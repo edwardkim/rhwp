@@ -1,0 +1,57 @@
+{
+  "changeSetId": "issue-7196.ygodic230-metric-name",
+  "decisionPlane": "layout-metric",
+  "evidenceRecords": [
+    {
+      "evidenceId": "evidence.issue-7196.ygodic230-pdf",
+      "kind": "public-fixture",
+      "licenseOrProvenance": "정상 한컴 PDF 9·10쪽은 HaanYGodic23을 내장합니다. 기존 font_oracle_readiness.json의 한컴 윤고딕 230 / Haan YGodic 230 이름과 동일한 cdf74617… 실폰트에서 upem1000, ASCII 및 한글 전진폭을 확인했습니다. 글꼴 파일은 배포하지 않습니다.",
+      "parentEvidenceIds": [],
+      "sha256": "5db32d3107d229d471eb43b544e2c87a5fade1d1738b4bdea6338958726cc443",
+      "source": "samples/issue7196/156760012_page_top_spacing_trim-2024.pdf"
+    }
+  ],
+  "expectedDelta": {
+    "activeRuleDelta": 1,
+    "projectionId": "rust-layout-metric",
+    "unchangedProjectionIds": [
+      "rust-layout-name",
+      "canvas2d-paint",
+      "canvas2d-webfont",
+      "canvaskit-sfnt"
+    ]
+  },
+  "issue": 7196,
+  "kind": "font-rule-change-set",
+  "operations": [
+    {
+      "operationId": "operation.issue-7196.ygodic230-metric-name",
+      "rule": {
+        "conditions": {},
+        "decisionPlane": "layout-metric",
+        "evidenceIds": [
+          "evidence.issue-7196.ygodic230-pdf"
+        ],
+        "metricEntryIds": [
+          "font-metric.f3e4274740daf2960ec1"
+        ],
+        "order": null,
+        "projection": {
+          "id": "rust-layout-metric",
+          "mode": "direct"
+        },
+        "projectionSequence": 67,
+        "relationType": "metric-surrogate",
+        "ruleId": "rule.rust-metric.ygodic230-name",
+        "sourceBoundaryId": "rust-metric.metric-alias",
+        "sourceFace": "한컴 윤고딕 230",
+        "supply": null,
+        "targetFaceOrPolicy": "Haan YGodic 230"
+      },
+      "type": "add-rule"
+    }
+  ],
+  "parentRegistrySha256": "9b17f70a7bf1fe779042d6cde3df9293736fc89f5e58854dbb5170f539045b3b",
+  "schemaVersion": "2.0",
+  "sequence": 3
+}

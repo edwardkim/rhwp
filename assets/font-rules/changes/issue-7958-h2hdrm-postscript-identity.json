@@ -1,0 +1,83 @@
+{
+  "changeSetId": "issue-7958.h2hdrm-postscript-identity",
+  "decisionPlane": "layout-name",
+  "evidenceRecords": [
+    {
+      "evidenceId": "evidence.issue-7958.h2hdrm-name-table",
+      "kind": "public-fixture",
+      "licenseOrProvenance": "Locally installed H2HDRM.TTF name table: nameID 6 H2hdrM and nameID 1/4 HYHeadLine-Medium / HY헤드라인M describe the same font program. Metadata only; no proprietary font bytes distributed.",
+      "parentEvidenceIds": [],
+      "sha256": "c675d28d3826836832e6423e5826669fa44583ef7f299817939e11d0fc854b66",
+      "source": "assets/font-rules/evidence/issue-7958-postscript-identity.json"
+    }
+  ],
+  "expectedDelta": {
+    "activeRuleDelta": 2,
+    "projectionId": "rust-layout-name",
+    "unchangedProjectionIds": [
+      "rust-layout-metric",
+      "canvas2d-paint",
+      "canvas2d-webfont",
+      "canvaskit-sfnt"
+    ]
+  },
+  "issue": 7958,
+  "kind": "font-rule-change-set",
+  "operations": [
+    {
+      "operationId": "operation.issue-7958.h2hdrm-identity-0",
+      "rule": {
+        "conditions": {
+          "languageSlot": "all"
+        },
+        "decisionPlane": "layout-name",
+        "evidenceIds": [
+          "evidence.issue-7958.h2hdrm-name-table"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        },
+        "projectionSequence": 171,
+        "relationType": "style-fallback",
+        "ruleId": "rule.rust-style-resolution.14713c8b701c74678152",
+        "sourceBoundaryId": "rust-style-resolution.ttf",
+        "sourceFace": "H2hdrM",
+        "supply": null,
+        "targetFaceOrPolicy": "HY헤드라인M"
+      },
+      "type": "add-rule"
+    },
+    {
+      "operationId": "operation.issue-7958.h2hdrm-identity-1",
+      "rule": {
+        "conditions": {
+          "languageSlot": "all"
+        },
+        "decisionPlane": "layout-name",
+        "evidenceIds": [
+          "evidence.issue-7958.h2hdrm-name-table"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        },
+        "projectionSequence": 172,
+        "relationType": "style-fallback",
+        "ruleId": "rule.rust-style-resolution.1ce3e788a4c6198b4799",
+        "sourceBoundaryId": "rust-style-resolution.ttf",
+        "sourceFace": "HYHeadLine-Medium",
+        "supply": null,
+        "targetFaceOrPolicy": "HY헤드라인M"
+      },
+      "type": "add-rule"
+    }
+  ],
+  "parentRegistrySha256": "124a859fa52807d86b914b4ca6e192566eba1e022209b5485503aee5912acc63",
+  "schemaVersion": "2.0",
+  "sequence": 8
+}

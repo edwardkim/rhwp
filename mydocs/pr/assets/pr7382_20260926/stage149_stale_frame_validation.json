@@ -1,0 +1,425 @@
+{
+  "stage": 149,
+  "preanalysis": "#7288 실제첫본문줄소유FAIL과같은쪽본문넘침PASS를분리. 원본HWP 및검사문서가직접지정한한컴2024 PDF242쪽의실제63/64/65쪽을Native로비교한다. 90미만이면실제차단함수/단정만이관,정상넘침함수·모든원문/다른축유지. 90이상이면물리쪽명명과독립PDF/저장줄기대부터재검토하며현재값재고정안함.",
+  "production_source": "b7436944b81d20ad799edcd59ead3b94621902b3",
+  "inputs": [
+    {
+      "path": "samples/task1725/text_footnote_tail_overpagination.hwp",
+      "sha256": "d335c26cbcd57b157c929ed36596d95a6676bea5624348baae3bff3b55a705d9",
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/text_footnote_tail_overpagination-2024.pdf",
+      "sha256": "d8f47fc772556cc15b444fad61deca8b0f260eb82b3bf1691a36cc41036a69ba",
+      "matches_commit": true
+    }
+  ],
+  "source_head": "94411a3dec47b4e2a2ca2eb30f8f496588e2c155",
+  "native_visual": {
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "stale-frame7288",
+      "samples/task1725/text_footnote_tail_overpagination.hwp",
+      "pdf/text_footnote_tail_overpagination-2024.pdf",
+      "--pages",
+      "63-65",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+      "--embed-fonts=full",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/stage149-stale-frame7288/visual-native"
+    ],
+    "exit": {
+      "exit_code": 0
+    },
+    "pages": [
+      63,
+      64,
+      65
+    ],
+    "metrics": {
+      "compared_pages": 3,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 92.86991,
+      "worst_pixel_match_percent": 91.14732,
+      "average_ink_match_percent": 24.17048,
+      "worst_ink_match_percent": 18.39216,
+      "average_visual_accuracy_proxy_percent": 24.17048,
+      "worst_visual_accuracy_proxy_percent": 18.39216,
+      "average_tolerant_content_match_percent": 99.92209,
+      "worst_tolerant_content_match_percent": 99.8046,
+      "worst_pages": [
+        63,
+        65,
+        64
+      ]
+    }
+  },
+  "independent_finding": "한컴 PDF의 물리63쪽에표7.4-2/주)대각선문단이있고물리64쪽에는없다. 현재Native63쪽99.8046%이며같은물리쪽배치를보존한다. 기존PAGE=63(0기반)는64쪽을조회하는오류. 기대좌표364.12/공차1/본문넘침기존함수보존하고PAGE만62로교정할계획. freshWASM조건먼저확인.",
+  "fresh_wasm_visual": {
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "stale-frame7288",
+      "samples/task1725/text_footnote_tail_overpagination.hwp",
+      "pdf/text_footnote_tail_overpagination-2024.pdf",
+      "--pages",
+      "63-65",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+      "--embed-fonts=full",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/stage149-stale-frame7288/visual-wasm",
+      "--wasm-pkg",
+      "pkg"
+    ],
+    "exit": {
+      "exit_code": 0
+    },
+    "gate": {
+      "status": "passed",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "metrics": {
+      "compared_pages": 3,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 92.86991,
+      "worst_pixel_match_percent": 91.14732,
+      "average_ink_match_percent": 24.17048,
+      "worst_ink_match_percent": 18.39216,
+      "average_visual_accuracy_proxy_percent": 24.17048,
+      "worst_visual_accuracy_proxy_percent": 18.39216,
+      "average_tolerant_content_match_percent": 99.92209,
+      "worst_tolerant_content_match_percent": 99.8046,
+      "worst_pages": [
+        63,
+        65,
+        64
+      ]
+    },
+    "completed_pages": [
+      63,
+      64,
+      65
+    ],
+    "artifacts": {
+      "source_head": "94411a3dec47b4e2a2ca2eb30f8f496588e2c155",
+      "artifacts": [
+        {
+          "root": "pkg/rhwp.js",
+          "studio": "rhwp-studio/public/rhwp.js",
+          "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+          "studio_identical": true
+        },
+        {
+          "root": "pkg/rhwp_bg.wasm",
+          "studio": "rhwp-studio/public/rhwp_bg.wasm",
+          "sha256": "de241f6ea15754ebbd5b6c5aff367951e6b4e8c65b18cf41d3981193b3f0e78b",
+          "studio_identical": true
+        }
+      ],
+      "local_no_opt_alternative": true,
+      "docker_optimized_validation": false
+    },
+    "build": {
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "CARGO_TARGET_DIR": "target/pr-review",
+      "exit_code": 0,
+      "seconds": 197.3312772498466
+    }
+  },
+  "independent_location": {
+    "native_target_paragraph_lines": [
+      {
+        "file": "render_tree_063.json",
+        "bbox": {
+          "x": 75.6,
+          "y": 364.1,
+          "w": 642.5,
+          "h": 16.0
+        },
+        "text": "주)\t대각선 양측의 숫자는 그 구획의 해당되는 측(side)의 방화시스템에 요구되는 "
+      },
+      {
+        "file": "render_tree_063.json",
+        "bbox": {
+          "x": 116.1,
+          "y": 389.7,
+          "w": 602.0,
+          "h": 16.0
+        },
+        "text": "구조방화시간을 나타낸다. 강식구조(steel construction)가 사용되고 서로 다른 2"
+      },
+      {
+        "file": "render_tree_063.json",
+        "bbox": {
+          "x": 116.1,
+          "y": 415.3,
+          "w": 602.0,
+          "h": 16.0
+        },
+        "text": "개의 구조방화시간이 요구될 시에는, 큰 쪽만이 적용될 필요가 있다."
+      }
+    ],
+    "pdf_target_physical_page": 63,
+    "pdf_first_text_top_points": 272.8936767578125,
+    "pdf_first_text_top_px": 363.8582356770833,
+    "stored_ladder_expectation_px": 364.12000000333336,
+    "current_test_PAGE_zero_based": 63,
+    "correct_independent_zero_based_page": 62
+  },
+  "decision": "Native/fresh WASM 각영향3쪽 최저99.8046%·직접review/overlay위치확인. 독립PDF대상은물리63쪽. 기존 PAGE=63(물리64쪽)→62(물리63쪽)만교정한다. 두함수/문단번호/독립364.12px/공차1/본문넘침상한2px는유지. #7445제거대상아님.",
+  "code_commit": "38830266cfa0206bcd1b8ca55630076cb7a4a07a",
+  "scope": {
+    "corrected_only_shared_page_index": {
+      "before_zero_based": 63,
+      "after_zero_based": 62,
+      "independent_reference_physical_page": 63
+    },
+    "existing_test_functions_kept": 2,
+    "function_bodies_unchanged": true,
+    "expected_y_unchanged": true,
+    "tolerances_unchanged": [
+      1.0,
+      2.0
+    ],
+    "production_changed": false,
+    "new_functions": 0,
+    "issue7445_deferral": false
+  },
+  "gates": [
+    {
+      "step": "prepare-before-fmt",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.7673313338309526
+    },
+    {
+      "step": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 7.009649834129959
+    },
+    {
+      "step": "prepare-final",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.6050947080366313
+    },
+    {
+      "step": "focused",
+      "command": [
+        "python3",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage149-stale-frame7288/run-focused.py",
+        "after"
+      ],
+      "exit_code": 0,
+      "seconds": 10.356140041723847
+    },
+    {
+      "step": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 5.961644208058715
+    },
+    {
+      "step": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.3168800841085613
+    },
+    {
+      "step": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.22144687501713634
+    },
+    {
+      "step": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 0.3497135420329869
+    },
+    {
+      "step": "clippy-alltargets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 7.59955216711387
+    },
+    {
+      "step": "manifest-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 2.9529542909003794
+    },
+    {
+      "step": "unit-check",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 9.86239374987781
+    }
+  ],
+  "before": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_025",
+      "-E",
+      "test(issue_7288_stale_frame_empty_paragraph::)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plans": [
+      {
+        "caseName": "issue_7288_stale_frame_empty_paragraph",
+        "target": "regression_suite_025",
+        "grouped": true
+      }
+    ],
+    "exit_code": 100,
+    "seconds": 13.709104958921671,
+    "summary": [
+      "Summary [   0.191s] 2 tests run: 1 passed, 1 failed, 198 skipped"
+    ]
+  },
+  "after": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_025",
+      "-E",
+      "test(issue_7288_stale_frame_empty_paragraph::)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plans": [
+      {
+        "caseName": "issue_7288_stale_frame_empty_paragraph",
+        "target": "regression_suite_025",
+        "grouped": true
+      }
+    ],
+    "exit_code": 0,
+    "seconds": 9.476502374745905,
+    "summary": [
+      "Summary [   0.178s] 2 tests run: 2 passed, 198 skipped"
+    ]
+  },
+  "limits": "수정은tests PAGE/주석뿐이며 생산 코드는 불변. Native/freshWASM은영향3쪽직접판독이며 전체242쪽시각통과/최종전체회귀가아님. 글자획/굵기잔여차이를 픽셀일치로 주장하지않음. WASM no-opt 로컬대체빌드이며Docker최적화통과가아님."
+}

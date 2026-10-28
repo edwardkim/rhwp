@@ -1,0 +1,53 @@
+{
+  "job_id": "7d093cec-89d7-4483-8bd0-1114cfe468af",
+  "status": "succeeded",
+  "phase": "completed",
+  "target": "pdf",
+  "engine": "2020",
+  "created_at": "2026-10-04T10:24:00.645Z",
+  "started_at": "2026-10-04T10:24:00.647Z",
+  "completed_at": "2026-10-04T10:24:14.598Z",
+  "expired_at": null,
+  "elapsed_seconds": 13,
+  "queue_position": null,
+  "output_bytes": 107490,
+  "delivery": {
+    "status": "not_requested",
+    "attempts": 0,
+    "output_path": null,
+    "saved_at": null,
+    "error": null
+  },
+  "result": {
+    "job_id": "7d093cec-89d7-4483-8bd0-1114cfe468af",
+    "status": "success",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "11.0.0.9136",
+    "backend": "hwp-managed-direct-dll-host",
+    "input_format": "hwpx",
+    "format": "pdf",
+    "bytes": 107490,
+    "pdf_page_count": 1,
+    "logical_page_count": null,
+    "elapsed_ms": 13948,
+    "worker_elapsed_ms": 13008,
+    "worker_bits": 32,
+    "font_scope": {
+      "mode": "session0",
+      "status": "verified",
+      "profile_source": "protected_config",
+      "session_id": 0,
+      "mapped_font_count": 2,
+      "registered_font_count": 2,
+      "failed_font_count": 0,
+      "parent_visibility": "verified",
+      "child_visibility": "verified"
+    },
+    "input_preprocess": "none",
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+  },
+  "error": null,
+  "terminal": true
+}

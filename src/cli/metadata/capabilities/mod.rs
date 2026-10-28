@@ -647,6 +647,7 @@ pub(crate) fn capabilities_value() -> serde_json::Value {
         "schemaVersion": crate::ENVELOPE_SCHEMA_VERSION,
         "tool": "rhwp",
         "version": rhwp::version(),
+        "pdfImportSupport": rhwp::pdf_support::pdf_import_support(),
         // [#4329 R67×R83] 전 버전 축(봉투·IR·capabilities·plan + crate semver)의
         // 단일 출처 자기서술 — 외부 소비자가 이 한 번의 호출로 상류 버전을 기계
         // 대조한다(#4327 U2). 값의 원천은 rhwp::schema_registry 이고, 여기와
@@ -655,12 +656,12 @@ pub(crate) fn capabilities_value() -> serde_json::Value {
         // hwp5 는 convert·extract-pages·edit -o *.hwp 가 실제로 내는 산출 형식이다
         // (봉투의 format/outputFormat 이 "hwp5"). 쓰기 목록에서 빠져 있어 매니페스트만
         // 읽은 에이전트가 "HWP5 로는 못 쓴다"고 오판했다.
-        "formats": { "read": ["hwp5", "hwpx", "hwp3", "hml"], "write": ["hwp5", "hwpx", "hml", "pdf", "svg", "png", "txt", "md", "doclang"] },
+        "formats": { "read": if cfg!(feature = "pdf-import") { vec!["hwp5", "hwpx", "hwp3", "hml", "pdf"] } else { vec!["hwp5", "hwpx", "hwp3", "hml"] }, "write": ["hwp5", "hwpx", "hml", "pdf", "svg", "png", "txt", "md", "doclang"] },
         "exitCodes": {
             "0": "성공",
             "1": "런타임 실패 (읽기·파싱·렌더·쓰기)",
             "2": "사용법 오류 (인자 없음, 알 수 없는 옵션/명령, 페이지 범위 초과)",
-            "3": "검증 단언 실패 — convert/export-hwpx --verify IR 차이, edit 3종 --verify 저장본 불일치, run 계획 assertions 미충족, render-diff --json 시각 회귀 검출(사람 모드는 종전대로 1), layout-anomaly --strict 확정 신호(overflow·off-canvas·overlap·text-overlap) 검출(기본은 0)",
+            "3": "검증 단언 실패 — convert/export-hwpx --verify IR 차이, edit 3종 --verify 저장본 불일치, run 계획 assertions 미충족, render-diff --json 시각 회귀 검출(사람 모드는 종전대로 1), layout-anomaly --strict 확정 신호(overflow·off-canvas·overlap·text-overlap·stored-line-escape) 검출(기본은 0)",
             "4": "--verify-pages 페이지 수 불일치 (convert/export-hwpx)",
         },
         "jsonContract": {
@@ -668,7 +669,7 @@ pub(crate) fn capabilities_value() -> serde_json::Value {
             "schemaPolicy": "필드 추가 허용, 변경·삭제는 schemaVersion 범프",
             // [#3884 G3] run 의 예외는 설계다(판정을 데이터로 보고) — 적지 않으면
             // "실패 = stdout 0바이트"를 믿는 소비자가 run 에서 깨진다.
-            "failure": "단건 명령 실패 시 stdout 0바이트; batch 는 error 레코드 + 최종 exit 1. 예외: run — 실패도 봉투를 stdout 으로 낸다(입력 오류 exit 1 + error, 계획 무효 exit 2 + invalid[], 단언 실패 exit 3 + verify 저널)",
+            "failure": "단건 명령 실패 시 stdout 0바이트; batch 는 error 레코드 + 최종 exit 1. 예외: run — 실패도 봉투를 stdout 으로 낸다(계획 안 문서 부재 등 입력 오류 exit 1 + error, 계획 무효 exit 2 + invalid[], 단언 실패 exit 3 + verify 저널)",
             // [#3707] 봉투에 담기는 문서 유래 문자열의 유니코드 기만 판정. 이 키가
             // 있으면 바이너리가 검사한다는 뜻이다 — 키가 없으면 '깨끗함'이 아니라
             // '검사하지 않음'으로 읽어야 한다.

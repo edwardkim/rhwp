@@ -9,7 +9,8 @@
 
 | 파일 | 역할 |
 | --- | --- |
-| `tokenizer.rs` | 스크립트 → 토큰 |
+| `tokenizer.rs` | 공개 LaTeX 호환 스크립트 → 토큰 |
+| `document_script.rs` | 저장 문서의 bare LaTeX 전용 이름을 문자로 보존하고 한컴·레거시 명령을 유지 |
 | `dispatch.rs` | 명령 이름 → `EqCommandClass` (분류만, 파싱 없음) |
 | `parser.rs` | 토큰 → `EqNode`. `parse_command` 가 분류표로 핸들러를 고른다 |
 | `ast.rs` | `EqNode` / `MatrixStyle` / `PileAlign` |
@@ -17,7 +18,7 @@
 | `layout.rs` | `EqNode` → `LayoutBox` |
 | `svg_render.rs` | `LayoutBox` → SVG 조각 |
 | `canvas_render.rs` | WASM Canvas 경로 |
-| `mod.rs` | `intrinsic_size_hwp` 진입점 |
+| `mod.rs` | `intrinsic_size_hwp`, 한글 대체 `flow_metrics_hwp`와 공통 글꼴 정책 |
 
 ## 디스패치 순서
 

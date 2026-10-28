@@ -1,0 +1,135 @@
+{
+  "stage": 175,
+  "ledger_item": 17,
+  "original_pr": 7382,
+  "starting_head": "6bbc5b0fe9f715dbb84667265d6bf0033b073cb1",
+  "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+  "input": "samples/issue6778/156757920-animal-welfare-husbandry-guidelines.hwp",
+  "input_sha256": "309494bf58da7c092eca2c6fe55918063d2f538820cbc3fc6f8c8196fcd3586a",
+  "last_saved_with": "hancom-office-2024 13.0.0.564",
+  "print_method": 4,
+  "print_method_implies_nup": true,
+  "original_pdf": "pdf/156757920-animal-welfare-husbandry-guidelines-2024.pdf",
+  "original_pdf_sha256": "de6a57ee0d28cfb66acab4e477cc0b95e31a7939d3ca2e165de46fd5a487296e",
+  "reprinted_pdf": "pdf/issue7382-regression-review/156757920-animal-welfare-husbandry-guidelines-2024.pdf",
+  "reprinted_pdf_sha256": "d2373f7d40c0b54953b4a55e6cce6dc488171452744934c21b3584fc171f07c3",
+  "reprint": {
+    "client": "hwp2024-mcp-convert",
+    "engine": 2024,
+    "job_id": "88f71017-4852-40f6-94c6-9ea96c447944",
+    "terminal_status": "succeeded",
+    "pages": 12,
+    "size_bytes": 877608
+  },
+  "pdf_reprint_comparison": {
+    "page_count_equal": true,
+    "page_size": "595x841 pt A4",
+    "page_2_96dpi_raster_equal": true,
+    "page_1_2_text_sizes_equal": true,
+    "conclusion": "같은 엔진 재출력만으로 배율·위치 차이가 해결되지 않음"
+  },
+  "anomaly": {
+    "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_10",
+    "page": 2,
+    "paragraph_index": 35,
+    "over_bottom_px": 23.76,
+    "before": "신규 발생1건, baseline 없음"
+  },
+  "visual": {
+    "dpi": 96,
+    "pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "native_scores_percent": [
+      20.29389,
+      26.62215,
+      17.50287,
+      28.53119,
+      24.06242,
+      16.32648,
+      26.79986,
+      17.36874,
+      27.53999,
+      23.08911,
+      26.41537,
+      23.32355
+    ],
+    "fresh_wasm_scores_percent": [
+      20.29389,
+      26.62215,
+      17.50287,
+      28.49533,
+      24.01698,
+      16.32648,
+      26.79986,
+      17.36874,
+      27.53481,
+      22.93955,
+      26.3533,
+      23.32486
+    ],
+    "native_gate": "re_review_required",
+    "fresh_wasm_gate": "re_review_required",
+    "font_exception": false,
+    "direct_inspection_pages": [
+      1,
+      2,
+      4
+    ],
+    "native_binary_sha256": "e10951f2df5ac6e86dd2a6afccf5ed6ed3ad463bdae15399c3ac32a718a972fe",
+    "fresh_wasm_sha256": "70f8065759cfee268e8bd76c94f2b8e35bef6fe161d7227b7036ac6fb723ba38"
+  },
+  "scope": "원문·기존 PDF 유지, 새 PDF 추가, body-overflow 자동 수집의 이 입력 한 건만 보류, 다른 래칫과 다른 입력 유지",
+  "issue_7445_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5904847678",
+  "issue_comment_readback": {
+    "exact": true,
+    "bom": false,
+    "literal_newline_escape": false
+  },
+  "new_test_functions": 0,
+  "baseline_or_tolerance_relaxations": 0,
+  "production_change": false,
+  "body_overflow_all_partitions": {
+    "command": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 8 --no-fail-fast -E 'test(body_overflow_does_not_grow_partition_)'",
+    "run": 16,
+    "passed": 14,
+    "failed": 2,
+    "failed_functions": [
+      "body_overflow_baseline::body_overflow_does_not_grow_partition_15",
+      "body_overflow_baseline::body_overflow_does_not_grow_partition_3"
+    ],
+    "remaining_inputs": [
+      "issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "issue6756/17253153-traffic-safety-designated-routes.hwp",
+      "k-water-rfp-2024.hwp"
+    ]
+  },
+  "validation": {
+    "fmt": "PASS",
+    "clippy_native": "PASS",
+    "clippy_wasm": "PASS",
+    "workspace_build": "PASS",
+    "clippy_workspace_all_targets": "PASS",
+    "manifest_base_check_after_prepare": "PASS",
+    "unit_tier_base_check": "PASS"
+  },
+  "full_nextest": "보정173 전체 42FAIL 이후 이 단계에서는 전수 미실행; 최종 head에서 재실행 필요",
+  "representative_assets": [
+    "stage175_animal_native_review_001.png",
+    "stage175_animal_native_review_002.png",
+    "stage175_animal_native_review_004.png",
+    "stage175_animal_wasm_overlay_002.png"
+  ],
+  "logs": "output/pr-review/planet6897-7382-20260926/stage175-body10-animal/"
+}

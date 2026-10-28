@@ -1,0 +1,59 @@
+{
+  "source_head": "5a12bf20e2e0aca40d2edf11d0a44a2bdfb6c5c8",
+  "native_source_record": "print-alpha-native-build-4394-result.json",
+  "wasm_source_record": "print-alpha-wasm079-build-4400-result.json",
+  "dpi": 96,
+  "oracle": "Independent Hancom Office2020 Print, method0, driveroneup; PDF frames and explicit Mask sizes extracted from original PDF objects; no source/layout edits",
+  "cases": [
+    {
+      "label": "wide",
+      "input": "tests/fixtures/pr8032_print_alpha/wide.hwpx",
+      "input_sha256": "9ef1b0180eab92c311901a5be26936ac737df165c6a0cdf9b8a743553519b07d",
+      "pdf": "pdf/semanticist21-20261019/pr8032-print-alpha-wide-2020.pdf",
+      "pdf_sha256": "ca30c1fce58e933f0a20c7b842f1cd1c306d071f2f64b1fef110449532d5187d",
+      "pdf_frame_pt": [
+        95.947998046875,
+        115.073974609375,
+        383.79400634765625,
+        153.4320068359375
+      ],
+      "mask_pixels": [
+        3200,
+        1280
+      ],
+      "native_raw": "98.78322",
+      "fresh_wasm_raw": "98.78261"
+    },
+    {
+      "label": "narrow",
+      "input": "tests/fixtures/pr8032_print_alpha/narrow.hwpx",
+      "input_sha256": "0a86ed26a5429f80b079ee18d37a6e3c6f1c8924787d353be44e0ebe09baa377",
+      "pdf": "pdf/semanticist21-20261019/pr8032-print-alpha-narrow-2020.pdf",
+      "pdf_sha256": "1d3d29dd82da18e53b1cf1d16483f24635cdc28c63d14151f515ae551d428ecd",
+      "pdf_frame_pt": [
+        221.64100646972656,
+        100.69000244140625,
+        40.29798889160156,
+        40.2760009765625
+      ],
+      "mask_pixels": [
+        336,
+        336
+      ],
+      "native_raw": "100.00000",
+      "fresh_wasm_raw": "100.00000"
+    }
+  ],
+  "runtime_source_hashes": {
+    "src/paint/builder.rs": "6e6a9cd9feb7d268ec5eb046096cd5a28237c4ff08fd41e07f3acd49d7add042",
+    "src/renderer/cubic_sampling.rs": "4591d8d72e4ccbeca36fd3ffba7f9b81a6f93826c0f1c5d7203b1dbef911fcd8",
+    "src/renderer/image_resolver.rs": "3e7c68aaff82a4a43c705bd19c0a39e2253cd013c0f0d6d205606ad79bc1cf99",
+    "src/renderer/image_resolver/print_alpha.rs": "ea8833c2a5c1ae7408b5b9bef5571ac290ae72348780c8bc15efc4fea3da75a4"
+  },
+  "native_binary_sha256": "24a3930317c9af84a8483aaa2fc1003213a2915a36e26644067fcaf1b97ae781",
+  "fresh_wasm_artifacts": {
+    "rhwp.js": "a48acb46a157950724859baea436fda8d5d3b7c9a0fd10665455c952bf4c2434",
+    "rhwp_bg.wasm": "24fd7c188e0386a65ed29506db8e4ed56caeb432305575cfad8c5536266e5670"
+  },
+  "full_source_manifest_sha256": "e59df3ffce99308c1438ab97a947a9d46e371dd322ae6ab143d99a61031a6ef9"
+}

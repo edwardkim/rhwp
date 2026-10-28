@@ -1,0 +1,41 @@
+[
+  {
+    "id": "format-parity-hwp",
+    "changes": {}
+  },
+  {
+    "id": "format-parity-hwpx",
+    "changes": {}
+  },
+  {
+    "id": "overlay-and-policy-heuristic-hwp",
+    "changes": {
+      "widthSources": {
+        "old": {
+          "areaDotFallback": 22,
+          "embeddedMetric": 13891,
+          "figureSpace": 187,
+          "heuristicFullwidth": 524,
+          "heuristicHalfwidth": 118,
+          "metricHalfSpace": 946,
+          "metricNarrowPunctuationOverlay": 82,
+          "metricSpaceOverlay": 1102
+        },
+        "new": {
+          "embeddedMetric": 13891,
+          "metricHalfSpace": 946,
+          "areaDotFallback": 22,
+          "heuristicFullwidth": 550,
+          "metricNarrowPunctuationOverlay": 82,
+          "metricSpaceOverlay": 1102,
+          "figureSpace": 187,
+          "heuristicHalfwidth": 92
+        }
+      },
+      "aggregateHash": {
+        "old": "9b4a9bdc0ad322dbaba0e135fe680ab1c98bfccee0d93cfde6e39c2f495e51d9",
+        "new": "efb71617691f41118fad939b4c38afbabf322823d65cb4015bc38add828918a0"
+      }
+    }
+  }
+]

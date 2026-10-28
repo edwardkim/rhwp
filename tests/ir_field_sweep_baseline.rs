@@ -49,6 +49,25 @@
 //! `RHWP_IR_SWEEP_DETAIL="샘플명조각;다른조각"` 을 주면 해당 샘플의 완전한
 //! 경로별 건수와 상한 이내의 경로·값 예시를 출력한다 — 잔여 항목 분류용.
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/exam_fixtures.rs"
+));
+mod retired_exam_baseline_scope {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/retired_exam_baseline_scope.rs"
+    ));
+}
+
+mod preserved_format_inputs {
+    include!("common/preserved_format_inputs.rs");
+}
+
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
@@ -63,6 +82,21 @@ const BASELINE_SCHEMA: &str = "# rhwp-ir-field-sweep-baseline-v2 complete-normal
 const BASELINE_HEADER: &str = "lane\tsample\tpath\tcount";
 const HWP5_ROOT: &str = "samples";
 const HWPX_ROOT: &str = "samples/hwpx";
+// 이관 문서의 기존 비렌더링 왕복 계약은 논리 샘플명과 입력 바이트를 유지한다.
+const SHARED_HWP5_INPUTS: &[(&str, &str)] = &[
+    ("KTX.hwp", "mydocs/pr/assets/issue7445/ktx-toc27/KTX.hwp"),
+    ("aift.hwp", "mydocs/pr/assets/issue7445/aift74/aift.hwp"),
+];
+
+fn hwp5_sample_path(sample: &str) -> PathBuf {
+    SHARED_HWP5_INPUTS
+        .iter()
+        .find(|(name, _)| *name == sample)
+        .map_or_else(
+            || preserved_format_inputs::hwp5_path(sample),
+            |(_, path)| PathBuf::from(path),
+        )
+}
 
 /// `RHWP_IR_SWEEP_FAST=1` 일 때만 쓰는 샘플 크기 상한(바이트) — 로컬 반복 확인용.
 /// 기본(CI 포함)은 전체 코퍼스다.
@@ -95,6 +129,9 @@ fn collect(root: &Path, ext: &str, skip_dirs: &[&str]) -> Vec<(PathBuf, String)>
         };
         for entry in entries.flatten() {
             let path = entry.path();
+            if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+                continue;
+            }
             if path.is_dir() {
                 let skip = path
                     .file_name()
@@ -117,6 +154,11 @@ fn collect(root: &Path, ext: &str, skip_dirs: &[&str]) -> Vec<(PathBuf, String)>
     }
     let mut acc = Vec::new();
     walk(root, root, ext, skip_dirs, &mut acc);
+    if root == Path::new(HWP5_ROOT) && ext == "hwp" {
+        preserved_format_inputs::append_preserved_hwp5_inputs(&mut acc);
+    }
+    acc.retain(|(path, _)| !is_deferred_fixture(path));
+    acc.retain(|(path, _)| !retired_exam_baseline_scope::is_retired(path));
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     acc
 }
@@ -183,7 +225,13 @@ fn sweep_corpus(size_filter: &dyn Fn(u64) -> bool) -> (Baseline, usize, usize) {
         }
     };
 
-    for (path, rel) in collect(Path::new(HWP5_ROOT), "hwp", &[]) {
+    let mut hwp5_inputs = collect(Path::new(HWP5_ROOT), "hwp", &[]);
+    for (name, path) in SHARED_HWP5_INPUTS {
+        let path = PathBuf::from(path);
+        assert!(path.is_file(), "공유 왕복 입력이 없음: {}", path.display());
+        hwp5_inputs.push((path, (*name).to_owned()));
+    }
+    for (path, rel) in hwp5_inputs {
         let size = std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
         if !size_filter(size) {
             continue;
@@ -397,8 +445,11 @@ fn baseline_samples_exist() {
     assert!(!baseline.is_empty(), "baseline 이 비어 있음: {BASELINE}");
     let mut missing = Vec::new();
     for (lane, sample, _) in baseline.keys() {
-        let root = if lane == "hwpx" { HWPX_ROOT } else { HWP5_ROOT };
-        let path = Path::new(root).join(sample);
+        let path = if lane == "hwpx" {
+            Path::new(HWPX_ROOT).join(sample)
+        } else {
+            hwp5_sample_path(sample)
+        };
         if !path.exists() {
             missing.push(format!("  [{lane}] {sample}"));
         }

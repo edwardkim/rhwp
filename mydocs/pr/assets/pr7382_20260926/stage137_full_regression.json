@@ -1,0 +1,276 @@
+{
+  "source_head": "0a069b1f1c1b0541f52f281e2d4f3a316616f982",
+  "command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--tests",
+    "--test-threads",
+    "8",
+    "--no-fail-fast"
+  ],
+  "state": "complete",
+  "started_utc": "2026-09-28T18:47:41Z",
+  "exit_code": 100,
+  "seconds": 819.2250884999521,
+  "summary": [
+    "Summary [ 539.451s] 10250 tests run: 10190 passed (8 slow), 60 failed, 50 skipped"
+  ],
+  "failed_tests": [
+    {
+      "binary": "rhwp",
+      "test": "renderer::layout::integration_tests::tests::issue_3738_picture_caption_float_clears_caption_before_next_body_text"
+    },
+    {
+      "binary": "rhwp",
+      "test": "renderer::layout::integration_tests::tests::issue_3821_page_tail_square_picture_wrap_reaches_visible_text_after_guides"
+    },
+    {
+      "binary": "rhwp",
+      "test": "renderer::layout::integration_tests::tests::issue_3820_rewinding_rowbreak_uses_painted_first_fragment_boundary"
+    },
+    {
+      "binary": "rhwp::overflow_cell_baseline",
+      "test": "overflow_cell_lines_do_not_grow_partition_9"
+    },
+    {
+      "binary": "rhwp::overflow_cell_baseline",
+      "test": "overflow_cell_lines_do_not_grow_partition_8"
+    },
+    {
+      "binary": "rhwp::regression_suite_001",
+      "test": "issue_1100_exam_social_hwpx_header::issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only"
+    },
+    {
+      "binary": "rhwp::regression_suite_001",
+      "test": "issue_7147_row_declaration_beats_object_height::header_row_boxes_match_the_hancom_oracle"
+    },
+    {
+      "binary": "rhwp::regression_suite_001",
+      "test": "issue_7147_row_declaration_beats_object_height::the_unshrunk_table_splits_across_the_page_boundary"
+    },
+    {
+      "binary": "rhwp::regression_suite_002",
+      "test": "issue_6358_negative_cell_pad_clamp::issue_6358_negative_vertical_pad_falls_back_to_table_zero"
+    },
+    {
+      "binary": "rhwp::regression_suite_002",
+      "test": "issue_6358_negative_cell_pad_clamp::issue_6358_small_positive_vertical_pad_is_kept"
+    },
+    {
+      "binary": "rhwp::regression_suite_003",
+      "test": "hwpx_password_fixture::actual_odf_hwpx_fixture_requires_the_password_and_matches_plain_counterpart"
+    },
+    {
+      "binary": "rhwp::regression_suite_003",
+      "test": "hwpx_password_fixture::cli_password_exit_contract_uses_the_actual_odf_hwpx_fixture"
+    },
+    {
+      "binary": "rhwp::regression_suite_007",
+      "test": "issue_5801_stored_ladder_spacing_before::issue_5801_gate_does_not_move_the_page_boundary"
+    },
+    {
+      "binary": "rhwp::regression_suite_007",
+      "test": "maintainer_hwpx_overlay_table_extent::low_slack_footer_keeps_its_independent_painted_position"
+    },
+    {
+      "binary": "rhwp::regression_suite_008",
+      "test": "issue_4252_nested_partial_table_cell_path::issue_4252_all_nested_partial_table_paths_resolve_against_original_ir"
+    },
+    {
+      "binary": "rhwp::regression_suite_010",
+      "test": "issue_7160_tac_table_line_break::leading_viewtext_inline_table_keeps_its_visible_left_inset"
+    },
+    {
+      "binary": "rhwp::regression_suite_010",
+      "test": "issue_7160_tac_table_line_break::oversized_tac_table_moves_to_its_own_line_below_the_host_text"
+    },
+    {
+      "binary": "rhwp::regression_suite_010",
+      "test": "issue_6697_cell_host_paragraph_text_is_drawn::cell_host_paragraph_caption_is_drawn_on_its_page"
+    },
+    {
+      "binary": "rhwp::regression_suite_007",
+      "test": "issue_2070_rowbreak_density::sijang_rowbreak_density_pin"
+    },
+    {
+      "binary": "rhwp::regression_suite_012",
+      "test": "issue_7358_terminal_rowbreak_outer_top::terminal_rowbreak_continuation_repeats_saved_outer_top"
+    },
+    {
+      "binary": "rhwp::regression_suite_013",
+      "test": "issue_2243::issue_2243_gyeoljae_sliver_page_pins"
+    },
+    {
+      "binary": "rhwp::regression_suite_013",
+      "test": "issue_6535_low_slack_absorb_keeps_page::low_slack_anchor_block_is_absorbed_into_the_same_page"
+    },
+    {
+      "binary": "rhwp::regression_suite_013",
+      "test": "issue_7288_stale_frame_empty_paragraph::the_line_after_the_table_sits_where_the_ladder_says"
+    },
+    {
+      "binary": "rhwp::regression_suite_014",
+      "test": "issue_3930_hwpx_hwp_save_layout::issue_3820_hwp5_qa_rowbreak_tail_reduces_page_count"
+    },
+    {
+      "binary": "rhwp::regression_suite_014",
+      "test": "issue_3930_hwpx_hwp_save_layout::issue_3930_preserves_page_count_and_inherited_even_master_page"
+    },
+    {
+      "binary": "rhwp::regression_suite_015",
+      "test": "mcp_password_contract::protected_documents_open_in_a_password_session_without_echoing_password"
+    },
+    {
+      "binary": "rhwp::regression_suite_015",
+      "test": "stored_table_text_tail::hancom_saved_object_row_keeps_its_character_border"
+    },
+    {
+      "binary": "rhwp::regression_suite_015",
+      "test": "stored_table_text_tail::hancom_saved_tail_preserves_pdf_baseline_after_the_table"
+    },
+    {
+      "binary": "rhwp::regression_suite_015",
+      "test": "stored_table_text_tail::one_paragraph_keeps_one_border_across_table_and_text_items"
+    },
+    {
+      "binary": "rhwp::regression_suite_018",
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_11"
+    },
+    {
+      "binary": "rhwp::regression_suite_018",
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_5"
+    },
+    {
+      "binary": "rhwp::regression_suite_018",
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_7"
+    },
+    {
+      "binary": "rhwp::regression_suite_018",
+      "test": "issue_6145_squeeze_cell_keeps_inner_margin::squeeze_cell_line_width_tracks_the_stored_inner_width"
+    },
+    {
+      "binary": "rhwp::regression_suite_018",
+      "test": "issue_6145_squeeze_cell_keeps_inner_margin::squeeze_cell_text_starts_inside_the_declared_inner_margin"
+    },
+    {
+      "binary": "rhwp::regression_suite_019",
+      "test": "issue_6032_rewind_anchor_float_snap::issue_6032_rewound_empty_anchor_table_snaps_to_saved_vpos"
+    },
+    {
+      "binary": "rhwp::regression_suite_019",
+      "test": "issue_4961_font_decision_trace::stage4_public_hwp_hwpx_profiles_are_end_to_end_and_feature_detected"
+    },
+    {
+      "binary": "rhwp::regression_suite_020",
+      "test": "issue_1133_native_rowbreak_outer_margin::hwpx_captionless_rowbreak_keeps_independent_frame_origins"
+    },
+    {
+      "binary": "rhwp::regression_suite_022",
+      "test": "armor_cli_contract::encrypted_hwp3_hwp5_and_hwpx_open_through_password_stdin"
+    },
+    {
+      "binary": "rhwp::regression_suite_022",
+      "test": "issue_2007_nested_cell_pagination::issue_2007_completed_multiline_table_keeps_following_heading_in_next_viewport"
+    },
+    {
+      "binary": "rhwp::regression_suite_022",
+      "test": "issue_2007_nested_cell_pagination::issue_2007_continuation_frame_restarts_and_drops_previous_page_residual"
+    },
+    {
+      "binary": "rhwp::regression_suite_022",
+      "test": "issue_2007_nested_cell_pagination::issue_2007_continuation_viewport_does_not_center_nested_cell_content"
+    },
+    {
+      "binary": "rhwp::regression_suite_018",
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_10"
+    },
+    {
+      "binary": "rhwp::regression_suite_022",
+      "test": "issue_2007_nested_cell_pagination::issue_2007_nested_cell_content_paginates"
+    },
+    {
+      "binary": "rhwp::regression_suite_022",
+      "test": "issue_2007_nested_cell_pagination::issue_2007_saved_frame_tail_nested_table_starts_before_next_frame"
+    },
+    {
+      "binary": "rhwp::regression_suite_022",
+      "test": "issue_2007_nested_cell_pagination::issue_2007_single_cell_continuation_does_not_repaint_boundary_fragments"
+    },
+    {
+      "binary": "rhwp::regression_suite_022",
+      "test": "stored_nested_content_flow::nested_cell_alignment_uses_the_sequential_anchor_when_stored_positions_reset"
+    },
+    {
+      "binary": "rhwp::regression_suite_023",
+      "test": "issue_4272_nested_cell_text_selection::issue_4272_path_api_returns_rects_for_page5_innermost_cell_text"
+    },
+    {
+      "binary": "rhwp::regression_suite_023",
+      "test": "svg_snapshot::issue_157_page_1"
+    },
+    {
+      "binary": "rhwp::regression_suite_023",
+      "test": "svg_snapshot::form_002_page_0"
+    },
+    {
+      "binary": "rhwp::regression_suite_023",
+      "test": "svg_snapshot::issue_267_ktx_toc_page"
+    },
+    {
+      "binary": "rhwp::regression_suite_023",
+      "test": "svg_snapshot::issue_677_bokhakwonseo_page1"
+    },
+    {
+      "binary": "rhwp::regression_suite_023",
+      "test": "svg_snapshot::issue_147_aift_page3"
+    },
+    {
+      "binary": "rhwp::regression_suite_023",
+      "test": "svg_snapshot::issue_617_exam_kor_page5"
+    },
+    {
+      "binary": "rhwp::regression_suite_024",
+      "test": "issue_1772_table_outer_margin_sync::issue_1772_body_first_line_respects_table_outer_margin_bottom"
+    },
+    {
+      "binary": "rhwp::regression_suite_024",
+      "test": "issue_6312_float_anchor_line_uses_source_vpos::liver_picture_row_and_caption_keep_the_independent_pdf_frame"
+    },
+    {
+      "binary": "rhwp::regression_suite_024",
+      "test": "issue_7196_page_top_spacing_trim_restore::issue_7196_attachment_table_starts_next_page_without_body_overflow"
+    },
+    {
+      "binary": "rhwp::regression_suite_025",
+      "test": "issue_3308_nested_table_width::narrow_nested_table_keeps_declared_width_and_centers"
+    },
+    {
+      "binary": "rhwp::regression_suite_025",
+      "test": "issue_6078_inline_table_seg_lookup::issue_6078_paper_spec_line_stays_inside_the_page"
+    },
+    {
+      "binary": "rhwp::regression_suite_023",
+      "test": "issue_6761_stored_vpos_rewind_page_break::stored_rewind_paragraph_starts_the_next_page"
+    },
+    {
+      "binary": "rhwp::regression_suite_027",
+      "test": "issue_938::issue_938_layer_tree_watermark_is_resolved_hancom_baked_png"
+    }
+  ],
+  "counts": {
+    "passed": 10190,
+    "failed": 60,
+    "tests_run": 10250,
+    "skipped": 50
+  },
+  "policy_base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+  "readiness": "최종검증FAIL. PR준비미완료. 실제차단문서의90%미만범위만개별이관하고다른실패는원인/정상계약검토.",
+  "test_execution_seconds": 539.451,
+  "slow_tests": 8
+}

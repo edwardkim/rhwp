@@ -1,0 +1,5 @@
+backend	page	base	candidate	declinePp	reReviewRequired
+native	1	74.58351	91.20154	-16.61803	False
+native	2	69.70042	92.31277	-22.61235	False
+wasm	1	85.43866	92.44329	-7.00463	False
+wasm	2	92.85946	92.86183	-0.00237	False

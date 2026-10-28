@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d5-b-exact-source-preparation-correction-plan",
+  "issue": 4969,
+  "stage": "W10-Q4-D5-B",
+  "date": "2026-08-31",
+  "status": "qualified-performance-correction-result-approved-automatic",
+  "planApproved": true,
+  "approvalBasis": "maintainer-auto-approval-until-morning",
+  "d5ACheckpoint": "e31c5c15d",
+  "observed": {
+    "rustWarmLayoutP50Ns64Iterations": 1142878416,
+    "rustLayerBuildP50Ns64Iterations": 223300253,
+    "canvasKitDrawP50Ns64Iterations": 11317080,
+    "canvasKitPixelMismatchCount": 0,
+    "rootCause": [
+      "repeated-sha256-over-immutable-registry-source",
+      "repeated-sfnt-face-parse",
+      "repeated-blake3-and-face-metadata-during-layer-publication"
+    ]
+  },
+  "changes": [
+    "registry-owned-verified-source-accessor",
+    "verified-shaping-and-geometry-shared-face",
+    "certificate-bound-portable-font-metadata"
+  ],
+  "hardGates": {
+    "supportTupleChangeAllowed": false,
+    "publicApiOrSchemaChangeAllowed": false,
+    "serializedOutputChangeAllowed": false,
+    "fallbackChangeAllowed": false,
+    "externalProviderTrustBoundaryRelaxationAllowed": false,
+    "resourceLimitRelaxationAllowed": false,
+    "newIntegrationSourceAllowed": false,
+    "generatedIntegrationArtifactAllowed": false,
+    "nineProcessPostCorrectionMeasurementRequired": true
+  },
+  "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d5_b_performance_correction.json",
+  "next": "correction-checkpoint-then-causal-WASM-size-comparison"
+}

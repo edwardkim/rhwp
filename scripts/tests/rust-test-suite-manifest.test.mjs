@@ -98,6 +98,41 @@ function writeRepositoryFixture(root) {
   return manifest;
 }
 
+test('Cargo CRLF 블록은 허용하지만 실제 target drift는 거절한다', () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'rhwp-cargo-crlf-'));
+  try {
+    writeRepositoryFixture(root);
+    const cargoPath = path.join(root, 'Cargo.toml');
+    const original = readFileSync(cargoPath, 'utf8');
+    for (const eol of ['\n', '\r\n']) {
+      const contents = original.replace(/\r?\n/g, eol);
+      writeFileSync(cargoPath, contents);
+      assert.deepEqual(validateRepository(root).errors, []);
+      assert.equal(readFileSync(cargoPath, 'utf8'), contents, '검사는 파일을 쓰지 않는다');
+      writeFileSync(cargoPath, contents.replace('name = "regression_suite_001"', 'name = "wrong_target"'));
+      assert.ok(validateRepository(root).errors.some(
+        (error) => error.includes('Cargo.toml generated test target block drift'),
+      ));
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('Cargo checkout은 core.autocrlf=true여도 저장소 속성에 따라 LF를 유지한다', () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'rhwp-cargo-checkout-'));
+  try {
+    writeRepositoryFixture(root);
+    writeFileSync(path.join(root, '.gitattributes'), readFileSync(path.join(ROOT, '.gitattributes')));
+    runGit(root, ['add', '.gitattributes']);
+    runGit(root, ['-c', 'core.autocrlf=true', 'checkout-index', '-f', '--', 'Cargo.toml']);
+    assert.ok(!readFileSync(path.join(root, 'Cargo.toml'), 'utf8').includes('\r'));
+    assert.deepEqual(validateRepository(root).errors, []);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('전체 integration source는 파생 산출물을 쓰지 않고 검증한다', () => {
   const policyPath = path.join(ROOT, 'tests', 'suites', 'suite-policy.json');
   const policyBefore = readFileSync(policyPath, 'utf8');
@@ -118,12 +153,18 @@ test('전체 integration source는 파생 산출물을 쓰지 않고 검증한�
 });
 
 test('일반 case는 weighted suite로 해석한다', () => {
-  const target = resolveCase('issue_1035_alignment');
-  assert.match(target, /^regression_suite_\d{3}$/);
-  const plan = resolveCasePlan('issue_1035_alignment');
-  assert.equal(plan.grouped, true);
-  assert.match(nextestArguments(plan).join(' '), /issue_1035_alignment::/);
-  assert.match(cargoTestArguments(plan).at(-1), /issue_1035_alignment::/);
+  const root = mkdtempSync(path.join(os.tmpdir(), 'rhwp-suite-resolver-'));
+  try {
+    writeRepositoryFixture(root);
+    const target = resolveCase('existing', root);
+    assert.match(target, /^regression_suite_\d{3}$/);
+    const plan = resolveCasePlan('existing', root);
+    assert.equal(plan.grouped, true);
+    assert.match(nextestArguments(plan).join(' '), /existing::/);
+    assert.match(cargoTestArguments(plan).at(-1), /existing::/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test('경로 의존 case는 기존 target 이름을 유지한다', () => {
@@ -152,6 +193,24 @@ test('Native Skia 함수 게이트 case는 generated suite에서 feature별로 �
     nextestArguments(plan).join(' '),
     /issue_2225_missing_picture_placeholder::/,
   );
+});
+
+test('#6308 전역 카운터·벽시계 테스트는 generated suite가 아니라 독립 target이다', () => {
+  for (const caseName of [
+    'issue_2833_hml_adapter_row_sizes',
+    'issue_4126_cursor_rect_empty_para_pages',
+    'issue_4128_cell_cursor_page_narrowing',
+    'issue_4179_cursor_rect_text_host_para_pages',
+  ]) {
+    const plan = resolveCasePlan(caseName);
+    assert.equal(plan.grouped, false, caseName);
+    assert.equal(plan.target, caseName, caseName);
+    const exception = loadManifest().exceptions.find(
+      (entry) => entry.target === caseName,
+    );
+    assert.equal(exception?.manual, true, caseName);
+    assert.deepEqual(exception?.reasons, ['manual_isolation'], caseName);
+  }
 });
 
 test('CI slow archive case는 독립 target과 nextest 우선순위를 함께 유지한다', () => {
@@ -209,6 +268,47 @@ test('신규 source는 선택된 suite에 정확히 한 번만 배정한다', (t
   const assigned = Object.values(manifest.suites).flat();
   assert.equal(assigned.filter((source) => source === 'tests/first.rs').length, 1);
   assert.equal(assigned.filter((source) => source === 'tests/second.rs').length, 1);
+});
+
+test('개별 testcase에서 합산한 source 시간으로 suite를 재배정한다', async (t) => {
+  const {
+    generateArtifacts,
+    rebalanceManifest,
+    validateManifest,
+  } = await import('../rust-test-suite-manifest.mjs');
+  const root = mkdtempSync(path.join(os.tmpdir(), 'rhwp-duration-rebalance-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  mkdirSync(path.join(root, 'tests', 'cases'), { recursive: true });
+  mkdirSync(path.join(root, 'tests', 'suites'), { recursive: true });
+  writeFileSync(path.join(root, 'tests', 'cases', 'heavy.rs'), '#[test]\nfn heavy() {}\n');
+  writeFileSync(path.join(root, 'tests', 'cases', 'light.rs'), '#[test]\nfn light() {}\n');
+  const manifest = {
+    sharding: {
+      suitePrefix: 'regression_suite_',
+      suiteCount: 2,
+      testAttributeWeight: 1,
+      maximumIntegrationTargets: 2,
+    },
+    minimumNextestCases: 1,
+    nextestPriorities: [],
+    sourceRoots: [{ path: 'tests/cases', recursive: false }],
+    moduleIntegrationOverrides: [],
+    exceptions: [],
+    suites: {},
+  };
+  const rebalanced = rebalanceManifest(manifest, root, {
+    durationPolicy: {
+      fallbackSecondsPerTest: 60,
+      cases: new Map([['heavy', 800], ['light', 5]]),
+    },
+  });
+  assert.deepEqual(rebalanced.suites.regression_suite_001, ['tests/cases/heavy.rs']);
+  assert.deepEqual(rebalanced.suites.regression_suite_002, ['tests/cases/light.rs']);
+  generateArtifacts(rebalanced, root);
+  assert.deepEqual(
+    validateManifest(rebalanced, root, { checkCargo: false }).errors,
+    [],
+  );
 });
 
 test('PR base에 없던 integration source는 tests/cases 밖에서 거부한다', () => {
@@ -354,11 +454,15 @@ test('검토·개발 가이드는 파생 suite 준비 경로를 안내한다', (
   }
 });
 
-test('CI가 PR base를 integration과 source unit 정책 검사에 전달한다', () => {
+test('CI가 일반 PR base를 integration과 source unit 정책 검사에 전달한다', () => {
   const workflow = readFileSync(path.join(ROOT, '.github/workflows/ci.yml'), 'utf8');
   assert.match(
     workflow,
-    /RHWP_TEST_POLICY_BASE_REF: \$\{\{ github\.event\.pull_request\.base\.sha \|\| '' \}\}/,
+    /RHWP_TEST_POLICY_BASE_SHA: \$\{\{ github\.event\.pull_request\.base\.sha \|\| '' \}\}/,
+  );
+  assert.match(
+    workflow,
+    /policy_base_ref="\$RHWP_TEST_POLICY_BASE_SHA"/,
   );
   assert.match(
     workflow,
@@ -372,6 +476,27 @@ test('CI가 PR base를 integration과 source unit 정책 검사에 전달한다'
     workflow,
     /rust-unit-test-tiers\.mjs --check "\$\{base_args\[@\]\}"/,
   );
+});
+
+test('CI는 same-repository devel-to-main exact promotion에서만 head를 정책 기준으로 쓴다', () => {
+  const workflow = readFileSync(path.join(ROOT, '.github/workflows/ci.yml'), 'utf8');
+  for (const expected of [
+    /RHWP_TEST_POLICY_BASE_BRANCH: \$\{\{ github\.event\.pull_request\.base\.ref \|\| '' \}\}/,
+    /RHWP_TEST_POLICY_HEAD_SHA: \$\{\{ github\.event\.pull_request\.head\.sha \|\| '' \}\}/,
+    /RHWP_TEST_POLICY_HEAD_BRANCH: \$\{\{ github\.event\.pull_request\.head\.ref \|\| '' \}\}/,
+    /RHWP_TEST_POLICY_HEAD_REPOSITORY: \$\{\{ github\.event\.pull_request\.head\.repo\.full_name \|\| '' \}\}/,
+    /RHWP_REPOSITORY: \$\{\{ github\.repository \}\}/,
+    /"\$RHWP_TEST_POLICY_BASE_BRANCH" == "main"/,
+    /"\$RHWP_TEST_POLICY_HEAD_BRANCH" == "devel"/,
+    /"\$RHWP_TEST_POLICY_HEAD_REPOSITORY" == "\$RHWP_REPOSITORY"/,
+    /git merge-base --is-ancestor/,
+    /checkout_tree="\$\(git rev-parse 'HEAD\^\{tree\}'\)"/,
+    /head_tree="\$\(git rev-parse "\$\{RHWP_TEST_POLICY_HEAD_SHA\}\^\{tree\}"\)"/,
+    /if \[\[ "\$checkout_tree" != "\$head_tree" \]\]/,
+    /policy_base_ref="\$RHWP_TEST_POLICY_HEAD_SHA"/,
+  ]) {
+    assert.match(workflow, expected);
+  }
 });
 
 test('CI lint checkout은 PR base 3-way diff를 위해 전체 Git 계보를 가져온다', () => {

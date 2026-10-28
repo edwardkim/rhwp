@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { codeOnly } from './support/source-guard.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
@@ -82,7 +83,7 @@ test('main은 embed에서 수명주기 커맨드 등록만 거르고 메뉴는 �
     /if \(chromeMode !== 'embed'\) await offerAutosaveRecoveryIfIdle\(\);/,
   );
   // 시작 시 빈 문서도 호스트가 감지할 수 없는 문서 교체이므로 embed에서는 열지 않는다.
-  assert.match(mainSource, /async function openBlankDocumentIfIdle[\s\S]*?if \(chromeMode === 'embed'\) return;/);
+  assert.match(codeOnly(mainSource), /async function openBlankDocumentIfIdle[\s\S]*?if \(chromeMode === 'embed'\) return;/);
   // index.html은 수정하지 않는다 — 기본 full 프로파일의 정적 마크업 검사가 그대로 유효하다.
   const indexHtml = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   assert.match(indexHtml, /data-cmd="file:save"/);
@@ -91,8 +92,8 @@ test('main은 embed에서 수명주기 커맨드 등록만 거르고 메뉴는 �
 
 test('shortcut-map은 embed 프로파일과 무관하게 파일 단축키 매핑을 유지한다', () => {
   // 매핑이 남아야 Ctrl+S/Ctrl+P가 preventDefault로 계속 삼켜져 브라우저 저장/인쇄
-  // 대화상자로 빠지지 않고, Ctrl+Shift+S가 후순위 table:block-sum 매핑으로
-  // 폴스루하지 않는다. 미등록 커맨드 dispatch는 무해하게 false를 반환한다.
+  // 대화상자로 빠지지 않는다. Ctrl+Shift+S의 셀 블록 문맥 라우터도 Save As가
+  // 미등록이면 이벤트만 소비해 table:block-sum으로 폴스루하지 않는다.
   const shortcutSource = readFileSync(
     new URL('../src/command/shortcut-map.ts', import.meta.url),
     'utf8',
@@ -212,7 +213,7 @@ test('embed의 unsaved guard는 로컬 저장 선택지를 막고 자동 discard
   assert.match(fileSource, /if \(!allowLocalSave\) return false;/);
 
   const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
-  assert.match(mainSource, /allowLocalSave: chromeMode !== 'embed'/);
+  assert.match(codeOnly(mainSource), /allowLocalSave: chromeMode !== 'embed'/);
 
   // 다이얼로그는 저장 비활성 사유를 받아 표시하고, '저장 안 함'/'취소' 선택은
   // 사용자에게 남는다(자동 discard 없음).

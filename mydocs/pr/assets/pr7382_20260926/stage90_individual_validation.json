@@ -1,0 +1,161 @@
+{
+  "head": "a82cee49561109052553907231bcd7f2806f165d",
+  "policy": "고정38 대기 함수를 한 개씩 실행. 첫 실패에서 중단하여 원인·동일 입력 시각 검증을 먼저 수행. 새 검사나 기준값 완화 없음.",
+  "individual": [
+    {
+      "id": 24,
+      "function": "off_canvas_baseline::off_canvas_does_not_grow_partition_10",
+      "plan": {
+        "caseName": "off_canvas_baseline",
+        "target": "regression_suite_016",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_016",
+        "-E",
+        "test(=off_canvas_baseline::off_canvas_does_not_grow_partition_10)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 1.6388623751699924,
+      "summary": [
+        "     Summary [   0.636s] 1 test run: 1 passed, 223 skipped"
+      ]
+    },
+    {
+      "id": 25,
+      "function": "off_canvas_baseline::off_canvas_does_not_grow_partition_14",
+      "plan": {
+        "caseName": "off_canvas_baseline",
+        "target": "regression_suite_016",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_016",
+        "-E",
+        "test(=off_canvas_baseline::off_canvas_does_not_grow_partition_14)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 1.1981875840574503,
+      "summary": [
+        "     Summary [   0.741s] 1 test run: 1 passed, 223 skipped"
+      ]
+    },
+    {
+      "id": 26,
+      "function": "oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_13",
+      "plan": {
+        "caseName": "oracle_page_count_baseline",
+        "target": "regression_suite_025",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_025",
+        "-E",
+        "test(=oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_13)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 10.550961249973625,
+      "summary": [
+        "     Summary [   1.053s] 1 test run: 1 passed, 221 skipped"
+      ]
+    },
+    {
+      "id": 27,
+      "function": "oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_15",
+      "plan": {
+        "caseName": "oracle_page_count_baseline",
+        "target": "regression_suite_025",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_025",
+        "-E",
+        "test(=oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_15)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 0.7641082089394331,
+      "summary": [
+        "     Summary [   0.402s] 1 test run: 1 passed, 221 skipped"
+      ]
+    },
+    {
+      "id": 28,
+      "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_0",
+      "plan": {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_013",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_013",
+        "-E",
+        "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_0)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 8.818517499603331,
+      "summary": [
+        "     Summary [   2.507s] 1 test run: 0 passed, 1 failed, 225 skipped"
+      ]
+    }
+  ]
+}

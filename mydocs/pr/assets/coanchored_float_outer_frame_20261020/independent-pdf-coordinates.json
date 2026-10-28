@@ -1,0 +1,26 @@
+{
+  "input": "/home/tsjang/rhwp/samples/issue3587/c-form-labnote-001-stage11-filled.hwp",
+  "input_sha256": "c8bae9677a6b4cdf6d7e79996523d7bbe04c31e61bdc8d04ef286d308ec74832",
+  "pdf": "/home/tsjang/rhwp/pdf/semanticist21-20261019/supplemental-originals-416/c-form-labnote-001-stage11-filled-hwp/c-form-labnote-001-stage11-filled-hwp-2020.pdf",
+  "pdf_sha256": "9bbfde168412ef0f31b68bc4c75d65321feeaccc670e9be8a4dac362f96be33a",
+  "page": 2,
+  "dpi": 96,
+  "coordinate_system": "paper origin, PDF vector strokes at 72dpi scaled by96/72",
+  "vertical_outer_strokes": [
+    [
+      41.57733409,
+      41.5546875,
+      128.34000651
+    ],
+    [
+      41.57733409,
+      136.01066081,
+      986.60131836
+    ],
+    [
+      41.57733409,
+      994.11197917,
+      1065.8733724
+    ]
+  ]
+}

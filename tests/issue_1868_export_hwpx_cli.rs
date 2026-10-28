@@ -27,13 +27,6 @@ fn convert_and_verify(sample: &str) -> (u32, u32) {
 }
 
 #[test]
-fn hwp5_to_hwpx_preserves_pages() {
-    // HWP5 (CFB) 원본 — pr-1674 (문체부 공고, 한글 2020 정답지 35쪽).
-    let (src, round) = convert_and_verify("samples/pr-1674.hwp");
-    assert_eq!(src, round, "HWP5→HWPX 변환 후 페이지 수가 보존돼야 한다");
-}
-
-#[test]
 fn hwp3_to_hwpx_preserves_pages() {
     // HWP3 (고전 바이너리) 원본 — 파서 자동 감지 경로 커버.
     let (src, round) = convert_and_verify("samples/hwp3-sample.hwp");

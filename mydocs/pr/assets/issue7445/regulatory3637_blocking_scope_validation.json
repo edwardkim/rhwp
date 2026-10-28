@@ -1,0 +1,704 @@
+{
+  "stage": 132,
+  "preanalysis": {
+    "stage": 132,
+    "head": "b77d41894bc373d93addfef8d864c521f0e45a14",
+    "input": "samples/issue3637/regulatory_impact_nested_table_escape.hwpx",
+    "input_sha256": "e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62",
+    "input_magic": "504b0304",
+    "pdf": "pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf",
+    "pdf_sha256": "4628627c8d6e41dea85aa022232221da982e28538e6a514a24b8ca1af3f21699",
+    "pdf_pages": 31,
+    "native_pages": 32,
+    "devel_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "analysis": "현재oracle31→32와기존중첩표함수의실제실패를먼저재현. 쪽수뒤의26/27줄소유·28숨은셀줄·중첩넘침계약을각각진단. 낮은시각증거일때만실제실패assertion/입력축을#7445보류하고정상함수/다른축/원문PDF유지. 새함수추가/기준완화금지.",
+    "pdf_provenance": "pr7118_7187_review_stage2 paired 한컴2022 PDF31쪽. current-2020의cairo생성PDF는독립정답지로사용하지않음."
+  },
+  "code_commit": "467b2835f47a58f596af9b281c166c5bf06c55f1",
+  "before": [
+    {
+      "case": "oracle_page_count_baseline",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_015",
+        "-E",
+        "test(=oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_0)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 10.794224916957319
+    },
+    {
+      "case": "issue_3637_nested_table_starts_inside_parent_cell",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_004",
+        "-E",
+        "test(issue_3637_nested_table_starts_inside_parent_cell::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 5.923121124971658
+    },
+    {
+      "case": "issue_6442_unused_cell_padding_is_garbage",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_011",
+        "-E",
+        "test(issue_6442_unused_cell_padding_is_garbage::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 5.8988150004297495
+    }
+  ],
+  "owner26_exact": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_004",
+      "-E",
+      "test(issue_3637_nested_table_starts_inside_parent_cell::)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "exit_code": 100,
+    "seconds": 7.293445665854961
+  },
+  "owner27_exact": [
+    {
+      "step": "owner27-survey",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_004",
+        "-E",
+        "test(issue_3637_nested_table_starts_inside_parent_cell::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 6.927436958067119
+    },
+    {
+      "step": "owner27-wage",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_004",
+        "-E",
+        "test(issue_3637_nested_table_starts_inside_parent_cell::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 5.857074333820492
+    }
+  ],
+  "individually_failed_assertions": [
+    "31→32쪽",
+    "p26 임금 줄 존재",
+    "p27 사업체노동력조사 줄 존재",
+    "p27 임금 줄 부재"
+  ],
+  "deferred_scope": [
+    "oracle 이입력31/31행",
+    "기존함수의위쪽수/소유assertion4개만"
+  ],
+  "preserved_scope": [
+    "기존중첩표함수자체",
+    "p26 다음사업체조사줄부재",
+    "p28 숨은셀줄없음",
+    "전체페이지중첩표넘침상한1100px",
+    "다른정상입력/모든다른축/원문/PDF"
+  ],
+  "visual_command": [
+    "venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--file-target",
+    "nested3637",
+    "samples/issue3637/regulatory_impact_nested_table_escape.hwpx",
+    "pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf",
+    "--pages",
+    "1,25-31",
+    "--dpi",
+    "96",
+    "--rhwp-bin",
+    "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+    "--embed-fonts=full",
+    "--font-path",
+    "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+    "--font-path",
+    "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+    "--font-path",
+    "/Users/tsjang/Library/Fonts",
+    "--out",
+    "output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native"
+  ],
+  "selected_pages": [
+    1,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31
+  ],
+  "native_pages": 32,
+  "pdf_pages": 31,
+  "overlay_metrics": {
+    "summary": {
+      "compared_pages": 8,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 89.42302,
+      "worst_pixel_match_percent": 86.87339,
+      "average_ink_match_percent": 9.75078,
+      "worst_ink_match_percent": 5.84003,
+      "average_visual_accuracy_proxy_percent": 9.75078,
+      "worst_visual_accuracy_proxy_percent": 5.84003,
+      "average_tolerant_content_match_percent": 40.25755,
+      "worst_tolerant_content_match_percent": 24.2785,
+      "worst_pages": [
+        31,
+        30,
+        29,
+        26,
+        25,
+        28,
+        27,
+        1
+      ]
+    },
+    "pages": [
+      {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/rhwp_png/rhwp_001.png",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/pdf_png/pdf-01.png",
+        "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/overlay/overlay_001.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 28537,
+        "diff_ratio": 0.03200428,
+        "pixel_match_percent": 96.79957,
+        "ink_union_pixels": 39345,
+        "ink_diff_pixels": 28537,
+        "ink_diff_ratio": 0.72530182,
+        "ink_match_percent": 27.46982,
+        "visual_accuracy_proxy_percent": 27.46982,
+        "tolerant_content_match_radius_px": 2,
+        "tolerant_content_match_percent": 98.44961,
+        "mean_abs_channel_delta": 4.052,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          76,
+          76,
+          717,
+          1079
+        ]
+      },
+      {
+        "page": 25,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/rhwp_png/rhwp_025.png",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/pdf_png/pdf-25.png",
+        "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/overlay/overlay_025.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 106598,
+        "diff_ratio": 0.11954978,
+        "pixel_match_percent": 88.04502,
+        "ink_union_pixels": 115003,
+        "ink_diff_pixels": 106598,
+        "ink_diff_ratio": 0.92691495,
+        "ink_match_percent": 7.3085,
+        "visual_accuracy_proxy_percent": 7.3085,
+        "tolerant_content_match_radius_px": 2,
+        "tolerant_content_match_percent": 24.2785,
+        "mean_abs_channel_delta": 18.561,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          76,
+          76,
+          717,
+          1081
+        ]
+      },
+      {
+        "page": 26,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/rhwp_png/rhwp_026.png",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/pdf_png/pdf-26.png",
+        "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/overlay/overlay_026.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 109840,
+        "diff_ratio": 0.12318569,
+        "pixel_match_percent": 87.68143,
+        "ink_union_pixels": 117883,
+        "ink_diff_pixels": 109840,
+        "ink_diff_ratio": 0.93177133,
+        "ink_match_percent": 6.82287,
+        "visual_accuracy_proxy_percent": 6.82287,
+        "tolerant_content_match_radius_px": 2,
+        "tolerant_content_match_percent": 31.65936,
+        "mean_abs_channel_delta": 18.548,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          76,
+          76,
+          712,
+          1081
+        ]
+      },
+      {
+        "page": 27,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/rhwp_png/rhwp_027.png",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/pdf_png/pdf-27.png",
+        "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/overlay/overlay_027.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 109185,
+        "diff_ratio": 0.12245111,
+        "pixel_match_percent": 87.75489,
+        "ink_union_pixels": 120737,
+        "ink_diff_pixels": 109185,
+        "ink_diff_ratio": 0.90432096,
+        "ink_match_percent": 9.5679,
+        "visual_accuracy_proxy_percent": 9.5679,
+        "tolerant_content_match_radius_px": 2,
+        "tolerant_content_match_percent": 39.11477,
+        "mean_abs_channel_delta": 17.934,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          77,
+          75,
+          712,
+          1080
+        ]
+      },
+      {
+        "page": 28,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/rhwp_png/rhwp_028.png",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/pdf_png/pdf-28.png",
+        "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/overlay/overlay_028.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 117045,
+        "diff_ratio": 0.13126611,
+        "pixel_match_percent": 86.87339,
+        "ink_union_pixels": 127249,
+        "ink_diff_pixels": 117045,
+        "ink_diff_ratio": 0.91981076,
+        "ink_match_percent": 8.01892,
+        "visual_accuracy_proxy_percent": 8.01892,
+        "tolerant_content_match_radius_px": 2,
+        "tolerant_content_match_percent": 36.52917,
+        "mean_abs_channel_delta": 17.729,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          77,
+          75,
+          712,
+          1081
+        ]
+      },
+      {
+        "page": 29,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/rhwp_png/rhwp_029.png",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/pdf_png/pdf-29.png",
+        "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/overlay/overlay_029.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 108085,
+        "diff_ratio": 0.12121746,
+        "pixel_match_percent": 87.87825,
+        "ink_union_pixels": 115746,
+        "ink_diff_pixels": 108085,
+        "ink_diff_ratio": 0.93381197,
+        "ink_match_percent": 6.6188,
+        "visual_accuracy_proxy_percent": 6.6188,
+        "tolerant_content_match_radius_px": 2,
+        "tolerant_content_match_percent": 37.78273,
+        "mean_abs_channel_delta": 20.431,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          77,
+          75,
+          712,
+          1080
+        ]
+      },
+      {
+        "page": 30,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/rhwp_png/rhwp_030.png",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/pdf_png/pdf-30.png",
+        "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/overlay/overlay_030.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 73653,
+        "diff_ratio": 0.08260193,
+        "pixel_match_percent": 91.73981,
+        "ink_union_pixels": 78655,
+        "ink_diff_pixels": 73653,
+        "ink_diff_ratio": 0.93640582,
+        "ink_match_percent": 6.35942,
+        "visual_accuracy_proxy_percent": 6.35942,
+        "tolerant_content_match_radius_px": 2,
+        "tolerant_content_match_percent": 24.86809,
+        "mean_abs_channel_delta": 13.161,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          77,
+          75,
+          712,
+          1081
+        ]
+      },
+      {
+        "page": 31,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/rhwp_png/rhwp_031.png",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/pdf_png/pdf-31.png",
+        "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage132-regulatory3637/visual-native/nested3637/overlay/overlay_031.png",
+        "width": 794,
+        "height": 1123,
+        "pixel_diff_threshold": 32,
+        "total_pixels": 891662,
+        "diff_pixels": 101544,
+        "diff_ratio": 0.11388172,
+        "pixel_match_percent": 88.61183,
+        "ink_union_pixels": 107842,
+        "ink_diff_pixels": 101544,
+        "ink_diff_ratio": 0.94159975,
+        "ink_match_percent": 5.84003,
+        "visual_accuracy_proxy_percent": 5.84003,
+        "tolerant_content_match_radius_px": 2,
+        "tolerant_content_match_percent": 29.37816,
+        "mean_abs_channel_delta": 17.297,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          77,
+          75,
+          712,
+          1081
+        ]
+      }
+    ]
+  },
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 25,
+        "tolerant_content_match_percent": 24.2785
+      },
+      {
+        "page": 26,
+        "tolerant_content_match_percent": 31.65936
+      },
+      {
+        "page": 27,
+        "tolerant_content_match_percent": 39.11477
+      },
+      {
+        "page": 28,
+        "tolerant_content_match_percent": 36.52917
+      },
+      {
+        "page": 29,
+        "tolerant_content_match_percent": 37.78273
+      },
+      {
+        "page": 30,
+        "tolerant_content_match_percent": 24.86809
+      },
+      {
+        "page": 31,
+        "tolerant_content_match_percent": 29.37816
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "direct_inspection": "선택1·25–31쪽contact sheet와26쪽review/28쪽overlay직접확인. PDF26쪽임금줄은Native27쪽,PDF27쪽사업체줄은Native28쪽. Native추가32쪽도직접확인했고정상PDF31쪽의마지막편익표·뒤설명내용이이월. 글꼴예외아님.",
+  "tree_diagnostics": {
+    "source": "고정 Native CLI의동일코드RenderTree진단. 0.1px반올림JSON이므로경계공차근처는Rust실행으로확정.",
+    "pages": {
+      "26": {
+        "has_wage": false,
+        "has_labor_survey": false,
+        "hidden_cell_lines": [],
+        "visible_text": "나. 각 대안의 활동별 비용․편익 분석 결과 <규제대안1  : 농업용 지게차 사용자 폐기 신고>①피규제 기업소상공인 : □ 직접비용(정량)영향집단명농업기계 해체재활용업자활동제목농업용 지게차 폐기 신고비용항목행정부담비용연도비용비용(현재가치)20251,810,0001,810,00020261,940,0001,856,45920272,090,0001,913,87620282,240,0001,962,90420292,400,0002,012,54720302,580,0002,070,32420312,770,0002,127,07120322,970,0002,182,44120333,190,0002,243,16120343,420,0002,301,333합계25,410,00020,480,116일시적/반복적반복적/비균등/비정률산식폐기 사실 신고의 행정소요 비용 = 연간 투입인원(명) X 건당 투입시간(시간) X 시간당 근로임금(원) X 연간 폐기 건수(건)근거설명1. 폐기 사실 신고의 행정소요 비용  - 연간 투입인원 : 업체당 1명  - 건당 투입시간 : 폐기 신고 행정 소요 시간(5분) + 신고서류 준비 시간 노동력 투입시간(55분) = 1시간   * 폐기신고 행정 소요 시간(5분) : 농업기계 신고관리시스템에 이미 제원, 폐기 등 이력이 입력 되어있는 데이터를 바탕으로 최종소유자 등 6개 항목만 입력하고 준비된 신고 서류를 업로드만 함에 따라 행정소요는 미미함 ... 간(5분) + 신고서류 준비 시간 노동력 투입시간(55분) = 1시간   * 폐기신고 행정 소요 시간(5분) : 농업기계 신고관리시스템에 이미 제원, 폐기 등 이력이 입력 되어있는 데이터를 바탕으로 최종소유자 등 6개 항목만 입력하고 준비된 신고 서류를 업로드만 함에 따라 행정소요는 미미함    * 신고서류 준비 시간 노동력 투입시간(55분) : 다음의 서류는 폐기 과정 중 각 단계별로 준비, 분해, 폐기확인(제조번호 각인, 보호구조물 폐기상태)의 3과정이며, 각 과정은 1. = 10분 2. = 30분 3.,4.=15분으로 각각 산정하였음. 본 준비 시간은 사진 촬영, 문서작성만 포함함1. 입고 시 농업용 지게차(중량, 원동기 및 본기 제조번호 포함)  2. 분해작업 과정3. 폐기상태 농업용 지게차(제조번호가 각인된 차대를 포함)4. 농업용지게차 보호구조물 폐기상태  - 연간 폐차 대수 : 2톤 미만 지게차 말소 현황의 10년 평균 증감률 적용 향후 10년 말소 대수 예측- 26 -"
+      },
+      "27": {
+        "has_wage": true,
+        "has_labor_survey": false,
+        "hidden_cell_lines": [],
+        "visible_text": "□ 비용 항목 근거◦농업기계 해체 신고관리시스템을 활용하여 현재도 운영중이나, 지게차 항목이 추가됨에 따라 행정비용이 추가적으로 소요될 것으로 예상됨. ◦농업용 지게차 연간 폐기 건수는 2톤미만 지게차 말소 현황으로 산출하였으며, 전체 건수에서 농업 종사자 건수로 추정함. 지게차 업종별 등록 비율은 파악 불가능 하나 지게차 이용 가능한 산업규모 중 농업이 차지하는 비율이 약 16%로 이를 바탕으로 재추정하여 농업용 지게차 폐기건수를 산출하였음.<최근 10년간 2톤미만 지게차 말소 현황 및 예측>(단위 : 대)구분`14`15`16`17`18`19`20`21`22`232톤미만 지게차 말소 현황278289316279298535490476763564(단위 : 대)구분`24`25`26`27`28`29`30`31`32`33`342톤미만 지게차 말소 예측468(390)419449482518555596640687737791   * 출처: 국토교통부 통계누리 2톤 미만 지게차 말소 현황   * `24년은 현행 기준으로 일할계산한 예측값임<지게차 이용 산업별 종사자 규모>(단위 : 천명)구분광업제조업건설업도매 및 운수및농업합계종사자규모123,7721,4532,2837531,5869,859   * 2023년 농업 및 농가 경제 동향과 전망(krei)<최근 10년간 2톤미만 농업용 지게차 말소 예측>(단위 : 대)구분`24`25`26`27`28`29`30 ... 15`16`17`18`19`20`21`22`232톤미만 지게차 말소 현황278289316279298535490476763564(단위 : 대)구분`24`25`26`27`28`29`30`31`32`33`342톤미만 지게차 말소 예측468(390)419449482518555596640687737791   * 출처: 국토교통부 통계누리 2톤 미만 지게차 말소 현황   * `24년은 현행 기준으로 일할계산한 예측값임<지게차 이용 산업별 종사자 규모>(단위 : 천명)구분광업제조업건설업도매 및 운수및농업합계종사자규모123,7721,4532,2837531,5869,859   * 2023년 농업 및 농가 경제 동향과 전망(krei)<최근 10년간 2톤미만 농업용 지게차 말소 예측>(단위 : 대)구분`24`25`26`27`28`29`30`31`32`33`34농업용 지게차 말소 예측(농업기계)75(62)80869399107114123132142152 ◦시간당 근로임금은 2024년 7월 기준 - 27 -"
+      },
+      "28": {
+        "has_wage": false,
+        "has_labor_survey": true,
+        "hidden_cell_lines": [],
+        "visible_text": "사업체노동력조사(고용노동부)의 ‘폐기물 수집, 운반, 처리 및 원료 재생업’의 시간당 임금지표의 전체 임금총액(4,257,103원)에서 전체 근로시간(169.1시간)으로 산출함. <폐기물 수집, 운반, 처리 및 원료 재생업 시간당 임금지표>  * 출처: KOSIS 국가통계 포털<향후 10년간 폐농업용 지게차 비용 계산>연간투입인원 수(명, A)건당 투입시간(시간, B)연간처리건수(건, C)시간당근로임금(원, D)비용(백만원E=A*B*C*D)현재가치(E=C*D, 백만 원)할인율(D)202511.08022,5411.801.801.000202611.08622,5411.941.860.957202711.09322,5412.101.920.916202811.09922,5412.231.960.876202911.010722,5412.412.020.839203011.011422,5412.572.060.802203111.012322,5412.772.130.768203211.013222,5412.982.190.735203311.014222,5413.202.250.703203411.015222,5413.432.310.673총비용20.58.269연간균등순비용2.48□ 직접편익(정량)영향집단명농업기계 해체재활용업자활동제목농업용 지게차 해체 수익편익항목해체수익편익연도편익편익(현재가치)- 28 - ... 간 폐농업용 지게차 비용 계산>연간투입인원 수(명, A)건당 투입시간(시간, B)연간처리건수(건, C)시간당근로임금(원, D)비용(백만원E=A*B*C*D)현재가치(E=C*D, 백만 원)할인율(D)202511.08022,5411.801.801.000202611.08622,5411.941.860.957202711.09322,5412.101.920.916202811.09922,5412.231.960.876202911.010722,5412.412.020.839203011.011422,5412.572.060.802203111.012322,5412.772.130.768203211.013222,5412.982.190.735203311.014222,5413.202.250.703203411.015222,5413.432.310.673총비용20.58.269연간균등순비용2.48□ 직접편익(정량)영향집단명농업기계 해체재활용업자활동제목농업용 지게차 해체 수익편익항목해체수익편익연도편익편익(현재가치)- 28 -"
+      },
+      "31": {
+        "has_wage": false,
+        "has_labor_survey": false,
+        "hidden_cell_lines": [],
+        "visible_text": "중간값으로 가정하여 농업용 지게차 폐기 수익 및 비용은 각각 1,190,000원, 550,000원으로 추정됨.<최근 10년간 2톤미만 지게차 말소 현황 및 예측>(단위 : 대)구분`14`15`16`17`18`19`20`21`22`232톤미만 지게차 말소 현황278289316279298535490476763564(단위 : 대)구분`24`25`26`27`28`29`30`31`32`33`342톤미만 지게차 말소 예측468(390)419449482518555596640687737791   * 출처: 국토교통부 통계누리 2톤 미만 지게차 말소 현황   * `24년은 현행 기준으로 일할계산한 예측값임<지게차 이용 산업별 종사자 규모>(단위 : 천명)구분광업제조업건설업도매 및 운수및농업합계종사자규모123,7721,4532,2837531,5869,859   * 2023년 농업 및 농가 경제 동향과 전망(krei) ◦농업용 지게차 연간 폐기 건수는 2톤미만 지게차 말소 현황으로 산출하였으며, 전체 건수에서 농업 종사자 건수로 추정함. 지게차 업종별 등록 비율은 파악 불가능 하나 지게차 이용 가능한 산업규모 중 농업이 차지하는 비율이 약 16%로 이를 바탕으로 재추정하여 농업용 지게차 폐기건수를 산출하였음.<최근 10년간 2톤미만 농업용 지게차 말소 예측>(단위 : 대)구분`24`25`26`27`28`29`30`31`32`33`34농업용 지게차 말소  ...  미만 지게차 말소 현황   * `24년은 현행 기준으로 일할계산한 예측값임<지게차 이용 산업별 종사자 규모>(단위 : 천명)구분광업제조업건설업도매 및 운수및농업합계종사자규모123,7721,4532,2837531,5869,859   * 2023년 농업 및 농가 경제 동향과 전망(krei) ◦농업용 지게차 연간 폐기 건수는 2톤미만 지게차 말소 현황으로 산출하였으며, 전체 건수에서 농업 종사자 건수로 추정함. 지게차 업종별 등록 비율은 파악 불가능 하나 지게차 이용 가능한 산업규모 중 농업이 차지하는 비율이 약 16%로 이를 바탕으로 재추정하여 농업용 지게차 폐기건수를 산출하였음.<최근 10년간 2톤미만 농업용 지게차 말소 예측>(단위 : 대)구분`24`25`26`27`28`29`30`31`32`33`34농업용 지게차 말소 예측(농업기계)75(62)80869399107114123132142152<향후 10년간 폐농업용 지게차 해체 수익 계산>연간폐기지게차 지게차 편익현재가치- 31 -"
+      },
+      "32": {
+        "has_wage": false,
+        "has_labor_survey": false,
+        "hidden_cell_lines": [],
+        "visible_text": "연간폐기처리건수(건, A)폐기 수익(원, B)폐기 비용(원, C)편익(백만원,E=A*(B-C)현재가치(E=C*D, 백만 원)할인율(D)2025801,190,000550,00051.2051.201.0002026861,190,000550,00055.0452.670.9572027931,190,000550,00059.5254.500.9162028991,190,000550,00063.3655.520.87620291071,190,000550,00068.4857.420.83920301141,190,000550,00072.9658.550.80220311231,190,000550,00078.7260.450.76820321321,190,000550,00084.4862.080.73520331421,190,000550,00090.8863.910.70320341521,190,000550,00097.2865.460.673총편익581.768.269연간균등순비용70.36②피규제 이외 기업소상공인 : □ 편익(정성)영향집단명농업용 지게차 사용 농업인활동제목농업용 지게차 폐기 이력정보 확인편익항목농업인의 알권리 보장 및 농업용 지게차 체계적 이력 관리일시적/반복적반복적근거설명농업기계 신고관리시스템의 정보를 활용하여 농업인은 농업용 지게차 운용, 폐기에 대한 정확한 정보를 얻을 수 있고 유통 중인 농업용 지게차에 대한 체계적 관리 가능- 32 - ... 28991,190,000550,00063.3655.520.87620291071,190,000550,00068.4857.420.83920301141,190,000550,00072.9658.550.80220311231,190,000550,00078.7260.450.76820321321,190,000550,00084.4862.080.73520331421,190,000550,00090.8863.910.70320341521,190,000550,00097.2865.460.673총편익581.768.269연간균등순비용70.36②피규제 이외 기업소상공인 : □ 편익(정성)영향집단명농업용 지게차 사용 농업인활동제목농업용 지게차 폐기 이력정보 확인편익항목농업인의 알권리 보장 및 농업용 지게차 체계적 이력 관리일시적/반복적반복적근거설명농업기계 신고관리시스템의 정보를 활용하여 농업인은 농업용 지게차 운용, 폐기에 대한 정확한 정보를 얻을 수 있고 유통 중인 농업용 지게차에 대한 체계적 관리 가능- 32 -"
+      }
+    },
+    "deepest": [
+      {
+        "page": 29,
+        "overflow": 213.0
+      },
+      {
+        "page": 15,
+        "overflow": 69.19999999999982
+      },
+      {
+        "page": 1,
+        "overflow": 0.0
+      },
+      {
+        "page": 2,
+        "overflow": 0.0
+      },
+      {
+        "page": 3,
+        "overflow": 0.0
+      }
+    ]
+  },
+  "after_summary": {
+    "passed": 17,
+    "failed": 3,
+    "skipped": 648,
+    "normal_tests_passed": 4,
+    "oracle_partitions_passed": 13,
+    "oracle_partitions_failed": 3,
+    "raw_summary": [
+      "     Summary [   3.657s] 20 tests run: 17 passed, 3 failed, 648 skipped"
+    ]
+  },
+  "gates": {
+    "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "head": "b77d41894bc373d93addfef8d864c521f0e45a14",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_005",
+          "--test",
+          "regression_suite_011",
+          "--test",
+          "regression_suite_015",
+          "-E",
+          "(test(oracle_page_count_baseline::)) or (test(issue_3637_nested_table_starts_inside_parent_cell::)) or (test(issue_6442_unused_cell_padding_is_garbage::))"
+        ],
+        "exit_code": 100,
+        "seconds": 16.295507792383432
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.010736625175923
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.29365912498906255
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.22272695787250996
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.35615504207089543
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 6.0285114999860525
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 3.155562332831323
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 7.964174875058234
+      }
+    ]
+  },
+  "issue_url": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5875495573",
+  "stable_image_sha256": {
+    "regulatory3637_native_review_026.png": "6ad61a54b8a579a43611d1b48bb840373addf85325f916e7c85aaf62afd65205",
+    "regulatory3637_native_overlay_028.png": "89b21ac6607f9eed35c0db572bf395f37b434b5b0d40e8e52a1279fd2dd55928",
+    "regulatory3637_native_extra_032.png": "02975092e078b22cccc00caedd9550de0317795dd409159eac67924c1957dff0"
+  },
+  "limits": [
+    "전31쪽/freshWASM미실행. 선택8쪽의부정증거만",
+    "전체회귀/PR준비/피델리티승인아님",
+    "생산코드변경·새함수·baseline공차완화없음;다른3oracle실패유지"
+  ]
+}

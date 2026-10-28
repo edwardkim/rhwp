@@ -10,7 +10,7 @@ last_verified: 2026-08-18
 이 문서는 `gym/report.py` 와 `gym/certify.py` 의 **예외 경로 계약**,
 **스코어카드·JSON·미가용 pack 삼원**, **재현 core**, **보고 카드**를
 고정한다. 작업 기록은
-[`mydocs/working/gym_certify_report.md`](../../mydocs/working/gym_certify_report.md)
+[`mydocs/working/gym_certify_report.md`](../../mydocs/working/archives/gym_certify_report.md)
 를 본다. 시험 계약은 `scripts/tests/test_gym_report.py`(리포트 칸)와
 `scripts/tests/test_gym_certify.py`(인증서 칸)가 기계로 고정한다.
 

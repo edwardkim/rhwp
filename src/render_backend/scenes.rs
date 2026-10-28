@@ -160,7 +160,8 @@ fn expected_kinds_after_replay(tree: &PageLayerTree) -> Vec<&'static str> {
                     walk(child, active, plane, out);
                 }
             }
-            crate::paint::LayerNodeKind::ClipRect { child, .. } => {
+            crate::paint::LayerNodeKind::ClipRect { child, .. }
+            | crate::paint::LayerNodeKind::ClipPath { child, .. } => {
                 walk(child, active, plane, out);
             }
             crate::paint::LayerNodeKind::Leaf { ops } => {
@@ -284,6 +285,7 @@ fn text_run_node(text: &str) -> TextRunNode {
         border_fill_id: 0,
         baseline: 12.0,
         field_marker: Default::default(),
+        layout_positions: None,
         display_text: None,
     }
 }
@@ -293,6 +295,7 @@ fn footnote_marker_node() -> FootnoteMarkerNode {
         number: 1,
         text: "1)".into(),
         base_font_size: 10.0,
+        baseline: 7.0,
         font_family: "sans-serif".into(),
         color: 0,
         section_index: 0,
@@ -334,6 +337,7 @@ fn sample_equation_node() -> EquationNode {
     EquationNode {
         svg_content: "<text>x</text>".into(),
         layout_box: LayoutBox {
+            font_size: 12.0,
             x: 0.0,
             y: 0.0,
             width: 10.0,
@@ -359,6 +363,8 @@ fn sample_form_node() -> FormObjectNode {
         form_type: FormType::PushButton,
         caption: "확인".into(),
         text: String::new(),
+        display_text: None,
+        appearance: Default::default(),
         fore_color: "#000000".into(),
         back_color: "#ffffff".into(),
         value: 0,

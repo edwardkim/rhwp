@@ -1,0 +1,18 @@
+{
+  "crate": "hayro-ccitt",
+  "version": "0.3.0",
+  "archive_sha256": "9f4d0e94ddd48749f06bbe4e5389fb9799a0c45bcaf00495042076ef05e3241a",
+  "files": {
+    "LICENSE-APACHE": "0cec06e0e55fbc3dc5cee4fca9b607f66cb8f4e4dbcf3b3c013594dd156732e9",
+    "Cargo.toml.orig": "096d072c387aa841ec40711438a2bbda476efd3e5c2acaf4b81b0a008483c30a",
+    "README.md": "60edc511d49d2585dfda02f243b2d6b465d7967e6a6799f1d7140fc39c1cb983",
+    "Cargo.lock": "cd8c47421074b868ddb49e4915277126dd21c5788bc4d54d189f55b1c5dd0d16",
+    ".cargo_vcs_info.json": "d60ee626aa44e3e7da291a6dda1ea47facc4082ea868c0ca8726b093bbde2cc2",
+    "Cargo.toml": "39f75be81cd86234039625e5cc6c4f51a3e564c34c8c7025930b5d420dc00faf",
+    "LICENSE-MIT": "51b50e6120c344dcc146bbd6375ca1c78e079d97c8bea76e67a53d6ff0efebac",
+    "src/decode.rs": "4e7a1f5762d0550da6ccc53e7642669340220b30f2e182a7e402e3a3eac75187",
+    "src/state_machine.rs": "e6e88fceea261d3f72040eae2849a3919a4e9682fe688fb72547144748c676e3",
+    "src/lib.rs": "d9d2965508dd55d1c79fc8e67e9d6f26be97635bf9c4aed915d85fa6d36e5538",
+    "src/bit_reader.rs": "315e0d3f4593ae97d8d3c5d1503d5e97a71760726cf8ef89cabebf41482957d6"
+  }
+}

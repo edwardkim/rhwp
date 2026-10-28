@@ -10,6 +10,8 @@
  * DOM 은 인자로 받아 전역 `document` 없이 검증할 수 있게 둔다.
  */
 
+import { t } from '../i18n/index.ts';
+
 /** 도구 상자 표시 상태 (기본/서식) */
 export interface ToolboxVisibility {
   basic: boolean;
@@ -21,6 +23,8 @@ export const TOOLBOX_TARGETS = [
   {
     key: 'basic',
     cmd: 'view:toolbox-basic',
+    nameKey: 'ui.toolbox.basic',
+    shortcut: 'Ctrl+F1',
     datasetKey: 'toolboxBasic',
     attribute: 'data-toolbox-basic',
     elementId: 'icon-toolbar',
@@ -28,6 +32,8 @@ export const TOOLBOX_TARGETS = [
   {
     key: 'format',
     cmd: 'view:toolbox-format',
+    nameKey: 'ui.toolbox.format',
+    shortcut: undefined,
     datasetKey: 'toolboxFormat',
     attribute: 'data-toolbox-format',
     elementId: 'style-bar',
@@ -35,6 +41,8 @@ export const TOOLBOX_TARGETS = [
 ] as const satisfies ReadonlyArray<{
   key: keyof ToolboxVisibility;
   cmd: string;
+  nameKey: string;
+  shortcut?: string;
   datasetKey: string;
   attribute: string;
   elementId: string;
@@ -42,6 +50,7 @@ export const TOOLBOX_TARGETS = [
 
 interface ToolboxMenuItem {
   classList: { toggle(token: string, force: boolean): void };
+  getAttribute(name: string): string | null;
   setAttribute(name: string, value: string): void;
 }
 
@@ -56,14 +65,23 @@ export function toolboxState(visible: boolean): 'shown' | 'hidden' {
   return visible ? 'shown' : 'hidden';
 }
 
-/** 도구 모음 표시 여부와 메뉴 체크 상태(active 클래스 + aria-checked)를 함께 맞춘다. */
+/** 도구 모음 표시 여부와 메뉴·버튼의 접근성 상태를 함께 맞춘다. */
 export function applyToolboxVisibility(dom: ToolboxDom, visibility: ToolboxVisibility): void {
   for (const target of TOOLBOX_TARGETS) {
     const visible = visibility[target.key];
     dom.documentElement.dataset[target.datasetKey] = toolboxState(visible);
     for (const item of dom.querySelectorAll(`[data-cmd="${target.cmd}"]`)) {
       item.classList.toggle('active', visible);
-      item.setAttribute('aria-checked', String(visible));
+      if (item.getAttribute('aria-controls') === target.elementId) {
+        const label = visible
+          ? t('ui.toolbox.collapseLabel', { p1: t(target.nameKey) })
+          : t('ui.toolbox.expandLabel', { p1: t(target.nameKey) });
+        item.setAttribute('aria-expanded', String(visible));
+        item.setAttribute('aria-label', label);
+        item.setAttribute('title', target.shortcut ? `${label} (${target.shortcut})` : label);
+      } else {
+        item.setAttribute('aria-checked', String(visible));
+      }
     }
   }
 }

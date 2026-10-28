@@ -1,0 +1,145 @@
+{
+  "source_sha": "f3d77b4d36e62ea486413da4075612ea41a50edf",
+  "files": {
+    "src/renderer/layout.rs": "2214fb9270354ab02fcb8ce405489ba5574895966830cd9857b596e5eab37e81",
+    "src/renderer/layout/table_layout.rs": "65c1ecd6bb6fc41fda94324044422f7670f90b832ea40f404d634765d2f8fc77",
+    "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "230b7beb8e525983d00614c011fae7a9960ac512826bdd25d504906df589ac45"
+  },
+  "runtime_diff_sha256": "d7d3879906baffbd05784f92b76647df85e565d4050417820ba8a2b63b3ad37b",
+  "test_diff_sha256": "69ce1c8d1af959c710a99aafbee739951da0bc09daa75c1b340335b9a2746cc6",
+  "base_sha": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "before": {
+    "passed": 1,
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 0.252
+  },
+  "after": {
+    "passed": 207,
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 6.676,
+    "threads": 8,
+    "remaining_failure": "issue_2097_midpage_rowbreak_table_placed_whole_by_declared_height",
+    "classification": "120쪽 표 원점 회귀 해소. 보정34 이후 실제 마지막 행 이월은 다음 개별 보정으로 보류"
+  },
+  "after_command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--test",
+    "regression_suite_001",
+    "--test",
+    "regression_suite_002",
+    "--test",
+    "regression_suite_003",
+    "--test",
+    "regression_suite_005",
+    "--test",
+    "regression_suite_006",
+    "--test",
+    "regression_suite_010",
+    "--test",
+    "regression_suite_012",
+    "--test",
+    "regression_suite_013",
+    "--test",
+    "regression_suite_014",
+    "--test",
+    "regression_suite_015",
+    "--test",
+    "regression_suite_016",
+    "--test",
+    "regression_suite_018",
+    "--test",
+    "regression_suite_020",
+    "--test",
+    "regression_suite_023",
+    "--test",
+    "regression_suite_024",
+    "--test",
+    "regression_suite_027",
+    "--test",
+    "regression_suite_028",
+    "--test-threads",
+    "8",
+    "--no-fail-fast",
+    "-E",
+    "test(issue_7379_rowbreak_table_footnote_reservation) | test(issue_6312_float_anchor_line_uses_source_vpos) | test(issue_6312_tab_host_line_kept) | test(issue_6950_paragraph_end_topbottom_anchor) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before) | test(issue_6665_tac_shape_trailing_spacing) | test(issue_6551_tac_shape_advance_keeps_spacing) | test(issue_5788_tac_table_anchor_line_spacing) | test(issue_5731_cell_second_float_flow_anchor) | test(issue_5734_cell_float_stack_stored_vpos) | test(issue_5833_cell_multi_para_float_pics) | test(issue_6110_cell_empty_para_float_anchor) | test(issue_6313_cell_picture_own_displacement) | test(issue_6782_cell_float_offset_outside_cell) | test(issue_6782_cell_float_full_original) | test(issue_5551_caption_owner) | test(issue_6284_picture_top_caption_rendered) | test(issue_6593_tac_caption_follows_image_bottom) | test(issue_6575_tac_caption_box_baseline) | test(issue_5875_nested_text_caption) | test(issue_5875_nested_table_text_caption) | test(issue_5714_completed_row_tail_band) | test(issue_5906_float_stack_declared_tail) | test(issue_6761_object_only_cell_row_keeps_declared_height) | test(issue_7358_terminal_rowbreak_outer_top) | test(issue_3738_rowbreak_table_footnote_fragment) | test(issue_6204_object_move_invalidates_linesegs) | test(issue_7063_float_outer_margin_box) | test(issue_7063_empty_float_host_snap_intrudes_prev_line) | test(issue_6378_hwpx_outmargin_position) | test(issue_2097_rowbreak_midpage_declared_fits) | test(issue_2097_none_table_declared_fits) | test(issue_2439)"
+  ],
+  "after_result": {
+    "exit_code": 100,
+    "elapsed_seconds": 168.5377742499113
+  },
+  "cli": {
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--bin",
+      "rhwp"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 79.86620941571891,
+    "cli_sha256": "18921ce56baf3d2c6fd1faa3aa64afbb490e25bb50a6e6031ad1e2f87ecbd240"
+  },
+  "policies": [
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "manifest_static_attrs": 6224,
+  "source_unit_tests": 4205,
+  "source_unit_modules": 298,
+  "independent_expectation": {
+    "table_top_px": 86.945312,
+    "source": "동일 원본 한컴 HWP PDF120쪽 괘선65.208984pt 및 다음 저장 줄24356HU 닫힘"
+  },
+  "directly_read_png_count": 24,
+  "logs": [
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/logs/stage36-before.log",
+      "sha256": "ec1d1d854f017ff4ce1eb6246ef159443904c6f41d8d487e68d8cad17b5bf171"
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/logs/stage36-expanded.log",
+      "sha256": "730aa26abdbac0bb13b37391a5822548f881c8068d721cb36ce7046c0a51ee47"
+    }
+  ]
+}

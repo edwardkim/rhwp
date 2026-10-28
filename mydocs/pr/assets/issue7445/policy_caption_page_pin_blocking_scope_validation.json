@@ -1,0 +1,243 @@
+{
+  "stage": 144,
+  "source_head": "9ae787bb9094ea6c686b1b9a2c1c7d739c5e567e",
+  "policy_base": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+  "independent_evidence": "mydocs/pr/assets/issue7445/policy_report_blocking_scope_validation.json",
+  "negative_visual": "stage136-policy-report-hwp/visual-hwpx",
+  "physical_page_11_tolerant_percent": 46.45331,
+  "selected_minimum_tolerant_percent": 31.53863,
+  "input_validation": [
+    {
+      "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+      "sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+      "sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59",
+      "matches_commit": true
+    },
+    {
+      "path": "samples/issue6312/fiscal_trend_float_table_anchor.hwpx",
+      "sha256": "aa804ca85dba392fad80dd78e3b61e668771984720a0a321a0c0ed694233a918",
+      "matches_commit": true
+    }
+  ],
+  "preanalysis": "그림5 그림2셀/행높이/캡션267.621053px 검사 뒤 전체215쪽 전제만 실패. 해당 전제 한곳만 #7445 이관하고 같은 함수의 기존 그림/캡션 및 다른5개 공개4쪽 입력 검사를 보존한다. 생산/공차/좌표/새함수 변경 없음.",
+  "code_commit": "00f0aa74ebca0e04a8c59de4b9469c3fb7666a87",
+  "before": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_021",
+      "-E",
+      "test(issue_6312_float_anchor_line_uses_source_vpos::)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plans": [
+      {
+        "caseName": "issue_6312_float_anchor_line_uses_source_vpos",
+        "target": "regression_suite_021",
+        "grouped": true
+      }
+    ],
+    "exit_code": 100,
+    "seconds": 8.405464999843389,
+    "summary": [
+      "Summary [   0.179s] 6 tests run: 5 passed, 1 failed, 199 skipped"
+    ]
+  },
+  "after": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_021",
+      "-E",
+      "test(issue_6312_float_anchor_line_uses_source_vpos::)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plans": [
+      {
+        "caseName": "issue_6312_float_anchor_line_uses_source_vpos",
+        "target": "regression_suite_021",
+        "grouped": true
+      }
+    ],
+    "exit_code": 0,
+    "seconds": 6.695968416053802,
+    "summary": [
+      "Summary [   0.165s] 6 tests run: 6 passed, 207 skipped"
+    ]
+  },
+  "gates": [
+    {
+      "step": "prepare-before-fmt",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.7981112920679152
+    },
+    {
+      "step": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 6.550797500181943
+    },
+    {
+      "step": "prepare-final",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.6651147501543164
+    },
+    {
+      "step": "focused",
+      "command": [
+        "python3",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage144-policy-caption-page-pin/run-focused.py",
+        "after"
+      ],
+      "exit_code": 0,
+      "seconds": 6.936755166854709
+    },
+    {
+      "step": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 5.975926332641393
+    },
+    {
+      "step": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.29719208320602775
+    },
+    {
+      "step": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.22955633327364922
+    },
+    {
+      "step": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 0.36903175013139844
+    },
+    {
+      "step": "clippy-alltargets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 6.712909666821361
+    },
+    {
+      "step": "manifest-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 2.5622490416280925
+    },
+    {
+      "step": "unit-check",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 8.43601749977097
+    }
+  ],
+  "scope": {
+    "removed_assertions": 1,
+    "test_functions_before": 6,
+    "test_functions_after": 6,
+    "normal_functions_unchanged": 5,
+    "all_picture_caption_assertions_unchanged": true,
+    "production_changed": false
+  },
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5883869473",
+  "limits": "동일 생산 코드의 보정136 Native 부정 증거를 재사용. fresh WASM/최종 전체 미실행. 통과한 일부 좌표를 전체피델리티 증거로 승격하지 않음."
+}

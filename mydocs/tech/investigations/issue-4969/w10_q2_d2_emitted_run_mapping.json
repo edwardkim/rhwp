@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-d2-emitted-run-mapping-result",
+  "issue": 4969,
+  "stage": "W10-Q2-D2",
+  "status": "qualified",
+  "productOutputChange": false,
+  "productConsumerCount": 0,
+  "mapping": {
+    "sourceOwner": "ComposedParagraph.horizontal_shaping",
+    "targetCardinality": "exactly-one-full-final-line-target",
+    "coordinates": [
+      "unicode-scalar",
+      "utf-8-byte",
+      "utf-16-code-unit"
+    ],
+    "sameNodeIdAttach": true,
+    "sameFinalTargetMeasurementArc": true,
+    "runSplittingAllowed": false
+  },
+  "geometry": {
+    "owner": "HorizontalShapingMeasurement.total_advance_px",
+    "lineWidthFromOwner": true,
+    "bboxWidthFromOwner": true,
+    "nextOriginFromOwner": true,
+    "productGeometryMutation": false
+  },
+  "mutualExclusion": {
+    "w9LayoutPositionsWithCommonSidecar": false,
+    "mixedOrPartialTargetPublication": false,
+    "duplicateGlyphRun": false
+  },
+  "failClosed": [
+    "outcome-not-qualified",
+    "product-already-published",
+    "unsupported-emitted-surface",
+    "empty-run",
+    "text-code-point-limit-exceeded",
+    "scalar-range-overflow",
+    "paragraph-text-range-mismatch",
+    "exact-target-not-found",
+    "mixed-or-partial-target",
+    "measurement-mismatch",
+    "applied-trace-not-found",
+    "geometry-malformed"
+  ],
+  "limits": {
+    "paragraphScalars": 4096,
+    "partialPublicationAllowed": false,
+    "pageSidecars": 4096
+  },
+  "privacy": {
+    "rawTextInTrace": false,
+    "fontPayloadInTrace": false,
+    "localPathInTrace": false,
+    "privateCorpusUsed": false
+  },
+  "validation": {
+    "nativeFocused": {
+      "passed": 4,
+      "failed": 0,
+      "runtimeSeconds": 0.10
+    },
+    "nodeWasmFocused": {
+      "passed": 4,
+      "failed": 0,
+      "runtimeSeconds": 0.51
+    },
+    "nativeWasmParityMismatches": 0,
+    "libraryRegression": {
+      "passed": 3889,
+      "failed": 0,
+      "ignored": 13,
+      "runtimeSeconds": 216.48
+    },
+    "workspaceAuxiliaryLibraries": {
+      "passed": 182,
+      "failed": 0
+    },
+    "cargoCheck": "pass",
+    "cargoClippyNativeDenyWarnings": "pass",
+    "cargoClippyWasm32DenyWarnings": "pass",
+    "integrationManifestPolicy": {
+      "passed": 20,
+      "failed": 0
+    },
+    "focusedRustfmt": "pass",
+    "diffCheck": "pass",
+    "productMapperCallsites": 0,
+    "pageTreeLayoutPaintFilesChanged": 0,
+    "generatedIntegrationArtifacts": 0
+  },
+  "next": "maintainer approval required before Q2-D3 glyph-run lowering shadow"
+}

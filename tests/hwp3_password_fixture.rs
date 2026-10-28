@@ -161,7 +161,11 @@ fn actual_hwp3_password_fixture_requires_the_password_and_preserves_structure() 
     // HWP3 조합형 0xD3C5는 아래아를 포함한 "ᄒᆞᆫ"이다. 기존에는 지원하지
     // 않는 중성으로 간주해 첫 글자를 버렸고, 제목이 "글 97"로 시작했다.
     // 같은 문서의 HWPX는 이 자모열을 명시하므로 두 fixture로 회귀를 고정한다.
-    assert!(hwp3_text.contains("ᄒᆞᆫ글 97 안내문"));
+    // [#4680] 이 자리는 HWP3 고정폭 빈칸(코드 31)이다. 종전에는 파서가 일반 공백으로
+    // 눌러 써서 HWP3 쪽만 U+0020 이었다 — 같은 문서의 HWPX 판은 U+2007 이다.
+    // 제어 표기를 보존하면 두 fixture 가 같은 문자를 낸다(실측 확인). 이 파일이
+    // 스스로 적어 둔 "같은 문서의 HWPX 로 회귀를 고정한다" 는 취지에 비로소 맞는다.
+    assert!(hwp3_text.contains("ᄒᆞᆫ글\u{2007}97 안내문"));
     assert!(hwpx_text.contains("ᄒᆞᆫ글\u{2007}97 안내문"));
 
     // HWP3 원본 머리말의 0x37C0..=0x37C5 graphic char는 HWPX 변환본과
@@ -468,16 +472,58 @@ fn actual_hwp3_password_fixture_keeps_icon_outline_at_column_origin_without_fill
 
 #[test]
 fn actual_hwp3_password_fixture_keeps_regular_page_background_opaque() {
-    let mut document = HwpDocument::from_bytes_with_password(&fixture_bytes(), FIXTURE_PASSWORD)
+    use base64::Engine as _;
+
+    let source = parse_document_with_password(&fixture_bytes(), FIXTURE_PASSWORD)
+        .expect("원본 쪽 배경 속성과 payload");
+    let border_id = source.sections[0]
+        .section_def
+        .page_border_fill
+        .border_fill_id;
+    let fill = source.doc_info.border_fills[(border_id - 1) as usize]
+        .fill
+        .image
+        .as_ref()
+        .expect("원본 쪽 배경");
+    assert_eq!((fill.brightness, fill.contrast), (-15, 50));
+    let original = image::load_from_memory(
+        &source.bin_data_content[(fill.bin_data_id - 1) as usize]
+            .data
+            .load(),
+    )
+    .expect("원본 배경 BMP")
+    .to_rgba8();
+    let document = HwpDocument::from_bytes_with_password(&fixture_bytes(), FIXTURE_PASSWORD)
         .expect("실제 HWP3 fixture를 열어야 함");
     let svg = document
         .render_page_svg(0)
         .expect("첫 쪽 SVG를 렌더해야 함");
 
-    assert!(
-        svg.contains("rhwp-img-bc-b50c-15"),
-        "배경의 HWP 밝기 50·대비 -15 색조는 유지해야 함"
-    );
+    // 효과가 이미 픽셀에 들어간 PNG를 보호한다. 이전 SVG filter ID의 존재는
+    // 실제 불투명도·색조의 증거가 아니며 중복 효과 적용을 요구해서도 안 된다.
+    let backgrounds: Vec<_> = svg
+        .split("data:image/png;base64,")
+        .skip(1)
+        .filter_map(|tail| {
+            let encoded = tail.split('"').next()?;
+            let bytes = base64::engine::general_purpose::STANDARD
+                .decode(encoded)
+                .ok()?;
+            let png = image::load_from_memory(&bytes).ok()?.to_rgba8();
+            (png.dimensions() == original.dimensions()).then_some(png)
+        })
+        .collect();
+    assert_eq!(backgrounds.len(), 1, "원본 크기의 쪽 배경 하나를 보존한다");
+    let background = &backgrounds[0];
+    assert!(background.pixels().all(|pixel| pixel[3] == 255));
+    assert!(background
+        .pixels()
+        .zip(original.pixels())
+        .all(|(after, before)| (0..3).all(|channel| after[channel] >= before[channel])));
+    assert!(background
+        .pixels()
+        .zip(original.pixels())
+        .any(|(after, before)| after.0[..3] != before.0[..3]));
     assert!(
         !svg.contains("<g opacity=\"0.17\">"),
         "일반 쪽 배경의 밝기·대비를 legacy watermark opacity로 처리하면 안 됨"

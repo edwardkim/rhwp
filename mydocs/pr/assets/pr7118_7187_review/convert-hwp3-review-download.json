@@ -1,0 +1,41 @@
+{
+  "status": "success",
+  "job_id": "b5ebd5e9-d1dd-462d-b4d6-badbdf18c1f3",
+  "output_path": "/Users/tsjang/rhwp/pdf/german-legislative-system-review-2020.pdf",
+  "output_filename": "german-legislative-system-review-2020.pdf",
+  "size": 2389946,
+  "sha256": "8a8542c9cc765c7673e8ca78ab178b34ce3d6f934ebb188db9d3872019b6e4f4",
+  "server": {
+    "job_id": "b5ebd5e9-d1dd-462d-b4d6-badbdf18c1f3",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "german-legislative-system-review.hwp",
+    "output_filename": "german-legislative-system-review-2020.pdf",
+    "size": 2389946,
+    "sha256": "8a8542c9cc765c7673e8ca78ab178b34ce3d6f934ebb188db9d3872019b6e4f4",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "12.0.0.4605",
+    "backend": "hwp-managed-direct-dll-host",
+    "pdf_page_count": 264,
+    "logical_page_count": null,
+    "pdf_print_method": 0,
+    "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+    "font_scope": {
+      "mode": "session0",
+      "status": "verified",
+      "profile_source": "protected_config",
+      "session_id": 0,
+      "mapped_font_count": 2,
+      "registered_font_count": 2,
+      "failed_font_count": 0,
+      "parent_visibility": "verified",
+      "child_visibility": "verified"
+    },
+    "elapsed_ms": 59276,
+    "worker_elapsed_ms": 57306,
+    "worker_bits": 32,
+    "input_preprocess": "none"
+  }
+}

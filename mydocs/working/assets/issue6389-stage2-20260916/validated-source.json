@@ -1,0 +1,97 @@
+{
+  "baseSha": "e5a305cb44fa46b750d2ebff82a8052888b16c18",
+  "files": [
+    {
+      "path": "scripts/export-wasm-for-sweep.mjs",
+      "sha256": "5b51337e43cfb443c3151d2ab47ab8b09d94e6ca493b60eb565cd9d20be82588"
+    },
+    {
+      "path": "scripts/tests/test_visual_sweep.py",
+      "sha256": "8ee06dd4b925d545f97045006e0e5ff4a317895711aeb41827f17148e03b9d34"
+    },
+    {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "11b1d259de1dd62f111dc0da9bd74efac2d5572aa80fbd73f180c984b20d2849"
+    },
+    {
+      "path": "src/cli/metadata/help/public.rs",
+      "sha256": "5ce195d7655ea6e15eea57430f9f265d021b9ec77b938573f71c9632cb9170b8"
+    },
+    {
+      "path": "src/cli/outputs/mod.rs",
+      "sha256": "ae8329346cef22a46ddba02923d9713244f6af9af73169b3862d4aabd0f4acbc"
+    },
+    {
+      "path": "src/cli/outputs/pdf.rs",
+      "sha256": "1a4389fd306de10f99bfb5635e6575f48073422b68ccbb9af5db0a2677ec82af"
+    },
+    {
+      "path": "src/cli/outputs/vector.rs",
+      "sha256": "21271344336ba813814aaa381c8c3848c1a2edd420f1c3afcdbf7a9e967b1cb2"
+    },
+    {
+      "path": "src/document_core/commands/document.rs",
+      "sha256": "c81481596d61e7005168635c25e08f11c36779a04868f2358d0aff4ff832cbea"
+    },
+    {
+      "path": "src/document_core/commands/formatting.rs",
+      "sha256": "d06e109e6811f2a59bad55a39da602ec5965fb98ed40c5566edca73c5edd9d81"
+    },
+    {
+      "path": "src/document_core/commands/formatting_runs.rs",
+      "sha256": "9934a6a226563b8e6044e5a1839a69fe63e851300d1dfb8210bf0f028eeaab49"
+    },
+    {
+      "path": "src/document_core/commands/header_footer_ops.rs",
+      "sha256": "ac7c1dae9df3d9c97e46756df49880c25a0cabebaadf0b94b8b8138039836020"
+    },
+    {
+      "path": "src/document_core/commands/text_editing.rs",
+      "sha256": "683b179865c228a6959e44bf75c205ca9079c0d4db7bf089f5f1a6939878b66e"
+    },
+    {
+      "path": "src/document_core/font_environment.rs",
+      "sha256": "6a4ad7997804081f55169ed2442af489a12e5fd7c9d92218e89fa42b039c30ef"
+    },
+    {
+      "path": "src/document_core/mod.rs",
+      "sha256": "afb7fc29349b5d2174d92ffabd06bd72e56455090da48a11f6f2c4ba36a34cd0"
+    },
+    {
+      "path": "src/document_core/queries/font_decision.rs",
+      "sha256": "02c72632dd0ee0923cd4f757335b790d691de8cc0b807a1e5383b2d95dff35da"
+    },
+    {
+      "path": "src/document_core/queries/font_metric_coverage.rs",
+      "sha256": "74c4dc167979669a8a6b91ccc80454e89280907f712d49cb8296e0b5a25af126"
+    },
+    {
+      "path": "src/renderer/font_environment.rs",
+      "sha256": "cc4686256aa9ba79d527700a76802717123b302811ee1454d23dcf74eac993f6"
+    },
+    {
+      "path": "src/renderer/mod.rs",
+      "sha256": "ba978d95a1cd2d847ec3eb17a2d6a566f7b0e2147ebab18bc354f764f57d1c67"
+    },
+    {
+      "path": "src/renderer/style_resolver.rs",
+      "sha256": "1ee71cc0b67fdbc711df622b99b4e44e67fd4ff3ea055dd3bcfbe75e5518ad29"
+    },
+    {
+      "path": "src/wasm_api.rs",
+      "sha256": "20fa6908af7f8c2b6a7f00bff4ae8504a988e8eb4db856f977c76e4769ce2b60"
+    },
+    {
+      "path": "tests/cases/issue_6389_font_environment.rs",
+      "sha256": "bb664e01ac5a61b4a546183edf2dd58328ef3d0355d3831c14191998a433733e"
+    },
+    {
+      "path": "tests/fixtures/issue_6389/kopub-unavailable.json",
+      "sha256": "960e24dcdfe4a7ed4401c273acaafddc61bf3d95f934e85ec5e3a8d59be045f7"
+    },
+    {
+      "path": "tests/issue_2724_passthrough_invalidation_guard.rs",
+      "sha256": "9d0b08c9fa4513ce6d222fdf302c0bb9d7f89fad36c1ded6cfa2aaf7afa1dab2"
+    }
+  ]
+}

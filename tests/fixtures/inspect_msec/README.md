@@ -15,12 +15,15 @@ python tools/inspect_msec/test_msec_fixtures.py
 
 ## 건수
 
-- 성공 봉투: 194
+- 성공 봉투: 192
 - 예외 봉투: 22
-- 합계: 216
-- hidden-text: 48
+- 합계: 214
+- hidden-text: 47
 - injection: 102
-- unicode: 44
+- unicode: 43
+
+시험지 입력 `exam_kor.hwp`를 명시한 봉투는 활성 회귀 목록과 생성기에서 제외했다.
+원본 샘플과 일반 유니코드 계약 검사는 보존한다.
 
 ## 권위
 
@@ -38,3 +41,5 @@ python tools/inspect_msec/test_msec_fixtures.py
 - 새 kind / 새 토큰 / 새 코드포인트
 - gym / canvaskit / serializer / layout-anomaly / oracle /
   render_backend / proptest / fidelity_compare / hwp5-inventory / page-count
+
+편람 HWPX의 clean-corpus 봉투는 사용자 요청으로 검사와 생성기에서 제거했다.

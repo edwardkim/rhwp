@@ -1,0 +1,37 @@
+{
+  "prior_head": "2d141ec6c",
+  "source": {
+    "path": "src/renderer/layout/table_partial.rs",
+    "sha256": "6a4447091e3e067da2786a15c77c9e6bd0cc39f0732bc43dc448d7406aa363a5"
+  },
+  "input": {
+    "path": "samples/issue7336/stored_frame_page_larger_rowbreak.hwpx",
+    "sha256": "042633046ab469b971aa155417ecd568c8825d586d37f87a76194145edb903dc"
+  },
+  "pdf": {
+    "path": "pdf/issue7336/stored_frame_page_larger_rowbreak-2020.pdf",
+    "sha256": "5e19bd4c4d0cc3e7b177834e939a8e75df57e4387d43d1a9a1bd8f74840b993e"
+  },
+  "native_binary_sha256": "be0f3921b29ef607f483837e87a471d4154b438cf9de93849e5888e76028f525",
+  "fresh_wasm_sha256": "a86707c868f714ee4ac43a41e14362b9e2bf4e3567fe2cbf85b03899dcc63952",
+  "wasm_build_exit_code": 0,
+  "wasm_build": "Mac --no-opt local substitute; not Docker optimized",
+  "whole_visual_pages": 7,
+  "pdf_pages": 7,
+  "minimum_percent": {
+    "native": 97.74445,
+    "wasm": 97.74445
+  },
+  "focused": {
+    "run": 46,
+    "passed": 45,
+    "failed": 1,
+    "exit_code": 100,
+    "resolved": "issue_7095_multirow_fragment_page_cap::a_multirow_fragment_past_the_page_cap_is_folded_to_it",
+    "remaining": "issue_7379_rowbreak_table_footnote_reservation::figure11_closed_frame_preserves_units_across_body_budgets"
+  },
+  "new_tests": 0,
+  "assertion_changes": 0,
+  "whole_nextest": "not rerun after correction",
+  "native_tsv_origin": "reuse of completed full Native PNG; no second export"
+}

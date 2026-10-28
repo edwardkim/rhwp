@@ -3,7 +3,6 @@
 
 `samples/` 의 `.hwp`/`.hwpx` 를 재귀 수집한 뒤, 같은 상대 경로의
 `pdf/{stem}-{year}.pdf` (및 `-hwp-2020` 같은 허용 변형) 를 맞춘다.
-`pdf-2020/`, `pdf-large/` 가 있으면 같은 규칙으로 추가 탐색한다.
 한글 버전은 2018 / 2020 / 2022 / 2024 만 센다.
 
 `oracle_resolver.py` 가 devel 에 없어도 동작하도록 매칭을 이 파일 안에 둔다.
@@ -25,12 +24,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Sequence
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+from regression_document_scope import is_deferred_regression_input
+
 SCHEMA_VERSION = "1.0"
 CLAIM_ID = "M01-3"
 GENERATOR = "tools/oracle_public/coverage_report.py"
 MATCHING_RULE = "stem-{year}.pdf"
 SAMPLE_EXTS = {".hwp", ".hwpx"}
-DEFAULT_ORACLE_ROOTS = ("pdf", "pdf-2020", "pdf-large")
+DEFAULT_ORACLE_ROOTS = ("pdf",)
 HANCOM_YEARS = ("2018", "2020", "2022", "2024")
 
 # `{stem}` 뒤에 붙는 오라클 접미사. 연도가 반드시 들어가고, 포맷 태그·kopub·
@@ -98,11 +100,23 @@ def discover_repo_root(start: Path | None = None) -> Path:
 def walk_samples(samples_dir: Path, repo_root: Path) -> list[SampleDoc]:
     if not samples_dir.is_dir():
         raise UsageError(f"samples 디렉터리가 없습니다: {samples_dir}")
+    # 원본은 보존하고 공통 제외 목록만 활성 회귀 수집에 적용한다.
+    policy = repo_root / "tests/fixtures/transferred_exam_regressions.txt"
+    if not policy.is_file():
+        policy = Path(__file__).resolve().parents[2] / "tests/fixtures/transferred_exam_regressions.txt"
+    excluded = set(policy.read_text(encoding="utf-8").splitlines()) if policy.is_file() else set()
+    deferred = Path(__file__).resolve().parents[2] / "tests/fixtures/deferred_document_regressions.txt"
+    deferred_names = set(deferred.read_text(encoding="utf-8").splitlines())
+    excluded.update(deferred_names)
     found: list[SampleDoc] = []
     for path in samples_dir.rglob("*"):
+        if is_deferred_regression_input(path, axis="oracle"):
+            continue
         if not path.is_file():
             continue
         if path.suffix.lower() not in SAMPLE_EXTS:
+            continue
+        if path.name in deferred_names or path.relative_to(samples_dir).as_posix() in excluded:
             continue
         rel = Path(posix_rel(path, repo_root))
         parent = rel.parent.as_posix()
@@ -458,7 +472,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         "# M01-3 오라클 커버리지",
         "",
         "`samples/` 의 `.hwp`/`.hwpx` 와 `{stem}-{year}.pdf` (2018/2020/2022/2024) 짝.",
-        "같은 상대 하위 경로를 `pdf/` · `pdf-2020/` · `pdf-large/` 에서 찾는다.",
+        "같은 상대 하위 경로를 단일 오라클 루트 `pdf/` 에서 찾는다.",
         "`oracle_resolver.py` 가 없어도 이 도구가 같은 규칙으로 직접 맞춘다.",
         "짝 없는 개수는 아래 표의 실측값이다.",
         "",
@@ -571,7 +585,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--roots",
         default=",".join(DEFAULT_ORACLE_ROOTS),
-        help="오라클 PDF 루트(쉼표 구분). 기본 pdf,pdf-2020,pdf-large",
+        help="오라클 PDF 루트(쉼표 구분). 기본 pdf",
     )
     parser.add_argument(
         "--json-out",

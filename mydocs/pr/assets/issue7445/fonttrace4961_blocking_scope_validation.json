@@ -1,0 +1,619 @@
+{
+  "stage": 150,
+  "production_source": "b7436944b81d20ad799edcd59ead3b94621902b3",
+  "preanalysis": "#4961 actual exact-face counts1336/1334차이를현재/devel고정Native트리194run대조로추적. 차이는FootnoteArea run186의1) 뒤1공백과run187의2공백→1공백으로확인했다. 본문문자누락이아니다. layoutHash핀도당해각주배치에의존하므로독립한컴원본HWP PDF전체1쪽Native/freshWASM90조건과각주실제위치부터검증한다. 다른문서/프로필/포맷동일성/기능탐지/limit/비지원backend검사는보존,현재숫자에맹목적으로맞추지않음.",
+  "input_sha256": "1bcdc7a2de38680cdb715556f40c8477f8242131d28de949b09e945022bf35fa",
+  "pdf_sha256": "41451dd4d1b6a43b78cc532500a54a310314da84fc1b2963e49485443d0b4d0d",
+  "reference_conversion": {
+    "job_id": "1345932d-de63-4748-912e-1714afe3ad93",
+    "status": "succeeded",
+    "terminal": true,
+    "target": "pdf",
+    "engine": "2020",
+    "created_at": "2026-09-29T05:22:56.429Z",
+    "completed_at": "2026-09-29T05:23:34.710Z"
+  },
+  "engine_reason": "lastSavedWith hancom-office-2010 8.5.6.1133 =>engine2020",
+  "before_tree_diff": "tree-text-difference.json",
+  "visual": {
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "fonttrace4961-exact-face",
+      "samples/143E433F503322BD33.hwp",
+      "pdf/143E433F503322BD33-hwp-2020.pdf",
+      "--pages",
+      "1",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+      "--embed-fonts=full",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/stage150-fonttrace4961/visual-native"
+    ],
+    "exit": {
+      "exit_code": 1
+    },
+    "metrics": {
+      "compared_pages": 1,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 83.93393,
+      "worst_pixel_match_percent": 83.93393,
+      "average_ink_match_percent": 55.32147,
+      "worst_ink_match_percent": 55.32147,
+      "average_visual_accuracy_proxy_percent": 55.32147,
+      "worst_visual_accuracy_proxy_percent": 55.32147,
+      "average_tolerant_content_match_percent": 88.61634,
+      "worst_tolerant_content_match_percent": 88.61634,
+      "worst_pages": [
+        1
+      ]
+    },
+    "gate": {
+      "status": "re_review_required",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 88.61634
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "completed_pages": [
+      1
+    ]
+  },
+  "decision": "원본HWP1쪽전체88.61634%로90미만. counts/hash를현재값으로갱신하지않고 actual exact-face의렌더기반두핀만개별FAIL확인후#7445 이관계획. 같은문서/다른5문서의fontprofile/기능탐지/포맷패리티/limit/backend상태 및기존3함수는보존한다. 생산개선안함.",
+  "source_head": "6ac946c5f7772abec6ac1396edb7a1703dceaa68",
+  "consumption_path": [
+    "src/renderer/layout/picture_footnote.rs::stored_footnote_number_prefix -> layout_footnote_area (stored AutoNumber prefix/suffix, skips original control-slot spaces)",
+    "src/document_core/queries/font_decision.rs:698-705 collect_runs -> run.text.chars count",
+    "get_font_decision_trace_from_tree -> layoutHash",
+    "tests/cases/issue_4961_font_decision_trace.rs document exact-face expectedCounts/expectedLayoutHash"
+  ],
+  "code_commit": "d2dd864b68efc7bba55e59a2a20483e7e9a36733",
+  "scope": {
+    "removed_actual_render_pins": {
+      "document_id": "exact-face",
+      "removed_expectedCounts": {
+        "runsSeen": 194,
+        "charactersSeen": 1336,
+        "recordsEmitted": 1336,
+        "recordsOmitted": 0
+      },
+      "removed_expectedLayoutHash": "038db08108fbc97f8bf21a2d44162d57830955ef286f6f49f56ba718d33bcab2",
+      "layout_hash_actual_failed_log": "diagnostic-1.log"
+    },
+    "existing_functions_kept": true,
+    "only_mixed_function_changed": [
+      "stage4_public_hwp_hwpx_profiles_are_end_to_end_and_feature_detected"
+    ],
+    "all_other_function_bodies_unchanged": true,
+    "all_other_document_rows_unchanged": 5,
+    "profile_comparison_options_unchanged": true,
+    "absence_without_explicit_deferral_still_asserts_and_fails": true,
+    "production_changed": false,
+    "new_test_functions": 0
+  },
+  "lint_gates": [
+    {
+      "step": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 6.1054600002244115
+    },
+    {
+      "step": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.29734400007873774
+    },
+    {
+      "step": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.23237945791333914
+    },
+    {
+      "step": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 0.3720298339612782
+    },
+    {
+      "step": "clippy-alltargets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 7.665135957766324
+    },
+    {
+      "step": "manifest-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 2.3946625837124884
+    },
+    {
+      "step": "unit-check",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 8.366426000371575
+    }
+  ],
+  "focused_runs": [
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_019",
+        "-E",
+        "test(issue_4961_font_decision_trace::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_4961_font_decision_trace",
+          "target": "regression_suite_019",
+          "grouped": true
+        }
+      ],
+      "exit_code": 100,
+      "seconds": 9.377071666996926,
+      "label": "before",
+      "summary": [
+        "Summary [   0.289s] 7 tests run: 6 passed, 1 failed, 190 skipped"
+      ]
+    },
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_020",
+        "-E",
+        "test(issue_4961_font_decision_trace::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_4961_font_decision_trace",
+          "target": "regression_suite_020",
+          "grouped": true
+        }
+      ],
+      "exit_code": 100,
+      "seconds": 8.3983775828965,
+      "label": "diagnostic-1",
+      "summary": [
+        "Summary [   0.356s] 7 tests run: 6 passed, 1 failed, 177 skipped"
+      ]
+    },
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_020",
+        "-E",
+        "test(issue_4961_font_decision_trace::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_4961_font_decision_trace",
+          "target": "regression_suite_020",
+          "grouped": true
+        }
+      ],
+      "exit_code": 100,
+      "seconds": 7.138945166952908,
+      "label": "after-first",
+      "summary": [
+        "Summary [   0.421s] 7 tests run: 6 passed, 1 failed, 186 skipped"
+      ]
+    },
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_020",
+        "-E",
+        "test(issue_4961_font_decision_trace::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_4961_font_decision_trace",
+          "target": "regression_suite_020",
+          "grouped": true
+        }
+      ],
+      "exit_code": 100,
+      "seconds": 7.716127417050302,
+      "label": "after",
+      "summary": [
+        "Summary [   0.405s] 7 tests run: 6 passed, 1 failed, 186 skipped"
+      ]
+    }
+  ],
+  "next_actual_failure": "missing-face expectedLayoutHash: a0700d254aa2c397972e16fc91c8cb6805e1c27b1dd435e30bbf15ab31657d50 vs 5f344c2ff37349395dc2694e2ab02a03904a7eb461e3d86f50089090db6324f8",
+  "exact_face_profile_readonly": {
+    "recordId": "page:0:run:1:char:0",
+    "expected": {
+      "sourceStatus": "complete",
+      "character": "초",
+      "documentFace": "바탕",
+      "substFont": null,
+      "normalizedFace": "바탕",
+      "layoutStepKind": null,
+      "metricMatchKind": "exact",
+      "metricCharacterMatch": "hit",
+      "widthSource": "embeddedMetric"
+    },
+    "actual": {
+      "sourceStatus": "complete",
+      "character": "초",
+      "documentFace": "바탕",
+      "substFont": null,
+      "normalizedFace": "바탕",
+      "layoutStepKind": null,
+      "metricMatchKind": "exact",
+      "metricCharacterMatch": "hit",
+      "widthSource": "embeddedMetric"
+    },
+    "all_fields_match": true,
+    "not_a_full_end_to_end_test_pass": true
+  },
+  "tree_text_differences": [
+    {
+      "index": 186,
+      "devel": {
+        "node": {
+          "type": "TextRun",
+          "bbox": {
+            "x": 75.6,
+            "y": 997.1,
+            "w": 16.0,
+            "h": 12.0
+          },
+          "text": "1) ",
+          "pi": 18446744073709549615
+        },
+        "parents": [
+          {
+            "type": "Page",
+            "pi": null,
+            "ci": null,
+            "bbox": {
+              "x": 0.0,
+              "y": 0.0,
+              "w": 793.7,
+              "h": 1122.5
+            }
+          },
+          {
+            "type": "FootnoteArea",
+            "pi": null,
+            "ci": null,
+            "bbox": {
+              "x": 75.6,
+              "y": 977.7,
+              "w": 642.5,
+              "h": 31.4
+            }
+          },
+          {
+            "type": "TextLine",
+            "pi": 0,
+            "ci": null,
+            "bbox": {
+              "x": 75.6,
+              "y": 997.1,
+              "w": 642.5,
+              "h": 12.0
+            }
+          }
+        ]
+      },
+      "candidate": {
+        "node": {
+          "type": "TextRun",
+          "bbox": {
+            "x": 75.6,
+            "y": 997.1,
+            "w": 12.0,
+            "h": 12.0
+          },
+          "text": "1)",
+          "pi": 18446744073709549615
+        },
+        "parents": [
+          {
+            "type": "Page",
+            "pi": null,
+            "ci": null,
+            "bbox": {
+              "x": 0.0,
+              "y": 0.0,
+              "w": 793.7,
+              "h": 1122.5
+            }
+          },
+          {
+            "type": "FootnoteArea",
+            "pi": null,
+            "ci": null,
+            "bbox": {
+              "x": 75.6,
+              "y": 977.7,
+              "w": 642.5,
+              "h": 31.4
+            }
+          },
+          {
+            "type": "TextLine",
+            "pi": 0,
+            "ci": null,
+            "bbox": {
+              "x": 75.6,
+              "y": 997.1,
+              "w": 642.5,
+              "h": 12.0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "index": 187,
+      "devel": {
+        "node": {
+          "type": "TextRun",
+          "bbox": {
+            "x": 91.6,
+            "y": 997.1,
+            "w": 12.0,
+            "h": 12.0
+          },
+          "text": "  ",
+          "pi": 18446744073709549615
+        },
+        "parents": [
+          {
+            "type": "Page",
+            "pi": null,
+            "ci": null,
+            "bbox": {
+              "x": 0.0,
+              "y": 0.0,
+              "w": 793.7,
+              "h": 1122.5
+            }
+          },
+          {
+            "type": "FootnoteArea",
+            "pi": null,
+            "ci": null,
+            "bbox": {
+              "x": 75.6,
+              "y": 977.7,
+              "w": 642.5,
+              "h": 31.4
+            }
+          },
+          {
+            "type": "TextLine",
+            "pi": 0,
+            "ci": null,
+            "bbox": {
+              "x": 75.6,
+              "y": 997.1,
+              "w": 642.5,
+              "h": 12.0
+            }
+          }
+        ]
+      },
+      "candidate": {
+        "node": {
+          "type": "TextRun",
+          "bbox": {
+            "x": 87.6,
+            "y": 997.1,
+            "w": 6.0,
+            "h": 12.0
+          },
+          "text": " ",
+          "pi": 18446744073709549615
+        },
+        "parents": [
+          {
+            "type": "Page",
+            "pi": null,
+            "ci": null,
+            "bbox": {
+              "x": 0.0,
+              "y": 0.0,
+              "w": 793.7,
+              "h": 1122.5
+            }
+          },
+          {
+            "type": "FootnoteArea",
+            "pi": null,
+            "ci": null,
+            "bbox": {
+              "x": 75.6,
+              "y": 977.7,
+              "w": 642.5,
+              "h": 31.4
+            }
+          },
+          {
+            "type": "TextLine",
+            "pi": 0,
+            "ci": null,
+            "bbox": {
+              "x": 75.6,
+              "y": 997.1,
+              "w": 642.5,
+              "h": 12.0
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "runner_correction": {
+    "initial_wrapper_did_not_propagate_failure": true,
+    "initial_raw_focused_exit": 100,
+    "final_wrapper_exit": 100,
+    "other_previous_focused_runs_actual_exit_audit": [
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage140-cell-padding-contract/after-result.json",
+        "actual_exit_code": 0
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage141-basic2007-render-tests/after-result.json",
+        "actual_exit_code": 0
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage142-market2070/after-result.json",
+        "actual_exit_code": 0
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage143-bokhak938/after-result.json",
+        "actual_exit_code": 0
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage144-policy-caption-page-pin/after-result.json",
+        "actual_exit_code": 0
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage145-handbook-hwp-page-pin/after-result.json",
+        "actual_exit_code": 0
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage146-handbook-hwpx-owner/after-result.json",
+        "actual_exit_code": 0
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage147-distribution7160/after-result.json",
+        "actual_exit_code": 0
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage148-low-slack6535/after-result.json",
+        "actual_exit_code": 0
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage149-stale-frame7288/after-result.json",
+        "actual_exit_code": 0
+      }
+    ],
+    "no_full_pass_claim": true
+  },
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5884283688",
+  "limits": "해당문서두핀만처리. 혼합함수는다른missing-face에서6PASS/1FAIL/exit100. 다른문서미판정·정식e2e전체프로필미완료. readonlyexact-face프로필비교일치가전체테스트PASS를대신하지않음. Native1쪽부정증거이며freshWASM/최종전체미실행."
+}

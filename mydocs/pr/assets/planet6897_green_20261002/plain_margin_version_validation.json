@@ -1,0 +1,66 @@
+{
+  "prior_head": "56fad062d",
+  "source_hashes": {
+    "src/model/style.rs": "dce062cffb2b208de665610d3ccf4fbaefc2e36bec65cbf0e808fd81398d1a06",
+    "src/parser/doc_info.rs": "0d24d454f549c11a0cc922ecbd742ea17d9893ebad4b9a557f9111d1b482deb1",
+    "src/parser/hwpx/header.rs": "8ba17a9c8722a8029f10d5a955147a21cacd0e5ebbbc399ff2cc19dad76298ee",
+    "src/parser/hwpx/mod.rs": "7ff4d32bd33c9e0b710dc49ac637ab2f19164b9af042ecb6f921f45b78f52896",
+    "src/serializer/hwpx/header.rs": "c462548b518e3620a5d35205e0cf740b34c31b026af5acccdea4ae2a36bdf5b8",
+    "tests/cases/issue_4898_hwpx_plain_para_margin.rs": "8d7d4481e120aff5568e882d77d858baf3ac309142d6b7b3b57d197e9334727e"
+  },
+  "source_package": "version.xml xmlVersion; not header.xml head version",
+  "oracle": "plain_margin_version_oracle.json",
+  "parser_nextest": {
+    "passed": 54,
+    "failed": 0,
+    "exit_code": 0
+  },
+  "focused_existing_nextest": {
+    "passed": 5,
+    "failed": 0,
+    "exit_code": 0,
+    "new_functions": 0,
+    "task903_expected_values": "unchanged independent HWP comparison"
+  },
+  "clippy": {
+    "scope": "--lib release-test",
+    "exit_code": 0
+  },
+  "native_build_exit_code": 0,
+  "fresh_wasm_build_exit_code": 0,
+  "fresh_wasm_sha256": "9cdf7027a6b236472439bef4420420176c70ae382cfef307bdf6c52a004a96ce",
+  "wasm_build": "Mac --no-opt substitute; not Docker optimized",
+  "visual": {
+    "h01_native": {
+      "pages": 9,
+      "minimum_percent": 53.03132,
+      "below_90_pages": [
+        1
+      ]
+    },
+    "h01_wasm": {
+      "pages": 9,
+      "minimum_percent": 53.03132,
+      "below_90_pages": [
+        1
+      ]
+    },
+    "hy_native": {
+      "pages": 2,
+      "minimum_percent": 90.86083,
+      "below_90_pages": []
+    },
+    "hy_wasm": {
+      "pages": 2,
+      "minimum_percent": 90.86083,
+      "below_90_pages": []
+    }
+  },
+  "h01_native_and_wasm_pages": 9,
+  "h01_pdf_pages": 9,
+  "hy_native_and_wasm_pages": 2,
+  "hy_pdf_pages": 2,
+  "whole_nextest": "not rerun after correction",
+  "renderer_regression_admission": "none; h01 p1 fails90 gate and stays held in current branch; parser and serialization unit contracts updated",
+  "original_input_and_pdf": "preserved"
+}

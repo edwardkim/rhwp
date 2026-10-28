@@ -1,0 +1,22 @@
+{
+  "status": "individual_scope_pass_integration_pending",
+  "production_code_candidate": "4cfe96e52",
+  "nextest": {
+    "passed": 2,
+    "failed": 0,
+    "exit_code": 0,
+    "log_sha256": "03c12514b48078ee0d70c1c626d2aefb753e8a779c0becb658b1d925557002e6"
+  },
+  "native_and_fresh_wasm": {
+    "scope": "public synthetic document",
+    "pages": 1,
+    "minimum": 99.79652,
+    "below_90": 0,
+    "missing_pages": 0
+  },
+  "structural_cases": "Four larger-anchor HWP cases and one smaller-anchor control; saved first-line HU independent oracle, not whole-document visual proof",
+  "remaining": [
+    "other individual PR reviews",
+    "final integrated full gates"
+  ]
+}

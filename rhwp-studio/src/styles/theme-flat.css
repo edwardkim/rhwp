@@ -91,6 +91,22 @@
   background: var(--ui-hover-strong);
 }
 
+[data-theme-skin="flat"] #icon-toolbar .tb-scroll-nav {
+  border: 0;
+  border-radius: 0;
+  background: var(--ui-surface);
+  box-shadow: none;
+}
+
+[data-theme-skin="flat"] #icon-toolbar .tb-scroll-nav:hover:not(:disabled) {
+  background: var(--ui-surface);
+}
+
+[data-theme-skin="flat"] #icon-toolbar .tb-scroll-nav:hover:not(:disabled)::before {
+  background: var(--ui-hover-strong);
+  border-color: var(--ui-border-subtle);
+}
+
 [data-theme-skin="flat"] #icon-toolbar .tb-sep {
   background: var(--ui-border-subtle);
 }

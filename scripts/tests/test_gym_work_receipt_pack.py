@@ -18,7 +18,7 @@ PACK = GYM / "packs" / "work-receipt"
 TASKS = PACK / "tasks"
 REFS = PACK / "reference"
 README = PACK / "README.md"
-WORKING = REPO_ROOT / "mydocs" / "working" / "gym_work_receipt.md"
+WORKING = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_work_receipt.md"
 MAINTAINER = GYM / "profiles" / "maintainer.json"
 
 EXISTING_OPS = {
@@ -120,7 +120,7 @@ class WorkReceiptPackLayoutTests(unittest.TestCase):
         self.assertIn("복제하지", text)
 
     def test_working_notes_exist_and_are_korean(self):
-        self.assertTrue(WORKING.is_file(), "mydocs/working/gym_work_receipt.md 가 없다")
+        self.assertTrue(WORKING.is_file(), "mydocs/working/archives/gym_work_receipt.md 가 없다")
         text = WORKING.read_text(encoding="utf-8")
         self.assertGreater(len(text), 2000)
         for needle in ("WR05", "WR56", "기존 표본", "T07", "audit", "test_gym_packs"):
@@ -303,6 +303,11 @@ class WorkReceiptTaskContractTests(unittest.TestCase):
         self.assertEqual(errors, [], "\n".join(errors))
 
     def test_answer_reference_mirrors_check_cmd_path(self):
+        def normalize_cmd(cmd):
+            # 기준풀이 생성기는 저장소 루트 오염을 막기 위해 {sub:} 만 허용하고,
+            # 채점기는 제출물을 읽기 위해 같은 경로를 {file:} 로 표현한다.
+            return [part.replace("{sub:", "{file:") for part in cmd]
+
         refs = load_refs()
         for task in load_tasks():
             answer_checks = [c for c in task["checks"] if c["op"] in ANSWER_OPS]
@@ -325,7 +330,11 @@ class WorkReceiptTaskContractTests(unittest.TestCase):
             by_key = {c["answer"]: c for c in answer_checks}
             for key, spec in answer.items():
                 check = by_key[key]
-                self.assertEqual(spec["cmd"], check["cmd"], f"{tid}/{key} cmd")
+                self.assertEqual(
+                    normalize_cmd(spec["cmd"]),
+                    normalize_cmd(check["cmd"]),
+                    f"{tid}/{key} cmd",
+                )
                 self.assertEqual(spec["path"], check["path"], f"{tid}/{key} path")
 
 

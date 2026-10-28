@@ -1,0 +1,46 @@
+{
+  "prior_head": "8e7ba13d4",
+  "changed_source": [
+    {
+      "path": "src/renderer/typeset/table/block/whole_fit.rs",
+      "sha256": "916a2b8641fcbdef4b820f8d52ecf2841ceefcc2b6e4c16667167c8d02b26f05"
+    },
+    {
+      "path": "src/renderer/typeset/table/continuation/fragment/budget.rs",
+      "sha256": "58ea89e4c32bd846a578997c85ec1cae61ee73b3d75485a8616215edfbe39f59"
+    }
+  ],
+  "native_document_pages": 215,
+  "pdf_document_pages": 215,
+  "before_native_document_pages": 216,
+  "visual_scope": [
+    182,
+    183
+  ],
+  "native_minimum_percent": 99.89879,
+  "focused": {
+    "run": 46,
+    "passed": 44,
+    "failed": 2,
+    "exit_code": 100,
+    "unchanged_prior_failures": [
+      "issue_7095_multirow_fragment_page_cap::a_multirow_fragment_past_the_page_cap_is_folded_to_it",
+      "issue_7379_rowbreak_table_footnote_reservation::figure11_closed_frame_preserves_units_across_body_budgets"
+    ]
+  },
+  "full_215_visual": "not run on correction",
+  "fresh_wasm": {
+    "code_head": "8ee77497f",
+    "build_exit_code": 0,
+    "scope_pages": [
+      182,
+      183
+    ],
+    "document_pages": 215,
+    "pdf_pages": 215,
+    "minimum_percent": 99.89879,
+    "wasm_sha256": "570476bd8359d662d023291f8a20cdc0c813199af075e2d65217a29153e7af9e",
+    "local_build": "Mac --no-opt; not Docker optimized"
+  },
+  "original_input_and_pdf": "preserved"
+}

@@ -15,10 +15,18 @@ use super::*;
 /// 마커가 사라져 native HWPX로 취급된다.
 pub const HWP5_ORIGIN_HWPX_MARKER_PATH: &str = "META-INF/rhwp-hwp5-origin";
 
+/// 제어 슬롯을 포함하는 문단 UTF-16 축으로 LineSeg를 저장하는 생산자 계약.
+/// 이전 `1` 산출물의 축 해석은 읽기 호환 경로에서 유지한다.
+pub const HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS: &[u8] = b"2:paragraph-utf16";
+
 /// HWP3 원본에서 HWPX 로 export 한 산출물 마커 — 재열람 시 hwp3_lineage 를
 /// 복원해 직파싱 HWP3 와 같은 레이아웃 계약(저장-스텝 등)을 밟게 한다.
 /// 없으면 render-diff 왕복이 프로파일 차이만큼 갈라진다(hwp3-sample p7 14.9px).
 pub const HWP3_ORIGIN_HWPX_MARKER_PATH: &str = "META-INF/rhwp-hwp3-origin";
+
+/// 원본 HWP3의 외부 생성·재정렬 요청을 저장 왕복에서 보존한다.
+pub const HWP3_EXTERNAL_REALIGN_STREAM_PATH: &str = "/RhwpHwp3ExternalRealign";
+pub const HWP3_EXTERNAL_REALIGN_HWPX_PATH: &str = "META-INF/rhwp-hwp3-external-realign";
 
 /// [Issue #1770] HWPX-origin 마커 스트림 경로.
 ///
@@ -203,6 +211,19 @@ pub struct DocInfo {
     pub styles: Vec<Style>,
     /// 파서가 모델링하지 않는 추가 레코드 (DOC_DATA, FORBIDDEN_CHAR 등)
     pub extra_records: Vec<RawRecord>,
+    /// [Issue #6208] 문서에 실린 **인쇄 방식**(모아 찍기 등).
+    ///
+    /// HWP5 는 `DocInfo`/`HWPTAG_DOC_DATA`(tag 27)의 `(u32 key, u32 value)` 목록 중
+    /// 키 `0x0006_4006`, HWPX 는 `settings.xml` 의
+    /// `<config:config-item name="PrintMethod">` 에 같은 값을 싣는다.
+    /// 원본에 항목이 없으면 `None`.
+    ///
+    /// **rhwp 는 이 값을 출력에 반영하지 않는다** — 파싱·노출 전용이다.
+    /// 한글 오라클 PDF 와 대조할 때 이 값이 [`print_method_implies_nup`] 이면
+    /// 한글 쪽 장 수·용지 방향이 rhwp 와 다르므로, 좌표를 그대로 견주면 오판한다.
+    /// 저장은 `extra_records` / `raw_stream` 의 원본 바이트가 담당하므로 이 필드는
+    /// 직렬화에 쓰이지 않는다(파생 값).
+    pub print_method: Option<u32>,
     /// 원본 DocInfo 레코드 스트림 바이트 (직렬화 시 원본 복원용)
     pub raw_stream: Option<Vec<u8>>,
     /// Bullet 개수 (ID_MAPPINGS에 포함, bullets.len()과 동기화)
@@ -235,6 +256,28 @@ pub struct DocInfo {
     pub raw_provenance: Option<crate::model::raw_provenance::DocInfoSeal>,
 }
 
+/// HWP5 `HWPTAG_DOC_DATA` 안에서 인쇄 방식을 담는 키.
+///
+/// 레코드는 `(u32 key, u32 value)` 의 평평한 목록이고 **키 순서가 문서마다 다르다** —
+/// 인덱스가 아니라 키로 찾아야 한다(156458354 는 3번째, 156543798 은 3번째지만
+/// 뒤쪽 항목들의 순서가 서로 다르다).
+pub const HWP5_DOC_DATA_KEY_PRINT_METHOD: u32 = 0x0006_4006;
+
+/// 이 인쇄 방식이 **모아 찍기**(한 장에 여러 쪽)인지.
+///
+/// 한글 2020 실측(코퍼스 표본 1건씩, COM `FileSaveAs` PDF):
+///
+/// | 값 | 한글 출력 | rhwp 출력 |
+/// |---|---|---|
+/// | 0 · 1 · 3 | 세로, 쪽수 일치 | 일치 |
+/// | **4** | **2쪽 841×595 가로** | 4쪽 세로 |
+/// | **5** | **1쪽 841×595 가로** | 3쪽 세로 |
+///
+/// 즉 0·1·3 은 용지 기하에 영향이 없고 4·5 만 장 수·방향을 바꾼다.
+pub fn print_method_implies_nup(print_method: Option<u32>) -> bool {
+    matches!(print_method, Some(4) | Some(5))
+}
+
 /// 본문의 구역 (Section)
 #[derive(Debug, Clone, Default)]
 pub struct Section {
@@ -242,6 +285,8 @@ pub struct Section {
     pub section_def: SectionDef,
     /// 문단 리스트
     pub paragraphs: Vec<Paragraph>,
+    /// 본문 문단 뒤에 저장된 바탕쪽·메모 목록. 본문 raw_stream과 수명을 분리한다.
+    pub trailing_lists: Option<crate::model::section_tail::SectionTail>,
     /// 원본 BodyText 레코드 스트림 바이트 (직렬화 시 원본 복원용)
     /// 편집 시 None으로 초기화하여 재직렬화 유도
     pub raw_stream: Option<Vec<u8>>,
@@ -336,14 +381,16 @@ impl Document {
 
     /// [#2403 Stage 1] 레이아웃 호환 정책 질의 표면.
     ///
-    /// 기존 분기의 1:1 파생 — `hwp3_layout` = `is_hwp3_variant`,
+    /// 계보와 실제 저장 포맷을 구분한다. HWP5의 문단 단위·저장 줄은 HWP5 계약을
+    /// 사용하고 `hwp3_lineage`만으로 HWP3 좌표 보정을 켜지 않는다.
     /// `hwpx_stored_layout` = (HWPX 컨테이너 && rhwp HWP5→HWPX 산출물 마커
     /// 없음) || rhwp HWPX→HWP 변환본. HWP5→HWPX 마커는 세션 중 부착될 수
     /// 있어 저장 값이 아닌 현재 문서 상태에서 파생한다. `native_hwp5_layout`은
-    /// 변환 계보가 없는 원본 HWP5 컨테이너에만 true다. HWP5-origin HWPX는
+    /// rhwp HWPX 변환 마커가 없는 실제 HWP5 컨테이너에 true다. HWP5-origin HWPX는
     /// `hwp5_stored_pagination_layout`으로 별도 호환 계약을 적용한다.
     pub fn layout_profile(&self) -> crate::model::provenance::LayoutCompatibilityProfile {
         use crate::model::provenance::SourceFormat;
+        let hwp5_container = self.provenance.format == SourceFormat::Hwp5;
         let hwp5_origin_hwpx = self.hwpx_aux_entry(HWP5_ORIGIN_HWPX_MARKER_PATH).is_some();
         // 원본 HWP3→HWPX 는 hwp3-origin 마커만 있다. lineage 만으로 hwp3_layout
         // 을 켜면 HWP3→HWP5 변환본 전용 계약(spacing_before *2 등)이 직파싱
@@ -354,8 +401,13 @@ impl Document {
         let native_hwp3_hwpx = self.provenance.format == SourceFormat::Hwpx
             && self.hwpx_aux_entry(HWP3_ORIGIN_HWPX_MARKER_PATH).is_some()
             && !hwp5_origin_hwpx;
+        // HWP5-origin HWPX는 같은 HWP5 문단 단위를 보존한다. 컨테이너 변경만으로
+        // HWP3 전용 본문 높이·저장 줄·문단 간격 분기를 다시 켜지 않는다.
         crate::model::provenance::LayoutCompatibilityProfile::new(
-            self.provenance.hwp3_lineage && !native_hwp3_hwpx,
+            self.provenance.hwp3_lineage
+                && !native_hwp3_hwpx
+                && !hwp5_container
+                && !hwp5_origin_hwpx,
             self.provenance.format == SourceFormat::Hwp3 || native_hwp3_hwpx,
             (self.provenance.format == SourceFormat::Hwpx
                 && !hwp5_origin_hwpx
@@ -363,12 +415,32 @@ impl Document {
                 || self.provenance.hwpx_lineage,
             self.provenance.format == SourceFormat::Hwpx && !native_hwp3_hwpx,
             hwp5_origin_hwpx,
-            self.provenance.format == SourceFormat::Hwp5
-                && !self.provenance.hwp3_lineage
-                && !self.provenance.hwpx_lineage,
+            hwp5_container && !self.provenance.hwpx_lineage,
+        )
+        .with_hwp5_container(hwp5_container)
+        .with_hwp3_external_realign(
+            self.extra_streams
+                .iter()
+                .any(|(path, value)| path == HWP3_EXTERNAL_REALIGN_STREAM_PATH && value == b"1")
+                || self.hwpx_aux_entry(HWP3_EXTERNAL_REALIGN_HWPX_PATH) == Some(b"1"),
         )
         .with_hwp3_password_layout(
             self.provenance.format == SourceFormat::Hwp3 && self.header.encrypted,
+        )
+        .with_stored_rows_before_hancom_2020(self.provenance.stored_rows_before_hancom_2020)
+        // native HWP5 는 로드 시 raw_stream 을 보유한 섹션을 raw_provenance 로
+        // 봉인한다(파서 seal_body_raw_provenance). 편집 명령은 raw_stream 만
+        // None 으로 지우고 봉인은 남기므로, "봉인은 있는데 raw_stream 이 사라짐"
+        // = 이 세션의 문서 변조 신호다. 합성·신규 문서(Document::default 직접
+        // 구성)는 봉인 자체가 없어 편집이 아니어도 raw_stream 이 없으므로,
+        // raw_stream 부재만으로 판정하면 오탐이다(오라클 미편집인데 편집 게이트
+        // 발동). 봉인 존재를 함께 요구해 실제 로드된 문서의 편집만 잡는다.
+        .with_session_edited(
+            self.provenance.format == SourceFormat::Hwp5
+                && self
+                    .sections
+                    .iter()
+                    .any(|s| s.raw_provenance.is_some() && s.raw_stream.is_none()),
         )
     }
 
@@ -535,6 +607,20 @@ impl Document {
         new_id
     }
 
+    /// [#6788] 선택 안의 각 원본 모양에만 속성을 병합한다. 같은 ID는 한 번만 해소한다.
+    pub(crate) fn modified_char_shape_ids(
+        &mut self,
+        base_ids: Vec<u32>,
+        mods: &super::style::CharShapeMods,
+    ) -> std::collections::HashMap<u32, u32> {
+        let mut ids = std::collections::HashMap::new();
+        for base_id in base_ids {
+            ids.entry(base_id)
+                .or_insert_with(|| self.find_or_create_char_shape(base_id, mods));
+        }
+        ids
+    }
+
     /// 기존 ParaShape를 복제하고 수정사항을 적용한 후, 동일한 것이 있으면 재사용한다.
     ///
     /// 반환값: 적용된 ParaShape의 ID (기존 또는 새로 생성)
@@ -636,7 +722,41 @@ impl Document {
 
         for (id, (basename, ext)) in to_load {
             let full_path = base_dir.join(&basename);
-            if let Ok(data) = std::fs::read(&full_path) {
+            let data = (|| {
+                use std::io::Read;
+                let limit = super::bin_data::MAX_BIN_DATA_BYTES;
+                // Reject an existing FIFO/device before opening it; validate the
+                // opened descriptor as well before the bounded read.
+                let metadata = std::fs::metadata(&full_path).ok()?;
+                if !metadata.is_file() || metadata.len() > limit as u64 {
+                    return None;
+                }
+                let file = std::fs::File::open(&full_path).ok()?;
+                let metadata = file.metadata().ok()?;
+                if !metadata.is_file() || metadata.len() > limit as u64 {
+                    return None;
+                }
+                let mut data = Vec::new();
+                file.take(limit as u64 + 1).read_to_end(&mut data).ok()?;
+                if data.len() > limit {
+                    return None;
+                }
+                let mime = crate::renderer::image_resolver::detect_image_mime_type(&data);
+                if mime == "application/octet-stream" {
+                    return None;
+                }
+                // Prefix detection is sufficient for paint routing, but a local
+                // sidecar must actually be an SVG document, not arbitrary XML.
+                if mime == "image/svg+xml" {
+                    let xml = std::str::from_utf8(&data).ok()?;
+                    let svg = roxmltree::Document::parse(xml).ok()?;
+                    if !svg.root_element().has_tag_name("svg") {
+                        return None;
+                    }
+                }
+                Some(data)
+            })();
+            if let Some(data) = data {
                 if !self.inject_external_image_data(id, data, ext) {
                     continue;
                 }

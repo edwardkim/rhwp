@@ -1,0 +1,32 @@
+{
+  "KTX": {
+    "pages": 27,
+    "changed_pages": [],
+    "before_sha256": "8e167bb53dce768ed5cafd56bf482e638cd9632dbe506bea84f8e11d8d839bae",
+    "after_sha256": "8e167bb53dce768ed5cafd56bf482e638cd9632dbe506bea84f8e11d8d839bae"
+  },
+  "exam_math": {
+    "pages": 20,
+    "changed_pages": [],
+    "before_sha256": "b88ea5bcfb29d2bfeb1c3f47530a2555f072ae62da5374af709659ec7d56cd55",
+    "after_sha256": "b88ea5bcfb29d2bfeb1c3f47530a2555f072ae62da5374af709659ec7d56cd55"
+  },
+  "21_언어_기출_편집가능본": {
+    "pages": 15,
+    "changed_pages": [],
+    "before_sha256": "9317b6089f42203791e2fd6afe6e017dc0bdb8c9bda10ef3bacd7ea290d9c3b9",
+    "after_sha256": "9317b6089f42203791e2fd6afe6e017dc0bdb8c9bda10ef3bacd7ea290d9c3b9"
+  },
+  "aift": {
+    "pages": 74,
+    "changed_pages": [],
+    "before_sha256": "eb3271713949eb2a31c92f09002a8e50f8f9db1ed9031016abbc3dc38d952c76",
+    "after_sha256": "eb3271713949eb2a31c92f09002a8e50f8f9db1ed9031016abbc3dc38d952c76"
+  },
+  "biz_plan": {
+    "pages": 6,
+    "changed_pages": [],
+    "before_sha256": "4b86c40afc8f9fa0778c1ff1a95cf145cd74c8b5949d932320bb1edd1700d39a",
+    "after_sha256": "4b86c40afc8f9fa0778c1ff1a95cf145cd74c8b5949d932320bb1edd1700d39a"
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "stage": 174,
+  "ledger_item": 16,
+  "original_pr": 7382,
+  "starting_head": "15366639a",
+  "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+  "failed_test": "issue_1133_native_rowbreak_outer_margin::hwpx_captionless_rowbreak_keeps_independent_frame_origins",
+  "actual_failure": {
+    "input": "samples/86712_regulatory_analysis.hwp",
+    "variant": "원본의 표 가로 기준만 Column으로 바꾼 제어 IR",
+    "following_table_actual_y_px": 543.7333333333337,
+    "previous_pdf_reference_y_px": 541.488,
+    "failed_assertion": "변형 입력의 후속 표 절대 y 차이"
+  },
+  "prior_7445_evidence": "../issue7445/outer7358_blocking_scope_validation.json",
+  "prior_7445_issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5889443550",
+  "prior_visual_gate": {
+    "older_pdf_selected_min_percent": 80.03785,
+    "font_supplied_pdf_selected_min_percent": 28.67074,
+    "status": "re_review_required"
+  },
+  "correction": "기존 HWPX 함수에서 64쪽 변형 입력 호출과 전용 helper만 제거하고 #1133 원본 두 함수의 표 조각·괘선·뒤 문장 소속 검사는 유지",
+  "retained_inputs": [
+    "samples/issue_1133.hwp",
+    "samples/hwpx/issue_1133.hwpx",
+    "samples/86712_regulatory_analysis.hwp"
+  ],
+  "reference_pdfs": [
+    "pdf/issue7382-regression-review/issue_1133-2020.pdf",
+    "pdf/hwpx/issue_1133.pdf",
+    "pdf/86712_regulatory_analysis-hwp-2024.pdf",
+    "pdf/issue7382-regression-review/86712_regulatory_analysis-font-supplied-2024.pdf"
+  ],
+  "focused_nextest": {
+    "command": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 8 --no-fail-fast -E 'test(native_captionless_rowbreak_keeps_independent_frame_origins) | test(hwpx_captionless_rowbreak_keeps_independent_frame_origins)'",
+    "passed": 2,
+    "failed": 0
+  },
+  "current_visual": {
+    "hwp_native_percent": [
+      96.24979,
+      99.272,
+      100.0
+    ],
+    "hwp_fresh_wasm_percent": [
+      96.24979,
+      99.272,
+      100.0
+    ],
+    "hwpx_native_percent": [
+      96.1041,
+      99.25401,
+      100.0
+    ],
+    "hwpx_fresh_wasm_percent": [
+      96.1041,
+      99.25401,
+      100.0
+    ],
+    "gate": "passed",
+    "native_wasm_png_sha_equal_all_six_pages": true,
+    "wasm_build": "보정173의 동일 생산 소스 fresh Mac --no-opt 패키지 재사용"
+  },
+  "production_change": false,
+  "new_test_functions": 0,
+  "baseline_or_tolerance_relaxations": 0,
+  "validation": {
+    "fmt": "PASS",
+    "clippy_native": "PASS",
+    "clippy_wasm": "PASS",
+    "workspace_build": "PASS",
+    "clippy_workspace_all_targets": "PASS",
+    "manifest_base_check_after_prepare": "PASS",
+    "unit_tier_base_check": "PASS"
+  },
+  "full_nextest": "보정173의 42FAIL 후 이 검사 전용 변경에서는 전수 재실행하지 않음; 최종 code head에서 필요",
+  "representative_assets": [
+    "stage174_hwp_native_review_002.png",
+    "stage174_hwpx_native_review_003.png",
+    "stage174_hwpx_wasm_overlay_002.png"
+  ],
+  "logs": "output/pr-review/planet6897-7382-20260926/stage174-captionless1133/"
+}

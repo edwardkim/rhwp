@@ -26,10 +26,28 @@ function slice(s: string, from: string, to: string): string {
 test('표 블록계산은 evaluateTableFormula commit 을 snapshot 으로 라우팅한다', () => {
   const block = slice(tableSrc, 'function blockCalcCommand', 'function openFormulaDialog');
   assert.match(block, /operationType:\s*'tableBlockCalc'/, 'tableBlockCalc snapshot 라우팅');
-  assert.match(block, /\bwasm\.evaluateTableFormula\([^)]*true\s*\)/, 'commit(write=true)은 operation 콜백 안');
+  assert.match(
+    block,
+    /operation:\s*\(wasm\)\s*=>\s*\{[^}]*evaluate\(wasm,\s*job,\s*true\)/s,
+    'commit(write=true)은 operation 콜백 안',
+  );
   // 기존 직접 commit + emit 패턴 제거(회귀 방지).
   assert.doesNotMatch(block, /services\.eventBus\.emit\('document-changed'\)/,
     '직접 emit 제거 — 라우터가 refresh');
+});
+
+test('Recovery R2: 표 블록계산은 선택 범위 plan 전체를 preflight한 뒤 한 snapshot에서 쓴다', () => {
+  const block = slice(tableSrc, 'function blockCalcCommand', 'function openFormulaDialog');
+  assert.match(block, /getSelectedCellRange\s*\(\)/, 'F5 선택 범위를 읽어야 한다');
+  assert.match(block, /selectedBlockCalculationCells\s*\(/, '선택 셀의 공백·병합 상태를 모아야 한다');
+  assert.match(block, /planBlockCalculation\s*\(/, '선택 범위 planner를 사용해야 한다');
+  assert.match(block, /preflightBlockCalculationJobs\s*\(/, '전체 job dry-run이 필요하다');
+
+  const preflight = block.indexOf('preflightBlockCalculationJobs(');
+  const snapshot = block.indexOf("kind: 'snapshot'");
+  assert.ok(preflight >= 0 && snapshot > preflight, 'preflight가 snapshot 쓰기보다 먼저여야 한다');
+  assert.match(block, /for \(const job of plan\.jobs\)/, '모든 결과 job을 같은 snapshot에서 쓴다');
+  assert.doesNotMatch(block, /=\$\{func\}\(above\)/, '앵커 셀 위 전체를 더하는 기존 경로 금지');
 });
 
 test('page.ts 다단 설정·문단 감추기는 snapshot 으로 라우팅한다', () => {

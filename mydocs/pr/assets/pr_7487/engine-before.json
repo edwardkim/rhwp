@@ -1,0 +1,126 @@
+{
+  "engine": [
+    {
+      "spacing": 200,
+      "rows": [
+        {
+          "enter": 32,
+          "split": {
+            "ok": true,
+            "paraIdx": 32,
+            "charOffset": 0
+          },
+          "pages": 1,
+          "cursor": {
+            "pageIndex": 0,
+            "x": 113.4,
+            "y": 985.6,
+            "height": 13.3
+          }
+        },
+        {
+          "enter": 33,
+          "split": {
+            "ok": true,
+            "paraIdx": 33,
+            "charOffset": 0
+          },
+          "pages": 1,
+          "cursor": {
+            "error": "렌더링 오류: 문단 (sec=0, para=33)이 페이지에 없습니다"
+          }
+        },
+        {
+          "enter": 34,
+          "split": {
+            "ok": true,
+            "paraIdx": 34,
+            "charOffset": 0
+          },
+          "pages": 2,
+          "cursor": {
+            "pageIndex": 1,
+            "x": 113.4,
+            "y": 158.9,
+            "height": 13.3
+          }
+        }
+      ]
+    },
+    {
+      "spacing": 300,
+      "rows": [
+        {
+          "enter": 21,
+          "split": {
+            "ok": true,
+            "paraIdx": 21,
+            "charOffset": 0
+          },
+          "pages": 1,
+          "cursor": {
+            "pageIndex": 0,
+            "x": 113.4,
+            "y": 972.3,
+            "height": 13.3
+          }
+        },
+        {
+          "enter": 22,
+          "split": {
+            "ok": true,
+            "paraIdx": 22,
+            "charOffset": 0
+          },
+          "pages": 1,
+          "cursor": {
+            "error": "렌더링 오류: 문단 (sec=0, para=22)이 페이지에 없습니다"
+          }
+        },
+        {
+          "enter": 23,
+          "split": {
+            "ok": true,
+            "paraIdx": 23,
+            "charOffset": 0
+          },
+          "pages": 2,
+          "cursor": {
+            "pageIndex": 1,
+            "x": 113.4,
+            "y": 172.3,
+            "height": 13.3
+          }
+        }
+      ]
+    }
+  ],
+  "geometry": [
+    {
+      "zoom": 1,
+      "viewportWidth": 1200,
+      "before": {
+        "offset": 0,
+        "left": 600
+      },
+      "after": {
+        "offset": 1142.5,
+        "left": 203.14999999999998
+      }
+    },
+    {
+      "zoom": 0.66,
+      "viewportWidth": 1200,
+      "before": {
+        "offset": 0,
+        "left": 600
+      },
+      "after": {
+        "offset": 6.6000000000000005,
+        "left": 603.3000000000001
+      }
+    }
+  ],
+  "enterPending": false,
+  "explicitPageBreakPending": true
+}

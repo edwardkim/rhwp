@@ -1,0 +1,167 @@
+{
+  "generation": "실제 DocumentCore 편집과 export_hwp_native. LineSeg 수동 변경 없음. 재구성된 기본 단 정의는 저장기가 발행.",
+  "reference": "대응 HWP 바이트를 한컴 MCP engine 2020으로 직접 변환. 보정 전 실패 자료는 별도 구분.",
+  "inputs": [
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/6190-edited-2020.pdf",
+      "sha256": "59cde4d1fa924a98f5e8d1343e3e0e3bf80a9f289f1bcb8f50d56f8a65aea5b8",
+      "bytes": 33960
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/6190-edited-one-column-2020.pdf",
+      "sha256": "55db99fde3462c91c456d84cfbb7715eb164dc1c0332db0808d247250fb3ec57",
+      "bytes": 33958
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/6190-edited-one-column.hwp",
+      "sha256": "358a8f6bfa4aaf5728f4be1050e363fa195c0ab6966ac10a5deee68f3fbe38c0",
+      "bytes": 10752
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/6190-edited-without-column-2020.pdf",
+      "sha256": "8b32672c46561908f6013868ef1ee6055c35b5fc2ed12ded044bab44e395474c",
+      "bytes": 33906
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/6190-edited-without-column.hwp",
+      "sha256": "4c59a5dfed122d31707d59ac11f393809737bee4ae5fa55e551ce16b5d0f3d87",
+      "bytes": 10240
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/6190-edited.hwp",
+      "sha256": "358a8f6bfa4aaf5728f4be1050e363fa195c0ab6966ac10a5deee68f3fbe38c0",
+      "bytes": 10752
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/6190-explicit-break-one-column-2020.pdf",
+      "sha256": "66518eecaf637220524f97484842bfa96c757e38e068048859e5fe6d7a118ab5",
+      "bytes": 33943
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/6190-explicit-break-one-column.hwp",
+      "sha256": "2224dba0e3c1a797658228f0d04a70e3036df96f7d45edb7169f0249d7ac49b3",
+      "bytes": 10752
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/6190-original-2020.pdf",
+      "sha256": "c6f67eed4e37d6ad3b67943b96cff505b36be5fa57ee9a866b033cb9b51f369d",
+      "bytes": 33758
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/6190-original-hancom-normalized.hwpx",
+      "sha256": "e28c22cd5f520c4fcd139790f2dc54c78c6be64332eb3d4061445cfaac52fc90",
+      "bytes": 33264
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/biz-edited-2020.pdf",
+      "sha256": "b9c469665d4f67803045f9dbda00273068b162020c1da95d7e82536d65a586c9",
+      "bytes": 112827
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/biz-edited.hwp",
+      "sha256": "742bfbf9665961cf575c9a79961d61aba4649bcd6dcc2f8b8ff22e815fbd7873",
+      "bytes": 28160
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/typed-first-2020.pdf",
+      "sha256": "b59ead985707c0512caf78c0abced2e0a5a7916363d2e360feb5a3f4c8c06685",
+      "bytes": 11162
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/typed-first.hwp",
+      "sha256": "733f3c25212180a4decf500b0917d9deaadba9f08c359e441c0663399290184f",
+      "bytes": 13312
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/typed-flat-2020.pdf",
+      "sha256": "e630224b4da785099fc77a40a9583034325ea2ea3450b4e4cbf9648d79da0199",
+      "bytes": 11172
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/typed-flat.hwp",
+      "sha256": "60236e2d2614190c6f336566c694af5304eca17f647c402a250f1b878ede4b96",
+      "bytes": 13312
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/typed-hanging-2020.pdf",
+      "sha256": "6a9f979d64d669ba79fed9db993fba68a73acc643e9ef2342c83e3511583766d",
+      "bytes": 11161
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/typed-hanging.hwp",
+      "sha256": "be75a13f7070a2e198c09e9f547993db16849d798486759652bfb33e9eace303",
+      "bytes": 13312
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/prefix-blank-break-2020.pdf",
+      "sha256": "43ff7e975116a19cd25d2fd0855c4f8bd87f3fae601a3bd9d2e8e74a4cccb470",
+      "bytes": 33805
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/prefix-blank-break.hwp",
+      "sha256": "cd82006863a506574c8911d14b58c05a7a5450fde1fc0779f9a3d7ce5fa78bb1",
+      "bytes": 10752
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/prefix-punctuation-break-2020.pdf",
+      "sha256": "caff964345047b2f8c1313560bed5ee8d5e00a9e4c970c445ba1bcc562e606fb",
+      "bytes": 33842
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/prefix-punctuation-break.hwp",
+      "sha256": "d65abc20fcc9963c1d4b8fc90d6b8d1f4aec94c0a1030a6ab9a6e9dc9a71238b",
+      "bytes": 10752
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/prefix-spaces-2020.pdf",
+      "sha256": "54b26896bc5034a2384e5357fead820bef9a58d942b153fedc63344a3bf658d3",
+      "bytes": 33830
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/prefix-spaces.hwp",
+      "sha256": "f5a560d90982cb821a07534d2235a40569e7d9389417dfe6419110296895febc",
+      "bytes": 10752
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/growth-20-2020.pdf",
+      "sha256": "788a3dfec9a473d53c3a842d4ad19be31b37592a664eeef2590a9dc8553166ef",
+      "bytes": 280233
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/growth-20.hwp",
+      "sha256": "6a845c5f3d647e785578509aae027d5e999154de41048a9518eb8d448fb01b09",
+      "bytes": 80384
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/growth-8-2020.pdf",
+      "sha256": "df58485d1b11aff182b55692ce42edb708d31df825e24d7b38f8bdaa4cc515d6",
+      "bytes": 279743
+    },
+    {
+      "path": "tests/fixtures/pr7491_edited_indent/growth-8.hwp",
+      "sha256": "15269a53212f76d69d51ff4937bca6937dd7078e9d285c1582cf7aeda442011a",
+      "bytes": 79872
+    }
+  ],
+  "before_column_source_sha": "4060db2d9d46b3ccd2987538286a11f836348056",
+  "original": {
+    "path": "samples/issue6190/center_align_first_line_indent.hwp",
+    "sha256": "ba8a7c83c345b1e2a6eca33e7af8be93197291648c635044083387183656c454",
+    "stored_margin_hwpunit": 7086,
+    "observed_hancom_margin_without_column_hwpunit": 8504
+  },
+  "prefix_reference_jobs": {
+    "blank-break": "919cb58d-6a1b-4281-a588-ec04e54d3cce",
+    "spaces": "86a0a866-fcef-4dc3-85ea-d6d0b9643780",
+    "punctuation-break": "2f1a7ea4-d8da-48a7-b320-940da50f2848"
+  },
+  "growth_reference": {
+    "generation": "samples/issue6882/synth_cell_enter_table_growth.hwp, cell 31, last paragraph end, actual split_paragraph_in_cell_native repeated 8/20 times",
+    "engine": "2020",
+    "jobs": {
+      "8": "025d03be-a896-42fc-bf81-a17f79d82d69",
+      "20": "f12a426f-750b-4ef1-a6ac-d1d78c998078"
+    },
+    "scope": "Independent live table origin/body contract at 8; 20-height and saved-cell reopen remain unresolved. Not a full-page visual pass."
+  }
+}

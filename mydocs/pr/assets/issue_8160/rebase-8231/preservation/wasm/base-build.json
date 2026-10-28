@@ -1,0 +1,91 @@
+{
+  "source_sha": "238de6de41a208648f4ade6b494fe433a81c1fce",
+  "source_dirty": false,
+  "profile": "release",
+  "build_configuration": {
+    "profile": "release",
+    "build_mode": "standard",
+    "cdylib_only": "0",
+    "crate_types": "rlib+cdylib",
+    "lto_policy": "manifest",
+    "cache_variant": "release-rlib-cdylib-lto-manifest"
+  },
+  "command": [
+    "sh",
+    "scripts/wasm-pack-locked.sh",
+    "--target",
+    "web",
+    "--release"
+  ],
+  "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+  "wasm_pack": "wasm-pack 0.15.0",
+  "cargo_cache_hit": "unknown",
+  "cargo_cache_matched_key": "unknown",
+  "cargo_lock_sha256": "9de45bade3712d379d62418e201d6e24c08a6ca61ab4b930a3d9d5a0bf275155",
+  "cargo_manifest_sha256": "bdea5ecca8203eefcfa50de93ee6bca896805554f7e98b437af998e1c782eee8",
+  "wrapper_sha256": "556e5cc3e62ac8f3adb69b1419e8078c61d0a85615f59317103f10e3fda6e37c",
+  "runner": {
+    "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.39",
+    "logical_cpus": 16,
+    "image": null,
+    "image_version": null,
+    "cpu_model": "Intel(R) Xeon(R) CPU           E5640  @ 2.67GHz"
+  },
+  "cargo_target_dir": "/home/tsjang/rhwp/target/pr-review",
+  "cargo_build_jobs": "8",
+  "timing_method": "log receipt boundaries; includes setup/finalization, not isolated process timings",
+  "success": true,
+  "wall_seconds": 1981.225,
+  "returncode": 0,
+  "events_seconds": {
+    "cargo_start": 1.505636536050588,
+    "bindgen_start": 431.97111764899455,
+    "opt_start": 453.4413300030865,
+    "package_done": 1980.9992918981006
+  },
+  "phase_seconds_approx": {
+    "preparation": 1.506,
+    "cargo": 430.465,
+    "bindgen_setup_and_run": 21.47,
+    "wasm_opt_and_finalize": 1527.558,
+    "after_package": 0.226
+  },
+  "tool_commands": {
+    "wasm-bindgen": [
+      "/home/tsjang/.cache/.wasm-pack/wasm-bindgen-834c8396d913406b/wasm-bindgen",
+      "/home/tsjang/rhwp/target/pr-review/wasm32-unknown-unknown/release/rhwp.wasm",
+      "--out-dir",
+      "/home/tsjang/rhwp-8160-validation/pkg",
+      "--typescript",
+      "--target",
+      "web"
+    ],
+    "wasm-opt": [
+      "/home/tsjang/.cache/.wasm-pack/wasm-opt-1ceaaea8b7b5f7e0/bin/wasm-opt",
+      "/home/tsjang/rhwp-8160-validation/pkg/rhwp_bg.wasm",
+      "-o",
+      "/home/tsjang/rhwp-8160-validation/pkg/rhwp_bg.wasm-opt.wasm",
+      "-O"
+    ]
+  },
+  "tools": {
+    "wasm-bindgen": {
+      "version": "wasm-bindgen 0.2.127",
+      "sha256": "f36dbe1938e78a79ce34d0ab3700907555161e293954f6f35bf6785a2f0cf916"
+    },
+    "wasm-opt": {
+      "version": "wasm-opt version 117 (version_117)",
+      "sha256": "621b5a984f16d0323ea7aa8b389ac9ccda0950ddee5de0e99292970129f571ed"
+    }
+  },
+  "artifacts": {
+    "rhwp.js": {
+      "sha256": "ba97ed3f9cb04605f9fee14363eb76bf572eca3722ece29fd4181fe0076e7da0",
+      "bytes": 486515
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "afcbc22635b4d2defc9389204c33c835164be75801dcdd14c2fd321216736c61",
+      "bytes": 22422450
+    }
+  }
+}

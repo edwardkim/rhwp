@@ -1,0 +1,112 @@
+{
+  "key": "grid-hwpx",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    120,
+    121
+  ],
+  "completed_pages": [
+    120,
+    121
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage16-shared-origin-wasm/grid-hwpx/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 120,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage16-shared-origin-wasm/grid-hwpx/rhwp_png/rhwp_120.png",
+      "rhwp_sha256": "5411c5739509edc0352c66c93cbbd2a99071025014c11f7472450a4fd3d95db0",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage16-shared-origin-wasm/grid-hwpx/pdf_png/pdf-120.png",
+      "pdf_sha256": "922a4be716ca1af7588fb0b45cd5ca9672b104b1b8ad5644ce79115a9421c92d"
+    },
+    {
+      "page": 121,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage16-shared-origin-wasm/grid-hwpx/rhwp_png/rhwp_121.png",
+      "rhwp_sha256": "8fecf50a89e8e7d9603567af94ac1ca568b4c3da55ae3541ad388da368af867b",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage16-shared-origin-wasm/grid-hwpx/pdf_png/pdf-121.png",
+      "pdf_sha256": "a87c3fcd46e3f74c7ee4649c8b08f1deef58ac7bdacb63582b4505ddec0e34a7"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 120,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 91.01869,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 138933,
+      "tolerant_content_match_percent": 91.01869
+    },
+    {
+      "page": 121,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 85.98687,
+      "silhouette_boundary_reconciled_pixels": 136,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 129186,
+      "tolerant_content_match_percent": 86.09215
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 121,
+        "tolerant_content_match_percent": 86.09215
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue1891/80168_regulatory_analysis.hwpx",
+      "sha256": "1e00b54e1139515258260a657217e0b3baa0b1b652a2cd28dd4b9bc48aa262fe"
+    },
+    "pdf": {
+      "path": "output/pr-review/planet6897-20261004/stage16-reference/80168_regulatory_analysis-hwpx-2020.pdf",
+      "sha256": "88996e41ed3e68b15a3cd0eb4eda98845d34225c5dcd2ca547c80ab6e1242744"
+    },
+    "git_head": "919e6d162f49f1f6452700f2e45df144109a5816",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "5bafebcbf674d8fddbd58cf9a11e9ac8a94ea880fa8a4e5bb3d44887b38a9f73"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp.js",
+          "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "sha256": "ee0d8a6712669e71451b1225f31288160f8af339d48496d7bbf3bec683e38949"
+        }
+      ],
+      "exporter_sha256": "aaf27aabe09958270a5a8d8b19593a386dd821bb9cbc1e219a9c726c623fea6f",
+      "comparison_profile": "print",
+      "font_policy": "same-input native --font-style; font-face CSS only",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "exported_svg_pages": 156,
+  "exported_render_tree_pages": 156,
+  "exported_pdf_pages": 2
+}

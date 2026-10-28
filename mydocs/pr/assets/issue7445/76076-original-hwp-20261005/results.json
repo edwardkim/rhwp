@@ -1,0 +1,72 @@
+{
+  "source_head": "4f151f870c4019cae89381e2087323acbcf03dd4",
+  "production_head": "072048a8ae2d19b1140c6b675ebfc234961b84a1",
+  "actual_input": "samples/76076_regulatory_analysis.hwp",
+  "input_sha256": "3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5",
+  "independent_pdf": {
+    "input": "samples/76076_regulatory_analysis.hwp",
+    "sha256": "3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5",
+    "last_saved_product": "hancom-office-2024",
+    "job_id": "1a5ed915-52cc-4a77-8b36-96fb1199043b",
+    "engine": "2024",
+    "pdf": "pdf/issue1891/76076-original-hwp-exact-2024-20261005.pdf",
+    "pdf_sha256": "515133a656a78a9e77db3429f324b0a1f84b658b7a07bc846aa360533cf74072",
+    "previous_wrong_pair_excluded": true
+  },
+  "pages": 82,
+  "below_90_pages": [
+    7,
+    13,
+    15,
+    16,
+    17,
+    20,
+    21,
+    22,
+    23,
+    29,
+    31,
+    32,
+    33,
+    34,
+    36,
+    39,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    55,
+    56,
+    62,
+    64,
+    65,
+    66,
+    70,
+    71,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82
+  ],
+  "minimum_percent": 16.58182,
+  "removed_functions": [
+    "issue_2308_saved_nested_width_keeps_fragment_geometry"
+  ],
+  "removed_fixed_pixels": [
+    "400.4/636.8",
+    "79.0/388.3"
+  ],
+  "preserved": "다른 테스트 함수·원본·독립 PDF",
+  "fresh_wasm": "not_run; Native whole gate failed, acceptance not claimed",
+  "invalid_comparison_excluded": "이전 76076-exact-input-hwp2020-20261004.pdf는 hash49bb의 다른 HWPX용이며 이번3308 HWP 판정에 사용하지 않음",
+  "retained_validation": {
+    "run_id": "b73ec59a-4cac-4810-8193-96f51af56f16",
+    "passed": 4,
+    "failed": 0
+  }
+}

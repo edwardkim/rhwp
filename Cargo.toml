@@ -1,14 +1,45 @@
 [package]
 name = "rhwp"
-version = "0.8.4"
+version = "0.8.7"
 edition = "2021"
-description = "HWP file viewer and editor written in Rust, targeting WebAssembly"
+description = "HWP/HWPX document engine for Rust applications, WebAssembly, and CLI automation"
 license = "MIT"
 repository = "https://github.com/edwardkim/rhwp"
+readme = "packaging/crates-io/README_PACKAGE.md"
 autotests = false
+autoexamples = false
+autobins = false
+include = [
+    "/Cargo.toml",
+    "/Cargo.lock",
+    "/build.rs",
+    "/src/**",
+    "/LICENSE",
+    "/README.md",
+    "/README_EN.md",
+    "/THIRD_PARTY_LICENSES.md",
+    "/llms.txt",
+    "/saved/blank2010.hwp",
+    "/assets/fonts/boxed-digit-metrics.json",
+    "/assets/fonts/LatinModernMath-VariableOutline-subset.otf",
+    "/assets/fonts/MANIFEST-RHWP-LMM-VariableOutline.txt",
+    "/assets/fonts/licenses/**",
+    "/mydocs/manual/agent_knowledge_map.md",
+    "/mydocs/manual/agent_troubleshooting_guide.md",
+    "/mydocs/manual/gym_optional_tool.md",
+    "/mydocs/manual/recipes/01_fill_form_and_submit.md",
+    "/mydocs/manual/recipes/02_table_csv_roundtrip.md",
+    "/mydocs/manual/recipes/03_redact_before_sharing.md",
+    "/mydocs/manual/recipes/04_safety_check_untrusted_doc.md",
+    "/mydocs/manual/recipes/05_mail_merge_batch_fill.md",
+    "/mydocs/manual/recipes/06_visual_regression_before_after.md",
+    "/mydocs/tech/agent_roadmap/atlas_r1_r200.md",
+    "/packaging/crates-io/README_PACKAGE.md"
+]
 
 [workspace]
-members = [".", "crates/*", "tools/rhwp-subsecond", "bindings/Native", "tools/batch-convert", "tools/llm_verifier/verdict_protocol", "tools/llm_verifier/claim_bind", "tools/llm_verifier/criteria_decomp"]
+exclude = ["vendor/rhwp-pdf-import-backend", "vendor/rhwp-zune-jpeg", "vendor/rhwp-jpeg-decoder", "vendor/rhwp-jpeg-encoder", "vendor/svg2pdf", "vendor/rhwp-codec-resource", "vendor/rhwp-hayro-jbig2", "vendor/rhwp-hayro-jpeg2000", "vendor/rhwp-hayro-ccitt"]
+members = ["crates/*", "tools/rhwp-subsecond", "bindings/Native", "tools/batch-convert", "tools/llm_verifier/verdict_protocol", "tools/llm_verifier/claim_bind", "tools/llm_verifier/criteria_decomp"]
 default-members = [".", "crates/*"]
 resolver = "2"
 
@@ -22,10 +53,21 @@ crate-type = ["rlib", "cdylib"]
 [[bin]]
 name = "rhwp"
 path = "src/main.rs"
+# CLI 는 `wasm_api::HwpDocument` 를 쓴다 — 아래 `wasm-api` feature 참고.
+required-features = ["wasm-api"]
+
+[[bin]]
+name = "rhwp-q"
+path = "src/bin/rhwp-q/main.rs"
+
+[[bin]]
+name = "rhwp-agent"
+path = "src/bin/rhwp-agent/main.rs"
 
 [[bin]]
 name = "font-metric-gen"
 path = "src/tools/font_metric_gen.rs"
+required-features = ["dev-tools"]
 
 # BEGIN RHWP GENERATED TEST TARGETS
 # tests/suites/manifest.json에서 생성한다. 직접 수정하지 않는다.
@@ -143,22 +185,6 @@ name = "regression_suite_028"
 path = "tests/generated/regression_suite_028.rs"
 
 [[test]]
-name = "regression_suite_029"
-path = "tests/generated/regression_suite_029.rs"
-
-[[test]]
-name = "regression_suite_030"
-path = "tests/generated/regression_suite_030.rs"
-
-[[test]]
-name = "regression_suite_031"
-path = "tests/generated/regression_suite_031.rs"
-
-[[test]]
-name = "regression_suite_032"
-path = "tests/generated/regression_suite_032.rs"
-
-[[test]]
 name = "cli_exit_codes"
 path = "tests/cli_exit_codes.rs"
 
@@ -173,6 +199,10 @@ path = "tests/issue_1144.rs"
 [[test]]
 name = "issue_1144_native"
 path = "tests/issue_1144_native.rs"
+
+[[test]]
+name = "issue_2833_hml_adapter_row_sizes"
+path = "tests/issue_2833_hml_adapter_row_sizes.rs"
 
 [[test]]
 name = "issue_4055_b1_chart_edit_probe"
@@ -191,17 +221,61 @@ name = "issue_4100_chart_data_edit"
 path = "tests/issue_4100_chart_data_edit.rs"
 
 [[test]]
+name = "issue_4126_cursor_rect_empty_para_pages"
+path = "tests/issue_4126_cursor_rect_empty_para_pages.rs"
+
+[[test]]
+name = "issue_4128_cell_cursor_page_narrowing"
+path = "tests/issue_4128_cell_cursor_page_narrowing.rs"
+
+[[test]]
+name = "issue_4179_cursor_rect_text_host_para_pages"
+path = "tests/issue_4179_cursor_rect_text_host_para_pages.rs"
+
+[[test]]
+name = "issue_4969_shaping_composition_handoff"
+path = "tests/cases/issue_4969_shaping_composition_handoff.rs"
+
+[[test]]
+name = "issue_4969_shaping_emitted_run_mapping"
+path = "tests/cases/issue_4969_shaping_emitted_run_mapping.rs"
+
+[[test]]
+name = "issue_4969_shaping_glyph_lowering"
+path = "tests/cases/issue_4969_shaping_glyph_lowering.rs"
+
+[[test]]
+name = "issue_4969_shaping_page_sidecar"
+path = "tests/cases/issue_4969_shaping_page_sidecar.rs"
+
+[[test]]
+name = "issue_4969_shaping_paragraph_transaction"
+path = "tests/cases/issue_4969_shaping_paragraph_transaction.rs"
+
+[[test]]
+name = "issue_4969_shaping_request_contract"
+path = "tests/cases/issue_4969_shaping_request_contract.rs"
+
+[[test]]
+name = "issue_4969_shaping_shadow_context"
+path = "tests/cases/issue_4969_shaping_shadow_context.rs"
+
+[[test]]
 name = "overflow_cell_baseline"
 path = "tests/overflow_cell_baseline.rs"
 
 # END RHWP GENERATED TEST TARGETS
 
 [dependencies]
-rhwp-contracts = { path = "crates/rhwp-contracts" }
-rhwp-ooxml-chart = { path = "crates/rhwp-ooxml-chart" }
-rhwp-password-crypto = { path = "crates/rhwp-password-crypto" }
+rhwp-contracts = { path = "crates/rhwp-contracts", version = "0.1.0" }
+rhwp-ooxml-chart = { path = "crates/rhwp-ooxml-chart", version = "0.1.0" }
+rhwp-password-crypto = { path = "crates/rhwp-password-crypto", version = "0.1.0" }
+pdf_oxide = { package = "rhwp-pdf-import-backend", path = "vendor/rhwp-pdf-import-backend", version = "=0.3.78-rhwp.1", default-features = false, optional = true }
+# pdf_oxide 0.3.78's DocumentIR initializer is incompatible with office_oxide 0.1.13.
+# Keep the compatibility constraint for library consumers that do not use our lockfile.
+office_oxide = { version = "=0.1.9", default-features = false, optional = true }
 wasm-bindgen = "0.2"
-cfb = "0.14"
+cfb = "0.15"
 crc32fast = "1"
 des = "0.9"
 flate2 = "1.0"
@@ -236,7 +310,7 @@ blake3 = "1"
 # 저장소는 getrandom 0.4 + wasm_js 를 쓴다). 여기 코드는 소금·논스를
 # `getrandom::fill` 로 직접 만들고 저수준 Argon2 API 만 쓰므로 그 피처가
 # 필요 없다 — 끊어 두면 wasm 빌드가 구버전 getrandom 을 아예 만나지 않는다.
-argon2 = { version = "0.5", default-features = false, features = ["alloc"] }
+argon2 = { version = "0.6", default-features = false, features = ["alloc"] }
 chacha20poly1305 = { version = "0.11", default-features = false, features = ["alloc"] }
 zeroize = "1"
 # [보안 트레일러 · 포스트양자] ML-KEM-768(NIST FIPS 203) 격자 KEM — 공개키 봉인의
@@ -244,8 +318,8 @@ zeroize = "1"
 # 비대칭 키교환만 격자 KEM 으로 교체한다. 순수 Rust(RustCrypto) 라 wasm 도 그대로 컴파일.
 ml-kem = "0.3"
 rand_core = "0.10"
-zip = { version = "8.5", default-features = false, features = ["deflate"] }
-quick-xml = "0.41"
+zip = { version = "9.0", default-features = false, features = ["deflate"] }
+quick-xml = "0.42"
 roxmltree = "0.21"
 svgtypes = "0.16"
 codepage = "0.1.2"
@@ -255,13 +329,19 @@ paste = "1.0.15"
 snafu = "0.9.0"
 strum = { version = "0.28.0", default-features = false, features = ["derive"] }
 unicode-segmentation = "1.12.0"
+unicode-bidi = "0.3.18"
+unicode-bidi-mirroring = "0.4.0"
 unicode-properties = { version = "0.1.4", default-features = false, features = ["general-category"] }
 unicode-width = "0.2.2"
-image = { version = "0.25", default-features = false, features = ["bmp", "jpeg", "png", "tiff"] }
+image = { version = "0.25", default-features = false, features = ["bmp", "gif", "jpeg", "png", "tiff"] }
+jpeg-encoder = { package = "rhwp-jpeg-encoder", path = "vendor/rhwp-jpeg-encoder", version = "=0.7.1-rhwp.1" }
+tiny-skia = { version = "0.12", optional = true, default-features = false, features = ["std", "simd"] }
 pcx = "0.2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 ttf-parser = "0.25"
+rustybuzz = "0.20"
+resvg = { version = "0.47", default-features = false, features = ["text", "raster-images"] }
 
 console_error_panic_hook = { version = "0.1", optional = true }
 # [#4580] 핫패치 버전의 **유일한** 사본. `dx` 가 만든 점프 테이블을 이 크레이트가 역직렬화하므로
@@ -270,38 +350,44 @@ console_error_panic_hook = { version = "0.1", optional = true }
 subsecond = { version = "=0.7.10", optional = true }
 
 [features]
-default = ["console_error_panic_hook"]
-native-skia = ["dep:resvg", "dep:skia-safe"]
+default = ["console_error_panic_hook", "pdf-import", "wasm-api"]
+pdf-import = ["dep:pdf_oxide", "dep:office_oxide", "dep:tiny-skia"]
+pdf-jbig2 = ["pdf-import", "pdf_oxide/jbig2"]
+pdf-jpeg2000 = ["pdf-import", "pdf_oxide/jpeg2000"]
+# 브라우저 JS 바인딩(`wasm_api`)과 자동 panic hook 초기화·`version` export.
+# npm 패키지·Studio·CLI·Native FFI는 기본값을 사용한다. 다른 wasm-bindgen 앱이
+# 라이브러리로 링크할 때는 `default-features = false`로 facade와 자동 start를 제외한다.
+# 의존성의 start가 있으면 일반 Rust main은 자동 실행되지 않지만, 명시적 start끼리는 연결된다.
+# export를 제외하면 쓰지 않는 렌더러·편집 코드도 링커가 제거할 수 있다.
+# 기본값을 끈 Rust 소비자가 `wasm_api`를 쓰려면 `wasm-api`를 명시적으로 켠다.
+# Cargo feature는 합쳐지므로 다른 의존성이 이 feature를 켜면 다시 포함된다.
+wasm-api = []
+native-skia = ["dep:skia-safe", "dep:icy_sixel"]
 subsecond-dev = ["dep:subsecond"]
-# [gym_gpu_raster] GPU 가속 SVG 래스터화 경로 (네이티브 전용). native-skia 와 같은 방식으로
-# 선택 게이팅한다 — CI 는 GPU 없이도 컴파일되고, 실제 GPU 실행은 로컬에서만 일어난다.
-# vello(+vello_svg)로 SVG 를 GPU 래스터화하고, resvg(CPU)를 같은 usvg 트리로 돌려 정직한
-# 벤치마크 기준선으로 삼는다.
-gpu = ["dep:vello", "dep:vello_svg", "dep:pollster", "dep:resvg-gpu"]
+# 릴리즈 CLI 설치에서 제외하는 저장소 개발 도구.
+dev-tools = []
 
-# PDF 내보내기 (네이티브 전용, Task #21)
+# PDF 내보내기·SVG 웹폰트 부분집합 (네이티브 전용)
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-svg2pdf = "0.13"
+# #8174: root patch는 외부 Rust 소비자에게 전달되지 않는다. 보정 fork를 직접 연결한다.
+svg2pdf = { package = "rhwp-svg2pdf", path = "vendor/svg2pdf", version = "=0.13.0-rhwp.1" }
 usvg = "0.45"
-resvg = { version = "0.47", optional = true }
 pdf-writer = "0.12"
-subsetter = "0.2"
-skia-safe = { version = "0.99.0", optional = true, default-features = false, features = ["binary-cache", "embed-icudtl", "pdf", "textlayout"] }
+read-fonts = "0.46"
+skera = "0.9"
+skia-safe = { version = "0.153.2", optional = true, default-features = false, features = ["binary-cache", "embed-icudtl", "pdf", "textlayout"] }
+icy_sixel = { version = "=0.7.0", optional = true }
 
-# [gym_gpu_raster] GPU 래스터화 스택 (feature = "gpu", 네이티브 전용).
-# vello: Linebender 의 GPU 2D 렌더러(컴퓨트 파이프라인). vello_svg: usvg 트리 → vello Scene.
-# pollster: 헤드리스라 이벤트 루프가 없으므로 wgpu 의 async(adapter/device/버퍼매핑)를 블로킹.
-# resvg-gpu: CPU 기준선. vello_svg 0.10 과 usvg 0.46 를 공유하도록 0.46 로 핀했다(같은 트리를
-# 두 래스터라이저에 동일 입력으로 넣어 벤치마크·픽셀비교를 성립). native-skia 의 resvg 0.47 과
-# 별개 버전으로 공존한다.
-vello = { version = "0.10", optional = true }
-vello_svg = { version = "0.10", optional = true }
-pollster = { version = "1.0", optional = true }
-resvg-gpu = { package = "resvg", version = "0.46", optional = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 web-sys = { version = "0.3", features = [
     "CanvasRenderingContext2d",
+    "CanvasWindingRule",
+    "DomMatrix",
+    "CanvasGradient",
+    "CanvasPattern",
+    "DomMatrix",
+    "DomMatrixReadOnly",
     "CanvasGradient",
     "CanvasPattern",
     "HtmlCanvasElement",
@@ -319,7 +405,7 @@ wasm-bindgen-test = "0.3"
 # [#3707] 통합 시험이 공격 문서를 **시험 시점에 합성**하려면 HWPX(zip) 재압축이
 # 필요하다 — 실물 악성 파일을 저장소에 커밋하지 않기 위해서다. 위 [dependencies]
 # 와 같은 버전이라 의존성 그래프도, WASM 산출물도 그대로다.
-zip = { version = "8.5", default-features = false, features = ["deflate"] }
+zip = { version = "9.0", default-features = false, features = ["deflate"] }
 # [#4378] CAS 계약 테스트가 기대 해시를 스스로 계산한다 — 위 [dependencies] 와
 # 같은 버전이라 의존성 그래프도 산출물도 그대로다(zip 선례와 동일).
 sha2 = "0.11"
@@ -403,10 +489,60 @@ unused_macros = "allow"
 # wmf 모듈의 tracing feature cfg 경고 억제
 unexpected_cfgs = { level = "allow", check-cfg = ['cfg(feature, values("tracing", "svg"))'] }
 
-# PR #599 PNG 게이트웨이 검증 도구 — native-skia feature 필수
+# 재사용 가능한 개발자 도구만 명시적으로 Cargo target에 등록한다.
+# 이슈별 일회성 probe는 mydocs/tech/investigations/issue-*/probes에 보존하며
+# 기본 build/clippy 대상으로 다시 끌어오지 않는다.
 [[example]]
-name = "pr599_png_gateway"
-required-features = ["native-skia"]
+name = "audit_image_magic"
+path = "tools/diagnostics/audit_image_magic.rs"
+
+[[example]]
+name = "audit_studio_image_parity"
+path = "tools/diagnostics/audit_studio_image_parity.rs"
+
+[[example]]
+name = "dump_layer_json_page"
+path = "tools/diagnostics/dump_layer_json_page.rs"
+
+[[example]]
+name = "dump_source_images"
+path = "tools/diagnostics/dump_source_images.rs"
+
+[[example]]
+name = "edit_sweep"
+path = "tools/diagnostics/edit_sweep.rs"
+
+[[example]]
+name = "hwpx_dump_empty"
+path = "tools/diagnostics/hwpx_dump_empty.rs"
+
+[[example]]
+name = "hwpx_dump_text"
+path = "tools/diagnostics/hwpx_dump_text.rs"
+
+[[example]]
+name = "hwpx_hwp_ir_diff"
+path = "tools/diagnostics/hwpx_hwp_ir_diff.rs"
+
+[[example]]
+name = "hwpx_roundtrip"
+path = "tools/diagnostics/hwpx_roundtrip.rs"
+
+[[example]]
+name = "build_issue_505_fixture"
+path = "tools/fixture_generators/build_issue_505_fixture.rs"
+
+[[example]]
+name = "build_issue_5800_fixture"
+path = "tools/fixture_generators/build_issue_5800_fixture.rs"
+
+[[example]]
+name = "font_metric_coverage_worker"
+path = "tools/diagnostics/font_metric_coverage_worker.rs"
+
+[profile.dev]
+# 로컬 실행 파일의 크기를 줄이되 함수·파일·줄 단위 역추적 정보는 유지한다.
+debug = 1
 
 [profile.release]
 lto = true
@@ -427,8 +563,3 @@ codegen-units = 16
 # 사실상 유일한 공급원이라 삭제 시 빌드가 불능이 된다. 결정화 커밋의 authorship 은
 # 그대로 보존된다(원 작성자 planet6897, 이관 동의 완료).
 #
-# [#2283] krilla-svg 마이그레이션은 하지 않기로 결정했다. 장기 방향은 Skia direct
-# 백엔드 단일화이며, 그 미지원 op 목록(gradient·pattern·shadow·connector 등)이
-# 비는 시점에 재판단한다. 그때까지 이 패치를 유지·관리한다.
-[patch.crates-io]
-svg2pdf = { git = "https://github.com/edwardkim/svg2pdf", branch = "determinism-0.13" }

@@ -63,6 +63,17 @@
   cursor: not-allowed;
 }
 
+/* [#6053] 계열명·카테고리 라벨은 수치가 아니라 텍스트다. */
+.chart-data-input.chart-data-text {
+  text-align: left;
+}
+
+/* [#6053] 이번 편집으로 생긴 칸 — 저장 전에 눈으로 구분된다. */
+.chart-data-input.chart-data-new {
+  border-color: var(--ui-menu-open-border);
+  background: var(--ui-surface-raised);
+}
+
 .chart-data-input.chart-data-invalid {
   border-color: var(--ui-danger-strong);
   background: var(--ui-danger-soft);

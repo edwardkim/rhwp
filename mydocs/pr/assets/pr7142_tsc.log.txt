@@ -1,0 +1,5 @@
+src/core/wasm-bridge.ts(3513,32): error TS2339: Property 'getHyperlinkContext' does not exist on type 'HwpDocument'.
+src/core/wasm-bridge.ts(3518,21): error TS2339: Property 'insertHyperlinkEx' does not exist on type 'HwpDocument'.
+src/core/wasm-bridge.ts(3523,21): error TS2339: Property 'updateHyperlinkEx' does not exist on type 'HwpDocument'.
+src/core/wasm-bridge.ts(3528,21): error TS2339: Property 'replaceHyperlinkTextEx' does not exist on type 'HwpDocument'.
+src/core/wasm-bridge.ts(3533,14): error TS2339: Property 'removeHyperlinkEx' does not exist on type 'HwpDocument'.

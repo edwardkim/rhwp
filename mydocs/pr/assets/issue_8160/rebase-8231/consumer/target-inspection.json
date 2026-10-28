@@ -1,0 +1,162 @@
+[
+  {
+    "document": "hwpx",
+    "page": 18,
+    "review": "target-review/hwpx-p018.png",
+    "input_pngs": [
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwpx/sample16-hwpx/rhwp_png/rhwp_018.png",
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-wasm-hwpx/sample16-hwpx/rhwp_png/rhwp_018.png",
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwpx/sample16-hwpx/pdf_png/pdf-018.png"
+    ],
+    "sha256": [
+      "446356ca14f5ee601dc30bcc7150b161de1162c2a830dafeb7aba5494dfd0dca",
+      "1b4a71b5e1d6edf21a395577425ac958b10e2880cd0f1f0b9dd7a63ae134c929",
+      "5b8ce921a87a1578cbe60753532668dbd052c584ba29d1176dd5e381dce0a3b3"
+    ],
+    "directly_inspected": true,
+    "assessment": "preserved",
+    "scope": "Current Native/fresh optimized WASM/independent Print triplet; raw100 is silhouette, not RGB identity",
+    "observation": "구성도 및 위아래 본문·표제·행 구분 유지",
+    "review_sha256": "bfa2700856aa3d1370881cb0a40ee8ef077542c499458447775f719b27ceb4b8"
+  },
+  {
+    "document": "hwpx",
+    "page": 58,
+    "review": "target-review/hwpx-p058.png",
+    "input_pngs": [
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwpx/sample16-hwpx/rhwp_png/rhwp_058.png",
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-wasm-hwpx/sample16-hwpx/rhwp_png/rhwp_058.png",
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwpx/sample16-hwpx/pdf_png/pdf-058.png"
+    ],
+    "sha256": [
+      "f9570415ccc84f659e42dfa210546a31a012d6c42f57e48a39d9cdd3fb53a35e",
+      "673a11aa68c9a8c7db1cd9d03d213c28b4e06f61742b72221ea2962fc96e575b",
+      "7a3a92e48ed152ff1f1946bf3d011b28c8ff9545ac30d9f795a945192cf62ec7"
+    ],
+    "directly_inspected": true,
+    "assessment": "preserved",
+    "scope": "Current Native/fresh optimized WASM/independent Print triplet; raw100 is silhouette, not RGB identity",
+    "observation": "투입 계획 표의 머리행·행/열·테두리·쪽번호 유지",
+    "review_sha256": "4b84dce5ed9be79b17fe4103761a835e502b8f51914723497a122bc5bbf49a68"
+  },
+  {
+    "document": "hwp2024",
+    "page": 3,
+    "review": "target-review/hwp2024-p003.png",
+    "input_pngs": [
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwp2024/sample16-hwp2024/rhwp_png/rhwp_003.png",
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-wasm-hwp2024/sample16-hwp2024/rhwp_png/rhwp_003.png",
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwp2024/sample16-hwp2024/pdf_png/pdf-003.png"
+    ],
+    "sha256": [
+      "ec3c6c31e23ea6ae306c38a0db870b4f83cee8ee671d515e8dedf573006518ed",
+      "90854d1de232533eebcf924b36699151f9936a3acb79af12d2d456e3ab109225",
+      "2fa720609058eaf704fd0c14872bed90dca629479b897138e64d967881942574"
+    ],
+    "directly_inspected": true,
+    "assessment": "preserved",
+    "scope": "Current Native/fresh optimized WASM/independent Print triplet; raw100 is silhouette, not RGB identity",
+    "observation": "해당 원본의 BCP 한 줄과 쪽 테두리·본문 배치 유지",
+    "review_sha256": "ff2b18a9747ddd009cc5f4ec3cd9d30439d43c8011ea02e39b07c9490fa60da0"
+  },
+  {
+    "document": "hwp2024",
+    "page": 6,
+    "review": "target-review/hwp2024-p006.png",
+    "input_pngs": [
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwp2024/sample16-hwp2024/rhwp_png/rhwp_006.png",
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-wasm-hwp2024/sample16-hwp2024/rhwp_png/rhwp_006.png",
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwp2024/sample16-hwp2024/pdf_png/pdf-006.png"
+    ],
+    "sha256": [
+      "9134d22d79a99a0cac7062d58f4a39fa403d1b161885fb0c61f1bf70de9736e8",
+      "9559a1a5ac31ffc1d44e04b5167cfb8c784894d79cfeafd3f33194cdfa31fea6",
+      "6a8a543a6db72ffb0256269221ae95d3b11942b9a03f14bfa10a9269b7547efa"
+    ],
+    "directly_inspected": true,
+    "assessment": "preserved",
+    "scope": "Current Native/fresh optimized WASM/independent Print triplet; raw100 is silhouette, not RGB identity",
+    "observation": "평가 배점 표와 수식 분수·괄호·기호·아래 문구 유지",
+    "review_sha256": "94845d260636b90573728229771e6e5facb6f86eb9b46b2698c5a00cde18b733"
+  },
+  {
+    "document": "hwp2022",
+    "page": 3,
+    "review": "target-review/hwp2022-p003.png",
+    "input_pngs": [
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwp2022/sample16-hwp2022/rhwp_png/rhwp_003.png",
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-wasm-hwp2022/sample16-hwp2022/rhwp_png/rhwp_003.png",
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwp2022/sample16-hwp2022/pdf_png/pdf-003.png"
+    ],
+    "sha256": [
+      "3eb23dc4c268c9cbe0a976d4426d721107a29b6cef1639da89bac3fac94937f1",
+      "e290dc270c72fba9d5a766e74700e90434f8c80273e003fc646e1e2c43d1bc07",
+      "1970d271f9fe8803cccb79d562790f9de5eaf0dc241a8fcfbf8964365dd54cfc"
+    ],
+    "directly_inspected": true,
+    "assessment": "preserved",
+    "scope": "Current Native/fresh optimized WASM/independent Print triplet; raw100 is silhouette, not RGB identity",
+    "observation": "BCP 원본 두 줄·문단 소유·테두리와 쪽번호 배치 유지",
+    "review_sha256": "9df3046797001e6337c144de9f961bb5724080ddbf284f9db7b11c432b8c2d8f"
+  },
+  {
+    "document": "hwp2022",
+    "page": 18,
+    "review": "target-review/hwp2022-p018.png",
+    "input_pngs": [
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwp2022/sample16-hwp2022/rhwp_png/rhwp_018.png",
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-wasm-hwp2022/sample16-hwp2022/rhwp_png/rhwp_018.png",
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwp2022/sample16-hwp2022/pdf_png/pdf-018.png"
+    ],
+    "sha256": [
+      "5a89232c9d06e83cd5d9e47b1b9f20b260983236ea46afd6cd1e29d2d4da5aac",
+      "9d7ddca2418c7a8d96a7fed51210d21531f27e4ed67606ddd0f154628425afd3",
+      "74046eaea5927ec001c33332a8a53a5bd954fa196edffe2c1a4ca2f947f98b98"
+    ],
+    "directly_inspected": true,
+    "assessment": "preserved",
+    "scope": "Current Native/fresh optimized WASM/independent Print triplet; raw100 is silhouette, not RGB identity",
+    "observation": "클립을 가진 WMF 그림의 문자·선·사진 격자와 본문 흐름 복원",
+    "review_sha256": "a26e62c56d0bef235cfc5fe8456f4e79b58672ccf16ba8fd8ac8728b1b517d8d"
+  },
+  {
+    "document": "hwp2022",
+    "page": 35,
+    "review": "target-review/hwp2022-p035.png",
+    "input_pngs": [
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwp2022/sample16-hwp2022/rhwp_png/rhwp_035.png",
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-wasm-hwp2022/sample16-hwp2022/rhwp_png/rhwp_035.png",
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwp2022/sample16-hwp2022/pdf_png/pdf-035.png"
+    ],
+    "sha256": [
+      "091a4278de0523d2c75b9a4dfad099d83ccfc4654756047075db30e2639f1cea",
+      "36b463404a84ee47bd092563e2b1a739255dd09cc99b3b9ae09c378f533d6ad7",
+      "67f5245366e853fb1187d939dc84035434c5f8d63ce0ae36fed8a22469131763"
+    ],
+    "directly_inspected": true,
+    "assessment": "preserved",
+    "scope": "Current Native/fresh optimized WASM/independent Print triplet; raw100 is silhouette, not RGB identity",
+    "observation": "원본 시스템 구성도·표제와 상단 본문 유지",
+    "review_sha256": "299a1cf463f7751c06e5201cbb98e8bf11fcc53a21ead35c529b6d1cc86b684b"
+  },
+  {
+    "document": "hwp2022",
+    "page": 38,
+    "review": "target-review/hwp2022-p038.png",
+    "input_pngs": [
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwp2022/sample16-hwp2022/rhwp_png/rhwp_038.png",
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-wasm-hwp2022/sample16-hwp2022/rhwp_png/rhwp_038.png",
+      "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwp2022/sample16-hwp2022/pdf_png/pdf-038.png"
+    ],
+    "sha256": [
+      "cf543fbf14cecdaafc25b46ad0f8e9767f9849b4bdc499e98289b8787e726241",
+      "ed9470f1634ad2f85bb4270f0896a98abc983ef8321b8f355a229cfbab055d13",
+      "5b518684bb5d2e146ad906fde08b035ba57f948257be3d453d4ffd96790ac5f0"
+    ],
+    "directly_inspected": true,
+    "assessment": "preserved",
+    "scope": "Current Native/fresh optimized WASM/independent Print triplet; raw100 is silhouette, not RGB identity",
+    "observation": "서버 소프트웨어 표의 내용·셀과 줄 구성 유지",
+    "review_sha256": "3bf210ea1da8480c84161f5e4c18d6020f5933d4f021c909d0ea4abb1acdfb3b"
+  }
+]

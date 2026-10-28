@@ -45,9 +45,9 @@
       ]
     },
     {
-      "name": "다른 목차 칸 공란 값",
+      "name": "다른 목차 칸 안내문구 유지",
       "op": "value_eq",
-      "value": "",
+      "value": "목차 입력",
       "path": "fields[7].value",
       "cmd": [
         "fields",

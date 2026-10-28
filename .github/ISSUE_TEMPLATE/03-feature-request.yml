@@ -1,0 +1,52 @@
+name: "기능·개선 요청"
+description: "새로운 기능이나 기존 기능의 개선을 제안해주세요."
+labels:
+  - "enhancement"
+body:
+  - type: "markdown"
+    attributes:
+      value: "먼저 [기존 이슈](https://github.com/edwardkim/rhwp/issues)를 검색해주세요. 사용법 질문은 [Discussions](https://github.com/edwardkim/rhwp/discussions)를 이용해주세요.\n\n구현 방법을 몰라도 괜찮습니다. 실제로 하려는 작업과 현재의 불편을 설명해주세요."
+  - type: "dropdown"
+    id: "surface"
+    attributes:
+      label: "사용 경로"
+      description: "관련된 사용 경로를 선택해주세요. 기타·모름·해당 없음도 선택할 수 있습니다."
+      options:
+        - "Studio"
+        - "CLI"
+        - "브라우저 확장"
+        - "라이브러리/API"
+        - "MCP"
+        - "기타"
+        - "모름"
+        - "해당 없음"
+    validations:
+      required: true
+  - type: "textarea"
+    id: "goal"
+    attributes:
+      label: "하려는 작업과 현재 제약"
+      description: "어떤 상황에서 무엇을 하려는데 어려운가요?"
+    validations:
+      required: true
+  - type: "textarea"
+    id: "proposal"
+    attributes:
+      label: "원하는 동작"
+      description: "기능이 추가되면 어떤 작업을 할 수 있어야 하나요?"
+    validations:
+      required: true
+  - type: "textarea"
+    id: "alternatives"
+    attributes:
+      label: "현재 우회 방법"
+      description: "사용 중인 우회 방법이나 생각해 본 대안이 있으면 적어주세요."
+    validations:
+      required: false
+  - type: "textarea"
+    id: "references"
+    attributes:
+      label: "참고 자료"
+      description: "한컴 동작, 사양, 관련 이슈, 예시 문서 등을 첨부할 수 있습니다."
+    validations:
+      required: false

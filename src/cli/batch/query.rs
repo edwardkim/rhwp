@@ -6,9 +6,10 @@ use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
 use super::fail_record;
+use crate::cli::queries::structure::structure_json_value;
 use crate::{
     collect_field_records, extract_data_json_value, fields_json_value, info_json_value,
-    search_json_value, structure_json_value, tables_json_value,
+    search_json_value, tables_json_value,
 };
 
 pub(super) fn export_text_record(path: &str) -> serde_json::Value {

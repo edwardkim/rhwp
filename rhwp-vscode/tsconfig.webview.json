@@ -15,6 +15,7 @@
     "sourceMap": true,
     "paths": {
       "@rhwp-wasm/*": ["../pkg/*"],
+      "@wasm/*": ["../pkg/*"],
       "@/*": ["../rhwp-studio/src/*"],
       "canvaskit-wasm": ["./node_modules/canvaskit-wasm/types/index.d.ts"],
       "@noble/hashes/*": ["./node_modules/@noble/hashes/*"]

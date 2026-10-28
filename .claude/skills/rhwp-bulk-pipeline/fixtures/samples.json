@@ -78,19 +78,6 @@
       "format": "hwp5",
       "hasMerge": true,
       "note": "batch_axes_contract 표 병합 표본."
-    },
-    "handbook": {
-      "path": "samples/2025 행정업무운영 편람(최종).hwpx",
-      "format": "hwpx",
-      "pageCount": 387,
-      "convertBytes": 9083392,
-      "convertMs": 428,
-      "note": "레시피 9 convert 실측. 387쪽 / 428ms / 9_083_392 bytes."
-    },
-    "handbookHwp": {
-      "path": "samples/2025 행정업무운영 편람(최종).hwp",
-      "format": "hwp5",
-      "note": "extract-data 계약 오라클과 같은 편람 HWP5."
     }
   }
 }

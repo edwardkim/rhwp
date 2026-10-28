@@ -1,0 +1,32 @@
+{
+  "stage": 172,
+  "ledger_item": 14,
+  "original_pr": 7382,
+  "starting_head": "fb25a51c7d58ad3a51dd15c76d8e179a39149a24",
+  "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+  "input": "samples/issue6145/worklife_balance_index_156607916.hwpx",
+  "reference_pdf": "pdf/planet-review-20260917/worklife_balance_index_156607916-2020.pdf",
+  "existing_test": "squeeze_cell_text_starts_inside_the_declared_inner_margin",
+  "before_test_weakness": "고정된 6쪽 셀 x 범위로 페이지 전체 TextRun을 문자열 검색하여 이웃 줄이나 향후 표 이동에 취약함",
+  "correction": "원문 문단 pi56 표의 21행 마지막 셀을 찾고 그 셀 안의 대상 글줄 시작과 셀 좌단의 차이가 선언 안쪽여백 283HU를 지키는지 검사",
+  "production_change": false,
+  "new_test_functions": 0,
+  "baseline_or_tolerance_relaxations": 0,
+  "focused_nextest": {
+    "command": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 8 --no-fail-fast -E 'test(squeeze_cell_text_starts_inside_the_declared_inner_margin) | test(squeeze_cell_line_width_tracks_the_stored_inner_width)'",
+    "passed": 2,
+    "failed": 0
+  },
+  "validation": {
+    "fmt": "PASS",
+    "clippy_native": "PASS",
+    "clippy_wasm": "PASS",
+    "workspace_build": "PASS",
+    "clippy_workspace_all_targets": "PASS",
+    "manifest_base_check_after_prepare": "PASS",
+    "unit_tier_base_check": "PASS"
+  },
+  "visual_evidence": "생산 코드·입력·PDF·Native/fresh WASM 패키지 불변이므로 보정171의 동일 문서 전6쪽 최저95.5266% 인쇄 프로필 증거를 재사용",
+  "full_nextest": "보정171의 43FAIL 이후 이 단계에서는 전체 재실행하지 않음; #7382 마지막 코드 head에서 최종 전체 검증 필요",
+  "logs": "output/pr-review/planet6897-7382-20260926/stage172-left6145/"
+}

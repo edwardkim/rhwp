@@ -51,3 +51,77 @@ export function mergeBorderCoords(
 
   return { positions, indexByCoord };
 }
+
+/** 경계선이 실제로 존재하는 한 구간. */
+export interface BorderSpan { start: number; end: number }
+
+/** 칸 상자에서 span 을 뽑는 데 필요한 최소 형태. */
+export interface SpanCell { x: number; y: number; w: number; h: number }
+
+/** 맞닿은 칸 변을 잇는 허용 오차(px). 공유 변은 정확히 같으므로 반올림 오차만 허용한다. */
+export const BORDER_SPAN_JOIN_EPS_PX = 0.5;
+
+/**
+ * 같은 경계에 속한 칸 변들을 이어 붙인다.
+ *
+ * 맞닿은 칸은 변을 정확히 공유하므로 반올림 오차만 허용해 잇고, 그보다 벌어지면 실제로
+ * 끊긴 구간이라 따로 남긴다. 병합 칸이 가로지르는 자리가 그 "끊긴 구간" 이다.
+ */
+export function coalesceSpans(
+  spans: readonly BorderSpan[],
+  eps: number = BORDER_SPAN_JOIN_EPS_PX,
+): BorderSpan[] {
+  if (spans.length <= 1) return spans.map((s) => ({ ...s }));
+  const sorted = [...spans].sort((a, b) => a.start - b.start);
+  const out: BorderSpan[] = [{ ...sorted[0] }];
+  for (const span of sorted.slice(1)) {
+    const last = out[out.length - 1];
+    if (span.start <= last.end + eps) {
+      last.end = Math.max(last.end, span.end);
+    } else {
+      out.push({ ...span });
+    }
+  }
+  return out;
+}
+
+/**
+ * [#7191] 각 경계선이 **실제로 존재하는 구간**을 칸 상자에서 모은다.
+ *
+ * 종전에는 그리는 쪽이 선마다 표 전체 범위 하나만 들고 있었고, 적중 판정은 칸 상자를
+ * 훑었다 — 두 범위의 출처가 달랐다. 병합 칸이 있으면 한 열 경계가 일부 행에만 존재하므로
+ * 둘이 반드시 어긋난다(3147199 1쪽: 두 칸에만 있는 경계를 표 높이 828px 로 그렸다).
+ *
+ * 인덱스 조회는 `hitTestBorder` 와 **같은 `indexByCoord` 맵**을 쓴다. 대표 좌표로 맵을
+ * 다시 만들면 병합돼 사라진 좌표를 가진 칸의 경계를 놓친다(`mergeBorderCoords` 주석).
+ */
+export function computeBorderSpans(
+  cells: readonly SpanCell[],
+  rowIndexByY: ReadonlyMap<number, number>,
+  colIndexByX: ReadonlyMap<number, number>,
+  round: (value: number) => number,
+): { rowSpans: Map<number, BorderSpan[]>; colSpans: Map<number, BorderSpan[]> } {
+  const rowSpans = new Map<number, BorderSpan[]>();
+  const colSpans = new Map<number, BorderSpan[]>();
+  const add = (target: Map<number, BorderSpan[]>, index: number, start: number, end: number) => {
+    const list = target.get(index);
+    if (list) list.push({ start, end });
+    else target.set(index, [{ start, end }]);
+  };
+
+  for (const cell of cells) {
+    const top = rowIndexByY.get(round(cell.y));
+    if (top !== undefined) add(rowSpans, top, cell.x, cell.x + cell.w);
+    const bottom = rowIndexByY.get(round(cell.y + cell.h));
+    if (bottom !== undefined) add(rowSpans, bottom, cell.x, cell.x + cell.w);
+
+    const left = colIndexByX.get(round(cell.x));
+    if (left !== undefined) add(colSpans, left, cell.y, cell.y + cell.h);
+    const right = colIndexByX.get(round(cell.x + cell.w));
+    if (right !== undefined) add(colSpans, right, cell.y, cell.y + cell.h);
+  }
+
+  for (const [index, spans] of rowSpans) rowSpans.set(index, coalesceSpans(spans));
+  for (const [index, spans] of colSpans) colSpans.set(index, coalesceSpans(spans));
+  return { rowSpans, colSpans };
+}

@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "key": "pr7118",
+  "provenance": {
+    "hwp": {
+      "path": "tests/fixtures/issue_6970/synth_no_ls_square_wrap.hwp",
+      "sha256": "31a5b76148718d92e3fd150f4d68b84b5005b02d16863c4735a6178eb02f2799"
+    },
+    "pdf": {
+      "path": "pdf/synth_no_ls_square_wrap-2020.pdf",
+      "sha256": "41156c2d3294d49bdb7091ea4f27d0e2b1e6ff40e04e64da3ff3209876d68110"
+    },
+    "git_head": "2a2089bf71e7a42286e0643a3fb517b7047c7320",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "11b1d259de1dd62f111dc0da9bd74efac2d5572aa80fbd73f180c984b20d2849"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "target/pr7118-7187-20260916/release-test/rhwp",
+      "path": "target/pr7118-7187-20260916/release-test/rhwp",
+      "sha256": "84fe916132f07e2e4445c5952870b2471dd7288c859b0fa5363a3e4ef8aee7d4"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp.js",
+          "sha256": "a490dc79102cbc6047252da243f0901d078997bef545d7c38d5143093e0bc781"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "sha256": "6dd1d0998306e84a7a6c913a2a29e44dac706bb1ac10f738c0d568e94e372e19"
+        }
+      ],
+      "exporter_sha256": "5b51337e43cfb443c3151d2ab47ab8b09d94e6ca493b60eb565cd9d20be82588",
+      "font_policy": "same-input native export-svg --font-style; font-face CSS only",
+      "render_tree": "WASM getPageRenderTree"
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    1,
+    2,
+    3
+  ],
+  "requested_page_shards": [
+    [
+      1,
+      2,
+      3
+    ]
+  ],
+  "run_state": "complete"
+}

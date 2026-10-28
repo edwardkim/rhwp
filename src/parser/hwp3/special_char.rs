@@ -4,7 +4,7 @@
 //! 바이트 코드에 따라 적절한 제어 코드로 해석하여 렌더링에 필요한 정보를 제공한다.
 
 use snafu::Snafu;
-use std::io::{self, Cursor, Read};
+use std::io::{self, Cursor};
 
 #[derive(Debug, Snafu)]
 pub enum Hwp3SpecialCharError {

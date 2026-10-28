@@ -118,18 +118,18 @@ class PairingTests(unittest.TestCase):
             _touch(repo / "samples" / "bar.hwp")
             ps.write_minimal_pdf(repo / "pdf" / "foo.pdf", 1)
             ps.write_minimal_pdf(repo / "pdf" / "foo-2022.pdf", 1)
-            ps.write_minimal_pdf(repo / "pdf-2020" / "foo-2020.pdf", 1)
+            ps.write_minimal_pdf(repo / "pdf" / "foo-2020.pdf", 1)
             pairs, unpaired = ps.discover_pairs(repo)
             pdfs = sorted(p.pdf.name for p in pairs)
             self.assertEqual(pdfs, ["foo-2020.pdf", "foo-2022.pdf", "foo.pdf"])
             self.assertEqual(unpaired, ["samples/bar.hwp"])
             self.assertTrue(all(p.doc.name == "foo.hwp" for p in pairs))
 
-    def test_nested_pdf_large_subdir(self) -> None:
+    def test_nested_pdf_subdir(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             repo = Path(td)
             _touch(repo / "samples" / "issue2006" / "report.hwpx")
-            ps.write_minimal_pdf(repo / "pdf-large" / "issue2006" / "report-2022.pdf", 2)
+            ps.write_minimal_pdf(repo / "pdf" / "issue2006" / "report-2022.pdf", 2)
             pairs, unpaired = ps.discover_pairs(repo)
             self.assertEqual(len(pairs), 1)
             self.assertEqual(unpaired, [])

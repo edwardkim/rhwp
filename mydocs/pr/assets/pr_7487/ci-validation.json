@@ -1,0 +1,292 @@
+{
+  "observed_at_utc": "2026-10-01T17:38:36+00:00",
+  "pr": 7487,
+  "pr_metadata": {
+    "baseRefOid": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "headRefOid": "38c0af21a4370876da2fa34178f25d0ce0a782e0",
+    "isDraft": false,
+    "maintainerCanModify": true,
+    "mergeStateStatus": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "state": "OPEN"
+  },
+  "source_head": "38c0af21a4370876da2fa34178f25d0ce0a782e0",
+  "actual_merge_commit": "5836f2b03f7c31d1d91d9b2c11c35a94dd9c4582",
+  "actual_merge_base": "02530b9ed567a44663edb26c65fb565c4a79f00d",
+  "policy_base": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+  "archive_counts": {
+    "a": {
+      "run": 3873,
+      "passed": 3873,
+      "skipped": 13
+    },
+    "b": {
+      "run": 1884,
+      "passed": 1884,
+      "skipped": 29
+    },
+    "c": {
+      "run": 2235,
+      "passed": 2235,
+      "skipped": 5
+    },
+    "d": {
+      "run": 2095,
+      "passed": 2095,
+      "skipped": 3
+    }
+  },
+  "total_passed": 10087,
+  "total_skipped": 50,
+  "targeted_regressions": [
+    "2026-10-01T17:32:45.8694560Z         PASS [   0.058s] (1585/2235) rhwp::regression_suite_025 issue_7486_enter_overflow_opens_page::enter_past_page_end_opens_second_page",
+    "2026-10-01T17:32:45.9243105Z         PASS [   0.040s] (1587/2235) rhwp::regression_suite_025 issue_7486_enter_overflow_opens_page::spacing_200_enter_boundary_keeps_caret_owner",
+    "2026-10-01T17:32:45.9526156Z         PASS [   0.026s] (1588/2235) rhwp::regression_suite_025 issue_7486_enter_overflow_opens_page::spacing_300_enter_boundary_keeps_caret_owner",
+    "2026-10-01T17:32:46.5592775Z         PASS [   0.689s] (1613/2235) rhwp::regression_suite_025 issue_7486_enter_overflow_opens_page::repeated_enter_preserves_line_boxes_across_spacing_and_pages"
+  ],
+  "checks": [
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647961/job/110497506699",
+      "name": "Build & Test",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "skipping",
+      "link": "https://github.com/edwardkim/rhwp/runs/110495700758",
+      "name": "CodeQL",
+      "state": "NEUTRAL"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647961/job/110494589693",
+      "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647961/job/110494025986",
+      "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647961/job/110493579060",
+      "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647961/job/110492242405",
+      "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647961/job/110490016296",
+      "name": "build-test-archive-b / Build test archive (b)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647961/job/110490016440",
+      "name": "build-test-archive-c / Build test archive (c)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647961/job/110490016322",
+      "name": "build-test-archive-d / Build test archive (d)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647961/job/110489960331",
+      "name": "Native Skia tests",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647961/job/110489960498",
+      "name": "build-test-archive-a / Build test archive (a)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647961/job/110489960292",
+      "name": "Resolve nextest target duration policy",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647961/job/110489960338",
+      "name": "Lint (fmt, clippy, WASM check)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "skipping",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647961/job/110489962418",
+      "name": "Workflow promotion preflight",
+      "state": "SKIPPED"
+    },
+    {
+      "bucket": "skipping",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647961/job/110489962732",
+      "name": "Frontend package gates",
+      "state": "SKIPPED"
+    },
+    {
+      "bucket": "skipping",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647961/job/110489962496",
+      "name": "Frontend unit gates",
+      "state": "SKIPPED"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647907/job/110489818365",
+      "name": "Analyze (javascript-typescript)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647907/job/110489818352",
+      "name": "Analyze (rust)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647907/job/110489818166",
+      "name": "Analyze (python)",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647983/job/110489500328",
+      "name": "adapter inter-diff",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647872/job/110489497666",
+      "name": "prop roundtrip",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647961/job/110489309164",
+      "name": "CI preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647872/job/110489138586",
+      "name": "Proptest preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647641/job/110489105803",
+      "name": "Canvas visual diff",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647983/job/110489098493",
+      "name": "adapter inter-diff preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647907/job/110489089455",
+      "name": "CodeQL preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647872/job/110489055278",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "skipping",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647613/job/110489070177",
+      "name": "cancel-stale-runs",
+      "state": "SKIPPED"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647983/job/110489039765",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647641/job/110489021317",
+      "name": "Render Diff preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647907/job/110489013431",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647961/job/110488981544",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "skipping",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896647961/job/110488983725",
+      "name": "WASM Build",
+      "state": "SKIPPED"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896643452/job/110485186760",
+      "name": "cancel-stale-runs",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36896643443/job/110485188060",
+      "name": "Evaluate trusted CI impact policy",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/36900329949",
+      "name": "CI Impact Policy",
+      "state": "SUCCESS"
+    }
+  ],
+  "render_report": {
+    "canvas_passed": 3,
+    "direct_pdf_passed": 3,
+    "report_only_pdf_warnings": 4,
+    "pdf_summary_byte_identical_to_original_run": 36633643139
+  },
+  "limitations": [
+    "동일 Enter 합성 입력의 한컴 출력 미검증",
+    "Studio caret/scroll 지연 후속",
+    "표 뒤 Enter 미해결"
+  ],
+  "publication": {
+    "approve_review": false,
+    "merge": false,
+    "pr_body_updated": false,
+    "initial_two_commits_pushed": true
+  },
+  "source_update": {
+    "head": "f2f96733b838c860253a357721f713e931b469ae",
+    "contributor_merge_base": "e5098bc91be44a49367a7f2895a14fcd4f4c2c7f",
+    "current_simulation_base": "4a7cf61c8652586ffe86158344771029714f3681",
+    "ci_run": 36953426308,
+    "ci_candidate": "38c0af21a4370876da2fa34178f25d0ce0a782e0",
+    "reuse_reason": "current-base-merge-resolution-mydocs-only",
+    "full_ci_rerun": false,
+    "current_base_direct_visual_reverification": false
+  }
+}

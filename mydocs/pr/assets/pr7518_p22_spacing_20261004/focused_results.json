@@ -1,0 +1,17 @@
+[
+  {
+    "case": "issue_6267_para_float_table_overlap",
+    "exit_code": 0,
+    "log": "/tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/logs/p22-focused-issue_6267_para_float_table_overlap.log"
+  },
+  {
+    "case": "issue_6950_paragraph_end_topbottom_anchor",
+    "exit_code": 0,
+    "log": "/tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/logs/p22-focused-issue_6950_paragraph_end_topbottom_anchor.log"
+  },
+  {
+    "case": "issue_7196_page_top_spacing_trim_restore",
+    "exit_code": 0,
+    "log": "/tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/logs/p22-focused-issue_7196_page_top_spacing_trim_restore.log"
+  }
+]

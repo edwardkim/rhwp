@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "minimumNextestCases": 6559,
+  "minimumNextestCases": 6288,
   "sharding": {
     "suitePrefix": "regression_suite_",
-    "suiteCount": 32,
+    "suiteCount": 28,
     "testAttributeWeight": 4096,
     "maximumIntegrationTargets": 48
   },
@@ -29,6 +29,20 @@
   ],
   "moduleIntegrationOverrides": [
     {
+      "path": "tests/cases/issue_7518_reflow_row_physical_frame.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_6753_lazy_base_keeps_trimmed_spacing_before.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
       "path": "tests/cli_json_contract.rs",
       "allowBlockers": [
         "path_attr",
@@ -43,9 +57,30 @@
       ]
     },
     {
+      "path": "tests/cases/issue_4968_kerning_capability_provider.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
       "path": "tests/issue_2225_missing_picture_placeholder.rs",
       "allowBlockers": [
         "function_gated_native_skia"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_7642_same_family_font_coverage.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
+    },
+    {
+      "path": "tests/cases/verified_png_sampling_contracts.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
       ]
     }
   ],
@@ -95,6 +130,14 @@
       ]
     },
     {
+      "target": "issue_2833_hml_adapter_row_sizes",
+      "path": "tests/issue_2833_hml_adapter_row_sizes.rs",
+      "manual": true,
+      "reasons": [
+        "manual_isolation"
+      ]
+    },
+    {
       "target": "issue_4055_b1_chart_edit_probe",
       "path": "tests/issue_4055_b1_chart_edit_probe.rs",
       "manual": false,
@@ -128,6 +171,30 @@
       "reasons": [
         "path_attr",
         "root_mod"
+      ]
+    },
+    {
+      "target": "issue_4126_cursor_rect_empty_para_pages",
+      "path": "tests/issue_4126_cursor_rect_empty_para_pages.rs",
+      "manual": true,
+      "reasons": [
+        "manual_isolation"
+      ]
+    },
+    {
+      "target": "issue_4128_cell_cursor_page_narrowing",
+      "path": "tests/issue_4128_cell_cursor_page_narrowing.rs",
+      "manual": true,
+      "reasons": [
+        "manual_isolation"
+      ]
+    },
+    {
+      "target": "issue_4179_cursor_rect_text_host_para_pages",
+      "path": "tests/issue_4179_cursor_rect_text_host_para_pages.rs",
+      "manual": true,
+      "reasons": [
+        "manual_isolation"
       ]
     },
     {

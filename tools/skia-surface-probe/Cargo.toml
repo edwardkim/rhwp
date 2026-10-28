@@ -1,0 +1,18 @@
+[package]
+name = "rhwp-skia-surface-probe"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Opt-in host probe; it does not change the root workspace or default features.
+[workspace]
+resolver = "2"
+
+[dependencies]
+rhwp = { path = "../..", default-features = false, features = ["native-skia"] }
+# Must match the root Cargo.lock so the borrowed Canvas/Surface types agree.
+skia-safe = { version = "=0.153.3", default-features = false, features = ["binary-cache", "embed-icudtl", "pdf", "textlayout", "ganesh", "vulkan"] }
+ash = { version = "=0.38.0", default-features = false, features = ["loaded", "std"] }
+serde_json = "1.0"
+
+# rhwp가 version을 병기한 보정 fork를 직접 의존하므로 별도 root patch가 필요하지 않다.

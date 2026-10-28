@@ -1,0 +1,52 @@
+{
+  "parent_head": "643913756",
+  "source_code_sha256": {
+    "src/renderer/layout/table_partial.rs": "2cd25da8cd11215920d01c154664182eb6962d4a6e7bd2ca8cf91032a0ab479b",
+    "src/renderer/layout/table_layout.rs": "3204b7025a7ca180a55dc1bf8af97909a4c8dbd367572c9f654e52d0d54633f8"
+  },
+  "source": "samples/hwpx_sample2.hwpx",
+  "pdf": "pdf/hwpx_sample2-hwpx-2020.pdf",
+  "page_count": {
+    "native": 29,
+    "wasm": 29,
+    "pdf": 29
+  },
+  "off_canvas_count": 0,
+  "p8_match_percent": {
+    "native": 98.91222,
+    "fresh_wasm": 98.91222
+  },
+  "focused_integration": {
+    "run": 95,
+    "passed": 95,
+    "failed": 0,
+    "exit_code": 0,
+    "runtime_seconds": 14.451
+  },
+  "native_all_pages": {
+    "completed": 29,
+    "below90_pages": [
+      2,
+      4,
+      7,
+      9,
+      10,
+      14,
+      20,
+      21,
+      28
+    ],
+    "tsv": "sample2_mixed_line_reset_native.tsv"
+  },
+  "fresh_wasm_selected_pages": [
+    8,
+    9
+  ],
+  "wasm_build": "Mac local replacement --no-opt; exit0; Docker validation is not claimed",
+  "wasm_run_gate_exit": 1,
+  "wasm_run_gate_reason": "9쪽52.67182% 미달;8쪽통과",
+  "new_tests": 0,
+  "baseline_changes": 0,
+  "decision": "8쪽 용지 밖·정렬 해결. 문서 전체와 최종 전체 검증은 보류.",
+  "p20_prior_comparison_note": "기존 none font 공급의92.01046%와 현재 full font 공급85.82574%는동일환경비교가 아님. 보정 전359896c29의20쪽render tree와현재기하동일;현재미달은추가검토한다."
+}

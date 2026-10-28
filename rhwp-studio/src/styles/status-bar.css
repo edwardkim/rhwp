@@ -73,6 +73,23 @@
   line-height: 22px;
 }
 
+/* F5 셀 선택은 자동저장·인쇄가 쓰는 일시 #sb-message와 독립한 지속 상태다. */
+.stb-cell-selection {
+  min-width: 0;
+  max-width: 250px;
+  margin-left: 10px;
+  padding-left: 10px;
+  border-left: 1px solid var(--ui-border-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--color-text-secondary);
+  flex-shrink: 1;
+}
+
+.stb-cell-selection[hidden] {
+  display: none;
+}
+
 /* 우측 줌 영역 — 한컴 .inline_panel.justify_right.align_item_center */
 .stb-right {
   display: flex;

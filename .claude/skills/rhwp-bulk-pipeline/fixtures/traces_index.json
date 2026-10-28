@@ -4,7 +4,7 @@
   "skill": "rhwp-bulk-pipeline",
   "notGym": true,
   "noNewCli": true,
-  "count": 20,
+  "count": 17,
   "traces": [
     {
       "id": "T01",
@@ -44,19 +44,6 @@
       "stop": "B10",
       "notGym": true,
       "transcript": "examples/transcripts/T03.ndjson"
-    },
-    {
-      "id": "T04",
-      "title": "convert 편람 1건",
-      "command": "batch convert --out-dir out/bulk --json",
-      "axis": "convert",
-      "input": 1,
-      "success": 1,
-      "failure": 0,
-      "exit": 0,
-      "stop": "B17",
-      "notGym": true,
-      "transcript": "examples/transcripts/T04.ndjson"
     },
     {
       "id": "T05",
@@ -226,32 +213,6 @@
       "stop": "B13",
       "notGym": true,
       "transcript": "examples/transcripts/T17.ndjson"
-    },
-    {
-      "id": "T18",
-      "title": "verify 차이",
-      "command": "batch convert --out-dir out --verify --json",
-      "axis": "convert",
-      "input": 1,
-      "success": 1,
-      "failure": 0,
-      "exit": 3,
-      "stop": "B15",
-      "notGym": true,
-      "transcript": "examples/transcripts/T18.ndjson"
-    },
-    {
-      "id": "T19",
-      "title": "verify-pages",
-      "command": "batch convert --out-dir out --verify-pages --json",
-      "axis": "convert",
-      "input": 1,
-      "success": 1,
-      "failure": 0,
-      "exit": 4,
-      "stop": "B16",
-      "notGym": true,
-      "transcript": "examples/transcripts/T19.ndjson"
     },
     {
       "id": "T20",

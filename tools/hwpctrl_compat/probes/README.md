@@ -11,7 +11,6 @@ node   tools/hwpctrl_compat/runner_rhwp.mjs tools/hwpctrl_compat/probes/<이름>
 python tools/hwpctrl_compat/compare.py <출력>
 ```
 
-## p2-footnote-chain — 컨트롤 사슬 차례가 문서에 따라 갈린다
 
 `samples/2025 행정업무운영 편람(최종).hwp` 에서 164건 중 **83건이 어긋난다**(캡션을 고친
 뒤에도 그대로다 — 다른 원인이다).
@@ -27,3 +26,5 @@ rhwp 는 본문 층을 계속 걷는다. 같은 문단(97)에 놓인 컨트롤 �
 원장에 올린 항목은 이 갈래 문서를 근거로 삼지 않았으므로 선언이 뒤집히지는 않는다. 다만
 `HeadCtrl`·`Next` 계열은 **표본 의존**이라는 것이 드러났으니, 사슬을 쓰는 새 규칙을 세울 때는
 이 표본을 반드시 함께 돌려야 한다.
+
+위 편람 탐침의 과거 분석은 보존한다. 사용자 요청으로 `p2-footnote-chain.json`과 `p2-list-enum.json` 실행 등록은 제거했으며 이번 PR의 검토 대상으로 사용하지 않는다.

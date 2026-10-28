@@ -13,8 +13,59 @@ const PRIVATE_IP_PATTERNS = [
   /^169\.254\./, /^0\./, /^\[::1\]/, /^localhost$/i, /\.local$/i,
 ];
 function isPrivateHost(hostname) {
-  return PRIVATE_IP_PATTERNS.some(re => re.test(hostname));
+  return PRIVATE_IP_PATTERNS.some(re => re.test(hostname)) ||
+    isPrivateIPv6(hostname.toLowerCase().replace(/^\[/, '').replace(/\]$/, ''));
 }
+
+function isPrivateIPv4(host) {
+  if (!/^\d{1,3}(?:\.\d{1,3}){3}$/.test(host)) return false;
+
+  const parts = host.split('.').map(Number);
+  if (parts.some((part) => part < 0 || part > 255)) return true;
+
+  const [a, b] = parts;
+  return (
+    a === 0 ||
+    a === 10 ||
+    a === 127 ||
+    (a === 100 && b >= 64 && b <= 127) ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168) ||
+    a >= 224
+  );
+}
+
+function isPrivateIPv6(host) {
+  if (!host.includes(':')) return false;
+
+  // URL.hostname canonicalizes dotted mapped IPv4 into hexadecimal words.
+  // Expand the address before classifying; textual prefix checks miss that form.
+  const halves = host.toLowerCase().split('::');
+  if (halves.length > 2) return true;
+  const words = part => part ? part.split(':').map(word =>
+    /^[0-9a-f]{1,4}$/.test(word) ? parseInt(word, 16) : NaN) : [];
+  const left = words(halves[0]);
+  const right = halves.length === 2 ? words(halves[1]) : [];
+  const missing = 8 - left.length - right.length;
+  if (left.concat(right).some(Number.isNaN) ||
+      (halves.length === 2 ? missing < 1 : missing !== 0)) return true;
+  const address = halves.length === 2
+    ? [...left, ...Array(missing).fill(0), ...right] : left;
+
+  if (address.slice(0, 5).every(word => word === 0) && address[5] === 0xffff) {
+    const high = address[6];
+    const low = address[7];
+    return isPrivateIPv4(`${high >> 8}.${high & 255}.${low >> 8}.${low & 255}`);
+  }
+  // Unspecified, loopback and deprecated IPv4-compatible ::/96 addresses;
+  // link-local fe80::/10, unique-local fc00::/7 and multicast ff00::/8.
+  return address.slice(0, 6).every(word => word === 0) ||
+    (address[0] & 0xffc0) === 0xfe80 ||
+    (address[0] & 0xfe00) === 0xfc00 ||
+    (address[0] & 0xff00) === 0xff00;
+}
+
 
 function validateUrl(urlString) {
   if (!urlString || typeof urlString !== 'string') return { valid: false, reason: 'URL 비어있음' };
@@ -438,7 +489,7 @@ async function extractPrvImageFromZip(data, maxBytes) {
       }
       if (comp === 8) {
         try {
-          const dec = new DecompressionStream('raw');
+          const dec = new DecompressionStream('deflate-raw');
           const w = dec.writable.getWriter();
           const write = w.write(data.slice(ds, ds + compSz)).then(() => w.close());
           const buf = await readExactStreamLimited(dec.readable, uncSz, maxBytes);

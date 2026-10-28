@@ -1,0 +1,10 @@
+== regulatory-p39-frame ==
++ output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee dump-note-shape /tmp/rhwp-pr7518-review-20261004/samples/76076_regulatory_analysis.hwp
++ output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee export-svg /tmp/rhwp-pr7518-review-20261004/samples/76076_regulatory_analysis.hwp --embed-fonts=full --font-path /tmp/rhwp-pr7518-font-cache --profile print -o /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/p39-frame-native/regulatory-p39-frame/svg -p 38 --json
++ output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee export-render-tree /tmp/rhwp-pr7518-review-20261004/samples/76076_regulatory_analysis.hwp -o /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/p39-frame-native/regulatory-p39-frame/render_tree -p 38
+SVG export pages: 1
++ pdftoppm -f 39 -l 39 -r 96 -png /tmp/rhwp-pr7518-review-20261004/samples/issue1891/76076_regulatory_analysis-2024.pdf /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/p39-frame-native/regulatory-p39-frame/pdf_png/pdf
++ pdftotext -bbox-layout /tmp/rhwp-pr7518-review-20261004/samples/issue1891/76076_regulatory_analysis-2024.pdf /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/p39-frame-native/regulatory-p39-frame/pdf_bbox.html
+Selected pages: [39]
+Raster PNG pages: rhwp=1, pdf=1
+summary: /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/p39-frame-native/summary.json

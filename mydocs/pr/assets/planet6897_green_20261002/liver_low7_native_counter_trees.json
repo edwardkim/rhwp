@@ -1,0 +1,62 @@
+[
+  {
+    "key": "rowbreak",
+    "pages": 18,
+    "previous_pages": 18,
+    "changed_pages": [],
+    "source": {
+      "path": "samples/rowbreak-problem-pages.hwp",
+      "sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed"
+    },
+    "current_tree_dir": "output/pr-review/planet6897-green-20261002/liver-low7-counter-rowbreak-native-tree",
+    "previous_tree_dir": "output/pr-review/planet6897-green-20261002/rebase7567-rowbreak-native/rebase7567-rowbreak-native/render_tree"
+  },
+  {
+    "key": "h01",
+    "pages": 9,
+    "previous_pages": 9,
+    "changed_pages": [],
+    "source": {
+      "path": "samples/hwpx/hwpx-h-01.hwpx",
+      "sha256": "87b386ade71aa4c5a3e78f17c25e9efb91cf180f264fde17b2b9b6305a3c90b5"
+    },
+    "current_tree_dir": "output/pr-review/planet6897-green-20261002/liver-low7-counter-h01-native-tree",
+    "previous_tree_dir": "output/pr-review/planet6897-green-20261002/rebase7567-h01-native/rebase7567-h01-native/render_tree"
+  },
+  {
+    "key": "social6797",
+    "pages": 11,
+    "previous_pages": 11,
+    "changed_pages": [],
+    "source": {
+      "path": "samples/issue6797/156160455-social-pig-farm-income.hwp",
+      "sha256": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8"
+    },
+    "current_tree_dir": "output/pr-review/planet6897-green-20261002/liver-low7-counter-social6797-native-tree",
+    "previous_tree_dir": "output/pr-review/planet6897-green-20261002/rebase7567-social6797-native/rebase7567-social6797-native/render_tree"
+  },
+  {
+    "key": "stale1835",
+    "pages": 3,
+    "previous_pages": 3,
+    "changed_pages": [],
+    "source": {
+      "path": "samples/issue1835_tac_stale_height.hwp",
+      "sha256": "0eb04bdb79081fa4aa4d27a32db535fea9e955c05ca311292fc95ca8fc91d6b7"
+    },
+    "current_tree_dir": "output/pr-review/planet6897-green-20261002/liver-low7-counter-stale1835-native-tree",
+    "previous_tree_dir": "output/pr-review/planet6897-green-20261002/rebase7567-stale1835-native/rebase7567-stale1835-native/render_tree"
+  },
+  {
+    "key": "para6267",
+    "pages": 1,
+    "previous_pages": 1,
+    "changed_pages": [],
+    "source": {
+      "path": "samples/issue6267/kdt_result_para_float_table.hwpx",
+      "sha256": "48b761c03604a742d036e9349ab793964b518c40cd32219578fff1e6c647bf33"
+    },
+    "current_tree_dir": "output/pr-review/planet6897-green-20261002/liver-low7-counter-para6267-native-tree",
+    "previous_tree_dir": "output/pr-review/planet6897-green-20261002/6267-review-scope-para6267-native/6267-review-scope-para6267-native/render_tree"
+  }
+]

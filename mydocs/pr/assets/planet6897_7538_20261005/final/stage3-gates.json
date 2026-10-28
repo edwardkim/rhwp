@@ -1,0 +1,177 @@
+[
+  {
+    "gate": "unit-tiers",
+    "cmd": [
+      "node",
+      "scripts/rust-unit-test-tiers.mjs",
+      "--check",
+      "--base-ref",
+      "1e488ac370ec715a5b97c765542e16fc9bf65714"
+    ],
+    "exit": 0,
+    "seconds": 16.098
+  },
+  {
+    "gate": "prepare",
+    "cmd": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--prepare"
+    ],
+    "exit": 0,
+    "seconds": 0.78
+  },
+  {
+    "gate": "fmt",
+    "cmd": [
+      "cargo",
+      "fmt",
+      "--all"
+    ],
+    "exit": 0,
+    "seconds": 6.499
+  },
+  {
+    "gate": "focused4068",
+    "cmd": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_4068_column_top_table_outer_margin",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "exit": 0,
+    "seconds": 119.165
+  },
+  {
+    "gate": "focused7062",
+    "cmd": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_7062_tac_object_host_line_height",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "exit": 0,
+    "seconds": 10.375
+  },
+  {
+    "gate": "focused6598",
+    "cmd": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_6598_para_anchor_vert_origin",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "exit": 0,
+    "seconds": 8.203
+  },
+  {
+    "gate": "fmt-check",
+    "cmd": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 6.528
+  },
+  {
+    "gate": "native-clippy",
+    "cmd": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--target-dir",
+      "target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 30.838
+  },
+  {
+    "gate": "wasm-clippy",
+    "cmd": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "rhwp",
+      "--lib",
+      "--target",
+      "wasm32-unknown-unknown",
+      "--target-dir",
+      "target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 18.671
+  },
+  {
+    "gate": "workspace-build",
+    "cmd": [
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace",
+      "--target-dir",
+      "target/pr-review"
+    ],
+    "exit": 0,
+    "seconds": 63.084
+  },
+  {
+    "gate": "all-target-clippy",
+    "cmd": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--target-dir",
+      "target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 77.233
+  },
+  {
+    "gate": "manifest",
+    "cmd": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "1e488ac370ec715a5b97c765542e16fc9bf65714"
+    ],
+    "exit": 0,
+    "seconds": 0.53
+  }
+]

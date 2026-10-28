@@ -2,7 +2,7 @@
 //!
 //! 재현 문서: `samples/hwpx/footnote-tbox-01.hwpx` + `samples/footnote-tbox-01.hwp`.
 //!
-//! 한컴 PDF 정답지 (`pdf-large/hwpx/footnote-tbox-01.pdf`):
+//! 한컴 PDF 정답지 (`pdf/hwpx/footnote-tbox-01.pdf`):
 //! ```
 //! 글상자 내부에 각주가 있는 경우
 //!  여기에 각주1)가 들어있는 경우

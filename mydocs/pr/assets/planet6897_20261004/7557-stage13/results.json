@@ -1,0 +1,30 @@
+{
+  "status": "individual_changed_layout_scope_pass_integration_pending",
+  "production_code_candidate": "4cfe96e52",
+  "nextest": {
+    "passed": 2,
+    "failed": 0,
+    "exit_code": 0,
+    "log_sha256": "c90b0911dbb4ffc4146570ca3540a01fcf468eb4ef4e319d33b2ad61985e82ac"
+  },
+  "test_source_sha256": "21cc5805426252217d266ec7c05fd452500c369479742a8d9ef55cb4e4e67051",
+  "native_and_fresh_wasm": {
+    "selected_pages": {
+      "exam": {
+        "page": 14,
+        "percent": 98.67045
+      },
+      "footnote_control": {
+        "page": 201,
+        "percent": 97.6543
+      }
+    },
+    "below_90": 0,
+    "missing_pages": 0
+  },
+  "residual": "p201 arrowhead paint differs independently of lane/table/paragraph ownership; no whole-document fidelity claim",
+  "remaining": [
+    "other individual PR reviews",
+    "final integrated full gates"
+  ]
+}

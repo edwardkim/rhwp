@@ -11,6 +11,7 @@ import {
   getProjectedWebFontRuleIds,
   isCanvasKitSfntPlanned,
   normalizeProjectedFontFamily,
+  projectedSubstituteTargets,
   resolveProjectedCanvasKitFontPlan,
   type ProjectedWebFontEntry,
 } from './font-rule-runtime.ts';
@@ -60,8 +61,8 @@ const FONT_LIST: readonly FontEntry[] = FONT_RULE_WEBFONT_ENTRIES;
 /** @font-face에 등록된 폰트 이름 Set */
 export const REGISTERED_FONTS = new Set(FONT_LIST.map(f => f.name));
 
-/** 초기 렌더링에 필수인 폰트 (대부분의 HWP 문서 기본 서체) */
-const CRITICAL_FONTS = new Set(['함초롬바탕', '함초롬돋움']);
+/** 문서 기본 서체와 Canvas 옛한글 paint가 직접 요청하는 공급 자원. */
+const CRITICAL_FONTS = new Set(['함초롬바탕', '함초롬돋움', 'RHWP Old Hangul']);
 
 /** CSS @font-face에 등록한 글꼴 (문서 요청 단위로 누적) */
 const registeredFontFaces: FontEntry[] = [];
@@ -159,6 +160,15 @@ const OS_FONT_CANDIDATES = [
 ];
 const detectedOSFonts = new Set<string>();
 const detectedOSFontFamilies = new Set<string>();
+
+/** 실제 local() 프로그램 로드가 끝난 face만 공급하고 CDN 덮어쓰기를 막는다. */
+export function registerLoadedLocalFontFace(face: FontFace): void {
+  if (face.status !== 'loaded') throw new Error('로컬 글꼴 프로그램이 로드되지 않았습니다');
+  document.fonts.add(face);
+  const name = face.family.replace(/^['"]|['"]$/g, '');
+  detectedOSFonts.add(name);
+  detectedOSFontFamilies.add(normalizeFontFamily(name));
+}
 
 /**
  * 등록 전 시스템 글꼴을 generic fallback과의 폭 비교로 감지한다.
@@ -265,7 +275,13 @@ export async function loadWebFonts(
   // 이미 등록한 face가 있으면 브라우저가 그 face를 시스템 글꼴처럼 보고할 수 있으므로
   // 해당 이름은 재감지하지 않는다.
   const targetNames = [...(docFonts ?? []), ...CRITICAL_FONTS];
-  detectOSFonts(targetNames);
+  // legacy 이름(`한양중고딕`)은 stand-in 웹폰트로만 공급되므로 치환 대상(`HY중고딕`)까지
+  // 감지 후보에 넣어야 설치 face를 표시 체인 앞에 둘 수 있다.
+  const detectionNames = [
+    ...targetNames,
+    ...targetNames.flatMap(name => projectedSubstituteTargets(name).map(target => target.face)),
+  ];
+  detectOSFonts(detectionNames);
   const systemFontNames = [...new Set(targetNames.filter(isDetectedOSFont))];
   if (systemFontNames.length > 0) {
     console.debug(`[FontLoader][debug] 시스템 글꼴 사용: ${systemFontNames.join(', ')}`);

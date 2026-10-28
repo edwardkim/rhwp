@@ -1,0 +1,63 @@
+{
+  "changeSetId": "issue-6936.new-gulim-face-identity",
+  "decisionPlane": "layout-name",
+  "evidenceRecords": [
+    {
+      "evidenceId": "evidence.issue-6936.hancom-new-gulim",
+      "kind": "public-fixture",
+      "licenseOrProvenance": "New synthetic fixture samples/issue6936/bold-faces.hwp, exported by Hancom 12.0.0.4605 engine 2020. PDF embeds New Gulim for both regular and synthetic-bold lines; source font is 새굴림. No proprietary font file is distributed.",
+      "parentEvidenceIds": [],
+      "sha256": "5b0dc916098847ed3c6e3eadae468f33a9810ee58de3e91c1e2bb2f3a7e2ae12",
+      "source": "pdf/issue6936-bold-faces-2020.pdf"
+    }
+  ],
+  "expectedDelta": {
+    "activeRuleDelta": 0,
+    "projectionId": "rust-layout-name",
+    "unchangedProjectionIds": [
+      "rust-layout-metric",
+      "canvas2d-paint",
+      "canvas2d-webfont",
+      "canvaskit-sfnt"
+    ]
+  },
+  "issue": 6936,
+  "kind": "font-rule-change-set",
+  "operations": [
+    {
+      "evidenceIds": [
+        "evidence.issue-6936.hancom-new-gulim"
+      ],
+      "expectedSelectionTupleSha256": "44fe3470b9c8215d4ec1f139ae38d76f360da66283ceea89f47dfc34a0e2db74",
+      "operationId": "operation.issue-6936.new-gulim-face-identity",
+      "replacementRule": {
+        "conditions": {
+          "languageSlot": "all"
+        },
+        "decisionPlane": "layout-name",
+        "evidenceIds": [
+          "evidence.issue-6936.hancom-new-gulim"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        },
+        "projectionSequence": 166,
+        "relationType": "style-fallback",
+        "ruleId": "rule.rust-style-resolution.100b7126dfe0ddd2d55c",
+        "sourceBoundaryId": "rust-style-resolution.ttf",
+        "sourceFace": "새굴림",
+        "supply": null,
+        "targetFaceOrPolicy": "New Gulim"
+      },
+      "retiredRuleId": "rule.rust-style-resolution.b6c97b846cf79ce168fa",
+      "retirementReason": "Preserve the original New Gulim face and its existing metrics instead of substituting HCR Dotum, so PDF synthetic bold uses the requested regular face.",
+      "type": "retire-and-replace"
+    }
+  ],
+  "parentRegistrySha256": "78cda382672ab6da2923d605c80abaac663a47dac301cc23cfeeda5bd49e8ca4",
+  "schemaVersion": "2.0",
+  "sequence": 2
+}

@@ -1,0 +1,99 @@
+{
+  "sourceHead": "7da9c6ca3ee48f26c16e6b882e7cc9353bf541f6",
+  "correctionCodeCommit": "73f27d3fa70b2a00bdf014eec814dbb52f7edc0c",
+  "validatedPatchSha256": "199f078b7b6e91d27e36e7604383571e969e1f44b6428e8cedd2cc1c030c8341",
+  "wasmSha256": "0534af7ba417a07b2514911daeb8ad2de15ca09adc8b7f20d94121dd5bc9490c",
+  "images": [
+    {
+      "file": "after-dark-delete-one.png",
+      "sha256": "b23c8939fc3c76c482ff53a93454eae8c5f59d5576f3ee8be68ff548bd1c318d",
+      "bytes": 69787,
+      "plannedRepositoryPath": "mydocs/pr/assets/pr7485/20260930/after-dark-delete-one.png",
+      "stage": "final proposed local patch, not applied to PR at capture"
+    },
+    {
+      "file": "after-dark-two.png",
+      "sha256": "693101298954a04fb0c6c84429a795341e1b563269c85225be345523ed98c450",
+      "bytes": 68795,
+      "plannedRepositoryPath": "mydocs/pr/assets/pr7485/20260930/after-dark-two.png",
+      "stage": "final proposed local patch, not applied to PR at capture"
+    },
+    {
+      "file": "after-dark-wrapped.png",
+      "sha256": "9e6604901be3c64b0ac39f07c6780a3d2ac5b55fd123604d8cddef91def84206",
+      "bytes": 72131,
+      "plannedRepositoryPath": "mydocs/pr/assets/pr7485/20260930/after-dark-wrapped.png",
+      "stage": "final proposed local patch, not applied to PR at capture"
+    },
+    {
+      "file": "after-dark-zero.png",
+      "sha256": "b3a8a27b9373ad78c5a4d02080578f3b0aa7eb60605ead06dcc4785ba11c2c1b",
+      "bytes": 71533,
+      "plannedRepositoryPath": "mydocs/pr/assets/pr7485/20260930/after-dark-zero.png",
+      "stage": "final proposed local patch, not applied to PR at capture"
+    },
+    {
+      "file": "after-light-delete-one.png",
+      "sha256": "2f13004180380d8c5e1d19d2652bc2dc25148984b7eaca3ee8df414a6f9370e7",
+      "bytes": 60776,
+      "plannedRepositoryPath": "mydocs/pr/assets/pr7485/20260930/after-light-delete-one.png",
+      "stage": "final proposed local patch, not applied to PR at capture"
+    },
+    {
+      "file": "after-light-two.png",
+      "sha256": "0e696e0df79f715fe2bce964dfcd3c0aa3286442ee7889317e655ffb63db16ac",
+      "bytes": 61241,
+      "plannedRepositoryPath": "mydocs/pr/assets/pr7485/20260930/after-light-two.png",
+      "stage": "final proposed local patch, not applied to PR at capture"
+    },
+    {
+      "file": "after-light-wrapped.png",
+      "sha256": "dd484f129d95ce9334da84e1cd5fa4efbe562ccb93a1a9b8f9962efd01c192cb",
+      "bytes": 63481,
+      "plannedRepositoryPath": "mydocs/pr/assets/pr7485/20260930/after-light-wrapped.png",
+      "stage": "final proposed local patch, not applied to PR at capture"
+    },
+    {
+      "file": "after-light-zero.png",
+      "sha256": "4a0d4b41b2e98be7d3e237e1b6f44f95f772c409689ee096e819fe80f72e2e16",
+      "bytes": 62952,
+      "plannedRepositoryPath": "mydocs/pr/assets/pr7485/20260930/after-light-zero.png",
+      "stage": "final proposed local patch, not applied to PR at capture"
+    },
+    {
+      "file": "before-dark-two.png",
+      "sha256": "7e364b5522935918267d53650af61b867894733f19b367a5e7a322612707f3d9",
+      "bytes": 69951,
+      "plannedRepositoryPath": "mydocs/pr/assets/pr7485/20260930/before-dark-two.png",
+      "stage": "original PR initial review"
+    },
+    {
+      "file": "before-dark-zero.png",
+      "sha256": "6db22b20c2f2e9dd9776a7b21ddb500a34914d6033d2c5be54d2d3251f69f598",
+      "bytes": 69016,
+      "plannedRepositoryPath": "mydocs/pr/assets/pr7485/20260930/before-dark-zero.png",
+      "stage": "original PR initial review"
+    },
+    {
+      "file": "before-light-after-delete.png",
+      "sha256": "db365b2e0b5a35552c6d35bb01ededc3245ac895d859cfe9e3af873eab56ac01",
+      "bytes": 60355,
+      "plannedRepositoryPath": "mydocs/pr/assets/pr7485/20260930/before-light-after-delete.png",
+      "stage": "original PR initial review"
+    },
+    {
+      "file": "before-light-two.png",
+      "sha256": "efeff3c42150f1826bcf26688efbd39a2918aeabb283110c43885a68deab08fd",
+      "bytes": 60890,
+      "plannedRepositoryPath": "mydocs/pr/assets/pr7485/20260930/before-light-two.png",
+      "stage": "original PR initial review"
+    },
+    {
+      "file": "before-light-zero.png",
+      "sha256": "457cab87001c1acbec972ee00b3108809dbfed34afff3ee2ad7afca8dd9d78d6",
+      "bytes": 60047,
+      "plannedRepositoryPath": "mydocs/pr/assets/pr7485/20260930/before-light-zero.png",
+      "stage": "original PR initial review"
+    }
+  ]
+}

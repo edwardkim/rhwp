@@ -14,9 +14,12 @@ from __future__ import annotations
 
 import json
 import shutil
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "scripts"))
+from regression_document_scope import is_deferred_regression_input
 OUT = ROOT / "tests" / "fixtures" / "inspect_msec"
 WORKING = ROOT / "mydocs" / "working" / "inspect_msec"
 ISSUE = 5476
@@ -86,7 +89,6 @@ CLEAN_SAMPLES = [
     "samples/hwp3-sample10.hwp",
     "samples/issue1950_hwp3_tab_charoffset.hwp",
     "samples/2022년 국립국어원 업무계획.hwp",
-    "samples/2025 행정업무운영 편람(최종).hwpx",
 ]
 
 INJECTION_KINDS = [
@@ -1147,7 +1149,7 @@ class Builder:
         )
 
     def _ht_clean_samples(self) -> None:
-        for sample in CLEAN_SAMPLES:
+        for sample in filter(lambda value: not is_deferred_regression_input(value), CLEAN_SAMPLES):
             slug = slug_token(Path(sample).name)
             env = {
                 "schemaVersion": SCHEMA,
@@ -1865,7 +1867,6 @@ class Builder:
         self._uni_tag()
         self._uni_confusable()
         self._uni_kind_filter()
-        self._uni_hangul_pua()
         self._uni_clean()
         self._uni_rendered_raw()
 
@@ -2360,45 +2361,6 @@ class Builder:
                     human=f"축 {kind['filter']} — 탐지 {len(kept)}건\n",
                 )
             )
-
-    def _uni_hangul_pua(self) -> None:
-        env = {
-            "schemaVersion": SCHEMA,
-            "source": "samples/exam_kor.hwp",
-            "kindFilter": "all",
-            "scannedChars": 1,
-            "findings": [],
-            "findingCount": 0,
-            "clean": True,
-            "severityCounts": {"high": 0, "medium": 0, "low": 0},
-            "kindCounts": {
-                "zero_width": 0,
-                "bidi_override": 0,
-                "tag_char": 0,
-                "confusable": 0,
-            },
-        }
-        self.add(
-            envelope_shell(
-                case_id="uni-zw-hangul-pua-typesetting",
-                axis="unicode",
-                family="zero_width",
-                polarity="negative",
-                source_rule={
-                    "file": UNI_SRC,
-                    "symbol": "zero_width_is_hangul_typesetting",
-                    "note": "PUA 옆 U+200B 는 옛한글 조판 보조. exam_kor.hwp 24건 전부 이 형태.",
-                },
-                argv=["inspect", "unicode", "samples/exam_kor.hwp", "--json"],
-                exit_code=0,
-                envelope=env,
-                consume={"branch": "clean == true", "reason": "hangul-pua"},
-                pair=None,
-                why="한/글 PUA 옛한글 + ZWSP 는 은닉 채널이 아니다.",
-                note="방향 제어·태그 문자에는 이 완화를 적용하지 않는다.",
-                human="유니코드 기만 검사 — 탐지 0건 (옛한글 조판 보조)\n",
-            )
-        )
 
     def _uni_clean(self) -> None:
         for sample in (
@@ -3239,7 +3201,7 @@ class Builder:
             "## 만진 경로 / 만지지 않은 경로",
             "",
             "- 만짐: `tools/inspect_msec/`, `tests/fixtures/inspect_msec/`, `mydocs/working/inspect_msec/`,",
-            "  `mydocs/working/m_sec_inspect_fatten.md`, `tests/cases/inspect_msec_fatten.rs`",
+            "  `mydocs/working/archives/m_sec_inspect_fatten.md`, `tests/cases/inspect_msec_fatten.rs`",
             "- 안 만짐: `src/`, `gym/`, `scripts/visual_sweep.py`, 다른 MEGA 좌석",
             "",
             "## 건수",
@@ -3263,7 +3225,7 @@ class Builder:
             "closes #5476. `--body-file`. base `devel`. 한국어.",
             "",
         ]
-        write_text(ROOT / "mydocs" / "working" / "m_sec_inspect_fatten.md", "\n".join(overview))
+        write_text(ROOT / "mydocs" / "working" / "archives" / "m_sec_inspect_fatten.md", "\n".join(overview))
 
         # family walkthroughs — 픽스처마다 소비 분기
         by_axis = {"hidden-text": [], "injection": [], "unicode": [], "inspect": []}

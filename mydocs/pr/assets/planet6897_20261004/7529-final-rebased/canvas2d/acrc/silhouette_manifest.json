@@ -1,0 +1,58 @@
+{
+  "key": "acrc-canvas2d",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    3,
+    14
+  ],
+  "completed_pages": [
+    3,
+    14
+  ],
+  "missing_pages": [],
+  "tsv": "output/pr-review/planet6897-20261004/final-studio-rebased/canvas2d/acrc/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 3,
+      "rhwp_png": "output/pr-review/planet6897-20261004/final-studio-rebased/canvas2d/acrc/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "9f0912a44c2d6dc8ffe564315c772a094ac96fbb9b2942f7b591f96e9c6a5a08",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage21-7529/pdf/acrc/pdf_003.png",
+      "pdf_sha256": "768dd61f5aa06bb5259442893ea9fecb3d5d73e4a713a3598bebc24b1e8952a8"
+    },
+    {
+      "page": 14,
+      "rhwp_png": "output/pr-review/planet6897-20261004/final-studio-rebased/canvas2d/acrc/rhwp_png/rhwp_014.png",
+      "rhwp_sha256": "4a391e8b3140c33f2b723a3087ca55f7067d497782aefd2cc8e362f635a5ef21",
+      "pdf_png": "output/pr-review/planet6897-20261004/stage21-7529/pdf/acrc/pdf_014.png",
+      "pdf_sha256": "2267f4509eec9cfd08bb35c106595043a41b4014d3777d8b73537e0c46087455"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.0847,
+      "silhouette_boundary_reconciled_pixels": 12,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 42172,
+      "tolerant_content_match_percent": 99.11316
+    },
+    {
+      "page": 14,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.22162,
+      "silhouette_boundary_reconciled_pixels": 2,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 166628,
+      "tolerant_content_match_percent": 99.22282
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "summary": {
+    "compared_pages": 1,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 84.79188,
+    "worst_pixel_match_percent": 84.79188,
+    "average_ink_match_percent": 31.11427,
+    "worst_ink_match_percent": 31.11427,
+    "average_visual_accuracy_proxy_percent": 31.11427,
+    "worst_visual_accuracy_proxy_percent": 31.11427,
+    "worst_pages": [
+      5
+    ]
+  },
+  "pages": [
+    {
+      "page": 5,
+      "rhwp_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/frame2004/frame2004/rhwp_png/rhwp_005.png",
+      "pdf_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/frame2004/frame2004/pdf_png/pdf-5.png",
+      "overlay_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/frame2004/frame2004/overlay/overlay_005.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 135605,
+      "diff_ratio": 0.15208117,
+      "pixel_match_percent": 84.79188,
+      "ink_union_pixels": 196855,
+      "ink_diff_pixels": 135605,
+      "ink_diff_ratio": 0.68885728,
+      "ink_match_percent": 31.11427,
+      "visual_accuracy_proxy_percent": 31.11427,
+      "mean_abs_channel_delta": 15.48,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        86,
+        714,
+        930
+      ]
+    }
+  ]
+}

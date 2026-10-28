@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "key": "issue5701-original-p76",
+  "provenance": {
+    "hwp": {
+      "path": "output/review-planet6897-6125-6153-6155-20260827/source/issue5701-original.hwp",
+      "sha256": "2e97a22156cb69f2425dadb88e7f0b3128c9273716a14f7b4dbce1b18d825523"
+    },
+    "pdf": {
+      "path": "output/review-planet6897-6125-6153-6155-20260827/baseline/issue5701-original/issue5701-original-hwp2020.pdf",
+      "sha256": "2bab72225d993a39789b921efcfa77a5cce40dc8f383893bde67063500aa4c0e"
+    },
+    "git_head": "a6616441b21c6127999039419625a622f86db982",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "f438924fe2a8654d2a6560313971832470a54792bf423ff920a46ae493a98a43"
+    },
+    "rhwp_binary": {
+      "configured": "target/pr-review-planet6897-6125-6153-6155/release-test/rhwp",
+      "path": "target/pr-review-planet6897-6125-6153-6155/release-test/rhwp",
+      "sha256": "2aefca93a0f8e6a8e1ce124731094bd281eba4dd24f5051f92e47d0578f4e1aa"
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    76
+  ],
+  "requested_page_shards": [
+    [
+      76
+    ]
+  ],
+  "run_state": "complete"
+}

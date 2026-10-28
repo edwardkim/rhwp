@@ -1,0 +1,7 @@
+
+running 3 tests
+test issue_7518_reflow_row_physical_frame::regulatory_39_wrapper_offset_and_physical_tail_advance_the_following_flow ... ok
+test issue_7518_reflow_row_physical_frame::regulatory_39_table_follows_its_title_and_blank_paragraph ... ok
+test issue_7518_reflow_row_physical_frame::regulatory_39_exact_fit_opinion_cell_keeps_padding_and_all_four_lines ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 234 filtered out; finished in 4.07s

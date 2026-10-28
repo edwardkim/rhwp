@@ -41,10 +41,29 @@ fn render_box(
     italic: bool,
     bold: bool,
 ) {
+    let fs = if lb.font_size > 0.0 { lb.font_size } else { fs };
     let x = parent_x + lb.x;
     let y = parent_y + lb.y;
 
     match &lb.kind {
+        LayoutKind::HancomGlyphs(run) => {
+            ctx.set_font(&format!("{:.2}px {}", fs, run.font_family));
+            ctx.set_fill_style_str(color);
+            for ((glyph, offset), shear) in run.glyphs.chars().zip(&run.positions).zip(&run.shears)
+            {
+                ctx.save();
+                let _ = ctx.transform(
+                    1.0,
+                    0.0,
+                    -shear,
+                    1.0,
+                    x + offset,
+                    y + lb.baseline + run.baseline_shift,
+                );
+                let _ = ctx.fill_text(&glyph.to_string(), 0.0, 0.0);
+                ctx.restore();
+            }
+        }
         LayoutKind::Row(children) => {
             for child in children {
                 render_box(ctx, child, x, y, color, fs, italic, bold);
@@ -57,14 +76,26 @@ fn render_box(
             let fi = fs;
             // CJK 문자는 italic 미적용. FontStyle::Roman(`rm`)으로 italic=false 가
             // 전달된 경우에도 italic 미적용 (svg_render.rs Text arm 과 동일 정책).
-            let has_cjk = text.chars().any(|c| {
-                matches!(c,
-                    '\u{3000}'..='\u{9FFF}' | '\u{F900}'..='\u{FAFF}' | '\u{AC00}'..='\u{D7AF}'
-                )
-            });
-            set_font(ctx, fi, !has_cjk && italic, bold);
+            let has_cjk = super::text_has_cjk(text);
+            if has_cjk {
+                ctx.set_font(&format!(
+                    "{}{:.1}px {}",
+                    if bold { "bold " } else { "" },
+                    fi,
+                    super::CJK_EQUATION_FONT_FAMILY
+                ));
+            } else {
+                let styled = is_styled_variable(text);
+                set_font(ctx, fi, italic && !styled, bold && !styled);
+            }
             ctx.set_fill_style_str(color);
-            let _ = ctx.fill_text(text, x, y + lb.baseline);
+            if has_cjk && (lb.width - estimate_text_width(text, fi, false)).abs() > 0.01 {
+                for (ch, offset) in super::positioned_cjk_text(text, fi, lb.width) {
+                    let _ = ctx.fill_text(&ch.to_string(), x + offset, y + lb.baseline);
+                }
+            } else {
+                let _ = ctx.fill_text(text, x, y + lb.baseline);
+            }
         }
         LayoutKind::Number(text) => {
             // [Issue #900] svg_render.rs Number arm 과 동기화 — fs 사용.
@@ -81,6 +112,56 @@ fn render_box(
             ctx.set_text_align("center");
             let _ = ctx.fill_text(text, x + lb.width / 2.0, y + lb.baseline);
             ctx.set_text_align("start");
+        }
+        LayoutKind::FontGlyph {
+            text,
+            font_family,
+            outline,
+            paint,
+        } => {
+            if let Some(commands) = outline {
+                ctx.save();
+                let _ = ctx.translate(x, y);
+                if let Some(p) = paint {
+                    let _ = ctx.scale(p.scale_x, 1.0);
+                }
+                ctx.set_fill_style_str(color);
+                ctx.begin_path();
+                for command in commands {
+                    use super::GlyphOutlineCommand as Command;
+                    match *command {
+                        Command::Move((a, b)) => ctx.move_to(a, b),
+                        Command::Line((a, b)) => ctx.line_to(a, b),
+                        Command::Cubic([(a, b), (c, d), (e, f)]) => {
+                            ctx.bezier_curve_to(a, b, c, d, e, f)
+                        }
+                        Command::Close => ctx.close_path(),
+                    }
+                }
+                ctx.fill();
+                if let Some(p) = paint {
+                    ctx.set_stroke_style_str(color);
+                    ctx.set_line_width(p.stroke_width);
+                    ctx.set_line_join("miter");
+                    ctx.set_miter_limit(10.0);
+                    ctx.stroke();
+                }
+                ctx.restore();
+                return;
+            }
+            ctx.set_font(&format!("{fs:.1}px {font_family}"));
+            ctx.set_fill_style_str(color);
+            ctx.set_text_align("start");
+            let scale_x = paint.map_or(1.0, |p| p.scale_x);
+            if scale_x != 1.0 {
+                ctx.save();
+                let _ = ctx.translate(x, y + lb.baseline);
+                let _ = ctx.scale(scale_x, 1.0);
+                let _ = ctx.fill_text(text, 0.0, 0.0);
+                ctx.restore();
+            } else {
+                let _ = ctx.fill_text(text, x, y + lb.baseline);
+            }
         }
         LayoutKind::MathSymbol(text) => {
             // [Issue #900] svg_render.rs MathSymbol arm 과 동기화 (commit 292dbbef).
@@ -101,16 +182,23 @@ fn render_box(
             ctx.set_fill_style_str(color);
             let _ = ctx.fill_text(name, x, y + lb.baseline);
         }
-        LayoutKind::Fraction { numer, denom } => {
+        LayoutKind::Fraction {
+            numer,
+            denom,
+            axis_height,
+            rule_thickness,
+            rule_start,
+            rule_end,
+        } => {
             render_box(ctx, numer, x, y, color, fs, italic, bold);
             // 분수선 — baseline에서 axis_height 위에 배치 (SVG 경로와 동일)
-            let line_y = y + lb.baseline - fs * super::layout::AXIS_HEIGHT;
-            let line_thick = fs * 0.04;
+            let line_y = y + lb.baseline - axis_height;
+            let line_thick = *rule_thickness;
             ctx.set_stroke_style_str(color);
             ctx.set_line_width(line_thick);
             ctx.begin_path();
-            ctx.move_to(x + fs * 0.05, line_y);
-            ctx.line_to(x + lb.width - fs * 0.05, line_y);
+            ctx.move_to(x + rule_start, line_y);
+            ctx.line_to(x + rule_end, line_y);
             ctx.stroke();
             render_box(ctx, denom, x, y, color, fs, italic, bold);
         }
@@ -119,29 +207,39 @@ fn render_box(
             render_box(ctx, bottom, x, y, color, fs, italic, bold);
         }
         LayoutKind::Sqrt { index, body } => {
-            let sign_h = lb.height;
-            let body_left = x + body.x - fs * 0.1;
-            let sign_x = x;
-            let v_top = y;
-            let v_mid_x = body_left - fs * 0.15;
-            let v_mid_y = y + sign_h;
-            let v_start_x = v_mid_x - fs * 0.3;
-            let v_start_y = y + sign_h * 0.6;
-            let tick_x = v_start_x - fs * 0.1;
-            let tick_y = v_start_y - fs * 0.05;
-
-            ctx.set_stroke_style_str(color);
-            ctx.set_line_width(fs * 0.04);
+            let geometry = super::radical_outline::geometry(lb, body, fs);
+            ctx.set_fill_style_str(color);
             ctx.begin_path();
-            ctx.move_to(tick_x, tick_y);
-            ctx.line_to(v_start_x, v_start_y);
-            ctx.line_to(v_mid_x, v_mid_y);
-            ctx.line_to(body_left, v_top);
-            ctx.line_to(x + lb.width, v_top);
+            for command in &geometry.outline {
+                use super::GlyphOutlineCommand as Command;
+                match *command {
+                    Command::Move((a, b)) => ctx.move_to(x + a, y + b),
+                    Command::Line((a, b)) => ctx.line_to(x + a, y + b),
+                    Command::Cubic([(a, b), (c, d), (e, f)]) => {
+                        ctx.bezier_curve_to(x + a, y + b, x + c, y + d, x + e, y + f)
+                    }
+                    Command::Close => ctx.close_path(),
+                }
+            }
+            ctx.fill();
+            ctx.set_stroke_style_str(color);
+            ctx.set_line_width(geometry.rule_thickness);
+            ctx.begin_path();
+            ctx.move_to(x + geometry.bar_start.0, y + geometry.bar_start.1);
+            ctx.line_to(x + geometry.bar_end.0, y + geometry.bar_end.1);
             ctx.stroke();
 
             if let Some(idx) = index {
-                render_box(ctx, idx, sign_x, y, color, fs * SCRIPT_SCALE, false, false);
+                render_box(
+                    ctx,
+                    idx,
+                    x,
+                    y,
+                    color,
+                    fs * RADICAL_DEGREE_SCALE,
+                    false,
+                    false,
+                );
             }
             render_box(ctx, body, x, y, color, fs, italic, bold);
         }
@@ -158,33 +256,30 @@ fn render_box(
             render_box(ctx, sub, x, y, color, fs * SCRIPT_SCALE, italic, bold);
             render_box(ctx, sup, x, y, color, fs * SCRIPT_SCALE, italic, bold);
         }
-        LayoutKind::BigOp { symbol, sub, sup } => {
+        LayoutKind::BigOp {
+            symbol,
+            sub,
+            sup,
+            op_font_size,
+            op_x,
+            op_y,
+            op_baseline,
+            ..
+        } => {
             // [Issue #900] svg_render.rs BigOp arm 과 동기화 (commit 292dbbef).
             // 적분 (∫, ∮ 등): 기호 좌측, 첨자 우상단/우하단 (nolimits)
             // 그 외 (∑, ∏ 등): 기호 중앙, 첨자 위/아래 (limits)
             let is_integral = super::layout::is_integral_symbol(symbol);
-            // Task #1313: 적분은 전용 스케일(INTEGRAL_SCALE), ∑/∏ 등은 BIG_OP_SCALE.
-            let op_fs = fs
-                * if is_integral {
-                    INTEGRAL_SCALE
-                } else {
-                    BIG_OP_SCALE
-                };
+            // 생산 단계에서 확정한 표시 글자 크기와 원점을 소비한다.
+            let op_fs = *op_font_size;
             set_font(ctx, op_fs, false, false);
             ctx.set_fill_style_str(color);
             if is_integral {
                 // Task #1317: 적분 기호는 stroke path 로 렌더(geom SSOT).
-                draw_integral(ctx, x, y, fs, color);
+                draw_integral(ctx, x + op_x, y + op_y, fs, color);
             } else {
-                let sup_h = sup.as_ref().map(|b| b.height + fs * 0.05).unwrap_or(0.0);
-                // Task #1233: 연산자는 max_w(= lb.width - trailing pad)에 중앙정렬 →
-                // pad 전체가 순수 trailing 간격이 되고 첨자(max_w 중앙정렬)와 정렬된다.
-                // #1304: 연산자 폭은 layout 의 estimate_text_width 와 동일 기준을 써야 첨자와
-                // 가로 중심이 맞는다 (기존 estimate_op_width 의 0.6 과소추정 → ∑ 우측 치우침).
-                let center_w = lb.width - fs * super::layout::BIG_OP_TRAIL_PAD;
-                let op_x =
-                    x + (center_w - super::layout::estimate_text_width(symbol, op_fs, false)) / 2.0;
-                let op_y = y + sup_h + op_fs * 0.8;
+                let op_x = x + op_x;
+                let op_y = y + op_baseline;
                 let _ = ctx.fill_text(symbol, op_x, op_y);
             }
             // 위/아래 첨자 — LayoutBox 자식 좌표 사용 (적분/일반 공통)
@@ -195,17 +290,24 @@ fn render_box(
                 render_box(ctx, sub_box, x, y, color, fs * SCRIPT_SCALE, false, false);
             }
         }
-        LayoutKind::Limit { is_upper, sub } => {
-            // [Task PR #396 후속] SVG 경로 (svg_render.rs::Limit) 와 동일하게 base font_size 사용.
-            // font_size_from_box(lb, fs) 는 lb.height 를 사용하는데, Limit 의 lb 는 "lim + 첨자"
-            // 전체 높이라 base 의 1.5~2 배가 되어 lim 글자가 비정상으로 커지는 정황.
-            let name = if *is_upper { "Lim" } else { "lim" };
-            let fi = fs;
-            set_font(ctx, fi, false, false);
-            ctx.set_fill_style_str(color);
-            let _ = ctx.fill_text(name, x, y + fi * 0.8);
+        LayoutKind::Limit {
+            is_upper,
+            name,
+            name_font_size,
+            sub_font_size,
+            sub,
+        } => {
+            if let Some(name) = name {
+                render_box(ctx, name, x, y, color, name.height, false, false);
+            } else {
+                // 일반 글꼴은 첨자를 포함한 전체 상자 높이를 글꼴 크기로 쓰지 않는다.
+                let name = if *is_upper { "Lim" } else { "lim" };
+                set_font(ctx, *name_font_size, false, false);
+                ctx.set_fill_style_str(color);
+                let _ = ctx.fill_text(name, x, y + lb.baseline);
+            }
             if let Some(sub_box) = sub {
-                render_box(ctx, sub_box, x, y, color, fs * SCRIPT_SCALE, false, false);
+                render_box(ctx, sub_box, x, y, color, *sub_font_size, false, false);
             }
         }
         LayoutKind::Matrix { cells, style } => {
@@ -213,7 +315,7 @@ fn render_box(
                 MatrixStyle::Paren => ("(", ")"),
                 MatrixStyle::Bracket => ("[", "]"),
                 MatrixStyle::Vert => ("|", "|"),
-                MatrixStyle::Plain => ("", ""),
+                MatrixStyle::Plain | MatrixStyle::Ladder | MatrixStyle::ShortLadder => ("", ""),
             };
             if !bracket_chars.0.is_empty() {
                 draw_stretch_bracket(ctx, bracket_chars.0, x, y, fs * 0.3, lb.height, color, fs);
@@ -247,36 +349,94 @@ fn render_box(
                 render_box(ctx, right, x, y, color, fs, italic, bold);
             }
         }
-        LayoutKind::Paren { left, right, body } => {
+        LayoutKind::Paren {
+            left,
+            right,
+            left_width,
+            right_width,
+            delimiter_height,
+            glyph_delimiters,
+            left_outline,
+            right_outline,
+            body,
+        } => {
             // 텍스트 높이 파렌(`(`, `)`)은 폰트 글리프로 렌더, 그 외는 path. (Task #283)
-            let use_glyph = lb.height <= fs * 1.2;
-            let paren_w = if use_glyph { fs * 0.333 } else { fs * 0.27 };
+            let use_glyph = *glyph_delimiters;
             if !left.is_empty() {
-                if use_glyph && (left == "(" || left == ")") {
+                if let Some(commands) = left_outline {
+                    draw_delimiter_outline(ctx, commands, x, y, color);
+                } else if use_glyph && (left == "(" || left == ")") {
                     set_font(ctx, fs, false, false);
                     ctx.set_fill_style_str(color);
                     let _ = ctx.fill_text(left, x, y + lb.baseline);
                 } else {
-                    draw_stretch_bracket(ctx, left, x, y, paren_w, lb.height, color, fs);
+                    draw_stretch_bracket(
+                        ctx,
+                        left,
+                        x,
+                        y,
+                        *left_width,
+                        *delimiter_height,
+                        color,
+                        fs,
+                    );
                 }
             }
             render_box(ctx, body, x, y, color, fs, italic, bold);
             if !right.is_empty() {
-                let right_x = x + lb.width - paren_w;
-                if use_glyph && (right == "(" || right == ")") {
+                let right_x = x + lb.width - right_width;
+                if let Some(commands) = right_outline {
+                    draw_delimiter_outline(ctx, commands, right_x, y, color);
+                } else if use_glyph && (right == "(" || right == ")") {
                     set_font(ctx, fs, false, false);
                     ctx.set_fill_style_str(color);
                     let _ = ctx.fill_text(right, right_x, y + lb.baseline);
                 } else {
-                    draw_stretch_bracket(ctx, right, right_x, y, paren_w, lb.height, color, fs);
+                    draw_stretch_bracket(
+                        ctx,
+                        right,
+                        right_x,
+                        y,
+                        *right_width,
+                        *delimiter_height,
+                        color,
+                        fs,
+                    );
                 }
             }
         }
-        LayoutKind::Decoration { kind, body } => {
+        LayoutKind::Decoration {
+            kind,
+            body,
+            negation,
+            outline,
+        } => {
             render_box(ctx, body, x, y, color, fs, italic, bold);
-            let deco_y = y + fs * 0.05;
-            let mid_x = x + body.x + body.width / 2.0;
-            draw_decoration(ctx, *kind, mid_x, deco_y, body.width, color, fs);
+            if let Some(commands) = outline {
+                draw_delimiter_outline(ctx, commands, x, y, color);
+            } else if *kind == DecoKind::StrikeThrough {
+                let g = negation
+                    .clone()
+                    .unwrap_or_else(|| super::negation_geometry::geometry(body));
+                ctx.set_stroke_style_str(color);
+                ctx.set_line_width(g.thickness);
+                ctx.begin_path();
+                ctx.move_to(x + g.start.0, y + g.start.1);
+                ctx.line_to(x + g.end.0, y + g.end.1);
+                ctx.stroke();
+            } else if *kind == DecoKind::Box {
+                ctx.set_stroke_style_str(color);
+                ctx.set_line_width(fs * 0.03);
+                ctx.stroke_rect(x, y, lb.width, lb.height);
+            } else {
+                let deco_y = y + fs * 0.05;
+                let mid_x = x + body.x + body.width / 2.0;
+                draw_decoration(ctx, *kind, mid_x, deco_y, body.width, color, fs);
+            }
+        }
+        LayoutKind::Color { rgb, body } => {
+            let body_color = format!("#{:02x}{:02x}{:02x}", rgb[0], rgb[1], rgb[2]);
+            render_box(ctx, body, x, y, &body_color, fs, italic, bold);
         }
         LayoutKind::FontStyle { style, body } => {
             let (new_italic, new_bold) = match style {
@@ -306,31 +466,47 @@ fn set_font(ctx: &CanvasRenderingContext2d, size: f64, italic: bool, bold: bool)
 
 /// 적분 기호(∫)를 stroke path 로 렌더 (Task #1317).
 ///
-/// svg_render.rs 의 `integral_path` 와 동일한 `integral_geom` 기하·곡선을 사용해
-/// SVG/Canvas 가 픽셀 단위로 정합한다. 폰트에 의존하지 않으므로 글리프 bbox 가
-/// 결정적이며 상·하한 attach point(동일 geom)와 어긋나지 않는다.
+/// SVG·Skia와 같은 공개 적분 윤곽 및 공통 ink 영역을 소비한다.
 fn draw_integral(ctx: &CanvasRenderingContext2d, x: f64, y: f64, fs: f64, color: &str) {
-    let g = integral_geom(fs);
-    let h = g.bottom_y - g.top_y;
-    let p0x = x + g.bottom_hook_x;
-    let p0y = y + g.bottom_y;
-    let p3x = x + g.top_hook_x;
-    let p3y = y + g.top_y;
-    let c1x = x + g.width * 1.02;
-    let c1y = y + g.bottom_y - h * 0.30;
-    let c2x = x - g.width * 0.10;
-    let c2y = y + g.top_y + h * 0.30;
-    ctx.set_stroke_style_str(color);
-    ctx.set_line_width(g.stroke_w);
-    ctx.set_line_cap("round");
+    use super::integral_outline::{commands, Command};
+    ctx.set_fill_style_str(color);
     ctx.begin_path();
-    ctx.move_to(p0x, p0y);
-    ctx.bezier_curve_to(c1x, c1y, c2x, c2y, p3x, p3y);
-    ctx.stroke();
-    ctx.set_line_cap("butt");
+    for command in commands(x, y, fs) {
+        match command {
+            Command::Move((x, y)) => ctx.move_to(x, y),
+            Command::Line((x, y)) => ctx.line_to(x, y),
+            Command::Cubic([(a, b), (c, d), (e, f)]) => ctx.bezier_curve_to(a, b, c, d, e, f),
+            Command::Close => ctx.close_path(),
+        }
+    }
+    ctx.fill();
 }
 
 /// 늘림 괄호 렌더링
+fn draw_delimiter_outline(
+    ctx: &CanvasRenderingContext2d,
+    commands: &[super::GlyphOutlineCommand],
+    x: f64,
+    y: f64,
+    color: &str,
+) {
+    use super::GlyphOutlineCommand as Command;
+    ctx.set_fill_style_str(color);
+    ctx.begin_path();
+    for command in commands {
+        match *command {
+            Command::Move((a, b)) => ctx.move_to(x + a, y + b),
+            Command::Line((a, b)) => ctx.line_to(x + a, y + b),
+            Command::Cubic([(a, b), (c, d), (e, f)]) => {
+                ctx.bezier_curve_to(x + a, y + b, x + c, y + d, x + e, y + f)
+            }
+            Command::Close => ctx.close_path(),
+        }
+    }
+    ctx.fill();
+}
+
+#[allow(clippy::too_many_arguments)]
 fn draw_stretch_bracket(
     ctx: &CanvasRenderingContext2d,
     bracket: &str,
@@ -341,6 +517,21 @@ fn draw_stretch_bracket(
     color: &str,
     fs: f64,
 ) {
+    if matches!(bracket, "{" | "}") {
+        use super::GlyphOutlineCommand as Command;
+        ctx.set_fill_style_str(color);
+        ctx.begin_path();
+        for command in super::brace_stretch::commands(x, y, w, h, fs, bracket == "}") {
+            match command {
+                Command::Move((a, b)) => ctx.move_to(a, b),
+                Command::Line((a, b)) => ctx.line_to(a, b),
+                Command::Cubic([(a, b), (c, d), (e, f)]) => ctx.bezier_curve_to(a, b, c, d, e, f),
+                Command::Close => ctx.close_path(),
+            }
+        }
+        ctx.fill();
+        return;
+    }
     let mid_x = x + w / 2.0;
     let stroke_w = if matches!(bracket, "(" | ")") {
         (fs * 0.042).max(0.48)
@@ -397,26 +588,6 @@ fn draw_stretch_bracket(
             ctx.line_to(mid_x - w * 0.2, y + h);
             ctx.stroke();
         }
-        "{" => {
-            let qh = h / 4.0;
-            ctx.begin_path();
-            ctx.move_to(mid_x + w * 0.2, y);
-            ctx.quadratic_curve_to(mid_x - w * 0.1, y, mid_x - w * 0.1, y + qh);
-            ctx.quadratic_curve_to(mid_x - w * 0.1, y + qh * 2.0, mid_x - w * 0.3, y + qh * 2.0);
-            ctx.quadratic_curve_to(mid_x - w * 0.1, y + qh * 2.0, mid_x - w * 0.1, y + qh * 3.0);
-            ctx.quadratic_curve_to(mid_x - w * 0.1, y + h, mid_x + w * 0.2, y + h);
-            ctx.stroke();
-        }
-        "}" => {
-            let qh = h / 4.0;
-            ctx.begin_path();
-            ctx.move_to(mid_x - w * 0.2, y);
-            ctx.quadratic_curve_to(mid_x + w * 0.1, y, mid_x + w * 0.1, y + qh);
-            ctx.quadratic_curve_to(mid_x + w * 0.1, y + qh * 2.0, mid_x + w * 0.3, y + qh * 2.0);
-            ctx.quadratic_curve_to(mid_x + w * 0.1, y + qh * 2.0, mid_x + w * 0.1, y + qh * 3.0);
-            ctx.quadratic_curve_to(mid_x + w * 0.1, y + h, mid_x - w * 0.2, y + h);
-            ctx.stroke();
-        }
         "|" => {
             ctx.begin_path();
             ctx.move_to(mid_x, y);
@@ -463,7 +634,7 @@ fn draw_decoration(
             ctx.line_to(mid_x + half_w, y + fs * 0.05);
             ctx.stroke();
         }
-        DecoKind::Vec => {
+        DecoKind::Vec | DecoKind::Dyad => {
             let arrow_y = y + fs * 0.05;
             ctx.begin_path();
             ctx.move_to(mid_x - half_w, arrow_y);
@@ -474,6 +645,13 @@ fn draw_decoration(
             ctx.line_to(mid_x + half_w, arrow_y);
             ctx.line_to(mid_x + half_w - fs * 0.1, arrow_y + fs * 0.06);
             ctx.stroke();
+            if kind == DecoKind::Dyad {
+                ctx.begin_path();
+                ctx.move_to(mid_x - half_w + fs * 0.1, arrow_y - fs * 0.06);
+                ctx.line_to(mid_x - half_w, arrow_y);
+                ctx.line_to(mid_x - half_w + fs * 0.1, arrow_y + fs * 0.06);
+                ctx.stroke();
+            }
         }
         DecoKind::Tilde => {
             let ty = y + fs * 0.08;

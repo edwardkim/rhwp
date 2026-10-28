@@ -1,0 +1,31 @@
+{
+  "emptyPacks": [],
+  "exit": 0,
+  "issueCount": 0,
+  "issueCountsByCode": {},
+  "issueCountsByFamily": {},
+  "issues": [],
+  "kind": "gymAudit",
+  "missingPacksRoot": false,
+  "ok": true,
+  "okPacks": [
+    "pack-a"
+  ],
+  "packCount": 1,
+  "packs": [
+    {
+      "empty": false,
+      "id": "pack-a",
+      "issues": [],
+      "referenceCount": 2,
+      "structured": [],
+      "taskCount": 2
+    }
+  ],
+  "referenceCount": 2,
+  "schemaVersion": "1.0",
+  "taskCount": 2,
+  "taskIdCollisions": {},
+  "toolErrors": [],
+  "toolFailed": false
+}

@@ -1,0 +1,19 @@
+key	input	reference_pdf	pages
+87520_____1	corpus:87520	corpus:87520	21
+36293327__2	corpus:36293327	(MCP 2024, 비공개 보관) 36293327-2024.pdf	1
+36368692__3	corpus:36368692	(MCP 2024, 비공개 보관) 36368692-2024.pdf	1
+36305262__4	corpus:36305262	(MCP 2024, 비공개 보관) 36305262-2024.pdf	1
+36293656__5	corpus:36293656	(MCP 2024, 비공개 보관) 36293656-2024.pdf	1
+36496061__6	corpus:36496061	(MCP 2024, 비공개 보관) 36496061-2024.pdf	1
+36349632__7	corpus:36349632	corpus:36349632	2
+36345869__8	corpus:36345869	(MCP 2024, 비공개 보관) 36345869-2024.pdf	3,4
+36323513__9	corpus:36323513	(MCP 2024, 비공개 보관) 36323513-2024.pdf	1
+36417104__10	corpus:36417104	(MCP 2024, 비공개 보관) 36417104-2024.pdf	1
+36415413__11	corpus:36415413	corpus:36415413	3
+36424611__12	corpus:36424611	(MCP 2024, 비공개 보관) 36424611-2024.pdf	1
+36353129__13	corpus:36353129	corpus:36353129	1
+36456809__14	corpus:36456809	(MCP 2024, 비공개 보관) 36456809-2024.pdf	1
+36433929__15	corpus:36433929	corpus:36433929	2
+36457457__16	corpus:36457457	(MCP 2024, 비공개 보관) 36457457.pdf	all
+36376848__17	samples/task2279/36376848_gyeoljae.hwpx	(MCP 2024, 비공개 보관) 36376848.pdf	1
+synthetic	samples/masked_stale_vpos/masked_stale_vpos.hwpx	pdf/masked_stale_vpos/masked_stale_vpos-2020.pdf	all

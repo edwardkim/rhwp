@@ -1,0 +1,59 @@
+{
+  "changeSetId": "issue-7445.document-substitute-lookup",
+  "decisionPlane": "layout-name",
+  "evidenceRecords": [
+    {
+      "evidenceId": "evidence.issue-7445.document-substitute-lookup",
+      "kind": "aggregate-measurement",
+      "licenseOrProvenance": "한컴2020/2024 독립 Print 10조건의 선택 경계 대조. 글꼴·표본·PDF 바이트는 로컬에만 보존하며 SFNT 동일성을 주장하지 않는다.",
+      "parentEvidenceIds": [],
+      "sha256": "edd9d10b2fc62f0ba9a462d8833f697a76aaad26856d36e8e7b66c6be878b75b",
+      "source": "assets/font-rules/evidence/issue-7445-document-substitute-lookup.json"
+    }
+  ],
+  "expectedDelta": {
+    "activeRuleDelta": 1,
+    "projectionId": "rust-layout-name",
+    "unchangedProjectionIds": [
+      "rust-layout-metric",
+      "canvas2d-paint",
+      "canvas2d-webfont",
+      "canvaskit-sfnt"
+    ]
+  },
+  "issue": 7445,
+  "kind": "font-rule-change-set",
+  "operations": [
+    {
+      "operationId": "operation.issue-7445.document-substitute-lookup",
+      "rule": {
+        "conditions": {
+          "altType": "1",
+          "availability": "nonembedded-ttf-document-substitute",
+          "languageSlot": "all"
+        },
+        "decisionPlane": "layout-name",
+        "evidenceIds": [
+          "evidence.issue-7445.document-substitute-lookup"
+        ],
+        "metricEntryIds": [],
+        "order": null,
+        "projection": {
+          "id": "rust-layout-name",
+          "mode": "direct"
+        },
+        "projectionSequence": 178,
+        "relationType": "style-fallback",
+        "ruleId": "rule.rust-style-resolution.8f1a484b6e8dff748728",
+        "sourceBoundaryId": "rust-style-resolution.document-substitute",
+        "sourceFace": "HCR Batang",
+        "supply": null,
+        "targetFaceOrPolicy": "Haansoft Batang"
+      },
+      "type": "add-rule"
+    }
+  ],
+  "parentRegistrySha256": "62fafb5d147698ba1e66a42f06788cee7a8531d83c843227a15e8c634c8d10ff",
+  "schemaVersion": "2.0",
+  "sequence": 16
+}

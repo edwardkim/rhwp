@@ -139,6 +139,6 @@ exit 3. 머리 캡슐 없음은 exit 1(IO)이다.
 - 레시피 색인: [references/recipe-index.md](references/recipe-index.md)
 - 워크스루: [examples/README.md](examples/README.md)
 - 픽스처: [fixtures/catalog.json](fixtures/catalog.json)
-- 작업 기록: [`mydocs/working/agent_work_receipt.md`](../../../mydocs/working/agent_work_receipt.md)
+- 작업 기록: [`mydocs/working/agent_work_receipt.md`](../../../mydocs/working/archives/agent_work_receipt.md)
 - 명령 정본: [`mydocs/manual/cli_commands.md`](../../../mydocs/manual/cli_commands.md)
 - 지식 지도 §영수증·감사·계보: [`mydocs/manual/agent_knowledge_map.md`](../../../mydocs/manual/agent_knowledge_map.md)

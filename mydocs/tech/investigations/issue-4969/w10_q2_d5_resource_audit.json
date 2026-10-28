@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-d5-resource-audit",
+  "issue": 4969,
+  "stage": "W10-Q2-D5-resource-audit",
+  "status": "ready-for-revised-plan",
+  "baseline": {
+    "source": "W10-Q2-D4-C existing release probe",
+    "dormantCheckpoint": "520f14dcf",
+    "activeCheckpoint": "4992ccbf3",
+    "warmLayerMedianUs": {
+      "dormant": 0.843,
+      "active": 703.6,
+      "delta": 702.757
+    },
+    "coldLayerMedianMs": {
+      "dormant": 1.608,
+      "active": 2.314,
+      "delta": 0.706
+    },
+    "layerJsonBytes": {
+      "dormant": 6849,
+      "active": 619562,
+      "delta": 612713
+    },
+    "portableFontBytes": 456688,
+    "repeatedFullBaselineRun": false
+  },
+  "provenExistingReuse": {
+    "registrySourceOwnership": "one Arc<[u8]> per exact source handle",
+    "replayCertificateOwnership": "Arc clone without font byte copy",
+    "pageArenaBlobDedup": true,
+    "pageArenaFaceDedup": true,
+    "rejectLeavesPartialResource": false,
+    "documentLayerJsonCache": "per page and output option",
+    "canvasKitVerifiedBlobCache": "per document renderer"
+  },
+  "gaps": {
+    "digestPreparation": "two BLAKE3 passes per common shaping run before ResourceArena interning",
+    "arenaLookup": "full-font FNV and byte comparison per interning attempt",
+    "facePreparation": "ttf-parser face preparation per common shaping run",
+    "crossPagePayload": "same font blob is base64-inline in every PageLayerTree JSON",
+    "fontByKeyApi": false,
+    "runAndPageScalingMeasured": false
+  },
+  "focusedValidation": {
+    "resourceArenaDuplicateInterning": {
+      "passed": 1,
+      "failed": 0
+    },
+    "issue4969ShapingGlyphLowering": {
+      "passed": 7,
+      "failed": 0
+    },
+    "generatedSuitePrepared": false,
+    "taskWorktreeModifiedByManifestCheck": false
+  },
+  "requiredMeasurementMatrix": {
+    "runsPerPage": [1, 2, 8],
+    "pagesPerDocument": [1, 2, 8],
+    "publicFixture": "ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf",
+    "structuralGate": "full-font digest, face preparation, and byte transport scale with unique exact sources rather than run or page count",
+    "arbitraryWallTimeThreshold": false
+  },
+  "recommendedSlices": [
+    "bounded unique-source portable resource identity cache",
+    "page-local registration using prepared identity",
+    "optional font-by-key PageLayerTree JSON transport",
+    "WASM exact-source byte resolver",
+    "Studio document-generation verified font blob cache integration",
+    "NO_LS boundary-changing activation after resource qualification"
+  ],
+  "invariants": [
+    "default inline JSON remains backward compatible",
+    "raw font bytes and host paths never enter trace metadata",
+    "wrong, missing, stale, or oversized resource fails closed to retained TextRun",
+    "page-local blob and face count remains one per unique source",
+    "D5 publishes line selection, bbox, next origin, and GlyphRun atomically from one Arc"
+  ],
+  "privateCorpusUsed": false,
+  "productSourceChanged": false,
+  "d5ActivationStarted": false,
+  "next": "write and approve revised Q2-D5 execution plan"
+}

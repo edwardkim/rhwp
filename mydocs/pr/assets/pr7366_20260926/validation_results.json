@@ -1,0 +1,157 @@
+{
+  "base": "8baae33464bce7e92cbbd07e715397dca141f836",
+  "head": "67574d64b9e26b9f72fb9a60505c6fc694c78cf7",
+  "steps": [
+    {
+      "name": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit": 0,
+      "seconds": 0.759
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit": 0,
+      "seconds": 6.873
+    },
+    {
+      "name": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 7.652
+    },
+    {
+      "name": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 17.84
+    },
+    {
+      "name": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 13.47
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 19.667
+    },
+    {
+      "name": "clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 32.817
+    },
+    {
+      "name": "manifest-base",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "8baae33464bce7e92cbbd07e715397dca141f836"
+      ],
+      "exit": 0,
+      "seconds": 0.677
+    }
+  ],
+  "determinism": {
+    "head": "67574d64b9e26b9f72fb9a60505c6fc694c78cf7",
+    "base": "8baae33464bce7e92cbbd07e715397dca141f836",
+    "product_tree_identity": {
+      "src": "8aab4d9b4d3e0474ee1b19e4badf3f749e8d15b9",
+      "crates": "084f4d82464abcd836ab4039be1df5df2767b594",
+      "Cargo.toml": "3505f6ba9dbe31f3af3101ff34d191dff802d587",
+      "Cargo.lock": "d85887b8d66377646225b9f96385c4d9045fe76b"
+    },
+    "page_count": 140,
+    "repeat_dump_sha256": "6990ec40a19ab128aa49180b624753c37ce325321c572047572974b94e9fa449",
+    "rhwp_binary_sha256": "bb6673691cf00a24f9ec49c68c5b2a3674e41271d05baa256e0674251c51ce99"
+  },
+  "focused": {
+    "base_source_tests": {
+      "passed": 2,
+      "seconds": 0.138,
+      "exit": 0
+    },
+    "base_controls": {
+      "passed": 7,
+      "seconds": 0.166,
+      "exit": 0
+    },
+    "source_policy": {
+      "passed": 9,
+      "seconds": 0.177,
+      "exit": 0
+    },
+    "maintainer_candidate": {
+      "passed": 9,
+      "seconds": 0.184,
+      "exit": 0
+    },
+    "row_ownership": {
+      "passed": 1,
+      "exit": 0
+    }
+  },
+  "scope": "Rust integration regression guards and historical review records; no product source change",
+  "visual_evidence_reused_from_merge": "8baae33464bce7e92cbbd07e715397dca141f836",
+  "visual_source_sha": "9e7518243b251193ee91378e2d09e754d0223d64"
+}

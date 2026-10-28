@@ -27,7 +27,7 @@ gym 을 만점 통과했다"고 주장해도, 그게 몰래 축소한 벤치마�
   `unavailable-pack` 예외 칸에 옮긴다. 부재는 위조가 아니지만 숨기면 위조다.
 
 카탈로그·봉투 계약은 `gym/docs/certify_report.md` 가 정본이다. 작업 기록은
-`mydocs/working/gym_certify_report.md`. 시험은 `scripts/tests/test_gym_certify.py`.
+`mydocs/working/archives/gym_certify_report.md`. 시험은 `scripts/tests/test_gym_certify.py`.
 
 새 CLI 플래그는 없다. `--bin` `--verify` `--out` `--at` 만 쓴다.
 

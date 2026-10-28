@@ -179,16 +179,17 @@ fn issue5797_self_closing_draw_text_is_an_empty_text_box() {
     );
 }
 
-/// `<hp:p/>` — 내용 없는 문단이다. 뒤 문단의 글을 삼키면 안 된다.
+/// `<hp:p/>` — 내용 없는 문단도 보존하고 뒤 문단의 글을 삼키면 안 된다.
+/// #6856: group_children은 문단을 개행으로 연결하므로 빈 첫 문단의 개행이 남는다.
 #[test]
 fn issue5797_self_closing_paragraph_does_not_swallow_next_paragraph() {
     assert_eq!(
         group_children("emptyPara"),
         vec![
-            (101, Some("검토/승인".to_string())),
+            (101, Some("\n검토/승인".to_string())),
             (102, Some("개발/양산".to_string())),
             (103, Some("CSRP정보".to_string())),
         ],
-        "자기닫힘 <hp:p/> 가 뒤 문단을 삼켰다"
+        "자기닫힘 빈 문단과 뒤 문단·형제 도형을 함께 보존해야 한다"
     );
 }

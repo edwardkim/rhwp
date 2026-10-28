@@ -1,0 +1,10 @@
+{
+  "sourceHead": "d1d3091c52463905acca175d89a6e2936cd059a7",
+  "productionCodeHead": "d1d3091c52463905acca175d89a6e2936cd059a7",
+  "rhwp-candidate": "8a3a5c33b935d02433c31f0cb5e27a4c26168a9f511f0f840ba669f5d87a22ad",
+  "pkg/rhwp_bg.wasm": "5581c55a0fdad513a6c9f923f867e65ae1739757de07acc6f148937f57d3c212",
+  "pkg/rhwp.js": "1c40e6aa15e5b87643148b717fba0683ae622910e96e369659465d2c0abfab9a",
+  "testHead": "168e96b86e6da036fe24d740fb01a6675e6f4a5f",
+  "lintCodeHead": "97918861741fc45b3370edf0a27929c9fc922ddb",
+  "nonBehavioralFollowup": "Test contracts/formatting; equivalent bool/Option PDF paint match; identical content_index function moved before tests; equivalent >110000 resource test comparison. See stage38."
+}

@@ -1,0 +1,403 @@
+{
+  "validated_code_sha": "64b3d366c3d6563b2d9ed1eba1eb869d99c0eb7a",
+  "base_sha": "e0f6b0942775b863e3bef292f133508b14a12e9e",
+  "original_head_sha": "371abaac7a00185c8818a16f69c3ec0296990577",
+  "comparison_profile": "print",
+  "pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "inputs": {
+    "samples/nested_tac_table_wrap.hwp": {
+      "sha256": "7e1b32b9f57d3b13b6e32a9af872bbc64bc326bc815eaf6b6d4bfd566031f393"
+    },
+    "samples/pr7337/nested_tac_table_wrap-2020.pdf": {
+      "sha256": "0e0755d3f15532c5716e93fd0fa8109ead3d97f92f2cd96110449f443812c3e3"
+    }
+  },
+  "outputs": {
+    "native_review_006.png": {
+      "sha256": "552ee1d095b4892eb1d80dcf6c02e66c519f39aa7971b53cda354a4a8f6ff95a"
+    },
+    "native_overlay_006.png": {
+      "sha256": "4d0ca931003df61af18224dcf00351071abbad212d038949f11f2ebbfc69292c"
+    },
+    "native_all_pages_review.png": {
+      "sha256": "0b24bf6d642b097e3b768a38d3f19e956ab083d7af72c80ea89fd26069356f85"
+    },
+    "wasm_review_006.png": {
+      "sha256": "4eb8745a8fab9891f47e17bf9585106cc781a12fccb5fa0aee32a9428f84f594"
+    },
+    "wasm_overlay_006.png": {
+      "sha256": "1fd591ecdab8057efa862dbcebe5e2d0c52db4cb5e4be1ab839600fd912117cf"
+    },
+    "wasm_all_pages_review.png": {
+      "sha256": "4d0610666c679e77ae8cc53c76396110d20daef7f708bea8bf1d635ae972a1bd"
+    },
+    "before_native_review_006.png": {
+      "sha256": "adfb7805fd2336ed9e7932122d53a5d6cac2f48fd8b874fabf52e5d3ab96c5e5"
+    },
+    "studio_page6.png": {
+      "sha256": "864fa4cee029b5693ab1f6ac49f35b6bf798c2c4979d7649c5d8f7614a0e7b37"
+    }
+  },
+  "sweep": {
+    "native": {
+      "metrics": {
+        "compared_pages": 6,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 94.89878,
+        "worst_pixel_match_percent": 94.10696,
+        "average_ink_match_percent": 55.02588,
+        "worst_ink_match_percent": 44.48769,
+        "average_visual_accuracy_proxy_percent": 55.02588,
+        "worst_visual_accuracy_proxy_percent": 44.48769,
+        "average_tolerant_content_match_percent": 99.74537,
+        "worst_tolerant_content_match_percent": 99.30154,
+        "worst_pages": [
+          5,
+          1,
+          2,
+          6,
+          4,
+          3
+        ]
+      },
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "capture_head_sha": "154a2314d7269d298963b7d22ad1edc535dcd973"
+    },
+    "wasm": {
+      "metrics": {
+        "compared_pages": 6,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 94.89878,
+        "worst_pixel_match_percent": 94.10696,
+        "average_ink_match_percent": 55.02588,
+        "worst_ink_match_percent": 44.48769,
+        "average_visual_accuracy_proxy_percent": 55.02588,
+        "worst_visual_accuracy_proxy_percent": 44.48769,
+        "average_tolerant_content_match_percent": 99.74537,
+        "worst_tolerant_content_match_percent": 99.30154,
+        "worst_pages": [
+          5,
+          1,
+          2,
+          6,
+          4,
+          3
+        ]
+      },
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "capture_head_sha": "154a2314d7269d298963b7d22ad1edc535dcd973"
+    }
+  },
+  "cdp": {
+    "sourceSha": "154a2314d7269d298963b7d22ad1edc535dcd973",
+    "wasmSha256": "03dc07efa2618604327866b5c36319bf24ab7c0ddb85212d8cc1980a41710eac",
+    "checks": [
+      {
+        "name": "fresh package served with cache disabled",
+        "passed": true,
+        "detail": {
+          "pkgHash": "03dc07efa2618604327866b5c36319bf24ab7c0ddb85212d8cc1980a41710eac",
+          "publicHash": "03dc07efa2618604327866b5c36319bf24ab7c0ddb85212d8cc1980a41710eac",
+          "served": [
+            "03dc07efa2618604327866b5c36319bf24ab7c0ddb85212d8cc1980a41710eac",
+            "03dc07efa2618604327866b5c36319bf24ab7c0ddb85212d8cc1980a41710eac"
+          ]
+        }
+      },
+      {
+        "name": "Native/portable/canvas six pages",
+        "passed": true,
+        "detail": {
+          "portable": 6,
+          "canvas": 6
+        }
+      },
+      {
+        "name": "p1 Native/WASM geometry",
+        "passed": true,
+        "detail": {
+          "nativeNodes": 189,
+          "wasmNodes": 189
+        }
+      },
+      {
+        "name": "p2 Native/WASM geometry",
+        "passed": true,
+        "detail": {
+          "nativeNodes": 189,
+          "wasmNodes": 189
+        }
+      },
+      {
+        "name": "p3 Native/WASM geometry",
+        "passed": true,
+        "detail": {
+          "nativeNodes": 89,
+          "wasmNodes": 89
+        }
+      },
+      {
+        "name": "p4 Native/WASM geometry",
+        "passed": true,
+        "detail": {
+          "nativeNodes": 97,
+          "wasmNodes": 97
+        }
+      },
+      {
+        "name": "p5 Native/WASM geometry",
+        "passed": true,
+        "detail": {
+          "nativeNodes": 138,
+          "wasmNodes": 138
+        }
+      },
+      {
+        "name": "p6 Native/WASM geometry",
+        "passed": true,
+        "detail": {
+          "nativeNodes": 251,
+          "wasmNodes": 251
+        }
+      },
+      {
+        "name": "source host owns two nested tables",
+        "passed": true
+      },
+      {
+        "name": "whole nested frames inside parent",
+        "passed": true,
+        "detail": [
+          {
+            "x": 97.9,
+            "y": 355.2,
+            "w": 616.7,
+            "h": 185.3
+          },
+          {
+            "x": 111.7,
+            "y": 553,
+            "w": 589.2,
+            "h": 261.9
+          }
+        ]
+      },
+      {
+        "name": "performance table follows guide",
+        "passed": true,
+        "detail": [
+          {
+            "x": 97.9,
+            "y": 355.2,
+            "w": 616.7,
+            "h": 185.3
+          },
+          {
+            "x": 111.7,
+            "y": 553,
+            "w": 589.2,
+            "h": 261.9
+          }
+        ]
+      },
+      {
+        "name": "second table content and row structure",
+        "passed": true,
+        "detail": {
+          "rows": 12,
+          "cols": 6
+        }
+      },
+      {
+        "name": "no browser exceptions",
+        "passed": true,
+        "detail": []
+      }
+    ],
+    "errors": []
+  },
+  "before_provenance": {
+    "base": "e0f6b0942775b863e3bef292f133508b14a12e9e",
+    "binary_source": "1871ba72a7b3c2dbd84d354343fdf20d6a1bc387",
+    "binary_sha256": "d041cb48e79322687178a247c943512b8500c1b72a7ca4bbab2649f0ca88df9f",
+    "source_tree_identity": {
+      "src": "355d75aca85fc600f5e7d8fdfc0f132ced17df6d",
+      "crates": "154a15328d097d97dd3898ed913874632bae054f",
+      "Cargo.toml": "0e5c32a9822fd1ce89ba2b20dcab7ff2f6652f4e",
+      "Cargo.lock": "b8a89f5b10538b9ba2127dae9e369ee06c5588ee"
+    },
+    "input_sha256": "7e1b32b9f57d3b13b6e32a9af872bbc64bc326bc815eaf6b6d4bfd566031f393",
+    "reference_sha256": "0e0755d3f15532c5716e93fd0fa8109ead3d97f92f2cd96110449f443812c3e3",
+    "native_tables": [
+      {
+        "x": 97.9,
+        "y": 355.2,
+        "width": 616.7,
+        "height": 185.3
+      },
+      {
+        "x": 718.4,
+        "y": 355.2,
+        "width": 589.2,
+        "height": 261.9
+      }
+    ],
+    "page_count": 6,
+    "page6_tolerant_match_percent": 57.6391,
+    "independent_reference": "Hancom HOffice120 engine2020; saved product Hancom2018; input_preprocess none; reference pages6",
+    "observed": "review and standalone overlay directly inspected. Second table lies to the right of guide at same top instead of below guide inside host cell."
+  },
+  "regression": {
+    "before": {
+      "source_sha": "e0f6b0942775b863e3bef292f133508b14a12e9e",
+      "tests": 2,
+      "failed": 2,
+      "causes": [
+        "whole second table outside body",
+        "second table frame overlaps guide"
+      ]
+    },
+    "focused_after": {
+      "source_sha": "64b3d366c3d6563b2d9ed1eba1eb869d99c0eb7a",
+      "tests": 2,
+      "passed": 2
+    },
+    "full": {
+      "source_sha": "64b3d366c3d6563b2d9ed1eba1eb869d99c0eb7a",
+      "passed": 10355,
+      "failed": 0,
+      "skipped": 50,
+      "seconds": 456.298,
+      "test_threads": 8,
+      "command": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 8 --no-fail-fast",
+      "security_sample_input": [
+        "samples/nested_tac_table_wrap.hwp"
+      ]
+    },
+    "normal_controls": {
+      "case_modules": [
+        "issue_7008_cell_tac_nested_side_by_side",
+        "issue_6122_cell_tac_picture_line_wrap",
+        "issue_6754_tac_picture_and_table_share_a_line",
+        "issue_6737_inline_tac_table_own_line_axis",
+        "issue_7150_tac_line_owner_anchor",
+        "issue_5601_tac_cell_stored_anchor_last_line",
+        "issue_7049_inline_tac_table_baseline",
+        "issue_7518_reflow_row_physical_frame"
+      ],
+      "passed": 42
+    }
+  },
+  "rust_lint": {
+    "source_sha": "64b3d366c3d6563b2d9ed1eba1eb869d99c0eb7a",
+    "base_sha": "e0f6b0942775b863e3bef292f133508b14a12e9e",
+    "fmt": "passed",
+    "native_clippy": "passed",
+    "wasm32_clippy": "passed",
+    "workspace_build": "passed",
+    "workspace_all_targets_clippy": "passed",
+    "manifest_base_check": "passed"
+  },
+  "fixture_ratchets": {
+    "ir": {
+      "dumps": 1,
+      "fixture_nonzero_rows": []
+    },
+    "overflow": {
+      "dumps": 16,
+      "fixture_nonzero_rows": []
+    },
+    "off-canvas": {
+      "dumps": 16,
+      "fixture_nonzero_rows": []
+    },
+    "text-overlap": {
+      "dumps": 16,
+      "fixture_nonzero_rows": []
+    },
+    "body-overflow": {
+      "dumps": 16,
+      "fixture_nonzero_rows": []
+    }
+  },
+  "remaining_difference": {
+    "diagnostic_body_frame_overflow_tolerance_1px": {
+      "before_count": 3,
+      "after_count": 3,
+      "max_before_px": 570.8,
+      "max_after_px": 1.4
+    },
+    "silhouette_tolerance_px": 2,
+    "native_wasm_rasters_identical": true,
+    "skipped_existing_tests": 50,
+    "not_implemented": "new width-driven line composition without valid stored LineSeg"
+  },
+  "native_skia_library_results": [
+    "test result: ok. 3927 passed; 0 failed; 13 ignored; 0 measured; 0 filtered out; finished in 49.16s",
+    "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+    "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+    "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+  ],
+  "native_skia": {
+    "library_passed": 4109,
+    "library_ignored": 13,
+    "placeholder_passed": 2,
+    "direct_pdf_passed": 4
+  },
+  "oracle_page_count": {
+    "added_row": "samples/nested_tac_table_wrap.hwp\t6\t6",
+    "partitions_passed": 16,
+    "source": "samples/pr7337/nested_tac_table_wrap-2020.pdf",
+    "minimum_native_wasm_full_document_silhouette_percent": 99.30154
+  },
+  "latest_base_verification": {
+    "base_sha": "ea5ef5f6a8e405f5109407e46acb4e9a0455c24a",
+    "merged_head_sha": "154a2314d7269d298963b7d22ad1edc535dcd973",
+    "rust_source_identical_to": "64b3d366c3d6563b2d9ed1eba1eb869d99c0eb7a",
+    "production_objects": {
+      "src": "01647c670af31b55730bcd9393ab15be9d6bd237",
+      "crates": "154a15328d097d97dd3898ed913874632bae054f",
+      "Cargo.toml": "0e5c32a9822fd1ce89ba2b20dcab7ff2f6652f4e",
+      "Cargo.lock": "b8a89f5b10538b9ba2127dae9e369ee06c5588ee"
+    },
+    "npm_ci": "passed",
+    "vite_version": "8.3.2",
+    "typescript": "passed",
+    "manifest_fixed_base": "passed"
+  }
+}

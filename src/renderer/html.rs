@@ -6,7 +6,6 @@
 use super::image_resolver::{
     bmp_bytes_to_png_bytes, detect_image_mime_type, pcx_bytes_to_png_bytes, tiff_bytes_to_png_bytes,
 };
-use super::layout::compute_char_positions;
 use super::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
 use super::svg::convert_wmf_to_svg;
 use super::{LineStyle, PathCommand, Renderer, ShapeStyle, TextStyle};
@@ -126,16 +125,18 @@ impl HtmlRenderer {
                 return;
             }
             RenderNodeType::TextRun(run) => {
-                self.draw_text(run.display_or_text(), node.bbox.x, node.bbox.y, &run.style);
+                self.draw_text_positioned(
+                    run.display_or_text(),
+                    node.bbox.x,
+                    node.bbox.y,
+                    &run.style,
+                    run.validated_layout_positions_for(run.display_or_text()),
+                );
                 if self.show_paragraph_marks || self.show_control_codes {
-                    let font_size = if run.style.font_size > 0.0 {
-                        run.style.font_size
-                    } else {
-                        12.0
-                    };
+                    let font_size = run.style.effective_font_size();
                     // 공백·탭 기호
                     if !run.text.is_empty() {
-                        let char_positions = compute_char_positions(&run.text, &run.style);
+                        let char_positions = run.replay_positions_for(&run.text);
                         let mark_font_size = font_size * 0.5;
                         for (i, c) in run.text.chars().enumerate() {
                             if c == ' ' {
@@ -211,14 +212,12 @@ impl HtmlRenderer {
                 );
             }
             RenderNodeType::Image(img) => {
+                if img.crop.is_some_and(|(l, t, r, b)| r <= l || b <= t) {
+                    return;
+                }
                 if let Some(ref data) = img.data {
-                    self.draw_image(
-                        data,
-                        node.bbox.x,
-                        node.bbox.y,
-                        node.bbox.width,
-                        node.bbox.height,
-                    );
+                    let paint = img.paint_bbox(&node.bbox);
+                    self.draw_image(data, paint.x, paint.y, paint.width, paint.height);
                 } else {
                     self.output.push_str(&format!(
                         "<div class=\"hwp-image\" style=\"position:absolute;left:{}px;top:{}px;width:{}px;height:{}px;background:#eee;\"></div>\n",
@@ -237,15 +236,8 @@ impl HtmlRenderer {
         // 조판부호 개체 마커 (붉은색 대괄호)
         if self.show_control_codes {
             let label = match &node.node_type {
-                RenderNodeType::Table(_) => Some("[표]"),
-                RenderNodeType::Image(_) => Some("[그림]"),
-                RenderNodeType::TextBox => Some("[글상자]"),
-                RenderNodeType::Equation(_) => Some("[수식]"),
                 RenderNodeType::FormObject(_) => Some("[양식]"),
-                RenderNodeType::Header => Some("[머리말]"),
-                RenderNodeType::Footer => Some("[꼬리말]"),
-                RenderNodeType::FootnoteArea => Some("[각주]"),
-                _ => None,
+                _ => node.control_code_label(),
             };
             if let Some(label) = label {
                 let fs = 10.0;
@@ -278,15 +270,22 @@ impl Renderer for HtmlRenderer {
     }
 
     fn draw_text(&mut self, text: &str, x: f64, y: f64, style: &TextStyle) {
+        self.draw_text_positioned(text, x, y, style, None);
+    }
+
+    fn draw_text_positioned(
+        &mut self,
+        text: &str,
+        x: f64,
+        y: f64,
+        style: &TextStyle,
+        layout_positions: Option<&[f64]>,
+    ) {
         // [Task #509] 한컴은 폰트 지정과 상관없이 PUA 를 자체 처리. 지정 폰트에 글리프
         // 부재 시 한컴 내부 매핑이 발행. rhwp 도 동일 동작 모방 (PR #251 정합).
-        let text = &crate::renderer::composer::expand_pua_render_text(text);
+        let text = &crate::renderer::composer::expand_pua_render_text_in_style(text, style);
 
-        let font_size = if style.font_size > 0.0 {
-            style.font_size
-        } else {
-            12.0
-        };
+        let font_size = style.effective_font_size();
         let color = color_to_css(style.color);
         let font_family = if style.font_family.is_empty() {
             "sans-serif".to_string()
@@ -383,11 +382,24 @@ impl Renderer for HtmlRenderer {
             ));
         }
 
-        self.output.push_str(&format!(
-            "<span class=\"text-run\" style=\"{}\">{}</span>\n",
-            css,
-            escape_html(text),
-        ));
+        if let Some(positions) = super::validated_replay_positions(text, layout_positions) {
+            let left_token = format!("left:{}px;", x);
+            for (index, character) in text.chars().enumerate() {
+                let positioned_left = format!("left:{}px;", x + positions[index]);
+                let positioned_css = css.replacen(&left_token, &positioned_left, 1);
+                self.output.push_str(&format!(
+                    "<span class=\"text-run text-run-positioned\" style=\"{}\">{}</span>\n",
+                    positioned_css,
+                    escape_html(&character.to_string()),
+                ));
+            }
+        } else {
+            self.output.push_str(&format!(
+                "<span class=\"text-run\" style=\"{}\">{}</span>\n",
+                css,
+                escape_html(text),
+            ));
+        }
     }
 
     fn draw_rect(

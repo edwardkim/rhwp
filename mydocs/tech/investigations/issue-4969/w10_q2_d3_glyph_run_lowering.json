@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-d3-glyph-run-lowering-result",
+  "issue": 4969,
+  "stage": "W10-Q2-D3",
+  "status": "qualified",
+  "productOutputChange": false,
+  "productConsumerCount": 0,
+  "lookup": {
+    "key": "LayerNode.source_node_id",
+    "pageSidecarExactNodeId": true,
+    "fullRunRangeRequired": true,
+    "publicRejectedAnnotation": false
+  },
+  "fontIdentity": {
+    "source": "SourceHanSerifK-OldHangul-subset",
+    "sha256": "2f86ef9a52acb6d1dad9d915843239123b635d97edd88fd0573a88ffcb4e16f1",
+    "bytes": 456688,
+    "faceIndex": 0,
+    "digestMatched": true,
+    "byteLengthMatched": true,
+    "faceIndexMatched": true,
+    "unitsPerEmMatched": true,
+    "ambiguousIdentityAllowed": false
+  },
+  "payload": {
+    "fontSizePx": 10.0,
+    "widthRatio": 0.8,
+    "totalAdvancePx": 15.456,
+    "glyphIds": [614, 1230, 1497, 2085],
+    "positionsPx": [
+      [0.0, 0.0],
+      [7.728, 0.0],
+      [15.456, 0.0],
+      [15.456, 0.0]
+    ],
+    "advancesPx": [
+      [7.728, 0.0],
+      [7.728, 0.0],
+      [0.0, 0.0],
+      [0.0, 0.0]
+    ],
+    "glyphTransformCount": 4,
+    "clusters": [
+      {
+        "scalarRange": [0, 3],
+        "utf8Range": [0, 9],
+        "utf16Range": [0, 3],
+        "glyphRange": [0, 1],
+        "flags": ["ligature"]
+      },
+      {
+        "scalarRange": [3, 4],
+        "utf8Range": [9, 12],
+        "utf16Range": [3, 4],
+        "glyphRange": [1, 4],
+        "flags": []
+      }
+    ]
+  },
+  "fallback": {
+    "textRunPreserved": true,
+    "claimsGlyphRunSlotOnSuccess": true,
+    "nominalDuplicatePublished": false,
+    "resourceMutationOnReject": false
+  },
+  "failClosed": [
+    "missing-source-node",
+    "missing-sidecar",
+    "rejected-decision",
+    "unsupported-run-surface",
+    "run-range-mismatch",
+    "measurement-identity-mismatch",
+    "embedded-face-not-found",
+    "embedded-face-ambiguous",
+    "embedded-face-invalid",
+    "measurement-geometry-invalid",
+    "cluster-mapping-invalid",
+    "resource-limit-exceeded"
+  ],
+  "limits": {
+    "glyphsPerRun": 4096,
+    "clustersPerRun": 4096,
+    "portableFontBlobBytes": 33554432,
+    "commonShapingFontBytesPerPage": 67108864
+  },
+  "activationPrecondition": {
+    "status": "blocked-pending-revised-d4-plan",
+    "q2MeasurementHorizontalScale": "font-size-times-ratio",
+    "q2MeasurementVerticalScale": "font-size",
+    "d3GlyphTransform": "xx-ratio-yy-one",
+    "d3StrictVisualEligible": false,
+    "d3DiagnosticReason": "q2CommonShapingReplayAuthorityPending",
+    "issue5821CompressedTextRunDraw": "font-size-times-sqrt-ratio-and-horizontal-scale-sqrt-ratio",
+    "currentStrictSelectorAcceptsRatioOrTransform": false,
+    "requiredDecision": "single-replay-authority-with-native-wasm-oracle-before-product-wiring"
+  },
+  "privacy": {
+    "rawTextInTrace": false,
+    "fontPayloadInTrace": false,
+    "localPathInTrace": false,
+    "privateCorpusUsed": false
+  },
+  "validation": {
+    "nativeFocused": {
+      "passed": 4,
+      "failed": 0,
+      "runtimeSeconds": 0.13
+    },
+    "nodeWasmFocused": {
+      "passed": 4,
+      "failed": 0,
+      "runtimeSeconds": 0.71
+    },
+    "nativeWasmFixedOracleMismatches": 0,
+    "libraryRegressionBaseline": {
+      "passed": 3889,
+      "failed": 0,
+      "ignored": 13,
+      "runtimeSeconds": 216.72
+    },
+    "workspaceAuxiliaryLibraries": {
+      "passed": 182,
+      "failed": 0
+    },
+    "cargoCheck": "pass",
+    "cargoClippyNativeDenyWarnings": "pass",
+    "cargoClippyWasm32DenyWarnings": "pass",
+    "integrationManifestPolicy": {
+      "passed": 20,
+      "failed": 0
+    },
+    "focusedRustfmt": "pass",
+    "diffCheck": "pass",
+    "productLowererCallsites": 0,
+    "generatedIntegrationArtifacts": 0
+  },
+  "next": "maintainer approval required for revised Q2-D4 replay-authority plan; no activation"
+}

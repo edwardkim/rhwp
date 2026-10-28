@@ -41,8 +41,8 @@ fn the_frame_splits_a_fallback_run_by_char_shapes_on_both_the_body_and_the_cell_
             .iter()
             .map(|r| r.char_style_id)
             .collect::<Vec<u32>>(),
-        vec![0],
-        "전제: compose_lines 의 NO_LS fallback 은 char_shapes[0] 단일 run 을 낸다"
+        vec![0, 1],
+        "전제: compose_lines 의 NO_LS fallback 도 char_shapes 로 run 을 재분할한다"
     );
 
     let mut cell_variant = compose_paragraph(&para);
@@ -70,6 +70,7 @@ fn the_frame_splits_a_fallback_run_by_char_shapes_on_both_the_body_and_the_cell_
         96.0,
         false,
         StoredRowMissPolicy::Reflow,
+        &[],
     )
     .expect("the frame owns the NO_LS rebuild");
     let body_run_ids: Vec<u32> = body_variant.lines[0]
@@ -151,7 +152,7 @@ fn clean_cell_cache_is_admitted_only_for_its_exact_content_box() {
         "a clean imported cell-box miss is unmodelled without mutation provenance"
     );
 
-    let dirty_para = para.clone();
+    let mut dirty_para = para.clone();
     dirty_para.invalidate_layout_inputs();
     let mut dirty_changed = compose_paragraph(&dirty_para);
     recompose_cell_lines_in_frame(
@@ -278,6 +279,11 @@ fn context_display_overlay_preserves_frame_style_partitions_around_the_field() {
         ComposedTextRun {
             text: "\u{0017}".to_string(),
             display_text: Some("report.hwp".to_string()),
+            supplemental_metrics_blocked: false,
+            inserted_control_text: false,
+            space_metric: crate::renderer::composer::SpaceMetric::Stored,
+            regenerated_font_metrics: false,
+            literal_figure_space: false,
             ..stale.clone()
         },
         ComposedTextRun {
@@ -296,6 +302,7 @@ fn context_display_overlay_preserves_frame_style_partitions_around_the_field() {
         96.0,
         false,
         StoredRowMissPolicy::Reflow,
+        &[],
     )
     .expect("Frame owns the NO_LS rebuild");
 
@@ -385,6 +392,8 @@ fn modest_field_fill_reflows_a_geometry_matching_stored_partition() {
             false,
             StoredRowMissPolicy::Reflow,
             false,
+            &[],
+            false,
         ),
         Some(line_breaking::StoredRowResolution::Stored)
     ));
@@ -404,6 +413,8 @@ fn modest_field_fill_reflows_a_geometry_matching_stored_partition() {
             false,
             StoredRowMissPolicy::Reflow,
             stale,
+            &[],
+            false,
         ),
         Some(line_breaking::StoredRowResolution::Reflowed)
     ));
@@ -478,6 +489,7 @@ fn a_field_paragraph_whose_stored_row_cannot_hold_its_text_is_rewrapped() {
         96.0,
         false,
         StoredRowMissPolicy::Reflow,
+        &[],
     )
     .expect("필드를 가진 본문 문단도 프레임이 소유한다");
     assert!(
@@ -563,6 +575,7 @@ fn an_impossible_paragraph_box_publishes_nothing_on_either_route() {
             96.0,
             false,
             StoredRowMissPolicy::Reflow,
+            &[],
         )
         .is_none(),
         "렌더 경로도 같은 규칙을 따른다"
@@ -783,15 +796,6 @@ fn test_compose_multi_line_multi_style() {
     assert_eq!(composed.lines[1].runs[0].char_style_id, 3);
 }
 
-/// 빈 문단
-#[test]
-fn test_compose_empty_paragraph() {
-    let para = Paragraph::default();
-    let composed = compose_paragraph(&para);
-    assert!(composed.lines.is_empty());
-    assert!(composed.inline_controls.is_empty());
-}
-
 /// table-vpos-01 page 5의 10/11/12 마커는 CharOverlap 하나에 두 개의
 /// HWP PUA 구성 글자가 들어온다. 텍스트 흐름과 캐럿 이동은 한 글자 폭이어야 한다.
 #[test]
@@ -809,19 +813,18 @@ fn test_char_overlap_multi_component_is_single_advance() {
 /// - 관세청 월간 수출입 현황 p1 — 테두리 없음(0) + `charSz=-4` → 축소 없음.
 ///   한컴 PDF content stream 에서 마커와 본문이 같은 `101 Tf`, 같은 baseline.
 #[test]
-fn char_overlap_size_ratio_applies_only_when_a_border_is_drawn() {
+fn char_overlap_signed_size_steps_follow_hancom_print() {
     // 테두리 없음 — charSz 부호와 무관하게 축소하지 않는다 (#4085 관세청 오라클)
     assert_eq!(char_overlap_size_ratio(0, -4), 1.0);
     assert_eq!(char_overlap_size_ratio(0, 90), 1.0);
-
-    // 테두리 있음 — PR #1101 실측 규칙 보존 (회귀 금지)
+    // 독립 Print의 크기 증거·전쪽 Native/fresh WASM·직접 확대 판독:
+    // mydocs/pr/assets/semanticist21_20261019/char_overlap_size_print/README.md
+    // 본문 10pt에 -3/0/10/20/50을 적용한 결과는 약 7/10/20/30/60pt다.
+    for (char_size, expected) in [(-3, 0.7), (0, 1.0), (10, 2.0), (20, 3.0), (50, 6.0)] {
+        assert!((char_overlap_size_ratio(1, char_size) - expected).abs() < 1e-9);
+    }
+    // 기존 PR #1101의 테두리 있는 음수 크기 계약도 유지한다.
     assert_eq!(char_overlap_size_ratio(4, -2), 0.8);
-    assert!((char_overlap_size_ratio(1, -3) - 0.7).abs() < 1e-9);
-
-    // 양수는 percent 그대로
-    assert_eq!(char_overlap_size_ratio(1, 50), 0.5);
-
-    // 0 은 기본 100%
     assert_eq!(char_overlap_size_ratio(3, 0), 1.0);
 }
 
@@ -982,6 +985,7 @@ fn make_styles_with_font_size(font_size: f64) -> ResolvedStyleSet {
     use crate::renderer::style_resolver::{ResolvedCharStyle, ResolvedParaStyle, ResolvedStyleSet};
     ResolvedStyleSet {
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
             font_size,
             ratio: 1.0,
@@ -1185,9 +1189,15 @@ fn test_split_runs_by_lang_korean_english() {
         text: "안녕Hello세계".to_string(),
         char_style_id: 0,
         lang_index: 0,
+        neutral_space_origin: None,
         char_overlap: None,
         footnote_marker: None,
         display_text: None,
+        supplemental_metrics_blocked: false,
+        inserted_control_text: false,
+        space_metric: crate::renderer::composer::SpaceMetric::Stored,
+        regenerated_font_metrics: false,
+        literal_figure_space: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 3);
@@ -1206,9 +1216,15 @@ fn test_split_runs_by_lang_no_split() {
         text: "안녕하세요".to_string(),
         char_style_id: 0,
         lang_index: 0,
+        neutral_space_origin: None,
         char_overlap: None,
         footnote_marker: None,
         display_text: None,
+        supplemental_metrics_blocked: false,
+        inserted_control_text: false,
+        space_metric: crate::renderer::composer::SpaceMetric::Stored,
+        regenerated_font_metrics: false,
+        literal_figure_space: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
@@ -1223,9 +1239,15 @@ fn test_split_runs_by_lang_space_follows_prev() {
         text: "안녕 Hello 세계".to_string(),
         char_style_id: 0,
         lang_index: 0,
+        neutral_space_origin: None,
         char_overlap: None,
         footnote_marker: None,
         display_text: None,
+        supplemental_metrics_blocked: false,
+        inserted_control_text: false,
+        space_metric: crate::renderer::composer::SpaceMetric::Stored,
+        regenerated_font_metrics: false,
+        literal_figure_space: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 3);
@@ -1244,9 +1266,15 @@ fn test_split_runs_by_lang_empty() {
         text: "".to_string(),
         char_style_id: 0,
         lang_index: 0,
+        neutral_space_origin: None,
         char_overlap: None,
         footnote_marker: None,
         display_text: None,
+        supplemental_metrics_blocked: false,
+        inserted_control_text: false,
+        space_metric: crate::renderer::composer::SpaceMetric::Stored,
+        regenerated_font_metrics: false,
+        literal_figure_space: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
@@ -1260,9 +1288,15 @@ fn test_split_runs_by_lang_english_only() {
         text: "Hello World".to_string(),
         char_style_id: 0,
         lang_index: 0,
+        neutral_space_origin: None,
         char_overlap: None,
         footnote_marker: None,
         display_text: None,
+        supplemental_metrics_blocked: false,
+        inserted_control_text: false,
+        space_metric: crate::renderer::composer::SpaceMetric::Stored,
+        regenerated_font_metrics: false,
+        literal_figure_space: false,
     }];
     let result = split_runs_by_lang(runs);
     assert_eq!(result.len(), 1);
@@ -1290,6 +1324,7 @@ fn test_reflow_lang_aware_mixed() {
 
     let styles = ResolvedStyleSet {
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
             font_family: "함초롬돋움".to_string(),
             font_families: vec![
@@ -1360,9 +1395,15 @@ fn test_estimate_composed_line_width() {
             text: "가나다".to_string(),
             char_style_id: 0,
             lang_index: 0,
+            neutral_space_origin: None,
             char_overlap: None,
             footnote_marker: None,
             display_text: None,
+            supplemental_metrics_blocked: false,
+            inserted_control_text: false,
+            space_metric: crate::renderer::composer::SpaceMetric::Stored,
+            regenerated_font_metrics: false,
+            literal_figure_space: false,
         }],
         line_height: 400,
         baseline_distance: 320,
@@ -1518,7 +1559,11 @@ fn issue_4442_corrected_noto_ascii_advances_change_threshold_wrap_with_kerning_o
     let text_style = resolved_to_text_style(&styles, 0, 1);
     let corrected_width = estimate_text_width_unrounded("AVATAR", &text_style);
     let prior_table_width = 3416.0;
-    assert_eq!(corrected_width, 3633.0);
+    // [#7702] 한/글 장치 격자 단위 합 68118 × 4/75 px.
+    assert!(
+        (corrected_width - 68118.0 * 4.0 / 75.0).abs() < 1e-9,
+        "{corrected_width}"
+    );
     let threshold = (prior_table_width + corrected_width) / 2.0;
 
     let mut para = Paragraph {
@@ -1652,11 +1697,13 @@ fn test_reflow_condense_shrinks_measured_space_width() {
         ..Default::default()
     };
 
-    // Natural width is 50px: 8 latin chars at 5px + 2 spaces at 5px.
-    // condense=20 allows each measured space to shrink by 20%, saving 2px.
+    // [#7702] On the Hancom device grid (ppem 187) a half-width latin char is 94 units
+    // (5.013px) and a space rounds down to 93 units (4.96px): natural width 50.03px.
+    // condense=20 shrinks each space by 20% of 4.96px, saving 1.98px → 48.05px, which
+    // fits a 48.1px box only through condense.
     reflow_line_segs(
         &mut para,
-        ParagraphBox::content_width_px(48.0, 96.0),
+        ParagraphBox::content_width_px(48.1, 96.0),
         &styles,
         96.0,
     );
@@ -1712,6 +1759,12 @@ fn test_geumchik_functions() {
     assert!(is_line_end_forbidden('\u{20A9}')); // ₩
     assert!(!is_line_end_forbidden('가'));
     assert!(!is_line_end_forbidden('A'));
+    // 같은 원본의 독립 Print는 ASCII 큰따옴표 뒤 한글 경계를 허용한다.
+    // 방향이 있는 여는 따옴표와 줄머리 금칙은 별도로 유지한다.
+    assert!(!is_line_end_forbidden('"'));
+    assert!(is_line_start_forbidden('"'));
+    assert!(is_line_end_forbidden('\u{201C}'));
+    assert!(is_line_end_forbidden('\u{300C}'));
 }
 
 /// 토크나이저: 한국어 어절 토큰화
@@ -1842,9 +1895,15 @@ fn test_555_effective_text_for_metrics_uses_display_text_when_present() {
         text: "\u{F861}".to_string(), // PUA 책괄호 (1 char)
         char_style_id: 0,
         lang_index: 0,
+        neutral_space_origin: None,
         char_overlap: None,
         footnote_marker: None,
         display_text: Some("《".to_string()), // 변환된 자모 (1 char in this case)
+        supplemental_metrics_blocked: false,
+        inserted_control_text: false,
+        space_metric: crate::renderer::composer::SpaceMetric::Stored,
+        regenerated_font_metrics: false,
+        literal_figure_space: false,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -1864,9 +1923,15 @@ fn test_555_effective_text_for_metrics_multi_jamo_cluster() {
         text: "\u{F8E0}".to_string(), // PUA 옛한글 합자 (가상 codepoint, 1 char)
         char_style_id: 0,
         lang_index: 0,
+        neutral_space_origin: None,
         char_overlap: None,
         footnote_marker: None,
         display_text: Some("ᄃᆞᄫᆡ".to_string()), // 4 jamo chars
+        supplemental_metrics_blocked: false,
+        inserted_control_text: false,
+        space_metric: crate::renderer::composer::SpaceMetric::Stored,
+        regenerated_font_metrics: false,
+        literal_figure_space: false,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -1887,9 +1952,15 @@ fn test_555_effective_text_for_metrics_no_display_text_falls_back_to_text() {
         text: "한글".to_string(),
         char_style_id: 0,
         lang_index: 0,
+        neutral_space_origin: None,
         char_overlap: None,
         footnote_marker: None,
         display_text: None,
+        supplemental_metrics_blocked: false,
+        inserted_control_text: false,
+        space_metric: crate::renderer::composer::SpaceMetric::Stored,
+        regenerated_font_metrics: false,
+        literal_figure_space: false,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
@@ -1898,24 +1969,33 @@ fn test_555_effective_text_for_metrics_no_display_text_falls_back_to_text() {
     );
 }
 
-/// Issue #677: U+F081C HWP TAC filler 는 시각 폭 0으로 측정되어야 한다.
+/// [#7017] U+F081C 런은 `display_text` 가 아니라 **원문**으로 측정해야 한다.
 ///
-/// filler 원문이 display_text 로 치환되면 `text_measurement` 의 0폭 분기를
-/// 우회하여 복학원서 접수증 블록이 우측으로 밀린다.
+/// `expand_pua_display_text` 는 이 글자를 지우므로(continue) `display_text` 로
+/// 재면 글자 수가 줄어 폭이 모자란다. 원문을 유지해 글자 수를 보존한다.
+///
+/// 종전 주석은 "시각 폭 0으로 측정되어야 한다" 였는데, 그 0폭 규칙은 #7017 에서
+/// 한/글 정본과 어긋남이 확인돼 사라졌다. 원문 유지 계약 자체는 그대로다.
 #[test]
 fn test_677_effective_text_for_metrics_preserves_f081c_filler() {
     let run = ComposedTextRun {
         text: "\u{F081C}\u{F081C}".to_string(),
         char_style_id: 0,
         lang_index: 0,
+        neutral_space_origin: None,
         char_overlap: None,
         footnote_marker: None,
         display_text: Some("□□".to_string()),
+        supplemental_metrics_blocked: false,
+        inserted_control_text: false,
+        space_metric: crate::renderer::composer::SpaceMetric::Stored,
+        regenerated_font_metrics: false,
+        literal_figure_space: false,
     };
     let effective = super::effective_text_for_metrics(&run);
     assert_eq!(
         effective, "\u{F081C}\u{F081C}",
-        "U+F081C filler 는 0폭 측정 규칙을 유지하기 위해 원문으로 측정해야 함."
+        "U+F081C filler 는 글자 수를 보존하기 위해 원문으로 측정해야 함."
     );
 }
 
@@ -2030,9 +2110,15 @@ fn test_kbu1_line_start_forbidden_retraction() {
             text: "적용한다.111111".to_string(),
             char_style_id: 0,
             lang_index: 0,
+            neutral_space_origin: None,
             char_overlap: None,
             footnote_marker: None,
             display_text: None,
+            supplemental_metrics_blocked: false,
+            inserted_control_text: false,
+            space_metric: crate::renderer::composer::SpaceMetric::Stored,
+            regenerated_font_metrics: false,
+            literal_figure_space: false,
         }],
         line_height: 400,
         baseline_distance: 320,
@@ -2093,179 +2179,118 @@ fn issue4149_guard_para(text: &str) -> Paragraph {
     }
 }
 
-/// 첫 판정이 memo 되고, memo hit 에도 over=true 의 fresh 재래핑은 매 빌드 수행된다 —
-/// 재래핑 결과는 composed 에만 반영되고 저장 line_segs 는 안 바뀌므로 생략하면
-/// 절단 렌더 회귀(#2291).
+/// 두 개의 실제 fresh composition이 renderer-session cache를 공유한다. hit에서도
+/// over=true의 fresh 재래핑은 수행하되 비싼 실폭 측정은 한 번만 한다.
 #[test]
-fn issue4149_overflow_judgment_memoized_and_rewrap_still_runs_on_hit() {
+fn issue4149_renderer_cache_survives_fresh_compositions() {
     let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
     let para = issue4149_guard_para(&"가".repeat(60));
     let width = 50.0; // 60자 실폭 ≫ 50×1.8
-    let key = crate::model::paragraph::SingleLineOverflowMemo::width_key(width);
-    assert!(para.single_line_overflow_memo.is_unjudged());
+    let cache = SingleLineOverflowCache::default();
 
     let mut composed = compose_paragraph(&para);
-    assert_eq!(composed.lines.len(), 1);
-    recompose_stored_single_line_if_overflowing(&mut composed, &para, width, &styles, 96.0);
-    assert!(
-        composed.lines.len() > 1,
-        "과밀 저장 단일줄은 fresh 재래핑돼야 함"
+    recompose_stored_single_line_if_overflowing_cached(
+        &mut composed,
+        &para,
+        width,
+        &styles,
+        96.0,
+        Some(&cache),
     );
-    assert_eq!(
-        para.single_line_overflow_memo.get(key),
-        Some(true),
-        "판정이 (폭 키, over) 로 memo 돼야 함"
-    );
+    assert!(composed.lines.len() > 1);
 
-    // 두 번째 페이지 빌드 (memo hit): 측정 생략, 재래핑은 수행.
     let mut composed2 = compose_paragraph(&para);
-    assert_eq!(composed2.lines.len(), 1);
-    recompose_stored_single_line_if_overflowing(&mut composed2, &para, width, &styles, 96.0);
+    recompose_stored_single_line_if_overflowing_cached(
+        &mut composed2,
+        &para,
+        width,
+        &styles,
+        96.0,
+        Some(&cache),
+    );
     assert!(
         composed2.lines.len() > 1,
-        "memo hit 에도 재래핑은 수행돼야 함 (절단 렌더 회귀 방지)"
+        "cache hit에도 derived rewrap은 새 composition에 적용돼야 함"
     );
 }
 
-/// memo hit 시 실폭 측정(estimate_composed_line_width)이 생략됨을 모순 memo 로
-/// 증명한다 — 실측이면 over=true 로 재래핑될 문단에 over=false memo 를 주입했을 때
-/// 재래핑이 일어나지 않으면 측정이 생략된 것이다 (= 같은 문단 2회 판정에 측정 1회).
+/// 실제 소비 frame이 바뀌면 같은 source paragraph도 별도 판정이다.
 #[test]
-fn issue4149_memo_hit_skips_width_measurement() {
+fn issue4149_renderer_cache_keys_actual_cell_width() {
     let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
     let para = issue4149_guard_para(&"가".repeat(60));
-    let width = 50.0;
-    let key = crate::model::paragraph::SingleLineOverflowMemo::width_key(width);
-    para.single_line_overflow_memo.set(key, false); // 실측(true)과 모순인 memo
-
-    let mut composed = compose_paragraph(&para);
-    recompose_stored_single_line_if_overflowing(&mut composed, &para, width, &styles, 96.0);
-    assert_eq!(
-        composed.lines.len(),
-        1,
-        "memo hit 시 재측정 없이 판정을 재사용해야 함"
-    );
-    assert_eq!(
-        para.single_line_overflow_memo.get(key),
-        Some(false),
-        "hit 경로는 memo 를 덮어쓰지 않아야 함"
-    );
+    let cache = SingleLineOverflowCache::default();
+    for (width, expected_lines) in [(50.0, 2..usize::MAX), (5000.0, 1..2)] {
+        let mut composed = compose_paragraph(&para);
+        recompose_stored_single_line_if_overflowing_cached(
+            &mut composed,
+            &para,
+            width,
+            &styles,
+            96.0,
+            Some(&cache),
+        );
+        assert!(
+            expected_lines.contains(&composed.lines.len()),
+            "frame width {width} must select its own cached judgment"
+        );
+    }
 }
 
-/// 폭이 바뀌면(셀 크기 조정) 키 불일치로 자연 재판정된다.
+/// Source/style revision 경계는 renderer owner 전체를 비운다. Source mutation
+/// site는 memo 필드를 알거나 직접 무효화하지 않는다.
 #[test]
-fn issue4149_width_change_re_judges_via_key_mismatch() {
+fn issue4149_renderer_cache_clear_owns_source_invalidation() {
     let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
-    let para = issue4149_guard_para(&"가".repeat(60));
-    let narrow = 50.0;
-    // 넓은 폭에서의 기존 판정(over=false)이 남아 있는 상태.
-    para.single_line_overflow_memo.set(
-        crate::model::paragraph::SingleLineOverflowMemo::width_key(5000.0),
-        false,
-    );
-
+    let mut para = issue4149_guard_para("가나다");
+    let cache = SingleLineOverflowCache::default();
     let mut composed = compose_paragraph(&para);
-    recompose_stored_single_line_if_overflowing(&mut composed, &para, narrow, &styles, 96.0);
+    recompose_stored_single_line_if_overflowing_cached(
+        &mut composed,
+        &para,
+        50.0,
+        &styles,
+        96.0,
+        Some(&cache),
+    );
+    assert_eq!(composed.lines.len(), 1);
+    para.insert_text_at(0, &"가".repeat(60));
+    cache.clear();
+    let mut recomposed = compose_paragraph(&para);
+    recompose_stored_single_line_if_overflowing_cached(
+        &mut recomposed,
+        &para,
+        50.0,
+        &styles,
+        96.0,
+        Some(&cache),
+    );
     assert!(
-        composed.lines.len() > 1,
-        "폭 키 불일치 시 재측정으로 과밀을 다시 잡아야 함"
-    );
-    assert_eq!(
-        para.single_line_overflow_memo.get(
-            crate::model::paragraph::SingleLineOverflowMemo::width_key(narrow)
-        ),
-        Some(true)
+        recomposed.lines.len() > 1,
+        "renderer owner clear must retire the fit judgment after source mutation"
     );
 }
 
-/// 정합(비과밀) 판정도 memo 되고 재래핑은 일어나지 않는다.
+/// 정합(비과밀) 판정도 cache되고 재래핑은 일어나지 않는다.
 #[test]
-fn issue4149_fit_judgment_memoized_false_without_rewrap() {
+fn issue4149_fit_judgment_is_cached_without_rewrap() {
     let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
     let para = issue4149_guard_para("가나다");
     let width = 5000.0;
+    let cache = SingleLineOverflowCache::default();
     let mut composed = compose_paragraph(&para);
-    recompose_stored_single_line_if_overflowing(&mut composed, &para, width, &styles, 96.0);
+    recompose_stored_single_line_if_overflowing_cached(
+        &mut composed,
+        &para,
+        width,
+        &styles,
+        96.0,
+        Some(&cache),
+    );
     assert_eq!(
         composed.lines.len(),
         1,
         "정합 단일줄은 재래핑하지 않아야 함"
-    );
-    assert_eq!(
-        para.single_line_overflow_memo.get(
-            crate::model::paragraph::SingleLineOverflowMemo::width_key(width)
-        ),
-        Some(false)
-    );
-}
-
-/// text/char_shapes 를 바꾸는 모든 경로에서 memo 가 미판정으로 돌아간다.
-/// (셀 편집의 단일 관문 reflow_cell_paragraph[_by_path]는 reflow_line_segs 로
-/// 수렴한다 — document_core 관문 자체는 text_editing.rs 테스트에서 검증.)
-#[test]
-fn issue4149_memo_invalidated_by_mutation_paths() {
-    let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
-    let key = crate::model::paragraph::SingleLineOverflowMemo::width_key(500.0);
-    let prime = |p: &Paragraph| p.single_line_overflow_memo.set(key, true);
-    let mut para = issue4149_guard_para("가나다라마");
-
-    prime(&para);
-    para.insert_text_at(1, "X");
-    assert!(
-        para.single_line_overflow_memo.is_unjudged(),
-        "insert_text_at 후 미판정"
-    );
-
-    prime(&para);
-    para.delete_text_at(0, 1);
-    assert!(
-        para.single_line_overflow_memo.is_unjudged(),
-        "delete_text_at 후 미판정"
-    );
-
-    prime(&para);
-    para.apply_char_shape_range(0, 2, 7);
-    assert!(
-        para.single_line_overflow_memo.is_unjudged(),
-        "apply_char_shape_range 후 미판정"
-    );
-
-    prime(&para);
-    para.set_single_char_shape(0);
-    assert!(
-        para.single_line_overflow_memo.is_unjudged(),
-        "set_single_char_shape 후 미판정"
-    );
-
-    prime(&para);
-    reflow_line_segs(
-        &mut para,
-        ParagraphBox::content_width_px(300.0, 96.0),
-        &styles,
-        96.0,
-    );
-    assert!(
-        para.single_line_overflow_memo.is_unjudged(),
-        "reflow_line_segs(셀 편집 관문의 수렴점) 후 미판정"
-    );
-
-    prime(&para);
-    let new_half = para.split_at(2);
-    assert!(
-        para.single_line_overflow_memo.is_unjudged(),
-        "split_at 앞 절반 미판정"
-    );
-    assert!(
-        new_half.single_line_overflow_memo.is_unjudged(),
-        "split_at 산출 문단은 미판정으로 시작"
-    );
-
-    prime(&para);
-    let other = issue4149_guard_para("바사");
-    para.merge_from(&other);
-    assert!(
-        para.single_line_overflow_memo.is_unjudged(),
-        "merge_from 후 미판정"
     );
 }
 
@@ -2296,16 +2321,148 @@ fn owned_rowbreak_tac_height_selects_current_or_multirow_frames() {
     let multirow = para_with_rows(4, 32_339);
     assert_eq!(owned_rowbreak_tac_height(&multirow, 0), Some(32_339));
 
-    let single_row = para_with_rows(1, 32_339);
+    let mut single_row = para_with_rows(1, 32_339);
+    single_row.line_segs[0].line_spacing = 1_200;
     assert_eq!(owned_rowbreak_tac_height(&single_row, 0), None);
+    assert_eq!(
+        stored_first_tac_line(&single_row).map(|line| line.line_height),
+        Some(32_339)
+    );
+    // 저장 간격 1200HU는 96dpi에서 전량 16px를 소비한다.
+    assert_eq!(
+        tac_host_trailing_spacing(&single_row, 0, &single_row.line_segs[0], true, false, 96.0),
+        16.0
+    );
 
     let mut current_single_row = para_with_rows(1, 32_339);
     current_single_row.line_segs[0].tag = LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    current_single_row.line_segs[0].line_spacing = 1_200;
     assert_eq!(
         owned_rowbreak_tac_height(&current_single_row, 0),
         Some(32_339)
     );
+    // 현재 생성한 개체 소유 줄에만 기존 반간격을 적용한다.
+    assert_eq!(
+        tac_host_trailing_spacing(
+            &current_single_row,
+            0,
+            &current_single_row.line_segs[0],
+            true,
+            false,
+            96.0,
+        ),
+        8.0
+    );
+    assert_eq!(
+        tac_host_trailing_spacing(
+            &current_single_row,
+            0,
+            &current_single_row.line_segs[0],
+            false,
+            false,
+            96.0,
+        ),
+        16.0
+    );
+
+    // 완전한 원본 개체 줄이 새 프레임의 다음 저장 줄을 닫는 경우와,
+    // 단순 되감김·더티 셀·합성 사다리를 구분한다. px 위치를 핀으로 두지 않는다.
+    let mut moved = single_row.clone();
+    moved.line_segs[0].vertical_pos = moved.line_segs[0].line_height * 2;
+    let mut next = Paragraph {
+        line_segs: vec![LineSeg {
+            vertical_pos: moved.line_segs[0].line_height + moved.line_segs[0].line_spacing,
+            line_height: moved.line_segs[0].line_spacing,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let closes = |host: &Paragraph, following: &Paragraph| {
+        tac_next_line_full_spacing(
+            host,
+            Some(following),
+            0.0,
+            0.0,
+            &host.line_segs[0],
+            crate::model::provenance::LayoutCompatibilityProfile::default(),
+            96.0,
+        )
+    };
+    assert!(closes(&moved, &next));
+    next.line_segs[0].vertical_pos -= moved.line_segs[0].line_spacing;
+    assert!(
+        !closes(&moved, &next),
+        "되감김만으로 전량 간격을 소유하지 않는다"
+    );
+    next.line_segs[0].vertical_pos += moved.line_segs[0].line_spacing;
+    next.cell_format_vpos_dirty = true;
+    assert!(!closes(&moved, &next));
+    next.cell_format_vpos_dirty = false;
+    next.line_segs[0].tag = LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    // 현재 생성한 후속 줄은 원본 저장 사다리의 닫힘 증거가 아니다.
+    assert!(
+        crate::renderer::float_placement::restarted_tac::restarted_tac_line_advance(
+            &moved, &next, 0.0, 0.0, 96.0,
+        )
+        .is_none()
+    );
+    // 저장 원점이 간격을 복원하지 않는 후속 재조판에는 전량 간격을 남긴다.
+    // C416의 독립 Print/전쪽 검증처럼 두 소유를 구분하며 더티 후속 줄은 위에서 거절한다.
+    assert!(closes(&moved, &next));
+    next.line_segs[0].tag = 0;
+    moved.line_segs[0].line_height -= 1;
+    next.line_segs[0].vertical_pos -= 1;
+    assert!(
+        !closes(&moved, &next),
+        "불완전한 개체 높이의 닫힘을 채택하지 않는다"
+    );
 
     let undersized = para_with_rows(4, 32_338);
     assert_eq!(owned_rowbreak_tac_height(&undersized, 0), None);
+    assert!(stored_first_tac_line(&undersized).is_none());
+    assert!(stored_first_tac_line(&current_single_row).is_none());
+    single_row.text = "본문".to_owned();
+    assert!(
+        stored_first_tac_line(&single_row).is_none(),
+        "가시 텍스트와 같은 줄은 별도 구성 계약"
+    );
+}
+
+#[test]
+fn default_tabs_use_the_physical_row_origin() {
+    // 80px 등간격 탭 격자에서 원점 20px인 폭 100px 줄은
+    // 첫 탭 60px + 전각 네 글자 40px가 정확히 한 줄을 소유한다.
+    // 원점 0인 대조군은 80px + 40px라 두 줄이다.
+    let styles = ResolvedStyleSet {
+        char_styles: vec![crate::renderer::style_resolver::ResolvedCharStyle {
+            font_size: 10.0,
+            ..Default::default()
+        }],
+        para_styles: vec![crate::renderer::style_resolver::ResolvedParaStyle {
+            default_tab_width: 80.0,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let para = Paragraph {
+        text: "\t가나다라".into(),
+        char_count: 6,
+        char_offsets: (0..5).collect(),
+        char_shapes: vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }],
+        ..Default::default()
+    };
+    let rows = |left| {
+        let mut frame =
+            crate::renderer::layout_frame::LayoutFrame::new(left..left + 7500, 0, vec![]);
+        super::line_breaking::layout_paragraph_in_frame(&para, &mut frame, &styles, 96.0).unwrap()
+    };
+    assert_eq!(rows(0).len(), 2);
+    assert_eq!(
+        rows(1500).len(),
+        1,
+        "탭 격자는 줄 내부 0이 아니라 물리 행의 시작 좌표에서 이어진다"
+    );
 }

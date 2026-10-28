@@ -1,0 +1,96 @@
+| 문서 | 전 | 후 | 감소 | SHA-256 |
+| --- | ---: | ---: | ---: | --- |
+| `task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp` | 96 | 48 | −48 | `84d297375c48e1e903247a389e9ec3907e3cdc57a4a7e29a819a01c2a1e3a341` |
+| `hwpx_sample2.hwpx` | 37 | 0 | −37 | `188bdfe21f89e117d8897f4102aa6f741962b23a3019ad2aaf7bdc222d90fdb2` |
+| `hwpx_sample2.hwp` | 35 | 0 | −35 | `ca66d521d070ac8442e09fd3f283e17611eb9efb45eb4bf6c3a8f65e604f6b5f` |
+| `issue6795/1341000-201100013-cyber-university-application.hwp` | 35 | 2 | −33 | `3202819ec9712c49b189ecb0e1b4a2d46aba37d01e1654c6917438e8134f42d8` |
+| `task2287/1342000_edu_curriculum_map.hwp` | 65 | 37 | −28 | `623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e` |
+| `task2097/21217935_simsa_jipyo.hwp` | 75 | 48 | −27 | `094b9372a7fcd601780443f3063893cbcd087c5faa3129e71ec4708cce6bc2c5` |
+| `issue6284/child_policy_top_caption_charts.hwpx` | 52 | 26 | −26 | `2e7c0b2701105814e60f670d46a813ea344e39b60416ac14729aec7d364b4c8b` |
+| `issue3637/regulatory_impact_nested_table_escape.hwpx` | 38 | 14 | −24 | `e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62` |
+| `issue6697/80550-agricultural-machinery-act-amendment.hwpx` | 38 | 14 | −24 | `e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62` |
+| `issue5941/1490000-201600081_roadmap_research.hwp` | 157 | 134 | −23 | `a06f46ec3f175c7cfa84eb3178b8b3fbdf78e94f71b31d7d87f3417a2617dae9` |
+| `basic/sungeo.hwp` | 23 | 0 | −23 | `3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96` |
+| `hwp3-sample16.hwp` | 22 | 0 | −22 | `559fd94860cf836d5800436d56055c23a73e59eedef3da273a5ba365e6ed9e16` |
+| `hwp3-sample16-hwp5.hwpx` | 21 | 0 | −21 | `49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c` |
+| `hwp3-sample16-hwp5-2010.hwp` | 20 | 0 | −20 | `6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45` |
+| `hwp3-sample16-hwp5-2018.hwp` | 20 | 0 | −20 | `9c3e00a1948a76f524603b3f7d5aba90a524b6e21583d199e40c2539845ae116` |
+| `hwp3-sample16-hwp5-2022.hwp` | 20 | 0 | −20 | `fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe` |
+| `hwp3-sample16-hwp5-2024.hwp` | 20 | 0 | −20 | `f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d` |
+| `hwp3-sample16-hwp5.hwp` | 20 | 0 | −20 | `6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45` |
+| `task2430/1382000_domestic_violence_survey.hwp` | 18 | 0 | −18 | `a3c6a227d26c41c7de9aa258f470001a629da90fa606cdddcbd385add43b7381` |
+| `issue6764/1613000-202200037-air-traffic-controller-cbta.hwp` | 23 | 7 | −16 | `8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7` |
+| `issue6793/1611000-201000141-small-air-transport-study.hwp` | 16 | 0 | −16 | `25cc60d379f68246875e968978c13f3273fcc3f6b04fc1fe726434e4626e447d` |
+| `synam-001.hwp` | 15 | 0 | −15 | `1dce9356ec316407b6c684d5a11190a44bb26da643a7749626763e781ab0c13b` |
+| `issue2559/1341000_research_report_footnotes.hwp` | 28 | 16 | −12 | `e9011fe125a76ed5d56ae06a1702e7f82b4ff5550f2a07ead956ca540f1231c8` |
+| `issue1853_caption_precedes_body_split.hwpx` | 11 | 0 | −11 | `46bd0142f7fe2f68dffb9768e08d65488feeb19f5fd6916f9ad90ae5d72a96a9` |
+| `issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp` | 15 | 5 | −10 | `a80b09754ce4f8e73398af9a9467f570c02be237815fec203ee8ff2db1bb8cbb` |
+| `issue2006/1790387_prep_final_report.hwpx` | 22 | 14 | −8 | `c68baed24096386f9041930d24d39409b61ac99463bf04dfd242440dfdeb739f` |
+| `80168_regulatory_analysis.hwp` | 9 | 2 | −7 | `c8ad10fe9f07be5119cd804278017aefa46e555bbee4f05f0f5132fe4f591a22` |
+| `issue1891/80168_regulatory_analysis.hwpx` | 9 | 2 | −7 | `1e00b54e1139515258260a657217e0b3baa0b1b652a2cd28dd4b9bc48aa262fe` |
+| `3-09월_교육_통합_2023.hwp` | 7 | 0 | −7 | `47a503ea0e92a63ee58b552e661fbde27f8a611afffd67e822be5928319e3c87` |
+| `3-09월_교육_통합_2023.hwpx` | 7 | 0 | −7 | `9ff4ba0f8530621c0ad89be3bc563135cc88f75052949e4d444cfcd715375340` |
+| `issue1891/76076_regulatory_analysis.hwpx` | 7 | 0 | −7 | `49bbcc491b75eb18fea7cd1453de8e261749e2ff9b20793b54aa202e015192d7` |
+| `issue6465/press_release_footer_logos.hwpx` | 7 | 0 | −7 | `89ec9065432547ae141328dfb957981a26f9dd1b17b9bba9d721e5ae4fbbf5fa` |
+| `hwp-multi-001.hwp` | 97 | 91 | −6 | `cb810b94394d8116de0aff1be70d5c63f381090a55050c77f02d4ba67e89523e` |
+| `task2097/75544_pii_bunseok.hwpx` | 8 | 2 | −6 | `f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1` |
+| `76076_regulatory_analysis.hwp` | 6 | 0 | −6 | `3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5` |
+| `hwpx/2025년 2분기 해외직접투자 (최종).hwpx` | 97 | 92 | −5 | `e49c69c090fa7abe9d33971f2983839f30c3efd77068d6d24b99db93a3c2872f` |
+| `hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp` | 97 | 92 | −5 | `d5b13bb007cb62aed574cada108fcf1e961fc63f3d2b84bdbb8b887439134940` |
+| `hwpx/hancom-hwp/hwpx-h-02.hwp` | 97 | 92 | −5 | `a53da8f1793ffbd45ae653c3d14e9855a4d8c2b4d5836005c0c8d96d31b349f1` |
+| `hwpx/hwpx-h-02.hwpx` | 97 | 92 | −5 | `0da11418eeca474c31575af6114cf161a16a3ea95cde0b57dfc3a708e946453b` |
+| `issue2470/36341511_masked.hwpx` | 9 | 4 | −5 | `315b7fc1ffadc1f8096daae8ca92c46e5233598a0efbb81f99db2678b027d909` |
+| `issue5679/10857_delegation_rules.hwp` | 6 | 1 | −5 | `de43607f05072840097b19a294b4455905210402cc42823545125e03567df881` |
+| `정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp` | 58 | 53 | −5 | `50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113` |
+| `정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx` | 223 | 218 | −5 | `8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c` |
+| `basic/issue1994_behindtext_table_20200830.hwp` | 5 | 0 | −5 | `8e7a95cf591944bff56050879fa90251921ec57e28eac66d40c6fb8ad103016f` |
+| `hwp5-tbl-attr-1916.hwp` | 5 | 0 | −5 | `34c3797ad126b17cb26a7fa8296b0a056e6a826443e36f52c0b62a88258118b0` |
+| `issue2217/20200830.hwp` | 5 | 0 | −5 | `8e7a95cf591944bff56050879fa90251921ec57e28eac66d40c6fb8ad103016f` |
+| `issue6782/1480000-201900042-chemical-labeling-standards.hwp` | 5 | 0 | −5 | `4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0` |
+| `issue6782/1480000-201900042-chemical-product-labeling-study.hwp` | 5 | 0 | −5 | `398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860` |
+| `issue4090/156492236_규제샌드박스_min.hwpx` | 4 | 0 | −4 | `d6f4d431b9a4d934b3b4e4330546ef61768c953c2e1328010d2f75440fefa070` |
+| `issue6776/78494-virtual-convergence-industry-decree.hwpx` | 4 | 0 | −4 | `5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617` |
+| `issue1937_rowbreak_footnote_overpagination.hwp` | 135 | 132 | −3 | `a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990` |
+| `hwpx/opengov/36384689_결재문서본문_화재발생종합보고서(제2026-298호).hwpx` | 3 | 0 | −3 | `9de5b2b17aba9c51bfbab27f5e571780aa8e49f39f059e2d1ba8665da11df4cd` |
+| `issue4491/30213_1.혼합단지등 제도개선 방안.hwp` | 3 | 0 | −3 | `d960df91e9d69501006a680eb2c921048307b97b8ffcc25a0d3172e63e87e3ee` |
+| `issue5699/37787_regulatory_impact.hwp` | 3 | 0 | −3 | `71496c7f481d8e7a4083fdeb9b5a1bc5dbb74f6253b8d65b448bbf12af8d7e55` |
+| `issue6044/156513948.hwpx` | 3 | 0 | −3 | `d1d618c0a38d0efdb3348d21ec81fc400780a8c801ccbbc367c8ea08b495482d` |
+| `task3307/issue3307_outline_number.hwpx` | 3 | 0 | −3 | `28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d` |
+| `exam_science.hwp` | 3 | 1 | −2 | `22d29786a80d68a9b2ad9294c2dab4915e0eced941e790e37390b14312b8b6a8` |
+| `hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx` | 86 | 84 | −2 | `54f25292bdd370f3b170e36ad1368bdcb4dd4849a73afdf431939d08ac55bd13` |
+| `hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp` | 86 | 84 | −2 | `f1b84dbb135423331a2af1fb4733508afa44f4b7c73a391b923d30b0c03c662b` |
+| `issue5966/1130000-202100008_franchise_review_report.hwp` | 28 | 26 | −2 | `a1b8299b2554a83873b780474defb02efa949b43c86c63bcc164967f96091e55` |
+| `issue6031/3249937_asset_management_rules.hwpx` | 3 | 1 | −2 | `97b5d6c571a6b7626321c6a53d797e3511978447497bb73309bd23eaa8e7ea77` |
+| `issue6181/156562368_inline_tac_table_line_advance.hwpx` | 5 | 3 | −2 | `e5f92644f671eb8cfb0cfea9ebe9837c390b46b29329ec7858ed61d1ce423f96` |
+| `table_giant_cell_overfill.hwpx` | 18 | 16 | −2 | `5d7eb4a21e46d9ad01a0f631eea2b1f2ec8a71750b4d448868e944e1b95042f4` |
+| `task1725/text_footnote_tail_overpagination.hwp` | 40 | 38 | −2 | `d335c26cbcd57b157c929ed36596d95a6676bea5624348baae3bff3b55a705d9` |
+| `issue4690/30098_indent_over_stored_cs.hwp` | 2 | 0 | −2 | `de4d89bd8803bd3c8cc84b7e51ed36846af7cc938a97baf6fb458fc0b0eeb474` |
+| `issue6086/30098_resident_registration_reform.hwp` | 2 | 0 | −2 | `de4d89bd8803bd3c8cc84b7e51ed36846af7cc938a97baf6fb458fc0b0eeb474` |
+| `issue6524/30098_float_host_split_lineseg.hwp` | 2 | 0 | −2 | `de4d89bd8803bd3c8cc84b7e51ed36846af7cc938a97baf6fb458fc0b0eeb474` |
+| `issue6718/27469-child-allowance-retroactive-support.hwp` | 2 | 0 | −2 | `f619b8745d179562755e767307a3728dc7f8952fe70d376fbfe28aaf77ff66d7` |
+| `issue6854/22037757-chuncheon-personnel-rule-annex13.hwpx` | 2 | 0 | −2 | `1d2ae7a559189f73d41f380da59b03aba41102511a69fbf67514141362cb962f` |
+| `issue7062/tac_object_host_line_height.hwp` | 2 | 0 | −2 | `2cf764c89943a23eff17fb8ac5ccaa1958711216b15d5eb29a9a469b97d23abb` |
+| `SO-SUEOP.hwp` | 34 | 33 | −1 | `b5e410d4972b988240eb79f462c75ab3f92ce3415af6ed7f411906cc7498396c` |
+| `issue-986-receipt.hwp` | 5 | 4 | −1 | `38371563b4f9a53a1b7c2584eb5cd77b6cc2bb13dbf37294d0b797516b1c6715` |
+| `issue1921/59043_regulatory_analysis.hwp` | 3 | 2 | −1 | `da9f9c9862475d1710f6ecf93e3ce134726054fe0be0d9523b9d60d1a90c82ef` |
+| `issue3837/stored_vpos_rewind_form.hwp` | 4 | 3 | −1 | `b1609c633619fdc5203c33ab542eca97b00211717d618f55ee2869106c895652` |
+| `issue5714/1490000-200800034_vietnam_labor_report.hwp` | 4 | 3 | −1 | `da3550d9f370b52823bd63eae0431d1b86fae46ae211b9cb2cd987165a8c0904` |
+| `issue5877/fragment_ghost_vrules.hwp` | 7 | 6 | −1 | `263a96fa24b4070a4a22cc4a62d878c50b7586d0741e039c58aa18615273d5a3` |
+| `issue5941/1480000-201900698-native-neartop-reset.hwp` | 11 | 10 | −1 | `18765ac22270a2cb4ece6a1e6539c2dea6ca6ccde2573b42fb9acce7c34fa83a` |
+| `issue6180/156745974_tac_object_line_spacing.hwpx` | 2 | 1 | −1 | `b1f940681c9faab086503bb4d6474d3d53bc4e0076ed7145c48bc7ca0129ce54` |
+| `issue6601/36331407_side_by_side_tac_tables.hwpx` | 12 | 11 | −1 | `1a34d18a4a334b52bc0dd00c1ee8c18f632316cf777699639f10980a60be98f8` |
+| `issue-6271-rowbreak-float-tail-line.hwp` | 1 | 0 | −1 | `9d533fde6caa7ce388fd0a06893933116dea06e4ef755bb3906c0417b8902dfa` |
+| `issue1880_takeplace_host_before.hwpx` | 1 | 0 | −1 | `9807766f5b4b2ad352362b5384f3bc0611a89cfdb1b65bd3d6682d7d571dca2c` |
+| `issue4514/sample1-repro.hwp` | 1 | 0 | −1 | `72d3be39c8af8779387e7657cb9cd5823fda62dff1c8700ab1bfe73592baf793` |
+| `issue5724/2689441_wmf_contents_ole.hwp` | 1 | 0 | −1 | `eac07217187521898f597392b0d3fb8d24947f9070336f6df1e3e0aa08e3505e` |
+| `issue6111/56345_regulatory_impact_analysis.hwp` | 1 | 0 | −1 | `58013017c3a3dc7e2d278b99c5b4fa1c61de0aa861f913a2c41a49145baadafc` |
+| `issue6269/156739836_public_sector_jobs_stats.hwpx` | 1 | 0 | −1 | `f93e0ecf7576dd32a35a5a7458f51feeb4d1d506518a4177d86feeaa779eabbd` |
+| `issue6873/19211507-chungju-paid-restroom-certificate.hwp` | 1 | 0 | −1 | `03da409ce69894bdfcb8a0b0f00b85803dd599586198b7b0c64e850268904bcb` |
+| `issue6873/hwpx/19211507-chungju-paid-restroom-certificate-2020.hwpx` | 1 | 0 | −1 | `aae30dd14c59d20e7aa4317a9f26c11cc2270d6cdad543269fdab2aaae415cf3` |
+| `table_scattered_header_rowbreak.hwp` | 1 | 0 | −1 | `65bbf7f22c8ab664f0f916b3a25257faf7a65ad564d58706955580e4f63c649b` |
+| `task1716/table_scattered_header_rowbreak.hwpx` | 1 | 0 | −1 | `a36d3effddd75d34433b16ae26cd474c08f5c7d6c5f4a4c3c20880a1f2e6c997` |
+| `task1718/table_giant_cell_overfill.hwp` | 1 | 0 | −1 | `eb630b0bb9ae67c539323b5d1944a52fc7b61cecd8805adbf152064a306f9a61` |
+| `task1753/deferred_takeplace_fill_ahead.hwp` | 1 | 0 | −1 | `fb07b3a1391902af8f7d6cafe9d26d8643d63647ebd9897026d7e54a887789f6` |
+| `task1753/deferred_takeplace_fill_ahead.hwpx` | 1 | 0 | −1 | `cc00f9e11a9f01c777d8b6b92a66aac3f376538f609596b069bfbf22550645a0` |
+| `issue6924/148751598-briefing.hwp` | 1 | 0 | −1 | `03c93b021e01652b1ca5ba3a4a301decf9da33484af7d088987327efcb59e610` |
+| `issue6790/17544911-sericulture-training-criteria.hwp` | 0 | 0 | −0 | `59857dfd443c282ef3a7384558be36266e7476363d182b0c85d690b9b841dba4` |

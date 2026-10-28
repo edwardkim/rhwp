@@ -58,7 +58,9 @@ class WorkflowContractWiringTests(unittest.TestCase):
             self.assertIn(expected, found)
         self.assertEqual(
             node_contract_test_files(),
-            ["ci-impact-classifier.test.cjs", "ci-impact-policy.test.cjs"],
+            ["ci-impact-classifier.test.cjs", "ci-impact-controller-contract.test.cjs",
+             "ci-impact-policy.test.cjs",
+             "ci-impact-report.test.cjs", "ci-workflow-evidence.test.cjs"],
         )
 
     def test_every_contract_test_is_invoked_by_ci(self):
@@ -96,6 +98,34 @@ class WorkflowContractWiringTests(unittest.TestCase):
                 body,
                 f"{name} 이 lint job 밖에서 실행된다 — 조건화로 생략될 수 있다",
             )
+
+    def test_visual_sweep_png_contracts_are_discovered_by_lint(self):
+        lint_job = re.search(
+            r"(?ms)^  lint:\n.*?(?=^  [A-Za-z0-9_-]+:\n|\Z)", self.ci
+        )
+        self.assertIsNotNone(lint_job)
+        body = lint_job.group(0)
+        self.assertIn(
+            "-m unittest discover -s scripts/tests -p 'test_visual_sweep*.py'", body
+        )
+        discovered = {path.name for path in TESTS_DIR.glob("test_visual_sweep*.py")}
+        self.assertIn("test_visual_sweep_alpha.py", discovered)
+        self.assertIn("test_visual_sweep_workers.py", discovered)
+
+    def test_font_trace_contracts_reuse_the_existing_fresh_wasm_job(self):
+        frontend_job = re.search(
+            r"(?ms)^  frontend-package-gates:\n.*?(?=^  [A-Za-z0-9_-]+:\n|\Z)",
+            self.ci,
+        )
+        self.assertIsNotNone(frontend_job)
+        body = frontend_job.group(0)
+        build_position = body.index("wasm-pack build --target web --dev")
+        for name in ["font_decision_trace_contract.test.mjs", "font_decision_trace_e2e.test.mjs"]:
+            invocation = f"scripts/tests/{name}"
+            self.assertEqual(body.count(invocation), 1, "동일 검사를 중복 실행하지 않는다")
+            self.assertGreater(body.index(invocation), build_position, "fresh WASM 이후 실행한다")
+        self.assertIn("contents: read", body)
+        self.assertNotIn("contents: write", body)
 
 
 if __name__ == "__main__":

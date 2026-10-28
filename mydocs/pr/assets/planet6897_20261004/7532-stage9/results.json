@@ -1,0 +1,23 @@
+{
+  "status": "individual_regression_scope_pass_integration_pending",
+  "production_code_candidate": "4cfe96e52",
+  "nextest": {
+    "passed": 2,
+    "failed": 0,
+    "exit_code": 0,
+    "log_sha256": "975d126937d81bd32992d9e86063fe94bceb195412037a1b0582791ba09092be"
+  },
+  "test_source_sha256": "7be935f06a1bbc2ffbe2f26b180f0dc23e261277772cf2fda238c1fb188f65fb",
+  "native_and_fresh_wasm": {
+    "pages": 20,
+    "minimum": 90.80846,
+    "minimum_page": 17,
+    "below_90": 0,
+    "missing_pages": 0
+  },
+  "render_scope": "SVG Native and fresh WASM; output binary/font provenance retained per run manifest",
+  "remaining": [
+    "other individual PR reviews",
+    "final integrated full gates"
+  ]
+}

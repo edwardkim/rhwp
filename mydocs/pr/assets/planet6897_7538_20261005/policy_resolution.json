@@ -1,0 +1,22 @@
+{
+  "pr": 7538,
+  "source_head": "e4abc99f2de1da071964bb3a86c22e4b3d0a4d64",
+  "integration_base": "1e488ac370ec715a5b97c765542e16fc9bf65714",
+  "old_pending_reason": "missing-workflow:CI|missing-workflow:CodeQL|missing-workflow:Render Diff",
+  "resolution": "동일 Controller run 재실행 후 증적 조회와 SUCCESS 갱신",
+  "controller_run": 37012662838,
+  "attempt": 2,
+  "policy_code_changes": false,
+  "current_status": {
+    "url": "https://api.github.com/repos/edwardkim/rhwp/statuses/e4abc99f2de1da071964bb3a86c22e4b3d0a4d64",
+    "avatar_url": "https://avatars.githubusercontent.com/in/15368?v=4",
+    "id": 55557098792,
+    "node_id": "SC_kwDORyECHM8AAAAM73YNKA",
+    "state": "success",
+    "description": "v=6;cv=7;mode=selective;rfp=0;wf=111;rust=1;fe=none;render=1;skia=1;ql=rs;b=4a7cf61c8652586ffe86158344771029714f3681",
+    "target_url": "https://github.com/edwardkim/rhwp/actions/runs/37012662838",
+    "context": "CI Impact Policy",
+    "created_at": "2026-10-04T18:22:25Z",
+    "updated_at": "2026-10-04T18:22:25Z"
+  }
+}

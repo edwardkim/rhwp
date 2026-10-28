@@ -1,0 +1,13 @@
+{
+  "head_sha": "ad321308c3e3acfb6ca0bd8f27525a20dbea3e9d",
+  "run_id": 40513485940,
+  "run_url": "https://github.com/edwardkim/rhwp/actions/runs/40513485940",
+  "status": "completed",
+  "conclusion": "success",
+  "fast_pass": true,
+  "reason": "all-review-only-no-code-impact",
+  "candidate_sha": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+  "heavy_tests": "skipped_review_only",
+  "remote_asset_downloads_verified": 88,
+  "all_tsv_downloads_verified": 78
+}

@@ -1,0 +1,102 @@
+{
+  "date": "2026-10-03",
+  "parent_head": "c30cb3093",
+  "input": "samples/issue1853_caption_precedes_body_split.hwpx",
+  "pdf": "pdf/issue1853_caption_precedes_body_split-hwpx-2020.pdf",
+  "native_pdf_pages": [
+    52,
+    52
+  ],
+  "minimum": 39.96802,
+  "below90_pages": [
+    1,
+    10,
+    13,
+    14,
+    17,
+    19,
+    20,
+    21,
+    22,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    45,
+    46,
+    48,
+    51
+  ],
+  "representative_page": 27,
+  "removed_functions": 2,
+  "removed_baseline_rows": 2,
+  "preserved_original_pdf": true,
+  "new_tests": 0,
+  "whole_nextest": "미실행",
+  "integration_pr_ready": false,
+  "wasm": "미실행; Native 음성 증거로 회귀 이관하며 fresh WASM 통과를 주장하지 않음",
+  "sha256": {
+    "samples/issue1853_caption_precedes_body_split.hwpx": "46bd0142f7fe2f68dffb9768e08d65488feeb19f5fd6916f9ad90ae5d72a96a9",
+    "pdf/issue1853_caption_precedes_body_split-hwpx-2020.pdf": "6577db6936337f4003553c1b8c492cfac42f06554b7dddca640b865ce5a100a8",
+    "target/pr-review/release-test/rhwp": "eb00f79062f920bf91f6e28b70010df814e220bd6af4c5590b068a4e77f64f9d",
+    "scripts/visual_sweep.py": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+  },
+  "gates": [
+    {
+      "gate": "nextest",
+      "exit_code": 0,
+      "elapsed_seconds": 69.472
+    },
+    {
+      "gate": "fmt",
+      "exit_code": 0,
+      "elapsed_seconds": 6.087
+    },
+    {
+      "gate": "native-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 0.277
+    },
+    {
+      "gate": "wasm-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 0.22
+    },
+    {
+      "gate": "workspace-build",
+      "exit_code": 0,
+      "elapsed_seconds": 0.342
+    },
+    {
+      "gate": "workspace-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 11.711
+    },
+    {
+      "gate": "manifest",
+      "exit_code": 0,
+      "elapsed_seconds": 0.399
+    }
+  ],
+  "nextest": {
+    "run": 39,
+    "pass": 39,
+    "fail": 0,
+    "seconds": 52.626
+  },
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5967189734"
+}

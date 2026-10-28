@@ -1,0 +1,62 @@
+[
+  {
+    "mode": "native",
+    "command": [
+      "python3",
+      "scripts/visual_sweep.py",
+      "--key",
+      "liver7379",
+      "--hwp",
+      "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+      "--pdf",
+      "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+      "--font-environment",
+      "mydocs/pr/assets/pr7382_20260926/stage325_font_environment.json",
+      "--embed-fonts",
+      "full",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage338-final-head/rhwp-current",
+      "--dpi",
+      "96",
+      "--pages",
+      "22,66,67,88,163,164",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/stage338-final-head/native-fresh-boundaries"
+    ],
+    "exit_code": 0,
+    "seconds": 59.622
+  },
+  {
+    "mode": "wasm",
+    "command": [
+      "python3",
+      "scripts/visual_sweep.py",
+      "--key",
+      "liver7379",
+      "--hwp",
+      "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+      "--pdf",
+      "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+      "--font-environment",
+      "mydocs/pr/assets/pr7382_20260926/stage325_font_environment.json",
+      "--embed-fonts",
+      "full",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage338-final-head/rhwp-current",
+      "--dpi",
+      "96",
+      "--pages",
+      "22,66,67,88,163,164",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/stage338-final-head/wasm-fresh-boundaries",
+      "--wasm-pkg",
+      "output/pr-review/planet6897-7382-20260926/stage338-final-head/pkg-current"
+    ],
+    "exit_code": 0,
+    "seconds": 224.281
+  }
+]

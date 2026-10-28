@@ -1,0 +1,67 @@
+{
+  "parent_head": "3b26d7cff",
+  "source": "samples/hwpx_sample2.hwpx",
+  "pdf": "pdf/hwpx_sample2-hwpx-2020.pdf",
+  "cause": "종료 행 선언 공간과 바깥 여백의 소유를 합쳐 판정하지 못해 물리 높이·가운데 정렬·후속 문단이 앞당겨짐",
+  "source_equality_hu": {
+    "raw_rows": 49504,
+    "first_frame": 21804,
+    "remaining": 27700,
+    "outer_top": 141,
+    "outer_bottom": 141,
+    "successor_origin": 27982
+  },
+  "native_selected_percent": {
+    "3": 99.05706,
+    "4": 99.85457,
+    "8": 98.91222,
+    "9": 98.55869,
+    "10": 99.70891
+  },
+  "fresh_wasm_selected_percent": {
+    "3": 99.05706,
+    "4": 99.85457,
+    "8": 98.91222,
+    "9": 98.55869,
+    "10": 99.70891
+  },
+  "native_all_pages": 29,
+  "native_below90_pages": [
+    7,
+    14,
+    20,
+    21,
+    28
+  ],
+  "page_count": {
+    "native": 29,
+    "pdf": 29,
+    "wasm": 29
+  },
+  "off_canvas_count": 0,
+  "focused_integration": {
+    "run": 110,
+    "passed": 110,
+    "failed": 0,
+    "exit_code": 0,
+    "runtime_seconds": 12.52
+  },
+  "counterexample": {
+    "source": "samples/issue1921/59043_regulatory_analysis.hwp",
+    "pages": 37,
+    "off_canvas": 1,
+    "original_off_canvas": 1
+  },
+  "wasm_build": "Mac local replacement --no-opt; exit0; not Docker validation",
+  "wasm_visual_exit_code": 0,
+  "source_code_sha256": {
+    "src/renderer/float_placement.rs": "e36abe7080bacb4670df4d7fa856f229827a128f44c084579faed0c66513b2bb",
+    "src/renderer/layout/table_partial.rs": "0a856ed2497227990fee6779f45e16059b300e30ed45bd3fded9fea3ec97fbd7",
+    "src/renderer/typeset/table/continuation/fragment/emit.rs": "1a1c67b190663649c176310b0e649e98756e9cada3ec320dd8c29de4828b0c15"
+  },
+  "native_binary_sha256": "751d11aca5dd92ecd93710d7d2218131d762b1cdfdcd5040f93f085f4a3c33ed",
+  "wasm_binary_sha256": "e5f10e5956a9be06ac58cb12d24f63f1b82c12c7d866c19b808c8c109e366fce",
+  "new_tests": 0,
+  "baseline_changes": 0,
+  "decision": "4쪽 보정 검증. 나머지 미달 페이지와 최종 전체 검증은 미완료."
+}

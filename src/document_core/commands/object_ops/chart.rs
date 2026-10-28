@@ -787,15 +787,255 @@ fn validate_structure(data: &ChartData, edits: &ChartEdits) -> Vec<serde_json::V
     out
 }
 
+// ---------------------------------------------------------------------------
+// [#6053] 정체 추론 — 비꼬리 삽입·삭제에서 계열의 정체(이름·값·스타일)를 보존한다
+// ---------------------------------------------------------------------------
+
+/// 원본 계열이 목표 열과 **같은 계열**이라고 볼 근거 — 비어 있지 않은 이름의 일치 또는
+/// 값 벡터의 일치. 캔들 가드 `ends_kept` 의 이중 술어를 전 위치로 확장한 것이다.
+/// 빈 이름은 근거에서 뺀다 — 이름 없는 계열끼리 전부 서로 걸려 모호해진다.
+fn series_matches(orig: &ChartSeries, want: &SeriesEdits) -> bool {
+    let name_match = match (orig.name.as_deref(), want.name.as_deref()) {
+        (Some(a), Some(b)) => !a.is_empty() && a == b,
+        _ => false,
+    };
+    name_match
+        || (orig.values.len() == want.values.len()
+            && orig
+                .values
+                .iter()
+                .map(|p| p.text.as_str())
+                .eq(want.values.iter().map(String::as_str)))
+}
+
+/// 원본↔목표 계열의 정체 대응.
+enum SeriesMapping {
+    /// 삽입만 — `mapping[i]` = 원본 i 의 목표 자리(단조 증가). 대응 안 된 목표 자리가 신설이다.
+    InsertOnly(Vec<usize>),
+    /// 삭제만 — `mapping[j]` = 목표 j 의 원본 자리(단조 증가). 대응 안 된 원본이 삭제된다.
+    DeleteOnly(Vec<usize>),
+}
+
+/// 대응이 **확실할 때만** `Some` — 계열 수가 같거나, 어느 한쪽이 대응을 못 찾거나, 한 계열에
+/// 둘 이상이 걸리거나(중복 이름·중복 값), 생존 계열의 상대 순서가 뒤집히면 전부 `None` 으로
+/// 현행 위치 기반 경로에 맡긴다(계획 R1 — 모호하면 무조건 폴백). 대응이 서도 전부 제자리면
+/// 꼬리 증감뿐이라 레거시 경로와 같다 — 그쪽이 바이트 불변 계약을 이미 갖고 있어 합류한다.
+fn infer_series_mapping(data: &ChartData, edits: &ChartEdits) -> Option<SeriesMapping> {
+    let k = data.series.len();
+    let k_new = edits.series.len();
+    if k_new > k {
+        let mut mapping = Vec::with_capacity(k);
+        for orig in &data.series {
+            let mut js = (0..k_new).filter(|&j| series_matches(orig, &edits.series[j]));
+            let j = js.next()?;
+            if js.next().is_some() {
+                return None;
+            }
+            mapping.push(j);
+        }
+        if mapping.windows(2).any(|w| w[0] >= w[1]) {
+            return None;
+        }
+        if mapping.iter().enumerate().all(|(i, &j)| i == j) {
+            return None;
+        }
+        Some(SeriesMapping::InsertOnly(mapping))
+    } else if k_new < k {
+        let mut mapping = Vec::with_capacity(k_new);
+        for want in &edits.series {
+            let mut is = (0..k).filter(|&i| series_matches(&data.series[i], want));
+            let i = is.next()?;
+            if is.next().is_some() {
+                return None;
+            }
+            mapping.push(i);
+        }
+        if mapping.windows(2).any(|w| w[0] >= w[1]) {
+            return None;
+        }
+        if mapping.iter().enumerate().all(|(j, &i)| i == j) {
+            return None;
+        }
+        Some(SeriesMapping::DeleteOnly(mapping))
+    } else {
+        None
+    }
+}
+
+/// [#6053] 정체 경로 계획 — 대응이 선 경우에만 `Some`.
+///
+/// 대응쌍의 값·이름·점 증감·라벨 편집은 전부 **원본 좌표**로 주소를 잡고, 신설
+/// ([`ChartEdit::InsertSeries`])의 `at` 만 최종 문서 좌표, 삭제([`ChartEdit::RemoveSeries`])의
+/// `at` 은 원본 좌표다 — patch 층의 계약 그대로다. 삭제되는 계열에는 어떤 편집도 걸지 않는다
+/// (구간이 겹쳐 patch 가 거부한다).
+fn plan_identity_edits(
+    data: &ChartData,
+    edits: &ChartEdits,
+    scatter: bool,
+) -> Option<(Vec<ChartEdit>, Vec<serde_json::Value>)> {
+    let mapping = infer_series_mapping(data, edits)?;
+    let mut plan = Vec::new();
+    let mut changed = Vec::new();
+
+    // (원본 i, 목표 j) 대응쌍과 신설(목표 좌표)·삭제(원본 좌표) 목록. mapping 은 단조 증가라
+    // 대응 안 된 자리는 binary_search 로 가른다.
+    let (pairs, inserts, removes): (Vec<(usize, usize)>, Vec<usize>, Vec<usize>) = match &mapping {
+        SeriesMapping::InsertOnly(m) => (
+            m.iter().copied().enumerate().collect(),
+            (0..edits.series.len())
+                .filter(|j| m.binary_search(j).is_err())
+                .collect(),
+            Vec::new(),
+        ),
+        SeriesMapping::DeleteOnly(m) => (
+            m.iter().copied().enumerate().map(|(j, i)| (i, j)).collect(),
+            Vec::new(),
+            (0..data.series.len())
+                .filter(|i| m.binary_search(i).is_err())
+                .collect(),
+        ),
+    };
+
+    for &(i, j) in &pairs {
+        let have = &data.series[i];
+        let want = &edits.series[j];
+        let keep = want.values.len().min(have.values.len());
+        for (p, (text, point)) in want.values.iter().zip(&have.values).enumerate().take(keep) {
+            if text != &point.text {
+                plan.push(ChartEdit::Value(ValueEdit {
+                    series: i,
+                    point: p,
+                    target: EditTarget::Value,
+                    text: text.clone(),
+                }));
+                changed.push(serde_json::json!({
+                    "series": i, "point": p, "from": point.text, "to": text,
+                }));
+            }
+        }
+        if let Some(name) = &want.name {
+            if let Some(h) = &have.name {
+                if h != name {
+                    plan.push(ChartEdit::SeriesName {
+                        series: i,
+                        text: name.clone(),
+                    });
+                    changed.push(serde_json::json!({
+                        "op": "renameSeries", "series": i, "from": h, "to": name,
+                    }));
+                }
+            }
+        }
+        if want.values.len() > have.values.len() {
+            changed.push(serde_json::json!({
+                "op": "appendPoints", "series": i, "block": block_name(scatter, EditTarget::Value),
+                "before": have.values.len(), "after": want.values.len(),
+            }));
+            plan.push(ChartEdit::AppendPoints {
+                series: i,
+                target: EditTarget::Value,
+                texts: want.values[have.values.len()..].to_vec(),
+            });
+        } else if want.values.len() < have.values.len() {
+            changed.push(serde_json::json!({
+                "op": "truncatePoints", "series": i, "block": block_name(scatter, EditTarget::Value),
+                "before": have.values.len(), "after": want.values.len(),
+            }));
+            plan.push(ChartEdit::TruncatePoints {
+                series: i,
+                target: EditTarget::Value,
+                keep: want.values.len(),
+            });
+        }
+    }
+
+    if let Some(labels) = &edits.labels {
+        // 라벨은 **생존 계열에만** 동기 적용한다 — 삭제될 계열에 걸면 구간이 겹친다.
+        for &(i, _) in &pairs {
+            let series = &data.series[i];
+            if !has_labels(series) {
+                continue;
+            }
+            let keep = labels.len().min(series.labels.len());
+            for (p, (text, point)) in labels.iter().zip(&series.labels).enumerate().take(keep) {
+                if text != &point.text {
+                    plan.push(ChartEdit::Value(ValueEdit {
+                        series: i,
+                        point: p,
+                        target: EditTarget::Label,
+                        text: text.clone(),
+                    }));
+                    changed.push(if scatter {
+                        serde_json::json!({ "series": i, "x": p, "from": point.text, "to": text })
+                    } else {
+                        serde_json::json!({ "op": "relabel", "series": i, "point": p, "from": point.text, "to": text })
+                    });
+                }
+            }
+            if labels.len() > series.labels.len() {
+                changed.push(serde_json::json!({
+                    "op": "appendPoints", "series": i, "block": block_name(scatter, EditTarget::Label),
+                    "before": series.labels.len(), "after": labels.len(),
+                }));
+                plan.push(ChartEdit::AppendPoints {
+                    series: i,
+                    target: EditTarget::Label,
+                    texts: labels[series.labels.len()..].to_vec(),
+                });
+            } else if labels.len() < series.labels.len() {
+                changed.push(serde_json::json!({
+                    "op": "truncatePoints", "series": i, "block": block_name(scatter, EditTarget::Label),
+                    "before": series.labels.len(), "after": labels.len(),
+                }));
+                plan.push(ChartEdit::TruncatePoints {
+                    series: i,
+                    target: EditTarget::Label,
+                    keep: labels.len(),
+                });
+            }
+        }
+    }
+
+    for &j in &inserts {
+        let want = &edits.series[j];
+        changed.push(serde_json::json!({
+            "op": "insertSeries", "at": j, "name": want.name,
+        }));
+        plan.push(ChartEdit::InsertSeries {
+            at: j,
+            name: want.name.clone(),
+            labels: edits.labels.clone(),
+            values: want.values.clone(),
+        });
+    }
+    for &i in &removes {
+        changed.push(serde_json::json!({
+            "op": "removeSeries", "at": i, "name": data.series[i].name,
+        }));
+        plan.push(ChartEdit::RemoveSeries { at: i });
+    }
+
+    Some((plan, changed))
+}
+
 /// 바뀐 칸·구조를 편집 목록과 `changed[]` 봉투로 만든다.
 ///
 /// [#5652] `structure: false` 는 B1 계획(값 치환, 분산형 X)이고, `true` 는 목표 행렬과의
 /// 위치 기반 diff — 겹치는 칸은 치환, 남는 행·열은 꼬리 증감, 라벨은 라벨 보유 전 계열에 동기.
+///
+/// [#6053] 계열 수가 바뀌는 구조 편집은 **정체 추론을 먼저** 시도한다 — 대응이 서면 비꼬리
+/// 삽입·삭제를 정체 보존 연산으로 계획하고, 모호하거나 꼬리뿐이면 여기(위치 기반)로 폴백한다.
 fn plan_edits(
     data: &ChartData,
     edits: &ChartEdits,
     scatter: bool,
 ) -> (Vec<ChartEdit>, Vec<serde_json::Value>) {
+    if edits.structure {
+        if let Some(result) = plan_identity_edits(data, edits, scatter) {
+            return result;
+        }
+    }
+
     let mut plan = Vec::new();
     let mut changed = Vec::new();
 

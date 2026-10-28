@@ -7,10 +7,12 @@ use super::symbols::{DecoKind, FontStyleKind};
 /// 행렬 스타일
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 pub enum MatrixStyle {
-    Plain,   // MATRIX — 괄호 없음
-    Paren,   // PMATRIX — 소괄호 ( )
-    Bracket, // BMATRIX — 대괄호 [ ]
-    Vert,    // DMATRIX — 세로줄 | |
+    Plain,       // MATRIX — 괄호 없음
+    Paren,       // PMATRIX — 소괄호 ( )
+    Bracket,     // BMATRIX — 대괄호 [ ]
+    Vert,        // DMATRIX — 세로줄 | |
+    Ladder,      // LADDER — 나눗셈 행과 마지막 결과 행
+    ShortLadder, // SLADDER — 나눗셈 행 오른쪽에 나머지 표시
 }
 
 /// 공백 종류
@@ -26,6 +28,9 @@ pub enum SpaceKind {
 pub enum EqNode {
     /// 수평 나열 (여러 노드의 연속)
     Row(Vec<EqNode>),
+
+    /// 구형 저장 수식의 명시적 중괄호. 일반 Row와 다른 좌표 프레임 소유를 보존한다.
+    Group(Box<EqNode>),
 
     /// 일반 텍스트 (이탤릭체로 렌더링되는 변수 등)
     Text(String),
@@ -54,6 +59,12 @@ pub enum EqNode {
         bottom: Box<EqNode>,
     },
 
+    /// 조합: CHOOSE/BINOM은 일반 ATOP을 감싼 괄호와 다른 행 프레임을 소유한다.
+    Binomial {
+        top: Box<EqNode>,
+        bottom: Box<EqNode>,
+    },
+
     /// 제곱근: SQRT x, SQRT(n) of x
     Sqrt {
         index: Option<Box<EqNode>>,
@@ -71,6 +82,13 @@ pub enum EqNode {
         base: Box<EqNode>,
         sub: Box<EqNode>,
         sup: Box<EqNode>,
+    },
+
+    /// 중위 LSUB/LSUP: 앞 항의 왼쪽에 뒤 항을 첨자로 부착한다.
+    LeftScripts {
+        base: Box<EqNode>,
+        sub: Option<Box<EqNode>>,
+        sup: Option<Box<EqNode>>,
     },
 
     /// 큰 연산자 (∫, ∑, ∏ 등): 위/아래 첨자 포함
@@ -102,6 +120,8 @@ pub enum EqNode {
     /// & 기준으로 왼쪽/오른쪽을 분리하여 세로 정렬
     EqAlign {
         rows: Vec<(EqNode, EqNode)>, // (& 이전, & 이후) 쌍
+        /// 빈 오른쪽 칸과 & 없는 행을 구분한다.
+        alignment_marks: Vec<bool>,
     },
 
     /// 관계식: REL 화살표 {위} {아래}, BUILDREL 화살표 {위}
@@ -109,6 +129,13 @@ pub enum EqNode {
         arrow: String,
         over: Box<EqNode>,
         under: Option<Box<EqNode>>, // BUILDREL은 None
+    },
+
+    /// 긴 나눗셈: LONGDIV{제수}{몫}{피제수}
+    LongDiv {
+        divisor: Box<EqNode>,
+        quotient: Box<EqNode>,
+        body: Box<EqNode>,
     },
 
     /// 자동 크기 괄호: LEFT ( ... RIGHT )
@@ -157,6 +184,14 @@ pub enum PileAlign {
 }
 
 impl EqNode {
+    /// 기존 자연 배치의 분류는 그룹 본체를 읽고, 구형 좌표 평면은 Group 자체를 읽는다.
+    pub(super) fn ungrouped(&self) -> &Self {
+        match self {
+            Self::Group(body) => body.ungrouped(),
+            other => other,
+        }
+    }
+
     /// Row에서 불필요한 중첩 제거
     pub fn simplify(self) -> Self {
         match self {
@@ -166,6 +201,7 @@ impl EqNode {
                     .map(|c| c.simplify())
                     .filter(|c| !matches!(c, EqNode::Empty))
                     .collect();
+                children = super::font_style_runs::resolve(children);
                 if children.len() == 1 {
                     children.into_iter().next().unwrap()
                 } else if children.is_empty() {
@@ -174,6 +210,7 @@ impl EqNode {
                     EqNode::Row(children)
                 }
             }
+            EqNode::Group(body) => EqNode::Group(Box::new(body.simplify())),
             other => other,
         }
     }

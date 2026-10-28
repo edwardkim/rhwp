@@ -322,6 +322,11 @@ fn parse_export_pdf_args<'a>(args: &'a [String]) -> Result<PdfExportArgs<'a>, i3
 }
 
 pub(crate) fn export_pdf(args: &[String]) -> i32 {
+    let (filtered_args, font_environment) = match super::font_environment_args(args) {
+        Ok(options) => options,
+        Err(code) => return code,
+    };
+    let args = filtered_args.as_slice();
     if args.first().is_some_and(|a| a == "--help" || a == "-h") {
         print_export_pdf_usage();
         return 0;
@@ -341,6 +346,8 @@ pub(crate) fn export_pdf(args: &[String]) -> i32 {
             target_page,
             pdf_backend,
             pdf_options,
+            // PDF raster feature 빌드가 아래에서 font_paths 를 대입한다 — 기본
+            // 빌드에서만 미사용 mut 로 보이는 자리다 (CI Canvas visual diff 잡 기준).
             mut direct_pdf_options,
             render_profile,
             hangul2024_compat,
@@ -362,6 +369,12 @@ pub(crate) fn export_pdf(args: &[String]) -> i32 {
             Ok(d) => d,
             Err(e) => return e.report(),
         };
+        if let Err(e) =
+            super::apply_font_environment(&mut doc, font_environment, &pdf_options.font_paths)
+        {
+            eprintln!("오류: 폰트 환경 적용 실패: {e}");
+            return EXIT_RUNTIME;
+        }
 
         // [#3302] 외부 연결 그림 같은 디렉터리 자동 적재 — export-svg/export-png 와 동일 규칙.
         if allows_implicit_sibling_resources(rhwp::parser::detect_format(&data)) {
@@ -495,6 +508,7 @@ fn print_export_pdf_usage() {
         "      --profile <프로필>   layer 출력 프로필 (screen|print|high-quality|fast-preview)"
     );
     eprintln!("      --raster-dpi <DPI>    direct backend fallback raster DPI (기본값: 144)");
+    eprintln!("      --font-environment <json>  명시적 조판/출력 폰트 환경");
     eprintln!("      --compat 2022|2024    목표 한글 조판 세대 (기본: 2022 — 2018·2020 포함)");
     eprintln!("      --font-path <경로>   폰트 파일 탐색 경로 (여러 번 지정 가능)");
     eprintln!("      --fallback-serif <명>");

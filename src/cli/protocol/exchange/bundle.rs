@@ -285,7 +285,7 @@ fn cmd_bundle_verify(args: &[String]) -> i32 {
         }
     };
     let mut broken_at = serde_json::Value::Null;
-    let mut note = |ok: &mut bool, why: String, broken_at: &mut serde_json::Value| {
+    let note = |ok: &mut bool, why: String, broken_at: &mut serde_json::Value| {
         if *ok {
             *ok = false;
             if broken_at.is_null() {

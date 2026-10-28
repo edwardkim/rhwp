@@ -1,0 +1,70 @@
+{
+  "key": "anchor-char",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1
+  ],
+  "completed_pages": [
+    1
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage11-7549-native/anchor-char/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage11-7549-native/anchor-char/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "6568c236812ec60b7113f8a2329ae89185a3e72bfa990fe68f8ce5f80147cf24",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage11-7549-native/anchor-char/pdf_png/pdf-1.png",
+      "pdf_sha256": "aae2b5dbb0cdffe216d175b46e2e221b6568a97549d4f2469c1c09ca230cac3f"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.79652,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 20641,
+      "tolerant_content_match_percent": 99.79652
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/anchor_char_line_height/anchor_char_height.hwpx",
+      "sha256": "e33ebcbe83ac24768367d4e4ef3d1d06c9f315075283a87ecf2342f39bb7517e"
+    },
+    "pdf": {
+      "path": "pdf/anchor_char_line_height/anchor_char_height-2020.pdf",
+      "sha256": "c6c0d63a1cb7276ea7e70b9b651d8664e27c6d0c09469a3b84c9b582d2ae565a"
+    },
+    "git_head": "44cc13c2c7bb0165cbefe09bcabbee6d4a45b1f8",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "6b591e4fa3e4bded1e8ea4a18107bb60dd5c2fd692014fbbece45c8770e52151"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "exported_svg_pages": 1,
+  "exported_render_tree_pages": 1,
+  "exported_pdf_pages": 1
+}

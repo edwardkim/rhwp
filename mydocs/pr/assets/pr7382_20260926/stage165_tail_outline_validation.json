@@ -1,0 +1,181 @@
+{
+  "stage": 165,
+  "code_head": "c5113cb5c9546b5917820d830e5ca6f67f623fcc",
+  "preanalysis": {
+    "stage": 165,
+    "item": 9,
+    "head": "d89575c1ff8065903929ed1657944d6ff9c9fbed",
+    "test": "stored_table_text_tail::one_paragraph_keeps_one_border_across_table_and_text_items",
+    "plan": "정상 한컴1쪽의 same-paragraph text/table/text 항목을 나누어도 하나의 문단 외곽이 소유하는지 개별 확인. 기존 절대 외곽 y핀을 원문 소속·포함 관계·단일 외곽 검사로 교정. 생산 변경/새 함수/이관0."
+  },
+  "current_original": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_019",
+      "-E",
+      "test(=stored_table_text_tail::one_paragraph_keeps_one_border_across_table_and_text_items)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plan": {
+      "caseName": "stored_table_text_tail",
+      "target": "regression_suite_019",
+      "grouped": true
+    },
+    "exit_code": 0,
+    "seconds": 11.514850874897093
+  },
+  "after": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_026",
+      "-E",
+      "test(/stored_table_text_tail::/)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plan": {
+      "caseName": "stored_table_text_tail",
+      "target": "regression_suite_026",
+      "grouped": true
+    },
+    "exit_code": 0,
+    "seconds": 7.904938791878521
+  },
+  "checks": {
+    "base": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "results": [
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit_code": 0,
+        "seconds": 6.049545833840966
+      },
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 7.218537541106343
+      },
+      {
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "seconds": 0.6339125419035554
+      },
+      {
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.748380416072905
+      },
+      {
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 9.968492500018328
+      },
+      {
+        "command": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 0.03580145910382271
+      }
+    ]
+  },
+  "actual_before_after_output_contract": {
+    "scope": "저장된 실제 렌더트리와 재실행한 페이지 항목에 같은 소속 계약을 평가함. 보정 전의 새 Rust 함수 실행으로 주장하지 않음. 내보낸 Rect 태그를 실제 스키마에 맞게 확인함.",
+    "results": [
+      {
+        "capture": "before",
+        "command": [
+          "output/pr-review/planet6897-7382-20260926/stage162-consult2243/candidate2/rhwp",
+          "dump-pages",
+          "samples/stored-table-text-tail/native-8-0.hwpx",
+          "-p",
+          "0",
+          "--json"
+        ],
+        "actual_kinds": [
+          "partialParagraph",
+          "table",
+          "partialParagraph"
+        ],
+        "owning_outlines": 1,
+        "passes": true
+      },
+      {
+        "capture": "after",
+        "command": [
+          "output/pr-review/planet6897-7382-20260926/stage163-tail-border/candidate1/rhwp",
+          "dump-pages",
+          "samples/stored-table-text-tail/native-8-0.hwpx",
+          "-p",
+          "0",
+          "--json"
+        ],
+        "actual_kinds": [
+          "partialParagraph",
+          "table",
+          "partialParagraph"
+        ],
+        "owning_outlines": 1,
+        "passes": true
+      }
+    ]
+  },
+  "summary": [
+    "Summary [   0.049s] 12 tests run: 12 passed, 196 skipped"
+  ],
+  "test_sha256": "f412c0eccb1e655af7e0dea2f83f92a1c3fc3c74eb4aa6e6f66450a32fb1bb13",
+  "visual_evidence": "stage163_tail_border_validation.json",
+  "production_style_sha_unchanged": true,
+  "runtime_sha_unchanged": {
+    "output/pr-review/planet6897-7382-20260926/stage163-tail-border/candidate1/rhwp": true,
+    "pkg/rhwp.js": true,
+    "pkg/rhwp_bg.wasm": true
+  },
+  "scope": "기존 외곽 테두리 함수만 절대 좌표에서 실제 항목 경로/원래 문단의 단일 외곽 소유로 교정. 새 함수/생산/원문/PDF/이관 변경0. 새 테스트의 수정 전 Rust 실행으로 주장하지 않음. 최종 전체/PR 준비는 미완료."
+}

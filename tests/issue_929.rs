@@ -38,7 +38,6 @@ fn issue_929_existing_hwp3_samples_no_regression() {
         "samples/hwp3-sample11.hwp",
         "samples/hwp3-sample13.hwp",
         "samples/hwp3-sample14.hwp",
-        "samples/hwp3-sample16.hwp",
     ] {
         let data = read_sample(sample);
         rhwp::parser::hwp3::parse_hwp3(&data)

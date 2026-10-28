@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "job_id": "560b0206-80fc-4a49-852f-0a13b1ac9ac3",
+  "output_path": "/home/tsjang/rhwp/pdf/pr_6275/by_saved_version/pr6275_issue6194_agri_press_release-2020.pdf",
+  "output_filename": "pr6275_issue6194_agri_press_release-2020.pdf",
+  "size": 160884,
+  "sha256": "eca8cf9ed62f305822404af14658db514246ceb3b8f99d6b02ede1bbdcd3e4f6",
+  "server": {
+    "job_id": "560b0206-80fc-4a49-852f-0a13b1ac9ac3",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "156494392_agri_press_release.hwpx",
+    "output_filename": "pr6275_issue6194_agri_press_release-2020.pdf",
+    "size": 160884,
+    "sha256": "eca8cf9ed62f305822404af14658db514246ceb3b8f99d6b02ede1bbdcd3e4f6",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "12.0.0.4605",
+    "backend": "hwp-managed-direct-dll-host",
+    "elapsed_ms": 16528,
+    "worker_elapsed_ms": 15280,
+    "worker_bits": 32
+  }
+}

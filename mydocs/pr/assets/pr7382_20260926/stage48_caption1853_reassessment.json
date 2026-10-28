@@ -1,0 +1,29 @@
+{
+  "head": "c4ce9ff96436d94468557f09794ee0fa84b35ce6",
+  "current_pages": 52,
+  "frozen96_all_trees_identical": true,
+  "independent_pdf_page14_spans": [
+    {
+      "text": "유사입법례(참고)",
+      "bbox": [
+        150.07999674479166,
+        991.52001953125,
+        296.92128499348956,
+        1013.9839680989584
+      ],
+      "origin": [
+        150.07999674479166,
+        1010.239990234375
+      ]
+    }
+  ],
+  "direct_read": "같은14쪽 PDF의첫표줄은 사회적문제해결부터 시작하나 현재는 앞내용1.주요정책...까지 시작. 본문이 아래로 밀리고 마지막유사입법례글줄도 PDF보다아래. runtime96 review32.06% 직접 재판독",
+  "raw_overflow_is_empty_line": false,
+  "body_overflow_test_appropriateness": "이 입력에서는 실제내용·본문원점 회귀를 잡음. 래칫의모든건이실제결함이라는뜻은아님",
+  "page44_table_boundary_verified": false,
+  "repeated_phrase_ownership_check": {
+    "page13": "본문 TextLine pi100, y513.5, 높이18.7",
+    "page14": "Table pi105 ci0의 Cell row1 col1, 내부 pi1, y107.7, 높이14.7",
+    "conclusion": "같은 문구가 서로 다른 본문/표 셀 소유에 있으므로 문구 중복만으로 분할 유닛 중복을 주장하지 않는다. 독립 PDF14쪽의 표 이어받기 시작 내용과 본문 하단 위치 차이는 별도로 유효하다."
+  }
+}

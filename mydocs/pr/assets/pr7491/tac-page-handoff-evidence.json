@@ -1,0 +1,64 @@
+{
+  "before_source": "41e1be0cf7d3c5946a5e76811da49fd214b64136",
+  "after_production": "c3e99c204133f661534e837aa8bb00b16e4bb99a",
+  "formal_case_head": "183db042f8a2e81735d6a03b8566f76763dfd052",
+  "input": "samples/issue6882/synth_cell_enter_table_growth.hwp",
+  "operation": "Actual split_paragraph_in_cell_native(0,1,0,31,last+i,end-or-zero,None), 8/20 times",
+  "independent_8_table_top_px": 69.844,
+  "body_bottom_px": 1052.64,
+  "observations": {
+    "before_8": {
+      "pages": 3,
+      "table_page": 1,
+      "table_top_px": 260.44,
+      "table_height_px": 797.16
+    },
+    "after_8": {
+      "pages": 3,
+      "table_page": 2,
+      "table_top_px": 69.92,
+      "table_height_px": 797.16,
+      "prefix_page1_count": 1,
+      "prefix_page2_count": 0
+    },
+    "before_20": {
+      "pages": 4,
+      "table_page": 2,
+      "table_top_px": 260.44,
+      "table_height_px": 997.48,
+      "saved_reopen_pages": 2
+    },
+    "after_20": {
+      "pages": 4,
+      "table_page": 2,
+      "table_top_px": 69.92,
+      "table_height_px": 997.48,
+      "saved_reopen_pages": 2
+    }
+  },
+  "formal_before": {
+    "result": "0 PASS / 1 FAIL: grown table remains on previous page",
+    "log": "output/pr-review/pr7491-20261005/logs/growth-formal21-exact-before.log",
+    "build": "output/pr-review/pr7491-20261005/logs/formal21-exact-before-build.log",
+    "rlib_sha256": "dcab6c2ddaf6b1aea1269f7aead89fa2478dd11d32bf8c35b1cf331c7431cc69"
+  },
+  "formal_after": {
+    "source_head": "dbe8431cb240d056411b8136503e3ebef3d54bba",
+    "production_head": "c3e99c204133f661534e837aa8bb00b16e4bb99a",
+    "result": "PASS: exact final integration source, prefix count and painted table page/top/body boundary",
+    "log": "output/pr-review/pr7491-20261005/logs/final8-whole-rust.log",
+    "test": "issue_7490_edited_paragraph_indent::grown_tac_keeps_prefix_before_page_break_and_object_inside_next_body"
+  },
+  "fresh_wasm": {
+    "result": "PASS live Enter 8; table p2 y69.9 h797.2",
+    "log": "output/pr-review/pr7491-20261005/logs/cdp-handoff-final8-renamed.log"
+  },
+  "limits": [
+    "20-Enter measured height and saved-cell-height reopen are pre-existing and unresolved, not a full fidelity claim.",
+    "8-Enter next footnote/rowbreak placement still differs from Hancom. The table origin/body contract does not establish full-page visual acceptance."
+  ],
+  "pdf_jobs": {
+    "8": "025d03be-a896-42fc-bf81-a17f79d82d69",
+    "20": "f12a426f-750b-4ef1-a6ac-d1d78c998078"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "stage": 297,
+  "candidate_head": "1c1d088cb6997ebcbd330c1119d923460aa59bfc",
+  "base": "02530b9ed567a44663edb26c65fb565c4a79f00d",
+  "native_wasm_png_byte_identical_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "visuals": {
+    "stage297-native-current-base": {
+      "manifest": "output/pr-review/planet6897-7382-20260926/stage297-native-current-base/shortcut/manifest.json",
+      "manifest_sha256": "332c0df1be7772d0e11b09adb93ade1ca8d05c27dc5f35d000ac14eebed9b340",
+      "run_state": "complete",
+      "requested_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "completed_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "missing_pages": [],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      }
+    },
+    "stage297-wasm-current-base": {
+      "manifest": "output/pr-review/planet6897-7382-20260926/stage297-wasm-current-base/shortcut/manifest.json",
+      "manifest_sha256": "1db492696e2ebf3c0ac1f64011b73957a1bfe9352d54bf8c7c1914a719f97ae8",
+      "run_state": "complete",
+      "requested_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "completed_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "missing_pages": [],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      }
+    }
+  },
+  "other_tests": {
+    "visual_sweep_python": {
+      "pass": 77,
+      "exit": 0
+    },
+    "font_rule_node": {
+      "pass": 22,
+      "exit": 0
+    }
+  }
+}

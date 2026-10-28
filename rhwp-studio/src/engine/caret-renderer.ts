@@ -68,6 +68,9 @@ export class CaretRenderer {
     this.caretEl.style.left = `${pageLeft + x * zoom}px`;
     this.caretEl.style.top = `${pageOffset + y * zoom}px`;
     this.caretEl.style.height = `${height * zoom}px`;
+    this.caretEl.style.transformOrigin = '0 0';
+    this.caretEl.style.transform = this.currentRect.rotation
+      ? `rotate(${this.currentRect.rotation}deg)` : '';
   }
 
   /** 새 CursorRect로 갱신한다 (깜박임 리셋) */
@@ -122,6 +125,8 @@ export class CaretRenderer {
     this.compEl.style.top = `${top}px`;
     this.compEl.style.width = `${w}px`;
     this.compEl.style.height = `${h}px`;
+    this.compEl.style.transformOrigin = '0 0';
+    this.compEl.style.transform = startRect.rotation ? `rotate(${startRect.rotation}deg)` : '';
     this.compEl.style.fontSize = `${box.h * 0.85 * zoom}px`;
     this.compEl.style.fontFamily = fontFamily || 'sans-serif';
     this.compEl.style.lineHeight = `${h}px`;
@@ -178,13 +183,9 @@ export class CaretRenderer {
 
   /** 페이지의 화면 X 좌표를 계산한다 (그리드/단일 열 공통) */
   private calcPageLeft(pageIndex: number): number {
-    const gridLeft = this.virtualScroll.getPageLeft(pageIndex);
-    if (gridLeft >= 0) return gridLeft;
-    // 단일 열: CSS 중앙 정렬 보정
     const scrollContent = this.container.querySelector('#scroll-content');
     const contentWidth = scrollContent?.clientWidth ?? 0;
-    const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIndex);
-    return (contentWidth - pageDisplayWidth) / 2;
+    return this.virtualScroll.getPageLeftResolved(pageIndex, contentWidth);
   }
 
   /** 캐럿 엘리먼트가 DOM에 없으면 재부착한다 (loadDocument 후 컨테이너 교체 대응) */

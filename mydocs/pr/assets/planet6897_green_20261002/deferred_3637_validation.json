@@ -1,0 +1,84 @@
+{
+  "date": "2026-10-03",
+  "input": "samples/issue3637/regulatory_impact_nested_table_escape.hwpx",
+  "pdf": "pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf",
+  "native_pages": 31,
+  "pdf_pages": 31,
+  "minimum_percent": 16.17029,
+  "below90_pages": [
+    7,
+    13,
+    14,
+    15,
+    16,
+    17,
+    20,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31
+  ],
+  "native_exit_code": 1,
+  "status": "31쪽 미달 문서의 회귀 제거 완료; 다른 문서5개 실패 partition 잔존",
+  "wasm": "미실행; Native 음성 증거로 제외 판단",
+  "issue_record": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5875495573",
+  "new_tests": 0,
+  "source_sha256": {
+    "src/renderer/stored_float_anchor.rs": "e39db7868d4ed4597739ce00b0a048b6510583b218e2fd2333f24818e4907d67",
+    "src/renderer/typeset/controls/empty_float.rs": "69bc81af7a7f4b3d7726908617541f1a611e0018ea31e0a29c14f8990ae284b5"
+  },
+  "input_sha256": "e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62",
+  "pdf_sha256": "4628627c8d6e41dea85aa022232221da982e28538e6a514a24b8ca1af3f21699",
+  "removed_test_sources": [
+    "tests/issue_3637_nested_table_starts_inside_parent_cell.rs"
+  ],
+  "removed_test_functions": 1,
+  "baseline_rows_removed": 2,
+  "source_preserved": true,
+  "pdf_preserved": true,
+  "scope": "규제영향분석서31쪽만; 다른 보도자료2종의 회귀는 유지",
+  "validation": {
+    "nextest": {
+      "run": 50,
+      "passed": 45,
+      "failed": 5,
+      "seconds": 130.512,
+      "exit_code": 100,
+      "remaining": "다른 문서 텍스트 겹침5 partition"
+    },
+    "gates": [
+      {
+        "gate": "nextest",
+        "exit_code": 100,
+        "elapsed_seconds": 165.989
+      },
+      {
+        "gate": "native-clippy",
+        "exit_code": 0,
+        "elapsed_seconds": 0.631
+      },
+      {
+        "gate": "wasm-clippy",
+        "exit_code": 0,
+        "elapsed_seconds": 0.277
+      },
+      {
+        "gate": "workspace-build",
+        "exit_code": 0,
+        "elapsed_seconds": 0.578
+      },
+      {
+        "gate": "workspace-clippy",
+        "exit_code": 0,
+        "elapsed_seconds": 20.283
+      }
+    ],
+    "manifest_exit_code": 0,
+    "fmt_exit_code": 0,
+    "diff_exit_code": 0
+  },
+  "validation_source_note": "작업 중 #2137 renderer 후보에서 검사; 후보 소스는 이 이관 커밋에 포함하지 않음"
+}

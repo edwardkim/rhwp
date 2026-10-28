@@ -21,6 +21,24 @@
         "{input}",
         "--json"
       ]
+    },
+    {
+      "name": "답안 chartCount 숫자 형식",
+      "op": "json_type_eq",
+      "file": "answer.json",
+      "path": "ok",
+      "value": "number"
+    },
+    {
+      "name": "답안 chartCount 라이브 일치",
+      "op": "answer_eq",
+      "answer": "ok",
+      "path": "chartCount",
+      "cmd": [
+        "chart-to-csv",
+        "{input}",
+        "--json"
+      ]
     }
   ],
   "axis": "조사"

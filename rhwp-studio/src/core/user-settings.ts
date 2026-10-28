@@ -11,6 +11,7 @@ import {
   resolvePageViewSettings,
   type PageMovementSettings,
 } from '../view/page-movement.ts';
+import { normalizeZoomFitMode, type ZoomFitMode } from '../view/zoom-fit.ts';
 
 /** 대표 글꼴 세트 (7개 언어별 글꼴) */
 export interface FontSet {
@@ -77,6 +78,8 @@ export interface ViewSettings {
   pageArrangement: PageArrangement;
   /** 쪽을 세로/가로 어느 방향으로 이어 볼지와 휠 변환 설정 */
   pageMovement: PageMovementSettings;
+  /** 마지막으로 고른 쪽 맞춤/폭 맞춤. 문서를 열 때 그 쪽 크기로 다시 계산해 적용한다. */
+  zoomFitMode: ZoomFitMode;
 }
 
 /** 복구용 자동저장 설정 */
@@ -169,8 +172,9 @@ function defaultSettings(): AppSettings {
       clipView: true,
       toolbarBasic: true,
       toolbarFormat: true,
-      pageArrangement: { kind: 'auto' },
+      pageArrangement: { kind: 'single' },
       pageMovement: { ...DEFAULT_PAGE_MOVEMENT },
+      zoomFitMode: 'none',
     },
     autosave: {
       recoveryEnabled: true,
@@ -237,7 +241,14 @@ class UserSettingsService {
       const dialog: Partial<DialogSettings> = parsed.dialog ?? {};
       const view: Partial<ViewSettings> = parsed.view ?? {};
       const autosave: Partial<AutosaveSettings> = parsed.autosave ?? {};
-      const pageView = resolvePageViewSettings(view.pageArrangement, view.pageMovement);
+      // 저장값에 쪽 배치가 없으면 기본 설정을 쓴다 — 정규화의 폴백(`DEFAULT_PAGE_ARRANGEMENT`)
+      // 은 손상된 값을 되살리는 용도이자 `setPageDimensions` 의 하위 호환 인자라, 새 사용자의
+      // 기본 쪽 모양과는 뜻이 다르다. 두 갈래를 같은 상수로 묶으면 기본값을 바꿀 때 그리드
+      // 경로의 하위 호환까지 함께 끌려간다.
+      const pageView = resolvePageViewSettings(
+        view.pageArrangement ?? defaults.view.pageArrangement,
+        view.pageMovement,
+      );
       return {
         version: parsed.version ?? defaults.version,
         font: {
@@ -282,6 +293,7 @@ class UserSettingsService {
           ),
           pageArrangement: pageView.arrangement,
           pageMovement: pageView.movement,
+          zoomFitMode: normalizeZoomFitMode(view.zoomFitMode),
         },
         autosave: {
           ...defaults.autosave,
@@ -422,18 +434,32 @@ class UserSettingsService {
 
   /** 페이지 화면 배치 설정 */
   setPageArrangement(value: PageArrangement): void {
-    this.data.view.pageArrangement = resolvePageViewSettings(
-      value,
-      this.data.view.pageMovement,
-    ).arrangement;
+    this.setPageViewSettings(value, this.data.view.pageMovement);
+  }
+
+  /** 마지막으로 고른 쪽 맞춤/폭 맞춤을 저장한다 ('none' 이면 수치 배율). */
+  setZoomFitMode(value: ZoomFitMode): void {
+    const next = normalizeZoomFitMode(value);
+    if (this.data.view.zoomFitMode === next) return;
+    this.data.view.zoomFitMode = next;
     this.save();
   }
 
   /** 페이지를 세로/가로 어느 방향으로 이어 볼지 저장한다. */
   setPageMovement(value: PageMovementSettings): void {
-    const pageView = resolvePageViewSettings(this.data.view.pageArrangement, value);
+    this.setPageViewSettings(this.data.view.pageArrangement, value);
+  }
+
+  /** 쪽 배치·이동·맞춤 모드를 하나의 정규화된 보기 snapshot으로 저장한다. */
+  setPageViewSettings(
+    arrangement: PageArrangement,
+    movement: PageMovementSettings,
+    zoomFitMode: ZoomFitMode = this.data.view.zoomFitMode,
+  ): void {
+    const pageView = resolvePageViewSettings(arrangement, movement);
     this.data.view.pageArrangement = pageView.arrangement;
     this.data.view.pageMovement = pageView.movement;
+    this.data.view.zoomFitMode = normalizeZoomFitMode(zoomFitMode);
     this.save();
   }
 

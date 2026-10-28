@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q3-e3-merge-requalification-result",
+  "issue": 4969,
+  "stage": "W10-Q3-E3-requalification",
+  "status": "qualified-merge-reconfirmed-approved",
+  "date": "2026-08-29",
+  "q3E3Checkpoint": "5e5819dbda8500f72fa8aa4cda1c22331d3c26e7",
+  "upstreamDevel": "2bcf9b261c3b761d114bc2b3a35ed85ccd1e461e",
+  "mergeCheckpoint": "24055078bc021f81636898b29a7ca8fdeb1f62d0",
+  "ahead": 28,
+  "behind": 0,
+  "merge": {
+    "conflicts": 0,
+    "upstreamCommitCount": 7,
+    "upstreamChangedFileCount": 39,
+    "overlapWithQ3E3ChangedFiles": 0,
+    "productSourceDeltaFromQ3E3Checkpoint": 0
+  },
+  "nativeValidation": {
+    "compositionHandoff": { "passed": 5, "failed": 0 },
+    "q2ParagraphRegression": { "passed": 8, "failed": 0 },
+    "atomicActivation": { "passed": 7, "failed": 0 },
+    "glyphLowering": { "passed": 16, "failed": 0 },
+    "shadowContextGreen": { "passed": 17, "failed": 0 },
+    "red": { "passed": 3, "failed": 1, "expectedFailure": "Q3-E4-atomic-outline-publication-absent" }
+  },
+  "upstreamPolicyValidation": {
+    "node": { "passed": 90, "failed": 0 },
+    "python": { "passed": 70, "failed": 0 }
+  },
+  "defaultReceipt": {
+    "layerJsonBlake3": "0b5212cc076c34dce706039d7c4da85936c0a6769e83f08baa7f158cbd9029de",
+    "canvasKitPlanBlake3": "a98e6933d76901cfa55a43205c758675a8864527f87f8bed7a689d16267cbb56",
+    "changedFromQ3E3": false
+  },
+  "explicitGeometryReceipt": {
+    "baselineWidthPx": 21.0,
+    "selectedWidthPx": 19.840000000000003,
+    "glyphRunPublished": false,
+    "glyphOutlinePublished": false
+  },
+  "wasm": {
+    "command": "docker compose --env-file .env.docker run --rm wasm",
+    "result": "passed",
+    "elapsed": "6m26s",
+    "bytes": 9795240,
+    "sha256": "37e83b9f2225f1ed3e82307e22cad7b7dec18cc02482d3b1b23dc5a7781057ba",
+    "previousReceiptCorrected": true,
+    "correctionReason": "previous Docker receipt preceded the final request-before-predicate source ordering fix"
+  },
+  "otherValidation": {
+    "cargoFmtAll": "passed",
+    "cargoFmtAllCheck": "passed",
+    "clippyAllTargetsDenyWarnings": "passed"
+  },
+  "resultApproved": true,
+  "commitCreated": true,
+  "next": "approve-q3-e4-start",
+  "remoteMutation": false
+}

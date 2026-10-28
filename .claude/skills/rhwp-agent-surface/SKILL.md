@@ -214,4 +214,4 @@ rhwp capabilities --search "표 병합" --json
 - 생성: `python .claude/skills/rhwp-agent-surface/references/_gen_pack.py`
 - 가드: `python -m unittest scripts.tests.test_agent_surface`
 
-작업 기록: [`mydocs/working/agent_surface_skill.md`](../../../mydocs/working/agent_surface_skill.md).
+작업 기록: [`mydocs/working/agent_surface_skill.md`](../../../mydocs/working/archives/agent_surface_skill.md).

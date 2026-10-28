@@ -1,0 +1,22 @@
+{
+  "command": [
+    "/Users/tsjang/rhwp/venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--hwp",
+    "/Users/tsjang/rhwp/samples/issue2097/rowbreak-fragment-start-resaved-2020.hwpx",
+    "--pdf",
+    "/Users/tsjang/rhwp/pdf/issue2097/rowbreak-fragment-start-resaved-2020.pdf",
+    "--key",
+    "resaved",
+    "--rhwp-bin",
+    "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/bin/stage36-after-rhwp",
+    "--out",
+    "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage38-resaved-native",
+    "--dpi",
+    "96",
+    "--pages",
+    "1,2"
+  ],
+  "exit_code": 1,
+  "elapsed_seconds": 39.501104291994125
+}

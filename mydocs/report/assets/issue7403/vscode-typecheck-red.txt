@@ -1,0 +1,5 @@
+
+> rhwp-vscode@0.8.6 typecheck
+> tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.webview.json
+
+src/webview/viewer.ts(139,38): error TS18047: 'report' is possibly 'null'.

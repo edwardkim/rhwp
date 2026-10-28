@@ -1,0 +1,27 @@
+{
+  "stage": 334,
+  "kind": "existing_unit_test_expectation_correction",
+  "beforeHead": "98f2e879c3a0002b119bdcc1ffca29524f827afd",
+  "firstWholeNextest": {
+    "passed": 10227,
+    "failed": 2,
+    "skipped": 50,
+    "exitCode": 100,
+    "testRuntimeSeconds": 722.75
+  },
+  "test": "renderer::layout::text_measurement::tests::test_b7_advance_follows_the_font_table_only_when_trusted",
+  "independentEvidence": "stage325_true_type_realization_validation.json",
+  "expectedAdvance": {
+    "trustedHumanTrueType": 1.0,
+    "untrustedHumanCompatibility": 0.3
+  },
+  "productionCodeChanged": false,
+  "rustTestFunctionsAdded": 0,
+  "focused": {
+    "passed": 1,
+    "failed": 0,
+    "exitCode": 0
+  },
+  "sourceSha256": "d607cf070926b1226c7d4075dacafa2fd0f15716d8c3ed1bbeceba4edc2605c9",
+  "wholeRerun": "pending"
+}

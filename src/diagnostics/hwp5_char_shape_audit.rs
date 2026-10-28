@@ -314,8 +314,8 @@ fn parse_hwpx_signatures(xml: &str) -> Result<BTreeMap<usize, HwpxDecorationSign
 
 fn xml_required_id(event: &quick_xml::events::BytesStart<'_>) -> Result<usize, String> {
     for attribute in event.attributes().flatten() {
-        if attribute.key.as_ref() == b"id" {
-            let value = String::from_utf8_lossy(attribute.value.as_ref());
+        if attribute.key.as_ref().as_bytes() == b"id" {
+            let value = attribute.value.as_ref();
             return value
                 .parse::<usize>()
                 .map_err(|_| format!("HWPX charPr id가 올바르지 않습니다: {value}"));
@@ -342,20 +342,14 @@ fn xml_attribute_signature(event: &quick_xml::events::BytesStart<'_>) -> String 
     let mut attributes = event
         .attributes()
         .flatten()
-        .map(|attribute| {
-            format!(
-                "{}={}",
-                String::from_utf8_lossy(attribute.key.as_ref()),
-                String::from_utf8_lossy(attribute.value.as_ref())
-            )
-        })
+        .map(|attribute| format!("{}={}", attribute.key.as_ref(), attribute.value.as_ref()))
         .collect::<Vec<_>>();
     attributes.sort();
     attributes.join(",")
 }
 
-fn xml_local_name(name: &[u8]) -> &[u8] {
-    name.rsplit(|byte| *byte == b':').next().unwrap_or(name)
+fn xml_local_name(name: &str) -> &[u8] {
+    name.rsplit(':').next().unwrap_or(name).as_bytes()
 }
 
 fn read_char_shapes(path: &PathBuf) -> Result<Vec<CharShapeRecord>, String> {

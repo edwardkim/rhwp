@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "stage": "maintainer correction8; held",
+  "producer_head": "0c35e445844012542d60803686dd63f9b73b764e",
+  "producer_worktree_rust_diff_sha256": "6a53c73982266e70bd2770e75a2b027433aea0c52e62566970eab2c736fa87d4",
+  "before": {
+    "passed": 1,
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 0.321,
+    "cause": "note234 tail wrongly on176; synthetic control passed"
+  },
+  "focused": {
+    "passed": 17,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 1.773
+  },
+  "focused_and_normal": {
+    "passed": 46,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 3.07
+  },
+  "cli_build": {
+    "exit_code": 0,
+    "seconds": 113
+  },
+  "page_count": {
+    "actual": 216,
+    "pdf": 215,
+    "status": "re_review_required"
+  },
+  "native": {
+    "pages": [
+      176,
+      177
+    ],
+    "tolerant_content_match_percent": [
+      85.24789,
+      90.47055
+    ],
+    "selected_gate": "re_review_required",
+    "exit_code": 1,
+    "direct_inspection": [
+      "review176",
+      "overlay176",
+      "review177",
+      "overlay177"
+    ],
+    "font_exception": false
+  },
+  "remaining": [
+    "whole singlecell table1832/1843 top inset",
+    "figure67 guide/geometry and later extra page",
+    "terminal caption budget failure boundary",
+    "final full Rust/lint/Skia/fresh WASM"
+  ]
+}

@@ -80,12 +80,9 @@ export class FieldMarkerRenderer {
 
   /** 페이지의 화면 X 좌표를 계산한다 */
   private calcPageLeft(pageIndex: number): number {
-    const gridLeft = this.virtualScroll.getPageLeft(pageIndex);
-    if (gridLeft >= 0) return gridLeft;
     const scrollContent = this.container.querySelector('#scroll-content');
     const contentWidth = scrollContent?.clientWidth ?? 0;
-    const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIndex);
-    return (contentWidth - pageDisplayWidth) / 2;
+    return this.virtualScroll.getPageLeftResolved(pageIndex, contentWidth);
   }
 
   /** DOM에서 분리된 경우 재부착 */

@@ -3,9 +3,7 @@
 //! HWP3 파일 포맷의 다양한 헤더, 문서 정보, 스타일, 개체 레코드의 바이트 수준 구조를 정의한다.
 //! 바이너리 스트림에서 직접 구조체로 데이터를 읽어오는 메서드들을 포함한다.
 
-use super::Hwp3Error;
 use byteorder::{LittleEndian, ReadBytesExt};
-use snafu::ResultExt;
 use std::io::{self, Read};
 
 #[derive(Debug, Default)]
@@ -331,7 +329,9 @@ impl Default for Hwp3ParaShape {
             left_margin: 0,
             right_margin: 0,
             indent: 0,
-            line_spacing: 0,
+            // 미지정 기본은 160%(MSB=0 이라 퍼센트 해석). 실제 레코드가
+            // 있으면 `read()` 가 덮어쓴다. 0 은 이제 "advance 0" 의 실값이라 구분이 필요하다.
+            line_spacing: 160,
             margin_bottom: 0,
             word_spacing: 0,
             align: 0,

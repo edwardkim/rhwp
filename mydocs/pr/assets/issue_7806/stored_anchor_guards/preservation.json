@@ -1,0 +1,108 @@
+{
+  "existing_issue": "https://github.com/edwardkim/rhwp/issues/7806",
+  "source_commit": "3a8785316cb6d4a34b29737959ff8890cab01ee8",
+  "fixed_base": "2e3b4f880bd11d35398e6ea0100846611f13a72d",
+  "runtime_source": "3a8785316cb6d4a34b29737959ff8890cab01ee8",
+  "status": "archive two unqualified source-flow/visible-bbox pins; preserve independent normal assertions",
+  "input": "samples/issue6111/56345_regulatory_impact_analysis.hwp",
+  "pdf": "pdf/issue6111/56345_regulatory_impact_analysis-hwp-2020.pdf",
+  "files": [
+    {
+      "source": "tests/cases/issue_7203_float_table_stored_anchor_top.rs",
+      "source_blob": "7f293c84e623971c610aae6e8d9583353e58f0a1",
+      "archive": "mydocs/pr/assets/issue_7806/stored_anchor_guards/issue_7203_float_table_stored_anchor_top.rs.txt",
+      "sha256": "b4e227dc9c9f68829dd414448dd901c3b25262b16a8bda21ed61647ee685a910"
+    },
+    {
+      "source": "tests/cases/issue_7203_float_table_top_uses_stored_anchor.rs",
+      "source_blob": "5a65ad738244a256c2db6ba23f360b0b31a6fa4d",
+      "archive": "mydocs/pr/assets/issue_7806/stored_anchor_guards/issue_7203_float_table_top_uses_stored_anchor.rs.txt",
+      "sha256": "bd50e6edbf55fdd8b5818b46777fd99c839a8ea2cf8f9b563a4389035ee83bfb"
+    }
+  ],
+  "remove_only": [
+    "p11 stored flow advance equated with the visible label-wrapper bbox delta",
+    "p20 0.05px equality of source flow origins and visible label-wrapper origins"
+  ],
+  "retain": [
+    "p11 independent Print following table top 436.961344px assertion",
+    "p20 following table presence and body containment",
+    "offset-anchored input counterexample",
+    "all shared input/PDF and parser/serializer tests"
+  ],
+  "restore_when": "same original all-page Native/fresh WASM raw minimum90, page counts/content ownership/direct inspection; restore qualified relational checks and px only on both-backend98 pages",
+  "input_sha256": "58013017c3a3dc7e2d278b99c5b4fa1c61de0aa861f913a2c41a49145baadafc",
+  "pdf_sha256": "c66ea20c3b8d6b31af73752e170372bc7af839c38812991125bdde4dfba35abb",
+  "evidence": [
+    {
+      "source": "output/pr-review/planet6897-20261018/final-four-new-failures-20261021/issue6111-base-native-whole/issue6111/silhouette.tsv",
+      "archive": "mydocs/pr/assets/issue_7806/stored_anchor_guards/base/native/silhouette.tsv",
+      "producer": "2e3b4f880bd11d35398e6ea0100846611f13a72d",
+      "sha256": "0fa4498da5f197a0663437bbe5b68eab47d96d980e9757086c54759eee827a4f"
+    },
+    {
+      "source": "mydocs/pr/assets/issue7445/deferred-20261020/stored-empty-paragraph-56345/base-wasm-silhouette.tsv",
+      "archive": "mydocs/pr/assets/issue_7806/stored_anchor_guards/base/wasm/silhouette.tsv",
+      "producer": "efc52afb738bd408ac821c4e156101b8d26e5cbd",
+      "sha256": "b064ad65ba911b843c6c684f03514b103a1295504b8735dbf6b114833e25bfd4"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261018/issue7806-current-native-whole-20261021/issue6111/silhouette.tsv",
+      "archive": "mydocs/pr/assets/issue_7806/stored_anchor_guards/current/native/silhouette.tsv",
+      "producer": "3a8785316cb6d4a34b29737959ff8890cab01ee8",
+      "sha256": "4787833dc867f7055dee26f8200104694c2b6668744d4f6a0b8b7aaad9f1af01"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261018/post-regression-wasm-extra-20261021/issue6111/silhouette.tsv",
+      "archive": "mydocs/pr/assets/issue_7806/stored_anchor_guards/current/wasm/impacted-pages.tsv",
+      "producer": "3a8785316cb6d4a34b29737959ff8890cab01ee8",
+      "sha256": "a52be28ef518553f2c4bc3b637bd4ef1c3ea7853ab10273d24824287a52fc0a1"
+    }
+  ],
+  "wasm_producer": {
+    "source_sha": "3a8785316cb6d4a34b29737959ff8890cab01ee8",
+    "source_files": {
+      "src/renderer/typeset/controls/empty_float.rs": "700c28c92af5400511122a47abcc1ea8d0247a64614f07e2bea09914cd628f43",
+      "src/renderer/layout/table_layout.rs": "5c97c177f79dab9968d6874e0b1fd8e8b5b4441ff144624bb0f5d56bc26973db",
+      "src/renderer/layout/table_layout/empty_line_flow.rs": "51e752e3bd63a46b2c585f569db6185a709c4e32c8b60c51e7b2b3715d844008",
+      "src/renderer/layout/table_layout/nested_empty_line_flow.rs": "8202dbc59cbb2a3710650a66091e811b84c29bb05e158898b96893b15360b4b5",
+      "src/renderer/typeset/section/heading.rs": "671ac927af1061b3f6442f0ba6c1fb2eba030e5a146abd2bbbe974c718282aef"
+    },
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg"
+    ],
+    "target_dir": "/home/tsjang/rhwp/target/pr-review",
+    "jobs": 8,
+    "wasm_codegen_units": 16,
+    "optimized": true,
+    "final_candidate_build": true,
+    "started_at_utc": "2026-10-21T05:10:03.829571+00:00",
+    "exit_code": 0,
+    "completed_at_utc": "2026-10-21T05:29:52.288108+00:00",
+    "wasm_sha256": "dc382494b86ea08b84d81e333618f3eb56dbfcd312b26c580004532901e7cbb7",
+    "package_sha256": {
+      "rhwp_bg.wasm": "dc382494b86ea08b84d81e333618f3eb56dbfcd312b26c580004532901e7cbb7",
+      "summary.json": "08d15ec904e37ed93ccb4f11a8feb607bcfcf982dc03b97b51f0c3507778accd",
+      "README.md": "47991b99c9d9a09290fe52eb585a6b72afb1cf175c2f9a735756aa9b83bb40a2",
+      ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+      "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+      "package.json": "267a441ed76906609928a1ca8d013b90f72c9f353c2ef91c2755774ffe6ca390",
+      "rhwp_bg.wasm.d.ts": "1a24cf957b4135471a8fd85b7c81b6d50b922c7f678962f111526cefbca3c6a7",
+      "rhwp.d.ts": "be45862cb1e4d8f39579d5c5cb3e7b49b04abd69f93329a57ec83f3fac4c29db",
+      "rhwp.js": "78a36f2edad08758572614180c8ddfd3077802079786d266e7843d2f4b245812"
+    }
+  },
+  "base_wasm_runtime_difference": [
+    "src/native_host/clipboard.rs"
+  ],
+  "active_changes": "only the two recorded incorrect assertions removed; function names, independent PDF border and body containment retained",
+  "retained_focused_result": {
+    "passed": 18,
+    "failed": 0,
+    "receipt": "output/pr-review/planet6897-20261018/issue7806-retained-controls-20261021/results.json"
+  }
+}

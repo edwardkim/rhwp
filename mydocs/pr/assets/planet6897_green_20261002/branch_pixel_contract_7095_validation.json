@@ -1,0 +1,26 @@
+{
+  "parent_head": "6a6b62082",
+  "scope": "현재 브랜치 #7095 기존2개 함수",
+  "removed_absolute_expected_px": [
+    1022.99,
+    1020.27,
+    1007.63
+  ],
+  "contract": "원본 용지 높이−아래 여백−꼬리말−표 바깥 아래 여백 안에 조각과 가시 글줄이 포함. 짧은 조각은 경계 아래 빈 공간을 소비하지 않음.",
+  "new_tests": 0,
+  "renderer_changes": 0,
+  "nextest": {
+    "run": 2,
+    "passed": 2,
+    "exit_code": 0
+  },
+  "suite_clippy_exit": 0,
+  "visual_evidence": {
+    "path": "issue7336_terminal_cap_evidence.json",
+    "pages": 7,
+    "native_min": 97.74445,
+    "fresh_wasm_min": 97.74445,
+    "provenance": "이전 생산 코드 증적. 최신 전수 시각 재검증 완료로 보고하지 않음."
+  },
+  "integration_pr_ready": false
+}

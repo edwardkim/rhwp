@@ -17,11 +17,19 @@
 - 출처: 서울 정보소통광장 정보공개 결재문서(공개) 36375752 — opengov 결재문서 계열,
   PII 방침 A(그대로 동결).
 - 특성: **누적좌표 + 명시적 쪽나누기** — vpos 가 쪽 경계에서도 리셋 없이 증가하고,
-  2쪽 마지막 문단 pi=26(vpos=137484) 다음의 pi=27 이 [쪽나누기](column_type=Page).
+  2쪽 마지막 문단 pi=26(vpos=137484) 다음의 pi=27 이 쪽나누기(`column_type=Page`).
   저장 lineseg 상 pi=25(134764)와 pi=26 은 한 줄(2720HU) 간격 연속 = 2쪽 배치가 정답.
 - 결함(#1749 1차 게이트): `saved_flow_marks_page_last` 가 "vpos 리셋"만 페이지-마지막
   증거로 인정 → 쪽나누기 증거 누락 → pi=26 신뢰 거부 → 누적높이 판정(919.2+36.3 >
   930.5px)으로 3쪽 단독 문단으로 밀림 (5쪽 → 6쪽 회귀).
 - 기대(한글 정합): pi=26 은 2쪽 마지막, 전체 5쪽.
 - 검증: `rhwp dump-pages samples/task1749/saved_bounds_cumulative_page_break.hwpx` /
-  `cargo test --test issue_1749_saved_bounds_page_break`
+  `node scripts/run-rust-test.mjs issue_1749_saved_bounds_page_break -- --cargo-profile release-test --target-dir target/pr-review --test-threads 8 --no-fail-fast`
+
+## HWPX 회귀 이관
+
+페이지나누기 HWPX는 사용자 승인으로 [#7445 보존 자산](../../mydocs/pr/assets/issue7445/saved_bounds_cumulative_page_break.hwpx)에 바이트 동일하게 이동했습니다. 전체 Native 최저5쪽30.44845%이며 최종 출력 검사는 이슈에서 재구축합니다. 저장 IR·기존 HWP 대조군과 나머지누적좌표입력/기준PDF는 유지합니다. [시각·제외·유지 근거](../../mydocs/pr/assets/issue7445/savedbounds1749_test_removal_validation.json). 위 samples HWPX 경로와 이전 cargo 명령은 당시 기록입니다.
+
+## 현재 통합 검토의 재검증
+
+위 #7445 이관은 과거 판정입니다. 현재 브랜치에는 원문 HWPX가 복원되어 있으며, 사용자 지시에 따라5쪽 문서를 현재 브랜치에서 보정하고 있습니다. 저장 제품에 맞춘 [한컴2020 정본 PDF](../../pdf/task1749/saved_bounds_cumulative_page_break-hwpx-2020.pdf)로 전체5쪽을 비교했습니다. 재조판 표 마지막 줄 간격 보정 후 Native 최저91.10644%/미달0쪽이고 기존 쪽·문단 소유3검사와 관련26검사가 통과했습니다. fresh WASM 전5쪽은 Native와 동일하고 Rust lint/빌드/정책 gate는 모두 통과했으며, [현재 검증 기록](../../mydocs/pr/assets/planet6897_green_20261002/savedbounds1749_reflow_validation.json)을 따릅니다. 원문 HWP/HWPX는 삭제하지 않았습니다.

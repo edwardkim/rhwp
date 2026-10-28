@@ -65,7 +65,9 @@ const CANVASKIT_READINESS_EXPECTATION_KEYS = new Set([
 ]);
 const CANVASKIT_GLYPH_RESOURCE_PAYLOAD_KINDS = new Set(['bitmapGlyph', 'svgGlyph']);
 const CANVASKIT_LAYER_FEATURE_COUNT_KEYS = new Set([
+  'charOverlaps',
   'dashedStrokes',
+  'tabLeaders',
   'verticalPresentationPunctuation',
   'verticalTextRuns',
 ]);
@@ -518,6 +520,8 @@ async function readLayerFeatureProbe(page, pageIndex, profile) {
   return await page.evaluate(([targetPageIndex, targetProfile]) => {
     const tree = window.__wasm?.getPageLayerTreeObject?.(targetPageIndex, targetProfile);
     if (!tree?.root) return null;
+    // Count replayed visuals, not input ops: rejected or no-op positioned text
+    // must not satisfy tabLeaders / charOverlaps feature expectations.
     const featureCounts = window.__canvasView
       ?.getCanvasKitRenderDiagnostics?.(targetPageIndex)
       ?.replayFeatureCounts ?? null;

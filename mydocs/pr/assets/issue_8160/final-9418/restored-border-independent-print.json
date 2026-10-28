@@ -1,0 +1,39 @@
+{
+  "pdf": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+  "pdf_sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+  "dpi": 192,
+  "threshold": 232,
+  "pages": [
+    {
+      "page": 63,
+      "bands": [
+        [
+          2127,
+          2128
+        ],
+        [
+          2130,
+          2131
+        ]
+      ],
+      "png": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/fresh-print-192-p63.png",
+      "png_sha256": "7e2a6ad346f6a000e50793fcc0eca0ecc893468a5b62a1c9e50004a2e39c192c"
+    },
+    {
+      "page": 64,
+      "bands": [
+        [
+          2127,
+          2128
+        ],
+        [
+          2130,
+          2131
+        ]
+      ],
+      "png": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/candidate43/fresh-print-192-p64.png",
+      "png_sha256": "ef6846c6f63865fbd769fd0c8ff4aee22f23e54a386381f9572bd456fcd5f8db"
+    }
+  ],
+  "unchanged_original_expectation": true
+}

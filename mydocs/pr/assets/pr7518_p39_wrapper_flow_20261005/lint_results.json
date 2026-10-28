@@ -1,0 +1,119 @@
+{
+  "head": "2869859ee38461645235978f6c05604013c05430",
+  "base": "731de9e1b4bb946d76f35108ed7e186ebe4ebecb",
+  "results": [
+    {
+      "step": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 12.02,
+      "log": "output/pr-review/pr7518-20261004/logs/p39-fmt.log"
+    },
+    {
+      "step": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 36.05,
+      "log": "output/pr-review/pr7518-20261004/logs/p39-clippy-native.log"
+    },
+    {
+      "step": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 31.79,
+      "log": "output/pr-review/pr7518-20261004/logs/p39-clippy-wasm.log"
+    },
+    {
+      "step": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 51.55,
+      "log": "output/pr-review/pr7518-20261004/logs/p39-workspace-build.log"
+    },
+    {
+      "step": "clippy-all-targets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 6.08,
+      "log": "output/pr-review/pr7518-20261004/logs/p39-clippy-all-targets.log",
+      "duration_note": "Cargo reported time for final all-targets rerun after harness regeneration"
+    },
+    {
+      "step": "manifest-base",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "731de9e1b4bb946d76f35108ed7e186ebe4ebecb"
+      ],
+      "exit_code": 0,
+      "duration_seconds": null,
+      "log": "output/pr-review/pr7518-20261004/logs/p39-manifest-base.log",
+      "repair": "Regenerated harnesses after final test formatting, reran all-targets Clippy then base-pinned manifest check"
+    }
+  ],
+  "prepare_log": "output/pr-review/pr7518-20261004/logs/p39-manifest-prepare.log",
+  "status": "passed",
+  "resolved_failures": [
+    {
+      "step": "native Clippy",
+      "reason": "question_mark style lint",
+      "log": "output/pr-review/pr7518-20261004/logs/p39-clippy-native-first-failure.log",
+      "resolution_source_sha": "2869859ee38461645235978f6c05604013c05430"
+    },
+    {
+      "step": "manifest base check",
+      "reason": "harness allocation drift after test formatting changed source weight",
+      "log": "output/pr-review/pr7518-20261004/logs/p39-manifest-base-first-failure.log",
+      "resolution": "regenerated derived harnesses after final formatting; all-targets Clippy and base-pinned check both pass"
+    }
+  ]
+}

@@ -1,0 +1,209 @@
+{
+  "producer_head": "01598540342748e3dbc30d610b6036c1574b5553",
+  "kind": "intermediate_diagnostic_not_final_acceptance",
+  "pages": 215,
+  "below_90_count": 50,
+  "gate": "re_review_required",
+  "remaining_pages": [
+    {
+      "page": 10,
+      "match_percent": 66.93454
+    },
+    {
+      "page": 11,
+      "match_percent": 70.44434
+    },
+    {
+      "page": 12,
+      "match_percent": 59.07444
+    },
+    {
+      "page": 13,
+      "match_percent": 48.43828
+    },
+    {
+      "page": 14,
+      "match_percent": 81.51575
+    },
+    {
+      "page": 17,
+      "match_percent": 65.05603
+    },
+    {
+      "page": 22,
+      "match_percent": 89.59133
+    },
+    {
+      "page": 23,
+      "match_percent": 74.73376
+    },
+    {
+      "page": 27,
+      "match_percent": 86.96367
+    },
+    {
+      "page": 28,
+      "match_percent": 87.87776
+    },
+    {
+      "page": 31,
+      "match_percent": 43.95752
+    },
+    {
+      "page": 32,
+      "match_percent": 33.86723
+    },
+    {
+      "page": 44,
+      "match_percent": 55.45553
+    },
+    {
+      "page": 45,
+      "match_percent": 50.97961
+    },
+    {
+      "page": 52,
+      "match_percent": 87.02484
+    },
+    {
+      "page": 74,
+      "match_percent": 86.20769
+    },
+    {
+      "page": 75,
+      "match_percent": 52.55315
+    },
+    {
+      "page": 84,
+      "match_percent": 83.29813
+    },
+    {
+      "page": 85,
+      "match_percent": 67.28834
+    },
+    {
+      "page": 87,
+      "match_percent": 59.8492
+    },
+    {
+      "page": 88,
+      "match_percent": 89.52975
+    },
+    {
+      "page": 90,
+      "match_percent": 83.32319
+    },
+    {
+      "page": 91,
+      "match_percent": 82.8449
+    },
+    {
+      "page": 95,
+      "match_percent": 79.41281
+    },
+    {
+      "page": 106,
+      "match_percent": 73.10516
+    },
+    {
+      "page": 107,
+      "match_percent": 45.14314
+    },
+    {
+      "page": 108,
+      "match_percent": 12.98094
+    },
+    {
+      "page": 121,
+      "match_percent": 73.77787
+    },
+    {
+      "page": 122,
+      "match_percent": 58.45223
+    },
+    {
+      "page": 126,
+      "match_percent": 67.14618
+    },
+    {
+      "page": 127,
+      "match_percent": 65.32413
+    },
+    {
+      "page": 130,
+      "match_percent": 88.32677
+    },
+    {
+      "page": 131,
+      "match_percent": 84.22025
+    },
+    {
+      "page": 153,
+      "match_percent": 52.75757
+    },
+    {
+      "page": 155,
+      "match_percent": 30.89542
+    },
+    {
+      "page": 156,
+      "match_percent": 41.21846
+    },
+    {
+      "page": 162,
+      "match_percent": 81.06478
+    },
+    {
+      "page": 163,
+      "match_percent": 89.396
+    },
+    {
+      "page": 168,
+      "match_percent": 81.76057
+    },
+    {
+      "page": 169,
+      "match_percent": 61.00773
+    },
+    {
+      "page": 173,
+      "match_percent": 84.34809
+    },
+    {
+      "page": 178,
+      "match_percent": 84.60678
+    },
+    {
+      "page": 186,
+      "match_percent": 84.75294
+    },
+    {
+      "page": 199,
+      "match_percent": 88.83247
+    },
+    {
+      "page": 206,
+      "match_percent": 36.53762
+    },
+    {
+      "page": 207,
+      "match_percent": 32.35064
+    },
+    {
+      "page": 208,
+      "match_percent": 85.08928
+    },
+    {
+      "page": 210,
+      "match_percent": 72.49487
+    },
+    {
+      "page": 211,
+      "match_percent": 81.3431
+    },
+    {
+      "page": 214,
+      "match_percent": 82.90745
+    }
+  ]
+}

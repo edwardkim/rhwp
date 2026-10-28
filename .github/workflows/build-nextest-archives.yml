@@ -20,6 +20,11 @@ on:
         description: Cargo test target group assigned to this archive.
         required: true
         type: string
+      duration_policy_sha:
+        description: Pinned ci-metrics policy commit for integration B/C/D/E selection.
+        required: false
+        type: string
+        default: ''
 jobs:
   build:
     name: Build test archive (${{ inputs.archive_label }})
@@ -48,7 +53,7 @@ jobs:
           esac
 
           case "${TARGET_GROUP}" in
-            lib|integration-b|integration-c)
+            lib|integration-b|integration-c|integration-d|integration-e)
               ;;
             *)
               echo "::error::invalid test archive target group: ${TARGET_GROUP}"
@@ -91,7 +96,7 @@ jobs:
           toolchain: 1.93.1
 
       - name: Install cargo-nextest
-        uses: taiki-e/install-action@ba47c86ac325773530516bb756137ac718732518 # v2.86.5
+        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2.87.31
         with:
           tool: nextest
 
@@ -99,7 +104,7 @@ jobs:
       # 동일하게 devel/main push로 한정한다.
       - name: Rust build cache
         id: rust-cache
-        uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2.9.1
+        uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2.9.3 이후 workspace root key 보정
         with:
           shared-key: test-archive
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
@@ -134,7 +139,7 @@ jobs:
             printf "| cache_save_eligible | \`%s\` |\n" "${CACHE_SAVE_ELIGIBLE}"
           } >> "${GITHUB_STEP_SUMMARY}"
 
-      # [#5737] lib는 별도 archive로, integration target은 두 archive로 교차 배정해
+      # [#6251] lib는 별도 archive로, integration target은 B/C/D/E 네 archive에 시간 기준으로 배정해
       # compile/link 임계 경로를 병렬화한다. integration 목록은 파생 suite 준비 뒤
       # metadata에서 구한다.
       - name: Build default-feature test archive
@@ -148,39 +153,45 @@ jobs:
             lib)
               cargo_target_args+=(--lib)
               ;;
-            integration-b|integration-c)
-              mapfile -t integration_targets < <(
-                cargo metadata --no-deps --format-version 1 | node -e '
-                  let source = "";
-                  process.stdin.setEncoding("utf8");
-                  process.stdin.on("data", (chunk) => { source += chunk; });
-                  process.stdin.on("end", () => {
-                    const metadata = JSON.parse(source);
-                    const manifestPath = `${process.cwd()}/Cargo.toml`;
-                    const root = metadata.packages.find((pkg) => pkg.manifest_path === manifestPath);
-                    if (!root) {
-                      throw new Error(`root package not found for ${manifestPath}`);
-                    }
-                    root.targets
-                      .filter((target) => target.kind.length === 1 && target.kind[0] === "test")
-                      .map((target) => target.name)
-                      .sort()
-                      .forEach((name) => console.log(name));
-                  });
-                '
-              )
-              if (( ${#integration_targets[@]} == 0 )); then
-                echo "::error::integration test target discovery returned no targets"
-                exit 1
-              fi
-              selected_targets=()
-              for index in "${!integration_targets[@]}"; do
-                if [[ "${{ inputs.target_group }}" == "integration-b" ]] && (( index % 2 == 0 )); then
-                  selected_targets+=("${integration_targets[index]}")
-                elif [[ "${{ inputs.target_group }}" == "integration-c" ]] && (( index % 2 == 1 )); then
-                  selected_targets+=("${integration_targets[index]}")
+            integration-b|integration-c|integration-d|integration-e)
+              duration_policy='tests/suites/nextest-target-duration-policy.json'
+              duration_policy_ref='ci-metrics/nextest-target-durations'
+              if [[ -n "${{ inputs.duration_policy_sha }}" ]]; then
+                candidate_policy='target/nextest-duration-policy.json'
+                mkdir -p "$(dirname "${candidate_policy}")"
+                # GitHub does not promise arbitrary SHA fetches. Fetch the advertised
+                # metrics ref instead, then require the PR-pinned SHA to be in its
+                # append-only history before reading the policy blob from that SHA.
+                if git fetch --no-tags origin \
+                  "refs/heads/${duration_policy_ref}:refs/remotes/origin/${duration_policy_ref}" \
+                  && git merge-base --is-ancestor "${{ inputs.duration_policy_sha }}" \
+                    "refs/remotes/origin/${duration_policy_ref}" \
+                  && git show "${{ inputs.duration_policy_sha }}:nextest-target-duration-policy.json" \
+                    > "${candidate_policy}"; then
+                  duration_policy="${candidate_policy}"
+                  printf 'duration_policy_sha=%s\n' "${{ inputs.duration_policy_sha }}"
+                  printf 'duration_policy_source=metrics-ref\n'
+                else
+                  echo "::warning::Duration policy ${{ inputs.duration_policy_sha }} is unavailable from ${duration_policy_ref}; using the committed fallback."
+                  printf 'duration_policy_source=fallback:metrics-policy-unavailable\n'
                 fi
-              done
+              else
+                echo 'duration_policy_sha=fallback:committed'
+                echo 'duration_policy_source=fallback:no-pinned-policy'
+              fi
+
+              # `regression_suite_NNN`는 고정 workload 이름이 아니다. 현재 source 구성에
+              # 대응하는 개별 testcase 측정값으로 harness를 다시 pack한 뒤 archive를 만든다.
+              node scripts/rust-test-suite-manifest.mjs \
+                --rebalance-by-duration "${duration_policy}"
+
+              mapfile -t selected_targets < <(
+                cargo metadata --no-deps --format-version 1 \
+                  | node scripts/select-nextest-archive-targets.mjs \
+                    --group "${{ inputs.target_group }}" \
+                    --policy "${duration_policy}" \
+                    --manifest tests/suites/manifest.json
+              )
               if (( ${#selected_targets[@]} == 0 )); then
                 echo "::error::integration target group selected no targets: ${{ inputs.target_group }}"
                 exit 1
@@ -188,7 +199,7 @@ jobs:
               for target in "${selected_targets[@]}"; do
                 cargo_target_args+=(--test "${target}")
               done
-              printf 'integration_targets=%s selected_targets=%s\n' "${#integration_targets[@]}" "${#selected_targets[@]}"
+              printf 'selected_targets=%s\n' "${#selected_targets[@]}"
               ;;
           esac
 

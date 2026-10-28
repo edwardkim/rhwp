@@ -15,6 +15,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+RELEASE_BINARY_WORKFLOW = REPO_ROOT / ".github/workflows/release-binary.yml"
 
 PRESERVED = [
     ".github/workflows/deploy-pages.yml",
@@ -71,7 +72,75 @@ def tracked_path(path: str) -> bool:
     return bool(result.stdout.strip())
 
 
+def release_binary_matrix() -> dict[str, dict[str, str]]:
+    """Release Binary의 include matrix를 사람이 검토할 수 있는 계약으로 읽는다."""
+    workflow = RELEASE_BINARY_WORKFLOW.read_text(encoding="utf-8")
+    block = workflow.split("      matrix:\n", maxsplit=1)[1].split(
+        "\n    steps:", maxsplit=1
+    )[0]
+    entries: dict[str, dict[str, str]] = {}
+    current: dict[str, str] | None = None
+    for raw_line in block.splitlines():
+        line = raw_line.strip()
+        if line.startswith("- target:"):
+            target = line.split(":", maxsplit=1)[1].strip(" '\"")
+            current = {"target": target}
+            if target in entries:
+                raise AssertionError(f"release target 중복: {target}")
+            entries[target] = current
+            continue
+        if current is None or ":" not in line or line.startswith("#"):
+            continue
+        key, value = line.split(":", maxsplit=1)
+        if key in {"runner", "archive", "archive_suffix", "binary_name"}:
+            current[key] = value.strip(" '\"")
+    return entries
+
+
 class ReleaseChannelPolicyWorkflowTests(unittest.TestCase):
+    def test_packaged_cli_has_png_backend_on_every_release_target(self):
+        workflow = RELEASE_BINARY_WORKFLOW.read_text(encoding="utf-8")
+        build = workflow.split("      - name: Build release binary\n", 1)[1].split(
+            "\n      - name:", 1
+        )[0]
+        self.assertIn("--locked", build)
+        self.assertIn("--features native-skia", build)
+        self.assertIn("--target ${{ matrix.target }}", build)
+        self.assertNotIn("if:", build)
+        smoke = workflow.split("      - name: Verify packaged PNG export\n", 1)[1].split(
+            "\n      - name:", 1
+        )[0]
+        self.assertNotIn("if:", smoke, "PNG export must be verified on all five targets")
+        self.assertIn("scripts/verify_release_binary.py", smoke)
+        self.assertIn('--archive "${ARCHIVE_NAME}"', smoke)
+        self.assertIn("--sample samples/issue2527_empty_linesegs.hwpx", smoke)
+        self.assertLess(workflow.index("Verify packaged PNG export"), workflow.index("Upload artifact"))
+
+    def test_release_binary_matrix_includes_linux_aarch64(self):
+        entries = release_binary_matrix()
+        expected_targets = {
+            "x86_64-unknown-linux-gnu",
+            "aarch64-unknown-linux-gnu",
+            "x86_64-apple-darwin",
+            "aarch64-apple-darwin",
+            "x86_64-pc-windows-msvc",
+        }
+        self.assertEqual(
+            set(entries),
+            expected_targets,
+            "공식 CLI release matrix는 기존 네 target과 Linux AArch64를 포함해야 한다",
+        )
+
+        linux_arm = entries["aarch64-unknown-linux-gnu"]
+        self.assertEqual(linux_arm.get("runner"), "ubuntu-24.04-arm")
+        self.assertEqual(linux_arm.get("archive"), "tar.gz")
+        self.assertEqual(linux_arm.get("archive_suffix"), "linux-aarch64")
+        self.assertEqual(linux_arm.get("binary_name"), "rhwp")
+
+        suffixes = [entry.get("archive_suffix") for entry in entries.values()]
+        self.assertNotIn(None, suffixes, "archive suffix가 없는 release target이 있다")
+        self.assertEqual(len(suffixes), len(set(suffixes)), "archive suffix가 중복됐다")
+
     def test_user_visible_versions_match_release_version(self):
         cargo = tomllib.loads((REPO_ROOT / "Cargo.toml").read_text(encoding="utf-8"))
         release_version = cargo["package"]["version"]
@@ -81,14 +150,62 @@ class ReleaseChannelPolicyWorkflowTests(unittest.TestCase):
 
         visible_versions = {
             "rhwp-studio About": package_version("rhwp-studio/package.json"),
+            "VS Code extension": package_version("rhwp-vscode/package.json"),
+            "npm editor": package_version("npm/editor/package.json"),
             "Chrome and Edge extension": package_version("rhwp-chrome/manifest.json"),
+            "Chrome package": package_version("rhwp-chrome/package.json"),
             "Firefox extension": package_version("rhwp-firefox/manifest.json"),
+            "Firefox package": package_version("rhwp-firefox/package.json"),
+            "Safari extension": package_version("rhwp-safari/src/manifest.json"),
         }
-        self.assertEqual(release_version, "0.8.4")
+        self.assertRegex(release_version, r"^\d+\.\d+\.\d+$")
         self.assertEqual(
             set(visible_versions.values()),
             {release_version},
             f"사용자 표시 버전이 릴리스 버전과 다르다: {visible_versions}",
+        )
+
+        lock_versions = {
+            path: json.loads((REPO_ROOT / path).read_text(encoding="utf-8"))["packages"][
+                ""
+            ]["version"]
+            for path in (
+                "rhwp-studio/package-lock.json",
+                "rhwp-vscode/package-lock.json",
+                "rhwp-chrome/package-lock.json",
+                "rhwp-firefox/package-lock.json",
+            )
+        }
+        self.assertEqual(
+            set(lock_versions.values()),
+            {release_version},
+            f"root package-lock 버전이 릴리스 버전과 다르다: {lock_versions}",
+        )
+
+        cargo_lock = tomllib.loads(
+            (REPO_ROOT / "Cargo.lock").read_text(encoding="utf-8")
+        )
+        rhwp_packages = [
+            package for package in cargo_lock["package"] if package["name"] == "rhwp"
+        ]
+        self.assertEqual(len(rhwp_packages), 1)
+        self.assertEqual(rhwp_packages[0]["version"], release_version)
+
+        release_document_markers = {
+            "README.md": f"**v{release_version} — v1.0 조판 엔진 체계화**",
+            "README_EN.md": f"**v{release_version} — systematizing the v1.0 typesetting engine**",
+            "THIRD_PARTY_LICENSES.md": f"`rhwp` v{release_version}",
+            "rhwp-vscode/CHANGELOG.md": f"## {release_version} — ",
+        }
+        stale_release_documents = [
+            path
+            for path, marker in release_document_markers.items()
+            if marker not in (REPO_ROOT / path).read_text(encoding="utf-8")
+        ]
+        self.assertEqual(
+            stale_release_documents,
+            [],
+            f"사용자 안내 버전이 릴리스와 다르다: {stale_release_documents}",
         )
 
         display_wiring = {

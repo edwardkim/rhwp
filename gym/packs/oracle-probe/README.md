@@ -41,7 +41,7 @@ last_verified: 2026-08-18
 3. **기존 표본만.** `samples/` 밖 파일을 만들지 않는다. table-001,
    issue2007 중첩 표, field-01 / field-01-memo, form-01 / form-02,
    국립국어원 업무계획, 수출입 현황, multi-table-001, para-001,
-   exam-kor-1p, hwpx_sample2, PII 분석 표본만 축을 바꿔 다시 묻는다.
+   hwpx_sample2, PII 분석 표본만 축을 바꿔 다시 묻는다.
 4. **라이브 오라클.** 쪽수·검색 건수·필드 수를 과제에 박제하지 않는다.
    채점기가 같은 명령을 다시 돌려 봉투 필드를 읽는다.
 5. **편집 과제를 복제하지 않는다.** 누름틀을 채우지 않는다. 표를 고치지
@@ -89,8 +89,6 @@ last_verified: 2026-08-18
   다른 오라클이다 (OP14 / OP34).
 - **형식 표지는 확장자가 아니다.** `.hwp` 라도 봉투의 `format` 을
   읽어야 한다. hwpx 표본에 `hwp` 를 적으면 OP18 이 실패한다.
-- **이름이 1p 라고 1 을 박제하지 마라.** OP35 는 exam-kor-1p 의 쪽수를
-  info 로 다시 센다.
 - **PII 표본을 마스킹하지 마라.** OP37·OP38 은 형식과 쪽수만 묻는다.
   보안 pack 의 SE01·SE02 를 복제하지 않는다.
 - **제출은 answer.json 하나다.** 산출 `.hwp` 를 만들어도 채점기는
@@ -153,14 +151,12 @@ last_verified: 2026-08-18
 | OP31 | 2 | 표 배열 길이 | multi-table-001 | len(tables) |
 | OP32 | 2 | 문단 수 | para-001 | explain.paragraphCount |
 
-### OP33–OP44 — 검색 변이·시험지·PII 신원·이중 필드
+### OP33–OP44 — 검색 변이·PII 신원·이중 필드
 
 | ID | 티어 | 질문 | 표본 | 오라클 |
 |----|------|------|------|--------|
 | OP33 | 2 | '마케팅' 검색 | field-01 | search.matchCount |
 | OP34 | 2 | '업무' 검색 | 국립국어원 | search.matchCount |
-| OP35 | 1 | 쪽수 | exam-kor-1p | info.pageCount |
-| OP36 | 2 | 문단 수 | exam-kor-1p | explain.paragraphCount |
 | OP37 | 2 | format | PII 분석 표본 | info.format |
 | OP38 | 2 | 쪽수 | PII 분석 표본 | info.pageCount |
 | OP39 | 2 | format | field-01 | info.format |
@@ -198,3 +194,7 @@ probe_missing_artifact   이 pack 은 answer 만 — 산출 부재는 단위 시
 - 편집·변환·영수증 사다리를 이 pack 에 끌어오지 않는다.
 - `gym/README.md` 의 12 pack 표를 바꾸지 않는다. 이 pack 은 라이브
   오라클 계약을 드러내는 확장이지 운동장 입문 코스의 교체가 아니다.
+
+## 시험지 과제 제외
+
+지정된 시험지 입력을 참조하는 다음 과제를 활성 평가에서 제거했다: OP35, OP36. 원본 문서 파일은 보존하며 과제 ID는 재사용하지 않는다.

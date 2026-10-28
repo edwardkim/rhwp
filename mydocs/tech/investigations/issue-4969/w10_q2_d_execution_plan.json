@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-d-emitted-run-handoff-plan",
+  "issue": 4969,
+  "stage": "W10-Q2-D",
+  "status": "d4-revised-plan-qualified-awaiting-d4-a-approval",
+  "checkpoint": "452b6b741",
+  "ownerCorrection": {
+    "rejected": "new-public-field-on-TextRunNode",
+    "reason": "81-literals-public-api-churn-and-layout-positions-contract-risk",
+    "composedOwner": "ComposedParagraph internal Arc",
+    "emittedOwner": "PageRenderTree bounded NodeId sidecar table",
+    "layerLookup": "LayerNode.source_node_id"
+  },
+  "sourceAudit": {
+    "textRunNodeLiterals": 81,
+    "textRunNodeLiteralFiles": 24,
+    "pageRenderTreeLiterals": 10,
+    "pageRenderTreeLiteralFiles": 6,
+    "composedParagraphLiterals": 14,
+    "composedParagraphLiteralFiles": 8,
+    "composeParagraphCalls": 151,
+    "paintTextRunPatterns": 38
+  },
+  "firstAppliedSubset": {
+    "fullEmittedRunIsOneTarget": true,
+    "directOldHangulRequired": true,
+    "mixedPrefixSuffix": false,
+    "exactEmbeddedPortableSource": true,
+    "writingMode": "horizontal-tb",
+    "direction": "ltr",
+    "bidiLevel": 0,
+    "modelTextEqualsReplayText": true,
+    "variationAxes": [],
+    "syntheticStyle": false,
+    "letterSpacingPx": 0.0,
+    "condenseMinSpace": 0,
+    "controlsOrTabs": false,
+    "rotationOrOverlap": false,
+    "decorations": false
+  },
+  "slices": [
+    {
+      "id": "Q2-D0",
+      "name": "page-sidecar-abi-and-bounded-table",
+      "productOutputChange": false,
+      "result": "qualified",
+      "approvalAfter": true
+    },
+    {
+      "id": "Q2-D1",
+      "name": "composition-owner-handoff",
+      "productOutputChange": false,
+      "result": "qualified",
+      "approvalAfter": true
+    },
+    {
+      "id": "Q2-D2",
+      "name": "final-emitted-run-mapping",
+      "productOutputChange": false,
+      "result": "qualified",
+      "approvalAfter": true
+    },
+    {
+      "id": "Q2-D3",
+      "name": "glyph-run-lowering-shadow",
+      "productOutputChange": false,
+      "result": "qualified",
+      "approvalAfter": true
+    },
+    {
+      "id": "Q2-D4",
+      "name": "same-boundary-atomic-activation",
+      "productOutputChange": true,
+      "approvalAfter": true
+    },
+    {
+      "id": "Q2-D5",
+      "name": "no-lineseg-boundary-changing-activation",
+      "productOutputChange": true,
+      "approvalAfter": true
+    }
+  ],
+  "limits": {
+    "pageSidecars": 4096,
+    "lineDecisionRetries": 2,
+    "partialTargetPublication": false,
+    "duplicateGlyphRun": false
+  },
+  "d4ActivationPrecondition": {
+    "status": "resolved-by-revised-plan-awaiting-d4-a-approval",
+    "q2MeasurementScale": "x-font-size-times-ratio-y-font-size",
+    "issue5821CompressedTextRunDraw": "glyph-size-font-size-times-sqrt-ratio-x-scale-sqrt-ratio",
+    "d3PreservedTransform": "xx-ratio-yy-one",
+    "currentStrictSelectorAcceptsRatioOrTransform": false,
+    "selectedDecision": "keep-page-layout-owner-and-project-local-replay-from-same-shaping-result",
+    "revisedPlan": "mydocs/plans/task_m100_4969_w10_q2_d4_revised.md",
+    "machinePlan": "mydocs/tech/investigations/issue-4969/w10_q2_d4_revised_execution_plan.json"
+  },
+  "invariants": {
+    "w9LayoutPositionsTypeUnchanged": true,
+    "commonSidecarAndLayoutPositionsMutuallyExclusive": true,
+    "sameArcForLineBboxOriginGlyphRun": true,
+    "pageTreeSerializationContainsSidecar": false,
+    "textRunPublicSchemaChanged": false,
+    "rawTextInTrace": false,
+    "fontBytesInTrace": false,
+    "hostPathInTrace": false
+  },
+  "deferred": [
+    "general-edit-reflow-boundary-publication",
+    "multi-interval-frame",
+    "stored-prefix-reflow",
+    "split-cell-recovery",
+    "mixed-partial-glyph-run",
+    "public-rejected-attempt-annotation",
+    "latin-default-liga",
+    "rtl",
+    "variation",
+    "vertical"
+  ],
+  "approvalScope": "revised Q2-D4 plan qualified; maintainer approval may open Q2-D4-A shadow implementation only, not product activation"
+}

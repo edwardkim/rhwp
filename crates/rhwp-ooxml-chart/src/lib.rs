@@ -27,6 +27,8 @@
 
 /// [#4100] 값의 바이트 구간 스캐너 — 편집용. `parser` 는 손실 파서라 재방출에 쓸 수 없다.
 pub mod data;
+mod drawing_style;
+mod legend_layout;
 pub mod parser;
 /// [#4100] 값 구간의 최소 diff 치환.
 pub mod patch;
@@ -35,6 +37,8 @@ pub mod renderer;
 /// OOXML 차트 데이터 모델
 #[derive(Debug, Clone, Default)]
 pub struct OoxmlChart {
+    /// 한컴 확장 `hncChartStyle/@colorIndex`; -1은 문서 쪽 색상표를 사용한다.
+    pub color_index: Option<i32>,
     /// 주 차트 타입 (콤보인 경우 첫 번째 plotType이 들어감; 렌더러는 시리즈별 타입 우선)
     pub chart_type: OoxmlChartType,
     /// 명시 제목 텍스트 (`c:title > … > a:t`). 자동 제목 판단은 아래 플래그로 별도
@@ -46,10 +50,34 @@ pub struct OoxmlChart {
     pub has_title_elem: bool,
     /// `c:autoTitleDeleted val="1"` — 자동 제목 억제 플래그. (C1c #1882 갭①)
     pub auto_title_deleted: bool,
+    /// [#6624] `c:chartSpace > c:txPr > a:p > a:pPr > a:defRPr sz` — 차트 전체 기본 글꼴
+    /// 크기(pt). 축 라벨·범례·격자 여백 산정이 쓴다. 한컴 코퍼스 28종은 전건 `sz="1000"`.
+    /// 없으면 렌더러가 10pt 를 쓴다.
+    pub text_size_pt: Option<f64>,
+    /// [#6624] `c:title` 안의 `a:defRPr sz`/`a:rPr sz` — 제목 글꼴 크기(pt). 축 제목
+    /// (`c:plotArea` 안 `c:title`)은 제외. 코퍼스는 전건 미지정이라 한컴이 14pt 로 그린다.
+    /// 없으면 렌더러가 14pt 를 쓴다.
+    pub title_size_pt: Option<f64>,
+    /// 차트 기본 글꼴과 제목·범례의 명시적 글꼴. 없으면 기본 글꼴을 상속한다.
+    pub text_font_family: Option<String>,
+    pub title_font_family: Option<String>,
+    pub legend_font_family: Option<String>,
+    /// 범례 자체의 글자 크기(pt). 생략하면 차트 기본 글자 크기를 상속한다.
+    pub legend_size_pt: Option<f64>,
     pub series: Vec<OoxmlSeries>,
     pub categories: Vec<String>,
     /// 시리즈 중 하나라도 보조축을 쓰면 true
     pub has_secondary_axis: bool,
+    /// [#6624] `c:plotArea` 의 축 선언(`c:catAx`/`c:valAx`/`c:dateAx`/`c:serAx`) — 문서 순서.
+    /// 격자선(`c:majorGridlines`)·눈금(`c:majorTickMark`)·숨김(`c:delete`)을 렌더러가 읽는다.
+    /// 코퍼스: 값축(l)만 격자, 눈금은 전부 `out`, 주식형은 격자 없음. 선언이 없으면(축 없는
+    /// 원형, 축 요소를 안 쓴 문서) 렌더러가 코퍼스 기본(값축 격자·눈금 out)을 쓴다.
+    pub axes: Vec<OoxmlAxis>,
+    /// [#6624] `c:plotArea > c:spPr > a:ln` — 플롯 영역 테두리. 코퍼스는 전건 `a:noFill`.
+    pub plot_area_line: LineSpec,
+    /// [#6624] `c:chartSpace > c:spPr > a:ln` — 차트 바깥 테두리. 코퍼스는 전건 미지정이라
+    /// 한/글 기본(#8c8c8c 0.75px)으로 그린다.
+    pub chart_line: LineSpec,
     /// 막대(bar/bar3D) plot의 `c:grouping` (clustered/stacked/percentStacked).
     /// 막대 렌더러만 사용. line/pie 무관. (C1a #1453 막대 누적 보정)
     pub grouping: BarGrouping,
@@ -199,6 +227,69 @@ pub enum SeriesMarker {
     Named(String),
 }
 
+/// 선 선언 (`c:spPr > a:ln`) — 플롯 영역·차트 테두리용. [#6624]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum LineSpec {
+    /// `a:ln` 이 없다 — 렌더러가 기본 서식을 정한다.
+    #[default]
+    Unspecified,
+    /// `a:ln > a:noFill` — 선 없음.
+    None,
+    /// `a:ln > a:solidFill` — 색과 굵기(EMU, 없으면 None).
+    Solid { rgb: u32, width_emu: Option<u32> },
+}
+
+/// 축 종류 (`c:catAx`/`c:valAx`/`c:dateAx`/`c:serAx`). [#6624]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum AxisKind {
+    #[default]
+    Category,
+    Value,
+    Date,
+    Series,
+}
+
+/// 축 위치 (`c:axPos`). [#6624]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum AxisPos {
+    Left,
+    Right,
+    Top,
+    #[default]
+    Bottom,
+}
+
+/// 주 눈금 표시 (`c:majorTickMark`). 없으면 OOXML 기본 `cross` 가 아니라 코퍼스 기본 `out`
+/// 을 쓴다 — 한/글 문서는 전건 명시한다. [#6624]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum TickMark {
+    #[default]
+    Out,
+    In,
+    Cross,
+    None,
+}
+
+/// 축 선언 하나. [#6624]
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct OoxmlAxis {
+    pub kind: AxisKind,
+    pub pos: AxisPos,
+    /// `c:majorGridlines` 요소 존재 — 이 축의 눈금 위치에 격자선.
+    pub major_gridlines: bool,
+    /// 축선과 주 격자선은 서로 다른 spPr 선언을 소비한다.
+    pub line: LineSpec,
+    pub grid_line: LineSpec,
+    pub major_tick_mark: TickMark,
+    /// `c:delete val="1"` — 축선·눈금·라벨을 그리지 않는다 (격자선은 유지).
+    pub deleted: bool,
+    /// 명시한 값축 범위. 자동 눈금 계산보다 우선한다.
+    pub minimum: Option<f64>,
+    pub maximum: Option<f64>,
+    /// 값축의 숫자 서식 (`0%` 등). 계열의 데이터 서식과 독립적이다.
+    pub format_code: Option<String>,
+}
+
 /// 범례 위치 (`c:legendPos`). C1c #1882 갭③.
 ///
 /// 기본값 Bottom — `c:legend`/`legendPos` 미존재 시 현행 하단 배치를 유지한다
@@ -290,6 +381,10 @@ impl OoxmlChartType {
 /// 데이터 시리즈 (막대 한 묶음 또는 선 하나)
 #[derive(Debug, Clone, Default)]
 pub struct OoxmlSeries {
+    /// 저장 계열 식별자. 표시 순서나 현재 Vec 색인과 같다고 가정하지 않는다.
+    pub source_index: Option<u32>,
+    /// 계열 자체의 `ser/spPr/ln`. 라벨·표식의 선과 구별한다.
+    pub shape_line: LineSpec,
     pub name: String,
     /// Y 값 (막대/선/원형). 분산형에서는 `c:yVal`.
     pub values: Vec<f64>,
@@ -305,12 +400,31 @@ pub struct OoxmlSeries {
     pub axis_group: u8,
     /// 숫자 포맷 코드 (예: "#,##0")
     pub format_code: Option<String>,
+    /// 계열의 `c:dLbls/c:showVal` — 각 막대에 원본 값을 표시한다.
+    pub show_values: bool,
+    /// 계열 데이터 라벨의 `c:dLbls/c:txPr/a:defRPr@sz` (pt).
+    pub data_label_size_pt: Option<f64>,
+    /// 계열 데이터 라벨의 `c:dLbls/c:dLblPos@val`.
+    pub data_label_position: Option<String>,
     /// 계열 내부 `<c:marker>` 상태 — stock 종가 마커 판별용. (C2a #2277)
     pub marker_symbol: SeriesMarker,
     /// 계열 레벨 `<c:explosion val>` (%) — 쪼개진원형: 전 슬라이스를 중심각
     /// 방향으로 반지름×값/100 만큼 이동(코퍼스 25). dPt 단위 explosion은
     /// 코퍼스 부재로 범위 외. (C2b #2278 Stage 3 v3)
     pub explosion: Option<f64>,
+    /// [#6053] 계열 `<c:spPr><a:ln><a:noFill/>` — 선을 그리지 않는다는 명시.
+    ///
+    /// **주식형에서만 소비한다.** 코퍼스 주식형은 계열 전건이 이 표기를 달고 있어 선이 없고,
+    /// 고저선·캔들만으로 그림이 선다. 표기가 없는 계열(한컴 편집기가 새로 더한 계열)은 기본
+    /// 선 스타일이라 한컴이 선으로 그린다 — 그 차이를 담는 필드다.
+    ///
+    /// 막대·꺾은선·분산형은 자기 규칙(`line_markers`·`scatter_style`)으로 선을 정하므로
+    /// 이 값을 보지 않는다.
+    pub line_none: bool,
+    /// [#6624] 계열 `c:spPr > a:ln w` — 선 굵기(EMU, 12700 = 1pt). 점별(`c:dPt`)·표식
+    /// (`c:marker`) 의 spPr 은 제외. 없으면 렌더러가 Office 기본 2.25pt 를 쓴다
+    /// (한컴 꺽은선형 실측 3px = 2.25pt).
+    pub line_width_emu: Option<u32>,
 }
 
 impl OoxmlChart {
@@ -323,6 +437,16 @@ impl OoxmlChart {
     /// 반환값은 `<g>...</g>` 또는 여러 요소로 구성된 SVG 문자열 조각.
     pub fn render_svg(&self, x: f64, y: f64, w: f64, h: f64) -> String {
         renderer::render_chart_svg(self, x, y, w, h)
+    }
+
+    /// 호스트의 실제 글꼴 측정을 범례의 예약 폭과 배치에 공급한다.
+    pub fn render_svg_with_text_measure(
+        &self,
+        bounds: [f64; 4],
+        measure: &dyn Fn(&str, f64, &str) -> f64,
+    ) -> String {
+        let [x, y, w, h] = bounds;
+        renderer::render_chart_svg_with_text_measure(self, x, y, w, h, measure)
     }
 
     /// 시리즈가 여러 타입을 섞어 쓰는지 (콤보 차트) 여부

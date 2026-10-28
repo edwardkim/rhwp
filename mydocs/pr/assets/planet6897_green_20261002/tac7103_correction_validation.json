@@ -1,0 +1,189 @@
+{
+  "analysis": "원본 빈 줄 text_height=300HU, line_spacing=-92HU, 전진208HU는 유효하다. 음수 간격을 거절해 저장 복수 TAC 계획에서 일반 배치로 떨어져 표가 겹쳤다. 부호가 아닌 실제 전진량과 다음 저장 원점을 검증한다.",
+  "source_mutation": "src/renderer/composer.rs",
+  "old_whole_head": "b4293ab6b6910606d6cf2ceaf7f12ed9144f70ae",
+  "old_failing_tests": 4,
+  "focused_before_test_migration_passed": 4,
+  "native_min_percent": 95.54807,
+  "fresh_wasm_min_percent": 95.54807,
+  "h01_normal_counter": {
+    "native": {
+      "svg": {
+        "count": 9,
+        "all_byte_identical": true
+      },
+      "render_tree": {
+        "count": 9,
+        "all_byte_identical": true
+      }
+    },
+    "wasm": {
+      "raw_svg": {
+        "count": 9,
+        "all_byte_identical": true
+      },
+      "render_tree": {
+        "count": 9,
+        "all_byte_identical": true
+      }
+    }
+  },
+  "gates": [
+    {
+      "step": "native",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--bin",
+        "rhwp"
+      ],
+      "exit": 0,
+      "seconds": 101.39
+    },
+    {
+      "step": "wasm",
+      "command": [
+        "env",
+        "CARGO_TARGET_DIR=target/pr-review",
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit": 0,
+      "seconds": 224.66
+    },
+    {
+      "step": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 31.54
+    },
+    {
+      "step": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 15.65
+    },
+    {
+      "step": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 36.27
+    },
+    {
+      "step": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 62.28
+    }
+  ],
+  "test_migration": "기존2건의 절대 PDF 좌표를 원문 줄 간격·높이·본문 포함·내용 순서로 대체, 나머지 양수/음수 간격2건 유지",
+  "new_test_functions": 0,
+  "new_fixtures": 0,
+  "golden_updated": false,
+  "integration_pr_ready": false,
+  "hashes": {
+    "src/renderer/composer.rs": "2688c5d3b90acc16ac8145b689c2e279d613dd09e625a3643aaeca2a9341a569",
+    "tests/cases/issue_7103_tac_table_rewind.rs": "f61bf21906e15dc144262d92b0a1b05bb203b54fd1e7abf8969db060187306a2",
+    "target/pr-review/release-test/rhwp": "dc6b0e6832b802dc177e7ab8c027df6f3d724d1a8a91db5f7d35ca0c21d61342",
+    "pkg/rhwp_bg.wasm": "c19843051adc7a5245fa0a40ae2916f49405e1d05eada472ccd3040caef936e9",
+    "tests/fixtures/issue_7103/ari-tutoring-application.hwp": "09596c115082f8fb873312152553741b15fe2ccfcdeecd9357195d62c94f2a43",
+    "pdf/ari-tutoring-application-2020.pdf": "37970ce6dffaff2d3bc119549753e591215404ca7e8f19857676b11dbebbc5a8"
+  },
+  "focused_after_test_migration": {
+    "run": 4,
+    "passed": 4,
+    "failed": 0,
+    "exit": 0,
+    "log": "output/pr-review/planet6897-green-20261002/7103-semantic-focused.log"
+  },
+  "final_test_gates": [
+    {
+      "step": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0
+    },
+    {
+      "step": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0
+    },
+    {
+      "step": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "6b3faf77d8085441f9f26d88d65a49791e910352"
+      ],
+      "exit": 0
+    }
+  ]
+}

@@ -26,8 +26,8 @@ last_verified: 2026-08-18
 
 ## 연산자 등록부 — 읽기만
 
-`gym/core/checks.py` 의 `REGISTRY` 는 지금 이 서른세 이름이다. 휴게실
-작업이 서른네 번째를 추가하지 않는다. 시험이 이 집합을 잠근다.
+`gym/core/checks.py`의 `REGISTRY`는 지금 이 서른네 이름이다. 시험이 이
+집합을 잠근다.
 
 파일 연산자(CLI 를 부르지 않음):
 
@@ -67,6 +67,7 @@ last_verified: 2026-08-18
 - `deep_contains`
 - `not_contains`
 - `cell_text_eq`
+- `text_file_envelope_eq`
 
 전역 훑기(`GLOBAL_SCAN_OPS`)는 `deep_contains` 와 `not_contains` 다.
 편집 과제에서 좌표 없이 쓰면 스키마가 막는다(#4600). 그 막음은

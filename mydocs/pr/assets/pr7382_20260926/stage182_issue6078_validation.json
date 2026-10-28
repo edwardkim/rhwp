@@ -1,0 +1,33 @@
+{
+  "stage": 182,
+  "scope": "#6078 PR 차단 단일 회귀 검사의 전체 피델리티 미달 판별",
+  "head_before": "4668e349f",
+  "hwp": "samples/hwp3-table-caption.hwp",
+  "hwp_sha256": "e8ac29656b1ca41f96b1dd9f6ef88be294c61165e2daf40f75873814291795e1",
+  "hancom_pdf": "mydocs/pr/assets/pr_6191/hancom/issue_6078_hancom_2020.pdf",
+  "pdf_sha256": "48940a3579d0fb3a9545c68e0b3d00da1094c9eea67773a1d781b958c7319305",
+  "pages": 1,
+  "visual": {
+    "backend": "Native",
+    "tolerant_content_match_percent": 30.47054,
+    "gate": "re_review_required",
+    "font_mismatch_exception": false,
+    "summary": "output/pr-review/planet6897-7382-20260926/stage182-issue6078/visual-native/summary.json",
+    "review_png": "mydocs/pr/assets/pr7382_20260926/stage182_issue6078_native_review_001.png"
+  },
+  "direct_review": "기준 PDF와 rhwp의 표 전체 가로 원점, 표 셀 경계, 문단 위치가 크게 다름. 용지 규격 줄 하나의 y값 수정은 전체 출력의 독립 정답을 보장하지 않음.",
+  "failed_test": "issue_6078_inline_table_seg_lookup::issue_6078_paper_spec_line_stays_inside_the_page",
+  "failure": "원본 회귀 검사의 994.5±1px 고정 핀에 현재 981.3px이어서 실패",
+  "decision": "전1쪽 30.47054%로 90% 미만이므로 해당 검사만 제거하고 원본 HWP·한컴 PDF·다른 HWP3 회귀 검사를 유지. #7445에 전체 피델리티 작업을 기록 후 재구축.",
+  "focused_nextest": "1 passed, 0 failed: issue_5563_hwpx_lineseg_axis::hwp3_sectiondef_fallback_extends_the_comparable_lineseg_axis; removed test absent from generated suite",
+  "logs": "output/pr-review/planet6897-7382-20260926/stage182-issue6078*",
+  "lint": {
+    "fmt": "pass",
+    "clippy_default": "pass",
+    "clippy_wasm": "pass",
+    "workspace_build": "pass",
+    "clippy_all_targets": "pass",
+    "manifest_base_check": "pass"
+  },
+  "issue7445_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5908796733"
+}

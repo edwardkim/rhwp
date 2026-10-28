@@ -18,7 +18,7 @@ PACK = GYM / "packs" / "expert-challenges"
 TASKS = PACK / "tasks"
 REFS = PACK / "reference"
 README = PACK / "README.md"
-WORKING = REPO_ROOT / "mydocs" / "working" / "gym_expert_challenges.md"
+WORKING = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_expert_challenges.md"
 
 EXISTING_OPS = {
     "same_hash",
@@ -128,7 +128,7 @@ class ExpertChallengesPackLayoutTests(unittest.TestCase):
         self.assertNotIn("fill-fields", text)
 
     def test_working_notes_exist_and_are_korean(self):
-        self.assertTrue(WORKING.is_file(), "mydocs/working/gym_expert_challenges.md 가 없다")
+        self.assertTrue(WORKING.is_file(), "mydocs/working/archives/gym_expert_challenges.md 가 없다")
         text = WORKING.read_text(encoding="utf-8")
         self.assertGreater(len(text), 2000)
         for needle in ("XC06", "XC55", "기존 표본", "T07", "audit", "test_gym_packs"):

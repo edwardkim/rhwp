@@ -1,0 +1,61 @@
+[
+  {
+    "stage": 33,
+    "cli_sha256": "9bbb85583cb1b5f176d94998d551c5d611e03121a8aae1a4e8a71124ef1c84e7",
+    "dump_sha256": "ad52c1835d040e8b4b985b4badd371732224773803a8e57e38cace7c74c7c682",
+    "page_count": 2,
+    "table_owners": [
+      {
+        "page": 1,
+        "kind": "table",
+        "startRow": null,
+        "endRow": null,
+        "isContinuation": null
+      }
+    ]
+  },
+  {
+    "stage": 34,
+    "cli_sha256": "78c7c980affb494ae0f5a07e4e50960f419e1f0f4f9dd1313729fe217f415a6b",
+    "dump_sha256": "312388ecfebb5f3d994ad52d71f4b3eda699450f7f2a8521c4d4faad07c779c8",
+    "page_count": 2,
+    "table_owners": [
+      {
+        "page": 1,
+        "kind": "partialTable",
+        "startRow": 0,
+        "endRow": 2,
+        "isContinuation": false
+      },
+      {
+        "page": 2,
+        "kind": "partialTable",
+        "startRow": 2,
+        "endRow": 3,
+        "isContinuation": true
+      }
+    ]
+  },
+  {
+    "stage": 35,
+    "cli_sha256": "36ec9c26f40281ebe116c363bc78bfc0e4cb57b1c106f47db274bd1592605c6f",
+    "dump_sha256": "312388ecfebb5f3d994ad52d71f4b3eda699450f7f2a8521c4d4faad07c779c8",
+    "page_count": 2,
+    "table_owners": [
+      {
+        "page": 1,
+        "kind": "partialTable",
+        "startRow": 0,
+        "endRow": 2,
+        "isContinuation": false
+      },
+      {
+        "page": 2,
+        "kind": "partialTable",
+        "startRow": 2,
+        "endRow": 3,
+        "isContinuation": true
+      }
+    ]
+  }
+]

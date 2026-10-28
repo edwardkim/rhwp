@@ -1,0 +1,321 @@
+{
+  "stage": 148,
+  "production_source": "b7436944b81d20ad799edcd59ead3b94621902b3",
+  "preanalysis": "저슬랙 #6535/메인터너하단위치 actual2FAIL은같은입력1쪽전제에서현재2쪽실패. 정상한컴PDF1쪽과현재출력을전체비교해90미만일때만실제차단검사이관. 정상페이지앵커/초과근무 하단위치와모든다른입력·축 보존. 최저90이상이면검사기대독립근거·입력생성·실제경로를다시판정하며쪽수만현재값에맞추지않음.",
+  "inputs": [
+    {
+      "path": "samples/issue6535/36339092_low_slack_absorb_block.hwpx",
+      "sha256": "28f17fae566427400084a30985a62e731c1907c42b25d52eaa000bb61a83e0ad",
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/36339092_low_slack_absorb_block-2020.pdf",
+      "sha256": "0772e32e1a98a22042a2c25755ab493fe2b79d5096a1ce9ad5d5b3a400d6f809",
+      "matches_commit": true
+    }
+  ],
+  "source_head": "ac94ab661e657c24ebfb9921cd06fe77e356c24b",
+  "full_sweep_state": {
+    "exit_code": 1,
+    "exported_native_pages": 2,
+    "reference_pdf_pages": 1,
+    "completed_compare_pages": 0,
+    "reason": "SVG/tree2 vs PDF1; full-sweep rejects count mismatch before scoring",
+    "not_a_successful_visual_gate": true
+  },
+  "visual_page1": {
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--pages",
+      "1",
+      "--file-target",
+      "low-slack6535",
+      "samples/issue6535/36339092_low_slack_absorb_block.hwpx",
+      "pdf/36339092_low_slack_absorb_block-2020.pdf",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+      "--embed-fonts=full",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/stage148-low-slack6535/visual-page1"
+    ],
+    "exit": {
+      "exit_code": 1
+    },
+    "gate": {
+      "status": "re_review_required",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 69.33089
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "metrics": {
+      "compared_pages": 1,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 94.62936,
+      "worst_pixel_match_percent": 94.62936,
+      "average_ink_match_percent": 19.57274,
+      "worst_ink_match_percent": 19.57274,
+      "average_visual_accuracy_proxy_percent": 19.57274,
+      "worst_visual_accuracy_proxy_percent": 19.57274,
+      "average_tolerant_content_match_percent": 69.33089,
+      "worst_tolerant_content_match_percent": 69.33089,
+      "worst_pages": [
+        1
+      ]
+    },
+    "completed_compare_pages": [
+      1
+    ],
+    "not_a_whole_two_native_page_sweep": true
+  },
+  "decision": "첫물리쪽69.33089%로이미90미달. 원본/PDF1쪽 대비현재2쪽이며서명·결재선·주소/전화블록이1쪽에서누락. 실제차단2함수만이관하고다른2하단정상함수/공통helper·모든다른축/원문보존. 생산변경·새함수·기준갱신없음.",
+  "code_commit": "6fd829478a0e11a93113006a08ddc38b724aefe6",
+  "scope": {
+    "removed_actual_failed_functions": [
+      {
+        "file": "tests/cases/issue_6535_low_slack_absorb_keeps_page.rs",
+        "function": "low_slack_anchor_block_is_absorbed_into_the_same_page",
+        "file_sha256": "2357ff8d9ef87d69a29a2628285375d4a4f62859e72f58d1117cd60576a8a48d",
+        "entire_file_has_one_test_only": true
+      },
+      {
+        "file": "tests/cases/maintainer_hwpx_overlay_table_extent.rs",
+        "function": "low_slack_footer_keeps_its_independent_painted_position",
+        "function_sha256": "55d55d7e67cb8296ceae5d910258ffdad6af53f2930c0ba6ab7524b0018f8d71"
+      }
+    ],
+    "preserved_normal_functions": 2,
+    "shared_helper_and_normal_function_bodies_unchanged": true,
+    "all_inputs_kept": true,
+    "production_changed": false,
+    "new_functions": 0
+  },
+  "gates": [
+    {
+      "step": "prepare-before-fmt",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.8944510826840997
+    },
+    {
+      "step": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 8.735481209121644
+    },
+    {
+      "step": "prepare-final",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.757090040948242
+    },
+    {
+      "step": "focused",
+      "command": [
+        "python3",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage148-low-slack6535/run-focused.py",
+        "after"
+      ],
+      "exit_code": 0,
+      "seconds": 10.70281087514013
+    },
+    {
+      "step": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 7.141996041871607
+    },
+    {
+      "step": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.38672637520357966
+    },
+    {
+      "step": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.29126779083162546
+    },
+    {
+      "step": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 0.44596412498503923
+    },
+    {
+      "step": "clippy-alltargets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 12.275729666929692
+    },
+    {
+      "step": "manifest-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 4.0705627501010895
+    },
+    {
+      "step": "unit-check",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 12.962435541208833
+    }
+  ],
+  "before": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_010",
+      "--test",
+      "regression_suite_013",
+      "-E",
+      "test(issue_6535_low_slack_absorb_keeps_page::) or test(maintainer_hwpx_overlay_table_extent::)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plans": [
+      {
+        "caseName": "issue_6535_low_slack_absorb_keeps_page",
+        "target": "regression_suite_010",
+        "grouped": true
+      },
+      {
+        "caseName": "maintainer_hwpx_overlay_table_extent",
+        "target": "regression_suite_013",
+        "grouped": true
+      }
+    ],
+    "exit_code": 100,
+    "seconds": 27.196521500125527,
+    "summary": [
+      "Summary [   0.039s] 4 tests run: 2 passed, 2 failed, 429 skipped"
+    ]
+  },
+  "after": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_021",
+      "-E",
+      "test(issue_6535_low_slack_absorb_keeps_page::) or test(maintainer_hwpx_overlay_table_extent::)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plans": [
+      {
+        "caseName": "maintainer_hwpx_overlay_table_extent",
+        "target": "regression_suite_021",
+        "grouped": true
+      }
+    ],
+    "exit_code": 0,
+    "seconds": 9.556663707830012,
+    "summary": [
+      "Summary [   0.024s] 2 tests run: 2 passed, 208 skipped"
+    ]
+  },
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5884097204",
+  "limits": "전체Native2/PDF1 sweep은비교전쪽수불일치중단. 별도물리1쪽비교69.33089%의부정증거로판정. 전체Native2쪽시각완료/freshWASM/최종전체회귀 아님."
+}

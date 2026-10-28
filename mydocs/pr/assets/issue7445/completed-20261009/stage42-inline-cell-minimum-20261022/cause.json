@@ -1,0 +1,15 @@
+{
+  "originalCorrection": "1d28a62b073406076fcf6d4d947f26a6ce50e17a",
+  "lostAtIntegration": "4eeea6d7b40a0edf237b24534bbad3999b0cf537",
+  "commonProducer": "src/renderer/float_placement.rs:stored_text_line_cell_minimum",
+  "measurementConsumer": "src/renderer/height_measurer.rs:stored_text_line_cell_minimum",
+  "layoutConsumer": "src/renderer/layout/table_layout/stored_plain_cell_minimum.rs",
+  "disagreement": "현재 layout의 복제된 가드가 모든 control을 거부하지만 측정과 원 보정은 TAC 수식을 글줄로 수용한다.",
+  "observedFailure": {
+    "test": "fraction_text_lines_are_contained_by_their_own_cell_rows",
+    "lineBottom": 1210.9733333333334,
+    "cellBottom": 1209.0933333333332,
+    "differencePx": 1.8800000000002
+  },
+  "newExpectations": false
+}

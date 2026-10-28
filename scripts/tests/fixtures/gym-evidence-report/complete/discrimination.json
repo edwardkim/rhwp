@@ -1,0 +1,39 @@
+{
+  "binPath": "/opt/rhwp-fixture/bin/rhwp",
+  "buildErrors": [],
+  "controlCount": 2,
+  "controlKinds": [
+    "wrong-answer",
+    "input-copy",
+    "garbage"
+  ],
+  "discriminating": 2,
+  "falsePass": [],
+  "falsePassControls": [],
+  "kind": "gymDiscrimination",
+  "loadErrors": [],
+  "ok": true,
+  "results": [
+    {
+      "control": "wrong-answer",
+      "discriminates": true,
+      "error": "expected scorer rejection",
+      "pack": "pack-a",
+      "task": "T01"
+    },
+    {
+      "control": "input-copy",
+      "discriminates": true,
+      "pack": "pack-a",
+      "task": "T02"
+    }
+  ],
+  "schemaVersion": "1.0",
+  "scoreErrors": [
+    "pack-a/T01 (wrong-answer): expected scorer rejection"
+  ],
+  "skipped": [],
+  "taskCount": 2,
+  "toolErrors": [],
+  "toolFailed": false
+}

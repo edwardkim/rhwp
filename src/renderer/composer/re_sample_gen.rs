@@ -44,6 +44,7 @@ mod tests {
                 type_info: None,
                 default_name: None,
                 subst_font: None,
+                native_program: None,
             });
             (fonts.len() - 1) as u16
         };

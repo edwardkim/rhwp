@@ -1,0 +1,28 @@
+{
+  "candidate_code_head": "1c1d088cb6997ebcbd330c1119d923460aa59bfc",
+  "command": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 8 --no-fail-fast",
+  "exit_code": 100,
+  "seconds": 526.096,
+  "run": 10229,
+  "pass": 10228,
+  "fail": 1,
+  "skip": 50,
+  "failed_tests": [
+    "issue_7442_nested_cell_hit_test::nested_text_hit_keeps_same_offset"
+  ],
+  "log": "output/pr-review/planet6897-7382-20260926/stage298-full-nextest.log",
+  "log_sha256": "5f46e52ef0bf9b3237928a37d5c48336a44d4facd0b52ddc1c936c81968c009b",
+  "policy_checks": {
+    "suite_manifest": {
+      "exit": 0,
+      "base": "02530b9ed567a44663edb26c65fb565c4a79f00d"
+    },
+    "unit_test_tiers": {
+      "exit": 0,
+      "base": "02530b9ed567a44663edb26c65fb565c4a79f00d"
+    },
+    "fmt_check": {
+      "exit": 0
+    }
+  }
+}

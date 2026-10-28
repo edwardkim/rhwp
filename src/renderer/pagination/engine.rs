@@ -307,7 +307,7 @@ impl Paginator {
         let is_hwp3_variant = opts.is_hwp3_variant;
         let source_uses_inline_field_reset = source_context.source_uses_inline_field_reset;
         let hwp3_converted_missing_lineseg = source_context.hwp3_converted_missing_lineseg;
-        let legacy_hwp3_stored_geometry = source_context.legacy_hwp3_stored_geometry;
+        let stored_geometry_policy = source_context.stored_geometry_policy;
         // [Task #1007] 페이지 본문 영역 높이 (HWPUNIT) — variant cross-paragraph
         // vpos reset 감지 THRESHOLD 계산용.
         let body_height_hu_for_variant = if is_hwp3_variant {
@@ -326,10 +326,10 @@ impl Paginator {
         let tac_seg_width_fallback_hu = layout.column_width_hu();
         let measurer = HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(is_hwp3_variant)
-            .with_legacy_hwp3_stored_geometry(legacy_hwp3_stored_geometry);
+            .with_stored_geometry_policy(stored_geometry_policy);
 
         // 머리말/꼬리말/쪽 번호 위치/새 번호 지정 컨트롤 수집
-        let (hf_entries, page_number_pos, page_hides, new_page_numbers) =
+        let (hf_entries, page_number_pos) =
             Self::collect_header_footer_controls(paragraphs, section_index);
 
         let col_count = column_def.column_count.max(1);
@@ -1153,14 +1153,7 @@ impl Paginator {
             }
         }
         // 페이지 번호 + 머리말/꼬리말 할당
-        Self::finalize_pages(
-            &mut st.pages,
-            &hf_entries,
-            &page_number_pos,
-            &page_hides,
-            &new_page_numbers,
-            section_index,
-        );
+        Self::finalize_pages(&mut st.pages, &hf_entries, &page_number_pos, paragraphs);
 
         PaginationResult {
             pages: st.pages,
@@ -1168,34 +1161,30 @@ impl Paginator {
             hidden_empty_paras,
             pre_emitted_host_paras: std::collections::HashSet::new(),
             pre_emitted_host_heights: std::collections::HashMap::new(),
+            pre_emitted_host_content_heights: std::collections::HashMap::new(),
             endnotes: Vec::new(),
             endnote_paragraphs: Vec::new(),
             endnote_para_sources: Vec::new(),
+            endnote_measured_tables: Vec::new(),
             endnote_between_notes_hu: 0,
             endnote_separator_above_hu: 0,
             endnote_separator_below_hu: 0,
         }
     }
 
-    /// 머리말/꼬리말/쪽 번호 위치/새 번호 컨트롤 수집
+    /// 머리말/꼬리말/쪽 번호 위치 컨트롤 수집
     fn collect_header_footer_controls(
         paragraphs: &[Paragraph],
         section_index: usize,
     ) -> (
         Vec<(usize, HeaderFooterRef, bool, HeaderFooterApply)>,
         Option<crate::model::control::PageNumberPos>,
-        Vec<(usize, crate::model::control::PageHide)>,
-        Vec<(usize, u16)>,
     ) {
-        let mut hf_entries: Vec<(usize, HeaderFooterRef, bool, HeaderFooterApply)> = Vec::new();
-        let mut page_number_pos: Option<crate::model::control::PageNumberPos> = None;
-        // (para_index, PageHide) — 각 PageHide가 속한 문단 인덱스
-        let mut page_hides: Vec<(usize, crate::model::control::PageHide)> = Vec::new();
-        let mut new_page_numbers: Vec<(usize, u16)> = Vec::new();
-
+        let mut hf_entries = Vec::new();
+        let page_number_pos = crate::renderer::pagination::collect_page_number_pos(paragraphs);
         for (pi, para) in paragraphs.iter().enumerate() {
-            for (ci, ctrl) in para.controls.iter().enumerate() {
-                match ctrl {
+            for (ci, control) in para.controls.iter().enumerate() {
+                match control {
                     Control::Header(h) => {
                         let r = HeaderFooterRef {
                             para_index: pi,
@@ -1214,19 +1203,7 @@ impl Paginator {
                         };
                         hf_entries.push((pi, r, false, f.apply_to));
                     }
-                    Control::PageHide(ph) => {
-                        page_hides.push((pi, ph.clone()));
-                    }
-                    Control::PageNumberPos(pnp) => {
-                        page_number_pos = Some(pnp.clone());
-                    }
-                    Control::NewNumber(nn) => {
-                        if nn.number_type == crate::model::control::AutoNumberType::Page {
-                            new_page_numbers.push((pi, nn.number));
-                        }
-                    }
                     Control::Table(table) => {
-                        Self::collect_pagehide_in_table(table, pi, &mut page_hides);
                         crate::renderer::pagination::collect_nested_header_footer_controls(
                             table,
                             pi,
@@ -1240,32 +1217,7 @@ impl Paginator {
                 }
             }
         }
-
-        (hf_entries, page_number_pos, page_hides, new_page_numbers)
-    }
-
-    /// 표 셀 안 paragraph 의 PageHide 를 재귀 수집.
-    /// 외부 paragraph index `pi` 를 그대로 사용해 페이지 매핑 정합성 유지.
-    fn collect_pagehide_in_table(
-        table: &crate::model::table::Table,
-        pi: usize,
-        page_hides: &mut Vec<(usize, crate::model::control::PageHide)>,
-    ) {
-        for cell in &table.cells {
-            for cp in &cell.paragraphs {
-                for ctrl in &cp.controls {
-                    match ctrl {
-                        Control::PageHide(ph) => {
-                            page_hides.push((pi, ph.clone()));
-                        }
-                        Control::Table(inner) => {
-                            Self::collect_pagehide_in_table(inner, pi, page_hides);
-                        }
-                        _ => {}
-                    }
-                }
-            }
-        }
+        (hf_entries, page_number_pos)
     }
 
     /// 다단 나누기 처리
@@ -1826,6 +1778,15 @@ impl Paginator {
                     // 무관하게 높이를 예약해야 한다(한컴 의미론). #1995: 전체폭 단일셀
                     // 콜아웃 박스가 글앞으로로 저장돼도 흐름 높이를 차지해야 후속
                     // 문단이 박스 위로 겹치지 않는다.
+                    //
+                    // 글앞으로 / 글뒤로: Shape처럼 취급 — 공간 차지 없음.
+                    // 단, treat_as_char(글자처럼 취급) 표는 인라인이므로 wrap 설정과
+                    // 무관하게 높이를 예약해야 한다(한컴 의미론). #1995: 전체폭 단일셀
+                    // 콜아웃 박스가 글앞으로로 저장돼도 흐름 높이를 차지해야 후속
+                    // 문단이 박스 위로 겹치지 않는다.
+                    //
+                    // [#6366] 쪽수 경로는 TypesetEngine (#703 단축)이다. 여기
+                    // Paginator 에 flowWithText 를 넓게 열면 #5918 쪽수가 는다.
                     if !table.common.treat_as_char
                         && matches!(
                             table.common.text_wrap,
@@ -2058,17 +2019,11 @@ impl Paginator {
 
         // 표 내 각주 높이 사전 계산
         let mut table_footnote_height = 0.0;
-        let mut table_footnote_count = 0usize;
-        for cell in &table.cells {
-            for cp in &cell.paragraphs {
-                for cc in &cp.controls {
-                    if let Control::Footnote(fn_ctrl) = cc {
-                        let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
-                        table_footnote_height += fn_height;
-                        table_footnote_count += 1;
-                    }
-                }
-            }
+        let table_notes = super::table_cell_footnotes(table);
+        let table_footnote_count = table_notes.len();
+        for (_, fn_ctrl) in &table_notes {
+            let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
+            table_footnote_height += fn_height;
         }
 
         // 현재 사용 가능한 높이
@@ -2234,10 +2189,10 @@ impl Paginator {
                 table.common.vert_rel_to,
                 crate::model::shape::VertRelTo::Para
             )
-            && table.common.vertical_offset > 0
+            && Self::get_table_vertical_offset(table) > 0
         {
             let v_off =
-                crate::renderer::hwpunit_to_px(table.common.vertical_offset as i32, self.dpi);
+                crate::renderer::hwpunit_to_px(Self::get_table_vertical_offset(table), self.dpi);
             // 표의 절대 하단 y = 문단 시작 y + vert_offset + 표 높이
             // 피트 판단식: current_height + effective_table_height <= available
             // 이를 만족하도록 effective_table_height = abs_bottom - current_height
@@ -2321,27 +2276,15 @@ impl Paginator {
         }
 
         // 표 셀 내 각주 수집
-        for (cell_idx, cell) in table.cells.iter().enumerate() {
-            for (cp_idx, cp) in cell.paragraphs.iter().enumerate() {
-                for (cc_idx, cc) in cp.controls.iter().enumerate() {
-                    if let Control::Footnote(fn_ctrl) = cc {
-                        if let Some(page) = st.pages.last_mut() {
-                            page.footnotes.push(FootnoteRef {
-                                number: fn_ctrl.number,
-                                source: FootnoteSource::TableCell {
-                                    para_index: para_idx,
-                                    table_control_index: ctrl_idx,
-                                    cell_index: cell_idx,
-                                    cell_para_index: cp_idx,
-                                    cell_control_index: cc_idx,
-                                },
-                                fragment: None,
-                            });
-                            let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
-                            st.add_footnote_height(fn_height);
-                        }
-                    }
-                }
+        for (cell_path, fn_ctrl) in table_notes {
+            if let Some(page) = st.pages.last_mut() {
+                page.footnotes.push(FootnoteRef {
+                    number: fn_ctrl.number,
+                    source: FootnoteSource::table_cell_path(para_idx, ctrl_idx, &cell_path),
+                    fragment: None,
+                });
+                let fn_height = super::estimate_footnote_note_height(fn_ctrl, self.dpi);
+                st.add_footnote_height(fn_height);
             }
         }
     }
@@ -2434,10 +2377,9 @@ impl Paginator {
                     table.common.vert_rel_to,
                     crate::model::shape::VertRelTo::Para
                 )
-                && table.common.vertical_offset > 0;
+                && vertical_offset > 0;
             if is_independent_float {
-                let v_off =
-                    crate::renderer::hwpunit_to_px(table.common.vertical_offset as i32, self.dpi);
+                let v_off = crate::renderer::hwpunit_to_px(vertical_offset, self.dpi);
                 let float_bottom = para_start_height + v_off + effective_height;
                 if float_bottom > st.current_height {
                     st.current_height = float_bottom;
@@ -2530,9 +2472,8 @@ impl Paginator {
         // 투명 1×1 래퍼를 벗긴 표를 기준으로 만들어질 수 있다 — `row_count`/`row_heights`가
         // `table`(바깥 컨트롤 표) 자신의 행 수와 다를 수 있다는 뜻이다. 이 함수가 아래에서
         // 방출하는 모든 PartialTable의 start_row/end_row는 그 `mt` 기준이므로, 같은 unwrap
-        // 규칙(`row_geometry_table`)으로 좌표계를 판정해 PageItem에 데이터로 싣는다.
-        let row_cursor_is_nested =
-            !std::ptr::eq(crate::renderer::typeset::row_geometry_table(table), table);
+        // 결과에 기록된 소유 표를 소비해 PageItem에 좌표계를 싣는다.
+        let row_cursor_is_nested = !std::ptr::eq(mt.row_geometry_table(table), table);
         let row_count = mt.row_heights.len();
         let cs = mt.cell_spacing;
         let header_row_height = if row_count > 0 {
@@ -2566,7 +2507,7 @@ impl Paginator {
 
         // vertical_offset: 레이아웃에서 표 위에 v_offset만큼 공간을 확보하므로 가용 높이 차감
         let v_offset_px = if vertical_offset > 0 {
-            crate::renderer::hwpunit_to_px(vertical_offset as i32, self.dpi)
+            crate::renderer::hwpunit_to_px(vertical_offset, self.dpi)
         } else {
             0.0
         };
@@ -2584,8 +2525,11 @@ impl Paginator {
         let first_block_is_single_row = first_block_size == 1;
         // [Task #474] RowBreak 표는 보호 블록 정책 비적용 (HWP 행 경계 분할 정책 정합)
         let first_block_protected = !mt.allows_row_break_split()
-            && first_block_size >= 2
-            && first_block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
+            && mt.rowspan_block_fits_whole_unit(
+                first_block_start,
+                first_block_end,
+                base_available_height,
+            );
         let can_intra_split_early = !mt.cells.is_empty();
         let split_unit_h = if first_block_protected {
             first_block_h
@@ -2724,7 +2668,9 @@ impl Paginator {
                 let approx_end_raw =
                     mt.find_break_row(avail_for_rows, cursor_row, effective_first_row_h);
                 // Task #398: rowspan 묶음 중간에서 잘리지 않도록 블록 경계로 스냅
-                let approx_end = mt.snap_to_block_boundary(approx_end_raw);
+                let fresh_row_budget = (base_available_height - header_overhead).max(0.0);
+                let approx_end =
+                    mt.snap_to_block_boundary_for_budget(approx_end_raw, fresh_row_budget);
 
                 // cursor_row가 속한 블록 정보 (인트라-로우 분할 가드)
                 let (cur_b_start, cur_b_end, _) = mt.row_block_for(cursor_row);
@@ -2732,9 +2678,9 @@ impl Paginator {
                 let cur_block_single = cur_block_size == 1;
                 // [Task #474] RowBreak 표는 보호 블록 정책 비적용
                 let cur_block_protected = !mt.allows_row_break_split()
-                    && cur_block_size >= 2
-                    && cur_block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
-                // 큰 블록(>3) 또는 단일 행은 분할 가능; 보호 블록(2~3)은 분할 불가
+                    && mt.rowspan_block_fits_whole_unit(cur_b_start, cur_b_end, fresh_row_budget);
+                // 다음 온전한 밴드에 들어가는 병합 그룹은 이월하고,
+                // 실제 page-larger 그룹과 단일 행은 내용 컷으로 전진한다.
                 let cur_can_intra_split =
                     (cur_block_single || !cur_block_protected) && can_intra_split;
 
@@ -2789,8 +2735,11 @@ impl Paginator {
                     let next_block_single = next_block_size == 1;
                     // [Task #474] RowBreak 표는 보호 블록 정책 비적용
                     let next_block_protected = !mt.allows_row_break_split()
-                        && next_block_size >= 2
-                        && next_block_size <= crate::renderer::height_measurer::BLOCK_UNIT_MAX_ROWS;
+                        && mt.rowspan_block_fits_whole_unit(
+                            next_b_start,
+                            next_b_end,
+                            fresh_row_budget,
+                        );
                     let next_can_intra_split =
                         (next_block_single || !next_block_protected) && can_intra_split;
                     if next_can_intra_split && mt.is_row_splittable(r) {
@@ -2895,9 +2844,15 @@ impl Paginator {
                         start_cut: Vec::new(),
                         end_cut: Vec::new(),
                         is_block_split: false,
+                        start_cut_is_block: false,
                         row_cursor_is_nested,
                         end_row_height_override: None,
                         start_row_height_override: None,
+                        straddle_row_relief: Vec::new(),
+                        straddle_page_bands: Vec::new(),
+                        fragment_row_heights: None,
+                        fragment_block_frames: Vec::new(),
+                        end_row_owns_stored_frame: false,
                     });
                     // 마지막 부분 표: spacing_after도 포함 (레이아웃과 일치)
                     let mp = measured.get_measured_paragraph(para_idx);
@@ -2917,9 +2872,15 @@ impl Paginator {
                 start_cut: Vec::new(),
                 end_cut: Vec::new(),
                 is_block_split: false,
+                start_cut_is_block: false,
                 row_cursor_is_nested,
                 end_row_height_override: None,
                 start_row_height_override: None,
+                straddle_row_relief: Vec::new(),
+                straddle_page_bands: Vec::new(),
+                fragment_row_heights: None,
+                fragment_block_frames: Vec::new(),
+                end_row_owns_stored_frame: false,
             });
             st.advance_column_or_new_page();
 
@@ -2945,13 +2906,12 @@ impl Paginator {
         pages: &mut [PageContent],
         hf_entries: &[(usize, HeaderFooterRef, bool, HeaderFooterApply)],
         page_number_pos: &Option<crate::model::control::PageNumberPos>,
-        page_hides: &[(usize, crate::model::control::PageHide)],
-        new_page_numbers: &[(usize, u16)],
-        _section_index: usize,
+        paragraphs: &[Paragraph],
     ) {
         // 쪽번호: PageNumberAssigner 가 NewNumber 1회 적용 + 단조 증가를 보장 (Issue #353)
+        let events = crate::renderer::page_number::PageControlEvents::collect(pages, paragraphs);
         let mut assigner =
-            crate::renderer::page_number::PageNumberAssigner::new(new_page_numbers, 1);
+            crate::renderer::page_number::PageNumberAssigner::new_for_pages(&events.new_numbers, 1);
         // 머리말/꼬리말은 한번 설정되면 이후 페이지에도 유지 (누적).
         // 선택 규칙은 typeset.rs 와 공유한다 (#3234).
         let mut active_hf = crate::renderer::pagination::ActiveHeaderFooter::default();
@@ -3000,48 +2960,24 @@ impl Paginator {
 
             let page_num_u32 = assigner.assign(page);
             page.page_number = page_num_u32;
+            page.page_number_restarted = assigner.last_restarted();
 
             let (active_header, active_footer) = active_hf.active(page_num_u32);
             page.active_header = active_header;
             page.active_footer = active_footer;
 
-            if !assigner.should_hide_page_number() {
+            if !events.positions.is_empty() {
+                page.page_number_pos = events.active_position(i).cloned();
+            } else if !assigner.should_hide_page_number() {
                 page.page_number_pos = page_number_pos.clone();
             }
-            // PageHide: 해당 문단이 이 페이지에서 **처음** 시작하는 경우만 적용
-            // (문단이 여러 페이지에 걸치면 첫 페이지에서만 감추기 적용)
-            for (ph_para, ph) in page_hides {
-                if Self::para_starts_in_page(page, *ph_para) {
-                    page.page_hide = Some(ph.clone());
-                    break;
-                }
+            // 한 컨트롤의 감추기는 소스 위치가 매핑된 한 쪽에만 적용한다.
+            if let Some((_, hide)) = events.hides.iter().rev().find(|(target, _)| *target == i) {
+                page.page_hide = Some(hide.clone());
             }
 
             let _ = page_last_para;
         }
-    }
-
-    /// 문단이 해당 페이지에서 **처음 시작**하는지 확인
-    /// (PartialParagraph의 start_line==0 또는 FullParagraph만 해당)
-    fn para_starts_in_page(page: &PageContent, para_idx: usize) -> bool {
-        for col in &page.column_contents {
-            for item in &col.items {
-                match item {
-                    PageItem::FullParagraph { para_index } if *para_index == para_idx => {
-                        return true
-                    }
-                    PageItem::PartialParagraph {
-                        para_index,
-                        start_line,
-                        ..
-                    } if *para_index == para_idx && *start_line == 0 => return true,
-                    PageItem::Table { para_index, .. } if *para_index == para_idx => return true,
-                    PageItem::Shape { para_index, .. } if *para_index == para_idx => return true,
-                    _ => {}
-                }
-            }
-        }
-        false
     }
 
     /// 문단 인덱스가 해당 페이지에 속하는지 확인
@@ -3064,8 +3000,8 @@ impl Paginator {
         false
     }
 
-    /// 표의 세로 오프셋 추출
-    fn get_table_vertical_offset(table: &crate::model::table::Table) -> u32 {
-        table.common.vertical_offset as u32
+    /// Decode the signed offset before both comparisons and height arithmetic.
+    fn get_table_vertical_offset(table: &crate::model::table::Table) -> i32 {
+        crate::renderer::float_placement::signed_hwpunit(table.common.vertical_offset)
     }
 }

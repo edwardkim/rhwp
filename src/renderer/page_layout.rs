@@ -1,7 +1,7 @@
 //! 페이지 레이아웃 계산 (PageDef → 렌더링 영역)
 
 use super::{hwpunit_to_px, DEFAULT_DPI};
-use crate::model::page::{ColumnDef, PageAreas, PageDef};
+use crate::model::page::{ColumnDef, ColumnDirection, PageAreas, PageDef};
 use crate::model::Rect;
 
 /// 페이지 레이아웃 정보 (픽셀 단위로 변환된 영역)
@@ -16,6 +16,8 @@ pub struct PageLayoutInfo {
     pub body_area: LayoutRect,
     /// 단별 본문 영역 (px)
     pub column_areas: Vec<LayoutRect>,
+    /// 원본 단 진행 방향. 단 영역 배열도 내용이 흐르는 순서로 유지한다.
+    pub column_direction: ColumnDirection,
     /// 각주 영역 (px)
     pub footnote_area: LayoutRect,
     /// 꼬리말 영역 (px)
@@ -90,7 +92,14 @@ impl PageLayoutInfo {
         let footnote_area = LayoutRect::from_hwpunit_rect(&areas.footnote_area, dpi);
 
         // 다단 영역 계산
-        let column_areas = calculate_column_areas(&body_area, column_def, dpi);
+        let mut column_areas = calculate_column_areas(&body_area, column_def, dpi);
+        if column_def.direction == ColumnDirection::RightToLeft
+            || (column_def.direction == ColumnDirection::Mirror
+                && page_number != 0
+                && page_number.is_multiple_of(2))
+        {
+            column_areas.reverse();
+        }
 
         let pagination_tolerance_px =
             hwpunit_to_px(page_def.pagination_bottom_tolerance as i32, dpi);
@@ -101,6 +110,7 @@ impl PageLayoutInfo {
             header_area,
             body_area,
             column_areas,
+            column_direction: column_def.direction,
             footnote_area,
             footer_area,
             dpi,
@@ -121,6 +131,7 @@ impl PageLayoutInfo {
     /// ColumnDef가 다른 zone layout일 수 있으므로 단 너비/간격은 보존하고, page body의
     /// 기준 x 이동량만 각 영역에 적용한다.
     pub fn apply_page_number_margins(&mut self, page_def: &PageDef, page_number: u32) {
+        self.apply_column_page_number(page_number);
         let target_areas = PageAreas::from_page_def_for_page(page_def, page_number);
         let target_header = LayoutRect::from_hwpunit_rect(&target_areas.header_area, self.dpi);
         let target_body = LayoutRect::from_hwpunit_rect(&target_areas.body_area, self.dpi);
@@ -150,9 +161,31 @@ impl PageLayoutInfo {
         }
     }
 
-    /// 본문 영역의 사용 가능한 높이 (각주 영역 제외 + 페이지네이션 허용치 포함)
+    /// 원본 문단 순회를 유지하면서 단의 물리 위치를 바꾼다.
+    /// 렌더링에서 레이아웃을 재사용하므로 같은 쪽 번호로 반복 적용해도 결과가 같다.
+    pub(crate) fn apply_column_page_number(&mut self, page_number: u32) {
+        if self.column_areas.len() < 2 {
+            return;
+        }
+        let reverse = self.column_direction == ColumnDirection::RightToLeft
+            || (self.column_direction == ColumnDirection::Mirror
+                && page_number != 0
+                && page_number.is_multiple_of(2));
+        let reversed = self.column_areas[0].x > self.column_areas[self.column_areas.len() - 1].x;
+        if reverse != reversed {
+            self.column_areas.reverse();
+        }
+    }
+
+    /// 각주 영역을 제외한 물리 본문 높이. 저장 형식의 허용치로 용지를 늘리지 않는다.
+    pub fn physical_body_height(&self) -> f64 {
+        self.body_area.height - self.footnote_area.height
+    }
+
+    /// 레거시 미주 흐름에서 사용하는 추가 페이지네이션 예산.
+    /// 일반 본문의 줄·표 점유는 `physical_body_height`를 사용한다.
     pub fn available_body_height(&self) -> f64 {
-        self.body_area.height - self.footnote_area.height + self.pagination_tolerance_px
+        self.physical_body_height() + self.pagination_tolerance_px
     }
 
     /// 단 너비 (HWPUNIT) — vpos 보정에서 segment_width 비교에 사용
@@ -181,7 +214,7 @@ impl PageLayoutInfo {
 }
 
 /// 다단 영역 계산
-fn calculate_column_areas(
+pub(crate) fn calculate_column_areas(
     body_area: &LayoutRect,
     column_def: &ColumnDef,
     dpi: f64,
@@ -197,7 +230,7 @@ fn calculate_column_areas(
         let mut x = body_area.x;
 
         if column_def.proportional_widths {
-            // HWP 5.0 바이너리: widths/gaps는 비례값 (합계=32768)
+            // 한컴 HWP5·HWPX: widths/gaps는 비례값(합계=32768)
             // body_area.width에 대한 비례로 변환
             let total: f64 = column_def
                 .widths

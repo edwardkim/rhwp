@@ -1,0 +1,14 @@
+{
+  "source_commit": "016aba9bf",
+  "command": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 8 --no-fail-fast",
+  "pass": 10228,
+  "fail": 1,
+  "skip": 50,
+  "seconds": 640.89,
+  "exit_code": 100,
+  "failure": "text_overlap_baseline::text_overlaps_do_not_grow_partition_6",
+  "counterexample": "samples/hwpctl_ParameterSetID_Item_v1.2.hwp",
+  "physical_page": 70,
+  "actual": "앞 문단174 글줄과 다음 표175 안의 글자가 겹침. 표 하단만 검사하고 앞 본문 가시 하단을 제외한 보정308의 범위 오류.",
+  "planned_correction": "일반 문단을 확정할 때 후행 줄간격 제외 본문 하단을 기록하고 저장 표의 충돌 판정에도 같은 실제 하단을 사용. 기존 표와 본문 충돌 모두 유지."
+}

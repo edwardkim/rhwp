@@ -72,8 +72,8 @@ test('grid layout keeps its own centering when no pan space is applied', () => {
   assert.ok(left0 >= 0 && left1 > left0, '그리드는 명시 left 를 유지');
   assert.equal(
     left1 - left0,
-    scroll.getPageWidth(0) + 10,
-    '열 간격은 페이지 폭 + gap(10)',
+    scroll.getPageWidth(0) + scroll.getPageGap(),
+    '열 간격은 페이지 폭 + 현재 배율의 gap',
   );
 });
 
@@ -118,7 +118,7 @@ test('pointer anchor remains representable across the viewport-width boundary', 
 });
 
 // [#3591] 그리드는 layoutGrid 가 중앙을 잡으므로 팬을 주지 않는다.
-// 그리드 첫 진입(zoom 0.5)에서만 팬이 붙어 스크롤 여지가 생기고 문서가 밀리던 회귀 가드.
+// 자동 열 수가 1→다중 열로 바뀔 때 팬이 붙어 스크롤 여지가 생기고 문서가 밀리던 회귀 가드.
 test('grid mode never receives pan space at any zoom', () => {
   const scroll = new VirtualScroll();
   const gridPages = Array.from({ length: 5 }, () => ({ width: 794, height: 1123 })) as never;

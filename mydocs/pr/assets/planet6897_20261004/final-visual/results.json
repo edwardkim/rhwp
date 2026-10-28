@@ -1,0 +1,1346 @@
+{
+  "verified_head": "bea737c9ad8a75a9a2122d8e3f0c153b645811ec",
+  "native_cli_sha256": "e9f0dd82d874679b205ce1e0fc89ace66d21217353308e7c6559870138eae936",
+  "native_cli_build": "cargo build --locked --profile release-test --target-dir target/pr-review --features native-skia --bin rhwp",
+  "fresh_wasm_sha256": "a16f67cc8522c818397f51acebb0e90a654974dc2dcde8c6091e78de76edd4f5",
+  "approved_scope_pages_per_backend": 104,
+  "native_minimum": 90.80846,
+  "wasm_minimum": 90.80846,
+  "below90": 0,
+  "method": "현재 Native와 실제 Chrome/fresh WASM에서 수용 범위 SVG를 모두 재출력. byte-identical SVG의 기존 raster만 재사용, 달라진 SVG/font policy는 새 raster. 같은 원본/독립 PDF hash로 Visual Sweep PNG-pair TSV 재산출. global #7445 문서 승인 아님.",
+  "cases": [
+    {
+      "key": "7532",
+      "input": "samples/exam_kor.hwp",
+      "pdf": "pdf/exam_kor-2022.pdf",
+      "old_folder": "stage9-7532-native/exam-kor",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "native_changed_pages": [],
+      "native_pages": 20,
+      "wasm_vs_native_byte_different_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "wasm_pages": 20,
+      "old_wasm_folder": "stage9-7532-wasm/exam-kor",
+      "wasm_raw_changed_pages": [],
+      "wasm_policy_changed_pages": [],
+      "native_final_min": 90.80846,
+      "native_final_below90": 0,
+      "wasm_final_min": 90.80846,
+      "wasm_final_below90": 0,
+      "input_sha256": "0315576fb25dd29ad3b6b188ee2539d0e8d31c15b74847be801c2186a97aac69",
+      "pdf_sha256": "80fa2a520dcbd15a15c04eb6284f83bba9c8ff33a535445c5fcd5df1b9e12197",
+      "svg_pages": [
+        {
+          "page": 1,
+          "native_sha256": "03c3fcb3a65b724fe2723f38e7962410cfdf786bb0d2e0be44d1d0d80f08c5f6",
+          "wasm_raw_sha256": "c364cf31cc8d3d80be341e80f0e25a5fc1b2aa3ae2769d305d746de26b5f1274",
+          "wasm_with_font_policy_sha256": "39209dcdf84185739132aedae130bf76d09d76362bdaf6db9b49a920bb884bb7"
+        },
+        {
+          "page": 2,
+          "native_sha256": "7c7accc9b75b89969f3a2200ffbe58181f266bca225b1f06c7e6758716411aee",
+          "wasm_raw_sha256": "a7ede760051e341bbef70fbfafc681259530e746f07450356d67d14d33764413",
+          "wasm_with_font_policy_sha256": "f306d3ff900f3ada4eb3ea6aa014379c66b949cc6a175c41091938e4fd720c66"
+        },
+        {
+          "page": 3,
+          "native_sha256": "7172b110c83b2df517f355ce35630a757e6c7e0662599e88a0ecb479df28e07c",
+          "wasm_raw_sha256": "4eb66ce2e1fed4b0f3b53cdfbe8c484a0e6f1c6c4e3d52ad8d1e60bae31e7383",
+          "wasm_with_font_policy_sha256": "7aef2e05c298cde970e937b1b822c274305738c508c62142d8f8491623a7085f"
+        },
+        {
+          "page": 4,
+          "native_sha256": "ab30a2e1d7a0caf0d1fafeea8d23e552284d7ba688c4755b555fe41e4418076e",
+          "wasm_raw_sha256": "95dbda9412b7196ba65af1ca149b377b67eb00f601acd2d1cec3317f28add4f8",
+          "wasm_with_font_policy_sha256": "5e01d417e364222d0ef4c2caeb55fd950eb6460d5cc7d3fbb2949a0c340e4686"
+        },
+        {
+          "page": 5,
+          "native_sha256": "64090414fc49a1131f951d955e254879a98a8e8900855cf76f11e163999c0195",
+          "wasm_raw_sha256": "acfaf72d6d94ea09dda9210e476537fa01a08871f2b8cf7e7dbac2768ef2b9fe",
+          "wasm_with_font_policy_sha256": "62f559fa695714a6e449e8869f890ab28da411eaaa47e2c16538990b53d9441c"
+        },
+        {
+          "page": 6,
+          "native_sha256": "1015a17b91bcc86c6a90104b8aa7f1d2c5ff14360858f1f65afc8f192b81a402",
+          "wasm_raw_sha256": "2f812b74cc3f73fea88eaeb7409e445dd8eadaeda1e4e714eca93c9bad73253a",
+          "wasm_with_font_policy_sha256": "bd7e78bfd09fe66b645d4f8cd080dd7b917c85eaa639038df0ac6badefb7f840"
+        },
+        {
+          "page": 7,
+          "native_sha256": "e2826d24899fb9e229eaf6d90d718db630e7a5ecb25fdee9ffc72fd8cd1d8bbb",
+          "wasm_raw_sha256": "363d1c4184d64adb070bc1fff0562a9274fdb9b9a04a72c2c9848cd097408502",
+          "wasm_with_font_policy_sha256": "cc50e1aff32ef3d3134b22d53056ca330e37cc7ed48d10a83a5457985ef42c6d"
+        },
+        {
+          "page": 8,
+          "native_sha256": "0bf3a9f6bf547b02faf613639b515c464ed06ca11f7a653ff12f416325fc2aba",
+          "wasm_raw_sha256": "93277eeb1269dde41caf11949a025949cf973cbb37fe6087cebb7be69f5c9b17",
+          "wasm_with_font_policy_sha256": "558b62feb55f099060960f5fb9bf8236033967c7eb3ee7d109225d91d913c75f"
+        },
+        {
+          "page": 9,
+          "native_sha256": "f88515241725c30c5c78f001da00f583e1acf5c159247b614f801b5f29de342b",
+          "wasm_raw_sha256": "1cc6dfa095ee0fb60315662cfeeadbd217509ebd090098d1bb54182d2be720a8",
+          "wasm_with_font_policy_sha256": "6a9839c52e55f59091dc04debd8280e1affa6fc39675100cbb8bad21dea33f6d"
+        },
+        {
+          "page": 10,
+          "native_sha256": "215adf6389e60bd243bca61810dacbf75dc3e957a1437e21970ac3c0854e75f9",
+          "wasm_raw_sha256": "c3cd3cf54ab3304d65528c2dcc59af794f47b0936283196d9298e9497842f375",
+          "wasm_with_font_policy_sha256": "bb37b7398cc830f9d7eb95ca2471ccde9b589a8004fe8cba5a2b2c0ed7ed1e92"
+        },
+        {
+          "page": 11,
+          "native_sha256": "d1ea75f922f0e58874cb51e9e958e70f99b577a6192c348ee1b78cb43ce303ba",
+          "wasm_raw_sha256": "28178a937faebc137c012f2988d34250ce80a6fe1eb50011de2a693d6ba4c562",
+          "wasm_with_font_policy_sha256": "5b2b96aad8911b1581c5854cd929ca6f232c6891403d56f00b041aa21ff24e37"
+        },
+        {
+          "page": 12,
+          "native_sha256": "281c72ad9ba239233993d492d6d2ea85a702204e3bd38f386501d4ca80898448",
+          "wasm_raw_sha256": "b0ceb8d790a194202639ff7a40f9bcfec403e8beec116c077b157bf25a57ccec",
+          "wasm_with_font_policy_sha256": "ab4144f904cebadf3ee9657b9674ab3b88e1686d015b918c53b00ea75fa73897"
+        },
+        {
+          "page": 13,
+          "native_sha256": "09a698cac3b39c928f38f0821fcfe43dd33bbf401e70af9aca874c5b47722f35",
+          "wasm_raw_sha256": "ab3759206844bee631b20a8f9cbe42f0c739744ef841813681c2cdeba6e79842",
+          "wasm_with_font_policy_sha256": "1efc4cec90e6248e9baea07148811689f3f52953151b7323e9ae24d0d5bd003f"
+        },
+        {
+          "page": 14,
+          "native_sha256": "1239ae6bde2b5bc99c60627f0a3778d88e9eeb9f04c8d181fce83ebe02dda1c3",
+          "wasm_raw_sha256": "a6b237bff1498a8fa4ef35d716467bb067be3c32920a55898eeec0b01832d170",
+          "wasm_with_font_policy_sha256": "824b12c15a24e4bf8566fcede194211794b12a045ed5168de2c2e1d847b67893"
+        },
+        {
+          "page": 15,
+          "native_sha256": "880f3ad8715051162f25de0dedaa92a0f039a06931d2047be550b9f3e7d06c78",
+          "wasm_raw_sha256": "fb6474f28fa014592193b9b7f4cffe9c803b1f8c6d7ce663dafeda9fd4de00bc",
+          "wasm_with_font_policy_sha256": "ea97493d297286bba23f9a5052deff982cdccc138ad22a3d33069e87f5b45f8a"
+        },
+        {
+          "page": 16,
+          "native_sha256": "9128e8ba0278e103714211320ea0ba5df96733e7c20c61ee98613e2c9103f371",
+          "wasm_raw_sha256": "fb5c02b7f4f0a6beaa5714f8f3697e4582b0eb473e6acb003dc0dbf8c145dd67",
+          "wasm_with_font_policy_sha256": "6c60f4f3fe3fbff29df31ad754754e59dd73c9b0d423743db5ece2368debf418"
+        },
+        {
+          "page": 17,
+          "native_sha256": "88d169f362c49ebf9d0c9e173c53fc3c13468e3a66469584a1414bca29bcf3d0",
+          "wasm_raw_sha256": "b663d33f4980c17838eca72ace9fe80cfd85ddbc9a193bec1b4a6da00a887f36",
+          "wasm_with_font_policy_sha256": "da3c9a534ca22fab7083beef9bcddff996bea4cb7612218ba2b600d219d840c5"
+        },
+        {
+          "page": 18,
+          "native_sha256": "fbe114c10364b331504b09ed6a6d05ce23680a1641a9939d6cde2910241771f5",
+          "wasm_raw_sha256": "3d92e9ea62c6da2ef5e19ded0172c949593884277df99f8466840bb1105e793f",
+          "wasm_with_font_policy_sha256": "cb6f34ce7b7153b706db235bd63dfce26d60d33ca9bd45b68fff12ba05980ff0"
+        },
+        {
+          "page": 19,
+          "native_sha256": "1bab56168185cca5107682f142e0ff50a8d6bd7c1a9dc6873d2ae4ff810763b8",
+          "wasm_raw_sha256": "1a7205692e07529d6a4a39ffb235d9fbb2e9b51661fb7f7880a6e468d40a94ea",
+          "wasm_with_font_policy_sha256": "1a47e4812039003e5c30c1181f96e1ad0251d58132fab685c926ad6699523c87"
+        },
+        {
+          "page": 20,
+          "native_sha256": "2c311b1570efa719eac85dd81407839889fb4cd516a46272d15f46ae07b453ca",
+          "wasm_raw_sha256": "890e1cacb84a5c6e984a1b37b2d61c55ae2f25d225f040978a8727f6ccad6c3b",
+          "wasm_with_font_policy_sha256": "3d56b9ff6eaa062f0578380ea84605153766848ba211eb674e10e5528b05a09b"
+        }
+      ]
+    },
+    {
+      "key": "7534",
+      "input": "samples/exam_eng.hwp",
+      "pdf": "pdf/exam_eng-2022.pdf",
+      "old_folder": "stage8-native/exam-eng",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "native_changed_pages": [],
+      "native_pages": 8,
+      "wasm_vs_native_byte_different_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "wasm_pages": 8,
+      "old_wasm_folder": "stage8-wasm/exam-eng",
+      "wasm_raw_changed_pages": [],
+      "wasm_policy_changed_pages": [],
+      "native_final_min": 95.2965,
+      "native_final_below90": 0,
+      "wasm_final_min": 95.2965,
+      "wasm_final_below90": 0,
+      "input_sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b",
+      "pdf_sha256": "68ce956dc33f6cc6c21537488a0accebd20a1c4dde7ee720843d4565532c9844",
+      "svg_pages": [
+        {
+          "page": 1,
+          "native_sha256": "3e2899fbe113750af220b7cbbd16925040218f895c2c1eafd9ace5ce6b3d0350",
+          "wasm_raw_sha256": "3e5f54ad41fb6d72fb92c07ddb83c0b59b6fd889f00671e5e7ad2366933ddede",
+          "wasm_with_font_policy_sha256": "1ae0b74e7f1c15908ba493efa31a3c90923bf4a84a610e2efcaffc8384cb094e"
+        },
+        {
+          "page": 2,
+          "native_sha256": "cb4e824a29890583d3c3c4d15d0d819069158099cb02db00d4dd14bdc8e548a3",
+          "wasm_raw_sha256": "f80b052cedf548941d1fa992fdd942415e1cbc96ad291ac6f839ef0f95be93a9",
+          "wasm_with_font_policy_sha256": "056db6c1b2fc17db8fef4c95dc3ee03c8ac11a83050a9fea81605e290003a208"
+        },
+        {
+          "page": 3,
+          "native_sha256": "10393872de17fd02c59289eb26c3633c3c5c9c4b6aad3312ba71e93d0cac6c22",
+          "wasm_raw_sha256": "9436286274bafd1bba75509d6d654af9f5a90e0bbde24651973488fc8751ec4e",
+          "wasm_with_font_policy_sha256": "3fb958dac3c73d21844a527f07439509339e3b9794b6318eec7d14ca77de0151"
+        },
+        {
+          "page": 4,
+          "native_sha256": "4b76de201e9d4e5ccdfdbc14f49c4d70f08ac88b4a8aad4307edc7b45e1d2418",
+          "wasm_raw_sha256": "0ae62790c8b1088bbf7d745be6736fda0dc9ac9132ca6980323179e3b85bfa0d",
+          "wasm_with_font_policy_sha256": "3a753d1c57c0f7ec256c3ddee596b5cdbb0d244e90893175025f0197a1d30a99"
+        },
+        {
+          "page": 5,
+          "native_sha256": "c0552b259c77fe8e5568d99b20a3e7f6a0f125ad136a296f5d1a36fb494c6d50",
+          "wasm_raw_sha256": "3bc64edfdecb8acda755351a6c7d753c6d5106a183d19cc44baccfdca1a4113f",
+          "wasm_with_font_policy_sha256": "550f8fb36aa57df7db9088bf567efaa447e61fb77e26f9ba37b8412c0d25b077"
+        },
+        {
+          "page": 6,
+          "native_sha256": "f772d440581ff3f0bbcaf29de9a60cb9e35e5dbcf3380f1fdfce3806a157888c",
+          "wasm_raw_sha256": "1615d91edfa1bb640ceb400055fbf8b2e16d0b392c4cec662098786e80ca565f",
+          "wasm_with_font_policy_sha256": "d5a6e8eaf13858be1e4c11bd0299f65f751936dc3218a3f5d82bbfcc70cafa55"
+        },
+        {
+          "page": 7,
+          "native_sha256": "184c3cb64858a4669064a04bc8681dc859f756827df1cd38ea128f2097e51b7e",
+          "wasm_raw_sha256": "a8e4bf4b83e9d486b87cfeba235763303f91cc43f872283502c362fcff757d3c",
+          "wasm_with_font_policy_sha256": "6ab3dcb767306846579937bc74e4d7d2a0c275abd3581b554283a94c20c34c0c"
+        },
+        {
+          "page": 8,
+          "native_sha256": "625906cf3512ebac124a5e4f0aa5874aadf6ff38fa93356e4ef3735febfbfcf1",
+          "wasm_raw_sha256": "05d365720691fa137b73ca26e4b88214286b0cf7082fe8ee9126562f500e5b52",
+          "wasm_with_font_policy_sha256": "22b4ece76ab5b873361e18ff8a35ae21e91028ca72c378a66a2a75852ae54c37"
+        }
+      ]
+    },
+    {
+      "key": "7543",
+      "input": "samples/issue4599/156714641_wrap_tail_min.hwpx",
+      "pdf": "pdf/issue4599/156714641_wrap_tail_min-2020.pdf",
+      "old_folder": "stage8-native/issue4599-min",
+      "pages": [
+        1
+      ],
+      "native_changed_pages": [],
+      "native_pages": 1,
+      "wasm_vs_native_byte_different_pages": [
+        1
+      ],
+      "wasm_pages": 1,
+      "old_wasm_folder": "stage8-wasm/issue4599-min",
+      "wasm_raw_changed_pages": [],
+      "wasm_policy_changed_pages": [],
+      "native_final_min": 99.41288,
+      "native_final_below90": 0,
+      "wasm_final_min": 99.41288,
+      "wasm_final_below90": 0,
+      "input_sha256": "5140fff9f15078ead1cde8b341dba07822542b0ed980254f6e09fc3c73d03df5",
+      "pdf_sha256": "d6fff0fcf4c1aa2d72b71f10f5996781e8fda077e3c608f4d4f52b3a647bd0b1",
+      "svg_pages": [
+        {
+          "page": 1,
+          "native_sha256": "13a8d97e44f28762b697c5287f5b100f47126d8648b818eb6d5c0bfa9e19c670",
+          "wasm_raw_sha256": "9c7892a32692cb2a0c459cb404f7b262de72a7c4fc417a502c2bd8ac091baf94",
+          "wasm_with_font_policy_sha256": "82d5aed7f58b6060806f70c7b7926ea448e15f62c6fa62d77a37641e84ccabbc"
+        }
+      ]
+    },
+    {
+      "key": "7547a",
+      "input": "samples/issue6929/148776468_search_ad_terms_press_release.hwp",
+      "pdf": "pdf/issue6929/148776468_search_ad_terms_press_release-hwp-2020.pdf",
+      "old_folder": "stage8-native/issue6929",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "native_changed_pages": [
+        1,
+        4
+      ],
+      "native_pages": 17,
+      "wasm_vs_native_byte_different_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "wasm_pages": 17,
+      "old_wasm_folder": "stage8-wasm/issue6929",
+      "wasm_raw_changed_pages": [
+        1,
+        4
+      ],
+      "wasm_policy_changed_pages": [
+        1,
+        4
+      ],
+      "native_final_min": 95.23424,
+      "native_final_below90": 0,
+      "wasm_final_min": 95.23424,
+      "wasm_final_below90": 0,
+      "input_sha256": "a05d313f34852e07305d8bf16223303d9cc00c3d9bdc0b5258f96dfcb347a43d",
+      "pdf_sha256": "61c28f0265bde456dea299a6793e00cd731fabe78cb1e258bb9ca5397d233495",
+      "svg_pages": [
+        {
+          "page": 1,
+          "native_sha256": "6342b23e0cc886907bfc680303453cbb670993afa72e7fcbb7d44e8bbf247935",
+          "wasm_raw_sha256": "02e0fd1c7f7842db0631411670ff01df09be921b02c0eed8bea815a569fa5a4d",
+          "wasm_with_font_policy_sha256": "703631cf6181bf0dfbf1c7afc625a8592581d3760a53e19f183fd9594d30c5b1"
+        },
+        {
+          "page": 2,
+          "native_sha256": "11a2092abea55c9c6d4a082078fc1c21ed7d8c54824703cd7cf9e6ba539fa2f6",
+          "wasm_raw_sha256": "29f55f4a7a9ee17b47b24512bc281fa037de63a32731fe944771262686ba5bcf",
+          "wasm_with_font_policy_sha256": "841ed28aaa73672a2f614caf84d486bf84993e4fbe2a6223d1875b3310906b10"
+        },
+        {
+          "page": 3,
+          "native_sha256": "eab9fd425902b17db59d4b4b7ad2ca870220b594220e9c823be8e0e4f422c8ff",
+          "wasm_raw_sha256": "6c3db47e2920d145e1910e40b1b7095d0f00a82e6163321a60e36f6e42b947d4",
+          "wasm_with_font_policy_sha256": "36c4d678b1dfe294555d1a43a4dc2b434bfd698ad77fb0db4abcde728c62cba2"
+        },
+        {
+          "page": 4,
+          "native_sha256": "002b7e0cdde0182374ff0f7b815a5e04fb5b87025f0288d9434e59fd1437f2ed",
+          "wasm_raw_sha256": "1470b6fc3f6784213b056f447a13fe9c238ea2206027f45ce55a926740fde2d0",
+          "wasm_with_font_policy_sha256": "38f0021f1914c3ecec07d7802525a11b240a35da4c3566fe3951dcbd02054110"
+        },
+        {
+          "page": 5,
+          "native_sha256": "9f0e7f6afcae405d6fdee0c79e263723d878c73342cf4930096abf3db2bd4a8e",
+          "wasm_raw_sha256": "a40a40f6919971f12d931590b79e33dafd6182185f74942cf2936ae4477fd0ff",
+          "wasm_with_font_policy_sha256": "6a4296ff308c2f2ffe2960a09b67ec5fcb812cb718817112b8b2d287ce76848a"
+        },
+        {
+          "page": 6,
+          "native_sha256": "87f4043c11ba895120b3d05a89f7f7ed4a5e5fdf4bd638d009316d37f9a7730e",
+          "wasm_raw_sha256": "b45f2068d10599b88d77d0eeb2a432a8d9a76da92e3f46ae111d232cfad06bf2",
+          "wasm_with_font_policy_sha256": "d0497f39e7eb757572779f7697dea78609ae0912dd7e46ddc4743749219f6cd4"
+        },
+        {
+          "page": 7,
+          "native_sha256": "47ade8f49cdbc3caa4127cbd0396a5298c51186cb0e3d8229e57c6e501944e9a",
+          "wasm_raw_sha256": "4af83582c99ebf90eddd37590d529ae8242acf48977d5ec2c8c605b58ed3b5ca",
+          "wasm_with_font_policy_sha256": "1ce40ff9f01eb38b00730372d4133ecb5560e015a08e0e4f62184965ef1d3073"
+        },
+        {
+          "page": 8,
+          "native_sha256": "44434fc76a5debead76dbeb83d966dae7a035c7d8fdfde0431f6a50f9843b614",
+          "wasm_raw_sha256": "7b6ec402eff100350e5854b8db1ddd7028e4c5269d57477563b26dea6883ac78",
+          "wasm_with_font_policy_sha256": "5e5fdd3677f5136f67b54073ccf0ae14eb28c2990aa69843b4c0db75ba21f38c"
+        },
+        {
+          "page": 9,
+          "native_sha256": "cf764e7ebc767d6e924662a53e5ee9f4640e3b9b5d10a6f42d45b170217781ed",
+          "wasm_raw_sha256": "1488e1669be1639281d0df17dcbab29c6e03fef3f66da0deb801bcc918ba8514",
+          "wasm_with_font_policy_sha256": "1110b5342dc366ab02921fa0c00c354b4c93f80ff05ba6b1d8399d9116e9cb26"
+        },
+        {
+          "page": 10,
+          "native_sha256": "3219ed03982f24f3e066def21afff4b7514fa0bbd271cc9364f102567b805f81",
+          "wasm_raw_sha256": "04c9db822a25b7ebf79e2023c496e67a41d1460781d05c23328c5fb08325a55c",
+          "wasm_with_font_policy_sha256": "17ca5b6a8b57808668486b82444beadb37ce6fd75cec3ac995143bd06b96fca7"
+        },
+        {
+          "page": 11,
+          "native_sha256": "f3743bc8c67580fd9233b9e63c64cac7627d515a8ae74250532365b7407ef848",
+          "wasm_raw_sha256": "ae9b5a77a190513a471219c5b994ec63f6007363e25c7922d914b94521f54fbc",
+          "wasm_with_font_policy_sha256": "1f4a64ffcfa1eb20804de40cd5801f61e8506abf5af832876a8ffc2f22b84b0c"
+        },
+        {
+          "page": 12,
+          "native_sha256": "bbb22a6bc141d94bc82e4c2bb505513fc9962e33d8526501241c6385cb4a8fdf",
+          "wasm_raw_sha256": "4cda40f2ef2e892ba5da48f3d20d1831be53f15c9c7b7fcb50082d64ae820b1b",
+          "wasm_with_font_policy_sha256": "a2e0384f2bb81df891768fa96dcc901c470989a533a4a818095231e5fe7c6b9d"
+        },
+        {
+          "page": 13,
+          "native_sha256": "957c7450d600a5e092d345e5c082f75fdc30db3fd7f8de0b2093fa0b3f156385",
+          "wasm_raw_sha256": "7f7bb980034105bdaa6ac9a6ce8665c8b0aea644a963d23ce25625368083f591",
+          "wasm_with_font_policy_sha256": "627ab4d0e327feae1d1f167dec546ce4031b19c55450b2bcd94b8c1fd2fa794d"
+        },
+        {
+          "page": 14,
+          "native_sha256": "46927608e7f242efdaf4646d5ebb2541183cc8306c8c024f39f3d6f88d12ec7e",
+          "wasm_raw_sha256": "e9f5ebb368687e277fe7207ce8d035343443ae6c862a7e56ee6b38f99bfbc980",
+          "wasm_with_font_policy_sha256": "d6c4855c853b683e909a3a12bf9e93e59c8192675d543202886d00ad455ad37e"
+        },
+        {
+          "page": 15,
+          "native_sha256": "49a90756e879ba609745ea8b429de7697631283c96969c82fbc59e0dbbb63052",
+          "wasm_raw_sha256": "2b2e8d5f796c2f05a9dc8155efa040d3205c24b152fdbdd3def7d955e2b5f987",
+          "wasm_with_font_policy_sha256": "ac61c390ce60e17f98e3acd30c1b5a6724502dd83e08749042d0302aefb82cee"
+        },
+        {
+          "page": 16,
+          "native_sha256": "2277425d136de9c24245d431b530198bbf69451ccfa9abd2c25e3e28024e8e33",
+          "wasm_raw_sha256": "2bb094a29f3fea038f6b1ef7aa5bf09535d4ec9e0944e28e87f1196fd8d2c348",
+          "wasm_with_font_policy_sha256": "20cf9e4f9e77aff28791befaeabbba8ee5f5a178cf1804c087ed4af46afaee45"
+        },
+        {
+          "page": 17,
+          "native_sha256": "bbc9f1027bc50046f631b07dad709f40ab0e833e180b77294299efa2bc7d33ca",
+          "wasm_raw_sha256": "1494ca578ea68ede50126614f6126519efb2fa699fa3a4c636c889c50614f159",
+          "wasm_with_font_policy_sha256": "96f8d4a43aa061065217735db7549dd74ba5e5f297de3e8f05afc05643082c0e"
+        }
+      ]
+    },
+    {
+      "key": "7547b",
+      "input": "samples/issue_1133.hwp",
+      "pdf": "pdf/issue7382-regression-review/issue_1133-2020.pdf",
+      "old_folder": "stage8-native/issue1133-hwp",
+      "pages": [
+        1,
+        2,
+        3
+      ],
+      "native_changed_pages": [],
+      "native_pages": 3,
+      "wasm_vs_native_byte_different_pages": [
+        1,
+        2,
+        3
+      ],
+      "wasm_pages": 3,
+      "old_wasm_folder": "stage8-wasm/issue1133-hwp",
+      "wasm_raw_changed_pages": [],
+      "wasm_policy_changed_pages": [],
+      "native_final_min": 97.99734,
+      "native_final_below90": 0,
+      "wasm_final_min": 97.99734,
+      "wasm_final_below90": 0,
+      "input_sha256": "ea03105fa7fa22398f3e370d222f37213e986ecca4b9b97d2847f1bbfe998d3b",
+      "pdf_sha256": "46ca5b1abc40d9479e9eea7994b951ebb82d177ebc448cd09688170effd850ae",
+      "svg_pages": [
+        {
+          "page": 1,
+          "native_sha256": "d00aa1682ba383eaa50e211f41f25a1de7b4ccc14b2060450ec5d68ab7122b64",
+          "wasm_raw_sha256": "adfb218029915f3c78c9dad7a8ab86376677f56455315a5237a1d8ccce593ab9",
+          "wasm_with_font_policy_sha256": "2e5da214ecbc9ba7e83002f345c654617499ae79e7da87d00579960ea69089b4"
+        },
+        {
+          "page": 2,
+          "native_sha256": "de992ffd7ed238699833f1d5746e8aee2b72e40a6ebf6869c6dfc17ac395d7ad",
+          "wasm_raw_sha256": "e80bcab2b2b14442be2039dee4ea948ea3f74b7fb86492680db13892551a4fd9",
+          "wasm_with_font_policy_sha256": "dce0f1143937bb3354210543b0ca72bb82f1e36bd9ef007277c406ec63d7a4ab"
+        },
+        {
+          "page": 3,
+          "native_sha256": "b6d5cb05b7885dbffdc6714b4123070ef91f4fc5bcece466f2a693d86a1ae039",
+          "wasm_raw_sha256": "f0dbce1ad946ae52fcaf63a9a39214ff6e81f0a0889a1ac05b5a5bd19be5b8f4",
+          "wasm_with_font_policy_sha256": "b1067e5e0fff38e7d5e1ac191819b888d4051e3b3dede3a3d830ba03b2873ea4"
+        }
+      ]
+    },
+    {
+      "key": "7547c",
+      "input": "samples/hwpx/issue_1133.hwpx",
+      "pdf": "pdf/hwpx/issue_1133.pdf",
+      "old_folder": "stage8-native/issue1133-hwpx",
+      "pages": [
+        1,
+        2,
+        3
+      ],
+      "native_changed_pages": [],
+      "native_pages": 3,
+      "wasm_vs_native_byte_different_pages": [
+        1,
+        2,
+        3
+      ],
+      "wasm_pages": 3,
+      "old_wasm_folder": "stage8-wasm/issue1133-hwpx",
+      "wasm_raw_changed_pages": [],
+      "wasm_policy_changed_pages": [],
+      "native_final_min": 98.00366,
+      "native_final_below90": 0,
+      "wasm_final_min": 98.00366,
+      "wasm_final_below90": 0,
+      "input_sha256": "2cf479d94a70d2a834ae7bc1f5ec5fa3d7ff895792cded48d0bf92ca19341bee",
+      "pdf_sha256": "ca066fdc5cda9fd8c47c9a29ba9a546e70c6acdaa96df4d6c66e0b8e02cdbc45",
+      "svg_pages": [
+        {
+          "page": 1,
+          "native_sha256": "d290a0ac563c7798407e22b19f68cc5d1b41a9c403bb88b2312b846efece5fc1",
+          "wasm_raw_sha256": "c83a04ac35a223092cf5bd7de6997311a3e8bfdda1936f382ab3e4d523625911",
+          "wasm_with_font_policy_sha256": "e8f908f0f9c5329e2d0c05bfbc931b5036a73f104bf4236c718c93cec1eb3101"
+        },
+        {
+          "page": 2,
+          "native_sha256": "de992ffd7ed238699833f1d5746e8aee2b72e40a6ebf6869c6dfc17ac395d7ad",
+          "wasm_raw_sha256": "e80bcab2b2b14442be2039dee4ea948ea3f74b7fb86492680db13892551a4fd9",
+          "wasm_with_font_policy_sha256": "dce0f1143937bb3354210543b0ca72bb82f1e36bd9ef007277c406ec63d7a4ab"
+        },
+        {
+          "page": 3,
+          "native_sha256": "b6d5cb05b7885dbffdc6714b4123070ef91f4fc5bcece466f2a693d86a1ae039",
+          "wasm_raw_sha256": "f0dbce1ad946ae52fcaf63a9a39214ff6e81f0a0889a1ac05b5a5bd19be5b8f4",
+          "wasm_with_font_policy_sha256": "b1067e5e0fff38e7d5e1ac191819b888d4051e3b3dede3a3d830ba03b2873ea4"
+        }
+      ]
+    },
+    {
+      "key": "7546a",
+      "input": "samples/issue6639/rhwp-table-cell-minimal-repro.hwp",
+      "pdf": "pdf/issue6639/issue6639-original-160-2020.pdf",
+      "old_folder": "stage10-7546-native/issue6639-original",
+      "pages": [
+        1
+      ],
+      "native_changed_pages": [],
+      "native_pages": 1,
+      "wasm_vs_native_byte_different_pages": [
+        1
+      ],
+      "wasm_pages": 1,
+      "old_wasm_folder": "stage10-7546-wasm/issue6639-original",
+      "wasm_raw_changed_pages": [],
+      "wasm_policy_changed_pages": [],
+      "native_final_min": 99.78048,
+      "native_final_below90": 0,
+      "wasm_final_min": 99.78048,
+      "wasm_final_below90": 0,
+      "input_sha256": "983df661a2316881457ee4604c3084895bd4f6b350df4953c6c53cca8c162801",
+      "pdf_sha256": "ebd1cd8ef64741c648211db9174cae7118e59fcbc49fba39b57ab5c63b2e9bc0",
+      "svg_pages": [
+        {
+          "page": 1,
+          "native_sha256": "1413ee3410ecff4b540a1f5708657df18d1cee39b01beda5b56075d75a0f97f4",
+          "wasm_raw_sha256": "cc6ddfff64406d1cf3e1477198cba0da83012ab0a0801696c83c8fb2aaf6834d",
+          "wasm_with_font_policy_sha256": "17777f776c45a92795cd053f8f320854ebe274ab7512b47f976bf39eb89c0659"
+        }
+      ]
+    },
+    {
+      "key": "7546b",
+      "input": "samples/issue6639/issue6639-hancom-160.hwpx",
+      "pdf": "pdf/issue6639/issue6639-original-160-2020.pdf",
+      "old_folder": "stage10-7546-native/issue6639-hancom",
+      "pages": [
+        1
+      ],
+      "native_changed_pages": [],
+      "native_pages": 1,
+      "wasm_vs_native_byte_different_pages": [
+        1
+      ],
+      "wasm_pages": 1,
+      "old_wasm_folder": "stage10-7546-wasm/issue6639-hancom",
+      "wasm_raw_changed_pages": [],
+      "wasm_policy_changed_pages": [],
+      "native_final_min": 99.78048,
+      "native_final_below90": 0,
+      "wasm_final_min": 99.78048,
+      "wasm_final_below90": 0,
+      "input_sha256": "a9ece196dfdeee718b04c95494b0f4868cfe5eb58b3e61cd53df371e7d57504b",
+      "pdf_sha256": "ebd1cd8ef64741c648211db9174cae7118e59fcbc49fba39b57ab5c63b2e9bc0",
+      "svg_pages": [
+        {
+          "page": 1,
+          "native_sha256": "7e258d167ba4ba8e5aea23b2a9be53de151e31deb49e50802269755f7a0549f4",
+          "wasm_raw_sha256": "c01c2d904dcc8540b89b051abbeea9ad024d8894239e7098c4660a28d60b8a57",
+          "wasm_with_font_policy_sha256": "07d5d88e4891035b83cf9861ce90563751520f1dedbc62bea9fe06fbc475e729"
+        }
+      ]
+    },
+    {
+      "key": "7549",
+      "input": "samples/anchor_char_line_height/anchor_char_height.hwpx",
+      "pdf": "pdf/anchor_char_line_height/anchor_char_height-2020.pdf",
+      "old_folder": "stage11-7549-native/anchor-char",
+      "pages": [
+        1
+      ],
+      "native_changed_pages": [],
+      "native_pages": 1,
+      "wasm_vs_native_byte_different_pages": [
+        1
+      ],
+      "wasm_pages": 1,
+      "old_wasm_folder": "stage11-7549-wasm/anchor-char",
+      "wasm_raw_changed_pages": [],
+      "wasm_policy_changed_pages": [],
+      "native_final_min": 99.79652,
+      "native_final_below90": 0,
+      "wasm_final_min": 99.79652,
+      "wasm_final_below90": 0,
+      "input_sha256": "e33ebcbe83ac24768367d4e4ef3d1d06c9f315075283a87ecf2342f39bb7517e",
+      "pdf_sha256": "c6c0d63a1cb7276ea7e70b9b651d8664e27c6d0c09469a3b84c9b582d2ae565a",
+      "svg_pages": [
+        {
+          "page": 1,
+          "native_sha256": "f534965399434f94becd67bb8c3829305449d1e6a9b6d8ac8fe265700c72b22e",
+          "wasm_raw_sha256": "463875cad98776d5eed39f59c124cda81451de8e3ec64d5d5a9aaf82cdca900d",
+          "wasm_with_font_policy_sha256": "0f05db1cabe478fb74b266506cf6bdb7dede8a763be39123cd4893d0d7021f60"
+        }
+      ]
+    },
+    {
+      "key": "7564",
+      "input": "samples/page_anchored_square/page_anchored_square.hwp",
+      "pdf": "pdf/page_anchored_square/page_anchored_square-2020.pdf",
+      "old_folder": "stage12-7564-native/page-square",
+      "pages": [
+        1
+      ],
+      "native_changed_pages": [],
+      "native_pages": 1,
+      "wasm_vs_native_byte_different_pages": [
+        1
+      ],
+      "wasm_pages": 1,
+      "old_wasm_folder": "stage12-7564-wasm/page-square",
+      "wasm_raw_changed_pages": [],
+      "wasm_policy_changed_pages": [],
+      "native_final_min": 99.87139,
+      "native_final_below90": 0,
+      "wasm_final_min": 99.87139,
+      "wasm_final_below90": 0,
+      "input_sha256": "36571e1991a5fdb9f0646284ab92a47db2e9a697e70bd2ff15d1bce1b222936b",
+      "pdf_sha256": "736a7b58e5ba418b05bddbf0f154f683e3c4c16a0444a70059564084c82a0af7",
+      "svg_pages": [
+        {
+          "page": 1,
+          "native_sha256": "3337a51f702b226577facb5432c5e54858c9d8b5064e05f8a8664e10df714b86",
+          "wasm_raw_sha256": "7f3771d07acf2d93480b702063017d327a26f342a7151973ae1b5e1324fa53b3",
+          "wasm_with_font_policy_sha256": "a4c59b84763045b1de9ab9b8a75682f0e58da1621580562567813d53510dfe34"
+        }
+      ]
+    },
+    {
+      "key": "7557a",
+      "input": "samples/21_언어_기출_편집가능본.hwp",
+      "pdf": "pdf/21_언어_기출_편집가능본-2022.pdf",
+      "old_folder": "stage13-7557-native/square-lane",
+      "pages": [
+        14
+      ],
+      "native_changed_pages": [],
+      "native_pages": 15,
+      "wasm_vs_native_byte_different_pages": [
+        14
+      ],
+      "wasm_pages": 15,
+      "old_wasm_folder": "stage13-7557-wasm/square-lane",
+      "wasm_raw_changed_pages": [],
+      "wasm_policy_changed_pages": [],
+      "native_final_min": 98.67045,
+      "native_final_below90": 0,
+      "wasm_final_min": 98.67045,
+      "wasm_final_below90": 0,
+      "input_sha256": "905454045ca2e236839a7cab59750678116d08af3db31dbf846819af355b8d15",
+      "pdf_sha256": "f2d858d7974393661d91a658e6b384b951114ef52783379f426a963effd97b72",
+      "svg_pages": [
+        {
+          "page": 14,
+          "native_sha256": "98c9e591f236376620d777a616edd90ffad9709024f74817bc49fc84a51e7fc4",
+          "wasm_raw_sha256": "8508237f22fe031dc030c65ae7ebeaec6eeed7b18229e361dfeda5c8ae4df373",
+          "wasm_with_font_policy_sha256": "c04a9ab80be680c98ffd7ed5cb3f504afd109a62daa9fd3bea4e865841ee55af"
+        }
+      ]
+    },
+    {
+      "key": "7557b",
+      "input": "samples/task1725/text_footnote_tail_overpagination.hwp",
+      "pdf": "pdf/task1725/text_footnote_tail_overpagination-hwp-2024.pdf",
+      "old_folder": "stage13-7557-control-native/footnote-lane",
+      "pages": [
+        201
+      ],
+      "native_changed_pages": [],
+      "native_pages": 242,
+      "wasm_vs_native_byte_different_pages": [
+        201
+      ],
+      "wasm_pages": 242,
+      "old_wasm_folder": "stage13-7557-control-wasm/footnote-lane",
+      "wasm_raw_changed_pages": [],
+      "wasm_policy_changed_pages": [],
+      "native_final_min": 97.6543,
+      "native_final_below90": 0,
+      "wasm_final_min": 97.6543,
+      "wasm_final_below90": 0,
+      "input_sha256": "d335c26cbcd57b157c929ed36596d95a6676bea5624348baae3bff3b55a705d9",
+      "pdf_sha256": "03ddf66494ebd1b25cfe49344039f0c6e324a0a837d3d4dce9f26bc14141e8af",
+      "svg_pages": [
+        {
+          "page": 201,
+          "native_sha256": "eb359edb14e1d1b4588c6bb8819ebb0a6900d59f0320b399c067b01ad5e3f894",
+          "wasm_raw_sha256": "153dda310eb4ec817dc62761204e7518e4efb34b921073d3b13aa4514524f02b",
+          "wasm_with_font_policy_sha256": "8250217bc85efd0cd75bdf17dc2a0d20e9718c2531505c5a5b56a23efb30a67e"
+        }
+      ]
+    },
+    {
+      "key": "7551",
+      "input": "samples/hwpx_sample2.hwp",
+      "pdf": "pdf/hwpx_sample2-2020.pdf",
+      "old_folder": "stage14-7551-native/nested-picture",
+      "pages": [
+        19
+      ],
+      "native_changed_pages": [],
+      "native_pages": 29,
+      "wasm_vs_native_byte_different_pages": [
+        19
+      ],
+      "wasm_pages": 29,
+      "old_wasm_folder": "stage14-7551-wasm/nested-picture",
+      "wasm_raw_changed_pages": [],
+      "wasm_policy_changed_pages": [
+        19
+      ],
+      "native_final_min": 99.68937,
+      "native_final_below90": 0,
+      "wasm_final_min": 99.68937,
+      "wasm_final_below90": 0,
+      "input_sha256": "ca66d521d070ac8442e09fd3f283e17611eb9efb45eb4bf6c3a8f65e604f6b5f",
+      "pdf_sha256": "3d792e4116183a9cbf9f31b6abe561d040565f2e16af30ab57eb449732f99c78",
+      "svg_pages": [
+        {
+          "page": 19,
+          "native_sha256": "e93dffd99e2f43cb40fdbe828e5ce0d5fb38a569fea1b0522532733075f5e9a2",
+          "wasm_raw_sha256": "a5684211d65b9cbbf9ec62d701d9eaa7a96c5aa7f80c78b0b751f5fca9e93cf6",
+          "wasm_with_font_policy_sha256": "e7ace954ded05b7b731133dc4afd5e9466a76f50915aa003b3920c6abeaac327"
+        }
+      ]
+    },
+    {
+      "key": "7545a",
+      "input": "samples/80168_regulatory_analysis.hwp",
+      "pdf": "pdf/80168_regulatory_analysis-hwp-2024.pdf",
+      "old_folder": "stage17-verified-native/grid-hwp",
+      "pages": [
+        121
+      ],
+      "native_changed_pages": [],
+      "native_pages": 157,
+      "wasm_vs_native_byte_different_pages": [
+        121
+      ],
+      "wasm_pages": 157,
+      "old_wasm_folder": "stage17-verified-wasm/grid-hwp",
+      "wasm_raw_changed_pages": [],
+      "wasm_policy_changed_pages": [
+        121
+      ],
+      "native_final_min": 96.53486,
+      "native_final_below90": 0,
+      "wasm_final_min": 96.53486,
+      "wasm_final_below90": 0,
+      "input_sha256": "c8ad10fe9f07be5119cd804278017aefa46e555bbee4f05f0f5132fe4f591a22",
+      "pdf_sha256": "b233df7098547df43455f49c13ba5b63f1f06113c853a4773f86a94d6b34a982",
+      "svg_pages": [
+        {
+          "page": 121,
+          "native_sha256": "2a8a13a6f49641d3ea6852f7b08c8ecaf66d8b8dfd95344c6913077af1286759",
+          "wasm_raw_sha256": "3a89a2c1cdc05101f70861ff603dbff5369a3f0ff2ba3b63ac3ac2e79b7e4e80",
+          "wasm_with_font_policy_sha256": "92ce41ff7aecb691b8bd213af8c3849de7d6d89a00b40cb4f13ef4cac8803273"
+        }
+      ]
+    },
+    {
+      "key": "7545b",
+      "input": "samples/issue1891/80168_regulatory_analysis.hwpx",
+      "pdf": "pdf/issue1891/80168_regulatory_analysis-hwpx-2020.pdf",
+      "old_folder": "stage17-verified-native/grid-hwpx",
+      "pages": [
+        120,
+        121
+      ],
+      "native_changed_pages": [],
+      "native_pages": 156,
+      "wasm_vs_native_byte_different_pages": [
+        120,
+        121
+      ],
+      "wasm_pages": 156,
+      "old_wasm_folder": "stage17-verified-wasm/grid-hwpx",
+      "wasm_raw_changed_pages": [],
+      "wasm_policy_changed_pages": [
+        120,
+        121
+      ],
+      "native_final_min": 93.93579,
+      "native_final_below90": 0,
+      "wasm_final_min": 93.93579,
+      "wasm_final_below90": 0,
+      "input_sha256": "1e00b54e1139515258260a657217e0b3baa0b1b652a2cd28dd4b9bc48aa262fe",
+      "pdf_sha256": "88996e41ed3e68b15a3cd0eb4eda98845d34225c5dcd2ca547c80ab6e1242744",
+      "svg_pages": [
+        {
+          "page": 120,
+          "native_sha256": "f63b79093a00e42e9203f6b5f2c7538bd86f3ed7d4d286ca38ecc77b371fb0e8",
+          "wasm_raw_sha256": "5eab8404c2ea84ff3f52d671c8449625e15b2edcdcef0f858427a71be4707a4e",
+          "wasm_with_font_policy_sha256": "8786449fe60982aa4b886fde37df78354b73e3219e1ba63d05959d51959d3916"
+        },
+        {
+          "page": 121,
+          "native_sha256": "f6e0eef4b964fd020d496b48559d7aefdaa06f995b3f8c0542f4ce9c7b05a8e9",
+          "wasm_raw_sha256": "3cdbc288d53eee0c688a32a45166084f4622220c58cd62acd29f93c629afd48c",
+          "wasm_with_font_policy_sha256": "b0b3c794e63c218cae8e3c09c36d9c3e4cf1a8c9041ca674e0794155c281daad"
+        }
+      ]
+    },
+    {
+      "key": "7550a",
+      "input": "samples/hwp3-sample10-hwpx.hwpx",
+      "pdf": "output/pr-review/planet6897-20261004/stage19-7550/hwp3-sample10-joined-2024.pdf",
+      "old_folder": "stage19-7550/native/hft-hwpx",
+      "pages": [
+        25,
+        80,
+        90,
+        195,
+        196,
+        197,
+        200,
+        232,
+        244,
+        276,
+        300,
+        337,
+        338,
+        339,
+        340,
+        341,
+        342,
+        343,
+        419,
+        487,
+        488,
+        489,
+        490,
+        491,
+        492,
+        510,
+        577,
+        653,
+        680
+      ],
+      "native_changed_pages": [],
+      "native_pages": 763,
+      "wasm_vs_native_byte_different_pages": [
+        25,
+        80,
+        90,
+        195,
+        196,
+        197,
+        200,
+        232,
+        244,
+        276,
+        300,
+        337,
+        338,
+        339,
+        340,
+        341,
+        342,
+        343,
+        419,
+        487,
+        488,
+        489,
+        490,
+        491,
+        492,
+        510,
+        577,
+        653,
+        680
+      ],
+      "wasm_pages": 763,
+      "old_wasm_folder": "stage19-7550/wasm/hft-hwpx",
+      "wasm_raw_changed_pages": [],
+      "wasm_policy_changed_pages": [
+        196
+      ],
+      "native_final_min": 92.22769,
+      "native_final_below90": 0,
+      "wasm_final_min": 92.22769,
+      "wasm_final_below90": 0,
+      "input_sha256": "3395e19bebea8b6689f383df1f4ea1ddb253dee91c4320392cc40e90e2e4f191",
+      "pdf_sha256": "acb8578b2e5b123e852085b401f25b14a9dbca68b6e884e96a65e92aa7b41154",
+      "svg_pages": [
+        {
+          "page": 25,
+          "native_sha256": "2c5958a0fe945011a1be9688f857fa93c2045888d6cf245c108f2a4dc150a5a2",
+          "wasm_raw_sha256": "1e7b982293e95f9b0da65ccb7e294fe247ec2899fd3cf1a894915c2b3f5ae4d0",
+          "wasm_with_font_policy_sha256": "7973ad26350f3ecb8ca637c5fc42fab2bcb711ce4ae866a54803420c93f4e870"
+        },
+        {
+          "page": 80,
+          "native_sha256": "4d7fb0211e1a2f84d649057ceeefd13f0c50d784c257348e508703769a4535e2",
+          "wasm_raw_sha256": "dc987bc0012193c4459d9e6764e4f1e7e7f00a011f17f87f097ee6a50a42a94c",
+          "wasm_with_font_policy_sha256": "4743f6275ceee0ad30575084f5f45f2eb7013fda3c8b4a25e0af23e63af3d4fa"
+        },
+        {
+          "page": 90,
+          "native_sha256": "a4a048a5e309eddba0f947f832e111adeb25b09859a9282b2148b156b38e6fa5",
+          "wasm_raw_sha256": "d1bd904d7f4ccd57b90f3a775a720ddd657c484a8b071d84c18f11c8c655d866",
+          "wasm_with_font_policy_sha256": "ffd1bbf7a07db0cf76ec6aec359564cf4346113e07ef16b2a5be255febb73636"
+        },
+        {
+          "page": 195,
+          "native_sha256": "b0e530faac9b7f11d5fb1528bfdd057414807d1213f035288776ce9ce8e4984e",
+          "wasm_raw_sha256": "0039374a53a6a7c77243aafaa91524dc7b601b7d70f329777fdb72a542a89074",
+          "wasm_with_font_policy_sha256": "fcba0bbc949e84211c1dab6ce93c3756fed591f4f5c96806b02f0b56be56ea0c"
+        },
+        {
+          "page": 196,
+          "native_sha256": "ae6e612c1acf5316f46abe15a82e3e16ba59ee6ee903a52cbcf246ae8314d644",
+          "wasm_raw_sha256": "32556cf39cc1ce8570a2daf262cfab38e28843182922edb6678e3e4f2bb9328a",
+          "wasm_with_font_policy_sha256": "3acdfb34b6e22b56fc845e33b65684103737301468387686205880f56bdc5c5b"
+        },
+        {
+          "page": 197,
+          "native_sha256": "2cb47844a4013d5af756660f04f0f912866cf7aefa0527978e24c167993849f4",
+          "wasm_raw_sha256": "b84ffc811d5c2805464efc4db8c77e8ed2d759d79cf6fc7fba78574365c3c186",
+          "wasm_with_font_policy_sha256": "64ff36d8c069990926ac848502c2b5a48dbccd292e409ff3537d6f72496a04a0"
+        },
+        {
+          "page": 200,
+          "native_sha256": "0de905763ccea75c7a4c9e76d908d58c312d125e5905f9fac2bf3e27e8900315",
+          "wasm_raw_sha256": "301df9b10d4c6e1c88881a18471dd2e7efb2ec6054939bdcb3b6c4f2f7907ed6",
+          "wasm_with_font_policy_sha256": "714d0466d72a78f15360b9d55495b52efd1843508b7065039cb420047ebc1a8c"
+        },
+        {
+          "page": 232,
+          "native_sha256": "a0b79d3c0ec805f59c124ca6ef1899154d8f41c07cb91b1f5c2a884312372f4d",
+          "wasm_raw_sha256": "50a8619e5c0b82a2415075832716769f0fb99e1ad4256f66f21ef61de634800d",
+          "wasm_with_font_policy_sha256": "a86b0d6eb11220ab6ae144f8bfb6ae53cd4c9860e843e73dea346ad4de65acb2"
+        },
+        {
+          "page": 244,
+          "native_sha256": "1304f314291c399fee14a95c6ef3ef5fdd9b2f556958399ddaf236b93874bca6",
+          "wasm_raw_sha256": "6db10a70bc6029a8e5100157ddc612e65ba8f28506710a616f1697fda9d64b0b",
+          "wasm_with_font_policy_sha256": "d2b1dde0b566efb638c916a2da19316ef06058e16ec2902633b22a2f60e081db"
+        },
+        {
+          "page": 276,
+          "native_sha256": "3fa39345ad057246d2e9dd06c2d0f94dfeb7a7ea0a765fd304b366f4ecbf0ce1",
+          "wasm_raw_sha256": "50c89a74e8459fc3d7b07d634de3f0af838d5ce8a24e5e6c24012394bff502fd",
+          "wasm_with_font_policy_sha256": "54bf3318e86786526b765b413a3d95d55d3fe19e4e2dbac82bcb17d2d1748575"
+        },
+        {
+          "page": 300,
+          "native_sha256": "1fcade5288a4ace8601873613c81ba502dde957688578c7139b6fce7b5ba6d2d",
+          "wasm_raw_sha256": "ca4f7ac454fad91909fd2789d191db0817514a36498baf268a30c9bece29398e",
+          "wasm_with_font_policy_sha256": "9e695a656e56c0339f4958488d05c51d40ceaa32bdf227d704f5b57d18eff37f"
+        },
+        {
+          "page": 337,
+          "native_sha256": "a526236ee237110b140741eaa17e007547e0776f504adfdbd15c330e70899004",
+          "wasm_raw_sha256": "c54e785488f396aadfaa47a0a41d90cc17ecaa25a8fb6e90bf957ab64b82d854",
+          "wasm_with_font_policy_sha256": "69de51ee3f90d424dd7f0ab4bc2f1637328c46613c469e6478dee1991efbd23f"
+        },
+        {
+          "page": 338,
+          "native_sha256": "e23b8aa4be2c9963696aec12023986aa98fc8fd9bdb7bcaaa4b84dccafb14463",
+          "wasm_raw_sha256": "71f147ad8ff700b86905257c7b2e875a5d75d0e386f23eac8144e5e42f669e05",
+          "wasm_with_font_policy_sha256": "3f43877760345617d01deebe69775a15a0e3c5c93b177b6ea79fe0762a17a244"
+        },
+        {
+          "page": 339,
+          "native_sha256": "66e6f239ea18eeb643868680500526c3054d31d707e4399eb38a06d1f795998b",
+          "wasm_raw_sha256": "021ab9a86f75ea411a0b153ade7c1c553ec1694e9f7890b440f6aa26beafc29e",
+          "wasm_with_font_policy_sha256": "9a6c274fe7927c1fcfaed3a6a99848544ebdd1c3001e70f10bda3143c55fa34b"
+        },
+        {
+          "page": 340,
+          "native_sha256": "a6db3f52f9f18fff2cc7f41505e762aba9d982485fd56d8a6fe4a99594193f08",
+          "wasm_raw_sha256": "9d33ef9d3f70ac134ba2c86afbcc6ab6a72d6e2b0698f44af4493c9a8f1887d4",
+          "wasm_with_font_policy_sha256": "1f63df8efbe6bfe128881dbbc0842e3d2578d141cd1209de92787ef47ce5d851"
+        },
+        {
+          "page": 341,
+          "native_sha256": "243057461228587ccc59cce50b5a8aa4fc4df051d893bbc3fdda01cae6b9a1c5",
+          "wasm_raw_sha256": "39f3c84aa59c5145836678501e3191f450a0cbe8ba5165e6faf24f6f85c019b7",
+          "wasm_with_font_policy_sha256": "ccb34ea3b723d4fb931772b5baea3a15120a61d53a5c9def3d790aa34ece5e06"
+        },
+        {
+          "page": 342,
+          "native_sha256": "12dac1d208d99d890f3c76d57912a23345ea06ca2915d81ec2ee7c03126c4f42",
+          "wasm_raw_sha256": "d08ba2e8a3aea752a3ec5051d7ce92ac0b79fb6b0d3d1d72b6d01a4582feb328",
+          "wasm_with_font_policy_sha256": "6b2db7e5d55c63f2364dbd31211c4b94efba16491215963fe5332e14e9ed3020"
+        },
+        {
+          "page": 343,
+          "native_sha256": "15301436321a2fd062b900fd582a6d862b05fa929bdc735a79b8c889b6ac458b",
+          "wasm_raw_sha256": "0df0b757d1add33f87d5ce34a7442c4d0ace3ca35298a1a999115b430355b02a",
+          "wasm_with_font_policy_sha256": "bb084398ae8495ede737e3ec2104b5f0ca208a81731117e2bd225e83403ae293"
+        },
+        {
+          "page": 419,
+          "native_sha256": "2b0739d96d8b00769e76845104be38711e718b34e64b1d868e03dec6c9945a61",
+          "wasm_raw_sha256": "7ad9ce2a1a755de91edab3c8c334068721afe77eb0ad066ed0d58fcfd307d387",
+          "wasm_with_font_policy_sha256": "c5fd9f87dffdd9e48054850126f0d056f3428f9e0a08746fbe4fcaee23855be2"
+        },
+        {
+          "page": 487,
+          "native_sha256": "dbf9d8475840f0406822d876eea541dd6467a855c42d42d1d460b53dc2b5fe5a",
+          "wasm_raw_sha256": "4209caaf565d1fcf90e3791cee39af285447de69809ffdb04e23c5bfd7295477",
+          "wasm_with_font_policy_sha256": "bc94c930cfb2b083a7ec723e425926a2e7369a56c0eb18895710ded40eb0c9d5"
+        },
+        {
+          "page": 488,
+          "native_sha256": "78ac08b44b6231e1bc2d8263e3e231505b1348562ea81e72044426f7e5691c4e",
+          "wasm_raw_sha256": "3b25da00e9a86e0dbf4b42bc482348645945d25a43fdd5af5d817dbd53200be5",
+          "wasm_with_font_policy_sha256": "d99b2d8259bb6d948b297c3f83de65640fd871a7f4ce6e6d8ac3f885feb840fd"
+        },
+        {
+          "page": 489,
+          "native_sha256": "66558a0226e5e4eeac14c5b583071bdbd76f963d6d41e1b098832e8b891ab18a",
+          "wasm_raw_sha256": "3ecd834b5341731e7d9c4bda744bbbc3cb473fd9a8a2f938b7cd8b5d413cb1a3",
+          "wasm_with_font_policy_sha256": "46103b7e3ee0937df2f37f39f999676e6087ab5a34aa2f26ca57cfa3e0997596"
+        },
+        {
+          "page": 490,
+          "native_sha256": "e5507df337c2e858756990d60e8d43b70ea277c279a88e66da711590e149119c",
+          "wasm_raw_sha256": "142a99754ba10be38fb1d8311242ff2ebf9928bd3d9f2fa31b1fb00b47e165fc",
+          "wasm_with_font_policy_sha256": "e70d72c5d704775df034f412800729b9139f56ce25eb2895275dd2ee9574317f"
+        },
+        {
+          "page": 491,
+          "native_sha256": "9f86b8d32cb7e7b58d20f5aad6b38e44fa21aabe960b7de4e748833065a633b6",
+          "wasm_raw_sha256": "d92ff623b2ed3ebfe2f8f93fa37c17cdf1dc5cc62859f33ceb04b6720375d1ca",
+          "wasm_with_font_policy_sha256": "935b08ce144a337708976ca58de445e033735ee3f3963b95adc1d28e89aa7a25"
+        },
+        {
+          "page": 492,
+          "native_sha256": "47f48980a7f9b30c5091f06290401923c522022c2672b0083f2bfbfe3665925f",
+          "wasm_raw_sha256": "ee7dc8ef7c7afe515aed445b208b68e9cd1be71fbd85a75df9fe7eee55526aa4",
+          "wasm_with_font_policy_sha256": "cc3d0c32f0b205ca1698695df6c56cd18c9632658a5371458e5bb20bea159d2e"
+        },
+        {
+          "page": 510,
+          "native_sha256": "ca495be2832ad251842d95bab0f3a02eb21b630e0c7ef73160bdbd152db8e0c7",
+          "wasm_raw_sha256": "7c8c400502f732795a8db397e2d1377d7b1f3955988e0c0d3984f3daf4073203",
+          "wasm_with_font_policy_sha256": "bd5173c5302c74016926bb3551238c682e589a6d1389c19dc527d69f0301cd6a"
+        },
+        {
+          "page": 577,
+          "native_sha256": "3e9b0a52c799928a19486441ccf1eb430b020a187e28a3b80b843eeec42520d2",
+          "wasm_raw_sha256": "15027cdb565f1d7fd51b88e72229b1f0615040d1025b59061ef6e132b92df085",
+          "wasm_with_font_policy_sha256": "b0cc04567428b96790712179d17bce761cbf89857452dd01416a145a4e96d3e4"
+        },
+        {
+          "page": 653,
+          "native_sha256": "1b3e5cbe4dca0b05888c3a80b8128c5a2f280b4e97cdcb577852392a664c98f2",
+          "wasm_raw_sha256": "85f019928b34246d7993313b3c1159a48c12955670f293c4fe1218fa25a5ebcd",
+          "wasm_with_font_policy_sha256": "2b1d886e6a741cbe18cda69b38cf4a32f6a4345ad80507fddf6c618ed55296f2"
+        },
+        {
+          "page": 680,
+          "native_sha256": "7db9174dd2d59a4b7cc024d670dd7e6345ed8bc3c9068fb3c2f3e1e8e502edb3",
+          "wasm_raw_sha256": "512251fd8a43dbfa8c077ce536c6f4d9c3e035e6d0a95ea422e7d7392432c13c",
+          "wasm_with_font_policy_sha256": "3f4a8ba30e4f853455534337387db62220a62b2f3abd26a96295d3ff446127ab"
+        }
+      ]
+    },
+    {
+      "key": "7550b",
+      "input": "samples/hwpx/exam_kor.hwpx",
+      "pdf": "pdf/exam_kor-2022.pdf",
+      "old_folder": "stage19-7550/modern-native/modern-hwpx",
+      "pages": [
+        6
+      ],
+      "native_changed_pages": [],
+      "native_pages": 20,
+      "wasm_vs_native_byte_different_pages": [
+        6
+      ],
+      "wasm_pages": 20,
+      "old_wasm_folder": "stage19-7550/modern-wasm/modern-hwpx",
+      "wasm_raw_changed_pages": [],
+      "wasm_policy_changed_pages": [],
+      "native_final_min": 98.44675,
+      "native_final_below90": 0,
+      "wasm_final_min": 98.44675,
+      "wasm_final_below90": 0,
+      "input_sha256": "c71a8991d63d084c18db1c90d2e32865b2af69cae5762b20cb554ee53a539b7c",
+      "pdf_sha256": "80fa2a520dcbd15a15c04eb6284f83bba9c8ff33a535445c5fcd5df1b9e12197",
+      "svg_pages": [
+        {
+          "page": 6,
+          "native_sha256": "1015a17b91bcc86c6a90104b8aa7f1d2c5ff14360858f1f65afc8f192b81a402",
+          "wasm_raw_sha256": "2f812b74cc3f73fea88eaeb7409e445dd8eadaeda1e4e714eca93c9bad73253a",
+          "wasm_with_font_policy_sha256": "bd7e78bfd09fe66b645d4f8cd080dd7b917c85eaa639038df0ac6badefb7f840"
+        }
+      ]
+    },
+    {
+      "key": "7554a",
+      "input": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+      "pdf": "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+      "old_folder": "stage20-7554/native/labeling",
+      "pages": [
+        88,
+        89
+      ],
+      "native_changed_pages": [],
+      "native_pages": 103,
+      "wasm_vs_native_byte_different_pages": [
+        88,
+        89
+      ],
+      "wasm_pages": 103,
+      "old_wasm_folder": "stage20-7554/wasm/labeling",
+      "wasm_raw_changed_pages": [],
+      "wasm_policy_changed_pages": [
+        88,
+        89
+      ],
+      "native_final_min": 92.67463,
+      "native_final_below90": 0,
+      "wasm_final_min": 92.67463,
+      "wasm_final_below90": 0,
+      "input_sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+      "pdf_sha256": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79",
+      "svg_pages": [
+        {
+          "page": 88,
+          "native_sha256": "edd91f3d683c6370455f192404eb923c3be8dda3b847954fd7749c1753cda595",
+          "wasm_raw_sha256": "8b6b1b5d7201dc3937231b22d7f32a2af328937b88bc63b9e38536b961ca0924",
+          "wasm_with_font_policy_sha256": "6f47ac9a9ff36175acdc0e8881db96feba3523cc8bc5f2b4810f4b7268db10c4"
+        },
+        {
+          "page": 89,
+          "native_sha256": "9d950ba89bc06e608508b2bd98f33e050620261b8c835e04892227f20922171f",
+          "wasm_raw_sha256": "801866190ccecd598bdf6d179ce8fdfe63bd2d180a8d8d258981d92eedcea269",
+          "wasm_with_font_policy_sha256": "96d6c4077104ce050ab736d0a9f9f6bd97462c1cdcb58bdd6939531e358c3dbf"
+        }
+      ]
+    },
+    {
+      "key": "7554b",
+      "input": "samples/issue2004_cell_image_stack.hwp",
+      "pdf": "pdf/issue2004_cell_image_stack-hwp-2020.pdf",
+      "old_folder": "stage20-7554/native/image-stack",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "native_changed_pages": [],
+      "native_pages": 8,
+      "wasm_vs_native_byte_different_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "wasm_pages": 8,
+      "old_wasm_folder": "stage20-7554/wasm/image-stack",
+      "wasm_raw_changed_pages": [],
+      "wasm_policy_changed_pages": [],
+      "native_final_min": 96.40794,
+      "native_final_below90": 0,
+      "wasm_final_min": 96.40794,
+      "wasm_final_below90": 0,
+      "input_sha256": "c633fd086323075ab25777d8ee10357869d037bd17c9e74d444d5b8297c40d50",
+      "pdf_sha256": "b5e2f962620d8d7cdd2ec8b10571c53fbe959eb9ce7b3428ff09a595f12fee90",
+      "svg_pages": [
+        {
+          "page": 1,
+          "native_sha256": "11d21a8bba551b5b7917786cf94ec9a12c4ec4adb27c7a256fbf78bf0533e298",
+          "wasm_raw_sha256": "8d7ac11e6be476fd45fd5ca3d7bee341d12ecbfeefda44683eba8472cbe07aa3",
+          "wasm_with_font_policy_sha256": "3be7fc3b74eee25978767b464d6723fc772fbe3f37c881d025dc9f17e92995ea"
+        },
+        {
+          "page": 2,
+          "native_sha256": "0fdb79667dfbeea3578e1613cda7829e433f128fb5261d4b646bb0d12b98c252",
+          "wasm_raw_sha256": "0e6390f01d43a5ee0f69f9c2c39f150d1a6f1de00098792055046f4dee14cefc",
+          "wasm_with_font_policy_sha256": "4bd3308083ad1a696fc75cf9e2bf05dfddb7afa004e31047e51e12370ac4b3c5"
+        },
+        {
+          "page": 3,
+          "native_sha256": "061554746283b0108b7e588c443da8c45e49e5eedd556a2312b62c67be5ea74a",
+          "wasm_raw_sha256": "556edfdb8d9fb0f4a786b355afb8585ef81cab79d3f7bd39e401a43691c1bac5",
+          "wasm_with_font_policy_sha256": "efcb713de46fd76c6e81628792d337d2a72e0a33da122fc58e90f28e6a89124a"
+        },
+        {
+          "page": 4,
+          "native_sha256": "200710763aa63096a492c3df3a2f30012d85b43accede0ce47ca2fa13827aa74",
+          "wasm_raw_sha256": "f5b3e69e9cfdcfba8dbf6495e0fc08d06c33a3124b41327152c922e6689aa864",
+          "wasm_with_font_policy_sha256": "4b495494f001c9623904617c244ec610d86dfa3429804c56e1dcefd4d2862a68"
+        },
+        {
+          "page": 5,
+          "native_sha256": "9aca2bb984524d1b9e060042e934da849c1c9b8b1a09ae5a870ef17edcd802aa",
+          "wasm_raw_sha256": "4440b220b525219b82b3857de63a0dc11562f2f17c1079c31dbdca7fef13d808",
+          "wasm_with_font_policy_sha256": "4440b220b525219b82b3857de63a0dc11562f2f17c1079c31dbdca7fef13d808"
+        },
+        {
+          "page": 6,
+          "native_sha256": "1633c31933a9315d09a8ce93af4fb25a10cf587b273b96ce4453768f98823bf7",
+          "wasm_raw_sha256": "8b2adc62f67cd816a75b0bcb06d8def031d32bef8dab0d7dcda2ec35a7e1c13b",
+          "wasm_with_font_policy_sha256": "8b2adc62f67cd816a75b0bcb06d8def031d32bef8dab0d7dcda2ec35a7e1c13b"
+        },
+        {
+          "page": 7,
+          "native_sha256": "d5bb9c01f21473cf21d7a8dd6c2aec68a95c3201c720337517b1426ff2aec05f",
+          "wasm_raw_sha256": "20ab2872ab66435a7f18fe8df2f557abc3ea6259546ba4604f305039dd765081",
+          "wasm_with_font_policy_sha256": "20ab2872ab66435a7f18fe8df2f557abc3ea6259546ba4604f305039dd765081"
+        },
+        {
+          "page": 8,
+          "native_sha256": "a4202919e0ff3750f78645d85bfd23c617b788004288eaca470b30e1bc58040e",
+          "wasm_raw_sha256": "7e6629c97837fd029c6f8ba8e623b57dcab89e4a55f90de9561237619bd289d5",
+          "wasm_with_font_policy_sha256": "7e6629c97837fd029c6f8ba8e623b57dcab89e4a55f90de9561237619bd289d5"
+        }
+      ]
+    },
+    {
+      "key": "ladder",
+      "input": "samples/task2070/hy_ladder3.hwpx",
+      "pdf": "pdf/task2070/hy-ladder3-2020.pdf",
+      "old_folder": "stage22-nextest/native/hy-ladder3",
+      "pages": [
+        1,
+        2
+      ],
+      "native_changed_pages": [],
+      "native_pages": 2,
+      "wasm_vs_native_byte_different_pages": [
+        1,
+        2
+      ],
+      "wasm_pages": 2,
+      "old_wasm_folder": "stage22-nextest/wasm/hy-ladder3",
+      "wasm_raw_changed_pages": [],
+      "wasm_policy_changed_pages": [],
+      "native_final_min": 93.1128,
+      "native_final_below90": 0,
+      "wasm_final_min": 93.1128,
+      "wasm_final_below90": 0,
+      "input_sha256": "42b120273f3f8836157617500103a852003e41c65647568354d536c0eef9da50",
+      "pdf_sha256": "8ae8ea959dd342a2b2240d781706ba2a72e93474c8d0d7394d0da9bf819e23db",
+      "svg_pages": [
+        {
+          "page": 1,
+          "native_sha256": "72fb00a9ec816958b1040c619bf67fd610be19847cd0c5a1acb89b89f4fbe68d",
+          "wasm_raw_sha256": "721d4c1ed1a3c20cfc7a7ce3d1de004941f02b61bc2857154b2ece5899c19fec",
+          "wasm_with_font_policy_sha256": "410cbf4ceec8bc4ef246f54fba479f89ab3d51b59f1a02f2efb5df18e8c7df61"
+        },
+        {
+          "page": 2,
+          "native_sha256": "858eadcc0a9eb8b8ce15ea439c425840680e498bac28196b7aa52e50429c69dc",
+          "wasm_raw_sha256": "9db1125c5930a77323d71d96855076f2c907f0c4617a8e13fa4b37c3a7903131",
+          "wasm_with_font_policy_sha256": "a9df4ee48bcb5d2c3dd2a34aaf3c0189245c821dc327079fa9fe104c4496e7fb"
+        }
+      ]
+    }
+  ]
+}

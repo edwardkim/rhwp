@@ -19,7 +19,7 @@ REF = SKILL / "references"
 EX = SKILL / "examples"
 FIXT = SKILL / "fixtures"
 GEN = REF / "_gen_pack.py"
-WORKING = REPO / "mydocs" / "working" / "agent_surface_skill.md"
+WORKING = REPO / "mydocs" / "working" / "archives" / "agent_surface_skill.md"
 PLAYBOOK = REPO / "mydocs" / "manual" / "agent_surface_playbook.md"
 
 HWP_NAME = re.compile(r"\bhwp_[a-z0-9_]+\b")

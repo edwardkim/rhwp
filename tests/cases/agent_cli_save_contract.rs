@@ -73,7 +73,7 @@ fn self_roundtrip_is_not_hangul() {
 
 #[test]
 fn working_doc_forbids_new_cli_and_gym() {
-    let text = fs::read_to_string(repo().join("mydocs/working/agent_cli.md")).unwrap();
+    let text = fs::read_to_string(repo().join("mydocs/working/archives/agent_cli.md")).unwrap();
     assert!(text.contains("새 CLI") || text.contains("새 rhwp CLI"));
     assert!(text.contains("gym"));
     assert!(text.contains("DocumentCore"));

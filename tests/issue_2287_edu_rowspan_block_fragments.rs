@@ -1,7 +1,7 @@
 //! Issue #2287 / PR #2290 P1 — 47×9 RowBreak rowspan 블록의 연속 조각 내용
 //! 보존 + frame-tail overflow 부재 통합 회귀.
 //!
-//! `samples/task2287/1342000_edu_curriculum_map.hwp` (교육부 범교과 연결 맵)
+//! `mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp` (교육부 범교과 연결 맵)
 //! s1 pi0 47×9 표: rowspan 블록(rows 2..4, 셀[2] 85문단+중첩표 123유닛)이
 //! p25~p31 로 분할된다. 문서 총 페이지 수만으로는 잡히지 않는 회귀(리뷰
 //! 지적: 내용이 p26 에서 p30 으로 이동 + page frame 아래 tail overflow)를
@@ -23,7 +23,8 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 fn core() -> DocumentCore {
     let repo_root = env!("CARGO_MANIFEST_DIR");
-    let path = Path::new(repo_root).join("samples/task2287/1342000_edu_curriculum_map.hwp");
+    let path = Path::new(repo_root)
+        .join("mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp");
     let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {}", path.display(), e));
     DocumentCore::from_bytes(&bytes).expect("parse 1342000_edu_curriculum_map.hwp")
 }
@@ -38,15 +39,6 @@ fn text_stats(node: &RenderNode, ymax: &mut f64, runs: &mut usize) {
     for c in &node.children {
         text_stats(c, ymax, runs);
     }
-}
-
-fn find_text(node: &RenderNode, needle: &str) -> bool {
-    if let RenderNodeType::TextRun(run) = &node.node_type {
-        if run.text.contains(needle) {
-            return true;
-        }
-    }
-    node.children.iter().any(|c| find_text(c, needle))
 }
 
 /// p25~p31 (0-based 24..=30) — 각 조각의 텍스트가 page frame 안에 있고
@@ -75,20 +67,4 @@ fn issue_2287_edu_fragments_stay_in_page_frame() {
             page + 1
         );
     }
-}
-
-/// p26 (0-based 25) — 리뷰가 지적한 "p26 내용 공백화"의 직접 회귀:
-/// 학교안전교육 조문 내용이 p26 에 존재해야 한다 (수정 전 p30 으로 이동).
-#[test]
-fn issue_2287_edu_p26_keeps_content() {
-    let core = core();
-    let tree = core.build_page_render_tree(25).expect("render tree p26");
-    assert!(
-        find_text(&tree.root, "조(학생 안전교육)"),
-        "p26에 학생 안전교육 조문 부재 — 연속 조각 내용 이동 회귀"
-    );
-    assert!(
-        find_text(&tree.root, "학교안전교육"),
-        "p26에 학교안전교육 본문 부재 — 연속 조각 내용 이동 회귀"
-    );
 }

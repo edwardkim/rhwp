@@ -7,11 +7,20 @@ use std::collections::HashMap;
 
 use crate::emf::parser::objects::{LogBrush, LogFontW, LogPen, XForm};
 
+/// 생성 시 한 번 디코딩하고, 선택·SaveDC/RestoreDC가 공유하는 브러시 타일.
+#[derive(Debug, Clone, Hash)]
+pub struct BitmapPattern {
+    pub width: u32,
+    pub height: u32,
+    pub data_url: String,
+}
+
 /// 그래픽 객체 핸들이 참조하는 구체 객체.
 #[derive(Debug, Clone)]
 pub enum GraphicsObject {
     Pen(LogPen),
     Brush(LogBrush),
+    PatternBrush(BitmapPattern),
     Font(LogFontW),
 }
 
@@ -20,6 +29,9 @@ pub enum GraphicsObject {
 pub struct DeviceContext {
     pub pen: Option<LogPen>,
     pub brush: Option<LogBrush>,
+    pub pattern_brush: Option<BitmapPattern>,
+    pub brush_origin: (i32, i32),
+    pub poly_fill_mode: u32,
     pub font: Option<LogFontW>,
     pub text_color: u32,
     pub bk_color: u32,
@@ -34,13 +46,23 @@ pub struct DeviceContext {
     pub viewport_org: (i32, i32),
     pub viewport_ext: (i32, i32),
     pub current_pos: (i32, i32),
+    /// [#6577] 현재 클립 사각형(논리 좌표, `left top right bottom`).
+    ///
+    /// `EMR_INTERSECTCLIPRECT` 로 좁혀지고 `SaveDC`/`RestoreDC` 와 함께 저장·복원된다.
+    /// 156627451 내장 EMF 는 이 레코드를 112건 쓰는데, 종전에는 클립이 아예 없어
+    /// 도형이 제 영역 밖까지 그려졌다.
+    pub clip_rect: Option<(i32, i32, i32, i32)>,
 }
 
 impl Default for DeviceContext {
     fn default() -> Self {
         Self {
+            clip_rect: None,
             pen: None,
             brush: None,
+            pattern_brush: None,
+            brush_origin: (0, 0),
+            poly_fill_mode: 1,
             font: None,
             text_color: 0x00_00_00_00,
             bk_color: 0x00_FF_FF_FF,

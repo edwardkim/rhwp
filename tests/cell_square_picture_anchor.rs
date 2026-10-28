@@ -13,11 +13,17 @@
 //!
 //! 검사는 "셀 안에 있는가"로 고정한다. 좌표 상수를 그대로 박으면 무관한 레이아웃 변화에도
 //! 깨지지만, 셀 경계 포함 관계는 이 결함이 재발하면 반드시 깨진다.
+//!
+//! `#7182` 는 같은 주제의 다른 갈래다 — 쪽을 넘어 분할되는 표(RowBreak)의 칸에서 **글자 없이
+//! 그림만 든 문단**이 어느 조각에도 배치되지 않아 그림이 통째로 사라진다. 여기서는 "셀 안에
+//! 있는가" 앞에 "그림이 있는가" 를 먼저 못박는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::DocumentCore;
 
 const SAMPLE: &str = "samples/156457624_210622 7월부터 해외직구 구매대행업체 등록제 시행.hwp";
+/// 실문서 익명화본(한글 음절 순환 치환 · 그림 더미화 · 기하 보존). 4쪽, 14행 RowBreak 표.
+const ISSUE_7182_SAMPLE: &str = "samples/issue7182/rowbreak_cell_picture_only_paragraph.hwp";
 
 #[derive(Debug, Clone, Copy)]
 struct Rect {
@@ -40,8 +46,8 @@ impl Rect {
     }
 }
 
-/// render tree JSON 에서 (셀, 그 셀이 직접 담은 Square 그림) 쌍을 모은다.
-fn cell_square_pictures(node: &serde_json::Value, out: &mut Vec<(Rect, Rect)>) {
+/// render tree JSON 에서 (셀, 그 셀이 직접 담은 `wrap` 어울림 그림) 쌍을 모은다.
+fn cell_pictures_with_wrap(node: &serde_json::Value, wrap: &str, out: &mut Vec<(Rect, Rect)>) {
     let rect = |v: &serde_json::Value| -> Option<Rect> {
         let b = v.get("bbox")?;
         Some(Rect {
@@ -60,9 +66,9 @@ fn cell_square_pictures(node: &serde_json::Value, out: &mut Vec<(Rect, Rect)>) {
                 .map(|v| v.as_slice())
                 .unwrap_or(&[])
             {
-                let is_square = child.get("type").and_then(|t| t.as_str()) == Some("Image")
-                    && child.get("textWrap").and_then(|t| t.as_str()) == Some("Square");
-                if is_square {
+                let is_match = child.get("type").and_then(|t| t.as_str()) == Some("Image")
+                    && child.get("textWrap").and_then(|t| t.as_str()) == Some(wrap);
+                if is_match {
                     if let Some(img) = rect(child) {
                         out.push((cell, img));
                     }
@@ -77,7 +83,7 @@ fn cell_square_pictures(node: &serde_json::Value, out: &mut Vec<(Rect, Rect)>) {
         .map(|v| v.as_slice())
         .unwrap_or(&[])
     {
-        cell_square_pictures(child, out);
+        cell_pictures_with_wrap(child, wrap, out);
     }
 }
 
@@ -94,7 +100,7 @@ fn issue_4059_cell_square_picture_stays_inside_its_cell() {
     let root = tree.get("root").unwrap_or(&tree);
 
     let mut pairs = Vec::new();
-    cell_square_pictures(root, &mut pairs);
+    cell_pictures_with_wrap(root, "Square", &mut pairs);
 
     // 전제를 먼저 못박는다 — fixture 가 바뀌어 Square 그림이 사라지면 아래 단언이 공허해진다.
     assert!(
@@ -106,6 +112,57 @@ fn issue_4059_cell_square_picture_stays_inside_its_cell() {
         assert!(
             img.within(cell, 1.0),
             "셀 안 Square 그림이 셀 밖으로 나갔다 — \
+             그림 y={:.1}..{:.1} x={:.1}..{:.1}, 셀 y={:.1}..{:.1} x={:.1}..{:.1}",
+            img.y,
+            img.bottom(),
+            img.x,
+            img.x + img.w,
+            cell.y,
+            cell.bottom(),
+            cell.x,
+            cell.x + cell.w,
+        );
+    }
+}
+
+#[test]
+fn issue_7182_rowbreak_cell_picture_only_paragraphs_render_inside_their_cells() {
+    let bytes = std::fs::read(ISSUE_7182_SAMPLE).expect("fixture 를 읽을 수 있어야 한다");
+    let core = DocumentCore::from_bytes(&bytes).expect("fixture 파싱");
+
+    assert_eq!(
+        core.page_count(),
+        4,
+        "익명화본은 원본과 같은 4쪽이어야 한다"
+    );
+
+    let mut pairs = Vec::new();
+    for page in 0..core.page_count() {
+        let tree = core
+            .build_page_render_tree(page)
+            .unwrap_or_else(|e| panic!("{}쪽 render tree: {e:?}", page + 1));
+        let json: serde_json::Value =
+            serde_json::from_str(&tree.root.to_json()).expect("render tree JSON");
+        cell_pictures_with_wrap(
+            json.get("root").unwrap_or(&json),
+            "TopAndBottom",
+            &mut pairs,
+        );
+    }
+
+    // `devel` 은 0 장이다 — 글자 없이 그림만 든 칸 문단은 저장 LINE_SEG 가 없어 합성 줄 수가
+    // 0 이고, 분할 표의 컷 판정이 "이 쪽 소속 아님" 으로 읽어 앞·뒤 조각 모두에서 탈락한다.
+    assert_eq!(
+        pairs.len(),
+        11,
+        "RowBreak 표 안 그림 11 장이 어느 조각에든 배치되어야 한다 (0 이면 #7182 재발)"
+    );
+
+    // 배치된 뒤에도 세로 정렬 장부가 개체 높이를 모르면 `Center` 칸에서 아래 칸을 침범한다.
+    for (cell, img) in &pairs {
+        assert!(
+            img.within(cell, 1.0),
+            "RowBreak 칸 안 그림이 칸 밖으로 나갔다 — \
              그림 y={:.1}..{:.1} x={:.1}..{:.1}, 셀 y={:.1}..{:.1} x={:.1}..{:.1}",
             img.y,
             img.bottom(),

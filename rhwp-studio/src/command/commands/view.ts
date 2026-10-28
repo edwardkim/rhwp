@@ -1,4 +1,4 @@
-import type { CommandDef } from '../types';
+import type { CommandDef, CommandServices } from '../types';
 import { setThemeMode, setThemeSkin, syncThemeMenu, type EffectiveTheme } from '../../core/theme';
 import { userSettings, type ThemeMode, type ThemeSkin } from '../../core/user-settings';
 import { GridSettingsDialog } from '../../ui/grid-settings-dialog';
@@ -11,14 +11,59 @@ import {
 } from '../../view/grid-settings';
 import { HWPUNIT_PER_MM } from '../../core/hwp-constants';
 import {
-  calculateArrangementFitWidthZoom,
-  calculateFitPageZoom,
+  resolveZoomFitZoom,
+  type ZoomFitMetrics,
 } from '../../view/zoom-fit';
+import type { PageArrangement } from '../../view/page-arrangement';
+import { CENTER_ZOOM_ANCHOR } from '../../view/zoom-anchor';
 import { applyToolboxVisibility } from '../../view/toolbox-visibility';
 import { ZoomDialog } from '../../ui/zoom-dialog';
-import { resolveZoomDialogZoom } from '../../view/zoom-dialog-state';
+import {
+  resolveZoomDialogFitMode,
+  resolveZoomDialogZoom,
+} from '../../view/zoom-dialog-state';
+import type { PageViewSettingsChange } from '../../view/page-view-settings-change';
 
+import { t } from '../../i18n/index.ts';
 const PX_TO_MM = 25.4 / 96;
+const PAGE_GAP = 10;
+
+/** 메뉴·상태 표시줄·대화상자가 공유하는 현재 문서 맞춤 계산 입력을 만든다. */
+function getZoomFitMetrics(
+  services: CommandServices,
+  arrangement: PageArrangement,
+): ZoomFitMetrics | null {
+  if (services.wasm.pageCount === 0) return null;
+  const container = document.getElementById('scroll-container');
+  if (!container) return null;
+  // getPageInfo 의 width/height 는 이미 px 단위 (96dpi 기준)
+  const pageInfo = services.wasm.getPageInfo(0);
+  return {
+    containerWidth: container.clientWidth,
+    containerHeight: container.clientHeight,
+    pageWidth: pageInfo.width,
+    pageHeight: pageInfo.height,
+    arrangement,
+    pageGap: PAGE_GAP,
+  };
+}
+
+/**
+ * 쪽 맞춤·폭 맞춤을 지금의 창·쪽 크기로 계산해 적용하고 그 선택을 저장한다.
+ * 맞춤은 수치가 아니라 규칙이라, 다음에 여는 문서에서는 그 쪽 크기로 다시 계산한다.
+ */
+function applyZoomFit(services: CommandServices, mode: 'fitWidth' | 'fitPage'): void {
+  const vm = services.getViewportManager();
+  if (!vm) return;
+  const metrics = getZoomFitMetrics(
+    services,
+    userSettings.getViewSettings().pageArrangement,
+  );
+  if (!metrics) return;
+  const zoom = resolveZoomFitZoom(mode, metrics);
+  if (zoom === null) return;
+  vm.setZoom(zoom, CENTER_ZOOM_ANCHOR, mode);
+}
 
 /** 배율 고정값 커맨드 생성 헬퍼 */
 function zoomLevel(pct: number, shortcutLabel?: string): CommandDef {
@@ -173,7 +218,7 @@ function closeMm(a: number, b: number): boolean {
 export const viewCommands: CommandDef[] = [
   {
     id: 'view:zoom-in',
-    label: '확대',
+    label: t('command.view.zoomIn.label'),
     icon: 'icon-zoom-menu-in',
     shortcutLabel: 'Ctrl++',
     execute(services) {
@@ -183,7 +228,7 @@ export const viewCommands: CommandDef[] = [
   },
   {
     id: 'view:zoom-out',
-    label: '축소',
+    label: t('command.view.zoomOut.label'),
     icon: 'icon-zoom-menu-out',
     shortcutLabel: 'Ctrl+-',
     execute(services) {
@@ -193,29 +238,19 @@ export const viewCommands: CommandDef[] = [
   },
   {
     id: 'view:zoom-dialog',
-    label: '화면 확대/축소...',
+    label: t('command.view.zoomDialog.label'),
     opensDialog: true,
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
       const vm = services.getViewportManager();
-      if (!vm || services.wasm.pageCount === 0) return;
-      const container = document.getElementById('scroll-container');
-      if (!container) return;
-      const pageInfo = services.wasm.getPageInfo(0);
+      if (!vm) return;
       const viewSettings = userSettings.getViewSettings();
       const arrangement = viewSettings.pageArrangement;
+      const metrics = getZoomFitMetrics(services, arrangement);
+      if (!metrics) return;
       const fitZooms = {
-        fitWidth: calculateArrangementFitWidthZoom({
-          containerWidth: container.clientWidth,
-          pageWidth: pageInfo.width,
-          arrangement,
-        }),
-        fitPage: calculateFitPageZoom(
-          container.clientWidth,
-          container.clientHeight,
-          pageInfo.width,
-          pageInfo.height,
-        ),
+        fitWidth: resolveZoomFitZoom('fitWidth', metrics) ?? 1,
+        fitPage: resolveZoomFitZoom('fitPage', metrics) ?? 1,
       };
       new ZoomDialog({
         currentZoom: vm.getZoom(),
@@ -223,22 +258,33 @@ export const viewCommands: CommandDef[] = [
         arrangement,
         pageMovement: viewSettings.pageMovement,
         onConfirm(value) {
+          const currentMetrics = getZoomFitMetrics(services, value.arrangement);
+          if (!currentMetrics) return;
           const zoom = resolveZoomDialogZoom({
             ...value,
-            viewportWidth: container.clientWidth,
-            viewportHeight: container.clientHeight,
-            pageWidth: pageInfo.width,
-            pageHeight: pageInfo.height,
-            pageGap: 10,
+            viewportWidth: currentMetrics.containerWidth,
+            viewportHeight: currentMetrics.containerHeight,
+            pageWidth: currentMetrics.pageWidth,
+            pageHeight: currentMetrics.pageHeight,
+            pageGap: currentMetrics.pageGap,
           });
-          userSettings.setPageMovement(value.pageMovement);
-          userSettings.setPageArrangement(value.arrangement);
+          const zoomFitMode = resolveZoomDialogFitMode(value);
+          userSettings.setPageViewSettings(
+            value.arrangement,
+            value.pageMovement,
+            zoomFitMode,
+          );
           const view = userSettings.getViewSettings();
-          services.eventBus.emit('page-view-settings-changed', {
+          const transaction: PageViewSettingsChange = {
             arrangement: view.pageArrangement,
             pageMovement: view.pageMovement,
-          });
-          vm.setZoom(zoom);
+            zoom: {
+              value: zoom,
+              fitMode: view.zoomFitMode,
+              anchor: CENTER_ZOOM_ANCHOR,
+            },
+          };
+          services.eventBus.emit('page-view-settings-changed', transaction);
           services.eventBus.emit('command-state-changed');
         },
       }).show();
@@ -246,37 +292,18 @@ export const viewCommands: CommandDef[] = [
   },
   {
     id: 'view:zoom-fit-page',
-    label: '쪽 맞춤',
+    label: t('command.view.zoomFitPage.label'),
     shortcutLabel: 'Ctrl+G,P',
     execute(services) {
-      const vm = services.getViewportManager();
-      if (!vm || services.wasm.pageCount === 0) return;
-      const container = document.getElementById('scroll-container')!;
-      const pi = services.wasm.getPageInfo(0);
-      // pi.width/height는 이미 px 단위 (96dpi 기준)
-      vm.setZoom(calculateFitPageZoom(
-        container.clientWidth,
-        container.clientHeight,
-        pi.width,
-        pi.height,
-      ));
+      applyZoomFit(services, 'fitPage');
     },
   },
   {
     id: 'view:zoom-fit-width',
-    label: '폭 맞춤',
+    label: t('command.view.zoomFitWidth.label'),
     shortcutLabel: 'Ctrl+G,W',
     execute(services) {
-      const vm = services.getViewportManager();
-      if (!vm || services.wasm.pageCount === 0) return;
-      const container = document.getElementById('scroll-container')!;
-      const pi = services.wasm.getPageInfo(0);
-      // pi.width는 이미 px 단위 (96dpi 기준)
-      vm.setZoom(calculateArrangementFitWidthZoom({
-        containerWidth: container.clientWidth,
-        pageWidth: pi.width,
-        arrangement: userSettings.getViewSettings().pageArrangement,
-      }));
+      applyZoomFit(services, 'fitWidth');
     },
   },
   zoomLevel(50),
@@ -287,16 +314,16 @@ export const viewCommands: CommandDef[] = [
   zoomLevel(200),
   zoomLevel(300),
   zoomLevel(500),
-  themeModeCommand('system', '시스템 설정'),
-  themeModeCommand('light', '밝게'),
-  themeModeCommand('dark', '어둡게'),
-  themeSkinCommand('oldschool', '올드스쿨'),
-  themeSkinCommand('default', '클래식'),
-  themeSkinCommand('flat', '모던'),
+  themeModeCommand('system', t('command.view.themeModeCommand.system')),
+  themeModeCommand('light', t('command.view.themeModeCommand.light')),
+  themeModeCommand('dark', t('command.view.themeModeCommand.dark')),
+  themeSkinCommand('oldschool', t('command.view.themeSkinCommand.oldschool')),
+  themeSkinCommand('default', t('command.view.themeSkinCommand.default')),
+  themeSkinCommand('flat', t('command.view.themeSkinCommand.flat')),
   // ─── 보기 메뉴: 표시/숨기기 ─────────────────────────
   {
     id: 'view:form-mode',
-    label: '양식 모드',
+    label: t('command.view.formMode.registryLabel'),
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
       const next = services.getContext().isFormMode ? 'normal' : 'form';
@@ -305,7 +332,7 @@ export const viewCommands: CommandDef[] = [
   },
   {
     id: 'view:ctrl-mark',
-    label: '조판 부호',
+    label: t('command.view.ctrlMark.label'),
     icon: 'icon-ctrl-mark',
     shortcutLabel: 'Ctrl+G,C',
     canExecute: (ctx) => ctx.hasDocument,
@@ -324,7 +351,7 @@ export const viewCommands: CommandDef[] = [
   },
   {
     id: 'view:para-mark',
-    label: '문단 부호',
+    label: t('command.view.paraMark.label'),
     icon: 'icon-para-mark',
     shortcutLabel: 'Ctrl+G,T',
     canExecute: (ctx) => ctx.hasDocument,
@@ -340,7 +367,7 @@ export const viewCommands: CommandDef[] = [
   },
   {
     id: 'view:border-transparent',
-    label: '투명 선',
+    label: t('command.view.borderTransparent.label'),
     shortcutLabel: 'Alt+V,T',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
@@ -355,7 +382,7 @@ export const viewCommands: CommandDef[] = [
   },
   {
     id: 'view:toggle-clip',
-    label: '잘림 보기',
+    label: t('command.view.toggleClip.label'),
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
       const next = !clipEnabled;
@@ -367,7 +394,7 @@ export const viewCommands: CommandDef[] = [
   } satisfies CommandDef,
   {
     id: 'view:toggle-grid',
-    label: '격자 보기',
+    label: t('command.view.toggleGrid.label'),
     icon: 'icon-grid',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
@@ -381,7 +408,7 @@ export const viewCommands: CommandDef[] = [
   {
     id: 'view:grid-settings',
     opensDialog: true,
-    label: '격자 설정',
+    label: t('command.view.gridSettings.label'),
     icon: 'icon-grid',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
@@ -404,7 +431,8 @@ export const viewCommands: CommandDef[] = [
   },
   {
     id: 'view:toolbox-basic',
-    label: '기본',
+    label: t('command.view.toolboxBasic.label'),
+    shortcutLabel: 'Ctrl+F1',
     execute() {
       userSettings.setToolbarBasic(!userSettings.getViewSettings().toolbarBasic);
       syncToolboxMenu();
@@ -412,7 +440,7 @@ export const viewCommands: CommandDef[] = [
   } satisfies CommandDef,
   {
     id: 'view:toolbox-format',
-    label: '서식',
+    label: t('command.view.toolboxFormat.label'),
     execute() {
       userSettings.setToolbarFormat(!userSettings.getViewSettings().toolbarFormat);
       syncToolboxMenu();

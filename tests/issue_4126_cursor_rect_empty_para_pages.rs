@@ -13,6 +13,7 @@
 //! 판별은 시계가 아니라 작업량 카운터(`diagnostics::perf_counters::PAGE_TREE_BUILDS`)
 //! 상한이다 — 수정 원복 시 빌드가 115회로 폭증해 상한(8)을 넘는다(red→green).
 //! 카운터는 프로세스 누적이므로 이 파일에는 테스트를 1개만 둔다.
+//! 생성 suite 병렬 묶음에서 빼 전용 cargo target 으로 돌린다 (#6308).
 
 use std::fs;
 use std::path::Path;

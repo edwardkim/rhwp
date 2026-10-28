@@ -12,7 +12,7 @@ use rhwp::wasm_api::HwpDocument;
 use std::fs;
 use std::path::Path;
 
-/// `examples/build_issue_5800_fixture.rs` 가 만든 최소 재현 문서.
+/// `tools/fixture_generators/build_issue_5800_fixture.rs` 가 만든 최소 재현 문서.
 const FIXTURE: &str = "samples/issue5800-hancom-symbol.hwp";
 
 fn fixture_bytes() -> Vec<u8> {
@@ -41,8 +41,8 @@ fn hwp5_raw_symbols_reach_the_display_table() {
     // 글머리표 표시표(`renderer::layout::map_pua_bullet_char`) 쪽 값도 같이 탄다.
     assert_eq!(
         expand_pua_render_text("\u{A80F}"),
-        "━",
-        "0xA80F 는 U+F080F 와 같은 글자 — 굵은 가로선",
+        "─",
+        "0xA80F 는 U+F080F 와 같은 원본 가는 괘선 — C144 독립 Print 전쪽 수용 근거",
     );
 
     // 렌더러 단건 조회와 텍스트 표면도 같은 답을 낸다.

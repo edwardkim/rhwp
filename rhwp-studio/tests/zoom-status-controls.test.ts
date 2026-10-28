@@ -36,8 +36,8 @@ test('중앙 근처를 드래그하면 100%에 즉시 스냅하고 범위를 벗
 });
 
 test('확대·축소 호버 단축키는 플랫폼 표기를 사용한다', () => {
-  assert.equal(zoomPercentShortcutTitle('확대', 'Ctrl++', 'mac'), '확대 (⌘+)');
-  assert.equal(zoomPercentShortcutTitle('축소', 'Ctrl+-', 'mac'), '축소 (⌘−)');
-  assert.equal(zoomPercentShortcutTitle('확대', 'Ctrl++', 'other'), '확대 (Ctrl + +)');
-  assert.equal(zoomPercentShortcutTitle('축소', 'Ctrl+-', 'other'), '축소 (Ctrl + -)');
+  assert.equal(zoomPercentShortcutTitle('zoomIn', 'Ctrl++', 'mac'), '확대 (⌘+)');
+  assert.equal(zoomPercentShortcutTitle('zoomOut', 'Ctrl+-', 'mac'), '축소 (⌘−)');
+  assert.equal(zoomPercentShortcutTitle('zoomIn', 'Ctrl++', 'other'), '확대 (Ctrl + +)');
+  assert.equal(zoomPercentShortcutTitle('zoomOut', 'Ctrl+-', 'other'), '축소 (Ctrl + -)');
 });

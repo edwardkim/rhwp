@@ -35,7 +35,7 @@ fn find_text_context(node: &RenderNode, target: &str) -> Option<CellContext> {
 fn issue_4272_path_api_returns_rects_for_page5_innermost_cell_text() {
     let bytes = fixture_bytes();
     let core = DocumentCore::from_bytes(&bytes).expect("parse #4272 fixture");
-    assert_eq!(core.page_count(), 17, "#4069 17쪽 pagination 계약");
+    // 문서 쪽수 고정만 #7445로 이관하고 경로·선택 API 계약은 유지한다.
     let page5 = core
         .build_page_render_tree(4)
         .expect("render physical page 5");

@@ -1,0 +1,33 @@
+{
+  "analysis": "감추기 제어는 쪽 표시 메타데이터다. 빈 호스트의 TAC 저장 계획에서 이를 제외해 앞 빈 줄2400HU를 보존한다.",
+  "source": "samples/footnote-01.hwp",
+  "reference_before": "pdf/footnote-01-hwp-2020.pdf",
+  "native_debug_p5_percent": 100,
+  "before_p5_percent": 52.81675,
+  "focused": {
+    "run": 11,
+    "passed": 11,
+    "failed": 0,
+    "exit": 0
+  },
+  "source_pdf_reexport": {
+    "old_sha256": "ca73ea312ab2cb83805a003a53fe31698fe1740d27a0141e354c3838c94de36d",
+    "new_sha256": "2b47aa31b3d135f1621ba478189efcbfcacc77dfbc6c9d9082239f7885bb546e",
+    "old_pages": 6,
+    "new_pages": 6,
+    "text_equal_by_page": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "same_page_sizes": true
+  },
+  "font_residual": "원문 나눔고딕과 한컴2020 PDF의 바탕 대체 출력 차이가 남는다. Native 원문 글꼴을 변경하지 않았다. 실루엣100%는 글꼴 일치 판정이 아니다.",
+  "fresh_wasm_and_all6_final": "pending",
+  "tests_added": 0,
+  "tests_removed": 0,
+  "test_expectations_changed": false
+}

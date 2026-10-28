@@ -1,0 +1,259 @@
+{
+  "status": "document_scoped_qualification_complete_full_branch_pending",
+  "source_parent": "3024c89246cf7d2e255f1c3e45f2ad3bb5070034",
+  "source_files": {
+    "rhwp-studio/src/core/native-pua-font-session.ts": "4891f5f7cda1acf29bc028b93ed8939af7dcab1ee21419fad377c0470771537c",
+    "rhwp-studio/src/view/canvaskit-renderer.ts": "583e251a71129b0a2ef03bf0fb1645136859b802863e9979f1970e42e52db783",
+    "rhwp-studio/src/view/canvaskit/raster-stroke.ts": "aa2b3c7e466ad86232cb01d6c477ffd89c09082965a99ded041274c1d8d24b85",
+    "scripts/visual-sweep-font-registration.mjs": "8344cc46917a72185fe9544dd2df85216dc4657ab518f65d019b30e51b5c6809",
+    "src/diagnostics/ir_field_sweep.rs": "154307de1816be4ada159dbf08cfb2eed16fd9d702ebc25d4433a4a83b2380f2",
+    "src/document_core/native_pua_fonts.rs": "d3d717cb446ccb0e1a6a4dde6cb5508e6517fde9177b27449c364b359cc65d9a",
+    "src/document_core/queries/rendering.rs": "969a7c44c0beb8031eaf2f055de36b8b810b7cf04f8ef0eaedd8775346347d17",
+    "src/model/paragraph.rs": "0e8270cdbb406923a07690526a1c58adadbcf5837e1a3992254ff063f9c50d63",
+    "src/parser/body_text.rs": "95c1a7151ac13efe43c9df38ed17c3d72529cd0ac6e50c4065a84d5c8dc1f7fd",
+    "src/parser/body_text/tests.rs": "fc0e875ec64cf57b70a7f5e8de13ff15445061fd555d9e99f81c4ac8e34aad6f",
+    "src/parser/hwpx/section.rs": "073bf889626f29041e8e92190dee44ea0fadd6a0c584d79f62145d4e5feef771",
+    "src/renderer/composer.rs": "3e112cebd0539c4dbf43c3b4dffeab399e3d365393958438f94f1a89391528f2",
+    "src/renderer/composer/auto_number_projection.rs": "6ec3479eecefe5b4c3378c1f7d850f5cc4e92fce6049b7905d157bdea7265cdb",
+    "src/renderer/composer/cell_line_breaking.inc.rs": "801488a30fb280d8b654ea872e48c5adc8b2f30bce8774aeafb48f292c2296db",
+    "src/renderer/composer/composition.inc.rs": "f7eb42492ff3a0c1685bf6d9b14f2e9445264aecdac3e32e421346350ddd5213",
+    "src/renderer/composer/inline_control_projection.inc.rs": "8319effc3728bcd4c93bc8339f84259df39d274cb78683432ecbc200e4fe4937",
+    "src/renderer/composer/line_breaking.rs": "2a8fa182391b5b6816f4f1588ad5d5c561c07d87379fb4d5358ead27d58fa783",
+    "src/renderer/composer/pua_surface.inc.rs": "5bff7f6f6d5d65a7421267862c35e44dd777196b1c434c3f2919762e89f04710",
+    "src/renderer/composer/stored_lines_runs.inc.rs": "1004f4bee84fbeaa2a7e3fc7645fdd5f69da77e5b933010b6fce93a8e92431e5",
+    "src/renderer/composer/stored_tac_display.inc.rs": "afcd287620726df9e21ec29c33df0e9163747bf864c4c0fc6965f05d9e719cf5",
+    "src/renderer/composer/stored_word_tail.rs": "bbd477a48e5f89be4e5f9b6a12ad3f8407d7465aedf5546cf79cc459df6b6218",
+    "src/renderer/composer/supplemental_clusters.rs": "68eb9fd16d8a0317900e353961be1c7560e9eecae52c0f1072b17c0fd4e7fb63",
+    "src/renderer/composer/tests.rs": "0bc3548b4d053a13a035118944919a5974b6baf8bf29b406a4956ef3bd1eb98f",
+    "src/renderer/kerning.rs": "9163cbde8752960ec69f714e329dff3438a48c9a459ff431b8e17e037ee37099",
+    "src/renderer/layout/text_measurement.rs": "734b5ae8e421460a58fe12c879cb1ca4966600bbb1cdb840a02717a5dbc809d7",
+    "src/renderer/mod.rs": "5615e39c80a1a9e69c7736d600a077216c19e75068dcd8a698d1139b9fffa18a",
+    "src/renderer/native_pua_fonts.rs": "367a20568d6bdb0a640b4742d888ba1701e92f6366a79d3953cfc38bcea00344",
+    "src/renderer/raster_stroke.rs": "04c882ee6d963b6c22eee0ff4653635a3a6333ce80ac4a60287db0e3f0346c7a",
+    "src/renderer/render_normalization/stored_word_tail.rs": "c1d89818a59e77f8169c6b02dcf94e23a100bc407bb401ca239fd7a152969e91",
+    "src/renderer/skia/line_replay.rs": "8439f59ea41f9d15cc5335f4d87bb829195131df949ab47c24f32101d669b5b3",
+    "src/renderer/skia/native_pua_fonts.rs": "4cfa4b41c46bc406a504cde812ab27f8e69fbb57896a07b44b2c6bc59e170261",
+    "src/renderer/style_resolver/resolved.rs": "cfc09459f72a1c8ae01675e72c6f91d41529fb47ae2816cadbe58e52831b69f4",
+    "src/renderer/web_canvas.rs": "20ec339214b8f989c77a6351cd10efa40b6c83c48eabb5eedba2f59d9103e7af",
+    "src/serializer/body_text.rs": "c682c09b5ed4a87929202640d00a61c358b146fc856bbe0dcbf9f1c2cc98937c",
+    "src/serializer/hwpx/section.rs": "08382c1460099993419929dccfa3d1645a03009310bf35fd17cff3b7606aa115",
+    "src/wasm_api.rs": "6e6181e85268ef37dfbe0589ce034f76806b680463defd421c89b092bf595333"
+  },
+  "native_sha256": "78ade85574144994f7b49b7fe91e6d1f74ac88a43c88544f53e9df07a8a5de68",
+  "wasm_files": {
+    "rhwp.js": "ba97ed3f9cb04605f9fee14363eb76bf572eca3722ece29fd4181fe0076e7da0",
+    "rhwp_bg.wasm": "41b37d97c2962b6fe07733c53816ddd6d957de895e032676b6773fa7654970c9"
+  },
+  "input": "samples/hwpx/hancom-hwp/[2027] 온새미로 1 본교재.hwp",
+  "input_sha256": "c9ef761953944665e7f9886f5414955c9d52291f1b2e2fd12f62277aafdafa3e",
+  "independent_print_pdf": "pdf/hwpx/hancom-hwp/[2027] 온새미로 1 본교재-hwp-2020.pdf",
+  "pdf_sha256": "58ff2fdc358d38c503d61a1e35a78320099b0671860047f1ac40151787247f3d",
+  "environment": {
+    "profile": "print",
+    "compat": "2022",
+    "css_dpi": 96,
+    "pdf_rasterizer": "PDFium",
+    "silhouette_radius_px": 2,
+    "minimum_percent": 90,
+    "font_environment": "print-reference-environment.json",
+    "font_environment_sha256": "b28205b803ccbe53b4f7a0e67fa2eaf74ebe02d68c3918714172d2933992481a",
+    "font_bytes_committed": false
+  },
+  "backends": {
+    "native": {
+      "pages": 46,
+      "minimum": 94.65583,
+      "below90": [],
+      "tsv": "tsv/native.tsv",
+      "sha256": "22590d3c3c78f5fef07ad1ee7e12b41ba352515d0854c510b330ca1d29744c32",
+      "bytes": 1266
+    },
+    "wasm": {
+      "pages": 46,
+      "minimum": 94.55536,
+      "below90": [],
+      "tsv": "tsv/wasm.tsv",
+      "sha256": "0057a0d8fa4a165771399b6e4a90a907378d038f6b208ef2f0d44b7216b7ee93",
+      "bytes": 1266
+    }
+  },
+  "formal_regression": {
+    "after_pass": 6,
+    "after_fail": 0,
+    "same_binary_prior_defect_failures": 5,
+    "source": "tests/cases/issue_7881_current_body_frame.rs"
+  },
+  "normal_counterpart": {
+    "input": "samples/[2027] 온새미로 1 본교재.hwp",
+    "input_sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+    "pages": 46,
+    "identical_pages": 46,
+    "different_pages": []
+  },
+  "body_ownership_scope": "독립 CFB 원시 PARA_TEXT와 최상위 본문 문단 468개의 내용·순서. 중첩 표·도형 텍스트 전체 검증 주장은 하지 않는다.",
+  "body_ownership": {
+    "reference-supplied": {
+      "checked_nonempty": 468,
+      "mismatches": [],
+      "order_reversals": [],
+      "rendered_unique_owners": 781
+    },
+    "wasm-reference-supplied": {
+      "checked_nonempty": 468,
+      "mismatches": [],
+      "order_reversals": [],
+      "rendered_unique_owners": 781
+    }
+  },
+  "direct_reading": [
+    {
+      "page": 12,
+      "backends": [
+        "native",
+        "wasm"
+      ],
+      "scope": "현재 한 줄과 다음 원점"
+    },
+    {
+      "page": 14,
+      "backends": [
+        "native",
+        "wasm"
+      ],
+      "scope": "최저 쪽 본문·보기·줄바꿈 및 잔여 간격"
+    },
+    {
+      "page": 19,
+      "backends": [
+        "native",
+        "wasm"
+      ],
+      "scope": "연한 괘선·꼬리말"
+    },
+    {
+      "page": 26,
+      "backends": [
+        "native",
+        "wasm"
+      ],
+      "scope": "TAC 그림 뒤 NOTE 밴드·다음 문단"
+    },
+    {
+      "page": 46,
+      "backends": [
+        "native",
+        "wasm"
+      ],
+      "scope": "Print 제목 글꼴"
+    }
+  ],
+  "residuals": [
+    "14쪽 보기의 글자 획과 미세 간격 차이",
+    "13쪽 보기 표제·기출 꼬리의 작은 장평·위치 차이",
+    "26쪽 NOTE 02. 마침표는 원문과 출력 TextRun에 보존되지만 간격 차이가 남음"
+  ],
+  "full_branch_gates_complete": false,
+  "actual_studio_initialization_verified": false,
+  "asset_files": {
+    "p012-native-review.png": {
+      "sha256": "cc83bb3a622984b5d884aaeba3aefbc8956653f848d44cf6035ca1d5d6e650b4",
+      "bytes": 472749,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/reference-supplied/onsaemiro-converted-control/focus/p012/review/review_012.png"
+    },
+    "p012-native-overlay.png": {
+      "sha256": "755310e1d1efd6eb14fac22974389fa6950f933cadfd6746d3ba57af2d8b00d1",
+      "bytes": 168490,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/reference-supplied/onsaemiro-converted-control/focus/p012/overlay/overlay_012.png"
+    },
+    "p014-native-review.png": {
+      "sha256": "9bafe8f1a13746ea40b3ee404af8904533b278da3830fb0cf6199f79a598f0db",
+      "bytes": 463906,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/reference-supplied/onsaemiro-converted-control/focus/p014/review/review_014.png"
+    },
+    "p014-native-overlay.png": {
+      "sha256": "f374d98e085c4ec34249daaeb5a45a6889d84e99aaa109a82af844440115848e",
+      "bytes": 164117,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/reference-supplied/onsaemiro-converted-control/focus/p014/overlay/overlay_014.png"
+    },
+    "p019-native-review.png": {
+      "sha256": "96e9ed398899c52807fd4d9538a56e728a5d335df1750a401f1320d66c898ba6",
+      "bytes": 39253,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/reference-supplied/onsaemiro-converted-control/focus/p019/review/review_019.png"
+    },
+    "p019-native-overlay.png": {
+      "sha256": "a5575cbcf857d6a099348aa8433a1088001866047e52cd263c18c03e2e321af8",
+      "bytes": 28609,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/reference-supplied/onsaemiro-converted-control/focus/p019/overlay/overlay_019.png"
+    },
+    "p026-native-review.png": {
+      "sha256": "94f6195a0b480f3299ad7b10bfe757f146d70c8fcd19763864cf9858dbff1b8a",
+      "bytes": 96324,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/reference-supplied/onsaemiro-converted-control/focus/p026/review/review_026.png"
+    },
+    "p026-native-overlay.png": {
+      "sha256": "577248050633d9d2f919e763eac9e360f7b10ccd164ab49aa3908a0ae63e6216",
+      "bytes": 45826,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/reference-supplied/onsaemiro-converted-control/focus/p026/overlay/overlay_026.png"
+    },
+    "p046-native-review.png": {
+      "sha256": "83cbc636e66a1c6faf383b7a5bc9ce08386e727094765839bdb3b4e350c6fcc6",
+      "bytes": 59100,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/reference-supplied/onsaemiro-converted-control/focus/p046/review/review_046.png"
+    },
+    "p046-native-overlay.png": {
+      "sha256": "67ebe4e4ca4721854a8f80a8b0ce36f99366c62f7f399abf0b866031e291e96b",
+      "bytes": 34534,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/reference-supplied/onsaemiro-converted-control/focus/p046/overlay/overlay_046.png"
+    },
+    "p012-wasm-review.png": {
+      "sha256": "f559a81ac07c3576f2e172a4bc59a9af3cfb7f0698fcf902afc81312bef4e598",
+      "bytes": 471975,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/wasm-reference-supplied/onsaemiro-converted-control/focus/p012/review/review_012.png"
+    },
+    "p012-wasm-overlay.png": {
+      "sha256": "bb91cc11789a24350b3924c4e2fdae3f6ed8dd19ecd9fb281977bceac7195ea8",
+      "bytes": 168104,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/wasm-reference-supplied/onsaemiro-converted-control/focus/p012/overlay/overlay_012.png"
+    },
+    "p014-wasm-review.png": {
+      "sha256": "8852380225f0028c88db49adf4413702e07a04fb86adcf28fadd2d9eb6a7ce5b",
+      "bytes": 463589,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/wasm-reference-supplied/onsaemiro-converted-control/focus/p014/review/review_014.png"
+    },
+    "p014-wasm-overlay.png": {
+      "sha256": "78190b92c796977632f3505146fdbb151cc8bf16d1c1df3e2e36890e752aabec",
+      "bytes": 164246,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/wasm-reference-supplied/onsaemiro-converted-control/focus/p014/overlay/overlay_014.png"
+    },
+    "p019-wasm-review.png": {
+      "sha256": "673a33103feba9e1d1d2ca9d7441a9aa8351e940b72dcfc9df330fbcea5e61b4",
+      "bytes": 39266,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/wasm-reference-supplied/onsaemiro-converted-control/focus/p019/review/review_019.png"
+    },
+    "p019-wasm-overlay.png": {
+      "sha256": "f289a8565704090f4603e3dfe0d46377f4bcc755deeaa2374455b04043d5a785",
+      "bytes": 28600,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/wasm-reference-supplied/onsaemiro-converted-control/focus/p019/overlay/overlay_019.png"
+    },
+    "p026-wasm-review.png": {
+      "sha256": "63cb95c201b69c90a4fef3713a491f566f8575046b1f6e92d137063521d94b94",
+      "bytes": 96168,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/wasm-reference-supplied/onsaemiro-converted-control/focus/p026/review/review_026.png"
+    },
+    "p026-wasm-overlay.png": {
+      "sha256": "6232bdaa0982fcc82d48cf352e0e6c093250210f6954e8a846481d0af854a750",
+      "bytes": 45690,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/wasm-reference-supplied/onsaemiro-converted-control/focus/p026/overlay/overlay_026.png"
+    },
+    "p046-wasm-review.png": {
+      "sha256": "ea3533e1f96ff7c1ffce4ff7e556fc201a036fd137972b8a021ee9c5e7fa48da",
+      "bytes": 58927,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/wasm-reference-supplied/onsaemiro-converted-control/focus/p046/review/review_046.png"
+    },
+    "p046-wasm-overlay.png": {
+      "sha256": "13fb4305c4cd8650b16f97fd9f6b39088ef1d50f1385969e655ba7544660575f",
+      "bytes": 34370,
+      "source": "output/pr-review/planet6897-20261024/print-reference-fonts-v47/wasm-reference-supplied/onsaemiro-converted-control/focus/p046/overlay/overlay_046.png"
+    }
+  }
+}

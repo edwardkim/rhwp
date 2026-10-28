@@ -1,0 +1,363 @@
+{
+  "method": "Each physical landscape PDF half is cropped at original coordinates and uniformly enlarged by sqrt(2) to the matching portrait logical A4 page. The content is not reflowed or otherwise altered.",
+  "targets": {
+    "issue6202": {
+      "canonical_pdf": "pdf/issue6202-156483689-2020.pdf",
+      "canonical_pdf_sha256": "3154313e2bbaf793dfe2f6c505768cffb6d1097d9019fb6cf8d50d7659c701a7",
+      "derived_pdf": "mydocs/pr/assets/pr_6683_6705_20260904/visual-6709-6710/issue6202-156483689-2020-logical-a4-normalized.pdf",
+      "derived_pdf_sha256": "4b91672270742b2b43b9a835cb57d13c0c4edd106df7f98a1caaf0265f12a7c2",
+      "logical_page_count": 8,
+      "physical_pdf_page_count": 4,
+      "uniform_scale": 1.4142135623730951,
+      "mapping": [
+        {
+          "logical_page": 1,
+          "physical_pdf_page": 1,
+          "physical_half": "left",
+          "crop_points": [
+            0.0,
+            0.0,
+            420.5,
+            595.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            594.6768029778865,
+            841.4570696119916
+          ]
+        },
+        {
+          "logical_page": 2,
+          "physical_pdf_page": 1,
+          "physical_half": "right",
+          "crop_points": [
+            420.5,
+            0.0,
+            841.0,
+            595.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            594.6768029778865,
+            841.4570696119916
+          ]
+        },
+        {
+          "logical_page": 3,
+          "physical_pdf_page": 2,
+          "physical_half": "left",
+          "crop_points": [
+            0.0,
+            0.0,
+            420.5,
+            595.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            594.6768029778865,
+            841.4570696119916
+          ]
+        },
+        {
+          "logical_page": 4,
+          "physical_pdf_page": 2,
+          "physical_half": "right",
+          "crop_points": [
+            420.5,
+            0.0,
+            841.0,
+            595.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            594.6768029778865,
+            841.4570696119916
+          ]
+        },
+        {
+          "logical_page": 5,
+          "physical_pdf_page": 3,
+          "physical_half": "left",
+          "crop_points": [
+            0.0,
+            0.0,
+            420.5,
+            595.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            594.6768029778865,
+            841.4570696119916
+          ]
+        },
+        {
+          "logical_page": 6,
+          "physical_pdf_page": 3,
+          "physical_half": "right",
+          "crop_points": [
+            420.5,
+            0.0,
+            841.0,
+            595.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            594.6768029778865,
+            841.4570696119916
+          ]
+        },
+        {
+          "logical_page": 7,
+          "physical_pdf_page": 4,
+          "physical_half": "left",
+          "crop_points": [
+            0.0,
+            0.0,
+            420.5,
+            595.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            594.6768029778865,
+            841.4570696119916
+          ]
+        },
+        {
+          "logical_page": 8,
+          "physical_pdf_page": 4,
+          "physical_half": "right",
+          "crop_points": [
+            420.5,
+            0.0,
+            841.0,
+            595.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            594.6768029778865,
+            841.4570696119916
+          ]
+        }
+      ]
+    },
+    "issue5057": {
+      "canonical_pdf": "pdf/issue5057-21484591-2020.pdf",
+      "canonical_pdf_sha256": "78ef349ce8936a7cfaa4e671c1ca1318e31cda3b91c303ebc86b91c1660bae54",
+      "derived_pdf": "mydocs/pr/assets/pr_6683_6705_20260904/visual-6709-6710/issue5057-21484591-2020-logical-a4-normalized.pdf",
+      "derived_pdf_sha256": "bb26a827a8158e8a6d22dad80bd0636db62a0d9f6c01ec59c7e774dd0b4a96e7",
+      "logical_page_count": 13,
+      "physical_pdf_page_count": 7,
+      "uniform_scale": 1.4142135623730951,
+      "mapping": [
+        {
+          "logical_page": 1,
+          "physical_pdf_page": 1,
+          "physical_half": "left",
+          "crop_points": [
+            0.0,
+            0.0,
+            420.5,
+            595.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            594.6768029778865,
+            841.4570696119916
+          ]
+        },
+        {
+          "logical_page": 2,
+          "physical_pdf_page": 1,
+          "physical_half": "right",
+          "crop_points": [
+            420.5,
+            0.0,
+            841.0,
+            595.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            594.6768029778865,
+            841.4570696119916
+          ]
+        },
+        {
+          "logical_page": 3,
+          "physical_pdf_page": 2,
+          "physical_half": "left",
+          "crop_points": [
+            0.0,
+            0.0,
+            420.5,
+            595.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            594.6768029778865,
+            841.4570696119916
+          ]
+        },
+        {
+          "logical_page": 4,
+          "physical_pdf_page": 2,
+          "physical_half": "right",
+          "crop_points": [
+            420.5,
+            0.0,
+            841.0,
+            595.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            594.6768029778865,
+            841.4570696119916
+          ]
+        },
+        {
+          "logical_page": 5,
+          "physical_pdf_page": 3,
+          "physical_half": "left",
+          "crop_points": [
+            0.0,
+            0.0,
+            420.5,
+            595.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            594.6768029778865,
+            841.4570696119916
+          ]
+        },
+        {
+          "logical_page": 6,
+          "physical_pdf_page": 3,
+          "physical_half": "right",
+          "crop_points": [
+            420.5,
+            0.0,
+            841.0,
+            595.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            594.6768029778865,
+            841.4570696119916
+          ]
+        },
+        {
+          "logical_page": 7,
+          "physical_pdf_page": 4,
+          "physical_half": "left",
+          "crop_points": [
+            0.0,
+            0.0,
+            297.5,
+            841.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            420.7285348059958,
+            1189.353605955773
+          ]
+        },
+        {
+          "logical_page": 8,
+          "physical_pdf_page": 4,
+          "physical_half": "right",
+          "crop_points": [
+            297.5,
+            0.0,
+            595.0,
+            841.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            420.7285348059958,
+            1189.353605955773
+          ]
+        },
+        {
+          "logical_page": 9,
+          "physical_pdf_page": 5,
+          "physical_half": "left",
+          "crop_points": [
+            0.0,
+            0.0,
+            297.5,
+            841.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            420.7285348059958,
+            1189.353605955773
+          ]
+        },
+        {
+          "logical_page": 10,
+          "physical_pdf_page": 5,
+          "physical_half": "right",
+          "crop_points": [
+            297.5,
+            0.0,
+            595.0,
+            841.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            420.7285348059958,
+            1189.353605955773
+          ]
+        },
+        {
+          "logical_page": 11,
+          "physical_pdf_page": 6,
+          "physical_half": "left",
+          "crop_points": [
+            0.0,
+            0.0,
+            420.5,
+            595.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            594.6768029778865,
+            841.4570696119916
+          ]
+        },
+        {
+          "logical_page": 12,
+          "physical_pdf_page": 6,
+          "physical_half": "right",
+          "crop_points": [
+            420.5,
+            0.0,
+            841.0,
+            595.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            594.6768029778865,
+            841.4570696119916
+          ]
+        },
+        {
+          "logical_page": 13,
+          "physical_pdf_page": 7,
+          "physical_half": "left",
+          "crop_points": [
+            0.0,
+            0.0,
+            297.5,
+            841.0
+          ],
+          "scale": 1.4142135623730951,
+          "normalized_page_points": [
+            420.7285348059958,
+            1189.353605955773
+          ]
+        }
+      ]
+    }
+  }
+}

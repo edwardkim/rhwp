@@ -1,0 +1,79 @@
+name: Verify release WASM
+description: Check the already-built standard release package before it is uploaded or published.
+runs:
+  using: composite
+  steps:
+    - name: Check the package and source identity
+      shell: bash
+      run: >-
+        python3 scripts/verify_release_wasm.py
+        --manifest output/render-diff-build/build.json
+        --package-dir pkg --package-dir rhwp-studio/public
+
+    - name: Set up Node
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: '22'
+
+    - name: Install Studio dependencies
+      shell: bash
+      working-directory: rhwp-studio
+      run: npm ci
+
+    - name: Install PDF raster dependencies
+      shell: bash
+      run: |
+        sudo env DEBIAN_FRONTEND=noninteractive timeout 180 apt-get update
+        sudo env DEBIAN_FRONTEND=noninteractive timeout 180 apt-get install -y --no-install-recommends \
+          fonts-dejavu-core libfontconfig1-dev libfreetype6-dev poppler-utils
+
+    - name: Build the native PDF reference CLI
+      shell: bash
+      run: cargo build --locked --features native-skia --bin rhwp
+
+    - name: Install the Render Diff browser
+      shell: bash
+      working-directory: rhwp-studio
+      env:
+        RHWP_CHROMIUM_BUILD_ID: '1660786'
+      run: |
+        browser_path=$(npx @puppeteer/browsers install chromium@"${RHWP_CHROMIUM_BUILD_ID}" --path .cache/puppeteer --format '{{path}}' | tail -n 1)
+        browser_path=$(realpath "$browser_path")
+        test -x "$browser_path"
+        echo "CHROME_PATH=$browser_path" >> "$GITHUB_ENV"
+
+    - name: Check Canvas and direct PDF using the release package
+      shell: bash
+      working-directory: rhwp-studio
+      env:
+        RHWP_WASM_BUILD_MANIFEST: ${{ github.workspace }}/output/render-diff-build/build.json
+        VITE_PORT: '7700'
+        RHWP_RENDER_DIFF_MAX_PAGES: '1'
+        RHWP_RENDER_DIFF_WRITE_IMAGES: '1'
+        RHWP_RENDER_DIFF_PDF: '1'
+        RHWP_RENDER_DIFF_PDF_WRITE_IMAGES: '1'
+        RHWP_RENDER_DIFF_DIRECT_PDF: '1'
+        RHWP_RENDER_DIFF_DIRECT_PDF_GATE: '1'
+        RHWP_RENDER_DIFF_DIRECT_PDF_MAX_RATIO: '0.02'
+        RHWP_RENDER_DIFF_DIRECT_PDF_RASTER_DPI: '144'
+        RHWP_RENDER_DIFF_RHWP_BIN: ../target/debug/rhwp
+      run: npm run e2e:render-diff:ci
+
+    - name: Verify the package still matches the tested bytes
+      shell: bash
+      run: >-
+        python3 scripts/verify_release_wasm.py
+        --manifest output/render-diff-build/build.json
+        --package-dir pkg --package-dir rhwp-studio/public
+        --require-consumption
+
+    - name: Preserve release WASM verification evidence
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: release-wasm-validation
+        path: |
+          output/render-diff-build/
+          rhwp-studio/e2e/screenshots/render-diff/
+        if-no-files-found: error
+        retention-days: 30

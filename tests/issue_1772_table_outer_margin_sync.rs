@@ -5,10 +5,10 @@
 //! 파서가 `table.outer_margin_*` 만 채우면 HWPX 직파스 문서에서만 표 바깥 여백이
 //! 무시되어 본문 첫 줄이 저장 lineseg(한컴 위치)보다 11.36px(3mm) 위로 붙는다.
 //!
-//! Regression shape (samples/task1772/table_outer_margin_common_sync.hwpx, 36381023):
+//! 재현 문서(samples/task1772/table_outer_margin_common_sync.hwpx, 36381023):
 //! - 헤더 표: vert=Page + TopAndBottom, outMargin bottom=852(3mm)
-//! - 수정 전: 본문 pi=0 첫 줄 y=295.4px / 수정 후(=HWP5 재파스본과 동일): 306.7px
-//!   (저장 lineseg vpos=17478 → 75.6+233.0 ≈ 306.7 정합)
+//! - 본문 첫 줄은 헤더 표의 하단과 원본 바깥여백 뒤에서 시작한다.
+//!   기준 한컴 PDF 1쪽 Visual Sweep은 100%이며, 절대 쪽 좌표는 검사하지 않는다.
 
 use std::fs;
 use std::path::Path;
@@ -60,10 +60,23 @@ fn issue_1772_hwpx_table_common_margin_synced_with_outer_margin() {
 
 #[test]
 fn issue_1772_body_first_line_respects_table_outer_margin_bottom() {
-    // 렌더 레벨 회귀: 본문 첫 줄이 저장 lineseg 위치(≈306.7px)에 있어야 한다.
-    // 수정 전에는 표 아래 여백 3mm 누락으로 295.4px 에 렌더되었다.
+    // 원본 표의 아래 여백을 본문 시작과 헤더 표 하단 사이에 예약해야 한다.
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {}", SAMPLE, e));
+    let source_margin_hu = load_ir()
+        .sections
+        .iter()
+        .flat_map(|section| &section.paragraphs)
+        .flat_map(|paragraph| &paragraph.controls)
+        .find_map(|control| match control {
+            Control::Table(table) if table.outer_margin_bottom > 0 => {
+                Some(i32::from(table.outer_margin_bottom))
+            }
+            _ => None,
+        })
+        .expect("헤더 표의 양의 아래 바깥여백");
+    let source_margin =
+        rhwp::renderer::hwpunit_to_px(source_margin_hu, rhwp::renderer::DEFAULT_DPI);
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
         .unwrap_or_else(|e| panic!("parse {}: {}", SAMPLE, e));
     let tree = doc
@@ -72,16 +85,18 @@ fn issue_1772_body_first_line_respects_table_outer_margin_bottom() {
     let json: serde_json::Value =
         serde_json::from_str(&tree.root.to_json()).expect("parse tree json");
 
-    // 본문 좌측(x≈75.6) TextLine 의 최소 y — 결재 헤더 표 아래 본문 첫 줄.
-    fn collect(v: &serde_json::Value, out: &mut Vec<(f64, f64)>) {
+    fn has_text(v: &serde_json::Value, expected: &str) -> bool {
+        v["text"]
+            .as_str()
+            .is_some_and(|text| text.contains(expected))
+            || v["children"]
+                .as_array()
+                .is_some_and(|children| children.iter().any(|child| has_text(child, expected)))
+    }
+
+    fn collect<'a>(v: &'a serde_json::Value, out: &mut Vec<&'a serde_json::Value>) {
         if let Some(o) = v.as_object() {
-            if o.get("type").and_then(|t| t.as_str()) == Some("TextLine") {
-                if let Some(b) = o.get("bbox") {
-                    let x = b.get("x").and_then(|x| x.as_f64()).unwrap_or(-1.0);
-                    let y = b.get("y").and_then(|y| y.as_f64()).unwrap_or(-1.0);
-                    out.push((x, y));
-                }
-            }
+            out.push(v);
             for c in o.values() {
                 collect(c, out);
             }
@@ -91,16 +106,28 @@ fn issue_1772_body_first_line_respects_table_outer_margin_bottom() {
             }
         }
     }
-    let mut lines = Vec::new();
-    collect(&json, &mut lines);
-    let first_body_y = lines
+    let mut nodes = Vec::new();
+    collect(&json, &mut nodes);
+    let header_table = nodes
         .iter()
-        .filter(|(x, _)| (x - 75.6).abs() < 0.2)
-        .map(|(_, y)| *y)
-        .fold(f64::INFINITY, f64::min);
+        .filter(|node| node["type"] == "Table")
+        .min_by(|a, b| {
+            a["bbox"]["y"]
+                .as_f64()
+                .unwrap()
+                .total_cmp(&b["bbox"]["y"].as_f64().unwrap())
+        })
+        .expect("쪽 위의 결재 헤더 표");
+    let body_line = nodes
+        .iter()
+        .find(|node| node["type"] == "TextLine" && has_text(node, "관련: 총무과"))
+        .expect("결재 헤더 표 뒤의 첫 본문 문단");
+    let header_bottom =
+        header_table["bbox"]["y"].as_f64().unwrap() + header_table["bbox"]["h"].as_f64().unwrap();
+    let first_body_y = body_line["bbox"]["y"].as_f64().unwrap();
+    let margin_ratio = (first_body_y - header_bottom) / source_margin;
     assert!(
-        (first_body_y - 306.7).abs() < 1.0,
-        "본문 첫 줄 y 는 저장 lineseg 위치(≈306.7px)여야 한다 (수정 전 결함값 295.4): {:.2}",
-        first_body_y
+        (0.75..=1.25).contains(&margin_ratio),
+        "첫 본문 문단은 헤더 표 하단 뒤에 원본 바깥여백을 두어야 함: 실제/원본 비율 {margin_ratio:.3}"
     );
 }

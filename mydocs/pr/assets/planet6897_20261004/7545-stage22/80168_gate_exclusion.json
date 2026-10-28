@@ -1,0 +1,15 @@
+{
+  "excluded_inputs": [
+    "samples/80168_regulatory_analysis.hwp",
+    "samples/issue1891/80168_regulatory_analysis.hwpx"
+  ],
+  "changed_gates": [
+    "tests/issue_1891.rs::HWP5_ORIGIN_SAMPLES",
+    "tests/fixtures/oracle_page_count_baseline.tsv"
+  ],
+  "reason": "이미 #7445로 이관한 전체 피델리티/쪽수 범위의 낡은157쪽 pin 제거.156을 새정답으로 변경하지 않음.",
+  "focused_passed": 2,
+  "focused_failed": 0,
+  "run_id": "6c88d340-8a1e-4b66-817c-6a75af35d8f4",
+  "preserved": "원본, PDF, 120–121쪽 검증, 76076 및 원장 다른 입력"
+}

@@ -1,0 +1,15 @@
+{
+  "full_test_head": "aa10d4093f60c4e0c12aa186f2464861acbf89ea",
+  "file": "src/parser/hwpx/mod.rs",
+  "change": "cfg(test) 모듈만 파일 끝으로 이동",
+  "test_module_content_identical": true,
+  "production_content_identical_after_excluding_test_module": true,
+  "production_content_sha256": "ba9b0f8f4fc4a9967f634a9a47308f7423450f6ab0a84771365aa0d50eb2d952",
+  "test_module_content_sha256": "8665d4cf77b3fd909780361fe1619d5e760567301bc215b0b71d5dfc11b2894f",
+  "focused_validation": {
+    "run_id": "9e74e6af-4526-4be1-83aa-d7423e030347",
+    "passed": 4,
+    "failed": 0
+  },
+  "workspace_all_targets_clippy": "PASS (-D warnings)"
+}

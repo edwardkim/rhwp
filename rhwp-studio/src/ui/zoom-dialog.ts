@@ -16,9 +16,13 @@ import {
   ZOOM_PRESET_PERCENTAGES,
   clampCustomZoomPercent,
   detectZoomChoice,
+  validateCustomZoomPercent,
   type ZoomChoice,
   type ZoomDialogValue,
 } from '../view/zoom-dialog-state.ts';
+
+import { t } from '../i18n/index.ts';
+const CUSTOM_ZOOM_ERROR_ID = 'zoom-dialog-custom-error';
 
 export interface ZoomDialogOptions {
   currentZoom: number;
@@ -35,12 +39,14 @@ export class ZoomDialog extends ModalDialog {
   private readonly initialPageMovement: PageMovementSettings;
   private readonly callback: (value: ZoomDialogValue) => void;
   private customInput!: HTMLInputElement;
+  private customError!: HTMLParagraphElement;
   private columnsInput!: HTMLInputElement;
   private rowsInput!: HTMLInputElement;
   private wheelHorizontalInput!: HTMLInputElement;
+  private inputEnterHandler: ((event: KeyboardEvent) => void) | null = null;
 
   constructor(options: ZoomDialogOptions) {
-    super('확대/축소', 540);
+    super(t('dialog.zoom.title'), 540);
     this.initialChoice = detectZoomChoice(options.currentZoom, options.fitZooms);
     this.initialArrangement = normalizePageArrangement(options.arrangement);
     this.initialPageMovement = normalizePageMovementSettings(options.pageMovement);
@@ -51,7 +57,24 @@ export class ZoomDialog extends ModalDialog {
     super.show();
     this.dialog.classList.add('zoom-dialog');
     const confirm = this.dialog.querySelector<HTMLButtonElement>('.dialog-btn-primary');
-    if (confirm) confirm.textContent = '설정';
+    if (confirm) {
+      confirm.textContent = t('dialog.zoom.confirm.text');
+      this.inputEnterHandler = (event) => {
+        if (event.target === this.customInput && event.key === 'Enter') {
+          event.preventDefault();
+          confirm.click();
+        }
+      };
+      document.addEventListener('keydown', this.inputEnterHandler, true);
+    }
+  }
+
+  override hide(): void {
+    if (this.inputEnterHandler) {
+      document.removeEventListener('keydown', this.inputEnterHandler, true);
+      this.inputEnterHandler = null;
+    }
+    super.hide();
   }
 
   protected createBody(): HTMLElement {
@@ -65,8 +88,18 @@ export class ZoomDialog extends ModalDialog {
     return body;
   }
 
-  protected onConfirm(): void {
+  protected onConfirm(): boolean {
     const zoomValue = this.selectedValue('zoom-choice');
+    let customPercent: number | undefined;
+    if (zoomValue === 'custom' && !this.customInput.disabled) {
+      const validation = validateCustomZoomPercent(this.customInput.value);
+      if (!validation.valid) {
+        this.showCustomZoomError(validation.message);
+        return false;
+      }
+      customPercent = validation.percent;
+      this.clearCustomZoomError();
+    }
     const arrangementValue = this.selectedValue('page-arrangement');
     const resolved = resolvePageViewSettings(
       this.arrangementFromValue(arrangementValue),
@@ -76,14 +109,15 @@ export class ZoomDialog extends ModalDialog {
       },
     );
     this.callback({
-      zoomChoice: this.zoomChoiceFromValue(zoomValue),
+      zoomChoice: this.zoomChoiceFromValue(zoomValue, customPercent),
       arrangement: resolved.arrangement,
       pageMovement: resolved.movement,
     });
+    return true;
   }
 
   private createZoomSection(): HTMLFieldSetElement {
-    const section = this.section('비율');
+    const section = this.section(t('dialog.zoom.section.label'));
     const grid = document.createElement('div');
     grid.className = 'zoom-dialog-grid';
     const presets = document.createElement('div');
@@ -103,13 +137,13 @@ export class ZoomDialog extends ModalDialog {
       this.radioRow(
         'zoom-choice',
         'fitWidth',
-        '폭 맞춤',
+        t('dialog.zoom.radioRow.label'),
         this.initialChoice.kind === 'fitWidth',
       ),
       this.radioRow(
         'zoom-choice',
         'fitPage',
-        '쪽 맞춤',
+        t('dialog.zoom.radioRow.label.xc096df'),
         this.initialChoice.kind === 'fitPage',
       ),
     );
@@ -117,20 +151,32 @@ export class ZoomDialog extends ModalDialog {
     const customRow = this.radioRow(
       'zoom-choice',
       'custom',
-      '사용자 정의',
+      t('dialog.zoom.radioRow.label.x0b64ca'),
       this.initialChoice.kind === 'custom',
     );
     this.customInput = this.numberInput(
       this.initialChoice.kind === 'custom' ? this.initialChoice.percent : 100,
       MIN_CUSTOM_ZOOM_PERCENT,
       MAX_CUSTOM_ZOOM_PERCENT,
-      '사용자 정의 배율',
+      t('dialog.zoom.createZoomSection.label'),
     );
+    this.customInput.setAttribute('aria-describedby', CUSTOM_ZOOM_ERROR_ID);
+    this.customInput.setAttribute('aria-invalid', 'false');
+    this.customInput.addEventListener('input', () => {
+      if (validateCustomZoomPercent(this.customInput.value).valid) {
+        this.clearCustomZoomError();
+      }
+    });
     const unit = document.createElement('span');
     unit.className = 'dialog-unit';
     unit.textContent = '%';
     customRow.append(this.customInput, unit);
-    adaptive.appendChild(customRow);
+    this.customError = document.createElement('p');
+    this.customError.id = CUSTOM_ZOOM_ERROR_ID;
+    this.customError.className = 'zoom-dialog-custom-error';
+    this.customError.setAttribute('role', 'alert');
+    this.customError.hidden = true;
+    adaptive.append(customRow, this.customError);
     grid.append(presets, adaptive);
     section.appendChild(grid);
     section.addEventListener('change', () => this.updateDependentInputs());
@@ -139,20 +185,20 @@ export class ZoomDialog extends ModalDialog {
   }
 
   private createMovementSection(): HTMLFieldSetElement {
-    const section = this.section('쪽 이동');
+    const section = this.section(t('dialog.zoom.section.label.xbd5df6'));
     const options = document.createElement('div');
     options.className = 'zoom-dialog-choice-column';
     options.append(
       this.radioRow(
         'page-movement',
         'vertical',
-        '세로 방향',
+        t('dialog.zoom.radioRow.label.xec44d2'),
         this.initialPageMovement.direction === 'vertical',
       ),
       this.radioRow(
         'page-movement',
         'horizontal',
-        '가로 방향',
+        t('dialog.zoom.radioRow.label.x4d8575'),
         this.initialPageMovement.direction === 'horizontal',
       ),
     );
@@ -164,10 +210,10 @@ export class ZoomDialog extends ModalDialog {
     this.wheelHorizontalInput.checked = this.initialPageMovement.wheelHorizontal;
     this.wheelHorizontalInput.setAttribute(
       'aria-label',
-      '마우스 휠을 사용하여 좌우로 스크롤하기',
+      t('dialog.zoom.createMovementSection.label'),
     );
     const wheelText = document.createElement('span');
-    wheelText.textContent = '마우스 휠을 사용하여 좌우로 스크롤하기';
+    wheelText.textContent = t('dialog.zoom.wheelText.text');
     wheelLabel.append(this.wheelHorizontalInput, wheelText);
     options.appendChild(wheelLabel);
     section.appendChild(options);
@@ -177,7 +223,7 @@ export class ZoomDialog extends ModalDialog {
   }
 
   private createArrangementSection(): HTMLFieldSetElement {
-    const section = this.section('쪽 모양');
+    const section = this.section(t('dialog.zoom.section.label.x10c080'));
     const grid = document.createElement('div');
     grid.className = 'zoom-dialog-grid';
     const standard = document.createElement('div');
@@ -186,10 +232,10 @@ export class ZoomDialog extends ModalDialog {
     multiple.className = 'zoom-dialog-choice-column';
 
     for (const [value, label] of [
-      ['auto', '자동'],
-      ['single', '한 쪽'],
-      ['double', '두 쪽'],
-      ['facing', '맞쪽'],
+      ['auto', t('dialog.zoom.createArrangementSection.label')],
+      ['single', t('dialog.zoom.createArrangementSection.label.x4300a4')],
+      ['double', t('dialog.zoom.createArrangementSection.label.x580846')],
+      ['facing', t('dialog.zoom.createArrangementSection.label.x11933b')],
     ] as const) {
       standard.appendChild(this.radioRow(
         'page-arrangement',
@@ -202,7 +248,7 @@ export class ZoomDialog extends ModalDialog {
     const multipleRow = this.radioRow(
       'page-arrangement',
       'multiple',
-      '여러 쪽',
+      t('dialog.zoom.radioRow.label.xf6736f'),
       this.initialArrangement.kind === 'multiple',
     );
     const columns = this.initialArrangement.kind === 'multiple'
@@ -215,13 +261,13 @@ export class ZoomDialog extends ModalDialog {
       columns,
       MIN_MULTIPLE_PAGES,
       MAX_MULTIPLE_PAGES,
-      '여러 쪽 가로 쪽 수',
+      t('dialog.zoom.numberInput.label'),
     );
     this.rowsInput = this.numberInput(
       rows,
       MIN_MULTIPLE_PAGES,
       MAX_MULTIPLE_PAGES,
-      '여러 쪽 세로 쪽 수',
+      t('dialog.zoom.numberInput.label.xc985e9'),
     );
     const multiply = document.createElement('span');
     multiply.className = 'zoom-dialog-multiply';
@@ -286,13 +332,31 @@ export class ZoomDialog extends ModalDialog {
     return this.dialog.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`)?.value ?? '';
   }
 
-  private zoomChoiceFromValue(value: string): ZoomChoice {
+  private zoomChoiceFromValue(value: string, customPercent?: number): ZoomChoice {
     if (value.startsWith('preset:')) {
       return { kind: 'preset', percent: clampCustomZoomPercent(Number(value.slice(7))) };
     }
     if (value === 'fitWidth') return { kind: 'fitWidth' };
     if (value === 'fitPage') return { kind: 'fitPage' };
-    return { kind: 'custom', percent: clampCustomZoomPercent(Number(this.customInput.value)) };
+    return {
+      kind: 'custom',
+      percent: customPercent ?? clampCustomZoomPercent(Number(this.customInput.value)),
+    };
+  }
+
+  private showCustomZoomError(message: string): void {
+    this.customError.textContent = message;
+    this.customError.hidden = false;
+    this.customInput.setAttribute('aria-invalid', 'true');
+    this.customInput.focus();
+    this.customInput.select();
+  }
+
+  private clearCustomZoomError(): void {
+    if (!this.customError) return;
+    this.customError.textContent = '';
+    this.customError.hidden = true;
+    this.customInput.setAttribute('aria-invalid', 'false');
   }
 
   private arrangementFromValue(value: string): PageArrangement {
@@ -313,7 +377,6 @@ export class ZoomDialog extends ModalDialog {
       || !this.rowsInput
       || !this.wheelHorizontalInput
     ) return;
-    this.customInput.disabled = this.selectedValue('zoom-choice') !== 'custom';
     const horizontal = this.selectedValue('page-movement') === 'horizontal';
     if (horizontal) {
       const single = this.dialog.querySelector<HTMLInputElement>(
@@ -324,6 +387,10 @@ export class ZoomDialog extends ModalDialog {
     this.dialog.querySelectorAll<HTMLInputElement>('input[name="page-arrangement"]')
       .forEach((input) => { input.disabled = horizontal && input.value !== 'single'; });
     const multiple = !horizontal && this.selectedValue('page-arrangement') === 'multiple';
+    this.dialog.querySelectorAll<HTMLInputElement>('input[name="zoom-choice"]')
+      .forEach((input) => { input.disabled = multiple; });
+    this.customInput.disabled = multiple || this.selectedValue('zoom-choice') !== 'custom';
+    if (this.customInput.disabled) this.clearCustomZoomError();
     this.columnsInput.disabled = !multiple;
     this.rowsInput.disabled = !multiple;
     this.wheelHorizontalInput.disabled = !horizontal;

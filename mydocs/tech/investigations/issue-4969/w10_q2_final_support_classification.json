@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-final-support-classification",
+  "issue": 4969,
+  "stage": "W10-Q2-final",
+  "status": "bounded-subset",
+  "evidence": {
+    "n2Checkpoint": "422a8f7bc",
+    "postMergeEvidenceCheckpoint": "167e3b3d2",
+    "upstreamDevel": "f6a6bee8f",
+    "mergeCommit": "c0998c280",
+    "n2Qualification": "mydocs/tech/investigations/issue-4969/w10_q2_d5_n2_final_qualification.json"
+  },
+  "commonEligibility": {
+    "writingMode": "horizontal-tb",
+    "direction": "ltr",
+    "bidiLevel": 0,
+    "exactPortableSource": true,
+    "variationAxes": [],
+    "syntheticStyle": false,
+    "targetClass": "direct-old-hangul-complex-required",
+    "homogeneousExactFaceStyleScript": true,
+    "paragraphLines": 1,
+    "lineRuns": 1,
+    "finalTargetCount": 1,
+    "alignment": "left",
+    "displayProjection": false,
+    "characterBorderOrFill": false,
+    "inlineControl": false,
+    "nonzeroDesignYPositioning": false,
+    "maxGlyphs": 4096,
+    "maxClusters": 4096
+  },
+  "activeLanes": [
+    {
+      "id": "stored-boundary-strict",
+      "additionalGate": "stored-or-existing-line-boundary-equals-final-shaped-range",
+      "output": "one-text-run-one-common-glyph-run-no-nominal-duplicate"
+    },
+    {
+      "id": "no-lineseg-atomic",
+      "additionalGate": "zero-model-lineseg-one-ordinary-frame-interval-no-edit-reflow-stored-prefix-or-split-cell",
+      "output": "atomically-publish-line-width-bbox-next-origin-and-common-glyph-run"
+    }
+  ],
+  "ownership": {
+    "singleMeasurementArcConsumers": [
+      "line-selection",
+      "text-run-bbox",
+      "next-origin",
+      "page-sidecar-and-common-glyph-run"
+    ],
+    "doubleGposAllowed": false,
+    "partialPublicationAllowed": false,
+    "fallbackOrder": [
+      "w9-k1",
+      "existing-k0-text-run"
+    ]
+  },
+  "backendMatrix": {
+    "nativeProducer": "qualified",
+    "nodeWasmProducer": "qualified",
+    "canvasKit": "bounded-strict-common-glyph-run",
+    "canvas2d": "deterministic-text-run-fallback",
+    "legacySvg": "deterministic-text-run-fallback",
+    "nativeSkia": "deterministic-text-run-fallback"
+  },
+  "resourceContract": {
+    "preparedPerUniqueExactSource": true,
+    "pageBlobAndFacePerUniqueSource": 1,
+    "defaultInlineJsonPreserved": true,
+    "fontByKeyOptIn": true,
+    "fontByKeyFetchPerDocumentGeneration": 1,
+    "rawFontOrHostPathInTrace": false
+  },
+  "deferred": [
+    "rtl-and-bidi-product-replay",
+    "latin-default-liga-general-activation",
+    "multi-line-or-multi-run-batch",
+    "mixed-target-run-splitting",
+    "multi-interval-frame",
+    "general-edit-reflow",
+    "stored-prefix",
+    "split-cell-recovery",
+    "inline-control",
+    "center-right-justify-distribute",
+    "ratio-identity-or-expansion",
+    "nonzero-gpos-y-positioning",
+    "variation-instance-q3",
+    "vertical-writing-q4",
+    "native-skia-portable-blob-typeface-replay",
+    "public-rejected-attempt-annotation"
+  ],
+  "validation": {
+    "focusedCrossImpactPassed": 98,
+    "nextestPassed": 8568,
+    "nextestSkipped": 43,
+    "nextestFailed": 0,
+    "nativeSkiaRhwpPassed": 3946,
+    "nativeSkiaRhwpIgnored": 13,
+    "nativeSkiaAuxiliaryPassed": 182,
+    "nativeAllTargetsClippy": "pass",
+    "dockerWasmBuild": "pass",
+    "optimizedWasmBytes": 9739125,
+    "studioTestsPassed": 1238,
+    "studioTestsSkipped": 1,
+    "studioTestsFailed": 0,
+    "canvasKitReplay": "pass",
+    "canvasKitFontCoverage": "pass",
+    "rendererBackendContract": "pass",
+    "studioBuild": "pass",
+    "privateCorpusUsed": false,
+    "hyperVOrHostInstalledFontUsed": false
+  },
+  "q3Handoff": {
+    "next": "W10-Q3-variable-font-instance-capability-audit-and-revised-plan",
+    "approved": false,
+    "reuse": [
+      "single-shaping-owner",
+      "atomic-rollback",
+      "exact-source-provenance",
+      "bounded-resource-reservation"
+    ],
+    "mustProveBeforeActivation": [
+      "official-exact-variable-font-source",
+      "fvar-axis-range-and-default",
+      "float-canonicalization",
+      "instance-identity-and-cache-key",
+      "backend-instance-or-outline-capability"
+    ]
+  },
+  "resultApproved": true,
+  "checkpointCommitApproved": true,
+  "pushReady": false
+}

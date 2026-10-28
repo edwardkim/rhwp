@@ -1,0 +1,107 @@
+[
+  {
+    "paragraph": {
+      "id": "2147483648",
+      "paraPrIDRef": "3",
+      "styleIDRef": "11",
+      "pageBreak": "0",
+      "columnBreak": "0",
+      "merged": "0"
+    },
+    "text": " 홋카이도지역 3곳, 토호쿠지역 3곳, 칸토지역 23곳, 코신에츠지역 4곳, 호쿠리쿠지역 4곳, 토카이지역 10곳, 킨키지역 14곳, 츄고쿠지역 5곳, 큐슈지역 13곳임. 인정기관 관련 의료기관에 대해서도 인정하는 제도를 운영하고 있으며, 같은 기간 동안 11곳 의료기관이 인정을 받음. 인정기관의 인정이 취소되면 관련 의료기관의 인정은 자동으로 취소됨. https://www.jsh.or.jp/medical/specialists/certified_facility ",
+    "lines": [
+      {
+        "textpos": "0",
+        "vertpos": "0",
+        "vertsize": "900",
+        "textheight": "900",
+        "baseline": "765",
+        "spacing": "272",
+        "horzpos": "0",
+        "horzsize": "45352",
+        "flags": "393216"
+      },
+      {
+        "textpos": "75",
+        "vertpos": "1172",
+        "vertsize": "900",
+        "textheight": "900",
+        "baseline": "765",
+        "spacing": "272",
+        "horzpos": "0",
+        "horzsize": "45352",
+        "flags": "1441792"
+      },
+      {
+        "textpos": "139",
+        "vertpos": "2344",
+        "vertsize": "900",
+        "textheight": "900",
+        "baseline": "765",
+        "spacing": "272",
+        "horzpos": "0",
+        "horzsize": "45352",
+        "flags": "1441792"
+      },
+      {
+        "textpos": "203",
+        "vertpos": "3516",
+        "vertsize": "900",
+        "textheight": "900",
+        "baseline": "765",
+        "spacing": "272",
+        "horzpos": "0",
+        "horzsize": "45352",
+        "flags": "1441792"
+      }
+    ],
+    "shape_xml": "<ns0:paraPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:ns2=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"3\" tabPrIDRef=\"1\" condense=\"0\" fontLineHeight=\"0\" snapToGrid=\"0\" suppressLineNumbers=\"0\" checked=\"0\" textDir=\"AUTO\"><ns0:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\" /><ns0:heading type=\"NONE\" idRef=\"0\" level=\"0\" /><ns0:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\" /><ns0:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\" /><ns1:switch><ns1:case ns1:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><ns0:margin><ns2:intent value=\"-1310\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"130\" unit=\"HWPUNIT\" /></ns1:case><ns1:default><ns0:margin><ns2:intent value=\"-2620\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"130\" unit=\"HWPUNIT\" /></ns1:default></ns1:switch><ns0:border borderFillIDRef=\"2\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\" /></ns0:paraPr>"
+  },
+  {
+    "paragraph": {
+      "id": "2147483648",
+      "paraPrIDRef": "3",
+      "styleIDRef": "11",
+      "pageBreak": "0",
+      "columnBreak": "0",
+      "merged": "0"
+    },
+    "text": " 해외 환자를 받을 수 있는 시설로서의 요건으로 제시되어 있으나, 일본 내 시설요건과 크게 다르지 않을 것으로 판단함. 간이식에서 국제공헌의 방식 - 제33회 일본간이식연구회 긴급특별기획, 간 56권 11호(2015), pp.555-566.  https://www.jstage.jst.go.jp/article/kanzo/56/11/56_555/_pdf/-char/ja ",
+    "lines": [
+      {
+        "textpos": "0",
+        "vertpos": "0",
+        "vertsize": "900",
+        "textheight": "900",
+        "baseline": "765",
+        "spacing": "272",
+        "horzpos": "0",
+        "horzsize": "45352",
+        "flags": "393216"
+      },
+      {
+        "textpos": "70",
+        "vertpos": "1172",
+        "vertsize": "900",
+        "textheight": "900",
+        "baseline": "765",
+        "spacing": "272",
+        "horzpos": "0",
+        "horzsize": "45352",
+        "flags": "1441792"
+      },
+      {
+        "textpos": "143",
+        "vertpos": "2344",
+        "vertsize": "900",
+        "textheight": "900",
+        "baseline": "765",
+        "spacing": "272",
+        "horzpos": "0",
+        "horzsize": "45352",
+        "flags": "1441792"
+      }
+    ],
+    "shape_xml": "<ns0:paraPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:ns2=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"3\" tabPrIDRef=\"1\" condense=\"0\" fontLineHeight=\"0\" snapToGrid=\"0\" suppressLineNumbers=\"0\" checked=\"0\" textDir=\"AUTO\"><ns0:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\" /><ns0:heading type=\"NONE\" idRef=\"0\" level=\"0\" /><ns0:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\" /><ns0:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\" /><ns1:switch><ns1:case ns1:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><ns0:margin><ns2:intent value=\"-1310\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"130\" unit=\"HWPUNIT\" /></ns1:case><ns1:default><ns0:margin><ns2:intent value=\"-2620\" unit=\"HWPUNIT\" /><ns2:left value=\"0\" unit=\"HWPUNIT\" /><ns2:right value=\"0\" unit=\"HWPUNIT\" /><ns2:prev value=\"0\" unit=\"HWPUNIT\" /><ns2:next value=\"0\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"130\" unit=\"HWPUNIT\" /></ns1:default></ns1:switch><ns0:border borderFillIDRef=\"2\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\" /></ns0:paraPr>"
+  }
+]

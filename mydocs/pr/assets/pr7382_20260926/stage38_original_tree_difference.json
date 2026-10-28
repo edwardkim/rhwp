@@ -1,0 +1,25 @@
+[
+  {
+    "key": "original",
+    "pages": 2,
+    "changed_pages": []
+  },
+  {
+    "key": "resaved",
+    "pages": 2,
+    "changed_pages": [
+      1,
+      2
+    ]
+  },
+  {
+    "key": "hwpx",
+    "pages": 215,
+    "changed_pages": []
+  },
+  {
+    "key": "hwp",
+    "pages": 215,
+    "changed_pages": []
+  }
+]

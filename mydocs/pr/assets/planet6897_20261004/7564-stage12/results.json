@@ -1,0 +1,21 @@
+{
+  "status": "individual_scope_pass_integration_pending",
+  "production_code_candidate": "4cfe96e52",
+  "nextest": {
+    "passed": 3,
+    "failed": 0,
+    "exit_code": 0,
+    "log_sha256": "3dc4f9e32b89b3e80798e6becfc79c25cd1738a83fd0253c0d19d7f9b927254b"
+  },
+  "native_and_fresh_wasm": {
+    "scope": "public Hancom-saved synthetic document",
+    "pages": 1,
+    "minimum": 99.87139,
+    "below_90": 0,
+    "missing_pages": 0
+  },
+  "remaining": [
+    "other individual PR reviews",
+    "final integrated full gates"
+  ]
+}

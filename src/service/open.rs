@@ -297,8 +297,8 @@ impl OpenedDocument {
     /// 중복"이 정보이기 때문이다.
     pub fn info(&self) -> DocumentInfo {
         let document = self.document();
-        let version = if self.format == FileFormat::Hml {
-            // HML 에는 HWP 바이너리 버전이 없다. 0.0.0.0 을 지어내지 않는다.
+        let version = if matches!(self.format, FileFormat::Hml | FileFormat::Pdf) {
+            // HML/PDF에는 HWP 바이너리 버전이 없다. 0.0.0.0 을 지어내지 않는다.
             None
         } else {
             Some(format!(
@@ -386,6 +386,7 @@ pub fn format_token(format: FileFormat) -> &'static str {
         FileFormat::Hwpx => "hwpx",
         FileFormat::Hwp3 => "hwp3",
         FileFormat::Hml => "hml",
+        FileFormat::Pdf => "pdf",
         FileFormat::DrmProtected => "drm-protected",
         FileFormat::Empty => "empty",
         FileFormat::Unknown => "unknown",
@@ -398,8 +399,9 @@ pub fn format_token(format: FileFormat) -> &'static str {
 /// 결국 거절하지만, 거절의 **이름**이 형식 판정에서 나와야 소비자가 "지원하지
 /// 않는 형식"과 "손상된 문서"를 가를 수 있다.
 fn is_openable(format: FileFormat) -> bool {
-    matches!(
-        format,
-        FileFormat::Hwp | FileFormat::Hwpx | FileFormat::Hwp3 | FileFormat::Hml
-    )
+    (format == FileFormat::Pdf && cfg!(feature = "pdf-import"))
+        || matches!(
+            format,
+            FileFormat::Hwp | FileFormat::Hwpx | FileFormat::Hwp3 | FileFormat::Hml
+        )
 }

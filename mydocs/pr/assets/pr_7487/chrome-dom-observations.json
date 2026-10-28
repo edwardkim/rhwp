@@ -1,0 +1,306 @@
+[
+  {
+    "label": "200-enter33-stale-caret",
+    "caret": "position: absolute; width: 2px; background: rgb(0, 0, 0); pointer-events: none; z-index: 10; display: block; left: 530.4px; top: 132.3px; height: 13.3px; opacity: 0;",
+    "pages": [
+      {
+        "rect": {
+          "bottom": 1160,
+          "height": 1122.5,
+          "left": 213.14453125,
+          "right": 1006.83984375,
+          "top": 37.5,
+          "width": 793.6953125,
+          "x": 213.14453125,
+          "y": 37.5
+        },
+        "style": "top: 10px; left: 50%; transform: translateX(-50%); width: 793.7px; height: 1122.5px;"
+      },
+      {
+        "rect": {
+          "bottom": 2292.5,
+          "height": 1122.5,
+          "left": 213.14453125,
+          "right": 1006.83984375,
+          "top": 1170,
+          "width": 793.6953125,
+          "x": 213.14453125,
+          "y": 1170
+        },
+        "style": "top: 1142.5px; left: 50%; transform: translateX(-50%); width: 793.7px; height: 1122.5px;"
+      }
+    ],
+    "status": "1 / 2 쪽\n구역: 1 / 1\n삽입\n새 문서.hwp — 1페이지\n100%"
+  },
+  {
+    "label": "200-after-a-caret-updated",
+    "caret": "position: absolute; width: 2px; background: rgb(0, 0, 0); pointer-events: none; z-index: 10; display: block; left: 141.15px; top: 1275.4px; height: 13.3px; opacity: 1;",
+    "pages": [
+      {
+        "rect": {
+          "bottom": 586,
+          "height": 1122.5,
+          "left": 213.14453125,
+          "right": 1006.83984375,
+          "top": -536.5,
+          "width": 793.6953125,
+          "x": 213.14453125,
+          "y": -536.5
+        },
+        "style": "top: 10px; left: 50%; transform: translateX(-50%); width: 793.7px; height: 1122.5px;"
+      },
+      {
+        "rect": {
+          "bottom": 1718.5,
+          "height": 1122.5,
+          "left": 213.14453125,
+          "right": 1006.83984375,
+          "top": 596,
+          "width": 793.6953125,
+          "x": 213.14453125,
+          "y": 596
+        },
+        "style": "top: 1142.5px; left: 50%; transform: translateX(-50%); width: 793.7px; height: 1122.5px;"
+      }
+    ],
+    "status": "2 / 2 쪽\n구역: 1 / 1\n삽입\n새 문서.hwp — 1페이지\n100%"
+  },
+  {
+    "label": "300-enter21",
+    "caret": "position: absolute; width: 2px; background: rgb(0, 0, 0); pointer-events: none; z-index: 10; display: block; left: 133.55px; top: 982.3px; height: 13.3px; opacity: 1;",
+    "pages": [
+      {
+        "rect": {
+          "bottom": 879,
+          "height": 1122.5,
+          "left": 213.14453125,
+          "right": 1006.83984375,
+          "top": -243.5,
+          "width": 793.6953125,
+          "x": 213.14453125,
+          "y": -243.5
+        },
+        "style": "top: 10px; left: 50%; transform: translateX(-50%); width: 793.7px; height: 1122.5px;"
+      }
+    ],
+    "status": "1 / 1 쪽\n구역: 1 / 1\n삽입\n새 문서.hwp — 1페이지\n100%"
+  },
+  {
+    "label": "300-enter22-stale-caret",
+    "caret": "position: absolute; width: 2px; background: rgb(0, 0, 0); pointer-events: none; z-index: 10; display: block; left: 530.4px; top: 132.3px; height: 13.3px; opacity: 1;",
+    "pages": [
+      {
+        "rect": {
+          "bottom": 1160,
+          "height": 1122.5,
+          "left": 213.14453125,
+          "right": 1006.83984375,
+          "top": 37.5,
+          "width": 793.6953125,
+          "x": 213.14453125,
+          "y": 37.5
+        },
+        "style": "top: 10px; left: 50%; transform: translateX(-50%); width: 793.7px; height: 1122.5px;"
+      },
+      {
+        "rect": {
+          "bottom": 2292.5,
+          "height": 1122.5,
+          "left": 213.14453125,
+          "right": 1006.83984375,
+          "top": 1170,
+          "width": 793.6953125,
+          "x": 213.14453125,
+          "y": 1170
+        },
+        "style": "top: 1142.5px; left: 50%; transform: translateX(-50%); width: 793.7px; height: 1122.5px;"
+      }
+    ],
+    "status": "1 / 2 쪽\n구역: 1 / 1\n삽입\n새 문서.hwp — 1페이지\n100%"
+  },
+  {
+    "label": "300-after-a-caret-updated",
+    "caret": "position: absolute; width: 2px; background: rgb(0, 0, 0); pointer-events: none; z-index: 10; display: block; left: 141.15px; top: 1275.4px; height: 13.3px; opacity: 1;",
+    "pages": [
+      {
+        "rect": {
+          "bottom": 586,
+          "height": 1122.5,
+          "left": 213.14453125,
+          "right": 1006.83984375,
+          "top": -536.5,
+          "width": 793.6953125,
+          "x": 213.14453125,
+          "y": -536.5
+        },
+        "style": "top: 10px; left: 50%; transform: translateX(-50%); width: 793.7px; height: 1122.5px;"
+      },
+      {
+        "rect": {
+          "bottom": 1718.5,
+          "height": 1122.5,
+          "left": 213.14453125,
+          "right": 1006.83984375,
+          "top": 596,
+          "width": 793.6953125,
+          "x": 213.14453125,
+          "y": 596
+        },
+        "style": "top: 1142.5px; left: 50%; transform: translateX(-50%); width: 793.7px; height: 1122.5px;"
+      }
+    ],
+    "status": "2 / 2 쪽\n구역: 1 / 1\n삽입\n새 문서.hwp — 1페이지\n100%"
+  },
+  {
+    "label": "160-enter41-stale-caret",
+    "caret": "position: absolute; width: 2px; background: rgb(0, 0, 0); pointer-events: none; z-index: 10; display: block; left: 530.4px; top: 132.3px; height: 13.3px; opacity: 1;",
+    "pages": [
+      {
+        "rect": {
+          "bottom": 1160,
+          "height": 1122.5,
+          "left": 213.14453125,
+          "right": 1006.83984375,
+          "top": 37.5,
+          "width": 793.6953125,
+          "x": 213.14453125,
+          "y": 37.5
+        },
+        "style": "top: 10px; left: 50%; transform: translateX(-50%); width: 793.7px; height: 1122.5px;"
+      },
+      {
+        "rect": {
+          "bottom": 2292.5,
+          "height": 1122.5,
+          "left": 213.14453125,
+          "right": 1006.83984375,
+          "top": 1170,
+          "width": 793.6953125,
+          "x": 213.14453125,
+          "y": 1170
+        },
+        "style": "top: 1142.5px; left: 50%; transform: translateX(-50%); width: 793.7px; height: 1122.5px;"
+      }
+    ],
+    "status": "1 / 2 쪽\n구역: 1 / 1\n삽입\n새 문서.hwp — 1페이지\n100%"
+  },
+  {
+    "label": "160-after-a-caret-updated",
+    "caret": "position: absolute; width: 2px; background: rgb(0, 0, 0); pointer-events: none; z-index: 10; display: block; left: 141.15px; top: 1275.4px; height: 13.3px; opacity: 1;",
+    "pages": [
+      {
+        "rect": {
+          "bottom": 586,
+          "height": 1122.5,
+          "left": 213.14453125,
+          "right": 1006.83984375,
+          "top": -536.5,
+          "width": 793.6953125,
+          "x": 213.14453125,
+          "y": -536.5
+        },
+        "style": "top: 10px; left: 50%; transform: translateX(-50%); width: 793.7px; height: 1122.5px;"
+      },
+      {
+        "rect": {
+          "bottom": 1718.5,
+          "height": 1122.5,
+          "left": 213.14453125,
+          "right": 1006.83984375,
+          "top": 596,
+          "width": 793.6953125,
+          "x": 213.14453125,
+          "y": 596
+        },
+        "style": "top: 1142.5px; left: 50%; transform: translateX(-50%); width: 793.7px; height: 1122.5px;"
+      }
+    ],
+    "status": "2 / 2 쪽\n구역: 1 / 1\n삽입\n새 문서.hwp — 1페이지\n100%"
+  },
+  {
+    "label": "300-zoom66-enter21",
+    "caret": "position: absolute; width: 2px; background: rgb(0, 0, 0); pointer-events: none; z-index: 10; display: block; left: 137.702px; top: 648.318px; height: 8.778px; opacity: 1;",
+    "pages": [
+      {
+        "rect": {
+          "bottom": 832.4375,
+          "height": 740.84375,
+          "left": 82.8515625,
+          "right": 606.6875,
+          "top": 91.59375,
+          "width": 523.8359375,
+          "x": 82.8515625,
+          "y": 91.59375
+        },
+        "style": "top: 6.6px; left: 62.858px; transform: none; width: 523.842px; height: 740.85px;"
+      }
+    ],
+    "status": "1 / 1 쪽\n구역: 1 / 1\n삽입\n새 문서.hwp — 1페이지\n66%"
+  },
+  {
+    "label": "300-zoom66-enter22-stale-caret",
+    "caret": "position: absolute; width: 2px; background: rgb(0, 0, 0); pointer-events: none; z-index: 10; display: block; left: 664.844px; top: 87.318px; height: 8.778px; opacity: 1;",
+    "pages": [
+      {
+        "rect": {
+          "bottom": 832.4375,
+          "height": 740.84375,
+          "left": 82.8515625,
+          "right": 606.6875,
+          "top": 91.59375,
+          "width": 523.8359375,
+          "x": 82.8515625,
+          "y": 91.59375
+        },
+        "style": "top: 6.6px; left: 62.858px; transform: none; width: 523.842px; height: 740.85px;"
+      },
+      {
+        "rect": {
+          "bottom": 832.4375,
+          "height": 740.84375,
+          "left": 613.296875,
+          "right": 1137.1328125,
+          "top": 91.59375,
+          "width": 523.8359375,
+          "x": 613.296875,
+          "y": 91.59375
+        },
+        "style": "top: 6.6px; left: 593.3px; transform: none; width: 523.842px; height: 740.85px;"
+      }
+    ],
+    "status": "2 / 2 쪽\n구역: 1 / 1\n삽입\n새 문서.hwp — 1페이지\n66%"
+  },
+  {
+    "label": "300-zoom66-after-a-caret-updated",
+    "caret": "position: absolute; width: 2px; background: rgb(0, 0, 0); pointer-events: none; z-index: 10; display: block; left: 673.16px; top: 94.314px; height: 8.778px; opacity: 1;",
+    "pages": [
+      {
+        "rect": {
+          "bottom": 832.4375,
+          "height": 740.84375,
+          "left": 82.8515625,
+          "right": 606.6875,
+          "top": 91.59375,
+          "width": 523.8359375,
+          "x": 82.8515625,
+          "y": 91.59375
+        },
+        "style": "top: 6.6px; left: 62.858px; transform: none; width: 523.842px; height: 740.85px;"
+      },
+      {
+        "rect": {
+          "bottom": 832.4375,
+          "height": 740.84375,
+          "left": 613.296875,
+          "right": 1137.1328125,
+          "top": 91.59375,
+          "width": 523.8359375,
+          "x": 613.296875,
+          "y": 91.59375
+        },
+        "style": "top: 6.6px; left: 593.3px; transform: none; width: 523.842px; height: 740.85px;"
+      }
+    ],
+    "status": "2 / 2 쪽\n구역: 1 / 1\n삽입\n새 문서.hwp — 1페이지\n66%"
+  }
+]

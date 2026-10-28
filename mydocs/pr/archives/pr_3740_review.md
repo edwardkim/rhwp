@@ -78,7 +78,7 @@ full integration/CI는 별도 근거로 취급했다.
 | 같은 이름의 `.hwpx` | 동등 HWPX 입력 | `8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c` |
 | `pdf/pr3740/hwp/...-2020.pdf` | 한컴 2020 기준 PDF | `7879ffee6313575132187c44c0090cd2e62c32c12c29b7eabd989181acf27b3a` |
 
-대표 증적은 p78–80 표 25 URL 각주 owner의 [Stage 17 visual sweep](../../working/task_m100_3738_stage17_visual_sweep.md)과
+대표 증적은 p78–80 표 25 URL 각주 owner의 [Stage 17 visual sweep](../../working/archives/task_m100_3738_stage17_visual_sweep.md)과
 `mydocs/pr/assets/pr_3740_issue3738_stage17/`의 review PNG, p90 표 27 row owner의
 `mydocs/pr/assets/pr_3740_issue3738_stage31_p90_table_owner/`에 보존했다. p23–24, p25–27,
 p30–32, p37, p43, p44–45, p52–54, p58–59, p66–67, p68–70, p76–80, p83–85, p90, p127은

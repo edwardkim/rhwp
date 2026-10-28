@@ -105,8 +105,14 @@ pub(crate) fn edit_verify_report(
             );
         }
     };
-    let diff =
-        rhwp::serializer::hwpx::roundtrip::diff_documents(doc.document(), reloaded.document());
+    let diff = if rhwp::parser::detect_format(out_bytes) == rhwp::parser::FileFormat::Hwpx {
+        rhwp::serializer::hwpx::roundtrip::diff_exported_hwpx_documents(
+            doc.document(),
+            reloaded.document(),
+        )
+    } else {
+        rhwp::serializer::hwpx::roundtrip::diff_documents(doc.document(), reloaded.document())
+    };
     let diff = if source_is_hwpx {
         rhwp::serializer::hwpx::roundtrip::strip_hwpx_to_hwp_noise(diff)
     } else {

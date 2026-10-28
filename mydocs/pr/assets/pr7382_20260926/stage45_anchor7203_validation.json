@@ -1,0 +1,347 @@
+{
+  "git_parent": "eef20ea17b2d82cfe9293cd440e733f846779189",
+  "runtime_head": "96c4e47771ecf7f46016bffa1e09c467b2878cbb",
+  "base": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "test_path": "tests/cases/issue_7203_float_table_stored_anchor_top.rs",
+  "test_sha256": "aab7ae77e9c2f3ddbf6e733825b93c1b39a12e8076df7fc04d8ea4a1024faff1",
+  "product_source_changed": false,
+  "fixture": {
+    "key": "anchor7203",
+    "input": "samples/issue6111/56345_regulatory_impact_analysis.hwp",
+    "input_sha256": "58013017c3a3dc7e2d278b99c5b4fa1c61de0aa861f913a2c41a49145baadafc",
+    "pdf": "pdf/issue6111/56345_regulatory_impact_analysis-hwp-2020.pdf",
+    "pdf_exists": true,
+    "pdf_sha256": "c66ea20c3b8d6b31af73752e170372bc7af839c38812991125bdde4dfba35abb",
+    "pdf_pages": 21,
+    "selected_pages": "11"
+  },
+  "expected": {
+    "stored_anchor_advance_hu": 2432,
+    "following_outer_top_hu": 141,
+    "visible_advance_px": 34.306666666666665,
+    "advance_tolerance_px_unchanged": 0.2,
+    "pdf_following_table_top_px": 436.961344,
+    "absolute_tolerance_px_existing_test_family": 1.5
+  },
+  "old_actual_advance_px": 34.31,
+  "old_test_failed_exit_code": 100,
+  "new_test_family": {
+    "passed": 5,
+    "skipped": 207,
+    "seconds": 4.086,
+    "exit_code": 0,
+    "suite": "regression_suite_002"
+  },
+  "gates": [
+    {
+      "name": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 5.7663021655753255
+    },
+    {
+      "name": "fmt-apply",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 29.141747916582972
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 29.763660208322108
+    },
+    {
+      "name": "focused-derived",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_002",
+        "-E",
+        "test(issue_7203_float_table_stored_anchor_top)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 30.695337334182113
+    },
+    {
+      "name": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 1.329077749978751
+    },
+    {
+      "name": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.6210095835849643
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 1.2817237908020616
+    },
+    {
+      "name": "clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 18.729659541044384
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0,
+      "seconds": 1.5791091667488217
+    },
+    {
+      "name": "diff",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.06595779210329056
+    }
+  ],
+  "independent_pdf_drawings": [
+    {
+      "rect_px": [
+        77.238668,
+        240.217367,
+        712.257324,
+        240.217367
+      ],
+      "width": 0.36000001430511475,
+      "items": "[('l', Point(57.92900085449219, 180.16302490234375), Point(534.1929931640625, 180.16302490234375))]"
+    },
+    {
+      "rect_px": [
+        77.238668,
+        263.392008,
+        712.257324,
+        263.392008
+      ],
+      "width": 0.36000001430511475,
+      "items": "[('l', Point(57.92900085449219, 197.54400634765625), Point(534.1929931640625, 197.54400634765625))]"
+    },
+    {
+      "rect_px": [
+        77.238668,
+        286.726644,
+        712.257324,
+        286.726644
+      ],
+      "width": 0.36000001430511475,
+      "items": "[('l', Point(57.92900085449219, 215.04498291015625), Point(534.1929931640625, 215.04498291015625))]"
+    },
+    {
+      "rect_px": [
+        77.238668,
+        309.901367,
+        712.257324,
+        309.901367
+      ],
+      "width": 0.36000001430511475,
+      "items": "[('l', Point(57.92900085449219, 232.426025390625), Point(534.1929931640625, 232.426025390625))]"
+    },
+    {
+      "rect_px": [
+        77.238668,
+        333.236003,
+        712.257324,
+        333.236003
+      ],
+      "width": 0.36000001430511475,
+      "items": "[('l', Point(57.92900085449219, 249.927001953125), Point(534.1929931640625, 249.927001953125))]"
+    },
+    {
+      "rect_px": [
+        77.238668,
+        356.410645,
+        712.257324,
+        356.410645
+      ],
+      "width": 0.36000001430511475,
+      "items": "[('l', Point(57.92900085449219, 267.3079833984375), Point(534.1929931640625, 267.3079833984375))]"
+    },
+    {
+      "rect_px": [
+        77.238668,
+        356.410645,
+        712.257324,
+        356.410645
+      ],
+      "width": 0.36000001430511475,
+      "items": "[('l', Point(57.92900085449219, 267.3079833984375), Point(534.1929931640625, 267.3079833984375))]"
+    },
+    {
+      "rect_px": [
+        77.238668,
+        240.217367,
+        712.257324,
+        240.217367
+      ],
+      "width": 0.36000001430511475,
+      "items": "[('l', Point(57.92900085449219, 180.16302490234375), Point(534.1929931640625, 180.16302490234375))]"
+    },
+    {
+      "rect_px": [
+        77.238668,
+        436.961344,
+        712.257324,
+        436.961344
+      ],
+      "width": 0.36000001430511475,
+      "items": "[('l', Point(57.92900085449219, 327.72100830078125), Point(534.1929931640625, 327.72100830078125))]"
+    },
+    {
+      "rect_px": [
+        77.238668,
+        460.29598,
+        712.257324,
+        460.29598
+      ],
+      "width": 0.36000001430511475,
+      "items": "[('l', Point(57.92900085449219, 345.22198486328125), Point(534.1929931640625, 345.22198486328125))]"
+    },
+    {
+      "rect_px": [
+        77.238668,
+        483.470662,
+        712.257324,
+        483.470662
+      ],
+      "width": 0.36000001430511475,
+      "items": "[('l', Point(57.92900085449219, 362.6029968261719), Point(534.1929931640625, 362.6029968261719))]"
+    },
+    {
+      "rect_px": [
+        77.238668,
+        506.805339,
+        712.257324,
+        506.805339
+      ],
+      "width": 0.36000001430511475,
+      "items": "[('l', Point(57.92900085449219, 380.10400390625), Point(534.1929931640625, 380.10400390625))]"
+    },
+    {
+      "rect_px": [
+        77.238668,
+        529.97998,
+        712.257324,
+        529.97998
+      ],
+      "width": 0.36000001430511475,
+      "items": "[('l', Point(57.92900085449219, 397.4849853515625), Point(534.1929931640625, 397.4849853515625))]"
+    },
+    {
+      "rect_px": [
+        77.238668,
+        594.869344,
+        712.257324,
+        594.869344
+      ],
+      "width": 0.36000001430511475,
+      "items": "[('l', Point(57.92900085449219, 446.1520080566406), Point(534.1929931640625, 446.1520080566406))]"
+    },
+    {
+      "rect_px": [
+        77.238668,
+        436.961344,
+        712.257324,
+        436.961344
+      ],
+      "width": 0.36000001430511475,
+      "items": "[('l', Point(57.92900085449219, 327.72100830078125), Point(534.1929931640625, 327.72100830078125))]"
+    }
+  ],
+  "source_metadata_dump_sha256": {
+    "186": "a6eeb6abf35d54d1eecd3943ac89cf977df345cc802326efba884bd9f5c11ed0",
+    "187": "24606591b2a5c79ca62be9f114ab60d27a23e1e55ae5fcc9aad4326127ebbe03"
+  },
+  "visual": {
+    "direct_read": [
+      "base11 review",
+      "head11 review",
+      "head11 standalone overlay"
+    ],
+    "whole_document_fidelity_claimed": false,
+    "remaining": "앞 제목·설명 텍스트의 잔여 위치 차이도 있으며 점수 통과만으로 전체 일치를 주장하지 않음",
+    "base": 93.74164,
+    "head": 93.19785
+  },
+  "new_test_on_base_executed": false,
+  "full_nextest_on_new_test_head_executed": false
+}

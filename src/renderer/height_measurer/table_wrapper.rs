@@ -1,0 +1,234 @@
+//! 펼친 표의 부모 상자와 자식 개체가 각각 소유하는 원점·점유 높이.
+
+use crate::model::paragraph::LineSeg;
+use crate::model::shape::{HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo};
+use crate::model::style::{Alignment, BorderLineType};
+use crate::model::table::{Table, TablePageBreak};
+use crate::renderer::float_placement::signed_hwpunit;
+use crate::renderer::hwpunit_to_px;
+use crate::renderer::style_resolver::ResolvedStyleSet;
+
+/// 빈 글자만 있어도 셀 채움과 자식 문단의 가로 프레임은 독립적인 소유자다.
+/// 펼침에서 원점을 다시 추측하지 않고 일반 셀·문단 배치가 이 정보를 소비한다.
+pub(crate) fn wrapper_owns_paint_or_horizontal_frame(
+    table: &Table,
+    styles: &ResolvedStyleSet,
+) -> bool {
+    let Some(cell) = table.cells.first() else {
+        return false;
+    };
+    let has_fill = |id: u16| {
+        id.checked_sub(1)
+            .and_then(|index| styles.border_styles.get(usize::from(index)))
+            .is_some_and(|style| {
+                style.fill_color.is_some()
+                    || style.pattern.is_some()
+                    || style.gradient.is_some()
+                    || style.image_fill.is_some()
+            })
+    };
+    if has_fill(table.border_fill_id)
+        || has_fill(cell.border_fill_id)
+        || table.zones.iter().any(|zone| has_fill(zone.border_fill_id))
+    {
+        return true;
+    }
+    cell.paragraphs.iter().any(|paragraph| {
+        crate::renderer::height_measurer::sole_nested_table_in_paragraph(paragraph)
+            .is_some_and(|child| child.common.treat_as_char)
+            && styles
+                .para_styles
+                .get(paragraph.para_shape_id as usize)
+                .is_some_and(|style| {
+                    matches!(
+                        style.alignment,
+                        Alignment::Center | Alignment::Right | Alignment::Distribute
+                    ) || style.margin_left != 0.0
+                        || style.margin_right != 0.0
+                        || style.indent != 0.0
+                })
+    })
+}
+
+/// 나뉠 수 있는 부모 행의 외곽선은 자식 행 컷과 별개인 물리 프레임이다.
+/// 통째로 배치하는 글자 취급 래퍼의 외곽선은 기존 래퍼 배치가 직접 그리므로
+/// 그 외곽선만으로 자식 행 측정과 빈 호스트 줄을 다시 합산하지 않는다.
+pub(super) fn wrapper_owns_row_fragment_frame(table: &Table, styles: &ResolvedStyleSet) -> bool {
+    if table.common.treat_as_char || table.page_break != TablePageBreak::RowBreak {
+        return false;
+    }
+    let has_border = |id: u16| {
+        id.checked_sub(1)
+            .and_then(|index| styles.border_styles.get(usize::from(index)))
+            .is_some_and(|style| {
+                style
+                    .borders
+                    .iter()
+                    .any(|border| border.line_type != BorderLineType::None)
+            })
+    };
+    has_border(table.border_fill_id)
+        || table
+            .cells
+            .first()
+            .is_some_and(|cell| has_border(cell.border_fill_id))
+        || table
+            .zones
+            .iter()
+            .any(|zone| has_border(zone.border_fill_id))
+}
+
+impl super::MeasuredTable {
+    /// 측정에서 확정한 펼침 깊이를 따라가며 행 컷의 실제 소유 표를 돌려준다.
+    /// 분할기가 모양만 보고 다시 펼치면 테두리·채움을 가진 부모의 행을 잃는다.
+    pub(crate) fn row_geometry_table<'a>(&self, table: &'a Table) -> &'a Table {
+        let mut owner = table;
+        for _ in 0..self.unwrapped_table_depth {
+            let [cell] = owner.cells.as_slice() else {
+                panic!("측정에서 펼친 표의 단일 셀 소유 구조가 변경됨");
+            };
+            let [paragraph] = cell.paragraphs.as_slice() else {
+                panic!("측정에서 펼친 표의 단일 문단 소유 구조가 변경됨");
+            };
+            owner = sole_nested_table_in_paragraph(paragraph)
+                .expect("측정에서 펼친 표의 유일한 자식이 유지되어야 함");
+        }
+        owner
+    }
+}
+
+/// 표 하나와 배치 상자가 없는 마커만 있는 문단의 유일한 자식을 반환한다.
+/// 1×1 모양만으로 여러 자식이나 다른 개체의 소유권을 버리지 않는다.
+pub(crate) fn sole_nested_table_in_paragraph(
+    para: &crate::model::paragraph::Paragraph,
+) -> Option<&Table> {
+    let mut child = None;
+    for control in &para.controls {
+        if let crate::model::control::Control::Table(table) = control {
+            if child.replace(table.as_ref()).is_some() {
+                return None;
+            }
+        } else if !crate::renderer::composer::control_is_width_neutral_marker(control) {
+            return None;
+        }
+    }
+    child
+}
+
+/// 흐름 제한이 없는 문단 기준 표는 셀 안여백·세로 정렬과 독립된 개체다.
+/// 저장된 빈 앵커 줄은 부모의 높이를 소유하며, 자식은 그 부모 원점을 참조한다.
+pub(crate) fn unrestricted_wrapper_frame(table: &Table, nested: &Table, dpi: f64) -> Option<f64> {
+    let [cell] = table.cells.as_slice() else {
+        return None;
+    };
+    let [para] = cell.paragraphs.as_slice() else {
+        return None;
+    };
+    sole_nested_table_in_paragraph(para)?;
+    let [line] = para.line_segs.as_slice() else {
+        return None;
+    };
+    let common = &nested.common;
+    if table.row_count != 1
+        || table.col_count != 1
+        || table.page_break != TablePageBreak::None
+        || nested.page_break != TablePageBreak::None
+        || common.treat_as_char
+        || common.flow_with_text
+        || common.text_wrap != TextWrap::TopAndBottom
+        || common.vert_rel_to != VertRelTo::Para
+        || common.vert_align != VertAlign::Top
+        || common.horz_rel_to != HorzRelTo::Para
+        || common.horz_align != HorzAlign::Left
+        || nested.caption.is_some()
+        || !para.text.trim().is_empty()
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || line.vertical_pos < 0
+        || line.line_height <= 0
+        || line.text_height <= 0
+        || line.text_height > line.line_height
+        || line.baseline_distance < 0
+        || line.baseline_distance > line.line_height
+    {
+        return None;
+    }
+    let padding = cell.effective_padding(&table.padding);
+    let anchor_bottom = i64::from(line.vertical_pos)
+        + i64::from(line.line_height)
+        + i64::from(padding.top)
+        + i64::from(padding.bottom);
+    let height = anchor_bottom.max(i64::from(signed_hwpunit(cell.height)));
+    i32::try_from(height)
+        .ok()
+        .filter(|&height| height > 0)
+        .map(|height| hwpunit_to_px(height, dpi))
+}
+
+/// 부모의 테두리 높이와 뒤 흐름의 점유 끝은 자식의 행 높이와 구별한다.
+pub(crate) struct TableWrapperVerticalFrame {
+    pub(crate) child_top: f64,
+    child_bottom: f64,
+    minimum: f64,
+    independent_frame_height: Option<f64>,
+}
+
+impl TableWrapperVerticalFrame {
+    pub(crate) fn new(table: &Table, nested: &Table, dpi: f64, native_hwp5: bool) -> Self {
+        if let Some(height) = unrestricted_wrapper_frame(table, nested, dpi) {
+            return Self {
+                child_top: hwpunit_to_px(signed_hwpunit(nested.common.vertical_offset), dpi),
+                child_bottom: 0.0,
+                minimum: height,
+                independent_frame_height: Some(height),
+            };
+        }
+        let cell = &table.cells[0];
+        let padding = cell.effective_padding(&table.padding);
+        // [#8067] 저장 안 여백 그대로 — 선언 높이를 넘는 여백도 줄이지 않는다.
+        let top = hwpunit_to_px(i32::from(padding.top), dpi);
+        let bottom = hwpunit_to_px(i32::from(padding.bottom), dpi);
+        Self {
+            child_top: top + hwpunit_to_px(i32::from(nested.outer_margin_top), dpi),
+            child_bottom: bottom + hwpunit_to_px(i32::from(nested.outer_margin_bottom), dpi),
+            minimum: if native_hwp5 {
+                hwpunit_to_px(signed_hwpunit(table.common.height).max(0), dpi)
+            } else {
+                0.0
+            },
+            independent_frame_height: None,
+        }
+    }
+
+    pub(crate) fn unrestricted(&self) -> bool {
+        self.independent_frame_height.is_some()
+    }
+
+    pub(crate) fn height(&self, child_height: f64) -> f64 {
+        (self.child_top + child_height + self.child_bottom).max(self.minimum)
+    }
+
+    pub(crate) fn border_height(&self, child_height: f64) -> f64 {
+        self.independent_frame_height
+            .unwrap_or_else(|| self.height(child_height))
+    }
+}
+
+/// 통째 배치는 측정·분할 후 통째 확정에서도 동일한 외곽 프레임을 소비한다.
+/// 재조판 HWPX는 기존 측정 높이를 쓰며 독립 자식 프레임은 자기 계약을 유지한다.
+pub(crate) fn whole_table_frame_height(
+    table: &Table,
+    measured: f64,
+    dpi: f64,
+    native_hwp5: bool,
+    styles: &ResolvedStyleSet,
+) -> f64 {
+    let independent = super::transparent_table_wrapper_child(table, styles)
+        .is_some_and(|nested| unrestricted_wrapper_frame(table, nested, dpi).is_some());
+    if native_hwp5 || independent {
+        super::unwrapped_table_whole_height(table, measured, dpi, styles)
+    } else {
+        measured
+    }
+}

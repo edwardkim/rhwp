@@ -1,0 +1,551 @@
+[
+  {
+    "file": "issue7015/30442-acrc-recommendation-business-burden.hwp",
+    "page": 3,
+    "png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage21-7529/canvas2d/acrc/rhwp_png/rhwp_003.png",
+    "info": {
+      "pageCount": 17,
+      "documentLoadAndInitialRenderMs": 259.19999980926514
+    },
+    "width": 794,
+    "height": 1123,
+    "backend": "canvas2d",
+    "session": {
+      "schemaVersion": 1,
+      "request": {
+        "backend": "canvas2d",
+        "source": "url",
+        "requested": "canvas2d"
+      },
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "selectionReason": "explicitCanvas2d",
+      "fallbackReason": null,
+      "documentRevision": 3,
+      "resourceGeneration": 3,
+      "renderProfile": "print",
+      "documentDigest": "blake3:123cc0b233466d1aefebf2bd315a44e9daab2c0bf6f53e24939b524525646bfc",
+      "decisionKey": "blake3:123cc0b233466d1aefebf2bd315a44e9daab2c0bf6f53e24939b524525646bfc|revision:3|profile:print|resources:3|request:canvas2d|mode:default",
+      "preflight": null,
+      "initializationError": null,
+      "selectionError": null
+    },
+    "kit": null,
+    "capture": "페이지 화면 레이어 합성 screenshot",
+    "clip": {
+      "x": 163.15625,
+      "y": 140,
+      "width": 793.6875,
+      "height": 1122.5
+    }
+  },
+  {
+    "file": "issue7015/30442-acrc-recommendation-business-burden.hwp",
+    "page": 14,
+    "png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage21-7529/canvas2d/acrc/rhwp_png/rhwp_014.png",
+    "info": {
+      "pageCount": 17,
+      "documentLoadAndInitialRenderMs": 259.19999980926514
+    },
+    "width": 794,
+    "height": 1123,
+    "backend": "canvas2d",
+    "session": {
+      "schemaVersion": 1,
+      "request": {
+        "backend": "canvas2d",
+        "source": "url",
+        "requested": "canvas2d"
+      },
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "selectionReason": "explicitCanvas2d",
+      "fallbackReason": null,
+      "documentRevision": 4,
+      "resourceGeneration": 4,
+      "renderProfile": "print",
+      "documentDigest": "blake3:123cc0b233466d1aefebf2bd315a44e9daab2c0bf6f53e24939b524525646bfc",
+      "decisionKey": "blake3:123cc0b233466d1aefebf2bd315a44e9daab2c0bf6f53e24939b524525646bfc|revision:4|profile:print|resources:4|request:canvas2d|mode:default",
+      "preflight": null,
+      "initializationError": null,
+      "selectionError": null
+    },
+    "kit": null,
+    "capture": "페이지 화면 레이어 합성 screenshot",
+    "clip": {
+      "x": 163.15625,
+      "y": 139.5,
+      "width": 793.6875,
+      "height": 1122.5
+    }
+  },
+  {
+    "file": "issue6866/156627451-quantum-science-press-note.hwpx",
+    "page": 1,
+    "png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage21-7529/canvas2d/quantum/rhwp_png/rhwp_001.png",
+    "info": {
+      "pageCount": 15,
+      "documentLoadAndInitialRenderMs": 440.30000019073486
+    },
+    "width": 794,
+    "height": 1123,
+    "backend": "canvas2d",
+    "session": {
+      "schemaVersion": 1,
+      "request": {
+        "backend": "canvas2d",
+        "source": "url",
+        "requested": "canvas2d"
+      },
+      "requestedBackend": "canvas2d",
+      "effectiveBackend": "canvas2d",
+      "selectionReason": "explicitCanvas2d",
+      "fallbackReason": null,
+      "documentRevision": 2,
+      "resourceGeneration": 2,
+      "renderProfile": "print",
+      "documentDigest": "blake3:bf7130b9c64f8b36133d2ec546da3f3462a83c5ee7026169b259a8c98473a1ea",
+      "decisionKey": "blake3:bf7130b9c64f8b36133d2ec546da3f3462a83c5ee7026169b259a8c98473a1ea|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+      "preflight": null,
+      "initializationError": null,
+      "selectionError": null
+    },
+    "kit": null,
+    "capture": "페이지 화면 레이어 합성 screenshot",
+    "clip": {
+      "x": 163.15625,
+      "y": 140,
+      "width": 793.6875,
+      "height": 1122.5
+    }
+  },
+  {
+    "file": "issue7015/30442-acrc-recommendation-business-burden.hwp",
+    "page": 3,
+    "png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage21-7529/canvaskit/acrc/rhwp_png/rhwp_003.png",
+    "info": {
+      "pageCount": 17,
+      "documentLoadAndInitialRenderMs": 199.30000019073486
+    },
+    "width": 794,
+    "height": 1123,
+    "backend": "canvaskit",
+    "session": {
+      "schemaVersion": 1,
+      "request": {
+        "backend": "canvaskit",
+        "source": "url",
+        "requested": "canvaskit"
+      },
+      "requestedBackend": "canvaskit",
+      "effectiveBackend": "canvaskit",
+      "selectionReason": "explicitCanvasKit",
+      "fallbackReason": null,
+      "documentRevision": 3,
+      "resourceGeneration": 3,
+      "renderProfile": "print",
+      "documentDigest": "blake3:123cc0b233466d1aefebf2bd315a44e9daab2c0bf6f53e24939b524525646bfc",
+      "decisionKey": "blake3:123cc0b233466d1aefebf2bd315a44e9daab2c0bf6f53e24939b524525646bfc|revision:3|profile:print|resources:3|request:canvaskit|mode:default",
+      "preflight": null,
+      "initializationError": null,
+      "selectionError": null
+    },
+    "kit": {
+      "mode": "default",
+      "surfacePreference": "software",
+      "surfaceBackend": "software",
+      "surfaceFallbackReason": null,
+      "lastRenderCompleted": true,
+      "lastUnsupportedOps": [],
+      "lastExpectedUnsupportedOps": [],
+      "lastUnexpectedUnsupportedOps": [],
+      "lastRenderError": null,
+      "passesRuntimeReadinessGate": true,
+      "readinessBlockers": [],
+      "hiddenCanvas2dOverlayUsed": false,
+      "lastRenderDurationMs": 10.799999713897705,
+      "renderCount": 6,
+      "imageCacheEntries": 2,
+      "imageCacheLimit": 128,
+      "imageCachePixels": 1122125,
+      "imageCachePixelLimit": 67108864,
+      "imageCacheHits": 2,
+      "imageCacheMisses": 2,
+      "imageCacheEvictions": 0,
+      "imageFailureCacheHits": 0,
+      "imageFailures": [],
+      "localTypefaceCount": 0,
+      "localTypefaceLoadFailureCount": 0,
+      "localTypefacePendingCount": 0,
+      "bundledTypefaceCount": 0,
+      "bundledTypefaceLoadFailureCount": 0,
+      "glyphRunFontBlobCount": 0,
+      "glyphRunFontBlobBytes": 0,
+      "glyphRunTypefaceCount": 0,
+      "glyphRunFontCount": 0,
+      "fontSubstitutionLimit": 4096,
+      "unregisteredFontFallbacks": 10,
+      "fontSubstitutions": [
+        {
+          "requestedFamily": "맑은 고딕",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "굴림체",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "HY헤드라인M",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "한양견고딕",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "한양견명조",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "한양견명조",
+          "resolvedFamily": "CanvasKit symbol fallback",
+          "source": "missingGlyphSymbol",
+          "kind": "glyphCoverageFallback"
+        },
+        {
+          "requestedFamily": "양재튼튼체B",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "돋움",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "휴먼명조",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "바탕",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "Palatino Linotype",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        }
+      ],
+      "replayFeatureCounts": {
+        "dashedStrokes": 0,
+        "glyphRuns": 0,
+        "verticalPresentationPunctuation": 0,
+        "verticalTextRuns": 0
+      }
+    },
+    "capture": "페이지 화면 레이어 합성 screenshot",
+    "clip": {
+      "x": 163.15625,
+      "y": 140,
+      "width": 793.6875,
+      "height": 1122.5
+    }
+  },
+  {
+    "file": "issue7015/30442-acrc-recommendation-business-burden.hwp",
+    "page": 14,
+    "png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage21-7529/canvaskit/acrc/rhwp_png/rhwp_014.png",
+    "info": {
+      "pageCount": 17,
+      "documentLoadAndInitialRenderMs": 199.30000019073486
+    },
+    "width": 794,
+    "height": 1123,
+    "backend": "canvaskit",
+    "session": {
+      "schemaVersion": 1,
+      "request": {
+        "backend": "canvaskit",
+        "source": "url",
+        "requested": "canvaskit"
+      },
+      "requestedBackend": "canvaskit",
+      "effectiveBackend": "canvaskit",
+      "selectionReason": "explicitCanvasKit",
+      "fallbackReason": null,
+      "documentRevision": 3,
+      "resourceGeneration": 3,
+      "renderProfile": "print",
+      "documentDigest": "blake3:123cc0b233466d1aefebf2bd315a44e9daab2c0bf6f53e24939b524525646bfc",
+      "decisionKey": "blake3:123cc0b233466d1aefebf2bd315a44e9daab2c0bf6f53e24939b524525646bfc|revision:3|profile:print|resources:3|request:canvaskit|mode:default",
+      "preflight": null,
+      "initializationError": null,
+      "selectionError": null
+    },
+    "kit": {
+      "mode": "default",
+      "surfacePreference": "software",
+      "surfaceBackend": "software",
+      "surfaceFallbackReason": null,
+      "lastRenderCompleted": true,
+      "lastUnsupportedOps": [
+        "textRun:glyphMapping"
+      ],
+      "lastExpectedUnsupportedOps": [],
+      "lastUnexpectedUnsupportedOps": [
+        "textRun:glyphMapping"
+      ],
+      "lastRenderError": null,
+      "passesRuntimeReadinessGate": false,
+      "readinessBlockers": [
+        "unexpectedUnsupportedOps"
+      ],
+      "hiddenCanvas2dOverlayUsed": false,
+      "lastRenderDurationMs": 15.399999618530273,
+      "renderCount": 11,
+      "imageCacheEntries": 3,
+      "imageCacheLimit": 128,
+      "imageCachePixels": 3195725,
+      "imageCachePixelLimit": 67108864,
+      "imageCacheHits": 3,
+      "imageCacheMisses": 3,
+      "imageCacheEvictions": 0,
+      "imageFailureCacheHits": 0,
+      "imageFailures": [],
+      "localTypefaceCount": 0,
+      "localTypefaceLoadFailureCount": 0,
+      "localTypefacePendingCount": 0,
+      "bundledTypefaceCount": 0,
+      "bundledTypefaceLoadFailureCount": 0,
+      "glyphRunFontBlobCount": 0,
+      "glyphRunFontBlobBytes": 0,
+      "glyphRunTypefaceCount": 0,
+      "glyphRunFontCount": 0,
+      "fontSubstitutionLimit": 4096,
+      "unregisteredFontFallbacks": 8,
+      "fontSubstitutions": [
+        {
+          "requestedFamily": "HY헤드라인M",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "돋움",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "휴먼명조",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "한양신명조",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "궁서체",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "Palatino Linotype",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "돋움",
+          "resolvedFamily": "CanvasKit symbol fallback",
+          "source": "missingGlyphSymbol",
+          "kind": "glyphCoverageFallback"
+        },
+        {
+          "requestedFamily": "HY중고딕",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "굴림",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        }
+      ],
+      "replayFeatureCounts": {
+        "dashedStrokes": 0,
+        "glyphRuns": 0,
+        "verticalPresentationPunctuation": 0,
+        "verticalTextRuns": 0
+      }
+    },
+    "capture": "페이지 화면 레이어 합성 screenshot",
+    "clip": {
+      "x": 163.15625,
+      "y": 139.5,
+      "width": 793.6875,
+      "height": 1122.5
+    }
+  },
+  {
+    "file": "issue6866/156627451-quantum-science-press-note.hwpx",
+    "page": 1,
+    "png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/stage21-7529/canvaskit/quantum/rhwp_png/rhwp_001.png",
+    "info": {
+      "pageCount": 15,
+      "documentLoadAndInitialRenderMs": 378
+    },
+    "width": 794,
+    "height": 1123,
+    "backend": "canvaskit",
+    "session": {
+      "schemaVersion": 1,
+      "request": {
+        "backend": "canvaskit",
+        "source": "url",
+        "requested": "canvaskit"
+      },
+      "requestedBackend": "canvaskit",
+      "effectiveBackend": "canvaskit",
+      "selectionReason": "explicitCanvasKit",
+      "fallbackReason": null,
+      "documentRevision": 3,
+      "resourceGeneration": 3,
+      "renderProfile": "print",
+      "documentDigest": "blake3:bf7130b9c64f8b36133d2ec546da3f3462a83c5ee7026169b259a8c98473a1ea",
+      "decisionKey": "blake3:bf7130b9c64f8b36133d2ec546da3f3462a83c5ee7026169b259a8c98473a1ea|revision:3|profile:print|resources:3|request:canvaskit|mode:default",
+      "preflight": null,
+      "initializationError": null,
+      "selectionError": null
+    },
+    "kit": {
+      "mode": "default",
+      "surfacePreference": "software",
+      "surfaceBackend": "software",
+      "surfaceFallbackReason": null,
+      "lastRenderCompleted": true,
+      "lastUnsupportedOps": [
+        "textRun:glyphMapping"
+      ],
+      "lastExpectedUnsupportedOps": [],
+      "lastUnexpectedUnsupportedOps": [
+        "textRun:glyphMapping"
+      ],
+      "lastRenderError": null,
+      "passesRuntimeReadinessGate": false,
+      "readinessBlockers": [
+        "unexpectedUnsupportedOps"
+      ],
+      "hiddenCanvas2dOverlayUsed": false,
+      "lastRenderDurationMs": 14,
+      "renderCount": 4,
+      "imageCacheEntries": 2,
+      "imageCacheLimit": 128,
+      "imageCachePixels": 295123,
+      "imageCachePixelLimit": 67108864,
+      "imageCacheHits": 2,
+      "imageCacheMisses": 5,
+      "imageCacheEvictions": 0,
+      "imageFailureCacheHits": 0,
+      "imageFailures": [],
+      "localTypefaceCount": 0,
+      "localTypefaceLoadFailureCount": 0,
+      "localTypefacePendingCount": 0,
+      "bundledTypefaceCount": 0,
+      "bundledTypefaceLoadFailureCount": 0,
+      "glyphRunFontBlobCount": 0,
+      "glyphRunFontBlobBytes": 0,
+      "glyphRunTypefaceCount": 0,
+      "glyphRunFontCount": 0,
+      "fontSubstitutionLimit": 4096,
+      "unregisteredFontFallbacks": 6,
+      "fontSubstitutions": [
+        {
+          "requestedFamily": "돋움체",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "함초롬바탕",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "함초롬돋움",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "함초롬바탕",
+          "resolvedFamily": "CanvasKit symbol fallback",
+          "source": "missingGlyphSymbol",
+          "kind": "glyphCoverageFallback"
+        },
+        {
+          "requestedFamily": "바탕",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "바탕",
+          "resolvedFamily": "CanvasKit symbol fallback",
+          "source": "missingGlyphSymbol",
+          "kind": "glyphCoverageFallback"
+        },
+        {
+          "requestedFamily": "바탕체",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        },
+        {
+          "requestedFamily": "굴림",
+          "resolvedFamily": "Noto Sans KR",
+          "source": "unregisteredDefault",
+          "kind": "unregisteredFallback"
+        }
+      ],
+      "replayFeatureCounts": {
+        "dashedStrokes": 0,
+        "glyphRuns": 0,
+        "verticalPresentationPunctuation": 0,
+        "verticalTextRuns": 0
+      }
+    },
+    "capture": "페이지 화면 레이어 합성 screenshot",
+    "clip": {
+      "x": 163.15625,
+      "y": 140,
+      "width": 793.6875,
+      "height": 1122.5
+    }
+  }
+]

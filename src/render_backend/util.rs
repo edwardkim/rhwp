@@ -26,6 +26,7 @@ pub fn paint_op_kind(op: &PaintOp) -> &'static str {
         PaintOp::TextControlMark { .. } => "textControlMark",
         PaintOp::TabLeader { .. } => "tabLeader",
         PaintOp::TextDecoration { .. } => "textDecoration",
+        PaintOp::ControlLabel { .. } => "controlLabel",
         PaintOp::FootnoteMarker { .. } => "footnoteMarker",
         PaintOp::Line { .. } => "line",
         PaintOp::Rectangle { .. } => "rectangle",
@@ -144,6 +145,7 @@ impl PageState {
 pub fn replay_page<B>(backend: &mut B, tree: &PageLayerTree) -> Result<(), B::Error>
 where
     B: RenderBackend + ?Sized,
+    B::Error: From<RenderBackendError>,
 {
     backend.begin_page(PageSize::from_layer_tree(tree))?;
     for plane in PaintReplayPlane::ORDERED {
@@ -160,6 +162,7 @@ fn replay_node<B>(
 ) -> Result<(), B::Error>
 where
     B: RenderBackend + ?Sized,
+    B::Error: From<RenderBackendError>,
 {
     let active_layer = node.layer.or(inherited_layer);
     match &node.kind {
@@ -167,6 +170,12 @@ where
             for child in children {
                 replay_node(backend, child, active_layer, plane)?;
             }
+        }
+        LayerNodeKind::ClipPath { .. } => {
+            return Err(crate::render_backend::RenderBackendError::Backend(
+                "source text path clip requires structural layer replay".into(),
+            )
+            .into())
         }
         LayerNodeKind::ClipRect { child, .. } => {
             replay_node(backend, child, active_layer, plane)?;

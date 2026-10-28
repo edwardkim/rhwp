@@ -1,0 +1,71 @@
+{
+  "head": "53b7b314b251faa596abd71fee21b0bd95e2200a",
+  "git_status": "",
+  "state": "complete",
+  "command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--tests",
+    "--test-threads",
+    "8",
+    "--no-fail-fast"
+  ],
+  "log": "output/pr-review/planet6897-green-20261002/whole-after-probe1789.log",
+  "exit_code": 100,
+  "elapsed_seconds": 728.315,
+  "summary": [
+    "Summary [ 408.881s] 10266 tests run: 10249 passed (5 slow), 17 failed, 50 skipped"
+  ],
+  "failed_tests": [
+    "rhwp::regression_suite_002 issue_6104_tac_title_over_table::issue_6104_tac_title_clears_offset_topbottom_table",
+    "rhwp::regression_suite_005 issue_6761_band_absorbs_spacing_before::next_paragraph_starts_at_table_outer_margin_bottom",
+    "rhwp::regression_suite_017 issue_synam001_visible_float_host_line_overlap::host_title_line_does_not_overlap_visible_float_table_first_line",
+    "rhwp::regression_suite_018 issue_7288_stale_frame_empty_paragraph::nothing_on_that_page_overflows_the_body",
+    "rhwp::regression_suite_018 issue_7288_stale_frame_empty_paragraph::the_line_after_the_table_sits_where_the_ladder_says",
+    "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_10",
+    "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_13",
+    "rhwp::regression_suite_025 issue_7359_page_top_table_spacing::page_top_stored_spacing_aligns_caption_and_table_with_pdf",
+    "rhwp::regression_suite_025 text_overlap_baseline::text_overlaps_do_not_grow_partition_0",
+    "rhwp::regression_suite_025 text_overlap_baseline::text_overlaps_do_not_grow_partition_1",
+    "rhwp::regression_suite_025 text_overlap_baseline::text_overlaps_do_not_grow_partition_10",
+    "rhwp::regression_suite_025 text_overlap_baseline::text_overlaps_do_not_grow_partition_12",
+    "rhwp::regression_suite_025 text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+    "rhwp::regression_suite_025 text_overlap_baseline::text_overlaps_do_not_grow_partition_6",
+    "rhwp::regression_suite_025 text_overlap_baseline::text_overlaps_do_not_grow_partition_7",
+    "rhwp::regression_suite_025 text_overlap_baseline::text_overlaps_do_not_grow_partition_9",
+    "rhwp::regression_suite_028 issue_6267_para_float_table_overlap::para_float_table_does_not_overlap_host_text"
+  ],
+  "not_ready_for_PR": true,
+  "resolved_previous_failure": "oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_6",
+  "new_failures_after_this_correction": [
+    "issue_6104_tac_title_over_table::issue_6104_tac_title_clears_offset_topbottom_table",
+    "issue_7288_stale_frame_empty_paragraph::nothing_on_that_page_overflows_the_body",
+    "issue_7288_stale_frame_empty_paragraph::the_line_after_the_table_sits_where_the_ladder_says",
+    "body_overflow_baseline::body_overflow_does_not_grow_partition_10",
+    "body_overflow_baseline::body_overflow_does_not_grow_partition_13"
+  ],
+  "next_analysis": "첫 Table의 LINE_SEG가 실제 뒤 호스트 글줄을 뜻하는 경우와 표만 배치되어 새 프레임을 여는 경우를 구분한다. 공통 호스트 원점이 이미 확정됐다면 출력의 초기 HeightCursor도 그 기준을 소비해야 한다. 아직 이 원인 가설의 코드 수정/반례 재검증은 하지 않았다.",
+  "small_document_analysis": {
+    "sample": "samples/issue1835_tac_stale_height.hwp",
+    "reference": "pdf/issue1835_tac_stale_height-hwp-2020.pdf",
+    "sample_sha256": "0eb04bdb79081fa4aa4d27a32db535fea9e955c05ca311292fc95ca8fc91d6b7",
+    "reference_sha256": "f4e14d3b35a1097c83c83714f9f413746fff22de3da75965c08d2913dde34498",
+    "native_and_fresh_wasm_all3": [
+      85.09695,
+      84.10752,
+      14.25185
+    ],
+    "pages_native_wasm_pdf": 3,
+    "source_provenance": "원본 hwp_table_test의 TAC common.height를 훼손한 기존 합성 fixture; 같은 입력의 독립 한컴 PDF 두 버전은 모두3쪽",
+    "actual_difference": "pi20 표 쪽나눔=None,11행인데 Native/WASM은 2쪽4행/3쪽7행으로 분할한다. 독립 PDF는 3쪽 전체11행이다. 쪽수 일치로 통과 판정할 수 없다.",
+    "action": "10쪽 이하 문서이므로 현재 브랜치에서 개선한다. 기존2검사/fixture는 유지하고 시각90 미만 상태에서 기준값 교정/새 검사 추가/이관하지 않는다.",
+    "review": "mydocs/pr/assets/planet6897_green_20261002/stale1835_current_native_p3_review.png",
+    "production_changes_this_analysis": 0
+  }
+}

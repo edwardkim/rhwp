@@ -1,0 +1,583 @@
+{
+  "stage": 140,
+  "head": "ab22b5e597125e5bd5df3deea9b705730109e7b4",
+  "analysis": "기존 #6358 합성2검사는 apply_inner_margin=false인데 양수 셀패딩32/141을 적용하길 기대한다. hasMargin=false는 표기본0을 사용한다는 사양/독립정상한컴 출력과 모순. 음수결측 폴백 및 정상활성셀141 계약을 검사하려면 두 입력을 hasMargin=true로 만들어야 한다. 기존기대값/함수/공차를 그대로 두고 입력속성만 수정한다. 렌더러 생산변경/함수추가/7445일괄제거 없음.",
+  "independent_sources": [
+    "mydocs/manual/OWPML SCHEMA/ParaList XML schema.xml:2100",
+    "mydocs/tech/hwp_hwpx_ir_differences.md:33-45",
+    "mydocs/pr/assets/pr7382_20260926/stage68_validation.json"
+  ],
+  "independent_pdf_geometry": {
+    "pdf": "pdf/pr7382/36361137_firefighter_training_plan-2020.pdf",
+    "page": 3,
+    "dpi": 96,
+    "horizontal_rules": [
+      [
+        69.72266642252605,
+        700.03466796875,
+        725.849365234375,
+        700.03466796875
+      ],
+      [
+        571.6920166015625,
+        716.017333984375,
+        725.849365234375,
+        716.017333984375
+      ],
+      [
+        622.225341796875,
+        716.017333984375,
+        676.7559814453125,
+        716.017333984375
+      ],
+      [
+        674.037353515625,
+        716.017333984375,
+        725.849365234375,
+        716.017333984375
+      ],
+      [
+        69.72266642252605,
+        733.5973307291666,
+        725.849365234375,
+        733.5973307291666
+      ],
+      [
+        69.72266642252605,
+        749.5799967447916,
+        725.849365234375,
+        749.5799967447916
+      ],
+      [
+        130.80933634440103,
+        783.1426595052084,
+        725.849365234375,
+        783.1426595052084
+      ],
+      [
+        69.72266642252605,
+        816.7067057291666,
+        725.849365234375,
+        816.7067057291666
+      ],
+      [
+        69.72266642252605,
+        850.2693684895834,
+        624.9440104166666,
+        850.2693684895834
+      ],
+      [
+        622.225341796875,
+        850.2693684895834,
+        676.7559814453125,
+        850.2693684895834
+      ],
+      [
+        674.037353515625,
+        850.2693684895834,
+        725.849365234375,
+        850.2693684895834
+      ],
+      [
+        69.72266642252605,
+        850.2693684895834,
+        624.9440104166666,
+        850.2693684895834
+      ],
+      [
+        622.225341796875,
+        850.2693684895834,
+        676.7559814453125,
+        850.2693684895834
+      ],
+      [
+        674.037353515625,
+        850.2693684895834,
+        725.849365234375,
+        850.2693684895834
+      ],
+      [
+        69.72266642252605,
+        700.03466796875,
+        725.849365234375,
+        700.03466796875
+      ]
+    ],
+    "min_y": 700.03466796875,
+    "max_y": 850.2693684895834
+  },
+  "source_consumption": [
+    "src/model/table.rs::use_cell_padding_axis -> effective_padding -> 각축 padding",
+    "이번 검사는 모델 축선택값을 직접 확인. 합성 입력의 PDF 일치 주장 없음. 정상문서 시각결과와 계약의 독립 기대값을 분리."
+  ],
+  "prior_whole_visual": [
+    {
+      "backend": "native",
+      "key": "firefighter6101",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "minimum": 92.26525
+    },
+    {
+      "backend": "native",
+      "key": "approval6101",
+      "pages": [
+        1,
+        2
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "minimum": 95.7966
+    },
+    {
+      "backend": "wasm",
+      "key": "firefighter6101",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "minimum": 92.26525
+    },
+    {
+      "backend": "wasm",
+      "key": "approval6101",
+      "pages": [
+        1,
+        2
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "minimum": 95.7966
+    }
+  ],
+  "model_source_same_as_stage68": true,
+  "model_sha256": "acd44a3097e7ea33a1328f281aa3e991509871461e435c58eca9cfa0bb7323dd",
+  "code_commit": "82c28e524ee3536753f829c4888b79cfa41be1f2",
+  "policy_base": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+  "before": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_003",
+      "--test",
+      "regression_suite_006",
+      "--test",
+      "regression_suite_011",
+      "-E",
+      "test(issue_6358_negative_cell_pad_clamp::) or test(issue_1785_cell_padding_rule_consistency::) or test(issue_6101_block_tac_table_text_order::)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plans": [
+      {
+        "caseName": "issue_6358_negative_cell_pad_clamp",
+        "target": "regression_suite_006",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_1785_cell_padding_rule_consistency",
+        "target": "regression_suite_011",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_6101_block_tac_table_text_order",
+        "target": "regression_suite_003",
+        "grouped": true
+      }
+    ],
+    "exit_code": 100,
+    "seconds": 1.1171377920545638,
+    "summary": [
+      "Summary [   0.079s] 6 tests run: 4 passed, 2 failed, 617 skipped"
+    ]
+  },
+  "after": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_003",
+      "--test",
+      "regression_suite_011",
+      "--test",
+      "regression_suite_015",
+      "-E",
+      "test(issue_6358_negative_cell_pad_clamp::) or test(issue_1785_cell_padding_rule_consistency::) or test(issue_6101_block_tac_table_text_order::)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plans": [
+      {
+        "caseName": "issue_6358_negative_cell_pad_clamp",
+        "target": "regression_suite_015",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_1785_cell_padding_rule_consistency",
+        "target": "regression_suite_011",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_6101_block_tac_table_text_order",
+        "target": "regression_suite_003",
+        "grouped": true
+      }
+    ],
+    "exit_code": 0,
+    "seconds": 12.870325374882668,
+    "summary": [
+      "Summary [   0.033s] 6 tests run: 6 passed, 625 skipped"
+    ]
+  },
+  "commands": [
+    {
+      "step": "prepare-before-fmt",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.8182481247931719
+    },
+    {
+      "step": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 6.799585625063628
+    },
+    {
+      "step": "prepare-final",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.6050544581376016
+    },
+    {
+      "step": "focused",
+      "command": [
+        "python3",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage140-cell-padding-contract/run-focused.py",
+        "after"
+      ],
+      "exit_code": 0,
+      "seconds": 13.37367408303544
+    },
+    {
+      "step": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 5.941160874906927
+    },
+    {
+      "step": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.2924714577384293
+    },
+    {
+      "step": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.22409708285704255
+    },
+    {
+      "step": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 0.36067883390933275
+    },
+    {
+      "step": "clippy-alltargets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 5.4825603752397
+    },
+    {
+      "step": "manifest-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 2.8173944582231343
+    },
+    {
+      "step": "unit-check",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 8.213343082927167
+    }
+  ],
+  "current_visual": {
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "firefighter6101",
+      "samples/issue6101/36361137_firefighter_training_plan.hwpx",
+      "pdf/pr7382/36361137_firefighter_training_plan-2020.pdf",
+      "--pages",
+      "1-11",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+      "--embed-fonts=full",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage140-cell-padding-contract/visual-native"
+    ],
+    "completed_pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "gate": {
+      "status": "passed",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "scores": [
+      {
+        "page": 1,
+        "tolerant_content_match_percent": 92.26525
+      },
+      {
+        "page": 2,
+        "tolerant_content_match_percent": 99.77495
+      },
+      {
+        "page": 3,
+        "tolerant_content_match_percent": 97.40962
+      },
+      {
+        "page": 4,
+        "tolerant_content_match_percent": 98.49783
+      },
+      {
+        "page": 5,
+        "tolerant_content_match_percent": 99.35129
+      },
+      {
+        "page": 6,
+        "tolerant_content_match_percent": 98.6332
+      },
+      {
+        "page": 7,
+        "tolerant_content_match_percent": 94.36649
+      },
+      {
+        "page": 8,
+        "tolerant_content_match_percent": 98.37976
+      },
+      {
+        "page": 9,
+        "tolerant_content_match_percent": 96.73487
+      },
+      {
+        "page": 10,
+        "tolerant_content_match_percent": 96.94338
+      },
+      {
+        "page": 11,
+        "tolerant_content_match_percent": 98.05499
+      }
+    ],
+    "summary": {
+      "compared_pages": 11,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 91.9109,
+      "worst_pixel_match_percent": 89.29471,
+      "average_ink_match_percent": 40.14358,
+      "worst_ink_match_percent": 16.01955,
+      "average_visual_accuracy_proxy_percent": 40.14358,
+      "worst_visual_accuracy_proxy_percent": 16.01955,
+      "average_tolerant_content_match_percent": 97.31015,
+      "worst_tolerant_content_match_percent": 92.26525,
+      "worst_pages": [
+        9,
+        8,
+        6,
+        5,
+        10,
+        4,
+        1,
+        3,
+        7,
+        11
+      ]
+    },
+    "native_binary_producer": "b7436944b81d20ad799edcd59ead3b94621902b3",
+    "binary_sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7",
+    "manifest_sha256": "57af0d1d23027fe382b8ff239730baf8e6c3a376ac3cbe068d3e4916db8490fe",
+    "direct_read": [
+      "전체11쪽 contact sheet",
+      "3쪽 review·standalone overlay의 표 높이·뒤 본문"
+    ],
+    "remaining": "큰제목 글꼴·굵기 차이가 남아 완전 픽셀일치를 주장하지 않음",
+    "fresh_wasm": "이번에는 미재실행. 생산변경 없는 모델합성입력 보정이며 과거 전체 Native/WASM 92.26525%는 규칙의 독립 근거로만 재사용"
+  },
+  "source_change": {
+    "path": "tests/cases/issue_6358_negative_cell_pad_clamp.rs",
+    "before_sha256": "be02ddcc5d84f071c91abb1989f43b9ede48d66020daed267b74a424a7df4ee2",
+    "after_sha256": "d3915a7042628508206d0e64b7bf80ff3724b0ffcaf817267d769279812288b9",
+    "preserved_functions": [
+      "issue_6358_negative_vertical_pad_falls_back_to_table_zero",
+      "issue_6358_small_positive_vertical_pad_is_kept"
+    ],
+    "expected_values_unchanged": true,
+    "fixture_change": "apply_inner_margin=false -> true 두곳",
+    "production_changes": false,
+    "new_functions": 0
+  },
+  "inputs": [
+    {
+      "path": "samples/issue6101/36361137_firefighter_training_plan.hwpx",
+      "sha256": "21b684d2e9c29bae5ab5a7a884f29df772aece434f4f6423b81cb3f9677df7a3",
+      "committed_identical": true
+    },
+    {
+      "path": "pdf/pr7382/36361137_firefighter_training_plan-2020.pdf",
+      "sha256": "4317793eaa7fa0927b58a1870cac91fb104ad5dc9fac22a16f771e6a18ebed29",
+      "committed_identical": true
+    }
+  ]
+}

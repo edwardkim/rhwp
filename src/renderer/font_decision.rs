@@ -131,6 +131,8 @@ pub(crate) struct LayoutMetricDecision {
     pub(crate) metric_entry: Option<usize>,
     pub(crate) character_match: String,
     pub(crate) width_source: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) measurement_character: Option<String>,
     pub(crate) base_advance_hwpunit: Option<i32>,
     pub(crate) transforms: Vec<DecisionStep>,
     pub(crate) final_advance_hwpunit: Option<i32>,

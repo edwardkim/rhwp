@@ -8,7 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
 use std::fs;
 use std::io::{Cursor, Read};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use crate::diagnostics::hwp5_inventory::{build_inventory, Hwp5InventoryItem};
 use crate::model::control::Control;
@@ -753,7 +753,10 @@ fn summarize_hwpx_xml(bytes: &[u8]) -> Result<HwpxXmlSummary, String> {
         let mut file = archive
             .by_index(index)
             .map_err(|error| format!("HWPX entry 열기 실패: {error}"))?;
-        let name = file.name().to_string();
+        let name = file
+            .name()
+            .map_err(|error| format!("HWPX entry 이름 읽기 실패: {error}"))?
+            .into_owned();
         if name.starts_with("BinData/") {
             summary.bindata_files += 1;
         }

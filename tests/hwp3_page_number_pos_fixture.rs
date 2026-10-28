@@ -29,7 +29,8 @@ fn page_number_position_does_not_prefix_hwp3_title_with_object_marker() {
         "PageNumberPos 설정 control은 보존해야 함"
     );
     assert!(
-        title.text.starts_with("ᄒᆞᆫ글 97 안내문"),
+        // [#4680] 고정폭 빈칸(코드 31)은 U+2007 로 보존한다 — 같은 문서의 HWPX 판과 일치.
+        title.text.starts_with("ᄒᆞᆫ글\u{2007}97 안내문"),
         "PageNumberPos는 title 앞에 U+FFFC를 남기면 안 됨: {:?}",
         title.text
     );

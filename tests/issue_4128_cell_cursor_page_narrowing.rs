@@ -14,6 +14,7 @@
 //! 판별은 작업량 카운터(`diagnostics::perf_counters::PAGE_TREE_BUILDS`) 상한 —
 //! 수정 원복 시 깊은 행 질의가 후보를 순차 빌드해 상한을 크게 넘는다(red→green).
 //! 카운터는 프로세스 누적이므로 이 파일에는 테스트를 1개만 둔다.
+//! 생성 suite 병렬 묶음에서 빼 전용 cargo target 으로 돌린다 (#6308).
 
 use std::fs;
 use std::path::Path;

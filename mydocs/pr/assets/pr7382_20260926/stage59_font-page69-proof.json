@@ -1,0 +1,112 @@
+{
+  "faces": [
+    {
+      "family": "함초롬바탕",
+      "weight": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Malgun Gothic",
+      "weight": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "맑은 고딕",
+      "weight": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "돋움",
+      "weight": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "돋움체",
+      "weight": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "바탕",
+      "weight": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Noto Sans KR",
+      "weight": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Noto Sans KR ExtraLight",
+      "weight": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Pretendard",
+      "weight": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Noto",
+      "weight": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "Source Han Serif K Old Hangul",
+      "weight": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "__rhwp_visual_sweep_noto_sans_kr__",
+      "weight": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "KoPub돋움체 Bold",
+      "weight": "normal",
+      "status": "unloaded"
+    },
+    {
+      "family": "KoPub돋움체 Bold",
+      "weight": "bold",
+      "status": "loaded"
+    },
+    {
+      "family": "KoPub돋움체 Light",
+      "weight": "normal",
+      "status": "loaded"
+    }
+  ],
+  "messages": [],
+  "fonts": [
+    {
+      "fonts": [
+        {
+          "familyName": "KoPubDotum",
+          "postScriptName": "KoPubDotumLight",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "fonts": [
+        {
+          "familyName": "KoPubDotum",
+          "postScriptName": "KoPubDotumLight",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "fonts": [
+        {
+          "familyName": "KoPubDotum",
+          "postScriptName": "KoPubDotumLight",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    }
+  ]
+}

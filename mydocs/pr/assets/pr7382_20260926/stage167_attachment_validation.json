@@ -1,0 +1,165 @@
+{
+  "stage": 167,
+  "item": 25,
+  "code_head": "5d136a5bc0ad12c29fa95453bb700406d9d4875e",
+  "preanalysis": {
+    "stage": 167,
+    "item": 25,
+    "head": "def80cf8186cee17bfb849986bc06c0568fdd04e",
+    "analysis": "기존2함수를 보존합니다. 보정166으로 첨부 함수의 기존 실패가 해소됐습니다. 정상 PDF10쪽/첨부9쪽·앞8쪽 시작과 끝 내용, 원문XML pi72의 저장 줄 원점0·위 바깥여백141HU를 검사합니다. 느슨한 상대 픽셀 상한을 원문 줄/여백 관계로 교정하고 전10쪽 본문 점유를 확인합니다. 기존 Native/freshWASM 전10쪽 최저91.53858%의 독립 시각 증거를 재사용하며 생산 변경은 없습니다.",
+    "independent_visual": "../stage166-body11/visual-candidate5-final-native/trim7196/ and visual-candidate5-final-wasm/trim7196/",
+    "plan": "기존 첨부 함수만 쪽 소속·순서·원문 줄/바깥여백의 관계로 강화. 정상 음수 Percent 대조군/원문/PDF/기존 함수·공차 유지. 새 테스트/이관/생산 변경0."
+  },
+  "focused": [
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_011",
+        "-E",
+        "test(/^issue_7196_page_top_spacing_trim_restore::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 9.328004625160247
+    },
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_016",
+        "-E",
+        "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_11)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 7.203179750125855
+    }
+  ],
+  "checks": {
+    "base": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "results": [
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit_code": 0,
+        "seconds": 6.2319955001585186
+      },
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.336407208349556
+      },
+      {
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "seconds": 0.6476768339052796
+      },
+      {
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.8076997501775622
+      },
+      {
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 9.544112917035818
+      },
+      {
+        "command": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 0.042392333038151264
+      }
+    ]
+  },
+  "clippy": {
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--target-dir",
+      "target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0
+  },
+  "source_runtime_input_sha_unchanged": {
+    "samples/issue7196/156760012_page_top_spacing_trim.hwpx": true,
+    "samples/issue7196/156760012_page_top_spacing_trim-2024.pdf": true,
+    "output/pr-review/planet6897-7382-20260926/stage166-body11/candidate5/rhwp": true,
+    "output/pr-review/planet6897-7382-20260926/stage166-body11/fonts/HANYGO230.ttf": true,
+    "src/document_core/commands/document.rs": true,
+    "src/renderer/composer.rs": true,
+    "src/renderer/layout/table_layout.rs": true,
+    "src/renderer/svg.rs": true,
+    "src/renderer/font_metrics_data.rs": true,
+    "src/renderer/font_rule_projections/layout_metric.rs": true,
+    "assets/font-rules/changes/issue-7196-ygodic230-metric-name.json": true,
+    "scripts/rasterize-svg-webfonts.mjs": true,
+    "scripts/tests/font_rule_projection_gen.test.mjs": true,
+    "scripts/tests/font_rule_lifecycle_audit.test.mjs": true,
+    "src/renderer/composer/tests.rs": true,
+    "src/renderer/svg/tests.rs": true,
+    "assets/font-rules/font_rule_registry_v2.json": true,
+    "assets/font-rules/font_rule_projection_manifest.json": true
+  },
+  "visual_reuse": "stage166_body11_validation.json",
+  "test_sha256": "b0a60b2c488a97daf5560abdb37242f12da05b1c62b641b22b6fe5fe77f31503",
+  "before_original_function": "보정166 이전의 원래 첨부 함수는 첨부 표가 첫 항목이 아니어서1FAIL. 보정166 생산 후2PASS, 강화한 기존 함수/정상대조군2PASS+본문분할11 1PASS. 강화한 새 assertion의 이전 Rust source 실행으로 주장하지 않음.",
+  "scope": "기존2함수 보존. 정상PDF 쪽 소속·원문 저장 줄 원점/바깥여백·전10쪽 점유를 검사. 정상 음수Percent 검사 유지. 생산/원문/PDF/새함수/이관/공차완화0.",
+  "summary": [
+    "기존3PASS/0FAIL",
+    "전체 검증과 별도 #1749 재검토 미완료"
+  ]
+}

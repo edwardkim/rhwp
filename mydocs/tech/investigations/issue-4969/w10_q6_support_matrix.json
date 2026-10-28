@@ -1,0 +1,362 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q6-final-support-unsupported-matrix",
+  "issue": 4969,
+  "stage": "W10-Q6-A",
+  "date": "2026-08-31",
+  "status": "qualified-approved",
+  "overallClassification": "bounded-subset",
+  "resultApproval": "explicit",
+  "checkpointApproved": true,
+  "source": {
+    "q5FinalCheckpoint": "cf1536a9c91bd2726455308e19259542ba3e2f49",
+    "productMergeHead": "3afbb066fe93724ab44309163a2e04efb954bf18",
+    "q6PlanCheckpoint": "cb5c2b5d9",
+    "authority": "w10_q5_final_qualification.json"
+  },
+  "classificationVocabulary": {
+    "qualified": "the frozen lane contract satisfies all required gates",
+    "bounded-subset": "only the listed predicate tuple is supported; all other surfaces remain explicit fallback or deferred",
+    "blocked": "a required gate or evidence axis is incomplete"
+  },
+  "globalLimits": {
+    "fontBytes": 33554432,
+    "pagePreparedFontBytes": 67108864,
+    "textCodePointsPerRun": 4096,
+    "glyphsPerRun": 4096,
+    "clustersPerRun": 4096,
+    "featuresPerRequest": 64,
+    "variationAxesPerRequest": 16,
+    "horizontalCacheEntries": 4096,
+    "explicitInstanceRequests": 4096,
+    "horizontalPageSidecars": 4096,
+    "verticalPageSidecars": 4096,
+    "attemptTraceRecords": 4096
+  },
+  "lanes": [
+    {
+      "id": "q2-horizontal-old-hangul",
+      "classification": "bounded-subset",
+      "source": {
+        "path": "ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf",
+        "bytes": 456688,
+        "sha256": "2f86ef9a52acb6d1dad9d915843239123b635d97edd88fd0573a88ffcb4e16f1",
+        "faceIndex": 0,
+        "exactPortableSourceRequired": true,
+        "tablesUsed": ["GPOS", "GSUB"]
+      },
+      "predicate": {
+        "format": "renderer-request-owned-not-a-general-document-format-claim",
+        "writingMode": "horizontal-tb",
+        "direction": "ltr",
+        "bidiLevel": 0,
+        "scriptDetection": "direct-old-hangul-jamo-present",
+        "language": "request-owned-script-language-not-general-language-coverage",
+        "targetClass": "direct-old-hangul-complex-required",
+        "variationAxes": [],
+        "syntheticStyle": false,
+        "homogeneousExactFaceStyleScript": true,
+        "paragraphLines": 1,
+        "lineRuns": 1,
+        "finalTargetCount": 1,
+        "alignment": "left",
+        "displayProjection": false,
+        "characterBorderOrFill": false,
+        "inlineControl": false,
+        "nonzeroDesignYPositioning": false,
+        "features": {
+          "gsubOwner": "common-shaper",
+          "kernFromHwpFlag": true,
+          "w9PairAdjustmentAfterAppliedShaping": false
+        },
+        "activeBoundaries": [
+          "stored-boundary-strict",
+          "ordinary-single-interval-no-lineseg-atomic"
+        ]
+      },
+      "producer": {
+        "native": "qualified",
+        "nodeWasm": "qualified",
+        "canonicalGlyphClusterPositionParity": true
+      },
+      "backends": {
+        "canvasKit": {
+          "disposition": "bounded-strict-common-glyph-run",
+          "backendReshaping": false
+        },
+        "canvas2d": { "disposition": "deterministic-text-run-fallback" },
+        "legacySvg": { "disposition": "deterministic-text-run-fallback" },
+        "nativeSkia": { "disposition": "deterministic-text-run-fallback" }
+      },
+      "publication": {
+        "measurementOwner": "single-shaping-measurement-arc",
+        "textRun": 1,
+        "commonGlyphRun": 1,
+        "nominalDuplicate": 0,
+        "atomic": true,
+        "partialPublicationAllowed": false
+      },
+      "fallback": {
+        "ownerOrder": ["w9-k1", "existing-k0-text-run"],
+        "geometry": "pristine-horizontal-text-run",
+        "transactionScope": "whole-approved-boundary"
+      },
+      "rejectionReasons": [
+        "SourceUnavailable",
+        "MalformedSfnt",
+        "NonPortableSource",
+        "DirectionWritingModeMismatch",
+        "RangeMismatch",
+        "DuplicateNode",
+        "StaleRegistryGeneration",
+        "AttemptIdentityMismatch",
+        "InvalidHorizontalScale",
+        "ResourceLimitExceeded",
+        "FontByteLimitExceeded",
+        "TextCodePointLimitExceeded",
+        "FeatureLimitExceeded",
+        "GlyphLimitExceeded",
+        "ClusterMappingInvalid",
+        "CacheEntryLimitExceeded"
+      ],
+      "deferred": [
+        "rtl-and-bidi-product-replay",
+        "latin-default-liga-general-activation",
+        "multi-line-or-multi-run-batch",
+        "mixed-target-run-splitting",
+        "multi-interval-frame",
+        "general-edit-reflow",
+        "stored-prefix",
+        "split-cell-recovery",
+        "inline-control",
+        "center-right-justify-distribute",
+        "ratio-identity-or-expansion",
+        "nonzero-gpos-y-positioning",
+        "native-skia-portable-blob-typeface-replay",
+        "public-rejected-attempt-annotation"
+      ],
+      "followUpEvidence": "public-representative-fixture-plus-backend-replay-per-surface",
+      "automaticFollowUpIssue": false
+    },
+    {
+      "id": "q3-variable-instance",
+      "classification": "qualified",
+      "source": {
+        "path": "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf",
+        "bytes": 1503064,
+        "sha256": "3bbd254dcc5780f7524f9d07af4aa981ba5e3e84cf32d7d4e04301b3943e8694",
+        "faceIndex": 0,
+        "exactPortableSourceRequired": true,
+        "tablesUsed": ["GDEF", "GPOS", "GSUB", "STAT", "fvar", "glyf", "gvar", "hhea", "hmtx"]
+      },
+      "predicate": {
+        "inputOwner": "explicit-char-shape-language-slot-command-or-api",
+        "parserAxisIntent": false,
+        "fontNameOrRatioHeuristic": false,
+        "writingMode": "horizontal-tb",
+        "direction": "ltr",
+        "scripts": ["modern-hangul-syllables", "ascii-latin-letters"],
+        "languageIndex": { "minimum": 0, "exclusiveMaximum": 7 },
+        "axes": [
+          { "tag": "wght", "minimum": 400.0, "default": 400.0, "maximum": 900.0 },
+          { "tag": "opsz", "minimum": 400.0, "default": 400.0, "maximum": 900.0 }
+        ],
+        "canonicalInstances": [
+          { "id": "default", "wght": 400.0, "opsz": 400.0 },
+          { "id": "weight-interior", "wght": 650.0, "opsz": 400.0 },
+          { "id": "bold", "wght": 900.0, "opsz": 400.0 },
+          { "id": "optical-interior", "wght": 400.0, "opsz": 650.0 },
+          { "id": "title", "wght": 900.0, "opsz": 900.0 }
+        ],
+        "axisOrderCanonicalized": true,
+        "floatBitIdentity": true,
+        "maximumPageVariants": 4
+      },
+      "producer": {
+        "native": "qualified",
+        "nodeWasm": "qualified",
+        "canonicalGlyphClusterPositionParity": true
+      },
+      "backends": {
+        "canvasKit": {
+          "default": "unchanged-text-run",
+          "nonDefault": "published-glyph-run-and-portable-outline",
+          "backendReshaping": false
+        },
+        "canvas2d": { "nonDefault": "deterministic-text-run-fallback" },
+        "legacySvg": { "nonDefault": "deterministic-text-run-fallback" },
+        "nativeSkia": { "nonDefault": "deterministic-text-run-fallback" }
+      },
+      "publication": {
+        "noRequest": "unchanged-text-run",
+        "explicitDefault": "unchanged-text-run",
+        "explicitInteriorAndMax": "bounded-glyph-run-and-portable-outline",
+        "atomic": true,
+        "partialPublicationAllowed": false
+      },
+      "fallback": {
+        "invalidOrIncompleteInstance": "whole-paragraph-text-run-rollback",
+        "unsupportedBackend": "deterministic-text-run"
+      },
+      "rejectionReasons": [
+        "DuplicateVariationAxis",
+        "MalformedVariationTag",
+        "VariationAxisUnsupported",
+        "VariationValueNonFinite",
+        "VariationValueOutOfRange",
+        "VariationAxisLimitExceeded",
+        "ExplicitInstanceSlotMismatch",
+        "ExplicitInstanceOverrideNotAllowed",
+        "IncompleteOrMalformedOutline",
+        "SourceUnavailable",
+        "StaleRegistryGeneration"
+      ],
+      "deferred": [
+        "hwp-or-hwpx-axis-intent-inference",
+        "font-name-bold-or-ratio-axis-heuristic",
+        "backend-native-variable-typeface-reconstruction",
+        "arbitrary-font-and-axis-range-generalization",
+        "unsupported-script-language-generalization"
+      ],
+      "followUpEvidence": "explicit-document-intent-contract-plus-public-variable-font-and-backend-proof",
+      "automaticFollowUpIssue": false
+    },
+    {
+      "id": "q4-vertical-hwp5-table-cell-v1",
+      "classification": "bounded-subset",
+      "source": {
+        "path": "ttfs/opensource/NotoSansKR-Regular.ttf",
+        "bytes": 2519996,
+        "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+        "faceIndex": 0,
+        "exactPortableSourceRequired": true,
+        "requiredTables": ["vhea", "vmtx"],
+        "featureTables": ["GPOS", "GSUB"],
+        "vorgPresent": false
+      },
+      "predicate": {
+        "format": "hwp5",
+        "provenance": "hwp5-semantic-lineage",
+        "surface": "table-cell",
+        "textDirection": 2,
+        "writingMode": "vertical-rl",
+        "orientation": "vertical-upright",
+        "scriptClass": "pure-cjk",
+        "language": "fixture-owned-cjk-request-not-general-language-coverage",
+        "oneCell": true,
+        "oneParagraph": true,
+        "oneComposedLine": true,
+        "oneTextRun": true,
+        "oneColumn": true,
+        "oneExactSlot": true,
+        "variationAxes": [],
+        "syntheticStyleOrEffect": false,
+        "mode": "boundedVerticalHwp5TableCellV1"
+      },
+      "producer": {
+        "native": "qualified",
+        "nodeWasm": "qualified",
+        "canonicalGlyphClusterPositionParity": true
+      },
+      "backends": {
+        "canvasKitBrowser": { "disposition": "vertical-glyph-run-selected", "backendReshaping": false },
+        "canvasKitPolicy": { "disposition": "vertical-glyph-run-selected", "backendReshaping": false },
+        "canvas2d": { "disposition": "text-run-and-legacy-vertical-geometry-fallback" },
+        "legacySvg": { "disposition": "text-run-and-legacy-vertical-geometry-fallback" },
+        "nativeSkia": { "disposition": "text-run-and-legacy-vertical-geometry-fallback" }
+      },
+      "publication": {
+        "verticalGlyphRunPerFallbackLeaf": 1,
+        "sourceSharedAcrossLeaves": true,
+        "atomic": true,
+        "partialLayoutOrPublicationAllowed": false
+      },
+      "fallback": {
+        "geometry": "pristine-legacy-vertical-geometry",
+        "paint": "deterministic-text-run",
+        "scope": "whole-vertical-target"
+      },
+      "rejectionReasons": [
+        "VerticalMetricsUnavailable",
+        "MalformedSfnt",
+        "MixedRunUnsupported",
+        "HorizontalIntentUnsupported",
+        "DirectionIntentMismatch",
+        "ColumnPitchInvalid",
+        "VariationGeometryUnsupported",
+        "LegacyGeometryMalformed",
+        "SourceIdentityMismatch",
+        "StaleRegistryGeneration",
+        "UnsupportedBackendOrTuple",
+        "EntryLimitExceeded",
+        "ResourceLimitExceeded"
+      ],
+      "deferred": [
+        "hwpx-table-cell",
+        "hwp5-text-direction-1",
+        "horizontal-cell",
+        "missing-or-stale-exact-source",
+        "multi-paragraph-run-or-column",
+        "latin-punctuation-or-mixed-run",
+        "vertical-variable-instance",
+        "unsupported-backend-glyph-replay",
+        "text-box-and-general-vertical-surface"
+      ],
+      "followUpEvidence": "surface-specific-semantic-lineage-plus-public-oracle-and-backend-pixel-proof",
+      "automaticFollowUpIssue": false,
+      "historicalBlockedResult": {
+        "preserved": true,
+        "currentBlocker": false,
+        "resolvedBy": "w10_q4_d5_d_causal_wasm_result.json"
+      }
+    }
+  ],
+  "decisionRules": {
+    "featureDetectionNotVersionBranching": true,
+    "allPredicatesRequiredForSupportedSelection": true,
+    "unsupportedSelectionReturnsStructuredReason": true,
+    "backendMayReshapePublishedGlyphPayload": false,
+    "failurePublishesPartialGeometryOrResources": false,
+    "deferredCountsAsSupported": false,
+    "deferredCountsAsFailure": false
+  },
+  "crossChecks": {
+    "q5LaneClassificationsMatch": true,
+    "sourceDigestsMatchQ5": true,
+    "q3AxesMatchCapabilityAudit": true,
+    "q4ActivationSurfaceMatchesExecutionPlan": true,
+    "fallbackOwnersPresent": true,
+    "rejectionReasonsPresent": true,
+    "deferredRowsMarkedUnsupported": true,
+    "supportExpansion": 0,
+    "matrixMismatch": 0
+  },
+  "validation": {
+    "jsonSyntax": "passed",
+    "localSourceSizeAndSha256": "passed-3-of-3",
+    "q5LaneClassification": "passed",
+    "q5BCanonicalFaceDigest": "passed-3-of-3",
+    "q3CanonicalAxisRange": "passed-2-of-2",
+    "q4ActivationSurface": "passed",
+    "fallbackReasonDeferredCompleteness": "passed-3-of-3",
+    "gitDiffCheck": "passed"
+  },
+  "procedureCorrection": {
+    "kind": "evidence-shape-normalization",
+    "detail": "the first jq expression treated Q5 final source labels as digest objects; the corrected expression uses Q5-B faces as digest authority and normalizes Q3 axis field names",
+    "productOrEvidenceMismatch": false
+  },
+  "boundaries": {
+    "productMutation": false,
+    "testMutation": false,
+    "privateCorpusUsed": false,
+    "hyperVUsed": false,
+    "hancomOracleUsed": false,
+    "githubMutated": false,
+    "followUpIssuesCreated": false
+  },
+  "next": {
+    "stage": "W10-Q6-B",
+    "action": "checkpoint-after-maintainer-approval-then-prepare-local-tracker-drafts"
+  }
+}

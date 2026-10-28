@@ -1,0 +1,52 @@
+name: "문서 오류·설명 보완"
+description: "사용법, README, 예제, API 문서의 오류나 부족한 설명을 알려주세요."
+labels:
+  - "documentation"
+body:
+  - type: "markdown"
+    attributes:
+      value: "먼저 [기존 이슈](https://github.com/edwardkim/rhwp/issues)를 검색해주세요. 사용법 질문은 [Discussions](https://github.com/edwardkim/rhwp/discussions)를 이용해주세요.\n\n문서 자체의 오류·누락을 신고하는 폼입니다. 사용법 질문은 Discussions에서 이야기해주세요."
+  - type: "dropdown"
+    id: "surface"
+    attributes:
+      label: "사용 경로"
+      description: "관련된 사용 경로를 선택해주세요. 기타·모름·해당 없음도 선택할 수 있습니다."
+      options:
+        - "Studio"
+        - "CLI"
+        - "브라우저 확장"
+        - "라이브러리/API"
+        - "MCP"
+        - "기타"
+        - "모름"
+        - "해당 없음"
+    validations:
+      required: true
+  - type: "input"
+    id: "location"
+    attributes:
+      label: "문서 URL 또는 위치"
+      description: "문서가 없다면 설명이 필요한 기능이나 CLI 도움말 명령을 적어주세요."
+    validations:
+      required: true
+  - type: "textarea"
+    id: "problem"
+    attributes:
+      label: "잘못되거나 부족한 설명"
+      description: "어떤 설명 때문에 작업을 진행하기 어려웠나요?"
+    validations:
+      required: true
+  - type: "textarea"
+    id: "expected"
+    attributes:
+      label: "기대하는 설명"
+      description: "보완되면 좋을 내용이나 올바른 예시를 적어주세요. 정확한 답을 몰라도 필요한 설명을 적어주시면 됩니다."
+    validations:
+      required: true
+  - type: "textarea"
+    id: "references"
+    attributes:
+      label: "참고 자료"
+      description: "관련 버전, 실제 실행 결과, 참고 링크가 있으면 적어주세요."
+    validations:
+      required: false

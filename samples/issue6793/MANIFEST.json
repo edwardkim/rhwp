@@ -1,0 +1,26 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6793,
+  "title": "소형항공운송사업 발전방안 연구용역 과업지시서(최종)",
+  "entries": [
+    {
+      "path": "samples/issue6793/1611000-201000141-small-air-transport-study.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6793",
+      "originalFilename": "1611000-201000141_D0150012-1-000_소형항공운송사업 발전방안 연구용역 과업지시서(최종).hwp",
+      "bytes": 51200,
+      "sha256": "25cc60d379f68246875e968978c13f3273fcc3f6b04fc1fe726434e4626e447d",
+      "lastSavedWith": {
+        "product": null,
+        "version": "6.7.8.1045"
+      },
+      "referenceEngine": "2020",
+      "contract": "앞 문단의 저장 꼬리(vpos+lh+gap)가 쪽 예산을 넘고 이 문단의 첫 비합성 저장 줄이 vpos==0 이면 새 쪽에서 시작한다. < 차 례 > 는 2쪽 본문 상단에 놓인다. 크기 문턱 없음.",
+      "referencePdfStatus": "engine 2020 으로 직접 산출해 저장했다 (hwp2024Convert MCP). 12쪽, 쪽별 공백 제거 글자 수 [33,144,246,355,339,255,262,414,431,503,275,352] 로 rhwp 와 12쪽 전부 일치. 1쪽에 < 차 례 > 가 없고 2쪽이 <차례> 로 시작한다 — 이 PR 의 쪽 귀속 수정이 정본과 같다.",
+      "referencePdf": "pdf/1611000-201000141-small-air-transport-study-2020.pdf",
+      "referencePdfSha256": "34bc3082d666d9112ed073de468586490dd57c93c920bfd6d681e5221e4dda85",
+      "referencePdfBytes": 179155
+    }
+  ]
+}

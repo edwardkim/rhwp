@@ -1,0 +1,229 @@
+{
+  "schema": "rhwp-independent-print-frame-oracle-v1",
+  "status": "qualified",
+  "dpi": 96,
+  "coordinate_system": "CSS pixels,96/72 times PDF point coordinates",
+  "tolerance_csspx": 2,
+  "source_of_expected_values": "Independent Hancom Print PDF vector paths, extracted with PyMuPDF; no RHWP geometry used to construct expected coordinates. Source-margin ownership is checked separately as a relationship.",
+  "production_source": "04c92da78165ccbf63b467855591df183655a98d",
+  "base": "faa885e8b54ffc7cdf4196cd43a3103f362499a2",
+  "cases": [
+    {
+      "family": "valid_orientation",
+      "input": "tests/fixtures/pr7518_review_page_budget/valid_orientation/nested-mixed-cell.hwp",
+      "input_sha256": "53756e85140c0573076f230e7a86ab3abbd2e25dee131d23dc19cd68f1daab2b",
+      "pdf": "pdf/pr7518_review/print-20261027/valid_orientation/nested-mixed-cell-2020.pdf",
+      "pdf_sha256": "22c6875f15fa37784c875a3373840150503dde25452daefeeae131d1f365f1dd",
+      "pdf_pages": 8,
+      "positions": [
+        {
+          "page": 4,
+          "nested_left_csspx": 217.00267,
+          "nested_top_csspx": 79.94666,
+          "nested_bottom_csspx": 413.61466,
+          "first_unit": "UNIT 000",
+          "last_unit": "UNIT 017",
+          "unit_count": 18,
+          "relation": "Every selected source unit appears exactly once, in order, inside its owning nested fragment."
+        },
+        {
+          "page": 8,
+          "outer_top_csspx": 58.40401,
+          "outer_bottom_csspx": 147.28666,
+          "relation": "Consumed UNIT stream is absent from the final tail-owned physical fragment; existing full source-tail preservation test remains active."
+        }
+      ],
+      "known_residual": "Raw100 means zero silhouette misses at Chebyshev radius2, not exact RGB equality; line darkness and raster antialiasing differ.",
+      "qualification": {
+        "native": {
+          "raw_min": 99.96132,
+          "tsv": "mydocs/pr/assets/pr7518_mixed_cut_20261027/native/valid_orientation-silhouette.tsv",
+          "tsv_sha256": "7a7c2e5d235449ddd1d3f58f6a55894b819c3509eb082550ace2fbfec699644a",
+          "font_supply_programs": 1317,
+          "font_supply_set_sha256": "b07e768c6ef7e37413beb2e95ab35f3023e20aa7fe7aa4e75093fbef142d1ddf",
+          "direct_reading": [
+            {
+              "page": 4,
+              "raw": 100.0,
+              "images": {
+                "review": {
+                  "path": "mydocs/pr/assets/pr7518_mixed_cut_20261027/native/valid_orientation-p004-review.png",
+                  "sha256": "c93ad3fe5c51ba4b1b65b199c3a697adcec2d82198bd161b5be18631047cc5fd"
+                },
+                "overlay": {
+                  "path": "mydocs/pr/assets/pr7518_mixed_cut_20261027/native/valid_orientation-p004-overlay.png",
+                  "sha256": "b7fc3d8ca481e923518430aaab86b90f06fc09d7a356487d3f223f16a5f33697"
+                }
+              },
+              "direct_read_complete": true
+            },
+            {
+              "page": 8,
+              "raw": 100.0,
+              "images": {
+                "review": {
+                  "path": "mydocs/pr/assets/pr7518_mixed_cut_20261027/native/valid_orientation-p008-review.png",
+                  "sha256": "6e1636b3a617e6aa9d119946b3c6e295ded0f8683566eea864e2751f435bd678"
+                },
+                "overlay": {
+                  "path": "mydocs/pr/assets/pr7518_mixed_cut_20261027/native/valid_orientation-p008-overlay.png",
+                  "sha256": "9b680bab0baeace2058a642e4c8330a18647ce0cf6c18aba6f8aeabf79a3fce3"
+                }
+              },
+              "direct_read_complete": true
+            }
+          ]
+        },
+        "wasm": {
+          "raw_min": 99.95693,
+          "tsv": "mydocs/pr/assets/pr7518_mixed_cut_20261027/wasm/valid_orientation-silhouette.tsv",
+          "tsv_sha256": "2a6c48037f219a0e45125a16196321cd27af2178202fdf3e5528d2131adedbf5",
+          "font_supply_programs": 1317,
+          "font_supply_set_sha256": "b07e768c6ef7e37413beb2e95ab35f3023e20aa7fe7aa4e75093fbef142d1ddf",
+          "direct_reading": [
+            {
+              "page": 4,
+              "raw": 100.0,
+              "images": {
+                "review": {
+                  "path": "mydocs/pr/assets/pr7518_mixed_cut_20261027/wasm/valid_orientation-p004-review.png",
+                  "sha256": "ca219fcf39f36b7ca336b049524e1136063b2060e5763c8946950352f0c04aa9"
+                },
+                "overlay": {
+                  "path": "mydocs/pr/assets/pr7518_mixed_cut_20261027/wasm/valid_orientation-p004-overlay.png",
+                  "sha256": "07078e5a646833a504e68aa705e9ee6788d6bf870747b57d1b878a35fadbe217"
+                }
+              },
+              "direct_read_complete": true
+            },
+            {
+              "page": 8,
+              "raw": 100.0,
+              "images": {
+                "review": {
+                  "path": "mydocs/pr/assets/pr7518_mixed_cut_20261027/wasm/valid_orientation-p008-review.png",
+                  "sha256": "2ca3dde76384870c960c6a3532a9e8d0267d0f91c86ad34463c96cd61b96b2d6"
+                },
+                "overlay": {
+                  "path": "mydocs/pr/assets/pr7518_mixed_cut_20261027/wasm/valid_orientation-p008-overlay.png",
+                  "sha256": "504b199ea947316e5657a1e3fc5cef3db8212cb6cad595f5c06798f5d1706098"
+                }
+              },
+              "direct_read_complete": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "family": "valid_generated",
+      "input": "tests/fixtures/pr7518_review_page_budget/valid_generated/nested-mixed-cell.hwp",
+      "input_sha256": "173eee9e0f224eb0d7fa53bc3c7d1254ccc41b7cee883da36f8c779d2494abbb",
+      "pdf": "pdf/pr7518_review/print-20261027/valid_generated/nested-mixed-cell-2020.pdf",
+      "pdf_sha256": "446e5fc57a73cca4e255ba2899e8eb824c45b8abc67e1714c7b621398a3071c4",
+      "pdf_pages": 8,
+      "positions": [
+        {
+          "page": 1,
+          "outer_top_csspx": 232.49866,
+          "relation": "Stored host anchor plus original vertical offset owns one positive original outer top margin."
+        },
+        {
+          "page": 2,
+          "outer_top_csspx": 58.56401,
+          "relation": "Continuation physical frame owns one positive original outer top margin relative to the page column."
+        }
+      ],
+      "known_residual": "Base and current first-page bottom differ about2.9CSSpx from Print; not claimed exact or used as a ±2px oracle. First-page top and next-page ownership are the corrected boundaries.",
+      "qualification": {
+        "native": {
+          "raw_min": 99.74063,
+          "tsv": "mydocs/pr/assets/pr7518_mixed_cut_20261027/native/valid_generated-silhouette.tsv",
+          "tsv_sha256": "8ad24cf8718ed67628edd3eb2ab37052bfc119dd4341ba20d8dffb03deca46e4",
+          "font_supply_programs": 1317,
+          "font_supply_set_sha256": "b07e768c6ef7e37413beb2e95ab35f3023e20aa7fe7aa4e75093fbef142d1ddf",
+          "direct_reading": [
+            {
+              "page": 1,
+              "raw": 99.74063,
+              "images": {
+                "review": {
+                  "path": "mydocs/pr/assets/pr7518_mixed_cut_20261027/native/valid_generated-p001-review.png",
+                  "sha256": "4036e207ee9f479ea3ee08a12d4159dc984c019e89dea6c67d108ea4eec0ca96"
+                },
+                "overlay": {
+                  "path": "mydocs/pr/assets/pr7518_mixed_cut_20261027/native/valid_generated-p001-overlay.png",
+                  "sha256": "f4a0afa57c9c15f7e8a9d11ce22b5f8675d57b1dc93397323a5808b5b1f20690"
+                }
+              },
+              "direct_read_complete": true
+            },
+            {
+              "page": 2,
+              "raw": 100.0,
+              "images": {
+                "review": {
+                  "path": "mydocs/pr/assets/pr7518_mixed_cut_20261027/native/valid_generated-p002-review.png",
+                  "sha256": "93516beca0be4e41dc175c8406d13fc5e64b9033c1b50b8255f3e1506dcf4434"
+                },
+                "overlay": {
+                  "path": "mydocs/pr/assets/pr7518_mixed_cut_20261027/native/valid_generated-p002-overlay.png",
+                  "sha256": "d5dd4e0cac7703e43eb15391f4cf69eea28a9576a2fc2f15b9bad5ddecc37448"
+                }
+              },
+              "direct_read_complete": true
+            }
+          ]
+        },
+        "wasm": {
+          "raw_min": 99.77021,
+          "tsv": "mydocs/pr/assets/pr7518_mixed_cut_20261027/wasm/valid_generated-silhouette.tsv",
+          "tsv_sha256": "a3eb23c67025f8713f9b18857ef6ece35ef3bc04cba0824f5bbb0d7bb011163a",
+          "font_supply_programs": 1317,
+          "font_supply_set_sha256": "b07e768c6ef7e37413beb2e95ab35f3023e20aa7fe7aa4e75093fbef142d1ddf",
+          "direct_reading": [
+            {
+              "page": 1,
+              "raw": 99.77021,
+              "images": {
+                "review": {
+                  "path": "mydocs/pr/assets/pr7518_mixed_cut_20261027/wasm/valid_generated-p001-review.png",
+                  "sha256": "c23f056017a4912df945c9b50c5ac31db01eb0e1bd4b69c4a6a5c09923391399"
+                },
+                "overlay": {
+                  "path": "mydocs/pr/assets/pr7518_mixed_cut_20261027/wasm/valid_generated-p001-overlay.png",
+                  "sha256": "47881a431bb3962d4ff8009db32bcbdc0b76baf8a5e308377769f42d8761f35f"
+                }
+              },
+              "direct_read_complete": true
+            },
+            {
+              "page": 2,
+              "raw": 100.0,
+              "images": {
+                "review": {
+                  "path": "mydocs/pr/assets/pr7518_mixed_cut_20261027/wasm/valid_generated-p002-review.png",
+                  "sha256": "d71fb4dd884c9f331b55d294bae7c9eec3b1ab05e0895fded6a1ae2b96d90795"
+                },
+                "overlay": {
+                  "path": "mydocs/pr/assets/pr7518_mixed_cut_20261027/wasm/valid_generated-p002-overlay.png",
+                  "sha256": "df00847d2cf14fa00fe29389e76d82475c4615e19c8a7c89212ddfe1dce2e383"
+                }
+              },
+              "direct_read_complete": true
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "producer_artifacts": {
+    "native_sha256": "cefdb3294d2380855bfe02e2857523e5baa2990ada414c7987a970f0e261729f",
+    "artifacts": {
+      "rhwp.js": "a48acb46a157950724859baea436fda8d5d3b7c9a0fd10665455c952bf4c2434",
+      "rhwp_bg.wasm": "99c8f542858d30f5b0781c6a6954d3eba1dff2214199ef7e4dd6d36e267d13af"
+    },
+    "standard_release_verified": true
+  },
+  "same_binary_red_green_evidence": "../s21_20261027/execution-evidence.json"
+}

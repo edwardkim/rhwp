@@ -1,0 +1,42 @@
+[
+  {
+    "name": "7518",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "issue_7518_reflow_row_physical_frame",
+      "--",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "exit_code": 101
+  },
+  {
+    "name": "2308",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "issue_2308_render_normalized_derived_state",
+      "--",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "exit_code": 101
+  },
+  {
+    "name": "overlap-partition9",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--test",
+      "regression_suite_010",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_9"
+    ],
+    "exit_code": 101
+  }
+]

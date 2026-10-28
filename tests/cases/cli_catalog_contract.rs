@@ -1,6 +1,6 @@
 //! [#5511 Stage 1~2] 최상위 dispatch와 자기서술·모듈 소유권의 characterization 계약.
 //!
-//! handler 이동 전에 실제 `main()` 102개 arm과 catalog를 양방향으로 대조한다.
+//! 실제 `main()` 최상위 arm과 catalog를 양방향으로 대조한다.
 //! help·capabilities·MCP의 현재 결과도 같은 catalog와 비교하되, 이 단계에서는
 //! 기존 출력 생성기를 바꾸지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
@@ -13,6 +13,9 @@ mod catalog;
 
 use catalog::{commands, Visibility};
 
+const CAPTION_VALIDATION_SOURCE: &str =
+    include_str!("../../src/cli/commands/caption_validation.rs");
+const DOCUMENT_IO_SOURCE: &str = include_str!("../../src/cli/document_io.rs");
 const MAIN_SOURCE: &str = include_str!("../../src/main.rs");
 const DATA_EXTRACTION_SOURCE: &str = include_str!("../../src/cli/queries/data_extraction.rs");
 const DIAGNOSTICS_SOURCE: &str = include_str!("../../src/cli/queries/diagnostics.rs");
@@ -22,7 +25,10 @@ const EXPLAIN_SOURCE: &str = include_str!("../../src/cli/queries/explain.rs");
 const EXPLORE_SOURCE: &str = include_str!("../../src/cli/queries/explore.rs");
 const SECURITY_INSPECTION_SOURCE: &str =
     include_str!("../../src/cli/queries/security_inspection.rs");
+const STRUCTURE_SOURCE: &str = include_str!("../../src/cli/queries/structure.rs");
 const STRUCTURED_OBJECTS_SOURCE: &str = include_str!("../../src/cli/queries/structured_objects.rs");
+const UNITS_SOURCE: &str = include_str!("../../src/cli/units.rs");
+const VECTOR_OUTPUT_SOURCE: &str = include_str!("../../src/cli/outputs/vector.rs");
 
 fn rhwp_bin() -> String {
     std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
@@ -73,19 +79,25 @@ fn dispatch_names() -> Vec<&'static str> {
 fn help_names() -> BTreeSet<String> {
     let output = run(&["--help"]);
     assert_eq!(output.status.code(), Some(0));
-    String::from_utf8_lossy(&output.stdout)
-        .lines()
-        .filter_map(|line| {
-            let rest = line.strip_prefix("  ")?;
-            if rest.starts_with(' ') || rest.starts_with('-') {
-                return None;
-            }
-            let token = rest.split_whitespace().next()?;
-            token
-                .chars()
-                .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
-                .then(|| token.to_string())
+    let help = String::from_utf8_lossy(&output.stdout);
+    commands()
+        .iter()
+        .filter(|command| command.in_help())
+        .filter(|command| {
+            help.lines().any(|line| {
+                let Some(rest) = line.strip_prefix("  ") else {
+                    return false;
+                };
+                let Some(tail) = rest.strip_prefix(command.name) else {
+                    return false;
+                };
+                tail.chars()
+                    .next()
+                    .map(char::is_whitespace)
+                    .unwrap_or(false)
+            })
         })
+        .map(|command| command.name.to_string())
         .collect()
 }
 
@@ -95,7 +107,18 @@ fn catalog_is_unique_and_matches_all_top_level_dispatch_arms() {
     let dispatch = dispatch_names();
     let dispatch_set: BTreeSet<&str> = dispatch.iter().copied().collect();
 
-    assert_eq!(commands().len(), 102, "characterization 기준선");
+    // 명령 수는 공개 기능의 추가·폐기로 달라진다. 선언과 실제 dispatch의 대응을 검사한다.
+    assert!(!catalog_names.is_empty(), "catalog가 비어서는 안 된다");
+    for retired in ["export-png-gpu", "gpu-info"] {
+        assert!(
+            !catalog_names.contains(retired),
+            "폐기 명령이 catalog에 남음: {retired}"
+        );
+        assert!(
+            !dispatch_set.contains(retired),
+            "폐기 명령이 dispatch에 남음: {retired}"
+        );
+    }
     assert_eq!(catalog_names.len(), commands().len(), "catalog 이름 중복");
     assert_eq!(dispatch.len(), dispatch_set.len(), "dispatch arm 이름 중복");
     assert_eq!(dispatch_set, catalog_names, "dispatch↔catalog drift");
@@ -200,6 +223,99 @@ fn exceptional_visibility_is_small_explicit_and_explained() {
     assert_eq!(
         dispatch_only.keys().copied().collect::<BTreeSet<_>>(),
         BTreeSet::from(["dump-anchors", "dump-carets", "export-llm", "ir-sweep"])
+    );
+}
+
+#[test]
+fn cli_render_input_caption_and_structure_have_dedicated_owners() {
+    assert!(
+        CAPTION_VALIDATION_SOURCE.contains("pub(crate) fn run("),
+        "test-caption 구현이 caption_validation 모듈에 있어야 한다"
+    );
+    assert!(
+        CAPTION_VALIDATION_SOURCE.contains("doc.render_page_svg("),
+        "직접 SVG 렌더 경계가 caption_validation 모듈에 있어야 한다"
+    );
+    assert!(
+        CAPTION_VALIDATION_SOURCE.contains("Control::Shape(shape)")
+            && CAPTION_VALIDATION_SOURCE.contains("ShapeObject::Picture(picture)"),
+        "test-caption 검증은 setter와 같이 Shape(Picture)를 그림으로 받아야 한다"
+    );
+    assert!(
+        CAPTION_VALIDATION_SOURCE.contains("Control::Endnote(endnote)"),
+        "test-caption 검증은 setter와 같이 Endnote 가상 문단 좌표를 해석해야 한다"
+    );
+    assert!(
+        !MAIN_SOURCE.contains("fn test_caption(") && !MAIN_SOURCE.contains(".render_page_"),
+        "test-caption 구현이나 직접 페이지 렌더가 main.rs로 되돌아가면 안 된다"
+    );
+
+    for owned in [
+        "pub(crate) fn load_document(",
+        "pub(crate) fn load_document_core(",
+        "pub(crate) fn classify_hwp_error(",
+        "pub(crate) fn strip_global_auth_options(",
+        "thread_local!",
+    ] {
+        assert!(
+            DOCUMENT_IO_SOURCE.contains(owned),
+            "CLI 문서 입력 경계가 document_io 모듈에 있어야 한다: {owned}"
+        );
+    }
+    for root_owned in [
+        "fn load_document(",
+        "fn load_document_core(",
+        "fn classify_hwp_error(",
+        "fn strip_global_auth_options(",
+        "thread_local!",
+    ] {
+        assert!(
+            !MAIN_SOURCE.contains(root_owned),
+            "CLI 문서 입력 구현이 main.rs로 되돌아가면 안 된다: {root_owned}"
+        );
+    }
+    for owned in ["pub(crate) fn hu_to_mm(", "pub(crate) fn hu_to_mm_i("] {
+        assert!(
+            UNITS_SOURCE.contains(owned),
+            "CLI 단위 변환이 units 모듈에 있어야 한다: {owned}"
+        );
+    }
+    assert!(
+        !MAIN_SOURCE.contains("fn hu_to_mm(") && !MAIN_SOURCE.contains("fn hu_to_mm_i("),
+        "CLI 단위 변환 구현이 main.rs로 되돌아가면 안 된다"
+    );
+
+    assert!(
+        STRUCTURE_SOURCE.contains("pub(crate) fn export_structure("),
+        "export-structure 구현이 structure query 모듈에 있어야 한다"
+    );
+    assert!(
+        STRUCTURE_SOURCE.contains("pub(crate) fn structure_json_value("),
+        "structure JSON 봉투 authority가 structure query 모듈에 있어야 한다"
+    );
+    assert!(
+        !VECTOR_OUTPUT_SOURCE.contains("fn export_structure(")
+            && !VECTOR_OUTPUT_SOURCE.contains("structure_json_value"),
+        "비렌더 structure query가 vector render output과 파일 경계를 공유하면 안 된다"
+    );
+    assert!(
+        !MAIN_SOURCE.contains("fn structure_json_value("),
+        "structure JSON helper가 main.rs로 되돌아가면 안 된다"
+    );
+
+    let compact_main: String = MAIN_SOURCE
+        .chars()
+        .filter(|ch| !ch.is_whitespace())
+        .collect();
+    assert!(
+        compact_main.contains("Some(\"test-caption\")=>")
+            && compact_main.contains("cli::commands::caption_validation::run(&args[2..])"),
+        "test-caption dispatch가 caption_validation 모듈 API를 사용해야 한다"
+    );
+    assert!(
+        compact_main.contains("Some(\"export-structure\")=>")
+            && compact_main.contains("cli::queries::structure::export_structure(&args[2..])"),
+        "export-structure dispatch가 structure query 모듈 API를 사용해야 한다"
     );
 }
 

@@ -1,0 +1,912 @@
+{
+  "stage": 156,
+  "tested_head": "e13abf3b19329a282d05f60e2a96bc6889855de2",
+  "total_planned": 27,
+  "completed": 27,
+  "passed": 0,
+  "failed": 27,
+  "state": "complete",
+  "results": [
+    {
+      "index": 1,
+      "binary": "rhwp::overflow_cell_baseline",
+      "test": "overflow_cell_lines_do_not_grow_partition_9",
+      "plan": {
+        "caseName": "overflow_cell_baseline",
+        "target": "overflow_cell_baseline",
+        "grouped": false
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "overflow_cell_baseline",
+        "-E",
+        "test(=overflow_cell_lines_do_not_grow_partition_9)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 4.986557291820645,
+      "summary": [
+        "Summary [   1.388s] 1 test run: 0 passed, 1 failed, 15 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-01.log"
+    },
+    {
+      "index": 2,
+      "binary": "rhwp::overflow_cell_baseline",
+      "test": "overflow_cell_lines_do_not_grow_partition_8",
+      "plan": {
+        "caseName": "overflow_cell_baseline",
+        "target": "overflow_cell_baseline",
+        "grouped": false
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "overflow_cell_baseline",
+        "-E",
+        "test(=overflow_cell_lines_do_not_grow_partition_8)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 2.4323237910866737,
+      "summary": [
+        "Summary [   2.079s] 1 test run: 0 passed, 1 failed, 15 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-02.log"
+    },
+    {
+      "index": 3,
+      "binary": "rhwp::regression_suite_001",
+      "test": "issue_1100_exam_social_hwpx_header::issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only",
+      "plan": {
+        "caseName": "issue_1100_exam_social_hwpx_header",
+        "target": "regression_suite_018",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_018",
+        "-E",
+        "test(=issue_1100_exam_social_hwpx_header::issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 5.760338957887143,
+      "summary": [
+        "Summary [   0.049s] 1 test run: 0 passed, 1 failed, 217 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-03.log"
+    },
+    {
+      "index": 4,
+      "binary": "rhwp::regression_suite_010",
+      "test": "issue_6697_cell_host_paragraph_text_is_drawn::cell_host_paragraph_caption_is_drawn_on_its_page",
+      "plan": {
+        "caseName": "issue_6697_cell_host_paragraph_text_is_drawn",
+        "target": "regression_suite_028",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_028",
+        "-E",
+        "test(=issue_6697_cell_host_paragraph_text_is_drawn::cell_host_paragraph_caption_is_drawn_on_its_page)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 6.844518042169511,
+      "summary": [
+        "Summary [   0.127s] 1 test run: 0 passed, 1 failed, 210 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-04.log"
+    },
+    {
+      "index": 5,
+      "binary": "rhwp::regression_suite_012",
+      "test": "issue_7358_terminal_rowbreak_outer_top::terminal_rowbreak_continuation_repeats_saved_outer_top",
+      "plan": {
+        "caseName": "issue_7358_terminal_rowbreak_outer_top",
+        "target": "regression_suite_008",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_008",
+        "-E",
+        "test(=issue_7358_terminal_rowbreak_outer_top::terminal_rowbreak_continuation_repeats_saved_outer_top)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 5.637237082701176,
+      "summary": [
+        "Summary [   0.120s] 1 test run: 0 passed, 1 failed, 216 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-05.log"
+    },
+    {
+      "index": 6,
+      "binary": "rhwp::regression_suite_013",
+      "test": "issue_2243::issue_2243_gyeoljae_sliver_page_pins",
+      "plan": {
+        "caseName": "issue_2243",
+        "target": "regression_suite_023",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_023",
+        "-E",
+        "test(=issue_2243::issue_2243_gyeoljae_sliver_page_pins)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 6.513485000003129,
+      "summary": [
+        "Summary [   0.031s] 1 test run: 0 passed, 1 failed, 218 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-06.log"
+    },
+    {
+      "index": 7,
+      "binary": "rhwp::regression_suite_015",
+      "test": "stored_table_text_tail::hancom_saved_object_row_keeps_its_character_border",
+      "plan": {
+        "caseName": "stored_table_text_tail",
+        "target": "regression_suite_017",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_017",
+        "-E",
+        "test(=stored_table_text_tail::hancom_saved_object_row_keeps_its_character_border)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 5.4449831251986325,
+      "summary": [
+        "Summary [   0.016s] 1 test run: 0 passed, 1 failed, 222 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-07.log"
+    },
+    {
+      "index": 8,
+      "binary": "rhwp::regression_suite_015",
+      "test": "stored_table_text_tail::hancom_saved_tail_preserves_pdf_baseline_after_the_table",
+      "plan": {
+        "caseName": "stored_table_text_tail",
+        "target": "regression_suite_017",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_017",
+        "-E",
+        "test(=stored_table_text_tail::hancom_saved_tail_preserves_pdf_baseline_after_the_table)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 0.39695324981585145,
+      "summary": [
+        "Summary [   0.010s] 1 test run: 0 passed, 1 failed, 222 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-08.log"
+    },
+    {
+      "index": 9,
+      "binary": "rhwp::regression_suite_015",
+      "test": "stored_table_text_tail::one_paragraph_keeps_one_border_across_table_and_text_items",
+      "plan": {
+        "caseName": "stored_table_text_tail",
+        "target": "regression_suite_017",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_017",
+        "-E",
+        "test(=stored_table_text_tail::one_paragraph_keeps_one_border_across_table_and_text_items)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 0.378907541744411,
+      "summary": [
+        "Summary [   0.009s] 1 test run: 0 passed, 1 failed, 222 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-09.log"
+    },
+    {
+      "index": 10,
+      "binary": "rhwp::regression_suite_018",
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_11",
+      "plan": {
+        "caseName": "body_overflow_baseline",
+        "target": "regression_suite_010",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_010",
+        "-E",
+        "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_11)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 7.088630832731724,
+      "summary": [
+        "Summary [   0.697s] 1 test run: 0 passed, 1 failed, 231 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-10.log"
+    },
+    {
+      "index": 11,
+      "binary": "rhwp::regression_suite_018",
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_5",
+      "plan": {
+        "caseName": "body_overflow_baseline",
+        "target": "regression_suite_010",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_010",
+        "-E",
+        "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_5)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 0.957410333212465,
+      "summary": [
+        "Summary [   0.594s] 1 test run: 0 passed, 1 failed, 231 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-11.log"
+    },
+    {
+      "index": 12,
+      "binary": "rhwp::regression_suite_018",
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_7",
+      "plan": {
+        "caseName": "body_overflow_baseline",
+        "target": "regression_suite_010",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_010",
+        "-E",
+        "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_7)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 0.9372535832226276,
+      "summary": [
+        "Summary [   0.585s] 1 test run: 0 passed, 1 failed, 231 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-12.log"
+    },
+    {
+      "index": 13,
+      "binary": "rhwp::regression_suite_018",
+      "test": "issue_6145_squeeze_cell_keeps_inner_margin::squeeze_cell_line_width_tracks_the_stored_inner_width",
+      "plan": {
+        "caseName": "issue_6145_squeeze_cell_keeps_inner_margin",
+        "target": "regression_suite_019",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_019",
+        "-E",
+        "test(=issue_6145_squeeze_cell_keeps_inner_margin::squeeze_cell_line_width_tracks_the_stored_inner_width)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 7.19139533303678,
+      "summary": [
+        "Summary [   0.658s] 1 test run: 0 passed, 1 failed, 194 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-13.log"
+    },
+    {
+      "index": 14,
+      "binary": "rhwp::regression_suite_018",
+      "test": "issue_6145_squeeze_cell_keeps_inner_margin::squeeze_cell_text_starts_inside_the_declared_inner_margin",
+      "plan": {
+        "caseName": "issue_6145_squeeze_cell_keeps_inner_margin",
+        "target": "regression_suite_019",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_019",
+        "-E",
+        "test(=issue_6145_squeeze_cell_keeps_inner_margin::squeeze_cell_text_starts_inside_the_declared_inner_margin)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 0.9434157088398933,
+      "summary": [
+        "Summary [   0.565s] 1 test run: 0 passed, 1 failed, 194 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-14.log"
+    },
+    {
+      "index": 15,
+      "binary": "rhwp::regression_suite_019",
+      "test": "issue_6032_rewind_anchor_float_snap::issue_6032_rewound_empty_anchor_table_snaps_to_saved_vpos",
+      "plan": {
+        "caseName": "issue_6032_rewind_anchor_float_snap",
+        "target": "regression_suite_001",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_001",
+        "-E",
+        "test(=issue_6032_rewind_anchor_float_snap::issue_6032_rewound_empty_anchor_table_snaps_to_saved_vpos)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 7.409664833918214,
+      "summary": [
+        "Summary [   0.012s] 1 test run: 0 passed, 1 failed, 169 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-15.log"
+    },
+    {
+      "index": 16,
+      "binary": "rhwp::regression_suite_020",
+      "test": "issue_1133_native_rowbreak_outer_margin::hwpx_captionless_rowbreak_keeps_independent_frame_origins",
+      "plan": {
+        "caseName": "issue_1133_native_rowbreak_outer_margin",
+        "target": "regression_suite_021",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_021",
+        "-E",
+        "test(=issue_1133_native_rowbreak_outer_margin::hwpx_captionless_rowbreak_keeps_independent_frame_origins)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 6.437250374816358,
+      "summary": [
+        "Summary [   0.291s] 1 test run: 0 passed, 1 failed, 220 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-16.log"
+    },
+    {
+      "index": 17,
+      "binary": "rhwp::regression_suite_018",
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_10",
+      "plan": {
+        "caseName": "body_overflow_baseline",
+        "target": "regression_suite_010",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_010",
+        "-E",
+        "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_10)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 72.66271779220551,
+      "summary": [
+        "Summary [  72.268s] 1 test run: 0 passed, 1 failed, 231 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-17.log"
+    },
+    {
+      "index": 18,
+      "binary": "rhwp::regression_suite_022",
+      "test": "stored_nested_content_flow::nested_cell_alignment_uses_the_sequential_anchor_when_stored_positions_reset",
+      "plan": {
+        "caseName": "stored_nested_content_flow",
+        "target": "regression_suite_028",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_028",
+        "-E",
+        "test(=stored_nested_content_flow::nested_cell_alignment_uses_the_sequential_anchor_when_stored_positions_reset)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 1.0759017090313137,
+      "summary": [
+        "Summary [   0.042s] 1 test run: 0 passed, 1 failed, 210 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-18.log"
+    },
+    {
+      "index": 19,
+      "binary": "rhwp::regression_suite_023",
+      "test": "svg_snapshot::issue_157_page_1",
+      "plan": {
+        "caseName": "svg_snapshot",
+        "target": "regression_suite_006",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_006",
+        "-E",
+        "test(=svg_snapshot::issue_157_page_1)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 15.94355533272028,
+      "summary": [
+        "Summary [   0.033s] 1 test run: 0 passed, 1 failed, 203 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-19.log"
+    },
+    {
+      "index": 20,
+      "binary": "rhwp::regression_suite_023",
+      "test": "svg_snapshot::form_002_page_0",
+      "plan": {
+        "caseName": "svg_snapshot",
+        "target": "regression_suite_006",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_006",
+        "-E",
+        "test(=svg_snapshot::form_002_page_0)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 1.1630102922208607,
+      "summary": [
+        "Summary [   0.242s] 1 test run: 0 passed, 1 failed, 203 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-20.log"
+    },
+    {
+      "index": 21,
+      "binary": "rhwp::regression_suite_023",
+      "test": "svg_snapshot::issue_267_ktx_toc_page",
+      "plan": {
+        "caseName": "svg_snapshot",
+        "target": "regression_suite_006",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_006",
+        "-E",
+        "test(=svg_snapshot::issue_267_ktx_toc_page)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 1.083355000242591,
+      "summary": [
+        "Summary [   0.132s] 1 test run: 0 passed, 1 failed, 203 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-21.log"
+    },
+    {
+      "index": 22,
+      "binary": "rhwp::regression_suite_023",
+      "test": "svg_snapshot::issue_147_aift_page3",
+      "plan": {
+        "caseName": "svg_snapshot",
+        "target": "regression_suite_006",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_006",
+        "-E",
+        "test(=svg_snapshot::issue_147_aift_page3)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 1.727851040661335,
+      "summary": [
+        "Summary [   0.427s] 1 test run: 0 passed, 1 failed, 203 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-22.log"
+    },
+    {
+      "index": 23,
+      "binary": "rhwp::regression_suite_023",
+      "test": "svg_snapshot::issue_617_exam_kor_page5",
+      "plan": {
+        "caseName": "svg_snapshot",
+        "target": "regression_suite_006",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_006",
+        "-E",
+        "test(=svg_snapshot::issue_617_exam_kor_page5)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 1.0836329581215978,
+      "summary": [
+        "Summary [   0.153s] 1 test run: 0 passed, 1 failed, 203 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-23.log"
+    },
+    {
+      "index": 24,
+      "binary": "rhwp::regression_suite_024",
+      "test": "issue_1772_table_outer_margin_sync::issue_1772_body_first_line_respects_table_outer_margin_bottom",
+      "plan": {
+        "caseName": "issue_1772_table_outer_margin_sync",
+        "target": "regression_suite_001",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_001",
+        "-E",
+        "test(=issue_1772_table_outer_margin_sync::issue_1772_body_first_line_respects_table_outer_margin_bottom)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 1.040958875324577,
+      "summary": [
+        "Summary [   0.057s] 1 test run: 0 passed, 1 failed, 169 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-24.log"
+    },
+    {
+      "index": 25,
+      "binary": "rhwp::regression_suite_024",
+      "test": "issue_7196_page_top_spacing_trim_restore::issue_7196_attachment_table_starts_next_page_without_body_overflow",
+      "plan": {
+        "caseName": "issue_7196_page_top_spacing_trim_restore",
+        "target": "regression_suite_018",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_018",
+        "-E",
+        "test(=issue_7196_page_top_spacing_trim_restore::issue_7196_attachment_table_starts_next_page_without_body_overflow)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 0.9121457082219422,
+      "summary": [
+        "Summary [   0.095s] 1 test run: 0 passed, 1 failed, 217 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-25.log"
+    },
+    {
+      "index": 26,
+      "binary": "rhwp::regression_suite_025",
+      "test": "issue_3308_nested_table_width::narrow_nested_table_keeps_declared_width_and_centers",
+      "plan": {
+        "caseName": "issue_3308_nested_table_width",
+        "target": "regression_suite_008",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_008",
+        "-E",
+        "test(=issue_3308_nested_table_width::narrow_nested_table_keeps_declared_width_and_centers)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 1.2917802496813238,
+      "summary": [
+        "Summary [   0.694s] 1 test run: 0 passed, 1 failed, 216 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-26.log"
+    },
+    {
+      "index": 27,
+      "binary": "rhwp::regression_suite_025",
+      "test": "issue_6078_inline_table_seg_lookup::issue_6078_paper_spec_line_stays_inside_the_page",
+      "plan": {
+        "caseName": "issue_6078_inline_table_seg_lookup",
+        "target": "regression_suite_028",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_028",
+        "-E",
+        "test(=issue_6078_inline_table_seg_lookup::issue_6078_paper_spec_line_stays_inside_the_page)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 1.288284458220005,
+      "summary": [
+        "Summary [   0.042s] 1 test run: 0 passed, 1 failed, 210 skipped"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage156-remaining-individual/individual-27.log"
+    }
+  ],
+  "scope": "원래60개 실패 중33곳처리후남은27개를각각단독재실행. 현행함수에서모두동일실패재현. 전체10250검사재실행결과가아님.",
+  "source_or_test_changes": false,
+  "new_functions": 0,
+  "english_comment_audit": {
+    "base": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "added_english_comments_without_korean": 0,
+    "scope": "src/** tests/cases/** 및 #1100원본검사의현재branch추가주석. 기존upstream영문주석은추가주석으로세지않음."
+  },
+  "logs": "output/pr-review/planet6897-7382-20260926/stage156-remaining-individual",
+  "final_pr_ready": false
+}

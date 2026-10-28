@@ -1,0 +1,25 @@
+{
+  "parentHead": "cec3710f1dc5c06f5364c6f5af74a10b4772fef4",
+  "base": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867",
+  "productionDiffSha256": "8314c1e309de8c49d9eaf84f21b63e3ae443a10b623d51a2603767b62b159572",
+  "sourceFiles": {
+    "src/paint/metafile_surface.rs": "25e6e90572fe6f7526fc18cf0919560722852ea8b7fdf6aae627b00e1f4146a2",
+    "src/renderer/float_placement/stored_header_frame.rs": "583083874e0cb75c0007fdc9780d61cd9f138f34aa98e883198a4f161c9e78a7",
+    "src/renderer/layout/table_layout.rs": "43355675778a70fe9417f49b95581d07d8abf110ab6f92dc6c71447865aa6b3a",
+    "src/renderer/layout/table_partial.rs": "e0d579c717b6ebcae01bb2e10f3dc486f1767599ecbd24cc9775b83f71ff5699",
+    "src/renderer/pdf.rs": "6ea29d68b1a1ebe0426993e193ada2cc82567b4073324186506b8dc1d02b30c1",
+    "src/renderer/pdf_synthetic_bold.rs": "e5c1291291cb0e51f6e150dcd4fa436d83482a01691ca472533d3510c5a84b16",
+    "src/renderer/pdf_synthetic_italic.rs": "43293bd0ccc0090839167a1c8b5b378003e20ff017f58c5a0d9dfa253882e802",
+    "src/renderer/typeset/paragraph.rs": "13a15653a17e5b0a6cf8e0176273e42320aedad57a3e40fdb2e212a2631175e7",
+    "src/renderer/typeset/paragraph/flow.rs": "7826229b0e1af8497e2d5ab1b9eb0fea066c58164ef247bc89c9f5b4de7664d6"
+  },
+  "patchHashes": {
+    "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/biotoxin-exact-print-source-audit/atomic-preserve-accepted-boundary-proposed.patch": "ac05b9be2151097eea7932264f44d1fcef725e8249f10abd522983c3f742cdf0",
+    "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/biotoxin-exact-print-source-audit/p011-own-empty-stored-line-frame-proposed.patch": "c040ec6291d2b95712c6763bf2bc782cf53f8f51016a64b74cce925a9e041750",
+    "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/sample16-hwpx-metafile-style-audit/reuse-selected-face-bold-preparation-proposed.patch": "89139157a2b8107b75cae9d4a10f253dd6411ce27bfef6161062a52c8a72f788",
+    "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage85-candidate-preparation/square-fragment-positive-offset-proposed.patch": "b76f8565a01ae32f13fdc3abb94c500f9ffe483494030ef351d5b61d6d75c63a"
+  },
+  "sourceState": "Uncommitted common correction based on parent HEAD; not yet accepted",
+  "fullPrAcceptance": false,
+  "errorCorrection": "PDF/usvg0.45 and resvg/usvg0.47 consume the same style source compiled with their own version alias; no font database conversion, no algorithm copy, original native PDF public cfg retained"
+}

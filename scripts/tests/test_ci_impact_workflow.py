@@ -514,14 +514,19 @@ class CiImpactWorkflowTests(unittest.TestCase):
             "BUILD_ARCHIVE_A_RESULT": "skipped",
             "BUILD_ARCHIVE_B_RESULT": "skipped",
             "BUILD_ARCHIVE_C_RESULT": "skipped",
+            "BUILD_ARCHIVE_D_RESULT": "skipped",
+            "BUILD_ARCHIVE_E_RESULT": "skipped",
             "TEST_ARCHIVE_A_1_RESULT": "skipped",
-            "TEST_ARCHIVE_A_2_RESULT": "skipped",
             "TEST_ARCHIVE_B_1_RESULT": "skipped",
             "TEST_ARCHIVE_C_1_RESULT": "skipped",
+            "TEST_ARCHIVE_D_1_RESULT": "skipped",
+            "TEST_ARCHIVE_E_1_RESULT": "skipped",
             "LINT_RESULT": "skipped",
             "NATIVE_SKIA_RESULT": "skipped",
             "FRONTEND_UNIT_RESULT": "success",
             "FRONTEND_PACKAGE_RESULT": "skipped",
+            "PROMOTION_RESULT": "skipped",
+            "CANONICAL_PROMOTION": "false",
             **overrides,
         }
         return subprocess.run(
@@ -538,16 +543,36 @@ class CiImpactWorkflowTests(unittest.TestCase):
             "frontend_mode": "'package'",
             "render_required": "'true'",
             "native_skia_required": "'true'",
-            "codeql_languages": "'javascript-typescript,python,rust'",
+            "codeql_languages": "'javascript-typescript,python,rust,actions'",
             "classification_status": "'full'",
             "classifier_version": "'unavailable'",
             "impact_reason": "'fail-closed:impact-unavailable'",
             "impact_authority": "'unavailable'",
+            "security_sweep_samples_json": "'[]'",
         }
         for output, default in expected_defaults.items():
             with self.subTest(output=output):
                 self.assertIn(f"      {output}:", self.preflight)
                 self.assertIn(default, self.preflight)
+
+    def test_preflight_collects_only_new_sample_docs_for_security_sweep(self) -> None:
+        collect = self._step("Collect CI impact input", self.preflight)
+        self.assertIn("function securitySweepSamples(files)", collect)
+        self.assertIn(".filter((file) => file.status === 'added')", collect)
+        self.assertIn("filename.startsWith('samples/')", collect)
+        self.assertIn("/\\.(hwp|hwpx|hml)$/i.test(filename)", collect)
+        self.assertIn(
+            "core.setOutput('security_sweep_samples_json', JSON.stringify(samplePaths));",
+            collect,
+        )
+
+        summary = self._step("Summarize CI impact classification", self.preflight)
+        self.assertIn(
+            "SECURITY_SWEEP_SAMPLES_JSON: "
+            "${{ steps.collect-impact.outputs.security_sweep_samples_json || '[]' }}",
+            summary,
+        )
+        self.assertIn("security_sweep_samples_json", summary)
 
     def test_classifier_uses_pr_base_sha_without_checkout_credentials(self) -> None:
         step = self._step("Check out trusted CI impact classifier", self.preflight)
@@ -568,6 +593,21 @@ class CiImpactWorkflowTests(unittest.TestCase):
         )
         self.assertIn("pr-base-trusted", self.preflight)
         self.assertNotIn("pr-base-trusted-shadow", self.preflight)
+
+    def test_font_fixture_generators_are_registered_as_render_tools(self) -> None:
+        classifier = CLASSIFIER_PATH.read_text(encoding="utf-8")
+        tool_block = classifier.split("const RENDER_TOOL_PATHS = new Set([", maxsplit=1)[1].split(
+            "]);",
+            maxsplit=1,
+        )[0]
+        for expected in (
+            "scripts/generate_font_glyph_payload_fixture.py",
+            "scripts/generate_exact_face_collection_fixture.py",
+            "scripts/generate_exact_kerning_fixture.py",
+            "scripts/generate_font_native_hwpx_fixture.py",
+        ):
+            with self.subTest(path=expected):
+                self.assertIn(f"'{expected}'", tool_block)
 
     def test_missing_classifier_checkout_cannot_claim_trusted_authority(self) -> None:
         self.assertIn(
@@ -634,23 +674,73 @@ class CiImpactWorkflowTests(unittest.TestCase):
         self.assertIn("npm --prefix rhwp-studio run test", package)
         self.assertIn("npm --prefix rhwp-studio run build", package)
 
+    def test_frontend_package_install_uses_cache_first_without_implicit_audit(self) -> None:
+        package = self._job("frontend-package-gates")
+        install = self._step("Install frontend package dependencies", package)
+
+        self.assertIn("timeout-minutes: 30", package)
+        expected_commands = [
+            f"npm --prefix {package_path} ci --no-audit --prefer-offline"
+            for package_path in (
+                "rhwp-studio",
+                "rhwp-chrome",
+                "rhwp-firefox",
+                "rhwp-vscode",
+            )
+        ]
+        actual_commands = [
+            line.strip()
+            for line in install.splitlines()
+            if line.strip().startswith("npm --prefix")
+        ]
+        self.assertEqual(expected_commands, actual_commands)
+        self.assertNotIn("--offline", install)
+        self.assertNotIn("--ignore-scripts", install)
+
     def test_rust_lint_and_archive_builder_require_rust_axis(self) -> None:
         lint = self._job("lint")
         self.assertIn("needs.preflight.outputs.rust_required == 'true'", lint)
 
-        for archive_name, target_group in (
-            ("build-test-archive-a", "lib"),
-            ("build-test-archive-b", "integration-b"),
-            ("build-test-archive-c", "integration-c"),
+        for archive_name, target_group, expected_needs in (
+            ("build-test-archive-a", "lib", "needs: [preflight]"),
+            (
+                "build-test-archive-b",
+                "integration-b",
+                "needs: [preflight, resolve-nextest-duration-policy]",
+            ),
+            (
+                "build-test-archive-c",
+                "integration-c",
+                "needs: [preflight, resolve-nextest-duration-policy]",
+            ),
+            (
+                "build-test-archive-d",
+                "integration-d",
+                "needs: [preflight, resolve-nextest-duration-policy]",
+            ),
+            (
+                "build-test-archive-e",
+                "integration-e",
+                "needs: [preflight, resolve-nextest-duration-policy]",
+            ),
         ):
             with self.subTest(archive=archive_name):
                 archive = self._job(archive_name)
                 self.assertIn("needs.preflight.outputs.rust_required == 'true'", archive)
-                self.assertIn("needs: [preflight]", archive)
+                self.assertIn(expected_needs, archive)
                 self.assertNotIn("needs.lint.result", archive)
                 self.assertNotIn("frontend-unit-gates", archive)
                 self.assertNotIn("frontend-package-gates", archive)
                 self.assertIn(f"target_group: {target_group}", archive)
+                if archive_name != "build-test-archive-a":
+                    self.assertIn(
+                        "needs.resolve-nextest-duration-policy.result == 'success'",
+                        archive,
+                    )
+                    self.assertIn(
+                        "duration_policy_sha: ${{ needs.resolve-nextest-duration-policy.outputs.duration_policy_sha }}",
+                        archive,
+                    )
 
     def test_lint_prepares_derived_test_targets_before_cargo_commands(self) -> None:
         lint = self._job("lint")
@@ -747,7 +837,12 @@ class CiImpactWorkflowTests(unittest.TestCase):
         self.assertTrue(targets)
         for target in targets:
             with self.subTest(target=target):
-                self.assertIn(f"'tests/{target}.rs'", classifier)
+                source = TESTS_DIR / "cases" / f"{target}.rs"
+                if not source.is_file():
+                    source = TESTS_DIR / f"{target}.rs"
+                self.assertTrue(source.is_file(), f"missing Native Skia target source: {target}")
+                source_path = source.relative_to(TESTS_DIR.parent).as_posix()
+                self.assertIn(f"'{source_path}'", classifier)
 
     def test_discovery_finds_the_known_file_gated_native_skia_tests(self) -> None:
         """발견 패턴이 망가지면 아래 테스트가 조용히 무의미해진다.
@@ -775,7 +870,7 @@ class CiImpactWorkflowTests(unittest.TestCase):
             function_gated_native_skia_tests(),
             [
                 "issue_2225_missing_picture_placeholder::"
-                "issue_2225_export_png_defaults_to_print_equivalent_skia_profile",
+                "issue_2225_export_png_defaults_to_screen_skia_profile",
             ],
         )
 
@@ -952,10 +1047,10 @@ mod support;
 
     def test_rust_workers_wait_only_for_their_archive_partition(self) -> None:
         for archive_label, index, partition in (
-            ("a", 1, "hash:1/2"),
-            ("a", 2, "hash:2/2"),
+            ("a", 1, "hash:1/1"),
             ("b", 1, "hash:1/1"),
             ("c", 1, "hash:1/1"),
+            ("d", 1, "hash:1/1"),
         ):
             job_name = f"test-archive-{archive_label}-shard-{index}"
             with self.subTest(job=job_name):
@@ -999,6 +1094,8 @@ mod support;
             "Download archive A expected count",
             "Download archive B expected count",
             "Download archive C expected count",
+            "Download archive D expected count",
+            "Download archive E expected count",
             "Download shard counts",
             "Verify archive shard totals",
         ):
@@ -1015,10 +1112,13 @@ mod support;
             "BUILD_ARCHIVE_A_RESULT": "success",
             "BUILD_ARCHIVE_B_RESULT": "success",
             "BUILD_ARCHIVE_C_RESULT": "success",
+            "BUILD_ARCHIVE_D_RESULT": "success",
+            "BUILD_ARCHIVE_E_RESULT": "success",
             "TEST_ARCHIVE_A_1_RESULT": "success",
-            "TEST_ARCHIVE_A_2_RESULT": "success",
             "TEST_ARCHIVE_B_1_RESULT": "success",
             "TEST_ARCHIVE_C_1_RESULT": "success",
+            "TEST_ARCHIVE_D_1_RESULT": "success",
+            "TEST_ARCHIVE_E_1_RESULT": "success",
         }
         cases = {
             "frontend-only": {},
@@ -1046,6 +1146,32 @@ mod support;
             with self.subTest(lane=name):
                 result = self._run_aggregate(**env)
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_aggregate_accepts_canonical_promotion_only_after_gate_success(self) -> None:
+        accepted = self._run_aggregate(
+            CANONICAL_PROMOTION="true",
+            PROMOTION_RESULT="success",
+        )
+        self.assertEqual(accepted.returncode, 0, accepted.stdout + accepted.stderr)
+
+        rejected_cases = {
+            "canonical-gate-skipped": {
+                "CANONICAL_PROMOTION": "true",
+                "PROMOTION_RESULT": "skipped",
+            },
+            "noncanonical-gate-ran": {
+                "CANONICAL_PROMOTION": "false",
+                "PROMOTION_RESULT": "success",
+            },
+            "canonical-state-missing": {
+                "CANONICAL_PROMOTION": "",
+                "PROMOTION_RESULT": "skipped",
+            },
+        }
+        for name, env in rejected_cases.items():
+            with self.subTest(case=name):
+                result = self._run_aggregate(**env)
+                self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_aggregate_rejects_axis_result_mismatches(self) -> None:
         cases = {

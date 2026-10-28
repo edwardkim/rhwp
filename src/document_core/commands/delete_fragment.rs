@@ -35,6 +35,7 @@ use crate::error::HwpError;
 use crate::model::event::DocumentEvent;
 use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::raw_provenance::SectionSeal;
+use crate::renderer::render_normalization::RenderPath;
 
 /// 선택 삭제 1회분의 복원 조각.
 #[derive(Debug, Clone)]
@@ -63,6 +64,9 @@ pub struct DeleteFragment {
     /// 다이제스트가 DocProperties 전체를 포함하므로(`raw_provenance.rs`
     /// `doc_info_model_digest`) 이것도 되돌려야 DocInfo raw 재사용이 살아난다.
     pub caret: (u32, u32),
+    /// Renderer provenance projected to logical paths before paragraph clones
+    /// replace their live Box identities.
+    pub text_reflowed_table_paths: std::collections::HashSet<RenderPath>,
 }
 
 impl DocumentCore {
@@ -83,6 +87,7 @@ impl DocumentCore {
                 self.document.sections.len()
             )));
         }
+        let text_reflowed_table_paths = self.text_reflowed_table_paths_for_snapshot();
         let section = &self.document.sections[section_idx];
         if start_para > end_para {
             return Err(HwpError::RenderError(format!(
@@ -116,6 +121,7 @@ impl DocumentCore {
                 self.document.doc_properties.caret_list_id,
                 self.document.doc_properties.caret_para_id,
             ),
+            text_reflowed_table_paths,
         };
 
         let id = self.next_fragment_id;
@@ -165,12 +171,15 @@ impl DocumentCore {
             )));
         }
 
-        // [start] 자리의 삭제 후 잔여(병합) 문단을 원본으로 교체 + 나머지 원본 재삽입
-        let mut restored: Vec<Paragraph> = Vec::with_capacity(frag.pre_para_count);
-        restored.extend_from_slice(&section.paragraphs[..frag.start_para]);
-        restored.extend(frag.captured_paras.iter().cloned());
-        restored.extend_from_slice(&section.paragraphs[frag.start_para + 1..]);
-        section.paragraphs = restored;
+        // [start] 자리의 삭제 후 잔여(병합) 문단을 캡처한 원본 범위로 통째 교체.
+        // 주변 문단을 깊은 복사하지 않고 캡처분만 clone 한다. 주소 안정성은 기대하지
+        // 않는다 — 여러 문단으로 교체하면 뒤 원소가 밀리고 용량이 모자라면 재할당된다.
+        // 포인터 키 캐시(composer.rs SingleLineOverflowCache)는 아래
+        // rebuild_derived_state -> invalidate_page_tree_cache -> clear_layout_caches 가 비운다.
+        section.paragraphs.splice(
+            frag.start_para..=frag.start_para,
+            frag.captured_paras.iter().cloned(),
+        );
 
         // 꼬리 줄 좌표 저널 복원 — recalculate_section_vpos 의 덮어쓰기를 되돌린다
         for (offset, segs) in frag.tail_line_segs.iter().enumerate() {
@@ -183,6 +192,7 @@ impl DocumentCore {
         // 구역 raw 필드 복원 — 저장 바이트 왕복 동일성의 핵심
         section.raw_stream = frag.raw_stream.clone();
         section.raw_provenance = frag.raw_provenance.clone();
+        self.restore_text_reflowed_tables_from_snapshot(&frag.text_reflowed_table_paths);
 
         let cursor_para = frag.start_para;
         let caret = frag.caret;

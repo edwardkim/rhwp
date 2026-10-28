@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q3-variable-instance-execution-plan",
+  "issue": 4969,
+  "stage": "W10-Q3",
+  "status": "q3-e2-complete-awaiting-q3-e3-start-approval",
+  "productMutation": false,
+  "source": {
+    "path": "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf",
+    "sha256": "3bbd254dcc5780f7524f9d07af4aa981ba5e3e84cf32d7d4e04301b3943e8694",
+    "bytes": 1503064,
+    "faceIndex": 0,
+    "staticInstanceFontAllowed": false
+  },
+  "canonicalInstance": {
+    "sortByAxisTag": true,
+    "normalizeNegativeZero": true,
+    "dropCoordinatesEqualToFvarDefault": true,
+    "partialVectorUsesFvarDefaults": true,
+    "identityFields": [
+      "source-digest",
+      "source-byte-length",
+      "face-index",
+      "canonical-non-default-axis-vector"
+    ]
+  },
+  "authoritativeInput": {
+    "firstOwner": "explicit-opt-in-slot-instance-command-or-api",
+    "parserHeuristic": false,
+    "fontNameHeuristic": false,
+    "boldOrRatioHeuristic": false,
+    "defaultWithoutRequest": "preserve-q2"
+  },
+  "cacheOwner": {
+    "sourceBytes": "shared-per-unique-source",
+    "mutableFace": "isolated-per-canonical-instance",
+    "measurement": "cached-per-source-and-canonical-instance-and-text-settings",
+    "backendFontOrOutline": "cached-per-canonical-instance",
+    "crossInstanceMutableReuseAllowed": false
+  },
+  "stages": [
+    {
+      "id": "Q3-A",
+      "name": "canonical-instance-red-contract",
+      "productOutputChange": false,
+      "result": "qualified-red-approved",
+      "checkpoint": "1075f5dce",
+      "approvalAfter": true
+    },
+    {
+      "id": "Q3-B",
+      "name": "instance-aware-dormant-measurement-and-cache",
+      "productOutputChange": false,
+      "result": "qualified-approved",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_b_dormant_measurement.json",
+      "checkpoint": "6a156ca98",
+      "approvalAfter": true
+    },
+    {
+      "id": "Q3-C",
+      "name": "replay-payload-and-backend-capability-shadow",
+      "productOutputChange": false,
+      "result": "qualified-approved",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_c_replay_capability_shadow.json",
+      "checkpoint": "0a248f3b8",
+      "postMergeRequalified": true,
+      "postMergeEvidenceCheckpointCreated": true,
+      "approvalAfter": true
+    },
+    {
+      "id": "Q3-D",
+      "name": "explicit-request-owner-and-dormant-product-transaction",
+      "productOutputChange": false,
+      "result": "qualified-dormant-approved",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_d_explicit_request_owner.json",
+      "checkpointCreated": true,
+      "approvalAfter": true,
+      "requiresActivationMatrix": true
+    },
+    {
+      "id": "Q3-E",
+      "name": "bounded-atomic-activation-and-final-qualification",
+      "productOutputChange": true,
+      "currentSlice": "Q3-E3-start-approval",
+      "currentSliceEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_e2_wasm_public_adapter.json",
+      "approvalAfter": true
+    }
+  ],
+  "publicMatrix": [
+    { "id": "default", "wght": 400.0, "opsz": 400.0 },
+    { "id": "weight-interior", "wght": 650.0, "opsz": 400.0 },
+    { "id": "bold", "wght": 900.0, "opsz": 400.0 },
+    { "id": "optical-interior", "wght": 400.0, "opsz": 650.0 },
+    { "id": "title", "wght": 900.0, "opsz": 900.0 }
+  ],
+  "limits": {
+    "variationAxes": 16,
+    "fontBytes": 33554432,
+    "glyphsPerRun": 4096,
+    "clustersPerRun": 4096,
+    "preparedSourcesPerPage": 256,
+    "fontBytesPerPage": 67108864
+  },
+  "prohibited": [
+    "hwp-or-hwpx-axis-inference",
+    "font-name-bold-or-ratio-axis-heuristic",
+    "cross-instance-mutable-face-reuse",
+    "backend-independent-shaping",
+    "static-or-modified-instance-font-generation",
+    "unproven-variation-glyph-run-selection",
+    "w8-or-fallback-registry-change",
+    "vertical-writing-activation"
+  ],
+  "privateCorpus": false,
+  "hyperVOrHancomOracle": false,
+  "q3ERevisedPlan": "mydocs/tech/investigations/issue-4969/w10_q3_e_execution_plan.json",
+  "nextStage": "Q3-E3-start-approval",
+  "nextStageApproved": false,
+  "approvalScope": "Q3-E2 result and checkpoint are complete; Q3-E3 product activation, push, PR, and comment remain separately gated"
+}

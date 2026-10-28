@@ -2,13 +2,32 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-07-25
+last_verified: 2026-10-06
 ---
 
 # Maintainer 일반 PR 처리
 
 이 경로는 admin 또는 branch-protection bypass 권한을 가진 maintainer가 외부 contributor PR을 일반 방식으로
 검토·merge하는 기본 경로다. collaborator 경로는 이 문서를 대체하지 않는다.
+
+## 렌더링 회귀의 추가·변경과 메인터너 보정
+
+새 회귀의 추가와 실패한 기존 회귀의 변경은 관련 모든 페이지의 Native/fresh WASM 일치율이
+90% 이상일 때만 진행한다. 기존 회귀가 실패하면 **원본 입력 출력 보정 → 버전에 맞는 독립 한컴
+Print PDF로 90% 이상 확인 → 독립 기대값에 따라 필요한 검사 변경** 순서를 따른다.
+실물 배치는 절대 px 좌표·고정 px 영역으로 선택하지 않고 문단·줄·개체의 소유·순서·보존·포함·겹침
+관계로 검사한다. 미달·측정 불가는 보류하고 원본과 실패 증거를 보존한다. 메인터너 보정 승인도
+이 선행 조건을 면제하지 않는다. 상세 절차는
+[시각 선행 조건](visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)과
+[기존 기대값 재검토](visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)를 따른다.
+다만 **완료된 페이지**의 Native/fresh WASM `silhouette_raw_match_percent`(색상 경계 보정 전2px 실루엣 일치율)이 각각98% 이상이고
+독립 PDF와 직접 판독을 마쳤으면 ±2px 좌표 고정도 허용한다. 고정한 쪽은 양쪽98% 이상을
+유지해야 하며100%로 개선은 허용한다. 문서 전체98% 이상은 요구하지 않는다.
+[페이지별 px 회귀 조건](visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따른다.
+
+90% 이상이어도 [수식·간격 확대 판독](visual_fixture_evidence.md#90-통과-후-수식간격의-확대-판독)을
+수행한다. 변경 영역·알려진 차이·사용자 지적 영역의 모양·장평·미세 간격을 직접 대조하고,
+확인된 결함이나 미검증은 점수 통과로 면제하지 않는다.
 
 ## review 문서 위치
 
@@ -32,20 +51,27 @@ PR이 일괄 실패할 수 있다.
   comment로 남긴다.
 - 보정 뒤 최신 head의 required check를 PR별로 재검증한다.
 
+원 contributor head가 규약을 충족하지 않으면 review 문서의 최종 판정은 `메인터너 보정 후 수용 가능`으로
+기록한다. 보정 commit의 SHA·범위·검증을 원 head와 분리하고, 보정 없는 원 PR을 `승인`으로 바꾸지 않는다.
+보정 검증이 아직 끝나지 않았거나 보정 범위가 원 주장 밖으로 넓어지면 `머지 보류`로 전환한다.
+
 ## 5. 작업지시자 승인 요청
 
 접수·검증·필요한 시각 증적을 review 문서에 남긴 뒤 승인 요청을 한다. 다음 값은 요청 시점 참고값이고
 merge 직전에 다시 확인한다.
 
 ~~~text
-PR #N 검토 결과 · admin merge 준비 완료.
+PR #N 검토 결과 · <승인 | 머지 보류 | 메인터너 보정 후 수용 가능>.
 
 - mergeable: <참고값, merge 전 재확인>
 - 충돌 simulation: <결과>
 - 선택한 local 검증: <결과>
 - review 문서: mydocs/pr/pr_N_review.md
-- merge 전 조건: 최신 PR head의 GitHub Actions 통과 + 작업지시자 승인
+- 다음 조건: <승인이면 최신 대상 head CI + 작업지시자 승인; 보류면 해제 조건; 보정이면 integration head 검증>
 ~~~
+
+`승인`일 때만 admin merge 준비 완료라고 쓴다. `머지 보류`와 `메인터너 보정 후 수용 가능`은
+GitHub approve, comment, close, push, merge를 자동으로 지시하지 않으며 각각 작업지시자의 별도 승인 범위를 따른다.
 
 ## 6. 승인 뒤 admin merge
 

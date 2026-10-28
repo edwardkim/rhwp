@@ -51,13 +51,13 @@ fn assert_consumable_doclang(path: &Path) {
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(quick_xml::events::Event::Start(e)) if !root_checked => {
-                assert_eq!(e.name().as_ref(), b"doclang", "루트 요소");
+                assert_eq!(e.name().as_ref(), "doclang", "루트 요소");
                 let version = e
                     .attributes()
                     .flatten()
-                    .find(|a| a.key.as_ref() == b"version")
+                    .find(|a| a.key.as_ref() == "version")
                     .expect("version 속성");
-                assert_eq!(version.value.as_ref(), b"0.6", "DocLang 버전");
+                assert_eq!(version.value.as_ref(), "0.6", "DocLang 버전");
                 root_checked = true;
             }
             Ok(quick_xml::events::Event::Eof) => break,

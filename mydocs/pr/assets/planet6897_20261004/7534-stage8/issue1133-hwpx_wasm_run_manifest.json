@@ -1,0 +1,53 @@
+{
+  "schema_version": 2,
+  "key": "issue1133-hwpx",
+  "provenance": {
+    "hwp": {
+      "path": "samples/hwpx/issue_1133.hwpx",
+      "sha256": "2cf479d94a70d2a834ae7bc1f5ec5fa3d7ff895792cded48d0bf92ca19341bee"
+    },
+    "pdf": {
+      "path": "pdf/hwpx/issue_1133.pdf",
+      "sha256": "ca066fdc5cda9fd8c47c9a29ba9a546e70c6acdaa96df4d6c66e0b8e02cdbc45"
+    },
+    "git_head": "4de143ddb0d6dabb7908bfe9182a9c5556543354",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "519ef2b53a3fafe0a47a28089b2a596bf924d20eae1e39b04d449365d33724d1"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp.js",
+          "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "sha256": "778dc81dca11ea1b696b1e540864c44185d06a209c4f2ab912e8cc8ee567909e"
+        }
+      ],
+      "exporter_sha256": "aaf27aabe09958270a5a8d8b19593a386dd821bb9cbc1e219a9c726c623fea6f",
+      "comparison_profile": "print",
+      "font_policy": "same-input native --font-style; font-face CSS only",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [],
+  "requested_page_shards": [],
+  "run_state": "incomplete"
+}

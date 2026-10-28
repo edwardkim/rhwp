@@ -1,0 +1,14 @@
+[
+  {
+    "path": "samples/rowbreak-problem-pages.hwp",
+    "sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed",
+    "verified_commit": "5b24c9ad8b56ccf9e581fe58db21186354a3f439",
+    "matches_executed_input": true
+  },
+  {
+    "path": "pdf/rowbreak-problem-pages-hwp-2024.pdf",
+    "sha256": "2c49bda9cc21dc8b93b554d2607da241dd7e894657eb308ed823e7d44654e85c",
+    "verified_commit": "5b24c9ad8b56ccf9e581fe58db21186354a3f439",
+    "matches_executed_input": true
+  }
+]

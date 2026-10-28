@@ -1,0 +1,27 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6900,
+  "title": "표 뒤 host 앵커 줄의 후행 간격을 사다리가 이미 준 자리에 또 더한다",
+  "entries": [
+    {
+      "path": "samples/issue6900/156521182-covid-press-clarification.hwp",
+      "format": "hwp5",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6900",
+      "originalFilename": "156521182_[8.16.보도설명자료] 동아일보 한국 인구대비 확진자 1위 보도 관련.hwp",
+      "bytes": 1005056,
+      "sha256": "165f4a2b98fc1740f4a453c7f3fd1a964666d585cb89ea2dd4b2b0ba9dbb7e7a",
+      "lastSavedWith": {
+        "product": "hancom-office-2018",
+        "version": "10.0.0.11808"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/156521182-covid-press-clarification-2020.pdf",
+      "referencePdfBytes": 591903,
+      "referencePdfSha256": "e98065c932702775fbff8b8afff4136915d02802fb5cf0ca74bcc1433cb938dd",
+      "referencePdfStatus": "2026-09-09 MCP convert 로 engine 2020 산출, 4쪽. 4쪽 출처 줄 텍스트 bbox 는 PDF 좌표 750.5..764.9pt = 1000.7..1019.9px(96dpi)로 이슈 본문 실측과 일치한다. PDF 는 매 실행 SHA 가 달라지므로 이 해시는 이 사본의 것이다.",
+      "contract": "4쪽 하단 `* 출처: 존스홉킨스 …` 줄이 본문(하단 1020.5) 안에 있어야 한다. 표 하단은 977.4 이고 저장 사다리가 다음 문단(pi=31)을 같은 977.4 에 둔다 — 그 위에 host 앵커 줄의 `line_spacing` 14.9px 을 또 더하면 출처 줄이 1017.9..1033.9 로 본문을 13.4px 넘는다.",
+      "originalIdentityStatus": "2026-09-09 코퍼스 `korea_downloads/질병관리청` 원문과 SHA-256 이 동일함을 확인했다. 원래 형식과 바이트를 보존하며 중복 사본을 만들지 않는다."
+    }
+  ]
+}

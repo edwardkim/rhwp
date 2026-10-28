@@ -1,0 +1,184 @@
+[
+  {
+    "name": "fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 11.65
+  },
+  {
+    "name": "clippy-host",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "seconds": 72.86
+  },
+  {
+    "name": "clippy-wasm",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "rhwp",
+      "--lib",
+      "--target",
+      "wasm32-unknown-unknown",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "seconds": 50.98
+  },
+  {
+    "name": "workspace-build",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace",
+      "--target-dir",
+      "target/pr7118-7187-20260916"
+    ],
+    "exit_code": 0,
+    "seconds": 111.63
+  },
+  {
+    "name": "clippy-workspace",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "seconds": 4.91
+  },
+  {
+    "name": "suite-policy",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "8d45f242baa1a565357aaa38e9f459595b1e756c"
+    ],
+    "exit_code": 0,
+    "seconds": 0.46
+  },
+  {
+    "name": "unit-policy",
+    "command": [
+      "node",
+      "scripts/rust-unit-test-tiers.mjs",
+      "--check",
+      "--base-ref",
+      "8d45f242baa1a565357aaa38e9f459595b1e756c"
+    ],
+    "exit_code": 0,
+    "seconds": 8.17
+  },
+  {
+    "name": "nextest",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--tests",
+      "--no-fail-fast"
+    ],
+    "exit_code": 0,
+    "seconds": 763.81
+  },
+  {
+    "name": "skia-lib",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--features",
+      "native-skia",
+      "--lib"
+    ],
+    "exit_code": 0,
+    "seconds": 198.41
+  },
+  {
+    "name": "skia-placeholder",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_2225_missing_picture_placeholder",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--features",
+      "native-skia"
+    ],
+    "exit_code": 0,
+    "seconds": 154.13
+  },
+  {
+    "name": "skia-p37",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "render_p37_direct_pdf_export",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--features",
+      "native-skia"
+    ],
+    "exit_code": 0,
+    "seconds": 13.0
+  },
+  {
+    "name": "wasm-fresh",
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--no-opt"
+    ],
+    "exit_code": 0,
+    "seconds": 221.23
+  }
+]

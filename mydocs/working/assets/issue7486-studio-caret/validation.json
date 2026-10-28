@@ -1,0 +1,95 @@
+{
+  "issue": 7486,
+  "baseSource": "83bf0f3c840c9afc1de584c17b167610fd9caf3b",
+  "fixedSource": "3f66b618c0842221981eb3353a818b696315ee53",
+  "input": "Code-generated A4 10pt blank document; Percent line spacing 160/200/300, setup through WASM; detected Enter/Undo/Redo through real keys",
+  "oracle": "Logical cursor preserved, WASM owner agrees with VirtualScroll; DOM projection equals completed page origin + page-local rect * zoom; viewport contains caret. No independent Hancom PDF claim for DOM overlay.",
+  "arrangements": {
+    "100": "single",
+    "66": "double"
+  },
+  "before": {
+    "passAssertions": 69,
+    "failAssertions": 15,
+    "states": [
+      {"spacing":160,"zoomPercent":100,"operation":"Enter","pos":{"sectionIndex":0,"paragraphIndex":41,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":1,"pages":2,"virtualPages":2,"layoutCount":2,"top":132.3,"left":530.4,"expectedTop":1274.8,"expectedLeft":133.54999999999998,"scrollTop":112,"firstPageTop":10,"secondPageTop":1142.5,"firstPageLeft":20.149999999999977,"secondPageLeft":20.149999999999977,"visible":true},
+      {"spacing":160,"zoomPercent":100,"operation":"Undo","pos":{"sectionIndex":0,"paragraphIndex":40,"charOffset":0},"rect":{"pageIndex":0,"x":113.4,"y":985.6,"height":13.3},"zoom":1,"pages":1,"virtualPages":1,"layoutCount":3,"top":995.6,"left":133.55,"expectedTop":995.6,"expectedLeft":133.54999999999998,"scrollTop":291,"firstPageTop":10,"secondPageTop":0,"firstPageLeft":20.149999999999977,"secondPageLeft":417,"visible":true},
+      {"spacing":160,"zoomPercent":100,"operation":"Redo","pos":{"sectionIndex":0,"paragraphIndex":41,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":1,"pages":2,"virtualPages":2,"layoutCount":4,"top":132.3,"left":530.4,"expectedTop":1274.8,"expectedLeft":133.54999999999998,"scrollTop":112,"firstPageTop":10,"secondPageTop":1142.5,"firstPageLeft":20.149999999999977,"secondPageLeft":20.149999999999977,"visible":true},
+      {"spacing":200,"zoomPercent":100,"operation":"Enter","pos":{"sectionIndex":0,"paragraphIndex":33,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":1,"pages":2,"virtualPages":2,"layoutCount":2,"top":132.3,"left":530.4,"expectedTop":1274.8,"expectedLeft":133.54999999999998,"scrollTop":112,"firstPageTop":10,"secondPageTop":1142.5,"firstPageLeft":20.149999999999977,"secondPageLeft":20.149999999999977,"visible":true},
+      {"spacing":200,"zoomPercent":100,"operation":"Undo","pos":{"sectionIndex":0,"paragraphIndex":32,"charOffset":0},"rect":{"pageIndex":0,"x":113.4,"y":985.6,"height":13.3},"zoom":1,"pages":1,"virtualPages":1,"layoutCount":3,"top":995.6,"left":133.55,"expectedTop":995.6,"expectedLeft":133.54999999999998,"scrollTop":291,"firstPageTop":10,"secondPageTop":0,"firstPageLeft":20.149999999999977,"secondPageLeft":417,"visible":true},
+      {"spacing":200,"zoomPercent":100,"operation":"Redo","pos":{"sectionIndex":0,"paragraphIndex":33,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":1,"pages":2,"virtualPages":2,"layoutCount":4,"top":132.3,"left":530.4,"expectedTop":1274.8,"expectedLeft":133.54999999999998,"scrollTop":112,"firstPageTop":10,"secondPageTop":1142.5,"firstPageLeft":20.149999999999977,"secondPageLeft":20.149999999999977,"visible":true},
+      {"spacing":300,"zoomPercent":100,"operation":"Enter","pos":{"sectionIndex":0,"paragraphIndex":22,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":1,"pages":2,"virtualPages":2,"layoutCount":2,"top":132.3,"left":530.4,"expectedTop":1274.8,"expectedLeft":133.54999999999998,"scrollTop":112,"firstPageTop":10,"secondPageTop":1142.5,"firstPageLeft":20.149999999999977,"secondPageLeft":20.149999999999977,"visible":true},
+      {"spacing":300,"zoomPercent":100,"operation":"Undo","pos":{"sectionIndex":0,"paragraphIndex":21,"charOffset":0},"rect":{"pageIndex":0,"x":113.4,"y":972.3,"height":13.3},"zoom":1,"pages":1,"virtualPages":1,"layoutCount":3,"top":982.3,"left":133.55,"expectedTop":982.3,"expectedLeft":133.54999999999998,"scrollTop":278,"firstPageTop":10,"secondPageTop":0,"firstPageLeft":20.149999999999977,"secondPageLeft":417,"visible":true},
+      {"spacing":300,"zoomPercent":100,"operation":"Redo","pos":{"sectionIndex":0,"paragraphIndex":22,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":1,"pages":2,"virtualPages":2,"layoutCount":4,"top":132.3,"left":530.4,"expectedTop":1274.8,"expectedLeft":133.54999999999998,"scrollTop":112,"firstPageTop":10,"secondPageTop":1142.5,"firstPageLeft":20.149999999999977,"secondPageLeft":20.149999999999977,"visible":true},
+      {"spacing":160,"zoomPercent":66,"operation":"Enter","pos":{"sectionIndex":0,"paragraphIndex":41,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":0.66,"pages":2,"virtualPages":2,"layoutCount":2,"top":87.318,"left":704.844,"expectedTop":93.918,"expectedLeft":708.1440000000001,"scrollTop":0,"firstPageTop":6.6000000000000005,"secondPageTop":6.6000000000000005,"firstPageLeft":102.85799999999995,"secondPageLeft":633.3000000000001,"visible":true},
+      {"spacing":160,"zoomPercent":66,"operation":"Undo","pos":{"sectionIndex":0,"paragraphIndex":40,"charOffset":0},"rect":{"pageIndex":0,"x":113.4,"y":985.6,"height":13.3},"zoom":0.66,"pages":1,"virtualPages":1,"layoutCount":3,"top":657.096,"left":177.702,"expectedTop":657.0960000000001,"expectedLeft":177.70199999999994,"scrollTop":0,"firstPageTop":6.6000000000000005,"secondPageTop":0,"firstPageLeft":102.85799999999995,"secondPageLeft":630,"visible":true},
+      {"spacing":160,"zoomPercent":66,"operation":"Redo","pos":{"sectionIndex":0,"paragraphIndex":41,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":0.66,"pages":2,"virtualPages":2,"layoutCount":4,"top":87.318,"left":704.844,"expectedTop":93.918,"expectedLeft":708.1440000000001,"scrollTop":0,"firstPageTop":6.6000000000000005,"secondPageTop":6.6000000000000005,"firstPageLeft":102.85799999999995,"secondPageLeft":633.3000000000001,"visible":true},
+      {"spacing":200,"zoomPercent":66,"operation":"Enter","pos":{"sectionIndex":0,"paragraphIndex":33,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":0.66,"pages":2,"virtualPages":2,"layoutCount":2,"top":87.318,"left":704.844,"expectedTop":93.918,"expectedLeft":708.1440000000001,"scrollTop":0,"firstPageTop":6.6000000000000005,"secondPageTop":6.6000000000000005,"firstPageLeft":102.85799999999995,"secondPageLeft":633.3000000000001,"visible":true},
+      {"spacing":200,"zoomPercent":66,"operation":"Undo","pos":{"sectionIndex":0,"paragraphIndex":32,"charOffset":0},"rect":{"pageIndex":0,"x":113.4,"y":985.6,"height":13.3},"zoom":0.66,"pages":1,"virtualPages":1,"layoutCount":3,"top":657.096,"left":177.702,"expectedTop":657.0960000000001,"expectedLeft":177.70199999999994,"scrollTop":0,"firstPageTop":6.6000000000000005,"secondPageTop":0,"firstPageLeft":102.85799999999995,"secondPageLeft":630,"visible":true},
+      {"spacing":200,"zoomPercent":66,"operation":"Redo","pos":{"sectionIndex":0,"paragraphIndex":33,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":0.66,"pages":2,"virtualPages":2,"layoutCount":4,"top":87.318,"left":704.844,"expectedTop":93.918,"expectedLeft":708.1440000000001,"scrollTop":0,"firstPageTop":6.6000000000000005,"secondPageTop":6.6000000000000005,"firstPageLeft":102.85799999999995,"secondPageLeft":633.3000000000001,"visible":true},
+      {"spacing":300,"zoomPercent":66,"operation":"Enter","pos":{"sectionIndex":0,"paragraphIndex":22,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":0.66,"pages":2,"virtualPages":2,"layoutCount":2,"top":87.318,"left":704.844,"expectedTop":93.918,"expectedLeft":708.1440000000001,"scrollTop":0,"firstPageTop":6.6000000000000005,"secondPageTop":6.6000000000000005,"firstPageLeft":102.85799999999995,"secondPageLeft":633.3000000000001,"visible":true},
+      {"spacing":300,"zoomPercent":66,"operation":"Undo","pos":{"sectionIndex":0,"paragraphIndex":21,"charOffset":0},"rect":{"pageIndex":0,"x":113.4,"y":972.3,"height":13.3},"zoom":0.66,"pages":1,"virtualPages":1,"layoutCount":3,"top":648.318,"left":177.702,"expectedTop":648.318,"expectedLeft":177.70199999999994,"scrollTop":0,"firstPageTop":6.6000000000000005,"secondPageTop":0,"firstPageLeft":102.85799999999995,"secondPageLeft":630,"visible":true},
+      {"spacing":300,"zoomPercent":66,"operation":"Redo","pos":{"sectionIndex":0,"paragraphIndex":22,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":0.66,"pages":2,"virtualPages":2,"layoutCount":4,"top":87.318,"left":704.844,"expectedTop":93.918,"expectedLeft":708.1440000000001,"scrollTop":0,"firstPageTop":6.6000000000000005,"secondPageTop":6.6000000000000005,"firstPageLeft":102.85799999999995,"secondPageLeft":633.3000000000001,"visible":true}
+    ]
+  },
+  "after": {
+    "passAssertions": 84,
+    "failAssertions": 0,
+    "states": [
+      {"spacing":160,"zoomPercent":100,"operation":"Enter","pos":{"sectionIndex":0,"paragraphIndex":41,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":1,"pages":2,"virtualPages":2,"layoutCount":2,"top":1274.8,"left":133.55,"expectedTop":1274.8,"expectedLeft":133.54999999999998,"scrollTop":570,"firstPageTop":10,"secondPageTop":1142.5,"firstPageLeft":20.149999999999977,"secondPageLeft":20.149999999999977,"visible":true},
+      {"spacing":160,"zoomPercent":100,"operation":"Undo","pos":{"sectionIndex":0,"paragraphIndex":40,"charOffset":0},"rect":{"pageIndex":0,"x":113.4,"y":985.6,"height":13.3},"zoom":1,"pages":1,"virtualPages":1,"layoutCount":3,"top":995.6,"left":133.55,"expectedTop":995.6,"expectedLeft":133.54999999999998,"scrollTop":405,"firstPageTop":10,"secondPageTop":0,"firstPageLeft":20.149999999999977,"secondPageLeft":417,"visible":true},
+      {"spacing":160,"zoomPercent":100,"operation":"Redo","pos":{"sectionIndex":0,"paragraphIndex":41,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":1,"pages":2,"virtualPages":2,"layoutCount":4,"top":1274.8,"left":133.55,"expectedTop":1274.8,"expectedLeft":133.54999999999998,"scrollTop":570,"firstPageTop":10,"secondPageTop":1142.5,"firstPageLeft":20.149999999999977,"secondPageLeft":20.149999999999977,"visible":true},
+      {"spacing":200,"zoomPercent":100,"operation":"Enter","pos":{"sectionIndex":0,"paragraphIndex":33,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":1,"pages":2,"virtualPages":2,"layoutCount":2,"top":1274.8,"left":133.55,"expectedTop":1274.8,"expectedLeft":133.54999999999998,"scrollTop":570,"firstPageTop":10,"secondPageTop":1142.5,"firstPageLeft":20.149999999999977,"secondPageLeft":20.149999999999977,"visible":true},
+      {"spacing":200,"zoomPercent":100,"operation":"Undo","pos":{"sectionIndex":0,"paragraphIndex":32,"charOffset":0},"rect":{"pageIndex":0,"x":113.4,"y":985.6,"height":13.3},"zoom":1,"pages":1,"virtualPages":1,"layoutCount":3,"top":995.6,"left":133.55,"expectedTop":995.6,"expectedLeft":133.54999999999998,"scrollTop":405,"firstPageTop":10,"secondPageTop":0,"firstPageLeft":20.149999999999977,"secondPageLeft":417,"visible":true},
+      {"spacing":200,"zoomPercent":100,"operation":"Redo","pos":{"sectionIndex":0,"paragraphIndex":33,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":1,"pages":2,"virtualPages":2,"layoutCount":4,"top":1274.8,"left":133.55,"expectedTop":1274.8,"expectedLeft":133.54999999999998,"scrollTop":570,"firstPageTop":10,"secondPageTop":1142.5,"firstPageLeft":20.149999999999977,"secondPageLeft":20.149999999999977,"visible":true},
+      {"spacing":300,"zoomPercent":100,"operation":"Enter","pos":{"sectionIndex":0,"paragraphIndex":22,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":1,"pages":2,"virtualPages":2,"layoutCount":2,"top":1274.8,"left":133.55,"expectedTop":1274.8,"expectedLeft":133.54999999999998,"scrollTop":570,"firstPageTop":10,"secondPageTop":1142.5,"firstPageLeft":20.149999999999977,"secondPageLeft":20.149999999999977,"visible":true},
+      {"spacing":300,"zoomPercent":100,"operation":"Undo","pos":{"sectionIndex":0,"paragraphIndex":21,"charOffset":0},"rect":{"pageIndex":0,"x":113.4,"y":972.3,"height":13.3},"zoom":1,"pages":1,"virtualPages":1,"layoutCount":3,"top":982.3,"left":133.55,"expectedTop":982.3,"expectedLeft":133.54999999999998,"scrollTop":405,"firstPageTop":10,"secondPageTop":0,"firstPageLeft":20.149999999999977,"secondPageLeft":417,"visible":true},
+      {"spacing":300,"zoomPercent":100,"operation":"Redo","pos":{"sectionIndex":0,"paragraphIndex":22,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":1,"pages":2,"virtualPages":2,"layoutCount":4,"top":1274.8,"left":133.55,"expectedTop":1274.8,"expectedLeft":133.54999999999998,"scrollTop":570,"firstPageTop":10,"secondPageTop":1142.5,"firstPageLeft":20.149999999999977,"secondPageLeft":20.149999999999977,"visible":true},
+      {"spacing":160,"zoomPercent":66,"operation":"Enter","pos":{"sectionIndex":0,"paragraphIndex":41,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":0.66,"pages":2,"virtualPages":2,"layoutCount":2,"top":93.918,"left":708.144,"expectedTop":93.918,"expectedLeft":708.1440000000001,"scrollTop":0,"firstPageTop":6.6000000000000005,"secondPageTop":6.6000000000000005,"firstPageLeft":102.85799999999995,"secondPageLeft":633.3000000000001,"visible":true},
+      {"spacing":160,"zoomPercent":66,"operation":"Undo","pos":{"sectionIndex":0,"paragraphIndex":40,"charOffset":0},"rect":{"pageIndex":0,"x":113.4,"y":985.6,"height":13.3},"zoom":0.66,"pages":1,"virtualPages":1,"layoutCount":3,"top":657.096,"left":177.702,"expectedTop":657.0960000000001,"expectedLeft":177.70199999999994,"scrollTop":0,"firstPageTop":6.6000000000000005,"secondPageTop":0,"firstPageLeft":102.85799999999995,"secondPageLeft":630,"visible":true},
+      {"spacing":160,"zoomPercent":66,"operation":"Redo","pos":{"sectionIndex":0,"paragraphIndex":41,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":0.66,"pages":2,"virtualPages":2,"layoutCount":4,"top":93.918,"left":708.144,"expectedTop":93.918,"expectedLeft":708.1440000000001,"scrollTop":0,"firstPageTop":6.6000000000000005,"secondPageTop":6.6000000000000005,"firstPageLeft":102.85799999999995,"secondPageLeft":633.3000000000001,"visible":true},
+      {"spacing":200,"zoomPercent":66,"operation":"Enter","pos":{"sectionIndex":0,"paragraphIndex":33,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":0.66,"pages":2,"virtualPages":2,"layoutCount":2,"top":93.918,"left":708.144,"expectedTop":93.918,"expectedLeft":708.1440000000001,"scrollTop":0,"firstPageTop":6.6000000000000005,"secondPageTop":6.6000000000000005,"firstPageLeft":102.85799999999995,"secondPageLeft":633.3000000000001,"visible":true},
+      {"spacing":200,"zoomPercent":66,"operation":"Undo","pos":{"sectionIndex":0,"paragraphIndex":32,"charOffset":0},"rect":{"pageIndex":0,"x":113.4,"y":985.6,"height":13.3},"zoom":0.66,"pages":1,"virtualPages":1,"layoutCount":3,"top":657.096,"left":177.702,"expectedTop":657.0960000000001,"expectedLeft":177.70199999999994,"scrollTop":0,"firstPageTop":6.6000000000000005,"secondPageTop":0,"firstPageLeft":102.85799999999995,"secondPageLeft":630,"visible":true},
+      {"spacing":200,"zoomPercent":66,"operation":"Redo","pos":{"sectionIndex":0,"paragraphIndex":33,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":0.66,"pages":2,"virtualPages":2,"layoutCount":4,"top":93.918,"left":708.144,"expectedTop":93.918,"expectedLeft":708.1440000000001,"scrollTop":0,"firstPageTop":6.6000000000000005,"secondPageTop":6.6000000000000005,"firstPageLeft":102.85799999999995,"secondPageLeft":633.3000000000001,"visible":true},
+      {"spacing":300,"zoomPercent":66,"operation":"Enter","pos":{"sectionIndex":0,"paragraphIndex":22,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":0.66,"pages":2,"virtualPages":2,"layoutCount":2,"top":93.918,"left":708.144,"expectedTop":93.918,"expectedLeft":708.1440000000001,"scrollTop":0,"firstPageTop":6.6000000000000005,"secondPageTop":6.6000000000000005,"firstPageLeft":102.85799999999995,"secondPageLeft":633.3000000000001,"visible":true},
+      {"spacing":300,"zoomPercent":66,"operation":"Undo","pos":{"sectionIndex":0,"paragraphIndex":21,"charOffset":0},"rect":{"pageIndex":0,"x":113.4,"y":972.3,"height":13.3},"zoom":0.66,"pages":1,"virtualPages":1,"layoutCount":3,"top":648.318,"left":177.702,"expectedTop":648.318,"expectedLeft":177.70199999999994,"scrollTop":0,"firstPageTop":6.6000000000000005,"secondPageTop":0,"firstPageLeft":102.85799999999995,"secondPageLeft":630,"visible":true},
+      {"spacing":300,"zoomPercent":66,"operation":"Redo","pos":{"sectionIndex":0,"paragraphIndex":22,"charOffset":0},"rect":{"pageIndex":1,"x":113.4,"y":132.3,"height":13.3},"zoom":0.66,"pages":2,"virtualPages":2,"layoutCount":4,"top":93.918,"left":708.144,"expectedTop":93.918,"expectedLeft":708.1440000000001,"scrollTop":0,"firstPageTop":6.6000000000000005,"secondPageTop":6.6000000000000005,"firstPageLeft":102.85799999999995,"secondPageLeft":633.3000000000001,"visible":true}
+    ]
+  },
+  "wasm": {
+    "pkg/rhwp.js": "8f01a5bcc227a41d72b4aca57792445e9f413c4400154b74bdf8992f35301df3",
+    "pkg/rhwp_bg.wasm": "c47d8b9134016cfad804d7d761211151160c22d71dd20920647d600c9cbef6dc",
+    "rhwp-studio/public/rhwp.js": "8f01a5bcc227a41d72b4aca57792445e9f413c4400154b74bdf8992f35301df3",
+    "rhwp-studio/public/rhwp_bg.wasm": "c47d8b9134016cfad804d7d761211151160c22d71dd20920647d600c9cbef6dc"
+  },
+  "assets": {
+    "after-zoom100.png": "c36b71d6835ca011956025532316671c559999b92fc1d26b980f75a16cfc7f14",
+    "before-zoom66.png": "c8dcf60c45e2b4555c2d5d2bcb3c8c7f990dc3faf64bc4fa1172514b64c26572",
+    "after-zoom66.png": "317e6b9410d1e8cd653bc7ac6a17caa91ee091090e04e5a63239ca9d91a6c755",
+    "before-zoom100.png": "304fb1e3951330ae5ea20de80e598d3ab28dbae4847bc2c46932d6c1d01d7fe4"
+  },
+  "manualChrome": {
+    "spacing": 200,
+    "enter": 33,
+    "zoomPercent": 100,
+    "before": {
+      "scrollTop": 407,
+      "caretTop": 995.6,
+      "pageStatus": "1 / 1 쪽"
+    },
+    "after": {
+      "scrollTop": 686,
+      "caretTop": 1274.8,
+      "pageStatus": "2 / 2 쪽",
+      "caretViewportY": [
+        728.796875,
+        742.09375
+      ],
+      "viewportY": [
+        140,
+        762
+      ]
+    },
+    "method": "Selected user Chrome tab, UI controls and 33 real Enter keys, read-only DOM snapshot; no subsequent input or zoom"
+  }
+}

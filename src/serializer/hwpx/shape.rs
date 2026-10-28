@@ -517,7 +517,7 @@ fn write_chart_element<W: Write>(
 ///   run 분할 + lineseg IR 보존/fallback)
 /// - `textDirection` VERTICAL/VERTICALALL 구분은 `TextBox.vertical_all` 로 보존
 /// - `textMargin` 은 subList **뒤** (한컴 원본 순서, footnote-tbox-01 실측),
-///   네 여백 모두 0이면 원본 부재로 간주하여 미방출
+///   명시적 여백은 0도 보존한다. 기존 생성기의 부재/0 기본값은 미방출한다.
 pub fn write_draw_text<W: Write>(
     w: &mut Writer<W>,
     tb: &TextBox,
@@ -586,7 +586,12 @@ pub fn write_draw_text<W: Write>(
 
     end_tag(w, "hp:subList")?;
 
-    if tb.margin_left != 0 || tb.margin_right != 0 || tb.margin_top != 0 || tb.margin_bottom != 0 {
+    if tb.text_margin_explicit
+        || tb.margin_left != 0
+        || tb.margin_right != 0
+        || tb.margin_top != 0
+        || tb.margin_bottom != 0
+    {
         let ml = tb.margin_left.to_string();
         let mr = tb.margin_right.to_string();
         let mt = tb.margin_top.to_string();
@@ -709,14 +714,13 @@ fn write_rotation_info<W: Write>(
 
 /// `<hp:renderingInfo>` — `raw_rendering` (cnt u16 LE + trans 6×f64 + cnt×(sca, rot))
 /// 를 디코드해 행렬을 재구성한다 (`parse_rendering_info` 의 역). raw 비정합/빈 경우
-/// identity 3행렬 fallback. pic 자식도 공유 (그룹 내 자식 transMatrix 보존).
+/// HWP와 같은 편집 변환을 생성한다. pic 자식도 공유 (그룹 내 자식 transMatrix 보존).
 pub(crate) fn write_rendering_info<W: Write>(
     w: &mut Writer<W>,
     sa: &ShapeComponentAttr,
 ) -> Result<(), SerializeError> {
-    const IDENTITY: [f64; 6] = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0];
-    let (trans, pairs) =
-        decode_raw_rendering(&sa.raw_rendering).unwrap_or((IDENTITY, vec![(IDENTITY, IDENTITY)]));
+    let (trans, pairs) = decode_raw_rendering(&sa.raw_rendering)
+        .unwrap_or_else(|| crate::serializer::shape_rendering::generated(sa));
 
     start_tag(w, "hp:renderingInfo")?;
     write_matrix(w, "hc:transMatrix", &trans)?;
@@ -796,14 +800,14 @@ pub(crate) fn write_line_shape<W: Write>(
 ) -> Result<(), SerializeError> {
     let color = color_to_hex(bl.color);
     let width = bl.width.to_string();
-    // style 은 attr 하위 6비트. 정본 코드(0=NONE/1=SOLID/2=DASH…)는 표 borderFill 의
+    // style 은 attr 하위 6비트. 정본 코드(0=NONE/1=SOLID/2=파선…)는 표 borderFill 의
     // border_line_type_from_code 및 HWP5 doc_info 와 동일. 종전에는 0 이 _ => SOLID 로
     // 떨어져 "선 없음" 도형 외곽선이 라운드트립에서 사각형 박스로 살아났다(#1531).
     let style = match bl.attr & 0x3F {
         0 => "NONE",
         1 => "SOLID",
-        2 => "DASH",
-        3 => "DOT",
+        2 => "DOT",
+        3 => "DASH",
         4 => "DASH_DOT",
         5 => "DASH_DOT_DOT",
         6 => "LONG_DASH",
@@ -994,7 +998,11 @@ pub(crate) fn write_fill_brush<W: Write>(
                 ImageFillMode::TileHorzBottom => "TILE_HORZ_BOTTOM",
                 ImageFillMode::TileVertLeft => "TILE_VERT_LEFT",
                 ImageFillMode::TileVertRight => "TILE_VERT_RIGHT",
-                ImageFillMode::FitToSize => "FIT",
+                ImageFillMode::FitToSize => "TOTAL",
+                // HWP5 mode 15 is emitted as ZOOM by Hancom when saving HWPX.
+                // It is an aspect-preserving fit, not the wildcard TILE fallback.
+                // This writer is shared by shape fills and header BorderFill.
+                ImageFillMode::Zoom | ImageFillMode::None => "ZOOM",
                 ImageFillMode::Total => "TOTAL",
                 ImageFillMode::Center => "CENTER",
                 ImageFillMode::CenterTop => "CENTER_TOP",
@@ -1009,8 +1017,13 @@ pub(crate) fn write_fill_brush<W: Write>(
             match ctx.resolve_bin_id(img.bin_data_id) {
                 Some(manifest_id) => {
                     start_tag_attrs(w, "hc:imgBrush", &[("mode", mode)])?;
-                    let bright = img.brightness.to_string();
-                    let contrast = img.contrast.to_string();
+                    // [#6895] `ImageFill` 은 이진 HWP5 저장 순서를 담으므로 HWPX 속성명으로
+                    // 나갈 때 되돌린다. 종전엔 그대로 써서 **HWPX 를 열어 저장할 때마다 두
+                    // 값이 뒤바뀌었다**(두 번 저장하면 원상 복귀). 한/글은 같은 문서에서
+                    // bright/contrast 를 보존한다.
+                    let (display_bright, display_contrast) = img.display_brightness_contrast();
+                    let bright = display_bright.to_string();
+                    let contrast = display_contrast.to_string();
                     let effect = match img.effect {
                         1 => "GRAY_SCALE",
                         2 => "BLACK_WHITE",
@@ -1397,7 +1410,7 @@ mod tests {
     fn task1531_line_shape_none_preserved() {
         assert_eq!(line_shape_style(0), "NONE"); // 정본 코드 0 = NONE
         assert_eq!(line_shape_style(1), "SOLID"); // 1 = SOLID
-        assert_eq!(line_shape_style(2), "DASH"); // 2 = DASH (회귀 방지)
+        assert_eq!(line_shape_style(2), "DOT"); // HWP5 파선은 HWPX DOT로 저장한다.
         let none_with_flat_end_cap = 1 << 6;
         assert_eq!(line_shape_style(none_with_flat_end_cap), "NONE");
     }

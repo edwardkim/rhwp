@@ -1,0 +1,160 @@
+{
+  "scope": "고정38의22번 기존92쪽 함수 개별 완료. 전체 PR 준비 완료가 아님.",
+  "preanalysis": {
+    "pdf": "pdf/issue2006/1790387_prep_final_report-2024.pdf",
+    "pdf_sha256": "04b95a6e41420fb45934ce2ee5abd8cf6dac4ce12fd47977dacbe7fca28018a8",
+    "source": "samples/issue2006/1790387_prep_final_report.hwpx",
+    "source_sha256": "c68baed24096386f9041930d24d39409b61ac99463bf04dfd242440dfdeb739f",
+    "page": 92,
+    "independent_pdf_caption": [
+      {
+        "text": "[그림 14] QUANTPrEP을 활용한 Parameter",
+        "bbox_pt": [
+          209.0399932861328,
+          742.8720092773438,
+          396.1480407714844,
+          753.4320068359375
+        ],
+        "y_96dpi": 990.4960123697916
+      }
+    ],
+    "original_linesegs": {
+      "214": [
+        {
+          "textpos": "0",
+          "vertpos": "46384",
+          "vertsize": "1050",
+          "textheight": "1050",
+          "baseline": "893",
+          "spacing": "524",
+          "horzpos": "1000",
+          "horzsize": "0",
+          "flags": "393216"
+        }
+      ],
+      "215": [
+        {
+          "textpos": "0",
+          "vertpos": "66533",
+          "vertsize": "1050",
+          "textheight": "1050",
+          "baseline": "893",
+          "spacing": "-420",
+          "horzpos": "1000",
+          "horzsize": "47188",
+          "flags": "393216"
+        }
+      ],
+      "216": [
+        {
+          "textpos": "0",
+          "vertpos": "67163",
+          "vertsize": "1050",
+          "textheight": "1050",
+          "baseline": "893",
+          "spacing": "524",
+          "horzpos": "1000",
+          "horzsize": "47188",
+          "flags": "393216"
+        }
+      ]
+    },
+    "observations": {
+      "before92": {
+        "path": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fidelity-before/render_tree/render_tree_092.json",
+        "sha256": "e27b3f235f5a17268beb601858a7685d50f4683be235d6a67a0621758a1150b1",
+        "captions": []
+      },
+      "before93": {
+        "path": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fidelity-before/render_tree/render_tree_093.json",
+        "sha256": "d3dd3667e118d3db79ce9b201d183b517cdfa71979c8281dadf382f49ca2171d",
+        "captions": [
+          {
+            "text": "[그림 14] QUANTPrEP을 활용한 Parameter",
+            "bbox": {
+              "x": 88.9,
+              "y": 94.5,
+              "w": 629.2,
+              "h": 14.0
+            }
+          }
+        ]
+      },
+      "after92": {
+        "path": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/candidate3/visual-final-native/prep2006/render_tree/render_tree_092.json",
+        "sha256": "3f83c937af557ea88df24188434e5c83bd6d5d0b9f384c8081d1f1726dd57217",
+        "captions": [
+          {
+            "text": "[그림 14] QUANTPrEP을 활용한 Parameter",
+            "bbox": {
+              "x": 88.9,
+              "y": 990.0,
+              "w": 629.2,
+              "h": 14.0
+            }
+          }
+        ]
+      }
+    },
+    "source_advance_hu": 630,
+    "line_height_plus_spacing_hu": 630
+  },
+  "before": {
+    "head": "6a727833438c0082ed88031d24a0a1412a640e06",
+    "observed": "92쪽 캡션 없음/93쪽 y94.5px로 이월; 기존 함수FAIL",
+    "exit_code": 100,
+    "evidence": "stage59_prep2006_validation.json before_related 및 원본13PASS/4FAIL 로그",
+    "test_source_sha256": "ab5bd179e72788248118585c0821034bd5d2ca4bb060c8d23f94ee257e5fac6b"
+  },
+  "individual": {
+    "function": "issue_7390_prep_table_rowbreak::prep_page_92_caption_keeps_saved_negative_empty_line_advance",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--test",
+      "regression_suite_016",
+      "-E",
+      "test(/(^|::)issue_7390_prep_table_rowbreak::prep_page_92_caption_keeps_saved_negative_empty_line_advance$/)",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plan": {
+      "caseName": "issue_7390_prep_table_rowbreak",
+      "target": "regression_suite_016",
+      "grouped": true
+    },
+    "exit_code": 0,
+    "seconds": 1.0196544998325408,
+    "head": "669c62930fbf250543a197c34bff0cb54d8356e2",
+    "code_commit": "fd10e7fd9d9fda41648b0d8ba2f57d219ae8d197",
+    "reused_evidence": "stage59_prep2006_validation.json",
+    "source_sha_comparison": "all_equal",
+    "test_source_sha256": "ab5bd179e72788248118585c0821034bd5d2ca4bb060c8d23f94ee257e5fac6b"
+  },
+  "visual_reuse": {
+    "evidence": "stage59_prep2006_validation.json",
+    "evidence_sha256": "abcb40df200bcf766a755974f5f306809fccf1c8757ddb2200ec2825f65fb958",
+    "source_comparison": "all_equal",
+    "count": 280,
+    "native_min": 91.82221,
+    "wasm_min": 91.82221,
+    "direct_assets": [
+      "stage59_after_native_prep2006_review_092.png",
+      "stage59_after_wasm_prep2006_review_092.png"
+    ],
+    "page92_native": 96.95925,
+    "page92_wasm": 96.95925
+  },
+  "code_change": "추가 수정 없이 보정59의 공통 successor 흐름 수정으로 해결",
+  "test_changed": false,
+  "baseline_changed": false,
+  "new_test_functions": 0,
+  "residual": "PDF 캡션990.496/실제990.0px 약0.5px 및 작은 글자/괘선 차이. 기존1.5px 공차 유지."
+}

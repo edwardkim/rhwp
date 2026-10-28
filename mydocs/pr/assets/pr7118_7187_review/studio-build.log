@@ -1,0 +1,34 @@
+
+> rhwp-studio@0.8.6 build
+> tsc && vite build
+
+vite v8.2.1 building client environment for production...
+[2K
+transforming...[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by "/Users/tsjang/rhwp/rhwp-studio/node_modules/canvaskit-wasm/bin/canvaskit.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported by "/Users/tsjang/rhwp/rhwp-studio/node_modules/canvaskit-wasm/bin/canvaskit.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+✓ 275 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/registerSW.js                               0.13 kB
+dist/manifest.webmanifest                        0.76 kB
+dist/index.html                                 87.03 kB │ gzip:     11.51 kB
+dist/assets/canvaskit-DB1zH3nD.wasm          7,159.34 kB │ gzip:  2,943.58 kB
+dist/assets/rhwp_bg-DpGD0pqK.wasm           40,487.16 kB │ gzip: 10,249.90 kB
+dist/assets/index-Li3v__E4.css                 113.54 kB │ gzip:     19.54 kB
+dist/assets/studio-plugin-Cp8dJ3L_.js           54.38 kB │ gzip:     16.18 kB
+dist/assets/canvaskit-renderer-ClUnP6On.js     246.50 kB │ gzip:     74.40 kB
+dist/assets/index-DNT7VS68.js                2,070.16 kB │ gzip:    422.35 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 2.13s
+
+PWA v1.3.0
+mode      generateSW
+precache  59 entries (26009.88 KiB)
+files generated
+  dist/sw.js
+  dist/workbox-dcde9eb3.js

@@ -1,0 +1,18 @@
+{
+  "source": "samples/footnote-01.hwp",
+  "reference": "pdf/footnote-01-hwp-2020.pdf",
+  "analysis": "쪽 첫vpos500HU가 자체 앞 간격6.667px와 같고 다음 저장 원점도 자기 앞 간격300HU를 계상한다. 기존 helper를 HWP5에서도 측정과 배치가 함께 소비한다.",
+  "native_debug_p4_percent": 100,
+  "before_p4_percent": 66.79296,
+  "focused": {
+    "run": 22,
+    "passed": 22,
+    "failed": 0,
+    "exit": 0
+  },
+  "tests_added": 0,
+  "tests_removed": 0,
+  "test_expectations_changed": false,
+  "fresh_wasm_and_final_gate": "5쪽 보정 이후 최종 전6쪽 검증에서 수행; 현재 미검증",
+  "remaining_below90_page": 5
+}

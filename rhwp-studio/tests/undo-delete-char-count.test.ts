@@ -42,7 +42,6 @@ test('InsertTextCommand.undo 는 삭제 count 를 charCount 로 계산한다', (
 });
 
 test('command.ts 의 삭제 count 에 UTF-16 length 를 넘기는 호출이 없다', () => {
-  // 커서 오프셋(charOffset + text.length)은 studio 의 UTF-16 관례를 유지하므로 제외하고,
   // 삭제 count 인자만 본다.
   const deleteCalls = /(doDeleteTextImmediate|deleteTextWithMutationEffects|deleteTextInHeaderFooter|deleteTextInFootnote|deleteTextInCell)\(([^;]{0,400}?)\)/g;
   const offenders: string[] = [];

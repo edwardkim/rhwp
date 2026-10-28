@@ -1,0 +1,43 @@
+{
+  "svg_sha256": "91158608c5b825bfa9acdc1ac6b77c9ec1e1631f6e6f51808b618e375f8ea085",
+  "font_mode": "Subset",
+  "fonts": [
+    {
+      "family": "\"굴림\"",
+      "sha256": "bb2a27dd9407abaa4df1d17697ae2d77da439c2a96c08d25a63a90ac58ccfaf0",
+      "tables": [
+        "GlyphOrder",
+        "head",
+        "hhea",
+        "maxp",
+        "hmtx",
+        "prep",
+        "loca",
+        "glyf",
+        "name",
+        "post"
+      ],
+      "has_cmap": false
+    },
+    {
+      "family": "\"휴먼명조\"",
+      "sha256": "ef5192443922800c210a10d18a74b4e01bfe8de6010db208242e3bc25329e8e3",
+      "tables": [
+        "GlyphOrder",
+        "head",
+        "hhea",
+        "maxp",
+        "hmtx",
+        "fpgm",
+        "prep",
+        "cvt ",
+        "loca",
+        "glyf",
+        "name",
+        "post"
+      ],
+      "has_cmap": false
+    }
+  ],
+  "status": "진단 본문 글리프 깨짐으로 시각 증거 거절; Native 기본 공급 방식으로 재캡처"
+}

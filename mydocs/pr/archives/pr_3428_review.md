@@ -113,5 +113,5 @@ rhwp search samples/exam_math.hwp lim --json
 계약을 모두 해결한 것으로 보지 않으며 **#3413은 open 유지**한다.
 
 **메인터너 보정 후 기술적으로 수용 가능**하다. #3445가 고정한 v0.8.2 핫픽스 기준선은
-[릴리즈 완료](../../report/task_m100_3445_report.md)로 종료됐으므로 현재 `devel` merge 보류 사유가
+[릴리즈 완료](../../report/archives/task_m100_3445_report.md)로 종료됐으므로 현재 `devel` merge 보류 사유가
 아니다. 최신 통합 PR head CI와 mergeable 상태가 성공하면 merge한다.

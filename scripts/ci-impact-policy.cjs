@@ -2,7 +2,7 @@
 
 const fs = require('node:fs');
 
-const POLICY_VERSION = '5';
+const POLICY_VERSION = '8';
 const POLICY_CONTEXT = 'CI Impact Policy';
 const WORKFLOW_ORDER = ['CI', 'CodeQL', 'Render Diff'];
 const WORKFLOW_PATHS = {
@@ -14,37 +14,28 @@ const WRITER_PERMISSIONS = new Set(['admin', 'maintain', 'write']);
 const FRONTEND_MODES = new Set(['none', 'unit', 'package']);
 const BOOLEAN_VALUES = new Set(['true', 'false']);
 const CLASSIFICATION_STATUSES = new Set(['classified', 'full']);
-const CODEQL_LANGUAGE_ORDER = ['javascript-typescript', 'python', 'rust'];
+const CODEQL_LANGUAGE_ORDER = ['javascript-typescript', 'python', 'rust', 'actions'];
 
-const CI_PUSH_PATHS_IGNORE = [
-  'mydocs/**',
-  'docs/**',
-  'samples/**',
-  'pdf/**',
-  'pdf-2020/**',
-  'pdf-large/**',
-  'assets/chrome/**',
-  'assets/edge/**',
-  'assets/logo/**',
-  'assets/screenshots/**',
-  '*.md',
-  'LICENSE',
-  '.github/ISSUE_TEMPLATE/**',
-  '.github/FUNDING.yml',
-  '.github/CODE_OF_CONDUCT.md',
-  '.github/SECURITY.md',
-  '.github/pull_request_template.md',
-  '.github/dependabot.yml',
-  'rhwp-logo.*',
-];
+const CI_PUSH_PATHS_IGNORE = []; // CI push is release-tag-only; no branch push checks.
 
 const CI_PULL_REQUEST_PATHS_IGNORE = [
-  'docs/**',
   'assets/chrome/**',
   'assets/edge/**',
   'assets/logo/**',
   'assets/screenshots/**',
-  '*.md',
+  'CHANGELOG.md',
+  'CHANGELOG_EN.md',
+  'CONTRIBUTING.md',
+  'CONVENTIONS.md',
+  'GEMINI.md',
+  'QWEN.md',
+  'README.md',
+  'README_EN.md',
+  'ROADMAP.md',
+  'SECURITY.md',
+  'THIRD_PARTY.md',
+  'THIRD_PARTY_LICENSES.md',
+  'replit.md',
   'LICENSE',
   '.github/ISSUE_TEMPLATE/**',
   '.github/FUNDING.yml',
@@ -55,29 +46,23 @@ const CI_PULL_REQUEST_PATHS_IGNORE = [
   'rhwp-logo.*',
 ];
 
-const CODEQL_PUSH_PATHS_IGNORE = [
-  'mydocs/**',
-  'docs/**',
-  'samples/**',
-  'pdf/**',
-  'pdf-2020/**',
-  'pdf-large/**',
-  'assets/**',
-  '*.md',
-  'LICENSE',
-  '.github/ISSUE_TEMPLATE/**',
-  '.github/FUNDING.yml',
-  '.github/CODE_OF_CONDUCT.md',
-  '.github/SECURITY.md',
-  '.github/pull_request_template.md',
-  '.github/dependabot.yml',
-  'rhwp-logo.*',
-];
+const CODEQL_PUSH_PATHS_IGNORE = []; // CodeQL has no push trigger.
 
 const CODEQL_PULL_REQUEST_PATHS_IGNORE = [
-  'docs/**',
   'assets/**',
-  '*.md',
+  'CHANGELOG.md',
+  'CHANGELOG_EN.md',
+  'CONTRIBUTING.md',
+  'CONVENTIONS.md',
+  'GEMINI.md',
+  'QWEN.md',
+  'README.md',
+  'README_EN.md',
+  'ROADMAP.md',
+  'SECURITY.md',
+  'THIRD_PARTY.md',
+  'THIRD_PARTY_LICENSES.md',
+  'replit.md',
   'LICENSE',
   '.github/ISSUE_TEMPLATE/**',
   '.github/FUNDING.yml',
@@ -90,11 +75,8 @@ const CODEQL_PULL_REQUEST_PATHS_IGNORE = [
 
 const DEPLOY_PAGES_PUSH_PATHS_IGNORE = [
   'mydocs/**',
-  'docs/**',
   'samples/**',
   'pdf/**',
-  'pdf-2020/**',
-  'pdf-large/**',
   'assets/**',
   '*.md',
   'LICENSE',
@@ -108,42 +90,55 @@ const DEPLOY_PAGES_PUSH_PATHS_IGNORE = [
 ];
 
 const RENDER_DIFF_PULL_REQUEST_PATHS = [
+  'AGENTS.md',
+  'CLAUDE.md',
   'Cargo.toml',
   'Cargo.lock',
   'src/paint/**',
   'src/model/**',
   'src/renderer/**',
   'src/document_core/queries/rendering.rs',
+  'src/cli/document_io.rs',
   'src/cli/outputs/mod.rs',
   'src/cli/outputs/pdf.rs',
   'src/wasm_api.rs',
-  'src/main.rs',
   'assets/fonts/**',
   'ttfs/**',
   'scripts/renderer_baseline.py',
+  'scripts/measure_render_diff_wasm.py',
+  'scripts/wasm-pack-locked.sh',
   'scripts/renderer_baseline_manifest.json',
   'scripts/ci-impact-classifier.cjs',
   'scripts/generate_font_glyph_payload_fixture.py',
   'scripts/generate_exact_face_collection_fixture.py',
+  'scripts/generate_exact_kerning_fixture.py',
   'scripts/generate_font_native_hwpx_fixture.py',
   'scripts/requirements-font-fixtures.txt',
   'samples/render-p35-font-native-bitmap.hwpx',
   'tests/fixtures/fonts/**',
-  'docs/canvaskit-parity-implementation.md',
-  'docs/text-ir-v2.md',
+  'mydocs/tech/canvaskit-parity-implementation.md',
+  'mydocs/tech/text-ir-v2.md',
   'rhwp-studio/**',
   '.github/workflows/render-diff.yml',
 ];
+
+const RENDER_CONTRACT_DOC_PATHS = new Set([
+  'mydocs/tech/canvaskit-parity-implementation.md',
+  'mydocs/tech/text-ir-v2.md',
+]);
 
 const CI_RUST_JOBS = [
   'Lint (fmt, clippy, WASM check)',
   'build-test-archive-a',
   'build-test-archive-b',
   'build-test-archive-c',
+  'build-test-archive-d',
+  'build-test-archive-e',
   'test-archive-a-shard-1',
-  'test-archive-a-shard-2',
   'test-archive-b-shard-1',
   'test-archive-c-shard-1',
+  'test-archive-d-shard-1',
+  'test-archive-e-shard-1',
 ];
 // Reusable workflow calls have two observed REST job names: a skipped call keeps only
 // its caller job id, while an executed call is reported as "caller / called job name".
@@ -162,21 +157,33 @@ const CI_JOB_ALIASES = {
     'build-test-archive-c',
     'build-test-archive-c / Build test archive (c)',
   ],
+  'build-test-archive-d': [
+    'build-test-archive-d',
+    'build-test-archive-d / Build test archive (d)',
+  ],
+  'build-test-archive-e': [
+    'build-test-archive-e',
+    'build-test-archive-e / Build test archive (e)',
+  ],
   'test-archive-a-shard-1': [
     'test-archive-a-shard-1',
-    'test-archive-a-shard-1 / Default-feature tests (Archive A shard 1)',
-  ],
-  'test-archive-a-shard-2': [
-    'test-archive-a-shard-2',
-    'test-archive-a-shard-2 / Default-feature tests (Archive A shard 2)',
+    'test-archive-a-shard-1 / Default-feature tests (Archive A)',
   ],
   'test-archive-b-shard-1': [
     'test-archive-b-shard-1',
-    'test-archive-b-shard-1 / Default-feature tests (Archive B shard 1)',
+    'test-archive-b-shard-1 / Default-feature tests (Archive B)',
   ],
   'test-archive-c-shard-1': [
     'test-archive-c-shard-1',
     'test-archive-c-shard-1 / Default-feature tests (Archive C)',
+  ],
+  'test-archive-d-shard-1': [
+    'test-archive-d-shard-1',
+    'test-archive-d-shard-1 / Default-feature tests (Archive D)',
+  ],
+  'test-archive-e-shard-1': [
+    'test-archive-e-shard-1',
+    'test-archive-e-shard-1 / Default-feature tests (Archive E)',
   ],
 };
 const CI_NATIVE_JOB = 'Native Skia tests';
@@ -188,10 +195,14 @@ const CI_AUDITED_JOB_IDS = {
   'build-test-archive-a': 'build-test-archive-a',
   'build-test-archive-b': 'build-test-archive-b',
   'build-test-archive-c': 'build-test-archive-c',
+  'build-test-archive-d': 'build-test-archive-d',
+  'build-test-archive-e': 'build-test-archive-e',
+  'resolve-nextest-duration-policy': 'resolve-nextest-duration-policy',
   'test-archive-a-shard-1': 'test-archive-a-shard-1',
-  'test-archive-a-shard-2': 'test-archive-a-shard-2',
   'test-archive-b-shard-1': 'test-archive-b-shard-1',
   'test-archive-c-shard-1': 'test-archive-c-shard-1',
+  'test-archive-d-shard-1': 'test-archive-d-shard-1',
+  'test-archive-e-shard-1': 'test-archive-e-shard-1',
   lint: 'Lint (fmt, clippy, WASM check)',
   'native-skia-tests': CI_NATIVE_JOB,
   'frontend-unit-gates': CI_FRONTEND_JOBS[0],
@@ -202,6 +213,7 @@ const CODEQL_JOBS = {
   'javascript-typescript': 'Analyze (javascript-typescript)',
   python: 'Analyze (python)',
   rust: 'Analyze (rust)',
+  actions: 'Analyze (actions)',
 };
 
 function fullClassification(reason) {
@@ -267,10 +279,13 @@ function normalizeClassification(value, fallbackReason = 'classifier-unavailable
 }
 
 function normalizeFile(file) {
-  if (typeof file === 'string') return { filename: file, previous_filename: '' };
+  if (typeof file === 'string') {
+    return { filename: file, previous_filename: '', status: 'modified' };
+  }
   return {
     filename: String(file?.filename || file?.path || ''),
     previous_filename: String(file?.previous_filename || file?.previousPath || ''),
+    status: String(file?.status || file?.changeType || 'modified').toLowerCase(),
   };
 }
 
@@ -287,31 +302,49 @@ function changesEnforcementSurface(files) {
     || filename.startsWith('.github/actions/')
     || filename === 'scripts/ci-impact-classifier.cjs'
     || filename === 'scripts/ci-impact-policy.cjs'
+    || filename === 'scripts/ci-workflow-evidence.cjs'
+    || filename === 'scripts/collect-postmerge-duration-data.mjs'
     || filename === 'scripts/verify_review_only_merge_resolution.py'
   ));
 }
 
-function isReviewReferencePath(filename) {
-  const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+function isSampleReviewReferencePath(filename) {
   return (
     filename.startsWith('samples/')
     && (
-      filename.endsWith('.hwp')
-      || filename.endsWith('.hwpx')
-      || filename.endsWith('.pdf')
+      filename.endsWith('.pdf')
       || filename.endsWith('.png')
     )
-  ) || (
+  );
+}
+
+function isPdfReviewReferencePath(filename) {
+  const pdfPrefixes = ['pdf/'];
+  return (
     pdfPrefixes.some((prefix) => filename.startsWith(prefix))
     && filename.endsWith('.pdf')
   );
 }
 
+function isReviewReferencePath(filename) {
+  return isSampleReviewReferencePath(filename) || isPdfReviewReferencePath(filename);
+}
+
 function isAllowedReviewFile(file) {
   const normalized = normalizeFile(file);
-  if (normalized.filename.startsWith('mydocs/')) return true;
-  return String(file?.status || '') === 'added'
-    && isReviewReferencePath(normalized.filename);
+  if (normalized.filename === 'AGENTS.md' || normalized.filename === 'CLAUDE.md') {
+    return !normalized.previous_filename
+      && (normalized.status === 'added' || normalized.status === 'modified');
+  }
+  if (
+    normalized.filename.startsWith('mydocs/')
+    && !RENDER_CONTRACT_DOC_PATHS.has(normalized.filename)
+  ) return true;
+  if (isPdfReviewReferencePath(normalized.filename)) {
+    return normalized.status === 'added' || normalized.status === 'modified';
+  }
+  return normalized.status === 'added'
+    && isSampleReviewReferencePath(normalized.filename);
 }
 
 function selectReviewOnlyCandidate(commits, currentBaseSha) {
@@ -438,6 +471,8 @@ function workflowRunMatchesPull(run, identity) {
   // GitHub can return an empty pull_requests array for fork runs. In that case the
   // repository + branch + exact SHA guards in selectLatestWorkflowRun remain the
   // authority. When association data exists, reject runs from another PR/base.
+  // 연결 PR의 head.sha는 이후 push에 맞춰 갱신된다. 실행 SHA는 아래 호출자의
+  // run.head_sha 검사로 확인하며 가변 PR 메타데이터와 중복 대조하지 않는다.
   if (pulls.length === 0) return true;
   return pulls.some((pull) => (
     Number(pull?.number || 0) === Number(identity.pullNumber || 0)
@@ -447,7 +482,6 @@ function workflowRunMatchesPull(run, identity) {
       || String(pull?.base?.sha || '') === String(identity.baseSha || '')
     )
     && String(pull?.head?.ref || '') === String(identity.headBranch || '')
-    && String(pull?.head?.sha || '') === String(identity.headSha || '')
   ));
 }
 
@@ -485,6 +519,7 @@ function encodeCodeqlLanguages(value) {
     'javascript-typescript': 'js',
     python: 'py',
     rust: 'rs',
+    actions: 'ac',
   })[language] || 'all').join(',');
 }
 
@@ -539,7 +574,7 @@ function parseStatusDescription(description) {
   if (!FRONTEND_MODES.has(fields.get('fe'))) throw new Error('invalid frontend axis');
   if (!new Set(['0', '1']).has(fields.get('render'))) throw new Error('invalid render axis');
   if (!new Set(['0', '1']).has(fields.get('skia'))) throw new Error('invalid skia axis');
-  if (!/^(none|all|(?:js|py|rs)(?:,(?:js|py|rs))*)$/.test(fields.get('ql'))) {
+  if (!/^(none|all|(?:js|py|rs|ac)(?:,(?:js|py|rs|ac))*)$/.test(fields.get('ql'))) {
     throw new Error('invalid CodeQL axis');
   }
   const languages = fields.get('ql').split(',');
@@ -602,6 +637,16 @@ function determinePolicy(input = {}) {
   return policy;
 }
 
+// A successful workflow can become visible before its Jobs API snapshot converges.
+// Nonterminal evidence blocks approval without claiming a completed test failed.
+const NONTERMINAL_EVIDENCE = new Set(['queued', 'in_progress', 'waiting', 'pending', 'requested']);
+function pendingEvidence(value) {
+  return NONTERMINAL_EVIDENCE.has(value.status) && !value.conclusion;
+}
+function pendingAuditReason(reason) {
+  return reason.startsWith('pending-') || reason.includes(':pending-');
+}
+
 function normalizedJobs(jobs) {
   const byName = new Map();
   for (const job of Array.isArray(jobs) ? jobs : []) {
@@ -634,6 +679,7 @@ function requireJobConclusion(byName, name, conclusion) {
   const resolved = exactJob(byName, name);
   if (resolved.error) return resolved.error;
   const job = resolved.job;
+  if (pendingEvidence(job)) return `pending-job:${name}:${job.status}`;
   if (job.status !== 'completed' || job.conclusion !== conclusion) {
     return `job-not-${conclusion}:${name}:${job.status || 'unknown'}:${job.conclusion || 'unknown'}`;
   }
@@ -649,6 +695,7 @@ function requireSafeJobConclusion(byName, name, expected) {
   if (resolved.error) return resolved.error;
   const job = resolved.job;
   const allowed = safeConclusions(expected);
+  if (pendingEvidence(job)) return `pending-job:${name}:${job.status}`;
   if (job.status !== 'completed' || !allowed.has(job.conclusion)) {
     return `job-not-${[...allowed].join('-or-')}:${name}:`
       + `${job.status || 'unknown'}:${job.conclusion || 'unknown'}`;
@@ -668,6 +715,7 @@ function requireSafeAliasedJobConclusion(byName, logicalName, expected) {
   }
   const { name, job } = matches[0];
   const allowed = safeConclusions(expected);
+  if (pendingEvidence(job)) return `pending-job:${name}:${job.status}`;
   if (job.status !== 'completed' || !allowed.has(job.conclusion)) {
     return `job-not-${[...allowed].join('-or-')}:${name}:`
       + `${job.status || 'unknown'}:${job.conclusion || 'unknown'}`;
@@ -689,6 +737,7 @@ function requireStepConclusion(job, name, conclusion) {
     return entries.length === 0 ? `missing-step:${name}` : `duplicate-step:${name}`;
   }
   const step = entries[0];
+  if (pendingEvidence(step)) return `pending-step:${name}:${step.status}`;
   if (step.status !== 'completed' || step.conclusion !== conclusion) {
     return `step-not-${conclusion}:${name}:${step.status || 'unknown'}:${step.conclusion || 'unknown'}`;
   }
@@ -705,6 +754,9 @@ function preflightFastPass(byName, jobName, checkoutStepName) {
     return { error: checkout.length === 0
       ? `missing-step:${checkoutStepName}`
       : `duplicate-step:${checkoutStepName}` };
+  }
+  if (pendingEvidence(checkout[0])) {
+    return { error: `pending-step:${checkoutStepName}:${checkout[0].status}` };
   }
   if (checkout[0].status !== 'completed') {
     return { error: `step-not-completed:${checkoutStepName}:${checkout[0].status || 'unknown'}` };
@@ -817,6 +869,9 @@ function auditCodeql(policy, jobs) {
       if (analyzeResolved.error) return `${name}:${analyzeResolved.error}`;
       const skipStep = skipResolved.step;
       const analyzeStep = analyzeResolved.step;
+      if (pendingEvidence(skipStep) || pendingEvidence(analyzeStep)) {
+        return `${name}:pending-unselected-steps:${skipStep.status}:${analyzeStep.status}`;
+      }
       if (skipStep.status !== 'completed' || analyzeStep.status !== 'completed') {
         return `${name}:unselected-steps-not-completed:`
           + `${skipStep.status || 'unknown'}:${analyzeStep.status || 'unknown'}`;
@@ -975,6 +1030,9 @@ function auditPolicyRuns(input = {}) {
     ) {
       return { publish: 'true', conclusion: 'failure', reason: `workflow-identity-mismatch:${workflow}` };
     }
+    if (evidence.collectionFailure) {
+      return { publish: 'true', conclusion: 'failure', reason: `${workflow}:${evidence.collectionFailure}` };
+    }
     if (String(run.status || '') !== 'completed') {
       pending.push(`workflow-not-completed:${workflow}:${run.status || 'unknown'}`);
       continue;
@@ -996,7 +1054,14 @@ function auditPolicyRuns(input = {}) {
         ? auditCodeql(policy, evidence.jobs)
         : auditRenderDiff(policy, evidence.jobs);
     if (failure) {
+      if (pendingAuditReason(failure)) {
+        pending.push(`${workflow}:${failure}`);
+        continue;
+      }
       return { publish: 'true', conclusion: 'failure', reason: `${workflow}:${failure}` };
+    }
+    if (evidence.collectionPendingReason) {
+      pending.push(`${workflow}:${evidence.collectionPendingReason}`);
     }
   }
   if (pending.length > 0) {
@@ -1104,6 +1169,7 @@ module.exports = {
   determinePolicy,
   expectedWorkflowMap,
   fullClassification,
+  isAllowedReviewFile,
   parseStatusDescription,
   runCli,
   selectReviewOnlyCandidate,

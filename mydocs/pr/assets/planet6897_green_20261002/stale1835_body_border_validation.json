@@ -1,0 +1,591 @@
+{
+  "head_before_correction": "5efef95ced5e376506cc6e4642dcb3ccb9258d15",
+  "cause": "본문 배경이 마지막 줄 상자가 아니라 후행 줄간격을 포함한 흐름 전진값을 사용했다",
+  "rule": "본문 배경·테두리는 실제 마지막 줄 상자 끝을 소비하고 다음 흐름은 기존 줄간격을 계속 소비; 셀의 독립 테두리 끝점 계약은 보존",
+  "before_native_first_page": 86.23109,
+  "after_native_first_page": 97.94299,
+  "gates": {
+    "head_before_changes": "5efef95ced5e376506cc6e4642dcb3ccb9258d15",
+    "state": "tests_failed",
+    "gates": [
+      {
+        "gate": "prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.813,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-gates-prepare.log"
+      },
+      {
+        "gate": "format",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 6.55,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-gates-format.log"
+      },
+      {
+        "gate": "prepare-formatted",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.592,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-gates-prepare-formatted.log"
+      },
+      {
+        "gate": "focused",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_003",
+          "--test",
+          "regression_suite_014",
+          "--test",
+          "regression_suite_010",
+          "--test",
+          "regression_suite_027",
+          "--test",
+          "regression_suite_028",
+          "--test",
+          "regression_suite_015",
+          "--test",
+          "regression_suite_005",
+          "--test",
+          "regression_suite_012",
+          "--test",
+          "regression_suite_001",
+          "--test",
+          "regression_suite_016",
+          "--test",
+          "regression_suite_025",
+          "--test",
+          "regression_suite_011",
+          "--test",
+          "regression_suite_022",
+          "--test",
+          "regression_suite_017",
+          "--test",
+          "regression_suite_021",
+          "--test",
+          "regression_suite_023",
+          "--test",
+          "regression_suite_019",
+          "--test",
+          "regression_suite_026",
+          "--test",
+          "regression_suite_006",
+          "-E",
+          "test(/issue_5711_para_border_negative_spacing::/) | test(/issue_6104_tac_title_over_table::/) | test(/issue_7288_stale_frame_empty_paragraph::/) | test(/body_overflow_baseline::body_overflow_does_not_grow_partition_(10|13)$/) | test(/issue_1789_exclusion_probe_line_spacing::/) | test(/oracle_page_count_baseline::/) | test(/svg_snapshot::/) | test(/issue_5701_rewound_float_host_double_paint::/) | test(/issue_6950_paragraph_end_topbottom_anchor::/) | test(/issue_5584_float_host_title_above_table::/) | test(/issue_6797_table_item_clears_float_band::/) | test(/issue_2097_terminal_row_physical_ownership::/) | test(/issue_6184_tail_line_before_deferred_table::/) | test(/issue_6761_band_absorbs_spacing_before::/) | test(/issue_synam001_visible_float_host_line_overlap::/) | test(/issue_7359_page_top_table_spacing::/) | test(/text_overlap_baseline::/) | test(/issue_6267_para_float_table_overlap::/) | test(/issue_1835_tac_stale_height::/) | test(/issue_7482_shared_paragraph_table_rows::/) | test(/issue_7481_no_lineseg_square_table_host_text::/) | test(/issue_2319_no_lineseg_tac_table_height::/) | test(/issue_7418_condense_new_word_needs_natural_fit::/) | test(/issue_7418_ascii_punct_uses_latin_slot::/) | test(/issue_7418_host_text_and_split_row_geometry::/)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "elapsed_seconds": 322.791,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-gates-focused.log"
+      },
+      {
+        "gate": "restore-current-cli",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--bin",
+          "rhwp"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 122.28,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-gates-restore-current-cli.log"
+      },
+      {
+        "gate": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 8.894,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-gates-fmt.log"
+      },
+      {
+        "gate": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 38.813,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-gates-native-clippy.log"
+      },
+      {
+        "gate": "wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 19.868,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-gates-wasm-clippy.log"
+      },
+      {
+        "gate": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 41.193,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-gates-workspace-build.log"
+      },
+      {
+        "gate": "all-target-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 84.371,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-gates-all-target-clippy.log"
+      },
+      {
+        "gate": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "8497729b4fb0e071c484fc5740f9bb2400bed437"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.844,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-gates-manifest.log"
+      }
+    ]
+  },
+  "visual": {
+    "state": "complete_diagnostic",
+    "commands": [
+      {
+        "name": "stale1835-native",
+        "command": [
+          "venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "samples/issue1835_tac_stale_height.hwp",
+          "--pdf",
+          "output/pr-review/planet6897-green-20261002/stale1835-reference-refresh/pdf/stale1835-exact-input-hwp-2020.pdf",
+          "--key",
+          "stale1835-body-border-verified-stale1835-native",
+          "--rhwp-bin",
+          "target/pr-review/release-test/rhwp",
+          "--embed-fonts",
+          "full",
+          "--silhouette-only",
+          "--out",
+          "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-stale1835-native"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 12.568,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-stale1835-native.log"
+      },
+      {
+        "name": "probe1789-native",
+        "command": [
+          "venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "samples/task1789/exclusion_probe_line_spacing.hwpx",
+          "--pdf",
+          "pdf/task1789/exclusion_probe_line_spacing-hwpx-2020.pdf",
+          "--key",
+          "stale1835-body-border-verified-probe1789-native",
+          "--rhwp-bin",
+          "target/pr-review/release-test/rhwp",
+          "--embed-fonts",
+          "full",
+          "--silhouette-only",
+          "--out",
+          "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-probe1789-native"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 9.95,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-probe1789-native.log"
+      },
+      {
+        "name": "h01-native",
+        "command": [
+          "venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "samples/hwpx/hwpx-h-01.hwpx",
+          "--pdf",
+          "pdf/hwpx/hwpx-h-01-hwpx-2020.pdf",
+          "--key",
+          "stale1835-body-border-verified-h01-native",
+          "--rhwp-bin",
+          "target/pr-review/release-test/rhwp",
+          "--embed-fonts",
+          "full",
+          "--silhouette-only",
+          "--out",
+          "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-h01-native"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 194.394,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-h01-native.log"
+      },
+      {
+        "name": "form002-native-tree",
+        "command": [
+          "target/pr-review/release-test/rhwp",
+          "export-render-tree",
+          "samples/hwpx/form-002.hwpx",
+          "-o",
+          "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-form002-native-tree"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.12,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-form002-native-tree.log"
+      },
+      {
+        "name": "social6797-native-tree",
+        "command": [
+          "target/pr-review/release-test/rhwp",
+          "export-render-tree",
+          "samples/issue6797/156160455-social-pig-farm-income.hwp",
+          "-o",
+          "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-social6797-native-tree"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.042,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-social6797-native-tree.log"
+      },
+      {
+        "name": "slice5701-native-tree",
+        "command": [
+          "target/pr-review/release-test/rhwp",
+          "export-render-tree",
+          "samples/issue5701/1270000-202200012_slice_p76_rewound_host.hwp",
+          "-o",
+          "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-slice5701-native-tree"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.014,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-slice5701-native-tree.log"
+      },
+      {
+        "name": "fresh-wasm",
+        "command": [
+          "env",
+          "CARGO_TARGET_DIR=target/pr-review",
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 172.445,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-fresh-wasm.log"
+      },
+      {
+        "name": "stale1835-wasm",
+        "command": [
+          "venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "samples/issue1835_tac_stale_height.hwp",
+          "--pdf",
+          "output/pr-review/planet6897-green-20261002/stale1835-reference-refresh/pdf/stale1835-exact-input-hwp-2020.pdf",
+          "--key",
+          "stale1835-body-border-verified-stale1835-wasm",
+          "--wasm-pkg",
+          "pkg",
+          "--rhwp-bin",
+          "target/pr-review/release-test/rhwp",
+          "--embed-fonts",
+          "full",
+          "--silhouette-only",
+          "--out",
+          "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-stale1835-wasm"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 18.54,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-stale1835-wasm.log"
+      },
+      {
+        "name": "probe1789-wasm",
+        "command": [
+          "venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "samples/task1789/exclusion_probe_line_spacing.hwpx",
+          "--pdf",
+          "pdf/task1789/exclusion_probe_line_spacing-hwpx-2020.pdf",
+          "--key",
+          "stale1835-body-border-verified-probe1789-wasm",
+          "--wasm-pkg",
+          "pkg",
+          "--rhwp-bin",
+          "target/pr-review/release-test/rhwp",
+          "--embed-fonts",
+          "full",
+          "--silhouette-only",
+          "--out",
+          "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-probe1789-wasm"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 9.466,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-probe1789-wasm.log"
+      },
+      {
+        "name": "h01-wasm",
+        "command": [
+          "venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "samples/hwpx/hwpx-h-01.hwpx",
+          "--pdf",
+          "pdf/hwpx/hwpx-h-01-hwpx-2020.pdf",
+          "--key",
+          "stale1835-body-border-verified-h01-wasm",
+          "--wasm-pkg",
+          "pkg",
+          "--rhwp-bin",
+          "target/pr-review/release-test/rhwp",
+          "--embed-fonts",
+          "full",
+          "--silhouette-only",
+          "--out",
+          "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-h01-wasm"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 183.587,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-h01-wasm.log"
+      },
+      {
+        "name": "form002-wasm-tree",
+        "command": [
+          "node",
+          "scripts/export-wasm-for-sweep.mjs",
+          "--pkg",
+          "pkg",
+          "--input",
+          "samples/hwpx/form-002.hwpx",
+          "--out",
+          "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-form002-wasm"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 1.734,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-form002-wasm-tree.log"
+      },
+      {
+        "name": "social6797-wasm-tree",
+        "command": [
+          "node",
+          "scripts/export-wasm-for-sweep.mjs",
+          "--pkg",
+          "pkg",
+          "--input",
+          "samples/issue6797/156160455-social-pig-farm-income.hwp",
+          "--out",
+          "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-social6797-wasm"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 1.526,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-social6797-wasm-tree.log"
+      },
+      {
+        "name": "slice5701-wasm-tree",
+        "command": [
+          "node",
+          "scripts/export-wasm-for-sweep.mjs",
+          "--pkg",
+          "pkg",
+          "--input",
+          "samples/issue5701/1270000-202200012_slice_p76_rewound_host.hwp",
+          "--out",
+          "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-slice5701-wasm"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 1.403,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-slice5701-wasm-tree.log"
+      }
+    ],
+    "counter": {
+      "form002-native": {
+        "pages": 10,
+        "prior_pages": 10,
+        "different": []
+      },
+      "social6797-native": {
+        "pages": 11,
+        "prior_pages": 11,
+        "different": []
+      },
+      "slice5701-native": {
+        "pages": 3,
+        "prior_pages": 3,
+        "different": []
+      },
+      "form002-wasm": {
+        "pages": 10,
+        "prior_pages": 10,
+        "different": []
+      },
+      "social6797-wasm": {
+        "pages": 11,
+        "prior_pages": 11,
+        "different": []
+      },
+      "slice5701-wasm": {
+        "pages": 3,
+        "prior_pages": 3,
+        "different": []
+      }
+    },
+    "focused_state": "tests_failed",
+    "code_files": {
+      "src/renderer/layout/paragraph_layout.rs": "bb6ed8f4292913a23f47f4b3e436b64de2e60bf5106043df1d5e8262b2faa235",
+      "src/renderer/float_placement.rs": "4db856f5eba6f3c19851e290ce559be82200bcc51130f1deb3875ecc033d7d35",
+      "src/renderer/composer/line_breaking.rs": "47b2e5b89f4b65d1a7e0ff70d8202482530fa929ad10a808a50224a97ae3a047",
+      "src/renderer/layout.rs": "e456a378e18e4095de0d1bf8d3297e6770e1bfe3d76ff29c6b309db3d864310a",
+      "src/renderer/typeset/table/block/entry.rs": "099b4635c13b75be427d385299727d314380fae4407e4dacfdb9617ae6692a5a"
+    }
+  },
+  "summary": [
+    "Summary [  88.699s] 135 tests run: 129 passed (2 slow), 6 failed, 3930 skipped"
+  ],
+  "remaining_failed_functions": [
+    "rhwp::regression_suite_001 text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+    "rhwp::regression_suite_001 text_overlap_baseline::text_overlaps_do_not_grow_partition_6",
+    "rhwp::regression_suite_015 issue_6761_band_absorbs_spacing_before::next_paragraph_starts_at_table_outer_margin_bottom",
+    "rhwp::regression_suite_017 issue_7359_page_top_table_spacing::page_top_stored_spacing_aligns_caption_and_table_with_pdf",
+    "rhwp::regression_suite_021 issue_6267_para_float_table_overlap::para_float_table_does_not_overlap_host_text",
+    "rhwp::regression_suite_022 issue_synam001_visible_float_host_line_overlap::host_title_line_does_not_overlap_visible_float_table_first_line",
+    "rhwp::regression_suite_001 text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+    "rhwp::regression_suite_001 text_overlap_baseline::text_overlaps_do_not_grow_partition_6",
+    "rhwp::regression_suite_015 issue_6761_band_absorbs_spacing_before::next_paragraph_starts_at_table_outer_margin_bottom",
+    "rhwp::regression_suite_017 issue_7359_page_top_table_spacing::page_top_stored_spacing_aligns_caption_and_table_with_pdf",
+    "rhwp::regression_suite_021 issue_6267_para_float_table_overlap::para_float_table_does_not_overlap_host_text",
+    "rhwp::regression_suite_022 issue_synam001_visible_float_host_line_overlap::host_title_line_does_not_overlap_visible_float_table_first_line"
+  ],
+  "regression_functions_added": 0,
+  "regression_functions_changed": 0,
+  "regression_functions_removed": 0,
+  "sources": {
+    "samples/issue1835_tac_stale_height.hwp": "0eb04bdb79081fa4aa4d27a32db535fea9e955c05ca311292fc95ca8fc91d6b7",
+    "pdf/issue1835_tac_stale_height-hwp-2020.pdf": "ecdb2bc2ac9c648dbc4321c17999b8cefae6fba1a753ea0a2223e2262466d037"
+  },
+  "scores": {
+    "stale1835-native": [
+      "1\t97.94299\t0\t97.94299\t0",
+      "2\t97.59989\t0\t97.59989\t0",
+      "3\t97.84834\t0\t97.84834\t0"
+    ],
+    "stale1835-wasm": [
+      "1\t97.94299\t0\t97.94299\t0",
+      "2\t97.59989\t0\t97.59989\t0",
+      "3\t97.84834\t0\t97.84834\t0"
+    ],
+    "probe1789-native": [
+      "1\t96.54137\t0\t96.54137\t0",
+      "2\t94.44785\t0\t94.44785\t0"
+    ],
+    "probe1789-wasm": [
+      "1\t96.54137\t0\t96.54137\t0",
+      "2\t94.44785\t0\t94.44785\t0"
+    ],
+    "h01-native": [
+      "1\t94.28413\t0\t94.28413\t0",
+      "2\t97.74155\t0\t97.73661\t4",
+      "3\t99.96246\t0\t99.95584\t9",
+      "4\t99.93577\t0\t99.92506\t13",
+      "5\t99.89535\t0\t99.89075\t4",
+      "6\t99.99369\t0\t99.99369\t0",
+      "7\t99.93051\t0\t99.91907\t14",
+      "8\t99.89707\t0\t99.89260\t4",
+      "9\t98.40651\t0\t98.40651\t0"
+    ],
+    "h01-wasm": [
+      "1\t94.28413\t0\t94.28413\t0",
+      "2\t97.74155\t0\t97.73661\t4",
+      "3\t99.96246\t0\t99.95584\t9",
+      "4\t99.93577\t0\t99.92506\t13",
+      "5\t99.89535\t0\t99.89075\t4",
+      "6\t99.99369\t0\t99.99369\t0",
+      "7\t99.93051\t0\t99.91907\t14",
+      "8\t99.89707\t0\t99.89260\t4",
+      "9\t98.40651\t0\t98.40651\t0"
+    ]
+  },
+  "png_comparison": {
+    "stale1835": {
+      "pages": 3,
+      "byte_identical": true
+    },
+    "probe1789": {
+      "pages": 2,
+      "byte_identical": true
+    },
+    "h01": {
+      "pages": 9,
+      "byte_identical": true
+    }
+  },
+  "pkg_sha256": "7d6dff483db4cb083b84c74fd03522903863fd3fe7195338a6f113a33e782a50",
+  "decision": "#1835 전3쪽 Native/fresh WASM90% 이상 및 직접 판독. 기존6실패/다른 시각 보류/전체 및Skia/PR미완료"
+}

@@ -1,0 +1,209 @@
+{
+  "started_head": "ecdde0050",
+  "origin_stage": 156,
+  "total": 26,
+  "completed": 22,
+  "remaining": 4,
+  "items": [
+    {
+      "index": 1,
+      "test": "overflow_cell_lines_do_not_grow_partition_9",
+      "case": "overflow_cell_baseline",
+      "status": "완료: 실제 실패 원장의 해당 입력만 #7445 이관",
+      "evidence": "../issue7445/cgmp6035_cell_blocking_scope_validation.json"
+    },
+    {
+      "index": 2,
+      "test": "overflow_cell_lines_do_not_grow_partition_8",
+      "case": "overflow_cell_baseline",
+      "status": "완료: 현 브랜치에서 심사지표8쪽 개선·셀넘침0·기존35검사PASS",
+      "evidence": "stage159_simsa2097_validation.json"
+    },
+    {
+      "index": 4,
+      "test": "issue_6697_cell_host_paragraph_text_is_drawn::cell_host_paragraph_caption_is_drawn_on_its_page",
+      "case": "issue_6697_cell_host_paragraph_text_is_drawn",
+      "status": "완료: 31쪽 복잡 중첩 표의 실제 실패1함수만 #7445 이관·정상3함수 보존",
+      "evidence": "../issue7445/host6697_blocking_scope_validation.json"
+    },
+    {
+      "index": 5,
+      "test": "issue_7358_terminal_rowbreak_outer_top::terminal_rowbreak_continuation_repeats_saved_outer_top",
+      "case": "issue_7358_terminal_rowbreak_outer_top",
+      "status": "완료:64쪽복잡분할표의실제차단1함수만#7445이관·원문/두PDF/정상대조군보존",
+      "evidence": "../issue7445/outer7358_blocking_scope_validation.json"
+    },
+    {
+      "index": 6,
+      "test": "issue_2243::issue_2243_gyeoljae_sliver_page_pins",
+      "case": "issue_2243",
+      "status": "완료: 현 브랜치에서 작은 결재문서4개14쪽 보정·의미 회귀/대조군7PASS·단위56PASS·스윕5PASS",
+      "evidence": "stage162_consult2243_validation.json"
+    },
+    {
+      "index": 7,
+      "test": "stored_table_text_tail::hancom_saved_object_row_keeps_its_character_border",
+      "case": "stored_table_text_tail",
+      "status": "완료: 현 브랜치 작은1쪽의100% 글꼴 반올림과0간격 손실 해결·테두리 의미 회귀 유지",
+      "evidence": "stage163_tail_border_validation.json"
+    },
+    {
+      "index": 8,
+      "test": "stored_table_text_tail::hancom_saved_tail_preserves_pdf_baseline_after_the_table",
+      "case": "stored_table_text_tail",
+      "status": "완료: 보정163으로 기존 FAIL 해소·Footer 함수의 저장 줄/표 뒤 흐름·소속 의미 교정",
+      "evidence": "stage164_tail_footer_validation.json"
+    },
+    {
+      "index": 9,
+      "test": "stored_table_text_tail::one_paragraph_keeps_one_border_across_table_and_text_items",
+      "case": "stored_table_text_tail",
+      "status": "완료: 보정163으로 기존 FAIL 해소·같은 문단 항목의 단일 외곽 소유 계약 교정·기존12PASS",
+      "evidence": "stage165_tail_outline_validation.json"
+    },
+    {
+      "index": 10,
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_11",
+      "case": "body_overflow_baseline",
+      "status": "완료: 현 브랜치 작은10쪽 저장 경계·TAC 원점·실제 글꼴 공급 보정·Native/freshWASM 전10쪽 최저91.53858%·본문 아래 넘침0",
+      "evidence": "stage166_body11_validation.json"
+    },
+    {
+      "index": 11,
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_5",
+      "case": "body_overflow_baseline",
+      "status": "완료:52쪽 법률문서의 실제 본문넘침 입력1개만 #7445 이관·정상2함수 유지·현재선택Native/freshWASM 최저32.88144%",
+      "evidence": "../issue7445/caption1853_blocking_scope_validation.json"
+    },
+    {
+      "index": 12,
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_7",
+      "case": "body_overflow_baseline",
+      "status": "완료:현재 #2019 원래2→3 증가 미재현·현재2건/baseline2·partition7/정상2PASS·기존검사유지",
+      "evidence": "stage170_body7_validation.json"
+    },
+    {
+      "index": 13,
+      "test": "issue_6145_squeeze_cell_keeps_inner_margin::squeeze_cell_line_width_tracks_the_stored_inner_width",
+      "case": "issue_6145_squeeze_cell_keeps_inner_margin",
+      "status": "완료: 현 브랜치에서 작은6쪽 문서의 저장 원점·그림/표 간격 보정, 기존 폭 검사PASS, Native/freshWASM 전6쪽 최저95.5266%",
+      "evidence": "stage171_width6145_validation.json"
+    },
+    {
+      "index": 14,
+      "test": "issue_6145_squeeze_cell_keeps_inner_margin::squeeze_cell_text_starts_inside_the_declared_inner_margin",
+      "case": "issue_6145_squeeze_cell_keeps_inner_margin",
+      "status": "완료: 기존PASS 검사에서 절대 x 검색을 실제 표 셀의 상대 안쪽여백 검사로 교정, 기존2PASS",
+      "evidence": "stage172_left6145_validation.json"
+    },
+    {
+      "index": 15,
+      "test": "issue_6032_rewind_anchor_float_snap::issue_6032_rewound_empty_anchor_table_snaps_to_saved_vpos",
+      "case": "issue_6032_rewind_anchor_float_snap",
+      "status": "완료: 현 브랜치에서 작은2쪽 문서의 이월 표 뒤 빈 호스트 간격 오판 보정·기존 의미 회귀1PASS·Native/freshWASM 전2쪽 최저98.39585%",
+      "evidence": "stage173_anchor6032_validation.json"
+    },
+    {
+      "index": 16,
+      "test": "issue_1133_native_rowbreak_outer_margin::hwpx_captionless_rowbreak_keeps_independent_frame_origins",
+      "case": "issue_1133_native_rowbreak_outer_margin",
+      "status": "완료: 기존 #1133 원문 두 검사·전3쪽 Native/freshWASM 최저96.1041% 보존, 기등록 #7445 64쪽 변형 입력의 잔여 단정만 분리",
+      "evidence": "stage174_captionless1133_validation.json"
+    },
+    {
+      "index": 17,
+      "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_10",
+      "case": "body_overflow_baseline",
+      "status": "완료: #6778 재출력 한컴2024 PDF 전12쪽 Native/freshWASM 최저17.50287%·인쇄 방식4 미구현 확인, #7445 개별 이관·본문 래칫에서 이 입력만 보류, 전체16분할14PASS/2기존FAIL",
+      "evidence": "stage175_animal6778_validation.json"
+    },
+    {
+      "index": 18,
+      "test": "stored_nested_content_flow::nested_cell_alignment_uses_the_sequential_anchor_when_stored_positions_reset",
+      "case": "stored_nested_content_flow",
+      "status": "완료: 보정173 전체 nextest에서 PASS, 보정175 후 동일 기존 함수 단독1PASS; 생산·검사·기준값 변경 없이 현재 차단 아님",
+      "evidence": "stage176_nested_alignment_validation.json"
+    },
+    {
+      "index": 19,
+      "test": "svg_snapshot::issue_157_page_1",
+      "case": "svg_snapshot",
+      "status": "완료: 기존 #157 스냅샷의 5.68e-14px 직렬화 차이를 원문 표·앞뒤 문장 소속/겹침 의미 검사로 교정, 전2쪽 Native/freshWASM 최저93.09137%, 기존 함수1PASS",
+      "evidence": "stage177_svg157_validation.json"
+    },
+    {
+      "index": 20,
+      "test": "svg_snapshot::form_002_page_0",
+      "case": "svg_snapshot",
+      "status": "완료: 보정177의 현재 SVG 검사 묶음에서 기존 함수 PASS; 생산·검사·golden 변경 없이 현재 차단 아님",
+      "evidence": "stage178_svg_existing_pass_validation.json"
+    },
+    {
+      "index": 21,
+      "test": "svg_snapshot::issue_267_ktx_toc_page",
+      "case": "svg_snapshot",
+      "status": "완료: 보정177의 현재 SVG 검사 묶음에서 기존 함수 PASS; 생산·검사·golden 변경 없이 현재 차단 아님",
+      "evidence": "stage178_svg_existing_pass_validation.json"
+    },
+    {
+      "index": 22,
+      "test": "svg_snapshot::issue_147_aift_page3",
+      "case": "svg_snapshot",
+      "status": "완료: 보정177의 현재 SVG 검사 묶음에서 기존 함수 PASS; 생산·검사·golden 변경 없이 현재 차단 아님",
+      "evidence": "stage178_svg_existing_pass_validation.json"
+    },
+    {
+      "index": 23,
+      "test": "svg_snapshot::issue_617_exam_kor_page5",
+      "case": "svg_snapshot",
+      "status": "개별검토대기",
+      "evidence": null
+    },
+    {
+      "index": 24,
+      "test": "issue_1772_table_outer_margin_sync::issue_1772_body_first_line_respects_table_outer_margin_bottom",
+      "case": "issue_1772_table_outer_margin_sync",
+      "status": "개별검토대기",
+      "evidence": null
+    },
+    {
+      "index": 25,
+      "test": "issue_7196_page_top_spacing_trim_restore::issue_7196_attachment_table_starts_next_page_without_body_overflow",
+      "case": "issue_7196_page_top_spacing_trim_restore",
+      "status": "완료: 보정166으로 첨부 기존 실패 해소·기존 두 함수 유지하며10쪽/9쪽 소속·앞뒤 문장·원문 TAC 여백 관계·전쪽 점유 검증3PASS",
+      "evidence": "stage167_attachment_validation.json"
+    },
+    {
+      "index": 26,
+      "test": "issue_3308_nested_table_width::narrow_nested_table_keeps_declared_width_and_centers",
+      "case": "issue_3308_nested_table_width",
+      "status": "개별검토대기",
+      "evidence": null
+    },
+    {
+      "index": 27,
+      "test": "issue_6078_inline_table_seg_lookup::issue_6078_paper_spec_line_stays_inside_the_page",
+      "case": "issue_6078_inline_table_seg_lookup",
+      "status": "개별검토대기",
+      "evidence": null
+    }
+  ],
+  "prior_handled_recheck": [
+    {
+      "test": "issue_1749_saved_bounds_page_break::issue_1811_hwpx_pi52_rowbreak_cut_matches_hwp_reference",
+      "status": "완료: 현 브랜치에서 작은 HWP5쪽 양수 원점 컷·종료 빈 공간·실제 임베드 글꼴 개선. 기존27PASS, 대상Native/freshWASM min90.62519%; HWPX 기존 보류는 보존.",
+      "evidence": "stage168_savedbounds1749_validation.json"
+    }
+  ],
+  "body_overflow_current_scan": {
+    "stage": 169,
+    "result": "12PASS/4FAIL; 제외로 greedy분할 재배치, 원래함수이름을 입력 소유 근거로 쓰지 않음. 원래대기12/17는 다음에 각각 현재 입력과 재대조.",
+    "failures": [
+      "신규 발생: issue6756/17253153-traffic-safety-designated-routes.hwp — 1건 (baseline 없음)",
+      "신규 발생: k-water-rfp-2024.hwp — 1건 (baseline 없음)",
+      "증가: issue6776/78494-virtual-convergence-industry-decree.hwpx — 1 → 2건",
+      "신규 발생: issue6778/156757920-animal-welfare-husbandry-guidelines.hwp — 1건 (baseline 없음)"
+    ],
+    "evidence": "../issue7445/caption1853_blocking_scope_validation.json"
+  }
+}

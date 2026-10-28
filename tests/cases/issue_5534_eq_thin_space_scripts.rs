@@ -2,7 +2,6 @@
 //!
 //! 한컴은 `a_{2}` 와 `` a`_{2} `` 를 다르게 렌더한다 — 공백이 있으면 첨자가
 //! 1/4 공백만큼 오른쪽에 놓인다. 종전 파서는 첨자 앞 Thin 공백 토큰을 삭제해
-//! (exam_math `log`_{2}` 첨자 파싱 실패의 과잉 교정) 두 스크립트가 같은 AST 가
 //! 됐다. 수정 후: 첨자 결합은 유지하되 공백 폭을 base 뒤 `Space(Thin)` 으로
 //! 보존한다 — AST 소비자도 두 표기를 구분할 수 있다.
 
@@ -40,7 +39,6 @@ fn thin_space_before_script_is_preserved_not_collapsed() {
 
 #[test]
 fn function_script_keeps_binding_and_space_width() {
-    // exam_math 원 결함(첨자 파싱 실패) 회귀 방지: log`_{2} 는 여전히 첨자 결합.
     let spaced = parse("log`_{2}");
     assert_ne!(spaced, parse("log_{2}"));
     assert!(

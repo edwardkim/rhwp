@@ -1,0 +1,18 @@
+{
+  "id": "pii-confirmed-glyph-fallback-3dd7c322eaac2832",
+  "substitutions": {
+    "명조": "HYmjrE",
+    "한양신명조": "HYSinMyeongJo-Medium",
+    "한양중고딕": "HYGothic-Medium"
+  },
+  "trueTypeFaces": [
+    "HYGothic-Medium",
+    "HYSinMyeongJo-Medium",
+    "HYmjrE"
+  ],
+  "glyphFallbacks": {
+    "휴먼명조": [
+      "Haansoft Batang"
+    ]
+  }
+}

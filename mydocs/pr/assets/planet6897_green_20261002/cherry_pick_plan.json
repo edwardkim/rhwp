@@ -1,0 +1,689 @@
+[
+  {
+    "pr": 7385,
+    "head": "a20cf583c76fdb038ccea6b87429a8f67b5bc832",
+    "commits": [
+      {
+        "sha": "8523553bf464611ba271c5d8ba2951259f09348e",
+        "subject": "수정(layout): 용지 기준 개체를 앵커 줄이 있는 쪽에 등록한다 (#5941)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "e12267c99af8a7aded398212047d090c663da035"
+      },
+      {
+        "sha": "1118c7a1d914b511f53a272d668e7e800a3fe215",
+        "subject": "문서(pr): #5941 Visual Sweep 증적을 보존한다",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "6d4cdc3446f39cdee39275bf8a4f3c6ce2233c20"
+      },
+      {
+        "sha": "a20cf583c76fdb038ccea6b87429a8f67b5bc832",
+        "subject": "Merge branch 'devel' into fix/5941-paper-anchored-float-owner-page",
+        "disposition": "merge excluded",
+        "basePatchEquivalent": false
+      }
+    ]
+  },
+  {
+    "pr": 7404,
+    "head": "13cf22339f5125df51e78b361656293876313846",
+    "commits": [
+      {
+        "sha": "c952ef71e8da558ba70244363f9161a0f56ee543",
+        "subject": "수정(저장): 재래핑된 표의 저장 프레임을 실제 조판 컷으로 되쓴다 (#7114)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "8d1593b2ce5eea68694a5830617707aa66876f96"
+      },
+      {
+        "sha": "4d80267e7ded2cd5408bcf3a61c4a3a3b56cfcf7",
+        "subject": "수정(저장): 중첩 표 안의 쪽 경계를 host 줄로 옮겨 적지 않는다 (#7114)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "97d24fb154e045e5af0d8b6a369aa08eb90f897f"
+      },
+      {
+        "sha": "13cf22339f5125df51e78b361656293876313846",
+        "subject": "Merge branch 'devel' into fix/7114-save-side-frame-normalize",
+        "disposition": "merge excluded",
+        "basePatchEquivalent": false
+      }
+    ]
+  },
+  {
+    "pr": 7410,
+    "head": "665079cbd53bc2b8c76b54b21da52d96a252b4ed",
+    "commits": [
+      {
+        "sha": "4cc0ffeedbfefa7a72a1bb03bce69ee26020394f",
+        "subject": "수정(조판): 칸 문단의 줄 상자도 문단 좌우 여백만큼 들여 잡는다 (#7407)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "9f76b1b19565b22a774da14444ff98c7975da26a"
+      },
+      {
+        "sha": "665079cbd53bc2b8c76b54b21da52d96a252b4ed",
+        "subject": "Merge branch 'devel' into fix/7407-cell-line-box-margins",
+        "disposition": "merge excluded",
+        "basePatchEquivalent": false
+      }
+    ]
+  },
+  {
+    "pr": 7411,
+    "head": "e116877a532eb02370fd7af35c982f407315d3b3",
+    "commits": [
+      {
+        "sha": "74b6e664e9ff26b7fd4f94bc4ad2c41a32463003",
+        "subject": "fix(layout): 원점이 접힌 프레임과 저장 행의 좌표계를 맞춘다 (#7408)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "2b01e669d793f7f4e0a14db38aee494720420707"
+      },
+      {
+        "sha": "e116877a532eb02370fd7af35c982f407315d3b3",
+        "subject": "Merge branch 'devel' into fix/7408-stored-lineseg-rewrap",
+        "disposition": "merge excluded",
+        "basePatchEquivalent": false
+      }
+    ]
+  },
+  {
+    "pr": 7414,
+    "head": "ed53392e9f575492f5cd7192f378490cc8c4b6d9",
+    "commits": [
+      {
+        "sha": "4cc0ffeedbfefa7a72a1bb03bce69ee26020394f",
+        "subject": "수정(조판): 칸 문단의 줄 상자도 문단 좌우 여백만큼 들여 잡는다 (#7407)",
+        "disposition": "stacked/rebased duplicate",
+        "basePatchEquivalent": false,
+        "patchId": "9f76b1b19565b22a774da14444ff98c7975da26a",
+        "duplicateOf": {
+          "pr": 7410,
+          "sha": "4cc0ffeedbfefa7a72a1bb03bce69ee26020394f"
+        }
+      },
+      {
+        "sha": "3d18a31ec5000d2d38cc596031e10849d65e74b5",
+        "subject": "수정(조판): 한 줄에 안 들어가는 토큰을 잰 폭으로 자른다 (#7407)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "843a232dd580d33c022ceb106b932062794f52d1"
+      },
+      {
+        "sha": "235aaa6b092f251267ab993cdbc6dc9c15930d50",
+        "subject": "문서(증적): #7407 A2b 시각 증적과 코퍼스 변화 3건 판독",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "42d53f0eff3728c8e6799fe341e38345c7d74270"
+      },
+      {
+        "sha": "ed53392e9f575492f5cd7192f378490cc8c4b6d9",
+        "subject": "Merge branch 'devel' into fix/7407-token-fallback-char-width",
+        "disposition": "merge excluded",
+        "basePatchEquivalent": false
+      }
+    ]
+  },
+  {
+    "pr": 7423,
+    "head": "07ec370f2c035d81007efffd415e3b740e752e55",
+    "commits": [
+      {
+        "sha": "3cb7daba69fc734879e672434f1547c4a7d24100",
+        "subject": "수정(조판): 자리차지 RowBreak 조각의 바깥 위 여백을 원본 HWPX 계보에도 연다 (#7063)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "8955ab2f4ed3889ef1401f7314dc51a160d1b4a9"
+      },
+      {
+        "sha": "040fa9b2bf9a343c6117a670235be1f518e06963",
+        "subject": "수정(조판): 쪽 중간 조각의 상자·내용·정렬 높이를 가른다 (#7063 레인②)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "e91826abae49c112724c5906366b69811218d750"
+      },
+      {
+        "sha": "e3a4456bd263884d73fe59f759421b1ce222baf6",
+        "subject": "수정(조판): 쪽을 끝내는 조각의 마지막 행 상자를 배치 뒤에 접는다 (#6976)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "d9dfc92c588a705c72467b30470cb5733a5c9def"
+      },
+      {
+        "sha": "07ec370f2c035d81007efffd415e3b740e752e55",
+        "subject": "Merge branch 'devel' into work/7063-lane1",
+        "disposition": "merge excluded",
+        "basePatchEquivalent": false
+      }
+    ]
+  },
+  {
+    "pr": 7424,
+    "head": "7c2c1c05226731342e9b11b038d883adf3c0bab5",
+    "commits": [
+      {
+        "sha": "4cc0ffeedbfefa7a72a1bb03bce69ee26020394f",
+        "subject": "수정(조판): 칸 문단의 줄 상자도 문단 좌우 여백만큼 들여 잡는다 (#7407)",
+        "disposition": "stacked/rebased duplicate",
+        "basePatchEquivalent": false,
+        "patchId": "9f76b1b19565b22a774da14444ff98c7975da26a",
+        "duplicateOf": {
+          "pr": 7410,
+          "sha": "4cc0ffeedbfefa7a72a1bb03bce69ee26020394f"
+        }
+      },
+      {
+        "sha": "3d18a31ec5000d2d38cc596031e10849d65e74b5",
+        "subject": "수정(조판): 한 줄에 안 들어가는 토큰을 잰 폭으로 자른다 (#7407)",
+        "disposition": "stacked/rebased duplicate",
+        "basePatchEquivalent": false,
+        "patchId": "843a232dd580d33c022ceb106b932062794f52d1",
+        "duplicateOf": {
+          "pr": 7414,
+          "sha": "3d18a31ec5000d2d38cc596031e10849d65e74b5"
+        }
+      },
+      {
+        "sha": "235aaa6b092f251267ab993cdbc6dc9c15930d50",
+        "subject": "문서(증적): #7407 A2b 시각 증적과 코퍼스 변화 3건 판독",
+        "disposition": "stacked/rebased duplicate",
+        "basePatchEquivalent": false,
+        "patchId": "42d53f0eff3728c8e6799fe341e38345c7d74270",
+        "duplicateOf": {
+          "pr": 7414,
+          "sha": "235aaa6b092f251267ab993cdbc6dc9c15930d50"
+        }
+      },
+      {
+        "sha": "bd0660d312b4247c28f4da7194965c327112009d",
+        "subject": "수정(조판): 칸 문단을 다시 조합하는 경로도 문단 좌우 여백을 뺀다 (#7422)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "5f8798c2a83d2dbf779db48746cf149d1b3887ba"
+      },
+      {
+        "sha": "a8388028a260c5d99e0107f30ba3a8ab2beb3801",
+        "subject": "문서(증적): #7422 재조합 경로 칸 상자 수정의 시각 증적",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "593fb16195fb396fb9d07ceed4e3a22352099944"
+      },
+      {
+        "sha": "7c2c1c05226731342e9b11b038d883adf3c0bab5",
+        "subject": "Merge branch 'devel' into fix/7422-cell-frame-paragraph-margins",
+        "disposition": "merge excluded",
+        "basePatchEquivalent": false
+      }
+    ]
+  },
+  {
+    "pr": 7434,
+    "head": "1fd09e538bf340a8fcf905d225d3fc74f5262e1b",
+    "commits": [
+      {
+        "sha": "3cb7daba69fc734879e672434f1547c4a7d24100",
+        "subject": "수정(조판): 자리차지 RowBreak 조각의 바깥 위 여백을 원본 HWPX 계보에도 연다 (#7063)",
+        "disposition": "stacked/rebased duplicate",
+        "basePatchEquivalent": false,
+        "patchId": "8955ab2f4ed3889ef1401f7314dc51a160d1b4a9",
+        "duplicateOf": {
+          "pr": 7423,
+          "sha": "3cb7daba69fc734879e672434f1547c4a7d24100"
+        }
+      },
+      {
+        "sha": "040fa9b2bf9a343c6117a670235be1f518e06963",
+        "subject": "수정(조판): 쪽 중간 조각의 상자·내용·정렬 높이를 가른다 (#7063 레인②)",
+        "disposition": "stacked/rebased duplicate",
+        "basePatchEquivalent": false,
+        "patchId": "e91826abae49c112724c5906366b69811218d750",
+        "duplicateOf": {
+          "pr": 7423,
+          "sha": "040fa9b2bf9a343c6117a670235be1f518e06963"
+        }
+      },
+      {
+        "sha": "e3a4456bd263884d73fe59f759421b1ce222baf6",
+        "subject": "수정(조판): 쪽을 끝내는 조각의 마지막 행 상자를 배치 뒤에 접는다 (#6976)",
+        "disposition": "stacked/rebased duplicate",
+        "basePatchEquivalent": false,
+        "patchId": "d9dfc92c588a705c72467b30470cb5733a5c9def",
+        "duplicateOf": {
+          "pr": 7423,
+          "sha": "e3a4456bd263884d73fe59f759421b1ce222baf6"
+        }
+      },
+      {
+        "sha": "55a6e010d049af03cc7d8c6e43e32ae21bb1c126",
+        "subject": "수정(조판): 조각 상자의 쪽 상한을 다행 표에도 적용한다 (#7095 확장, #7063)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "b2473c79d8ccd0b9b186127bf7c8321dfe700084"
+      },
+      {
+        "sha": "1fd09e538bf340a8fcf905d225d3fc74f5262e1b",
+        "subject": "Merge branch 'devel' into work/7095-multirow-cap",
+        "disposition": "merge excluded",
+        "basePatchEquivalent": false
+      }
+    ]
+  },
+  {
+    "pr": 7471,
+    "head": "492aef1eefd06240a6a49d52f6b10c4a15acc657",
+    "commits": [
+      {
+        "sha": "d481852b4968fdc2f1eee9dd0e6f2d05784c9e74",
+        "subject": "수정(각주): 번호 문단도 문단 모양의 내어쓰기·정렬을 받는다 (#7469)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "be18e65b230d5190eac4e2934d5fde246b7269ee"
+      },
+      {
+        "sha": "492aef1eefd06240a6a49d52f6b10c4a15acc657",
+        "subject": "증적(#7469): 각주 번호 문단 Visual Sweep 대표 쪽 review·overlay",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "21bd0d8ff72c4d6c6ba6dce049e5a941f849f024"
+      }
+    ]
+  },
+  {
+    "pr": 7476,
+    "head": "d0c18feef2e9a13403482d7b8663a66a422bfaa4",
+    "commits": [
+      {
+        "sha": "23da3567ecb49bce69d56f43cd041b8cb6eff9cc",
+        "subject": "수정(조판): 칸 문단의 줄 상자도 문단 좌우 여백만큼 들여 잡는다 (#7407)",
+        "disposition": "stacked/rebased duplicate",
+        "basePatchEquivalent": false,
+        "patchId": "9f76b1b19565b22a774da14444ff98c7975da26a",
+        "duplicateOf": {
+          "pr": 7410,
+          "sha": "4cc0ffeedbfefa7a72a1bb03bce69ee26020394f"
+        }
+      },
+      {
+        "sha": "b07b421a9d2398eac87e1e5155584e6f4cbddce5",
+        "subject": "수정(조판): 한 줄에 안 들어가는 토큰을 잰 폭으로 자른다 (#7407)",
+        "disposition": "stacked/rebased duplicate",
+        "basePatchEquivalent": false,
+        "patchId": "843a232dd580d33c022ceb106b932062794f52d1",
+        "duplicateOf": {
+          "pr": 7414,
+          "sha": "3d18a31ec5000d2d38cc596031e10849d65e74b5"
+        }
+      },
+      {
+        "sha": "7a81c50b701bbd590a47ca351a0a0aca9f5c6907",
+        "subject": "문서(증적): #7407 A2b 시각 증적과 코퍼스 변화 3건 판독",
+        "disposition": "stacked/rebased duplicate",
+        "basePatchEquivalent": false,
+        "patchId": "42d53f0eff3728c8e6799fe341e38345c7d74270",
+        "duplicateOf": {
+          "pr": 7414,
+          "sha": "235aaa6b092f251267ab993cdbc6dc9c15930d50"
+        }
+      },
+      {
+        "sha": "6a9a03bc235a5c274bef91dfa103337527e98582",
+        "subject": "수정(조판): 칸 문단을 다시 조합하는 경로도 문단 좌우 여백을 뺀다 (#7422)",
+        "disposition": "stacked/rebased duplicate",
+        "basePatchEquivalent": false,
+        "patchId": "5f8798c2a83d2dbf779db48746cf149d1b3887ba",
+        "duplicateOf": {
+          "pr": 7424,
+          "sha": "bd0660d312b4247c28f4da7194965c327112009d"
+        }
+      },
+      {
+        "sha": "d155e91375e8a616384c5c07067a076a1d706bd4",
+        "subject": "문서(증적): #7422 재조합 경로 칸 상자 수정의 시각 증적",
+        "disposition": "stacked/rebased duplicate",
+        "basePatchEquivalent": false,
+        "patchId": "593fb16195fb396fb9d07ceed4e3a22352099944",
+        "duplicateOf": {
+          "pr": 7424,
+          "sha": "a8388028a260c5d99e0107f30ba3a8ab2beb3801"
+        }
+      },
+      {
+        "sha": "93c73a032efd9c8d72405622cd3d24553bc93f1b",
+        "subject": "수정(조판): 칸 안 여백 축소를 줄바꿈으로 안 되는 칸에만 건다 (#7413)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "9aa50e5e24363b8b3a146ea2c9a007e77a9fac6a"
+      },
+      {
+        "sha": "1752f6fc69bee0dc3d003b202aa84bc3d73ec6e5",
+        "subject": "수정(조판): condense 로 새 낱말을 시작하려면 줄이 자연폭 안이어야 한다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "4843dab4fa19bef966e0cdcad6f311f67708d092"
+      },
+      {
+        "sha": "c96cc071e93a28fba67daffcc0c786966df0db5b",
+        "subject": "문서(조사): #7418 condense 규칙 재현 프로브 — 한/글 저장 줄 208/208",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "2d0d2b31e14bda8c823ffd14b689e80825b11a16"
+      },
+      {
+        "sha": "0928fba0918818bdb0d7a7e7668bac3b093929e2",
+        "subject": "수정(조판): 줄 맨 앞 공백은 condense 로 줄이지 않는다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "8ed9ad848457513ad6c2acd4750d5726539d33b5"
+      },
+      {
+        "sha": "37d2e41891b27559f8b99b03cbbbc1a3a8342400",
+        "subject": "수정(조판): 공백을 줄여 넣는 판정에는 줄바꿈 여유를 얹지 않는다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "7172782c54e753d41b8bc190910355c2d8799462"
+      },
+      {
+        "sha": "178b658b5e724de7a0ca3631217fac76eaa9986e",
+        "subject": "수정(조판): 글머리표 폭을 줄 나눔 상자에서 빼고 condense 판정을 한/글에 맞춘다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "97dc4c805716976e79b187e915b6d6f36a6b866f"
+      },
+      {
+        "sha": "fc34d8c73d019901854cbb5c8c655635ae000385",
+        "subject": "수정(조판): 줄 끝에 건 공백이 문단 끝이면 빈 행을 만들지 않고, 칸·끝 공백 검사를 더한다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "ac20072c07ec6bb974f1a12ce421728dc180148e"
+      },
+      {
+        "sha": "055a054ea081b4f6474d64803a8cc49dd35fee13",
+        "subject": "수정(조판): 글머리표 자리의 soft hyphen 은 반각 하이픈으로 그리고 잰다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "bbb528e763f6d41e0b77204dd82c39e312dc7b24"
+      },
+      {
+        "sha": "c6dd5efcc22c92affd2a88ce2e9b760026f65b87",
+        "subject": "수정(조판): 번호·개요 폭도 줄 나눔 상자에서 뺀다 — 번호를 문서 순서로 미리 계산한다 (#7436)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "ab552daf1c4364f20a048499f68de5ea718cfc83"
+      },
+      {
+        "sha": "8d7f57abcce796660614f2ee3602491ba54e69cc",
+        "subject": "검사(#7418): #2214 fifth line 경계를 한/글 환경에서 다시 정하고, 번호 파생값을 Debug 동일성에서 뺀다",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "7756aa2bd2f55cb3c52e5d3fa4a1963f9eaf290d"
+      },
+      {
+        "sha": "bd8596aacc562fe98e6199a38d241c1b287f771d",
+        "subject": "수정(조판): 공백 최소값은 자간 적용 전 공백 폭을 기준으로 줄인다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "40c4eb2b3964429527c85dfde1d99d80f18e3ccc"
+      },
+      {
+        "sha": "66b058c5f4dffa470d5d78b1c70f99ce726b2957",
+        "subject": "수정(조판): 목록 마커 영역을 머리 모양 속성으로 정한다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "a94347ac90829aa6aff324bc2652cdcb95adb8d7"
+      },
+      {
+        "sha": "f18e4e42458296db504043fb8c9802ebf5ee8512",
+        "subject": "검증: #7418 머리 모양 검사에 수정 전 일치 수를 적는다",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "474f2d75cfdcace7b6c375400159c3722c4ad52c"
+      },
+      {
+        "sha": "47ccfb7375a479f5461259386d1eca6de3009d09",
+        "subject": "수정(조판): 목록 마커 글자 폭·글자 모양·빈 영역을 한/글에 맞춘다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "b6d5e2dc1b35b351ef08e263b616a6496d5aef80"
+      },
+      {
+        "sha": "8d98868683ddf7cfaf0d0a999636fa34ac2f8a34",
+        "subject": "수정(조판): 저장 줄 없는 글자처럼 취급 표 host 줄의 줄간격을 계상한다 (#7418, #7344)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "868dba16d3a59b89a893be00253d3eef1eb0b16b"
+      },
+      {
+        "sha": "5472db690924061b5f75fa4afc731967287b1164",
+        "subject": "수정(조판): 쪽 나누기 선언만으로 빈 문단 넘침을 흡수하지 않는다 (#7429)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "30f0b97e7a85ff744d6928ec5ce3789fe0ca2892"
+      },
+      {
+        "sha": "5c262e4aca18959268536eb4dab8ce374c4041f6",
+        "subject": "수정(조판): 칸 선언이 모든 행을 담으면 낡은 표 선언 높이로 행을 늘리지 않는다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "7764abe961ffbcb62816b1534b1d10bd4fbed03e"
+      },
+      {
+        "sha": "38dafafd4af7c9f3e605a94fb58ea6f463720e53",
+        "subject": "수정(조판): 중첩 표 행 안의 중첩 표를 행 경계에서 나누고, 일반 격자 묶음의 빈 꼬리도 쪽 바닥에서 자른다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "a67a2d5b83156fabcb5d90c00d32712cd38317c9"
+      },
+      {
+        "sha": "719339ab2db1824eb3c759d9cf5a561577fbedff",
+        "subject": "수정(조판): 쪽 경계에 걸친 칸은 안 여백을 깎지 않는다 (#7080)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "50a4a10b8531d5643f265bf888a978ba00fae4f4"
+      },
+      {
+        "sha": "7baef3c9dc5ed7696170f2f6ed47354aba8d5f93",
+        "subject": "수정(조판): 빈 꼬리 문단 흡수를 문서 근거가 있을 때만 하고, 없으면 줄이 온전히 들어가야 한다 (#7429)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "d7cf30db040333d8128bf3f1182fd543ab384676"
+      },
+      {
+        "sha": "22378bb40280ad325e3502b9d8d6eda557fdc201",
+        "subject": "검사: 78494 의 쪽 핀을 한 쪽 밀린 현재 흐름으로 옮긴다 (#7422, #6776)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "1b7f7451835f1abc2a50dddc7cae1fde2a981513"
+      },
+      {
+        "sha": "4bf04154e52f53c10664f76ea9ffd93113118d6e",
+        "subject": "빌드: WMF/EMF 골든도 LF 로 체크아웃한다",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "29bc56fd8488c32ff8a9e34466d9cc081a3baa7b"
+      },
+      {
+        "sha": "74205c26fb751800a0672c6649fc7eaaa24b8a26",
+        "subject": "수정(조판): 선언 빈 꼬리 압축은 행으로 나뉘는 열이 하나인 묶음에만 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "730aeaa61d26a492e4797ee02830246aba8ec9bf"
+      },
+      {
+        "sha": "af3a05b926a3ed3bd349f6cd8fdd7a0b24a8ce83",
+        "subject": "검사: hy_ladder3 칸 넘침 래칫을 7 → 11 로 조인다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "daad5731ddc8f8c8c153454a28606d475b03d383"
+      },
+      {
+        "sha": "c75bbee725d44e22ef6593c18dcf57e2569cfee8",
+        "subject": "수정(조판): ASCII 구두점은 영문 슬롯 글꼴로 재고 그린다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "d926fd060c83fc86e5d5890bc3f48f6ceb9771cc"
+      },
+      {
+        "sha": "8041f80f113aec2a2717fd75ffc774315c24b11a",
+        "subject": "검사: 78494 의 쪽 핀을 정본 쪽으로 되돌린다 (#7422, #6776)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "7a8481f3456615c3f8e84182ac9c1b940497864c"
+      },
+      {
+        "sha": "ea41e252b047547407908594236cb33b004b32f0",
+        "subject": "검사: 구두점 영문 슬롯 단위 시험을 통합 시험으로 옮긴다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "1434a229271d9ae7715af235145371634ecd3455"
+      },
+      {
+        "sha": "2f0f6ca3c0a23f54392190815bafad7a9ecb5013",
+        "subject": "수정(조판): 구두점 영문 슬롯은 영문 슬롯이 옛 한컴 영문 글꼴일 때만 건다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "b680312805fab05f8129619af03f5a816d41301c"
+      },
+      {
+        "sha": "2d213d5d3e68035f6ce052ebc6328a738d0261d1",
+        "subject": "수정(조판): 구두점 영문 슬롯은 옛 영문 글꼴이 라틴 전용 글꼴로 치환될 때만 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "3ed5931609abce2838758177ca859d658c0396e1"
+      },
+      {
+        "sha": "397a5357c51a5ef40a77834061e81674ca25664c",
+        "subject": "수정(조판): 영문 슬롯 구두점은 run 을 쪼개지 않고 글자 폭만 영문 슬롯으로 잰다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "50b7b8e5185bcd79ff3ef0ac426acf8b847f20b9"
+      },
+      {
+        "sha": "6d72723b601ed5a8ef0143be4951a3677bab18e2",
+        "subject": "검사: #4962 공개 coverage 골든의 판정 행을 영문 슬롯 구두점 측정에 맞춘다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "c11c5325eb8a9efc4b34dc2c67d9b743ef8f2794"
+      },
+      {
+        "sha": "853cd9c497fd19274395d6c6d38a2ff2196d0d1e",
+        "subject": "수정(조판): 글자 단위 한글 문단은 한글 글자 앞도 줄 끝 후보다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "d05e18d2f083b0911815495d8dbb8a99aaa8ed9b"
+      },
+      {
+        "sha": "de25d9512557586d5ac51b8cbd1c9fc202b2ce16",
+        "subject": "수정(조판): 칸 안 여백 축소 판정은 칸 마지막 줄의 줄간격을 세지 않는다 (#7418, #7413)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "bbb6992e5b0fc87063abef3e751d8d4b4a15dc19"
+      },
+      {
+        "sha": "7065555f66ccf0a7a0616cab3ab38c2c9780bf74",
+        "subject": "수정(조판): 쪽을 넘어 이어지는 목록 문단 조각도 마커 영역만큼 들어간다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "a84261c833f8d4473e7559f8576804377e273fb4"
+      },
+      {
+        "sha": "6a9ca07c848abc8aa3203131364e275cb55fc623",
+        "subject": "수정(조판): 마지막 행 안에서 이어지는 2열 표 조각도 바깥 위 여백을 연다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "64cb9cf1b620c03874db91a29da0850bdf0bed18"
+      },
+      {
+        "sha": "219687eec48ee77ae6fa41404f6fa8d433cb5c3d",
+        "subject": "수정(조판): 표 host 글 뒤 자리차지 표와 칸 중첩 표 행의 기하를 한/글에 맞춘다 (#7418, #6854)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "63feb456b7f8998985ee335104574cd217919ba4"
+      },
+      {
+        "sha": "fe76d00f2682d6e59b5fa4a934aac65913e19664",
+        "subject": "검사: 표 host 글·칸 조각 기하를 한/글 정본 좌표로 잠근다 (#7418, #6854)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "2e72625287dcad18aa062d3eaa2343d8139963da"
+      },
+      {
+        "sha": "2576efc2d1372889378d36da56fb397bddcd0b80",
+        "subject": "수정(조판): host 글 선방출이 다른 표의 쪽 나눔을 바꾸지 않게 좁힌다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "2f9c2e72f1f02929bb0249e60760ecca7896d5e8"
+      },
+      {
+        "sha": "16a78a62f65009a884d46d5422e03b8fcca918c2",
+        "subject": "수정(조판): host 글 위치는 기존 host 배치 모델로 정하고 임시 규칙 둘을 걷는다 (#7418, #6854)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "c4c9fd96f6b4e1a6b00fff10e2fae297446e6973"
+      },
+      {
+        "sha": "ef1921b2700ac602bba98e81726bd4d123457bee",
+        "subject": "수정(조판): host 글 기록의 쪽 간 누수·저장 줄 근거 여백 축소·글 앞 앵커 분리 (#7418, #7413, #6950)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "4262f2490c847202ed64f707a2830c394a35d576"
+      },
+      {
+        "sha": "d18b1c1e84881023edc85edb70484cb5396d0093",
+        "subject": "검사: 정본 근거로 기준값 셋을 옮긴다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "9a9797cf5aacabafbf84caae169d4c0fb63129ab"
+      },
+      {
+        "sha": "375d701b32fd69fa24c6749e6e9450834649e9ff",
+        "subject": "문서(증적): #7418 대표 쪽 Native·fresh WASM Visual Sweep 증적",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "9c708e0ef6c35441c4af6d985154f29462c867f4"
+      },
+      {
+        "sha": "e5637516ac3bc42888ec505f87ca139751c656e5",
+        "subject": "수정(조판): 합성 host 줄이 품은 줄간격을 TAC host 규칙이 다시 더하지 않는다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "e27185277271472ee91d13ce506ccd73d3302b3e"
+      },
+      {
+        "sha": "d3d829abc86350e1862f8c6a805793366817dbd4",
+        "subject": "검사: #7413 칸 여백 시험 파일을 rustfmt 로 정리한다 (#7418)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "1059fbfda9c4230109fa3c1f9644b7b845aa61cb"
+      },
+      {
+        "sha": "d0c18feef2e9a13403482d7b8663a66a422bfaa4",
+        "subject": "검사: #7413 시험의 쓰지 않는 재귀 인자를 뺀다 (#7413)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "41ffb40879b0f82ddfc26ade72386dd49a012fe8"
+      }
+    ]
+  },
+  {
+    "pr": 7479,
+    "head": "1d894b4a05c4e5cf82b428e71ef0ab22de59c1ae",
+    "commits": [
+      {
+        "sha": "61dac2e5f14c206bc3eb293a67879051476c7004",
+        "subject": "fix(layout): 빈 host 줄을 문단 기준 그림 띠에 흡수하고 넘치는 그림을 사다리대로 넘긴다 (#7470)",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "e8efce3e9eb2071111cd70489d7b3425a1c1bf08"
+      },
+      {
+        "sha": "1d894b4a05c4e5cf82b428e71ef0ab22de59c1ae",
+        "subject": "증적(#7470): 빈 host 그림 띠 흡수 Visual Sweep 대표 쪽 review·overlay와 한/글 2024 기준 PDF",
+        "disposition": "candidate",
+        "basePatchEquivalent": false,
+        "patchId": "2642e27dede12296aecb233db5797bf801ea804e"
+      }
+    ]
+  }
+]

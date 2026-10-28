@@ -1,0 +1,41 @@
+{
+  "state": "complete_failed",
+  "head": "e580fa109a800ce3d5ba84b0d668981037cb0f8e",
+  "base": "6b3faf77d8085441f9f26d88d65a49791e910352",
+  "command": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 8 --no-fail-fast",
+  "log": "output/pr-review/planet6897-green-20261002/whole-after-slice5701.log",
+  "exit_code": 100,
+  "summary": "Summary [ 405.402s] 10266 tests run: 10253 passed (6 slow), 13 failed, 50 skipped",
+  "tests_run": 10266,
+  "passed": 10253,
+  "failed": 13,
+  "skipped": 50,
+  "execution_seconds": 405.402,
+  "failures": [
+    "rhwp::regression_suite_005 issue_6761_band_absorbs_spacing_before::next_paragraph_starts_at_table_outer_margin_bottom",
+    "rhwp::regression_suite_006 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_6",
+    "rhwp::regression_suite_017 issue_synam001_visible_float_host_line_overlap::host_title_line_does_not_overlap_visible_float_table_first_line",
+    "rhwp::regression_suite_019 issue_7359_page_top_table_spacing::page_top_stored_spacing_aligns_caption_and_table_with_pdf",
+    "rhwp::regression_suite_025 text_overlap_baseline::text_overlaps_do_not_grow_partition_10",
+    "rhwp::regression_suite_025 text_overlap_baseline::text_overlaps_do_not_grow_partition_1",
+    "rhwp::regression_suite_025 text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+    "rhwp::regression_suite_025 text_overlap_baseline::text_overlaps_do_not_grow_partition_6",
+    "rhwp::regression_suite_025 text_overlap_baseline::text_overlaps_do_not_grow_partition_12",
+    "rhwp::regression_suite_025 text_overlap_baseline::text_overlaps_do_not_grow_partition_7",
+    "rhwp::regression_suite_025 text_overlap_baseline::text_overlaps_do_not_grow_partition_9",
+    "rhwp::regression_suite_028 issue_6267_para_float_table_overlap::para_float_table_does_not_overlap_host_text",
+    "rhwp::regression_suite_025 text_overlap_baseline::text_overlaps_do_not_grow_partition_0"
+  ],
+  "new_text_overlap_observations": [
+    "신규 발생: issue1835_tac_stale_height.hwp — 2건 (baseline 없음)",
+    "신규 발생: hwp_table_test-m.hwp — 2건 (baseline 없음)",
+    "신규 발생: basic/KTX-003.hwp — 2건 (baseline 없음)",
+    "신규 발생: issue6267/kdt_result_para_float_table.hwpx — 3건 (baseline 없음)",
+    "신규 발생: issue2439/issue2439_repeat_table_overlap.hwp — 1건 (baseline 없음)",
+    "신규 발생: issue3587/b-table-repeated.hwpx — 2건 (baseline 없음)",
+    "신규 발생: hwp_table_test_saved.hwp — 2건 (baseline 없음)",
+    "신규 발생: hwp_table_test.hwp — 2건 (baseline 없음)",
+    "신규 발생: issue3587/b-table-repeated.hwp — 2건 (baseline 없음)"
+  ],
+  "changed_sources_during_run": false
+}

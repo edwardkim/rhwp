@@ -1,0 +1,1063 @@
+{
+  "independent_pdf": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+  "pdf_sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59",
+  "pdf_pages": 215,
+  "first_caption_lines": [
+    {
+      "text": "그림 21  2008/09년과 2014/15 대비 살아있는",
+      "bbox_pt": [
+        79.31999969482422,
+        373.7412414550781,
+        278.6399841308594,
+        382.750244140625
+      ],
+      "top_96dpi": 498.3216552734375
+    },
+    {
+      "text": "그림 22 2008/09년과 2014/15 대비 장기 유형별",
+      "bbox_pt": [
+        288.6000061035156,
+        361.021240234375,
+        486.5999755859375,
+        370.0302429199219
+      ],
+      "top_96dpi": 481.3616536458333
+    }
+  ],
+  "original_lines_per_caption": 5,
+  "line_height_hu": 900,
+  "line_spacing_hu": 540,
+  "line_pitch_px": 19.2,
+  "before_immutable_cli_sha256": "1129c5d53fb7e5360449caa15ed4c715a52c26ef529b53725509819da372d0f7",
+  "before_caption_nodes": [
+    {
+      "bbox": {
+        "x": 105.7,
+        "y": 498.4,
+        "w": 265.7,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "그림 21  2008/09년과 2014/15 대비 살아있는 "
+    },
+    {
+      "bbox": {
+        "x": 105.7,
+        "y": 517.6,
+        "w": 265.7,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "신장 및 간 기증율 비교(출처: Study on the "
+    },
+    {
+      "bbox": {
+        "x": 105.7,
+        "y": 536.8,
+        "w": 265.7,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "uptake and impact of the EU Action Plan on "
+    },
+    {
+      "bbox": {
+        "x": 105.7,
+        "y": 556.0,
+        "w": 265.7,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "Organ Donation and Transplantation "
+    },
+    {
+      "bbox": {
+        "x": 105.7,
+        "y": 575.2,
+        "w": 265.7,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "(2009-2015) in the EU Member States)"
+    },
+    {
+      "bbox": {
+        "x": 105.7,
+        "y": 498.4,
+        "w": 265.7,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "그림 21  2008/09년과 2014/15 대비 살아있는 "
+    },
+    {
+      "bbox": {
+        "x": 105.7,
+        "y": 517.6,
+        "w": 265.7,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "신장 및 간 기증율 비교(출처: Study on the "
+    },
+    {
+      "bbox": {
+        "x": 105.7,
+        "y": 536.8,
+        "w": 265.7,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "uptake and impact of the EU Action Plan on "
+    },
+    {
+      "bbox": {
+        "x": 105.7,
+        "y": 556.0,
+        "w": 265.7,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "Organ Donation and Transplantation "
+    },
+    {
+      "bbox": {
+        "x": 105.7,
+        "y": 575.2,
+        "w": 265.7,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "(2009-2015) in the EU Member States)"
+    },
+    {
+      "bbox": {
+        "x": 384.8,
+        "y": 481.5,
+        "w": 263.9,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "그림 22 2008/09년과 2014/15 대비 장기 유형별 "
+    },
+    {
+      "bbox": {
+        "x": 384.8,
+        "y": 500.7,
+        "w": 263.9,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "이식율(출처: Study on the uptake and impact "
+    },
+    {
+      "bbox": {
+        "x": 384.8,
+        "y": 519.9,
+        "w": 263.9,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "of the EU Action Plan on Organ Donation "
+    },
+    {
+      "bbox": {
+        "x": 384.8,
+        "y": 539.1,
+        "w": 263.9,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "and Transplantation (2009-2015) in the EU "
+    },
+    {
+      "bbox": {
+        "x": 384.8,
+        "y": 558.3,
+        "w": 263.9,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "Member States)"
+    },
+    {
+      "bbox": {
+        "x": 384.8,
+        "y": 481.5,
+        "w": 263.9,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "그림 22 2008/09년과 2014/15 대비 장기 유형별 "
+    },
+    {
+      "bbox": {
+        "x": 384.8,
+        "y": 500.7,
+        "w": 263.9,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "이식율(출처: Study on the uptake and impact "
+    },
+    {
+      "bbox": {
+        "x": 384.8,
+        "y": 519.9,
+        "w": 263.9,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "of the EU Action Plan on Organ Donation "
+    },
+    {
+      "bbox": {
+        "x": 384.8,
+        "y": 539.1,
+        "w": 263.9,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "and Transplantation (2009-2015) in the EU "
+    },
+    {
+      "bbox": {
+        "x": 384.8,
+        "y": 558.3,
+        "w": 263.9,
+        "h": 12.0
+      },
+      "owner": {
+        "secIdx": 0,
+        "paraIdx": 339,
+        "controlIdx": 0,
+        "controlKind": "image",
+        "captionOrdinal": 0
+      },
+      "text": "Member States)"
+    }
+  ],
+  "before_node_count": 20,
+  "cause": "공통 그림 경로 호출 뒤 온전한 셀의 Bottom 캡션을 다시 출력함",
+  "provenance": "기존 메인터너 9bed077a1a/4198c6df47, 원 기여 #7382 변경과 구분",
+  "before_by_format": {
+    "hwpx": {
+      "caption_lines": [
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 498.4,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "그림 21  2008/09년과 2014/15 대비 살아있는 "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 517.6,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "신장 및 간 기증율 비교(출처: Study on the "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 536.8,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "uptake and impact of the EU Action Plan on "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 556.0,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "Organ Donation and Transplantation "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 575.2,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "(2009-2015) in the EU Member States)"
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 498.4,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "그림 21  2008/09년과 2014/15 대비 살아있는 "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 517.6,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "신장 및 간 기증율 비교(출처: Study on the "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 536.8,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "uptake and impact of the EU Action Plan on "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 556.0,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "Organ Donation and Transplantation "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 575.2,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "(2009-2015) in the EU Member States)"
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 481.5,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "그림 22 2008/09년과 2014/15 대비 장기 유형별 "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 500.7,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "이식율(출처: Study on the uptake and impact "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 519.9,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "of the EU Action Plan on Organ Donation "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 539.1,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "and Transplantation (2009-2015) in the EU "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 558.3,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "Member States)"
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 481.5,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "그림 22 2008/09년과 2014/15 대비 장기 유형별 "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 500.7,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "이식율(출처: Study on the uptake and impact "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 519.9,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "of the EU Action Plan on Organ Donation "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 539.1,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "and Transplantation (2009-2015) in the EU "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 558.3,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "Member States)"
+        }
+      ],
+      "node_count": 20,
+      "evidence": "불변31 CLI의 실제 tree; HWP 신규 정식 검사의 수정 전 실행으로 보고하지 않음"
+    },
+    "hwp": {
+      "caption_lines": [
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 498.4,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "그림 21  2008/09년과 2014/15 대비 살아있는 "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 517.6,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "신장 및 간 기증율 비교(출처: Study on the "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 536.8,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "uptake and impact of the EU Action Plan on "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 556.0,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "Organ Donation and Transplantation "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 575.2,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "(2009-2015) in the EU Member States)"
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 498.4,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "그림 21  2008/09년과 2014/15 대비 살아있는 "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 517.6,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "신장 및 간 기증율 비교(출처: Study on the "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 536.8,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "uptake and impact of the EU Action Plan on "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 556.0,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "Organ Donation and Transplantation "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 575.2,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "text": "(2009-2015) in the EU Member States)"
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 481.5,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "그림 22 2008/09년과 2014/15 대비 장기 유형별 "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 500.7,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "이식율(출처: Study on the uptake and impact "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 519.9,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "of the EU Action Plan on Organ Donation "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 539.1,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "and Transplantation (2009-2015) in the EU "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 558.3,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "Member States)"
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 481.5,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "그림 22 2008/09년과 2014/15 대비 장기 유형별 "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 500.7,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "이식율(출처: Study on the uptake and impact "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 519.9,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "of the EU Action Plan on Organ Donation "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 539.1,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "and Transplantation (2009-2015) in the EU "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 558.3,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "text": "Member States)"
+        }
+      ],
+      "node_count": 20,
+      "evidence": "불변31 CLI의 실제 tree; HWP 신규 정식 검사의 수정 전 실행으로 보고하지 않음"
+    }
+  },
+  "after_by_format": {
+    "hwpx": {
+      "caption_lines": [
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 498.4,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "그림 21  2008/09년과 2014/15 대비 살아있는 "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 517.6,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "신장 및 간 기증율 비교(출처: Study on the "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 536.8,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "uptake and impact of the EU Action Plan on "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 556.0,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "Organ Donation and Transplantation "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 575.2,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "(2009-2015) in the EU Member States)"
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 481.5,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "그림 22 2008/09년과 2014/15 대비 장기 유형별 "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 500.7,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "이식율(출처: Study on the uptake and impact "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 519.9,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "of the EU Action Plan on Organ Donation "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 539.1,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "and Transplantation (2009-2015) in the EU "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 558.3,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "Member States)"
+        }
+      ],
+      "node_count": 10
+    },
+    "hwp": {
+      "caption_lines": [
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 498.4,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "그림 21  2008/09년과 2014/15 대비 살아있는 "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 517.6,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "신장 및 간 기증율 비교(출처: Study on the "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 536.8,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "uptake and impact of the EU Action Plan on "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 556.0,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "Organ Donation and Transplantation "
+        },
+        {
+          "bbox": {
+            "x": 105.7,
+            "y": 575.2,
+            "w": 265.7,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "(2009-2015) in the EU Member States)"
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 481.5,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "그림 22 2008/09년과 2014/15 대비 장기 유형별 "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 500.7,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "이식율(출처: Study on the uptake and impact "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 519.9,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "of the EU Action Plan on Organ Donation "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 539.1,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "and Transplantation (2009-2015) in the EU "
+        },
+        {
+          "bbox": {
+            "x": 384.8,
+            "y": 558.3,
+            "w": 263.9,
+            "h": 12.0
+          },
+          "owner": {
+            "secIdx": 0,
+            "paraIdx": 339,
+            "controlIdx": 0,
+            "controlKind": "image",
+            "captionOrdinal": 0
+          },
+          "text": "Member States)"
+        }
+      ],
+      "node_count": 10
+    }
+  }
+}

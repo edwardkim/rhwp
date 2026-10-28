@@ -1,0 +1,313 @@
+{
+  "recorded_utc": "2026-10-25T01:45:29.120423+00:00",
+  "status": "document_scoped_verified_full_branch_validation_pending",
+  "source_parent": "dd6119d2b916704dbb11fdd7aa8ebc950c8811b1",
+  "fixed_devel": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "production_source_sha256": {
+    "src/document_core/queries/rendering.rs": "8ef4c9b59f67ae9f1994d6d1b09e9e8940049626cb393cc9f5b42d2e93d676db",
+    "src/renderer/composer.rs": "90d38d49f0dcfd5ae248eb8e428552e47c20e1f23ff177dd2337146ce3bcac8c",
+    "src/renderer/composer/stored_word_tail.rs": "015039ebb736e84da3794a60af160548bad88ea1e7394ec613143ca154f0e340",
+    "src/renderer/float_placement.rs": "5f28d3b8c06a276ae1fa0bdc7f13dd74b98f8f2cd0b576c187bf34afbe56ad02",
+    "src/renderer/float_placement/stored_empty_host_frame.rs": "b6faaef3d0d80dd6c5a1953381863aef11eaca35ebe03c1c8f824b9983ef72f1",
+    "src/renderer/layout.rs": "679f1d4aaa5794d4296c0434f8eb41bf9809211315af0371e3c7cd54ef8d814f",
+    "src/renderer/layout/table_layout.rs": "ffade8fd1ef09f8ee20c1014932d90aee135ddfe3c75f772e9554300d2adfaeb",
+    "src/renderer/layout/table_layout/plain_cell_flow.rs": "323cfc423dc4ff04525e3b9f548453f92c7e51d03f8ba1f53c498b17a5307b81",
+    "src/renderer/layout/table_partial.rs": "6df1aceb589e19a5362c71d67b57de4666eaf0acdf6b0955ec87c8904d033139",
+    "src/renderer/mod.rs": "89dc3ad4b4cfcb5db2bcae50fd10d95fe229f601c912e8704b0d3967a3630f5e",
+    "src/renderer/render_normalization.rs": "14b7befbefc32d669fabda11a21533b0578ae9acb7177284c0e25d1ca347c926",
+    "src/renderer/render_normalization/stored_word_tail.rs": "f690b9fdf89d079929e7413ca2535bc69fce34b9f3b64961f3660e4a1403e3d4",
+    "src/renderer/style_resolver.rs": "ce60bffc3855d4f8fb2af3a83ed81fae52f2ae6872c3ebc3eada773dbe3d837e",
+    "src/renderer/style_resolver/resolved.rs": "1b94fe68b00d0f5d9149df81e570daa9b61cabfe58a9065df7e0189be0d3d620",
+    "src/renderer/typeset.rs": "7ed063822bcb39cfd2f20cc7a851373cca4d24d0926615d412e9cdd6be65dd22",
+    "src/renderer/typeset/controls.rs": "3988bd3ac81455a5b6044f9cbe92bf3dc447727c01371679285450adeb594e43",
+    "src/renderer/typeset/controls/empty_float.rs": "e9cc370ea337799fd95a857e9e187e9f9fb2085ee4457aabdda8a29d35481637",
+    "src/renderer/typeset/table/block/prepare.rs": "9fa7ec6e503e71d0171f98934985139c84803e473c5f7e518204b48f22cc9c31"
+  },
+  "production_diff_sha256": "8d1f20c0489f03e84533ac6c9297686b2df84e8423c299a5e1d09d22da15cd7d",
+  "native_sha256": "49fe6aad5c88ad0869b31c94878eb3ed0f3f5b660c51d84acbb6e1a21b475862",
+  "wasm_files": {
+    "rhwp.js": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9",
+    "rhwp_bg.wasm": "37705ba1064dc6fd88fcf54b341457a0160ac281ed5c4ecca032d6d94c23ad98"
+  },
+  "build_mode": "Mac locked wrapper --target web --out-dir pkg --no-opt 로컬 대체 빌드; Docker 최적화 통과 아님",
+  "root_pkg_studio_public_hashes": {
+    "rhwp.js": {
+      "root": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9",
+      "studio_public": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9",
+      "frozen": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9"
+    },
+    "rhwp_bg.wasm": {
+      "root": "37705ba1064dc6fd88fcf54b341457a0160ac281ed5c4ecca032d6d94c23ad98",
+      "studio_public": "37705ba1064dc6fd88fcf54b341457a0160ac281ed5c4ecca032d6d94c23ad98",
+      "frozen": "37705ba1064dc6fd88fcf54b341457a0160ac281ed5c4ecca032d6d94c23ad98"
+    }
+  },
+  "actual_studio_initialization_verified": false,
+  "input": {
+    "path": "samples/86712_regulatory_analysis.hwp",
+    "sha256": "ee82c7755617003cb972ba398da9cffadfed24ac0fa068eee1a5347da7658a88"
+  },
+  "independent_print": {
+    "path": "pdf/issue7382-regression-review/86712_regulatory_analysis-font-supplied-2024.pdf",
+    "sha256": "ac34bb60492e3749a53183cfb63c814f86379895937dd1309d3bc3d2d1b8126a",
+    "product": "Hancom 2024 13.0.0.3901 Print",
+    "pages": 64
+  },
+  "environment": {
+    "compat": "2024",
+    "css_dpi": 96,
+    "profile": "print",
+    "backend": [
+      "native-skia PNG",
+      "fresh WASM Canvas PNG"
+    ],
+    "pdf_rasterizer": "PDFium",
+    "silhouette_radius_px": 2,
+    "minimum_threshold": 90,
+    "devel_decline_threshold_pp": "0.1"
+  },
+  "tsv": [
+    {
+      "producer": "devel",
+      "backend": "native",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/tsv/devel-native.tsv",
+      "sha256": "d80241b30ef2f8b08e3eb109b26d5c0787e6ec17faae0531a61a0c740ab3e1db",
+      "bytes": 1755,
+      "pages": 64,
+      "minimum": 30.85317,
+      "below90": [
+        21,
+        25,
+        26,
+        27,
+        28,
+        29,
+        34
+      ]
+    },
+    {
+      "producer": "devel",
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/tsv/devel-wasm.tsv",
+      "sha256": "0ad71cf629fda5e53cd8fd2e735ecfd603bbd2693887fd2826cd59bd157b06d4",
+      "bytes": 1743,
+      "pages": 64,
+      "minimum": 30.86172,
+      "below90": [
+        21,
+        25,
+        26,
+        27,
+        28,
+        29,
+        34
+      ]
+    },
+    {
+      "producer": "parent",
+      "backend": "native",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/tsv/parent-native.tsv",
+      "sha256": "8d80f9ad3016b80b35a507bd787b809bbb0eee7fc5f9e42816e248b760b98175",
+      "bytes": 1753,
+      "pages": 64,
+      "minimum": 30.80108,
+      "below90": [
+        25,
+        26,
+        27,
+        28,
+        29
+      ]
+    },
+    {
+      "producer": "parent",
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/tsv/parent-wasm.tsv",
+      "sha256": "ac635caec00917e19f79d4c14c56348df4b675f6a2e8aa276ee60aa3c45fe1fc",
+      "bytes": 1741,
+      "pages": 64,
+      "minimum": 30.80964,
+      "below90": [
+        25,
+        26,
+        27,
+        28,
+        29
+      ]
+    },
+    {
+      "producer": "candidate",
+      "backend": "native",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/tsv/candidate-native.tsv",
+      "sha256": "3499bab4bd014596bd6dc596dcc2f886036c4bd6d5364b261aedb1871aee6323",
+      "bytes": 1755,
+      "pages": 64,
+      "minimum": 94.31413,
+      "below90": []
+    },
+    {
+      "producer": "candidate",
+      "backend": "wasm",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/tsv/candidate-wasm.tsv",
+      "sha256": "19b8ec63232a61419bafd66adcc34a7c9a689e318b4ee470c0c6eb25e2c85bf7",
+      "bytes": 1743,
+      "pages": 64,
+      "minimum": 94.07347,
+      "below90": []
+    }
+  ],
+  "representatives": [
+    {
+      "page": 26,
+      "backend": "native",
+      "kind": "review",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/p026-native-review.png",
+      "sha256": "53a105b903ebca9b029bcd7061d07d5c59e1296e906bd5ad5b407f078c555448"
+    },
+    {
+      "page": 26,
+      "backend": "native",
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/p026-native-overlay.png",
+      "sha256": "6b3b504f360b5070c2252af64a539cf6a0c1bb684d2cf141e17c2ab33a12eb3d"
+    },
+    {
+      "page": 27,
+      "backend": "native",
+      "kind": "review",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/p027-native-review.png",
+      "sha256": "a7dbd886f3b2c72b14707e61532c1e76310416efebdf7a00cb7b81ed6a4b6f19"
+    },
+    {
+      "page": 27,
+      "backend": "native",
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/p027-native-overlay.png",
+      "sha256": "d4b7b50c2e70bf000d3c7a4338c781e6a34365af0cbf5857a996ee2c53c60c9d"
+    },
+    {
+      "page": 28,
+      "backend": "native",
+      "kind": "review",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/p028-native-review.png",
+      "sha256": "aa407ffa2ac6c0fb3e7401530229ed55f88204577eadfea53cc714576d6c466e"
+    },
+    {
+      "page": 28,
+      "backend": "native",
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/p028-native-overlay.png",
+      "sha256": "ce979d0a179b2a20b98d0ca2ec667251c5f869beba515d1e577f71ae172d4459"
+    },
+    {
+      "page": 29,
+      "backend": "native",
+      "kind": "review",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/p029-native-review.png",
+      "sha256": "e249f08c0bfe84e03cd2a07d4e452f937d358a08a57449cdfe2c11e9fd421154"
+    },
+    {
+      "page": 29,
+      "backend": "native",
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/p029-native-overlay.png",
+      "sha256": "eb551f71ee4191c847469b01641fc42a8b0f6e9fc1776b94173c490c64aae493"
+    },
+    {
+      "page": 26,
+      "backend": "wasm",
+      "kind": "review",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/p026-wasm-review.png",
+      "sha256": "f14e64d2c8e63d9eebd4ecb7043776679ed6f0d3da2fe4ab942bca4da906e74f"
+    },
+    {
+      "page": 26,
+      "backend": "wasm",
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/p026-wasm-overlay.png",
+      "sha256": "92977721d46749b518c04343b64b30e4961e69ca66dbae218d283ba6d79fa00f"
+    },
+    {
+      "page": 27,
+      "backend": "wasm",
+      "kind": "review",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/p027-wasm-review.png",
+      "sha256": "ce82e78ed4e9be9df446de44eb9d320e08ffbd377de963494bb0c0378a4917a2"
+    },
+    {
+      "page": 27,
+      "backend": "wasm",
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/p027-wasm-overlay.png",
+      "sha256": "6299525f8b4b73a8c83a35e6e76bcbe7d5b8a17535b65470346c3cb13250d51e"
+    },
+    {
+      "page": 28,
+      "backend": "wasm",
+      "kind": "review",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/p028-wasm-review.png",
+      "sha256": "b18b642025ec80ddabbda22e170a9b613e712ffa4e1437d88fe297daee2ad6be"
+    },
+    {
+      "page": 28,
+      "backend": "wasm",
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/p028-wasm-overlay.png",
+      "sha256": "c4341d96a1a7a8be1c5acb19df67a37c453725f411094a66e79d62823e90754a"
+    },
+    {
+      "page": 29,
+      "backend": "wasm",
+      "kind": "review",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/p029-wasm-review.png",
+      "sha256": "a7be75de7392c9866c63171edaddd1ea73709f5e1cfc96504413365790bdc8b2"
+    },
+    {
+      "page": 29,
+      "backend": "wasm",
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/issue7765/source-program-frames-20261025/p029-wasm-overlay.png",
+      "sha256": "53ca3b88d31bf633beda3f80b73d58677f8d661337b13acbaff5e14f48ba4e3d"
+    }
+  ],
+  "direct_reading": {
+    "pages": [
+      14,
+      25,
+      26,
+      27,
+      28,
+      29
+    ],
+    "result": "25~29쪽 본문·수식 줄 소속·표 괘선·전후 내용 및14쪽 최저 페이지를 review/overlay로 판독했다. 14쪽 굵은 본문의 획·미세 간격 차이는 남으며 픽셀 동일로 주장하지 않는다.",
+    "all64_native_wasm_body_text_identical": true,
+    "changed25to29_body_and_order_equal_to_independent_pdf": true,
+    "unchanged59_pages_png_byte_identical_to_parent": true
+  },
+  "new_tests": {
+    "path": "tests/cases/issue_7765_current_source_frames.rs",
+    "sha256": "bd5cc490288b33bbfeb088d3c2244202d7e24cbc64f899a66f0735ffb9573481",
+    "parent_result": "1 PASS / 2 FAIL",
+    "current_result": "3 PASS",
+    "defect_detectors": 2,
+    "normal_content_ownership_guard": 1,
+    "px_oracle": "독립 Print p28 두 표 괘선과 p29 마지막 괘선 ±2 CSSpx; 해당 페이지 양쪽98% 이상 확인 뒤 추가"
+  },
+  "normal_controls": {
+    "existing_8105_tests_passed": 3,
+    "policy_research_pages": 215,
+    "page_owner_json_identical": true,
+    "native_png_pages_byte_identical": [
+      24,
+      67,
+      215
+    ],
+    "limit": "정책연구 독립 PDF 전215쪽 완료를 대신하지 않음"
+  },
+  "source_roundtrip_control": "현재 CLI export-hwpx --verify에서 IR 차이0. 렌더 직후 저장의 별도 순차 시험은 아님.",
+  "remaining": [
+    "최종 브랜치 전체 Native/fresh WASM·전체 nextest·lint/build/Skia/manifest/unit tier",
+    "온새미로 변환본48/46쪽 보정",
+    "최종 source/head 실제 Studio 소비·초기화 응답 hash·PR 템플릿 및 사용자 원격 제출 승인"
+  ]
+}

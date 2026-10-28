@@ -1,0 +1,299 @@
+{
+  "date": "2026-10-01",
+  "documents_commit": "88cb306a8",
+  "source_commit": "cf0eb806fca89507c09aa7e5c0fe49b5fe7bc6ec",
+  "source_snapshot": {
+    "head": "88cb306a8e9cb7822ba42ffc2c868c2ac6e00af0",
+    "dirty_source": true,
+    "files_sha256": {
+      "scripts/visual_sweep.py": "965018ddfad817ab40a20d0dad7038cd065aeb15368847736a3366a4467410e6",
+      "src/renderer/typeset.rs": "7337c19831ad059a811fc9c80647bc372254e5d9153d6ac84a1d04e5943cff07",
+      "src/renderer/typeset/table/block/prepare.rs": "dc97dede3f29eb8d0f576c493dfd8205d61765d96d20a87c084395b846b65889",
+      "src/renderer/typeset/table/continuation.rs": "edba5a55508f46b2368112b834d9462c33ce04dd6e6a1e4ede1addc69a906ccc",
+      "src/renderer/typeset/table/continuation/fragment/budget.rs": "c39910be5a1bca64cc43df22bbc76bc854d8ec6bd2645905dfe9125a17841508",
+      "target/pr-review/release-test/rhwp": "f65fe6948641ffcb986e6690b315fdddd97da2e2a306ca35d8df743d4e10e315",
+      "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+      "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59"
+    },
+    "source_patch_sha256": "fd545a0511143b801c4b9105e2298c039ce878a31615fe8381f756db579449ca",
+    "wasm_files_sha256": {
+      "pkg/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+      "pkg/rhwp_bg.wasm": "4f68aba2ad88b84720a7d89549586b4dca82a23fa8b0236d5817a98306280bcc"
+    }
+  },
+  "source_snapshot_matches_committed_source": true,
+  "scope": "PR #7382 정책연구 원본 HWPX 전체215쪽; 전체 저장소 fixture 검증을 뜻하지 않음",
+  "dpi": 96,
+  "builds": {
+    "native": {
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-7382-20260926/stage315-frame-proof-build.log"
+    },
+    "wasm": {
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-7382-20260926/stage317-wasm-build.log",
+      "kind": "Mac 로컬 대체 빌드, Docker 최적화 빌드 아님"
+    }
+  },
+  "backends": {
+    "native": {
+      "command": [
+        "python3",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+        "--pdf",
+        "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+        "--key",
+        "liver7379",
+        "--rhwp-bin",
+        "target/pr-review/release-test/rhwp",
+        "--dpi",
+        "96",
+        "--out",
+        "output/pr-review/planet6897-7382-20260926/stage317-native-tsv"
+      ],
+      "exit_code": 1,
+      "compared_pages": 215,
+      "document_pages": 215,
+      "missing_pages": [],
+      "minimum_percent": 38.30328,
+      "below_90": [
+        {
+          "page": 10,
+          "percent": 67.90467
+        },
+        {
+          "page": 28,
+          "percent": 88.24856
+        },
+        {
+          "page": 74,
+          "percent": 86.98592
+        },
+        {
+          "page": 75,
+          "percent": 52.88891
+        },
+        {
+          "page": 88,
+          "percent": 89.58124
+        },
+        {
+          "page": 107,
+          "percent": 38.30328
+        },
+        {
+          "page": 169,
+          "percent": 42.83023
+        },
+        {
+          "page": 199,
+          "percent": 89.9419
+        },
+        {
+          "page": 207,
+          "percent": 89.61032
+        },
+        {
+          "page": 208,
+          "percent": 85.36044
+        },
+        {
+          "page": 211,
+          "percent": 81.6385
+        }
+      ],
+      "gate": "re_review_required",
+      "tsv_asset": "mydocs/pr/assets/pr7382_20260926/stage317_pr7382_native_silhouette.tsv",
+      "tsv_sha256": "0c5266157b99cf1c9111eb862dd5ca49bd8e44e38133f9868beffe069ca4499c",
+      "manifest_path": "output/pr-review/planet6897-7382-20260926/stage317-native-tsv/liver7379/silhouette_manifest.json",
+      "manifest_sha256": "0dde9630459d210b7f5b370332e4aa96eb92fd5c86ca8db04c9db8a1f8a29317",
+      "provenance": {
+        "hwp": {
+          "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+          "sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c"
+        },
+        "pdf": {
+          "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+          "sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59"
+        },
+        "git_head": "88cb306a8e9cb7822ba42ffc2c868c2ac6e00af0",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "965018ddfad817ab40a20d0dad7038cd065aeb15368847736a3366a4467410e6"
+        },
+        "svg_rasterizer": "webfont",
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "target/pr-review/release-test/rhwp",
+          "path": "target/pr-review/release-test/rhwp",
+          "sha256": "f65fe6948641ffcb986e6690b315fdddd97da2e2a306ca35d8df743d4e10e315"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      },
+      "log": "output/pr-review/planet6897-7382-20260926/stage317-native-tsv.log",
+      "new_compare_overlay_review_png_count": 0
+    },
+    "wasm": {
+      "command": [
+        "python3",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+        "--pdf",
+        "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+        "--key",
+        "liver7379",
+        "--rhwp-bin",
+        "target/pr-review/release-test/rhwp",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "pkg",
+        "--out",
+        "output/pr-review/planet6897-7382-20260926/stage317-wasm-tsv"
+      ],
+      "exit_code": 1,
+      "compared_pages": 215,
+      "document_pages": 215,
+      "missing_pages": [],
+      "minimum_percent": 38.30328,
+      "below_90": [
+        {
+          "page": 10,
+          "percent": 67.90467
+        },
+        {
+          "page": 28,
+          "percent": 88.24856
+        },
+        {
+          "page": 74,
+          "percent": 86.98592
+        },
+        {
+          "page": 75,
+          "percent": 52.88891
+        },
+        {
+          "page": 88,
+          "percent": 89.58124
+        },
+        {
+          "page": 107,
+          "percent": 38.30328
+        },
+        {
+          "page": 169,
+          "percent": 42.83023
+        },
+        {
+          "page": 199,
+          "percent": 89.9419
+        },
+        {
+          "page": 207,
+          "percent": 89.61032
+        },
+        {
+          "page": 208,
+          "percent": 85.36044
+        },
+        {
+          "page": 211,
+          "percent": 81.6385
+        }
+      ],
+      "gate": "re_review_required",
+      "tsv_asset": "mydocs/pr/assets/pr7382_20260926/stage317_pr7382_wasm_silhouette.tsv",
+      "tsv_sha256": "0c5266157b99cf1c9111eb862dd5ca49bd8e44e38133f9868beffe069ca4499c",
+      "manifest_path": "output/pr-review/planet6897-7382-20260926/stage317-wasm-tsv/liver7379/silhouette_manifest.json",
+      "manifest_sha256": "4aa07df47018ccb319810d2f952929e9945a50c817cc5a864996ae2e87f49ec3",
+      "provenance": {
+        "hwp": {
+          "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+          "sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c"
+        },
+        "pdf": {
+          "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+          "sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59"
+        },
+        "git_head": "88cb306a8e9cb7822ba42ffc2c868c2ac6e00af0",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "965018ddfad817ab40a20d0dad7038cd065aeb15368847736a3366a4467410e6"
+        },
+        "svg_rasterizer": "webfont",
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "target/pr-review/release-test/rhwp",
+          "path": "target/pr-review/release-test/rhwp",
+          "sha256": "f65fe6948641ffcb986e6690b315fdddd97da2e2a306ca35d8df743d4e10e315"
+        },
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/pkg/rhwp.js",
+              "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+              "sha256": "4f68aba2ad88b84720a7d89549586b4dca82a23fa8b0236d5817a98306280bcc"
+            }
+          ],
+          "exporter_sha256": "aaf27aabe09958270a5a8d8b19593a386dd821bb9cbc1e219a9c726c623fea6f",
+          "comparison_profile": "print",
+          "font_policy": "same-input native --font-style; font-face CSS only",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      },
+      "log": "output/pr-review/planet6897-7382-20260926/stage317-wasm-tsv.log",
+      "new_compare_overlay_review_png_count": 0
+    }
+  },
+  "backend_tsv_equal": true,
+  "backend_identical_png_pages": 215,
+  "native_changed_png_pages_vs_stage308": [
+    17,
+    84,
+    85
+  ],
+  "focused_regression": {
+    "case": "issue_7379_rowbreak_table_footnote_reservation",
+    "passed": 14,
+    "failed": 0,
+    "exit_code": 0,
+    "log": "output/pr-review/planet6897-7382-20260926/stage317-focused.log",
+    "threads": 8
+  },
+  "structural_review": {
+    "native_note_84": [
+      131,
+      132,
+      133
+    ],
+    "native_note_85": [
+      134,
+      135,
+      136
+    ],
+    "remaining_note_owner_issues": [
+      100,
+      258
+    ],
+    "full_final_regression": "미실행"
+  },
+  "reference_pdf_pages": 215
+}

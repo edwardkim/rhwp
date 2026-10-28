@@ -1,0 +1,385 @@
+{
+  "parent_sha": "02bbe073e7bbb27d631538958cf5f2e9b19c08fb",
+  "base_sha": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "source_proof": {
+    "parent_sha": "02bbe073e7bbb27d631538958cf5f2e9b19c08fb",
+    "files": {
+      "src/renderer/layout/table_layout.rs": "d7ebc677b38d04674e3d4cca8e767faffc528fd0440df073df84d38addaee80c",
+      "src/renderer/typeset/table/block/prepare.rs": "b808eb832dbe6f0e7a302fe99b4f4df2d225c17fff2fbfb8fd80b0953c7802d0",
+      "src/renderer/typeset/table/block/whole_fit.rs": "9af950373d6bd205a2ecdedfb1f045fd25313bfa419a2748841026a069a1c13d",
+      "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "bd6f0a2e8474c36d290d2bb89638f6e7947c2ecac72a70d5f1cdf28f84144ae8"
+    },
+    "runtime_diff_sha256": "898ab8757ce4c6d75922578e41a51c167ddef42f168f353e6c1246c63bb4755f",
+    "test_diff_sha256": "a2c619b341fcbc1323c69f67c1974fa820d86a40f479659b2a0e5f75e51ba937"
+  },
+  "before": {
+    "result": {
+      "exit_code": 100,
+      "elapsed_seconds": 107.35022195801139
+    },
+    "summary": "1PASS/1FAIL; actual HWPX one-space cell edit exceeds body bottom by 39.0px"
+  },
+  "final": {
+    "result": {
+      "exit_code": 0,
+      "elapsed_seconds": 108.49546325020492,
+      "evidence_dir": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg"
+    },
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_002",
+      "--test",
+      "regression_suite_003",
+      "--test",
+      "regression_suite_004",
+      "--test",
+      "regression_suite_005",
+      "--test",
+      "regression_suite_006",
+      "--test",
+      "regression_suite_008",
+      "--test",
+      "regression_suite_010",
+      "--test",
+      "regression_suite_011",
+      "--test",
+      "regression_suite_012",
+      "--test",
+      "regression_suite_014",
+      "--test",
+      "regression_suite_015",
+      "--test",
+      "regression_suite_016",
+      "--test",
+      "regression_suite_017",
+      "--test",
+      "regression_suite_018",
+      "--test",
+      "regression_suite_019",
+      "--test",
+      "regression_suite_020",
+      "--test",
+      "regression_suite_021",
+      "--test",
+      "regression_suite_023",
+      "--test",
+      "regression_suite_024",
+      "--test",
+      "regression_suite_025",
+      "--test",
+      "regression_suite_026",
+      "--test",
+      "regression_suite_027",
+      "--test",
+      "regression_suite_028",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(issue_2097_1730000_real_doc_pin) | test(issue_2097_3080901_real_doc_pin) | test(issue_2097_band_fill) | test(issue_2097_none_table_declared_fits) | test(issue_2097_rowbreak_midpage_declared_fits) | test(issue_2097_squeeze) | test(issue_2097_terminal_row_physical_ownership) | test(issue_2105_rowbreak_table_declared_fits) | test(issue_2439) | test(issue_3738_rowbreak_table_footnote_fragment) | test(issue_5551_caption_owner) | test(issue_5714_completed_row_tail_band) | test(issue_5731_cell_second_float_flow_anchor) | test(issue_5734_cell_float_stack_stored_vpos) | test(issue_5788_tac_table_anchor_line_spacing) | test(issue_5792_overlay_table_split_overlap) | test(issue_5833_cell_multi_para_float_pics) | test(issue_5875_nested_table_text_caption) | test(issue_5875_nested_text_caption) | test(issue_5906_float_stack_declared_tail) | test(issue_6110_cell_empty_para_float_anchor) | test(issue_6204_object_move_invalidates_linesegs) | test(issue_6284_picture_top_caption_rendered) | test(issue_6312_float_anchor_line_uses_source_vpos) | test(issue_6312_tab_host_line_kept) | test(issue_6313_cell_picture_own_displacement) | test(issue_6378_hwpx_outmargin_position) | test(issue_6551_tac_shape_advance_keeps_spacing) | test(issue_6575_tac_caption_box_baseline) | test(issue_6593_tac_caption_follows_image_bottom) | test(issue_6665_tac_shape_trailing_spacing) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before) | test(issue_6761_object_only_cell_row_keeps_declared_height) | test(issue_6782_cell_float_full_original) | test(issue_6782_cell_float_offset_outside_cell) | test(issue_6950_paragraph_end_topbottom_anchor) | test(issue_7063_empty_float_host_snap_intrudes_prev_line) | test(issue_7063_float_outer_margin_box) | test(issue_7358_terminal_rowbreak_outer_top) | test(issue_7379_rowbreak_table_footnote_reservation) | test(issue_6190_stored_lineseg_indentation_flag) | test(issue_6034_footnote_area_reflow_width) | test(issue_5708_footnote_line_height) | test(issue_7174_hwp3) | test(issue_7172_hwp3_hanging_indent_margin) | test(issue_5598_cell_hanging_indent_clamp)"
+    ],
+    "summary": "247PASS/0FAIL; test runtime 10.594s; threads8"
+  },
+  "cli": {
+    "exit_code": 0,
+    "elapsed_seconds": 93.18912624986842,
+    "cli_sha256": "d0712acc0a63987360183a0a86c6206f2f5d1f4a9aaab72eb3d6e3f4485d7e45"
+  },
+  "policies": {
+    "stage42-manifest-result.json": {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.8469153749756515
+    },
+    "stage42-source-unit-result.json": {
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 18.81517675006762
+    }
+  },
+  "new_comments": [
+    {
+      "file": "src/renderer/layout/table_layout.rs",
+      "comment": "/ 실제 셀 재조판 뒤 온전한 행의 예약도 배치와 같은 측정 결과를 소비한다."
+    },
+    {
+      "file": "src/renderer/layout/table_layout.rs",
+      "comment": "/ 저장 프레임의 유효성이나 행 내부 내용 컷을 이 판정으로 대신하지 않는다."
+    },
+    {
+      "file": "src/renderer/typeset/table/block/prepare.rs",
+      "comment": "온전한 행은 실제 배치가 소유한 측정 높이를 함께 예약한다."
+    },
+    {
+      "file": "src/renderer/typeset/table/block/prepare.rs",
+      "comment": "재조판에서는 원본 저장 프레임이나 저장 안전 여유를 재사용하지 않는다."
+    },
+    {
+      "file": "src/renderer/typeset/table/block/whole_fit.rs",
+      "comment": "재조판한 온전한 일반 행도 실제 배치 높이로 통째 수용 여부를 정한다."
+    },
+    {
+      "file": "src/renderer/typeset/table/block/whole_fit.rs",
+      "comment": "원본의 저장 되감김/프레임 원점 조건과 별개이며 중첩 내용 컷은 제외한다."
+    },
+    {
+      "file": "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs",
+      "comment": "/ 실제 셀 편집의 재조판 결과는 저장 표 프레임을 그대로 재사용하지 않는다."
+    },
+    {
+      "file": "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs",
+      "comment": "/ 작은 삽입과 너비 부족 줄바꿈에서 전체 내용·캡션·물리 점유를 확인한다."
+    }
+  ],
+  "images": [
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage42_hwp_growth_page_107.png",
+      "sha256": "d629bb4623f172b2c661142cd3994c918b8d6007963e15e8213eaa6dd78ed673",
+      "directly_read": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage42_hwp_growth_page_108.png",
+      "sha256": "a71b6cf102ede59e3dcba369609ab80faa8030efdaea2dad9fe7b170078b14e7",
+      "directly_read": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage42_hwp_small_page_107.png",
+      "sha256": "8edb7971165f1e890a407d21b5b1b46eb7ce6c6437c95569575d62e80dc42d9b",
+      "directly_read": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage42_hwp_small_page_108.png",
+      "sha256": "ebdfaa76ac29900f118976d19df0c6c1c2d008686bd30412f596b2337dcc762b",
+      "directly_read": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage42_hwpx_growth_page_106.png",
+      "sha256": "b79fec12b65b1625879d55a6ebd93e98082dceb7877a30ef278effed843a0678",
+      "directly_read": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage42_hwpx_growth_page_107.png",
+      "sha256": "f9bc126437f987efc664d424fe40c70befa41f3bb170a105550dfac7f27d89dd",
+      "directly_read": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage42_hwpx_small_page_106.png",
+      "sha256": "46d2d0d3de0e94d445f9fbbff0d0fc7a54071843bbc59f856323dc460b0f76d8",
+      "directly_read": true
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage42_hwpx_small_page_107.png",
+      "sha256": "2a03f54bff5e43266a935f50f912b5a1c5163f36d0d705e48f408d07a9c2d94b",
+      "directly_read": true
+    }
+  ],
+  "raster": [
+    {
+      "svg": "output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwp-growth/page_107.svg",
+      "png": "output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwp-growth/page_107.png",
+      "command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwp-growth/page_107.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwp-growth/page_107.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "exit_code": 0,
+      "seconds": 1.1675058328546584
+    },
+    {
+      "svg": "output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwp-growth/page_108.svg",
+      "png": "output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwp-growth/page_108.png",
+      "command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwp-growth/page_108.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwp-growth/page_108.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "exit_code": 0,
+      "seconds": 1.0695900828577578
+    },
+    {
+      "svg": "output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwp-small/page_107.svg",
+      "png": "output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwp-small/page_107.png",
+      "command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwp-small/page_107.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwp-small/page_107.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "exit_code": 0,
+      "seconds": 1.208816624712199
+    },
+    {
+      "svg": "output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwp-small/page_108.svg",
+      "png": "output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwp-small/page_108.png",
+      "command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwp-small/page_108.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwp-small/page_108.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "exit_code": 0,
+      "seconds": 1.5712799998000264
+    },
+    {
+      "svg": "output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwpx-growth/page_106.svg",
+      "png": "output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwpx-growth/page_106.png",
+      "command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwpx-growth/page_106.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwpx-growth/page_106.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "exit_code": 0,
+      "seconds": 1.4794171671383083
+    },
+    {
+      "svg": "output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwpx-growth/page_107.svg",
+      "png": "output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwpx-growth/page_107.png",
+      "command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwpx-growth/page_107.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwpx-growth/page_107.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "exit_code": 0,
+      "seconds": 1.4028625418432057
+    },
+    {
+      "svg": "output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwpx-small/page_106.svg",
+      "png": "output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwpx-small/page_106.png",
+      "command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwpx-small/page_106.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwpx-small/page_106.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "exit_code": 0,
+      "seconds": 1.3928026668727398
+    },
+    {
+      "svg": "output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwpx-small/page_107.svg",
+      "png": "output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwpx-small/page_107.png",
+      "command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwpx-small/page_107.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage42-actual-edit-svg/hwpx-small/page_107.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "exit_code": 0,
+      "seconds": 1.4483596254140139
+    }
+  ],
+  "limitations": [
+    "Actual edit rendering uses local font Style mode; None and Subset outputs rejected.",
+    "No independently edited Hancom PDF; not a full edited-document visual acceptance.",
+    "Original HWP/HWPX 215-page trees unchanged; not full raster acceptance.",
+    "Full nextest/lints/Skia/fresh WASM and remaining holds not completed."
+  ],
+  "logs": {
+    "stage42-after-boundary.log": "d203c718941f6c2912cbbd5c37e3730ebf031ebb203d6275f5f61528568dfe0e",
+    "stage42-after-fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stage42-after-prepare.log": "6429a1c54fff128aff28e4ff6efa4709da3bfd35e4b0c0410ad58f412367b885",
+    "stage42-boundary.log": "9cecce4f60d3241b9e05c47c7e1361e7c7afb192eba876e6c849b9de7e2c2716",
+    "stage42-cli-build.log": "7e58a3bce10f5db266b361a5ae4bad0fe925eee6333b21fc30c8fc7be5aeb2cf",
+    "stage42-edit-raster-hwp-growth-page_107.log": "66ebd3364ef191a2153f54629dc3d540cc5cd177e726f1e8225f2627218b452f",
+    "stage42-edit-raster-hwp-growth-page_108.log": "650b18a8b155c1e4529e81d29a66be486624127f286e04b44f80d340ecf04b4d",
+    "stage42-edit-raster-hwp-small-page_107.log": "43bc93f2cf91b0216d2b9bd6286a83f9ae425bb5bcfe8013c6b6f412f5f08b01",
+    "stage42-edit-raster-hwp-small-page_108.log": "ff172e83008aeaff0b07dbb39ec2ab2e4691033567f2dcfd6570b9f8039cac9e",
+    "stage42-edit-raster-hwpx-growth-page_106.log": "1fce1c8d8fa1f35bd96473c6bf0b2d75f8cf7c2b31c13f4ebb09dc41d8b7dccc",
+    "stage42-edit-raster-hwpx-growth-page_107.log": "b402e259745891c13026d183a4aebd1a83a18c8b28e0e7fc11f5570bc1c870f4",
+    "stage42-edit-raster-hwpx-small-page_106.log": "ca59527f47dd1096805be6aef1058b252fc9c116631a688ec52802c077b9891c",
+    "stage42-edit-raster-hwpx-small-page_107.log": "fe34742b48862a63cffa801c1af9cd13cfe4e3a743032036ebb9de0fe2fd1d45",
+    "stage42-embedded-boundary.log": "c8caae72af76976120deca8f89c7e4182fbbd3cc7123b8784b75bfdfcab7084c",
+    "stage42-embedded-fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stage42-embedded-prepare.log": "6a027219046f695454e1485a2c90fe17c5a7c95da9c673da5608bea9ed62235d",
+    "stage42-embedded-raster-hwp-growth-page_107.log": "96eea1fec125352f3178540fa1c8ff9e20600c9ac87de836e8b439d1721b1344",
+    "stage42-embedded-raster-hwp-growth-page_108.log": "0d2c5da7175455a5e5841cb25fe256a4c005a07d157acbe9083c9855d579ec91",
+    "stage42-embedded-raster-hwp-small-page_107.log": "f9a6fe8bb839a0d96601657efa32fdc7e57d08edbd4aec2f35bf617a93c6cd4a",
+    "stage42-embedded-raster-hwp-small-page_108.log": "5671d32c24e4099561982fda3470638409b0b9989c31e105e9c74c8f857d6805",
+    "stage42-embedded-raster-hwpx-growth-page_106.log": "a0dd0a04c8474fefd80112e2833e31ea84bb410d76e5459fd3a6733112f87bb8",
+    "stage42-embedded-raster-hwpx-growth-page_107.log": "32ac559f007434669a382a93af79c775c243a4a6a3b00528b2d21b793034c0c8",
+    "stage42-embedded-raster-hwpx-small-page_106.log": "03660410531d92c959463ac73c7bd253c633895404d4776d1cdad897f0dc8b35",
+    "stage42-embedded-raster-hwpx-small-page_107.log": "9e8e033a9641de3fbe4d62aa23dd0c91d8ab53f8b7d5e6b75c55f67c2fc126e8",
+    "stage42-expanded.log": "32179a16696cbd33ac5112f8b3be3fcc37d108e68b0f0e136f34e9d5148e39b7",
+    "stage42-final-boundary.log": "b0ccec88361a53e5e02a1103a6d17a8508ff984dbdd939cb1a7c3a3a7e5bccf6",
+    "stage42-final-expanded.log": "2a8427c3b60c14bdb3734041e4215caaa4af2246d90229ac2805d25ca731c642",
+    "stage42-final-fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stage42-final-prepare.log": "6fd3a01b669f4d2096245025c26e787b4ea0f1196308cc3be58db12c9d4c71da",
+    "stage42-fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stage42-manifest.log": "0b6b1674644d56c098eb1a22ac9ca535e9a917cfb5a878176fc252de6e605c9a",
+    "stage42-original-hwp-tree.log": "c485ffb80227795ca6389287dcd31b9ec8bc6b3d46c230d9b4515f06f350c436",
+    "stage42-original-hwpx-tree.log": "40971b9792fe6c550533cf3ce8e1c99636b55c4314edaef80a33d731e72414a8",
+    "stage42-prepare.log": "34a9cde41ee3d43cdeaca177d0abecbf8e39b3e5d8bbc9cb019d42cb5165ce7f",
+    "stage42-source-unit.log": "adc0689489cedc5888716bd1f8ebd44b071014306583e6759fc528b2019d7f32",
+    "stage42-style-final.log": "ac83e935db93adeb6f30abb9b2004d8017c52c9bc954055db45912686c988c8a",
+    "stage42-style-fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stage42-style-prepare.log": "56f89601e4ecbcb43f3f48eb66d8a16cc477718026ee5a22f5b2997e6e0fffb4",
+    "stage42-style-raster-hwp-growth-page_107.log": "96eea1fec125352f3178540fa1c8ff9e20600c9ac87de836e8b439d1721b1344",
+    "stage42-style-raster-hwp-growth-page_108.log": "0d2c5da7175455a5e5841cb25fe256a4c005a07d157acbe9083c9855d579ec91",
+    "stage42-style-raster-hwp-small-page_107.log": "f9a6fe8bb839a0d96601657efa32fdc7e57d08edbd4aec2f35bf617a93c6cd4a",
+    "stage42-style-raster-hwp-small-page_108.log": "5671d32c24e4099561982fda3470638409b0b9989c31e105e9c74c8f857d6805",
+    "stage42-style-raster-hwpx-growth-page_106.log": "a0dd0a04c8474fefd80112e2833e31ea84bb410d76e5459fd3a6733112f87bb8",
+    "stage42-style-raster-hwpx-growth-page_107.log": "32ac559f007434669a382a93af79c775c243a4a6a3b00528b2d21b793034c0c8",
+    "stage42-style-raster-hwpx-small-page_106.log": "03660410531d92c959463ac73c7bd253c633895404d4776d1cdad897f0dc8b35",
+    "stage42-style-raster-hwpx-small-page_107.log": "9e8e033a9641de3fbe4d62aa23dd0c91d8ab53f8b7d5e6b75c55f67c2fc126e8"
+  },
+  "own_errors": [
+    "Initial candidate referenced unavailable layout_engine field and was fixed before compilation.",
+    "None diagnostic render omitted font metadata; rejected.",
+    "Subset embedded 굴림/휴먼명조 lacked cmap; rejected and preserved."
+  ]
+}

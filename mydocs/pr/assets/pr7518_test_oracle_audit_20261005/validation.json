@@ -1,0 +1,359 @@
+{
+  "audit_checkout": "cb2e1b0769d2e7080edb236e0019402216247aae",
+  "renderer_source_sha": "2869859ee38461645235978f6c05604013c05430",
+  "base_sha": "731de9e1b4bb946d76f35108ed7e186ebe4ebecb",
+  "native_binary": {
+    "path": "output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee",
+    "sha256": "3382011a113dd3ce9bab7906d61ac5a33db8d05015240b9d4696e40c9883bb88"
+  },
+  "wasm_sha256": "cba97aa8b5322cd4a533631a658ef3cbcc154eb7f47a1ae9a77aecaa8d2806a1",
+  "build_reuse": "No production/source-side unit changes. Reuse independently verified source 286 native and fresh-built WASM package; captures are new.",
+  "test_sources_sha256": {
+    "tests/cases/issue_7518_reflow_row_physical_frame.rs": "2ebab69c43325e3af792a0e4b7a0854410f98ee080811af779f5db08e827ad3e",
+    "tests/issue_2308_render_normalized_derived_state.rs": "f247a914b7ea100bfcd296df7c70a4d87b3e6ce8e1102440211ee0cf0afc00b5"
+  },
+  "inputs": [
+    {
+      "path": "tests/fixtures/pr7518_review_page_budget/valid_generated/terminal-follower.hwp",
+      "sha256": "e9402a615c7c40404f7df2e76b27471f8ef9a9813698c25a61b43577b7b227f5",
+      "committed_input_matches": true
+    },
+    {
+      "path": "pdf/pr7518_review/valid_generated/terminal-follower-2020.pdf",
+      "sha256": "2d4af0e69b7f04f69d7b97a4774b86e4f55ca7b029df6e05ccc83f59fc4e6cf3",
+      "committed_input_matches": true
+    },
+    {
+      "path": "tests/fixtures/pr7518_review_page_budget/valid_orientation/nested-auto-row.hwp",
+      "sha256": "fae2ff4c6fa2f43070a2cf6914bc00c8ef1325635e0832e50d07f4fcdf7afe9b",
+      "committed_input_matches": true
+    },
+    {
+      "path": "pdf/pr7518_review/valid_orientation/nested-auto-row-2020.pdf",
+      "sha256": "7333b4c445074ae856fe4b19bdd28554b1f66973982f7de4b51c1deee8d57db4",
+      "committed_input_matches": true
+    },
+    {
+      "path": "tests/fixtures/pr7518_review_page_budget/valid_orientation/nested-mixed-cell.hwp",
+      "sha256": "53756e85140c0573076f230e7a86ab3abbd2e25dee131d23dc19cd68f1daab2b",
+      "committed_input_matches": true
+    },
+    {
+      "path": "pdf/pr7518_review/valid_orientation/nested-mixed-cell-2020.pdf",
+      "sha256": "0d2dde8fe3a821df998d0433b70a23aa5c09703be4ab6372f7248e055feb5bd0",
+      "committed_input_matches": true
+    },
+    {
+      "path": "tests/fixtures/pr7518_review_page_budget/valid_generated/nested-auto-row.hwp",
+      "sha256": "b2f2d7d6e9d085293e8bee89e6925fe62f93fbe5aab62dec4a474f6d0831ea4f",
+      "committed_input_matches": true
+    },
+    {
+      "path": "pdf/pr7518_review/valid_generated/nested-auto-row-2020.pdf",
+      "sha256": "95e70cd010029dd381399aed1ed7392908c7a82602eac113042629de7dd8e728",
+      "committed_input_matches": true
+    },
+    {
+      "path": "tests/fixtures/pr7518_review_page_budget/valid_generated/nested-mixed-cell.hwp",
+      "sha256": "173eee9e0f224eb0d7fa53bc3c7d1254ccc41b7cee883da36f8c779d2494abbb",
+      "committed_input_matches": true
+    },
+    {
+      "path": "pdf/pr7518_review/valid_generated/nested-mixed-cell-2020.pdf",
+      "sha256": "99922d51368c7e1eaf2ff38db2f7cb233b1098733aeb31efe4e3ce60c8d7a9f6",
+      "committed_input_matches": true
+    },
+    {
+      "path": "samples/76076_regulatory_analysis.hwp",
+      "sha256": "3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5",
+      "committed_input_matches": true
+    },
+    {
+      "path": "samples/issue1891/76076_regulatory_analysis-2024.pdf",
+      "sha256": "06a389455d6b96e5f6580c9930fd8555256f9c712be85fb3cdaf31fc601a090d",
+      "committed_input_matches": true
+    }
+  ],
+  "metrics": {
+    "native": {
+      "terminal-audit": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 97.38866
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 95.62887
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 97.05989
+        }
+      ],
+      "auto-audit": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 98.16412
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.7219
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 99.6566
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 92.70394
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 88.5198
+        },
+        {
+          "page": 6,
+          "tolerant_content_match_percent": 88.61496
+        },
+        {
+          "page": 7,
+          "tolerant_content_match_percent": 73.02188
+        },
+        {
+          "page": 8,
+          "tolerant_content_match_percent": 26.35442
+        }
+      ],
+      "mixed-audit": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 98.16412
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.7219
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 99.6566
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 92.70394
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 88.5198
+        },
+        {
+          "page": 6,
+          "tolerant_content_match_percent": 88.61496
+        },
+        {
+          "page": 7,
+          "tolerant_content_match_percent": 72.98104
+        },
+        {
+          "page": 8,
+          "tolerant_content_match_percent": 0.0
+        }
+      ]
+    },
+    "wasm": {
+      "terminal-audit": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 97.38866
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 95.62887
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 97.05989
+        }
+      ],
+      "auto-audit": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 98.16412
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.7219
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 99.6566
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 92.70394
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 88.5198
+        },
+        {
+          "page": 6,
+          "tolerant_content_match_percent": 88.61496
+        },
+        {
+          "page": 7,
+          "tolerant_content_match_percent": 73.02188
+        },
+        {
+          "page": 8,
+          "tolerant_content_match_percent": 26.35442
+        }
+      ],
+      "mixed-audit": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 98.16412
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.7219
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 99.6566
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 92.70394
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 88.5198
+        },
+        {
+          "page": 6,
+          "tolerant_content_match_percent": 88.61496
+        },
+        {
+          "page": 7,
+          "tolerant_content_match_percent": 72.98104
+        },
+        {
+          "page": 8,
+          "tolerant_content_match_percent": 0.0
+        }
+      ]
+    },
+    "regulatory_wasm": {
+      "status": "re_review_required",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 33,
+          "tolerant_content_match_percent": 85.78689
+        },
+        {
+          "page": 34,
+          "tolerant_content_match_percent": 86.67962
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    }
+  },
+  "regulatory_native_wasm_png_identical": {
+    "33": true,
+    "34": true
+  },
+  "acceptance": "User instructed >=85 percent for this PR; raw 90 percent gates retained. Low-score auto/mixed cases remain failing.",
+  "corrected_oracles": [
+    "terminal table fragment count -> per-source-cell content ownership",
+    "p33 absolute y -> source Center alignment, preserving PDF-backed heights and p34 y; add saved width/left padding"
+  ],
+  "lint": {
+    "fmt": "PASS",
+    "clippy_native": "PASS",
+    "clippy_wasm32": "PASS",
+    "workspace_build": "PASS",
+    "clippy_workspace_all_targets": "PASS after explicit retry",
+    "manifest_base_check": "PASS"
+  },
+  "test_results": {
+    "terminal_original": "FAIL: Table node count 2 vs 1",
+    "terminal_corrected": "PASS",
+    "terminal_missing_replay_negative_controls": "PASS: both rejected",
+    "2308_original": "4 PASS/1 FAIL/1 existing ignored",
+    "2308_final": "5 PASS/0 FAIL/1 existing ignored",
+    "7518_final": "18 PASS/3 existing FAIL"
+  },
+  "non_evidence_attempts": [
+    "2308-before.log: zero tests before re-preparation, not a pass",
+    "regulatory-wasm.log: 30-second navigation timeout, retry metrics used",
+    "checks.sh initial process exit143: explicit all-targets retry exit0 used"
+  ],
+  "remaining": [
+    "auto wrong UNIT page allocation and following-row split",
+    "mixed empty final page despite PDF content",
+    "generated auto 7 pages vs 8-page PDF"
+  ],
+  "not_executed": [
+    "full PR CI at a new remote head",
+    "full release-test regression",
+    "new engine/WASM build (production unchanged)"
+  ],
+  "asset_hashes": {
+    "2308-after.log": "f8abdbdf9ff8f3fa644ca9df307a09a29e8f3da40f7ab19cd8098678ab2c5610",
+    "2308-before-executed.log": "cad677cb0e9a0e60ea7d2c371a75e371b72a59fe2138cc85491f412f8623267b",
+    "2308-before.log": "e5943b10340a6988e6a64439a51484b5642ed876fb28fda8bcf6e2bbc4296ffa",
+    "2308-final.log": "2bdb43b1aeea504fd3825e2db66d19c74a68b299b76b51861cfb36ebad7241f3",
+    "7518-final.log": "633b6bc821bdd415d47ce8ffd8952bfde5c7078ddc549faa4e68d4da11a7039a",
+    "build-workspace.log": "fe40f49128d35758a414570bdf5d596d2b246f805dc7237b7e95326753566b43",
+    "checks.sh": "d4aa2ce20c298ef69d753815713305974f0e69d7812b701bb3c7abf861bdcbf8",
+    "clippy-all-targets-final.log": "2bc683fb4e4f4f21ee9ee39e2b8ecce2efe20d3b1be57bda5316aa519ab3d30a",
+    "clippy-all-targets.log": "737c9334eeb91e3aaeb020a7cf9f2dc4417061f22cfc7b2233105988f83cc28d",
+    "clippy-native.log": "c2ccae29be8ebbd8973f3201e5f6646ec32bdad22fe9c3866ff8d1618ed74896",
+    "clippy-wasm.log": "b2c020f27a01faabb96e5d55c11fd219cf7c484c9cf34b3342bfc8444d934c89",
+    "fmt-check.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "manifest-check.log": "e5f8717b0c203bcebf3008a88a6f2b353e5bb077c5e582953997b4410af009db",
+    "native.log": "0156970d338148324c841ecc764018bef3a9fc2da2a85547b1c4eb6424dc12ec",
+    "native_auto-audit_overlay_metrics.json": "09e296d29cae3bfb1d90f734f89bea2335ed5ce95512e16f94c7e306f3f89dff",
+    "native_auto-audit_review_007.png": "d1ce2ad9543f58da1455dcdd77dee3696f73638af7f46b99d4e3aa207e67b953",
+    "native_auto-audit_review_008.png": "ecd29bf4d1b4e1f5f19039be0f867d97429e8709f9c94989196f35c73eb16135",
+    "native_auto-audit_run_manifest.json": "7aaf42b22b75734ac943b5307b8b1f1dde83e969cc21d7b1117003682e04a3d3",
+    "native_mixed-audit_overlay_metrics.json": "b22ee5e213375fcd8acd38d6514126b5ee6c8b43e968e7ecb74a777f913e8793",
+    "native_mixed-audit_review_008.png": "93da0438cd21bf0f91b7303859beeae3cad32ed6b22a852d93427d0342c8c6d9",
+    "native_mixed-audit_run_manifest.json": "0b5217fa5845a40aef2705e7619a07ea1271d6cb427b4208ec3ed08c79feecab",
+    "native_regulatory_overlay_033.png": "810ff39b82f9a22657d2a6015fcf187c1e10fdbe444faa0eff1b29d42dbf4a67",
+    "native_regulatory_review_033.png": "250079a4d854f10559ee5c167ddce40f370168b2aa9ac3cbef6a68fa4dde347c",
+    "native_regulatory_review_034.png": "21a08a4dda7bbd7aa7af282c17f5303fdd48e7bf44c029a2fbca23f802ba8feb",
+    "native_regulatory_run_manifest.json": "0effd3f82a9c762a5a6ec1ebf0748f380b44220a95af153892c5fe58b4cb232c",
+    "native_terminal-audit_overlay_003.png": "cc734039ad35bdaa9a3613102f0237b684d40636d0f328de9527a7d3b7abd403",
+    "native_terminal-audit_overlay_metrics.json": "4af2de70b67441c6268c91a61b2ab356cb3a0f645d0a0c5c21644d2c0a97af8f",
+    "native_terminal-audit_review_002.png": "b19911957a95cf984311e5cd6e160546daec8823db6b2968f7a98fa9896580b3",
+    "native_terminal-audit_run_manifest.json": "a2d6c09e18d2b768bb7626365e2c85e72abba3ebc51ae2a2dd912e94d5d570fe",
+    "regulatory-native.log": "337e18b7fa3779d95543be9dd9be39d71cd175a2c49d2230c03f60f6793cb9cb",
+    "regulatory-probe.log": "34a6b342303f9602e8a0914ae49f444abc43ba27b08ebb39e1af4241f8d221b0",
+    "regulatory-probe.rs": "9b8720f067dc06b936c89f7d0adc6c6b3e719824efe447e68e02f3ab789a68e9",
+    "regulatory-wasm.log": "efc1a406cc9508787caa85bd88aaeae10f0fa3d7b74779afad8a059b461931cf",
+    "terminal-after.log": "1f790ee403b942b40d59a661b10ab6c5f6fdfcbab4aff6fbb73bebccfb3d9ba3",
+    "terminal-before.log": "a7bc3489bd069e253bbdb62370c70b4b543eadc9e253ab0278436efd346fdaa0",
+    "tree-audit.json": "e428b719c624045f00f6d4f72ad03cb27e60899eb83a3bab42ae6c35e7b4066a",
+    "wasm.log": "c1fb614f81719129292b2311c953b390b9b585f0c71df712a5dc08a137944eb5",
+    "wasm_auto-audit_overlay_metrics.json": "6f60e568cd8fc1f2803fbb846ae6b6b64ad8c8834623b4a2edc6d4ee6e0e2d14",
+    "wasm_auto-audit_review_007.png": "ae8e41afc2e37d29ec1b3576ec03ac3987f0fc8ae0514ce25f44f85cb06ba959",
+    "wasm_auto-audit_review_008.png": "e97576d15ab34cbb636c456cd6124f4f1d96cfe913f4d73266c8d9c654c627f8",
+    "wasm_auto-audit_run_manifest.json": "452198a16b484f44b16c65378d75654cec308388b7e6a36cd3ddbb8cd6d903b6",
+    "wasm_mixed-audit_overlay_metrics.json": "cb19e3142e30cf81b84c0f7881b93ed4ec5791e43e70813d3ae032122ec8875c",
+    "wasm_mixed-audit_review_008.png": "a10b259655a76976a9bd4c76b1e18b9463b66188900e5b6a070fbb7036f29929",
+    "wasm_mixed-audit_run_manifest.json": "6e651b9997fbdea3d3600e669dafcc3b925809c7018f93dabcb8a0d716e6dc30",
+    "wasm_regulatory_overlay_033.png": "c6afcf108c304ecf2d2f596856683df8176c878e938b5776e1628a5e4ead62ad",
+    "wasm_regulatory_raster_retry_metrics.json": "7161327c6a1c26db0734a312eb50aaae6e01965a33ba42f0e7fbe7b462b8b643",
+    "wasm_regulatory_review_033.png": "ca3daf0da9d72975b9d6d6edd8caf0156513ea5af565993885895b6237955311",
+    "wasm_regulatory_review_034.png": "3495303ece0bbccab14c3630b60b05c6c691d91fa77c58be44ca767696260cb6",
+    "wasm_regulatory_run_manifest.json": "8008d894607ed9b6304a3d8825fea3eda92c03d10408cca901c9b8b75a32d0bb",
+    "wasm_terminal-audit_overlay_003.png": "108954bcd700e9a71a711abd0863c7532855f0184cbf92d01ff816bcb66a1558",
+    "wasm_terminal-audit_overlay_metrics.json": "3e3e36cde50fbe81dee375a4b825cc25ac25372920b78ad056b220eb14a7e4d6",
+    "wasm_terminal-audit_review_002.png": "6559c9e27e702344ae51ac68854c60e801014f249b7b5feeac996fbb2ff36ca0",
+    "wasm_terminal-audit_run_manifest.json": "4f1531321ad8946352c0bb95562e6e08f50ef9cfe236a3875996d3ca0883b9a9"
+  }
+}

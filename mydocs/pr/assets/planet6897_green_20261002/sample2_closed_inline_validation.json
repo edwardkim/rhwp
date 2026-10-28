@@ -1,0 +1,65 @@
+{
+  "parent_head": "d1a3ae1f1",
+  "source": "samples/hwpx_sample2.hwpx",
+  "pdf": "pdf/hwpx_sample2-hwpx-2020.pdf",
+  "cause": "닫힌 인라인 저장 프레임의 비활성 셀 여백 재성장과 다행 종료 빈 줄의 후행 간격 소비가 앞 쪽 빈 줄을 다음 쪽으로 이월함.",
+  "native_selected_percent": {
+    "1": 97.95558,
+    "2": 99.75557,
+    "8": 98.91222,
+    "9": 98.55869,
+    "10": 99.70891
+  },
+  "native_all_pages": {
+    "completed": 29,
+    "below90_pages": [
+      4,
+      7,
+      14,
+      20,
+      21,
+      28
+    ],
+    "tsv": "sample2_closed_inline_native.tsv"
+  },
+  "page_count": {
+    "native": 29,
+    "pdf": 29,
+    "wasm": 29
+  },
+  "off_canvas_count": 0,
+  "focused_integration": {
+    "run": 110,
+    "passed": 110,
+    "failed": 0,
+    "exit_code": 0,
+    "runtime_seconds": 17.52
+  },
+  "counterexample": {
+    "source": "samples/issue1921/59043_regulatory_analysis.hwp",
+    "pdf": "pdf/issue1921/59043_regulatory_analysis-2022.pdf",
+    "broad_candidate_off_canvas": 2,
+    "accepted_candidate_off_canvas": 1,
+    "original_baseline_off_canvas": 1,
+    "pages": 37,
+    "broad_candidate_focused": "109 PASS / 1 FAIL; rejected"
+  },
+  "source_code_sha256": {
+    "src/renderer/layout/table_layout.rs": "282da84f40ee0249fec17a0960fd8256a138fe5f9accf288982bfeb11156e7c8"
+  },
+  "native_binary_sha256": "9941d33fffaedce6af5a82cbe8bc39f75da109c2f18f169731efd6704648f4f5",
+  "source_note": "Focused and Native verification preceded rustfmt-only formatting; fresh WASM uses the final formatted source.",
+  "new_tests": 0,
+  "baseline_changes": 0,
+  "decision": "2쪽 보정 Native/fresh WASM 99.75557%, 110/110 PASS. 전쪽 미달6개 및 최종 전체 검증 보류.",
+  "fresh_wasm_selected_percent": {
+    "1": 97.95558,
+    "2": 99.75557,
+    "8": 98.91222,
+    "9": 98.55869,
+    "10": 99.70891
+  },
+  "wasm_build": "Mac local replacement --no-opt; exit0; not Docker validation",
+  "wasm_visual_exit_code": 0,
+  "wasm_binary_sha256": "2a7b832ea857d703537c3b42f69cd2aae51de2af9ead1b2df72772cea83e0d0d"
+}

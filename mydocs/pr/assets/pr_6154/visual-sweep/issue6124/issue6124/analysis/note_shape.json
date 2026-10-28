@@ -1,0 +1,215 @@
+{
+  "file": "/Users/tsjang/rhwp-planet6897-6148-6152-20260826/samples/issue6124/2737927_housing_evaluation_guideline.hwpx",
+  "sections": [
+    {
+      "endnoteShape": {
+        "raw": {
+          "attr": 0,
+          "noteSpacing": {
+            "hu": 567,
+            "mm": 2.0
+          },
+          "numberCodeSuperscript": false,
+          "numberFormat": "Digit",
+          "numbering": "Continue",
+          "placement": "EachColumn",
+          "prefixChar": "\u0000",
+          "printInlineAfterText": false,
+          "rawUnknown": {
+            "hu": 0,
+            "mm": 0.0
+          },
+          "separatorColor": "0x00000000",
+          "separatorLength": {
+            "hu": 14692344,
+            "mm": 51831.325
+          },
+          "separatorLineType": 1,
+          "separatorLineWidth": 1,
+          "separatorMarginBottom": {
+            "hu": 0,
+            "mm": 0.0
+          },
+          "separatorMarginTop": {
+            "hu": 850,
+            "mm": 2.999
+          },
+          "startNumber": 1,
+          "suffixChar": ")",
+          "userChar": "\u0000"
+        },
+        "ui": {
+          "betweenNotes": {
+            "hu": 0,
+            "mm": 0.0
+          },
+          "separatorAbove": {
+            "hu": 850,
+            "mm": 2.999
+          },
+          "separatorBelow": {
+            "hu": 567,
+            "mm": 2.0
+          }
+        }
+      },
+      "footnoteShape": {
+        "raw": {
+          "attr": 0,
+          "noteSpacing": {
+            "hu": 567,
+            "mm": 2.0
+          },
+          "numberCodeSuperscript": false,
+          "numberFormat": "Digit",
+          "numbering": "Continue",
+          "placement": "EachColumn",
+          "prefixChar": "\u0000",
+          "printInlineAfterText": false,
+          "rawUnknown": {
+            "hu": 283,
+            "mm": 0.998
+          },
+          "separatorColor": "0x00000000",
+          "separatorLength": {
+            "hu": -1,
+            "mm": -0.004
+          },
+          "separatorLineType": 1,
+          "separatorLineWidth": 1,
+          "separatorMarginBottom": {
+            "hu": 0,
+            "mm": 0.0
+          },
+          "separatorMarginTop": {
+            "hu": 850,
+            "mm": 2.999
+          },
+          "startNumber": 1,
+          "suffixChar": ")",
+          "userChar": "\u0000"
+        },
+        "ui": {
+          "betweenNotes": {
+            "hu": 283,
+            "mm": 0.998
+          },
+          "separatorAbove": {
+            "hu": 850,
+            "mm": 2.999
+          },
+          "separatorBelow": {
+            "hu": 567,
+            "mm": 2.0
+          }
+        }
+      },
+      "section": 0
+    },
+    {
+      "endnoteShape": {
+        "raw": {
+          "attr": 0,
+          "noteSpacing": {
+            "hu": 576,
+            "mm": 2.032
+          },
+          "numberCodeSuperscript": false,
+          "numberFormat": "Digit",
+          "numbering": "Continue",
+          "placement": "EachColumn",
+          "prefixChar": "\u0000",
+          "printInlineAfterText": false,
+          "rawUnknown": {
+            "hu": 0,
+            "mm": 0.0
+          },
+          "separatorColor": "0x00000000",
+          "separatorLength": {
+            "hu": 0,
+            "mm": 0.0
+          },
+          "separatorLineType": 0,
+          "separatorLineWidth": 1,
+          "separatorMarginBottom": {
+            "hu": 0,
+            "mm": 0.0
+          },
+          "separatorMarginTop": {
+            "hu": 864,
+            "mm": 3.048
+          },
+          "startNumber": 1,
+          "suffixChar": ")",
+          "userChar": "\u0000"
+        },
+        "ui": {
+          "betweenNotes": {
+            "hu": 0,
+            "mm": 0.0
+          },
+          "separatorAbove": {
+            "hu": 864,
+            "mm": 3.048
+          },
+          "separatorBelow": {
+            "hu": 576,
+            "mm": 2.032
+          }
+        }
+      },
+      "footnoteShape": {
+        "raw": {
+          "attr": 0,
+          "noteSpacing": {
+            "hu": 568,
+            "mm": 2.004
+          },
+          "numberCodeSuperscript": false,
+          "numberFormat": "Digit",
+          "numbering": "Continue",
+          "placement": "EachColumn",
+          "prefixChar": "\u0000",
+          "printInlineAfterText": false,
+          "rawUnknown": {
+            "hu": 284,
+            "mm": 1.002
+          },
+          "separatorColor": "0x00000000",
+          "separatorLength": {
+            "hu": -1,
+            "mm": -0.004
+          },
+          "separatorLineType": 1,
+          "separatorLineWidth": 1,
+          "separatorMarginBottom": {
+            "hu": 0,
+            "mm": 0.0
+          },
+          "separatorMarginTop": {
+            "hu": 852,
+            "mm": 3.006
+          },
+          "startNumber": 1,
+          "suffixChar": ")",
+          "userChar": "\u0000"
+        },
+        "ui": {
+          "betweenNotes": {
+            "hu": 284,
+            "mm": 1.002
+          },
+          "separatorAbove": {
+            "hu": 852,
+            "mm": 3.006
+          },
+          "separatorBelow": {
+            "hu": 568,
+            "mm": 2.004
+          }
+        }
+      },
+      "section": 1
+    }
+  ]
+}

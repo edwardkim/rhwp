@@ -1,0 +1,59 @@
+{
+  "prior_code_head": "1c1d088cb6997ebcbd330c1119d923460aa59bfc",
+  "change": "기존 고정 좌표 클릭을 중첩 경로의 가시 문자 커서 왕복으로 교정",
+  "changed_file": "tests/cases/issue_7442_nested_cell_hit_test.rs",
+  "production_source_changed": false,
+  "new_test_functions": 0,
+  "focused": {
+    "run": 11,
+    "pass": 11,
+    "fail": 0,
+    "exit_code": 0,
+    "log": "output/pr-review/planet6897-7382-20260926/stage300-issue7442-focused.log",
+    "sha256": "e9c1e55ec4cc36378f2c62b84000e64d480b6abdc98ad07470442c7ea77f2e35"
+  },
+  "native_visual": {
+    "stage299-issue7442-native": {
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 3,
+            "tolerant_content_match_percent": 87.04102
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "whole_document_visual_approved": false
+    },
+    "stage299-issue7442-original-pdf": {
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 3,
+            "tolerant_content_match_percent": 87.12326
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "completed_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "whole_document_visual_approved": false
+    }
+  }
+}

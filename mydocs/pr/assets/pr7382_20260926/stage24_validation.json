@@ -1,0 +1,108 @@
+{
+  "date": "2026-09-27",
+  "source_sha": "6fa58aef8813c185ce113754fbda60792db2a84e",
+  "rust_test_diff_sha256": "5cdda382e642690e2a2728c11667e40eee305b55abbd8864c0718d748ae369a9",
+  "immutable_cli_sha256": "8477eeca956b269d3cc33608f2b355e048da784df2f99ef728c28587586b8b04",
+  "capture_reason": "기준 코드의 전후 검사가 공유 캐시를 사용해도 캡처가 다른 바이너리로 바뀌지 않도록 최종 CLI의 불변 사본 사용",
+  "files": {
+    "src/renderer/float_placement.rs": "dd08f4055a85a75072a6810c61c65a3980aa2c5c228036d1c00a929f92b5ed5d",
+    "src/renderer/layout/table_layout.rs": "574c16d32bb0e1deb3cc53ac36b9bdc10d92ae6d83a5cbb3eb03a2bf201b63ff",
+    "src/renderer/layout/table_partial.rs": "6f91cf93e8309b9aa37eea31595827ef076ae33c094b70602ea930cd0ab64707",
+    "src/renderer/typeset/table/block/prepare.rs": "307f3d97050d9e57f0e12c93d1968d7ab07b0c45356b5ea66956caeec8a2d562",
+    "src/renderer/typeset/table/block/whole_fit.rs": "3bc48f7b5359143a3f41508bfe43fc9858349a83aa40b7bf2a43e519a8d0812f",
+    "src/renderer/typeset/table/continuation.rs": "1b11286b445254890d72f65e2ae13d4fdfaad5d90ffe1cb83181fb69bd324564",
+    "src/renderer/typeset/table/continuation/fragment/budget.rs": "18f6b4455027dd4b872dc0ac29f65b1bd60c85949f03f9a79de9ad4e0edbbedb",
+    "src/renderer/typeset/table/continuation/fragment/emit.rs": "25919c371de04580c7e680927cbafe17c6b0a2baf88d98f4de58f067e4492c43",
+    "src/renderer/typeset/table/continuation/fragment/scan.rs": "42289d661d2095f5b56c4ed1e42bf46a0c17e47bec7640a7fe0817a460b9396d",
+    "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "3f554d440ada72dde72547f5eb731180f192b7d1ddf5712dd03f88a23cc2ce2d"
+  },
+  "before": {
+    "source_sha": "6fa58aef8813c185ce113754fbda60792db2a84e",
+    "exit_code": 100,
+    "passed": 0,
+    "failed": 6,
+    "seconds": 0.275,
+    "defects": "원본 그림7의 내부 저장 줄 앵커, 그림8의 빈 물리 첫 조각 및 이어받기 소유/높이"
+  },
+  "after": {
+    "exit_code": 0,
+    "passed": 102,
+    "failed": 0,
+    "seconds": 6.337,
+    "threads": 8
+  },
+  "cli_build_exit_code": 0,
+  "fmt_check_exit_code": 0,
+  "manifest_policy": {
+    "exit_code": 0,
+    "base_ref": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+    "sources": 1428,
+    "targets": 48,
+    "minimum_nextest_tests": 6559
+  },
+  "source_unit_policy": {
+    "exit_code": 0,
+    "tests": 4205,
+    "modules": 298
+  },
+  "visual": {
+    "hwp": {
+      "exit_code": 1,
+      "status": "re_review_required",
+      "page_count": 215,
+      "pdf_page_count": 215,
+      "directly_read_review_and_overlay_pages": [
+        11,
+        12,
+        13,
+        14
+      ],
+      "pages": {
+        "11": 80.37557,
+        "12": 99.76685,
+        "13": 77.85867,
+        "14": 82.03316
+      }
+    },
+    "hwpx": {
+      "exit_code": 1,
+      "status": "re_review_required",
+      "page_count": 215,
+      "pdf_page_count": 215,
+      "directly_read_review_and_overlay_pages": [
+        11,
+        12,
+        13,
+        14
+      ],
+      "pages": {
+        "11": 68.96816,
+        "12": 99.76685,
+        "13": 77.05428,
+        "14": 81.51575
+      }
+    }
+  },
+  "full_native_before_stage24": {
+    "source_sha": "6fa58aef8813c185ce113754fbda60792db2a84e",
+    "exit_code": 1,
+    "pages": 215,
+    "below_threshold_count": 32,
+    "current_head_acceptance": false
+  },
+  "excluded_errors": [
+    "첫 manifest 검사에서 fmt 뒤 파생 suite drift; prepare 후 개별 재검사 exit0",
+    "중간 후보 ctrl_idx 누락 컴파일 exit101; 결함 재현으로 세지 않음"
+  ],
+  "remaining_holds": [
+    "13쪽 하단 표2·그림9 위치 차이",
+    "11·14쪽 잔여 차이 및 전체 전수 재검토",
+    "단계16 실제 TABLE 편집/재조판 반례",
+    "최종 전체 nextest·세 Clippy·Skia·fresh WASM·전체 시각 gate 미완료"
+  ],
+  "commands": {
+    "before": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --test regression_suite_003 --test-threads 8 --no-fail-fast -E 'test(picture_wrapper_) | test(picture_table_uses_interior_control_stored_line_anchor)'",
+    "after": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --test regression_suite_001 --test regression_suite_003 --test regression_suite_005 --test regression_suite_009 --test regression_suite_020 --test-threads 8 --no-fail-fast -E 'test(issue_7379_rowbreak_table_footnote_reservation) | test(issue_3738_rowbreak_table_footnote_fragment) | test(issue_1937_rowbreak_footnote_overpagination) | test(issue_2559_footnote_footer_band) | test(issue_6034_footnote_area_reflow_width) | test(issue_4882_policy_report_page_roundtrip)'",
+    "visual_template": "venv/bin/python scripts/visual_sweep.py --key liver7379 --hwp <원본 HWP 또는 HWPX> --pdf <대응 한컴2024 PDF> --rhwp-bin output/pr-review/planet6897-7382-20260926/bin/stage24-after-rhwp --pages 11,12,13,14 --dpi 96 --out output/pr-review/planet6897-7382-20260926/visual/stage24-native-<format>"
+  }
+}

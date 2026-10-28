@@ -1,0 +1,378 @@
+{
+  "stage": 131,
+  "preanalysis": {
+    "head": "17140921c2cf68285a2e5ca29c5ea7f1c3ae2520",
+    "input": "samples/task2146/21761835_jeonjik_exemption_table.hwp",
+    "input_sha256": "d8e7e38b206f6e53b7d2d260115396f8a0dd94bd8b712bbc4428dc11bf66e5dc",
+    "pdf": "pdf/task2146/21761835_jeonjik_exemption_table-hwp-2020.pdf",
+    "pdf_sha256": "99d150b26805a29f3d3153528638f363e33f882d0e38ad11edb374baccdac127",
+    "devel_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "devel_pages": 6,
+    "current_pages": 7,
+    "source_provenance": "pr_7043_review.md 및 pr_7036_review.md의 같은 공개 HWP/정상 한컴2022 PDF6쪽. 원문은2010 저장본이며 확장자/Creator연도만으로 PDF를 무효화하지 않습니다.",
+    "analysis": "실제 oracle6→7 실패만 우선 재현. 기존 관련 쪽수/사선/빈문단 함수를 실행해 실패 assertion과 정상대조를 구분한다. 독립 PDF6쪽 전체 Native 비교 및 추가7쪽 판독 후, 90미만이면 승인된 범위에서 실제 실패 assertion/해당 oracle 입력만 #7445 보류. 정상검사/다른 입력·축·원문PDF 유지. 새 테스트 추가/6을7로 baseline완화 금지."
+  },
+  "code_commit": "dcbdf1a8762a1ad064443f68804332928eb8ac01",
+  "before": [
+    {
+      "case": "oracle_page_count_baseline",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_009",
+        "-E",
+        "test(=oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_11)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 7.968534292187542
+    },
+    {
+      "case": "issue_2097_squeeze",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_003",
+        "-E",
+        "test(issue_2097_squeeze::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 6.074047083966434
+    },
+    {
+      "case": "issue_2146_no_ls_label_cell_declared_height",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_005",
+        "-E",
+        "test(issue_2146_no_ls_label_cell_declared_height::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 6.219335124827921
+    },
+    {
+      "case": "issue_7028_partial_table_diagonal",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_005",
+        "-E",
+        "test(issue_7028_partial_table_diagonal::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 0.6914935419335961
+    },
+    {
+      "case": "issue_7032_cell_empty_paragraph_flow",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_028",
+        "-E",
+        "test(issue_7032_cell_empty_paragraph_flow::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 8.61326662497595
+    }
+  ],
+  "before_summary": {
+    "passed": 15,
+    "failed": 4
+  },
+  "visual_command": [
+    "venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--file-target",
+    "jeonjik2146",
+    "samples/task2146/21761835_jeonjik_exemption_table.hwp",
+    "pdf/task2146/21761835_jeonjik_exemption_table-hwp-2020.pdf",
+    "--pages",
+    "1-6",
+    "--dpi",
+    "96",
+    "--rhwp-bin",
+    "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+    "--embed-fonts=full",
+    "--font-path",
+    "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+    "--font-path",
+    "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+    "--font-path",
+    "/Users/tsjang/Library/Fonts",
+    "--out",
+    "output/pr-review/planet6897-7382-20260926/stage131-jeonjik2146/visual-native"
+  ],
+  "native_document_pages": 7,
+  "pdf_pages": 6,
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 1,
+        "tolerant_content_match_percent": 86.44992
+      },
+      {
+        "page": 2,
+        "tolerant_content_match_percent": 49.90645
+      },
+      {
+        "page": 3,
+        "tolerant_content_match_percent": 59.72521
+      },
+      {
+        "page": 4,
+        "tolerant_content_match_percent": 44.29839
+      },
+      {
+        "page": 5,
+        "tolerant_content_match_percent": 39.57099
+      },
+      {
+        "page": 6,
+        "tolerant_content_match_percent": 37.39924
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "direct_inspection": {
+    "pages": "PDF 전체1–6쪽 contact sheet 및6쪽review·2쪽overlay 직접확인; native추가7쪽독립래스터직접확인",
+    "observed": "머리행은 남지만 행 경계/내용의 쪽 소속이 뒤로 밀림. PDF6쪽 하단 설명 마지막줄과3번항목이Native7쪽으로 이월. 글꼴예외아님.",
+    "extra_page7_export_command": [
+      "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+      "export-svg",
+      "samples/task2146/21761835_jeonjik_exemption_table.hwp",
+      "--page",
+      "6",
+      "--output",
+      "output/pr-review/planet6897-7382-20260926/stage131-jeonjik2146/extra-native-page7",
+      "--json",
+      "--embed-fonts=full",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts"
+    ]
+  },
+  "deferred_scope": [
+    "oracle 이입력6/6행만",
+    "#2097 PINS 이입력만",
+    "#7028 선행쪽수 assertion 하나만",
+    "#7032 HWP 선행쪽수 assertion 하나만"
+  ],
+  "preserved_scope": [
+    "모든기존함수 및머리행/대각선/SVG/빈문단/소유/좌표검사",
+    "#7032 HWPX6쪽 핀",
+    "#2097 다른두입력",
+    "원문/PDF/render_page_samples행/IR/다른축/문서"
+  ],
+  "after_summary": {
+    "passed": 30,
+    "failed": 4,
+    "skipped": 842,
+    "related_tests_passed": 18,
+    "oracle_partitions_passed": 12,
+    "oracle_partitions_failed": 4,
+    "raw_summary": [
+      "     Summary [   4.383s] 34 tests run: 30 passed, 4 failed, 842 skipped"
+    ]
+  },
+  "gates": {
+    "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "head": "17140921c2cf68285a2e5ca29c5ea7f1c3ae2520",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_005",
+          "--test",
+          "regression_suite_014",
+          "--test",
+          "regression_suite_015",
+          "--test",
+          "regression_suite_024",
+          "-E",
+          "(test(oracle_page_count_baseline::)) or (test(issue_2097_squeeze::)) or (test(issue_2146_no_ls_label_cell_declared_height::)) or (test(issue_7028_partial_table_diagonal::)) or (test(issue_7032_cell_empty_paragraph_flow::))"
+        ],
+        "exit_code": 100,
+        "seconds": 23.971383708994836
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 7.056789124850184
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.7126386659219861
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.28896120842546225
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.5260950000956655
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 7.857236000243574
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.731857290957123
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 10.451694374904037
+      }
+    ]
+  },
+  "issue_url": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5875379798",
+  "stable_image_sha256": {
+    "jeonjik2146_native_review_006.png": "75e6864cbc700261cd3ae077a25d27ec2f0fae95210a625e6ecbf2da65725a48",
+    "jeonjik2146_native_overlay_002.png": "0cf03543842724bb339a9eae0f897a765a332579a26493ba67212b8911e5bcde"
+  },
+  "limits": [
+    "정상검사 유지와 실제 차단범위 처리이며 원문 개선/피델리티 승인아님",
+    "Native7쪽/PDF6쪽; freshWASM미실행. 최종전체회귀/원PR시각검증/PR준비 미완료",
+    "다른oracle4분할 및기존다른cell/body/시장/font실패 미해결"
+  ]
+}

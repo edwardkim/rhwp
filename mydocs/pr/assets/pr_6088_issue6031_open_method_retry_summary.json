@@ -1,0 +1,20 @@
+[
+  {
+    "key": "pr_6088_issue6031_asset_management_rules_direct",
+    "method": "direct",
+    "status": "failed",
+    "returncode": 1,
+    "output": "pdf/pr_6088_6144/local_hancom2020/pr_6088_issue6031_asset_management_rules_direct-local2020.pdf",
+    "bytes": 0,
+    "log": "mydocs/pr/assets/pr_6088_issue6031_asset_management_rules_direct_local_hancom2020_convert.log"
+  },
+  {
+    "key": "pr_6088_issue6031_asset_management_rules_action",
+    "method": "action",
+    "status": "ok",
+    "returncode": 0,
+    "output": "pdf/pr_6088_6144/local_hancom2020/pr_6088_issue6031_asset_management_rules_action-local2020.pdf",
+    "bytes": 1317631,
+    "log": "mydocs/pr/assets/pr_6088_issue6031_asset_management_rules_action_local_hancom2020_convert.log"
+  }
+]

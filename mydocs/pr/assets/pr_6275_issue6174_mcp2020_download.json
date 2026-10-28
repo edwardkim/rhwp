@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "job_id": "ff183081-f073-40a8-89ed-ff7590202984",
+  "output_path": "/home/tsjang/rhwp/pdf/pr_6275/by_saved_version/pr6275_issue6174_police_press_release-2020.pdf",
+  "output_filename": "pr6275_issue6174_police_press_release-2020.pdf",
+  "size": 248767,
+  "sha256": "95bdbcec61d4413b91a220e50a7209a93cdd863fee03f714d4da23323debb1ca",
+  "server": {
+    "job_id": "ff183081-f073-40a8-89ed-ff7590202984",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "156661338_police_press_release.hwpx",
+    "output_filename": "pr6275_issue6174_police_press_release-2020.pdf",
+    "size": 248767,
+    "sha256": "95bdbcec61d4413b91a220e50a7209a93cdd863fee03f714d4da23323debb1ca",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "12.0.0.4605",
+    "backend": "hwp-managed-direct-dll-host",
+    "elapsed_ms": 30022,
+    "worker_elapsed_ms": 26681,
+    "worker_bits": 32
+  }
+}

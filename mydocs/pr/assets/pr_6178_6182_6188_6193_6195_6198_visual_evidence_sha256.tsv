@@ -1,0 +1,15 @@
+pr	purpose	path	sha256	observation
+6178	after page 7	mydocs/report/stored-vpos-overflow-6132/after_p7.png	0c88b634eea9df3910be7173b418c7b1805619e6ce31a7c631bb96d7837e313c	page 7 table flow renders with Korean text and page footer visible
+6178	oracle page 7	mydocs/report/stored-vpos-overflow-6132/oracle_p7.png	585140975247245f6b1662103ae05854f0815cacfebc9bf61a05ffa1bf6414b9	page 7 oracle shows same row band and footer placement
+6178	after page 8	mydocs/report/stored-vpos-overflow-6132/after_p8.png	ce9afb36314db860ea9352d281026caea826ce23d6ad2ba75b7a1682f461ce27	page 8 table continuation starts with reference company overview block
+6178	oracle page 8	mydocs/report/stored-vpos-overflow-6132/oracle_p8.png	e3c8b9da069ae5a87249ebc06b116cc03d053f3917f2d43a3e066f17c8ea8fa2	page 8 oracle matches the continuation block and footer placement
+6182	e2e context menu	mydocs/pr/assets/pr_6178_6182_6188_6193_6195_6198/pr_6182_issue6053_context_menu.png	f5d78a938a9802b8aafcba0b6fd15563c13b70e1e024b5fe7552f1ca707179f4	chart data dialog context menu shows row and series structural commands
+6182	e2e pie note	mydocs/pr/assets/pr_6178_6182_6188_6193_6195_6198/pr_6182_issue6053_pie_note.png	c1f4170a94a1fbc898bbcaecf52bae62b0b06707e92ddd0ca7ea950571f778d3	pie chart preflight note and disabled series delete state are visible
+6188	source low zoom	mydocs/pr/assets/pr_6188_issue6149/low_zoom_10_auto.jpg	c071d9a481c88fdf735b47869b56090fd563bee747b2e0753e3a70d4730ef17c	low zoom multi-page view keeps visible page gaps and ruler density
+6188	source focused scroll	mydocs/pr/assets/pr_6188_issue6149/focus_pinned_50_scroll.jpg	92d91ed71c72367c29dfa02242b12fb346d725d4f0c3164c3994700a2027347e	focused 50 percent view keeps paired pages and page boundary visible
+6188	e2e low zoom	mydocs/pr/assets/pr_6178_6182_6188_6193_6195_6198/pr_6188_issue6149_low_zoom_full.png	0aac1b5912ed6052389a9efa17e6e2dbf5379a9ad482abe2d43db22f876db3ee	responsive e2e confirms oldschool dark full-width low zoom rendering
+6188	e2e compact	mydocs/pr/assets/pr_6178_6182_6188_6193_6195_6198/pr_6188_issue6149_compact_panel.png	67e78ede3e2fa8cd047799a05d61835387270ebe6e9c886be046f46cd2ba9125	responsive e2e confirms compact overflow panel contrast and focus
+6193	after	mydocs/report/issue-5929-square-host-line-advance/after.png	26376df4ad4e811d62d96d9193a00b2924d037c9ce0e9329bc54e8d8a46297ed	bottom table line and inline image band align with the oracle axis
+6193	oracle	mydocs/report/issue-5929-square-host-line-advance/oracle.png	f62f8307394ba9f01cc851cbf67cefa6ad90f7d2a3eab017eac6c1740338841a	oracle crop confirms the target host line advance expectation
+6195	after	mydocs/report/hanyang-gyeongothic-alias-6171/after_p1.png	d20d62bc161a44f5591f571189410422a9ecb8a3e66ac6684a8e9523e5ca89a8	Hanyang bold Gothic Korean glyphs render as visible text
+6195	oracle	mydocs/report/hanyang-gyeongothic-alias-6171/oracle_p1.png	7ccfc7e1b51f8b09b068233d00f81efc2a08844f0787c9288d72dbade8cbea6d	oracle crop confirms the intended glyph weight and placement

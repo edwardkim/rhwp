@@ -1,0 +1,192 @@
+{
+  "date": "2026-10-03",
+  "branch": "review/planet6897-green-20261002",
+  "parent_head": "871b3330f",
+  "input": "samples/task2137/156637323_unification_lecture.hwpx",
+  "pdf": "pdf/task2137/156637323_unification_lecture-2020.pdf",
+  "status": "1쪽 Native/fresh WASM 개선 확인; 전체 회귀와 적용 일반성은 남은 실패 처리 후 최종 확인",
+  "before_percent": 68.6758,
+  "native_percent": 96.6025,
+  "new_tests": 0,
+  "assertion_changes": 0,
+  "baseline_changes": 0,
+  "whole_nextest": "미실행",
+  "integration_pr_ready": false,
+  "native_tsv_source": "전쪽 PNG 비교의 overlay_metrics.json에서 동일 필드 추출",
+  "anomaly_after": {
+    "emptyPageCount": 0,
+    "hasSignal": false,
+    "mode": "single",
+    "offCanvasCount": 0,
+    "overflowCount": 0,
+    "overflowTolerancePx": 1.0,
+    "overlapCount": 0,
+    "overlapTolerancePx": 2.0,
+    "pageCount": 1,
+    "pageFilter": null,
+    "pages": [],
+    "schemaVersion": "1.0",
+    "source": "samples/task2137/156637323_unification_lecture.hwpx",
+    "storedLineEscapeCount": 0,
+    "storedLineTolerancePx": 0.5,
+    "strict": false,
+    "textOverlapCount": 0,
+    "types": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  },
+  "sha256": {
+    "samples/task2137/156637323_unification_lecture.hwpx": "9223dd4b3499d0e640fd2c2aea980fd7eaade5aae63feefa234f4841422a4afd",
+    "pdf/task2137/156637323_unification_lecture-2020.pdf": "d7470c5ea4bb9b6181c31309e9df6a6e8e0cae183334ed89ef4b5ff04beec18d",
+    "src/renderer/stored_float_anchor.rs": "e39db7868d4ed4597739ce00b0a048b6510583b218e2fd2333f24818e4907d67",
+    "src/renderer/typeset/controls/empty_float.rs": "69bc81af7a7f4b3d7726908617541f1a611e0018ea31e0a29c14f8990ae284b5",
+    "pkg/rhwp_bg.wasm": "d24c016914048d9f0e309487189743aa95f037310c385ef7c6c46a17ce549ff5"
+  },
+  "wasm_percent": 96.6025,
+  "existing_issue2137_functions": "기존2함수 PASS; task2137-flow-outer-box-nextest.log",
+  "expanded_focused": {
+    "run": 63,
+    "passed": 56,
+    "failed": 7,
+    "seconds": 110.74,
+    "exit_code": 100,
+    "note": "이관 전 결과. 당시 다른 문서 corpus 실패는 후속 이관 및 보정 중"
+  },
+  "latest_corpus": {
+    "run": 70,
+    "passed": 67,
+    "failed": 3,
+    "seconds": 193.981,
+    "scope": "별도 회귀 이관 후 corpus; 전체 회귀 아님"
+  },
+  "gates": [
+    {
+      "key": "nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "--test",
+        "overflow_cell_baseline",
+        "--test",
+        "regression_suite_003",
+        "--test",
+        "regression_suite_007",
+        "--test",
+        "regression_suite_008",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_016",
+        "--test",
+        "regression_suite_017",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_019",
+        "--test",
+        "regression_suite_021",
+        "--test",
+        "regression_suite_022",
+        "--test",
+        "regression_suite_023",
+        "--test",
+        "regression_suite_026",
+        "--test",
+        "regression_suite_028",
+        "-E",
+        "test(=overflow_cell_lines_do_not_grow_partition_11) or test(=overflow_cell_lines_do_not_grow_partition_10) or test(=off_canvas_baseline::off_canvas_does_not_grow_partition_3) or test(=off_canvas_baseline::off_canvas_does_not_grow_partition_6) or test(=off_canvas_baseline::off_canvas_does_not_grow_partition_9) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_1) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_12) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_13) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_14) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_15) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_6) or test(=overflow_cell_lines_do_not_grow_partition_1) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_9) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_14) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_2) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_5) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_7) or test(=issue_1100_exam_social_hwpx_header::issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only) or test(=issue_1100_exam_social_hwpx_header::issue_1100_hwpx_four_pages_preserve_question_paragraph_ownership) or test(=issue_1100_exam_social_hwpx_header::issue_1100_hwpx_master_page_footer_page_number_is_preserved) or test(=issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page7) or test(=issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page8) or test(=issue_5875_nested_table_text_caption::issue_5875_page_count_stays_12) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_0) or test(=oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_11) or test(=oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_3) or test(=issue_5782_fragment_span_charge::issue_5782_fragment_clip_covers_nested_table_bottom) or test(issue_5723_coanchored_square_pair_center_slack) or test(issue_5755_rewind_overflow_page_break) or test(issue_5700_tac_reset_tail_above_flow) or test(issue_2137_topbottom_float_anchor_saved_fit) or test(issue_6378_hwpx_outmargin_position) or test(issue_7203_float_table_stored_anchor_top) or test(issue_1891) or test(body_overflow_baseline) or test(text_overlap_baseline)"
+      ],
+      "exit_code": 100,
+      "seconds": 481.228
+    },
+    {
+      "key": "wasm-build",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit_code": 0,
+      "seconds": 183.488
+    },
+    {
+      "key": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 23.594
+    },
+    {
+      "key": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 14.47
+    },
+    {
+      "key": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 31.812
+    },
+    {
+      "key": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 61.224
+    }
+  ],
+  "native_review_source": "task2137-flow-outer-box-native 최신 상대 흐름 원점 후보",
+  "candidate_limit": "낮은 피델리티 문서의 corpus 제외를 renderer 일반성 통과 증거로 대신하지 않음; 최종 전체 회귀와 정상 대조 필요"
+}

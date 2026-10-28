@@ -1,0 +1,83 @@
+{
+  "schema": "rhwp-independent-fixture-provenance-v1",
+  "records": [
+    {
+      "input": "tests/fixtures/pr7518_review_page_budget/valid_orientation/nested-split.hwp",
+      "input_sha256": "0f4d41b7a4de244f9032ea26d0cac2b66db446a35d16a62421a58ed0276002c0",
+      "output": "tests/fixtures/pr7518_review_page_budget/valid_hancom/nested-split.hwp",
+      "output_sha256": "f0d678e751337b74b99e817debc278e286443538b8a1cc0a918632a8e0d70192",
+      "bytes": 54272,
+      "job_id": "1ad8c411-25d5-4ec2-ab8b-c8a49939f2a7",
+      "engine": "2020",
+      "status": "success"
+    },
+    {
+      "input": "tests/fixtures/pr7518_review_page_budget/valid_orientation/nested-auto-row.hwp",
+      "input_sha256": "fae2ff4c6fa2f43070a2cf6914bc00c8ef1325635e0832e50d07f4fcdf7afe9b",
+      "output": "tests/fixtures/pr7518_review_page_budget/valid_hancom/nested-auto-row.hwp",
+      "output_sha256": "a0e091aa7cf1a4ddb748701e4ca3e1d90e94a0fde3219b315786b88742cb3bff",
+      "bytes": 54272,
+      "job_id": "0fc79b00-0874-4085-a862-748fcc6ac5f4",
+      "engine": "2020",
+      "status": "success"
+    },
+    {
+      "input": "tests/fixtures/pr7518_review_page_budget/valid_orientation/nested-mixed-cell.hwp",
+      "input_sha256": "53756e85140c0573076f230e7a86ab3abbd2e25dee131d23dc19cd68f1daab2b",
+      "output": "tests/fixtures/pr7518_review_page_budget/valid_hancom/nested-mixed-cell.hwp",
+      "output_sha256": "2dad045a8c50d93d50a59bcec33960fa0a282ebd934c1e1f243130ac24c69d79",
+      "bytes": 53760,
+      "job_id": "af75df22-42fa-4757-b671-7e5775da03fc",
+      "engine": "2020",
+      "status": "success"
+    },
+    {
+      "input": "tests/fixtures/pr7518_review_page_budget/valid_generated/nested-split.hwp",
+      "input_sha256": "82971f1bbe50f80fad655d0d572938c3afc0427dcdb6e2db3cbc49a301f8d89a",
+      "last_saved_product": "hancom-office-2020",
+      "engine": "2020",
+      "job_id": "dfc340a3-d0ef-4be2-91bf-5cf53679dc7c",
+      "status": "success",
+      "pdf": "pdf/pr7518_review/valid_generated/nested-split-2020.pdf",
+      "pdf_sha256": "18bf36e0700405cb32806c369ebd6bf61a910c08c3973154c9d0cb0659017b20",
+      "pdf_bytes": 125152,
+      "pdf_pages": 6
+    },
+    {
+      "input": "tests/fixtures/pr7518_review_page_budget/valid_generated/nested-auto-row.hwp",
+      "input_sha256": "b2f2d7d6e9d085293e8bee89e6925fe62f93fbe5aab62dec4a474f6d0831ea4f",
+      "last_saved_product": "hancom-office-2020",
+      "engine": "2020",
+      "job_id": "2b8dad76-b36e-4729-b5a9-9f937fd08d13",
+      "status": "success",
+      "pdf": "pdf/pr7518_review/valid_generated/nested-auto-row-2020.pdf",
+      "pdf_sha256": "95e70cd010029dd381399aed1ed7392908c7a82602eac113042629de7dd8e728",
+      "pdf_bytes": 129026,
+      "pdf_pages": 8
+    },
+    {
+      "input": "tests/fixtures/pr7518_review_page_budget/valid_generated/nested-mixed-cell.hwp",
+      "input_sha256": "173eee9e0f224eb0d7fa53bc3c7d1254ccc41b7cee883da36f8c779d2494abbb",
+      "last_saved_product": "hancom-office-2020",
+      "engine": "2020",
+      "job_id": "97f445d1-6326-4b17-a3b9-2c7a26ad0520",
+      "status": "success",
+      "pdf": "pdf/pr7518_review/valid_generated/nested-mixed-cell-2020.pdf",
+      "pdf_sha256": "99922d51368c7e1eaf2ff38db2f7cb233b1098733aeb31efe4e3ce60c8d7a9f6",
+      "pdf_bytes": 127439,
+      "pdf_pages": 8
+    },
+    {
+      "input": "tests/fixtures/pr7518_review_page_budget/valid_generated/terminal-follower.hwp",
+      "input_sha256": "e9402a615c7c40404f7df2e76b27471f8ef9a9813698c25a61b43577b7b227f5",
+      "last_saved_product": null,
+      "engine": "2020",
+      "job_id": "355b8dfa-a644-42ab-99e1-ed4990dc0ab8",
+      "status": "success",
+      "pdf": "pdf/pr7518_review/valid_generated/terminal-follower-2020.pdf",
+      "pdf_sha256": "2d4af0e69b7f04f69d7b97a4774b86e4f55ca7b029df6e05ccc83f59fc4e6cf3",
+      "pdf_bytes": 108003,
+      "pdf_pages": 3
+    }
+  ]
+}

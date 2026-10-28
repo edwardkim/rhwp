@@ -1,0 +1,391 @@
+{
+  "engine": 2020,
+  "input_generation": "수동 원본을 보존하고 한컴2020 HWP→HWPX 재저장 대조군을 별도로 생성",
+  "inputs": [
+    {
+      "path": "samples/task2105/rowbreak_table_declared_fits.hwpx",
+      "sha256": "b1c0983308573ebbb4133b311f89ab4590b42faf49feda0d520cc81101ae2165",
+      "geometry": [
+        {
+          "kind": "sz",
+          "attrs": {
+            "width": "40000",
+            "widthRelTo": "ABSOLUTE",
+            "height": "69700",
+            "heightRelTo": "ABSOLUTE",
+            "protect": "0"
+          }
+        },
+        {
+          "kind": "lineseg",
+          "attrs": {
+            "textpos": "0",
+            "vertpos": "141",
+            "vertsize": "1000",
+            "textheight": "1000",
+            "baseline": "850",
+            "spacing": "600",
+            "horzpos": "0",
+            "horzsize": "39000",
+            "flags": "393216"
+          }
+        },
+        {
+          "kind": "cellSz",
+          "attrs": {
+            "width": "40000",
+            "height": "68000"
+          }
+        },
+        {
+          "kind": "lineseg",
+          "attrs": {
+            "textpos": "0",
+            "vertpos": "141",
+            "vertsize": "1200",
+            "textheight": "1200",
+            "baseline": "1020",
+            "spacing": "720",
+            "horzpos": "0",
+            "horzsize": "39000",
+            "flags": "393216"
+          }
+        },
+        {
+          "kind": "cellSz",
+          "attrs": {
+            "width": "40000",
+            "height": "1200"
+          }
+        },
+        {
+          "kind": "lineseg",
+          "attrs": {
+            "textpos": "0",
+            "vertpos": "141",
+            "vertsize": "1200",
+            "textheight": "1200",
+            "baseline": "1020",
+            "spacing": "720",
+            "horzpos": "0",
+            "horzsize": "39000",
+            "flags": "393216"
+          }
+        },
+        {
+          "kind": "cellSz",
+          "attrs": {
+            "width": "40000",
+            "height": "500"
+          }
+        },
+        {
+          "kind": "lineseg",
+          "attrs": {
+            "textpos": "0",
+            "vertpos": "0",
+            "vertsize": "1000",
+            "textheight": "1000",
+            "baseline": "850",
+            "spacing": "600",
+            "horzpos": "0",
+            "horzsize": "48190",
+            "flags": "393216"
+          }
+        },
+        {
+          "kind": "lineseg",
+          "attrs": {
+            "textpos": "0",
+            "vertpos": "1000",
+            "vertsize": "1000",
+            "textheight": "1000",
+            "baseline": "850",
+            "spacing": "600",
+            "horzpos": "0",
+            "horzsize": "48190",
+            "flags": "393216"
+          }
+        }
+      ]
+    },
+    {
+      "path": "samples/issue2097/rowbreak-fragment-start-resaved-2020.hwpx",
+      "sha256": "2be72705948864c988bb779803759eb08aad59e4056938a5f7884b43a7066e0f",
+      "geometry": [
+        {
+          "kind": "sz",
+          "attrs": {
+            "width": "40000",
+            "widthRelTo": "ABSOLUTE",
+            "height": "69282",
+            "heightRelTo": "ABSOLUTE",
+            "protect": "0"
+          }
+        },
+        {
+          "kind": "lineseg",
+          "attrs": {
+            "textpos": "0",
+            "vertpos": "0",
+            "vertsize": "1000",
+            "textheight": "1000",
+            "baseline": "850",
+            "spacing": "600",
+            "horzpos": "0",
+            "horzsize": "39716",
+            "flags": "393216"
+          }
+        },
+        {
+          "kind": "cellSz",
+          "attrs": {
+            "width": "40000",
+            "height": "68000"
+          }
+        },
+        {
+          "kind": "lineseg",
+          "attrs": {
+            "textpos": "0",
+            "vertpos": "0",
+            "vertsize": "1000",
+            "textheight": "1000",
+            "baseline": "850",
+            "spacing": "600",
+            "horzpos": "0",
+            "horzsize": "39716",
+            "flags": "393216"
+          }
+        },
+        {
+          "kind": "cellSz",
+          "attrs": {
+            "width": "40000",
+            "height": "1200"
+          }
+        },
+        {
+          "kind": "lineseg",
+          "attrs": {
+            "textpos": "0",
+            "vertpos": "0",
+            "vertsize": "1000",
+            "textheight": "1000",
+            "baseline": "850",
+            "spacing": "600",
+            "horzpos": "0",
+            "horzsize": "39716",
+            "flags": "393216"
+          }
+        },
+        {
+          "kind": "cellSz",
+          "attrs": {
+            "width": "40000",
+            "height": "500"
+          }
+        },
+        {
+          "kind": "lineseg",
+          "attrs": {
+            "textpos": "0",
+            "vertpos": "0",
+            "vertsize": "1000",
+            "textheight": "1000",
+            "baseline": "850",
+            "spacing": "600",
+            "horzpos": "0",
+            "horzsize": "0",
+            "flags": "393216"
+          }
+        },
+        {
+          "kind": "lineseg",
+          "attrs": {
+            "textpos": "0",
+            "vertpos": "1282",
+            "vertsize": "1000",
+            "textheight": "1000",
+            "baseline": "850",
+            "spacing": "600",
+            "horzpos": "0",
+            "horzsize": "48188",
+            "flags": "393216"
+          }
+        }
+      ]
+    }
+  ],
+  "pdfs": [
+    {
+      "path": "pdf/issue2097/rowbreak-fragment-start-original-2020.pdf",
+      "sha256": "10a611ac0715f0ff8ac89b3f6d849d502786f04e217cbf22da7ae179dcf35d25",
+      "page_count": 2,
+      "pages": [
+        {
+          "page": 1,
+          "text_spans": [
+            {
+              "text": "BIG ROW",
+              "bbox_pt": [
+                58.04853820800781,
+                72.12458801269531,
+                103.80500793457031,
+                82.07645416259766
+              ]
+            },
+            {
+              "text": "MID ROW",
+              "bbox_pt": [
+                58.04853820800781,
+                751.3023681640625,
+                106.20417785644531,
+                761.2542114257812
+              ]
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "text_spans": [
+            {
+              "text": "AFTER TABLE",
+              "bbox_pt": [
+                56.609317779541016,
+                83.51214599609375,
+                130.76219177246094,
+                93.4640121459961
+              ]
+            },
+            {
+              "text": "TAIL ROW EXPANDING",
+              "bbox_pt": [
+                58.04853820800781,
+                72.12458801269531,
+                176.3960418701172,
+                82.07645416259766
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "pdf/issue2097/rowbreak-fragment-start-resaved-2020.pdf",
+      "sha256": "39e826923d47e068f0253947f7930073c10c0596c746a0602a99de8305c34dd5",
+      "page_count": 2,
+      "pages": [
+        {
+          "page": 1,
+          "text_spans": [
+            {
+              "text": "BIG ROW",
+              "bbox_pt": [
+                58.04853820800781,
+                72.12458801269531,
+                103.80500793457031,
+                82.07645416259766
+              ]
+            },
+            {
+              "text": "MID ROW",
+              "bbox_pt": [
+                58.04853820800781,
+                751.3023681640625,
+                106.20417785644531,
+                761.2542114257812
+              ]
+            }
+          ]
+        },
+        {
+          "page": 2,
+          "text_spans": [
+            {
+              "text": "AFTER TABLE",
+              "bbox_pt": [
+                56.609317779541016,
+                83.51214599609375,
+                130.76219177246094,
+                93.4640121459961
+              ]
+            },
+            {
+              "text": "TAIL ROW EXPANDING",
+              "bbox_pt": [
+                58.04853820800781,
+                72.12458801269531,
+                176.3960418701172,
+                82.07645416259766
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "before_fit": {
+    "measured_height_px": 940.8533333333334,
+    "body_height_px": 933.5733333333334,
+    "plain": false,
+    "overlay": true,
+    "declared": false,
+    "cause": "빈 current_items의 all(Shape)를 실제 배경 개체 존재로 오인하여12px 예외 수용",
+    "cli_sha256": "18921ce56baf3d2c6fd1faa3aa64afbb490e25bb50a6e6031ad1e2f87ecbd240",
+    "log_sha256": "f639298ab6ca889799b36b5d2dfd24c1850d94feda2cb972ad361ca9be49e8f1"
+  },
+  "reproduction": {
+    "private_env_file": "인증정보가 포함된 비공개 환경 파일을 사용하며 내용은 공개하지 않음",
+    "steps": [
+      [
+        "hwp2024-mcp-convert",
+        "convert",
+        "--env-file",
+        "<비공개환경파일>",
+        "--input",
+        "samples/task2105/rowbreak_table_declared_fits.hwpx",
+        "--target",
+        "hwp",
+        "--engine",
+        "2020",
+        "--output-dir",
+        "output/pr-review/planet6897-7382-20260926/controls/stage38",
+        "--output-filename",
+        "rowbreak-fragment-start-resaved-2020.hwp"
+      ],
+      [
+        "hwp2024-mcp-convert",
+        "convert",
+        "--env-file",
+        "<비공개환경파일>",
+        "--input",
+        "output/pr-review/planet6897-7382-20260926/controls/stage38/rowbreak-fragment-start-resaved-2020.hwp",
+        "--target",
+        "hwpx",
+        "--engine",
+        "2020",
+        "--output-dir",
+        "output/pr-review/planet6897-7382-20260926/controls/stage38",
+        "--output-filename",
+        "rowbreak-fragment-start-resaved-2020.hwpx"
+      ],
+      [
+        "hwp2024-mcp-convert",
+        "convert",
+        "--env-file",
+        "<비공개환경파일>",
+        "--input",
+        "samples/issue2097/rowbreak-fragment-start-resaved-2020.hwpx",
+        "--target",
+        "pdf",
+        "--engine",
+        "2020",
+        "--output-dir",
+        "pdf/issue2097",
+        "--output-filename",
+        "rowbreak-fragment-start-resaved-2020.pdf"
+      ]
+    ]
+  }
+}

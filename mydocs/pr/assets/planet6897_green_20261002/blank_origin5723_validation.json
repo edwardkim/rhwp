@@ -1,0 +1,247 @@
+{
+  "parent_head": "8e131f3f8",
+  "branch": "review/planet6897-green-20261002",
+  "date": "2026-10-03",
+  "input": "samples/issue5723/coanchored_square_pair_center_slack.hwpx",
+  "pdf": "pdf/issue5723/coanchored_square_pair_center_slack-2020.pdf",
+  "scope": "기존1쪽 미달 문서의 원점/설치 face/폭 메트릭 보정",
+  "before_percent": 77.28046,
+  "origin_only_percent": 89.23725,
+  "real_face_only_percent": 89.04963,
+  "native_percent": 90.04699,
+  "status": "단계 검증 완료; 다른 미달 문서·최종 전체 회귀로 통합 보류",
+  "new_tests": 0,
+  "assertion_changes": 0,
+  "baseline_changes": 0,
+  "whole_nextest": "미실행",
+  "integration_pr_ready": false,
+  "font_provenance": {
+    "installed_fonts": [
+      {
+        "path": "/Users/tsjang/Library/Fonts/Hancom Gothic Regular.ttf",
+        "sha256": "4a80e6a87aae6c779ccdf85116f4e8cb5b0027f71a28f538bb01a953265e6649",
+        "weight": 400,
+        "names": [
+          "Hancom Gothic",
+          "Hancom Gothic Regular",
+          "HancomGothicRegular",
+          "Regular",
+          "한컴 고딕",
+          "한컴 고딕 Regular"
+        ]
+      },
+      {
+        "path": "/Users/tsjang/Library/Fonts/Hancom Gothic Bold.ttf",
+        "sha256": "387905d447e92bce4d12462c7f90820d859d17a17151f822d907984867317ad9",
+        "weight": 700,
+        "names": [
+          "Bold",
+          "Hancom Gothic",
+          "Hancom Gothic Bold",
+          "HancomGothicBold",
+          "한컴 고딕",
+          "한컴 고딕 Bold"
+        ]
+      }
+    ],
+    "prior_embedded_family": "한컴 고딕",
+    "prior_embedded_actual_family": "Noto Sans KR ExtraLight",
+    "prior_sha256": "67b4003e2be99ea44a7c957e4b35acde1b5e6e82a54fe195c5598c3c617bc2e3",
+    "pdf_fonts": [
+      "HancomGothicRegular",
+      "HancomGothicBold"
+    ],
+    "decision": "실제 설치 face 파일을 연결하고 새 출력으로 판정"
+  },
+  "metric_measurements": {
+    "Regular": {
+      "units_per_em": 1000,
+      "hangul_glyphs": 11172,
+      "hangul_advance": 932,
+      "digit_advance": 583
+    },
+    "Bold": {
+      "units_per_em": 1000,
+      "hangul_glyphs": 11172,
+      "hangul_advance": 932,
+      "digit_advance": 583
+    }
+  },
+  "source_sha256": {
+    "src/renderer/layout/paragraph_layout.rs": "18de947db47e7397405204e2f722c4aa01b0b051b61b687ec5cdb02524247c6f",
+    "src/renderer/svg.rs": "0be0807fac824352d874649e617a598e5e992bee5007eca3e8ed8fe3ec24547a",
+    "src/renderer/font_metrics_overlays.rs": "0d21101c6fd98eacde506abde10181b81114ced26579e9793f8f48ff22f0375e"
+  },
+  "input_sha256": "a15ef3aa092febb9540e68f9bae206a8a2b7f7a613b8b13eca65e3fa67126aea",
+  "pdf_sha256": "ef296fcb5e7c99176eb095e9482f7cf533d2de7a5ecd13c547e89652f3e64cf8",
+  "native_sha256": "91491f3a90da83ba3d3818e861c2da81cee989bb536d9993138796cf4f05aa82",
+  "native": {
+    "pages": 1,
+    "minimum_percent": 90.04699,
+    "below90_pages": [],
+    "exit_code": 0
+  },
+  "wasm": {
+    "pages": 1,
+    "minimum_percent": 90.04699,
+    "below90_pages": [],
+    "exit_code": 0
+  },
+  "anomaly_after": {
+    "emptyPageCount": 0,
+    "hasSignal": false,
+    "mode": "single",
+    "offCanvasCount": 0,
+    "overflowCount": 0,
+    "overflowTolerancePx": 1.0,
+    "overlapCount": 0,
+    "overlapTolerancePx": 2.0,
+    "pageCount": 1,
+    "pageFilter": null,
+    "pages": [],
+    "schemaVersion": "1.0",
+    "source": "samples/issue5723/coanchored_square_pair_center_slack.hwpx",
+    "storedLineEscapeCount": 0,
+    "storedLineTolerancePx": 0.5,
+    "strict": false,
+    "textOverlapCount": 0,
+    "types": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  },
+  "wasm_sha256": "73f8394b355249e0a3230ec5e96693200b725278184547abc266a5c00b357590",
+  "focused": {
+    "run": 28,
+    "passed": 24,
+    "failed": 4,
+    "exit_code": 100,
+    "seconds": 77.404,
+    "scope": "직전 실패27건 + 기존 #5723 검사1건; 전체 회귀 아님"
+  },
+  "manifest": {
+    "base": "ab4dcfaca5d6c151a814536570b9c7e2832daa8c",
+    "exit_code": 0,
+    "generated_reprepared": true
+  },
+  "fmt_exit_code": 0,
+  "diff_exit_code": 0,
+  "rust_gates": [
+    {
+      "key": "nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "--test",
+        "overflow_cell_baseline",
+        "--test",
+        "regression_suite_008",
+        "--test",
+        "regression_suite_009",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_014",
+        "--test",
+        "regression_suite_016",
+        "--test",
+        "regression_suite_017",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_020",
+        "-E",
+        "test(=overflow_cell_lines_do_not_grow_partition_11) or test(=overflow_cell_lines_do_not_grow_partition_10) or test(=off_canvas_baseline::off_canvas_does_not_grow_partition_3) or test(=off_canvas_baseline::off_canvas_does_not_grow_partition_6) or test(=off_canvas_baseline::off_canvas_does_not_grow_partition_9) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_1) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_12) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_13) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_14) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_15) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_6) or test(=overflow_cell_lines_do_not_grow_partition_1) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_9) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_14) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_2) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_5) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_7) or test(=issue_1100_exam_social_hwpx_header::issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only) or test(=issue_1100_exam_social_hwpx_header::issue_1100_hwpx_four_pages_preserve_question_paragraph_ownership) or test(=issue_1100_exam_social_hwpx_header::issue_1100_hwpx_master_page_footer_page_number_is_preserved) or test(=issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page7) or test(=issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page8) or test(=issue_5875_nested_table_text_caption::issue_5875_page_count_stays_12) or test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_0) or test(=oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_11) or test(=oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_3) or test(=issue_5782_fragment_span_charge::issue_5782_fragment_clip_covers_nested_table_bottom) or test(issue_5723_coanchored_square_pair_center_slack)"
+      ],
+      "exit_code": 100,
+      "seconds": 240.602
+    },
+    {
+      "key": "wasm-build",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit_code": 0,
+      "seconds": 158.032
+    },
+    {
+      "key": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 22.539
+    },
+    {
+      "key": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 14.124
+    },
+    {
+      "key": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 30.909
+    },
+    {
+      "key": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 53.614
+    }
+  ],
+  "wasm_build_kind": "Mac 로컬 no-opt 대체 빌드; Docker 최적화 검증 아님"
+}

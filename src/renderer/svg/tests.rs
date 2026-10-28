@@ -55,17 +55,16 @@ fn test_svg_draw_text_medium_weight() {
 
 #[test]
 fn legacy_hanyang_faces_have_portable_local_aliases() {
-    // HWPX가 저장한 legacy face와 한컴 2020 PDF가 실제로 대체해 출력한 family가
-    // 다르다. `--font-style` SVG가 이 순서를 잃으면 검증 host에서 무관한 폴백 또는
-    // 두부(□)로 rasterize되어 PDF 대조 증적이 무효해진다.
+    // 원본 outline을 먼저 찾고 실제로 없는 경우에만 대체한다.
+    // 한컴 버전만으로 원본 프로그램을 HCR로 덮어쓰지 않는다.
     assert_eq!(
         font_local_aliases("한양중고딕"),
         vec![
-            "HCR Dotum",
-            "함초롬돋움",
             "한양중고딕",
             "HY중고딕",
             "HYGothic-Medium",
+            "HCR Dotum",
+            "함초롬돋움",
         ]
     );
     assert_eq!(
@@ -102,18 +101,35 @@ fn legacy_hanyang_faces_have_portable_local_aliases() {
     );
     assert_eq!(
         known_font_filenames("한양중고딕").first(),
-        Some(&"HANDotum.ttf"),
-        "한컴 2020 PDF와 같은 HCR Dotum을 full embed에서 먼저 찾아야 함"
+        Some(&"H2GTRM.TTF"),
+        "Full embed도 같은 원본 outline 프로그램을 먼저 찾아야 함"
     );
     assert_eq!(
         known_font_filenames("휴먼명조").first(),
-        Some(&"HANBatang.ttf"),
-        "한컴 2020 PDF와 같은 HCR Batang을 휴먼명조보다 먼저 찾아야 함"
+        Some(&"HMKMM.TTF"),
+        "Windows 한컴 PDF의 원 휴먼명조를 먼저 찾고 비트맵 strike는 임베드 사본에서 제거해야 함"
     );
     assert_eq!(
         known_font_filenames("한양신명조").first(),
         Some(&"H2MJSM.TTF"),
         "Windows 설치본의 실제 한양신명조 파일을 먼저 찾아야 함"
+    );
+    // [#6171] 견고딕/견명조도 형제 항목과 같은 `H2*` 파일명이다(Windows 글꼴 실측).
+    // 종전의 `HYGTRE.TTF`·`HYMJRE.TTF` 는 설치본에 없어 full embed 가 매번 실패했다.
+    assert_eq!(
+        known_font_filenames("한양견고딕").first(),
+        Some(&"H2GTRE.TTF"),
+        "Windows 설치본의 실제 한양견고딕 파일(H2GTRE.TTF)을 먼저 찾아야 함"
+    );
+    assert_eq!(
+        known_font_filenames("한양견명조").first(),
+        Some(&"H2MJRE.TTF"),
+        "Windows 설치본의 실제 한양견명조 파일(H2MJRE.TTF)을 먼저 찾아야 함"
+    );
+    assert_eq!(
+        font_local_aliases("한양견고딕"),
+        vec!["한양견고딕", "HY견고딕", "HYGothic-Extra"],
+        "정상 outline인 HY견고딕은 원 face를 먼저 유지해야 함"
     );
     assert_eq!(
         font_local_bold_aliases("휴먼명조").first(),
@@ -165,6 +181,55 @@ fn planned_font_lookup_does_not_descend_below_search_roots() {
         "font lookup must consider direct file names only"
     );
 
+    // 실제 설치 파일이 있으면 같은 루트의 대체 파일보다 먼저 선택한다.
+    let installed = root.join("HANYGO230.ttf");
+    std::fs::write(&installed, b"installed face").expect("설치 파일 후보");
+    std::fs::write(root.join("NotoSansKR-ExtraLight.ttf"), b"substitute").expect("대체 파일 후보");
+    for face in ["한컴 윤고딕 230", "Haan YGodic 230"] {
+        let lookup = plan_svg_font_file_lookup(face, std::slice::from_ref(&root), false);
+        assert_eq!(
+            find_font_file(&lookup),
+            Some(installed.clone()),
+            "원 face 파일 우선: {face}"
+        );
+    }
+    // 서로 다른 원 face가 같은 루트에 있어도 이름에 대응하는 파일을 선택한다.
+    for (face, filename) in [
+        ("HCR Batang", "HANBatang.ttf"),
+        ("HCR Dotum", "HANDotum.ttf"),
+        ("Haansoft Batang", "HBATANG.TTF"),
+        ("Haansoft Dotum", "HDOTUM.TTF"),
+    ] {
+        let installed = root.join(filename);
+        std::fs::write(&installed, b"installed face").expect("원 face 설치 후보");
+        let lookup = plan_svg_font_file_lookup(face, std::slice::from_ref(&root), false);
+        assert_eq!(
+            find_font_file(&lookup),
+            Some(installed),
+            "원 face 파일: {face}"
+        );
+    }
+    // 앞 루트의 대체 face가 뒤 루트의 원 face를 가리지 않아야 한다.
+    let later = root.join("later");
+    std::fs::create_dir_all(&later).expect("뒤쪽 글꼴 공급 루트");
+    let original = later.join("HMKMM.TTF");
+    std::fs::write(&original, b"original face").expect("원 휴먼명조 후보");
+    let roots = [root.clone(), later];
+    for face in ["휴먼명조", "HumanMyeongJo"] {
+        let mut lookup = plan_svg_font_file_lookup(face, &roots, false);
+        lookup.search_dirs = roots.to_vec();
+        assert_eq!(find_font_file(&lookup), Some(original.clone()));
+    }
+    // 같은 원 face가 두 루트에 있으면 호출자가 먼저 지정한 루트를 사용한다.
+    let first_original = root.join("HMKMM.TTF");
+    std::fs::write(&first_original, b"caller face").expect("앞쪽 원 face 후보");
+    let mut lookup = plan_svg_font_file_lookup("휴먼명조", &roots, false);
+    lookup.search_dirs = roots.to_vec();
+    assert_eq!(find_font_file(&lookup), Some(first_original.clone()));
+    // 원 face가 없을 때만 기존 대체 face를 사용한다.
+    std::fs::remove_file(first_original).expect("앞쪽 원 face 제거");
+    std::fs::remove_file(original).expect("뒤쪽 원 face 제거");
+    assert_eq!(find_font_file(&lookup), Some(root.join("HANBatang.ttf")));
     std::fs::remove_dir_all(root).expect("remove temporary font directory");
 }
 
@@ -206,8 +271,13 @@ fn style_font_face_css_orders_broken_bitmap_faces_after_outline_fallbacks() {
         .find(|line| line.contains("font-family: \"한양중고딕\""))
         .expect("한양중고딕 style rule");
     assert!(
-        hanyang_jung.contains("local(\"HCR Dotum\"), local(\"함초롬돋움\"), local(\"한양중고딕\")"),
-        "한컴 PDF 대체 고딕이 legacy local face보다 앞서야 함"
+        hanyang_jung
+            .find("local(\"HY중고딕\")")
+            .expect("원본 outline 별칭")
+            < hanyang_jung
+                .find("local(\"HCR Dotum\")")
+                .expect("대체 outline 폴백"),
+        "실제 CSS에서도 정상 원본 outline이 대체 고딕보다 앞서야 함"
     );
     let human_gothic = css
         .lines()
@@ -257,7 +327,71 @@ fn style_font_face_css_orders_broken_bitmap_faces_after_outline_fallbacks() {
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn full_font_embed_uses_real_bold_face_when_document_uses_bold() {
-    let dir = std::env::temp_dir().join(format!("rhwp-svg-bold-font-{}", std::process::id()));
+    // 기존 임베드 검사에서 종료 비문자만 보정하고 정상 문자 매핑은 보존하는지 확인한다.
+    let mut terminal = vec![0, 0, 0, 1, 0, 3, 0, 1, 0, 0, 0, 12];
+    for word in [
+        4u16,
+        32,
+        0,
+        4,
+        4,
+        1,
+        0,
+        65,
+        u16::MAX,
+        0,
+        65,
+        u16::MAX,
+        (-64i16) as u16,
+        0,
+        0,
+        0,
+    ] {
+        terminal.extend_from_slice(&word.to_be_bytes());
+    }
+    let repaired = svg_cmap_terminal_missing_glyph(&terminal, 2).into_owned();
+    let mut expected = terminal.clone();
+    expected[38..40].copy_from_slice(&1u16.to_be_bytes());
+    assert_eq!(
+        repaired, expected,
+        "U+FFFF 종료 델타 외의 원본 매핑은 보존한다"
+    );
+    assert!(matches!(
+        svg_cmap_terminal_missing_glyph(&repaired, 2),
+        std::borrow::Cow::Borrowed(_)
+    ));
+    expected[38..40].copy_from_slice(&2u16.to_be_bytes());
+    assert_eq!(
+        svg_cmap_terminal_missing_glyph(&expected, 2).as_ref(),
+        expected
+    );
+    assert_eq!(
+        svg_cmap_terminal_missing_glyph(&terminal[..43], 2).as_ref(),
+        &terminal[..43]
+    );
+
+    let chars = std::collections::HashSet::from(['가']);
+    let regular = include_bytes!("../../../tests/fixtures/fonts/RHWPHostFixture-Regular.ttf");
+    let bitmap_only = include_bytes!("../../../tests/fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf");
+    let collection = include_bytes!("../../../tests/fixtures/fonts/RHWPHostFixture.ttc");
+    // 비혼합 윤곽선, 비트맵 전용 및 collection은 입력 bytes를 그대로 보존한다.
+    assert_eq!(svg_outline_font_data(regular, &chars).as_ref(), regular);
+    assert_eq!(
+        svg_outline_font_data(bitmap_only, &chars).as_ref(),
+        bitmap_only
+    );
+    assert_eq!(
+        svg_outline_font_data(collection, &chars).as_ref(),
+        collection
+    );
+    assert_eq!(
+        svg_outline_font_data(b"regular", &chars).as_ref(),
+        b"regular"
+    );
+
+    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("output/pr-review/regression-temp")
+        .join(format!("rhwp-svg-bold-font-{}", std::process::id()));
     std::fs::create_dir_all(&dir).expect("temporary font directory");
     std::fs::write(dir.join("HANBatang.ttf"), b"regular").expect("regular test font");
     std::fs::write(dir.join("HANBatangB.ttf"), b"bold").expect("bold test font");
@@ -447,7 +581,7 @@ fn extra_char_spacing_does_not_expand_ascii_glyph_width() {
 }
 
 #[test]
-fn negative_extra_char_spacing_preserves_existing_svg_glyph_fit() {
+fn negative_extra_char_spacing_moves_origins_without_compressing_svg_glyphs() {
     let base_style = TextStyle {
         font_size: 20.0,
         font_family: "돋움".to_string(),
@@ -475,8 +609,8 @@ fn negative_extra_char_spacing_preserves_existing_svg_glyph_fit() {
         let base_length = text_length_of(base_output, glyph);
         let spaced_length = text_length_of(spaced_output, glyph);
         assert!(
-            (spaced_length - (base_length - 2.0)).abs() < 0.001,
-            "음수 셀 보정은 기존 SVG glyph-fit 폭을 유지해야 함: \
+            (spaced_length - base_length).abs() < 0.001,
+            "음수 배분 간격은 글리프의 자연 폭을 유지해야 함: \
              glyph={glyph}, base={base_length}, spaced={spaced_length}"
         );
     }
@@ -533,8 +667,8 @@ fn test_svg_draw_text_corner_quote_uses_halfwidth_text_length() {
     let base_quote_length = text_length_of(&base_output, "「");
     let negative_quote_length = text_length_of(&negative_output, "「");
     assert!(
-        (negative_quote_length - (base_quote_length - 2.0)).abs() < 0.001,
-        "음수 셀 보정은 낫표의 기존 SVG glyph-fit 폭을 유지해야 함: \
+        (negative_quote_length - base_quote_length).abs() < 0.001,
+        "음수 배분 간격은 낫표의 자연 glyph-fit 폭을 줄이면 안 됨: \
          base={base_quote_length}, negative={negative_quote_length}"
     );
     assert!(
@@ -620,31 +754,40 @@ fn test_svg_text_decoration() {
 }
 
 #[test]
-fn test_svg_text_ratio() {
-    let mut renderer = SvgRenderer::new();
-    renderer.begin_page(800.0, 600.0);
-    // ratio 80%: 문자별 transform 적용
-    renderer.draw_text(
-        "장평",
-        50.0,
-        100.0,
-        &TextStyle {
-            font_size: 16.0,
-            ratio: 0.8,
+fn svg_condensed_ratio_preserves_declared_height_and_horizontal_scale() {
+    // #5821의 독립 Print Tf·CTM·Tz와 전쪽 Native/fresh WASM이 근거다.
+    // 추출 span의 기하평균 size를 세로 글리프 크기로 사용하지 않는다.
+    for (font_size, ratio) in [(16.0, 0.8), (24.0, 0.95)] {
+        let style = TextStyle {
+            font_size,
+            ratio,
             ..Default::default()
-        },
-    );
-    let output = renderer.output();
-    // [#5821] 압축 장평은 세로 fs×√r + 가로 √r (총 폭 ×r 불변) — 한글 2022
-    // PDF 실측 계약. 첫 문자 '장': translate(50,100) scale(√0.8=0.8944,1).
-    assert!(output.contains("transform=\"translate(50,100) scale(0.8944,1)\""));
-    assert!(
-        output.contains("font-size=\"14.31"),
-        "글리프 크기가 16×√0.8=14.31 로 축소되어야 함"
-    );
-    // 문자별 렌더링이므로 각 문자가 개별 <text> 요소
-    let text_count = output.matches("<text ").count();
-    assert_eq!(text_count, 2, "2개 문자 = 2개 <text> 요소");
+        };
+        let mut renderer = SvgRenderer::new();
+        renderer.begin_page(800.0, 600.0);
+        renderer.draw_text("장평", 50.0, 100.0, &style);
+        renderer.end_page();
+        let xml = roxmltree::Document::parse(renderer.output()).expect("완전한 SVG");
+        let glyphs: Vec<_> = xml
+            .descendants()
+            .filter(|node| node.has_tag_name("text"))
+            .collect();
+        assert_eq!(glyphs.len(), 2, "원본의 두 글자 보존");
+        for glyph in glyphs {
+            let actual_size: f64 = glyph.attribute("font-size").unwrap().parse().unwrap();
+            assert!((actual_size / style.font_size - 1.0).abs() < 1e-6);
+            let transform = glyph.attribute("transform").expect("장평 변환");
+            let scale = transform.split("scale(").nth(1).unwrap();
+            let values: Vec<f64> = scale
+                .trim_end_matches(')')
+                .split(',')
+                .map(|value| value.parse().unwrap())
+                .collect();
+            assert_eq!(values.len(), 2);
+            assert!((values[0] - style.ratio).abs() < 1e-6);
+            assert_eq!(values[1], 1.0, "장평은 세로 축을 바꾸지 않는다");
+        }
+    }
 }
 
 #[test]
@@ -729,6 +872,19 @@ fn make_minimal_bmp_2x2() -> Vec<u8> {
     v.extend_from_slice(&[0, 0, 0, 0]); // important colors
     v.extend_from_slice(&pixels);
     v
+}
+
+fn first_embedded_png(svg: &str) -> image::RgbaImage {
+    use base64::Engine as _;
+    let prefix = "data:image/png;base64,";
+    let start = svg.find(prefix).expect("실제 PNG payload") + prefix.len();
+    let end = start + svg[start..].find('"').expect("data URL 끝");
+    let bytes = base64::engine::general_purpose::STANDARD
+        .decode(&svg[start..end])
+        .expect("PNG base64");
+    image::load_from_memory(&bytes)
+        .expect("PNG decode")
+        .to_rgba8()
 }
 
 /// 최소 2x2 RGB TIFF를 생성한다 (브라우저가 data URI를 직접 decode하지 못하는 회귀용).
@@ -962,13 +1118,18 @@ fn test_page_background_image_non_realpic_watermark_uses_legacy_opacity() {
         )),
         "non-RealPic PageBackground watermark should apply legacy watermark opacity: {output}"
     );
+    let png = first_embedded_png(output);
+    assert_eq!(png.dimensions(), (2, 2));
+    // 원본 빨강/파랑의 byte 회색조를 먼저 확정한 뒤 화면 B70/C-50을 적용한다.
+    // 독립 Print 대조로 정한 encoded RGB 계약이며 필터 ID 존재로 대신하지 않는다.
+    assert_eq!(png.get_pixel(0, 0).0, [235, 235, 235, 255]);
+    assert_eq!(png.get_pixel(0, 1).0, [212, 212, 212, 255]);
+    assert!(png
+        .pixels()
+        .all(|p| p[0] == p[1] && p[1] == p[2] && p[3] == 255));
     assert!(
-        output.contains("rhwp-img-grayscale"),
-        "non-RealPic PageBackground watermark should keep the image effect filter: {output}"
-    );
-    assert!(
-        output.contains("rhwp-img-bc-b70c-50"),
-        "non-RealPic PageBackground watermark should keep the display brightness/contrast filter: {output}"
+        !output.contains("rhwp-img-bc-"),
+        "bake한 색조를 다시 적용하지 않는다"
     );
 }
 
@@ -990,13 +1151,14 @@ fn test_page_background_image_uses_display_brightness_contrast_order() {
     renderer.render_page_background_image(&image, &bbox);
 
     let output = renderer.output();
+    let png = first_embedded_png(output);
+    assert_eq!(png.dimensions(), (2, 2));
+    // 화면 B50/C-15: 빨강 원색의 비활성 채널은137이다. raw 순서로 조정하면 다르다.
+    assert_eq!(png.get_pixel(0, 0).0, [255, 137, 137, 255]);
+    assert_eq!(png.get_pixel(0, 1).0, [137, 137, 255, 255]);
     assert!(
-        output.contains("rhwp-img-bc-b50c-15"),
-        "쪽 배경은 raw ImageFill 순서가 아닌 화면 bright/contrast를 써야 한다: {output}"
-    );
-    assert!(
-        !output.contains("rhwp-img-bc-b-15c50"),
-        "raw 저장 순서를 화면 필터에 직접 넘기면 안 된다: {output}"
+        !output.contains("rhwp-img-bc-"),
+        "픽셀에 적용한 색조를 중복 적용하지 않는다"
     );
 }
 
@@ -1005,8 +1167,11 @@ fn test_background_image_realpic_watermark_fill_preserves_color_with_opacity() {
     let png = bmp_bytes_to_png_bytes(&make_minimal_bmp_2x2()).expect("BMP->PNG 변환 실패");
     let mut image = ImageNode::new(1, Some(png));
     image.fill_mode = Some(ImageFillMode::FitToSize);
-    image.brightness = -50;
-    image.contrast = 70;
+    // [#6895] `ImageNode` 의 두 필드는 **화면 순서**다 — 한컴 워터마크 프리셋은
+    // 밝기 70 · 대비 −50 이다. 종전 값 `(-50, 70)` 은 이진 저장 순서였는데, 채움
+    // 그림이 `ImageNode` 로 갈 때 이진 순서가 그대로 새던 시절의 흔적이다.
+    image.brightness = 70;
+    image.contrast = -50;
     image.effect = crate::model::image::ImageEffect::RealPic;
     let bbox = BoundingBox::new(10.0, 20.0, 100.0, 50.0);
     let mut renderer = SvgRenderer::new();
@@ -1016,8 +1181,12 @@ fn test_background_image_realpic_watermark_fill_preserves_color_with_opacity() {
 
     let output = renderer.output();
     assert!(
-        !output.contains("rhwp-img-bc-b-50c70"),
+        !output.contains("rhwp-img-bc-b70c-50"),
         "RealPic background watermark fill should preserve source color without brightness/contrast filter: {output}"
+    );
+    assert!(
+        !output.contains("rhwp-img-bc-b-50c70"),
+        "이진 저장 순서를 화면 필터에 직접 넘기면 안 된다: {output}"
     );
     assert!(
         !output.contains("rhwp-realpic-watermark-tone"),
@@ -1105,21 +1274,6 @@ fn test_brightness_contrast_filter_clamp_out_of_range() {
 }
 
 #[test]
-fn test_compute_image_crop_src_exam_kor_header() {
-    // [Task #477] HWP 표준 75 HU/px 룰 적용.
-    // exam_kor.hwp bin_id=27: image 픽셀 2320×354 (= 174000/75 × 26580/75 HU),
-    // crop=(0, 0, 102366, 26580) → 좌측 1364.88px × 354px (= "국어 영역")
-    let (sx, sy, sw, sh) =
-        compute_image_crop_src((0, 0, 102366, 26580), Some((174000, 26580)), 2320.0, 354.0);
-    assert!((sx - 0.0).abs() < 0.01);
-    assert!((sy - 0.0).abs() < 0.01);
-    // 102366 / 75 = 1364.88
-    assert!((sw - 1364.88).abs() < 0.01);
-    // imgDim 세로 범위가 디코딩 이미지 전체 높이에 대응한다.
-    assert!((sh - 354.0).abs() < 0.01);
-}
-
-#[test]
 fn test_compute_image_crop_src_no_crop_full_image() {
     // crop이 원본 전체를 가리키면 src도 이미지 전체와 일치
     let (sx, sy, sw, sh) =
@@ -1133,16 +1287,28 @@ fn test_compute_image_crop_src_no_crop_full_image() {
 
 #[test]
 fn test_compute_image_crop_src_offset_top_left() {
-    // 좌·상단을 잘라낸 케이스: top=oh/5, left=ow/4 → 우하단 영역.
-    // imgDim 부재 → 적응 폴백(#3239): right/bottom(4000, 2500)이 전체 좌표
-    // 범위 = 디코딩 400×250px 에 대응 (10 HU/px).
+    // [#7015] 좌·상단을 **둘 다** 잘라낸 케이스. 적응 폴백(#3239)은 `right`/`bottom`
+    // 이 전체 좌표 범위라는 가정 위에 서는데, `left > 0` · `top > 0` 이면 두 값 다
+    // 자르기 경계일 뿐이라 그 가정이 성립하지 않는다. 전체 범위를 확인할 축이 하나도
+    // 없으므로 [Task #477] 표준 75 HU/px 로 떨어진다.
     let (sx, sy, sw, sh) = compute_image_crop_src((1000, 500, 4000, 2500), None, 400.0, 250.0);
-    // src_x = 1000/10 = 100, src_y = 500/10 = 50
-    // src_w = 3000/10 = 300, src_h = 2000/10 = 200
-    assert!((sx - 100.0).abs() < 0.01);
-    assert!((sy - 50.0).abs() < 0.01);
-    assert!((sw - 300.0).abs() < 0.01);
-    assert!((sh - 200.0).abs() < 0.01);
+    // src_x = 1000/75 = 13.33, src_y = 500/75 = 6.67
+    // src_w = 3000/75 = 40.0,  src_h = 2000/75 = 26.67
+    assert!((sx - 13.333).abs() < 0.01);
+    assert!((sy - 6.667).abs() < 0.01);
+    assert!((sw - 40.0).abs() < 0.01);
+    assert!((sh - 26.667).abs() < 0.01);
+
+    // #7015 실물 입력의 축을 바꿔, 가로만 자를 때도 확인된 세로 배율을 사용한다.
+    // 기준 크기의 한 축이 0이면 유효한 imgDim으로 취급하지 않고 같은 폴백을 탄다.
+    for reference in [None, Some((0, 88560)), Some((45453, 0))] {
+        let (x, y, width, height) =
+            compute_image_crop_src((20745, 0, 45453, 88560), reference, 945.0, 1181.0);
+        assert!((x - 276.64685).abs() < 0.001, "reference={reference:?}");
+        assert!(y.abs() < 0.001, "reference={reference:?}");
+        assert!((width - 329.49580).abs() < 0.001, "reference={reference:?}");
+        assert!((height - 1181.0).abs() < 0.001, "reference={reference:?}");
+    }
 }
 
 #[test]
@@ -1173,14 +1339,14 @@ fn test_compute_image_crop_src_issue2817_img_dim_scale() {
 
 #[test]
 fn test_compute_image_crop_src_fallback_when_original_size_missing() {
-    // original_size_hu(imgDim) 부재 시 적응 폴백(#3239): crop right/bottom
-    // (102366, 26580)이 전체 좌표 범위 = 디코딩 2320×354px 에 대응한다고 본다.
-    // pre-#2990 skia 경로(image_conv.rs)와 동일한 해석 — crop 이 전체 범위를
-    // 가리키는 그림(대부분의 무-crop 저장)은 단위와 무관하게 정확하다.
+    // 전체 기준 크기가 없는 crop 끝점은 원본 전체라는 증거가 아니다.
+    // HWPUNIT의 x/y 길이 단위는 동일하므로 source 창의 종횡비를 보존한다.
+    // 두 축에 서로 다른 배율을 적용해 잘린 영역을 전체로 늘리지 않는다.
     let (sx, sy, sw, sh) = compute_image_crop_src((0, 0, 102366, 26580), None, 2320.0, 354.0);
     assert!((sx - 0.0).abs() < 0.01);
     assert!((sy - 0.0).abs() < 0.01);
-    assert!((sw - 2320.0).abs() < 0.01);
+    assert!(sw > 0.0 && sw < 2320.0);
+    assert!((sw / sh - 102366.0 / 26580.0).abs() < 1e-9);
     assert!((sh - 354.0).abs() < 0.01);
 }
 
@@ -1190,11 +1356,11 @@ fn test_compute_image_crop_src_issue3239_non_96dpi_scan_fallback() {
     // 200dpi 스캔(36 HU/px), 디코딩 1654×2340px, crop=(0,0,59520,84240),
     // raw_picture_extra 9바이트로 imgDim 부재.
     // 고정 75 룰이면 src=793.6×1123.2 로 과소 계산되어 좌상단만 2.08배
-    // 확대·절단 렌더된다. 적응 폴백은 전체 이미지를 그대로 돌려준다.
+    // 확대·절단 렌더된다. 독립 200dpi 원본의 단위는 두 축 모두 36 HU/px다.
     let (sx, sy, sw, sh) = compute_image_crop_src((0, 0, 59520, 84240), None, 1654.0, 2340.0);
     assert!((sx - 0.0).abs() < 0.01);
     assert!((sy - 0.0).abs() < 0.01);
-    assert!((sw - 1654.0).abs() < 0.01);
+    assert!((sw - 59520.0 / 36.0).abs() < 0.01);
     assert!((sh - 2340.0).abs() < 0.01);
 }
 
@@ -1224,6 +1390,7 @@ fn char_overlap_without_border_keeps_body_font_size() {
     let overlap = CharOverlapInfo {
         border_type: 0,
         inner_char_size: -4,
+        composition: None,
     };
 
     let mut renderer = SvgRenderer::new();
@@ -1252,6 +1419,7 @@ fn boxed_pua_char_overlap_draws_square_and_number() {
     let overlap = CharOverlapInfo {
         border_type: 0,
         inner_char_size: 0,
+        composition: None,
     };
 
     let mut renderer = SvgRenderer::new();
@@ -1278,6 +1446,7 @@ fn char_overlap_with_border_keeps_charsz_reduction() {
     let overlap = CharOverlapInfo {
         border_type: 4,
         inner_char_size: -2,
+        composition: None,
     };
 
     let mut renderer = SvgRenderer::new();

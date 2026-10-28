@@ -1,0 +1,98 @@
+{
+  "stage": 171,
+  "ledger_item": 13,
+  "original_pr": 7382,
+  "starting_head": "76da2ab42d0141debca2e8f44dba51cd8a90e29a",
+  "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+  "input": "samples/issue6145/worklife_balance_index_156607916.hwpx",
+  "input_sha256": "7778e5373baf7371a7c643cf4cca73defb065a92ecc941a3e55fff34fcdd2d17",
+  "reference_pdf": "pdf/planet-review-20260917/worklife_balance_index_156607916-2020.pdf",
+  "reference_pdf_sha256": "0cc7229c1d8da5ef425ef76f3ba143db17171a71449bc4e341579a18a07a47ec",
+  "before": {
+    "rhwp_pages": 7,
+    "reference_pages": 6,
+    "existing_width_and_left_functions": "2 FAIL"
+  },
+  "cause": [
+    "저장 일반 글줄의 쪽-상대 0 원점을 재구성 누적 좌표로 덮어 6쪽 문서가 7쪽이 됨",
+    "필드가 있는 본문과 저장 줄 없는 글자취급 그림 뒤의 원문 간격 소실",
+    "글자취급 표의 저장 시작과 앞 문단 끝 사이 500HU 간격 소실",
+    "원문에 문단 위 간격이 들어 있는 일반 글줄 경계에서 앞줄 trailing 600HU를 재가산하고 뒤 그림의 위 간격은 사전 차감"
+  ],
+  "correction": [
+    "앞서 실제 저장 0 원점이 있는 구역에서 물리 끝과 다음 줄 적합을 함께 확인하여 일반 글줄의 0 리셋 보존",
+    "필드 및 재조판 그림의 원문 앵커를 별도 물리 점유와 구분",
+    "표의 저장 첫 줄과 앞 저장 끝 사이 간격이 선언 위 간격과 같을 때만 재구성에서 보존",
+    "재구성 전 원본 줄 좌표가 같은 본문 프레임에서 선언 위 간격을 담은 경우만 trailing 중복을 제거하고 합성 그림의 위 간격은 배치가 한 번 더하도록 처리"
+  ],
+  "counterexample": {
+    "input": "samples/task1749/saved_bounds_cumulative_vpos.hwpx",
+    "before_first_zero_anchor": false,
+    "page_count_final": 2,
+    "pi18_owner_page": 2,
+    "focused_test": "PASS"
+  },
+  "final": {
+    "rhwp_pages": 6,
+    "native_scores": [
+      96.8384,
+      99.83973,
+      95.5266,
+      95.67837,
+      97.80197,
+      98.89183
+    ],
+    "fresh_wasm_scores": [
+      96.8384,
+      99.83973,
+      95.5266,
+      95.67837,
+      97.80197,
+      98.89183
+    ],
+    "native_gate": "passed",
+    "fresh_wasm_gate": "passed",
+    "font_mismatch_exception": false,
+    "native_wasm_png_sha256_equal_all_pages": true
+  },
+  "print_profile": {
+    "native_and_wasm": "print",
+    "empty_field_guide_absent": true,
+    "filled_field_body_preserved": true,
+    "fresh_wasm_field_page_count": 3
+  },
+  "validation": {
+    "existing_width_left_tests": "2 PASS",
+    "existing_field_profile_tests": "3 PASS",
+    "existing_1749_test": "PASS",
+    "fmt": "PASS",
+    "clippy_native": "PASS",
+    "clippy_wasm": "PASS",
+    "workspace_build": "PASS",
+    "clippy_workspace_all_targets": "PASS",
+    "manifest_base_check": "PASS",
+    "unit_tier_base_check": "PASS",
+    "full_nextest": {
+      "total": 10229,
+      "passed": 10186,
+      "failed": 43,
+      "skipped": 50,
+      "exit_code": 100,
+      "previous_failures": 44,
+      "resolved": [
+        "rhwp::regression_suite_014 issue_1749_saved_bounds_cumulative::issue_1749_pi18_starts_on_page_2"
+      ],
+      "new": []
+    }
+  },
+  "binary_sha256": "57fe92a9393eb5efc94c3160e439b6924f07d680615f5405601770ff276b0afa",
+  "wasm_sha256": "216cf30d32e16e9fc4a4d04bd498701c7feb5d9cf84b296cc5e046e8b53b799a",
+  "evidence": {
+    "native_contact": "output/pr-review/planet6897-7382-20260926/stage171-width6145/visual-candidate13-native/squeeze6145/review_contact_sheet.png",
+    "wasm_contact": "output/pr-review/planet6897-7382-20260926/stage171-width6145/visual-candidate13-wasm/squeeze6145/review_contact_sheet.png",
+    "failure_comparison": "output/pr-review/planet6897-7382-20260926/stage171-width6145/full-failure-comparison.json"
+  },
+  "new_test_functions": 0,
+  "baseline_or_tolerance_relaxations": 0,
+  "remaining_scope": "다른 PR #7382 차단 43건은 개별 재검토 대상; 이 단계 통과로 전체 PR 승인 판정하지 않음"
+}

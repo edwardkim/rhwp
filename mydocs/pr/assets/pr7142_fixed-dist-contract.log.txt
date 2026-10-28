@@ -1,0 +1,11 @@
+✔ chrome extension dist contract (2.199083ms)
+✔ firefox extension dist contract (1.11875ms)
+✔ safari manifest keeps the stricter WAR surface (0.2965ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 77.044375

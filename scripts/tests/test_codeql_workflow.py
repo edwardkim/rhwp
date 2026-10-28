@@ -77,31 +77,59 @@ class CodeQLWorkflowTests(unittest.TestCase):
             workflow.index("return { state: 'green' };"),
         )
 
+    def test_trusted_postmerge_reuse_receives_original_caller_identity(self) -> None:
+        trusted_reuse = job_body(self.workflow, "trusted_postmerge_reuse")
+        self.assertIn("caller_event_name: ${{ github.event_name }}", trusted_reuse)
+        self.assertIn("caller_ref: ${{ github.ref }}", trusted_reuse)
+        self.assertIn("caller_sha: ${{ github.sha }}", trusted_reuse)
+
     def test_green_analyze_jobs_cannot_reuse_a_failed_security_check(self) -> None:
         outputs = self._run_preflight("failure")
         self.assertEqual(outputs["fast_pass"], "false")
-        self.assertEqual(outputs["candidate_sha"], "code-candidate")
+        self.assertEqual(outputs["candidate_sha"], "cccccccccccccccccccccccccccccccccccccccc")
         self.assertEqual(
             outputs["reason"],
             "security-check-not-green:CodeQL:failure",
         )
 
+    def test_legacy_three_language_candidate_is_not_reused(self) -> None:
+        outputs = self._run_preflight("success", include_actions=False)
+        self.assertEqual(outputs["fast_pass"], "false")
+        self.assertEqual(outputs["reason"], "no-green-codeql-candidate")
+
+    def test_full_selection_covers_actions_on_old_trusted_base(self) -> None:
+        outputs = self._run_language_finalizer(
+            outcome="success",
+            languages="javascript-typescript,python,rust",
+            status="full",
+            reason="fail-closed:workflow-contract",
+        )
+        self.assertEqual(outputs["codeql_languages"], "javascript-typescript,python,rust,actions")
+        self.assertEqual(outputs["classification_status"], "full")
+
+    def test_actions_language_selection_remains_selective(self) -> None:
+        outputs = self._run_language_finalizer(
+            outcome="success", languages="actions", status="classified", reason="classified:actions",
+        )
+        self.assertEqual(outputs["codeql_languages"], "actions")
+        self.assertEqual(outputs["classification_status"], "classified")
+
     def test_green_analyze_jobs_and_early_security_check_remain_reusable(self) -> None:
         outputs = self._run_preflight("success")
         self.assertEqual(outputs["fast_pass"], "true")
-        self.assertEqual(outputs["candidate_sha"], "code-candidate")
+        self.assertEqual(outputs["candidate_sha"], "cccccccccccccccccccccccccccccccccccccccc")
         self.assertEqual(outputs["reason"], "codeql-checks-green")
 
     def test_green_analyze_jobs_and_neutral_security_summary_remain_reusable(self) -> None:
         outputs = self._run_preflight("neutral")
         self.assertEqual(outputs["fast_pass"], "true")
-        self.assertEqual(outputs["candidate_sha"], "code-candidate")
+        self.assertEqual(outputs["candidate_sha"], "cccccccccccccccccccccccccccccccccccccccc")
         self.assertEqual(outputs["reason"], "codeql-checks-green")
 
     def test_green_analyze_jobs_cannot_reuse_a_skipped_security_summary(self) -> None:
         outputs = self._run_preflight("skipped")
         self.assertEqual(outputs["fast_pass"], "false")
-        self.assertEqual(outputs["candidate_sha"], "code-candidate")
+        self.assertEqual(outputs["candidate_sha"], "cccccccccccccccccccccccccccccccccccccccc")
         self.assertEqual(
             outputs["reason"],
             "security-check-not-green:CodeQL:skipped",
@@ -130,7 +158,7 @@ class CodeQLWorkflowTests(unittest.TestCase):
         self.assertIn("permissions:\n      actions: read", preflight)
         self.assertIn(
             "codeql_languages: ${{ steps.languages.outputs.codeql_languages "
-            "|| 'javascript-typescript,python,rust' }}",
+            "|| 'javascript-typescript,python,rust,actions' }}",
             workflow,
         )
         self.assertIn(
@@ -155,21 +183,38 @@ class CodeQLWorkflowTests(unittest.TestCase):
             "javascript-typescript,rust",
             "python,rust",
             "javascript-typescript,python,rust",
+            "actions",
+            "javascript-typescript,actions",
+            "python,actions",
+            "rust,actions",
+            "javascript-typescript,python,actions",
+            "javascript-typescript,rust,actions",
+            "python,rust,actions",
+            "javascript-typescript,python,rust,actions",
         ):
             self.assertIn(f"'{selection}')", workflow)
 
     def test_analysis_steps_follow_selection_while_check_names_stay_stable(self) -> None:
         analyze = job_body(self.workflow, "analyze")
+        # CodeQL은 init과 analyze 사이에 같은 버전의 설정을 공유한다.
+        pins = re.findall(r"github/codeql-action/(?:init|analyze)@([0-9a-f]{40})", analyze)
+        self.assertGreaterEqual(len(pins), 2)
+        self.assertEqual(len(set(pins)), 1, "CodeQL 단계의 버전 불일치")
+        dependabot = (REPO_ROOT / ".github/dependabot.yml").read_text(encoding="utf-8")
+        actions_config = dependabot.split('package-ecosystem: "github-actions"', 1)[1].split(
+            "  - package-ecosystem:", 1
+        )[0]
+        self.assertIn('"github/codeql-action/*"', actions_config)
         selected = (
             "contains(format(',{0},', env.SELECTED_LANGUAGES), "
             "format(',{0},', matrix.language))"
         )
         self.assertIn(
             "SELECTED_LANGUAGES: ${{ needs.preflight.outputs.codeql_languages "
-            "|| 'javascript-typescript,python,rust' }}",
+            "|| 'javascript-typescript,python,rust,actions' }}",
             analyze,
         )
-        self.assertIn("language: [javascript-typescript, python, rust]", analyze)
+        self.assertIn("language: [javascript-typescript, python, rust, actions]", analyze)
         self.assertIn("name: Analyze (${{ matrix.language }})", analyze)
         self.assertIn("name: Skip unselected language", analyze)
         self.assertIn(f"if: ${{{{ !{selected} }}}}", analyze)
@@ -187,7 +232,7 @@ class CodeQLWorkflowTests(unittest.TestCase):
         self.assertIn(
             "if: ${{ matrix.language == 'rust' && "
             + selected
-            + " && github.event_name != 'pull_request' }}",
+            + " && github.event_name != 'pull_request' && !(github.event_name == 'push' && github.ref == 'refs/heads/devel') }}",
             analyze,
         )
         job_if = next(
@@ -244,14 +289,34 @@ class CodeQLWorkflowTests(unittest.TestCase):
         ):
             self.assertEqual(
                 outputs["codeql_languages"],
-                "javascript-typescript,python,rust",
+                "javascript-typescript,python,rust,actions",
             )
             self.assertEqual(outputs["classification_status"], "full")
             self.assertEqual(outputs["reason"], reason)
 
+    def test_all_canonical_selections_and_invalid_axes(self) -> None:
+        from itertools import combinations
+        languages = ("javascript-typescript", "python", "rust", "actions")
+        for count in range(5):
+            for subset in combinations(languages, count):
+                selection = ",".join(subset) or "none"
+                with self.subTest(selection=selection):
+                    outputs = self._run_language_finalizer(
+                        outcome="success", languages=selection, status="classified", reason="classified:test",
+                    )
+                    self.assertEqual(outputs["codeql_languages"], selection)
+                    self.assertEqual(outputs["classification_status"], "classified")
+        for invalid in ("actions,rust", "actions,actions", "actions,ruby", "", "javascript-typescript,actions,rust"):
+            with self.subTest(invalid=invalid):
+                outputs = self._run_language_finalizer(
+                    outcome="success", languages=invalid, status="classified", reason="classified:test",
+                )
+                self.assertEqual(outputs["codeql_languages"], ",".join(languages))
+                self.assertEqual(outputs["classification_status"], "full")
+
     def test_rust_lane_uses_explicit_none_build_mode_without_manual_prebuild(self) -> None:
         analyze = job_body(self.workflow, "analyze")
-        self.assertIn("language: [javascript-typescript, python, rust]", analyze)
+        self.assertIn("language: [javascript-typescript, python, rust, actions]", analyze)
         self.assertIn("languages: ${{ matrix.language }}", analyze)
         self.assertIn("security-events: write", analyze)
         self.assertIn("contents: read", analyze)
@@ -279,6 +344,43 @@ class CodeQLWorkflowTests(unittest.TestCase):
         for path in ("src/**", "crates/**", "rhwp-desk/src/**", "build.rs"):
             self.assertIn(f"  - {path}\n", config)
 
+    def test_postmerge_metrics_keep_full_source_scope_and_security_defaults(self) -> None:
+        config = (REPO_ROOT / ".github/codeql/rust-postmerge.yml").read_text(encoding="utf-8")
+        active = "\n".join(line for line in config.splitlines() if not line.lstrip().startswith("#"))
+        self.assertNotRegex(active, r"(?m)^\s*(paths|paths-ignore|queries|packs|disable-default-queries):")
+        self.assertEqual(re.findall(r"id: (\S+)", active), [
+            "rust/summary/summary-statistics",
+            "rust/summary/reduced-summary-statistics",
+            "rust/summary/query-sink-counts",
+        ])
+        self.assertEqual(active.count("kind: metric"), 3)
+        self.assertEqual(active.count("- exclude:"), 3)
+
+    def test_rust_initializers_are_exclusive_for_every_event_and_language(self) -> None:
+        analyze = job_body(self.workflow, "analyze")
+        blocks = re.findall(r"(?ms)^      - name: Initialize CodeQL \(Rust[^\n]*\n.*?(?=^      - name:|\Z)", analyze)
+        self.assertEqual(len(blocks), 3)
+        conditions = [re.search(r"if: \$\{\{ (.*?) \}\}", block).group(1) for block in blocks]
+        selection = "contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language))"
+        for event in ("pull_request", "push", "schedule", "workflow_dispatch"):
+            for ref in ("refs/heads/devel", "refs/heads/main"):
+                for language in ("rust", "python"):
+                    for selected in (True, False):
+                        values = []
+                        for condition in conditions:
+                            expression = condition.replace(selection, str(selected))
+                            expression = expression.replace("matrix.language", repr(language))
+                            expression = expression.replace("github.event_name", repr(event))
+                            expression = expression.replace("github.ref", repr(ref))
+                            expression = expression.replace("&&", " and ").replace("||", " or ")
+                            expression = re.sub(r"!(?!=)", "not ", expression)
+                            values.append(eval(expression, {"__builtins__": {}}, {}))
+                        expected = (0 if event == "pull_request" else
+                                    1 if event == "push" and ref == "refs/heads/devel" else 2)
+                        self.assertEqual(values, [language == "rust" and selected and i == expected for i in range(3)])
+        self.assertIn("config-file: .github/codeql/rust-postmerge.yml", blocks[1])
+        self.assertNotIn("config-file:", blocks[2])
+
     def test_temporary_measurement_jobs_and_artifacts_are_absent(self) -> None:
         workflow = self.workflow
         self.assertNotIn("rust-no-prebuild-shadow:", workflow)
@@ -292,6 +394,7 @@ class CodeQLWorkflowTests(unittest.TestCase):
         self,
         security_conclusion: str,
         *,
+        include_actions: bool = True,
         run_started_at: str = "2026-08-09T00:10:00Z",
         security_started_at: str | None = "2026-08-09T00:11:00Z",
         security_completed_at: str = "2026-08-09T00:11:02Z",
@@ -306,12 +409,12 @@ const endpoints = {
   listForRef: Symbol('listForRef'),
 };
 const commits = {
-  'review-record': {
-    parents: [{ sha: 'code-candidate' }],
+  'dddddddddddddddddddddddddddddddddddddddd': {
+    parents: [{ sha: 'cccccccccccccccccccccccccccccccccccccccc' }],
     files: [{ filename: 'mydocs/working/review.md', status: 'modified' }],
   },
-  'code-candidate': {
-    parents: [{ sha: 'base-sha' }],
+  'cccccccccccccccccccccccccccccccccccccccc': {
+    parents: [{ sha: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' }],
     files: [{ filename: 'src/lib.rs', status: 'modified' }],
   },
 };
@@ -327,7 +430,7 @@ const github = {
     },
     checks: { listForRef: endpoints.listForRef },
     repos: {
-      getCommit: async ({ ref }) => ({ data: commits[ref] }),
+      getCommit: async ({ ref }) => ({ data: { sha: ref, ...commits[ref] } }),
     },
   },
   paginate: async (endpoint, params) => {
@@ -338,14 +441,14 @@ const github = {
       ];
     }
     if (endpoint === endpoints.listCommits) {
-      return [{ sha: 'code-candidate' }, { sha: 'review-record' }];
+      return [{ sha: 'cccccccccccccccccccccccccccccccccccccccc' }, { sha: 'dddddddddddddddddddddddddddddddddddddddd' }];
     }
     if (endpoint === endpoints.listWorkflowRuns) {
       return [{
         id: 3790,
         path: '.github/workflows/codeql.yml',
         event: 'pull_request',
-        head_sha: 'code-candidate',
+        head_sha: 'cccccccccccccccccccccccccccccccccccccccc',
         head_branch: 'feature-3790',
         head_repository: { id: 7 },
         status: 'completed',
@@ -363,6 +466,7 @@ const github = {
           completed_at: '2026-08-09T00:14:00Z',
         },
         { name: 'Analyze (rust)', completed_at: '2026-08-09T00:19:00Z' },
+        ...(INCLUDE_ACTIONS ? [{ name: 'Analyze (actions)', completed_at: '2026-08-09T00:19:00Z' }] : []),
       ].map((job) => ({
         ...job,
         status: 'completed',
@@ -390,8 +494,8 @@ const context = {
     pull_request: {
       number: 4310,
       created_at: '2026-08-09T00:00:00Z',
-      base: { sha: 'base-sha' },
-      head: { ref: 'feature-3790', repo: { id: 7 } },
+      base: { sha: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' },
+      head: { sha: 'dddddddddddddddddddddddddddddddddddddddd', ref: 'feature-3790', repo: { id: 7 } },
     },
   },
 };
@@ -408,7 +512,7 @@ PREFLIGHT_SCRIPT
   process.stderr.write(String(error.stack || error));
   process.exitCode = 1;
 });
-""".replace("SECURITY_CONCLUSION", json.dumps(security_conclusion)).replace(
+""".replace("INCLUDE_ACTIONS", json.dumps(include_actions)).replace("SECURITY_CONCLUSION", json.dumps(security_conclusion)).replace(
             "RUN_STARTED_AT", json.dumps(run_started_at)
         ).replace("SECURITY_STARTED_AT", json.dumps(security_started_at)).replace(
             "SECURITY_COMPLETED_AT", json.dumps(security_completed_at)

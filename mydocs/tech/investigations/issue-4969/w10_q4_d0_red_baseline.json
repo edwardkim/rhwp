@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d0-red-baseline",
+  "issue": 4969,
+  "stage": "W10-Q4-D0",
+  "date": "2026-08-30",
+  "status": "qualified-red-baseline",
+  "maintainerResultApproved": true,
+  "planCheckpoint": "7b3a7bab4",
+  "productSourceChanged": false,
+  "productOutputChanged": false,
+  "targetPolicy": {
+    "mode": "boundedVerticalHwp5TableCellV1",
+    "hwp5SemanticProvenance": true,
+    "textDirection": 2,
+    "oneCellParagraphLineRunColumn": true,
+    "pureCjk": true,
+    "exactSourceRegistered": true,
+    "variationRequested": false,
+    "q4CDormantTransactionApplied": true,
+    "productPublished": false
+  },
+  "green": {
+    "q4ContractAndTargetPassed": 28,
+    "q4ContractAndTargetFailed": 0,
+    "redFilteredOut": 5,
+    "integrationPolicyPassed": 19,
+    "integrationPolicyFailed": 0,
+    "studioCanvasKitControlPassed": 1,
+    "studioCanvasKitControlFailed": 0,
+    "focusedClippy": "passed",
+    "formatCheck": "passed"
+  },
+  "canonicalControls": [
+    {
+      "path": "samples/table-004.hwp",
+      "profile": "screen",
+      "pages": 1,
+      "overflowCellLines": 0,
+      "svgBytes": 214449,
+      "svgSha256": "7711baa0afe033c044605ff1afd5597534a8f246819bf12e929ac3c5ab93873f"
+    },
+    {
+      "path": "samples/issue6029/3200477_icao_procedure.hwpx",
+      "profile": "screen",
+      "pages": 1,
+      "overflowCellLines": 0,
+      "svgBytes": 273101,
+      "svgSha256": "27ac3f000875a1413a9a99bb3f8ad4c1fb8c21a942a3b9fd6476df72030328e9"
+    }
+  ],
+  "red": {
+    "filter": "issue_4969_q4_d0_red",
+    "passed": 0,
+    "failed": 5,
+    "unexpectedFailures": 0,
+    "causes": [
+      "product-vertical-module-registration-absent",
+      "exact-source-bound-vertical-owner-absent",
+      "atomic-table-cell-layout-commit-absent",
+      "vertical-glyph-run-publication-absent",
+      "rust-and-studio-canvaskit-feature-detection-absent"
+    ]
+  },
+  "newIntegrationSource": false,
+  "generatedIntegrationArtifacts": false,
+  "privateCorpusUsed": false,
+  "hyperVUsed": false,
+  "githubMutation": false,
+  "temporaryOutputDisposition": "moved-to-trash",
+  "next": "maintainer-Q4-D1-start-approval-after-Q4-D0-checkpoint"
+}

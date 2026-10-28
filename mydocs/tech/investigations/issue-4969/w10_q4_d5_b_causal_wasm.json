@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d5-b-causal-wasm-comparison-result",
+  "issue": 4969,
+  "stage": "W10-Q4-D5-B",
+  "date": "2026-08-31",
+  "status": "causal-size-unavailable",
+  "currentBCheckpoint": "e7f814330dbc8c19cc8ef00462ea6b993aae74fb",
+  "disposableWorktree": true,
+  "reverseProductCheckpoints": [
+    "b1a33b6fc",
+    "c9b551909",
+    "d49400aad",
+    "bb334756b",
+    "992fe4aca",
+    "d0948166a"
+  ],
+  "firstAttemptedCheckpoint": "b1a33b6fc",
+  "conflict": {
+    "occurred": true,
+    "paths": [
+      "mydocs/orders/20260831.md",
+      "mydocs/plans/task_m100_4969_w10_q4_d.md",
+      "mydocs/plans/task_m100_4969_w10_q4_d4.md",
+      "mydocs/tech/investigations/issue-4969/w10_q4_d4_c_studio_runtime.json",
+      "mydocs/tech/investigations/issue-4969/w10_q4_d4_execution_plan.json",
+      "mydocs/working/task_m100_4969_w10_q4_d4_c.md",
+      "rhwp-studio/e2e/issue-4969-shaping-replay.test.mjs"
+    ],
+    "productConflictResolutionAttempted": false,
+    "forcedResolutionAttempted": false
+  },
+  "wasmBuildAStarted": false,
+  "wasmBuildBStarted": false,
+  "historicalAbsoluteDeltaSubstituted": false,
+  "cleanup": {
+    "revertAborted": true,
+    "disposableWorktreeRemoved": true,
+    "currentBranchUnchanged": true
+  },
+  "impact": "D5 causal WASM size hard gate is incomplete; final Q4-D classification remains blocked even if D5-C correctness gates pass",
+  "next": "D5-C-correctness-and-regression-bounding"
+}

@@ -47,6 +47,12 @@ pub fn write_table<W: Write>(
     table: &Table,
     ctx: &mut SerializeContext,
 ) -> Result<(), SerializeError> {
+    // Keep the editable IR grid; HWPX rows must each contain a cell origin.
+    let projected = ctx
+        .table_row_grids
+        .table(table)
+        .map_err(SerializeError::UnsupportedInput)?;
+    let table = projected.as_ref();
     // borderFillIDRef 참조 등록 (assert_all_refs_resolved 검증 대상)
     ctx.border_fill_ids.reference(table.border_fill_id);
     for zone in &table.zones {

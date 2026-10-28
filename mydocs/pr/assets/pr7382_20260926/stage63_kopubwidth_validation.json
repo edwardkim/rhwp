@@ -1,0 +1,239 @@
+{
+  "scope": "고정38의19번 기존KoPub폭 함수 개별 완료;전체PR 미완료",
+  "preanalysis": {
+    "pdf_observations": [
+      {
+        "pdf": "pdf/issue2006/1790387_prep_final_report-2024.pdf",
+        "sha256": "04b95a6e41420fb45934ce2ee5abd8cf6dac4ce12fd47977dacbe7fca28018a8",
+        "page_count": 140,
+        "observations": [
+          {
+            "page": 94,
+            "text": "MSM, men who have sex with men; TGW/TGM, transwomen/transgender",
+            "bbox_pt": [
+              56.63999938964844,
+              625.176025390625,
+              365.8243408203125,
+              634.656005859375
+            ],
+            "ink_width_96dpi": 412.24578857421875,
+            "font": [
+              "KoPubDotumLight"
+            ]
+          },
+          {
+            "page": 108,
+            "text": "with men through the network scale-up method in Japan. PLoS One. 2012;7(1):e31184.",
+            "bbox_pt": [
+              75.47999572753906,
+              644.68798828125,
+              503.7460021972656,
+              655.7279663085938
+            ],
+            "ink_width_96dpi": 571.0213419596354,
+            "font": [
+              "KoPubDotumLight"
+            ]
+          }
+        ]
+      },
+      {
+        "pdf": "pdf/issue2006/1790387_prep_final_report-hwp2020-20260814.pdf",
+        "sha256": "f4b50edce8b519d8e1230657fe3630fec43e44327e27501887facfe632dc0c6a",
+        "page_count": 140,
+        "observations": [
+          {
+            "page": 94,
+            "text": "MSM, men who have sex with men; TGW/TGM, transwomen/transgender",
+            "bbox_pt": [
+              57.0,
+              624.5,
+              366.4100341796875,
+              635.5
+            ],
+            "ink_width_96dpi": 412.5467122395833,
+            "font": [
+              "KoPubDotumLight"
+            ]
+          },
+          {
+            "page": 108,
+            "text": "with men through the network scale-up method in Japan. PLoS One. 2012;7(1):e31184.",
+            "bbox_pt": [
+              76.0,
+              644.6500244140625,
+              504.0,
+              656.75
+            ],
+            "ink_width_96dpi": 570.6666666666666,
+            "font": [
+              "KoPubDotumLight"
+            ]
+          }
+        ]
+      }
+    ],
+    "render_tree_observations": [
+      {
+        "mode": "before",
+        "page": 94,
+        "path": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fidelity-before/render_tree/render_tree_094.json",
+        "sha256": "a624599369e2bd9c4cc21783bc9c382fac7a2e9e8c7aaaa774231a0b93ba8402",
+        "lines": []
+      },
+      {
+        "mode": "before",
+        "page": 95,
+        "path": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fidelity-before/render_tree/render_tree_095.json",
+        "sha256": "20ba165410d44d953ba2640900ddf79501b1520a85268a36e25e0e23ef2f0f7d",
+        "lines": [
+          {
+            "text": "MSM, men who have sex with men; TGW/TGM, transwomen/transgender",
+            "y": 833.0,
+            "span": 414.19999999999993,
+            "page_width": 793.7
+          }
+        ]
+      },
+      {
+        "mode": "before",
+        "page": 108,
+        "path": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fidelity-before/render_tree/render_tree_108.json",
+        "sha256": "c974ad7f612fb97492d49273cbad0ac1623313a2337abff61cd63eeae2b63e59",
+        "lines": []
+      },
+      {
+        "mode": "before",
+        "page": 109,
+        "path": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fidelity-before/render_tree/render_tree_109.json",
+        "sha256": "896af7458479c2c663d755a19861e986522579a9c0cef1d3927f2c5537af9095",
+        "lines": [
+          {
+            "text": "with men through the network scale-up method in Japan. PLoS One. 2012;7(1):e31184.",
+            "y": 859.0,
+            "span": 574.1,
+            "page_width": 793.7
+          }
+        ]
+      },
+      {
+        "mode": "after",
+        "page": 94,
+        "path": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/candidate3/visual-final-native/prep2006/render_tree/render_tree_094.json",
+        "sha256": "ad20a401904a73773ca05dacb9337d855b4e1d60858f1bde550b92232d0946a6",
+        "lines": [
+          {
+            "text": "MSM, men who have sex with men; TGW/TGM, transwomen/transgender",
+            "y": 833.0,
+            "span": 414.19999999999993,
+            "page_width": 793.7
+          }
+        ]
+      },
+      {
+        "mode": "after",
+        "page": 108,
+        "path": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/candidate3/visual-final-native/prep2006/render_tree/render_tree_108.json",
+        "sha256": "959ac3a30c8865b498608469bd7ef2aca584e7525b6990b33901b0556f8b8ce0",
+        "lines": [
+          {
+            "text": "with men through the network scale-up method in Japan. PLoS One. 2012;7(1):e31184.",
+            "y": 859.0,
+            "span": 574.1,
+            "page_width": 793.7
+          }
+        ]
+      }
+    ],
+    "expectations": {
+      "ink_width": [
+        412.55,
+        570.67
+      ],
+      "tolerance_px": 10,
+      "page_width_72dpi": 595
+    },
+    "initial_failure": "stage55 full.log: line_span lookup None at94;not widthassertion",
+    "decision": "독립 PDF와 정상 쪽 소유를 확인;기존 폭/공차/함수수 유지"
+  },
+  "individual": {
+    "function": "issue_7390_kopub_latin_metrics::kopub_latin_line_width_matches_hancom_in_absolute_px",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--test",
+      "regression_suite_012",
+      "-E",
+      "test(/(^|::)issue_7390_kopub_latin_metrics::kopub_latin_line_width_matches_hancom_in_absolute_px$/)",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plan": {
+      "caseName": "issue_7390_kopub_latin_metrics",
+      "target": "regression_suite_012",
+      "grouped": true
+    },
+    "exit_code": 0,
+    "seconds": 6.809816916007549,
+    "head": "32e2e2f96c9ef924cf8e7ef8f1bcc4da2de48ff9",
+    "code_commit": "fd10e7fd9d9fda41648b0d8ba2f57d219ae8d197",
+    "reused_evidence": "stage59_prep2006_validation.json",
+    "source_sha_comparison": "all_equal",
+    "test_source_sha256": "e3a0c6ba93c4ddae997676066432534a3aacf23b154b201158c81f733759e4c7"
+  },
+  "visual_reuse": {
+    "evidence": "stage59_prep2006_validation.json",
+    "evidence_sha256": "abcb40df200bcf766a755974f5f306809fccf1c8757ddb2200ec2825f65fb958",
+    "source_comparison": "all_equal",
+    "count": 280,
+    "native_min": 91.82221,
+    "wasm_min": 91.82221,
+    "page94": 99.57016,
+    "page108": 99.83575
+  },
+  "assets": [
+    {
+      "path": "stage63_after_native_prep2006_review_094.png",
+      "sha256": "7dbe43bbb91913b59703c69803c4f096c9b51295b456cb4fea5f8c760fb7e22c",
+      "direct_read": true
+    },
+    {
+      "path": "stage63_after_native_prep2006_review_108.png",
+      "sha256": "7d4c8a8ec28be37322c83a29f0f18da9dfa5bdd428f10fbd5a4ecdf860c32fca",
+      "direct_read": true
+    },
+    {
+      "path": "stage63_after_wasm_prep2006_review_094.png",
+      "sha256": "f21478f207ee71ae3c2e93b44edd8093ed2ad242f7c7da10aaf6ba49b7c30572",
+      "direct_read": true
+    },
+    {
+      "path": "stage63_after_wasm_prep2006_review_108.png",
+      "sha256": "1aa1096fa265d871d3250e4ff59dae30cef9fb84e3457e89f7a8d51b49646588",
+      "direct_read": true
+    },
+    {
+      "path": "stage63_after_wasm_prep2006_overlay_108.png",
+      "sha256": "4215f6eb0cb6be4eb8548e231b597858756b025f200444f75397d094a019fccd",
+      "direct_read": true
+    }
+  ],
+  "before": {
+    "head": "f677301d4+stage55 workingtree snapshot",
+    "evidence": "full-provenance.json/full.log",
+    "failure": "94쪽 대상줄 없음;폭 assertion 도달 전 FAIL",
+    "test_source_same_as_6a": true
+  },
+  "code_change": "추가수정 없음;보정59의 페이지 지연 수정으로 해결",
+  "test_changed": false,
+  "baseline_changed": false,
+  "new_test_functions": 0,
+  "residual": "약1px 문자 높이/작은 획과 제목 위 얇은 괘선 차이"
+}

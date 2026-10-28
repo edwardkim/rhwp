@@ -13,6 +13,7 @@ import {
   type WasmDocumentExport,
 } from '../src/core/export-content-loss.ts';
 
+import { assertShowsText, assertDoesNotShowText } from './support/i18n-text.ts';
 const fileCommandSource = readFileSync(
   new URL('../src/command/commands/file.ts', import.meta.url),
   'utf8',
@@ -269,7 +270,7 @@ test('Studio 명시 저장은 reported artifact를 primary 저장 뒤 fallback d
     'function requirePasswordSaveFormat',
   );
   assert.match(notice, /durationMs:\s*0/);
-  assert.match(notice, /confirmLabel:\s*'확인'/);
+  assertShowsText(notice, '확인');
 });
 
 test('알림은 출력 형식과 정확한 손실 위치를 사용자 상호작용에 남긴다', () => {

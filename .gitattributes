@@ -1,11 +1,34 @@
-# Git LFS — pdf-large/ 폴더 한정 추적
-#
-# 본질: 50 MB 초과 PDF 영역 영역 git history 영역 영역 직접 진입을 차단
-# 다른 PDF 폴더 (pdf/, pdf-2020/, pdf-2010/) 영역 영역 일반 git 영역 영역 보존
-pdf-large/**/*.pdf filter=lfs diff=lfs merge=lfs -text
-
 # SVG 골든 스냅샷 — 렌더러 생성물(LF)과 바이트 비교하므로 CRLF 변환 금지 (#1786)
 tests/golden_svg/**/*.svg text eol=lf
+
+# 폰트 재배포 전문은 공식 배포본의 원래 바이트와 공백을 보존한다.
+assets/fonts/licenses/*.pdf -text -diff
+assets/fonts/licenses/*.txt -text -whitespace
+tests/fixtures/fonts/RHWPEquationFonts.OFL.txt -text -whitespace
+# #7998 Adobe AFM과 CR 전용 개행의 라이선스 전문은 공식 배포 바이트를 보존한다.
+data/font-metrics/adobe-core14/*.afm -text -whitespace
+data/font-metrics/adobe-core14/MustRead.html -text -whitespace
+
+# WMF/EMF 골든도 같은 계약이다. `wmf_emf_goldens` 는 엔진이 LF 로 만든 문자열과 파일을
+# 통째로 비교하는데, `core.autocrlf=true` 로 클론한 Windows 체크아웃에서는 파일만 CRLF 가
+# 되어 **내용이 같은데 9건 전부 불일치**로 뜬다(리눅스 CI 는 무증상이라 안 잡힌다).
+tests/fixtures/m09x_wmf_emf/*.golden text eol=lf
+
+# Cargo의 generated test target 블록은 플랫폼과 무관하게 LF로 체크아웃한다.
+/Cargo.toml text eol=lf
+
+# 테스트가 원문을 읽어 `\n` 을 포함한 패턴으로 검사하는 소스다(Studio 계약 검사의 정규식·
+# 음성 대조 주입 위치, `src/*.rs` 함수 본문 발췌, `Cargo.lock` 패키지 블록). Windows
+# `core.autocrlf=true` 체크아웃에서는 CRLF 가 되어 같은 커밋이 Windows 에서만 실패한다.
+# 저장소의 이 파일들은 모두 LF 라 인덱스는 바뀌지 않는다.
+*.rs text eol=lf
+*.ts text eol=lf
+/Cargo.lock text eol=lf
+
+# PDF 는 텍스트 개행으로 보이는 구간이 있어도 xref 오프셋이 바이트를 가리키는 이진 형식이다.
+# 자동 감지가 텍스트로 보면 Windows 체크아웃에서 LF→CRLF 로 바뀌어 파싱이 깨진다
+# (예: `pdf/issue7966/close-stroke-controls.pdf` 가 `ImportResourceLimit` 로 실패).
+*.pdf -text -diff
 
 # Lawful HML corpus — preserve provenance bytes (BOM/CRLF/trailing spaces) and verify by SHA
 samples/hml/*.hml -text -diff
@@ -31,6 +54,8 @@ output/poc/**/*.tsv -whitespace
 # 이 파일은 재현용 unified diff 자체다. 내부 hunk의 공백 문맥은 패치 문법이므로
 # Git의 일반 source-whitespace 검사를 적용하지 않는다.
 mydocs/report/task3798/trimcap_experiment.patch -whitespace
+# 이관한 #8028 원본 패치도 문맥 공백과 원문 바이트를 보존한다.
+mydocs/pr/assets/issue7445/deferred-20261020/source-pr8028/source-pr8028.patch -text -whitespace
 
 # [#4659] 운동장 리더보드 — 해시 정합이 생명인 파일들. CRLF 변환은 원장에
 # 박힌 줄-바이트 해시를 깨뜨려 검증을 실패시킨다. LF 고정(-text).
@@ -43,3 +68,76 @@ gym/leaderboard/*.ndjson     -text
 samples/issue5447/*.hwp   -text -diff
 samples/issue5447/*.hwpx  -text -diff
 pdf/issue5447/*.pdf       -text -diff
+
+# #5057/#6202 회귀 입력은 한컴 원본 바이트다. 텍스트 변환이나 diff 정규화가
+# manifest의 SHA-256과 parser 재현성을 바꾸면 안 된다.
+samples/issue5057/*.hwp -text -diff
+samples/issue6202/*.hwp -text -diff
+
+# Issue #5941 canonical HWP fixture
+samples/issue5941/1480000-201900698-native-neartop-reset.hwp -text -diff
+
+# #6697/#6718 회귀 입력은 원본 한컴 바이트다. 텍스트 변환이나 diff 정규화가
+# manifest의 SHA-256과 renderer 재현성을 바꾸면 안 된다.
+samples/issue6697/*.hwpx -text -diff
+samples/issue6718/*.hwp -text -diff
+
+# PR #7163 전체 사진 시각 증적: 원본 ZIP 바이트 보존
+tests/fixtures/issue_7158/*.hwpx -text -diff
+
+# Preserve the original bytes of the #6756/#6764 regression inputs.
+samples/issue6756/*.hwp -text -diff
+samples/issue6764/*.hwp -text -diff
+
+# PR #6796: original HWP bytes
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp -text -diff
+
+# #7078/#7091 검토의 새 반례·변환 산출물은 원본 바이트를 보존한다.
+# PDF의 xref CRLF/공백과 압축 stream은 source whitespace가 아니다.
+tests/fixtures/issue_7077/*.hwpx -text -diff
+tests/fixtures/issue_7091/*.hwp -text -diff
+tests/fixtures/issue_7091/*.hwpx -text -diff
+pdf/pr7078-*.pdf -text -diff
+pdf/pr7091-sample11-before-2020.pdf -text -diff
+tests/fixtures/issue_7130/*.wmf -text -diff
+samples/issue6929/*.hwp -text -diff
+
+# PR #7165/#7168 독립 한컴 비교 입력·출력의 바이트를 보존한다.
+tests/fixtures/stored_inline_table_suffix/*.hwpx -text -diff
+tests/fixtures/stored_column_width_quantization/*.hwpx -text -diff
+pdf/two_digits-2020.pdf -text -diff
+pdf/stored-column-header-2020.pdf -text -diff
+tests/fixtures/stored_inline_table_suffix/*.hwp -text -diff
+tests/fixtures/stored_column_width_quantization/*.hwp -text -diff
+pdf/two-digits-wrap-2020.pdf -text -diff
+pdf/two-digits-break-2020.pdf -text -diff
+pdf/two-digits-table-wrap-2020.pdf -text -diff
+# Issue #7333 stored input and visual references are binary evidence.
+samples/issue7333/*.hwp -text -diff
+pdf/issue7333/*.pdf -text -diff
+
+# #7998 독립 PDF 격자의 xref·stream 바이트를 텍스트 변환 없이 보존한다.
+pdf/issue7998/*.pdf -text -diff
+pdf/issue7998/periodic-borders/*.pdf -text -diff
+pdf/issue7998/fill-borders/*.pdf -text -diff
+pdf/issue7998/compound-borders/*.pdf -text -diff
+pdf/issue7998/compound-borders/print/*.pdf -text -diff
+pdf/issue7998/structure-borders/*.pdf -text -diff
+pdf/issue7998/structure-borders/print/*.pdf -text -diff
+pdf/issue7998/retained-border-structure/*.pdf -text -diff
+pdf/issue7998/retained-border-structure/print/*.pdf -text -diff
+
+# #7998 수평 메트릭 독립 PDF의 xref 끝 공백을 포함해 원본 바이트를 보존한다.
+pdf/issue7998/horizontal-metrics/**/*.pdf -text -diff
+pdf/issue7998/shared-tabs/*.pdf -text -diff
+
+# #8109 font resource contracts retain PDF xref and HWPX archive bytes.
+pdf/issue8109/*.pdf -text -diff
+pdf/issue8109/*.hwpx -text -diff
+pdf/issue8109/print/*.pdf -text -diff
+tests/fixtures/issue_8109_saved_fonts/*.hwp -text -diff
+tests/fixtures/issue_8109_saved_fonts/*.hwpx -text -diff
+
+# #8183 PDF xref의 고정 폭 패딩과 codec stream의 원본 바이트를 보존한다.
+pdf/issue8183/*.pdf -text -diff
+pdf/issue8183/**/*.pdf -text -diff

@@ -1,0 +1,11 @@
+== regulatory-33-34-audit ==
++ output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee dump-note-shape /tmp/rhwp-pr7518-review-20261004/samples/76076_regulatory_analysis.hwp
++ node /tmp/rhwp-pr7518-review-20261004/scripts/export-wasm-for-sweep.mjs --pkg /tmp/rhwp-pr7518-review-20261004/pkg --input /tmp/rhwp-pr7518-review-20261004/samples/76076_regulatory_analysis.hwp --out /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/regulatory-wasm/regulatory-33-34-audit/wasm
++ output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee export-svg /tmp/rhwp-pr7518-review-20261004/samples/76076_regulatory_analysis.hwp --embed-fonts=full --font-path /tmp/rhwp-pr7518-font-cache --profile print -o /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/regulatory-wasm/regulatory-33-34-audit/font_policy
+SVG export pages: 82
++ pdftoppm -f 33 -l 33 -r 96 -png /tmp/rhwp-pr7518-review-20261004/samples/issue1891/76076_regulatory_analysis-2024.pdf /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/regulatory-wasm/regulatory-33-34-audit/pdf_png/pdf
++ pdftoppm -f 34 -l 34 -r 96 -png /tmp/rhwp-pr7518-review-20261004/samples/issue1891/76076_regulatory_analysis-2024.pdf /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/regulatory-wasm/regulatory-33-34-audit/pdf_png/pdf
++ pdftotext -bbox-layout /tmp/rhwp-pr7518-review-20261004/samples/issue1891/76076_regulatory_analysis-2024.pdf /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/regulatory-wasm/regulatory-33-34-audit/pdf_bbox.html
+Selected pages: [33, 34]
+Navigation timeout of 30000 ms exceeded
+

@@ -1,0 +1,9 @@
+{
+  "rust_source_sha": "cf2336295540ea8ce3e94eb6517cb406fca8d28f",
+  "hashes": {
+    "pkg/rhwp.js": "70cde06a369fa7fd4fc8bc8f3d6acaee158596ba1a116a2c72159002b0b5654e",
+    "rhwp-studio/public/rhwp.js": "70cde06a369fa7fd4fc8bc8f3d6acaee158596ba1a116a2c72159002b0b5654e",
+    "pkg/rhwp_bg.wasm": "3c8f9a54221120cbb2c4519dbbc026a01a41aa514085ecac3b50287058c217e3",
+    "rhwp-studio/public/rhwp_bg.wasm": "3c8f9a54221120cbb2c4519dbbc026a01a41aa514085ecac3b50287058c217e3"
+  }
+}

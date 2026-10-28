@@ -1,0 +1,107 @@
+{
+  "stage": 324,
+  "analysisCommit": "77ac5fcde",
+  "sourceSha256": {
+    "src/renderer/height_cursor.rs": "311b6aae8f50b4ecce8cd4c859691cb9ff5e6260d9431ce3d0ab36cd6d5057c3"
+  },
+  "nativeBuildExit": 0,
+  "wasmBuildExit": 0,
+  "focusedNextest": {
+    "passed": 14,
+    "failed": 0,
+    "exit": 0
+  },
+  "selectedNativeExit": 0,
+  "selectedWasmExit": 0,
+  "selectedPages": [
+    {
+      "page": "17",
+      "tolerant_content_match_percent": "99.75662",
+      "below_90": "0"
+    },
+    {
+      "page": "24",
+      "tolerant_content_match_percent": "92.98011",
+      "below_90": "0"
+    },
+    {
+      "page": "28",
+      "tolerant_content_match_percent": "98.43605",
+      "below_90": "0"
+    },
+    {
+      "page": "107",
+      "tolerant_content_match_percent": "98.86043",
+      "below_90": "0"
+    },
+    {
+      "page": "169",
+      "tolerant_content_match_percent": "99.91753",
+      "below_90": "0"
+    },
+    {
+      "page": "210",
+      "tolerant_content_match_percent": "99.85050",
+      "below_90": "0"
+    },
+    {
+      "page": "211",
+      "tolerant_content_match_percent": "99.41819",
+      "below_90": "0"
+    },
+    {
+      "page": "212",
+      "tolerant_content_match_percent": "99.31286",
+      "below_90": "0"
+    }
+  ],
+  "identicalBackendPngPages": [
+    17,
+    24,
+    28,
+    107,
+    169,
+    210,
+    211,
+    212
+  ],
+  "nativeWholeDocument": {
+    "pageCount": 215,
+    "rowCount": 215,
+    "below90": [
+      {
+        "page": "10",
+        "tolerant_content_match_percent": "67.90467",
+        "below_90": "1"
+      },
+      {
+        "page": "88",
+        "tolerant_content_match_percent": "89.58124",
+        "below_90": "1"
+      },
+      {
+        "page": "207",
+        "tolerant_content_match_percent": "89.61032",
+        "below_90": "1"
+      },
+      {
+        "page": "208",
+        "tolerant_content_match_percent": "85.36044",
+        "below_90": "1"
+      }
+    ],
+    "exit": 1
+  },
+  "wasmPageCount": 215,
+  "directlyInspected": [
+    211
+  ],
+  "inspection": "표50의 가시 본문·괘선·캡션 및 후행 순서를 독립 PDF와 직접 대조했습니다. 원본·PDF·회귀 기준은 변경하지 않았습니다.",
+  "remainingOriginalPages": [
+    10,
+    88,
+    207,
+    208
+  ],
+  "fullFinalValidation": "pending"
+}

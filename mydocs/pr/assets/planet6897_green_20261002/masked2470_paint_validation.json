@@ -1,0 +1,346 @@
+{
+  "stage": "측정된 TAC 행을 낡은 개체 선언으로 paint에서 재확장하지 않음",
+  "parent_head": "5abce60c3",
+  "gates": [
+    {
+      "gate": "focused",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--lib",
+        "--test",
+        "regression_suite_002",
+        "--test",
+        "regression_suite_008",
+        "--test",
+        "regression_suite_026",
+        "--test",
+        "regression_suite_007",
+        "--test",
+        "regression_suite_009",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_027",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(group_shapes_contract) | test(ungroup_shape_contract) | test(issue_5716) | test(page_31_signed_line_transform) | test(owned_rowbreak_tac_height) | test(issue_7062) | test(issue_6192) | test(issue_5755) | test(issue_7081)"
+      ],
+      "exit": 0,
+      "seconds": 355.361
+    },
+    {
+      "gate": "fresh-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit": 0,
+      "seconds": 247.449
+    },
+    {
+      "gate": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit": 0,
+      "seconds": 1.071
+    },
+    {
+      "gate": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--lib",
+        "--bin",
+        "rhwp",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 29.973
+    },
+    {
+      "gate": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 28.003
+    },
+    {
+      "gate": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "exit": 0,
+      "seconds": 36.123
+    },
+    {
+      "gate": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 86.29
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 10.511
+    },
+    {
+      "gate": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "6b3faf77d8085441f9f26d88d65a49791e910352"
+      ],
+      "exit": 0,
+      "seconds": 0.652
+    }
+  ],
+  "visual": {
+    "counter_native": [
+      {
+        "page": "1",
+        "tolerant_content_match_percent": "98.68570",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.68570",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "2",
+        "tolerant_content_match_percent": "96.09636",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "96.09636",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ],
+    "counter_wasm": [
+      {
+        "page": "1",
+        "tolerant_content_match_percent": "98.68570",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.68570",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "2",
+        "tolerant_content_match_percent": "96.09636",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "96.09636",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ],
+    "native": [
+      {
+        "page": "1",
+        "tolerant_content_match_percent": "98.73402",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.73402",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "2",
+        "tolerant_content_match_percent": "98.66489",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.65592",
+        "silhouette_boundary_reconciled_pixels": "16"
+      },
+      {
+        "page": "3",
+        "tolerant_content_match_percent": "99.78726",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.78726",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "4",
+        "tolerant_content_match_percent": "99.84525",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.84525",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "5",
+        "tolerant_content_match_percent": "97.99040",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "97.98986",
+        "silhouette_boundary_reconciled_pixels": "1"
+      },
+      {
+        "page": "6",
+        "tolerant_content_match_percent": "99.91741",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.91741",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "7",
+        "tolerant_content_match_percent": "99.09872",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.09872",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "8",
+        "tolerant_content_match_percent": "99.03672",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.03672",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ],
+    "wasm": [
+      {
+        "page": "1",
+        "tolerant_content_match_percent": "98.73402",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.73402",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "2",
+        "tolerant_content_match_percent": "98.66489",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "98.65592",
+        "silhouette_boundary_reconciled_pixels": "16"
+      },
+      {
+        "page": "3",
+        "tolerant_content_match_percent": "99.78726",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.78726",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "4",
+        "tolerant_content_match_percent": "99.84525",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.84525",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "5",
+        "tolerant_content_match_percent": "97.99040",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "97.98986",
+        "silhouette_boundary_reconciled_pixels": "1"
+      },
+      {
+        "page": "6",
+        "tolerant_content_match_percent": "99.91741",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.91741",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "7",
+        "tolerant_content_match_percent": "99.09872",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.09872",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "8",
+        "tolerant_content_match_percent": "99.03672",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.03672",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ],
+    "counter5755_native": [
+      {
+        "page": "1",
+        "tolerant_content_match_percent": "99.32105",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.32014",
+        "silhouette_boundary_reconciled_pixels": "1"
+      },
+      {
+        "page": "2",
+        "tolerant_content_match_percent": "99.13619",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.13619",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "3",
+        "tolerant_content_match_percent": "99.76615",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.76615",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ],
+    "counter5755_wasm": [
+      {
+        "page": "1",
+        "tolerant_content_match_percent": "99.32105",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.32014",
+        "silhouette_boundary_reconciled_pixels": "1"
+      },
+      {
+        "page": "2",
+        "tolerant_content_match_percent": "99.13619",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.13619",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "3",
+        "tolerant_content_match_percent": "99.76615",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "99.76615",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ]
+  },
+  "hashes": {
+    "src/renderer/layout/table_layout.rs": "2257dc3c63ceea395896ea7cc74fd0bfc3187c3a08d4ec766c0b9812fd01c0b2",
+    "pkg/rhwp_bg.wasm": "5e5dd4c7d20af3b26dba70c9d1cb46bfe9986a7f53b7ad88f571101d8ae49711"
+  },
+  "status": "2/8쪽 Native/fresh WASM 전쪽90이상; 기존 회귀 갱신과 나머지 차단은 별도 단계"
+}

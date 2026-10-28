@@ -51,7 +51,7 @@ pub fn build_multipage_pdf(pages: &[PdfBuildPage]) -> Result<Vec<u8>, String> {
     }
     let mut body = String::from("%PDF-1.4\n%RHWP\n");
     let mut offsets = Vec::new();
-    let mut push_obj = |body: &mut String, offsets: &mut Vec<usize>, obj: String| {
+    let push_obj = |body: &mut String, offsets: &mut Vec<usize>, obj: String| {
         offsets.push(body.len());
         body.push_str(&obj);
         if !body.ends_with('\n') {

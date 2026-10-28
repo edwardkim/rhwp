@@ -38,8 +38,11 @@ class ProptestRoundtripWorkflowTests(unittest.TestCase):
         self.assertIn("pr.base.ref !== 'devel'", self.wf)
         self.assertIn("function isAllowedReviewPath(file)", self.wf)
         self.assertIn("filename.startsWith('mydocs/')", self.wf)
+        self.assertIn("function isPdfReferencePath(filename)", self.wf)
+        self.assertIn("function isSampleReferencePath(filename)", self.wf)
         self.assertIn("file.status !== 'added'", self.wf)
-        self.assertIn("const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];", self.wf)
+        self.assertIn("file.status === 'added' || file.status === 'modified'", self.wf)
+        self.assertIn("const pdfPrefixes = ['pdf/'];", self.wf)
         self.assertIn("filename.endsWith('.pdf')", self.wf)
         self.assertIn("github.rest.pulls.listCommits", self.wf)
         self.assertIn("github.rest.repos.getCommit", self.wf)
@@ -57,7 +60,7 @@ class ProptestRoundtripWorkflowTests(unittest.TestCase):
 
     def test_review_only_preflight_script_parses(self) -> None:
         script = self.wf.split("script: |\n", maxsplit=1)[1].split(
-            "\n\n      - name: Finalize fast pass", maxsplit=1
+            "\n\n      # 기준선 병합을 fast-pass bridge로", maxsplit=1
         )[0]
         script = "\n".join(
             line.removeprefix("            ") for line in script.splitlines()
@@ -91,14 +94,14 @@ class ProptestRoundtripWorkflowTests(unittest.TestCase):
         run_at = self.wf.index("run-prop-roundtrip.mjs --cargo-test")
         self.assertLess(prepare_at, run_at, "prepare 가 실행보다 먼저여야 한다")
 
-    def test_does_not_add_a_fifth_nextest_shard(self) -> None:
-        """A/B/C archive의 worker 네 개 합 = runnable. 다섯 번째 worker는 깨진다."""
+    def test_keeps_nextest_workers_at_five_balanced_archives(self) -> None:
+        """A/B/C/D/E archive의 worker 다섯 개 합 = runnable. 각 archive는 한 worker가 소비한다."""
         self.assertNotRegex(self.ci, r"(?m)^  proptest-roundtrip:")
         self.assertNotIn("prop_hwpx_roundtrip", RUN_ARCHIVE.read_text(encoding="utf-8"))
-        self.assertEqual(1, self.ci.count('partition: "hash:1/2"'))
-        self.assertEqual(1, self.ci.count('partition: "hash:2/2"'))
-        self.assertEqual(2, self.ci.count('partition: "hash:1/1"'))
-        for count_label in ("a-1", "a-2", "b-1", "c-1"):
+        self.assertNotIn('partition: "hash:1/2"', self.ci)
+        self.assertNotIn('partition: "hash:2/2"', self.ci)
+        self.assertEqual(5, self.ci.count('partition: "hash:1/1"'))
+        for count_label in ("a-1", "b-1", "c-1", "d-1", "e-1"):
             with self.subTest(count_label=count_label):
                 self.assertIn(f"shard-count-{count_label}", self.ci)
 

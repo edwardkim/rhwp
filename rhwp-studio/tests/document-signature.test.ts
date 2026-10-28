@@ -36,6 +36,7 @@ function utf16(text: string, byteOrder: 'le' | 'be'): Uint8Array {
 const HWP3_HEADER = ascii('HWP Document File V3.00\x1a');
 const HWP5_CFB = bytes(0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1, 0x00, 0x00);
 const HWPX_ZIP = bytes(0x50, 0x4B, 0x03, 0x04, 0x00, 0x00);
+const XLSX_ZIP = ascii('PK\x03\x04[Content_Types].xml xl/workbook.xml');
 const HML_UTF8 = ascii(`<?xml version="1.0" encoding="UTF-8"?>
 <HWPML xmlns="http://www.hancom.co.kr/hwpml/2011/core" Version="2.1">
   <HEAD/>
@@ -51,11 +52,16 @@ test('서버가 text/html 404 를 보내도 HWP3 본문 매직이 우선한다 (
   assert.doesNotThrow(() => assertRemoteDocumentBytes(HWP3_HEADER, 'text/html'));
 });
 
-test('HWP5(CFB) / HWPX(ZIP) 회귀 없음', () => {
+test('HWP5는 확정하고 HWPX ZIP은 core 판정 전 zip 후보로만 둔다 (#6534)', () => {
   assert.equal(detectDocumentByteKind(HWP5_CFB, null), 'hwp');
-  assert.equal(detectDocumentByteKind(HWPX_ZIP, null), 'hwpx');
+  assert.equal(detectDocumentByteKind(HWPX_ZIP, null), 'zip');
   assert.doesNotThrow(() => assertRemoteDocumentBytes(HWP5_CFB, null));
   assert.doesNotThrow(() => assertRemoteDocumentBytes(HWPX_ZIP, null));
+});
+
+test('OOXML ZIP도 HWPX로 확정하지 않고 core로 넘길 zip 후보로 둔다 (#6534)', () => {
+  assert.equal(detectDocumentByteKind(XLSX_ZIP, null), 'zip');
+  assert.doesNotThrow(() => assertRemoteDocumentBytes(XLSX_ZIP, null));
 });
 
 test('HWPML signature는 잘못된 text/html Content-Type보다 우선한다', () => {

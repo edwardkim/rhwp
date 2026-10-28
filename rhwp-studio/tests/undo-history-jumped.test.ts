@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { codeOnly } from './support/source-guard.ts';
 
 // [Task #2339] history-jumped 이벤트 소스 가드.
 //
@@ -11,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 // 관례) 소스 배선을 핀한다. 행위 증명은 브라우저 실동작으로 별도 수행(PR 검증 섹션).
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
-const source = (rel: string): string => readFileSync(join(rootDir, rel), 'utf8');
+const source = (rel: string): string => codeOnly(readFileSync(join(rootDir, rel), 'utf8'));
 
 const inputHandler = source('src/engine/input-handler.ts');
 const findDialog = source('src/ui/find-dialog.ts');
@@ -67,10 +68,27 @@ test('find-dialog 는 history-jumped 를 구독해 currentHit 을 무효화하�
   const show = methodBlock(findDialog, 'show()');
   const hide = methodBlock(findDialog, 'hide()');
   // show 에서 구독 → currentHit = null.
-  assert.match(show, /eventBus\.on\('history-jumped',\s*\(\)\s*=>\s*\{\s*this\.currentHit = null;?\s*\}\)/,
-    'show 에서 history-jumped 구독 → currentHit 무효화');
+  assert.match(show, /eventBus\.on\('history-jumped',\s*\(\)\s*=>\s*\{[\s\S]*?this\.currentHit = null;[\s\S]*?this\.clearMatchCount\(\);[\s\S]*?\}\)/,
+    'show 에서 history-jumped 구독 → currentHit 과 match count 무효화');
   assert.match(show, /this\.historyJumpOff\s*=/, '해제 핸들 저장');
   // hide 에서 해제(리스너 누수 방지).
   assert.match(hide, /this\.historyJumpOff\?\.\(\)/, 'hide 에서 구독 해제 호출');
   assert.match(hide, /this\.historyJumpOff = null/, 'hide 에서 핸들 정리');
+});
+
+
+test('undo/redo count 갱신은 afterEdit의 document-mutated에서 한 번 실행한다', () => {
+  for (const name of ['handleUndo', 'handleRedo']) {
+    const block = methodBlock(inputHandler, `private ${name}()`);
+    assert.ok(block.indexOf('resetDerivedStateAfterHistoryJump') < block.indexOf('this.afterEdit('));
+    assert.match(block, /this\.afterEdit\(/);
+  }
+  assert.match(methodBlock(inputHandler, 'private afterEdit('), /emit\('document-mutated'/);
+  const show = methodBlock(findDialog, 'show()');
+  const history = show.match(/eventBus\.on\('history-jumped',\s*\(\)\s*=>\s*\{([\s\S]*?)\}\)/)?.[1];
+  assert.ok(history);
+  assert.doesNotMatch(history, /refreshMatchCount/);
+  const mutation = show.match(/eventBus\.on\('document-mutated',\s*\(\)\s*=>\s*\{([\s\S]*?)\}\)/)?.[1];
+  assert.ok(mutation);
+  assert.equal(mutation.match(/refreshMatchCount\(/g)?.length, 1);
 });

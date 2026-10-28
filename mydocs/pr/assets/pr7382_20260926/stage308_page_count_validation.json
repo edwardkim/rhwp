@@ -1,0 +1,30 @@
+{
+  "temporary_semantic_diagnostic": "    // 독립 PDF의 11쪽은 그림6과 뒤 소제목을 함께 소유한다.\n    // 유효 저장 프레임을 직전 글줄의 후행 간격과 겹친다는 이유로 이월하지 않는다.\n    let original = core();\n    let page = original.build_page_render_tree(10).expect(\"원본 11쪽\");\n    let figure = table_for_para(&page.root, 240).expect(\"11쪽 그림6 소유\");\n    assert!(find_picture(figure).is_some(), \"원본 그림 보존\");\n    assert_eq!(\n        text(figure).matches(\"그림 6.\").count(),\n        1,\n        \"원본 캡션 단일 소유\"\n    );\n    assert!(\n        line_top(&page.root, \"다. 장기 매매 현황\").is_some(),\n        \"원본 뒤 소제목 소유\"\n    );\n    assert_eq!(original.page_count(), 215, \"독립 한컴2024 PDF의 전체 쪽수\");\n",
+  "test_source_sha256": "529ff604112bede5e85e3e64a1dd09218d8f71838c9719e80d4129d1b51c3608",
+  "before_exit": 100,
+  "after_exit": 0,
+  "before_tests": {
+    "pass": 13,
+    "fail": 1
+  },
+  "after_tests": {
+    "pass": 14,
+    "fail": 0
+  },
+  "reason_not_registering_original_again": "전체 시각 최저 90% 미만 문서를 새 회귀로 등록하지 않는 지침에 따라 임시 원본 조건은 진단에만 사용하고 기존 검사 14개는 유지한다.",
+  "candidate_parent": "01a2dcaa45516ee03d0bef165658604374cb9b9c",
+  "source_path": "src/renderer/typeset/table/block/entry.rs",
+  "source_sha256": "4f0691fd8d8b6ed78c28eaa841e014d437553b7e6f4742c347915cf4ef43dd3c",
+  "originals": {
+    "hwp": {
+      "page_count": 215
+    },
+    "hwpx": {
+      "page_count": 215
+    }
+  },
+  "independent_pdf_pages": 215,
+  "before_pages": 216,
+  "existing_test_functions_unchanged": 14,
+  "visual_status": "전체215쪽 Native 비교 진행 중; 전 문서 시각 통과는 미확인"
+}

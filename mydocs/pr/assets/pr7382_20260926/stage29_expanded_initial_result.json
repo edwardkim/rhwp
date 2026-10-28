@@ -1,0 +1,14 @@
+{
+  "producer_sha": "d27af09f6",
+  "passed": 104,
+  "failed": 1,
+  "seconds": 4.004,
+  "exit_code": 100,
+  "failed_test": "single_cell_saved_frame_border_and_following_heading_match_pdf",
+  "actual_heading_top_px": 627.8,
+  "independent_pdf_heading_top_px": 641.061,
+  "before_immutable_cli_heading_top_px": 641.1,
+  "cause": "실제 trailing 간격 소비만으로 저장 단 원점까지 확정됐다고 판단한 잘못된 가정",
+  "correction": "처음 확정된 저장 단 원점과 실제 순차 위치를 대조한다. 분할 표 시작처럼 원점이 미확정이면 기존 bridge를 유지한다.",
+  "exact_candidate_runtime_diff_hash": "미수집; 로그 경로 재사용 전 관측 결과를 보존한 중간 실패 기록이며 최종 head 검증이 아님"
+}

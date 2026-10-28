@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { codeOnly } from './support/source-guard.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -14,9 +15,9 @@ test('편집기 셸은 제목과 header, main, footer landmark를 제공한다',
   const html = source('index.html');
 
   assert.match(html, /<header id="studio-header">/);
-  assert.match(html, /<h1 class="visually-hidden">rhwp-studio 문서 편집기<\/h1>/);
-  assert.match(html, /<nav id="menu-bar" aria-label="주 메뉴">/);
-  assert.match(html, /<main id="editor-area" aria-label="문서 편집 영역">/);
+  assert.match(html, /<h1 class="visually-hidden"[^>]*>rhwp-studio 문서 편집기<\/h1>/);
+  assert.match(html, /<nav id="menu-bar" aria-label="주 메뉴"[^>]*>/);
+  assert.match(html, /<main id="editor-area" aria-label="문서 편집 영역"[^>]*>/);
   assert.match(html, /<footer id="status-bar">/);
 });
 
@@ -32,7 +33,7 @@ test('서식 도구 모음의 폼 컨트롤은 연결된 보이는 label을 제�
   ]) {
     assert.match(
       html,
-      new RegExp(`<label class="sb-field-label" for="${id}">${label}</label>[\\s\\S]*?id="${id}"`),
+      new RegExp(`<label class="sb-field-label" for="${id}"[^>]*>${label}</label>[\\s\\S]*?id="${id}"`),
     );
   }
 });
@@ -52,9 +53,9 @@ test('문서 렌더링 이미지와 스크롤 영역은 보조 기술 및 키보
 
   assert.match(
     html,
-    /<div id="scroll-container" role="region" aria-label="문서 페이지" tabindex="0">/,
+    /<div id="scroll-container" role="region" aria-label="문서 페이지" tabindex="0"[^>]*>/,
   );
-  assert.match(pageRenderer, /const element = new Image\(\);\s*element\.alt = '';/);
+  assert.match(codeOnly(pageRenderer), /const element = new Image\(\);\s*element\.alt = '';/);
 });
 
 test('서식 도구 모음 컨트롤은 테마 토큰으로 전경색과 배경색을 명시한다', () => {

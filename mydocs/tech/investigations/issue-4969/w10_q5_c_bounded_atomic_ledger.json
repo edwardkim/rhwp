@@ -1,0 +1,199 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q5-bounded-malformed-atomic-ledger",
+  "issue": 4969,
+  "stage": "W10-Q5-C",
+  "date": "2026-08-31",
+  "status": "qualified-approved",
+  "planApproval": "explicit",
+  "resultApproval": "explicit",
+  "checkpointApproved": true,
+  "current": {
+    "branch": "task_m100_4969_w10_q5",
+    "productMergeHead": "3afbb066fe93724ab44309163a2e04efb954bf18",
+    "q5BCheckpoint": "0367ac865",
+    "productMutation": false,
+    "testSourcesModified": 2,
+    "newIntegrationSources": 0
+  },
+  "focusedValidation": {
+    "selected": 50,
+    "passed": 50,
+    "failed": 0,
+    "nonSelected": 8861,
+    "elapsedSeconds": 0.971,
+    "newBoundaryTests": {
+      "selected": 2,
+      "passed": 2,
+      "failed": 0,
+      "elapsedSeconds": 0.069
+    },
+    "sameProductTreeNodeWasmReusedFromQ5B": {
+      "passed": 19,
+      "failed": 0
+    }
+  },
+  "limits": [
+    {
+      "surface": "exact-font-bytes",
+      "maximum": 33554432,
+      "boundaryEvidence": "direct-limit-plus-one",
+      "reason": "FontByteLimitExceeded",
+      "mutationAfterReject": 0
+    },
+    {
+      "surface": "text-code-points",
+      "maximum": 4096,
+      "boundaryEvidence": "direct-limit-plus-one",
+      "reason": "TextCodePointLimitExceeded",
+      "mutationAfterReject": 0
+    },
+    {
+      "surface": "shaping-features",
+      "maximum": 64,
+      "boundaryEvidence": "direct-limit-plus-one",
+      "reason": "FeatureLimitExceeded",
+      "mutationAfterReject": 0
+    },
+    {
+      "surface": "variation-axes",
+      "maximum": 16,
+      "boundaryEvidence": "direct-limit-plus-one-native-and-node-wasm",
+      "reason": "VariationAxisLimitExceeded",
+      "mutationAfterReject": 0
+    },
+    {
+      "surface": "glyphs-per-run",
+      "maximum": 4096,
+      "boundaryEvidence": "near-boundary-runtime-plus-post-shape-guard",
+      "directHostileFontOverflowFixture": false,
+      "reason": "GlyphLimitExceeded",
+      "mutationAfterReject": 0
+    },
+    {
+      "surface": "clusters-per-run",
+      "maximum": 4096,
+      "boundaryEvidence": "near-boundary-runtime-plus-post-shape-guard",
+      "directHostileFontOverflowFixture": false,
+      "reason": "ClusterMappingInvalid",
+      "mutationAfterReject": 0
+    },
+    {
+      "surface": "horizontal-cache-entries",
+      "maximum": 4096,
+      "boundaryEvidence": "bounded-test-limit-one-plus-one",
+      "reason": "CacheEntryLimitExceeded",
+      "mutationAfterReject": 0
+    },
+    {
+      "surface": "explicit-instance-requests",
+      "maximum": 4096,
+      "boundaryEvidence": "direct-full-cap-coupled-to-equal-exact-source-slot-cap",
+      "effectiveReasons": [
+        "SlotLimitExceeded",
+        "SourceUnavailable"
+      ],
+      "requestLimitExceededBranchDirectlyReached": false,
+      "countAfterReject": 4096,
+      "generationAfterReject": 4096
+    },
+    {
+      "surface": "horizontal-page-sidecars",
+      "maximum": 4096,
+      "boundaryEvidence": "direct-limit-plus-one",
+      "reason": "EntryLimitExceeded",
+      "countAfterReject": 4096
+    },
+    {
+      "surface": "vertical-page-sidecars",
+      "maximum": 4096,
+      "boundaryEvidence": "direct-limit-plus-one",
+      "reason": "EntryLimitExceeded",
+      "countAfterReject": 4096,
+      "generationUnchanged": true
+    },
+    {
+      "surface": "attempt-trace-records",
+      "maximum": 4096,
+      "boundaryEvidence": "direct-limit-plus-two",
+      "reason": "Truncated",
+      "omitted": 2,
+      "retainsRawTextOrGlyphPayload": false
+    }
+  ],
+  "malformedAndUnsupported": {
+    "q2": [
+      "SourceUnavailable",
+      "MalformedSfnt",
+      "NonPortableSource",
+      "DirectionWritingModeMismatch",
+      "RangeMismatch",
+      "DuplicateNode",
+      "StaleRegistryGeneration",
+      "AttemptIdentityMismatch",
+      "InvalidHorizontalScale",
+      "ResourceLimitExceeded"
+    ],
+    "q3": [
+      "DuplicateVariationAxis",
+      "MalformedVariationTag",
+      "VariationAxisUnsupported",
+      "VariationValueNonFinite",
+      "VariationValueOutOfRange",
+      "VariationAxisLimitExceeded",
+      "ExplicitInstanceSlotMismatch",
+      "ExplicitInstanceOverrideNotAllowed",
+      "IncompleteOrMalformedOutline"
+    ],
+    "q4": [
+      "VerticalMetricsUnavailable",
+      "MalformedSfnt",
+      "MixedRunUnsupported",
+      "HorizontalIntentUnsupported",
+      "DirectionIntentMismatch",
+      "ColumnPitchInvalid",
+      "VariationGeometryUnsupported",
+      "LegacyGeometryMalformed",
+      "SourceIdentityMismatch",
+      "StaleRegistryGeneration",
+      "UnsupportedBackendOrTuple"
+    ]
+  },
+  "atomicity": {
+    "partialMeasurement": 0,
+    "cacheMutationAfterReject": 0,
+    "ownerSnapshotMutationAfterReject": 0,
+    "sidecarMutationAfterReject": 0,
+    "fontBlobMutationAfterReject": 0,
+    "fontFaceMutationAfterReject": 0,
+    "partialParagraphPublication": 0,
+    "partialVerticalLeafPublication": 0,
+    "fallbackGeometryMismatch": 0,
+    "textRunFallbackDisappearance": 0,
+    "panicOrOom": 0
+  },
+  "manifest": {
+    "integrationSources": 1075,
+    "staticTestAttributes": 4717,
+    "generatedSuites": 28,
+    "exceptionTargets": 20,
+    "accountedTargets": 48,
+    "expectedTargets": 48,
+    "minimumCases": 6559,
+    "generatedArtifactsSubmitted": false
+  },
+  "boundaries": {
+    "supportTupleExpanded": false,
+    "publicApiChanged": false,
+    "schemaChanged": false,
+    "privateCorpusUsed": false,
+    "hyperVUsed": false,
+    "hancomOracleUsed": false,
+    "githubMutated": false
+  },
+  "next": {
+    "stage": "W10-Q5-D",
+    "action": "checkpoint-after-maintainer-approval-then-close-focused-performance-wasm-and-resource-ledger",
+    "reuseCurrentDockerWasmSnapshotFromQ5B": true
+  }
+}

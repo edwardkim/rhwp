@@ -1,0 +1,649 @@
+{
+  "canonicalSha256": "4d628135329b82ed401453eef709783329840a5d1e22068afd83a7d2e7927576",
+  "fontBytesTracked": false,
+  "issue": 4968,
+  "kind": "kerning-capability-boundary",
+  "maximumFontBytes": 33554432,
+  "precedence": [
+    "gpos-kern",
+    "legacy-kern",
+    "unsupported"
+  ],
+  "publicFont": {
+    "bytes": 2519996,
+    "capability": "gpos-kern",
+    "fallbackReason": null,
+    "pairs": [
+      {
+        "adjustment": {
+          "first": {
+            "XAdvance": -18,
+            "XPlacement": 0,
+            "YAdvance": 0,
+            "YPlacement": 0
+          },
+          "second": {
+            "XAdvance": 0,
+            "XPlacement": 0,
+            "YAdvance": 0,
+            "YPlacement": 0
+          }
+        },
+        "disposition": "applied",
+        "fallbackReason": null,
+        "glyphs": [
+          "A",
+          "V"
+        ],
+        "text": "AV",
+        "totalXAdvance": -18
+      },
+      {
+        "adjustment": {
+          "first": {
+            "XAdvance": -76,
+            "XPlacement": 0,
+            "YAdvance": 0,
+            "YPlacement": 0
+          },
+          "second": {
+            "XAdvance": 0,
+            "XPlacement": 0,
+            "YAdvance": 0,
+            "YPlacement": 0
+          }
+        },
+        "disposition": "applied",
+        "fallbackReason": null,
+        "glyphs": [
+          "T",
+          "o"
+        ],
+        "text": "To",
+        "totalXAdvance": -76
+      },
+      {
+        "adjustment": {
+          "first": {
+            "XAdvance": 0,
+            "XPlacement": 0,
+            "YAdvance": 0,
+            "YPlacement": 0
+          },
+          "second": {
+            "XAdvance": 0,
+            "XPlacement": 0,
+            "YAdvance": 0,
+            "YPlacement": 0
+          }
+        },
+        "disposition": "no-pair-adjustment",
+        "fallbackReason": null,
+        "glyphs": [
+          "W",
+          "A"
+        ],
+        "text": "WA",
+        "totalXAdvance": 0
+      },
+      {
+        "adjustment": {
+          "first": {
+            "XAdvance": 0,
+            "XPlacement": 0,
+            "YAdvance": 0,
+            "YPlacement": 0
+          },
+          "second": {
+            "XAdvance": 0,
+            "XPlacement": 0,
+            "YAdvance": 0,
+            "YPlacement": 0
+          }
+        },
+        "disposition": "no-pair-adjustment",
+        "fallbackReason": null,
+        "glyphs": [
+          "H",
+          "H"
+        ],
+        "text": "HH",
+        "totalXAdvance": 0
+      }
+    ],
+    "path": "ttfs/opensource/NotoSansKR-Regular.ttf",
+    "script": "latn",
+    "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+    "status": "complete",
+    "tables": [
+      "BASE",
+      "GDEF",
+      "GPOS",
+      "GSUB",
+      "GlyphOrder",
+      "OS/2",
+      "STAT",
+      "cmap",
+      "gasp",
+      "glyf",
+      "head",
+      "hhea",
+      "hmtx",
+      "loca",
+      "maxp",
+      "name",
+      "post",
+      "prep",
+      "vhea",
+      "vmtx"
+    ],
+    "unitsPerEm": 1000
+  },
+  "schemaVersion": 1,
+  "stage": "W9-Q2",
+  "status": "complete",
+  "syntheticCases": [
+    {
+      "bytes": 1236,
+      "capability": "gpos-kern",
+      "case": "gpos-only",
+      "fallbackReason": null,
+      "pairs": [
+        {
+          "adjustment": {
+            "first": {
+              "XAdvance": -80,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            },
+            "second": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            }
+          },
+          "disposition": "applied",
+          "fallbackReason": null,
+          "glyphs": [
+            "A",
+            "V"
+          ],
+          "text": "AV",
+          "totalXAdvance": -80
+        },
+        {
+          "adjustment": {
+            "first": {
+              "XAdvance": -40,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            },
+            "second": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            }
+          },
+          "disposition": "applied",
+          "fallbackReason": null,
+          "glyphs": [
+            "T",
+            "o"
+          ],
+          "text": "To",
+          "totalXAdvance": -40
+        },
+        {
+          "adjustment": {
+            "first": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            },
+            "second": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            }
+          },
+          "disposition": "no-pair-adjustment",
+          "fallbackReason": null,
+          "glyphs": [
+            "W",
+            "A"
+          ],
+          "text": "WA",
+          "totalXAdvance": 0
+        },
+        {
+          "adjustment": {
+            "first": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            },
+            "second": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            }
+          },
+          "disposition": "no-pair-adjustment",
+          "fallbackReason": null,
+          "glyphs": [
+            "H",
+            "H"
+          ],
+          "text": "HH",
+          "totalXAdvance": 0
+        }
+      ],
+      "script": "latn",
+      "sha256": "775667d1980cd734e331f01e9390e02191bc35d669325291c842968cb0a4a9fc",
+      "status": "complete",
+      "tables": [
+        "GPOS",
+        "GlyphOrder",
+        "OS/2",
+        "cmap",
+        "glyf",
+        "head",
+        "hhea",
+        "hmtx",
+        "loca",
+        "maxp",
+        "name",
+        "post"
+      ],
+      "unitsPerEm": 1000
+    },
+    {
+      "bytes": 1172,
+      "capability": "legacy-kern",
+      "case": "legacy-only",
+      "fallbackReason": null,
+      "pairs": [
+        {
+          "adjustment": {
+            "first": {
+              "XAdvance": -70,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            },
+            "second": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            }
+          },
+          "disposition": "applied",
+          "fallbackReason": null,
+          "glyphs": [
+            "A",
+            "V"
+          ],
+          "text": "AV",
+          "totalXAdvance": -70
+        },
+        {
+          "adjustment": {
+            "first": {
+              "XAdvance": -30,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            },
+            "second": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            }
+          },
+          "disposition": "applied",
+          "fallbackReason": null,
+          "glyphs": [
+            "T",
+            "o"
+          ],
+          "text": "To",
+          "totalXAdvance": -30
+        },
+        {
+          "adjustment": {
+            "first": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            },
+            "second": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            }
+          },
+          "disposition": "no-pair-adjustment",
+          "fallbackReason": null,
+          "glyphs": [
+            "W",
+            "A"
+          ],
+          "text": "WA",
+          "totalXAdvance": 0
+        },
+        {
+          "adjustment": {
+            "first": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            },
+            "second": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            }
+          },
+          "disposition": "no-pair-adjustment",
+          "fallbackReason": null,
+          "glyphs": [
+            "H",
+            "H"
+          ],
+          "text": "HH",
+          "totalXAdvance": 0
+        }
+      ],
+      "script": "latn",
+      "sha256": "caa404a1ba14492ecd27357bebc1e38a937d526e58f388d4667fbff0eb177a40",
+      "status": "complete",
+      "tables": [
+        "GlyphOrder",
+        "OS/2",
+        "cmap",
+        "glyf",
+        "head",
+        "hhea",
+        "hmtx",
+        "kern",
+        "loca",
+        "maxp",
+        "name",
+        "post"
+      ],
+      "unitsPerEm": 1000
+    },
+    {
+      "bytes": 1284,
+      "capability": "gpos-kern",
+      "case": "gpos-and-legacy",
+      "fallbackReason": null,
+      "pairs": [
+        {
+          "adjustment": {
+            "first": {
+              "XAdvance": -80,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            },
+            "second": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            }
+          },
+          "disposition": "applied",
+          "fallbackReason": null,
+          "glyphs": [
+            "A",
+            "V"
+          ],
+          "text": "AV",
+          "totalXAdvance": -80
+        },
+        {
+          "adjustment": {
+            "first": {
+              "XAdvance": -40,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            },
+            "second": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            }
+          },
+          "disposition": "applied",
+          "fallbackReason": null,
+          "glyphs": [
+            "T",
+            "o"
+          ],
+          "text": "To",
+          "totalXAdvance": -40
+        },
+        {
+          "adjustment": {
+            "first": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            },
+            "second": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            }
+          },
+          "disposition": "no-pair-adjustment",
+          "fallbackReason": null,
+          "glyphs": [
+            "W",
+            "A"
+          ],
+          "text": "WA",
+          "totalXAdvance": 0
+        },
+        {
+          "adjustment": {
+            "first": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            },
+            "second": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            }
+          },
+          "disposition": "no-pair-adjustment",
+          "fallbackReason": null,
+          "glyphs": [
+            "H",
+            "H"
+          ],
+          "text": "HH",
+          "totalXAdvance": 0
+        }
+      ],
+      "script": "latn",
+      "sha256": "8f7d7d5aab95a399e904dfe314ad823a387483f42d5eca4c60d1ea5d19791171",
+      "status": "complete",
+      "tables": [
+        "GPOS",
+        "GlyphOrder",
+        "OS/2",
+        "cmap",
+        "glyf",
+        "head",
+        "hhea",
+        "hmtx",
+        "kern",
+        "loca",
+        "maxp",
+        "name",
+        "post"
+      ],
+      "unitsPerEm": 1000
+    },
+    {
+      "bytes": 1124,
+      "capability": "unsupported",
+      "case": "no-pair-table",
+      "fallbackReason": null,
+      "pairs": [
+        {
+          "adjustment": {
+            "first": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            },
+            "second": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            }
+          },
+          "disposition": "fail-closed",
+          "fallbackReason": "pair-table-unsupported",
+          "glyphs": [
+            "A",
+            "V"
+          ],
+          "text": "AV",
+          "totalXAdvance": 0
+        },
+        {
+          "adjustment": {
+            "first": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            },
+            "second": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            }
+          },
+          "disposition": "fail-closed",
+          "fallbackReason": "pair-table-unsupported",
+          "glyphs": [
+            "T",
+            "o"
+          ],
+          "text": "To",
+          "totalXAdvance": 0
+        },
+        {
+          "adjustment": {
+            "first": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            },
+            "second": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            }
+          },
+          "disposition": "fail-closed",
+          "fallbackReason": "pair-table-unsupported",
+          "glyphs": [
+            "W",
+            "A"
+          ],
+          "text": "WA",
+          "totalXAdvance": 0
+        },
+        {
+          "adjustment": {
+            "first": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            },
+            "second": {
+              "XAdvance": 0,
+              "XPlacement": 0,
+              "YAdvance": 0,
+              "YPlacement": 0
+            }
+          },
+          "disposition": "fail-closed",
+          "fallbackReason": "pair-table-unsupported",
+          "glyphs": [
+            "H",
+            "H"
+          ],
+          "text": "HH",
+          "totalXAdvance": 0
+        }
+      ],
+      "script": "latn",
+      "sha256": "74a1818916a1ac5e6414a23be17bfa409db22ae9d5dfb9f86d95dd252366608b",
+      "status": "complete",
+      "tables": [
+        "GlyphOrder",
+        "OS/2",
+        "cmap",
+        "glyf",
+        "head",
+        "hhea",
+        "hmtx",
+        "loca",
+        "maxp",
+        "name",
+        "post"
+      ],
+      "unitsPerEm": 1000
+    },
+    {
+      "bytes": 11,
+      "capability": "unsupported",
+      "case": "malformed",
+      "fallbackReason": "malformed-sfnt",
+      "status": "fail-closed"
+    },
+    {
+      "bytes": 33554433,
+      "capability": "unsupported",
+      "case": "oversized",
+      "fallbackReason": "font-byte-limit-exceeded",
+      "status": "fail-closed"
+    }
+  ]
+}

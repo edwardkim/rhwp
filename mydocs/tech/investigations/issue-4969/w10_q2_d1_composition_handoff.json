@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-d1-composition-handoff-result",
+  "issue": 4969,
+  "stage": "W10-Q2-D1",
+  "status": "qualified",
+  "productOutputChange": false,
+  "productConsumerCount": 0,
+  "ownership": {
+    "contextOwner": "ResolvedStyleSet",
+    "compositionOwner": "ComposedParagraph.horizontal_shaping",
+    "value": "Arc<HorizontalShapingLineOutcome>",
+    "qualifiedDisposition": "dormant-qualified",
+    "sameOutcomeArc": true,
+    "sameFinalTargetMeasurementArc": true
+  },
+  "contextSnapshot": {
+    "registryCloneCount": 1,
+    "kerningAndShapingGenerationEqual": true,
+    "partialContextRefreshAllowed": false,
+    "documentCoreOrder": [
+      "style-resolve",
+      "exact-source-rebuild",
+      "paired-context-snapshot",
+      "style-aware-composition",
+      "pagination"
+    ]
+  },
+  "compatibility": {
+    "legacyComposeParagraphSidecar": null,
+    "legacyComposeSectionSidecar": null,
+    "baseComposeParagraphPatternCount": 155,
+    "headComposeParagraphPatternCount": 155,
+    "existingCallsitesReplaced": 0,
+    "legacyComposedFieldsRewrittenByHandoff": false,
+    "publicSchemaChange": false
+  },
+  "failClosed": [
+    "missing-context",
+    "registry-generation-mismatch",
+    "text-code-point-limit-exceeded",
+    "not-complex-required-text",
+    "paragraph-input-length-mismatch",
+    "candidate-range-mismatch",
+    "available-width-malformed",
+    "q2-c-not-target",
+    "q2-c-rollback"
+  ],
+  "limits": {
+    "candidatePreflightScalarReads": 4097,
+    "candidatePreflightAllocatesProjection": false,
+    "partialPublicationAllowed": false
+  },
+  "privacy": {
+    "rawTextInTrace": false,
+    "fontPayloadInTrace": false,
+    "localPathInTrace": false,
+    "privateCorpusUsed": false
+  },
+  "validation": {
+    "nativeFocused": {
+      "passed": 4,
+      "failed": 0,
+      "runtimeSeconds": 0.10
+    },
+    "nodeWasmFocused": {
+      "passed": 4,
+      "failed": 0,
+      "runtimeSeconds": 0.38
+    },
+    "nativeWasmParityMismatches": 0,
+    "libraryRegression": {
+      "passed": 3889,
+      "failed": 0,
+      "ignored": 13,
+      "runtimeSeconds": 215.09
+    },
+    "workspaceAuxiliaryLibraries": {
+      "passed": 182,
+      "failed": 0
+    },
+    "cargoCheck": "pass",
+    "cargoClippyNativeDenyWarnings": "pass",
+    "cargoClippyWasm32DenyWarnings": "pass",
+    "integrationManifestPolicy": {
+      "passed": 20,
+      "failed": 0
+    },
+    "focusedRustfmt": "pass",
+    "diffCheck": "pass",
+    "generatedIntegrationArtifacts": 0
+  },
+  "next": "maintainer approval required before Q2-D2 final emitted-run mapping"
+}

@@ -3,18 +3,18 @@
  * svg_native_wasm_diff.mjs — native CLI SVG ↔ WASM SVG 문자열 패리티 하네스
  *
  * 같은 문서·같은 페이지를 두 경로로 렌더해 byte 단위로 비교한다:
- *   - native 축: `rhwp export-svg --json` (render_page_svg_native, legacy 경로)
+ *   - native 축: `rhwp export-svg --json` (render_page_svg_native, screen layer 경로)
  *   - wasm 축:   pkg/rhwp.js 를 Node 에서 직접 로드해 HwpDocument.renderPageSvg()
  * 두 축 모두 동일한 Rust 함수(rendering.rs render_page_svg_native)를 타므로,
  * 차이가 나면 원인은 측정기 분기(EmbeddedTextMeasurer vs WasmTextMeasurer),
- * 환경변수 분기(WASM 은 항상 미설정), cfg(target_arch) 분기 중 하나다.
+ * 플랫폼별 측정 상태 또는 cfg(target_arch) 분기 중 하나다.
  *
  * 사용:
  *   node scripts/svg_native_wasm_diff.mjs <문서|디렉터리>... [옵션]
  *
  * 옵션:
  *   --out <dir>        산출물 디렉터리 (기본 output/svg-native-wasm-diff)
- *   --profile <p>      layer 경로 비교 (renderPageSvgWithProfile ↔ export-svg --profile)
+ *   --profile <p>      명시 profile의 같은 layer 경로 비교 (기본은 screen)
  *   --pages <n,n,...>  0-based 페이지 서브셋 (기본 전체)
  *   --rhwp <path>      native 바이너리 (기본 target/release/rhwp)
  *   --pkg <dir>        wasm pkg 디렉터리 (기본 pkg)
@@ -24,8 +24,8 @@
  *
  * 종료 코드: 0 = 전 문서 일치, 1 = 불일치 존재, 2 = 사용법/환경 오류
  *
- * 주의: native 축은 RHWP_* 환경변수를 제거한 채 실행한다. WASM 에서는
- * std::env::var 가 항상 Err 이므로, env 기본값끼리 비교해야 공정하다.
+ * 주의: legacy 비교는 이 하네스 범위가 아니다. CLI에서만
+ * `export-svg --backend legacy`로 명시적으로 선택한다.
  */
 import fs from 'node:fs';
 import path from 'node:path';

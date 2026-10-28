@@ -84,10 +84,31 @@ pub(super) fn dump_shape_attr(attr: &ShapeComponentAttr, indent: &str) {
         attr.render_c, attr.render_sy, attr.render_ty,
         attr.offset_x, attr.offset_y,
         hu_to_mm(effective_width), hu_to_mm(effective_height));
-    if attr.horz_flip || attr.vert_flip || attr.rotation_angle != 0 {
+    dump_shape_attr_transform(attr, indent);
+}
+
+/// 변환 줄 — 도형과 그림이 공유한다.
+///
+/// `flip` 저장 워드와 `rotate_image` 를 함께 낸다. bit19(`0x0008_0000`) 처럼 h/v 뒤집기
+/// 밖의 비트는 회전이 0 일 때도 남아 있고(한컴 저장본 실측: 회전 0 인데 bit19 켜진 개체가
+/// 다수), 그 상태는 해석값만으로는 보이지 않았다 — 종전 조건
+/// (`horz_flip || vert_flip || rotation_angle != 0`)으로는 줄 자체가 나오지 않았다.
+/// 한컴 저장 관례를 대조하는 오라클(`tools/hangul_rotation_oracle/`)이 이 줄을 읽는다.
+pub(super) fn dump_shape_attr_transform(attr: &ShapeComponentAttr, indent: &str) {
+    if attr.horz_flip
+        || attr.vert_flip
+        || attr.rotation_angle != 0
+        || attr.flip != 0
+        || attr.rotate_image
+    {
         println!(
-            "{}  변환: 뒤집기=({},{}), 회전={}",
-            indent, attr.horz_flip, attr.vert_flip, attr.rotation_angle
+            "{}  변환: 뒤집기=({},{}), 회전={}, flip={:#010x}, rotateImage={}",
+            indent,
+            attr.horz_flip,
+            attr.vert_flip,
+            attr.rotation_angle,
+            attr.flip,
+            attr.rotate_image
         );
     }
 }
@@ -292,6 +313,10 @@ pub(super) fn dump_picture(picture: &rhwp::model::image::Picture, prefix: &str) 
         picture.common.horizontal_offset,
         picture.common.vert_align
     );
+    // 그림도 도형과 같은 `ShapeComponentAttr` 를 쓴다 — 변환 줄을 같은 형식으로 낸다.
+    // 종전에는 그림 경로가 이 줄을 아예 내지 않아, 회전·`flip` 워드를 `dump` 로 볼 수
+    // 없었다(도형만 보였다).
+    dump_shape_attr_transform(attr, prefix);
     println!(
         "{}  [image_attr] effect={:?} brightness={} contrast={} watermark={}{}",
         prefix,

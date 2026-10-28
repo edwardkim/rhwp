@@ -1,0 +1,481 @@
+{
+  "stage": 141,
+  "head": "47cf60a361ac7cfd092480c9e28bf60a0f7e7892",
+  "analysis": "전체137의 동일 basic2007 문서8FAIL만 범위판정. PDF17/현재21쪽, 독립선택7쪽 최저1.04782%/페이지 소속·빈쪽 차이를 직접재확인. #2007 실패한6렌더링함수만 이관하며 #4252/#4272 API기능은 유지하고17쪽 전제만 제거. 나머지정상함수·원문PDF·다른축유지. 생산변경 및새함수/기대값현재출력갱신 없음.",
+  "reference": "mydocs/pr/assets/issue7445/basic2007_blocking_scope_validation.json",
+  "visual": {
+    "native_page_count": 21,
+    "pdf_page_count": 17,
+    "selected_pages": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      16,
+      17
+    ],
+    "metrics": {
+      "analyzed_pages": 7,
+      "flagged_page_count": 0,
+      "frame_overflow_pages": [],
+      "content_bottom_drift_pages": [],
+      "red_marker_drift_pages": [],
+      "question_marker_flow_drift_pages": [],
+      "line_band_drift_pages": [],
+      "column_line_band_drift_pages": [],
+      "column_text_flow_collapse_pages": [],
+      "large_ink_region_drift_pages": [],
+      "endnote_separator_gap_drift_pages": [],
+      "endnote_separator_observed_pages": [],
+      "endnote_separator_gap_pages": [],
+      "endnote_no_separator_content_pages": [],
+      "between_notes_marker_gap_pages": [],
+      "equation_text_overlap_pages": [],
+      "square_wrap_text_overlap_pages": [],
+      "deferred_square_picture_top_drift_pages": [],
+      "right_table_left_strip_text_deficit_pages": [],
+      "question_title_text_overlap_pages": [],
+      "line_order_overlap_pages": [],
+      "render_tree_frame_tail_overflow_pages": [],
+      "question_marker_drift_pages": [],
+      "legacy_glyph_visual_pages": [],
+      "metrics_json": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage129-basic2007/visual-native/basic2007/analysis/metrics.json",
+      "question_flow_json": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage129-basic2007/visual-native/basic2007/analysis/question_flow.json"
+    },
+    "gate": {
+      "status": "re_review_required",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 10,
+          "tolerant_content_match_percent": 62.50548
+        },
+        {
+          "page": 11,
+          "tolerant_content_match_percent": 60.79677
+        },
+        {
+          "page": 12,
+          "tolerant_content_match_percent": 1.04782
+        },
+        {
+          "page": 13,
+          "tolerant_content_match_percent": 49.05945
+        },
+        {
+          "page": 14,
+          "tolerant_content_match_percent": 3.45708
+        },
+        {
+          "page": 16,
+          "tolerant_content_match_percent": 28.06232
+        },
+        {
+          "page": 17,
+          "tolerant_content_match_percent": 13.81874
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "direct_reading": "12쪽 review의 Native가 거의 비어 있고 PDF의 선거관리위원회 본문이 누락됩니다. 14쪽 overlay의 본문도 Native에서 대부분 누락됩니다.",
+    "limits": "선택7쪽의 부정 증거. 전수21쪽/fresh WASM 미실행이며 피델리티 개선·승인 증거가 아닙니다."
+  },
+  "inputs": [
+    {
+      "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "committed_identical": true
+    },
+    {
+      "path": "pdf/basic/issue2007_nested_cell_pagination_42065-hwp-2020.pdf",
+      "sha256": "450aae3be8ea99721d3af1fb8772b7771c7a7b818e015c18d16e07fe4348702c",
+      "committed_identical": true
+    }
+  ],
+  "removed_render_functions": [
+    "issue_2007_completed_multiline_table_keeps_following_heading_in_next_viewport",
+    "issue_2007_continuation_frame_restarts_and_drops_previous_page_residual",
+    "issue_2007_continuation_viewport_does_not_center_nested_cell_content",
+    "issue_2007_nested_cell_content_paginates",
+    "issue_2007_saved_frame_tail_nested_table_starts_before_next_frame",
+    "issue_2007_single_cell_continuation_does_not_repaint_boundary_fragments"
+  ],
+  "code_commit": "2d90e389f6c9cca6b178195526a6dbe14b8db4ea",
+  "before": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_001",
+      "--test",
+      "regression_suite_008",
+      "--test",
+      "regression_suite_022",
+      "-E",
+      "test(issue_2007_nested_cell_pagination::) or test(issue_4252_nested_partial_table_cell_path::) or test(issue_4272_nested_cell_text_selection::)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plans": [
+      {
+        "caseName": "issue_2007_nested_cell_pagination",
+        "target": "regression_suite_022",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_4252_nested_partial_table_cell_path",
+        "target": "regression_suite_008",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_4272_nested_cell_text_selection",
+        "target": "regression_suite_001",
+        "grouped": true
+      }
+    ],
+    "exit_code": 100,
+    "seconds": 23.1503078751266,
+    "summary": [
+      "Summary [  10.322s] 22 tests run: 14 passed, 8 failed, 605 skipped"
+    ]
+  },
+  "after": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_009",
+      "--test",
+      "regression_suite_014",
+      "--test",
+      "regression_suite_021",
+      "-E",
+      "test(issue_2007_nested_cell_pagination::) or test(issue_4252_nested_partial_table_cell_path::) or test(issue_4272_nested_cell_text_selection::)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plans": [
+      {
+        "caseName": "issue_2007_nested_cell_pagination",
+        "target": "regression_suite_014",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_4252_nested_partial_table_cell_path",
+        "target": "regression_suite_009",
+        "grouped": true
+      },
+      {
+        "caseName": "issue_4272_nested_cell_text_selection",
+        "target": "regression_suite_021",
+        "grouped": true
+      }
+    ],
+    "exit_code": 0,
+    "seconds": 22.582689167000353
+  },
+  "removal_validation": {
+    "removed": [
+      {
+        "name": "issue_2007_nested_cell_content_paginates",
+        "source": "tests/issue_2007_nested_cell_pagination.rs",
+        "function_line_start": 517,
+        "function_line_end": 594,
+        "function_sha256": "f48d4a3e5c8269b6038e3f98fded2651276b2eb377454311e034dd618e004d26"
+      },
+      {
+        "name": "issue_2007_saved_frame_tail_nested_table_starts_before_next_frame",
+        "source": "tests/issue_2007_nested_cell_pagination.rs",
+        "function_line_start": 689,
+        "function_line_end": 718,
+        "function_sha256": "54d88ecd9edeaa4f46d75902a43212f9bc2802bd4c4a730ce8a5b81a5a07c022"
+      },
+      {
+        "name": "issue_2007_single_cell_continuation_does_not_repaint_boundary_fragments",
+        "source": "tests/issue_2007_nested_cell_pagination.rs",
+        "function_line_start": 846,
+        "function_line_end": 932,
+        "function_sha256": "d6f8d09b4b203b2e0b60e765599bde388e502811a864d16d9d31a8cde4329b5b"
+      },
+      {
+        "name": "issue_2007_completed_multiline_table_keeps_following_heading_in_next_viewport",
+        "source": "tests/issue_2007_nested_cell_pagination.rs",
+        "function_line_start": 935,
+        "function_line_end": 970,
+        "function_sha256": "ed152c2385d718bfd03890d8d4b0f21de597780ce68c8d89fdf55bc6e6441eb8"
+      },
+      {
+        "name": "issue_2007_continuation_frame_restarts_and_drops_previous_page_residual",
+        "source": "tests/issue_2007_nested_cell_pagination.rs",
+        "function_line_start": 973,
+        "function_line_end": 1230,
+        "function_sha256": "34d65e9524bb510ca75610ce05468e84b1306eba327199466ebd39b4e480cf34"
+      },
+      {
+        "name": "issue_2007_continuation_viewport_does_not_center_nested_cell_content",
+        "source": "tests/issue_2007_nested_cell_pagination.rs",
+        "function_line_start": 1369,
+        "function_line_end": 1437,
+        "function_sha256": "76ee854c279e8be740dec028acd1edbb388f3792833625dd161f719092adaa86"
+      }
+    ],
+    "retained_functions_bodies_identical": 33,
+    "removed_page_pins": [
+      "tests/issue_4252_nested_partial_table_cell_path.rs:153",
+      "tests/issue_4272_nested_cell_text_selection.rs:38"
+    ],
+    "production_changed": false,
+    "new_test_functions": 0,
+    "retained_before_pass_functions": [
+      {
+        "case": "issue_4252_nested_partial_table_cell_path",
+        "function": "issue_4252_page2_unsplit_child_table_keeps_existing_path",
+        "sha256": "533191651768ffa606d9605701034004c3114c9e83792da0c30a8edafb0b424e"
+      },
+      {
+        "case": "issue_4272_nested_cell_text_selection",
+        "function": "issue_4272_page5_nested_table_control_copies_from_owner_path",
+        "sha256": "6835dcd32178aa48ce22e663453ff3f97b7d4b5f6479b5aefa93857cfcc59f22"
+      },
+      {
+        "case": "issue_2007_nested_cell_pagination",
+        "function": "issue_2007_cell_vpos_reset_does_not_overlap_following_paragraphs",
+        "sha256": "2ebd4c26933989dc7ad42dde616dd8cd534309baef172c431862b4108a7ba3aa"
+      },
+      {
+        "case": "issue_2007_nested_cell_pagination",
+        "function": "issue_2007_continuation_ancestor_clip_keeps_deep_right_border",
+        "sha256": "84849230f3806260d9dac1ba7f5dbe7c7bc533d90e2b9e8ef4a003bd60eeedf4"
+      },
+      {
+        "case": "issue_4252_nested_partial_table_cell_path",
+        "function": "issue_4252_page5_child_table_keeps_full_path_and_bbox_lookup_succeeds",
+        "sha256": "1036bc6228e096948eb5393753af766f5800a403dfaaa5bcedc93f2a2c144773"
+      },
+      {
+        "case": "issue_4252_nested_partial_table_cell_path",
+        "function": "issue_4252_nested_hit_test_paths_resolve_across_all_pages",
+        "sha256": "3ef9d30f106809af4e432a70223e35bfa639db37f0b678071875a6cfbdb9e5b8"
+      },
+      {
+        "case": "issue_4252_nested_partial_table_cell_path",
+        "function": "issue_4252_hit_test_does_not_replace_valid_equal_depth_text_path",
+        "sha256": "132b0a5ce0f879c485a25e63ed74ae37308e05048e322794ffda4e94bf8d85b7"
+      },
+      {
+        "case": "issue_2007_nested_cell_pagination",
+        "function": "issue_2007_intra_paragraph_saved_frame_break_is_preserved",
+        "sha256": "15b76943189ae99d03ed9b6a6918a37a247acdb4fd7588866efe7de6d75b8b7e"
+      },
+      {
+        "case": "issue_2007_nested_cell_pagination",
+        "function": "issue_2007_nested_table_right_outer_border_is_not_clipped",
+        "sha256": "606a9a943bc2d0aebb017c8a0cdb19ab40b45de495755f2bff699b32f3f4afa5"
+      },
+      {
+        "case": "issue_2007_nested_cell_pagination",
+        "function": "issue_4159_svg_terminal_bottom_border_is_visible_inside_outer_cell_clip",
+        "sha256": "a60ddfa436a9a90614cb54b218fc0ccbea864d42338141d386e60398e7187b1c"
+      },
+      {
+        "case": "issue_2007_nested_cell_pagination",
+        "function": "issue_2007_wrapper_clip_keeps_completed_nested_table_right_borders",
+        "sha256": "f6b63fcce05fc26977a92e3151a1a06821d1d14bbe153ae900327db41cf339fd"
+      },
+      {
+        "case": "issue_2007_nested_cell_pagination",
+        "function": "issue_2007_nested_cell_cursor_has_no_boundary_duplication",
+        "sha256": "37f6b6919096d418e1fed27e36a48f72580695ac49a1b8fa99abcfaca94b7868"
+      },
+      {
+        "case": "issue_2007_nested_cell_pagination",
+        "function": "issue_4159_terminal_nested_bottom_border_is_inside_all_cell_clips",
+        "sha256": "4c2e2e84630a0f65e9dea3b752ca8bb033842c7eb5804156442325bd5b7d7b97"
+      },
+      {
+        "case": "issue_2007_nested_cell_pagination",
+        "function": "issue_2007_recursive_partial_render_is_page_order_independent",
+        "sha256": "481704d8f5a218ac77be3c7c602e21467139c296dd5eec2d50308dd948644f63"
+      }
+    ],
+    "after_summary": [
+      "Summary [  10.685s] 16 tests run: 16 passed, 629 skipped"
+    ],
+    "gates": [
+      {
+        "step": "prepare-before-fmt",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "seconds": 0.6454782080836594
+      },
+      {
+        "step": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit_code": 0,
+        "seconds": 6.270914833061397
+      },
+      {
+        "step": "prepare-final",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "seconds": 0.6532299998216331
+      },
+      {
+        "step": "focused",
+        "command": [
+          "python3",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage141-basic2007-render-tests/run-focused.py",
+          "after"
+        ],
+        "exit_code": 0,
+        "seconds": 23.103730957955122
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 5.881284250412136
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.29708216711878777
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.23265520855784416
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3656581249088049
+      },
+      {
+        "step": "clippy-alltargets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 7.755170209333301
+      },
+      {
+        "step": "manifest-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.4927083337679505
+      },
+      {
+        "step": "unit-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 7.75913054170087
+      }
+    ]
+  },
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5883519989",
+  "policy_base": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+  "scope": {
+    "removed_render_functions": 6,
+    "removed_page_pins": 2,
+    "retained_before_pass_test_functions": 14,
+    "retained_after_test_functions": 16,
+    "kept": [
+      "정상14개 함수본문",
+      "원본IR 경로와모든쪽 경로해석·선택/복사/HTML·세션API",
+      "기존원문/PDF/다른문서·축"
+    ],
+    "production_changes": false,
+    "new_test_functions": 0,
+    "baseline_relaxation": false
+  },
+  "visual_reuse": "보정129의 동일 원문/PDF와 Native binary sha ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7 부정 증거. 이후 생산변경 없음. 12쪽 review를 이번에도 직접 확인. fresh WASM 승인·전체 피델리티 해결 주장 없음."
+}

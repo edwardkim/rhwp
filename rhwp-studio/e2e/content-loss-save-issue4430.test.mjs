@@ -501,7 +501,12 @@ async function enterSaveAsName(page, fileName, action = 'confirm') {
   await page.keyboard.type(fileName);
   await input.dispose();
   await dialog.dispose();
-  await clickDialogButton(page, title, action === 'password' ? '암호 설정...' : '확인');
+  const actionLabel = action === 'password'
+    ? '암호 설정...'
+    : action === 'plaintext'
+      ? '암호 없이 저장'
+      : '확인';
+  await clickDialogButton(page, title, actionLabel);
 }
 
 async function enterPasswordAndConfirm(page, password) {
@@ -653,11 +658,12 @@ async function verifyProtectedReopen(page, password, format) {
       } catch {
         unprotectedFailed = true;
       }
-      const info = window.__wasm.loadDocumentWithPassword(
+      window.__wasm.loadDocumentWithPassword(
         bytes,
         passwordValue,
         `protected-reopen.${outputFormat}`,
       );
+      const info = window.__wasm.getDocumentInfo();
       return {
         unprotectedFailed,
         pageCount: info.pageCount,
@@ -952,7 +958,7 @@ await runTest('Issue #4430 content-loss artifact reaches explicit Studio saves',
   await page.evaluate(() => { window.__wasm.requiresPasswordForSave = true; });
   await markDocumentDirty(page);
   await clickFileCommand(page, EXPECTED.hwp.command);
-  await enterSaveAsName(page, 'issue4430-protection-preserve', 'confirm');
+  await enterSaveAsName(page, 'issue4430-protection-preserve', 'plaintext');
   await waitForHarnessEvent(page, 'picker:error');
   await enterSaveAsName(page, 'issue4430-protection-preserve', 'confirm');
   await waitForHarnessEvent(page, 'alert');

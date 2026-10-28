@@ -1,0 +1,28 @@
+[
+  {
+    "name": "visual-tool-tests",
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "scripts/tests",
+      "-p",
+      "test_visual_sweep.py"
+    ],
+    "exit_code": 0,
+    "seconds": 5.512
+  },
+  {
+    "name": "font-rule-tests",
+    "command": [
+      "node",
+      "--test",
+      "scripts/tests/font_rule_lifecycle_audit.test.mjs",
+      "scripts/tests/font_rule_projection_gen.test.mjs"
+    ],
+    "exit_code": 0,
+    "seconds": 2.842
+  }
+]

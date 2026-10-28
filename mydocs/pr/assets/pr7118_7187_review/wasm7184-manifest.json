@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "key": "pr7184",
+  "provenance": {
+    "hwp": {
+      "path": "samples/table_giant_cell_overfill.hwpx",
+      "sha256": "5d7eb4a21e46d9ad01a0f631eea2b1f2ec8a71750b4d448868e944e1b95042f4"
+    },
+    "pdf": {
+      "path": "pdf/table_giant_cell_overfill-hwpx-2024.pdf",
+      "sha256": "7669a8f468fd47e3180a09b5ea60526785e968fcb9ad5f1039d1f585d55d59be"
+    },
+    "git_head": "2a2089bf71e7a42286e0643a3fb517b7047c7320",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "11b1d259de1dd62f111dc0da9bd74efac2d5572aa80fbd73f180c984b20d2849"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "/private/tmp/rhwp-review-open-20260916/rhwp-candidate",
+      "path": "/private/tmp/rhwp-review-open-20260916/rhwp-candidate",
+      "sha256": "84fe916132f07e2e4445c5952870b2471dd7288c859b0fa5363a3e4ef8aee7d4"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp.js",
+          "sha256": "a490dc79102cbc6047252da243f0901d078997bef545d7c38d5143093e0bc781"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "sha256": "6dd1d0998306e84a7a6c913a2a29e44dac706bb1ac10f738c0d568e94e372e19"
+        }
+      ],
+      "exporter_sha256": "5b51337e43cfb443c3151d2ab47ab8b09d94e6ca493b60eb565cd9d20be82588",
+      "font_policy": "same-input native export-svg --font-style; font-face CSS only",
+      "render_tree": "WASM getPageRenderTree"
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    18,
+    19,
+    20,
+    21,
+    47,
+    48
+  ],
+  "requested_page_shards": [
+    [
+      18,
+      19,
+      20,
+      21,
+      47,
+      48
+    ]
+  ],
+  "run_state": "complete"
+}

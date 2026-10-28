@@ -1,0 +1,46 @@
+{
+  "parentHead": "8d9106d2bff13f5389069a927ca073bc284c6c5f",
+  "base": "def947c2149df5bc812d801e6e79be19a403b4d1",
+  "sourceHashes": {
+    "rhwp-studio/src/view/canvas-view.ts": "ae81ff84461d09da7d4f17e1ac97b3287b00e327dc3443cc15ef5a2a284dca61",
+    "rhwp-studio/tests/canvas-view-surface-cache.test.ts": "8aac60ce1dedeec8c14dd2363ded607a912ce1a7005ec57ab2c6c12e684a6e4c"
+  },
+  "studioUnit": {
+    "total": 2410,
+    "passed": 2408,
+    "failed": 0,
+    "skipped": 2
+  },
+  "actualBrowser": {
+    "observations": 62,
+    "failed": 0
+  },
+  "printIndependent": {
+    "comparisons": 31,
+    "below90": 0,
+    "newDropsAtLeast2Pp": 0,
+    "minimum": 93.15185
+  },
+  "zoomIndependent": {
+    "comparisons": 20,
+    "below90": [
+      {
+        "sample": "roadmap-p153",
+        "step": {
+          "name": "fractional-dpr",
+          "zoom": 1,
+          "dpr": 1.5
+        },
+        "raw": 89.22797
+      }
+    ]
+  },
+  "captures": {
+    "roadmap-dpr1-overlay.png": "b6eb61b16301446f6a3a97b3149ac9839e4c588ba9e4c382d9d575ef7f0ae001",
+    "roadmap-dpr15-residual-overlay.png": "1a380c1dec861a1b0685f9a46508bb7ce424da4f530e1a25875be62cbd0ac38a",
+    "roadmap-dpr1-review.png": "c202915df584fa5bf15eb33d5efa435601866a8a55453e77cfd204811fe8a5a1",
+    "roadmap-dpr15-residual-review.png": "4d537d58ca7975bd1ced58995ad79398229a7b8005411d3deaf70f51358f3e93"
+  },
+  "logs": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-8155-20261022/canvas-raster-display-final",
+  "fullPrAcceptance": false
+}

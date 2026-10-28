@@ -1,0 +1,15 @@
+{
+  "source_head": "5375b1f33bb4ab6b251a954e8fd33806d2626add",
+  "source_status": "?? target\n",
+  "test": "native_hwp5_rowbreak_table_reclaims_only_the_actual_existing_footnote_boundary",
+  "exit_code": 100,
+  "failed": 1,
+  "seconds": 0.208,
+  "message": "p90 table 27 caption must stay above its first table fragment",
+  "before_stage20": true,
+  "devel_failure": false,
+  "cli_sha256": "8915d2bf6d2f70141a593e093d7ba9268e5928050e99c144bc94a1d924b201fd",
+  "cli_build_provenance": "대조 worktree의 cargo nextest가 만든 동일 release-test CLI, 후속 캡처 전에 별도 보존",
+  "target": "/Users/tsjang/rhwp/target/pr-review",
+  "worktree_owned": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/control-stage19"
+}

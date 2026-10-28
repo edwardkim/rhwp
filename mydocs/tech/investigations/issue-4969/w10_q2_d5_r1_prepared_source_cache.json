@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-d5-r1-prepared-source-cache-result",
+  "issue": 4969,
+  "stage": "W10-Q2-D5-R1",
+  "status": "qualified",
+  "fixture": "ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf",
+  "fontBytes": 456688,
+  "cache": {
+    "scope": "page-local-common-shaping-lowering",
+    "key": [
+      "registry-generation",
+      "font-source-sha256",
+      "byte-length",
+      "face-index"
+    ],
+    "bytesOwner": "registry-certificate-Arc",
+    "sourceByteCopyAddedByCache": false,
+    "maxEntries": 256,
+    "maxLogicalSourceBytes": 67108864,
+    "maxBytesPerSource": 33554432,
+    "debugIncludesRawBytesOrPath": false
+  },
+  "runMatrix": [
+    {
+      "runs": 1,
+      "explicitBlake3DigestPasses": 1,
+      "faceParseAttempts": 1,
+      "arenaInternAttempts": 1,
+      "preparedEntries": 1,
+      "fontBlobs": 1,
+      "fontFaces": 1
+    },
+    {
+      "runs": 2,
+      "explicitBlake3DigestPasses": 1,
+      "faceParseAttempts": 1,
+      "arenaInternAttempts": 1,
+      "preparedEntries": 1,
+      "fontBlobs": 1,
+      "fontFaces": 1
+    },
+    {
+      "runs": 8,
+      "explicitBlake3DigestPasses": 1,
+      "faceParseAttempts": 1,
+      "arenaInternAttempts": 1,
+      "preparedEntries": 1,
+      "fontBlobs": 1,
+      "fontFaces": 1
+    }
+  ],
+  "failClosed": {
+    "zeroLimitRejectReason": "resourceLimitExceeded",
+    "preparedEntriesAfterReject": 0,
+    "fontBlobsAfterReject": 0,
+    "fontFacesAfterReject": 0,
+    "glyphRunsAfterReject": 0,
+    "textRunFallbackPreserved": true
+  },
+  "productPageTraversal": {
+    "textRuns": 8,
+    "commonGlyphRuns": 8,
+    "nominalDuplicates": 0,
+    "claims": 8,
+    "fontBlobs": 1,
+    "fontFaces": 1
+  },
+  "validation": {
+    "rustFocusedPassed": 11,
+    "focusedClippy": "pass",
+    "wasmLibraryCheck": "pass",
+    "canvasKitActualReplay": "pass",
+    "canvasKitVerifiedBlobs": 1,
+    "canvasKitVerifiedBytes": 456688,
+    "studioInlineBaseline": "pass",
+    "studioByKeyResolver": "expected-red-until-r2",
+    "generatedArtifactsChanged": false,
+    "sourceCfgTestIncrease": false,
+    "productOutputChanged": false
+  },
+  "nextSlice": "Q2-D5-R2",
+  "nextSliceApproved": false,
+  "pushReady": false
+}

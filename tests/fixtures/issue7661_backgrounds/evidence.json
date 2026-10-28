@@ -1,0 +1,70 @@
+[
+  {
+    "key": "flow-band-ownership",
+    "generation": "기존 public el-school-001.hwpx의 글줄/채우기 대조군. pr_7661_review.md에 생성·Print 관측 기록.",
+    "files": {
+      "flow-band-ownership.hwpx": "4f390d9e24ca9bcd134db6372a998445d1ffe60a714990e6e788e886573ad172",
+      "flow-band-ownership-2020.pdf": "18200d72bf6393d7b2f6a2f47bb027fec6f8f319b45022f1ade454ce41322a50"
+    },
+    "visual_source_sha": "801fc9a9d",
+    "native": {
+      "pages": 1,
+      "minimum_tolerant_content_match_percent": 98.7932
+    },
+    "wasm": {
+      "pages": 1,
+      "minimum_tolerant_content_match_percent": 98.54227
+    }
+  },
+  {
+    "key": "connected-backgrounds",
+    "generation": "기존 public el-school-001.hwpx의 글줄/채우기 대조군. pr_7661_review.md에 생성·Print 관측 기록.",
+    "files": {
+      "connected-backgrounds.hwpx": "7a370b4dad2d8cd47f02b5fa5e0c09c03f8a55029ac80e057b771780be04c1da",
+      "connected-backgrounds-2020.pdf": "3ba9b1a07c9a2fed6af3f0aae446a061e2c2aef22aaad6997558b05b017d7874"
+    },
+    "visual_source_sha": "801fc9a9d",
+    "native": {
+      "pages": 1,
+      "minimum_tolerant_content_match_percent": 99.63357
+    },
+    "wasm": {
+      "pages": 1,
+      "minimum_tolerant_content_match_percent": 99.20348
+    }
+  },
+  {
+    "key": "continued-paragraph",
+    "generation": "기존 public el-school-001.hwpx의 글줄/채우기 대조군. pr_7661_review.md에 생성·Print 관측 기록.",
+    "files": {
+      "continued-paragraph.hwpx": "de9dc6a1c7b6f14a6a6e98b017add2b67a4391d00414ac81547499da1c0cc274",
+      "continued-paragraph-2020.pdf": "d64cecfeaad10a76c8d84a76c91760f18de2e67655ebfe936fd17b2d9ad58106"
+    },
+    "visual_source_sha": "801fc9a9d",
+    "native": {
+      "pages": 3,
+      "minimum_tolerant_content_match_percent": 99.96178
+    },
+    "wasm": {
+      "pages": 3,
+      "minimum_tolerant_content_match_percent": 99.90232
+    }
+  },
+  {
+    "key": "cell-background-layers",
+    "generation": "기존 public el-school-001.hwpx의 글줄/채우기 대조군. pr_7661_review.md에 생성·Print 관측 기록.",
+    "files": {
+      "cell-background-layers.hwpx": "2082c02fddf44002e65ba384a78d7ca765b0457be14f52c35c16658ac88aa09c",
+      "cell-background-layers-2020.pdf": "191d44755a29eaaebb87af26a87c4827789be226858f5fa1450de33d3ffc9ae8"
+    },
+    "visual_source_sha": "801fc9a9d",
+    "native": {
+      "pages": 1,
+      "minimum_tolerant_content_match_percent": 99.71982
+    },
+    "wasm": {
+      "pages": 1,
+      "minimum_tolerant_content_match_percent": 99.72084
+    }
+  }
+]

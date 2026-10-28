@@ -5,6 +5,7 @@ import {
   clampCustomZoomPercent,
   detectZoomChoice,
   resolveZoomDialogZoom,
+  validateCustomZoomPercent,
   ZOOM_PRESET_PERCENTAGES,
 } from '../src/view/zoom-dialog-state.ts';
 
@@ -37,6 +38,35 @@ test('사용자 정의 배율은 한컴 계약인 10~500%로 제한된다', () =
   assert.equal(clampCustomZoomPercent(600), 500);
 });
 
+test('사용자 정의 배율 제출은 잘못된 값을 보정하지 않고 오류로 돌려준다', () => {
+  assert.deepEqual(
+    validateCustomZoomPercent(''),
+    { valid: false, message: '사용자 정의 배율을 입력하세요.' },
+  );
+  assert.deepEqual(
+    validateCustomZoomPercent('not-a-number'),
+    { valid: false, message: '사용자 정의 배율은 숫자로 입력하세요.' },
+  );
+  assert.deepEqual(
+    validateCustomZoomPercent('10.5'),
+    { valid: false, message: '사용자 정의 배율은 정수로 입력하세요.' },
+  );
+  assert.deepEqual(
+    validateCustomZoomPercent('9'),
+    { valid: false, message: '10~500% 사이의 배율을 입력하세요.' },
+  );
+  assert.deepEqual(
+    validateCustomZoomPercent('501'),
+    { valid: false, message: '10~500% 사이의 배율을 입력하세요.' },
+  );
+});
+
+test('사용자 정의 배율 제출은 10~500% 정수 경계를 정확히 보존한다', () => {
+  assert.deepEqual(validateCustomZoomPercent(' 10 '), { valid: true, percent: 10 });
+  assert.deepEqual(validateCustomZoomPercent('137'), { valid: true, percent: 137 });
+  assert.deepEqual(validateCustomZoomPercent('500'), { valid: true, percent: 500 });
+});
+
 test('고정·맞춤 배율 선택을 실제 문서 배율로 계산한다', () => {
   const metrics = {
     viewportWidth: 1600,
@@ -53,6 +83,11 @@ test('고정·맞춤 배율 선택을 실제 문서 배율로 계산한다', () 
   assert.equal(resolveZoomDialogZoom({
     zoomChoice: { kind: 'fitPage' },
     arrangement: { kind: 'single' },
+    ...metrics,
+  }), 0.88);
+  assert.equal(resolveZoomDialogZoom({
+    zoomChoice: { kind: 'fitPage' },
+    arrangement: { kind: 'double' },
     ...metrics,
   }), 0.88);
 });
@@ -88,4 +123,13 @@ test('여러 쪽은 별도 비율 선택보다 지정한 가로×세로 맞춤�
     pageHeight: 1000,
     pageGap: 10,
   }), 0.435);
+  assert.equal(resolveZoomDialogZoom({
+    zoomChoice: { kind: 'preset', percent: 200 },
+    arrangement: { kind: 'multiple', columns: 4, rows: 1 },
+    viewportWidth: 1600,
+    viewportHeight: 900,
+    pageWidth: 800,
+    pageHeight: 1000,
+    pageGap: 10,
+  }), 1530 / 3200);
 });

@@ -42,7 +42,7 @@ use ed25519_dalek::{
 };
 use ml_dsa::{
     EncodedSignature, KeyInit as _, Keypair as _, MlDsa65, Seed, Signature as MlSignature,
-    Signer as _, SigningKey as MlSigningKey, Verifier as _, VerifyingKey as MlVerifyingKey,
+    SigningKey as MlSigningKey, VerifyingKey as MlVerifyingKey,
 };
 
 /// 순수 ML-DSA-65 서명의 알고리즘 표기 — 봉투·사이드카의 `alg` 필드에 쓴다.

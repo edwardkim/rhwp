@@ -1,12 +1,12 @@
 # @rhwp/core
 
-**알(R), 모두의 한글** — 브라우저에서 HWP 파일을 열어보세요
+**알(R), 모두의 한글** — 브라우저에서 HWP/HWPX 파일을 열어보세요
 
 [![npm](https://img.shields.io/npm/v/@rhwp/core)](https://www.npmjs.com/package/@rhwp/core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Rust + WebAssembly 기반 HWP/HWPX 파서 & 렌더러입니다.
-HWP 파일을 파싱하고 SVG로 렌더링하는 저수준 API를 제공합니다.
+HWP/HWPX 파일을 파싱하고 SVG로 렌더링하는 저수준 API를 제공합니다.
 
 > 편집 기능(메뉴, 툴바, 서식)이 필요하면 **[@rhwp/editor](https://www.npmjs.com/package/@rhwp/editor)** 를 사용하세요.
 > 3줄이면 완전한 HWP 에디터를 임베드할 수 있습니다.
@@ -15,6 +15,24 @@ HWP 파일을 파싱하고 SVG로 렌더링하는 저수준 API를 제공합니�
 |--------|------|
 | **@rhwp/core** (이 패키지) | WASM 파서/렌더러 — 직접 API 호출 |
 | **@rhwp/editor** | 완전한 에디터 UI — iframe 임베드 |
+
+## v0.8.7
+
+- 연속 TAC 표와 중첩 표의 저장 줄·페이지 분할·셀 패딩 및 문단 배치를 보정했습니다.
+- 호스트 글꼴 공급자, 명시적 폰트 환경과 guarded native glyph replay를 보강했습니다.
+- SVG CSS/XML 직렬화, XML 누적 예산, HWP3 문단 깊이, 연결 그림과 WMF 입력 경계를 보강했습니다.
+- HWP/HWPX 저장 보존과 웹 하이퍼링크, 영어 UI·편집 경계를 개선했습니다.
+
+## v0.8.6
+
+- exact font instance, guarded kerning, common shaping과 세로쓰기 조판 경로를 보강했습니다.
+- HWPX OLE shape component·curve·BinData와 HWP3·OWPML·HWPML 본문의 열기·저장 보존 범위를
+  넓혔습니다.
+- HWPX container·parser 재귀 깊이, 압축 해제와 입력 경계 검증을 강화했습니다.
+- exact font instance는 명시적 opt-in이며 기존 기본 조판 경로를 바꾸지 않습니다.
+
+세부 변경·호환성·기여자 기록은
+**[CHANGELOG.md](https://github.com/edwardkim/rhwp/blob/main/CHANGELOG.md)**를 참조하세요.
 
 ## 빠른 시작 — 처음부터 따라하기
 
@@ -118,6 +136,26 @@ const resp = await fetch('/sample.hwp');
 const doc = new HwpDocument(new Uint8Array(await resp.arrayBuffer()));
 ```
 
+### PDF 가져오기 (소스 opt-in 빌드)
+
+PDF는 기본 배포에서 활성화하지 않습니다. 소스를 `--features pdf-import`로 빌드한
+제품 WASM에서만 사용할 수 있으며, 비활성 빌드는 `PDF_IMPORT_DISABLED`로 거부합니다.
+
+```javascript
+const doc = HwpDocument.importPdf(pdfBytes, { sourcePages: [0, 6, 7] });
+const diagnostics = JSON.parse(doc.getPdfImportDiagnostics());
+const hwpx = doc.exportHwpx();
+doc.free();
+```
+
+`options`는 JSON 문자열이 아닌 객체이며 `sourcePages`는 0-based 엄격 증가 배열입니다.
+선택을 생략하거나 기존 생성자에 PDF 바이트를 전달하면 전체 쪽을 가져옵니다. 잘못된 옵션은
+`PDF_IMPORT_OPTIONS`, 잘못된 쪽 선택은 `PDF_PAGE_SELECTION`을 포함한 JS 오류입니다.
+진단은 가져오기 시점의 원본 쪽/출력 구역 대응·경고·임시 문단 정책이며 다른 입력은 `null`입니다.
+전체 입력은 현재 16 MiB/128쪽 한도이고, 전체 parser 할당 경계는 아직 입증하지 않았습니다
+(`parserAllocationBoundsProven=false`). 동기 API의 시간 제한·취소는 별도 Worker 소유자가
+종료·재생성으로 처리해야 합니다. 저장소의 `rhwp-shared/pdf/`에 해당 세션 구현이 있습니다.
+
 ### SVG 렌더링
 
 ```javascript
@@ -178,7 +216,8 @@ doc.insertPictureEx(
 - 어떤 메서드에 `*Ex` 가 있는지는 `rhwp.d.ts` 에서 `Ex(options` 로 확인할 수 있습니다.
 
 > 0.x 단계라 편집 API 시그니처가 바뀔 수 있습니다. 인자가 많은 API 는 `*Ex` 사용을
-> 권장하며, 변경 사항은 CHANGELOG 의 `### API` 항목에 기록합니다.
+> 권장하며, 변경 사항은 [CHANGELOG.md](https://github.com/edwardkim/rhwp/blob/main/CHANGELOG.md)의
+> `### API` 항목에 기록합니다.
 
 ## 필수 설정: measureTextWidth
 
@@ -267,6 +306,7 @@ rhwp가 SVG에 적용하는 자동 폴백 체인:
 
 - **[온라인 데모](https://edwardkim.github.io/rhwp/)**
 - **[GitHub](https://github.com/edwardkim/rhwp)**
+- **[CHANGELOG.md](https://github.com/edwardkim/rhwp/blob/main/CHANGELOG.md)** — 버전별 변경·호환성·기여자 기록
 - **[@rhwp/editor](https://www.npmjs.com/package/@rhwp/editor)** — 에디터 UI 임베드
 - **[VS Code 확장](https://marketplace.visualstudio.com/items?itemName=edwardkim.rhwp-vscode)**
 

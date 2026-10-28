@@ -1,0 +1,204 @@
+{
+  "parent_head": "7a71a3ee348657f886980b99ae82eba3c3873731",
+  "source": "samples/hwpx_sample2.hwpx",
+  "pdf": "pdf/hwpx_sample2-hwpx-2020.pdf",
+  "cause": "첫 프레임과 교차하지 않는 뒤행 병합셀의 소유를 첫 프레임 검증에 혼합하고, 컷행에서 시작한 원본 병합 선언과 행합 계약을 배제함",
+  "source_geometry_hu": {
+    "opening_frame": 74405,
+    "rows_before_split": 63595,
+    "split_row": 23607,
+    "first_split_part": 10810,
+    "remaining_split_part": 12797,
+    "opening_span_declared_and_raw_sum": 72792
+  },
+  "native_all_pages": 29,
+  "native_min_percent": 92.22927,
+  "native_below90_pages": [],
+  "native_changed_pages": [
+    27,
+    28
+  ],
+  "native_target_percent": {
+    "27": 99.56009,
+    "28": 99.91253
+  },
+  "page_count": {
+    "native": 29,
+    "pdf": 29,
+    "wasm": 29
+  },
+  "native_off_canvas_count": 0,
+  "native_table_overlap_count": 0,
+  "text_ownership": {
+    "27": {
+      "text_run_count_before": 153,
+      "text_run_count_after": 153,
+      "ordered_text_ownership_unchanged": true,
+      "text_sha256": "3d63c5bfd96fc4be3919702ba6f9b78d7fcffc87e268572b3034966640f9ac71"
+    },
+    "28": {
+      "text_run_count_before": 93,
+      "text_run_count_after": 93,
+      "ordered_text_ownership_unchanged": true,
+      "text_sha256": "506e853e42a4ac2b33e859c0d696f44ce2ae93465e68fea8b70199ca329cb1e9"
+    }
+  },
+  "whole_nextest": {
+    "parent_head": "7a71a3ee3",
+    "candidate": "uncommitted p28 crossing-only",
+    "summary": "Summary [ 556.165s] 10281 tests run: 10254 passed (6 slow), 27 failed, 50 skipped",
+    "exit_code": 100,
+    "failed_cases": [
+      "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_11",
+      "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_10",
+      "rhwp::regression_suite_006 off_canvas_baseline::off_canvas_does_not_grow_partition_3",
+      "rhwp::regression_suite_006 off_canvas_baseline::off_canvas_does_not_grow_partition_6",
+      "rhwp::regression_suite_006 off_canvas_baseline::off_canvas_does_not_grow_partition_9",
+      "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_1",
+      "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_12",
+      "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_13",
+      "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_14",
+      "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_15",
+      "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_6",
+      "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_1",
+      "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_9",
+      "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_14",
+      "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_2",
+      "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_5",
+      "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_7",
+      "rhwp::regression_suite_010 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only",
+      "rhwp::regression_suite_010 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_four_pages_preserve_question_paragraph_ownership",
+      "rhwp::regression_suite_010 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_master_page_footer_page_number_is_preserved",
+      "rhwp::regression_suite_012 issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page7",
+      "rhwp::regression_suite_012 issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page8",
+      "rhwp::regression_suite_012 issue_5875_nested_table_text_caption::issue_5875_page_count_stays_12",
+      "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_0",
+      "rhwp::regression_suite_017 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_11",
+      "rhwp::regression_suite_017 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_3",
+      "rhwp::regression_suite_024 issue_5782_fragment_span_charge::issue_5782_fragment_clip_covers_nested_table_bottom",
+      "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_11",
+      "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_10",
+      "rhwp::regression_suite_006 off_canvas_baseline::off_canvas_does_not_grow_partition_3",
+      "rhwp::regression_suite_006 off_canvas_baseline::off_canvas_does_not_grow_partition_6",
+      "rhwp::regression_suite_006 off_canvas_baseline::off_canvas_does_not_grow_partition_9",
+      "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_1",
+      "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_12",
+      "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_13",
+      "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_14",
+      "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_15",
+      "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_6",
+      "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_1",
+      "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_9",
+      "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_14",
+      "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_2",
+      "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_5",
+      "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_7",
+      "rhwp::regression_suite_010 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only",
+      "rhwp::regression_suite_010 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_four_pages_preserve_question_paragraph_ownership",
+      "rhwp::regression_suite_010 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_master_page_footer_page_number_is_preserved",
+      "rhwp::regression_suite_012 issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page7",
+      "rhwp::regression_suite_012 issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page8",
+      "rhwp::regression_suite_012 issue_5875_nested_table_text_caption::issue_5875_page_count_stays_12",
+      "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_0",
+      "rhwp::regression_suite_017 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_11",
+      "rhwp::regression_suite_017 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_3",
+      "rhwp::regression_suite_024 issue_5782_fragment_span_charge::issue_5782_fragment_clip_covers_nested_table_bottom"
+    ],
+    "log": "output/pr-review/planet6897-green-20261002/sample2-p28-crossing-full-nextest.log",
+    "log_sha256": "b0546e550045fbcdef7d4e7dbd3e25a22994846bb1e209f9bdb4d79f3abdaeba",
+    "integration_pr_ready": false
+  },
+  "parent_counterexamples": {
+    "candidate": {
+      "samples/issue5875/nested_table_text_caption.hwp": {
+        "pageCount": 11,
+        "offCanvasCount": 1,
+        "overlapCount": 0
+      },
+      "samples/issue5782/2181727_press_guard_test_methods.hwp": {
+        "pageCount": 11,
+        "offCanvasCount": 1,
+        "overlapCount": 0
+      },
+      "samples/issue6122/2181727_press_guard_test_method.hwp": {
+        "pageCount": 11,
+        "offCanvasCount": 1,
+        "overlapCount": 0
+      },
+      "samples/hwpx/exam_social.hwpx": {
+        "pageCount": 5,
+        "offCanvasCount": 0,
+        "overlapCount": 1
+      }
+    },
+    "parent": {
+      "samples/issue5875/nested_table_text_caption.hwp": {
+        "pageCount": 11,
+        "offCanvasCount": 1,
+        "overlapCount": 0
+      },
+      "samples/issue5782/2181727_press_guard_test_methods.hwp": {
+        "pageCount": 11,
+        "offCanvasCount": 1,
+        "overlapCount": 0
+      },
+      "samples/issue6122/2181727_press_guard_test_method.hwp": {
+        "pageCount": 11,
+        "offCanvasCount": 1,
+        "overlapCount": 0
+      },
+      "samples/hwpx/exam_social.hwpx": {
+        "pageCount": 5,
+        "offCanvasCount": 0,
+        "overlapCount": 1
+      }
+    }
+  },
+  "parent_counterexample_summary": "4종의 쪽수/용지밖/표겹침은 변경 전후 동일. 전체 실패 전부의 원인 배제를 뜻하지 않음",
+  "fresh_wasm": {
+    "mode": "Mac local no-opt substitute, not Docker",
+    "whole_pages": 29,
+    "min_percent": 92.22927,
+    "below90_pages": [],
+    "native_wasm_percent_identical": true,
+    "exit_code": 0
+  },
+  "integration_pr_ready": false,
+  "new_tests_or_baseline_changes": false,
+  "metric": "2px tolerant silhouette auxiliary, not exact pixel similarity",
+  "source_hashes": {
+    "samples/hwpx_sample2.hwpx": "188bdfe21f89e117d8897f4102aa6f741962b23a3019ad2aaf7bdc222d90fdb2",
+    "pdf/hwpx_sample2-hwpx-2020.pdf": "d69bf2c042f1b3f4713ad838c7d4f7817f2568cea62f1df78731086ebb8e81dc",
+    "src/renderer/layout/table_layout.rs": "f0de220fd0a81fd3a679d14b8714a7ae4ef6c5cb0c0853783b08ca18d3f10ed0"
+  },
+  "counterexample_6551": {
+    "page_count": 46,
+    "off_canvas": 1,
+    "overlap": 1,
+    "unchanged": true
+  },
+  "lint": {
+    "fmt_exit_code": 0,
+    "diff_check_exit_code": 0,
+    "workspace_all_targets_clippy_exit_code": 0,
+    "wasm32_clippy_exit_code": 0,
+    "native_root_clippy_exit_code": 0,
+    "suite_manifest_exit_code": 0,
+    "whole_document_metadata_exit_code": 1,
+    "metadata_errors": 16
+  },
+  "builds": {
+    "native_build": {
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/sample2-p28-final-native_build.log"
+    },
+    "fresh_wasm_build": {
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/sample2-p28-final-fresh_wasm_build.log"
+    }
+  },
+  "wasm_hashes": {
+    "pkg/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+    "pkg/rhwp_bg.wasm": "e1f3b1e7574dcfb796517396f8887800b91cd1fa27022eba5f5c40e211f5411c"
+  }
+}

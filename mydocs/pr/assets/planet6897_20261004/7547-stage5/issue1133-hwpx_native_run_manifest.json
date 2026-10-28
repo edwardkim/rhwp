@@ -1,0 +1,37 @@
+{
+  "schema_version": 2,
+  "key": "issue1133-hwpx",
+  "provenance": {
+    "hwp": {
+      "path": "samples/hwpx/issue_1133.hwpx",
+      "sha256": "2cf479d94a70d2a834ae7bc1f5ec5fa3d7ff895792cded48d0bf92ca19341bee"
+    },
+    "pdf": {
+      "path": "pdf/hwpx/issue_1133.pdf",
+      "sha256": "ca066fdc5cda9fd8c47c9a29ba9a546e70c6acdaa96df4d6c66e0b8e02cdbc45"
+    },
+    "git_head": "c8c5f535cd3ebf331cadc2714c68af9fdc663a4d",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "351b97126f337ba1bd7a05b8b0354577478b5c6056544e5048bdafdd98510125"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [],
+  "requested_page_shards": [],
+  "run_state": "incomplete"
+}

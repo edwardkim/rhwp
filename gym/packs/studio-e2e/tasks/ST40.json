@@ -21,6 +21,24 @@
         "{input}",
         "--json"
       ]
+    },
+    {
+      "name": "답안 charts 길이 숫자 형식",
+      "op": "json_type_eq",
+      "file": "answer.json",
+      "path": "ok",
+      "value": "number"
+    },
+    {
+      "name": "답안 charts 길이 라이브 일치",
+      "op": "len_answer_eq",
+      "answer": "ok",
+      "path": "charts",
+      "cmd": [
+        "chart-to-csv",
+        "{input}",
+        "--json"
+      ]
     }
   ],
   "axis": "조사"

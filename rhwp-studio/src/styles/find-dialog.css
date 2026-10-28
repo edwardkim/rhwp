@@ -3,7 +3,7 @@
   position: fixed;
   top: 80px;
   right: 24px;
-  width: 380px;
+  width: min(380px, calc(100vw - 32px));
   background: var(--color-surface-raised);
   border: 1px solid var(--color-primary-subtle);
   box-shadow: var(--shadow-dropdown);
@@ -48,6 +48,7 @@
   padding: 0 4px;
   font-size: var(--font-size-base);
   box-sizing: border-box;
+  min-width: 0;
 }
 
 .find-dialog-input:focus {
@@ -56,9 +57,25 @@
 }
 
 .find-dialog-status {
-  margin-left: auto;
-  color: var(--ui-danger);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
+}
+
+.find-dialog-status-row {
+  min-height: 18px;
+  line-height: 18px;
+  text-align: right;
+}
+
+.find-dialog-status[data-state="wrapped"] {
+  color: var(--color-primary-dark);
+}
+
+.find-dialog-match-count {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
 }
 
 .find-dialog-buttons {

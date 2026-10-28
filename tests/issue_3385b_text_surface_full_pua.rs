@@ -6,7 +6,7 @@
 //! 181자가 이 문자이고 최장 96자 연속 — 머리말/꼬리말 가로선이 본문 텍스트로 나갔다.
 //!
 //! 정체는 저장소 안에 이미 있었다. `map_pua_bullet_char` 가 한컴 정답지 실측 근거와 함께
-//! 표시 문자를 정의한다(`0xF080F => '━'`, `0xF0854 => '《'` 등). **렌더는 그 표를 쓰는데
+//! 표시 문자를 정의한다(`0xF080F => '─'`, `0xF0854 => '『'` 등). **렌더는 그 표를 쓰는데
 //! 텍스트 추출은 쓰지 않았다.**
 //!
 //! 계약 두 가지를 고정한다.
@@ -14,13 +14,17 @@
 //!   2) 렌더는 건드리지 않는다 — `pua_to_text_surface` 는 추출 경로에서만 불린다
 #![cfg(not(target_arch = "wasm32"))]
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/deferred_exam_scope.rs"
+));
+
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// 머리말·꼬리말 가로선이 PUA 로 조판된 HWP 3.0 문서.
 const LINE_SAMPLE: &str = "samples/hwp3-sample11.hwp";
-/// 책괄호(《》)가 PUA 로 조판된 문서.
-const BRACKET_SAMPLE: &str = "samples/exam_kor.hwp";
+
 /// 중첩 표 안의 Wingdings 계열 글머리표가 반복되는 HWP 5.0 문서.
 const TRIANGLE_BULLET_SAMPLE: &str = "samples/basic/issue2007_nested_cell_pagination_42065.hwp";
 
@@ -60,6 +64,9 @@ fn export(kind: &str, rel: &str, dir: &Path) -> String {
     let mut all = String::new();
     for entry in std::fs::read_dir(dir).expect("출력 디렉터리") {
         let path = entry.expect("항목").path();
+        if is_deferred_exam_document(path.to_string_lossy().as_ref()) {
+            continue;
+        }
         if path.is_file() {
             all.push_str(&std::fs::read_to_string(&path).unwrap_or_default());
         }
@@ -95,41 +102,19 @@ fn heavy_horizontal_line_pua_is_readable_in_extracted_text() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
-/// 책괄호 PUA(U+F0854·F0855)도 《 》 로 나온다.
+/// 렌더는 사각형+숫자 벡터 합성이다 — 원-안 글리프 매핑(캡스톤 F-1 이 되돌린
+/// 발산)이 되살아나지 않고, raw PUA 도 새지 않는다([#6127] 백엔드 패리티).
 #[test]
-fn book_bracket_pua_becomes_angle_brackets() {
-    let dir = out_dir("bracket");
-    let text = export("export-text", BRACKET_SAMPLE, &dir);
-    let leaked = pua_chars(&text);
-    assert!(
-        leaked.is_empty(),
-        "추출 텍스트에 PUA 가 남았다 ({}건): {:?}",
-        leaked.len(),
-        &leaked[..leaked.len().min(3)]
-    );
-    assert!(
-        text.contains('\u{300A}') && text.contains('\u{300B}'),
-        "책괄호 《 》 로 바뀌지 않았다"
-    );
-    let _ = std::fs::remove_dir_all(&dir);
-}
-
-/// 렌더는 그대로다 — 텍스트 표면 변환이 렌더까지 번지면 안 된다.
-///
-/// `map_pua_bullet_char` 는 원래 렌더 경로의 표이므로 SVG 에는 이미 치환된 글자가 나온다.
-/// 여기서 고정하는 것은 **텍스트 전용 변환이 렌더 출력을 바꾸지 않는다**는 점이다 —
-/// 사각 안 숫자는 렌더에서 원문 유지(캡스톤 F-1 결정)여야 한다.
-#[test]
-fn render_keeps_the_boxed_number_passthrough() {
+fn render_synthesizes_the_boxed_numbers() {
     let dir = out_dir("svg");
     let svg = export("export-svg", "samples/2022년 국립국어원 업무계획.hwp", &dir);
     let boxed = svg
         .chars()
-        .filter(|c| (0xF02B1..=0xF02C4).contains(&(*c as u32)))
+        .filter(|c| (0xF02B0..=0xF02C4).contains(&(*c as u32)))
         .count();
-    assert!(
-        boxed > 0,
-        "렌더에서 사각 안 숫자 원문이 사라졌다 — 텍스트 표면 변환이 렌더까지 번졌다"
+    assert_eq!(
+        boxed, 0,
+        "렌더에 raw 사각 안 숫자 PUA 가 남았다 — 글꼴 부재 환경에서 빈칸이 된다"
     );
     let _ = std::fs::remove_dir_all(&dir);
 }

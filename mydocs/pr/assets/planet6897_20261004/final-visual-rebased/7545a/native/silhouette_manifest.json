@@ -1,0 +1,40 @@
+{
+  "key": "png-pair",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    121
+  ],
+  "completed_pages": [
+    121
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/final-svg-rebased/7545a/native/compare/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 121,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/final-svg-rebased/7545a/native/rhwp_png/rhwp_121.png",
+      "rhwp_sha256": "a582f28fa3b08fd908b006f3d3beeab61f5ae7ba9b58e88fa30c6c5395515fae",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261004/final-svg-rebased/7545a/pdf_png/pdf-121.png",
+      "pdf_sha256": "532faf5e3ce37c325983020543b2314e89fc6318e1cce486990285ba350b8e56"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 121,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.53486,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 128855,
+      "tolerant_content_match_percent": 96.53486
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  }
+}

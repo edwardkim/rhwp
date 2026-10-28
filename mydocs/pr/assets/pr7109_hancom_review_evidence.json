@@ -1,0 +1,436 @@
+{
+  "reviewCodeHead": "b40c2953cf526b86319f2841c5b5584d7a83d735",
+  "reviewWorkspaceHeadBeforeEvidenceUpdate": "8c02339353a46b6877e9bb5b4e56f85e42cc4765",
+  "previousRendererCodeHead": "6e5dc6f52b3b5d5c14333a734d95e628cbd77f7c",
+  "pdf": {
+    "path": "tests/fixtures/multiline_cell_zero_positions/two_lines-2020.pdf",
+    "source": "User supplied existing local Hancom conversion, explicitly identified in this task",
+    "sha1": "fcaed0a1e2ab1e77ca61ab939da4809fd1676da0",
+    "sha256": "34c7d6208c7831cdbdf82a11fab01c924426725c6a0e2bf17cb1a484ed2719b8",
+    "size": 10161,
+    "metadata": "Author:          admin\nCreator:         Hwp 2022 12.0.0.4605\nProducer:        Hancom PDF 1.3.0.550\nCreationDate:    Mon Sep 14 20:58:52 2026 KST\nModDate:         Mon Sep 14 20:58:52 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           1\nEncrypted:       no\nPage size:       595 x 841 pts (A4)\nPage rot:        0\nFile size:       10161 bytes\nOptimized:       no\nPDF version:     1.4\n",
+    "role": "independent Hancom reference PDF",
+    "trackedDuplicatesFound": [],
+    "preservedAtUserProvidedPath": true
+  },
+  "geometry": {
+    "pdfLines": [
+      {
+        "text": "First line",
+        "pdf_top_pt": 53.33691,
+        "pdf_top_px": 71.11588,
+        "pdf_bottom_px": 84.38138266666667
+      },
+      {
+        "text": "Second line",
+        "pdf_top_pt": 63.286037,
+        "pdf_top_px": 84.38138266666667,
+        "pdf_bottom_px": 97.64688533333333
+      }
+    ],
+    "treeChanges": [
+      [
+        "/children/6/children/0/children/4/children/0/children/0/children/0/bbox/y",
+        77.9,
+        71.2
+      ],
+      [
+        "/children/6/children/0/children/4/children/0/children/0/children/1/bbox/y",
+        77.9,
+        71.2
+      ],
+      [
+        "/children/6/children/0/children/4/children/0/children/0/children/2/bbox/y",
+        77.9,
+        71.2
+      ],
+      [
+        "/children/6/children/0/children/4/children/0/children/0/children/3/bbox/y",
+        77.7,
+        71.0
+      ],
+      [
+        "/children/6/children/0/children/4/children/0/children/0/children/4/bbox/y",
+        91.0,
+        84.4
+      ],
+      [
+        "/children/6/children/0/children/4/children/0/children/0/bbox/y",
+        77.9,
+        71.2
+      ],
+      [
+        "/children/6/children/0/children/4/children/0/children/1/children/0/bbox/y",
+        91.2,
+        84.5
+      ],
+      [
+        "/children/6/children/0/children/4/children/0/children/1/children/1/bbox/y",
+        91.2,
+        84.5
+      ],
+      [
+        "/children/6/children/0/children/4/children/0/children/1/children/2/bbox/y",
+        91.2,
+        84.5
+      ],
+      [
+        "/children/6/children/0/children/4/children/0/children/1/children/3/bbox/y",
+        91.0,
+        84.4
+      ],
+      [
+        "/children/6/children/0/children/4/children/0/children/1/children/4/bbox/y",
+        104.4,
+        97.7
+      ],
+      [
+        "/children/6/children/0/children/4/children/0/children/1/bbox/y",
+        91.2,
+        84.5
+      ]
+    ],
+    "beforePageBox": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 480.0,
+      "h": 480.0
+    },
+    "afterPageBox": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 480.0,
+      "h": 480.0
+    },
+    "referencePDFMediaBoxPt": [
+      595,
+      841
+    ],
+    "pdfCellBorderTopPx": 69.52400000000004,
+    "pdfCellBorderBottomPx": 99.89066666666668,
+    "trackedDuplicatePDFs": []
+  },
+  "comparison": {
+    "before": {
+      "summary": {
+        "key": "two-lines",
+        "hwp": "tests/fixtures/multiline_cell_zero_positions/two_lines.hwpx",
+        "pdf": "tests/fixtures/multiline_cell_zero_positions/two_lines-2020.pdf",
+        "requested_pages": [
+          1
+        ],
+        "completed_pages": [
+          1
+        ],
+        "missing_pages": [],
+        "run_state": "complete",
+        "run_manifest": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-before/two-lines/run_manifest.json",
+        "exported_svg_pages": 1,
+        "exported_render_tree_pages": 1,
+        "exported_pdf_pages": 1,
+        "rasterized_svg_pages": 1,
+        "rasterized_pdf_pages": 1,
+        "svg_pages": 1,
+        "render_tree_pages": 1,
+        "pdf_pages": 1,
+        "compare_pages": 1,
+        "overlay_pages": 1,
+        "review_pages": 1,
+        "pdf_question_markers": 0,
+        "contact_sheet": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-before/two-lines/contact_sheet.png",
+        "overlay_contact_sheet": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-before/two-lines/overlay_contact_sheet.png",
+        "review_contact_sheet": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-before/two-lines/review_contact_sheet.png",
+        "analysis_dir": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-before/two-lines/analysis",
+        "overlay_dir": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-before/two-lines/overlay",
+        "review_dir": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-before/two-lines/review",
+        "note_shape": [
+          {
+            "section": 0,
+            "footnote": {
+              "separatorAboveMm": 2.999,
+              "separatorBelowMm": 2.0,
+              "betweenNotesMm": 0.998,
+              "separatorEnabled": true,
+              "separatorLengthMm": -0.004,
+              "rawSeparatorMarginTopMm": 2.999,
+              "rawSeparatorMarginBottomMm": 0.0,
+              "rawNoteSpacingMm": 2.0,
+              "rawUnknownMm": 0.998
+            },
+            "endnote": {
+              "separatorAboveMm": 0.79,
+              "separatorBelowMm": 2.0,
+              "betweenNotesMm": 0.0,
+              "separatorEnabled": true,
+              "separatorLengthMm": 43.321,
+              "rawSeparatorMarginTopMm": 0.79,
+              "rawSeparatorMarginBottomMm": 0.0,
+              "rawNoteSpacingMm": 2.0,
+              "rawUnknownMm": 0.0
+            }
+          }
+        ],
+        "note_shape_json": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-before/two-lines/analysis/note_shape.json",
+        "overlay_metrics": {
+          "compared_pages": 1,
+          "pixel_diff_threshold": 32,
+          "average_pixel_match_percent": 99.30528,
+          "worst_pixel_match_percent": 99.30528,
+          "average_ink_match_percent": 8.59548,
+          "worst_ink_match_percent": 8.59548,
+          "average_visual_accuracy_proxy_percent": 8.59548,
+          "worst_visual_accuracy_proxy_percent": 8.59548,
+          "worst_pages": [
+            1
+          ]
+        },
+        "overlay_metrics_json": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-before/two-lines/overlay/overlay_metrics.json",
+        "visual_metrics": {
+          "analyzed_pages": 1,
+          "flagged_page_count": 0,
+          "frame_overflow_pages": [],
+          "content_bottom_drift_pages": [],
+          "red_marker_drift_pages": [],
+          "question_marker_flow_drift_pages": [],
+          "line_band_drift_pages": [],
+          "column_line_band_drift_pages": [],
+          "column_text_flow_collapse_pages": [],
+          "large_ink_region_drift_pages": [],
+          "endnote_separator_gap_drift_pages": [],
+          "endnote_separator_observed_pages": [],
+          "endnote_separator_gap_pages": [],
+          "endnote_no_separator_content_pages": [],
+          "between_notes_marker_gap_pages": [],
+          "equation_text_overlap_pages": [],
+          "square_wrap_text_overlap_pages": [],
+          "deferred_square_picture_top_drift_pages": [],
+          "right_table_left_strip_text_deficit_pages": [],
+          "question_title_text_overlap_pages": [],
+          "line_order_overlap_pages": [],
+          "render_tree_frame_tail_overflow_pages": [],
+          "question_marker_drift_pages": [],
+          "legacy_glyph_visual_pages": [],
+          "metrics_json": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-before/two-lines/analysis/metrics.json",
+          "question_flow_json": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-before/two-lines/analysis/question_flow.json"
+        },
+        "flagged_pages": []
+      },
+      "runManifest": {
+        "schema_version": 1,
+        "key": "7109",
+        "provenance": {
+          "hwp": {
+            "path": "tests/fixtures/multiline_cell_zero_positions/two_lines.hwpx",
+            "sha256": "fc8a807e79eca85b2c07991fd2001880433acc2dd458c27d5fda0b4c2d28b8d7"
+          },
+          "pdf": {
+            "path": "tests/fixtures/multiline_cell_zero_positions/two_lines-2020.pdf",
+            "sha256": "34c7d6208c7831cdbdf82a11fab01c924426725c6a0e2bf17cb1a484ed2719b8"
+          },
+          "git_head": "8c02339353a46b6877e9bb5b4e56f85e42cc4765",
+          "sweep_script": {
+            "path": "scripts/visual_sweep.py",
+            "sha256": "6ec9a96bd4f04a57710aa4fa6c0bdb0a90c13b4dd8e5a324257c409a50f38aed"
+          },
+          "svg_rasterizer": "webfont",
+          "rhwp_binary": {
+            "configured": "/Users/tsjang/.Trash/rhwp-pr7107-target-20260914/debug/rhwp",
+            "path": "/Users/tsjang/.Trash/rhwp-pr7107-target-20260914/debug/rhwp",
+            "sha256": "03a35f41c00e2fcb95b85606e651493d4394a0655a070d2bc78b078533e1730c"
+          },
+          "wasm": {
+            "files": [
+              {
+                "path": "/Users/tsjang/.Trash/rhwp-pr7107-review-evidence-20260914/review/pkg/rhwp.js",
+                "sha256": "0ef35380618d4088db768ad067c39fb89bdb9367402f61c2574e8fe4535a3899"
+              },
+              {
+                "path": "/Users/tsjang/.Trash/rhwp-pr7107-review-evidence-20260914/review/pkg/rhwp_bg.wasm",
+                "sha256": "7d8b6205817a367dde0ec74c86dd7388d94a9780a17c9cd83fb1573e0481087b"
+              }
+            ],
+            "exporter_sha256": "fa92267b32f4f7617f60e02b37427762fd251d52196c9a001e6e8232c997a3aa",
+            "font_policy": "same-input native export-svg --font-style; font-face CSS only",
+            "render_tree": "WASM getPageRenderTree"
+          }
+        },
+        "dpi": 96,
+        "pixel_diff_threshold": 32,
+        "requested_pages": [
+          1
+        ],
+        "requested_page_shards": [
+          [
+            1
+          ]
+        ],
+        "run_state": "complete"
+      }
+    },
+    "after": {
+      "summary": {
+        "key": "two-lines",
+        "hwp": "tests/fixtures/multiline_cell_zero_positions/two_lines.hwpx",
+        "pdf": "tests/fixtures/multiline_cell_zero_positions/two_lines-2020.pdf",
+        "requested_pages": [
+          1
+        ],
+        "completed_pages": [
+          1
+        ],
+        "missing_pages": [],
+        "run_state": "complete",
+        "run_manifest": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-after/two-lines/run_manifest.json",
+        "exported_svg_pages": 1,
+        "exported_render_tree_pages": 1,
+        "exported_pdf_pages": 1,
+        "rasterized_svg_pages": 1,
+        "rasterized_pdf_pages": 1,
+        "svg_pages": 1,
+        "render_tree_pages": 1,
+        "pdf_pages": 1,
+        "compare_pages": 1,
+        "overlay_pages": 1,
+        "review_pages": 1,
+        "pdf_question_markers": 0,
+        "contact_sheet": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-after/two-lines/contact_sheet.png",
+        "overlay_contact_sheet": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-after/two-lines/overlay_contact_sheet.png",
+        "review_contact_sheet": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-after/two-lines/review_contact_sheet.png",
+        "analysis_dir": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-after/two-lines/analysis",
+        "overlay_dir": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-after/two-lines/overlay",
+        "review_dir": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-after/two-lines/review",
+        "note_shape": [
+          {
+            "section": 0,
+            "footnote": {
+              "separatorAboveMm": 2.999,
+              "separatorBelowMm": 2.0,
+              "betweenNotesMm": 0.998,
+              "separatorEnabled": true,
+              "separatorLengthMm": -0.004,
+              "rawSeparatorMarginTopMm": 2.999,
+              "rawSeparatorMarginBottomMm": 0.0,
+              "rawNoteSpacingMm": 2.0,
+              "rawUnknownMm": 0.998
+            },
+            "endnote": {
+              "separatorAboveMm": 0.79,
+              "separatorBelowMm": 2.0,
+              "betweenNotesMm": 0.0,
+              "separatorEnabled": true,
+              "separatorLengthMm": 43.321,
+              "rawSeparatorMarginTopMm": 0.79,
+              "rawSeparatorMarginBottomMm": 0.0,
+              "rawNoteSpacingMm": 2.0,
+              "rawUnknownMm": 0.0
+            }
+          }
+        ],
+        "note_shape_json": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-after/two-lines/analysis/note_shape.json",
+        "overlay_metrics": {
+          "compared_pages": 1,
+          "pixel_diff_threshold": 32,
+          "average_pixel_match_percent": 99.30775,
+          "worst_pixel_match_percent": 99.30775,
+          "average_ink_match_percent": 8.63704,
+          "worst_ink_match_percent": 8.63704,
+          "average_visual_accuracy_proxy_percent": 8.63704,
+          "worst_visual_accuracy_proxy_percent": 8.63704,
+          "worst_pages": [
+            1
+          ]
+        },
+        "overlay_metrics_json": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-after/two-lines/overlay/overlay_metrics.json",
+        "visual_metrics": {
+          "analyzed_pages": 1,
+          "flagged_page_count": 0,
+          "frame_overflow_pages": [],
+          "content_bottom_drift_pages": [],
+          "red_marker_drift_pages": [],
+          "question_marker_flow_drift_pages": [],
+          "line_band_drift_pages": [],
+          "column_line_band_drift_pages": [],
+          "column_text_flow_collapse_pages": [],
+          "large_ink_region_drift_pages": [],
+          "endnote_separator_gap_drift_pages": [],
+          "endnote_separator_observed_pages": [],
+          "endnote_separator_gap_pages": [],
+          "endnote_no_separator_content_pages": [],
+          "between_notes_marker_gap_pages": [],
+          "equation_text_overlap_pages": [],
+          "square_wrap_text_overlap_pages": [],
+          "deferred_square_picture_top_drift_pages": [],
+          "right_table_left_strip_text_deficit_pages": [],
+          "question_title_text_overlap_pages": [],
+          "line_order_overlap_pages": [],
+          "render_tree_frame_tail_overflow_pages": [],
+          "question_marker_drift_pages": [],
+          "legacy_glyph_visual_pages": [],
+          "metrics_json": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-after/two-lines/analysis/metrics.json",
+          "question_flow_json": "/private/tmp/rhwp-nondraft-review-20260914/hancom-two-lines-after/two-lines/analysis/question_flow.json"
+        },
+        "flagged_pages": []
+      },
+      "runManifest": {
+        "schema_version": 1,
+        "key": "7109",
+        "provenance": {
+          "hwp": {
+            "path": "tests/fixtures/multiline_cell_zero_positions/two_lines.hwpx",
+            "sha256": "fc8a807e79eca85b2c07991fd2001880433acc2dd458c27d5fda0b4c2d28b8d7"
+          },
+          "pdf": {
+            "path": "tests/fixtures/multiline_cell_zero_positions/two_lines-2020.pdf",
+            "sha256": "34c7d6208c7831cdbdf82a11fab01c924426725c6a0e2bf17cb1a484ed2719b8"
+          },
+          "git_head": "8c02339353a46b6877e9bb5b4e56f85e42cc4765",
+          "sweep_script": {
+            "path": "scripts/visual_sweep.py",
+            "sha256": "6ec9a96bd4f04a57710aa4fa6c0bdb0a90c13b4dd8e5a324257c409a50f38aed"
+          },
+          "svg_rasterizer": "webfont",
+          "rhwp_binary": {
+            "configured": "target/nondraft-review-20260914/debug/rhwp",
+            "path": "target/nondraft-review-20260914/debug/rhwp",
+            "sha256": "bd985de43281f4282fce8e545f167242325686c36fcabc331cb657908087d57f"
+          },
+          "wasm": {
+            "files": [
+              {
+                "path": "/private/tmp/rhwp-nondraft-review-20260914/pkg/rhwp.js",
+                "sha256": "0ef35380618d4088db768ad067c39fb89bdb9367402f61c2574e8fe4535a3899"
+              },
+              {
+                "path": "/private/tmp/rhwp-nondraft-review-20260914/pkg/rhwp_bg.wasm",
+                "sha256": "1c3b96506b717ebde9c147e95c638327d9c0ade0676818d3252a1afb9ffadd54"
+              }
+            ],
+            "exporter_sha256": "fa92267b32f4f7617f60e02b37427762fd251d52196c9a001e6e8232c997a3aa",
+            "font_policy": "same-input native export-svg --font-style; font-face CSS only",
+            "render_tree": "WASM getPageRenderTree"
+          }
+        },
+        "dpi": 96,
+        "pixel_diff_threshold": 32,
+        "requested_pages": [
+          1
+        ],
+        "requested_page_shards": [
+          [
+            1
+          ]
+        ],
+        "run_state": "complete"
+      }
+    }
+  },
+  "decision": "accept within two-line alignment and clipping scope; missing independent PDF blocker resolved",
+  "limits": [
+    "PDF print sheet A4 versus 480x480 source page; unchanged surrounding border and font residuals",
+    "Private original 4-page document not reverified",
+    "Separate shrink, duplicate/reset, roundtrip cases rely on source-head CI; PDF does not independently verify every synthetic variant",
+    "No integrated-head GitHub CI yet"
+  ],
+  "updatedAtUTC": "2026-09-14T12:04:11.799511+00:00",
+  "presentationNote": "Shortened Visual Sweep target label from two-lines to 7109 to fit the full metric header; source, renderer and PDF unchanged."
+}

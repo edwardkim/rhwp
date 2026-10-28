@@ -1,0 +1,14 @@
+Summary extracted from complete successful native-skia --lib log. Command exit: 0.
+    Finished `release-test` profile [optimized] target(s) in 2m 02s
+     Running unittests src/lib.rs (/Users/tsjang/rhwp/target/issue6389-20260916/release-test/deps/rhwp-70a30a598daf964d)
+running 3943 tests
+test result: ok. 3930 passed; 0 failed; 13 ignored; 0 measured; 0 filtered out; finished in 17.19s
+     Running unittests src/lib.rs (/Users/tsjang/rhwp/target/issue6389-20260916/release-test/deps/rhwp_contracts-fbfad54192303fc8)
+running 15 tests
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running unittests src/lib.rs (/Users/tsjang/rhwp/target/issue6389-20260916/release-test/deps/rhwp_ooxml_chart-4bd6f25890ad6fe8)
+running 165 tests
+test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running unittests src/lib.rs (/Users/tsjang/rhwp/target/issue6389-20260916/release-test/deps/rhwp_password_crypto-302401cde12f9ad1)
+running 2 tests
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

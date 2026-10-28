@@ -1,0 +1,19 @@
+{
+  "source": "win10-ted C:/Windows/Fonts/HYHWPEQ.TTF",
+  "sha256": "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807",
+  "byteLength": 155612,
+  "unitsPerEm": 1024,
+  "hangulCmapCount": 0,
+  "fontNames": {
+    "1": "HyhwpEQ",
+    "2": "Regular",
+    "4": "HyhwpEQ",
+    "6": "HyhwpEQ"
+  },
+  "referencePdf": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+  "observedPdfFaces": [
+    "HyhwpEQ",
+    "Haansoft Batang"
+  ],
+  "fontBinaryCommitted": false
+}

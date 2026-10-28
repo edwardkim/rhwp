@@ -18,7 +18,7 @@
 //! 2. **`RHWP_FONT_PATH`** — 환경변수. 백엔드 대량 변환에서 호출마다 인자를
 //!    붙이는 대신 한 번만 설정한다. 복수 경로는 OS 관례 구분자로 나눈다
 //!    (유닉스 `:`, Windows `;`).
-//! 3. **시스템 기본** — OS별 표준 폰트 디렉터리
+//! 3. **시스템 기본** — OS별 표준 사용자·시스템 폰트 디렉터리
 //! 4. **`ttfs/opensource`** — 최후 폴백. `.gitignore` 대상이 아닌 **저장소 자산**
 //!    (NotoSansKR 2종 + OFL)이라 모든 체크아웃에서 확보된다. 폰트 미설치 환경
 //!    (CI headless·컨테이너)에서 한국어가 드롭되는 것을 막는다(#2293).
@@ -60,11 +60,18 @@ const PATH_SEPARATOR: char = ':';
 pub fn system_font_dirs() -> Vec<PathBuf> {
     #[cfg(target_os = "macos")]
     {
-        vec![
+        // macOS의 사용자 설치 위치도 표준 경로다. 누락하면 Full 임베딩이
+        // 설치된 굵은 글꼴을 찾지 못해 Chrome의 local() 비트맵 폰트로 돌아간다.
+        let mut dirs = Vec::new();
+        if let Some(home) = std::env::var_os("HOME").filter(|home| !home.is_empty()) {
+            dirs.push(PathBuf::from(home).join("Library/Fonts"));
+        }
+        dirs.extend([
             PathBuf::from("/Library/Fonts"),
             PathBuf::from("/System/Library/Fonts"),
             PathBuf::from("/System/Library/Fonts/Supplemental"),
-        ]
+        ]);
+        dirs
     }
     #[cfg(target_os = "linux")]
     {
@@ -97,13 +104,12 @@ pub fn search_dirs(extra: &[PathBuf]) -> Vec<PathBuf> {
 
 /// custom typeface 로더(skia `with_font_paths`)용 디렉터리 — **시스템·번들 제외**.
 ///
-/// skia 의 custom 로더는 family 당 typeface 1개만 담아 굵기(스타일) 변형을
-/// 표현하지 못하고, 해석 체인에서 시스템 매칭보다 앞선다(#2864 이전 필드
-/// 검증 의미론). 그래서 여기에는 사용자가 의도한 폰트(호출자 지정 → 환경
-/// 변수)만 담는다:
-/// - 시스템 디렉터리를 넣으면 regular 파일이 family 를 선점해 bold run 이
-///   전부 regular 로 렌더된다(#3300) — 시스템 폰트는
-///   `FontMgr::match_family_style`(정상 스타일 매칭)이 담당한다.
+/// custom 로더는 이제 collection 의 모든 bounded face와 family별 스타일
+/// 후보를 보존하지만, 해석 체인에서 시스템 매칭보다 앞선다는 계약은 같다.
+/// 그래서 여기에는 사용자가 의도한 폰트(호출자 지정 → 환경 변수)만 담는다:
+/// - 시스템 폰트는 `FontMgr::match_family_style`이 담당한다. 시스템 디렉터리를
+///   custom inventory로 다시 읽어 명시적인 사용자 폰트처럼 우선하지 않는다.
+///   예전 single-face 로더의 regular 선점 문제(#3300)도 이 경계의 근거다.
 /// - 번들 opensource 를 넣으면 깊은 폴백(Noto Sans KR)이 시스템 1순위를
 ///   제치고 선점된다(#3300, r23 발산 −6.9pp) — 번들은 별도 최후-폴백 로더
 ///   (`bundled_font_dirs`)로 체인 말미에만 선다.
@@ -206,6 +212,19 @@ mod tests {
             Some(&PathBuf::from(BUNDLED_OPENSOURCE_DIR)),
             "번들 오픈소스 폰트가 최후 폴백이어야 한다"
         );
+        #[cfg(target_os = "macos")]
+        if let Some(home) = std::env::var_os("HOME").filter(|home| !home.is_empty()) {
+            let user_dir = PathBuf::from(home).join("Library/Fonts");
+            let user_index = dirs.iter().position(|dir| dir == &user_dir).unwrap();
+            let system_index = dirs
+                .iter()
+                .position(|dir| dir == Path::new("/Library/Fonts"))
+                .unwrap();
+            assert!(
+                user_index < system_index,
+                "표준 사용자 설치 글꼴을 시스템 폴백보다 먼저 찾는다"
+            );
+        }
     }
 
     /// [#2864] 환경 종속 경로가 조달 목록에 다시 들어오지 않도록 고정한다.
@@ -231,7 +250,7 @@ mod tests {
     }
 
     /// [#3300] custom 로더 목록은 시스템·번들을 포함하면 안 된다.
-    /// - 시스템: family 당 1 typeface 라 굵기 변형 소실(regular 선점)
+    /// - 시스템: 사용자 지정 inventory로 승격하지 않고 FontMgr의 스타일 매칭에 위임
     /// - 번들: 깊은 폴백(Noto)이 시스템 1순위를 제치고 본문을 렌더(r23 −6.9pp)
     #[test]
     fn custom_font_dirs_excludes_system_and_bundled() {

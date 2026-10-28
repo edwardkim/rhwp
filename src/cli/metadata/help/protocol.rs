@@ -38,6 +38,11 @@ pub(super) fn print() {
     println!("      실행해 단언(verify) 통과 시에만 단 한 번 저장한다 — 실패 시 디스크 무변경.");
     println!("      steps: fill_fields{{data}} · replace_text{{find,replace[,occurrence]}}");
     println!("             · set_cell{{table,row,col,text}} · set_checkbox{{occurrence}}");
+    println!("      단독 구조 step: fill_template · repeat_and_fill_paragraph_block · repeat_and_fill_table_rows (request)");
+    println!("                     import_paragraph_block (source{{path,sha256}} + request)");
+    println!(
+        "      가져오기 source는 별도 로컬 파일(64 MiB 이하). 지문 불일치 exit 3, 실행·저장 없음."
+    );
     println!("      --plan-json '<JSON>'      파일 대신 인라인 계획 (MCP hwp_run_plan 경로)");
     println!("      --dry-run                 선검증만 — preview 저널, 디스크 무변경 (계획서 dryRun:true 와 동일)");
     println!("      step 마다 if 조건 가능: {{fieldExists}}·{{fieldEquals:{{name,value}}}}·{{textFound}}");
@@ -53,7 +58,7 @@ pub(super) fn print() {
     println!("      --json                  -o 와 함께 쓰면 저장 결과를 JSON 봉투로 보고");
     println!();
     println!("내부 개발·회귀 도구 (일반 사용자 대상 아님):");
-    println!("  test-caption <파일.hwp> [-o <폴더>] 캡션 라운드트립 검증");
+    println!("  test-caption <파일.hwp> [-o <폴더>] 고정 fixture 캡션 라운드트립 검증");
     println!("  test-field <파일.hwp>               필드 라운드트립 검증");
     println!("  test-shape <입력.hwp> <출력.hwp>    도형 라운드트립 검증");
     println!("  gen-table                           표 테스트 HWP 생성");

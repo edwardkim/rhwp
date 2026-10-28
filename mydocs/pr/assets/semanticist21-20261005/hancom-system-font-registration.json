@@ -1,0 +1,18 @@
+{
+  "link": "/usr/local/share/fonts/hancom-office-2020",
+  "target": "/opt/hnc/hoffice11/Shared/TTF",
+  "registered_font_faces": 201,
+  "family_resolution": {
+    "휴먼명조": {
+      "family": "휴먼명조",
+      "file": "/usr/local/share/fonts/hancom-office-2020/Hwp/HMKMM.TTF",
+      "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+    },
+    "한컴바탕": {
+      "family": "Haansoft Batang,한컴바탕",
+      "file": "/usr/local/share/fonts/hancom-office-2020/All/HBATANG.TTF",
+      "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+    }
+  },
+  "override_config": "/etc/fonts/conf.d/99-rhwp-hancom-exact-family.conf"
+}

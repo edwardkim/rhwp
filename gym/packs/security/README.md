@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: gym/packs/security/README.md
-last_verified: 2026-08-18
+last_verified: 2026-10-10
 ---
 
 # security — 배포 전·수신 후 보안 스윕
@@ -14,7 +14,7 @@ last_verified: 2026-08-18
 PII·메타데이터는 서로 다른 축이다. 한 축이 clean 이어도 다른 축은 더럽다.
 
 이 pack 은 그 축들을 **기존 CLI 표면**(`inspect` · `edit redact` · `edit sanitize`
-· `scan`)과 **저장소에 이미 있는 samples/** 만으로 과제화한다. 새 pack 도, 새
+· `scan`)과 **저장소에 이미 있는 공개 문서**만으로 과제화한다. 새 pack 도, 새
 명령도, 새 연산자도, 새 픽스처도 없다.
 
 권위 출처: `mydocs/manual/cli_commands.md` §inspect · §edit redact · §edit sanitize,
@@ -26,9 +26,10 @@ PII·메타데이터는 서로 다른 축이다. 한 축이 clean 이어도 다�
    `answer_eq` · `len_answer_eq` · `value_eq` · `file_exists` ·
    `differs_from_input` 가 전부다. 전역 훑기(`deep_contains`)는 보안 축에서
    `allowGlobalScan` 없이 쓰지 않는다.
-2. **기존 표본만.** `samples/` 밖 파일을 만들지 않는다. 유니코드 전용 표본,
-   PII 원장, 행정 편람, 누름틀 서식, 시험지, 업무계획, 규제영향분석 — 이미
-   있는 실문서를 축만 바꿔 다시 스윕한다.
+2. **기존 표본만.** `samples/`의 공개 문서 또는 피델리티 이관으로 같은 바이트를
+   보존한 `mydocs/pr/assets/issue7445/`의 문서를 사용한다. 새 입력을 만들거나
+   사설·저장소 밖 경로를 읽지 않는다. 유니코드 전용 표본, PII 원장, 행정 편람,
+   누름틀 서식, 시험지, 업무계획, 규제영향분석 등 기존 실문서를 축만 바꿔 다시 스윕한다.
 3. **라이브 오라클.** 정답 숫자를 과제에 박제하지 않는다. 채점기가 같은
    명령을 다시 돌려 봉투 필드를 읽는다. 표본이 늘거나 탐지 규칙이 보수적으로
    바뀌면 정답이 따라간다.
@@ -69,7 +70,8 @@ PII·메타데이터는 서로 다른 축이다. 한 축이 clean 이어도 다�
 - **탐지 규칙은 보수적(오탐 0 우선).** 주민번호 mod 11, 카드 Luhn, 전화 하이픈.
   미끼가 마스킹되면 그것이 오탐이다.
 - **redact 는 탐지 0건이면 출력 파일을 만들지 않을 수 있다.** 마스킹 재스윕
-  과제(SE02, SE69, SE70)는 PII 가 있는 표본만 쓴다.
+  과제(SE02, SE69, SE70)는 실제 탐지 신호가 있는 표본만 쓴다. SE69·70은
+  각각 phone·email 범위만 지우고 다른 범위의 신호 보존까지 확인한다.
 - **sanitize 두 번째 실행의 `removedCount: 0` 이 정상**이다 — 첫 실행이 지웠다는
   증거. 본문만 지우면 미리보기·작성자가 남는다. redact 와 sanitize 는 짝이다.
 - **`scanScopes` 에 없는 영역은 깨끗함이 아니라 검사 안 함이다.**
@@ -100,12 +102,11 @@ PII·메타데이터는 서로 다른 축이다. 한 축이 clean 이어도 다�
 | SE10 | 1 | 워터마크 소견 건수 | field-01.hwp |
 | SE11 | 2 | 원문 비노출 PII (`--no-raw`) | 분석본 |
 | SE12 | 2 | 누름틀까지 주입 (`--include-fields`) | field-01.hwp |
-| SE13 | 2 | 쪽 밖 은닉 (`--include-offpage`) | 2025 행정업무운영 편람(최종).hwp |
 
 ### SE14–SE25 — 유니코드 축을 가른다
 
 SE05 는 `all` 한 방에 섞는다. 여기서는 `--kind` 로 제로폭·양방향·태그·동형자를
-가르고, 편람·시험지·규제영향·업무계획·짧은 본문처럼 **다른 실문서**에서 같은
+가르고, 규제영향·업무계획·짧은 본문처럼 **다른 실문서**에서 같은
 질문을 반복한다. 음성 0 이어도 라이브 오라클이 정답이다.
 
 | ID | 질문 |
@@ -116,10 +117,7 @@ SE05 는 `all` 한 방에 섞는다. 여기서는 `--kind` 로 제로폭·양방
 | SE17 | `--kind confusable` |
 | SE18 | field-01 의 unicode `clean` |
 | SE19 | `kindCounts` 맵 길이 |
-| SE20 | 편람 HWP 소견 건수 |
-| SE21 | 편람 HWPX 소견 건수 (형식 짝 — 숫자를 베끼지 마라) |
 | SE22 | para-001 입문 건수 |
-| SE23 | 시험지 소견 건수 |
 | SE24 | 규제영향분석 소견 건수 |
 | SE25 | 업무계획 `clean` |
 
@@ -136,9 +134,7 @@ SE04 는 기본 임계(low=전부)다. 고신뢰만, 중신뢰 이상, 필드 �
 | SE29 | field-01-memo + `--include-fields` 에코 |
 | SE30 | `highestConfidence` |
 | SE31 | `scanScopes` 길이 |
-| SE32 | 편람 주입 건수 |
 | SE33 | PII 분석본 주입 건수 (축 혼동 금지) |
-| SE34 | 시험지 `clean` |
 | SE35 | 각주 표본 |
 | SE36 | 미주 표본 (SE35 숫자를 베끼지 마라) |
 | SE37 | form-02 + 필드 포함 |
@@ -146,15 +142,13 @@ SE04 는 기본 임계(low=전부)다. 고신뢰만, 중신뢰 이상, 필드 �
 ### SE38–SE48 — 은닉 임계·쪽 밖·실문서
 
 SE03 은 기본 1.0pt. 0.5pt 와 2.0pt 로 민감도를 갈라 판별력을 만든다. 쪽 밖
-포함은 편람(SE13/SE41)과 중첩 표(SE48) 두 표본. clean 과 글자 수를 섞지 마라.
+포함 검사는 중첩 표(SE48) 표본을 사용한다. clean 과 글자 수를 섞지 마라.
 
 | ID | 질문 |
 |----|------|
 | SE38 | `--threshold-pt 0.5` |
 | SE39 | `--threshold-pt 2.0` |
 | SE40 | field-01 `clean` |
-| SE41 | 편람 + `--include-offpage` 에코 |
-| SE42 | 편람 HWPX 기본 은닉 |
 | SE43 | 실문서 해시명의 글자 수 (SE08 은 clean) |
 | SE44 | 표 표본 |
 | SE45 | 각주 표본 |
@@ -174,9 +168,7 @@ SE10 은 `all`. hidden / homoglyph / whitespace 를 가르고 편람·PII·시�
 | SE50 | `--kind homoglyph` |
 | SE51 | `--kind whitespace` |
 | SE52 | para-001 `clean` |
-| SE53 | 편람 소견 |
 | SE54 | PII 분석본 소견 |
-| SE55 | 시험지 소견 |
 | SE56 | hwpx_sample2 소견 |
 | SE57 | 업무계획 `clean` |
 | SE58 | 표 + `--kind all` |
@@ -196,11 +188,9 @@ SE01/SE09/SE11 은 분석본 한 장에 몰려 있다. 원장·선발 보고서�
 | SE63 | 어구 금지 문서 |
 | SE64 | 누름틀 서식 (오탐 0 우선) |
 | SE65 | sanitize field-01 |
-| SE66 | sanitize 편람 HWPX |
 | SE67 | sanitize 업무계획 |
-| SE68 | sanitize 시험지 |
-| SE69 | 원장 마스킹 후 재스윕 (tier 4) |
-| SE70 | 선발 보고서 마스킹 후 재스윕 (tier 4) |
+| SE69 | 전화번호 범위 마스킹 후 재스윕 (tier 4) |
+| SE70 | 이메일 범위 마스킹 후 재스윕 (tier 4) |
 
 ### SE71–SE80 — 폴더 스캔과 실문서 4축
 
@@ -256,3 +246,9 @@ pack requires 밖 명령 금지, T07 복제 금지를 파일만으로 고정한�
 배포 전: inspect 3축 + watermark + redact --dry-run --no-raw → 처리(redact ·
 sanitize) → 재스윕. 수신 후: 같은 스윕을 열기 전에. 숫자가 아니라 봉투가
 게이트다.
+
+## 시험지 과제 제외
+
+지정된 시험지 입력을 참조하는 다음 과제를 활성 평가에서 제거했다: SE23, SE34, SE55, SE68. 원본 문서 파일은 보존하며 과제 ID는 재사용하지 않는다.
+
+사용자 요청으로 편람 HWP/HWPX 과제 SE13, SE20, SE21, SE32, SE41, SE42, SE53, SE66를 제거했다. 두 원본은 보존하며 신규 회귀는 다른 PR에서 추가한다.

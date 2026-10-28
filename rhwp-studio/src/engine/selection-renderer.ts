@@ -36,8 +36,7 @@ export class SelectionRenderer {
 
     for (const rect of rects) {
       const pageOffset = this.virtualScroll.getPageOffset(rect.pageIndex);
-      const pageDisplayWidth = this.virtualScroll.getPageWidth(rect.pageIndex);
-      const pageLeft = (contentWidth - pageDisplayWidth) / 2;
+      const pageLeft = this.virtualScroll.getPageLeftResolved(rect.pageIndex, contentWidth);
       layouts.push([
         pageLeft + rect.x * zoom,
         pageOffset + rect.y * zoom,

@@ -1,0 +1,50 @@
+{
+  "source_sha": "45863eb2b238929c22ecc606af801b6273dc8482",
+  "backend": "fresh WASM direct Node API + librsvg (not Chrome/Studio)",
+  "page_count": 3,
+  "page": 2,
+  "metrics": {
+    "page": 2,
+    "rhwp_png": "output/pr-review/pr7487-review-20261001/p122-wasm-direct/rhwp_002.png",
+    "pdf_png": "output/pr-review/pr7487-review-20261001/p122-native-sweep/pr7487-p122-control/pdf_png/pdf-2.png",
+    "overlay_png": "output/pr-review/pr7487-review-20261001/p122-wasm-direct/overlay/overlay_002.png",
+    "width": 794,
+    "height": 1123,
+    "pixel_diff_threshold": 32,
+    "total_pixels": 891662,
+    "diff_pixels": 2370,
+    "diff_ratio": 0.00265796,
+    "pixel_match_percent": 99.7342,
+    "ink_union_pixels": 674871,
+    "ink_diff_pixels": 2370,
+    "ink_diff_ratio": 0.00351178,
+    "ink_match_percent": 99.64882,
+    "visual_accuracy_proxy_percent": 99.64882,
+    "tolerant_content_match_radius_px": 2,
+    "tolerant_content_match_percent": 100.0,
+    "mean_abs_channel_delta": 2.861,
+    "max_channel_delta": 162,
+    "diff_bbox": [
+      113,
+      132,
+      793,
+      1122
+    ]
+  },
+  "pr_review_gate": {
+    "status": "passed",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "files": {
+    "pkg/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+    "pkg/rhwp_bg.wasm": "31af99b1a6ce32c8c2ed0d80b1b0cadaea69a0a985e55b81dc48df5b6e69969c",
+    "samples/p122.hwp": "b4d66baa093d564ac728c84d591b3ea7d6bc4cfef160bde81ee13afc6d927e82",
+    "pdf/p122-2022.pdf": "379cbf8c5b571be12b123180ceba7b266d43f54c84f6cd0b660c693317fc90cc"
+  },
+  "review": [
+    "output/pr-review/pr7487-review-20261001/p122-wasm-direct/review/review_002.png"
+  ]
+}

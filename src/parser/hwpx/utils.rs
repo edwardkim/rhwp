@@ -7,9 +7,36 @@ use quick_xml::Reader;
 
 use super::HwpxError;
 
+/// XML 이름을 바이트 태그 비교에 쓰기 위한 공통 입력 경계.
+///
+/// quick-xml 0.42부터 이벤트 이름이 UTF-8 문자열이므로, 기존 HWPX 파서의 바이트
+/// 태그 매치 계약은 이 경계에서만 유지한다. 테스트의 바이트 리터럴도 계속 받는다.
+pub trait XmlNameBytes {
+    fn xml_name_bytes(&self) -> &[u8];
+}
+
+impl XmlNameBytes for str {
+    fn xml_name_bytes(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
+impl XmlNameBytes for [u8] {
+    fn xml_name_bytes(&self) -> &[u8] {
+        self
+    }
+}
+
+impl<const N: usize> XmlNameBytes for [u8; N] {
+    fn xml_name_bytes(&self) -> &[u8] {
+        self
+    }
+}
+
 /// XML 네임스페이스 접두사를 제거하고 로컬 이름만 반환
 /// 예: b"hp:p" → b"p", b"tbl" → b"tbl"
-pub fn local_name(name: &[u8]) -> &[u8] {
+pub fn local_name<T: XmlNameBytes + ?Sized>(name: &T) -> &[u8] {
+    let name = name.xml_name_bytes();
     if let Some(pos) = name.iter().position(|&b| b == b':') {
         &name[pos + 1..]
     } else {
@@ -27,16 +54,16 @@ pub fn local_name(name: &[u8]) -> &[u8] {
 /// 숫자/열거형 속성은 엔티티가 없어 unescape 가 no-op 이라 무영향. 미정의 엔티티/
 /// malformed 입력은 원문 lossy 로 안전 폴백한다.
 pub fn attr_str(attr: &quick_xml::events::attributes::Attribute) -> String {
-    let raw = String::from_utf8_lossy(&attr.value);
-    match quick_xml::escape::unescape(&raw) {
+    let raw = attr.value.as_ref();
+    match quick_xml::escape::unescape(raw) {
         Ok(value) => value.into_owned(),
-        Err(_) => raw.into_owned(),
+        Err(_) => raw.to_owned(),
     }
 }
 
 /// 속성 값이 특정 문자열과 일치하는지 확인 (비교용)
 pub fn attr_eq(attr: &quick_xml::events::attributes::Attribute, val: &str) -> bool {
-    attr.value.as_ref() == val.as_bytes()
+    attr.value.as_ref() == val
 }
 
 pub fn parse_u8(attr: &quick_xml::events::attributes::Attribute) -> u8 {

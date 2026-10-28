@@ -1,0 +1,82 @@
+{
+  "stage": 173,
+  "ledger_item": 15,
+  "original_pr": 7382,
+  "starting_head": "4f471ac73",
+  "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+  "input": "samples/issue6032/2912695_civil_petition_form.hwp",
+  "input_sha256": "1c6569dc69b1fe99de058de2760249d322b393b7eb6b4f2a2fe60f2489c25e04",
+  "reference_pdf": "pdf/2912695_civil_petition_form-2020.pdf",
+  "reference_pdf_sha256": "2e85455f13d0e911b495a7a152f1c799ffb2fc37dd2051312cafa4359c810f89",
+  "reference_conversion": {
+    "engine": 2020,
+    "job_id": "08a43184-efcd-4e90-bd4a-234f5b671e08",
+    "status": "succeeded",
+    "pages": 2,
+    "hancom_version": "11.0.0.9136"
+  },
+  "existing_test": "issue_6032_rewound_empty_anchor_table_snaps_to_saved_vpos",
+  "before": {
+    "rhwp_pages": 3,
+    "native_page_2_tolerant_content_match_percent": 89.78092,
+    "pr_review_gate": "re_review_required",
+    "missing_from_page_2": [
+      "작성요령 표",
+      "용지규격 문장"
+    ]
+  },
+  "root_cause": "이월된 앞 표 뒤의 빈 호스트 줄간격 안에 저장된 다음 표를 흐름 커서 역전만으로 물리 겹침으로 오판해 3쪽으로 이월",
+  "correction": "미편집 HWP5의 저장 줄·빈 단일 표 호스트에서 앞 표의 선언 높이와 윗여백 및 후행 줄간격이 커서와 일치하고 다음 프레임이 그 간격에 맞는 경우 같은 쪽에 배치",
+  "after": {
+    "rhwp_pages": 2,
+    "native_scores_percent": [
+      98.39585,
+      99.3826
+    ],
+    "fresh_wasm_scores_percent": [
+      98.39585,
+      99.3826
+    ],
+    "pr_review_gate": "passed",
+    "native_binary_sha256": "e10951f2df5ac6e86dd2a6afccf5ed6ed3ad463bdae15399c3ac32a718a972fe",
+    "fresh_wasm_sha256": "70f8065759cfee268e8bd76c94f2b8e35bef6fe161d7227b7036ac6fb723ba38",
+    "mac_wasm_build": "scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt"
+  },
+  "test_correction": "기존 함수에서 2쪽의 원문 두 표와 뒤 문장을 렌더 트리로 찾아 소속과 물리 순서를 검사; 절대 SVG y 좌표 제거",
+  "focused_nextest": {
+    "command": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 8 --no-fail-fast -E 'test(issue_6032_rewound_empty_anchor_table_snaps_to_saved_vpos)'",
+    "passed": 1,
+    "failed": 0
+  },
+  "new_test_functions": 0,
+  "baseline_or_tolerance_relaxations": 0,
+  "validation": {
+    "fmt": "PASS",
+    "clippy_native": "PASS",
+    "clippy_wasm": "PASS",
+    "workspace_build": "PASS",
+    "clippy_workspace_all_targets": "PASS",
+    "manifest_base_check_after_prepare": "PASS",
+    "unit_tier_base_check": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "full_nextest": {
+    "command": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 8 --no-fail-fast",
+    "run": 10229,
+    "passed": 10187,
+    "failed": 42,
+    "skipped": 50,
+    "previous_failed": 43,
+    "resolved_failed_functions": [
+      "issue_6032_rewind_anchor_float_snap::issue_6032_rewound_empty_anchor_table_snaps_to_saved_vpos"
+    ],
+    "new_failed_functions": []
+  },
+  "representative_assets": [
+    "stage173_before_native_review_002.png",
+    "stage173_native_review_001.png",
+    "stage173_native_review_002.png",
+    "stage173_wasm_overlay_002.png"
+  ],
+  "logs": "output/pr-review/planet6897-7382-20260926/stage173-anchor6032/"
+}

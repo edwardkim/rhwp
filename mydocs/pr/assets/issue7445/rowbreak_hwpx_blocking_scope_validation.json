@@ -1,0 +1,891 @@
+{
+  "stage": 111,
+  "code_commit": "83402f03e3ce700149dd6099a078dabdc3859b06",
+  "analysis": {
+    "head": "2bab5e233dcd069400ccd8310733eb18715fcdf4",
+    "source": {
+      "path": "samples/rowbreak-problem-pages.hwpx",
+      "sha256": "4ccc321e7eb146f28b768654502a128ba1ae408238fd1ed37d51e963732eb5b0",
+      "size": 3452994
+    },
+    "pdf": {
+      "path": "pdf/rowbreak-problem-pages-hwpx-2020.pdf",
+      "sha256": "e3dc7bb21707f92e42e83808023bf155f62475fc4eb0e0498709d03986c5afe5",
+      "pages": 18,
+      "metadata": {
+        "format": "PDF 1.6",
+        "title": "",
+        "author": "user",
+        "subject": "",
+        "keywords": "",
+        "creator": "Hwp 2022 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550",
+        "creationDate": "D:20260830175144+09'00'",
+        "modDate": "D:20260830175144+09'00'",
+        "trapped": "",
+        "encryption": null
+      }
+    },
+    "binary": {
+      "path": "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+      "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+    },
+    "independent_pair": "보정52의 동일 입력/기준PDF SHA 검증. HWP 대응본으로 HWPX를 대체하지 않음.",
+    "cause_to_check": "원래38번의HWPX text-overlap1→2 및 별도7쪽 행25/26 이어받기2개 함수 실패. 본문/셀/후속 내용 소유를 직접PDF와 대조하고 검사 적절성을 판단. corpus 재배정으로 현재같은 원문은 partition14. 원래fixed38 function partition9는 최종 재실행 대상 그대로 유지.",
+    "scope": "이 원문의 실제 차단 검사만 판단. 다른18개정상함수·HWP대조군·기대값/공차/원문 유지. 새함수 없음."
+  },
+  "decision": {
+    "actual_failed_functions": [
+      "rowbreak_page7_nested_table_paragraph_keeps_host_text",
+      "rowbreak_page7_starts_article_26_like_hancom_pdf"
+    ],
+    "actual_failed_corpus_input": "rowbreak-problem-pages.hwpx",
+    "rule": "실제 차단만 보류. 독립 PDF7쪽 제26조 확인; Native전체18쪽최저20.18283%/13개쪽미달. 위2함수·이text입력만 제외하며 원문/PDF/다른18함수/다른축 유지.",
+    "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5872944940"
+  },
+  "individual_before": {
+    "head": "2bab5e233dcd069400ccd8310733eb18715fcdf4",
+    "individual": [
+      {
+        "case": "issue_rowbreak_chart_overlap",
+        "function": "rowbreak_page7_nested_table_paragraph_keeps_host_text",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_027",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "-E",
+          "test(=issue_rowbreak_chart_overlap::rowbreak_page7_nested_table_paragraph_keeps_host_text)"
+        ],
+        "exit_code": 100,
+        "seconds": 1.2331061661243439,
+        "summary": [
+          "Summary [   0.071s] 1 test run: 0 passed, 1 failed, 225 skipped"
+        ]
+      },
+      {
+        "case": "issue_rowbreak_chart_overlap",
+        "function": "rowbreak_page7_starts_article_26_like_hancom_pdf",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_027",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "-E",
+          "test(=issue_rowbreak_chart_overlap::rowbreak_page7_starts_article_26_like_hancom_pdf)"
+        ],
+        "exit_code": 100,
+        "seconds": 0.4110662080347538,
+        "summary": [
+          "Summary [   0.042s] 1 test run: 0 passed, 1 failed, 225 skipped"
+        ]
+      },
+      {
+        "case": "text_overlap_baseline",
+        "function": "text_overlaps_do_not_grow_partition_14",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_009",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "-E",
+          "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_14)"
+        ],
+        "exit_code": 100,
+        "seconds": 2.6949075828306377,
+        "summary": [
+          "Summary [   2.320s] 1 test run: 0 passed, 1 failed, 232 skipped"
+        ]
+      }
+    ]
+  },
+  "independent_pdf_anchors": [
+    {
+      "page": 6,
+      "width": 595.0,
+      "height": 841.0,
+      "hits": [
+        {
+          "text": "제26조",
+          "pdf_boxes": []
+        },
+        {
+          "text": "제25조",
+          "pdf_boxes": []
+        },
+        {
+          "text": "1. 「정보통신망",
+          "pdf_boxes": []
+        },
+        {
+          "text": "과학기술정보통신부장관",
+          "pdf_boxes": []
+        }
+      ]
+    },
+    {
+      "page": 7,
+      "width": 595.0,
+      "height": 841.0,
+      "hits": [
+        {
+          "text": "제26조",
+          "pdf_boxes": [
+            [
+              99.83999633789062,
+              591.239990234375,
+              137.63999938964844,
+              605.6400146484375
+            ]
+          ]
+        },
+        {
+          "text": "제25조",
+          "pdf_boxes": [
+            [
+              99.83999633789062,
+              291.9599914550781,
+              137.63999938964844,
+              306.3599853515625
+            ]
+          ]
+        },
+        {
+          "text": "1. 「정보통신망",
+          "pdf_boxes": [
+            [
+              200.27999877929688,
+              211.0800018310547,
+              281.0400085449219,
+              224.32798767089844
+            ]
+          ]
+        },
+        {
+          "text": "과학기술정보통신부장관",
+          "pdf_boxes": [
+            [
+              282.0,
+              466.79998779296875,
+              402.599365234375,
+              480.0480041503906
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "page": 8,
+      "width": 595.0,
+      "height": 841.0,
+      "hits": [
+        {
+          "text": "제26조",
+          "pdf_boxes": []
+        },
+        {
+          "text": "제25조",
+          "pdf_boxes": []
+        },
+        {
+          "text": "1. 「정보통신망",
+          "pdf_boxes": []
+        },
+        {
+          "text": "과학기술정보통신부장관",
+          "pdf_boxes": [
+            [
+              200.39999389648438,
+              91.79999542236328,
+              309.4786071777344,
+              105.0479965209961
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "current_table_anchors": [
+    {
+      "page": 7,
+      "table_bbox": {
+        "x": 79.4,
+        "y": 606.6,
+        "w": 635.0,
+        "h": 400.4
+      },
+      "cells": [
+        {
+          "type": "Cell",
+          "row": 0,
+          "col": 0,
+          "bbox": {
+            "x": 79.4,
+            "y": 606.6,
+            "w": 635.0,
+            "h": 19.8
+          }
+        },
+        {
+          "type": "Cell",
+          "row": 1,
+          "col": 0,
+          "bbox": {
+            "x": 79.4,
+            "y": 626.4,
+            "w": 159.0,
+            "h": 20.9
+          }
+        },
+        {
+          "type": "Cell",
+          "row": 1,
+          "col": 1,
+          "bbox": {
+            "x": 238.4,
+            "y": 626.4,
+            "w": 476.0,
+            "h": 20.9
+          }
+        },
+        {
+          "type": "Cell",
+          "row": 2,
+          "col": 0,
+          "bbox": {
+            "x": 79.4,
+            "y": 647.3,
+            "w": 159.0,
+            "h": 359.5
+          }
+        },
+        {
+          "type": "Cell",
+          "row": 2,
+          "col": 1,
+          "bbox": {
+            "x": 238.4,
+            "y": 647.3,
+            "w": 476.0,
+            "h": 389.6
+          }
+        }
+      ]
+    },
+    {
+      "page": 8,
+      "table_bbox": {
+        "x": 79.4,
+        "y": 98.2,
+        "w": 635.0,
+        "h": 908.5
+      },
+      "cells": [
+        {
+          "type": "Cell",
+          "row": 3,
+          "col": 0,
+          "bbox": {
+            "x": 79.4,
+            "y": 98.2,
+            "w": 159.0,
+            "h": 528.6
+          }
+        },
+        {
+          "type": "Cell",
+          "row": 3,
+          "col": 1,
+          "bbox": {
+            "x": 238.4,
+            "y": 98.2,
+            "w": 476.0,
+            "h": 528.6
+          }
+        },
+        {
+          "type": "Cell",
+          "row": 4,
+          "col": 0,
+          "bbox": {
+            "x": 79.4,
+            "y": 626.8,
+            "w": 159.0,
+            "h": 379.2
+          }
+        },
+        {
+          "type": "Cell",
+          "row": 4,
+          "col": 1,
+          "bbox": {
+            "x": 238.4,
+            "y": 626.8,
+            "w": 476.0,
+            "h": 379.2
+          }
+        }
+      ]
+    }
+  ],
+  "visual_command": {
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "rowbreak-hwpx",
+      "samples/rowbreak-problem-pages.hwpx",
+      "pdf/rowbreak-problem-pages-hwpx-2020.pdf",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+      "--embed-fonts=full",
+      "--out",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage111-rowbreak-hwpx/visual-native",
+      "--font-path",
+      "output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts"
+    ],
+    "exit_code": 1,
+    "RHWP_FONT_PATH": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts:/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts:/Users/tsjang/Library/Fonts"
+  },
+  "visual_provenance": {
+    "hwp": {
+      "path": "samples/rowbreak-problem-pages.hwpx",
+      "sha256": "4ccc321e7eb146f28b768654502a128ba1ae408238fd1ed37d51e963732eb5b0"
+    },
+    "pdf": {
+      "path": "pdf/rowbreak-problem-pages-hwpx-2020.pdf",
+      "sha256": "e3dc7bb21707f92e42e83808023bf155f62475fc4eb0e0498709d03986c5afe5"
+    },
+    "git_head": "2bab5e233dcd069400ccd8310733eb18715fcdf4",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+      "path": "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+      "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+    },
+    "font_supply": {
+      "mode": "full",
+      "source": "explicit",
+      "file_count": 715,
+      "inventory_sha256": "5e7427d397aac098d9b5c3395fee8e65ee2c1756793d2813f1afd741c0adc3bf",
+      "inventory_hash_format": "UTF-8 sorted keys compact JSON files array",
+      "full_inventory": "output/pr-review/planet6897-7382-20260926/stage111-rowbreak-hwpx/visual-native/rowbreak-hwpx/run_manifest.json"
+    }
+  },
+  "native_gate": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 2,
+        "tolerant_content_match_percent": 65.11591
+      },
+      {
+        "page": 4,
+        "tolerant_content_match_percent": 46.47032
+      },
+      {
+        "page": 5,
+        "tolerant_content_match_percent": 56.097
+      },
+      {
+        "page": 6,
+        "tolerant_content_match_percent": 38.74121
+      },
+      {
+        "page": 7,
+        "tolerant_content_match_percent": 33.49973
+      },
+      {
+        "page": 8,
+        "tolerant_content_match_percent": 43.01334
+      },
+      {
+        "page": 9,
+        "tolerant_content_match_percent": 20.18283
+      },
+      {
+        "page": 11,
+        "tolerant_content_match_percent": 58.98015
+      },
+      {
+        "page": 12,
+        "tolerant_content_match_percent": 36.9943
+      },
+      {
+        "page": 13,
+        "tolerant_content_match_percent": 71.22959
+      },
+      {
+        "page": 14,
+        "tolerant_content_match_percent": 67.15538
+      },
+      {
+        "page": 15,
+        "tolerant_content_match_percent": 86.55866
+      },
+      {
+        "page": 16,
+        "tolerant_content_match_percent": 68.60288
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "run_state": "complete",
+  "page_counts": {
+    "native": 18,
+    "pdf": 18,
+    "compared": 18
+  },
+  "native_metrics": [
+    {
+      "page": 1,
+      "tolerant_content_match_percent": 97.66091
+    },
+    {
+      "page": 2,
+      "tolerant_content_match_percent": 65.11591
+    },
+    {
+      "page": 3,
+      "tolerant_content_match_percent": 95.32194
+    },
+    {
+      "page": 4,
+      "tolerant_content_match_percent": 46.47032
+    },
+    {
+      "page": 5,
+      "tolerant_content_match_percent": 56.097
+    },
+    {
+      "page": 6,
+      "tolerant_content_match_percent": 38.74121
+    },
+    {
+      "page": 7,
+      "tolerant_content_match_percent": 33.49973
+    },
+    {
+      "page": 8,
+      "tolerant_content_match_percent": 43.01334
+    },
+    {
+      "page": 9,
+      "tolerant_content_match_percent": 20.18283
+    },
+    {
+      "page": 10,
+      "tolerant_content_match_percent": 97.69256
+    },
+    {
+      "page": 11,
+      "tolerant_content_match_percent": 58.98015
+    },
+    {
+      "page": 12,
+      "tolerant_content_match_percent": 36.9943
+    },
+    {
+      "page": 13,
+      "tolerant_content_match_percent": 71.22959
+    },
+    {
+      "page": 14,
+      "tolerant_content_match_percent": 67.15538
+    },
+    {
+      "page": 15,
+      "tolerant_content_match_percent": 86.55866
+    },
+    {
+      "page": 16,
+      "tolerant_content_match_percent": 68.60288
+    },
+    {
+      "page": 17,
+      "tolerant_content_match_percent": 97.16439
+    },
+    {
+      "page": 18,
+      "tolerant_content_match_percent": 98.13585
+    }
+  ],
+  "direct_inspection": "7/8/9/16쪽 review와7/16쪽 standalone overlay 직접 확인.7쪽 큰 표 시작 빈 영역과제26조이월,8쪽 내용소유,9쪽 이전내용잔류 및시행령표 하강,16쪽 표/설명 위치차이. 원문 전체18쪽 자동비교이며다른14쪽 직접판독 완료를 주장하지 않음.",
+  "anomaly_probe": [
+    {
+      "binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/rhwp",
+      "binary_sha256": "450dc282867a4dfc63a7f60ce6570192607c4bc042e2535b7c87c77762e6bbb9",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/rhwp",
+        "layout-anomaly",
+        "samples/rowbreak-problem-pages.hwpx",
+        "--json"
+      ],
+      "exit_code": 0,
+      "page_count": 18,
+      "text_overlap_count": 1,
+      "events": [
+        {
+          "page": 15,
+          "textOverlap": [
+            {
+              "bboxA": {
+                "h": 12.0,
+                "w": 529.4333333333332,
+                "x": 132.28666666666675,
+                "y": 1057.5866666666668
+              },
+              "bboxB": {
+                "h": 13.333333333333334,
+                "w": 40.0,
+                "x": 376.85333333333335,
+                "y": 1057.9977777777779
+              },
+              "overlapArea": 463.5555555555584,
+              "overlapH": 11.58888888888896,
+              "overlapW": 40.0,
+              "pathA": "Page/Body/Column0/Table11/Cell0/Rect11/TextBox0/TextLine3/TextRun0",
+              "pathB": "Page/Footer3/TextLine0/TextRun0",
+              "typeA": "TextRun",
+              "typeB": "TextRun"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+      "binary_sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+        "layout-anomaly",
+        "samples/rowbreak-problem-pages.hwpx",
+        "--json"
+      ],
+      "exit_code": 0,
+      "page_count": 18,
+      "text_overlap_count": 2,
+      "events": [
+        {
+          "page": 6,
+          "textOverlap": [
+            {
+              "bboxA": {
+                "h": 14.666666666666664,
+                "w": 168.432,
+                "x": 267.25333333333333,
+                "y": 1045.6400000000003
+              },
+              "bboxB": {
+                "h": 13.333333333333334,
+                "w": 33.0,
+                "x": 380.35333333333335,
+                "y": 1048.008888888889
+              },
+              "overlapArea": 405.82666666667524,
+              "overlapH": 12.297777777778037,
+              "overlapW": 33.0,
+              "pathA": "Page/Body/Column0/Table4/Cell4/TextLine10/TextRun0",
+              "pathB": "Page/Footer3/TextLine0/TextRun0",
+              "typeA": "TextRun",
+              "typeB": "TextRun"
+            }
+          ]
+        },
+        {
+          "page": 15,
+          "textOverlap": [
+            {
+              "bboxA": {
+                "h": 12.0,
+                "w": 529.4333333333332,
+                "x": 132.28666666666675,
+                "y": 1054.6933333333334
+              },
+              "bboxB": {
+                "h": 13.333333333333334,
+                "w": 40.0,
+                "x": 376.85333333333335,
+                "y": 1048.008888888889
+              },
+              "overlapArea": 265.9555555555562,
+              "overlapH": 6.648888888888905,
+              "overlapW": 40.0,
+              "pathA": "Page/Body/Column0/Table11/Cell0/Rect11/TextBox0/TextLine3/TextRun0",
+              "pathB": "Page/Footer3/TextLine0/TextRun0",
+              "typeA": "TextRun",
+              "typeB": "TextRun"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "anomaly_limits": "bbox text-overlap1→2:새 사건은7쪽 표셀/꼬리말이며 이전부터16쪽 사건이 있었음.7쪽은꼬리말bbox의y1057.9978→1048.0089 변화와동시에드러남. 이 binary 비교로 모든본문배치의동일성이나 실제잉크겹침/알고리즘정확성을단정하지 않음.낮은피델리티 상태에서해당래칫fixture수용을보류.",
+  "removed_functions": [
+    "rowbreak_page7_nested_table_paragraph_keeps_host_text",
+    "rowbreak_page7_starts_article_26_like_hancom_pdf"
+  ],
+  "kept_functions": [
+    "rowbreak_page11_partial_table_stays_inside_body",
+    "rowbreak_page13_following_reference_strip_stays_below_table",
+    "rowbreak_page13_textbox_shapes_cover_their_text",
+    "rowbreak_page13_preserves_linear_empty_spacer_in_excerpt_table",
+    "rowbreak_page17_split_table_covers_visible_textbox_shape",
+    "rowbreak_page18_does_not_emit_tiny_empty_table_continuation",
+    "rowbreak_final_pages_match_hancom_pdf_page_count",
+    "rowbreak_page17_keeps_final_database_table_tail_like_hancom_pdf",
+    "rowbreak_page17_keeps_database_separation_line_before_example_box",
+    "rowbreak_page2_chart_starts_below_title_line",
+    "rowbreak_hwpx_page1_ignores_stale_initial_vpos",
+    "rowbreak_hwpx_page5_table_split_keeps_page6_notes_off_page5",
+    "rowbreak_hwpx_page8_keeps_continued_nested_reference_line",
+    "rowbreak_hwpx_page10_keeps_csap_table_near_title",
+    "rowbreak_page12_reference_text_stays_inside_body",
+    "rowbreak_hwp_page8_keeps_continued_nested_reference_line",
+    "rowbreak_hwp_page12_reference_text_stays_inside_body",
+    "rowbreak_page7_keeps_tail_line_before_large_table_like_hancom_pdf"
+  ],
+  "other_axes": "samples 원문/정상PDF, HWP대조군, body/offcanvas/cell/oracle/matrix는그대로유지. text의이입력/기준1행만제외.",
+  "focused_summary": [
+    "Summary [   0.174s] 18 tests run: 18 passed, 194 skipped"
+  ],
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "2bab5e233dcd069400ccd8310733eb18715fcdf4",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_023",
+          "-E",
+          "test(issue_rowbreak_chart_overlap::)"
+        ],
+        "exit_code": 0,
+        "seconds": 6.299371082801372
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.206975540611893
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.31207420816645026
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.22659616684541106
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.36118083260953426
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 7.714567583985627
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.759523042012006
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 9.43999154213816
+      }
+    ]
+  },
+  "original38_function_after": {
+    "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_9",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_017",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_9)"
+    ],
+    "exit_code": 0,
+    "seconds": 8.46451716683805,
+    "summary": [
+      "Summary [   1.417s] 1 test run: 1 passed, 234 skipped"
+    ]
+  },
+  "production_changes": false,
+  "new_test_functions": 0,
+  "threshold_relaxation": false,
+  "comment_changes": "이번파일의영어소개주석을한글로변경하고잘못된HWPX소개경로를samples로교정.",
+  "assets": [
+    {
+      "path": "mydocs/pr/assets/issue7445/rowbreak_hwpx_native_review_007.png",
+      "sha256": "bdae6792694c9bf287935045fdb6059180210652d41521b3ded729bbdbbb4618"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/rowbreak_hwpx_native_overlay_007.png",
+      "sha256": "c3a96c4546ccffca774c870d8bcc788716ea3d4b15dc3d958f8fd2afae70e765"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/rowbreak_hwpx_native_review_008.png",
+      "sha256": "d0ab496e052228eb1052e73eeecb67e94dd18d3b060469b091d76feaf0d8e46e"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/rowbreak_hwpx_native_overlay_008.png",
+      "sha256": "adee3cd70dbf78ad8c06411413261c6c1ffac6894ada352beab0df35d611ca11"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/rowbreak_hwpx_native_review_009.png",
+      "sha256": "99a38393edcc27d4d02845ccf13e5cc15e54feda55f467ade277180e1e5f8356"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/rowbreak_hwpx_native_overlay_009.png",
+      "sha256": "aa68a8b4fbc56609e585dc37d9b44df26e119dd2ff001b1152f9d7c7b56151e6"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/rowbreak_hwpx_native_review_016.png",
+      "sha256": "ded93af9f31f7dc099f5fc7dbe58bdfb5a8ee71575fc9afca1cde0647d769a2d"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/rowbreak_hwpx_native_overlay_016.png",
+      "sha256": "aafbc3123db7a570ec627b4878e0f446d1ec30716fcf7646001fd0b45c07db8c"
+    }
+  ],
+  "source_sha256": {
+    "tests/issue_rowbreak_chart_overlap.rs": "9efd9b826c5622f059c3faf81d0bc78d5c500e570528cdf5039ee3fcfb27d1f9",
+    "tests/cases/text_overlap_baseline.rs": "0e072344743f395e5fa6a8d292276d391f635ec6b9139f1bb963b5b33bfe27c0",
+    "tests/fixtures/text_overlap_baseline.tsv": "f9d5dfa7d4e6ed48cc21564d0ab0bccc0a016ea3f8ec93860dcdc6786fb1ebcc"
+  },
+  "fresh_wasm": "미실행. Native미달을확인한부정증거이며최종PR제출Native/freshWASM검증을대체하지않음.",
+  "limits": "검사범위의사용자승인보류이며원문피델리티 개선/90%승인/전체회귀완료가아님. 보정110의다른corpus실패원인과복원개별15실패를계속개별처리. 최종37개별/전체nextest/전체시각검증과PR준비미완료."
+}

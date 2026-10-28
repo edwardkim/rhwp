@@ -1,0 +1,207 @@
+{
+  "source_sha": "9787d549237b4c678605c1ade7ba116ee2515baf",
+  "fix_sha": "e917cffb9f70dfc73451a32fb4c1bf3ef9cffc8c",
+  "markup_identical_without_i18n_attributes": true,
+  "i18n_attribute_count": 396,
+  "referenced_key_count": 385,
+  "catalog_key_counts": {
+    "ko": 401,
+    "en": 401
+  },
+  "missing_keys": {
+    "ko": [],
+    "en": []
+  },
+  "before": {
+    "600": {
+      "style_right": 102,
+      "font_lang_left": 95.5,
+      "gap": -6.5
+    },
+    "808": {
+      "document_width": 818,
+      "trigger_right": 818
+    },
+    "962": {
+      "document_width": 974,
+      "button_left": 941,
+      "button_right": 973,
+      "icon_right": 966
+    }
+  },
+  "after": [
+    {
+      "docWidth": 375,
+      "fieldWidth": 363,
+      "gap": 4,
+      "layout": "grid",
+      "panelHidden": true,
+      "trigger": "flex",
+      "width": 375
+    },
+    {
+      "docWidth": 459,
+      "fieldWidth": 447,
+      "gap": 4,
+      "layout": "grid",
+      "panelHidden": true,
+      "trigger": "flex",
+      "width": 459
+    },
+    {
+      "docWidth": 460,
+      "fieldWidth": 438,
+      "gap": 4,
+      "layout": "grid",
+      "panelHidden": false,
+      "trigger": "none",
+      "width": 460
+    },
+    {
+      "docWidth": 600,
+      "fieldWidth": 496,
+      "gap": 4,
+      "layout": "grid",
+      "panelHidden": false,
+      "trigger": "none",
+      "width": 600
+    },
+    {
+      "docWidth": 808,
+      "fieldWidth": 496,
+      "gap": 4,
+      "layout": "grid",
+      "panelHidden": false,
+      "trigger": "none",
+      "width": 808
+    },
+    {
+      "docWidth": 827,
+      "fieldWidth": 496,
+      "gap": 4,
+      "layout": "grid",
+      "panelHidden": false,
+      "trigger": "none",
+      "width": 827
+    },
+    {
+      "docWidth": 828,
+      "fieldWidth": 501,
+      "gap": 4,
+      "layout": "flex",
+      "panelHidden": true,
+      "trigger": "flex",
+      "width": 828
+    },
+    {
+      "docWidth": 961,
+      "fieldWidth": 501,
+      "gap": 4,
+      "layout": "flex",
+      "panelHidden": true,
+      "trigger": "flex",
+      "width": 961
+    },
+    {
+      "docWidth": 962,
+      "fieldWidth": 501,
+      "gap": 4,
+      "layout": "flex",
+      "panelHidden": true,
+      "trigger": "flex",
+      "width": 962
+    },
+    {
+      "docWidth": 981,
+      "fieldWidth": 501,
+      "gap": 4,
+      "layout": "flex",
+      "panelHidden": true,
+      "trigger": "flex",
+      "width": 981
+    },
+    {
+      "docWidth": 982,
+      "fieldWidth": 501,
+      "gap": 4,
+      "layout": "flex",
+      "panelHidden": false,
+      "trigger": "none",
+      "width": 982
+    },
+    {
+      "docWidth": 1024,
+      "fieldWidth": 501,
+      "gap": 4,
+      "layout": "flex",
+      "panelHidden": false,
+      "trigger": "none",
+      "width": 1024
+    }
+  ],
+  "screenshots": {
+    "pr7152_en_600_before.jpg": "14b9001cf24ac35131134bb802b17f20897169b6035e9b72383b1110cc975a53",
+    "pr7152_en_808_after.jpg": "50df19aed7c7ba87728e774c7699e8ee89c6e5b0f7965515d54161a764dc54c6",
+    "pr7152_en_962_after.jpg": "844ebde4f3882b799797266e4feb4815489d4fc8e77fe4db5e59a44707b32196",
+    "pr7152_en_600_after.jpg": "8cdce63e60ac5dcca5d2e75939034f5a7f77e177e7e2e31cf7022556cc1de7ab",
+    "pr7152_en_962_panel_after.jpg": "adfdf7a1a3613ad4ad1452479d8085ed5e69cb95d7c12381c8e929b84bf9529c",
+    "pr7152_en_808_before.jpg": "b97868c4ab5aba60d9439953f5dde1e1ddaf8c9149ef6292a932d4d0f99c370f",
+    "pr7152_en_962_before.jpg": "2979651de9e8f0ec1860de87dfe6f89547a046fd2234476e0e049741ee800a7d",
+    "pr7152_en_982_after.jpg": "6b1ecb2e56948a032e1627c2c9be47d2751e77d5cc0862adf802fbb231f5da76",
+    "pr7152_comparison.jpg": "c456d99b45b2a9e751c8aa55cdf0b2de034a3d9a8e2a5791b65f93433438586c"
+  },
+  "image_note": "Browser native JPEG, no raster modification. Gallery uses CSS viewports to display toolbar regions and highlights; full originals retained.",
+  "comment_core_images": {
+    "pr7152_core_field_before.jpg": {
+      "source": "pr7152_en_600_before.jpg",
+      "source_region": {
+        "x": 0,
+        "y": 84,
+        "width": 520,
+        "height": 40
+      },
+      "sha256": "014af255e460f8dacd1b6e1b391ee13574fe010340d5e4aae91998ebf4a53346"
+    },
+    "pr7152_core_field_after.jpg": {
+      "source": "pr7152_en_600_after.jpg",
+      "source_region": {
+        "x": 0,
+        "y": 84,
+        "width": 520,
+        "height": 40
+      },
+      "sha256": "266f4ceb70558a919d5e75bcff40544d31617aeb7314bfa90d52c35ce2481b5f"
+    },
+    "pr7152_core_edge_before.jpg": {
+      "source": "pr7152_en_962_before.jpg",
+      "source_region": {
+        "x": 632,
+        "y": 84,
+        "width": 330,
+        "height": 40
+      },
+      "sha256": "94046468f917006ed3a1eaf438afb7f9c7a9d3aed8b76a23c5f89ee6fc82b430"
+    },
+    "pr7152_core_edge_after.jpg": {
+      "source": "pr7152_en_962_after.jpg",
+      "source_region": {
+        "x": 632,
+        "y": 84,
+        "width": 330,
+        "height": 40
+      },
+      "sha256": "202cfc7ae6b4867bd5207f5a6b3e696bca1ec2748dc86dff4a602322d8caad48"
+    },
+    "pr7152_core_panel_after.jpg": {
+      "source": "pr7152_en_962_panel_after.jpg",
+      "source_region": {
+        "x": 600,
+        "y": 84,
+        "width": 230,
+        "height": 82
+      },
+      "sha256": "6fd3a0688c95647bd2795b22120a51d11480c3613de32d1c3e4bbb0e0d26a122"
+    }
+  },
+  "comment_core_image_method": "기존 전체 JPEG의 해당 영역만 로컬 HTML에서 표시하고 브라우저로 재캡처했다. 캡처 도구의 배율을 보정한 뒤 원본 크기로 표시되는지 직접 판독했다. UI·문구·버튼을 재생성하거나 덧그리지 않았다. 설명은 Markdown 본문에 있다."
+}

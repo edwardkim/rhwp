@@ -1,7 +1,7 @@
 ---
 kind: investigation
 status: active
-canonical: mydocs/plans/task_m100_4962_w4.md
+canonical: mydocs/plans/archives/task_m100_4962_w4.md
 last_verified: 2026-08-22
 ---
 
@@ -20,6 +20,7 @@ last_verified: 2026-08-22
 | `font_metric_coverage_checkpoint_policy.json` | crash-consistent journal·state·identity·storage 정책 |
 | `font_metric_coverage_finalizer_policy.json` | format 보존 usage key와 corpus 병합·hash 정책 |
 | `font_metric_coverage_full_manifest_policy.json` | local-only 10k 발견·BLAKE3·저장공간 preflight 정책 |
+| [`tools/diagnostics/font_metric_coverage_worker.rs`](../../../../tools/diagnostics/font_metric_coverage_worker.rs) | W3 격리 계측 worker source; 반복 실행 중이므로 명시적 Cargo target으로 유지 |
 | `scripts/font_metric_coverage_contract.mjs` | 분류·대사·hash·privacy·POC/W1 drift 검사 |
 | `scripts/tests/font_metric_coverage_contract.test.mjs` | 정상·변이·누락을 다루는 Stage 1 계약 test |
 | `font_typesetting_risk_contract.schema.json` | W4 입력·identity·proxy·lane·risk mass·privacy schema |
@@ -29,7 +30,7 @@ last_verified: 2026-08-22
 
 ## 권위와 경계
 
-- [수행계획](../../../plans/task_m100_4962.md)이 범위와 승인 게이트의 정본이다.
+- [수행계획](../../../plans/archives/task_m100_4962.md)이 범위와 승인 게이트의 정본이다.
 - W1 원장과 candidate는 `../issue-4939/`, W2 trace 계약은 `../issue-4961/`에서 읽는다.
 - 기존 `output/poc/font-layout-habits/`는 gitignored 로컬 입력이다. 이 디렉터리로 복사하지 않는다.
 - 기존 POC의 장평·자간·커닝·문맥·font usage는 재측정하지 않는다.
@@ -50,7 +51,9 @@ last_verified: 2026-08-22
 7. `heuristic`
 
 cluster continuation, inline object placeholder, HWP PUA filler, figure space와 tab advance는 font metric
-coverage 대상이 아니므로 `not-applicable`로 분리한다. 새 `widthSource`나 모순된
+coverage 대상이 아니므로 `not-applicable`로 분리한다. `measuredOriginalGlyph`는 원본 글꼴의 부분 실측 advance를 소비한 `hit`이며
+`measured-overlay`에 포함합니다. 정적 전체 metric entry나 대체 글꼴로 오인하지 않습니다.
+이는 진단 분류이며 원본 글꼴 선택·폭 계산·paint를 바꾸지 않습니다. 새 `widthSource`나 모순된
 `characterMatch`·`metricEntry` 조합은 임의 분류하지 않고 실패한다.
 
 ## 분모

@@ -1,0 +1,14 @@
+{
+  "head": "2869859ee38461645235978f6c05604013c05430",
+  "base": "731de9e1b4bb946d76f35108ed7e186ebe4ebecb",
+  "source_files": {
+    "src/renderer/height_measurer.rs": "a64967d5d6dbf8aeca58eede68006dba9de03252bd0df1d70076cd3514615064",
+    "src/renderer/typeset/table.rs": "0c1fa8957d93f567dfc1c4903040b14b109b153420f2fda9eceb8593ad36a0b3",
+    "src/renderer/layout/table_layout.rs": "2d9b09211569fd562069525bcb35f1585a0c425ff6c07cfed339a5e64b76bd1b",
+    "src/renderer/float_placement.rs": "cdc46ddb62833fc8031994007ed85aad782925b9a4dd0b6724971deb057ef147",
+    "src/renderer/typeset/table/block/entry.rs": "033fcb721f254c19ee169efe2e6122c6e7ecd80e302df12369581d6b2427d907",
+    "src/renderer/composer.rs": "5f710a2b38ae9f914567042ba5f762e4be5235660f08dc8585c5efaa3ffb5c25",
+    "tests/cases/issue_7518_reflow_row_physical_frame.rs": "410e2c3ce2d8aba1f3ebe9a43c881e711b8783e6b9555e0a981fdf97bba85324"
+  },
+  "native_cli_sha256": "3382011a113dd3ce9bab7906d61ac5a33db8d05015240b9d4696e40c9883bb88"
+}

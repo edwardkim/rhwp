@@ -23,6 +23,10 @@ pub struct META_TEXTOUT {
     /// null-terminated, because StringLength specifies the length of the
     /// string. The string is written at the location specified by the XStart
     /// and YStart fields.
+    ///
+    /// [#7130] 여기에는 글자 `string_length` 바이트만 담는다. 홀수 길이일 때
+    /// 뒤따르는 WORD 정렬용 채움 1바이트는 읽고 버린다 — 그 바이트는 0 으로
+    /// 정해져 있지 않아서 남겨 두면 글자로 그려진다.
     pub string: Vec<u8>,
     /// YStart (2 bytes): A 16-bit signed integer that defines the vertical
     /// (y-axis) coordinate, in logical units, of the point where drawing is to
@@ -66,16 +70,29 @@ impl META_TEXTOUT {
                 cause: format!("The string_length field `{string_length}` must not be negative"),
             });
         }
-        // usize 로 넓힌 뒤 홀수 보정을 더한다 — i16 에서 `32767 + 1` 은 오버플로라
-        // (debug 패닉 / release wrap→음수→huge) 넓힌 뒤 더해야 안전하다.
-        let string_len = string_length as usize + (string_length as usize % 2);
+        // [#7130] `String` 필드가 차지하는 자리는 짝수로 올림한 크기지만, 글자는
+        // 앞 `string_length` 바이트뿐이다(MS-WMF §2.3.5.6 — `StringLength` 는 글자
+        // 수이고, 홀수면 뒤 1바이트는 WORD 정렬용 채움이다). 종전에는 올림한 크기를
+        // 통째로 `string` 에 담아 채움 바이트까지 `into_utf8` 이 글자로 바꿨다.
+        // 채움 바이트는 0 으로 정해져 있지 않다 — 한/글이 내보낸 OLE 회로도에서는
+        // `Emitter` 뒤 `0x6F`, `VCC`·`10V` 뒤 `0x31`, `COM`·`GND` 뒤 `0x5E`·`0x4B`
+        // 처럼 버퍼에 남아 있던 값이 그대로 들어와 라벨 끝에 글자가 하나 더 붙었다.
+        // 같은 저장소의 `META_EXTTEXTOUT` 은 처음부터 이 방식이다.
+        let (string, string_bytes) =
+            crate::wmf::parser::read_variable(buf, string_length as usize)?;
+        record_size.consume(string_bytes);
 
-        let ((string, string_bytes), (y_start, y_start_bytes), (x_start, x_start_bytes)) = (
-            crate::wmf::parser::read_variable(buf, string_len as usize)?,
+        // ignore odd bytes
+        if string_length % 2 != 0 {
+            let _ = crate::wmf::parser::read::<R, 1>(buf)?;
+            record_size.consume(1);
+        }
+
+        let ((y_start, y_start_bytes), (x_start, x_start_bytes)) = (
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
             crate::wmf::parser::read_i16_from_le_bytes(buf)?,
         );
-        record_size.consume(string_bytes + y_start_bytes + x_start_bytes);
+        record_size.consume(y_start_bytes + x_start_bytes);
 
         crate::wmf::parser::records::consume_remaining_bytes(buf, record_size)?;
 

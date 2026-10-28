@@ -95,11 +95,13 @@ function createChromeMock(options = {}) {
       session: {
         async get(query) {
           calls.sessionGet.push(query);
+          await options.beforeSessionGet?.(query);
           return getStorageValues(sessionItems, query);
         },
         async set(items) {
           const setIndex = calls.sessionSet.length;
           calls.sessionSet.push(items);
+          await options.beforeSessionSet?.(items);
           const delayMs = options.sessionSetDelaysMs?.[setIndex] ?? 0;
           if (delayMs > 0) {
             await new Promise((resolve) => setTimeout(resolve, delayMs));
@@ -179,6 +181,139 @@ function lastListener(list) {
   return list[list.length - 1];
 }
 
+function deferred() {
+  let resolve;
+  const promise = new Promise(done => { resolve = done; });
+  return { promise, resolve };
+}
+
+for (const scenario of [
+  { name: 'extensionless HWP', filename: 'extensionless', expected: 1 },
+  { name: 'final HWP filename', filename: 'final.hwp', expected: 1 },
+  { name: 'XLSX despite HWP URL', filename: 'final.xlsx', expected: 0 },
+  { name: 'own Blob', filename: 'save.hwp', url: 'blob:chrome-extension://rhwp/save', expected: 0 },
+  { name: 'autoOpen=false', filename: 'extensionless', autoOpen: false, expected: 0 },
+]) {
+  test(`initial tracking write racing filename/complete: ${scenario.name} (#6988)`, async () => {
+    const held = deferred();
+    const release = deferred();
+    let blocked = false;
+    const env = createChromeMock({
+      settings: { autoOpen: scenario.autoOpen ?? true },
+      async beforeSessionSet(items) {
+        if (!blocked && Object.values(items).some(state => state.lastReason === 'fresh-created')) {
+          blocked = true;
+          held.resolve();
+          await release.promise;
+        }
+      },
+    });
+    await withChromeMock(env, async ({ listeners, calls, searchItems, sessionItems }) => {
+      const item = {
+        id: 6988, url: scenario.url ?? 'https://example.com/document.hwp',
+        filename: '', mime: 'application/x-hwp', startTime: new Date().toISOString(),
+      };
+      const created = listeners.onCreated[0](item);
+      await held.promise;
+      searchItems.set(item.id, { ...item, filename: scenario.filename, state: 'complete' });
+      const changed = [
+        listeners.onChanged[0]({ id: item.id, filename: { current: scenario.filename } }),
+        listeners.onChanged[0]({ id: item.id, state: { current: 'complete' } }),
+      ];
+      await flushAsyncWork(); // deliver both changes while the first write is still held
+      release.resolve();
+      await Promise.all([created, ...changed]);
+      await flushAsyncWork();
+      assert.equal(calls.tabsCreate.length, scenario.expected);
+      if (scenario.expected || scenario.autoOpen === false) {
+        assert.ok(sessionItems.get(`rhwpDownloadState:${item.id}`).handledAt);
+      }
+      // Duplicate created/complete must not erase the handled marker or open another tab.
+      await listeners.onCreated[0](item);
+      await listeners.onChanged[0]({ id: item.id, state: { current: 'complete' } });
+      await flushAsyncWork();
+      assert.equal(calls.tabsCreate.length, scenario.expected);
+      assert.deepEqual(calls.cancel, []);
+      assert.deepEqual(calls.erase, []);
+    });
+  });
+}
+
+test('a held first write does not block a different download ID (#6988)', async () => {
+  const held = deferred();
+  const release = deferred();
+  const env = createChromeMock({
+    async beforeSessionSet(items) {
+      if (items['rhwpDownloadState:6988']?.lastReason === 'fresh-created') {
+        held.resolve();
+        await release.promise;
+      }
+    },
+  });
+  await withChromeMock(env, async ({ listeners, calls }) => {
+    const created = listeners.onCreated[0]({ id: 6988, filename: '', url: 'https://example.com/held.hwp' });
+    await held.promise;
+    const other = listeners.onCreated[0]({ id: 6989, filename: 'other.hwp', url: 'https://example.com/other.hwp' });
+    try {
+      await flushAsyncWork();
+      assert.equal(calls.tabsCreate.length, 1);
+      assert.match(calls.tabsCreate[0].url, /other\.hwp/);
+    } finally {
+      release.resolve();
+      await Promise.all([created, other]);
+      await flushAsyncWork();
+    }
+  });
+});
+
+test('changes wait even while the initial state read is pending (#6988)', async () => {
+  const held = deferred();
+  const release = deferred();
+  let first = true;
+  const env = createChromeMock({
+    async beforeSessionGet() {
+      if (first) {
+        first = false;
+        held.resolve();
+        await release.promise;
+      }
+    },
+  });
+  await withChromeMock(env, async ({ listeners, calls, searchItems }) => {
+    const item = { id: 6990, filename: '', url: 'https://example.com/document.hwp', startTime: new Date().toISOString() };
+    const created = listeners.onCreated[0](item);
+    await held.promise;
+    searchItems.set(item.id, { ...item, filename: 'extensionless', state: 'complete' });
+    const changed = listeners.onChanged[0]({ id: item.id, state: { current: 'complete' } });
+    await flushAsyncWork();
+    release.resolve();
+    await Promise.all([created, changed]);
+    await flushAsyncWork();
+    assert.equal(calls.tabsCreate.length, 1);
+  });
+});
+
+test('failed event does not poison later events for the same ID (#6988)', async t => {
+  const errors = t.mock.method(console, 'error', () => {});
+  let first = true;
+  const env = createChromeMock({
+    async beforeSessionSet() {
+      if (first) {
+        first = false;
+        throw new Error('first tracking write failed');
+      }
+    },
+  });
+  await withChromeMock(env, async ({ listeners, calls }) => {
+    const item = { id: 6991, filename: 'retry.hwp', url: 'https://example.com/retry.hwp' };
+    await Promise.all([listeners.onCreated[0](item), listeners.onCreated[0](item)]);
+    assert.equal(errors.mock.callCount(), 1);
+    assert.equal(calls.tabsCreate.length, 1);
+    await listeners.onChanged[0]({ id: item.id, state: { current: 'complete' } });
+    assert.equal(calls.tabsCreate.length, 1);
+  });
+});
+
 test('Chrome interceptor registers observers, not onDeterminingFilename', async () => {
   const env = createChromeMock();
 
@@ -226,7 +361,7 @@ test('HWP download opens viewer once', async () => {
     listeners.onCreated[0]({
       id: 201,
       url: 'https://example.com/sample.hwp',
-      filename: 'sample.hwp',
+      filename: '/Users/example/Downloads/sample.hwp',
       mime: 'application/x-hwp',
       fileSize: 1024,
     });
@@ -276,7 +411,7 @@ test('filename finalized in onChanged is rechecked with downloads.search', async
     searchItems.set(401, {
       id: 401,
       url: 'https://example.com/download?id=401',
-      filename: 'sample.hwp',
+      filename: '/Users/example/Downloads/sample.hwp',
       mime: 'application/octet-stream',
     });
     await listeners.onChanged[0]({
@@ -286,6 +421,86 @@ test('filename finalized in onChanged is rechecked with downloads.search', async
     await flushAsyncWork();
 
     assert.deepEqual(calls.search, [{ id: 401 }]);
+    assert.equal(calls.tabsCreate.length, 1);
+  });
+});
+
+test('XLSX filename is not opened even when source URL ends with hwp (#6534)', async () => {
+  const env = createChromeMock();
+
+  await withChromeMock(env, async ({ listeners, calls }) => {
+    listeners.onCreated[0]({
+      id: 402,
+      url: 'https://public.example.go.kr/download/report.hwp',
+      filename: '/home/me/Downloads/public-report.xlsx',
+      mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      startTime: new Date().toISOString(),
+    });
+    await flushAsyncWork();
+
+    assert.deepEqual(calls.tabsCreate, []);
+    assert.deepEqual(calls.cancel, []);
+    assert.deepEqual(calls.erase, []);
+  });
+});
+
+test('provisional HWP URL waits for XLSX filename finalization (#6534)', async () => {
+  const env = createChromeMock();
+
+  await withChromeMock(env, async ({ listeners, calls, searchItems }) => {
+    listeners.onCreated[0]({
+      id: 403,
+      url: 'https://public.example.go.kr/download/report.hwp',
+      filename: 'download',
+      mime: 'application/octet-stream',
+      startTime: new Date().toISOString(),
+    });
+    await flushAsyncWork();
+
+    assert.deepEqual(calls.tabsCreate, [], 'URL 단독 근거는 onCreated에서 보류해야 함');
+
+    searchItems.set(403, {
+      id: 403,
+      url: 'https://public.example.go.kr/download/report.hwp',
+      filename: '/home/me/Downloads/final-report.xlsx',
+      mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      startTime: new Date().toISOString(),
+    });
+    await listeners.onChanged[0]({
+      id: 403,
+      filename: { current: '/home/me/Downloads/final-report.xlsx' },
+    });
+    await flushAsyncWork();
+
+    assert.deepEqual(calls.search, [{ id: 403 }]);
+    assert.deepEqual(calls.tabsCreate, []);
+  });
+});
+
+test('extensionless HWP MIME opens only after terminal recheck (#198/#6534)', async () => {
+  const env = createChromeMock();
+
+  await withChromeMock(env, async ({ listeners, calls, searchItems }) => {
+    const item = {
+      id: 404,
+      url: 'https://public.example.go.kr/download?id=404',
+      filename: 'download',
+      mime: 'application/x-hwp',
+      startTime: new Date().toISOString(),
+    };
+    listeners.onCreated[0](item);
+    await flushAsyncWork();
+
+    assert.deepEqual(calls.tabsCreate, [], 'MIME 단독 근거는 onCreated에서 보류해야 함');
+
+    searchItems.set(404, { ...item, state: 'complete', endTime: new Date().toISOString() });
+    await listeners.onChanged[0]({
+      id: 404,
+      state: { current: 'complete' },
+    });
+    await flushAsyncWork();
+
+    assert.deepEqual(calls.search, [{ id: 404 }]);
     assert.equal(calls.tabsCreate.length, 1);
   });
 });
@@ -306,6 +521,43 @@ test('local file HWP is opened and suppressed best-effort', async () => {
     assert.equal(calls.tabsCreate.length, 1);
     assert.deepEqual(calls.cancel, [501]);
     assert.deepEqual(calls.erase, [{ id: 501 }]);
+  });
+});
+
+// #7664: "다운로드 전 저장 위치 확인" 대화상자가 떠 있으면 filename이 비고 MIME이 generic이다.
+// 대화상자를 취소하면 interrupted만 오므로 onCreated에서 열어야 한다.
+test('local file HWP opens from onCreated while the save-as prompt hides the filename (#7664)', async () => {
+  const env = createChromeMock();
+
+  await withChromeMock(env, async ({ listeners, calls, searchItems }) => {
+    listeners.onCreated[0]({
+      id: 7664,
+      url: 'file:///C:/Users/user/Documents/%ED%95%9C%EA%B8%80.hwp',
+      filename: '',
+      mime: 'application/octet-stream',
+      startTime: new Date().toISOString(),
+    });
+    await flushAsyncWork();
+    await flushAsyncWork();
+
+    assert.equal(calls.tabsCreate.length, 1);
+    assert.equal(new URL(calls.tabsCreate[0].url).searchParams.get('filename'), '한글.hwp');
+    assert.deepEqual(calls.cancel, [7664]);
+    assert.deepEqual(calls.erase, [{ id: 7664 }]);
+
+    // 대화상자에서 저장을 고르면 filename 확정 delta가 와도 다시 열지 않는다.
+    searchItems.set(7664, {
+      id: 7664,
+      url: 'file:///C:/Users/user/Documents/%ED%95%9C%EA%B8%80.hwp',
+      filename: 'C:\\Users\\user\\Downloads\\한글.hwp',
+      mime: 'application/octet-stream',
+      startTime: new Date().toISOString(),
+    });
+    await listeners.onChanged[0]({ id: 7664, filename: { current: 'C:\\Users\\user\\Downloads\\한글.hwp' } });
+    await listeners.onChanged[0]({ id: 7664, state: { current: 'interrupted' }, error: { current: 'USER_CANCELED' } });
+    await flushAsyncWork();
+
+    assert.equal(calls.tabsCreate.length, 1, 'filename 확정·interrupted 뒤에도 한 번만 열어야 함');
   });
 });
 
@@ -691,3 +943,29 @@ test('sync read failure never authorizes automatic opening from a local true sna
     assert.deepEqual(calls.tabsCreate, [], 'sync 상태가 불명확하면 자동 탭을 열지 않아야 함');
   });
 });
+
+for (const [url, expectedTabs] of [
+  ['blob:chrome-extension://rhwp/saved-output', 0],
+  ['blob:https://example.com/external-output', 1],
+  ['blob:chrome-extension://another-extension/external-output', 1],
+  ['blob:chrome-extension://rhwp-lookalike/external-output', 1],
+  ['https://example.com/sample.hwp', 1],
+]) {
+  test(`chrome preserves external downloads and skips only its own Blob: ${url} (#6964)`, async () => {
+    const env = createChromeMock();
+    await withChromeMock(env, async ({ listeners, calls, searchItems }) => {
+      const item = { id: 6970, url, filename: '/Downloads/saved.hwp', startTime: new Date().toISOString() };
+      searchItems.set(item.id, item);
+      listeners.onCreated[0](item);
+      await flushAsyncWork();
+      listeners.onChanged[0]({ id: item.id, filename: { current: item.filename } });
+      listeners.onChanged[0]({ id: item.id, state: { current: 'complete' } });
+      await flushAsyncWork();
+      assert.equal(calls.tabsCreate.length, expectedTabs);
+      assert.equal(item.url, url);
+      assert.equal(item.filename, '/Downloads/saved.hwp');
+      assert.deepEqual(calls.cancel, []);
+      assert.deepEqual(calls.erase, []);
+    });
+  });
+}

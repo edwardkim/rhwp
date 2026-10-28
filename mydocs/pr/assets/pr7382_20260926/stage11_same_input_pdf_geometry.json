@@ -1,0 +1,1177 @@
+{
+  "original_pages": 215,
+  "fresh_pages": 215,
+  "fresh_sha256": "515da0d7ce8d61fc8e3c5ee935dd846047bec30b64d889e061103fb8a11d13f9",
+  "job_id": "d146cc30-6eee-4133-a714-1be403862781",
+  "engine": 2024,
+  "pages": [
+    {
+      "page": 10,
+      "same_text_lines": true,
+      "line_count_original": 21,
+      "line_count_fresh": 21,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 31,
+      "same_text_lines": true,
+      "line_count_original": 153,
+      "line_count_fresh": 153,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 32,
+      "same_text_lines": true,
+      "line_count_original": 94,
+      "line_count_fresh": 94,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 66,
+      "same_text_lines": true,
+      "line_count_original": 49,
+      "line_count_fresh": 49,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 67,
+      "same_text_lines": true,
+      "line_count_original": 66,
+      "line_count_fresh": 66,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 78,
+      "same_text_lines": true,
+      "line_count_original": 131,
+      "line_count_fresh": 131,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 108,
+      "same_text_lines": true,
+      "line_count_original": 30,
+      "line_count_fresh": 30,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 121,
+      "same_text_lines": true,
+      "line_count_original": 36,
+      "line_count_fresh": 36,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 176,
+      "same_text_lines": true,
+      "line_count_original": 38,
+      "line_count_fresh": 38,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 178,
+      "same_text_lines": true,
+      "line_count_original": 53,
+      "line_count_fresh": 53,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 179,
+      "same_text_lines": true,
+      "line_count_original": 42,
+      "line_count_fresh": 42,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 182,
+      "same_text_lines": true,
+      "line_count_original": 8,
+      "line_count_fresh": 8,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 183,
+      "same_text_lines": true,
+      "line_count_original": 10,
+      "line_count_fresh": 10,
+      "max_line_bbox_delta_pt": 0.0
+    }
+  ],
+  "all_pages_text_geometry": [
+    {
+      "page": 1,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 2,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 3,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 4,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 5,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 6,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 7,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 8,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 9,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 10,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 11,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 12,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 13,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 14,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 15,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 16,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 17,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 18,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 19,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 20,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 21,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 22,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 23,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 24,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 25,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 26,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 27,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 28,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 29,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 30,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 31,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 32,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 33,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 34,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 35,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 36,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 37,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 38,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 39,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 40,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 41,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 42,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 43,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 44,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 45,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 46,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 47,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 48,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 49,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 50,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 51,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 52,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 53,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 54,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 55,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 56,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 57,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 58,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 59,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 60,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 61,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 62,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 63,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 64,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 65,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 66,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 67,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 68,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 69,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 70,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 71,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 72,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 73,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 74,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 75,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 76,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 77,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 78,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 79,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 80,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 81,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 82,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 83,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 84,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 85,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 86,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 87,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 88,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 89,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 90,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 91,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 92,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 93,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 94,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 95,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 96,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 97,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 98,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 99,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 100,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 101,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 102,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 103,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 104,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 105,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 106,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 107,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 108,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 109,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 110,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 111,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 112,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 113,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 114,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 115,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 116,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 117,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 118,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 119,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 120,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 121,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 122,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 123,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 124,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 125,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 126,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 127,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 128,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 129,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 130,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 131,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 132,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 133,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 134,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 135,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 136,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 137,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 138,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 139,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 140,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 141,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 142,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 143,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 144,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 145,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 146,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 147,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 148,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 149,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 150,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 151,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 152,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 153,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 154,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 155,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 156,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 157,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 158,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 159,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 160,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 161,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 162,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 163,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 164,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 165,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 166,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 167,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 168,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 169,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 170,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 171,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 172,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 173,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 174,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 175,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 176,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 177,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 178,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 179,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 180,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 181,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 182,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 183,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 184,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 185,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 186,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 187,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 188,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 189,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 190,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 191,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 192,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 193,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 194,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 195,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 196,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 197,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 198,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 199,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 200,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 201,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 202,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 203,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 204,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 205,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 206,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 207,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 208,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 209,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 210,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 211,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 212,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 213,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 214,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    },
+    {
+      "page": 215,
+      "same_text_lines": true,
+      "max_line_bbox_delta_pt": 0.0
+    }
+  ]
+}

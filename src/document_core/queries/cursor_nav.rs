@@ -8,9 +8,9 @@ use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
-use crate::renderer::render_tree::{PageRenderTree, TextRunNode};
+use crate::renderer::render_tree::TextRunNode;
 
-/// 화면에서는 여러 글자로 보이지만 모델에서는 marker 한 글자인 필드 런의 캐럿 경계다.
+/// 글자겹침과 확장 필드는 화면 글자 수와 무관하게 모델의 캐럿 한 칸을 차지한다.
 ///
 /// `compute_char_positions(run.text)`는 raw marker의 가상 글리프 폭을 반환하므로,
 /// field display 런은 레이아웃이 확정한 bbox 끝을 모델 한 글자의 끝으로 쓴다.
@@ -21,16 +21,15 @@ fn cursor_positions_for_render_run(run: &TextRunNode, bbox_width: f64) -> Vec<f6
             run.text.chars().next(),
             Some('\u{0015}' | '\u{0016}' | '\u{0017}' | '\u{2007}')
         );
-    if is_expanded_field_marker {
+    if (run.char_overlap.is_some() && !run.text.is_empty()) || is_expanded_field_marker {
         vec![0.0, bbox_width]
     } else {
-        crate::renderer::layout::compute_char_positions(&run.text, &run.style)
+        run.replay_positions_for(&run.text).into_owned()
     }
 }
 
 fn is_caret_logical_inline_control(ctrl: &Control) -> bool {
-    is_treat_as_char_object_control(ctrl)
-        || matches!(ctrl, Control::Footnote(_) | Control::Endnote(_))
+    ctrl.is_logical_inline()
 }
 
 fn control_only_caret_utf16_to_char_idx(para: &Paragraph, caret_utf16: u32) -> usize {
@@ -376,8 +375,6 @@ impl DocumentCore {
         preferred_x: f64,
         cell_ctx: Option<(usize, usize, usize, usize)>,
     ) -> Result<String, HwpError> {
-        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
-
         // ═══ PHASE 1: preferredX 결정 ═══
         let actual_px = if preferred_x < 0.0 {
             match self.get_cursor_rect_values(sec, para, char_offset, cell_ctx) {
@@ -1054,7 +1051,6 @@ impl DocumentCore {
         char_range: (usize, usize),
         preferred_x: f64,
     ) -> Result<LineCursorHit, HwpError> {
-        use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         // 해당 문단이 포함된 페이지의 렌더 트리 빌드
@@ -1129,7 +1125,7 @@ impl DocumentCore {
                 );
                 // 번호/글머리표 TextRun (char_start: None)은 건너뛴다
                 if let (true, Some(cs)) = (matches, tr.char_start) {
-                    let cc = tr.text.chars().count();
+                    let cc = tr.logical_char_count();
                     // 이 run이 목표 줄의 char_range에 겹치는지 확인
                     if cs < char_range.1 && cs + cc > char_range.0 {
                         let positions = cursor_positions_for_render_run(tr, node.bbox.width);
@@ -1823,7 +1819,6 @@ impl DocumentCore {
         cell_target: Option<SelectionCellTarget<'_>>,
         page_hints: Option<(u32, u32)>,
     ) -> Result<String, HwpError> {
-        use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         // ── 커서 위치를 pre-built tree에서 직접 찾는 헬퍼 ──
@@ -1920,12 +1915,14 @@ impl DocumentCore {
                 }
 
                 if let RenderNodeType::TextRun(ref tr) = node.node_type {
-                    if tr.section_index == Some(sec)
-                        && tr.para_index == Some(para)
-                        && tr.cell_context.is_none()
-                    {
-                        let cs = tr.char_start.unwrap_or(0);
-                        let cc = tr.text.chars().count();
+                    // 번호/글머리표 TextRun (char_start: None)은 건너뛴다
+                    if let (true, Some(cs)) = (
+                        tr.section_index == Some(sec)
+                            && tr.para_index == Some(para)
+                            && tr.cell_context.is_none(),
+                        tr.char_start,
+                    ) {
+                        let cc = tr.logical_char_count();
                         if offset >= cs && offset <= cs + cc {
                             let pos = cursor_positions_for_render_run(tr, node.bbox.width);
                             let lo = offset - cs;
@@ -2008,9 +2005,9 @@ impl DocumentCore {
                             path,
                         } => path_cell_ctx_matches(ctx, parent_para_idx, path, cpi),
                     });
-                    if matches_cell {
-                        let cs = tr.char_start.unwrap_or(0);
-                        let cc = tr.text.chars().count();
+                    // 번호/글머리표 TextRun (char_start: None)은 건너뛴다
+                    if let (true, Some(cs)) = (matches_cell, tr.char_start) {
+                        let cc = tr.logical_char_count();
                         if offset >= cs && offset <= cs + cc {
                             let pos = cursor_positions_for_render_run(tr, node.bbox.width);
                             let lo = offset - cs;
@@ -2113,16 +2110,29 @@ impl DocumentCore {
             SelectionPagePlan::FullFallback(pages) => (pages, false),
         };
 
+        let selection_tree = |pn| {
+            if used_hints {
+                return self.build_page_tree_cached(pn);
+            }
+            // 본문은 렌더·캐럿 질의가 이미 만든 유효한 트리만 재사용한다.
+            if cell_target.is_none() {
+                if let Some(tree) = self
+                    .page_tree_cache
+                    .borrow()
+                    .get(pn as usize)
+                    .and_then(Option::as_ref)
+                {
+                    return Ok(tree.clone());
+                }
+            }
+            // 캐시가 없는 쪽은 기존 함수 로컬 수명을 유지한다. 긴 선택 범위 때문에
+            // 보이지 않는 쪽까지 shared cache에 남겨 메모리 체류를 늘리지 않는다.
+            self.build_page_tree(pn)
+        };
+
         // 주요 페이지 트리 미리 빌드
         for &pn in &page_nums {
-            let tree = if used_hints {
-                self.build_page_tree_cached(pn)?
-            } else {
-                // positional/missing/invalid hint는 기존 함수 로컬 수명을 유지한다.
-                // 115쪽 fallback을 shared cache에 영구 보관해 메모리 체류를 늘리지 않는다.
-                self.build_page_tree(pn)?
-            };
-            tree_cache.push((pn, tree));
+            tree_cache.push((pn, selection_tree(pn)?));
         }
 
         // 한 line segment의 양 cursor는 반드시 같은 page tree에서 찾는다. split paragraph의
@@ -2233,12 +2243,7 @@ impl DocumentCore {
                 if let Ok(pp) = self.find_pages_for_paragraph(section_idx, para_idx) {
                     for &pn in &pp {
                         if !tree_cache.iter().any(|(p, _)| *p == pn) {
-                            let tree = if used_hints {
-                                self.build_page_tree_cached(pn)?
-                            } else {
-                                self.build_page_tree(pn)?
-                            };
-                            tree_cache.push((pn, tree));
+                            tree_cache.push((pn, selection_tree(pn)?));
                         }
                     }
                 }
@@ -2422,6 +2427,7 @@ mod flat_cell_ctx_matches_tests {
     #[test]
     fn matches_direct_single_level_cell() {
         let ctx = CellContext {
+            in_textbox: false,
             parent_para_index: 0,
             path: vec![entry(1, 2, 3)],
         };
@@ -2435,6 +2441,7 @@ mod flat_cell_ctx_matches_tests {
         // 안쪽 셀에 속하므로 매칭돼선 안 된다 — 종전엔 path.len() 가드가
         // 없어 여기서 잘못 true 를 반환했다(#2651).
         let ctx = CellContext {
+            in_textbox: false,
             parent_para_index: 0,
             path: vec![entry(1, 2, 3), entry(0, 0, 0)],
         };
@@ -2444,6 +2451,7 @@ mod flat_cell_ctx_matches_tests {
     #[test]
     fn rejects_mismatched_outer_indices() {
         let ctx = CellContext {
+            in_textbox: false,
             parent_para_index: 0,
             path: vec![entry(1, 2, 3)],
         };
@@ -2453,6 +2461,7 @@ mod flat_cell_ctx_matches_tests {
     #[test]
     fn path_matcher_uses_the_full_nested_container_path() {
         let ctx = CellContext {
+            in_textbox: false,
             parent_para_index: 7,
             path: vec![entry(1, 0, 0), entry(2, 0, 12), entry(0, 50, 3)],
         };
@@ -2465,6 +2474,7 @@ mod flat_cell_ctx_matches_tests {
     #[test]
     fn path_matcher_rejects_a_different_nested_cell_or_intermediate_paragraph() {
         let ctx = CellContext {
+            in_textbox: false,
             parent_para_index: 7,
             path: vec![entry(1, 0, 0), entry(2, 0, 12), entry(0, 50, 0)],
         };

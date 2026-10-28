@@ -17,6 +17,13 @@ pub enum TextDecorationKind {
     EmphasisDot,
 }
 
+/// Decoration-only output placement; the paired text/source stays in layout space.
+#[derive(Debug, Clone, Copy)]
+pub struct TextDecorationPaintGeometry {
+    pub bbox: BoundingBox,
+    pub inline_scale: f64,
+}
+
 impl TextDecorationKind {
     pub fn as_str(self) -> &'static str {
         match self {
@@ -30,6 +37,10 @@ impl TextDecorationKind {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ResolvedImageKind {
     FormatConverted,
+    /// 원본의 잘린 픽셀 창. 최종 장치 표본은 아니며 원본 bin 키로 조회할 수 없다.
+    SourceWindow,
+    /// 출력 크기·장치에 따라 바이트가 달라지는 변환. 원본 bin 키와 구분한다.
+    OutputDevice,
     BakedWatermark,
 }
 
@@ -39,6 +50,17 @@ pub struct ResolvedImagePayload {
     pub mime: &'static str,
     pub kind: ResolvedImageKind,
     pub suppress_effects: bool,
+}
+
+/// Page-space layout bounds and a separate estimate of the painted extent.
+///
+/// `logical` remains the layout/editing contract. `visual` includes known
+/// strokes, shadows and explicit text visuals, but is not a font ink proof.
+/// Picture recorders must retain a page-wide safety extent for unmeasured ink.
+#[derive(Debug, Clone, Copy)]
+pub struct PaintBounds {
+    pub logical: BoundingBox,
+    pub visual: BoundingBox,
 }
 
 /// backend가 재생하는 leaf paint operation.
@@ -54,14 +76,18 @@ pub enum PaintOp {
     TextRun {
         bbox: BoundingBox,
         run: Box<TextRunNode>,
+        source: Option<TextSourceSpan>,
+        paint_transform: Option<LayerAffineTransform>,
     },
     GlyphRun {
         bbox: BoundingBox,
         run: Box<LayerGlyphRunPaint>,
+        paint_transform: Option<LayerAffineTransform>,
     },
     GlyphOutline {
         bbox: BoundingBox,
         outline: Box<LayerGlyphOutlinePaint>,
+        paint_transform: Option<LayerAffineTransform>,
     },
     /// HWP 글자겹침의 명시 visual op.
     ///
@@ -70,23 +96,32 @@ pub enum PaintOp {
     CharOverlap {
         bbox: BoundingBox,
         run: Box<TextRunNode>,
+        source: Option<TextSourceSpan>,
+        paint_transform: Option<LayerAffineTransform>,
     },
     /// 문단 끝/줄 바꿈/필드 마커처럼 source text와 visual projection이 다른 표식.
     TextControlMark {
         bbox: BoundingBox,
         run: Box<TextRunNode>,
+        source: Option<TextSourceSpan>,
     },
     /// 탭 리더 visual geometry.
     TabLeader {
         bbox: BoundingBox,
         run: Box<TextRunNode>,
+        source: Option<TextSourceSpan>,
     },
     /// 밑줄/취소선/강조점 visual geometry.
     TextDecoration {
         bbox: BoundingBox,
         run: Box<TextRunNode>,
         kind: TextDecorationKind,
+        source: Option<TextSourceSpan>,
+        trim_trailing_spaces: usize,
+        paint_geometry: Option<TextDecorationPaintGeometry>,
     },
+    /// Editor control-code label for a non-text object.
+    ControlLabel { bbox: BoundingBox, label: String },
     FootnoteMarker {
         bbox: BoundingBox,
         marker: Box<FootnoteMarkerNode>,
@@ -140,13 +175,16 @@ impl PaintOp {
 
     pub fn text_run(bbox: BoundingBox, run: TextRunNode) -> Self {
         Self::TextRun {
+            paint_transform: None,
             bbox,
             run: Box::new(run),
+            source: None,
         }
     }
 
     pub fn glyph_run(bbox: BoundingBox, run: LayerGlyphRunPaint) -> Self {
         Self::GlyphRun {
+            paint_transform: None,
             bbox,
             run: Box::new(run),
         }
@@ -154,6 +192,7 @@ impl PaintOp {
 
     pub fn glyph_outline(bbox: BoundingBox, outline: LayerGlyphOutlinePaint) -> Self {
         Self::GlyphOutline {
+            paint_transform: None,
             bbox,
             outline: Box::new(outline),
         }
@@ -161,8 +200,10 @@ impl PaintOp {
 
     pub fn char_overlap(bbox: BoundingBox, run: TextRunNode) -> Self {
         Self::CharOverlap {
+            paint_transform: None,
             bbox,
             run: Box::new(run),
+            source: None,
         }
     }
 
@@ -170,6 +211,7 @@ impl PaintOp {
         Self::TextControlMark {
             bbox,
             run: Box::new(run),
+            source: None,
         }
     }
 
@@ -177,6 +219,7 @@ impl PaintOp {
         Self::TabLeader {
             bbox,
             run: Box::new(run),
+            source: None,
         }
     }
 
@@ -185,6 +228,71 @@ impl PaintOp {
             bbox,
             run: Box::new(run),
             kind,
+            source: None,
+            trim_trailing_spaces: 0,
+            paint_geometry: None,
+        }
+    }
+
+    pub fn glyph_paint_transform(&self) -> Option<LayerAffineTransform> {
+        match self {
+            Self::TextRun {
+                paint_transform, ..
+            }
+            | Self::CharOverlap {
+                paint_transform, ..
+            }
+            | Self::GlyphRun {
+                paint_transform, ..
+            }
+            | Self::GlyphOutline {
+                paint_transform, ..
+            } => *paint_transform,
+            _ => None,
+        }
+    }
+
+    pub fn glyph_paint_transform_is_valid(&self) -> bool {
+        self.glyph_paint_transform().is_none_or(|t| {
+            [t.a, t.b, t.c, t.d, t.e, t.f]
+                .iter()
+                .all(|v| v.is_finite() && (*v as f32).is_finite())
+                && (t.a * t.d - t.b * t.c).is_finite()
+                && (t.a * t.d - t.b * t.c).abs() > 1e-12
+        })
+    }
+
+    /// All decoration consumers replay this placement, without mutating the
+    /// semantic run used by source binding, selection and variant validation.
+    pub(crate) fn decoration_replay(
+        &self,
+    ) -> Option<(BoundingBox, std::borrow::Cow<'_, TextRunNode>)> {
+        let Self::TextDecoration {
+            bbox,
+            run,
+            paint_geometry,
+            ..
+        } = self
+        else {
+            return None;
+        };
+        let Some(geometry) = paint_geometry else {
+            return Some((*bbox, std::borrow::Cow::Borrowed(run.as_ref())));
+        };
+        let mut replay = run.as_ref().clone();
+        replay.layout_positions = Some(
+            run.replay_positions_for(run.display_or_text())
+                .iter()
+                .map(|position| position * geometry.inline_scale)
+                .collect(),
+        );
+        Some((geometry.bbox, std::borrow::Cow::Owned(replay)))
+    }
+
+    pub fn control_label(bbox: BoundingBox, label: impl Into<String>) -> Self {
+        Self::ControlLabel {
+            bbox,
+            label: label.into(),
         }
     }
 
@@ -225,9 +333,10 @@ impl PaintOp {
 
     pub fn image(
         bbox: BoundingBox,
-        image: ImageNode,
+        mut image: ImageNode,
         resolved: Option<ResolvedImagePayload>,
     ) -> Self {
+        image.original_size_hu = crate::renderer::image_resolver::image_crop_reference(&image);
         Self::Image {
             bbox,
             image: Box::new(image),
@@ -273,6 +382,7 @@ impl PaintOp {
             | PaintOp::TextControlMark { bbox, .. }
             | PaintOp::TabLeader { bbox, .. }
             | PaintOp::TextDecoration { bbox, .. }
+            | PaintOp::ControlLabel { bbox, .. }
             | PaintOp::FootnoteMarker { bbox, .. }
             | PaintOp::Line { bbox, .. }
             | PaintOp::Rectangle { bbox, .. }
@@ -348,6 +458,20 @@ impl GlyphOutlinePayloadKind {
 }
 
 impl LayerGlyphOutlinePaint {
+    /// Scalar representability shared by strict outline consumers. Resource
+    /// preparation and transformed extents still require backend validation.
+    pub(crate) fn has_portable_geometry(&self) -> bool {
+        text_placement_is_finite(&self.placement)
+            && (!matches!(
+                self.payload_kind,
+                GlyphOutlinePayloadKind::MonochromeFill
+                    | GlyphOutlinePayloadKind::MonochromeFillStroke
+            ) || self
+                .paths
+                .iter()
+                .all(|path| path_commands_are_finite(&path.commands)))
+    }
+
     pub fn has_exclusive_payload_family(&self) -> bool {
         let has_stroke = self.stroke.is_some();
         let has_color_layers = self.color_layers.is_some();
@@ -611,6 +735,22 @@ fn color_paint_graph_node_paint_key(node: &ColorPaintGraphNode) -> String {
             affine_key(transform.transform),
         );
     }
+    if let Some(composite) = &node.composite {
+        return format!(
+            "composite:{}:{}:{}",
+            composite.source_node_id,
+            composite.backdrop_node_id,
+            composite.mode.as_str(),
+        );
+    }
+    if let Some(clip) = &node.clip {
+        return format!(
+            "clip:{}:{}:{}",
+            clip.child_node_id,
+            path_commands_key(Some(&clip.clip_commands)),
+            clip.fill_rule.as_str(),
+        );
+    }
     "-".to_string()
 }
 
@@ -674,6 +814,10 @@ fn svg_glyph_payload_resource_key(
         payload.interactivity_allowed,
         optional_affine_key(payload.transform_to_run),
     );
+    if let Some(em_box) = payload.font_em_box {
+        key.push_str(":fontEmBox:");
+        key.push_str(&bbox_key(em_box));
+    }
     if let Some(resource_key) =
         resources.and_then(|resources| resources.svg_resource_key(payload.svg_ref))
     {
@@ -818,6 +962,7 @@ pub enum ColorPaintGraphNodeKind {
     SweepGradientPath,
     Transform,
     Composite,
+    Clip,
 }
 
 impl ColorPaintGraphNodeKind {
@@ -829,6 +974,7 @@ impl ColorPaintGraphNodeKind {
             Self::SweepGradientPath => "sweepGradientPath",
             Self::Transform => "transform",
             Self::Composite => "composite",
+            Self::Clip => "clip",
         }
     }
 
@@ -840,6 +986,8 @@ impl ColorPaintGraphNodeKind {
                 | Self::RadialGradientPath
                 | Self::SweepGradientPath
                 | Self::Transform
+                | Self::Composite
+                | Self::Clip
         )
     }
 }
@@ -918,6 +1066,33 @@ pub struct ColorPaintTransformNode {
     pub transform: LayerAffineTransform,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ColorPaintCompositeMode {
+    SourceOver,
+}
+
+impl ColorPaintCompositeMode {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::SourceOver => "sourceOver",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ColorPaintCompositeNode {
+    pub source_node_id: u32,
+    pub backdrop_node_id: u32,
+    pub mode: ColorPaintCompositeMode,
+}
+
+#[derive(Debug, Clone)]
+pub struct ColorPaintClipNode {
+    pub child_node_id: u32,
+    pub clip_commands: Vec<PathCommand>,
+    pub fill_rule: GlyphOutlineFillRule,
+}
+
 #[derive(Debug, Clone)]
 pub struct ColorPaintGraphNode {
     pub node_id: u32,
@@ -927,6 +1102,8 @@ pub struct ColorPaintGraphNode {
     pub radial_gradient_path: Option<ColorPaintRadialGradientPathNode>,
     pub sweep_gradient_path: Option<ColorPaintSweepGradientPathNode>,
     pub transform: Option<ColorPaintTransformNode>,
+    pub composite: Option<ColorPaintCompositeNode>,
+    pub clip: Option<ColorPaintClipNode>,
     pub source_range_utf8: Option<TextSourceRange>,
     pub glyph_range: Option<GlyphRange>,
     pub source_font_ref: Option<FontColorGlyphRef>,
@@ -940,6 +1117,9 @@ pub struct ColorPaintGraphPayload {
 
 const MAX_COLRV1_GRAPH_NODES: usize = 64;
 const MAX_COLRV1_GRAPH_DEPTH: usize = 64;
+/// Shared DAG nodes may be painted repeatedly; the node limit alone does not
+/// bound the expanded replay cost of nested composites.
+const MAX_COLRV1_GRAPH_REPLAY_VISITS: usize = 4096;
 
 fn text_source_range_is_valid(range: TextSourceRange) -> bool {
     range.end >= range.start
@@ -949,16 +1129,24 @@ fn glyph_range_is_valid(range: GlyphRange) -> bool {
     range.end >= range.start
 }
 
-fn path_commands_are_finite(commands: &[PathCommand]) -> bool {
+// Skia consumes f32 scalars even when the shared IR stores f64 geometry.
+pub(crate) fn portable_glyph_scalar(value: f64) -> bool {
+    value.is_finite() && value.abs() <= f64::from(f32::MAX)
+}
+
+pub(crate) fn path_commands_are_finite(commands: &[PathCommand]) -> bool {
     !commands.is_empty()
+        && commands.len() <= 4096
         && commands.iter().all(|command| match *command {
-            PathCommand::MoveTo(x, y) | PathCommand::LineTo(x, y) => x.is_finite() && y.is_finite(),
-            PathCommand::CurveTo(x1, y1, x2, y2, x, y) => {
-                [x1, y1, x2, y2, x, y].into_iter().all(f64::is_finite)
+            PathCommand::MoveTo(x, y) | PathCommand::LineTo(x, y) => {
+                portable_glyph_scalar(x) && portable_glyph_scalar(y)
             }
-            PathCommand::ArcTo(rx, ry, rotation, _, _, x, y) => {
-                [rx, ry, rotation, x, y].into_iter().all(f64::is_finite)
-            }
+            PathCommand::CurveTo(x1, y1, x2, y2, x, y) => [x1, y1, x2, y2, x, y]
+                .into_iter()
+                .all(portable_glyph_scalar),
+            PathCommand::ArcTo(rx, ry, rotation, _, _, x, y) => [rx, ry, rotation, x, y]
+                .into_iter()
+                .all(portable_glyph_scalar),
             PathCommand::ClosePath => true,
         })
 }
@@ -991,10 +1179,14 @@ fn color_gradient_stops_are_valid(stops: &[ColorGradientStop]) -> bool {
 }
 
 fn color_sweep_is_supported_full_circle(start_angle_degrees: f64, end_angle_degrees: f64) -> bool {
-    start_angle_degrees.is_finite()
-        && end_angle_degrees.is_finite()
-        && start_angle_degrees < end_angle_degrees
-        && (end_angle_degrees - start_angle_degrees - 360.0).abs() <= 1e-9
+    let is_full_circle = |start: f64, end: f64| start < end && (end - start - 360.0).abs() <= 1e-9;
+    portable_glyph_scalar(start_angle_degrees)
+        && portable_glyph_scalar(end_angle_degrees)
+        && is_full_circle(start_angle_degrees, end_angle_degrees)
+        && is_full_circle(
+            glyph_geometry_wire_scalar(start_angle_degrees, 6),
+            glyph_geometry_wire_scalar(end_angle_degrees, 6),
+        )
 }
 
 fn graph_leaf_metadata_is_valid(node: &ColorPaintGraphNode) -> bool {
@@ -1025,21 +1217,16 @@ impl ColorPaintGraphPayload {
                 return false;
             }
         }
+        if !nodes_by_id.contains_key(&self.root_node_id) {
+            return false;
+        }
 
-        let mut visited = HashSet::new();
-        let mut node_id = self.root_node_id;
-        let mut depth = 1usize;
-        loop {
-            if depth > MAX_COLRV1_GRAPH_DEPTH || !visited.insert(node_id) {
-                return false;
-            }
-            let Some(node) = nodes_by_id.get(&node_id) else {
-                return false;
-            };
+        for node in &self.nodes {
             match node.kind {
                 ColorPaintGraphNodeKind::SolidPath => {
-                    if visited.len() != self.nodes.len()
-                        || node.transform.is_some()
+                    if node.transform.is_some()
+                        || node.composite.is_some()
+                        || node.clip.is_some()
                         || node.linear_gradient_path.is_some()
                         || node.radial_gradient_path.is_some()
                         || node.sweep_gradient_path.is_some()
@@ -1050,13 +1237,17 @@ impl ColorPaintGraphPayload {
                     let Some(solid) = node.solid_path.as_ref() else {
                         return false;
                     };
-                    return path_commands_are_finite(&solid.commands)
-                        && resolved_color_is_valid(&solid.fill);
+                    if !path_commands_are_finite(&solid.commands)
+                        || !resolved_color_is_valid(&solid.fill)
+                    {
+                        return false;
+                    }
                 }
                 ColorPaintGraphNodeKind::LinearGradientPath => {
-                    if visited.len() != self.nodes.len()
-                        || node.solid_path.is_some()
+                    if node.solid_path.is_some()
                         || node.transform.is_some()
+                        || node.composite.is_some()
+                        || node.clip.is_some()
                         || node.radial_gradient_path.is_some()
                         || node.sweep_gradient_path.is_some()
                         || !graph_leaf_metadata_is_valid(node)
@@ -1066,17 +1257,21 @@ impl ColorPaintGraphPayload {
                     let Some(gradient_path) = node.linear_gradient_path.as_ref() else {
                         return false;
                     };
-                    return path_commands_are_finite(&gradient_path.commands)
-                        && gradient_path.gradient.x0.is_finite()
-                        && gradient_path.gradient.y0.is_finite()
-                        && gradient_path.gradient.x1.is_finite()
-                        && gradient_path.gradient.y1.is_finite()
-                        && color_gradient_stops_are_valid(&gradient_path.gradient.stops);
+                    if !path_commands_are_finite(&gradient_path.commands)
+                        || !portable_glyph_scalar(gradient_path.gradient.x0)
+                        || !portable_glyph_scalar(gradient_path.gradient.y0)
+                        || !portable_glyph_scalar(gradient_path.gradient.x1)
+                        || !portable_glyph_scalar(gradient_path.gradient.y1)
+                        || !color_gradient_stops_are_valid(&gradient_path.gradient.stops)
+                    {
+                        return false;
+                    }
                 }
                 ColorPaintGraphNodeKind::RadialGradientPath => {
-                    if visited.len() != self.nodes.len()
-                        || node.solid_path.is_some()
+                    if node.solid_path.is_some()
                         || node.transform.is_some()
+                        || node.composite.is_some()
+                        || node.clip.is_some()
                         || node.linear_gradient_path.is_some()
                         || node.sweep_gradient_path.is_some()
                         || !graph_leaf_metadata_is_valid(node)
@@ -1086,17 +1281,22 @@ impl ColorPaintGraphPayload {
                     let Some(gradient_path) = node.radial_gradient_path.as_ref() else {
                         return false;
                     };
-                    return path_commands_are_finite(&gradient_path.commands)
-                        && gradient_path.gradient.cx.is_finite()
-                        && gradient_path.gradient.cy.is_finite()
-                        && gradient_path.gradient.radius.is_finite()
-                        && gradient_path.gradient.radius > 0.0
-                        && color_gradient_stops_are_valid(&gradient_path.gradient.stops);
+                    if !path_commands_are_finite(&gradient_path.commands)
+                        || !portable_glyph_scalar(gradient_path.gradient.cx)
+                        || !portable_glyph_scalar(gradient_path.gradient.cy)
+                        || !portable_glyph_scalar(gradient_path.gradient.radius)
+                        || gradient_path.gradient.radius <= 0.0
+                        || glyph_geometry_wire_scalar(gradient_path.gradient.radius, 6) <= 0.0
+                        || !color_gradient_stops_are_valid(&gradient_path.gradient.stops)
+                    {
+                        return false;
+                    }
                 }
                 ColorPaintGraphNodeKind::SweepGradientPath => {
-                    if visited.len() != self.nodes.len()
-                        || node.solid_path.is_some()
+                    if node.solid_path.is_some()
                         || node.transform.is_some()
+                        || node.composite.is_some()
+                        || node.clip.is_some()
                         || node.linear_gradient_path.is_some()
                         || node.radial_gradient_path.is_some()
                         || !graph_leaf_metadata_is_valid(node)
@@ -1106,20 +1306,25 @@ impl ColorPaintGraphPayload {
                     let Some(gradient_path) = node.sweep_gradient_path.as_ref() else {
                         return false;
                     };
-                    return path_commands_are_finite(&gradient_path.commands)
-                        && gradient_path.gradient.cx.is_finite()
-                        && gradient_path.gradient.cy.is_finite()
-                        && color_sweep_is_supported_full_circle(
+                    if !path_commands_are_finite(&gradient_path.commands)
+                        || !portable_glyph_scalar(gradient_path.gradient.cx)
+                        || !portable_glyph_scalar(gradient_path.gradient.cy)
+                        || !color_sweep_is_supported_full_circle(
                             gradient_path.gradient.start_angle_degrees,
                             gradient_path.gradient.end_angle_degrees,
                         )
-                        && color_gradient_stops_are_valid(&gradient_path.gradient.stops);
+                        || !color_gradient_stops_are_valid(&gradient_path.gradient.stops)
+                    {
+                        return false;
+                    }
                 }
                 ColorPaintGraphNodeKind::Transform => {
                     if node.solid_path.is_some()
                         || node.linear_gradient_path.is_some()
                         || node.radial_gradient_path.is_some()
                         || node.sweep_gradient_path.is_some()
+                        || node.composite.is_some()
+                        || node.clip.is_some()
                     {
                         return false;
                     }
@@ -1138,12 +1343,162 @@ impl ColorPaintGraphPayload {
                     if !layer_affine_is_finite(transform.transform) {
                         return false;
                     }
-                    node_id = transform.child_node_id;
-                    depth += 1;
+                    if transform.child_node_id == node.node_id
+                        || !nodes_by_id.contains_key(&transform.child_node_id)
+                    {
+                        return false;
+                    }
                 }
-                ColorPaintGraphNodeKind::Composite => return false,
+                ColorPaintGraphNodeKind::Composite => {
+                    if node.solid_path.is_some()
+                        || node.linear_gradient_path.is_some()
+                        || node.radial_gradient_path.is_some()
+                        || node.sweep_gradient_path.is_some()
+                        || node.transform.is_some()
+                        || node.clip.is_some()
+                    {
+                        return false;
+                    }
+                    if node
+                        .source_range_utf8
+                        .is_some_and(|range| !text_source_range_is_valid(range))
+                        || node
+                            .glyph_range
+                            .is_some_and(|range| !glyph_range_is_valid(range))
+                    {
+                        return false;
+                    }
+                    let Some(composite) = node.composite.as_ref() else {
+                        return false;
+                    };
+                    if composite.mode != ColorPaintCompositeMode::SourceOver
+                        || composite.source_node_id == composite.backdrop_node_id
+                        || composite.source_node_id == node.node_id
+                        || composite.backdrop_node_id == node.node_id
+                        || !nodes_by_id.contains_key(&composite.source_node_id)
+                        || !nodes_by_id.contains_key(&composite.backdrop_node_id)
+                    {
+                        return false;
+                    }
+                }
+                ColorPaintGraphNodeKind::Clip => {
+                    if node.solid_path.is_some()
+                        || node.linear_gradient_path.is_some()
+                        || node.radial_gradient_path.is_some()
+                        || node.sweep_gradient_path.is_some()
+                        || node.transform.is_some()
+                        || node.composite.is_some()
+                    {
+                        return false;
+                    }
+                    if node
+                        .source_range_utf8
+                        .is_some_and(|range| !text_source_range_is_valid(range))
+                        || node
+                            .glyph_range
+                            .is_some_and(|range| !glyph_range_is_valid(range))
+                    {
+                        return false;
+                    }
+                    let Some(clip) = node.clip.as_ref() else {
+                        return false;
+                    };
+                    if clip.child_node_id == node.node_id
+                        || !nodes_by_id.contains_key(&clip.child_node_id)
+                        || !path_commands_are_finite(&clip.clip_commands)
+                    {
+                        return false;
+                    }
+                }
             }
         }
+
+        // Reusable DAG subgraphs are valid, but every expanded replay visit is
+        // counted so a small graph cannot create exponential paint work.
+
+        fn visit(
+            node_id: u32,
+            depth: usize,
+            nodes_by_id: &HashMap<u32, &ColorPaintGraphNode>,
+            visiting: &mut HashSet<u32>,
+            visited: &mut HashSet<u32>,
+            replay_visits: &mut usize,
+        ) -> bool {
+            *replay_visits += 1;
+            if depth > MAX_COLRV1_GRAPH_DEPTH || *replay_visits > MAX_COLRV1_GRAPH_REPLAY_VISITS {
+                return false;
+            }
+            if visiting.contains(&node_id) {
+                return false;
+            }
+            let Some(node) = nodes_by_id.get(&node_id) else {
+                return false;
+            };
+            visiting.insert(node_id);
+            let valid = match node.kind {
+                ColorPaintGraphNodeKind::Transform => {
+                    node.transform.as_ref().is_some_and(|transform| {
+                        visit(
+                            transform.child_node_id,
+                            depth + 1,
+                            nodes_by_id,
+                            visiting,
+                            visited,
+                            replay_visits,
+                        )
+                    })
+                }
+                ColorPaintGraphNodeKind::Composite => {
+                    node.composite.as_ref().is_some_and(|composite| {
+                        visit(
+                            composite.backdrop_node_id,
+                            depth + 1,
+                            nodes_by_id,
+                            visiting,
+                            visited,
+                            replay_visits,
+                        ) && visit(
+                            composite.source_node_id,
+                            depth + 1,
+                            nodes_by_id,
+                            visiting,
+                            visited,
+                            replay_visits,
+                        )
+                    })
+                }
+                ColorPaintGraphNodeKind::Clip => node.clip.as_ref().is_some_and(|clip| {
+                    visit(
+                        clip.child_node_id,
+                        depth + 1,
+                        nodes_by_id,
+                        visiting,
+                        visited,
+                        replay_visits,
+                    )
+                }),
+                ColorPaintGraphNodeKind::SolidPath
+                | ColorPaintGraphNodeKind::LinearGradientPath
+                | ColorPaintGraphNodeKind::RadialGradientPath
+                | ColorPaintGraphNodeKind::SweepGradientPath => true,
+            };
+            visiting.remove(&node_id);
+            if valid {
+                visited.insert(node_id);
+            }
+            valid
+        }
+
+        let mut visiting = HashSet::new();
+        let mut visited = HashSet::new();
+        visit(
+            self.root_node_id,
+            1,
+            &nodes_by_id,
+            &mut visiting,
+            &mut visited,
+            &mut 0,
+        ) && visited.len() == self.nodes.len()
     }
 }
 
@@ -1163,12 +1518,13 @@ impl ColorLayersPayload {
         self.color_format == ColorGlyphFormat::ColrV0
             && self.paint_graph.is_none()
             && !self.layers.is_empty()
+            && self.layers.len() <= 256
             && self.layers.iter().all(|layer| {
                 layer
                     .commands
                     .as_ref()
-                    .is_some_and(|commands| !commands.is_empty())
-                    && layer.fill.is_some()
+                    .is_some_and(|commands| path_commands_are_finite(commands))
+                    && layer.fill.as_ref().is_some_and(resolved_color_is_valid)
                     && layer.fill_rule.is_some()
                     && layer
                         .source_range_utf8
@@ -1180,7 +1536,7 @@ impl ColorLayersPayload {
                         .unwrap_or(true)
                     && layer
                         .opacity
-                        .map(|opacity| opacity.is_finite())
+                        .map(|opacity| opacity.is_finite() && (0.0..=1.0).contains(&opacity))
                         .unwrap_or(true)
             })
     }
@@ -1273,6 +1629,9 @@ pub struct SvgGlyphPayload {
     pub source_range_utf8: TextSourceRange,
     pub glyph_range: GlyphRange,
     pub view_box: BoundingBox,
+    /// OpenType SVG initial em-square viewport in page coordinates. Its origin
+    /// is the glyph baseline, not the compatibility TextRun bounding box.
+    pub font_em_box: Option<BoundingBox>,
     pub intrinsic_size: Option<LayerVector>,
     pub static_sanitized: bool,
     pub script_allowed: bool,
@@ -1283,14 +1642,33 @@ pub struct SvgGlyphPayload {
 }
 
 impl SvgGlyphPayload {
+    /// CanvasKit composes T(destination) * S(destination / viewBox) * T(-viewBox).
+    /// Both the producer geometry and its fixed-decimal JSON form must fit the
+    /// f32 matrix used by replay before the TextRun fallback can be suppressed.
+    pub fn has_portable_view_box_mapping(&self, destination: BoundingBox) -> bool {
+        bbox_is_finite_positive(self.view_box)
+            && bbox_is_finite_positive(destination)
+            && svg_view_box_mapping_is_portable(self.view_box, destination)
+            && svg_view_box_mapping_is_portable(
+                glyph_geometry_wire_bbox(self.view_box),
+                glyph_geometry_wire_bbox(destination),
+            )
+    }
+
     pub fn has_static_sanitized_contract(&self) -> bool {
         text_source_range_is_non_empty(self.source_range_utf8)
             && self.glyph_range.is_non_empty()
             && bbox_is_finite_positive(self.view_box)
+            && self.font_em_box.is_none_or(bbox_is_finite_positive)
             && self
                 .intrinsic_size
                 .map(|size| {
-                    size.dx.is_finite() && size.dy.is_finite() && size.dx > 0.0 && size.dy > 0.0
+                    portable_glyph_scalar(size.dx)
+                        && portable_glyph_scalar(size.dy)
+                        && (size.dx as f32) > 0.0
+                        && (size.dy as f32) > 0.0
+                        && glyph_geometry_wire_scalar(size.dx, 6) > 0.0
+                        && glyph_geometry_wire_scalar(size.dy, 6) > 0.0
                 })
                 .unwrap_or(true)
             && self.static_sanitized
@@ -1309,22 +1687,85 @@ fn text_source_range_is_non_empty(range: TextSourceRange) -> bool {
     range.end > range.start
 }
 
-fn layer_affine_is_finite(transform: LayerAffineTransform) -> bool {
-    transform.a.is_finite()
-        && transform.b.is_finite()
-        && transform.c.is_finite()
-        && transform.d.is_finite()
-        && transform.e.is_finite()
-        && transform.f.is_finite()
+pub(crate) fn text_placement_is_finite(placement: &TextRunPlacement) -> bool {
+    layer_affine_is_finite(placement.run_to_page) && portable_glyph_scalar(placement.baseline_y)
 }
 
-fn bbox_is_finite_positive(bbox: BoundingBox) -> bool {
-    bbox.x.is_finite()
-        && bbox.y.is_finite()
-        && bbox.width.is_finite()
-        && bbox.height.is_finite()
-        && bbox.width > 0.0
-        && bbox.height > 0.0
+fn layer_affine_is_finite(transform: LayerAffineTransform) -> bool {
+    portable_glyph_scalar(transform.a)
+        && portable_glyph_scalar(transform.b)
+        && portable_glyph_scalar(transform.c)
+        && portable_glyph_scalar(transform.d)
+        && portable_glyph_scalar(transform.e)
+        && portable_glyph_scalar(transform.f)
+}
+
+pub(crate) fn bbox_is_finite_positive(bbox: BoundingBox) -> bool {
+    // Selection happens before JSON export. The fixed-decimal wire rectangle
+    // must also survive both replay backends, or preflight would omit a font
+    // that the browser's whole-TextRun fallback still requires.
+    bbox_is_positive_in_replay_space(bbox)
+        && bbox_is_positive_in_replay_space(glyph_geometry_wire_bbox(bbox))
+}
+
+fn glyph_geometry_wire_bbox(bbox: BoundingBox) -> BoundingBox {
+    BoundingBox::new(
+        glyph_geometry_wire_scalar(bbox.x, 3),
+        glyph_geometry_wire_scalar(bbox.y, 3),
+        glyph_geometry_wire_scalar(bbox.width, 3),
+        glyph_geometry_wire_scalar(bbox.height, 3),
+    )
+}
+
+fn svg_view_box_mapping_is_portable(view_box: BoundingBox, destination: BoundingBox) -> bool {
+    [
+        (view_box.x, view_box.width, destination.x, destination.width),
+        (
+            view_box.y,
+            view_box.height,
+            destination.y,
+            destination.height,
+        ),
+    ]
+    .into_iter()
+    .all(|(origin, extent, destination_origin, destination_extent)| {
+        let scale = destination_extent / extent;
+        let scaled_origin = origin * scale;
+        let narrowed_scale = scale as f32;
+        let narrowed_origin = (origin as f32) * narrowed_scale;
+        portable_glyph_scalar(scale)
+            && narrowed_scale > 0.0
+            && portable_glyph_scalar(scaled_origin)
+            && portable_glyph_scalar(destination_origin - scaled_origin)
+            && narrowed_origin.is_finite()
+            && ((destination_origin as f32) - narrowed_origin).is_finite()
+    })
+}
+
+pub(crate) fn glyph_geometry_wire_scalar(value: f64, precision: usize) -> f64 {
+    // Match json.rs: bbox components use 3 decimals, other glyph geometry uses 6.
+    format!("{value:.precision$}").parse().unwrap_or(f64::NAN)
+}
+
+fn bbox_is_positive_in_replay_space(bbox: BoundingBox) -> bool {
+    let [x, y, width, height] = [bbox.x, bbox.y, bbox.width, bbox.height].map(|v| v as f32);
+    // Native Skia narrows the components before adding; CanvasKit's XYWHRect
+    // adds the f64 components before storing f32 edges. Both must remain
+    // finite and retain a positive span before suppressing the TextRun.
+    portable_glyph_scalar(bbox.x)
+        && portable_glyph_scalar(bbox.y)
+        && portable_glyph_scalar(bbox.width)
+        && portable_glyph_scalar(bbox.height)
+        && portable_glyph_scalar(bbox.x + bbox.width)
+        && portable_glyph_scalar(bbox.y + bbox.height)
+        && width > 0.0
+        && height > 0.0
+        && [
+            (x + width, y + height),
+            ((bbox.x + bbox.width) as f32, (bbox.y + bbox.height) as f32),
+        ]
+        .into_iter()
+        .all(|(right, bottom)| right.is_finite() && bottom.is_finite() && right > x && bottom > y)
 }
 
 #[derive(Debug, Clone)]
@@ -1363,9 +1804,10 @@ pub struct GlyphOutlineStrokeStyle {
 
 impl GlyphOutlineStrokeStyle {
     pub fn is_strict_subset(&self) -> bool {
-        self.width.is_finite()
+        portable_glyph_scalar(self.width)
             && self.width > 0.0
-            && self.miter_limit.is_finite()
+            && glyph_geometry_wire_scalar(self.width, 6) > 0.0
+            && portable_glyph_scalar(self.miter_limit)
             && self.miter_limit >= 1.0
             && matches!(self.join, GlyphOutlineStrokeJoin::Miter)
             && matches!(self.cap, GlyphOutlineStrokeCap::Butt)
@@ -1627,6 +2069,7 @@ pub struct GlyphRunDiagnostics {
 pub struct PaintTextStyle {
     pub font_family: String,
     pub font_size: f64,
+    pub font_position: Option<i8>,
     pub color: ColorRef,
     pub bold: bool,
     pub italic: bool,
@@ -1656,6 +2099,7 @@ impl From<&TextStyle> for PaintTextStyle {
         Self {
             font_family: style.font_family.clone(),
             font_size: style.font_size,
+            font_position: style.font_position,
             color: style.color,
             bold: style.bold,
             italic: style.italic,
@@ -1686,17 +2130,33 @@ impl PaintTextStyle {
     /// Returns whether a backend may replay this text as a simple fill-only
     /// positioned glyph run without losing HWP text effects.
     pub fn is_fill_only_glyph_replay(&self) -> bool {
-        let ratio = if self.ratio > 0.0 { self.ratio } else { 1.0 };
-        (ratio - 1.0).abs() <= 0.001
-            && self.tab_leaders.is_empty()
-            && self.underline == UnderlineType::None
-            && !self.strikethrough
+        self.is_simple_glyph_run_replay()
             && self.outline_type == 0
             && self.shadow_type == 0
             && !self.emboss
             && !self.engrave
+    }
+
+    /// Geometry-compatible glyph replay for backends that explicitly reproduce
+    /// outline, shadow, emboss and engrave. This does not enable those effects
+    /// for fill-only consumers or change the default text variant policy.
+    pub fn is_simple_glyph_run_replay(&self) -> bool {
+        let ratio = if self.ratio > 0.0 { self.ratio } else { 1.0 };
+        (ratio - 1.0).abs() <= 0.001
+            && self.font_size.is_finite()
+            && self.font_size > 0.0
+            && self.font_size <= 4096.0
+            && self.tab_leaders.is_empty()
+            && self.underline == UnderlineType::None
+            && !self.strikethrough
+            && [self.shadow_offset_x, self.shadow_offset_y]
+                .into_iter()
+                .all(|offset| offset.is_finite() && offset.abs() <= f32::MAX as f64)
             && !self.superscript
             && !self.subscript
+            // 단순 glyph replay의 위치는 줄 기준선이다. 별도 글자 위치가 있는
+            // run은 그 속성을 소비하는 positioned text 경로를 사용한다.
+            && self.font_position.unwrap_or_default() == 0
             && self.emphasis_dot == 0
             // [#4155] 종전엔 흰색만 "음영 없음"으로 봐서, 미지정 잔재 0 을 가진 텍스트
             // (HWP3 변환본 전건)가 늘 fill-only 경로에서 빠졌다. 판정 정본은 model::color.
@@ -1746,6 +2206,8 @@ mod tests {
             radial_gradient_path: None,
             sweep_gradient_path: None,
             transform: None,
+            composite: None,
+            clip: None,
             source_range_utf8: None,
             glyph_range: None,
             source_font_ref: None,

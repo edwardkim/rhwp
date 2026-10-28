@@ -1,20 +1,12 @@
-//! Issue #1789: exclusion 겹침 프로브는 line_spacing 을 제외한 잉크/줄 높이로 판정해야 한다.
+//! #1789: 표 위 글줄은 표 위에 남고, 표 뒤 빈 줄도 공간을 점유한다.
 //!
-//! HWPX 경로 전용 `overlaps_zone` 프로브(layout.rs, task 1510 도입)가
-//! `line_height + line_spacing` 으로 겹침을 판정하면, 잉크는 문단 기준 자리차지 표 위
-//! 공간에 들어가는 줄이 spacing 포함분 수 px 겹침만으로 표 아래로 밀린다.
-//!
-//! Regression shape (samples/task1789/exclusion_probe_line_spacing.hwpx, 36385142):
-//! - 문단 0.8("다. 위원구성…") 저장 lineseg vpos=34925 → 표 위 공간에 유지되어야 한다
-//! - 수정 전: 문단이 zone.bottom(≈875px)으로 밀려 345px 변위
-//!
-//! [Task #1841] 핀 좌표 정정: 종전 529.9px 는 om_bottom 누락 렌더의 보상값이었다.
-//! 저장 vpos 산술 = 34925HU(465.7px) + body_top 75.6px = 541.3px 이며, 헤더 표
-//! outer_margin_bottom(852HU=11.36px) 반영 후 렌더가 이 값에 수렴한다 (한글 2022
-//! PDF baseline 대조 p1 median +0.07pt — task_m100_1841 참조). 본 테스트의 목적
-//! (exclusion 프로브가 line_spacing 과대 판정으로 345px 밀지 않는지)은 불변.
+//! 독립 한컴2020 PDF는 2쪽이다. 위원구성은 첫쪽 표 위에 있고 회의내용과
+//! 다섯 항목은 표 뒤에 있다. 행정사항·첨부 목록·결재 표는 둘째쪽에 있다.
+//! 이전 절대 좌표 검사는 불필요한 3쪽과 표 뒤 빈 줄 소실을 발견하지 못했다.
+//! 전2쪽 Native/fresh WASM 근거는 probe1789_origin_validation.json을 따른다.
 
-use std::fs;
+use rhwp::document_core::DocumentCore;
+use serde_json::Value;
 use std::path::Path;
 
 const SAMPLE: &str = "samples/task1789/exclusion_probe_line_spacing.hwpx";
@@ -22,47 +14,132 @@ const SAMPLE: &str = "samples/task1789/exclusion_probe_line_spacing.hwpx";
 #[test]
 fn issue_1789_line_above_para_float_table_stays_at_saved_vpos() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
-    let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {}", SAMPLE, e));
-    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
-        .unwrap_or_else(|e| panic!("parse {}: {}", SAMPLE, e));
-    let tree = doc
-        .build_page_render_tree(0)
-        .unwrap_or_else(|e| panic!("render tree: {:?}", e));
-    let json: serde_json::Value =
-        serde_json::from_str(&tree.root.to_json()).expect("parse tree json");
-
-    // 본문(표/글상자 외부) TextLine y 수집
-    fn collect(v: &serde_json::Value, in_container: bool, out: &mut Vec<f64>) {
-        if let Some(o) = v.as_object() {
-            let ty = o.get("type").and_then(|t| t.as_str()).unwrap_or("");
-            let next_container =
-                in_container || matches!(ty, "Table" | "Rect" | "TextBox" | "Header" | "Footer");
-            if ty == "TextLine" && !next_container {
-                if let Some(b) = o.get("bbox") {
-                    if let Some(y) = b.get("y").and_then(|y| y.as_f64()) {
-                        out.push(y);
-                    }
-                }
-            }
-            for c in o.values() {
-                collect(c, next_container, out);
-            }
-        } else if let Some(a) = v.as_array() {
-            for c in a {
-                collect(c, in_container, out);
-            }
+    let core =
+        DocumentCore::from_bytes(&std::fs::read(path).expect("원본 읽기")).expect("문서 열기");
+    assert_eq!(
+        core.page_count(),
+        2,
+        "정본의 회의계획과 행정사항은 각각 한 쪽이다"
+    );
+    let mut pages = Vec::new();
+    let mut tables = Vec::new();
+    for page in 0..core.page_count() {
+        let tree = core.build_page_render_tree(page).expect("쪽 렌더 트리");
+        let json: Value = serde_json::from_str(&tree.root.to_json()).expect("렌더 트리 JSON");
+        let mut lines = Vec::new();
+        let mut boxes = Vec::new();
+        collect(&json, &mut lines, &mut boxes);
+        pages.push(lines);
+        tables.push(boxes);
+    }
+    let first = &pages[0];
+    let line = |pi| {
+        first
+            .iter()
+            .find(|(owner, _, _, _)| *owner == pi)
+            .unwrap_or_else(|| panic!("첫쪽 본문 문단 {pi} 누락"))
+    };
+    let table = tables[0]
+        .iter()
+        .find(|(pi, _, _)| *pi == 5)
+        .expect("첫쪽 위원 표");
+    assert!(line(8).2 <= table.1, "위원구성 글줄은 표 위 공간에 남는다");
+    assert!(table.2 <= line(9).1, "빈 줄의 상자는 표 뒤에 있어야 한다");
+    assert!(
+        line(9).2 <= line(10).1,
+        "회의내용 앞 빈 줄의 높이를 소비한다"
+    );
+    for pi in 10..=15 {
+        assert_eq!(
+            first.iter().filter(|(owner, _, _, _)| *owner == pi).count(),
+            1
+        );
+        assert!(
+            !pages[1].iter().any(|(owner, _, _, _)| *owner == pi),
+            "회의 항목은 둘째쪽으로 밀리지 않는다"
+        );
+        if pi > 10 {
+            assert!(
+                line(pi - 1).2 <= line(pi).1,
+                "회의 항목 순서와 비겹침을 보존한다"
+            );
         }
     }
-    let mut ys = Vec::new();
-    collect(&json, false, &mut ys);
-
-    // 문단 0.8 첫 줄: 저장 lineseg 위치(34925HU + body_top = ≈541.3px)에 있어야 한다.
+    for pi in 17..=27 {
+        assert!(!first.iter().any(|(owner, _, _, _)| *owner == pi));
+        assert_eq!(
+            pages[1]
+                .iter()
+                .filter(|(owner, _, _, _)| *owner == pi)
+                .count(),
+            1,
+            "행정사항과 첨부는 둘째쪽에서 한 번 그린다"
+        );
+    }
     assert!(
-        ys.iter().any(|y| (y - 541.3).abs() < 2.0),
-        "표 위 공간에 들어가는 줄(저장 vpos=34925 → ≈541.3px)이 없다 — exclusion 프로브가 \
-         line_spacing 포함 높이로 과대 판정하여 표 아래로 밀었을 가능성. body TextLine y: {:?}",
-        ys.iter()
-            .map(|y| (y * 10.0).round() / 10.0)
-            .collect::<Vec<_>>()
+        tables[1].iter().any(|(pi, _, _)| *pi == 28),
+        "결재 표는 둘째쪽에 남는다"
     );
+    for (pi, paragraph) in core.document().sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .take(28)
+    {
+        let painted: String = pages
+            .iter()
+            .flatten()
+            .filter(|(owner, _, _, _)| *owner == pi)
+            .map(|(_, _, _, text)| text.as_str())
+            .collect();
+        let visible = |text: &str| {
+            text.chars()
+                .filter(|c| !c.is_whitespace())
+                .collect::<String>()
+        };
+        assert_eq!(
+            visible(&painted),
+            visible(&paragraph.text),
+            "문단 {pi} 본문 누락·중복 없이 원문을 보존한다"
+        );
+    }
+}
+
+fn collect(
+    node: &Value,
+    lines: &mut Vec<(usize, f64, f64, String)>,
+    tables: &mut Vec<(usize, f64, f64)>,
+) {
+    let kind = node["type"].as_str().unwrap_or("");
+    if matches!(kind, "Table" | "Rect" | "TextBox" | "Header" | "Footer") {
+        if kind == "Table" {
+            if let (Some(pi), Some(y), Some(h)) = (
+                node["pi"].as_u64(),
+                node["bbox"]["y"].as_f64(),
+                node["bbox"]["h"].as_f64(),
+            ) {
+                tables.push((pi as usize, y, y + h));
+            }
+        }
+        return;
+    }
+    if kind == "TextLine" {
+        if let (Some(pi), Some(y), Some(h)) = (
+            node["pi"].as_u64(),
+            node["bbox"]["y"].as_f64(),
+            node["bbox"]["h"].as_f64(),
+        ) {
+            let text = node["children"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(|child| child["text"].as_str())
+                .collect();
+            lines.push((pi as usize, y, y + h, text));
+        }
+        return;
+    }
+    for child in node["children"].as_array().into_iter().flatten() {
+        collect(child, lines, tables);
+    }
 }

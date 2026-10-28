@@ -1,0 +1,288 @@
+{
+  "stage": 75,
+  "analysis": {
+    "head": "31222d1da4d68da31c788288998e705d6430ad38",
+    "analysis": "기존 #2158은 HWPX 저장 vertpos 재계산의 쪽 리셋 보존을64쪽으로 검사하지만 현재65쪽이다. HWP5와 별도 입력의 독립 한컴2024 PDF64쪽으로 페이지 소유 및 위치를 먼저 검증한다. Native에서90%미만이면 사용자 지시에 따라 원문을 #7445 증거로 보존하고 해당 입력의 렌더링/쪽수 검사를 제거한다. 허용치나 다른 문서 기대값은 바꾸지 않는다.",
+    "files": {
+      "samples/hwp3-sample16-hwp5.hwpx": {
+        "size": 3061900,
+        "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c"
+      },
+      "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf": {
+        "size": 2234074,
+        "sha256": "87cf9b7e3ed3abf529fd3e6bd34104d62d5a1b2e308532556069de0d50efa187"
+      },
+      "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp": {
+        "size": 26874272,
+        "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+      }
+    },
+    "pdf": {
+      "pages": 64,
+      "metadata": {
+        "format": "PDF 1.6",
+        "title": "",
+        "author": "Kowaco 대리 Igru",
+        "subject": "",
+        "keywords": "",
+        "creator": "Hwp 2024 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550",
+        "creationDate": "D:20260830014307+09'00'",
+        "modDate": "D:20260830014307+09'00'",
+        "trapped": "",
+        "encryption": null
+      }
+    },
+    "selected_pages": [
+      3,
+      5,
+      6,
+      18,
+      23,
+      24,
+      64
+    ],
+    "reuse_runtime": "production code unchanged since b7436944b; later changes are test removals only. Negative proof, not final head acceptance."
+  },
+  "code_commit": "aa8b4c00385f6e28d3b68ae4f1d95f4038cac900",
+  "original_document_preserved": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5.hwpx",
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5869485533",
+  "visual": {
+    "backend": "frozen Native negative proof",
+    "actual_pages": 65,
+    "oracle_pages": 64,
+    "selected": [
+      {
+        "page": 3,
+        "tolerant_content_match_percent": 44.78343
+      },
+      {
+        "page": 5,
+        "tolerant_content_match_percent": 58.6314
+      },
+      {
+        "page": 6,
+        "tolerant_content_match_percent": 22.67417
+      },
+      {
+        "page": 18,
+        "tolerant_content_match_percent": 67.8613
+      },
+      {
+        "page": 23,
+        "tolerant_content_match_percent": 22.32296
+      },
+      {
+        "page": 24,
+        "tolerant_content_match_percent": 41.72462
+      },
+      {
+        "page": 64,
+        "tolerant_content_match_percent": 11.02735
+      }
+    ],
+    "exit_code": 1,
+    "gate": "re_review_required",
+    "direct_review": "6쪽 본문·표·수식의 세로 위치 차이와64쪽 앞 내용/합의각서의 페이지 소유 차이 확인",
+    "whole_document_and_fresh_wasm": "미실행. 선택 Native의90%미만 증거로 사용자 승인 제외를 판단했으며 피델리티 개선이나 승인으로 세지 않음"
+  },
+  "removed_functions": [
+    "issue_2158_hwpx_vpos_reset_preserve::hwp3_sample16_hwpx_matches_hwp5_and_hangul",
+    "issue_6706_stored_inline_control_rows::stored_table_picture_table_rows_keep_hancom_positions_and_unique_ownership",
+    "issue_6527_standalone_equation_text::inline_equations_are_extracted_once_in_reading_order",
+    "issue_6060_fullwidth_cjk_quote::issue_6060_human_myeongjo_corner_quote_keeps_fullwidth_gap"
+  ],
+  "removed_rows": [
+    {
+      "file": "tests/fixtures/body_overflow_baseline.tsv",
+      "row": "hwp3-sample16-hwp5.hwpx\t7"
+    },
+    {
+      "file": "tests/fixtures/off_canvas_baseline.tsv",
+      "row": "hwp3-sample16-hwp5.hwpx\t3"
+    },
+    {
+      "file": "tests/fixtures/oracle_page_count_baseline.tsv",
+      "row": "samples/hwp3-sample16-hwp5.hwpx\t64\t64"
+    }
+  ],
+  "preserved": "기존 온새미로 쪽수 및 HWP3 수식 검사와 #1008 gradient IR 파싱 검사. 다른 입력/함수/허용치와 정적 IR 자료 유지. 새 함수 및 skip/ignore 없음. 생산 코드 변화 없음.",
+  "focused_result": {
+    "exit_code": 0,
+    "passed": 7,
+    "failed": 0,
+    "skipped": 659
+  },
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "31222d1da4d68da31c788288998e705d6430ad38",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_002",
+          "--test",
+          "regression_suite_016",
+          "--test",
+          "regression_suite_018",
+          "-E",
+          "test(/(^|::)issue_2158_hwpx_vpos_reset_preserve::/) or test(/(^|::)issue_6527_standalone_equation_text::/) or test(/(^|::)issue_1008_gradient::/)"
+        ],
+        "exit_code": 0,
+        "seconds": 13.094332083128393
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.208671833854169
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3816610421054065
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.21665670908987522
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3739898749627173
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 5.37678183382377
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.329340291209519
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 7.824515207670629
+      }
+    ]
+  },
+  "representative_assets": [
+    {
+      "page": 6,
+      "kind": "review",
+      "path": "mydocs/pr/assets/issue7445/sample16hwpx_native_review_006.png",
+      "sha256": "b5d8a281a19a1a1df8e2fcfd6710ec1e4068868dff97c3567584182f3f93e713"
+    },
+    {
+      "page": 6,
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/issue7445/sample16hwpx_native_overlay_006.png",
+      "sha256": "66878ab4e48ec37e1a6a39e28724fbf93c295e2f8d2ebf2316fa0657b2b626ef"
+    },
+    {
+      "page": 23,
+      "kind": "review",
+      "path": "mydocs/pr/assets/issue7445/sample16hwpx_native_review_023.png",
+      "sha256": "e1baeb37abc2b39ae88c3829e3c3b6a11c3acb11255b030151dcfdaae4903316"
+    },
+    {
+      "page": 23,
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/issue7445/sample16hwpx_native_overlay_023.png",
+      "sha256": "4ad21e388edf832b10c4cd9d5b19ef330f430797cd069e6c8bbe369ac5ab6c5b"
+    },
+    {
+      "page": 64,
+      "kind": "review",
+      "path": "mydocs/pr/assets/issue7445/sample16hwpx_native_review_064.png",
+      "sha256": "e6911a499a70d65237209fb05e920da4d7562d7a3a6200f0a5cc0a03886c2202"
+    },
+    {
+      "page": 64,
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/issue7445/sample16hwpx_native_overlay_064.png",
+      "sha256": "9a25195e2495e6faf7bb6aba4676b1a89c8feaf6dae24f11aba07d9557048144"
+    }
+  ],
+  "output": "output/pr-review/planet6897-7382-20260926/stage75-sample16hwpx"
+}

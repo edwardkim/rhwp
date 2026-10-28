@@ -26,9 +26,9 @@ pub(crate) struct GeneratedFontRuleProjection {
 pub(crate) const FONT_RULE_LAYOUT_NAME_SCHEMA_VERSION: &str =
     crate::schema_registry::FONT_RULE_PROJECTION_SCHEMA_VERSION;
 pub(crate) const FONT_RULE_LAYOUT_NAME_INPUT_SHA256: &str =
-    "aa8e2c199e4272e5c12b136d991670aad1c6400197835bed0d95b92b800364f0";
+    "5ee6922694ed1f814e108c4e166dc8c084dace57e834ffbb489f7f4738ff544e";
 pub(crate) const FONT_RULE_LAYOUT_NAME_PROJECTION_SHA256: &str =
-    "595cdcc1c8d81441c9e4585acb393e734f52e6da3e822babf0f722df2c791cee";
+    "749f9cefc71c00116a80b475324d8abbf2a0d43ad3709a5a45f813f50a642c1f";
 
 pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = &[
     GeneratedFontRuleProjection {
@@ -2854,12 +2854,12 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
         metric_entry_ids: &[],
     },
     GeneratedFontRuleProjection {
-        rule_id: "rule.rust-style-resolution.b6c97b846cf79ce168fa",
+        rule_id: "rule.rust-style-resolution.100b7126dfe0ddd2d55c",
         source_boundary_id: "rust-style-resolution.ttf",
         relation_type: "style-fallback",
         decision_plane: "layout-name",
         source_face: Some("새굴림"),
-        target_face_or_policy: "함초롬돋움",
+        target_face_or_policy: "New Gulim",
         conditions: GeneratedFontRuleConditions {
             language_slot: Some("all"),
             alt_type: None,
@@ -2932,6 +2932,142 @@ pub(crate) static FONT_RULE_LAYOUT_NAME_RULES: &[GeneratedFontRuleProjection] = 
             language_slot: Some("all"),
             alt_type: None,
             availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.14713c8b701c74678152",
+        source_boundary_id: "rust-style-resolution.ttf",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("H2hdrM"),
+        target_face_or_policy: "HY헤드라인M",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.1ce3e788a4c6198b4799",
+        source_boundary_id: "rust-style-resolution.ttf",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("HYHeadLine-Medium"),
+        target_face_or_policy: "HY헤드라인M",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.dada52dd12498becd0dd",
+        source_boundary_id: "rust-style-resolution.ttf",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("MalgunGothic"),
+        target_face_or_policy: "맑은 고딕",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.d145573b4a0a8f0207a1",
+        source_boundary_id: "rust-style-resolution.ttf",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("MalgunGothicBold"),
+        target_face_or_policy: "Malgun Gothic Bold",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.b1f7fd94d0b7349f050c",
+        source_boundary_id: "rust-style-resolution.ttf",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("Arial-BoldMT"),
+        target_face_or_policy: "Arial Bold",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.95cdb8836bbe2ab25687",
+        source_boundary_id: "rust-style-resolution.ttf",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("Wingdings-Regular"),
+        target_face_or_policy: "Wingdings",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.79009337ef6c42cd3a51",
+        source_boundary_id: "rust-style-resolution.missing-program",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("하이텔울릉도제목체"),
+        target_face_or_policy: "RHWP Public Batang",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: None,
+            availability: Some("primary-and-document-substitute-missing"),
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-style-resolution.8f1a484b6e8dff748728",
+        source_boundary_id: "rust-style-resolution.document-substitute",
+        relation_type: "style-fallback",
+        decision_plane: "layout-name",
+        source_face: Some("HCR Batang"),
+        target_face_or_policy: "Haansoft Batang",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: Some("all"),
+            alt_type: Some("1"),
+            availability: Some("nonembedded-ttf-document-substitute"),
             profile: None,
         },
         order: None,
@@ -3459,6 +3595,30 @@ pub(crate) fn find_font_rule_layout_name(
         }
         ("rust-style-resolution.ttf", "굵은안상수체") => {
             Some(&FONT_RULE_LAYOUT_NAME_RULES[170])
+        }
+        ("rust-style-resolution.ttf", "H2hdrM") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[171])
+        }
+        ("rust-style-resolution.ttf", "HYHeadLine-Medium") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[172])
+        }
+        ("rust-style-resolution.ttf", "MalgunGothic") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[173])
+        }
+        ("rust-style-resolution.ttf", "MalgunGothicBold") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[174])
+        }
+        ("rust-style-resolution.ttf", "Arial-BoldMT") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[175])
+        }
+        ("rust-style-resolution.ttf", "Wingdings-Regular") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[176])
+        }
+        ("rust-style-resolution.missing-program", "하이텔울릉도제목체") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[177])
+        }
+        ("rust-style-resolution.document-substitute", "HCR Batang") => {
+            Some(&FONT_RULE_LAYOUT_NAME_RULES[178])
         }
         _ => None,
     }

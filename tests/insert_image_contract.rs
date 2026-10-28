@@ -1157,11 +1157,12 @@ fn capabilities_and_mcp_declare_insert_image_axis() {
     let _ = std::fs::remove_file(&out);
     let _ = std::fs::remove_file(&stamp);
 
-    // `--help` 에도 있어야 한다(사람용/기계용 양방향 현행화).
-    let help = String::from_utf8_lossy(&run(&["--help"]).stdout).to_string();
-    assert!(help.contains("edit insert-image"), "--help 에 누락");
-    assert!(help.contains("HWPUNIT"), "--help 에 단위 규약 누락");
+    // 상세 help 에도 있어야 한다(사람용/기계용 양방향 현행화).
+    let help =
+        String::from_utf8_lossy(&run(&["edit", "insert-image", "--help"]).stdout).to_string();
+    assert!(help.contains("edit insert-image"), "상세 help 에 누락");
+    assert!(help.contains("HWPUNIT"), "상세 help 에 단위 규약 누락");
     for flag in ["--image", "--page", "--x", "--y", "--width", "--height"] {
-        assert!(help.contains(flag), "--help 에 {flag} 안내 누락");
+        assert!(help.contains(flag), "상세 help 에 {flag} 안내 누락");
     }
 }

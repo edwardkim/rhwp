@@ -7,7 +7,47 @@ use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::{common_obj_offsets, ShapeObject};
+use crate::model::shape::common_obj_offsets;
+
+use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+mod creation_line;
+
+// 렌더 트리에서 해당 표 노드를 찾아 셀 bbox를 수집
+fn find_table_cells(
+    node: &RenderNode,
+    sec: usize,
+    ppi: usize,
+    ci: usize,
+    page_idx: usize,
+    result: &mut Vec<String>,
+) -> bool {
+    if let RenderNodeType::Table(ref tn) = node.node_type {
+        if tn.section_index == Some(sec)
+            && tn.para_index == Some(ppi)
+            && tn.control_index == Some(ci)
+        {
+            for child in &node.children {
+                if let RenderNodeType::TableCell(ref cn) = child.node_type {
+                    // cellIdx: 모델의 cells 배열에서 (row, col)로 검색한 인덱스
+                    let model_cell_idx = cn.model_cell_index.unwrap_or(0) as usize;
+                    result.push(format!(
+                        "{{\"cellIdx\":{},\"row\":{},\"col\":{},\"rowSpan\":{},\"colSpan\":{},\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}}}",
+                        model_cell_idx, cn.row, cn.col, cn.row_span, cn.col_span,
+                        page_idx,
+                        child.bbox.x, child.bbox.y, child.bbox.width, child.bbox.height
+                    ));
+                }
+            }
+            return true; // 찾음
+        }
+    }
+    for child in &node.children {
+        if find_table_cells(child, sec, ppi, ci, page_idx, result) {
+            return true;
+        }
+    }
+    false
+}
 
 impl DocumentCore {
     /// [Task #1151 v7] cell_path JSON → Vec<(controlIdx, cellIdx, cellParaIdx)>.
@@ -217,7 +257,6 @@ impl DocumentCore {
             }
         }
         table.update_ctrl_dimensions();
-        table.dirty = true;
         let new_table_height = table.common.height as i32;
         if let Some((vertical_pos, line_height_extra)) = line_seg_update {
             if let Some(seg) = para.line_segs.first_mut() {
@@ -369,6 +408,27 @@ impl DocumentCore {
         row_count: u16,
         col_count: u16,
     ) -> Result<String, HwpError> {
+        self.create_table_with_options_native(
+            section_idx,
+            para_idx,
+            char_offset,
+            row_count,
+            col_count,
+            &super::TableCreationOptions::default(),
+        )
+    }
+
+    /// 표 생성과 동시에 열 너비·정렬·반복 머리행을 적용한다.
+    /// 기존 create_table_native의 기본값은 바꾸지 않는다.
+    pub fn create_table_with_options_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        row_count: u16,
+        col_count: u16,
+        options: &super::TableCreationOptions,
+    ) -> Result<String, HwpError> {
         use crate::model::paragraph::{CharShapeRef, LineSeg};
         use crate::model::style::{
             BorderFill, BorderLine, BorderLineType, CenterLine, DiagonalLine, Fill,
@@ -396,6 +456,8 @@ impl DocumentCore {
             )));
         }
 
+        let instance_id = super::super::clone_identity::next_instance_id(&self.document)?;
+
         // --- 1. 편집 영역 폭 계산 ---
         let pd = &self.document.sections[section_idx].section_def.page_def;
         let outer_margin_lr: i32 = 283 * 2; // outer_margin left + right (~2mm)
@@ -404,7 +466,9 @@ impl DocumentCore {
                 .max(7200) as u32;
 
         // --- 2. 한컴 기본값 기반 셀 생성 (blank_h_saved.hwp 참조) ---
-        let col_width = content_width / col_count as u32;
+        let col_widths = options
+            .widths(col_count, content_width)
+            .map_err(HwpError::RenderError)?;
         // 한컴 기본: 셀 패딩 L=510 R=510 T=141 B=141
         let cell_pad = crate::model::Padding {
             left: 510,
@@ -414,9 +478,10 @@ impl DocumentCore {
         };
         // 한컴 기본: 셀 높이 = top + bottom padding (빈 셀 최소 높이)
         let cell_height: u32 = (cell_pad.top + cell_pad.bottom) as u32;
-        // 한컴 기본: 행 렌더링 높이 = padding_top + line_height(1000) + padding_bottom
-        let rendered_row_height: u32 = cell_pad.top as u32 + 1000 + cell_pad.bottom as u32;
-        let total_width = col_width * col_count as u32;
+        let inherited_line = creation_line::for_cursor(self, section_idx, para_idx, char_offset);
+        let rendered_row_height: u32 =
+            cell_pad.top as u32 + inherited_line.line_height.max(0) as u32 + cell_pad.bottom as u32;
+        let total_width: u32 = col_widths.iter().sum();
         let total_height = rendered_row_height * row_count as u32;
 
         // BorderFill: 실선 테두리가 있는 기존 항목 재사용, 없으면 새로 생성
@@ -459,18 +524,38 @@ impl DocumentCore {
         let current_para = &self.document.sections[section_idx].paragraphs[para_idx];
         let default_char_shape_id: u32 = current_para.char_shape_id_at(char_offset).unwrap_or(0);
         let default_para_shape_id: u16 = current_para.para_shape_id;
+        let para_shape_ids: Vec<u16> = (0..col_count)
+            .map(|col| {
+                options
+                    .column_alignments
+                    .as_ref()
+                    .map_or(default_para_shape_id, |alignments| {
+                        self.document.find_or_create_para_shape(
+                            default_para_shape_id,
+                            &crate::model::style::ParaShapeMods {
+                                alignment: Some(alignments[usize::from(col)]),
+                                ..Default::default()
+                            },
+                        )
+                    })
+            })
+            .collect();
 
         // 셀 목록 생성
         let mut cells = Vec::with_capacity((row_count as usize) * (col_count as usize));
         for r in 0..row_count {
             for c in 0..col_count {
+                let col_width = col_widths[usize::from(c)];
                 let mut cell = Cell::new_empty(c, r, col_width, cell_height, cell_border_fill_id);
+                if options.repeat_header.is_some() {
+                    cell.set_header(r == 0 && options.repeat_header == Some(true));
+                }
                 cell.padding = cell_pad;
                 cell.vertical_align = crate::model::table::VerticalAlign::Center; // 한컴 기본값
                                                                                   // 셀 문단 보정: char_count_msb, raw_header_extra, para/char shape
                 for cp in &mut cell.paragraphs {
                     cp.char_count_msb = true;
-                    cp.para_shape_id = default_para_shape_id;
+                    cp.para_shape_id = para_shape_ids[usize::from(c)];
                     // Cell::new_empty() 의 문단은 char_shapes 가 비어 있고, 저장기는 그것을
                     // charPrIDRef="0" 으로 쓴다. 아래 raw_header_extra 가 n_char_shapes=1 을
                     // 주장하는 것과도 어긋난다. 표를 삽입한 문단의 글자모양을 상속한다.
@@ -487,14 +572,8 @@ impl DocumentCore {
                     // line_segs 보정: new_empty()의 기본 LineSeg는 line_height=0이므로 항상 교체
                     let seg_w = (col_width as i32) - 141 - 141; // 셀 폭 - 좌우 패딩
                     cp.line_segs = vec![LineSeg {
-                        text_start: 0,
-                        line_height: 1000,
-                        text_height: 1000,
-                        baseline_distance: 850,
-                        line_spacing: 600,
                         segment_width: seg_w,
-                        tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                        ..Default::default()
+                        ..inherited_line.clone()
                     }];
                 }
                 // raw_list_extra: 빈 벡터 (cell.width 필드가 LIST_HEADER에 직렬화됨)
@@ -512,7 +591,8 @@ impl DocumentCore {
         //                 + instance_id(4) = 36바이트 (+ 여유 2바이트 = 38)
         // vert=Para(2), horz=Para(3), wrap=TopAndBottom(1)
         // width_criterion=Absolute(4), height_criterion=Absolute(2)
-        let flags: u32 = (2 << 3) | (3 << 8) | (4 << 15) | (2 << 18) | (1 << 21);
+        // 새 표의 기본 번호 종류는 TABLE이다. 캡션의 존재가 번호 범주를 정하지 않는다.
+        let flags: u32 = (2 << 3) | (3 << 8) | (4 << 15) | (2 << 18) | (1 << 21) | (2 << 26);
         let outer_margin: i16 = 283; // ~1mm
         let mut raw_ctrl_data = vec![0u8; 38];
         raw_ctrl_data[common_obj_offsets::FLAGS].copy_from_slice(&flags.to_le_bytes());
@@ -525,18 +605,6 @@ impl DocumentCore {
         raw_ctrl_data[common_obj_offsets::MARGIN_TOP].copy_from_slice(&outer_margin.to_le_bytes());
         raw_ctrl_data[common_obj_offsets::MARGIN_BOTTOM]
             .copy_from_slice(&outer_margin.to_le_bytes());
-        // instance_id (해시 기반, 비-0 필수)
-        let instance_id: u32 = {
-            let mut h: u32 = 0x7c150000;
-            h = h.wrapping_add(row_count as u32 * 0x1000);
-            h = h.wrapping_add(col_count as u32 * 0x100);
-            h = h.wrapping_add(total_width);
-            h = h.wrapping_add(total_height.wrapping_mul(0x1b));
-            if h == 0 {
-                h = 0x7c154b69;
-            }
-            h
-        };
         raw_ctrl_data[common_obj_offsets::INSTANCE_ID].copy_from_slice(&instance_id.to_le_bytes());
 
         let mut table = Table {
@@ -555,10 +623,24 @@ impl DocumentCore {
             zones: Vec::new(),
             cells,
             cell_grid: Vec::new(),
-            page_break: TablePageBreak::None,
-            repeat_header: false,
+            page_break: if options.repeat_header.is_some() {
+                // HWPX CELL은 저장소 공통 IR의 RowBreak에 대응한다.
+                TablePageBreak::RowBreak
+            } else {
+                TablePageBreak::None
+            },
+            repeat_header: options.repeat_header.unwrap_or(false),
             caption: None,
             common: crate::model::shape::CommonObjAttr {
+                attr: flags,
+                numbering_type: crate::model::shape::ObjectNumberingType::Table,
+                margin: crate::model::Padding {
+                    left: outer_margin,
+                    right: outer_margin,
+                    top: outer_margin,
+                    bottom: outer_margin,
+                },
+                instance_id,
                 treat_as_char: false,
                 text_wrap: crate::model::shape::TextWrap::TopAndBottom,
                 vert_rel_to: crate::model::shape::VertRelTo::Para,
@@ -575,15 +657,12 @@ impl DocumentCore {
             outer_margin_bottom: 283,
             raw_ctrl_data,
             raw_ctrl_seal: None,
-            raw_table_record_attr: 0x00000006, // 한컴 기본값 (bit1=셀분리금지, bit2=repeat_header)
+            raw_table_record_attr: options.repeat_header.map_or(0x00000006, |repeat| {
+                // 새 표도 HWP5 저장기의 raw TABLE 레코드 우선 계약을 지킨다.
+                2 | (u32::from(repeat) << 2) // HWPX CELL (HWP5 RowBreak) + repeatHeader
+            }),
             // [#3570] 한컴은 TABLE 레코드를 zone 개수까지만 쓴다 — 여분 2바이트 없음.
             raw_table_record_extra: Vec::new(),
-            dirty: true,
-            text_reflowed_after_edit: false,
-            local_resize_rows: Vec::new(),
-            local_resize_cols: Vec::new(),
-            local_resize_cell_widths: Vec::new(),
-            local_resize_cell_heights: Vec::new(),
         };
         table.rebuild_grid();
 
@@ -595,7 +674,7 @@ impl DocumentCore {
         table_raw_header_extra[0..2].copy_from_slice(&1u16.to_le_bytes());
         table_raw_header_extra[4..6].copy_from_slice(&1u16.to_le_bytes());
 
-        let table_para = Paragraph {
+        let mut table_para = Paragraph {
             text: String::new(),
             char_count: 9, // 확장 제어문자(8 code units) + 문단끝(1)
             control_mask: 0x00000800,
@@ -605,14 +684,8 @@ impl DocumentCore {
                 char_shape_id: default_char_shape_id,
             }],
             line_segs: vec![LineSeg {
-                text_start: 0,
-                line_height: 1000,
-                text_height: 1000,
-                baseline_distance: 850,
-                line_spacing: 600,
                 segment_width: 0, // 한컴 표준: 표 문단의 segment_width는 0
-                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                ..Default::default()
+                ..inherited_line.clone()
             }],
             para_shape_id: table_para_shape_id,
             style_id: 0,
@@ -640,14 +713,8 @@ impl DocumentCore {
                     char_shape_id: default_char_shape_id,
                 }],
                 line_segs: vec![LineSeg {
-                    text_start: 0,
-                    line_height: 1000,
-                    text_height: 1000,
-                    baseline_distance: 850,
-                    line_spacing: 600,
                     segment_width: content_width as i32,
-                    tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                    ..Default::default()
+                    ..inherited_line.clone()
                 }],
                 has_para_text: false,
                 raw_header_extra: empty_raw_header_extra,
@@ -668,6 +735,10 @@ impl DocumentCore {
         let mut did_split_for_table = false;
         if is_empty_para {
             // 빈 문단이면 UI에서 넘어온 offset과 무관하게 현재 줄을 표 host로 사용한다.
+            // 같은 문단 자리를 교체하므로 나눔과 그 저장 출처도 유지한다.
+            table_para.column_type = para.column_type;
+            table_para.raw_break_type = para.raw_break_type;
+            table_para.page_break_synthesized = para.page_break_synthesized;
             self.document.sections[section_idx].paragraphs[para_idx] = table_para;
             insert_para_idx = para_idx;
             table_control_idx = 0;
@@ -821,6 +892,12 @@ impl DocumentCore {
 
         // ── 인라인 TAC 표 생성 ──
 
+        let previous_host_end = crate::renderer::composer::paragraph_flow_end(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+        );
+
+        let instance_id = super::super::clone_identity::next_instance_id(&self.document)?;
+
         let pd = &self.document.sections[section_idx].section_def.page_def;
         let outer_margin: i16 = 283;
         let outer_margin_lr = (outer_margin * 2) as i32;
@@ -848,7 +925,9 @@ impl DocumentCore {
             top: 141,
             bottom: 141,
         };
-        let min_row_height: u32 = cell_pad.top as u32 + 1000 + cell_pad.bottom as u32;
+        let inherited_line = creation_line::for_cursor(self, section_idx, para_idx, char_offset);
+        let min_row_height: u32 =
+            cell_pad.top as u32 + inherited_line.line_height.max(0) as u32 + cell_pad.bottom as u32;
         let row_heights: Vec<u32> = if let Some(heights) = row_heights_hu {
             if heights.len() == row_count as usize {
                 heights.iter().map(|h| (*h).max(min_row_height)).collect()
@@ -924,17 +1003,9 @@ impl DocumentCore {
                         cp.raw_header_extra = rhe;
                     }
                     let seg_w = (col_w as i32) - 141 - 141;
-                    let text_height =
-                        row_height.saturating_sub((cell_pad.top + cell_pad.bottom) as u32);
                     cp.line_segs = vec![LineSeg {
-                        text_start: 0,
-                        line_height: text_height as i32,
-                        text_height: text_height as i32,
-                        baseline_distance: (text_height as f64 * 0.85) as i32,
-                        line_spacing: 600,
                         segment_width: seg_w,
-                        tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                        ..Default::default()
+                        ..inherited_line.clone()
                     }];
                 }
                 cell.raw_list_extra = Vec::new();
@@ -949,9 +1020,11 @@ impl DocumentCore {
         let flags: u32 = (1 << 0) /* treat_as_char */
             | (0 << 3) /* vert=Page */
             | (3 << 8) /* horz=Para */
+            | (1 << 13) /* flow_with_text: 인라인 개체의 본문 흐름 */
             | (4 << 15) /* width_criterion=Absolute */
             | (2 << 18) /* height_criterion=Absolute */
-            | (1 << 21) /* wrap=TopAndBottom */;
+            | (1 << 21) /* wrap=TopAndBottom */
+            | (2 << 26) /* numbering_type=Table */;
         let mut raw_ctrl_data = vec![0u8; 38];
         raw_ctrl_data[common_obj_offsets::FLAGS].copy_from_slice(&flags.to_le_bytes());
         raw_ctrl_data[common_obj_offsets::WIDTH].copy_from_slice(&total_width.to_le_bytes());
@@ -962,20 +1035,10 @@ impl DocumentCore {
         raw_ctrl_data[common_obj_offsets::MARGIN_TOP].copy_from_slice(&outer_margin.to_le_bytes());
         raw_ctrl_data[common_obj_offsets::MARGIN_BOTTOM]
             .copy_from_slice(&outer_margin.to_le_bytes());
-        let instance_id: u32 = {
-            let mut h: u32 = 0x7c160000;
-            h = h.wrapping_add(row_count as u32 * 0x1000);
-            h = h.wrapping_add(col_count as u32 * 0x100);
-            h = h.wrapping_add(total_width);
-            if h == 0 {
-                h = 0x7c164b69;
-            }
-            h
-        };
         raw_ctrl_data[common_obj_offsets::INSTANCE_ID].copy_from_slice(&instance_id.to_le_bytes());
 
         let mut table = Table {
-            attr: 0x04000006,
+            attr: flags,
             row_count,
             col_count,
             cell_spacing: 0,
@@ -989,7 +1052,17 @@ impl DocumentCore {
             repeat_header: false,
             caption: None,
             common: crate::model::shape::CommonObjAttr {
+                attr: flags,
+                numbering_type: crate::model::shape::ObjectNumberingType::Table,
+                margin: crate::model::Padding {
+                    left: outer_margin,
+                    right: outer_margin,
+                    top: outer_margin,
+                    bottom: outer_margin,
+                },
+                instance_id,
                 treat_as_char: true,
+                flow_with_text: true,
                 text_wrap: crate::model::shape::TextWrap::TopAndBottom,
                 vert_rel_to: crate::model::shape::VertRelTo::Page,
                 horz_rel_to: crate::model::shape::HorzRelTo::Para,
@@ -1008,12 +1081,6 @@ impl DocumentCore {
             raw_table_record_attr: 0x04000006,
             // [#3570] 한컴은 TABLE 레코드를 zone 개수까지만 쓴다 — 여분 2바이트 없음.
             raw_table_record_extra: Vec::new(),
-            dirty: true,
-            text_reflowed_after_edit: false,
-            local_resize_rows: Vec::new(),
-            local_resize_cols: Vec::new(),
-            local_resize_cell_widths: Vec::new(),
-            local_resize_cell_heights: Vec::new(),
         };
         table.rebuild_grid();
 
@@ -1053,15 +1120,19 @@ impl DocumentCore {
         // char_count 갱신 (확장 제어문자 8 + 기존)
         para.char_count += 8;
 
-        // LINE_SEG 갱신: 표 높이를 반영
-        if let Some(seg) = para.line_segs.first_mut() {
-            let new_lh = (total_height as i32).max(seg.line_height);
-            if new_lh > seg.line_height {
-                seg.line_height = new_lh;
-                seg.text_height = new_lh;
-                seg.baseline_distance = (new_lh as f64 * 0.85) as i32;
-            }
-        }
+        // 실제 줄 나눔은 글자/표 순서와 가용 폭을 함께 소비한다. 최초 줄의 높이만
+        // 바꾸면 앞 글자도 표 줄에 귀속되고 뒤 문단의 오래된 vpos가 리셋처럼 남는다.
+        self.reflow_paragraph(section_idx, para_idx);
+        let hwp3_layout = self.document.layout_profile().hwp3_layout();
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs,
+            para_idx,
+            None,
+            previous_host_end,
+            &self.styles,
+            self.dpi,
+            hwp3_layout,
+        );
 
         // rebuild
         self.rebuild_section(section_idx);
@@ -1166,6 +1237,31 @@ impl DocumentCore {
         }
         (0, 0)
     }
+    /// 지정 페이지에 배치된 표 조각의 셀 bbox만 반환한다.
+    /// hover/리사이즈용이며 다른 페이지의 렌더 트리를 준비하지 않는다.
+    /// 분할 조각의 cellIdx는 원본 모델 인덱스를 그대로 보존한다.
+    pub fn get_table_cell_bboxes_at_page_native(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        page: u32,
+    ) -> Result<String, HwpError> {
+        let mut cells = Vec::new();
+        self.with_page_tree_cached(page, |tree| {
+            find_table_cells(
+                &tree.root,
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                page as usize,
+                &mut cells,
+            );
+            Ok(())
+        })?;
+        Ok(format!("[{}]", cells.join(",")))
+    }
+
     /// page_hint부터 탐색하여 표의 셀 bbox를 반환한다 (네이티브).
     /// page_hint에서 못 찾으면 앞쪽도 탐색한다 (페이지 분할된 표 대응).
     pub(crate) fn get_table_cell_bboxes_from_page(
@@ -1175,61 +1271,26 @@ impl DocumentCore {
         control_idx: usize,
         page_hint: usize,
     ) -> Result<String, HwpError> {
-        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
-
-        // 렌더 트리에서 해당 표 노드를 찾아 셀 bbox를 수집
-        fn find_table_cells(
-            node: &RenderNode,
-            sec: usize,
-            ppi: usize,
-            ci: usize,
-            page_idx: usize,
-            result: &mut Vec<String>,
-        ) -> bool {
-            if let RenderNodeType::Table(ref tn) = node.node_type {
-                if tn.section_index == Some(sec)
-                    && tn.para_index == Some(ppi)
-                    && tn.control_index == Some(ci)
-                {
-                    for (_child_idx, child) in node.children.iter().enumerate() {
-                        if let RenderNodeType::TableCell(ref cn) = child.node_type {
-                            // cellIdx: 모델의 cells 배열에서 (row, col)로 검색한 인덱스
-                            let model_cell_idx = cn.model_cell_index.unwrap_or(0) as usize;
-                            result.push(format!(
-                                "{{\"cellIdx\":{},\"row\":{},\"col\":{},\"rowSpan\":{},\"colSpan\":{},\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1}}}",
-                                model_cell_idx, cn.row, cn.col, cn.row_span, cn.col_span,
-                                page_idx,
-                                child.bbox.x, child.bbox.y, child.bbox.width, child.bbox.height
-                            ));
-                        }
-                    }
-                    return true; // 찾음
-                }
-            }
-            for child in &node.children {
-                if find_table_cells(child, sec, ppi, ci, page_idx, result) {
-                    return true;
-                }
-            }
-            false
-        }
-
         let mut cells = Vec::new();
         let total_pages = self.page_count() as usize;
         let start = page_hint.min(total_pages.saturating_sub(1));
 
         // page_hint부터 뒤쪽 탐색
+        // [#4117] hover 경로가 이 질의를 표 진입마다 부르므로, 캐시 히트에서
+        // 트리 전체를 clone 하는 build_page_tree_cached 대신 참조로 읽는다.
         let mut found = false;
         for page_num in start..total_pages {
-            let tree = self.build_page_tree_cached(page_num as u32)?;
-            if find_table_cells(
-                &tree.root,
-                section_idx,
-                parent_para_idx,
-                control_idx,
-                page_num,
-                &mut cells,
-            ) {
+            let found_here = self.with_page_tree_cached(page_num as u32, |tree| {
+                Ok(find_table_cells(
+                    &tree.root,
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    page_num,
+                    &mut cells,
+                ))
+            })?;
+            if found_here {
                 found = true;
             } else if found {
                 break;
@@ -1239,27 +1300,31 @@ impl DocumentCore {
         // page_hint에서 못 찾았으면 앞쪽 탐색 (페이지 분할 표가 hint 이전 페이지에서 시작될 수 있음)
         if !found && start > 0 {
             for page_num in (0..start).rev() {
-                let tree = self.build_page_tree_cached(page_num as u32)?;
-                if find_table_cells(
-                    &tree.root,
-                    section_idx,
-                    parent_para_idx,
-                    control_idx,
-                    page_num,
-                    &mut cells,
-                ) {
+                let found_here = self.with_page_tree_cached(page_num as u32, |tree| {
+                    Ok(find_table_cells(
+                        &tree.root,
+                        section_idx,
+                        parent_para_idx,
+                        control_idx,
+                        page_num,
+                        &mut cells,
+                    ))
+                })?;
+                if found_here {
                     found = true;
                     // 이 페이지에서 찾음 — hint까지 다시 정방향 탐색하여 누락된 페이지 수집
                     for fwd in (page_num + 1)..=start {
-                        let tree2 = self.build_page_tree_cached(fwd as u32)?;
-                        if !find_table_cells(
-                            &tree2.root,
-                            section_idx,
-                            parent_para_idx,
-                            control_idx,
-                            fwd,
-                            &mut cells,
-                        ) {
+                        let found_fwd = self.with_page_tree_cached(fwd as u32, |tree| {
+                            Ok(find_table_cells(
+                                &tree.root,
+                                section_idx,
+                                parent_para_idx,
+                                control_idx,
+                                fwd,
+                                &mut cells,
+                            ))
+                        })?;
+                        if !found_fwd {
                             break;
                         }
                     }
@@ -1411,7 +1476,56 @@ impl DocumentCore {
         cell_path_json: &str,
         inner_control_idx: usize,
     ) -> Result<String, HwpError> {
+        self.delete_cell_control_by_path_native(
+            section_idx,
+            parent_para_idx,
+            cell_path_json,
+            inner_control_idx,
+            |c| matches!(c, Control::Picture(_)),
+            "그림이",
+        )
+    }
+
+    /// [#6771] 표 셀/글상자 **내부 표** 삭제 (cell_path 기반).
+    ///
+    /// 공공 양식은 작성 안내문을 셀 안 1×1 표(점선 상자)로 넣어 두고 본문에 "안내 박스는
+    /// 반드시 삭제 후 제출"이라고 적는다. 글자는 `delete_text_in_cell_by_path` 로 지울 수
+    /// 있었지만 **그릇을 지울 길이 없었다** — `delete_control_at` 은 본문 리스트만 다루고
+    /// `delete_table_control` 은 `(구역, 문단, 컨트롤)` 셋만 받아 셀 안을 짚지 못한다.
+    /// 절차는 그림 삭제와 같으므로 몸통을 공유한다.
+    pub fn delete_cell_table_control_by_path_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        cell_path_json: &str,
+        inner_control_idx: usize,
+    ) -> Result<String, HwpError> {
+        self.delete_cell_control_by_path_native(
+            section_idx,
+            parent_para_idx,
+            cell_path_json,
+            inner_control_idx,
+            |c| matches!(c, Control::Table(_)),
+            "표가",
+        )
+    }
+
+    /// 셀·글상자 안 컨트롤 하나를 지우는 공통 몸통 — 그림·표가 같은 절차를 쓴다.
+    ///
+    /// `accepts` 가 지목한 컨트롤 종류를 검사하고, 그 컨트롤이 본문에서 차지하던 8바이트
+    /// 자리를 걷어낸 뒤 문단을 다시 흘린다. `kind_label` 은 오류 문구의 조사까지 담는다
+    /// ("그림이" / "표가").
+    fn delete_cell_control_by_path_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        cell_path_json: &str,
+        inner_control_idx: usize,
+        accepts: fn(&Control) -> bool,
+        kind_label: &str,
+    ) -> Result<String, HwpError> {
         let path = Self::parse_cell_path_json(cell_path_json)?;
+        let deleted_table;
         {
             let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
@@ -1423,66 +1537,14 @@ impl DocumentCore {
                     inner_control_idx
                 )));
             }
-            if !matches!(&para.controls[inner_control_idx], Control::Picture(_)) {
-                return Err(HwpError::RenderError(
-                    "지정된 셀 내 컨트롤이 그림이 아닙니다".to_string(),
-                ));
+            if !accepts(&para.controls[inner_control_idx]) {
+                return Err(HwpError::RenderError(format!(
+                    "지정된 셀 내 컨트롤이 {} 아닙니다",
+                    kind_label
+                )));
             }
 
-            let text_chars: Vec<char> = para.text.chars().collect();
-            let mut ci = 0usize;
-            let mut prev_end: u32 = 0;
-            let mut gap_start: Option<u32> = None;
-            'outer: for i in 0..text_chars.len() {
-                let offset = if i < para.char_offsets.len() {
-                    para.char_offsets[i]
-                } else {
-                    prev_end
-                };
-                while prev_end + 8 <= offset && ci < para.controls.len() {
-                    if ci == inner_control_idx {
-                        gap_start = Some(prev_end);
-                        break 'outer;
-                    }
-                    ci += 1;
-                    prev_end += 8;
-                }
-                let char_size: u32 = if text_chars[i] == '\t' {
-                    8
-                } else if text_chars[i].len_utf16() == 2 {
-                    2
-                } else {
-                    1
-                };
-                prev_end = offset + char_size;
-            }
-            if gap_start.is_none() {
-                while ci < para.controls.len() {
-                    if ci == inner_control_idx {
-                        gap_start = Some(prev_end);
-                        break;
-                    }
-                    ci += 1;
-                    prev_end += 8;
-                }
-            }
-
-            if let Some(gs) = gap_start {
-                let threshold = gs + 8;
-                for offset in para.char_offsets.iter_mut() {
-                    if *offset >= threshold {
-                        *offset -= 8;
-                    }
-                }
-            }
-
-            para.controls.remove(inner_control_idx);
-            if inner_control_idx < para.ctrl_data_records.len() {
-                para.ctrl_data_records.remove(inner_control_idx);
-            }
-            if para.char_count >= 8 {
-                para.char_count -= 8;
-            }
+            deleted_table = matches!(para.remove_control(inner_control_idx), Control::Table(_));
             Self::reflow_paragraph_line_segs_after_control_delete(para, &self.styles, self.dpi);
         }
 
@@ -1492,12 +1554,20 @@ impl DocumentCore {
         self.paginate_if_needed();
         self.invalidate_page_tree_cache();
 
-        let outer_ctrl = path.first().unwrap().0;
-        self.event_log.push(DocumentEvent::PictureDeleted {
-            section: section_idx,
-            para: parent_para_idx,
-            ctrl: outer_ctrl,
-        });
+        if deleted_table {
+            self.event_log.push(DocumentEvent::CellTableDeleted {
+                section: section_idx,
+                para: parent_para_idx,
+                cell_path: path,
+                ctrl: inner_control_idx,
+            });
+        } else {
+            self.event_log.push(DocumentEvent::PictureDeleted {
+                section: section_idx,
+                para: parent_para_idx,
+                ctrl: path.first().unwrap().0,
+            });
+        }
         Ok("{\"ok\":true}".to_string())
     }
     pub fn set_cell_shape_properties_by_path_native(

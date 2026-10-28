@@ -103,3 +103,45 @@ fn issue_1418_first_page_table_top_overlaps_title_textbox_center() {
         textbox_bbox.y,
     );
 }
+
+/// 독립 Print의 마지막 세 행은3쪽에서 닫히고 다음 구역은 곧바로4쪽에서 시작한다.
+/// 전6쪽 Native 최저95.88324/fresh WASM96.56689%, 3쪽 양쪽99.99680%와 직접 판독.
+/// 근거: stage8 C446 및 oss-terminal-cursor 증적의 원본 TSV/review/overlay.
+#[test]
+fn completed_terminal_cut_keeps_the_next_section_on_the_adjacent_page() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let bytes = fs::read(root.join(SAMPLE)).expect("원본 OSS 결과보고서");
+    let core = rhwp::DocumentCore::from_bytes(&bytes).expect("원본 문서 파싱");
+    let ending = core.build_page_render_tree(2).expect("표의 마지막 쪽");
+    let following = core
+        .build_page_render_tree(3)
+        .expect("바로 뒤 구역의 첫 쪽");
+    let compact = |node: &RenderNode| node_text(node).split_whitespace().collect::<String>();
+    let last_text = compact(&ending.root);
+    let next_text = compact(&following.root);
+    for marker in ["프로젝트주요기능", "기대효과및활용분야", "소감및후기"] {
+        assert!(
+            last_text.contains(marker),
+            "마지막 표 조각의 원문 누락: {marker}"
+        );
+    }
+    assert!(
+        next_text.contains("SBOM(소프트웨어자재명세서)"),
+        "내용 컷·물리 잔여가 모두 끝난 뒤 항목 없는 중간 쪽을 만들지 않는다"
+    );
+    assert!(!next_text.contains("소감및후기"), "끝 행의 중복 이월 금지");
+    let table = find_table_bbox(&ending.root, 7, 0).expect("원본 문단7 표0의 끝 조각");
+    // pdf/hwpx/2026_oss_rst.pdf 3쪽의 원래 벡터 선, pt→96CSSpx.
+    // 독립 폭·끝 행 프레임을 내용 높이로 압축해 다음 구역 쪽수만 맞추지 않는다.
+    for (label, actual, independent) in [
+        ("left", table.x, 113.058_666_666_666_67),
+        ("top", table.y, 132.176),
+        ("right", table.x + table.width, 680.434_666_666_666_7),
+        ("bottom", table.y + table.height, 999.226_666_666_666_7),
+    ] {
+        assert!(
+            (actual - independent).abs() <= 2.0,
+            "독립 Print의 {label} ±2CSSpx: {actual} vs {independent}"
+        );
+    }
+}

@@ -100,7 +100,6 @@ T07 의 `fields[0].value == 홍길동` 판정은 복제하지 않는다.
 | T17 | 1 | 표 표본 문단 수 | `samples/table-001.hwp` |
 | T18 | 1 | 서식 표본 쪽수 | `samples/form-01.hwp` |
 | T19 | 1 | 누름틀 표본 형식 | `samples/field-01.hwp` |
-| T20 | 1 | 한 쪽 시험지 쪽수 | `samples/exam-kor-1p.hwp` |
 | T21 | 1 | 표 표본에서 '표' 검색 | `samples/table-001.hwp` |
 | T22 | 2 | 국어원 문서에서 '국립' 검색 | `samples/2022년 국립국어원 업무계획.hwp` |
 | T23 | 2 | 서식 본문에서 '서식' 검색 | `samples/form-01.hwp` |
@@ -134,7 +133,6 @@ T07 의 `fields[0].value == 홍길동` 판정은 복제하지 않는다.
 | T51 | 2 | 내부표 첫 셀 표기 | `samples/inner-table-01.hwp` |
 | T52 | 3 | 표 표본 두 칸 원자 계획 | `samples/table-001.hwp` |
 | T53 | 3 | 표 표본 결정론 실증 | `samples/table-001.hwp` |
-| T54 | 2 | 한 쪽 시험지 데이터 추출 | `samples/exam-kor-1p.hwp` |
 
 ## 재현
 
@@ -149,3 +147,7 @@ python -m unittest scripts.tests.test_gym_core_casual_packs
 
 바이너리 없이 스키마·짝·고유 ID 는 audit 가 본다. 라이브 오라클 수치는
 채점 시점 CLI 가 다시 계산한다.
+
+## 시험지 과제 제외
+
+지정된 시험지 입력을 참조하는 다음 과제를 활성 평가에서 제거했다: T20, T54. 원본 문서 파일은 보존하며 과제 ID는 재사용하지 않는다.

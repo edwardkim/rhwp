@@ -1,0 +1,225 @@
+[
+  {
+    "key": "issue6190",
+    "input": "tests/fixtures/issue7491/center_align_first_line_indent_missing_column.hwp",
+    "input_sha256": "ba8a7c83c345b1e2a6eca33e7af8be93197291648c635044083387183656c454",
+    "engine": "2020",
+    "job_id": "0766d9b6-fc6b-40d2-91f4-ca7bac9e3ecc",
+    "last_status": "succeeded",
+    "output": "pdf/semanticist21-20261005/pr7491/mcp/center_align_first_line_indent-2020.pdf",
+    "pdf_sha256": "975ee917101ae1d34f6eb3cb42dc245d05a63acd6705dc675c09ce69c9ccdd1d",
+    "state": "succeeded",
+    "metadata": {
+      "job_id": "0766d9b6-fc6b-40d2-91f4-ca7bac9e3ecc",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "elapsed_ms": 15080,
+      "worker_elapsed_ms": 14122
+    },
+    "role": "preserved_missing_column_diagnostic"
+  },
+  {
+    "key": "biz-plan",
+    "input": "samples/biz_plan.hwp",
+    "input_sha256": "8b786d6824622afae2220b203beeef6e5592157e1896fea055ebc602817113c1",
+    "engine": "2020",
+    "job_id": "654ec35e-e8ca-4de8-9996-0db036bcff2e",
+    "last_status": "succeeded",
+    "output": "pdf/semanticist21-20261005/pr7491/mcp/biz-plan-2020.pdf",
+    "pdf_sha256": "7ee12cd3c3ede0b38a9f198a82743790469fa25bf65a7e9c0aace61843531ead",
+    "state": "succeeded",
+    "metadata": {
+      "job_id": "654ec35e-e8ca-4de8-9996-0db036bcff2e",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "elapsed_ms": 17432,
+      "worker_elapsed_ms": 16652
+    }
+  },
+  {
+    "key": "tac-img",
+    "input": "samples/tac-img-02.hwp",
+    "input_sha256": "f8d5b42367363de0bfde553c062e8a632c222e076a52c95b36efb490b743008e",
+    "engine": "2020",
+    "job_id": "48fe5ff9-fd12-4262-9c2d-777e2d72f2e7",
+    "last_status": "succeeded",
+    "output": "pdf/semanticist21-20261005/pr7491/mcp/tac-img-2020.pdf",
+    "pdf_sha256": "99d4927af46ead8d8716be7952c08f4bab2cb7b7c19d940f48f57709b96d011f",
+    "state": "succeeded",
+    "metadata": {
+      "job_id": "48fe5ff9-fd12-4262-9c2d-777e2d72f2e7",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "elapsed_ms": 43468,
+      "worker_elapsed_ms": 41744
+    }
+  },
+  {
+    "key": "paste-indent",
+    "input": "samples/143E433F503322BD33.hwp",
+    "input_sha256": "1bcdc7a2de38680cdb715556f40c8477f8242131d28de949b09e945022bf35fa",
+    "engine": "2020",
+    "job_id": "23f4e9a6-83d0-45ac-adc8-e1bec3fa8f19",
+    "last_status": "succeeded",
+    "output": "pdf/semanticist21-20261005/pr7491/mcp/paste-indent-2020.pdf",
+    "pdf_sha256": "76b6c4564c3c2bda89a5f3e063b0e409aaf572db32a2bbbff21b95bfdf95b8fc",
+    "state": "succeeded",
+    "metadata": {
+      "job_id": "23f4e9a6-83d0-45ac-adc8-e1bec3fa8f19",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "elapsed_ms": 20520,
+      "worker_elapsed_ms": 18555
+    }
+  },
+  {
+    "key": "so-sueop",
+    "input": "samples/SO-SUEOP.hwpx",
+    "input_sha256": "ebbd6f5c86d6eda195bb9c4ba1fc35b329432dcc5ef1dc0fffbfb4542fce74b8",
+    "engine": "2024",
+    "job_id": "f58defa4-ede7-4d56-a791-37c522f8fbc8",
+    "last_status": "succeeded",
+    "output": "pdf/semanticist21-20261005/pr7491/mcp/so-sueop-2024.pdf",
+    "pdf_sha256": "a5756b13cb9be0c75b852e525626a6f523bbbdb1cd4841425681b20076249300",
+    "state": "succeeded",
+    "metadata": {
+      "job_id": "f58defa4-ede7-4d56-a791-37c522f8fbc8",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "backend": "hwp-managed-direct-dll-host",
+      "elapsed_ms": 87934,
+      "worker_elapsed_ms": 83739
+    }
+  },
+  {
+    "key": "issue6190-edited",
+    "input": "output/pr-review/semanticist21-20261005/pr7491-edited-input/issue6190.hwp",
+    "input_sha256": "a7bb820e5630d17e59230c97cc9b5723ea5455fe282e0bbcb182a679953cebcc",
+    "engine": "2020",
+    "job_id": "8cc71c7e-e9ba-4b3b-80a3-2a4376e40dd7",
+    "last_status": "succeeded",
+    "output": "pdf/semanticist21-20261005/pr7491/mcp/issue6190-edited-2020.pdf",
+    "pdf_sha256": "661df09f7f12699d8af356fc82722afbc67b4d3ca4ba5448eb3b061a3f2bc90c",
+    "state": "succeeded",
+    "metadata": {
+      "job_id": "8cc71c7e-e9ba-4b3b-80a3-2a4376e40dd7",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "elapsed_ms": 20174,
+      "worker_elapsed_ms": 18133
+    }
+  },
+  {
+    "key": "biz-plan-edited",
+    "input": "output/pr-review/semanticist21-20261005/pr7491-edited-input/biz-plan.hwp",
+    "input_sha256": "2db06131cbd378d9be12e91905a7c73999b1b33f9c6fe90e9ba05eea7686196a",
+    "engine": "2020",
+    "job_id": "b343e55c-bca0-46c8-927a-cff843a5c5a7",
+    "last_status": "succeeded",
+    "output": "pdf/semanticist21-20261005/pr7491/mcp/biz-plan-edited-2020.pdf",
+    "pdf_sha256": "07685b3ba1ff27e99e397a37ed4f182c4b85136ed3fd9358102685ada78624dd",
+    "state": "succeeded",
+    "metadata": {
+      "job_id": "b343e55c-bca0-46c8-927a-cff843a5c5a7",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "elapsed_ms": 22255,
+      "worker_elapsed_ms": 19765
+    }
+  },
+  {
+    "key": "tac-img-edited",
+    "input": "output/pr-review/semanticist21-20261005/pr7491-edited-input/tac-img.hwp",
+    "input_sha256": "c27328877bfec04e47a74dc56df18d74a3566d5c038ff6ce52ac890aca836d11",
+    "engine": "2020",
+    "job_id": "3ce4870f-3a55-41c8-80a6-0aa1f71eee71",
+    "last_status": "succeeded",
+    "output": "pdf/semanticist21-20261005/pr7491/mcp/tac-img-edited-2020.pdf",
+    "pdf_sha256": "ddba3d7c928479a0b70615da5de2fecdb68607ee6820f6b6110c5505306cdf79",
+    "state": "succeeded",
+    "metadata": {
+      "job_id": "3ce4870f-3a55-41c8-80a6-0aa1f71eee71",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "elapsed_ms": 46245,
+      "worker_elapsed_ms": 43368
+    }
+  },
+  {
+    "key": "issue6190-insert",
+    "input": "output/pr-review/semanticist21-20261005/pr7491-edited-input/issue6190-insert.hwp",
+    "input_sha256": "ede923e37a840baade665be361693a53e8ecbd49bdff484b87bbe4438ebbe4d8",
+    "engine": "2020",
+    "job_id": "fba7e818-fd38-4423-8048-432a6f6118c8",
+    "last_status": "succeeded",
+    "output": "pdf/semanticist21-20261005/pr7491/mcp/issue6190-insert-2020.pdf",
+    "pdf_sha256": "ab2a1097dbb83cde845ac9b4d84d490444c609f2da02f9d6e0717d6ee090e8a5",
+    "state": "succeeded",
+    "metadata": {
+      "job_id": "fba7e818-fd38-4423-8048-432a6f6118c8",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "elapsed_ms": 18141,
+      "worker_elapsed_ms": 16132
+    }
+  },
+  {
+    "key": "column-restored",
+    "input": "samples/issue6190/center_align_first_line_indent.hwp",
+    "input_sha256": "d40b42d1e22237d931a1970ead577ec9c8119611dd73176ac335de5a848f90a7",
+    "engine": "2020",
+    "job_id": "76a474f2-5d43-4ba7-82b5-de6775a087a6",
+    "output": "pdf/semanticist21-20261005/pr7491/mcp/issue6190-column-probe-2020.pdf",
+    "pdf_sha256": "f4ad4ec484e5ffac82eea2daadcfe4631cad4eba840290706082749a29593676",
+    "state": "succeeded",
+    "metadata": {
+      "job_id": "76a474f2-5d43-4ba7-82b5-de6775a087a6",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "worker_bits": 32
+    }
+  },
+  {
+    "key": "column-restored-edited",
+    "input": "tests/fixtures/issue7491/center_align_first_line_indent_edited.hwp",
+    "input_sha256": "358a8f6bfa4aaf5728f4be1050e363fa195c0ab6966ac10a5deee68f3fbe38c0",
+    "engine": "2020",
+    "job_id": "f2c055c2-4857-4aaa-a20d-26abfb60284b",
+    "output": "pdf/semanticist21-20261005/pr7491/mcp/issue6190-column-insert-outer-2020.pdf",
+    "pdf_sha256": "6c7688b984ee73ad08978c23a6c7224cae4ffdd949427dca658e0197221dd011",
+    "state": "succeeded",
+    "metadata": {
+      "job_id": "f2c055c2-4857-4aaa-a20d-26abfb60284b",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "worker_bits": 32
+    }
+  },
+  {
+    "key": "full-original",
+    "input": "tests/fixtures/issue7491/imo-award-full-original.hwp",
+    "input_sha256": "365fbb671701e72a389a717ea334a6b3b5857d3ead2c934d6733563a27206e1b",
+    "engine": "2020",
+    "job_id": "7f9a011e-2446-48ec-934a-aab554c09835",
+    "output": "pdf/semanticist21-20261005/pr7491/mcp/issue6190-full-original-2020.pdf",
+    "pdf_sha256": "480a29b7647a59ca666f1ced796140ec5f348366dd621a6a2f831a807d161527",
+    "state": "succeeded",
+    "metadata": {
+      "job_id": "7f9a011e-2446-48ec-934a-aab554c09835",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "worker_bits": 32
+    }
+  }
+]

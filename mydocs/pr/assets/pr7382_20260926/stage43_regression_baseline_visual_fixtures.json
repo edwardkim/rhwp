@@ -1,0 +1,338 @@
+{
+  "fixtures": [
+    {
+      "key": "44b04f8c4d4f",
+      "input": "samples/hwpctl_ParameterSetID_Item_v1.2.hwp",
+      "input_sha256": "76645c03f0372529bad746e9287cb04efc86c6b1aa57963caae4a1c3c004c39e",
+      "pdf": "pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf",
+      "pdf_sha256": "c48e3bba704a20f319d1782868123a8cf484cce9e6d8c060f7e018f0fceb9d4f",
+      "pages": [
+        70
+      ],
+      "unpaired_pages": [],
+      "pdf_pages": 74,
+      "diagnostic_page_index_base": 0,
+      "visual_page_number_base": 1
+    },
+    {
+      "key": "5d1e28985f08",
+      "input": "samples/issue1853_caption_precedes_body_split.hwpx",
+      "input_sha256": "46bd0142f7fe2f68dffb9768e08d65488feeb19f5fd6916f9ad90ae5d72a96a9",
+      "pdf": "pdf/issue1853_caption_precedes_body_split-hwpx-2020.pdf",
+      "pdf_sha256": "6577db6936337f4003553c1b8c492cfac42f06554b7dddca640b865ce5a100a8",
+      "pages": [
+        14,
+        44
+      ],
+      "unpaired_pages": [],
+      "pdf_pages": 52,
+      "diagnostic_page_index_base": 0,
+      "visual_page_number_base": 1
+    },
+    {
+      "key": "544060979baa",
+      "input": "samples/issue1891_external_bindata_link.hwpx",
+      "input_sha256": "ce9f7275b9c84e4f032c218b9b6f94cf53c24f6e91fba30be7fd55b17acee924",
+      "pdf": "pdf/issue7382-regression-review/issue1891_external_bindata_link-2020.pdf",
+      "pdf_sha256": "1a230300ab4e4f7f3bf7e1b56ee96e71b087f0c855e2d874993316ce53ae9bf8",
+      "pages": [
+        15,
+        40,
+        42,
+        47,
+        70
+      ],
+      "unpaired_pages": [
+        71
+      ],
+      "pdf_pages": 70,
+      "diagnostic_page_index_base": 0,
+      "visual_page_number_base": 1
+    },
+    {
+      "key": "ace93bea2459",
+      "input": "samples/issue1937_rowbreak_footnote_overpagination.hwp",
+      "input_sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "pdf": "pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+      "pdf_sha256": "7f14bc85eb389a68cc88bd40fcafeb7a638d8454293a30bb2c8fe884a16978eb",
+      "pages": [
+        44
+      ],
+      "unpaired_pages": [],
+      "pdf_pages": 50,
+      "diagnostic_page_index_base": 0,
+      "visual_page_number_base": 1
+    },
+    {
+      "key": "28af64a4fe1e",
+      "input": "samples/issue3637/regulatory_impact_nested_table_escape.hwpx",
+      "input_sha256": "e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62",
+      "pdf": "pdf/issue7382-regression-review/80550-agricultural-machinery-act-amendment-2020.pdf",
+      "pdf_sha256": "4e3e656a70bc1a0ba1314f949b0f35ae057266b6a25921c6dc417c8c26f587ad",
+      "pages": [
+        20
+      ],
+      "unpaired_pages": [],
+      "pdf_pages": 31,
+      "diagnostic_page_index_base": 0,
+      "visual_page_number_base": 1
+    },
+    {
+      "key": "c6c74825a377",
+      "input": "samples/issue5941/1480000-201900698-native-neartop-reset.hwp",
+      "input_sha256": "18765ac22270a2cb4ece6a1e6539c2dea6ca6ccde2573b42fb9acce7c34fa83a",
+      "pdf": "pdf/issue5941-1480000-201900698-2020.pdf",
+      "pdf_sha256": "fe01f1ddffc3153d015adab93178f0fa8a5e9624763ff529362d4410d50955dc",
+      "pages": [
+        39,
+        49,
+        153,
+        160
+      ],
+      "unpaired_pages": [],
+      "pdf_pages": 205,
+      "diagnostic_page_index_base": 0,
+      "visual_page_number_base": 1
+    },
+    {
+      "key": "022d38a5f3be",
+      "input": "samples/issue5941/1490000-201600081_roadmap_research.hwp",
+      "input_sha256": "a06f46ec3f175c7cfa84eb3178b8b3fbdf78e94f71b31d7d87f3417a2617dae9",
+      "pdf": "pdf/issue7382-regression-review/1490000-201600081_roadmap_research-2020.pdf",
+      "pdf_sha256": "133f79cad7b756ebef777d253befb14f9407faaf7fe04eeea66036f3e049bbe7",
+      "pages": [
+        65,
+        82,
+        90,
+        94,
+        99,
+        104,
+        107,
+        112,
+        114,
+        123,
+        127,
+        131,
+        147,
+        148,
+        150,
+        159,
+        161,
+        175,
+        233,
+        258,
+        259,
+        261,
+        267,
+        280,
+        301
+      ],
+      "unpaired_pages": [],
+      "pdf_pages": 302,
+      "diagnostic_page_index_base": 0,
+      "visual_page_number_base": 1
+    },
+    {
+      "key": "e0fa7ba72220",
+      "input": "samples/issue6023/30269_reform_recommendation.hwp",
+      "input_sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7",
+      "pdf": "pdf/30269-anticorruption-recommendation-toc-2020.pdf",
+      "pdf_sha256": "d01f9ff59664a9c5b4e1a67e38f0d1c295aac8e22e3fbc07017f938f197822c3",
+      "pages": [
+        5
+      ],
+      "unpaired_pages": [],
+      "pdf_pages": 22,
+      "diagnostic_page_index_base": 0,
+      "visual_page_number_base": 1
+    },
+    {
+      "key": "7889b5405e2d",
+      "input": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+      "input_sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7",
+      "pdf": "pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf",
+      "pdf_sha256": "71145684dae73b459f088a8e10acc0335a7585c5345d7207401a3d988696fe6b",
+      "pages": [
+        71,
+        121
+      ],
+      "unpaired_pages": [],
+      "pdf_pages": 204,
+      "diagnostic_page_index_base": 0,
+      "visual_page_number_base": 1
+    },
+    {
+      "key": "09ade75fcd13",
+      "input": "samples/issue6778/156757920-animal-welfare-husbandry-guidelines.hwp",
+      "input_sha256": "309494bf58da7c092eca2c6fe55918063d2f538820cbc3fc6f8c8196fcd3586a",
+      "pdf": "pdf/156757920-animal-welfare-husbandry-guidelines-2024.pdf",
+      "pdf_sha256": "de6a57ee0d28cfb66acab4e477cc0b95e31a7939d3ca2e165de46fd5a487296e",
+      "pages": [
+        2
+      ],
+      "unpaired_pages": [],
+      "pdf_pages": 12,
+      "diagnostic_page_index_base": 0,
+      "visual_page_number_base": 1
+    },
+    {
+      "key": "be43923bc64f",
+      "input": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+      "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "pdf": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+      "pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+      "pages": [
+        45,
+        76
+      ],
+      "unpaired_pages": [],
+      "pdf_pages": 103,
+      "diagnostic_page_index_base": 0,
+      "visual_page_number_base": 1
+    },
+    {
+      "key": "efcce265e106",
+      "input": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+      "input_sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+      "pdf": "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+      "pdf_sha256": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79",
+      "pages": [
+        45,
+        76
+      ],
+      "unpaired_pages": [],
+      "pdf_pages": 103,
+      "diagnostic_page_index_base": 0,
+      "visual_page_number_base": 1
+    },
+    {
+      "key": "9ce9ef02ea42",
+      "input": "samples/issue6892/156726122-recycling-press-release.hwpx",
+      "input_sha256": "424f0264dcf10740d086b769f1e388cd7bd1b3e1a3cd2b140b93715a60b1eae6",
+      "pdf": "pdf/issue7382-regression-review/156726122-recycling-press-release-2020.pdf",
+      "pdf_sha256": "c92ad7d204afbb2db9b88f0365d43ba70f018e3cc444cdfd04ce945a1fa1ef88",
+      "pages": [
+        7
+      ],
+      "unpaired_pages": [],
+      "pdf_pages": 8,
+      "diagnostic_page_index_base": 0,
+      "visual_page_number_base": 1
+    },
+    {
+      "key": "ad6e457a55fe",
+      "input": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+      "input_sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+      "pdf": "pdf/issue7382-regression-review/outline_navigation_panel_demo-2020.pdf",
+      "pdf_sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be",
+      "pages": [
+        3
+      ],
+      "unpaired_pages": [],
+      "pdf_pages": 3,
+      "diagnostic_page_index_base": 0,
+      "visual_page_number_base": 1
+    },
+    {
+      "key": "c694ae353384",
+      "input": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+      "input_sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+      "pdf": "pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+      "pdf_sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81",
+      "pages": [
+        1
+      ],
+      "unpaired_pages": [],
+      "pdf_pages": 1,
+      "diagnostic_page_index_base": 0,
+      "visual_page_number_base": 1
+    },
+    {
+      "key": "4a571f73751e",
+      "input": "samples/task1725/text_footnote_tail_overpagination.hwp",
+      "input_sha256": "d335c26cbcd57b157c929ed36596d95a6676bea5624348baae3bff3b55a705d9",
+      "pdf": "pdf/task1725/text_footnote_tail_overpagination-hwp-2024.pdf",
+      "pdf_sha256": "03ddf66494ebd1b25cfe49344039f0c6e324a0a837d3d4dce9f26bc14141e8af",
+      "pages": [
+        33,
+        35,
+        111
+      ],
+      "unpaired_pages": [],
+      "pdf_pages": 242,
+      "diagnostic_page_index_base": 0,
+      "visual_page_number_base": 1
+    },
+    {
+      "key": "b6b0122559c3",
+      "input": "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+      "input_sha256": "84d297375c48e1e903247a389e9ec3907e3cdc57a4a7e29a819a01c2a1e3a341",
+      "pdf": "pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf",
+      "pdf_sha256": "89ff2583598e1bb8ab9d95b754fcc0cf42e3409547aec4dbe01ac0f4207b312e",
+      "pages": [
+        100,
+        139
+      ],
+      "unpaired_pages": [],
+      "pdf_pages": 315,
+      "diagnostic_page_index_base": 0,
+      "visual_page_number_base": 1
+    },
+    {
+      "key": "1f7f3c06753e",
+      "input": "samples/task2097/75544_pii_bunseok.hwpx",
+      "input_sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+      "pdf": "pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf",
+      "pdf_sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+      "pages": [
+        22
+      ],
+      "unpaired_pages": [],
+      "pdf_pages": 66,
+      "diagnostic_page_index_base": 0,
+      "visual_page_number_base": 1
+    },
+    {
+      "key": "field1948",
+      "input": "samples/hwpx/issue1948_cross_para_fieldend.hwpx",
+      "input_sha256": "38244a9ce101e1b24f012bf856bdb5bdc2e006632542b66813a615488cbf0066",
+      "pdf": "pdf/hwpx/issue1948_cross_para_fieldend-hwpx-2020.pdf",
+      "pdf_sha256": "e300ed55e58565dd2af6755562b8bec00e5b188c638132e57c073b14fbc676d8",
+      "pages": [
+        1
+      ],
+      "unpaired_pages": [],
+      "pdf_pages": 1
+    },
+    {
+      "key": "nested1133-hwp",
+      "input": "samples/issue_1133.hwp",
+      "input_sha256": "ea03105fa7fa22398f3e370d222f37213e986ecca4b9b97d2847f1bbfe998d3b",
+      "pdf": "pdf/issue7382-regression-review/issue_1133-2020.pdf",
+      "pdf_sha256": "46ca5b1abc40d9479e9eea7994b951ebb82d177ebc448cd09688170effd850ae",
+      "pages": [
+        2
+      ],
+      "unpaired_pages": [],
+      "pdf_pages": 3
+    }
+  ],
+  "exact_input_aliases": [
+    {
+      "input": "samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx",
+      "sha256": "e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62",
+      "same_input_as": "samples/issue3637/regulatory_impact_nested_table_escape.hwpx"
+    },
+    {
+      "input": "samples/issue6844/30269-anticorruption-recommendation-toc.hwp",
+      "sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7",
+      "same_input_as": "samples/issue6023/30269_reform_recommendation.hwp"
+    }
+  ],
+  "unverified": [
+    {
+      "input": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+      "reason": "동일 입력의 독립 PDF 없음; 한컴2020 변환 실패 기록을 유지한다."
+    }
+  ]
+}

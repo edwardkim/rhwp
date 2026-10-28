@@ -1,0 +1,36 @@
+import fs from 'node:fs';
+import crypto from 'node:crypto';
+import {pathToFileURL} from 'node:url';
+const root='/home/tsjang/rhwp';
+const out=`${root}/output/pr-review/pr8319-comment-correction/captured-inputs`;
+fs.mkdirSync(out,{recursive:true});
+const mod=await import(pathToFileURL(`${root}/pkg/rhwp.js`).href);
+mod.initSync({module:fs.readFileSync(`${root}/pkg/rhwp_bg.wasm`)});
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const records=[];
+function checked(result){const j=JSON.parse(result);if(j.ok===false)throw Error(result);return j;}
+function save(doc,name,source,state){const bytes=doc.exportHwpx();fs.writeFileSync(`${out}/${name}.hwpx`,bytes);records.push({name,source,state,input:`${out}/${name}.hwpx`,sha256:sha(bytes),pageCount:doc.pageCount()});}
+
+// 원 회귀의 captioned()와 같은 공개 호출·인자·이미지를 사용한다.
+const caption=mod.HwpDocument.createEmpty();
+// 원 단위 검사는 스타일 테이블이 비어 있어 저장할 수 없다. 정상 빈 문서를 seed로 둔 유효 대조군임을 기록한다.
+checked(caption.createBlankDocument());
+const captionInsert=checked(caption.insertPicture(0,0,0,'[]',fs.readFileSync(`${root}/assets/logo/logo-16.png`),9600,9600,16,16,'png','',undefined,undefined));
+const captionIndex=captionInsert.controlIdx;
+checked(caption.setPictureProperties(0,0,captionIndex,'{"hasCaption":true}'));
+checked(caption.insertTextInCell(0,0,captionIndex,0,0,4,'수달'));
+const caret5=JSON.parse(caption.getCursorRectInCell(0,0,captionIndex,0,0,5));
+const caret6=JSON.parse(caption.getCursorRectInCell(0,0,captionIndex,0,0,6));
+save(caption,'pr8094-caption-number-sudal','tests/cases/caption_auto_number_caret.rs','유효 빈 문서 seed를 추가한 대조군; 원 회귀 captioned()와 같은 logo-16.png, 9600HU, 캡션 위치4에 수달 입력');
+records.at(-1).caret5=caret5;records.at(-1).caret6=caret6;
+
+// 원 회귀 blank_with_table()/assert_flow_kept()의 본문·셀 두 경계를 각각 캡처한다.
+for(const [key,path]of [['body',''],['cell','[{"controlIndex":0,"cellIndex":0,"cellParaIndex":0}]']]){
+ const doc=mod.HwpDocument.createEmpty();checked(doc.createBlankDocument());
+ checked(doc.insertText(0,0,0,'머리'));checked(doc.splitParagraph(0,0,2,undefined));
+ checked(doc.createTable(0,1,0,2,2));checked(doc.insertText(0,2,0,'뒤'));
+ checked(doc.insertPicture(0,1,0,path,fs.readFileSync(`${root}/assets/logo/logo-16.png`),1200,1200,16,16,'png','',7000,9000));
+ save(doc,`pr8037-${key}-picture-on-host`,'tests/cases/picture_on_table_host_keeps_following_flow.rs',`원 회귀와 같은 머리/2x2표/뒤 및 ${key} 경로 그림 삽입 후 HWPX 저장`);
+}
+fs.writeFileSync(`${out}/generation.json`,JSON.stringify({runtime_source:'04c92da78165ccbf63b467855591df183655a98d',js_sha256:sha(fs.readFileSync(`${root}/pkg/rhwp.js`)),wasm_sha256:sha(fs.readFileSync(`${root}/pkg/rhwp_bg.wasm`)),records},null,2)+'\n');
+console.log(JSON.stringify(records,null,2));

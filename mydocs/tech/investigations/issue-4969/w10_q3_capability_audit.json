@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q3-variable-instance-capability-audit",
+  "issue": 4969,
+  "stage": "W10-Q3-audit",
+  "status": "ready-for-revised-plan-no-product-activation",
+  "productMutation": false,
+  "source": {
+    "path": "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf",
+    "bytes": 1503064,
+    "sha256": "3bbd254dcc5780f7524f9d07af4aa981ba5e3e84cf32d7d4e04301b3943e8694",
+    "faceIndex": 0,
+    "glyphCount": 3889,
+    "modified": false,
+    "runtimeWoff2Decode": false,
+    "staticInstanceFontAllowed": false,
+    "tables": [
+      "GDEF",
+      "GPOS",
+      "GSUB",
+      "STAT",
+      "fvar",
+      "glyf",
+      "gvar",
+      "hhea",
+      "hmtx"
+    ],
+    "axes": [
+      {
+        "tag": "wght",
+        "min": 400.0,
+        "default": 400.0,
+        "max": 900.0
+      },
+      {
+        "tag": "opsz",
+        "min": 400.0,
+        "default": 400.0,
+        "max": 900.0
+      }
+    ],
+    "namedInstances": [
+      { "name": "Regular", "wght": 400.0, "opsz": 400.0 },
+      { "name": "Bold", "wght": 900.0, "opsz": 400.0 },
+      { "name": "Title", "wght": 900.0, "opsz": 900.0 }
+    ]
+  },
+  "existingCapability": {
+    "standaloneValidation": true,
+    "axisLimit": 16,
+    "axisTagDuplicateFiniteAndRangeChecks": true,
+    "axisOrderCanonicalized": true,
+    "floatBitIdentity": true,
+    "rustybuzzSetVariations": true,
+    "fontInstanceSchemaField": true,
+    "shapeKeyJsonField": true,
+    "q1DefaultVsTitleAdvanceOracle": true
+  },
+  "gaps": {
+    "explicitDefaultsEqualEmptyInstance": false,
+    "horizontalRequestCarriesVariations": false,
+    "horizontalCacheKeyCarriesVariations": false,
+    "sharedMutableFaceSafeAcrossPartialInstances": false,
+    "glyphLowererAcceptsVariations": false,
+    "canvasKitAcceptsVariations": false,
+    "canvasKitFontCacheKeyCarriesVariations": false,
+    "nativeSkiaAcceptsVariations": false,
+    "textV2AcceptsVariations": false,
+    "hwpOrHwpxAxisIntent": false,
+    "explicitProductRequestApi": false
+  },
+  "mutableFaceRisk": {
+    "rustybuzzSetVariationsResetsUnspecifiedAxes": false,
+    "currentFaceCacheKey": "exact-source-handle-only",
+    "requiredOwner": "exact-source-handle-plus-canonical-effective-instance",
+    "mustTestSequence": [
+      "default-to-title-to-default",
+      "wght-only-to-opsz-only",
+      "axis-order-permutation"
+    ]
+  },
+  "backendMatrix": {
+    "canvasKit": {
+      "current": "variationUnsupported",
+      "currentJsTypefaceVariationCloneApi": false,
+      "candidate": "exact-runtime-glyph-outline-or-proven-instance-typeface"
+    },
+    "nativeSkia": {
+      "current": "fontVariationUnsupported",
+      "skiaSafeFontArgumentsAvailable": true,
+      "skiaSafeCloneWithArgumentsAvailable": true,
+      "blocker": "exact-blob-typeface-construction-and-coordinate-round-trip-not-proven"
+    },
+    "svgAndCanvas2d": {
+      "current": "text-run-fallback",
+      "candidate": "published-exact-variable-outline-without-backend-shaping"
+    },
+    "textV2": {
+      "current": "variationUnsupported",
+      "candidate": "instance-qualified-glyph-run-or-outline-selection"
+    }
+  },
+  "authoritativeInput": {
+    "hwpParserField": false,
+    "hwpxParserField": false,
+    "fontNameHeuristicAllowed": false,
+    "boldOrRatioHeuristicAllowed": false,
+    "requiredFirstOwner": "explicit-opt-in-slot-instance-command-or-api",
+    "defaultWithoutRequest": "preserve-q2-default-instance"
+  },
+  "publicMatrix": [
+    { "id": "default", "wght": 400.0, "opsz": 400.0 },
+    { "id": "weight-interior", "wght": 650.0, "opsz": 400.0 },
+    { "id": "bold", "wght": 900.0, "opsz": 400.0 },
+    { "id": "optical-interior", "wght": 400.0, "opsz": 650.0 },
+    { "id": "title", "wght": 900.0, "opsz": 900.0 }
+  ],
+  "privateCorpusUsed": false,
+  "hyperVOrHancomOracleRequired": false,
+  "next": "approve-revised-q3-plan-and-open-q3-a-canonical-instance-red-contract",
+  "nextApproved": true
+}

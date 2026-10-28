@@ -1,0 +1,11 @@
+[RustTestSuite] issue_7196_page_top_spacing_trim_restore -> regression_suite_018::issue_7196_page_top_spacing_trim_restore
+[RustTestSuite] cargo test --locked --target-dir /home/edward/mygithub/rhwp/target/pr-review --test regression_suite_018 issue_7196_page_top_spacing_trim_restore::
+   Compiling rhwp v0.8.6 (/tmp/rhwp-pr7518-review-20261004)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.33s
+     Running tests/generated/regression_suite_018.rs (/home/edward/mygithub/rhwp/target/pr-review/debug/deps/regression_suite_018-1eb231bcf3dfb43b)
+
+running 2 tests
+test issue_7196_page_top_spacing_trim_restore::negative_percent_tac_hosts_preserve_the_three_page_physical_layout ... ok
+test issue_7196_page_top_spacing_trim_restore::issue_7196_attachment_table_starts_next_page_without_body_overflow ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 195 filtered out; finished in 0.32s

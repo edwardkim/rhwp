@@ -1,0 +1,47 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 1 /Kids [3 0 R] >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 240] /Resources << /Font << /F1 5 0 R /F2 6 0 R /F3 7 0 R /F4 8 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 178  >>
+stream
+BT /F1 12 Tf 20 200 Td (STYLE 1 ALPHA) Tj ET
+BT /F2 12 Tf 20 160 Td (STYLE 2 ALPHA) Tj ET
+BT /F3 12 Tf 20 120 Td (STYLE 3 ALPHA) Tj ET
+BT /F4 12 Tf 20 80 Td (STYLE 4 ALPHA) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+7 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique /Encoding /WinAnsiEncoding >>
+endobj
+8 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-BoldOblique /Encoding /WinAnsiEncoding >>
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000271 00000 n 
+0000000501 00000 n 
+0000000598 00000 n 
+0000000700 00000 n 
+0000000805 00000 n 
+trailer
+<< /Size 9 /Root 1 0 R >>
+startxref
+914
+%%EOF

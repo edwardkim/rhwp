@@ -1,0 +1,34 @@
+{
+  "sourceHead": "7e57741eb6df800921de836d4e0df7286dd71864",
+  "base": "751c315a8d0dff33b30a0c91087887f550c44386",
+  "reviewCodeHead": "06a168c5b709232ded8a493dde55a024c786b93b",
+  "branch": "codex/pr7142-review-20260914",
+  "firstContributor": true,
+  "sourceCI": {
+    "run": 34838074070,
+    "head": "7e57741eb6df800921de836d4e0df7286dd71864",
+    "conclusion": "success",
+    "frontendTests": {
+      "tests": 1733,
+      "passed": 1731,
+      "failed": 0,
+      "skipped": 2
+    }
+  },
+  "matchingWasmTypecheck": {
+    "command": "rhwp-studio/node_modules/.bin/tsc -p /private/tmp/rhwp-pr7142-review/tsconfig.json --noEmit",
+    "exit": 0,
+    "note": "scratch config overrides @wasm path and typeRoots; source tsconfig retained"
+  },
+  "wasm": {
+    "builtForCodeHead": "b40c2953cf526b86319f2841c5b5584d7a83d735",
+    "codeAndCargoDiffToReview": [],
+    "rebuiltForThisFrontendReview": false,
+    "sha256": {
+      "rhwp.js": "0ef35380618d4088db768ad067c39fb89bdb9367402f61c2574e8fe4535a3899",
+      "rhwp_bg.wasm": "1c3b96506b717ebde9c147e95c638327d9c0ade0676818d3252a1afb9ffadd54",
+      "rhwp.d.ts": "84cb1399e71218680fff953e7be7ea0b5ec2daa6f6ee47d4331f746eecfa4c59"
+    }
+  },
+  "scope": "Frontend review; no HWP/HWPX/PDF fixture used, no full regression rerun, no native compilation, no Hancom fidelity claim."
+}

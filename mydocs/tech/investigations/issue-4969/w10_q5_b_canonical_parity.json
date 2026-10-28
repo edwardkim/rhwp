@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q5-merged-head-canonical-parity",
+  "issue": 4969,
+  "stage": "W10-Q5-B",
+  "date": "2026-08-31",
+  "status": "qualified-approved",
+  "planApproval": "explicit",
+  "resultApproval": "explicit",
+  "checkpointApproved": true,
+  "current": {
+    "branch": "task_m100_4969_w10_q5",
+    "productMergeHead": "3afbb066fe93724ab44309163a2e04efb954bf18",
+    "q5AEvidenceCheckpoint": "a8371d976",
+    "productMutation": false
+  },
+  "faces": [
+    {
+      "name": "NotoSansKR-Regular.ttf",
+      "role": "horizontal-and-vertical-control",
+      "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74"
+    },
+    {
+      "name": "SourceHanSerifK-OldHangul-subset.otf",
+      "role": "old-hangul-complex-shaping",
+      "sha256": "2f86ef9a52acb6d1dad9d915843239123b635d97edd88fd0573a88ffcb4e16f1"
+    },
+    {
+      "name": "HappinessSansVF.ttf",
+      "role": "explicit-variable-instances",
+      "sha256": "3bbd254dcc5780f7524f9d07af4aa981ba5e3e84cf32d7d4e04301b3943e8694"
+    }
+  ],
+  "inventory": {
+    "unitTierTests": 4221,
+    "unitTierModules": 299,
+    "integrationSources": 1075,
+    "staticTestAttributes": 4715,
+    "generatedSuites": 28,
+    "exceptionTargets": 20,
+    "accountedTargets": 48,
+    "expectedTargets": 48,
+    "minimumCases": 6559,
+    "newIntegrationSources": 0,
+    "generatedArtifactsSubmitted": false
+  },
+  "nativeFocused": {
+    "command": "cargo nextest run --locked --cargo-profile release-test --target-dir /home/edward/mygithub/rhwp/target/pr-review --tests -E 'test(/issue_4969/)' --no-fail-fast",
+    "selected": 114,
+    "passed": 114,
+    "failed": 0,
+    "nonSelectedSkipped": 8795,
+    "elapsedSeconds": 1.106,
+    "nextestVersion": "0.9.137",
+    "recommendedNextestVersion": "0.9.140"
+  },
+  "nodeWasmFocused": {
+    "wasmPackVersion": "0.15.0",
+    "nodeVersion": "24.15.0",
+    "rootTopologyDiagnostic": {
+      "status": "not-product-failure",
+      "reason": "root-dev-dependency-wait-timeout-is-not-wasm32-compatible"
+    },
+    "isolatedHarness": {
+      "sourceCopies": 0,
+      "trackedIntegrationSources": 2,
+      "requestContractPassed": 5,
+      "shadowContextPassed": 14,
+      "totalPassed": 19,
+      "failed": 0,
+      "removedAfterRun": true
+    }
+  },
+  "studioCanvasKit": {
+    "command": "node --test rhwp-studio/e2e/issue-4969-shaping-replay.test.mjs",
+    "passed": 1,
+    "failed": 0,
+    "commonGlyphRun": {
+      "pageAdvance": 61.824,
+      "currentInk": {
+        "width": 58,
+        "height": 34
+      },
+      "oldControlInk": {
+        "width": 58,
+        "height": 38
+      },
+      "fontCache": {
+        "blobs": 1,
+        "typefaces": 1,
+        "fonts": 2,
+        "bytes": 456688
+      }
+    },
+    "verticalLeaves": [
+      {
+        "source": 0,
+        "glyphId": 11232,
+        "inkWidth": 35,
+        "inkHeight": 36
+      },
+      {
+        "source": 1,
+        "glyphId": 1156,
+        "inkWidth": 33,
+        "inkHeight": 35
+      }
+    ],
+    "verticalFontCache": {
+      "blobs": 1,
+      "typefaces": 1,
+      "fonts": 1,
+      "bytes": 2519996
+    }
+  },
+  "standardDockerWasm": {
+    "command": "docker compose --env-file .env.docker run --rm wasm",
+    "status": "passed",
+    "wasmPackReportedSeconds": 404,
+    "wallSeconds": 448.45,
+    "imageId": "sha256:bbbc4f8e0f7162b9a9700a592b8959b7c13fee2accbbe6d921586f28a2c55903",
+    "artifact": "pkg/rhwp_bg.wasm",
+    "bytes": 9905805,
+    "sha256": "ed11bdb3bf2b11b44c3f6fed5c16d403257b60b27bffa469e5e3c1dfecf912a4",
+    "interpretation": "current-absolute-snapshot-only-not-causal-delta",
+    "submitted": false
+  },
+  "parity": {
+    "supportedNativeToWasmCanonicalMismatch": 0,
+    "canvasKitReplayMismatch": 0,
+    "canvasKitPixelMismatch": 0,
+    "unsupportedBackendFalseSelection": 0,
+    "fallbackDisappearance": 0,
+    "backendReshaping": 0,
+    "partialPublication": 0,
+    "resourceMultiplicityIncrease": 0
+  },
+  "boundaries": {
+    "supportTupleExpanded": false,
+    "publicApiChanged": false,
+    "schemaChanged": false,
+    "privateCorpusUsed": false,
+    "hyperVUsed": false,
+    "hancomOracleUsed": false,
+    "githubMutated": false
+  },
+  "next": {
+    "stage": "W10-Q5-C",
+    "action": "checkpoint-after-maintainer-approval-then-audit-bounds-malformed-and-atomic-rollback"
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "inputs": [
+    {
+      "key": "crop",
+      "source": "pdf/issue7642-bitmap-crop-palette-print-20261019/bitmap-crop-palette-controls.hwpx",
+      "sourceSha256": "d60a1a891c4235330ed0950d63ca3dac921c06892bb8b19b3951bbbadb64ba51",
+      "pdf": "pdf/issue7642-bitmap-crop-palette-print-20261019/bitmap-crop-palette-controls-2024.pdf",
+      "pdfSha256": "2480817b897f7e8bbcd0db5e14de0668ddcf0d71786fc93b89d97442a202469e"
+    },
+    {
+      "key": "reserved",
+      "source": "pdf/issue7642-metafile-palette-visibility-20261017/bitmap-white-palette-controls.hwpx",
+      "sourceSha256": "0460afdbe6ed8f9a4272cac1828645760038421a6aa03338c96d6e730a8cab55",
+      "pdf": "pdf/issue7642-metafile-palette-visibility-20261017/bitmap-white-palette-controls-2024.pdf",
+      "pdfSha256": "e9b268117253193197fd8c2de694165bf681fb0f8ea28ad5659a9117b19fa6cf"
+    },
+    {
+      "key": "indexed",
+      "source": "pdf/issue7642-metafile-palette-visibility-20261017/bitmap-indexed-color-controls.hwpx",
+      "sourceSha256": "b6e326a5a7b486a85cb49c599611ec80f39e516b3ac2c6a93efaf6241542e04b",
+      "pdf": "pdf/issue7642-metafile-palette-visibility-20261017/bitmap-indexed-color-controls-2024.pdf",
+      "pdfSha256": "0ed6c7157fc01b3d33213793561a217353d89e8c24635902ffd4d712062fb418"
+    }
+  ],
+  "oracles": [
+    {
+      "case": "reserved",
+      "index": 0,
+      "path": "tests/fixtures/print_bitmap_payload_oracles/bitmap-white-palette-controls/00.jpg",
+      "sha256": "93ca4d523a4cbbb523636f8f17915136d13e4f7de30460b7945d132431e22cda",
+      "source": "동일 입력의 기존 독립 한컴2024 Print PDF에서 xref 원문 JPEG를 추출; RHWP 출력 아님"
+    },
+    {
+      "case": "reserved",
+      "index": 1,
+      "path": "tests/fixtures/print_bitmap_payload_oracles/bitmap-white-palette-controls/01.jpg",
+      "sha256": "e2583deb642072c3f2e14c88e8c9d5b4c454b165a4d86aff94372dd1ee5ef333",
+      "source": "동일 입력의 기존 독립 한컴2024 Print PDF에서 xref 원문 JPEG를 추출; RHWP 출력 아님"
+    },
+    {
+      "case": "reserved",
+      "index": 2,
+      "path": "tests/fixtures/print_bitmap_payload_oracles/bitmap-white-palette-controls/02.jpg",
+      "sha256": "a456b8bc8c95cd40c36344c556a456d6463f7273f57b4454c10ac11a5cdd5640",
+      "source": "동일 입력의 기존 독립 한컴2024 Print PDF에서 xref 원문 JPEG를 추출; RHWP 출력 아님"
+    },
+    {
+      "case": "reserved",
+      "index": 3,
+      "path": "tests/fixtures/print_bitmap_payload_oracles/bitmap-white-palette-controls/03.jpg",
+      "sha256": "be355ee159b8d2119e0140984128804669dfd38742c1cf53301007612f2949c0",
+      "source": "동일 입력의 기존 독립 한컴2024 Print PDF에서 xref 원문 JPEG를 추출; RHWP 출력 아님"
+    },
+    {
+      "case": "reserved",
+      "index": 4,
+      "path": "tests/fixtures/print_bitmap_payload_oracles/bitmap-white-palette-controls/04.jpg",
+      "sha256": "fdbbf2e4c6646fabca69bbdc511894ef1c59e7b66e51e28faaaa129add3492e0",
+      "source": "동일 입력의 기존 독립 한컴2024 Print PDF에서 xref 원문 JPEG를 추출; RHWP 출력 아님"
+    },
+    {
+      "case": "reserved",
+      "index": 5,
+      "path": "tests/fixtures/print_bitmap_payload_oracles/bitmap-white-palette-controls/05.jpg",
+      "sha256": "bb1ce61599afd7af936692677e03305a694fdd0a61bc45123d210d99c04cf887",
+      "source": "동일 입력의 기존 독립 한컴2024 Print PDF에서 xref 원문 JPEG를 추출; RHWP 출력 아님"
+    },
+    {
+      "case": "indexed",
+      "index": 0,
+      "path": "tests/fixtures/print_bitmap_payload_oracles/bitmap-indexed-color-controls/00.jpg",
+      "sha256": "e2583deb642072c3f2e14c88e8c9d5b4c454b165a4d86aff94372dd1ee5ef333",
+      "source": "동일 입력의 기존 독립 한컴2024 Print PDF에서 xref 원문 JPEG를 추출; RHWP 출력 아님"
+    },
+    {
+      "case": "indexed",
+      "index": 1,
+      "path": "tests/fixtures/print_bitmap_payload_oracles/bitmap-indexed-color-controls/01.jpg",
+      "sha256": "e2583deb642072c3f2e14c88e8c9d5b4c454b165a4d86aff94372dd1ee5ef333",
+      "source": "동일 입력의 기존 독립 한컴2024 Print PDF에서 xref 원문 JPEG를 추출; RHWP 출력 아님"
+    },
+    {
+      "case": "indexed",
+      "index": 2,
+      "path": "tests/fixtures/print_bitmap_payload_oracles/bitmap-indexed-color-controls/02.jpg",
+      "sha256": "e2583deb642072c3f2e14c88e8c9d5b4c454b165a4d86aff94372dd1ee5ef333",
+      "source": "동일 입력의 기존 독립 한컴2024 Print PDF에서 xref 원문 JPEG를 추출; RHWP 출력 아님"
+    },
+    {
+      "case": "indexed",
+      "index": 3,
+      "path": "tests/fixtures/print_bitmap_payload_oracles/bitmap-indexed-color-controls/03.jpg",
+      "sha256": "a456b8bc8c95cd40c36344c556a456d6463f7273f57b4454c10ac11a5cdd5640",
+      "source": "동일 입력의 기존 독립 한컴2024 Print PDF에서 xref 원문 JPEG를 추출; RHWP 출력 아님"
+    },
+    {
+      "case": "indexed",
+      "index": 4,
+      "path": "tests/fixtures/print_bitmap_payload_oracles/bitmap-indexed-color-controls/04.jpg",
+      "sha256": "a456b8bc8c95cd40c36344c556a456d6463f7273f57b4454c10ac11a5cdd5640",
+      "source": "동일 입력의 기존 독립 한컴2024 Print PDF에서 xref 원문 JPEG를 추출; RHWP 출력 아님"
+    },
+    {
+      "case": "indexed",
+      "index": 5,
+      "path": "tests/fixtures/print_bitmap_payload_oracles/bitmap-indexed-color-controls/05.jpg",
+      "sha256": "a456b8bc8c95cd40c36344c556a456d6463f7273f57b4454c10ac11a5cdd5640",
+      "source": "동일 입력의 기존 독립 한컴2024 Print PDF에서 xref 원문 JPEG를 추출; RHWP 출력 아님"
+    },
+    {
+      "case": "indexed",
+      "index": 6,
+      "path": "tests/fixtures/print_bitmap_payload_oracles/bitmap-indexed-color-controls/06.jpg",
+      "sha256": "be355ee159b8d2119e0140984128804669dfd38742c1cf53301007612f2949c0",
+      "source": "동일 입력의 기존 독립 한컴2024 Print PDF에서 xref 원문 JPEG를 추출; RHWP 출력 아님"
+    },
+    {
+      "case": "indexed",
+      "index": 7,
+      "path": "tests/fixtures/print_bitmap_payload_oracles/bitmap-indexed-color-controls/07.jpg",
+      "sha256": "be355ee159b8d2119e0140984128804669dfd38742c1cf53301007612f2949c0",
+      "source": "동일 입력의 기존 독립 한컴2024 Print PDF에서 xref 원문 JPEG를 추출; RHWP 출력 아님"
+    },
+    {
+      "case": "indexed",
+      "index": 8,
+      "path": "tests/fixtures/print_bitmap_payload_oracles/bitmap-indexed-color-controls/08.jpg",
+      "sha256": "be355ee159b8d2119e0140984128804669dfd38742c1cf53301007612f2949c0",
+      "source": "동일 입력의 기존 독립 한컴2024 Print PDF에서 xref 원문 JPEG를 추출; RHWP 출력 아님"
+    },
+    {
+      "case": "indexed",
+      "index": 9,
+      "path": "tests/fixtures/print_bitmap_payload_oracles/bitmap-indexed-color-controls/09.jpg",
+      "sha256": "fdbbf2e4c6646fabca69bbdc511894ef1c59e7b66e51e28faaaa129add3492e0",
+      "source": "동일 입력의 기존 독립 한컴2024 Print PDF에서 xref 원문 JPEG를 추출; RHWP 출력 아님"
+    },
+    {
+      "case": "indexed",
+      "index": 10,
+      "path": "tests/fixtures/print_bitmap_payload_oracles/bitmap-indexed-color-controls/10.jpg",
+      "sha256": "fdbbf2e4c6646fabca69bbdc511894ef1c59e7b66e51e28faaaa129add3492e0",
+      "source": "동일 입력의 기존 독립 한컴2024 Print PDF에서 xref 원문 JPEG를 추출; RHWP 출력 아님"
+    },
+    {
+      "case": "indexed",
+      "index": 11,
+      "path": "tests/fixtures/print_bitmap_payload_oracles/bitmap-indexed-color-controls/11.jpg",
+      "sha256": "fdbbf2e4c6646fabca69bbdc511894ef1c59e7b66e51e28faaaa129add3492e0",
+      "source": "동일 입력의 기존 독립 한컴2024 Print PDF에서 xref 원문 JPEG를 추출; RHWP 출력 아님"
+    }
+  ],
+  "qualification": "4bd20fd54a 생산 코드, Native/fresh WASM 전쪽 reserved/indexed 각100%, crop최저99.97922%. 96DPI/2px/current PDFium152. 비교PNG 및 PDF소스 JPEG 직접 판독.",
+  "pixelProof": "Print SVG에 실제 포함된 JPEG와 독립 PDF의18개 이미지가 디코딩 후 전픽셀 동일. Source 원본 픽셀·Print payload·배치별 바이트를 구분해 검사한다.",
+  "correction": "배치 폭에 따라 품질이 달라지는 OutputDevice/SourceWindow는 원본 bin 키로 재조회할 수 없어 inline 바이트가 필수다. 기존 source key가 있는 정상 경로는 조회·동일성 검사를 유지한다."
+}

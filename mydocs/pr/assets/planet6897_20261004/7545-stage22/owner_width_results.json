@@ -1,0 +1,21 @@
+{
+  "scope": "전체 nextest 실패 2개, 표 프레임 소유 폭 회귀의 잘못된 4 HWPUNIT 격자 기대 제거",
+  "whole_nextest_before": {
+    "tested_head": "4f151f870c4019cae89381e2087323acbcf03dd4",
+    "passed": 10313,
+    "failed": 11,
+    "skipped": 50,
+    "duration_seconds": 668.646
+  },
+  "independent_contract": "합성 2열 표의 선언 폭에서 앞 열 원시 폭을 빼 마지막 열 소유 폭을 구함. 원시 칸 폭·중복 안 여백 차감은 허용하지 않음.",
+  "unit_rounding_tolerance_hwpunit": 1,
+  "production_changed": false,
+  "new_test_functions": 0,
+  "focused": {
+    "passed": 2,
+    "failed": 0,
+    "nextest_run": "08c2a2ed-5b95-4a0a-98d5-e6cdd8864d13"
+  },
+  "visual_gate_applicability": "화면 좌표가 아닌 저장 폭 소유/단위 환산 계약. 실물 렌더링의 90% 충족을 이 합성 단위 검사로 주장하지 않음. 실제 #7545 영향 120–121쪽 PNG/TSV는 stage17/18 기록 유지.",
+  "remaining_whole_failure_count": 9
+}

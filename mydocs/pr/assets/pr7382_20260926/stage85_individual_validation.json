@@ -1,0 +1,37 @@
+{
+  "head": "88dea0a3a0ddec32cf59a9280c7bf297cc776672",
+  "policy": "고정38 대기 함수를 한 개씩 실행. 첫 실패에서 중단하여 원인·동일 입력 시각 검증을 먼저 수행. 새 검사나 기준값 완화 없음.",
+  "individual": [
+    {
+      "id": 7,
+      "function": "body_overflow_baseline::body_overflow_does_not_grow_partition_4",
+      "plan": {
+        "caseName": "body_overflow_baseline",
+        "target": "regression_suite_017",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_017",
+        "-E",
+        "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_4)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 1.541432250291109,
+      "summary": [
+        "     Summary [   0.540s] 1 test run: 0 passed, 1 failed, 232 skipped"
+      ]
+    }
+  ]
+}

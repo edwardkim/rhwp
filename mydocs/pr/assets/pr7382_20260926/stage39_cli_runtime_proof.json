@@ -1,0 +1,20 @@
+{
+  "compiled_runtime_diff_sha256": "1683b586e8094aba62315008ba8f172b043925cb7c77d38ec157f59f2ed434f4",
+  "cli": {
+    "exit_code": 0,
+    "elapsed_seconds": 81.53332533314824,
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--bin",
+      "rhwp"
+    ],
+    "cli_sha256": "8770e0c52638217bf88cc75be858956110df41b4a8dab6c9f7af73da4c4d0481"
+  },
+  "test_only_followup": "모든15개 원본 셀 문단 보존 검사를 보강; 런타임 불변"
+}

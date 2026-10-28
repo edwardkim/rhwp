@@ -1,0 +1,68 @@
+{
+  "stage": 179,
+  "scope": "#617 PDF 재출력·DPI 대조; 렌더링 보정은 후속 단계",
+  "head_before": "5542c11b0",
+  "input": "samples/exam_kor.hwp",
+  "input_sha256": "0315576fb25dd29ad3b6b188ee2539d0e8d31c15b74847be801c2186a97aac69",
+  "lastSavedWith": "hancom-office-2022",
+  "original_pdf": "pdf/exam_kor-hwp-2020.pdf",
+  "original_pdf_sha256": "d67a5a0c759dcc8609226f89ef96de5339e3b41c43c2655be3824dcde1732f22",
+  "reprinted_pdf": "pdf/issue7382-regression-review/exam_kor-2020-reprint.pdf",
+  "reprinted_pdf_sha256": "867fbb82ad03c31eb0fee3ddf991d24db93986264ce7e58c91cf4a02903e2c7d",
+  "mcp": {
+    "client": "hwp2024-mcp-convert",
+    "engine": "2020",
+    "job_id": "47943141-efc4-40d7-ae6f-4e62e20474d8",
+    "status": "succeeded",
+    "server_result": "success",
+    "engine_profile": "2020",
+    "hancom_version": "11.0.0.9136",
+    "pages": 20,
+    "bytes": 4583878
+  },
+  "pdf_geometry": {
+    "original_pages": 20,
+    "reprinted_pages": 20,
+    "original_page_size_pt": [
+      841,
+      1190
+    ],
+    "reprinted_page_size_pt": [
+      841,
+      1190
+    ],
+    "dpi": 96,
+    "all_20_raster_pixels_identical": true,
+    "page6_raster_size_px": [
+      1122,
+      1587
+    ]
+  },
+  "svg_snapshot_failure": {
+    "test": "svg_snapshot::issue_617_exam_kor_page5",
+    "golden_xml_nodes": 1905,
+    "actual_xml_nodes": 1905,
+    "semantic_differences": 0,
+    "numeric_only_attribute_differences": 50,
+    "max_numeric_delta_px": 1.1368683772161603e-13
+  },
+  "visual": {
+    "native": {
+      "pages_compared": 20,
+      "page6_percent": 94.8256,
+      "page17_percent": 84.84018,
+      "gate": "re_review_required"
+    },
+    "fresh_wasm": {
+      "pages_compared": 20,
+      "page6_percent": 94.8256,
+      "page17_percent": 84.84018,
+      "gate": "re_review_required"
+    },
+    "font_supplied_p17_percent": 85.09605,
+    "existing_2022_pdf_p17_percent": 84.84174,
+    "font_exception": false
+  },
+  "decision": "20쪽 문서이므로 사용자 지시에 따라 #7445로 이관하지 않고 현재 브랜치에서 17쪽 배치·폰트 차이를 해결한다. #617 기존 검사 유지. 재출력 PDF를 커밋한다.",
+  "logs": "output/pr-review/planet6897-7382-20260926/stage179-exam617/"
+}

@@ -34,7 +34,7 @@ fn section_xml(bytes: &[u8]) -> String {
     let mut out = String::new();
     for i in 0..zin.len() {
         let mut f = zin.by_index(i).expect("zip 항목");
-        let name = f.name().to_string();
+        let name = f.name().expect("ZIP 엔트리 이름").to_string();
         if name.starts_with("Contents/section") && name.ends_with(".xml") {
             let mut s = String::new();
             f.read_to_string(&mut s).expect("section xml 읽기");
@@ -62,7 +62,7 @@ fn hwpx_save_writes_soft_hyphen_as_literal_char() {
     let xml = section_xml(&saved);
 
     assert!(
-        !xml.contains("<hp:hyphen/>"),
+        !xml.contains("<hp:hyphen/>") && !xml.contains("<hp:hypen/>"),
         "소프트 하이픈을 <hp:hyphen/> 요소로 내리면 한글이 그 글자를 버린다"
     );
     assert!(

@@ -1,0 +1,45 @@
+{
+  "before_source_sha": "d10a64a0c9d4f85e1cad726feb7158585aa277a9",
+  "before_wasm_sha256": "d78951e975d108e326f01e5292fae48e4de243a2924d0f8bf326eedf2458892c",
+  "after_source_sha": "45863eb2b238929c22ecc606af801b6273dc8482",
+  "before_backend": "preserved WASM direct API",
+  "after_backend": "Native export-render-tree",
+  "input": "samples/p122.hwp",
+  "before_pages": 3,
+  "after_pages": 3,
+  "before_objects": [
+    {
+      "kind": "image",
+      "pi": 1,
+      "ci": 0,
+      "depth": 0,
+      "page": 2,
+      "x": 113.4,
+      "y": 132.3,
+      "w": 3374.8,
+      "h": 2496.2,
+      "text": "",
+      "text_wrap": null,
+      "id": 0
+    }
+  ],
+  "after_objects": [
+    {
+      "kind": "image",
+      "pi": 1,
+      "ci": 0,
+      "depth": 0,
+      "page": 2,
+      "x": 113.4,
+      "y": 132.3,
+      "w": 3374.8,
+      "h": 2496.2,
+      "text": "",
+      "text_wrap": null,
+      "id": 0
+    }
+  ],
+  "ovr_regressions": [],
+  "position_deltas": [],
+  "tool": "tools/object_visual_regression.py rhwp_objects + compare_objects (reuse exported trees)"
+}

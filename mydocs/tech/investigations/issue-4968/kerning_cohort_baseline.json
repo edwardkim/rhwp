@@ -1,0 +1,945 @@
+{
+  "canonicalSha256": "95309e457f78de38f2b1470b05e6f0fe97f00684ffff5eddd4d82c6438fb71e6",
+  "cohort": {
+    "aggregateUsageRows": 1723,
+    "byContext": [
+      {
+        "characters": 83367,
+        "context": "body",
+        "documents": 75
+      },
+      {
+        "characters": 1436,
+        "context": "caption",
+        "documents": 4
+      },
+      {
+        "characters": 2,
+        "context": "footer",
+        "documents": 1
+      },
+      {
+        "characters": 2036,
+        "context": "footnote",
+        "documents": 4
+      },
+      {
+        "characters": 223,
+        "context": "header",
+        "documents": 1
+      },
+      {
+        "characters": 86610,
+        "context": "table-cell",
+        "documents": 99
+      },
+      {
+        "characters": 11,
+        "context": "table-cell+caption",
+        "documents": 1
+      },
+      {
+        "characters": 1,
+        "context": "table-cell+footer",
+        "documents": 1
+      },
+      {
+        "characters": 2,
+        "context": "table-cell+header",
+        "documents": 1
+      },
+      {
+        "characters": 1778,
+        "context": "text-box",
+        "documents": 7
+      }
+    ],
+    "byDocumentAndMetricFace": [
+      {
+        "characters": 18,
+        "documents": 1,
+        "font": "AppleSDGothicNeo-Regular",
+        "metricFace": null
+      },
+      {
+        "characters": 63,
+        "documents": 1,
+        "font": "Aptos",
+        "metricFace": null
+      },
+      {
+        "characters": 7170,
+        "documents": 25,
+        "font": "HCI Poppy",
+        "metricFace": null
+      },
+      {
+        "characters": 410,
+        "documents": 1,
+        "font": "HY강M",
+        "metricFace": null
+      },
+      {
+        "characters": 21,
+        "documents": 1,
+        "font": "HY견고딕",
+        "metricFace": "HYGothic-Extra"
+      },
+      {
+        "characters": 39,
+        "documents": 2,
+        "font": "HY신명조",
+        "metricFace": "HYSinMyeongJo-Medium"
+      },
+      {
+        "characters": 15,
+        "documents": 1,
+        "font": "HY울릉도B",
+        "metricFace": "HYwulB"
+      },
+      {
+        "characters": 2289,
+        "documents": 1,
+        "font": "HY중고딕",
+        "metricFace": "HYGothic-Medium"
+      },
+      {
+        "characters": 957,
+        "documents": 6,
+        "font": "HY헤드라인M",
+        "metricFace": "HYHeadLine-Medium"
+      },
+      {
+        "characters": 281,
+        "documents": 1,
+        "font": "HelveticaNeue",
+        "metricFace": null
+      },
+      {
+        "characters": 63,
+        "documents": 1,
+        "font": "HelveticaNeue-Bold",
+        "metricFace": null
+      },
+      {
+        "characters": 36,
+        "documents": 1,
+        "font": "KoPubWorld돋움체_Pro Bold",
+        "metricFace": null
+      },
+      {
+        "characters": 42,
+        "documents": 1,
+        "font": "KoPubWorld바탕체 Light",
+        "metricFace": null
+      },
+      {
+        "characters": 31,
+        "documents": 1,
+        "font": "KoPub돋움체 Bold",
+        "metricFace": "KoPub돋움체 Bold"
+      },
+      {
+        "characters": 120,
+        "documents": 1,
+        "font": "KoPub돋움체 Light",
+        "metricFace": "KoPub돋움체 Light"
+      },
+      {
+        "characters": 105,
+        "documents": 1,
+        "font": "KoPub돋움체 Medium",
+        "metricFace": "KoPub돋움체 Medium"
+      },
+      {
+        "characters": 434,
+        "documents": 4,
+        "font": "Times New Roman",
+        "metricFace": "Times New Roman"
+      },
+      {
+        "characters": 502,
+        "documents": 1,
+        "font": "경기천년제목 Light",
+        "metricFace": null
+      },
+      {
+        "characters": 2528,
+        "documents": 5,
+        "font": "굴림",
+        "metricFace": "Gulim"
+      },
+      {
+        "characters": 160,
+        "documents": 2,
+        "font": "굴림체",
+        "metricFace": "GulimChe"
+      },
+      {
+        "characters": 8,
+        "documents": 1,
+        "font": "나눔고딕",
+        "metricFace": "NanumGothic"
+      },
+      {
+        "characters": 751,
+        "documents": 2,
+        "font": "나눔명조 ExtraBold",
+        "metricFace": null
+      },
+      {
+        "characters": 144,
+        "documents": 1,
+        "font": "나눔명조",
+        "metricFace": "NanumMyeongjo"
+      },
+      {
+        "characters": 200,
+        "documents": 16,
+        "font": "나눔바른고딕",
+        "metricFace": null
+      },
+      {
+        "characters": 5582,
+        "documents": 4,
+        "font": "돋움",
+        "metricFace": "Dotum"
+      },
+      {
+        "characters": 379,
+        "documents": 3,
+        "font": "돋움체",
+        "metricFace": "DotumChe"
+      },
+      {
+        "characters": 30901,
+        "documents": 46,
+        "font": "맑은 고딕",
+        "metricFace": "Malgun Gothic"
+      },
+      {
+        "characters": 29,
+        "documents": 4,
+        "font": "명조",
+        "metricFace": null
+      },
+      {
+        "characters": 35140,
+        "documents": 10,
+        "font": "바탕",
+        "metricFace": "Batang"
+      },
+      {
+        "characters": 3795,
+        "documents": 14,
+        "font": "바탕체",
+        "metricFace": "BatangChe"
+      },
+      {
+        "characters": 1209,
+        "documents": 1,
+        "font": "새굴림",
+        "metricFace": null
+      },
+      {
+        "characters": 8,
+        "documents": 1,
+        "font": "신명 견명조",
+        "metricFace": null
+      },
+      {
+        "characters": 15,
+        "documents": 1,
+        "font": "신명 태명조",
+        "metricFace": null
+      },
+      {
+        "characters": 145,
+        "documents": 1,
+        "font": "옛한글",
+        "metricFace": null
+      },
+      {
+        "characters": 8342,
+        "documents": 22,
+        "font": "한양신명조",
+        "metricFace": "HanyangSinMyeongJo"
+      },
+      {
+        "characters": 1225,
+        "documents": 14,
+        "font": "한양중고딕",
+        "metricFace": "HanyangJungGothic"
+      },
+      {
+        "characters": 23,
+        "documents": 1,
+        "font": "한컴돋움",
+        "metricFace": "Haansoft Dotum"
+      },
+      {
+        "characters": 102,
+        "documents": 2,
+        "font": "한컴바탕",
+        "metricFace": "Haansoft Batang"
+      },
+      {
+        "characters": 490,
+        "documents": 3,
+        "font": "함초롬돋움",
+        "metricFace": "HCR Dotum"
+      },
+      {
+        "characters": 15384,
+        "documents": 12,
+        "font": "함초롬바탕",
+        "metricFace": "HCR Batang"
+      },
+      {
+        "characters": 701,
+        "documents": 1,
+        "font": "휴먼고딕",
+        "metricFace": "휴먼고딕"
+      },
+      {
+        "characters": 55609,
+        "documents": 50,
+        "font": "휴먼명조",
+        "metricFace": "HumanMyeongJo"
+      }
+    ],
+    "byFormat": [
+      {
+        "characters": 160041,
+        "documents": 115,
+        "format": "hwp"
+      },
+      {
+        "characters": 15425,
+        "documents": 42,
+        "format": "hwpx"
+      }
+    ],
+    "byRatioAndSpacing": [
+      {
+        "characters": 8000,
+        "documents": 15,
+        "ratio": 100,
+        "spacing": -10
+      },
+      {
+        "characters": 791,
+        "documents": 8,
+        "ratio": 100,
+        "spacing": -11
+      },
+      {
+        "characters": 373,
+        "documents": 7,
+        "ratio": 100,
+        "spacing": -12
+      },
+      {
+        "characters": 670,
+        "documents": 7,
+        "ratio": 100,
+        "spacing": -13
+      },
+      {
+        "characters": 890,
+        "documents": 5,
+        "ratio": 100,
+        "spacing": -14
+      },
+      {
+        "characters": 553,
+        "documents": 8,
+        "ratio": 100,
+        "spacing": -15
+      },
+      {
+        "characters": 450,
+        "documents": 6,
+        "ratio": 100,
+        "spacing": -16
+      },
+      {
+        "characters": 179,
+        "documents": 3,
+        "ratio": 100,
+        "spacing": -17
+      },
+      {
+        "characters": 268,
+        "documents": 7,
+        "ratio": 100,
+        "spacing": -18
+      },
+      {
+        "characters": 141,
+        "documents": 6,
+        "ratio": 100,
+        "spacing": -19
+      },
+      {
+        "characters": 2572,
+        "documents": 16,
+        "ratio": 100,
+        "spacing": -1
+      },
+      {
+        "characters": 61,
+        "documents": 2,
+        "ratio": 100,
+        "spacing": -20
+      },
+      {
+        "characters": 48,
+        "documents": 2,
+        "ratio": 100,
+        "spacing": -21
+      },
+      {
+        "characters": 687,
+        "documents": 3,
+        "ratio": 100,
+        "spacing": -22
+      },
+      {
+        "characters": 37,
+        "documents": 1,
+        "ratio": 100,
+        "spacing": -24
+      },
+      {
+        "characters": 19,
+        "documents": 2,
+        "ratio": 100,
+        "spacing": -25
+      },
+      {
+        "characters": 53,
+        "documents": 2,
+        "ratio": 100,
+        "spacing": -26
+      },
+      {
+        "characters": 4,
+        "documents": 1,
+        "ratio": 100,
+        "spacing": -27
+      },
+      {
+        "characters": 26,
+        "documents": 2,
+        "ratio": 100,
+        "spacing": -28
+      },
+      {
+        "characters": 3113,
+        "documents": 23,
+        "ratio": 100,
+        "spacing": -2
+      },
+      {
+        "characters": 7,
+        "documents": 1,
+        "ratio": 100,
+        "spacing": -30
+      },
+      {
+        "characters": 22,
+        "documents": 2,
+        "ratio": 100,
+        "spacing": -31
+      },
+      {
+        "characters": 34,
+        "documents": 2,
+        "ratio": 100,
+        "spacing": -32
+      },
+      {
+        "characters": 3175,
+        "documents": 25,
+        "ratio": 100,
+        "spacing": -3
+      },
+      {
+        "characters": 772,
+        "documents": 17,
+        "ratio": 100,
+        "spacing": -4
+      },
+      {
+        "characters": 2165,
+        "documents": 26,
+        "ratio": 100,
+        "spacing": -5
+      },
+      {
+        "characters": 1656,
+        "documents": 17,
+        "ratio": 100,
+        "spacing": -6
+      },
+      {
+        "characters": 818,
+        "documents": 18,
+        "ratio": 100,
+        "spacing": -7
+      },
+      {
+        "characters": 373,
+        "documents": 11,
+        "ratio": 100,
+        "spacing": -8
+      },
+      {
+        "characters": 264,
+        "documents": 7,
+        "ratio": 100,
+        "spacing": -9
+      },
+      {
+        "characters": 114403,
+        "documents": 130,
+        "ratio": 100,
+        "spacing": 0
+      },
+      {
+        "characters": 26,
+        "documents": 2,
+        "ratio": 100,
+        "spacing": 10
+      },
+      {
+        "characters": 59,
+        "documents": 2,
+        "ratio": 100,
+        "spacing": 11
+      },
+      {
+        "characters": 300,
+        "documents": 8,
+        "ratio": 100,
+        "spacing": 1
+      },
+      {
+        "characters": 267,
+        "documents": 4,
+        "ratio": 100,
+        "spacing": 2
+      },
+      {
+        "characters": 23,
+        "documents": 3,
+        "ratio": 100,
+        "spacing": 3
+      },
+      {
+        "characters": 74,
+        "documents": 3,
+        "ratio": 100,
+        "spacing": 4
+      },
+      {
+        "characters": 51,
+        "documents": 3,
+        "ratio": 100,
+        "spacing": 5
+      },
+      {
+        "characters": 2,
+        "documents": 1,
+        "ratio": 100,
+        "spacing": 8
+      },
+      {
+        "characters": 9,
+        "documents": 1,
+        "ratio": 101,
+        "spacing": -19
+      },
+      {
+        "characters": 31,
+        "documents": 1,
+        "ratio": 75,
+        "spacing": -5
+      },
+      {
+        "characters": 537,
+        "documents": 1,
+        "ratio": 85,
+        "spacing": -15
+      },
+      {
+        "characters": 33,
+        "documents": 1,
+        "ratio": 85,
+        "spacing": -5
+      },
+      {
+        "characters": 103,
+        "documents": 1,
+        "ratio": 85,
+        "spacing": 0
+      },
+      {
+        "characters": 36,
+        "documents": 1,
+        "ratio": 86,
+        "spacing": -10
+      },
+      {
+        "characters": 41,
+        "documents": 1,
+        "ratio": 87,
+        "spacing": -10
+      },
+      {
+        "characters": 1303,
+        "documents": 1,
+        "ratio": 88,
+        "spacing": -10
+      },
+      {
+        "characters": 20,
+        "documents": 1,
+        "ratio": 89,
+        "spacing": -10
+      },
+      {
+        "characters": 15,
+        "documents": 1,
+        "ratio": 89,
+        "spacing": -19
+      },
+      {
+        "characters": 3685,
+        "documents": 3,
+        "ratio": 90,
+        "spacing": -10
+      },
+      {
+        "characters": 20,
+        "documents": 1,
+        "ratio": 90,
+        "spacing": -11
+      },
+      {
+        "characters": 17,
+        "documents": 1,
+        "ratio": 90,
+        "spacing": -12
+      },
+      {
+        "characters": 54,
+        "documents": 1,
+        "ratio": 90,
+        "spacing": -13
+      },
+      {
+        "characters": 32,
+        "documents": 1,
+        "ratio": 90,
+        "spacing": -15
+      },
+      {
+        "characters": 24,
+        "documents": 1,
+        "ratio": 90,
+        "spacing": -19
+      },
+      {
+        "characters": 27,
+        "documents": 1,
+        "ratio": 90,
+        "spacing": -1
+      },
+      {
+        "characters": 66,
+        "documents": 1,
+        "ratio": 90,
+        "spacing": -3
+      },
+      {
+        "characters": 38,
+        "documents": 1,
+        "ratio": 90,
+        "spacing": -4
+      },
+      {
+        "characters": 342,
+        "documents": 1,
+        "ratio": 90,
+        "spacing": -5
+      },
+      {
+        "characters": 5421,
+        "documents": 1,
+        "ratio": 90,
+        "spacing": -9
+      },
+      {
+        "characters": 118,
+        "documents": 3,
+        "ratio": 90,
+        "spacing": 0
+      },
+      {
+        "characters": 1853,
+        "documents": 1,
+        "ratio": 93,
+        "spacing": -6
+      },
+      {
+        "characters": 4,
+        "documents": 1,
+        "ratio": 95,
+        "spacing": -10
+      },
+      {
+        "characters": 68,
+        "documents": 1,
+        "ratio": 95,
+        "spacing": -2
+      },
+      {
+        "characters": 193,
+        "documents": 2,
+        "ratio": 95,
+        "spacing": -3
+      },
+      {
+        "characters": 10618,
+        "documents": 5,
+        "ratio": 95,
+        "spacing": -5
+      },
+      {
+        "characters": 44,
+        "documents": 1,
+        "ratio": 95,
+        "spacing": -7
+      },
+      {
+        "characters": 435,
+        "documents": 4,
+        "ratio": 95,
+        "spacing": 0
+      },
+      {
+        "characters": 21,
+        "documents": 1,
+        "ratio": 95,
+        "spacing": 50
+      },
+      {
+        "characters": 64,
+        "documents": 1,
+        "ratio": 96,
+        "spacing": -12
+      },
+      {
+        "characters": 2289,
+        "documents": 1,
+        "ratio": 96,
+        "spacing": -6
+      },
+      {
+        "characters": 522,
+        "documents": 1,
+        "ratio": 96,
+        "spacing": 0
+      },
+      {
+        "characters": 47,
+        "documents": 1,
+        "ratio": 97,
+        "spacing": -10
+      },
+      {
+        "characters": 12,
+        "documents": 1,
+        "ratio": 97,
+        "spacing": -19
+      },
+      {
+        "characters": 2364,
+        "documents": 1,
+        "ratio": 97,
+        "spacing": -3
+      },
+      {
+        "characters": 124,
+        "documents": 1,
+        "ratio": 97,
+        "spacing": -5
+      },
+      {
+        "characters": 116,
+        "documents": 1,
+        "ratio": 97,
+        "spacing": -7
+      },
+      {
+        "characters": 38,
+        "documents": 1,
+        "ratio": 97,
+        "spacing": -9
+      },
+      {
+        "characters": 8,
+        "documents": 1,
+        "ratio": 97,
+        "spacing": 18
+      },
+      {
+        "characters": 9,
+        "documents": 1,
+        "ratio": 97,
+        "spacing": 1
+      },
+      {
+        "characters": 4,
+        "documents": 1,
+        "ratio": 97,
+        "spacing": 3
+      },
+      {
+        "characters": 1078,
+        "documents": 1,
+        "ratio": 98,
+        "spacing": -2
+      },
+      {
+        "characters": 69,
+        "documents": 1,
+        "ratio": 98,
+        "spacing": -6
+      },
+      {
+        "characters": 61,
+        "documents": 1,
+        "ratio": 98,
+        "spacing": 0
+      },
+      {
+        "characters": 27,
+        "documents": 1,
+        "ratio": 99,
+        "spacing": 0
+      }
+    ],
+    "byStoredLineSeg": [
+      {
+        "characters": 1997,
+        "documents": 4,
+        "storedLineSeg": false
+      },
+      {
+        "characters": 173469,
+        "documents": 154,
+        "storedLineSeg": true
+      }
+    ],
+    "characters": 175466,
+    "documentUsageRows": 2318,
+    "documents": 157,
+    "documentsByFormat": {
+      "hwp": 115,
+      "hwpx": 42
+    }
+  },
+  "executionPolicy": {
+    "corpusSourceFilesOpened": 0,
+    "fullCorpusRerun": false,
+    "hyperVOracleRerun": false,
+    "nextStage": "kerning-off-baseline-and-capability-contract",
+    "productSourceMutation": false
+  },
+  "gates": {
+    "checkpointIdentityMatched": true,
+    "journalAggregateReconciled": true,
+    "privateCohortSeparated": true,
+    "recalculationOnly": true,
+    "w8OverlapFrozen": true
+  },
+  "inputs": {
+    "notoSansKrRegular": {
+      "artifact": "ttfs/opensource/NotoSansKR-Regular.ttf",
+      "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74"
+    },
+    "w5FixtureManifest": {
+      "artifact": "mydocs/tech/investigations/issue-4963/fixtures/oracle_typesetting_fixture.manifest.json",
+      "sha256": "adf7185faab35edaae62b6c77c5a60642b6a62eee3dc7656bd98042f368d1c3a"
+    },
+    "w8Rank1Disposition": {
+      "artifact": "mydocs/tech/investigations/issue-4967/rank1_metric_hypothesis.json",
+      "sha256": "916a9e253b4c515d50fd5ee609e75faed01e80fba35d660164d4a6c8bde908be"
+    },
+    "w8Rank7Disposition": {
+      "artifact": "mydocs/tech/investigations/issue-4967/rank7_private_qualification.json",
+      "sha256": "ce2c3fd1fa8ba7678625c7aec7a8123e1e034bdd825d43b51fdd62cf353fa436"
+    },
+    "w8Rank8Disposition": {
+      "artifact": "mydocs/tech/investigations/issue-4967/rank8_private_qualification.json",
+      "sha256": "f29fcec397a33f80146b68b873f0e4dae6fe9a4152d9ccbdc37b6a06f69beb88"
+    }
+  },
+  "issue": 4968,
+  "kind": "font-kerning-cohort-baseline",
+  "privacy": {
+    "absolutePathIncluded": false,
+    "fontBytesIncluded": false,
+    "privateDocumentHashIncluded": false,
+    "privateDocumentIdentityIncluded": false,
+    "privateDocumentNameIncluded": false
+  },
+  "schemaVersion": 1,
+  "stage": "W9-Q0",
+  "w3LocalAttestation": {
+    "aggregateSha256": "378671053ae94c02cda4caf8b8a4a1ac7866c3711fdf72c14aa527f8d9bc2888",
+    "checkpointChainSha256": "94d9bbe3cce4218728ff29def8ab24abb51ffc434ec395d8be663fdab6b03649",
+    "checkpointPolicySha256": "b71c1c29b0e6dd120260f97e5632d7d7ab4c09e156078b185f28bfceadccf5dd",
+    "documentCount": 10000,
+    "layoutCharacters": 54399371,
+    "sourceHead": "c1ec759f97eab0152fe8b38cef2e9fbbc50a5c6c",
+    "successfulDocuments": 9909,
+    "successfulDocumentsByFormat": {
+      "hwp": 6489,
+      "hwpx": 3420
+    }
+  },
+  "w8Freeze": {
+    "metricFallbackProductMutation": false,
+    "overlap": [
+      {
+        "characters": 0,
+        "documentFace": "문체부 바탕체",
+        "documents": 0,
+        "productMutationAuthorized": false,
+        "queueRank": 1,
+        "w8Disposition": "no-change"
+      },
+      {
+        "characters": 0,
+        "documentFace": "KoPubWorld돋움체 Light",
+        "documents": 0,
+        "productMutationAuthorized": false,
+        "queueRank": 7,
+        "w8Disposition": "no-change"
+      },
+      {
+        "characters": 42,
+        "documentFace": "KoPubWorld바탕체 Light",
+        "documents": 1,
+        "productMutationAuthorized": false,
+        "queueRank": 8,
+        "w8Disposition": "no-change"
+      }
+    ],
+    "status": "satisfied"
+  }
+}

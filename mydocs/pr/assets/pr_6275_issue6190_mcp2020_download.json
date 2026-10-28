@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "job_id": "19d040ed-a67f-462f-8c43-e2535ef46c5e",
+  "output_path": "/home/tsjang/rhwp/pdf/pr_6275/by_saved_version/pr6275_issue6190_center_align_first_line_indent-2020.pdf",
+  "output_filename": "pr6275_issue6190_center_align_first_line_indent-2020.pdf",
+  "size": 31269,
+  "sha256": "0f90dda4cba5261295fa809542cbeb43de53545421dd8c39ae15e5b292e049c9",
+  "server": {
+    "job_id": "19d040ed-a67f-462f-8c43-e2535ef46c5e",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "center_align_first_line_indent.hwp",
+    "output_filename": "pr6275_issue6190_center_align_first_line_indent-2020.pdf",
+    "size": 31269,
+    "sha256": "0f90dda4cba5261295fa809542cbeb43de53545421dd8c39ae15e5b292e049c9",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "12.0.0.4605",
+    "backend": "hwp-managed-direct-dll-host",
+    "elapsed_ms": 11915,
+    "worker_elapsed_ms": 11344,
+    "worker_bits": 32
+  }
+}

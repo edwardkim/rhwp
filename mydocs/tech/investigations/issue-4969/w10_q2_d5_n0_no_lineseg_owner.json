@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-d5-n0-no-lineseg-owner-result",
+  "issue": 4969,
+  "stage": "W10-Q2-D5-N0",
+  "status": "qualified",
+  "fixture": {
+    "text": "ᄒᆞᆫ글",
+    "font": "ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf",
+    "privateCorpusUsed": false,
+    "hyperVOrHancomOracleUsed": false
+  },
+  "featureDetection": {
+    "versionBranching": false,
+    "requiredModelLineSegCount": 0,
+    "requiredFrameIntervalCount": 1,
+    "editReflow": false,
+    "storedPrefix": false,
+    "splitCell": false,
+    "inlineControl": false,
+    "requiredFinalTargetCount": 1
+  },
+  "ownerTransaction": {
+    "retainsComposedOutcomeArc": true,
+    "consumerArcs": [
+      "line-selection",
+      "text-run-bbox",
+      "next-origin",
+      "page-sidecar-and-glyph-run"
+    ],
+    "allConsumerArcsPointerEqual": true,
+    "q2cFinalTargetArcPointerEqual": true,
+    "productPublished": false,
+    "productCallerCount": 0
+  },
+  "geometry": {
+    "rangeScalarStart": 0,
+    "rangeScalarEnd": 4,
+    "originXPx": 23.5,
+    "legacyLineWidthPx": 16.0,
+    "legacyBboxWidthPx": 16.0,
+    "legacyNextOriginXPx": 39.5,
+    "stagedLineWidthPx": 15.456,
+    "stagedBboxWidthPx": 15.456,
+    "stagedNextOriginXPx": 38.956,
+    "boundaryDeltaPx": -0.544,
+    "published": false
+  },
+  "typedRejects": [
+    "legacy-geometry-malformed",
+    "model-lineseg-present",
+    "frame-interval-count-unsupported",
+    "edit-reflow-unsupported",
+    "stored-prefix-unsupported",
+    "split-cell-unsupported",
+    "inline-control-unsupported",
+    "outcome-not-qualified",
+    "target-count-unsupported",
+    "emitted-run-rejected-with-d2-reason",
+    "replay-source-rejected-with-d4-reason",
+    "owner-identity-mismatch"
+  ],
+  "rollback": {
+    "resultContainsOnlyLegacyGeometry": true,
+    "partialBoundary": false,
+    "partialSidecar": false,
+    "partialResource": false,
+    "partialTarget": false
+  },
+  "redGreen": {
+    "red": "missing-n0-owner-api-compile-failure",
+    "firstGreenAttempt": "7-pass-1-float-exact-oracle-failure",
+    "oracleCorrection": "existing-d2-absolute-tolerance-1e-12",
+    "final": "8-pass-0-fail"
+  },
+  "harnessLineageCorrection": {
+    "cause": "r1-kerning-exact-resource-resolver-added-paint-helper-dependency",
+    "productApiWidened": false,
+    "newIntegrationSource": false,
+    "normalizedExistingSources": [
+      "tests/cases/issue_4969_shaping_emitted_run_mapping.rs",
+      "tests/cases/issue_4969_shaping_composition_handoff.rs",
+      "tests/cases/issue_4969_shaping_page_sidecar.rs",
+      "tests/cases/issue_4969_shaping_paragraph_transaction.rs",
+      "tests/cases/issue_4969_shaping_shadow_context.rs"
+    ]
+  },
+  "validation": {
+    "n0AndD2Passed": 8,
+    "adjacentSourceIntegrationPassed": 34,
+    "integrationPolicyPassed": 18,
+    "unitTierTests": 4221,
+    "unitTierModules": 299,
+    "unitTierViolationCount": 0,
+    "canvasKitD4Replay": "pass",
+    "canvasKitInk": "58x34",
+    "canvasKitOldContractInk": "58x38",
+    "canvasKitPageAdvancePx": 61.824,
+    "canvasKitFontCoverage": "pass",
+    "rendererContract": "pass",
+    "releaseLibClippy": "pass",
+    "focusedRustfmt": "pass",
+    "taskWorktreeCargoFmt": "not-entered-missing-generated-suite-sources",
+    "cargoFmtRequiredInPreparedReviewWorktreeBeforePush": true,
+    "generatedArtifactsChanged": false,
+    "sourceCfgTestChanged": false,
+    "productOutputChanged": false
+  },
+  "nextSlice": "Q2-D5-N1",
+  "nextSliceApproved": false,
+  "checkpointCommitApproved": false,
+  "pushReady": false
+}

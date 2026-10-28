@@ -1,0 +1,699 @@
+{
+  "status": "partial_correction_verified_integration_on_hold",
+  "branch": "review/planet6897-green-20261002",
+  "head_before_change": "92b33d37cc59e80092db8ed8b23c10f86b15a131",
+  "base": "8497729b4fb0e071c484fc5740f9bb2400bed437",
+  "scope": "현재 통합 브랜치에서 도입한 실제 회귀만 보정. KTX 기준PDF 교체/글꼴 설치/기존 전체 피델리티 개선 제외",
+  "analysis": "단을 여는 전체 TAC 표의 저장 원점과 후속 호스트 글줄의 원점이 다르게 해석돼 #6267의 3개 글줄 겹침 발생. 첫 저장 줄 0과 같은 단의 유효한 단조 증가 사다리를 확인하고 원점을 공유한다.",
+  "consumer_path": [
+    "entry.rs source_text_origin -> ParagraphFloatPlacement stored_host_origin/table_top/occupied_bottom",
+    "entry.rs resolved_host_placement -> whole_frame_budget -> record_paragraph_float_placement",
+    "layout.rs paragraph_float_placements -> 글줄 원점과 전체 Table 실제 배치"
+  ],
+  "source_files": {
+    "src/renderer/typeset/table/block/entry.rs": "61355ab6e6441f036dd2ba8fcdf19a6a95c99e51a28bc9efd4083798355d4b1c",
+    "src/renderer/typeset/table/block/prepare.rs": "50c12d87e5c2ba5be92668c52a238e01f382fb349025b75592e91da3dc95f846",
+    "src/renderer/float_placement.rs": "4db856f5eba6f3c19851e290ce559be82200bcc51130f1deb3875ecc033d7d35",
+    "src/renderer/layout.rs": "e456a378e18e4095de0d1bf8d3297e6770e1bfe3d76ff29c6b309db3d864310a",
+    "src/renderer/layout/paragraph_layout.rs": "bb6ed8f4292913a23f47f4b3e436b64de2e60bf5106043df1d5e8262b2faa235",
+    "src/renderer/composer/line_breaking.rs": "47b2e5b89f4b65d1a7e0ff70d8202482530fa929ad10a808a50224a97ae3a047"
+  },
+  "visual": {
+    "state": "complete",
+    "commands": [
+      {
+        "name": "6267-review-scope-para6267-native",
+        "command": [
+          "venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "samples/issue6267/kdt_result_para_float_table.hwpx",
+          "--pdf",
+          "pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6277_issue6267_kdt_result_para_float_table-2020.pdf",
+          "--key",
+          "6267-review-scope-para6267-native",
+          "--rhwp-bin",
+          "target/pr-review/release-test/rhwp",
+          "--embed-fonts",
+          "full",
+          "--silhouette-only",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-para6267-native"
+        ],
+        "exit_code": 0,
+        "seconds": 28.172
+      },
+      {
+        "name": "form002-native-tree",
+        "command": [
+          "target/pr-review/release-test/rhwp",
+          "export-render-tree",
+          "samples/hwpx/form-002.hwpx",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-form002-native-tree"
+        ],
+        "exit_code": 0,
+        "seconds": 0.217
+      },
+      {
+        "name": "social6797-native-tree",
+        "command": [
+          "target/pr-review/release-test/rhwp",
+          "export-render-tree",
+          "samples/issue6797/156160455-social-pig-farm-income.hwp",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-social6797-native-tree"
+        ],
+        "exit_code": 0,
+        "seconds": 0.076
+      },
+      {
+        "name": "slice5701-native-tree",
+        "command": [
+          "target/pr-review/release-test/rhwp",
+          "export-render-tree",
+          "samples/issue5701/1270000-202200012_slice_p76_rewound_host.hwp",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-slice5701-native-tree"
+        ],
+        "exit_code": 0,
+        "seconds": 0.021
+      },
+      {
+        "name": "stale1835-native-tree",
+        "command": [
+          "target/pr-review/release-test/rhwp",
+          "export-render-tree",
+          "samples/issue1835_tac_stale_height.hwp",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-stale1835-native-tree"
+        ],
+        "exit_code": 0,
+        "seconds": 0.022
+      },
+      {
+        "name": "probe1789-native-tree",
+        "command": [
+          "target/pr-review/release-test/rhwp",
+          "export-render-tree",
+          "samples/task1789/exclusion_probe_line_spacing.hwpx",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-probe1789-native-tree"
+        ],
+        "exit_code": 0,
+        "seconds": 0.023
+      },
+      {
+        "name": "h01-native-tree",
+        "command": [
+          "target/pr-review/release-test/rhwp",
+          "export-render-tree",
+          "samples/hwpx/hwpx-h-01.hwpx",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-h01-native-tree"
+        ],
+        "exit_code": 0,
+        "seconds": 0.113
+      },
+      {
+        "name": "6267-review-scope-h01-native",
+        "command": [
+          "venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "samples/hwpx/hwpx-h-01.hwpx",
+          "--pdf",
+          "pdf/hwpx/hwpx-h-01-hwpx-2020.pdf",
+          "--key",
+          "6267-review-scope-h01-native",
+          "--rhwp-bin",
+          "target/pr-review/release-test/rhwp",
+          "--embed-fonts",
+          "full",
+          "--silhouette-only",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-h01-native"
+        ],
+        "exit_code": 0,
+        "seconds": 161.394
+      },
+      {
+        "name": "fresh-wasm",
+        "command": [
+          "env",
+          "CARGO_TARGET_DIR=target/pr-review",
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "exit_code": 0,
+        "seconds": 161.418
+      },
+      {
+        "name": "6267-review-scope-para6267-wasm",
+        "command": [
+          "venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "samples/issue6267/kdt_result_para_float_table.hwpx",
+          "--pdf",
+          "pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6277_issue6267_kdt_result_para_float_table-2020.pdf",
+          "--key",
+          "6267-review-scope-para6267-wasm",
+          "--rhwp-bin",
+          "target/pr-review/release-test/rhwp",
+          "--embed-fonts",
+          "full",
+          "--silhouette-only",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-para6267-wasm",
+          "--wasm-pkg",
+          "pkg"
+        ],
+        "exit_code": 0,
+        "seconds": 25.279
+      },
+      {
+        "name": "form002-wasm-tree",
+        "command": [
+          "node",
+          "scripts/export-wasm-for-sweep.mjs",
+          "--pkg",
+          "pkg",
+          "--input",
+          "samples/hwpx/form-002.hwpx",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-form002-wasm"
+        ],
+        "exit_code": 0,
+        "seconds": 1.496
+      },
+      {
+        "name": "social6797-wasm-tree",
+        "command": [
+          "node",
+          "scripts/export-wasm-for-sweep.mjs",
+          "--pkg",
+          "pkg",
+          "--input",
+          "samples/issue6797/156160455-social-pig-farm-income.hwp",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-social6797-wasm"
+        ],
+        "exit_code": 0,
+        "seconds": 1.459
+      },
+      {
+        "name": "slice5701-wasm-tree",
+        "command": [
+          "node",
+          "scripts/export-wasm-for-sweep.mjs",
+          "--pkg",
+          "pkg",
+          "--input",
+          "samples/issue5701/1270000-202200012_slice_p76_rewound_host.hwp",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-slice5701-wasm"
+        ],
+        "exit_code": 0,
+        "seconds": 1.265
+      },
+      {
+        "name": "stale1835-wasm-tree",
+        "command": [
+          "node",
+          "scripts/export-wasm-for-sweep.mjs",
+          "--pkg",
+          "pkg",
+          "--input",
+          "samples/issue1835_tac_stale_height.hwp",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-stale1835-wasm"
+        ],
+        "exit_code": 0,
+        "seconds": 1.423
+      },
+      {
+        "name": "probe1789-wasm-tree",
+        "command": [
+          "node",
+          "scripts/export-wasm-for-sweep.mjs",
+          "--pkg",
+          "pkg",
+          "--input",
+          "samples/task1789/exclusion_probe_line_spacing.hwpx",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-probe1789-wasm"
+        ],
+        "exit_code": 0,
+        "seconds": 1.218
+      },
+      {
+        "name": "h01-wasm-tree",
+        "command": [
+          "node",
+          "scripts/export-wasm-for-sweep.mjs",
+          "--pkg",
+          "pkg",
+          "--input",
+          "samples/hwpx/hwpx-h-01.hwpx",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-h01-wasm"
+        ],
+        "exit_code": 0,
+        "seconds": 1.61
+      },
+      {
+        "name": "6267-review-scope-h01-wasm",
+        "command": [
+          "venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "samples/hwpx/hwpx-h-01.hwpx",
+          "--pdf",
+          "pdf/hwpx/hwpx-h-01-hwpx-2020.pdf",
+          "--key",
+          "6267-review-scope-h01-wasm",
+          "--rhwp-bin",
+          "target/pr-review/release-test/rhwp",
+          "--embed-fonts",
+          "full",
+          "--silhouette-only",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-h01-wasm",
+          "--wasm-pkg",
+          "pkg"
+        ],
+        "exit_code": 0,
+        "seconds": 243.513
+      }
+    ],
+    "counters": {
+      "form002-native": {
+        "current": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-form002-native-tree",
+        "prior": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-form002-native-tree",
+        "pages": 10,
+        "prior_pages": 10,
+        "byte_identical": true
+      },
+      "social6797-native": {
+        "current": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-social6797-native-tree",
+        "prior": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-social6797-native-tree",
+        "pages": 11,
+        "prior_pages": 11,
+        "byte_identical": true
+      },
+      "slice5701-native": {
+        "current": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-slice5701-native-tree",
+        "prior": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-slice5701-native-tree",
+        "pages": 3,
+        "prior_pages": 3,
+        "byte_identical": true
+      },
+      "stale1835-native": {
+        "current": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-stale1835-native-tree",
+        "prior": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-stale1835-native/stale1835-body-border-verified-stale1835-native/render_tree",
+        "pages": 3,
+        "prior_pages": 3,
+        "byte_identical": true
+      },
+      "probe1789-native": {
+        "current": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-probe1789-native-tree",
+        "prior": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-probe1789-native/stale1835-body-border-verified-probe1789-native/render_tree",
+        "pages": 2,
+        "prior_pages": 2,
+        "byte_identical": true
+      },
+      "h01-native": {
+        "current": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-h01-native-tree",
+        "prior": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-h01-native/stale1835-body-border-verified-h01-native/render_tree",
+        "pages": 9,
+        "prior_pages": 9,
+        "byte_identical": false
+      },
+      "form002-wasm": {
+        "current": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-form002-wasm/render_tree",
+        "prior": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-form002-wasm/render_tree",
+        "pages": 10,
+        "prior_pages": 10,
+        "byte_identical": true
+      },
+      "social6797-wasm": {
+        "current": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-social6797-wasm/render_tree",
+        "prior": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-social6797-wasm/render_tree",
+        "pages": 11,
+        "prior_pages": 11,
+        "byte_identical": true
+      },
+      "slice5701-wasm": {
+        "current": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-slice5701-wasm/render_tree",
+        "prior": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-slice5701-wasm/render_tree",
+        "pages": 3,
+        "prior_pages": 3,
+        "byte_identical": true
+      },
+      "stale1835-wasm": {
+        "current": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-stale1835-wasm/render_tree",
+        "prior": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-stale1835-wasm/stale1835-body-border-verified-stale1835-wasm/render_tree",
+        "pages": 3,
+        "prior_pages": 3,
+        "byte_identical": true
+      },
+      "probe1789-wasm": {
+        "current": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-probe1789-wasm/render_tree",
+        "prior": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-probe1789-wasm/stale1835-body-border-verified-probe1789-wasm/render_tree",
+        "pages": 2,
+        "prior_pages": 2,
+        "byte_identical": true
+      },
+      "h01-wasm": {
+        "current": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/6267-review-scope-h01-wasm/render_tree",
+        "prior": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/stale1835-body-border-verified-h01-wasm/stale1835-body-border-verified-h01-wasm/render_tree",
+        "pages": 9,
+        "prior_pages": 9,
+        "byte_identical": false
+      }
+    },
+    "gate_state": "tests_failed",
+    "code_files": {
+      "src/renderer/typeset/table/block/entry.rs": "61355ab6e6441f036dd2ba8fcdf19a6a95c99e51a28bc9efd4083798355d4b1c",
+      "src/renderer/typeset/table/block/prepare.rs": "50c12d87e5c2ba5be92668c52a238e01f382fb349025b75592e91da3dc95f846",
+      "src/renderer/float_placement.rs": "4db856f5eba6f3c19851e290ce559be82200bcc51130f1deb3875ecc033d7d35",
+      "src/renderer/layout.rs": "e456a378e18e4095de0d1bf8d3297e6770e1bfe3d76ff29c6b309db3d864310a",
+      "src/renderer/layout/paragraph_layout.rs": "bb6ed8f4292913a23f47f4b3e436b64de2e60bf5106043df1d5e8262b2faa235",
+      "src/renderer/composer/line_breaking.rs": "47b2e5b89f4b65d1a7e0ff70d8202482530fa929ad10a808a50224a97ae3a047"
+    }
+  },
+  "gates": {
+    "head_before_changes": "92b33d37cc59e80092db8ed8b23c10f86b15a131",
+    "state": "tests_failed",
+    "gates": [
+      {
+        "gate": "prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.766,
+        "log": "output/pr-review/planet6897-green-20261002/6267-review-scope-gates-prepare.log"
+      },
+      {
+        "gate": "format",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 6.203,
+        "log": "output/pr-review/planet6897-green-20261002/6267-review-scope-gates-format.log"
+      },
+      {
+        "gate": "prepare-formatted",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.597,
+        "log": "output/pr-review/planet6897-green-20261002/6267-review-scope-gates-prepare-formatted.log"
+      },
+      {
+        "gate": "focused",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_001",
+          "--test",
+          "regression_suite_012",
+          "--test",
+          "regression_suite_016",
+          "--test",
+          "regression_suite_009",
+          "--test",
+          "regression_suite_017",
+          "--test",
+          "regression_suite_025",
+          "--test",
+          "regression_suite_019",
+          "--test",
+          "regression_suite_026",
+          "-E",
+          "test(/issue_6267_para_float_table_overlap::/) | test(/issue_6950_paragraph_end_topbottom_anchor::/) | test(/issue_1789_exclusion_probe_line_spacing::/) | test(/issue_1835_tac_stale_height::/) | test(/issue_5701_rewound_float_host_double_paint::/) | test(/issue_6797_table_item_clears_float_band::/) | test(/issue_2097_terminal_row_physical_ownership::/) | test(/issue_7482_shared_paragraph_table_rows::/) | test(/issue_7481_no_lineseg_square_table_host_text::/)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 100,
+        "elapsed_seconds": 28.993,
+        "log": "output/pr-review/planet6897-green-20261002/6267-review-scope-gates-focused.log"
+      },
+      {
+        "gate": "restore-current-cli",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--bin",
+          "rhwp"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 101.401,
+        "log": "output/pr-review/planet6897-green-20261002/6267-review-scope-gates-restore-current-cli.log"
+      },
+      {
+        "gate": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 7.126,
+        "log": "output/pr-review/planet6897-green-20261002/6267-review-scope-gates-fmt.log"
+      },
+      {
+        "gate": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 29.378,
+        "log": "output/pr-review/planet6897-green-20261002/6267-review-scope-gates-native-clippy.log"
+      },
+      {
+        "gate": "wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 17.635,
+        "log": "output/pr-review/planet6897-green-20261002/6267-review-scope-gates-wasm-clippy.log"
+      },
+      {
+        "gate": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 41.471,
+        "log": "output/pr-review/planet6897-green-20261002/6267-review-scope-gates-workspace-build.log"
+      },
+      {
+        "gate": "all-target-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 72.103,
+        "log": "output/pr-review/planet6897-green-20261002/6267-review-scope-gates-all-target-clippy.log"
+      },
+      {
+        "gate": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "8497729b4fb0e071c484fc5740f9bb2400bed437"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.665,
+        "log": "output/pr-review/planet6897-green-20261002/6267-review-scope-gates-manifest.log"
+      }
+    ]
+  },
+  "focused_rerun": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_001",
+      "--test",
+      "regression_suite_012",
+      "--test",
+      "regression_suite_016",
+      "--test",
+      "regression_suite_009",
+      "--test",
+      "regression_suite_017",
+      "--test",
+      "regression_suite_025",
+      "--test",
+      "regression_suite_019",
+      "--test",
+      "regression_suite_026",
+      "-E",
+      "test(/issue_6267_para_float_table_overlap::/) | test(/issue_6950_paragraph_end_topbottom_anchor::/) | test(/issue_1789_exclusion_probe_line_spacing::/) | test(/issue_1835_tac_stale_height::/) | test(/issue_5701_rewound_float_host_double_paint::/) | test(/issue_6797_table_item_clears_float_band::/) | test(/issue_2097_terminal_row_physical_ownership::/) | test(/issue_7482_shared_paragraph_table_rows::/) | test(/issue_7481_no_lineseg_square_table_host_text::/)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 197.2809920310974,
+    "log": "output/pr-review/planet6897-green-20261002/6267-review-scope-focused-rerun.log"
+  },
+  "initial_three_failures": "base 대조 빌드 후 첫 집중 실행 59PASS/3FAIL. 현재 브랜치 library 재빌드 후 소스/검사 변경 없이 62PASS. 이전 실패 로그 보존. 첫 결과를 통과 증거로 쓰지 않음.",
+  "unchanged": [
+    "기존 테스트 함수와 기대값",
+    "원본 HWPX와 독립 한컴 PDF",
+    "prepare.rs",
+    "visual_sweep.py와 임계값",
+    "글꼴 설치 상태"
+  ],
+  "remaining": [
+    "KTX·#2439 신규 겹침",
+    "기존 #6761·#7359·synam001 간격 실패",
+    "최종 전체 nextest/Skia",
+    "통합 PR와 CI 및 후속 처리"
+  ],
+  "inputs": {
+    "samples/issue6267/kdt_result_para_float_table.hwpx": {
+      "sha256": "48b761c03604a742d036e9349ab793964b518c40cd32219578fff1e6c647bf33",
+      "matches_HEAD": true
+    },
+    "pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6277_issue6267_kdt_result_para_float_table-2020.pdf": {
+      "sha256": "39721580d7d485035fad3f8486bc1c200fb09b1d347eccc4ce7352e5bb2f74ba",
+      "matches_HEAD": true
+    },
+    "tests/cases/issue_6267_para_float_table_overlap.rs": {
+      "sha256": "28f0781d04f16083217fcfb4051d37acc8ea744524f805fb02bbcf5ae6e8aa26",
+      "matches_HEAD": true
+    }
+  },
+  "focused135": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_015",
+      "--test",
+      "regression_suite_021",
+      "--test",
+      "regression_suite_022",
+      "--test",
+      "regression_suite_027",
+      "--test",
+      "regression_suite_016",
+      "--test",
+      "regression_suite_028",
+      "--test",
+      "regression_suite_017",
+      "--test",
+      "regression_suite_012",
+      "--test",
+      "regression_suite_011",
+      "--test",
+      "regression_suite_025",
+      "--test",
+      "regression_suite_018",
+      "--test",
+      "regression_suite_024",
+      "--test",
+      "regression_suite_001",
+      "--test",
+      "regression_suite_009",
+      "--test",
+      "regression_suite_019",
+      "--test",
+      "regression_suite_026",
+      "--test",
+      "regression_suite_006",
+      "--test",
+      "regression_suite_013",
+      "-E",
+      "test(/issue_5711_para_border_negative_spacing::/) | test(/issue_6104_tac_title_over_table::/) | test(/issue_7288_stale_frame_empty_paragraph::/) | test(/body_overflow_baseline::body_overflow_does_not_grow_partition_(10|13)$/) | test(/issue_1789_exclusion_probe_line_spacing::/) | test(/oracle_page_count_baseline::/) | test(/svg_snapshot::/) | test(/issue_5701_rewound_float_host_double_paint::/) | test(/issue_6950_paragraph_end_topbottom_anchor::/) | test(/issue_5584_float_host_title_above_table::/) | test(/issue_6797_table_item_clears_float_band::/) | test(/issue_2097_terminal_row_physical_ownership::/) | test(/issue_6184_tail_line_before_deferred_table::/) | test(/issue_6761_band_absorbs_spacing_before::/) | test(/issue_synam001_visible_float_host_line_overlap::/) | test(/issue_7359_page_top_table_spacing::/) | test(/text_overlap_baseline::/) | test(/issue_6267_para_float_table_overlap::/) | test(/issue_1835_tac_stale_height::/) | test(/issue_7482_shared_paragraph_table_rows::/) | test(/issue_7481_no_lineseg_square_table_host_text::/) | test(/issue_2319_no_lineseg_tac_table_height::/) | test(/issue_7418_condense_new_word_needs_natural_fit::/) | test(/issue_7418_ascii_punct_uses_latin_slot::/) | test(/issue_7418_host_text_and_split_row_geometry::/)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "exit_code": 100,
+    "elapsed_seconds": 119.49241709709167,
+    "log": "output/pr-review/planet6897-green-20261002/6267-review-scope-focused135.log",
+    "summary": "Summary [  70.224s] 135 tests run: 130 passed (1 slow), 5 failed, 3721 skipped"
+  }
+}

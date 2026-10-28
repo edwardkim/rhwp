@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q1-schema-sufficiency-audit",
+  "issue": 4969,
+  "stage": "W10-Q1",
+  "status": "qualified-with-q2-diagnostic-handoff",
+  "productSchemaMutation": false,
+  "appliedPath": {
+    "verdict": "sufficient-with-producer-canonicalization",
+    "mappings": [
+      {
+        "contract": "exact-font-source-and-face-index",
+        "existing": [
+          "ShapeKey.fontInstance.faceKey",
+          "FontFaceResource.blobKey",
+          "FontFaceResource.faceIndex",
+          "FontBlobResource.digest",
+          "FontBlobResource.dataRef"
+        ],
+        "note": "digest algorithm is declared; current resource identity is blake3 and must not be compared as if it were the Q1 sha256 string"
+      },
+      {
+        "contract": "direction-writing-mode-script-language",
+        "existing": [
+          "ShapeKey.direction",
+          "ShapeKey.writingMode",
+          "ShapeKey.script",
+          "ShapeKey.language"
+        ],
+        "note": "vertical top-to-bottom shaping is derived from writingMode while TextDirection retains bidi direction"
+      },
+      {
+        "contract": "ordered-features-and-canonical-variation-instance",
+        "existing": [
+          "ShapeKey.features",
+          "FontInstanceKey.variations"
+        ],
+        "note": "vectors preserve order but do not enforce canonicalization; the producer must preserve feature order and sort axes by tag"
+      },
+      {
+        "contract": "glyph-id-position-advance-offset",
+        "existing": [
+          "LayerGlyphRunPaint.glyphIds",
+          "LayerGlyphRunPaint.positions",
+          "LayerGlyphRunPaint.advances",
+          "LayerGlyphRunPaint.placement"
+        ],
+        "note": "rustybuzz offsets are folded into positions and advances remain explicit after font-unit scaling"
+      },
+      {
+        "contract": "source-range-and-many-to-many-clusters",
+        "existing": [
+          "LayerGlyphRunPaint.source",
+          "LayerGlyphRunPaint.clusters",
+          "GlyphCluster.sourceRangeUtf8",
+          "GlyphCluster.sourceRangeUtf16",
+          "GlyphCluster.glyphRange",
+          "GlyphCluster.flags"
+        ],
+        "note": "schema supports ligatures and shared clusters; Q2 conversion must be direction-aware and must not assume one character per glyph"
+      },
+      {
+        "contract": "shaper-and-fallback-lineage",
+        "existing": [
+          "ShapeKey.shapingEngine",
+          "ShapeKey.fallbackPolicy",
+          "GlyphRunDiagnostics.replayEligibility",
+          "GlyphRunDiagnostics.quality"
+        ],
+        "note": "backend variation vertical and face-index rejection are capability policy rather than missing transport fields"
+      }
+    ]
+  },
+  "canonicalizationRequirements": [
+    "feature order is preserved",
+    "variation axes are unique and sorted by tag",
+    "negative zero is normalized before identity hashing",
+    "OpenTypeFeatureSetting enabled and value states map to one unambiguous u32 value",
+    "font size and synthetic style remain FontInstanceKey inputs even though Q1 rustybuzz font-unit oracle is size-independent",
+    "digest values are compared only with the declared algorithm"
+  ],
+  "rejectedPath": {
+    "verdict": "public-trace-gap",
+    "evidence": [
+      "ShapingOutputDecision preserves typed disposition and reason in the standalone Q1 boundary",
+      "GlyphRunDiagnostics exists only when a GlyphRun is emitted",
+      "TextShapeDiagnostic carries a free-form reason but no typed disposition",
+      "TextShapeReport is not retained by PageLayerTree JSON",
+      "TextV2Diagnostics derives slots from emitted GlyphRun or GlyphOutline variants, so a rejected attempt with only TextRun is invisible"
+    ],
+    "forbiddenShortcut": "do not encode disposition only inside GlyphRunDiagnostics.reason because rejected requests have no GlyphRun",
+    "q2MinimumHandoff": {
+      "owner": "common shaping attempt result before optional GlyphRun emission",
+      "requiredFields": [
+        "sourceSpanOrBoundedRunId",
+        "disposition",
+        "reason",
+        "glyphCount"
+      ],
+      "optionalWhenUnavailable": [
+        "settingsSha256",
+        "fontSourceSha256"
+      ],
+      "privacy": [
+        "no raw text",
+        "no font bytes duplication in diagnostics",
+        "no local font path",
+        "no private corpus identity"
+      ],
+      "limit": 4096,
+      "schemaRevisionRequiredOnlyWhenPublicPageLayerTreeSerializationIsEnabled": true
+    }
+  },
+  "q1Exit": {
+    "standaloneRequestCapabilityDispositionContract": "qualified",
+    "appliedGlyphTransport": "qualified",
+    "newProductFieldRequiredInQ1": false,
+    "q2EntryPrecondition": "design and approve the bounded rejected-attempt sidecar before connecting shaping to layout"
+  }
+}

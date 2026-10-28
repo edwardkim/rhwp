@@ -1,0 +1,75 @@
+{
+  "previous_ci_head": "076b19d364a552b5c38da1a9639e48587f6f8b1e",
+  "scope": "CI execution registration only; original renderer, Rust assertions, inputs/PDF and thresholds unchanged",
+  "case": "issue_8160_hwp2022_paragraph_relations",
+  "native_only_test": "issue_8160_sample16_2022_compound_page_border_keeps_both_print_coverage_bands",
+  "previous_ci_default_issue8160_passed": 86,
+  "previous_native_job_did_not_invoke_case": true,
+  "added_profiles": [
+    "release-test",
+    "release"
+  ],
+  "native_owned_path": "tests/cases/issue_8160_hwp2022_paragraph_relations.rs",
+  "local": {
+    "actionlint_exit_code": 0,
+    "node_passed": 117,
+    "python_passed": 66,
+    "native_case_passed": 3,
+    "native_case_failed": 0,
+    "native_case_filtered": 266,
+    "native_case_seconds": 37.89,
+    "validated_rust_source": "949195dba653cdef8d8fa1506131f5db2f669e78",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "--cargo-test",
+      "issue_8160_hwp2022_paragraph_relations",
+      "--",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--target-dir",
+      "/home/tsjang/rhwp/target/pr-review",
+      "--verbose"
+    ],
+    "log_sha256": {
+      "actionlint-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "node-final.log": "199939a34ac462ed2fe21237b3180c3802a300332b39ba3ae38830aca33f88ec",
+      "python-final.log": "77241058acbc5f011dea70c5536f9018fd8819a6169b12b5b8d5c774c1995da4",
+      "native-case.log": "3c87034f56f7b55e42e6cf6148d4cf9dba51e1706541156856f3b699962eb35c"
+    }
+  },
+  "new_head_ci": "Pending remote push; must verify the actual Native-only assertion PASS on the new CI head before merge",
+  "classifier_boundary": {
+    "input": {
+      "eventName": "pull_request",
+      "files": [
+        {
+          "filename": "tests/cases/issue_8160_hwp2022_paragraph_relations.rs",
+          "status": "modified"
+        }
+      ]
+    },
+    "before": {
+      "rust_required": "true",
+      "frontend_mode": "none",
+      "render_required": "false",
+      "native_skia_required": "false",
+      "codeql_languages": "rust",
+      "classification_status": "classified",
+      "classifier_version": "8",
+      "reason": "classified:rust"
+    },
+    "after": {
+      "rust_required": "true",
+      "frontend_mode": "none",
+      "render_required": "false",
+      "native_skia_required": "true",
+      "codeql_languages": "rust",
+      "classification_status": "classified",
+      "classifier_version": "8",
+      "reason": "classified:native-skia-rust"
+    }
+  }
+}

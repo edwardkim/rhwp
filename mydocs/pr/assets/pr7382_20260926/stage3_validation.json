@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "stage": "maintainer correction 3; held",
+  "producer_head": "22d23872c04b03534cfb4308c11e2d0a11bca7aa",
+  "producer_worktree_rust_diff_sha256": "ab493546327acb1d0305b0f6c4b19904a88220173ab5a42749fdaedef80110d6",
+  "before": {
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 0.234,
+    "failure": "row4 prefix absent on physical76"
+  },
+  "intermediate": {
+    "passed": 5,
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 0.822,
+    "failure": "figure51 caption908.973 versus independent PDF913.379"
+  },
+  "focused": {
+    "passed": 6,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 0.889
+  },
+  "focused_and_normal_final": {
+    "passed": 75,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 1.742
+  },
+  "page_count": {
+    "actual": 218,
+    "pdf": 215,
+    "status": "re_review_required"
+  },
+  "native": {
+    "pages": [
+      76,
+      77
+    ],
+    "tolerant_content_match_percent": [
+      96.49182,
+      98.35446
+    ],
+    "selected_gate": "passed",
+    "exit_code": 0,
+    "direct_inspection": [
+      "review76",
+      "review77",
+      "overlay76",
+      "overlay77"
+    ],
+    "font_exception": false
+  },
+  "remaining": [
+    "table885 own-note reservation",
+    "table1822 oversized single-cell notes and later page boundaries",
+    "terminal caption budget failure branch",
+    "final head full Rust/Skia/lint/fresh WASM"
+  ]
+}

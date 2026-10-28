@@ -1,0 +1,221 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q5-final-qualification",
+  "issue": 4969,
+  "stage": "W10-Q5-E",
+  "date": "2026-08-31",
+  "status": "qualified-approved",
+  "classification": "bounded-subset",
+  "resultApproval": "explicit",
+  "checkpointApproved": true,
+  "current": {
+    "branch": "task_m100_4969_w10_q5",
+    "productMergeHead": "3afbb066fe93724ab44309163a2e04efb954bf18",
+    "q5Checkpoints": {
+      "evidenceEligibility": "a8371d976",
+      "canonicalParity": "0367ac865",
+      "boundedAtomicLedger": "7d9909791",
+      "performanceResourceLedger": "4d107fe09"
+    },
+    "productMutationInQ5": false,
+    "testSourcesModifiedInQ5": 3,
+    "newIntegrationSources": 0
+  },
+  "lanes": [
+    {
+      "id": "q2-horizontal-old-hangul",
+      "classification": "bounded-subset",
+      "source": "SourceHanSerifK-OldHangul-subset.otf",
+      "supported": {
+        "writingMode": "horizontal-tb",
+        "direction": "ltr",
+        "exactPortableSource": true,
+        "targetClass": "direct-old-hangul-complex-required",
+        "activeLanes": [
+          "stored-boundary-strict",
+          "no-lineseg-atomic"
+        ],
+        "nativeProducer": true,
+        "nodeWasmProducer": true,
+        "canvasKitReplay": "bounded-strict-common-glyph-run"
+      },
+      "fallback": {
+        "canvas2d": "deterministic-text-run",
+        "legacySvg": "deterministic-text-run",
+        "nativeSkia": "deterministic-text-run",
+        "ownerOrder": [
+          "w9-k1",
+          "existing-k0-text-run"
+        ]
+      },
+      "deferred": [
+        "rtl-and-bidi-product-replay",
+        "latin-default-liga-general-activation",
+        "multi-line-or-multi-run-batch",
+        "mixed-target-run-splitting",
+        "multi-interval-frame",
+        "general-edit-reflow",
+        "stored-prefix",
+        "split-cell-recovery",
+        "inline-control",
+        "center-right-justify-distribute",
+        "ratio-identity-or-expansion",
+        "nonzero-gpos-y-positioning",
+        "native-skia-portable-blob-typeface-replay",
+        "public-rejected-attempt-annotation"
+      ],
+      "reason": "two explicit horizontal lanes are qualified while all other surfaces deterministically retain W9 K1 or K0 TextRun ownership"
+    },
+    {
+      "id": "q3-variable-instance",
+      "classification": "qualified",
+      "source": "HappinessSansVF.ttf",
+      "supported": {
+        "exactDefault": "unchanged-text-run",
+        "explicitDefault": "unchanged-text-run",
+        "explicitInteriorAndMax": "bounded-glyph-run-and-portable-outline",
+        "canvasKitReplay": true,
+        "maximumVariationAxes": 16,
+        "maximumInstanceRequests": 4096,
+        "maximumPageVariants": 4
+      },
+      "fallback": {
+        "unsupportedBackendNonDefault": "deterministic-text-run",
+        "invalidOrIncompleteInstance": "atomic-paragraph-rollback"
+      },
+      "reason": "the frozen explicit-instance contract passes canonical, performance, resource, cache and rollback gates without changing default output"
+    },
+    {
+      "id": "q4-vertical-hwp5-table-cell-v1",
+      "classification": "bounded-subset",
+      "source": "NotoSansKR-Regular.ttf",
+      "supported": {
+        "scope": "boundedVerticalHwp5TableCellV1",
+        "backend": "CanvasKit",
+        "exactPortableSource": true,
+        "verticalMetricsRequired": [
+          "vhea",
+          "vmtx"
+        ],
+        "glyphAndLeafPublication": "atomic"
+      },
+      "fallback": {
+        "unsupportedBackendOrTuple": "deterministic-text-run-and-legacy-vertical-geometry",
+        "missingOrMalformedVerticalMetrics": "pristine-legacy-geometry"
+      },
+      "historicalBlockedClassification": {
+        "preserved": true,
+        "resolvedBy": "w10_q4_d5_d_causal_wasm_result.json",
+        "resolution": "clean-room source-only baseline construction supplied the missing same-tree causal WASM receipt"
+      },
+      "reason": "correctness, runtime parity, corrected performance and causal WASM evidence qualify only the frozen table-cell tuple"
+    }
+  ],
+  "mergedHeadParity": {
+    "nativeFocusedPassed": 114,
+    "nativeFocusedFailed": 0,
+    "nodeWasmPassed": 19,
+    "nodeWasmFailed": 0,
+    "studioCanvasKitPassed": 1,
+    "studioCanvasKitFailed": 0,
+    "supportedNativeToWasmCanonicalMismatch": 0,
+    "canvasKitReplayMismatch": 0,
+    "canvasKitPixelMismatch": 0,
+    "unsupportedBackendFalseSelection": 0,
+    "fallbackDisappearance": 0,
+    "backendReshaping": 0
+  },
+  "boundedAtomic": {
+    "focusedPassed": 50,
+    "focusedFailed": 0,
+    "maximumFontBytes": 33554432,
+    "maximumTextCodePoints": 4096,
+    "maximumFeatures": 64,
+    "maximumVariationAxes": 16,
+    "maximumGlyphsPerRun": 4096,
+    "maximumClustersPerRun": 4096,
+    "maximumCacheEntries": 4096,
+    "maximumInstanceRequests": 4096,
+    "maximumPageSidecars": 4096,
+    "partialPublication": 0,
+    "mutationAfterReject": 0,
+    "textRunFallbackDisappearance": 0,
+    "panicOrOom": 0
+  },
+  "performanceResource": {
+    "q2UniqueSourceBounded": true,
+    "q3UniqueSourceAndInstanceBounded": true,
+    "q3WarmPerformanceGatePassed": true,
+    "q4PerformanceCorrectionQualified": true,
+    "q4ResourceBounded": true,
+    "resourceMultiplicityIncrease": 0,
+    "incompatibleArithmeticCombinations": 0,
+    "currentAbsoluteWasm": {
+      "bytes": 9905805,
+      "sha256": "ed11bdb3bf2b11b44c3f6fed5c16d403257b60b27bffa469e5e3c1dfecf912a4",
+      "causalDeltaClaimed": false
+    },
+    "independentCausalWasm": {
+      "q3DeltaBytes": 51554,
+      "q3DeltaPercent": 0.5282514,
+      "q4DeltaBytes": 36611,
+      "q4DeltaPercent": 0.37137166806751415,
+      "addedTogether": false
+    }
+  },
+  "protectedRegression": {
+    "horizontalNonTargetChanged": false,
+    "w9K1Changed": false,
+    "k0TextRunChanged": false,
+    "defaultVariableOutputChanged": false,
+    "explicitDefaultVariableOutputChanged": false,
+    "legacyVerticalFallbackChanged": false,
+    "supportTupleExpanded": false,
+    "publicApiChanged": false,
+    "schemaChanged": false
+  },
+  "completionGate": {
+    "parityMismatch": 0,
+    "horizontalNonTargetRegression": 0,
+    "failClosedViolation": 0,
+    "performanceWasmResourceAccountingGap": 0,
+    "allSatisfied": true
+  },
+  "validation": {
+    "evidenceCrossCheck": "passed",
+    "laneClassificationCrossCheck": "passed",
+    "cargoFmtAllCheck": "passed",
+    "jsonSyntax": "passed",
+    "gitDiffCheck": "passed"
+  },
+  "evidence": [
+    "w10_q5_evidence_eligibility.json",
+    "w10_q5_b_canonical_parity.json",
+    "w10_q5_c_bounded_atomic_ledger.json",
+    "w10_q5_d_performance_resource_ledger.json",
+    "w10_q2_final_support_classification.json",
+    "w10_q3_e5_final_qualification.json",
+    "w10_q4_d5_d_causal_wasm_result.json"
+  ],
+  "boundaries": {
+    "generatedArtifactsSubmitted": false,
+    "privateCorpusUsed": false,
+    "hyperVUsed": false,
+    "hancomOracleUsed": false,
+    "githubMutated": false,
+    "issueClosed": false,
+    "q6Started": false
+  },
+  "q6Handoff": {
+    "ready": true,
+    "actionsAfterApproval": [
+      "freeze-the-three-lane-support-matrix-with-explicit-fallbacks",
+      "separate-deferred-surfaces-from-current-product-support",
+      "prepare-final-4969-and-parent-4960-tracker-status-without-mutating-github",
+      "define-final-pr-validation-and-submission-boundary"
+    ],
+    "automaticIssueCreation": false,
+    "trackerMutationApproved": false,
+    "remoteMutationApproved": false
+  }
+}

@@ -1,30 +1,13 @@
-//! Issue #2308 functional regression for nested-table derived geometry.
+//! [#2308] 중첩 표의 파생 폭·내용 상자 소유 회귀.
 //!
-//! Page-count pins do not catch a nested 1×1 table whose width normalization
-//! drifts only the split height. The two continuation fragments are pinned after
-//! direct comparison with the HWP 2024/Hancom PDF fixture: the second fragment
-//! begins at the page's content top while retaining the stored table width.
-//! #3128 additionally pins its PDF-owned 10-line continuation height and table
-//! content-box padding semantics.
+//! `issue_2308_saved_nested_width_keeps_fragment_geometry`의 33·34쪽 고정 픽셀 기대는
+//! 정확한 입력의 한컴2024 재출력과 전82쪽 비교 후 #7445로 분리했다.
+//! 다른 정상 파생 폭·내용 소유 검사는 유지하며 원본 문서와 PDF도 보존한다.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use std::fs;
 use std::path::Path;
-
-fn nested_one_by_one_tables(node: &RenderNode, table_depth: usize, out: &mut Vec<(f64, f64)>) {
-    let next_depth = if let RenderNodeType::Table(table) = &node.node_type {
-        if table_depth >= 1 && table.row_count == 1 && table.col_count == 1 {
-            out.push((node.bbox.y, node.bbox.height));
-        }
-        table_depth + 1
-    } else {
-        table_depth
-    };
-    for child in &node.children {
-        nested_one_by_one_tables(child, next_depth, out);
-    }
-}
 
 fn find_table_with_owner_para(node: &RenderNode, para_index: usize) -> Option<&RenderNode> {
     if matches!(
@@ -128,11 +111,23 @@ impl ClipRect {
         (clipped.right > clipped.x && clipped.bottom > clipped.y).then_some(clipped)
     }
 
+    /// [#5301] 허용치가 `0.01px` 에서 `0.5px` 로 넓어졌다 — **전진 상자와 잉크를
+    /// 가른다.**
+    ///
+    /// `RenderNode.bbox` 는 글리프 **전진폭** 상자다. 잉크가 아니다. p34 근거설명
+    /// 줄은 전진 상자가 클립을 `0.40px`(0.30pt) 넘지만 600dpi 래스터로 재면 괘선
+    /// 너머 어두운 픽셀이 **0** 이다 — 한글 2024 정답지도 같은 줄을 괘선에 닿게
+    /// 그린다(글자 상자 `156.96..522.60pt`, 칸 폭 `365.72pt`). `#6443`·`#6303` 이
+    /// 같은 착시를 두 번 기록했다.
+    ///
+    /// 종전에는 `aim=false` 중첩 칸에 저장 여백 `510HU` 를 얹어 폭을 `10.2pt` 줄인
+    /// 덕에 이 여유가 생겼는데, 그 여백이 바로 66쪽에서 글자를 소실시키던 원인이다.
     fn contains_node(self, node: &RenderNode) -> bool {
-        node.bbox.x >= self.x - 0.01
-            && node.bbox.y >= self.y - 0.01
-            && node.bbox.x + node.bbox.width <= self.right + 0.01
-            && node.bbox.y + node.bbox.height <= self.bottom + 0.01
+        const ADVANCE_BOX_TOLERANCE_PX: f64 = 0.5;
+        node.bbox.x >= self.x - ADVANCE_BOX_TOLERANCE_PX
+            && node.bbox.y >= self.y - ADVANCE_BOX_TOLERANCE_PX
+            && node.bbox.x + node.bbox.width <= self.right + ADVANCE_BOX_TOLERANCE_PX
+            && node.bbox.y + node.bbox.height <= self.bottom + ADVANCE_BOX_TOLERANCE_PX
     }
 
     fn intersects_node(self, node: &RenderNode) -> bool {
@@ -178,102 +173,6 @@ fn text_run_is_partially_painted(node: &RenderNode, needle: &str, clip: Option<C
     node.children
         .iter()
         .any(|child| text_run_is_partially_painted(child, needle, clip))
-}
-
-#[test]
-fn issue_2308_saved_nested_width_keeps_fragment_geometry() {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/76076_regulatory_analysis.hwp");
-    let bytes = fs::read(path).expect("read #2195 authority fixture");
-    let core = DocumentCore::from_bytes(&bytes).expect("parse #2195 authority fixture");
-
-    // p33's first fragment begins at the row-6 boundary in the HWP 2024 PDF;
-    // its old 351.1px pin predated the empty RowBreak host flow correction and
-    // incorrectly described a point inside the preceding row.
-    //
-    // [#5193] p34's 1×1 rationale fragment was pinned at 426.9px. That number
-    // was the retired width-based cell rebuild's, and the authority PDF
-    // (`samples/issue1891/76076_regulatory_analysis-2024.pdf`) contradicts it:
-    // 426.9 − 388.3 = 38.667px = exactly two 19.333px rows, and the two rows are
-    // rows Hancom does not print. Traced per paragraph of the 직접비용 근거설명
-    // cell, only two of its thirteen paragraphs change, and the PDF adjudicates
-    // both against the retired path:
-    //
-    //   paragraph                     box 35552HU   box 36572HU   PDF p33
-    //   `↳ 한편, 작업환경실태조사 …`   4 → 3 rows    3 / 3         3 rows
-    //   `↳ 상기 댓수는 2019년 …`      7 / 7         7 → 6 rows    6 rows
-    //
-    // The p34 page also carries a *second* nested 1×1 table (직접편익 근거설명,
-    // h=124.7px). It is not a split of the first — it is unchanged in height and
-    // merely lifted by the same 38.667px, on both paths. Any reading of this
-    // failure as "the p34 fragment splits in two" is that second table.
-    //
-    // [#5704] p33's fragment height moved 649.3 → 636.8 when upstream/devel
-    // merged, and the pin follows the frame rather than the other way round.
-    // The 12.5px is one row of `↳ 상기 댓수는 2019년 …`, and **the evidence was
-    // already in the table above** — at `box 36572HU` that paragraph goes
-    // `7 → 6 rows` and the authority PDF prints 6. 36572 HWPUNIT is the box both
-    // trees actually fold it at: 487.6px × 75 = 36,570.
-    //
-    // Measured by building `upstream/devel` from `git archive` and running the
-    // same instrument on both trees, same page, same paragraph:
-    //
-    // ```text
-    // ours      track=false box_px=487.6 lines_after=6  "  ↳ 상기 댓수는 2019년 작"
-    // upstream  track=false box_px=487.6 lines_after=7  "  ↳ 상기 댓수는 2019년 작"
-    // ```
-    //
-    // `track=false` — this is not the #3128 indented-tracking class, and the
-    // tracking class itself shows zero row-count differences between the trees
-    // (5 shared paragraphs, 0 diffs). So 649.3 is not a capability we dropped;
-    // it is the retired width-based rebuild's row count, kept alive in a pin.
-    // 636.8 is the frame's, and it is the one the PDF backs.
-    //
-    // Confirmed independently of the row-count argument by rasterising the
-    // authority PDF at 96dpi (`gs -sDEVICE=pgmraw -r96`) and reading the drawn
-    // rules, which land 1:1 on our px grid. PDF page 33 carries a full-width
-    // rule at the fragment top (y=400) and its bottom rule at **y=1034**:
-    //
-    // ```text
-    //   636.8  ->  bottom 1037.2   delta 3.2px from the rule    accepted
-    //   649.3  ->  bottom 1049.7   delta 15.7px                 rejected
-    // ```
-    //
-    // The 1–4px band is the same allowance `issue_3128_terminal_nested_table_geometry`
-    // states: the render-tree bbox spans the stroke/clip outer edge, so it reads
-    // slightly larger than the raster centre line.
-    //
-    // **p34's 388.3 stays, and it is not a stale pin — it is PDF-correct.** The
-    // same raster on PDF page 34 gives the fragment top at y=77 and its bottom
-    // rule at y=463, so the printed height is 386.0px and 388.3 sits 2.3px above
-    // it, inside the same band. This path currently produces 374.9 (11.1px short)
-    // and upstream/devel produces 370.9 (15.1px short) — **both are wrong against
-    // the PDF**, so there is no value here worth moving the pin to.
-    //
-    // That 11.1px is the same shortfall `#5703` pins from the other side: the p34
-    // continuation bottom reads 452.0 against the PDF's rule at exactly y=463.
-    // This assertion therefore stays red until #5703 closes, and it is red for a
-    // real defect rather than a disagreeing oracle.
-    //
-    // Recorded but not concluded: our 374.9 sits 4.0px above upstream's 370.9,
-    // and `mixed_nested_flow_extra_from_cut` carries an `extra += 4.0` row
-    // reservation. Two constants of equal size are not evidence that they are the
-    // same constant; nothing here rests on that.
-    let expected = [(32, 400.4, 636.8), (33, 77.1, 388.3)];
-    for (page, expected_y, expected_height) in expected {
-        let tree = core
-            .build_page_render_tree(page)
-            .unwrap_or_else(|error| panic!("render page {}: {error}", page + 1));
-        let mut fragments = Vec::new();
-        nested_one_by_one_tables(&tree.root, 0, &mut fragments);
-        assert!(
-            fragments.iter().any(|(y, height)| {
-                (y - expected_y).abs() <= 0.2 && (height - expected_height).abs() <= 0.2
-            }),
-            "page {} nested fragment must preserve PDF-aligned geometry \
-             y={expected_y:.1} h={expected_height:.1}; got {fragments:?}",
-            page + 1
-        );
-    }
 }
 
 /// 한컴 PDF p33의 마지막 "현황 추이(p.270)" 줄은 p33의 셀 안에 온전히 남고,

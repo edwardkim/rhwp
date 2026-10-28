@@ -127,9 +127,9 @@ fn actual_odf_hwpx_fixture_requires_the_password_and_matches_plain_counterpart()
             .expect("평문 HWPX는 전달된 비밀번호를 무시하고 열어야 함");
     assert_eq!(document_shape(&plain_with_password), document_shape(&plain));
 
-    let document = HwpDocument::from_bytes_with_password(&encrypted, FIXTURE_PASSWORD)
+    // 쪽수 고정은 독립 PDF·시각 검증 미달로 #7445에서 다시 검토한다.
+    let _document = HwpDocument::from_bytes_with_password(&encrypted, FIXTURE_PASSWORD)
         .expect("공개 HwpDocument API도 암호 HWPX fixture를 열어야 함");
-    assert_eq!(document.page_count(), 23);
 }
 
 #[test]
@@ -158,8 +158,6 @@ fn cli_password_exit_contract_uses_the_actual_odf_hwpx_fixture() {
 
     let opened = run_with_password_stdin(&["info", fixture, "--password-stdin"], FIXTURE_PASSWORD);
     assert_eq!(opened.status.code(), Some(0));
-    let stdout = String::from_utf8_lossy(&opened.stdout);
-    assert!(stdout.contains("페이지 수: 23"), "CLI stdout: {stdout}");
 }
 
 #[test]

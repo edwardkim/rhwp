@@ -1,0 +1,144 @@
+{
+  "source_head": "40eb16ef3",
+  "source": "samples/hwpx/table-text.hwpx",
+  "reference": "pdf/hwpx/table-text-hwpx-2020.pdf",
+  "analysis": "기존 golden의 59글자 x 간격 차이. 전체223요소·140글자·y/내용 동일. 출력 결함 없이 결정적 좌표 문자열에 결합한 기존 검사 수정.",
+  "native_release_build_exit": 0,
+  "fresh_wasm_build_exit": 0,
+  "native_full_review_exit": 0,
+  "wasm_all_pages_tsv_exit": 0,
+  "pages": 1,
+  "native_silhouette_percent": 100,
+  "wasm_silhouette_percent": 100,
+  "strict_pixel_percent": 70.58156,
+  "visual_review": "표18셀 내용·열 소유·경계 확인. 실루엣100%를 글꼴 획의 픽셀 동일로 주장하지 않음.",
+  "new_test_functions": 0,
+  "golden_updates": 0,
+  "production_changes": false,
+  "test_migration": "기존 table_text_page_0 하나를 셀 내용·행열 소유·글자 포함·수치/증감 제목 가운데 정렬로 변경",
+  "verification_pending": [],
+  "source_sha256": "c31c5267c4c686cefd5b5df1056e0e4bc64d13c8c67dcdaeb2933a28e9df6c8f",
+  "reference_sha256": "f6090b8ca6b15b7bac2dbc563c845e2e3a13d6a3265a67a1d70ee81ac28aa17b",
+  "gates": {
+    "base_sha": "6b3faf77d8085441f9f26d88d65a49791e910352",
+    "steps": [
+      {
+        "step": "focused",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_022",
+          "-E",
+          "test(svg_snapshot::table_text_page_0)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 0.63
+      },
+      {
+        "step": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.395
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.288
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.238
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.355
+      },
+      {
+        "step": "clippy-all",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 13.09
+      },
+      {
+        "step": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "6b3faf77d8085441f9f26d88d65a49791e910352"
+        ],
+        "exit_code": 0,
+        "seconds": 0.512
+      }
+    ]
+  },
+  "focused_summary": "1 test run: 1 passed, 216 skipped; exit0",
+  "snapshot_counter": "7 tests run: 6 passed, form002 1 failed; exit100",
+  "native_tsv_provenance": "current release-test full sweep PNG pairs → silhouette-only PNG-pair TSV; debug initial TSV replaced",
+  "doclinks_exit": 0,
+  "changed_metadata_errors": [],
+  "diff_check_exit": 0
+}

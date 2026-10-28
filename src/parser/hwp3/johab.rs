@@ -10,7 +10,7 @@ use crate::parser::hwp3::johab_map;
 /// HWP3은 이 음절을 한 개 hchar로 저장하지만, HWP5/HWPX 변환본은
 /// 초성·아래아·종성 자모열로 보존한다. `decode_johab`의 완성형 반환 계약을
 /// 바꾸지 않기 위해, 가변 길이 텍스트가 필요한 호출자만 이 함수를 사용한다.
-pub fn decode_johab_araea_jamo(ch: u16) -> Option<(char, char, Option<char>)> {
+pub fn decode_johab_araea_jamo(ch: u16) -> Option<(Option<char>, char, Option<char>)> {
     if ch < 0x8000 {
         return None;
     }
@@ -32,11 +32,24 @@ pub fn decode_johab_araea_jamo(ch: u16) -> Option<(char, char, Option<char>)> {
     ];
     let cho = *cho_map.get(cho_idx)?;
     let jong = *jong_map.get(jong_idx)?;
-    if cho < 0 || jong < 0 {
+    if jong < 0 {
         return None;
     }
 
-    let leading = char::from_u32(0x1100 + cho as u32)?;
+    // [#6380] 초성 인덱스 1 은 '채움'(초성 없음)이라 무효가 아니다. cho_map 이 이를
+    // -1 로 내는 바람에 채움 + 아래아 음절이 통째로 버려졌다 — hwp3-sample16 의
+    // 0x87C1 이 그 경우로, 한컴 변환본은 같은 자리를 `석ᆞ박사급` 처럼 U+119E 한
+    // 글자로 보존한다. 그 밖의 무효 초성(0·21~31)은 종전대로 None 이다.
+    const CHO_FILL_INDEX: usize = 1;
+    if cho < 0 && cho_idx != CHO_FILL_INDEX {
+        return None;
+    }
+
+    let leading = if cho < 0 {
+        None
+    } else {
+        Some(char::from_u32(0x1100 + cho as u32)?)
+    };
     let araea = char::from_u32(0x119E)?;
     let trailing = if jong == 0 {
         None
@@ -223,6 +236,9 @@ fn decode_hwp3_extra(ch: u16) -> Option<char> {
         // 표준 Unicode로 보존한다. 매핑이 없으면 decode_johab가 '?'를 반환하고
         // HWP3 parser가 미지원 사적 코드를 조용히 건너뛰어 글머리표가 사라진다.
         0x2F67 => 0x25B8, // ▸ BLACK RIGHT-POINTING SMALL TRIANGLE
+        // 국세청 납세담보 확인서 추천기관 세 곳의 원시 hchar 0x2F00 은
+        // 한컴 2020 PDF에서 모두 빈 체크박스(□)로 추출된다.
+        0x2F00 => 0x25A1, // □ 빈 사각형
         // [Task #1105] sample16 글머리 prefix.
         // HWP3 0x3366 은 한컴 HWP5 변환본에서 U+F03C5 로 보존되고, 렌더러가
         // 이를 한컴오피스 표시값인 □(U+25A1)로 확장한다. 여기서 ○로 직접
@@ -234,6 +250,10 @@ fn decode_hwp3_extra(ch: u16) -> Option<char> {
         // 사적 코드라, 통과시키면 ⁚·․·⁘ 라는 다른 글자가 된다(한글 대조 실측 89건).
         // 사적 코드 → 표시 문자의 일반식이 없으므로 실측된 값만 하나씩 싣는다.
         0x203B => 0x203B,
+        // HWP3 입장권 원본의 치수 화살표: 0x2015 반복 구간은 한컴 2020
+        // HWPX 재저장본에서 U+2015(―)로 그대로 남는다. 미지원 문자로
+        // 버리면 화살표 양쪽의 가로선과 그 전진폭이 함께 사라진다.
+        0x2015 => 0x2015,
         // [#5860] 아래는 s36 load/save 전수(한글 2022 오라클)에서 **버려지던** 코드를
         // 계측으로 모으고 오라클 추출 텍스트와 위치 정렬해 짝지은 값이다. 코퍼스
         // HWP3 38문서 중 15문서에서 479자가 이 경로로 사라졌다(07270 은 40쪽→52쪽,
@@ -271,6 +291,57 @@ fn decode_hwp3_extra(ch: u16) -> Option<char> {
         0x309D => 0xFF63, // ｣  07615(7)
         // 한컴 사설 영역 기호는 평면 15 PUA 로 보존한다 — 렌더러의 공통 한컴 PUA 표가
         // 표시 문자열을 담당한다(0x37C0..0x37C5·0x3366 과 같은 계약).
+        // [#6380] 아래는 저장소 `samples/` 의 HWP3 원본을 같은 문서의 한컴 변환본과
+        // 문자 멀티셋·문맥으로 대조해 얻은 값이다. 코드 출현 횟수가 변환본의 해당
+        // 문자 개수와 정확히 맞는 것만 싣는다.
+        //
+        // 텍스트 다이어그램 괘선 조각 — 0x301C(→F080F) 와 같은 묶음이고 상수
+        // 오프셋(0xC07F3)으로 이어진다. 렌더러 검증표가 ┌┬┐└┘│ 로 편다.
+        // sample11 개수: 3·1·10·6·9·17 ↔ 변환본 F0806·F0807·F0808·F080C·F080E·F0810 동수.
+        0x3013 => 0xF0806,
+        0x3014 => 0xF0807,
+        0x3015 => 0xF0808,
+        0x3019 => 0xF080C,
+        0x301B => 0xF080E,
+        0x301D => 0xF0810,
+        // 겹줄. 기호 좌표 규칙으로는 가타카나 `ネ` 가 되는 사적 graphic 코드다.
+        // sample10(42) · sample11(12) 의 변환본이 같은 자리에 리터럴 U+2550 을 동수로
+        // 갖는다 — 0x3048(→F0832) 과 달리 PUA 가 아니라 표준 문자로 저장된다.
+        0x37ED => 0x2550,
+        // 원문자·괄호문자 계열 (sample11).
+        //   0x2E01~0x2E07 은 표준 ①~⑦ 로 저장되고(7코드 연속 문맥 일치),
+        //   0x2E00·0x2E0A~0x2E12 는 hancom_pua.rs 가 근거로 적어 둔 p23 NVRAM 라벨 줄의
+        //   별도 글리프(F0288~F0291)다. 두 계열이 같은 문서에서 함께 쓰인다.
+        0x2E01 => 0x2460,
+        0x2E02 => 0x2461,
+        0x2E03 => 0x2462,
+        0x2E04 => 0x2463,
+        0x2E05 => 0x2464,
+        0x2E06 => 0x2465,
+        0x2E07 => 0x2466,
+        0x2E00 => 0xF0288,
+        0x2E0A => 0xF0289,
+        0x2E0B => 0xF028A,
+        0x2E0D => 0xF028C,
+        0x2E0E => 0xF028D,
+        0x2E0F => 0xF028E,
+        0x2E10 => 0xF028F,
+        0x2E11 => 0xF0290,
+        0x2E12 => 0xF0291,
+        // 0x2E0C(→F028B=③)는 근거 문서가 그 자리에 리터럴 ③ 을 써서 관측되지 않았다.
+        0x2C21 => 0x24D0, // ⓐ  sample11 개수 1·1·2·2·2·3 ↔ 변환본 ⓐ~ⓕ 동수
+        0x2C22 => 0x24D1,
+        0x2C23 => 0x24D2,
+        0x2C24 => 0x24D3,
+        0x2C25 => 0x24D4,
+        0x2C26 => 0x24D5,
+        0x2C40 => 0x3260, // ㉠  sample11 각 1건
+        0x2C41 => 0x3261,
+        0x2C42 => 0x3262,
+        // 글머리표·장식.
+        0x2022 => 0x2022,  // •  sample(4) — 유니코드 값 그대로 담은 자리
+        0x2F17 => 0x2022,  // •  sample10(3)
+        0x2F06 => 0x25A0,  // ■  sample10 "제목차례" 좌우 장식(2)
         0x25F5 => 0xF0099, // 04759(1)
         // 관인·서명란 도장 기호. 00460·00465·04442·04640·04845·05428·05755 (7문서 8회).
         0x2BCE => 0xF012B,
@@ -291,6 +362,9 @@ fn hancom_variant(c: char) -> char {
     match c {
         // 0xA1AD: 표준 U+223C(∼) ↔ 한컴 U+FF5E(～). 실측 80건.
         '\u{223C}' => '\u{FF5E}',
+        // [#6380] 0xA2C1: 표준 U+2299(⊙) ↔ 한컴 U+25C9(◉).
+        // hwp3-sample11 ↔ hwp3-sample11-hwpx 문맥 정렬 2건.
+        '\u{2299}' => '\u{25C9}',
         other => other,
     }
 }
@@ -313,7 +387,10 @@ mod tests {
     #[test]
     fn decode_johab_araea_preserves_legacy_jamo_sequence() {
         // HWP3 fixture의 첫 글자. 한컴 HWPX 변환본은 "ᄒᆞᆫ"으로 보존한다.
-        assert_eq!(decode_johab_araea_jamo(0xD3C5), Some(('ᄒ', 'ᆞ', Some('ᆫ'))));
+        assert_eq!(
+            decode_johab_araea_jamo(0xD3C5),
+            Some((Some('ᄒ'), 'ᆞ', Some('ᆫ')))
+        );
     }
 
     #[test]
@@ -359,6 +436,7 @@ mod tests {
         assert_eq!(decode_johab(0x3438), '※');
         assert_eq!(decode_johab(0x343B), '○');
         assert_eq!(decode_johab(0x3440), '□');
+        assert_eq!(decode_johab(0x2F00), '□');
         assert_eq!(decode_johab(0x341C), '【');
         assert_eq!(decode_johab(0x341D), '】');
     }

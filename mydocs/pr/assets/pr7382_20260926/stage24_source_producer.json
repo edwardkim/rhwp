@@ -1,0 +1,6 @@
+{
+  "source_sha": "6fa58aef8813c185ce113754fbda60792db2a84e",
+  "rust_test_diff_sha256": "5cdda382e642690e2a2728c11667e40eee305b55abbd8864c0718d748ae369a9",
+  "immutable_cli_sha256": "8477eeca956b269d3cc33608f2b355e048da784df2f99ef728c28587586b8b04",
+  "capture_reason": "기준 코드의 전후 검사가 공유 캐시를 사용해도 캡처가 다른 바이너리로 바뀌지 않도록 최종 CLI의 불변 사본 사용"
+}

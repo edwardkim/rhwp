@@ -1,0 +1,43 @@
+{
+  "runtime_source": "04c92da78165ccbf63b467855591df183655a98d",
+  "js_sha256": "a48acb46a157950724859baea436fda8d5d3b7c9a0fd10665455c952bf4c2434",
+  "wasm_sha256": "99c8f542858d30f5b0781c6a6954d3eba1dff2214199ef7e4dd6d36e267d13af",
+  "records": [
+    {
+      "name": "pr8094-caption-number-sudal",
+      "source": "tests/cases/caption_auto_number_caret.rs",
+      "state": "유효 빈 문서 seed를 추가한 대조군; 원 회귀 captioned()와 같은 logo-16.png, 9600HU, 캡션 위치4에 수달 입력",
+      "input": "/home/tsjang/rhwp/output/pr-review/pr8319-comment-correction/captured-inputs/pr8094-caption-number-sudal.hwpx",
+      "sha256": "dab243d31a31079621231c4f625ea6d9eb99119f3e050aaf7c3411f9e29b5189",
+      "pageCount": 1,
+      "caret5": {
+        "pageIndex": 0,
+        "x": 52.9,
+        "y": 128.7,
+        "height": 13.3
+      },
+      "caret6": {
+        "pageIndex": 0,
+        "x": 65.9,
+        "y": 128.7,
+        "height": 13.3
+      }
+    },
+    {
+      "name": "pr8037-body-picture-on-host",
+      "source": "tests/cases/picture_on_table_host_keeps_following_flow.rs",
+      "state": "원 회귀와 같은 머리/2x2표/뒤 및 body 경로 그림 삽입 후 HWPX 저장",
+      "input": "/home/tsjang/rhwp/output/pr-review/pr8319-comment-correction/captured-inputs/pr8037-body-picture-on-host.hwpx",
+      "sha256": "b45e8e507712da9a975445ad0055bd7eef45b30deab607f9e23f8bc1effc28b4",
+      "pageCount": 1
+    },
+    {
+      "name": "pr8037-cell-picture-on-host",
+      "source": "tests/cases/picture_on_table_host_keeps_following_flow.rs",
+      "state": "원 회귀와 같은 머리/2x2표/뒤 및 cell 경로 그림 삽입 후 HWPX 저장",
+      "input": "/home/tsjang/rhwp/output/pr-review/pr8319-comment-correction/captured-inputs/pr8037-cell-picture-on-host.hwpx",
+      "sha256": "b45e8e507712da9a975445ad0055bd7eef45b30deab607f9e23f8bc1effc28b4",
+      "pageCount": 1
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "pr": 8188,
+  "failed_head": "80153145479473545c678e2a55cf663565c729b5",
+  "failed_job_url": "https://github.com/edwardkim/rhwp/actions/runs/40046356353/job/120729157912",
+  "failed_step": "Compile VS Code extension",
+  "diagnosis": "Shared CanvasKit helpers import @wasm/rhwp.js; VS Code TypeScript paths and webpack alias lacked @wasm while supporting @rhwp-wasm.",
+  "local_reproduction_exit_code": 1,
+  "correction": "Map both aliases to the same existing pkg directory in webview TypeScript and webpack. No rendering source, fixture, threshold, or test expectation changed.",
+  "configuration": [
+    {
+      "path": "rhwp-vscode/tsconfig.webview.json",
+      "sha256": "26025050c8340f2104a4c015f0ed2a29a78ec6b705fe0d545a02652178c3bf79"
+    },
+    {
+      "path": "rhwp-vscode/webpack.config.js",
+      "sha256": "b13a98c4076cdf49963b43e591a69623530c23ca344617bda7fa6388bfe45efe"
+    }
+  ],
+  "compile": {
+    "exit_code": 0,
+    "product_source": "0c3148ab54b3a4ca1bdc969e4d9283265625feec",
+    "wasm_sha256": "a814fb7a95f29f6d9de397f72a756ec19ce0fa2b7c151e00e879d58c80db06d4",
+    "configuration_files": [
+      "rhwp-vscode/tsconfig.webview.json",
+      "rhwp-vscode/webpack.config.js"
+    ]
+  },
+  "package_gates": [
+    {
+      "step": "studio-build",
+      "command": [
+        "npm",
+        "--prefix",
+        "rhwp-studio",
+        "run",
+        "build"
+      ],
+      "exit_code": 0,
+      "seconds": 17.195
+    },
+    {
+      "step": "chrome-build",
+      "command": [
+        "npm",
+        "--prefix",
+        "rhwp-chrome",
+        "run",
+        "build"
+      ],
+      "exit_code": 0,
+      "seconds": 7.727
+    },
+    {
+      "step": "firefox-build",
+      "command": [
+        "npm",
+        "--prefix",
+        "rhwp-firefox",
+        "run",
+        "build"
+      ],
+      "exit_code": 0,
+      "seconds": 6.453
+    },
+    {
+      "step": "frontend-contracts",
+      "command": [
+        "node",
+        "--test",
+        "scripts/frontend-wasm-bindings.test.mjs",
+        "scripts/frontend-editor-embed.test.mjs",
+        "scripts/frontend-extension-dist.test.mjs",
+        "scripts/frontend-vscode-outline.test.mjs",
+        "scripts/frontend-font-assets.test.mjs"
+      ],
+      "exit_code": 0,
+      "seconds": 2.653
+    }
+  ],
+  "contracts": {
+    "tests": 20,
+    "passed": 20,
+    "failed": 0,
+    "skipped": 0
+  },
+  "bundle_export_symbols_verified": [
+    "resamplePrintFrameRgba",
+    "resamplePrintBitmapRgba",
+    "isPrintMetafile",
+    "rasterizePrintMetafile"
+  ],
+  "copied_wasm_sha256": "a814fb7a95f29f6d9de397f72a756ec19ce0fa2b7c151e00e879d58c80db06d4",
+  "viewer_bundle_sha256": "632e5b26fb88cacfef23237a2cc41a628f62fc2e451902afbb9ff11cad57fc50",
+  "precondition_error": "An initial distribution contract invocation before all builds had 13 pass and 4 missing-dist failures; after Studio/Chrome/Firefox/VS Code builds the complete 20-test invocation passed. Expectations unchanged.",
+  "remote_ci": "Corrected head CI must complete before review/trailing documents and merge."
+}

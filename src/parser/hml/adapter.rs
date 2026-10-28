@@ -23,6 +23,8 @@ pub(crate) fn into_document(mut source: HmlSource) -> Result<Document, HmlError>
             format: crate::model::provenance::SourceFormat::Hml,
             hwp3_lineage: false,
             hwpx_lineage: false,
+            hft_ascii_halfwidth_witnessed: false,
+            stored_rows_before_hancom_2020: false,
         },
         ..Default::default()
     };
@@ -41,6 +43,7 @@ pub(crate) fn into_document(mut source: HmlSource) -> Result<Document, HmlError>
             .map(into_paragraph)
             .collect::<Result<Vec<_>, _>>()?;
         document.sections.push(Section {
+            trailing_lists: None,
             section_def,
             paragraphs,
             raw_provenance: None,

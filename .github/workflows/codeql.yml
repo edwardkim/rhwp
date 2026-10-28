@@ -1,33 +1,26 @@
 name: CodeQL
 
 on:
-  push:
-    branches: [main, devel]
-    paths-ignore:
-      - 'mydocs/**'
-      - 'docs/**'
-      - 'samples/**'
-      - 'pdf/**'
-      - 'pdf-2020/**'
-      - 'pdf-large/**'
-      - 'assets/**'
-      - '*.md'
-      - 'LICENSE'
-      - '.github/ISSUE_TEMPLATE/**'
-      - '.github/FUNDING.yml'
-      - '.github/CODE_OF_CONDUCT.md'
-      - '.github/SECURITY.md'
-      - '.github/pull_request_template.md'
-      - '.github/dependabot.yml'
-      - 'rhwp-logo.*'
   pull_request:
     branches: [main, devel]
     paths-ignore:
-      - 'docs/**'
       # samples는 PR preflight에서 신규 reference-only와 기존 자료 변경을
       # 구분해 CodeQL no-op/full 판정을 발행한다.
       - 'assets/**'
-      - '*.md'
+      # #8267: root instruction documents must reach the fast-pass preflight.
+      - 'CHANGELOG.md'
+      - 'CHANGELOG_EN.md'
+      - 'CONTRIBUTING.md'
+      - 'CONVENTIONS.md'
+      - 'GEMINI.md'
+      - 'QWEN.md'
+      - 'README.md'
+      - 'README_EN.md'
+      - 'ROADMAP.md'
+      - 'SECURITY.md'
+      - 'THIRD_PARTY.md'
+      - 'THIRD_PARTY_LICENSES.md'
+      - 'replit.md'
       - 'LICENSE'
       - '.github/ISSUE_TEMPLATE/**'
       - '.github/FUNDING.yml'
@@ -41,15 +34,28 @@ on:
   workflow_dispatch:
 
 # [Task #1192 F] 같은 PR 에 새 push 가 오면 진행 중 run 을 취소해 중복 실행 제거.
-# cancel-in-progress 는 PR 이벤트에서만 활성화 — push/schedule(주간 cron) run 은 보존.
+# Branch push에서는 분석하지 않는다. schedule/manual 분석은 별도 명시 정책이다.
 concurrency:
   group: codeql-${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  trusted_postmerge_reuse:
+    uses: ./.github/workflows/trusted-postmerge-ci-reuse.yml
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    with:
+      workflow_file: codeql.yml
+      caller_event_name: ${{ github.event_name }}
+      caller_ref: ${{ github.ref }}
+      caller_sha: ${{ github.sha }}
+
   preflight:
     name: CodeQL preflight
     runs-on: ubuntu-latest
+    needs: [trusted_postmerge_reuse]
     timeout-minutes: 10
     permissions:
       actions: read
@@ -58,10 +64,10 @@ jobs:
       pull-requests: read
       statuses: read
     outputs:
-      fast_pass: ${{ steps.finalize.outputs.fast_pass || 'false' }}
-      reason: ${{ steps.finalize.outputs.reason || 'preflight-unavailable' }}
+      fast_pass: ${{ needs.trusted_postmerge_reuse.outputs.reuse == 'true' && 'true' || steps.finalize.outputs.fast_pass || 'false' }}
+      reason: ${{ needs.trusted_postmerge_reuse.outputs.reuse == 'true' && needs.trusted_postmerge_reuse.outputs.reason || steps.finalize.outputs.reason || 'preflight-unavailable' }}
       candidate_sha: ${{ steps.finalize.outputs.candidate_sha || '' }}
-      codeql_languages: ${{ steps.languages.outputs.codeql_languages || 'javascript-typescript,python,rust' }}
+      codeql_languages: ${{ steps.languages.outputs.codeql_languages || 'javascript-typescript,python,rust,actions' }}
       classification_status: ${{ steps.languages.outputs.classification_status || 'full' }}
       impact_reason: ${{ steps.languages.outputs.reason || 'fail-closed:impact-unavailable' }}
       impact_authority: ${{ steps.collect-impact.outputs.authority || 'unavailable' }}
@@ -80,6 +86,7 @@ jobs:
               'Analyze (javascript-typescript)',
               'Analyze (python)',
               'Analyze (rust)',
+              'Analyze (actions)',
             ];
             const allowedConclusions = new Set(['success', 'skipped', 'neutral']);
             // GitHub Advanced Security can complete the aggregate CodeQL check as
@@ -88,6 +95,10 @@ jobs:
             // language-level verdict; skipped remains fail-closed here.
             const allowedSecurityConclusions = new Set(['success', 'neutral']);
             const { owner, repo } = context.repo;
+            const renderContractPaths = new Set([
+              'mydocs/tech/canvaskit-parity-implementation.md',
+              'mydocs/tech/text-ir-v2.md',
+            ]);
 
             function setResult(fastPass, reason, candidateSha = '') {
               core.setOutput('fast_pass', fastPass ? 'true' : 'false');
@@ -110,36 +121,54 @@ jobs:
 
             function isAllowedReviewPath(file) {
               const filename = file.filename;
-              if (filename.startsWith('mydocs/')) {
+              if (filename === 'AGENTS.md' || filename === 'CLAUDE.md') {
+                return !file.previous_filename
+                  && (file.status === 'added' || file.status === 'modified');
+              }
+              if (filename.startsWith('mydocs/') && !renderContractPaths.has(filename)) {
                 return true;
+              }
+              if (isPdfReferencePath(filename)) {
+                return file.status === 'added' || file.status === 'modified';
               }
               if (file.status !== 'added') {
                 return false;
               }
-              return isReviewReferencePath(filename);
+              return isSampleReferencePath(filename);
             }
 
-            function isReviewReferencePath(filename) {
-              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+            function isSampleReferencePath(filename) {
               return (
                 filename.startsWith('samples/')
                 && (
-                  filename.endsWith('.hwp')
-                  || filename.endsWith('.hwpx')
-                  || filename.endsWith('.pdf')
+                  filename.endsWith('.pdf')
                   || filename.endsWith('.png')
                 )
-              ) || (
+              );
+            }
+
+            function isPdfReferencePath(filename) {
+              const pdfPrefixes = ['pdf/'];
+              return (
                 pdfPrefixes.some((prefix) => filename.startsWith(prefix))
                 && filename.endsWith('.pdf')
               );
             }
 
+            function isReviewReferencePath(filename) {
+              return isSampleReferencePath(filename) || isPdfReferencePath(filename);
+            }
+
+            function isReviewReferenceFile(file) {
+              const filename = file.filename;
+              if (isPdfReferencePath(filename)) {
+                return file.status === 'added' || file.status === 'modified';
+              }
+              return file.status === 'added' && isSampleReferencePath(filename);
+            }
+
             function reviewOnlyLabel(files) {
-              const hasReferenceArtifact = files.some((file) => (
-                file.status === 'added'
-                && isReviewReferencePath(file.filename)
-              ));
+              const hasReferenceArtifact = files.some((file) => isReviewReferenceFile(file));
               return hasReferenceArtifact ? 'review-reference-only' : 'mydocs-only';
             }
 
@@ -168,6 +197,8 @@ jobs:
             }
 
             async function hasTrustedReviewReuse(pr) {
+              if (pr.base?.ref !== 'devel' || pr.base?.repo?.full_name !== `${owner}/${repo}`
+                || pr.head?.repo?.full_name !== `${owner}/${repo}`) return false;
               for (let attempt = 0; attempt < 7; attempt += 1) {
                 const statuses = await github.paginate(github.rest.repos.listCommitStatusesForRef, {
                   owner,
@@ -179,12 +210,14 @@ jobs:
                   .filter((status) => status.context === 'CI Impact Policy')
                   .sort((left, right) => Number(right.id || 0) - Number(left.id || 0))[0];
                 if (latest) {
-                  const fields = new Map(String(latest.description || '').split(';').map((part) => {
+                  const entries = String(latest.description || '').split(';').map((part) => {
                     const separator = part.indexOf('=');
                     return separator > 0
                       ? [part.slice(0, separator), part.slice(separator + 1)]
                       : ['', ''];
-                  }));
+                  });
+                  const fields = new Map(entries);
+                  if (entries.length !== fields.size || entries.some(([key, value]) => !key || !value)) return false;
                   const expectedFields = [
                     'v', 'cv', 'mode', 'rfp', 'wf', 'rust', 'fe', 'render', 'skia', 'ql', 'b',
                   ];
@@ -194,7 +227,7 @@ jobs:
                     && latest.creator?.login === 'github-actions[bot]'
                     && fields.size === expectedFields.length
                     && expectedFields.every((field) => fields.has(field))
-                    && fields.get('v') === '5'
+                    && fields.get('v') === '8'
                     && fields.get('rfp') === '1'
                     && fields.get('b') === pr.base.sha
                     && target
@@ -255,6 +288,9 @@ jobs:
                   state: 'pending',
                   reason: `codeql-workflow-not-completed:${workflowRun.status}`,
                 };
+              }
+              if (workflowRun.conclusion !== 'success') {
+                return { state: 'failed', reason: `workflow-not-success:${workflowRun.conclusion}` };
               }
               const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
                 owner,
@@ -403,8 +439,11 @@ jobs:
               }
 
               const reviewOnlyCandidates = [];
+              const candidatesContainingBase = new Set();
+              let baseMergeCandidateIndex = -1;
               let codeCandidateSha = '';
               let baseMergeBridge = null;
+              let expectedSha = pr.head.sha;
 
               for (let index = commits.length - 1; index >= 0; index -= 1) {
                 const sha = commits[index].sha;
@@ -414,6 +453,10 @@ jobs:
                   ref: sha,
                 });
                 const parents = commit.parents || [];
+                if (sha !== expectedSha || commit.sha !== sha) {
+                  setResult(false, 'review-tail-parent-mismatch');
+                  return;
+                }
                 if (isCurrentBaseUpdateMerge(commit, pr.base.sha)) {
                   if (baseMergeBridge) {
                     setResult(false, `multiple-current-base-update-merges:${sha}`);
@@ -421,6 +464,13 @@ jobs:
                   }
                   const sourceParent = parents.find((parent) => parent.sha !== pr.base.sha);
                   baseMergeBridge = { mergeSha: sha, sourceParentSha: sourceParent.sha };
+                  expectedSha = sourceParent.sha;
+                  // The merge can itself have a green run; do not only search its source parent.
+                  baseMergeCandidateIndex = reviewOnlyCandidates.length;
+                  for (const candidateSha of reviewOnlyCandidates) {
+                    candidatesContainingBase.add(candidateSha);
+                  }
+                  candidatesContainingBase.add(sha);
                   core.info(`including current-base update merge bridge ${sha}`);
                   continue;
                 }
@@ -434,8 +484,9 @@ jobs:
 
                 const reviewOnly = files.every((file) => isAllowedReviewPath(file));
                 if (reviewOnly) {
-                  if (parents.length === 1) {
+                  if (parents.length === 1 && /^[0-9a-f]{40}$/.test(parents[0]?.sha || '')) {
                     reviewOnlyCandidates.push(sha);
+                    expectedSha = parents[0].sha;
                     continue;
                   }
                   setResult(false, `${reviewOnlyLabel(files)}-merge-not-reusable:${sha}`);
@@ -453,11 +504,14 @@ jobs:
               if (codeCandidateSha) {
                 reviewOnlyCandidates.push(codeCandidateSha);
               }
+              if (baseMergeBridge) {
+                reviewOnlyCandidates.splice(baseMergeCandidateIndex, 0, baseMergeBridge.mergeSha);
+              }
 
               for (const candidateSha of reviewOnlyCandidates) {
                 const result = await codeqlResult(candidateSha, pr);
                 if (result.state === 'green') {
-                  if (baseMergeBridge) {
+                  if (baseMergeBridge && !candidatesContainingBase.has(candidateSha)) {
                     setPendingBaseMergeResult(
                       'codeql-checks-green',
                       candidateSha,
@@ -572,7 +626,7 @@ jobs:
 
       # [#3790 Stage 5B] PR head가 classifier를 바꿔 자기 CodeQL 언어를 줄일 수 없도록
       # pull_request.base.sha의 classifier만 실행한다. push·schedule·수동 실행과 모든
-      # checkout/수집/classifier 오류는 아래 finalizer에서 세 언어 full로 닫는다.
+      # checkout/수집/classifier 오류는 아래 finalizer에서 네 언어 full로 닫는다.
       - name: Check out trusted CodeQL impact classifier
         id: checkout-impact-classifier
         if: ${{ steps.finalize.outputs.fast_pass != 'true' }}
@@ -669,7 +723,7 @@ jobs:
           RAW_REASON: ${{ steps.impact.outputs.reason }}
         run: |
           set -euo pipefail
-          all_languages='javascript-typescript,python,rust'
+          all_languages='javascript-typescript,python,rust,actions'
           languages="${RAW_LANGUAGES}"
           status="${RAW_STATUS}"
           reason="${RAW_REASON}"
@@ -679,15 +733,28 @@ jobs:
             status='full'
             reason='fail-closed:impact-unavailable'
           else
+            # PR classifiers are loaded from trusted base. During migration,
+            # expand its legacy full selection rather than omit Actions.
+            if [[ "${status}" == 'full' && "${languages}" == 'javascript-typescript,python,rust' ]]; then
+              languages="${all_languages}"
+            fi
             case "${languages}" in
               'none') ;;
               'javascript-typescript') ;;
               'python') ;;
               'rust') ;;
+              'actions') ;;
               'javascript-typescript,python') ;;
               'javascript-typescript,rust') ;;
               'python,rust') ;;
               'javascript-typescript,python,rust') ;;
+              'javascript-typescript,actions') ;;
+              'python,actions') ;;
+              'rust,actions') ;;
+              'javascript-typescript,python,actions') ;;
+              'javascript-typescript,rust,actions') ;;
+              'python,rust,actions') ;;
+              'javascript-typescript,python,rust,actions') ;;
               *)
                 languages="${all_languages}"
                 status='full'
@@ -715,7 +782,7 @@ jobs:
           FAST_PASS: ${{ steps.finalize.outputs.fast_pass || 'false' }}
           FAST_PASS_REASON: ${{ steps.finalize.outputs.reason || 'preflight-unavailable' }}
           IMPACT_AUTHORITY: ${{ steps.collect-impact.outputs.authority || 'unavailable' }}
-          CODEQL_LANGUAGES: ${{ steps.languages.outputs.codeql_languages || 'javascript-typescript,python,rust' }}
+          CODEQL_LANGUAGES: ${{ steps.languages.outputs.codeql_languages || 'javascript-typescript,python,rust,actions' }}
           CLASSIFICATION_STATUS: ${{ steps.languages.outputs.classification_status || 'full' }}
           IMPACT_REASON: ${{ steps.languages.outputs.reason || 'fail-closed:impact-unavailable' }}
         run: |
@@ -747,9 +814,9 @@ jobs:
     needs: preflight
     if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' }}
     # preflight가 cancel·runner 장애로 job output을 발행하지 못해도 빈 선택이
-    # 세 no-op success로 열리지 않도록 consumer에서 다시 세 언어 full로 닫는다.
+    # 네 no-op success로 열리지 않도록 consumer에서 다시 네 언어 full로 닫는다.
     env:
-      SELECTED_LANGUAGES: ${{ needs.preflight.outputs.codeql_languages || 'javascript-typescript,python,rust' }}
+      SELECTED_LANGUAGES: ${{ needs.preflight.outputs.codeql_languages || 'javascript-typescript,python,rust,actions' }}
     permissions:
       security-events: write
       contents: read
@@ -757,10 +824,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [javascript-typescript, python, rust]
+        language: [javascript-typescript, python, rust, actions]
 
     steps:
-      # matrix job 이름은 세 언어 모두 유지한다. 선택되지 않은 언어도 명시적 success로
+      # matrix job 이름은 네 언어 모두 유지한다. 선택되지 않은 언어도 명시적 success로
       # 끝나므로 현재·향후 required check가 check 부재로 pending되지 않는다.
       - name: Skip unselected language
         if: ${{ !contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
@@ -775,23 +842,32 @@ jobs:
       # 포화·스톨) 및 task_m100_3289_report.md 거버넌스 절 참조.
       - name: Initialize CodeQL (non-Rust)
         if: ${{ matrix.language != 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1 (2026-10-21)
         with:
           languages: ${{ matrix.language }}
 
       - name: Initialize CodeQL (Rust)
         if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name == 'pull_request' }}
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1 (2026-10-21)
         with:
           languages: rust
           build-mode: none
           config-file: .github/codeql/rust-pr.yml
 
-      # PR은 제품 Rust만 빠르게 검사하고, devel push·schedule은 아래 기존 전체
-      # 경로 분석을 유지한다. PR 축소가 기준선 보안 탐지를 대신하지 않게 한다.
+      # #6947: devel push도 전체 Rust 경로와 보안 쿼리를 유지하되,
+      # #6877에서 제외한 내부 metric 3개만 생략한다. PR의 paths는 가져오지 않는다.
+      - name: Initialize CodeQL (Rust post-merge)
+        if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name == 'push' && github.ref == 'refs/heads/devel' }}
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1 (2026-10-21)
+        with:
+          languages: rust
+          build-mode: none
+          config-file: .github/codeql/rust-postmerge.yml
+
+      # main push, schedule, workflow_dispatch retain all paths and all queries.
       - name: Initialize CodeQL (Rust full scan)
-        if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name != 'pull_request' }}
-        uses: github/codeql-action/init@v4
+        if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name != 'pull_request' && !(github.event_name == 'push' && github.ref == 'refs/heads/devel') }}
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1 (2026-10-21)
         with:
           languages: rust
           build-mode: none
@@ -804,4 +880,4 @@ jobs:
       # 추출 파일·SARIF 지표가 같았고, none 모드가 더 짧아 Rust 자동 빌드 의존을 제거한다.
       - name: Perform CodeQL Analysis
         if: ${{ contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1 (2026-10-21)

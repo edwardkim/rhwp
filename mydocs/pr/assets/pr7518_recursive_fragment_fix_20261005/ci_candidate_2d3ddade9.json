@@ -1,0 +1,417 @@
+{
+  "code_candidate": "2d3ddade935f25e56bad404a5dd1d8f113c34b39",
+  "renderer_test_source": "1871ba72a7b3c2dbd84d354343fdf20d6a1bc387",
+  "base_sha": "df7d0076ad01a36c8fa1a0226727653904b67dd9",
+  "captured_utc": "2026-10-05T03:55:14.154453+00:00",
+  "execution_mode": "Full; rfp=0; same repository/source branch/PR7570/exact candidate",
+  "main_workflows": [
+    {
+      "name": "Adapter inter-diff",
+      "id": 37259603476,
+      "event": "pull_request",
+      "head_sha": "2d3ddade935f25e56bad404a5dd1d8f113c34b39",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603476"
+    },
+    {
+      "name": "Proptest roundtrip",
+      "id": 37259603520,
+      "event": "pull_request",
+      "head_sha": "2d3ddade935f25e56bad404a5dd1d8f113c34b39",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603520"
+    },
+    {
+      "name": "Render Diff",
+      "id": 37259603333,
+      "event": "pull_request",
+      "head_sha": "2d3ddade935f25e56bad404a5dd1d8f113c34b39",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603333"
+    },
+    {
+      "name": "CodeQL",
+      "id": 37259603453,
+      "event": "pull_request",
+      "head_sha": "2d3ddade935f25e56bad404a5dd1d8f113c34b39",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603453"
+    },
+    {
+      "name": "CI",
+      "id": 37259603454,
+      "event": "pull_request",
+      "head_sha": "2d3ddade935f25e56bad404a5dd1d8f113c34b39",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603454"
+    }
+  ],
+  "check_runs": [
+    {
+      "name": "Build & Test",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603454/job/111607457512"
+    },
+    {
+      "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603454/job/111606128358"
+    },
+    {
+      "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603454/job/111606075542"
+    },
+    {
+      "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603454/job/111605765476"
+    },
+    {
+      "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603454/job/111605736758"
+    },
+    {
+      "name": "CodeQL",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/runs/111604890465"
+    },
+    {
+      "name": "build-test-archive-b / Build test archive (b)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603454/job/111604145296"
+    },
+    {
+      "name": "build-test-archive-c / Build test archive (c)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603454/job/111604145282"
+    },
+    {
+      "name": "build-test-archive-d / Build test archive (d)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603454/job/111604145218"
+    },
+    {
+      "name": "Frontend unit gates",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603454/job/111604122841"
+    },
+    {
+      "name": "Workflow promotion preflight",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603454/job/111604122592"
+    },
+    {
+      "name": "build-test-archive-a / Build test archive (a)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603454/job/111604121710"
+    },
+    {
+      "name": "Resolve nextest target duration policy",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603454/job/111604121587"
+    },
+    {
+      "name": "Lint (fmt, clippy, WASM check)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603454/job/111604121528"
+    },
+    {
+      "name": "Native Skia tests",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603454/job/111604121523"
+    },
+    {
+      "name": "Frontend package gates",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603454/job/111604121516"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603453/job/111604116879"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603453/job/111604116867"
+    },
+    {
+      "name": "Analyze (python)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603453/job/111604116816"
+    },
+    {
+      "name": "adapter inter-diff",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603476/job/111604006229"
+    },
+    {
+      "name": "prop roundtrip",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603520/job/111604005978"
+    },
+    {
+      "name": "Canvas visual diff",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603333/job/111603900831"
+    },
+    {
+      "name": "adapter inter-diff preflight",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603476/job/111603882090"
+    },
+    {
+      "name": "Proptest preflight",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603520/job/111603879825"
+    },
+    {
+      "name": "CodeQL preflight",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603453/job/111603875730"
+    },
+    {
+      "name": "CI preflight",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603454/job/111603875217"
+    },
+    {
+      "name": "WASM Build",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603454/job/111603852791"
+    },
+    {
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603454/job/111603852171"
+    },
+    {
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603453/job/111603851971"
+    },
+    {
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603520/job/111603851865"
+    },
+    {
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603476/job/111603851823"
+    },
+    {
+      "name": "Render Diff preflight",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603333/job/111603851081"
+    },
+    {
+      "name": "cancel-stale-runs",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259603303/job/111603851027"
+    },
+    {
+      "name": "cancel-stale-runs",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259601577/job/111603847468"
+    },
+    {
+      "name": "Evaluate trusted CI impact policy",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37259601571/job/111603846736"
+    }
+  ],
+  "commit_statuses": [
+    {
+      "context": "CI Impact Policy",
+      "state": "success",
+      "description": "v=6;cv=7;mode=full;rfp=0;wf=111;rust=1;fe=package;render=1;skia=1;ql=js,py,rs;b=df7d0076ad01a36c8fa1a0226727653904b67dd9",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/37260830941"
+    }
+  ],
+  "required_checks": {
+    "url": "https://api.github.com/repos/edwardkim/rhwp/branches/devel/protection/required_status_checks",
+    "strict": false,
+    "contexts": [
+      "Build & Test"
+    ],
+    "contexts_url": "https://api.github.com/repos/edwardkim/rhwp/branches/devel/protection/required_status_checks/contexts",
+    "checks": [
+      {
+        "context": "Build & Test",
+        "app_id": 15368
+      }
+    ]
+  },
+  "tested_merge": {
+    "sha": "0977f5b6d8a0cc1ff976dab94b6b5a36016f8465",
+    "tree": "7025dc9c3238e1be5e20c6f3da038a74f8cc776b",
+    "parents": [
+      "df7d0076ad01a36c8fa1a0226727653904b67dd9",
+      "2d3ddade935f25e56bad404a5dd1d8f113c34b39"
+    ],
+    "tree_equals_code_candidate": true
+  },
+  "archive_logs": [
+    {
+      "worker": "a1",
+      "sha256": "059980479bcbc0d30089b4a7811a8654bead1b437ffa642ffb431b4c96db3765",
+      "summary": "2026-10-05T03:42:21.9786922Z      Summary [  63.261s] 3870 tests run: 3870 passed, 13 skipped",
+      "targeted_pass_lines": []
+    },
+    {
+      "worker": "b1",
+      "sha256": "6ac0e4d1744f44e38bb0647f5b7f284aabda547f0114b8157f976a364b496a70",
+      "summary": "2026-10-05T03:47:05.9261880Z      Summary [ 295.684s] 2256 tests run: 2256 passed (2 slow), 10 skipped",
+      "targeted_pass_lines": [
+        "2026-10-05T03:43:39.2759776Z         PASS [  12.398s] ( 296/2256) rhwp::regression_suite_005 text_overlap_baseline::text_overlaps_do_not_grow_partition_9"
+      ]
+    },
+    {
+      "worker": "c1",
+      "sha256": "ed730f42aaaf0c630b38837da6b49bfe7891ee29389cb2986581157ed4306512",
+      "summary": "2026-10-05T03:47:07.5993512Z      Summary [ 324.000s] 2275 tests run: 2275 passed (3 slow), 7 skipped",
+      "targeted_pass_lines": [
+        "2026-10-05T03:46:29.4965515Z         PASS [   0.362s] (1684/2275) rhwp::regression_suite_020 issue_2308_render_normalized_derived_state::issue_2308_empty_host_paragraph_keeps_block_nested_table_content",
+        "2026-10-05T03:46:29.6509152Z         PASS [   0.381s] (1685/2275) rhwp::regression_suite_020 issue_2308_render_normalized_derived_state::issue_2308_nested_fragment_cut_does_not_half_paint_boundary_line",
+        "2026-10-05T03:46:29.8476088Z         PASS [   0.350s] (1686/2275) rhwp::regression_suite_020 issue_2308_render_normalized_derived_state::issue_2308_nested_non_tac_table_uses_table_content_box",
+        "2026-10-05T03:46:30.0409091Z         PASS [   0.390s] (1687/2275) rhwp::regression_suite_020 issue_2308_render_normalized_derived_state::issue_2308_saved_nested_width_keeps_fragment_geometry",
+        "2026-10-05T03:46:30.1748480Z         PASS [   0.327s] (1698/2275) rhwp::regression_suite_020 issue_2308_render_normalized_derived_state::issue_2308_short_rowbreak_child_uses_owner_content_box_only"
+      ]
+    },
+    {
+      "worker": "d1",
+      "sha256": "22d1bd67be408f5cc0b36f8e0cbcf3ac77bc7bb2837233b484fda16ee4291e1e",
+      "summary": "2026-10-05T03:43:35.2860046Z      Summary [ 156.218s] 1758 tests run: 1758 passed (2 slow), 20 skipped",
+      "targeted_pass_lines": []
+    }
+  ],
+  "archive_tests_passed": 10159,
+  "previous_ci_failures_now_passed": [
+    "2026-10-05T03:43:39.2759776Z         PASS [  12.398s] ( 296/2256) rhwp::regression_suite_005 text_overlap_baseline::text_overlaps_do_not_grow_partition_9",
+    "2026-10-05T03:46:29.4965515Z         PASS [   0.362s] (1684/2275) rhwp::regression_suite_020 issue_2308_render_normalized_derived_state::issue_2308_empty_host_paragraph_keeps_block_nested_table_content",
+    "2026-10-05T03:46:29.6509152Z         PASS [   0.381s] (1685/2275) rhwp::regression_suite_020 issue_2308_render_normalized_derived_state::issue_2308_nested_fragment_cut_does_not_half_paint_boundary_line",
+    "2026-10-05T03:46:29.8476088Z         PASS [   0.350s] (1686/2275) rhwp::regression_suite_020 issue_2308_render_normalized_derived_state::issue_2308_nested_non_tac_table_uses_table_content_box",
+    "2026-10-05T03:46:30.0409091Z         PASS [   0.390s] (1687/2275) rhwp::regression_suite_020 issue_2308_render_normalized_derived_state::issue_2308_saved_nested_width_keeps_fragment_geometry",
+    "2026-10-05T03:46:30.1748480Z         PASS [   0.327s] (1698/2275) rhwp::regression_suite_020 issue_2308_render_normalized_derived_state::issue_2308_short_rowbreak_child_uses_owner_content_box_only"
+  ],
+  "pr_state": "open",
+  "mergeable": true,
+  "mergeable_state": "clean",
+  "published_images": [
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/2d3ddade935f25e56bad404a5dd1d8f113c34b39/mydocs/pr/assets/pr7518_recursive_fragment_fix_20261005/native_valid_orientation-nested-auto-row_p7_review.png",
+      "status": 200,
+      "sha256": "1f6dde4d3084c381d532c90af40adfced0d79247e8158ebbfa33c0927aa467fc",
+      "verified": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/2d3ddade935f25e56bad404a5dd1d8f113c34b39/mydocs/pr/assets/pr7518_recursive_fragment_fix_20261005/native_valid_orientation-nested-auto-row_p7_overlay.png",
+      "status": 200,
+      "sha256": "5bdc7b8c8ad4fdbae2340154165a755ecdcf377bb0edf22be84b98461454e607",
+      "verified": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/2d3ddade935f25e56bad404a5dd1d8f113c34b39/mydocs/pr/assets/pr7518_recursive_fragment_fix_20261005/wasm_valid_orientation-nested-auto-row_p7_review.png",
+      "status": 200,
+      "sha256": "8a58d3359c8c390b01a269f583522b253cad965ac398649419fd4b1421cc2060",
+      "verified": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/2d3ddade935f25e56bad404a5dd1d8f113c34b39/mydocs/pr/assets/pr7518_recursive_fragment_fix_20261005/wasm_valid_orientation-nested-auto-row_p7_overlay.png",
+      "status": 200,
+      "sha256": "75c316d2fdf0f6b10543f948b6eb86195d479e2e29bdc7ff6ad56523737e4fa7",
+      "verified": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/2d3ddade935f25e56bad404a5dd1d8f113c34b39/mydocs/pr/assets/pr7518_recursive_fragment_fix_20261005/native_regulatory_p33_review.png",
+      "status": 200,
+      "sha256": "dddc03527b754eff499656abe74f8c17ae95f1dd9e8ff033be216567e03a94f8",
+      "verified": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/2d3ddade935f25e56bad404a5dd1d8f113c34b39/mydocs/pr/assets/pr7518_recursive_fragment_fix_20261005/native_regulatory_p33_overlay.png",
+      "status": 200,
+      "sha256": "f3c44ff056f44df504c1c21153ef8ce37586baec26d780f004a67d363b444383",
+      "verified": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/2d3ddade935f25e56bad404a5dd1d8f113c34b39/mydocs/pr/assets/pr7518_recursive_fragment_fix_20261005/wasm_regulatory_p33_review.png",
+      "status": 200,
+      "sha256": "4ebb69a3cec3b06d2cc273ee2674a4fe97a8bc28a7efa423a08d37a1dcbfca93",
+      "verified": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/2d3ddade935f25e56bad404a5dd1d8f113c34b39/mydocs/pr/assets/pr7518_recursive_fragment_fix_20261005/wasm_regulatory_p33_overlay.png",
+      "status": 200,
+      "sha256": "8ef24cc9375305a3b3eee86ae32798c40c06079087cb5300803913862ea39abb",
+      "verified": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/2d3ddade935f25e56bad404a5dd1d8f113c34b39/mydocs/pr/assets/pr7518_recursive_fragment_fix_20261005/native_regulatory_p22_review.png",
+      "status": 200,
+      "sha256": "9c75aa9819fa9511985f10e4aacfff3631018f2ad20dbeb8e407ef723d6ec3d6",
+      "verified": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/2d3ddade935f25e56bad404a5dd1d8f113c34b39/mydocs/pr/assets/pr7518_recursive_fragment_fix_20261005/native_regulatory_p22_overlay.png",
+      "status": 200,
+      "sha256": "826ecf90ca194f9a7b52221cb6044112788f27c97ad07835583d072f9492f446",
+      "verified": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/2d3ddade935f25e56bad404a5dd1d8f113c34b39/mydocs/pr/assets/pr7518_recursive_fragment_fix_20261005/wasm_regulatory_p22_review.png",
+      "status": 200,
+      "sha256": "bad166dd4778e5058fa77b6dc11021017240480bb46ac272326aff55df78d100",
+      "verified": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/2d3ddade935f25e56bad404a5dd1d8f113c34b39/mydocs/pr/assets/pr7518_recursive_fragment_fix_20261005/wasm_regulatory_p22_overlay.png",
+      "status": 200,
+      "sha256": "eaf9f5c95924297a9a93ccefefad1140acc1ba2bb2a13a6aa5e1cfa9507cd305",
+      "verified": true
+    }
+  ]
+}

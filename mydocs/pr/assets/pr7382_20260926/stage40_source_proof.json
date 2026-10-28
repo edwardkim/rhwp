@@ -1,0 +1,11 @@
+{
+  "source_sha": "461de86b49e826fabb9c4b26021441b108a3fd6a",
+  "files": {
+    "src/renderer/equation_tac_flow.rs": "5d7fd6ff125183a5643aad96d7db95bacb2290b733413e83b51bbea75e3894a2",
+    "src/renderer/layout/paragraph_layout.rs": "1ceb6ca7f5cc23afa4d3f2dd56b4067f88f086b998bfcca25f289a01c1cebb3f",
+    "src/renderer/layout/picture_footnote.rs": "fc4ca4d7b08281e10bd198b34b213a0cf5908c4485009be28423c2b20d2e8b2c",
+    "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "13e3df09bfb817e9e418b4362b05ca0ac97fdc641f458aa378f8d8c2bc1bf20d"
+  },
+  "runtime_diff_sha256": "d7eb915cdad73beb850ea13a1a64f587008102a9b1f2866944aa50c53fdcb0f8",
+  "test_diff_sha256": "7e46327f411b0a1edd0540bc1ac27f99a112534ec22a9f80d79ab7d49241b3b0"
+}

@@ -1,0 +1,96 @@
+{
+  "original_pdf": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+  "original_pdf_sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59",
+  "unit": "PDF pt",
+  "controls": [
+    {
+      "pdf": "liver7379-cell250-height-0-2024.pdf",
+      "sha256": "33209a562101262b00e7a6130d0724d3695d9a01efa64cdd2e690d561abfe4fb",
+      "page_count": 215,
+      "compared_pages": 215,
+      "different_text_or_image_geometry_pages": [
+        12,
+        13
+      ],
+      "comparison_method": "텍스트와 bbox의 다중집합 및 이미지 bbox 다중집합, 동일 논리 쪽 대조",
+      "differences": [
+        {
+          "page": 12,
+          "missing_or_moved_spans": [
+            {
+              "text": "7) http://www.europarl.europa.eu/RegData/etudes/STUD/2015/549055/EXPO_STU%282015%29549055_EN.pdf",
+              "bbox_pt": [
+                70.91999816894531,
+                770.6764526367188,
+                461.27728271484375,
+                779.4364013671875
+              ],
+              "count": 1
+            }
+          ],
+          "added_or_moved_spans": [
+            {
+              "text": "7) http://www.europarl.europa.eu/RegData/etudes/STUD/2015/549055/EXPO_STU%282015%29549055_EN.pdf",
+              "bbox_pt": [
+                70.91999816894531,
+                758.7964477539062,
+                461.27728271484375,
+                767.556396484375
+              ],
+              "count": 1
+            },
+            {
+              "text": "8) http://www.europarl.europa.eu/RegData/etudes/STUD/2015/549055/EXPO_STU%282015%29549055_EN.pdf",
+              "bbox_pt": [
+                70.91999816894531,
+                770.6764526367188,
+                461.27728271484375,
+                779.4364013671875
+              ],
+              "count": 1
+            }
+          ],
+          "image_geometry_changed": false
+        },
+        {
+          "page": 13,
+          "missing_or_moved_spans": [
+            {
+              "text": "8) http://www.europarl.europa.eu/RegData/etudes/STUD/2015/549055/EXPO_STU%282015%29549055_EN.pdf",
+              "bbox_pt": [
+                70.91999816894531,
+                735.2764282226562,
+                461.27728271484375,
+                744.036376953125
+              ],
+              "count": 1
+            }
+          ],
+          "added_or_moved_spans": [],
+          "image_geometry_changed": false
+        }
+      ],
+      "all_geometry_exactly_equal": false
+    },
+    {
+      "pdf": "liver7379-table250-noadjust-2024.pdf",
+      "sha256": "83c8ba18cd7205f1627169eabd3391e93b4cc535d21846a93ac14665d50fce3c",
+      "page_count": 215,
+      "compared_pages": 215,
+      "different_text_or_image_geometry_pages": [],
+      "comparison_method": "텍스트와 bbox의 다중집합 및 이미지 bbox 다중집합, 동일 논리 쪽 대조",
+      "differences": [],
+      "all_geometry_exactly_equal": true
+    },
+    {
+      "pdf": "liver7379-table250-visible-border-2024.pdf",
+      "sha256": "c45fa135fbcc787368cb4c5c19f55c2cb246e43de97da947284eccc2416c10ee",
+      "page_count": 215,
+      "compared_pages": 215,
+      "different_text_or_image_geometry_pages": [],
+      "comparison_method": "텍스트와 bbox의 다중집합 및 이미지 bbox 다중집합, 동일 논리 쪽 대조",
+      "differences": [],
+      "all_geometry_exactly_equal": true
+    }
+  ]
+}

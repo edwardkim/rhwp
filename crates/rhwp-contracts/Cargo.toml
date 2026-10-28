@@ -1,9 +1,18 @@
 [package]
+include = [
+    "/Cargo.toml",
+    "/src/**",
+    "/LICENSE",
+    "/README.md"
+]
 name = "rhwp-contracts"
 version = "0.1.0"
 edition = "2021"
+description = "Shared schema, ontology, and provenance contracts for rhwp"
 license = "MIT"
 publish = false
+repository = "https://github.com/edwardkim/rhwp"
+readme = "README.md"
 
 [dependencies]
 serde_json = "1.0"

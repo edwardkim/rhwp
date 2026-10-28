@@ -1,0 +1,144 @@
+[
+  {
+    "backend": "native",
+    "key": "toggle",
+    "compared_pages": 1,
+    "minimum_percent": 99.95151,
+    "below_90_pages": []
+  },
+  {
+    "backend": "native",
+    "key": "petition",
+    "compared_pages": 2,
+    "minimum_percent": 98.62979,
+    "below_90_pages": []
+  },
+  {
+    "backend": "native",
+    "key": "tac7062",
+    "compared_pages": 10,
+    "minimum_percent": 95.17961,
+    "below_90_pages": []
+  },
+  {
+    "backend": "native",
+    "key": "liver",
+    "compared_pages": 215,
+    "minimum_percent": 71.61533,
+    "below_90_pages": [
+      44,
+      158,
+      168,
+      173,
+      184,
+      208,
+      211
+    ]
+  },
+  {
+    "backend": "native",
+    "key": "hwpspec",
+    "compared_pages": 4,
+    "minimum_percent": 29.81894,
+    "below_90_pages": [
+      18,
+      35,
+      44,
+      46
+    ]
+  },
+  {
+    "backend": "native",
+    "key": "rowbreak",
+    "compared_pages": 1,
+    "minimum_percent": 98.38614,
+    "below_90_pages": []
+  },
+  {
+    "backend": "native",
+    "key": "float-stack",
+    "compared_pages": 2,
+    "minimum_percent": 95.07329,
+    "below_90_pages": []
+  },
+  {
+    "backend": "native",
+    "key": "cbta",
+    "compared_pages": 1,
+    "minimum_percent": 73.1757,
+    "below_90_pages": [
+      58
+    ]
+  },
+  {
+    "backend": "wasm",
+    "key": "toggle",
+    "compared_pages": 1,
+    "minimum_percent": 99.95151,
+    "below_90_pages": []
+  },
+  {
+    "backend": "wasm",
+    "key": "petition",
+    "compared_pages": 2,
+    "minimum_percent": 98.62979,
+    "below_90_pages": []
+  },
+  {
+    "backend": "wasm",
+    "key": "tac7062",
+    "compared_pages": 10,
+    "minimum_percent": 95.17961,
+    "below_90_pages": []
+  },
+  {
+    "backend": "wasm",
+    "key": "liver",
+    "compared_pages": 215,
+    "minimum_percent": 71.61533,
+    "below_90_pages": [
+      44,
+      158,
+      168,
+      173,
+      184,
+      208,
+      211
+    ]
+  },
+  {
+    "backend": "wasm",
+    "key": "hwpspec",
+    "compared_pages": 4,
+    "minimum_percent": 29.81894,
+    "below_90_pages": [
+      18,
+      35,
+      44,
+      46
+    ]
+  },
+  {
+    "backend": "wasm",
+    "key": "rowbreak",
+    "compared_pages": 1,
+    "minimum_percent": 98.38614,
+    "below_90_pages": []
+  },
+  {
+    "backend": "wasm",
+    "key": "float-stack",
+    "compared_pages": 2,
+    "minimum_percent": 95.07329,
+    "below_90_pages": []
+  },
+  {
+    "backend": "wasm",
+    "key": "cbta",
+    "compared_pages": 1,
+    "minimum_percent": 73.1757,
+    "below_90_pages": [
+      58
+    ]
+  }
+]

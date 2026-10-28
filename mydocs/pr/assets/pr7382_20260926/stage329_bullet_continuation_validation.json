@@ -1,0 +1,47 @@
+{
+  "source_base": "22109657a",
+  "candidate": "layout.rs와 paragraph_layout.rs의 이어받은 글머리표 문단 폭 보정",
+  "nativeBuildExit": 0,
+  "wasmBuildExit": 0,
+  "focusedTests": {
+    "passed": 20,
+    "failed": 0
+  },
+  "pages": {
+    "stage329-native-review": [
+      {
+        "page": 87,
+        "silhouette": 99.83337,
+        "pngSha256": "f9dd47d3bf728027b872136a8f5f66fe2f50a33eb13fd0a8be2b51501a7c8a6c"
+      },
+      {
+        "page": 88,
+        "silhouette": 90.66487,
+        "pngSha256": "140620efbe896aae69060657070828f0dff6da754ec80c57af57708caf39d0bb"
+      },
+      {
+        "page": 89,
+        "silhouette": 98.72103,
+        "pngSha256": "5d399bf7fb0b06d59e66e48fb22fb4111ec03b0238f40294343aacdbe6016cbf"
+      }
+    ],
+    "stage329-wasm-review": [
+      {
+        "page": 87,
+        "silhouette": 99.83337,
+        "pngSha256": "f9dd47d3bf728027b872136a8f5f66fe2f50a33eb13fd0a8be2b51501a7c8a6c"
+      },
+      {
+        "page": 88,
+        "silhouette": 90.66487,
+        "pngSha256": "140620efbe896aae69060657070828f0dff6da754ec80c57af57708caf39d0bb"
+      },
+      {
+        "page": 89,
+        "silhouette": 98.72103,
+        "pngSha256": "5d399bf7fb0b06d59e66e48fb22fb4111ec03b0238f40294343aacdbe6016cbf"
+      }
+    ]
+  },
+  "remaining": "88쪽 수식 폭·뒤 본문 줄바꿈, 최종 전체 검증"
+}

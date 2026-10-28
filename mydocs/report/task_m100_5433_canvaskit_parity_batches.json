@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "issue": 5433,
-  "plan": "docs/canvaskit-parity-implementation.md",
+  "plan": "mydocs/tech/canvaskit-parity-implementation.md",
   "manifest": "scripts/renderer_baseline_manifest.json",
   "manifestUpdated": false,
   "manifestUpdatePolicy": "Do not edit renderer_baseline_manifest.json from this driver. Threshold/sample changes stay on the existing renderer-contract and renderer_baseline review process.",

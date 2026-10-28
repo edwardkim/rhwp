@@ -30,4 +30,4 @@
 
 픽스처 카탈로그: [`../fixtures/catalog.json`](../fixtures/catalog.json).
 워크스루: [`../examples/README.md`](../examples/README.md).
-작업 기록: [`../../../../mydocs/working/agent_handoff.md`](../../../../mydocs/working/agent_handoff.md).
+작업 기록: [`../../../../mydocs/working/agent_handoff.md`](../../../../mydocs/working/archives/agent_handoff.md).

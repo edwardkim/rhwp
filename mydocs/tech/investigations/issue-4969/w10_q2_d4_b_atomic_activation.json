@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-d4-b-atomic-activation-result",
+  "issue": 4969,
+  "stage": "W10-Q2-D4-B",
+  "status": "qualified-awaiting-d4-c-approval",
+  "productOutputChange": true,
+  "activation": {
+    "featureDetectionOnly": true,
+    "documentVersionBranching": false,
+    "paragraphLines": 1,
+    "lineRuns": 1,
+    "fullRunIsDirectOldHangulTarget": true,
+    "compressedRatioOnly": true,
+    "leftAlignmentOnly": true,
+    "zeroDesignYOffsetAndAdvanceOnly": true,
+    "displayProjection": false,
+    "layoutPositions": false
+  },
+  "atomicPublication": {
+    "nodeIdReservedBeforeAttach": true,
+    "sameNodeIdUsedOnFallback": true,
+    "sidecarAttachBeforeGeometryMutation": true,
+    "measurementAdvanceOwnsWidthBboxAndNextOrigin": true,
+    "partialGeometryPublication": false,
+    "legacyK1K0PathOnReject": true,
+    "textRunFallbackPreserved": true
+  },
+  "positiveProductFixture": {
+    "textClass": "direct-old-hangul-without-display-projection",
+    "textRunCount": 1,
+    "commonGlyphRunCount": 1,
+    "nominalDuplicateGlyphRunCount": 0,
+    "pageSidecarCount": 1,
+    "textSourceCount": 1,
+    "fontBlobCount": 1,
+    "fontFaceCount": 1,
+    "layoutPositions": false,
+    "bboxMismatchCount": 0,
+    "affineAdvanceMismatchCount": 0,
+    "tolerancePx": 1e-9
+  },
+  "negativeProductMatrix": [
+    {
+      "surface": "center-alignment",
+      "commonGlyphRunCount": 0,
+      "fontBlobCount": 0,
+      "legacyTextPreserved": true
+    },
+    {
+      "surface": "legacy-product-name-display-projection",
+      "commonGlyphRunCount": 0,
+      "fontBlobCount": 0,
+      "legacyTextPreserved": true
+    },
+    {
+      "surface": "character-border-fill",
+      "commonGlyphRunCount": 0,
+      "fontBlobCount": 0,
+      "legacyTextPreserved": true
+    }
+  ],
+  "validation": {
+    "atomicActivationSource": {
+      "passed": 2,
+      "failed": 0
+    },
+    "glyphLoweringSource": {
+      "passed": 7,
+      "failed": 0
+    },
+    "emittedRunMappingSource": {
+      "passed": 4,
+      "failed": 0
+    },
+    "pageSidecarSource": {
+      "passed": 4,
+      "failed": 0
+    },
+    "layerBuilderFallbackUnit": {
+      "passed": 1,
+      "failed": 0
+    },
+    "libraryRegression": {
+      "passed": 3889,
+      "failed": 0,
+      "ignored": 13,
+      "runtimeSeconds": 217.44
+    },
+    "workspaceAuxiliaryLibraries": {
+      "passed": 182,
+      "failed": 0
+    },
+    "cargoClippyNativeDenyWarnings": "pass",
+    "cargoClippyWasm32LibraryDenyWarnings": "pass",
+    "directWasmIntegration": {
+      "status": "blocked-before-rhwp-test",
+      "causes": [
+        "wait-timeout-0.2.1-wasm-imp-unavailable",
+        "getrandom-0.3.4-wasm-js-configuration-unavailable"
+      ],
+      "productLibraryCompileFailure": false,
+      "deferredTo": "Q2-D4-C Node and CanvasKit matrix"
+    },
+    "rustUnitTierPolicy": {
+      "tests": 4221,
+      "modules": 299,
+      "violations": 0
+    },
+    "rustfmt": "pass",
+    "diffCheck": "pass",
+    "generatedIntegrationArtifactsInSourceWorktree": 0,
+    "privateCorpusUsed": false,
+    "hostInstalledFontUsed": false
+  },
+  "deferred": [
+    "cross-backend-selector-and-draw-matrix",
+    "source-han-canvaskit-pixel-oracle",
+    "issue-5821-visual-regression",
+    "sidecar-layer-json-and-resource-performance",
+    "multi-line-or-multi-run",
+    "mixed-target",
+    "non-left-alignment",
+    "ratio-identity-and-expansion",
+    "nonzero-gpos-y-positioning",
+    "native-skia-blob-typeface-replay",
+    "rtl-vertical-and-variation"
+  ],
+  "next": "maintainer approval required for Q2-D4-C"
+}

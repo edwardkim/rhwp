@@ -1,0 +1,622 @@
+{
+  "kind": "stage50_validation",
+  "state": "complete-with-holds",
+  "base": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "provenance": {
+    "parent": "591cf4499",
+    "binary_sha256": "a501e757415d8b5f5af7ac91b4a636c483927a4bd187fde53c5bc70f3e1ade19",
+    "files": {
+      "src/renderer/typeset/table/block/whole_fit.rs": "8287329afef82b4e60fe679f33d682a5074a73214b1a1f08330519f6e1ba7423",
+      "tests/cases/issue_6797_table_item_clears_float_band.rs": "130896e5cf0c8b818098fb4825b1dd0a1d716f9af0d329a2e0675eb3c14b769f"
+    }
+  },
+  "gates": {
+    "base": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+    "steps": [
+      {
+        "step": 0,
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "state": "complete",
+        "started_utc": "2026-09-27T06:45:51Z",
+        "exit_code": 0,
+        "seconds": 6.066100083291531
+      },
+      {
+        "step": 1,
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "state": "complete",
+        "started_utc": "2026-09-27T06:45:57Z",
+        "exit_code": 0,
+        "seconds": 18.905274458695203
+      },
+      {
+        "step": 2,
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "state": "complete",
+        "started_utc": "2026-09-27T06:46:16Z",
+        "exit_code": 0,
+        "seconds": 20.843847749754786
+      },
+      {
+        "step": 3,
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "state": "complete",
+        "started_utc": "2026-09-27T06:46:36Z",
+        "exit_code": 0,
+        "seconds": 27.284179416950792
+      },
+      {
+        "step": 4,
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "state": "complete",
+        "started_utc": "2026-09-27T06:47:04Z",
+        "exit_code": 0,
+        "seconds": 47.282082457561046
+      },
+      {
+        "step": 5,
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "eb9142dd7c73297d555383d7d8434a470bdef26e"
+        ],
+        "state": "complete",
+        "started_utc": "2026-09-27T06:47:51Z",
+        "exit_code": 0,
+        "seconds": 1.7192442091181874
+      },
+      {
+        "step": 6,
+        "command": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "state": "complete",
+        "started_utc": "2026-09-27T06:47:53Z",
+        "exit_code": 0,
+        "seconds": 0.06893108272925019
+      },
+      {
+        "step": 7,
+        "command": [
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "state": "complete",
+        "started_utc": "2026-09-27T06:47:53Z",
+        "exit_code": 0,
+        "seconds": 204.1011999999173
+      },
+      {
+        "step": 8,
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--tests",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "state": "complete",
+        "started_utc": "2026-09-27T06:51:15Z",
+        "exit_code": 100,
+        "seconds": 1254.4954317496158
+      }
+    ]
+  },
+  "wasm": {
+    "local_alternative": true,
+    "docker_optimized_build": false,
+    "files": {
+      "rhwp.js": {
+        "pkg/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+        "rhwp-studio/public/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+        "output/pr-review/planet6897-7382-20260926/stage50-float6797/wasm-pkg/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+      },
+      "rhwp_bg.wasm": {
+        "pkg/rhwp_bg.wasm": "eb95cfae16cf16cc625b0d613ad9e2db1caa7eed65774fc8eb36f33023b7bea1",
+        "rhwp-studio/public/rhwp_bg.wasm": "eb95cfae16cf16cc625b0d613ad9e2db1caa7eed65774fc8eb36f33023b7bea1",
+        "output/pr-review/planet6897-7382-20260926/stage50-float6797/wasm-pkg/rhwp_bg.wasm": "eb95cfae16cf16cc625b0d613ad9e2db1caa7eed65774fc8eb36f33023b7bea1"
+      }
+    }
+  },
+  "native_controls": [
+    {
+      "key": "para6950",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/hwpx/20260909-para-table.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/hwpx/20260909-para-table-2024.pdf",
+        "--key",
+        "para6950",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage50-float6797/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage50-float6797/visual/native-controls",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 37.98260666662827
+    },
+    {
+      "key": "anchor6312",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue6312/fiscal_trend_float_table_anchor.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/issue6312/fiscal-trend-float-table-anchor-2020.pdf",
+        "--key",
+        "anchor6312",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage50-float6797/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage50-float6797/visual/native-controls",
+        "--pages",
+        "1-4",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 61.16406820807606
+    },
+    {
+      "key": "main-hwp",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage50-float6797/rhwp",
+        "export-render-tree",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage50-float6797/main-tree/hwp"
+      ],
+      "exit_code": 0,
+      "before_pages": 215,
+      "after_pages": 215,
+      "changed_pages": [],
+      "tree_equality_is_not_full_raster_fidelity": true
+    },
+    {
+      "key": "main-hwpx",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage50-float6797/rhwp",
+        "export-render-tree",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage50-float6797/main-tree/hwpx"
+      ],
+      "exit_code": 0,
+      "before_pages": 215,
+      "after_pages": 215,
+      "changed_pages": [],
+      "tree_equality_is_not_full_raster_fidelity": true
+    }
+  ],
+  "visual": [
+    {
+      "backend": "native",
+      "key": "float6797",
+      "pages": [
+        7
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 91.04728,
+        "worst_pixel_match_percent": 91.04728,
+        "average_ink_match_percent": 50.11467,
+        "worst_ink_match_percent": 50.11467,
+        "average_visual_accuracy_proxy_percent": 50.11467,
+        "worst_visual_accuracy_proxy_percent": 50.11467,
+        "average_tolerant_content_match_percent": 93.53093,
+        "worst_tolerant_content_match_percent": 93.53093,
+        "worst_pages": [
+          7
+        ]
+      },
+      "directly_inspected": [
+        "review_007.png",
+        "overlay_007.png"
+      ],
+      "remaining": "PDF chart payload is blank; chart fidelity unverified. Page number vertical mismatch remains."
+    },
+    {
+      "backend": "wasm",
+      "key": "float6797",
+      "pages": [
+        7
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 91.04728,
+        "worst_pixel_match_percent": 91.04728,
+        "average_ink_match_percent": 50.11467,
+        "worst_ink_match_percent": 50.11467,
+        "average_visual_accuracy_proxy_percent": 50.11467,
+        "worst_visual_accuracy_proxy_percent": 50.11467,
+        "average_tolerant_content_match_percent": 93.53093,
+        "worst_tolerant_content_match_percent": 93.53093,
+        "worst_pages": [
+          7
+        ]
+      },
+      "directly_inspected": [
+        "review_007.png",
+        "overlay_007.png"
+      ],
+      "remaining": "PDF chart payload is blank; chart fidelity unverified. Page number vertical mismatch remains."
+    },
+    {
+      "backend": "fresh-wasm",
+      "key": "para6950",
+      "pages": [
+        1,
+        2,
+        3
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "metrics": {
+        "compared_pages": 3,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 89.75475,
+        "worst_pixel_match_percent": 88.72353,
+        "average_ink_match_percent": 33.66448,
+        "worst_ink_match_percent": 18.15385,
+        "average_visual_accuracy_proxy_percent": 33.66448,
+        "worst_visual_accuracy_proxy_percent": 18.15385,
+        "average_tolerant_content_match_percent": 99.19115,
+        "worst_tolerant_content_match_percent": 98.66178,
+        "worst_pages": [
+          1,
+          2,
+          3
+        ]
+      },
+      "automatic_results_do_not_resolve_material_layout_residuals": true
+    },
+    {
+      "backend": "fresh-wasm",
+      "key": "anchor6312",
+      "pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "metrics": {
+        "compared_pages": 4,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 91.5861,
+        "worst_pixel_match_percent": 87.35193,
+        "average_ink_match_percent": 35.94183,
+        "worst_ink_match_percent": 24.15943,
+        "average_visual_accuracy_proxy_percent": 35.94183,
+        "worst_visual_accuracy_proxy_percent": 24.15943,
+        "average_tolerant_content_match_percent": 97.27683,
+        "worst_tolerant_content_match_percent": 92.77058,
+        "worst_pages": [
+          4,
+          2,
+          3,
+          1
+        ]
+      },
+      "automatic_results_do_not_resolve_material_layout_residuals": true
+    },
+    {
+      "backend": "fresh-wasm",
+      "key": "caption3738",
+      "pages": [
+        23
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 96.01822,
+        "worst_pixel_match_percent": 96.01822,
+        "average_ink_match_percent": 40.47348,
+        "worst_ink_match_percent": 40.47348,
+        "average_visual_accuracy_proxy_percent": 40.47348,
+        "worst_visual_accuracy_proxy_percent": 40.47348,
+        "average_tolerant_content_match_percent": 99.62947,
+        "worst_tolerant_content_match_percent": 99.62947,
+        "worst_pages": [
+          23
+        ]
+      },
+      "automatic_results_do_not_resolve_material_layout_residuals": true
+    },
+    {
+      "backend": "fresh-wasm",
+      "key": "anchor7203",
+      "pages": [
+        11
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 94.9002,
+        "worst_pixel_match_percent": 94.9002,
+        "average_ink_match_percent": 16.67186,
+        "worst_ink_match_percent": 16.67186,
+        "average_visual_accuracy_proxy_percent": 16.67186,
+        "worst_visual_accuracy_proxy_percent": 16.67186,
+        "average_tolerant_content_match_percent": 93.19785,
+        "worst_tolerant_content_match_percent": 93.19785,
+        "worst_pages": [
+          11
+        ]
+      },
+      "automatic_results_do_not_resolve_material_layout_residuals": true
+    },
+    {
+      "backend": "fresh-wasm",
+      "key": "nested1133-hwp",
+      "pages": [
+        2
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 89.81139,
+        "worst_pixel_match_percent": 89.81139,
+        "average_ink_match_percent": 47.70525,
+        "worst_ink_match_percent": 47.70525,
+        "average_visual_accuracy_proxy_percent": 47.70525,
+        "worst_visual_accuracy_proxy_percent": 47.70525,
+        "average_tolerant_content_match_percent": 94.52174,
+        "worst_tolerant_content_match_percent": 94.52174,
+        "worst_pages": [
+          2
+        ]
+      },
+      "automatic_results_do_not_resolve_material_layout_residuals": true
+    },
+    {
+      "backend": "fresh-wasm",
+      "key": "nested1133-hwpx",
+      "pages": [
+        2
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 89.02611,
+        "worst_pixel_match_percent": 89.02611,
+        "average_ink_match_percent": 44.41762,
+        "worst_ink_match_percent": 44.41762,
+        "average_visual_accuracy_proxy_percent": 44.41762,
+        "worst_visual_accuracy_proxy_percent": 44.41762,
+        "average_tolerant_content_match_percent": 94.27306,
+        "worst_tolerant_content_match_percent": 94.27306,
+        "worst_pages": [
+          2
+        ]
+      },
+      "automatic_results_do_not_resolve_material_layout_residuals": true
+    }
+  ],
+  "assets": [
+    {
+      "asset": "mydocs/pr/assets/pr7382_20260926/stage50_native_float6797_review_007.png",
+      "sha256": "8cf8a4a9d633258617096c4da96313dfc68d8ab0e08cb44709648e3b0907d125"
+    },
+    {
+      "asset": "mydocs/pr/assets/pr7382_20260926/stage50_native_float6797_overlay_007.png",
+      "sha256": "6933169277ee2af028eea732ce83e54dc626d0c87077b87a50f6c7775edee5c2"
+    },
+    {
+      "asset": "mydocs/pr/assets/pr7382_20260926/stage50_wasm_float6797_review_007.png",
+      "sha256": "9b07f06a72aaa5599fc6afa1e57b170800ad3c6161c36e57e938192865b025f6"
+    },
+    {
+      "asset": "mydocs/pr/assets/pr7382_20260926/stage50_wasm_float6797_overlay_007.png",
+      "sha256": "145aa9490fe52882ede003cd3a2b35fe19c8100b2e91a58f2593aa725544d4bc"
+    }
+  ],
+  "full_nextest": {
+    "step": 8,
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--tests",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "state": "complete",
+    "started_utc": "2026-09-27T06:51:15Z",
+    "exit_code": 100,
+    "seconds": 1254.4954317496158,
+    "candidate_parent": "591cf4499",
+    "source_provenance": {
+      "parent": "591cf4499",
+      "binary_sha256": "a501e757415d8b5f5af7ac91b4a636c483927a4bd187fde53c5bc70f3e1ade19",
+      "files": {
+        "src/renderer/typeset/table/block/whole_fit.rs": "8287329afef82b4e60fe679f33d682a5074a73214b1a1f08330519f6e1ba7423",
+        "tests/cases/issue_6797_table_item_clears_float_band.rs": "130896e5cf0c8b818098fb4825b1dd0a1d716f9af0d329a2e0675eb3c14b769f"
+      }
+    },
+    "base": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+    "test_seconds": 777.99,
+    "pass": 10337,
+    "fail": 36,
+    "skipped": 50,
+    "summary": "Summary [ 777.990s] 10373 tests run: 10337 passed (9 slow), 36 failed, 50 skipped",
+    "failures": [
+      "issue_1133_nested_table_valign::issue_1133_hwpx_preserves_gap_between_consecutive_block_tables",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_11",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_10",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_0",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_14",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_1",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_12",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_3",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_4",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_8",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_9",
+      "issue_7336_table_fragment_cut::hwpx_stored_inline_table_does_not_double_charge_last_line_spacing",
+      "issue_7336_table_fragment_cut::stored_frame_page_larger_rowbreak_table_is_split_across_pages",
+      "off_canvas_baseline::off_canvas_does_not_grow_partition_10",
+      "off_canvas_baseline::off_canvas_does_not_grow_partition_14",
+      "issue_6101_block_tac_table_text_order::issue_6101_table_after_control_text_renders_and_table_stays_left",
+      "issue_1733::issue_1733_hwpx_matches_hancom_pdf_page_count",
+      "issue_2006_1790387_prep_pagination_pin::prep_1790387_page_count_pin",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+      "issue_7390_prep_table_rowbreak::prep_page_105_merged_budget_table_keeps_saved_row_boundaries",
+      "issue_7390_prep_table_rowbreak::prep_page_92_caption_keeps_saved_negative_empty_line_advance",
+      "issue_7390_prep_table_rowbreak::prep_page_93_caption_starts_after_saved_picture_bottom",
+      "issue_1658_page_bottom_fixed_exclusion::gwanak_bottom_fixed_frame_renders_at_page_bottom",
+      "oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_13",
+      "oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_15",
+      "issue_5941_tail_overflow_drift_gate::issue_5941_drift_past_saved_tail_still_grants_overflow",
+      "issue_2243::issue_2243_gyeoljae_sliver_page_pins",
+      "issue_5585_sibling_table_anchor_offset::sibling_tables_do_not_recharge_the_paragraph_anchor_offset",
+      "issue_7390_kopub_latin_metrics::kopub_latin_line_width_matches_hancom_in_absolute_px",
+      "issue_7390_kopub_latin_metrics::kopub_space_stays_half_width",
+      "body_overflow_baseline::body_overflow_does_not_grow_partition_10",
+      "body_overflow_baseline::body_overflow_does_not_grow_partition_3",
+      "body_overflow_baseline::body_overflow_does_not_grow_partition_1",
+      "body_overflow_baseline::body_overflow_does_not_grow_partition_8",
+      "body_overflow_baseline::body_overflow_does_not_grow_partition_2",
+      "body_overflow_baseline::body_overflow_does_not_grow_partition_15"
+    ],
+    "previous_failed_now_passed": [
+      "issue_6797_table_item_clears_float_band::maintainer_an_already_clear_offset_table_is_not_snapped_again",
+      "issue_6797_table_item_clears_float_band::table_item_clears_the_previous_float_band"
+    ],
+    "new_failed_tests": [],
+    "all_failures_distinct_visible_defects": false,
+    "rust_changes_during_run": false,
+    "pr_ready": false
+  },
+  "source_hashes_verified": true
+}

@@ -1,0 +1,11 @@
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 7.35s
+     Running tests/generated/regression_suite_020.rs (target/pr7118-7187-20260916/release-test/deps/regression_suite_020-37299297c1324f65)
+
+running 4 tests
+test issue_1892::issue_1892_empty_container_and_size_criterion_roundtrip ... ok
+test issue_1892::issue_1892_null_tab_extension_marker_not_parsed_into_ir ... ok
+test issue_1892::issue_1892_hwp3_drawing_group_roundtrip_render_is_self_consistent ... ok
+test issue_1892::issue_1892_hwp3_tab_roundtrip_render_is_self_consistent ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 186 filtered out; finished in 0.01s

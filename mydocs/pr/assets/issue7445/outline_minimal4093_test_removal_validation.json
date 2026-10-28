@@ -1,0 +1,496 @@
+{
+  "stage": 101,
+  "code_commit": "d01ab7eb21f908a2939df889954b8a0f766a175f",
+  "analysis": {
+    "head": "614a1089d388947ec865d923e9c1bbe2fda2f8de",
+    "analysis": "기존34번 최소개요fixture 신규2건.한컴빈문서에서 합성된입력이며같은입력해시/독립PDF대응을확인하고전수Native로먼저90%미달·검사유효성을판단.생산·공차·새검사변경없음.",
+    "files": {
+      "samples/pr4093/outline_navigation_table_cell_number.hwpx": {
+        "size": 7755,
+        "sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c"
+      },
+      "pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf": {
+        "size": 14962,
+        "sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81"
+      }
+    },
+    "info": {
+      "fonts": [
+        "함초롬돋움",
+        "함초롬바탕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "함초롬돋움",
+        "함초롬바탕"
+      ],
+      "format": "hwpx",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.3524"
+      },
+      "pageCount": 1,
+      "paraCount": 6,
+      "printMethod": null,
+      "printMethodImpliesNup": false,
+      "schemaVersion": "1.0",
+      "sections": 1,
+      "sizeBytes": 7755,
+      "source": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+      "title": "1. 개요",
+      "untrustedContent": true,
+      "untrustedFields": [
+        "title",
+        "fonts[]"
+      ],
+      "version": "5.1.0.0",
+      "warnings": []
+    },
+    "anomaly": {
+      "emptyPageCount": 0,
+      "hasSignal": true,
+      "mode": "single",
+      "offCanvasCount": 0,
+      "overflowCount": 0,
+      "overflowTolerancePx": 2.0,
+      "overlapCount": 1,
+      "overlapTolerancePx": 2.0,
+      "pageCount": 1,
+      "pageFilter": null,
+      "pages": [
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [],
+          "overlap": [
+            {
+              "bboxA": {
+                "h": 16.0,
+                "w": 559.36,
+                "x": 117.16,
+                "y": 221.3733333333334
+              },
+              "bboxB": {
+                "h": 13.333333333333343,
+                "w": 69.73333333333332,
+                "x": 126.72,
+                "y": 233.60000000000005
+              },
+              "overlapArea": 263.12711111111156,
+              "overlapH": 3.7733333333333405,
+              "overlapW": 69.73333333333332,
+              "pathA": "Page/Body/Column0/Table4",
+              "pathB": "Page/Body/Column0/TextLine6",
+              "typeA": "Table",
+              "typeB": "TextLine"
+            }
+          ],
+          "page": 0,
+          "storedLineEscape": [],
+          "textOverlap": [
+            {
+              "bboxA": {
+                "h": 13.333333333333334,
+                "w": 11.6,
+                "x": 137.29333333333332,
+                "y": 223.2533333333334
+              },
+              "bboxB": {
+                "h": 13.333333333333334,
+                "w": 51.733333333333334,
+                "x": 144.72,
+                "y": 233.60000000000005
+              },
+              "overlapArea": 12.46435555555556,
+              "overlapH": 2.986666666666679,
+              "overlapW": 4.173333333333318,
+              "pathA": "Page/Body/Column0/Table4/Cell0/TextLine0/TextRun0",
+              "pathB": "Page/Body/Column0/TextLine6/TextRun1",
+              "typeA": "TextRun",
+              "typeB": "TextRun"
+            },
+            {
+              "bboxA": {
+                "h": 13.333333333333334,
+                "w": 97.60000000000001,
+                "x": 155.29333333333332,
+                "y": 223.2533333333334
+              },
+              "bboxB": {
+                "h": 13.333333333333334,
+                "w": 51.733333333333334,
+                "x": 144.72,
+                "y": 233.60000000000005
+              },
+              "overlapArea": 122.93120000000049,
+              "overlapH": 2.986666666666679,
+              "overlapW": 41.16,
+              "pathA": "Page/Body/Column0/Table4/Cell0/TextLine0/TextRun1",
+              "pathB": "Page/Body/Column0/TextLine6/TextRun1",
+              "typeA": "TextRun",
+              "typeB": "TextRun"
+            }
+          ]
+        }
+      ],
+      "schemaVersion": "1.0",
+      "source": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+      "storedLineEscapeCount": 0,
+      "storedLineTolerancePx": 0.5,
+      "strict": false,
+      "textOverlapCount": 2,
+      "types": null,
+      "untrustedContent": false,
+      "untrustedFields": []
+    },
+    "pdf_pages": 1,
+    "pdf_metadata": {
+      "format": "PDF 1.4",
+      "title": "",
+      "author": "SYSTEM",
+      "subject": "",
+      "keywords": "",
+      "creator": "Hwp 2020 0.0.0.0",
+      "producer": "Hancom PDF 1.3.0.550",
+      "creationDate": "D:20260927135517+09'00'",
+      "modDate": "D:20260927135517+09'00'",
+      "trapped": "",
+      "encryption": null
+    },
+    "independent_conversion_record": {
+      "input": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+      "sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.3524"
+      },
+      "engine": "2020",
+      "filename": "outline_navigation_table_cell_number-2020.pdf",
+      "job_id": "99f0ab52-9320-419a-bbb2-98d60d84484b",
+      "status": "succeeded",
+      "error_class": null,
+      "history": [
+        {
+          "status": "queued",
+          "terminal": false,
+          "error_class": null,
+          "checked_utc": "2026-09-27T04:51:08Z"
+        },
+        {
+          "status": "queued",
+          "terminal": false,
+          "error_class": null,
+          "checked_utc": "2026-09-27T04:51:26Z"
+        },
+        {
+          "status": "queued",
+          "terminal": false,
+          "error_class": null,
+          "checked_utc": "2026-09-27T04:51:43Z"
+        },
+        {
+          "status": "queued",
+          "terminal": false,
+          "error_class": null,
+          "checked_utc": "2026-09-27T04:52:00Z"
+        },
+        {
+          "status": "queued",
+          "terminal": false,
+          "error_class": null,
+          "checked_utc": "2026-09-27T04:52:17Z"
+        },
+        {
+          "status": "queued",
+          "terminal": false,
+          "error_class": null,
+          "checked_utc": "2026-09-27T04:52:35Z"
+        },
+        {
+          "status": "queued",
+          "terminal": false,
+          "error_class": null,
+          "checked_utc": "2026-09-27T04:52:53Z"
+        },
+        {
+          "status": "queued",
+          "terminal": false,
+          "error_class": null,
+          "checked_utc": "2026-09-27T04:53:10Z"
+        },
+        {
+          "status": "queued",
+          "terminal": false,
+          "error_class": null,
+          "checked_utc": "2026-09-27T04:53:27Z"
+        },
+        {
+          "status": "queued",
+          "terminal": false,
+          "error_class": null,
+          "checked_utc": "2026-09-27T04:53:47Z"
+        },
+        {
+          "status": "queued",
+          "terminal": false,
+          "error_class": null,
+          "checked_utc": "2026-09-27T04:54:05Z"
+        },
+        {
+          "status": "queued",
+          "terminal": false,
+          "error_class": null,
+          "checked_utc": "2026-09-27T04:54:23Z"
+        },
+        {
+          "status": "queued",
+          "terminal": false,
+          "error_class": null,
+          "checked_utc": "2026-09-27T04:54:41Z"
+        },
+        {
+          "status": "queued",
+          "terminal": false,
+          "error_class": null,
+          "checked_utc": "2026-09-27T04:54:58Z"
+        },
+        {
+          "status": "running",
+          "terminal": false,
+          "error_class": null,
+          "checked_utc": "2026-09-27T04:55:15Z"
+        },
+        {
+          "status": "succeeded",
+          "terminal": true,
+          "error_class": null,
+          "checked_utc": "2026-09-27T04:55:32Z"
+        }
+      ],
+      "download": {
+        "status": "success",
+        "output_path": "/Users/tsjang/rhwp/pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+        "output_filename": "outline_navigation_table_cell_number-2020.pdf",
+        "size": 14962,
+        "sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81"
+      }
+    }
+  },
+  "input_generation": "한컴2020 빈 문서에서 Python이 본문 합성. 저장제품 메타데이터를 정상생성본 증거로 사용하지 않음. 같은 합성입력의 독립 한컴PDF와 대조.",
+  "visual_provenance": {
+    "hwp": {
+      "path": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+      "sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c"
+    },
+    "pdf": {
+      "path": "pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+      "sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81"
+    },
+    "git_head": "614a1089d388947ec865d923e9c1bbe2fda2f8de",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "path": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+    },
+    "font_supply": {
+      "mode": "full",
+      "source": "explicit",
+      "file_count": 715,
+      "inventory_sha256": "405c24e3d5d9b137193f466ced0e2d962edfe0cd0b970e77b04c293f4ca6ddfd",
+      "full_inventory": "output/pr-review/planet6897-7382-20260926/stage101-outline-minimal4093/visual-native/outline-minimal4093/run_manifest.json"
+    }
+  },
+  "native_gate": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 1,
+        "tolerant_content_match_percent": 85.44776
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "native_metrics": [
+    {
+      "page": 1,
+      "tolerant_content_match_percent": 85.44776
+    }
+  ],
+  "direct_inspection": "표 셀의2. 표셀번호문단과 뒤3. 요구사항이 겹침. 독립PDF의 두줄 간격을 보존하지 못함. review 직접 확인. 글꼴/합성입력 예외 없음.",
+  "native_scope": "전체1쪽 완료,85.44776%",
+  "fresh_wasm": "미실행",
+  "mutation": {
+    "preserved_input": {
+      "path": "mydocs/pr/assets/issue7445/outline_navigation_table_cell_number.hwpx",
+      "size": 7755,
+      "sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c"
+    },
+    "render_assertions_removed": "기존 최소입력함수의3.요구사항/2.요구사항/1.개요 SVG번호 대조 및불용page_text helper",
+    "retained_contracts": [
+      "최소개요3개 번호/제목/수준 getter",
+      "기존데모15개 번호/제목/수준 getter"
+    ],
+    "removed_test_functions": 0,
+    "new_test_functions": 0,
+    "baseline_rows_removed": 0,
+    "renderer_manifest_entries_removed": 0,
+    "generator_output_path": "mydocs/pr/assets/issue7445/outline_navigation_table_cell_number.hwpx",
+    "regenerated_source_sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+    "same_id_historical_ir_arrays": "unchanged",
+    "production_changes": false,
+    "threshold_relaxation": false
+  },
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "614a1089d388947ec865d923e9c1bbe2fda2f8de",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_016",
+          "--test",
+          "regression_suite_021",
+          "-E",
+          "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_14) or test(outline_numbers_match_rendered_numbers_across_table_cell_number) or test(panel_demo_outline_matches_rendered_document)"
+        ],
+        "exit_code": 0,
+        "seconds": 13.515240290667862
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 7.0649847919121385
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3901034169830382
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.23826358327642083
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.38352400017902255
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 6.933103458024561
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.2405170421116054
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 10.053470542188734
+      }
+    ]
+  },
+  "focused_summary": [
+    "     Summary [   0.838s] 3 tests run: 3 passed, 424 skipped"
+  ],
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5871582903",
+  "limits": "기존혼합검사의SVG부분만 승인제외.3개/15개getter통과를 최종렌더링 승인으로 세지 않음. 기존함수이름 유지/새함수없음. 피델리티 개선/PR승인/전체회귀 완료 아님.",
+  "test_source_sha256": "3b78f3e772f3330f7c9526dd6011443be0aea11bcce9863bff13d4f134e85d3f"
+}

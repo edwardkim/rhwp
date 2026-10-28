@@ -1,0 +1,695 @@
+{
+  "stage": 163,
+  "fixture": {
+    "input": "samples/stored-table-text-tail/native-8-0.hwpx",
+    "input_sha256": "3aa0379ab1b4d158800d33c73ae26eed909e5f08e3614dca228044780c8c5e64",
+    "pdf": "pdf/pr7242/native-8-0-2020.pdf",
+    "pdf_sha256": "90d6e84f4c24a5d0e79cde09cfd5d9addf1d8e92da322a13cb03f0dab9a2c3c3"
+  },
+  "visuals": [
+    {
+      "capture": "visual-before-native",
+      "pages": [
+        1,
+        1
+      ],
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 46.21901
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 94.84375,
+        "worst_pixel_match_percent": 94.84375,
+        "average_ink_match_percent": 5.23595,
+        "worst_ink_match_percent": 5.23595,
+        "average_visual_accuracy_proxy_percent": 5.23595,
+        "worst_visual_accuracy_proxy_percent": 5.23595,
+        "average_tolerant_content_match_percent": 46.21901,
+        "worst_tolerant_content_match_percent": 46.21901,
+        "worst_pages": [
+          1
+        ]
+      }
+    },
+    {
+      "capture": "visual-before-wasm",
+      "pages": [
+        1,
+        1
+      ],
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 46.21901
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 94.84375,
+        "worst_pixel_match_percent": 94.84375,
+        "average_ink_match_percent": 5.23595,
+        "worst_ink_match_percent": 5.23595,
+        "average_visual_accuracy_proxy_percent": 5.23595,
+        "worst_visual_accuracy_proxy_percent": 5.23595,
+        "average_tolerant_content_match_percent": 46.21901,
+        "worst_tolerant_content_match_percent": 46.21901,
+        "worst_pages": [
+          1
+        ]
+      }
+    },
+    {
+      "capture": "visual-candidate1-native",
+      "pages": [
+        1,
+        1
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 96.15026,
+        "worst_pixel_match_percent": 96.15026,
+        "average_ink_match_percent": 7.45587,
+        "worst_ink_match_percent": 7.45587,
+        "average_visual_accuracy_proxy_percent": 7.45587,
+        "worst_visual_accuracy_proxy_percent": 7.45587,
+        "average_tolerant_content_match_percent": 96.86991,
+        "worst_tolerant_content_match_percent": 96.86991,
+        "worst_pages": [
+          1
+        ]
+      }
+    },
+    {
+      "capture": "visual-candidate1-wasm",
+      "pages": [
+        1,
+        1
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 96.15026,
+        "worst_pixel_match_percent": 96.15026,
+        "average_ink_match_percent": 7.45587,
+        "worst_ink_match_percent": 7.45587,
+        "average_visual_accuracy_proxy_percent": 7.45587,
+        "worst_visual_accuracy_proxy_percent": 7.45587,
+        "average_tolerant_content_match_percent": 96.86991,
+        "worst_tolerant_content_match_percent": 96.86991,
+        "worst_pages": [
+          1
+        ]
+      }
+    }
+  ],
+  "native_wasm_png_equal": true,
+  "wasm_js_sync": true,
+  "wasm_binary_sync": true,
+  "preanalysis": {
+    "stage": 163,
+    "head": "e416add4729ee264a38571d3f628cba29c7c1622",
+    "item": 7,
+    "case": "stored_table_text_tail",
+    "test": "hancom_saved_object_row_keeps_its_character_border",
+    "input": "samples/stored-table-text-tail/native-8-0.hwpx",
+    "pdf": "pdf/pr7242/native-8-0-2020.pdf",
+    "plan": "현 브랜치에서 작은1쪽의 실제 단독 실패를 재현하고 정상 한컴 PDF와 Native/fresh WASM 전1쪽 직접 대조. 회귀의 픽셀 핀이 유효한 의미를 검사하는지 먼저 확인하며 신규 함수/자동 이관 없이 개별 보정.",
+    "observed": {
+      "before": "기존 단독1FAIL/Native+freshWASM1쪽46.21901%; 표148.5px(정상PDF140.77)·Footer/문자테두리 약8px 아래",
+      "producer": "style_resolver.rs font_sizes: font_size*relative/100, 100%가 13.333333333333336으로 13.333333333333334 저장 lh보다 커짐",
+      "measurement": "typeset/paragraph/format.rs composed_line_max_font_size(base)->pre_h13.3/ls0",
+      "paint": "layout/paragraph_layout.rs run.text_style(lang)->corrected_line_metrics_for_source->raw_lh<max_fs->13.3/ls8.0->TAC148.5/후속Footer·테두리 이동",
+      "independent": "한컴 정상재저장본4개LineSeg: 첫 저장lh1000HU/ls0; PDF140.77..312.42와Footer354.4891px. README에 원본/재저장 출처와해시기록"
+    },
+    "candidate": "상대 크기를 비율로 먼저 변환해 100% 항등성을 보존. 문서ID/좌표보정/비교 공차 추가 없음.",
+    "direct_read": [
+      "Native 보정 전 review_001: 표/셀/뒤 문장 약8px 아래",
+      "Native 보정 후 review_001: 표 외곽과 Cell1..8/Footer 정렬·잔여 선 명암/약1px 차이",
+      "fresh WASM 보정 후 overlay_001: 같은 흐름과 문자/문단 테두리 소속 확인"
+    ],
+    "implementation_scope": "100% 상대 크기의 부동소수 항등성만 보존. 80%/125% 실제 크기 비율·원문 저장 메트릭과 재조판 조건은 유지. 다른 상대 크기의 측정/paint 일반화를 주장하지 않음."
+  },
+  "code_head": "6fcb36f242af7f5139df4c578c6073246b214dc6",
+  "changed_source_sha256": {
+    "src/renderer/style_resolver.rs": "80f8fee10a7a17600e5ef7624e2862ad2f5935fc346b0e3745f9707fadb793d1",
+    "tests/cases/stored_table_text_tail.rs": "233d84a30ee4205e529a81fb648b23f95fe9149f7e21e18f8938ff0610814d3b"
+  },
+  "before_checks": [
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_003",
+        "-E",
+        "test(=stored_table_text_tail::hancom_saved_object_row_keeps_its_character_border)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 126.0930713750422
+    },
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--lib",
+        "-E",
+        "test(=renderer::style_resolver::tests::test_resolve_char_style_size)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 130.32995787495747
+    }
+  ],
+  "after_checks": [
+    {
+      "case": "stored_table_text_tail",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_003",
+        "-E",
+        "test(/stored_table_text_tail::/) and not test(=stored_table_text_tail::hancom_saved_tail_preserves_pdf_baseline_after_the_table) and not test(=stored_table_text_tail::one_paragraph_keeps_one_border_across_table_and_text_items)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 214.93915004236624
+    },
+    {
+      "case": "issue_2243",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_018",
+        "-E",
+        "test(/issue_2243::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 14.346454916056246
+    },
+    {
+      "case": "unit",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--lib",
+        "-E",
+        "test(/renderer::style_resolver::tests::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 237.18383404193446
+    }
+  ],
+  "policy_and_format": {
+    "base": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "results": [
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit_code": 0,
+        "seconds": 6.2009651670232415
+      },
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.213020958006382
+      },
+      {
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.2382900840602815
+      },
+      {
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 9.432805249933153
+      },
+      {
+        "command": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 0.03725404059514403
+      }
+    ]
+  },
+  "fresh_wasm_build": [
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 7.25577550008893
+    },
+    {
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit_code": 0,
+      "seconds": 180.18501141713932
+    }
+  ],
+  "commands": {
+    "visual-before-native": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage162-consult2243/candidate2/rhwp",
+      "--embed-fonts=full",
+      "--file-target",
+      "saved-tail",
+      "samples/stored-table-text-tail/native-8-0.hwpx",
+      "pdf/pr7242/native-8-0-2020.pdf",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage163-tail-border/visual-before-native"
+    ],
+    "visual-before-wasm": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage162-consult2243/candidate2/rhwp",
+      "--embed-fonts=full",
+      "--file-target",
+      "saved-tail",
+      "samples/stored-table-text-tail/native-8-0.hwpx",
+      "pdf/pr7242/native-8-0-2020.pdf",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage163-tail-border/visual-before-wasm",
+      "--wasm-pkg",
+      "pkg"
+    ],
+    "visual-candidate1-native": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage163-tail-border/candidate1/rhwp",
+      "--embed-fonts=full",
+      "--file-target",
+      "saved-tail",
+      "samples/stored-table-text-tail/native-8-0.hwpx",
+      "pdf/pr7242/native-8-0-2020.pdf",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage163-tail-border/visual-candidate1-native"
+    ],
+    "visual-candidate1-wasm": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage163-tail-border/candidate1/rhwp",
+      "--embed-fonts=full",
+      "--file-target",
+      "saved-tail",
+      "samples/stored-table-text-tail/native-8-0.hwpx",
+      "pdf/pr7242/native-8-0-2020.pdf",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage163-tail-border/visual-candidate1-wasm",
+      "--wasm-pkg",
+      "pkg"
+    ],
+    "counter2243-native": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage163-tail-border/candidate1/rhwp",
+      "--embed-fonts=full",
+      "--file-target",
+      "36395325_gyeoljae_consulting",
+      "samples/task2243/36395325_gyeoljae_consulting.hwpx",
+      "pdf/task2243/36395325_gyeoljae_consulting-hwpx-2020.pdf",
+      "--file-target",
+      "36382819_gyeoljae_pm_traffic",
+      "samples/task2243/36382819_gyeoljae_pm_traffic.hwpx",
+      "pdf/task2243/36382819_gyeoljae_pm_traffic-hwpx-2020.pdf",
+      "--file-target",
+      "36386907_gyeoljae_sewoon",
+      "samples/task2243/36386907_gyeoljae_sewoon.hwpx",
+      "pdf/task2243/36386907_gyeoljae_sewoon-hwpx-2020.pdf",
+      "--file-target",
+      "156631374_taxi_press",
+      "samples/task2243/156631374_taxi_press.hwpx",
+      "pdf/task2243/156631374_taxi_press-hwpx-2020.pdf",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage163-tail-border/counter2243-native"
+    ],
+    "counter2243-wasm": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage163-tail-border/candidate1/rhwp",
+      "--embed-fonts=full",
+      "--file-target",
+      "36395325_gyeoljae_consulting",
+      "samples/task2243/36395325_gyeoljae_consulting.hwpx",
+      "pdf/task2243/36395325_gyeoljae_consulting-hwpx-2020.pdf",
+      "--file-target",
+      "36382819_gyeoljae_pm_traffic",
+      "samples/task2243/36382819_gyeoljae_pm_traffic.hwpx",
+      "pdf/task2243/36382819_gyeoljae_pm_traffic-hwpx-2020.pdf",
+      "--file-target",
+      "36386907_gyeoljae_sewoon",
+      "samples/task2243/36386907_gyeoljae_sewoon.hwpx",
+      "pdf/task2243/36386907_gyeoljae_sewoon-hwpx-2020.pdf",
+      "--file-target",
+      "156631374_taxi_press",
+      "samples/task2243/156631374_taxi_press.hwpx",
+      "pdf/task2243/156631374_taxi_press-hwpx-2020.pdf",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage163-tail-border/counter2243-wasm",
+      "--wasm-pkg",
+      "pkg"
+    ]
+  },
+  "counter2243": [
+    {
+      "backend": "native",
+      "key": "36395325_gyeoljae_consulting",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "minimum": 95.62058
+    },
+    {
+      "backend": "native",
+      "key": "36382819_gyeoljae_pm_traffic",
+      "pages": [
+        1,
+        2,
+        3
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "minimum": 91.61509
+    },
+    {
+      "backend": "native",
+      "key": "36386907_gyeoljae_sewoon",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "minimum": 96.4361
+    },
+    {
+      "backend": "native",
+      "key": "156631374_taxi_press",
+      "pages": [
+        1
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "minimum": 94.56346
+    },
+    {
+      "backend": "wasm",
+      "key": "36395325_gyeoljae_consulting",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "minimum": 95.62058
+    },
+    {
+      "backend": "wasm",
+      "key": "36382819_gyeoljae_pm_traffic",
+      "pages": [
+        1,
+        2,
+        3
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "minimum": 91.61509
+    },
+    {
+      "backend": "wasm",
+      "key": "36386907_gyeoljae_sewoon",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "minimum": 96.4361
+    },
+    {
+      "backend": "wasm",
+      "key": "156631374_taxi_press",
+      "pages": [
+        1
+      ],
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "minimum": 94.56346
+    }
+  ],
+  "scope": "작은1쪽 보정·이관0·새 테스트 함수0·원문/PDF 보존. 기존 테두리 검사는 절대 좌표 대신 저장 빈 줄의 점유와 object/뒤 공백/Footer 테두리 소속을 검사. 실제 상대 크기80%/125%는 유지. 최종 전체lint/nextest/Skia/source PR visual은 미완료.",
+  "test_summaries": {
+    "after-format-prepare.log": [],
+    "after-unit.log": [
+      "Summary [   0.042s] 26 tests run: 26 passed, 4039 skipped"
+    ],
+    "after-prepare.log": [],
+    "after-issue_2243.log": [
+      "Summary [   0.107s] 1 test run: 1 passed, 212 skipped"
+    ],
+    "after-stored_table_text_tail.log": [
+      "Summary [   0.089s] 10 tests run: 10 passed, 197 skipped"
+    ]
+  },
+  "before_summaries": {
+    "semantic-before-0.log": [
+      "Summary [   0.017s] 1 test run: 0 passed, 1 failed, 206 skipped"
+    ],
+    "semantic-before-1.log": [
+      "Summary [   0.012s] 1 test run: 0 passed, 1 failed, 4064 skipped"
+    ]
+  },
+  "assets": {
+    "stage163_before_native_review.png": "85faabbd3ab09de3472e588cbb2ca343b89ad18465c8c4ba8d6bd0dbe9245945",
+    "stage163_native_review.png": "1ef9f371428ef6a53d3ea1d24dd19b1a215a93149e71368fb2cd651b022f6019",
+    "stage163_wasm_overlay.png": "a28098c90be8fb7c36aae95a9a79d51f7a89e52da19228b68d597dad3705a754"
+  },
+  "runtime_artifacts": {
+    "output/pr-review/planet6897-7382-20260926/stage163-tail-border/candidate1/rhwp": "8ef437853af527fa93e5a6d1c1c2f1636f0ad7422a28ae94aeb18c6ca274777c",
+    "pkg/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+    "pkg/rhwp_bg.wasm": "aed967b5423d27b9633def177224cb390c9d060b82411ff01e79df8c1a199539"
+  },
+  "preparation_note": "최초 fmt 뒤 source 길이 변화에 따른 파생 묶음 drift는 --prepare로 재준비해 정책검사 모두0. 생성 파일은 커밋하지 않음.",
+  "counter2243_png": {
+    "pages": 14,
+    "all_equal": true
+  }
+}

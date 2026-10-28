@@ -73,6 +73,26 @@ pub enum ChartEdit {
     },
     /// 꼬리 계열 삭제 — 앞 `keep` 개만 남긴다. `keep == 0` 은 거부.
     TruncateSeries { keep: usize },
+    /// [#6053] 계열을 `at` 자리(**최종 문서 기준**)에 삽입한다.
+    ///
+    /// 마지막 계열을 복제해 앵커(그 자리를 차지할 원본 계열의 요소 시작)에 놓되, 복제본의
+    /// 계열 최상위 `c:spPr` 와 `c:marker` 안 `c:symbol` 을 **들어내** 기본 스타일(Auto 마커·
+    /// 기본 선)로 되돌린다 — 한컴 편집기가 더한 계열과 같은 모양이다. 밀려나는 뒤 계열들의
+    /// `c:idx`/`c:order` 는 한 칸씩 재번호된다. `labels`/`name` 규칙은
+    /// [`ChartEdit::AppendSeries`] 와 같다.
+    ///
+    /// 같은 목록에서 [`ChartEdit::AppendSeries`]/[`ChartEdit::TruncateSeries`] 와 섞이면
+    /// 거부된다 — 위치 기반 꼬리 증감과 정체 기반 재번호는 좌표계가 다르다.
+    InsertSeries {
+        at: usize,
+        name: Option<String>,
+        labels: Option<Vec<String>>,
+        values: Vec<String>,
+    },
+    /// [#6053] `at` 계열(**원본 기준**)을 삭제한다 — 요소 구간을 비우고 뒤 계열들을 재번호한다.
+    ///
+    /// 혼합 금지는 [`ChartEdit::InsertSeries`] 와 같다.
+    RemoveSeries { at: usize },
 }
 
 /// 치환 거부 사유. **하나라도 걸리면 한 바이트도 쓰지 않는다.**
@@ -158,6 +178,10 @@ pub enum PatchError {
     StructureSpanOutOfRange {
         series: usize,
     },
+    /// [#6053] 삽입·삭제로 자리가 밀리는 계열에 `c:idx`/`c:order` 구간이 없어 재번호할 수 없다.
+    SeriesNotRenumberable {
+        series: usize,
+    },
 }
 
 impl std::fmt::Display for PatchError {
@@ -222,6 +246,12 @@ impl std::fmt::Display for PatchError {
             Self::StructureSpanOutOfRange { series } => {
                 write!(f, "계열 {series} 의 구조 편집 구간이 입력 밖이다")
             }
+            Self::SeriesNotRenumberable { series } => {
+                write!(
+                    f,
+                    "계열 {series} 의 c:idx/c:order 구간이 없어 재번호할 수 없다"
+                )
+            }
         }
     }
 }
@@ -261,6 +291,7 @@ impl PatchError {
             },
             Self::OverlappingStructureEdits { .. } => Self::OverlappingStructureEdits { series },
             Self::StructureSpanOutOfRange { .. } => Self::StructureSpanOutOfRange { series },
+            Self::SeriesNotRenumberable { .. } => Self::SeriesNotRenumberable { series },
         }
     }
 }
@@ -343,6 +374,11 @@ struct Planner<'a> {
     /// 이번 목록에서 신설한 계열 수 — 다음 신설 계열의 `c:idx`/`c:order`.
     appended_series: usize,
     truncated_series: bool,
+    /// [#6053] 정체 경로 삽입 — (최종 문서 기준 자리, 복제본 바이트). 앵커·재번호는
+    /// [`Planner::finish`] 가 일괄 계산한다.
+    inserted: Vec<(usize, Vec<u8>)>,
+    /// [#6053] 정체 경로 삭제 — 원본 기준 자리.
+    removed: Vec<usize>,
 }
 
 impl<'a> Planner<'a> {
@@ -355,6 +391,8 @@ impl<'a> Planner<'a> {
             seen: Vec::new(),
             appended_series: 0,
             truncated_series: false,
+            inserted: Vec::new(),
+            removed: Vec::new(),
         }
     }
 
@@ -433,6 +471,13 @@ impl<'a> Planner<'a> {
                 values,
             } => self.append_series(name.as_deref(), labels.as_deref(), values),
             ChartEdit::TruncateSeries { keep } => self.truncate_series(*keep),
+            ChartEdit::InsertSeries {
+                at,
+                name,
+                labels,
+                values,
+            } => self.insert_series(*at, name.as_deref(), labels.as_deref(), values),
+            ChartEdit::RemoveSeries { at } => self.remove_series(*at),
         }
     }
 
@@ -581,7 +626,11 @@ impl<'a> Planner<'a> {
         if keep >= len {
             return Err(PatchError::SeriesOutOfRange { series: keep, len });
         }
-        if self.appended_series > 0 || self.truncated_series {
+        if self.appended_series > 0
+            || self.truncated_series
+            || !self.inserted.is_empty()
+            || !self.removed.is_empty()
+        {
             return Err(PatchError::OverlappingStructureEdits { series: keep });
         }
         self.truncated_series = true;
@@ -592,9 +641,6 @@ impl<'a> Planner<'a> {
     }
 
     /// 마지막 계열을 템플릿으로 복제본 바이트를 만들어 그 뒤에 삽입한다.
-    ///
-    /// 복제본은 템플릿 요소 바이트 조각을 **다시 스캔**해(구간이 조각 기준으로 나온다) 같은
-    /// splice 로 고친다 — 재직렬화 없이 `c:f`·`spPr`·확장이 그대로 살아남는다.
     fn append_series(
         &mut self,
         name: Option<&str>,
@@ -602,12 +648,69 @@ impl<'a> Planner<'a> {
         values: &[String],
     ) -> Result<(), PatchError> {
         let len = self.data.series.len();
-        let template_index = len - 1;
-        let template = self.series(template_index)?;
         let new_index = len + self.appended_series;
-        if self.truncated_series {
+        if self.truncated_series || !self.inserted.is_empty() || !self.removed.is_empty() {
             return Err(PatchError::OverlappingStructureEdits { series: new_index });
         }
+        let clone = self.clone_series(new_index, name, labels, values, false)?;
+        let at = self.data.series[len - 1].element_span.end;
+        self.push(at..at, clone, Addr::Structure { series: new_index });
+        self.appended_series += 1;
+        Ok(())
+    }
+
+    /// [#6053] 복제본을 `at` 자리(최종 문서 기준)에 끼운다 — 앵커·재번호는 [`Planner::finish`].
+    fn insert_series(
+        &mut self,
+        at: usize,
+        name: Option<&str>,
+        labels: Option<&[String]>,
+        values: &[String],
+    ) -> Result<(), PatchError> {
+        if self.appended_series > 0 || self.truncated_series || !self.removed.is_empty() {
+            return Err(PatchError::OverlappingStructureEdits { series: at });
+        }
+        let clone = self.clone_series(at, name, labels, values, true)?;
+        self.inserted.push((at, clone));
+        Ok(())
+    }
+
+    /// [#6053] `at` 계열(원본 기준)을 지운다 — 재번호는 [`Planner::finish`].
+    fn remove_series(&mut self, at: usize) -> Result<(), PatchError> {
+        if self.appended_series > 0 || self.truncated_series || !self.inserted.is_empty() {
+            return Err(PatchError::OverlappingStructureEdits { series: at });
+        }
+        let len = self.data.series.len();
+        if at >= len {
+            return Err(PatchError::SeriesOutOfRange { series: at, len });
+        }
+        if self.removed.contains(&at) {
+            return Err(PatchError::OverlappingStructureEdits { series: at });
+        }
+        self.removed.push(at);
+        Ok(())
+    }
+
+    /// 마지막 계열을 템플릿으로 복제본 바이트를 만든다 — [`ChartEdit::AppendSeries`] 와
+    /// [`ChartEdit::InsertSeries`] 가 같은 기계를 쓴다.
+    ///
+    /// 복제본은 템플릿 요소 바이트 조각을 **다시 스캔**해(구간이 조각 기준으로 나온다) 같은
+    /// splice 로 고친다 — 재직렬화 없이 `c:f`·확장이 그대로 살아남는다. `number` 는 복제본의
+    /// `c:idx`/`c:order` 값(= 최종 문서 기준 자리)이자 오류 보고 주소다. `strip_style` 이면
+    /// 계열 최상위 `c:spPr` 와 `c:marker` 안 `c:symbol` 을 들어내 기본 스타일(Auto 마커·기본
+    /// 선)로 되돌린다 — 한컴 편집기가 더한 계열에는 둘 다 없다(#6053 실측).
+    fn clone_series(
+        &self,
+        number: usize,
+        name: Option<&str>,
+        labels: Option<&[String]>,
+        values: &[String],
+        strip_style: bool,
+    ) -> Result<Vec<u8>, PatchError> {
+        let len = self.data.series.len();
+        let template_index = len - 1;
+        let template = self.series(template_index)?;
+        let new_index = number;
         let (Some(idx_span), Some(order_span)) = (&template.idx_span, &template.order_span) else {
             return Err(PatchError::SeriesNotClonable { series: new_index });
         };
@@ -774,11 +877,119 @@ impl<'a> Planner<'a> {
             new_index.to_string().into_bytes(),
             Addr::Structure { series: new_index },
         );
-        let clone = splice(fragment, inner.splices).map_err(|e| e.with_series(new_index))?;
+        // [#6053] 정체 경로 — 복제본의 스타일 구간을 들어내 기본으로 되돌린다. 꼬리 경로
+        // (`AppendSeries`)는 템플릿 스타일을 그대로 물려받는다(바이트 불변 계약).
+        if strip_style {
+            if let Some(span) = fseries.sp_pr_span.clone() {
+                inner.push(span, Vec::new(), Addr::Structure { series: new_index });
+            }
+            if let Some(span) = fseries.symbol_span.clone() {
+                inner.push(span, Vec::new(), Addr::Structure { series: new_index });
+            }
+        }
+        splice(fragment, inner.splices).map_err(|e| e.with_series(new_index))
+    }
 
-        let at = template.element_span.end;
-        self.push(at..at, clone, Addr::Structure { series: new_index });
-        self.appended_series += 1;
+    /// [#6053] 정체 경로의 앵커·재번호 일괄 계산 — 편집을 전부 받은 뒤 한 번 돈다.
+    fn finish(&mut self) -> Result<(), PatchError> {
+        if !self.inserted.is_empty() && !self.removed.is_empty() {
+            // add() 가 먼저 거르지만, 방어로 한 번 더.
+            return Err(PatchError::OverlappingStructureEdits {
+                series: self.inserted[0].0,
+            });
+        }
+        if !self.inserted.is_empty() {
+            self.finish_inserts()?;
+        }
+        if !self.removed.is_empty() {
+            self.finish_removes()?;
+        }
+        Ok(())
+    }
+
+    /// 자리가 밀린 원본 계열의 `c:idx`/`c:order` 를 새 자리로 치환한다.
+    ///
+    /// `dPt` 안의 `c:idx` 는 스캐너가 서브트리째 건너뛰므로 여기 못 온다
+    /// (`dpt_idx_does_not_override_series_idx` 가 고정).
+    fn renumber(&mut self, series: usize, number: usize) -> Result<(), PatchError> {
+        let s = self.series(series)?;
+        let (Some(idx), Some(order)) = (s.idx_span.clone(), s.order_span.clone()) else {
+            return Err(PatchError::SeriesNotRenumberable { series });
+        };
+        self.push(
+            idx,
+            number.to_string().into_bytes(),
+            Addr::Structure { series },
+        );
+        self.push(
+            order,
+            number.to_string().into_bytes(),
+            Addr::Structure { series },
+        );
+        Ok(())
+    }
+
+    /// 삽입 자리를 뺀 빈 칸에 원본 계열이 순서대로 들어간다고 보고, 각 삽입은 "바로 뒤에 올
+    /// 원본"의 요소 시작을 앵커로 쓴다(뒤에 원본이 없으면 마지막 원본의 요소 끝).
+    fn finish_inserts(&mut self) -> Result<(), PatchError> {
+        let mut inserted = std::mem::take(&mut self.inserted);
+        inserted.sort_by_key(|(at, _)| *at);
+        let n = self.data.series.len();
+        let n_final = n + inserted.len();
+        for pair in inserted.windows(2) {
+            if pair[0].0 == pair[1].0 {
+                return Err(PatchError::OverlappingStructureEdits { series: pair[0].0 });
+            }
+        }
+        if let Some((at, _)) = inserted.last() {
+            if *at >= n_final {
+                return Err(PatchError::SeriesOutOfRange {
+                    series: *at,
+                    len: n_final,
+                });
+            }
+        }
+        let insert_pos: Vec<usize> = inserted.iter().map(|(at, _)| *at).collect();
+        // 원본 i 의 최종 자리 — 삽입 자리를 뺀 빈 칸을 순서대로 차지한다.
+        let orig_final: Vec<usize> = (0..n_final)
+            .filter(|slot| insert_pos.binary_search(slot).is_err())
+            .collect();
+        for (at, bytes) in inserted {
+            // 최종 자리가 `at` 보다 큰 첫 원본 앞에 놓는다.
+            let anchor = match orig_final.partition_point(|&f| f < at) {
+                a if a < n => self.data.series[a].element_span.start,
+                _ => self.data.series[n - 1].element_span.end,
+            };
+            self.push(anchor..anchor, bytes, Addr::Structure { series: at });
+        }
+        for (i, &slot) in orig_final.iter().enumerate() {
+            if slot != i {
+                self.renumber(i, slot)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn finish_removes(&mut self) -> Result<(), PatchError> {
+        let mut removed = std::mem::take(&mut self.removed);
+        removed.sort_unstable();
+        let n = self.data.series.len();
+        if removed.len() >= n {
+            return Err(PatchError::EmptySeriesRefused);
+        }
+        for &at in &removed {
+            let span = self.data.series[at].element_span.clone();
+            self.push(span, Vec::new(), Addr::Structure { series: at });
+        }
+        for i in 0..n {
+            if removed.binary_search(&i).is_ok() {
+                continue;
+            }
+            let shift = removed.partition_point(|&r| r < i);
+            if shift > 0 {
+                self.renumber(i, i - shift)?;
+            }
+        }
         Ok(())
     }
 }
@@ -839,6 +1050,7 @@ pub fn apply_chart_edits(
     for edit in edits {
         planner.add(edit)?;
     }
+    planner.finish()?;
     splice(xml, planner.splices)
 }
 

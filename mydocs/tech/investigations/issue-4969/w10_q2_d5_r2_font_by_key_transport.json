@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-d5-r2-font-by-key-transport-result",
+  "issue": 4969,
+  "stage": "W10-Q2-D5-R2",
+  "status": "qualified",
+  "fixture": "ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf",
+  "fontBytes": 456688,
+  "base64PayloadCharactersPerPage": 608920,
+  "producer": {
+    "defaultTransport": "inline",
+    "defaultJsonByteIdentityPreserved": true,
+    "optInTransport": "font-by-resource-key",
+    "omittedFieldPayload": "resources.fontBlobs",
+    "metadataPreserved": true,
+    "cacheFingerprintBitsIndependent": true
+  },
+  "resolver": {
+    "wasmExport": "getSourceFontBytes",
+    "sourceOwner": "current-ExactFontSourceRegistry",
+    "canonicalKeyRequired": true,
+    "maxBytesPerSource": 33554432,
+    "familyOrPathLookup": false
+  },
+  "consumerCache": {
+    "scope": "document-generation",
+    "maxBlobs": 256,
+    "maxDocumentBytes": 67108864,
+    "commit": "after-entire-by-key-batch-verification",
+    "olderGenerationCanRepopulate": false
+  },
+  "pageMatrix": [
+    {
+      "pages": 1,
+      "inlineRawBytes": 456688,
+      "inlineBase64Characters": 608920,
+      "optInInlinePayloadBytes": 0,
+      "optInFetches": 1,
+      "optInTransferredBytes": 456688,
+      "retainedBlobs": 1
+    },
+    {
+      "pages": 2,
+      "inlineRawBytes": 913376,
+      "inlineBase64Characters": 1217840,
+      "optInInlinePayloadBytes": 0,
+      "optInFetches": 1,
+      "optInTransferredBytes": 456688,
+      "retainedBlobs": 1
+    },
+    {
+      "pages": 8,
+      "inlineRawBytes": 3653504,
+      "inlineBase64Characters": 4871360,
+      "optInInlinePayloadBytes": 0,
+      "optInFetches": 1,
+      "optInTransferredBytes": 456688,
+      "retainedBlobs": 1
+    }
+  ],
+  "failClosed": {
+    "missing": "verified-mutation-0-text-run",
+    "wrongBytesOrDigest": "verified-mutation-0-text-run",
+    "oversizedDeclaration": "fetch-0-verified-mutation-0-text-run",
+    "newGenerationMissing": "old-cache-cleared-text-run",
+    "olderGenerationResponse": "fetch-0-verified-mutation-0-text-run",
+    "partialBatch": "verified-mutation-0-text-run"
+  },
+  "validation": {
+    "rustFocusedPassed": 13,
+    "focusedClippy": "pass",
+    "dockerWasmBuild": "pass",
+    "generatedWasmResolverProbe": "pass",
+    "studioFocusedPassed": 4,
+    "studioFullPassed": 1238,
+    "studioFullSkipped": 1,
+    "studioBuild": "pass",
+    "canvasKitActualReplay": "pass",
+    "canvasKitInk": "58x34",
+    "generatedArtifactsChanged": false,
+    "sourceCfgTestChanged": false,
+    "productOutputChanged": "opt-in-only",
+    "noLineSegBoundaryChanged": false
+  },
+  "nextSlice": "Q2-D5-R3",
+  "nextSliceApproved": false,
+  "pushReady": false
+}

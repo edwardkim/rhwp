@@ -1,0 +1,15 @@
+Native Skia tests	Native Skia tests	2026-09-14T10:53:31.8309282Z test result: ok. 58 passed; 0 failed; 0 ignored; 0 measured; 3885 filtered out; finished in 0.16s
+Native Skia tests	Native Skia tests	2026-09-14T10:53:31.8350783Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.00s
+Native Skia tests	Native Skia tests	2026-09-14T10:53:31.8365367Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 165 filtered out; finished in 0.00s
+Native Skia tests	Native Skia tests	2026-09-14T10:53:31.8378747Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+Native Skia tests	Native Skia tests	2026-09-14T10:57:02.2832547Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+Native Skia tests	Native Skia tests	2026-09-14T10:57:04.3172741Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+Native Skia tests	Native Skia tests	2026-09-14T10:57:16.3925746Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.11s
+Native Skia tests	Native Skia tests	2026-09-14T10:57:27.8061825Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 188 filtered out; finished in 0.04s
+Native Skia tests	Native Skia tests	2026-09-14T10:57:39.0649782Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 201 filtered out; finished in 0.05s
+Native Skia tests	Native Skia tests	2026-09-14T10:57:48.7766121Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 196 filtered out; finished in 0.09s
+Native Skia tests	Native Skia tests	2026-09-14T10:57:59.2430009Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 191 filtered out; finished in 0.05s
+test-archive-a-shard-1 / Default-feature tests (Archive A)	UNKNOWN STEP	2026-09-14T10:54:31.1798958Z      Summary [  41.274s] 3873 tests run: 3873 passed, 13 skipped
+test-archive-c-shard-1 / Default-feature tests (Archive C)	UNKNOWN STEP	2026-09-14T10:57:45.6788895Z      Summary [ 218.644s] 1207 tests run: 1207 passed (1 slow), 18 skipped
+test-archive-b-shard-1 / Default-feature tests (Archive B)	UNKNOWN STEP	2026-09-14T10:57:30.6445534Z      Summary [ 120.168s] 2420 tests run: 2420 passed (1 slow), 7 skipped
+test-archive-d-shard-1 / Default-feature tests (Archive D)	UNKNOWN STEP	2026-09-14T10:59:01.8966076Z      Summary [ 198.890s] 2164 tests run: 2164 passed (2 slow), 13 skipped

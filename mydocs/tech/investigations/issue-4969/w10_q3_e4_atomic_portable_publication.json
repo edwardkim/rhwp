@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q3-e4-atomic-portable-publication-result",
+  "issue": 4969,
+  "stage": "W10-Q3-E4",
+  "status": "qualified-atomic-portable-publication-approved",
+  "date": "2026-08-30",
+  "baseCheckpoint": "d1b9f495f8177124bd3c09e48828acfdf20fc5da",
+  "validationUpstreamDevel": "2bcf9b261c3b761d114bc2b3a35ed85ccd1e461e",
+  "currentUpstreamDevel": "97c4d71550f24182f920d23c0f65d4a6371a6e48",
+  "ahead": 29,
+  "behind": 5,
+  "publication": {
+    "requiresNonDefaultInstance": true,
+    "atomicPair": ["glyphRun", "glyphOutline"],
+    "sameTextSource": true,
+    "sameEquivalenceGroup": true,
+    "sameAnchor": true,
+    "validatesBeforeResourceMutation": true,
+    "partialPublicationObserved": false
+  },
+  "backendMatrix": {
+    "canvasKit": "glyphOutline",
+    "canvasKitBrowser": "glyphOutline",
+    "studio": "glyphOutline",
+    "nativeSkia": "textRunFallback",
+    "svg": "textRunFallback",
+    "canvas2d": "textRunFallback",
+    "malformedOrIncompleteOutline": "textRunFallback"
+  },
+  "geometryReceipt": {
+    "font": "Happiness Sans VF",
+    "text": "가변",
+    "axes": { "opsz": 900.0, "wght": 900.0 },
+    "baselineWidthPx": 21.0,
+    "selectedWidthPx": 19.840000000000003,
+    "deltaPx": -1.1599999999999966,
+    "glyphRunPublished": 1,
+    "glyphOutlinePublished": 1,
+    "canvasKitSelectsOutline": true
+  },
+  "explicitDefault": {
+    "requestProvenanceSeparate": true,
+    "canonicalAxes": [],
+    "productActivation": false,
+    "layerJsonEqualsNoRequest": true,
+    "geometryEqualsNoRequest": true,
+    "regressionFoundAndFixed": "explicit-default-product-width-changed-from-21.0-to-19.62666666666667"
+  },
+  "defaultReceipt": {
+    "layerJsonBytes": 619562,
+    "layerJsonBlake3": "0b5212cc076c34dce706039d7c4da85936c0a6769e83f08baa7f158cbd9029de",
+    "canvasKitPlanBytes": 1755,
+    "canvasKitPlanBlake3": "a98e6933d76901cfa55a43205c758675a8864527f87f8bed7a689d16267cbb56",
+    "changedFromQ3E0": false
+  },
+  "validation": {
+    "compositionHandoff": { "passed": 5, "failed": 0 },
+    "atomicActivation": { "passed": 7, "failed": 0 },
+    "glyphLowering": { "passed": 17, "failed": 0 },
+    "q3ERedFilter": { "passed": 4, "failed": 0 },
+    "studioFull": { "passed": 1247, "failed": 0, "skipped": 1 },
+    "studioFocused": { "passed": 1, "failed": 0 },
+    "studioBuildModules": 239,
+    "rustUnitTier": { "tests": 4221, "modules": 299, "result": "passed" },
+    "cargoFmtAll": "passed",
+    "cargoFmtAllCheck": "passed",
+    "gitDiffCheck": "passed",
+    "clippyAllTargetsDenyWarnings": "passed"
+  },
+  "wasm": {
+    "command": "docker compose --env-file .env.docker run --rm wasm",
+    "result": "passed",
+    "elapsedWallSeconds": 409.57,
+    "bytes": 9796113,
+    "sha256": "94d622aa3b6ec5a6288b46606b703609dc069c0ed08322f0db9d7a1bf6d28607",
+    "q3E3DeltaBytes": 873,
+    "q3E3DeltaPercent": 0.008912,
+    "finalSizeGateDeferredTo": "Q3-E5"
+  },
+  "upstreamDrift": {
+    "commitCount": 5,
+    "changedFileCount": 14,
+    "overlapWithQ3E4ChangedFiles": 0,
+    "mergeTreeConflictCount": 0,
+    "mergePerformed": false,
+    "requalificationRequiredAfterApproval": true
+  },
+  "protectedRegression": {
+    "defaultOutputChanged": false,
+    "explicitDefaultProductOutputChanged": false,
+    "partialPortablePublication": false,
+    "unsupportedBackendNonDefaultSelection": false,
+    "fontFallbackRegistryChanged": false,
+    "newIntegrationSource": false,
+    "generatedArtifactsStaged": false,
+    "privateCorpusUsed": false,
+    "hyperVOrHancomOracleUsed": false
+  },
+  "resultApproved": true,
+  "checkpointApproved": true,
+  "commitCreated": true,
+  "next": "approve-latest-devel-merge-requalification-plan",
+  "nextSlice": "latest-devel-merge-requalification",
+  "remoteMutation": false
+}

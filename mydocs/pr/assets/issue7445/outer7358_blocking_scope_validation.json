@@ -1,0 +1,512 @@
+{
+  "stage": 161,
+  "before_head": "c8d7686c98488dc2d5713c1567f4a20dea7901df",
+  "code_commit": "b0aed8322e0ec11f4ad828e82007f3aaf0025cd6",
+  "production_head": "0dc722184d2ea56dbd9ea0873bf60edf5c23f8ce",
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5889443550",
+  "scope": "64쪽·28행4열 외곽 표와 중첩 표의 실제 차단 함수1개만 이관. 다른 검사/원장 입력은 보존. 단순 위치 보정으로 전체 판정하지 않음.",
+  "before": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_004",
+      "-E",
+      "test(=issue_7358_terminal_rowbreak_outer_top::terminal_rowbreak_continuation_repeats_saved_outer_top)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plan": {
+      "caseName": "issue_7358_terminal_rowbreak_outer_top",
+      "target": "regression_suite_004",
+      "grouped": true
+    },
+    "exit_code": 100,
+    "seconds": 7.704431666061282
+  },
+  "actual_failure": {
+    "outer_top_passed": true,
+    "following_actual_px": 543.7333333333337,
+    "old_pdf_expected_px": 541.488,
+    "delta_px": 2.245333333333633
+  },
+  "independent_reference": {
+    "original_pdf_font": "Haansoft Batang",
+    "fresh_pdf_font": "KoPubDotumLight",
+    "saved_product": "hancom-office-2024",
+    "saved_version": "13.0.0.3901",
+    "pages": 64,
+    "mcp": {
+      "job_id": "566eca29-8d49-4ac0-97bc-6e941f90bcf9",
+      "status": "success",
+      "output_path": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage161-outer7358/pdf-fresh/86712_regulatory_analysis-hwp-2024-fresh.pdf",
+      "output_filename": "86712_regulatory_analysis-hwp-2024-fresh.pdf",
+      "size": 728698,
+      "sha256": "ac34bb60492e3749a53183cfb63c814f86379895937dd1309d3bc3d2d1b8126a"
+    },
+    "limitation": "새PDF는글꼴이정상공급된동일원문한컴출력. 기존PDF의정상64쪽출력을폐기하거나잘못된문서로단정하지않음. 저장LineSeg와한컴현재재조판의계약차이는후속조사. 글꼴예외미사용."
+  },
+  "inputs": [
+    {
+      "path": "samples/86712_regulatory_analysis.hwp",
+      "sha256": "ee82c7755617003cb972ba398da9cffadfed24ac0fa068eee1a5347da7658a88",
+      "bytes": 151040
+    },
+    {
+      "path": "pdf/86712_regulatory_analysis-hwp-2024.pdf",
+      "sha256": "bc1025b0607bbac01fea960997fa54430fd8dcc2604831b02940e7815cbcf84f",
+      "bytes": 730646
+    },
+    {
+      "path": "pdf/issue7382-regression-review/86712_regulatory_analysis-font-supplied-2024.pdf",
+      "sha256": "ac34bb60492e3749a53183cfb63c814f86379895937dd1309d3bc3d2d1b8126a",
+      "bytes": 728698
+    }
+  ],
+  "removed": [
+    "issue_7358_terminal_rowbreak_outer_top::terminal_rowbreak_continuation_repeats_saved_outer_top"
+  ],
+  "preserved_control": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_012",
+      "-E",
+      "test(=issue_1133_native_rowbreak_outer_margin::native_captionless_rowbreak_keeps_independent_frame_origins)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "exit_code": 0,
+    "seconds": 10.682629500050098
+  },
+  "local_policy": [
+    {
+      "label": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "diff",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "visual": {
+    "before-native": {
+      "run_state": "complete",
+      "native_pages": 64,
+      "wasm_pages": null,
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 27,
+            "tolerant_content_match_percent": 80.03785
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "page_scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 98.27554,
+          "ink_match_percent": 25.44714
+        },
+        {
+          "page": 27,
+          "tolerant_content_match_percent": 80.03785,
+          "ink_match_percent": 9.18046
+        },
+        {
+          "page": 28,
+          "tolerant_content_match_percent": 92.04805,
+          "ink_match_percent": 14.26565
+        },
+        {
+          "page": 29,
+          "tolerant_content_match_percent": 90.78828,
+          "ink_match_percent": 14.64713
+        }
+      ],
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "outer7358",
+        "samples/86712_regulatory_analysis.hwp",
+        "pdf/86712_regulatory_analysis-hwp-2024.pdf",
+        "--pages",
+        "1,27,28,29",
+        "--dpi",
+        "96",
+        "--rhwp-bin",
+        "output/pr-review/planet6897-7382-20260926/stage159-cell2097/candidate-shared-frame/rhwp",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage161-outer7358/visual-before-native"
+      ],
+      "exit": {
+        "exit_code": 1,
+        "seconds": 68.59597579110414
+      },
+      "run_manifest": "output/pr-review/planet6897-7382-20260926/stage161-outer7358/visual-before-native/outer7358/run_manifest.json",
+      "run_manifest_sha256": "414a0232e7480e78e720821982cd2f22816c037b72c5db6be75abccfb79842be"
+    },
+    "before-wasm": {
+      "run_state": "complete",
+      "native_pages": null,
+      "wasm_pages": null,
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 27,
+            "tolerant_content_match_percent": 80.03785
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "page_scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 98.27554,
+          "ink_match_percent": 25.44714
+        },
+        {
+          "page": 27,
+          "tolerant_content_match_percent": 80.03785,
+          "ink_match_percent": 9.18046
+        },
+        {
+          "page": 28,
+          "tolerant_content_match_percent": 92.04805,
+          "ink_match_percent": 14.26565
+        },
+        {
+          "page": 29,
+          "tolerant_content_match_percent": 90.78828,
+          "ink_match_percent": 14.64713
+        }
+      ],
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "outer7358",
+        "samples/86712_regulatory_analysis.hwp",
+        "pdf/86712_regulatory_analysis-hwp-2024.pdf",
+        "--pages",
+        "1,27,28,29",
+        "--dpi",
+        "96",
+        "--rhwp-bin",
+        "output/pr-review/planet6897-7382-20260926/stage159-cell2097/candidate-shared-frame/rhwp",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage161-outer7358/visual-before-wasm",
+        "--wasm-pkg",
+        "pkg"
+      ],
+      "exit": {
+        "exit_code": 1,
+        "seconds": 235.85586475022137
+      },
+      "run_manifest": "output/pr-review/planet6897-7382-20260926/stage161-outer7358/visual-before-wasm/outer7358/run_manifest.json",
+      "run_manifest_sha256": "d7b746b23236d60d4770b0e9df84e28eea5065b781942da5629c29eabe292913"
+    },
+    "fresh-pdf-native": {
+      "run_state": "complete",
+      "native_pages": 64,
+      "wasm_pages": null,
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 27,
+            "tolerant_content_match_percent": 43.73488
+          },
+          {
+            "page": 28,
+            "tolerant_content_match_percent": 39.82847
+          },
+          {
+            "page": 29,
+            "tolerant_content_match_percent": 28.67074
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "page_scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 98.27554,
+          "ink_match_percent": 25.44714
+        },
+        {
+          "page": 27,
+          "tolerant_content_match_percent": 43.73488,
+          "ink_match_percent": 7.21735
+        },
+        {
+          "page": 28,
+          "tolerant_content_match_percent": 39.82847,
+          "ink_match_percent": 11.76749
+        },
+        {
+          "page": 29,
+          "tolerant_content_match_percent": 28.67074,
+          "ink_match_percent": 9.24862
+        }
+      ],
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "outer7358",
+        "samples/86712_regulatory_analysis.hwp",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage161-outer7358/pdf-fresh/86712_regulatory_analysis-hwp-2024-fresh.pdf",
+        "--pages",
+        "1,27,28,29",
+        "--dpi",
+        "96",
+        "--rhwp-bin",
+        "output/pr-review/planet6897-7382-20260926/stage159-cell2097/candidate-shared-frame/rhwp",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage161-outer7358/visual-fresh-pdf-native"
+      ],
+      "exit": {
+        "exit_code": 1,
+        "seconds": 75.55077395914122
+      },
+      "run_manifest": "output/pr-review/planet6897-7382-20260926/stage161-outer7358/visual-fresh-pdf-native/outer7358/run_manifest.json",
+      "run_manifest_sha256": "e14a8ed1e0d66099ef12b202ea56652a2b158b8d5a905b2a882005a95e8fb918"
+    },
+    "fresh-pdf-wasm": {
+      "run_state": "complete",
+      "native_pages": null,
+      "wasm_pages": null,
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 27,
+            "tolerant_content_match_percent": 43.73488
+          },
+          {
+            "page": 28,
+            "tolerant_content_match_percent": 39.82847
+          },
+          {
+            "page": 29,
+            "tolerant_content_match_percent": 28.67074
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "page_scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 98.27554,
+          "ink_match_percent": 25.44714
+        },
+        {
+          "page": 27,
+          "tolerant_content_match_percent": 43.73488,
+          "ink_match_percent": 7.21735
+        },
+        {
+          "page": 28,
+          "tolerant_content_match_percent": 39.82847,
+          "ink_match_percent": 11.76749
+        },
+        {
+          "page": 29,
+          "tolerant_content_match_percent": 28.67074,
+          "ink_match_percent": 9.24862
+        }
+      ],
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "outer7358",
+        "samples/86712_regulatory_analysis.hwp",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage161-outer7358/pdf-fresh/86712_regulatory_analysis-hwp-2024-fresh.pdf",
+        "--pages",
+        "1,27,28,29",
+        "--dpi",
+        "96",
+        "--rhwp-bin",
+        "output/pr-review/planet6897-7382-20260926/stage159-cell2097/candidate-shared-frame/rhwp",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage161-outer7358/visual-fresh-pdf-wasm",
+        "--wasm-pkg",
+        "pkg"
+      ],
+      "exit": {
+        "exit_code": 1,
+        "seconds": 260.9331058333628
+      },
+      "run_manifest": "output/pr-review/planet6897-7382-20260926/stage161-outer7358/visual-fresh-pdf-wasm/outer7358/run_manifest.json",
+      "run_manifest_sha256": "121e37707b25c30d1b7d4399d29ba4e2020c38eb282a6a3c040ec551028cf70d"
+    }
+  },
+  "backend_pixel_provenance": [
+    {
+      "reference": "before",
+      "page": 1,
+      "native_png_sha256": "162d77e24a95f3b37c606e021a651f604521eb03a0a2f2b085531019e636f37e",
+      "wasm_png_sha256": "162d77e24a95f3b37c606e021a651f604521eb03a0a2f2b085531019e636f37e",
+      "same": true
+    },
+    {
+      "reference": "before",
+      "page": 27,
+      "native_png_sha256": "982b98f9ae380f482f27dcd4976b3ac283caff0b2e241d4d3641c99e57e13df9",
+      "wasm_png_sha256": "982b98f9ae380f482f27dcd4976b3ac283caff0b2e241d4d3641c99e57e13df9",
+      "same": true
+    },
+    {
+      "reference": "before",
+      "page": 28,
+      "native_png_sha256": "b15bcefd3db54663a35fdb06a7e270e67636dc8f5a3ad055860d96fd5e871512",
+      "wasm_png_sha256": "b15bcefd3db54663a35fdb06a7e270e67636dc8f5a3ad055860d96fd5e871512",
+      "same": true
+    },
+    {
+      "reference": "before",
+      "page": 29,
+      "native_png_sha256": "9face754ffbfdd8c41f9e5dd536b99f8ea2314e3d687ec5a36672d0c1661a263",
+      "wasm_png_sha256": "9face754ffbfdd8c41f9e5dd536b99f8ea2314e3d687ec5a36672d0c1661a263",
+      "same": true
+    },
+    {
+      "reference": "fresh-pdf",
+      "page": 1,
+      "native_png_sha256": "162d77e24a95f3b37c606e021a651f604521eb03a0a2f2b085531019e636f37e",
+      "wasm_png_sha256": "162d77e24a95f3b37c606e021a651f604521eb03a0a2f2b085531019e636f37e",
+      "same": true
+    },
+    {
+      "reference": "fresh-pdf",
+      "page": 27,
+      "native_png_sha256": "982b98f9ae380f482f27dcd4976b3ac283caff0b2e241d4d3641c99e57e13df9",
+      "wasm_png_sha256": "982b98f9ae380f482f27dcd4976b3ac283caff0b2e241d4d3641c99e57e13df9",
+      "same": true
+    },
+    {
+      "reference": "fresh-pdf",
+      "page": 28,
+      "native_png_sha256": "b15bcefd3db54663a35fdb06a7e270e67636dc8f5a3ad055860d96fd5e871512",
+      "wasm_png_sha256": "b15bcefd3db54663a35fdb06a7e270e67636dc8f5a3ad055860d96fd5e871512",
+      "same": true
+    },
+    {
+      "reference": "fresh-pdf",
+      "page": 29,
+      "native_png_sha256": "9face754ffbfdd8c41f9e5dd536b99f8ea2314e3d687ec5a36672d0c1661a263",
+      "wasm_png_sha256": "9face754ffbfdd8c41f9e5dd536b99f8ea2314e3d687ec5a36672d0c1661a263",
+      "same": true
+    }
+  ],
+  "assets": [
+    {
+      "path": "mydocs/pr/assets/issue7445/outer7358_old_pdf_native_review_027.png",
+      "sha256": "5a62ffe5d3f61d55679f961f8e59cabaf3c170e73d1333dba37095c279c6a47f"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/outer7358_font_supplied_native_review_028.png",
+      "sha256": "8ca63965d0255c8544650bd741ba21daa4887c86371f781f422254bcddc5df37"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/outer7358_font_supplied_native_review_029.png",
+      "sha256": "21a9020dd954e88d123f227f07195fef11137c484e0600dadbd30f473e4306bd"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/outer7358_font_supplied_wasm_overlay_028.png",
+      "sha256": "8043b64a83b0455d06bed6a2e2dad058417ca1251bcf20f90f2018b04bd02b6c"
+    }
+  ],
+  "direct_inspection": [
+    "기존Native27/28review:27쪽하단·글꼴차이,28쪽내용보존",
+    "새정상글꼴PDF Native27/28/29review:수치표쪽소속·후속표시작·말미내용상이",
+    "새정상글꼴PDF freshWASM28standaloneoverlay:괘선·내용의큰위치차이"
+  ],
+  "limits": [
+    "선택4쪽의Native/freshWASM을두PDF기준으로각각실행. 전체64쪽PNG검증아님.",
+    "삭제후생산코드변경0. 캡처는삭제전head지만생산코드와입력동일.",
+    "기존PDF좌표기대가틀렸다고판정하지않음. 기대값·공차를늘리지않고사용자허용대용량범위로실패1함수이관.",
+    "최종필수lint·전체nextest·NativeSkia·원PR최종전체시각/PR준비미완료."
+  ],
+  "manifest_summary": "[RustTestSuite] 확인 완료: 1419 sources / 6102 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6559 cases / weight 1225641..1230930"
+}

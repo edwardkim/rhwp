@@ -1,8 +1,9 @@
 //! [#5363] M04-1: proptest 편집 계획 시퀀스 생성기.
 //!
 //! `rhwp run` 이 이미 받는 step 4종(`fill_fields` · `replace_text` · `set_cell` ·
-//! `set_checkbox`)만 조합한다. DocumentCore 편집 로직을 발명하지 않고, 생성된
-//! 계획서는 JSON 왕복과 `export-plan-schema` 정적 검증만 본다.
+//! `set_checkbox`)을 시퀀스로 조합한다. 템플릿 3종은 별도의 단독 step 생성기로
+//! 검사한다. DocumentCore 편집 로직을 발명하지 않고, 생성된 계획서는 JSON 왕복과
+//! `export-plan-schema` 정적 검증, 템플릿 typed 요청 decode만 본다.
 //! HWPX/HWP5 IrDiff-0 왕복 property 본체는 M04-2/3.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -12,6 +13,12 @@ use serde_json::{json, Map, Value};
 
 const PLAN_VERSION: &str = "1.0";
 const ACTIONS: [&str; 4] = ["fill_fields", "replace_text", "set_cell", "set_checkbox"];
+const TEMPLATE_ACTIONS: [&str; 4] = [
+    "fill_template",
+    "repeat_and_fill_paragraph_block",
+    "repeat_and_fill_table_rows",
+    "import_paragraph_block",
+];
 const PATHS: &[&str] = &[
     "in.hwp",
     "in.hwpx",
@@ -519,6 +526,9 @@ fn validate_against(
         }
         if let Some(pat) = schema.get("pattern").and_then(Value::as_str) {
             let ok = match pat {
+                "^[0-9a-fA-F]{64}$" => {
+                    s.len() == 64 && s.bytes().all(|byte| byte.is_ascii_hexdigit())
+                }
                 "^[^\r\n\t]*$" => !s.chars().any(|ch| matches!(ch, '\r' | '\n' | '\t')),
                 other => {
                     return Err(format!("{path}: 지원하지 않는 pattern {other}"));
@@ -564,7 +574,37 @@ fn prop_config() -> ProptestConfig {
 fn generator_actions_match_export_plan_schema() {
     let schema = rhwp::plan_schema::plan_schema();
     assert_eq!(schema["$ref"], "#/$defs/Plan");
-    assert_eq!(schema_actions(&schema), ACTIONS);
+    let mut generated: Vec<_> = ACTIONS.into_iter().chain(TEMPLATE_ACTIONS).collect();
+    generated.sort();
+    assert_eq!(schema_actions(&schema), generated);
+}
+
+fn template_step(action: &str, values: &[String]) -> Value {
+    let records: Vec<_> = values.iter().map(|value| json!({"body":value})).collect();
+    let bindings = json!([{"key":"body","target":{"kind":"textRange",
+        "path":[{"kind":"paragraph","index":0}],"start":0,"end":0}}]);
+    let request = match action {
+        "import_paragraph_block" => {
+            json!({"sourceSection":0,"sourceStart":1,"sourceEnd":2,"targetSection":0,"insertBefore":1,"count":values.len()})
+        }
+        "fill_template" => json!({"scope":{"sectionIndex":0,"start":0,"end":1},
+            "bindings":bindings,"record":records[0]}),
+        "repeat_and_fill_paragraph_block" => json!({"block":{"sectionIndex":0,
+            "sourceStart":0,"sourceEnd":1,"insertBefore":1,"count":values.len()},
+            "bindings":bindings,"records":records}),
+        "repeat_and_fill_table_rows" => json!({"sectionIndex":0,"paragraphIndex":0,
+            "controlIndex":0,"startRow":1,"endRow":2,"insertBefore":2,
+            "bindings":[{"key":"body","target":{"kind":"textRange","start":0,"end":0,
+                "path":[{"kind":"paragraph","index":0},{"kind":"control","index":0},
+                    {"kind":"cell","index":0},{"kind":"paragraph","index":0}]}}],
+            "records":records}),
+        _ => panic!("템플릿 생성기가 모르는 action: {action}"),
+    };
+    let mut step = json!({"action":action,"request":request});
+    if action == "import_paragraph_block" {
+        step["source"] = json!({"path":"source.hwp","sha256":"a".repeat(64)});
+    }
+    step
 }
 
 #[test]
@@ -580,6 +620,18 @@ fn seed_plan_roundtrips_and_matches_schema() {
 
 #[test]
 fn handwritten_invalid_plans_are_rejected() {
+    for digest in [
+        "a".repeat(63),
+        "g".repeat(64),
+        format!("{} ", "a".repeat(64)),
+    ] {
+        let mut step = template_step("import_paragraph_block", &[String::new()]);
+        step["source"]["sha256"] = json!(digest);
+        assert!(validate_plan_schema(
+            &json!({"planVersion":"1.0","input":"in.hwp","output":"out.hwp","steps":[step]})
+        )
+        .is_err());
+    }
     let cases = [
         json!({"planVersion": "1.0", "input": "a.hwp", "output": "b.hwp", "steps": []}),
         json!({"planVersion": "9.9", "input": "a.hwp", "output": "b.hwp",
@@ -612,6 +664,31 @@ fn handwritten_invalid_plans_are_rejected() {
 
 proptest! {
     #![proptest_config(prop_config())]
+
+    #[test]
+    fn generated_template_single_steps_roundtrip_and_match_schema(
+        values in proptest::collection::vec("[a-z가-힣😀\\n]{0,24}", 1..4),
+        dry in any::<bool>(),
+    ) {
+        for action in TEMPLATE_ACTIONS {
+            let step = template_step(action, &values);
+            if action == "import_paragraph_block" {
+                let typed: rhwp::document_core::ImportParagraphBlockRequest = serde_json::from_value(step["request"].clone())
+                    .map_err(|e| TestCaseError::fail(e.to_string()))?;
+                prop_assert_eq!(typed.count, values.len());
+            } else {
+                let typed = rhwp::document_core::TemplateOperation::from_json(&step.to_string())
+                .map_err(|e| TestCaseError::fail(e.to_string()))?;
+            let typed_value = serde_json::to_value(&typed).unwrap();
+            prop_assert_eq!(typed_value["action"].as_str(), Some(action));
+            }
+            let plan = json!({"planVersion":PLAN_VERSION,"input":"in.hwp","output":"out.hwp",
+                "dryRun":dry,"steps":[step]});
+            let back: Value = serde_json::from_str(&serde_json::to_string(&plan).unwrap()).unwrap();
+            prop_assert_eq!(&plan, &back);
+            validate_plan_schema(&back).map_err(TestCaseError::fail)?;
+        }
+    }
 
     #[test]
     fn generated_plans_serialize_and_match_schema(plan in arb_valid_plan()) {

@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-09-05T19:23:20+09:00",
+  "repository": "edwardkim/rhwp",
+  "dispatch": {
+    "requestedRef": "devel",
+    "develShaBeforeDispatch": "2c144b180dd776aa450c499778510199ae6cdf89",
+    "maxTotalTimeSeconds": 60,
+    "dispatchCount": 1
+  },
+  "workflow": {
+    "name": "Fuzz smoke",
+    "path": ".github/workflows/fuzz-smoke.yml",
+    "gitBlob": "b9c7394b1711d6d73463682a2989188cc42e5c30",
+    "sha256": "425ce384543f6b064149dea2be4c3c567352634b6dea81adb1a5269e7ceb0f97"
+  },
+  "run": {
+    "id": 33959858373,
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/33959858373",
+    "event": "workflow_dispatch",
+    "headBranch": "devel",
+    "headSha": "2c144b180dd776aa450c499778510199ae6cdf89",
+    "status": "completed",
+    "conclusion": "failure",
+    "createdAt": "2026-09-05T10:08:45Z",
+    "startedAt": "2026-09-05T10:08:45Z",
+    "updatedAt": "2026-09-05T10:21:27Z"
+  },
+  "jobs": [
+    {
+      "id": 101289731633,
+      "name": "fuzz parse_hwp",
+      "conclusion": "success",
+      "startedAt": "2026-09-05T10:08:49Z",
+      "completedAt": "2026-09-05T10:18:29Z"
+    },
+    {
+      "id": 101289731577,
+      "name": "fuzz parse_hwp3",
+      "conclusion": "success",
+      "startedAt": "2026-09-05T10:08:50Z",
+      "completedAt": "2026-09-05T10:18:34Z"
+    },
+    {
+      "id": 101289731494,
+      "name": "fuzz parse_hwpx",
+      "conclusion": "success",
+      "startedAt": "2026-09-05T10:08:49Z",
+      "completedAt": "2026-09-05T10:21:26Z"
+    },
+    {
+      "id": 101289731632,
+      "name": "fuzz parse_hml",
+      "conclusion": "success",
+      "startedAt": "2026-09-05T10:08:49Z",
+      "completedAt": "2026-09-05T10:17:50Z"
+    },
+    {
+      "id": 101289731422,
+      "name": "fuzz parse_wmf",
+      "conclusion": "failure",
+      "startedAt": "2026-09-05T10:08:49Z",
+      "completedAt": "2026-09-05T10:20:34Z"
+    },
+    {
+      "id": 101289731532,
+      "name": "fuzz parse_ooxml_chart",
+      "conclusion": "success",
+      "startedAt": "2026-09-05T10:08:49Z",
+      "completedAt": "2026-09-05T10:18:10Z"
+    }
+  ],
+  "failure": {
+    "job": "fuzz parse_wmf",
+    "step": "Smoke-run parse_wmf (60s)",
+    "panic": "attempt to negate with overflow",
+    "libFuzzerSummary": "deadly signal",
+    "fuzzTargetExitStatus": 77,
+    "workflowStepExitCode": 1,
+    "executedUnits": 1177,
+    "peakRssMb": 166,
+    "artifact": {
+      "id": 9967737012,
+      "name": "fuzz-crash-parse_wmf-33959858373",
+      "archiveSizeBytes": 258,
+      "entryName": "crash-ca3947cba11424abf10ceb43db04ca4e48c2bd8c",
+      "entrySizeBytes": 84,
+      "entrySha256": "2ac4a5d4e0c6ef488d6423151035068a36968c4fdb4c499016f29d90ecc6c2fa"
+    }
+  },
+  "verdict": {
+    "matrixJobCount": 6,
+    "successfulJobCount": 5,
+    "failedJobCount": 1,
+    "stage5EvidenceComplete": true,
+    "fuzzProductHealthy": false,
+    "promotionMechanismVerdictAffected": false,
+    "reason": "All six exact-devel jobs and conclusions were preserved; parse_wmf remains a separate product defect."
+  }
+}

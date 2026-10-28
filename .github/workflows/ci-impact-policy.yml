@@ -18,6 +18,10 @@ permissions: {}
 # Completion events for one candidate serialize on the exact head SHA. The newest event
 # recomputes all workflow evidence, so completion order cannot overwrite a failure with
 # partial success from another workflow.
+# [#6819] Completion audits must wait for the running controller: their default-branch
+# checks cannot replace a cancelled pull_request_target check on the PR head. Keep one
+# shared group so the initial publisher cannot race an audit and overwrite its status.
+# Only a new pull_request_target event may supersede a running controller for this head.
 concurrency:
   group: >-
     ci-impact-policy-${{
@@ -25,23 +29,32 @@ concurrency:
       || github.event.workflow_run.head_sha
       || github.run_id
     }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request_target' }}
 
 jobs:
   controller:
     name: Evaluate trusted CI impact policy
+    # A single explicit non-devel link can be skipped before allocating a runner.
+    # Missing/multiple links require live resolution; source branch is NOT the PR base.
     if: >-
       ${{
-        github.event_name == 'pull_request_target'
+        (github.event_name == 'pull_request_target' && github.event.pull_request.base.ref == 'devel')
         || (
           github.event_name == 'workflow_run'
           && github.event.workflow_run.event == 'pull_request'
+          && (
+            !github.event.workflow_run.pull_requests[0]
+            || github.event.workflow_run.pull_requests[1]
+            || !github.event.workflow_run.pull_requests[0].base.ref
+            || github.event.workflow_run.pull_requests[0].base.ref == 'devel'
+          )
         )
       }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       actions: read
+      checks: read
       contents: read
       pull-requests: read
       statuses: write
@@ -56,32 +69,81 @@ jobs:
             let pull = null;
             let mode = '';
             let triggerHeadSha = '';
+            let headRepository = '';
+            let headBranch = '';
+            core.setOutput('active', 'false');
+            function ignore(reason) {
+              core.setOutput('scope_reason', reason);
+              core.info(`CI Impact Policy inactive: ${reason}.`);
+            }
+            function matches(candidate) {
+              return candidate?.state === 'open'
+                && candidate.base?.ref === 'devel'
+                && candidate.base?.repo?.full_name === `${owner}/${repo}`
+                && /^[0-9a-f]{40}$/.test(candidate.base?.sha || '')
+                && candidate.head?.sha === triggerHeadSha
+                && candidate.head?.ref === headBranch
+                && candidate.head?.repo?.full_name === headRepository;
+            }
 
             if (context.eventName === 'pull_request_target') {
               mode = 'publish';
               const eventPull = context.payload.pull_request;
-              triggerHeadSha = eventPull.head.sha;
+              if (eventPull?.base?.ref !== 'devel'
+                || eventPull.base?.repo?.full_name !== `${owner}/${repo}`) {
+                ignore('not-devel-pr');
+                return;
+              }
+              triggerHeadSha = eventPull.head?.sha || '';
+              headRepository = eventPull.head?.repo?.full_name || '';
+              headBranch = eventPull.head?.ref || '';
+              if (!/^[0-9a-f]{40}$/.test(triggerHeadSha) || !headRepository || !headBranch
+                || !Number.isSafeInteger(eventPull.number) || eventPull.number <= 0) {
+                ignore('incomplete-event-identity');
+                return;
+              }
               const response = await github.rest.pulls.get({
                 owner,
                 repo,
                 pull_number: eventPull.number,
               });
               pull = response.data;
-              if (pull.state !== 'open' || pull.head.sha !== eventPull.head.sha) {
-                core.info(
-                  `Ignore stale policy event for PR #${eventPull.number}: `
-                  + `event=${eventPull.head.sha} live=${pull.head.sha} state=${pull.state}.`,
-                );
+              if (!matches(pull)) {
+                ignore(pull?.base?.ref !== 'devel' ? 'not-devel-pr' : 'stale-or-incomplete-pr');
                 pull = null;
               }
-            } else {
+            } else if (context.eventName === 'workflow_run') {
               mode = 'audit';
               const run = context.payload.workflow_run;
-              triggerHeadSha = run.head_sha;
-              const headRepository = run.head_repository?.full_name || '';
+              if (run?.event !== 'pull_request') {
+                ignore('not-pr-workflow');
+                return;
+              }
+              triggerHeadSha = run.head_sha || '';
+              headRepository = run.head_repository?.full_name || '';
+              headBranch = run.head_branch || '';
               const headOwner = run.head_repository?.owner?.login || headRepository.split('/')[0];
-              if (headOwner && run.head_branch && run.head_sha) {
-                const pulls = await github.paginate(github.rest.pulls.list, {
+              if (!headOwner || !headRepository || !headBranch || !/^[0-9a-f]{40}$/.test(triggerHeadSha)) {
+                ignore('incomplete-run-identity');
+                return;
+              }
+              const linked = run.pull_requests ?? [];
+              if (!Array.isArray(linked) || linked.length > 10 || linked.some((p) => (
+                !Number.isSafeInteger(p?.number) || p.number <= 0
+              ))) {
+                ignore('incomplete-or-excessive-pr-linkage');
+                return;
+              }
+              let pulls = [];
+              if (linked.length) {
+                // Explicit linkage is authoritative: never substitute another PR on this head.
+                for (const number of new Set(linked.map((p) => p.number))) {
+                  const response = await github.rest.pulls.get({ owner, repo, pull_number: number });
+                  pulls.push(response.data);
+                }
+              } else {
+                // Some fork completion events lack PR linkage. Resolve only exact live identities.
+                pulls = await github.paginate(github.rest.pulls.list, {
                   owner,
                   repo,
                   state: 'open',
@@ -89,17 +151,24 @@ jobs:
                   head: `${headOwner}:${run.head_branch}`,
                   per_page: 100,
                 });
-                pull = pulls.find((candidate) => (
-                  candidate.head.sha === run.head_sha
-                  && candidate.head.repo?.full_name === headRepository
-                )) || null;
               }
-              if (!pull) {
-                core.info(
-                  `Ignore stale or unrelated workflow ${run.id}: `
-                  + `${headRepository}:${run.head_branch}@${run.head_sha}.`,
-                );
+              const candidates = pulls.filter(matches);
+              if (candidates.length !== 1) {
+                ignore(candidates.length > 1 ? 'ambiguous-devel-pr' : 'no-matching-devel-pr');
+                return;
               }
+              pull = candidates[0];
+              if (!linked.length) {
+                const response = await github.rest.pulls.get({ owner, repo, pull_number: pull.number });
+                pull = response.data;
+              }
+              if (!matches(pull)) {
+                ignore('stale-or-retargeted-pr');
+                return;
+              }
+            } else {
+              ignore('unsupported-event');
+              return;
             }
 
             if (!pull) {
@@ -122,6 +191,7 @@ jobs:
             }
 
             core.setOutput('active', 'true');
+            core.setOutput('scope_reason', 'verified-devel-pr');
             core.setOutput('mode', mode);
             core.setOutput('pull_number', String(pull.number));
             core.setOutput('base_ref', pull.base.ref);
@@ -147,6 +217,8 @@ jobs:
           sparse-checkout: |
             scripts/ci-impact-classifier.cjs
             scripts/ci-impact-policy.cjs
+            scripts/ci-workflow-evidence.cjs
+            scripts/ci-impact-report.cjs
             scripts/verify_review_only_merge_resolution.py
           sparse-checkout-cone-mode: false
 
@@ -171,9 +243,13 @@ jobs:
             const fs = require('node:fs');
             const path = require('node:path');
             const { owner, repo } = context.repo;
-            const { selectLatestWorkflowRun, selectReviewOnlyCandidate } = require(path.join(
+            const { selectLatestWorkflowRun, selectReviewOnlyCandidate, expectedWorkflowMap } = require(path.join(
               process.env.GITHUB_WORKSPACE,
               'trusted-base/scripts/ci-impact-policy.cjs',
+            ));
+            const { collectWorkflowEvidence, collectWorkflowRunList } = require(path.join(
+              process.env.GITHUB_WORKSPACE,
+              'trusted-base/scripts/ci-workflow-evidence.cjs',
             ));
             let files = [];
             let forceFullReason = '';
@@ -278,23 +354,8 @@ jobs:
               'Render Diff': '.github/workflows/render-diff.yml',
             };
             if (process.env.MODE === 'audit' || reviewSelection.eligible) {
-              let runs = [];
-              try {
-                runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
-                  owner,
-                  repo,
-                  event: 'pull_request',
-                  // [#2183/#3508] head_sha server filtering can omit fork runs. The
-                  // branch filter finds them; trusted policy code then checks repo,
-                  // branch, exact SHA, and PR/base association when GitHub exposes it.
-                  branch: process.env.HEAD_BRANCH,
-                  per_page: 100,
-                });
-              } catch (error) {
-                core.warning(`Workflow run collection failed; audit will remain pending. ${error.message}`);
-              }
-              async function collectRun(name, expectedPath, headSha, allowPriorBase) {
-                const run = selectLatestWorkflowRun(runs, {
+              function selectRun(runs, name, expectedPath, headSha, allowPriorBase) {
+                return selectLatestWorkflowRun(runs, {
                   name,
                   path: expectedPath,
                   pullNumber: Number(process.env.PULL_NUMBER),
@@ -305,26 +366,51 @@ jobs:
                   headRepository: process.env.HEAD_REPOSITORY,
                   allowPriorBase,
                 });
+              }
+              const expected = expectedWorkflowMap(normalizedFiles, Boolean(forceFullReason));
+              const runs = await collectWorkflowRunList({
+                listRuns: () => github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
+                  owner,
+                  repo,
+                  event: 'pull_request',
+                  // [#2183/#3508] head_sha server filtering can omit fork runs. The
+                  // branch filter finds them; trusted policy code then checks repo,
+                  // branch, exact SHA, and PR/base association when GitHub exposes it.
+                  branch: process.env.HEAD_BRANCH,
+                  per_page: 100,
+                  request: { timeout: 10000 },
+                }),
+                // Completion audits alone retry missing required current-head runs.
+                // Untriggered paths and initial publication must not wait for workers.
+                missingWorkflows: (runs) => process.env.MODE !== 'audit' ? [] : (
+                  Object.entries(workflowPaths).filter(([name, expectedPath]) => (
+                    expected[name] === 'true'
+                    && !selectRun(runs, name, expectedPath, process.env.HEAD_SHA, false)
+                  )).map(([name]) => name)
+                ),
+                maxAttempts: process.env.MODE === 'audit' ? 4 : 1,
+                warn: (message) => core.warning(message),
+              });
+              async function collectRun(name, expectedPath, headSha, allowPriorBase) {
+                let run = selectRun(runs, name, expectedPath, headSha, allowPriorBase);
                 if (!run) return null;
-                let jobs = [];
-                let jobsCollected = false;
-                try {
-                  jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
-                    owner,
-                    repo,
-                    run_id: run.id,
-                    filter: 'latest',
-                    per_page: 100,
-                  });
-                  jobsCollected = true;
-                } catch (error) {
-                  core.warning(
-                    `Could not collect ${name} jobs after configured retries; `
-                    + `audit will remain pending. ${error.message}`,
-                  );
-                }
+                const snapshot = await collectWorkflowEvidence({
+                  run,
+                  getRun: async (id) => (await github.rest.actions.getWorkflowRun({
+                    owner, repo, run_id: id, request: { timeout: 10000 },
+                  })).data,
+                  listJobs: async (id) => github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+                    owner, repo, run_id: id, filter: 'latest', per_page: 100,
+                    request: { timeout: 10000 },
+                  }),
+                  warn: (message) => core.warning(message),
+                });
+                run = snapshot.run;
+                const { jobs, jobsCollected, collectionFailure, collectionPendingReason } = snapshot;
                 const collected = {
                   run: {
+                    id: run.id,
+                    attempt: run.run_attempt,
                     name: run.name,
                     path: String(run.path || '').split('@')[0],
                     event: run.event,
@@ -339,11 +425,17 @@ jobs:
                     createdAt: run.created_at || '',
                   },
                   jobsCollected,
+                  collectionFailure,
+                  collectionPendingReason,
                   jobs: jobs.map((job) => ({
+                    id: job.id,
+                    runId: job.run_id,
+                    attempt: job.run_attempt,
                     name: job.name,
                     status: job.status,
                     conclusion: job.conclusion || '',
                     steps: (job.steps || []).map((step) => ({
+                      number: step.number,
                       name: step.name,
                       status: step.status,
                       conclusion: step.conclusion || '',
@@ -469,6 +561,7 @@ jobs:
           > .ci-impact-classification.json
 
       - name: Prepare trusted policy input
+        id: policy-input
         if: ${{ always() && !cancelled() && steps.resolve.outputs.active == 'true' }}
         continue-on-error: true
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -612,12 +705,17 @@ jobs:
           } >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Publish exact-head policy status
+        id: publish-status
         if: ${{ always() && !cancelled() && steps.resolve.outputs.active == 'true' }}
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           MODE: ${{ steps.resolve.outputs.mode }}
           PULL_NUMBER: ${{ steps.resolve.outputs.pull_number }}
           HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
+          BASE_REF: ${{ steps.resolve.outputs.base_ref }}
+          BASE_SHA: ${{ steps.resolve.outputs.base_sha }}
+          HEAD_REPOSITORY: ${{ steps.resolve.outputs.head_repository }}
+          HEAD_BRANCH: ${{ steps.resolve.outputs.head_branch }}
           DECISION: ${{ steps.policy.outputs.decision || 'full' }}
           CI_EXPECTED: ${{ steps.policy.outputs.ci_run_expected || 'true' }}
           CODEQL_EXPECTED: ${{ steps.policy.outputs.codeql_run_expected || 'true' }}
@@ -636,10 +734,21 @@ jobs:
               pull_number: Number(process.env.PULL_NUMBER),
             });
             const livePull = response.data;
-            if (livePull.state !== 'open' || livePull.head.sha !== process.env.HEAD_SHA) {
+            if (process.env.BASE_REF !== 'devel'
+              || !/^[0-9a-f]{40}$/.test(process.env.BASE_SHA || '')
+              || livePull.state !== 'open'
+              || livePull.base?.ref !== 'devel'
+              || livePull.base?.repo?.full_name !== `${owner}/${repo}`
+              || livePull.base?.sha !== process.env.BASE_SHA
+              || livePull.head?.sha !== process.env.HEAD_SHA
+              || livePull.head?.repo?.full_name !== process.env.HEAD_REPOSITORY
+              || livePull.head?.ref !== process.env.HEAD_BRANCH) {
+              core.setOutput('stale', 'true');
+              core.setOutput('scope_reason', 'stale-or-non-devel-publication');
               core.info(
                 `Do not publish stale policy status for PR #${process.env.PULL_NUMBER}: `
-                + `resolved=${process.env.HEAD_SHA} live=${livePull.head.sha} state=${livePull.state}.`,
+                + `resolved=${process.env.HEAD_SHA}@${process.env.BASE_SHA} `
+                + `live=${livePull.head?.sha}@${livePull.base?.ref}:${livePull.base?.sha} state=${livePull.state}.`,
               );
               return;
             }
@@ -680,10 +789,70 @@ jobs:
               description: process.env.DESCRIPTION,
               target_url: `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`,
             });
+            core.setOutput('published', 'true');
+            core.setOutput('state', state);
             if (state === 'failure') {
               core.setFailed(
                 process.env.MODE === 'audit'
                   ? `Trusted CI impact audit failed: ${process.env.AUDIT_REASON}`
                   : 'Untrusted head changed the enforcement surface.',
               );
+            }
+
+      # Reporting is best-effort and runs AFTER the authoritative status publication.
+      # The trusted-base helper only reads metadata/logs. It cannot authorize fast-pass.
+      - name: Explain CI failure evidence
+        if: ${{ always() && !cancelled() }}
+        continue-on-error: true
+        timeout-minutes: 1
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          MODE: ${{ steps.resolve.outputs.mode }}
+          ACTIVE: ${{ steps.resolve.outputs.active }}
+          SCOPE_REASON: ${{ steps.publish-status.outputs.scope_reason || steps.resolve.outputs.scope_reason }}
+          PULL_NUMBER: ${{ steps.resolve.outputs.pull_number }}
+          HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
+          BASE_SHA: ${{ steps.resolve.outputs.base_sha }}
+          HEAD_BRANCH: ${{ steps.resolve.outputs.head_branch }}
+          HEAD_REPOSITORY: ${{ steps.resolve.outputs.head_repository }}
+          STALE: ${{ steps.publish-status.outputs.stale }}
+          STATUS_PUBLISHED: ${{ steps.publish-status.outputs.published }}
+          PUBLISHED_STATE: ${{ steps.publish-status.outputs.state }}
+          AUDIT_PUBLISH: ${{ steps.policy.outputs.audit_publish }}
+          AUDIT_CONCLUSION: ${{ steps.policy.outputs.audit_conclusion }}
+          DECISION: ${{ steps.policy.outputs.decision }}
+          OUTCOME_RESOLVE: ${{ steps.resolve.outcome }}
+          OUTCOME_CHECKOUT: ${{ steps.checkout-policy.outcome }}
+          OUTCOME_COLLECT: ${{ steps.collect.outcome }}
+          OUTCOME_CLASSIFY: ${{ steps.classify.outcome }}
+          OUTCOME_INPUT: ${{ steps.policy-input.outcome }}
+          OUTCOME_POLICY: ${{ steps.policy.outcome }}
+          OUTCOME_PUBLISH: ${{ steps.publish-status.outcome }}
+          REPORT_TOKEN: ${{ github.token }}
+        with:
+          retries: 0
+          script: |
+            const fs = require('node:fs');
+            const path = require('node:path');
+            // This fixed fallback must work even if resolve/checkout/helper loading failed.
+            const failed = ['RESOLVE', 'CHECKOUT', 'COLLECT', 'CLASSIFY', 'INPUT', 'POLICY', 'PUBLISH']
+              .filter((stage) => process.env[`OUTCOME_${stage}`] === 'failure'
+                && !(stage === 'PUBLISH' && process.env.STATUS_PUBLISHED === 'true'));
+            if (!failed.length && (process.env.ACTIVE === 'false' || process.env.STALE === 'true')) {
+              fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+                `\n### CI Impact Policy\n\n감사·게시 제외: ${process.env.SCOPE_REASON || 'stale-or-unrelated-event'}.\n`);
+              return;
+            }
+            try {
+              const { createReport, loadInput } = require(path.join(
+                process.env.GITHUB_WORKSPACE, 'trusted-base/scripts/ci-impact-report.cjs',
+              ));
+              const report = await createReport(loadInput(process.env, process.env.GITHUB_WORKSPACE), {
+                token: process.env.REPORT_TOKEN,
+              });
+              fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, report.summary);
+            } catch {
+              fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+                '\n### CI 실패 진단\n\n상세 미확인: trusted reporter unavailable. 기존 CI 판정은 유지됩니다.\n'
+                + (failed.length ? `Controller 오류 단계: ${failed.join(', ')}\n` : '원본 job 로그 확인이 필요합니다.\n'));
             }

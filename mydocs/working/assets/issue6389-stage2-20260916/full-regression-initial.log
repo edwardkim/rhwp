@@ -1,0 +1,41 @@
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp-issue6389-review-20260916)
+   Compiling rhwp-password-crypto v0.1.0 (/Users/tsjang/rhwp-issue6389-review-20260916/crates/rhwp-password-crypto)
+   Compiling rhwp-contracts v0.1.0 (/Users/tsjang/rhwp-issue6389-review-20260916/crates/rhwp-contracts)
+   Compiling rhwp-ooxml-chart v0.1.0 (/Users/tsjang/rhwp-issue6389-review-20260916/crates/rhwp-ooxml-chart)
+    Finished `release-test` profile [optimized] target(s) in 3m 23s
+────────────
+ Nextest run ID 0c05fbb2-286e-4f1c-b9b7-55ec084e6d1e with nextest profile: default
+    Starting 9905 tests across 78 binaries (51 tests skipped)
+        FAIL [   0.140s] (5153/9905) rhwp::regression_suite_006 issue_2724_passthrough_invalidation_guard::classification_drift_is_blocked
+  stdout ───
+
+    running 1 test
+    test issue_2724_passthrough_invalidation_guard::classification_drift_is_blocked ... FAILED
+
+    failures:
+
+    failures:
+        issue_2724_passthrough_invalidation_guard::classification_drift_is_blocked
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.12s
+
+  stderr ───
+
+    thread 'issue_2724_passthrough_invalidation_guard::classification_drift_is_blocked' (183048317) panicked at tests/generated/../issue_2724_passthrough_invalidation_guard.rs:1189:5:
+    미분류 문서 뮤테이터 1건 (#2724):
+      + src/document_core/font_environment.rs:7 set_font_environment() — 패스스루 무효화 없음
+
+    `pub fn (&mut self)` 가 문서 IR 을 바꾸면 본문에서 패스스루를 무효화해야 한다
+    (`section.raw_stream = None` / `doc_info.raw_stream_dirty = true`).
+    빠뜨리면 `serialize_section`(serializer/body_text.rs:26-30)이 원본 바이트를 그대로
+    반환해 편집이 저장 결과에서 사라진다 — 컴파일 에러도 테스트 실패도 없이.
+    바꾸지 않거나 다른 뮤테이터에 위임한다면 이 파일
+    (tests/issue_2724_passthrough_invalidation_guard.rs)의 EXEMPT 에 분류와 근거를
+    적어 등재하라.
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [ 271.140s] 9905 tests run: 9904 passed (3 slow), 1 failed, 51 skipped
+        FAIL [   0.140s] (5153/9905) rhwp::regression_suite_006 issue_2724_passthrough_invalidation_guard::classification_drift_is_blocked
+error: test run failed

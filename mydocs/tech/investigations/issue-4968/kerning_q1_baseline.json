@@ -1,0 +1,489 @@
+{
+  "schemaVersion": 1,
+  "issue": 4968,
+  "stage": "W9-Q1",
+  "status": "complete",
+  "productMutationCount": 0,
+  "inputs": {
+    "fixture": {
+      "path": "mydocs/tech/investigations/issue-4963/fixtures/oracle_typesetting_fixture.hwpx",
+      "bytes": 9097,
+      "sha256": "8ded3aff6f0286ee5ee4ad9c66732026fa627220b529e5d0fa7b9d51bc3ddb3f"
+    },
+    "manifest": {
+      "path": "mydocs/tech/investigations/issue-4963/fixtures/oracle_typesetting_fixture.manifest.json",
+      "bytes": 8889,
+      "sha256": "adf7185faab35edaae62b6c77c5a60642b6a62eee3dc7656bd98042f368d1c3a"
+    },
+    "sourceBoundary": [
+      {
+        "path": "src/renderer/style_resolver.rs",
+        "bytes": 50308,
+        "sha256": "7841d2a99e6e43b15c52eb25be3d217b9782eb12e466c09720a0927d1703e0dd"
+      },
+      {
+        "path": "src/renderer/mod.rs",
+        "bytes": 97925,
+        "sha256": "a807cd9b2493419de4a962d4df2238031134fb60d41a42ca44fd4395db7ee2f8"
+      },
+      {
+        "path": "src/renderer/layout/text_measurement.rs",
+        "bytes": 107171,
+        "sha256": "c4f68bdfca431b3a82cbe3bab70f0d7d4e28283387010d8439949a8a8a1b93f2"
+      },
+      {
+        "path": "src/paint/paint_op.rs",
+        "bytes": 63720,
+        "sha256": "111db01463fbc8f07179306a67d5a80359f6d1a8aa8004613a0f7207e5c842d5"
+      },
+      {
+        "path": "src/paint/json.rs",
+        "bytes": 184814,
+        "sha256": "eecdbd475bb0e7f5ce2e89e2451af1ef1497b9eb47cf35eebdc865fafb138b55"
+      },
+      {
+        "path": "src/renderer/font_metrics_data.rs",
+        "bytes": 21284,
+        "sha256": "5fc965ebf302693c3295db0e3d60791452ca9ce88a7e497c89314e755c28856c"
+      }
+    ]
+  },
+  "build": {
+    "nativeVersion": "rhwp v0.8.4",
+    "wasmVersion": "0.8.4",
+    "wasmBlobBytes": 8977497,
+    "wasmBlobSha256": "732834865b1f11cff04efc0130bb86ea3d554bf0842a03147ad6761c5a6653cd",
+    "dockerWasmCommand": "docker compose --env-file .env.docker run --rm wasm"
+  },
+  "currentSerialization": {
+    "textStyleFields": [
+      "bold",
+      "color",
+      "emboss",
+      "emphasisDot",
+      "engrave",
+      "fontFamily",
+      "fontSize",
+      "italic",
+      "outlineType",
+      "ratio",
+      "shadeColor",
+      "shadowColor",
+      "shadowOffsetX",
+      "shadowOffsetY",
+      "shadowType",
+      "strikeColor",
+      "strikeShape",
+      "strikethrough",
+      "subscript",
+      "superscript",
+      "underline",
+      "underlineColor",
+      "underlineShape"
+    ],
+    "paintTextStyleFields": [
+      "bold",
+      "color",
+      "emboss",
+      "emphasisDot",
+      "engrave",
+      "fontFamily",
+      "fontSize",
+      "italic",
+      "outlineType",
+      "ratio",
+      "shadeColor",
+      "shadowColor",
+      "shadowOffsetX",
+      "shadowOffsetY",
+      "shadowType",
+      "strikeColor",
+      "strikeShape",
+      "strikethrough",
+      "subscript",
+      "superscript",
+      "underline",
+      "underlineColor",
+      "underlineShape"
+    ],
+    "textRunFields": [
+      "baseline",
+      "bbox",
+      "charOverlap",
+      "clusterBasis",
+      "clusters",
+      "fieldMarker",
+      "isLineBreakEnd",
+      "isParaEnd",
+      "isVertical",
+      "orientation",
+      "paintStyle",
+      "placement",
+      "positions",
+      "projectionKind",
+      "rotation",
+      "source",
+      "style",
+      "text",
+      "type"
+    ],
+    "glyphRunFields": [
+      "advances",
+      "bbox",
+      "bidiLevel",
+      "clusters",
+      "diagnostics",
+      "direction",
+      "glyphIds",
+      "glyphTransforms",
+      "orientation",
+      "paintStyle",
+      "placement",
+      "positions",
+      "shapeKey",
+      "source",
+      "type",
+      "variant",
+      "writingMode"
+    ],
+    "kerningFieldPresent": false
+  },
+  "offBaseline": {
+    "page": 0,
+    "selectedRunCount": 9,
+    "selectedRuns": [
+      {
+        "label": "BODY R100 S-10 K0 |",
+        "positions": [
+          0,
+          6,
+          12,
+          18,
+          24,
+          30,
+          36,
+          42,
+          48,
+          54,
+          60,
+          66,
+          72,
+          78,
+          84,
+          90,
+          96,
+          102,
+          108,
+          114,
+          120
+        ],
+        "styleSha256": "aa05f20a5c618eda073611674f435b5d5337d51a5504e850ae09c6fbdc152758",
+        "paintStyleSha256": "aa05f20a5c618eda073611674f435b5d5337d51a5504e850ae09c6fbdc152758"
+      },
+      {
+        "label": "BODY R100 S-5 K0 |",
+        "positions": [
+          0,
+          6.333,
+          12.667,
+          19,
+          25.333,
+          31.667,
+          38,
+          44.333,
+          50.667,
+          57,
+          63.333,
+          69.667,
+          76,
+          82.333,
+          88.667,
+          95,
+          101.333,
+          107.667,
+          114,
+          120.333
+        ],
+        "styleSha256": "aa05f20a5c618eda073611674f435b5d5337d51a5504e850ae09c6fbdc152758",
+        "paintStyleSha256": "aa05f20a5c618eda073611674f435b5d5337d51a5504e850ae09c6fbdc152758"
+      },
+      {
+        "label": "BODY R100 S0 K0 |",
+        "positions": [
+          0,
+          6.667,
+          13.333,
+          20,
+          26.667,
+          33.333,
+          40,
+          46.667,
+          53.333,
+          60,
+          66.667,
+          73.333,
+          80,
+          86.667,
+          93.333,
+          100,
+          106.667,
+          113.333,
+          120
+        ],
+        "styleSha256": "aa05f20a5c618eda073611674f435b5d5337d51a5504e850ae09c6fbdc152758",
+        "paintStyleSha256": "aa05f20a5c618eda073611674f435b5d5337d51a5504e850ae09c6fbdc152758"
+      },
+      {
+        "label": "BODY R80 S-10 K0 |",
+        "positions": [
+          0,
+          4.8,
+          9.6,
+          14.4,
+          19.2,
+          24,
+          28.8,
+          33.6,
+          38.4,
+          43.2,
+          48,
+          52.8,
+          57.6,
+          62.4,
+          67.2,
+          72,
+          76.8,
+          81.6,
+          86.4,
+          91.2
+        ],
+        "styleSha256": "a794d63e439a3c1d8960778ad763b940cc8dfd51beb35a5220c25f452fe4d54f",
+        "paintStyleSha256": "a794d63e439a3c1d8960778ad763b940cc8dfd51beb35a5220c25f452fe4d54f"
+      },
+      {
+        "label": "BODY R80 S-5 K0 |",
+        "positions": [
+          0,
+          5.067,
+          10.133,
+          15.2,
+          20.267,
+          25.333,
+          30.4,
+          35.467,
+          40.533,
+          45.6,
+          50.667,
+          55.733,
+          60.8,
+          65.867,
+          70.933,
+          76,
+          81.067,
+          86.133,
+          91.2
+        ],
+        "styleSha256": "a794d63e439a3c1d8960778ad763b940cc8dfd51beb35a5220c25f452fe4d54f",
+        "paintStyleSha256": "a794d63e439a3c1d8960778ad763b940cc8dfd51beb35a5220c25f452fe4d54f"
+      },
+      {
+        "label": "BODY R80 S0 K0 |",
+        "positions": [
+          0,
+          5.333,
+          10.667,
+          16,
+          21.333,
+          26.667,
+          32,
+          37.333,
+          42.667,
+          48,
+          53.333,
+          58.667,
+          64,
+          69.333,
+          74.667,
+          80,
+          85.333,
+          90.667
+        ],
+        "styleSha256": "a794d63e439a3c1d8960778ad763b940cc8dfd51beb35a5220c25f452fe4d54f",
+        "paintStyleSha256": "a794d63e439a3c1d8960778ad763b940cc8dfd51beb35a5220c25f452fe4d54f"
+      },
+      {
+        "label": "BODY R90 S-10 K0 |",
+        "positions": [
+          0,
+          5.4,
+          10.8,
+          16.2,
+          21.6,
+          27,
+          32.4,
+          37.8,
+          43.2,
+          48.6,
+          54,
+          59.4,
+          64.8,
+          70.2,
+          75.6,
+          81,
+          86.4,
+          91.8,
+          97.2,
+          102.6
+        ],
+        "styleSha256": "c485f228a8a2aa7ea361f763fca2d89aebdb1a9184b4d5df3de5037758a7f1bf",
+        "paintStyleSha256": "c485f228a8a2aa7ea361f763fca2d89aebdb1a9184b4d5df3de5037758a7f1bf"
+      },
+      {
+        "label": "BODY R90 S-5 K0 |",
+        "positions": [
+          0,
+          5.7,
+          11.4,
+          17.1,
+          22.8,
+          28.5,
+          34.2,
+          39.9,
+          45.6,
+          51.3,
+          57,
+          62.7,
+          68.4,
+          74.1,
+          79.8,
+          85.5,
+          91.2,
+          96.9,
+          102.6
+        ],
+        "styleSha256": "c485f228a8a2aa7ea361f763fca2d89aebdb1a9184b4d5df3de5037758a7f1bf",
+        "paintStyleSha256": "c485f228a8a2aa7ea361f763fca2d89aebdb1a9184b4d5df3de5037758a7f1bf"
+      },
+      {
+        "label": "BODY R90 S0 K0 |",
+        "positions": [
+          0,
+          6,
+          12,
+          18,
+          24,
+          30,
+          36,
+          42,
+          48,
+          54,
+          60,
+          66,
+          72,
+          78,
+          84,
+          90,
+          96,
+          102
+        ],
+        "styleSha256": "c485f228a8a2aa7ea361f763fca2d89aebdb1a9184b4d5df3de5037758a7f1bf",
+        "paintStyleSha256": "c485f228a8a2aa7ea361f763fca2d89aebdb1a9184b4d5df3de5037758a7f1bf"
+      }
+    ],
+    "nativeLayerTreeSha256": "8179aa2d0d681d3f346627c59ffd7ac66a5f5965a1b27a2b8d96df3070920607",
+    "wasmLayerTreeSha256": "014c53e012685e0208c88730819cb51722e2ccb509030f8cd8fbf319d38bb81b",
+    "rawLayerTreeByteEqual": false,
+    "platformSentinel": {
+      "reason": "target-usize-max-width",
+      "nativeOccurrenceCount": 20,
+      "wasmOccurrenceCount": 20,
+      "normalizedValue": "para:MAX"
+    },
+    "normalizedLayerTreeSha256": "f33bb97d308834512bc4903097a1eee5761d59de71ccdad397506cc50c816f0c",
+    "normalizedLayerTreeEqual": true,
+    "selectedRunPositionsEqual": true,
+    "svg": {
+      "bytes": 400536,
+      "sha256": "c693b6f1710caeb0ab61a22e2ebdbefe38390161c163ea3b5ca5b5ecbf6d1431",
+      "byteEqual": true
+    }
+  },
+  "capabilityContract": {
+    "request": [
+      "disabled",
+      "enabled"
+    ],
+    "capability": [
+      "gpos-kern",
+      "legacy-kern",
+      "unsupported"
+    ],
+    "disposition": [
+      "not-requested",
+      "applied",
+      "no-pair-adjustment",
+      "fail-closed"
+    ],
+    "precedence": [
+      "gpos-kern",
+      "legacy-kern",
+      "unsupported"
+    ],
+    "requiredTraceFields": [
+      "request",
+      "capability",
+      "disposition",
+      "fontSourceSha256",
+      "faceIndex",
+      "pairCountSeen",
+      "pairCountAdjusted",
+      "totalAdvanceAdjustment",
+      "fallbackReason"
+    ],
+    "bounds": {
+      "maxFontBytes": 33554432,
+      "maxCodePointsPerRun": 4096,
+      "maxGlyphsPerRun": 4096,
+      "maxPairsPerRun": 4095,
+      "maxTraceRecordsPerRun": 4096,
+      "overflowDisposition": "fail-closed",
+      "overflowLayout": "preserve-current-advance"
+    },
+    "backends": {
+      "commonLayout": "decide-pair-adjustments-once",
+      "svg": "replay-common-positions",
+      "canvas2d": "replay-common-positions",
+      "canvaskit": "replay-common-positions",
+      "nativeSkia": "replay-common-positions",
+      "backendReshapingAllowed": false
+    }
+  },
+  "engineDecision": {
+    "selected": "rustybuzz-qualified-candidate",
+    "directDependencyAtQ1": false,
+    "currentWasmDependencyPresent": false,
+    "coverage": [
+      "GPOS-kern",
+      "legacy-kern"
+    ],
+    "rejectedAlternative": "limited-pair-parser",
+    "rejectionReasons": [
+      "class-pair-and-extension-lookup-coverage-risk",
+      "script-and-language-feature-routing-risk",
+      "legacy-kern-format-coverage-risk"
+    ],
+    "qualificationGates": [
+      "Q2-public-pair-fixture",
+      "Q3-native-wasm-size-delta",
+      "Q3-bounded-performance",
+      "glyph-identity-and-cluster-stability-or-fail-closed"
+    ]
+  },
+  "invariants": [
+    "kerning-disabled-preserves-current-layout-and-serialization",
+    "unsupported-or-untrusted-source-preserves-current-advance",
+    "pair-decision-is-common-and-backends-do-not-reshape",
+    "stored-and-fresh-lanes-remain-separate"
+  ],
+  "canonicalSha256": "74f0310aa61cb4464b7176a4f53b4154aab3b828bbf5608ed7ebc9644689d499"
+}

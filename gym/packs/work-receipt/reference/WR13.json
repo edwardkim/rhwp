@@ -7,7 +7,7 @@
           "cmd": [
             "replay",
             "--plan-json",
-            "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"two-step.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"일차장\"}, {\"action\": \"replace_text\", \"find\": \"일차장\", \"replace\": \"이차장\"}]}",
+            "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"two-step.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"일차장\"}, {\"action\": \"replace_text\", \"find\": \"회사\", \"replace\": \"회사정비\"}]}",
             "--json"
           ],
           "path": "steps"

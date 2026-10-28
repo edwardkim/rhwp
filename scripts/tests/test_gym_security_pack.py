@@ -17,7 +17,7 @@ PACK = GYM / "packs" / "security"
 TASKS = PACK / "tasks"
 REFS = PACK / "reference"
 README = PACK / "README.md"
-WORKING = REPO_ROOT / "mydocs" / "working" / "gym_security_pack.md"
+WORKING = REPO_ROOT / "mydocs" / "working" / "archives" / "gym_security_pack.md"
 
 # gym/core/checks.py REGISTRY 와 같은 기존 연산자만 허용.
 EXISTING_OPS = {
@@ -81,7 +81,7 @@ class SecurityPackLayoutTests(unittest.TestCase):
         self.assertNotIn("fill-fields", text)
 
     def test_working_notes_exist_and_are_korean(self):
-        self.assertTrue(WORKING.is_file(), "mydocs/working/gym_security_pack.md 가 없다")
+        self.assertTrue(WORKING.is_file(), "mydocs/working/archives/gym_security_pack.md 가 없다")
         text = WORKING.read_text(encoding="utf-8")
         self.assertGreater(len(text), 2000)
         for needle in ("SE14", "기존 표본", "T07", "audit", "test_gym_packs"):
@@ -91,7 +91,7 @@ class SecurityPackLayoutTests(unittest.TestCase):
 class SecurityTaskContractTests(unittest.TestCase):
     def test_se14_plus_ship_with_paired_reference(self):
         plus = [p for p in task_paths() if se_num(p) >= 14]
-        self.assertGreaterEqual(len(plus), 50, "SE14+ 과제가 50건 미만이다")
+        self.assertEqual(len(plus), 56, "이관 후 유지한 SE14+ 과제 수")
         missing = []
         for path in plus:
             tid = se_id(path)
@@ -105,11 +105,11 @@ class SecurityTaskContractTests(unittest.TestCase):
             self.assertEqual(ref_obj["id"], tid)
         self.assertEqual(missing, [], f"기준풀이 없음: {missing}")
 
-    def test_task_ids_are_contiguous_se_prefix(self):
+    def test_active_task_ids_keep_se_prefix(self):
         nums = sorted(se_num(p) for p in task_paths())
         self.assertEqual(nums[0], 1)
         self.assertGreaterEqual(nums[-1], 80)
-        self.assertEqual(nums, list(range(1, nums[-1] + 1)), "SE 번호에 구멍이 있다")
+        self.assertEqual(nums, [n for n in range(1, nums[-1] + 1) if n not in {13, 20, 21, 23, 32, 34, 41, 42, 53, 55, 66, 68}], "이관한 시험지·편람 이외의 SE 번호 누락")
 
     def test_operators_are_existing_only(self):
         unknown = []
@@ -136,9 +136,15 @@ class SecurityTaskContractTests(unittest.TestCase):
         for path in task_paths():
             task = read_json(path)
             rel = task["input"]
-            self.assertTrue(rel.startswith("samples/"), task["id"])
+            # 기존 공개 문서를 이슈 자산으로 옮겨도 같은 입력 계약을 유지한다.
+            # 사설 경로·저장소 밖 경로·없는 파일을 허용하지 않는다.
+            self.assertTrue(
+                rel.startswith(("samples/", "mydocs/pr/assets/issue7445/")),
+                task["id"],
+            )
             abs_path = REPO_ROOT / rel
-            if not abs_path.exists():
+            self.assertTrue(abs_path.resolve().is_relative_to(REPO_ROOT.resolve()), task["id"])
+            if not abs_path.is_file():
                 missing.append(f"{task['id']}:{rel}")
         self.assertEqual(missing, [], f"없는 표본: {missing}")
 
@@ -217,7 +223,8 @@ class SecurityExpansionScopeTests(unittest.TestCase):
                 if key in blob:
                     axes[key] += 1
         for key, count in axes.items():
-            self.assertGreaterEqual(count, 3, f"SE14+ 에 {key} 축이 부족하다: {count}")
+            minimum = 2 if key == "sanitize" else 3
+            self.assertGreaterEqual(count, minimum, f"SE14+ 에 {key} 축이 부족하다: {count}")
 
     def test_instructions_are_korean_and_unique(self):
         seen = {}

@@ -1,0 +1,140 @@
+{
+  "producer_head": "415b4b046a956133f919ee45bacef63399be007e",
+  "rust_test_diff_sha256": "2ca3b8cc2b49496dd93d46d04e808aa35176f28dc6c9b422b6b783f4dd21dead",
+  "before": {
+    "tests": 2,
+    "passed": 0,
+    "failed": 2,
+    "exit_code": 100,
+    "summary_seconds": 0.171,
+    "observed": "앞 행0..4 vs PDF0..2, 표38.8px 본문 하단 초과, 뒤 본문 꼬리 앞쪽 소비"
+  },
+  "own_build_error": {
+    "exit_code": 101,
+    "reason": "계약명 변경의 block.rs 전달 구조체 누락; 실제 테스트 전 실패. 수정하고 전체 참조 확인, 결함 검출로 세지 않음"
+  },
+  "r1": {
+    "tests": 62,
+    "passed": 61,
+    "failed": 1,
+    "exit_code": 100,
+    "summary_seconds": 3.206,
+    "remaining": "캡션1.88px, 뒤 본문3.76px 앞당김; 기대값 유지 후 공통 바깥 상자 보정"
+  },
+  "after": {
+    "tests": 66,
+    "passed": 66,
+    "failed": 0,
+    "exit_code": 0,
+    "summary_seconds": 4.009
+  },
+  "unit_controls": {
+    "tests": 6,
+    "passed": 6,
+    "exit_code": 0,
+    "summary_seconds": 0.227
+  },
+  "build_commands": [
+    {
+      "name": "unit-nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--lib",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(page_bottom_empty_paragraph_before_vpos_reset_does_not_create_blank_page) | test(page_bottom_empty_run_before_vpos_reset_does_not_create_blank_page) | test(issue2424_block_table_context_owns_step_lifecycle) | test(issue_3820_rewinding_rowbreak_uses_painted_first_fragment_boundary) | test(issue_3738_picture_caption_float_clears_caption_before_next_body_text)"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 135.94
+    },
+    {
+      "name": "cli-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--bin",
+        "rhwp"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 124.357
+    }
+  ],
+  "unit_policy": {
+    "base_sha": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+    "exit_code": 0
+  },
+  "fmt_check_exit_code": 0,
+  "page_count": 215,
+  "reference_page_count": 215,
+  "native_run": {
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--key",
+      "liver7379",
+      "--hwp",
+      "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+      "--pdf",
+      "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+      "--rhwp-bin",
+      "target/pr-review/release-test/rhwp",
+      "--pages",
+      "94,95,106,107,108",
+      "--dpi",
+      "96",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/visual/stage16-native"
+    ],
+    "exit_code": 1,
+    "elapsed_seconds": 25.576
+  },
+  "native_gate": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 106,
+        "tolerant_content_match_percent": 80.27049
+      },
+      {
+        "page": 107,
+        "tolerant_content_match_percent": 85.40785
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "page_metrics": {
+    "94": 98.91562,
+    "95": 94.55592,
+    "106": 80.27049,
+    "107": 85.40785,
+    "108": 99.94123
+  },
+  "direct_read_review_and_overlay_pages": [
+    106,
+    107,
+    108
+  ],
+  "metric_only_pages": [
+    94,
+    95
+  ],
+  "added_english_explanation_comment_count": 0,
+  "unverified": "편집/텍스트 재조판 제외의 실제 편집 counter는 이번 단계에서 직접 실행하지 않음. 보호 조건의 코드 대조와 기존 정상 대조군 통과를 실제 편집 검증으로 확대하지 않음.",
+  "remaining": "106/107 셀 안 글줄 위치 차이로 gate 보류. 전체/fresh WASM/최종 필수 검사 미완료, PR 생성 보류."
+}

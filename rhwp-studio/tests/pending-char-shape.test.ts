@@ -126,7 +126,7 @@ test('삽입 경로가 예약 서식을 실어 나른다', () => {
   const textSrc = readFileSync(join(studioDir, 'src/engine/input-handler-text.ts'), 'utf8');
   assert.match(
     textSrc,
-    /new InsertTextCommand\(insertPos, text, undefined, this\.getPendingCharShape\?\.\(\)\)/,
+    /new InsertTextCommand\(insertPos, text, undefined, this\.getPendingCharShape\?\.\(\)/,
     '일반 입력은 예약 서식을 커맨드에 실어야 한다',
   );
   assert.match(

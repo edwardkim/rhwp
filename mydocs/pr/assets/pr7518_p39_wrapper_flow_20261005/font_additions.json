@@ -1,0 +1,56 @@
+{
+  "reason": "Actual PDF Malgun Gothic and Human MyeongJo were previously substituted; restore actual Windows font supply",
+  "added": [
+    {
+      "source": "/mnt/c/Windows/Fonts/HMFMMUEX.TTC",
+      "cached": "/tmp/rhwp-pr7518-font-cache/HMFMMUEX.TTC",
+      "sha256": "be52401ea71e34d7c52bffacf25f95e3cc0bfdadc8a2a1f377d458f22484f7b7"
+    },
+    {
+      "source": "/mnt/c/Windows/Fonts/HMFMOLD.TTF",
+      "cached": "/tmp/rhwp-pr7518-font-cache/HMFMOLD.TTF",
+      "sha256": "3b2e7ec32c6c64edd80ef6c0cd685c461e78f76afba4ec9b21467fe0e3f5e0de"
+    },
+    {
+      "source": "/mnt/c/Windows/Fonts/HMFMPYUN.TTF",
+      "cached": "/tmp/rhwp-pr7518-font-cache/HMFMPYUN.TTF",
+      "sha256": "39d01b794c09d199f08248656aee098f208ebde82fb87cd395714546863cbc37"
+    },
+    {
+      "source": "/mnt/c/Windows/Fonts/HMKMAMI.TTF",
+      "cached": "/tmp/rhwp-pr7518-font-cache/HMKMAMI.TTF",
+      "sha256": "ca0da5f083be40d27772d4482f05947c3c5091585189aadc64900aaf914baf3f"
+    },
+    {
+      "source": "/mnt/c/Windows/Fonts/HMKMMAG.TTF",
+      "cached": "/tmp/rhwp-pr7518-font-cache/HMKMMAG.TTF",
+      "sha256": "ee9a3250e1198ac5960f9ead0cf4d32c99b80a4adc94ed782526e2ddd4853529"
+    },
+    {
+      "source": "/mnt/c/Windows/Fonts/HMKMRHD.TTF",
+      "cached": "/tmp/rhwp-pr7518-font-cache/HMKMRHD.TTF",
+      "sha256": "950272dc7af1fb7cdd4c33f74f0619256b9ac84d5d3815f1c295b590bd2243e2"
+    },
+    {
+      "source": "/mnt/c/Windows/Fonts/malgun.ttf",
+      "cached": "/tmp/rhwp-pr7518-font-cache/malgun.ttf",
+      "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f"
+    },
+    {
+      "source": "/mnt/c/Windows/Fonts/malgunbd.ttf",
+      "cached": "/tmp/rhwp-pr7518-font-cache/malgunbd.ttf",
+      "sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082"
+    },
+    {
+      "source": "/mnt/c/Windows/Fonts/malgunsl.ttf",
+      "cached": "/tmp/rhwp-pr7518-font-cache/malgunsl.ttf",
+      "sha256": "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e"
+    },
+    {
+      "source": "/mnt/c/Program Files (x86)/Hnc/Office 2020/HOffice110/Shared/TTF/Hwp/HMKMM.TTF",
+      "cached": "/tmp/rhwp-pr7518-font-cache/HMKMM.TTF",
+      "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+    }
+  ],
+  "actual_font_audit_correction": "HMFMMUEX contains MoeumT/Expo, not Human MyeongJo; actual Human MyeongJo added from Hancom private TTF/Hwp/HMKMM.TTF"
+}

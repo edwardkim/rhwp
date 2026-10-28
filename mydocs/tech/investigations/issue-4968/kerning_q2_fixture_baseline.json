@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 1,
+  "issue": 4968,
+  "stage": "W9-Q2",
+  "status": "complete",
+  "productMutationCount": 0,
+  "inputs": {
+    "fixture": {
+      "path": "mydocs/tech/investigations/issue-4968/fixtures/kerning_pair_fixture.hwpx",
+      "bytes": 8806,
+      "sha256": "53eb9568bb12e0dbfb9f6878998452464f17827be6ed1c664bb6c3bfb4872fe8"
+    },
+    "manifest": {
+      "path": "mydocs/tech/investigations/issue-4968/fixtures/kerning_pair_fixture.manifest.json",
+      "bytes": 8941,
+      "sha256": "5aab02e427ac584acbc16fb26bf7b7f938eccb43d8d00642b5bd4d146801a5ef"
+    },
+    "capabilityBoundary": {
+      "path": "mydocs/tech/investigations/issue-4968/kerning_capability_boundary.json",
+      "bytes": 14844,
+      "sha256": "96b9016a129dd166c842c400b043dc6c881616a5952ec832d1a3627618900451",
+      "canonicalSha256": "4d628135329b82ed401453eef709783329840a5d1e22068afd83a7d2e7927576"
+    },
+    "hancomAdjudication": {
+      "path": "mydocs/tech/investigations/issue-4968/kerning_q2_hancom_adjudication.json",
+      "bytes": 7006,
+      "sha256": "8fdd89326d91a17435fc3a5a336e00142b9fd9babc0125ac692b807522b8d9a3",
+      "canonicalSha256": "8fce761f58c742a9a6d4fcf1cbfdf7a3037acd8f14f028e5f2c5cd41f64ff1ee"
+    }
+  },
+  "fixture": {
+    "pageCount": 1,
+    "matrixCount": 18,
+    "contextCount": 22,
+    "lineSegLaneCounts": {
+      "fresh-candidate-lane": 10,
+      "stored-line-lane": 12
+    },
+    "fontFamily": "Noto Sans KR",
+    "fontSize": 13.333,
+    "pairText": "AV To WA HH 가나다"
+  },
+  "currentProductBaseline": {
+    "bodyRunCount": 18,
+    "onOffGroupCount": 9,
+    "allCurrentOnOffPositionsEqual": true,
+    "groups": [
+      {
+        "ratio": 100,
+        "spacing": 0,
+        "lane": "stored-line-lane",
+        "currentOnOffEqual": true,
+        "positionsSha256": "b48ecfc0bdc8aaf7f7b9e8da03062e87b130efe5a3ad570fc8f3f3e1bc8692ef"
+      },
+      {
+        "ratio": 100,
+        "spacing": -5,
+        "lane": "fresh-candidate-lane",
+        "currentOnOffEqual": true,
+        "positionsSha256": "893577ec8ea1b5ad40ba78929842023d5dc2552d63d63c2a5d956477c0384b49"
+      },
+      {
+        "ratio": 100,
+        "spacing": -10,
+        "lane": "stored-line-lane",
+        "currentOnOffEqual": true,
+        "positionsSha256": "b4e522ba6e7681d72aa9427bd1b7ce27e2d3c5df540bb54bb023552de4a2b209"
+      },
+      {
+        "ratio": 90,
+        "spacing": 0,
+        "lane": "fresh-candidate-lane",
+        "currentOnOffEqual": true,
+        "positionsSha256": "b4e522ba6e7681d72aa9427bd1b7ce27e2d3c5df540bb54bb023552de4a2b209"
+      },
+      {
+        "ratio": 90,
+        "spacing": -5,
+        "lane": "stored-line-lane",
+        "currentOnOffEqual": true,
+        "positionsSha256": "c995006fd6e3c532e43f2cdfa621380ddea049b0bbb8bdd759a19fed6077c7a8"
+      },
+      {
+        "ratio": 90,
+        "spacing": -10,
+        "lane": "fresh-candidate-lane",
+        "currentOnOffEqual": true,
+        "positionsSha256": "47252931c94128a547da36a63a902fcd34d2fb7f12c43efaba45dd91d5017f33"
+      },
+      {
+        "ratio": 80,
+        "spacing": 0,
+        "lane": "stored-line-lane",
+        "currentOnOffEqual": true,
+        "positionsSha256": "239dc561f33eefa8c0ccd62e97e71cb41116c620072c9b8ebe7aee62189340ae"
+      },
+      {
+        "ratio": 80,
+        "spacing": -5,
+        "lane": "fresh-candidate-lane",
+        "currentOnOffEqual": true,
+        "positionsSha256": "66ef0f93369a95c857ecc67efa55bb00550bb24aa4c1c88e76ec39167eef59f0"
+      },
+      {
+        "ratio": 80,
+        "spacing": -10,
+        "lane": "stored-line-lane",
+        "currentOnOffEqual": true,
+        "positionsSha256": "3dd78543d44dbc1103a006356d7bf66a9eebd87eca304891429e1d79a41d2f31"
+      }
+    ],
+    "rawLayerTreeByteEqual": false,
+    "platformSentinel": {
+      "reason": "target-usize-max-width",
+      "nativeOccurrenceCount": 0,
+      "wasmOccurrenceCount": 0
+    },
+    "normalizedLayerTreeSha256": "7324d3248997004fa85fa6354d86e40c41a25688e816faad022d850b5dbab654",
+    "normalizedLayerTreeEqual": true,
+    "svg": {
+      "bytes": 384857,
+      "sha256": "04afae9641b482604d9a023747ee7eb05b883e05938084e309f296a5988bb578",
+      "byteEqual": true
+    }
+  },
+  "openTypeTruth": {
+    "capability": "gpos-kern",
+    "unitsPerEm": 1000,
+    "pairDesignUnits": {
+      "AV": -18,
+      "To": -76,
+      "WA": 0,
+      "HH": 0
+    },
+    "candidateScaledDeltasPx": [
+      {
+        "ratio": 100,
+        "spacingIndependent": true,
+        "pairs": {
+          "AV": -0.24,
+          "To": -1.013,
+          "WA": 0,
+          "HH": 0
+        }
+      },
+      {
+        "ratio": 90,
+        "spacingIndependent": true,
+        "pairs": {
+          "AV": -0.216,
+          "To": -0.912,
+          "WA": 0,
+          "HH": 0
+        }
+      },
+      {
+        "ratio": 80,
+        "spacingIndependent": true,
+        "pairs": {
+          "AV": -0.192,
+          "To": -0.811,
+          "WA": 0,
+          "HH": 0
+        }
+      }
+    ],
+    "applicationOrderStatus": "not-observable-because-on-off-differential-is-zero",
+    "candidateOrder": [
+      "nominal-advance-and-pair-adjustment-in-font-units",
+      "font-size-scale",
+      "horizontal-ratio-scale",
+      "letter-spacing-per-glyph"
+    ]
+  },
+  "edgeCoverage": {
+    "gpos-only": {
+      "status": "complete",
+      "capability": "gpos-kern",
+      "fallbackReason": null
+    },
+    "legacy-only": {
+      "status": "complete",
+      "capability": "legacy-kern",
+      "fallbackReason": null
+    },
+    "gpos-and-legacy": {
+      "status": "complete",
+      "capability": "gpos-kern",
+      "fallbackReason": null
+    },
+    "no-pair-table": {
+      "status": "complete",
+      "capability": "unsupported",
+      "fallbackReason": null
+    },
+    "malformed": {
+      "status": "fail-closed",
+      "capability": "unsupported",
+      "fallbackReason": "malformed-sfnt"
+    },
+    "oversized": {
+      "status": "fail-closed",
+      "capability": "unsupported",
+      "fallbackReason": "font-byte-limit-exceeded"
+    }
+  },
+  "hancomObservation": {
+    "version": "11, 0, 0, 9136",
+    "featureFlagSurvivesOpen": true,
+    "featureFlagCreatesPdfLayoutDifferential": false,
+    "controlledGroupCount": 9,
+    "maximumAbsoluteOnOffDelta": 0,
+    "role": "version-scoped-negative-compatibility-observation"
+  },
+  "nextGate": "maintainer-Q2-direction-approval-before-product-mutation",
+  "canonicalSha256": "8ad6b8562bfb19fc9c751d1d74012c334d821028640a1459e27a0b0b6bbbbda1"
+}

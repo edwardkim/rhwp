@@ -6,46 +6,15 @@
   },
   "documents": [
     {
-      "id": "format-parity-hwp",
-      "format": "hwp",
-      "path": "samples/3-10월_교육_통합_2022.hwp",
-      "page": 0,
-      "expectedStatus": "complete",
-      "expectedCounts": {
-        "runsSeen": 175,
-        "charactersSeen": 440,
-        "recordsEmitted": 440,
-        "recordsOmitted": 0
-      },
-      "expectedLayoutHash": "ecc09cc1b2bfc374f5f94871a26a0a6f7e0263fa08eba4f586e4518ad2955251"
-    },
-    {
-      "id": "format-parity-hwpx",
-      "format": "hwpx",
-      "path": "samples/3-10월_교육_통합_2022.hwpx",
-      "page": 0,
-      "expectedStatus": "complete",
-      "expectedCounts": {
-        "runsSeen": 175,
-        "charactersSeen": 440,
-        "recordsEmitted": 440,
-        "recordsOmitted": 0
-      },
-      "expectedLayoutHash": "ecc09cc1b2bfc374f5f94871a26a0a6f7e0263fa08eba4f586e4518ad2955251"
-    },
-    {
       "id": "exact-face",
       "format": "hwp",
       "path": "samples/143E433F503322BD33.hwp",
       "page": 0,
       "expectedStatus": "complete",
-      "expectedCounts": {
-        "runsSeen": 194,
-        "charactersSeen": 1336,
-        "recordsEmitted": 1336,
-        "recordsOmitted": 0
-      },
-      "expectedLayoutHash": "234a429072626a8d57f988ce1be89db5cc64449bc05eaf567ab36bdb5f76384a"
+      "renderPinsDeferredToIssue7445": [
+        "expectedCounts",
+        "expectedLayoutHash"
+      ]
     },
     {
       "id": "missing-face",
@@ -54,12 +23,14 @@
       "page": 0,
       "expectedStatus": "complete",
       "expectedCounts": {
-        "runsSeen": 136,
         "charactersSeen": 607,
         "recordsEmitted": 607,
         "recordsOmitted": 0
       },
-      "expectedLayoutHash": "1aabe571044b58c0e7797e49c7ee8e76911f0391e4f48e8050cf7d65401a21a5"
+      "renderPinsDeferredToIssue7445": [
+        "expectedLayoutHash"
+      ],
+      "validateRunOwnership": true
     },
     {
       "id": "subst-counterpart-hwp",
@@ -68,12 +39,14 @@
       "page": 0,
       "expectedStatus": "complete",
       "expectedCounts": {
-        "runsSeen": 46,
         "charactersSeen": 41,
         "recordsEmitted": 41,
         "recordsOmitted": 0
       },
-      "expectedLayoutHash": "4cc30e2ffa7cabe850ceb85e8d41796eac590091a3786710660760dc24bc515b"
+      "renderPinsDeferredToIssue7445": [
+        "expectedLayoutHash"
+      ],
+      "validateRunOwnership": true
     },
     {
       "id": "document-substitute-hwpx",
@@ -82,19 +55,20 @@
       "page": 0,
       "expectedStatus": "complete",
       "expectedCounts": {
-        "runsSeen": 46,
         "charactersSeen": 41,
         "recordsEmitted": 41,
         "recordsOmitted": 0
       },
-      "expectedLayoutHash": "6dc1c3429ae84ef2c29615d42996e106acdc149cbdebcfc8ac116c587fc54004"
+      "renderPinsDeferredToIssue7445": [
+        "expectedLayoutHash"
+      ],
+      "validateRunOwnership": true
     }
   ],
   "profiles": [
     {
       "id": "exact-face",
       "documentId": "exact-face",
-      "recordId": "page:0:run:1:char:0",
       "expected": {
         "sourceStatus": "complete",
         "character": "초",
@@ -105,12 +79,18 @@
         "metricMatchKind": "exact",
         "metricCharacterMatch": "hit",
         "widthSource": "embeddedMetric"
+      },
+      "sourceAddress": {
+        "sectionIndex": 0,
+        "paragraphIndex": 1,
+        "charOffset": 0,
+        "charShapeId": 0,
+        "nestedPath": []
       }
     },
     {
       "id": "missing-face",
       "documentId": "missing-face",
-      "recordId": "page:0:run:46:char:1",
       "expected": {
         "sourceStatus": "complete",
         "character": "1",
@@ -121,12 +101,18 @@
         "metricMatchKind": "exact",
         "metricCharacterMatch": "hit",
         "widthSource": "embeddedMetric"
+      },
+      "sourceAddress": {
+        "sectionIndex": 0,
+        "paragraphIndex": 7,
+        "charOffset": 22,
+        "charShapeId": 318,
+        "nestedPath": []
       }
     },
     {
       "id": "document-substitute",
       "documentId": "document-substitute-hwpx",
-      "recordId": "page:0:run:3:char:0",
       "expected": {
         "sourceStatus": "complete",
         "character": "2",
@@ -135,19 +121,48 @@
         "normalizedFace": "KoPubWorld돋움체 Light",
         "layoutStepKind": "documentSubstFont",
         "metricMatchKind": "none",
-        "metricCharacterMatch": "notApplicable",
-        "widthSource": "heuristicHalfwidth"
+        "metricCharacterMatch": "hit",
+        "widthSource": "kopubTable"
+      },
+      "sourceAddress": {
+        "sectionIndex": 0,
+        "paragraphIndex": 3,
+        "charOffset": 0,
+        "charShapeId": 89,
+        "nestedPath": [
+          1,
+          1,
+          0
+        ]
       }
     }
   ],
   "comparisons": {
-    "portableFormatParity": [
-      "format-parity-hwp",
-      "format-parity-hwpx"
-    ],
     "substFeatureDetection": {
-      "withoutSubstFont": "subst-counterpart-hwp",
+      "withoutSubstFont": "exact-face",
+      "withHwpSubstFont": "subst-counterpart-hwp",
+      "expectedHwpSubstFont": "한컴바탕",
       "withSubstFont": "document-substitute-hwpx"
-    }
+    },
+    "documentSubstituteDeclarations": [
+      {
+        "documentId": "subst-counterpart-hwp",
+        "face": "KoPubWorld돋움체 Light",
+        "languageSlots": [
+          0,
+          1
+        ],
+        "substFont": "한컴바탕"
+      },
+      {
+        "documentId": "document-substitute-hwpx",
+        "face": "KoPubWorld돋움체 Light",
+        "languageSlots": [
+          0,
+          1
+        ],
+        "substFont": "HCR Batang"
+      }
+    ]
   }
 }

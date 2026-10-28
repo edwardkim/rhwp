@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "key": "pr7118",
+  "provenance": {
+    "hwp": {
+      "path": "tests/fixtures/issue_6970/synth_no_ls_square_wrap.hwp",
+      "sha256": "31a5b76148718d92e3fd150f4d68b84b5005b02d16863c4735a6178eb02f2799"
+    },
+    "pdf": {
+      "path": "pdf/synth_no_ls_square_wrap-2020.pdf",
+      "sha256": "41156c2d3294d49bdb7091ea4f27d0e2b1e6ff40e04e64da3ff3209876d68110"
+    },
+    "git_head": "788ab292b9f4cbaaff62420a18cd05181b1f902d",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "11b1d259de1dd62f111dc0da9bd74efac2d5572aa80fbd73f180c984b20d2849"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "/private/tmp/rhwp-review-open-20260916/rhwp-stage2-final",
+      "path": "/private/tmp/rhwp-review-open-20260916/rhwp-stage2-final",
+      "sha256": "9b4ef7ea3cc120293b5bda39f5c72d0fc6eb5f9e9a7e41e34c864f98e95abde1"
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    1,
+    2,
+    3
+  ],
+  "requested_page_shards": [
+    [
+      1,
+      2,
+      3
+    ]
+  ],
+  "run_state": "complete"
+}

@@ -1,0 +1,8 @@
+{
+  "host": "win10-ted",
+  "environment": "SSH에서 powershell.exe -NoProfile -NonInteractive 명시 실행",
+  "search_root": "C:\\Users\\admin\\Downloads\\korea_downloads",
+  "document_id": "19378753",
+  "exit_code": 0,
+  "elapsed_seconds": 1.3723408752121031
+}

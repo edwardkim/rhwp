@@ -472,7 +472,7 @@ M20 이 시작된 뒤에 고치면 언어 수만큼의 예외가 이미 심어�
 
 ```
 $ rhwp capabilities | jq -r '.jsonContract.failure'
-단건 명령 실패 시 stdout 0바이트; batch 는 error 레코드 + 최종 exit 1
+단건 명령 실패 시 stdout 0바이트; batch 는 error 레코드 + 최종 exit 1. 예외: run — 실패도 봉투를 stdout 으로 낸다(계획 안 문서 부재 등 입력 오류 exit 1 + error, 계획 무효 exit 2 + invalid[], 단언 실패 exit 3 + verify 저널)
 ```
 
 실물은 다르다.

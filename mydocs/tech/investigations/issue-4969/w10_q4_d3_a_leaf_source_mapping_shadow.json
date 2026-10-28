@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d3-a-leaf-source-mapping-shadow",
+  "issue": 4969,
+  "stage": "W10-Q4-D3-A",
+  "date": "2026-08-30",
+  "status": "qualified-shadow-mapping-checkpointed",
+  "resultApproved": true,
+  "checkpoint": "bb334756b",
+  "planCheckpoint": "e64d6fd67",
+  "baseUpstreamDevel": "bd78a53122e4",
+  "productPublished": false,
+  "backendSelectionChanged": false,
+  "mapping": {
+    "lineNodes": 1,
+    "fallbackLeaves": 2,
+    "textSources": 2,
+    "glyphs": 2,
+    "clusterMismatch": 0,
+    "bboxMismatch": 0,
+    "nodeSequenceMismatch": 0,
+    "textSourceSequenceMismatch": 0,
+    "sameLengthTextSubstitutionRejected": true,
+    "rawTextRetainedInSidecar": false,
+    "sourceTextSha256Serialized": false
+  },
+  "green": {
+    "d3ASemanticMappingPassed": 1,
+    "q4ContractPassed": 36,
+    "q4ContractFailed": 0,
+    "expectedRedFilteredOut": 2,
+    "atomicActivationPassed": 9,
+    "atomicActivationFailed": 0,
+    "atomicActivationIgnored": 1,
+    "issue6029Passed": 1,
+    "integrationManifestSources": 1040,
+    "integrationManifestStaticTestAttrs": 4639,
+    "integrationManifestTargetsPassed": 48,
+    "integrationManifestTargetsTotal": 48,
+    "integrationPolicyPassed": 19,
+    "integrationPolicyFailed": 0,
+    "focusedClippy": "passed",
+    "formatCheck": "passed"
+  },
+  "remainingRed": [
+    "Q4-D3-vertical-glyph-run-publication",
+    "Q4-D4-canvaskit-feature-detection"
+  ],
+  "canonicalControls": [
+    {
+      "path": "samples/table-004.hwp",
+      "pages": 1,
+      "overflowCellLines": 0,
+      "svgBytes": 214449,
+      "svgSha256": "7711baa0afe033c044605ff1afd5597534a8f246819bf12e929ac3c5ab93873f",
+      "mismatch": 0
+    },
+    {
+      "path": "samples/issue6029/3200477_icao_procedure.hwpx",
+      "pages": 1,
+      "overflowCellLines": 0,
+      "svgBytes": 273101,
+      "svgSha256": "27ac3f000875a1413a9a99bb3f8ad4c1fb8c21a942a3b9fd6476df72030328e9",
+      "mismatch": 0
+    }
+  ],
+  "dockerWasm": "not-run-by-approved-D3-A-gate",
+  "newIntegrationSource": false,
+  "generatedIntegrationArtifacts": false,
+  "privateCorpusUsed": false,
+  "hyperVUsed": false,
+  "githubMutation": false,
+  "next": "Q4-D3-B"
+}

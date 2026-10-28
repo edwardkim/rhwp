@@ -1,0 +1,520 @@
+{
+  "stage": 80,
+  "analysis": {
+    "head": "131cf3ee6d28e61472e0aa7bcf083ffdd7bd2fb3",
+    "analysis": "고정5번의남은 보도자료HWPX는본문초과2→3,실제13/독립PDF12쪽. 원문과기존한컴2022 PDF로표조각·중첩셀·후속내용소유를검증한다. 기존cairo PDF를독립출력으로사용하지않는다.90%미달이면사용자 승인범위의전용검사와해당corpus행만제외하고원문보존;다른원문·합성계약·공차유지.",
+    "files": {
+      "samples/issue3637/press_release_split_cell_nested_table.hwpx": {
+        "size": 433664,
+        "sha256": "e2cb077d51293ae081a83e49c3bf2bca701087fddb4068d29295607b326be410"
+      },
+      "pdf/issue3637/press_release_split_cell_nested_table-hwpx-2020.pdf": {
+        "size": 908484,
+        "sha256": "731ff37070a7a5fedbd239920323244aecd10d8913a1a49351956263e45bc2cc"
+      }
+    },
+    "info": {
+      "fonts": [
+        "굴림",
+        "굴림체",
+        "돋움",
+        "맑은 고딕",
+        "바탕",
+        "휴먼둥근헤드라인",
+        "휴먼명조",
+        "HY견고딕",
+        "HY그래픽",
+        "HY그래픽M",
+        "HY울릉도M",
+        "HY헤드라인M",
+        "한양신명조",
+        "한양견명조",
+        "한양중고딕",
+        "08서울남산체 B",
+        "굴림",
+        "굴림체",
+        "돋움",
+        "맑은 고딕",
+        "바탕",
+        "휴먼둥근헤드라인",
+        "휴먼명조",
+        "HY견고딕",
+        "HY그래픽",
+        "HY그래픽M",
+        "HY울릉도M",
+        "HY헤드라인M",
+        "산세리프",
+        "한양신명조",
+        "한양중고딕",
+        "한양견명조",
+        "HCI Poppy",
+        "08서울남산체 B",
+        "굴림",
+        "굴림체",
+        "맑은 고딕",
+        "바탕",
+        "한컴바탕",
+        "휴먼둥근헤드라인",
+        "휴먼명조",
+        "HY견고딕",
+        "HY그래픽",
+        "HY그래픽M",
+        "HY울릉도M",
+        "HY헤드라인M",
+        "한양신명조",
+        "한양중고딕",
+        "08서울남산체 B",
+        "굴림",
+        "굴림체",
+        "맑은 고딕",
+        "바탕",
+        "한컴바탕",
+        "휴먼둥근헤드라인",
+        "휴먼명조",
+        "HY견고딕",
+        "HY그래픽",
+        "HY그래픽M",
+        "HY울릉도M",
+        "HY헤드라인M",
+        "한양신명조",
+        "한양중고딕",
+        "08서울남산체 B",
+        "굴림",
+        "굴림체",
+        "맑은 고딕",
+        "바탕",
+        "한컴바탕",
+        "함초롬바탕",
+        "휴먼둥근헤드라인",
+        "휴먼명조",
+        "HY견고딕",
+        "HY그래픽",
+        "HY그래픽M",
+        "HY울릉도M",
+        "HY헤드라인M",
+        "한양신명조",
+        "08서울남산체 B",
+        "굴림",
+        "굴림체",
+        "맑은 고딕",
+        "바탕",
+        "한컴바탕",
+        "휴먼둥근헤드라인",
+        "휴먼명조",
+        "HY견고딕",
+        "HY그래픽",
+        "HY그래픽M",
+        "HY울릉도M",
+        "HY헤드라인M",
+        "한양신명조",
+        "한양중고딕",
+        "08서울남산체 B",
+        "가는안상수체",
+        "굴림",
+        "굴림체",
+        "맑은 고딕",
+        "바탕",
+        "한컴바탕",
+        "함초롬바탕",
+        "휴먼둥근헤드라인",
+        "휴먼명조",
+        "HY견고딕",
+        "HY그래픽",
+        "HY그래픽M",
+        "HY울릉도M",
+        "HY헤드라인M",
+        "명조",
+        "08서울남산체 B"
+      ],
+      "format": "hwp5",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2010",
+        "version": "8.5.8.1232"
+      },
+      "pageCount": 13,
+      "paraCount": 8,
+      "printMethod": 0,
+      "printMethodImpliesNup": false,
+      "schemaVersion": "1.0",
+      "sections": 1,
+      "sizeBytes": 433664,
+      "source": "samples/issue3637/press_release_split_cell_nested_table.hwpx",
+      "title": "보 도 자 료",
+      "untrustedContent": true,
+      "untrustedFields": [
+        "title",
+        "fonts[]"
+      ],
+      "version": "5.0.3.3",
+      "warnings": []
+    },
+    "pdf": {
+      "pages": 12,
+      "metadata": {
+        "format": "PDF 1.6",
+        "title": "",
+        "author": "",
+        "subject": "",
+        "keywords": "",
+        "creator": "Hwp 2022 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550",
+        "creationDate": "D:20260830171547+09'00'",
+        "modDate": "D:20260830171547+09'00'",
+        "trapped": "",
+        "encryption": null
+      }
+    },
+    "anomaly": {
+      "emptyPageCount": 0,
+      "hasSignal": true,
+      "mode": "single",
+      "offCanvasCount": 0,
+      "overflowCount": 3,
+      "overflowTolerancePx": 2.0,
+      "overlapCount": 0,
+      "overlapTolerancePx": 2.0,
+      "pageCount": 13,
+      "pageFilter": null,
+      "pages": [
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 1003.0266666666669,
+                "w": 675.9733333333334,
+                "x": 59.160000000000004,
+                "y": 47.226666666666674
+              },
+              "boundary": {
+                "h": 1001.5866666666667,
+                "w": 680.32,
+                "x": 56.693333333333335,
+                "y": 45.34666666666667
+              },
+              "maxOver": 3.3200000000001637,
+              "nodeType": "Table",
+              "overBottom": 3.3200000000001637,
+              "overLeft": 0.0,
+              "overRight": 0.0,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table0"
+            }
+          ],
+          "overlap": [],
+          "page": 6,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 1006.16,
+                "w": 675.9733333333334,
+                "x": 59.160000000000004,
+                "y": 47.226666666666674
+              },
+              "boundary": {
+                "h": 1001.5866666666667,
+                "w": 680.32,
+                "x": 56.693333333333335,
+                "y": 45.34666666666667
+              },
+              "maxOver": 6.453333333333148,
+              "nodeType": "Table",
+              "overBottom": 6.453333333333148,
+              "overLeft": 0.0,
+              "overRight": 0.0,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table0"
+            }
+          ],
+          "overlap": [],
+          "page": 7,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 1002.0666666666664,
+                "w": 675.9733333333334,
+                "x": 59.160000000000004,
+                "y": 47.226666666666674
+              },
+              "boundary": {
+                "h": 1001.5866666666667,
+                "w": 680.32,
+                "x": 56.693333333333335,
+                "y": 45.34666666666667
+              },
+              "maxOver": 2.3599999999996726,
+              "nodeType": "Table",
+              "overBottom": 2.3599999999996726,
+              "overLeft": 0.0,
+              "overRight": 0.0,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Table0"
+            }
+          ],
+          "overlap": [],
+          "page": 11,
+          "storedLineEscape": [],
+          "textOverlap": []
+        }
+      ],
+      "schemaVersion": "1.0",
+      "source": "samples/issue3637/press_release_split_cell_nested_table.hwpx",
+      "storedLineEscapeCount": 0,
+      "storedLineTolerancePx": 0.5,
+      "strict": false,
+      "textOverlapCount": 0,
+      "types": null,
+      "untrustedContent": false,
+      "untrustedFields": []
+    },
+    "selected_pages": [
+      4,
+      5,
+      7,
+      8,
+      12
+    ]
+  },
+  "code_commit": "521cee34a1d62ae144e2db28ab015f95bb39fd99",
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5869729786",
+  "original_document_preserved": "mydocs/pr/assets/issue7445/press_release_split_cell_nested_table.hwpx",
+  "visual": {
+    "runtime": "stage69 frozen Native; production unchanged; exclusion negative proof",
+    "actual_pages": 13,
+    "oracle_pages": 12,
+    "exit_code": 1,
+    "gate": "re_review_required",
+    "selected": [
+      {
+        "page": 4,
+        "tolerant_content_match_percent": 97.23437
+      },
+      {
+        "page": 5,
+        "tolerant_content_match_percent": 95.89646
+      },
+      {
+        "page": 7,
+        "tolerant_content_match_percent": 91.68111
+      },
+      {
+        "page": 8,
+        "tolerant_content_match_percent": 83.85004
+      },
+      {
+        "page": 12,
+        "tolerant_content_match_percent": 36.41033
+      }
+    ],
+    "direct_review": "8쪽 중첩 상자·배경·글줄·괘선 차이,12쪽 앞 내용과 향후계획 표의 쪽 소유 차이 및 마지막 내용13쪽 이월 확인",
+    "whole_native_fresh_wasm": "미실행. 개선·승인으로 세지 않음"
+  },
+  "removed_functions": [
+    "issue_3637_split_cell_nested_table_vpos::nested_table_snap_stays_inside_the_split_cell",
+    "issue_5920_nested_atom_tail_page_fit::issue_5920_page8_holds_both_nested_boxes",
+    "issue_5920_nested_atom_tail_page_fit::issue_5920_page9_does_not_restart_with_the_conclusion_box",
+    "issue_5920_nested_atom_tail_page_fit::issue_7206_page4_fragment_does_not_exceed_the_body"
+  ],
+  "removed_rows": [
+    {
+      "file": "tests/fixtures/body_overflow_baseline.tsv",
+      "row": "issue3637/press_release_split_cell_nested_table.hwpx\t2"
+    },
+    {
+      "file": "tests/fixtures/oracle_page_count_baseline.tsv",
+      "row": "samples/issue3637/press_release_split_cell_nested_table.hwpx\t12\t13"
+    },
+    {
+      "file": "tests/fixtures/render_page_samples.tsv",
+      "row": "samples/issue3637/press_release_split_cell_nested_table.hwpx\t12\t13\t1"
+    }
+  ],
+  "preserved": "다른 issue3637 입력과 합성 중첩 행 계약, 함수/기대값/공차 유지. 새 함수/ignore/skip/생산 변경 없음.",
+  "focused_result": {
+    "passed": 5,
+    "failed": 2,
+    "skipped": 849,
+    "exit_code": 100,
+    "remaining_failures": [
+      "issue3637의별도 regulatory_impact_nested_table_escape.hwpx 셀 위치 검사",
+      "body partition2: 관제교육39→40건,rowbreak HWP신규1건"
+    ]
+  },
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "131cf3ee6d28e61472e0aa7bcf083ffdd7bd2fb3",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_003",
+          "--test",
+          "regression_suite_023",
+          "--test",
+          "regression_suite_025",
+          "--test",
+          "regression_suite_027",
+          "-E",
+          "test(/(^|::)issue_(3637_nested_table_starts_inside_parent_cell|3637_para_topbottom_vpos_base|6837_nested_row_intra_split)::/) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_2)"
+        ],
+        "exit_code": 100,
+        "seconds": 19.63749812496826
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.5012701246887445
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.37617241591215134
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.23183574993163347
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.36897433269768953
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 7.117004957981408
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.2461671251803637
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 8.429220125079155
+      }
+    ]
+  },
+  "assets": [
+    {
+      "page": 8,
+      "kind": "review",
+      "path": "mydocs/pr/assets/issue7445/press3637_native_review_008.png",
+      "sha256": "316e9d8b797d172227515cbc5a71f2af400cdecee8b399b6a88c2f83075ca44d"
+    },
+    {
+      "page": 8,
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/issue7445/press3637_native_overlay_008.png",
+      "sha256": "520216678e238374f4e1daad12da763904dc5703f048f5e4f7ba2b327b243e18"
+    },
+    {
+      "page": 12,
+      "kind": "review",
+      "path": "mydocs/pr/assets/issue7445/press3637_native_review_012.png",
+      "sha256": "8e6baeb4a1a6677520392056a77e8823e2a47a944bba0280c7f3e795cf066f4e"
+    },
+    {
+      "page": 12,
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/issue7445/press3637_native_overlay_012.png",
+      "sha256": "b343fa48013dc886350be5472d56c2ba8b54c20841e7bd25a29d45cb43bb6506"
+    }
+  ],
+  "output": "output/pr-review/planet6897-7382-20260926/stage80-press3637",
+  "report_correction": "최초 댓글의 마지막 초과 쪽/수치를 원장과 다시 대조하여12쪽2.36px로 즉시 정정. 최종 API 본문 일치 확인."
+}

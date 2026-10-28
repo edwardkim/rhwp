@@ -1,0 +1,42 @@
+[
+  {
+    "key": "rowbreak",
+    "pages": 18,
+    "previous_pages": 18,
+    "changed_pages": [],
+    "current": "output/pr-review/planet6897-green-20261002/liver-low7-counter-rowbreak-wasm",
+    "previous": "output/pr-review/planet6897-green-20261002/restored-two-rowbreak-wasm/raw_svg"
+  },
+  {
+    "key": "h01",
+    "pages": 9,
+    "previous_pages": 9,
+    "changed_pages": [],
+    "current": "output/pr-review/planet6897-green-20261002/liver-low7-counter-h01-wasm",
+    "previous": "output/pr-review/planet6897-green-20261002/restored-two-h01-wasm/raw_svg"
+  },
+  {
+    "key": "social6797",
+    "pages": 11,
+    "previous_pages": 11,
+    "changed_pages": [],
+    "current": "output/pr-review/planet6897-green-20261002/liver-low7-counter-social6797-wasm",
+    "previous": "output/pr-review/planet6897-green-20261002/restored-two-social6797-wasm/raw_svg"
+  },
+  {
+    "key": "stale1835",
+    "pages": 3,
+    "previous_pages": 3,
+    "changed_pages": [],
+    "current": "output/pr-review/planet6897-green-20261002/liver-low7-counter-stale1835-wasm",
+    "previous": "output/pr-review/planet6897-green-20261002/restored-two-stale1835-wasm/raw_svg"
+  },
+  {
+    "key": "para6267",
+    "pages": 1,
+    "previous_pages": 1,
+    "changed_pages": [],
+    "current": "output/pr-review/planet6897-green-20261002/liver-low7-counter-para6267-wasm",
+    "previous": "output/pr-review/planet6897-green-20261002/restored-two-para6267-wasm/raw_svg"
+  }
+]

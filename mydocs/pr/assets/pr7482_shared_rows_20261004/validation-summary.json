@@ -1,0 +1,595 @@
+{
+  "code_sha": "0373fb43c4189a138482f72ebbb5ecb0a081b4a5",
+  "base_sha": "6b3faf77d8085441f9f26d88d65a49791e910352",
+  "local_disposition": "Approved partial correction published as PR7563; latest remote CI and separate large-change review/merge approval remain; 50 percent applicability unresolved",
+  "checks": {
+    "fmt": "PASS",
+    "native_clippy": "PASS",
+    "wasm_clippy": "PASS",
+    "workspace_build": "PASS",
+    "workspace_all_target_clippy": "PASS",
+    "manifest_base_check": "PASS",
+    "unit_tier_base_check": "PASS",
+    "focused": {
+      "passed": 24,
+      "failed": 0,
+      "scope": "15 formal TAC/Square/legacy ownership checks and 9 issue6970 boundary checks"
+    },
+    "full_nextest": {
+      "status": "PASS",
+      "passed": 10265,
+      "failed": 0,
+      "skipped": 50,
+      "summary": "Summary [ 792.835s] 10265 tests run: 10265 passed (7 slow), 50 skipped"
+    },
+    "native_skia_lib": {
+      "status": "PASS",
+      "passed": 4109,
+      "failed": 0,
+      "ignored": 13,
+      "summary": [
+        [
+          "3927",
+          "0",
+          "13"
+        ],
+        [
+          "15",
+          "0",
+          "0"
+        ],
+        [
+          "165",
+          "0",
+          "0"
+        ],
+        [
+          "2",
+          "0",
+          "0"
+        ]
+      ]
+    },
+    "native_skia_picture": {
+      "status": "PASS",
+      "passed": 2,
+      "failed": 0,
+      "summary": [
+        [
+          "2",
+          "0",
+          "211"
+        ]
+      ],
+      "skipped": 211
+    },
+    "native_skia_direct_pdf": {
+      "status": "PASS",
+      "passed": 4,
+      "failed": 0,
+      "summary": [
+        [
+          "4",
+          "0",
+          "218"
+        ]
+      ],
+      "skipped": 218
+    },
+    "studio_cdp": {
+      "documents": 18,
+      "passed": 45,
+      "page_errors": 0,
+      "wasm_sha256": "91654b0814b6cadc38225cf9eaab48ef1e3a35d9a7ad2b08cd7a02761ed4d95b",
+      "fixture_transport": "17 real Vite loads; one exact public fixture byte response through CDP interception and real loadHwpFile/WASM/canvas"
+    }
+  },
+  "visual_review": {
+    "pages_per_backend": 27,
+    "direct_review": "Native and fresh WASM 27 review PNG pages each directly inspected; representative standalone overlays directly inspected",
+    "raw_gate_unchanged": true,
+    "threshold_exception": "User approved PR 7482 only; no global gate or allowance changes",
+    "scores": [
+      {
+        "mode": "native",
+        "input_key": "distribution",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 95.9503
+          },
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 96.45424
+          },
+          {
+            "page": 3,
+            "tolerant_content_match_percent": 85.83661
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "full-width",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 100.0
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "long-host",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 100.0
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "margin1034",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 99.87152
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "margin284",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 99.8719
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "original-tac",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 99.8719
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "square-follower",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 100.0
+          },
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 99.43386
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "tac-explicit-break",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 100.0
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "tac-mixed-explicit-break",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 100.0
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "tac-mixed-one-row",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 100.0
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "tac-one-row",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 100.0
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "tac-two-rows",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 100.0
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "tac-word-after-pair",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 99.85896
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "title",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 99.35552
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "ecard",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 96.68799
+          },
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 98.07369
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "form",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 98.85463
+          },
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 65.49734
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "gwanak",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 99.46759
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "masked",
+        "pages": [
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 43.1166
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "negative-spacing",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 94.94989
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "regulatory-hwp",
+        "pages": [
+          {
+            "page": 38,
+            "tolerant_content_match_percent": 77.99388
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "regulatory-hwpx",
+        "pages": [
+          {
+            "page": 38,
+            "tolerant_content_match_percent": 78.00141
+          }
+        ]
+      },
+      {
+        "mode": "native",
+        "input_key": "square-columns",
+        "pages": [
+          {
+            "page": 3,
+            "tolerant_content_match_percent": 74.11148
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "distribution",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 95.9503
+          },
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 96.45424
+          },
+          {
+            "page": 3,
+            "tolerant_content_match_percent": 85.83661
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "full-width",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 100.0
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "long-host",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 100.0
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "margin1034",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 99.87152
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "margin284",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 99.8719
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "original-tac",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 99.8719
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "square-follower",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 100.0
+          },
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 99.43386
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "tac-explicit-break",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 100.0
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "tac-mixed-explicit-break",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 100.0
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "tac-mixed-one-row",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 100.0
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "tac-one-row",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 100.0
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "tac-two-rows",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 100.0
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "tac-word-after-pair",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 99.85896
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "title",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 99.35552
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "ecard",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 96.68799
+          },
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 98.07369
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "form",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 98.92451
+          },
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 65.49734
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "gwanak",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 99.46759
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "masked",
+        "pages": [
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 43.1166
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "negative-spacing",
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 94.94989
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "regulatory-hwp",
+        "pages": [
+          {
+            "page": 38,
+            "tolerant_content_match_percent": 77.99388
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "regulatory-hwpx",
+        "pages": [
+          {
+            "page": 38,
+            "tolerant_content_match_percent": 78.00141
+          }
+        ]
+      },
+      {
+        "mode": "wasm",
+        "input_key": "square-columns",
+        "pages": [
+          {
+            "page": 3,
+            "tolerant_content_match_percent": 74.11148
+          }
+        ]
+      }
+    ]
+  },
+  "remaining": [
+    "50 percent page-fit applicability unresolved versus independent Hancom 2020 output and 10 Hancom 2024 diagnostics; not implemented or claimed validated",
+    "Existing masked photo-table height and subsequent paragraphs differ substantially from the PDF; same base behavior",
+    "Existing regulatory and form vertical or cell/font/border differences, distribution table left origin, and paper decoration differences remain"
+  ],
+  "publication": {
+    "source_head": "9bc8478d5ddf43dc87c06278b8c0deb8c7640959",
+    "source_fork_dry_run": "403 Permission to kidsnote/rhwp.git denied to edwardkim",
+    "remote_mutation": true,
+    "fallback": "User-approved own-repository partial correction PR created; original PR disposition and merge separate",
+    "correction_pr": "https://github.com/edwardkim/rhwp/pull/7563",
+    "published_candidate_sha": "659c940bd00b6c684493ba71781dda97fca726c7",
+    "original_pr_mutation": false
+  },
+  "regression_proof": {
+    "prior_c8_full": "10263 passed / 1 actual overlap failed / 50 skipped",
+    "prior_c8_new_case": "1 run / 1 failed on final coordinates",
+    "current_new_case": "PASS; independent PDF 12pt=16px successor and empty-line pitch",
+    "prior_cdp_transport": "404 fixture routing failure retained separately; not a layout failure"
+  }
+}

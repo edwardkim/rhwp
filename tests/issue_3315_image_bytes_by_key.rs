@@ -58,6 +58,7 @@ fn omitted_json(doc: &rhwp::wasm_api::HwpDocument) -> String {
         rhwp::paint::RenderProfile::Screen,
         LayerJsonOptions {
             omit_image_bytes: true,
+            omit_font_bytes: false,
         },
     )
     .expect("omitted layer tree")

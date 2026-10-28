@@ -1,0 +1,344 @@
+{
+  "stage": 77,
+  "analysis": {
+    "head": "3c89005779bdfddf302ebc762f7e9d4233e46960",
+    "analysis": "고정4번 본문초과 partition15가2010 이름 저장본에서 baseline1→3건으로 실패. 실제 저장metadata는한컴2024이므로 같은입력의독립 한컴2024 PDF64쪽으로 분할 내용과 위치를 검증한다. 이전HWP5/HWPX의판정을옮기지않는다. Native미달시사용자 승인 범위의문서검사만 제외하며 다른버전·파서계약과공차유지.",
+    "files": {
+      "samples/hwp3-sample16-hwp5-2010.hwp": {
+        "size": 3043328,
+        "sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45"
+      },
+      "pdf/hwp3-sample16-hwp5-2010-hwp-2024.pdf": {
+        "size": 2234012,
+        "sha256": "59e8c3cdf62969885ccdabc32de303cdb7c76456eec7aeabbdfab2a5439143a5"
+      }
+    },
+    "info": {
+      "fonts": [
+        "신명 신신명조",
+        "태 나무",
+        "한양견고딕",
+        "한양그래픽",
+        "한양신명조",
+        "한양중고딕",
+        "휴먼고딕",
+        "휴먼명조",
+        "휴먼옛체",
+        "굴림체",
+        "바탕",
+        "HCI Hollyhock",
+        "HCI Poppy",
+        "산세리프",
+        "신명 신신명조",
+        "태 나무",
+        "한양견고딕",
+        "한양궁서",
+        "한양그래픽",
+        "한양신명조",
+        "한양중고딕",
+        "굴림체",
+        "바탕",
+        "신명 세명조",
+        "신명 태고딕",
+        "한양신명조",
+        "한양중고딕",
+        "굴림체",
+        "바탕",
+        "신명 신명조",
+        "신명 태고딕",
+        "한양신명조",
+        "한양중고딕",
+        "굴림체",
+        "바탕",
+        "한양신명조",
+        "굴림체",
+        "바탕",
+        "#그래픽",
+        "#태고딕",
+        "한양신명조",
+        "한양중고딕",
+        "굴림체",
+        "바탕",
+        "명조",
+        "굴림체",
+        "바탕"
+      ],
+      "format": "hwp5",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2024",
+        "version": "13.0.0.3457"
+      },
+      "pageCount": 65,
+      "paraCount": 1058,
+      "printMethod": null,
+      "printMethodImpliesNup": false,
+      "schemaVersion": "1.0",
+      "sections": 1,
+      "sizeBytes": 3043328,
+      "source": "samples/hwp3-sample16-hwp5-2010.hwp",
+      "title": "\"세계 3대 물 서비스 기업\" 실현을 위한",
+      "untrustedContent": true,
+      "untrustedFields": [
+        "title",
+        "fonts[]"
+      ],
+      "version": "5.1.1.0",
+      "warnings": []
+    },
+    "pdf": {
+      "pages": 64,
+      "metadata": {
+        "format": "PDF 1.6",
+        "title": "",
+        "author": "Kowaco 대리 Igru",
+        "subject": "",
+        "keywords": "",
+        "creator": "Hwp 2024 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550",
+        "creationDate": "D:20260830033651+09'00'",
+        "modDate": "D:20260830033651+09'00'",
+        "trapped": "",
+        "encryption": null
+      }
+    },
+    "excluded_reference": "기존이름2010-2020.pdf는cairo출력이므로독립기준으로사용하지않음;파일보존",
+    "selected_pages": [
+      7,
+      22,
+      23,
+      24,
+      64
+    ]
+  },
+  "code_commit": "123e7260c107e4f45f04521b395b1906d8d40256",
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5869562651",
+  "original_document_preserved": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2010.hwp",
+  "visual": {
+    "runtime": "stage69 frozen Native; production unchanged; exclusion negative proof",
+    "actual_pages": 65,
+    "oracle_pages": 64,
+    "exit_code": 1,
+    "gate": "re_review_required",
+    "selected": [
+      {
+        "page": 7,
+        "tolerant_content_match_percent": 21.76084
+      },
+      {
+        "page": 22,
+        "tolerant_content_match_percent": 22.15574
+      },
+      {
+        "page": 23,
+        "tolerant_content_match_percent": 26.53989
+      },
+      {
+        "page": 24,
+        "tolerant_content_match_percent": 7.09794
+      },
+      {
+        "page": 64,
+        "tolerant_content_match_percent": 15.52702
+      }
+    ],
+    "direct_review": "23쪽 본문 바닥 밖 출력,24쪽 정상 문단·표 대신 한 줄만 표시. 쪽 소유 및 분할 차이를 직접 확인.",
+    "whole_native_fresh_wasm": "미실행. 개선·승인으로 세지 않음"
+  },
+  "removed_functions": [
+    "issue_1105::task1105_sample16_hwp5_2010_business_selection_break_matches_hancom",
+    "issue_1105::task1105_sample16_hwp5_2010_server_requirements_page_matches_hancom"
+  ],
+  "removed_rows": [
+    {
+      "file": "tests/fixtures/body_overflow_baseline.tsv",
+      "row": "hwp3-sample16-hwp5-2010.hwp\t1"
+    },
+    {
+      "file": "tests/fixtures/oracle_page_count_baseline.tsv",
+      "row": "samples/hwp3-sample16-hwp5-2010.hwp\t64\t64"
+    }
+  ],
+  "preserved": "다른 버전·문서의 함수/기대값/공차, IR 진단과 IR field baseline 유지. 원문 경로만 보존 위치로 연결. 새 함수/ignore/skip/생산 변경 없음.",
+  "focused_result": {
+    "passed": 8,
+    "failed": 0,
+    "skipped": 865,
+    "exit_code": 0
+  },
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "3c89005779bdfddf302ebc762f7e9d4233e46960",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_004",
+          "--test",
+          "regression_suite_017",
+          "--test",
+          "regression_suite_021",
+          "--test",
+          "regression_suite_025",
+          "-E",
+          "test(/(^|::)diag_1042_(2022|normal_vs_abnormal)::/) or test(/(^|::)issue_1105::task1105_k_water_rfp_2024_/) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_15)"
+        ],
+        "exit_code": 0,
+        "seconds": 18.31774158310145
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 5.955339207779616
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.2940382920205593
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.21864591678604484
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.358620333019644
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 7.439687666017562
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.252515709027648
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 7.978750957641751
+      }
+    ]
+  },
+  "own_setup_error": "최초 suite resolve의 Array.map 직접 callback이 index를 root로 전달해 Cargo 실행 전 오류. lambda로 수정 후 유효 계획·집중 검증 재실행; 렌더링 결함으로 세지 않음.",
+  "assets": [
+    {
+      "page": 23,
+      "kind": "review",
+      "path": "mydocs/pr/assets/issue7445/sample16_2010_native_review_023.png",
+      "sha256": "6fac421b0ca40e56a69656abcda0fab65bcad937259ebdc268d643d155aae3d3"
+    },
+    {
+      "page": 23,
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/issue7445/sample16_2010_native_overlay_023.png",
+      "sha256": "1f6eab8aa9cee819e06a010f4a2e7ff994b65cb1b2c68660627a8a71b0aba88d"
+    },
+    {
+      "page": 24,
+      "kind": "review",
+      "path": "mydocs/pr/assets/issue7445/sample16_2010_native_review_024.png",
+      "sha256": "188746ecfe08f2f2247f5de802cf6aa72eb7f39782624f760e5a26c73e9eb69b"
+    },
+    {
+      "page": 24,
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/issue7445/sample16_2010_native_overlay_024.png",
+      "sha256": "a0cdeacc62d2617b961e5a60be7dc41087b6c28f308a0c105dbc0451253e2c88"
+    },
+    {
+      "page": 64,
+      "kind": "review",
+      "path": "mydocs/pr/assets/issue7445/sample16_2010_native_review_064.png",
+      "sha256": "d63acb41d33cb7f11be2a53a70ae9a04f12db1dee64fe7d7f402d7812d1b31a0"
+    },
+    {
+      "page": 64,
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/issue7445/sample16_2010_native_overlay_064.png",
+      "sha256": "934f190c4b129d465352e6e5dca8084f9069fdc9ecc8fc74a9cd78905e0ed5b4"
+    }
+  ],
+  "output": "output/pr-review/planet6897-7382-20260926/stage77-sample16-2010"
+}

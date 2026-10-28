@@ -95,7 +95,7 @@ last_verified: 2026-07-16
 - 이번 배포 (M100) 에서 **제외**
 - Stage 7 의 UI 변경 (`rhwp-studio/src/command/commands/file.ts` + `hwpctl/index.ts`) **롤백** — HWPX 출처는 다시 HWPX 저장
 - 어댑터 코드 (`src/document_core/converters/`) **보존** — 후속 이슈의 자산
-- 진단 도구 (`examples/hwpx_hwp_ir_diff.rs`, `tests/hwpx_to_hwp_adapter.rs`) **보존**
+- 진단 도구 (`tools/diagnostics/hwpx_hwp_ir_diff.rs`, `tests/hwpx_to_hwp_adapter.rs`) **보존**
 - typeset.rs 버그픽스 **보존** — 독립적 버그픽스
 - WASM `export_hwp` 자동 어댑터 분기 **PR 검토 시 결정**
 

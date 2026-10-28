@@ -1,0 +1,1210 @@
+{
+  "parentHead": "2c0e61e8cb247f1b2e244090f89652be0fca8593",
+  "base": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867",
+  "sourceProducer": {
+    "parentHead": "2c0e61e8cb247f1b2e244090f89652be0fca8593",
+    "productionDiffSha256": "3010fa34eaa4a39b56a2a8f5e944555c0279efc9b3fe613a52125755f29514a2",
+    "productionPaths": [
+      "src",
+      "crates",
+      "assets",
+      "data",
+      "ttfs",
+      "vendor",
+      "Cargo.toml",
+      "Cargo.lock",
+      "build.rs",
+      "rust-toolchain.toml"
+    ],
+    "changedFiles": [
+      "src/renderer/typeset/paragraph.rs"
+    ],
+    "sourceHashes": {
+      "src/renderer/typeset/paragraph.rs": "1ac348940b64d01a8727fda12d9019a9e1f2975d4ace511693d7c2383480ab36"
+    }
+  },
+  "beforeFull": {
+    "head": "2c0e61e8cb247f1b2e244090f89652be0fca8593",
+    "sourceLog": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage91-rust-gates/full-nextest.log",
+    "total": 11756,
+    "passed": 11730,
+    "failed": 26,
+    "failures": [
+      {
+        "ordinal": 4203,
+        "test": "rhwp::regression_suite_001 issue_7445_stored_multicolumn_flow::completed_shortcut_last_page_keeps_both_column_tails_and_print_baselines"
+      },
+      {
+        "ordinal": 5101,
+        "test": "rhwp::regression_suite_004 verified_exam_source_content_and_pages::exam_all_14_source_equations_and_print_page"
+      },
+      {
+        "ordinal": 5105,
+        "test": "rhwp::regression_suite_004 text_overlap_baseline::text_overlaps_do_not_grow_partition_5"
+      },
+      {
+        "ordinal": 5107,
+        "test": "rhwp::regression_suite_004 verified_exam_source_content_and_pages::exam_all_15_source_equations_and_print_page"
+      },
+      {
+        "ordinal": 5109,
+        "test": "rhwp::regression_suite_004 verified_exam_source_content_and_pages::exam_all_16_source_equations_and_print_page"
+      },
+      {
+        "ordinal": 5110,
+        "test": "rhwp::regression_suite_004 verified_exam_source_content_and_pages::exam_all_17_source_equations_and_print_page"
+      },
+      {
+        "ordinal": 5111,
+        "test": "rhwp::regression_suite_004 verified_exam_source_content_and_pages::exam_all_18_source_equations_and_print_page"
+      },
+      {
+        "ordinal": 5112,
+        "test": "rhwp::regression_suite_004 verified_exam_source_content_and_pages::exam_all_19_source_equations_and_print_page"
+      },
+      {
+        "ordinal": 5113,
+        "test": "rhwp::regression_suite_004 verified_exam_source_content_and_pages::exam_all_20_source_equations_and_print_page"
+      },
+      {
+        "ordinal": 5114,
+        "test": "rhwp::regression_suite_004 verified_exam_source_content_and_pages::exam_all_21_source_equations_and_print_page"
+      },
+      {
+        "ordinal": 5115,
+        "test": "rhwp::regression_suite_004 verified_exam_source_content_and_pages::exam_all_22_source_equations_and_print_page"
+      },
+      {
+        "ordinal": 5116,
+        "test": "rhwp::regression_suite_004 verified_exam_source_content_and_pages::exam_all_23_source_equations_and_print_page"
+      },
+      {
+        "ordinal": 5117,
+        "test": "rhwp::regression_suite_004 verified_exam_source_content_and_pages::exam_all_24_source_equations_and_print_page"
+      },
+      {
+        "ordinal": 5165,
+        "test": "rhwp::regression_suite_004 verified_exam_source_content_and_pages::exam_all_25_source_equations_and_print_page"
+      },
+      {
+        "ordinal": 5222,
+        "test": "rhwp::regression_suite_004 verified_exam_source_content_and_pages::exam_all_26_source_equations_and_print_page"
+      },
+      {
+        "ordinal": 5289,
+        "test": "rhwp::regression_suite_004 verified_exam_source_content_and_pages::exam_all_28_source_equations_and_print_page"
+      },
+      {
+        "ordinal": 5343,
+        "test": "rhwp::regression_suite_004 verified_exam_source_content_and_pages::exam_all_29_source_equations_and_print_page"
+      },
+      {
+        "ordinal": 5348,
+        "test": "rhwp::regression_suite_004 verified_exam_source_content_and_pages::exam_all_27_source_equations_and_print_page"
+      },
+      {
+        "ordinal": 5359,
+        "test": "rhwp::regression_suite_004 verified_exam_source_content_and_pages::exam_all_30_source_equations_and_print_page"
+      },
+      {
+        "ordinal": 5380,
+        "test": "rhwp::regression_suite_004 verified_exam_source_content_and_pages::exam_all_31_source_equations_and_print_page"
+      },
+      {
+        "ordinal": 5541,
+        "test": "rhwp::regression_suite_006 issue_2299_edit_vpos_reset_preserve::delete_edit_preserves_layout"
+      },
+      {
+        "ordinal": 5543,
+        "test": "rhwp::regression_suite_006 issue_2299_edit_vpos_reset_preserve::editing_reset_paragraph_itself_preserves_layout"
+      },
+      {
+        "ordinal": 5547,
+        "test": "rhwp::regression_suite_006 issue_2299_edit_vpos_reset_preserve::front_paragraph_edit_preserves_column_bands_and_page_count"
+      },
+      {
+        "ordinal": 5550,
+        "test": "rhwp::regression_suite_006 issue_2299_edit_vpos_reset_preserve::last_paragraph_edit_stays_stable"
+      },
+      {
+        "ordinal": 6466,
+        "test": "rhwp::regression_suite_009 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_2"
+      },
+      {
+        "ordinal": 11481,
+        "test": "rhwp::regression_suite_028 issue_702::shortcut_distribute_short_column_split"
+      }
+    ],
+    "summary": [
+      "     Summary [ 875.204s] 11756 tests run: 11730 passed (8 slow), 26 failed, 45 skipped"
+    ]
+  },
+  "afterFocused": [
+    {
+      "name": "stored-multicolumn",
+      "case": "issue_7445_stored_multicolumn_flow",
+      "derivedPlan": {
+        "caseName": "issue_7445_stored_multicolumn_flow",
+        "target": "regression_suite_001",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--test",
+        "regression_suite_001",
+        "-E",
+        "test(/(^|::)issue_7445_stored_multicolumn_flow::/)",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exitCode": 0,
+      "seconds": 125.39572310447693,
+      "summary": [
+        "     Summary [   0.145s] 5 tests run: 5 passed, 277 skipped"
+      ]
+    },
+    {
+      "name": "ktx-and-synthetic",
+      "case": "issue_6970_multicolumn_synth_ladder_fill",
+      "derivedPlan": {
+        "caseName": "issue_6970_multicolumn_synth_ladder_fill",
+        "target": "regression_suite_021",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--test",
+        "regression_suite_021",
+        "-E",
+        "test(/(^|::)issue_6970_multicolumn_synth_ladder_fill::/)",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exitCode": 0,
+      "seconds": 9.01153302192688,
+      "summary": [
+        "     Summary [   0.036s] 3 tests run: 3 passed, 255 skipped"
+      ]
+    },
+    {
+      "name": "shortcut-edit",
+      "case": "issue_2299_edit_vpos_reset_preserve",
+      "derivedPlan": {
+        "caseName": "issue_2299_edit_vpos_reset_preserve",
+        "target": "regression_suite_006",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--test",
+        "regression_suite_006",
+        "-E",
+        "test(/(^|::)issue_2299_edit_vpos_reset_preserve::/)",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exitCode": 0,
+      "seconds": 7.21255898475647,
+      "summary": [
+        "     Summary [   0.057s] 8 tests run: 8 passed, 270 skipped"
+      ]
+    },
+    {
+      "name": "shortcut-original",
+      "case": "issue_702",
+      "derivedPlan": {
+        "caseName": "issue_702",
+        "target": "regression_suite_028",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--test",
+        "regression_suite_028",
+        "-E",
+        "test(/(^|::)issue_702::/)",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exitCode": 0,
+      "seconds": 7.502830982208252,
+      "summary": [
+        "     Summary [   0.062s] 2 tests run: 2 passed, 267 skipped"
+      ]
+    },
+    {
+      "name": "exam-source-subset",
+      "case": "verified_exam_source_content_and_pages",
+      "derivedPlan": {
+        "caseName": "verified_exam_source_content_and_pages",
+        "target": "regression_suite_004",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--test",
+        "regression_suite_004",
+        "-E",
+        "test(/verified_exam_source_content_and_pages::exam_all_(14|15|31)_/)",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exitCode": 0,
+      "seconds": 27.69136881828308,
+      "summary": [
+        "     Summary [  19.808s] 3 tests run: 3 passed, 280 skipped"
+      ]
+    }
+  ],
+  "intended22PageControls": {
+    "exitCode": 0,
+    "seconds": 209.79374718666077,
+    "summary": [
+      "     Summary [  28.510s] 2 tests run: 2 passed, 281 skipped"
+    ],
+    "casePlan": {
+      "caseName": "verified_exam_source_content_and_pages",
+      "target": "regression_suite_004",
+      "grouped": true
+    },
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--test",
+      "regression_suite_004",
+      "-E",
+      "test(/verified_exam_source_content_and_pages::exam_all_(16|17)_/)",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ]
+  },
+  "cases": [
+    {
+      "key": "ktx003",
+      "source": "samples/basic/KTX-003.hwp",
+      "pdf": "pdf/basic/KTX-003-hwp-2020.pdf",
+      "pages": 1,
+      "review": [
+        1
+      ],
+      "compat": "2022",
+      "dpi": 96,
+      "sourceSha256": "619bc919de3f2b8113fb9af0fcc808c754dc601ed9e66e49226280fd3d1ae032",
+      "pdfSha256": "a0798bc093be8521908d9d0e5f2bf557013370f12de455fb9886d4f4d6419787",
+      "kind": "original",
+      "latestCandidateValidation": "pending",
+      "latestHeadValidation": "pending",
+      "environment": null,
+      "environmentSha256": null,
+      "fontProgramScope": {
+        "includeOriginalHftSymbolOverlay": false,
+        "sourceDeclarationEvidence": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4296fa04-20261018/font-scope-diagnostic-c163/source-fonts.json",
+        "reason": "No matching declared HFT source face; glyph-only HFT review resource must not advertise a complete TTF primary family"
+      },
+      "previousDpi": 192,
+      "selectedPages": [
+        1
+      ]
+    },
+    {
+      "key": "shortcut-preservation",
+      "source": "samples/basic/shortcut.hwp",
+      "pdf": "pdf/basic/shortcut-2022.pdf",
+      "compat": "2022",
+      "selectedPages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "sourceSha256": "71c23f5e9201d62af1dca41adaebd42c871c7dff91dfb933a082ea0e1f6f7e1d",
+      "pdfSha256": "9c877ad7aafe78d4734536f0a7b0e985a431534cc9d01d0737a90c106e2f2eb5",
+      "normalPreservationControl": true,
+      "repairScopeExpansion": false
+    },
+    {
+      "key": "exam-hwp-preservation",
+      "source": "samples/3-11월_실전_통합_2022.hwp",
+      "pdf": "mydocs/pr/assets/pr_7600_control_print_20261006/input-09-3-11월_실전_통합_2022-2020.pdf",
+      "compat": "2022",
+      "selectedPages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "sourceSha256": "bc8bccbb954c337d813d1af96f4e3047242124c2f2939163e282634eb721accd",
+      "pdfSha256": "b5dc3580c0c3716963c9686ec62fd779cedfea97f50d8f49eb98a2ec8fae369a",
+      "normalPreservationControl": true,
+      "repairScopeExpansion": false
+    },
+    {
+      "key": "exam-hwpx-preservation",
+      "source": "samples/3-11월_실전_통합_2022.hwpx",
+      "pdf": "pdf/issue7642-failed-regression-print/3-11월_실전_통합_2022-hwpx-print-2024.pdf",
+      "compat": "2024",
+      "selectedPages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "sourceSha256": "9efbf79140da8182e10380b140c714f54bcee5c57e05844ee7496febe9219fa4",
+      "pdfSha256": "b24dd23ae1cd89ac02393225d432fdf0bd7dbdacd361ee25bc31343a627c8dd5",
+      "normalPreservationControl": true,
+      "repairScopeExpansion": false
+    },
+    {
+      "key": "science-preservation",
+      "source": "samples/exam_science.hwp",
+      "pdf": "pdf/exam_science-2020.pdf",
+      "compat": "2022",
+      "selectedPages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "sourceSha256": "22d29786a80d68a9b2ad9294c2dab4915e0eced941e790e37390b14312b8b6a8",
+      "pdfSha256": "6d362eeba4ceae575b7b8279b461ecd661355ae4aca3d2281fe605444533fdbf",
+      "normalPreservationControl": true,
+      "repairScopeExpansion": false
+    }
+  ],
+  "measurements": [
+    {
+      "case": "ktx003",
+      "backend": "native",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "99.36494"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage94-restoration-focus/focus/native/ktx003/silhouette.tsv",
+      "tsvSha256": "c048e8751248af75d1e4b7e38a1dbae56d5dc7a7e4d3ca0275bb6c15b49d18e1"
+    },
+    {
+      "case": "shortcut-preservation",
+      "backend": "native",
+      "counts": {
+        "rhwp": 7,
+        "pdf": 7
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "99.94646"
+        },
+        {
+          "page": 2,
+          "raw": "99.91532"
+        },
+        {
+          "page": 3,
+          "raw": "96.75859"
+        },
+        {
+          "page": 4,
+          "raw": "99.93712"
+        },
+        {
+          "page": 5,
+          "raw": "99.99252"
+        },
+        {
+          "page": 6,
+          "raw": "99.98152"
+        },
+        {
+          "page": 7,
+          "raw": "99.99152"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage94-restoration-focus/focus/native/shortcut-preservation/silhouette.tsv",
+      "tsvSha256": "bf6e8170bb74d115cf0d6df6c5f22f932d5c9102cd3caa44fe66227aa783ebb1"
+    },
+    {
+      "case": "exam-hwp-preservation",
+      "backend": "native",
+      "counts": {
+        "rhwp": 21,
+        "pdf": 21
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "98.68396"
+        },
+        {
+          "page": 2,
+          "raw": "99.70946"
+        },
+        {
+          "page": 3,
+          "raw": "99.57571"
+        },
+        {
+          "page": 4,
+          "raw": "99.40854"
+        },
+        {
+          "page": 5,
+          "raw": "99.82373"
+        },
+        {
+          "page": 6,
+          "raw": "99.70687"
+        },
+        {
+          "page": 7,
+          "raw": "99.78266"
+        },
+        {
+          "page": 8,
+          "raw": "97.52483"
+        },
+        {
+          "page": 9,
+          "raw": "99.84487"
+        },
+        {
+          "page": 10,
+          "raw": "99.13921"
+        },
+        {
+          "page": 11,
+          "raw": "98.74632"
+        },
+        {
+          "page": 12,
+          "raw": "99.80131"
+        },
+        {
+          "page": 13,
+          "raw": "99.59515"
+        },
+        {
+          "page": 14,
+          "raw": "99.31113"
+        },
+        {
+          "page": 15,
+          "raw": "99.76065"
+        },
+        {
+          "page": 16,
+          "raw": "99.52232"
+        },
+        {
+          "page": 17,
+          "raw": "99.15336"
+        },
+        {
+          "page": 18,
+          "raw": "98.70263"
+        },
+        {
+          "page": 19,
+          "raw": "99.27001"
+        },
+        {
+          "page": 20,
+          "raw": "99.76769"
+        },
+        {
+          "page": 21,
+          "raw": "99.27479"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage94-restoration-focus/focus/native/exam-hwp-preservation/silhouette.tsv",
+      "tsvSha256": "dd6eb313f4ca6cdbe56aae48798e9cef84f77c1958548d99fd7c1ac59940d0e5"
+    },
+    {
+      "case": "exam-hwpx-preservation",
+      "backend": "native",
+      "counts": {
+        "rhwp": 21,
+        "pdf": 21
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "98.74415"
+        },
+        {
+          "page": 2,
+          "raw": "99.75224"
+        },
+        {
+          "page": 3,
+          "raw": "97.58048"
+        },
+        {
+          "page": 4,
+          "raw": "99.45261"
+        },
+        {
+          "page": 5,
+          "raw": "99.88831"
+        },
+        {
+          "page": 6,
+          "raw": "99.74344"
+        },
+        {
+          "page": 7,
+          "raw": "99.82944"
+        },
+        {
+          "page": 8,
+          "raw": "97.59695"
+        },
+        {
+          "page": 9,
+          "raw": "99.90423"
+        },
+        {
+          "page": 10,
+          "raw": "99.16455"
+        },
+        {
+          "page": 11,
+          "raw": "98.67193"
+        },
+        {
+          "page": 12,
+          "raw": "99.83614"
+        },
+        {
+          "page": 13,
+          "raw": "99.62834"
+        },
+        {
+          "page": 14,
+          "raw": "99.34133"
+        },
+        {
+          "page": 15,
+          "raw": "99.79408"
+        },
+        {
+          "page": 16,
+          "raw": "99.55624"
+        },
+        {
+          "page": 17,
+          "raw": "99.17427"
+        },
+        {
+          "page": 18,
+          "raw": "98.83047"
+        },
+        {
+          "page": 19,
+          "raw": "99.30410"
+        },
+        {
+          "page": 20,
+          "raw": "99.80480"
+        },
+        {
+          "page": 21,
+          "raw": "99.22742"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage94-restoration-focus/focus/native/exam-hwpx-preservation/silhouette.tsv",
+      "tsvSha256": "243e52e390bd193e435fda2881d4b6e96912cefea26b5aaa5267c03bb7abc402"
+    },
+    {
+      "case": "science-preservation",
+      "backend": "native",
+      "counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "98.62223"
+        },
+        {
+          "page": 2,
+          "raw": "98.65554"
+        },
+        {
+          "page": 3,
+          "raw": "97.80872"
+        },
+        {
+          "page": 4,
+          "raw": "95.84398"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage94-restoration-focus/focus/native/science-preservation/silhouette.tsv",
+      "tsvSha256": "477fee82698a01e2a04ee16504dde1382804723babef8338eef1082000b8ee76"
+    },
+    {
+      "case": "ktx003",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "99.38975"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage94-restoration-focus/focus/wasm/ktx003/silhouette.tsv",
+      "tsvSha256": "1a03196c04a41d2d1bfd1b1140f40be92af65378d9ca275fe41e808f812e4d04"
+    },
+    {
+      "case": "shortcut-preservation",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 7,
+        "pdf": 7
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "99.98981"
+        },
+        {
+          "page": 2,
+          "raw": "99.91533"
+        },
+        {
+          "page": 3,
+          "raw": "96.74949"
+        },
+        {
+          "page": 4,
+          "raw": "99.93712"
+        },
+        {
+          "page": 5,
+          "raw": "99.99252"
+        },
+        {
+          "page": 6,
+          "raw": "99.97920"
+        },
+        {
+          "page": 7,
+          "raw": "99.97455"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage94-restoration-focus/focus/wasm/shortcut-preservation/silhouette.tsv",
+      "tsvSha256": "79b3d99d0a8e519b84d2fccb81c3a31754887ad5d0a89543c90d368bb98b0da0"
+    },
+    {
+      "case": "exam-hwp-preservation",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 21,
+        "pdf": 21
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "98.65240"
+        },
+        {
+          "page": 2,
+          "raw": "99.71063"
+        },
+        {
+          "page": 3,
+          "raw": "99.54757"
+        },
+        {
+          "page": 4,
+          "raw": "99.41637"
+        },
+        {
+          "page": 5,
+          "raw": "99.82963"
+        },
+        {
+          "page": 6,
+          "raw": "99.69426"
+        },
+        {
+          "page": 7,
+          "raw": "99.76422"
+        },
+        {
+          "page": 8,
+          "raw": "97.55326"
+        },
+        {
+          "page": 9,
+          "raw": "99.84448"
+        },
+        {
+          "page": 10,
+          "raw": "99.11956"
+        },
+        {
+          "page": 11,
+          "raw": "98.70468"
+        },
+        {
+          "page": 12,
+          "raw": "99.79550"
+        },
+        {
+          "page": 13,
+          "raw": "99.57019"
+        },
+        {
+          "page": 14,
+          "raw": "99.29408"
+        },
+        {
+          "page": 15,
+          "raw": "99.76274"
+        },
+        {
+          "page": 16,
+          "raw": "99.51995"
+        },
+        {
+          "page": 17,
+          "raw": "99.22473"
+        },
+        {
+          "page": 18,
+          "raw": "98.63775"
+        },
+        {
+          "page": 19,
+          "raw": "99.31994"
+        },
+        {
+          "page": 20,
+          "raw": "99.77582"
+        },
+        {
+          "page": 21,
+          "raw": "99.30271"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage94-restoration-focus/focus/wasm/exam-hwp-preservation/silhouette.tsv",
+      "tsvSha256": "1aabddc3c05923993adbde42aafae2f8c4b218f1153e38e9c467833718dc4450"
+    },
+    {
+      "case": "exam-hwpx-preservation",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 21,
+        "pdf": 21
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "98.70911"
+        },
+        {
+          "page": 2,
+          "raw": "99.75117"
+        },
+        {
+          "page": 3,
+          "raw": "98.23605"
+        },
+        {
+          "page": 4,
+          "raw": "99.45752"
+        },
+        {
+          "page": 5,
+          "raw": "99.89092"
+        },
+        {
+          "page": 6,
+          "raw": "99.72984"
+        },
+        {
+          "page": 7,
+          "raw": "99.80844"
+        },
+        {
+          "page": 8,
+          "raw": "97.61948"
+        },
+        {
+          "page": 9,
+          "raw": "99.90029"
+        },
+        {
+          "page": 10,
+          "raw": "99.14309"
+        },
+        {
+          "page": 11,
+          "raw": "98.62852"
+        },
+        {
+          "page": 12,
+          "raw": "99.82770"
+        },
+        {
+          "page": 13,
+          "raw": "99.59957"
+        },
+        {
+          "page": 14,
+          "raw": "99.32172"
+        },
+        {
+          "page": 15,
+          "raw": "99.79371"
+        },
+        {
+          "page": 16,
+          "raw": "99.55125"
+        },
+        {
+          "page": 17,
+          "raw": "99.24431"
+        },
+        {
+          "page": 18,
+          "raw": "98.76693"
+        },
+        {
+          "page": 19,
+          "raw": "99.35160"
+        },
+        {
+          "page": 20,
+          "raw": "99.80997"
+        },
+        {
+          "page": 21,
+          "raw": "99.25636"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage94-restoration-focus/focus/wasm/exam-hwpx-preservation/silhouette.tsv",
+      "tsvSha256": "ee26c073f192f11c9962586cff6e76e26bc1672566ffa413c769ac02b9dec918"
+    },
+    {
+      "case": "science-preservation",
+      "backend": "wasm",
+      "counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "pages": [
+        {
+          "page": 1,
+          "raw": "98.61228"
+        },
+        {
+          "page": 2,
+          "raw": "98.59821"
+        },
+        {
+          "page": 3,
+          "raw": "97.78979"
+        },
+        {
+          "page": 4,
+          "raw": "95.78187"
+        }
+      ],
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-d9fd85ed-20261023/stage94-restoration-focus/focus/wasm/science-preservation/silhouette.tsv",
+      "tsvSha256": "58158bcc45e287a71a4763d2c28e9f8a27e501ff876c928d16052fef7c8def9f"
+    }
+  ],
+  "builds": [
+    {
+      "step": "native-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--jobs",
+        "8"
+      ],
+      "exitCode": 0,
+      "seconds": 111.27147603034973
+    },
+    {
+      "step": "fresh-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exitCode": 0,
+      "seconds": 205.79164505004883
+    }
+  ],
+  "native": {
+    "binarySha256": "abff5056fe395c6527dc6d8528c22c42281c9947d5f4bf6bc3e3ccc62fca06a6",
+    "sourceProducerSha256": "8c67108c852a3bc16f9b625596d9731391b605876f69dd36eb7fe282534756a4"
+  },
+  "wasm": {
+    "files": {
+      "rhwp.js": "56b2836e71bbbde64097476cb009303b8eeff61777c480cae82a238cf4d47af3",
+      "rhwp_bg.wasm": "4af5842b5d9c612d4b30caea794a6666c0a32c728d442ddcd68693a81b567ce4"
+    },
+    "rootAndStudioPublicMatch": true,
+    "method": "Mac locked wrapper --target web --out-dir pkg --no-opt; local substitute, not Docker optimized",
+    "sourceProducerSha256": "8c67108c852a3bc16f9b625596d9731391b605876f69dd36eb7fe282534756a4"
+  },
+  "directInspection": {
+    "backends": [
+      "native",
+      "wasm"
+    ],
+    "pages": {
+      "shortcut-preservation": [
+        7
+      ],
+      "exam-hwp-preservation": [
+        9
+      ],
+      "exam-hwpx-preservation": [
+        9
+      ],
+      "science-preservation": [
+        3
+      ]
+    },
+    "findings": "Two-column tails, source problem/caption/graph ownership and note boxes align with independent Print; no new omission or overlap observed. Thin strokes, glyph raster edges and minor text baselines remain. This does not claim exact RGB identity."
+  },
+  "files": [
+    {
+      "path": "native-ktx003.tsv",
+      "sha256": "c048e8751248af75d1e4b7e38a1dbae56d5dc7a7e4d3ca0275bb6c15b49d18e1"
+    },
+    {
+      "path": "native-shortcut-preservation.tsv",
+      "sha256": "bf6e8170bb74d115cf0d6df6c5f22f932d5c9102cd3caa44fe66227aa783ebb1"
+    },
+    {
+      "path": "native-exam-hwp-preservation.tsv",
+      "sha256": "dd6eb313f4ca6cdbe56aae48798e9cef84f77c1958548d99fd7c1ac59940d0e5"
+    },
+    {
+      "path": "native-exam-hwpx-preservation.tsv",
+      "sha256": "243e52e390bd193e435fda2881d4b6e96912cefea26b5aaa5267c03bb7abc402"
+    },
+    {
+      "path": "native-science-preservation.tsv",
+      "sha256": "477fee82698a01e2a04ee16504dde1382804723babef8338eef1082000b8ee76"
+    },
+    {
+      "path": "wasm-ktx003.tsv",
+      "sha256": "1a03196c04a41d2d1bfd1b1140f40be92af65378d9ca275fe41e808f812e4d04"
+    },
+    {
+      "path": "wasm-shortcut-preservation.tsv",
+      "sha256": "79b3d99d0a8e519b84d2fccb81c3a31754887ad5d0a89543c90d368bb98b0da0"
+    },
+    {
+      "path": "wasm-exam-hwp-preservation.tsv",
+      "sha256": "1aabddc3c05923993adbde42aafae2f8c4b218f1153e38e9c467833718dc4450"
+    },
+    {
+      "path": "wasm-exam-hwpx-preservation.tsv",
+      "sha256": "ee26c073f192f11c9962586cff6e76e26bc1672566ffa413c769ac02b9dec918"
+    },
+    {
+      "path": "wasm-science-preservation.tsv",
+      "sha256": "58158bcc45e287a71a4763d2c28e9f8a27e501ff876c928d16052fef7c8def9f"
+    },
+    {
+      "path": "native-shortcut-preservation-p007-review.png",
+      "sha256": "8757d59bd8e6d19cba1ec5a51b184d58403e051e2b151e344b51fe1a81e1932c"
+    },
+    {
+      "path": "native-shortcut-preservation-p007-overlay.png",
+      "sha256": "69bf6fd3ec4ed4adb75fba45a0dd0541058fb25cb9f219554abbe5f471a06436"
+    },
+    {
+      "path": "native-exam-hwp-preservation-p009-review.png",
+      "sha256": "04befafa1567811ebf40bcb08742cb91ba421f3ea9765bd9e43a6e04e47dd83e"
+    },
+    {
+      "path": "native-exam-hwp-preservation-p009-overlay.png",
+      "sha256": "71ee009ce9e26fb52d2328d9077cf0d230d0c5ba6cb4e2ce0bc9a6a359f753f4"
+    },
+    {
+      "path": "native-exam-hwpx-preservation-p009-review.png",
+      "sha256": "89d9dc0d7a57049c252dc0e4cf3b9c4b770568e95be0977f16d0fe78535d55db"
+    },
+    {
+      "path": "native-exam-hwpx-preservation-p009-overlay.png",
+      "sha256": "8f4fb4709abb7c4c1d19960fd506b0db0e9c3c6050b662ebd2c834ae19e82d2f"
+    },
+    {
+      "path": "native-science-preservation-p003-review.png",
+      "sha256": "99014e4fcd000fad7006039664bd77dbcb9030b49654b7ff7b8fe533b2c64fa9"
+    },
+    {
+      "path": "native-science-preservation-p003-overlay.png",
+      "sha256": "28e3299eccd37c10641e285076e923be72c9a917277825935a7d76585b83b3aa"
+    },
+    {
+      "path": "wasm-shortcut-preservation-p007-review.png",
+      "sha256": "fde52a0449528c01b4e2cf36dfd781f85bdc75b2f43770ff73b6ce59babbe7d6"
+    },
+    {
+      "path": "wasm-shortcut-preservation-p007-overlay.png",
+      "sha256": "f1cba50dfbb0187fa9e6fc5dcf5f17b9e7d2c4e4bd69e5d72e6312b4bf83fe77"
+    },
+    {
+      "path": "wasm-exam-hwp-preservation-p009-review.png",
+      "sha256": "32fe05b3384dd793f222b3009d6aad3e5bdf2149c8daab98f2c4ce69359a04f7"
+    },
+    {
+      "path": "wasm-exam-hwp-preservation-p009-overlay.png",
+      "sha256": "9e2ada81e3b773aee16ffd3b35023cce2a518456289dec2acae03d3096e2e327"
+    },
+    {
+      "path": "wasm-exam-hwpx-preservation-p009-review.png",
+      "sha256": "ae4b9f2899364c03a150b300d692fbf86d09b5ed36043652f3c09bab0ac43c35"
+    },
+    {
+      "path": "wasm-exam-hwpx-preservation-p009-overlay.png",
+      "sha256": "434483e4ef1f8b32a89d2612407c490562a59bd600eb0653dfd32eadfe11b810"
+    },
+    {
+      "path": "wasm-science-preservation-p003-review.png",
+      "sha256": "f85783c056d019b3ae7e86cda60cc5dfac6d4a4c78b8b8f7f017d66ce484b88b"
+    },
+    {
+      "path": "wasm-science-preservation-p003-overlay.png",
+      "sha256": "217479eb4e780e0303c38474786d5e442caf488bd44d79c23ef108cd2a006ad9"
+    }
+  ],
+  "fullPrAcceptance": false
+}

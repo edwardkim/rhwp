@@ -51,6 +51,7 @@ fn write_flipped(sample: &str, flip_pct: usize, label: &str) -> PathBuf {
 fn corrupt_input_does_not_panic_in_renderer() {
     // 초인적 규모 퍼징이 잡은 렌더러 오버플로 사이트들의 재현자 — info(레이아웃) 와
     // export-text(전체 렌더) 두 경로 모두.
+    // #7445의 원문 피델리티 검사와 구분한다. 원문90% 위치를 손상한 입력의 패닉 방지다.
     for (sample, pct, cmd, label) in [
         ("hwp3-sample11.hwp", 45, "info", "typeset-vpos"),
         (
@@ -100,19 +101,22 @@ fn missing_arguments_report_usage_error() {
 
 #[test]
 fn unknown_command_writes_usage_to_stderr_and_fails() {
-    let args = ["expport-svg", "foo.hwp"];
-    let output = assert_code(&args, 2);
+    // 제거된 네이티브 GPU 명령도 알 수 없는 명령 계약을 따른다.
+    for command in ["expport-svg", "export-png-gpu", "gpu-info"] {
+        let args = [command, "foo.hwp"];
+        let output = assert_code(&args, 2);
 
-    assert!(
-        String::from_utf8_lossy(&output.stderr).contains("알 수 없는 명령"),
-        "알 수 없는 명령을 stderr 로 알려야 한다\n{}",
-        describe(&args, &output)
-    );
-    assert!(
-        output.stdout.is_empty(),
-        "사용법 안내가 stdout 을 오염시키면 안 된다\n{}",
-        describe(&args, &output)
-    );
+        assert!(
+            String::from_utf8_lossy(&output.stderr).contains("알 수 없는 명령"),
+            "알 수 없는 명령을 stderr 로 알려야 한다\n{}",
+            describe(&args, &output)
+        );
+        assert!(
+            output.stdout.is_empty(),
+            "사용법 안내가 stdout 을 오염시키면 안 된다\n{}",
+            describe(&args, &output)
+        );
+    }
 }
 
 #[test]
@@ -314,39 +318,4 @@ fn export_png_without_native_skia_reports_usage_error() {
         "왜 못 쓰는지 알려야 한다\n{}",
         describe(&args, &output)
     );
-}
-
-#[cfg(not(feature = "gpu"))]
-#[test]
-fn gpu_commands_without_feature_report_usage_error() {
-    for (command, expected) in [
-        (
-            "export-png-gpu",
-            "export-png-gpu 명령은 gpu feature 가 활성화되어야 합니다.",
-        ),
-        (
-            "gpu-info",
-            "gpu-info 명령은 gpu feature 가 활성화되어야 합니다.",
-        ),
-    ] {
-        let output = run_cli(&[command]);
-        assert_eq!(
-            output.status.code(),
-            Some(2),
-            "{command} exit code\nstdout:\n{}\nstderr:\n{}",
-            String::from_utf8_lossy(&output.stdout),
-            String::from_utf8_lossy(&output.stderr)
-        );
-        assert!(
-            output.stdout.is_empty(),
-            "{command} stdout must stay empty: {}",
-            String::from_utf8_lossy(&output.stdout)
-        );
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        assert!(stderr.contains(expected), "{command} stderr: {stderr}");
-        assert!(
-            stderr.contains("cargo build --release --features gpu"),
-            "{command} build guidance: {stderr}"
-        );
-    }
 }

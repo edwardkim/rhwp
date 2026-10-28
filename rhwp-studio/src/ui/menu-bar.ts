@@ -77,10 +77,12 @@ export class MenuBar {
     }
   }
 
-  /** 드롭다운 항목 클릭 → 커맨드 디스패치 + 닫기 */
+  /** 드롭다운 항목·메뉴바 직접 버튼 클릭 → 커맨드 디스패치 + 닫기 */
   private setupItemClicks(): void {
     this.container.addEventListener('click', (e) => {
-      const target = (e.target as HTMLElement).closest('.md-item') as HTMLElement;
+      const target = (e.target as HTMLElement).closest(
+        '.md-item[data-cmd], .menu-command[data-cmd]',
+      ) as HTMLElement;
       if (!target) return;
       if (target.classList.contains('disabled')) return;
 

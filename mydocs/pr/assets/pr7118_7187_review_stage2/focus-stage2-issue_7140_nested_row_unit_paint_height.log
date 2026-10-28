@@ -1,0 +1,8 @@
+    Finished `release-test` profile [optimized] target(s) in 0.15s
+     Running tests/generated/regression_suite_023.rs (target/pr7118-7187-20260916/release-test/deps/regression_suite_023-080dfad70f7431c0)
+
+running 2 tests
+test issue_7140_nested_row_unit_paint_height::hwpx_page_count_matches_the_oracle ... ok
+test issue_7140_nested_row_unit_paint_height::nested_row_units_reserve_painted_height ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 190 filtered out; finished in 0.32s

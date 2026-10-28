@@ -1,0 +1,41 @@
+{
+  "differences": 231,
+  "kinds": {
+    "numeric": 231
+  },
+  "maxNumericDifference": [
+    18446744069414584320,
+    [
+      "render_tree_011/children/4/children/1/children/0/pi",
+      18446744073709549615,
+      4294965295
+    ]
+  ],
+  "examples": [
+    [
+      "render_tree_011/children/4/children/1/children/0/pi",
+      "18446744073709549615",
+      "4294965295"
+    ],
+    [
+      "render_tree_011/children/4/children/1/children/1/pi",
+      "18446744073709549615",
+      "4294965295"
+    ],
+    [
+      "render_tree_011/children/4/children/1/children/2/pi",
+      "18446744073709549615",
+      "4294965295"
+    ],
+    [
+      "render_tree_011/children/4/children/1/children/3/pi",
+      "18446744073709549615",
+      "4294965295"
+    ]
+  ],
+  "differenceFields": {
+    "pi": 231
+  },
+  "nonSentinelDifferences": [],
+  "interpretation": "Only negative paragraph index sentinel values encoded as native usize64 vs WASM usize32; coordinates and text identical."
+}

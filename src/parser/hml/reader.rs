@@ -661,6 +661,14 @@ impl<'a> ReadState<'a> {
             alignment: parse_alignment(attribute(element, b"Align")?.as_deref()),
             tab_def_id: parse_attribute(element, b"TabDef")?.unwrap_or(0),
             para_level: parse_attribute(element, b"Level")?.unwrap_or(0),
+            // `<PARAMARGIN>` 이 없는 PARASHAPE 도 "미지정 = 160%" 계약을 따른다.
+            // 160 기본값이 capture_para_margin() 안에만 있어 PARAMARGIN 없는 문단이
+            // line_spacing 0 으로 남았는데, 0 을 실값(advance 0)으로 존중하게 바꾼 뒤로는
+            // 그 문단의 줄이 전부 본문 상단 한 점에 겹쳤다.
+            // `LineSpacing="0"` 이 명시된 문서는 capture_para_margin() 이 0 으로 덮어쓰므로
+            // "미지정 vs 명시 0" 구분은 그대로다.
+            line_spacing: 160,
+            line_spacing_type: LineSpacingType::Percent,
             ..Default::default()
         };
         if !set_indexed(
@@ -811,13 +819,13 @@ impl<'a> ReadState<'a> {
         let path = format!("/{}", self.stack.join("/"));
         for item in element.attributes() {
             let attr = item.map_err(|error| HmlError::InvalidXml(error.to_string()))?;
-            let name = std::str::from_utf8(attr.key.as_ref())
+            let name = std::str::from_utf8(attr.key.as_ref().as_bytes())
                 .map_err(|_| HmlError::InvalidXml("non-UTF-8 attribute name".to_string()))?;
             if !matches!(
                 name,
                 "BaseLine" | "BaseUnit" | "TextColor" | "Version" | "Font"
             ) {
-                let raw = std::str::from_utf8(attr.value.as_ref())
+                let raw = std::str::from_utf8(attr.value.as_ref().as_bytes())
                     .map_err(|_| HmlError::InvalidXml("non-UTF-8 attribute".to_string()))?;
                 let value = quick_xml::escape::unescape(raw)
                     .map_err(|error| HmlError::InvalidXml(error.to_string()))?;
@@ -866,9 +874,9 @@ impl<'a> ReadState<'a> {
         };
         for item in element.attributes() {
             let attr = item.map_err(|error| HmlError::InvalidXml(error.to_string()))?;
-            let name = std::str::from_utf8(attr.key.as_ref())
+            let name = std::str::from_utf8(attr.key.as_ref().as_bytes())
                 .map_err(|_| HmlError::InvalidXml("non-UTF-8 attribute name".to_string()))?;
-            let raw = std::str::from_utf8(attr.value.as_ref())
+            let raw = std::str::from_utf8(attr.value.as_ref().as_bytes())
                 .map_err(|_| HmlError::InvalidXml("non-UTF-8 attribute".to_string()))?;
             let value = quick_xml::escape::unescape(raw)
                 .map_err(|error| HmlError::InvalidXml(error.to_string()))?;
@@ -1341,10 +1349,11 @@ impl<'a> ReadState<'a> {
             if unsupported_equation_child {
                 for item in element.attributes() {
                     let attr = item.map_err(|error| HmlError::InvalidXml(error.to_string()))?;
-                    let attr_name = std::str::from_utf8(attr.key.as_ref()).map_err(|_| {
-                        HmlError::InvalidXml("non-UTF-8 attribute name".to_string())
-                    })?;
-                    let raw = std::str::from_utf8(attr.value.as_ref())
+                    let attr_name =
+                        std::str::from_utf8(attr.key.as_ref().as_bytes()).map_err(|_| {
+                            HmlError::InvalidXml("non-UTF-8 attribute name".to_string())
+                        })?;
+                    let raw = std::str::from_utf8(attr.value.as_ref().as_bytes())
                         .map_err(|_| HmlError::InvalidXml("non-UTF-8 attribute".to_string()))?;
                     let value = quick_xml::escape::unescape(raw)
                         .map_err(|error| HmlError::InvalidXml(error.to_string()))?;
@@ -1429,7 +1438,7 @@ pub(crate) fn has_hwpml_root(xml: &str) -> bool {
     loop {
         match reader.read_event() {
             Ok(Event::Start(element)) | Ok(Event::Empty(element)) => {
-                return element.name().as_ref() == b"HWPML"
+                return element.name().as_ref().as_bytes() == b"HWPML"
                     && attribute(&element, b"Version")
                         .ok()
                         .flatten()
@@ -1441,7 +1450,7 @@ pub(crate) fn has_hwpml_root(xml: &str) -> bool {
             // 실패했다 — 실제로는 HWPML 인데 "알 수 없는 파일 형식"으로 거부됐다.
             Ok(Event::DocType(_)) => {}
             Ok(Event::Decl(_) | Event::Comment(_) | Event::PI(_)) => {}
-            Ok(Event::Text(text)) if text.iter().all(|byte| byte.is_ascii_whitespace()) => {}
+            Ok(Event::Text(text)) if text.as_ref().chars().all(char::is_whitespace) => {}
             Ok(Event::Eof) | Err(_) => return false,
             _ => return false,
         }
@@ -1469,7 +1478,7 @@ pub(crate) fn read_hml(xml: &str, limits: &HmlLimits) -> Result<HmlSource, HmlEr
                 enforce_depth(state.stack.len(), limits.max_depth)?;
                 state.empty(&element, limits, start_pos, end_pos)?;
             }
-            Event::End(element) => state.end(element.name().as_ref(), end_pos)?,
+            Event::End(element) => state.end(element.name().as_ref().as_bytes(), end_pos)?,
             Event::Text(text) => append_decoded_text(&mut state, &text, limits)?,
             Event::CData(text) => append_cdata(&mut state, &text, limits)?,
             Event::GeneralRef(reference) => append_reference(&mut state, &reference)?,
@@ -1497,10 +1506,7 @@ fn append_cdata(
     if text.len() > limits.max_text_node_bytes {
         return Err(HmlError::LimitExceeded("text node size".to_string()));
     }
-    let decoded = text
-        .decode()
-        .map_err(|error| HmlError::InvalidXml(error.to_string()))?;
-    state.append_text(&decoded)
+    state.append_text(text.as_ref())
 }
 
 fn enforce_depth(current_depth: usize, max_depth: usize) -> Result<(), HmlError> {
@@ -1518,10 +1524,7 @@ fn append_decoded_text(
     if text.len() > limits.max_text_node_bytes {
         return Err(HmlError::LimitExceeded("text node size".to_string()));
     }
-    let decoded = text
-        .decode()
-        .map_err(|error| HmlError::InvalidXml(error.to_string()))?;
-    state.append_text(&decoded)
+    state.append_text(text.as_ref())
 }
 
 /// [#5848] 숫자 문자참조(`&#160;` · `&#xA0;`)만 실제 문자로 푼다.
@@ -1572,10 +1575,7 @@ fn collect_doctype_entities(
     const MAX_ENTITIES: usize = 64;
     const MAX_VALUE_BYTES: usize = 256;
 
-    let text = doctype
-        .decode()
-        .map_err(|error| HmlError::InvalidXml(error.to_string()))?;
-    let mut rest = text.as_ref();
+    let mut rest = doctype.as_ref();
     while let Some(at) = rest.find("<!ENTITY") {
         rest = &rest[at + "<!ENTITY".len()..];
         let Some(decl_end) = rest.find('>') else {
@@ -1640,10 +1640,8 @@ fn append_reference(
     {
         return state.append_text(&character.to_string());
     }
-    let name = reference
-        .decode()
-        .map_err(|error| HmlError::InvalidXml(error.to_string()))?;
-    let value = match name.as_ref() {
+    let name = reference.as_ref();
+    let value = match name {
         "lt" => "<",
         "gt" => ">",
         "amp" => "&",
@@ -1665,9 +1663,7 @@ fn append_reference(
 }
 
 fn element_name(element: &BytesStart<'_>) -> Result<String, HmlError> {
-    std::str::from_utf8(element.name().as_ref())
-        .map(str::to_owned)
-        .map_err(|_| HmlError::InvalidXml("non-UTF-8 element name".to_string()))
+    Ok(element.name().as_ref().to_owned())
 }
 
 fn validate_attributes(element: &BytesStart<'_>, max: usize) -> Result<(), HmlError> {
@@ -1685,8 +1681,8 @@ fn validate_attributes(element: &BytesStart<'_>, max: usize) -> Result<(), HmlEr
 fn attribute(element: &BytesStart<'_>, key: &[u8]) -> Result<Option<String>, HmlError> {
     for item in element.attributes() {
         let attr = item.map_err(|error| HmlError::InvalidXml(error.to_string()))?;
-        if attr.key.as_ref() == key {
-            let raw = std::str::from_utf8(attr.value.as_ref())
+        if attr.key.as_ref().as_bytes() == key {
+            let raw = std::str::from_utf8(attr.value.as_ref().as_bytes())
                 .map_err(|_| HmlError::InvalidXml("non-UTF-8 attribute".to_string()))?;
             let value = quick_xml::escape::unescape(raw)
                 .map_err(|error| HmlError::InvalidXml(error.to_string()))?;
@@ -1777,6 +1773,7 @@ fn parse_column_type(value: Option<&str>) -> ColumnType {
 fn parse_column_direction(value: Option<&str>) -> ColumnDirection {
     match value {
         Some("Right") => ColumnDirection::RightToLeft,
+        Some("Mirror") => ColumnDirection::Mirror,
         _ => ColumnDirection::LeftToRight,
     }
 }

@@ -6,8 +6,11 @@
         "edit",
         "redact",
         "{input}",
+        "--kind",
+        "email",
+        "--no-raw",
         "-o",
-        "{sub:masked.hwp}",
+        "{sub:email-masked.hwpx}",
         "--json"
       ]
     }

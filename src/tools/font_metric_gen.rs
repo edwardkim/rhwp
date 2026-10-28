@@ -4,8 +4,8 @@
 //! 글리프 폭 데이터를 추출하고, Rust 소스코드로 출력한다.
 //!
 //! 사용법:
-//!   cargo run --bin font-metric-gen -- ttfs/windows/malgun.ttf --face-index 0
-//!   cargo run --bin font-metric-gen -- --plan plan.json \
+//!   cargo run --features dev-tools --bin font-metric-gen -- ttfs/windows/malgun.ttf --face-index 0
+//!   cargo run --features dev-tools --bin font-metric-gen -- --plan plan.json \
 //!     --generated-output generated.rs --metadata-output provenance.json
 //!
 //! 생성 모드는 입력 순서와 TTC face를 계획 파일에 명시해야 한다. core lookup과

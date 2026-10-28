@@ -1,0 +1,22 @@
+{
+  "browser": "Chrome/152.0.7977.83",
+  "scope": "Packaged bootstrap script in real Chrome before any application bundle; real DOM helper identity/listener/idempotence. Firefox package bytes tested in Chrome, not Firefox runtime.",
+  "results": [
+    {
+      "kind": "chrome",
+      "bootstrapLang": "en",
+      "iconPreserved": true,
+      "clicks": 1,
+      "text": "★Open",
+      "children": 1
+    },
+    {
+      "kind": "firefox",
+      "bootstrapLang": "en",
+      "iconPreserved": true,
+      "clicks": 1,
+      "text": "★Open",
+      "children": 1
+    }
+  ]
+}

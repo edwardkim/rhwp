@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-d5-r3-resource-qualification-result",
+  "issue": 4969,
+  "stage": "W10-Q2-D5-R3",
+  "status": "qualified",
+  "fixture": "ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf",
+  "fontBytes": 456688,
+  "privateCorpusUsed": false,
+  "hyperVOrHancomOracleUsed": false,
+  "structuralAccounting": {
+    "runCounts": [1, 2, 8],
+    "digestPreparations": [1, 1, 1],
+    "faceParses": [1, 1, 1],
+    "arenaInterns": [1, 1, 1],
+    "pageCounts": [1, 2, 8],
+    "byKeyFetches": [1, 1, 1],
+    "byKeyTransferredBytes": [456688, 456688, 456688],
+    "byKeyInlinePayloadBytes": [0, 0, 0],
+    "defaultInlineRawBytes": [456688, 913376, 3653504]
+  },
+  "nativeTransportParity": {
+    "rootExact": true,
+    "fontResourcesExact": true,
+    "onlyPayloadDifference": "resources.fontBlobs",
+    "inlineJsonBytes": 619562,
+    "byKeyJsonBytes": 10640,
+    "jsonBytesRemoved": 608922,
+    "jsonReductionPercent": 98.2827,
+    "glyphIds": [614, 864, 1479, 1674],
+    "positionX": [0, 11.520222, 23.040444, 23.040444],
+    "advanceX": [11.520222, 11.520222, 0, 0],
+    "clusterGlyphRanges": [[0, 1], [1, 4]]
+  },
+  "canvasKit": {
+    "inlineByKeyPixelsIdentical": true,
+    "transportProbeInk": {
+      "left": 14,
+      "top": 70,
+      "right": 33,
+      "bottom": 81,
+      "width": 20,
+      "height": 12
+    },
+    "d4Oracle": {
+      "glyphIds": [614, 1230, 1497, 2085],
+      "pageAdvancePx": 61.824,
+      "inkWidth": 58,
+      "inkHeight": 34,
+      "affineMismatchPx": 0
+    },
+    "cacheBeforeGenerationChange": {
+      "blobs": 1,
+      "typefaces": 1,
+      "fonts": 1,
+      "bytes": 456688
+    },
+    "cacheAfterGenerationChange": {
+      "blobs": 0,
+      "typefaces": 0,
+      "fonts": 0,
+      "bytes": 0
+    },
+    "olderGenerationCanRepopulate": false
+  },
+  "performance": {
+    "authority": "structural-counters-not-wall-time",
+    "protocol": "release-20-warmups-9-groups-of-200-warm-25-cold-median",
+    "warmLayerMedianUs": 609.270,
+    "d4WarmLayerMedianUs": 703.600,
+    "warmLayerReductionPercent": 13.4068,
+    "coldLayerMedianUs": 2229.509,
+    "d4ColdLayerMedianUs": 2314.000,
+    "coldLayerReductionPercent": 3.6513,
+    "inlineSerializeMedianUs": 473.585,
+    "byKeySerializeMedianUs": 247.468,
+    "serializeReductionPercent": 47.7458,
+    "warmInlineQueryMedianUs": 17.194,
+    "warmByKeyQueryMedianUs": 0.124,
+    "warmQueryReductionPercent": 99.2788,
+    "coldInlineQueryMedianUs": 3118.056,
+    "coldByKeyQueryMedianUs": 2480.652,
+    "coldQueryReductionPercent": 20.4424
+  },
+  "wasm": {
+    "exactResolverProbe": "pass",
+    "resolvedBytes": 456688,
+    "wrongLengthKeyRejected": true,
+    "dockerBuildEvidenceReusedFromR2": true
+  },
+  "validation": {
+    "nativeReleaseProbe": "pass",
+    "rustRegisteredSourceIntegrationPassed": 13,
+    "taskWorktreeGeneratedTargetsPrepared": false,
+    "taskWorktreeCargoFmt": "not-entered-missing-generated-suite-sources",
+    "cargoFmtRequiredInPreparedReviewWorktreeBeforePush": true,
+    "sourceOnlyTargetsReusedFromD4ReviewEvidence": [
+      "issue_4969_shaping_atomic_activation",
+      "issue_5821_condensed_ratio_glyph_height"
+    ],
+    "studioResourceFocusedPassed": 4,
+    "canvasKitD4Replay": "pass",
+    "canvasKitBundledFontCoverage": "pass",
+    "canvasKitRendererContract": "pass-after-stale-signature-guard-correction",
+    "studioFullEvidenceReusedFromR2": "1238-pass-1-existing-skip",
+    "studioBuildEvidenceReusedFromR2": "pass",
+    "generatedArtifactsChanged": false,
+    "sourceCfgTestChanged": false,
+    "productSourceChangedInR3": false,
+    "noLineSegBoundaryChanged": false
+  },
+  "excludedDiagnostic": {
+    "kind": "hwp5-roundtrip-of-in-memory-fixture",
+    "reason": "exact-font-registry-is-not-part-of-that-fixture-serialization",
+    "usedAsProductEvidence": false
+  },
+  "nextSlice": "Q2-D5-N0",
+  "nextSliceApproved": false,
+  "checkpointCommitApproved": false,
+  "pushReady": false
+}

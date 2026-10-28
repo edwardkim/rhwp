@@ -1,7 +1,7 @@
 name: Release Binary
 
 # Issue #612 — CLI 바이너리 릴리즈 파이프라인
-# 4 플랫폼 (Linux x86_64 / macOS x86_64 + aarch64 / Windows x86_64) matrix 빌드
+# 5 플랫폼 (Linux x86_64 + aarch64 / macOS x86_64 + aarch64 / Windows x86_64) matrix 빌드
 # release tag (v*) push 시 자동 트리거 + workflow_dispatch 수동 실행 (테스트용)
 
 on:
@@ -16,7 +16,7 @@ on:
         default: 'test'
 
 permissions:
-  contents: write  # release 자산 첨부 권한
+  contents: read
 
 jobs:
   build:
@@ -31,16 +31,21 @@ jobs:
             archive: tar.gz
             archive_suffix: linux-x86_64
             binary_name: rhwp
+          - target: aarch64-unknown-linux-gnu
+            runner: ubuntu-24.04-arm
+            archive: tar.gz
+            archive_suffix: linux-aarch64
+            binary_name: rhwp
           - target: x86_64-apple-darwin
-            # macos-13 (Intel) runner 큐 적체 영역 회피 — Apple Silicon (macos-14)
+            # Apple Silicon (macos-15)에서 Intel target을 교차 빌드한다.
             # 에서 x86_64-apple-darwin 으로 cross-compile (Rust 표준 cross-compile).
             # Intel binary 산출물 보존 + 큐 가용성 영역 정합.
-            runner: macos-14
+            runner: macos-15
             archive: tar.gz
             archive_suffix: macos-x86_64
             binary_name: rhwp
           - target: aarch64-apple-darwin
-            runner: macos-14
+            runner: macos-15
             archive: tar.gz
             archive_suffix: macos-aarch64
             binary_name: rhwp
@@ -79,12 +84,26 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          # runner 전환 시 이전 SDK로 만든 target/ cache를 재사용하지 않는다.
+          key: ${{ matrix.target }}-${{ matrix.runner }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ matrix.target }}-cargo-
+            ${{ matrix.target }}-${{ matrix.runner }}-cargo-
+
+      - name: Install native Skia dependencies (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get \
+            -o Acquire::Retries=3 -o Acquire::http::Timeout=30 \
+            -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=60 update
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get \
+            -o Acquire::Retries=3 -o Acquire::http::Timeout=30 \
+            -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=60 \
+            install -y --no-install-recommends \
+            fonts-dejavu-core libfontconfig1-dev libfreetype6-dev
 
       - name: Build release binary
-        run: cargo build --release --bin rhwp --target ${{ matrix.target }}
+        run: cargo build --locked --release --bin rhwp --features native-skia --target ${{ matrix.target }}
 
       - name: Verify binary (Linux/macOS)
         if: matrix.archive == 'tar.gz'
@@ -126,6 +145,20 @@ jobs:
           Get-ChildItem $archiveName
           "ARCHIVE_NAME=$archiveName" | Out-File -FilePath $env:GITHUB_ENV -Append
 
+      # Verify the packaged binary on every platform, including the Intel binary
+      # on macOS ARM. --version alone cannot detect a missing optional backend.
+      - name: Install Python for release verification
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+
+      - name: Verify packaged PNG export
+        shell: bash
+        run: |
+          python scripts/verify_release_binary.py \
+            --archive "${ARCHIVE_NAME}" \
+            --sample samples/issue2527_empty_linesegs.hwpx
+
       - name: Upload artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -136,22 +169,20 @@ jobs:
   release:
     name: Attach to GitHub Release
     needs: build
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.tag, 'v'))
+    permissions:
+      contents: write
 
     steps:
       - name: Determine release tag
         id: version
         shell: bash
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
-          else
-            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
-          fi
+          echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
 
       - name: Download all artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: dist/
           merge-multiple: true
@@ -164,7 +195,7 @@ jobs:
           cat SHA256SUMS.txt
 
       - name: Attach to release
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           files: |
@@ -174,3 +205,22 @@ jobs:
           draft: false
           prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
           generate_release_notes: false  # 본문은 별도 작성 (release manual 정합)
+
+  publish-packages:
+    name: Publish packages after binary release
+    needs: [build, release]
+    if: >-
+      always() &&
+      needs.build.result == 'success' &&
+      ((github.event_name == 'push' && needs.release.result == 'success') ||
+       (github.event_name == 'workflow_dispatch' && needs.release.result == 'skipped'))
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/npm-publish.yml
+    with:
+      publish: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-') }}
+      publish_extensions: true
+    secrets:
+      VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      OVSX_PAT: ${{ secrets.OVSX_PAT }}

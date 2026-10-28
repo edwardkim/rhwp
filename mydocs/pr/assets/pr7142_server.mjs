@@ -1,0 +1,11 @@
+import {createServer,loadConfigFromFile} from '/Users/tsjang/rhwp/rhwp-studio/node_modules/vite/dist/node/index.js';
+const root='/Users/tsjang/rhwp/rhwp-studio';
+const pkg='/private/tmp/rhwp-pr7142-review/pkg';
+const loaded=await loadConfigFromFile({command:'serve',mode:'development'},root+'/vite.config.ts');
+const config=loaded.config;
+config.resolve.alias['@wasm/rhwp.js']=pkg+'/rhwp.js';
+config.resolve.alias['@wasm']=pkg;
+config.server.fs.allow.push(pkg);
+const server=await createServer({...config,root,configFile:false,server:{...config.server,port:7797,strictPort:true}});
+await server.listen();
+server.printUrls();

@@ -1,0 +1,192 @@
+{
+  "source_sha": "45863eb2b238929c22ecc606af801b6273dc8482",
+  "contributor_source_sha": "b28130e1bcea509d9969088c7e75a0e23e4974b2",
+  "policy_base_sha": "02530b9ed567a44663edb26c65fb565c4a79f00d",
+  "checked_utc": "2026-10-01T16:46:48Z",
+  "inputs": [
+    {
+      "path": "samples/p122.hwp",
+      "sha256": "b4d66baa093d564ac728c84d591b3ea7d6bc4cfef160bde81ee13afc6d927e82",
+      "bytes": 89088,
+      "committed_head": "45863eb2b238929c22ecc606af801b6273dc8482",
+      "byte_match": true
+    },
+    {
+      "path": "pdf/p122-2022.pdf",
+      "sha256": "379cbf8c5b571be12b123180ceba7b266d43f54c84f6cd0b660c693317fc90cc",
+      "bytes": 61601,
+      "committed_head": "45863eb2b238929c22ecc606af801b6273dc8482",
+      "byte_match": true
+    },
+    {
+      "path": "samples/issue6060/30307_local_service_reform.hwp",
+      "sha256": "cc8668819b79ed51408a93c0ad7876569bf67e8fed56dbfb7febdd0c9a91cded",
+      "bytes": 130048,
+      "committed_head": "45863eb2b238929c22ecc606af801b6273dc8482",
+      "byte_match": true
+    },
+    {
+      "path": "saved/blank2010.hwp",
+      "sha256": "43f472751fafefb8c66b0f831660ebed51e443a46bebe44c75bba918154ce4c9",
+      "bytes": 13824,
+      "committed_head": "45863eb2b238929c22ecc606af801b6273dc8482",
+      "byte_match": true
+    }
+  ],
+  "artifacts": {
+    "native-p122-review-p002.png": {
+      "sha256": "c547ddaa2ef7ce39ae935b12fbfabf4b372b727187bb0b5dcf5afc730db5a1e3",
+      "bytes": 625875,
+      "generated_from": "p122-native-sweep/pr7487-p122-control/review/review_002.png"
+    },
+    "native-p122-overlay-p002.png": {
+      "sha256": "c2f2183a8b37bfd09526eb84dec25b6cce6ec51e5787f279f413ef5b012b07c1",
+      "bytes": 181271,
+      "generated_from": "p122-native-sweep/pr7487-p122-control/overlay/overlay_002.png"
+    },
+    "wasm-p122-review-p002.png": {
+      "sha256": "1831abcb636fdc4c33116c07d24e522ef9bb49123e39775f27f138e8c1f8cf68",
+      "bytes": 626754,
+      "generated_from": "p122-wasm-direct/review/review_002.png"
+    },
+    "wasm-p122-overlay-p002.png": {
+      "sha256": "be456213d86db4d1dc1b77fdfa3a2af7f12a96deaf076b877d9eb891951b0111",
+      "bytes": 182742,
+      "generated_from": "p122-wasm-direct/overlay/overlay_002.png"
+    },
+    "chrome-200-enter33.png": {
+      "sha256": "c712473587b49f299a0f5645e01cbb8faae6c7ed6158e9939ae2a4e779d749e7",
+      "bytes": 42687,
+      "generated_from": "chrome-correction/200-enter33-stale-caret.png"
+    },
+    "chrome-200-after-input.png": {
+      "sha256": "3a5f78e19dd6333d68c6d92f85a0cd964c7d63c327a4b56ef7abfae1f13aa606",
+      "bytes": 46423,
+      "generated_from": "chrome-correction/200-after-a-caret-updated.png"
+    },
+    "chrome-300-enter22.png": {
+      "sha256": "0dd40980cc5dd78f3f938b5dc8abfe574268b58eeab7e236eda6b49029e5828b",
+      "bytes": 43239,
+      "generated_from": "chrome-correction/300-enter22-stale-caret.png"
+    },
+    "chrome-300-after-input.png": {
+      "sha256": "d01c4aa711c33f4d9d526d487079697face9c35e2e90a2467c1356105966314e",
+      "bytes": 46429,
+      "generated_from": "chrome-correction/300-after-a-caret-updated.png"
+    },
+    "chrome-300-zoom66-enter22.png": {
+      "sha256": "e5d8eb414f3edd2d34f666664baaf059583858d6bb8f2b9d0305f35402796b47",
+      "bytes": 47015,
+      "generated_from": "chrome-correction/300-zoom66-enter22-stale-caret.png"
+    },
+    "chrome-300-zoom66-after-input.png": {
+      "sha256": "0add821f70f8c47355776702370c3c0a0455dc4b1357b46d3e8b84f3952e8bce",
+      "bytes": 47023,
+      "generated_from": "chrome-correction/300-zoom66-after-a-caret-updated.png"
+    },
+    "chrome-dom-observations.json": {
+      "sha256": "72c2b1793ad45093ef8d747dba1206a76ec3532a60b05736eff17c7f7aaec5ac",
+      "bytes": 10193,
+      "generated_from": "chrome-correction/dom-observations.json"
+    },
+    "engine-before.json": {
+      "sha256": "f767adc56785e8ced4865c837e32776899dff71fc7b548442cca445c0bfee2e5",
+      "bytes": 2536,
+      "generated_from": "studio-boundary-diagnostic.json"
+    },
+    "engine-after.json": {
+      "sha256": "e057a34bed0ceb787207c4a1ed098ff5a2232634daa9dc51106305ff135871b5",
+      "bytes": 2554,
+      "generated_from": "correction-boundary-wasm.json"
+    },
+    "wasm-p122-summary.json": {
+      "sha256": "1c91532488bc9ec6b5a2303123de7e97f7a6a6d44846eaf4a0d7a3535abcb74e",
+      "bytes": 1791,
+      "generated_from": "p122-wasm-direct/summary.json"
+    },
+    "p122-ovr-summary.json": {
+      "sha256": "5b00d756b275ed044f11ff4412562a088d4f9c2e62ea1a8507e884fca274a8b3",
+      "bytes": 1063,
+      "generated_from": "p122-ovr/summary.json"
+    },
+    "validation.json": {
+      "sha256": "c9430c1317f45e56e710e49c19b83bdbb24a351aeaef87af88a988adc0c7a3a5",
+      "bytes": 3608,
+      "generated_from": "logs/correction-validation-state.json"
+    },
+    "user-before-300-enter.png": {
+      "sha256": "5d9f9efa4b4074d3837da4c4f8e7eb9f669c46f41cef1f727078ea81102db2dc",
+      "bytes": 187209,
+      "generated_from": "user-screenshots/user-03.png"
+    },
+    "user-before-new-page-caret.png": {
+      "sha256": "a51beeb2aaf7562631127bb19f37b04e3f451d9d175c5d397f4d7d7652fb0f3e",
+      "bytes": 188267,
+      "generated_from": "user-screenshots/user-01.png"
+    },
+    "reproduce-wasm.mjs": {
+      "sha256": "bfd97cbab135a159a2d6aa2b15d8d5a1dff2bbca495f87abe39ddb9181ca1dec",
+      "bytes": 1839,
+      "purpose": "실제 실행 확인한 직접 WASM 재현 스크립트"
+    },
+    "test-results.txt": {
+      "sha256": "10a5940d83b0eb7e203828353a648d29aa137ed40764b6d9c097460a38014f71",
+      "bytes": 2694,
+      "purpose": "실제 로그의 수정 전후 및 전체 검사 결과 발췌"
+    }
+  },
+  "fresh_wasm": {
+    "sha256": "31af99b1a6ce32c8c2ed0d80b1b0cadaea69a0a985e55b81dc48df5b6e69969c",
+    "js_sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+    "command": "CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt",
+    "limitations": "Docker daemon unavailable; host wrapper --no-opt; optimized deployment not tested"
+  },
+  "user_screenshot_provenance": [
+    {
+      "image": 1,
+      "origin": "/var/folders/c2/y83wcw894j1d5bv4_lhqmvg80000gn/T/codex-clipboard-33f654b2-049b-4567-8ef4-23db99553e60.png",
+      "copy": "output/pr-review/pr7487-review-20261001/user-screenshots/user-01.png",
+      "sha256": "a51beeb2aaf7562631127bb19f37b04e3f451d9d175c5d397f4d7d7652fb0f3e",
+      "source": "user manual Studio observation; exact event count supplied in chat, not encoded in screenshot"
+    },
+    {
+      "image": 2,
+      "origin": "/var/folders/c2/y83wcw894j1d5bv4_lhqmvg80000gn/T/codex-clipboard-637e1b63-2d3b-405d-9387-6bca28b50e6e.png",
+      "copy": "output/pr-review/pr7487-review-20261001/user-screenshots/user-02.png",
+      "sha256": "c2e3ca0d55d0c0d7c7cca70d8ad2b2c110b504762807c8d4f4e9e06cd73fd014",
+      "source": "user manual Studio observation; exact event count supplied in chat, not encoded in screenshot"
+    },
+    {
+      "image": 3,
+      "origin": "/var/folders/c2/y83wcw894j1d5bv4_lhqmvg80000gn/T/codex-clipboard-d6d272cb-ea6e-443c-bdbe-e784c97fd822.png",
+      "copy": "output/pr-review/pr7487-review-20261001/user-screenshots/user-03.png",
+      "sha256": "5d9f9efa4b4074d3837da4c4f8e7eb9f669c46f41cef1f727078ea81102db2dc",
+      "source": "user manual Studio observation; exact event count supplied in chat, not encoded in screenshot"
+    },
+    {
+      "image": 4,
+      "origin": "/var/folders/c2/y83wcw894j1d5bv4_lhqmvg80000gn/T/codex-clipboard-c6913e8e-f6c0-4892-89c6-73176d82a0cc.png",
+      "copy": "output/pr-review/pr7487-review-20261001/user-screenshots/user-04.png",
+      "sha256": "2bed31356022c0ba8ffe0bad70539722322e7e377f75cd88943ab7a16eabb843",
+      "source": "user manual Studio observation; exact event count supplied in chat, not encoded in screenshot"
+    },
+    {
+      "image": 5,
+      "origin": "/var/folders/c2/y83wcw894j1d5bv4_lhqmvg80000gn/T/codex-clipboard-d271569d-2306-4b33-83a2-f969fe0340bc.png",
+      "copy": "output/pr-review/pr7487-review-20261001/user-screenshots/user-05.png",
+      "sha256": "c06eeec030e4925c6496a6e50e98cf9969efd4a5326daa39f2c0fb04807b1181",
+      "source": "user manual Studio observation; exact event count supplied in chat, not encoded in screenshot"
+    }
+  ],
+  "visual_control_scope": "p122 p2 saved-document control; not Hancom oracle for newly generated blank Enter documents",
+  "studio_served_assets": {
+    "rhwp.js": {
+      "root_public_http_sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+      "match": true
+    },
+    "rhwp_bg.wasm": {
+      "root_public_http_sha256": "31af99b1a6ce32c8c2ed0d80b1b0cadaea69a0a985e55b81dc48df5b6e69969c",
+      "match": true
+    }
+  }
+}

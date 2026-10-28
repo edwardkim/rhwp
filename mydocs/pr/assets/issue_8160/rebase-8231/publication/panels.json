@@ -1,0 +1,117 @@
+{
+  "scope": "Publication panels derived from already verified final PNGs. No new product output; raw100 metric remains the final immutable proof.",
+  "records": [
+    {
+      "backend": "native",
+      "page": 18,
+      "producer": "e01e7540fd4c8a67ce5d1d1e5802170973acb998",
+      "input_pngs": [
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwp2022/sample16-hwp2022/rhwp_png/rhwp_018.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwp2022/sample16-hwp2022/pdf_png/pdf-018.png"
+      ],
+      "input_sha256": [
+        "5a89232c9d06e83cd5d9e47b1b9f20b260983236ea46afd6cd1e29d2d4da5aac",
+        "74046eaea5927ec001c33332a8a53a5bd954fa196edffe2c1a4ca2f947f98b98"
+      ],
+      "review": "publication/native/review_018.png",
+      "review_sha256": "b00859d7ee7adad985ac952332ae837d37f55a013a9c39b6a39427a3d8c9c329",
+      "overlay": "publication/native/overlay_018.png",
+      "overlay_sha256": "180eb59907b3fd50b4940a02aa337e5007f062ff14e7797f46f086615eed6f4a",
+      "metrics": {
+        "page": 18,
+        "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwp2022/sample16-hwp2022/rhwp_png/rhwp_018.png",
+        "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwp2022/sample16-hwp2022/pdf_png/pdf-018.png",
+        "overlay_png": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/rebase8231/followup-prep/images/native/overlay_018.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 67310,
+        "diff_ratio": 0.07555553,
+        "pixel_match_percent": 92.44445,
+        "ink_union_pixels": 278676,
+        "ink_diff_pixels": 67310,
+        "ink_diff_ratio": 0.24153497,
+        "ink_match_percent": 75.8465,
+        "visual_accuracy_proxy_percent": 75.8465,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 278676,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 8.79,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          36,
+          55,
+          757,
+          1083
+        ]
+      }
+    },
+    {
+      "backend": "wasm",
+      "page": 18,
+      "producer": "e01e7540fd4c8a67ce5d1d1e5802170973acb998",
+      "input_pngs": [
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-wasm-hwp2022/sample16-hwp2022/rhwp_png/rhwp_018.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwp2022/sample16-hwp2022/pdf_png/pdf-018.png"
+      ],
+      "input_sha256": [
+        "9d7ddca2418c7a8d96a7fed51210d21531f27e4ed67606ddd0f154628425afd3",
+        "74046eaea5927ec001c33332a8a53a5bd954fa196edffe2c1a4ca2f947f98b98"
+      ],
+      "review": "publication/wasm/review_018.png",
+      "review_sha256": "75b46ab009ad2c4000358cdc82d9f378f33e1772a8ac551f7b262eda4c771bc7",
+      "overlay": "publication/wasm/overlay_018.png",
+      "overlay_sha256": "e62035d17bb2391f6a25775b982b430275c3b0989fd234ddc19d001445d6c4d5",
+      "metrics": {
+        "page": 18,
+        "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-wasm-hwp2022/sample16-hwp2022/rhwp_png/rhwp_018.png",
+        "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/rebase8231/fix1/original-font-final-full-native-hwp2022/sample16-hwp2022/pdf_png/pdf-018.png",
+        "overlay_png": "/home/tsjang/rhwp/output/pr-review/issue8160-20261022/rebase8231/followup-prep/images/wasm/overlay_018.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 67507,
+        "diff_ratio": 0.07577666,
+        "pixel_match_percent": 92.42233,
+        "ink_union_pixels": 278931,
+        "ink_diff_pixels": 67507,
+        "ink_diff_ratio": 0.24202043,
+        "ink_match_percent": 75.79796,
+        "visual_accuracy_proxy_percent": 75.79796,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 278931,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 8.463,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          36,
+          55,
+          757,
+          1083
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,285 @@
+{
+  "stage": 138,
+  "parent_head": "fb73f24b7bedf5098ca75f3d149fcfac4d18b7c3",
+  "scope": "동일정책연구HWP의 실제FAIL한 source측3함수만7445후속이관. 다른검사/원문/생산동작유지.",
+  "test_fail_proof": "../pr7382_20260926/stage137_full_regression.json",
+  "before": [
+    {
+      "test": "issue_3821_page_tail_square_picture_wrap_reaches_visible_text_after_guides",
+      "start_byte": 40531,
+      "end_byte": 43632,
+      "lines": [
+        996,
+        1067
+      ]
+    },
+    {
+      "test": "issue_3820_rewinding_rowbreak_uses_painted_first_fragment_boundary",
+      "start_byte": 43955,
+      "end_byte": 45844,
+      "lines": [
+        1073,
+        1124
+      ]
+    },
+    {
+      "test": "issue_3738_picture_caption_float_clears_caption_before_next_body_text",
+      "start_byte": 46280,
+      "end_byte": 48532,
+      "lines": [
+        1132,
+        1182
+      ]
+    }
+  ],
+  "reference_evidence": "policy_report_blocking_scope_validation.json",
+  "scores": [
+    [
+      94,
+      54.77737
+    ],
+    [
+      95,
+      51.96505
+    ],
+    [
+      106,
+      33.20293
+    ],
+    [
+      107,
+      31.07231
+    ],
+    [
+      156,
+      28.45017
+    ],
+    [
+      182,
+      18.00186
+    ]
+  ],
+  "visual_command": [
+    "venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--file-target",
+    "policy-report-hwp",
+    "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+    "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+    "--pages",
+    "94,95,106,107,156,182",
+    "--dpi",
+    "96",
+    "--rhwp-bin",
+    "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+    "--embed-fonts=full",
+    "--font-path",
+    "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+    "--font-path",
+    "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+    "--font-path",
+    "/Users/tsjang/Library/Fonts",
+    "--out",
+    "output/pr-review/planet6897-7382-20260926/stage138-policy-report-unit/visual-native"
+  ],
+  "binary_sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7",
+  "direct_read": [
+    "review_contact_sheet.png",
+    "review_182.png",
+    "overlay_107.png"
+  ],
+  "status": "실제실패3함수제거후기존55함수본문보존(54PASS/0FAIL, 기존ignore1유지). 필수lint/정책7단계모두exit0. 원문/PDF/생산동작유지. 전체재검증미완료.",
+  "removal_validation": {
+    "removed": [
+      {
+        "test": "issue_3821_page_tail_square_picture_wrap_reaches_visible_text_after_guides",
+        "lines": [
+          996,
+          1067
+        ],
+        "sha256": "8e5d6933c3de0740ce92fa940f0b5f74a27cab775cf4ab1fb77fe41f2f8aa8fa"
+      },
+      {
+        "test": "issue_3820_rewinding_rowbreak_uses_painted_first_fragment_boundary",
+        "lines": [
+          1073,
+          1124
+        ],
+        "sha256": "769266fbac38ace57c8b3e40145b18e7ba56dd6bc47a545c0c590d1f232460ec"
+      },
+      {
+        "test": "issue_3738_picture_caption_float_clears_caption_before_next_body_text",
+        "lines": [
+          1132,
+          1182
+        ],
+        "sha256": "3a3898810d4157dc1e54ead5615450839180ecb5aeea4ada49d926b1ba19032b"
+      }
+    ],
+    "other_test_bodies_preserved": 55,
+    "original_tests": 58,
+    "source_sha256_after": "41d60be43b90f3cdef9ed488ad9756e8b393b6bc5a3e9c98cca313225918137e"
+  },
+  "issue": {
+    "id": 5876621658,
+    "html_url": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5876621658",
+    "body_exact": true
+  },
+  "after_commands": [
+    {
+      "step": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.8753939173184335
+    },
+    {
+      "step": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 8.031743250321597
+    },
+    {
+      "step": "preserved-layout-units",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--lib",
+        "-E",
+        "test(renderer::layout::integration_tests::tests::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 134.26692237472162
+    },
+    {
+      "step": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 7.21260541677475
+    },
+    {
+      "step": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.4577131657861173
+    },
+    {
+      "step": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.33725954219698906
+    },
+    {
+      "step": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 0.465443667024374
+    },
+    {
+      "step": "clippy-alltargets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 24.658625749871135
+    },
+    {
+      "step": "manifest-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 2.7432359168305993
+    },
+    {
+      "step": "unit-check",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 9.70907716685906
+    }
+  ],
+  "after_summary": {
+    "preserved_functions": 55,
+    "passed": 54,
+    "failed": 0,
+    "not_executed": [
+      {
+        "test": "test_552_passage_box_top_gap_p2_4_6",
+        "reason": "기존 #[ignore] 유지"
+      }
+    ],
+    "note": "동일sourceunit54실행. 전체57잔여실패통과를뜻하지않음."
+  },
+  "production_changes": false
+}

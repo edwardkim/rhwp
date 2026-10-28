@@ -1,0 +1,9 @@
+{
+  "input": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+  "code_head": "c6ece0a6e3d2e1b74aac8dfa03ba44a56805d5ae",
+  "trace_pages": 19,
+  "trace_status": "complete on every page",
+  "U+2024_total": 115,
+  "original_HFT_altType2_character_miss_heuristicFullwidth": 26,
+  "TrueType_altType1_character_miss_heuristicHalfwidth": 89
+}

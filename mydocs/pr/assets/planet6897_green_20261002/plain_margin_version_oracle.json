@@ -1,0 +1,183 @@
+{
+  "engine": "2020",
+  "originals_preserved": true,
+  "experiments": [
+    {
+      "experiment": "independent",
+      "hwp_ir_values_from_default_branch": {
+        "10": {
+          "intent": -2800,
+          "left": 0,
+          "right": 0,
+          "prev": 0,
+          "next": 0
+        },
+        "17": {
+          "intent": 0,
+          "left": 3000,
+          "right": 0,
+          "prev": 0,
+          "next": 0
+        },
+        "20": {
+          "intent": 0,
+          "left": 0,
+          "right": 0,
+          "prev": 0,
+          "next": 1000
+        }
+      },
+      "ir_export_sha256": "830af31f9a48f16ebaa2d284073d88a35c549e61b49d94466ce3f49accfe70f7"
+    },
+    {
+      "experiment": "prior",
+      "hwp_ir_values_from_default_branch": {
+        "10": {
+          "intent": -2800,
+          "left": 0,
+          "right": 0,
+          "prev": 0,
+          "next": 0
+        },
+        "17": {
+          "intent": 0,
+          "left": 3000,
+          "right": 0,
+          "prev": 0,
+          "next": 0
+        },
+        "20": {
+          "intent": 0,
+          "left": 0,
+          "right": 0,
+          "prev": 0,
+          "next": 1000
+        }
+      },
+      "ir_export_sha256": "3ae044cf78a73906d563d906fccf589f037a2d6f39f4739aace30305d6bd54f6"
+    },
+    {
+      "experiment": "h01-header14",
+      "hwp_ir_values_from_default_branch": {
+        "10": {
+          "intent": -2800,
+          "left": 0,
+          "right": 0,
+          "prev": 0,
+          "next": 0
+        },
+        "17": {
+          "intent": 0,
+          "left": 3000,
+          "right": 0,
+          "prev": 0,
+          "next": 0
+        },
+        "20": {
+          "intent": 0,
+          "left": 0,
+          "right": 0,
+          "prev": 0,
+          "next": 1000
+        }
+      },
+      "ir_export_sha256": "830af31f9a48f16ebaa2d284073d88a35c549e61b49d94466ce3f49accfe70f7"
+    },
+    {
+      "experiment": "hy-header12",
+      "hwp_ir_values_from_default_branch": {
+        "2": {
+          "intent": -4880,
+          "left": 0,
+          "right": 0,
+          "prev": 0,
+          "next": 0
+        },
+        "3": {
+          "intent": -9760,
+          "left": 0,
+          "right": 0,
+          "prev": 0,
+          "next": 0
+        }
+      },
+      "ir_export_sha256": "3af7d11c79a3e0ec016af7802e7c07c6177a38753af20a91cc9789179e2bfc85"
+    },
+    {
+      "experiment": "h01-both14",
+      "hwp_ir_values_from_default_branch": {
+        "10": {
+          "intent": -5600,
+          "left": 0,
+          "right": 0,
+          "prev": 0,
+          "next": 0
+        },
+        "17": {
+          "intent": 0,
+          "left": 6000,
+          "right": 0,
+          "prev": 0,
+          "next": 0
+        },
+        "20": {
+          "intent": 0,
+          "left": 0,
+          "right": 0,
+          "prev": 0,
+          "next": 2000
+        }
+      },
+      "ir_export_sha256": "2210d07bbb928478621a87202aff1488bec689c0f336f347aae2d0e763a4e156"
+    },
+    {
+      "experiment": "hy-both12",
+      "hwp_ir_values_from_default_branch": {
+        "2": {
+          "intent": -2440,
+          "left": 0,
+          "right": 0,
+          "prev": 0,
+          "next": 0
+        },
+        "3": {
+          "intent": -4880,
+          "left": 0,
+          "right": 0,
+          "prev": 0,
+          "next": 0
+        }
+      },
+      "ir_export_sha256": "3036e204f642a95bf99de61c37c49ebedfb6319c14b12ea492c0b7262635850e"
+    },
+    {
+      "experiment": "h01-package13",
+      "hwp_ir_values_from_default_branch": {
+        "10": {
+          "intent": -2800,
+          "left": 0,
+          "right": 0,
+          "prev": 0,
+          "next": 0
+        },
+        "17": {
+          "intent": 0,
+          "left": 3000,
+          "right": 0,
+          "prev": 0,
+          "next": 0
+        },
+        "20": {
+          "intent": 0,
+          "left": 0,
+          "right": 0,
+          "prev": 0,
+          "next": 1000
+        }
+      },
+      "ir_export_sha256": "830af31f9a48f16ebaa2d284073d88a35c549e61b49d94466ce3f49accfe70f7"
+    }
+  ],
+  "conclusion": "package version.xml xmlVersion <=1.3 keeps raw plain margins; >=1.4 doubles to shared IR; header head version alone does not select units",
+  "contains_private_env": false
+}

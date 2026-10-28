@@ -5,7 +5,7 @@ canonical: mydocs/manual/verification/edit_sweep.md
 last_verified: 2026-07-19
 ---
 
-# 편집-스윕 하니스 (`examples/edit_sweep.rs`)
+# 편집-스윕 하니스 (`tools/diagnostics/edit_sweep.rs`)
 
 편집 경로 PR(vpos 재계산·pagination·undo 계열)의 **가짜 페이지 변동**을 정량 검출한다.
 PR #2314 검증에서 일회성 하네스로 수행해 "devel 변동 70건 → PR 11건"을 실증했던

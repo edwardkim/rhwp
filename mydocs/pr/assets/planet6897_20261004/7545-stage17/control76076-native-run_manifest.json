@@ -1,0 +1,45 @@
+{
+  "schema_version": 2,
+  "key": "control76076",
+  "provenance": {
+    "hwp": {
+      "path": "samples/76076_regulatory_analysis.hwp",
+      "sha256": "3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5"
+    },
+    "pdf": {
+      "path": "pdf/issue1891/76076-exact-input-hwp2020-20261004.pdf",
+      "sha256": "9e0c6a21a509e2f89c21bf80bc22cf9e23150718f6468665ea749fbec4d819a7"
+    },
+    "git_head": "8080b9adcc5cd12bc10cdd4978910d38e6588344",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "b8c491de461cff4751a3d41cbf940b54ff8d434681bfb042c528bd3a70f20802"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [
+    35,
+    36
+  ],
+  "requested_page_shards": [
+    [
+      35,
+      36
+    ]
+  ],
+  "run_state": "complete"
+}

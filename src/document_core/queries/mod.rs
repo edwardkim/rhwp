@@ -1,3 +1,4 @@
+mod body_page_fields;
 mod bookmark_query;
 mod cursor_nav;
 mod cursor_rect;
@@ -6,6 +7,7 @@ pub(crate) mod doc_tree_nav;
 pub mod explain;
 /// [#gym] `explore` 명령의 어포던스 라우터 — 기존 조회 개수에서 문서별 행동 메뉴를 유도.
 pub mod explore;
+mod transformed_text;
 // [#3281] `fields` CLI 가 필드 위치(NestedEntry)를 읽어야 하므로 공개한다.
 // 읽기 전용 질의 모듈이며 `structure`·`rendering` 과 같은 가시성이다.
 pub mod field_query;
@@ -13,6 +15,9 @@ mod font_decision;
 mod font_metric_coverage;
 mod form_query;
 pub mod hwpctrl_sets;
+pub mod hyperlink_geometry;
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+pub mod png_export;
 pub mod rendering;
 // [#3283] `grep` 이 같은 매칭 규칙(find_matches)을 쓰도록 크레이트 내부 공개.
 /// [프롬프트 주입 방패] 문서 본문을 nonce 격벽으로 감싸 LLM 에 안전하게 넘긴다 — 읽기 전용.
@@ -43,3 +48,5 @@ pub mod chart_csv;
 pub mod chart_extract;
 pub mod table_csv;
 pub mod table_extract;
+
+pub(crate) mod equation_fonts;

@@ -103,6 +103,7 @@ fn text_run_node(n: &serde_json::Value, bbox: BoundingBox) -> RenderNode {
                 Some(rhwp::renderer::composer::CharOverlapInfo {
                     border_type: 1,
                     inner_char_size: 100,
+                    composition: None,
                 })
             } else {
                 None
@@ -110,6 +111,7 @@ fn text_run_node(n: &serde_json::Value, bbox: BoundingBox) -> RenderNode {
             border_fill_id: 0,
             baseline: 0.0,
             field_marker: Default::default(),
+            layout_positions: None,
             display_text: None,
         }),
         bbox,
@@ -143,6 +145,7 @@ fn cell_node(bbox: BoundingBox) -> RenderNode {
             border_fill_id: 0,
             text_direction: 0,
             clip: false,
+            closed_reflow_frame: false,
             page_fragment: false,
             model_cell_index: None,
         }),
@@ -167,6 +170,7 @@ fn build_node(n: &serde_json::Value) -> RenderNode {
         "Group" => RenderNode::new(
             6,
             RenderNodeType::Group(GroupNode {
+                paint_transform: None,
                 section_index: None,
                 para_index: None,
                 control_index: None,
@@ -262,6 +266,7 @@ fn options_of(opts: &serde_json::Value) -> AnomalyOptions {
         overflow_tolerance_px: f64_field(opts, "overflowTol"),
         overlap_tolerance_px: f64_field(opts, "overlapTol"),
         type_filter: types,
+        ..AnomalyOptions::default()
     }
 }
 

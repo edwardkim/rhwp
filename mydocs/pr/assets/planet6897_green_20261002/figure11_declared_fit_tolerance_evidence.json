@@ -1,0 +1,33 @@
+{
+  "prior_head": "7d5bcae5f",
+  "source": {
+    "path": "src/renderer/typeset/table/continuation/fragment/budget.rs",
+    "sha256": "3e712b9c5ede2b5f82ebd78dfdce66cdb7185d651a9cb97ae58e88803dbd104e"
+  },
+  "before_diagnostic": {
+    "body_height_px": 240,
+    "host_top_overhead_px": 3.7733333333333334,
+    "page_avail_px": 236.22666666666666,
+    "raised_row_budget_px": 237.58666666666664,
+    "overflow_px": 1.36
+  },
+  "correction": "2px measured-height tolerance only when original declared frame fits actual row budget",
+  "existing_nextest": {
+    "run": 48,
+    "passed": 48,
+    "failed": 0,
+    "exit_code": 0,
+    "scope": [
+      "issue_7379",
+      "issue_6950",
+      "issue_7243",
+      "issue_7095",
+      "issue_1853"
+    ]
+  },
+  "resolved": "issue_7379_rowbreak_table_footnote_reservation::figure11_closed_frame_preserves_units_across_body_budgets",
+  "new_tests": 0,
+  "assertion_changes": 0,
+  "independent_new_visual": "not performed after this correction; final whole Native/fresh WASM remains required",
+  "whole_nextest": "not rerun after correction"
+}

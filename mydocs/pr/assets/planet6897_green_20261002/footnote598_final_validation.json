@@ -1,0 +1,91 @@
+{
+  "production_head": "d018a37f1",
+  "source": "samples/footnote-01.hwp",
+  "reference": "pdf/footnote-01-hwp-2020.pdf",
+  "native_pages": 6,
+  "wasm_pages": 6,
+  "reference_pages": 6,
+  "native_percent": [
+    98.10308,
+    98.57838,
+    98.44127,
+    100,
+    100,
+    100
+  ],
+  "fresh_wasm_percent": [
+    98.10308,
+    98.57838,
+    98.44127,
+    100,
+    100,
+    100
+  ],
+  "below90_pages": [],
+  "font_residual": "5쪽 원문 나눔고딕과 한컴 PDF 바탕 대체 출력이 다르다. 배치·소속은 확인했고 원문 글꼴을 유지한다. 색 있는 표 배경의 실루엣100%는 글꼴 일치 증거가 아니다.",
+  "builds": [
+    {
+      "step": "native",
+      "exit": 0,
+      "seconds": 101.32
+    },
+    {
+      "step": "wasm",
+      "exit": 0,
+      "seconds": 183.24
+    }
+  ],
+  "source_base_verified": "6b3faf77d8085441f9f26d88d65a49791e910352",
+  "upstream_missing_commits": 0,
+  "existing_test_count": 5,
+  "test_count_delta": 0,
+  "focused_semantic": {
+    "run": 5,
+    "passed": 5,
+    "failed": 0,
+    "exit": 0,
+    "previous_whole_failures_resolved": 2
+  },
+  "final_lint": [
+    {
+      "step": "fmt",
+      "exit": 0,
+      "seconds": 6.11
+    },
+    {
+      "step": "native-clippy",
+      "exit": 0,
+      "seconds": 22.3
+    },
+    {
+      "step": "wasm-clippy",
+      "exit": 0,
+      "seconds": 14.35
+    },
+    {
+      "step": "workspace-build",
+      "exit": 0,
+      "seconds": 26.22
+    },
+    {
+      "step": "workspace-clippy",
+      "exit": 0,
+      "seconds": 53.48
+    },
+    {
+      "step": "manifest",
+      "exit": 0,
+      "seconds": 0.42
+    },
+    {
+      "step": "doc-links",
+      "exit": 0,
+      "seconds": 8.27
+    }
+  ],
+  "changed_production_sources_since_visual": [],
+  "new_test_functions": 0,
+  "golden_updated": false,
+  "source_pdf_sha256": "2b47aa31b3d135f1621ba478189efcbfcacc77dfbc6c9d9082239f7885bb546e",
+  "whole_validation": "마지막 전체14FAIL 이후 개별 보정 중; 최종 전체 재실행 미완료"
+}

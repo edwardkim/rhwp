@@ -1,0 +1,114 @@
+{
+  "correction": "163쪽 첫 표 조각의 물리 높이 보존",
+  "pages": [
+    17,
+    24,
+    107,
+    163,
+    164,
+    169,
+    207,
+    208,
+    211
+  ],
+  "metrics": [
+    {
+      "page": 17,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.75608,
+      "silhouette_boundary_reconciled_pixels": 110,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 81994,
+      "tolerant_content_match_percent": 99.89024
+    },
+    {
+      "page": 24,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 92.94896,
+      "silhouette_boundary_reconciled_pixels": 2,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 156757,
+      "tolerant_content_match_percent": 92.95024
+    },
+    {
+      "page": 107,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.05702,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 67870,
+      "tolerant_content_match_percent": 99.05702
+    },
+    {
+      "page": 163,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 90.44522,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 36903,
+      "tolerant_content_match_percent": 90.44522
+    },
+    {
+      "page": 164,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.3929,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 44551,
+      "tolerant_content_match_percent": 96.3929
+    },
+    {
+      "page": 169,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.93183,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 54274,
+      "tolerant_content_match_percent": 99.93183
+    },
+    {
+      "page": 207,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 93.36062,
+      "silhouette_boundary_reconciled_pixels": 12,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 67913,
+      "tolerant_content_match_percent": 93.37829
+    },
+    {
+      "page": 208,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.82326,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 34249,
+      "tolerant_content_match_percent": 96.82326
+    },
+    {
+      "page": 211,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.46975,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 58840,
+      "tolerant_content_match_percent": 99.46975
+    }
+  ],
+  "native_wasm_png_equal": {
+    "17": true,
+    "24": true,
+    "107": true,
+    "163": true,
+    "164": true,
+    "169": true,
+    "207": true,
+    "208": true,
+    "211": true
+  },
+  "page_count": 215,
+  "focused_tests": "14/14 PASS",
+  "build": "Native final rebuild exit0; fresh WASM exit0",
+  "candidate_retry": "initial replacement assertion failed before source mutation; final build verified after patch",
+  "residual": "직접 비교에서 첫 조각 가운데 정렬 본문이 PDF보다 약6.7px 위입니다. 물리 프레임과 가시 정렬 높이를 후속 보정에서 구분합니다. 전체 승인 판정은 보류합니다.",
+  "final_whole_validation": "pending"
+}

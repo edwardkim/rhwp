@@ -1,0 +1,37 @@
+{
+  "schema_version": 2,
+  "key": "decree78494",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617"
+    },
+    "pdf": {
+      "path": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+      "sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9"
+    },
+    "git_head": "4f151f870c4019cae89381e2087323acbcf03dd4",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "b8c491de461cff4751a3d41cbf940b54ff8d434681bfb042c528bd3a70f20802"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [],
+  "requested_page_shards": [],
+  "run_state": "incomplete"
+}

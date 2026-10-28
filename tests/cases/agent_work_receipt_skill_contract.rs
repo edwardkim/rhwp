@@ -5,6 +5,11 @@
 
 #![cfg(not(target_arch = "wasm32"))]
 
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/support/root_binary_contract.rs"
+));
+
 use serde_json::Value;
 use std::collections::BTreeSet;
 use std::fs;
@@ -98,11 +103,7 @@ fn skill_does_not_add_cli_and_stays_out_of_other_skills() {
     );
     assert!(skill.contains("gym"), "gym 비범위를 밝혀야 합니다");
     let cargo = fs::read_to_string(repo().join("Cargo.toml")).expect("Cargo.toml");
-    let bins = cargo.matches("[[bin]]").count();
-    assert_eq!(
-        bins, 2,
-        "새 [[bin]] 을 추가하지 마세요 (rhwp, font-metric-gen 만): {bins}"
-    );
+    assert_root_binary_contract(&cargo);
     for forbidden in [
         ".claude/skills/rhwp-onboarding/SKILL.md",
         ".claude/skills/rhwp-mcp-session/SKILL.md",
@@ -312,7 +313,7 @@ fn scenario_catalog_does_not_invent_commands() {
 
 #[test]
 fn working_doc_records_the_issue_and_scope() {
-    let path = repo().join("mydocs/working/agent_work_receipt.md");
+    let path = repo().join("mydocs/working/archives/agent_work_receipt.md");
     let text = fs::read_to_string(&path).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
     assert!(text.contains("#5308") || text.contains("5308"), "이슈 번호");
     assert!(text.contains("replay"), "replay");

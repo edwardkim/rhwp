@@ -1,0 +1,400 @@
+{
+  "product_source": "71e938f4b6e952dfbdd6f33291073f05a0f10ae4",
+  "base": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "input": "samples/issue1891/80168_regulatory_analysis.hwpx",
+  "input_sha256": "1e00b54e1139515258260a657217e0b3baa0b1b652a2cd28dd4b9bc48aa262fe",
+  "independent_pdf": "pdf/issue1891/80168_regulatory_analysis-hwpx-2020.pdf",
+  "pdf_sha256": "88996e41ed3e68b15a3cd0eb4eda98845d34225c5dcd2ca547c80ab6e1242744",
+  "dpi": 96,
+  "comparison_profile": "print",
+  "layout_generation": "2022",
+  "silhouette_radius_px": 2,
+  "whole_pages_per_backend": 156,
+  "whole_min_raw": {
+    "native": "94.79496",
+    "wasm": "94.79506"
+  },
+  "below90": {
+    "native": [],
+    "wasm": []
+  },
+  "coordinate_metric": "독립 한컴 Print PDF vector stroke 중심선. pt×96/72를 CSS px로 환산. Native bbox 복사 아님.",
+  "pixel_tolerance": 2,
+  "coordinate_cases": [
+    {
+      "page": 56,
+      "paragraph": 481,
+      "backend": "native",
+      "raw_percent": "100.00000",
+      "expected_edges_px96": [
+        96.108,
+        392.8507,
+        731.2867,
+        623.6373
+      ],
+      "observed_edges_px96": [
+        96.4,
+        393.2,
+        731.4,
+        624.2
+      ],
+      "deltas_px": [
+        0.292,
+        0.3493,
+        0.1133,
+        0.5627
+      ]
+    },
+    {
+      "page": 101,
+      "paragraph": 890,
+      "backend": "native",
+      "raw_percent": "99.99195",
+      "expected_edges_px96": [
+        79.1573,
+        534.136,
+        714.176,
+        628.912
+      ],
+      "observed_edges_px96": [
+        79.4,
+        534.5,
+        714.4,
+        629.5
+      ],
+      "deltas_px": [
+        0.2427,
+        0.364,
+        0.224,
+        0.588
+      ]
+    },
+    {
+      "page": 104,
+      "paragraph": 911,
+      "backend": "native",
+      "raw_percent": "100.00000",
+      "expected_edges_px96": [
+        77.2387,
+        240.2174,
+        712.2573,
+        496.896
+      ],
+      "observed_edges_px96": [
+        77.5,
+        240.4,
+        712.5,
+        497.4
+      ],
+      "deltas_px": [
+        0.2613,
+        0.1826,
+        0.2427,
+        0.504
+      ]
+    },
+    {
+      "page": 104,
+      "paragraph": 923,
+      "backend": "native",
+      "raw_percent": "100.00000",
+      "expected_edges_px96": [
+        77.2387,
+        577.448,
+        712.2573,
+        834.128
+      ],
+      "observed_edges_px96": [
+        77.5,
+        577.9,
+        712.5,
+        834.9
+      ],
+      "deltas_px": [
+        0.2613,
+        0.452,
+        0.2427,
+        0.772
+      ]
+    },
+    {
+      "page": 56,
+      "paragraph": 481,
+      "backend": "wasm",
+      "raw_percent": "99.99745",
+      "expected_edges_px96": [
+        96.108,
+        392.8507,
+        731.2867,
+        623.6373
+      ],
+      "observed_edges_px96": [
+        96.4,
+        393.2,
+        731.4,
+        624.2
+      ],
+      "deltas_px": [
+        0.292,
+        0.3493,
+        0.1133,
+        0.5627
+      ]
+    },
+    {
+      "page": 101,
+      "paragraph": 890,
+      "backend": "wasm",
+      "raw_percent": "99.98924",
+      "expected_edges_px96": [
+        79.1573,
+        534.136,
+        714.176,
+        628.912
+      ],
+      "observed_edges_px96": [
+        79.4,
+        534.5,
+        714.4,
+        629.5
+      ],
+      "deltas_px": [
+        0.2427,
+        0.364,
+        0.224,
+        0.588
+      ]
+    },
+    {
+      "page": 104,
+      "paragraph": 911,
+      "backend": "wasm",
+      "raw_percent": "100.00000",
+      "expected_edges_px96": [
+        77.2387,
+        240.2174,
+        712.2573,
+        496.896
+      ],
+      "observed_edges_px96": [
+        77.5,
+        240.4,
+        712.5,
+        497.4
+      ],
+      "deltas_px": [
+        0.2613,
+        0.1826,
+        0.2427,
+        0.504
+      ]
+    },
+    {
+      "page": 104,
+      "paragraph": 923,
+      "backend": "wasm",
+      "raw_percent": "100.00000",
+      "expected_edges_px96": [
+        77.2387,
+        577.448,
+        712.2573,
+        834.128
+      ],
+      "observed_edges_px96": [
+        77.5,
+        577.9,
+        712.5,
+        834.9
+      ],
+      "deltas_px": [
+        0.2613,
+        0.452,
+        0.2427,
+        0.772
+      ]
+    }
+  ],
+  "test_source_sha256": "cd365b7a6c185a3ca33013bdd09629dfc696e2c3ae262769e53741e939c625e8",
+  "existing_relationship_tests_retained": 7,
+  "new_coordinate_tests": 1,
+  "new_coordinate_boxes": 4,
+  "new_coordinate_edges": 16,
+  "formal_before": {
+    "source": {
+      "source_head": "b0c5f9b4c898f706c99e2aa67398b0e5bfaaa545",
+      "base": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+      "renderer_tree": "8cb787d6a04105307ff2664f1c22ed518d2a8944",
+      "native_sha256": "638770d1d271d606276a57021e7a9672324783dbd677a758efd659c4cff7c2a8",
+      "native_build_log": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/head-native-build.log",
+      "wasm_mode": "Mac locked wrapper --no-opt 로컬 대체 빌드",
+      "wasm_build_log": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/validation-b0c5/head-wasm-build.log",
+      "files": {
+        "pkg/rhwp.js": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9",
+        "pkg/rhwp_bg.wasm": "1fadbc13808d201d93efba45ac509588768bbc8c9fd2272505c3d1e322e0ff41",
+        "rhwp-studio/public/rhwp.js": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9",
+        "rhwp-studio/public/rhwp_bg.wasm": "1fadbc13808d201d93efba45ac509588768bbc8c9fd2272505c3d1e322e0ff41"
+      }
+    },
+    "binary_sha256": "638770d1d271d606276a57021e7a9672324783dbd677a758efd659c4cff7c2a8",
+    "tests_run": 1,
+    "passed": 0,
+    "failed": 1,
+    "actual_failure": "p104 문단911 bottom504.0 vs 독립 PDF496.896 CSS px; 7.104px 차이"
+  },
+  "formal_after": {
+    "tests_run": 8,
+    "passed": 8,
+    "failed": 0,
+    "runtime_seconds": 2.518,
+    "determinism_repeat": {
+      "tests_run": 1,
+      "passed": 1,
+      "failed": 0
+    }
+  },
+  "direct_review": {
+    "pages": [
+      56,
+      101,
+      104
+    ],
+    "backends": [
+      "native",
+      "wasm"
+    ],
+    "observations": "같은 배율의 review와 standalone overlay로 법령 인용상자, 규제 정비계획 표, 비용·편익 두 상자의 네 변·줄 소유·내용을 직접 확인. 글리프 외곽과 테두리 raster의 미세 차이는 남으며 RGB 픽셀 동일성은 주장하지 않음.",
+    "relation_scope": "101→102 마지막 줄 1회 이어받기, 원문 순서·누락·중복·셀 포함·중첩 표 관계 검사를 함께 유지."
+  },
+  "actual_build": {
+    "native_sha256": "48ced61ee0bf0938abf7ff6c4ba1fc8d1e0a83bbd7ea085ff96d58db297c947d",
+    "wasm_files": [
+      {
+        "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/closing-slot-ownership-v10/pkg/rhwp.js",
+        "sha256": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9"
+      },
+      {
+        "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-20261024/closing-slot-ownership-v10/pkg/rhwp_bg.wasm",
+        "sha256": "c67ba62b5aef26449b5fcb411d5ab61d9194f0e5599e5d5c1a247c110dec2e55"
+      }
+    ],
+    "wasm_build": "Mac locked wrapper --target web --out-dir pkg --no-opt 로컬 대체 빌드. Docker 최적화 통과 아님.",
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_v1",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "script_sha256": "eda5cb9561ea417f55efdf2a36510a5db2563d4382adf2b5ef564389f6736faf",
+      "available": true,
+      "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+      "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+      "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+      "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+      "version": "152.0.7947.0",
+      "wrapper_version": "5.12.1",
+      "version_exit_code": 0
+    },
+    "font_program_sha256": {
+      "native": [
+        "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+        "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+        "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+        "febb15c4b79dffd48f7424d656fa8456586575216f007a40d962801d0a5280fd",
+        "57fbb1b386019fa083dd5c9ac7d096cb7abf5a17cbc3e1384edfdaf95c981969",
+        "9d56ac6f59a57794a1f2c03c09846a301b239ae1fe402a12bb0c32971c41774a",
+        "a11e243f32b0d18d9e2fb8fd70a9bc25cbfa7b104d2d2dac4f755f06b8fa3f16",
+        "d10501295740bc29bf5a8fe3eb8fad1903ef63a54aa77c6cc744a609f3a627cf",
+        "e48a43385fc11e9460c905aa2e19780933307d85e56dcb0e3bfd9e2d4a9cfcf1",
+        "c5fc8854f7f8227a067e800da9d60b3bb5179f105b4530ac712c21c070564b21"
+      ],
+      "wasm": [
+        "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+        "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+        "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+        "febb15c4b79dffd48f7424d656fa8456586575216f007a40d962801d0a5280fd",
+        "57fbb1b386019fa083dd5c9ac7d096cb7abf5a17cbc3e1384edfdaf95c981969",
+        "9d56ac6f59a57794a1f2c03c09846a301b239ae1fe402a12bb0c32971c41774a",
+        "a11e243f32b0d18d9e2fb8fd70a9bc25cbfa7b104d2d2dac4f755f06b8fa3f16",
+        "d10501295740bc29bf5a8fe3eb8fad1903ef63a54aa77c6cc744a609f3a627cf",
+        "e48a43385fc11e9460c905aa2e19780933307d85e56dcb0e3bfd9e2d4a9cfcf1",
+        "c5fc8854f7f8227a067e800da9d60b3bb5179f105b4530ac712c21c070564b21"
+      ]
+    }
+  },
+  "assets": [
+    {
+      "path": "mydocs/pr/assets/issue_1891_legacy_hwpx_current_frame/tsv/native.tsv",
+      "sha256": "35912ce54b646c06bd08b5988417d6d98c11000fc2f177b6321c0e3f1d236775",
+      "bytes": 4183
+    },
+    {
+      "path": "mydocs/pr/assets/issue_1891_legacy_hwpx_current_frame/native-p056-review.png",
+      "sha256": "10aa69f30c115f4de86fe9eb946b0e96e4711cb42ee7550493b84ed9843c5706",
+      "bytes": 301785
+    },
+    {
+      "path": "mydocs/pr/assets/issue_1891_legacy_hwpx_current_frame/native-p056-overlay.png",
+      "sha256": "2e3eac36850ea9caf94a72d4e2f52300ad6a1f9a1c3babe8c9cb448fc2bf8e18",
+      "bytes": 119738
+    },
+    {
+      "path": "mydocs/pr/assets/issue_1891_legacy_hwpx_current_frame/native-p101-review.png",
+      "sha256": "03f17f2a8fefac3d8eb00d312f88f19ff2568fd042ac34f023e50717a910652e",
+      "bytes": 654555
+    },
+    {
+      "path": "mydocs/pr/assets/issue_1891_legacy_hwpx_current_frame/native-p101-overlay.png",
+      "sha256": "e166f1e5f8438d7d0d72cfeb31dc2129bbd854013b1d33433bdfe8a5c2b30584",
+      "bytes": 219753
+    },
+    {
+      "path": "mydocs/pr/assets/issue_1891_legacy_hwpx_current_frame/native-p104-review.png",
+      "sha256": "5fa70fb103fce55ca35113527d098d2082033997425caf9420f16304803a1780",
+      "bytes": 421228
+    },
+    {
+      "path": "mydocs/pr/assets/issue_1891_legacy_hwpx_current_frame/native-p104-overlay.png",
+      "sha256": "0239712dda102ddf822527b443efdf535941cfcb8c46243c0e9b99111e43042d",
+      "bytes": 147502
+    },
+    {
+      "path": "mydocs/pr/assets/issue_1891_legacy_hwpx_current_frame/tsv/wasm.tsv",
+      "sha256": "6650f24945b246abae5420384d27b59dd7a39f44210958007486d409c29ed30a",
+      "bytes": 4163
+    },
+    {
+      "path": "mydocs/pr/assets/issue_1891_legacy_hwpx_current_frame/wasm-p056-review.png",
+      "sha256": "557b4ab22389221386f402cebd0f8dbc1934f2b38d31246c574ea1cc70331fbb",
+      "bytes": 299460
+    },
+    {
+      "path": "mydocs/pr/assets/issue_1891_legacy_hwpx_current_frame/wasm-p056-overlay.png",
+      "sha256": "c860cdd9eb36256e07ebfa6b6241ad8bfa28f1e13b48b62c07dec4e74b2afb41",
+      "bytes": 118233
+    },
+    {
+      "path": "mydocs/pr/assets/issue_1891_legacy_hwpx_current_frame/wasm-p101-review.png",
+      "sha256": "350ad417d3610335d41b4cd0bceef93202f6687d69ff511b6adfe0824e639a43",
+      "bytes": 649934
+    },
+    {
+      "path": "mydocs/pr/assets/issue_1891_legacy_hwpx_current_frame/wasm-p101-overlay.png",
+      "sha256": "f7216770ca3ca9a1c235550a002254cdff94fa61bd39fff9014b9a2e989b483e",
+      "bytes": 215246
+    },
+    {
+      "path": "mydocs/pr/assets/issue_1891_legacy_hwpx_current_frame/wasm-p104-review.png",
+      "sha256": "b3e053a7427206a81cb1f803fc73e03b626c1d2bcf8db160c8ecc9d606f583ac",
+      "bytes": 419973
+    },
+    {
+      "path": "mydocs/pr/assets/issue_1891_legacy_hwpx_current_frame/wasm-p104-overlay.png",
+      "sha256": "f6eae0d0ba2d8b9715e7ad751140c327ff3b6ab08ee88255da8d2b50f4d564e5",
+      "bytes": 146180
+    }
+  ],
+  "scope": "이 증거는 해당156쪽과 완료 페이지 px 검사 범위다. 통합36조건의 기존 미달·쪽수 불일치 또는 전체 PR 제출 보류를 면제하지 않는다."
+}

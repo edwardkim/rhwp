@@ -1,0 +1,44 @@
+{
+  "schema_version": 2,
+  "key": "resaved",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue2097/rowbreak-fragment-start-resaved-2020.hwpx",
+      "sha256": "2be72705948864c988bb779803759eb08aad59e4056938a5f7884b43a7066e0f"
+    },
+    "pdf": {
+      "path": "pdf/issue2097/rowbreak-fragment-start-resaved-2020.pdf",
+      "sha256": "39e826923d47e068f0253947f7930073c10c0596c746a0602a99de8305c34dd5"
+    },
+    "git_head": "e7f2364ce83c603b4d5160b3919183bc91221b31",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/bin/stage36-after-rhwp",
+      "path": "output/pr-review/planet6897-7382-20260926/bin/stage36-after-rhwp",
+      "sha256": "18921ce56baf3d2c6fd1faa3aa64afbb490e25bb50a6e6031ad1e2f87ecbd240"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [
+    1,
+    2
+  ],
+  "requested_page_shards": [
+    [
+      1,
+      2
+    ]
+  ],
+  "run_state": "complete"
+}

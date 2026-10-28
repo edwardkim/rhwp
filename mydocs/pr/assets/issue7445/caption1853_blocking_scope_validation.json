@@ -1,0 +1,1013 @@
+{
+  "stage": 169,
+  "item": 11,
+  "code_head": "61ef48a08c1bb2a976ce5d5f853789a6abaae1db",
+  "production_head": "aee3bd2b4",
+  "preanalysis": {
+    "stage": 169,
+    "item": 11,
+    "head": "509798ac7a2f227715898dcb9f86e91c53898e5f",
+    "case": "body_overflow_baseline",
+    "test": "body_overflow_does_not_grow_partition_5",
+    "input": "samples/issue1853_caption_precedes_body_split.hwpx",
+    "reference": "pdf/issue1853_caption_precedes_body_split-2024.pdf",
+    "analysis": "원래 실패목록에서는0→2건 본문 넘침. 현재 단독 partition과 기존정상2함수를 먼저 실행하고 실제 overflow의 쪽·내용·독립PDF를 대조한다. 정상 한컴52쪽의 큰 법률 이유서; 옛14쪽 diff32%는 현재 판정으로 재사용하지 않는다. 작은 원인으로 해결 가능한지 먼저 분석, 대용량 전체 흐름 차이만 실제 차단입력/축으로 #7445 이관. 정상 함수·원문·PDF·다른축 유지.",
+    "plan": "현재 단독재현/정상2함수 → 현재 전쪽 anomaly/해당쪽 직접 Native/freshWASM → 개별판정 → 수정/집중/보고/커밋.",
+    "observed": {
+      "before": "body5 0PASS/1FAIL; normal2PASS",
+      "current_pages": 52,
+      "reference_pages": 52,
+      "overflow": [
+        {
+          "page": 14,
+          "source_pi": 115,
+          "actual_text": "○ 유사 입법례(참고)",
+          "over_bottom_px": 7.946666666666488
+        },
+        {
+          "page": 44,
+          "source_pi": 371,
+          "over_bottom_px": 2.333333333332803
+        }
+      ],
+      "native_selected_minimum": 32.88144
+    },
+    "decision": "13쪽 표의 마지막 입법례 항목이 14쪽으로 이동해 이어받기 시작 내용·표 높이·후속 문단이 서로 다름. 원문pi105 2x2 CellBreak 표와 pi371 TAC캡션+3x2CellBreak의 별개 이어받기 경로이며 후자는 source4327HU offset/flowWithText0을 보존. 14쪽의 실제 본문 초과를 마지막좌표clamp나 공차완화로 숨길 수 없음. 정상52쪽/캡션같은쪽분할2함수는PASS. 전체52쪽 법률문서 피델리티 복원이 필요한 실제 본문넘침 입력1개만 #7445 이관, 원문/PDF/정상2함수/다른축 유지."
+  },
+  "source_boundaries": [
+    {
+      "pi": 105,
+      "text": "현        행개   정   안<신  설>제4조의2(데이터의 가명처리) 공공기관의 장이 데이터기반행정을 위하여 개인정보가 포함된 데이터를 가명처리하여 활용하는 경우로서 다음 각 호의 어느 하나에 해당하는 경우에는 「개인정보 보호법」 제28조의2제1",
+      "host_lines": [
+        {
+          "textpos": "0",
+          "vertpos": "56260",
+          "vertsize": "1400",
+          "textheight": "1400",
+          "baseline": "1190",
+          "spacing": "840",
+          "horzpos": "0",
+          "horzsize": "0",
+          "flags": "393216"
+        }
+      ],
+      "tables": [
+        {
+          "attrib": {
+            "id": "1113878764",
+            "zOrder": "8",
+            "numberingType": "TABLE",
+            "textWrap": "TOP_AND_BOTTOM",
+            "textFlow": "BOTH_SIDES",
+            "lock": "0",
+            "dropcapstyle": "None",
+            "pageBreak": "CELL",
+            "repeatHeader": "1",
+            "rowCnt": "2",
+            "colCnt": "2",
+            "cellSpacing": "0",
+            "borderFillIDRef": "10",
+            "noAdjust": "1"
+          },
+          "pos": [
+            {
+              "treatAsChar": "0",
+              "affectLSpacing": "0",
+              "flowWithText": "1",
+              "allowOverlap": "0",
+              "holdAnchorAndSO": "0",
+              "vertRelTo": "PARA",
+              "horzRelTo": "COLUMN",
+              "vertAlign": "TOP",
+              "horzAlign": "LEFT",
+              "vertOffset": "0",
+              "horzOffset": "0"
+            }
+          ],
+          "sz": [
+            {
+              "width": "45230",
+              "widthRelTo": "ABSOLUTE",
+              "height": "12840",
+              "heightRelTo": "ABSOLUTE",
+              "protect": "0"
+            }
+          ],
+          "cells": 4
+        }
+      ]
+    },
+    {
+      "pi": 114,
+      "text": " 마. 그 밖의 참고사항",
+      "host_lines": [
+        {
+          "textpos": "0",
+          "vertpos": "64182",
+          "vertsize": "1400",
+          "textheight": "1400",
+          "baseline": "1190",
+          "spacing": "840",
+          "horzpos": "0",
+          "horzsize": "45356",
+          "flags": "393216"
+        }
+      ],
+      "tables": []
+    },
+    {
+      "pi": 115,
+      "text": "   ○ 유사 입법례(참고)",
+      "host_lines": [
+        {
+          "textpos": "0",
+          "vertpos": "66922",
+          "vertsize": "1400",
+          "textheight": "1400",
+          "baseline": "1190",
+          "spacing": "840",
+          "horzpos": "0",
+          "horzsize": "45356",
+          "flags": "393216"
+        }
+      ],
+      "tables": []
+    },
+    {
+      "pi": 371,
+      "text": "참고 유사 입법례관련 법령(약칭) 내  용 공공데이터법제13조(공공데이터활용지원센터) ① 공공데이터의 효율적인 제공 및 이용 활성화 지원을 위하여 공공데이터활용지원센터(이하 “활용지원센터”라 한다)를 「지능정보화 기본법」 제12조에 따른 한국지능정보사",
+      "host_lines": [
+        {
+          "textpos": "0",
+          "vertpos": "500",
+          "vertsize": "3396",
+          "textheight": "3396",
+          "baseline": "2887",
+          "spacing": "1020",
+          "horzpos": "0",
+          "horzsize": "45356",
+          "flags": "393216"
+        }
+      ],
+      "tables": [
+        {
+          "attrib": {
+            "id": "1134614006",
+            "zOrder": "20",
+            "numberingType": "NONE",
+            "textWrap": "TOP_AND_BOTTOM",
+            "textFlow": "BOTH_SIDES",
+            "lock": "0",
+            "dropcapstyle": "None",
+            "pageBreak": "CELL",
+            "repeatHeader": "1",
+            "rowCnt": "1",
+            "colCnt": "3",
+            "cellSpacing": "0",
+            "borderFillIDRef": "5",
+            "noAdjust": "0"
+          },
+          "pos": [
+            {
+              "treatAsChar": "1",
+              "affectLSpacing": "0",
+              "flowWithText": "1",
+              "allowOverlap": "0",
+              "holdAnchorAndSO": "0",
+              "vertRelTo": "PARA",
+              "horzRelTo": "PARA",
+              "vertAlign": "TOP",
+              "horzAlign": "LEFT",
+              "vertOffset": "0",
+              "horzOffset": "0"
+            }
+          ],
+          "sz": [
+            {
+              "width": "44790",
+              "widthRelTo": "ABSOLUTE",
+              "height": "2830",
+              "heightRelTo": "ABSOLUTE",
+              "protect": "0"
+            }
+          ],
+          "cells": 3
+        },
+        {
+          "attrib": {
+            "id": "1187099589",
+            "zOrder": "30",
+            "numberingType": "TABLE",
+            "textWrap": "TOP_AND_BOTTOM",
+            "textFlow": "BOTH_SIDES",
+            "lock": "0",
+            "dropcapstyle": "None",
+            "pageBreak": "CELL",
+            "repeatHeader": "1",
+            "rowCnt": "3",
+            "colCnt": "2",
+            "cellSpacing": "0",
+            "borderFillIDRef": "5",
+            "noAdjust": "0"
+          },
+          "pos": [
+            {
+              "treatAsChar": "0",
+              "affectLSpacing": "0",
+              "flowWithText": "0",
+              "allowOverlap": "0",
+              "holdAnchorAndSO": "0",
+              "vertRelTo": "PARA",
+              "horzRelTo": "COLUMN",
+              "vertAlign": "TOP",
+              "horzAlign": "LEFT",
+              "vertOffset": "4327",
+              "horzOffset": "0"
+            }
+          ],
+          "sz": [
+            {
+              "width": "45063",
+              "widthRelTo": "ABSOLUTE",
+              "height": "64174",
+              "heightRelTo": "ABSOLUTE",
+              "protect": "0"
+            }
+          ],
+          "cells": 6
+        }
+      ]
+    }
+  ],
+  "input": {
+    "path": "samples/issue1853_caption_precedes_body_split.hwpx",
+    "sha256": "46bd0142f7fe2f68dffb9768e08d65488feeb19f5fd6916f9ad90ae5d72a96a9",
+    "bytes": 284908
+  },
+  "reference": {
+    "path": "pdf/issue1853_caption_precedes_body_split-2024.pdf",
+    "sha256": "c3befae95a2135761066c44435a331bb55d0d27bac2f97d8487358f1b9f2bd9b",
+    "bytes": 749771,
+    "pages": 52,
+    "metadata": {
+      "format": "PDF 1.6",
+      "title": "",
+      "author": "user",
+      "subject": "",
+      "keywords": "",
+      "creator": "Hwp 2024 13.0.0.3622",
+      "producer": "Hancom PDF 1.3.0.550",
+      "creationDate": "D:20260703190332+09'00'",
+      "modDate": "D:20260703190332+09'00'",
+      "trapped": "",
+      "encryption": null
+    },
+    "reuse": "동일 원문/52쪽의 실제13/14/44쪽 표 내용·본문 직접 대조. 기존 정상2024PDF 재사용."
+  },
+  "before": [
+    {
+      "label": "body5",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_023",
+        "-E",
+        "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_5)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 9.082411707844585
+    },
+    {
+      "label": "normal",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_012",
+        "-E",
+        "test(/^issue_1853::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 6.148022416047752
+    }
+  ],
+  "after": [
+    {
+      "label": "body-all16",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_028",
+        "-E",
+        "test(/^body_overflow_baseline::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 96.02280433336273
+    },
+    {
+      "label": "normal",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_011",
+        "-E",
+        "test(/^issue_1853::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 13.873608542140573
+    }
+  ],
+  "after_counts": {
+    "pass": 12,
+    "fail": 4,
+    "observations": [
+      "신규 발생: issue6756/17253153-traffic-safety-designated-routes.hwp — 1건 (baseline 없음)",
+      "신규 발생: k-water-rfp-2024.hwp — 1건 (baseline 없음)",
+      "증가: issue6776/78494-virtual-convergence-industry-decree.hwpx — 1 → 2건",
+      "신규 발생: issue6778/156757920-animal-welfare-husbandry-guidelines.hwp — 1건 (baseline 없음)"
+    ],
+    "failed_functions": [
+      "body_overflow_baseline::body_overflow_does_not_grow_partition_10",
+      "body_overflow_baseline::body_overflow_does_not_grow_partition_12",
+      "body_overflow_baseline::body_overflow_does_not_grow_partition_2",
+      "body_overflow_baseline::body_overflow_does_not_grow_partition_3"
+    ]
+  },
+  "checks": {
+    "base": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "results": [
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit_code": 0,
+        "seconds": 6.656154416967183
+      },
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 7.663349125068635
+      },
+      {
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "seconds": 0.6073988750576973
+      },
+      {
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.6591593748889863
+      },
+      {
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 9.821755374781787
+      },
+      {
+        "command": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 0.04799324972555041
+      }
+    ]
+  },
+  "lint": [
+    {
+      "command": [
+        "venv/bin/python",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/checks.py"
+      ],
+      "exit_code": 0,
+      "seconds": 27.490505416877568
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.4669977077282965
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.26386529160663486
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 0.4446165421977639
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 13.789475958794355
+    }
+  ],
+  "actual_overflow": [
+    {
+      "page": 14,
+      "nodes": [
+        {
+          "bbox": {
+            "h": 18.666666666666668,
+            "w": 604.7466666666667,
+            "x": 94.48,
+            "y": 1009.7599999999999
+          },
+          "boundary": {
+            "h": 918.4533333333334,
+            "w": 604.7466666666667,
+            "x": 94.48,
+            "y": 102.02666666666667
+          },
+          "maxOver": 7.946666666666488,
+          "nodeType": "TextLine",
+          "overBottom": 7.946666666666488,
+          "overLeft": 0.0,
+          "overRight": 0.0,
+          "overTop": 0.0,
+          "path": "Page/Body/Column0/TextLine22"
+        }
+      ]
+    },
+    {
+      "page": 44,
+      "nodes": [
+        {
+          "bbox": {
+            "h": 861.2133333333328,
+            "w": 600.8399999999999,
+            "x": 96.36,
+            "y": 161.6
+          },
+          "boundary": {
+            "h": 918.4533333333334,
+            "w": 604.7466666666667,
+            "x": 94.48,
+            "y": 102.02666666666667
+          },
+          "maxOver": 2.333333333332803,
+          "nodeType": "Table",
+          "overBottom": 2.333333333332803,
+          "overLeft": 0.0,
+          "overRight": 0.0,
+          "overTop": 0.0,
+          "path": "Page/Body/Column0/Table1"
+        }
+      ]
+    }
+  ],
+  "visual": [
+    {
+      "backend": "native",
+      "selected_pages": [
+        13,
+        14,
+        43,
+        44,
+        52
+      ],
+      "run_state": "complete",
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 13,
+            "tolerant_content_match_percent": 62.38007
+          },
+          {
+            "page": 14,
+            "tolerant_content_match_percent": 32.88144
+          },
+          {
+            "page": 43,
+            "tolerant_content_match_percent": 88.03127
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "metrics": {
+        "summary": {
+          "compared_pages": 5,
+          "pixel_diff_threshold": 32,
+          "average_pixel_match_percent": 91.72801,
+          "worst_pixel_match_percent": 87.93096,
+          "average_ink_match_percent": 21.77965,
+          "worst_ink_match_percent": 11.95481,
+          "average_visual_accuracy_proxy_percent": 21.77965,
+          "worst_visual_accuracy_proxy_percent": 11.95481,
+          "average_tolerant_content_match_percent": 74.6917,
+          "worst_tolerant_content_match_percent": 32.88144,
+          "worst_pages": [
+            14,
+            43,
+            13,
+            44,
+            52
+          ]
+        },
+        "pages": [
+          {
+            "page": 13,
+            "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-native/caption1853/rhwp_png/rhwp_013.png",
+            "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-native/caption1853/pdf_png/pdf-13.png",
+            "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-native/caption1853/overlay/overlay_013.png",
+            "width": 794,
+            "height": 1123,
+            "pixel_diff_threshold": 32,
+            "total_pixels": 891662,
+            "diff_pixels": 98249,
+            "diff_ratio": 0.11018637,
+            "pixel_match_percent": 88.98136,
+            "ink_union_pixels": 120383,
+            "ink_diff_pixels": 98249,
+            "ink_diff_ratio": 0.81613683,
+            "ink_match_percent": 18.38632,
+            "visual_accuracy_proxy_percent": 18.38632,
+            "tolerant_content_match_radius_px": 2,
+            "tolerant_content_match_percent": 62.38007,
+            "mean_abs_channel_delta": 16.778,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              94,
+              107,
+              699,
+              1017
+            ]
+          },
+          {
+            "page": 14,
+            "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-native/caption1853/rhwp_png/rhwp_014.png",
+            "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-native/caption1853/pdf_png/pdf-14.png",
+            "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-native/caption1853/overlay/overlay_014.png",
+            "width": 794,
+            "height": 1123,
+            "pixel_diff_threshold": 32,
+            "total_pixels": 891662,
+            "diff_pixels": 107615,
+            "diff_ratio": 0.12069035,
+            "pixel_match_percent": 87.93096,
+            "ink_union_pixels": 122227,
+            "ink_diff_pixels": 107615,
+            "ink_diff_ratio": 0.88045195,
+            "ink_match_percent": 11.95481,
+            "visual_accuracy_proxy_percent": 11.95481,
+            "tolerant_content_match_radius_px": 2,
+            "tolerant_content_match_percent": 32.88144,
+            "mean_abs_channel_delta": 19.519,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              96,
+              103,
+              699,
+              1028
+            ]
+          },
+          {
+            "page": 43,
+            "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-native/caption1853/rhwp_png/rhwp_043.png",
+            "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-native/caption1853/pdf_png/pdf-43.png",
+            "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-native/caption1853/overlay/overlay_043.png",
+            "width": 794,
+            "height": 1123,
+            "pixel_diff_threshold": 32,
+            "total_pixels": 891662,
+            "diff_pixels": 26757,
+            "diff_ratio": 0.03000801,
+            "pixel_match_percent": 96.9992,
+            "ink_union_pixels": 31081,
+            "ink_diff_pixels": 26757,
+            "ink_diff_ratio": 0.86087964,
+            "ink_match_percent": 13.91204,
+            "visual_accuracy_proxy_percent": 13.91204,
+            "tolerant_content_match_radius_px": 2,
+            "tolerant_content_match_percent": 88.03127,
+            "mean_abs_channel_delta": 4.342,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              96,
+              103,
+              699,
+              516
+            ]
+          },
+          {
+            "page": 44,
+            "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-native/caption1853/rhwp_png/rhwp_044.png",
+            "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-native/caption1853/pdf_png/pdf-44.png",
+            "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-native/caption1853/overlay/overlay_044.png",
+            "width": 794,
+            "height": 1123,
+            "pixel_diff_threshold": 32,
+            "total_pixels": 891662,
+            "diff_pixels": 81390,
+            "diff_ratio": 0.09127898,
+            "pixel_match_percent": 90.8721,
+            "ink_union_pixels": 116549,
+            "ink_diff_pixels": 81390,
+            "ink_diff_ratio": 0.69833289,
+            "ink_match_percent": 30.16671,
+            "visual_accuracy_proxy_percent": 30.16671,
+            "tolerant_content_match_radius_px": 2,
+            "tolerant_content_match_percent": 93.34014,
+            "mean_abs_channel_delta": 12.774,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              96,
+              105,
+              697,
+              1022
+            ]
+          },
+          {
+            "page": 52,
+            "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-native/caption1853/rhwp_png/rhwp_052.png",
+            "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-native/caption1853/pdf_png/pdf-52.png",
+            "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-native/caption1853/overlay/overlay_052.png",
+            "width": 794,
+            "height": 1123,
+            "pixel_diff_threshold": 32,
+            "total_pixels": 891662,
+            "diff_pixels": 54780,
+            "diff_ratio": 0.06143584,
+            "pixel_match_percent": 93.85642,
+            "ink_union_pixels": 83606,
+            "ink_diff_pixels": 54780,
+            "ink_diff_ratio": 0.65521613,
+            "ink_match_percent": 34.47839,
+            "visual_accuracy_proxy_percent": 34.47839,
+            "tolerant_content_match_radius_px": 2,
+            "tolerant_content_match_percent": 96.82559,
+            "mean_abs_channel_delta": 9.064,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              96,
+              105,
+              697,
+              588
+            ]
+          }
+        ]
+      },
+      "binary": {
+        "configured": "output/pr-review/planet6897-7382-20260926/stage168-savedbounds1749/candidate5/rhwp",
+        "path": "output/pr-review/planet6897-7382-20260926/stage168-savedbounds1749/candidate5/rhwp",
+        "sha256": "d913b4ac9c4d5f4780783e05b08dc4fa3082f686ffc2db41946b8b1af12b2c02"
+      },
+      "wasm": null,
+      "manifest": "output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-native/caption1853/manifest.json",
+      "manifest_sha256": "5ac42046b7734b9321ce8fa2a518299000e9e89bc9294c7a865d9d6fe055b5b3",
+      "run_manifest_sha256": "e0354ad3dec3bdf416d18ceef41d31d364e2196f2b8c63482cd3c17cd9a0ee09"
+    },
+    {
+      "backend": "wasm",
+      "selected_pages": [
+        13,
+        14,
+        43,
+        44,
+        52
+      ],
+      "run_state": "complete",
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 13,
+            "tolerant_content_match_percent": 62.38007
+          },
+          {
+            "page": 14,
+            "tolerant_content_match_percent": 32.88144
+          },
+          {
+            "page": 43,
+            "tolerant_content_match_percent": 88.03127
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "metrics": {
+        "summary": {
+          "compared_pages": 5,
+          "pixel_diff_threshold": 32,
+          "average_pixel_match_percent": 91.72801,
+          "worst_pixel_match_percent": 87.93096,
+          "average_ink_match_percent": 21.77965,
+          "worst_ink_match_percent": 11.95481,
+          "average_visual_accuracy_proxy_percent": 21.77965,
+          "worst_visual_accuracy_proxy_percent": 11.95481,
+          "average_tolerant_content_match_percent": 74.6917,
+          "worst_tolerant_content_match_percent": 32.88144,
+          "worst_pages": [
+            14,
+            43,
+            13,
+            44,
+            52
+          ]
+        },
+        "pages": [
+          {
+            "page": 13,
+            "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-wasm/caption1853/rhwp_png/rhwp_013.png",
+            "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-wasm/caption1853/pdf_png/pdf-13.png",
+            "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-wasm/caption1853/overlay/overlay_013.png",
+            "width": 794,
+            "height": 1123,
+            "pixel_diff_threshold": 32,
+            "total_pixels": 891662,
+            "diff_pixels": 98249,
+            "diff_ratio": 0.11018637,
+            "pixel_match_percent": 88.98136,
+            "ink_union_pixels": 120383,
+            "ink_diff_pixels": 98249,
+            "ink_diff_ratio": 0.81613683,
+            "ink_match_percent": 18.38632,
+            "visual_accuracy_proxy_percent": 18.38632,
+            "tolerant_content_match_radius_px": 2,
+            "tolerant_content_match_percent": 62.38007,
+            "mean_abs_channel_delta": 16.778,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              94,
+              107,
+              699,
+              1017
+            ]
+          },
+          {
+            "page": 14,
+            "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-wasm/caption1853/rhwp_png/rhwp_014.png",
+            "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-wasm/caption1853/pdf_png/pdf-14.png",
+            "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-wasm/caption1853/overlay/overlay_014.png",
+            "width": 794,
+            "height": 1123,
+            "pixel_diff_threshold": 32,
+            "total_pixels": 891662,
+            "diff_pixels": 107615,
+            "diff_ratio": 0.12069035,
+            "pixel_match_percent": 87.93096,
+            "ink_union_pixels": 122227,
+            "ink_diff_pixels": 107615,
+            "ink_diff_ratio": 0.88045195,
+            "ink_match_percent": 11.95481,
+            "visual_accuracy_proxy_percent": 11.95481,
+            "tolerant_content_match_radius_px": 2,
+            "tolerant_content_match_percent": 32.88144,
+            "mean_abs_channel_delta": 19.519,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              96,
+              103,
+              699,
+              1028
+            ]
+          },
+          {
+            "page": 43,
+            "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-wasm/caption1853/rhwp_png/rhwp_043.png",
+            "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-wasm/caption1853/pdf_png/pdf-43.png",
+            "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-wasm/caption1853/overlay/overlay_043.png",
+            "width": 794,
+            "height": 1123,
+            "pixel_diff_threshold": 32,
+            "total_pixels": 891662,
+            "diff_pixels": 26757,
+            "diff_ratio": 0.03000801,
+            "pixel_match_percent": 96.9992,
+            "ink_union_pixels": 31081,
+            "ink_diff_pixels": 26757,
+            "ink_diff_ratio": 0.86087964,
+            "ink_match_percent": 13.91204,
+            "visual_accuracy_proxy_percent": 13.91204,
+            "tolerant_content_match_radius_px": 2,
+            "tolerant_content_match_percent": 88.03127,
+            "mean_abs_channel_delta": 4.342,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              96,
+              103,
+              699,
+              516
+            ]
+          },
+          {
+            "page": 44,
+            "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-wasm/caption1853/rhwp_png/rhwp_044.png",
+            "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-wasm/caption1853/pdf_png/pdf-44.png",
+            "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-wasm/caption1853/overlay/overlay_044.png",
+            "width": 794,
+            "height": 1123,
+            "pixel_diff_threshold": 32,
+            "total_pixels": 891662,
+            "diff_pixels": 81390,
+            "diff_ratio": 0.09127898,
+            "pixel_match_percent": 90.8721,
+            "ink_union_pixels": 116549,
+            "ink_diff_pixels": 81390,
+            "ink_diff_ratio": 0.69833289,
+            "ink_match_percent": 30.16671,
+            "visual_accuracy_proxy_percent": 30.16671,
+            "tolerant_content_match_radius_px": 2,
+            "tolerant_content_match_percent": 93.34014,
+            "mean_abs_channel_delta": 12.774,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              96,
+              105,
+              697,
+              1022
+            ]
+          },
+          {
+            "page": 52,
+            "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-wasm/caption1853/rhwp_png/rhwp_052.png",
+            "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-wasm/caption1853/pdf_png/pdf-52.png",
+            "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-wasm/caption1853/overlay/overlay_052.png",
+            "width": 794,
+            "height": 1123,
+            "pixel_diff_threshold": 32,
+            "total_pixels": 891662,
+            "diff_pixels": 54780,
+            "diff_ratio": 0.06143584,
+            "pixel_match_percent": 93.85642,
+            "ink_union_pixels": 83606,
+            "ink_diff_pixels": 54780,
+            "ink_diff_ratio": 0.65521613,
+            "ink_match_percent": 34.47839,
+            "visual_accuracy_proxy_percent": 34.47839,
+            "tolerant_content_match_radius_px": 2,
+            "tolerant_content_match_percent": 96.82559,
+            "mean_abs_channel_delta": 9.064,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              96,
+              105,
+              697,
+              588
+            ]
+          }
+        ]
+      },
+      "binary": {
+        "configured": "output/pr-review/planet6897-7382-20260926/stage168-savedbounds1749/candidate5/rhwp",
+        "path": "output/pr-review/planet6897-7382-20260926/stage168-savedbounds1749/candidate5/rhwp",
+        "sha256": "d913b4ac9c4d5f4780783e05b08dc4fa3082f686ffc2db41946b8b1af12b2c02"
+      },
+      "wasm": {
+        "files": [
+          {
+            "path": "/Users/tsjang/rhwp/pkg/rhwp.js",
+            "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+          },
+          {
+            "path": "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+            "sha256": "9f3c7d6fce6909d9525b0bdf44c2ce8dd8dd7b47c049c378a225ebc411b13313"
+          }
+        ],
+        "exporter_sha256": "5b51337e43cfb443c3151d2ab47ab8b09d94e6ca493b60eb565cd9d20be82588",
+        "font_policy": "same-input native --embed-fonts=full --font-path /Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage166-body11/fonts --font-path /Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts --font-path /Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts --font-path /Users/tsjang/Library/Fonts; font-face CSS only",
+        "render_tree": "WASM getPageRenderTree"
+      },
+      "manifest": "output/pr-review/planet6897-7382-20260926/stage169-body5/visual-current-wasm/caption1853/manifest.json",
+      "manifest_sha256": "6a0a634772862ab4c8d6b627f11dc2604e23293b83d3f7698ee8d13d3d364793",
+      "run_manifest_sha256": "fb34a65b6719115539b110140899fa22766dfd6312c6ed38d1ff56a5f840edb3"
+    }
+  ],
+  "scope": "본문넘침 원장의 실패 input1개와 대응 baseline0한행만 이관. 허용치/기대값 완화0. 정상 #1853 두함수·원문/PDF/다른축·다른문서·기존16본문함수 유지. 신규 테스트 함수/생산 변경0.",
+  "limits": "선택5쪽씩 Native/freshWASM negative evidence; 전52쪽PNG 통과 주장이 아님. 테스트대상 원본을 옮기거나 제거하지 않음. 본문전수는12PASS/4FAIL이며 남은4개는 별도검토, 이 입력 피델리티 해결/전체PASS가 아님.",
+  "issue_comment": {
+    "id": 5894072744,
+    "url": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5894072744",
+    "body_sha256": "f59bcf41b016f57c9c5cfd311cfabfd1f17ea3a50e676d5b7cc1e86101ef18a1",
+    "readback_verified": true
+  },
+  "assets": [
+    {
+      "path": "mydocs/pr/assets/issue7445/caption1853_native_review_013.png",
+      "sha256": "161196eaf46cf291b0596e4b379417c7ef0303640032592c0ba7dbeb8cd9ad47"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/caption1853_native_review_014.png",
+      "sha256": "3e5d3fb63bac2abc1f95b5950d57d23551b8362b7740d222a2bfa02ef40e6283"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/caption1853_native_review_044.png",
+      "sha256": "6355335ad30ba24c5ffc55f6e22cec7c9ae5117f1bc0ab4db2ec3c23ceff375f"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/caption1853_wasm_overlay_014.png",
+      "sha256": "6a6fce3a3a9074383458d69a2222b703e74f36f602da22a2548ad6e3c3fe10e4"
+    }
+  ]
+}

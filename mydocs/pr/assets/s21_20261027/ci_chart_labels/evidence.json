@@ -1,0 +1,36 @@
+{
+  "schema": "rhwp.ci-chart-label-visibility.v1",
+  "product_source": "04c92da78165ccbf63b467855591df183655a98d",
+  "asset_parent_head": "d1e9f27148884d24bdc96650883c39f68d40d801",
+  "base": "faa885e8b54ffc7cdf4196cd43a3103f362499a2",
+  "input": "samples/chart/라인/표식이있는꺽은선형.hwp",
+  "input_sha256": "89c799605d954a586cc49b933b794682bb50f31ad0c2a7aa2d912534aed10bca",
+  "pdf": "pdf/semanticist21-20261019/ci-chart-label-4819/표식이있는꺽은선형/표식이있는꺽은선형-2020.pdf",
+  "pdf_sha256": "be5a4564aea4c4cdf0e8fd23921c52345e923a5b00e88ed1f187e896a43224ef",
+  "print": {
+    "job_id": "b8ee495b-7687-4ef2-af4a-a08f568bba2c",
+    "engine": "2020",
+    "hancom_version": "11.0.0.9136",
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+  },
+  "dpi": 96,
+  "compat": "2022",
+  "page_count": 1,
+  "candidate_raw": {
+    "native": 97.45943,
+    "wasm": 96.57949
+  },
+  "base_raw": {
+    "native": 85.5783,
+    "wasm": 78.7013
+  },
+  "base_below_90_is_comparison_only": true,
+  "candidate_gate_passed": true,
+  "regression_contract": "원본 12개 SVG 텍스트를 각각 제외한 출력과 원 출력을 비교하는 가시 기여 관계",
+  "coordinate_or_fixed_region_pins": false,
+  "normal_passed": 2,
+  "minimal_passed": 2,
+  "no_fonts_negative_exit_code": 101,
+  "test_source_sha256": "731dfa0463dc125c8086465bc30dc2807e21ba64d2b5ad59b10e0955cf8736f8"
+}

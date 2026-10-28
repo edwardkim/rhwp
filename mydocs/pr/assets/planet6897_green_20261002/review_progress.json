@@ -1,0 +1,1006 @@
+{
+  "date": "2026-10-04",
+  "branch": "review/planet6897-green-20261002",
+  "source_code_for_initial_full": "ec5ca7c3057a89c9a82bb59a78956a4d5eee567d",
+  "latest_code_correction": "48dcbeff4",
+  "latest_comment_translation": "facdbf948",
+  "initial_full": {
+    "run": 10283,
+    "passed": 10250,
+    "failed": 33,
+    "skipped": 50,
+    "exit_code": 100
+  },
+  "focused_handled_initial_failures": 33,
+  "remaining_initial_failures": [],
+  "post_correction_focused": [
+    {
+      "case": "issue_6950_paragraph_end_topbottom_anchor",
+      "passed": 28,
+      "failed": 0,
+      "log": "output/pr-review/planet6897-green-20261002/nextest-6950-corrected.log"
+    },
+    {
+      "case": "issue_7418_host_text_and_split_row_geometry",
+      "passed": 7,
+      "failed": 0,
+      "log": "output/pr-review/planet6897-green-20261002/nextest-7476-host-counterguards.log"
+    },
+    {
+      "case": "current TAC band and #7243 neighbors",
+      "passed": 39,
+      "failed": 0,
+      "source": "worktree on 5b8be2ac8; hy_ladder3_current_band_validation.json source hashes"
+    },
+    {
+      "case": "hy_ladder3 overflow_cell partition14",
+      "passed": 1,
+      "failed": 0,
+      "log": "output/pr-review/planet6897-green-20261002/hy-ladder3-baseline-verified.log",
+      "baseline": {
+        "before": 7,
+        "after": 12
+      },
+      "independent_whole_native_and_fresh_wasm_min_percent": 90.86083
+    },
+    {
+      "case": "issue_7469_footnote_number_paragraph_indent",
+      "passed": 4,
+      "failed": 0,
+      "old_failed_case": "empty_footnote_keeps_its_number_and_line_box",
+      "replacement": "empty_footnote_without_number_placeholder_does_not_add_a_footer_line",
+      "validation": "empty_notes_validation.json"
+    },
+    {
+      "case": "stored TAC gap normal counterparts",
+      "passed": 33,
+      "failed": 0,
+      "code_head": "0305f8f22"
+    },
+    {
+      "case": "issue_4771_derived_layout_state",
+      "passed": 6,
+      "failed": 0,
+      "new_functions": 0
+    },
+    {
+      "case": "issue_7063_hwpx_rowbreak_fragment_outer_top",
+      "passed": 3,
+      "failed": 0,
+      "removed_invalid_function": "issue_7063_hwpx_multi_column_fragment_stays_outside_this_lane",
+      "reason": "pins acknowledged wrong old37.80px despite independent41.55px and current41.56px",
+      "preserved": "original sample and PDF; other3existing tests; 29page visual hold"
+    },
+    {
+      "case": "terminal page cap and counterparts",
+      "passed": 45,
+      "failed": 1,
+      "evidence": "issue7336_terminal_cap_evidence.json",
+      "resolved_new_full_failure": "issue_7095_multirow_fragment_page_cap::a_multirow_fragment_past_the_page_cap_is_folded_to_it"
+    },
+    {
+      "case": "package-version plain margin; task903/4898/6875",
+      "passed": 5,
+      "failed": 0,
+      "parser_passed": 54,
+      "evidence": "plain_margin_version_validation.json",
+      "resolved_new_full_failure": "hwpx_to_hwp_adapter::task903_hwpx_h_01_para_shape_margin_children_are_parsed"
+    },
+    {
+      "case": "figure11 declared physical fit tolerance and counterparts",
+      "passed": 48,
+      "failed": 0,
+      "evidence": "figure11_declared_fit_tolerance_evidence.json",
+      "resolved_new_full_failure": "issue_7379_rowbreak_table_footnote_reservation::figure11_closed_frame_preserves_units_across_body_budgets"
+    },
+    {
+      "case": "issue_3930_hwpx_hwp_save_layout",
+      "passed": 3,
+      "failed": 0,
+      "evidence": "handbook_q29_inverse_assertion_validation.json",
+      "removed_invalid_assertion": "absence of Q29 on independent PDF physical page296",
+      "new_functions": 0
+    }
+  ],
+  "visual_evidence": {
+    "purpose": "승인 증적이 아닌 잔존 차이 진단",
+    "binary_source": "562948785 before cf5cc04ca boundary correction",
+    "font_supplied_counter_p28": 50.63333,
+    "font_supplied_issue2004_p3": 58.48267,
+    "page_counts": {
+      "hwpx-sample2": [
+        29,
+        29
+      ],
+      "regulatory86712": [
+        64,
+        64
+      ],
+      "issue2004": [
+        8,
+        8
+      ]
+    },
+    "files": [
+      {
+        "path": "mydocs/pr/assets/planet6897_green_20261002/hwpx-sample2_diagnostic_native.tsv",
+        "sha256": "bccdf8d54fa82a11635a7a4288542f9f3cc8d1c35d8ebbd60b3ccf359a8b6075"
+      },
+      {
+        "path": "mydocs/pr/assets/planet6897_green_20261002/regulatory86712_diagnostic_native.tsv",
+        "sha256": "1b61efd6ad2a93536e2b064c828ad89d80b56e564194131fc2e7edf57c2b5a6e"
+      },
+      {
+        "path": "mydocs/pr/assets/planet6897_green_20261002/hwpx_sample2_p28_review.png",
+        "sha256": "bf6c3a1e731806d7ae152c7dc6c9f628a874205f3fc1adbadc3f0518328054e7"
+      },
+      {
+        "path": "mydocs/pr/assets/planet6897_green_20261002/issue2004_p3_review.png",
+        "sha256": "26674e514482d3b11c980f3ee46ad241bf8a9d72761a17e9ea54a36cea6fbe45"
+      }
+    ]
+  },
+  "merge_decision": "보정된 통합 head 수용 가능; 새 통합 PR 최신 CI·mergeability 확인 필요",
+  "resolved_visual_holds": {
+    "issue2004": {
+      "native_pages": 8,
+      "fresh_wasm_pages": 8,
+      "pdf_pages": 8,
+      "minimum_percent": 95.85551,
+      "page3_before": 58.48267,
+      "page3_after": 97.64619,
+      "evidence": "issue2004_stored_gap_evidence.json"
+    },
+    "policy_page_count": {
+      "before_native": 216,
+      "after_native": 215,
+      "after_fresh_wasm": 215,
+      "pdf": 215,
+      "scope_pages": [
+        182,
+        183
+      ],
+      "minimum_percent": 99.89879,
+      "full_215_visual": "pending"
+    },
+    "issue5723": {
+      "pages": 1,
+      "minimum_percent": 90.04699,
+      "below90_pages": [],
+      "exit_code": 0
+    },
+    "issue5755_percentage": {
+      "pages": 3,
+      "minimum_percent": 94.36369,
+      "page3_before": 73.9298,
+      "page3_after": 99.7054,
+      "below90_pages": [],
+      "structural_residuals": [
+        "2쪽 본문·표 텍스트 겹침1건",
+        "3쪽 일정표 세로 괘선 차이",
+        "본문 오른쪽 넘침2건은 원본/PDF 대조 필요"
+      ],
+      "approved": false
+    }
+  },
+  "corrected_full_run": {
+    "head": "d2ef8693a",
+    "run": 10281,
+    "passed": 10264,
+    "failed": 17,
+    "skipped": 50,
+    "exit_code": 100,
+    "evidence": "nextest_corrected_d2ef8693a.json",
+    "focused_resolved_after_run": 16,
+    "remaining_not_yet_full_reverified": 1
+  },
+  "prior17_current_focused": {
+    "head": "54704ab32",
+    "scope": "exact 17 failures of d2ef8693a; not full suite",
+    "run": 17,
+    "passed": 15,
+    "failed": 2,
+    "exit_code": 100,
+    "failed_cases": [
+      "issue_3930_hwpx_hwp_save_layout::issue_3930_preserves_page_count_and_inherited_even_master_page",
+      "off_canvas_baseline::off_canvas_does_not_grow_partition_1"
+    ],
+    "passed_cases": [
+      "overflow_cell_lines_do_not_grow_partition_12",
+      "hwpx_to_hwp_adapter::task903_hwpx_h_01_para_shape_margin_children_are_parsed",
+      "oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_7",
+      "issue_7095_multirow_fragment_page_cap::a_multirow_fragment_past_the_page_cap_is_folded_to_it",
+      "off_canvas_baseline::off_canvas_does_not_grow_partition_11",
+      "off_canvas_baseline::off_canvas_does_not_grow_partition_13",
+      "off_canvas_baseline::off_canvas_does_not_grow_partition_6",
+      "body_overflow_baseline::body_overflow_does_not_grow_partition_2",
+      "body_overflow_baseline::body_overflow_does_not_grow_partition_4",
+      "body_overflow_baseline::body_overflow_does_not_grow_partition_7",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_10",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_12",
+      "text_overlap_baseline::text_overlaps_do_not_grow_partition_15",
+      "body_overflow_baseline::body_overflow_does_not_grow_partition_10",
+      "issue_7379_rowbreak_table_footnote_reservation::figure11_closed_frame_preserves_units_across_body_budgets"
+    ],
+    "log_sha256": "bf0a8ba7f38fb287da92c98f6f7426ca499ef857bdbe5172c093cda60749808d",
+    "runtime_seconds": 48.999
+  },
+  "latest_validation_head": "859d1ddefc2f70180fd8009d7124804bdd9d76d8",
+  "prior17_final_focused": {
+    "head": "8927c6ccb",
+    "scope": "exact prior 17 failed test names; two invocations after generated suite reallocation",
+    "coverage": {
+      "run": 17,
+      "passed": 16,
+      "failed": 1
+    },
+    "invocations": [
+      {
+        "run": 16,
+        "passed": 15,
+        "failed": 1,
+        "exit_code": 100
+      },
+      {
+        "run": 1,
+        "passed": 1,
+        "failed": 0,
+        "exit_code": 0
+      }
+    ],
+    "remaining_failed_case": "off_canvas_baseline::off_canvas_does_not_grow_partition_1",
+    "remaining_fixture": "samples/hwpx_sample2.hwpx",
+    "remaining_diagnostic": {
+      "pages": 29,
+      "page": 8,
+      "table_para_index": 74,
+      "off_canvas_count": 1,
+      "off_canvas_bottom_px": 7.6266666666665515,
+      "binary_source": "7d5bcae5f diagnostic CLI; not final candidate approval",
+      "print_tree_observation": "logical table bbox differs from default anomaly profile and contains trailing TextLine outside its frame; no border-only correction accepted"
+    },
+    "logs": [
+      {
+        "path": "output/pr-review/planet6897-green-20261002/prior17-final-focused.log",
+        "sha256": "1c72c00c40494451d15d43616b6bc1e9b76689b3cd9100627854cc16b34866af"
+      },
+      {
+        "path": "output/pr-review/planet6897-green-20261002/prior17-final-oracle.log",
+        "sha256": "c3e4e1c0357db49aedd5fa37c3d419ed1c6d55900d5124e8a061c2c460116f73"
+      }
+    ],
+    "whole_nextest": "not rerun; most recent full d2ef8693a 10264 PASS/17 FAIL remains historical",
+    "visual_holds": [
+      "h01 original9pages p1 53.03132%; p2-9 above98%, current branch correction required",
+      "hwpx_sample2 whole29pages low fidelity and p8 off_canvas",
+      "regulatory86712 whole64pages low pages",
+      "latest215page whole Native/fresh WASM validation pending"
+    ],
+    "integration_pr_ready": false
+  },
+  "sample2_p8_correction": {
+    "evidence": "sample2_mixed_line_reset_validation.json",
+    "off_canvas": 0,
+    "native_percent": 98.91222,
+    "fresh_wasm_percent": 98.91222,
+    "remaining_native_below90_pages": [
+      2,
+      4,
+      7,
+      14,
+      20,
+      21,
+      28
+    ]
+  },
+  "sample2_closing_frame_correction": {
+    "evidence": "sample2_closing_frame_validation.json",
+    "native_and_fresh_wasm_selected_percent": {
+      "8": 98.91222,
+      "9": 98.55869,
+      "10": 99.70891
+    },
+    "focused_pass": 95,
+    "off_canvas": 0,
+    "remaining_native_below90_pages": [
+      2,
+      4,
+      7,
+      14,
+      20,
+      21,
+      28
+    ],
+    "final_full_validation": "pending"
+  },
+  "sample2_closed_inline_correction": {
+    "evidence": "sample2_closed_inline_validation.json",
+    "native_and_fresh_wasm_p2_percent": 99.75557,
+    "focused_pass": 110,
+    "off_canvas": 0,
+    "remaining_native_below90_pages": [
+      4,
+      7,
+      14,
+      20,
+      21,
+      28
+    ],
+    "final_full_validation": "pending"
+  },
+  "sample2_terminal_margin_correction": {
+    "parent_head": "3b26d7cff",
+    "source": "samples/hwpx_sample2.hwpx",
+    "pdf": "pdf/hwpx_sample2-hwpx-2020.pdf",
+    "cause": "종료 행 선언 공간과 바깥 여백의 소유를 합쳐 판정하지 못해 물리 높이·가운데 정렬·후속 문단이 앞당겨짐",
+    "source_equality_hu": {
+      "raw_rows": 49504,
+      "first_frame": 21804,
+      "remaining": 27700,
+      "outer_top": 141,
+      "outer_bottom": 141,
+      "successor_origin": 27982
+    },
+    "native_selected_percent": {
+      "3": 99.05706,
+      "4": 99.85457,
+      "8": 98.91222,
+      "9": 98.55869,
+      "10": 99.70891
+    },
+    "fresh_wasm_selected_percent": {
+      "3": 99.05706,
+      "4": 99.85457,
+      "8": 98.91222,
+      "9": 98.55869,
+      "10": 99.70891
+    },
+    "native_all_pages": 29,
+    "native_below90_pages": [
+      7,
+      14,
+      20,
+      21,
+      28
+    ],
+    "page_count": {
+      "native": 29,
+      "pdf": 29,
+      "wasm": 29
+    },
+    "off_canvas_count": 0,
+    "focused_integration": {
+      "run": 110,
+      "passed": 110,
+      "failed": 0,
+      "exit_code": 0,
+      "runtime_seconds": 12.52
+    },
+    "counterexample": {
+      "source": "samples/issue1921/59043_regulatory_analysis.hwp",
+      "pages": 37,
+      "off_canvas": 1,
+      "original_off_canvas": 1
+    },
+    "wasm_build": "Mac local replacement --no-opt; exit0; not Docker validation",
+    "wasm_visual_exit_code": 0,
+    "source_code_sha256": {
+      "src/renderer/float_placement.rs": "e36abe7080bacb4670df4d7fa856f229827a128f44c084579faed0c66513b2bb",
+      "src/renderer/layout/table_partial.rs": "0a856ed2497227990fee6779f45e16059b300e30ed45bd3fded9fea3ec97fbd7",
+      "src/renderer/typeset/table/continuation/fragment/emit.rs": "1a1c67b190663649c176310b0e649e98756e9cada3ec320dd8c29de4828b0c15"
+    },
+    "native_binary_sha256": "751d11aca5dd92ecd93710d7d2218131d762b1cdfdcd5040f93f085f4a3c33ed",
+    "wasm_binary_sha256": "e5f10e5956a9be06ac58cb12d24f63f1b82c12c7d866c19b808c8c109e366fce",
+    "new_tests": 0,
+    "baseline_changes": 0,
+    "decision": "4쪽 보정 검증. 나머지 미달 페이지와 최종 전체 검증은 미완료."
+  },
+  "sample2_intra_paragraph_frame_correction": {
+    "parent_head": "0aca00783",
+    "source": "samples/hwpx_sample2.hwpx",
+    "pdf": "pdf/hwpx_sample2-hwpx-2020.pdf",
+    "cause": "HWPX 문단 내부 저장 쪽 경계의 고아 줄 되감기와 병합 프레임의 선언 공간 누락",
+    "cut_before": [
+      2,
+      3
+    ],
+    "cut_after": [
+      2,
+      4
+    ],
+    "native_target_percent": {
+      "2": 99.75557,
+      "6": 99.84829,
+      "7": 93.08766
+    },
+    "fresh_wasm_selected_percent": {
+      "2": 99.75557,
+      "6": 99.84829,
+      "7": 93.08766,
+      "21": 88.03303
+    },
+    "native_all_pages": 29,
+    "native_below90_pages": [
+      14,
+      20,
+      21,
+      28
+    ],
+    "page_count": {
+      "native": 29,
+      "pdf": 29,
+      "wasm": 29
+    },
+    "off_canvas_count": 0,
+    "table_overlap_count": 0,
+    "focused_integration": {
+      "run": 112,
+      "passed": 112,
+      "failed": 0,
+      "exit_code": 0,
+      "runtime_seconds": 12.5
+    },
+    "rejected_candidates": [
+      {
+        "reason": "일반 비병합 셀의 선언 최소높이까지 물리 프레임으로 강제",
+        "native_pages": 30
+      },
+      {
+        "reason": "기존 문단 간 이어받기에 원시 행 잔여를 다시 전달",
+        "sample2_table_overlap": 2,
+        "issue6551_off_canvas": 2,
+        "focused_pass": 111,
+        "focused_fail": 1
+      }
+    ],
+    "accepted_counterexample": {
+      "source": "samples/issue6551/113424_evaluation_guideline.hwpx",
+      "page_count": 46,
+      "off_canvas": 1,
+      "original_off_canvas": 1
+    },
+    "wasm_build": "Mac local replacement --no-opt; exit0; not Docker validation",
+    "wasm_visual_exit_code": 1,
+    "wasm_visual_exit_reason": "Known p21 88.03303 percent hold; target p2/p6/p7 all above90. Selected4 raster, all29 export.",
+    "new_tests": 0,
+    "baseline_changes": 0,
+    "source_code_sha256": {
+      "src/renderer/layout/table_layout.rs": "14f985e5d150a408414262a2bf2999eb1b72a8e9e9e290341c2fb664177694f1",
+      "src/renderer/layout/table_partial.rs": "5d4723fecff097c1510664f4fcb9e8b4e17491b16b70bc541fe8533efbe2af51",
+      "src/renderer/typeset/table/continuation/fragment/budget.rs": "19c1a0f981b139ae6887f7deb603e80c8d6682aced4cdcaf9cd7dba9906bd630",
+      "src/renderer/typeset/table/continuation/fragment/emit.rs": "729b7d0ce171f026833080011dde7693a8e291cb26779aa831ebc629a4a2196f"
+    },
+    "native_binary_sha256": "8970b8cc789b606ff75a395f101421014f8b2346873f1b2ff219be656f49af0f",
+    "wasm_binary_sha256": "2c21394aa04524ca11c2b99e372994964157a782b70b7d6250490332fed440a1",
+    "decision": "7쪽 보정 검증; 14/20/21/28쪽과 나머지 문서 및 최종 전체 검증은 미완료."
+  },
+  "sample2_block_row_frame_correction": {
+    "parent_head": "45e21bbac",
+    "source": "samples/hwpx_sample2.hwpx",
+    "pdf": "pdf/hwpx_sample2-hwpx-2020.pdf",
+    "cause": "HWPX 병합 블록의 완전 행을 내용 높이로 축소하고 저장 부분 행의 물리 잔여를 버리는 조판/paint 경로",
+    "source_geometry_hu": {
+      "first_frame": 40685,
+      "rows_before_split": 24937,
+      "split_row": 21514,
+      "first_split_part": 15748,
+      "remaining_split_part": 5766,
+      "merged_label": 29906,
+      "merged_row_sum": 29906
+    },
+    "native_target_percent": {
+      "13": 92.22927,
+      "14": 99.37435
+    },
+    "fresh_wasm_selected_percent": {
+      "2": 99.75557,
+      "8": 98.91222,
+      "13": 92.22927,
+      "14": 99.37435
+    },
+    "native_all_pages": 29,
+    "native_below90_pages": [
+      20,
+      21,
+      28
+    ],
+    "native_changed_pages": [
+      13,
+      14
+    ],
+    "page_count": {
+      "native": 29,
+      "pdf": 29,
+      "wasm_export": 29
+    },
+    "native_off_canvas_count": 0,
+    "native_table_overlap_count": 0,
+    "focused_integration": {
+      "run": 112,
+      "passed": 112,
+      "failed": 0,
+      "exit_code": 0,
+      "runtime_seconds": 14.561
+    },
+    "counterexample": {
+      "source": "samples/issue6551/113424_evaluation_guideline.hwpx",
+      "page_count": 46,
+      "off_canvas": 1,
+      "original_off_canvas": 1
+    },
+    "wasm_build": "Mac local replacement --no-opt; exit0; not Docker validation",
+    "wasm_selected_visual_exit": 0,
+    "wasm_raster_pages": [
+      2,
+      8,
+      13,
+      14
+    ],
+    "source_code_sha256": {
+      "src/renderer/layout/table_layout.rs": "c3a90586160735cba5ff92dc2242e7b18c2bb95215fffb83c32f0c3668b7ac2d",
+      "src/renderer/layout/table_partial.rs": "9a312ededaa257c4d3be27c7b56e99f234fe70170de96dd0fd201ae9c4ec8946",
+      "src/renderer/typeset/table/continuation/fragment/emit.rs": "20ab0b35242f914a7fa8a7c363823ab21ef286255cb4bc1f43211a581f0ac5e1"
+    },
+    "native_binary_sha256": "e267bbadf58f6429fd924ddf9b47205c8263b45f69dac0d1365e1f75eabdebf2",
+    "wasm_binary_sha256": "8312c23bcd4baf1f09cac7a85ee475fa5bab28def2442ee9e1304cce3a0c6947",
+    "new_tests": 0,
+    "baseline_changes": 0,
+    "decision": "14쪽 보정 완료. sample2 20/21/28 및 다른 문서 시각과 최종 전체 검증은 미완료."
+  },
+  "sample2_single_tac_correction": {
+    "parent_head": "30bb77d6a",
+    "source": "samples/hwpx_sample2.hwpx",
+    "pdf": "pdf/hwpx_sample2-hwpx-2020.pdf",
+    "cause": "단일 TAC 원본 줄의 물리 여백·닫힌 다음 저장 원점을 버리는 경로 및 임시 lazy 축을 확정 배치에 고정하는 문제",
+    "source_geometry_hu": {
+      "body": 2614,
+      "outer_top": 141,
+      "outer_bottom": 141,
+      "line_height": 2896,
+      "line_spacing": 440,
+      "source_origin": 19104,
+      "next_origin": 22440
+    },
+    "native_target_percent": {
+      "19": 99.86666,
+      "20": 92.01064,
+      "21": 88.03303
+    },
+    "fresh_wasm_selected_percent": {
+      "1": 96.95128,
+      "2": 99.76191,
+      "19": 99.86666,
+      "20": 92.01064,
+      "21": 88.03303
+    },
+    "native_changed_pages": {
+      "1": [
+        97.95558,
+        96.95128
+      ],
+      "2": [
+        99.75557,
+        99.76191
+      ],
+      "20": [
+        85.82574,
+        92.01064
+      ]
+    },
+    "native_all_pages": 29,
+    "native_below90_pages": [
+      21,
+      28
+    ],
+    "page_count": {
+      "native": 29,
+      "pdf": 29,
+      "wasm_export": 29
+    },
+    "native_off_canvas_count": 0,
+    "native_table_overlap_count": 0,
+    "focused_integration": {
+      "run": 116,
+      "passed": 116,
+      "failed": 0,
+      "exit_code": 0,
+      "runtime_seconds": 15.333
+    },
+    "counterexample": {
+      "case": "issue_7312_tac_stored_band_no_wrap",
+      "baseline_head": "30bb77d6a",
+      "baseline_passed": 1,
+      "first_candidate_failed": 1,
+      "corrected_passed": 1,
+      "native_percent": 97.51354,
+      "fresh_wasm_percent": 97.51354,
+      "axis_hu": {
+        "temporary_lazy": 283,
+        "first_stored_table": 0
+      }
+    },
+    "fmt_exit": 0,
+    "wasm_build": "Mac local replacement --no-opt; exit0; 3m42s; not Docker validation",
+    "wasm_selected_visual_exit": 1,
+    "wasm_raster_pages": [
+      1,
+      2,
+      19,
+      20,
+      21
+    ],
+    "source_code_sha256": {
+      "src/renderer/typeset/controls.rs": "3e42be9e0a137a865cb26383329bf34f3f222a19d4e5bb507b2a427a7195e3e7",
+      "src/renderer/typeset/controls/stored_tac.rs": "31cb81a9d8cd0c743885156f3f61d18f79fbbfe5d8f4a93d298f9b8aa11af63c"
+    },
+    "native_binary_sha256": "efa1aeca8b6a881380a580a554034ad891d73156d440e019ea62baf36c7ffbc3",
+    "wasm_binary_sha256": "61c3f3dda61edaa4a12df9c47ca3cc651931d35459ed5821ac793657f33e298c",
+    "new_tests": 0,
+    "baseline_changes": 0,
+    "decision": "단일 TAC 제목 원점 보정 수용. 사용자 재검토 요청에 따라20쪽 마지막 행 물리 프레임 추가 개선,21/28쪽·다른 문서·최종 전체 검증은 미완료."
+  },
+  "sample2_plain_row_frame_correction": {
+    "parent_head": "ec4d6db52",
+    "source": "samples/hwpx_sample2.hwpx",
+    "pdf": "pdf/hwpx_sample2-hwpx-2020.pdf",
+    "cause": "비병합 행의 저장 문단 내부 쪽 경계에서 첫 물리 밴드를 버리고, 종료 행의 온전한 내용 fit을 수치 상한만으로 거절하는 회계",
+    "source_geometry_hu": {
+      "opening_frame": 54589,
+      "rows_before_split": 44108,
+      "split_row": 52986,
+      "first_split_part": 10481,
+      "remaining_split_part": 42505
+    },
+    "native_target_percent": {
+      "20": 99.92951,
+      "21": 94.47593
+    },
+    "fresh_wasm_selected_percent": {
+      "20": 99.92951,
+      "21": 94.47593
+    },
+    "native_all_pages": 29,
+    "native_below90_pages": [
+      28
+    ],
+    "native_changed_pages": [
+      20,
+      21
+    ],
+    "page_count": {
+      "native": 29,
+      "pdf": 29,
+      "wasm_export": 29
+    },
+    "native_off_canvas_count": 0,
+    "native_table_overlap_count": 0,
+    "focused_integration": {
+      "run": 116,
+      "passed": 116,
+      "failed": 0,
+      "exit_code": 0,
+      "runtime_seconds": 11.767
+    },
+    "text_ownership": {
+      "20": {
+        "text_run_count_before": 190,
+        "text_run_count_after": 190,
+        "ordered_text_ownership_unchanged": true,
+        "text_sha256": "3a3ec21554e3ec4c9910760ff7867830bb2a165cb9223b70d4b2cb00503df249"
+      },
+      "21": {
+        "text_run_count_before": 101,
+        "text_run_count_after": 101,
+        "ordered_text_ownership_unchanged": true,
+        "text_sha256": "baf5ce8095c481f180289a514b0a9598722b5c37b6be3b6d56847533b5a89c36"
+      }
+    },
+    "counterexample": {
+      "source": "samples/issue6551/113424_evaluation_guideline.hwpx",
+      "page_count": 46,
+      "off_canvas": 1,
+      "original_off_canvas": 1,
+      "overlap": 1,
+      "original_overlap": 1
+    },
+    "rejected_candidate": {
+      "description": "첫 프레임만 복원하여 종료 행의 내용 완결 fit을 수용하지 않는 후보",
+      "page_count": 30,
+      "off_canvas": 0,
+      "overlap": 0
+    },
+    "fmt_exit": 0,
+    "wasm_build": "Mac local replacement --no-opt; exit0; 3m06s; not Docker validation",
+    "wasm_selected_visual_exit": 0,
+    "wasm_raster_pages": [
+      20,
+      21
+    ],
+    "source_code_sha256": {
+      "src/renderer/layout/table_layout.rs": "61191001ba4a04282125c1cfe906d38c0777dec423ed164c78941a06a59cd22b",
+      "src/renderer/typeset/table/scan/runner/row_step.rs": "bdff6327d4bd724df49dd45b03759ed1e9ed592cef42814d94d123c13942fb52"
+    },
+    "native_binary_sha256": "0e0833e4874b98567d95c11896c12cff3c912049d9bbf810ab677e9a186740db",
+    "wasm_binary_sha256": "75a74bfa4257fbb049dbf15cf452974eaebc6b6843e6c7cf88211189102a595a",
+    "new_tests": 0,
+    "baseline_changes": 0,
+    "decision": "사용자 요청20쪽99% 이상 개선 및21쪽90% 이상 복원. 28쪽·다른 문서 시각과 최종 전체 검증은 미완료."
+  },
+  "sample2_crossing_span_correction": {
+    "parent_head": "7a71a3ee348657f886980b99ae82eba3c3873731",
+    "source": "samples/hwpx_sample2.hwpx",
+    "pdf": "pdf/hwpx_sample2-hwpx-2020.pdf",
+    "cause": "첫 프레임과 교차하지 않는 뒤행 병합셀의 소유를 첫 프레임 검증에 혼합하고, 컷행에서 시작한 원본 병합 선언과 행합 계약을 배제함",
+    "source_geometry_hu": {
+      "opening_frame": 74405,
+      "rows_before_split": 63595,
+      "split_row": 23607,
+      "first_split_part": 10810,
+      "remaining_split_part": 12797,
+      "opening_span_declared_and_raw_sum": 72792
+    },
+    "native_all_pages": 29,
+    "native_min_percent": 92.22927,
+    "native_below90_pages": [],
+    "native_changed_pages": [
+      27,
+      28
+    ],
+    "native_target_percent": {
+      "27": 99.56009,
+      "28": 99.91253
+    },
+    "page_count": {
+      "native": 29,
+      "pdf": 29,
+      "wasm": 29
+    },
+    "native_off_canvas_count": 0,
+    "native_table_overlap_count": 0,
+    "text_ownership": {
+      "27": {
+        "text_run_count_before": 153,
+        "text_run_count_after": 153,
+        "ordered_text_ownership_unchanged": true,
+        "text_sha256": "3d63c5bfd96fc4be3919702ba6f9b78d7fcffc87e268572b3034966640f9ac71"
+      },
+      "28": {
+        "text_run_count_before": 93,
+        "text_run_count_after": 93,
+        "ordered_text_ownership_unchanged": true,
+        "text_sha256": "506e853e42a4ac2b33e859c0d696f44ce2ae93465e68fea8b70199ca329cb1e9"
+      }
+    },
+    "whole_nextest": {
+      "parent_head": "7a71a3ee3",
+      "candidate": "uncommitted p28 crossing-only",
+      "summary": "Summary [ 556.165s] 10281 tests run: 10254 passed (6 slow), 27 failed, 50 skipped",
+      "exit_code": 100,
+      "failed_cases": [
+        "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_11",
+        "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_10",
+        "rhwp::regression_suite_006 off_canvas_baseline::off_canvas_does_not_grow_partition_3",
+        "rhwp::regression_suite_006 off_canvas_baseline::off_canvas_does_not_grow_partition_6",
+        "rhwp::regression_suite_006 off_canvas_baseline::off_canvas_does_not_grow_partition_9",
+        "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_1",
+        "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_12",
+        "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_13",
+        "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_14",
+        "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_15",
+        "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_6",
+        "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_1",
+        "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_9",
+        "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_14",
+        "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_2",
+        "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_5",
+        "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_7",
+        "rhwp::regression_suite_010 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only",
+        "rhwp::regression_suite_010 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_four_pages_preserve_question_paragraph_ownership",
+        "rhwp::regression_suite_010 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_master_page_footer_page_number_is_preserved",
+        "rhwp::regression_suite_012 issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page7",
+        "rhwp::regression_suite_012 issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page8",
+        "rhwp::regression_suite_012 issue_5875_nested_table_text_caption::issue_5875_page_count_stays_12",
+        "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_0",
+        "rhwp::regression_suite_017 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_11",
+        "rhwp::regression_suite_017 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_3",
+        "rhwp::regression_suite_024 issue_5782_fragment_span_charge::issue_5782_fragment_clip_covers_nested_table_bottom",
+        "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_11",
+        "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_10",
+        "rhwp::regression_suite_006 off_canvas_baseline::off_canvas_does_not_grow_partition_3",
+        "rhwp::regression_suite_006 off_canvas_baseline::off_canvas_does_not_grow_partition_6",
+        "rhwp::regression_suite_006 off_canvas_baseline::off_canvas_does_not_grow_partition_9",
+        "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_1",
+        "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_12",
+        "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_13",
+        "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_14",
+        "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_15",
+        "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_6",
+        "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_1",
+        "rhwp::regression_suite_008 body_overflow_baseline::body_overflow_does_not_grow_partition_9",
+        "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_14",
+        "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_2",
+        "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_5",
+        "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_7",
+        "rhwp::regression_suite_010 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only",
+        "rhwp::regression_suite_010 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_four_pages_preserve_question_paragraph_ownership",
+        "rhwp::regression_suite_010 issue_1100_exam_social_hwpx_header::issue_1100_hwpx_master_page_footer_page_number_is_preserved",
+        "rhwp::regression_suite_012 issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page7",
+        "rhwp::regression_suite_012 issue_5875_nested_table_text_caption::issue_5875_nested_table_text_captions_render_on_page8",
+        "rhwp::regression_suite_012 issue_5875_nested_table_text_caption::issue_5875_page_count_stays_12",
+        "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_0",
+        "rhwp::regression_suite_017 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_11",
+        "rhwp::regression_suite_017 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_3",
+        "rhwp::regression_suite_024 issue_5782_fragment_span_charge::issue_5782_fragment_clip_covers_nested_table_bottom"
+      ],
+      "log": "output/pr-review/planet6897-green-20261002/sample2-p28-crossing-full-nextest.log",
+      "log_sha256": "b0546e550045fbcdef7d4e7dbd3e25a22994846bb1e209f9bdb4d79f3abdaeba",
+      "integration_pr_ready": false
+    },
+    "parent_counterexamples": {
+      "candidate": {
+        "samples/issue5875/nested_table_text_caption.hwp": {
+          "pageCount": 11,
+          "offCanvasCount": 1,
+          "overlapCount": 0
+        },
+        "samples/issue5782/2181727_press_guard_test_methods.hwp": {
+          "pageCount": 11,
+          "offCanvasCount": 1,
+          "overlapCount": 0
+        },
+        "samples/issue6122/2181727_press_guard_test_method.hwp": {
+          "pageCount": 11,
+          "offCanvasCount": 1,
+          "overlapCount": 0
+        },
+        "samples/hwpx/exam_social.hwpx": {
+          "pageCount": 5,
+          "offCanvasCount": 0,
+          "overlapCount": 1
+        }
+      },
+      "parent": {
+        "samples/issue5875/nested_table_text_caption.hwp": {
+          "pageCount": 11,
+          "offCanvasCount": 1,
+          "overlapCount": 0
+        },
+        "samples/issue5782/2181727_press_guard_test_methods.hwp": {
+          "pageCount": 11,
+          "offCanvasCount": 1,
+          "overlapCount": 0
+        },
+        "samples/issue6122/2181727_press_guard_test_method.hwp": {
+          "pageCount": 11,
+          "offCanvasCount": 1,
+          "overlapCount": 0
+        },
+        "samples/hwpx/exam_social.hwpx": {
+          "pageCount": 5,
+          "offCanvasCount": 0,
+          "overlapCount": 1
+        }
+      }
+    },
+    "parent_counterexample_summary": "4종의 쪽수/용지밖/표겹침은 변경 전후 동일. 전체 실패 전부의 원인 배제를 뜻하지 않음",
+    "fresh_wasm": {
+      "mode": "Mac local no-opt substitute, not Docker",
+      "whole_pages": 29,
+      "min_percent": 92.22927,
+      "below90_pages": [],
+      "native_wasm_percent_identical": true,
+      "exit_code": 0
+    },
+    "integration_pr_ready": false,
+    "new_tests_or_baseline_changes": false,
+    "metric": "2px tolerant silhouette auxiliary, not exact pixel similarity",
+    "source_hashes": {
+      "samples/hwpx_sample2.hwpx": "188bdfe21f89e117d8897f4102aa6f741962b23a3019ad2aaf7bdc222d90fdb2",
+      "pdf/hwpx_sample2-hwpx-2020.pdf": "d69bf2c042f1b3f4713ad838c7d4f7817f2568cea62f1df78731086ebb8e81dc",
+      "src/renderer/layout/table_layout.rs": "f0de220fd0a81fd3a679d14b8714a7ae4ef6c5cb0c0853783b08ca18d3f10ed0"
+    },
+    "counterexample_6551": {
+      "page_count": 46,
+      "off_canvas": 1,
+      "overlap": 1,
+      "unchanged": true
+    },
+    "lint": {
+      "fmt_exit_code": 0,
+      "diff_check_exit_code": 0,
+      "workspace_all_targets_clippy_exit_code": 0,
+      "wasm32_clippy_exit_code": 0,
+      "native_root_clippy_exit_code": 0,
+      "suite_manifest_exit_code": 0,
+      "whole_document_metadata_exit_code": 1,
+      "metadata_errors": 16
+    },
+    "builds": {
+      "native_build": {
+        "exit_code": 0,
+        "log": "output/pr-review/planet6897-green-20261002/sample2-p28-final-native_build.log"
+      },
+      "fresh_wasm_build": {
+        "exit_code": 0,
+        "log": "output/pr-review/planet6897-green-20261002/sample2-p28-final-fresh_wasm_build.log"
+      }
+    },
+    "wasm_hashes": {
+      "pkg/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+      "pkg/rhwp_bg.wasm": "e1f3b1e7574dcfb796517396f8887800b91cd1fa27022eba5f5c40e211f5411c"
+    }
+  },
+  "latest_whole_nextest": {
+    "passed": 10288,
+    "failed": 0,
+    "skipped": 50,
+    "slow": 9,
+    "runtime_seconds": 497.515,
+    "exit_code": 0,
+    "log": "output/pr-review/planet6897-green-20261002/liver-p90-retry-whole-nextest.log"
+  },
+  "integration_pr_ready": true,
+  "current_base": "1d6bc70767fad365b07afe4ef57972d23b140f2b",
+  "latest_stage_evidence": "h01_correction_validation.json",
+  "current_focused_failures": [],
+  "renderer_candidate": "#6192 제목 여백·인용문 시작점·HFT 불릿 보정; 전2쪽 Native/fresh WASM 최저99.99263%, 기존 검사 유지",
+  "current_candidate_whole_nextest_validated": true,
+  "focused_resolved_since_latest_whole": [
+    "#6192",
+    "#7062"
+  ],
+  "latest_rebase_evidence": "rebase_latest_validation.json",
+  "remaining_latest_whole_blockers_after_focused": [],
+  "social6797_correction": {
+    "evidence": "social6797_correction_validation.json",
+    "pages": 11,
+    "native_wasm_min_percent": 95.80181,
+    "below90_pages": [],
+    "existing_test_functions": 5,
+    "focused_passed": 19,
+    "focused_failed": 0
+  },
+  "regulatory1921_deferral": {
+    "pages": 37,
+    "below90": 19,
+    "minimum_percent": 33.38675,
+    "removed_failed_tests": 1,
+    "preserved_passed_tests": 4,
+    "issue": 7445,
+    "validation_pending": false,
+    "after_focused_passed": 9
+  },
+  "h01_correction": {
+    "pages": 9,
+    "native_wasm_min_percent": 94.28413,
+    "below90_pages": [],
+    "focused_passed": 62,
+    "focused_failed": 0,
+    "final_validation_pending": false
+  },
+  "whole_b4293ab6b": {
+    "head": "b4293ab6b6910606d6cf2ceaf7f12ed9144f70ae",
+    "run": 10268,
+    "passed": 10254,
+    "failed": 14,
+    "skipped": 50,
+    "exit_code": 100,
+    "failed_cases": [
+      "regression_suite_001 issue_7103_tac_table_rewind::consecutive_tac_tables_do_not_rewind_to_the_previous_line_segment",
+      "regression_suite_001 issue_7103_tac_table_rewind::hancom_privacy_and_tutor_boundaries_match",
+      "regression_suite_001 issue_7103_tac_table_rewind::negative_saved_gap_is_not_clamped",
+      "regression_suite_001 issue_7103_tac_table_rewind::positive_saved_gap_is_preserved",
+      "regression_suite_004 text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+      "regression_suite_012 compat_generation_render_commands::compat_2024_changes_pagination_and_2022_is_the_default",
+      "regression_suite_017 issue_1749_saved_bounds_page_break::issue_1811_hwpx_pi52_rowbreak_cut_matches_hwp_reference",
+      "regression_suite_018 issue_5524_hangul2024_compat::hangul2024_compat_reclaims_tac_anchor_line_and_default_stays_2022",
+      "regression_suite_021 issue_598_footnote_marker_nav::issue_598_body_footnote_marker_has_hit_and_cursor_unit",
+      "regression_suite_021 issue_598_footnote_marker_nav::issue_598_second_body_footnote_marker_has_same_cursor_unit",
+      "regression_suite_024 issue_5731_cell_second_float_flow_anchor::issue_5731_second_cell_float_uses_stored_flow_anchor",
+      "regression_suite_028 issue_6812_square_picture_tac_table::issue_6812_following_text_respects_column_bottom_after_multiple_pictures",
+      "regression_suite_028 svg_snapshot::form_002_page_0",
+      "regression_suite_028 svg_snapshot::table_text_page_0"
+    ]
+  },
+  "final_validation": "final_validation.json"
+}

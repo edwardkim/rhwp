@@ -1,0 +1,14 @@
+{
+  "before_cli_sha256": "d7c86b2c8a562523e1e313216d9121d34675d8304587afceae00f69fcd72774a",
+  "after_cli_sha256": "9bbb85583cb1b5f176d94998d551c5d611e03121a8aae1a4e8a71124ef1c84e7",
+  "compared_pages": 103,
+  "changed_tree_pages": [
+    77
+  ],
+  "changed_image_pages": [
+    77
+  ],
+  "limitation": "전체 render-tree 수치 비교; 직접 시각 판독 대체 아님",
+  "normal_main_hwp_compared_pages": 215,
+  "normal_main_hwp_changed_tree_pages": []
+}

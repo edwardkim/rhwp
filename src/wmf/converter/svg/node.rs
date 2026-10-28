@@ -1,5 +1,8 @@
 use crate::wmf::imports::*;
 
+mod shared_bitmaps;
+pub(super) use shared_bitmaps::share_repeated_bitmaps;
+
 #[derive(Clone, Debug)]
 pub struct Node {
     typ: NodeType,
@@ -45,6 +48,27 @@ impl Node {
         }
 
         self
+    }
+
+    pub(super) fn attr(&self, name: &str) -> Option<&str> {
+        self.attrs.get(name).map(String::as_str)
+    }
+
+    /// 합성 ROP의 바깥 svg도 모든 자식이 공유하는 같은 장치 클립을 소비한다.
+    pub(super) fn shared_clip_reference(&self) -> Option<&str> {
+        if let Some(clip) = self.attr("clip-path") {
+            return Some(clip);
+        }
+        let clip = self.inner.first()?.shared_clip_reference()?;
+        self.inner
+            .iter()
+            .skip(1)
+            .all(|child| child.shared_clip_reference() == Some(clip))
+            .then_some(clip)
+    }
+
+    pub(super) fn has_name(&self, name: &str) -> bool {
+        matches!(&self.typ, NodeType::Node(value) if value == name)
     }
 
     fn escape_text(value: impl ToString) -> String {

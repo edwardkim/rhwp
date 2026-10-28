@@ -1,0 +1,151 @@
+{
+  "scope": "Generated diagnostic HWPX all seven language font fields; independent Hancom Print controls. Not physical-layout golden or original-font equivalence.",
+  "decision": "For a nonembedded TTF declaration and nonembedded TTF document substitute, English HCR Batang in the substitute field resolves to Haansoft Batang. Primary HCR Batang and Korean 함초롬바탕 retain HCR. Other substitutes, embedded programs and explicit caller selections retain precedence.",
+  "limits": [
+    "Only the TTF source/substitute boundary was independently probed; HFT and unknown declarations are unchanged.",
+    "No font/PDF/sample bytes redistributed. Names and hashes are aggregate measurements, not an assertion of outline identity."
+  ],
+  "controls": [
+    {
+      "control": "gothic-info-missing-hcr-en",
+      "inputSha256": "93561343ac400b7c0a075e67d6d91c48bff1a94300249a99aafb2c83a034d67e",
+      "pdfSha256": "8e68771f6ff4e4b740569f3c50d86a1553e12911f40c63cd83bdad289c89822f",
+      "engine": "2024",
+      "hancomVersion": "13.0.0.3901",
+      "printMethod": 0,
+      "outputMode": "frame_print_to_pdf_ex_one_up",
+      "preprocess": "none",
+      "pages": 1,
+      "embeddedPdfFontNames": [
+        "INPILL+Haansoft Batang"
+      ]
+    },
+    {
+      "control": "notype-missing-hcr-en",
+      "inputSha256": "f44be8505f00dfa00801529b61aefd03d30152526184ef58cedcd29834a03deb",
+      "pdfSha256": "4fd5b219caca76a62b31a203a37a03519bb12ec2b66fbff72e4dd36233f1c927",
+      "engine": "2024",
+      "hancomVersion": "13.0.0.3901",
+      "printMethod": 0,
+      "outputMode": "frame_print_to_pdf_ex_one_up",
+      "preprocess": "none",
+      "pages": 1,
+      "embeddedPdfFontNames": [
+        "INPILL+Haansoft Batang"
+      ]
+    },
+    {
+      "control": "notype-missing-hcr-ko",
+      "inputSha256": "7564c01003d2a835730518b11600ebc2146e7a2053611b16a93dbea67d4849d2",
+      "pdfSha256": "75d14c88f1a89ed549c4a34d498af799820e667e42c601437dfb6bb481390cd3",
+      "engine": "2024",
+      "hancomVersion": "13.0.0.3901",
+      "printMethod": 0,
+      "outputMode": "frame_print_to_pdf_ex_one_up",
+      "preprocess": "none",
+      "pages": 1,
+      "embeddedPdfFontNames": [
+        "INPILL+HCRBatang"
+      ]
+    },
+    {
+      "control": "notype-missing-arial",
+      "inputSha256": "0c237c57c9649bdeda8cd5851e341d08795d57018e1a8b68b3abfd43351831d4",
+      "pdfSha256": "47d51c18403c6079fdfd76b2a9892f6b6bd2a5993a71dc2001f5a1a80fa05090",
+      "engine": "2024",
+      "hancomVersion": "13.0.0.3901",
+      "printMethod": 0,
+      "outputMode": "frame_print_to_pdf_ex_one_up",
+      "preprocess": "none",
+      "pages": 1,
+      "embeddedPdfFontNames": [
+        "INPILL+ArialMT",
+        "INPILL+Haansoft Batang"
+      ]
+    },
+    {
+      "control": "notype-missing-hancom",
+      "inputSha256": "1b8e8f7db5c688b521b8ec7d1b7a8e3c6fba76c62b9acc51227c8d2fdfac6a9b",
+      "pdfSha256": "c50acde96f66e9964bdbd4a0d007fdfff0256d881949edf17b9aee12975be402",
+      "engine": "2024",
+      "hancomVersion": "13.0.0.3901",
+      "printMethod": 0,
+      "outputMode": "frame_print_to_pdf_ex_one_up",
+      "preprocess": "none",
+      "pages": 1,
+      "embeddedPdfFontNames": [
+        "INPILL+Haansoft Batang"
+      ]
+    },
+    {
+      "control": "notype-primary-hcr-en",
+      "inputSha256": "929adab8aa8d9d32494d06332eee4b3c27226c98a8136ff4b1903a3c2a454a13",
+      "pdfSha256": "6d3ea1e88b53a1e1ef9f7c5c7cf4cd12cc77710c3f5a41e85eb87a4c4624bb8d",
+      "engine": "2024",
+      "hancomVersion": "13.0.0.3901",
+      "printMethod": 0,
+      "outputMode": "frame_print_to_pdf_ex_one_up",
+      "preprocess": "none",
+      "pages": 1,
+      "embeddedPdfFontNames": [
+        "INPILL+HCRBatang"
+      ]
+    },
+    {
+      "control": "notype-primary-hcr-ko",
+      "inputSha256": "d2119be24253f9a00c357b73c0cff781f673892e1255767541c7828e708ce743",
+      "pdfSha256": "b3f52afcdb8166f9d589a5470cad62769e749a49a64ddceba7eb0fe17c9b021b",
+      "engine": "2024",
+      "hancomVersion": "13.0.0.3901",
+      "printMethod": 0,
+      "outputMode": "frame_print_to_pdf_ex_one_up",
+      "preprocess": "none",
+      "pages": 1,
+      "embeddedPdfFontNames": [
+        "INPILL+HCRBatang"
+      ]
+    },
+    {
+      "control": "engine2020-missing-hcr-en",
+      "inputSha256": "f44be8505f00dfa00801529b61aefd03d30152526184ef58cedcd29834a03deb",
+      "pdfSha256": "5a180455525bae9090b46fbe7f442031221eaf5980d603db16ff5bdb56cfff16",
+      "engine": "2020",
+      "hancomVersion": "11.0.0.9136",
+      "printMethod": 0,
+      "outputMode": "hancom2020_pdf_driver_one_up",
+      "preprocess": "none",
+      "pages": 1,
+      "embeddedPdfFontNames": [
+        "INPILL+Haansoft Batang"
+      ]
+    },
+    {
+      "control": "engine2020-missing-hcr-ko",
+      "inputSha256": "7564c01003d2a835730518b11600ebc2146e7a2053611b16a93dbea67d4849d2",
+      "pdfSha256": "e87d013c8c10bc3949f7cd0b41367e6d2d3391fd09c3e3dfe424598bba66d6a6",
+      "engine": "2020",
+      "hancomVersion": "11.0.0.9136",
+      "printMethod": 0,
+      "outputMode": "hancom2020_pdf_driver_one_up",
+      "preprocess": "none",
+      "pages": 1,
+      "embeddedPdfFontNames": [
+        "INPILL+HCRBatang"
+      ]
+    },
+    {
+      "control": "engine2020-primary-hcr-en",
+      "inputSha256": "929adab8aa8d9d32494d06332eee4b3c27226c98a8136ff4b1903a3c2a454a13",
+      "pdfSha256": "58b1dc6503501bdad24a0cca67438dc317f52d41d51189e788da5c40da9f8939",
+      "engine": "2020",
+      "hancomVersion": "11.0.0.9136",
+      "printMethod": 0,
+      "outputMode": "hancom2020_pdf_driver_one_up",
+      "preprocess": "none",
+      "pages": 1,
+      "embeddedPdfFontNames": [
+        "INPILL+HCRBatang"
+      ]
+    }
+  ]
+}

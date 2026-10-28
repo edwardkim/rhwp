@@ -1,0 +1,162 @@
+{
+  "repositoryId": 1193345564,
+  "run": {
+    "id": 34702678657,
+    "run_attempt": 2,
+    "name": "CI",
+    "path": ".github/workflows/ci.yml",
+    "head_sha": "85f08bda8e1b394e398c404004c27fd4bcd37fca",
+    "head_branch": "fix/5819-insert-table-options",
+    "event": "pull_request",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-09-12T15:35:16Z",
+    "run_started_at": "2026-09-12T15:52:42Z",
+    "pull_requests": [],
+    "repository": {
+      "id": 1193345564,
+      "full_name": "edwardkim/rhwp"
+    },
+    "head_repository": {
+      "id": 1193345564,
+      "full_name": "edwardkim/rhwp"
+    }
+  },
+  "pr": {
+    "number": 7068,
+    "created_at": "2026-09-12T15:29:54Z",
+    "merged_at": "2026-09-12T16:01:27Z",
+    "merged": true,
+    "merge_commit_sha": "3f34869b9c4d15a27b181dd22c63cd0a3730d46a",
+    "base": {
+      "ref": "devel",
+      "sha": "b116c11d0736fb1c105ed64bfc694b43dcd48b7d",
+      "repo": {
+        "id": 1193345564,
+        "full_name": "edwardkim/rhwp"
+      }
+    },
+    "head": {
+      "ref": "fix/5819-insert-table-options",
+      "sha": "85f08bda8e1b394e398c404004c27fd4bcd37fca",
+      "repo": {
+        "id": 1193345564,
+        "full_name": "edwardkim/rhwp"
+      }
+    }
+  },
+  "jobs": [
+    {
+      "id": 103579418249,
+      "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+      "run_id": 34702678657,
+      "run_attempt": 2,
+      "head_sha": "85f08bda8e1b394e398c404004c27fd4bcd37fca",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-09-12T15:42:17Z",
+      "completed_at": "2026-09-12T15:47:28Z"
+    },
+    {
+      "id": 103579418341,
+      "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+      "run_id": 34702678657,
+      "run_attempt": 2,
+      "head_sha": "85f08bda8e1b394e398c404004c27fd4bcd37fca",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-09-12T15:43:16Z",
+      "completed_at": "2026-09-12T15:47:49Z"
+    },
+    {
+      "id": 103579418376,
+      "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+      "run_id": 34702678657,
+      "run_attempt": 2,
+      "head_sha": "85f08bda8e1b394e398c404004c27fd4bcd37fca",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-09-12T15:43:18Z",
+      "completed_at": "2026-09-12T15:48:30Z"
+    }
+  ],
+  "originalJobs": [
+    {
+      "id": 103578018332,
+      "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+      "run_id": 34702678657,
+      "run_attempt": 1,
+      "head_sha": "85f08bda8e1b394e398c404004c27fd4bcd37fca",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-09-12T15:42:17Z",
+      "completed_at": "2026-09-12T15:47:28Z"
+    },
+    {
+      "id": 103578144430,
+      "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+      "run_id": 34702678657,
+      "run_attempt": 1,
+      "head_sha": "85f08bda8e1b394e398c404004c27fd4bcd37fca",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-09-12T15:43:16Z",
+      "completed_at": "2026-09-12T15:47:49Z"
+    },
+    {
+      "id": 103578147777,
+      "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+      "run_id": 34702678657,
+      "run_attempt": 1,
+      "head_sha": "85f08bda8e1b394e398c404004c27fd4bcd37fca",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-09-12T15:43:18Z",
+      "completed_at": "2026-09-12T15:48:30Z"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 10301655406,
+      "name": "nextest-target-durations-34702678657-attempt-1-c",
+      "expired": false,
+      "size_in_bytes": 41720,
+      "created_at": "2026-09-12T15:47:47Z",
+      "workflow_run": {
+        "id": 34702678657,
+        "repository_id": 1193345564,
+        "head_repository_id": 1193345564,
+        "head_branch": "fix/5819-insert-table-options",
+        "head_sha": "85f08bda8e1b394e398c404004c27fd4bcd37fca"
+      }
+    },
+    {
+      "id": 10301346099,
+      "name": "nextest-target-durations-34702678657-attempt-1-d",
+      "expired": false,
+      "size_in_bytes": 40130,
+      "created_at": "2026-09-12T15:47:26Z",
+      "workflow_run": {
+        "id": 34702678657,
+        "repository_id": 1193345564,
+        "head_repository_id": 1193345564,
+        "head_branch": "fix/5819-insert-table-options",
+        "head_sha": "85f08bda8e1b394e398c404004c27fd4bcd37fca"
+      }
+    },
+    {
+      "id": 10301251247,
+      "name": "nextest-target-durations-34702678657-attempt-1-b",
+      "expired": false,
+      "size_in_bytes": 52325,
+      "created_at": "2026-09-12T15:48:27Z",
+      "workflow_run": {
+        "id": 34702678657,
+        "repository_id": 1193345564,
+        "head_repository_id": 1193345564,
+        "head_branch": "fix/5819-insert-table-options",
+        "head_sha": "85f08bda8e1b394e398c404004c27fd4bcd37fca"
+      }
+    }
+  ]
+}

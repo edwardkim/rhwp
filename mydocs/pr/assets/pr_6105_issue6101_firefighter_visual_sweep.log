@@ -1,0 +1,10 @@
+== pr_6105_issue6101_firefighter ==
++ target/pr-review/release-test/rhwp dump-note-shape /home/tsjang/rhwp/samples/issue6101/36361137_firefighter_training_plan.hwpx
++ target/pr-review/release-test/rhwp export-svg /home/tsjang/rhwp/samples/issue6101/36361137_firefighter_training_plan.hwpx --font-style -o /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6105_issue6101_firefighter/svg
++ target/pr-review/release-test/rhwp export-render-tree /home/tsjang/rhwp/samples/issue6101/36361137_firefighter_training_plan.hwpx -o /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6105_issue6101_firefighter/render_tree
+SVG export pages: 12
++ pdftoppm -f 7 -l 7 -r 96 -png /home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6105_issue6101_firefighter_training_plan-local2020.pdf /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6105_issue6101_firefighter/pdf_png/pdf
++ pdftotext -bbox-layout /home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6105_issue6101_firefighter_training_plan-local2020.pdf /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6105_issue6101_firefighter/pdf_bbox.html
+Selected pages: [7]
+Raster PNG pages: rhwp=1, pdf=1
+summary: /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/summary.json

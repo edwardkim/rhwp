@@ -1,0 +1,33 @@
+
+running 3 tests
+test issue_7518_reflow_row_physical_frame::regulatory_39_wrapper_offset_and_physical_tail_advance_the_following_flow ... FAILED
+test issue_7518_reflow_row_physical_frame::regulatory_39_table_follows_its_title_and_blank_paragraph ... FAILED
+test issue_7518_reflow_row_physical_frame::regulatory_39_exact_fit_opinion_cell_keeps_padding_and_all_four_lines ... FAILED
+
+failures:
+
+---- issue_7518_reflow_row_physical_frame::regulatory_39_wrapper_offset_and_physical_tail_advance_the_following_flow stdout ----
+
+thread 'issue_7518_reflow_row_physical_frame::regulatory_39_wrapper_offset_and_physical_tail_advance_the_following_flow' (67626) panicked at tests/generated/../cases/issue_7518_reflow_row_physical_frame.rs:119:5:
+the wrapper's offset and top margins must be consumed once
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- issue_7518_reflow_row_physical_frame::regulatory_39_table_follows_its_title_and_blank_paragraph stdout ----
+
+thread 'issue_7518_reflow_row_physical_frame::regulatory_39_table_follows_its_title_and_blank_paragraph' (67625) panicked at tests/generated/../cases/issue_7518_reflow_row_physical_frame.rs:164:5:
+table overlaps its preceding blank paragraph/title
+
+---- issue_7518_reflow_row_physical_frame::regulatory_39_exact_fit_opinion_cell_keeps_padding_and_all_four_lines stdout ----
+
+thread 'issue_7518_reflow_row_physical_frame::regulatory_39_exact_fit_opinion_cell_keeps_padding_and_all_four_lines' (67624) panicked at tests/generated/../cases/issue_7518_reflow_row_physical_frame.rs:193:5:
+assertion `left == right` failed: an exact height fit must retain the four source-width lines
+  left: 3
+ right: 4
+
+
+failures:
+    issue_7518_reflow_row_physical_frame::regulatory_39_exact_fit_opinion_cell_keeps_padding_and_all_four_lines
+    issue_7518_reflow_row_physical_frame::regulatory_39_table_follows_its_title_and_blank_paragraph
+    issue_7518_reflow_row_physical_frame::regulatory_39_wrapper_offset_and_physical_tail_advance_the_following_flow
+
+test result: FAILED. 0 passed; 3 failed; 0 ignored; 0 measured; 234 filtered out; finished in 4.08s

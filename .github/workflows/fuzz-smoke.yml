@@ -54,7 +54,7 @@ jobs:
           toolchain: nightly
 
       - name: Cache cargo-fuzz + sanitizer build
-        uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2.9.1
+        uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2.9.3 이후 workspace root key 보정
         with:
           workspaces: fuzz
           shared-key: fuzz-smoke-${{ matrix.target }}

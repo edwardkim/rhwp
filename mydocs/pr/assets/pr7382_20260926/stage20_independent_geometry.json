@@ -1,0 +1,234 @@
+{
+  "input": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+  "input_sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+  "reference": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+  "reference_sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59",
+  "reference_page_count": 215,
+  "pdf_marker_and_notes": {
+    "121": [
+      {
+        "text": "- 1980년 왕실명령은 생체장기를 이식하는 의료기관의 조건을 규정함.159) 시설과 인력 등의 기준",
+        "top_96dpi": 349.7325846354167,
+        "bbox_pt": [
+          70.91999816894531,
+          262.2994384765625,
+          524.280029296875,
+          272.35577392578125
+        ]
+      },
+      {
+        "text": "- 1980년 왕실명령은 1999년 새로운 왕실명령(Royal Decree 2070/1999)으로 대체됨.160) 생체장기 ",
+        "top_96dpi": 803.0126139322916,
+        "bbox_pt": [
+          70.91999816894531,
+          602.2594604492188,
+          529.3795166015625,
+          612.3157958984375
+        ]
+      },
+      {
+        "text": "159) https://www.boe.es/buscar/doc.php?id=BOE-A-1980-5627",
+        "top_96dpi": 1011.7285970052084,
+        "bbox_pt": [
+          70.91999816894531,
+          758.7964477539062,
+          323.67535400390625,
+          767.556396484375
+        ]
+      },
+      {
+        "text": "160) https://www.boe.es/buscar/doc.php?id=BOE-A-2000-79",
+        "top_96dpi": 1027.568603515625,
+        "bbox_pt": [
+          70.91999816894531,
+          770.6764526367188,
+          314.07470703125,
+          779.4364013671875
+        ]
+      }
+    ],
+    "122": [
+      {
+        "text": "나. 기증자-이식대상자 관계 확인 및 본인확인절차를 포함한 장기 기증 관련 승인 절차161)",
+        "top_96dpi": 323.0126139322917,
+        "bbox_pt": [
+          70.91999816894531,
+          242.25946044921875,
+          487.27899169921875,
+          252.3157958984375
+        ]
+      },
+      {
+        "text": "161) Chapter 13.1. Aspectos generales. EL MODELO ESPAÑOL de Coordinación y Trasplantes",
+        "top_96dpi": 1027.568603515625,
+        "bbox_pt": [
+          70.91999816894531,
+          770.6764526367188,
+          455.02532958984375,
+          779.4364013671875
+        ]
+      }
+    ]
+  },
+  "source_para": 1297,
+  "source_line_segs": [
+    {
+      "textpos": "0",
+      "vertpos": "54000",
+      "vertsize": "1000",
+      "textheight": "1000",
+      "baseline": "850",
+      "spacing": "1000",
+      "horzpos": "0",
+      "horzsize": "45352",
+      "flags": "393216"
+    },
+    {
+      "textpos": "73",
+      "vertpos": "56000",
+      "vertsize": "1000",
+      "textheight": "1000",
+      "baseline": "850",
+      "spacing": "1000",
+      "horzpos": "0",
+      "horzsize": "45352",
+      "flags": "393216"
+    },
+    {
+      "textpos": "125",
+      "vertpos": "58000",
+      "vertsize": "1000",
+      "textheight": "1000",
+      "baseline": "850",
+      "spacing": "1000",
+      "horzpos": "0",
+      "horzsize": "45352",
+      "flags": "393216"
+    },
+    {
+      "textpos": "183",
+      "vertpos": "60000",
+      "vertsize": "1000",
+      "textheight": "1000",
+      "baseline": "850",
+      "spacing": "1000",
+      "horzpos": "0",
+      "horzsize": "45352",
+      "flags": "393216"
+    },
+    {
+      "textpos": "233",
+      "vertpos": "62000",
+      "vertsize": "1000",
+      "textheight": "1000",
+      "baseline": "850",
+      "spacing": "1000",
+      "horzpos": "0",
+      "horzsize": "45352",
+      "flags": "393216"
+    },
+    {
+      "textpos": "292",
+      "vertpos": "64000",
+      "vertsize": "1000",
+      "textheight": "1000",
+      "baseline": "850",
+      "spacing": "1000",
+      "horzpos": "0",
+      "horzsize": "45352",
+      "flags": "393216"
+    },
+    {
+      "textpos": "350",
+      "vertpos": "66000",
+      "vertsize": "1000",
+      "textheight": "1000",
+      "baseline": "850",
+      "spacing": "1000",
+      "horzpos": "0",
+      "horzsize": "45352",
+      "flags": "393216"
+    },
+    {
+      "textpos": "410",
+      "vertpos": "0",
+      "vertsize": "1000",
+      "textheight": "1000",
+      "baseline": "850",
+      "spacing": "1000",
+      "horzpos": "0",
+      "horzsize": "45352",
+      "flags": "393216"
+    },
+    {
+      "textpos": "463",
+      "vertpos": "2000",
+      "vertsize": "1000",
+      "textheight": "1000",
+      "baseline": "850",
+      "spacing": "1000",
+      "horzpos": "0",
+      "horzsize": "45352",
+      "flags": "393216"
+    },
+    {
+      "textpos": "515",
+      "vertpos": "4000",
+      "vertsize": "1000",
+      "textheight": "1000",
+      "baseline": "850",
+      "spacing": "1000",
+      "horzpos": "0",
+      "horzsize": "45352",
+      "flags": "393216"
+    }
+  ],
+  "source_run_nodes": [
+    [
+      "t",
+      "- 1980년 왕실명령은 1999년 새로운 왕실명령(Royal Decree 2070/1999)으로 대체됨.",
+      []
+    ],
+    [
+      "ctrl",
+      "",
+      [
+        {
+          "number": "160",
+          "suffixChar": "41",
+          "instId": "1937553270"
+        }
+      ]
+    ],
+    [
+      "t",
+      " 생체장기 이식을 ‘이식의 결과가 매우 성공적인 경우로만 제한함’이란 조건이 추가되었으며 기증 승인을 위해 이식이 이루어지는 병원의 윤리위원회에서 보고서를 제출하는 것이 의무화되었음(Article 9. 2) 그리고 자치 지방에서 개별 가이드라인에 따라 병원을 인증하되 일정 기한에만 유효하고 재인증받도록 함.(Article 12.4) 자치 지방은 보건복지부에 인증 결과를 고지하고 인증받은 의료기관은 등록부에 등록됨.(Article 12.7) 생존 장기이식이 이루어지는 병원은 사망한 사람으로부터 장기를 적출하는 센터로 인증받은 동시에 장기 이식 센터로 인증받은 병원이어야 함.(Atticle 10.a) 그 외 병원 인증을 위한 조건에 수술 전 기증자 검사와 합병증 치료를 위한 시설, 적합하게 기증자를 선택하고 장기를 적출하고 수술 후 장기 추적할 수 있는 프로토콜을 갖추어 장기 이식의 질을 유지해야 함이 조건으로 추가됨.(Article 11)",
+      []
+    ]
+  ],
+  "native_hwp_control": {
+    "input": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+    "input_sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113",
+    "reference": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+    "reference_sha256": "b87a6f945fdf752ce603f8aa7b50dbccd38a8dea783e2581acee8a3f6af35916",
+    "page_count": 215,
+    "notes": {
+      "121": [
+        {
+          "text": "159) https://www.boe.es/buscar/doc.php?id=BOE-A-1980-5627",
+          "top_96dpi": 1011.7285970052084
+        },
+        {
+          "text": "160) https://www.boe.es/buscar/doc.php?id=BOE-A-2000-79",
+          "top_96dpi": 1027.568603515625
+        }
+      ],
+      "122": [
+        {
+          "text": "161) Chapter 13.1. Aspectos generales. EL MODELO ESPAÑOL de Coordinación y Trasplantes",
+          "top_96dpi": 1027.568603515625
+        }
+      ]
+    }
+  }
+}

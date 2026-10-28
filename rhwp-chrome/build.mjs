@@ -99,6 +99,8 @@ copy(resolve(__dirname, '_locales'), resolve(DIST, '_locales'));
 // 않으므로 viewer.html 의 <script src="/theme-init.js"> 가 가리키는 파일을 개별 복사한다.
 // 확장 CSP('self')는 인라인을 금지하므로 인라인 대신 이 외부 파일을 쓴다.
 copy(resolve(ROOT, 'rhwp-studio', 'public', 'theme-init.js'), resolve(DIST, 'theme-init.js'));
+// 언어 선택도 번들 전 동기 실행한다(publicDir:false이므로 직접 포함).
+copy(resolve(ROOT, 'rhwp-studio', 'public', 'locale-init.js'), resolve(DIST, 'locale-init.js'));
 
 // [#3433] 인쇄 surface. print-surface.ts 가 'print.html' 을 확장 루트 기준 상대 경로로
 // 열므로(new URL(surfacePath, baseUrl)) dist 최상위에 있어야 한다. 같은 확장 origin 이라
@@ -130,6 +132,12 @@ const fontFiles = readdirSync(fontDir).filter((f) => f.endsWith('.woff2'));
 for (const font of fontFiles) {
   copy(resolve(fontDir, font), resolve(DIST, 'fonts', font));
 }
+// 폰트 재배포에는 권리자 고지와 라이선스 전문도 필수다. 누락 시 빌드를 실패시킨다.
+cpSync(resolve(fontDir, 'licenses'), resolve(DIST, 'fonts', 'licenses'), { recursive: true });
+for (const license of readdirSync(fontDir).filter((file) => file.endsWith('-OFL.txt'))) {
+  copy(resolve(fontDir, license), resolve(DIST, 'fonts', license));
+}
+copy(resolve(ROOT, 'THIRD_PARTY_LICENSES.md'), resolve(DIST, 'THIRD_PARTY_LICENSES.md'));
 console.log(`  woff2 ${fontFiles.length}개 복사`);
 
 // [#3433] 필수 산출물 게이트. copy() 는 원본이 없으면 SKIP 경고만 내고 넘어가므로,
@@ -140,6 +148,7 @@ const REQUIRED_DIST_FILES = [
   'viewer.html',
   'print.html', // print-surface.ts 가 확장 루트 기준으로 연다
   'theme-init.js',
+  'locale-init.js',
   'icons/icon-256.png', // viewer.html apple-touch-icon
   'wasm/rhwp.js',
   'wasm/rhwp_bg.wasm',

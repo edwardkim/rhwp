@@ -1,0 +1,244 @@
+{
+  "schema_version": 2,
+  "key": "terminal-audit",
+  "provenance": {
+    "hwp": {
+      "path": "tests/fixtures/pr7518_review_page_budget/valid_generated/terminal-follower.hwp",
+      "sha256": "e9402a615c7c40404f7df2e76b27471f8ef9a9813698c25a61b43577b7b227f5"
+    },
+    "pdf": {
+      "path": "pdf/pr7518_review/valid_generated/terminal-follower-2020.pdf",
+      "sha256": "2d4af0e69b7f04f69d7b97a4774b86e4f55ca7b029df6e05ccc83f59fc4e6cf3"
+    },
+    "git_head": "cb2e1b0769d2e7080edb236e0019402216247aae",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee",
+      "path": "output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee",
+      "sha256": "3382011a113dd3ce9bab7906d61ac5a33db8d05015240b9d4696e40c9883bb88"
+    },
+    "font_supply": {
+      "mode": "full",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/ARIALN.TTF",
+          "sha256": "cad552553cf2a75afca01955751aaa115e2a64fd6c6eea42e1fbd236630b7e0a"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/ARIALNB.TTF",
+          "sha256": "6c4a4b643461def5411e0217b74a625dcf2fb681252ef5da1db0af4eae80aa7e"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/ARIALNBI.TTF",
+          "sha256": "161b859efd20c69ddebb23012a49f4f2030d56a0c1b9bcfd4df753217ce3e358"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/ARIALNI.TTF",
+          "sha256": "faf73aa7ce40b77ad19c09507a2263fe3f3ce9fa5642e8a1cd54fb3c9f52d599"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/ARIALUNI.TTF",
+          "sha256": "fe50313c37c2eca0bbf8cc3565b5ef32314753889afbe44cb275d65c3b58f0df"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/H2GPRM.TTF",
+          "sha256": "5d44c3bf2ab83b773e292eb91d6373fdbc11364532064ebb961ee8181ae54335"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/H2GSRB.TTF",
+          "sha256": "b5679c0b4eee4f53ddc591defc5f3d657bcf052c7afff27ac41d07be67480163"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/H2GTRE.TTF",
+          "sha256": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/H2GTRM.TTF",
+          "sha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/H2HDRM.TTF",
+          "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/H2MJRE.TTF",
+          "sha256": "2fda1cc69297fe605ee8804984d26666c2543b0ec22b8f50031123a18d81924e"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/H2MJSM.TTF",
+          "sha256": "f78f538885b29f956cf84286e430898462d11430604625857ad587c0ea73925b"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/H2MKPB.TTF",
+          "sha256": "5d9865627d7f72e01c51f766bf8f485bee126188eb9c07c0df02d263a54b2d6a"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/H2PORL.TTF",
+          "sha256": "e9d3cb723faef0e6d3811b9c2de31349fb78733e23024f086a93c0c14d2b9b68"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/H2PORM.TTF",
+          "sha256": "2c8c6ffca6665eca867079be0e184c8783f63031e01def94264c5a429b03c622"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/H2SA1M.TTF",
+          "sha256": "4fd98912d979331de61cf0705741b6946ea0013fa0b7b34fa273ed18afdaba4a"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/HANBatang.ttf",
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/HANBatangB.ttf",
+          "sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/HANBatangExt.ttf",
+          "sha256": "f88d957a26dd5a6360424e37b6d25b4192a83d922b7ac1fa9fb92d34e579afe4"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/HANBatangExtB.ttf",
+          "sha256": "c9c8ec1f6c295be9254157fdbddef9df93f5f4b6c55e8683214b50368c50c381"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/HANBatangExtBB.ttf",
+          "sha256": "594860a83ffb618c76f1a08ab1708b2ad62bf533c919065e2527d7fbe69c497d"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/HANDotum.ttf",
+          "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/HANDotumB.ttf",
+          "sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/HANDotumExt.ttf",
+          "sha256": "a2828746031f9e725b667ab1e5c96b553b6b42d24d55669a4472605692f8807c"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/HANWing2.ttf",
+          "sha256": "ea1138df0143c26a1b8150b67a4c4a16e1839fa77cfbf7d8655fd6d3dd497f52"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/HMFMMUEX.TTC",
+          "sha256": "be52401ea71e34d7c52bffacf25f95e3cc0bfdadc8a2a1f377d458f22484f7b7"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/HMFMOLD.TTF",
+          "sha256": "3b2e7ec32c6c64edd80ef6c0cd685c461e78f76afba4ec9b21467fe0e3f5e0de"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/HMFMPYUN.TTF",
+          "sha256": "39d01b794c09d199f08248656aee098f208ebde82fb87cd395714546863cbc37"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/HMKMAMI.TTF",
+          "sha256": "ca0da5f083be40d27772d4482f05947c3c5091585189aadc64900aaf914baf3f"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/HMKMM.TTF",
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/HMKMMAG.TTF",
+          "sha256": "ee9a3250e1198ac5960f9ead0cf4d32c99b80a4adc94ed782526e2ddd4853529"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/HMKMRHD.TTF",
+          "sha256": "950272dc7af1fb7cdd4c33f74f0619256b9ac84d5d3815f1c295b590bd2243e2"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/arial.ttf",
+          "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/arialbd.ttf",
+          "sha256": "e8f4e3baf6cc35fed6fcce3a540e8b39e8f6cda1d22a28f2ec8f526fef7a43f5"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/arialbi.ttf",
+          "sha256": "267a411525980d648f10a7222a6ff1ebe4d4feeefbf9b3100cae2b5cfab5594a"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/ariali.ttf",
+          "sha256": "86b32db9a06f9694e2a3760c42e5117bcdc5cc1255bb5186ca8ce0305e22f288"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/cour.ttf",
+          "sha256": "e4a66a0259718d0c8f4b6e14319b4803ced45afbddf3abba8b8c3e2006856206"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/courbd.ttf",
+          "sha256": "11e629cef937cd08f942aa1bd994a71302dbe2819c72c6d4c183a623acbb421a"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/courbi.ttf",
+          "sha256": "2d61f452de49b57d9ef14ce8896bc1cd2ed8285c2e9fb2e73e78a4b23f91d308"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/couri.ttf",
+          "sha256": "d82eeeb458f661d867f916d691fc6d3c53f8735fe4d5b04b54a5757321ee03e0"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/malgun.ttf",
+          "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/malgunbd.ttf",
+          "sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/malgunsl.ttf",
+          "sha256": "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/symbol.ttf",
+          "sha256": "bbf1192965e5266fbf23370416337d2861fc1e8bd349def93f2994ba67382fc3"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/times.ttf",
+          "sha256": "931c5de5c70401d9324d5014c123802b4fb753000360ceb2f56c589403cd58c5"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/timesbd.ttf",
+          "sha256": "54fbe2c70af7c85a97bed0573227e3ccc4b2486012e3ca2a40c6bc77065846f5"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/timesbi.ttf",
+          "sha256": "3a29d114cb5229e8dbda5bef6c69be4a210a13b7277de4d66e9fc86963226f6c"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/timesi.ttf",
+          "sha256": "e7f7a88b65188328aea58670f955022e23c712f55679524729da1e4e03c49d88"
+        },
+        {
+          "path": "/tmp/rhwp-pr7518-font-cache/wingding.ttf",
+          "sha256": "9bcd6064e3b52fa30a347edd6e82506e2ec8b1602930b423c629a82c10468a5b"
+        }
+      ]
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [
+    1,
+    2,
+    3
+  ],
+  "requested_page_shards": [
+    [
+      1,
+      2,
+      3
+    ]
+  ],
+  "run_state": "complete"
+}

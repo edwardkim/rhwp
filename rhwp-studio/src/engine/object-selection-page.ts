@@ -52,3 +52,18 @@ export function summarizeObjectSelection(
 export function clearObjectEditingPage(eventTarget: EditingPageEventTarget): void {
   eventTarget.emit('editing-page-changed', null);
 }
+
+/** 객체 bbox의 page-local 좌표를 scroll-content 좌표로 한 번만 변환한다. */
+export function objectSelectionViewportBox(
+  box: ObjectSelectionBox,
+  zoom: number,
+  pageLeft: number,
+  pageOffset: number,
+): { left: number; top: number; width: number; height: number } {
+  return {
+    left: pageLeft + box.x * zoom,
+    top: pageOffset + box.y * zoom,
+    width: box.w * zoom,
+    height: box.h * zoom,
+  };
+}

@@ -5,7 +5,7 @@
 
 use byteorder::{LittleEndian, ReadBytesExt};
 use snafu::Snafu;
-use std::io::{self, Cursor, Read, Seek};
+use std::io::{self, Cursor, Read};
 
 #[derive(Debug, Snafu)]
 pub enum Hwp3OleError {

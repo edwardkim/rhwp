@@ -6,6 +6,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from regression_document_scope import is_deferred_regression_input
+
 ROOT = Path(__file__).resolve().parents[1]
 FIX = ROOT / "tests" / "fixtures" / "char_shapes"
 OUT = ROOT / "src" / "serializer" / "hwpx" / "char_shape_tables"
@@ -26,7 +28,7 @@ def gen_same_id() -> None:
         for line in (FIX / "corpus_same_id_para_char_shapes.jsonl").read_text(
             encoding="utf-8"
         ).splitlines()
-        if line
+        if line and not is_deferred_regression_input(json.loads(line).get("file", ""))
     ]
     lines = [
         "//! Same-id PARA_CHAR_SHAPE 코퍼스 — HWPX 왕복이 접으면 안 되는 경계.",
@@ -93,14 +95,14 @@ def gen_shape_catalog() -> None:
         for line in (FIX / "corpus_char_shape_tables.jsonl").read_text(
             encoding="utf-8"
         ).splitlines()
-        if line
+        if line and not is_deferred_regression_input(json.loads(line).get("file", ""))
     ]
     same_files = {
         json.loads(line)["file"]
         for line in (FIX / "corpus_same_id_para_char_shapes.jsonl").read_text(
             encoding="utf-8"
         ).splitlines()
-        if line
+        if line and not is_deferred_regression_input(json.loads(line).get("file", ""))
     }
     lines = [
         "//! DocInfo CHAR_SHAPE / HWPX hh:charPr 미리보기 카탈로그.",
@@ -246,7 +248,7 @@ def gen_same_id_tsv() -> None:
         for line in (FIX / "corpus_same_id_para_char_shapes.jsonl").read_text(
             encoding="utf-8"
         ).splitlines()
-        if line
+        if line and not is_deferred_regression_input(json.loads(line).get("file", ""))
     ]
     out = [
         "file\tkind\tsection\tpara\ttext_units\tidx\tstart_pos\tchar_shape_id\tsame_id_extra"

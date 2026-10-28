@@ -69,7 +69,7 @@ export interface RendererSessionOptions {
   ) => CanvasKitDocumentPreflight;
   prepareCanvasKitDocument?: (
     renderer: CanvasKitLayerRenderer,
-    preflight: CanvasKitDocumentPreflight,
+    preflight: CanvasKitDocumentPreflight | null,
   ) => Promise<void>;
 }
 
@@ -332,7 +332,7 @@ export class RendererSession {
         preflight,
       );
     }
-    if (preflight && this.options.prepareCanvasKitDocument) {
+    if (this.options.prepareCanvasKitDocument) {
       try {
         await this.options.prepareCanvasKitDocument(renderer, preflight);
       } catch (error) {

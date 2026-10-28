@@ -31,6 +31,9 @@ pub struct Token {
     /// 이 토큰 앞에 일반 공백이 있었는지. 무브레이스 첨자 operand 의 경계 판정에 쓰인다
     /// (HWP 수식에서 일반 공백은 시각적으로는 무의미하나 operand 구분자 역할을 한다, #1304).
     pub space_before: bool,
+    /// 저장 문서의 백슬래시 문자 전환으로 선택된 정체 글리프다.
+    /// 인자 소유·토큰 위치·공백 경계와 독립적인 표시 속성이다.
+    pub roman_literal: bool,
 }
 
 impl Token {
@@ -40,6 +43,7 @@ impl Token {
             value: value.into(),
             pos,
             space_before: false,
+            roman_literal: false,
         }
     }
 
@@ -49,6 +53,7 @@ impl Token {
             value: String::new(),
             pos,
             space_before: false,
+            roman_literal: false,
         }
     }
 }
@@ -59,6 +64,10 @@ pub struct Tokenizer {
     pos: usize,
     /// 직전 `next_token` 호출이 토큰 앞에서 일반 공백을 건너뛰었는지 (#1304).
     last_had_space: bool,
+    /// 저장 문서의 한컴 명령 해석과 공개 LaTeX 호환 해석을 구분한다.
+    document_commands: bool,
+    /// 빈 버전의 구형 사전에는 COLOR가 없으며 COL의 붙은 인자로 해석된다.
+    legacy_document_commands: bool,
 }
 
 impl Tokenizer {
@@ -67,6 +76,22 @@ impl Tokenizer {
             chars: script.chars().collect(),
             pos: 0,
             last_had_space: false,
+            document_commands: false,
+            legacy_document_commands: false,
+        }
+    }
+
+    pub(crate) fn for_document(script: &str) -> Self {
+        Self {
+            document_commands: true,
+            ..Self::new(script)
+        }
+    }
+
+    pub(crate) fn for_legacy_document(script: &str) -> Self {
+        Self {
+            legacy_document_commands: true,
+            ..Self::for_document(script)
         }
     }
 
@@ -135,13 +160,30 @@ impl Tokenizer {
     /// [Task #576] times/sim 연산자 키워드도 변수와 인접 시 분리.
     /// HWP 수식 script 에서 "{a timesm}" → "a × m", "rm X simZ" → "X ~ Z"
     /// 의미. 광범위 sweep (158 fixture / 563 unique scripts) 결과 결함 발현
-    /// 키워드는 times/sim 만 (대소문자 4 개). alpha/sqrt 등은 항상 공백
-    /// 구분되어 prefix-split 불필요 — 그리스 문자 prefix 충돌 회귀 위험 0.
+    /// 키워드는 times/sim이었다 (대소문자 4개). 그리스 기호도 한컴 명령이며
+    /// 붙은 피연산자와 분리한다. 문자 그대로의 문자열은 따옴표로 구분한다.
     ///
     /// [Task #1122] HWP 수식 script 에서 분모 숫자가 OVER/ATOP 에 붙는 경우
     /// (`11 over20`, `3 over5`)가 있어 over/atop 뒤가 숫자인 경우에만 분리한다.
     fn read_command(&mut self) -> Token {
         let start = self.pos;
+
+        // 한컴 Print는 OVERSET을 OVER + SET으로 읽지만 OVERLINE은
+        // 하나의 장식 명령으로 읽는다. 긴 명령을 먼저 읽고 남은 항을
+        // 다음 토큰에 맡긴다. 혼합 대소문자를 새로운 명령으로 합치지 않는다.
+        if self.document_commands {
+            for name in ["OVERLINE", "UNDERLINE", "OVER", "UNDER", "ATOP"] {
+                if self.matches_at(name) || self.matches_at(&name.to_ascii_lowercase()) {
+                    self.pos += name.len();
+                    let value = if name == "UNDER" {
+                        "UNDERLINE".to_owned()
+                    } else {
+                        self.chars[start..self.pos].iter().collect()
+                    };
+                    return Token::new(TokenType::Command, value, start);
+                }
+            }
+        }
 
         // OVER/ATOP 분리: 뒤가 숫자(#1122, 임의 길이) 또는 [#1204-E] 짧은(≤2) 글자
         // 피연산자(`overa^2`,`overdx`)면 분리. 단 `overlap`/`overline` 등 긴 word·keyword 는
@@ -169,14 +211,19 @@ impl Tokenizer {
             }
         }
 
+        // 글꼴 전환은 붙은 식별자에서도 parser와 같은 대소문자 규칙을 쓴다.
+        // 토큰의 원래 철자는 보존하고 나머지 피연산자만 다음 토큰으로 남긴다.
         for kw in [
             "bold", "it", "rm", "times", "sim", "TIMES", "SIM", "RM", "IT", "BOLD",
         ] {
-            if self.matches_at(kw) {
+            let matches = self.matches_at(kw)
+                || (matches!(kw, "bold" | "it" | "rm") && self.matches_at_ascii_ci(kw));
+            if matches {
                 let after = self.peek(kw.len());
                 if matches!(after, Some(c) if c.is_ascii_alphanumeric()) {
                     self.pos += kw.len();
-                    return Token::new(TokenType::Command, kw, start);
+                    let value: String = self.chars[start..self.pos].iter().collect();
+                    return Token::new(TokenType::Command, value, start);
                 }
             }
         }
@@ -193,6 +240,14 @@ impl Tokenizer {
                     return Token::new(TokenType::Command, kw, start);
                 }
             }
+        }
+
+        // 곱셈 기호에 숫자가 붙어도 같은 연산자·피연산자 경계다.
+        // cdots나 cdotValue 같은 다른 명령·식별자는 숫자 조건에 해당하지 않는다.
+        if self.matches_at_ascii_ci("cdot") && self.peek(4).is_some_and(|ch| ch.is_ascii_digit()) {
+            self.pos += 4;
+            let value = self.chars[start..self.pos].iter().collect::<String>();
+            return Token::new(TokenType::Command, value, start);
         }
 
         // [#1204-C] prime 이 글자/숫자에 붙은 경우 분리 (`primeF`→′ F).
@@ -213,6 +268,37 @@ impl Tokenizer {
                 self.pos += 1;
             } else {
                 break;
+            }
+        }
+
+        // COL 계열도 붙은 피연산자와 분리한다. 현대 사전의 COLOR는 더 긴 별도 명령이다.
+        // 따옴표·백슬래시 문자 전환과 공개 호환 tokenizer에는 적용하지 않는다.
+        let modern_color =
+            !self.legacy_document_commands && value.to_ascii_uppercase().starts_with("COLOR");
+        if self.document_commands && !modern_color {
+            for name in ["LCOL", "RCOL", "COL"] {
+                if value.len() > name.len() && value[..name.len()].eq_ignore_ascii_case(name) {
+                    self.pos = start + name.len();
+                    return Token::new(TokenType::Command, value[..name.len()].to_string(), start);
+                }
+            }
+        }
+
+        // 알려진 그리스 기호와 RIGHT가 닫는 구분자 앞에서 붙은 경우다.
+        // sigmaRIGHT )를 문자로 그리지 않으며 뒤의 구분자 경계를 보존한다.
+        if let Some(prefix_len) = value
+            .len()
+            .checked_sub(5)
+            .filter(|&len| len > 0 && value[len..].eq_ignore_ascii_case("right"))
+        {
+            let next = self.chars[self.pos..]
+                .iter()
+                .copied()
+                .find(|ch| !ch.is_ascii_whitespace());
+            let greek_symbol = is_greek_command(&value[..prefix_len]);
+            if matches!(next, Some(')' | ']' | '}' | '|')) && greek_symbol {
+                self.pos = start + prefix_len;
+                return Token::new(TokenType::Command, value[..prefix_len].to_string(), start);
             }
         }
 
@@ -289,7 +375,19 @@ impl Tokenizer {
                 break;
             }
         }
-        Token::new(TokenType::Command, value, start)
+        if self.document_commands && !value.is_empty() {
+            // 저장 문서의 백슬래시는 뒤 명령 이름을 문자로 남긴다.
+            // 공개 tokenizer의 LaTeX 확장과 pm/mp 별칭은 별도로 유지한다.
+            return Token::new(TokenType::Text, value, start);
+        }
+        // LaTeX 확장과 한컴의 일반 pm/mp 식별자를 구분한다.
+        match value.as_str() {
+            "pm" => Token::new(TokenType::Command, "PLUSMINUS", start),
+            "mp" => Token::new(TokenType::Command, "MINUSPLUS", start),
+            // 한컴 NOT의 한 글자 소비와 LaTeX의 그룹 인자를 구별한다.
+            "not" => Token::new(TokenType::Command, r"\not", start),
+            _ => Token::new(TokenType::Command, value, start),
+        }
     }
 
     /// 다중 문자 기호 읽기 (<=, >=, !=, ==, <<, >>, <<<, >>>)
@@ -299,6 +397,18 @@ impl Tokenizer {
         let next = self.peek(1).unwrap_or('\0');
         let third = self.peek(2).unwrap_or('\0');
 
+        // 붙은 부호와 화살표의 우선순위는 공개 API와 문서 경로가 공유한다.
+        // `+->`는 `±`와 `>`, `<-+`는 아래 화살표 분기의 `<-`와 `+`다.
+        // 공백·Unicode minus·인용은 이 축약에 포함하지 않는다.
+        if let Some(symbol) = match (ch, next) {
+            ('+', '-') => Some("±"),
+            ('-', '+') => Some("∓"),
+            _ => None,
+        } {
+            self.pos += 2;
+            return Some(Token::new(TokenType::Symbol, symbol, start));
+        }
+
         // 3문자 기호
         if (ch == '<' || ch == '>') && next == ch && third == ch {
             self.pos += 3;
@@ -306,10 +416,14 @@ impl Tokenizer {
             return Some(Token::new(TokenType::Symbol, s, start));
         }
 
-        // -> (화살표 축약)
-        if ch == '-' && next == '>' {
+        // 붙은 ASCII 화살표 축약. `<`-`의 명시적 공백은 이 축약이 아니다.
+        if matches!((ch, next), ('-', '>') | ('<', '-')) {
             self.pos += 2;
-            return Some(Token::new(TokenType::Symbol, "->", start));
+            return Some(Token::new(
+                TokenType::Symbol,
+                [ch, next].iter().collect::<String>(),
+                start,
+            ));
         }
 
         // 2문자 기호
@@ -463,11 +577,26 @@ impl Tokenizer {
             return Token::new(TokenType::Symbol, sym, start);
         }
 
+        // Unicode 산술·관계·논리 기호는 비-ASCII 피연산자와 붙어도 독립 기호다.
+        if !ch.is_ascii()
+            && (super::symbols::is_relation_symbol(&ch.to_string())
+                || super::symbols::is_binary_symbol(&ch.to_string())
+                || super::symbols::is_logical_symbol(&ch.to_string()))
+        {
+            self.pos += 1;
+            return Token::new(TokenType::Symbol, ch.to_string(), start);
+        }
+
         // 기타 문자 (한글 등) — 연속 비-ASCII 문자를 하나의 Text 토큰으로
         if !ch.is_ascii() {
             let mut value = String::new();
             while let Some(c) = self.current() {
-                if c.is_ascii() || c == ' ' {
+                if c.is_ascii()
+                    || c == ' '
+                    || super::symbols::is_relation_symbol(&c.to_string())
+                    || super::symbols::is_binary_symbol(&c.to_string())
+                    || super::symbols::is_logical_symbol(&c.to_string())
+                {
                     break;
                 }
                 value.push(c);
@@ -515,9 +644,9 @@ fn is_eq_keyword(s: &str) -> bool {
 }
 
 /// [#1204-E] glued 분리에 **안전한** 키워드 allowlist (소문자, 대소문자 무시 비교).
-/// hwpeq 에서 피연산자에 공백 없이 붙는 게 흔하고, 변수/그리스/`over`·`root` 등
-/// 모호 prefix 와 충돌하지 않는 명령만 포함한다.
-/// (제외: greek(alphabet), over/atop(overlap, #1122), root/sqrt(rootn), arg/max(argmax),
+/// hwpeq에서 피연산자에 붙는 명령이다. 그리스 기호 명령은 별도 기호표에서
+/// 확인하며, 문자 그대로의 식별자는 따옴표로 보호한다.
+/// (제외: over/atop(overlap, #1122), root/sqrt(rootn), arg/max(argmax),
 ///  ge/le 2자(LEFT 등 충돌) — 이들은 분리하지 않는다.)
 const GLUE_SAFE: &[&str] = &[
     // 삼각/쌍곡 함수 (longest-first 는 is_eq_keyword whole-check 가 보장)
@@ -533,6 +662,7 @@ const GLUE_SAFE: &[&str] = &[
     "sec",
     "csc",
     "cot",
+    "min",
     // 장식
     "overrightarrow",
     "overleftarrow",
@@ -542,6 +672,8 @@ const GLUE_SAFE: &[&str] = &[
     "underline",
     "bar",
     "vec",
+    // [#7593] dyad(양쪽 화살표) — `rm dyadAB` 처럼 붙여 쓰는 표기가 흔하다.
+    "dyad",
     "hat",
     "tilde",
     "dot",
@@ -566,9 +698,18 @@ const GLUE_SAFE: &[&str] = &[
     "ddots",
 ];
 
+/// 기호표가 실제 그리스 문자 하나로 해석하는 명령만 접두사로 분리한다.
+/// 대소문자별 그리스 이름은 기호표의 기존 계약을 그대로 따른다.
+fn is_greek_command(command: &str) -> bool {
+    super::symbols::lookup_symbol(command).is_some_and(|symbol| {
+        let mut chars = symbol.chars();
+        matches!((chars.next(), chars.next()), (Some(ch), None) if ('\u{0370}'..='\u{03ff}').contains(&ch))
+    })
+}
+
 fn is_glue_safe(s: &str) -> bool {
     let lower = s.to_ascii_lowercase();
-    GLUE_SAFE.contains(&lower.as_str())
+    GLUE_SAFE.contains(&lower.as_str()) || is_greek_command(s)
 }
 
 /// [#1204-E] glued identifier 의 앞쪽에 붙은 allowlist 키워드의 최장 prefix 길이.
@@ -584,384 +725,14 @@ fn longest_keyword_prefix(value: &str) -> Option<usize> {
 
 /// 수식 스크립트를 토큰 리스트로 변환
 pub fn tokenize(script: &str) -> Vec<Token> {
-    Tokenizer::new(script).tokenize()
+    // [#7105] 레거시 hwpeq5 OLE 방언(`\CMD 인자 \TAB`)은 먼저 현행 문법으로 옮긴다.
+    // 게이트는 `\TAB` 존재이므로 현행 스크립트는 원문 그대로 지나간다.
+    match super::legacy_hwpeq::normalize(script) {
+        Some(normalized) => Tokenizer::new(&normalized).tokenize(),
+        None => Tokenizer::new(script).tokenize(),
+    }
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn values(tokens: &[Token]) -> Vec<&str> {
-        tokens
-            .iter()
-            .filter(|t| t.ty != TokenType::Eof)
-            .map(|t| t.value.as_str())
-            .collect()
-    }
-
-    fn types(tokens: &[Token]) -> Vec<TokenType> {
-        tokens
-            .iter()
-            .filter(|t| t.ty != TokenType::Eof)
-            .map(|t| t.ty)
-            .collect()
-    }
-
-    #[test]
-    fn test_simple_fraction() {
-        let tokens = tokenize("1 over 2");
-        assert_eq!(values(&tokens), vec!["1", "over", "2"]);
-        assert_eq!(
-            types(&tokens),
-            vec![TokenType::Number, TokenType::Command, TokenType::Number]
-        );
-    }
-
-    #[test]
-    fn test_task1122_over_atop_followed_by_number_splits() {
-        let tokens = tokenize("11 over20");
-        assert_eq!(values(&tokens), vec!["11", "over", "20"]);
-        assert_eq!(
-            types(&tokens),
-            vec![TokenType::Number, TokenType::Command, TokenType::Number]
-        );
-
-        let tokens = tokenize("7 OVER10");
-        assert_eq!(values(&tokens), vec!["7", "OVER", "10"]);
-        assert_eq!(
-            types(&tokens),
-            vec![TokenType::Number, TokenType::Command, TokenType::Number]
-        );
-
-        let tokens = tokenize("a atop2");
-        assert_eq!(values(&tokens), vec!["a", "atop", "2"]);
-    }
-
-    #[test]
-    fn test_task1122_over_prefix_non_numeric_identifiers_stay_intact() {
-        let tokens = tokenize("overlap overline overset");
-        assert_eq!(values(&tokens), vec!["overlap", "overline", "overset"]);
-
-        let tokens = tokenize(r"\overline{AB}");
-        assert_eq!(values(&tokens), vec!["overline", "{", "AB", "}"]);
-    }
-
-    #[test]
-    fn test_superscript() {
-        let tokens = tokenize("E=mc^2");
-        assert_eq!(values(&tokens), vec!["E", "=", "mc", "^", "2"]);
-    }
-
-    #[test]
-    fn test_subscript_superscript() {
-        let tokens = tokenize("sum_{i=0}^n");
-        assert_eq!(
-            values(&tokens),
-            vec!["sum", "_", "{", "i", "=", "0", "}", "^", "n"]
-        );
-    }
-
-    #[test]
-    fn test_whitespace_chars() {
-        let tokens = tokenize("a~b`c#d&e");
-        let ws_tokens: Vec<_> = tokens
-            .iter()
-            .filter(|t| t.ty == TokenType::Whitespace)
-            .map(|t| t.value.as_str())
-            .collect();
-        assert_eq!(ws_tokens, vec!["~", "`", "#", "&"]);
-    }
-
-    #[test]
-    fn test_korean_text() {
-        let tokens = tokenize("평점=입찰가격");
-        assert_eq!(
-            types(&tokens),
-            vec![TokenType::Text, TokenType::Symbol, TokenType::Text]
-        );
-        assert_eq!(values(&tokens), vec!["평점", "=", "입찰가격"]);
-    }
-
-    #[test]
-    fn test_quoted_string() {
-        let tokens = tokenize("\"1234567890\" over 5");
-        assert_eq!(
-            types(&tokens),
-            vec![TokenType::Quoted, TokenType::Command, TokenType::Number]
-        );
-        assert_eq!(values(&tokens), vec!["1234567890", "over", "5"]);
-    }
-
-    #[test]
-    fn test_multi_char_symbols() {
-        let tokens = tokenize("a <= b >= c != d == e");
-        let syms: Vec<_> = tokens
-            .iter()
-            .filter(|t| t.ty == TokenType::Symbol)
-            .map(|t| t.value.as_str())
-            .collect();
-        assert_eq!(syms, vec!["<=", ">=", "!=", "=="]);
-    }
-
-    #[test]
-    fn test_pua_conditional_bar() {
-        // #1343: 한컴 수식 PUA 조건부 막대 U+E04D → 단일 `|` 기호와 동일 토큰
-        let tokens = tokenize("rm P LEFT ( it A \u{E04D} B RIGHT )");
-        let bar: Vec<_> = tokens
-            .iter()
-            .filter(|t| t.ty == TokenType::Symbol)
-            .map(|t| t.value.as_str())
-            .collect();
-        assert_eq!(bar, vec!["|"]);
-        // PUA 원형 코드포인트가 토큰에 남지 않아야 한다(두부 방지)
-        assert!(tokens.iter().all(|t| !t.value.contains('\u{E04D}')));
-    }
-
-    #[test]
-    fn test_arrow() {
-        let tokens = tokenize("x->0");
-        assert_eq!(values(&tokens), vec!["x", "->", "0"]);
-    }
-
-    #[test]
-    fn test_left_right() {
-        let tokens = tokenize("LEFT ( a over b RIGHT )");
-        assert_eq!(
-            values(&tokens),
-            vec!["LEFT", "(", "a", "over", "b", "RIGHT", ")"]
-        );
-    }
-
-    #[test]
-    fn test_matrix() {
-        let tokens = tokenize("matrix{a & b # c & d}");
-        assert_eq!(
-            values(&tokens),
-            vec!["matrix", "{", "a", "&", "b", "#", "c", "&", "d", "}"]
-        );
-    }
-
-    #[test]
-    fn test_decimal_number() {
-        let tokens = tokenize("3.14");
-        assert_eq!(types(&tokens), vec![TokenType::Number]);
-        assert_eq!(values(&tokens), vec!["3.14"]);
-    }
-
-    #[test]
-    fn test_sample_eq01() {
-        // 실제 eq-01.hwp 수식 스크립트의 일부
-        let tokens = tokenize("TIMES  LEFT ( {최저입찰가격} over {해당입찰가격} RIGHT )");
-        let cmds: Vec<_> = tokens
-            .iter()
-            .filter(|t| t.ty == TokenType::Command)
-            .map(|t| t.value.as_str())
-            .collect();
-        assert!(cmds.contains(&"TIMES"));
-        assert!(cmds.contains(&"LEFT"));
-        assert!(cmds.contains(&"over"));
-        assert!(cmds.contains(&"RIGHT"));
-    }
-
-    // Task #488: 폰트 스타일 키워드(rm/it/bold) prefix 분리
-
-    #[test]
-    fn test_font_style_prefix_rm_uppercase() {
-        let tokens = tokenize("rmK ^{+}");
-        assert_eq!(values(&tokens), vec!["rm", "K", "^", "{", "+", "}"]);
-    }
-
-    #[test]
-    fn test_font_style_prefix_rm_compound() {
-        let tokens = tokenize("rmCa ^{2+}");
-        assert_eq!(values(&tokens), vec!["rm", "Ca", "^", "{", "2", "+", "}"]);
-    }
-
-    #[test]
-    fn test_font_style_prefix_rm_lowercase() {
-        let tokens = tokenize("1`rmmol");
-        assert_eq!(values(&tokens), vec!["1", "`", "rm", "mol"]);
-    }
-
-    #[test]
-    fn test_font_style_prefix_it_compound() {
-        let tokens = tokenize("LEFT ( itaq RIGHT )");
-        assert_eq!(values(&tokens), vec!["LEFT", "(", "it", "aq", "RIGHT", ")"]);
-    }
-
-    #[test]
-    fn test_font_style_prefix_it_single_letter() {
-        let tokens = tokenize("LEFT ( itl RIGHT )");
-        assert_eq!(values(&tokens), vec!["LEFT", "(", "it", "l", "RIGHT", ")"]);
-    }
-
-    #[test]
-    fn test_font_style_prefix_bold() {
-        let tokens = tokenize("boldX");
-        assert_eq!(values(&tokens), vec!["bold", "X"]);
-    }
-
-    #[test]
-    fn test_font_style_keyword_alone_unchanged() {
-        // 키워드 직후가 공백/기호/EOF: 분리하지 않고 그대로 키워드
-        let tokens = tokenize("rm K");
-        assert_eq!(values(&tokens), vec!["rm", "K"]);
-        let tokens = tokenize("it{x}");
-        assert_eq!(values(&tokens), vec!["it", "{", "x", "}"]);
-        let tokens = tokenize("rm");
-        assert_eq!(values(&tokens), vec!["rm"]);
-    }
-
-    // [#1204-A] root/sqrt 가 숫자에 붙은 경우 분리 (`root3`→√3)
-    #[test]
-    fn test_root_sqrt_prefix_split_on_digit() {
-        assert_eq!(values(&tokenize("root3 y")), vec!["root", "3", "y"]);
-        assert_eq!(values(&tokenize("sqrt5")), vec!["sqrt", "5"]);
-        assert_eq!(
-            values(&tokenize("2 over {root3 a}")),
-            vec!["2", "over", "{", "root", "3", "a", "}"]
-        );
-        // 관계연산자도 숫자에 붙으면 분리 (`GEQ5`→≥5, `GE0`→≥0)
-        assert_eq!(values(&tokenize("GEQ5")), vec!["GEQ", "5"]);
-        assert_eq!(values(&tokenize("GE0")), vec!["GE", "0"]);
-        assert_eq!(values(&tokenize("LEQ3")), vec!["LEQ", "3"]);
-        // 숫자가 아니면 분리하지 않음 (letter 변수 충돌 회피)
-        assert_eq!(values(&tokenize("rootn")), vec!["rootn"]);
-        // 중괄호/공백 형태는 영향 없음
-        assert_eq!(
-            values(&tokenize("root {4} of {x}")),
-            vec!["root", "{", "4", "}", "of", "{", "x", "}"]
-        );
-    }
-
-    // [#1204-C] prime 이 alnum 에 붙은 경우 분리 (`primeF`→′ F)
-    #[test]
-    fn test_prime_prefix_split() {
-        assert_eq!(values(&tokenize("F primeF")), vec!["F", "prime", "F"]);
-        // 공백 형태는 기존대로
-        assert_eq!(values(&tokenize("f prime")), vec!["f", "prime"]);
-    }
-
-    // [#1204-E] 함수/장식/관계연산자/도형 키워드가 글자에 붙은 경우 allowlist 분리.
-    #[test]
-    fn test_glued_keyword_letter_split() {
-        assert_eq!(values(&tokenize("tanx")), vec!["tan", "x"]);
-        assert_eq!(values(&tokenize("sinx")), vec!["sin", "x"]);
-        assert_eq!(values(&tokenize("barMH")), vec!["bar", "MH"]);
-        assert_eq!(values(&tokenize("LEQb")), vec!["LEQ", "b"]);
-        assert_eq!(values(&tokenize("trianglePQR")), vec!["triangle", "PQR"]);
-        // chain: rm + bar + FF
-        assert_eq!(values(&tokenize("rmbarFF")), vec!["rm", "bar", "FF"]);
-        // longest-match: cosh 는 cos+h 로 쪼개지지 않음
-        assert_eq!(values(&tokenize("coshx")), vec!["cosh", "x"]);
-    }
-
-    // [#1204-E] 회귀 가드: greek/root/arg 등 모호 prefix 는 분리 금지.
-    #[test]
-    fn test_glued_keyword_no_oversplit() {
-        assert_eq!(values(&tokenize("alphabet")), vec!["alphabet"]); // greek 제외
-        assert_eq!(values(&tokenize("argmax")), vec!["argmax"]); // arg/max 제외
-        assert_eq!(values(&tokenize("rootn")), vec!["rootn"]); // root letter 제외
-    }
-
-    // [#1204-E] cap/cup (집합연산) 가 글자에 붙은 경우 분리 (`capB`→∩ B)
-    #[test]
-    fn test_cap_cup_glued_split() {
-        assert_eq!(values(&tokenize("capB")), vec!["cap", "B"]);
-        assert_eq!(values(&tokenize("cupB")), vec!["cup", "B"]);
-    }
-
-    // [#1204] 생략기호 연접 분리 (`cdotscdots`→⋯⋯). 단일/공백형은 기존대로.
-    #[test]
-    fn test_dots_glued_split() {
-        assert_eq!(values(&tokenize("cdotscdots")), vec!["cdots", "cdots"]);
-        assert_eq!(values(&tokenize("cdots")), vec!["cdots"]);
-        assert_eq!(values(&tokenize("a cdots b")), vec!["a", "cdots", "b"]);
-        assert_eq!(values(&tokenize("ldotsldots")), vec!["ldots", "ldots"]);
-    }
-
-    // [#1204-E] over/atop 가 짧은(≤2) 글자 피연산자에 붙으면 분리(분수), 긴 word 는 유지.
-    #[test]
-    fn test_over_glued_short_letter_operand() {
-        assert_eq!(values(&tokenize("overa")), vec!["over", "a"]);
-        assert_eq!(values(&tokenize("overdx")), vec!["over", "dx"]);
-        assert_eq!(values(&tokenize("x overy")), vec!["x", "over", "y"]);
-        // 가드: 긴 word(≥3) 및 keyword 는 유지 (#1122)
-        assert_eq!(values(&tokenize("overlap")), vec!["overlap"]);
-        assert_eq!(values(&tokenize("overline")), vec!["overline"]);
-        assert_eq!(values(&tokenize("overset")), vec!["overset"]);
-    }
-
-    #[test]
-    fn test_existing_commands_unchanged() {
-        // 기존 명령은 회귀 없음
-        let tokens = tokenize("OVER MATRIX SQRT alpha beta");
-        assert_eq!(
-            values(&tokens),
-            vec!["OVER", "MATRIX", "SQRT", "alpha", "beta"]
-        );
-    }
-
-    #[test]
-    fn test_latex_command_prefix() {
-        let tokens = tokenize(r"\frac{1}{2}");
-        assert_eq!(
-            types(&tokens),
-            vec![
-                TokenType::Command,
-                TokenType::LBrace,
-                TokenType::Number,
-                TokenType::RBrace,
-                TokenType::LBrace,
-                TokenType::Number,
-                TokenType::RBrace,
-            ]
-        );
-        assert_eq!(values(&tokens), vec!["frac", "{", "1", "}", "{", "2", "}"]);
-    }
-
-    // Task #576: times/sim 연산자 키워드 prefix 분리
-
-    #[test]
-    fn test_task576_times_lowercase_prefix_split() {
-        let tokens = tokenize("a timesm");
-        assert_eq!(values(&tokens), vec!["a", "times", "m"]);
-    }
-
-    #[test]
-    fn test_task576_sim_lowercase_prefix_split() {
-        let tokens = tokenize("rm X simZ");
-        assert_eq!(values(&tokens), vec!["rm", "X", "sim", "Z"]);
-    }
-
-    #[test]
-    fn test_task576_times_uppercase_prefix_split() {
-        let tokens = tokenize("1TIMES10");
-        assert_eq!(values(&tokens), vec!["1", "TIMES", "10"]);
-    }
-
-    #[test]
-    fn test_task576_sim_uppercase_prefix_split() {
-        let tokens = tokenize("rmA SIMC");
-        assert_eq!(values(&tokens), vec!["rm", "A", "SIM", "C"]);
-    }
-
-    #[test]
-    fn test_task576_alpha_no_split() {
-        // 회귀 차단: alpha 는 그 자체 keyword 이므로 분리되면 안 됨
-        let tokens = tokenize("alpha");
-        assert_eq!(values(&tokens), vec!["alpha"]);
-        // alphabet 은 일반 식별자 — 분리되지 않아야 함
-        let tokens = tokenize("alphabet");
-        assert_eq!(values(&tokens), vec!["alphabet"]);
-    }
-
-    #[test]
-    fn test_task576_times_followed_by_space() {
-        // 키워드 다음 공백/기호 오면 분리 불필요 (기존 동작 보존)
-        let tokens = tokenize("a times b");
-        assert_eq!(values(&tokens), vec!["a", "times", "b"]);
-        let tokens = tokenize("rmA SIM C");
-        assert_eq!(values(&tokens), vec!["rm", "A", "SIM", "C"]);
-    }
-}
+#[path = "tokenizer/tests.rs"]
+mod tests;

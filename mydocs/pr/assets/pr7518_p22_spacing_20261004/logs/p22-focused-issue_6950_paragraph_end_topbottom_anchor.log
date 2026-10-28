@@ -1,0 +1,37 @@
+[RustTestSuite] issue_6950_paragraph_end_topbottom_anchor -> regression_suite_012::issue_6950_paragraph_end_topbottom_anchor
+[RustTestSuite] cargo test --locked --target-dir /home/edward/mygithub/rhwp/target/pr-review --test regression_suite_012 issue_6950_paragraph_end_topbottom_anchor::
+   Compiling rhwp v0.8.6 (/tmp/rhwp-pr7518-review-20261004)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.61s
+     Running tests/generated/regression_suite_012.rs (/home/edward/mygithub/rhwp/target/pr-review/debug/deps/regression_suite_012-18ab4d818e5ea8d7)
+
+running 28 tests
+test issue_6950_paragraph_end_topbottom_anchor::occupied_bands_move_the_box_not_the_anchor_and_are_order_independent ... ok
+test issue_6950_paragraph_end_topbottom_anchor::paragraph_completion_uses_occupied_end_once_in_either_emission_order ... ok
+test issue_6950_paragraph_end_topbottom_anchor::computed_host_rejects_invalid_rows_and_other_wrap_owners ... ok
+test issue_6950_paragraph_end_topbottom_anchor::a_control_after_a_hard_break_is_not_a_width_wrapped_text_tail ... ok
+test issue_6950_paragraph_end_topbottom_anchor::anchor_origin_translation_is_applied_once ... ok
+test issue_6950_paragraph_end_topbottom_anchor::first_fragment_uses_paragraph_reference_not_text_or_outer_box ... ok
+test issue_6950_paragraph_end_topbottom_anchor::computed_anchor_uses_scalar_positions_and_not_stored_geometry ... ok
+test issue_6950_paragraph_end_topbottom_anchor::first_fragment_real_fixture_matches_paragraph_offset_without_extra_margins ... ok
+test issue_6950_paragraph_end_topbottom_anchor::floating_band_consumes_flow_only_when_the_tail_line_has_insufficient_space ... ok
+test issue_6950_paragraph_end_topbottom_anchor::object_only_paragraph_preserves_outer_frames_and_finishes_once ... ok
+test issue_6950_paragraph_end_topbottom_anchor::paragraph_text_table_and_following_text_do_not_overlap ... ok
+test issue_6950_paragraph_end_topbottom_anchor::page_last_line_consumes_the_resolved_source_frame ... ok
+test issue_6950_paragraph_end_topbottom_anchor::preceding_tables_and_page_count_are_preserved ... ok
+test issue_6950_paragraph_end_topbottom_anchor::centered_wrapper_preserves_its_cell_frame_and_nested_table_origin ... ok
+test issue_6950_paragraph_end_topbottom_anchor::reflowed_host_does_not_use_stale_stored_line_coordinates ... ok
+test issue_6950_paragraph_end_topbottom_anchor::split_computed_host_publishes_fragment_local_placements ... ok
+test issue_6950_paragraph_end_topbottom_anchor::unproven_source_coordinates_do_not_supply_a_stored_plan ... ok
+test issue_6950_paragraph_end_topbottom_anchor::tail_table_closes_its_paragraph_before_successor_line_advance ... ok
+test issue_6950_paragraph_end_topbottom_anchor::wrap_semantics_are_not_reclassified_as_topbottom ... ok
+test issue_6950_paragraph_end_topbottom_anchor::typeset_publishes_a_computed_placement_for_the_current_frame ... ok
+test issue_6950_paragraph_end_topbottom_anchor::computed_frame_placement_reaches_paint_and_following_flow ... ok
+test issue_6950_paragraph_end_topbottom_anchor::top_caption_is_inside_the_reserved_box_before_the_table_body ... ok
+test issue_6950_paragraph_end_topbottom_anchor::split_and_deferred_computed_tables_preserve_host_and_paint_inside_frame ... ok
+test issue_6950_paragraph_end_topbottom_anchor::shorter_body_does_not_hide_table_overflow_by_moving_it_over_host_text ... ok
+test issue_6950_paragraph_end_topbottom_anchor::wrapper_alignment_variants_consume_the_cell_space_once ... ok
+test issue_6950_paragraph_end_topbottom_anchor::paragraph_start_controls_are_not_reclassified_as_text_tail_anchors ... ok
+test issue_6950_paragraph_end_topbottom_anchor::stored_band_origin_requires_measured_successor_agreement_and_valid_source ... ok
+test issue_6950_paragraph_end_topbottom_anchor::stored_tail_table_paints_border_and_cell_content_from_the_same_origin ... ok
+
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 179 filtered out; finished in 1.98s

@@ -6,6 +6,7 @@ import { userSettings } from '@/core/user-settings';
 import type { FontSet } from '@/core/user-settings';
 import { getLocalFonts } from '@/core/local-fonts';
 
+import { t } from '../i18n/index.ts';
 type FontMenuCategory = 'all' | 'current' | 'document' | 'fontSets' | 'system';
 
 interface FontMenuEntry {
@@ -16,11 +17,11 @@ interface FontMenuEntry {
 const BASE_FONTS = ['함초롬바탕', '함초롬돋움', '맑은 고딕', '나눔고딕', '바탕', '돋움', '궁서'];
 
 const FONT_MENU_CATEGORIES: ReadonlyArray<{ id: FontMenuCategory; label: string }> = [
-  { id: 'all', label: '모든 글꼴' },
-  { id: 'current', label: '현재 글꼴' },
-  { id: 'document', label: '문서 글꼴' },
-  { id: 'fontSets', label: '대표 글꼴' },
-  { id: 'system', label: '시스템 글꼴' },
+  { id: 'all', label: t('dialog.toolbar.label') },
+  { id: 'current', label: t('dialog.toolbar.label.xd6736f') },
+  { id: 'document', label: t('dialog.toolbar.label.x59330b') },
+  { id: 'fontSets', label: t('dialog.toolbar.label.xfef286') },
+  { id: 'system', label: t('dialog.toolbar.label.x8a1767') },
 ];
 
 /** 서식 도구 모음 (style-bar) 컨트롤러 */
@@ -49,6 +50,7 @@ export class Toolbar {
   private btnLsUp: HTMLButtonElement;
   private btnLsDown: HTMLButtonElement;
   private fontLang: HTMLSelectElement;
+  private alignButtons: Array<{ button: HTMLButtonElement; alignment: string }> = [];
 
   private enabled = false;
   private styleDropdownInitialized = false;
@@ -129,6 +131,10 @@ export class Toolbar {
       btn.addEventListener('mousedown', (e) => {
         e.preventDefault();
         this.dispatcher.dispatch(cmdId);
+      });
+      btn.addEventListener('click', (event) => {
+        // 키보드 Enter/Space가 만드는 click에는 선행 mousedown이 없다.
+        if (event.detail === 0) this.dispatcher.dispatch(cmdId);
       });
     }
   }
@@ -341,8 +347,11 @@ export class Toolbar {
 
   /** 글자색 피커 이벤트 */
   private setupColorPicker(): void {
+    // 선택은 mousedown에서 보존하고, 키보드도 발생시키는 click에서 활성화한다.
     this.btnTextColor.addEventListener('mousedown', (e) => {
       e.preventDefault();
+    });
+    this.btnTextColor.addEventListener('click', () => {
       this.colorPicker.click();
     });
 
@@ -371,23 +380,28 @@ export class Toolbar {
     const actRow = document.createElement('div');
     actRow.className = 'sb-hl-palette-actions';
     const btnNone = document.createElement('button');
-    btnNone.textContent = '색 없음';
+    btnNone.textContent = t('dialog.toolbar.btnNone.text');
     btnNone.addEventListener('mousedown', (e) => {
       e.preventDefault();
+    });
+    btnNone.addEventListener('click', () => {
       this.highlightColor = '#ffffff';
       this.highlightBar.style.background = '#ffffff';
       this.eventBus.emit('format-char', { shadeColor: '#ffffff' } as CharProperties);
       this.highlightDropdown.classList.remove('open');
     });
     const btnOther = document.createElement('button');
-    btnOther.textContent = '다른 색...';
+    btnOther.textContent = t('dialog.toolbar.btnOther.text');
     const hiddenPicker = document.createElement('input');
     hiddenPicker.type = 'color';
+    hiddenPicker.tabIndex = -1;
+    hiddenPicker.setAttribute('aria-label', t('dialog.toolbar.setupHighlightPicker.label'));
     hiddenPicker.value = this.highlightColor;
     hiddenPicker.style.cssText = 'position:absolute;width:0;height:0;opacity:0;';
-    btnOther.appendChild(hiddenPicker);
     btnOther.addEventListener('mousedown', (e) => {
       e.preventDefault();
+    });
+    btnOther.addEventListener('click', () => {
       hiddenPicker.click();
     });
     hiddenPicker.addEventListener('input', () => {
@@ -398,6 +412,7 @@ export class Toolbar {
     });
     actRow.appendChild(btnNone);
     actRow.appendChild(btnOther);
+    actRow.appendChild(hiddenPicker);
     palette.appendChild(actRow);
 
     // 색상 스워치 행들
@@ -424,7 +439,17 @@ export class Toolbar {
     this.btnHighlight.addEventListener('mousedown', (e) => {
       e.preventDefault();
       e.stopPropagation();
+    });
+    this.btnHighlight.addEventListener('click', () => {
       this.highlightDropdown.classList.toggle('open');
+    });
+
+    this.highlightDropdown.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || !this.highlightDropdown.classList.contains('open')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      this.highlightDropdown.classList.remove('open');
+      this.btnHighlight.focus();
     });
 
     // 외부 클릭 시 닫기
@@ -437,20 +462,24 @@ export class Toolbar {
 
   /** 문단 정렬 버튼 이벤트 → 커맨드 디스패치 */
   private setupAlignButtons(): void {
-    const aligns: [string, string][] = [
-      ['#btn-align-left', 'format:align-left'],
-      ['#btn-align-center', 'format:align-center'],
-      ['#btn-align-right', 'format:align-right'],
-      ['#btn-align-justify', 'format:align-justify'],
-      ['#btn-align-distribute', 'format:align-distribute'],
-      ['#btn-align-split', 'format:align-split'],
+    const aligns: [string, string, string][] = [
+      ['#btn-align-left', 'left', 'format:align-left'],
+      ['#btn-align-center', 'center', 'format:align-center'],
+      ['#btn-align-right', 'right', 'format:align-right'],
+      ['#btn-align-justify', 'justify', 'format:align-justify'],
+      ['#btn-align-distribute', 'distribute', 'format:align-distribute'],
+      ['#btn-align-split', 'split', 'format:align-split'],
     ];
-    for (const [sel, cmdId] of aligns) {
+    for (const [sel, alignment, cmdId] of aligns) {
       const btn = this.container.querySelector(sel) as HTMLButtonElement;
       if (btn) {
+        this.alignButtons.push({ button: btn, alignment });
         btn.addEventListener('mousedown', (e) => {
           e.preventDefault();
           this.dispatcher.dispatch(cmdId);
+        });
+        btn.addEventListener('click', (event) => {
+          if (event.detail === 0) this.dispatcher.dispatch(cmdId);
         });
       }
     }
@@ -565,6 +594,10 @@ export class Toolbar {
 
   /** 커서 위치의 문단 속성(줄간격 등)을 도구 모음에 반영한다 */
   private updateParaState(props: ParaProperties): void {
+    for (const { button, alignment } of this.alignButtons) {
+      this.setActive(button, props.alignment === alignment);
+    }
+
     if (props.lineSpacingType === 'Percent' && props.lineSpacing !== undefined) {
       const val = Math.round(props.lineSpacing);
       this.ensureLsOption(val);
@@ -645,6 +678,8 @@ export class Toolbar {
     const opacity = enabled ? '1' : '0.5';
     this.container.style.opacity = opacity;
     this.container.style.pointerEvents = enabled ? 'auto' : 'none';
+    this.container.setAttribute('aria-disabled', String(!enabled));
+    this.container.inert = !enabled;
   }
 
   /** 선택된 언어 카테고리에 해당하는 글꼴명을 반환한다 */
@@ -739,7 +774,7 @@ export class Toolbar {
     const menu = document.createElement('div');
     menu.className = 'font-picker-menu';
     menu.setAttribute('role', 'dialog');
-    menu.setAttribute('aria-label', '글꼴 목록');
+    menu.setAttribute('aria-label', t('dialog.toolbar.openFontMenu.label'));
 
     const categories = document.createElement('div');
     categories.className = 'font-picker-categories';
@@ -821,7 +856,7 @@ export class Toolbar {
     if (entries.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'font-picker-empty';
-      empty.textContent = '표시할 글꼴이 없습니다.';
+      empty.textContent = t('dialog.toolbar.empty.text');
       fragment.appendChild(empty);
     } else {
       for (const entry of entries) {

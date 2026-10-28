@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/browser_extension_dev_guide.md
-last_verified: 2026-08-20
+last_verified: 2026-10-24
 ---
 
 # 브라우저 확장 빌드 및 배포 매뉴얼 (Chrome/Edge/Firefox/Safari)
@@ -15,7 +15,7 @@ last_verified: 2026-08-20
 
 | 항목 | 요구사항 |
 |------|---------|
-| Node.js | v20 이상 |
+| Node.js | v22.12 이상 (잠긴 Puppeteer의 최소 버전) |
 | npm | v10 이상 |
 | WASM 빌드 | `pkg/` 폴더에 WASM 빌드 완료 상태 |
 | 웹폰트 | `assets/fonts/`에 canonical WOFF2 36개 존재 |
@@ -169,7 +169,7 @@ npm --prefix rhwp-chrome run test:e2e:smoke
 - 실행별 임시 Chrome profile·download 디렉터리 생성과 종료 후 정리
 
 사용자 Chrome profile, Web Store 설치 또는 외부 네트워크는 사용하지 않는다. 설정·다운로드 수명주기
-상세 E2E는 #3513, CI 선택 실행과 브라우저 cache는 #3515가 담당한다. flake 확인은 build를 한 번만
+상세 E2E와 배포 후보 선택 실행은 아래 3.8~3.9를 따른다. flake 확인은 build를 한 번만
 수행한 뒤 실행별 새 profile로 smoke를 반복한다. 명령은 실제 Chrome 실행 전에 탭 예산 계약 테스트도
 실행해, 끝나지 않는 surface가 있어도 예상 밖 page target만으로 즉시 실패하는지 확인한다.
 
@@ -180,7 +180,251 @@ RHWP_EXTENSION_SMOKE_REPEAT=10 npm --prefix rhwp-chrome run test:e2e:smoke
 단계 timeout은 기본 60초이며 느린 진단 환경에서만 `RHWP_EXTENSION_SMOKE_TIMEOUT_MS`를 양의
 밀리초 값으로 지정한다. retry를 추가해 실패를 숨기지 않는다.
 
----
+### 3.7 실제 다운로드 자동 열기 E2E
+
+다운로드 metadata 판정이나 observer adapter를 바꾼 경우 단위 테스트만으로 끝내지 않는다. 최종
+`rhwp-chrome/dist`를 격리 Chrome for Testing에 적재하고 실제 browser download와 뷰어 탭 생성을 함께
+확인한다.
+
+```bash
+npm --prefix rhwp-chrome ci
+npm --prefix rhwp-chrome run test:e2e:download
+```
+
+두 번째 명령은 확장을 다시 빌드한 뒤 자체 loopback fixture server, 임시 Chrome profile과 download
+directory를 사용해 다음 계약을 검증한다.
+
+| 사례 | 기대 결과 |
+| --- | --- |
+| 정상 `.xlsx` | 파일 저장, rhwp 탭 0 |
+| URL은 `.hwp`, 최종 filename/MIME은 XLSX | 파일 저장, rhwp 탭 0 |
+| 확정 `.hwp` | 파일 저장, 해당 download의 rhwp 탭 1 |
+| extensionless URL + HWP MIME/body | terminal 뒤 파일 저장, 해당 download의 rhwp 탭 1 |
+| 최초 추적 저장 대조군/지연군 각 3회 (#6988) | 실제 complete 이벤트 뒤 저장을 재개해도 ID별 탭 1, 원본 바이트 보존 |
+
+E2E는 CDP `Browser.downloadWillBegin`/`Browser.downloadProgress`, 저장 파일의 존재·크기와
+`chrome.downloads.search()`의 완료된 download id를 교차 확인한다. 사용자 Chrome profile과 외부
+네트워크는 사용하지 않으며 종료 시 browser, server, 임시 profile/download를 정리한다.
+
+한 사례만 진단할 때는 다음처럼 case id를 지정한다.
+
+```bash
+RHWP_EXTENSION_DOWNLOAD_CASE=misleading-hwp-url \
+  npm --prefix rhwp-chrome run test:e2e:download
+```
+
+알려진 id는 `normal-xlsx`, `misleading-hwp-url`, `confirmed-hwp`, `extensionless-hwp`다. 단계 timeout은
+기본 30초이며 느린 환경에서만 `RHWP_EXTENSION_DOWNLOAD_TIMEOUT_MS`를 양의 밀리초 값으로 늘린다.
+timeout이나 retry로 제품 실패를 숨기지 말고, 특정 사례 단독 실행과 전체 순차 실행을 비교해 fixture tab
+활성화·정리 같은 하네스 문제를 제품 판정과 분리한다.
+
+#6988 경합 사례의 id는 `initial-state-control-1`~`3`, `initial-state-delayed-1`~`3`이다.
+`samples/re-font-dotum-empty-hancom.hwp`를 HWP URL/MIME과 확장자 없는 최종 filename으로 내려준다.
+테스트는 worker의 최초 `storage.session.set`만 보류하며 다운로드와 filename/complete 이벤트는
+Chrome이 발생시킨다. 실제 complete 수신 후 저장을 재개하고 1.5초 동안 ID당 탭이 하나임을 확인한다.
+이는 지연을 주입한 회귀 검증이며 자연 발생 빈도나 worker suspend/resume을 보증하지 않는다.
+
+### 3.8 설정 수명주기와 다운로드 탭 불변식 (#3513)
+
+```bash
+npm --prefix rhwp-chrome run test:e2e:lifecycle
+```
+
+확장을 빌드하고 탭 감시 계약을 검사한 뒤 실제 options UI에서 값을 저장한다. 주 assertion은
+표시된 OFF 상태와 생성된 viewer 탭 0/1개이며, `chrome.storage` 조회는 실패 진단에만 쓴다.
+새 프로필을 사용하는 10개 시나리오는 다음과 같다.
+
+| 전환 | 검사 |
+| --- | --- |
+| OFF 저장 → options 재진입 / worker 종료 / 같은 profile 재시작 | OFF 표시 유지, 추가 탭 0 |
+| OFF / ON → 새 HWP, HWPX 다운로드 | 완료 이벤트와 저장 바이트 확인, viewer 각각 0 / 1 |
+| worker 종료 확인 → 새 HWP, HWPX 다운로드 | 다른 worker target으로 재기동, viewer 정확히 1 |
+| 확장 없이 HWP/HWPX 다운로드 → 확장 시작 → ON 저장 | `chrome://downloads`에서 과거 기록 보존 확인, viewer 0 |
+
+HWP는 `samples/hwp3-pagedef-1915.hwp`, HWPX는 `samples/hwpx_sample2.hwpx`를 사용한다.
+실행마다 고유 파일명과 loopback 서버를 사용하고 단계 timeout은 30초, 관찰 quiet window는 1.5초다.
+잠깐 생겼다가 닫힌 탭도 생성 이력에 포함하며 두 번째 탭은 진행 중 작업을 즉시 실패시킨다.
+worker를 깨울 수 있는 페이지 이동을 먼저 마친 뒤 worker를 종료하므로, 이후 다운로드가 재기동을
+일으켰는지 구분한다. 실제 Web Store 업데이트·계정 동기화·OS 인쇄 UI는 이 검사에 포함하지 않는다.
+
+```bash
+# 한 번 빌드한 dist에서 각 시나리오를 10회 반복한다. 자동 retry는 없다.
+RHWP_EXTENSION_LIFECYCLE_REPEAT=10 node rhwp-chrome/e2e/extension-lifecycle.test.mjs
+# 실패한 사례만 조사할 때 사용한다.
+RHWP_EXTENSION_LIFECYCLE_CASE=wake-download-hwpx node rhwp-chrome/e2e/extension-lifecycle.test.mjs
+# 정상 대조군과 방어 제거본을 비교한다. source가 아닌 임시 복사본에서만 변경한다.
+node rhwp-chrome/e2e/lifecycle-mutations.mjs
+```
+
+mutation 검증은 중복 방어 제거 시 실제 Chrome에서 viewer 2개를 검출한다. freshness 제거는 기존
+Node 상태 계약에서 검출한다. 완료된 과거 Chrome 다운로드가 `onCreated`를 다시 발생시키는 것은
+아니므로, 과거 기록 E2E만으로 freshness 방어의 검출력을 입증했다고 보고하지 않는다.
+
+### 3.9 배포 후보 선택 실행과 결과 보고 (#3515)
+
+개발자와 에이전트가 필요할 때 같은 명령을 사용한다. PR/devel/main/tag의 자동 E2E나
+필수 병합 게이트에 연결하지 않으며 npm/editor 검사도 호출하지 않는다. 기존 CI는 기존 정책대로
+동작한다. 이 검사는 배포 전 수동 확인을 보조하며, 성공을 배포 승인으로 사용하지 않는다.
+
+먼저 잠긴 도구 의존성 및 Chrome for Testing을 설치한다.
+
+```bash
+npm --prefix rhwp-chrome ci --no-audit
+# 설치 시 PUPPETEER_SKIP_DOWNLOAD를 설정했다면 브라우저를 별도로 설치한다.
+(cd rhwp-chrome && npx puppeteer browsers install chrome)
+```
+
+이 매뉴얼의 빌드 절차로 준비한 폴더 또는 배포 후보 ZIP을 별도 폴더에 압축 해제해 지정한다.
+`manifest.json`이 지정 폴더 바로 아래에 있어야 한다. 실행기는 후보를 다시 빌드하지 않는다.
+
+```bash
+npm --prefix rhwp-chrome run test:e2e -- --dist /absolute/path/to/extension-candidate
+# 결과 위치를 직접 정할 때는 아직 존재하지 않는 새 디렉터리를 지정한다.
+npm --prefix rhwp-chrome run test:e2e -- \
+  --dist /absolute/path/to/extension-candidate \
+  --output /absolute/path/to/new-e2e-report
+```
+
+`--dist`는 필수다. 지정 폴더의 smoke → download → lifecycle 전체를 한 번씩 실행하며 재시도하지
+않는다. 특정 case/repeat 환경 변수가 남아 있으면 전체 검증으로 오인하지 않도록 실패한다.
+하나라도 실패하면 뒤 suite는 `not-run`으로 기록한다. 브라우저 suite 전체 예산은 220초이며
+시간 초과는 실패다. 후보 안의 symlink·특수 파일, 필수 파일 누락도 실행 전에 거부한다.
+
+기본 결과 위치는 `output/chrome-extension-e2e/run-*/`이다. 마지막 stdout의 JSON이 결과 경로를
+알려준다. 성공 exit code는 0, 검사 실패·환경/입력 오류는 1이다. 인자 오류나 기존 결과 폴더
+재사용처럼 보고서를 만들 수 없는 오류는 stderr를 확인한다.
+
+| 결과 | 내용 |
+| --- | --- |
+| `result.json` | 전체 `pass/fail/error`, suite별 `pass/fail/not-run`, exit code·timeout·실행 시각 |
+| `candidate` | 버전, 상대 경로별 SHA-256 목록과 목록 전체 SHA-256; 검사 전후 동일 여부 |
+| `environment` | Node/OS/아키텍처, Puppeteer/Chrome 버전·실행 파일, 도구 checkout SHA·변경 여부 |
+| `*.log`, 실패 시 `*.json`·`*.png` | suite 로그, 단계·worker·download·console 진단과 확장 화면 |
+
+도구 checkout SHA는 외부 후보를 빌드한 SHA가 아니다. 후보의 출처·빌드 SHA는 릴리즈 기록에서
+별도로 연결하고, 이 보고서의 파일 해시로 실제 검사한 후보를 식별한다. 디렉터리 해시는 ZIP
+바이트 해시와 다르다. 후보가 검사 도중 바뀌면 결과를 `error`로 끝내고 새 실행을 요구한다.
+결과 폴더는 후보 바깥에만 만들며 이전 실행을 덮어쓰지 않는다.
+
+프로필과 다운로드는 실행마다 별도 임시 디렉터리에 만들고 정리한다. 사용자 Chrome 프로필을
+사용하지 않으며 결과에 프로필·원본 문서를 복사하지 않는다. 로그/PNG를 외부 공유하기 전 내용을 확인한다.
+
+**남는 수동 확인:** 스토어 설치·업데이트, 실제 사용자 환경과 권한, Edge/Firefox, 실제 문서의
+표시·인쇄 품질은 이 결과가 보증하지 않는다. 동일 후보의 자동 검사를 참고해 기존 수동 배포
+검증을 수행한다. 개별 `test:e2e:smoke/download/lifecycle` 명령은 개발용이며 먼저 재빌드하므로,
+이미 만든 배포 후보를 검사할 때는 위 `test:e2e -- --dist ...` 진입점을 사용한다.
+
+실행기·탭 감시·진단의 계약 검사는 브라우저 없이 실행할 수 있다.
+
+```bash
+node --test rhwp-chrome/e2e/run.test.mjs rhwp-chrome/e2e/tab-monitor.test.mjs \
+  rhwp-chrome/e2e/failure-diagnostics.test.mjs rhwp-chrome/e2e/page-budget.test.mjs
+```
+
+### 3.10 선택 실행 증적 보고서 (#7449)
+
+별도 의존성 없이 개발자와 에이전트가 같은 명령으로 **선택한 한 결과 폴더**를 읽는다.
+기존 후보를 재빌드하거나 E2E를 다시 실행하지 않는다. 자동 CI·필수 병합 게이트·외부 게시에
+연결하지 않으며, 새 출력 폴더의 부모는 미리 만들어 둔다.
+
+```bash
+node rhwp-chrome/e2e/report.mjs \
+  --input output/chrome-extension-e2e/run-EXAMPLE \
+  --output output/chrome-extension-e2e/report-NEW
+# 릴리즈 기록 등 독립 출처의 값을 알고 있으면 함께 대조한다.
+node rhwp-chrome/e2e/report.mjs \
+  --input output/chrome-extension-e2e/run-EXAMPLE \
+  --output output/chrome-extension-e2e/report-CHECKED \
+  --expect-candidate-sha256 <64자리-SHA256> --expect-tool-sha <40자리-Git-SHA>
+```
+
+| 파일 | 용도와 공유 경계 |
+| --- | --- |
+| `report.html`, `report.json` | 공유 검토용 allowlist 요약. 실행 상태·증적 완전성, 후보·도구 식별, 환경 버전·시각·suite·증적 해시·단계·미검증·수동 기록 |
+| `private.html` | **공유 금지**. 원본 result.json과 검증한 로그·진단 JSON·PNG의 상대 링크 인덱스. 원본 폴더를 옮기면 링크도 함께 확인 |
+
+HTML은 원본 실행 상태와 보고서 판정, 확인할 문제, 검사별 결과를 먼저 보여 준다. 오류 코드는
+한국어 설명과 함께 표시하며, 실행 ID·후보 해시·도구 SHA·환경 기록은 상세를 펼쳐 확인한다.
+모바일에서는 검사 표를 세로로 읽는다. Chrome 값은 실행기가 기록한 설치 대상 버전이며,
+그 값만으로 브라우저가 실제 실행됐다고 판정하지 않는다.
+
+출력 폴더 전체를 공개하지 않는다. 프로필과 원문 문서를 수집·복사하지 않으며, 로그·진단·PNG도
+보고서 폴더에 복사하지 않는다. 공유 요약은 후보/브라우저 절대 경로, 다운로드 ID·URL,
+오류 stack·원문 로그·자유 텍스트를 제외한다. 단계는 알려진 단계명만 표시한다.
+HTML은 외부 script·font·network 리소스를 사용하지 않는다.
+
+새 실행기는 기존 `schemaVersion: 1`에 `evidenceVersion: 1`, 임의 `runId`, suite별 `artifacts`
+목록(상대 파일명·runId·SHA-256)을 추가한다. 실패 진단 JSON에도 같은 runId를 기록하고 로그 머리말에는 runId와 suite 이름을 넣는다.
+result.json은 임시 파일을 원자적으로 rename하여 갱신한다. 기존 v1 실행 상태는 읽되 이 증거가 없는
+과거 결과는 `incomplete`로 표시하며, 파일명/mtime만으로 같은 실행이라고 추정하지 않는다.
+
+후보 inventory의 경로·파일 해시와 전체 해시를 재계산하고, 실행기와 같은 필수 파일 목록을
+확인한다. 도구 SHA 형식·dirty 여부도 검사한다.
+후보 실제 파일을 다시 읽는 검사는 아니며 도구 SHA의 존재·서명 인증도 아니다. 독립 기대값은 위
+`--expect-*`로 대조한다. 도구 checkout SHA를 후보 빌드 SHA로 표시하지 않으며 후보 빌드 SHA는
+미관측으로 남긴다. `sourceSha256`은 선택한 원본 result.json의 바이트 해시다.
+증적 해시와 runId는 내부 일관성 근거이며 악의적으로 함께 수정된 원본의 진위를 인증하지 않는다.
+
+원본 `pass/fail/error/running`과 보고서 상태를 따로 표시한다. 원본이 pass여도 누락·파싱 오류·변조·
+지원하지 않는 스키마·SHA 불일치·미완료이면 보고서는 `incomplete`다. 누락 suite를 pass로 채우지
+않고 `not-run`을 유지한다. fail/error에서 JSON 또는 PNG가 없으면 이유를 표시하고 incomplete로
+남긴다(브라우저 실행 전 오류로 화면을 얻지 못한 경우 포함). PNG는 청크 구조·CRC와 압축 스캔라인의 완전성을 확인한다. 서명만 남은 파일·잘린 파일·
+압축 오류는 incomplete다. 압축 해제 데이터가 128 MiB를 넘는 이미지도 검증 제한으로 거부한다.
+화면의 시각적 품질 판정은 별도다. 전체 error 필드와 pass가 모순되는 결과도 incomplete로 처리한다.
+목록 밖 파일은 다른 run 혼입 가능성을
+표시하고, symlink·중복 증적·다른 runId도 거부한다. 정상적인 preflight error는 전체 error와 모든
+suite not-run으로 보존하며 후보/환경이 관측되지 않았음을 null로 표시한다.
+CLI exit 0은 완전한 자동 pass뿐이며 fail/error/incomplete는 1이다. CLI 성공도 수동 확인·배포 승인은 아니다.
+
+**공유 전 수동 절차:**
+
+1. 비공개 `private.html`에서 원본 결과·단계·로그·PNG를 대조한다. 원본 해시가 공유 요약의
+   sourceSha256과 같은지 확인하고, 원본 폴더는 공개하지 않는다.
+2. 공유할 report.html/report.json에서 경로·다운로드 정보·개인 정보가 제외됐는지 직접 검색·판독한다.
+   파일 해시·도구 SHA·환경 버전·실행 시각도 공유 대상 정보이므로 해당 공개 범위가 적절한지 확인한다.
+3. 보고서 읽기 편의성과 정보 제외 결과를 별도 수동 기록으로 남긴다. 기록이 없으면 `미확인`이다.
+   아래 JSON을 로컬에 작성하고 `--manual-review <파일>`을 추가해 **새 폴더**에 재생성할 수 있다.
+   수동 상태는 자동 결과를 덮어쓰지 않으며 입력된 기록임을 표시한다. reviewer 이름·메모는 수집하지 않는다.
+   `reviewMode`는 직접 검토 `direct` 또는 사용자 위임에 따른 검토 `delegated`만 받는다.
+   생략한 기존 기록은 검토 방식 미기록으로 표시한다. 위임 판정을 사용자 본인의 직접 판정으로 쓰지 않는다.
+4. 검토한 두 공유 파일만 원하는 증적 저장소에 사람이 게시한다. 이 도구는 업로드·공개 설정을 하지 않는다.
+   원본이 바뀌면 이전 수동 기록은 무효이며 다시 검토한다.
+
+```json
+{
+  "sourceSha256": "원본-result.json의-64자리-SHA256",
+  "checkedAt": "2026-10-23T09:00:00.000Z",
+  "readability": "pass",
+  "sharingExclusions": "pass",
+  "reviewMode": "direct"
+}
+```
+
+실패한 수동 항목은 `fail`로 기록한다. 검토 전 위 예시의 pass를 복사하지 않는다.
+스토어 설치·업데이트, 사용자 환경, Edge/Firefox, 실제 문서 표시·인쇄 품질은 계속 별도 수동 검증이다.
+
+합성 예제와 계약 검사는 실제 브라우저 검사로 간주하지 않는다. 예제 SHA·버전·PNG는 가짜이며,
+pass/fail/error와 not-run·incomplete를 사람이 비교하는 용도다.
+
+```bash
+mkdir -p output/chrome-extension-e2e
+node rhwp-chrome/e2e/report-fixtures.mjs --output output/chrome-extension-e2e/examples-NEW
+node --test rhwp-chrome/e2e/report.test.mjs rhwp-chrome/e2e/png-integrity.test.mjs \
+  rhwp-chrome/e2e/run.test.mjs \
+  rhwp-chrome/e2e/failure-diagnostics.test.mjs rhwp-chrome/e2e/page-budget.test.mjs \
+  rhwp-chrome/e2e/tab-monitor.test.mjs
+```
+
+보고서 HTML의 보안·표시 검사는 Puppeteer와 로컬 브라우저를 준비한 뒤 별도로 실행한다.
+기본 Chrome for Testing을 사용할 때는 환경 변수를 생략한다. 브라우저가 없으면 실패하며 skip하지 않는다.
+실제 확장 E2E와 구분하고 자동 CI에는 연결하지 않는다.
+
+```bash
+RHWP_REPORT_BROWSER=/path/to/chromium node --test rhwp-chrome/e2e/report-browser.test.mjs
+```
+
+이 검사는 CSP에 의존하지 않고 대소문자·혼합 태그와 이벤트 핸들러 입력의 생성 DOM을 확인하며,
+실제 브라우저 스크린샷이 PNG 무결성 검사에서 통과하는지도 확인한다.
 
 ## 4. 스토어 배포
 

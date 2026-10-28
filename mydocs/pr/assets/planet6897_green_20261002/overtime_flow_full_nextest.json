@@ -1,0 +1,33 @@
+{
+  "head": "4df3f6e63e9dc657e73b7a189a4010040359509b",
+  "command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--tests",
+    "--test-threads",
+    "8",
+    "--no-fail-fast"
+  ],
+  "exit_code": 100,
+  "elapsed_seconds": 903.567,
+  "log": "output/pr-review/planet6897-green-20261002/overtime-flow-full-nextest.log",
+  "summary": [
+    "     Summary [ 576.984s] 10271 tests run: 10264 passed (9 slow), 7 failed, 50 skipped"
+  ],
+  "failed_cases": [
+    "FAIL [   0.106s] ( 4607/10271) rhwp::regression_suite_003 issue_7062_tac_object_host_line_height::issue_7062_control_group_page1_and_page_count_unchanged",
+    "FAIL [   0.035s] ( 4832/10271) rhwp::regression_suite_004 issue_6192_cell_overlay_picture_para_anchor::issue_6192_cell_overlay_picture_anchors_to_host_paragraph",
+    "FAIL [   0.045s] ( 7152/10271) rhwp::regression_suite_015 issue_2470_masking_page_pins::issue_2470_masked_rewrap_36341511_pins_current_nine_pages",
+    "FAIL [   1.123s] ( 8057/10271) rhwp::regression_suite_019 issue_5941_neartop_reset_only_on_empty_page::stored_neartop_reset_survives_on_a_filled_page",
+    "FAIL [   1.188s] ( 9233/10271) rhwp::regression_suite_024 issue_7147_row_declaration_beats_object_height::object_height_that_ends_mid_row_still_reconciles",
+    "FAIL [   0.073s] ( 9367/10271) rhwp::regression_suite_025 issue_6797_table_item_clears_float_band::table_item_clears_the_previous_float_band",
+    "FAIL [   0.370s] ( 9916/10271) rhwp::regression_suite_028 issue_1921_59043_pagination_pin::regulatory_59043_page36_keeps_nested_source_and_following_headings"
+  ],
+  "log_sha256": "5ab6cb191e149e90b24e70b2923f3a280c748240c764b6651b1c09069259848d"
+}

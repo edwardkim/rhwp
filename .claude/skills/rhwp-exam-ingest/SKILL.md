@@ -333,7 +333,7 @@ bash .claude/skills/rhwp-exam-ingest/helpers/check_deps.sh --json
 - [`tools/rhwp-ingest/schema/ingest_schema_v1.json`](../../../tools/rhwp-ingest/schema/ingest_schema_v1.json)
 - [`src/parser/ingest/schema.rs`](../../../src/parser/ingest/schema.rs)
 - [`mydocs/manual/cli_commands.md`](../../../mydocs/manual/cli_commands.md) §`build-from-ingest`
-- 처리 결과: [`mydocs/working/agent_exam_ingest.md`](../../../mydocs/working/agent_exam_ingest.md)
+- 처리 결과: [`mydocs/working/agent_exam_ingest.md`](../../../mydocs/working/archives/agent_exam_ingest.md)
 
 관련 이슈: #5319 (본 스킬 고도화), #660 (스키마+빌더), #667 (passages/boxed),
 #3358 (deny_unknown_fields), #182 (Picture 직렬화).

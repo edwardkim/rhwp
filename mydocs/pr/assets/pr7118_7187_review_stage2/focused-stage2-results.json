@@ -1,0 +1,344 @@
+[
+  {
+    "case": "issue_7172_hwp3_hanging_indent_margin",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_014",
+      "issue_7172_hwp3_hanging_indent_margin",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "issue_4771_derived_layout_state",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_024",
+      "issue_4771_derived_layout_state",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "issue_6946_block_seated_float_sibling_gets_its_own_page",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_009",
+      "issue_6946_block_seated_float_sibling_gets_its_own_page",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "issue_7174_hwp3_footnote_number_suffix",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_023",
+      "issue_7174_hwp3_footnote_number_suffix",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "issue_1440_onsamiro_picture_wrap",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_007",
+      "issue_1440_onsamiro_picture_wrap",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "issue_1892",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_020",
+      "issue_1892",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "issue_5908_giant_cell_last_fragment_overfill",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_022",
+      "issue_5908_giant_cell_last_fragment_overfill",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "issue_7170_hwp3_inline_tab_width",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_011",
+      "issue_7170_hwp3_inline_tab_width",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "issue_7095_page_spanning_fragment_box",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_009",
+      "issue_7095_page_spanning_fragment_box",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "issue_1692",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_026",
+      "issue_1692",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "issue_7174_hwp3_footnote_separator_margins",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_004",
+      "issue_7174_hwp3_footnote_separator_margins",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "issue_7140_nested_row_unit_paint_height",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_023",
+      "issue_7140_nested_row_unit_paint_height",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "cell_square_picture_anchor",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_012",
+      "cell_square_picture_anchor",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "issue_3637_nested_table_starts_inside_parent_cell",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_002",
+      "issue_3637_nested_table_starts_inside_parent_cell",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "issue_3637_para_topbottom_vpos_base",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_015",
+      "issue_3637_para_topbottom_vpos_base",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "issue_3637_split_cell_nested_table_vpos",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_018",
+      "issue_3637_split_cell_nested_table_vpos",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "issue_4129_mixed_nested_scan_budget",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_019",
+      "issue_4129_mixed_nested_scan_budget",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "issue_6970_no_ls_cross_column_picture_flow",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_024",
+      "issue_6970_no_ls_cross_column_picture_flow",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0
+  },
+  {
+    "case": "issue_6970_multicolumn_synth_ladder_fill",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr7118-7187-20260916",
+      "--test",
+      "regression_suite_026",
+      "issue_6970_multicolumn_synth_ladder_fill",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0
+  }
+]

@@ -21,7 +21,7 @@ const SAMPLE: &str = "samples/issue3460/svg_picture_repro.hwpx";
 fn render_page_svg(page: u32) -> String {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {}", SAMPLE, e));
-    let mut doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse repro.hwpx");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse repro.hwpx");
     doc.render_page_svg(page).expect("render svg")
 }
 

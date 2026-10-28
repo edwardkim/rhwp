@@ -1,0 +1,82 @@
+[
+  {
+    "backend": "native",
+    "key": "toggle",
+    "page": 1,
+    "code_head": "c6ece0a6e3d2e1b74aac8dfa03ba44a56805d5ae",
+    "svg_sha256": "6709d15cde8dc1549163f63069f89a1a0cfb73f53ff1522683dd2a9e8d3b9482",
+    "byte_identical_to_final_svg": true,
+    "review_png": "toggle-native-review-001.png",
+    "png_sha256": "f67a9c4d46bf21479c4c988fee45c31eb620f0606482fb46e4b5a311880c5555"
+  },
+  {
+    "backend": "native",
+    "key": "petition",
+    "page": 2,
+    "code_head": "c6ece0a6e3d2e1b74aac8dfa03ba44a56805d5ae",
+    "svg_sha256": "bee5a729fb1a88924730528d0f9f3512a69c5384d88a46a47dfa6d78c18ff5a6",
+    "byte_identical_to_final_svg": true,
+    "review_png": "petition-native-review-002.png",
+    "png_sha256": "d4671a135cf39b503f3e4bec23afa7bbe51a891d0252f6cd10d77ac9be89c198"
+  },
+  {
+    "backend": "native",
+    "key": "tac7062",
+    "page": 1,
+    "code_head": "c6ece0a6e3d2e1b74aac8dfa03ba44a56805d5ae",
+    "svg_sha256": "18e7fadcf426045d5b1abc726806f855b0be312ec9d48184248d150daf6757c3",
+    "byte_identical_to_final_svg": true,
+    "review_png": "tac7062-native-review-001.png",
+    "png_sha256": "be7ab509aacebf270d8b8cabad4ccefe801d266702f5b1a69a38050dc00e8376"
+  },
+  {
+    "backend": "native",
+    "key": "liver",
+    "page": 24,
+    "code_head": "c6ece0a6e3d2e1b74aac8dfa03ba44a56805d5ae",
+    "svg_sha256": "77a60f33724595eaf48e4aa5fc5f844fafae025967c6e36be4a478d11c87e531",
+    "byte_identical_to_final_svg": true,
+    "review_png": "liver-native-review-024.png",
+    "png_sha256": "1084b07db91d22bc165b50206bd83c046dc61e605d7efb2ef1fbf073ee640c0c"
+  },
+  {
+    "backend": "wasm",
+    "key": "toggle",
+    "page": 1,
+    "code_head": "c6ece0a6e3d2e1b74aac8dfa03ba44a56805d5ae",
+    "svg_sha256": "8de1c045b35fc34f102bad3d8446ac63b972417460d769b59883bfb923f3f3e6",
+    "byte_identical_to_final_svg": true,
+    "review_png": "toggle-wasm-review-001.png",
+    "png_sha256": "cb5df8c2cde94da1966b0dddc3ba7cbaefb857728ed89afbb45415288fb7ba88"
+  },
+  {
+    "backend": "wasm",
+    "key": "petition",
+    "page": 2,
+    "code_head": "c6ece0a6e3d2e1b74aac8dfa03ba44a56805d5ae",
+    "svg_sha256": "ffe2b139d4b8ecbbb285158593897bf61e98167ced8f50a97a193010a29b72e3",
+    "byte_identical_to_final_svg": true,
+    "review_png": "petition-wasm-review-002.png",
+    "png_sha256": "14e9c839009ce7ad199ea66dbea71e317379e4c0f379e2a3716a43f0a876b6dd"
+  },
+  {
+    "backend": "wasm",
+    "key": "tac7062",
+    "page": 1,
+    "code_head": "c6ece0a6e3d2e1b74aac8dfa03ba44a56805d5ae",
+    "svg_sha256": "056650e6b559ad75ef3d5cbe2a8d032098327de6aa76dfab51679bccd803cf83",
+    "byte_identical_to_final_svg": true,
+    "review_png": "tac7062-wasm-review-001.png",
+    "png_sha256": "24b68fe5ddd7fdba676c7b1f1a5d68a57bde21e517b18fedebacdd5a417e352a"
+  },
+  {
+    "backend": "wasm",
+    "key": "liver",
+    "page": 24,
+    "code_head": "c6ece0a6e3d2e1b74aac8dfa03ba44a56805d5ae",
+    "svg_sha256": "30d710547738e4d59e4edf29b8a952de58e429ba863b206d4d955f7af0168632",
+    "byte_identical_to_final_svg": true,
+    "review_png": "liver-wasm-review-024.png",
+    "png_sha256": "7c4a7cf095ffeea6fe0682991d47bbbdf8749228ac7683b728a8e39a785194d8"
+  }
+]

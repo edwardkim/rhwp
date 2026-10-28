@@ -19,7 +19,7 @@ use crate::model::shape::{
     HorzRelTo, OleShape, ShapeComponentAttr, ShapeObject, SizeCriterion, TextFlow, TextWrap,
     VertAlign, VertRelTo,
 };
-use crate::model::style::{Fill, FillType, ImageFillMode, ShapeBorderLine};
+use crate::model::style::{Fill, FillType};
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 use crate::parser::record::Record;
 use crate::parser::tags;
@@ -115,15 +115,9 @@ pub fn serialize_control(
             // 필드 컨트롤 직렬화 (표 154)
             // ctrl_id(4) + 속성(4) + 기타속성(1) + command_len(2) + command(가변) + id(4)
             //
-            // [Task #852 Stage 2.5] ClickHere 의 field_id 는 정답지 패턴 (form 마지막 +1) 우선.
-            // form_order_counter 가 form 다음 ClickHere 시점에 5 (form 0..4 다음) → instance_id =
-            // 0x7dcd59d6 + 5 = 0x7dcd59db (정답지와 일치).
-            let field_id =
-                if matches!(f.field_type, FieldType::ClickHere) && peek_form_order_counter() > 0 {
-                    0x7dcd_59d6u32.wrapping_add(peek_form_order_counter())
-                } else {
-                    f.field_id
-                };
+            // field_id is the explicit field-begin identity, not Form order.
+            // Replacing it at save time breaks cloned field references (#3587).
+            let field_id = f.field_id;
             let ctrl_id = if matches!(f.field_type, FieldType::Memo) {
                 tags::FIELD_UNKNOWN
             } else {
@@ -168,7 +162,7 @@ pub fn serialize_control(
             // 오는데, 종전에는 ClickHere 만 CTRL_DATA 를 냈으므로 **책갈피 이름이 저장에서
             // 통째로 사라졌다**(이름 없는 책갈피는 상호참조·하이퍼링크의 대상이 못 된다).
             //
-            // 정답지 `samples/aift.hwp`(한컴 저작)는 같은 문서의 `%bmk` 컨트롤 아래에
+            // 정답지 `mydocs/pr/assets/issue7445/aift74/aift.hwp`(한컴 저작)는 같은 문서의 `%bmk` 컨트롤 아래에
             // `ParameterSet ps_id=0x021b · item id=0x4000(String) = "_top"` 을 싣는다 —
             // 위 ClickHere 구조와 **같은 바이트 모양**이다. 스펙(§4.2.10.11)도 책갈피는
             // "책갈피 이름 밖에 없다"고 못박으므로 item ID 를 새로 발명할 필요가 없다
@@ -457,10 +451,24 @@ pub(crate) fn serialize_master_page(
     records: &mut Vec<Record>,
 ) {
     let data = if !master_page.raw_list_header.is_empty() {
-        master_page.raw_list_header.clone()
+        let mut data = master_page.raw_list_header.clone();
+        // 원본 목록은 보존하되 지정 쪽이 바뀌면 같은 소유 필드만 갱신한다.
+        if let Some(kind) = master_page
+            .optional_page_number
+            .and_then(|number| number.checked_add(3))
+        {
+            if let Some(slot) = data.get_mut(18..20) {
+                slot.copy_from_slice(&kind.to_le_bytes());
+            }
+        }
+        data
     } else {
-        let ext_flags =
-            u16::from(master_page.overlap) | if master_page.is_extension { 0x02 } else { 0 };
+        let ext_flags = master_page
+            .optional_page_number
+            .and_then(|number| number.checked_add(3))
+            .unwrap_or_else(|| {
+                u16::from(master_page.overlap) | if master_page.is_extension { 0x02 } else { 0 }
+            });
         build_header_footer_list_header(
             master_page.paragraphs.len() as u16,
             0,
@@ -511,11 +519,11 @@ fn serialize_footnote_shape(fs: &FootnoteShape) -> Vec<u8> {
     w.write_u16(char_to_wchar(fs.prefix_char)).unwrap();
     w.write_u16(char_to_wchar(fs.suffix_char)).unwrap();
     w.write_u16(fs.start_number).unwrap();
-    // HWP5 노트 구분선 길이는 i16 슬롯. 한컴 전폭 sentinel(14692344)은 i16을 넘지만
-    // HWP5 포맷 한계상 하위 16비트로 기록한다(HWPX 경로는 i32 원본을 보존).
-    w.write_i16(fs.separator_length as i16).unwrap();
-    w.write_i16(fs.separator_margin_top).unwrap();
-    w.write_i16(fs.separator_margin_bottom).unwrap();
+    // [#7862] HWP5 노트 구분선 길이는 4바이트다(한컴 전폭 값 14692344 그대로).
+    w.write_i32(fs.separator_length).unwrap();
+    // "구분선 위" 는 다음 i16 이다. HWPX 출처 모양은 `aboveLine` 을
+    // `separator_margin_top` 에 두므로 정규화 접근자로 쓴다(HWP5 출처는 원값 그대로).
+    w.write_i16(fs.separator_above_margin_hu()).unwrap();
     w.write_i16(fs.note_spacing).unwrap();
     // 미문서화 2바이트 (원본 보존)
     w.write_u16(fs.raw_unknown).unwrap();
@@ -543,6 +551,11 @@ fn serialize_page_border_fill(pbf: &PageBorderFill) -> Vec<u8> {
 fn serialize_column_def(cd: &ColumnDef, level: u16, records: &mut Vec<Record>) {
     let mut w = ByteWriter::new();
 
+    // [#7523] 파서는 bit 12 가 꺼져 있으면 단 수만큼 너비·간격 쌍을 읽는다. 단별 너비가
+    // 모자라면(너비 동일을 끈 채 단 수만 정한 편집) 렌더러처럼 같은 너비로 기록한다.
+    let count = cd.column_count as usize;
+    let same_width = cd.same_width || (count > 1 && cd.widths.len() < count);
+
     // 표 141: 속성 bit 0-15 (원본이 있으면 그대로, 없으면 재구성)
     let attr: u16 = if cd.raw_attr != 0 {
         cd.raw_attr
@@ -555,11 +568,13 @@ fn serialize_column_def(cd: &ColumnDef, level: u16, records: &mut Vec<Record>) {
         // bit 2-9: 단 개수
         a |= (cd.column_count as u16 & 0xFF) << 2;
         // bit 10-11: 단 방향
-        if cd.direction == ColumnDirection::RightToLeft {
-            a |= 1 << 10;
-        }
+        a |= match cd.direction {
+            ColumnDirection::LeftToRight => 0,
+            ColumnDirection::RightToLeft => 1 << 10,
+            ColumnDirection::Mirror => 2 << 10,
+        };
         // bit 12: 단 너비 동일
-        if cd.same_width {
+        if same_width {
             a |= 1 << 12;
         }
         a
@@ -568,10 +583,10 @@ fn serialize_column_def(cd: &ColumnDef, level: u16, records: &mut Vec<Record>) {
     w.write_u16(attr).unwrap();
 
     // hwplib 기준: same_width 여부에 따라 바이트 순서가 다름
-    if !cd.same_width && cd.column_count > 1 {
+    if !same_width && count > 1 {
         // same_width=false: [attr2(2)] [col0_width(2) col0_gap(2)] ...
         w.write_u16(0).unwrap(); // attr2
-        for i in 0..cd.widths.len() {
+        for i in 0..count {
             w.write_i16(cd.widths[i]).unwrap();
             let gap = cd.gaps.get(i).copied().unwrap_or(0);
             w.write_i16(gap).unwrap();
@@ -644,25 +659,39 @@ fn serialize_table(table: &Table, level: u16, records: &mut Vec<Record>) {
     }
 }
 
+/// HWPTAG_TABLE attr — 원본 비트는 보존하고, IR 이 가진 bit 0-1(쪽 경계에서 나눔)·
+/// bit 2(제목 줄 자동 반복)만 IR 값으로 맞춘다. 원본 attr 를 통째로 재사용하면
+/// `setTableProperties` 로 바꾼 두 값이 저장·재파싱 뒤 원래 값으로 돌아간다.
+/// bit 0-1 은 파서가 원본에서 읽은 값과 IR 이 다를 때만 덮는다(비표준 값 3 무손실).
+/// 원본이 없으면(0) IR 에서 재구성하는 것과 같다.
+fn table_record_attr(table: &Table) -> u32 {
+    let raw = table.raw_table_record_attr;
+    let raw_page_break = match raw & 0x03 {
+        1 | 3 => TablePageBreak::CellBreak,
+        2 => TablePageBreak::RowBreak,
+        _ => TablePageBreak::None,
+    };
+    let mut attr = raw;
+    if raw_page_break != table.page_break {
+        let bits = match table.page_break {
+            TablePageBreak::None => 0x00,
+            TablePageBreak::CellBreak => 0x01,
+            TablePageBreak::RowBreak => 0x02,
+        };
+        attr = (attr & !0x03) | bits;
+    }
+    if table.repeat_header {
+        attr |= 0x04;
+    } else {
+        attr &= !0x04;
+    }
+    attr
+}
+
 fn serialize_table_record(table: &Table) -> Vec<u8> {
     let mut w = ByteWriter::new();
 
-    // attr (원본이 있으면 그대로, 없으면 재구성)
-    let attr = if table.raw_table_record_attr != 0 {
-        table.raw_table_record_attr
-    } else {
-        let mut a: u32 = 0;
-        match table.page_break {
-            TablePageBreak::CellBreak => a |= 0x01,
-            TablePageBreak::RowBreak => a |= 0x02,
-            TablePageBreak::None => {}
-        }
-        if table.repeat_header {
-            a |= 0x04;
-        }
-        a
-    };
-    w.write_u32(attr).unwrap();
+    w.write_u32(table_record_attr(table)).unwrap();
 
     w.write_u16(table.row_count).unwrap();
     w.write_u16(table.col_count).unwrap();
@@ -721,7 +750,11 @@ fn serialize_cell(cell: &Cell, level: u16, records: &mut Vec<Record>) {
         | (((cell.line_wrap as u32) & 0x03) << 19)
         | (v_align_code << 21);
     w.write_u32(list_attr).unwrap();
-    let list_header_width_ref = if cell.list_header_width_ref == 0 {
+    // 파싱한 HWP5 셀은 raw_list_extra에 LIST_HEADER 확장 바이트를 보존한다.
+    // 이 경우 width_ref=0도 유효한 원본값이므로 그대로 기록한다. 반대로 새로
+    // 만든 셀은 한컴 호환 47바이트 LIST_HEADER 계약을 위해 기본값 0x0400을 쓴다.
+    let list_header_width_ref = if cell.list_header_width_ref == 0 && cell.raw_list_extra.is_empty()
+    {
         0x0400
     } else {
         cell.list_header_width_ref
@@ -1239,9 +1272,9 @@ fn serialize_picture_data(pic: &Picture) -> Vec<u8> {
     w.write_i16(pic.padding.top).unwrap();
     w.write_i16(pic.padding.bottom).unwrap();
 
-    // 이미지 속성
-    w.write_i8(pic.image_attr.brightness).unwrap();
+    // HWP5는 명암→밝기 순서로 저장한다. parser와 대칭인 의미 IR 변환이다.
     w.write_i8(pic.image_attr.contrast).unwrap();
+    w.write_i8(pic.image_attr.brightness).unwrap();
     let effect_val: u8 = match pic.image_attr.effect {
         ImageEffect::RealPic => 0,
         ImageEffect::GrayScale => 1,
@@ -2537,70 +2570,33 @@ fn write_shape_component_base(
     w.write_i32(attr.rotation_center.x).unwrap();
     w.write_i32(attr.rotation_center.y).unwrap();
 
-    // Rendering 정보 (원본이 있으면 복원, 없으면 적절한 행렬 생성)
-    if !attr.raw_rendering.is_empty() {
-        w.write_bytes(&attr.raw_rendering).unwrap();
-    } else if attr.rotation_angle.rem_euclid(360) != 0 {
-        write_generated_rendering_matrix(w, attr);
-    } else if has_explicit_rendering_matrix(attr) {
-        write_parsed_rendering_matrix(w, attr);
-    } else {
-        let is_group_child = attr.group_level > 0;
-        let cnt: u16 = if is_group_child { 2 } else { 1 };
-        w.write_u16(cnt).unwrap();
-        // translation matrix = identity [1, 0, 0, 0, 1, 0].
-        // 그룹 자식 위치의 단일 권위는 render_tx/ty 다 (렌더러 layout_group_child_*,
-        // object_ops 그룹 생성 모두 render_tx 기준). 위치를 의도한 작성자는 항상
-        // render_tx 를 명시하므로(그 경우 explicit 경로로 감), 이 폴백에 오는
-        // offset_x/y 는 위치가 아닌 메타데이터다(HWP3 relative_pos 등). 종전처럼
-        // offset 을 tx/ty 로 승격하면 재파스에서 render_tx 가 생겨 그룹 자식이
-        // offset 만큼 이동한다 (#1892 대법원 서식 최대 10485px 라운드트립 변위).
-        w.write_f64(1.0).unwrap();
-        w.write_f64(0.0).unwrap();
-        w.write_f64(0.0).unwrap(); // tx
-        w.write_f64(0.0).unwrap();
-        w.write_f64(1.0).unwrap();
-        w.write_f64(0.0).unwrap(); // ty
-                                   // scale matrix = identity [1, 0, 0, 0, 1, 0]
-                                   // (스케일은 current_width/original_width 값으로 표현 — 행렬에 중복 기록하면 이중 적용됨)
-        w.write_f64(1.0).unwrap();
-        w.write_f64(0.0).unwrap();
-        w.write_f64(0.0).unwrap();
-        w.write_f64(0.0).unwrap();
-        w.write_f64(1.0).unwrap();
-        w.write_f64(0.0).unwrap();
-        // rotation matrix. Hancom applies visible picture rotation from the
-        // rendering rotMatrix, not only from ShapeComponentAttr.rotation_angle.
-        write_matrix(w, shape_rotation_matrix(attr));
-        // 그룹 자식 (cnt=2): 두 번째 scale + rotation 세트 (identity)
-        if is_group_child {
-            // scale2 = identity
-            w.write_f64(1.0).unwrap();
-            w.write_f64(0.0).unwrap();
-            w.write_f64(0.0).unwrap();
-            w.write_f64(0.0).unwrap();
-            w.write_f64(1.0).unwrap();
-            w.write_f64(0.0).unwrap();
-            // rotation2 = identity
-            w.write_f64(1.0).unwrap();
-            w.write_f64(0.0).unwrap();
-            w.write_f64(0.0).unwrap();
-            w.write_f64(0.0).unwrap();
-            w.write_f64(1.0).unwrap();
-            w.write_f64(0.0).unwrap();
-        }
-    }
+    w.write_bytes(&shape_rendering_bytes(attr)).unwrap();
 }
 
-fn has_explicit_rendering_matrix(attr: &ShapeComponentAttr) -> bool {
-    const EPSILON: f64 = 0.000_001;
+/// HWP와 HWPX가 같은 저장 변환을 소비한다. 원본 행렬은 그대로 보존하고,
+/// 편집으로 raw 캐시가 사라진 개체는 기존 HWP 계약으로 회전·축척을 발행한다.
+pub(crate) fn shape_rendering_bytes(attr: &ShapeComponentAttr) -> Vec<u8> {
+    let mut writer = ByteWriter::new();
+    write_shape_rendering(&mut writer, attr);
+    writer.into_bytes()
+}
 
-    (attr.render_sx - 1.0).abs() > EPSILON
-        || attr.render_b.abs() > EPSILON
-        || attr.render_tx.abs() > EPSILON
-        || attr.render_c.abs() > EPSILON
-        || (attr.render_sy - 1.0).abs() > EPSILON
-        || attr.render_ty.abs() > EPSILON
+fn write_shape_rendering(w: &mut ByteWriter, attr: &ShapeComponentAttr) {
+    if !attr.raw_rendering.is_empty() {
+        w.write_bytes(&attr.raw_rendering).unwrap();
+    } else {
+        let (translation, pairs) = super::shape_rendering::generated(attr);
+        w.write_u16(pairs.len() as u16).unwrap();
+        for matrix in std::iter::once(translation).chain(
+            pairs
+                .into_iter()
+                .flat_map(|(scale, rotation)| [scale, rotation]),
+        ) {
+            for value in matrix {
+                w.write_f64(value).unwrap();
+            }
+        }
+    }
 }
 
 fn write_matrix(w: &mut ByteWriter, matrix: [f64; 6]) {
@@ -2609,88 +2605,11 @@ fn write_matrix(w: &mut ByteWriter, matrix: [f64; 6]) {
     }
 }
 
-fn shape_scale_matrix(attr: &ShapeComponentAttr) -> [f64; 6] {
-    let sx = if attr.original_width > 0 && attr.current_width > 0 {
-        attr.current_width as f64 / attr.original_width as f64
-    } else {
-        1.0
-    };
-    let sy = if attr.original_height > 0 && attr.current_height > 0 {
-        attr.current_height as f64 / attr.original_height as f64
-    } else {
-        1.0
-    };
-    [sx, 0.0, 0.0, 0.0, sy, 0.0]
-}
-
-fn shape_rotation_positive_correction(attr: &ShapeComponentAttr) -> (f64, f64) {
-    let width = attr.current_width as f64;
-    let height = attr.current_height as f64;
-    if width <= 0.0 || height <= 0.0 {
-        return (0.0, 0.0);
-    }
-
-    let theta = (attr.rotation_angle as f64).to_radians();
-    let cos = theta.cos();
-    let sin = theta.sin();
-    let corners = [
-        (0.0, 0.0),
-        (width * cos, width * sin),
-        (-height * sin, height * cos),
-        (width * cos - height * sin, width * sin + height * cos),
-    ];
-    let min_x = corners
-        .iter()
-        .map(|(x, _)| *x)
-        .fold(f64::INFINITY, f64::min);
-    let min_y = corners
-        .iter()
-        .map(|(_, y)| *y)
-        .fold(f64::INFINITY, f64::min);
-    (-min_x, -min_y)
-}
-
-fn shape_rotation_matrix(attr: &ShapeComponentAttr) -> [f64; 6] {
-    if attr.rotation_angle.rem_euclid(360) == 0 {
-        return [1.0, 0.0, 0.0, 0.0, 1.0, 0.0];
-    }
-
-    let theta = (attr.rotation_angle as f64).to_radians();
-    let cos = theta.cos();
-    let sin = theta.sin();
-    let (tx, ty) = shape_rotation_positive_correction(attr);
-
-    [
-        cos,
-        -sin,
-        tx - attr.offset_x as f64,
-        sin,
-        cos,
-        ty - attr.offset_y as f64,
-    ]
-}
-
-fn write_generated_rendering_matrix(w: &mut ByteWriter, attr: &ShapeComponentAttr) {
-    let is_group_child = attr.group_level > 0;
-    let cnt: u16 = if is_group_child { 2 } else { 1 };
-    w.write_u16(cnt).unwrap();
-    write_matrix(
-        w,
-        [
-            1.0,
-            0.0,
-            attr.offset_x as f64,
-            0.0,
-            1.0,
-            attr.offset_y as f64,
-        ],
-    );
-    write_matrix(w, shape_scale_matrix(attr));
-    write_matrix(w, shape_rotation_matrix(attr));
-    if is_group_child {
-        write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
-        write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
-    }
+/// 편집으로 합성한 행렬을 HWP 저장 rendering 블록으로 만든다.
+pub(crate) fn serialize_affine_rendering(attr: &ShapeComponentAttr) -> Vec<u8> {
+    let mut writer = ByteWriter::new();
+    write_parsed_rendering_matrix(&mut writer, attr);
+    writer.into_bytes()
 }
 
 fn write_parsed_rendering_matrix(w: &mut ByteWriter, attr: &ShapeComponentAttr) {
@@ -2699,7 +2618,10 @@ fn write_parsed_rendering_matrix(w: &mut ByteWriter, attr: &ShapeComponentAttr) 
     //
     // Store the parsed affine transform so reload reconstructs exactly:
     // [sx, b, tx; c, sy, ty] = [1,0,tx;0,1,ty] x I x [sx,b,0;c,sy,0]
-    w.write_u16(1).unwrap();
+    //
+    // [#6874] 쌍 개수는 그룹 깊이 + 1 이다. 종전에는 깊이와 무관하게 1 을 써서, 명시
+    // 변환을 가진 묶음 자식의 레코드가 한/글 저장본보다 96바이트씩 짧았다.
+    w.write_u16(attr.group_level.saturating_add(1)).unwrap();
     write_matrix(w, [1.0, 0.0, attr.render_tx, 0.0, 1.0, attr.render_ty]);
     write_matrix(
         w,
@@ -2713,6 +2635,10 @@ fn write_parsed_rendering_matrix(w: &mut ByteWriter, attr: &ShapeComponentAttr) 
         ],
     );
     write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
+    for _ in 0..attr.group_level {
+        write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
+        write_matrix(w, [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]);
+    }
 }
 
 /// 도형 채우기 직렬화 (SHAPE_COMPONENT 내부 — parse_fill과 동일한 형식)
@@ -2764,25 +2690,7 @@ fn serialize_shape_fill(w: &mut ByteWriter, fill: &Fill) {
     // bit 1: 이미지 채우기
     if fill_type_val & 0x02 != 0 {
         if let Some(ref img) = fill.image {
-            let mode_val: u8 = match img.fill_mode {
-                ImageFillMode::TileAll => 0,
-                ImageFillMode::TileHorzTop => 1,
-                ImageFillMode::TileHorzBottom => 2,
-                ImageFillMode::TileVertLeft => 3,
-                ImageFillMode::TileVertRight => 4,
-                ImageFillMode::Total => 0,
-                ImageFillMode::FitToSize => 5,
-                ImageFillMode::Center => 6,
-                ImageFillMode::CenterTop => 7,
-                ImageFillMode::CenterBottom => 8,
-                ImageFillMode::LeftCenter => 9,
-                ImageFillMode::LeftTop => 10,
-                ImageFillMode::LeftBottom => 11,
-                ImageFillMode::RightCenter => 12,
-                ImageFillMode::RightTop => 13,
-                ImageFillMode::RightBottom => 14,
-                ImageFillMode::None => 15,
-            };
+            let mode_val = super::doc_info::image_fill_mode_to_u8(img.fill_mode);
             w.write_u8(mode_val).unwrap();
             w.write_i8(img.brightness).unwrap();
             w.write_i8(img.contrast).unwrap();
@@ -2962,11 +2870,6 @@ fn next_form_order() -> u32 {
     })
 }
 
-/// 현재 카운터 값 조회 (다음 Form 직렬화 시 사용될 order). Form 5 개 직렬화 직후 = 5.
-fn peek_form_order_counter() -> u32 {
-    FORM_ORDER_COUNTER.with(|c| c.get())
-}
-
 /// 양식 개체 직렬화 — CTRL_HEADER (46 bytes) + HWPTAG_FORM_OBJECT 자식
 ///
 /// 정답지 `samples/form-01.hwp` reverse engineering 결과를 기반으로 작성.
@@ -2987,16 +2890,43 @@ fn serialize_form_control(form: &FormObject, level: u16, records: &mut Vec<Recor
     //   28..36 zero (8 bytes)
     //   36..40 instance_id (u32, 0x7dcd59d6 + order)
     //   40..46 zero (6 bytes)
+    // [#6266] 이 헤더의 0..40 바이트 배치는 `parse_common_obj_attr` 이 읽는
+    // `CommonObjAttr` 와 정확히 같다(24..28=z_order, 28..36=바깥 여백,
+    // 36..40=instance_id). 그래서 원본에서 읽은 배치를 여기서 되쓴다 — 종전처럼
+    // 고정값만 쓰면 왕복에서 배치가 소실된다. 배치를 갖지 않는 원본(HWPX 유래
+    // 등)에서는 정답지 고정값으로 떨어져 종전 산출을 유지한다.
+    let c = &form.common;
+    // 원본이 HWP5 form 헤더를 갖고 있었는지의 판별자는 `attr` 이다 — 그 헤더에서
+    // 읽었다면 attr 은 0 이 아니다. z_order·instance_id 는 **0 도 원본 값**일 수
+    // 있으므로 값 자체가 아니라 이 판별자로 갈라야 왕복이 무손실이다.
+    let from_hwp5_header = c.attr != 0;
+    let attr = if from_hwp5_header {
+        c.attr
+    } else {
+        0x002a_6211
+    };
+    let z_order = if from_hwp5_header {
+        c.z_order
+    } else {
+        order as i32
+    };
+    // The document writer assigns missing legacy Form identities against the
+    // whole document before emitting records. This low-level writer preserves
+    // the supplied identity, including an original HWP identity of zero.
+    let instance_id = c.instance_id;
     let mut hdr = Vec::with_capacity(46);
     hdr.extend_from_slice(b"mrof"); // ctrl_id "form" little-endian
-    hdr.extend_from_slice(&0x002a_6211u32.to_le_bytes());
-    hdr.extend_from_slice(&0i32.to_le_bytes()); // y_offset
-    hdr.extend_from_slice(&0i32.to_le_bytes()); // x_offset
+    hdr.extend_from_slice(&attr.to_le_bytes());
+    hdr.extend_from_slice(&c.vertical_offset.to_le_bytes());
+    hdr.extend_from_slice(&c.horizontal_offset.to_le_bytes());
     hdr.extend_from_slice(&form.width.to_le_bytes());
     hdr.extend_from_slice(&form.height.to_le_bytes());
-    hdr.extend_from_slice(&order.to_le_bytes());
-    hdr.extend_from_slice(&[0u8; 8]);
-    hdr.extend_from_slice(&(0x7dcd_59d6u32.wrapping_add(order)).to_le_bytes());
+    hdr.extend_from_slice(&z_order.to_le_bytes());
+    hdr.extend_from_slice(&c.margin.left.to_le_bytes());
+    hdr.extend_from_slice(&c.margin.right.to_le_bytes());
+    hdr.extend_from_slice(&c.margin.top.to_le_bytes());
+    hdr.extend_from_slice(&c.margin.bottom.to_le_bytes());
+    hdr.extend_from_slice(&instance_id.to_le_bytes());
     hdr.extend_from_slice(&[0u8; 6]);
     debug_assert_eq!(hdr.len(), 46);
     records.push(Record {
@@ -3042,7 +2972,7 @@ fn serialize_form_control(form: &FormObject, level: u16, records: &mut Vec<Recor
 }
 
 /// 정답지 fall-back BorderType (FormObject.properties 에 키가 없을 때).
-fn default_border_type(ft: FormType) -> i32 {
+pub(super) fn default_border_type(ft: FormType) -> i32 {
     match ft {
         FormType::PushButton => 4,
         FormType::CheckBox => 0,

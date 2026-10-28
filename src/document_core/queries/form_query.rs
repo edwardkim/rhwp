@@ -2,6 +2,7 @@
 //!
 //! 렌더 트리에서 양식 개체를 좌표로 찾거나, 문서 트리에서 직접 값을 조회/설정한다.
 
+use crate::document_core::helpers::json_escape as escape_json;
 use crate::document_core::DocumentCore;
 use crate::model::control::{Control, FormType};
 use crate::model::table::Table;
@@ -110,7 +111,7 @@ impl DocumentCore {
 
         match control {
             Some(Control::Form(f)) => {
-                apply_form_value(f, value_json);
+                apply_form_value(f, value_json)?;
                 // 원본 스트림 무효화 — serialize_section 은 raw_stream 이 있으면 원본
                 // 바이트를 그대로 반환하므로(serializer/body_text.rs), 비우지 않으면
                 // 방금 넣은 양식 값이 저장 시 통째로 사라진다. 화면은 recompose 로
@@ -169,7 +170,7 @@ impl DocumentCore {
 
         match form {
             Some(f) => {
-                apply_form_value(f, value_json);
+                apply_form_value(f, value_json)?;
                 // set_form_value_native 와 동일 — 셀 안 양식 값도 섹션 raw_stream 을
                 // 비워야 저장 시 반영된다.
                 if let Some(s) = self.document.sections.get_mut(sec) {
@@ -247,16 +248,30 @@ impl DocumentCore {
 }
 
 /// form value/text/caption 적용 헬퍼
-fn apply_form_value(f: &mut crate::model::control::FormObject, value_json: &str) {
-    if let Some(v) = extract_json_int(value_json, "value") {
+fn apply_form_value(
+    f: &mut crate::model::control::FormObject,
+    value_json: &str,
+) -> Result<(), crate::error::HwpError> {
+    // 전체 JSON을 먼저 읽어 잘못된 입력의 일부만 문서에 반영하지 않는다.
+    let value: serde_json::Value = serde_json::from_str(value_json)
+        .map_err(|error| crate::error::HwpError::InvalidField(format!("양식 값 JSON: {error}")))?;
+    let fields = value.as_object().ok_or_else(|| {
+        crate::error::HwpError::InvalidField("양식 값은 JSON 객체여야 합니다".to_string())
+    })?;
+    if let Some(v) = fields
+        .get("value")
+        .and_then(serde_json::Value::as_i64)
+        .and_then(|v| i32::try_from(v).ok())
+    {
         f.value = v;
     }
-    if let Some(t) = extract_json_string(value_json, "text") {
-        f.text = t;
+    if let Some(t) = fields.get("text").and_then(serde_json::Value::as_str) {
+        f.text = t.to_string();
     }
-    if let Some(c) = extract_json_string(value_json, "caption") {
-        f.caption = c;
+    if let Some(c) = fields.get("caption").and_then(serde_json::Value::as_str) {
+        f.caption = c.to_string();
     }
+    Ok(())
 }
 
 /// 렌더 트리를 재귀 순회하여 좌표에 해당하는 FormObject 노드를 찾는다.
@@ -288,50 +303,6 @@ fn form_type_to_str(ft: FormType) -> &'static str {
         FormType::ComboBox => "ComboBox",
         FormType::RadioButton => "RadioButton",
         FormType::Edit => "Edit",
-    }
-}
-
-fn escape_json(s: &str) -> String {
-    s.replace('\\', "\\\\")
-        .replace('"', "\\\"")
-        .replace('\n', "\\n")
-        .replace('\r', "\\r")
-        .replace('\t', "\\t")
-}
-
-/// 간단한 JSON에서 정수값 추출: `"key":123`
-fn extract_json_int(json: &str, key: &str) -> Option<i32> {
-    let pattern = format!(r#""{}":"#, key);
-    if let Some(pos) = json.find(&pattern) {
-        let start = pos + pattern.len();
-        let rest = &json[start..];
-        let end = rest
-            .find(|c: char| !c.is_ascii_digit() && c != '-')
-            .unwrap_or(rest.len());
-        rest[..end].parse().ok()
-    } else {
-        None
-    }
-}
-
-/// 간단한 JSON에서 문자열값 추출: `"key":"value"`
-fn extract_json_string(json: &str, key: &str) -> Option<String> {
-    let pattern = format!(r#""{}":""#, key);
-    if let Some(pos) = json.find(&pattern) {
-        let start = pos + pattern.len();
-        let rest = &json[start..];
-        // 이스케이프되지 않은 닫는 따옴표 찾기
-        let mut end = 0;
-        let chars: Vec<char> = rest.chars().collect();
-        while end < chars.len() {
-            if chars[end] == '"' && (end == 0 || chars[end - 1] != '\\') {
-                break;
-            }
-            end += 1;
-        }
-        Some(chars[..end].iter().collect())
-    } else {
-        None
     }
 }
 

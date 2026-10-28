@@ -20,7 +20,7 @@ REF = SKILL / "references"
 EXAMPLES = SKILL / "examples"
 FIXT = SKILL / "fixtures"
 GEN = REF / "_gen_pack.py"
-WORKING = REPO / "mydocs" / "working" / "agent_knowledge_map_skill.md"
+WORKING = REPO / "mydocs" / "working" / "archives" / "agent_knowledge_map_skill.md"
 MAP = REPO / "mydocs" / "manual" / "agent_knowledge_map.md"
 LLMS = REPO / "llms.txt"
 

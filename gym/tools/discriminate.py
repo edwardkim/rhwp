@@ -114,6 +114,7 @@ OPTIONAL_REPORT_KEYS = (
     "toolFailed",
     "toolErrors",
     "controlKinds",
+    "binPath",
 )
 
 EXIT_OK = 0
@@ -420,6 +421,7 @@ def empty_report() -> dict:
         "toolFailed": False,
         "toolErrors": [],
         "controlKinds": list(CONTROL_KINDS),
+        "binPath": "",
     }
 
 
@@ -876,7 +878,9 @@ def run_audit(bin_path: str, gym_root: str | None = None, neg_root: str | None =
     gym = gym_root if gym_root is not None else GYM_ROOT
     dest = neg_root if neg_root is not None else default_neg_root(gym)
     prepare_neg_root(dest)
-    return discriminate(bin_path, gym, dest)
+    report = discriminate(bin_path, gym, dest)
+    report["binPath"] = bin_path if isinstance(bin_path, str) else ""
+    return report
 
 
 def parse_args(argv=None) -> argparse.Namespace:

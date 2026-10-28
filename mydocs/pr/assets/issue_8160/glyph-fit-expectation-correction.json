@@ -1,0 +1,29 @@
+{
+  "before": {
+    "stage": "existing lib expectations after six initializer fixes",
+    "tests": 3,
+    "passed": 1,
+    "failed": 2,
+    "exit_code": 100,
+    "failures": {
+      "non_negative_letter_spacing_keeps_existing_canvas_font_fit_policy": "None != Some(0.5)",
+      "distribution_spacing_does_not_resize_ascii_canvas_glyph": "None != Some(1.0)"
+    }
+  },
+  "intermediate_after": {
+    "stage": "explicit-fit three existing tests plus ordinary-ink standalone test",
+    "tests": 4,
+    "passed": 4,
+    "failed": 0,
+    "exit_code": 0,
+    "build_seconds": 571,
+    "test_seconds": 0.053
+  },
+  "final_source": {
+    "source_test_count": 4101,
+    "source_module_count": 296,
+    "policy_exit_code": 0,
+    "ordinary_ink_coverage": "helper invoked by existing fit test; no new source-side test attribute",
+    "formal_nextest": "pending"
+  }
+}

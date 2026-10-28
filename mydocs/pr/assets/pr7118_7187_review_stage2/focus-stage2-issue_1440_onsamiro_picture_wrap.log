@@ -1,0 +1,15 @@
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 7.29s
+     Running tests/generated/regression_suite_007.rs (target/pr7118-7187-20260916/release-test/deps/regression_suite_007-f458415331fe5b60)
+
+running 8 tests
+test issue_1440_onsamiro_picture_wrap::issue_6970_source_column_direction_preserves_rectangles_and_page_parity ... ok
+test issue_1440_onsamiro_picture_wrap::issue_6970_mirror_columns_and_square_paragraph_keep_source_geometry ... ok
+test issue_1440_onsamiro_picture_wrap::issue_6970_mirror_direction_survives_hwp_and_hwpx_save ... ok
+test issue_1440_onsamiro_picture_wrap::issue_6970_no_ls_square_wrap_columns_stay_inside_body_without_overlap ... ok
+test issue_1440_onsamiro_picture_wrap::issue_1440_source_linesegs_encode_wrap_zone_for_target_paragraph ... ok
+test issue_1440_onsamiro_picture_wrap::issue_1440_page6_box_paragraph_does_not_double_apply_lineseg_column_start ... ok
+test issue_1440_onsamiro_picture_wrap::issue_1440_page6_box_border_connect_and_dash_line_are_preserved ... ok
+test issue_1440_onsamiro_picture_wrap::issue_1440_page35_text_lines_do_not_cross_square_picture ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 189 filtered out; finished in 0.12s

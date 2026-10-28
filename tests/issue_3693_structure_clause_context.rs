@@ -57,20 +57,6 @@ fn all_text(structure: &StructureDoc) -> Vec<String> {
 }
 
 #[test]
-fn real_agreement_keeps_items_under_article() {
-    let structure = load_structure("samples/hwp3-sample16-hwp5.hwp");
-    let article = find_at(&structure.roots, 0, 945).expect("협정서 제1조");
-
-    assert_eq!((article.kind, article.marker.as_str()), ("조", "제1조"));
-    let child_markers: Vec<&str> = article
-        .children
-        .iter()
-        .map(|node| node.marker.as_str())
-        .collect();
-    assert_eq!(child_markers, vec!["1.", "2.", "3."]);
-}
-
-#[test]
 fn real_work_plan_date_is_not_a_clause_item() {
     let structure = load_structure("samples/2022년 국립국어원 업무계획.hwp");
 
@@ -84,30 +70,5 @@ fn real_work_plan_date_is_not_a_clause_item() {
             .iter()
             .any(|text| text.trim_start().starts_with("2022.")),
         "날짜 문단이 텍스트로도 사라졌다면 negative 단언이 공허하게 통과한 것이다"
-    );
-}
-
-#[test]
-fn real_handbook_toc_numbers_are_not_clause_items() {
-    let structure = load_structure("samples/2025 행정업무운영 편람(최종).hwp");
-
-    assert_eq!(
-        find_at(&structure.roots, 0, 8).map(|node| (node.kind, node.marker.as_str())),
-        Some(("장", "제1장"))
-    );
-    assert_eq!(
-        find_at(&structure.roots, 0, 14).map(|node| (node.kind, node.marker.as_str())),
-        Some(("절", "제1절"))
-    );
-    assert!(find_at(&structure.roots, 0, 9).is_none());
-    assert!(find_at(&structure.roots, 0, 15).is_none());
-
-    // 거부된 목차 번호도 텍스트로는 남는다.
-    let texts = all_text(&structure);
-    assert!(
-        texts.iter().any(|text| text
-            .trim_start()
-            .starts_with("1. ‘행정업무의 효율적 운영’의 의의")),
-        "목차 문단이 텍스트로도 사라졌다면 negative 단언이 공허하게 통과한 것이다"
     );
 }

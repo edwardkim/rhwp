@@ -82,6 +82,8 @@ pub(super) fn edit_insert_text(args: &[String]) -> i32 {
         eprintln!("{USAGE}");
         return EXIT_USAGE;
     };
+    let normalized = rhwp::model::paragraph::normalize_text_newlines(text);
+    let text = normalized.as_ref();
     if text.is_empty() {
         eprintln!("오류: --text 는 빈 문자열일 수 없습니다.");
         return EXIT_USAGE;
@@ -423,8 +425,24 @@ pub(super) fn edit_insert_page_break(args: &[String]) -> i32 {
         );
         return EXIT_USAGE;
     }
+    // [#7218] 문단 시작(offset 0)이면 문단을 가르지 않고 그 문단에 쪽 나눔만 건다 —
+    // 가르면 원 문단 모양(개요 수준 포함)을 물려받은 빈 문단이 앞에 남는다. 봉투는 문단 수
+    // 변화(`paragraphDelta`)와 쪽 나눔이 걸린 문단 좌표(`pageBreakParagraph`)를 싣는다.
+    let at_paragraph_start = offset == 0;
+    let paragraph_delta: u32 = if at_paragraph_start { 0 } else { 1 };
+    let page_break_paragraph = if at_paragraph_start {
+        para_arg
+    } else {
+        para_arg + 1
+    };
     if !dry_run {
-        if let Err(e) = doc.insert_page_break_native(sec, para, offset) {
+        let result = if at_paragraph_start {
+            doc.mark_page_break_at_paragraph_start_native(sec, para)
+                .map(|_| ())
+        } else {
+            doc.insert_page_break_native(sec, para, offset).map(|_| ())
+        };
+        if let Err(e) = result {
             eprintln!("오류: 쪽 나눔 삽입 실패 - {e}");
             return EXIT_RUNTIME;
         }
@@ -441,7 +459,9 @@ pub(super) fn edit_insert_page_break(args: &[String]) -> i32 {
         serde_json::json!({
             "section": section_arg,
             "paragraph": para_arg,
-            "offset": offset_arg
+            "offset": offset_arg,
+            "paragraphDelta": paragraph_delta,
+            "pageBreakParagraph": page_break_paragraph
         }),
         &[(sec, para)],
         &format!(
@@ -541,8 +561,22 @@ pub(super) fn edit_insert_column_break(args: &[String]) -> i32 {
         );
         return EXIT_USAGE;
     }
+    let at_paragraph_start = offset == 0;
+    let paragraph_delta: u32 = if at_paragraph_start { 0 } else { 1 };
+    let column_break_paragraph = if at_paragraph_start {
+        para_arg
+    } else {
+        para_arg + 1
+    };
     if !dry_run {
-        if let Err(e) = doc.insert_column_break_native(sec, para, offset) {
+        let result = if at_paragraph_start {
+            doc.mark_column_break_at_paragraph_start_native(sec, para)
+                .map(|_| ())
+        } else {
+            doc.insert_column_break_native(sec, para, offset)
+                .map(|_| ())
+        };
+        if let Err(e) = result {
             eprintln!("오류: 단 나눔 삽입 실패 - {e}");
             return EXIT_RUNTIME;
         }
@@ -559,7 +593,9 @@ pub(super) fn edit_insert_column_break(args: &[String]) -> i32 {
         serde_json::json!({
             "section": section_arg,
             "paragraph": para_arg,
-            "offset": offset_arg
+            "offset": offset_arg,
+            "paragraphDelta": paragraph_delta,
+            "columnBreakParagraph": column_break_paragraph
         }),
         &[(sec, para)],
         &format!(

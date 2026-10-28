@@ -1,0 +1,26 @@
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 2m 42s
+     Running unittests src/lib.rs (target/pr7118-7187-20260916/release-test/deps/rhwp-7c2b8d4ed9a3b299)
+
+running 1 test
+test renderer::layout::table_layout::row_cut_tests::test_advance_row_cut_multi_cell ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3885 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/pr7118-7187-20260916/release-test/deps/rhwp_contracts-fbfad54192303fc8)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/pr7118-7187-20260916/release-test/deps/rhwp_ooxml_chart-4bd6f25890ad6fe8)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 165 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/pr7118-7187-20260916/release-test/deps/rhwp_password_crypto-302401cde12f9ad1)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s

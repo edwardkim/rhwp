@@ -1,0 +1,292 @@
+{
+  "state": "scoped_transfer_complete_final_whole_validation_pending",
+  "base": "8497729b4fb0e071c484fc5740f9bb2400bed437",
+  "head_before_transfer": "6da2af0da",
+  "user_authorization": "현재 브랜치 검토를 신속히 마치도록 #7445로 최대한 이관",
+  "scope": [
+    "issue_6761_band_absorbs_spacing_before::next_paragraph_starts_at_table_outer_margin_bottom",
+    "issue_synam001_visible_float_host_line_overlap::host_title_line_does_not_overlap_visible_float_table_first_line",
+    "text_overlap_baseline only basic/KTX-003.hwp",
+    "text_overlap_baseline only issue2439/issue2439_repeat_table_overlap.hwp"
+  ],
+  "classification": "actual unresolved rendering differences deferred, not proven-correct rendering or invalid overlap detector",
+  "preserve": [
+    "all original HWP/HWPX and PDF",
+    "6761 passing counterexample",
+    "all other document regressions and baseline entries",
+    "7359 qualified semantic test"
+  ],
+  "fresh_wasm_for_low_documents": "not executed; Native already fails prerequisite; no dual-backend approval",
+  "visual": [
+    {
+      "topic": "chemical",
+      "source": {
+        "path": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+        "sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860"
+      },
+      "pdf": {
+        "path": "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+        "sha256": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79"
+      },
+      "pages": 103,
+      "below90_pages": [
+        10,
+        15,
+        16,
+        35,
+        40,
+        41,
+        46,
+        47,
+        50,
+        53,
+        55,
+        60,
+        65,
+        76,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        86,
+        88,
+        89,
+        92,
+        94
+      ],
+      "minimum": 17.93029,
+      "visual_run_manifest_sha256": "114022de42a592dcada2e12596922b26e26698bec2a53411dc306154a67bbb92"
+    },
+    {
+      "topic": "synam",
+      "source": {
+        "path": "samples/synam-001.hwp",
+        "sha256": "1dce9356ec316407b6c684d5a11190a44bb26da643a7749626763e781ab0c13b"
+      },
+      "pdf": {
+        "path": "pdf/synam-001-hwp-2020.pdf",
+        "sha256": "d199640be90cb39acfde965bbeb66c787d01d179b6759c5d797cf91043c7d09d"
+      },
+      "pages": 35,
+      "below90_pages": [
+        4,
+        5,
+        6,
+        13,
+        14,
+        15,
+        24,
+        25,
+        30
+      ],
+      "minimum": 53.70706,
+      "visual_run_manifest_sha256": "b70371d4c9499999883d19c87ef6d0e051445736aa9e708368879dc6252917cd"
+    },
+    {
+      "topic": "ktx",
+      "source": {
+        "path": "samples/basic/KTX-003.hwp",
+        "sha256": "619bc919de3f2b8113fb9af0fcc808c754dc601ed9e66e49226280fd3d1ae032"
+      },
+      "pdf": {
+        "path": "pdf/basic/KTX-003-hwp-2020.pdf",
+        "sha256": "4f1ee37987cbffe1856b44da2fa4e36cd9df46b9c04a4da1259b3cfc3cde55ff"
+      },
+      "pages": 1,
+      "below90_pages": [
+        1
+      ],
+      "minimum": 78.18921,
+      "visual_run_manifest_sha256": "e236ff568eb14031c912ca6bbc2d977de9185723aaa5315614beb60ca74de2a9"
+    },
+    {
+      "topic": "2439",
+      "source": {
+        "path": "samples/issue2439/issue2439_repeat_table_overlap.hwp",
+        "sha256": "674eabe66ea0ba783ad2cd398519c9893ba94956a22d9cb94b084db00d4d2c3d"
+      },
+      "pdf": {
+        "path": "pdf/issue2439/issue2439_hancom2024_landscape.pdf",
+        "sha256": "f36a747c5f848d90e755abe2e730d932429a324fad9b7e822964934cd8f8eca4"
+      },
+      "pages": 10,
+      "below90_pages": [
+        1,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "minimum": 0.0,
+      "visual_run_manifest_sha256": "40fe10c5dd7aecc2fcd92e1796f0841b46017d04c06a257a499c2f7b245aa288"
+    }
+  ],
+  "issue_comment_url": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5977265491",
+  "removed_functions": 2,
+  "deferred_text_overlap_inputs": 2,
+  "gates": [
+    {
+      "gate": "focused",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_026",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_004",
+        "--test",
+        "regression_suite_014",
+        "--test",
+        "regression_suite_007",
+        "--test",
+        "regression_suite_015",
+        "--test",
+        "regression_suite_006",
+        "--test",
+        "regression_suite_012",
+        "--test",
+        "regression_suite_016",
+        "--test",
+        "regression_suite_025",
+        "--test",
+        "regression_suite_019",
+        "--test",
+        "regression_suite_027",
+        "--test",
+        "regression_suite_017",
+        "-E",
+        "test(/issue_5711_para_border_negative_spacing::/) | test(/issue_6104_tac_title_over_table::/) | test(/issue_7288_stale_frame_empty_paragraph::/) | test(/body_overflow_baseline::body_overflow_does_not_grow_partition_(10|13)$/) | test(/issue_1789_exclusion_probe_line_spacing::/) | test(/oracle_page_count_baseline::/) | test(/svg_snapshot::/) | test(/issue_5701_rewound_float_host_double_paint::/) | test(/issue_6950_paragraph_end_topbottom_anchor::/) | test(/issue_5584_float_host_title_above_table::/) | test(/issue_6797_table_item_clears_float_band::/) | test(/issue_2097_terminal_row_physical_ownership::/) | test(/issue_6184_tail_line_before_deferred_table::/) | test(/issue_6761_band_absorbs_spacing_before::/) | test(/issue_7359_page_top_table_spacing::/) | test(/text_overlap_baseline::/) | test(/issue_6267_para_float_table_overlap::/) | test(/issue_1835_tac_stale_height::/) | test(/issue_7482_shared_paragraph_table_rows::/) | test(/issue_7481_no_lineseg_square_table_host_text::/) | test(/issue_2319_no_lineseg_tac_table_height::/) | test(/issue_7418_condense_new_word_needs_natural_fit::/) | test(/issue_7418_ascii_punct_uses_latin_slot::/) | test(/issue_7418_host_text_and_split_row_geometry::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 121.859,
+      "log": "output/pr-review/planet6897-green-20261002/transfer7445-gates-focused.log"
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 6.73,
+      "log": "output/pr-review/planet6897-green-20261002/transfer7445-gates-fmt.log"
+    },
+    {
+      "gate": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.273,
+      "log": "output/pr-review/planet6897-green-20261002/transfer7445-gates-native-clippy.log"
+    },
+    {
+      "gate": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.216,
+      "log": "output/pr-review/planet6897-green-20261002/transfer7445-gates-wasm-clippy.log"
+    },
+    {
+      "gate": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.346,
+      "log": "output/pr-review/planet6897-green-20261002/transfer7445-gates-workspace-build.log"
+    },
+    {
+      "gate": "all-target-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 15.229,
+      "log": "output/pr-review/planet6897-green-20261002/transfer7445-gates-all-target-clippy.log"
+    },
+    {
+      "gate": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "8497729b4fb0e071c484fc5740f9bb2400bed437"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.528,
+      "log": "output/pr-review/planet6897-green-20261002/transfer7445-gates-manifest.log"
+    }
+  ],
+  "focused": {
+    "run": 133,
+    "pass": 133,
+    "fail": 0,
+    "slow": 2,
+    "skipped": 2911,
+    "seconds": 65.798,
+    "exit_code": 0
+  },
+  "source_after": {
+    "tests/cases/issue_6761_band_absorbs_spacing_before.rs": "19114eb2002911a65d6aeb081704075c3029cc1c2f3b6c75b2816ed1bd16ca4e",
+    "tests/cases/text_overlap_baseline.rs": "972c7db77528541bb09837da7d24585a9160f18b414ac07f54de124d6168a130"
+  },
+  "production_changed": false
+}

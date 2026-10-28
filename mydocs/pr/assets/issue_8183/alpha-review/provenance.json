@@ -1,0 +1,228 @@
+{
+  "product_source": "cfc5be8fe",
+  "case_scope": "two 1-page JPX fixtures, presentation of existing captures; no new rendering or metric calculation",
+  "capture_dpi": 96,
+  "native_and_wasm_reference_raw_percent": 100,
+  "print_gate": "re_review_required",
+  "items": [
+    {
+      "id": "jpx-alpha",
+      "title": "alpha=1 — 일반 alpha",
+      "pixels": [
+        [
+          255,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          255,
+          0,
+          64
+        ],
+        [
+          0,
+          0,
+          255,
+          128
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ]
+      ],
+      "captures": [
+        {
+          "key": "reference",
+          "title": "독립 PDF 기준",
+          "detail": "원본 PDF → Ghostscript 정규화 → PDFium",
+          "path": "mydocs/pr/assets/issue_8183/alpha-review/jpx-alpha-reference.png",
+          "source": "output/pr-review/issue8183/stage3/visual-final/native-roundtrip-independent-ref/jpx-alpha/pdf_png/pdf-001.png",
+          "sha256": "45b2922954cbb6ebd43987e9efaa79961ca9feb10aa3a0e348ed9ffa1daa5c06",
+          "width": 214,
+          "height": 107
+        },
+        {
+          "key": "native",
+          "title": "RHWP Native",
+          "detail": "같은 HWPX의 Native Skia 출력",
+          "path": "mydocs/pr/assets/issue_8183/alpha-review/jpx-alpha-native.png",
+          "source": "output/pr-review/issue8183/stage3/visual-final/native-roundtrip-independent-ref/jpx-alpha/rhwp_png/rhwp_001.png",
+          "sha256": "7dae6b19a1de792ba63483c7f772c665f13158506cc780450440b837aa4586d0",
+          "width": 214,
+          "height": 107
+        },
+        {
+          "key": "wasm",
+          "title": "RHWP WASM",
+          "detail": "같은 HWPX의 fresh WASM Canvas 출력",
+          "path": "mydocs/pr/assets/issue_8183/alpha-review/jpx-alpha-wasm.png",
+          "source": "output/pr-review/issue8183/stage3/visual-final/wasm-roundtrip-independent-ref/jpx-alpha/rhwp_png/rhwp_001.png",
+          "sha256": "356af4e864de5e25c3091507ed4d7c24613a26c0d57cc6f08d30154a2f535252",
+          "width": 214,
+          "height": 107
+        },
+        {
+          "key": "print",
+          "title": "한컴 Print",
+          "detail": "한컴 2024에서 HWPX를 인쇄",
+          "path": "mydocs/pr/assets/issue_8183/alpha-review/jpx-alpha-print.png",
+          "source": "output/pr-review/issue8183/stage3/visual-final/print-native/jpx-alpha/pdf_png/pdf-001.png",
+          "sha256": "2f31d523d0af181c7b56d11450e5d93f97f96ba536f14d23d44eff6a42cac102",
+          "width": 211,
+          "height": 106
+        },
+        {
+          "key": "resaved",
+          "title": "한컴 재저장 후 Print",
+          "detail": "한컴이 HWP로 저장한 뒤 다시 인쇄",
+          "path": "mydocs/pr/assets/issue_8183/alpha-review/jpx-alpha-resaved.png",
+          "source": "mydocs/pr/assets/issue_8183/hancom-print/jpx-alpha-hancom-hwp-print.png",
+          "sha256": "3edbc154ae191655c7fce9b9e944c5565008744e797aef4a2b37f6c408d13a2b",
+          "width": 211,
+          "height": 106
+        }
+      ],
+      "embedded": {
+        "path": "mydocs/pr/assets/issue_8183/alpha-review/jpx-alpha-embedded.png",
+        "sha256": "8717babaa1b25eafde5c658761e7556a15b5ed704e4ca3b5ff52f42edd12f5fc"
+      },
+      "score": 27.39104
+    },
+    {
+      "id": "jpx-premult",
+      "title": "alpha=2 — preblend 복원",
+      "pixels": [
+        [
+          255,
+          0,
+          0,
+          128
+        ],
+        [
+          0,
+          255,
+          0,
+          64
+        ],
+        [
+          0,
+          0,
+          255,
+          255
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "captures": [
+        {
+          "key": "reference",
+          "title": "독립 PDF 기준",
+          "detail": "원본 PDF → Ghostscript 정규화 → PDFium",
+          "path": "mydocs/pr/assets/issue_8183/alpha-review/jpx-premult-reference.png",
+          "source": "output/pr-review/issue8183/stage3/visual-final/native-roundtrip-independent-ref/jpx-premult/pdf_png/pdf-001.png",
+          "sha256": "6f62693e13f2c8d027a79bc57f9e70999252f8eac7b1df641df750f738a1fe62",
+          "width": 214,
+          "height": 107
+        },
+        {
+          "key": "native",
+          "title": "RHWP Native",
+          "detail": "같은 HWPX의 Native Skia 출력",
+          "path": "mydocs/pr/assets/issue_8183/alpha-review/jpx-premult-native.png",
+          "source": "output/pr-review/issue8183/stage3/visual-final/native-roundtrip-independent-ref/jpx-premult/rhwp_png/rhwp_001.png",
+          "sha256": "7eef06cd8b8e5a4ea5567d69846e60e0eddf2cff0a50f69da72c41cbf0f2d928",
+          "width": 214,
+          "height": 107
+        },
+        {
+          "key": "wasm",
+          "title": "RHWP WASM",
+          "detail": "같은 HWPX의 fresh WASM Canvas 출력",
+          "path": "mydocs/pr/assets/issue_8183/alpha-review/jpx-premult-wasm.png",
+          "source": "output/pr-review/issue8183/stage3/visual-final/wasm-roundtrip-independent-ref/jpx-premult/rhwp_png/rhwp_001.png",
+          "sha256": "0034bc7a4c06fecbc098c1786dbe0a21c3f395df7ecbd11128e224f790c7f217",
+          "width": 214,
+          "height": 107
+        },
+        {
+          "key": "print",
+          "title": "한컴 Print",
+          "detail": "한컴 2024에서 HWPX를 인쇄",
+          "path": "mydocs/pr/assets/issue_8183/alpha-review/jpx-premult-print.png",
+          "source": "output/pr-review/issue8183/stage3/visual-final/print-native/jpx-premult/pdf_png/pdf-001.png",
+          "sha256": "6753fb1ee82be93c32203b6a4b4f7ed1ab40f5cfdae7bdf4d2fba33efffd6ba0",
+          "width": 211,
+          "height": 106
+        },
+        {
+          "key": "resaved",
+          "title": "한컴 재저장 후 Print",
+          "detail": "한컴이 HWP로 저장한 뒤 다시 인쇄",
+          "path": "mydocs/pr/assets/issue_8183/alpha-review/jpx-premult-resaved.png",
+          "source": "mydocs/pr/assets/issue_8183/hancom-print/jpx-premult-hancom-hwp-print.png",
+          "sha256": "a66a8f852dfacefcb41e82ece6f13d01679f0a1db67c6ff86f83c1e2f7c3068a",
+          "width": 211,
+          "height": 106
+        }
+      ],
+      "embedded": {
+        "path": "mydocs/pr/assets/issue_8183/alpha-review/jpx-premult-embedded.png",
+        "sha256": "8cdf2e12b2042927cfbf540384791994a087464e8a10363184dd471749899864"
+      },
+      "score": 52.99065
+    }
+  ],
+  "presentation": {
+    "viewer": "viewer.html",
+    "browser": "Chrome 154.0.8037.57",
+    "viewport_width": 2020,
+    "deviceScaleFactor": 1,
+    "display_scale": 2,
+    "files": [
+      {
+        "path": "mydocs/pr/assets/issue_8183/alpha-review/viewer.html",
+        "sha256": "6764ec70fee232bf6de7a4d505377cea1513f3cdfd8a23bbc6284a5bd9af9e50"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/alpha-review/overview.png",
+        "sha256": "40e310c3118cde4f44cec690c141e0c234d1cf4560661a368184ab7450437499"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/alpha-review/jpx-alpha-comparison.png",
+        "sha256": "c644c4f11524048cd20731580f91d63b684a0a634481f86b8d74c1626a277371"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/alpha-review/jpx-premult-comparison.png",
+        "sha256": "b00a623246c6813198da5a2dbfe0d557d96ac955c2be8533bd551ff63dd291f3"
+      }
+    ],
+    "local_review_pdf": {
+      "path": "output/pr-review/issue8183/alpha-review/alpha-review.pdf",
+      "pages": 2,
+      "sha256": "8d1ecc9e6998c7d3bb8f35a888e22ac3a4e6de009aca10422f6048cc23ca3d8f",
+      "role": "review-board-not-reference"
+    }
+  },
+  "maintainer_decision": {
+    "date": "2026-10-24",
+    "authority": "maintainer instruction in this session",
+    "scope": [
+      "jpx-alpha.pdf p1",
+      "jpx-premult.pdf p1"
+    ],
+    "product_source": "cfc5be8fe",
+    "disposition": "rhwp_correct_hancom_print_reference_defect",
+    "pr_submission_authorized": true,
+    "merge_authorized": false,
+    "numeric_results_changed": false,
+    "evidence": "mydocs/working/task_m100_8183_alpha_visual_review.md"
+  }
+}

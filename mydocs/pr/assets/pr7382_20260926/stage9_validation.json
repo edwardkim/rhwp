@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "stage": "maintainer correction9; held",
+  "producer_head": "7f3b0ee8bf9c193356080aca907fa1a50ea5c9ef",
+  "producer_worktree_rust_diff_sha256": "6df533dd3ced36364feb966bb3cae0da6aa57536c1fe3ebc2b8f1c031b7493c3",
+  "before": {
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 0.17,
+    "actual_top_px": 483.16,
+    "pdf_top_px": 486.508
+  },
+  "focused_and_normal": {
+    "passed": 64,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 2.699
+  },
+  "page_count": {
+    "actual": 216,
+    "pdf": 215,
+    "status": "re_review_required"
+  },
+  "native": {
+    "pages": [
+      176,
+      177
+    ],
+    "tolerant_content_match_percent": [
+      96.81055,
+      98.67443
+    ],
+    "selected_gate": "passed",
+    "exit_code": 0,
+    "direct_inspection": [
+      "review176",
+      "overlay176",
+      "review177",
+      "overlay177"
+    ],
+    "font_exception": false
+  },
+  "remaining": [
+    "figure67 source origin/flow/guide and later extra page",
+    "terminal caption budget failure boundary",
+    "final full Rust/lint/Skia/fresh WASM"
+  ]
+}

@@ -1,0 +1,8 @@
+page	next_page	direction	sequence_chars	sequence	note
+44	45	rhwp_later_than_reference	171	)(b)(a)접점간그리고접점과코일간의단락은만일그릴레이가13.2.2.3(14.1.2.2.3)의규정을충족시키는경우배제될수있다.(b)접점의용접은배제될수없다.다만,그릴레이가기계적으로힘이주어진연동된접점을갖도록되어있고,KSCIEC60947-5-1에따라만들어진경우,13.2.1.3의가정을적용한다.3.6인쇄회로기판(PCB	candidate only; PDF visual owner review required
+44	45	rhwp_later_than_reference	117	경우-PCB가위의요구조건에따라만들어지고그최소값이다음조건과함께표(KSCIEC60664-1)에따르는경우-오염등급이3-재료그룹이Ⅲ-이종(질)의분야표4의인쇄배선재료란은사용하지않는다.그것은연면거리가4mm이고250Vrms	candidate only; PDF visual owner review required
+44	45	rhwp_later_than_reference	79	1을참고한다.PCB의보호등급이IP5X또는그보다높은경우또는그재료가더높은품질을갖는경우,연면거리는간극값,즉250Vrms에대해3mm,에대해서감소될수있	candidate only; PDF visual owner review required
+44	45	rhwp_later_than_reference	54	,적용가능한KS(또는IEC)에따라취부되는경우배제될수있다.단락은소손된퓨즈의단락을의미한다.3.5릴레이	candidate only; PDF visual owner review required
+44	45	rhwp_later_than_reference	37	단락은다음의경우배제될수있다.-PCB의일반사양이EN60326-1에따르	candidate only; PDF visual owner review required
+44	45	rhwp_later_than_reference	32	60249-2-3의사양또는KSCIEC60249-2-2의사양	candidate only; PDF visual owner review required
+44	45	rhwp_later_than_reference	24	3.4퓨즈(a)(a)퓨즈가올바르게등급이주어지	candidate only; PDF visual owner review required

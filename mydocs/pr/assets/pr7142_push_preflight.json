@@ -1,0 +1,9 @@
+{
+  "repositoryPush": false,
+  "maintainerCanModify": true,
+  "dryRunExit": 0,
+  "dryRunOutput": "To https://github.com/rubidus-api/rhwp.git\n   7e57741eb..0308b476b  0308b476baed1e1c57f93af27a27edf47d18109c -> i18n/1-skeleton\n",
+  "dryRunCodeHead": "0308b476baed1e1c57f93af27a27edf47d18109c",
+  "remoteHeadAfterDryRun": "7e57741eb6df800921de836d4e0df7286dd71864",
+  "actuallyPushed": false
+}

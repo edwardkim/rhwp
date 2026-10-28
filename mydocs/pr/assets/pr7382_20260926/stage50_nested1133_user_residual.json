@@ -1,0 +1,118 @@
+{
+  "svg": [
+    {
+      "baseline": 603.067,
+      "first_x": 221.98000000000008,
+      "text": "※지원시유의사항"
+    },
+    {
+      "baseline": 605.32,
+      "first_x": 100.77333333333334,
+      "text": "지원서"
+    },
+    {
+      "baseline": 627.333,
+      "first_x": 230.64666666666673,
+      "text": "◦접수마감시한까지등록한지원서에한해유효함"
+    },
+    {
+      "baseline": 633.32,
+      "first_x": 110.10666666666667,
+      "text": "접수"
+    },
+    {
+      "baseline": 651.6,
+      "first_x": 232.30333333333337,
+      "text": "◦지원서의기재사항및제출서류가사실과다를경우"
+    },
+    {
+      "baseline": 675.867,
+      "first_x": 258.94000000000005,
+      "text": "합격또는채용이취소됨"
+    },
+    {
+      "baseline": 700.133,
+      "first_x": 230.73250000000007,
+      "text": "◦당회내규와부합되지않는채용신체검사상결격사유"
+    },
+    {
+      "baseline": 724.4,
+      "first_x": 256.92666666666673,
+      "text": "발생시합격이취소될수있음"
+    },
+    {
+      "baseline": 748.667,
+      "first_x": 230.64666666666673,
+      "text": "◦제출하신서류는일체반환하지않음"
+    },
+    {
+      "baseline": 1090.244,
+      "first_x": 380.35333333333335,
+      "text": "-2-"
+    }
+  ],
+  "pdf": [
+    {
+      "baseline": 1080.4192708333333,
+      "first_x": 379.9540608723958,
+      "text": "- 2 -"
+    },
+    {
+      "baseline": 606.5371500651041,
+      "first_x": 100.58548990885417,
+      "text": "지원서"
+    },
+    {
+      "baseline": 634.506591796875,
+      "first_x": 110.02037556966145,
+      "text": "접수"
+    },
+    {
+      "baseline": 604.2996012369791,
+      "first_x": 197.33304850260416,
+      "text": "※ 지원시 유의사항"
+    },
+    {
+      "baseline": 628.4332275390625,
+      "first_x": 197.33304850260416,
+      "text": " ◦ 접수 마감시한까지 등록한 지원서에 한해 유효함"
+    },
+    {
+      "baseline": 652.7266845703125,
+      "first_x": 197.33304850260416,
+      "text": " ◦ 지원서의 기재사항 및 제출서류가 사실과 다를 경우 "
+    },
+    {
+      "baseline": 677.0201009114584,
+      "first_x": 234.27303059895834,
+      "text": "합격 또는 채용이 취소됨"
+    },
+    {
+      "baseline": 701.1537272135416,
+      "first_x": 197.33304850260416,
+      "text": " ◦ 당회 내규와 부합되지 않는 채용 신체검사상 결격사유 "
+    },
+    {
+      "baseline": 725.4471842447916,
+      "first_x": 232.19415283203125,
+      "text": "발생시 합격이 취소 될 수 있음"
+    },
+    {
+      "baseline": 749.7406412760416,
+      "first_x": 197.33304850260416,
+      "text": " ◦ 제출하신 서류는 일체 반환하지 않음"
+    }
+  ],
+  "kind": "maintainer-review-residual",
+  "input": "samples/issue_1133.hwp",
+  "input_sha256": "ea03105fa7fa22398f3e370d222f37213e986ecca4b9b97d2847f1bbfe998d3b",
+  "reference_pdf": "pdf/issue7382-regression-review/issue_1133-2020.pdf",
+  "reference_sha256": "46ca5b1abc40d9479e9eea7994b951ebb82d177ebc448cd09688170effd850ae",
+  "page": 2,
+  "dpi": 96,
+  "review_png": "output/pr-review/planet6897-7382-20260926/stage50-float6797/visual/native-unresolved/nested1133-hwp/review/review_002.png",
+  "status": "hold",
+  "inspection": "Native review and fresh WASM review directly inspected; support nested table shifted right and automatic page number shifted downward. No font exception.",
+  "review_asset": "mydocs/pr/assets/pr7382_20260926/stage50_nested1133_user_review_002.png",
+  "review_asset_sha256": "29b10bab4a46a1de7c5911adb45861619d0a8e7bdc8e84de6deaa22f288df6b0"
+}

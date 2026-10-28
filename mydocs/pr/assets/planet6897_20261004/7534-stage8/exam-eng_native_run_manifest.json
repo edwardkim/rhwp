@@ -1,0 +1,37 @@
+{
+  "schema_version": 2,
+  "key": "exam-eng",
+  "provenance": {
+    "hwp": {
+      "path": "samples/exam_eng.hwp",
+      "sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b"
+    },
+    "pdf": {
+      "path": "pdf/exam_eng-2022.pdf",
+      "sha256": "68ce956dc33f6cc6c21537488a0accebd20a1c4dde7ee720843d4565532c9844"
+    },
+    "git_head": "4de143ddb0d6dabb7908bfe9182a9c5556543354",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "519ef2b53a3fafe0a47a28089b2a596bf924d20eae1e39b04d449365d33724d1"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [],
+  "requested_page_shards": [],
+  "run_state": "incomplete"
+}

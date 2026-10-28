@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "stage": "maintainer correction 5; held",
+  "producer_head": "45f40cf443e26956722b63032531eb1a5c7197cc",
+  "producer_worktree_rust_diff_sha256": "b498d17a03881662c9ca45f979d942cc8147f83c46e044d1bf73ab0e39ff39ea",
+  "before_physical_bottom": {
+    "passed": 1,
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 0.363,
+    "failure": "table885 bottom960.9467 vs PDF970.937; PASS is raw-source diagnostic, not regression"
+  },
+  "before_selected_prefix_alignment": {
+    "passed": 0,
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 0.169,
+    "actual_y_px": 833.8133333333334,
+    "independent_expected_y_px": 839.4266666666667
+  },
+  "rejected_alignment_candidate": {
+    "passed": 7,
+    "failed": 5,
+    "exit_code": 100,
+    "seconds": 1.623,
+    "failure": "Top-only lazy composition assumption invalid for preserved Center; fixed before recapture"
+  },
+  "focused_and_normal_final": {
+    "passed": 81,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 2.951
+  },
+  "page_count": {
+    "actual": 217,
+    "pdf": 215,
+    "status": "re_review_required"
+  },
+  "native": {
+    "pages": [
+      78,
+      79,
+      80
+    ],
+    "tolerant_content_match_percent": [
+      97.8181,
+      96.21953,
+      95.66118
+    ],
+    "selected_gate": "passed",
+    "exit_code": 0,
+    "direct_inspection": [
+      "review78",
+      "overlay78",
+      "review79",
+      "overlay79",
+      "review80",
+      "overlay80"
+    ],
+    "font_exception": false,
+    "residuals": [
+      "thin border rasterization",
+      "body line glyph/width differences",
+      "footnote URL glyph widths"
+    ]
+  },
+  "remaining": [
+    "queue actual area capacity and inherited count-based policy",
+    "table1822 and later whole pagination",
+    "terminal caption budget failure boundary",
+    "final head full Rust/Skia/lint/fresh WASM"
+  ]
+}

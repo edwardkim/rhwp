@@ -5,36 +5,60 @@ on:
     branches: [main, devel]
     types: [opened, reopened, synchronize]
     paths:
+      - 'AGENTS.md'
+      - 'CLAUDE.md'
       - 'Cargo.toml'
       - 'Cargo.lock'
       - 'src/paint/**'
       - 'src/model/**'
       - 'src/renderer/**'
       - 'src/document_core/queries/rendering.rs'
+      # [#3789] export-pdf와 native raster가 공유하는 CLI 문서 입력 경계.
+      - 'src/cli/document_io.rs'
       # [#5776] PDF report가 native CLI export-pdf와 shared output helper를 직접 소비한다.
       - 'src/cli/outputs/mod.rs'
       - 'src/cli/outputs/pdf.rs'
       - 'src/wasm_api.rs'
-      - 'src/main.rs'
       - 'assets/fonts/**'
       - 'ttfs/**'
       - 'scripts/renderer_baseline.py'
+      - 'scripts/measure_render_diff_wasm.py'
+      - 'scripts/wasm-pack-locked.sh'
       - 'scripts/renderer_baseline_manifest.json'
       - 'scripts/ci-impact-classifier.cjs'
       - 'scripts/generate_font_glyph_payload_fixture.py'
       - 'scripts/generate_exact_face_collection_fixture.py'
+      - 'scripts/generate_exact_kerning_fixture.py'
       - 'scripts/generate_font_native_hwpx_fixture.py'
       - 'scripts/requirements-font-fixtures.txt'
       - 'samples/render-p35-font-native-bitmap.hwpx'
       - 'tests/fixtures/fonts/**'
-      - 'docs/canvaskit-parity-implementation.md'
-      - 'docs/text-ir-v2.md'
+      - 'mydocs/tech/canvaskit-parity-implementation.md'
+      - 'mydocs/tech/text-ir-v2.md'
       - 'rhwp-studio/**'
       # Review 기록·asset은 렌더 입력이 아니다. trailing review-only commit이
-      # Canvas visual diff를 다시 시작하지 않게 mydocs/**는 trigger에서 제외한다 (#3559).
+      # Canvas visual diff를 다시 시작하지 않게 일반 mydocs/**는 trigger에서 제외한다 (#3559).
+      # 위 두 렌더 계약 문서는 예외로 직접 검증한다.
       - '.github/workflows/render-diff.yml'
   workflow_dispatch:
     inputs:
+      wasm-profile:
+        description: 'Manual cost comparison only; pull requests always use release'
+        required: false
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - dev
+      wasm-build-mode:
+        description: 'Manual comparison: auto preserves standard; cdylib is explicit opt-in'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - standard
+          - cdylib
       fixtures:
         description: 'Comma-separated sample files under rhwp-studio/public/samples'
         required: false
@@ -92,6 +116,10 @@ jobs:
           retries: 3
           script: |
             const { owner, repo } = context.repo;
+            const renderContractPaths = new Set([
+              'mydocs/tech/canvaskit-parity-implementation.md',
+              'mydocs/tech/text-ir-v2.md',
+            ]);
 
             function setResult(fastPass, reason, candidateSha = '') {
               core.setOutput('fast_pass', fastPass ? 'true' : 'false');
@@ -114,36 +142,54 @@ jobs:
 
             function isAllowedReviewPath(file) {
               const filename = file.filename;
-              if (filename.startsWith('mydocs/')) {
+              if (filename === 'AGENTS.md' || filename === 'CLAUDE.md') {
+                return !file.previous_filename
+                  && (file.status === 'added' || file.status === 'modified');
+              }
+              if (filename.startsWith('mydocs/') && !renderContractPaths.has(filename)) {
                 return true;
+              }
+              if (isPdfReferencePath(filename)) {
+                return file.status === 'added' || file.status === 'modified';
               }
               if (file.status !== 'added') {
                 return false;
               }
-              return isReviewReferencePath(filename);
+              return isSampleReferencePath(filename);
             }
 
-            function isReviewReferencePath(filename) {
-              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+            function isSampleReferencePath(filename) {
               return (
                 filename.startsWith('samples/')
                 && (
-                  filename.endsWith('.hwp')
-                  || filename.endsWith('.hwpx')
-                  || filename.endsWith('.pdf')
+                  filename.endsWith('.pdf')
                   || filename.endsWith('.png')
                 )
-              ) || (
+              );
+            }
+
+            function isPdfReferencePath(filename) {
+              const pdfPrefixes = ['pdf/'];
+              return (
                 pdfPrefixes.some((prefix) => filename.startsWith(prefix))
                 && filename.endsWith('.pdf')
               );
             }
 
+            function isReviewReferencePath(filename) {
+              return isSampleReferencePath(filename) || isPdfReferencePath(filename);
+            }
+
+            function isReviewReferenceFile(file) {
+              const filename = file.filename;
+              if (isPdfReferencePath(filename)) {
+                return file.status === 'added' || file.status === 'modified';
+              }
+              return file.status === 'added' && isSampleReferencePath(filename);
+            }
+
             function reviewOnlyLabel(files) {
-              const hasReferenceArtifact = files.some((file) => (
-                file.status === 'added'
-                && isReviewReferencePath(file.filename)
-              ));
+              const hasReferenceArtifact = files.some((file) => isReviewReferenceFile(file));
               return hasReferenceArtifact ? 'review-reference-only' : 'mydocs-only';
             }
 
@@ -172,6 +218,8 @@ jobs:
             }
 
             async function hasTrustedReviewReuse(pr) {
+              if (pr.base?.ref !== 'devel' || pr.base?.repo?.full_name !== `${owner}/${repo}`
+                || pr.head?.repo?.full_name !== `${owner}/${repo}`) return false;
               for (let attempt = 0; attempt < 7; attempt += 1) {
                 const statuses = await github.paginate(github.rest.repos.listCommitStatusesForRef, {
                   owner,
@@ -183,12 +231,14 @@ jobs:
                   .filter((status) => status.context === 'CI Impact Policy')
                   .sort((left, right) => Number(right.id || 0) - Number(left.id || 0))[0];
                 if (latest) {
-                  const fields = new Map(String(latest.description || '').split(';').map((part) => {
+                  const entries = String(latest.description || '').split(';').map((part) => {
                     const separator = part.indexOf('=');
                     return separator > 0
                       ? [part.slice(0, separator), part.slice(separator + 1)]
                       : ['', ''];
-                  }));
+                  });
+                  const fields = new Map(entries);
+                  if (entries.length !== fields.size || entries.some(([key, value]) => !key || !value)) return false;
                   const expectedFields = [
                     'v', 'cv', 'mode', 'rfp', 'wf', 'rust', 'fe', 'render', 'skia', 'ql', 'b',
                   ];
@@ -198,7 +248,7 @@ jobs:
                     && latest.creator?.login === 'github-actions[bot]'
                     && fields.size === expectedFields.length
                     && expectedFields.every((field) => fields.has(field))
-                    && fields.get('v') === '5'
+                    && fields.get('v') === '8'
                     && fields.get('rfp') === '1'
                     && fields.get('b') === pr.base.sha
                     && target
@@ -389,8 +439,11 @@ jobs:
               }
 
             const reviewOnlyCandidates = [];
+            const candidatesContainingBase = new Set();
+            let baseMergeCandidateIndex = -1;
             let codeCandidateSha = '';
             let baseMergeBridge = null;
+            let expectedSha = pr.head.sha;
 
             for (let index = commits.length - 1; index >= 0; index -= 1) {
               const sha = commits[index].sha;
@@ -400,6 +453,10 @@ jobs:
                 ref: sha,
               });
               const parents = commit.parents || [];
+              if (sha !== expectedSha || commit.sha !== sha) {
+                setResult(false, 'review-tail-parent-mismatch');
+                return;
+              }
               if (isCurrentBaseUpdateMerge(commit, pr.base.sha)) {
                 if (baseMergeBridge) {
                   setResult(false, `multiple-current-base-update-merges:${sha}`);
@@ -407,6 +464,13 @@ jobs:
                 }
                 const sourceParent = parents.find((parent) => parent.sha !== pr.base.sha);
                 baseMergeBridge = { mergeSha: sha, sourceParentSha: sourceParent.sha };
+                expectedSha = sourceParent.sha;
+                // The merge can itself have a green run; do not only search its source parent.
+                baseMergeCandidateIndex = reviewOnlyCandidates.length;
+                for (const candidateSha of reviewOnlyCandidates) {
+                  candidatesContainingBase.add(candidateSha);
+                }
+                candidatesContainingBase.add(sha);
                 core.info(`including current-base update merge bridge ${sha}`);
                 continue;
               }
@@ -420,8 +484,9 @@ jobs:
 
               const reviewOnly = files.every((file) => isAllowedReviewPath(file));
               if (reviewOnly) {
-                if (parents.length === 1) {
+                if (parents.length === 1 && /^[0-9a-f]{40}$/.test(parents[0]?.sha || '')) {
                   reviewOnlyCandidates.push(sha);
+                  expectedSha = parents[0].sha;
                   continue;
                 }
                 setResult(false, `${reviewOnlyLabel(files)}-merge-not-reusable:${sha}`);
@@ -439,11 +504,14 @@ jobs:
             if (codeCandidateSha) {
               reviewOnlyCandidates.push(codeCandidateSha);
             }
+            if (baseMergeBridge) {
+              reviewOnlyCandidates.splice(baseMergeCandidateIndex, 0, baseMergeBridge.mergeSha);
+            }
 
             for (const candidateSha of reviewOnlyCandidates) {
-              const result = await renderDiffResult(candidateSha, pr);
+              const result = await renderDiffResult(candidateSha, pr, Boolean(baseMergeBridge) && !candidatesContainingBase.has(candidateSha));
               if (result.state === 'green') {
-                if (baseMergeBridge) {
+                if (baseMergeBridge && !candidatesContainingBase.has(candidateSha)) {
                   setPendingBaseMergeResult(
                     'canvas-visual-diff-success',
                     candidateSha,
@@ -650,6 +718,7 @@ jobs:
       contents: read
     env:
       RHWP_CHROMIUM_BUILD_ID: '1660786'
+      RHWP_WASM_BUILD_MANIFEST: ${{ github.workspace }}/output/render-diff-build/build.json
 
     steps:
       - name: "Render Diff identity PR #${{ github.event.pull_request.number }} base ${{ github.event.pull_request.base.sha }}"
@@ -706,6 +775,14 @@ jobs:
       # [Task #1667] Render Diff is PR-heavy; pull_request caches are scoped to
       # refs/pull/* and are not reused by other PRs. Keep PR runs restore-only,
       # and allow only trusted manual devel/main seed runs to save a cache.
+      - name: Resolve WASM build configuration
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
+        id: wasm_configuration
+        env:
+          RHWP_WASM_PROFILE: ${{ github.event_name == 'workflow_dispatch' && inputs['wasm-profile'] || 'release' }}
+          RHWP_WASM_BUILD_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs['wasm-build-mode'] || 'standard' }}
+        run: python3 scripts/measure_render_diff_wasm.py --profile "$RHWP_WASM_PROFILE" --build-mode "$RHWP_WASM_BUILD_MODE" --describe-build >> "$GITHUB_OUTPUT"
+
       - name: Restore cargo registry & build cache
         if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         id: render_diff_cargo_cache_restore
@@ -715,13 +792,18 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-render-diff-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-render-diff-cargo-v2-${{ steps.wasm_configuration.outputs.cache_variant }}-${{ hashFiles('rust-toolchain.toml', '**/Cargo.toml', '**/Cargo.lock', '.cargo/config*', 'scripts/wasm-pack-locked.sh') }}
           restore-keys: |
-            ${{ runner.os }}-render-diff-cargo-
+            ${{ runner.os }}-render-diff-cargo-v2-${{ steps.wasm_configuration.outputs.cache_variant }}-
 
       - name: Build WASM package
         if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
-        run: wasm-pack build --target web --dev
+        env:
+          RHWP_WASM_PROFILE: ${{ steps.wasm_configuration.outputs.profile }}
+          RHWP_WASM_BUILD_MODE: ${{ steps.wasm_configuration.outputs.build_mode }}
+          RHWP_CARGO_CACHE_HIT: ${{ steps.render_diff_cargo_cache_restore.outputs.cache-hit || 'false' }}
+          RHWP_CARGO_CACHE_MATCHED_KEY: ${{ steps.render_diff_cargo_cache_restore.outputs.cache-matched-key }}
+        run: python3 scripts/measure_render_diff_wasm.py --profile "$RHWP_WASM_PROFILE" --build-mode "$RHWP_WASM_BUILD_MODE"
 
       - name: Build native CLI for PDF report
         if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
@@ -735,11 +817,11 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-render-diff-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ steps.render_diff_cargo_cache_restore.outputs.cache-primary-key }}
 
       - name: Setup Node.js
         if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22'
 
@@ -747,6 +829,12 @@ jobs:
         if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
         working-directory: rhwp-studio
         run: npm ci
+
+      # 글꼴 등록 계약은 설치 Chrome의 정상 sandbox로 실행한다.
+      # 실제 Render Diff의 고정 Chromium과 캡처 조건은 아래에서 별도로 준비한다.
+      - name: Validate Visual Sweep Canvas font registration
+        if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
+        run: node --test scripts/tests/visual-sweep-font-registration-browser.test.mjs
 
       - name: Install Chromium
         if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}
@@ -769,6 +857,8 @@ jobs:
           node --check e2e/renderer-baseline-native-diff.mjs
           node e2e/renderer-baseline-native-diff.mjs --self-test
           node --check e2e/run-render-diff.mjs
+          node --test tests/wasm-artifact-check.test.ts
+          python3 -m unittest discover -s ../scripts/tests -p test_render_diff_workflow.py
           python3 -m py_compile ../scripts/renderer_baseline.py
           npm run e2e:renderer-contract
           npm run e2e:canvaskit-font-coverage
@@ -807,7 +897,8 @@ jobs:
           for summary in \
             e2e/screenshots/render-diff/summary.md \
             e2e/screenshots/render-diff/pdf-summary.md \
-            ../output/renderer-baseline/canvaskit-readiness/baseline-report.md
+            ../output/renderer-baseline/canvaskit-readiness/baseline-report.md \
+            ../output/render-diff-build/summary.md
           do
             if [ -f "$summary" ]; then
               cat "$summary" >> "$GITHUB_STEP_SUMMARY"
@@ -823,6 +914,7 @@ jobs:
           path: |
             rhwp-studio/e2e/screenshots/render-diff/
             output/e2e/
+            output/render-diff-build/
             output/renderer-baseline/canvaskit-readiness/
             target/rhwp-studio-vite.log
           if-no-files-found: ignore

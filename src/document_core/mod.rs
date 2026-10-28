@@ -7,18 +7,46 @@ pub(crate) mod helpers;
 pub(crate) use helpers::*;
 
 pub mod builders;
+mod canvas_metric_requests;
+mod canvas_metrics;
+mod native_pua_fonts;
+pub use native_pua_fonts::NativePuaFontRequest;
+mod font_environment;
+mod loaded_frame_restore;
+mod table_reflow_owners;
+pub use canvas_metric_requests::{CanvasMetricBatch, CanvasMetricReply, CanvasMetricRequest};
 mod commands;
+pub use commands::paragraph_block::{
+    FillTemplateRequest, FillTemplateResult, ImportParagraphBlockLimits,
+    ImportParagraphBlockPreview, ImportParagraphBlockRequest, ImportParagraphBlockResult,
+    ImportResourceCounts, ParagraphBlockBudget, ParagraphBlockCopy, ParagraphBlockLimits,
+    ParagraphBlockMapping, ParagraphBlockPathStep, ParagraphBlockValidationError,
+    RepeatParagraphBlockRequest, RepeatParagraphBlockResult, RepeatTableRowsRequest,
+    RepeatTableRowsResult, TemplateBinding, TemplateFillPreview, TemplateFillRequest,
+    TemplateFillTarget, TemplateOperation, TemplateOperationResult, TemplateScope,
+    TEMPLATE_REQUEST_MAX_BYTES,
+};
+pub use commands::{TableColumnWidths, TableCreationOptions};
 pub mod converters;
 pub(crate) mod html_table_import;
+mod html_table_width;
+/// 한글 클립보드 문서모델(hwpjson) → HWPX 변환
+pub mod hwpjson;
+pub mod hyperlink;
+pub mod inline_control;
+pub mod native_interaction;
 pub mod queries;
 pub mod table_calc;
 pub mod text_security;
 pub mod validation;
 
+use crate::model::control::Control;
 use crate::model::document::Document;
 use crate::model::event::DocumentEvent;
+use crate::model::header_footer::HeaderFooterApply;
 use crate::model::paragraph::Paragraph;
 use crate::model::table::TableTransposeData;
+use crate::paint::PageLayerTree;
 use crate::renderer::composer::ComposedParagraph;
 use crate::renderer::height_measurer::{MeasuredSection, MeasuredTable};
 use crate::renderer::layout::LayoutEngine;
@@ -36,12 +64,35 @@ use std::sync::Arc;
 pub const DEFAULT_FALLBACK_FONT: &str = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf";
 pub(crate) const TABLE_CAPTION_CELL_SENTINEL: usize = 65_534;
 
+/// Studio/WASM의 `applyTo` 숫자를 core 열거형으로 변환한다.
+///
+/// 공개 API의 기존 호환 규칙대로 1=짝수, 2=홀수, 나머지는 양쪽이다.
+pub(crate) fn header_footer_apply_from_u8(value: u8) -> HeaderFooterApply {
+    match value {
+        1 => HeaderFooterApply::Even,
+        2 => HeaderFooterApply::Odd,
+        _ => HeaderFooterApply::Both,
+    }
+}
+
+/// core 열거형을 Studio/WASM의 `applyTo` 숫자로 변환한다.
+pub(crate) fn header_footer_apply_to_u8(value: HeaderFooterApply) -> u8 {
+    match value {
+        HeaderFooterApply::Both => 0,
+        HeaderFooterApply::Even => 1,
+        HeaderFooterApply::Odd => 2,
+    }
+}
+
 /// 내부 클립보드 데이터
 pub(crate) struct ClipboardData {
     /// 복사된 문단들 (서식 정보 포함)
     pub(crate) paragraphs: Vec<Paragraph>,
     /// 플레인 텍스트
     pub(crate) plain_text: String,
+    /// The copied control owns renderer text-reflow provenance that must be
+    /// inherited by a pasted table clone.
+    pub(crate) copied_table_text_reflowed: bool,
 }
 
 /// 표 셀 행/열 바꿈 전용 내부 버퍼
@@ -106,12 +157,26 @@ pub(crate) struct RenderNormalizedSection {
     pub(crate) composed: Arc<Vec<ComposedParagraph>>,
 }
 
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub(crate) struct TableTextReflowKey(usize);
+
+impl TableTextReflowKey {
+    pub(crate) fn from_table(table: &crate::model::table::Table) -> Self {
+        Self(table as *const crate::model::table::Table as usize)
+    }
+}
+
 #[derive(Default)]
 pub(crate) struct RenderNormalizationState {
     pub(crate) document_epoch: u64,
     pub(crate) section_revisions: Vec<u64>,
     pub(crate) sections: Vec<Option<RenderNormalizedSection>>,
     pub(crate) path_revisions: HashMap<RenderPath, u64>,
+    /// Stable live Box identities whose stored frame was superseded by text
+    /// reflow. Box pointees survive paragraph/control-vector moves; clones are
+    /// admitted only by explicit split/clipboard inheritance.
+    pub(crate) text_reflowed_tables: table_reflow_owners::TableReflowOwners,
+    pub(crate) loaded_frames: Option<loaded_frame_restore::LoadedFrames>,
     pub(crate) overlay: Arc<RenderNormalizationOverlay>,
 }
 
@@ -126,8 +191,15 @@ pub struct DocumentCore {
     pub(crate) pagination: Vec<PaginationResult>,
     /// 해소된 스타일 세트
     pub(crate) styles: ResolvedStyleSet,
+    native_pua_fonts: std::sync::Arc<crate::renderer::native_pua_fonts::NativePuaFonts>,
+    pub(crate) canvas_metrics: Option<canvas_metrics::CanvasMetricSession>,
+    pub(crate) hft_outline_fonts: crate::renderer::hft_outline::HftOutlineFonts,
+    pub(crate) metafile_fonts: crate::paint::metafile_fonts::MetafileFonts,
+    pub(crate) font_environment: Option<crate::renderer::font_environment::FontEnvironment>,
     /// 구역별 구성된 문단 목록
     pub(crate) composed: Vec<Vec<ComposedParagraph>>,
+    /// 본문 동적 필드의 쪽 소속/표시값이 수렴하지 않으면 출력을 명시적으로 거부한다.
+    pub(crate) body_page_field_error: Option<String>,
     /// [#2308] source IR로부터 재생성되는 revision 기반 render normalization state.
     /// #2004 immutable compatibility projection과 #2195 sparse width overlay를 소유하며,
     /// **원본 `document`는 무손상**이고 deferred edit은 projection을 직접 mirror하지 않는다.
@@ -184,10 +256,21 @@ pub struct DocumentCore {
     pub(crate) pending_pagination_job: Option<PendingPaginationJob>,
     /// 페이지별 렌더 트리 캐시 (지연 구축, 부분 무효화)
     pub(crate) page_tree_cache: RefCell<Vec<Option<PageRenderTree>>>,
+    /// [#6452] 구역 첫 페이지에 임시 투영한 머리말/꼬리말 편집 tree의 단일-entry 캐시.
+    ///
+    /// Studio는 한 번에 한 HF 정의만 편집하므로 마지막 `(page, section, header,
+    /// apply_to)`만 보존한다. 일반 page cache와 분리해 pagination의 실제 active
+    /// header/footer tree를 오염시키지 않는다.
+    pub(crate) header_footer_preview_tree_cache:
+        RefCell<Option<((u32, usize, bool, u8), PageRenderTree)>>,
     /// [Task #2222] 페이지 레이어 트리 JSON 캐시 — (출력옵션 지문, 직렬화 결과).
     /// 이미지 base64 인라인으로 페이지당 1MB 급이라 재직렬화(실측 15ms/회)가
     /// 렌더 자체와 맞먹는다. 편집 무효화는 page_tree_cache 와 동일 지점에서.
-    pub(crate) layer_tree_json_cache: RefCell<Vec<Vec<(u8, String)>>>,
+    pub(crate) layer_tree_json_cache: RefCell<Vec<Vec<(u16, String)>>>,
+    /// [#4969 Q3-E5] 페이지 레이어 트리 캐시 — (출력옵션 지문, immutable tree).
+    /// page render tree와 같은 세대에서 무효화하며, 페이지당 최근 변형 4개로 제한한다.
+    /// `ResourceArena`의 font bytes는 `Arc<[u8]>`라 캐시 hit clone이 payload를 복제하지 않는다.
+    pub(crate) page_layer_tree_cache: RefCell<Vec<Vec<(u16, PageLayerTree)>>>,
     /// 그림 신원 키(`imageKey`)의 문서 단위 세대 번호 (Task #3315).
     ///
     /// `bin_data_id` 는 append-only 라 세션 중 id→바이트가 안정하지만, undo 스냅샷
@@ -196,13 +279,15 @@ pub struct DocumentCore {
     pub(crate) bin_data_epoch: u32,
     /// Batch 모드 플래그 — true이면 paginate() 스킵
     pub(crate) batch_mode: bool,
+    /// 셀 문단 서식으로 무효화된 vpos. RowBreak 조각별 첫 변경부터 한 번만 갱신한다.
+    pub(crate) pending_cell_format_vpos: bool,
     /// 이벤트 로그 (Command 실행 시 누적)
     pub(crate) event_log: Vec<DocumentEvent>,
     /// 글상자 오버플로우 연결 캐시 (섹션별, 지연 계산)
     pub(crate) overflow_links_cache:
         RefCell<HashMap<usize, Vec<queries::doc_tree_nav::OverflowLink>>>,
     /// Undo/Redo용 Document 스냅샷 저장소 (ID → Document 클론)
-    pub(crate) snapshot_store: Vec<(u32, Document)>,
+    pub(crate) snapshot_store: Vec<(u32, Document, std::collections::HashSet<RenderPath>)>,
     /// 다음 스냅샷 ID
     pub(crate) next_snapshot_id: u32,
     /// [#5769] Undo/Redo용 삭제 조각 저장소 (ID → DeleteFragment).
@@ -215,6 +300,14 @@ pub struct DocumentCore {
     pub(crate) section_raw_store: Vec<(u32, commands::section_raw_journal::SectionRawCapture)>,
     /// 다음 구역 raw 캡처 ID
     pub(crate) next_section_raw_id: u32,
+    pub(crate) border_paint_store: Vec<(u32, commands::border_paint_edit::BorderPaintUndo)>,
+    pub(crate) next_border_paint_id: u32,
+    /// 그림 크기 변경의 원본 변환 상태. 문서/이미지 전체는 복제하지 않는다.
+    pub(crate) picture_transform_store: Vec<(
+        u32,
+        commands::picture_transform_journal::PictureTransformCapture,
+    )>,
+    pub(crate) next_picture_transform_id: u32,
     /// 머리말/꼬리말 감추기: (global_page_index, is_header) 조합
     pub(crate) hidden_header_footer: std::collections::HashSet<(u32, bool)>,
     /// 파일 이름 (머리말/꼬리말 필드 치환용)
@@ -229,9 +322,40 @@ pub struct DocumentCore {
     pub(crate) source_format: crate::parser::FileFormat,
     /// HML 입력에서만 유지되는 버전·인코딩·손실 진단.
     pub(crate) hml_metadata: Option<crate::parser::HmlImportMetadata>,
+    /// PDF 가져오기 당시의 원본 쪽 대응·미지원 진단. 편집 후 현재 페이지 번호와 구분한다.
+    #[cfg(feature = "pdf-import")]
+    pub(crate) pdf_metadata: Option<crate::parser::pdf::PdfImportMetadata>,
     /// HWPX 비표준 감지 등 문서 검증 경고.
     /// `from_bytes` 에서 자동 생성되며, 사용자 고지·선택적 reflow 에 사용 (#177).
     pub(crate) validation_report: validation::ValidationReport,
+}
+
+impl DocumentCore {
+    /// 구역에서 지정한 머리말/꼬리말 정의의 원본 control 위치를 찾는다.
+    ///
+    /// 편집 command와 대표 페이지 renderer가 반드시 이 resolver를 공유해야 한다
+    /// (#6453). 먼저 발견된 동일 종류·적용 범위 control이 canonical target이다.
+    pub(crate) fn find_header_footer_control(
+        &self,
+        section_idx: usize,
+        is_header: bool,
+        apply_to: HeaderFooterApply,
+    ) -> Option<(usize, usize)> {
+        let section = self.document.sections.get(section_idx)?;
+        for (para_index, para) in section.paragraphs.iter().enumerate() {
+            for (control_index, control) in para.controls.iter().enumerate() {
+                let matches = match control {
+                    Control::Header(header) => is_header && header.apply_to == apply_to,
+                    Control::Footer(footer) => !is_header && footer.apply_to == apply_to,
+                    _ => false,
+                };
+                if matches {
+                    return Some((para_index, control_index));
+                }
+            }
+        }
+        None
+    }
 }
 
 /// `DocumentCore` 는 스레드 경계 너머로 소유될 수 있어야 한다 — native 소비자(MCP 서버,
@@ -248,14 +372,13 @@ const _: () = {
 #[derive(Debug, Clone, PartialEq)]
 pub struct ActiveFieldInfo {
     pub section_idx: usize,
+    /// 본문 문단 번호. 셀 내부이면 최상위 표/글상자를 담은 본문 부모 문단이다.
     pub para_idx: usize,
     /// field_ranges의 control_idx (controls[] 내 Field 컨트롤 인덱스)
     pub control_idx: usize,
-    /// 셀 내부 필드인 경우의 전체 경로
-    /// 단일 표: vec![(parent_para_idx, ctrl, cell)]
-    /// 중첩 표: vec![(outer_ctrl, outer_cell, ..), (inner_ctrl, inner_cell, ..)]
-    /// parent_para_idx는 별도 필드에 포함하지 않고 첫 번째 요소의 context로 사용
-    pub cell_path: Option<Vec<(usize, usize, usize)>>, // Vec<(parent_para_idx_or_ctrl, ctrl_or_cell, cell_or_para)>
+    /// 셀 내부 필드이면 (컨트롤, 셀, 셀 문단) 번호로 이루어진 전체 경로.
+    /// 본문 부모 문단은 para_idx, 마지막 셀 문단은 경로의 마지막 요소가 구분한다.
+    pub cell_path: Option<Vec<(usize, usize, usize)>>,
 }
 
 impl DocumentCore {
@@ -270,25 +393,41 @@ impl DocumentCore {
 
     /// 문서 정보를 JSON 문자열로 반환한다.
     pub fn get_document_info(&self) -> String {
-        use crate::renderer::style_resolver::resolve_font_substitution;
+        use crate::renderer::style_resolver::lookup_font_name_in_environment;
 
         let mut fonts = std::collections::BTreeSet::new();
+        if let Some(default) =
+            crate::renderer::style_resolver::missing_latin_default(&self.document)
+        {
+            // 표시·측정에 쓰는 기본 face도 같은 브라우저 준비 경로로 공급한다.
+            fonts.insert(default.to_string());
+        }
         let mut font_substitutions = std::collections::BTreeSet::new();
         for (lang_idx, lang_fonts) in self.document.doc_info.font_faces.iter().enumerate() {
-            for font in lang_fonts {
-                let resolved = resolve_font_substitution(&font.name, font.alt_type, lang_idx)
-                    .unwrap_or(&font.name);
-                fonts.insert(resolved.to_string());
-                if let Some(substitute) = font
-                    .subst_font
-                    .as_ref()
-                    .filter(|substitute| !substitute.is_embedded)
-                    .filter(|substitute| !substitute.face.trim().is_empty())
-                    .filter(|substitute| substitute.face.trim() != resolved)
-                {
-                    font_substitutions
-                        .insert((resolved.to_string(), substitute.face.trim().to_string()));
+            for (font_idx, _) in lang_fonts.iter().enumerate() {
+                let decision = lookup_font_name_in_environment(
+                    &self.document.doc_info,
+                    lang_idx,
+                    font_idx as u16,
+                    self.font_environment.as_ref(),
+                );
+                // 실제 paint가 소비하는 glyph 공급자도 Studio가 준비해야 한다.
+                // primary만 노출하면 측정한 대체 face를 브라우저가 로드하지 못한다.
+                fonts.extend(decision.css_family_chain.iter().cloned());
+                if let Some(resolved) = decision.normalized_face {
+                    fonts.insert(resolved.clone());
+                    if decision.environment_profile_id.is_none() {
+                        if let Some(substitute) = decision.subst_font {
+                            font_substitutions.insert((resolved, substitute));
+                        }
+                    }
                 }
+            }
+        }
+        for section in &self.document.sections {
+            queries::equation_fonts::collect(&section.paragraphs, &mut fonts);
+            for master in &section.section_def.master_pages {
+                queries::equation_fonts::collect(&master.paragraphs, &mut fonts);
             }
         }
         let fonts_json: Vec<String> = fonts
@@ -359,9 +498,37 @@ impl DocumentCore {
     /// Rebuild the resolved-style aggregate with the document format's style
     /// normalization. Layout provenance remains in `Document::layout_profile`
     /// and is passed separately to cache-admission consumers.
-    pub(crate) fn rebuild_resolved_styles(&mut self) {
-        self.styles =
-            crate::renderer::style_resolver::resolve_styles_for_document(&self.document, self.dpi);
+    pub(crate) fn resolve_render_styles(&self) -> ResolvedStyleSet {
+        let mut styles = crate::renderer::style_resolver::resolve_styles_with_environment(
+            &self.document,
+            self.dpi,
+            self.font_environment.as_ref(),
+            self.effective_layout_profile(),
+        );
+        styles.native_pua_fonts = self.native_pua_fonts.clone();
+        styles
+    }
+
+    pub(crate) fn rebuild_resolved_styles(&mut self) -> bool {
+        let equation_frames_changed = crate::renderer::equation::declared_frame::set_generation(
+            &mut self.document,
+            self.hangul2024_compat,
+        );
+        // 정규화한 줄과 인라인 프레임은 현재 글꼴 메트릭·DPI에서 파생된다.
+        // source revision이 같아도 스타일 재해소 뒤에는 이전 투영을 재사용하지 않는다.
+        self.render_normalization.sections.fill_with(|| None);
+        self.styles = self.resolve_render_styles();
+        self.styles.supplemental_metrics = self
+            .canvas_metrics
+            .as_ref()
+            .and_then(canvas_metrics::CanvasMetricSession::active_snapshot);
+        // [#7436] 번호 문자열은 문단 모양·번호 정의에서 정해지므로 스타일과 함께 다시 계산한다.
+        // 문서를 열 때의 재조판(저장 줄 없는 문단)도 번호 폭을 알고 줄을 나눈다.
+        crate::renderer::layout::assign_numbering_markers(
+            &mut self.document.sections,
+            &self.styles,
+        );
+        equation_frames_changed
     }
 
     /// 한글 2024 계열 조판 에뮬레이션을 켜거나 끈다.
@@ -369,6 +536,9 @@ impl DocumentCore {
     pub fn set_hangul2024_compat(&mut self, enabled: bool) {
         if self.hangul2024_compat != enabled {
             self.hangul2024_compat = enabled;
+            if self.rebuild_resolved_styles() {
+                self.recompose_all_with_horizontal_shaping();
+            }
             for d in self.dirty_sections.iter_mut() {
                 *d = true;
             }
@@ -390,7 +560,13 @@ impl DocumentCore {
             document: Document::default(),
             pagination: Vec::new(),
             styles: ResolvedStyleSet::default(),
+            native_pua_fonts: Default::default(),
+            canvas_metrics: None,
+            hft_outline_fonts: Default::default(),
+            metafile_fonts: Default::default(),
+            font_environment: None,
             composed: Vec::new(),
+            body_page_field_error: None,
             render_normalization: RenderNormalizationState::default(),
             dpi: DEFAULT_DPI,
             fallback_font: DEFAULT_FALLBACK_FONT.to_string(),
@@ -415,9 +591,12 @@ impl DocumentCore {
             deferred_pagination_descriptor: None,
             pending_pagination_job: None,
             page_tree_cache: RefCell::new(Vec::new()),
+            header_footer_preview_tree_cache: RefCell::new(None),
             layer_tree_json_cache: RefCell::new(Vec::new()),
+            page_layer_tree_cache: RefCell::new(Vec::new()),
             bin_data_epoch: 0,
             batch_mode: false,
+            pending_cell_format_vpos: false,
             event_log: Vec::new(),
             overflow_links_cache: RefCell::new(HashMap::new()),
             snapshot_store: Vec::new(),
@@ -426,12 +605,18 @@ impl DocumentCore {
             next_fragment_id: 0,
             section_raw_store: Vec::new(),
             next_section_raw_id: 0,
+            border_paint_store: Vec::new(),
+            next_border_paint_id: 0,
+            picture_transform_store: Vec::new(),
+            next_picture_transform_id: 0,
             hidden_header_footer: std::collections::HashSet::new(),
             file_name: String::new(),
             active_field: None,
             para_offset: Vec::new(),
             source_format: crate::parser::FileFormat::Hwp,
             hml_metadata: None,
+            #[cfg(feature = "pdf-import")]
+            pdf_metadata: None,
             validation_report: validation::ValidationReport::new(),
         }
     }
@@ -439,6 +624,12 @@ impl DocumentCore {
     /// HML 열기 메타데이터. 다른 입력 포맷은 `None`이다.
     pub fn hml_metadata(&self) -> Option<&crate::parser::HmlImportMetadata> {
         self.hml_metadata.as_ref()
+    }
+
+    /// PDF를 가져온 시점의 진단. HWP/HWPX 저장본 재열기에서는 `None`이다.
+    #[cfg(feature = "pdf-import")]
+    pub fn pdf_metadata(&self) -> Option<&crate::parser::pdf::PdfImportMetadata> {
+        self.pdf_metadata.as_ref()
     }
 
     /// 문서 검증 리포트에 대한 참조를 반환한다.

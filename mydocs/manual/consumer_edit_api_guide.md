@@ -2,7 +2,7 @@
 kind: reference
 status: active
 canonical: mydocs/manual/consumer_edit_api_guide.md
-last_verified: 2026-07-28
+last_verified: 2026-08-29
 ---
 
 # @rhwp/core 편집 API 가이드 (소비자용)
@@ -10,6 +10,10 @@ last_verified: 2026-07-28
 `@rhwp/core`(WASM) 를 앱에 임베드해 HWP 문서를 **생성·편집**하는 개발자를 위한 안내다.
 읽기/렌더링 기본은 패키지 README 를 참고하고, 이 문서는 편집 API 호출과 버전 변경 대응에
 초점을 둔다.
+
+고정 양식 채우기·문단/표 행 복제는 [템플릿 자동화 API](template_automation.md)의
+`applyTemplateOperation(optionsJson)`을 사용한다. native·CLI·MCP와 같은 코어를 쓰며
+dry-run, 소유 경로와 단독 step 제한을 함께 설명한다.
 
 ## 1. 초기화와 문서 객체
 
@@ -63,11 +67,41 @@ const doc3 = HwpDocument.openWithPassword(
 | 셀 내부 | `insertTextInCell`, `getTextInCell`, `applyCharFormatInCell` (표 셀 좌표 추가) |
 | 그림 | `insertPicture` |
 | 필드(누름틀) | `insertClickHereField`, `getFieldList`, `setFieldValueByName` |
+| 웹 하이퍼링크 | `getHyperlinkContext`, `insertHyperlinkEx`, `updateHyperlinkEx`, `removeHyperlinkEx` |
 | 서식 | `applyCharFormat`, `applyParaFormat`, `setCharShapeId` |
 | 저장 | `exportHwp`, `exportHwpx`, `exportHwpWithPassword`, `exportHwpxWithPassword` |
 
 정확한 시그니처·반환은 패키지의 `rhwp.d.ts`(타입 정의)를 본다. IDE 자동완성으로 인자
 이름과 타입이 표시된다.
+
+### 웹 하이퍼링크 (#6963)
+
+새 문서의 저장 왕복은 Studio와 같은 `createBlankDocument()` 템플릿 경로를 사용한다.
+`createEmpty()`만 호출한 최소 IR의 HWP5 저장은 이 링크 기능의 검증 범위에 포함하지 않는다.
+
+```ts
+const doc = HwpDocument.createEmpty();
+doc.createBlankDocument();
+doc.insertText(0, 0, 0, '한컴 링크');
+const target = { section: 0, para: 0, cellPath: [] };
+const fieldId = doc.insertHyperlinkEx(JSON.stringify({
+  target, start: 0, end: 5, uri: 'https://www.hancom.com',
+}));
+const { text, links } = JSON.parse(doc.getHyperlinkContext(JSON.stringify(target)));
+doc.updateHyperlinkEx(JSON.stringify({ target, fieldId, uri: 'https://example.com/#section' }));
+doc.removeHyperlinkEx(JSON.stringify({ target, fieldId })); // 표시 글자는 남는다.
+```
+
+`start`·`end`는 Unicode scalar 기준 반열린 범위이며 JavaScript의 UTF-16 `string.length`와
+다르다. 본문은 빈 `cellPath`, 셀·글상자는 `[controlIndex, cellIndex, cellParaIndex]`의
+배열을 바깥부터 나열한다. `para`는 가장 바깥 본문 문단이고 글상자의 `cellIndex`는 0이다.
+본문·중첩 셀·글상자의 단일 문단을 지원하며 캡션·머리말·각주·다단락 필드 등은 지원하지 않는다.
+조회 결과 `links`에는 `fieldId`, `start`, `end`, `text`, `uri`가 담긴다.
+
+추가는 field ID, 수정은 변경 여부(boolean), 해제는 void를 반환한다. 주소·범위·경로 오류는
+JS 예외다. 새 주소는 HTTP/HTTPS만 허용하며 조회는 기존 scheme을 보존한다.
+무선택 삽입은 표시 글자 삽입과 링크 추가를 같은 snapshot으로 묶고 실패 시 복원해야 한다.
+Studio는 이를 편집 라우터로 처리한다. 직접 WASM 호출은 Studio의 undo·dirty 기록을 만들지 않는다.
 
 ## 3. 래퍼(Builder) 패턴 권장
 
@@ -140,7 +174,45 @@ doc.applyCharFormatInCellEx(JSON.stringify({
 }));
 ```
 
-## 5. 0.x 버전 변경 대응
+## 5. 명시 variable-font instance 요청
+
+host가 확정한 variable font를 exact `(charShapeId, languageIndex)` slot에 연결할 때는 font bytes를 먼저
+`registerExactFontSource`로 등록하고, 별도 strict JSON command로 instance를 설정한다. 문서 parser·font name·bold·
+장평·자간으로 axis를 추측해 자동 호출하면 안 된다.
+
+```ts
+doc.registerExactFontSource(charShapeId, 0, fontBytes, 0);
+
+const setResult = JSON.parse(doc.setExactFontInstance(JSON.stringify({
+  charShapeId,
+  languageIndex: 0,
+  mode: 'boundedHorizontalLtrV1',
+  axes: [
+    { tag: 'wght', value: 650 },
+    { tag: 'opsz', value: 400 },
+  ],
+})));
+
+const clearResult = JSON.parse(doc.clearExactFontInstance(JSON.stringify({
+  charShapeId,
+  languageIndex: 0,
+  mode: 'boundedHorizontalLtrV1',
+})));
+```
+
+- options JSON은 16 KiB, axis는 16개, `languageIndex`는 0..6으로 제한된다.
+- unknown field/mode, 중복·잘못된 axis tag, 비유한 값, font의 `fvar` 범위 밖 값은 요청 snapshot 변경 전에
+  예외로 거절된다.
+- axis 순서는 canonical tag 순서로 정렬되고 `fvar` default 값은 응답 axis에서 생략된다. 빈 axis 또는 explicit
+  default 요청은 유효하며 clear와 같지 않다.
+- 같은 canonical request의 재설정과 이미 비어 있는 slot의 clear는 멱등이다. 응답의 `status`와
+  `requestGeneration`으로 effective mutation 여부를 확인할 수 있다.
+- 반환 JSON에는 상태·slot·canonical axis·source/request generation·request count만 있고 font bytes·문서 text·
+  host path는 포함되지 않는다.
+- 이 API는 명시 요청 owner다. 호출 성공 자체가 모든 문단·backend에서 variable instance가 시각적으로 게시됐다는
+  뜻은 아니며, 지원되지 않는 형상과 backend는 기존 default `TextRun`으로 결정론적으로 fallback한다.
+
+## 6. 0.x 버전 변경 대응
 
 `@rhwp/core` 는 0.x 단계라 편집 API 시그니처가 바뀔 수 있다. 업그레이드 비용을 줄이려면:
 
@@ -149,7 +221,7 @@ doc.applyCharFormatInCellEx(JSON.stringify({
 - 업그레이드 시 CHANGELOG 의 `### API` 항목을 확인한다(인자 추가·index 변경을 기록).
 - 타입 검사(`tsc`)로 시그니처 불일치를 빌드 단계에서 잡는다.
 
-## 6. 저장
+## 7. 저장
 
 ```ts
 const hwpBytes = doc.exportHwp(); // Uint8Array — .hwp 파일로 저장

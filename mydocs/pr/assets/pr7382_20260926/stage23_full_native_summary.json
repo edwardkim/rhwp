@@ -1,0 +1,1994 @@
+[
+  {
+    "key": "liver7379",
+    "hwp": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+    "pdf": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+    "requested_pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126,
+      127,
+      128,
+      129,
+      130,
+      131,
+      132,
+      133,
+      134,
+      135,
+      136,
+      137,
+      138,
+      139,
+      140,
+      141,
+      142,
+      143,
+      144,
+      145,
+      146,
+      147,
+      148,
+      149,
+      150,
+      151,
+      152,
+      153,
+      154,
+      155,
+      156,
+      157,
+      158,
+      159,
+      160,
+      161,
+      162,
+      163,
+      164,
+      165,
+      166,
+      167,
+      168,
+      169,
+      170,
+      171,
+      172,
+      173,
+      174,
+      175,
+      176,
+      177,
+      178,
+      179,
+      180,
+      181,
+      182,
+      183,
+      184,
+      185,
+      186,
+      187,
+      188,
+      189,
+      190,
+      191,
+      192,
+      193,
+      194,
+      195,
+      196,
+      197,
+      198,
+      199,
+      200,
+      201,
+      202,
+      203,
+      204,
+      205,
+      206,
+      207,
+      208,
+      209,
+      210,
+      211,
+      212,
+      213,
+      214,
+      215
+    ],
+    "completed_pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126,
+      127,
+      128,
+      129,
+      130,
+      131,
+      132,
+      133,
+      134,
+      135,
+      136,
+      137,
+      138,
+      139,
+      140,
+      141,
+      142,
+      143,
+      144,
+      145,
+      146,
+      147,
+      148,
+      149,
+      150,
+      151,
+      152,
+      153,
+      154,
+      155,
+      156,
+      157,
+      158,
+      159,
+      160,
+      161,
+      162,
+      163,
+      164,
+      165,
+      166,
+      167,
+      168,
+      169,
+      170,
+      171,
+      172,
+      173,
+      174,
+      175,
+      176,
+      177,
+      178,
+      179,
+      180,
+      181,
+      182,
+      183,
+      184,
+      185,
+      186,
+      187,
+      188,
+      189,
+      190,
+      191,
+      192,
+      193,
+      194,
+      195,
+      196,
+      197,
+      198,
+      199,
+      200,
+      201,
+      202,
+      203,
+      204,
+      205,
+      206,
+      207,
+      208,
+      209,
+      210,
+      211,
+      212,
+      213,
+      214,
+      215
+    ],
+    "missing_pages": [],
+    "run_state": "complete",
+    "run_manifest": "output/pr-review/planet6897-7382-20260926/visual/stage23-full-native/liver7379/run_manifest.json",
+    "exported_svg_pages": 215,
+    "exported_render_tree_pages": 215,
+    "exported_pdf_pages": 215,
+    "rasterized_svg_pages": 215,
+    "rasterized_pdf_pages": 215,
+    "svg_pages": 215,
+    "render_tree_pages": 215,
+    "pdf_pages": 215,
+    "compare_pages": 215,
+    "overlay_pages": 215,
+    "review_pages": 215,
+    "pdf_question_markers": 0,
+    "contact_sheet": "output/pr-review/planet6897-7382-20260926/visual/stage23-full-native/liver7379/contact_sheet.png",
+    "overlay_contact_sheet": "output/pr-review/planet6897-7382-20260926/visual/stage23-full-native/liver7379/overlay_contact_sheet.png",
+    "review_contact_sheet": "output/pr-review/planet6897-7382-20260926/visual/stage23-full-native/liver7379/review_contact_sheet.png",
+    "analysis_dir": "output/pr-review/planet6897-7382-20260926/visual/stage23-full-native/liver7379/analysis",
+    "overlay_dir": "output/pr-review/planet6897-7382-20260926/visual/stage23-full-native/liver7379/overlay",
+    "review_dir": "output/pr-review/planet6897-7382-20260926/visual/stage23-full-native/liver7379/review",
+    "note_shape": [
+      {
+        "section": 0,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": 2.999,
+          "rawSeparatorMarginBottomMm": 0.0,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 51831.325,
+          "rawSeparatorMarginTopMm": 2.999,
+          "rawSeparatorMarginBottomMm": 0.0,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      }
+    ],
+    "note_shape_json": "output/pr-review/planet6897-7382-20260926/visual/stage23-full-native/liver7379/analysis/note_shape.json",
+    "overlay_metrics": {
+      "compared_pages": 215,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 93.6283,
+      "worst_pixel_match_percent": 87.30707,
+      "average_ink_match_percent": 30.42603,
+      "worst_ink_match_percent": 7.06285,
+      "average_visual_accuracy_proxy_percent": 30.42603,
+      "worst_visual_accuracy_proxy_percent": 7.06285,
+      "average_tolerant_content_match_percent": 93.87482,
+      "worst_tolerant_content_match_percent": 30.89542,
+      "worst_pages": [
+        155,
+        75,
+        207,
+        206,
+        169,
+        2,
+        162,
+        126,
+        156,
+        173
+      ]
+    },
+    "overlay_metrics_json": "output/pr-review/planet6897-7382-20260926/visual/stage23-full-native/liver7379/overlay/overlay_metrics.json",
+    "pr_review_gate": {
+      "status": "re_review_required",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 10,
+          "tolerant_content_match_percent": 66.93454
+        },
+        {
+          "page": 11,
+          "tolerant_content_match_percent": 68.96816
+        },
+        {
+          "page": 12,
+          "tolerant_content_match_percent": 59.07444
+        },
+        {
+          "page": 13,
+          "tolerant_content_match_percent": 48.43828
+        },
+        {
+          "page": 14,
+          "tolerant_content_match_percent": 81.51575
+        },
+        {
+          "page": 17,
+          "tolerant_content_match_percent": 65.05603
+        },
+        {
+          "page": 22,
+          "tolerant_content_match_percent": 89.59133
+        },
+        {
+          "page": 23,
+          "tolerant_content_match_percent": 74.73376
+        },
+        {
+          "page": 27,
+          "tolerant_content_match_percent": 86.96367
+        },
+        {
+          "page": 28,
+          "tolerant_content_match_percent": 87.87776
+        },
+        {
+          "page": 74,
+          "tolerant_content_match_percent": 86.20769
+        },
+        {
+          "page": 75,
+          "tolerant_content_match_percent": 52.55315
+        },
+        {
+          "page": 88,
+          "tolerant_content_match_percent": 89.52975
+        },
+        {
+          "page": 126,
+          "tolerant_content_match_percent": 67.14618
+        },
+        {
+          "page": 127,
+          "tolerant_content_match_percent": 65.32413
+        },
+        {
+          "page": 130,
+          "tolerant_content_match_percent": 88.32677
+        },
+        {
+          "page": 131,
+          "tolerant_content_match_percent": 84.22025
+        },
+        {
+          "page": 155,
+          "tolerant_content_match_percent": 30.89542
+        },
+        {
+          "page": 156,
+          "tolerant_content_match_percent": 41.21846
+        },
+        {
+          "page": 162,
+          "tolerant_content_match_percent": 81.06478
+        },
+        {
+          "page": 163,
+          "tolerant_content_match_percent": 89.396
+        },
+        {
+          "page": 168,
+          "tolerant_content_match_percent": 89.52962
+        },
+        {
+          "page": 169,
+          "tolerant_content_match_percent": 40.47912
+        },
+        {
+          "page": 173,
+          "tolerant_content_match_percent": 84.34809
+        },
+        {
+          "page": 186,
+          "tolerant_content_match_percent": 84.75294
+        },
+        {
+          "page": 199,
+          "tolerant_content_match_percent": 88.83247
+        },
+        {
+          "page": 206,
+          "tolerant_content_match_percent": 36.53762
+        },
+        {
+          "page": 207,
+          "tolerant_content_match_percent": 32.35064
+        },
+        {
+          "page": 208,
+          "tolerant_content_match_percent": 85.08928
+        },
+        {
+          "page": 210,
+          "tolerant_content_match_percent": 72.49487
+        },
+        {
+          "page": 211,
+          "tolerant_content_match_percent": 81.3431
+        },
+        {
+          "page": 214,
+          "tolerant_content_match_percent": 82.90745
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "visual_metrics": {
+      "analyzed_pages": 215,
+      "flagged_page_count": 2,
+      "frame_overflow_pages": [],
+      "content_bottom_drift_pages": [],
+      "red_marker_drift_pages": [],
+      "question_marker_flow_drift_pages": [],
+      "line_band_drift_pages": [
+        155
+      ],
+      "column_line_band_drift_pages": [
+        126,
+        155
+      ],
+      "column_text_flow_collapse_pages": [
+        155
+      ],
+      "large_ink_region_drift_pages": [
+        155
+      ],
+      "endnote_separator_gap_drift_pages": [],
+      "endnote_separator_observed_pages": [],
+      "endnote_separator_gap_pages": [],
+      "endnote_no_separator_content_pages": [],
+      "between_notes_marker_gap_pages": [
+        15,
+        23,
+        24,
+        32,
+        38,
+        72,
+        140,
+        174
+      ],
+      "equation_text_overlap_pages": [],
+      "square_wrap_text_overlap_pages": [
+        126,
+        155
+      ],
+      "deferred_square_picture_top_drift_pages": [],
+      "right_table_left_strip_text_deficit_pages": [],
+      "question_title_text_overlap_pages": [],
+      "line_order_overlap_pages": [],
+      "render_tree_frame_tail_overflow_pages": [],
+      "question_marker_drift_pages": [],
+      "legacy_glyph_visual_pages": [],
+      "metrics_json": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage23-full-native/liver7379/analysis/metrics.json",
+      "question_flow_json": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage23-full-native/liver7379/analysis/question_flow.json"
+    },
+    "flagged_pages": [
+      {
+        "page": 126,
+        "flags": [
+          "square_wrap_text_overlap",
+          "column_line_band_drift"
+        ],
+        "rhwp_frame": [
+          26,
+          75,
+          768,
+          1097
+        ],
+        "pdf_frame": [
+          26,
+          75,
+          768,
+          1096
+        ],
+        "rhwp_outside_frame_pixels": 0,
+        "pdf_outside_frame_pixels": 0,
+        "rhwp_outside_frame_max_y": null,
+        "pdf_outside_frame_max_y": null,
+        "rhwp_outside_frame_extent_px": null,
+        "pdf_outside_frame_extent_px": null,
+        "frame_is_interior_decoration": true,
+        "frame_overflow_tolerated_bleed": false,
+        "paper_size_footer_frame_bleed": false,
+        "rhwp_outside_frame_bleed_px": 0,
+        "pdf_outside_frame_bleed_px": 0,
+        "content_bottom_delta_px": -3.0,
+        "red_marker_drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "line_band_drift": {
+          "rhwp_count": 36,
+          "pdf_count": 41,
+          "paired": 36,
+          "max_abs_delta_px": 105.0,
+          "p90_abs_delta_px": 26.5,
+          "mean_abs_delta_px": 13.1
+        },
+        "column_line_band_drift": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              26,
+              75,
+              395,
+              1097
+            ],
+            "pdf_frame": [
+              26,
+              75,
+              395,
+              1096
+            ],
+            "drift": {
+              "rhwp_count": 40,
+              "pdf_count": 41,
+              "paired": 40,
+              "max_abs_delta_px": 4.0,
+              "p90_abs_delta_px": 4.0,
+              "mean_abs_delta_px": 1.7
+            },
+            "rhwp_first_band": {
+              "y0": 109,
+              "y1": 122,
+              "x0": 97,
+              "x1": 392,
+              "pixels": 1284,
+              "cy": 115.5
+            },
+            "rhwp_last_band": {
+              "y0": 1027,
+              "y1": 1040,
+              "x0": 94,
+              "x1": 393,
+              "pixels": 1668,
+              "cy": 1033.5
+            },
+            "pdf_first_band": {
+              "y0": 110,
+              "y1": 121,
+              "x0": 95,
+              "x1": 392,
+              "pixels": 1191,
+              "cy": 115.5
+            },
+            "pdf_last_band": {
+              "y0": 1077,
+              "y1": 1077,
+              "x0": 371,
+              "x1": 389,
+              "pixels": 9,
+              "cy": 1077.0
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              399,
+              75,
+              768,
+              1097
+            ],
+            "pdf_frame": [
+              399,
+              75,
+              768,
+              1096
+            ],
+            "drift": {
+              "rhwp_count": 36,
+              "pdf_count": 31,
+              "paired": 31,
+              "max_abs_delta_px": 205.0,
+              "p90_abs_delta_px": 181.5,
+              "mean_abs_delta_px": 66.2
+            },
+            "rhwp_first_band": {
+              "y0": 109,
+              "y1": 121,
+              "x0": 404,
+              "x1": 699,
+              "pixels": 1231,
+              "cy": 115.0
+            },
+            "rhwp_last_band": {
+              "y0": 1075,
+              "y1": 1076,
+              "x0": 401,
+              "x1": 419,
+              "pixels": 20,
+              "cy": 1075.5
+            },
+            "pdf_first_band": {
+              "y0": 110,
+              "y1": 121,
+              "x0": 403,
+              "x1": 698,
+              "pixels": 1145,
+              "cy": 115.5
+            },
+            "pdf_last_band": {
+              "y0": 1076,
+              "y1": 1077,
+              "x0": 401,
+              "x1": 422,
+              "pixels": 23,
+              "cy": 1076.5
+            }
+          }
+        ],
+        "column_line_band_drift_candidates": [
+          {
+            "column": 1,
+            "rhwp_frame": [
+              399,
+              75,
+              768,
+              1097
+            ],
+            "pdf_frame": [
+              399,
+              75,
+              768,
+              1096
+            ],
+            "drift": {
+              "rhwp_count": 36,
+              "pdf_count": 31,
+              "paired": 31,
+              "max_abs_delta_px": 205.0,
+              "p90_abs_delta_px": 181.5,
+              "mean_abs_delta_px": 66.2
+            },
+            "rhwp_first_band": {
+              "y0": 109,
+              "y1": 121,
+              "x0": 404,
+              "x1": 699,
+              "pixels": 1231,
+              "cy": 115.0
+            },
+            "rhwp_last_band": {
+              "y0": 1075,
+              "y1": 1076,
+              "x0": 401,
+              "x1": 419,
+              "pixels": 20,
+              "cy": 1075.5
+            },
+            "pdf_first_band": {
+              "y0": 110,
+              "y1": 121,
+              "x0": 403,
+              "x1": 698,
+              "pixels": 1145,
+              "cy": 115.5
+            },
+            "pdf_last_band": {
+              "y0": 1076,
+              "y1": 1077,
+              "x0": 401,
+              "x1": 422,
+              "pixels": 23,
+              "cy": 1076.5
+            }
+          }
+        ],
+        "column_text_flow_masked_line_band_drift": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              92,
+              81,
+              395,
+              1042
+            ],
+            "pdf_frame": [
+              92,
+              81,
+              395,
+              1041
+            ],
+            "drift": {
+              "rhwp_count": 25,
+              "pdf_count": 26,
+              "paired": 25,
+              "max_abs_delta_px": 72.5,
+              "p90_abs_delta_px": 27.0,
+              "mean_abs_delta_px": 13.8
+            },
+            "rhwp_first_band": {
+              "y0": 109,
+              "y1": 122,
+              "x0": 97,
+              "x1": 392,
+              "pixels": 1284,
+              "cy": 115.5
+            },
+            "rhwp_last_band": {
+              "y0": 1027,
+              "y1": 1040,
+              "x0": 94,
+              "x1": 393,
+              "pixels": 1668,
+              "cy": 1033.5
+            },
+            "pdf_first_band": {
+              "y0": 110,
+              "y1": 121,
+              "x0": 95,
+              "x1": 392,
+              "pixels": 1191,
+              "cy": 115.5
+            },
+            "pdf_last_band": {
+              "y0": 1027,
+              "y1": 1038,
+              "x0": 112,
+              "x1": 393,
+              "pixels": 1304,
+              "cy": 1032.5
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              399,
+              81,
+              702,
+              1042
+            ],
+            "pdf_frame": [
+              399,
+              81,
+              702,
+              1041
+            ],
+            "drift": {
+              "rhwp_count": 24,
+              "pdf_count": 21,
+              "paired": 21,
+              "max_abs_delta_px": 160.0,
+              "p90_abs_delta_px": 140.0,
+              "mean_abs_delta_px": 63.7
+            },
+            "rhwp_first_band": {
+              "y0": 109,
+              "y1": 121,
+              "x0": 404,
+              "x1": 699,
+              "pixels": 1231,
+              "cy": 115.0
+            },
+            "rhwp_last_band": {
+              "y0": 1012,
+              "y1": 1039,
+              "x0": 401,
+              "x1": 674,
+              "pixels": 1702,
+              "cy": 1025.5
+            },
+            "pdf_first_band": {
+              "y0": 110,
+              "y1": 121,
+              "x0": 403,
+              "x1": 698,
+              "pixels": 1145,
+              "cy": 115.5
+            },
+            "pdf_last_band": {
+              "y0": 1028,
+              "y1": 1038,
+              "x0": 401,
+              "x1": 471,
+              "pixels": 289,
+              "cy": 1033.0
+            }
+          }
+        ],
+        "column_text_flow_table_masks": {
+          "rhwp": [
+            [
+              101,
+              461,
+              660,
+              698
+            ]
+          ],
+          "pdf": [
+            [
+              101,
+              460,
+              660,
+              697
+            ]
+          ]
+        },
+        "column_text_flow_body_frames": {
+          "rhwp": [
+            92,
+            81,
+            702,
+            1042
+          ],
+          "pdf": [
+            92,
+            81,
+            702,
+            1041
+          ]
+        },
+        "column_text_flow_reflowing_float_present": true,
+        "column_text_flow_collapse_candidates": [],
+        "large_ink_region_drift": {
+          "rhwp_count": 4,
+          "pdf_count": 6,
+          "paired": 4,
+          "deltas_px": [
+            -8.0,
+            -32.0,
+            -112.0,
+            144.0
+          ],
+          "max_abs_delta_px": 144.0,
+          "mean_abs_delta_px": 74.0,
+          "rhwp_regions": [
+            {
+              "x0": 90.0,
+              "y0": 107.0,
+              "x1": 698.0,
+              "y1": 187.0,
+              "w": 608.0,
+              "h": 80.0,
+              "cy": 147.0,
+              "tiles": 56.0
+            },
+            {
+              "x0": 106.0,
+              "y0": 235.0,
+              "x1": 698.0,
+              "y1": 363.0,
+              "w": 592.0,
+              "h": 128.0,
+              "cy": 299.0,
+              "tiles": 192.0
+            },
+            {
+              "x0": 106.0,
+              "y0": 379.0,
+              "x1": 698.0,
+              "y1": 443.0,
+              "w": 592.0,
+              "h": 64.0,
+              "cy": 411.0,
+              "tiles": 95.0
+            },
+            {
+              "x0": 90.0,
+              "y0": 459.0,
+              "x1": 698.0,
+              "y1": 1051.0,
+              "w": 608.0,
+              "h": 592.0,
+              "cy": 755.0,
+              "tiles": 873.0
+            }
+          ],
+          "pdf_regions": [
+            {
+              "x0": 90.0,
+              "y0": 107.0,
+              "x1": 490.0,
+              "y1": 203.0,
+              "w": 400.0,
+              "h": 96.0,
+              "cy": 155.0,
+              "tiles": 56.0
+            },
+            {
+              "x0": 90.0,
+              "y0": 235.0,
+              "x1": 698.0,
+              "y1": 427.0,
+              "w": 608.0,
+              "h": 192.0,
+              "cy": 331.0,
+              "tiles": 267.0
+            },
+            {
+              "x0": 474.0,
+              "y0": 459.0,
+              "x1": 650.0,
+              "y1": 587.0,
+              "w": 176.0,
+              "h": 128.0,
+              "cy": 523.0,
+              "tiles": 63.0
+            },
+            {
+              "x0": 106.0,
+              "y0": 491.0,
+              "x1": 458.0,
+              "y1": 731.0,
+              "w": 352.0,
+              "h": 240.0,
+              "cy": 611.0,
+              "tiles": 137.0
+            },
+            {
+              "x0": 122.0,
+              "y0": 827.0,
+              "x1": 554.0,
+              "y1": 875.0,
+              "w": 432.0,
+              "h": 48.0,
+              "cy": 851.0,
+              "tiles": 50.0
+            },
+            {
+              "x0": 90.0,
+              "y0": 907.0,
+              "x1": 698.0,
+              "y1": 1051.0,
+              "w": 608.0,
+              "h": 144.0,
+              "cy": 979.0,
+              "tiles": 284.0
+            }
+          ]
+        },
+        "endnote_shape_ui": {
+          "separator_visible": true,
+          "separator_above_mm": 2.999,
+          "between_notes_mm": 0.0,
+          "separator_below_mm": 2.0,
+          "separator_length_mm": 51831.325
+        },
+        "endnote_separator_gap": {
+          "expected_separator": true,
+          "separator_below_mm": 2.0,
+          "separator_above_mm": 2.999,
+          "between_notes_mm": 0.0,
+          "separator_length_px": 195897.9,
+          "rhwp": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "pdf": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "gap_delta_px": null
+        },
+        "endnote_no_separator_content_start": null,
+        "between_notes_marker_gap": {
+          "expected_between_notes_mm": 0.0,
+          "expected_between_notes_px": null,
+          "rhwp_marker_count": 0,
+          "pdf_marker_count": 0,
+          "paired_gap_count": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null,
+          "rhwp_marker_y": [],
+          "pdf_marker_y": [],
+          "rhwp_marker_y_by_column": [
+            []
+          ],
+          "pdf_marker_y_by_column": [
+            []
+          ],
+          "rhwp_gaps_px": [],
+          "pdf_gaps_px": [],
+          "pairs": []
+        },
+        "svg": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage23-full-native/liver7379/svg/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)_126.svg",
+        "render_tree_json": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage23-full-native/liver7379/render_tree/render_tree_126.json",
+        "equation_text_overlap_candidates": [],
+        "square_wrap_text_overlap_candidates": [
+          {
+            "pi": 1355,
+            "ci": 0,
+            "text_wrap": "Square",
+            "candidate_kind": "physical_overlap",
+            "overlap_line_count": 4,
+            "image_bbox": [
+              408.7,
+              645.8,
+              253.1,
+              340.7
+            ],
+            "first_line_bbox": [
+              103.6,
+              706.6,
+              554.0,
+              13.3
+            ],
+            "last_line_bbox": [
+              117.9,
+              862.2,
+              581.4,
+              13.3
+            ]
+          }
+        ],
+        "deferred_square_picture_top_drift_candidates": [],
+        "right_table_left_strip_text_deficit_candidates": [],
+        "question_title_text_overlap_candidates": [],
+        "line_order_overlap_candidates": [],
+        "render_tree_frame_tail_overflow_candidates": [],
+        "render_tree_frame_tail_overflow_suppressed_candidates": [],
+        "question_marker_drift_candidates": [],
+        "legacy_glyph_visual_candidates": [],
+        "annotated": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage23-full-native/liver7379/analysis/annotated_126.png"
+      },
+      {
+        "page": 155,
+        "flags": [
+          "square_wrap_text_overlap",
+          "column_text_flow_collapse",
+          "line_band_drift",
+          "column_line_band_drift",
+          "large_ink_region_drift"
+        ],
+        "rhwp_frame": [
+          98,
+          130,
+          768,
+          1097
+        ],
+        "pdf_frame": [
+          26,
+          353,
+          768,
+          1096
+        ],
+        "rhwp_outside_frame_pixels": 0,
+        "pdf_outside_frame_pixels": 0,
+        "rhwp_outside_frame_max_y": null,
+        "pdf_outside_frame_max_y": null,
+        "rhwp_outside_frame_extent_px": null,
+        "pdf_outside_frame_extent_px": null,
+        "frame_is_interior_decoration": true,
+        "frame_overflow_tolerated_bleed": false,
+        "paper_size_footer_frame_bleed": false,
+        "rhwp_outside_frame_bleed_px": 0,
+        "pdf_outside_frame_bleed_px": 0,
+        "content_bottom_delta_px": -3.0,
+        "red_marker_drift": {
+          "rhwp_count": 0,
+          "pdf_count": 0,
+          "paired": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null
+        },
+        "line_band_drift": {
+          "rhwp_count": 32,
+          "pdf_count": 27,
+          "paired": 27,
+          "max_abs_delta_px": 197.0,
+          "p90_abs_delta_px": 187.5,
+          "mean_abs_delta_px": 165.7
+        },
+        "column_line_band_drift": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              98,
+              130,
+              431,
+              1097
+            ],
+            "pdf_frame": [
+              26,
+              353,
+              395,
+              1096
+            ],
+            "drift": {
+              "rhwp_count": 32,
+              "pdf_count": 26,
+              "paired": 26,
+              "max_abs_delta_px": 198.0,
+              "p90_abs_delta_px": 197.5,
+              "mean_abs_delta_px": 168.0
+            },
+            "rhwp_first_band": {
+              "y0": 171,
+              "y1": 182,
+              "x0": 100,
+              "x1": 175,
+              "pixels": 301,
+              "cy": 176.5
+            },
+            "rhwp_last_band": {
+              "y0": 1070,
+              "y1": 1079,
+              "x0": 371,
+              "x1": 419,
+              "pixels": 141,
+              "cy": 1074.5
+            },
+            "pdf_first_band": {
+              "y0": 356,
+              "y1": 365,
+              "x0": 98,
+              "x1": 140,
+              "pixels": 163,
+              "cy": 360.5
+            },
+            "pdf_last_band": {
+              "y0": 1077,
+              "y1": 1077,
+              "x0": 371,
+              "x1": 389,
+              "pixels": 9,
+              "cy": 1077.0
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              435,
+              130,
+              768,
+              1097
+            ],
+            "pdf_frame": [
+              399,
+              353,
+              768,
+              1096
+            ],
+            "drift": {
+              "rhwp_count": 26,
+              "pdf_count": 13,
+              "paired": 13,
+              "max_abs_delta_px": 451.0,
+              "p90_abs_delta_px": 439.0,
+              "mean_abs_delta_px": 346.5
+            },
+            "rhwp_first_band": {
+              "y0": 223,
+              "y1": 235,
+              "x0": 437,
+              "x1": 698,
+              "pixels": 1010,
+              "cy": 229.0
+            },
+            "rhwp_last_band": {
+              "y0": 1021,
+              "y1": 1040,
+              "x0": 437,
+              "x1": 689,
+              "pixels": 1589,
+              "cy": 1030.5
+            },
+            "pdf_first_band": {
+              "y0": 382,
+              "y1": 393,
+              "x0": 402,
+              "x1": 657,
+              "pixels": 1011,
+              "cy": 387.5
+            },
+            "pdf_last_band": {
+              "y0": 1076,
+              "y1": 1077,
+              "x0": 402,
+              "x1": 422,
+              "pixels": 21,
+              "cy": 1076.5
+            }
+          }
+        ],
+        "column_line_band_drift_candidates": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              98,
+              130,
+              431,
+              1097
+            ],
+            "pdf_frame": [
+              26,
+              353,
+              395,
+              1096
+            ],
+            "drift": {
+              "rhwp_count": 32,
+              "pdf_count": 26,
+              "paired": 26,
+              "max_abs_delta_px": 198.0,
+              "p90_abs_delta_px": 197.5,
+              "mean_abs_delta_px": 168.0
+            },
+            "rhwp_first_band": {
+              "y0": 171,
+              "y1": 182,
+              "x0": 100,
+              "x1": 175,
+              "pixels": 301,
+              "cy": 176.5
+            },
+            "rhwp_last_band": {
+              "y0": 1070,
+              "y1": 1079,
+              "x0": 371,
+              "x1": 419,
+              "pixels": 141,
+              "cy": 1074.5
+            },
+            "pdf_first_band": {
+              "y0": 356,
+              "y1": 365,
+              "x0": 98,
+              "x1": 140,
+              "pixels": 163,
+              "cy": 360.5
+            },
+            "pdf_last_band": {
+              "y0": 1077,
+              "y1": 1077,
+              "x0": 371,
+              "x1": 389,
+              "pixels": 9,
+              "cy": 1077.0
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              435,
+              130,
+              768,
+              1097
+            ],
+            "pdf_frame": [
+              399,
+              353,
+              768,
+              1096
+            ],
+            "drift": {
+              "rhwp_count": 26,
+              "pdf_count": 13,
+              "paired": 13,
+              "max_abs_delta_px": 451.0,
+              "p90_abs_delta_px": 439.0,
+              "mean_abs_delta_px": 346.5
+            },
+            "rhwp_first_band": {
+              "y0": 223,
+              "y1": 235,
+              "x0": 437,
+              "x1": 698,
+              "pixels": 1010,
+              "cy": 229.0
+            },
+            "rhwp_last_band": {
+              "y0": 1021,
+              "y1": 1040,
+              "x0": 437,
+              "x1": 689,
+              "pixels": 1589,
+              "cy": 1030.5
+            },
+            "pdf_first_band": {
+              "y0": 382,
+              "y1": 393,
+              "x0": 402,
+              "x1": 657,
+              "pixels": 1011,
+              "cy": 387.5
+            },
+            "pdf_last_band": {
+              "y0": 1076,
+              "y1": 1077,
+              "x0": 402,
+              "x1": 422,
+              "pixels": 21,
+              "cy": 1076.5
+            }
+          }
+        ],
+        "column_text_flow_masked_line_band_drift": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              92,
+              81,
+              395,
+              1042
+            ],
+            "pdf_frame": [
+              92,
+              81,
+              395,
+              1041
+            ],
+            "drift": {
+              "rhwp_count": 13,
+              "pdf_count": 18,
+              "paired": 13,
+              "max_abs_delta_px": 556.0,
+              "p90_abs_delta_px": 552.5,
+              "mean_abs_delta_px": 171.5
+            },
+            "rhwp_first_band": {
+              "y0": 171,
+              "y1": 182,
+              "x0": 96,
+              "x1": 175,
+              "pixels": 327,
+              "cy": 176.5
+            },
+            "rhwp_last_band": {
+              "y0": 1028,
+              "y1": 1038,
+              "x0": 95,
+              "x1": 391,
+              "pixels": 1113,
+              "cy": 1033.0
+            },
+            "pdf_first_band": {
+              "y0": 163,
+              "y1": 175,
+              "x0": 95,
+              "x1": 393,
+              "pixels": 1040,
+              "cy": 169.0
+            },
+            "pdf_last_band": {
+              "y0": 1027,
+              "y1": 1037,
+              "x0": 95,
+              "x1": 393,
+              "pixels": 963,
+              "cy": 1032.0
+            }
+          },
+          {
+            "column": 1,
+            "rhwp_frame": [
+              399,
+              81,
+              702,
+              1042
+            ],
+            "pdf_frame": [
+              399,
+              81,
+              702,
+              1041
+            ],
+            "drift": {
+              "rhwp_count": 14,
+              "pdf_count": 15,
+              "paired": 14,
+              "max_abs_delta_px": 509.5,
+              "p90_abs_delta_px": 473.5,
+              "mean_abs_delta_px": 145.7
+            },
+            "rhwp_first_band": {
+              "y0": 223,
+              "y1": 235,
+              "x0": 401,
+              "x1": 698,
+              "pixels": 1140,
+              "cy": 229.0
+            },
+            "rhwp_last_band": {
+              "y0": 1021,
+              "y1": 1040,
+              "x0": 401,
+              "x1": 689,
+              "pixels": 1746,
+              "cy": 1030.5
+            },
+            "pdf_first_band": {
+              "y0": 163,
+              "y1": 174,
+              "x0": 401,
+              "x1": 698,
+              "pixels": 1006,
+              "cy": 168.5
+            },
+            "pdf_last_band": {
+              "y0": 1027,
+              "y1": 1038,
+              "x0": 402,
+              "x1": 678,
+              "pixels": 1233,
+              "cy": 1032.5
+            }
+          }
+        ],
+        "column_text_flow_table_masks": {
+          "rhwp": [
+            [
+              96,
+              84,
+              660,
+              133
+            ],
+            [
+              96,
+              412,
+              660,
+              861
+            ]
+          ],
+          "pdf": [
+            [
+              96,
+              84,
+              660,
+              133
+            ],
+            [
+              96,
+              412,
+              660,
+              860
+            ]
+          ]
+        },
+        "column_text_flow_body_frames": {
+          "rhwp": [
+            92,
+            81,
+            702,
+            1042
+          ],
+          "pdf": [
+            92,
+            81,
+            702,
+            1041
+          ]
+        },
+        "column_text_flow_reflowing_float_present": true,
+        "column_text_flow_collapse_candidates": [
+          {
+            "column": 0,
+            "rhwp_frame": [
+              92,
+              81,
+              395,
+              1042
+            ],
+            "pdf_frame": [
+              92,
+              81,
+              395,
+              1041
+            ],
+            "drift": {
+              "rhwp_count": 13,
+              "pdf_count": 18,
+              "paired": 13,
+              "max_abs_delta_px": 556.0,
+              "p90_abs_delta_px": 552.5,
+              "mean_abs_delta_px": 171.5
+            },
+            "rhwp_first_band": {
+              "y0": 171,
+              "y1": 182,
+              "x0": 96,
+              "x1": 175,
+              "pixels": 327,
+              "cy": 176.5
+            },
+            "rhwp_last_band": {
+              "y0": 1028,
+              "y1": 1038,
+              "x0": 95,
+              "x1": 391,
+              "pixels": 1113,
+              "cy": 1033.0
+            },
+            "pdf_first_band": {
+              "y0": 163,
+              "y1": 175,
+              "x0": 95,
+              "x1": 393,
+              "pixels": 1040,
+              "cy": 169.0
+            },
+            "pdf_last_band": {
+              "y0": 1027,
+              "y1": 1037,
+              "x0": 95,
+              "x1": 393,
+              "pixels": 963,
+              "cy": 1032.0
+            },
+            "band_count_delta": 5,
+            "reason": "column_line_count_and_y_flow_diverge"
+          }
+        ],
+        "large_ink_region_drift": {
+          "rhwp_count": 6,
+          "pdf_count": 6,
+          "paired": 6,
+          "deltas_px": [
+            -199.0,
+            -239.0,
+            -263.0,
+            -383.0,
+            -375.0,
+            -135.0
+          ],
+          "max_abs_delta_px": 383.0,
+          "mean_abs_delta_px": 265.7,
+          "rhwp_regions": [
+            {
+              "x0": 98.0,
+              "y0": 210.0,
+              "x1": 706.0,
+              "y1": 290.0,
+              "w": 608.0,
+              "h": 80.0,
+              "cy": 250.0,
+              "tiles": 140.0
+            },
+            {
+              "x0": 98.0,
+              "y0": 306.0,
+              "x1": 706.0,
+              "y1": 370.0,
+              "w": 608.0,
+              "h": 64.0,
+              "cy": 338.0,
+              "tiles": 125.0
+            },
+            {
+              "x0": 98.0,
+              "y0": 418.0,
+              "x1": 658.0,
+              "y1": 482.0,
+              "w": 560.0,
+              "h": 64.0,
+              "cy": 450.0,
+              "tiles": 92.0
+            },
+            {
+              "x0": 98.0,
+              "y0": 498.0,
+              "x1": 242.0,
+              "y1": 562.0,
+              "w": 144.0,
+              "h": 64.0,
+              "cy": 530.0,
+              "tiles": 26.0
+            },
+            {
+              "x0": 98.0,
+              "y0": 578.0,
+              "x1": 386.0,
+              "y1": 642.0,
+              "w": 288.0,
+              "h": 64.0,
+              "cy": 610.0,
+              "tiles": 55.0
+            },
+            {
+              "x0": 98.0,
+              "y0": 658.0,
+              "x1": 706.0,
+              "y1": 1042.0,
+              "w": 608.0,
+              "h": 384.0,
+              "cy": 850.0,
+              "tiles": 548.0
+            }
+          ],
+          "pdf_regions": [
+            {
+              "x0": 106.0,
+              "y0": 369.0,
+              "x1": 650.0,
+              "y1": 529.0,
+              "w": 544.0,
+              "h": 160.0,
+              "cy": 449.0,
+              "tiles": 114.0
+            },
+            {
+              "x0": 106.0,
+              "y0": 545.0,
+              "x1": 394.0,
+              "y1": 609.0,
+              "w": 288.0,
+              "h": 64.0,
+              "cy": 577.0,
+              "tiles": 50.0
+            },
+            {
+              "x0": 90.0,
+              "y0": 625.0,
+              "x1": 586.0,
+              "y1": 801.0,
+              "w": 496.0,
+              "h": 176.0,
+              "cy": 713.0,
+              "tiles": 137.0
+            },
+            {
+              "x0": 106.0,
+              "y0": 881.0,
+              "x1": 698.0,
+              "y1": 945.0,
+              "w": 592.0,
+              "h": 64.0,
+              "cy": 913.0,
+              "tiles": 114.0
+            },
+            {
+              "x0": 106.0,
+              "y0": 961.0,
+              "x1": 266.0,
+              "y1": 1009.0,
+              "w": 160.0,
+              "h": 48.0,
+              "cy": 985.0,
+              "tiles": 23.0
+            },
+            {
+              "x0": 282.0,
+              "y0": 961.0,
+              "x1": 698.0,
+              "y1": 1009.0,
+              "w": 416.0,
+              "h": 48.0,
+              "cy": 985.0,
+              "tiles": 66.0
+            }
+          ]
+        },
+        "endnote_shape_ui": {
+          "separator_visible": true,
+          "separator_above_mm": 2.999,
+          "between_notes_mm": 0.0,
+          "separator_below_mm": 2.0,
+          "separator_length_mm": 51831.325
+        },
+        "endnote_separator_gap": {
+          "expected_separator": true,
+          "separator_below_mm": 2.0,
+          "separator_above_mm": 2.999,
+          "between_notes_mm": 0.0,
+          "separator_length_px": 195897.9,
+          "rhwp": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "pdf": {
+            "expected_separator": true,
+            "candidate_count": 0,
+            "selected": null,
+            "gap_px": null,
+            "first_content_y": null,
+            "first_marker_y": null,
+            "candidates": []
+          },
+          "gap_delta_px": null
+        },
+        "endnote_no_separator_content_start": null,
+        "between_notes_marker_gap": {
+          "expected_between_notes_mm": 0.0,
+          "expected_between_notes_px": null,
+          "rhwp_marker_count": 0,
+          "pdf_marker_count": 0,
+          "paired_gap_count": 0,
+          "max_abs_delta_px": null,
+          "mean_abs_delta_px": null,
+          "rhwp_marker_y": [],
+          "pdf_marker_y": [],
+          "rhwp_marker_y_by_column": [
+            []
+          ],
+          "pdf_marker_y_by_column": [
+            []
+          ],
+          "rhwp_gaps_px": [],
+          "pdf_gaps_px": [],
+          "pairs": []
+        },
+        "svg": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage23-full-native/liver7379/svg/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)_155.svg",
+        "render_tree_json": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage23-full-native/liver7379/render_tree/render_tree_155.json",
+        "equation_text_overlap_candidates": [],
+        "square_wrap_text_overlap_candidates": [
+          {
+            "pi": 1692,
+            "ci": 1,
+            "text_wrap": "Square",
+            "candidate_kind": "physical_overlap",
+            "overlap_line_count": 10,
+            "image_bbox": [
+              436.5,
+              683.7,
+              224.9,
+              302.8
+            ],
+            "first_line_bbox": [
+              105.1,
+              683.0,
+              545.8,
+              13.3
+            ],
+            "last_line_bbox": [
+              112.1,
+              961.1,
+              587.2,
+              13.3
+            ]
+          }
+        ],
+        "deferred_square_picture_top_drift_candidates": [],
+        "right_table_left_strip_text_deficit_candidates": [],
+        "question_title_text_overlap_candidates": [],
+        "line_order_overlap_candidates": [],
+        "render_tree_frame_tail_overflow_candidates": [],
+        "render_tree_frame_tail_overflow_suppressed_candidates": [],
+        "question_marker_drift_candidates": [],
+        "legacy_glyph_visual_candidates": [],
+        "annotated": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage23-full-native/liver7379/analysis/annotated_155.png"
+      }
+    ]
+  }
+]

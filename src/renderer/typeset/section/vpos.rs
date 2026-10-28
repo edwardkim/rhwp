@@ -1,0 +1,389 @@
+//! 구역 vpos 책임. 기존 조건과 호출 순서를 보존한다.
+use crate::renderer::typeset::{
+    stored_ladder_encodes_spacing_before, ComposedParagraph, HeightCursor, Paragraph,
+    ResolvedStyleSet, TypesetEngine, TypesetState,
+};
+impl TypesetEngine {
+    fn source_height_cursor(
+        &self,
+        st: &TypesetState,
+        paragraphs: &[Paragraph],
+        composed: &[ComposedParagraph],
+    ) -> HeightCursor {
+        HeightCursor {
+            dpi: self.dpi,
+            col_area_y: 0.0,
+            col_area_height: st.base_available_height(),
+            col_anchor_y: st.vpos_col_anchor,
+            vpos_page_base: st.vpos_page_base,
+            vpos_lazy_base: st.vpos_lazy_base,
+            stored_column_origin: st.vpos_stored_column_origin,
+            prev_layout_para: st.vpos_prev_layout_para,
+            prev_item_was_partial_table: st.vpos_prev_partial_table,
+            skip_spacing_before_prededuct: st.skip_spacing_before_prededuct,
+            trimmed_prev_spacing_before_px: st.vpos_prev_trimmed_sb_px,
+            allow_vpos_rewind: false,
+            allow_start_height_backtrack: false,
+            suppress_large_forward_jump: false,
+            suppress_hwpx_stale_forward: st.profile.hwpx_stored_layout(),
+            rejected_stored_forward_origin: None,
+            stored_equation_reflow: st.profile.hwp5_container(),
+            prev_reissued_equation_rows: st
+                .vpos_prev_layout_para
+                .and_then(|index| paragraphs.get(index).zip(composed.get(index)))
+                .is_some_and(|(source, actual)| {
+                    crate::renderer::composer::stored_row_projection::reissued_equation_rows(
+                        source, actual,
+                    )
+                }),
+            uniform_filler_ladder: self.uniform_filler_ladder.get(),
+            endnote_between_notes_hu: 0,
+            prev_item_content_bottom_y: None,
+            // 빈 글줄 역시 수용한 구성의 점유 끝을 가진다. 저장 vpos만으로
+            // 간격 소비를 추정하지 않고 실제 fit에서 보존한 끝을 전달한다.
+            prev_item_flow_line_bottom_y: st.vpos_prev_layout_para.and_then(|previous| {
+                let para = paragraphs.get(previous)?;
+                (para.controls.is_empty() && para.line_segs.len() == 1)
+                    .then(|| {
+                        st.paragraph_fragment_content_bottoms
+                            .get(&(previous, 1))
+                            .map(|bounds| bounds.content_bottom)
+                    })
+                    .flatten()
+            }),
+            owned_origin: None,
+            last_compacted_endnote_title_gap: false,
+            min_flow_floor: f64::MIN,
+            stored_boundary_spacing_before: 0.0,
+            session_edited: self.profile.get().session_edited(),
+            curr_item_is_table_fragment: false,
+            // 본문 조판: 미주 제목 갈래는 `suppress_large_forward_jump` 아래에서만 발화한다.
+            endnote_note_first_paras: Default::default(),
+            endnote_tail_leading_hu: Default::default(),
+            seed_lazy_base_from_next_stored: false,
+        }
+    }
+
+    /// 저장 TAC 단축도 일반 paint와 같은 vpos 판정을 조회한다. 거절된 source만
+    /// 전달하고, 정상 개체 줄의 독립 저장 원점/예약 높이는 이 조회에서 바꾸지 않는다.
+    pub(in crate::renderer::typeset) fn observe_stored_table_origin(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        paragraphs: &[Paragraph],
+        composed: &[ComposedParagraph],
+        styles: &ResolvedStyleSet,
+    ) {
+        if st.col_count != 1 || !st.profile.hwpx_stored_layout() {
+            return;
+        }
+        let mut hc = self.source_height_cursor(st, paragraphs, composed);
+        if !hc.bind_stored_frame_successor(
+            st.current_height,
+            para_idx,
+            paragraphs,
+            &st.paragraph_float_placements,
+        ) && !hc.bind_computed_paragraph_successor(
+            st.current_height,
+            para_idx,
+            paragraphs,
+            styles,
+            &st.paragraph_origins,
+        ) {
+            hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
+        }
+        st.record_rejected_stored_forward_origin(
+            hc.rejected_stored_forward_origin
+                .map(|source| (para_idx, source)),
+        );
+    }
+
+    /// 렌더러 `build_single_column` 의 inter-item VPOS_CORR(Stage C `HeightCursor::vpos_adjust`)
+    /// 를 페이지네이터에서도 적용해, 단락마다 `+= total_height` 로 누적된 sb·trailing_ls
+    /// drift 를 다음 항목 진입 시 제거한다(렌더러와 동일 측정). 단단(col_count==1) 전용 —
+    /// 다단/flow-around 는 Stage E.
+    ///
+    /// HeightCursor 는 `current_height` 상대공간(col_area_y=0)에서 구동한다.
+    pub(in crate::renderer::typeset) fn vpos_snap_current_height(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        paragraphs: &[Paragraph],
+        composed: &[ComposedParagraph],
+        styles: &ResolvedStyleSet,
+        spacing_before_px: f64,
+    ) {
+        if st.col_count != 1 {
+            return; // 다단은 Stage E
+        }
+        // 컬럼 첫 항목: anchor + page_base 확립 (렌더러 2186/2216 정합).
+        // items.first() 의 vpos 를 page_base 로, 현 current_height 를 anchor 로 둔다.
+        if st.current_items.is_empty() {
+            st.record_vpos_column_anchor(st.current_height);
+            st.record_vpos_page_origin(
+                paragraphs
+                    .get(para_idx)
+                    .and_then(|p| p.line_segs.first())
+                    .map(|seg| {
+                        // 배치가 보존하는 문단 앞 여백을 측정의 쪽 원점으로 빼지 않는다.
+                        let margin_is_page_relative = (st.profile.hwpx_stored_layout()
+                            || st.profile.hwp5_stored_pagination_layout()
+                            || st.profile.hwp3_native_layout())
+                            && !st.profile.session_edited()
+                            && paragraphs.get(para_idx).is_some_and(|first| {
+                                crate::renderer::stored_page_origin::stored_first_margin_is_page_relative(
+                                    first,
+                                    paragraphs.get(para_idx + 1),
+                                    styles,
+                                    self.dpi,
+                                )
+                            });
+                        if margin_is_page_relative {
+                            0
+                        } else {
+                            seg.vertical_pos
+                                - paragraphs.get(para_idx).map_or(0, |first| {
+                                    crate::renderer::layout::synthesized_first_margin_hu(
+                                        first, styles, self.dpi,
+                                    )
+                                })
+                        }
+                    }),
+            );
+            st.record_vpos_lazy_origin(None);
+            st.record_stored_column_origin(
+                st.vpos_page_base.map(|base| (base, st.vpos_col_anchor)),
+            );
+            // [#2243] 저장 여부 태깅 — dirty 역스냅 금지 판단용.
+            st.record_vpos_origin_provenance(
+                paragraphs
+                    .get(para_idx)
+                    .and_then(|p| p.line_segs.first())
+                    .is_some_and(|s| {
+                        s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    }),
+            );
+            st.record_vpos_ladder_validity(false);
+        }
+        // [#7824] 합성 줄(`TAG_IMPLEMENTATION_PROPERTY`)만 가진 문단이 흐름에 들어오면 이 쪽의
+        // 사다리는 한/글 사다리가 아니다 — 로드 재구성이 그 문단에 rhwp 의 누적 좌표를 주므로,
+        // 뒤 저장 문단의 쪽-상대 vpos 와 같은 좌표계가 아니다. 그러면 뒤 저장 문단의 스냅이
+        // 성립하지 않아, 스냅이 되돌려 준다는 전제의 간격 트림(`flow_advance_height`)분이 흐름에서
+        // 그냥 사라진다(HWP5-nopassword 14쪽: 트림 8회 ≈125px, 그리기는 본문 아래 100px 넘침).
+        // `#2279 ①-2` 가 말하는 «합성 혼합 사다리» 를 여기서 표시한다.
+        if paragraphs.get(para_idx).is_some_and(|para| {
+            !para.line_segs.is_empty()
+                && para.line_segs.iter().all(|seg| {
+                    seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                })
+        }) {
+            st.mark_vpos_ladder_dirty();
+        }
+        let mut hc = self.source_height_cursor(st, paragraphs, composed);
+        let bound_successor = hc.bind_stored_frame_successor(
+            st.current_height,
+            para_idx,
+            paragraphs,
+            &st.paragraph_float_placements,
+        ) || hc.bind_computed_paragraph_successor(
+            st.current_height,
+            para_idx,
+            paragraphs,
+            styles,
+            &st.paragraph_origins,
+        );
+        let mut y = if bound_successor {
+            st.record_vpos_column_anchor(0.0);
+            st.record_vpos_origin_provenance(true);
+            st.current_height
+        } else {
+            hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles)
+        };
+        // 재조판된 저장 문단이 행을 줄였으면 후속 저장 사다리의 절대 vpos는
+        // 옛 행 수를 담고 있다. 동일 쪽에서 회수한 높이를 뺀 뒤 흐름 뒤로만 스냅한다.
+        if st.profile.hwpx_stored_layout()
+            && st.vpos_compacted_stored_delta > 0.0
+            && y > st.current_height
+        {
+            y = (y - st.vpos_compacted_stored_delta).max(st.current_height);
+        }
+        // [#5699 H1] 저장 사다리가 자리차지 표 밴드를 계상하지 않은 문서: 흐름이
+        // 계상 교정으로 확보한 표 밴드 위로 저장 vpos 스냅으로 되감기지 못한다.
+        // 저장 경계가 위 간격을 이미 소유하면 실제 글줄은 그 간격 뒤에 있다.
+        // 논리 문단 상단을 표 밴드 안쪽 잉크로 오인해 같은 간격을 다시 더하지 않는다.
+        if y + hc.stored_boundary_spacing_before < st.ladder_band_floor {
+            y = st.ladder_band_floor - hc.stored_boundary_spacing_before;
+        }
+        // 렌더의 min_flow_floor는 floor뿐 아니라 직전 순차 cursor도 보호한다.
+        // 회피한 표 이후 분할기만 저장 vpos로 되감으면 쪽 fit와 출력이 갈라진다.
+        if !st.inline_placements.is_empty()
+            || !st.inline_flow_plans.is_empty()
+            || st
+                .paragraph_float_placements
+                .iter()
+                .any(|(&(owner, _), placement)| {
+                    owner < para_idx && placement.advances_paragraph_flow()
+                })
+        {
+            y = y.max(st.current_height - hc.stored_boundary_spacing_before);
+        }
+        // [#2243] dirty 저장-앵커 사다리의 역스냅 금지 — 저장 lineseg 누락 문단의
+        // fresh 재계산 성장분을 낡은 기계 v0 가 되돌리지 못하게 한다(전방만 허용).
+        // [#2279 OMIT-sa] spacing-누락 문서군은 합성(비저장) base 사다리도 동일 —
+        // 사다리 자체가 spacing 을 누락하므로 dirty 성장분의 역스냅을 base 저장
+        // 여부와 무관하게 금지한다 (36392557 p4: pi61 저장 anchor 로의 역스냅이
+        // sa 성장분 +20.1px 를 되감아 페이지 경계를 한 문단 뒤로 밀던 형상).
+        if st.vpos_ladder_dirty
+            && (st.vpos_page_base_stored || st.omit_fresh_recalc_doc)
+            && y < st.current_height
+        {
+            y = st.current_height;
+        }
+        // [#2279 OMIT-sa] 합성(비저장) lineseg 경계의 후방 스냅량이 직전 문단의
+        // spacing_after 와 일치(±2px)하면 합성 사다리의 sa-누락이다 — 한글
+        // fresh 는 sa 를 가산하므로 되감지 않는다 (36392557 p4 pi42/43/44
+        // sa 6.7px ×3, 한글 PDF 절대좌표 +20.1px 실측). OMIT 문서군 + 합성
+        // seg 직전 문단 한정. 이후 저장 anchor 역스냅이 성장분을 되돌리지
+        // 못하게 dirty 처리(위 #2243 확장과 짝).
+        if st.omit_fresh_recalc_doc && y < st.current_height && para_idx > 0 {
+            let prev = &paragraphs[para_idx - 1];
+            let prev_synthetic = !prev.line_segs.is_empty()
+                && prev.line_segs.iter().all(|s| {
+                    s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                });
+            let prev_sa = styles
+                .para_styles
+                .get(prev.para_shape_id as usize)
+                .map(|s| s.spacing_after)
+                .unwrap_or(0.0);
+            if prev_synthetic && prev_sa > 0.5 && (st.current_height - y - prev_sa).abs() < 2.0 {
+                y = st.current_height;
+                st.mark_vpos_ladder_dirty();
+            }
+        }
+        // [#2279 ladder-sb] 후방 스냅량이 이 문단의 spacing_before 와 정확히
+        // 일치(±2px)하고, **저장 ladder 스텝 자체가 sb 를 누락**했으면 생성기
+        // ladder 의 sb-누락이다 — 한글 fresh 는 sb 를 가산하므로(서브픽셀
+        // 하니스 실측: 36398709 문단당 −5.0pt 균일 = sb 6.7px) 스냅으로 되감지
+        // 않는다. 스텝-검사 없이 ±2px 우연 일치만으로 스킵하면 sb-포함 정상
+        // ladder 에서 이중 가산(+1쪽 과다, issue_1853 실측 반증)이 난다.
+        if st.profile.hwpx_stored_layout()
+            && spacing_before_px > 0.5
+            && y < st.current_height
+            && (st.current_height - y - spacing_before_px).abs() < 2.0
+        {
+            y = st.current_height;
+        }
+        // [#6031] sb-누락 ladder 는 경계 하나가 아니라 **문서 전체 서명**이다 —
+        // 위 ±2px 일치 스킵만으로는 누락분이 다음 sb=0 경계의 후방 스냅으로
+        // 흘러가 되감긴다(3249937 p3: pi=36 스킵분 −6.7px 가 pi=37 스냅으로
+        // 제거, 쪽 말미 누적 +53.3px 를 typeset 만 안 본다). 렌더는 후방 스냅
+        // 상한(8px)으로 이 되감김을 거부하므로 판정 좌표와 배치 좌표가 갈라져
+        // 쪽-말미 줄이 본문 하단 밖에 그려진다(#5801 코어). 경계 검사
+        // (`stored_ladder_encodes_spacing_before`)가 누락을 확정하면 남은 열의
+        // 후방 스냅·트림을 dirty 로 철회해 두 좌표계를 일치시킨다 — 한글
+        // fresh 도 sb 를 가산한 흐름으로 쪽을 끊는다(p3 말미 810.7px 실측
+        // = 한글 809.7pt 정합, 꼬리 '바.' 줄은 한글도 4쪽 첫 줄).
+        if st.profile.hwpx_stored_layout()
+            && !st.profile.hwp3_layout()
+            && spacing_before_px > 5.0
+            && !st.vpos_ladder_dirty
+            && !stored_ladder_encodes_spacing_before(
+                paragraphs,
+                para_idx,
+                spacing_before_px,
+                self.dpi,
+            )
+        {
+            st.mark_vpos_ladder_dirty();
+            if y < st.current_height {
+                y = st.current_height;
+            }
+        }
+        // [#7552] 글자 없는 자리차지 표 host(세로 오프셋 0)는 스냅이 미리 뺀 앞 간격을 다시
+        // 더하는 글줄이 없다. 후방 이동이 정확히 그 앞 간격뿐이면 흐름 커서를 유지한다 —
+        // 렌더의 `empty_float_vpos_snap_flow_top` 과 같은 판정이고, 조판은 표 위 바깥 여백을
+        // 이미 예약하므로 두 경로 모두 표 윗변이 흐름 + 바깥 위 여백이 된다(hwpspec 50쪽
+        // pi=327 정본 713.8, 그 뒤 pi=328 이 같은 흐름에서 이어진다).
+        if spacing_before_px > 0.5
+            && y < st.current_height
+            && (st.current_height - y - spacing_before_px).abs() <= 0.5
+            && paragraphs.get(para_idx).is_some_and(|para| {
+                !crate::renderer::typeset::para_has_visible_text(para)
+                    && para.controls.len() == 1
+                    && matches!(&para.controls[0], crate::model::control::Control::Table(table)
+                        if !table.common.treat_as_char
+                            && table.common.vertical_offset == 0
+                            && crate::renderer::float_placement::is_para_topbottom_float(&table.common))
+            })
+        {
+            y = st.current_height;
+        }
+        // [#2243 진단] snap 입출력 — 동작 불변.
+        if std::env::var("RHWP_DIAG_SNAPALL").is_ok() {
+            eprintln!(
+                "DIAG_SNAPALL sec={} page={} pi={} y_in={:.1} y_out={:.1} base={:?} lazy={:?} anchor={:.1} dirty={} source={:?}",
+                st.section_index,
+                st.pages.len(),
+                para_idx,
+                st.current_height,
+                y,
+                st.vpos_page_base,
+                hc.vpos_lazy_base,
+                st.vpos_col_anchor,
+                st.vpos_ladder_dirty,
+                hc.stored_column_origin,
+            );
+        }
+        if std::env::var("RHWP_DIAG_TAC").is_ok() && (y - st.current_height).abs() > 0.05 {
+            eprintln!(
+                "DIAG_SNAP pi={} y_in={:.1} y_out={:.1} page_base={:?} lazy={:?} anchor={:.1}",
+                para_idx,
+                st.current_height,
+                y,
+                st.vpos_page_base,
+                hc.vpos_lazy_base,
+                st.vpos_col_anchor,
+            );
+        }
+        // 페이지 배분이 확정한 단 상대 흐름 경계는 배치도 그대로 소비한다.
+        // 앞 문단을 완전히 수용한 같은 단에서 다음 시작으로 이동했으면 그
+        // 위치가 앞 문단의 흐름 끝이다. 글자 유무·TAC·개체 조합으로 저장 줄을
+        // 다시 판정하거나 paint에서 별도의 높이를 누적하지 않는다.
+        // 다른 단의 항목이나 부분 문단은 이 전체 문단 완료의 소유자가 아니다.
+        // 같은 원본 HU 좌표의 변환·누적 오차는 흐름 이동이 아니다. f64의
+        // 끝자리 차이로 완료 경계를 새로 기록하면 실제 이동이 없는 문단까지
+        // 다른 저장 원점의 절대 끝으로 되감는다.
+        let flow_moved = crate::renderer::px_to_hwpunit(y, self.dpi)
+            != crate::renderer::px_to_hwpunit(st.current_height, self.dpi);
+        // lazy 역산은 현재 순차 흐름에 저장 사다리를 맞춘 값일 뿐, 단의 실제
+        // 원점을 인증하지 않는다. 수용한 줄/개체가 고정한 축이 있는 경우만
+        // 절대 종료값으로 전달해야 paint의 다른 실제 프레임을 덮어쓰지 않는다.
+        let owns_column_axis = hc.vpos_page_base.is_some()
+            || hc
+                .stored_column_origin
+                .is_some_and(|(base, _)| hc.vpos_lazy_base == Some(base));
+        if flow_moved && owns_column_axis && y >= 0.0 && y <= st.available_height() {
+            if let Some(crate::renderer::typeset::PageItem::FullParagraph {
+                para_index: previous,
+            }) = st.current_items.last()
+            {
+                let previous = *previous;
+                if previous != para_idx && st.vpos_prev_layout_para == Some(previous) {
+                    st.record_stored_paragraph_flow_end(previous, y);
+                }
+            }
+        }
+        // 재조판 뒤 저장 줄의 원점 연결과 지연 기준 산출을 모두 회수한다.
+        st.record_vpos_page_origin(hc.vpos_page_base);
+        st.record_vpos_lazy_origin(hc.vpos_lazy_base);
+        st.record_stored_column_origin(hc.stored_column_origin);
+        st.record_vpos_column_anchor(hc.col_anchor_y);
+        st.align_flow_to(y);
+        st.record_vpos_snapped_flow_start(para_idx, y);
+        st.record_rejected_stored_forward_origin(
+            hc.rejected_stored_forward_origin
+                .map(|source| (para_idx, source)),
+        );
+    }
+}

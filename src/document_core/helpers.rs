@@ -65,6 +65,7 @@ pub(crate) fn logical_to_text_offset(para: &Paragraph, logical_offset: usize) ->
             if logical_idx == logical_offset {
                 return (text_idx, true);
             }
+            continue;
         }
         // 텍스트 문자
         if text_idx < text_len {
@@ -108,11 +109,6 @@ pub(crate) fn logical_paragraph_length(para: &Paragraph) -> usize {
         .iter()
         .filter(|ctrl| is_logical_inline_control(ctrl))
         .count();
-    let char_overlap_count = para
-        .controls
-        .iter()
-        .filter(|ctrl| matches!(ctrl, Control::CharOverlap(_)))
-        .count();
     let logical_positions = find_logical_control_positions(para);
     let max_inline_end = para
         .controls
@@ -124,7 +120,7 @@ pub(crate) fn logical_paragraph_length(para: &Paragraph) -> usize {
         .map(|pos| pos + 1)
         .unwrap_or(0);
 
-    (text_len + inline_count + char_overlap_count).max(max_inline_end + char_overlap_count)
+    (text_len + inline_count).max(max_inline_end)
 }
 
 /// 반환: positions[i] = para.controls[i]가 삽입되어야 할 텍스트 문자 인덱스
@@ -205,6 +201,20 @@ pub(crate) fn get_caption_from_shape(
         ShapeObject::Chart(c) => c.caption.as_ref(),
         ShapeObject::Ole(o) => o.caption.as_ref(),
         _ => shape.drawing().and_then(|d| d.caption.as_ref()),
+    }
+}
+
+/// [`get_caption_from_shape`] 의 가변 짝 — 변형별 캡션 자리 판정은 그 문서를 따른다.
+pub(crate) fn get_caption_from_shape_mut(
+    shape: &mut crate::model::shape::ShapeObject,
+) -> Option<&mut crate::model::shape::Caption> {
+    use crate::model::shape::ShapeObject;
+    match shape {
+        ShapeObject::Group(g) => g.caption.as_mut(),
+        ShapeObject::Picture(p) => p.caption.as_mut(),
+        ShapeObject::Chart(c) => c.caption.as_mut(),
+        ShapeObject::Ole(o) => o.caption.as_mut(),
+        _ => shape.drawing_mut().and_then(|d| d.caption.as_mut()),
     }
 }
 
@@ -928,6 +938,37 @@ pub(crate) fn color_ref_to_css(color: crate::model::ColorRef) -> String {
     format!("#{:02x}{:02x}{:02x}", r, g, b)
 }
 
+/// 테두리/배경 채우기의 속성 JSON 값 `(fillType, fillColor, patternColor, patternType)`.
+///
+/// 면 색이 '색 없음'(상위 바이트 ≠ 0, 한컴 `0xFFFFFFFF`)이고 무늬도 없으면 `none` 이다.
+/// 렌더러(`style_resolver::resolve_single_border_style`)가 칠하지 않는 채우기와 같다.
+/// HWPX `faceColor="none"` 은 파서가 이미 `FillType::None` 으로 읽지만(#1172), HWP 는
+/// 단색 레코드로 남는다. `color_ref_to_css` 가 상위 바이트를 버리므로 이 판정이 없으면
+/// '색 없음'이 흰색 단색으로 보인다.
+///
+/// 그러데이션·그림은 개체 속성 조회와 같은 `gradient`·`image` 로 알린다. `none` 으로 알리면
+/// 읽은 속성을 그대로 다시 쓰는 호출이 채우기를 지운다(`create_border_fill_from_json`).
+pub(crate) fn fill_json_values(
+    fill: &crate::model::style::Fill,
+) -> (&'static str, String, String, i32) {
+    use crate::model::style::FillType;
+    match (&fill.fill_type, &fill.solid) {
+        (FillType::Solid, Some(s)) => {
+            let no_fill = s.pattern_type <= 0
+                && crate::model::color::opaque_rgb(s.background_color).is_none();
+            (
+                if no_fill { "none" } else { "solid" },
+                color_ref_to_css(s.background_color),
+                color_ref_to_css(s.pattern_color),
+                s.pattern_type,
+            )
+        }
+        (FillType::Gradient, _) => ("gradient", "#ffffff".to_string(), "#000000".to_string(), 0),
+        (FillType::Image, _) => ("image", "#ffffff".to_string(), "#000000".to_string(), 0),
+        _ => ("none", "#ffffff".to_string(), "#000000".to_string(), 0),
+    }
+}
+
 // === HTML 파싱 유틸리티 함수 ===
 
 /// chars 배열에서 pos부터 target 문자를 찾아 인덱스를 반환한다.
@@ -1181,10 +1222,21 @@ pub(crate) fn parse_html_attr_f64(tag: &str, attr: &str) -> Option<f64> {
             let after = &tag[start + pat.len()..];
             let delim = if pat.ends_with('"') { '"' } else { '\'' };
             if let Some(end) = after.find(delim) {
-                let val_str = &after[..end];
-                // "200px" → 200.0, "200" → 200.0
-                let num_str = val_str.trim_end_matches("px").trim();
-                return num_str.parse().ok();
+                let val_str = &after[..end].trim();
+                // 한글은 `width="97pt"` 로 낸다 — pt 를 px 로 읽으면 그림이 25% 작아진다.
+                // "200px"·"200" → 200.0, "97pt" → 129.3(px), "2cm"·"20mm" 도 px 로 환산.
+                let (num_str, factor) = if let Some(v) = val_str.strip_suffix("pt") {
+                    (v, 96.0 / 72.0)
+                } else if let Some(v) = val_str.strip_suffix("cm") {
+                    (v, 96.0 / 2.54)
+                } else if let Some(v) = val_str.strip_suffix("mm") {
+                    (v, 96.0 / 25.4)
+                } else if let Some(v) = val_str.strip_suffix("in") {
+                    (v, 96.0)
+                } else {
+                    (val_str.trim_end_matches("px"), 1.0)
+                };
+                return num_str.trim().parse::<f64>().ok().map(|n| n * factor);
             }
         }
     }
@@ -1528,15 +1580,9 @@ pub(crate) fn border_fills_equal(
             return false;
         }
     }
-    // fill 비교 (fill_type + solid color)
-    if a.fill.fill_type != b.fill.fill_type {
-        return false;
-    }
-    match (&a.fill.solid, &b.fill.solid) {
-        (Some(sa), Some(sb)) => sa.background_color == sb.background_color,
-        (None, None) => true,
-        _ => false,
-    }
+    // 채우기는 면 색뿐 아니라 무늬 종류·무늬 색, 그러데이션, 그림, 투명도까지 모두 같아야 한다.
+    // 면 색만 비교하면 무늬만 바꾼 정의가 옛 정의로 재사용되어 칸 배경 무늬가 바뀌지 않는다.
+    a.fill == b.fill
 }
 
 #[cfg(test)]

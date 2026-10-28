@@ -1,0 +1,12 @@
+{
+  "head": "c4ce9ff96436d94468557f09794ee0fa84b35ce6",
+  "input": "tests/fixtures/stored_float_anchor_control/1351000_policy_indicators.hwp",
+  "input_sha256": "b28ef2f22b24b962c41559389c3d29fda25acde14c245ee9808c2777aaeec0a9",
+  "current_pages": 85,
+  "reference_pages": 86,
+  "current_vs_frozen_96_all_trees_identical": true,
+  "direct_read": "현재85쪽 마지막 평가인증률/목표70표가 PDF86쪽에 대응하고 꼬리 행도 보임. PDF85쪽은취약보육목표58표. 쪽수85로 기대를 교정하지 않음",
+  "reference_quality_note": "PDF86쪽 우측 단위/가중치 등의 셀은 출력에 없으며 현재표에는 있음. 기준 MediaBox 복구 provenance는 #7269 기록을 확인. 이 차이로 원본이나 PDF전체를 비정상으로 단정하지 않음",
+  "missing_content_verified": false,
+  "pagination_contract_reassessment": "86쪽 독립 출력과 현재85쪽 차이는 유효하지만 이동 시작/누락/분할 원인의 추가 검증 필요"
+}

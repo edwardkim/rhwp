@@ -7,8 +7,9 @@
 //! 넘고 글자별 오른쪽이 깎였다. 수정 = 한컴오피스 동봉
 //! HANYoonGothic720/740/760.ttf 의 hmtx 를 메트릭 overlay 에 등재(한글 지배
 //! 폭 880/920/960 per mille, ASCII 전량; 이름은 HWPX 원문 "한컴 윤고딕 NNN").
-//! 잔여: fwSpace(U+2007) 0.5em vs 한글 ~0.25em 은 #3216 필드 마커와 코드포인트
-//! 를 공유해 별도 오라클 축으로 이슈에 남김.
+//! ⭐ fwSpace(U+2007) 0.5em vs 한글 ~0.25em 잔차는 **#6597 에서 닫혔다**(0.25em).
+//! 그래서 아래 창이 `0.88 + 0.5` 에서 `0.88 + 0.25` 로 내려갔다 — 판별 대상(메트릭
+//! 부재 시 대체 폭)은 그대로다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -93,13 +94,14 @@ fn issue_6036_yoongothic_logo_advances_use_real_metrics() {
     let gap1 = glyphs[1].0 - glyphs[0].0;
     let gap2 = glyphs[2].0 - glyphs[1].0;
 
-    // 글리프 간 전진 = 한글 0.88em + fwSpace 0.5em ≈ 1.3~1.4em.
-    // 메트릭 부재(맑은 고딕 대체)면 1.55em+ 로 벌어져 글상자 clip 을 깎는다.
+    // 글리프 간 전진 = 한글 0.88em + fwSpace 0.25em(#6597) ≈ 1.13em.
+    // 메트릭 부재(맑은 고딕 대체)면 1.05 + 0.25 = 1.30em 이상으로 벌어져 글상자
+    // clip 을 깎는다. 창은 그 사이를 가른다.
     for gap in [gap1, gap2] {
         let em = gap / fs;
         assert!(
-            (1.15..=1.48).contains(&em),
-            "로고 글리프 전진 {em:.2}em — 윤고딕 720 실메트릭(0.88em)이 아니라 \
+            (1.05..=1.22).contains(&em),
+            "로고 글리프 전진 {em:.2}em — 윤고딕 720 실메트릭(0.88em)+fwSpace(0.25em)이 아니라 \
              대체 폭으로 측정됨 (gap {gap:.1}px @ fs {fs:.1})",
         );
     }

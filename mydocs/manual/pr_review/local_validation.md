@@ -2,18 +2,90 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-10
+last_verified: 2026-10-18
 ---
 
 # 로컬 사전 검증
 
-이 가이드는 PR의 코드·sample·frontend 변경을 로컬에서 확인하는 절차다. 선택한 검증과 생략 이유를
-PR별 review 문서에 남긴다. 같은 checkout·target·Cargo cache를 공유하는 Cargo 계열 명령은
-**반드시 하나가 끝난 뒤 다음 명령을 실행**한다.
+이 가이드는 PR의 코드·sample·frontend 변경을 로컬에서 확인하는 절차다. **PR 제출 전에 4.3의
+변경 범위별 필수 검증과 해당 보조 절차를 빠짐없이 완료한다.** 기여자·메인터너·콜라보레이터 모두
+같은 기준을 적용한다. 실행 head·base SHA, 명령·환경·실제 결과와 증적을 PR 본문 또는 기존 검증
+기록에 연결한다. 비해당 항목은 변경 범위와 소비 경로를 근거로 구분하며, 실패·미실행 항목을
+비해당으로 바꾸거나 새 PR의 CI에 넘겨 제출 전 검증을 대신하지 않는다. 정본에서 허용한 동일
+code head의 기존 CI·증적 재사용은 그 조건을 확인해 기록한다.
 
-모든 PR review Cargo 실행은 기본 증분 빌드를 사용한다. 전체 회귀는 host마다 고정한
-`target/pr-review`를 재사용해 이전 review의 debug/release 산출물과 분리한다. Cargo가 소스·feature·compiler
-변경을 판별해 필요한 unit만 다시 빌드한다.
+일반 제출은 **검증을 완료한 Open PR**로 한다. Draft는 미완성 설계·WIP의 조기 논의처럼 특별한
+목적을 명시한 경우에만 사용하며, 에이전트는 작업지시자의 명시적 Draft 지시가 있어야 생성한다.
+단순한 PR 생성 승인, 번호 확보, CI 시작·대기 또는 필수 검증 실패·미완료는 Draft 예외 사유가 아니다.
+예외 Draft도 목적·미완료 항목·완료 계획을 본문에 적고 Ready 전환 전에 필수 검증을 모두 마친다.
+
+선택한 검증과 정본이 허용한 재사용·비해당 사유를 PR별 검증 기록에 남긴다.
+같은 checkout·target·Cargo cache를 공유하는 Cargo 계열 명령은 **반드시 하나가 끝난 뒤 다음
+명령을 실행**한다.
+
+로컬 검증 로그(`*.log`)는 저장소의 ignored `output/pr-review/<review-id>/logs/`에 기록한다.
+`/private/tmp`이나 추적되는 문서·asset 경로에 로그를 만들거나 커밋하지 않는다. PR review 문서에는
+실행 head·명령·결과와 필요한 증적의 위치를 요약한다. 검토 종료 뒤에는 **`output/pr-review` 전체**의
+불필요한 산출물을 점검·정리한다. 검토별 저장 경로가 정리 범위를 제한하지 않는다. 삭제 전 사용·소유·
+증적 보존 확인, 활성 작업·공유 캐시의 보존과 정리 결과 기록은
+[merge 후속 처리](post_merge.md#77-branch-worktree-검토-전용-target-정리)를 따른다.
+
+기존 회귀 실패는 [해결 PR의 선행 분석](../codex/docs_and_git_workflow.md#기존-이슈와-해결-pr의-선행-분석)으로
+원 이슈·원 PR·실제 통합 및 후속 보정의 원인·기대값·검증 범위를 먼저 확인한다. 실패 항목마다
+현재 base/head와 대조하며, 리베이스로 반영한 기능의 실패도 같은 순서로 조사한다.
+필수 근거 부족·미해결 항목을 `미검증`으로 기록한 채 PR을 제출하지 않는다. 승인된 작업 범위는
+근거 확보·원인 보정·실제 재검증까지 완료하며, 그 전에는 PR 생성·승인·통합을 보류한다.
+
+기존 렌더링 회귀가 실패하면 검사부터 바꾸지 않는다. **원본 입력 출력 보정 → 독립 한컴 Print PDF와
+Native/fresh WASM의 관련 모든 페이지에서 90% 이상 확인 → 독립 기대값에 따라 필요한 검사 변경**
+순서로 진행한다. 새 회귀의 추가도 같은 90% 선행 조건을 따른다. 실물 배치는 절대 px 좌표·고정 px
+영역으로 선택하지 않고 문단·줄·개체의 소유·순서·보존·포함·겹침 관계로 검사한다. 다만 완료된
+해당 페이지의 Native/fresh WASM `silhouette_raw_match_percent`가 각각98% 이상이고 독립 PDF와 직접 판독을 마쳤으면
+±2px 좌표 고정도 허용한다. 문서 전체98% 이상은 요구하지 않는다.
+[페이지별 px 회귀 조건](visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따른다. 상세 절차는
+[시각 선행 조건](visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)과
+[기존 기대값 재검토](visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)를 따른다.
+
+현재 브랜치에서 전쪽 Native/fresh WASM 최저 90% 이상·독립 PDF 쪽수 일치·직접 판독을
+확인한 문서는 실패 검사를 먼저 재검토한다. **쪽수 검사도 포함**하며, 잘못된 px·고정 영역·과거
+쪽수 핀은 문단·줄·개체 소속, 내용 순서·보존·포함·겹침 관계로 수정한다. 정확한 독립 기대값은
+유지하고 구현을 고친다. 이미 보정한 문서는 과거 base 미달이나 이슈 등록만으로 제거하지 않는다.
+
+전쪽 Native/fresh WASM 검증과 직접 판독을 마친 **현재 보정 대상 문서**는 기존 회귀가
+통과 중이어도 그 문서를 사용하는 절대 px 좌표·고정 영역 검사를 확인하고 관계 검사로
+바꾼다. 위 페이지별 98% 이상·직접 판독 조건을 충족한 쪽의 ±2px 좌표 검사는 유지·추가할 수 있다.
+대상 문서의 원본 경로를 따라 검사·공용 corpus 참조를 확인하며 다른 문서로 범위를
+확장하지 않는다. 기존 검사 함수 안에서 쪽 소속·내용 순서·누락·중복·포함·겹침을 보호하고,
+독립 PDF 쪽수 대조에는 대응 내용 보존을 함께 검사한다. 원본 글자모양·셀 속성에서 계산한
+크기와 실제 줄·개체의 포함 또는 비율 관계는 유지할 수 있다. 소스 단위를 px로 환산했다는
+이유만으로 이 원본 계약을 제거하지 않는다. 변경 보고에는 기존에 이미 관계 검사였던 범위,
+실제로 교체한 핀, 새로 보완한 내용 관계와 재사용한 시각 증거를 구분해 기록한다.
+
+미달 문서는 **같은 원본·같은 미해결 범위가 기존 이슈에 등록되어 있는지 먼저 확인**한다.
+등록되어 있으면 제거 전 검사 모듈 전체를 helper와 함께 `.rs.txt`로 보존하고, source commit·Git blob·
+SHA-256·이전/보존 경로·활성 유지/제거 목록·복원 조건을 기록한다. 입력·PDF·검증 근거를 해당 이슈에
+연결한 뒤 해당 회귀 함수·assertion·baseline/manifest 및 자동 수집 참조를 제거하고 남은 검증을 계속한다. 원본·PDF와 범위 밖의 정상 검사는 보존한다. 관련 이슈가 없을 때만
+별도 이슈를 등록하며, **개인의 작업 이슈를 공통 이관 대상으로 자동 지정하지 않는다.**
+상세 판정·기록은 [기존 기대값 재검토](visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)와
+[기존 이슈 확인·처리](visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관)를 따른다.
+
+**SHA를 고정한 `upstream/devel`에서 이미 90% 미만인 원본에 등록되어 있던 회귀 검사**가
+부적합한 경우에만
+[별도 이슈 이관](visual_fixture_evidence.md#90-미만-회귀-대상의-별도-이슈-이관)에 따라 기존 이슈 등록 여부를 먼저 확인하고
+해당 회귀 검사와 HWP/HWPX/PDF를 활성 검증 경로에서 제거·이관한다. 별도 이슈에서
+보정·90% 이상·확대 판독 후 관계형 회귀를 복원한다.
+같은 원본·독립 Print PDF의 base/head 비교로 기존 미달을 입증한다. 현재 수정으로 생긴 회귀는
+구현을 고치며, base가 미검증이면 이관 판정을 보류한다. 이관 범위와 현재 PR의 완료 범위를 구분한다.
+
+90% 이상이어도 [수식·간격 확대 판독](visual_fixture_evidence.md#90-통과-후-수식간격의-확대-판독)을
+수행한다. 변경 영역·알려진 차이·사용자 지적 영역을 같은 배율로 대조해 수식 모양·장평·미세 간격을
+확인하고, 결함이 보이면 전체 회귀를 반복하기 전에 출력 보정과 새 source의 시각 재검증을 진행한다.
+
+모든 PR review Cargo 실행은 기본 증분 빌드를 사용한다. macOS·Linux·Windows 모두 각 host의 **기본 rhwp
+작업공간 아래 `target/pr-review` 한 곳**을 Native·WASM·lint·회귀에 재사용한다. review worktree가 바뀌어도
+동일한 물리 경로를 절대 경로로 전달한다. `target/<issue>`, `target/pr-<번호>`, `target/pr-review/<issue>`나
+worktree 안의 별도 `target/pr-review`를 새로 만들지 않는다. Cargo가 소스 경로·feature·compiler 변경을 판별해
+필요한 unit만 다시 빌드하며, 캐시 재사용이 최종 head 검증을 생략하는 근거는 아니다.
 
 `target/pr-review`는 **이동하거나 이름을 바꾸지 않는다**. 일부 통합 테스트의 `CARGO_BIN_EXE_*` fallback은
 컴파일 당시 절대 target 경로를 가질 수 있어, 빌드 뒤 directory를 옮기면 실행 파일을 찾지 못한다. 최초
@@ -22,13 +94,96 @@ PR별 review 문서에 남긴다. 같은 checkout·target·Cargo cache를 공유
 Cargo 검증을 시작하기 전에는 target 하위 directory와 실행 중인 Cargo/Rust 작업을 확인한다.
 `target/pr-review`와 shared target/debug, target/release, target/release-test,
 target/wasm32-unknown-unknown, 다른 작업의 산출물은 삭제 대상으로 가정하지 않는다.
+다만 검증·후속 처리 종료 시에는 기본 작업공간의 `target/pr-review/debug` 전체를
+[종료 정리 절차](post_merge.md#771-검토-전용-target)에 따라 삭제한다. 실행 중인 빌드·테스트가
+없음을 확인하며, 공유 target 루트와 다른 profile은 재사용한다.
+
+디스크 공간이 부족하면 공유 빌드 캐시를 정리하기 전에 종료된 검증용 Chromium/Puppeteer
+임시 프로필의 삭제를 검토한다. 기본 후보는 24시간 이상 지난 항목이며 실행 중인 프로세스의
+경로·열린 파일 참조와 잠금 PID를 확인한 뒤 정확한 임시 경로만 정리한다. 현재 프로필·일반
+사용자 프로필·검증 증적은 보존하고 삭제 목록·확인 근거·전후 여유 공간을 로그에 남긴다.
+Linux Snap 경로와 상세 절차는 [디스크 공간 정리](../dev_environment_guide.md#디스크-공간이-부족할-때)를 따른다.
+
+`target/pr-review`의 종료된 오래된 증분 캐시도 디스크 정리 후보로 권장한다. 공유 target을
+사용하는 Cargo·rustc·wasm-pack·wasm-opt 작업이 모두 종료된 뒤 사용하지 않는 정확한
+`incremental` 하위 캐시 경로만 삭제한다. target 전체·프로필 디렉터리·실행 파일·`deps`·
+`.fingerprint`와 다른 작업의 산출물은 보존하고, 삭제 경로·확인 근거·전후 여유 공간을 기록한다.
+이 증분 캐시 정리와 검토 종료 후의 `target/pr-review/debug` 전체 삭제는 별개 절차다.
 
 ~~~bash
-find target -mindepth 1 -maxdepth 1 -type d -exec du -sh {} \;
+find "${rhwp_review_source_dir:?기본 작업공간 경로를 먼저 고정하세요}/target" -mindepth 1 -maxdepth 1 -type d -exec du -sh {} \;
 pgrep -alf '(^|/)(cargo|rustc|wasm-pack)( |$)' || true
 ~~~
 
+### 리베이스로 반영한 PR의 기능 보존 검증
+
+리베이스 뒤에는 현재 작업의 개선과 **새 기준에서 들어온 PR의 기능 유지·개선**을 함께 확인한다.
+충돌 없는 자동 적용도 포함한다. 작성자·reviewer·메인터너 보정·collaborator self PR에 같은 기준을 적용한다.
+
+1. 리베이스 전 base, 새 `upstream/devel`, 리베이스 후 후보의 SHA를 고정한다. 두 base 사이의
+   commit과 병합 PR을 확인하고, 각 PR의 본문·실제 diff·회귀 검사에서 제공하는 기능과 기대 동작을
+   파악한다. 충돌을 해소한 파일만으로 대상을 정하지 않는다.
+2. 들어온 PR별로 후보 변경과의 공통 호출 경로·데이터·조건·backend를 대조한다. 기존 재현 입력과
+   정상 대조군, 중요한 적용·비적용 경계를 골라 **새 devel과 리베이스 후 후보를 같은 조건에서 실행**한다.
+   원래 작업 대상의 검증도 유지한다. 기능상 영향이 없는 PR은 실제 diff·소비 경로를 근거로 비해당
+   사유를 적으며, 시험하지 않았다는 이유로 비해당 처리하지 않는다.
+3. 기능의 실제 소비 지점까지 확인한다. 해당 PR이 다루는 편집·저장·열기·Native ABI·브라우저 동작 등은
+   그 실행 경로에서 검증한다. 조판·렌더링은 같은 원본·독립 한컴 Print PDF의 전쪽 Native/fresh WASM
+   TSV와 review·overlay 직접 판독을 대조한다. 컴파일·전체 CI 성공이나 코드가 남아 있다는 사실만으로
+   기능 보존을 판정하지 않는다.
+4. **기존 기능이 유지되거나 개선되고 현재 작업의 필수 검증도 충족하면 다음 단계로 진행한다.**
+   기능·내용 보존·배치·출력 품질이 하나라도 후퇴하면 구현이나 충돌 해소를 보정하고, 영향받은
+   원래 작업과 반영 PR 양쪽을 새 후보에서 다시 검증한다. 다른 입력의 개선·평균값으로 후퇴를
+   상쇄하거나, 기존 검사·baseline·허용치를 완화해 통과시키지 않는다. 시각 판정은
+   [devel 대비 페이지별 하락 기준](../verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)과
+   90%·쪽수·내용 보존·확대 판독 조건도 함께 적용한다.
+5. 기존 PR 본문 또는 검토 기록에 `반영 PR/기능 → 새 base/후보 SHA → 입력·명령·실제 결과 →
+   유지/개선/후퇴/미검증 → 보정·재검증 결과`를 연결한다. 리베이스 전 실행은 출처 기록이며 새
+   후보의 검증으로 표시하지 않는다. 실행으로 확인한 후퇴와 필수 증거 부족을 구분하고, 어느 쪽이든
+   해소 전에는 준비 완료·새 PR 생성·승인·통합을 보류한다. 별도 보고서 파일을 중복 작성할 필요는 없다.
+
 ### 고정 review target과 실행 환경
+
+각 OS의 [빌드 병렬도 예시](../dev_environment_guide.md#빌드-병렬도)는 `CARGO_BUILD_JOBS`의
+시작값으로 **논리 CPU 수 − 2, 최소 1개**를 권장한다. 강제값은 아니며 Native·WASM·테스트
+컴파일의 메모리·동시 작업·빌드 성능에 맞게 조절한다. 테스트 실행 스레드와 구분하며,
+fresh WASM의 `codegen-units=16`도 환경에 따라 조절할 수 있는 권장값이다. WASM용 설정은
+해당 빌드 명령 범위에만 적용한다.
+
+먼저 **기본 작업공간의 저장소 루트에서**, review worktree로 이동하기 전에 절대 경로를 고정한다.
+이 변수는 같은 셸에서 이후 검증 전체에 유지한다. 이미 review worktree에 있다면 기본 작업공간으로 돌아가
+준비하며, 그 worktree의 `git rev-parse --show-toplevel`을 공용 cache의 기준으로 사용하지 않는다.
+
+macOS·Linux 및 POSIX 셸:
+
+```bash
+rhwp_review_source_dir="$(git rev-parse --show-toplevel)"
+rhwp_review_target_dir="${rhwp_review_source_dir}/target/pr-review"
+export CARGO_TARGET_DIR="$rhwp_review_target_dir"
+```
+
+PowerShell(운영체제와 무관하게 동일):
+
+```powershell
+$rhwpReviewSourceDir = (Get-Item -LiteralPath (git rev-parse --show-toplevel)).FullName
+$rhwpReviewTargetDir = Join-Path $rhwpReviewSourceDir 'target/pr-review'
+$env:CARGO_TARGET_DIR = $rhwpReviewTargetDir
+```
+
+Windows cmd에서는 기본 작업공간에서 `RHWP_SOURCE_DIR`를 절대 경로로 고정하고
+`RHWP_REVIEW_TARGET_DIR=%RHWP_SOURCE_DIR%\target\pr-review`를 유지한다. 대화형 cmd의 준비 예시는 다음과
+같으며 `.cmd` 파일에서는 `%R` 대신 `%%R`을 사용한다.
+
+```bat
+for /f "delims=" %R in ('git rev-parse --show-toplevel') do set "RHWP_SOURCE_DIR=%R"
+set "RHWP_REVIEW_TARGET_DIR=%RHWP_SOURCE_DIR%\target\pr-review"
+set "CARGO_TARGET_DIR=%RHWP_REVIEW_TARGET_DIR%"
+```
+
+모든 Cargo `--target-dir`와
+WASM의 `CARGO_TARGET_DIR`는 위에서 고정한 같은 경로를 사용한다. 명시한 `--target-dir`는 환경변수보다
+우선하므로 환경변수만 설정한 뒤 상대 target 옵션을 그대로 쓰지 않는다. 공유 cache를 쓰는 다른 Cargo
+작업이 있으면 종료·소유를 먼저 확인하고 순차로 실행한다. 별도 경로는 사용자 명시 지시가 있을 때만 쓴다.
 
 전체 Rust 회귀의 기본 명령은 다음과 같다. 같은 `target/pr-review`를 사용하는 Cargo 계열 명령은 반드시
 앞 명령의 종료를 확인한 뒤 실행한다.
@@ -37,24 +192,29 @@ pgrep -alf '(^|/)(cargo|rustc|wasm-pack)( |$)' || true
 `run-rust-test.mjs`도 이를 기본 적용한다. lockfile 자체를 의도적으로 바꾸는 의존성 갱신 작업만 별도
 검증에서 이 규칙을 벗어날 수 있다.
 
+새 검사는 기존 자동 수집·suite·Native 실행 경로에서 실제로 실행되는지 먼저 확인한다.
+`ci.yml`에 불필요한 개별 호출을 추가하지 않으며, 실행 누락으로 추가가 필요한 경우에는
+[CI 테스트 호출 추가 기준](../github_operations.md#531-ci-테스트-호출-추가-기준)을 따른다.
+
 `wasm-pack`은 Cargo build 전에 별도 metadata를 실행하므로, WASM 검증은 raw `wasm-pack build` 대신
 아래 wrapper를 사용한다. wrapper는 두 Cargo 호출 모두에 `--locked`를 적용한다.
 
 ```bash
-CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg
+CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" scripts/wasm-pack-locked.sh --target web --out-dir pkg
 ```
 
 반복 검증에는 macOS/Linux 셸에서 다음 alias를 사용할 수 있습니다.
 
 ```bash
-alias rhwp-wasm-build='CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg'
+alias rhwp-wasm-build='CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" scripts/wasm-pack-locked.sh --target web --out-dir pkg'
 rhwp-wasm-build
 ```
 
 Windows PowerShell에서는 native wrapper를 사용합니다.
 
 ```powershell
-$env:CARGO_TARGET_DIR = 'target\pr-review'
+if (-not $rhwpReviewTargetDir) { throw '기본 작업공간에서 공용 target 경로를 먼저 고정하세요' }
+$env:CARGO_TARGET_DIR = $rhwpReviewTargetDir
 .\scripts\wasm-pack-locked.ps1 --target web --out-dir pkg
 Remove-Item Env:CARGO_TARGET_DIR
 ```
@@ -64,7 +224,8 @@ Remove-Item Env:CARGO_TARGET_DIR
 
 ```bat
 doskey rhwp-wasm-build=scripts\wasm-pack-locked.cmd --target web --out-dir pkg $*
-set "CARGO_TARGET_DIR=target\pr-review"
+if not defined RHWP_REVIEW_TARGET_DIR exit /b 1
+set "CARGO_TARGET_DIR=%RHWP_REVIEW_TARGET_DIR%"
 rhwp-wasm-build
 set "CARGO_TARGET_DIR="
 ```
@@ -78,9 +239,35 @@ host의 논리 CPU·메모리·동시 작업을 확인한 뒤에만 `--test-thre
 ~~~bash
 cargo nextest run --locked \
   --cargo-profile release-test \
-  --target-dir target/pr-review \
+  --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" \
   --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 ~~~
+
+`cargo test --profile release-test --tests`는 이 전체 integration 회귀의 대체 명령이 아니다.
+unsharded libtest 경로는 nextest 우선순위, `--no-fail-fast`, 고정 review target 계약을 따르지
+않으므로 전체 integration 검증에는 반드시 위 `cargo nextest run --locked` 명령을 사용한다.
+`cargo test`는 이 문서가 정확한 test target 또는 Native Skia lib 범위를 지정한 focused 명령에만
+쓴다. 실수로 전체 `cargo test`를 시작했다면 중지하고, 그 실행을 검증 결과로 기록하지 않는다.
+
+### 정책 검사의 base 고정
+
+PR 제출·검토의 manifest 및 unit-tier 검사는 `--check`만 실행하지 않고 비교 base SHA를 함께
+전달한다. 단독 검사는 현재 정책 정합성을 확인하지만 PR base 대비 증가를 모두 검출하지 않는다.
+CI와 같은 비교 범위를 사용하도록 검증 전에 최신 대상 branch를 fetch하고 SHA를 고정한다.
+
+~~~bash
+git fetch upstream devel
+rhwp_review_base_sha="$(git rev-parse upstream/devel)"
+git rev-parse "$rhwp_review_base_sha" HEAD
+~~~
+
+아래 정책 명령은 같은 셸에서 이 준비 후 실행한다. 이미 열린 PR의 base가 다르면 실제 PR base
+SHA를 fetch해 사용하고, 검증 기록에 base/head SHA를 남긴다. CI의 PR base가 전진했으면 새 base로
+정책 비교를 다시 수행한다. 단순 base 확인을 위해 source branch를 merge/rebase하지 않는다.
+manifest `--check`는 아래처럼 파생 상태를 준비한 review worktree에서만 실행하고, unit-tier는
+무생성 검사다. 기여자는 [CONTRIBUTING의 worktree 준비](../../../CONTRIBUTING.md#rust-검증-worktree-준비와-실행)에서
+고정한 `rhwp_review_base_sha`를 그대로 사용한다. 정책 실패를 감추기 위해 비교 base를 HEAD로
+바꾸거나 기준선·테스트 assertion을 완화하지 않는다.
 
 ### integration test source 추가와 자동 sharding
 
@@ -94,9 +281,9 @@ cargo nextest run --locked \
 
 ~~~bash
 node scripts/rust-test-suite-manifest.mjs --prepare
-node scripts/rust-test-suite-manifest.mjs --check
+node scripts/rust-test-suite-manifest.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
 node scripts/run-rust-test.mjs issue_1234_short_description \
-  -- --cargo-profile release-test --target-dir target/pr-review
+  -- --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
 ~~~
 
 `tests/generated/*.rs`, unit-tier inventory, manifest는 직접 편집하거나 PR에 stage하지 않는다. Cargo generated
@@ -104,7 +291,7 @@ block은 통합 불가 예외 target이 바뀐 메인터너 전용 PR에서만 `
 검증이 끝나면 이 파생 변경은 review worktree에서 복원한다. `--prepare`가 이름 변경·삭제와 신규 source를
 함께 처리하므로 일반 PR에 `--generate`·`--sync`·`--rebalance` 결과를 포함하지 않는다. 기여자가
 PR 전 검증으로 실행할 명령은 `node --test scripts/tests/rust-test-suite-manifest.test.mjs`와 변경 범위의
-Rust test이며, source-side `#[cfg(test)]`를 바꾼 경우에는 `node scripts/rust-unit-test-tiers.mjs --check`도
+Rust test이며, source-side `#[cfg(test)]`를 바꾼 경우에는 `node scripts/rust-unit-test-tiers.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"`도
 실행한다. 이 unit-tier 검사는 파생 파일을 만들지 않는다. 반면 manifest 파생 파일 일치 검사는 review
 worktree와 CI의 책임이다. 경로·crate-root·feature-gated 의존성이 탐지된 source는 기본적으로 singleton
 exception으로 보존한다. module harness 호환성을 실제 실행으로 확인한 경우에만 메인터너가
@@ -118,7 +305,7 @@ support 항목을 기준선으로 관리한다.
 
 ~~~bash
 node --test scripts/tests/rust-unit-test-tiers.test.mjs
-node scripts/rust-unit-test-tiers.mjs --check
+node scripts/rust-unit-test-tiers.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
 ~~~
 
 PR CI는 `github.event.pull_request.base.sha`의 integration manifest를 읽어 현재 source와
@@ -153,11 +340,16 @@ renderer/layout 변경을 한컴 기준 PDF와 비교할 때는 비교 하네스
 명령을 먼저 쓸 수 있다.
 
 ~~~bash
-cargo build --profile release-test --target-dir target/pr-review
-RHWP_BIN=target/pr-review/release-test/rhwp \
+cargo build --profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
+RHWP_BIN="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}/release-test/rhwp" \
   venv/bin/python tools/fidelity_compare/fidelity_compare.py <키> <시작쪽> <끝쪽> \
-  --out-dir /tmp/rhwp-fidelity-<키>
+  --out-dir output/pr-review/<review-id>/fidelity-<키>
 ~~~
+
+위 `--target-dir`의 공용 `target/pr-review`는 **Cargo 컴파일 캐시**이며 모든 검토에서 재사용한다.
+반면 `--out-dir output/pr-review/<review-id>/fidelity-<키>`는 **해당 실행의 비교 증적 저장 위치**다.
+TSV·PNG·보고서를 검토별로 구분하므로 공용 빌드 캐시 재사용과 충돌하지 않는다. 증적을 나누기 위해
+별도 Cargo target을 만들지 않으며, 서로 다른 head·입력·실행의 증적을 같은 경로에 덮어쓰지 않는다.
 
 `cargo build`는 **컴파일 전용 준비 단계**이며 테스트를 실행하지 않는다. 시각 보정 중에는 이 명령으로
 빠르게 최신 SVG를 확인하되, code head가 바뀐 뒤 PR 검증을 완료하려면 위의 전체 `cargo nextest run
@@ -183,10 +375,12 @@ target을 재사용한 warm 실행은 6분 11초(build 2.74초, test 359.563초)
 이 host의 4 thread 측정값은 역사적 증적이며, 다른 Windows host의 기본값이나 상한이 아니다.
 
 ~~~powershell
-Set-Location 'C:\\Users\\admin\\Desktop\\rhwp\\rhwp'
+# 준비한 같은 셸에서 review worktree의 루트로 이동한 뒤 실행한다.
+if (-not $rhwpReviewTargetDir) { throw '공용 target 준비가 필요합니다' }
 cargo nextest run `
+  --locked `
   --cargo-profile release-test `
-  --target-dir target/pr-review `
+  --target-dir $rhwpReviewTargetDir `
   --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 ~~~
 
@@ -250,17 +444,38 @@ devel 위에 PR head를 합친 결과 tree와 conflict를 확인한다. conflict
 
 ## 4.3 변경 범위별 기본 검증
 
-**Rust 를 한 줄이라도 바꾼 PR 은 아래가 실패하면 생성하지 않는다.**
+**Rust source 또는 Rust test/baseline helper를 한 줄이라도 바꾼 PR은 아래 lint 묶음이 실패하면 생성하지
+않는다.** 테스트 전용 변경이나 기존 baseline 분할도 예외가 아니다. #6390처럼 test/baseline만
+바꾼 경우에 `fmt`와 focused nextest만 실행하고 Clippy를 GitHub CI에 넘기는 해석이 가능했던 것이
+기존 절차의 결함이었다.
 
 ```bash
+# PR review worktree에서만 실행: 파생 suite는 검증 뒤 stage하지 않는다.
+node scripts/rust-test-suite-manifest.mjs --prepare
 cargo fmt --all
 cargo fmt --all -- --check
-node scripts/rust-test-suite-manifest.mjs --check
-node scripts/rust-unit-test-tiers.mjs --check
+cargo clippy --locked --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" -- -D warnings
+cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown \
+  --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" -- -D warnings
+cargo build --locked --workspace --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
+cargo clippy --locked --workspace --all-targets --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" -- -D warnings
+node scripts/rust-test-suite-manifest.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
 ```
 
-CI `Lint (fmt, clippy, WASM check)` 의 Format check 단계는
-`cargo fmt --all -- --check` 이다. `cargo fmt --check` 만 실행하면 CI 가 실패한다.
+이 묶음은 CI `Lint (fmt, clippy, WASM check)`의 Format check, native root Clippy, WASM32
+Clippy, workspace all-target Clippy와 대응한다. CI에만 있는 Node/Python 계약 검사는 변경 범위가
+해당할 때 아래 표와 workflow 전용 절차에 따라 추가한다. `cargo fmt --check` 또는 native
+`cargo clippy` 하나만 실행하면 각각 Format check 또는 WASM·workspace lint 오류를 놓친다.
+
+`src/**` 또는 `crates/*/src/**`의 `#[cfg(test)]`를 변경했을 때만 다음 policy 검사를 위 묶음 뒤에
+추가한다. 이 검사는 파생 파일을 만들지 않는다.
+
+```bash
+node scripts/rust-unit-test-tiers.mjs --check --base-ref "${rhwp_review_base_sha:?검증할 PR base SHA를 먼저 고정하세요}"
+```
+
+`--prepare`가 만든 `tests/generated/`와 `tests/suites/manifest.json`은 검증 증적일 뿐 source PR에
+stage하지 않는다. 검증 뒤 review worktree에서만 복원한다.
 
 `PR 준비` 지시는 이 절에서 해당 변경 범위에 지정한 검증을 실제로 실행하는 승인이다. PR 본문 초안,
 review 문서, 오늘할일만 작성하고 이 표의 필수 회귀 게이트를 남겨 두면 준비 완료로 보고하지 않는다.
@@ -270,12 +485,67 @@ remote push, PR 생성, ready 전환, merge 승인과는 별개다.
 | 변경 범위 | 기본 검증 |
 | --- | --- |
 | mydocs만 변경 | git diff --check, 문서 경로·링크·변경 범위 확인. Cargo 생략 |
-| Rust parser/model/CLI | focused test, release-test 전체, fmt, clippy. 단, 4.3.0의 검토 재사용 조건이면 focused test와 GitHub 전체 CI 근거 |
+| Rust parser/model/CLI | 모든 Rust lint 묶음, focused test, release-test 전체. 단, 4.3.0의 검토 재사용 조건이면 focused test와 GitHub 전체 CI 근거 |
 | renderer/layout/typeset/WASM | focused test, release-test 전체, Native Skia 3종, wasm-pack build, 시각 증적. 단, 4.3.0의 검토 재사용 조건이면 focused test, WASM·시각 증적과 GitHub 전체 CI 근거 |
 | rhwp-studio만 변경 | TypeScript 검사, npm test, 실제 browser 동작 |
 | npm/editor public API·transport·type | 아래 package 검증 |
 | CI workflow | [GitHub 저장소 운영 매뉴얼](../github_operations.md)의 변경 등급에 따른 workflow 구문·정책 테스트·required check 영향·최신 GitHub Actions 결과 |
-| 기존 golden/baseline/fixture | 관련 focused test, snapshot 결정성, 최신 PR head CI |
+| Rust test/baseline helper | 모든 Rust lint 묶음, 관련 focused test, snapshot 결정성, 최신 PR head CI |
+| 기존 golden/baseline/fixture data만 변경 | 관련 focused test, snapshot 결정성, 최신 PR head CI. Rust helper도 함께 바꾸면 바로 위 행의 lint 묶음을 추가 |
+
+렌더링 baseline·golden·래칫 허용치 변경은 위 테스트 통과만으로 수용하지 않는다.
+[조판 규칙과 기준값 변경 증거](visual_fixture_evidence.md#조판-규칙과-기준값-변경-증거)를 확인하고,
+역할에 관계없이 [공통 준수 검토](intake_and_review.md#27-조판-원칙-준수-검토)에 근거와 판정을 남긴다.
+
+분할·이어받기 변경은 [공통 입증 절차](../../../AGENTS.md#분할이어받기-변경의-입증)의 작은 경계
+검사와 영향 페이지 Visual Sweep을 먼저 수행해 수정 방향을 확인한다. 그 뒤 위 범위별 필수 검증을
+완료한다. 이 순서는 필수 검사를 줄이거나 4.3.0의 exact head CI 재사용 조건을 바꾸지 않는다.
+Native 선행 진단과 최종 fresh WASM 출력은 구분하고, 보정 코드가 바뀌면 영향 경계·시각 증적도 갱신한다.
+
+공통 조판·paint·font/resource 또는 실제 출력 소비 경로를 바꾸면
+[출력 백엔드 소비 경로 검증](../verification/renderer_backend_verification.md)에 따라 영향받는
+Canvas·SVG·Native PNG 등의 실제 산출물과 정상 대조군을 추가로 확인한다. 기본 PNG 경로의
+Visual Sweep은 Native Skia와 fresh WASM Canvas에서 직접 출력한다. 별도로 선택한 SVG 진단
+경로의 래스터 PNG는 Canvas·Native Skia의 실제 소비 경로 검증을 대신하지 않는다.
+공통 함수 이후 context·font 선택·합성 경로도 추적하며, 모든 backend 전수 검증 대신 변경한 값의
+실제 소비 경로로 범위를 정한다. 기존 renderer baseline의 report-only 결과와 필수 게이트를 구분한다.
+
+archive label 또는 trusted post-merge reuse topology를 바꾸면, 일반 workflow 계약 검사에 더해
+아래 두 묶음을 PR 전에 모두 실행한다. Studio E2E나 OS resource-limit처럼 이 변경 범위와
+무관한 Node 테스트까지 glob으로 섞지 않는다.
+
+~~~bash
+node --test \
+  scripts/tests/ci-impact-classifier.test.cjs \
+  scripts/tests/ci-impact-policy.test.cjs \
+  scripts/tests/verify-trusted-postmerge-ci-reuse.test.mjs \
+  scripts/tests/verify-trusted-postmerge-ci-reuse-squash.test.mjs
+python3 -m unittest discover -s scripts/tests -p 'test_*workflow.py'
+~~~
+
+이 묶음은 archive consumer, CI impact, CodeQL, adapter, proptest, reusable workflow의
+상호 계약을 함께 검사한다. 따라서 새 archive label이나 reusable input을 추가한 PR은
+GitHub CI에서가 아니라 PR을 열기 전에 누락된 consumer를 발견해야 한다.
+
+### 4.3.0.0 상수·정책·호출 경로 변경의 동작 기반 회귀 검증
+
+상수의 출처, 예산·축출 정책, fallback 또는 bridge·setter 같은 실제 호출 경로를 변경할 때는
+소스 문자열·정규식 검사만으로 기능 검증을 대체하지 않는다. 소스 가드는 선언·배선의 보조 계약이며,
+핵심 동작은 변경된 제품 진입점을 직접 호출해 확인한다. 테스트 안에 제품 구현을 복사한 대역만
+실행하거나 입력 상수 자체의 순서를 검사한 결과를 제품 경로 검증으로 기록하지 않는다.
+
+- 입력값이 바뀌면 결과가 계약대로 달라지는지 검사한다. 예산은 서로 다른 정상 상한에서
+  실제 execute/undo/redo와 축출·최근 참조 보존·복원 결과를 확인한다.
+- 조회 불가·구형 API fallback, 경계값, 실패 뒤 상태와 기존 정상 동작 보존을 함께 확인한다.
+  대역을 사용한 범위와 실제 WASM·브라우저를 실행한 범위를 구분한다.
+- 기존 결함 또는 최소 잘못된 구현으로 되돌리면 해당 검사가 실패하는 음성 대조를 남긴다.
+  격리된 임시 사본이나 메모리 내 변이를 사용하고 사용자의 작업 트리를 되돌리지 않는다.
+- 기존 source guard를 삭제·대체할 때는 새 동작 검사가 같은 실패 계급을 실제로 검출함을 확인한다.
+  CI가 녹색이라는 이유만으로 삭제 전 보호 범위가 유지됐다고 추정하지 않는다.
+- 예: 스냅샷 상한 100·50·조회 불가 fallback에서 제품 history 경로를 실행해 축출과 복원을 검사한다.
+  폰트 체인 수정은 파서만이 아니라 실제 치환 함수 또는 설치된 canvas font setter의 출력 순서를 검사한다.
+- 명령, 정상/음성 대조 결과, 미실행 범위는 테스트가 완료된 뒤 개별 PR review에 기록한다.
+  실행 전 문서는 계획 또는 잠정 검토로만 취급하며 완료·승인 결과를 미리 작성하지 않는다.
 
 ### 4.3.0 PR 검토의 GitHub Full CI 재사용
 
@@ -287,10 +557,13 @@ GitHub Full CI가 완료된 code head를 maintainer가 재검토할 때는
 
 - 이 예외는 source·test·fixture·workflow·baseline·asset 보정이 전혀 없고, current-base merge가
   clean 또는 `mydocs/` 한정 bridge인 경우에만 사용한다.
+- maintainer가 Rust source·test·baseline helper 보정을 새 code head에 추가한 경우에는 이전 녹색 CI를
+  lint 생략 근거로 재사용하지 않는다. 위 Rust lint 묶음과 변경 범위 검증을 새 head에서 먼저
+  끝내고 PR을 만든다.
 - focused test, `git diff --check`, 변경 문서 링크 검사, renderer의 실제 WASM/브라우저 시각 검증은
   생략하지 않는다.
-- Docker 등 표준 실행 환경이 없어서 host fallback을 썼다면, 표준 경로를 통과했다고 쓰지 않고
-  대체 명령과 환경 부재를 review 문서에 함께 기록한다.
+- Docker 사용 여부는 필수 검증의 생략 조건이 아니다. 아래 [환경별 WASM 검증](#환경에-따른-fresh-wasm-검증)에서
+  실제 사용 가능한 경로를 선택하고 명령·환경·산출물과 결과를 기록한다.
 - candidate SHA와 녹색 run, 생략한 명령과 사유를 PR review 문서에 적고, 최신 trailing 문서 head의
   aggregate 상태는 merge 직전에 다시 확인한다.
 
@@ -316,7 +589,7 @@ merge 판단에서는 다음 경계를 적용한다.
 
 신규 CLI 통합 테스트는 `env!("CARGO_BIN_EXE_rhwp")`를 실행 경로로 직접 사용하지 않는다. nextest archive가
 런타임에 주입하는 `CARGO_BIN_EXE_rhwp`를 먼저 읽고 컴파일타임 값을 fallback으로 쓰는 기존 `rhwp_bin()`
-패턴을 따른다. 근거와 재현 조건은 [#3289 CI 보고서](../../report/task_m100_3289_report.md#멀티러너-거버넌스-운영-규칙)에
+패턴을 따른다. 근거와 재현 조건은 [#3289 CI 보고서](../../report/archives/task_m100_3289_report.md#멀티러너-거버넌스-운영-규칙)에
 기록되어 있다.
 
 일반 Rust 검증 예시는 다음과 같다. 명령은 같은 checkout에서 동시에 실행하지 않는다.
@@ -324,7 +597,7 @@ merge 판단에서는 다음 경계를 적용한다.
 ~~~bash
 cargo nextest run --locked \
   --cargo-profile release-test \
-  --target-dir target/pr-review \
+  --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" \
   --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 cargo fmt --all -- --check
 cargo clippy --locked --all-targets -- -D warnings
@@ -333,14 +606,15 @@ cargo clippy --locked --all-targets -- -D warnings
 renderer 영향 PR의 Native Skia 공식 회귀 범위는 다음 3종이다.
 
 ~~~bash
-cargo test --locked --profile release-test --target-dir target/pr-review --features native-skia --lib
-node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \\
-  --cargo-profile release-test --target-dir target/pr-review --features native-skia
-node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \\
-  --cargo-profile release-test --target-dir target/pr-review --features native-skia
-# 최초 한 번의 .env.docker 준비는 개발 환경 안내를 따른다.
-docker compose --env-file .env.docker run --rm wasm
+cargo test --locked --profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia --lib
+node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \
+  --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia
+node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \
+  --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia
 ~~~
+
+fresh WASM은 아래 환경별 경로 중 하나를 완료한다. Docker 설치 여부와 관계없이 Native Skia 3종과
+WASM·브라우저·시각 검증의 적용 범위는 동일하다.
 
 `native-skia`가 Cargo feature이고 `skia`는 feature가 아니다. 따라서
 `cargo test --features native-skia skia --lib`의 `skia`는 test filter가 되어 전체 회귀를 실행하지 않는다.
@@ -349,25 +623,206 @@ libtest 동시성을 현재 host에 맞춰 조정해야 하면 Cargo 옵션 뒤�
 
 개별 Rust 통합 fixture는 `tests/generated/regression_suite_*.rs`에 묶이므로, 이전처럼 파일명을
 `cargo test --test`에 직접 넘기지 않는다. `run-rust-test.mjs`가 manifest에서 실제 suite와 테스트
-필터를 해석한다. Docker 표준 WASM 경로가 없는 호스트에서는 개발 환경 안내의 `--no-opt` 진단 경로를
-사용하고, 검토 기록에 Docker 부재와 대체 명령을 함께 남긴다.
+필터를 해석한다.
 
-## 4.3.1 새 HWP/HWPX fixture의 baseline 등록 — IR sweep + overflow-cell 원장
+### 환경에 따른 fresh WASM 검증
+
+**Docker는 필수 설치 조건이 아니다.** Docker·Compose 명령과 daemon 접근이 정상인 환경에서는
+컨테이너 경로를, Docker 미설치·daemon 접근 불가·컨테이너 실행 제한 환경에서는 호스트 경로를 쓴다.
+Docker 설치·권한·daemon 설정 변경을 검증의 선행 의무로 만들지 않는다.
+
+| 환경 | 수행할 빌드 | 공용 캐시 |
+| --- | --- | --- |
+| Docker에서 공용 target 마운트·읽기/쓰기·hard-link 가능 | Compose `wasm` 서비스에 호스트 공용 target을 연결해 최적화 포함 빌드 | 호스트의 동일한 물리적 `target/pr-review` 재사용 |
+| Docker 실행 불가 | 해당 OS의 locked wrapper로 호스트에서 최적화 포함 빌드 | 기본 작업공간의 고정 `target/pr-review` 절대 경로 재사용 |
+| 원인 분리를 위한 `--no-opt` 실행 | 진단 결과로만 기록; 제출 전에는 위 두 경로 중 하나의 최적화 포함 빌드를 완료 | 해당 실행 환경의 기존 캐시 재사용 |
+
+Docker 사용 가능 여부는 `docker compose version`과 `docker info`의 성공으로 확인한다. CLI만
+설치되어 있거나 daemon 권한이 없는 상태를 사용 가능한 환경으로 기록하지 않는다. 호스트 경로는
+Rust의 `wasm32-unknown-unknown` target과 `wasm-pack`을 준비하며, 버전·옵션과 최적화 종료 결과를
+기록한다. 도구 준비·OS별 설명은 [개발 환경 가이드](../dev_environment_guide.md#wasm-빌드)를 따른다.
+
+**A. Docker에서 공용 캐시를 사용할 수 있는 환경 — Linux 등 POSIX 셸의 저장소 루트에서 실행:**
+
+~~~bash
+if [ ! -f .env.docker ]; then cp .env.docker.example .env.docker; fi
+mkdir -p "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
+docker compose --env-file .env.docker run --rm \
+  --user "$(id -u):$(id -g)" \
+  --env HOST_UID="$(id -u)" --env HOST_GID="$(id -g)" \
+  --env CARGO_TARGET_DIR=/review-target \
+  --volume "${rhwp_review_target_dir}:/review-target" wasm
+~~~
+
+컨테이너의 `/review-target`는 **호스트의 기존 `target/pr-review`를 가리키는 마운트 경로**이며
+별도 target이나 캐시가 아니다. 호스트 UID/GID로 실행해 공용 캐시의 소유권도 유지한다.
+Compose 기본 설정의 `/build-target` named volume은 별도 캐시이므로 로컬 PR 검증에서는 위
+명령으로 `CARGO_TARGET_DIR`을 덮어쓴다. 옵션 없는 `docker compose ... run --rm wasm`을
+공용 캐시 재사용 명령으로 기록하지 않는다.
+
+Windows Docker Desktop 등의 bind mount에서 Cargo hard-link나 같은 공용 target 접근을
+지원하지 않으면 **아래 호스트 경로를 선택한다.** 별도 named volume으로 캐시를 분리하거나
+공유 target을 비우거나 옮겨 우회하지 않는다. 호스트와 컨테이너의 Cargo 작업도 동시에 실행하지 않는다.
+
+**B. Docker 실행 불가 환경 — Linux/macOS의 저장소 루트에서 실행:**
+
+~~~bash
+CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" \
+  scripts/wasm-pack-locked.sh --target web --out-dir pkg
+~~~
+
+**B. Docker 실행 불가 환경 — Windows PowerShell의 저장소 루트에서 실행:**
+
+~~~powershell
+if (-not $rhwpReviewTargetDir) { throw '기본 작업공간에서 공용 target 경로를 먼저 고정하세요' }
+$rhwpPreviousTargetDir = $env:CARGO_TARGET_DIR
+try {
+    $env:CARGO_TARGET_DIR = $rhwpReviewTargetDir
+    .\scripts\wasm-pack-locked.ps1 --target web --out-dir pkg
+    if ($LASTEXITCODE -ne 0) { throw 'fresh WASM 빌드 실패' }
+    foreach ($artifact in @('rhwp.js', 'rhwp_bg.wasm', 'rhwp.d.ts', 'rhwp_bg.wasm.d.ts')) {
+        Copy-Item "pkg/$artifact" "rhwp-studio/public/$artifact" -Force -ErrorAction Stop
+    }
+} finally {
+    if ($null -eq $rhwpPreviousTargetDir) {
+        Remove-Item Env:CARGO_TARGET_DIR -ErrorAction SilentlyContinue
+    } else {
+        $env:CARGO_TARGET_DIR = $rhwpPreviousTargetDir
+    }
+}
+~~~
+
+어느 경로든 종료 코드·source SHA와 `pkg/`의 실제 산출물을 확인한다. Studio가 읽는
+`rhwp-studio/public/`의 JS·WASM과 해시가 일치하는지 확인하고, 같은 fresh package로 해당
+브라우저 동작·Native/fresh WASM Visual Sweep을 완료한다. 컨테이너 빌드 성공만으로 이 검증을
+대신하지 않는다. 호스트에서 최적화까지 성공한 빌드도 정식 로컬 검증으로 인정하며 Docker를
+추가 실행할 필요는 없다. `--no-opt` 결과나 과거 package를 최종 fresh 산출물로 제출하지 않는다.
+최적화 실패 시 잔재·실행 프로세스·도구 환경을 조사해 보정한 뒤 다시 실행하며 검증을 생략하지 않는다.
+
+## 4.3.1 새 HWP/HWPX fixture의 baseline 등록 — 코퍼스 래칫 일곱
 
 samples 아래 HWP 또는 HWPX fixture를 새로 추가·교체·이동하면 renderer 변경 여부와 무관하게 PR 생성 또는
-draft 해제 전에 **두 baseline 절차**를 수행한다: ① IR field sweep(아래), ② overflow-cell 원장(이 절 말미).
+draft 해제 전에 코퍼스 래칫을 확인한다. 래칫은 일곱이고, 그중 **다섯은 `samples/` 를 스스로 훑기 때문에
+파일을 놓는 순간 "신규 발생(baseline 없음)" 으로 실패한다.**
+
+| 래칫 | fixture | 대상 선정 | 새 sample 이 즉시 걸리나 |
+| --- | --- | --- | --- |
+| `ir_field_sweep_baseline` | `tests/fixtures/ir_field_sweep_baseline.tsv` | `samples/` 전수 | **예** |
+| `overflow_cell_baseline` | `tests/fixtures/overflow_cell_baseline.tsv` | `samples/` 전수 | **예** |
+| `off_canvas_baseline` | `tests/fixtures/off_canvas_baseline.tsv` | `samples/` 전수 | **예** |
+| `text_overlap_baseline` | `tests/fixtures/text_overlap_baseline.tsv` | `samples/` 전수 | **예** |
+| `body_overflow_baseline` | `tests/fixtures/body_overflow_baseline.tsv` | `samples/` 전수 | **예** |
+| `oracle_page_count_baseline` | `tests/fixtures/oracle_page_count_baseline.tsv` | 그 TSV 의 행만 순회 | 아니오 (아래 참조) |
+| `clipping_baseline` | `tests/fixtures/clipping_baseline.tsv` | `tests/fixtures/render_page_controlset.tsv` | 아니오 (아래 참조) |
+
+다섯을 한 번에 돌리는 필터다. `oracle_page_count` 도 함께 걸어 두면 쪽수 회귀를 같이 본다.
+
+~~~bash
+cargo nextest run --locked --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --tests --no-fail-fast -E \
+ 'test(/ir_field_sweep_does_not_regress|overflow_cell_lines_do_not_grow|off_canvas_does_not_grow|text_overlaps_do_not_grow|body_overflow_does_not_grow|oracle_page_count/)'
+~~~
+
+> ⚠ **`clipping_gate.py` 는 클론만으로는 아무것도 검사하지 못한다.**
+> `render_page_controlset.tsv` 의 92개 행이 모두 저장소 밖 문서를 가리키므로 실행하면
+> `ERR/누락=92 baseline없음=92 회귀=0` 으로 **exit 0** 이 된다. 이 exit 0 은
+> "이상 없음" 이 아니라 **"검사 대상 0"** 이다 — 게이트 통과로 적지 말고, 검사하지
+> 못했다는 사실을 그대로 적는다. 그 문서들이 있는 환경에서만 의미가 있다.
+>
+> ~~~bash
+> python tools/clipping_gate.py --check tests/fixtures/clipping_baseline.tsv \
+>   --exe "${rhwp_review_target_dir:?공용 target 준비가 필요합니다}/release/rhwp"
+> # 출력 마지막 줄의 `ERR/누락` 과 `baseline없음` 을 반드시 읽는다.
+> ~~~
+
+> ⚠ **IR sweep 과 overflow-cell 둘만 돌리고 "게이트 통과" 로 판단하지 않는다.**
+> `off_canvas` 와 `text_overlap` 은 `samples/` 를 같은 방식으로 훑으므로 새 fixture 가
+> 0 이 아닌 값을 가지면 반드시 실패한다. 로컬에서 둘만 확인하고 올렸다가 CI 에서 그 둘에
+> 걸린 사례가 있다(PR #6804 · #6796).
+
+### 신규 행은 "내 수정 탓인가" 부터 가른다
+
+새 fixture 가 0 이 아닌 값을 갖는다고 곧바로 baseline 에 싣지 않는다. **그 수정이 없는
+빌드를 대조군으로 같은 fixture 를 다시 재서**, 값이 수정 때문에 생긴 것인지 문서 고유의
+것인지 먼저 가른다. 두 값이 같으면 fixture 가 코퍼스에 처음 들어와 래칫이 켜진 것이고,
+수정 후가 더 크면 회귀이므로 **원인을 고친다**.
+
+- `rhwp layout-anomaly <문서> --json` 의 `offCanvasCount` · `textOverlapCount` 가 곧
+  그 두 원장의 값이다. **0 이면 행을 만들지 않는다.**
+- 기존 문서의 수치 **증가**는 회귀다 — baseline 으로 숨기지 않는다.
+- 감소·해소는 통과다. 다만 브랜치 base 가 `devel` 보다 뒤처져 있으면 그 수치가 devel 에서도
+  같다는 보장이 없으므로, **리베이스 없이 감소분으로 래칫을 조이지 않는다.** 실측만 PR 에 적는다.
+- 행을 추가·갱신하면 문서 경로·SHA-256·수치·판정 근거를 review 문서에 적는다.
+
+### `samples/` 를 훑는 다섯의 dump 재생성
+
+`off_canvas`·`overflow_cell`·`text_overlap`·`body_overflow` 는 16개 partition test 가 병렬로 dump 를 쓰므로,
+지정한 경로가 아니라 `<경로>.part00-of16` 부터 `.part15-of16` 까지를 이어 붙여 비교한다.
+파일 안의 행 순서는 판정에 영향이 없다(래칫이 경로→건수 map 으로 읽는다).
+
+| 래칫 | dump 환경변수 |
+| --- | --- |
+| `ir_field_sweep_baseline` | `RHWP_IR_SWEEP_DUMP` (상세는 `RHWP_IR_SWEEP_DETAIL`) |
+| `overflow_cell_baseline` | `RHWP_OVERFLOW_CELL_DUMP` |
+| `off_canvas_baseline` | `RHWP_OFF_CANVAS_DUMP` |
+| `text_overlap_baseline` | `RHWP_TEXT_OVERLAP_DUMP` |
+| `body_overflow_baseline` | `RHWP_BODY_OVERFLOW_DUMP` |
+
+### 정답지 PDF 를 함께 넣었다면 — `oracle_page_count_baseline`
+
+이 래칫은 `samples/` 를 훑지 않고 **자기 TSV 에 이미 있는 행만** 순회한다. 따라서
+`pdf/` 에 한/글 정답지를 새로 넣어도 그 문서는 자동으로 쪽수 축의 보호를 받지 못한다.
+정답지를 추가했으면 픽스처를 재생성해 그 문서를 원장에 넣는다.
+
+~~~bash
+python tools/oracle_page_count/regenerate.py --rhwp "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}/release-test/rhwp.exe"
+~~~
+
+모아 찍기(`printMethod` 4·5) 문서는 한/글이 한 장에 여러 쪽을 실으므로 이 축의 대상이
+아니다 — 재생성 단계에서 제외된다. `rhwp info --json` 의 `printMethodImpliesNup` 으로 확인한다.
+
+### 새 sample 보안 검사 입력도 별도로 전달한다
+
+위 여섯 layout/시각 래칫을 통과했다고 새 문서의 보안 코퍼스 검사까지 완료한 것은 아니다.
+`security_corpus_regression::new_sample_documents_are_clean_across_all_three_detectors`는
+`RHWP_SECURITY_SWEEP_SAMPLES_JSON`으로 전달한 문서를 검사한다. 환경변수 없이 전체 회귀를
+실행한 결과만으로 새 문서의 hidden text·prompt injection·unicode deception 검사 통과를
+주장하지 않는다. 입력 없이 반환된 테스트의 성공과 실제 문서 검사를 구분한다.
+
+검토 base 대비 `samples/`의 추가·복사·수정·이동 문서를 확인하고, 해당 HWP/HWPX/HML의
+현재 경로를 JSON 배열로 전달한다. 검증 중에는 아직 커밋하지 않은 이 작업 소유 fixture도 목록에 포함한다.
+수용 판정 전에는 [공통 입력 커밋 확인](intake_and_review.md#28-검증-입력-커밋-확인)에 따라 해당 파일을
+검토 대상 commit에 포함하고 실제 검증한 내용과 동일함을 확인한다. 검증 중 입력 허용을 미커밋 상태의 수용으로 해석하지 않는다.
+아래 경로는 예시이므로 실제 검토 대상 전체로 교체한다. 공백·한글이 있는 경로도 JSON 문자열로
+보존하며 셸 공백 분할로 목록을 만들지 않는다.
+
+~~~bash
+RHWP_SECURITY_SWEEP_SAMPLES_JSON='["samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx"]' \
+  cargo nextest run --locked --cargo-profile release-test \
+  --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --tests --no-fail-fast \
+  -E 'test(/security_corpus_regression/)'
+~~~
+
+- 대상이 없으면 `신규/변경 sample 없음: 해당 검사 입력 대상 없음`으로 기록한다. 빈 목록이나
+  환경변수 누락을 새 문서 검사 통과 증적으로 쓰지 않는다.
+- 결과에는 입력 경로·문서 수와 실제 실행한 테스트 결과를 함께 기록한다. 기존 fixture로 입력
+  전달 경로만 점검했다면 신규 fixture 검사와 구분한다.
+- 탐지가 발생하면 정상 자료 여부와 탐지 신호를 조사한다. 통과시키기 위해 검사 목록에서 빼거나
+  탐지기를 비활성화하거나 일괄 allowlist/baseline에 넣지 않는다.
+- 새 sample 보안 검사는 위 여섯 래칫과 별도 게이트다. 둘 중 하나로 다른 검사를 대체하지 않는다.
+
+### IR field sweep
 
 ~~~bash
 RHWP_IR_SWEEP_DUMP=/tmp/ir_field_sweep_current.tsv \
-  cargo test --locked --profile release-test \
-  --test regression_suite_014 \
-  ir_field_sweep_baseline::ir_field_sweep_does_not_regress -- --nocapture
+  node scripts/run-rust-test.mjs ir_field_sweep_baseline -- \
+  --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
 diff -u tests/fixtures/ir_field_sweep_baseline.tsv /tmp/ir_field_sweep_current.tsv
 ~~~
 
-`ir_field_sweep_baseline.rs`는 standalone Cargo test target이 아니라 generated
-`regression_suite_014`에 포함된다. 따라서 독립 target을 지정하지 않고 위 module filter로
-실행한다. generated suite 파일 자체는 review 산출물이므로 수정하거나 stage하지 않는다.
+`ir_field_sweep_baseline.rs`는 standalone Cargo test target이 아니라 generated regression suite에
+포함된다. suite 번호는 manifest 재생성마다 달라질 수 있으므로 고정 번호를 쓰지 않고
+`run-rust-test.mjs`가 현재 manifest에서 module filter를 해석하게 한다. generated suite 파일 자체는
+review 산출물이므로 수정하거나 stage하지 않는다.
 
 - baseline은 fixture 목록이 아니라 관측된 비영 왕복 발산의 래칫이다. 발산이 없으면 행을 억지로 추가하지 않는다.
 - 새 발산은 먼저 RHWP_IR_SWEEP_DETAIL로 원본값·재생성값을 확인한다. 의도된 정규화임을 증명한 경우에만
@@ -384,10 +839,15 @@ diff -u tests/fixtures/ir_field_sweep_baseline.tsv /tmp/ir_field_sweep_current.t
 
 ~~~bash
 RHWP_OVERFLOW_CELL_DUMP=/tmp/overflow_cell_current.tsv \
-  cargo test --locked --profile release-test \
+  cargo test --locked --profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" \
   --test overflow_cell_baseline -- --nocapture
+LC_ALL=C cat /tmp/overflow_cell_current.tsv.part??-of16 | \
+  LC_ALL=C sort > /tmp/overflow_cell_current.tsv
 diff -u tests/fixtures/overflow_cell_baseline.tsv /tmp/overflow_cell_current.tsv
 ~~~
+
+`overflow_cell_baseline`은 16개 partition test가 병렬로 dump를 쓰므로, 지정한 경로 자체가 아니라
+`<경로>.part00-of16`부터 `.part15-of16`까지를 사전순 병합한 파일을 비교한다.
 
 - 원장은 0 이 아닌 문서만 `상대경로\t줄수` 사전순으로 기록한다. 0 인 문서는 행을 만들지 않는다.
 - **원인 정정이 원칙이다** — 소실 줄은 사용자에게 보이지 않는 콘텐츠(#3236 계열)이므로,
@@ -412,33 +872,34 @@ iframe RPC 완료 시점이나 기본 옵션이 바뀌면 fresh WASM build와 �
 embed E2E를 추가한다. 기본값 변경은 옵션을 생략한 smoke에서도 loadFile 완료와 페이지 수를 기록한다.
 
 ~~~bash
-# 최초 한 번의 .env.docker 준비는 개발 환경 안내를 따른다.
-docker compose --env-file .env.docker run --rm wasm
+# 위 환경별 경로 중 하나로 fresh WASM 빌드·Studio 동기화를 완료한 뒤 실행한다.
 VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:embed
 ~~~
 
 대형 복합 변경 또는 승인된 전체 검증은 build, release lib, release-test, Native Skia 3종, fmt,
-diff check, clippy, doc test, TypeScript, npm test, 표준 Docker WASM build를 이 순서로 실행한다.
+diff check, clippy, doc test, TypeScript, npm test, 환경에 맞는 fresh WASM build를 이 순서로 실행한다.
+마지막 WASM 단계는 위 Docker 또는 호스트 경로 중 하나를 완료하며, Docker 사용 불가를 생략
+사유로 삼지 않는다.
 
 ~~~bash
-cargo build --locked --release --target-dir target/pr-review
-cargo test --locked --release --target-dir target/pr-review --lib
+cargo build --locked --release --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
+cargo test --locked --release --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --lib
 cargo nextest run --locked \
   --cargo-profile release-test \
-  --target-dir target/pr-review \
+  --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" \
   --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
-cargo test --locked --profile release-test --target-dir target/pr-review --features native-skia --lib
+cargo test --locked --profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia --lib
 node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \
-  --cargo-profile release-test --target-dir target/pr-review --features native-skia
+  --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia
 node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \
-  --cargo-profile release-test --target-dir target/pr-review --features native-skia
+  --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia
 cargo fmt --all -- --check
 git diff --check
-cargo clippy --locked --all-targets --target-dir target/pr-review -- -D warnings
-cargo test --locked --doc --target-dir target/pr-review
+cargo clippy --locked --all-targets --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" -- -D warnings
+cargo test --locked --doc --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
 (cd rhwp-studio && npx tsc --noEmit)
 npm --prefix rhwp-studio test
-docker compose --env-file .env.docker run --rm wasm
+# 이어서 위 환경별 fresh WASM 절의 Docker 또는 호스트 빌드 중 하나를 완료한다.
 ~~~
 
 각 명령은 앞 명령이 끝난 뒤 실행한다. 실패하면 뒤 명령으로 건너뛰어 전체 통과처럼 기록하지 않는다.
@@ -470,7 +931,7 @@ git branch -D prN-merge-test
 ~~~
 
 merge가 시작되지 않았거나 Already up to date면 abort는 생략한다. 이 절은 simulation branch만 정리한다.
-fetch branch, review branch, docs-only branch, worktree, 검토 전용 target은 review 종료 뒤
+fetch branch, review branch, docs-only branch, worktree와 `output/pr-review` 전체의 불필요한 산출물은 review 종료 뒤
 [merge 후속 처리](post_merge.md)의 최종 종료 게이트에서 정리한다.
 
 ## 4.5 전체 Rust 회귀 sharding 실측
@@ -485,6 +946,17 @@ sharding 전체 회귀를 실행했다. `CARGO_INCREMENTAL=0`은 지정하지 �
 - `nextest list`: 6,541개, ignored 38개, runnable 6,503개
 - 전체 실행: 종료 코드 0, 실패 0건
 - warm `nextest list`: 0.19초
+
+페이지별 일치율 수집은 [TSV 전용 절차](../verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)를 우선 사용한다.
+검증 대상 전체 페이지를 Native/fresh WASM으로 비교해 쪽수·최저값·90% 미만/누락 쪽을 기록한다.
+낮은 점수·구조 차이·대표 경계는 별도 output의 일반 모드 PNG로 직접 판독한다.
+TSV 측정 성공/`not_evaluated`는 PR 승인이나 fixture 적합성 통과가 아니며,
+각주 수량·문단 소속·내용 누락/중복·전체 쪽수를 별도로 검증한다. 기존 PNG 재사용의 원 실행과
+최신 head 재출력을 혼동하지 않는다. 상세 명령과 증적은 위 정본을 따른다.
+
+렌더링 변경의 신규 회귀는 [시각 검증 선행 조건](visual_fixture_evidence.md#렌더링-회귀-테스트-신규-추가의-시각-검증-선행-조건)을 먼저 충족한다.
+관련 모든 페이지·fixture·Native/fresh WASM 출력의 최저 일치율이 90% 미만이거나 측정 불가이면
+추가하지 않는다. 쪽수 검사는 전체 페이지를 비교하며 실제 출력을 개선한 뒤 새 코드로 재검증한다.
 
 신규 회귀 test source는 `tests/cases/`에만 추가한다. PR review는
 `node scripts/rust-test-suite-manifest.mjs --prepare`로 기존 suite에 자동 배정한 뒤 검증하며,

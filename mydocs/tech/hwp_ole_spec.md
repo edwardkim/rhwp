@@ -8,6 +8,9 @@ last_verified: 2026-07-17
 # HWP OLE 개체(SHAPE_COMPONENT_OLE) 바이너리 스펙 정리
 
 > Task #195 단계 1 산출물. 구현 전 스펙 조사 및 IR 설계 문서.
+> 현재 OOXML·레거시 `Contents`·미리보기의 실행 우선순위와 일반 차트 경로는
+> [차트 OLE v1 경계](chart_ole_v1_boundary.md)를 따른다. 아래 placeholder 중심
+> 단계 4 계획은 당시 설계 기록이며 현재 렌더링 분류 기준이 아니다.
 
 ## 1. OLE 컨트롤의 전체 구조
 

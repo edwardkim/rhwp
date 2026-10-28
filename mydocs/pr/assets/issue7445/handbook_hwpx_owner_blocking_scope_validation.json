@@ -1,0 +1,668 @@
+{
+  "stage": 146,
+  "source_head": "829a315167159829648f4eda405f46434c081ef7",
+  "preanalysis": "편람 HWPX 쪽수전용#5801 및혼합#3930의실제실패만 처리. 첫문제Q27물리쪽 단정이며 이후각단정을개별실행해차단범위를 확인. IR/바탕쪽/동일저장전후결과 및이미PASS인 다른assertion·다른정상함수 보존. 생산/새함수/현재값재고정없음.",
+  "independent_evidence": "mydocs/pr/assets/issue7445/handbook_hwpx_blocking_scope_validation.json",
+  "pdf_pages": 384,
+  "native_pages": 385,
+  "inputs": [
+    {
+      "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+      "matches_commit": true
+    },
+    {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-2024.pdf",
+      "sha256": "e77634f4c63c15875797a4d6d354fd90cad27fd65d708cee4cd85b80c4cb1009",
+      "matches_commit": true
+    }
+  ],
+  "visual": {
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "handbook-hwpx",
+      "samples/2025 행정업무운영 편람(최종).hwpx",
+      "pdf/2025 행정업무운영 편람(최종)-hwpx-2024.pdf",
+      "--pages",
+      "272,294-296",
+      "--dpi",
+      "96",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+      "--embed-fonts=full",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+      "--font-path",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/stage146-handbook-hwpx-owner/visual-native"
+    ],
+    "exit": {
+      "exit_code": 1
+    },
+    "metrics": {
+      "compared_pages": 4,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 93.8578,
+      "worst_pixel_match_percent": 92.23257,
+      "average_ink_match_percent": 56.58548,
+      "worst_ink_match_percent": 19.89927,
+      "average_visual_accuracy_proxy_percent": 56.58548,
+      "worst_visual_accuracy_proxy_percent": 19.89927,
+      "average_tolerant_content_match_percent": 93.75684,
+      "worst_tolerant_content_match_percent": 84.03568,
+      "worst_pages": [
+        272,
+        296,
+        294,
+        295
+      ]
+    },
+    "gate": {
+      "status": "re_review_required",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 272,
+          "tolerant_content_match_percent": 84.03568
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "pages": [
+      272,
+      294,
+      295,
+      296
+    ]
+  },
+  "code_commit": "2b6355bf430510e9bde6064f80a4efbea6fbe10e",
+  "scope": {
+    "removed_actual_failed_functions": 1,
+    "removed_actual_failed_assertions": [
+      {
+        "step": 1,
+        "assertion": "    assert!(\n        source_p295_tree.contains(Q27_TITLE),\n        \"HWPX Q27 표제는 PDF/native HWP와 같이 p295에서 시작해야 한다\"\n    );\n",
+        "reason": "before.log actual Q27 FAIL"
+      },
+      {
+        "step": 2,
+        "name": "Q29",
+        "assertion": "    assert!(\n        source_p295_tree.contains(Q29_TITLE),\n        \"HWPX Q29의 두 줄 response는 PDF/native HWP와 같이 p295에서 끝나야 한다\"\n    );\n",
+        "failed_log": "diagnostic-1.log",
+        "reason": "HWPX Q29의 두 줄 response는 PDF/native HWP와 같이 p295에서 끝나야 한다"
+      },
+      {
+        "step": 3,
+        "name": "Q30",
+        "assertion": "    assert!(\n        source_p296_tree.contains(Q30_TITLE),\n        \"HWPX Q30 표제는 PDF/native HWP와 같이 p296에서 시작해야 한다\"\n    );\n",
+        "failed_log": "diagnostic-2.log",
+        "reason": "HWPX Q30 표제는 PDF/native HWP와 같이 p296에서 시작해야 한다"
+      },
+      {
+        "step": 4,
+        "name": "source_count_first",
+        "assertion": "    assert_eq!(\n        source.page_count(),\n        382,\n        \"HWPX Q&A PageHide/목차 tail 보정 뒤 Hancom PDF 쪽수\"\n    );\n",
+        "failed_log": "diagnostic-3.log",
+        "reason": "HWPX Q&A PageHide/목차 tail 보정 뒤 Hancom PDF 쪽수"
+      },
+      {
+        "step": 5,
+        "name": "reload_count",
+        "assertion": "    assert_eq!(\n        reloaded.page_count(),\n        383,\n        \"저장 HWP의 p144 table owner 보존 — [#5923] trailing 제외로 384→383\"\n    );\n",
+        "failed_log": "diagnostic-4.log",
+        "reason": "저장 HWP의 p144 table owner 보존 — [#5923] trailing 제외로 384→383"
+      },
+      {
+        "step": 6,
+        "name": "source_count_second",
+        "assertion": "    assert_eq!(\n        source.page_count(),\n        382,\n        \"HWPX 원본 경로 — [#5923] trailing 제외로 383→382\"\n    );\n",
+        "failed_log": "diagnostic-5.log",
+        "reason": "HWPX 원본 경로 — [#5923] trailing 제외로 383→382"
+      }
+    ],
+    "preserved_before_pass_functions": [
+      {
+        "file": "tests/issue_3930_hwpx_hwp_save_layout.rs",
+        "function": "issue_3820_hwp5_qa_rowbreak_tail_reduces_page_count",
+        "body_sha256": "e52b5a71dd62acbcc6ef08cf1e8516689d4f8936836b1a737c8b35c806e426df",
+        "unchanged": true
+      },
+      {
+        "file": "tests/issue_3930_hwpx_hwp_save_layout.rs",
+        "function": "issue_3820_hwpx_behind_text_stamp_placeholders_keep_common_y_and_offsets",
+        "body_sha256": "5424f3e8f0d0d8863a2e7c0cb2be861007ded7a51c42189b15d2e0199dafa0b4",
+        "unchanged": true
+      },
+      {
+        "file": "tests/cases/issue_5801_stored_ladder_spacing_before.rs",
+        "function": "issue_5801_typeset_used_height_matches_stored_ladder",
+        "body_sha256": "d852f8ffab633eb67ece11febe840f72d1444a92b02f29538f49999b72ce29f1",
+        "unchanged": true
+      }
+    ],
+    "preserved_mixed_function_contracts": [
+      "이전통과바탕쪽/물리쪽배치assertion",
+      "overflow cell p144",
+      "원본/저장 SectionDef extra0/19",
+      "선택13물리쪽 source==roundtrip tree",
+      "Odd슬롯/짝수상속/BorderFill",
+      "원본해상도그림저장extra/밝기/대비"
+    ],
+    "normal_function_bodies_unchanged": true,
+    "production_changed": false,
+    "new_functions": 0,
+    "diagnostic_correction": "처음suite미준비0tests/exit4는보존·통과로세지않음. prepare후정상진단6의4PASS를확인."
+  },
+  "diagnostics": [
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_006",
+        "--test",
+        "regression_suite_016",
+        "-E",
+        "test(issue_3930_hwpx_hwp_save_layout::) or test(issue_5801_stored_ladder_spacing_before::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_3930_hwpx_hwp_save_layout",
+          "target": "regression_suite_006",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_5801_stored_ladder_spacing_before",
+          "target": "regression_suite_016",
+          "grouped": true
+        }
+      ],
+      "exit_code": 100,
+      "seconds": 10.877295624930412,
+      "label": "before",
+      "observations": [
+        "left: 385",
+        "right: 382",
+        "Summary [   0.750s] 5 tests run: 3 passed, 2 failed, 412 skipped"
+      ]
+    },
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_021",
+        "-E",
+        "test(issue_3930_hwpx_hwp_save_layout::) or test(issue_5801_stored_ladder_spacing_before::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_3930_hwpx_hwp_save_layout",
+          "target": "regression_suite_021",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_5801_stored_ladder_spacing_before",
+          "target": "regression_suite_005",
+          "grouped": true
+        }
+      ],
+      "exit_code": 4,
+      "seconds": 17.361434624996036,
+      "label": "diagnostic-1-no-tests",
+      "observations": [
+        "Summary [   0.001s] 0 tests run: 0 passed, 418 skipped"
+      ]
+    },
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_021",
+        "-E",
+        "test(issue_3930_hwpx_hwp_save_layout::) or test(issue_5801_stored_ladder_spacing_before::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_3930_hwpx_hwp_save_layout",
+          "target": "regression_suite_021",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_5801_stored_ladder_spacing_before",
+          "target": "regression_suite_005",
+          "grouped": true
+        }
+      ],
+      "exit_code": 100,
+      "seconds": 14.42520449962467,
+      "label": "diagnostic-1",
+      "observations": [
+        "Summary [   0.565s] 4 tests run: 3 passed, 1 failed, 416 skipped"
+      ]
+    },
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_021",
+        "--test",
+        "regression_suite_027",
+        "-E",
+        "test(issue_3930_hwpx_hwp_save_layout::) or test(issue_5801_stored_ladder_spacing_before::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_3930_hwpx_hwp_save_layout",
+          "target": "regression_suite_021",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_5801_stored_ladder_spacing_before",
+          "target": "regression_suite_027",
+          "grouped": true
+        }
+      ],
+      "exit_code": 100,
+      "seconds": 18.727443207986653,
+      "label": "diagnostic-2",
+      "observations": [
+        "Summary [   0.594s] 4 tests run: 3 passed, 1 failed, 416 skipped"
+      ]
+    },
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_002",
+        "--test",
+        "regression_suite_010",
+        "-E",
+        "test(issue_3930_hwpx_hwp_save_layout::) or test(issue_5801_stored_ladder_spacing_before::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_3930_hwpx_hwp_save_layout",
+          "target": "regression_suite_002",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_5801_stored_ladder_spacing_before",
+          "target": "regression_suite_010",
+          "grouped": true
+        }
+      ],
+      "exit_code": 100,
+      "seconds": 19.03891925001517,
+      "label": "diagnostic-3",
+      "observations": [
+        "left: 385",
+        "right: 382",
+        "Summary [   0.895s] 4 tests run: 3 passed, 1 failed, 440 skipped"
+      ]
+    },
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_020",
+        "--test",
+        "regression_suite_026",
+        "-E",
+        "test(issue_3930_hwpx_hwp_save_layout::) or test(issue_5801_stored_ladder_spacing_before::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_3930_hwpx_hwp_save_layout",
+          "target": "regression_suite_026",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_5801_stored_ladder_spacing_before",
+          "target": "regression_suite_020",
+          "grouped": true
+        }
+      ],
+      "exit_code": 100,
+      "seconds": 22.495980959385633,
+      "label": "diagnostic-4",
+      "observations": [
+        "left: 385",
+        "right: 383",
+        "Summary [   2.327s] 4 tests run: 3 passed, 1 failed, 398 skipped"
+      ]
+    },
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_015",
+        "-E",
+        "test(issue_3930_hwpx_hwp_save_layout::) or test(issue_5801_stored_ladder_spacing_before::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_3930_hwpx_hwp_save_layout",
+          "target": "regression_suite_005",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_5801_stored_ladder_spacing_before",
+          "target": "regression_suite_015",
+          "grouped": true
+        }
+      ],
+      "exit_code": 100,
+      "seconds": 24.305139707867056,
+      "label": "diagnostic-5",
+      "observations": [
+        "left: 385",
+        "right: 382",
+        "Summary [   2.941s] 4 tests run: 3 passed, 1 failed, 424 skipped"
+      ]
+    },
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_012",
+        "-E",
+        "test(issue_3930_hwpx_hwp_save_layout::) or test(issue_5801_stored_ladder_spacing_before::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_3930_hwpx_hwp_save_layout",
+          "target": "regression_suite_005",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_5801_stored_ladder_spacing_before",
+          "target": "regression_suite_012",
+          "grouped": true
+        }
+      ],
+      "exit_code": 0,
+      "seconds": 22.702780249994248,
+      "label": "diagnostic-6",
+      "observations": [
+        "Summary [   2.566s] 4 tests run: 4 passed, 427 skipped"
+      ]
+    },
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_001",
+        "--test",
+        "regression_suite_004",
+        "-E",
+        "test(issue_3930_hwpx_hwp_save_layout::) or test(issue_5801_stored_ladder_spacing_before::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_3930_hwpx_hwp_save_layout",
+          "target": "regression_suite_004",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_5801_stored_ladder_spacing_before",
+          "target": "regression_suite_001",
+          "grouped": true
+        }
+      ],
+      "exit_code": 0,
+      "seconds": 17.652050249744207,
+      "label": "after",
+      "observations": [
+        "Summary [   1.643s] 4 tests run: 4 passed, 390 skipped"
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "step": "prepare-before-fmt",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.8027850422076881
+    },
+    {
+      "step": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 8.384496167302132
+    },
+    {
+      "step": "prepare-final",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 1.089000167325139
+    },
+    {
+      "step": "focused",
+      "command": [
+        "python3",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage146-handbook-hwpx-owner/run-focused.py",
+        "after"
+      ],
+      "exit_code": 0,
+      "seconds": 19.40945133380592
+    },
+    {
+      "step": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 8.03522383281961
+    },
+    {
+      "step": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.34019166557118297
+    },
+    {
+      "step": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.2610549172386527
+    },
+    {
+      "step": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 0.40108670806512237
+    },
+    {
+      "step": "clippy-alltargets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 13.087443500291556
+    },
+    {
+      "step": "manifest-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 3.192327792290598
+    },
+    {
+      "step": "unit-check",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 11.682170541025698
+    }
+  ],
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5883936903",
+  "limits": "선택4쪽 Native 직접 판독, 기존부록/말미0%근거도유지. fresh WASM/전체384쪽 비교 미실행. 90미달전체문서 보정없음."
+}

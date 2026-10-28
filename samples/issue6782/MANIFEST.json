@@ -1,0 +1,59 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 6782,
+  "title": "안전확인대상생활화학제품 표시기준 제정 연구 (최종보고서)",
+  "entries": [
+    {
+      "path": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6782",
+      "originalFilename": "1480000-201900042_D0150004-1-001_(최종보고서) 안전확인대상생활화학제품 표시기준 제정 연구(부록 제외).hwp",
+      "bytes": 6521856,
+      "sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+      "lastSavedWith": {
+        "product": "hancom-office-2010",
+        "version": "8.5.8.1677"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+      "referencePdfPageCount": 103,
+      "deferredToIssue": 7445,
+      "historicalContract": "물리 77쪽 row4/col3의 CCC 그림 복원과 칸 안 그림 11개 보존. 전체 페이지 동일 주장은 하지 않는다.",
+      "referencePdfSha256": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79",
+      "deferredReason": "보정103 선택 Native 최저49.36129%,76쪽 표/캡션 겹침과78쪽 그림 누락.103/103쪽 일치만으로 승인하지 않음.",
+      "validationEvidence": "mydocs/pr/assets/issue7445/chemical_full6782_test_removal_validation.json",
+      "preservedCopy": "mydocs/pr/assets/issue7445/1480000-201900042-chemical-product-labeling-study.hwp",
+      "deferredScope": "보정105: PR#7382를 실제 막는 text-overlap corpus 입력만 제외. 개별19함수와 다른 원장 검사 복원/유지.90%미달 부정 증거는 그대로 보류."
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/1480000-201900042-chemical-labeling-standards.hwp",
+      "format": "hwp",
+      "role": "deferred_fidelity_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/6782",
+      "originalFilename": "1480000-201900042_D0150004-1-001_(최종보고서) 안전확인대상생활화학제품 표시기준 제정 연구(부록 제외).hwp",
+      "derivedFrom": {
+        "bytes": 6521856,
+        "sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+        "transform": "BinData 204개 스트림을 같은 확장자의 1×1 stub 이미지로 치환 후 재저장한 축소본. 이전의 조판 불변 주장은 보정93 독립 PDF/실제 출력 차이로 승인 근거에서 제외한다.",
+        "verifiedIdentical": "과거 render-tree 부분 좌표 비교이며 최종 출력 일치 증거가 아니다."
+      },
+      "bytes": 193536,
+      "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "lastSavedWith": {
+        "product": "hancom-office-2010",
+        "version": "8.5.8.1677"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/1480000-201900042-chemical-labeling-standards-2020.pdf",
+      "referencePdfSha256": "32e0e6d41d53b755b3dc4bcc31937e8b4f0921b282c2e5d3633a3f3617761912",
+      "referencePdfPageCount": 103,
+      "deferredToIssue": 7445,
+      "historicalContract": "칸 앵커 그림의 음수 세로 오프셋이 그림을 칸 내용 영역 위로 통째로 밀어내면(배치 결과 바닥 <= content_top) 그 오프셋을 버리고 오프셋 0 으로 놓는다. 77쪽(idx 76) 표 pi=118 ci=0 의 row=4 col=3 칸, 그림 w=81.1 h=65.8 이 대상이다. 한/글 2020 정본 y=235.9px.",
+      "historicalTransform": "BinData 204개 스트림을 같은 확장자의 1×1 stub 이미지로 치환한 뒤 rhwp convert 로 재저장했다. 그림 상자 치수·위치는 컨트롤 레코드가 정하므로 조판은 바뀌지 않는다.",
+      "historicalVerifiedIdentical": "77쪽(idx 76) render tree 의 image 11개가 원본과 좌표·치수까지 동일하다. 쪽수 104, lastSavedWith·printMethod 도 같다.",
+      "deferredReason": "보정93 선택 Native 최저53.67396%, 전체 원문과 별도 해시. 보정103에서 남아 있던 이전 samples 경로/역할을 수정.",
+      "validationEvidence": "mydocs/pr/assets/issue7445/chemical6782_test_removal_validation.json"
+    }
+  ]
+}

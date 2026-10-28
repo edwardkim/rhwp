@@ -1,0 +1,111 @@
+{
+  "producer_head": "865d9e8605ae70e1dbb54d8566e462683d988725",
+  "source_diff_sha256": "87afc5898223467cf57df1dc05b84df50f09c642b142b0e71f4dc85bed706f1e",
+  "files": {
+    "src/renderer/composer.rs": "c74d29b29d57c3130e046bc730a8debed50b419a6c09b203436742b6cdf566d4",
+    "src/renderer/layout_frame.rs": "f2d5892b973c71c3c7667ce258675008248415223a7140eaaa69191658397dd4",
+    "src/renderer/typeset/table/block.rs": "9f11cc64ff1af9626a85b45c84fda6b18090a426fa82b30587c9db07be3aac27",
+    "src/renderer/typeset/table/block/entry.rs": "1f552fcc59e32eabdd6498c12256e723b7dbe6066993ba30862f8fb09fc523d1",
+    "src/renderer/typeset/table/block/prepare.rs": "b8ff7aeb830cf1e81a56b7dd64da23e0b1aa87145742471b919158da23fe78ef",
+    "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "853ae9d2cd344b176de9939f5520285fb62af9586539e5f890a46042a90b453d"
+  },
+  "before": {
+    "exit_code": 100,
+    "passed": 0,
+    "failed": 1,
+    "seconds": 0.205,
+    "observed_tail_rows": 7,
+    "expected_tail_rows": 8
+  },
+  "rejected_candidate": {
+    "exit_code": 100,
+    "passed": 33,
+    "failed": 19,
+    "seconds": 3.489,
+    "hwpx_page_count": 216,
+    "native_target_and_empty_list_caret_passed": true
+  },
+  "table_before": {
+    "exit_code": 100,
+    "passed": 0,
+    "failed": 1,
+    "seconds": 0.289,
+    "observed_bottom_px": 931.9466666666665,
+    "expected_bottom_px": 995.710693
+  },
+  "after": {
+    "exit_code": 0,
+    "passed": 96,
+    "failed": 0,
+    "seconds": 5.424
+  },
+  "fmt_check_exit_code": 0,
+  "source_unit_policy": {
+    "exit_code": 0,
+    "base_ref": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+    "tests": 4205,
+    "modules": 298
+  },
+  "cli_build": {
+    "exit_code": 0,
+    "seconds": 105,
+    "binary_sha256": "db5fffbbcbb12849802c932c82cddd5616ce57b50bec0d51d6c1505f5f3b85a9"
+  },
+  "visual": {
+    "hwp": {
+      "exit_code": 0,
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pages": {
+        "90": 94.09514,
+        "91": 96.28253
+      },
+      "page_count": 215,
+      "pdf_page_count": 215,
+      "directly_read_review_and_overlay_pages": [
+        90,
+        91
+      ],
+      "command": "venv/bin/python scripts/visual_sweep.py --key liver7379hwp --hwp 'samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp' --pdf 'pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf' --rhwp-bin target/pr-review/release-test/rhwp --pages 90,91 --dpi 96 --out output/pr-review/planet6897-7382-20260926/visual/stage22-native-hwp"
+    },
+    "hwpx": {
+      "exit_code": 0,
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pages": {
+        "90": 94.09514,
+        "91": 95.9903
+      },
+      "page_count": 215,
+      "pdf_page_count": 215,
+      "directly_read_review_and_overlay_pages": [
+        90,
+        91
+      ],
+      "command": "venv/bin/python scripts/visual_sweep.py --key liver7379 --hwp 'samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx' --pdf 'pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf' --rhwp-bin target/pr-review/release-test/rhwp --pages 90,91 --dpi 96 --out output/pr-review/planet6897-7382-20260926/visual/stage22-native-hwpx"
+    }
+  },
+  "remaining_holds": [
+    "HWPX91의 캡션 각주142가 직접 비교에서 누락됨",
+    "90쪽 목록 표식과 본문 가로 시작 차이는 별도 원인 추적 필요",
+    "전체 Native/fresh WASM 및 최종 회귀/lint 게이트 미완료"
+  ],
+  "commands": {
+    "before": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --test regression_suite_003 --test-threads 8 --no-fail-fast -E 'test(native_stored_bullet_tail_preserves_saved_rows_and_following_paragraph)'",
+    "table_before": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --test regression_suite_003 --test-threads 8 --no-fail-fast -E 'test(hwpx_stored_caption_table_keeps_relationship_row_above_actual_footnote_area)'",
+    "after": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --test regression_suite_003 --test regression_suite_005 --test regression_suite_020 --test regression_suite_024 --test regression_suite_025 --test regression_suite_015 --test-threads 8 --no-fail-fast -E 'test(issue_7379_rowbreak_table_footnote_reservation) | test(issue_3738_rowbreak_table_footnote_fragment) | test(issue_1937_rowbreak_footnote_overpagination) | test(issue_2559_footnote_footer_band) | test(issue_6034_footnote_area_reflow_width) | test(issue_4882_policy_report_page_roundtrip) | test(issue_1329_bullet_caret) | test(issue_5677_empty_body_para_margin_applied_twice)'",
+    "cli_build": "cargo build --locked --profile release-test --target-dir target/pr-review --bin rhwp",
+    "fmt_check": "cargo fmt --all -- --check",
+    "source_unit_policy": "node scripts/rust-unit-test-tiers.mjs --check --base-ref eb9142dd7c73297d555383d7d8434a470bdef26e"
+  }
+}

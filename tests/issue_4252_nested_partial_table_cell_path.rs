@@ -150,7 +150,7 @@ fn path_key(section_index: usize, context: &CellContext) -> String {
 #[test]
 fn issue_4252_all_nested_partial_table_paths_resolve_against_original_ir() {
     let core = DocumentCore::from_bytes(&fixture_bytes()).expect("parse #4252 fixture");
-    assert_eq!(core.page_count(), 17, "#4069 17쪽 pagination 계약");
+    // 문서 쪽수 고정만 #7445로 이관하고 경로·선택 API 계약은 유지한다.
 
     let mut checked = BTreeSet::new();
     let mut failures = Vec::new();

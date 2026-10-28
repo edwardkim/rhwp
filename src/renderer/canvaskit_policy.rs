@@ -11,7 +11,7 @@ use crate::paint::{
     PaintOp, PaintReplayPlane, RenderProfile, ResolvedImageKind, ResolvedImagePayload,
     TextDecorationKind, TextVariantKind,
 };
-use crate::renderer::composer::expand_pua_display_text;
+use crate::renderer::composer::expand_pua_render_text_in_style;
 use crate::renderer::equation::{
     layout::{LayoutBox, LayoutKind},
     symbols::{DecoKind, FontStyleKind},
@@ -21,13 +21,12 @@ use crate::renderer::layer_renderer::{
     analyze_text_variant_selection, TextVariantSelectionOptions, VariantSelectedReason,
     VariantSelectionBackend,
 };
-use crate::renderer::layout::compute_char_positions;
 use crate::renderer::render_tree::{
     EllipseNode, ImageNode, LineNode, PageBackgroundNode, PageRenderTree, PathNode, RectangleNode,
     RenderLayerInfo, RenderNodeType, TextRunNode,
 };
 
-const OLD_HANGUL_FONT_FAMILY: &str = "Source Han Serif K Old Hangul";
+const OLD_HANGUL_FONT_FAMILY: &str = "RHWP Old Hangul";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -528,6 +527,7 @@ fn render_node_prelower_work_units(node_type: &RenderNodeType) -> Option<usize> 
             form.caption
                 .len()
                 .checked_add(form.text.len())?
+                .checked_add(form.display_text.as_ref().map_or(0, String::len))?
                 .checked_add(form.name.len())?,
             true,
         ),
@@ -560,9 +560,13 @@ fn render_node_prelower_work_units(node_type: &RenderNodeType) -> Option<usize> 
 }
 
 fn text_run_payload_bytes(run: &TextRunNode) -> Option<usize> {
+    let positions_bytes = run.layout_positions.as_ref().map_or(Some(0), |positions| {
+        positions.len().checked_mul(std::mem::size_of::<f64>())
+    })?;
     run.text
         .len()
         .checked_add(run.display_text.as_ref().map_or(0, String::len))
+        .and_then(|bytes| bytes.checked_add(positions_bytes))
 }
 
 fn count_layer_tree_work_units(
@@ -618,7 +622,7 @@ fn count_layer_tree_work_units(
                 }
                 pending.extend(children.iter().rev().map(|child| (child, depth + 1)));
             }
-            LayerNodeKind::ClipRect { child, .. } => {
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
                 if minimum_work_exceeds_limit(work_units, pending.len(), 1, max_work_units) {
                     return CanvasKitBoundedWorkCount::Exceeded;
                 }
@@ -658,15 +662,18 @@ fn additional_payload_work_units(bytes: usize) -> usize {
 
 fn paint_op_work_units(op: &PaintOp) -> usize {
     let repeated_visual_units = match op {
-        PaintOp::TextRun { run, .. } => expand_pua_display_text(run.display_or_text())
-            .chars()
-            .count(),
+        PaintOp::TextRun { run, .. } => {
+            expand_pua_render_text_in_style(run.display_or_text(), &run.style)
+                .chars()
+                .count()
+        }
         PaintOp::CharOverlap { run, .. } => run.text.chars().count(),
         PaintOp::TextControlMark { run, .. } => bounded_text_char_count(&run.text),
         PaintOp::TabLeader { run, .. } => {
             display_visual_position_count(run).saturating_add(run.style.tab_leaders.len())
         }
         PaintOp::TextDecoration { run, .. } => display_visual_position_count(run),
+        PaintOp::ControlLabel { label, .. } => label.chars().count(),
         _ => 0,
     };
     let payload_bytes = match op {
@@ -726,11 +733,14 @@ fn paint_op_work_units(op: &PaintOp) -> usize {
             .caption
             .len()
             .saturating_add(form.text.len())
+            .saturating_add(form.display_text.as_ref().map_or(0, String::len))
+            .saturating_add(form.appearance.font_family.len())
             .saturating_add(form.name.len()),
         PaintOp::RawSvg { raw, .. } => raw.svg.len(),
         PaintOp::FootnoteMarker { marker, .. } => {
             marker.text.len().saturating_add(marker.font_family.len())
         }
+        PaintOp::ControlLabel { label, .. } => label.len(),
         PaintOp::Line { .. }
         | PaintOp::Rectangle { .. }
         | PaintOp::Ellipse { .. }
@@ -767,7 +777,7 @@ fn bounded_display_text_for_visual(run: &TextRunNode) -> (String, bool) {
     let mut source_chars = run.display_or_text().chars();
     let source: String = source_chars.by_ref().take(limit).collect();
     let source_complete = source_chars.next().is_none();
-    let expanded = expand_pua_display_text(&source);
+    let expanded = expand_pua_render_text_in_style(&source, &run.style);
     let mut display_chars = expanded.chars();
     let display: String = display_chars.by_ref().take(limit).collect();
     (display, source_complete && display_chars.next().is_none())
@@ -805,15 +815,121 @@ fn text_visual_geometry_is_valid(
         && bbox.height >= 0.0
         && run.style.font_size > 0.0
         && run.style.ratio > 0.0
-        && compute_char_positions(
-            &replay_text
-                .chars()
-                .take(crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN)
-                .collect::<String>(),
-            &run.style,
-        )
-        .iter()
-        .all(|position| position.is_finite())
+        && run
+            .replay_positions_for(
+                &replay_text
+                    .chars()
+                    .take(crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN)
+                    .collect::<String>(),
+            )
+            .iter()
+            .all(|position| position.is_finite())
+}
+
+// Validate the same producer-owned drawing serialized to the browser. Raw form
+// properties do not describe the final primitives or the selected display label.
+fn form_drawing_replay_rejection(
+    bbox: &crate::renderer::render_tree::BoundingBox,
+    form: &crate::renderer::render_tree::FormObjectNode,
+) -> Option<&'static str> {
+    use crate::paint::paint_op::portable_glyph_scalar as scalar;
+    use crate::renderer::form_appearance::{form_drawing, FormPrimitive};
+
+    let valid_rect = |bbox: &crate::renderer::render_tree::BoundingBox| {
+        bbox.width >= 0.0
+            && bbox.height >= 0.0
+            && [
+                bbox.x,
+                bbox.y,
+                bbox.width,
+                bbox.height,
+                bbox.x + bbox.width,
+                bbox.y + bbox.height,
+            ]
+            .into_iter()
+            .all(scalar)
+    };
+    if bbox.width <= 0.0 || bbox.height <= 0.0 || !valid_rect(bbox) {
+        return Some("invalidGeometry");
+    }
+    let drawing = form_drawing(form, *bbox);
+    if drawing.primitives.len() > 512 {
+        return Some("formPrimitiveBudgetExceeded");
+    }
+    let mut point_count = 0usize;
+    for primitive in &drawing.primitives {
+        let (geometry_valid, color) = match primitive {
+            FormPrimitive::Rect { bbox, color } => (valid_rect(bbox), color),
+            FormPrimitive::Circle {
+                x,
+                y,
+                radius,
+                color,
+            } => (
+                *radius >= 0.0
+                    && [
+                        *x,
+                        *y,
+                        *radius,
+                        x - radius,
+                        x + radius,
+                        y - radius,
+                        y + radius,
+                    ]
+                    .into_iter()
+                    .all(scalar),
+                color,
+            ),
+            FormPrimitive::Polyline {
+                points,
+                color,
+                width,
+                ..
+            } => {
+                point_count = point_count.saturating_add(points.len());
+                if point_count > 4096 {
+                    return Some("formPrimitiveBudgetExceeded");
+                }
+                (
+                    *width >= 0.0 && scalar(*width) && points.iter().flatten().copied().all(scalar),
+                    color,
+                )
+            }
+        };
+        if !geometry_valid {
+            return Some("invalidGeometry");
+        }
+        if color.encode_utf16().take(129).count() > 128 {
+            return Some("formColorBudgetExceeded");
+        }
+    }
+    if let Some(label) = &drawing.label {
+        if [&label.text, &label.font_family]
+            .into_iter()
+            .any(|text| text.encode_utf16().take(4097).count() > 4096)
+        {
+            return Some("formTextBudgetExceeded");
+        }
+        if label.color.encode_utf16().take(129).count() > 128 {
+            return Some("formColorBudgetExceeded");
+        }
+        if label.font_size <= 0.0
+            || label.font_size > 4096.0
+            || ![
+                label.x,
+                label.baseline,
+                label.font_size,
+                label.baseline - label.font_size,
+            ]
+            .into_iter()
+            .all(scalar)
+        {
+            return Some("invalidGeometry");
+        }
+    }
+    // Font availability is an actual browser preparation result, not something
+    // the Rust structural preflight can claim from a font-family string.
+    None
 }
 
 fn minimum_work_exceeds_limit(
@@ -1153,6 +1269,7 @@ pub fn analyze_canvaskit_replay_plan(
         TextVariantSelectionOptions {
             backend: VariantSelectionBackend::CanvasKitBrowser,
             prefer_strict_outline: true,
+            allow_colrv0_color_layers: true,
             allow_colrv1_stage1_color_graph: true,
             allow_bitmap_glyph: true,
             allow_svg_glyph: true,
@@ -1273,6 +1390,19 @@ impl CanvasKitReplayPlanBuilder {
                         pending.push((child, format!("{path}/group/{index}"), active_layer));
                     }
                 }
+                LayerNodeKind::ClipPath { child, .. } => {
+                    self.push(CanvasKitReplayItem {
+                        path: format!("{path}/clip"),
+                        op_type: "clipPath",
+                        replay_plane: None,
+                        feature: CanvasKitReplayFeature::Clip,
+                        status: CanvasKitReplayStatus::Direct,
+                        reason: CanvasKitReplayReason::DirectReplaySupported,
+                        compat_overlay_allowed: false,
+                        detail: Some("source text path intersection".into()),
+                    });
+                    pending.push((child, format!("{path}/clip/child"), active_layer));
+                }
                 LayerNodeKind::ClipRect {
                     child, clip_kind, ..
                 } => {
@@ -1323,15 +1453,32 @@ impl CanvasKitReplayPlanBuilder {
 
         for op in ops {
             match op {
+                PaintOp::CharOverlap { bbox, run, .. } => {
+                    if let Some(plan) = crate::renderer::char_overlap::project(run, *bbox) {
+                        for glyph in plan.border.iter().chain(&plan.interior) {
+                            self.record_required_font_family(&glyph.run.style.font_family);
+                        }
+                    }
+                }
                 PaintOp::TextRun { run, .. } if text_run_selected => {
                     self.record_required_font_family(&run.style.font_family);
-                    let display_text = expand_pua_display_text(run.display_or_text());
+                    let display_text =
+                        expand_pua_render_text_in_style(run.display_or_text(), &run.style);
                     if crate::renderer::contains_old_hangul_jamo(&display_text) {
                         self.record_required_font_family(OLD_HANGUL_FONT_FAMILY);
                     }
                 }
                 PaintOp::FootnoteMarker { marker, .. } => {
                     self.record_required_font_family(&marker.font_family);
+                }
+                PaintOp::Equation { equation, .. }
+                    if crate::renderer::equation::hancom_glyphs::is_used(&equation.layout_box) =>
+                {
+                    for family in crate::renderer::equation::hancom_glyphs::used_font_families(
+                        &equation.layout_box,
+                    ) {
+                        self.record_required_font_family(family);
+                    }
                 }
                 _ => {}
             }
@@ -1397,6 +1544,15 @@ impl CanvasKitReplayPlanBuilder {
                 item.detail = Some("footnoteMarker".to_string());
                 item
             }
+            PaintOp::ControlLabel { .. } => {
+                let mut item = direct_item(
+                    path,
+                    "controlLabel",
+                    CanvasKitReplayFeature::TextSpecialVisual,
+                );
+                item.detail = Some("objectControlLabel".to_string());
+                item
+            }
             PaintOp::Image {
                 image, resolved, ..
             } => self.image_item(path, image, resolved.as_deref()),
@@ -1416,9 +1572,18 @@ impl CanvasKitReplayPlanBuilder {
                 item.detail = Some("unsupportedSemanticLayout".to_string());
                 item
             }
-            PaintOp::FormObject { .. } => {
-                let mut item = direct_item(path, "formObject", CanvasKitReplayFeature::FormObject);
-                item.detail = Some("basicStaticReplay".to_string());
+            PaintOp::FormObject { bbox, form } => {
+                let reason = form_drawing_replay_rejection(bbox, form);
+                let mut item = if reason.is_some() {
+                    self.transition_overlay_item(
+                        path,
+                        "formObject",
+                        CanvasKitReplayFeature::FormObject,
+                    )
+                } else {
+                    direct_item(path, "formObject", CanvasKitReplayFeature::FormObject)
+                };
+                item.detail = Some(reason.unwrap_or("basicStaticReplay").to_string());
                 item
             }
             PaintOp::RawSvg { .. } => {
@@ -1451,8 +1616,8 @@ impl CanvasKitReplayPlanBuilder {
                 });
                 item
             }
-            PaintOp::TextRun { bbox, run } => self.text_run_item(path, bbox, run),
-            PaintOp::CharOverlap { bbox, run } => {
+            PaintOp::TextRun { bbox, run, .. } => self.text_run_item(path, bbox, run),
+            PaintOp::CharOverlap { bbox, run, .. } => {
                 let detail = if bounded_text_char_count(&run.text)
                     > crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN
                 {
@@ -1486,7 +1651,7 @@ impl CanvasKitReplayPlanBuilder {
                     )
                 }
             }
-            PaintOp::TextControlMark { bbox, run } => {
+            PaintOp::TextControlMark { bbox, run, .. } => {
                 let detail = if bounded_text_char_count(&run.text)
                     > crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN
                     || positioned_control_mark_count(run)
@@ -1497,8 +1662,6 @@ impl CanvasKitReplayPlanBuilder {
                     Some("invalidGeometry")
                 } else if run.is_vertical {
                     Some("verticalText")
-                } else if run.rotation.abs() > f64::EPSILON {
-                    Some("rotatedText")
                 } else {
                     None
                 };
@@ -1518,7 +1681,7 @@ impl CanvasKitReplayPlanBuilder {
                     )
                 }
             }
-            PaintOp::TabLeader { bbox, run } => {
+            PaintOp::TabLeader { bbox, run, .. } => {
                 let (display_text, display_complete) = bounded_display_text_for_visual(run);
                 let detail = if !display_complete
                     || run.style.tab_leaders.len()
@@ -1527,8 +1690,6 @@ impl CanvasKitReplayPlanBuilder {
                     Some("visualItemLimitExceeded")
                 } else if !text_visual_geometry_is_valid(bbox, run, &display_text) {
                     Some("invalidGeometry")
-                } else if run.rotation.abs() > f64::EPSILON {
-                    Some("rotatedText")
                 } else if run.style.tab_leaders.iter().any(|leader| {
                     !leader.start_x.is_finite()
                         || !leader.end_x.is_finite()
@@ -1550,16 +1711,39 @@ impl CanvasKitReplayPlanBuilder {
                     direct_item(path, "tabLeader", CanvasKitReplayFeature::TextSpecialVisual)
                 }
             }
-            PaintOp::TextDecoration { bbox, run, kind } => {
+            PaintOp::TextDecoration {
+                bbox,
+                run,
+                kind,
+                paint_geometry,
+                ..
+            } => {
+                let invalid_placement = paint_geometry.is_some_and(|geometry| {
+                    ![
+                        geometry.bbox.x,
+                        geometry.bbox.y,
+                        geometry.bbox.width,
+                        geometry.bbox.height,
+                        geometry.inline_scale,
+                    ]
+                    .iter()
+                    .all(|value| value.is_finite())
+                        || geometry.inline_scale <= 0.0
+                        || geometry.bbox.width < 0.0
+                        || geometry.bbox.height < 0.0
+                });
                 let (display_text, display_complete) = bounded_display_text_for_visual(run);
                 let detail = if !display_complete {
                     Some("visualItemLimitExceeded")
-                } else if !text_visual_geometry_is_valid(bbox, run, &display_text) {
+                } else if invalid_placement
+                    || !text_visual_geometry_is_valid(bbox, run, &display_text)
+                {
                     Some("invalidGeometry")
-                } else if run.rotation.abs() > f64::EPSILON {
-                    Some("rotatedText")
                 } else {
-                    None
+                    let (paint_bbox, paint_run) =
+                        op.decoration_replay().expect("decoration replay");
+                    (!text_visual_geometry_is_valid(&paint_bbox, &paint_run, &display_text))
+                        .then_some("invalidGeometry")
                 };
                 if let Some(detail) = detail {
                     let mut item = self.transition_overlay_item(
@@ -1592,6 +1776,12 @@ impl CanvasKitReplayPlanBuilder {
                 TextVariantKind::GlyphOutline,
             ),
         };
+        if !op.glyph_paint_transform_is_valid() {
+            item.status = CanvasKitReplayStatus::Unsupported;
+            item.reason = CanvasKitReplayReason::UnsupportedFeature;
+            item.compat_overlay_allowed = false;
+            item.detail = Some("invalidGlyphPaintTransform".to_string());
+        }
         item.replay_plane = Some(paint_op_replay_plane_with_layer(op, layer));
         item
     }
@@ -1601,20 +1791,43 @@ impl CanvasKitReplayPlanBuilder {
         path: String,
         background: &PageBackgroundNode,
     ) -> CanvasKitReplayItem {
-        if background.image.is_some() {
-            let mut item = self.transition_overlay_item(
-                path,
-                "pageBackground",
-                CanvasKitReplayFeature::RasterImage,
-            );
+        if let Some(image) = &background.image {
+            let (brightness, contrast) = image.display_brightness_contrast();
+            let supported = canvaskit_encoded_image_is_replayable(&image.data)
+                && (-100..=100).contains(&brightness)
+                && (-100..=100).contains(&contrast);
+            let mut item = if supported {
+                direct_item(path, "pageBackground", CanvasKitReplayFeature::RasterImage)
+            } else {
+                self.transition_overlay_item(
+                    path,
+                    "pageBackground",
+                    CanvasKitReplayFeature::RasterImage,
+                )
+            };
             item.detail = Some("imageFill".to_string());
             item
-        } else if background.gradient.is_some() {
-            let mut item = self.transition_overlay_item(
-                path,
-                "pageBackground",
-                CanvasKitReplayFeature::PageBackground,
-            );
+        } else if let Some(gradient) = &background.gradient {
+            let supported = (1..=4).contains(&gradient.gradient_type)
+                && (2..=4096).contains(&gradient.colors.len())
+                && gradient.positions.len() <= 4096
+                && gradient
+                    .positions
+                    .iter()
+                    .all(|position| position.is_finite());
+            let mut item = if supported {
+                direct_item(
+                    path,
+                    "pageBackground",
+                    CanvasKitReplayFeature::PageBackground,
+                )
+            } else {
+                self.transition_overlay_item(
+                    path,
+                    "pageBackground",
+                    CanvasKitReplayFeature::PageBackground,
+                )
+            };
             item.detail = Some("gradientFill".to_string());
             item
         } else {
@@ -1825,13 +2038,22 @@ fn canvaskit_equation_layout_is_supported(layout: &LayoutBox) -> bool {
             visit(child, depth + 1, remaining_nodes, max_text_utf16_units)
         };
         match &layout.kind {
+            LayoutKind::HancomGlyphs(run) => {
+                text_supported(&run.glyphs)
+                    && run.baseline_shift.is_finite()
+                    && run.glyphs.chars().count() == run.positions.len()
+                    && run.positions.iter().all(|x| x.is_finite())
+            }
             LayoutKind::Row(children) => children.iter().all(|item| child(item, remaining_nodes)),
             LayoutKind::Text(text)
             | LayoutKind::Number(text)
             | LayoutKind::Symbol(text)
             | LayoutKind::MathSymbol(text)
             | LayoutKind::Function(text) => text_supported(text),
-            LayoutKind::Fraction { numer, denom } => {
+            // CanvasKit은 해당 시스템 face의 SFNT 조달을 아직 입증하지 않았다.
+            // 다른 수학 글꼴로 조용히 대체하지 않고 기존 SVG fallback을 사용한다.
+            LayoutKind::FontGlyph { outline, .. } => outline.is_some(),
+            LayoutKind::Fraction { numer, denom, .. } => {
                 child(numer, remaining_nodes) && child(denom, remaining_nodes)
             }
             LayoutKind::Atop { top, bottom } => {
@@ -1854,7 +2076,9 @@ fn canvaskit_equation_layout_is_supported(layout: &LayoutBox) -> bool {
                     && child(sub, remaining_nodes)
                     && child(sup, remaining_nodes)
             }
-            LayoutKind::BigOp { symbol, sub, sup } => {
+            LayoutKind::BigOp {
+                symbol, sub, sup, ..
+            } => {
                 text_supported(symbol)
                     && sub
                         .as_deref()
@@ -1863,9 +2087,13 @@ fn canvaskit_equation_layout_is_supported(layout: &LayoutBox) -> bool {
                         .as_deref()
                         .is_none_or(|item| child(item, remaining_nodes))
             }
-            LayoutKind::Limit { sub, .. } => sub
-                .as_deref()
-                .is_none_or(|item| child(item, remaining_nodes)),
+            LayoutKind::Limit { name, sub, .. } => {
+                name.as_deref()
+                    .is_none_or(|item| child(item, remaining_nodes))
+                    && sub
+                        .as_deref()
+                        .is_none_or(|item| child(item, remaining_nodes))
+            }
             LayoutKind::Matrix { cells, .. } => cells
                 .iter()
                 .flatten()
@@ -1880,15 +2108,27 @@ fn canvaskit_equation_layout_is_supported(layout: &LayoutBox) -> bool {
             LayoutKind::EqAlign { rows } => rows
                 .iter()
                 .all(|(left, right)| child(left, remaining_nodes) && child(right, remaining_nodes)),
-            LayoutKind::Paren { left, right, body } => {
-                (left.is_empty() || text_supported(left))
+            LayoutKind::Paren {
+                left,
+                right,
+                body,
+                left_width,
+                right_width,
+                ..
+            } => {
+                left_width.is_finite()
+                    && right_width.is_finite()
+                    && *left_width >= 0.0
+                    && *right_width >= 0.0
+                    && (left.is_empty() || text_supported(left))
                     && (right.is_empty() || text_supported(right))
                     && child(body, remaining_nodes)
             }
-            LayoutKind::Decoration { kind, body } => {
+            LayoutKind::Decoration { kind, body, .. } => {
                 matches!(
                     kind,
-                    DecoKind::Hat
+                    DecoKind::Box
+                        | DecoKind::Hat
                         | DecoKind::Dot
                         | DecoKind::DDot
                         | DecoKind::Bar
@@ -1900,6 +2140,7 @@ fn canvaskit_equation_layout_is_supported(layout: &LayoutBox) -> bool {
                         | DecoKind::StrikeThrough
                 ) && child(body, remaining_nodes)
             }
+            LayoutKind::Color { body, .. } => child(body, remaining_nodes),
             LayoutKind::FontStyle { style, body } => {
                 matches!(
                     style,
@@ -1936,6 +2177,7 @@ fn paint_op_type(op: &PaintOp) -> &'static str {
             kind: TextDecorationKind::EmphasisDot,
             ..
         } => "emphasisDot",
+        PaintOp::ControlLabel { .. } => "controlLabel",
         PaintOp::FootnoteMarker { .. } => "footnoteMarker",
         PaintOp::Line { .. } => "line",
         PaintOp::Rectangle { .. } => "rectangle",
@@ -2038,6 +2280,8 @@ fn text_requires_complex_shaping(text: &str) -> bool {
                 | 0xfe30..=0xfe6f
                 | 0xff00..=0xffef
                 | 0x1d400..=0x1d7ff
+                // 독립 SFNT 글리프로 재생하는 두 그림자 원형 기호. M/Cf는 아래에서 보류한다.
+                | 0x1f53e..=0x1f53f
                 | 0x20000..=0x323af
         );
         let category_requires_shaping = matches!(
@@ -2115,9 +2359,7 @@ fn image_can_replay_directly(image: &ImageNode, resolved: Option<&ResolvedImageP
     let payload_is_supported =
         image_payload_bytes(image, resolved).is_some_and(canvaskit_encoded_image_is_replayable);
     let effects_are_supported = resolved.is_some_and(|payload| payload.suppress_effects)
-        || (matches!(image.effect, ImageEffect::RealPic)
-            && image.brightness == 0
-            && image.contrast == 0);
+        || ((-100..=100).contains(&image.brightness) && (-100..=100).contains(&image.contrast));
     has_replayable_payload && payload_is_supported && effects_are_supported
 }
 
@@ -2149,6 +2391,8 @@ fn image_has_replayable_payload(
 fn resolved_image_kind_detail(value: ResolvedImageKind) -> &'static str {
     match value {
         ResolvedImageKind::FormatConverted => "formatConverted",
+        ResolvedImageKind::SourceWindow => "sourceWindow",
+        ResolvedImageKind::OutputDevice => "outputDevice",
         ResolvedImageKind::BakedWatermark => "bakedWatermark",
     }
 }
@@ -2170,6 +2414,7 @@ fn image_fill_mode_detail(value: ImageFillMode) -> &'static str {
         ImageFillMode::TileVertLeft => "tileVertLeft",
         ImageFillMode::TileVertRight => "tileVertRight",
         ImageFillMode::FitToSize => "fitToSize",
+        ImageFillMode::Zoom => "zoom",
         ImageFillMode::Total => "total",
         ImageFillMode::Center => "center",
         ImageFillMode::CenterTop => "centerTop",
@@ -2206,6 +2451,7 @@ mod tests {
     use crate::model::style::ImageFillMode;
     use crate::paint::{GroupKind, LayerNode, ResolvedImageKind, ResolvedImagePayload};
     use crate::renderer::composer::CharOverlapInfo;
+    use crate::renderer::composer::{expand_pua_display_text, expand_pua_render_text};
     use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
     use crate::renderer::render_tree::{
         BoundingBox, EllipseNode, EquationNode, FieldMarkerType, FootnoteMarkerNode,
@@ -2257,6 +2503,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 12.0,
             field_marker: FieldMarkerType::None,
+            layout_positions: None,
             display_text: None,
         }
     }
@@ -2286,6 +2533,7 @@ mod tests {
         EquationNode {
             svg_content: "<text>x</text>".to_string(),
             layout_box: LayoutBox {
+                font_size: 12.0,
                 x: 0.0,
                 y: 0.0,
                 width: 8.0,
@@ -2414,6 +2662,7 @@ mod tests {
         let rect_style = ShapeStyle {
             pattern: Some(crate::renderer::PatternFillInfo {
                 pattern_type: 4,
+                tile_size: 7.68,
                 pattern_color: 0x0000_00ff,
                 background_color: 0x00ff_ffff,
             }),
@@ -2511,7 +2760,7 @@ mod tests {
     }
 
     #[test]
-    fn image_replay_plan_reports_unimplemented_image_effects() {
+    fn image_replay_plan_reports_direct_image_effects() {
         let mut image = image_node(1);
         image.effect = ImageEffect::GrayScale;
         image.brightness = 10;
@@ -2521,7 +2770,7 @@ mod tests {
 
         let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
 
-        assert_eq!(plan.items[0].status, CanvasKitReplayStatus::DirectRequired);
+        assert_eq!(plan.items[0].status, CanvasKitReplayStatus::Direct);
         assert_eq!(
             plan.items[0].detail.as_deref(),
             Some("effect=grayScale;adjustment=brightness:10,contrast:-20")
@@ -2735,7 +2984,7 @@ mod tests {
         ]);
 
         let default_plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
-        assert_eq!(default_plan.summary.direct_required_items, 2);
+        assert_eq!(default_plan.summary.direct_required_items, 1);
         assert_eq!(
             default_plan.items[0].feature,
             CanvasKitReplayFeature::RasterImage
@@ -2753,7 +3002,7 @@ mod tests {
         let compat_plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Compat);
         assert!(!compat_plan.hidden_canvas2d_overlay_allowed);
         assert!(compat_plan.direct_replay_required);
-        assert_eq!(compat_plan.summary.direct_required_items, 2);
+        assert_eq!(compat_plan.summary.direct_required_items, 1);
         assert_eq!(compat_plan.summary.compat_overlay_items, 0);
     }
 
@@ -2794,6 +3043,7 @@ mod tests {
         equation.layout_box.kind = LayoutKind::FontStyle {
             style: FontStyleKind::Blackboard,
             body: Box::new(LayoutBox {
+                font_size: 12.0,
                 x: 0.0,
                 y: 0.0,
                 width: 8.0,
@@ -2894,6 +3144,7 @@ mod tests {
         superscript.char_overlap = Some(CharOverlapInfo {
             border_type: 1,
             inner_char_size: 100,
+            composition: None,
         });
         superscript
             .style
@@ -2952,6 +3203,7 @@ mod tests {
         rotated.char_overlap = Some(CharOverlapInfo {
             border_type: 1,
             inner_char_size: 100,
+            composition: None,
         });
         let rotated_tree = tree_with_ops(vec![PaintOp::char_overlap(bbox(), rotated)]);
         let rotated_plan =
@@ -2965,11 +3217,12 @@ mod tests {
     }
 
     #[test]
-    fn malformed_vertical_and_rotated_text_special_visuals_stay_fail_closed() {
+    fn malformed_and_vertical_special_visuals_fail_closed_while_rotation_is_direct() {
         let mut invalid_overlap = text_run("A");
         invalid_overlap.char_overlap = Some(CharOverlapInfo {
             border_type: 9,
             inner_char_size: 100,
+            composition: None,
         });
         let mut invalid_leader = text_run("A");
         invalid_leader
@@ -3002,12 +3255,13 @@ mod tests {
         ]);
 
         let plan = analyze_canvaskit_replay_plan(&tree, CanvasKitReplayMode::Default);
-        assert_eq!(plan.summary.direct_required_items, 6);
+        assert_eq!(plan.summary.direct_required_items, 3);
         assert_eq!(plan.items[0].detail.as_deref(), Some("invalidCharOverlap"));
         assert_eq!(plan.items[1].detail.as_deref(), Some("invalidTabLeader"));
         assert_eq!(plan.items[2].detail.as_deref(), Some("verticalText"));
         for item in &plan.items[3..] {
-            assert_eq!(item.detail.as_deref(), Some("rotatedText"));
+            assert_eq!(item.status, CanvasKitReplayStatus::Direct);
+            assert_eq!(item.detail, None);
         }
     }
 
@@ -3053,7 +3307,7 @@ mod tests {
             "\u{F012B}".repeat(crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN / 3 + 1);
         assert!(pua_source.chars().count() <= crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN);
         assert!(
-            expand_pua_display_text(&pua_source).chars().count()
+            expand_pua_render_text(&pua_source).chars().count()
                 > crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN
         );
         let mut leader = text_run(&pua_source);
@@ -3101,7 +3355,7 @@ mod tests {
             projected_text.chars().count() < CANVASKIT_DOCUMENT_PREFLIGHT_MAX_WORK_UNITS as usize
         );
         assert!(
-            expand_pua_display_text(&projected_text).chars().count()
+            expand_pua_render_text(&projected_text).chars().count()
                 > CANVASKIT_DOCUMENT_PREFLIGHT_MAX_WORK_UNITS as usize
         );
         let projected_tree =
@@ -3117,7 +3371,7 @@ mod tests {
 
     #[test]
     fn shaped_script_text_fails_closed_without_positioned_cluster_authority() {
-        for text in ["가", "\u{F012B}"] {
+        for text in ["가", "\u{F012B}", "\u{1f53e}", "\u{1f53f}"] {
             let mut superscript = text_run(text);
             superscript.style.superscript = true;
             let tree = tree_with_ops(vec![PaintOp::text_run(bbox(), superscript)]);
@@ -3144,6 +3398,8 @@ mod tests {
 
         for text in [
             "e\u{0301}",
+            "\u{1f53e}\u{fe0f}",
+            "\u{1f53e}\u{200d}\u{1f53f}",
             "к\u{0483}",
             "漢\u{302a}",
             "か\u{3099}",
@@ -3246,6 +3502,7 @@ mod tests {
                 number: 1,
                 text: "1)".to_string(),
                 base_font_size: 12.0,
+                baseline: 7.0,
                 font_family: "Test".to_string(),
                 color: 0x0000_0000,
                 section_index: 0,
@@ -3275,6 +3532,8 @@ mod tests {
             form_type: FormType::CheckBox,
             caption: "Agree".to_string(),
             text: String::new(),
+            display_text: None,
+            appearance: Default::default(),
             fore_color: "#111111".to_string(),
             back_color: "#ffffff".to_string(),
             value: 1,

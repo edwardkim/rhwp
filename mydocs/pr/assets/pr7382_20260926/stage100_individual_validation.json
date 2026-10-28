@@ -1,0 +1,37 @@
+{
+  "head": "2cd02b417d5830858aadb74e9546a99d8cb90967",
+  "policy": "고정38 대기 함수를 한 개씩 실행. 첫 실패에서 중단하여 원인·동일 입력 시각 검증을 먼저 수행. 새 검사나 기준값 완화 없음.",
+  "individual": [
+    {
+      "id": 34,
+      "function": "text_overlap_baseline::text_overlaps_do_not_grow_partition_14",
+      "plan": {
+        "caseName": "text_overlap_baseline",
+        "target": "regression_suite_016",
+        "grouped": true
+      },
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_016",
+        "-E",
+        "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_14)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 100,
+      "seconds": 2.0860198331065476,
+      "summary": [
+        "     Summary [   0.957s] 1 test run: 0 passed, 1 failed, 223 skipped"
+      ]
+    }
+  ]
+}

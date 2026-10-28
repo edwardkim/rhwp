@@ -1,5 +1,6 @@
 import { ModalDialog } from './dialog';
 
+import { t } from '../i18n/index.ts';
 export type TableInsertRowColumnMode = 'row-above' | 'row-below' | 'col-left' | 'col-right';
 export type TableDeleteRowColumnMode = 'row' | 'col';
 
@@ -55,14 +56,14 @@ export class TableInsertRowColumnDialog extends ModalDialog {
   private readonly radioName = `table-insert-row-column-${Math.random().toString(36).slice(2)}`;
 
   constructor(defaultMode: TableInsertRowColumnMode = 'row-above') {
-    super('줄/칸 추가하기', 360);
+    super(t('dialog.tableRowColumn.clampInsertCount.title'), 360);
     this.mode = defaultMode;
   }
 
   show(): void {
     super.show();
     const confirmBtn = this.dialog.querySelector('.dialog-btn-primary') as HTMLButtonElement | null;
-    if (confirmBtn) confirmBtn.textContent = '추가';
+    if (confirmBtn) confirmBtn.textContent = t('dialog.tableRowColumn.confirmBtn.text');
     this.countInput.focus();
     this.countInput.select();
   }
@@ -75,7 +76,7 @@ export class TableInsertRowColumnDialog extends ModalDialog {
 
     const title = document.createElement('div');
     title.className = 'dialog-section-title';
-    title.textContent = '추가';
+    title.textContent = t('dialog.tableRowColumn.title.text');
     addSection.appendChild(title);
 
     const radioGroup = document.createElement('div');
@@ -98,7 +99,7 @@ export class TableInsertRowColumnDialog extends ModalDialog {
 
     const countLabel = document.createElement('label');
     countLabel.className = 'dialog-label';
-    countLabel.textContent = '줄/칸 수:';
+    countLabel.textContent = t('dialog.tableRowColumn.countLabel.text');
     countLabel.style.width = '78px';
 
     this.countInput = document.createElement('input');
@@ -121,7 +122,7 @@ export class TableInsertRowColumnDialog extends ModalDialog {
 
     const hint = document.createElement('span');
     hint.className = 'dialog-unit';
-    hint.textContent = `최대 ${MAX_INSERT_COUNT}`;
+    hint.textContent = t('dialog.tableRowColumn.hint.text', { p1: MAX_INSERT_COUNT });
 
     countRow.appendChild(countLabel);
     countRow.appendChild(this.countInput);
@@ -147,14 +148,14 @@ export class TableDeleteRowColumnDialog extends ModalDialog {
   private readonly radioName = `table-delete-row-column-${Math.random().toString(36).slice(2)}`;
 
   constructor(defaultMode: TableDeleteRowColumnMode = 'row') {
-    super('줄/칸 지우기', 320);
+    super(t('dialog.tableRowColumn.onConfirm.title'), 320);
     this.mode = defaultMode;
   }
 
   show(): void {
     super.show();
     const confirmBtn = this.dialog.querySelector('.dialog-btn-primary') as HTMLButtonElement | null;
-    if (confirmBtn) confirmBtn.textContent = '지우기';
+    if (confirmBtn) confirmBtn.textContent = t('dialog.tableRowColumn.confirmBtn.text.x5c6c6e');
   }
 
   protected createBody(): HTMLElement {
@@ -165,7 +166,7 @@ export class TableDeleteRowColumnDialog extends ModalDialog {
 
     const title = document.createElement('div');
     title.className = 'dialog-section-title';
-    title.textContent = '지우기';
+    title.textContent = t('dialog.tableRowColumn.title.text.x5c6c6e');
     delSection.appendChild(title);
 
     const radioGroup = document.createElement('div');

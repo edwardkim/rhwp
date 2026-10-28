@@ -1,0 +1,189 @@
+{
+  "status": "7359_semantic_stage_complete_PR_still_on_hold",
+  "head_before_test_correction": "95b60f1d4fd3118d9aa3e4493d1415e8c96b4ffe",
+  "production_hashes": {
+    "src/renderer/typeset/table/block/entry.rs": "61355ab6e6441f036dd2ba8fcdf19a6a95c99e51a28bc9efd4083798355d4b1c",
+    "src/renderer/typeset/table/block/prepare.rs": "50c12d87e5c2ba5be92668c52a238e01f382fb349025b75592e91da3dc95f846",
+    "src/renderer/float_placement.rs": "4db856f5eba6f3c19851e290ce559be82200bcc51130f1deb3875ecc033d7d35",
+    "src/renderer/layout.rs": "e456a378e18e4095de0d1bf8d3297e6770e1bfe3d76ff29c6b309db3d864310a",
+    "src/renderer/layout/paragraph_layout.rs": "bb6ed8f4292913a23f47f4b3e436b64de2e60bf5106043df1d5e8262b2faa235",
+    "src/renderer/composer/line_breaking.rs": "47b2e5b89f4b65d1a7e0ff70d8202482530fa929ad10a808a50224a97ae3a047"
+  },
+  "fresh_wasm_command_provenance": "para6267_scope_validation.json",
+  "inputs": {
+    "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+    "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79",
+    "pkg/rhwp_bg.wasm": "9ff4a350a57da467ea1b9e752c9be1ff68ba2dd20524d577ad1a13be7b40f56c"
+  },
+  "native_full_document": {
+    "pages": 103,
+    "below90": [
+      10,
+      15,
+      16,
+      35,
+      40,
+      41,
+      46,
+      47,
+      50,
+      53,
+      55,
+      60,
+      65,
+      76,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      86,
+      88,
+      89,
+      92,
+      94
+    ]
+  },
+  "issue7359": {
+    "native_percent": 97.8781,
+    "fresh_wasm_percent": 97.8781,
+    "native_wasm_png_identical": true,
+    "previous_failure": "caption y 165.9 versus fixed 172.55, threshold1.5",
+    "contract": "same page, content once, heading/caption/owning table ordered without overlap,3x3 table",
+    "residual": "caption slightly above independent PDF; semantic PASS does not mean exact spacing resolved",
+    "new_tests": 0,
+    "modified_tests": 1,
+    "removed_tests": 0
+  },
+  "issue6761": {
+    "native_p83_percent": 64.92223,
+    "classification": "actual visible table/heading overlap and vertical displacement; no test expectation change",
+    "passing_counterexample": "retained"
+  },
+  "synam001": {
+    "native_p30_percent": 89.57062,
+    "classification": "unqualified fidelity; no expectation change",
+    "native_full35": "running"
+  },
+  "gates": [
+    {
+      "gate": "focused",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_028",
+        "-E",
+        "test(/issue_7359_page_top_table_spacing::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 166.023,
+      "log": "output/pr-review/planet6897-green-20261002/7359-semantic-focused.log"
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 9.298,
+      "log": "output/pr-review/planet6897-green-20261002/7359-semantic-fmt.log"
+    },
+    {
+      "gate": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 38.429,
+      "log": "output/pr-review/planet6897-green-20261002/7359-semantic-native-clippy.log"
+    },
+    {
+      "gate": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 33.126,
+      "log": "output/pr-review/planet6897-green-20261002/7359-semantic-wasm-clippy.log"
+    },
+    {
+      "gate": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 42.578,
+      "log": "output/pr-review/planet6897-green-20261002/7359-semantic-workspace-build.log"
+    },
+    {
+      "gate": "all-target-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 103.654,
+      "log": "output/pr-review/planet6897-green-20261002/7359-semantic-all-target-clippy.log"
+    },
+    {
+      "gate": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "8497729b4fb0e071c484fc5740f9bb2400bed437"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.868,
+      "log": "output/pr-review/planet6897-green-20261002/7359-semantic-manifest.log"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "independent-print-2022-missing-aRocket-and-pro-medium",
+  "substitutions": {
+    "KoPubWorld돋움체_Pro Medium": "Haansoft Batang",
+    "a로케트": "Haansoft Batang"
+  },
+  "trueTypeFaces": [
+    "Haansoft Batang"
+  ]
+}

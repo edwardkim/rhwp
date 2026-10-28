@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d5-d-clean-room-causal-wasm-recovery-plan",
+  "issue": 4969,
+  "stage": "W10-Q4-D5-D",
+  "date": "2026-08-31",
+  "status": "qualified-clean-room-causal-wasm-result-approved-by-maintainer",
+  "planApproved": true,
+  "productMutation": false,
+  "baselineClassification": "blocked",
+  "goal": "construct a same-latest-tree causal WASM A axis without reversing documentation or test-only commits",
+  "axes": {
+    "B": "exact clean task head after this plan checkpoint",
+    "A": "detached B worktree with only enumerated Q4-D Rust product source diffs reversed"
+  },
+  "reverseCommitsNewestFirst": [
+    "513068f8e",
+    "e7f814330",
+    "c9b551909",
+    "d49400aad",
+    "bb334756b",
+    "992fe4acaf92",
+    "d0948166a"
+  ],
+  "excludedFromReverse": [
+    {
+      "commit": "b1a33b6fc",
+      "reason": "Studio TypeScript and E2E do not contribute bytes to rhwp_bg.wasm"
+    },
+    {
+      "commit": "e31c5c15d",
+      "reason": "test-only performance receipt does not contribute bytes to the default WASM library"
+    },
+    {
+      "kind": "docs-and-upstream-merge-commits",
+      "reason": "not Q4-D Rust product source delta"
+    }
+  ],
+  "sourceAllowlist": [
+    "src/renderer/mod.rs",
+    "src/renderer/shaping_vertical.rs",
+    "src/renderer/kerning.rs",
+    "src/renderer/layout.rs",
+    "src/renderer/layout/table_cell_content.rs",
+    "src/renderer/layout/table_layout.rs",
+    "src/renderer/layout/table_partial.rs",
+    "src/renderer/render_tree.rs",
+    "src/renderer/layer_renderer.rs",
+    "src/paint/mod.rs",
+    "src/paint/builder.rs",
+    "src/paint/resources.rs",
+    "src/paint/shaping_glyph_vertical.rs"
+  ],
+  "hardGates": {
+    "manualConflictResolutionAllowed": false,
+    "patchRejectAllowed": false,
+    "outOfAllowlistTrackedDiffAllowed": false,
+    "cargoLockOrFeatureDriftAllowed": false,
+    "differentDockerImageAllowed": false,
+    "historicalAbsoluteDeltaSubstitutionAllowed": false,
+    "aWasm32CheckRequired": true,
+    "aAndBStandardDockerBuildRequired": true
+  },
+  "docker": {
+    "aProject": "rhwp4969d5a",
+    "bProject": "rhwp4969d5b",
+    "separateVolumes": true,
+    "sameImageIdRequired": true,
+    "wasmPackVersion": "0.15.0",
+    "buildWallTimeIsConclusion": false
+  },
+  "classificationOnSuccess": "qualified-bounded-subset",
+  "classificationOnFailure": "blocked",
+  "resultCheckpoint": "95d450dd5",
+  "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d5_d_causal_wasm_result.json",
+  "result": {
+    "aBytes": 9858318,
+    "bBytes": 9894929,
+    "bMinusABytes": 36611,
+    "bMinusAPercentOfA": 0.37137166806751415,
+    "sameDockerImage": true,
+    "separateVolumes": true,
+    "hardGate": "available"
+  },
+  "finalClassification": "qualified-bounded-subset",
+  "latestRequalifiedUpstreamDevel": "3b301f725ab48985f19c25784b68448ed4257bfd",
+  "latestRequalificationMergeCommit": "3d239b5a7",
+  "next": "submission-boundary-after-final-remote-refresh"
+}

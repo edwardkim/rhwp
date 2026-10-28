@@ -37,7 +37,7 @@ rhwp ir-diff <파일A> <파일B> [-s <구역>] [-p <문단>] [--summary] [--max-
 | `--para <번호>` | `-p` | 특정 문단만 비교 (0부터 시작) |
 | `--summary` |  | 카테고리별 차이 카운트만 출력 (paragraph 헤더 + 개별 차이 라인 생략). **`--json` 병용 시 JSON 이 이겨** 카운트 텍스트는 출력하지 않음 |
 | `--max-lines <N>` |  | 출력 라인 수를 N 으로 제한, 초과 시 truncation 마커 표시 (`=== 비교 완료` 라인은 항상 출력). **단 `--json` 병용 시에는 봉투 한 줄만 나가고 이 텍스트 출력은 전부 생략** |
-| `--json` (#3274) |  | 판정 봉투 JSON 한 줄만 stdout 출력 (`schemaVersion`·`a`·`b`·`identical`·`diffCount`·`categories`). 종료 코드: 차이 발견 3, 읽기·파싱 실패 1(stdout 0바이트), 인자 부족 2 |
+| `--json` (#3274, #4658) |  | 판정 봉투 JSON 한 줄만 stdout 출력 (`schemaVersion`·`a`·`b`·`identical`·`diffCount`·`categories`·`pageCountA`·`pageCountB`). `pageCount*` 는 `info --json` 과 같은 조판 쪽수. 쪽수가 다르면 `identical:false` 이고 `categories.pageCount` 가 집계된다. 종료 코드: 차이 발견 3, 읽기·파싱 실패 1(stdout 0바이트), 인자 부족 2 |
 
 > **병용·인자 규칙(#3274)**: `--summary`/`--max-lines` 와 `--json` 을 함께 주면 **stdout 순수성을 위해 JSON 이 이긴다**(텍스트 출력 전부 생략). 값을 받는 `-s`/`-p`/`--max-lines` 는 다음 토큰이 플래그면 값으로 삼키지 않는다. **알 수 없는 옵션(오타 포함)은 현재 조용히 무시**되어 exit 2 가 아니므로(전역 계약 §종료 코드의 예외, #3178 정렬은 별도 이슈), 게이트 스크립트는 플래그 철자를 정확히 쓸 것.
 
@@ -56,7 +56,7 @@ rhwp ir-diff samples/hwpx/aift.hwpx samples/aift.hwp --max-lines 50
 ```bash
 # 대량 변환 후 내용 보존 검증 — 차이가 있으면 exit 3 으로 즉시 신호
 rhwp ir-diff 원본.hwp 변환본.hwpx --json || echo "격리 대상"
-# {"a":"원본.hwp","b":"변환본.hwpx","categories":{...},"diffCount":N,"identical":false,"schemaVersion":"1.0"}
+# {"a":"원본.hwp","b":"변환본.hwpx","categories":{...},"diffCount":N,"identical":false,"pageCountA":N,"pageCountB":M,"schemaVersion":"1.0"}
 ```
 
 
@@ -134,6 +134,14 @@ rhwp ir-diff samples/tac-img-02.hwpx samples/tac-img-02.hwp 2>&1 | tail -1
 - `B` = 두 번째 파일 (보통 HWP)
 - `[PS N]` = ParaShape 인덱스 N번의 차이
 - `[TD N]` = TabDef 인덱스 N번의 차이
+
+## IR 동일 ≠ 조판 동일 (#4658)
+
+`identical:true` 는 **비교하는 IR 필드**가 같고 `pageCountA == pageCountB` 일 때만이다.
+조판은 IR + 출처 프로파일(HWP5-origin 마커 등, IR 밖 zip/CFB)의 함수라, IR 필드가
+같아도 `info.pageCount` 가 갈릴 수 있다 (`samples/2026_oss_rst.hwp` 6쪽 vs
+`samples/hwpx/2026_oss_rst.hwpx` 7쪽). 그 경우 JSON 은 양쪽 `pageCount*` 를 신고
+`identical:false`·`categories.pageCount` 로 게이트한다. 두 번째 IR 을 만들지 않는다.
 
 ## 정상적인 차이 (무시 가능)
 

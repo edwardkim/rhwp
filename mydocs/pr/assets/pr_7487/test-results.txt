@@ -1,0 +1,38 @@
+### correction-before.log
+        FAIL [   0.019s] (1/3) rhwp::regression_suite_021 issue_7486_enter_overflow_opens_page::spacing_300_enter_boundary_keeps_caret_owner
+    test issue_7486_enter_overflow_opens_page::spacing_300_enter_boundary_keeps_caret_owner ... FAILED
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 214 filtered out; finished in 0.01s
+    thread 'issue_7486_enter_overflow_opens_page::spacing_300_enter_boundary_keeps_caret_owner' (1829470) panicked at tests/generated/../cases/issue_7486_enter_overflow_opens_page.rs:44:78:
+    called `Result::unwrap()` on an `Err` value: RenderError("문단 (sec=0, para=22)이 페이지에 없습니다")
+        FAIL [   0.023s] (2/3) rhwp::regression_suite_021 issue_7486_enter_overflow_opens_page::spacing_200_enter_boundary_keeps_caret_owner
+    test issue_7486_enter_overflow_opens_page::spacing_200_enter_boundary_keeps_caret_owner ... FAILED
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 214 filtered out; finished in 0.01s
+    thread 'issue_7486_enter_overflow_opens_page::spacing_200_enter_boundary_keeps_caret_owner' (1829471) panicked at tests/generated/../cases/issue_7486_enter_overflow_opens_page.rs:44:78:
+    called `Result::unwrap()` on an `Err` value: RenderError("문단 (sec=0, para=33)이 페이지에 없습니다")
+     Summary [   0.030s] 3 tests run: 1 passed, 2 failed, 212 skipped
+        FAIL [   0.019s] (1/3) rhwp::regression_suite_021 issue_7486_enter_overflow_opens_page::spacing_300_enter_boundary_keeps_caret_owner
+        FAIL [   0.023s] (2/3) rhwp::regression_suite_021 issue_7486_enter_overflow_opens_page::spacing_200_enter_boundary_keeps_caret_owner
+
+### correction-final-focused.log
+     Summary [   0.188s] 4 tests run: 4 passed, 205 skipped
+
+### correction-p122.log
+     Summary [   1.192s] 3 tests run: 3 passed, 210 skipped
+
+### correction-zero-advance.log
+     Summary [   0.039s] 1 test run: 1 passed, 216 skipped
+
+### correction-full-nextest.log
+     Summary [ 249.199s] 10273 tests run: 10273 passed (7 slow, 1 leaky), 50 skipped
+
+### correction-skia-lib-retry.log
+test result: ok. 3930 passed; 0 failed; 13 ignored; 0 measured; 0 filtered out; finished in 48.41s
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+### correction-skia-placeholder-retry.log
+     Summary [   1.572s] 2 tests run: 2 passed, 178 skipped
+
+### correction-skia-pdf-retry.log
+     Summary [   1.334s] 4 tests run: 4 passed, 214 skipped

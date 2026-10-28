@@ -11,7 +11,7 @@
             "--",
             "국어"
           ],
-          "path": "matches[0].offset"
+          "path": "matches[0].charOffset"
         }
       }
     }

@@ -88,8 +88,9 @@ exit=2
 ```
 
 - **원인**: 명령 이름 오타이거나, 다른 버전에만 있는 명령이다.
-- **처방**: `rhwp capabilities` 의 `commands[].name` 목록에서 고른다. 버전은
-  `rhwp --version` (실측 출력 `rhwp v0.8.2`, exit 0).
+- **처방**: `rhwp capabilities` 의 `commands[].name` 목록에서 고른다. `inspect`·`edit`
+  는 하위를 `commands[].subcommands[].name` 으로 싣는다 (`inspect hidden-text` 등).
+  버전은 `rhwp --version` (실측 출력 `rhwp v0.8.2`, exit 0).
 
 ### 인자 없이 실행하면 exit 2 (헬스체크 함정)
 

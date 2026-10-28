@@ -1,0 +1,32 @@
+{
+  "hwp": {
+    "command": [
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/bin/stage42-after-rhwp",
+      "export-render-tree",
+      "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+      "-o",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage42-original-hwp-tree"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 1.7709524580277503,
+    "before_pages": 215,
+    "after_pages": 215,
+    "changed_pages": [],
+    "unchanged_pages": 215
+  },
+  "hwpx": {
+    "command": [
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/bin/stage42-after-rhwp",
+      "export-render-tree",
+      "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+      "-o",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage42-original-hwpx-tree"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.6616201247088611,
+    "before_pages": 215,
+    "after_pages": 215,
+    "changed_pages": [],
+    "unchanged_pages": 215
+  }
+}

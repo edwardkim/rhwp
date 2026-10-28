@@ -15,11 +15,11 @@ use crate::model::bin_data::{BinData, BinDataType, MAX_BIN_DATA_BYTES};
 use crate::model::document::{Document, Preview};
 use crate::password_crypto::{encrypt_hwp5_stream, HWP5_ENCRYPT_VERSION};
 
-use super::body_text::serialize_section;
+use super::body_text::serialize_section_for_version;
 use super::content_loss::{
     ContentLoss, ContentLossReason, ContentLossReport, SerializedDocument, SerializedFormat,
 };
-use super::doc_info::serialize_doc_info;
+use super::doc_info::{serialize_doc_info, surgical_update_section_count};
 use super::header::serialize_file_header;
 use super::mini_cfb;
 use super::SerializeError;
@@ -67,6 +67,8 @@ fn serialize_hwp_inner(
     password: Option<&[u8]>,
     warning_mode: ContentLossWarningMode,
 ) -> Result<SerializedDocument, SerializeError> {
+    crate::model::section_tail::validate_preservation(doc)
+        .map_err(SerializeError::UnsupportedInput)?;
     // 1. FileHeader 직렬화
     // [Task #1768] 배포용/암호화 문서 강하: IR 은 이미 복호화된 평문이고 본 직렬화는
     // ViewText/DISTRIBUTE_DOC_DATA 를 생성하지 않으므로, 플래그를 유지하면 산출물
@@ -107,6 +109,9 @@ fn serialize_hwp_inner(
         serialize_file_header(&doc.header)
     };
 
+    // raw FileHeader가 보존되면 모델의 version과 다를 수 있으므로 실제 출력값을 쓴다.
+    let output_version = u32::from_le_bytes(header_bytes[32..36].try_into().unwrap());
+
     // 3. BodyText 섹션별 직렬화
     //
     // [#5142] HWPX 는 한 section 파일 안에 `<hp:secPr>` 를 여러 개 둘 수 있고,
@@ -120,6 +125,8 @@ fn serialize_hwp_inner(
     // IR 형상(구역 수)이 바뀐다. 거부는 순수 HWPX 출처(x2h)에서만 관측됐다.
     let split_multi_sec_pr = doc.layout_profile().hwpx_stored_layout();
     let mut section_bytes_list = Vec::new();
+    let mut viewtext_history = Vec::new();
+    let mut form_id_allocator = None;
     for section in &doc.sections {
         let split_starts: Vec<usize> =
             if !split_multi_sec_pr || section.raw_provenance_permits_reuse() {
@@ -139,7 +146,23 @@ fn serialize_hwp_inner(
                     .collect()
             };
         if split_starts.is_empty() {
-            section_bytes_list.push(serialize_section(section));
+            let prepared =
+                super::form_identity::prepare_section(section, doc, &mut form_id_allocator)?;
+            let bytes = serialize_section_for_version(&prepared, output_version);
+            if prepared.raw_provenance_permits_reuse() {
+                if let Some(visible) =
+                    crate::parser::tracked_viewtext::project(&bytes, &doc.doc_info)
+                        .map_err(|error| SerializeError::UnsupportedInput(error.to_string()))?
+                {
+                    // An unedited review stream belongs in ViewText. Reusing it
+                    // as BodyText alone loses the distinction between current
+                    // content and review history in a Hancom round trip.
+                    viewtext_history.push((section_bytes_list.len(), bytes));
+                    section_bytes_list.push(visible);
+                    continue;
+                }
+            }
+            section_bytes_list.push(bytes);
             continue;
         }
         let mut starts = Vec::with_capacity(split_starts.len() + 1);
@@ -163,22 +186,45 @@ fn serialize_hwp_inner(
             let sub = crate::model::document::Section {
                 section_def,
                 paragraphs,
+                trailing_lists: if k + 1 == starts.len() {
+                    section.trailing_lists.clone()
+                } else {
+                    None
+                },
                 raw_stream: None,
                 raw_provenance: None,
             };
-            section_bytes_list.push(serialize_section(&sub));
+            let prepared =
+                super::form_identity::prepare_section(&sub, doc, &mut form_id_allocator)?;
+            section_bytes_list.push(serialize_section_for_version(&prepared, output_version));
         }
     }
 
-    // 2. DocInfo 직렬화 — 구역 분할로 스트림 수가 IR 구역 수와 달라지면
-    // DOCUMENT_PROPERTIES.section_count 도 실제 스트림 수로 맞춘다.
-    let doc_info_bytes = if section_bytes_list.len() != doc.sections.len() {
-        let mut props = doc.doc_properties.clone();
-        props.section_count = section_bytes_list.len() as u16;
-        serialize_doc_info(&doc.doc_info, &props)
-    } else {
-        serialize_doc_info(&doc.doc_info, &doc.doc_properties)
-    };
+    // 2. DocInfo 직렬화 — DOCUMENT_PROPERTIES.section_count 는 **실제로 방출한
+    // BodyText/SectionN 스트림 수**로 확정한다 (#6156).
+    //
+    // 한글은 이 값을 구역 스트림 탐색의 상한으로 읽으므로, 선언값이 실제보다
+    // 크면 없는 구역에서 손상 판정을 내고(forceopen 도 실패) 작으면 뒤쪽 구역이
+    // 렌더링되지 않는다. 어느 쪽이든 이 값의 권위는 입력 모델이 아니라 이 자리 —
+    // "몇 개를 실제로 썼는가" 를 아는 유일한 지점이다.
+    //
+    // 종전에는 `section_bytes_list.len() != doc.sections.len()` 일 때만 보정해서
+    // #5142 분할로 스트림이 늘어난 경우만 잡았고, 입력이 이미 어긋난 경우
+    // (선언 2 / IR 구역 1)는 두 값이 같아 원본 선언값이 그대로 실려 나갔다.
+    // HWP5 네이티브 왕복은 DOCUMENT_PROPERTIES 를 raw 로 통과시키므로 불일치가
+    // 왕복해도 남는다 — 그래서 모델이 아니라 방출 바이트를 고친다.
+    let emitted_sections = section_bytes_list.len().min(u16::MAX as usize) as u16;
+    let mut doc_info_bytes = serialize_doc_info(&doc.doc_info, &doc.doc_properties);
+    if doc.doc_properties.section_count != emitted_sections {
+        // raw 통과(스트림·레코드) 경로에서도 다른 바이트를 건드리지 않도록 국소 패치.
+        // 레코드가 없는 병리적 스트림에서만 모델 writer 로 재생성한다.
+        if surgical_update_section_count(&mut doc_info_bytes, emitted_sections).is_err() {
+            let mut props = doc.doc_properties.clone();
+            props.section_count = emitted_sections;
+            props.raw_data = None;
+            doc_info_bytes = serialize_doc_info(&doc.doc_info, &props);
+        }
+    }
 
     // 4. 압축 여부 결정
     let compressed = doc.header.compressed;
@@ -193,14 +239,49 @@ fn serialize_hwp_inner(
 
     // 6. CFB 컨테이너 조립
     let mut content_loss = ContentLossReport::new(SerializedFormat::Hwp);
+    let mut extra_streams = doc.extra_streams.clone();
+    extra_streams.retain(|(path, _)| path != crate::model::border_paint::HWP_STREAM);
+    if let Some(bytes) =
+        crate::model::border_paint::encode(doc).map_err(SerializeError::UnsupportedInput)?
+    {
+        extra_streams.push((crate::model::border_paint::HWP_STREAM.into(), bytes));
+        content_loss.record(crate::model::border_paint::native_editing_loss());
+    }
+    extra_streams.retain(|(path, _)| path != crate::model::text_clip::HWP_STREAM);
+    if let Some(bytes) =
+        crate::model::text_clip::encode(doc).map_err(SerializeError::UnsupportedInput)?
+    {
+        extra_streams.push((crate::model::text_clip::HWP_STREAM.into(), bytes));
+        content_loss.record(crate::model::text_clip::native_visibility_loss());
+    }
+    // HWPX에 보존한 재정렬 요청도 HWP 저장·재열기에서 같은 계약을 유지한다.
+    if doc.layout_profile().hwp3_external_realign()
+        && !extra_streams
+            .iter()
+            .any(|(path, _)| path == crate::model::document::HWP3_EXTERNAL_REALIGN_STREAM_PATH)
+    {
+        extra_streams.push((
+            crate::model::document::HWP3_EXTERNAL_REALIGN_STREAM_PATH.to_string(),
+            b"1".to_vec(),
+        ));
+    }
+    extra_streams.retain(|(path, _)| path != crate::model::native_font_program::HWP_STREAM);
+    if let Some(bytes) = crate::model::native_font_program::encode(&doc.doc_info, &doc_info_bytes) {
+        extra_streams.push((crate::model::native_font_program::HWP_STREAM.into(), bytes));
+    }
+    extra_streams.retain(|(path, _)| path != crate::model::hyperlink_format::HWP_STREAM);
+    if let Some(bytes) = crate::model::hyperlink_format::encode(doc) {
+        extra_streams.push((crate::model::hyperlink_format::HWP_STREAM.into(), bytes));
+    }
     let bytes = write_hwp_cfb(
         &header_bytes,
         &doc_info_bytes,
         &section_bytes_list,
+        &viewtext_history,
         &doc.doc_info.bin_data_list,
         &doc.bin_data_content,
         &preview,
-        &doc.extra_streams,
+        &extra_streams,
         compressed,
         password,
         &mut content_loss,
@@ -280,6 +361,7 @@ fn write_hwp_cfb(
     header_bytes: &[u8],
     doc_info_bytes: &[u8],
     section_bytes_list: &[Vec<u8>],
+    viewtext_history: &[(usize, Vec<u8>)],
     bin_data_list: &[BinData],
     bin_data_content: &[BinDataContent],
     preview: &Option<Preview>,
@@ -314,6 +396,17 @@ fn write_hwp_cfb(
             section_bytes.clone()
         };
         streams.push((path, encrypt_if_password(data, password)));
+    }
+    for (index, bytes) in viewtext_history {
+        let data = if compressed {
+            compress_stream(bytes)?
+        } else {
+            bytes.clone()
+        };
+        streams.push((
+            format!("/ViewText/Section{index}"),
+            encrypt_if_password(data, password),
+        ));
     }
 
     // 4. /BinData/BIN{XXXX}.{ext}

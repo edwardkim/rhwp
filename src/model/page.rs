@@ -130,7 +130,7 @@ pub struct ColumnDef {
     /// 단 간격
     pub spacing: HwpUnit16,
     /// 단별 너비 목록 (same_width가 false일 때)
-    /// HWP 5.0 바이너리: 비례값 (합계=32768), HWPX: 절대 HWPUNIT
+    /// 한컴 HWP 5.0·HWPX 저장본의 비례값(합계=32768)
     pub widths: Vec<HwpUnit16>,
     /// 단별 간격 목록 (same_width가 false일 때, 각 단 뒤의 간격)
     pub gaps: Vec<HwpUnit16>,
@@ -163,6 +163,8 @@ pub enum ColumnDirection {
     #[default]
     LeftToRight,
     RightToLeft,
+    /// 홀수 쪽은 왼쪽부터, 짝수 쪽은 오른쪽부터 채우는 맞쪽 방향(HWP 사양 표 139).
+    Mirror,
 }
 
 /// 페이지 렌더링에 필요한 계산된 영역 정보

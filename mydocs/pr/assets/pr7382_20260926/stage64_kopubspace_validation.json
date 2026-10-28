@@ -1,0 +1,216 @@
+{
+  "scope": "고정38의20번 기존공백하한 함수 개별 완료;전체PR 미완료",
+  "preanalysis": {
+    "pdf": "pdf/issue2006/1790387_prep_final_report-2024.pdf",
+    "pdf_sha256": "04b95a6e41420fb45934ce2ee5abd8cf6dac4ce12fd47977dacbe7fca28018a8",
+    "observations": [
+      {
+        "text": "with men through the network scale-up method in Japan. PLoS One. 2012;7(1):e31184.",
+        "space_count": 11,
+        "origin_advances_96dpi": [
+          6.720540364583333,
+          6.72137451171875,
+          6.721394856770833,
+          6.720682779947917,
+          6.72161865234375,
+          6.883097330729167,
+          6.7208251953125,
+          6.720662434895833,
+          6.722086588541667,
+          6.880167643229167,
+          6.7197265625
+        ],
+        "bbox_pt": [
+          75.47999572753906,
+          644.68798828125,
+          503.7460021972656,
+          655.7279663085938
+        ]
+      }
+    ],
+    "source": "samples/issue2006/1790387_prep_final_report.hwpx",
+    "source_sha256": "c68baed24096386f9041930d24d39409b61ac99463bf04dfd242440dfdeb739f",
+    "original_run_text": "11. Ezoe S, Morooka T, Noda T, Sabin ML, Koike S. Population size estimation of men who have sex with men through the network scale-up method in Japan. PLoS One. 2012;7(1):e31184.",
+    "charpr_xml": "<ns0:charPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" id=\"28\" height=\"1100\" textColor=\"#000000\" shadeColor=\"none\" useFontSpace=\"0\" useKerning=\"0\" symMark=\"NONE\" borderFillIDRef=\"51\"><ns0:fontRef hangul=\"9\" latin=\"12\" hanja=\"9\" japanese=\"9\" other=\"12\" symbol=\"11\" user=\"11\" /><ns0:ratio hangul=\"98\" latin=\"98\" hanja=\"98\" japanese=\"98\" other=\"98\" symbol=\"98\" user=\"98\" /><ns0:spacing hangul=\"-5\" latin=\"-5\" hanja=\"-5\" japanese=\"-5\" other=\"-5\" symbol=\"-5\" user=\"-5\" /><ns0:relSz hangul=\"100\" latin=\"100\" hanja=\"100\" japanese=\"100\" other=\"100\" symbol=\"100\" user=\"100\" /><ns0:offset hangul=\"0\" latin=\"0\" hanja=\"0\" japanese=\"0\" other=\"0\" symbol=\"0\" user=\"0\" /><ns0:underline type=\"NONE\" shape=\"SOLID\" color=\"#000000\" /><ns0:strikeout shape=\"3D\" color=\"none\" /><ns0:outline type=\"NONE\" /><ns0:shadow type=\"NONE\" color=\"#C0C0C0\" offsetX=\"10\" offsetY=\"10\" /></ns0:charPr>",
+    "before_failure": "stage55 full.log:108쪽 대상 줄 None;폭하한 도달전FAIL",
+    "after_span_96dpi": 574.1,
+    "lower_bound_px": 555,
+    "policy": "기존 하한/함수수/구현 유지. 공백 개수 주석9→11, 예상 감소약25→33px만 바로잡음.",
+    "scope_limit": "전체 줄 하한은 개별공백의 정확한 advance 등식 검사가 아니다. PDF 공백glyph상자와다음origin 전진도구분."
+  },
+  "individual": {
+    "function": "issue_7390_kopub_latin_metrics::kopub_space_stays_half_width",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--test",
+      "regression_suite_012",
+      "-E",
+      "test(/(^|::)issue_7390_kopub_latin_metrics::kopub_space_stays_half_width$/)",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plan": {
+      "caseName": "issue_7390_kopub_latin_metrics",
+      "target": "regression_suite_012",
+      "grouped": true
+    },
+    "exit_code": 0,
+    "seconds": 7.234109000302851,
+    "head": "16500cd5cb763c98dfb741f59716320c85bcafbc",
+    "code_commit": "fd10e7fd9d9fda41648b0d8ba2f57d219ae8d197",
+    "reused_evidence": "stage59_prep2006_validation.json",
+    "source_sha_comparison": "all_equal",
+    "test_source_sha256": "ee578f9368e7727a17b52beabcc6c1c0d8e8964e75bfd2854a50c8431ed064af"
+  },
+  "rust_gates": [
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.7328452919609845,
+      "base_sha": "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+    },
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 5.771826458163559,
+      "base_sha": "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+    },
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 5.699349999893457,
+      "base_sha": "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.3427540408447385,
+      "base_sha": "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.21557608293369412,
+      "base_sha": "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 0.34396408312022686,
+      "base_sha": "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 3.9201659159734845,
+      "base_sha": "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+      ],
+      "exit_code": 0,
+      "seconds": 1.8456735839135945,
+      "base_sha": "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.035420124884694815,
+      "base_sha": "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+    }
+  ],
+  "visual_reuse": {
+    "evidence": "stage59_prep2006_validation.json",
+    "evidence_sha256": "abcb40df200bcf766a755974f5f306809fccf1c8757ddb2200ec2825f65fb958",
+    "source_comparison": "all_equal",
+    "count": 280,
+    "native_min": 91.82221,
+    "wasm_min": 91.82221,
+    "page108_native": 99.83575,
+    "page108_wasm": 99.83575,
+    "direct_read_evidence": "stage63_kopubwidth_validation.json",
+    "direct_assets": [
+      "stage63_after_native_prep2006_review_108.png",
+      "stage63_after_wasm_prep2006_review_108.png",
+      "stage63_after_wasm_prep2006_overlay_108.png"
+    ]
+  },
+  "code_change": "생산코드 변경 없음. 기존 테스트 주석의공백9→11/예상폭감소약25→33px만 수정.",
+  "test_assertion_changed": false,
+  "baseline_changed": false,
+  "new_test_functions": 0,
+  "source_side_test_change": false,
+  "residual": "전체 줄 하한은개별공백advance 등식 검증이 아님.약1px 글자높이/획/제목 위 얇은선 차이."
+}

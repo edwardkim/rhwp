@@ -135,14 +135,8 @@ pub fn run(args: &[String]) -> i32 {
             }
         }
     }
-    // [#3884 G1] 전건 실패면 stdout 을 비운다 — 빈 표에 배너까지 얹어 내보내면
-    // 파이프 소비자가 "측정 결과"로 읽는다. 실패의 전말은 stderr 와 종료 코드가 말한다.
-    if !rows.is_empty() {
-        println!("=== bench: 단계별 처리 성능 (median of {iters}회, 워밍업 1회) ===");
-        println!("주의: 절대 수치는 측정 머신·빌드 의존. 동일 환경 상대·재현 지표로 해석.");
-        print_table(&rows);
-    }
 
+    let mut tsv_written: Option<String> = None;
     if let Some(path) = tsv {
         if rows.is_empty() {
             // 측정 성공 0건이면 산출물을 만들지 않는다(redact 의 "탐지 0건 = 파일
@@ -150,7 +144,7 @@ pub fn run(args: &[String]) -> i32 {
             eprintln!("TSV 생략: 측정 성공이 0건입니다 - {path}");
         } else {
             match write_tsv(&path, &rows) {
-                Ok(()) => println!("\nTSV: {path}"),
+                Ok(()) => tsv_written = Some(path),
                 Err(e) => {
                     eprintln!("TSV 쓰기 실패: {e}");
                     failures += 1;
@@ -159,13 +153,25 @@ pub fn run(args: &[String]) -> i32 {
         }
     }
 
-    // 성능 계측은 CI·스크립트에서 자동화되므로, 하나 이상의 파일 처리 실패가
-    // 있으면 non-zero 로 종료해 실패가 성공처럼 숨겨지지 않게 한다.
+    // [#3884 G1] 실패가 하나라도 있으면 stdout 은 0바이트다
+    // (`capabilities.jsonContract.failure`). 종전엔 성공 행이 하나 있으면 배너+표를
+    // stdout 에 얹은 채 exit 1 을 냈고, `bench <문서> --json` 이 `--json` 을 파일
+    // 이름으로 접던 시절의 518 B 누수가 그 혼합 실패였다. 사람용 전말은 stderr.
     if failures > 0 {
         eprintln!("\n{failures}개 파일 처리 실패 — 종료 코드 1");
-        // process::exit 대신 반환한다 — 호출부(main 의 exit_with)가 종료를 맡으면
-        // 이 함수도 다른 진단 명령과 같은 계약 하나만 지키면 된다.
+        if let Some(path) = tsv_written {
+            eprintln!("TSV: {path}");
+        }
         return super::EXIT_RUNTIME;
+    }
+
+    if !rows.is_empty() {
+        println!("=== bench: 단계별 처리 성능 (median of {iters}회, 워밍업 1회) ===");
+        println!("주의: 절대 수치는 측정 머신·빌드 의존. 동일 환경 상대·재현 지표로 해석.");
+        print_table(&rows);
+    }
+    if let Some(path) = tsv_written {
+        println!("\nTSV: {path}");
     }
     super::EXIT_OK
 }

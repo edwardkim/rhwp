@@ -25,10 +25,10 @@ export type GeneratedFontRuleProjection = Readonly<{
 export const FONT_RULE_CANVAS2D_WEBFONT_META = Object.freeze({
   "schemaVersion": "1.0",
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
-  "inputSha256": "dd4604d3f12377ce8deab730d246df72e2e19e607ad11ad8973671698873873b",
+  "inputSha256": "067d9fa89a5c9316aa372193ace695f6f105edaff1e78b27aedb25038f212b64",
   "projectionId": "canvas2d-webfont",
-  "projectionSha256": "730cab042d68ffb019d5867102ee8b2b8e5be41c48170ca5fc75422005e3fbee",
-  "ruleCount": 153
+  "projectionSha256": "1fe89c01aa989f9449c736e0f73c4d448a0176c863edcb9bb66cb849b306beee",
+  "ruleCount": 155
 });
 
 export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProjection[] = Object.freeze([
@@ -737,12 +737,12 @@ export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProject
     }
   },
   {
-    "ruleId": "rule.studio-supply.2f05addbdfe5f66a5bd0.canvas2d",
+    "ruleId": "rule.studio-supply.batangche-serif.canvas2d",
     "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
     "sourceFace": "바탕체",
-    "targetFaceOrPolicy": "'fonts/D2Coding-Regular.woff2'",
+    "targetFaceOrPolicy": "'fonts/NotoSerifKR-Regular.woff2'",
     "conditions": {
       "profile": "canvas2d-css-unknown"
     },
@@ -754,7 +754,7 @@ export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProject
       "fontFamily": "바탕체",
       "format": "woff2",
       "kind": "canvas2d-webfont",
-      "sourceUrl": "fonts/D2Coding-Regular.woff2",
+      "sourceUrl": "fonts/NotoSerifKR-Regular.woff2",
       "unicodeRange": null
     }
   },
@@ -3377,12 +3377,12 @@ export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProject
     }
   },
   {
-    "ruleId": "rule.studio-supply.0aab2d58429b52047acb.canvas2d",
+    "ruleId": "rule.issue-4969.oldhangul-license-webfont",
     "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
-    "sourceFace": "Source Han Serif K Old Hangul",
-    "targetFaceOrPolicy": "'fonts/SourceHanSerifK-OldHangul-subset.woff2'",
+    "sourceFace": "RHWP Old Hangul",
+    "targetFaceOrPolicy": "'fonts/RHWPOldHangul-Regular.woff2'",
     "conditions": {
       "profile": "canvas2d-css-unknown"
     },
@@ -3391,11 +3391,55 @@ export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProject
     "metricEntryIds": [],
     "supply": {
       "external": false,
-      "fontFamily": "Source Han Serif K Old Hangul",
+      "fontFamily": "RHWP Old Hangul",
       "format": "woff2",
       "kind": "canvas2d-webfont",
-      "sourceUrl": "fonts/SourceHanSerifK-OldHangul-subset.woff2",
+      "sourceUrl": "fonts/RHWPOldHangul-Regular.woff2",
       "unicodeRange": "U+1100-11FF, U+A960-A97F, U+D7B0-D7FF"
+    }
+  },
+  {
+    "ruleId": "rule.issue-5884.noto-symbols2.webfont",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "Noto Sans Symbols2",
+    "targetFaceOrPolicy": "'fonts/NotoSansSymbols2-Regular.ttf'",
+    "conditions": {
+      "profile": "canvas2d-css-unknown"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "external": false,
+      "fontFamily": "Noto Sans Symbols2",
+      "format": "truetype",
+      "kind": "canvas2d-webfont",
+      "sourceUrl": "fonts/NotoSansSymbols2-Regular.ttf",
+      "unicodeRange": null
+    }
+  },
+  {
+    "ruleId": "rule.issue-7445.public-batang-webfont-supply",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "RHWP Public Batang",
+    "targetFaceOrPolicy": "'fonts/RHWPPublicBatang-Regular.woff2'",
+    "conditions": {
+      "profile": "canvas2d-css-unknown"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "external": false,
+      "fontFamily": "RHWP Public Batang",
+      "format": "woff2",
+      "kind": "canvas2d-webfont",
+      "sourceUrl": "fonts/RHWPPublicBatang-Regular.woff2",
+      "unicodeRange": null
     }
   }
 ]);

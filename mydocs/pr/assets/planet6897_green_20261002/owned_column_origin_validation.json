@@ -1,0 +1,476 @@
+{
+  "state": "stage_complete_PR_still_on_hold",
+  "head_before_changes": "6d36a136c",
+  "source_hashes": {
+    "src/renderer/layout.rs": "c4213245768af2987198be3ab0b5bb02c914895823e31d0a0ff8ef371e2a58dc",
+    "src/renderer/typeset/table/block/entry.rs": "8c0ccbabee2d422cf7587a2a2ef973e01f8b1cfbc2b69e2351fe6297b38c0716",
+    "samples/hwpx/form-002.hwpx": "5ab8f7c368e02538f75f1cd2bd82bbd8de2f925a54ba7b38ec9395b2cdb804d4",
+    "pdf/hwpx/form-002-hwpx-2020.pdf": "b60acefa200945d74a4f6c0d08037125941e128bb5dfe2f63351b9fd30cb69a6",
+    "tests/golden_svg/form-002/page-0.actual.svg": "18e0ea9c328cea385d7d2c4df612ccea92c8063034cc877ae78d2a4463fcfdf2",
+    "pkg/rhwp_bg.wasm": "22b567229c193f647a316e772794d5d4f382cb52e3e59392937824fdf3c9f14f",
+    "rhwp-studio/public/rhwp_bg.wasm": "22b567229c193f647a316e772794d5d4f382cb52e3e59392937824fdf3c9f14f"
+  },
+  "new_tests": 0,
+  "modified_tests": 0,
+  "removed_tests": 0,
+  "reference_pdf_changes": 0,
+  "before_whole": {
+    "head": "53b7b314b251faa596abd71fee21b0bd95e2200a",
+    "run": 10266,
+    "passed": 10249,
+    "failed": 17,
+    "exit_code": 100
+  },
+  "after_focused": {
+    "run": 70,
+    "passed": 70,
+    "failed": 0,
+    "exit_code": 0
+  },
+  "fixed_five": [
+    "issue_6104_tac_title_over_table",
+    "issue_7288_stale_frame_empty_paragraph:2",
+    "body_overflow_baseline:partition10,13"
+  ],
+  "analysis": {
+    "column_origin": "실제 호스트 글줄이 함께 배치되면 측정의 공통 원점에서 저장 기준을 역산한다. 호스트 글줄 없이 표만 새 단을 여는 경우 기존 저장 프레임의 원점을 보존한다.",
+    "block_origin": "공통 글자취급 속성과 저장 table.attr이 달라 블록 경로로 온 표에서 밴드 회피가 current_height만 이동시켰다. 최종 whole-fit 원점과 점유 끝을 ParagraphFloatPlacement로 기록하여 예약과 renderer의 table_top/resolved_table_origin이 같은 결과를 사용한다.",
+    "excluded_attempts": "TAC 전용 경로 보정은 실제 블록 호출 경로를 지나지 않아 실패했고 제거했다. 임시 진단 출력도 source에서 제거했다. 원점만 공유한 첫 보정은69PASS/1FAIL이며 최종70PASS와 구분한다."
+  },
+  "native_wasm_all2_percent": {
+    "native": [
+      96.54137,
+      94.44785
+    ],
+    "wasm": [
+      96.54137,
+      94.44785
+    ]
+  },
+  "normal_validated_all24_render_trees_unchanged": {
+    "form002-native": {
+      "pages": 10,
+      "prior_pages": 10,
+      "different": []
+    },
+    "social6797-native": {
+      "pages": 11,
+      "prior_pages": 11,
+      "different": []
+    },
+    "slice5701-native": {
+      "pages": 3,
+      "prior_pages": 3,
+      "different": []
+    },
+    "form002-wasm": {
+      "pages": 10,
+      "prior_pages": 10,
+      "different": []
+    },
+    "social6797-wasm": {
+      "pages": 11,
+      "prior_pages": 11,
+      "different": []
+    },
+    "slice5701-wasm": {
+      "pages": 3,
+      "prior_pages": 3,
+      "different": []
+    }
+  },
+  "form002_svg_and_chrome_png_byte_identical_to_tofu_free_verified_output": true,
+  "gates": {
+    "head_before_changes": "6d36a136ce4ebd1bb82584b6504175c023a41081",
+    "state": "complete",
+    "gates": [
+      {
+        "gate": "prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.748,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-prepare.log"
+      },
+      {
+        "gate": "format",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 5.955,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-format.log"
+      },
+      {
+        "gate": "prepare-formatted",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.594,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-prepare-formatted.log"
+      },
+      {
+        "gate": "focused",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_002",
+          "--test",
+          "regression_suite_018",
+          "--test",
+          "regression_suite_022",
+          "--test",
+          "regression_suite_006",
+          "--test",
+          "regression_suite_007",
+          "--test",
+          "regression_suite_024",
+          "--test",
+          "regression_suite_012",
+          "--test",
+          "regression_suite_001",
+          "--test",
+          "regression_suite_013",
+          "--test",
+          "regression_suite_028",
+          "-E",
+          "test(/issue_6104_tac_title_over_table::/) | test(/issue_7288_stale_frame_empty_paragraph::/) | test(/body_overflow_baseline::body_overflow_does_not_grow_partition_(10|13)$/) | test(/issue_1789_exclusion_probe_line_spacing::/) | test(/oracle_page_count_baseline::/) | test(/svg_snapshot::/) | test(/issue_5701_rewound_float_host_double_paint::/) | test(/issue_6950_paragraph_end_topbottom_anchor::/) | test(/issue_5584_float_host_title_above_table::/) | test(/issue_6797_table_item_clears_float_band::/) | test(/issue_2097_terminal_row_physical_ownership::/) | test(/issue_6184_tail_line_before_deferred_table::/)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 164.414,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-focused.log"
+      },
+      {
+        "gate": "restore-current-cli",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--bin",
+          "rhwp"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 80.214,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-restore-current-cli.log"
+      },
+      {
+        "gate": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 6.36,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-fmt.log"
+      },
+      {
+        "gate": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 21.144,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-native-clippy.log"
+      },
+      {
+        "gate": "wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 13.978,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-wasm-clippy.log"
+      },
+      {
+        "gate": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 29.516,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-workspace-build.log"
+      },
+      {
+        "gate": "all-target-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 58.566,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-all-target-clippy.log"
+      },
+      {
+        "gate": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "6b3faf77d8085441f9f26d88d65a49791e910352"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.518,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-manifest.log"
+      }
+    ]
+  },
+  "visual": {
+    "state": "complete",
+    "commands": [
+      {
+        "name": "native",
+        "command": [
+          "venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "samples/task1789/exclusion_probe_line_spacing.hwpx",
+          "--pdf",
+          "pdf/task1789/exclusion_probe_line_spacing-hwpx-2020.pdf",
+          "--key",
+          "owned-column-origin-block-native",
+          "--rhwp-bin",
+          "target/pr-review/release-test/rhwp",
+          "--embed-fonts",
+          "full",
+          "--silhouette-only",
+          "--out",
+          "output/pr-review/planet6897-green-20261002/owned-column-origin-block-native"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 7.414,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-native.log"
+      },
+      {
+        "name": "form002-native",
+        "command": [
+          "target/pr-review/release-test/rhwp",
+          "export-render-tree",
+          "samples/hwpx/form-002.hwpx",
+          "-o",
+          "output/pr-review/planet6897-green-20261002/owned-column-origin-block-form002-native-tree"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.089,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-form002-native.log"
+      },
+      {
+        "name": "social6797-native",
+        "command": [
+          "target/pr-review/release-test/rhwp",
+          "export-render-tree",
+          "samples/issue6797/156160455-social-pig-farm-income.hwp",
+          "-o",
+          "output/pr-review/planet6897-green-20261002/owned-column-origin-block-social6797-native-tree"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.042,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-social6797-native.log"
+      },
+      {
+        "name": "slice5701-native",
+        "command": [
+          "target/pr-review/release-test/rhwp",
+          "export-render-tree",
+          "samples/issue5701/1270000-202200012_slice_p76_rewound_host.hwp",
+          "-o",
+          "output/pr-review/planet6897-green-20261002/owned-column-origin-block-slice5701-native-tree"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.012,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-slice5701-native.log"
+      },
+      {
+        "name": "fresh-wasm",
+        "command": [
+          "env",
+          "CARGO_TARGET_DIR=target/pr-review",
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 146.363,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-fresh-wasm.log"
+      },
+      {
+        "name": "wasm",
+        "command": [
+          "venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "samples/task1789/exclusion_probe_line_spacing.hwpx",
+          "--pdf",
+          "pdf/task1789/exclusion_probe_line_spacing-hwpx-2020.pdf",
+          "--key",
+          "owned-column-origin-block-wasm",
+          "--wasm-pkg",
+          "pkg",
+          "--rhwp-bin",
+          "target/pr-review/release-test/rhwp",
+          "--embed-fonts",
+          "full",
+          "--silhouette-only",
+          "--out",
+          "output/pr-review/planet6897-green-20261002/owned-column-origin-block-wasm"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 7.55,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-wasm.log"
+      },
+      {
+        "name": "form002-wasm",
+        "command": [
+          "node",
+          "scripts/export-wasm-for-sweep.mjs",
+          "--pkg",
+          "pkg",
+          "--input",
+          "samples/hwpx/form-002.hwpx",
+          "--out",
+          "output/pr-review/planet6897-green-20261002/owned-column-origin-block-form002-wasm"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 1.289,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-form002-wasm.log"
+      },
+      {
+        "name": "social6797-wasm",
+        "command": [
+          "node",
+          "scripts/export-wasm-for-sweep.mjs",
+          "--pkg",
+          "pkg",
+          "--input",
+          "samples/issue6797/156160455-social-pig-farm-income.hwp",
+          "--out",
+          "output/pr-review/planet6897-green-20261002/owned-column-origin-block-social6797-wasm"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 1.113,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-social6797-wasm.log"
+      },
+      {
+        "name": "slice5701-wasm",
+        "command": [
+          "node",
+          "scripts/export-wasm-for-sweep.mjs",
+          "--pkg",
+          "pkg",
+          "--input",
+          "samples/issue5701/1270000-202200012_slice_p76_rewound_host.hwp",
+          "--out",
+          "output/pr-review/planet6897-green-20261002/owned-column-origin-block-slice5701-wasm"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.928,
+        "log": "output/pr-review/planet6897-green-20261002/owned-column-origin-block-slice5701-wasm.log"
+      }
+    ],
+    "counter": {
+      "form002-native": {
+        "pages": 10,
+        "prior_pages": 10,
+        "different": []
+      },
+      "social6797-native": {
+        "pages": 11,
+        "prior_pages": 11,
+        "different": []
+      },
+      "slice5701-native": {
+        "pages": 3,
+        "prior_pages": 3,
+        "different": []
+      },
+      "form002-wasm": {
+        "pages": 10,
+        "prior_pages": 10,
+        "different": []
+      },
+      "social6797-wasm": {
+        "pages": 11,
+        "prior_pages": 11,
+        "different": []
+      },
+      "slice5701-wasm": {
+        "pages": 3,
+        "prior_pages": 3,
+        "different": []
+      }
+    },
+    "code_files": {
+      "src/renderer/layout.rs": "c4213245768af2987198be3ab0b5bb02c914895823e31d0a0ff8ef371e2a58dc",
+      "src/renderer/typeset/table/block/entry.rs": "8c0ccbabee2d422cf7587a2a2ef973e01f8b1cfbc2b69e2351fe6297b38c0716",
+      "src/renderer/float_placement.rs": "91e661ffed4a700371971e06e7b08fab0cc1133387ec14bac844a4d1abba7fe4",
+      "src/renderer/typeset/paragraph/fit.rs": "fbca4af50d9fbd08de4986bc911e532da708740a8020742cf87ec79c84c621fe"
+    }
+  },
+  "mac_local_no_opt": true,
+  "docker_optimized_build": false,
+  "not_completed": [
+    "최신 전체 nextest와 Skia",
+    "기존12회귀 실패와 다른 시각 보류",
+    "PR CI merge 후속처리"
+  ]
+}

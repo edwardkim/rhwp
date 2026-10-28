@@ -1,0 +1,12 @@
+{
+  "status": "asset_replacement_scope_pass_integration_pending",
+  "pdf": "pdf/pr_5786/hancom2020/issue5780_flow_image_page_background_hancom2020.pdf",
+  "pdf_sha256": "98447f3c11fc586cef42ba46f263d1f23406aa070d05d2a2d38b19b75665ae5d",
+  "source_commit": "42e81807b",
+  "source_bytes_match": true,
+  "sample": "samples/issue5780/flow_image_page_background.hwpx",
+  "sample_sha256": "e8986e2eb4a07c5f3b8c66716bc1bd02e471323649e19f266b2ff1f6627c017e",
+  "pdfinfo": "Author:          SYSTEM\nCreator:         Hwp 2020 0.0.0.0\nProducer:        Hancom PDF 1.3.0.550\nCreationDate:    Fri Oct  2 18:07:26 2026 KST\nModDate:         Fri Oct  2 18:07:26 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           1\nEncrypted:       no\nPage size:       595 x 841 pts (A4)\nPage rot:        0\nFile size:       12497 bytes\nOptimized:       no\nPDF version:     1.4\n",
+  "pdffonts": "name                                 type              encoding         emb sub uni object ID\n------------------------------------ ----------------- ---------------- --- --- --- ---------\nINPILL+H2hdrM                        CID TrueType      Identity-H       yes yes yes     12  0\n",
+  "scope": "reference PDF replacement; no renderer or regression expected value changes"
+}

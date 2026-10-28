@@ -1,0 +1,30 @@
+{
+  "head": "c4ce9ff96436d94468557f09794ee0fa84b35ce6",
+  "input": "samples/issue6797/156160455-social-pig-farm-income.hwp",
+  "input_sha256": "1b99b763aac36a14a9f463e35ee894a23eb1083780040eab5e0f02a481c694b8",
+  "pdf": "pdf/156160455-social-pig-farm-income-2020.pdf",
+  "pdf_sha256": "0b6d2573b68c4e4a59db108766380c0d9e9fe41237be8346d61757b28a485c65",
+  "current_pages": 11,
+  "current_vs_frozen_96_all_trees_identical": true,
+  "actual_tables": {
+    "70": {
+      "x": 77.5,
+      "y": 181.5,
+      "w": 633.1,
+      "h": 113.4
+    },
+    "71": {
+      "x": 77.5,
+      "y": 292.0,
+      "w": 635.0,
+      "h": 165.7
+    }
+  },
+  "independent_pdf_horizontal_border_y": [
+    294.557373046875,
+    298.393310546875
+  ],
+  "original_ordering_test_appropriateness": "유효: PDF 괘선으로 표70바닥294.557/표71상단298.393이 분리됨. 현재294.9/292.0은 실제 역전",
+  "chart_payload_fidelity_verified": false,
+  "manual_variant_expectation_574_8_verified": false
+}

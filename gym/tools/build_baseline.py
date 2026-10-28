@@ -43,6 +43,8 @@
   때만 바꾸던 자리는 계획서 JSON 에서 입력을 놓친다.
 - `{sub:}` 이름은 제출 폴더 안의 상대경로만 허용한다. 부모(`..`)·절대·
   드라이브·UNC·홈은 거부한다.
+- 과제 채점용 `{file:}` 자리표는 기준 풀이에서 허용하지 않는다. 기준 풀이가
+  제출 산출물을 가리킬 때는 반드시 `{sub:}` 를 써야 저장소 루트 오염을 막는다.
 - 닫히지 않은 `{sub:` 는 그 과제만 실패로 접는다. `ValueError` 로
   전 왕복을 죽이지 않는다.
 
@@ -67,6 +69,7 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import io
 import json
 import os
@@ -90,6 +93,7 @@ PACKS_DIR = runner.PACKS_DIR
 
 PLACEHOLDER_INPUT = "{input}"
 PLACEHOLDER_SUB_PREFIX = "{sub:"
+PLACEHOLDER_FILE_PREFIX = "{file:"
 PLACEHOLDER_SUB_CLOSE = "}"
 
 STEP_KINDS = ("run", "copy", "write_json", "keyring_from", "answer")
@@ -161,7 +165,10 @@ CATCHABLE_EXCEPTIONS = (
     json.JSONDecodeError,
 )
 
-CLI_FLAGS = ("--agent", "--pack", "--bin")
+CLI_FLAGS = ("--agent", "--pack", "--bin", "--json")
+
+REPORT_KIND = "gymBaselineVerification"
+SCHEMA_VERSION = "1.0"
 
 
 def is_fatal_exception(exc) -> bool:
@@ -497,6 +504,10 @@ def resolve(token, task, sub_dir):
     """
     if not is_str(token):
         return token
+    if PLACEHOLDER_FILE_PREFIX in token:
+        raise RuntimeError(
+            "기준 풀이에서는 {file:} 자리표를 쓸 수 없습니다; {sub:} 를 사용하세요"
+        )
     kind = classify_token(token)
     if kind == "unclosed-sub":
         raise RuntimeError(f"닫히지 않은 {{sub:}} 자리표: {token[:80]}")
@@ -1097,25 +1108,112 @@ def process_one_task(bin_path, pack_id, task, reference, sub_root, counts) -> di
     return inspected
 
 
-def process_pack(bin_path, pack_id, sub_root, counts) -> None:
+def result_row(pack_id, task_id, inspected) -> dict:
+    row = dict(inspected) if isinstance(inspected, dict) else {
+        "ok": False,
+        "kind": "build-error",
+        "message": "기준 풀이 결과가 객체가 아니다",
+    }
+    row["pack"] = pack_id
+    row["task"] = task_id
+    return row
+
+
+def process_pack(bin_path, pack_id, sub_root, counts, results=None) -> None:
     ref_dir = os.path.join(PACKS_DIR, pack_id, "reference")
     if not os.path.isdir(ref_dir):
         print(f"[{pack_id}] 기준 풀이 없음 — 건너뜀")
+        if results is not None:
+            try:
+                _manifest, tasks = runner.load_pack(pack_id)
+            except CATCHABLE_EXCEPTIONS as exc:
+                bump_count(counts, "failed")
+                bump_count(counts, "buildError")
+                results.append(result_row(pack_id, "", {
+                    "ok": False,
+                    "kind": "build-error",
+                    "message": format_task_failure(pack_id, "", exc),
+                }))
+                return
+            for task in tasks:
+                tid = task_id_of(task)
+                bump_count(counts, "skipped")
+                results.append(result_row(pack_id, tid, {
+                    "ok": False,
+                    "kind": "missing-reference",
+                    "message": format_task_failure(pack_id, tid, "기준 풀이 디렉터리가 없다"),
+                }))
         return
     _manifest, tasks = runner.load_pack(pack_id)
     for task in tasks:
-        ref_path = reference_path(pack_id, task_id_of(task))
+        tid = task_id_of(task)
+        ref_path = reference_path(pack_id, tid)
         if not os.path.exists(ref_path):
             bump_count(counts, "skipped")
+            if results is not None:
+                results.append(result_row(pack_id, tid, {
+                    "ok": False,
+                    "kind": "missing-reference",
+                    "message": format_task_failure(pack_id, tid, "기준 풀이 파일이 없다"),
+                }))
             continue
         try:
             reference = load_reference(ref_path)
         except CATCHABLE_EXCEPTIONS as exc:
             bump_count(counts, "failed")
             bump_count(counts, "buildError")
-            print(f"  X {format_task_failure(pack_id, task_id_of(task), exc)}")
+            message = format_task_failure(pack_id, tid, exc)
+            print(f"  X {message}")
+            if results is not None:
+                results.append(result_row(pack_id, tid, {
+                    "ok": False,
+                    "kind": "build-error",
+                    "message": message,
+                }))
             continue
-        process_one_task(bin_path, pack_id, task, reference, sub_root, counts)
+        inspected = process_one_task(bin_path, pack_id, task, reference, sub_root, counts)
+        if results is not None:
+            results.append(result_row(pack_id, tid, inspected))
+
+
+def verification_report(bin_path, agent, pack_ids, counts, results) -> dict:
+    task_count = len(results)
+    built = int(counts.get("built") or 0)
+    failed = int(counts.get("failed") or 0)
+    skipped = int(counts.get("skipped") or 0)
+    ok = bool(
+        task_count > 0
+        and built == task_count
+        and failed == 0
+        and skipped == 0
+        and all(row.get("ok") is True for row in results)
+    )
+    return {
+        "kind": REPORT_KIND,
+        "schemaVersion": SCHEMA_VERSION,
+        "ok": ok,
+        "exit": 0 if ok else 1,
+        "binPath": bin_path,
+        "agent": agent,
+        "packs": list(pack_ids),
+        "taskCount": task_count,
+        "built": built,
+        "failed": failed,
+        "skipped": skipped,
+        "missingArtifact": int(counts.get("missingArtifact") or 0),
+        "failedScore": int(counts.get("failedScore") or 0),
+        "buildError": int(counts.get("buildError") or 0),
+        "results": results,
+    }
+
+
+def run_verification(bin_path, agent, pack_ids) -> dict:
+    sub_root = os.path.join(runner.GYM, "submissions", agent)
+    counts = empty_counts()
+    results = []
+    for pack_id in pack_ids:
+        process_pack(bin_path, pack_id, sub_root, counts, results)
+    return verification_report(bin_path, agent, pack_ids, counts, results)
 
 
 def parse_args(argv=None):
@@ -1123,6 +1221,7 @@ def parse_args(argv=None):
     ap.add_argument("--agent", default="claude-fable-5")
     ap.add_argument("--pack", action="append", default=None)
     ap.add_argument("--bin", default=None)
+    ap.add_argument("--json", action="store_true")
     return ap.parse_args(argv)
 
 
@@ -1134,9 +1233,16 @@ def main(argv=None):
     a = parse_args(argv)
 
     bin_path = runner.find_bin(a.bin)
-    sub_root = os.path.join(runner.GYM, "submissions", a.agent)
     pack_ids = a.pack or runner.discover_packs()
+    if a.json:
+        # JSON stdout는 인증 러너가 그대로 파싱한다. 기존 과제별 진행 출력은
+        # stderr로 보내 구조화 증적과 섞이지 않게 한다.
+        with contextlib.redirect_stdout(sys.stderr):
+            report = run_verification(bin_path, a.agent, pack_ids)
+        print(json.dumps(report, ensure_ascii=False))
+        return int(report["exit"])
 
+    sub_root = os.path.join(runner.GYM, "submissions", a.agent)
     counts = empty_counts()
     for pack_id in pack_ids:
         process_pack(bin_path, pack_id, sub_root, counts)

@@ -1,41 +1,19 @@
-# 필수 순서 — 이슈 → 분석 → 브랜치 → 구현 → 게이트 → 영수증 → 문서 → PR
+# 기여 진행 순서
 
-기여 1건은 아래 8단을 **이 순서대로** 닫는다. 뒤 단계를 먼저 하고 앞 단계를
-끼워 넣지 않는다. 특히 PR 을 연 뒤에 이슈를 만들거나, fmt 없이 `gh pr create`
-하지 않는다.
+정본은 [CONTRIBUTING.md](../../../../CONTRIBUTING.md)다.
+검토/merge 요청은 [PR review workflow](../../../../mydocs/manual/pr_review_workflow.md)로 연결한다.
 
-## 8단
+1. 관련 이슈와 열린 PR을 확인하고 범위, 기대 결과와 완료 조건을 정한다.
+2. 해당 영역의 canonical 문서와 계약을 읽고 원인, 독립적인 정답과 반례를 기록한다.
+3. 정본에 따라 최신 upstream/devel 기준 브랜치와 작업 격리를 준비한다.
+   기존 PR 보정 요청은 해당 PR을 우선하며 사용자 변경을 보존한다.
+4. 승인된 범위에서 구현하고 결함 재현과 관련 경계를 다루는 테스트를 작성한다.
+5. 제출 source SHA와 review worktree를 정본 절차로 고정하고 범위별 필수 검증을 수행한다.
+   필수 검증을 fmt 또는 focused test 하나로 대신하지 않는다.
+6. 실행 결과와 미실행/실패, 필요한 시각 증거와 남은 비범위를 기록한다.
+   작업 영수증은 AGENTS의 권장 경로이지 보편적인 제출 의무가 아니다.
+7. 역할에 맞는 결과 문서를 작성하고 명시적인 경로만 stage한다.
+8. 승인된 push/PR 작업을 수행한다. 현재 PR 템플릿을 사용하고 전체 해결된 issue만 닫는다.
 
-| # | 단 | 닫는 증거 | 건너뛰면 |
-|---|----|-----------|----------|
-| 1 | 이슈 | `gh issue view` 번호, DoD, 중복 PR 없음 | 리뷰어가 왜 바꾸는지 모름 |
-| 2 | 분석 | 이슈 본문/댓글에 정본·계약 시험 인용 | 원인 없는 패치 |
-| 3 | 브랜치 | `upstream/devel` 에서 만든 isolation worktree | 본진 오염, named 훔침 |
-| 4 | 구현 | 경로를 지정한 `git add`, DocumentCore 미발명 | 범위 밖 파일 |
-| 5 | 로컬 게이트 | `cargo fmt --all -- --check` + clippy + 관련 test + (해당 시) 시각 | CI Lint 실패 |
-| 6 | 작업 영수증 | `rhwp replay --capsule` 포인터 (문서 편집 시) | 증빙 없음 (권장) |
-| 7 | 처리 결과 | `mydocs/working/<이름>.md` | 규모 있는 변경의 맥락 소실 |
-| 8 | 한국어 PR | `--base devel` · `--body-file` · `closes #` · 첫 칸 fmt | 접수 거부 |
-
-## 하드 규칙
-
-1. 단 5 의 HARD GATE 는 `cargo fmt --all -- --check` 다.
-   `cargo fmt --check` 는 낡은 표기다.
-2. 단 8 은 단 5 가 통과한 뒤에만 연다.
-3. 단 3 은 `git fetch upstream devel` 을 먼저 한다.
-4. 단 4 는 `git add -A` 를 쓰지 않는다.
-5. 단 3 은 이미 있는 named worktree 를 훔치지 않는다.
-
-## 권위
-
-- 순서·브랜치: `AGENTS.md`, `CONTRIBUTING.md`
-- 범위별 검증: `mydocs/manual/pr_review/local_validation.md` §4.3
-- PR 본문: `.github/pull_request_template.md` — 첫 체크박스 = fmt 게이트
-- 영수증: `AGENTS.md` 작업 증빙 절, 스킬 `rhwp-work-receipt` (포인터만)
-
-## 이 스킬이 닫지 않는 것
-
-리뷰 승인, merge, collaborator 의 오늘할일, gym 채점은 이 순서 밖이다.
-
-픽스처: `fixtures/checklists/step_01_issue.json` … `step_08_pr.json`.
-예제: [24_full_procedure_walkthrough.md](../examples/24_full_procedure_walkthrough.md).
+이 순서는 사용자 승인을 대신하지 않는다. 기여 구현 완료, 메인터너 수용 판단,
+최신 head CI와 merge는 별도 단계다. 과거 예제의 단계별 명령보다 현재 정본을 우선한다.

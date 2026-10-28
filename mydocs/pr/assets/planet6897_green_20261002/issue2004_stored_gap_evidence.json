@@ -1,0 +1,51 @@
+{
+  "prior_head": "2eb73ba7ce71d3c684a2269960a46bc5c7a269ea",
+  "changed_source": {
+    "path": "src/renderer/typeset/controls/stored_tac.rs",
+    "sha256": "a6a14700195fa8533fb4b5018a1c53d0f63c4dce266991608b13e61ed28d4065"
+  },
+  "input": {
+    "path": "samples/issue2004_cell_image_stack.hwpx",
+    "sha256": "e91cf067de71c6c567e27974415bc67462f3e777997d41853db949fea4265fa7"
+  },
+  "reference": {
+    "path": "pdf/issue2004_cell_image_stack-hwpx-2020.pdf",
+    "sha256": "ed5fea4e1fa6e21134088f905c717eb51396d398d6398636754b49d8ff83477b"
+  },
+  "binary": {
+    "path": "target/pr-review/release-test/rhwp",
+    "sha256": "8268531d2c1094f7ca1839cebfb2a4780f8ecab6277830f75d8ae7613218dfa5"
+  },
+  "native_pages": 8,
+  "pdf_pages": 8,
+  "native_minimum_percent": 95.85551,
+  "native_page3_percent": 97.64619,
+  "focused_tests": {
+    "run": 33,
+    "passed": 33,
+    "exit_code": 0
+  },
+  "wasm": {
+    "code_head": "0305f8f22",
+    "build_exit_code": 0,
+    "build": "Mac local wasm-pack --no-opt; Docker optimized build not performed",
+    "wasm_sha256": "c8e7ad408f95790b111332a249d00713d0d0bcff68d2bea5223fff60cb105893",
+    "pages": 8,
+    "pdf_pages": 8,
+    "minimum_percent": 95.85551,
+    "page3_percent": 97.64619,
+    "export": "fresh actual WASM render tree and SVG; Native font CSS only"
+  },
+  "whole_regression": "not rerun",
+  "tsv_origin": "reused PNG from completed Native whole eight-page run; no second export",
+  "existing_case_update": {
+    "case": "issue_4771_derived_layout_state",
+    "run": 6,
+    "passed": 6,
+    "exit_code": 0,
+    "new_test_functions": 0,
+    "new_fixtures": 0,
+    "contract": "two tables retain source-relative origin in physical HWPUNIT, normalized by first table height; no absolute pixel pin",
+    "before_artifact_contract": "old rounded tree 9308.16HU vs source9665HU: fail; corrected rounded tree9668.47HU: pass; actual existing case nextest passes"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "code_sha": "91203ff1947966679629993ed11b3503d6b04fba",
+  "input": "tests/fixtures/issue8105/numbered_stale_tail_ordered.hwpx",
+  "input_sha256": "8530f222c48d35e2316096be2c8c0e062bee45eda72acff382ce470990938287",
+  "pdf": "pdf/issue8105/numbered_stale_tail_ordered-2024.pdf",
+  "pdf_sha256": "c7e6f36358d22e7f587cf0ffc8c05d0fef6c61578756ed71ba4c10f3d32b0fb5",
+  "print_contract": {
+    "hancom_version": "13.0.0.3901",
+    "PrintMethod": 0,
+    "job_id": "ca0188db-9afb-454b-a0ea-3138ea3c1494",
+    "pages": 1
+  },
+  "native_library_sha256": "8bfad58a5b8cd56bc3d842459025e33afdeb319d12636ff9ec639430a6347199",
+  "wasm_sha256": "16652711f9a756883b7421151fd98ff4228842a4c8037a99cd053742dfea0330",
+  "compat": 2024,
+  "dpi": 96,
+  "whole_document_raw": {
+    "native": 100.0,
+    "fresh_wasm": 100.0
+  },
+  "previous_input_preserved": {
+    "path": "mydocs/tech/investigations/issue-8105/probes/numbered_stale_tail.hwpx",
+    "sha256": "c23c38bcb1d61904fa29624e429f848d9a0bfed38519eb9d069a02ccefc2782e",
+    "note": "Malformed paraPr order retained as the original diagnostic experiment; not overwritten or counted as qualified."
+  },
+  "before_after_regression": {
+    "before_code_sha": "dcb10ad325",
+    "before_exit": 101,
+    "before_failure": "P2w keeps the stale 2-line cache despite a different physical width",
+    "after_exit": 0,
+    "expected_source": "Independent Hancom Print line splits and vector border coordinates"
+  },
+  "assets_sha256": {
+    "native-p001-overlay.png": "3400f0819fc8b67c8079c5dc69706871dbed7950c6c5199257d95ef2c40882a3",
+    "native-silhouette.tsv": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+    "wasm-p001-review.png": "3ff8b9e2421cb41a9e091a4981e06729facab6e53fcc5e67fa51ce61f991f2f3",
+    "wasm-p001-overlay.png": "ad2fa3f454c22384a97d395664db0cd04a587a4c092aeabdc5f8b9a7d89f510f",
+    "native-p001-review.png": "5a30ce3507f07a6b56ee1d42804934d0e5c5fb3dbb80e0288c37f10eb1b484df",
+    "wasm-silhouette.tsv": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
+    "independent-pdf-frames.json": "8d4c5dacf66f000a3eaefca7d2623a9d72e8f08161ebf276dca791b8b5f5ce80"
+  }
+}

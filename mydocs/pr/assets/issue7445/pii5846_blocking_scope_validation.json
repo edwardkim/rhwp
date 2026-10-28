@@ -1,0 +1,404 @@
+{
+  "stage": 114,
+  "code_commit": "71610682efde6fa4c0681228caf1f981f78e5d9b",
+  "analysis": {
+    "head": "68a4449ae062834e2ff0214b86b2850bc3bbf8d2",
+    "analysis": "복원 후 실제 실패6번. 첫 pageCount66 기대는 독립 정상 Hancom PDF66쪽과 일치하나 현재70쪽. downstream의59쪽credit-table/60쪽단기연체정보 전제는 cairo PDF를 정답지로 언급해 출처가 잘못되었고 정상한컴PDF59쪽은자동화평가안내표이다. 둘을 혼동해 회귀의전체정확성을단정하지않는다. 동일 입력 Native영향4쪽최저30.63875%로피델리티수용미달이므로이실패함수만보류하며정상검사는유지한다.",
+    "source": "samples/task2097/75544_pii_bunseok.hwpx",
+    "pdf": "pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf",
+    "oracle": "한컴PDF66쪽. 기존이름2020.pdf는cairo출력이므로독립정답지로사용하지않는다. hwpx-2020.pdf의실제Creator는Hwp2022이며원문대응을확인한다.",
+    "visual_provenance": {
+      "hwp": {
+        "path": "samples/task2097/75544_pii_bunseok.hwpx",
+        "sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1"
+      },
+      "pdf": {
+        "path": "pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf",
+        "sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770"
+      },
+      "git_head": "8672401774d5a173ddcc681ceb844124dad5cf62",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+      },
+      "svg_rasterizer": "webfont",
+      "rhwp_binary": {
+        "configured": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+        "path": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+        "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+      },
+      "font_supply": {
+        "mode": "full",
+        "source": "explicit",
+        "file_count": 715,
+        "inventory_sha256": "5e7427d397aac098d9b5c3395fee8e65ee2c1756793d2813f1afd741c0adc3bf",
+        "full_inventory": "output/pr-review/planet6897-7382-20260926/stage73-pii75544/visual-native/pii75544/run_manifest.json"
+      }
+    },
+    "native_metrics": [
+      {
+        "page": 22,
+        "tolerant_content_match_percent": 93.59725
+      },
+      {
+        "page": 46,
+        "tolerant_content_match_percent": 65.5694
+      },
+      {
+        "page": 59,
+        "tolerant_content_match_percent": 30.66565
+      },
+      {
+        "page": 60,
+        "tolerant_content_match_percent": 30.63875
+      }
+    ],
+    "direct_inspection": "59쪽review/60쪽standalone overlay 재확인. 현재 법령 본문과 기준 자동화평가 안내서식의내용 소유가다름.60쪽도법령과기준서식의소유/표위치차이. 전수비교나freshWASM완료로보고하지않음.",
+    "visual_reuse": "입력/PDF/binary 해시확인,보정69대비src빈diff. same-production 부정 Native4쪽증거재사용.",
+    "planned_scope": "issue_5846_cut_fragment_defers_partial_nested_tail_row 한 함수/전용helper만보류. issue3595·issue2097 정상함수,원문/PDF와다른모든corpus축유지.기존body/pageCount축보류범위는유지.",
+    "before_source_sha256": "6fbb8fbb0ff2287380528551190fa95995f19212b961fdd1c3a7724c1b2488c2",
+    "plan": {
+      "caseName": "issue_5846_mixed_nested_partial_row_duplicate",
+      "target": "regression_suite_001",
+      "grouped": true
+    },
+    "additional_actual_failure": {
+      "test": "issue_2097_block_band_fill_page_pins",
+      "result": "2PASS/1FAIL focused snapshot. #3595 두 함수PASS; mixed #2097에서 PII 한 입력70/66FAIL. 다른5pin에대한최종통과는아직추정하지않음.",
+      "failed_input": "samples/task2097/75544_pii_bunseok.hwpx",
+      "new_scope": "#2097 함수 자체와다른5입력/공차유지. 같은독립부정시각증거로PII의한page pin만추가보류. 이바뀐후보에서필수게이트재실행."
+    }
+  },
+  "individual_before": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_001",
+      "-E",
+      "test(=issue_5846_mixed_nested_partial_row_duplicate::issue_5846_cut_fragment_defers_partial_nested_tail_row)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "exit_code": 100,
+    "seconds": 9.284377750009298,
+    "summary": [
+      "Summary [   0.088s] 1 test run: 0 passed, 1 failed, 186 skipped"
+    ]
+  },
+  "first_focused_snapshot": {
+    "summaries": [
+      "Summary [   0.181s] 3 tests run: 2 passed, 1 failed, 434 skipped"
+    ],
+    "actual_failure": "issue_2097_block_band_fill_page_pins: PII 70/66; #3595 두 함수PASS",
+    "gates_before_pin_correction": {
+      "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+      "head": "68a4449ae062834e2ff0214b86b2850bc3bbf8d2",
+      "steps": [
+        {
+          "step": "focused-kept",
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test-threads",
+            "8",
+            "--no-fail-fast",
+            "--test",
+            "regression_suite_004",
+            "--test",
+            "regression_suite_012",
+            "-E",
+            "test(issue_3595_nested_split_row_identity::) or test(issue_2097_band_fill::)"
+          ],
+          "exit_code": 100,
+          "seconds": 11.106781458016485
+        },
+        {
+          "step": "fmt-check",
+          "command": [
+            "cargo",
+            "fmt",
+            "--all",
+            "--",
+            "--check"
+          ],
+          "exit_code": 0,
+          "seconds": 6.938653375022113
+        },
+        {
+          "step": "clippy-native",
+          "command": [
+            "cargo",
+            "clippy",
+            "--locked",
+            "--target-dir",
+            "target/pr-review",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit_code": 0,
+          "seconds": 0.3006670419126749
+        },
+        {
+          "step": "clippy-wasm",
+          "command": [
+            "cargo",
+            "clippy",
+            "--locked",
+            "-p",
+            "rhwp",
+            "--lib",
+            "--target",
+            "wasm32-unknown-unknown",
+            "--target-dir",
+            "target/pr-review",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit_code": 0,
+          "seconds": 0.376241167075932
+        },
+        {
+          "step": "workspace-build",
+          "command": [
+            "cargo",
+            "build",
+            "--locked",
+            "--workspace",
+            "--target-dir",
+            "target/pr-review"
+          ],
+          "exit_code": 0,
+          "seconds": 0.37512229196727276
+        },
+        {
+          "step": "clippy-all-targets",
+          "command": [
+            "cargo",
+            "clippy",
+            "--locked",
+            "--workspace",
+            "--all-targets",
+            "--target-dir",
+            "target/pr-review",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit_code": 0,
+          "seconds": 6.1683502909727395
+        },
+        {
+          "step": "manifest-base-check",
+          "command": [
+            "node",
+            "scripts/rust-test-suite-manifest.mjs",
+            "--check",
+            "--base-ref",
+            "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+          ],
+          "exit_code": 0,
+          "seconds": 2.8362543750554323
+        },
+        {
+          "step": "unit-tier-base-check",
+          "command": [
+            "node",
+            "scripts/rust-unit-test-tiers.mjs",
+            "--check",
+            "--base-ref",
+            "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+          ],
+          "exit_code": 0,
+          "seconds": 9.022854084149003
+        }
+      ]
+    }
+  },
+  "mutation": {
+    "removed_functions": [
+      "issue_5846_cut_fragment_defers_partial_nested_tail_row"
+    ],
+    "removed_sources": [
+      "tests/cases/issue_5846_mixed_nested_partial_row_duplicate.rs (단일함수/전용helper)"
+    ],
+    "mixed_function_kept": "issue_2097_block_band_fill_page_pins",
+    "removed_pin": [
+      "samples/task2097/75544_pii_bunseok.hwpx",
+      66
+    ],
+    "kept_pins": [
+      "samples/task2097/3248363_upmu_bunjang.hwpx",
+      "samples/task2097/21217935_simsa_jipyo.hwp",
+      "samples/task2097/18095317_eogu_geumji.hwp",
+      "samples/task2097/3023771_wichokjang.hwpx",
+      "samples/task2097/17809123_jawonbongsa.hwpx"
+    ],
+    "other_scope": "#3595 두 함수 및 원문/정상한컴PDF, 다른 corpus 축/기대값/공차는 유지. 기존 실제 body/oracle 보류 범위는 유지."
+  },
+  "focused_summary": [
+    "Summary [   0.175s] 3 tests run: 3 passed, 407 skipped"
+  ],
+  "gates": {
+    "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "head": "68a4449ae062834e2ff0214b86b2850bc3bbf8d2",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_001",
+          "--test",
+          "regression_suite_012",
+          "-E",
+          "test(issue_3595_nested_split_row_identity::) or test(issue_2097_band_fill::)"
+        ],
+        "exit_code": 0,
+        "seconds": 11.045309958979487
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.2443189159967005
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.28670929186046124
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.2252979171462357
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3529523750767112
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 5.243286875076592
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.41689549991861
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 8.309421208221465
+      }
+    ]
+  },
+  "independent_pdf_anchor": "정상 Hancom PDF66쪽,59쪽 자동화평가 안내 서식. 기존 cairo PDF의 신용도판단정보/단기연체정보 쪽 전제를 정답으로 쓰지 않음. PDF text 추출과 review를 함께 대조.",
+  "pdf_text_evidence": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage114-pii5846/independent-pdf-text.json",
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5868672890",
+  "assets_reused": [
+    "mydocs/pr/assets/issue7445/pii75544_native_review_059.png",
+    "mydocs/pr/assets/issue7445/pii75544_native_overlay_060.png"
+  ],
+  "source_after_sha256": {
+    "tests/issue_2097_band_fill.rs": "9e8f1bd1ea7bc1fec1ce3d564db01bd185459954d73c2ad99843b9ad523c509c"
+  },
+  "new_test_functions": 0,
+  "production_changes": false,
+  "threshold_relaxation": false,
+  "fresh_wasm": "미실행. 선택4쪽의 동일 생산 후보 부정 증거 재사용, 전수 Native/freshWASM 통과로 보고하지 않음.",
+  "own_diagnostic_error": "PDF text 추출에서 시스템 Python에 fitz가 없어 첫 시도 실패. 저장소 venv Python으로 재실행 성공. 회귀/변환 실패로 세지 않음.",
+  "remaining": "보정106 실제15실패 중 영어 #6030와 PII #5846 두 개 좁게 보류,13개 후속 대기. 유지 검사에서 드러난 PII mixed pin 한 개도 추가 처리. 다른 corpus 및 최종37개별/전체회귀·시각/PR준비 미완료."
+}

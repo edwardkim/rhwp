@@ -1,0 +1,13 @@
+--- tests/fixtures/overflow_cell_baseline.tsv	2026-08-27 16:10:12
++++ /tmp/rhwp-without6637-overflow-cell.tsv	2026-09-05 17:05:02
+@@ -3,9 +3,8 @@
+ 86712_regulatory_analysis.hwp	1
+ hwpctl_ParameterSetID_Item_v1.2.hwp	8
+ issue1891/86712_regulatory_analysis.hwpx	1
+-issue1891_external_bindata_link.hwpx	48
++issue1891_external_bindata_link.hwpx	32
+ issue1921/59043_regulatory_analysis.hwp	1
+-issue4889/18098267_nested_fragment_origin.hwp	87
+ rowbreak-problem-pages.hwpx	14
+ table_giant_cell_overfill.hwpx	76
+ task2070/hy_ladder3.hwpx	7

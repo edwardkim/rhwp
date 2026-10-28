@@ -452,8 +452,8 @@ fn measured_default_font_name(name: &str) -> Option<&'static str> {
 pub fn serialize_face_name(font: &Font) -> Vec<u8> {
     let mut w = ByteWriter::new();
 
-    // 대체 글꼴 이름: HWP5 는 alt_name 한 곳에만 담는다. HWPX 파서는 같은 값을
-    // subst_font(<hh:substFont face=...>)로 채우고 alt_name 은 None 으로 두므로,
+    // 대체 글꼴 이름: HWP5 파서는 alt_name 과 subst_font 에 함께 담고, HWPX 파서는
+    // subst_font(<hh:substFont face=...>)만 채우고 alt_name 은 None 으로 두므로,
     // 여기서 두 출처를 합쳐야 HWPX→HWP5 저장에서 대체 글꼴이 살아남는다.
     // (종전엔 alt_name 만 봐서 HWPX 출처 대체 글꼴이 통째로 유실됐다.)
     let alt_name = font.alt_name.as_deref().or_else(|| {
@@ -486,7 +486,12 @@ pub fn serialize_face_name(font: &Font) -> Vec<u8> {
     w.write_hwp_string(&font.name).unwrap();
 
     if let Some(alt_name) = alt_name {
-        w.write_u8(font.alt_type & 0x03).unwrap();
+        let alt_type = font
+            .subst_font
+            .as_ref()
+            .filter(|substitute| substitute.face == alt_name)
+            .map_or(font.alt_type & 0x03, |substitute| substitute.font_type);
+        w.write_u8(alt_type).unwrap();
         w.write_hwp_string(alt_name).unwrap();
     }
     if let Some(type_info) = font.type_info {
@@ -522,15 +527,14 @@ fn border_line_type_to_u8(lt: BorderLineType) -> u8 {
     }
 }
 
-fn image_fill_mode_to_u8(mode: ImageFillMode) -> u8 {
+pub(super) fn image_fill_mode_to_u8(mode: ImageFillMode) -> u8 {
     match mode {
         ImageFillMode::TileAll => 0,
         ImageFillMode::TileHorzTop => 1,
         ImageFillMode::TileHorzBottom => 2,
         ImageFillMode::TileVertLeft => 3,
         ImageFillMode::TileVertRight => 4,
-        ImageFillMode::Total => 0,
-        ImageFillMode::FitToSize => 5,
+        ImageFillMode::FitToSize | ImageFillMode::Total => 5,
         ImageFillMode::Center => 6,
         ImageFillMode::CenterTop => 7,
         ImageFillMode::CenterBottom => 8,
@@ -540,7 +544,7 @@ fn image_fill_mode_to_u8(mode: ImageFillMode) -> u8 {
         ImageFillMode::RightCenter => 12,
         ImageFillMode::RightTop => 13,
         ImageFillMode::RightBottom => 14,
-        ImageFillMode::None => 15,
+        ImageFillMode::None | ImageFillMode::Zoom => 15,
     }
 }
 
@@ -1098,6 +1102,39 @@ pub fn surgical_remove_records(raw_stream: &mut Vec<u8>, tag_id: u16) -> usize {
     }
 
     removed
+}
+
+/// DocInfo 스트림 내 `DOCUMENT_PROPERTIES` 의 구역 개수만 in-place 로 확정한다 (#6156).
+///
+/// 한글은 `DOCUMENT_PROPERTIES.section_count` 를 `BodyText/SectionN` 탐색의 상한으로
+/// 읽는다. 선언값이 실제 스트림 수보다 크면 없는 구역을 찾다가 문서를 손상으로
+/// 판정하고, `forceopen` 으로도 열리지 않는다. 그래서 이 값의 권위는 모델이 아니라
+/// **실제로 방출한 스트림 수**다.
+///
+/// 스트림 전체를 재직렬화하지 않는 이유는 [`surgical_update_caret`] 과 같다 — raw
+/// 통과(스트림·레코드 양쪽) 경로에서도 다른 바이트를 그대로 두어야 한다.
+pub fn surgical_update_section_count(
+    doc_info_stream: &mut [u8],
+    section_count: u16,
+) -> Result<(), String> {
+    let positions = scan_records(doc_info_stream);
+
+    let doc_props_pos = positions
+        .iter()
+        .find(|r| r.tag_id == tags::HWPTAG_DOCUMENT_PROPERTIES)
+        .ok_or_else(|| "DOCUMENT_PROPERTIES 레코드를 찾을 수 없음".to_string())?;
+
+    if doc_props_pos.data_size < 2 {
+        return Err(format!(
+            "DOCUMENT_PROPERTIES 데이터 크기 부족: {} < 2",
+            doc_props_pos.data_size
+        ));
+    }
+
+    let data_off = doc_props_pos.data_offset;
+    doc_info_stream[data_off..data_off + 2].copy_from_slice(&section_count.to_le_bytes());
+
+    Ok(())
 }
 
 /// DocInfo raw_stream 내 DOCUMENT_PROPERTIES 레코드의 캐럿 위치만 갱신한다.

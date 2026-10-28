@@ -18,7 +18,7 @@ DoS 를 찾아, 패닉을 **소스 위치(file:line)별로 묶어** "고쳐야 �
 
 카탈로그·분류·봉투 계약은 `gym/docs/fuzz_corpus.md` 가 정본이다. 시험은
 `scripts/tests/test_gym_fuzz_corpus.py` 가 바이너리 없이 고정한다. 작업 기록은
-`mydocs/working/gym_fuzz_corpus.md`.
+`mydocs/working/archives/gym_fuzz_corpus.md`.
 
 무작위는 없다. 같은 바이트는 같은 (라벨, 바이트) 를 낸다.
 
@@ -48,6 +48,7 @@ REPO_ROOT = os.path.dirname(GYM_ROOT)
 sys.path.insert(0, GYM_ROOT)
 
 from core import runner  # noqa: E402
+from core.input_selection import is_excluded_exam_input  # noqa: E402
 
 DEFAULT_COMMANDS = ["info", "export-text", "export-structure", "export-render-tree"]
 PANIC_RE = re.compile(r"panicked at ([^\n]+?:\d+)")
@@ -1218,7 +1219,9 @@ def list_sample_names(samples_dir: str):
         if is_fatal_exception(exc):
             raise
         return None, f"{exception_kind(exc, 'select')}: {type(exc).__name__}: {exc}"
-    everything = sorted(f for f in names if is_sample_name(f))
+    everything = sorted(
+        f for f in names if is_sample_name(f) and not is_excluded_exam_input(f)
+    )
     return everything, None
 
 

@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "key": "issue6389-wasm-manual",
+  "provenance": {
+    "hwp": {
+      "path": "samples/2025 행정업무운영 편람(최종).hwp",
+      "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f"
+    },
+    "pdf": {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2020.pdf",
+      "sha256": "6c7be7602cb92bb9b5e6a0b66e9cd80700fceabeade89fabd1a0fcd32adc4413"
+    },
+    "git_head": "e5a305cb44fa46b750d2ebff82a8052888b16c18",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "11b1d259de1dd62f111dc0da9bd74efac2d5572aa80fbd73f180c984b20d2849"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "/Users/tsjang/rhwp/target/issue6389-20260916/release-test/rhwp",
+      "path": "target/issue6389-20260916/release-test/rhwp",
+      "sha256": "f3358c56345a45a08e1e5d713cb250c4077a1ab43d91659572d37d75a16208b8"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp-issue6389-review-20260916/pkg-issue6389/rhwp.js",
+          "sha256": "707049ae519de26779c842eec40f94e016b09bda2688fa721a37d2ae670c2f26"
+        },
+        {
+          "path": "/Users/tsjang/rhwp-issue6389-review-20260916/pkg-issue6389/rhwp_bg.wasm",
+          "sha256": "b50958518b3ab0fda4d94765e310f02e33e5a91e056e3554f7f547d73736bfc3"
+        }
+      ],
+      "exporter_sha256": "5b51337e43cfb443c3151d2ab47ab8b09d94e6ca493b60eb565cd9d20be82588",
+      "font_policy": "same-input native export-svg --font-style; font-face CSS only",
+      "render_tree": "WASM getPageRenderTree"
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    68
+  ],
+  "requested_page_shards": [
+    [
+      68
+    ]
+  ],
+  "run_state": "complete"
+}

@@ -1,0 +1,14 @@
+{
+  "before_artifact_producer": "cfad19a23c44d4e70e155643db42519530a6c5e3",
+  "public_equivalent_render_source": "de117655350082229a4203a6d8b0af0aa7396360",
+  "paths": [
+    "src",
+    "crates",
+    "Cargo.toml",
+    "Cargo.lock"
+  ],
+  "different_paths": [],
+  "before_artifact_relabelled": false,
+  "new_base_preserved": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "production_repair_commit": "5df67d3299befb467a49dc4eaafd12d6e1877e2d"
+}

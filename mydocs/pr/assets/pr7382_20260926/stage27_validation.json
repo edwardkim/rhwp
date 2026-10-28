@@ -1,0 +1,147 @@
+{
+  "source_sha": "6040c862f8fa240c66025a8718f12cde412a1d06",
+  "base_sha": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "files": {
+    "src/renderer/height_measurer.rs": "571265090a4e885191fcb6d0214cf8f850aee6da5eafa47a096a3de5d2f5715f",
+    "src/renderer/layout/table_layout.rs": "82cd043a7c790318f507739dc7360739c26f13112aa0820da6ec12268218f292",
+    "tests/cases/issue_6950_paragraph_end_topbottom_anchor.rs": "c4cc2dc5ada9e492e57b23c4de5c99df86a47b98b4c8b07c212deb654f26c5be"
+  },
+  "runtime_diff_sha256": "38beea32ae36ecdbf5ce65611336edfb2c9432070c0cb2ea96651e53eb08ad89",
+  "rust_test_diff_sha256": "5fab992f054445e67f30ac519639bf84753e08e390ae6b81c68e4ead874ec082",
+  "immutable_cli_sha256": "807ffa8ca4bca9e66742a94a05c6de1b72950d69de8b670beed3124bea41b8a8",
+  "before": {
+    "passed": 0,
+    "failed": 1,
+    "seconds": 0.028,
+    "exit_code": 100,
+    "cause": "외곽 최소 높이·가운데 정렬 소유 표가 최종 tree에서 소실"
+  },
+  "initial_after": {
+    "passed": 33,
+    "failed": 0,
+    "seconds": 0.273,
+    "exit_code": 0
+  },
+  "cli_build": {
+    "command": "cargo build --locked --profile release-test --target-dir target/pr-review --bin rhwp",
+    "exit_code": 0,
+    "duration": "1m43s"
+  },
+  "visual": {
+    "6950": {
+      "all_pages": [
+        1,
+        2,
+        3
+      ],
+      "scores": [
+        98.66178,
+        99.1346,
+        99.78442
+      ],
+      "exit_code": 0,
+      "gate": "passed",
+      "page_count": [
+        3,
+        3
+      ],
+      "directly_read_review_overlay_pages": [
+        1,
+        2,
+        3
+      ],
+      "meaning": "외곽 셀과 중첩 표 원점·점유 끝·기존 앞2쪽 보존"
+    },
+    "7382_hwpx": {
+      "pages": [
+        11,
+        12,
+        13,
+        14
+      ],
+      "scores": [
+        68.96816,
+        99.76685,
+        94.95851,
+        81.51575
+      ],
+      "exit_code": 1,
+      "gate": "re_review_required",
+      "page_count": [
+        215,
+        215
+      ],
+      "directly_read_review_overlay_pages": [
+        11,
+        12,
+        13,
+        14
+      ],
+      "meaning": "12/13쪽 기존 그림·캡션·본문/각주 보존;11/14쪽 위치 차이 남음"
+    }
+  },
+  "policies": {
+    "manifest_exit_code": 0,
+    "static_test_attrs": 6199,
+    "source_unit_exit_code": 0,
+    "source_unit_tests": 4205,
+    "source_unit_modules": 298
+  },
+  "remaining": [
+    "#6312 두 기존 formal FAIL 및 독립 PDF 기반 배치 검토",
+    "#7382 11/14쪽 및 최신 전수 visual/fresh WASM",
+    "보정16 실제 TABLE 편집 반례",
+    "최종 전체 nextest/lint/Skia",
+    "보정27 보존 셀의 분할/이월 물리 소유 경계는 미검증; 제출 전 실제 컷·점유 끝·내용 보존 대조"
+  ],
+  "english_added_explanatory_comments": 0,
+  "after": {
+    "passed": 34,
+    "failed": 0,
+    "seconds": 0.303,
+    "exit_code": 0,
+    "threads": 8
+  },
+  "before_command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--test",
+    "regression_suite_015",
+    "--test-threads",
+    "8",
+    "--no-fail-fast",
+    "-E",
+    "test(centered_wrapper_preserves_its_cell_frame_and_nested_table_origin)"
+  ],
+  "after_command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--test",
+    "regression_suite_014",
+    "--test",
+    "regression_suite_015",
+    "--test",
+    "regression_suite_017",
+    "--test",
+    "regression_suite_022",
+    "--test-threads",
+    "8",
+    "--no-fail-fast",
+    "-E",
+    "test(issue_6950_paragraph_end_topbottom_anchor) | test(issue_6621_wrapper_cell_padding) | test(issue_6648_unwrap_nested_outer_margin) | test(issue_7063_float_outer_margin_box)"
+  ],
+  "algorithm_counter": "Top/Center/Bottom 수동 IR 정렬 공간1541HU의 절반씩; 한컴 생성 출력 증거 아님",
+  "fmt_exit_code": 0
+}

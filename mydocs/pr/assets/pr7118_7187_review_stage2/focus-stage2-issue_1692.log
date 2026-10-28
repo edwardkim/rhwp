@@ -1,0 +1,18 @@
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 6.93s
+     Running tests/generated/regression_suite_026.rs (target/pr7118-7187-20260916/release-test/deps/regression_suite_026-26c8687883e201b8)
+
+running 11 tests
+test issue_1692::issue_1692_so_sueop_hwp3_endnote_internal_vpos_zero_is_normalized ... ok
+test issue_1692::issue_1692_so_sueop_hwp3_line_box_reflects_para_margins ... ok
+test issue_1692::issue_1692_so_sueop_hwpx_endnote_internal_vpos_zero_is_normalized ... ok
+test issue_1692::issue_1692_so_sueop_hwp3_endnotes_follow_hwpx_numbering_and_width ... ok
+test issue_1692::issue_1692_so_sueop_hwp3_preserves_blue_text_color_like_hwpx_reference ... ok
+test issue_1692::issue_1692_so_sueop_hwp3_title_renders_from_embedded_ole ... ok
+test issue_1692::issue_1692_so_sueop_hwpx_title_ole_renders_from_embedded_preview ... ok
+test issue_1692::issue_1692_so_sueop_hwp3_page1_school_label_matches_hwpx_y ... ok
+test issue_1692::issue_1692_so_sueop_hwp3_page22_relationship_box_uses_table_flow ... ok
+test issue_1692::issue_1692_so_sueop_header_footer_page5_matches_reference_contract ... ok
+test issue_1692::issue_1692_so_sueop_answer_endnote_pages_match_pdf_ranges ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 184 filtered out; finished in 0.20s

@@ -1,0 +1,418 @@
+{
+  "reason": "Publish the implicit single-column definition on rebuilt real-paper sections; the independent Hancom one-column print contrast preserves the original 25mm paper margins. Unedited raw bytes and existing explicit columns remain intact.",
+  "observed_head": "327128e81cefa325d55e6b095122d44607493f93",
+  "geometry_guard_head": "7fec9e9fb7aff2c9747902258dade4d181ea4be2",
+  "base_ref": "cdba77b609c399fdef26a6c9e637716aa32c2177",
+  "baseline_before_sha256": "c408638861937c77a42c1876f4d82ba3acd7d34a1427704aa58d30ff58bff372",
+  "scope": "Only the 51 observed hwp5rb increases below; unrelated baseline rows are preserved. No rendering or overflow allowance changes.",
+  "formal_guard": "tests/cases/issue_7490_edited_paragraph_indent.rs::default_column_rebuild_preserves_content_and_object_geometry",
+  "independent_reference": "tests/fixtures/pr7491_edited_indent/6190-edited-2020.pdf",
+  "new_control": "ColumnDef: column_count=1, same_width=true; one 8-unit extended-control slot is inserted after SectionDef. Existing controls retain their content and geometric boxes.",
+  "node_examples": [
+    {
+      "sample": "issue6190/center_align_first_line_indent.hwp",
+      "paragraph": 0,
+      "char_count": [
+        9,
+        17
+      ],
+      "controls_len": [
+        1,
+        2
+      ],
+      "ctrl_data_records_len": [
+        1,
+        2
+      ]
+    },
+    {
+      "sample": "issue5715/float_chart_ghost_ladder_gap.hwp",
+      "paragraph": 0,
+      "char_offset_0": [
+        8,
+        16
+      ],
+      "char_count": [
+        124,
+        132
+      ]
+    },
+    {
+      "sample": "issue6133/156483831_poster_title_above_offset_float.hwp",
+      "paragraph": 0,
+      "controls_before": [
+        "SectionDef",
+        "Picture",
+        "Table"
+      ],
+      "controls_after": [
+        "SectionDef",
+        "ColumnDef",
+        "Picture",
+        "Table"
+      ]
+    }
+  ],
+  "delta": [
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5701/1530000-200800002_slice_p139_tac_reset_tail.hwp",
+      "path": "sections[].paragraphs[].char_count",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5701/1530000-200800002_slice_p139_tac_reset_tail.hwp",
+      "path": "sections[].paragraphs[].controls.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5701/1530000-200800002_slice_p139_tac_reset_tail.hwp",
+      "path": "sections[].paragraphs[].ctrl_data_records.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5715/float_chart_ghost_ladder_gap.hwp",
+      "path": "sections[].paragraphs[].char_count",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5715/float_chart_ghost_ladder_gap.hwp",
+      "path": "sections[].paragraphs[].char_offsets.n",
+      "before": 0,
+      "after": 83
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5715/float_chart_ghost_ladder_gap.hwp",
+      "path": "sections[].paragraphs[].char_offsets[]",
+      "before": 0,
+      "after": 32
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5715/float_chart_ghost_ladder_gap.hwp",
+      "path": "sections[].paragraphs[].controls.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5715/float_chart_ghost_ladder_gap.hwp",
+      "path": "sections[].paragraphs[].ctrl_data_records.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5715/float_chart_ghost_ladder_gap.hwp",
+      "path": "sections[].paragraphs[].line_segs[].text_start",
+      "before": 0,
+      "after": 2
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5802/hf_cross_section_inherit.hwp",
+      "path": "sections[].paragraphs[].char_count",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5802/hf_cross_section_inherit.hwp",
+      "path": "sections[].paragraphs[].char_offsets[]",
+      "before": 0,
+      "after": 6
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5802/hf_cross_section_inherit.hwp",
+      "path": "sections[].paragraphs[].controls.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5802/hf_cross_section_inherit.hwp",
+      "path": "sections[].paragraphs[].ctrl_data_records.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5833/cell_multi_para_float_pics.hwp",
+      "path": "sections[].paragraphs[].char_count",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5833/cell_multi_para_float_pics.hwp",
+      "path": "sections[].paragraphs[].char_offsets[]",
+      "before": 0,
+      "after": 21
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5833/cell_multi_para_float_pics.hwp",
+      "path": "sections[].paragraphs[].char_shapes[].start_pos",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5833/cell_multi_para_float_pics.hwp",
+      "path": "sections[].paragraphs[].controls.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5833/cell_multi_para_float_pics.hwp",
+      "path": "sections[].paragraphs[].ctrl_data_records.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5871/ws_host_float_double_charge.hwp",
+      "path": "sections[].paragraphs[].char_count",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5871/ws_host_float_double_charge.hwp",
+      "path": "sections[].paragraphs[].controls.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5871/ws_host_float_double_charge.hwp",
+      "path": "sections[].paragraphs[].controls[]",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue5871/ws_host_float_double_charge.hwp",
+      "path": "sections[].paragraphs[].ctrl_data_records.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6133/156483831_poster_title_above_offset_float.hwp",
+      "path": "sections[].paragraphs[].char_count",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6133/156483831_poster_title_above_offset_float.hwp",
+      "path": "sections[].paragraphs[].controls.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6133/156483831_poster_title_above_offset_float.hwp",
+      "path": "sections[].paragraphs[].controls[]",
+      "before": 0,
+      "after": 2
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6133/156483831_poster_title_above_offset_float.hwp",
+      "path": "sections[].paragraphs[].ctrl_data_records.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6135/156544683_title_row_underfit.hwp",
+      "path": "sections[].paragraphs[].char_count",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6135/156544683_title_row_underfit.hwp",
+      "path": "sections[].paragraphs[].char_offsets[]",
+      "before": 0,
+      "after": 3
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6135/156544683_title_row_underfit.hwp",
+      "path": "sections[].paragraphs[].char_shapes[].start_pos",
+      "before": 0,
+      "after": 2
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6135/156544683_title_row_underfit.hwp",
+      "path": "sections[].paragraphs[].controls.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6135/156544683_title_row_underfit.hwp",
+      "path": "sections[].paragraphs[].controls[]",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6135/156544683_title_row_underfit.hwp",
+      "path": "sections[].paragraphs[].ctrl_data_records.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6184/156489124_tail_line_before_deferred_table.hwp",
+      "path": "sections[].paragraphs[].char_count",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6184/156489124_tail_line_before_deferred_table.hwp",
+      "path": "sections[].paragraphs[].char_offsets.n",
+      "before": 0,
+      "after": 46
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6184/156489124_tail_line_before_deferred_table.hwp",
+      "path": "sections[].paragraphs[].char_offsets[]",
+      "before": 0,
+      "after": 32
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6184/156489124_tail_line_before_deferred_table.hwp",
+      "path": "sections[].paragraphs[].char_shapes[].start_pos",
+      "before": 0,
+      "after": 10
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6184/156489124_tail_line_before_deferred_table.hwp",
+      "path": "sections[].paragraphs[].controls.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6184/156489124_tail_line_before_deferred_table.hwp",
+      "path": "sections[].paragraphs[].ctrl_data_records.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6184/156489124_tail_line_before_deferred_table.hwp",
+      "path": "sections[].paragraphs[].line_segs[].text_start",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6190/center_align_first_line_indent.hwp",
+      "path": "sections[].paragraphs[].char_count",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6190/center_align_first_line_indent.hwp",
+      "path": "sections[].paragraphs[].controls.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6190/center_align_first_line_indent.hwp",
+      "path": "sections[].paragraphs[].ctrl_data_records.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6196/cell_char_spacing_fit.hwp",
+      "path": "sections[].paragraphs[].char_count",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6196/cell_char_spacing_fit.hwp",
+      "path": "sections[].paragraphs[].char_offsets[]",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6196/cell_char_spacing_fit.hwp",
+      "path": "sections[].paragraphs[].char_shapes[].start_pos",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6196/cell_char_spacing_fit.hwp",
+      "path": "sections[].paragraphs[].controls.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6196/cell_char_spacing_fit.hwp",
+      "path": "sections[].paragraphs[].ctrl_data_records.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6204/square_picture_band_host.hwp",
+      "path": "sections[].paragraphs[].char_count",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6204/square_picture_band_host.hwp",
+      "path": "sections[].paragraphs[].controls.len",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6204/square_picture_band_host.hwp",
+      "path": "sections[].paragraphs[].controls[]",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "lane": "hwp5rb",
+      "sample": "issue6204/square_picture_band_host.hwp",
+      "path": "sections[].paragraphs[].ctrl_data_records.len",
+      "before": 0,
+      "after": 1
+    }
+  ],
+  "baseline_after_sha256": "cac06d2811dca319cdfef4b47227b7bd1f8cccb2e7915331f41658830777589f",
+  "native_and_fresh_wasm": "11/11 pages passed >=90%; minimum93.42616%; no font exception",
+  "painted_geometry_guard": "11 affected inputs: paper, paragraph content/style, page count and all painted text/table/drawing boxes preserved (<0.5px). Synthetic/API preservation contract; no claim of full Hancom fidelity for all 11 source samples."
+}

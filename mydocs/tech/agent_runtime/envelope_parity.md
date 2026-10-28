@@ -238,8 +238,8 @@ fn classify_hwp_error(msg: &str) -> LoadError {
 않고 사실만 적는다. 패리티 규칙은 이 현실을 덮어야 한다.
 
 **① `run --json` 은 실패에도 봉투를 낸다.** `capabilities.jsonContract.failure` 는
-"단건 명령 실패 시 stdout 0바이트; batch 는 error 레코드 + 최종 exit 1"이라고
-선언하는데, `run` 은 셋째 경우다:
+이 예외를 적는다 — "예외: run — 실패도 봉투를 stdout 으로 낸다(계획 안 문서 부재 등
+입력 오류 exit 1 + error, …)". `run` 은 셋째 경우다:
 
 ```console
 $ rhwp run --plan-json '{"planVersion":"1.0"}' --json

@@ -1,0 +1,13 @@
+{
+  "parent_sha": "292ba2161e1ce5ca90429bbb87ded48f8e661b5c",
+  "files": {
+    "src/renderer/float_placement.rs": "297032fc709eb23954e42de29e24c628354f70f929fe2d710ce91a5afeae6fbf",
+    "src/renderer/layout.rs": "e1b3cc1594998716f4bad25b1df9a8737009584c8825db24dcdad554d34ef9c7",
+    "src/renderer/layout/table_partial.rs": "1fff5825b758a12fcbd63c2b61918dabac4bbcf3873dc4c65106306f8040cd2d",
+    "src/renderer/typeset/table/block/whole_fit.rs": "1af469d7c18878607ffd5b0aa50bb3b4e785ddaaec0819f697459d3c8cca27b1",
+    "src/renderer/typeset/table/continuation/fragment/budget.rs": "3c3d4dd94525b9244f995046dd1d7197166fdfc31006119ef035b31a07e666fb",
+    "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "7384ab1c2d2bdf1d14319617c97df866f84185afd446c86cca7ae9983874610d"
+  },
+  "runtime_diff_sha256": "77343306702c191dfa6e0aff446cca69f6aacdb9f7c9ef6e934cfcfc231c8404",
+  "test_diff_sha256": "c505af19135246c265951b34a95e3ed8d1ab7c728fa829b8a599db65e29ac078"
+}

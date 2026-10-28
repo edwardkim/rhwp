@@ -86,8 +86,12 @@ pub(crate) fn record(
     if let Err(e) = doc.convert_to_editable_native() {
         return fail_record(path, format!("변환 실패: {:?}", e));
     }
+    let export_snapshot = doc.prepare_hwp_export_snapshot();
+    let verify_expected = verify_options
+        .verify
+        .then(|| export_snapshot.document().clone());
 
-    let bytes = match doc.export_hwp_with_adapter() {
+    let bytes = match export_snapshot.serialize() {
         Ok(b) => b,
         Err(e) => return fail_record(path, format!("직렬화 실패: {:?}", e)),
     };
@@ -141,8 +145,10 @@ pub(crate) fn record(
 
     let mut verify_report = serde_json::Value::Null;
     if verify_options.verify {
-        let diff =
-            rhwp::serializer::hwpx::roundtrip::diff_documents(doc.document(), reloaded.document());
+        let expected = verify_expected
+            .as_ref()
+            .expect("verify expected snapshot must exist");
+        let diff = rhwp::serializer::hwpx::roundtrip::diff_documents(expected, reloaded.document());
         // [#3505, #3930] 출처별로 대상 포맷에 표현 자리가 없는 항목만 걷어낸다.
         let diff = match source_format {
             rhwp::parser::FileFormat::Hwp => diff,

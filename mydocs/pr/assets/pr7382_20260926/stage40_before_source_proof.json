@@ -1,0 +1,10 @@
+{
+  "source_sha": "461de86b49e826fabb9c4b26021441b108a3fd6a",
+  "files": {
+    "src/renderer/equation_tac_flow.rs": "48db26fcf1a6f21091d1fc12fa371a228ba3afd8bf71d5e24642b45154cf31de",
+    "src/renderer/layout/paragraph_layout.rs": "f133ef93492822e28c8c8a81b7cee37f9257cb077b2aa7381984a446c6ceaa2c",
+    "src/renderer/layout/picture_footnote.rs": "b1e71b2b91afae269ddf87523e8f07c763be1e500301b50cfe35d21b25458089",
+    "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "819dee1841dc58d87be166c0015e94fdaa220e67bf7b398c95fa24792fe5c412"
+  },
+  "runtime_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

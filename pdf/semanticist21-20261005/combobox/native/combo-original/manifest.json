@@ -1,0 +1,119 @@
+{
+  "key": "combo-original",
+  "hwp": "samples/hwpx/form-01.hwpx",
+  "pdf": "samples/hwpx/form-01-2024.pdf",
+  "requested_pages": [
+    1
+  ],
+  "completed_pages": [
+    1
+  ],
+  "missing_pages": [],
+  "run_state": "complete",
+  "run_manifest": "output/pr-review/semanticist21-20261005/combobox-visual-native/combo-original/run_manifest.json",
+  "exported_svg_pages": 1,
+  "exported_render_tree_pages": 1,
+  "exported_pdf_pages": 1,
+  "rasterized_svg_pages": 1,
+  "rasterized_pdf_pages": 1,
+  "svg_pages": 1,
+  "render_tree_pages": 1,
+  "pdf_pages": 1,
+  "compare_pages": 1,
+  "overlay_pages": 1,
+  "review_pages": 1,
+  "pdf_question_markers": 0,
+  "contact_sheet": "output/pr-review/semanticist21-20261005/combobox-visual-native/combo-original/contact_sheet.png",
+  "overlay_contact_sheet": "output/pr-review/semanticist21-20261005/combobox-visual-native/combo-original/overlay_contact_sheet.png",
+  "review_contact_sheet": "output/pr-review/semanticist21-20261005/combobox-visual-native/combo-original/review_contact_sheet.png",
+  "analysis_dir": "output/pr-review/semanticist21-20261005/combobox-visual-native/combo-original/analysis",
+  "overlay_dir": "output/pr-review/semanticist21-20261005/combobox-visual-native/combo-original/overlay",
+  "review_dir": "output/pr-review/semanticist21-20261005/combobox-visual-native/combo-original/review",
+  "note_shape": [
+    {
+      "section": 0,
+      "footnote": {
+        "separatorAboveMm": 2.999,
+        "separatorBelowMm": 2.0,
+        "betweenNotesMm": 0.998,
+        "separatorEnabled": true,
+        "separatorLengthMm": -0.004,
+        "rawSeparatorMarginTopMm": 2.999,
+        "rawSeparatorMarginBottomMm": 0.0,
+        "rawNoteSpacingMm": 2.0,
+        "rawUnknownMm": 0.998
+      },
+      "endnote": {
+        "separatorAboveMm": 2.999,
+        "separatorBelowMm": 2.0,
+        "betweenNotesMm": 0.0,
+        "separatorEnabled": true,
+        "separatorLengthMm": 51831.325,
+        "rawSeparatorMarginTopMm": 2.999,
+        "rawSeparatorMarginBottomMm": 0.0,
+        "rawNoteSpacingMm": 2.0,
+        "rawUnknownMm": 0.0
+      }
+    }
+  ],
+  "note_shape_json": "output/pr-review/semanticist21-20261005/combobox-visual-native/combo-original/analysis/note_shape.json",
+  "overlay_metrics": {
+    "compared_pages": 1,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 99.67319,
+    "worst_pixel_match_percent": 99.67319,
+    "average_ink_match_percent": 42.89634,
+    "worst_ink_match_percent": 42.89634,
+    "average_visual_accuracy_proxy_percent": 42.89634,
+    "worst_visual_accuracy_proxy_percent": 42.89634,
+    "average_tolerant_content_match_percent": 82.89242,
+    "worst_tolerant_content_match_percent": 82.89242,
+    "worst_pages": [
+      1
+    ]
+  },
+  "overlay_metrics_json": "output/pr-review/semanticist21-20261005/combobox-visual-native/combo-original/overlay/overlay_metrics.json",
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 1,
+        "tolerant_content_match_percent": 82.89242
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "visual_metrics": {
+    "analyzed_pages": 1,
+    "flagged_page_count": 0,
+    "frame_overflow_pages": [],
+    "content_bottom_drift_pages": [],
+    "red_marker_drift_pages": [],
+    "question_marker_flow_drift_pages": [],
+    "line_band_drift_pages": [],
+    "column_line_band_drift_pages": [],
+    "column_text_flow_collapse_pages": [],
+    "large_ink_region_drift_pages": [],
+    "endnote_separator_gap_drift_pages": [],
+    "endnote_separator_observed_pages": [],
+    "endnote_separator_gap_pages": [],
+    "endnote_no_separator_content_pages": [],
+    "between_notes_marker_gap_pages": [],
+    "equation_text_overlap_pages": [],
+    "square_wrap_text_overlap_pages": [],
+    "deferred_square_picture_top_drift_pages": [],
+    "right_table_left_strip_text_deficit_pages": [],
+    "question_title_text_overlap_pages": [],
+    "line_order_overlap_pages": [],
+    "render_tree_frame_tail_overflow_pages": [],
+    "question_marker_drift_pages": [],
+    "legacy_glyph_visual_pages": [],
+    "metrics_json": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261005/combobox-visual-native/combo-original/analysis/metrics.json",
+    "question_flow_json": "/home/tsjang/rhwp/output/pr-review/semanticist21-20261005/combobox-visual-native/combo-original/analysis/question_flow.json"
+  },
+  "flagged_pages": [],
+  "native_document_pages": 1,
+  "native_export_metadata": "output/pr-review/semanticist21-20261005/combobox-visual-native/combo-original/native-export.json"
+}

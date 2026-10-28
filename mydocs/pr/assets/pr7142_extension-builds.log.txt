@@ -1,0 +1,61 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (rhwp-chrome/vite.config.ts:11:24). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+vite v8.2.1 building client environment for production...
+[2K
+transforming...<script src="/theme-init.js"> in "/index.html" can't be bundled without type="module" attribute
+<script src="/locale-init.js"> in "/index.html" can't be bundled without type="module" attribute
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by "/Users/tsjang/rhwp/rhwp-studio/node_modules/canvaskit-wasm/bin/canvaskit.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported by "/Users/tsjang/rhwp/rhwp-studio/node_modules/canvaskit-wasm/bin/canvaskit.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+
+/images/icon_small_ko.svg referenced in /images/icon_small_ko.svg didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+/images/icon_small_ko_dark.svg referenced in /images/icon_small_ko_dark.svg didn't resolve at build time, it will remain unchanged to be resolved at runtime
+✓ 271 modules transformed.
+rendering chunks...
+computing gzip size...
+../../../private/tmp/rhwp-pr7142-review/chrome-dist/index.html                                    66.97 kB │ gzip:     8.94 kB
+../../../private/tmp/rhwp-pr7142-review/chrome-dist/assets/canvaskit-DB1zH3nD.wasm             7,159.34 kB │ gzip: 2,943.58 kB
+../../../private/tmp/rhwp-pr7142-review/chrome-dist/assets/rhwp_bg-NzTAjaZs.wasm              13,028.49 kB │ gzip: 4,500.54 kB
+../../../private/tmp/rhwp-pr7142-review/chrome-dist/assets/viewer-BDUD3_JM.css                   110.27 kB │ gzip:    19.23 kB
+../../../private/tmp/rhwp-pr7142-review/chrome-dist/assets/rhwp-hwpctrl-plugin.d-BvRk9kiK.js       0.00 kB │ gzip:     0.02 kB
+../../../private/tmp/rhwp-pr7142-review/chrome-dist/assets/canvaskit-renderer-DbSbc2U9.js        246.50 kB │ gzip:    74.40 kB
+../../../private/tmp/rhwp-pr7142-review/chrome-dist/assets/viewer-BSz5Goy9.js                  1,810.03 kB │ gzip:   380.15 kB
+
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 417ms
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (rhwp-firefox/vite.config.ts:11:24). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+vite v8.2.1 building client environment for production...
+[2K
+transforming...<script src="/theme-init.js"> in "/index.html" can't be bundled without type="module" attribute
+<script src="/locale-init.js"> in "/index.html" can't be bundled without type="module" attribute
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by "/Users/tsjang/rhwp/rhwp-studio/node_modules/canvaskit-wasm/bin/canvaskit.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported by "/Users/tsjang/rhwp/rhwp-studio/node_modules/canvaskit-wasm/bin/canvaskit.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+
+/images/icon_small_ko.svg referenced in /images/icon_small_ko.svg didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+/images/icon_small_ko_dark.svg referenced in /images/icon_small_ko_dark.svg didn't resolve at build time, it will remain unchanged to be resolved at runtime
+✓ 271 modules transformed.
+rendering chunks...
+computing gzip size...
+../../../private/tmp/rhwp-pr7142-review/firefox-dist/index.html                                    66.97 kB │ gzip:     8.94 kB
+../../../private/tmp/rhwp-pr7142-review/firefox-dist/assets/canvaskit-DB1zH3nD.wasm             7,159.34 kB │ gzip: 2,943.58 kB
+../../../private/tmp/rhwp-pr7142-review/firefox-dist/assets/rhwp_bg-NzTAjaZs.wasm              13,028.49 kB │ gzip: 4,500.54 kB
+../../../private/tmp/rhwp-pr7142-review/firefox-dist/assets/viewer-BDUD3_JM.css                   110.27 kB │ gzip:    19.23 kB
+../../../private/tmp/rhwp-pr7142-review/firefox-dist/assets/rhwp-hwpctrl-plugin.d-BvRk9kiK.js       0.00 kB │ gzip:     0.02 kB
+../../../private/tmp/rhwp-pr7142-review/firefox-dist/assets/canvaskit-renderer-DbSbc2U9.js        246.50 kB │ gzip:    74.40 kB
+../../../private/tmp/rhwp-pr7142-review/firefox-dist/assets/viewer-BSz5Goy9.js                  1,810.03 kB │ gzip:   380.15 kB
+
+✓ built in 426ms
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[{"kind":"chrome","htmlRequestsLocaleInit":true,"localeInitBundled":false,"copyScriptMentionsLocaleInit":false,"publicDir":false},{"kind":"firefox","htmlRequestsLocaleInit":true,"localeInitBundled":false,"copyScriptMentionsLocaleInit":false,"publicDir":false}]

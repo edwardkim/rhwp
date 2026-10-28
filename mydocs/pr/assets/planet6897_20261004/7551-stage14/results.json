@@ -1,0 +1,26 @@
+{
+  "status": "individual_scope_pass_integration_pending",
+  "production_code_candidate": "4cfe96e52",
+  "nextest": {
+    "passed": 6,
+    "failed": 0,
+    "exit_code": 0,
+    "log_sha256": "480acc355178458d2ba16f7c0a91db47fcb43b2c007d367bb0ff12f888c039ac"
+  },
+  "native_and_fresh_wasm": {
+    "selected_pages": [
+      19
+    ],
+    "minimum": 99.68937,
+    "below_90": 0,
+    "missing_pages": 0
+  },
+  "test_sources": {
+    "tests/cases/issue_7387_nested_row_square_picture_floor.rs": "6c0f3367e5896f647e17f89e35063404f7c0515336d3b88859c88c2e0b2b1b1a",
+    "tests/cases/issue_4068_unclipped_cell_honors_valign.rs": "b3aef4a1a1cecd5c19d00e8da67758772c7389d102f3672e6049e7a07a6553a4"
+  },
+  "remaining": [
+    "other individual PR reviews",
+    "final integrated full gates"
+  ]
+}

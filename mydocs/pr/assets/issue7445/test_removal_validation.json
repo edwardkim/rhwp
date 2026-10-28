@@ -1,0 +1,363 @@
+{
+  "status": "held_for_remaining_regressions",
+  "corpus": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_006",
+      "--test",
+      "regression_suite_008",
+      "--test",
+      "regression_suite_010",
+      "--test",
+      "regression_suite_022",
+      "--test",
+      "regression_suite_028",
+      "--test",
+      "overflow_cell_baseline",
+      "-E",
+      "test(/issue_1891|ir_field_sweep_does_not_regress|overflow_cell_lines_do_not_grow|off_canvas_does_not_grow|text_overlaps_do_not_grow|body_overflow_does_not_grow/)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "targets": [
+      "regression_suite_006",
+      "regression_suite_008",
+      "regression_suite_010",
+      "regression_suite_022",
+      "regression_suite_028",
+      "overflow_cell_baseline"
+    ],
+    "exit_code": 100,
+    "seconds": 201.83563425019383,
+    "source_before": {
+      "tests/issue_1891.rs": "ff86438d2b812ad506e42fb5d09d71985cf7643a96f09980c7bbce72843da772",
+      "tests/fixtures/ir_field_sweep_baseline.tsv": "62d218da0911583b3af111481afe9a342bbb71cbcf8991392775f69b4a411c5e",
+      "tests/fixtures/text_overlap_baseline.tsv": "443f3190cf0ab504c1f91273fb8612fdb0f2783acc05df92a4f8cfe605b4dae6",
+      "mydocs/pr/assets/issue7445/80250_regulatory_analysis.hwp": "e68d903c20e89ed1325b3a5633c3c0606d21b042345b76a1785cad1e1eca8589",
+      "mydocs/pr/assets/issue7445/80250_regulatory_analysis.hwpx": "eec54040f66f9b67caa1df9010fa57810b13a884e35f3162dd7e5eb266ff167b"
+    },
+    "source_after": {
+      "tests/issue_1891.rs": "ff86438d2b812ad506e42fb5d09d71985cf7643a96f09980c7bbce72843da772",
+      "tests/fixtures/ir_field_sweep_baseline.tsv": "62d218da0911583b3af111481afe9a342bbb71cbcf8991392775f69b4a411c5e",
+      "tests/fixtures/text_overlap_baseline.tsv": "443f3190cf0ab504c1f91273fb8612fdb0f2783acc05df92a4f8cfe605b4dae6",
+      "mydocs/pr/assets/issue7445/80250_regulatory_analysis.hwp": "e68d903c20e89ed1325b3a5633c3c0606d21b042345b76a1785cad1e1eca8589",
+      "mydocs/pr/assets/issue7445/80250_regulatory_analysis.hwpx": "eec54040f66f9b67caa1df9010fa57810b13a884e35f3162dd7e5eb266ff167b"
+    }
+  },
+  "scope": {
+    "status": "passed",
+    "original_documents_preserved_byte_identically_in_issue_assets": true,
+    "explicit_document_rows_removed": 2,
+    "baseline_rows_removed": 3,
+    "remaining_baseline_lines_identical": true,
+    "no_corpus_exclusion_helper": true,
+    "no_ignore_attribute": true,
+    "runtime_changed": false,
+    "selected_corpus_sample_removal_count": 2
+  },
+  "summary": {
+    "tests": 70,
+    "passed": 48,
+    "failed": 22,
+    "skipped": 1087,
+    "slow": 4,
+    "test_seconds": 174.205,
+    "total_seconds": 201.83563425019383,
+    "exit_code": 100
+  },
+  "failed_functions": [
+    "rhwp::regression_suite_006 off_canvas_baseline::off_canvas_does_not_grow_partition_10",
+    "rhwp::regression_suite_006 off_canvas_baseline::off_canvas_does_not_grow_partition_14",
+    "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_0",
+    "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_1",
+    "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_10",
+    "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_11",
+    "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_12",
+    "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+    "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_14",
+    "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_15",
+    "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_3",
+    "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_8",
+    "rhwp::regression_suite_008 text_overlap_baseline::text_overlaps_do_not_grow_partition_9",
+    "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_0",
+    "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_1",
+    "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_10",
+    "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_15",
+    "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_2",
+    "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_3",
+    "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_4",
+    "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_8",
+    "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_9"
+  ],
+  "failed_input_messages": [
+    [
+      "hwp3-sample10-hwp5.hwp",
+      "187 → 194건"
+    ],
+    [
+      "hwpctl_ParameterSetID_Item_v1.2.hwp",
+      "1건 (baseline 없음)"
+    ],
+    [
+      "issue1853_caption_precedes_body_split.hwpx",
+      "0 → 2건"
+    ],
+    [
+      "issue1891_external_bindata_link.hwpx",
+      "3 → 12건"
+    ],
+    [
+      "issue1937_rowbreak_footnote_overpagination.hwp",
+      "132 → 134건"
+    ],
+    [
+      "issue3637/press_release_split_cell_nested_table.hwpx",
+      "2 → 3건"
+    ],
+    [
+      "issue3637/regulatory_impact_nested_table_escape.hwpx",
+      "14 → 21건"
+    ],
+    [
+      "issue5885/3171199_design_capability_criteria.hwp",
+      "1건 (baseline 없음)"
+    ],
+    [
+      "issue5941/1480000-201900698-native-neartop-reset.hwp",
+      "10 → 23건"
+    ],
+    [
+      "issue5941/1480000-201900698-native-neartop-reset.hwp",
+      "19 → 20건"
+    ],
+    [
+      "issue5941/1490000-201600081_roadmap_research.hwp",
+      "134 → 137건"
+    ],
+    [
+      "issue6023/30269_reform_recommendation.hwp",
+      "3건 (baseline 없음)"
+    ],
+    [
+      "issue6126/3171199_design_capability_criteria.hwp",
+      "1건 (baseline 없음)"
+    ],
+    [
+      "issue6697/80550-agricultural-machinery-act-amendment.hwpx",
+      "14 → 21건"
+    ],
+    [
+      "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+      "39 → 40건"
+    ],
+    [
+      "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+      "7 → 11건"
+    ],
+    [
+      "issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "1건 (baseline 없음)"
+    ],
+    [
+      "issue6778/156757920-animal-welfare-husbandry-guidelines.hwp",
+      "1건 (baseline 없음)"
+    ],
+    [
+      "issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+      "2건 (baseline 없음)"
+    ],
+    [
+      "issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+      "2건 (baseline 없음)"
+    ],
+    [
+      "issue6795/1341000-201100013-cyber-university-application.hwp",
+      "2 → 3건"
+    ],
+    [
+      "issue6844/30269-anticorruption-recommendation-toc.hwp",
+      "3건 (baseline 없음)"
+    ],
+    [
+      "issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp",
+      "2 → 3건"
+    ],
+    [
+      "issue6892/156726122-recycling-press-release.hwpx",
+      "1건 (baseline 없음)"
+    ],
+    [
+      "pr4093/outline_navigation_panel_demo.hwpx",
+      "2건 (baseline 없음)"
+    ],
+    [
+      "pr4093/outline_navigation_table_cell_number.hwpx",
+      "2건 (baseline 없음)"
+    ],
+    [
+      "rowbreak-problem-pages.hwp",
+      "1건 (baseline 없음)"
+    ],
+    [
+      "rowbreak-problem-pages.hwpx",
+      "1 → 2건"
+    ],
+    [
+      "task1725/text_footnote_tail_overpagination.hwp",
+      "13 → 17건"
+    ],
+    [
+      "task1725/text_footnote_tail_overpagination.hwp",
+      "17 → 18건"
+    ],
+    [
+      "task2097/75544_pii_bunseok.hwpx",
+      "1 → 2건"
+    ],
+    [
+      "task2287/1342000_edu_curriculum_map.hwp",
+      "37 → 90건"
+    ],
+    [
+      "한글문서파일형식_5.0_revision1.3.hwp",
+      "1건 (baseline 없음)"
+    ]
+  ],
+  "new_failed_input_messages_vs_stage53_full": [],
+  "stage53_failed_messages_not_in_selected_run": [
+    [
+      "80250_regulatory_analysis.hwp",
+      "2건 (baseline 없음)"
+    ]
+  ],
+  "log_sha256": "e98e41df64a717a04924bdbb07432f59b25bae8c1844c2e9d8274714bf88e11f",
+  "invalidated_runs": [
+    "corpus-invalidated-move.log",
+    "corpus-invalidated-restored.log"
+  ],
+  "issue": "https://github.com/edwardkim/rhwp/issues/7445",
+  "head_before": "ef09f1b19ca0cf1b8e787907ddfb6ff2ed20edf6",
+  "runtime_changed": false,
+  "tolerances_changed": false,
+  "remaining_baseline_lines_unchanged": true,
+  "result_is_full_suite": false,
+  "gates": [
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 6.937994583044201
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.4547073747962713
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.2344361669383943
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 0.36868320824578404
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 10.732739749830216
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0,
+      "seconds": 0.561210417188704
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0,
+      "seconds": 10.130014916881919
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.04401887534186244
+    }
+  ],
+  "runtime_sources": {
+    "src/renderer/float_placement.rs": "8dcab8b7f06a10bb4cc8f43fd70dc088dcb1f18bccd244668a21e9dea4564e90",
+    "src/renderer/typeset/table/continuation/fragment/budget.rs": "9573ac641daf35713f8142d1c1bdd0d95ac9d131e2c7c453ccb57f5182cf20a3",
+    "src/renderer/layout/table_partial.rs": "0b6ede74a715532d1c519931c1391a6765bc62cf8a53a21140180892f010b673"
+  }
+}

@@ -1,0 +1,47 @@
+## 문제와 수정
+
+Firefox에서 다운로드 1건의 생성·변경 이벤트가 겹치면 뷰어 탭을 여러 개 열었다.
+같은 ID의 이벤트를 수신 순서로 처리해 상태 읽기/쓰기 경합을 막고, 기존 과거 다운로드
+보호와 수신 시각 판정을 유지한다. Chrome/Firefox의 자체 extension Blob 저장은
+자동 열기에서 제외해 편집기 저장 때 새 뷰어가 열리지 않게 한다.
+
+Closes #6964
+
+파일명 절대 경로 제거는 #6961의 별도 수정이다.
+
+## 검증
+
+- 사용자 직접 검증: 결합 dist에서 다운로드 탭 1개, 정상 저장 파일명, 저장 시 추가 탭 없음과 편집 보존을 모두 확인.
+
+- 결정적 회귀 테스트: 수정 전 6개 실패, 최종 전체 148/148 통과.
+- 두 production build, dist 계약 3/3, Chrome 기존 4종 + 자체 Blob 저장 통과.
+- Firefox 155.0.1: 입력 다운로드/편집/저장/다른 이름 저장, 뷰어 1개와 편집 보존 확인.
+- #6961 결합 패키지에서 정상 basename까지 확인. Rust/WASM source 무변경, 기존 WASM 재사용.
+
+## 첫 이벤트 시점과 검증 한계
+
+초기 큐에서 첫 이벤트까지 비동기로 미뤘을 때 일부 headless 실행이 자동 열기를 놓쳤다.
+첫 browser API 호출은 기존처럼 이벤트 전달 중 시작하고, 같은 ID의 후속 이벤트만 기다리도록
+보정했다. 이 호출 시점 계약을 테스트로 고정했고 새 Firefox 프로필 3회가 연속 통과했다.
+Firefox 내부 원인을 단정하지 않는다. OS 네이티브 저장 대화상자는 검증하지 않았다.
+
+## 제출 기준
+
+- 검증한 code commit: `5de285adbfcf9e52b5e03c0ca6da750ec931714d`
+- 최초 제출 head: `53e3e701b0656468198f7d102c0077032332163e` (code 검증 이후 변경은 `mydocs/` 기록뿐)
+- 최신 devel `0d36da409`와 merge-tree 충돌 없음.
+- 변경 범위: 확장 JavaScript·회귀 테스트·작업 문서. Rust/WASM/Studio source와 CI 설정은 변경하지 않았다.
+- [x] 변경 범위의 로컬 검증과 실제 브라우저 검증을 수행했다.
+- [x] `git diff --check`와 최신 base 결합을 확인했다.
+- 캡슐은 문서 편집 산출물 생성 작업이 아니므로 미첨부.
+
+사용자 승인에 따라 draft로 제출한다. ready 전환·merge·배포는 별도 단계다.
+
+관련 PR: #6965. [작성자 검토 기록](https://github.com/edwardkim/rhwp/blob/codex/issue-6964-download-duplicates/mydocs/pr/archives/pr_6966_review.md).
+
+
+## 추가 Chrome smoke
+
+- `9bbdc46dbc55dc3dd3e3dedc4ecb04cb6071815e`에서 `npm --prefix rhwp-chrome run test:e2e:smoke` 통과.
+- production build, 보조 계약 4/4, 실제 Chrome headless의 viewer/options/print/service worker/content script 모두 PASS.
+- 기존 다운로드 E2E에 추가한 검증이며, 소스 수정 없이 실행했다. 기존 WASM 재사용.

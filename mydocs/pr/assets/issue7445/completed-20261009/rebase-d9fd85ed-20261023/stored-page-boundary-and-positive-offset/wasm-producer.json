@@ -1,0 +1,9 @@
+{
+  "files": {
+    "rhwp.js": "56b2836e71bbbde64097476cb009303b8eeff61777c480cae82a238cf4d47af3",
+    "rhwp_bg.wasm": "8527fd0a432243b2f9fe31bd6174bef8729feb5fdd46591856cdb528b40a4a81"
+  },
+  "rootAndStudioPublicMatch": true,
+  "method": "Mac locked wrapper --target web --out-dir pkg --no-opt; local substitute, not Docker optimized",
+  "sourceProducerSha256": "0d61660accabc18f0e5f4e05eb8e62c26338cd19bfa3e57152b6af3475645ab0"
+}

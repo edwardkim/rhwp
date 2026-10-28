@@ -1,0 +1,36 @@
+[
+  {
+    "name": "focused",
+    "cmd": [
+      "node",
+      "--test",
+      "tests/i18n-core.test.ts",
+      "tests/i18n-dom.test.ts",
+      "tests/i18n-locale-init.test.ts",
+      "tests/i18n-preference.test.ts",
+      "tests/i18n-resolve.test.ts"
+    ],
+    "exit": 0,
+    "seconds": 0.26
+  },
+  {
+    "name": "tsc",
+    "cmd": [
+      "./node_modules/.bin/tsc",
+      "--noEmit"
+    ],
+    "exit": 1,
+    "seconds": 0.53
+  },
+  {
+    "name": "tsc-unit",
+    "cmd": [
+      "./node_modules/.bin/tsc",
+      "--project",
+      "tsconfig.ci-unit.json",
+      "--noEmit"
+    ],
+    "exit": 0,
+    "seconds": 0.5
+  }
+]

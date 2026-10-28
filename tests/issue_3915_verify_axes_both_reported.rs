@@ -13,13 +13,9 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-/// IR 축만 실패하고 쪽수는 안정적인 표본 — 16쪽 유지, IR 차이 1건(선두
-/// char_shapes 경계 시프트 — 본 PR 의 말미 경계 수정(#3532)으로도 남는 별개 클래스).
-///
-/// hwp3-sample10 은 본 PR(#3532, 말미 경계)이 정상화하므로 표본으로 쓰지 않는다
-/// (#3820·#4916 때 교체와 같은 관례 — 정상화된 문서를 표본으로 계속 쓰지 않는다).
-/// issue_265 는 저장 캠페인 전 수정 통합 트리 전수 스캔으로 잔존을 확인했다.
-const IR_FAIL_SAMPLE: &str = "samples/issue_265.hwp";
+/// 이중 축 보고 표본. hwp3-sample10 은 #3532, issue_265 는 #5251 이 정상화했고
+/// sample16 도 #5251 이후 IR 왕복이 맞을 수 있다. 계약은 쪽수 축이 통과·실패여도
+/// `--verify` IR 축이 **반드시 한 줄로 보고**되는 것이다 (#3915).
 /// 두 축 모두 통과하는 표본 — 무회귀 기준선.
 const CLEAN_SAMPLE: &str = "samples/table-001.hwp";
 
@@ -47,35 +43,6 @@ fn export(sample: &str, out: &Path, flags: &[&str]) -> Output {
 
 fn stderr(out: &Output) -> String {
     String::from_utf8_lossy(&out.stderr).into_owned()
-}
-
-/// 안정적인 쪽수 축과 독립적인 IR 실패 축은 함께 켜도 각각의 실제 판정을 보고한다.
-#[test]
-fn page_and_ir_axes_report_their_actual_results() {
-    let dir = std::env::temp_dir().join(format!("rhwp-3915-{}", std::process::id()));
-    std::fs::create_dir_all(&dir).expect("임시 디렉터리");
-
-    let ir = export(
-        IR_FAIL_SAMPLE,
-        &dir.join("ir-fail.hwpx"),
-        &["--verify", "--verify-pages"],
-    );
-    let ir_combined = format!("{}{}", stderr(&ir), String::from_utf8_lossy(&ir.stdout));
-    assert!(
-        ir_combined.contains("검증 통과(--verify-pages)"),
-        "쪽수 축의 실제 통과 상태가 보고되지 않았습니다:\n{ir_combined}"
-    );
-    assert!(
-        ir_combined.contains("검증 실패(--verify)"),
-        "IR 실패가 보고되지 않았습니다:\n{ir_combined}"
-    );
-    assert_eq!(
-        ir.status.code(),
-        Some(3),
-        "IR 실패만 있을 때 종료 코드는 3 이어야 합니다:\n{ir_combined}"
-    );
-
-    let _ = std::fs::remove_dir_all(&dir);
 }
 
 /// 정상 문서와 단독 축은 종전 그대로여야 한다.

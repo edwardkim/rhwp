@@ -1,0 +1,97 @@
+{
+  "summary": {
+    "compared_pages": 3,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 91.5428,
+    "worst_pixel_match_percent": 84.75824,
+    "average_ink_match_percent": 10.96616,
+    "worst_ink_match_percent": 10.20994,
+    "average_visual_accuracy_proxy_percent": 10.96616,
+    "worst_visual_accuracy_proxy_percent": 10.20994,
+    "worst_pages": [
+      16,
+      17,
+      15
+    ]
+  },
+  "pages": [
+    {
+      "page": 15,
+      "rhwp_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-wasm/terminal42065/terminal42065/rhwp_png/rhwp_015.png",
+      "pdf_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-wasm/terminal42065/terminal42065/pdf_png/pdf-15.png",
+      "overlay_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-wasm/terminal42065/terminal42065/overlay/overlay_015.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 135905,
+      "diff_ratio": 0.15241762,
+      "pixel_match_percent": 84.75824,
+      "ink_union_pixels": 154312,
+      "ink_diff_pixels": 135905,
+      "ink_diff_ratio": 0.88071569,
+      "ink_match_percent": 11.92843,
+      "visual_accuracy_proxy_percent": 11.92843,
+      "mean_abs_channel_delta": 19.298,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        78,
+        118,
+        717,
+        1064
+      ]
+    },
+    {
+      "page": 16,
+      "rhwp_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-wasm/terminal42065/terminal42065/rhwp_png/rhwp_016.png",
+      "pdf_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-wasm/terminal42065/terminal42065/pdf_png/pdf-16.png",
+      "overlay_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-wasm/terminal42065/terminal42065/overlay/overlay_016.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 76001,
+      "diff_ratio": 0.08523521,
+      "pixel_match_percent": 91.47648,
+      "ink_union_pixels": 84643,
+      "ink_diff_pixels": 76001,
+      "ink_diff_ratio": 0.89790059,
+      "ink_match_percent": 10.20994,
+      "visual_accuracy_proxy_percent": 10.20994,
+      "mean_abs_channel_delta": 12.564,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        79,
+        128,
+        716,
+        1064
+      ]
+    },
+    {
+      "page": 17,
+      "rhwp_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-wasm/terminal42065/terminal42065/rhwp_png/rhwp_017.png",
+      "pdf_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-wasm/terminal42065/terminal42065/pdf_png/pdf-17.png",
+      "overlay_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-wasm/terminal42065/terminal42065/overlay/overlay_017.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 14323,
+      "diff_ratio": 0.01606326,
+      "pixel_match_percent": 98.39367,
+      "ink_union_pixels": 16050,
+      "ink_diff_pixels": 14323,
+      "ink_diff_ratio": 0.89239875,
+      "ink_match_percent": 10.76012,
+      "visual_accuracy_proxy_percent": 10.76012,
+      "mean_abs_channel_delta": 2.388,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        89,
+        118,
+        713,
+        1063
+      ]
+    }
+  ]
+}

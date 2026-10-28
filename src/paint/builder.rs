@@ -1,26 +1,72 @@
 use crate::model::style::UnderlineType;
+use crate::paint::font_glyph::lower_font_native_glyph_sidecars_excluding;
 use crate::paint::layer_tree::{
     CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind, LayerOutputOptions, PageLayerTree,
 };
 use crate::paint::paint_op::{PaintOp, TextDecorationKind};
+use crate::paint::paper_viewport::PagePaintContext;
 use crate::paint::profile::RenderProfile;
-use crate::paint::{lower_font_native_glyph_sidecars, EmbeddedFontFace};
-use crate::renderer::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
+use crate::paint::shaping_glyph::lower_horizontal_shaping_page_sidecars;
+use crate::paint::shaping_glyph_vertical::lower_vertical_shaping_page_sidecars;
+use crate::paint::EmbeddedFontFace;
+use crate::renderer::render_tree::{ControlCode, PageRenderTree, RenderNode, RenderNodeType};
+
+const TEXT_MARK_BODY_CLIP_RIGHT_PAD: f64 = 48.0;
 
 /// semantic render tree를 visual layer tree로 내린다.
 pub struct LayerBuilder {
     profile: RenderProfile,
+    layout_dpi: f64,
+    image_reference_origin: (f64, f64),
+    image_page_size: (f64, f64),
     output_options: LayerOutputOptions,
     bin_data_epoch: u32,
+    page_context: Option<PagePaintContext>,
+    metafile_device_pixel_width: Option<f64>,
+    hancom2024_print_bitmap: bool,
+    metafile_fonts: super::metafile_fonts::MetafileFonts,
+    prior_print_solid_fill: bool,
+    hangul2024_print: bool,
+    metafile_catalogue: Option<std::sync::Arc<super::metafile_print::Catalogue>>,
 }
 
 impl LayerBuilder {
     pub fn new(profile: RenderProfile) -> Self {
         Self {
             profile,
+            layout_dpi: crate::renderer::DEFAULT_DPI,
+            image_reference_origin: (0.0, 0.0),
+            image_page_size: (0.0, 0.0),
             output_options: LayerOutputOptions::default(),
             bin_data_epoch: 0,
+            page_context: None,
+            metafile_device_pixel_width: None,
+            hancom2024_print_bitmap: false,
+            metafile_fonts: Default::default(),
+            prior_print_solid_fill: false,
+            hangul2024_print: false,
+            metafile_catalogue: None,
         }
+    }
+
+    /// 인쇄 품질 계산에 사용할 실제 레이아웃 DPI다.
+    pub(crate) fn with_layout_dpi(mut self, dpi: f64) -> Self {
+        if dpi.is_finite() && dpi > 0.0 {
+            self.layout_dpi = dpi;
+        }
+        self
+    }
+
+    /// 원본 형식과 분리된 출력 장치 픽셀의 레이아웃 단위 크기다.
+    pub fn with_metafile_device_pixel_width(mut self, width: Option<f64>) -> Self {
+        self.metafile_device_pixel_width = width.filter(|v| v.is_finite() && *v > 0.0);
+        self
+    }
+
+    /// 그림 색의 출력 세대를 장치 픽셀 값과 독립적으로 전달한다.
+    pub fn with_hancom2024_print_bitmap(mut self, enabled: bool) -> Self {
+        self.hancom2024_print_bitmap = enabled && self.profile == RenderProfile::Print;
+        self
     }
 
     pub fn with_output_options(mut self, output_options: LayerOutputOptions) -> Self {
@@ -33,8 +79,38 @@ impl LayerBuilder {
         self
     }
 
+    pub(crate) fn with_metafile_fonts(
+        mut self,
+        fonts: &super::metafile_fonts::MetafileFonts,
+    ) -> Self {
+        self.metafile_fonts = fonts.clone();
+        self
+    }
+
+    pub(crate) fn with_prior_print_solid_fill(mut self, filled: bool) -> Self {
+        self.prior_print_solid_fill = filled;
+        self
+    }
+
+    pub(crate) fn with_hangul2024_print(mut self, enabled: bool) -> Self {
+        self.hangul2024_print = enabled;
+        self
+    }
+
+    pub(crate) fn page_has_print_solid_fill(tree: &PageRenderTree, hangul2024_print: bool) -> bool {
+        PagePaintContext::node_has_print_solid_fill(&tree.root, hangul2024_print)
+    }
+
     pub fn build(&mut self, tree: &PageRenderTree) -> PageLayerTree {
         self.build_with_embedded_fonts(tree, &[])
+    }
+
+    pub(crate) fn with_metafile_catalogue(
+        mut self,
+        catalogue: Option<std::sync::Arc<super::metafile_print::Catalogue>>,
+    ) -> Self {
+        self.metafile_catalogue = catalogue;
+        self
     }
 
     pub fn build_with_embedded_fonts(
@@ -42,10 +118,38 @@ impl LayerBuilder {
         tree: &PageRenderTree,
         fonts: &[EmbeddedFontFace<'_>],
     ) -> PageLayerTree {
+        if self.profile == RenderProfile::Print
+            && !fonts.is_empty()
+            && super::metafile::has_wmf(&tree.root)
+        {
+            for font in fonts {
+                let _ = self
+                    .metafile_fonts
+                    .register(font.family, font.bytes, font.face_index);
+                if let Some(alias) = font.alternate_family {
+                    let _ = self
+                        .metafile_fonts
+                        .register(alias, font.bytes, font.face_index);
+                }
+            }
+        }
         let (page_width, page_height) = match &tree.root.node_type {
             RenderNodeType::Page(page) => (page.width, page.height),
             _ => (tree.root.bbox.width, tree.root.bbox.height),
         };
+
+        let context = PagePaintContext::new(self.profile, page_width, page_height);
+        self.image_page_size = (page_width, page_height);
+        fn first_column(node: &RenderNode) -> Option<(f64, f64)> {
+            if matches!(node.node_type, RenderNodeType::Column(_)) {
+                Some((node.bbox.x, node.bbox.y))
+            } else {
+                node.children.iter().find_map(first_column)
+            }
+        }
+        self.image_reference_origin = first_column(&tree.root).unwrap_or((0.0, 0.0));
+        let (page_width, page_height) = context.output_size();
+        self.page_context = Some(context);
 
         let root = LayerNode::group(
             tree.root.bbox,
@@ -60,20 +164,130 @@ impl LayerBuilder {
             PageLayerTree::with_profile(page_width, page_height, root, self.profile)
                 .with_output_options(self.output_options)
                 .with_bin_data_epoch(self.bin_data_epoch);
-        lower_font_native_glyph_sidecars(&mut layer_tree.root, &mut layer_tree.resources, fonts);
+        publish_line_decoration_trims(&mut layer_tree.root);
+        // Vertical exact-source publication owns its leaf slots first. The
+        // horizontal and nominal lowerers remain independent and only share
+        // the final claim set used to suppress duplicate nominal GlyphRuns.
+        let mut claimed_glyph_run_sources = lower_vertical_shaping_page_sidecars(
+            &mut layer_tree.root,
+            &tree.frame,
+            &mut layer_tree.resources,
+        );
+        claimed_glyph_run_sources.extend(lower_horizontal_shaping_page_sidecars(
+            &mut layer_tree.root,
+            tree.frame.horizontal_shaping_sidecars(),
+            &mut layer_tree.resources,
+        ));
+        lower_font_native_glyph_sidecars_excluding(
+            &mut layer_tree.root,
+            &mut layer_tree.resources,
+            fonts,
+            &claimed_glyph_run_sources,
+        );
+        context.publish_table_border_geometry(&mut layer_tree.root);
+        context.publish_decoration_geometry(&mut layer_tree.root);
+        context.publish_glyph_geometry(
+            &mut layer_tree.root,
+            self.prior_print_solid_fill,
+            self.hangul2024_print,
+        );
         layer_tree
     }
 
     fn build_children(&mut self, node: &RenderNode) -> Vec<LayerNode> {
-        node.children
+        let previous_origin = self.image_reference_origin;
+        if matches!(node.node_type, RenderNodeType::Column(_)) {
+            self.image_reference_origin = (node.bbox.x, node.bbox.y);
+        }
+        let mut children = node
+            .children
             .iter()
             .filter_map(|child| self.build_node(child))
-            .collect()
+            .collect::<Vec<_>>();
+        if self.output_options.show_control_codes {
+            let label = match &node.node_type {
+                // 그림·수식은 전용 paint 하위화 경로에서 조판부호를 생성한다.
+                RenderNodeType::Image(_) | RenderNodeType::Equation(_) => None,
+                _ => node.control_code_label(),
+            };
+            if let Some(label) = label {
+                children.push(
+                    LayerNode::leaf(
+                        node.bbox,
+                        Some(node.id),
+                        vec![PaintOp::control_label(node.bbox, label)],
+                    )
+                    .with_layer(node.layer),
+                );
+            }
+        }
+        self.image_reference_origin = previous_origin;
+        children
     }
 
     fn build_node(&mut self, node: &RenderNode) -> Option<LayerNode> {
+        if let Some(paths) = &node.paint_clip {
+            let mut unclipped = node.clone();
+            unclipped.paint_clip = None;
+            let child = self.build_node(&unclipped)?;
+            return Some(LayerNode {
+                bounds: node.bbox,
+                source_node_id: Some(node.id),
+                layer: node.layer,
+                kind: LayerNodeKind::ClipPath {
+                    paths: paths.clone(),
+                    child: Box::new(child),
+                },
+            });
+        }
+        if !self.profile.shows_editor_visuals() {
+            if let Some(bbox) = node.print_bbox {
+                let mut print_node = node.clone();
+                print_node.bbox = bbox;
+                print_node.print_bbox = None;
+                return self.build_node(&print_node);
+            }
+        }
         if !node.visible || (node.editor_only && !self.profile.shows_editor_visuals()) {
             return None;
+        }
+        if matches!(
+            &node.node_type,
+            RenderNodeType::Placeholder(placeholder)
+                if placeholder.kind
+                    == crate::renderer::render_tree::PlaceholderKind::MissingPicture
+                    && !self.profile.shows_editor_visuals()
+        ) {
+            return None;
+        }
+
+        // A rectangle transform owns its text/clip descendants too. Primitive
+        // paint transforms affect only the outline, so move it to one common
+        // subtree group and clear the primitive transform to avoid double use.
+        if let RenderNodeType::Rectangle(rect) = &node.node_type {
+            if rect.transform.has_transform() && !node.children.is_empty() {
+                let matrix = rect.transform.matrix_about(node.bbox);
+                let mut local = node.clone();
+                if let RenderNodeType::Rectangle(rect) = &mut local.node_type {
+                    rect.transform = Default::default();
+                }
+                let child = self.build_node(&local)?;
+                let mut group = LayerNode::group(
+                    node.bbox,
+                    Some(node.id),
+                    vec![child],
+                    CacheHint::None,
+                    GroupKind::Group(crate::renderer::render_tree::GroupNode {
+                        paint_transform: Some(matrix),
+                        section_index: rect.section_index,
+                        para_index: rect.para_index,
+                        control_index: rect.control_index,
+                    }),
+                )
+                .with_layer(node.layer);
+                group.bounds = group.visual_bounds(true);
+                return Some(group);
+            }
         }
 
         let own_ops = match &node.node_type {
@@ -87,7 +301,11 @@ impl LayerBuilder {
             RenderNodeType::FootnoteMarker(marker) => {
                 Some(vec![PaintOp::footnote_marker(node.bbox, marker.clone())])
             }
-            RenderNodeType::Line(line) => Some(vec![PaintOp::line(node.bbox, line.clone())]),
+            RenderNodeType::Line(line) => Some(
+                line.paint_strokes()
+                    .map(|stroke| PaintOp::line(node.bbox, stroke))
+                    .collect(),
+            ),
             RenderNodeType::Rectangle(rect) => {
                 Some(vec![PaintOp::rectangle(node.bbox, rect.clone())])
             }
@@ -95,13 +313,101 @@ impl LayerBuilder {
                 Some(vec![PaintOp::ellipse(node.bbox, ellipse.clone())])
             }
             RenderNodeType::Path(path) => Some(vec![PaintOp::path(node.bbox, path.clone())]),
-            RenderNodeType::Image(image) => Some(vec![PaintOp::image(
-                node.bbox,
-                image.clone(),
-                crate::renderer::image_resolver::resolve_image_payload(image),
-            )]),
+            RenderNodeType::Image(image) => {
+                let mut frame = self
+                    .page_context
+                    .map_or(node.bbox, |context| context.image_frame(node, image));
+                let mut ops = if let Some(path) = crate::renderer::pdf_stroke::project(image, frame)
+                {
+                    vec![PaintOp::path(frame, path)]
+                } else {
+                    let mut image = image.clone();
+                    image.hancom2024_print_bitmap = self.hancom2024_print_bitmap;
+                    crate::renderer::image_resolver::publish_print_jpeg_crop(&mut image);
+                    let mut resolved = (self.profile == RenderProfile::Print)
+                        .then(|| {
+                            crate::renderer::image_resolver::print_jpeg_payload(
+                                &image,
+                                frame,
+                                self.layout_dpi,
+                            )
+                        })
+                        .flatten()
+                        .or_else(|| {
+                            if self.profile != RenderProfile::Print || self.hancom2024_print_bitmap
+                            {
+                                return None;
+                            }
+                            super::metafile_print::payload(
+                                &image,
+                                node.bbox,
+                                self.image_page_size,
+                                self.image_reference_origin,
+                                self.layout_dpi,
+                                &self.metafile_fonts,
+                                self.metafile_catalogue.as_deref()?,
+                            )
+                        })
+                        .or_else(|| {
+                            crate::paint::metafile::image_payload(
+                                &image,
+                                node.bbox,
+                                self.metafile_device_pixel_width,
+                                &self.metafile_fonts,
+                            )
+                        });
+                    if let Some(window) = crate::renderer::image_resolver::resolve_print_jpeg_window(
+                        &mut image,
+                        resolved.as_ref(),
+                    ) {
+                        resolved = Some(window);
+                    }
+                    if let Some(payload) = resolved.as_mut().filter(|p| {
+                        crate::renderer::image_resolver::png_sampling::print_jpeg_transfer(&p.data)
+                            && !image.transform.has_transform()
+                    }) {
+                        if let Some(frame) = crate::renderer::print_raster::PrintRasterFrame::new(
+                            self.image_page_size,
+                            self.image_reference_origin,
+                            node.bbox,
+                            self.layout_dpi,
+                        ) {
+                            frame.attach(&mut payload.data);
+                        }
+                    }
+                    if self.profile == RenderProfile::Print {
+                        if let Some((alpha_frame, payload)) =
+                            crate::renderer::print_raster::PrintRasterFrame::new(
+                                self.image_page_size,
+                                self.image_reference_origin,
+                                node.bbox,
+                                self.layout_dpi,
+                            )
+                            .and_then(|source| {
+                                crate::renderer::image_resolver::print_alpha_payload(
+                                    &image,
+                                    source,
+                                    self.layout_dpi,
+                                )
+                            })
+                        {
+                            frame = alpha_frame;
+                            resolved = Some(payload);
+                        }
+                    }
+                    vec![PaintOp::image(frame, image, resolved)]
+                };
+                if self.output_options.show_control_codes {
+                    ops.push(PaintOp::control_label(frame, "[그림]"));
+                }
+                Some(ops)
+            }
             RenderNodeType::Equation(equation) => {
-                Some(vec![PaintOp::equation(node.bbox, equation.clone())])
+                let mut ops = vec![PaintOp::equation(node.bbox, equation.clone())];
+                if self.output_options.show_control_codes {
+                    ops.push(PaintOp::control_label(node.bbox, "[수식]"));
+                }
+                Some(ops)
             }
             RenderNodeType::FormObject(form) => {
                 Some(vec![PaintOp::form_object(node.bbox, form.clone())])
@@ -109,13 +415,20 @@ impl LayerBuilder {
             RenderNodeType::Placeholder(placeholder) => {
                 Some(vec![PaintOp::placeholder(node.bbox, placeholder.clone())])
             }
-            RenderNodeType::RawSvg(raw) => Some(vec![PaintOp::raw_svg(node.bbox, raw.clone())]),
+            RenderNodeType::RawSvg(raw) => Some(vec![PaintOp::raw_svg(
+                node.bbox,
+                crate::paint::metafile::raw_svg(raw, self.metafile_device_pixel_width),
+            )]),
             _ => None,
         };
 
         if let Some(ops) = own_ops {
-            let own_leaf = LayerNode::leaf(node.bbox, Some(node.id), ops).with_layer(node.layer);
-            return if node.children.is_empty() {
+            let own_bounds = ops.first().map_or(node.bbox, PaintOp::bounds);
+            let own_leaf = LayerNode::leaf(own_bounds, Some(node.id), ops).with_layer(node.layer);
+            // 내부 문단이 없는 사각형도 원본 컨트롤 부호를 출력해야 한다.
+            let has_source_marker = self.output_options.show_control_codes
+                && matches!(node.control_code, ControlCode::Rectangle(_));
+            return if node.children.is_empty() && !has_source_marker {
                 Some(own_leaf)
             } else {
                 let mut children = Vec::with_capacity(node.children.len() + 1);
@@ -138,6 +451,18 @@ impl LayerBuilder {
             RenderNodeType::Body {
                 clip_rect: Some(clip),
             } => {
+                let effective_clip = if self.output_options.show_paragraph_marks
+                    || self.output_options.show_control_codes
+                {
+                    crate::renderer::render_tree::BoundingBox::new(
+                        clip.x,
+                        clip.y,
+                        clip.width + TEXT_MARK_BODY_CLIP_RIGHT_PAD,
+                        clip.height,
+                    )
+                } else {
+                    *clip
+                };
                 let child = LayerNode::group(
                     node.bbox,
                     Some(node.id),
@@ -146,8 +471,14 @@ impl LayerBuilder {
                     GroupKind::Body,
                 );
                 Some(
-                    LayerNode::clip_rect(node.bbox, Some(node.id), *clip, child, ClipKind::Body)
-                        .with_layer(node.layer),
+                    LayerNode::clip_rect(
+                        node.bbox,
+                        Some(node.id),
+                        effective_clip,
+                        child,
+                        ClipKind::Body,
+                    )
+                    .with_layer(node.layer),
                 )
             }
             RenderNodeType::TableCell(cell) if cell.clip => {
@@ -229,6 +560,113 @@ impl LayerBuilder {
             RenderNodeType::TextBox => GroupKind::TextBox,
             RenderNodeType::Group(group) => GroupKind::Group(group.clone()),
             _ => GroupKind::Generic,
+        }
+    }
+}
+
+fn line_decoration_trim_target(
+    children: &[LayerNode],
+) -> Option<(crate::paint::TextSourceSpan, usize)> {
+    fn scan(node: &LayerNode, found: &mut Option<Option<(crate::paint::TextSourceSpan, usize)>>) {
+        if found.is_some() {
+            return;
+        }
+        match &node.kind {
+            LayerNodeKind::Leaf { ops } => {
+                for op in ops.iter().rev() {
+                    if let PaintOp::TextRun {
+                        run,
+                        source: Some(source),
+                        ..
+                    } = op
+                    {
+                        if run.text.chars().any(|ch| ch != ' ') {
+                            if run.is_para_end || run.is_line_break_end {
+                                *found = Some(None);
+                                return;
+                            }
+                            let trailing =
+                                run.text.chars().rev().take_while(|ch| *ch == ' ').count();
+                            *found = Some((trailing > 0).then_some((source.clone(), trailing)));
+                            return;
+                        }
+                    }
+                }
+            }
+            LayerNodeKind::Group { children, .. } => {
+                for child in children.iter().rev() {
+                    scan(child, found);
+                    if found.is_some() {
+                        return;
+                    }
+                }
+            }
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                scan(child, found)
+            }
+        }
+    }
+    let mut found = None;
+    for child in children.iter().rev() {
+        scan(child, &mut found);
+        if found.is_some() {
+            break;
+        }
+    }
+    found.flatten()
+}
+
+fn publish_line_decoration_trims(node: &mut LayerNode) {
+    if let LayerNodeKind::Group {
+        children,
+        group_kind: GroupKind::TextLine(_),
+        ..
+    } = &mut node.kind
+    {
+        if let Some((source, trim)) = line_decoration_trim_target(children) {
+            set_decoration_trim_for_source(children, &source, trim);
+        }
+    }
+    match &mut node.kind {
+        LayerNodeKind::Group { children, .. } => {
+            for child in children {
+                publish_line_decoration_trims(child);
+            }
+        }
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+            publish_line_decoration_trims(child)
+        }
+        LayerNodeKind::Leaf { .. } => {}
+    }
+}
+
+fn set_decoration_trim_for_source(
+    nodes: &mut [LayerNode],
+    source: &crate::paint::TextSourceSpan,
+    trim: usize,
+) {
+    for node in nodes {
+        match &mut node.kind {
+            LayerNodeKind::Group { children, .. } => {
+                set_decoration_trim_for_source(children, source, trim);
+            }
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                set_decoration_trim_for_source(std::slice::from_mut(child), source, trim);
+            }
+            LayerNodeKind::Leaf { ops } => {
+                for op in ops {
+                    if let PaintOp::TextDecoration {
+                        source: Some(candidate),
+                        trim_trailing_spaces,
+                        ..
+                    } = op
+                    {
+                        if candidate == source {
+                            *trim_trailing_spaces = trim;
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -534,6 +972,7 @@ mod tests {
                 border_fill_id: 0,
                 text_direction: 0,
                 clip: true,
+                closed_reflow_frame: false,
                 page_fragment: false,
                 model_cell_index: None,
             }),
@@ -587,6 +1026,7 @@ mod tests {
                     number: 1,
                     text: "1)".to_string(),
                     base_font_size: 12.0,
+                    baseline: 7.0,
                     font_family: "serif".to_string(),
                     color: 0x00000000,
                     section_index: 0,
@@ -846,6 +1286,7 @@ mod tests {
         run.char_overlap = Some(CharOverlapInfo {
             border_type: 1,
             inner_char_size: 90,
+            composition: None,
         });
         run.style.tab_leaders.push(TabLeaderInfo {
             start_x: 2.0,
@@ -980,6 +1421,7 @@ mod tests {
                 border_fill_id: 3,
                 text_direction: 0,
                 clip: true,
+                closed_reflow_frame: false,
                 page_fragment: false,
                 model_cell_index: Some(4),
             }),
@@ -1008,6 +1450,7 @@ mod tests {
                 border_fill_id: 6,
                 text_direction: 0,
                 clip: false,
+                closed_reflow_frame: false,
                 page_fragment: false,
                 model_cell_index: None,
             }),
@@ -1169,6 +1612,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 12.0,
             field_marker: Default::default(),
+            layout_positions: None,
             display_text: None,
         }
     }
@@ -1177,6 +1621,7 @@ mod tests {
         EquationNode {
             svg_content: "<text>x</text>".to_string(),
             layout_box: LayoutBox {
+                font_size: 12.0,
                 x: 0.0,
                 y: 0.0,
                 width: 8.0,
@@ -1202,6 +1647,8 @@ mod tests {
             form_type: FormType::PushButton,
             caption: "OK".to_string(),
             text: String::new(),
+            display_text: None,
+            appearance: Default::default(),
             fore_color: "#000000".to_string(),
             back_color: "#ffffff".to_string(),
             value: 0,

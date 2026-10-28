@@ -4,7 +4,7 @@
   "skill": "rhwp-bulk-pipeline",
   "notGym": true,
   "noNewCli": true,
-  "count": 90,
+  "count": 89,
   "journeys": [
     {
       "id": "J01",
@@ -227,18 +227,6 @@
       "stop": "B10",
       "sample": "plan2022",
       "axis": "extract-data",
-      "notGym": true
-    },
-    {
-      "id": "J20",
-      "title": "convert 성공",
-      "steps": [
-        "list",
-        "convert --out-dir out"
-      ],
-      "stop": "B17",
-      "sample": "handbook",
-      "axis": "convert",
       "notGym": true
     },
     {

@@ -1,0 +1,24 @@
+    Checking rhwp v0.8.6 (/tmp/rhwp-pr7518-review-20261004)
+error: this `let...else` may be rewritten with the `?` operator
+  --> src/renderer/height_measurer.rs:94:5
+   |
+94 | /     let Some(nested) = para.controls.iter().find_map(|c| match c {
+95 | |         Control::Table(t) => Some(t.as_ref()),
+96 | |         _ => None,
+97 | |     }) else {
+98 | |         return None;
+99 | |     };
+   | |______^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.93.0/index.html#question_mark
+   = note: `-D clippy::question-mark` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::question_mark)]`
+help: replace it with
+   |
+94 ~     let nested = para.controls.iter().find_map(|c| match c {
+95 +         Control::Table(t) => Some(t.as_ref()),
+96 +         _ => None,
+97 +     })?;
+   |
+
+error: could not compile `rhwp` (lib) due to 1 previous error

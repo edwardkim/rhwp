@@ -206,12 +206,14 @@ fn ole_chart_contents_renders_standalone_rust_svg() {
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn issue_1251_svg_uses_legacy_ole_chart_renderer() {
-    let mut doc = rhwp::wasm_api::HwpDocument::from_bytes(&read_fixture()).expect("parse fixture");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&read_fixture()).expect("parse fixture");
     let svg = doc.render_page_svg_native(0).expect("render page svg");
 
     assert!(svg.contains("hwp-ole-chart"));
     assert!(svg.contains("hwp-ole-chart-rust-svg"));
-    assert!(svg.contains("연금 재정 전망"));
+    // 전체 문서 painter는 저장 TextBlock의 전각 공백을 보존한다.
+    // 데이터 IR의 정규화된 제목은 위 parser/standalone 검사에서 따로 확인한다.
+    assert!(svg.contains("연금\u{3000}재정\u{3000}전망"));
     assert!(svg.contains("적립금"));
     assert!(!svg.contains("OLE 개체 (BinData #2)"));
     assert!(!svg.contains("OLE 차트 미지원"));
@@ -231,13 +233,14 @@ fn issue_1283_hwpx_internal_ole_is_loaded_even_when_isembeded_zero() {
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn issue_1283_hwpx_svg_uses_legacy_ole_chart_renderer() {
-    let mut doc =
+    let doc =
         rhwp::wasm_api::HwpDocument::from_bytes(&read_hwpx_fixture()).expect("parse hwpx fixture");
     let svg = doc.render_page_svg_native(0).expect("render HWPX page svg");
 
     assert!(svg.contains("hwp-ole-chart"));
     assert!(svg.contains("hwp-ole-chart-rust-svg"));
-    assert!(svg.contains("연금 재정 전망"));
+    // 같은 원본의 HWPX도 저장 TextBlock의 전각 공백을 보존한다.
+    assert!(svg.contains("연금\u{3000}재정\u{3000}전망"));
     assert!(svg.contains("적립금"));
     assert!(!svg.contains("OLE 개체 (BinData #3)"));
     assert!(!svg.contains("OLE 차트 미지원"));

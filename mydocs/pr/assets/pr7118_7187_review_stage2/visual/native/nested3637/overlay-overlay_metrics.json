@@ -1,0 +1,151 @@
+{
+  "summary": {
+    "compared_pages": 5,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 88.83799,
+    "worst_pixel_match_percent": 86.81171,
+    "average_ink_match_percent": 7.6011,
+    "worst_ink_match_percent": 5.85557,
+    "average_visual_accuracy_proxy_percent": 7.6011,
+    "worst_visual_accuracy_proxy_percent": 5.85557,
+    "worst_pages": [
+      30,
+      29,
+      26,
+      28,
+      27
+    ]
+  },
+  "pages": [
+    {
+      "page": 26,
+      "rhwp_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/nested3637/nested3637/rhwp_png/rhwp_026.png",
+      "pdf_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/nested3637/nested3637/pdf_png/pdf-26.png",
+      "overlay_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/nested3637/nested3637/overlay/overlay_026.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 99804,
+      "diff_ratio": 0.11193031,
+      "pixel_match_percent": 88.80697,
+      "ink_union_pixels": 107288,
+      "ink_diff_pixels": 99804,
+      "ink_diff_ratio": 0.93024383,
+      "ink_match_percent": 6.97562,
+      "visual_accuracy_proxy_percent": 6.97562,
+      "mean_abs_channel_delta": 16.799,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        75,
+        712,
+        1083
+      ]
+    },
+    {
+      "page": 27,
+      "rhwp_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/nested3637/nested3637/rhwp_png/rhwp_027.png",
+      "pdf_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/nested3637/nested3637/pdf_png/pdf-27.png",
+      "overlay_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/nested3637/nested3637/overlay/overlay_027.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 117595,
+      "diff_ratio": 0.13188293,
+      "pixel_match_percent": 86.81171,
+      "ink_union_pixels": 133607,
+      "ink_diff_pixels": 117595,
+      "ink_diff_ratio": 0.88015598,
+      "ink_match_percent": 11.9844,
+      "visual_accuracy_proxy_percent": 11.9844,
+      "mean_abs_channel_delta": 18.141,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        75,
+        712,
+        1083
+      ]
+    },
+    {
+      "page": 28,
+      "rhwp_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/nested3637/nested3637/rhwp_png/rhwp_028.png",
+      "pdf_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/nested3637/nested3637/pdf_png/pdf-28.png",
+      "overlay_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/nested3637/nested3637/overlay/overlay_028.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 106053,
+      "diff_ratio": 0.11893857,
+      "pixel_match_percent": 88.10614,
+      "ink_union_pixels": 114185,
+      "ink_diff_pixels": 106053,
+      "ink_diff_ratio": 0.92878224,
+      "ink_match_percent": 7.12178,
+      "visual_accuracy_proxy_percent": 7.12178,
+      "mean_abs_channel_delta": 17.847,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        75,
+        712,
+        1083
+      ]
+    },
+    {
+      "page": 29,
+      "rhwp_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/nested3637/nested3637/rhwp_png/rhwp_029.png",
+      "pdf_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/nested3637/nested3637/pdf_png/pdf-29.png",
+      "overlay_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/nested3637/nested3637/overlay/overlay_029.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 74921,
+      "diff_ratio": 0.08402399,
+      "pixel_match_percent": 91.5976,
+      "ink_union_pixels": 79761,
+      "ink_diff_pixels": 74921,
+      "ink_diff_ratio": 0.93931871,
+      "ink_match_percent": 6.06813,
+      "visual_accuracy_proxy_percent": 6.06813,
+      "mean_abs_channel_delta": 15.056,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        75,
+        712,
+        1083
+      ]
+    },
+    {
+      "page": 30,
+      "rhwp_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/nested3637/nested3637/rhwp_png/rhwp_030.png",
+      "pdf_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/nested3637/nested3637/pdf_png/pdf-30.png",
+      "overlay_png": "/private/tmp/rhwp-review-open-20260916/sweep-stage2-native/nested3637/nested3637/overlay/overlay_030.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 99264,
+      "diff_ratio": 0.11132469,
+      "pixel_match_percent": 88.86753,
+      "ink_union_pixels": 105438,
+      "ink_diff_pixels": 99264,
+      "ink_diff_ratio": 0.94144426,
+      "ink_match_percent": 5.85557,
+      "visual_accuracy_proxy_percent": 5.85557,
+      "mean_abs_channel_delta": 16.219,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        75,
+        712,
+        1083
+      ]
+    }
+  ]
+}

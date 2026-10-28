@@ -3,6 +3,7 @@ import type { CommandDispatcher } from '@/command/dispatcher';
 import type { CommandDef } from '@/command/types';
 import { formatShortcutLabel } from '@/engine/navigation-keymap';
 
+import { t } from '../i18n/index.ts';
 /**
  * `/` 커맨드 팔레트
  *
@@ -46,7 +47,7 @@ export class CommandPalette {
     this.input = document.createElement('input');
     this.input.type = 'text';
     this.input.className = 'cp-input';
-    this.input.placeholder = '커맨드 검색...';
+    this.input.placeholder = t('dialog.commandPalette.input.placeholder');
     this.input.autocomplete = 'off';
     this.input.spellcheck = false;
 
@@ -168,7 +169,7 @@ export class CommandPalette {
     if (filtered.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'cp-empty';
-      empty.textContent = '검색 결과 없음';
+      empty.textContent = t('dialog.commandPalette.empty.text');
       this.list.appendChild(empty);
       return;
     }

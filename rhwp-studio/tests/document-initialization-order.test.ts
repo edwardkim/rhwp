@@ -69,14 +69,18 @@ test('CanvasKit 첫 replay는 저장된 local face를 bundled fallback보다 먼
   const prepareDocument = main.slice(start, end);
 
   const storedIndex = prepareDocument.indexOf('await loadStoredLocalFonts();');
+  const resolveIndex = prepareDocument.indexOf(
+    'requiredFontFamilies = documentFontRequirements(fontRequirements);',
+  );
   const localIndex = prepareDocument.indexOf(
-    'await renderer.prepareLocalFonts(report.requiredFontFamilies);',
+    'await renderer.prepareLocalFonts(requiredFontFamilies);',
   );
   const catchIndex = prepareDocument.indexOf('} catch (error) {');
   const bundledIndex = prepareDocument.indexOf('await renderer.prepareBundledFonts(plan.sources);');
 
   assert.ok(storedIndex >= 0, '저장된 local font snapshot을 첫 replay 전에 로드해야 한다');
-  assert.ok(localIndex > storedIndex, 'snapshot 로드 뒤 정확한 local face를 준비해야 한다');
+  assert.ok(resolveIndex > storedIndex, 'snapshot 로드 뒤 문서의 실제 후보를 선택해야 한다');
+  assert.ok(localIndex > resolveIndex, '해소한 문서 후보의 정확한 local face를 준비해야 한다');
   assert.ok(catchIndex > localIndex, 'local face 실패는 bundled fallback으로 격리해야 한다');
   assert.ok(bundledIndex > catchIndex, 'local face 준비 뒤 bundled fallback도 항상 준비해야 한다');
 });

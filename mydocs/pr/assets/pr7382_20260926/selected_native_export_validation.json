@@ -1,0 +1,315 @@
+{
+  "head_before_commit": "7e021215035305eb966bfecdc8a569e0be4baf9f",
+  "existing_python_tests": "77 PASS",
+  "real_export": {
+    "elapsed_seconds": 12.849403833039105,
+    "files": [
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/selected/svg/1342000_edu_curriculum_map_366.svg",
+        "sha256": "6fb7be818844c1ce5e5de36b6222660f33366421b8aa3a8fbc7abd8cade867ff",
+        "bytes": 52082460,
+        "same_as_full_export": true
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/selected/svg/1342000_edu_curriculum_map_361.svg",
+        "sha256": "fe7caf079771f6aaa41b76850ff0800e63cd17ddb0839c6e908b9fb731806e1d",
+        "bytes": 51996346,
+        "same_as_full_export": true
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/selected/svg/1342000_edu_curriculum_map_377.svg",
+        "sha256": "ae596041a6158fa2400132e8fb55e2fe1a76eaf2f94b56842b5fea1c107ae463",
+        "bytes": 51961165,
+        "same_as_full_export": true
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/selected/svg/1342000_edu_curriculum_map_131.svg",
+        "sha256": "950932238a548a2259667fae1513724ee6122c9b3a881088c542a2ed6086db31",
+        "bytes": 48936004,
+        "same_as_full_export": true
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/selected/svg/1342000_edu_curriculum_map_124.svg",
+        "sha256": "32efc2b2ab9393dd235e0f5bcac03f181a0385633e561cea010d3e6687f172bf",
+        "bytes": 32695526,
+        "same_as_full_export": true
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/selected/svg/1342000_edu_curriculum_map_025.svg",
+        "sha256": "7150ece9f76a66c4af0babed5333b03f5c11195be12bd07b0fc1701db6ee4ee2",
+        "bytes": 52103482,
+        "same_as_full_export": true
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/selected/render_tree/render_tree_366.json",
+        "sha256": "d473077f59a2cb4845d99306738a1dc0cf85b06c6820613c99023d08693de2d2",
+        "bytes": 38580,
+        "same_as_full_export": true
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/selected/render_tree/render_tree_131.json",
+        "sha256": "13b5dd7967a0c2d2c2187360cf4f43515423306cd9d53cbc6426d7edc3e0e0ea",
+        "bytes": 35715,
+        "same_as_full_export": true
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/selected/render_tree/render_tree_025.json",
+        "sha256": "d8d08ec3dd68d0bc6826b007c386a0a35132f6e61c462e833b4024806c5df15c",
+        "bytes": 25119,
+        "same_as_full_export": true
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/selected/render_tree/render_tree_377.json",
+        "sha256": "563be36bafda0ee78706298a2a6d0a7634ffc5cc16fbc00918f614a01271b89d",
+        "bytes": 48300,
+        "same_as_full_export": true
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/selected/render_tree/render_tree_361.json",
+        "sha256": "2292e8697e6b22dd26197b9d213c5082b428b9af2e637d0748defee88c041830",
+        "bytes": 41776,
+        "same_as_full_export": true
+      },
+      {
+        "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/selected/render_tree/render_tree_124.json",
+        "sha256": "c862e382f98416cd9c0e0123d0ee961400c2087b0418ee30a79c5818277cbd35",
+        "bytes": 32826,
+        "same_as_full_export": true
+      }
+    ],
+    "shard_expansion": true,
+    "repeated_selection_preserves_mtime": true,
+    "out_of_range": "요청 쪽이 Native 전체 413쪽 범위를 벗어납니다.",
+    "metadata": {
+      "pageCount": 413,
+      "all_pages_exported": false
+    },
+    "selected_svg_bytes": 289774983,
+    "whole_svg_bytes": 24890164162
+  },
+  "small_export": [
+    {
+      "key": "single",
+      "metadata": {
+        "pageCount": 1,
+        "all_pages_exported": true
+      },
+      "full_matches_selected": true,
+      "missing_artifact_repaired": false
+    },
+    {
+      "key": "multi",
+      "metadata": {
+        "pageCount": 2,
+        "all_pages_exported": true
+      },
+      "full_matches_selected": true,
+      "missing_artifact_repaired": true
+    }
+  ],
+  "png_files_identical": 30,
+  "png_hashes": [
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/rhwp_png/rhwp_025.png",
+      "sha256": "b6b9182e2830c2fe7a1514b78a5b600b5c04f630fb00a696a31361830435ec3a",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/rhwp_png/rhwp_131.png",
+      "sha256": "b3f495184425d1d595e80669c3e11aa97e75ab6d9a4156fa1a43c6a5d0ee4a1e",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/rhwp_png/rhwp_124.png",
+      "sha256": "d275eb81f1333966d910deab349ad3cb702dde9306c71dbbd1ecb6162fe6fefd",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/rhwp_png/rhwp_366.png",
+      "sha256": "33c611e4c1769c3b887373a43f8996567b1fdd492d8fab4a8c9fc67485a25eb2",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/rhwp_png/rhwp_361.png",
+      "sha256": "2240cdce2a6bfb988ea2b2abea7420759a12acb954da901eee34fceab6fb059a",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/rhwp_png/rhwp_377.png",
+      "sha256": "36fad3046228566915c118d59af1def038c993f4b46f91782f8ea5d47922adad",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/pdf_png/pdf-025.png",
+      "sha256": "0f91313fc55e8418a9c1c64f5298cced9c85752fb0bee253130701224ba79798",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/pdf_png/pdf-131.png",
+      "sha256": "fceedaea1d4cef7ed8816ee2c852447e509dd0e20042348a6f7ac15027cd6e3c",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/pdf_png/pdf-124.png",
+      "sha256": "64474f7b5e8a97507e727602347a029bc014fbc6e47a2203c14a7af9e85c3c89",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/pdf_png/pdf-366.png",
+      "sha256": "c7be0a3f574048d4d335833b7fb145e44a2df162f7fef057df0b25b720f12bbb",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/pdf_png/pdf-377.png",
+      "sha256": "bb553e7be29cd0641b8cad2e240440db39f4ca6cadce9c6b053a002b7fb41b44",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/pdf_png/pdf-361.png",
+      "sha256": "646a096b353b8eea273ea093ea90932e5d6cfd2ac314bad3c9e4ca8b0bb5dae8",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/compare/compare_377.png",
+      "sha256": "6d405072cedf773993fee3dcedaab5fb90f8f5a9ac1ea38aad187d537c066ce3",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/compare/compare_361.png",
+      "sha256": "540fd2376fdef9e5f5adabba24457a46bca7720d5d09e0c0f5d2c8dc55591b4c",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/compare/compare_366.png",
+      "sha256": "1db24c2ecd00ada1805215924b6720277929d8d306e5355b02276ecae34f3a9e",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/compare/compare_025.png",
+      "sha256": "c0a2d240049fe5b0ffccd59333e874e032cd9d51d83f953d60272b86a040be45",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/compare/compare_124.png",
+      "sha256": "2669bfc0e9eaada3580bc4ae696882b4fd5421567b01268aa9139e764d025d81",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/compare/compare_131.png",
+      "sha256": "32481ad14d29d5736569bc97055a2d2e8fd0a21adae96b8c627c1175750b4f42",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/overlay/overlay_366.png",
+      "sha256": "677491bce0c65734a9cacd573b1f37e9895ad7e61c42c72aa6dbc8599169bc11",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/overlay/overlay_361.png",
+      "sha256": "bfbf647dfa3fdf4f7d44bbf3ec0696936e2c73d479f9be978324f4880dd56d86",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/overlay/overlay_377.png",
+      "sha256": "f3ec0d05ba9ff4e67aa19fe1abc8a4584fcdc70e4a5820d2b2c86799470dee0e",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/overlay/overlay_025.png",
+      "sha256": "d7045349e3060f2484c3772dfd155275e6e2b834c0f49920ad05d9d195c57446",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/overlay/overlay_131.png",
+      "sha256": "1347ea84fe5034ba982711cb76bafd25c94ac95944d5ff88d2651f801103507a",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/overlay/overlay_124.png",
+      "sha256": "808c28aaa4951d5dc5128c560ff91bccf2ff198d25ae9e10348ce236d525fba2",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/review/review_131.png",
+      "sha256": "62b466ca845bd79bc60a84be22df6152aba072baf90f0f777811eb8e299b98a5",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/review/review_124.png",
+      "sha256": "e3e7cb502785b1cd4d814a752fbdd90e1882c77c15809d8150ce028369e564eb",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/review/review_025.png",
+      "sha256": "ca248265f2b451e5877856b784064e735d5e5c81d1aaeadd7dc5116fa4827c57",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/review/review_377.png",
+      "sha256": "f29ee597b8b14888620e9df41fa76160629cbadad9b6d13a8f369503102e10fd",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/review/review_361.png",
+      "sha256": "9b8ced1335034100ca70eda0f800985217f5a27741b51e8267341ab0b94583f3",
+      "same_as_previous": true
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/stage124-selected-export/visual-native/curriculum2287/review/review_366.png",
+      "sha256": "4c6102f8f248f49c8dc778876ba8548f4066f1b86fe01eeed8b6c7ed60689897",
+      "same_as_previous": true
+    }
+  ],
+  "sweep_exit_code": 1,
+  "gate_unchanged": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 25,
+        "tolerant_content_match_percent": 86.2782
+      },
+      {
+        "page": 124,
+        "tolerant_content_match_percent": 88.66352
+      },
+      {
+        "page": 131,
+        "tolerant_content_match_percent": 77.50575
+      },
+      {
+        "page": 361,
+        "tolerant_content_match_percent": 70.62993
+      },
+      {
+        "page": 366,
+        "tolerant_content_match_percent": 68.47008
+      },
+      {
+        "page": 377,
+        "tolerant_content_match_percent": 69.36841
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "native_document_pages": 413,
+  "exported_svg_pages": 6,
+  "rust_production_diff_empty": true,
+  "code_commit": "ee3c9aecec58ac432c2ea7d072d74e7fba65572a",
+  "cleanup": {
+    "directory": "output/pr-review/planet6897-7382-20260926/stage123-curriculum-text/visual-native/curriculum2287/svg",
+    "preserved_pages": [
+      25,
+      124,
+      131,
+      361,
+      366,
+      377
+    ],
+    "removed_svg_count": 407,
+    "freed_bytes": 24600389179,
+    "scope": "이미 완료된 선택 비교에 쓰이지 않은 이전 전체 SVG만 삭제. 원문/PDF/PNG/선택SVG/JSON/로그 유지.",
+    "completed": true
+  }
+}

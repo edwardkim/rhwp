@@ -1,0 +1,528 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "summarize.mjs",
+  "comparison": {
+    "baseline": {
+      "label": "Stage 3",
+      "sha": "5f5d60071"
+    },
+    "corrected": {
+      "label": "Stage 4 correction",
+      "sha": "63d29e68b"
+    },
+    "browser": "Chromium 151 / Canvas2D",
+    "viewportCssPx": {
+      "width": 1280,
+      "height": 720
+    },
+    "actualDpr": 2,
+    "fixture": "samples/exam_kor.hwp",
+    "arrangement": "fixed 4 columns",
+    "zoom": 0.34
+  },
+  "alertThresholds": {
+    "p50Regression": "max(10ms, 5%)",
+    "p95Regression": "max(25ms, 10%)",
+    "resolvedP50LimitMs": 11.1,
+    "resolvedP95LimitMs": 25
+  },
+  "overall": {
+    "baseline": {
+      "samples": 40,
+      "complete": 40,
+      "knownWorkNextFrameMs": {
+        "n": 40,
+        "p50": 216.4,
+        "p95": 240.6,
+        "mean": 195.8
+      },
+      "visibleFirstMs": {
+        "n": 40,
+        "p50": 156,
+        "p95": 167.1,
+        "mean": 160.4
+      },
+      "visibleStableMs": {
+        "n": 40,
+        "p50": 156,
+        "p95": 167.1,
+        "mean": 160.4
+      },
+      "retainedCompleteMs": {
+        "n": 40,
+        "p50": 215.9,
+        "p95": 234.6,
+        "mean": 193.1
+      },
+      "visibilityUpdateMs": {
+        "n": 40,
+        "p50": 146.9,
+        "p95": 155.2,
+        "mean": 150.9
+      },
+      "rasterCalls": {
+        "n": 40,
+        "p50": 2,
+        "p95": 3,
+        "mean": 2.5
+      },
+      "rasterInclusiveMs": {
+        "n": 40,
+        "p50": 202.1,
+        "p95": 221,
+        "mean": 181.3
+      },
+      "cacheTakeCalls": {
+        "n": 40,
+        "p50": 0,
+        "p95": 4,
+        "mean": 2
+      },
+      "errors": 0
+    },
+    "corrected": {
+      "samples": 40,
+      "complete": 40,
+      "knownWorkNextFrameMs": {
+        "n": 40,
+        "p50": 217.4,
+        "p95": 238.7,
+        "mean": 198.8
+      },
+      "visibleFirstMs": {
+        "n": 40,
+        "p50": 73.2,
+        "p95": 84.1,
+        "mean": 74
+      },
+      "visibleStableMs": {
+        "n": 40,
+        "p50": 84.1,
+        "p95": 165.5,
+        "mean": 117.7
+      },
+      "retainedCompleteMs": {
+        "n": 40,
+        "p50": 216.9,
+        "p95": 238.2,
+        "mean": 195.6
+      },
+      "visibilityUpdateMs": {
+        "n": 40,
+        "p50": 1.2,
+        "p95": 69.4,
+        "mean": 34.8
+      },
+      "rasterCalls": {
+        "n": 40,
+        "p50": 2,
+        "p95": 3,
+        "mean": 2.5
+      },
+      "rasterInclusiveMs": {
+        "n": 40,
+        "p50": 200.7,
+        "p95": 219.4,
+        "mean": 181.3
+      },
+      "cacheTakeCalls": {
+        "n": 40,
+        "p50": 0,
+        "p95": 4,
+        "mean": 2
+      },
+      "errors": 0
+    }
+  },
+  "down": {
+    "baseline": {
+      "samples": 20,
+      "complete": 20,
+      "knownWorkNextFrameMs": {
+        "n": 20,
+        "p50": 159.3,
+        "p95": 240.6,
+        "mean": 167.1
+      },
+      "visibleFirstMs": {
+        "n": 20,
+        "p50": 154.3,
+        "p95": 234.6,
+        "mean": 162.3
+      },
+      "visibleStableMs": {
+        "n": 20,
+        "p50": 154.3,
+        "p95": 234.6,
+        "mean": 162.3
+      },
+      "retainedCompleteMs": {
+        "n": 20,
+        "p50": 154.3,
+        "p95": 234.6,
+        "mean": 162.3
+      },
+      "visibilityUpdateMs": {
+        "n": 20,
+        "p50": 147.2,
+        "p95": 222.6,
+        "mean": 155.1
+      },
+      "rasterCalls": {
+        "n": 20,
+        "p50": 2,
+        "p95": 2,
+        "mean": 2
+      },
+      "rasterInclusiveMs": {
+        "n": 20,
+        "p50": 146.8,
+        "p95": 221,
+        "mean": 154.5
+      },
+      "cacheTakeCalls": {
+        "n": 20,
+        "p50": 0,
+        "p95": 0,
+        "mean": 0
+      },
+      "errors": 0
+    },
+    "corrected": {
+      "samples": 20,
+      "complete": 20,
+      "knownWorkNextFrameMs": {
+        "n": 20,
+        "p50": 162.9,
+        "p95": 215.8,
+        "mean": 169.7
+      },
+      "visibleFirstMs": {
+        "n": 20,
+        "p50": 73.1,
+        "p95": 96.5,
+        "mean": 76.5
+      },
+      "visibleStableMs": {
+        "n": 20,
+        "p50": 156.5,
+        "p95": 212.9,
+        "mean": 163.9
+      },
+      "retainedCompleteMs": {
+        "n": 20,
+        "p50": 156.5,
+        "p95": 212.9,
+        "mean": 163.9
+      },
+      "visibilityUpdateMs": {
+        "n": 20,
+        "p50": 66.1,
+        "p95": 85.1,
+        "mean": 69.2
+      },
+      "rasterCalls": {
+        "n": 20,
+        "p50": 2,
+        "p95": 2,
+        "mean": 2
+      },
+      "rasterInclusiveMs": {
+        "n": 20,
+        "p50": 146.1,
+        "p95": 196.6,
+        "mean": 153.4
+      },
+      "cacheTakeCalls": {
+        "n": 20,
+        "p50": 0,
+        "p95": 0,
+        "mean": 0
+      },
+      "errors": 0
+    }
+  },
+  "up": {
+    "baseline": {
+      "samples": 20,
+      "complete": 20,
+      "knownWorkNextFrameMs": {
+        "n": 20,
+        "p50": 221.6,
+        "p95": 234,
+        "mean": 224.5
+      },
+      "visibleFirstMs": {
+        "n": 20,
+        "p50": 157.3,
+        "p95": 166,
+        "mean": 158.5
+      },
+      "visibleStableMs": {
+        "n": 20,
+        "p50": 157.3,
+        "p95": 166,
+        "mean": 158.5
+      },
+      "retainedCompleteMs": {
+        "n": 20,
+        "p50": 221.2,
+        "p95": 233.6,
+        "mean": 224
+      },
+      "visibilityUpdateMs": {
+        "n": 20,
+        "p50": 146.3,
+        "p95": 154,
+        "mean": 146.8
+      },
+      "rasterCalls": {
+        "n": 20,
+        "p50": 3,
+        "p95": 3,
+        "mean": 3
+      },
+      "rasterInclusiveMs": {
+        "n": 20,
+        "p50": 206.7,
+        "p95": 217.4,
+        "mean": 208.1
+      },
+      "cacheTakeCalls": {
+        "n": 20,
+        "p50": 4,
+        "p95": 4,
+        "mean": 4
+      },
+      "errors": 0
+    },
+    "corrected": {
+      "samples": 20,
+      "complete": 20,
+      "knownWorkNextFrameMs": {
+        "n": 20,
+        "p50": 225.9,
+        "p95": 238.7,
+        "mean": 227.9
+      },
+      "visibleFirstMs": {
+        "n": 20,
+        "p50": 73.2,
+        "p95": 81.8,
+        "mean": 71.5
+      },
+      "visibleStableMs": {
+        "n": 20,
+        "p50": 73.2,
+        "p95": 81.8,
+        "mean": 71.5
+      },
+      "retainedCompleteMs": {
+        "n": 20,
+        "p50": 225.4,
+        "p95": 238.2,
+        "mean": 227.4
+      },
+      "visibilityUpdateMs": {
+        "n": 20,
+        "p50": 0.4,
+        "p95": 0.7,
+        "mean": 0.5
+      },
+      "rasterCalls": {
+        "n": 20,
+        "p50": 3,
+        "p95": 3,
+        "mean": 3
+      },
+      "rasterInclusiveMs": {
+        "n": 20,
+        "p50": 207.5,
+        "p95": 219.4,
+        "mean": 209.2
+      },
+      "cacheTakeCalls": {
+        "n": 20,
+        "p50": 4,
+        "p95": 4,
+        "mean": 4
+      },
+      "errors": 0
+    },
+    "retainedCompleteDelta": {
+      "p50Ms": 4.2,
+      "p95Ms": 4.6,
+      "p50Percent": 1.9,
+      "p95Percent": 2
+    }
+  },
+  "finalLedger": {
+    "baseline": {
+      "activePixels": 39090060,
+      "cachedPixels": 0,
+      "reservedPixels": 39090060,
+      "totalAccountedPixels": 39090060,
+      "overBudgetMandatory": false
+    },
+    "corrected": {
+      "activePixels": 39090060,
+      "cachedPixels": 0,
+      "reservedPixels": 39090060,
+      "totalAccountedPixels": 39090060,
+      "overBudgetMandatory": false,
+      "scheduler": {
+        "generation": 104,
+        "visibleQueued": 0,
+        "prefetchQueued": 0,
+        "frameScheduled": false,
+        "idleScheduled": false,
+        "visibleSlices": 84,
+        "visibleExecuted": 84,
+        "prefetchExecuted": 129,
+        "prefetchAdmissionRejected": 3,
+        "staleDropped": 3,
+        "maxQueueDepth": 8
+      }
+    }
+  },
+  "hwpspecWarm": {
+    "baseline": {
+      "samples": 40,
+      "complete": 40,
+      "knownWorkNextFrameMs": {
+        "n": 40,
+        "p50": 25,
+        "p95": 25.8,
+        "mean": 34.1
+      },
+      "visibleFirstMs": {
+        "n": 40,
+        "p50": 16.9,
+        "p95": 17.7,
+        "mean": 23.5
+      },
+      "visibleStableMs": {
+        "n": 40,
+        "p50": 16.9,
+        "p95": 17.7,
+        "mean": 23.5
+      },
+      "retainedCompleteMs": {
+        "n": 40,
+        "p50": 16.9,
+        "p95": 17.7,
+        "mean": 26.2
+      },
+      "visibilityUpdateMs": {
+        "n": 40,
+        "p50": 0.7,
+        "p95": 1.7,
+        "mean": 7.4
+      },
+      "rasterCalls": {
+        "n": 40,
+        "p50": 0,
+        "p95": 0,
+        "mean": 0.3
+      },
+      "rasterInclusiveMs": {
+        "n": 40,
+        "p50": 0,
+        "p95": 0,
+        "mean": 8.4
+      },
+      "cacheTakeCalls": {
+        "n": 40,
+        "p50": 12,
+        "p95": 12,
+        "mean": 12
+      },
+      "errors": 0
+    },
+    "corrected": {
+      "samples": 40,
+      "complete": 40,
+      "knownWorkNextFrameMs": {
+        "n": 40,
+        "p50": 25,
+        "p95": 25.8,
+        "mean": 33.9
+      },
+      "visibleFirstMs": {
+        "n": 40,
+        "p50": 16.6,
+        "p95": 17.7,
+        "mean": 17.7
+      },
+      "visibleStableMs": {
+        "n": 40,
+        "p50": 16.6,
+        "p95": 17.7,
+        "mean": 23.3
+      },
+      "retainedCompleteMs": {
+        "n": 40,
+        "p50": 16.6,
+        "p95": 17.7,
+        "mean": 25.8
+      },
+      "visibilityUpdateMs": {
+        "n": 40,
+        "p50": 0.8,
+        "p95": 1.1,
+        "mean": 1.4
+      },
+      "rasterCalls": {
+        "n": 40,
+        "p50": 0,
+        "p95": 0,
+        "mean": 0.3
+      },
+      "rasterInclusiveMs": {
+        "n": 40,
+        "p50": 0,
+        "p95": 0,
+        "mean": 8
+      },
+      "cacheTakeCalls": {
+        "n": 40,
+        "p50": 12,
+        "p95": 12,
+        "mean": 12
+      },
+      "errors": 0
+    },
+    "finalLedger": {
+      "baseline": {
+        "activePixels": 7838640,
+        "cachedPixels": 7013520,
+        "reservedPixels": 7838640,
+        "totalAccountedPixels": 14852160,
+        "overBudgetMandatory": false
+      },
+      "corrected": {
+        "activePixels": 7838640,
+        "cachedPixels": 7013520,
+        "reservedPixels": 7838640,
+        "totalAccountedPixels": 14852160,
+        "overBudgetMandatory": false,
+        "scheduler": {
+          "generation": 153,
+          "visibleQueued": 0,
+          "prefetchQueued": 0,
+          "frameScheduled": false,
+          "idleScheduled": false,
+          "visibleSlices": 95,
+          "visibleExecuted": 96,
+          "prefetchExecuted": 145,
+          "prefetchAdmissionRejected": 3,
+          "staleDropped": 3,
+          "maxQueueDepth": 12
+        }
+      }
+    }
+  },
+  "verdict": {
+    "accepted": true
+  }
+}

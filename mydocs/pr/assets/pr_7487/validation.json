@@ -1,0 +1,185 @@
+{
+  "head": "45863eb2b238929c22ecc606af801b6273dc8482",
+  "running": null,
+  "completed": [
+    {
+      "phase": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 5.7
+    },
+    {
+      "phase": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 42.74
+    },
+    {
+      "phase": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 45.81
+    },
+    {
+      "phase": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 53.32
+    },
+    {
+      "phase": "clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 46.06
+    },
+    {
+      "phase": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "02530b9ed567a44663edb26c65fb565c4a79f00d"
+      ],
+      "exit": 0,
+      "seconds": 0.51
+    },
+    {
+      "phase": "full-nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--tests",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 423.96
+    },
+    {
+      "phase": "skia-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib"
+      ],
+      "exit": 101,
+      "seconds": 10.51
+    },
+    {
+      "phase": "skia-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib"
+      ],
+      "exit": 0,
+      "seconds": 160.28
+    },
+    {
+      "phase": "skia-placeholder",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 89.73
+    },
+    {
+      "phase": "skia-pdf",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 6.61
+    }
+  ],
+  "environment_retry": {
+    "phase": "skia-lib",
+    "first_exit": 101,
+    "reason": "sandbox DNS denied Skia binary/source download; no test executed"
+  }
+}

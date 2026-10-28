@@ -247,7 +247,7 @@ footer 8건(#1616 규칙 부재) + **다페이지 4건** 전수 분석 결과 �
 ## [경로 A 1단계] vpos-추종 페이지네이션 타당성 — Task #1618
 
 vpos-추종(한글 저장 분할 따라가기) 타당성을 위해 LINE_SEG vpos-reset 신뢰도 전수 분석
-(`examples/vpos_reset_analyze.rs`). **순수 vpos-추종 비타당 확정**:
+(`mydocs/tech/investigations/issue-1600/probes/vpos_reset_analyze.rs`). **순수 vpos-추종 비타당 확정**:
 - vpos-예측 vs 한글(통제셋): 43.5%(현행 78.3% 후퇴), delta 전부 음수(과소).
 - vpos-예측 vs rhwp(코퍼스 16,600): 일치 74.2%, 과소 25.8%, **과대 0.0%**(신뢰 하한이나 누락).
 - 과소 원인: **표 내부 분할(PartialTable)은 IR 단일 컨트롤이라 vpos 리셋 없음** (big_table 보유

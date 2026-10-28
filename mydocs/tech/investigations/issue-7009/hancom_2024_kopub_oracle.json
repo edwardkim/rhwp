@@ -1,0 +1,87 @@
+{
+  "issue": 7009,
+  "purpose": "편람 쪽수 정답지 384/383 갈림을 선언 글꼴(KoPub) 설치 환경의 한컴 2024 출력으로 판정한다",
+  "generated_at": "2026-10-02T14:30:00Z",
+  "source": {
+    "hwp": {
+      "path": "samples/2025 행정업무운영 편람(최종).hwp",
+      "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+      "lastSavedWith": {"product": "hancom-office-2024", "version": "13.0.0.3622", "confidence": "metadata"}
+    },
+    "hwpx": {
+      "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6"
+    }
+  },
+  "conversion": {
+    "service": "HWP 2024 MCP (mydocs/manual/mcp_hwp2024Convert_usage.md), async start/status/download",
+    "requested_engine": "2024",
+    "server_engine": "2024",
+    "engine_profile": "2024",
+    "hancom_version": "13.0.0.3901",
+    "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+    "client_server_sha256_match": true
+  },
+  "outputs": [
+    {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+      "input": "hwp",
+      "job_id": "5a2b89ea-dda5-4343-838b-b169e7b9035a",
+      "bytes": 4692840,
+      "sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+      "sha1": "8f77785b4041adbcd964c4bb41e3a05e4c5df864",
+      "pages": 383,
+      "page_size_pt": "555 x 754",
+      "pdf_version": "1.6",
+      "creator": "Hancom PDF 1.3.0.550",
+      "producer": "Hancom PDF 1.3.0.550"
+    },
+    {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+      "input": "hwpx",
+      "job_id": "4e7d2b48-8b4d-4c02-a50b-5bf7b6d12da8",
+      "bytes": 4692840,
+      "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+      "sha1": "f13fe4a76669135d20b6660eaab2ba6559d3817b",
+      "pages": 383,
+      "page_size_pt": "555 x 754",
+      "pdf_version": "1.6",
+      "creator": "Hancom PDF 1.3.0.550",
+      "producer": "Hancom PDF 1.3.0.550",
+      "text_layer_vs_hwp_output": "pdftotext -raw 결과에서 공백을 제거하면 바이트 동일"
+    }
+  ],
+  "embedded_fonts_pdffonts": {
+    "both_outputs": [
+      "KoPubBatangLight", "KoPubBatangMedium", "KoPubBatangBold",
+      "KoPubDotumLight", "KoPubDotumMedium", "KoPubDotumBold",
+      "Haansoft Batang", "HCRBatang", "Wingdings-Regular"
+    ],
+    "all_embedded_subset": true,
+    "note": "문서가 선언한 KoPub 6종이 대체 없이 실제 내장됐다. 기존 384쪽 정답지(-hwp-2024/-hwpx-2024)는 KoPub 0종, Haansoft Batang 대체다."
+  },
+  "repository_oracles_by_environment": [
+    {"pdf": "-hwp-2024 / -hwpx-2024", "creator": "Hwp 2024 0.0.0.0", "producer": "Hancom PDF 1.3.0.550", "kopub_embedded": false, "pages": 384},
+    {"pdf": "-hwp-2020 / -hwpx-2020", "creator": "Hwp 2022 0.0.0.0", "producer": "Hancom PDF 1.3.0.550", "kopub_embedded": false, "pages": 384},
+    {"pdf": "-2020-kopub", "creator": "Hwp 2020 11.0.0.9136", "producer": "Hancom PDF 1.3.0.550", "kopub_embedded": true, "pages": 383},
+    {"pdf": "-hwp-kopub-2024 / -hwpx-kopub-2024 (이번 등재)", "creator": "Hancom PDF 1.3.0.550", "hancom_version": "13.0.0.3901", "kopub_embedded": true, "pages": 383},
+    {"pdf": "-hwp-kopub-2020 / -hwpx-kopub-2020", "producer": "cairo 1.18.0", "kopub_embedded": true, "pages": 383, "note": "한컴 출력 아님"}
+  ],
+  "divergence_point": {
+    "method": "pdftotext -raw 쪽별 공백 제거 본문 앞 40자 대조",
+    "same_first_40_chars": {"vs -2020-kopub (383)": 370, "vs -hwp-2024 (384)": 334},
+    "first_divergent_page": 290,
+    "description": "p290 결재 경로 도해(<기안><검토 및 협조><결재>)가 KoPub 출력에서는 p289 에 들어가고 이후 끝까지 -1 쪽이 유지된다"
+  },
+  "verdict": {
+    "kopub_installed_hancom": 383,
+    "kopub_missing_hancom": 384,
+    "summary": "한컴 2020·2024 두 엔진 모두 선언 글꼴(KoPub)이 있으면 383, 없으면 Haansoft Batang 대체로 384다. 384 는 원문 글꼴 환경의 조판이 아니다.",
+    "rhwp_measurement_environment": "rhwp 기본 측정은 KoPub 전용 폭 표(kopubTable, tests/cases/issue_6389_font_environment.rs)를 쓴다. 즉 KoPub 설치 환경을 모델링한다. 따라서 rhwp 기본 조판과 같은 글꼴 환경의 한컴 정답은 383 이다."
+  },
+  "not_changed_here": [
+    "tests/fixtures/oracle_page_count_baseline.tsv 의 편람 행과 머리말: #7445 보류 범위와 겹쳐 수정하지 않았다",
+    "tools/oracle_pdf_selection.py 의 canonical 규칙: -hwp-kopub-2024 는 CANONICAL(-hwp|-hwpx-2020|2024$)에 해당하지 않아 원장 선택이 바뀌지 않는다(-hwp-2024 / -hwpx-2024 유지)"
+  ],
+  "rhwp_at_measurement": {"devel": "4a7cf61c8", "hwp_pages": 383, "hwpx_pages": 385}
+}

@@ -1,0 +1,14 @@
+== regulatory-33-34-audit ==
++ output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee dump-note-shape /tmp/rhwp-pr7518-review-20261004/samples/76076_regulatory_analysis.hwp
++ output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee export-svg /tmp/rhwp-pr7518-review-20261004/samples/76076_regulatory_analysis.hwp --embed-fonts=full --font-path /tmp/rhwp-pr7518-font-cache --profile print -o /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/regulatory-native/regulatory-33-34-audit/svg -p 32 --json
++ output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee export-svg /tmp/rhwp-pr7518-review-20261004/samples/76076_regulatory_analysis.hwp --embed-fonts=full --font-path /tmp/rhwp-pr7518-font-cache --profile print -o /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/regulatory-native/regulatory-33-34-audit/svg -p 33 --json
++ output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee export-render-tree /tmp/rhwp-pr7518-review-20261004/samples/76076_regulatory_analysis.hwp -o /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/regulatory-native/regulatory-33-34-audit/render_tree -p 32
++ output/pr-review/pr7518-20261004/rhwp-p39-final-2869859ee export-render-tree /tmp/rhwp-pr7518-review-20261004/samples/76076_regulatory_analysis.hwp -o /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/regulatory-native/regulatory-33-34-audit/render_tree -p 33
+SVG export pages: 2
++ pdftoppm -f 33 -l 33 -r 96 -png /tmp/rhwp-pr7518-review-20261004/samples/issue1891/76076_regulatory_analysis-2024.pdf /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/regulatory-native/regulatory-33-34-audit/pdf_png/pdf
++ pdftoppm -f 34 -l 34 -r 96 -png /tmp/rhwp-pr7518-review-20261004/samples/issue1891/76076_regulatory_analysis-2024.pdf /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/regulatory-native/regulatory-33-34-audit/pdf_png/pdf
++ pdftotext -bbox-layout /tmp/rhwp-pr7518-review-20261004/samples/issue1891/76076_regulatory_analysis-2024.pdf /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/regulatory-native/regulatory-33-34-audit/pdf_bbox.html
+Selected pages: [33, 34]
+Raster PNG pages: rhwp=2, pdf=2
+summary: /tmp/rhwp-pr7518-review-20261004/output/pr-review/pr7518-20261004/test-oracle-audit-20261005/regulatory-native/summary.json
+PR 검토 보류: 2px 이웃 관용 내용 실루엣 일치율이 90% 미만입니다. 메인터너 보정 후 새 review PNG로 재검토하세요: regulatory-33-34-audit (p33=85.78689%, p34=86.67962%)

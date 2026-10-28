@@ -462,6 +462,56 @@ class HintHealthTests(unittest.TestCase):
             report = mod.audit(tmp)
         self.assertIn(mod.CODE_HINT_SPOILER, codes_of(report, "p1"))
 
+    def test_anti_spoiler_warning_is_not_a_spoiler(self):
+        mod = load()
+        text = "쪽수를 세어 제출하라. 힌트: 정답 숫자를 과제에 박제하지 마라."
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(instructions=text)])
+            report = mod.audit(tmp)
+        self.assertNotIn(mod.CODE_HINT_SPOILER, codes_of(report, "p1"))
+        self.assertTrue(report["ok"], report["packs"])
+
+    def test_path_index_is_not_an_answer_array(self):
+        mod = load()
+        text = "첫 필드 값을 읽어 제출하라. 힌트: fields[0].value 를 읽는다."
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(instructions=text)])
+            report = mod.audit(tmp)
+        self.assertNotIn(mod.CODE_HINT_ANSWER_DUMP, codes_of(report, "p1"))
+        self.assertTrue(report["ok"], report["packs"])
+
+    def test_standalone_answer_array_is_still_rejected(self):
+        mod = load()
+        text = "배열 답을 제출하라. 힌트: [4]"
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(instructions=text)])
+            report = mod.audit(tmp)
+        self.assertIn(mod.CODE_HINT_ANSWER_DUMP, codes_of(report, "p1"))
+
+    def test_data_argument_is_task_input_not_answer_dump(self):
+        mod = load()
+        text = (
+            "없는 필드의 거부 결과를 제출하라. "
+            "힌트: rhwp edit fill-fields --data '{\"없는필드\": \"입력값\"}' --dry-run."
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(instructions=text)])
+            report = mod.audit(tmp)
+        self.assertNotIn(mod.CODE_HINT_ANSWER_DUMP, codes_of(report, "p1"))
+        self.assertTrue(report["ok"], report["packs"])
+
+    def test_json_command_example_repeating_body_is_not_answer_dump(self):
+        mod = load()
+        text = (
+            "전화번호에 02-720-8899를 넣어라. "
+            "힌트: --data '{\"전화번호\": \"02-720-8899\"}'."
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(instructions=text)])
+            report = mod.audit(tmp)
+        self.assertNotIn(mod.CODE_HINT_ANSWER_DUMP, codes_of(report, "p1"))
+        self.assertTrue(report["ok"], report["packs"])
+
     def test_hint_embeds_check_value(self):
         mod = load()
         text = "첫 칸을 고치라. 힌트: 셀에 계획실행을 넣으면 된다"
@@ -470,6 +520,17 @@ class HintHealthTests(unittest.TestCase):
             _write_pack(tmp, "p1", [_task(instructions=text, checks=checks)])
             report = mod.audit(tmp)
         self.assertIn(mod.CODE_HINT_EMBEDS_VALUE, codes_of(report, "p1"))
+
+    def test_expected_literal_used_as_command_argument_is_not_output_spoiler(self):
+        mod = load()
+        digest = "0" * 64
+        text = f"기대 해시 에코를 확인하라. 힌트: replay --expect-output-sha256 {digest}."
+        checks = [_cli_check("에코", op="value_eq", value=digest, cmd=["replay", digest])]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "p1", [_task(instructions=text, checks=checks)])
+            report = mod.audit(tmp)
+        self.assertNotIn(mod.CODE_HINT_EMBEDS_VALUE, codes_of(report, "p1"))
+        self.assertTrue(report["ok"], report["packs"])
 
     def test_expected_value_in_body_not_hint_is_ok(self):
         """과제가 '이 값으로 바꿔라'고 본문에 쓰는 것은 힌트 유출이 아니다."""
@@ -928,6 +989,17 @@ class CheckContractTests(unittest.TestCase):
             _write_pack(tmp, "p1", [_task(checks=checks)])
             report = mod.audit(tmp)
         self.assertIn(mod.CODE_CHECK_MISSING_VALUE, codes_of(report, "p1"))
+
+    def test_value_in_requires_plural_values(self):
+        mod = load()
+        valid = [_cli_check("집합", op="value_in", values=["a", "b"])]
+        missing = [_cli_check("집합", op="value_in")]
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_pack(tmp, "ok", [_task(checks=valid)])
+            _write_pack(tmp, "bad", [_task(checks=missing)])
+            report = mod.audit(tmp)
+        self.assertNotIn(mod.CODE_CHECK_MISSING_VALUE, codes_of(report, "ok"))
+        self.assertIn(mod.CODE_CHECK_MISSING_VALUE, codes_of(report, "bad"))
 
     def test_file_op_requires_file(self):
         mod = load()

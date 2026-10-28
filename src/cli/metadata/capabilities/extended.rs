@@ -6,32 +6,58 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
         cmd_json(
             "export-svg",
             "문서를 페이지별 SVG로 렌더하고 --json 매니페스트 출력",
-            &["-o", "-p", "--json", "--compat"],
+            &["-o", "-p", "--json", "--compat", "--backend"],
             &[
                 "schemaVersion",
                 "source",
                 "format",
+                "backend",
                 "outputDir",
                 "pageCount",
                 "renderedCount",
                 "pages",
             ],
         ),
-        cmd_gated(
-            "export-png",
-            "문서를 페이지별 PNG로 렌더 (native-skia)",
-            cfg!(feature = "native-skia"),
-        ),
-        cmd_gated(
-            "export-png-gpu",
-            "SVG를 GPU(vello/wgpu)로 래스터화해 페이지별 PNG로 렌더 (--benchmark 로 CPU 대비 실측)",
-            cfg!(feature = "gpu"),
-        ),
-        cmd_gated(
-            "gpu-info",
-            "사용 가능한 GPU 어댑터 열거 (export-png-gpu 가 쓸 백엔드 확인)",
-            cfg!(feature = "gpu"),
-        ),
+        {
+            let mut command = cmd_gated(
+                "export-png",
+                "문서를 페이지별 PNG로 렌더하고 --json 매니페스트 출력 (native-skia)",
+                cfg!(feature = "native-skia"),
+            );
+            command["json"] = serde_json::json!(true);
+            command["flags"] = serde_json::json!([
+                "--page", "-p", "--output", "-o", "--font-path", "--profile", "--compat",
+                "--font-environment", "--dpi", "--scale", "--json", "--metadata-only",
+                "--render-tree-output"
+            ]);
+            command["recordFields"] = serde_json::json!([
+                "schemaVersion", "source", "backend", "comparisonProfile", "layoutGeneration",
+                "outputDir", "pageCount", "renderedCount", "pages"
+            ]);
+            command
+        },
+        {
+            let mut command = cmd_gated(
+                "export-kitty",
+                "문서를 Kitty graphics stdout 또는 페이지별 파일로 출력 (native-skia)",
+                cfg!(feature = "native-skia"),
+            );
+            command["flags"] = serde_json::json!([
+                "--page", "-p", "--output", "-o", "--width", "--font-path", "--profile", "--compat"
+            ]);
+            command
+        },
+        {
+            let mut command = cmd_gated(
+                "export-sixel",
+                "문서를 Sixel stdout 또는 페이지별 파일로 출력 (native-skia)",
+                cfg!(feature = "native-skia"),
+            );
+            command["flags"] = serde_json::json!([
+                "--page", "-p", "--output", "-o", "--width", "--font-path", "--profile", "--compat"
+            ]);
+            command
+        },
         cmd_json(
             "export-pdf",
             "문서를 PDF로 렌더 (svg|direct backend, --json 매니페스트)",
@@ -84,6 +110,17 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
                 "verifyPages",
             ],
         ),
+        {
+            let mut command = cmd_json(
+                "import-pdf",
+                "PDF 전체/선택 쪽을 HWPX 또는 HWP로 가져오기 (pdf-import feature)",
+                &["--source-pages", "--json", "--table-inference"],
+                &["schemaVersion", "source", "output", "format", "bytes", "pageCount", "diagnostics"],
+            );
+            command["requiresFeature"] = serde_json::json!("pdf-import");
+            command["available"] = serde_json::json!(rhwp::pdf_support::pdf_import_support().enabled);
+            command
+        },
         cmd_json(
             "export-hml",
             "HML 원본을 HWPML 2.91 XML로 저장 (--json 봉투)",
@@ -682,6 +719,8 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
                 "identical",
                 "diffCount",
                 "categories",
+                "pageCountA",
+                "pageCountB",
             ],
         ),
         // [#4113 / #3918 승격 2호] 독립 사후검증 게이트 — 기대 조건 집합 대조.
@@ -737,7 +776,7 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
         ),
         cmd_json(
             "layout-anomaly",
-            "렌더 한 장의 기하 이상탐지(overflow/off-canvas/overlap/text-overlap/empty_page) — render-diff(변위)와 다른 질문. overflow=본문 여백, off-canvas=페이지 상자·y<0, text-overlap=텍스트 런 bbox 교차. 기본 exit 0, --strict 만 확정 신호를 exit 3. --batch 는 NDJSON",
+            "렌더 한 장의 기하 이상탐지(overflow/off-canvas/overlap/text-overlap/stored-line-escape/empty_page) — render-diff(변위)와 다른 질문. overflow=본문 여백, off-canvas=페이지 상자·y<0, text-overlap=텍스트 런 bbox 교차, stored-line-escape=저장 줄을 재현한 줄의 글자가 남의 저장 줄 baseline 에 앉음. 기본 exit 0, --strict 만 확정 신호를 exit 3. --batch 는 NDJSON",
             &[
                 "--json",
                 "--batch",
@@ -746,6 +785,7 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
                 "--types",
                 "--overflow-tolerance",
                 "--overlap-tolerance",
+                "--stored-line-tolerance",
             ],
             &[
                 "schemaVersion",
@@ -755,12 +795,14 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
                 "pageFilter",
                 "overflowTolerancePx",
                 "overlapTolerancePx",
+                "storedLineTolerancePx",
                 "types",
                 "strict",
                 "overflowCount",
                 "offCanvasCount",
                 "overlapCount",
                 "textOverlapCount",
+                "storedLineEscapeCount",
                 "emptyPageCount",
                 "hasSignal",
                 "pages",
@@ -797,7 +839,7 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
         cmd("hwp5-cell-header-probe", "셀 헤더 프로브"),
         // ── 내부 개발용 ──
         cmd("test-shape", "도형 왕복 테스트"),
-        cmd("test-caption", "캡션 테스트"),
+        cmd("test-caption", "고정 fixture 캡션 라운드트립 검증"),
         cmd("test-field", "누름틀 왕복 테스트"),
         cmd("gen-table", "표 샘플 생성"),
         cmd("gen-pua", "PUA 샘플 생성"),

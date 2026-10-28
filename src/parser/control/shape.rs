@@ -6,10 +6,9 @@ use super::parse_caption;
 use crate::model::control::Control;
 use crate::model::image::{ImageEffect, Picture};
 use crate::model::shape::{
-    ArcShape, Caption, CaptionDirection, ChartShape, ChartType, CommonObjAttr, CurveShape,
-    DrawingObjAttr, EllipseShape, GroupShape, HorzAlign, HorzRelTo, LineShape, OleDrawingAspect,
-    OleShape, PolygonShape, RectangleShape, ShapeComponentAttr, ShapeObject, TextWrap, VertAlign,
-    VertRelTo,
+    ArcShape, Caption, ChartShape, CommonObjAttr, CurveShape, DrawingObjAttr, EllipseShape,
+    GroupShape, HorzAlign, HorzRelTo, LineShape, OleDrawingAspect, OleShape, PolygonShape,
+    RectangleShape, ShapeComponentAttr, ShapeObject, TextWrap, VertAlign, VertRelTo,
 };
 use crate::model::style::{Fill, ShapeBorderLine};
 use crate::model::Padding;
@@ -190,6 +189,9 @@ pub(crate) fn parse_gso_control(ctrl_data: &[u8], child_records: &[Record]) -> C
             text_box.margin_right = lr.read_i16().unwrap_or(0);
             text_box.margin_top = lr.read_i16().unwrap_or(0);
             text_box.margin_bottom = lr.read_i16().unwrap_or(0);
+            // The HWP LIST_HEADER physically stores all four margins. Zero is
+            // explicit too; dropping its presence changes HWPX text layout.
+            text_box.text_margin_explicit = lh_data.len() >= 16;
             text_box.max_width = lr.read_u32().unwrap_or(0);
             // 나머지 바이트 보존 (라운드트립용)
             if lr.remaining() > 0 {
@@ -794,6 +796,7 @@ fn parse_container_children(child_records: &[Record], depth: u32) -> Vec<ShapeOb
                     text_box.margin_right = lr.read_i16().unwrap_or(0);
                     text_box.margin_top = lr.read_i16().unwrap_or(0);
                     text_box.margin_bottom = lr.read_i16().unwrap_or(0);
+                    text_box.text_margin_explicit = lh_data.len() >= 16;
                     text_box.max_width = lr.read_u32().unwrap_or(0);
                     if lr.remaining() > 0 {
                         text_box.raw_list_header_extra =
@@ -943,9 +946,10 @@ fn parse_picture(common: CommonObjAttr, shape_attr: ShapeComponentAttr, data: &[
         bottom: r.read_i16().unwrap_or(0),
     };
 
-    // 이미지 속성
-    pic.image_attr.brightness = r.read_i8().unwrap_or(0);
+    // HWP5 실저장 순서는 명암→밝기다. 의미 IR/HWPX는 밝기→명암으로 읽는다.
+    // 한컴2024의 편람 그림354 HWP→HWPX는 bright=8, contrast=0이다(#7751).
     pic.image_attr.contrast = r.read_i8().unwrap_or(0);
+    pic.image_attr.brightness = r.read_i8().unwrap_or(0);
     let effect = r.read_u8().unwrap_or(0);
     pic.image_attr.effect = match effect {
         1 => ImageEffect::GrayScale,

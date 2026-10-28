@@ -9,7 +9,7 @@ last_verified: 2026-08-16
 
 rhwp 가 **얼마나 큰 문서까지 감당하는지**를 숫자로 공표한다. 로드맵 트랙 F
 [R55](agent_roadmap/track_f_scale_perf.md) 의 2차 실측이고, 1차
-([`mydocs/report/scale_ladder_r1_20260808.md`](../report/scale_ladder_r1_20260808.md))가
+([`mydocs/report/scale_ladder_r1_20260808.md`](../report/archives/scale_ladder_r1_20260808.md))가
 자기 손으로 미측정이라 적어 둔 세 구멍 — **합성이 아닌 실물 코퍼스**, **반복·분산**,
 **입력 크기 상한의 근거** — 을 메운다.
 

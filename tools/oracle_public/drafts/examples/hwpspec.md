@@ -1,11 +1,11 @@
 ---
-title: "[오라클] hwpspec: pdf_pages 73 (>= 12)"
+title: "[오라클] hwpspec: pdf_pages 178 (>= 12)"
 labels: bug
 draft: true
 submit: never
 ---
 
-# [오라클] hwpspec: pdf_pages 73 (>= 12)
+# [오라클] hwpspec: pdf_pages 178 (>= 12)
 
 > **초안 — 제출하지 않음.** 이 파일은 디스크에만 남긴다. `gh issue create` 로
 > 올리지 말고, 사람이 수치·재현 커맨드를 확인한 뒤 수동으로 등록한다.
@@ -14,9 +14,9 @@ submit: never
 
 문서 `samples/hwpspec.hwp` 가 한컴 기준 대비 임계 게이트를 넘었습니다.
 
-- 지표: `pdf_pages` = **73**
+- 지표: `pdf_pages` = **178**
 - 게이트: `pdf_pages >= 12` 이면 실패
-- 쪽수: 73
+- 쪽수: 178
 - 최악 페이지: 1
 
 cheap 스윕 판정 `CHEAP_OK` · 한컴 2024 · 군 `other` · 쪽수 엔진/visual_sweep 미사용.
@@ -42,7 +42,7 @@ python tools/oracle_public/page_smoke.py --pair samples/hwpspec.hwp pdf/hwpspec-
 
 | 지표 | 값 |
 | --- | --- |
-| `pdf_pages` | 73 |
+| `pdf_pages` | 178 |
 | `pdf_bytes` | 1750513 |
 | `sample_bytes` | 2752512 |
 | `worst_pages` | 1 |
@@ -50,7 +50,7 @@ python tools/oracle_public/page_smoke.py --pair samples/hwpspec.hwp pdf/hwpspec-
 ## 환경
 
 - 리포트 출처: `oracle_public.fatten_catalog.cheap`
-- 리포트 시각: 2026-08-18T10:37:44Z
+- 리포트 시각: 2026-09-03T13:33:12Z
 - rhwp 바이너리: `(unused)`
 - DPI: 96
 - pixel_diff_threshold: 12

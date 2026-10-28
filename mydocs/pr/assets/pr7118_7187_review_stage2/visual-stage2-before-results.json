@@ -1,0 +1,42 @@
+[
+  {
+    "key": "nested3637",
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "nested3637",
+      "samples/issue3637/regulatory_impact_nested_table_escape.hwpx",
+      "pdf/issue3637/regulatory_impact_nested_table_escape-hwpx-2020.pdf",
+      "--rhwp-bin",
+      "/private/tmp/rhwp-review-open-20260916/rhwp-candidate",
+      "--pages",
+      "26-30",
+      "--dpi",
+      "96",
+      "--out",
+      "/private/tmp/rhwp-review-open-20260916/sweep-stage2-before/nested3637"
+    ],
+    "exit_code": 0
+  },
+  {
+    "key": "terminal42065",
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--file-target",
+      "terminal42065",
+      "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "pdf/basic/issue2007_nested_cell_pagination_42065-hwp-2020.pdf",
+      "--rhwp-bin",
+      "/private/tmp/rhwp-review-open-20260916/rhwp-candidate",
+      "--pages",
+      "15-17",
+      "--dpi",
+      "96",
+      "--out",
+      "/private/tmp/rhwp-review-open-20260916/sweep-stage2-before/terminal42065"
+    ],
+    "exit_code": 0
+  }
+]

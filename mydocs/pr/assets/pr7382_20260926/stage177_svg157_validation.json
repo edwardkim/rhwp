@@ -1,0 +1,65 @@
+{
+  "stage": 177,
+  "ledger_item": 19,
+  "original_pr": 7382,
+  "starting_head": "660d8ba21",
+  "input": "samples/hwpx/issue_157.hwpx",
+  "reference_pdf": "pdf/hwpx/issue_157-hwpx-2020.pdf",
+  "page_count": {
+    "rhwp": 2,
+    "pdf": 2
+  },
+  "existing_test": "svg_snapshot::issue_157_page_1",
+  "before_failure": "golden SVG와 actual SVG의 바이트 불일치",
+  "svg_difference": {
+    "xml_nodes_golden": 523,
+    "xml_nodes_actual": 523,
+    "semantic_node_text_or_attribute_key_differences": 0,
+    "numeric_attribute_differences": 61,
+    "maximum_absolute_numeric_difference_px": 5.684341886080802e-14
+  },
+  "correction": "기존 함수 하나에서 원문 표 pi7·pi25와 앞뒤 문장 런의 2쪽 소속 및 실제 상하 비겹침 관계 검사; 옛 golden 파일 변경 없음",
+  "visual": {
+    "native_scores_percent": [
+      98.98123,
+      93.09137
+    ],
+    "fresh_wasm_scores_percent": [
+      98.98123,
+      93.09137
+    ],
+    "gate": "passed",
+    "direct_inspection_page": 2,
+    "font_exception": false
+  },
+  "focused_nextest": {
+    "command": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 8 --no-fail-fast -E 'test(=svg_snapshot::issue_157_page_1)'",
+    "passed": 1,
+    "failed": 0
+  },
+  "snapshot_suite_nextest": {
+    "command": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 8 --no-fail-fast -E 'test(svg_snapshot::)'",
+    "run": 7,
+    "passed": 6,
+    "failed": 1,
+    "remaining_failure": "svg_snapshot::issue_617_exam_kor_page5"
+  },
+  "new_test_functions": 0,
+  "production_change": false,
+  "baseline_or_tolerance_relaxations": 0,
+  "validation": {
+    "fmt": "PASS",
+    "clippy_native": "PASS",
+    "clippy_wasm": "PASS",
+    "workspace_build": "PASS",
+    "clippy_workspace_all_targets": "PASS",
+    "manifest_base_check_after_prepare": "PASS",
+    "unit_tier_base_check": "PASS"
+  },
+  "representative_assets": [
+    "stage177_issue157_native_review_001.png",
+    "stage177_issue157_native_review_002.png",
+    "stage177_issue157_wasm_overlay_002.png"
+  ],
+  "logs": "output/pr-review/planet6897-7382-20260926/stage177-svg157/"
+}

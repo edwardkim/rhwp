@@ -1,0 +1,10 @@
+== pr_6119_6120_6131_issue5820 ==
++ target/pr-review/release-test/rhwp dump-note-shape /home/tsjang/rhwp/samples/issue5820/156560092_ecard_meeting_press.hwpx
++ target/pr-review/release-test/rhwp export-svg /home/tsjang/rhwp/samples/issue5820/156560092_ecard_meeting_press.hwpx --font-style -o /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6119_6120_6131_issue5820/svg
++ target/pr-review/release-test/rhwp export-render-tree /home/tsjang/rhwp/samples/issue5820/156560092_ecard_meeting_press.hwpx -o /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6119_6120_6131_issue5820/render_tree
+SVG export pages: 2
++ pdftoppm -f 2 -l 2 -r 96 -png /home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6119_6120_6131_issue5820_ecard_meeting_press-local2020.pdf /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6119_6120_6131_issue5820/pdf_png/pdf
++ pdftotext -bbox-layout /home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6119_6120_6131_issue5820_ecard_meeting_press-local2020.pdf /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6119_6120_6131_issue5820/pdf_bbox.html
+Selected pages: [2]
+Raster PNG pages: rhwp=1, pdf=1
+summary: /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/summary.json

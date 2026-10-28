@@ -1,0 +1,37 @@
+{
+  "schema_version": 2,
+  "key": "issue4599-min",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue4599/156714641_wrap_tail_min.hwpx",
+      "sha256": "5140fff9f15078ead1cde8b341dba07822542b0ed980254f6e09fc3c73d03df5"
+    },
+    "pdf": {
+      "path": "pdf/issue4599/156714641_wrap_tail_min-2020.pdf",
+      "sha256": "d6fff0fcf4c1aa2d72b71f10f5996781e8fda077e3c608f4d4f52b3a647bd0b1"
+    },
+    "git_head": "c8c5f535cd3ebf331cadc2714c68af9fdc663a4d",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "351b97126f337ba1bd7a05b8b0354577478b5c6056544e5048bdafdd98510125"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [],
+  "requested_page_shards": [],
+  "run_state": "incomplete"
+}

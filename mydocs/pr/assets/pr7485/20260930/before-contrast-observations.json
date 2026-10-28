@@ -1,0 +1,278 @@
+[
+  {
+    "stage": "01-dark-two",
+    "theme": "dark",
+    "query": "foo",
+    "label": "검색 결과 2개",
+    "actualCount": 2,
+    "background": "rgb(54, 60, 69)",
+    "countColor": "rgb(182, 192, 204)",
+    "statusColor": "rgb(0, 102, 204)",
+    "contrast": {
+      "count": 6.03,
+      "status": 2.0
+    },
+    "labelRect": {
+      "x": 1006.015625,
+      "y": 152,
+      "width": 60.609375,
+      "height": 14,
+      "top": 152,
+      "right": 1066.625,
+      "bottom": 166,
+      "left": 1006.015625
+    },
+    "statusRect": {
+      "x": 1074.625,
+      "y": 152,
+      "width": 168.375,
+      "height": 14,
+      "top": 152,
+      "right": 1243,
+      "bottom": 166,
+      "left": 1074.625
+    },
+    "dialogRect": {
+      "x": 876,
+      "y": 80,
+      "width": 380,
+      "height": 138,
+      "top": 80,
+      "right": 1256,
+      "bottom": 218,
+      "left": 876
+    },
+    "dialogScrollWidth": 378,
+    "dialogClientWidth": 378
+  },
+  {
+    "stage": "02-light-two",
+    "theme": "light",
+    "query": "foo",
+    "label": "검색 결과 2개",
+    "actualCount": 2,
+    "background": "rgb(250, 250, 250)",
+    "countColor": "rgb(102, 102, 102)",
+    "statusColor": "rgb(0, 102, 204)",
+    "contrast": {
+      "count": 5.5,
+      "status": 5.33
+    },
+    "labelRect": {
+      "x": 1006.015625,
+      "y": 152,
+      "width": 60.609375,
+      "height": 14,
+      "top": 152,
+      "right": 1066.625,
+      "bottom": 166,
+      "left": 1006.015625
+    },
+    "statusRect": {
+      "x": 1074.625,
+      "y": 152,
+      "width": 168.375,
+      "height": 14,
+      "top": 152,
+      "right": 1243,
+      "bottom": 166,
+      "left": 1074.625
+    },
+    "dialogRect": {
+      "x": 876,
+      "y": 80,
+      "width": 380,
+      "height": 138,
+      "top": 80,
+      "right": 1256,
+      "bottom": 218,
+      "left": 876
+    },
+    "dialogScrollWidth": 378,
+    "dialogClientWidth": 378
+  },
+  {
+    "stage": "05-light-one",
+    "theme": "light",
+    "query": "foo",
+    "label": "검색 결과 1개",
+    "actualCount": 1,
+    "background": "rgb(250, 250, 250)",
+    "countColor": "rgb(102, 102, 102)",
+    "statusColor": "rgb(0, 102, 204)",
+    "contrast": {
+      "count": 5.5,
+      "status": 5.33
+    },
+    "labelRect": {
+      "x": 1007.5625,
+      "y": 152,
+      "width": 59.0625,
+      "height": 14,
+      "top": 152,
+      "right": 1066.625,
+      "bottom": 166,
+      "left": 1007.5625
+    },
+    "statusRect": {
+      "x": 1074.625,
+      "y": 152,
+      "width": 168.375,
+      "height": 14,
+      "top": 152,
+      "right": 1243,
+      "bottom": 166,
+      "left": 1074.625
+    },
+    "dialogRect": {
+      "x": 876,
+      "y": 80,
+      "width": 380,
+      "height": 138,
+      "top": 80,
+      "right": 1256,
+      "bottom": 218,
+      "left": 876
+    },
+    "dialogScrollWidth": 378,
+    "dialogClientWidth": 378
+  },
+  {
+    "stage": "06-dark-one",
+    "theme": "dark",
+    "query": "foo",
+    "label": "검색 결과 1개",
+    "actualCount": 1,
+    "background": "rgb(54, 60, 69)",
+    "countColor": "rgb(182, 192, 204)",
+    "statusColor": "rgb(0, 102, 204)",
+    "contrast": {
+      "count": 6.03,
+      "status": 2.0
+    },
+    "labelRect": {
+      "x": 1007.5625,
+      "y": 152,
+      "width": 59.0625,
+      "height": 14,
+      "top": 152,
+      "right": 1066.625,
+      "bottom": 166,
+      "left": 1007.5625
+    },
+    "statusRect": {
+      "x": 1074.625,
+      "y": 152,
+      "width": 168.375,
+      "height": 14,
+      "top": 152,
+      "right": 1243,
+      "bottom": 166,
+      "left": 1074.625
+    },
+    "dialogRect": {
+      "x": 876,
+      "y": 80,
+      "width": 380,
+      "height": 138,
+      "top": 80,
+      "right": 1256,
+      "bottom": 218,
+      "left": 876
+    },
+    "dialogScrollWidth": 378,
+    "dialogClientWidth": 378
+  },
+  {
+    "stage": "07-dark-zero",
+    "theme": "dark",
+    "query": "fooabsent",
+    "label": "검색 결과 0개",
+    "actualCount": 0,
+    "background": "rgb(54, 60, 69)",
+    "countColor": "rgb(182, 192, 204)",
+    "statusColor": "rgb(204, 0, 0)",
+    "contrast": {
+      "count": 6.03,
+      "status": 1.89
+    },
+    "labelRect": {
+      "x": 1110.6875,
+      "y": 152,
+      "width": 60.890625,
+      "height": 14,
+      "top": 152,
+      "right": 1171.578125,
+      "bottom": 166,
+      "left": 1110.6875
+    },
+    "statusRect": {
+      "x": 1179.578125,
+      "y": 152,
+      "width": 63.421875,
+      "height": 14,
+      "top": 152,
+      "right": 1243,
+      "bottom": 166,
+      "left": 1179.578125
+    },
+    "dialogRect": {
+      "x": 876,
+      "y": 80,
+      "width": 380,
+      "height": 138,
+      "top": 80,
+      "right": 1256,
+      "bottom": 218,
+      "left": 876
+    },
+    "dialogScrollWidth": 378,
+    "dialogClientWidth": 378
+  },
+  {
+    "stage": "08-light-zero",
+    "theme": "light",
+    "query": "fooabsent",
+    "label": "검색 결과 0개",
+    "actualCount": 0,
+    "background": "rgb(250, 250, 250)",
+    "countColor": "rgb(102, 102, 102)",
+    "statusColor": "rgb(204, 0, 0)",
+    "contrast": {
+      "count": 5.5,
+      "status": 5.64
+    },
+    "labelRect": {
+      "x": 1110.6875,
+      "y": 152,
+      "width": 60.890625,
+      "height": 14,
+      "top": 152,
+      "right": 1171.578125,
+      "bottom": 166,
+      "left": 1110.6875
+    },
+    "statusRect": {
+      "x": 1179.578125,
+      "y": 152,
+      "width": 63.421875,
+      "height": 14,
+      "top": 152,
+      "right": 1243,
+      "bottom": 166,
+      "left": 1179.578125
+    },
+    "dialogRect": {
+      "x": 876,
+      "y": 80,
+      "width": 380,
+      "height": 138,
+      "top": 80,
+      "right": 1256,
+      "bottom": 218,
+      "left": 876
+    },
+    "dialogScrollWidth": 378,
+    "dialogClientWidth": 378
+  }
+]

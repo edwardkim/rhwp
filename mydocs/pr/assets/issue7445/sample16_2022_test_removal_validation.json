@@ -1,0 +1,341 @@
+{
+  "stage": 79,
+  "analysis": {
+    "head": "d75eb265538cea0c26b39c9faf1a6170eee491a2",
+    "analysis": "고정5번 body partition2에서2022 이름 저장본의본문초과2→4건 실패. 같은입력의정상 한컴2022 engine2020 PDF64쪽으로 페이지 소유·본문 위치를 검증. 실제제품metadata확인.90%미달시 사용자가 승인한 문서 검사 제외만 수행; 다른버전·IR/저장버전계약 유지.",
+    "files": {
+      "samples/hwp3-sample16-hwp5-2022.hwp": {
+        "size": 3048448,
+        "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe"
+      },
+      "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf": {
+        "size": 1005545,
+        "sha256": "79e316c697717b3280745d48868a7cc530dab53b28f35bc839b5e0d593e2dd1c"
+      }
+    },
+    "info": {
+      "fonts": [
+        "태 나무",
+        "휴먼고딕",
+        "휴먼명조",
+        "휴먼옛체",
+        "한양견고딕",
+        "한양신명조",
+        "한양중고딕",
+        "한양그래픽",
+        "굴림체",
+        "바탕",
+        "신명 신신명조",
+        "태 나무",
+        "산세리프",
+        "한양신명조",
+        "한양중고딕",
+        "한양견고딕",
+        "한양그래픽",
+        "한양궁서",
+        "HCI Hollyhock",
+        "HCI Poppy",
+        "굴림체",
+        "바탕",
+        "신명 신신명조",
+        "한양신명조",
+        "한양중고딕",
+        "굴림체",
+        "바탕",
+        "신명 세명조",
+        "신명 태고딕",
+        "한양신명조",
+        "한양중고딕",
+        "굴림체",
+        "바탕",
+        "신명 신명조",
+        "신명 태고딕",
+        "한양신명조",
+        "굴림체",
+        "바탕",
+        "한양신명조",
+        "한양중고딕",
+        "굴림체",
+        "바탕",
+        "#그래픽",
+        "#태고딕",
+        "명조",
+        "굴림체",
+        "바탕"
+      ],
+      "format": "hwp5",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2022",
+        "version": "12.0.0.535"
+      },
+      "pageCount": 65,
+      "paraCount": 1058,
+      "printMethod": null,
+      "printMethodImpliesNup": false,
+      "schemaVersion": "1.0",
+      "sections": 1,
+      "sizeBytes": 3048448,
+      "source": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "title": "\"세계 3대 물 서비스 기업\" 실현을 위한",
+      "untrustedContent": true,
+      "untrustedFields": [
+        "title",
+        "fonts[]"
+      ],
+      "version": "5.1.1.0",
+      "warnings": []
+    },
+    "pdf": {
+      "pages": 64,
+      "metadata": {
+        "format": "PDF 1.6",
+        "title": "",
+        "author": "Kowaco 대리 Igru",
+        "subject": "",
+        "keywords": "",
+        "creator": "Hwp 2022 0.0.0.0",
+        "producer": "Hancom PDF 1.3.0.550",
+        "creationDate": "D:20260830033900+09'00'",
+        "modDate": "D:20260830033900+09'00'",
+        "trapped": "",
+        "encryption": null
+      }
+    },
+    "selected_pages": [
+      3,
+      6,
+      23,
+      24,
+      64
+    ]
+  },
+  "code_commit": "ced1d9ef299af17850c9f43ec3c4d91f914baa6c",
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5869647971",
+  "original_document_preserved": "mydocs/pr/assets/issue7445/hwp3-sample16-hwp5-2022.hwp",
+  "visual": {
+    "runtime": "stage69 frozen Native; production unchanged; exclusion negative proof",
+    "actual_pages": 65,
+    "oracle_pages": 64,
+    "exit_code": 1,
+    "gate": "re_review_required",
+    "selected": [
+      {
+        "page": 3,
+        "tolerant_content_match_percent": 38.04778
+      },
+      {
+        "page": 6,
+        "tolerant_content_match_percent": 33.70787
+      },
+      {
+        "page": 23,
+        "tolerant_content_match_percent": 26.53989
+      },
+      {
+        "page": 24,
+        "tolerant_content_match_percent": 7.09794
+      },
+      {
+        "page": 64,
+        "tolerant_content_match_percent": 15.52702
+      }
+    ],
+    "direct_review": "3쪽 문단·도형·글줄 간격 차이;24쪽 정상 본문·표 대신 한 줄만 남은 내용 소유 차이 직접 확인",
+    "whole_native_fresh_wasm": "미실행. 개선·승인으로 세지 않음"
+  },
+  "removed_functions": {
+    "tests/issue_1105.rs": [
+      "task1105_sample16_hwp5_2022_business_selection_break_matches_hancom",
+      "task1105_sample16_hwp5_2022_server_requirements_page_matches_hancom"
+    ],
+    "tests/issue_1116.rs": [
+      "sample16_hwp5_2022_page3_bcp_tail_glyph_stays_on_hancom_line",
+      "sample16_hwp5_2022_page3_bcp_tail_paragraph_folds_orphan_lineseg",
+      "sample16_hwp5_2022_page3_latin_font_matches_legacy_hancom_mapping"
+    ],
+    "tests/suites/issue_regression_pilot/issue_1035_alignment.rs": [
+      "hwp3_sample16_hwp5_2022_page_count_64"
+    ]
+  },
+  "removed_rows": [
+    {
+      "file": "tests/fixtures/body_overflow_baseline.tsv",
+      "row": "hwp3-sample16-hwp5-2022.hwp\t2"
+    },
+    {
+      "file": "tests/fixtures/oracle_page_count_baseline.tsv",
+      "row": "samples/hwp3-sample16-hwp5-2022.hwp\t64\t64"
+    }
+  ],
+  "preserved": "다른 입력의 함수/기대값/공차, 저장 제품 info 계약·IR 진단·IR field baseline 유지. 새 함수/ignore/skip/생산 변경 없음.",
+  "focused_result": {
+    "passed": 8,
+    "failed": 1,
+    "skipped": 853,
+    "exit_code": 100,
+    "remaining_failure": "body partition2: 보도자료HWPX2→3, 관제교육HWP39→40,rowbreak HWP신규1. 제외된2022입력은자동corpus에없음."
+  },
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "d75eb265538cea0c26b39c9faf1a6170eee491a2",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_001",
+          "--test",
+          "regression_suite_007",
+          "--test",
+          "regression_suite_009",
+          "--test",
+          "regression_suite_018",
+          "-E",
+          "test(/(^|::)info_hancom_save_version_contract::/) or test(/(^|::)diag_1042_2022::/) or test(/(^|::)issue_1116::sample16_hwp3_/) or test(=body_overflow_baseline::body_overflow_does_not_grow_partition_2)"
+        ],
+        "exit_code": 100,
+        "seconds": 19.807145458180457
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 5.942692917305976
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.290822250302881
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.2210289160721004
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.35517545929178596
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 7.738760208245367
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.189099708106369
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 7.6316905417479575
+      }
+    ]
+  },
+  "assets": [
+    {
+      "page": 3,
+      "kind": "review",
+      "path": "mydocs/pr/assets/issue7445/sample16_2022_native_review_003.png",
+      "sha256": "9801f058c45241a3f8eaf94d02ce9c82615c26e9a1f99648e4141a77cfe51974"
+    },
+    {
+      "page": 3,
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/issue7445/sample16_2022_native_overlay_003.png",
+      "sha256": "f48a2703c0cac4f40783523fe18b95498ce69e2ab20d43af4b20109393ac9ebe"
+    },
+    {
+      "page": 24,
+      "kind": "review",
+      "path": "mydocs/pr/assets/issue7445/sample16_2022_native_review_024.png",
+      "sha256": "e477626d4fb529e0117f9b1501fbc97848b39ea0f440fe61954a821c254d4589"
+    },
+    {
+      "page": 24,
+      "kind": "overlay",
+      "path": "mydocs/pr/assets/issue7445/sample16_2022_native_overlay_024.png",
+      "sha256": "54982466cec4cefcb20edf76ffead10b26d4356fe3db3e5534fbaf270f2cd578"
+    }
+  ],
+  "output": "output/pr-review/planet6897-7382-20260926/stage79-sample16-2022"
+}

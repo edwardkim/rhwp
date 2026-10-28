@@ -1,0 +1,168 @@
+{
+  "parent_head": "18e5f3133",
+  "input": "samples/issue6192/cell_behind_text_para_anchor.hwpx",
+  "pdf": "pdf/pr_6275/by_saved_version/pr6275_issue6192_cell_behind_text_para_anchor-2020.pdf",
+  "before_native": [
+    89.65731,
+    100.0
+  ],
+  "visual": {
+    "native": {
+      "exit_code": 1,
+      "pages": 2,
+      "scores": [
+        89.19602,
+        100.0
+      ],
+      "below90": [
+        1
+      ]
+    },
+    "wasm": {
+      "exit_code": 1,
+      "pages": 2,
+      "scores": [
+        89.19602,
+        100.0
+      ],
+      "below90": [
+        1
+      ]
+    }
+  },
+  "whole_nextest": "새 글꼴 연결 코드에서는 미실행; 4df3f6e63 전체7FAIL은 이전 결과",
+  "renderer_admission": "보류: 1쪽90%미만. 기존 검사·원문·PDF 유지. #7445 이관 없음",
+  "wasm_build": "Mac no-opt 대체 빌드 exit0; Docker 최적화 아님",
+  "new_tests": 0,
+  "sha256": {
+    "src/renderer/svg.rs": "e30556acaa3be1961e983edd3a9077cecfa5b485a0a34663e9336bd48a1b3abb",
+    "pkg/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+    "pkg/rhwp_bg.wasm": "4b616efb7a553e83402a8542aec2f5f85bcb917e986a89eaa16430f51e33545e",
+    "target/pr-review/release-test/rhwp": "ebcea9568c190f6e252d0c017924dd191b8c7d7a4c47f6219eb18d1bccf55b5f",
+    "samples/issue6192/cell_behind_text_para_anchor.hwpx": "ee5ed1034feb63702d679ea99b56914aff7a4b92f4a4dd781c1d35928b3d5c8e",
+    "pdf/pr_6275/by_saved_version/pr6275_issue6192_cell_behind_text_para_anchor-2020.pdf": "38940659b40642e388f8c8f5da00c723d68b4fcb2bf7d91428ae93f3b8d46087",
+    "/Users/tsjang/Library/Fonts/HANYGO240.ttf": "ed3fbb8f3af1866a7fe31478e4f62ef409f74f65d0db1bf60538f4649e564e4d",
+    "/Users/tsjang/Library/Fonts/H2HDRM.TTF": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831"
+  },
+  "gates": [
+    {
+      "gate": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--lib",
+        "--bin",
+        "rhwp",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 31.69
+    },
+    {
+      "gate": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--lib",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 39.642
+    },
+    {
+      "gate": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--workspace"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 192.848
+    },
+    {
+      "gate": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 72.611
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 10.015
+    },
+    {
+      "gate": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare",
+        "--base",
+        "ab4dcfaca5d6c151a814536570b9c7e2832daa8c"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.939
+    }
+  ],
+  "base_fixed_manifest_check": {
+    "base_ref": "ab4dcfaca5d6c151a814536570b9c7e2832daa8c",
+    "exit_code": 0
+  },
+  "title_margin_analysis": {
+    "cell_left_right_padding_px": 1.88,
+    "native_text_origin_x": 91.81333,
+    "native_text_advance_end_x": 696.61333,
+    "pdf_text_origin_x": 100.0,
+    "pdf_text_end_x": 688.432,
+    "native_available_width_px": 604.8,
+    "cell_x": 89.93333,
+    "cell_right_x": 698.49333,
+    "native_text_top_y": 132.2,
+    "pdf_text_top_y": 132.048,
+    "alignment": "CENTER",
+    "authored_tracking_percent": -6,
+    "source_branch": "src/renderer/layout/paragraph_layout.rs:2487-2545",
+    "finding": "가운데 정렬 셀의 음수 자간 줄을 자연 폭이 넘친다는 이유로 가용 폭까지 되늘리는 분기. 셀 패딩 누락으로 단정하지 않음",
+    "renderer_fix": "이 분석 단계에서 변경하지 않음"
+  }
+}

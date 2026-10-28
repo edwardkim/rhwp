@@ -1,0 +1,504 @@
+{
+  "inputBytes": 8645,
+  "inputSha256": "369dbea8562a5f0ddaee41c21319e06645250d854090a5dd1e04c006ddbe0485",
+  "issue": 4968,
+  "kind": "kerning-runtime-fixture-manifest",
+  "lineSegLaneCounts": {
+    "fresh-candidate-lane": 10,
+    "stored-line-lane": 12
+  },
+  "projectionContractSha256": "aeebaac86e90ff0bb95c603c88ef51c15ce93c0076742d9488ced09d95d5e2e6",
+  "schemaVersion": 1,
+  "semantic": {
+    "canonicalProjectionContract": {
+      "allowedFields": [
+        "context",
+        "charShapeId",
+        "languageIndex",
+        "lineSegLane",
+        "ratio",
+        "spacing",
+        "kerningRequested",
+        "registration",
+        "capability",
+        "disposition",
+        "fallbackReason",
+        "paragraphRef",
+        "measurement.totalWidth",
+        "line.starts",
+        "line.boundaries",
+        "layout.positions",
+        "layout.bboxWidth",
+        "canvas.positions",
+        "canvasKit.positions",
+        "svg.sha256",
+        "pageCount"
+      ],
+      "comparison": "byte-exact-canonical-json",
+      "forbiddenFields": [
+        "text",
+        "fontBytes",
+        "sourcePath",
+        "sourceDocumentHash",
+        "fileName",
+        "absolutePath",
+        "privateIdentity"
+      ],
+      "kind": "kerning-runtime-canonical-projection",
+      "normalization": {
+        "paragraphRef": {
+          "canonical": "para:MAX",
+          "native64Sentinel": "18446744073709551615",
+          "wasm32Sentinel": "4294967295"
+        }
+      },
+      "rowKey": [
+        "context",
+        "charShapeId",
+        "languageIndex",
+        "lineSegLane"
+      ],
+      "schemaVersion": 1
+    },
+    "contexts": [
+      {
+        "charPropertyId": 7,
+        "context": "body",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49681000
+      },
+      {
+        "charPropertyId": 8,
+        "context": "body",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49681001
+      },
+      {
+        "charPropertyId": 9,
+        "context": "body",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49681002
+      },
+      {
+        "charPropertyId": 10,
+        "context": "body",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49681003
+      },
+      {
+        "charPropertyId": 11,
+        "context": "body",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49681004
+      },
+      {
+        "charPropertyId": 12,
+        "context": "body",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49681005
+      },
+      {
+        "charPropertyId": 13,
+        "context": "body",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49681006
+      },
+      {
+        "charPropertyId": 14,
+        "context": "body",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49681007
+      },
+      {
+        "charPropertyId": 15,
+        "context": "body",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49681008
+      },
+      {
+        "charPropertyId": 16,
+        "context": "body",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49681009
+      },
+      {
+        "charPropertyId": 17,
+        "context": "body",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49681010
+      },
+      {
+        "charPropertyId": 18,
+        "context": "body",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49681011
+      },
+      {
+        "charPropertyId": 19,
+        "context": "body",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49681012
+      },
+      {
+        "charPropertyId": 20,
+        "context": "body",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49681013
+      },
+      {
+        "charPropertyId": 21,
+        "context": "body",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49681014
+      },
+      {
+        "charPropertyId": 22,
+        "context": "body",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49681015
+      },
+      {
+        "charPropertyId": 23,
+        "context": "body",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49681016
+      },
+      {
+        "charPropertyId": 24,
+        "context": "body",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49681017
+      },
+      {
+        "charPropertyId": 7,
+        "context": "table-cell",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49681018
+      },
+      {
+        "charPropertyId": 7,
+        "context": "text-box",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49681028
+      },
+      {
+        "charPropertyId": 8,
+        "context": "table-cell",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49681019
+      },
+      {
+        "charPropertyId": 8,
+        "context": "text-box",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49681029
+      }
+    ],
+    "contractVersion": "w9-q3-5-r4e-runtime-v1",
+    "documentFace": "RHWP Kerning Boundary",
+    "exactSourceRegistration": {
+      "faceIndex": 0,
+      "language": "latin",
+      "languageIndex": 1,
+      "nativeApi": "DocumentCore::register_exact_font_source_native",
+      "slots": [
+        {
+          "charShapeId": 7,
+          "languageIndex": 1
+        },
+        {
+          "charShapeId": 8,
+          "languageIndex": 1
+        },
+        {
+          "charShapeId": 9,
+          "languageIndex": 1
+        },
+        {
+          "charShapeId": 10,
+          "languageIndex": 1
+        },
+        {
+          "charShapeId": 11,
+          "languageIndex": 1
+        },
+        {
+          "charShapeId": 12,
+          "languageIndex": 1
+        },
+        {
+          "charShapeId": 13,
+          "languageIndex": 1
+        },
+        {
+          "charShapeId": 14,
+          "languageIndex": 1
+        },
+        {
+          "charShapeId": 15,
+          "languageIndex": 1
+        },
+        {
+          "charShapeId": 16,
+          "languageIndex": 1
+        },
+        {
+          "charShapeId": 17,
+          "languageIndex": 1
+        },
+        {
+          "charShapeId": 18,
+          "languageIndex": 1
+        },
+        {
+          "charShapeId": 19,
+          "languageIndex": 1
+        },
+        {
+          "charShapeId": 20,
+          "languageIndex": 1
+        },
+        {
+          "charShapeId": 21,
+          "languageIndex": 1
+        },
+        {
+          "charShapeId": 22,
+          "languageIndex": 1
+        },
+        {
+          "charShapeId": 23,
+          "languageIndex": 1
+        },
+        {
+          "charShapeId": 24,
+          "languageIndex": 1
+        }
+      ],
+      "wasmApi": "HwpDocument.registerExactFontSource"
+    },
+    "fontBytesEmbedded": false,
+    "fontLicensePath": "tests/fixtures/fonts/RHWPExactKerningSmoke.LICENSE.md",
+    "fontSource": {
+      "embedded": false,
+      "license": "MIT",
+      "path": "tests/fixtures/fonts/RHWPExactKerningSmoke.ttf",
+      "sha256": "775667d1980cd734e331f01e9390e02191bc35d669325291c842968cb0a4a9fc",
+      "tracked": true
+    },
+    "matrix": [
+      {
+        "charPropertyId": 7,
+        "kerning": false,
+        "ratio": 100,
+        "spacing": 0
+      },
+      {
+        "charPropertyId": 8,
+        "kerning": true,
+        "ratio": 100,
+        "spacing": 0
+      },
+      {
+        "charPropertyId": 9,
+        "kerning": false,
+        "ratio": 100,
+        "spacing": -5
+      },
+      {
+        "charPropertyId": 10,
+        "kerning": true,
+        "ratio": 100,
+        "spacing": -5
+      },
+      {
+        "charPropertyId": 11,
+        "kerning": false,
+        "ratio": 100,
+        "spacing": -10
+      },
+      {
+        "charPropertyId": 12,
+        "kerning": true,
+        "ratio": 100,
+        "spacing": -10
+      },
+      {
+        "charPropertyId": 13,
+        "kerning": false,
+        "ratio": 90,
+        "spacing": 0
+      },
+      {
+        "charPropertyId": 14,
+        "kerning": true,
+        "ratio": 90,
+        "spacing": 0
+      },
+      {
+        "charPropertyId": 15,
+        "kerning": false,
+        "ratio": 90,
+        "spacing": -5
+      },
+      {
+        "charPropertyId": 16,
+        "kerning": true,
+        "ratio": 90,
+        "spacing": -5
+      },
+      {
+        "charPropertyId": 17,
+        "kerning": false,
+        "ratio": 90,
+        "spacing": -10
+      },
+      {
+        "charPropertyId": 18,
+        "kerning": true,
+        "ratio": 90,
+        "spacing": -10
+      },
+      {
+        "charPropertyId": 19,
+        "kerning": false,
+        "ratio": 80,
+        "spacing": 0
+      },
+      {
+        "charPropertyId": 20,
+        "kerning": true,
+        "ratio": 80,
+        "spacing": 0
+      },
+      {
+        "charPropertyId": 21,
+        "kerning": false,
+        "ratio": 80,
+        "spacing": -5
+      },
+      {
+        "charPropertyId": 22,
+        "kerning": true,
+        "ratio": 80,
+        "spacing": -5
+      },
+      {
+        "charPropertyId": 23,
+        "kerning": false,
+        "ratio": 80,
+        "spacing": -10
+      },
+      {
+        "charPropertyId": 24,
+        "kerning": true,
+        "ratio": 80,
+        "spacing": -10
+      }
+    ],
+    "pairClasses": [
+      {
+        "gposXAdvance": -80,
+        "kind": "adjusted",
+        "text": "AV"
+      },
+      {
+        "gposXAdvance": -40,
+        "kind": "adjusted",
+        "text": "To"
+      },
+      {
+        "gposXAdvance": 0,
+        "kind": "zero-adjustment",
+        "text": "WA"
+      },
+      {
+        "gposXAdvance": 0,
+        "kind": "no-pair",
+        "text": "HH"
+      }
+    ],
+    "pairText": "AV To WA HH",
+    "sourceTemplateSha256": "c58144645069f7d1258e91404730618ad568bc4d47680ad5f891d3050aa308c7",
+    "visibleTextGlyphSet": [
+      "space",
+      "A",
+      "V",
+      "T",
+      "o",
+      "W",
+      "H"
+    ]
+  },
+  "semanticSha256": "c049dcdcfbba517bc77f2aedc1c42a7bbe91bf17195a24b83e4258bf0c91a57f",
+  "sourceFormat": "hwpx",
+  "stage": "W9-Q3-5R4E-0",
+  "zipEntries": [
+    {
+      "bytes": 19,
+      "compression": "stored",
+      "name": "mimetype",
+      "sha256": "5ab5230b5af04f78947736bf8dd1a269aa684e234f7f4a392efb85289d1655c2"
+    },
+    {
+      "bytes": 1708,
+      "compression": "deflated",
+      "name": "Contents/content.hpf",
+      "sha256": "8e274ad3eb05ab3c18647b718fe0ba64dedc2149c738659be5fffc0b8b22a5dc"
+    },
+    {
+      "bytes": 43757,
+      "compression": "deflated",
+      "name": "Contents/header.xml",
+      "sha256": "b24aa1b3408e0e248bb8460a9a3ed30cd45474cfe1e17671e78543627e6d1f20"
+    },
+    {
+      "bytes": 13749,
+      "compression": "deflated",
+      "name": "Contents/section0.xml",
+      "sha256": "d2d8812db149ba156f72165798ba5c1ad0cd76573ada3738262ffac14922a464"
+    },
+    {
+      "bytes": 867,
+      "compression": "deflated",
+      "name": "META-INF/container.rdf",
+      "sha256": "0cfd814c20595c841e48e62fbf7591829f13c177fa92af634c8199f85ecf3a89"
+    },
+    {
+      "bytes": 475,
+      "compression": "deflated",
+      "name": "META-INF/container.xml",
+      "sha256": "5109d3a9249ec1058177fedab574c5d9616058aa92ebefcd33249ebb36a20f61"
+    },
+    {
+      "bytes": 134,
+      "compression": "deflated",
+      "name": "META-INF/manifest.xml",
+      "sha256": "2b4b155c1bb6a9ccc212fef113c4831d2f558e67cf1260eb314ce54f26fd32ea"
+    },
+    {
+      "bytes": 5126,
+      "compression": "deflated",
+      "name": "Preview/PrvImage.png",
+      "sha256": "2103d51fb863769afce086d2aa45eda343808e1c478527a9d40b3dfbebe513c6"
+    },
+    {
+      "bytes": 11,
+      "compression": "deflated",
+      "name": "Preview/PrvText.txt",
+      "sha256": "3d816b8952a6b875171177b53e4b6179b98b87393bcf68f88e7242fb8a6bcc2a"
+    },
+    {
+      "bytes": 279,
+      "compression": "deflated",
+      "name": "settings.xml",
+      "sha256": "dcc4abfcc61852badcfc866339ec626cf4ffbdf77f0553cb708be58a05d6713f"
+    },
+    {
+      "bytes": 309,
+      "compression": "deflated",
+      "name": "version.xml",
+      "sha256": "343622a45451dd3b1c449f36016ef8608234b5b33e4e48dae3fc80f5f3888cbb"
+    }
+  ]
+}

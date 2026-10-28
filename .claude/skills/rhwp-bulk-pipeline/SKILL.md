@@ -14,7 +14,7 @@ description: 폴더의 HWP/HWPX 문서 수백 건을 rhwp batch 로 한 번에 �
 권위: [`mydocs/manual/cli_commands.md`](../../../mydocs/manual/cli_commands.md)
 §batch + `rhwp capabilities` 의 batch 항목(stdin·NDJSON·종료 집계·출력 충돌·인증).
 실측 원형: 레시피 9(PR #4182)·레시피 5·[`cli_json_pipeline_guide.md`](../../../mydocs/manual/cli_json_pipeline_guide.md).
-처리 결과: [`mydocs/working/agent_bulk_pipeline.md`](../../../mydocs/working/agent_bulk_pipeline.md).
+처리 결과: [`mydocs/working/agent_bulk_pipeline.md`](../../../mydocs/working/archives/agent_bulk_pipeline.md).
 
 ## 바이너리
 

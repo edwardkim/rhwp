@@ -14,5 +14,6 @@ pub(crate) mod position_diagnostics;
 pub(crate) mod scan;
 pub(crate) mod search;
 pub(crate) mod security_inspection;
+pub(crate) mod structure;
 pub(crate) mod structured_objects;
 pub(crate) mod verification;

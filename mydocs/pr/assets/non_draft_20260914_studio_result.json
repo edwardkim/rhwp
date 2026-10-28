@@ -1,0 +1,1400 @@
+{
+  "browser": "Chrome/152.0.7977.83",
+  "initial": {
+    "pages": 11,
+    "settings": {
+      "showParagraphMarks": false,
+      "showControlCodes": false,
+      "clipView": true,
+      "toolbarBasic": true,
+      "toolbarFormat": true,
+      "pageArrangement": {
+        "kind": "single"
+      },
+      "pageMovement": {
+        "direction": "vertical",
+        "wheelHorizontal": true
+      },
+      "zoomFitMode": "none"
+    },
+    "controls": [
+      {
+        "page": 0,
+        "controls": [
+          {
+            "type": "ole",
+            "x": 357.8,
+            "y": 786,
+            "w": 78,
+            "h": 19,
+            "secIdx": 0,
+            "paraIdx": 22,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              22,
+              0
+            ]
+          },
+          {
+            "type": "ole",
+            "x": 355.4,
+            "y": 813,
+            "w": 83,
+            "h": 19,
+            "secIdx": 0,
+            "paraIdx": 23,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              23,
+              0
+            ]
+          },
+          {
+            "type": "ole",
+            "x": 216.3,
+            "y": 553.7,
+            "w": 361.1,
+            "h": 117.6,
+            "secIdx": 0,
+            "paraIdx": 18,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": []
+          }
+        ]
+      },
+      {
+        "page": 1,
+        "controls": [
+          {
+            "type": "ole",
+            "x": 308.4,
+            "y": 672.6,
+            "w": 177,
+            "h": 35,
+            "secIdx": 0,
+            "paraIdx": 42,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              42,
+              0
+            ]
+          },
+          {
+            "type": "ole",
+            "x": 267.8,
+            "y": 174.9,
+            "w": 258,
+            "h": 193.3,
+            "secIdx": 0,
+            "paraIdx": 32,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": []
+          },
+          {
+            "type": "ole",
+            "x": 267.3,
+            "y": 715.6,
+            "w": 259,
+            "h": 19,
+            "secIdx": 0,
+            "paraIdx": 43,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              43,
+              0
+            ]
+          },
+          {
+            "type": "ole",
+            "x": 233.9,
+            "y": 742.6,
+            "w": 326,
+            "h": 19,
+            "secIdx": 0,
+            "paraIdx": 44,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              44,
+              0
+            ]
+          },
+          {
+            "type": "ole",
+            "x": 327.3,
+            "y": 464.9,
+            "w": 139,
+            "h": 19,
+            "secIdx": 0,
+            "paraIdx": 36,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              36,
+              0
+            ]
+          },
+          {
+            "type": "ole",
+            "x": 355.4,
+            "y": 491.9,
+            "w": 83,
+            "h": 19,
+            "secIdx": 0,
+            "paraIdx": 37,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              37,
+              0
+            ]
+          },
+          {
+            "type": "ole",
+            "x": 340.3,
+            "y": 518.9,
+            "w": 113,
+            "h": 39,
+            "secIdx": 0,
+            "paraIdx": 38,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              38,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "page": 2,
+        "controls": [
+          {
+            "type": "table",
+            "x": 196.4,
+            "y": 456,
+            "w": 400.9,
+            "h": 51.3,
+            "rowCount": 3,
+            "colCount": 3,
+            "secIdx": 0,
+            "paraIdx": 63,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              63,
+              0
+            ],
+            "cells": [
+              {
+                "x": 196.4,
+                "y": 456,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 0,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 0
+              },
+              {
+                "x": 330,
+                "y": 456,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 0,
+                "col": 1,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 1
+              },
+              {
+                "x": 463.7,
+                "y": 456,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 0,
+                "col": 2,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 2
+              },
+              {
+                "x": 196.4,
+                "y": 473.1,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 1,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 3
+              },
+              {
+                "x": 330,
+                "y": 473.1,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 1,
+                "col": 1,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 4
+              },
+              {
+                "x": 463.7,
+                "y": 473.1,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 1,
+                "col": 2,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 5
+              },
+              {
+                "x": 196.4,
+                "y": 490.2,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 2,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 6
+              },
+              {
+                "x": 330,
+                "y": 490.2,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 2,
+                "col": 1,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 7
+              },
+              {
+                "x": 463.7,
+                "y": 490.2,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 2,
+                "col": 2,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 8
+              }
+            ]
+          },
+          {
+            "type": "ole",
+            "x": 355.4,
+            "y": 919.1,
+            "w": 83,
+            "h": 19,
+            "secIdx": 0,
+            "paraIdx": 72,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              72,
+              0
+            ]
+          },
+          {
+            "type": "ole",
+            "x": 263.3,
+            "y": 629.1,
+            "w": 267.1,
+            "h": 193.3,
+            "secIdx": 0,
+            "paraIdx": 68,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": []
+          }
+        ]
+      },
+      {
+        "page": 3,
+        "controls": [
+          {
+            "type": "ole",
+            "x": 317.4,
+            "y": 525.7,
+            "w": 159,
+            "h": 21,
+            "secIdx": 0,
+            "paraIdx": 83,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              83,
+              0
+            ]
+          },
+          {
+            "type": "ole",
+            "x": 230.7,
+            "y": 293.5,
+            "w": 332.3,
+            "h": 117.6,
+            "secIdx": 0,
+            "paraIdx": 79,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": []
+          },
+          {
+            "type": "ole",
+            "x": 167,
+            "y": 729.7,
+            "w": 213.8,
+            "h": 193.3,
+            "secIdx": 0,
+            "paraIdx": 90,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": []
+          },
+          {
+            "type": "ole",
+            "x": 407.8,
+            "y": 729.7,
+            "w": 218.9,
+            "h": 193.3,
+            "secIdx": 0,
+            "paraIdx": 90,
+            "controlIdx": 1,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": []
+          }
+        ]
+      },
+      {
+        "page": 4,
+        "controls": [
+          {
+            "type": "table",
+            "x": 192.6,
+            "y": 242.7,
+            "w": 408.4,
+            "h": 51.3,
+            "rowCount": 3,
+            "colCount": 3,
+            "secIdx": 0,
+            "paraIdx": 96,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              96,
+              0
+            ],
+            "cells": [
+              {
+                "x": 192.6,
+                "y": 242.7,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 0,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 0
+              },
+              {
+                "x": 326.3,
+                "y": 242.7,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 0,
+                "col": 1,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 1
+              },
+              {
+                "x": 459.9,
+                "y": 242.7,
+                "w": 141.2,
+                "h": 17.1,
+                "row": 0,
+                "col": 2,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 2
+              },
+              {
+                "x": 192.6,
+                "y": 259.8,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 1,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 3
+              },
+              {
+                "x": 326.3,
+                "y": 259.8,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 1,
+                "col": 1,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 4
+              },
+              {
+                "x": 459.9,
+                "y": 259.8,
+                "w": 141.2,
+                "h": 17.1,
+                "row": 1,
+                "col": 2,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 5
+              },
+              {
+                "x": 192.6,
+                "y": 276.9,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 2,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 6
+              },
+              {
+                "x": 326.3,
+                "y": 276.9,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 2,
+                "col": 1,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 7
+              },
+              {
+                "x": 459.9,
+                "y": 276.9,
+                "w": 141.2,
+                "h": 17.1,
+                "row": 2,
+                "col": 2,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 8
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "x": 192.6,
+            "y": 355.5,
+            "w": 408.4,
+            "h": 51.3,
+            "rowCount": 3,
+            "colCount": 3,
+            "secIdx": 0,
+            "paraIdx": 98,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              98,
+              0
+            ],
+            "cells": [
+              {
+                "x": 192.6,
+                "y": 355.5,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 0,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 0
+              },
+              {
+                "x": 326.3,
+                "y": 355.5,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 0,
+                "col": 1,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 1
+              },
+              {
+                "x": 459.9,
+                "y": 355.5,
+                "w": 141.2,
+                "h": 17.1,
+                "row": 0,
+                "col": 2,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 2
+              },
+              {
+                "x": 192.6,
+                "y": 372.6,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 1,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 3
+              },
+              {
+                "x": 326.3,
+                "y": 372.6,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 1,
+                "col": 1,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 4
+              },
+              {
+                "x": 459.9,
+                "y": 372.6,
+                "w": 141.2,
+                "h": 17.1,
+                "row": 1,
+                "col": 2,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 5
+              },
+              {
+                "x": 192.6,
+                "y": 389.7,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 2,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 6
+              },
+              {
+                "x": 326.3,
+                "y": 389.7,
+                "w": 133.6,
+                "h": 17.1,
+                "row": 2,
+                "col": 1,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 7
+              },
+              {
+                "x": 459.9,
+                "y": 389.7,
+                "w": 141.2,
+                "h": 17.1,
+                "row": 2,
+                "col": 2,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 8
+              }
+            ]
+          },
+          {
+            "type": "ole",
+            "x": 113.4,
+            "y": 537.1,
+            "w": 566.9,
+            "h": 150.5,
+            "secIdx": 0,
+            "paraIdx": 103,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": []
+          }
+        ]
+      },
+      {
+        "page": 5,
+        "controls": [
+          {
+            "type": "table",
+            "x": 211.5,
+            "y": 200,
+            "w": 370.7,
+            "h": 51.3,
+            "rowCount": 3,
+            "colCount": 9,
+            "secIdx": 0,
+            "paraIdx": 109,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              109,
+              0
+            ],
+            "cells": [
+              {
+                "x": 211.5,
+                "y": 200,
+                "w": 54.6,
+                "h": 17.1,
+                "row": 0,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 0
+              },
+              {
+                "x": 266.1,
+                "y": 200,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 0,
+                "col": 1,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 1
+              },
+              {
+                "x": 305.6,
+                "y": 200,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 0,
+                "col": 2,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 2
+              },
+              {
+                "x": 345.1,
+                "y": 200,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 0,
+                "col": 3,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 3
+              },
+              {
+                "x": 384.6,
+                "y": 200,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 0,
+                "col": 4,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 4
+              },
+              {
+                "x": 424.2,
+                "y": 200,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 0,
+                "col": 5,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 5
+              },
+              {
+                "x": 463.7,
+                "y": 200,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 0,
+                "col": 6,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 6
+              },
+              {
+                "x": 503.2,
+                "y": 200,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 0,
+                "col": 7,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 7
+              },
+              {
+                "x": 542.7,
+                "y": 200,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 0,
+                "col": 8,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 8
+              },
+              {
+                "x": 211.5,
+                "y": 217.1,
+                "w": 54.6,
+                "h": 17.1,
+                "row": 1,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 9
+              },
+              {
+                "x": 266.1,
+                "y": 217.1,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 1,
+                "col": 1,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 10
+              },
+              {
+                "x": 305.6,
+                "y": 217.1,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 1,
+                "col": 2,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 11
+              },
+              {
+                "x": 345.1,
+                "y": 217.1,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 1,
+                "col": 3,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 12
+              },
+              {
+                "x": 384.6,
+                "y": 217.1,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 1,
+                "col": 4,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 13
+              },
+              {
+                "x": 424.2,
+                "y": 217.1,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 1,
+                "col": 5,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 14
+              },
+              {
+                "x": 463.7,
+                "y": 217.1,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 1,
+                "col": 6,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 15
+              },
+              {
+                "x": 503.2,
+                "y": 217.1,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 1,
+                "col": 7,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 16
+              },
+              {
+                "x": 542.7,
+                "y": 217.1,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 1,
+                "col": 8,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 17
+              },
+              {
+                "x": 211.5,
+                "y": 234.2,
+                "w": 54.6,
+                "h": 17.1,
+                "row": 2,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 18
+              },
+              {
+                "x": 266.1,
+                "y": 234.2,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 2,
+                "col": 1,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 19
+              },
+              {
+                "x": 305.6,
+                "y": 234.2,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 2,
+                "col": 2,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 20
+              },
+              {
+                "x": 345.1,
+                "y": 234.2,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 2,
+                "col": 3,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 21
+              },
+              {
+                "x": 384.6,
+                "y": 234.2,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 2,
+                "col": 4,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 22
+              },
+              {
+                "x": 424.2,
+                "y": 234.2,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 2,
+                "col": 5,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 23
+              },
+              {
+                "x": 463.7,
+                "y": 234.2,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 2,
+                "col": 6,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 24
+              },
+              {
+                "x": 503.2,
+                "y": 234.2,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 2,
+                "col": 7,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 25
+              },
+              {
+                "x": 542.7,
+                "y": 234.2,
+                "w": 39.5,
+                "h": 17.1,
+                "row": 2,
+                "col": 8,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 26
+              }
+            ]
+          },
+          {
+            "type": "ole",
+            "x": 307.5,
+            "y": 359.9,
+            "w": 178.7,
+            "h": 113.6,
+            "secIdx": 0,
+            "paraIdx": 113,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": []
+          },
+          {
+            "type": "ole",
+            "x": 220.7,
+            "y": 523.6,
+            "w": 352.4,
+            "h": 201.3,
+            "secIdx": 0,
+            "paraIdx": 115,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": []
+          }
+        ]
+      },
+      {
+        "page": 6,
+        "controls": [
+          {
+            "type": "ole",
+            "x": 262.8,
+            "y": 375.5,
+            "w": 268,
+            "h": 173.4,
+            "secIdx": 0,
+            "paraIdx": 129,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": []
+          },
+          {
+            "type": "ole",
+            "x": 137.3,
+            "y": 602.9,
+            "w": 519,
+            "h": 243.2,
+            "secIdx": 0,
+            "paraIdx": 131,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": []
+          }
+        ]
+      },
+      {
+        "page": 7,
+        "controls": [
+          {
+            "type": "table",
+            "x": 117.2,
+            "y": 555.5,
+            "w": 559.4,
+            "h": 239.7,
+            "rowCount": 1,
+            "colCount": 1,
+            "secIdx": 0,
+            "paraIdx": 138,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              138,
+              0
+            ],
+            "cells": [
+              {
+                "x": 117.2,
+                "y": 555.5,
+                "w": 559.4,
+                "h": 239.7,
+                "row": 0,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 0
+              }
+            ]
+          },
+          {
+            "type": "ole",
+            "x": 190,
+            "y": 132.3,
+            "w": 413.6,
+            "h": 233.2,
+            "secIdx": 0,
+            "paraIdx": 132,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": []
+          }
+        ]
+      },
+      {
+        "page": 8,
+        "controls": [
+          {
+            "type": "table",
+            "x": 117.2,
+            "y": 136,
+            "w": 559.4,
+            "h": 239.7,
+            "rowCount": 1,
+            "colCount": 1,
+            "secIdx": 0,
+            "paraIdx": 141,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              141,
+              0
+            ],
+            "cells": [
+              {
+                "x": 117.2,
+                "y": 136,
+                "w": 559.4,
+                "h": 239.7,
+                "row": 0,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 0
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "x": 117.2,
+            "y": 498,
+            "w": 559.4,
+            "h": 239.7,
+            "rowCount": 1,
+            "colCount": 1,
+            "secIdx": 0,
+            "paraIdx": 144,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              144,
+              0
+            ],
+            "cells": [
+              {
+                "x": 117.2,
+                "y": 498,
+                "w": 559.4,
+                "h": 239.7,
+                "row": 0,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "page": 9,
+        "controls": [
+          {
+            "type": "table",
+            "x": 117.2,
+            "y": 136,
+            "w": 559.4,
+            "h": 239.7,
+            "rowCount": 1,
+            "colCount": 1,
+            "secIdx": 0,
+            "paraIdx": 150,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              150,
+              0
+            ],
+            "cells": [
+              {
+                "x": 117.2,
+                "y": 136,
+                "w": 559.4,
+                "h": 239.7,
+                "row": 0,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 0
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "x": 117.2,
+            "y": 455.3,
+            "w": 559.4,
+            "h": 239.7,
+            "rowCount": 1,
+            "colCount": 1,
+            "secIdx": 0,
+            "paraIdx": 153,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              153,
+              0
+            ],
+            "cells": [
+              {
+                "x": 117.2,
+                "y": 455.3,
+                "w": 559.4,
+                "h": 239.7,
+                "row": 0,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "page": 10,
+        "controls": [
+          {
+            "type": "table",
+            "x": 117.2,
+            "y": 225.6,
+            "w": 559.4,
+            "h": 239.7,
+            "rowCount": 1,
+            "colCount": 1,
+            "secIdx": 0,
+            "paraIdx": 157,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              157,
+              0
+            ],
+            "cells": [
+              {
+                "x": 117.2,
+                "y": 225.6,
+                "w": 559.4,
+                "h": 239.7,
+                "row": 0,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 0
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "x": 117.2,
+            "y": 480.9,
+            "w": 559.4,
+            "h": 239.7,
+            "rowCount": 1,
+            "colCount": 1,
+            "secIdx": 0,
+            "paraIdx": 158,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              158,
+              0
+            ],
+            "cells": [
+              {
+                "x": 117.2,
+                "y": 480.9,
+                "w": 559.4,
+                "h": 239.7,
+                "row": 0,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 0
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "x": 117.2,
+            "y": 736.2,
+            "w": 559.4,
+            "h": 239.7,
+            "rowCount": 1,
+            "colCount": 1,
+            "secIdx": 0,
+            "paraIdx": 159,
+            "controlIdx": 0,
+            "plane": 2,
+            "zOrder": 0,
+            "stableIndex": [
+              0,
+              159,
+              0
+            ],
+            "cells": [
+              {
+                "x": 117.2,
+                "y": 736.2,
+                "w": 559.4,
+                "h": 239.7,
+                "row": 0,
+                "col": 0,
+                "rowSpan": 1,
+                "colSpan": 1,
+                "cellIdx": 0
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "para": 18,
+      "target": {
+        "type": "ole",
+        "x": 216.3,
+        "y": 553.7,
+        "w": 361.1,
+        "h": 117.6,
+        "secIdx": 0,
+        "paraIdx": 18,
+        "controlIdx": 0,
+        "plane": 2,
+        "zOrder": 0,
+        "stableIndex": []
+      },
+      "before": 22,
+      "after": 21,
+      "restored": 22,
+      "removed": {
+        "ok": true
+      },
+      "undo": {
+        "ok": true
+      },
+      "propertiesReadable": true
+    },
+    {
+      "para": 22,
+      "target": {
+        "type": "ole",
+        "x": 357.8,
+        "y": 786,
+        "w": 78,
+        "h": 19,
+        "secIdx": 0,
+        "paraIdx": 22,
+        "controlIdx": 0,
+        "plane": 2,
+        "zOrder": 0,
+        "stableIndex": [
+          0,
+          22,
+          0
+        ]
+      },
+      "before": 22,
+      "after": 21,
+      "restored": 22,
+      "removed": {
+        "ok": true
+      },
+      "undo": {
+        "ok": true
+      },
+      "propertiesReadable": true
+    }
+  ],
+  "savedAuto": {
+    "kind": "auto"
+  },
+  "errors": []
+}

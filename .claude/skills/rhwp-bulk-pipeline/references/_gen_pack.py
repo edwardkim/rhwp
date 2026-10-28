@@ -80,19 +80,6 @@ SAMPLES = {
         "hasMerge": True,
         "note": "batch_axes_contract 표 병합 표본.",
     },
-    "handbook": {
-        "path": "samples/2025 행정업무운영 편람(최종).hwpx",
-        "format": "hwpx",
-        "pageCount": 387,
-        "convertBytes": 9083392,
-        "convertMs": 428,
-        "note": "레시피 9 convert 실측. 387쪽 / 428ms / 9_083_392 bytes.",
-    },
-    "handbookHwp": {
-        "path": "samples/2025 행정업무운영 편람(최종).hwp",
-        "format": "hwp5",
-        "note": "extract-data 계약 오라클과 같은 편람 HWP5.",
-    },
 }
 
 AXES = [
@@ -564,7 +551,6 @@ def journey_catalog():
     add("J17", "날짜 금액 수확", ["list", "extract-data --limit 3"], "B10", axis="extract-data")
     add("J18", "kind=amount 만", ["extract-data --kind amount"], "B17", sample="plan2022", axis="extract-data")
     add("J19", "limit 절단", ["extract-data --limit 3"], "B10", sample="plan2022", axis="extract-data")
-    add("J20", "convert 성공", ["list", "convert --out-dir out"], "B17", sample="handbook", axis="convert")
     add("J21", "convert 이름 충돌", ["convert --out-dir out"], "B11", axis="convert")
     add("J22", "convert verify", ["convert --verify"], "B15", axis="convert")
     add("J23", "convert verify-pages", ["convert --verify-pages"], "B16", axis="convert")
@@ -932,7 +918,6 @@ TRACE_SPECS = [
     ("T01", "info 5=4+1", "batch info --json", "info", 5, 4, 1, 1, "B05"),
     ("T02", "export-text 5=4+1", "batch export-text --json --threads 4", "export-text", 5, 4, 1, 1, "B05"),
     ("T03", "extract-data --limit 3", "batch extract-data --json --limit 3", "extract-data", 5, 4, 1, 1, "B10"),
-    ("T04", "convert 편람 1건", "batch convert --out-dir out/bulk --json", "convert", 1, 1, 0, 0, "B17"),
     ("T05", "search --query 의", "batch search --query 의 --json", "search", 2, 2, 0, 0, "B17"),
     ("T06", "search 쿼리 없음", "batch search --json", "search", 0, 0, 0, 2, "B09"),
     ("T07", "password 거부", "batch info --password x --json", "info", 0, 0, 0, 2, "B03"),
@@ -946,8 +931,6 @@ TRACE_SPECS = [
     ("T15", "fill stdin 오용", "printf paths | batch fill --json", "fill", 0, 0, 0, 2, "B12"),
     ("T16", "threads 8 순서", "batch export-text --json --threads 8", "export-text", 5, 4, 1, 1, "B05"),
     ("T17", "게이트 증발", "export-text | head", "export-text", 5, 1, 0, None, "B13"),
-    ("T18", "verify 차이", "batch convert --out-dir out --verify --json", "convert", 1, 1, 0, 3, "B15"),
-    ("T19", "verify-pages", "batch convert --out-dir out --verify-pages --json", "convert", 1, 1, 0, 4, "B16"),
     ("T20", "info 선별 75건", "batch info 후 jq pageCount>=10", "info", 270, 270, 0, 0, "B04"),
 ]
 
@@ -1166,10 +1149,6 @@ def write_lists_and_data():
         "inbox/Report.HWP\ninbox/report.hwp\n",
     )
     write_md(
-        LISTS / "convert_ok.txt",
-        SAMPLES["handbook"]["path"] + "\n",
-    )
-    write_md(
         LISTS / "search_pair.txt",
         SAMPLES["hwp3"]["path"] + "\n" + SAMPLES["hwp3"]["path"] + "\n",
     )
@@ -1211,16 +1190,6 @@ def transcript_for(spec):
         return recipe9_text_rows()
     if tid == "T03":
         return recipe9_extract_rows(limit=3)
-    if tid == "T04":
-        return [
-            {
-                "schemaVersion": SCHEMA,
-                "source": SAMPLES["handbook"]["path"],
-                "format": "hwp5",
-                "output": "out/bulk\\2025 행정업무운영 편람(최종).hwp",
-                "bytes": SAMPLES["handbook"]["convertBytes"],
-            }
-        ]
     if tid == "T05":
         return [
             {
@@ -1306,28 +1275,6 @@ def transcript_for(spec):
         return rows
     if tid == "T17":
         return recipe9_text_rows()[:1]
-    if tid == "T18":
-        return [
-            {
-                "schemaVersion": SCHEMA,
-                "source": SAMPLES["handbook"]["path"],
-                "format": "hwp5",
-                "output": "out/x.hwp",
-                "bytes": 100,
-                "verify": {"identical": False, "diffCount": 2},
-            }
-        ]
-    if tid == "T19":
-        return [
-            {
-                "schemaVersion": SCHEMA,
-                "source": SAMPLES["handbook"]["path"],
-                "format": "hwp5",
-                "output": "out/x.hwp",
-                "bytes": 100,
-                "verifyPages": {"ok": False, "expected": 387, "actual": 388},
-            }
-        ]
     if tid == "T20":
         return [
             {

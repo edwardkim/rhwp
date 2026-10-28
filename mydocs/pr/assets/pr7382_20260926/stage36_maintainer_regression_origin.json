@@ -1,0 +1,26 @@
+[
+  {
+    "stage": 29,
+    "table_bbox": {
+      "x": 98.3,
+      "y": 86.9,
+      "w": 559.4,
+      "h": 317.2
+    },
+    "cli_path": "output/pr-review/planet6897-7382-20260926/bin/stage29-after-rhwp",
+    "cli_sha256": "cd96c6f42aede342777c9f5b0d9a94d53c4275cb2b9a2c097c12da3fdb36b5d1",
+    "runtime_commit": "e114fa58c2211bbcbf8adf910267075b5a27cd9a"
+  },
+  {
+    "stage": 30,
+    "table_bbox": {
+      "x": 98.3,
+      "y": 90.7,
+      "w": 559.4,
+      "h": 317.2
+    },
+    "cli_path": "output/pr-review/planet6897-7382-20260926/bin/stage30-after-rhwp",
+    "cli_sha256": "fd802f119e8969224ea813943f059c2fd01d2cfb798fd8759461034ea92abae3",
+    "runtime_commit": "f72725ac2"
+  }
+]

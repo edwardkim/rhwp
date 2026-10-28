@@ -1,14 +1,19 @@
+mod clipping;
 mod device_context;
 mod node;
+mod saved_device_context;
+mod source_contract;
+mod source_rop_pair;
 mod ternary_raster_operator;
+mod text_advances;
 mod util;
 
 use crate::wmf::{
     converter::{
         svg::{
             device_context::DeviceContext,
-            node::{Data, Node},
-            ternary_raster_operator::TernaryRasterOperator,
+            node::{share_repeated_bitmaps, Data, Node},
+            ternary_raster_operator::{BrushOnlyRopSequence, TernaryRasterOperator},
             util::{as_point_string, url_string, Fill, Stroke},
         },
         GraphicsObject, PlayError, SelectedGraphicsObject,
@@ -19,17 +24,29 @@ use crate::wmf::{
 
 #[derive(Default)]
 pub struct SVGPlayer {
-    context_stack: Vec<DeviceContext>,
+    context_stack: Vec<saved_device_context::SavedDeviceContext>,
     context_current: DeviceContext,
     definitions: Vec<Node>,
+    /// [#6469] 브러시 전용 ROP 근사의 짧은 PATINVERT → DPA → PATINVERT 상태.
+    brush_only_rop_sequence: BrushOnlyRopSequence,
+    source_rop_pair: Option<source_rop_pair::PendingSourcePair>,
     elements: Vec<Node>,
     object_selected: SelectedGraphicsObject,
     current_clip_id: Option<String>,
+    clip_bounds: BTreeMap<String, clipping::DeviceClipBounds>,
+    source_contract: Option<source_contract::SourceContract>,
 }
 
 impl SVGPlayer {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// 원본 창·LOGFONT·그리기 순서를 공통 출력 장치가 소비할 때만 보존한다.
+    /// 기본 SVG의 모양과 속성에는 추가 메타데이터를 방출하지 않는다.
+    pub fn with_source_contract(mut self) -> Self {
+        self.source_contract = Some(Default::default());
+        self
     }
 
     #[inline]
@@ -39,6 +56,9 @@ impl SVGPlayer {
 
     #[inline]
     fn push_element(&mut self, record_number: usize, mut element: Node) {
+        if let Some(contract) = &mut self.source_contract {
+            element = contract.element(element, &self.context_current, &self.object_selected.font);
+        }
         if record_number > 0 {
             element = element.set("id", format!("elem{record_number}"));
         }
@@ -69,26 +89,36 @@ impl crate::wmf::converter::Player for SVGPlayer {
         let Self {
             context_current,
             definitions,
+            brush_only_rop_sequence,
             elements,
+            clip_bounds,
+            source_contract,
             ..
         } = self;
+
+        let (definitions, elements) = brush_only_rop_sequence.finish(definitions, elements);
 
         // [Task #860] WMF binary 의 SetWindowExt 가 actual element 의 bbox 보다 작은 경우
         // (예: HWP3 sample14 의 WMF 가 1189 인데 image y+height=2304) viewBox 가 element
         // 를 cover 못 해 rsvg-convert 렌더 시 잘림. element 들의 max x+width / y+height
         // 까지 viewBox 확장 (한컴 SVG 변환의 자동 확장 시멘틱 정합).
+        // [#6617] 창 앞쪽(음수 장치 좌표)으로 넘친 요소는 GDI 처럼 잘린다. 예전의
+        // "min x/y 로 viewBox 앞쪽 확장"([Task #860 Stage D])은 viewBox 원점이 창 원점이던
+        // 때의 보정이라 [Task #864] 이후 원점 상대 좌표에서는 걸릴 일이 없었고, y-up 창의
+        // 음수 높이 DIB 를 논리 부호로 정규화해 생긴 가짜 음수 y 에만 걸려 viewBox 를 세로
+        // 두 배로 만들었다(bitmap.hwp, 156462405). 장치 좌표에서는 그 음수가 생기지 않는다.
         let (raw_vb_x, raw_vb_y, mut vb_w, mut vb_h) = context_current.window.as_view_box();
-        let mut vb_x = i32::from(raw_vb_x);
-        let mut vb_y = i32::from(raw_vb_y);
+        let vb_x = i32::from(raw_vb_x);
+        let vb_y = i32::from(raw_vb_y);
         let mut vb_w_i32 = i32::from(vb_w);
         let mut vb_h_i32 = i32::from(vb_h);
-        let mut vb_right = vb_x + vb_w_i32;
-        let mut vb_bottom = vb_y + vb_h_i32;
+        // [fuzz] 요소 좌표는 포화된 i32 끝값일 수 있다 — 합·차를 포화시킨다.
+        let mut vb_right = vb_x.saturating_add(vb_w_i32);
+        let mut vb_bottom = vb_y.saturating_add(vb_h_i32);
         for elem in elements.iter() {
-            let max_x = element_max_x(elem);
-            let max_y = element_max_y(elem);
-            let min_x = element_min_x(elem);
-            let min_y = element_min_y(elem);
+            // 출력에 적용한 같은 물리 클립만 표시 외곽에도 반영한다.
+            // 큰 원본 비트맵의 잘린 부분으로 viewBox를 늘리면 남은 그림까지 축소된다.
+            let (max_x, max_y) = clipping::visible_element_maxima(elem, &clip_bounds);
             if let Some(mx) = max_x {
                 if mx > vb_right {
                     vb_right = mx;
@@ -99,28 +129,26 @@ impl crate::wmf::converter::Player for SVGPlayer {
                     vb_bottom = my;
                 }
             }
-            // [Task #860 Stage D] element 의 min y 가 viewBox y 보다 작으면 viewBox 위쪽
-            // 확장 (HWP3 sample14 의 WMF: BoundingBox origin (329, 1536) 인데 element
-            // y=1008 — Placeable header 의 BoundingBox 와 element 좌표 mismatch 보정).
-            if let Some(nx) = min_x {
-                if nx < vb_x {
-                    vb_x = nx;
-                }
-            }
-            if let Some(ny) = min_y {
-                if ny < vb_y {
-                    vb_y = ny;
-                }
-            }
         }
-        vb_w_i32 = vb_right - vb_x;
-        vb_h_i32 = vb_bottom - vb_y;
+        vb_w_i32 = vb_right.saturating_sub(vb_x);
+        vb_h_i32 = vb_bottom.saturating_sub(vb_y);
         // 사용 안 함 (호환성)
         let _ = (&mut vb_w, &mut vb_h);
 
         let mut document = Node::new("svg")
             .set("xmlns", "http://www.w3.org/2000/svg")
+            // 논리 크기를 내재 크기로 보존하여 브라우저의 300×150 기본값을 피한다.
+            .set("width", vb_w_i32)
+            .set("height", vb_h_i32)
             .set("viewBox", format!("{vb_x} {vb_y} {vb_w_i32} {vb_h_i32}"));
+
+        if let Some(contract) = source_contract {
+            document = contract.document(document, &context_current);
+        }
+
+        // 외곽 계산은 원래 image 좌표를 소비한 뒤 끝낸다. 반복 비트맵의
+        // 바이트만 공유하고 실제 요소의 순서·좌표·클립은 그대로 유지한다.
+        let (definitions, elements) = share_repeated_bitmaps(definitions, elements);
 
         if !definitions.is_empty() {
             let mut defs = Node::new("defs");
@@ -131,24 +159,12 @@ impl crate::wmf::converter::Player for SVGPlayer {
             document = document.add(defs);
         }
 
-        // [Task #860 Stage D] WMF SetWindowExt y < 0 (Cartesian, bottom-up) 인 경우
-        // SVG (top-down) 정합 위해 y-flip transform 적용:
-        //   transform="translate(0, vb_h) scale(1, -1)"
-        // 이는 viewBox 안 element 의 y 좌표를 flip 하여 한컴 정합.
-        // HWP3 sample14 의 WMF 가 bottom-up 좌표계 사용 (캡션 outline 위, BMP 박스 아래
-        // 의 시각이 한컴과 반대로 나타나는 결함 정정).
-        if context_current.window.y_inverted {
-            let group =
-                Node::new("g").set("transform", format!("translate(0,{vb_h_i32}) scale(1,-1)"));
-            let mut group = group;
-            for v in elements {
-                group = group.add(v);
-            }
-            document = document.add(group);
-        } else {
-            for v in elements {
-                document = document.add(v);
-            }
+        // [#6617] y-up 창(SetWindowExt y < 0)의 축 뒤집기는 요소 좌표를 만들 때
+        // `Window::to_device` 가 이미 끝냈다(장치 좌표 = viewBox 좌표). 예전의
+        // `translate(0, vb_h) scale(1,-1)` 그룹은 창 바닥이 논리 0 일 때만 맞는 특수식이라,
+        // 원점이 0 인 y-up 창(bitmap.hwp OLE 표현, 156462405)의 그림을 viewBox 밖으로 보냈다.
+        for v in elements {
+            document = document.add(v);
         }
 
         Ok(document.to_string().into_bytes())
@@ -175,12 +191,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 target,
                 ..
             } => {
-                let pt = self.context_current.point_s_to_absolute_point(&PointS {
-                    x: x_dest,
-                    y: y_dest,
-                });
-                let mut operator =
-                    TernaryRasterOperator::new(raster_operation, pt.x, pt.y, height, width);
+                let rect = self
+                    .context_current
+                    .blit_dest_rect(x_dest, y_dest, width, height);
+                let mut operator = TernaryRasterOperator::new(raster_operation, rect);
 
                 if raster_operation.use_selected_brush() {
                     operator = operator.brush(self.selected_brush().clone());
@@ -200,12 +214,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 x_dest,
                 ..
             } => {
-                let pt = self.context_current.point_s_to_absolute_point(&PointS {
-                    x: x_dest,
-                    y: y_dest,
-                });
-                let mut operator =
-                    TernaryRasterOperator::new(raster_operation, pt.x, pt.y, height, width);
+                let rect = self
+                    .context_current
+                    .blit_dest_rect(x_dest, y_dest, width, height);
+                let mut operator = TernaryRasterOperator::new(raster_operation, rect);
 
                 if raster_operation.use_selected_brush() {
                     operator = operator.brush(self.selected_brush().clone());
@@ -215,12 +227,19 @@ impl crate::wmf::converter::Player for SVGPlayer {
             }
         };
 
-        let Some(elem) =
-            operator
-                .run(&mut self.definitions)
-                .map_err(|err| PlayError::InvalidRecord {
-                    cause: err.to_string(),
-                })?
+        let Some(elem) = operator
+            .clip(
+                self.current_clip_id.as_deref(),
+                self.context_current.clipping_region.as_ref(),
+            )
+            .run(
+                &mut self.definitions,
+                &mut self.brush_only_rop_sequence,
+                self.elements.len(),
+            )
+            .map_err(|err| PlayError::InvalidRecord {
+                cause: err.to_string(),
+            })?
         else {
             return Ok(self);
         };
@@ -250,12 +269,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 target,
                 ..
             } => {
-                let pt = self.context_current.point_s_to_absolute_point(&PointS {
-                    x: x_dest,
-                    y: y_dest,
-                });
-                let mut operator =
-                    TernaryRasterOperator::new(raster_operation, pt.x, pt.y, height, width);
+                let rect = self
+                    .context_current
+                    .blit_dest_rect(x_dest, y_dest, width, height);
+                let mut operator = TernaryRasterOperator::new(raster_operation, rect);
 
                 if raster_operation.use_selected_brush() {
                     operator = operator.brush(self.selected_brush().clone());
@@ -275,12 +292,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 x_dest,
                 ..
             } => {
-                let pt = self.context_current.point_s_to_absolute_point(&PointS {
-                    x: x_dest,
-                    y: y_dest,
-                });
-                let mut operator =
-                    TernaryRasterOperator::new(raster_operation, pt.x, pt.y, height, width);
+                let rect = self
+                    .context_current
+                    .blit_dest_rect(x_dest, y_dest, width, height);
+                let mut operator = TernaryRasterOperator::new(raster_operation, rect);
 
                 if raster_operation.use_selected_brush() {
                     operator = operator.brush(self.selected_brush().clone());
@@ -290,12 +305,19 @@ impl crate::wmf::converter::Player for SVGPlayer {
             }
         };
 
-        let Some(elem) =
-            operator
-                .run(&mut self.definitions)
-                .map_err(|err| PlayError::InvalidRecord {
-                    cause: err.to_string(),
-                })?
+        let Some(elem) = operator
+            .clip(
+                self.current_clip_id.as_deref(),
+                self.context_current.clipping_region.as_ref(),
+            )
+            .run(
+                &mut self.definitions,
+                &mut self.brush_only_rop_sequence,
+                self.elements.len(),
+            )
+            .map_err(|err| PlayError::InvalidRecord {
+                cause: err.to_string(),
+            })?
         else {
             return Ok(self);
         };
@@ -322,20 +344,50 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 dest_width,
                 y_dest,
                 x_dest,
+                src_width,
+                src_height,
+                x_src,
+                y_src,
                 target,
                 ..
             } => {
-                let pt = self.context_current.point_s_to_absolute_point(&PointS {
-                    x: x_dest,
-                    y: y_dest,
-                });
-                let mut operator = TernaryRasterOperator::new(
+                let rect =
+                    self.context_current
+                        .blit_dest_rect(x_dest, y_dest, dest_width, dest_height);
+                let mut operator = TernaryRasterOperator::new(raster_operation, rect);
+
+                if matches!(
                     raster_operation,
-                    pt.x,
-                    pt.y,
-                    dest_height,
-                    dest_width,
-                );
+                    TernaryRasterOperation::SRCPAINT | TernaryRasterOperation::SRCAND
+                ) {
+                    let bitmap = crate::wmf::converter::Bitmap::from((*target).clone());
+                    let composed = source_rop_pair::PendingSourcePair::observe(
+                        &mut self.source_rop_pair,
+                        source_rop_pair::SourceBlit {
+                            record: record_number,
+                            element: self.elements.len(),
+                            operation: raster_operation,
+                            destination: rect,
+                            source: [x_src, y_src, src_width, src_height],
+                            bitmap: &bitmap,
+                        },
+                    );
+                    if let Some(composed) = composed {
+                        if let Some(previous) = self.elements.get_mut(composed.previous_element) {
+                            use base64::{engine::general_purpose::STANDARD, Engine};
+                            *previous = Node::new("g");
+                            let uri =
+                                format!("data:image/png;base64,{}", STANDARD.encode(composed.png));
+                            self.push_element(
+                                record_number,
+                                TernaryRasterOperator::image_node(rect, uri),
+                            );
+                            return Ok(self);
+                        }
+                    }
+                } else {
+                    self.source_rop_pair = None;
+                }
 
                 if raster_operation.use_selected_brush() {
                     operator = operator.brush(self.selected_brush().clone());
@@ -355,17 +407,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 x_dest,
                 ..
             } => {
-                let pt = self.context_current.point_s_to_absolute_point(&PointS {
-                    x: x_dest,
-                    y: y_dest,
-                });
-                let mut operator = TernaryRasterOperator::new(
-                    raster_operation,
-                    pt.x,
-                    pt.y,
-                    dest_height,
-                    dest_width,
-                );
+                let rect =
+                    self.context_current
+                        .blit_dest_rect(x_dest, y_dest, dest_width, dest_height);
+                let mut operator = TernaryRasterOperator::new(raster_operation, rect);
 
                 if raster_operation.use_selected_brush() {
                     operator = operator.brush(self.selected_brush().clone());
@@ -375,12 +420,19 @@ impl crate::wmf::converter::Player for SVGPlayer {
             }
         };
 
-        let Some(elem) =
-            operator
-                .run(&mut self.definitions)
-                .map_err(|err| PlayError::InvalidRecord {
-                    cause: err.to_string(),
-                })?
+        let Some(elem) = operator
+            .clip(
+                self.current_clip_id.as_deref(),
+                self.context_current.clipping_region.as_ref(),
+            )
+            .run(
+                &mut self.definitions,
+                &mut self.brush_only_rop_sequence,
+                self.elements.len(),
+            )
+            .map_err(|err| PlayError::InvalidRecord {
+                cause: err.to_string(),
+            })?
         else {
             return Ok(self);
         };
@@ -424,17 +476,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 target,
                 ..
             } => {
-                let pt = self.context_current.point_s_to_absolute_point(&PointS {
-                    x: x_dest,
-                    y: y_dest,
-                });
-                let mut operator = TernaryRasterOperator::new(
-                    raster_operation,
-                    pt.x,
-                    pt.y,
-                    dest_height,
-                    dest_width,
-                );
+                let rect =
+                    self.context_current
+                        .blit_dest_rect(x_dest, y_dest, dest_width, dest_height);
+                let mut operator = TernaryRasterOperator::new(raster_operation, rect);
 
                 if raster_operation.use_selected_brush() {
                     operator = operator.brush(self.selected_brush().clone());
@@ -454,17 +499,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 x_dest,
                 ..
             } => {
-                let pt = self.context_current.point_s_to_absolute_point(&PointS {
-                    x: x_dest,
-                    y: y_dest,
-                });
-                let mut operator = TernaryRasterOperator::new(
-                    raster_operation,
-                    pt.x,
-                    pt.y,
-                    dest_height,
-                    dest_width,
-                );
+                let rect =
+                    self.context_current
+                        .blit_dest_rect(x_dest, y_dest, dest_width, dest_height);
+                let mut operator = TernaryRasterOperator::new(raster_operation, rect);
 
                 if raster_operation.use_selected_brush() {
                     operator = operator.brush(self.selected_brush().clone());
@@ -474,12 +512,19 @@ impl crate::wmf::converter::Player for SVGPlayer {
             }
         };
 
-        let Some(elem) =
-            operator
-                .run(&mut self.definitions)
-                .map_err(|err| PlayError::InvalidRecord {
-                    cause: err.to_string(),
-                })?
+        let Some(elem) = operator
+            .clip(
+                self.current_clip_id.as_deref(),
+                self.context_current.clipping_region.as_ref(),
+            )
+            .run(
+                &mut self.definitions,
+                &mut self.brush_only_rop_sequence,
+                self.elements.len(),
+            )
+            .map_err(|err| PlayError::InvalidRecord {
+                cause: err.to_string(),
+            })?
         else {
             return Ok(self);
         };
@@ -509,11 +554,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
             ..
         } = record;
 
-        let pt = self
+        let rect = self
             .context_current
-            .point_s_to_absolute_point(&PointS { x: x_dst, y: y_dst });
-        let mut operator =
-            TernaryRasterOperator::new(raster_operation, pt.x, pt.y, dest_height, dest_width);
+            .blit_dest_rect(x_dst, y_dst, dest_width, dest_height);
+        let mut operator = TernaryRasterOperator::new(raster_operation, rect);
 
         if raster_operation.use_selected_brush() {
             operator = operator.brush(self.selected_brush().clone());
@@ -523,12 +567,19 @@ impl crate::wmf::converter::Player for SVGPlayer {
             operator = operator.source_bitmap(dib);
         }
 
-        let Some(elem) =
-            operator
-                .run(&mut self.definitions)
-                .map_err(|err| PlayError::InvalidRecord {
-                    cause: err.to_string(),
-                })?
+        let Some(elem) = operator
+            .clip(
+                self.current_clip_id.as_deref(),
+                self.context_current.clipping_region.as_ref(),
+            )
+            .run(
+                &mut self.definitions,
+                &mut self.brush_only_rop_sequence,
+                self.elements.len(),
+            )
+            .map_err(|err| PlayError::InvalidRecord {
+                cause: err.to_string(),
+            })?
         else {
             return Ok(self);
         };
@@ -619,18 +670,19 @@ impl crate::wmf::converter::Player for SVGPlayer {
             point
         };
         let (rx, ry) = (
-            (record.right_rect - record.left_rect) / 2,
-            (record.bottom_rect - record.top_rect) / 2,
+            rect_half_extent(record.left_rect, record.right_rect),
+            rect_half_extent(record.top_rect, record.bottom_rect),
         );
         let center = self.context_current.point_s_to_absolute_point(&PointS {
-            x: record.left_rect + rx,
-            y: record.top_rect + ry,
+            x: record.left_rect.saturating_add(rx),
+            y: record.top_rect.saturating_add(ry),
         });
         // Start and end vectors relative to the center of the ellipse
-        let start_dx = f32::from(start.x - center.x);
-        let start_dy = f32::from(start.y - center.y);
-        let end_dx = f32::from(end.x - center.x);
-        let end_dy = f32::from(end.y - center.y);
+        // [fuzz] i16 뺄셈은 끝값에서 넘친다 — 부동소수로 옮긴 뒤 뺀다.
+        let start_dx = f32::from(start.x) - f32::from(center.x);
+        let start_dy = f32::from(start.y) - f32::from(center.y);
+        let end_dx = f32::from(end.x) - f32::from(center.x);
+        let end_dy = f32::from(end.y) - f32::from(center.y);
 
         // Calculate cross product to determine if the arc is larger than 180
         // degrees. Invert the sign because upper-left is origin.
@@ -662,15 +714,15 @@ impl crate::wmf::converter::Player for SVGPlayer {
     ))]
     fn chord(mut self, record_number: usize, record: META_CHORD) -> Result<Self, PlayError> {
         // Calculate ellipse center and radii from bounding rectangle
-        let rx = (record.right_rect - record.left_rect) / 2;
-        let ry = (record.bottom_rect - record.top_rect) / 2;
+        let rx = rect_half_extent(record.left_rect, record.right_rect);
+        let ry = rect_half_extent(record.top_rect, record.bottom_rect);
         if rx == 0 || ry == 0 {
             info!("META_CHORD is skipped because rx or ry is zero.");
             return Ok(self);
         }
         let center = self.context_current.point_s_to_absolute_point(&PointS {
-            x: record.left_rect + rx,
-            y: record.top_rect + ry,
+            x: record.left_rect.saturating_add(rx),
+            y: record.top_rect.saturating_add(ry),
         });
 
         // Convert radial endpoints from WMF coordinates to SVG absolute
@@ -728,8 +780,8 @@ impl crate::wmf::converter::Player for SVGPlayer {
     ))]
     fn ellipse(mut self, record_number: usize, record: META_ELLIPSE) -> Result<Self, PlayError> {
         let (rx, ry) = (
-            (record.right_rect - record.left_rect) / 2,
-            (record.bottom_rect - record.top_rect) / 2,
+            rect_half_extent(record.left_rect, record.right_rect),
+            rect_half_extent(record.top_rect, record.bottom_rect),
         );
 
         if rx == 0 || ry == 0 {
@@ -753,8 +805,8 @@ impl crate::wmf::converter::Player for SVGPlayer {
         let fill_rule = self.context_current.poly_fill_rule();
         let point = {
             let point = self.context_current.point_s_to_absolute_point(&PointS {
-                x: record.left_rect + rx,
-                y: record.top_rect + ry,
+                x: record.left_rect.saturating_add(rx),
+                y: record.top_rect.saturating_add(ry),
             });
 
             self.context_current = self.context_current.extend_window(&point);
@@ -809,6 +861,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 .map_err(|err| PlayError::InvalidRecord {
                     cause: err.to_string(),
                 })?;
+        let explicit = text_advances::explicit_advances(&record, font.charset, &text_content);
         let point = {
             let point = PointS {
                 x: if self.context_current.text_align_update_cp {
@@ -820,7 +873,9 @@ impl crate::wmf::converter::Player for SVGPlayer {
                     self.context_current.drawing_position.y
                 } else {
                     record.y
-                } + match self.context_current.text_align_vertical {
+                }
+                // [fuzz] i16 기준점에 세로 정렬 보정을 더하면 끝값에서 넘친다 — 포화시킨다.
+                .saturating_add(match self.context_current.text_align_vertical {
                     // [Task #965 / PR #918 Stage 33-A] WMF 의 ExtTextOut y 는
                     // text_align_vertical 에 따라 reference point 가 결정된다:
                     //   VTA_BASELINE (default): y 가 baseline — 그대로 사용
@@ -831,17 +886,17 @@ impl crate::wmf::converter::Player for SVGPlayer {
                     // -font.height 만큼 y 를 더했던 것은 잘못된 보정으로, 텍스트가 박스
                     // 하단으로 baseline shift 되는 원인).
                     VerticalTextAlignmentMode::VTA_TOP => {
-                        let em = font.height.abs();
+                        let em = font.height.saturating_abs();
                         (em as f64 * 0.8) as i16
                     }
                     VerticalTextAlignmentMode::VTA_BOTTOM => {
-                        let em = font.height.abs();
+                        let em = font.height.saturating_abs();
                         -((em as f64 * 0.2) as i16)
                     }
                     VerticalTextAlignmentMode::VTA_BASELINE => 0,
                     // VTA_CENTER / VTA_LEFT: 드물게 사용; baseline 과 동일 처리
                     _ => 0,
-                },
+                }),
             };
 
             let point = if self.context_current.text_align_update_cp {
@@ -936,7 +991,28 @@ impl crate::wmf::converter::Player for SVGPlayer {
             )
             .set("fill", self.context_current.text_color_as_css_color());
 
-        if record.dx.len() <= 1 {
+        if let Some(advances) = &explicit {
+            // Dx는 font의 자연 폭에 더할 여백이 아니라 원점 사이의 논리 전진이다.
+            // DBCS 바이트 셀을 연결한 결과를 전체 문자열의 정렬 기준에서 소비한다.
+            let alignment = match self.context_current.text_align_horizontal {
+                TextAlignmentMode::TA_CENTER => f64::from(advances.total) / 2.0,
+                TextAlignmentMode::TA_RIGHT => f64::from(advances.total),
+                _ => 0.0,
+            };
+            let window = &self.context_current.window;
+            let reference = if self.context_current.text_align_update_cp {
+                f64::from(point.x)
+            } else {
+                f64::from(window.to_device(f32::from(record.x), 0.0).0)
+            };
+            let zero = window.to_device(0.0, 0.0).0;
+            text = text.set("text-anchor", "start");
+            for (content, advance) in &advances.cells {
+                let logical = (f64::from(*advance) - alignment) as f32;
+                let x = reference + f64::from(window.to_device(logical, 0.0).0 - zero);
+                text = text.add(Node::new("tspan").set("x", x).add(Node::new_text(content)));
+            }
+        } else if record.dx.len() <= 1 {
             text = text.add(Node::new_text(&text_content));
         } else {
             // https://cgit.freedesktop.org/libreoffice/core/tree/emfio/source/reader/wmfreader.cxx?id=c0b14ab9aa4d713a6b718ef07b9e0379b88e97d3#n693
@@ -950,8 +1026,9 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 let mut tspan = Node::new("tspan").add(Node::new_text(s));
 
                 if dx != 0 {
-                    let excess_dx = (font.height.abs() / 2) * i16::try_from(s.width()).unwrap_or(0);
-                    let dx = core::cmp::max(dx - excess_dx, 0);
+                    let excess_dx = (font.height.saturating_abs() / 2)
+                        .saturating_mul(i16::try_from(s.width()).unwrap_or(0));
+                    let dx = core::cmp::max(dx.saturating_sub(excess_dx), 0);
 
                     tspan = tspan.set("dx", dx);
                 }
@@ -971,9 +1048,23 @@ impl crate::wmf::converter::Player for SVGPlayer {
         }
 
         if self.context_current.text_align_update_cp {
-            let dx = (font.height.abs() / 2) * i16::try_from(text_content.width()).unwrap_or(0);
+            let dx = explicit.as_ref().map_or_else(
+                || {
+                    f64::from(
+                        (font.height.saturating_abs() / 2)
+                            .saturating_mul(i16::try_from(text_content.width()).unwrap_or(0)),
+                    )
+                },
+                |advances| {
+                    let window = &self.context_current.window;
+                    f64::from(
+                        window.to_device(advances.total as f32, 0.0).0
+                            - window.to_device(0.0, 0.0).0,
+                    )
+                },
+            );
             let point = PointS {
-                x: point.x + dx,
+                x: (f64::from(point.x) + dx) as i16,
                 y: point.y,
             };
             self.context_current = self.context_current.drawing_position(point);
@@ -1154,10 +1245,13 @@ impl crate::wmf::converter::Player for SVGPlayer {
         };
         let fill_rule = self.context_current.poly_fill_rule();
         let (rx, ry) = (
-            (record.right_rect - record.left_rect) / 2,
-            (record.bottom_rect - record.top_rect) / 2,
+            rect_half_extent(record.left_rect, record.right_rect),
+            rect_half_extent(record.top_rect, record.bottom_rect),
         );
-        let (center_x, center_y) = (record.left_rect + rx, record.top_rect + ry);
+        let (center_x, center_y) = (
+            record.left_rect.saturating_add(rx),
+            record.top_rect.saturating_add(ry),
+        );
 
         let ellipse = Node::new("ellipse")
             .set("fill", fill.as_str())
@@ -1338,6 +1432,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
         // 소거하게 한다 (한컴 글맵시 OLE WMF 실측: WINDING + 글꼴 관례의 반대 방향
         // 구멍 윤곽).
         let mut subpaths: Vec<String> = Vec::new();
+        let mut bounds = [i32::MAX, i32::MAX, i32::MIN, i32::MIN];
 
         for i in 0..record.poly_polygon.number_of_polygons {
             let Some(points_of_polygon) = record.poly_polygon.a_points_per_polygon.get(i as usize)
@@ -1363,6 +1458,10 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 };
 
                 points.push(as_point_string(&point));
+                bounds[0] = bounds[0].min(i32::from(point.x));
+                bounds[1] = bounds[1].min(i32::from(point.y));
+                bounds[2] = bounds[2].max(i32::from(point.x));
+                bounds[3] = bounds[3].max(i32::from(point.y));
                 current_point_index += 1;
             }
 
@@ -1382,6 +1481,18 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 .set("fill-rule", fill_rule.as_str())
                 .set("d", subpaths.join(" "));
             let path = stroke.set_props(path);
+
+            self.brush_only_rop_sequence.observe_vector_mask(
+                &path,
+                &self.object_selected.brush,
+                self.context_current.draw_mode,
+                bounds,
+                (
+                    self.current_clip_id.as_deref(),
+                    self.context_current.clipping_region.as_ref(),
+                ),
+                self.elements.len(),
+            );
 
             self.push_element(record_number, path);
         }
@@ -1433,8 +1544,8 @@ impl crate::wmf::converter::Player for SVGPlayer {
             .set("fill-rule", fill_rule.as_str())
             .set("x", tl.x)
             .set("y", tl.y)
-            .set("height", br.y - tl.y)
-            .set("width", br.x - tl.x);
+            .set("height", br.y.saturating_sub(tl.y))
+            .set("width", br.x.saturating_sub(tl.x));
         let rect = stroke.set_props(rect);
 
         self.push_element(record_number, rect);
@@ -1453,8 +1564,8 @@ impl crate::wmf::converter::Player for SVGPlayer {
         record: META_ROUNDRECT,
     ) -> Result<Self, PlayError> {
         let (width, height) = (
-            record.right_rect - record.left_rect,
-            record.bottom_rect - record.top_rect,
+            record.right_rect.saturating_sub(record.left_rect),
+            record.bottom_rect.saturating_sub(record.top_rect),
         );
 
         if width == 0 || height == 0 {
@@ -1528,21 +1639,22 @@ impl crate::wmf::converter::Player for SVGPlayer {
         let point = {
             let point = PointS {
                 x: record.x_start,
-                y: record.y_start
-                    + match self.context_current.text_align_vertical {
+                y: record
+                    .y_start
+                    .saturating_add(match self.context_current.text_align_vertical {
                         // [Task #965 / PR #918 Stage 33-A] META_TEXTOUT 의 y 도 동일.
                         // ext_text_out 의 baseline 보정과 일관성 유지.
                         VerticalTextAlignmentMode::VTA_TOP => {
-                            let em = font.height.abs();
+                            let em = font.height.saturating_abs();
                             (em as f64 * 0.8) as i16
                         }
                         VerticalTextAlignmentMode::VTA_BOTTOM => {
-                            let em = font.height.abs();
+                            let em = font.height.saturating_abs();
                             -((em as f64 * 0.2) as i16)
                         }
                         VerticalTextAlignmentMode::VTA_BASELINE => 0,
                         _ => 0,
-                    },
+                    }),
             };
 
             let point = if self.context_current.text_align_update_cp {
@@ -1724,20 +1836,16 @@ impl crate::wmf::converter::Player for SVGPlayer {
             .object_table
             .get(record.region as usize);
 
-        if let GraphicsObject::Region(region) = object {
-            let rect = &region.bounding_rectangle;
-            let id = format!("clip{record_number}");
-            let mut clip = Node::new("clipPath").set("id", &id);
-            let rect_node = Node::new("rect")
-                .set("x", rect.left)
-                .set("y", rect.top)
-                .set("width", rect.right - rect.left)
-                .set("height", rect.bottom - rect.top);
-            clip = clip.add(rect_node);
-            self.definitions.push(clip);
-            self.current_clip_id = Some(id);
+        let rectangle = match object {
+            GraphicsObject::Region(region) => Some(region.bounding_rectangle.clone()),
+            _ => None,
+        };
+        if let Some(rectangle) = rectangle {
+            self.context_current.clipping_region = Some(rectangle.clone());
+            self.install_device_clip(record_number, &rectangle, false);
         } else {
             self.current_clip_id = None;
+            self.context_current.clipping_region = None;
         }
 
         Ok(self)
@@ -1853,12 +1961,14 @@ impl crate::wmf::converter::Player for SVGPlayer {
             ..
         } = record;
 
-        self.context_current = self.context_current.clipping_region(Rect {
+        let rectangle = Rect {
             left,
             top,
             right,
             bottom,
-        });
+        };
+        self.context_current = self.context_current.clipping_region(rectangle.clone());
+        self.install_device_clip(record_number, &rectangle, true);
 
         Ok(self)
     }
@@ -1961,17 +2071,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
         record_number: usize,
         record: META_RESTOREDC,
     ) -> Result<Self, PlayError> {
-        let context = if record.n_saved_dc < 0 {
-            self.context_current.clone().into()
-        } else if (record.n_saved_dc as usize) < self.context_stack.len() {
-            self.context_stack.remove(record.n_saved_dc as usize).into()
-        } else {
-            None
-        };
-
-        if let Some(ctx) = context {
-            self.context_current = ctx;
-        }
+        self.restore_playback_context(record.n_saved_dc);
 
         Ok(self)
     }
@@ -1986,7 +2086,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
         record_number: usize,
         record: META_SAVEDC,
     ) -> Result<Self, PlayError> {
-        self.context_stack.push(self.context_current.clone());
+        self.save_playback_context();
 
         Ok(self)
     }
@@ -2334,7 +2434,7 @@ fn element_max_x(elem: &Node) -> Option<i32> {
     let x = parse_attr_i32(&s, "x").unwrap_or(0);
     let w = parse_attr_i32(&s, "width").unwrap_or(0);
     if w > 0 {
-        Some(x + w)
+        Some(x.saturating_add(w))
     } else {
         None
     }
@@ -2347,27 +2447,15 @@ fn element_max_y(elem: &Node) -> Option<i32> {
     let y = parse_attr_i32(&s, "y").unwrap_or(0);
     let h = parse_attr_i32(&s, "height").unwrap_or(0);
     if h > 0 {
-        return Some(y + h);
+        return Some(y.saturating_add(h));
     }
     // text element: y + font-size (approx)
     if s.starts_with("<text ") {
         if let Some(fs) = parse_attr_i32(&s, "font-size") {
-            return Some(y + fs);
+            return Some(y.saturating_add(fs));
         }
     }
     None
-}
-
-/// [Task #860 Stage D] Node 의 x attribute (viewBox 위쪽 확장 용).
-fn element_min_x(elem: &Node) -> Option<i32> {
-    let s = elem.to_string();
-    parse_attr_i32(&s, "x")
-}
-
-/// [Task #860 Stage D] Node 의 y attribute (viewBox 위쪽 확장 용).
-fn element_min_y(elem: &Node) -> Option<i32> {
-    let s = elem.to_string();
-    parse_attr_i32(&s, "y")
 }
 
 /// 단순 SVG attribute 값 parse (i32). 미존재 또는 parse 실패 시 None.
@@ -2377,4 +2465,11 @@ fn parse_attr_i32(s: &str, attr: &str) -> Option<i32> {
     let val_start = start + needle.len();
     let val_end = s[val_start..].find('"')?;
     s[val_start..val_start + val_end].parse().ok()
+}
+
+/// [fuzz] 사각형 두 변 사이 반지름 `(to - from) / 2`. 파일의 `i16` 끝값에서 뺄셈이 넘치지 않게
+/// `i32` 로 계산하고 `i16` 범위로 포화시킨다.
+fn rect_half_extent(from: i16, to: i16) -> i16 {
+    let half = (i32::from(to) - i32::from(from)) / 2;
+    i16::try_from(half).unwrap_or(if half < 0 { i16::MIN } else { i16::MAX })
 }

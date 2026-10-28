@@ -1,0 +1,50 @@
+[
+  {
+    "key": "evenodd-hole",
+    "source": "independent Hancom colspan Print with explicit PDF clipping operator counterexample",
+    "bytes": 17598,
+    "sha256": "0428db32b9a64ed7f4224fff1d2303d9908222441535482d8d849729b939a423"
+  },
+  {
+    "key": "nonzero-hole",
+    "source": "independent Hancom colspan Print with explicit PDF clipping operator counterexample",
+    "bytes": 17598,
+    "sha256": "e6c0baa1abd95237502ac405f438f70930ef5bb5e1f038ee906d50d2b17886a3"
+  },
+  {
+    "key": "parent-intersection",
+    "source": "independent Hancom colspan Print with explicit PDF clipping operator counterexample",
+    "bytes": 17607,
+    "sha256": "8abc32a4efc8b121fd6df026c1e21c28d3c1caf90c015537c069e15b5451a262"
+  },
+  {
+    "key": "restored-triangle",
+    "source": "independent Hancom colspan Print with explicit PDF clipping operator counterexample",
+    "bytes": 17585,
+    "sha256": "608ec827be19623d53085b34ce2d0bc5e2c475b7f7dec309610d4d7deb5afb70"
+  },
+  {
+    "key": "form-triangle",
+    "source": "independent Hancom colspan Print with explicit PDF clipping operator counterexample",
+    "bytes": 17803,
+    "sha256": "4d034f767e3a969a7729f2894d9b19f3e0d108c68b6645ce0ff7e2fd0cc864a1"
+  },
+  {
+    "key": "background-triangle",
+    "source": "independent Hancom colspan Print with explicit PDF clipping operator counterexample",
+    "bytes": 17604,
+    "sha256": "a36d8383109105bb457146cc67a8fa3faac959df534c9d02d35a4abbcd87b8d9"
+  },
+  {
+    "key": "curve-clip",
+    "source": "independent Hancom colspan Print with explicit PDF clipping operator counterexample",
+    "bytes": 17604,
+    "sha256": "ac44e71ebb3cf603086500df2a62febfee4e3543b436eeb5142556b559d9888c"
+  },
+  {
+    "key": "nonrectangular-triangle",
+    "source": "immutable B18 failure; independent Print with triangle W* counterexample",
+    "bytes": 17585,
+    "sha256": "eee7497819108067e68171fab480262484b4a2a191fb01c16bc0f51bbc761355"
+  }
+]

@@ -4,12 +4,189 @@
 
 ## [Unreleased]
 
-### HWPX 저장
+## [0.8.7] — 2026-10-06
+
+> v0.8.6 이후 기능 기준선 `17a69fa4e`까지 2,395커밋과 230개 PR provenance를 확인한 누적 PATCH
+> 릴리스입니다. 이후 main 이력 동기화·버전·배포 검증 commit은 이 계측 범위와 구분합니다.
+
+### 조판·렌더링·폰트
+
+- 문단 안 연속 TAC 표의 저장 줄 소속과 가용 폭, 표 바깥여백을 함께 반영합니다. 저장 LineSeg가 없는
+  문서의 줄 구성도 보정해 같은 줄의 표와 너비 부족에 따른 줄바꿈을 구분합니다 (#7482, #7585).
+- rowspan·중첩 표의 페이지 분할에서 빈 물리 밴드, 셀 패딩과 이어받은 내용의 소유권을 보존합니다.
+  앞 조각의 외곽선과 다음 쪽 그림·뒤 문단이 함께 이어지도록 보정했습니다 (#7368, #7567, #7570).
+- 편집 문단의 들여쓰기와 TAC 표 앞줄 배치를 보정했습니다 (#7599).
+- 호스트 글꼴 공급자와 명시적 폰트 환경을 측정·CanvasKit·Canvas2D 출력에 연결하고,
+  native exact glyph replay의 원자적 fallback을 보강했습니다 (#6881, #7179, #7405).
+
+### 열기·저장·편집
+
+- 빈 머리말·꼬리말이 있는 HWP5 저장본의 한컴 열기 실패와 표 제목 줄 반복·쪽 경계 설정 저장을
+  보정하고, HWPX layoutCompatibility fallback을 정상 생성 형태로 정리했습니다 (#7338, #7460, #7478).
+- Studio 영어 UI, 웹 하이퍼링크 편집과 HWP/HWPX·PDF 링크 보존, 수정 모드 덮어쓰기 및 찾기 결과
+  개수 표시를 추가했습니다 (#6984, #7318, #7485, #7493).
+- 표 뒤 Enter의 새 쪽·빈 문단·캐럿·스크롤 처리와 중첩 표 칸 선택·삭제·붙여넣기 경계를 보정했습니다
+  (#7487, #7539, #7601).
+- CLI 표 생성에 열 너비·정렬·필드 위치 옵션을 추가하고, 안전한 블록 복사·채우기·문서 간 가져오기와
+  캡션·머리말·꼬리말 주소 메타데이터를 보강했습니다 (#7038, #7068, #7101).
+
+### 입력 안전성·브라우저 확장
+
+- SVG 글꼴 정보의 CSS/XML 직렬화 경계, IPv4-mapped IPv6 주소 판정, HWP3 문단 깊이,
+  연결 그림의 파일 형식과 XML 누적 읽기 예산을 보강했습니다. 정상 썸네일의 raw DEFLATE 처리를
+  브라우저 표준 형식에 맞게 복구했습니다 (#7602).
+- WMF 정수 끝값의 산술·비트맵 경계를 보강했습니다. 기존 main 정기 fuzz가 찾은 텍스트 간격
+  뺄셈 패닉의 방어도 이번 배포 코드에 포함됩니다 (#7263).
+- Chrome 다운로드의 최초 상태 저장 중 완료 이벤트, Firefox 중복 탭·저장본 재열기와 자동 열기
+  문서의 파일명 경로 노출을 보정했습니다 (#6965, #6966, #7279).
+
+### macOS·패키지·배포
+
+- macOS CLI runner를 `macos-15`로 전환했습니다. Apple Silicon에서 ARM64를 native 빌드하고
+  Intel target을 교차 빌드하며, target·runner가 포함된 cache key로 이전 SDK 산출물 재사용을 막습니다 (#7556).
+- stable 태그의 Release Binary가 같은 커밋에서 npm·VS Code Marketplace·Open VSX 배포를 직접
+  호출합니다. 채널별 exact version 조회와 aggregate evidence로 배포 결과를 확인합니다 (#6799).
+- Rust, npm core/editor, Studio, VS Code 및 Chrome/Edge/Firefox/Safari 버전을 0.8.7로 통일합니다.
+  Chrome·Edge·Firefox는 별도 스토어 제출 대상입니다.
+
+### 호환성과 남은 범위
+
+- 기존 JSON 봉투 major와 명시적 글꼴/호환성 opt-in을 유지합니다.
+- 문서 입력 경계의 방어를 보강하며 HWP/HWPX 형식 자체의 모든 취약점을 해결했다고 주장하지 않습니다.
+  별도 조사 중인 범위와 비공개 advisory/CVE 절차는 해당 트랙에서 계속 처리합니다.
+- Safari 버전은 맞추지만 이번 브라우저 스토어 배포 대상은 Chrome·Edge·Firefox입니다.
+
+### 기여자
+
+이번 기능 기준선의 사람 기여자 29명(대소문자 보존·알파벳순)입니다. bot과 AI co-author는 별도 집계합니다.
+
+<!-- release-contributors:0.8.7:start -->
+- @aodtjddms
+- @baba9811
+- @davindev
+- @edwardkim
+- @emptinessform
+- @humdrum00001010
+- @jangster77
+- @jeong-sik
+- @kyunghwan-AITeam
+- @lidge-jun
+- @LJYeon12
+- @lpaiu-cs
+- @moongioh
+- @nishantpurohit04
+- @planet6897
+- @postmelee
+- @rubidus-api
+- @salgum1114
+- @semanticist21
+- @semo-git
+- @seo-rii
+- @seongeun82
+- @spamcam1207-stack
+- @winchoose
+- @yoonkhsc
+- @z0rimo
+- @zer0bi9
+- @zlzlzlmo
+- @zunstudio
+<!-- release-contributors:0.8.7:end -->
+
+## [0.8.6] — 2026-09-02
+
+> v0.8.4 이후 기능 기준선의 2,214커밋에서 확인한 262개 PR provenance를 바탕으로 준비한 누적 PATCH
+> 릴리즈다. 이후 버전·검증·릴리스 기록 commit은 이 계측 범위와 분리한다. 문서 조판·저장 충실도,
+> Studio 편집, CLI·agent, 입력 안전성과 릴리스 신뢰성을 함께 보강하며 기존 JSON 봉투 major는 유지한다.
+
+### 조판·렌더링·폰트
+
+- `HwpDocument.setExactFontInstance(optionsJson)`와 `clearExactFontInstance(optionsJson)`를 추가했다. host가
+  `registerExactFontSource`로 등록한 exact slot에만 `boundedHorizontalLtrV1` variable-font 요청을 설정·해제하며,
+  strict JSON 검증과 per-slot 멱등 clear를 제공한다. parser나 font 이름에서 axis를 자동 추론하지 않는다 (#4969).
+- exact font 커닝, bounded common shaping replay와 vertical layout을 조판·CanvasKit 경로에 단계적으로
+  연결했다. 지원하지 않거나 손상된 입력은 기존 안전 경로로 되돌아간다 (#4968, #4969).
+- 저장 RowBreak 표·물리 frame·LineSeg와 자리차지 개체의 페이지 소유권, 표 폭, 글상자 vpos, 위첨자 advance,
+  빈 줄 TAC 그림과 Square 겹침 그림 배치를 실제 한글 오라클에 맞게 보정했다.
+- `--compat 2024`를 opt-in으로 추가해 한글 2024의 자리차지 표 앵커 줄 계상을 선택할 수 있게 했다. 기본
+  조판 정책을 버전 번호만으로 자동 변경하지 않는다 (#5525).
+
+### 개방·저장·왕복 보존
 
 - `hp:ole` 의 shape-component 자식(`offset`·`orgSz`·`curSz`·`flip`·
   `rotationInfo`·`renderingInfo`·`lineShape`)과 `id`/`instid` 를 원문
   보존한다. `curSz=0` 은 was_zero 센티널로 되돌리고, 음수 offset 은
   u32 wraparound 로 방출한다 (#4669, #5450).
+- HWPX curve를 `hp:seg` 체인으로 저장해 한글 개방 크래시를 막고, BinData storage id에 구멍이 있는
+  문서의 그림을 순번 축으로 복구한다 (#4676, #3893, #4049).
+- HWP3 구역 정의 제어문자 위치와 문자 보존을 고치고, OWPML 열거·숨은 설명·누름틀 범위 때문에 저장 후
+  본문이 사라지는 경로를 보정했다 (#4680, #4776).
+- DOCTYPE이 붙은 HWPML과 Version 2.1 입력을 열 수 있다 (#5848).
+- 중첩 표 검색·치환은 깊이 2 이상에서 `cellPath`를 제공한다. 깊이 1의 기존 `cellContext` 봉투는 유지한다
+  (#2792).
+
+### 편집·Studio·브라우저 확장
+
+- 문서 전체 HTML·Word `.doc` 내보내기와 차트 숫자 데이터 편집 UI를 추가했다.
+- 한글 IME `Ctrl+A`, 다른 이름 저장 뒤 문서명·최근 문서, 머리말·꼬리말 선택·편집 API, 사용자 배율과
+  표준 인쇄 판형을 보정했다.
+- 병합 셀과 일반 표 경계의 마우스 리사이즈, 쪽 나누기 뒤 캐럿 표시, 눈금자 갱신을 개선했다.
+- Chrome 다운로드 판정에서 `.xlsx` 파일이 HWP viewer로 잘못 열리는 경로를 차단했다 (#6547).
+
+### CLI·agent·MCP
+
+- 편집 명령군과 조회 CLI를 확장하고 `rhwp-q-pack`에 Control·문서 조회 명령을 모았다.
+- 문서 에이전트 공개 명령 bridge와 HWP 2024 원격 MCP client를 추가했다.
+- CLI 도움말 index와 명령별 안내를 정비하고, 검증 없이 성공하던 `test-caption` 경로를 실패로 처리한다.
+
+### 보안·성능·운영
+
+- HWPX container와 parser 재귀 깊이에 상한을 두고 입력 경계·WMF 초기화를 보강했다.
+- Oracle PDF 자동 선택은 형식·생성 엔진·저장 제품이 불명확할 때 fail-closed한다.
+- exact font source와 variable shaping cache를 bounded reuse하고, nextest archive 분할·CodeQL 경로 분리·
+  문서/review-only 증적 재사용으로 반복 CI 비용을 줄였다.
+- trusted controller가 동일 merge tree의 검증을 재사용하도록 보정했다. 실제 post-release Render Diff
+  canary는 #6243에서 계속 추적한다.
+
+### 패키지·배포
+
+- GitHub Release CLI matrix에 native `aarch64-unknown-linux-gnu` target을 추가했다 (#5949, #6573).
+- Docker build가 이미 사용 중인 GID를 받아도 실패하지 않도록 보정했다 (#5758).
+- Rust, `@rhwp/core`, `@rhwp/editor`, Studio, VS Code와 Chrome/Edge/Firefox/Safari 버전을 0.8.6으로
+  맞춘다.
+
+### 호환성과 알려진 문제
+
+- exact font instance와 `--compat 2024`는 명시적 opt-in이다. 기존 기본 경로와 JSON 봉투 major는 유지한다.
+- 저장 충실도 복구로 재저장 bytes는 달라질 수 있지만 의미 보존을 위한 의도된 변화다.
+- Linux AArch64 이슈 #5949는 실제 v0.8.6 asset의 ELF·실행권한·버전을 확인한 뒤 닫는다.
+- #6243은 `main` trusted controller의 실제 post-release canary가 성공할 때까지 열린 상태로 유지한다.
+
+### 기여자
+
+이번 사이클에 참여한 사람 20명(credit key, 대소문자 보존·알파벳순):
+
+<!-- release-contributors:start -->
+- @chrisryugj
+- @coolwithyou
+- @davindev
+- dkh0324 — Git author credit, 공개 GitHub 계정 미확인
+- @edwardkim
+- @humdrum00001010
+- @JamesPsh
+- @jangster77
+- @jeong-sik
+- @johndoekim
+- @keepYaoung
+- @kevin9327
+- @kjh0523
+- @lpaiu-cs
+- @planet6897
+- @postmelee
+- @RaghavShubham
+- @Shadungi
+- @t2c-lab
+- @thhan74
+<!-- release-contributors:end -->
 
 ## [0.8.4] — 2026-08-12
 

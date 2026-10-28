@@ -7,7 +7,7 @@
 다른 에이전트 스킬 본문을 요구하거나 바꾸지 않는다. 바이너리·네트워크를 부르지 않는다.
 
 정본: .claude/skills/rhwp-contributor/
-작업 기록: mydocs/working/agent_contributor.md
+작업 기록: mydocs/working/archives/agent_contributor.md
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ EXAMPLES = SKILL / "examples"
 FIXTURES = SKILL / "fixtures"
 ENVS = FIXTURES / "envelopes"
 CATALOG = FIXTURES / "catalog.json"
-WORKING = REPO / "mydocs" / "working" / "agent_contributor.md"
+WORKING = REPO / "mydocs" / "working" / "archives" / "agent_contributor.md"
 
 HARD_GATE = "cargo fmt --all -- --check"
 STALE_FMT = "cargo fmt --check"

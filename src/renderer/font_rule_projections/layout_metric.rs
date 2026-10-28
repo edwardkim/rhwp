@@ -26,9 +26,9 @@ pub(crate) struct GeneratedFontRuleProjection {
 pub(crate) const FONT_RULE_LAYOUT_METRIC_SCHEMA_VERSION: &str =
     crate::schema_registry::FONT_RULE_PROJECTION_SCHEMA_VERSION;
 pub(crate) const FONT_RULE_LAYOUT_METRIC_INPUT_SHA256: &str =
-    "355fde530a2f7d40b539ab534c52251bf6697a5632136bee416842a19f2230dd";
+    "973c76f7c6563021deaee513cf9b2e8949268aadaeb8809278056da0e902a6ce";
 pub(crate) const FONT_RULE_LAYOUT_METRIC_PROJECTION_SHA256: &str =
-    "c4659fc40246c5d4ad903578a61807c646681638cb4c8f9b7c802fb3f0c37cc2";
+    "fdca67b63b5f10b2f89fcf991e9d4d633461c1f1052dcc397884408af0e736ba";
 
 pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] = &[
     GeneratedFontRuleProjection {
@@ -1260,6 +1260,82 @@ pub(crate) static FONT_RULE_LAYOUT_METRIC_RULES: &[GeneratedFontRuleProjection] 
             "font-metric.6cef32736604b65b441e",
         ],
     },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-metric.ygodic230-name",
+        source_boundary_id: "rust-metric.metric-alias",
+        relation_type: "metric-surrogate",
+        decision_plane: "layout-metric",
+        source_face: Some("한컴 윤고딕 230"),
+        target_face_or_policy: "Haan YGodic 230",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: None,
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &["font-metric.f3e4274740daf2960ec1"],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-metric.97a520bd286dc482c765",
+        source_boundary_id: "rust-metric.metric-alias",
+        relation_type: "metric-surrogate",
+        decision_plane: "layout-metric",
+        source_face: Some("Malgun Gothic Bold"),
+        target_face_or_policy: "Malgun Gothic",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: None,
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[
+            "font-metric.cb5db76c0649913e4438",
+            "font-metric.1beeab194e16e4a6107d",
+        ],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-metric.d3b78b2bdea7d0531b5f",
+        source_boundary_id: "rust-metric.metric-alias",
+        relation_type: "metric-surrogate",
+        decision_plane: "layout-metric",
+        source_face: Some("Arial Bold"),
+        target_face_or_policy: "Arial",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: None,
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &[
+            "font-metric.b5fafcd791a4af142ef1",
+            "font-metric.6edd92d6f8127459749a",
+            "font-metric.a94242c0b0f23c0e97fd",
+            "font-metric.a04310c5f53100889fc3",
+        ],
+    },
+    GeneratedFontRuleProjection {
+        rule_id: "rule.rust-metric.issue-7445.public-batang-name",
+        source_boundary_id: "rust-metric.metric-alias",
+        relation_type: "metric-surrogate",
+        decision_plane: "layout-metric",
+        source_face: Some("RHWP Public Batang"),
+        target_face_or_policy: "Batang",
+        conditions: GeneratedFontRuleConditions {
+            language_slot: None,
+            alt_type: None,
+            availability: None,
+            profile: None,
+        },
+        order: None,
+        mode: "direct",
+        metric_entry_ids: &["font-metric.edec2573883b7b4dc023"],
+    },
 ];
 
 #[rustfmt::skip]
@@ -1467,6 +1543,18 @@ pub(crate) fn find_font_rule_layout_metric(
         }
         "Noto Serif CJK KR" => {
             Some(&FONT_RULE_LAYOUT_METRIC_RULES[66])
+        }
+        "한컴 윤고딕 230" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[67])
+        }
+        "Malgun Gothic Bold" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[68])
+        }
+        "Arial Bold" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[69])
+        }
+        "RHWP Public Batang" => {
+            Some(&FONT_RULE_LAYOUT_METRIC_RULES[70])
         }
         _ => None,
     }

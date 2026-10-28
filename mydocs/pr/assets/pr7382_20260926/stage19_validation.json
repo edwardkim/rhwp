@@ -1,0 +1,76 @@
+{
+  "producer_head": "369b17e2b385ea921211053d48efe2717fcc21d1",
+  "source_diff_sha256": "5720b4e171e66ca36855cf155f5198a4623e7da629f389eff106db8e3affb04b",
+  "files": {
+    "src/renderer/typeset/controls/empty_float.rs": "08a730303e79c662f4cea6c96fdb42eca15986afd41c6406e382fd3432b01ccc",
+    "src/renderer/typeset/state.rs": "b81f447c49d95f5b9dd9dce8f4b17723256651c7a821d23a2d0f1a6dfca75a51",
+    "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "f3bb45ddd29ab1175ce34fdf3193f0f4d6691e8a0c024cd25300227e260b837c"
+  },
+  "before": {
+    "exit_code": 100,
+    "passed": 0,
+    "failed": 1,
+    "seconds": 0.179,
+    "observed_first_table_top": 324.4266666666667,
+    "pdf_first_table_top": 327.961344
+  },
+  "harness_selection_error": {
+    "wrong_suite": "regression_suite_018",
+    "exit_code": 4,
+    "tests": 0,
+    "correct_suite": "regression_suite_005",
+    "defect_reproduction": false
+  },
+  "after": {
+    "exit_code": 0,
+    "passed": 40,
+    "failed": 0,
+    "seconds": 3.323
+  },
+  "normal_controls": {
+    "exit_code": 0,
+    "passed": 31,
+    "seconds": 0.493,
+    "issues": [
+      6946,
+      6795,
+      2439,
+      2279,
+      1880,
+      2097
+    ]
+  },
+  "cli_build": {
+    "exit_code": 0,
+    "seconds": 111,
+    "page_count": 215,
+    "pdf_page_count": 215
+  },
+  "fmt_check_exit_code": 0,
+  "visual": {
+    "exit_code": 0,
+    "gate": "passed",
+    "font_mismatch_exception": false,
+    "pages": {
+      "43": 91.32182,
+      "44": 99.68706,
+      "45": 98.61863,
+      "46": 97.24002
+    },
+    "directly_inspected_review_and_overlay": [
+      43,
+      44,
+      45,
+      46
+    ],
+    "residual": "표 괘선 농도와 글자·각주 간격 차이. 완전한 픽셀 일치를 주장하지 않음"
+  },
+  "commands": {
+    "before": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --test regression_suite_005 --test-threads 8 --no-fail-fast -E 'test(empty_host_sibling_tables_preserve_outer_margin_and_caption_origins)'",
+    "after": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --test regression_suite_005 --test-threads 8 --no-fail-fast -E 'test(issue_7379_rowbreak_table_footnote_reservation)'",
+    "normal_controls": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --test regression_suite_006 --test regression_suite_020 --test regression_suite_012 --test regression_suite_018 --test regression_suite_013 --test regression_suite_001 --test regression_suite_004 --test regression_suite_007 --test regression_suite_028 --test-threads 8 --no-fail-fast -E 'test(issue_6946) | test(issue_6795) | test(issue_2439) | test(issue_2279_layout_oracles) | test(issue_1880) | test(issue_2097)'",
+    "cli": "cargo build --locked --profile release-test --target-dir target/pr-review --bin rhwp",
+    "visual": "venv/bin/python scripts/visual_sweep.py --key liver7379 --hwp 'samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx' --pdf 'pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf' --rhwp-bin target/pr-review/release-test/rhwp --pages 43,44,45,46 --dpi 96 --out output/pr-review/planet6897-7382-20260926/visual/stage19-native"
+  },
+  "remaining": "121/122 각주160 소유 보류 및 전체 최종/fresh WASM/lint 미완료. 통합 PR 생성·승인 보류."
+}

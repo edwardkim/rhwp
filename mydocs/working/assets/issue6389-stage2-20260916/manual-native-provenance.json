@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "key": "issue6389-manual",
+  "provenance": {
+    "hwp": {
+      "path": "samples/2025 행정업무운영 편람(최종).hwp",
+      "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f"
+    },
+    "pdf": {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2020.pdf",
+      "sha256": "6c7be7602cb92bb9b5e6a0b66e9cd80700fceabeade89fabd1a0fcd32adc4413"
+    },
+    "git_head": "5720d3f1646d6c25e51c8d7cbb0b4cc6bc5feb4f",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "11b1d259de1dd62f111dc0da9bd74efac2d5572aa80fbd73f180c984b20d2849"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "/Users/tsjang/rhwp/target/issue6389-20260916/release-test/rhwp",
+      "path": "/Users/tsjang/rhwp/target/issue6389-20260916/release-test/rhwp",
+      "sha256": "f3358c56345a45a08e1e5d713cb250c4077a1ab43d91659572d37d75a16208b8"
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    68
+  ],
+  "requested_page_shards": [
+    [
+      68
+    ]
+  ],
+  "run_state": "complete"
+}

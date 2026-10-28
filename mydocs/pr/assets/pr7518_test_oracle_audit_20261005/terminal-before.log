@@ -1,0 +1,20 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.54s
+     Running tests/generated/regression_suite_024.rs (/home/edward/mygithub/rhwp/target/pr-review/debug/deps/regression_suite_024-d97177cead53422c)
+
+running 1 test
+
+thread 'issue_7518_reflow_row_physical_frame::terminal_physical_tail_is_drawn_after_the_last_content_unit' (86097) panicked at tests/generated/../cases/issue_7518_reflow_row_physical_frame.rs:796:5:
+assertion `left == right` failed: no content replay in the physical tail
+  left: 2
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test issue_7518_reflow_row_physical_frame::terminal_physical_tail_is_drawn_after_the_last_content_unit ... FAILED
+
+failures:
+
+failures:
+    issue_7518_reflow_row_physical_frame::terminal_physical_tail_is_drawn_after_the_last_content_unit
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 236 filtered out; finished in 0.17s
+
+error: test failed, to rerun pass `-p rhwp --test regression_suite_024`

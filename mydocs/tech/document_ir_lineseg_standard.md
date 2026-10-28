@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/document_ir_lineseg_standard.md
-last_verified: 2026-07-16
+last_verified: 2026-09-03
 ---
 
 # Document IR — LineSeg 필드 표준
@@ -18,6 +18,21 @@ LineSeg 를 채워야 한다.**
 HWP 3.0은 HWP 5.0의 `PARA_LINE_SEG`처럼 줄 위치, 세그먼트 폭, wrap zone 등을
 명시적으로 표현하는 정보가 부족하므로, HWP5 기반 공통 IR로 변환할 때 일부 값을
 파서가 계산하거나 추정해야 한다.
+
+`Paragraph.line_segs`에는 RowBreak 셀 높이를 맞추는 renderer-only suffix가 잠시 붙을 수 있다.
+`layout_only_fill_lines`는 그 suffix 길이이며 파일 데이터가 아니다. HWP5와 HWPX serializer는 모두
+`Paragraph::serializable_line_segs()`가 반환하는 source prefix에서 시작해야 한다. 포맷별 writer가
+marker를 각각 해석하거나 `line_segs` 전체를 직접 기록하면 안 된다.
+
+문단을 수동 재구성하는 코드도 같은 경계를 지킨다. 전체 `line_segs` vector를 옮기면
+`layout_only_fill_lines`와 axis/source-position provenance를 함께 옮기고, 새 source 문단을 템플릿에서
+만들 때는 `serializable_line_segs()`만 복사한다.
+
+fresh reflow·문단 split·merge가 새 vector를 발행할 때는 `Paragraph::replace_line_segs()`를 사용한다.
+이 publication boundary는 `layout_only_fill_lines=0`, `source_line_seg_vertical_pos=None`, HWPX axis shift
+초기화를 함께 수행한다. 새 vector에 이전 vector의 suffix 길이나 source vpos snapshot을 남기지 않는다.
+HWP memo tail처럼 source 문단에서 합성 root를 만드는 serializer adapter도 원본 vector를 복제하지 않고
+source view만 복사한다.
 
 PR #589 병합 후 시각 판정 과정에서, 이러한 HWP3 전용 추정값이
 `Paragraph.wrap_precomputed` 같은 공통 IR 필드에 남아 다른 포맷 처리에도 영향을 줄 수

@@ -1,0 +1,276 @@
+{
+  "branch": "review/planet6897-green-20261002",
+  "prior_failed_head": "b45dde605442b03ba85dbcaeb884acacc417b00c",
+  "prior_whole_summary": "10288 tests run: 10286 passed (9 slow), 2 failed, 50 skipped; exit100",
+  "reference_pr": "https://github.com/edwardkim/rhwp/pull/7505",
+  "reference_merge": "e5098bc91be44a49367a7f2895a14fcd4f4c2c7f",
+  "corrections": [
+    {
+      "source": "src/renderer/layout/paragraph_layout.rs",
+      "cause": "본문 채움 배경의 마지막 줄간격을 제외한 보정이 채움 없는 외곽선에도 적용됨",
+      "path": "render_line_flow_height/render_line_spacing_px -> last_line_box_bottom/y -> outline_includes_line_spacing -> para_border_ranges -> render_para_border_groups",
+      "change": "채움 없고 가시 선이 있는 문단 외곽선만 물리 줄 후행 간격을 포함. 다음 흐름·셀 흐름은 유지."
+    },
+    {
+      "source": "src/renderer/typeset/table/block/entry.rs",
+      "cause": "저장 TAC 호스트 whole_frame_budget의 종이 여백 허용이 닫힌 저장 표 프레임까지 전달됨",
+      "path": "closed_source_frame_placement -> resolved_host_placement -> whole_frame_budget -> occupied_bottom fit -> whole/fragment ownership",
+      "change": "닫힌 저장 프레임은 available 본문 예산으로 수용 판정. 일반 저장 TAC의 원점 공유는 유지."
+    }
+  ],
+  "sources": {
+    "src/renderer/layout/paragraph_layout.rs": "6589a67a334873fe3c850aebe445a6accba247a77f7b31c229125e89845ad2b4",
+    "src/renderer/typeset/table/block/entry.rs": "4833334913f31909cb71a5eb78fc298190a91f0012b56fbe55a2c93de218c9fe"
+  },
+  "focused_before_semantic_change": {
+    "tests": 13,
+    "passed": 13,
+    "failed": 0,
+    "skipped": 420,
+    "seconds": 1.06,
+    "exit_code": 0
+  },
+  "native_border_before": 89.37172,
+  "native_border_after": 96.86991,
+  "native_counter_trees": [
+    {
+      "key": "rowbreak",
+      "pages": 18,
+      "previous_pages": 18,
+      "changed_pages": [],
+      "current_tree_dir": "output/pr-review/planet6897-green-20261002/restored-two-rowbreak-native-tree",
+      "previous_tree_dir": "output/pr-review/planet6897-green-20261002/rebase7567-rowbreak-native/rebase7567-rowbreak-native/render_tree"
+    },
+    {
+      "key": "h01",
+      "pages": 9,
+      "previous_pages": 9,
+      "changed_pages": [],
+      "current_tree_dir": "output/pr-review/planet6897-green-20261002/restored-two-h01-native-tree",
+      "previous_tree_dir": "output/pr-review/planet6897-green-20261002/rebase7567-h01-native/rebase7567-h01-native/render_tree"
+    },
+    {
+      "key": "social6797",
+      "pages": 11,
+      "previous_pages": 11,
+      "changed_pages": [],
+      "current_tree_dir": "output/pr-review/planet6897-green-20261002/restored-two-social6797-native-tree",
+      "previous_tree_dir": "output/pr-review/planet6897-green-20261002/rebase7567-social6797-native/rebase7567-social6797-native/render_tree"
+    },
+    {
+      "key": "stale1835",
+      "pages": 3,
+      "previous_pages": 3,
+      "changed_pages": [],
+      "current_tree_dir": "output/pr-review/planet6897-green-20261002/restored-two-stale1835-native-tree",
+      "previous_tree_dir": "output/pr-review/planet6897-green-20261002/rebase7567-stale1835-native/rebase7567-stale1835-native/render_tree"
+    },
+    {
+      "key": "para6267",
+      "pages": 1,
+      "previous_pages": 1,
+      "changed_pages": [],
+      "current_tree_dir": "output/pr-review/planet6897-green-20261002/restored-two-para6267-native-tree",
+      "previous_tree_dir": "output/pr-review/planet6897-green-20261002/6267-review-scope-para6267-native/6267-review-scope-para6267-native/render_tree"
+    }
+  ],
+  "native_original_figure11": {
+    "current_pages": 215,
+    "previous_pages": 215,
+    "changed_pages": [
+      36,
+      78,
+      79,
+      87,
+      90,
+      94,
+      95,
+      158,
+      162,
+      165,
+      168,
+      169,
+      173,
+      214
+    ],
+    "figure11_p14_tree_byte_identical": true,
+    "previous_native_p14_score": 99.80678,
+    "scope_limit": "본문 예산합성 검사 복원과 원본14쪽의 동일성 대조. 현재215쪽 전체 시각 승인을 의미하지 않음."
+  },
+  "test_removals": 0,
+  "new_tests": 0,
+  "issue_transfer_withdrawal": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5977600701",
+  "fresh_wasm": {
+    "exit_code": 0,
+    "profile": "Mac no-opt local alternative",
+    "proof": {
+      "fresh_wasm_sha256": "6895a0c2fe54171febd03d0f2df767ef11f009cfd1081e48ecdee4888ed9574b",
+      "png_byte_identical": true
+    }
+  },
+  "final_whole_skia": "pending",
+  "wasm_border_after": 96.86991,
+  "semantic_test_change": "기존1함수의 절대좌표48/384/104.619/22.556을 빈 글줄 포함·테두리 단일 소유·뒤 문단과 경계 맞닿음 관계로 교정",
+  "fresh_wasm_counter_svg": {
+    "fresh_wasm_sha256": "6895a0c2fe54171febd03d0f2df767ef11f009cfd1081e48ecdee4888ed9574b",
+    "results": [
+      {
+        "key": "rowbreak",
+        "pages": 18,
+        "previous_pages": 18,
+        "changed_pages": [],
+        "current": "output/pr-review/planet6897-green-20261002/restored-two-rowbreak-wasm",
+        "previous": "output/pr-review/planet6897-green-20261002/rebase7567-rowbreak-wasm/rebase7567-rowbreak-wasm/wasm"
+      },
+      {
+        "key": "h01",
+        "pages": 9,
+        "previous_pages": 9,
+        "changed_pages": [],
+        "current": "output/pr-review/planet6897-green-20261002/restored-two-h01-wasm",
+        "previous": "output/pr-review/planet6897-green-20261002/rebase7567-h01-wasm/rebase7567-h01-wasm/wasm"
+      },
+      {
+        "key": "social6797",
+        "pages": 11,
+        "previous_pages": 11,
+        "changed_pages": [],
+        "current": "output/pr-review/planet6897-green-20261002/restored-two-social6797-wasm",
+        "previous": "output/pr-review/planet6897-green-20261002/rebase7567-social6797-wasm/rebase7567-social6797-wasm/wasm"
+      },
+      {
+        "key": "stale1835",
+        "pages": 3,
+        "previous_pages": 3,
+        "changed_pages": [],
+        "current": "output/pr-review/planet6897-green-20261002/restored-two-stale1835-wasm",
+        "previous": "output/pr-review/planet6897-green-20261002/rebase7567-stale1835-wasm/rebase7567-stale1835-wasm/wasm"
+      },
+      {
+        "key": "para6267",
+        "pages": 1,
+        "previous_pages": 1,
+        "changed_pages": [
+          1
+        ],
+        "current": "output/pr-review/planet6897-green-20261002/restored-two-para6267-wasm",
+        "previous": "output/pr-review/planet6897-green-20261002/6267-review-scope-para6267-wasm/6267-review-scope-para6267-wasm/wasm"
+      }
+    ],
+    "para6267_limit": "SVG 좌표752.4933333333333→752.4933333333336 등 부동소수 표현 차이가 있어 byte동일로 주장하지 않음. 새 raster 실제재실행97.26749%·90%미달0."
+  },
+  "focused_after_semantic_change": {
+    "tests": 17,
+    "passed": 17,
+    "failed": 0,
+    "skipped": 625,
+    "seconds": 1.089,
+    "exit_code": 0
+  },
+  "gates": {
+    "state": "failed",
+    "gates": [
+      {
+        "name": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.222,
+        "log": "output/pr-review/planet6897-green-20261002/restored-two-fmt.log"
+      },
+      {
+        "name": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 24.394,
+        "log": "output/pr-review/planet6897-green-20261002/restored-two-native-clippy.log"
+      },
+      {
+        "name": "wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 14.761,
+        "log": "output/pr-review/planet6897-green-20261002/restored-two-wasm-clippy.log"
+      },
+      {
+        "name": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 27.718,
+        "log": "output/pr-review/planet6897-green-20261002/restored-two-workspace-build.log"
+      },
+      {
+        "name": "all-target-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 54.589,
+        "log": "output/pr-review/planet6897-green-20261002/restored-two-all-target-clippy.log"
+      },
+      {
+        "name": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "1d6bc70767fad365b07afe4ef57972d23b140f2b"
+        ],
+        "exit_code": 1,
+        "log": "output/pr-review/planet6897-green-20261002/restored-two-manifest.log"
+      }
+    ],
+    "current": "all-target-clippy"
+  },
+  "manifest_correction": {
+    "reason": "교정 뒤 파생 harness source metadata drift. --prepare 재생성 후 같은 최신base check 통과. 파생 파일 커밋 제외.",
+    "exit_code": 0
+  },
+  "test_source_sha256": "e23994f4eec7ade10d69a55543cb395c590f78f5c3366ec99cda697210a294be",
+  "state": "two_regressions_corrected_stage_gates_passed_liver_low7_followup_pending"
+}

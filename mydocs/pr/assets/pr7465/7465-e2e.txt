@@ -1,0 +1,72 @@
+  ➜  Local:   http://127.0.0.1:7700/
+=== E2E: ⌘A 전체 선택 — 셀/글상자 범위 + 표 하이라이트 + 포커스 밖 ===
+
+  [browser] headless Chrome 실행
+  PASS: a: 선택 있음 (실제 true)
+  PASS: a: 시작은 문서 첫 문단 (실제 0)
+  PASS: a: 시작은 본문 (실제 undefined)
+  PASS: a: 끝은 문서 마지막 문단 (실제 3)
+  PASS: a: 표 영역이 하이라이트에 포함 (rects=[{"pageIndex":0,"x":113.4,"y":132.3,"width":566.9,"height":13.3},{"pageIndex":0,"x":113.4,"y":230,"width":566.9,"height":13.3},{"pageIndex":0,"x":117.2,"y":153.6,"width":559.4,"height":51.30000000000001}], table=[{"pageIndex":0,"x0":117.2,"y0":153.6,"x1":676.6,"y1":204.9}])
+  Screenshot: e2e/screenshots/pr2-a-body-cmdA.png
+  PASS: b: 선택 있음 (실제 true)
+  PASS: b: 선택은 셀 안 (실제 1)
+  PASS: b: 셀 첫 문단
+  PASS: b: 셀 첫 문단 시작 (실제 0)
+  PASS: b: 캐럿이 셀을 떠나지 않음 (실제 1)
+  Screenshot: e2e/screenshots/pr2-b-cell-cmdA.png
+  PASS: b: B2 만 지워짐
+  PASS: b: 다른 셀 보존
+  PASS: b: 다른 셀 보존
+  PASS: b: 편집 뒤 undo가 B2 원문을 복원
+  PASS: b2: 부분 선택 사전 조건 (실제 {"hasSel":true,"start":{"sectionIndex":0,"paragraphIndex":0,"charOffset":0,"parentParaIndex":1,"controlIndex":0,"cellIndex":4,"cellParaIndex":0,"cellPath":[{"controlIndex":0,"cellIndex":4,"cellParaIndex":0}]},"end":{"sectionIndex":0,"paragraphIndex":0,"charOffset":1,"parentParaIndex":1,"controlIndex":0,"cellIndex":4,"cellParaIndex":0,"cellPath":[{"controlIndex":0,"cellIndex":4,"cellParaIndex":0}]},"pos":{"sectionIndex":0,"paragraphIndex":0,"charOffset":0,"parentParaIndex":1,"controlIndex":0,"cellIndex":4,"cellParaIndex":0,"cellPath":[{"controlIndex":0,"cellIndex":4,"cellParaIndex":0}]},"cellSel":false,"inCell":true})
+  PASS: b2: 선택 범위는 B2 셀 내부
+  PASS: b2: 기존 anchor 대신 B2 전체 선택 (실제 {"hasSel":true,"start":{"sectionIndex":0,"paragraphIndex":0,"charOffset":0,"parentParaIndex":1,"controlIndex":0,"cellIndex":4,"cellParaIndex":0,"cellPath":[{"controlIndex":0,"cellIndex":4,"cellParaIndex":0}]},"end":{"sectionIndex":0,"paragraphIndex":0,"charOffset":2,"parentParaIndex":1,"controlIndex":0,"cellIndex":4,"cellParaIndex":0,"cellPath":[{"controlIndex":0,"cellIndex":4,"cellParaIndex":0}]},"pos":{"sectionIndex":0,"paragraphIndex":0,"charOffset":2,"parentParaIndex":1,"controlIndex":0,"cellIndex":4,"cellParaIndex":0,"cellPath":[{"controlIndex":0,"cellIndex":4,"cellParaIndex":0}]},"cellSel":false,"inCell":true})
+  PASS: a2: 본문 부분 선택 사전 조건 (실제 {"hasSel":true,"start":{"sectionIndex":0,"paragraphIndex":0,"charOffset":2},"end":{"sectionIndex":0,"paragraphIndex":0,"charOffset":3},"pos":{"sectionIndex":0,"paragraphIndex":0,"charOffset":3},"cellSel":false,"inCell":false})
+  PASS: a2: 기존 anchor 대신 문서 첫 위치부터 선택 (실제 {"hasSel":true,"start":{"sectionIndex":0,"paragraphIndex":0,"charOffset":0},"end":{"sectionIndex":0,"paragraphIndex":3,"charOffset":0},"pos":{"sectionIndex":0,"paragraphIndex":3,"charOffset":0},"cellSel":false,"inCell":false})
+  PASS: c: 여러 문단 셀 선택 있음
+  PASS: c: 범위 양끝이 같은 셀 내부
+  PASS: c: 첫 문단 시작 (실제 {"sectionIndex":0,"paragraphIndex":0,"charOffset":0,"parentParaIndex":1,"controlIndex":0,"cellIndex":4,"cellParaIndex":0,"cellPath":[{"controlIndex":0,"cellIndex":4,"cellParaIndex":0}]})
+  PASS: c: 마지막 문단 끝 (실제 {"sectionIndex":0,"paragraphIndex":1,"charOffset":6,"parentParaIndex":1,"controlIndex":0,"cellIndex":4,"cellParaIndex":1,"cellPath":[{"controlIndex":0,"cellIndex":4,"cellParaIndex":1}]})
+  PASS: c: 첫 문단 원문
+  PASS: c: 둘째 문단 원문
+  PASS: c: B2와 SECOND가 삭제되고 빈 문단 하나만 남음 (실제 {"count":1,"first":""})
+  PASS: c: 다른 셀 보존
+  PASS: c: 다른 셀 보존
+  PASS: c: undo가 첫 문단 B2 복원
+  PASS: c: undo가 둘째 문단 SECOND 복원
+  PASS: n: 안쪽 셀 선택 있음
+  PASS: n: 범위 양끝이 표 내부
+  PASS: n: 범위가 안쪽 셀 깊이 2에 한정 (실제 {"hasSel":true,"start":{"sectionIndex":0,"paragraphIndex":0,"charOffset":0,"parentParaIndex":0,"controlIndex":0,"cellIndex":0,"cellParaIndex":0,"cellPath":[{"controlIndex":0,"cellIndex":0,"cellParaIndex":1},{"controlIndex":0,"cellIndex":0,"cellParaIndex":0}]},"end":{"sectionIndex":0,"paragraphIndex":0,"charOffset":5,"parentParaIndex":0,"controlIndex":0,"cellIndex":0,"cellParaIndex":0,"cellPath":[{"controlIndex":0,"cellIndex":0,"cellParaIndex":1},{"controlIndex":0,"cellIndex":0,"cellParaIndex":0}]},"pos":{"sectionIndex":0,"paragraphIndex":0,"charOffset":5,"parentParaIndex":0,"controlIndex":0,"cellIndex":0,"cellParaIndex":0,"cellPath":[{"controlIndex":0,"cellIndex":0,"cellParaIndex":1},{"controlIndex":0,"cellIndex":0,"cellParaIndex":0}]},"cellSel":false,"inCell":true})
+  PASS: n: INNER 텍스트 전체 범위 (실제 {"hasSel":true,"start":{"sectionIndex":0,"paragraphIndex":0,"charOffset":0,"parentParaIndex":0,"controlIndex":0,"cellIndex":0,"cellParaIndex":0,"cellPath":[{"controlIndex":0,"cellIndex":0,"cellParaIndex":1},{"controlIndex":0,"cellIndex":0,"cellParaIndex":0}]},"end":{"sectionIndex":0,"paragraphIndex":0,"charOffset":5,"parentParaIndex":0,"controlIndex":0,"cellIndex":0,"cellParaIndex":0,"cellPath":[{"controlIndex":0,"cellIndex":0,"cellParaIndex":1},{"controlIndex":0,"cellIndex":0,"cellParaIndex":0}]},"pos":{"sectionIndex":0,"paragraphIndex":0,"charOffset":5,"parentParaIndex":0,"controlIndex":0,"cellIndex":0,"cellParaIndex":0,"cellPath":[{"controlIndex":0,"cellIndex":0,"cellParaIndex":1},{"controlIndex":0,"cellIndex":0,"cellParaIndex":0}]},"cellSel":false,"inCell":true})
+  PASS: n: 편집은 안쪽 셀에만 적용
+  PASS: n: undo가 안쪽 셀 원문을 복원
+  PASS: h: 글상자 안 선택 있음
+  PASS: h: 범위 양끝이 글상자 안
+  PASS: h: 글상자 문맥 유지
+  PASS: h: 글상자 텍스트 전체 범위 (실제 {"hasSel":true,"start":{"sectionIndex":0,"paragraphIndex":0,"charOffset":0,"parentParaIndex":0,"controlIndex":1,"cellIndex":0,"cellParaIndex":0,"isTextBox":true,"cellPath":[{"controlIndex":1,"cellIndex":0,"cellParaIndex":0}]},"end":{"sectionIndex":0,"paragraphIndex":0,"charOffset":7,"parentParaIndex":0,"controlIndex":1,"cellIndex":0,"cellParaIndex":0,"isTextBox":true,"cellPath":[{"controlIndex":1,"cellIndex":0,"cellParaIndex":0}]},"pos":{"sectionIndex":0,"paragraphIndex":0,"charOffset":7,"parentParaIndex":0,"controlIndex":1,"cellIndex":0,"cellParaIndex":0,"isTextBox":true,"cellPath":[{"controlIndex":1,"cellIndex":0,"cellParaIndex":0}]},"cellSel":false,"inCell":true})
+  PASS: h: 선택은 샘플 글상자 내부
+  PASS: h: 글상자 텍스트 삭제 (실제 )
+  PASS: h: 본문 보존
+  PASS: h: undo가 글상자 원문 복원
+  PASS: d: 셀 블록 진입 확인 (실제 true)
+  PASS: d: 블록 해제 (실제 false)
+  PASS: d: 선택 있음 (실제 true)
+  PASS: d: 셀 안 선택 (실제 1)
+  Screenshot: e2e/screenshots/pr2-d-cellblock-cmdA.png
+  PASS: e: 포커스가 버튼에 있음을 확인 (실제 BUTTON)
+  PASS: e: textarea 밖 포커스에서도 전체 선택 (실제 true)
+  PASS: e: 포커스가 편집기 textarea로 복귀 (실제 TEXTAREA)
+  PASS: e2: 입력란의 ⌘A는 문서가 가로채지 않음 (실제 {"focused":true,"prevented":false,"documentSelected":false})
+  PASS: e2: 선택 목록의 ⌘A를 문서가 가로채지 않음 (실제 {"focused":true,"prevented":false,"documentSelected":false})
+  PASS: f: IME ⌘A 전체 선택 (실제 true)
+  PASS: g: 표도 삭제됨 (실제 0)
+  PASS: g: 문단 1개만 남음 (실제 1)
+  PASS: g: 본문도 비었음
+  PASS: s: 스크롤할 만큼 긴 문서 (max 3802, pages 4)
+  PASS: s: 전체 선택됨
+  PASS: s: 문서 시작부터 (실제 {"sectionIndex":0,"paragraphIndex":0,"charOffset":0})
+  PASS: s: 문서 끝까지 (실제 {"sectionIndex":0,"paragraphIndex":150,"charOffset":0})
+  PASS: s: 스크롤 위치 유지 (전 0, 후 0)
+  PASS: pageerror 0건 (실제: [])
+
+📋 HTML 보고서: ../output/e2e/select-all-cmd-a-report.html

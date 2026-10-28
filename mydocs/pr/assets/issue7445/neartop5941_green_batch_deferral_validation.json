@@ -1,0 +1,200 @@
+{
+  "scope": "사용자 요청에 따른205쪽 문서의 실패 검사2개만 #7445 분리",
+  "before_head": "6f5877861",
+  "frozen_binary": {
+    "binary": "output/pr-review/planet6897-green-20261002/masked2470-arrow-frozen-rhwp",
+    "sha256": "fe76882037ee802cab237f506348d8480082c988fea7e684cc9b5c05c0ccb3c7",
+    "parent": "0c9c224d4",
+    "source_sha256": {
+      "src/renderer/composer.rs": "aa3eade999831efb5d409ae0ad45cec4aab896f768edcb20ca9e6dff497e915b",
+      "src/renderer/layout/shape_layout.rs": "af5153f7065b0acd3d7c25b3c61a4abcfac1ca6158e2ddb4e5f9b6043968fc71",
+      "src/renderer/height_cursor.rs": "fa6a429d6634d14de57ff678eec2b000318f604cd9de94fa8caa597d765fe9f4"
+    }
+  },
+  "statistics": {
+    "pages": 205,
+    "below_90": 102,
+    "worst": [
+      {
+        "page": "40",
+        "tolerant_content_match_percent": "5.85215",
+        "below_90": "1",
+        "silhouette_raw_match_percent": "5.85215",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "84",
+        "tolerant_content_match_percent": "10.63250",
+        "below_90": "1",
+        "silhouette_raw_match_percent": "10.62914",
+        "silhouette_boundary_reconciled_pixels": "4"
+      },
+      {
+        "page": "141",
+        "tolerant_content_match_percent": "16.30056",
+        "below_90": "1",
+        "silhouette_raw_match_percent": "16.30056",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "81",
+        "tolerant_content_match_percent": "16.32801",
+        "below_90": "1",
+        "silhouette_raw_match_percent": "16.32293",
+        "silhouette_boundary_reconciled_pixels": "7"
+      },
+      {
+        "page": "163",
+        "tolerant_content_match_percent": "17.55543",
+        "below_90": "1",
+        "silhouette_raw_match_percent": "17.55543",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ],
+    "affected": [
+      {
+        "page": "54",
+        "tolerant_content_match_percent": "62.73075",
+        "below_90": "1",
+        "silhouette_raw_match_percent": "62.73075",
+        "silhouette_boundary_reconciled_pixels": "0"
+      },
+      {
+        "page": "55",
+        "tolerant_content_match_percent": "95.55695",
+        "below_90": "0",
+        "silhouette_raw_match_percent": "95.55695",
+        "silhouette_boundary_reconciled_pixels": "0"
+      }
+    ],
+    "tsv_sha256": "63735f44e54f8af3d7702dd8382320aabcb4b6ebdf970ce68585dc79c563b58b"
+  },
+  "current_paint_render_tree_comparison": {
+    "compared": 205,
+    "changed_pages": []
+  },
+  "preserved_inputs": {
+    "samples/issue5941/1480000-201900698-native-neartop-reset.hwp": {
+      "bytes": 61810688,
+      "sha256": "18765ac22270a2cb4ece6a1e6539c2dea6ca6ccde2573b42fb9acce7c34fa83a"
+    },
+    "pdf/issue5941-1480000-201900698-2020.pdf": {
+      "bytes": 8209545,
+      "sha256": "fe01f1ddffc3153d015adab93178f0fa8a5e9624763ff529362d4410d50955dc"
+    }
+  },
+  "removed_tests": [
+    "stored_neartop_reset_survives_on_a_filled_page",
+    "object_height_that_ends_mid_row_still_reconciles"
+  ],
+  "preserved_tests": [
+    "issue_5921_empty_page_relaxation_still_applies"
+  ],
+  "fresh_wasm_all205": "미실행; Native 전쪽102미달을 이관 근거로 사용하며 승인 근거로 사용하지 않음",
+  "validation": "제거 전2FAIL/exit100, 제거 후 작은 대조1PASS와Clippy/fmt/manifest/docs-links exit0",
+  "before_validation": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_011",
+      "--test",
+      "regression_suite_022",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(stored_neartop_reset_survives_on_a_filled_page) | test(object_height_that_ends_mid_row_still_reconciles)"
+    ],
+    "exit": 100,
+    "seconds": 21.447931416798383
+  },
+  "gates": [
+    {
+      "gate": "focused",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_026",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_5921_empty_page_relaxation_still_applies)"
+      ],
+      "exit": 0,
+      "seconds": 12.837
+    },
+    {
+      "gate": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 12.883
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 6.581
+    },
+    {
+      "gate": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "6b3faf77d8085441f9f26d88d65a49791e910352"
+      ],
+      "exit": 0,
+      "seconds": 0.47
+    },
+    {
+      "gate": "docs-links",
+      "command": [
+        "python3",
+        "scripts/check_markdown_links.py",
+        "mydocs/pr/archives/pr_7423_review.md",
+        "mydocs/orders/20261003.md"
+      ],
+      "exit": 0,
+      "seconds": 8.337
+    }
+  ],
+  "current_binary_sha256": "05d011bef4ce9d4bdddf67845096883495605d95ed520904b0a669c0c9909f5e",
+  "scope_note": "기존396662b15에서 #7147 시장구조조사2함수는 이미 별도 이관됨. 이번 case에는 이 문서의 실패1개만 존재하여 해당 case와 미사용helper 제거. 다른 정상함수 삭제 없음",
+  "issue_comment": {
+    "id": 5969476561,
+    "url": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5969476561",
+    "body_sha256": "f07df01066b47e1adfbfd8510a8187edcf1704615bd2f3771db580dd51f913a5",
+    "verified_exact_body": true,
+    "code_commit": "770fb9f3c"
+  }
+}

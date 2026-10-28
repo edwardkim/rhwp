@@ -1,3 +1,6 @@
+#[path = "column_width_contract_tests.rs"]
+mod column_width_contract_tests;
+
 use super::super::page_layout::PageLayoutInfo;
 use super::super::pagination::{ColumnContent, PageContent, PageItem};
 use super::text_measurement::estimate_text_width;
@@ -37,6 +40,7 @@ fn test_build_empty_page() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: Vec::new(),
@@ -202,6 +206,7 @@ fn footnote_separator_caller_uses_absolute_hwpunit_width() {
         &ResolvedStyleSet::default(),
         &area,
         &shape,
+        &[],
     );
 
     let line = footnote_area
@@ -463,63 +468,19 @@ fn stored_layout_relocated_picture_caption_uses_next_saved_flow_anchor() {
         height: 900.0,
     };
 
-    let flow_top = stored_layout_relocated_empty_rowbreak_picture_next_flow_top(
-        true,
-        &host,
-        &table,
-        Some(&next),
-        &col,
-        96.0,
-    )
-    .expect("이월 그림의 다음 저장 anchor");
+    let flow_top =
+        stored_relocated_picture_successor_origin(true, &host, &table, Some(&next), 96.0)
+            .filter(|origin| *origin <= col.height)
+            .map(|origin| col.y + origin)
+            .expect("이월 그림의 다음 저장 원점");
     assert!(
         (flow_top - 488.386_666_7).abs() < 0.001,
         "flow_top={flow_top}"
     );
     assert!(
-        stored_layout_relocated_empty_rowbreak_picture_next_flow_top(
-            false,
-            &host,
-            &table,
-            Some(&next),
-            &col,
-            96.0,
-        )
-        .is_none()
+        stored_relocated_picture_successor_origin(false, &host, &table, Some(&next), 96.0)
+            .is_none()
     );
-}
-
-#[test]
-fn oversized_row_width_outlier_does_not_expand_base_columns() {
-    let mut cells = Vec::new();
-    for row in 0..3 {
-        for col in 0..2 {
-            cells.push(Cell {
-                row,
-                col,
-                row_span: 1,
-                col_span: 1,
-                width: if row == 0 && col == 0 { 150 } else { 100 },
-                ..Default::default()
-            });
-        }
-    }
-    let table = Table {
-        row_count: 3,
-        col_count: 2,
-        cells,
-        common: CommonObjAttr {
-            width: 200,
-            ..Default::default()
-        },
-        ..Default::default()
-    };
-    let engine = LayoutEngine::with_default_dpi();
-    let widths = engine.resolve_column_widths(&table, 2);
-    let expected = hwpunit_to_px(100, DEFAULT_DPI);
-
-    assert!((widths[0] - expected).abs() < 0.01, "widths={widths:?}");
-    assert!((widths[1] - expected).abs() < 0.01, "widths={widths:?}");
 }
 
 #[test]
@@ -576,9 +537,12 @@ fn test_build_page_with_paragraph() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,
@@ -590,6 +554,14 @@ fn test_build_page_with_paragraph() {
             wrap_anchors: std::collections::HashMap::new(),
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
+            stored_column_top_spacings: Default::default(),
+            paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
+            page_band_flow_starts: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -654,9 +626,12 @@ fn partial_paragraph_start_line_beyond_lines_does_not_panic() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,
@@ -673,6 +648,14 @@ fn partial_paragraph_start_line_beyond_lines_does_not_panic() {
             wrap_anchors: std::collections::HashMap::new(),
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
+            stored_column_top_spacings: Default::default(),
+            paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
+            page_band_flow_starts: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -734,7 +717,16 @@ fn test_layout_with_composed_styles() {
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
 
     let styles = ResolvedStyleSet {
+        source_program_projection_slots: Default::default(),
+        isolated_jamo_font: None,
+        native_pua_fonts: Default::default(),
+        char_overlap_size_bounds: None,
+        source_char_shapes: Default::default(),
+        resolved_dpi: None,
+        page_number_char_style_id: None,
+        page_number_font_is_hft: false,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![
             ResolvedCharStyle {
                 font_family: "함초롬돋움".to_string(),
@@ -754,14 +746,20 @@ fn test_layout_with_composed_styles() {
         border_styles: Vec::new(),
         numberings: Vec::new(),
         bullets: Vec::new(),
+        kerning_measurement_context: None,
+        horizontal_shaping_context: None,
+        supplemental_metrics: None,
     };
 
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,
@@ -773,6 +771,14 @@ fn test_layout_with_composed_styles() {
             wrap_anchors: std::collections::HashMap::new(),
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
+            stored_column_top_spacings: Default::default(),
+            paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
+            page_band_flow_starts: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -869,7 +875,16 @@ fn test_layout_multi_run_x_position() {
 
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
     let styles = ResolvedStyleSet {
+        source_program_projection_slots: Default::default(),
+        isolated_jamo_font: None,
+        native_pua_fonts: Default::default(),
+        char_overlap_size_bounds: None,
+        source_char_shapes: Default::default(),
+        resolved_dpi: None,
+        page_number_char_style_id: None,
+        page_number_font_is_hft: false,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![
             ResolvedCharStyle {
                 font_size: 16.0,
@@ -884,14 +899,20 @@ fn test_layout_multi_run_x_position() {
         border_styles: Vec::new(),
         numberings: Vec::new(),
         bullets: Vec::new(),
+        kerning_measurement_context: None,
+        horizontal_shaping_context: None,
+        supplemental_metrics: None,
     };
 
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,
@@ -903,6 +924,14 @@ fn test_layout_multi_run_x_position() {
             wrap_anchors: std::collections::HashMap::new(),
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
+            stored_column_top_spacings: Default::default(),
+            paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
+            page_band_flow_starts: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -954,7 +983,16 @@ fn test_resolved_to_text_style() {
     use crate::renderer::style_resolver::ResolvedCharStyle;
 
     let styles = ResolvedStyleSet {
+        source_program_projection_slots: Default::default(),
+        isolated_jamo_font: None,
+        native_pua_fonts: Default::default(),
+        char_overlap_size_bounds: None,
+        source_char_shapes: Default::default(),
+        resolved_dpi: None,
+        page_number_char_style_id: None,
+        page_number_font_is_hft: false,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
             font_family: "나눔고딕".to_string(),
             font_size: 14.0,
@@ -969,6 +1007,9 @@ fn test_resolved_to_text_style() {
         border_styles: Vec::new(),
         numberings: Vec::new(),
         bullets: Vec::new(),
+        kerning_measurement_context: None,
+        horizontal_shaping_context: None,
+        supplemental_metrics: None,
     };
 
     let ts = resolved_to_text_style(&styles, 0, 0);
@@ -987,7 +1028,16 @@ fn test_resolved_to_text_style_with_ratio() {
     use crate::renderer::style_resolver::ResolvedCharStyle;
 
     let styles = ResolvedStyleSet {
+        source_program_projection_slots: Default::default(),
+        isolated_jamo_font: None,
+        native_pua_fonts: Default::default(),
+        char_overlap_size_bounds: None,
+        source_char_shapes: Default::default(),
+        resolved_dpi: None,
+        page_number_char_style_id: None,
+        page_number_font_is_hft: false,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
             font_family: "함초롬돋움".to_string(),
             font_size: 16.0,
@@ -998,6 +1048,9 @@ fn test_resolved_to_text_style_with_ratio() {
         border_styles: Vec::new(),
         numberings: Vec::new(),
         bullets: Vec::new(),
+        kerning_measurement_context: None,
+        horizontal_shaping_context: None,
+        supplemental_metrics: None,
     };
 
     let ts = resolved_to_text_style(&styles, 0, 0);
@@ -1257,7 +1310,9 @@ fn test_layout_table_basic() {
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
     // border_fill_id=1은 styles.border_styles[0]을 참조 (1-indexed)
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         border_styles: vec![ResolvedBorderStyle::default()],
         ..Default::default()
     };
@@ -1265,9 +1320,12 @@ fn test_layout_table_basic() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,
@@ -1285,6 +1343,14 @@ fn test_layout_table_basic() {
             wrap_anchors: std::collections::HashMap::new(),
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
+            stored_column_top_spacings: Default::default(),
+            paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
+            page_band_flow_starts: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -1419,9 +1485,12 @@ fn test_layout_table_cell_positions() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: 0,
             start_height: 0.0,
             endnote_flow: false,
@@ -1439,6 +1508,14 @@ fn test_layout_table_cell_positions() {
             wrap_anchors: std::collections::HashMap::new(),
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
+            stored_column_top_spacings: Default::default(),
+            paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
+            page_band_flow_starts: Default::default(),
         }],
         active_header: None,
         active_footer: None,
@@ -1778,6 +1855,7 @@ fn test_expand_numbering_format_level_path_mixed_format() {
 
 #[test]
 fn test_numbering_format_to_number_format() {
+    assert_eq!(numbering_format_to_number_format(10), NumFmt::HangulJamo);
     assert!(matches!(
         numbering_format_to_number_format(0),
         NumFmt::Digit
@@ -1937,16 +2015,17 @@ fn test_square_bullet_with_space_preserves_layout() {
         "positions[1] expected 18.4, got {}",
         positions[1]
     );
-    // 공백: 반각(10) + 자간(10×-8% = -0.8) = advance 9.2 (min_clamp 5.0 미작동)
+    // 공백: [#7702] 한/글 장치 격자(ppem 375) — 반각 187.5 를 공백은 내려 187 단위,
+    // 자간 187×-8% = -14.96 → -15 단위, 172 단위 × 4/75 = 9.1733 (min_clamp 5.0 미작동)
     assert!(
-        (positions[2] - 27.6).abs() < 0.01,
-        "positions[2] expected 27.6, got {}",
+        (positions[2] - (18.4 + 172.0 * 4.0 / 75.0)).abs() < 0.01,
+        "positions[2] expected 27.573, got {}",
         positions[2]
     );
     // 가: 전각(20) + 자간(-1.6) = advance 18.4
     assert!(
-        (positions[3] - 46.0).abs() < 0.01,
-        "positions[3] expected 46.0, got {}",
+        (positions[3] - (18.4 + 172.0 * 4.0 / 75.0 + 18.4)).abs() < 0.01,
+        "positions[3] expected 45.973, got {}",
         positions[3]
     );
 }
@@ -1982,9 +2061,13 @@ fn test_tac_leading_width_block_table_full_line() {
         tac_controls: Vec::new(), // block 취급이라 비어있음
         footnote_positions: Vec::new(),
         tab_extended: Vec::new(),
+        horizontal_shaping: None,
+        frame_geometry: None,
     };
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
             font_size: 20.0,
             letter_spacing: -1.6,
@@ -1992,7 +2075,7 @@ fn test_tac_leading_width_block_table_full_line() {
         }],
         ..Default::default()
     };
-    let width = super::compute_tac_leading_width(&composed, 0, &styles);
+    let width = super::compute_tac_leading_width(&composed, 0, &styles, None, None);
     // [#2279] 자간 글자폭 비례: 4 spaces × (10 base + 10×-8% = 9.2) = 36.8
     // (min_clamp 5.0 미작동)
     assert!((width - 36.8).abs() < 0.5, "expected ~36.8, got {}", width);
@@ -2077,16 +2160,20 @@ fn test_tac_leading_width_inline_table_partial() {
         tac_controls: vec![(2, 1000, 0)], // pos=2 (ab 뒤), control_index=0
         footnote_positions: Vec::new(),
         tab_extended: Vec::new(),
+        horizontal_shaping: None,
+        frame_geometry: None,
     };
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
             font_size: 20.0,
             ..Default::default()
         }],
         ..Default::default()
     };
-    let width = super::compute_tac_leading_width(&composed, 0, &styles);
+    let width = super::compute_tac_leading_width(&composed, 0, &styles, None, None);
     // "ab" 2 chars, 반각 × font_size/2 = 20*0.5*2 = 20
     assert!((width - 20.0).abs() < 0.5, "expected ~20.0, got {}", width);
 }
@@ -2336,6 +2423,7 @@ fn task1197_paper_nodes_sort_by_plane_z_order_and_stable_index() {
         RenderNode::new(
             id,
             RenderNodeType::Group(GroupNode {
+                paint_transform: None,
                 section_index: Some(0),
                 para_index: Some(0),
                 control_index: Some(control_index),
@@ -2650,6 +2738,7 @@ fn render_tree_with_header_control(control: Control) -> PageRenderTree {
     let page_content = PageContent {
         page_index: 0,
         page_number: 1,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: Vec::new(),
@@ -2684,33 +2773,13 @@ fn render_tree_with_header_control(control: Control) -> PageRenderTree {
     )
 }
 
+/// [#6608] 머리말 안 용지 기준 그림은 물리 용지가 아니라 **머리말 틀 원점**에서
+/// 오프셋을 잰다. PR #1682 는 바탕쪽의 용지 원점 규칙을 머리말에도 유추해
+/// 이 테스트를 용지 원점으로 적었지만, 실문서 `pic-in-head-02.hwp` 를 한/글 2020·2022
+/// PDF 와 대조하면 머리말 그림(`PAPER`, 오프셋 (245, 1066)HU)이 틀 원점
+/// (왼쪽 여백, 위 여백) + 오프셋 = (78.68, 51.94)px 에 있다 — 6쪽 전부.
 #[test]
-fn header_paper_relative_shape_uses_page_origin() {
-    let tree = render_tree_with_header_control(Control::Shape(Box::new(ShapeObject::Rectangle(
-        RectangleShape {
-            common: CommonObjAttr {
-                width: 7_500,
-                height: 3_000,
-                horizontal_offset: 1_500,
-                vertical_offset: 2_250,
-                horz_rel_to: HorzRelTo::Paper,
-                vert_rel_to: VertRelTo::Paper,
-                text_wrap: TextWrap::InFrontOfText,
-                ..Default::default()
-            },
-            ..Default::default()
-        },
-    ))));
-
-    let bbox = first_header_child_bbox(&tree, |node_type| {
-        matches!(node_type, RenderNodeType::Rectangle(_))
-    });
-    assert!((bbox.x - hwpunit_to_px(1_500, DEFAULT_DPI)).abs() < 0.01);
-    assert!((bbox.y - hwpunit_to_px(2_250, DEFAULT_DPI)).abs() < 0.01);
-}
-
-#[test]
-fn header_paper_relative_picture_uses_page_origin() {
+fn header_paper_relative_picture_uses_header_frame_origin() {
     let tree =
         render_tree_with_header_control(Control::Picture(Box::new(crate::model::image::Picture {
             common: CommonObjAttr {
@@ -2734,16 +2803,25 @@ fn header_paper_relative_picture_uses_page_origin() {
             RenderNodeType::Image(_) | RenderNodeType::Placeholder(_)
         )
     });
-    assert!((bbox.x - hwpunit_to_px(1_500, DEFAULT_DPI)).abs() < 0.01);
-    assert!((bbox.y - hwpunit_to_px(2_250, DEFAULT_DPI)).abs() < 0.01);
+    let header_area =
+        PageLayoutInfo::from_page_def_default(&a4_page_def(), &ColumnDef::default()).header_area;
+    assert!(
+        header_area.x > 0.0 && header_area.y > 0.0,
+        "픽스처 머리말 틀은 용지 원점과 달라야 한다"
+    );
+    assert!((bbox.x - (header_area.x + hwpunit_to_px(1_500, DEFAULT_DPI))).abs() < 0.01);
+    assert!((bbox.y - (header_area.y + hwpunit_to_px(2_250, DEFAULT_DPI))).abs() < 0.01);
 }
 
-// [Task #2102] 쪽 배경 이미지 채우기는 구역 첫 쪽에만 적용된다.
-// 색 채우기는 첫 쪽 여부와 무관하게 유지된다.
+// 쪽 배경의 첫 쪽 제한은 PageDef의 채우기 플래그에 따라
+// 이미지와 색 채우기에 함께 적용된다.
 
 /// 이미지 채우기 + 색 채우기를 가진 쪽 테두리/배경으로 렌더 트리를 만든 뒤
 /// 루트 자식에서 PageBackground 노드를 찾아 (background_color, image 유무) 를 반환.
-fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
+fn page_bg_color_and_image_present(
+    is_section_first: bool,
+    fill_first_only: bool,
+) -> (Option<u32>, bool) {
     use crate::model::bin_data::BinDataContent;
     use crate::model::image::ImageEffect;
     use crate::model::page::PageBorderFill;
@@ -2755,6 +2833,7 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: Vec::new(),
@@ -2769,7 +2848,9 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
     };
 
     let styles = ResolvedStyleSet {
+        page_number_char_style_id: None,
         hwp3_variant: false,
+        hft_ascii_halfwidth: false,
         border_styles: vec![ResolvedBorderStyle {
             fill_color: Some(0x00F0F0F0),
             image_fill: Some(ResolvedImageFill {
@@ -2794,6 +2875,7 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
     };
 
     engine.set_current_page_is_section_first(is_section_first);
+    engine.set_page_border_fill_first_page_only(false, fill_first_only);
     let tree = engine.build_render_tree(
         &page_content,
         &[],
@@ -2815,20 +2897,27 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
         _ => None,
     });
     let bg = bg.expect("PageBackground 노드가 있어야 함");
-    (bg.background_color.is_some(), bg.image.is_some())
+    (bg.background_color, bg.image.is_some())
 }
 
 #[test]
 fn page_bg_image_only_on_section_first_page() {
-    // 구역 첫 쪽: 이미지 채우기 적용
-    let (color_first, image_first) = page_bg_color_and_image_present(true);
+    // 첫 쪽 제한을 명시한 구역의 첫 쪽: 이미지와 색 채우기 적용.
+    let (color_first, image_first) = page_bg_color_and_image_present(true, true);
     assert!(image_first, "구역 첫 쪽에는 배경 이미지가 있어야 한다");
-    assert!(color_first, "색 채우기는 유지되어야 한다");
+    assert_eq!(color_first, Some(0x00F0F0F0), "문서의 색 채우기를 적용한다");
 
-    // 구역 첫 쪽 아님: 이미지 채우기 억제, 색 채우기는 유지
-    let (color_rest, image_rest) = page_bg_color_and_image_present(false);
+    // 같은 구역의 다음 쪽: 채우기를 숨기고 기본 흰 종이만 유지한다.
+    let (color_rest, image_rest) = page_bg_color_and_image_present(false, true);
     assert!(!image_rest, "구역 첫 쪽이 아니면 배경 이미지가 없어야 한다");
-    assert!(color_rest, "이미지가 억제돼도 색 채우기는 유지되어야 한다");
+    assert_eq!(color_rest, Some(0x00FFFFFF), "뒤쪽은 기본 흰 종이 배경이다");
+    // 제한 플래그가 없으면 뒤쪽에서도 같은 이미지 채우기가 남는다.
+    let (color_unrestricted, image_unrestricted) = page_bg_color_and_image_present(false, false);
+    assert!(
+        image_unrestricted,
+        "첫 쪽 제한이 없으면 이미지 채우기를 유지한다"
+    );
+    assert_eq!(color_unrestricted, Some(0x00F0F0F0));
 }
 
 /// [Task #2835] TAC picture/shape 배치 경로의 좌측 margin 이 paragraph_layout.rs
@@ -2941,6 +3030,7 @@ fn collect_top_level_table_spans_domain() {
             border_fill_id: 0,
             text_direction: 0,
             clip: false,
+            closed_reflow_frame: false,
             page_fragment: false,
             model_cell_index: None,
         }),

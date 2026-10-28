@@ -101,7 +101,7 @@ fn layer_node_has_replay_plane_with_layer(
         LayerNodeKind::Group { children, .. } => children
             .iter()
             .any(|child| layer_node_has_replay_plane_with_layer(child, target, active_layer)),
-        LayerNodeKind::ClipRect { child, .. } => {
+        LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
             layer_node_has_replay_plane_with_layer(child, target, active_layer)
         }
         LayerNodeKind::Leaf { ops } => ops

@@ -1,0 +1,8 @@
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp-issue6389-review-20260916)
+    Finished `release-test` profile [optimized] target(s) in 4m 11s
+────────────
+ Nextest run ID eab54d4e-fc78-43e5-9f74-78d2de42dc3e with nextest profile: default
+    Starting 9905 tests across 78 binaries (51 tests skipped)
+────────────
+     Summary [ 274.309s] 9905 tests run: 9905 passed (5 slow), 51 skipped

@@ -45,7 +45,9 @@ test('finishLineEndpointDrag 는 끝점 이동을 executeOperation record 로 �
 });
 
 test('onMouseUp 은 직선 끝점 종료를 finishLineEndpointDrag 로 위임한다(인라인 정리 금지)', () => {
-  const body = fnBody(mouseSrc, 'export function onMouseUp');
+  const wrapper = fnBody(mouseSrc, 'export function onMouseUp');
+  assert.match(wrapper, /finishMouseUp\.call\(this, e\)/, '공통 마우스업 종료 경로로 위임');
+  const body = fnBody(mouseSrc, 'function finishMouseUp');
   assert.match(body, /if \(this\.isLineEndpointDragging\)\s*{\s*this\.finishLineEndpointDrag\(\);/,
     'onMouseUp 은 상태 인라인 초기화가 아니라 finishLineEndpointDrag 로 위임해야 함(기록 경로 확보)');
 });
@@ -61,4 +63,11 @@ test('bringShapeToFront 는 z순서 변경을 executeOperation command(SetZOrder
   // 스택에 얹힐 이유가 없다. 메뉴 정렬 경로(insert.ts changeZOrder 퍼널)와 동일 커맨드.
   assert.match(body, /kind:\s*'command'/, "kind:'command' 로 기록(메뉴 정렬 경로와 동형)");
   assert.match(body, /new SetZOrderCommand\(picHit\.sec/, 'z 순서 속성쌍 커맨드로 기록');
+});
+
+test('연결선 클릭은 z순서나 문서를 바꾸지 않고 선택만 한다', () => {
+  const body = fnBody(mouseSrc, 'function selectLineObjectFromHit');
+  assert.doesNotMatch(body, /bringShapeToFront\(/, '단순 클릭은 선을 맨 앞으로 옮기면 안 됨');
+  assert.doesNotMatch(body, /executeOperation\(/, '단순 클릭은 Undo 항목을 만들면 안 됨');
+  assert.match(body, /enterPictureObjectSelectionDirect\(/, '선 객체 선택으로 진입');
 });

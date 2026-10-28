@@ -1,11 +1,17 @@
+import { isBodyControl } from './picture-hit-policy';
 /** input-handler keyboard methods — extracted from InputHandler class */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { InsertTextCommand, InsertLineBreakCommand, InsertTabCommand, SplitParagraphCommand, SplitParagraphInCellCommand, InsertTextInHeaderFooterCommand, SplitParagraphInHeaderFooterCommand, SplitParagraphInFootnoteCommand, DeleteTextInFootnoteCommand, MergeParagraphInFootnoteCommand, cellParaIndexOf } from './command';
 import { matchShortcut, defaultShortcuts } from '@/command/shortcut-map';
+import {
+  resolveCellBlockCtrlShiftS,
+  resolveCellBlockLetterShortcut,
+} from '@/command/contextual-shortcut';
 import * as _connector from './input-handler-connector';
 import {
   detectPlatformKind,
+  getCellSelectionArrowAction,
   getNavigationAction,
   shouldSuppressUnmappedNavigation,
   type NavigationAction,
@@ -14,7 +20,10 @@ import {
 import type { DocumentPosition, CursorRect, CellBbox, CellPathLike } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import { tableObjectClipboardTarget } from './table-object-clipboard-target';
+import { inlineOfficeClipboardImages, liftImagesToBlockLevel, needsRtfImageInlining } from './office-clipboard-images';
+import { sanitizeOfficeHtmlForCore } from './office-html-sanitize';
 import { scrollByPageStep, type PageScrollDirection } from '@/view/page-scroll';
+import { emitHeaderFooterModeChanged } from './header-footer-mode';
 
 const RHWP_CLIPBOARD_MARKER_RE = /<!--\s*rhwp-studio-clipboard:([A-Za-z0-9._:-]+)\s*-->/;
 const PAGINATION_BOUNDARY_KEYS = new Set([
@@ -36,10 +45,43 @@ const PAGINATION_BOUNDARY_KEYS = new Set([
  * 전역 편집 명령이다. 이 모드의 문자 입력은 아래 전용 분기가 소유하지만, 되돌리기와
  * 찾아가기는 문서 전체 명령이므로 조기 반환 전에 dispatcher로 전달해야 한다.
  */
+/**
+ * [Task #6741] 셀 블록 선택을 **유지한 채** 통과시키는 명령.
+ *
+ * 한컴은 셀 블록에서 되돌리기를 해도 블록을 놓지 않는다(실측: undo 뒤 지우기 전 블록이
+ * 되살아난다). 종전 rhwp 는 방향키·Escape 외의 키를 전부 "그 외 키"로 흘려 블록을 먼저
+ * 해제했으므로, undo 가 실행될 때는 되살릴 선택이 이미 없었다.
+ *
+ * 서브모드(머리말/꼬리말·각주)의 우회로보다 좁게 잡는다 — goto·select-all 은 셀 블록을
+ * 들고 있을 이유가 없는 조작이라 종전대로 블록을 해제하고 넘긴다.
+ */
+const CELL_BLOCK_GLOBAL_COMMANDS = new Set([
+  'edit:undo',
+  'edit:redo',
+  'edit:delete',
+]);
+
+function dispatchCellBlockGlobalShortcut(this: any, e: KeyboardEvent): boolean {
+  if (!this.dispatcher) return false;
+  const commandId = matchShortcut(e, defaultShortcuts);
+  if (!commandId || !CELL_BLOCK_GLOBAL_COMMANDS.has(commandId)) return false;
+  e.preventDefault();
+  if (commandId === 'edit:delete' && e.ctrlKey && !e.metaKey) {
+    if (!this.cursor.isProtectedCellSelectionMode()) {
+      this.clearSelectedCellBlock();
+      this.updateCellSelection();
+    }
+    return true;
+  }
+  this.dispatcher.dispatch(commandId);
+  return true;
+}
+
 const SUBMODE_GLOBAL_COMMANDS = new Set([
   'edit:undo',
   'edit:redo',
   'edit:goto',
+  'edit:select-all',
 ]);
 
 /**
@@ -70,6 +112,37 @@ function dispatchSubmodeGlobalShortcut(this: any, e: KeyboardEvent): boolean {
 
   e.preventDefault();
   this.dispatcher.dispatch(commandId);
+  return true;
+}
+
+function dispatchCellBlockCtrlShiftS(this: any, e: KeyboardEvent): boolean {
+  if (!this.dispatcher) return false;
+  const resolution = resolveCellBlockCtrlShiftS(e, {
+    inCellSelectionMode: this.cursor.isInCellSelectionMode(),
+    blockSumEnabled: this.dispatcher.isEnabled('table:block-sum'),
+    saveAsEnabled: this.dispatcher.isEnabled('file:save-as'),
+  });
+  if (!resolution) return false;
+
+  e.preventDefault();
+  if (resolution.kind === 'dispatch') {
+    this.dispatcher.dispatch(resolution.commandId);
+  }
+  return true;
+}
+
+function dispatchCellBlockLetterShortcut(this: any, e: KeyboardEvent): boolean {
+  if (!this.dispatcher) return false;
+  const resolution = resolveCellBlockLetterShortcut(e, {
+    inCellSelectionMode: this.cursor.isInCellSelectionMode(),
+  });
+  if (!resolution) return false;
+
+  // macOS 한글 IME는 keydown을 막아도 동일 물리 키의 composition/input을 이어서 낼 수 있다.
+  // 대화상자를 열기 전에 arm해야 focus 이동 중 발생하는 후속 이벤트도 놓치지 않는다.
+  this._cellBlockLetterImeGuard?.arm(e);
+  e.preventDefault();
+  this.dispatcher.dispatch(resolution.commandId);
   return true;
 }
 
@@ -261,6 +334,71 @@ function handleNavigationShortcut(this: any, e: KeyboardEvent): boolean {
   return false;
 }
 
+function executeHeaderFooterNavigationAction(
+  this: any,
+  action: NavigationAction,
+  shiftKey: boolean,
+): void {
+  if (shiftKey) this.cursor.setHfAnchor();
+  else this.cursor.clearSelection();
+
+  switch (action) {
+    case 'wordBackward':
+      this.cursor.moveToWordBoundaryInHf(-1);
+      break;
+    case 'wordForward':
+      this.cursor.moveToWordBoundaryInHf(1);
+      break;
+    case 'lineStart':
+      this.cursor.moveToParagraphEdgeInHf(-1);
+      break;
+    case 'lineEnd':
+      this.cursor.moveToParagraphEdgeInHf(1);
+      break;
+    case 'paragraphBackward':
+      this.cursor.moveToParagraphBoundaryInHf(-1);
+      break;
+    case 'paragraphForward':
+      this.cursor.moveToParagraphBoundaryInHf(1);
+      break;
+  }
+
+  this.updateCaret();
+}
+
+/** 본문과 같은 플랫폼별 탐색 규칙을 머리말/꼬리말 좌표계에 적용한다. */
+function handleHeaderFooterNavigationShortcut(this: any, e: KeyboardEvent): boolean {
+  const input = toNavigationKeyInput(e);
+  const platform = detectPlatformKind();
+  const action = getNavigationAction(input, platform);
+  if (action) {
+    e.preventDefault();
+    executeHeaderFooterNavigationAction.call(this, action, e.shiftKey);
+    return true;
+  }
+
+  const isTargetBoundary =
+    ((e.metaKey && !e.ctrlKey && !e.altKey)
+      && (e.key === 'ArrowUp' || e.key === 'ArrowDown'))
+    || (((e.ctrlKey || e.metaKey) && !e.altKey)
+      && (e.key === 'Home' || e.key === 'End'));
+  if (isTargetBoundary) {
+    e.preventDefault();
+    if (e.shiftKey) this.cursor.setHfAnchor();
+    else this.cursor.clearSelection();
+    const towardStart = e.key === 'ArrowUp' || e.key === 'Home';
+    this.cursor.moveToHeaderFooterBoundary(towardStart ? -1 : 1);
+    this.updateCaret();
+    return true;
+  }
+
+  if (shouldSuppressUnmappedNavigation(input, platform)) {
+    e.preventDefault();
+    return true;
+  }
+  return false;
+}
+
 function positionAfterPasteResult(pos: DocumentPosition, parsed: any): DocumentPosition {
   const newPos: DocumentPosition = {
     sectionIndex: pos.sectionIndex,
@@ -297,8 +435,12 @@ function pastePlainText(this: any, text: string, hasSelection: boolean): void {
     if (lines[i]) {
       this.executeOperation({ kind: 'command', command: new InsertTextCommand(this.cursor.getPosition(), lines[i]) });
     }
-    if (i < lines.length - 1 && !this.cursor.isInCell()) {
-      this.executeOperation({ kind: 'command', command: new SplitParagraphCommand(this.cursor.getPosition()) });
+    if (i < lines.length - 1) {
+      const position = this.cursor.getPosition();
+      const command = this.cursor.isInCell()
+        ? new SplitParagraphInCellCommand(position)
+        : new SplitParagraphCommand(position);
+      this.executeOperation({ kind: 'command', command });
     }
   }
 }
@@ -354,10 +496,12 @@ export function pictureCellPathJson(
 export async function writeImageToClipboard(
   wasm: WasmBridge, sec: number, ppi: number, ci: number,
   text: string, html: string, cellPathJson = '',
+  isCurrent: () => boolean = () => true,
 ): Promise<void> {
   const imageData = wasm.getControlImageData(sec, ppi, ci, cellPathJson);
   const mime = wasm.getControlImageMime(sec, ppi, ci, cellPathJson);
   const pngBlob = await convertToPngBlob(imageData, mime);
+  if (!isCurrent()) return;
   const item = new ClipboardItem({
     'text/plain': new Blob([text], { type: 'text/plain' }),
     'text/html': new Blob([html], { type: 'text/html' }),
@@ -368,6 +512,8 @@ export async function writeImageToClipboard(
 
 /** 코드 단축키 → 커맨드 ID 매핑 (Ctrl+K,? 형태) */
 const chordMapK: Record<string, string> = {
+  h: 'insert:hyperlink',
+  ㅗ: 'insert:hyperlink', // 한글 IME 상태
   b: 'insert:bookmark',
   ㅠ: 'insert:bookmark', // 한글 IME 상태
   n: 'format:para-num-shape',
@@ -560,6 +706,23 @@ function hitTestAfterPageScroll(
  */
 export function onKeyDown(this: any, e: KeyboardEvent): void {
   if (!this.active) return;
+  if (['Delete', 'Backspace', 'Enter', 'Tab'].includes(e.key)
+    && !(e.key === 'Tab' && this.isFormMode?.())
+    && this.cursor.hasSelection()
+    && this.canDeleteSelectionInFormMode?.() === false) {
+    e.preventDefault();
+    return;
+  }
+
+  // fcitx forwards the same physical key after its Process/compositionend sequence.
+  if (this._imeNavigationGuard?.consume(e)) {
+    e.preventDefault();
+    return;
+  }
+
+  // 이전 셀 문자 단축키의 compositionend가 브라우저 focus 이동으로 누락됐더라도 다음
+  // 물리 입력까지 억제 상태가 새지 않게 한다. 현재 S/M이면 아래 resolver가 다시 arm한다.
+  this._cellBlockLetterImeGuard?.reset();
 
   // ─── 1. 코드 단축키 2번째 키 처리 (Ctrl+K → ? / Ctrl+M → ?) ───
   if (this._pendingChordK) {
@@ -656,6 +819,9 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
     return;
   }
 
+  if (dispatchCellBlockCtrlShiftS.call(this, e)) return;
+  if (dispatchCellBlockLetterShortcut.call(this, e)) return;
+
   // IME 조합 중 처리 (한국어 IME에서 e.key는 항상 'Process'이므로 e.code로 판별)
   if (e.isComposing || e.keyCode === 229) {
     // [PR #786 후속] Ctrl+M chord 1번째/2번째 키 영역 영역 IME 합성 중 영역 영역도 활성화.
@@ -688,6 +854,13 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       const cmdId = matchShortcut(e, defaultShortcuts);
       if (cmdId) {
         e.preventDefault();
+        if (cmdId === 'edit:delete' && this.cursor.isInCellSelectionMode() && e.ctrlKey && !e.metaKey) {
+          if (!this.cursor.isProtectedCellSelectionMode()) {
+            this.clearSelectedCellBlock();
+            this.updateCellSelection();
+          }
+          return;
+        }
         this.dispatcher.dispatch(cmdId);
         return;
       }
@@ -702,6 +875,7 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
         key: e.key, code: e.code, shiftKey: e.shiftKey,
         ctrlKey: e.ctrlKey, metaKey: e.metaKey, altKey: e.altKey,
       };
+      this._imeNavigationGuard?.queue(this._pendingNavAfterIME);
     }
     return;
   }
@@ -732,13 +906,18 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
   if (this.cursor.isInHeaderFooter()) {
     if (dispatchSubmodeGlobalShortcut.call(this, e)) return;
 
-    // Shift+Esc 또는 Esc → 편집 모드 탈출
+    // 선택이 있는 Esc는 선택만 해제한다. Shift+Esc 또는 선택 없는 Esc는 모드 탈출.
     if (e.key === 'Escape') {
       e.preventDefault();
+      if (!e.shiftKey && this.cursor.hasHeaderFooterSelection()) {
+        this.cursor.clearSelection();
+        this.updateCaret();
+        return;
+      }
       // 현재 보고 있는 페이지 기억
       const hfPage = this.cursor.rect?.pageIndex ?? 0;
       this.cursor.exitHeaderFooterMode();
-      this.eventBus.emit('headerFooterModeChanged', 'none');
+      emitHeaderFooterModeChanged(this.eventBus, this.cursor);
       // 해당 페이지의 본문 첫 문단 시작점으로 커서 이동
       try {
         const pageInfo = this.wasm.getPageInfo(hfPage);
@@ -754,21 +933,24 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       return;
     }
 
-    // 방향키 → 머리말/꼬리말 내 이동
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-      e.preventDefault();
-      const delta = e.key === 'ArrowLeft' ? -1 : 1;
-      this.cursor.moveHorizontalInHf(delta);
-      this.updateCaret();
-      return;
-    }
+    if (handleHeaderFooterNavigationShortcut.call(this, e)) return;
 
-    // Home/End → 머리말/꼬리말 내 줄 처음·끝. 이 분기가 없으면 키가 여기서 삼켜져
-    // 아래 본문 navigation 경로에 닿지 못하고 무동작이 된다.
-    // Ctrl 조합(문서 처음/끝)은 본문 명령이라 이 모드에서 가로채지 않는다.
-    if ((e.key === 'Home' || e.key === 'End') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    // 수정자에 별도 의미가 없는 방향키 → 머리말/꼬리말 내 시각 이동.
+    // Shift는 현재 위치를 HF anchor로 고정해 범위를 확장한다.
+    if (
+      e.key === 'ArrowLeft'
+      || e.key === 'ArrowRight'
+      || e.key === 'ArrowUp'
+      || e.key === 'ArrowDown'
+    ) {
       e.preventDefault();
-      this.cursor.moveToParagraphEdgeInHf(e.key === 'Home' ? -1 : 1);
+      if (e.shiftKey) this.cursor.setHfAnchor();
+      else this.cursor.clearSelection();
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        this.cursor.moveHorizontalInHf(e.key === 'ArrowLeft' ? -1 : 1);
+      } else {
+        this.cursor.moveVerticalInHf(e.key === 'ArrowUp' ? -1 : 1);
+      }
       this.updateCaret();
       return;
     }
@@ -778,7 +960,10 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       e.preventDefault();
       const isHeader = this.cursor.headerFooterMode === 'header';
       try {
-        const target = { sectionIdx: this.cursor.hfSectionIdx, isHeader, applyTo: this.cursor.hfApplyTo };
+        const target = {
+          sectionIdx: this.cursor.hfSectionIdx, isHeader, applyTo: this.cursor.hfApplyTo,
+          previewPage: this.cursor.hfPreviewPage,
+        };
         const paraIdx = this.cursor.hfParaIdx;
         const charOffset = this.cursor.hfCharOffset;
         this.wasm.insertTextInHeaderFooter(target.sectionIdx, isHeader, target.applyTo, paraIdx, charOffset, '\n');
@@ -794,7 +979,10 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       e.preventDefault();
       const isHeader = this.cursor.headerFooterMode === 'header';
       try {
-        const target = { sectionIdx: this.cursor.hfSectionIdx, isHeader, applyTo: this.cursor.hfApplyTo };
+        const target = {
+          sectionIdx: this.cursor.hfSectionIdx, isHeader, applyTo: this.cursor.hfApplyTo,
+          previewPage: this.cursor.hfPreviewPage,
+        };
         const paraIdx = this.cursor.hfParaIdx;
         const charOffset = this.cursor.hfCharOffset;
         const result = JSON.parse(this.wasm.splitParagraphInHeaderFooter(target.sectionIdx, isHeader, target.applyTo, paraIdx, charOffset));
@@ -808,6 +996,10 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
     // Backspace / Delete는 handleBackspace/handleDelete에서 처리
     if (e.key === 'Backspace' || e.key === 'Delete') {
       e.preventDefault();
+      if (this.getNonEmptyHeaderFooterSelection()) {
+        this.deleteSelection();
+        return;
+      }
       const pos = this.cursor.getPosition();
       if (e.key === 'Backspace') {
         this.handleBackspace(pos, false);
@@ -1101,13 +1293,28 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       this.updateCaret();
       return;
     }
-    // 셀 크기 조절 — 한컴 3모드 (help.hancom.com hwp/table/table(size).htm):
-    //   Ctrl/Cmd+방향키  = 칸/줄 전체 크기 조절, 표 전체 크기 변화
-    //   Alt+방향키       = 선택 칸/줄 전체와 바로 오른쪽/아래 이웃을 반대로 조절 (표 크기 유지)
-    //   Shift+방향키     = 경계 이동 — 셀이 커진 만큼 이웃 셀이 작아짐
-    const isArrow = e.key === 'ArrowUp' || e.key === 'ArrowDown' ||
-        e.key === 'ArrowLeft' || e.key === 'ArrowRight';
-    if ((e.ctrlKey || e.metaKey) && isArrow) {
+
+    // [Task #6741] 되돌리기/다시실행은 블록을 놓지 않고 통과시킨다. 히스토리 점프가
+    // 파생 상태를 해제하면(#2339) undo 쪽은 커맨드가 실어 둔 셀 블록으로 다시 세워진다.
+    if (dispatchCellBlockGlobalShortcut.call(this, e)) return;
+
+    // [Task #6741] 선택한 칸들의 내용을 한 번에 지우고 블록을 유지한다 — 한컴과 같다.
+    // 종전에는 아래 "그 외 키"로 떨어져 블록이 풀리고 캐럿에서 한 글자만 지워졌다.
+    if ((e.key === 'Delete' || e.key === 'Backspace') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      if (!this.cursor.isProtectedCellSelectionMode()) {
+        this.clearSelectedCellBlock();
+        this.updateCellSelection();
+      }
+      return;
+    }
+    if ((e.key === 'Backspace' || e.key === 'Delete') && e.metaKey && !e.ctrlKey && !e.altKey) {
+      e.preventDefault();
+      this.dispatcher?.dispatch('edit:delete');
+      return;
+    }
+    const cellArrowAction = getCellSelectionArrowAction(e);
+    if (cellArrowAction === 'resize') {
       e.preventDefault();
       const phase = this.cursor.getCellSelectionPhase();
       if (phase === 3) {
@@ -1119,18 +1326,7 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       }
       return;
     }
-    if (e.altKey && isArrow) {
-      e.preventDefault();
-      this.resizeCellLocalByKeyboard(e.key as 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight');
-      return;
-    }
-    if (e.shiftKey && isArrow) {
-      e.preventDefault();
-      this.resizeCellBoundaryByKeyboard(e.key as 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight');
-      return;
-    }
-    if (e.key === 'ArrowUp' || e.key === 'ArrowDown' ||
-        e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    if (cellArrowAction === 'navigate') {
       e.preventDefault();
       const dr = e.key === 'ArrowUp' ? -1 : e.key === 'ArrowDown' ? 1 : 0;
       const dc = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : 0;
@@ -1150,17 +1346,7 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       this.updateCellSelection();
       return;
     }
-    // M: 셀 합치기, S: 셀 나누기
-    if (e.key === 'm' || e.key === 'M') {
-      e.preventDefault();
-      this.dispatcher?.dispatch('table:cell-merge');
-      return;
-    }
-    if (e.key === 's' || e.key === 'S') {
-      e.preventDefault();
-      this.dispatcher?.dispatch('table:cell-split');
-      return;
-    }
+    // M/S 셀 명령은 한글 IME의 Process/물리 code를 보존하기 위해 조기 resolver가 소유한다.
     if (e.altKey && !e.ctrlKey && !e.metaKey) {
       const cmdId = matchShortcut(e, defaultShortcuts);
       if (cmdId === 'edit:format-copy') {
@@ -1583,77 +1769,138 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
 }
 
 export function handleSelectAll(this: any): void {
+  // ⌘A는 선택 범위만 바꾼다. 캐럿이 범위 끝(문서·셀 끝)으로 가더라도 화면을 그쪽으로
+  // 스크롤하지 않는다 — 보던 위치가 문서 맨 아래로 튀는 결함을 막는다.
+  if (this.cursor.isInHeaderFooter()) {
+    this.cursor.selectAllInHeaderFooter();
+    this.updateCaret(true);
+    return;
+  }
+
+  // 한컴 정합: 셀 블록(F5) 상태의 ⌘A 는 블록을 풀고 캐럿이 있는 셀 내용만 선택한다.
+  // 키 경로는 셀 선택 분기의 fallthrough 가 블록을 먼저 해제하지만, 메뉴 등 다른
+  // 경로로 들어와도 여기서 블록을 풀어 셀 선택이 되도록 방어적으로 처리한다.
+  if (this.cursor.isInCellSelectionMode()) {
+    this.cursor.exitCellSelectionMode();
+    this.cellSelectionRenderer?.clear();
+  }
+  // 셀·글상자 안의 ⌘A 는 그 컨테이너 내용만 선택한다 (본문 전체가 아니다).
+  if (this.cursor.isInCell()) {
+    if (this.cursor.selectAllInCell()) {
+      this.updateCaret(true);
+      return;
+    }
+  }
+
   // anchor를 문서 시작, focus를 문서 끝으로 설정
+  // (기존 부분 선택의 anchor가 남지 않도록 먼저 비운다)
+  this.cursor.clearSelection();
   this.cursor.moveTo({ sectionIndex: 0, paragraphIndex: 0, charOffset: 0 });
   this.cursor.setAnchor();
   this.cursor.moveToDocumentEnd();
-  this.updateCaret();
+  this.updateCaret(true);
 }
 
-export function onCopy(this: any, e: ClipboardEvent): void {
-  if (!this.active) return;
+function copyHeaderFooterSelection(this: any, e: ClipboardEvent): boolean {
+  const selection = this.getNonEmptyHeaderFooterSelection();
+  if (!selection) return false;
+  e.preventDefault();
+  if (!e.clipboardData) return false;
+  try {
+    const result = this.wasm.copySelectionInHeaderFooter(
+      selection.start.sectionIdx,
+      selection.start.isHeader,
+      selection.start.applyTo,
+      selection.start.paraIdx,
+      selection.start.charOffset,
+      selection.end.paraIdx,
+      selection.end.charOffset,
+    );
+    if (result.ok !== true) return false;
+    e.clipboardData.setData('text/plain', result.text);
+    e.clipboardData.setData(
+      'text/html',
+      prepareRhwpInternalClipboardHtml(this, '', result.text),
+    );
+    return true;
+  } catch (err) {
+    console.warn('[InputHandler] HF 선택 복사 실패:', err);
+    return false;
+  }
+}
+
+export function onCopy(this: any, e: ClipboardEvent): boolean {
+  if (!this.active) return false;
+
+  if (this.cursor.isInHeaderFooter() && this.getNonEmptyHeaderFooterSelection()) {
+    return copyHeaderFooterSelection.call(this, e);
+  }
 
   // 개체(글상자/그림) 선택 모드 → 개체 복사
   if (this.cursor.isInPictureObjectSelection()) {
     const ref = this.cursor.getSelectedPictureRef();
     if (ref) {
       e.preventDefault();
+      if (!e.clipboardData) return false;
       try {
         const cellPathJson = pictureCellPathJson(ref);
-        this.wasm.copyControl(ref.sec, ref.ppi, ref.ci, cellPathJson);
+        const result = this.wasm.copyControl(ref.sec, ref.ppi, ref.ci, cellPathJson);
+        if (JSON.parse(result).ok !== true) return false;
         const text = this.wasm.getClipboardText() || '[그림]';
         let html = '';
         try { html = this.wasm.exportControlHtml(ref.sec, ref.ppi, ref.ci, cellPathJson) || ''; } catch { /* HTML 내보내기 실패는 fallback */ }
         const markedHtml = prepareRhwpInternalClipboardHtml(this, html, text);
-        if (e.clipboardData) {
-          if (text) e.clipboardData.setData('text/plain', text);
-          e.clipboardData.setData('text/html', markedHtml);
-        }
+        e.clipboardData.setData('text/plain', text);
+        e.clipboardData.setData('text/html', markedHtml);
         // 이미지 컨트롤이면 image/png Blob 포함 클립보드 기록
         if (ref.type === 'image') {
           writeImageToClipboard(this.wasm, ref.sec, ref.ppi, ref.ci, text, markedHtml, cellPathJson)
             .catch(() => {});
         }
+        return true;
       } catch (err) {
         console.warn('[InputHandler] 개체 복사 실패:', err);
       }
     }
-    return;
+    return false;
   }
 
-  if (!this.cursor.hasSelection()) return;
+  if (!this.cursor.hasSelection()) return false;
   e.preventDefault();
+  if (!e.clipboardData) return false;
 
   const sel = this.cursor.getSelectionOrdered();
-  if (!sel) return;
+  if (!sel) return false;
   const { start, end } = sel;
 
   try {
     // WASM 내부 클립보드에 복사 (서식 보존)
+    let result: string;
     if (isNestedCellPosition(start)) {
-      this.wasm.copySelectionInCellByPath(
+      result = this.wasm.copySelectionInCellByPath(
         start.sectionIndex, start.parentParaIndex!, JSON.stringify(start.cellPath),
         cellParaIndexOf(start), start.charOffset,
         cellParaIndexOf(end), end.charOffset,
       );
     } else if (start.parentParaIndex !== undefined) {
-      this.wasm.copySelectionInCell(
+      result = this.wasm.copySelectionInCell(
         start.sectionIndex, start.parentParaIndex, start.controlIndex!, start.cellIndex!,
         start.cellParaIndex!, start.charOffset,
         end.cellParaIndex!, end.charOffset,
       );
     } else {
-      this.wasm.copySelection(
+      result = this.wasm.copySelection(
         start.sectionIndex,
         start.paragraphIndex, start.charOffset,
         end.paragraphIndex, end.charOffset,
       );
     }
+    if (JSON.parse(result).ok !== true) return false;
 
     // 시스템 클립보드에 플레인 텍스트 + HTML 설정
     const text = this.wasm.getClipboardText();
     if (e.clipboardData) {
-      if (text) e.clipboardData.setData('text/plain', text);
+      e.clipboardData.setData('text/plain', text);
       // HTML 내보내기 (표/서식 보존)
       let html = '';
       try {
@@ -1680,15 +1927,26 @@ export function onCopy(this: any, e: ClipboardEvent): void {
       const markedHtml = prepareRhwpInternalClipboardHtml(this, html, text);
       e.clipboardData.setData('text/html', markedHtml);
     }
+    return true;
   } catch (err) {
     console.warn('[InputHandler] 복사 실패:', err);
+    return false;
   }
 }
 
 export function onCut(this: any, e: ClipboardEvent): void {
   if (!this.active) return;
+  if (this.cursor.hasSelection() && this.canDeleteSelectionInFormMode?.() === false) {
+    e.preventDefault();
+    return;
+  }
   if (this.isFormMode?.()) {
     e.preventDefault();
+    return;
+  }
+
+  if (this.cursor.isInHeaderFooter() && this.getNonEmptyHeaderFooterSelection()) {
+    if (copyHeaderFooterSelection.call(this, e)) this.deleteSelection();
     return;
   }
 
@@ -1696,28 +1954,30 @@ export function onCut(this: any, e: ClipboardEvent): void {
   if (this.cursor.isInPictureObjectSelection()) {
     const ref = this.cursor.getSelectedPictureRef();
     if (ref) {
-      this.onCopy(e); // 클립보드에 복사
+      if (!this.onCopy(e)) return;
       this.cursor.moveOutOfSelectedPicture();
       this.pictureObjectRenderer?.clear();
-      this.eventBus.emit('picture-object-selection-changed', false);
       this.executeOperation({ kind: 'snapshot', operationType: 'cutObject', operation: (wasm: WasmBridge) => {
         deleteSelectedObject(wasm, ref);
         return this.cursor.getPosition();
       }});
+      // 알림 수신자가 문서를 교체할 수 있으므로 복사한 문서의 삭제를 먼저 끝낸다.
+      this.eventBus.emit('picture-object-selection-changed', false);
     }
     return;
   }
 
   if (!this.cursor.hasSelection()) return;
-  // 먼저 복사
-  this.onCopy(e);
-  // 선택 영역 삭제
-  this.deleteSelection();
+  // 복사 실패로 원문을 잃지 않도록 이번 클립보드 기록이 끝난 뒤에만 지운다.
+  if (this.onCopy(e)) this.deleteSelection();
 }
+
+
 
 export function onPaste(this: any, e: ClipboardEvent): void {
   if (!this.active) return;
   e.preventDefault();
+  if (this.cursor.hasSelection() && this.canDeleteSelectionInFormMode?.() === false) return;
   if (this.isFormMode?.()) return;
 
   // 개체/표 선택 모드 해제 후 붙여넣기 진행
@@ -1738,6 +1998,18 @@ export function onPaste(this: any, e: ClipboardEvent): void {
   const clipboardData = e.clipboardData;
   const html = clipboardData?.getData('text/html') || '';
   const text = clipboardData?.getData('text/plain') || '';
+  const rtf = clipboardData?.getData('text/rtf') || '';
+  // HF는 이번 이슈에서 rich clipboard round-trip을 만들지 않는다. 내부 marker/HTML이
+  // 있어도 시스템 plain text를 코어의 원자 범위 primitive로 삽입·치환한다.
+  if (this.cursor.isInHeaderFooter()) {
+    if (text) {
+      this.replaceHeaderFooterSelection(text, {
+        operationType: 'pastePlainTextInHeaderFooter',
+        allowCollapsed: true,
+      });
+    }
+    return;
+  }
   const hasCurrentInternalMarker = hasCurrentRhwpClipboardMarker(this, html);
   const internalClipboardText = this.wasm.getClipboardText?.() || '';
   const hasMatchingInternalControlText =
@@ -1819,33 +2091,126 @@ export function onPaste(this: any, e: ClipboardEvent): void {
 
   // 외부 클립보드: HTML이 있으면 pasteHtml로 표/서식 보존 붙여넣기
   if (html) {
-    this.executeOperation({ kind: 'snapshot', operationType: 'pasteHtml', operation: (wasm: WasmBridge) => {
-      if (hasSelection) this.deleteSelection({ deferRecord: true });
-      const p = this.cursor.getPosition();
-      let result: string;
-      if (isNestedCellPosition(p)) {
-        result = wasm.pasteHtmlInCellByPath(
-          p.sectionIndex, p.parentParaIndex!, JSON.stringify(p.cellPath), p.charOffset, html,
-        );
-      } else if (p.parentParaIndex !== undefined) {
-        result = wasm.pasteHtmlInCell(
-          p.sectionIndex, p.parentParaIndex, p.controlIndex!,
-          p.cellIndex!, p.cellParaIndex!, p.charOffset, html,
-        );
-      } else {
-        result = wasm.pasteHtml(p.sectionIndex, p.paragraphIndex, p.charOffset, html);
-      }
-      const parsed = JSON.parse(result);
-      if (parsed.ok) {
-        return positionAfterPasteResult(p, parsed);
-      }
-      return p;
-    }});
+    // 🔴 한글에서 복사한 것이면 **문서 모델**을 먼저 쓴다.
+    //
+    // 한글은 클립보드 HTML 끝 주석 `[data-hwpjson]` 에 문서 모델 전체를 싣는다(실측 1.08MB).
+    // HTML 에는 글꼴 등록·문단모양 정의·쪽 설정·셀 속성이 없어, HTML 만 읽으면 대상 문서의
+    // 기본 글꼴로 떨어지고 줄바꿈·쪽수가 어긋난다(표 셀 글자가 행 높이에 잘려 보이던 원인).
+    // 실패하면 조용히 종전 HTML 경로로 되돌아간다 — 워드·엑셀·파워포인트에는 이 주석이 없다.
+    const model = extractHwpJsonModel(html);
+    if (model && pasteHwpJsonModel.call(this, model, hasSelection)) return;
+    // 한글은 그림을 HTML 에 file:/// 로만 적고 실제 픽셀은 같은 클립보드의
+    // text/rtf 안에 둔다. 그 경우에만 RTF 에서 그림을 꺼내 data URI 로 채운 뒤 붙여넣는다.
+    if (needsRtfImageInlining(html, rtf)) {
+      void (async () => {
+        let merged = html;
+        try {
+          merged = await inlineOfficeClipboardImages(html, rtf);
+        } catch (error) {
+          console.warn('[paste] RTF 그림 삽입 실패 — 그림 없이 붙여넣기:', error);
+        }
+        pasteExternalHtml.call(this, merged, text, hasSelection);
+      })();
+      return;
+    }
+    pasteExternalHtml.call(this, liftImagesToBlockLevel(html), text, hasSelection);
     return;
   }
 
   // 플레인 텍스트 붙여넣기 (fallback — 기존 InsertTextCommand 사용, 정밀 undo 유지)
   pastePlainText.call(this, text, hasSelection);
+}
+
+
+/**
+ * 한글 클립보드 HTML 에서 문서 모델 JSON 을 꺼낸다.
+ *
+ * 형태는 `<!--[data-hwpjson]{ … }-->` 이고, 주석 안이 통째로 JSON 이다.
+ * 없으면 한글이 아닌 곳(워드·엑셀·브라우저)에서 온 것이므로 null 을 준다.
+ */
+export function extractHwpJsonModel(html: string): string | null {
+  const marker = html.indexOf('[data-hwpjson]');
+  if (marker < 0) return null;
+  const start = html.indexOf('{', marker);
+  if (start < 0) return null;
+  const end = html.indexOf('-->', start);
+  const raw = (end < 0 ? html.slice(start) : html.slice(start, end)).trim();
+  if (raw.length < 2 || raw[0] !== '{') return null;
+  return raw;
+}
+
+/**
+ * 문서 모델 붙여넣기. 코어가 이 경로를 못 다루면 false 를 돌려
+ * 호출한 쪽이 종전 HTML 경로로 되돌아가게 한다.
+ */
+function pasteHwpJsonModel(this: any, model: string, hasSelection: boolean): boolean {
+  let ok = false;
+  try {
+    this.executeOperation({
+      kind: 'snapshot',
+      operationType: 'pasteHwpJson',
+      operation: (wasm: WasmBridge) => {
+        const p = this.cursor.getPosition();
+        // 표 칸 안은 아직 HTML 경로가 담당한다(코어에 셀 진입점이 없다).
+        if (p.parentParaIndex !== undefined) return undefined;
+        if (hasSelection) this.deleteSelection({ deferRecord: true });
+        const result = wasm.pasteHwpJson(p.sectionIndex, p.paragraphIndex, p.charOffset, model);
+        console.debug('[paste] pasteHwpJson 결과:', String(result).slice(0, 200));
+        const parsed = JSON.parse(result);
+        if (!parsed.ok) return undefined;
+        ok = true;
+        return positionAfterPasteResult(p, parsed);
+      },
+    });
+  } catch (error) {
+    console.warn('[paste] 문서모델 붙여넣기 실패 — HTML 경로로 되돌아감:', error);
+    return false;
+  }
+  if (!ok) console.debug('[paste] 문서모델 경로 미적용 — HTML 경로로 되돌아감');
+  return ok;
+}
+
+/** jb: 외부 HTML 붙여넣기 본체 — 코어 정리 → pasteHtml → 실패 시 text/plain 폴백. */
+function pasteExternalHtml(this: any, html: string, text: string, hasSelection: boolean): void {
+  const htmlForCore = sanitizeOfficeHtmlForCore(html);
+  console.debug(`[paste] HTML 붙여넣기 시작: 원본 ${html.length}자 → 정리 ${htmlForCore.length}자, img ${(htmlForCore.match(/<img\b/gi) ?? []).length}개`);
+  let htmlPasted = false;
+  let selectionConsumed = false;
+  try {
+    this.executeOperation({ kind: 'snapshot', operationType: 'pasteHtml', operation: (wasm: WasmBridge) => {
+      if (hasSelection) {
+        this.deleteSelection({ deferRecord: true });
+        selectionConsumed = true;
+      }
+      const p = this.cursor.getPosition();
+      let result: string;
+      if (isNestedCellPosition(p)) {
+        result = wasm.pasteHtmlInCellByPath(
+          p.sectionIndex, p.parentParaIndex!, JSON.stringify(p.cellPath), p.charOffset, htmlForCore,
+        );
+      } else if (p.parentParaIndex !== undefined) {
+        result = wasm.pasteHtmlInCell(
+          p.sectionIndex, p.parentParaIndex, p.controlIndex!,
+          p.cellIndex!, p.cellParaIndex!, p.charOffset, htmlForCore,
+        );
+      } else {
+        result = wasm.pasteHtml(p.sectionIndex, p.paragraphIndex, p.charOffset, htmlForCore);
+      }
+      const parsed = JSON.parse(result);
+      console.debug('[paste] pasteHtml 결과:', String(result).slice(0, 200));
+      if (parsed.ok) {
+        htmlPasted = true;
+        return positionAfterPasteResult(p, parsed);
+      }
+      console.warn('[paste] HTML 가져오기 거절(ok=false) — 텍스트로 폴백:', parsed.error ?? parsed);
+      return p;
+    }});
+  } catch (error) {
+    console.warn('[paste] HTML 붙여넣기 실패 — 텍스트로 폴백:', error);
+  }
+  if (!htmlPasted && text) {
+    pastePlainText.call(this, text, hasSelection && !selectionConsumed);
+  }
 }
 
 /** 클립보드의 이미지 파일을 커서 위치에 삽입한다. */
@@ -1994,7 +2359,7 @@ export function handleF11(this: any): void {
         try {
           const pageCount = this.wasm.pageCount;
           for (let p = 0; p < pageCount; p++) {
-            const layout = this.wasm.getPageControlLayout(p);
+            const layout = { controls: this.wasm.getPageControlLayout(p).controls.filter(isBodyControl) };
             for (const ctrl of layout.controls) {
               if (ctrl.type === 'line' && ctrl.secIdx === result.sec && ctrl.paraIdx === result.para && ctrl.controlIdx === result.ci) {
                 ctrlType = 'line';
@@ -2092,7 +2457,7 @@ export function handleShiftF11(this: any): void {
         try {
           const pageCount = this.wasm.pageCount;
           for (let p = 0; p < pageCount; p++) {
-            const layout = this.wasm.getPageControlLayout(p);
+            const layout = { controls: this.wasm.getPageControlLayout(p).controls.filter(isBodyControl) };
             for (const ctrl of layout.controls) {
               if (ctrl.type === 'line' && ctrl.secIdx === result.sec && ctrl.paraIdx === result.para && ctrl.controlIdx === result.ci) {
                 ctrlType = 'line';

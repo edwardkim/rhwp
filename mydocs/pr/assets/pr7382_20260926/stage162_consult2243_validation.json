@@ -1,0 +1,752 @@
+{
+  "stage": 162,
+  "documents": [
+    {
+      "key": "36395325_gyeoljae_consulting",
+      "inputs": [
+        {
+          "path": "samples/task2243/36395325_gyeoljae_consulting.hwpx",
+          "bytes": 117672,
+          "sha256": "a0bd691420456e4b6c0b0127d526b6a38d7c1afc3f07e9b84cddb01495e48b0d"
+        },
+        {
+          "path": "pdf/task2243/36395325_gyeoljae_consulting-hwpx-2020.pdf",
+          "bytes": 130622,
+          "sha256": "edf4f1556e987dfddae27bf1aec75afd44c959c4736985958db20efac77e585d"
+        }
+      ],
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "native_pages": 5,
+      "pdf_pages": 5,
+      "native_gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "native_metrics": {
+        "compared_pages": 5,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 95.23398,
+        "worst_pixel_match_percent": 92.96135,
+        "average_ink_match_percent": 62.91624,
+        "worst_ink_match_percent": 46.14841,
+        "average_visual_accuracy_proxy_percent": 62.91624,
+        "worst_visual_accuracy_proxy_percent": 46.14841,
+        "average_tolerant_content_match_percent": 98.55277,
+        "worst_tolerant_content_match_percent": 95.62058,
+        "worst_pages": [
+          1,
+          3,
+          2,
+          4,
+          5
+        ]
+      },
+      "native_page_scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 95.62058
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 98.73445
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 98.81065
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 99.71388
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 99.88427
+        }
+      ],
+      "pdf_metadata": {
+        "Creator": "Hwp 2022 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "5",
+        "PDF version": "1.6"
+      },
+      "wasm_gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "wasm_metrics": {
+        "compared_pages": 5,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 95.23398,
+        "worst_pixel_match_percent": 92.96135,
+        "average_ink_match_percent": 62.91624,
+        "worst_ink_match_percent": 46.14841,
+        "average_visual_accuracy_proxy_percent": 62.91624,
+        "worst_visual_accuracy_proxy_percent": 46.14841,
+        "average_tolerant_content_match_percent": 98.55277,
+        "worst_tolerant_content_match_percent": 95.62058,
+        "worst_pages": [
+          1,
+          3,
+          2,
+          4,
+          5
+        ]
+      },
+      "native_output": "output/pr-review/planet6897-7382-20260926/stage162-consult2243/visual-candidate2-native/36395325_gyeoljae_consulting",
+      "wasm_output": "output/pr-review/planet6897-7382-20260926/stage162-consult2243/visual-candidate2-wasm/36395325_gyeoljae_consulting"
+    },
+    {
+      "key": "36382819_gyeoljae_pm_traffic",
+      "inputs": [
+        {
+          "path": "samples/task2243/36382819_gyeoljae_pm_traffic.hwpx",
+          "bytes": 361609,
+          "sha256": "1a1814462b84a968729d08e1a2c162223b8a9431d5cf4d12f3e776934081aace"
+        },
+        {
+          "path": "pdf/task2243/36382819_gyeoljae_pm_traffic-hwpx-2020.pdf",
+          "bytes": 104084,
+          "sha256": "3853ed3d458dc2d9eca11b4344363ebcc3e4a0580b47b9c1b40c2693996f426e"
+        }
+      ],
+      "pages": [
+        1,
+        2,
+        3
+      ],
+      "native_pages": 3,
+      "pdf_pages": 3,
+      "native_gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "native_metrics": {
+        "compared_pages": 3,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 94.01283,
+        "worst_pixel_match_percent": 90.34724,
+        "average_ink_match_percent": 42.56138,
+        "worst_ink_match_percent": 38.83159,
+        "average_visual_accuracy_proxy_percent": 42.56138,
+        "worst_visual_accuracy_proxy_percent": 38.83159,
+        "average_tolerant_content_match_percent": 95.54235,
+        "worst_tolerant_content_match_percent": 91.61629,
+        "worst_pages": [
+          1,
+          2,
+          3
+        ]
+      },
+      "native_page_scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 91.61629
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 98.20445
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 96.8063
+        }
+      ],
+      "pdf_metadata": {
+        "Creator": "Hwp 2022 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "3",
+        "PDF version": "1.6"
+      },
+      "wasm_gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "wasm_metrics": {
+        "compared_pages": 3,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 94.01283,
+        "worst_pixel_match_percent": 90.34724,
+        "average_ink_match_percent": 42.56138,
+        "worst_ink_match_percent": 38.83159,
+        "average_visual_accuracy_proxy_percent": 42.56138,
+        "worst_visual_accuracy_proxy_percent": 38.83159,
+        "average_tolerant_content_match_percent": 95.54235,
+        "worst_tolerant_content_match_percent": 91.61629,
+        "worst_pages": [
+          1,
+          2,
+          3
+        ]
+      },
+      "native_output": "output/pr-review/planet6897-7382-20260926/stage162-consult2243/visual-candidate2-native/36382819_gyeoljae_pm_traffic",
+      "wasm_output": "output/pr-review/planet6897-7382-20260926/stage162-consult2243/visual-candidate2-wasm/36382819_gyeoljae_pm_traffic"
+    },
+    {
+      "key": "36386907_gyeoljae_sewoon",
+      "inputs": [
+        {
+          "path": "samples/task2243/36386907_gyeoljae_sewoon.hwpx",
+          "bytes": 27686,
+          "sha256": "fe5ee0bb2818f7d046cfee92ad1bee078e91aeadbd3a87f4507ce6aaca5aa723"
+        },
+        {
+          "path": "pdf/task2243/36386907_gyeoljae_sewoon-hwpx-2020.pdf",
+          "bytes": 84992,
+          "sha256": "9deb1c17e79b02761b29d54075b600c8a9f10eb31fa862a28503fa8533e21528"
+        }
+      ],
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "native_pages": 5,
+      "pdf_pages": 5,
+      "native_gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "native_metrics": {
+        "compared_pages": 5,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 95.14605,
+        "worst_pixel_match_percent": 92.52744,
+        "average_ink_match_percent": 42.31203,
+        "worst_ink_match_percent": 33.75357,
+        "average_visual_accuracy_proxy_percent": 42.31203,
+        "worst_visual_accuracy_proxy_percent": 33.75357,
+        "average_tolerant_content_match_percent": 98.54774,
+        "worst_tolerant_content_match_percent": 96.4361,
+        "worst_pages": [
+          4,
+          5,
+          3,
+          1,
+          2
+        ]
+      },
+      "native_page_scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 97.7865
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.7164
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 96.4361
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 98.98189
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 99.81783
+        }
+      ],
+      "pdf_metadata": {
+        "Creator": "Hwp 2022 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "5",
+        "PDF version": "1.6"
+      },
+      "wasm_gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "wasm_metrics": {
+        "compared_pages": 5,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 95.14605,
+        "worst_pixel_match_percent": 92.52744,
+        "average_ink_match_percent": 42.31203,
+        "worst_ink_match_percent": 33.75357,
+        "average_visual_accuracy_proxy_percent": 42.31203,
+        "worst_visual_accuracy_proxy_percent": 33.75357,
+        "average_tolerant_content_match_percent": 98.54774,
+        "worst_tolerant_content_match_percent": 96.4361,
+        "worst_pages": [
+          4,
+          5,
+          3,
+          1,
+          2
+        ]
+      },
+      "native_output": "output/pr-review/planet6897-7382-20260926/stage162-consult2243/visual-candidate2-native/36386907_gyeoljae_sewoon",
+      "wasm_output": "output/pr-review/planet6897-7382-20260926/stage162-consult2243/visual-candidate2-wasm/36386907_gyeoljae_sewoon"
+    },
+    {
+      "key": "156631374_taxi_press",
+      "inputs": [
+        {
+          "path": "samples/task2243/156631374_taxi_press.hwpx",
+          "bytes": 599294,
+          "sha256": "eae05a534e26912030a698bb72dbeeea5ccb2bc8f8cc5fd5f5c51808edf4a143"
+        },
+        {
+          "path": "pdf/task2243/156631374_taxi_press-hwpx-2020.pdf",
+          "bytes": 218174,
+          "sha256": "b719d85ebb3337eacc10c2e1dec9f73450a7d60d11c2946d7c88a500c0266066"
+        }
+      ],
+      "pages": [
+        1
+      ],
+      "native_pages": 1,
+      "pdf_pages": 1,
+      "native_gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "native_metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 89.32936,
+        "worst_pixel_match_percent": 89.32936,
+        "average_ink_match_percent": 20.16279,
+        "worst_ink_match_percent": 20.16279,
+        "average_visual_accuracy_proxy_percent": 20.16279,
+        "worst_visual_accuracy_proxy_percent": 20.16279,
+        "average_tolerant_content_match_percent": 94.56346,
+        "worst_tolerant_content_match_percent": 94.56346,
+        "worst_pages": [
+          1
+        ]
+      },
+      "native_page_scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 94.56346
+        }
+      ],
+      "pdf_metadata": {
+        "Creator": "Hwp 2022 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "PDF version": "1.6"
+      },
+      "wasm_gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "wasm_metrics": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 89.32936,
+        "worst_pixel_match_percent": 89.32936,
+        "average_ink_match_percent": 20.16279,
+        "worst_ink_match_percent": 20.16279,
+        "average_visual_accuracy_proxy_percent": 20.16279,
+        "worst_visual_accuracy_proxy_percent": 20.16279,
+        "average_tolerant_content_match_percent": 94.56346,
+        "worst_tolerant_content_match_percent": 94.56346,
+        "worst_pages": [
+          1
+        ]
+      },
+      "native_output": "output/pr-review/planet6897-7382-20260926/stage162-consult2243/visual-candidate2-taxi-native/156631374_taxi_press",
+      "wasm_output": "output/pr-review/planet6897-7382-20260926/stage162-consult2243/visual-candidate2-wasm/156631374_taxi_press"
+    }
+  ],
+  "scope": "작은4문서14쪽을 현 브랜치에서 보정, 기존1회귀 및 기존1단위함수 강화. 신규테스트0/이관0.",
+  "remaining": "최종 정확한 head 전체 lint·정책·nextest·Native Skia3 및 원 PR 시각 검증은 아직 남음",
+  "rules": [
+    {
+      "cause": "거부한 합성 전방 원점이 뒤 저장 줄에 다시 적용됨",
+      "producer": "height_cursor.rs sync_vpos: 기존 소폭 전방 거부 분기에서 활성 vpos 기준도 같은 이동량으로 갱신",
+      "consumers": [
+        "typeset/section/vpos.rs: 측정 흐름",
+        "layout.rs: 실제 문단 배치"
+      ],
+      "boundary": "기존 거부 조건/48px 경계 유지; 저장 줄·큰 전방 이동·음수 Fixed 간격의 적용 조건을 추가 완화하지 않음",
+      "evidence": "before-result.json 기존 세운 FAIL 및 old Native/WASM p3 47.04651%; candidate1/2 p3 96.4361%"
+    },
+    {
+      "cause": "양의 TAC 저장 후행 간격을 측정 상한에서만 절반으로 소비",
+      "producer": "composer.rs tac_host_trailing_spacing: 저장 간격 전량, 현재 단일 RowBreak 개체 소유 줄만 기존 반간격",
+      "consumers": [
+        "typeset/controls/tac_reconcile.rs: 소유 줄 높이 뒤 후행 간격과 높이 상한",
+        "layout.rs: 동일 host_seg 후행 간격 뒤 문단 실제 흐름"
+      ],
+      "final_origin": "controls.rs reconcile_tac_height→state.rs commit_tac_capped_bottom→stored_tac.rs computed placement→layout.rs flow_placement; 잘못된 되감김을 없애 computed 표 원점이 실제 흐름을 따른다",
+      "evidence": "consult22 stored lh6454=height6172+141×2, ls2212HU; candidate2-consult-diag cap115.5/current235.0/clampfalse; consulting p3 63.60066→98.81065. 음수 간격은 기존 경로 유지"
+    }
+  ],
+  "existing_test_change": "issue_2243 1함수 유지: 기존4문서 쪽수, PDF에서 확인한 문단/표 소속·순서·본문 내부 점유, 원문 행열/셀 전수 소유, 원문190% 줄간격 보존. composer 기존1단위 함수만 간격 경계 강화. 새 #[test] 없음.",
+  "direct_native_reviews": [
+    "consulting3",
+    "consulting5",
+    "sewoon3",
+    "sewoon4",
+    "traffic3",
+    "4문서 전14쪽 contact sheet"
+  ],
+  "before_semantic": {
+    "production_head": "a9a67bb87ba8b0c6192b209269cc262f4efde9fd",
+    "production_files": [
+      "src/renderer/height_cursor.rs",
+      "src/renderer/composer.rs",
+      "src/renderer/layout.rs",
+      "src/renderer/typeset/controls/tac_reconcile.rs"
+    ],
+    "test_sha256": "16c97e13f598b7b78a9910c36414fd38aae1a9991876bd1efec3a128e5a91130",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_016",
+      "-E",
+      "test(=issue_2243::issue_2243_gyeoljae_sliver_page_pins)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "exit_code": 100,
+    "seconds": 149.31750270770863,
+    "failure": "문단25의 선언 줄간격이 다음 표 원점에서 손실됨"
+  },
+  "rejected_evidence": "파생 suite 미갱신 0 selected/exit4는 결함 재현으로 세지 않았으며 --prepare 후 1FAIL/exit100 재현",
+  "final_regression": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_016",
+      "-E",
+      "test(=issue_2243::issue_2243_gyeoljae_sliver_page_pins)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plan": {
+      "caseName": "issue_2243",
+      "target": "regression_suite_016",
+      "grouped": true
+    },
+    "exit_code": 0,
+    "seconds": 152.8322077090852
+  },
+  "normal_tests": [
+    {
+      "case": "issue_1658_page_bottom_fixed_exclusion",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_1658_page_bottom_fixed_exclusion",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 7.373302832711488
+    },
+    {
+      "case": "issue_2220_tac_host_line_outer_margin",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2220_tac_host_line_outer_margin",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 6.939159458037466
+    },
+    {
+      "case": "issue_2319_no_lineseg_tac_table_height",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2319_no_lineseg_tac_table_height",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 6.30833129119128
+    },
+    {
+      "case": "HeightCursor+owned_rowbreak",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--lib",
+        "-E",
+        "test(/renderer::height_cursor::tests::/) or test(/owned_rowbreak_tac_height/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 141.2404815829359
+    }
+  ],
+  "policies": {
+    "base": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "results": [
+      {
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 6.567614083178341
+      },
+      {
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 23.28861791593954
+      },
+      {
+        "command": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 0.11233274964615703
+      }
+    ]
+  },
+  "native_binary": "output/pr-review/planet6897-7382-20260926/stage162-consult2243/candidate2/rhwp",
+  "native_wasm_png_pairs": [
+    {
+      "key": "36395325_gyeoljae_consulting",
+      "page": 1,
+      "sha256": "2fbbbdf200c2e7793412ee93fceed4cb4e9e9d07d3f05b15726358446baf08cb"
+    },
+    {
+      "key": "36395325_gyeoljae_consulting",
+      "page": 2,
+      "sha256": "e29dcf4f6086cd7d394e036333e1c59ad6ea57b3784f37dda38a89f780428c72"
+    },
+    {
+      "key": "36395325_gyeoljae_consulting",
+      "page": 3,
+      "sha256": "a75f1a2ba888081f0c9d6d7a48679f5d90d134f6c824650363a43a519bfdb6a9"
+    },
+    {
+      "key": "36395325_gyeoljae_consulting",
+      "page": 4,
+      "sha256": "dd92d005e1810063b9f2d174fcc18324f0aa6ab7018b7df1e48f6232b0406432"
+    },
+    {
+      "key": "36395325_gyeoljae_consulting",
+      "page": 5,
+      "sha256": "971df8f3e22a40b67c9f4df0bb3bb5ea03daacf482efa6abf2bc1d213f10f9b8"
+    },
+    {
+      "key": "36382819_gyeoljae_pm_traffic",
+      "page": 1,
+      "sha256": "d27e0b7c80e8fb2e5b06511f514cd652cdf726a991b335c12fbe84d1ab86fe09"
+    },
+    {
+      "key": "36382819_gyeoljae_pm_traffic",
+      "page": 2,
+      "sha256": "d94c459493191df64bf782c8ad6644a6405c914fbe61937bc95da1363ec52dd0"
+    },
+    {
+      "key": "36382819_gyeoljae_pm_traffic",
+      "page": 3,
+      "sha256": "fe95395ddbb01f8bbf03bfba3247b465d1c2e4a663459bc6bc5e4afa2040ae99"
+    },
+    {
+      "key": "36386907_gyeoljae_sewoon",
+      "page": 1,
+      "sha256": "81068f10a6c22937ed7609fe900cb79b550c5a59227a78ff51136a716201484a"
+    },
+    {
+      "key": "36386907_gyeoljae_sewoon",
+      "page": 2,
+      "sha256": "d0cb8efef39f3d13cd7eaa36362b60e4e6448906220b939febb97772514a3447"
+    },
+    {
+      "key": "36386907_gyeoljae_sewoon",
+      "page": 3,
+      "sha256": "25fc67d89182de5c52375ba98fa3b0550e3a0d97b5bbc295b7a7819e9ef06f3f"
+    },
+    {
+      "key": "36386907_gyeoljae_sewoon",
+      "page": 4,
+      "sha256": "054478d54820fc6f9ce94b3d907a26d08934c2ea3df75120677a406c3eacf5cb"
+    },
+    {
+      "key": "36386907_gyeoljae_sewoon",
+      "page": 5,
+      "sha256": "ce13cc1f9dfd4da12c1d7877bc741e86da03854e8df5cd871ac8b57f0b6c0a40"
+    },
+    {
+      "key": "156631374_taxi_press",
+      "page": 1,
+      "sha256": "395e9d0c666611841489ff8828438079a524c7dbc9775ad17e343e2eee9ccb96"
+    }
+  ],
+  "wasm_build": {
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--no-opt"
+    ],
+    "env": {
+      "TMPDIR": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage162-consult2243/tmp",
+      "CARGO_TARGET_DIR": "target/pr-review"
+    },
+    "exit_code": 0,
+    "seconds": 165.71264724992216,
+    "sha256": {
+      "pkg/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+      "pkg/rhwp_bg.wasm": "7ca4110a84141c3a936a4e6e0a2e05c48288396e13cebc36c37afa83050deef2",
+      "rhwp-studio/public/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+      "rhwp-studio/public/rhwp_bg.wasm": "7ca4110a84141c3a936a4e6e0a2e05c48288396e13cebc36c37afa83050deef2"
+    }
+  },
+  "fmt": {
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 9.12475704215467
+  },
+  "status": "이 차단 건 완료, 통합 PR 준비는 미완료",
+  "direct_wasm_reviews": [
+    "consulting3 standalone overlay",
+    "sewoon3 standalone overlay"
+  ],
+  "new_tests": 0,
+  "deferred_to_7445": [],
+  "sweep_number_correction": {
+    "before_after": {
+      "before": 156631374,
+      "after": 1
+    },
+    "existing_tests": {
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "-m",
+        "unittest",
+        "scripts.tests.test_visual_sweep.SelectedRasterTests"
+      ],
+      "exit_code": 0,
+      "seconds": 0.22554683312773705
+    },
+    "existing_test_count": 5,
+    "corrected_native_output": "output/pr-review/planet6897-7382-20260926/stage162-consult2243/visual-candidate2-taxi-native",
+    "selected_page_7_preserved": true
+  },
+  "current_source_sha256": {
+    "src/renderer/height_cursor.rs": "62d1298ce8df8ad2128f0279064114d8c1fa2de8ff5fd10830ac0afd26b83f0e",
+    "src/renderer/composer.rs": "d54358eaf0e80a9d80f66e15e56e4001c7c60776729bdc4a199cf4dd930a068a",
+    "src/renderer/layout.rs": "9af7123ab98f4b5565d693844645d083a936d2a208c98ef303161e7e9a4e99e3",
+    "src/renderer/typeset/controls/tac_reconcile.rs": "34d51d01f9bb44ad98f0fb6f8f4db7c94afbef601db9c5c6694dd478ad9e3bb1",
+    "src/renderer/composer/tests.rs": "b6220a8c07d8858e76086469fe38798cbd2680a78e5e071a42babcfb911fc7df",
+    "tests/issue_2243.rs": "16c97e13f598b7b78a9910c36414fd38aae1a9991876bd1efec3a128e5a91130",
+    "scripts/visual_sweep.py": "eec3ea175fa60e6fdbe6a6d6741b60107c085c8deb6442baa93af346383c1fef",
+    "scripts/tests/test_visual_sweep.py": "f7536d965ab4f23bab820ebf2166dd0152e4abac9e3db124ef273e16d4563b74"
+  },
+  "code_commit": "037a0ec508e71cae7127ca43d9b2b12d2a200b1b",
+  "native_binary_sha256": "1888b022138dbbcb1de369aeef6b28e1d7e7c69fc78db3afe213e833e1ff3ba1",
+  "progress": {
+    "completed": 5,
+    "remaining": 21,
+    "total": 26
+  },
+  "committed_assets": {
+    "stage162_before_native_consult3_review.png": "939bca8ac0c3fa8ee35b7965b09c8ddc50be21e51b82afc4a6a580bfdba0ada0",
+    "stage162_before_native_sewoon3_review.png": "8145452201b81cdfd20a262cb4f780fc3fdb192c6b28ec9ff4aeb97e39e9f021",
+    "stage162_native_consult3_review.png": "5edc319070ba0edbd748c24c1c11b3eeed496c3871ae717eb0c71788abae2ffc",
+    "stage162_native_sewoon3_review.png": "61ca17cd34554562581747bb9efe3efb918541263b76ab2e078a87e33892a489",
+    "stage162_wasm_consult3_overlay.png": "b859297f88dd4ae932d45d9415b1c1733b139c39e11df2fccf67598770c215cb",
+    "stage162_wasm_sewoon3_overlay.png": "5548848ca633205a71ecd2abdbde20d462088666a11b9c48a2cd106e74cb7f1c"
+  },
+  "old_svg_cleanup": {
+    "count": 43,
+    "bytes": 3949468143,
+    "record": "output/pr-review/planet6897-7382-20260926/stage162-consult2243/old-svg-cleanup.json"
+  }
+}

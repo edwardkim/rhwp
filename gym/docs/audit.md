@@ -9,7 +9,7 @@ last_verified: 2026-08-18
 
 이 문서는 `gym/tools/audit.py` 의 **전 pack 정합 계약**, **위반 코드
 카탈로그**, **예외 경로**, **보고 봉투**를 고정한다. 작업 기록은
-[`mydocs/working/gym_audit.md`](../../mydocs/working/gym_audit.md) 를
+[`mydocs/working/gym_audit.md`](../../mydocs/working/archives/gym_audit.md) 를
 본다. 시험 계약은 `scripts/tests/test_gym_audit.py` 가 기계로 고정한다.
 
 개별 검증(`schema.validate_pack` / `validate_task`)은 pack 하나·과제

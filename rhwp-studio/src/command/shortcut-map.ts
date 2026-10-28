@@ -23,7 +23,7 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   // 한글 IME에서는 e.key가 'ㅁ' 또는 조합 중 'Process'가 되므로 물리 KeyA로 보정한다.
   [{ key: 'a', code: 'KeyA', ctrl: true }, 'edit:select-all'],
 
-  [{ key: 'e', ctrl: true }, 'edit:delete'],
+  [{ key: 'e', code: 'KeyE', ctrl: true }, 'edit:delete'],
   [{ key: 'ㄷ', ctrl: true }, 'edit:delete'],
   // macOS Option+C가 문자 입력으로 해석되어도 물리 C 키를 한컴 호환 모양 복사로 처리한다.
   [{ key: 'c', code: 'KeyC', alt: true }, 'edit:format-copy'],
@@ -35,8 +35,8 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   [{ key: 'o', ctrl: true }, 'file:open'],
   [{ key: 'ㅐ', ctrl: true }, 'file:open'],
   [{ key: 's', ctrl: true }, 'file:save'],
-  // [Task #833] Ctrl+Shift+S → 다른 이름으로 저장 (한글 IME 'ㄴ' 도 함께).
-  [{ key: 's', ctrl: true, shift: true }, 'file:save-as'],
+  // [Task #833] Ctrl+Shift+S → 다른 이름으로 저장 (한글 IME 'ㄴ'/Process 도 함께).
+  [{ key: 's', code: 'KeyS', ctrl: true, shift: true }, 'file:save-as'],
   [{ key: 'ㄴ', ctrl: true, shift: true }, 'file:save-as'],
   [{ key: 'p', ctrl: true }, 'file:print'],
 
@@ -66,6 +66,9 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   [{ key: '+', ctrl: true, shift: true }, 'view:zoom-in'],
   [{ key: '-', ctrl: true }, 'view:zoom-out'],
   [{ key: '0', ctrl: true }, 'view:zoom-100'],
+
+  // 도구 상자 (한글 2024 호환)
+  [{ key: 'f1', ctrl: true }, 'view:toolbox-basic'],
 
   // 검색
   [{ key: 'f', ctrl: true }, 'edit:find'],
@@ -128,7 +131,6 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   // 표
   [{ key: 'enter', alt: true }, 'table:insert-row-col'],
   [{ key: 'delete', alt: true }, 'table:delete-row-col'],
-  [{ key: 's', ctrl: true, shift: true }, 'table:block-sum'],
   [{ key: 'a', ctrl: true, shift: true }, 'table:block-avg'],
   [{ key: 'p', ctrl: true, shift: true }, 'table:block-product'],
 ];

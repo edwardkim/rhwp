@@ -1,0 +1,24 @@
+{
+  "input": "samples/task2070/hy_ladder3.hwpx",
+  "independent_pdf": "pdf/task2070/hy-ladder3-2020.pdf",
+  "native_percent": [
+    93.1128,
+    100.0
+  ],
+  "fresh_wasm_percent": [
+    93.1128,
+    100.0
+  ],
+  "pages": 2,
+  "removed_test_functions": 0,
+  "replacement": "기존 issue_7418_host_text_and_split_row_geometry::host_line_spacing_is_not_added_again_over_a_synthesized_host_line의 표·후속 문단 쪽 소속 계약",
+  "raw_overflow_diagnostics_preserved": true,
+  "focused_validation": {
+    "overflow_partition_3": {
+      "run_id": "1a55c4bc-f769-46d9-a0ee-fb109986fbff",
+      "passed": 1,
+      "failed": 0
+    },
+    "existing_ownership_contract": "직전 stage24의 기존 host 모듈5/5 PASS에 포함"
+  }
+}

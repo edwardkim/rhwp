@@ -1,0 +1,82 @@
+[
+  {
+    "face": "굴림",
+    "before_sha256": "9fb7f3188f37228ad299e533c3b4f5a9f7b56abbaed68f6cae1200e16545a348",
+    "after_sha256": "31f4f4a4b34503e33092660d3cbaff8077ecbd5325727ddd4dcd6380d89375fa",
+    "unicode_mappings_equal": true,
+    "outline_metrics_sha256": {
+      "glyf": "de7d7148ddde46bd47ba4a26e72e62e62d66bbf7de5925bfcc8b75d45a04d559",
+      "hmtx": "5630c53f7370b704e32f8d0c4412f24b0c1943106dd10469ef748a2faffea745"
+    }
+  },
+  {
+    "face": "굴림체",
+    "before_sha256": "4b4d1e7526be52f86701168cce0da85b47596b8649cd4bacb4084e3783396be9",
+    "after_sha256": "cdee7d952357ddf1de77119e47c2f41d917038ffa7e4835f7c144ab5862375ba",
+    "unicode_mappings_equal": true,
+    "outline_metrics_sha256": {
+      "glyf": "de7d7148ddde46bd47ba4a26e72e62e62d66bbf7de5925bfcc8b75d45a04d559",
+      "hmtx": "5630c53f7370b704e32f8d0c4412f24b0c1943106dd10469ef748a2faffea745"
+    }
+  },
+  {
+    "face": "돋움",
+    "before_sha256": "43d9815b3e4faae9765ba6f16b9de825130cb0ec0e97e2acd2661d3b6a113119",
+    "after_sha256": "8bcada2295c6b9b534335b50608c6e341ef744ffdb5b6f56e7cc6de0099596f1",
+    "unicode_mappings_equal": true,
+    "outline_metrics_sha256": {
+      "glyf": "de7d7148ddde46bd47ba4a26e72e62e62d66bbf7de5925bfcc8b75d45a04d559",
+      "hmtx": "5630c53f7370b704e32f8d0c4412f24b0c1943106dd10469ef748a2faffea745"
+    }
+  },
+  {
+    "face": "돋움체",
+    "before_sha256": "f64feb01ac20ba122feaca4165fc152f2b6d8df3f4c3f0fc064b9505f0167c02",
+    "after_sha256": "6fe4635a019ce270b6ec971864a6facd2da4ff040f95ce9ff59d0535beb45f9a",
+    "unicode_mappings_equal": true,
+    "outline_metrics_sha256": {
+      "glyf": "de7d7148ddde46bd47ba4a26e72e62e62d66bbf7de5925bfcc8b75d45a04d559",
+      "hmtx": "5630c53f7370b704e32f8d0c4412f24b0c1943106dd10469ef748a2faffea745"
+    }
+  },
+  {
+    "face": "바탕",
+    "before_sha256": "34905236428ba56b7fec6a1e1f69bc33d9d16814868b47904423670be62d138d",
+    "after_sha256": "314198c3387034ad04ae3e640c4e1fd210310a84b3777c04d948c1bce605ac6d",
+    "unicode_mappings_equal": true,
+    "outline_metrics_sha256": {
+      "glyf": "47e3f8803f9b9bd8d6d98ef6ff5ce42f13a345a0fad0f6e885237b9afa65d3de",
+      "hmtx": "6553bad0dbf4706e128fbfc73b0edcb59ddf1233345449a439a239aadff72878"
+    }
+  },
+  {
+    "face": "바탕체",
+    "before_sha256": "d774b7a0c2f2053e858021120c9f347f310f910c9aaf65f85df88a412c585650",
+    "after_sha256": "3ae057adc393fe0d46c0f7207420d57d5abbd299e0c4a9dd18af90a12f58a2b9",
+    "unicode_mappings_equal": true,
+    "outline_metrics_sha256": {
+      "glyf": "47e3f8803f9b9bd8d6d98ef6ff5ce42f13a345a0fad0f6e885237b9afa65d3de",
+      "hmtx": "6553bad0dbf4706e128fbfc73b0edcb59ddf1233345449a439a239aadff72878"
+    }
+  },
+  {
+    "face": "궁서",
+    "before_sha256": "ffd9d29170dddbcc654f63ca041361097927be0ae7e16b3eb957c2559b7a76ec",
+    "after_sha256": "7ac042176ff12d4a91fd2b1020ebc5ddf12f35db85c257a864c960bda9c24336",
+    "unicode_mappings_equal": true,
+    "outline_metrics_sha256": {
+      "glyf": "47e3f8803f9b9bd8d6d98ef6ff5ce42f13a345a0fad0f6e885237b9afa65d3de",
+      "hmtx": "6553bad0dbf4706e128fbfc73b0edcb59ddf1233345449a439a239aadff72878"
+    }
+  },
+  {
+    "face": "궁서체",
+    "before_sha256": "48abe4ccabdb38a8c538b17c93e10475b9c88d2ef2984fc39ebe60d530ea030d",
+    "after_sha256": "65b51b6a3af0ca074d138e90bbe47e04c82a0046b8d2d753c19597632b2c1520",
+    "unicode_mappings_equal": true,
+    "outline_metrics_sha256": {
+      "glyf": "47e3f8803f9b9bd8d6d98ef6ff5ce42f13a345a0fad0f6e885237b9afa65d3de",
+      "hmtx": "6553bad0dbf4706e128fbfc73b0edcb59ddf1233345449a439a239aadff72878"
+    }
+  }
+]

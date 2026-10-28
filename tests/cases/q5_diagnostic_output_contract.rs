@@ -63,7 +63,11 @@ fn info_human_stdout_is_byte_stable() {
     let sample = sample_path();
     assert_stdout_digest(
         &["info", sample.to_str().expect("UTF-8 sample path")],
-        "bffcbf7de3bab9ff3b05dda97815afcbfe3d953e8a85098d2ba78ef9d37284ea",
+        // [#4680] HWP3 스타일 풀 중복 제거로 두 줄이 바뀌었다 — 나머지 출력은 동일하다.
+        //   ParaShape: 119 → 16 · CharShape: 747 → 23
+        // [#7810] HWP3 글꼴 이름을 한/글 변환기 이름으로 읽어 폰트 여섯 줄이 바뀌었다
+        //   (HY신명조 → 한양신명조 · HY중고딕 → 한양중고딕 · HY견고딕 → 한양견고딕 · 궁서 → 한양궁서).
+        "b9b3bbaf4930f9e242429e45747c937c62cd2225de8f75ed400eb4b333c01f44",
     );
 }
 
@@ -93,6 +97,12 @@ fn dump_filtered_human_stdout_is_byte_stable() {
             "--para",
             "0",
         ],
-        "45f876bb12042d4a6539780c4eaf043975fca51e21e479c80fd79e975ea8641d",
+        // [#4680] 스타일 풀 중복 제거로 `[CS] id=` · `[PS] ps_id=` 숫자만 바뀌었다.
+        // 속성이 한 글자도 다르지 않던 런 넷(id 14·16·17·18)이 이제 한 id 를 공유하고,
+        // 실제로 다른 런(bold=false)은 그대로 별개 id 를 받는다. 나머지 필드는 동일하다.
+        // [#7445] 머리말/꼬리말의 실제 8유닛 제어 슬롯을 보존한다.
+        // cc=55→63, 슬롯 뒤 CS pos=33/38/54→41/46/62만 달라진다.
+        // 인쇄할 원문·글자모양·줄 메트릭·제어 소유 및 CLI 표기는 동일하다.
+        "eb282345c08d913ea0a51fd420c76b516d08c73c1dd9741189197f81bc696d93",
     );
 }

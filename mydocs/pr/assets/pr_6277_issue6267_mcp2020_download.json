@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "job_id": "fe22bc5b-0c90-4a25-9f5b-3ce449262c57",
+  "output_path": "/home/tsjang/rhwp/pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6277_issue6267_kdt_result_para_float_table-2020.pdf",
+  "output_filename": "pr6277_issue6267_kdt_result_para_float_table-2020.pdf",
+  "size": 116531,
+  "sha256": "39721580d7d485035fad3f8486bc1c200fb09b1d347eccc4ce7352e5bb2f74ba",
+  "server": {
+    "job_id": "fe22bc5b-0c90-4a25-9f5b-3ce449262c57",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "kdt_result_para_float_table.hwpx",
+    "output_filename": "pr6277_issue6267_kdt_result_para_float_table-2020.pdf",
+    "size": 116531,
+    "sha256": "39721580d7d485035fad3f8486bc1c200fb09b1d347eccc4ce7352e5bb2f74ba",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "12.0.0.4605",
+    "backend": "hwp-managed-direct-dll-host",
+    "elapsed_ms": 12255,
+    "worker_elapsed_ms": 11504,
+    "worker_bits": 32
+  }
+}

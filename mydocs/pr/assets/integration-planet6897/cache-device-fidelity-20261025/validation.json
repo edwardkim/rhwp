@@ -1,0 +1,718 @@
+{
+  "status": "scoped_repair_evidence_not_full_branch_acceptance",
+  "source_parent": "9cd2790e2c9d84a8c541e8a858e32acf3838e2d1",
+  "source_files": {
+    "rhwp-studio/src/view/canvaskit/raster-stroke.ts": "d0fbe37d9a15f696dd0deb74100e1bceb0f0cddb0af0628eb0eb8e36f618b673",
+    "src/renderer/composer/stored_word_tail.rs": "3b4236fe1d96876d6356421252b1a49c80c56b9496b835669a0140a914a069ff",
+    "src/renderer/layout/integration_tests.rs": "92960326ed3294f8bb35132bef9dea7771b4e737fe892c4f1d2bc656755d9bbe",
+    "src/renderer/layout/paragraph_layout/issue_2439_lineseg_indent_tests.rs": "fd7fa08399d8d8840630ce1990ef70913d0277ed09b1c094205c0c61a978dc27",
+    "src/renderer/layout/tests.rs": "e4d8ea23a726d74fd610cb25e4691a8c16ca3429cd60b0b88a855177bc19d9d1",
+    "src/renderer/raster_stroke.rs": "fe6f1a1676515b374bd57a3990ac2c1d9e307faa71d2e27031664d6e84084fa3",
+    "src/renderer/style_resolver.rs": "ce2d607461a5b92b86e860ad75d6f3b2c76d11f26b902900b29eec0e0164b28d",
+    "src/renderer/style_resolver/resolved.rs": "ae6a1017f920f79c61a17943a17abfe9a416caab96d801a5f2e2b63248f2a7dc"
+  },
+  "production_diff_sha256": "bf2a37064384b6b7ab54d2ccf2eb786d6ec18db824a3a1c269dfe65b7bae57e7",
+  "native_sha256": "d0c467188a72ec09bda71bb9666a197179d26e4a935eaadf70579d24f53465d6",
+  "wasm_files": {
+    "rhwp.js": "ba97ed3f9cb04605f9fee14363eb76bf572eca3722ece29fd4181fe0076e7da0",
+    "rhwp_bg.wasm": "15940d0bf964aa40787689b4c0b0a6a1611e32244ca9a69b14a9b094396a5992"
+  },
+  "build": "Mac locked wrapper --target web --out-dir pkg --no-opt local substitute",
+  "scope": {
+    "whole_documents": 3,
+    "focused_other_conditions": 6,
+    "conditions_per_backend": 9,
+    "pages_per_backend": 164
+  },
+  "environment": {
+    "profile": "print",
+    "css_dpi": 96,
+    "pdf_rasterizer": "PDFium",
+    "radius_px": 2,
+    "raw_threshold": 90,
+    "devel_raw_drop_pp": "0.1"
+  },
+  "records": [
+    {
+      "key": "onsaemiro-converted-control",
+      "backend": "native",
+      "range": "whole",
+      "pages": 46,
+      "minimum": 94.65583,
+      "below90": [],
+      "input": {
+        "path": "samples/hwpx/hancom-hwp/[2027] 온새미로 1 본교재.hwp",
+        "sha256": "c9ef761953944665e7f9886f5414955c9d52291f1b2e2fd12f62277aafdafa3e"
+      },
+      "independent_print": {
+        "path": "pdf/hwpx/hancom-hwp/[2027] 온새미로 1 본교재-hwp-2020.pdf",
+        "sha256": "58ff2fdc358d38c503d61a1e35a78320099b0671860047f1ac40151787247f3d"
+      },
+      "tsv": "tsv/onsaemiro-converted-control-native.tsv",
+      "sha256": "3bbe7184c1baafd93890f7844af7684641cf222a50a9293ef0894a940484d92e",
+      "bytes": 1266,
+      "devel_comparison": {
+        "status": "base_old_page_count_mismatch",
+        "reason": "고정 base48쪽과 후보46쪽. 전쪽 Print 정합과 본문 소속 증거를 숫자 하락 비교와 구분합니다."
+      }
+    },
+    {
+      "key": "onsaemiro-control",
+      "backend": "native",
+      "range": "whole",
+      "pages": 46,
+      "minimum": 92.38021,
+      "below90": [],
+      "input": {
+        "path": "samples/[2027] 온새미로 1 본교재.hwp",
+        "sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce"
+      },
+      "independent_print": {
+        "path": "pdf/[2027] 온새미로 1 본교재-hwp-2020.pdf",
+        "sha256": "450c793f33a134198936504b38d3b21c01a343a11c09c13e5a7a00e39e2d58c7"
+      },
+      "tsv": "tsv/onsaemiro-control-native.tsv",
+      "sha256": "ab7f497efb45a1d3a7098051ed12c49d995b47d01b0805df3120f0d0b3224cef",
+      "bytes": 1289,
+      "devel_comparison": {
+        "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+        "baseline_tsv": "output/pr-review/planet6897-20261024/visual/base/native/onsaemiro-control/silhouette.tsv",
+        "baseline_sha256": "bf847fa93da46ceb782280505c2718fa2492e3c88686dfa433cdd6ba3be580fa",
+        "pages_compared": 46,
+        "drops_ge_0p1": []
+      }
+    },
+    {
+      "key": "regulatory86712",
+      "backend": "native",
+      "range": "whole",
+      "pages": 64,
+      "minimum": 98.73269,
+      "below90": [],
+      "input": {
+        "path": "samples/86712_regulatory_analysis.hwp",
+        "sha256": "ee82c7755617003cb972ba398da9cffadfed24ac0fa068eee1a5347da7658a88"
+      },
+      "independent_print": {
+        "path": "pdf/issue7382-regression-review/86712_regulatory_analysis-font-supplied-2024.pdf",
+        "sha256": "ac34bb60492e3749a53183cfb63c814f86379895937dd1309d3bc3d2d1b8126a"
+      },
+      "tsv": "tsv/regulatory86712-native.tsv",
+      "sha256": "994b2459bd765943cc1459ba12c19fd8e556f8e242ed7cac5ed710135f903228",
+      "bytes": 1761,
+      "devel_comparison": {
+        "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+        "baseline_tsv": "mydocs/pr/assets/issue7765/source-program-frames-20261025/tsv/devel-native.tsv",
+        "baseline_sha256": "d80241b30ef2f8b08e3eb109b26d5c0787e6ec17faae0531a61a0c740ab3e1db",
+        "pages_compared": 64,
+        "drops_ge_0p1": []
+      }
+    },
+    {
+      "key": "cbta1613",
+      "backend": "native",
+      "range": [
+        59
+      ],
+      "pages": 1,
+      "minimum": 95.1408,
+      "below90": [],
+      "input": {
+        "path": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+        "sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7"
+      },
+      "independent_print": {
+        "path": "pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf",
+        "sha256": "1e15e26100e3b4c4cd9737a0d2b116a449c5895efec9765680d79baa3b8f4380"
+      },
+      "tsv": "tsv/cbta1613-native.tsv",
+      "sha256": "1b4b2b5b1bf4691ab5f19cf0e8635abbf36e069d07ca971e79ba333c573c8b8f",
+      "bytes": 139,
+      "devel_comparison": {
+        "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+        "baseline_tsv": "output/pr-review/planet6897-20261024/cbta-wmf-clip-analysis-v20/new-print-qualification/base/native/silhouette.tsv",
+        "baseline_sha256": "49ac7ab1906361fe3578021981539efa7bf0efc378f65006a409ba862685482c",
+        "pages_compared": 1,
+        "drops_ge_0p1": []
+      }
+    },
+    {
+      "key": "roadmap-control",
+      "backend": "native",
+      "range": [
+        166,
+        294,
+        295
+      ],
+      "pages": 3,
+      "minimum": 96.71566,
+      "below90": [],
+      "input": {
+        "path": "samples/issue5941/1490000-201600081_roadmap_research.hwp",
+        "sha256": "a06f46ec3f175c7cfa84eb3178b8b3fbdf78e94f71b31d7d87f3417a2617dae9"
+      },
+      "independent_print": {
+        "path": "pdf/issue7382-regression-review/1490000-201600081_roadmap_research-2020.pdf",
+        "sha256": "133f79cad7b756ebef777d253befb14f9407faaf7fe04eeea66036f3e049bbe7"
+      },
+      "tsv": "tsv/roadmap-control-native.tsv",
+      "sha256": "2122e20cf0df751a59178226a159599424953f17b6a5e265e027b19be329f833",
+      "bytes": 190,
+      "devel_comparison": {
+        "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+        "baseline_tsv": "output/pr-review/planet6897-20261024/validation-a9a5/visual/base/native/roadmap-control/silhouette.tsv",
+        "baseline_sha256": "ac8769922bafb302130e572562d081a23f84a245d61d4e4d8e80434d995ee495",
+        "pages_compared": 3,
+        "drops_ge_0p1": []
+      }
+    },
+    {
+      "key": "source8152-d80168",
+      "backend": "native",
+      "range": [
+        13
+      ],
+      "pages": 1,
+      "minimum": 98.84928,
+      "below90": [],
+      "input": {
+        "path": "samples/80168_regulatory_analysis.hwp",
+        "sha256": "c8ad10fe9f07be5119cd804278017aefa46e555bbee4f05f0f5132fe4f591a22"
+      },
+      "independent_print": {
+        "path": "pdf/80168_regulatory_analysis-hwp-2024.pdf",
+        "sha256": "b233df7098547df43455f49c13ba5b63f1f06113c853a4773f86a94d6b34a982"
+      },
+      "tsv": "tsv/source8152-d80168-native.tsv",
+      "sha256": "56ba33eaddcf5d3b7dc63a4626da72e0b94dd883e0a1e46faed125ce343e2892",
+      "bytes": 137,
+      "devel_comparison": {
+        "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+        "baseline_tsv": "output/pr-review/planet6897-20261024/validation-b0c5/visual/base/native/source8152-d80168/silhouette.tsv",
+        "baseline_sha256": "46ecbbfce62f9e3a0459138a62e609aa71ef2df126e1870444638631f06fb9ff",
+        "pages_compared": 1,
+        "drops_ge_0p1": []
+      }
+    },
+    {
+      "key": "source8152-d1853",
+      "backend": "native",
+      "range": [
+        44
+      ],
+      "pages": 1,
+      "minimum": 95.71982,
+      "below90": [],
+      "input": {
+        "path": "samples/issue1853_caption_precedes_body_split.hwpx",
+        "sha256": "46bd0142f7fe2f68dffb9768e08d65488feeb19f5fd6916f9ad90ae5d72a96a9"
+      },
+      "independent_print": {
+        "path": "pdf/issue1853_caption_precedes_body_split-hwpx-2020.pdf",
+        "sha256": "6577db6936337f4003553c1b8c492cfac42f06554b7dddca640b865ce5a100a8"
+      },
+      "tsv": "tsv/source8152-d1853-native.tsv",
+      "sha256": "0bdb14380c30edf461d313cbcf5911374ef49da1bf8965d50ed5ad52f27f76f7",
+      "bytes": 137,
+      "devel_comparison": {
+        "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+        "baseline_tsv": "output/pr-review/planet6897-20261024/validation-b0c5/visual/base/native/source8152-d1853/silhouette.tsv",
+        "baseline_sha256": "31ffc9844c0d2bf7afb00e6c651dd2cafdc648784915193e4a1a3d22320aa2b5",
+        "pages_compared": 1,
+        "drops_ge_0p1": []
+      }
+    },
+    {
+      "key": "source8152-d1880",
+      "backend": "native",
+      "range": [
+        6
+      ],
+      "pages": 1,
+      "minimum": 98.40056,
+      "below90": [],
+      "input": {
+        "path": "samples/issue1880_takeplace_host_before.hwpx",
+        "sha256": "9807766f5b4b2ad352362b5384f3bc0611a89cfdb1b65bd3d6682d7d571dca2c"
+      },
+      "independent_print": {
+        "path": "pdf/issue1880/issue1880_takeplace_host_before-2024.pdf",
+        "sha256": "662735e5f28fd423ffd158335cea1abfee1ed92b19c125efbea20c46dceca446"
+      },
+      "tsv": "tsv/source8152-d1880-native.tsv",
+      "sha256": "ba8c1eb2d304107c869c3d0081ab2b2b64a7166a3aaa6ebe7335685fb4dbf6a9",
+      "bytes": 136,
+      "devel_comparison": {
+        "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+        "baseline_tsv": "output/pr-review/planet6897-20261024/validation-b0c5/visual/base/native/source8152-d1880/silhouette.tsv",
+        "baseline_sha256": "e2b3aa1a3c0bf7cf22451b9fc157273205b9648c9ced505f67991055a9f5ebc7",
+        "pages_compared": 1,
+        "drops_ge_0p1": []
+      }
+    },
+    {
+      "key": "source8152-hs2",
+      "backend": "native",
+      "range": [
+        3
+      ],
+      "pages": 1,
+      "minimum": 97.1837,
+      "below90": [],
+      "input": {
+        "path": "samples/hwpx_sample2.hwp",
+        "sha256": "ca66d521d070ac8442e09fd3f283e17611eb9efb45eb4bf6c3a8f65e604f6b5f"
+      },
+      "independent_print": {
+        "path": "pdf/hwpx_sample2-hwp-2024.pdf",
+        "sha256": "1b2e13e966787f6b91f590c8901dcb988e73ac7063d5e1cb95c8952400fd9a47"
+      },
+      "tsv": "tsv/source8152-hs2-native.tsv",
+      "sha256": "f208cf590193fc49d37e28ed78538381332b36f687a67d7df97a1f75324bf336",
+      "bytes": 136,
+      "devel_comparison": {
+        "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+        "baseline_tsv": "output/pr-review/planet6897-20261024/validation-b0c5/visual/base/native/source8152-hs2/silhouette.tsv",
+        "baseline_sha256": "01b6ddec0d06c57551b41959457d17449b2334f64c78837c10d0613499f105c8",
+        "pages_compared": 1,
+        "drops_ge_0p1": []
+      }
+    },
+    {
+      "key": "onsaemiro-converted-control",
+      "backend": "wasm",
+      "range": "whole",
+      "pages": 46,
+      "minimum": 94.55536,
+      "below90": [],
+      "input": {
+        "path": "samples/hwpx/hancom-hwp/[2027] 온새미로 1 본교재.hwp",
+        "sha256": "c9ef761953944665e7f9886f5414955c9d52291f1b2e2fd12f62277aafdafa3e"
+      },
+      "independent_print": {
+        "path": "pdf/hwpx/hancom-hwp/[2027] 온새미로 1 본교재-hwp-2020.pdf",
+        "sha256": "58ff2fdc358d38c503d61a1e35a78320099b0671860047f1ac40151787247f3d"
+      },
+      "tsv": "tsv/onsaemiro-converted-control-wasm.tsv",
+      "sha256": "92a0c973ebc2b421603aa4242e83c403d4c04265bcb12d775940438a5567d75b",
+      "bytes": 1266,
+      "devel_comparison": {
+        "status": "base_old_page_count_mismatch",
+        "reason": "고정 base48쪽과 후보46쪽. 전쪽 Print 정합과 본문 소속 증거를 숫자 하락 비교와 구분합니다."
+      }
+    },
+    {
+      "key": "onsaemiro-control",
+      "backend": "wasm",
+      "range": "whole",
+      "pages": 46,
+      "minimum": 92.38142,
+      "below90": [],
+      "input": {
+        "path": "samples/[2027] 온새미로 1 본교재.hwp",
+        "sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce"
+      },
+      "independent_print": {
+        "path": "pdf/[2027] 온새미로 1 본교재-hwp-2020.pdf",
+        "sha256": "450c793f33a134198936504b38d3b21c01a343a11c09c13e5a7a00e39e2d58c7"
+      },
+      "tsv": "tsv/onsaemiro-control-wasm.tsv",
+      "sha256": "c7035e1564922cbf2614623ba97bc969d8d85c407c5c95aa2a5bafb66bd6d728",
+      "bytes": 1289,
+      "devel_comparison": {
+        "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+        "baseline_tsv": "output/pr-review/planet6897-20261024/visual/base/wasm/onsaemiro-control/silhouette.tsv",
+        "baseline_sha256": "d3028a1be6f5c870bb4f81bb820cf14ee78f4fa69e9fe108cc4c0c53835e18d0",
+        "pages_compared": 46,
+        "drops_ge_0p1": []
+      }
+    },
+    {
+      "key": "regulatory86712",
+      "backend": "wasm",
+      "range": "whole",
+      "pages": 64,
+      "minimum": 98.73139,
+      "below90": [],
+      "input": {
+        "path": "samples/86712_regulatory_analysis.hwp",
+        "sha256": "ee82c7755617003cb972ba398da9cffadfed24ac0fa068eee1a5347da7658a88"
+      },
+      "independent_print": {
+        "path": "pdf/issue7382-regression-review/86712_regulatory_analysis-font-supplied-2024.pdf",
+        "sha256": "ac34bb60492e3749a53183cfb63c814f86379895937dd1309d3bc3d2d1b8126a"
+      },
+      "tsv": "tsv/regulatory86712-wasm.tsv",
+      "sha256": "2eda3a38a74140c74f12e958d750b6d8faaea919882ef2771d146db1aa7eddd0",
+      "bytes": 1749,
+      "devel_comparison": {
+        "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+        "baseline_tsv": "mydocs/pr/assets/issue7765/source-program-frames-20261025/tsv/devel-wasm.tsv",
+        "baseline_sha256": "0ad71cf629fda5e53cd8fd2e735ecfd603bbd2693887fd2826cd59bd157b06d4",
+        "pages_compared": 64,
+        "drops_ge_0p1": []
+      }
+    },
+    {
+      "key": "cbta1613",
+      "backend": "wasm",
+      "range": [
+        59
+      ],
+      "pages": 1,
+      "minimum": 95.05109,
+      "below90": [],
+      "input": {
+        "path": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+        "sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7"
+      },
+      "independent_print": {
+        "path": "pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf",
+        "sha256": "1e15e26100e3b4c4cd9737a0d2b116a449c5895efec9765680d79baa3b8f4380"
+      },
+      "tsv": "tsv/cbta1613-wasm.tsv",
+      "sha256": "d66e6cbb601bf338d4ea081a32f0b61c1d5754344007385129da03000e8eea47",
+      "bytes": 139,
+      "devel_comparison": {
+        "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+        "baseline_tsv": "output/pr-review/planet6897-20261024/cbta-wmf-clip-analysis-v20/new-print-qualification/base/wasm/silhouette.tsv",
+        "baseline_sha256": "8396e45b41a6998566ff800e8238c71acf7d711c85b63f87e9da92feb3d25a9b",
+        "pages_compared": 1,
+        "drops_ge_0p1": []
+      }
+    },
+    {
+      "key": "roadmap-control",
+      "backend": "wasm",
+      "range": [
+        166,
+        294,
+        295
+      ],
+      "pages": 3,
+      "minimum": 96.71683,
+      "below90": [],
+      "input": {
+        "path": "samples/issue5941/1490000-201600081_roadmap_research.hwp",
+        "sha256": "a06f46ec3f175c7cfa84eb3178b8b3fbdf78e94f71b31d7d87f3417a2617dae9"
+      },
+      "independent_print": {
+        "path": "pdf/issue7382-regression-review/1490000-201600081_roadmap_research-2020.pdf",
+        "sha256": "133f79cad7b756ebef777d253befb14f9407faaf7fe04eeea66036f3e049bbe7"
+      },
+      "tsv": "tsv/roadmap-control-wasm.tsv",
+      "sha256": "1164e470ee2f0cd97f6f276bfd851bda1386c2e93348d19d55291e4ac844f2ff",
+      "bytes": 190,
+      "devel_comparison": {
+        "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+        "baseline_tsv": "output/pr-review/planet6897-20261024/validation-a9a5/visual/base/wasm/roadmap-control/silhouette.tsv",
+        "baseline_sha256": "a6dda17f5b30bd09368942da4076428b266c84eb3b64ac25c2a29776edcb8859",
+        "pages_compared": 3,
+        "drops_ge_0p1": []
+      }
+    },
+    {
+      "key": "source8152-d80168",
+      "backend": "wasm",
+      "range": [
+        13
+      ],
+      "pages": 1,
+      "minimum": 98.84857,
+      "below90": [],
+      "input": {
+        "path": "samples/80168_regulatory_analysis.hwp",
+        "sha256": "c8ad10fe9f07be5119cd804278017aefa46e555bbee4f05f0f5132fe4f591a22"
+      },
+      "independent_print": {
+        "path": "pdf/80168_regulatory_analysis-hwp-2024.pdf",
+        "sha256": "b233df7098547df43455f49c13ba5b63f1f06113c853a4773f86a94d6b34a982"
+      },
+      "tsv": "tsv/source8152-d80168-wasm.tsv",
+      "sha256": "d647adb63061e7f7a4d8b3e7ebf07d92bdbdcffeb9eabc8c5259594627887055",
+      "bytes": 137,
+      "devel_comparison": {
+        "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+        "baseline_tsv": "output/pr-review/planet6897-20261024/validation-b0c5/visual/base/wasm/source8152-d80168/silhouette.tsv",
+        "baseline_sha256": "73d18a8edd317c0db643f86d31253e1144c755f62fe28d3fdac18d1ec671862f",
+        "pages_compared": 1,
+        "drops_ge_0p1": []
+      }
+    },
+    {
+      "key": "source8152-d1853",
+      "backend": "wasm",
+      "range": [
+        44
+      ],
+      "pages": 1,
+      "minimum": 95.70173,
+      "below90": [],
+      "input": {
+        "path": "samples/issue1853_caption_precedes_body_split.hwpx",
+        "sha256": "46bd0142f7fe2f68dffb9768e08d65488feeb19f5fd6916f9ad90ae5d72a96a9"
+      },
+      "independent_print": {
+        "path": "pdf/issue1853_caption_precedes_body_split-hwpx-2020.pdf",
+        "sha256": "6577db6936337f4003553c1b8c492cfac42f06554b7dddca640b865ce5a100a8"
+      },
+      "tsv": "tsv/source8152-d1853-wasm.tsv",
+      "sha256": "c44ff79f0a3aed2c61af5247798d344c6d8cb04bc78a1cdca25e9b4ebc9949cd",
+      "bytes": 137,
+      "devel_comparison": {
+        "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+        "baseline_tsv": "output/pr-review/planet6897-20261024/validation-b0c5/visual/base/wasm/source8152-d1853/silhouette.tsv",
+        "baseline_sha256": "0df546ff53ab188c478c8c4cfd51abc18522949542ae522f5dafdcf1ad14f324",
+        "pages_compared": 1,
+        "drops_ge_0p1": []
+      }
+    },
+    {
+      "key": "source8152-d1880",
+      "backend": "wasm",
+      "range": [
+        6
+      ],
+      "pages": 1,
+      "minimum": 98.40002,
+      "below90": [],
+      "input": {
+        "path": "samples/issue1880_takeplace_host_before.hwpx",
+        "sha256": "9807766f5b4b2ad352362b5384f3bc0611a89cfdb1b65bd3d6682d7d571dca2c"
+      },
+      "independent_print": {
+        "path": "pdf/issue1880/issue1880_takeplace_host_before-2024.pdf",
+        "sha256": "662735e5f28fd423ffd158335cea1abfee1ed92b19c125efbea20c46dceca446"
+      },
+      "tsv": "tsv/source8152-d1880-wasm.tsv",
+      "sha256": "8b381d1f90cf864fa18ee706dde667bd84fd58be5d518157af3cb703d670cafe",
+      "bytes": 136,
+      "devel_comparison": {
+        "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+        "baseline_tsv": "output/pr-review/planet6897-20261024/validation-b0c5/visual/base/wasm/source8152-d1880/silhouette.tsv",
+        "baseline_sha256": "69008f5aa3f93b5841d6a3eab9d0be62f95d8ecab14353b6ea69470320a6d202",
+        "pages_compared": 1,
+        "drops_ge_0p1": []
+      }
+    },
+    {
+      "key": "source8152-hs2",
+      "backend": "wasm",
+      "range": [
+        3
+      ],
+      "pages": 1,
+      "minimum": 97.18261,
+      "below90": [],
+      "input": {
+        "path": "samples/hwpx_sample2.hwp",
+        "sha256": "ca66d521d070ac8442e09fd3f283e17611eb9efb45eb4bf6c3a8f65e604f6b5f"
+      },
+      "independent_print": {
+        "path": "pdf/hwpx_sample2-hwp-2024.pdf",
+        "sha256": "1b2e13e966787f6b91f590c8901dcb988e73ac7063d5e1cb95c8952400fd9a47"
+      },
+      "tsv": "tsv/source8152-hs2-wasm.tsv",
+      "sha256": "de4ea61eaabb7cab70bec48f902d287b1f9ccbd0bbd7213756ffacf9e0064e09",
+      "bytes": 136,
+      "devel_comparison": {
+        "base_sha": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+        "baseline_tsv": "output/pr-review/planet6897-20261024/validation-b0c5/visual/base/wasm/source8152-hs2/silhouette.tsv",
+        "baseline_sha256": "9378b36159274f7b7fcc034a5941e291845e7fe4ae326e3cac5a68e45e0b10dd",
+        "pages_compared": 1,
+        "drops_ge_0p1": []
+      }
+    }
+  ],
+  "representatives": [
+    {
+      "key": "onsaemiro-control",
+      "page": 9,
+      "backend": "native",
+      "kind": "review",
+      "file": "onsaemiro-control-p009-native-review.png",
+      "sha256": "0934e173ca29dfbdc0728d4d1d6cc6fc986b332593af559ce4c48531518862d1"
+    },
+    {
+      "key": "onsaemiro-control",
+      "page": 9,
+      "backend": "native",
+      "kind": "overlay",
+      "file": "onsaemiro-control-p009-native-overlay.png",
+      "sha256": "e9fe77bfd0e0a840bc61d6972318060395426d9a57f86b72c02709ce088a5bd3"
+    },
+    {
+      "key": "onsaemiro-control",
+      "page": 9,
+      "backend": "wasm",
+      "kind": "review",
+      "file": "onsaemiro-control-p009-wasm-review.png",
+      "sha256": "e2843eac07eafd4434e5badcfa6f706b77786a45e08372149773e457d9f6d0a8"
+    },
+    {
+      "key": "onsaemiro-control",
+      "page": 9,
+      "backend": "wasm",
+      "kind": "overlay",
+      "file": "onsaemiro-control-p009-wasm-overlay.png",
+      "sha256": "8dbee0275fbe222d78c8d720b5d8e888341e9dc9b45983cc3bc1b226dc7648ea"
+    },
+    {
+      "key": "onsaemiro-converted-control",
+      "page": 19,
+      "backend": "native",
+      "kind": "review",
+      "file": "onsaemiro-converted-control-p019-native-review.png",
+      "sha256": "fc029371937ebcff1b9705489c71a2027efe3f1ff71e6b8a5b14efdd42273cd4"
+    },
+    {
+      "key": "onsaemiro-converted-control",
+      "page": 19,
+      "backend": "native",
+      "kind": "overlay",
+      "file": "onsaemiro-converted-control-p019-native-overlay.png",
+      "sha256": "6cdeb5b262866545cbac82e33cd221e6725ac6d311470520e834a58bed63f1c7"
+    },
+    {
+      "key": "onsaemiro-converted-control",
+      "page": 19,
+      "backend": "wasm",
+      "kind": "review",
+      "file": "onsaemiro-converted-control-p019-wasm-review.png",
+      "sha256": "a759624d490bc4836aefa9089b0395a24fa3d387386acd90b3ec2c412507cb09"
+    },
+    {
+      "key": "onsaemiro-converted-control",
+      "page": 19,
+      "backend": "wasm",
+      "kind": "overlay",
+      "file": "onsaemiro-converted-control-p019-wasm-overlay.png",
+      "sha256": "434c10edb956fce49603dfc8f0c3894e33a54a483a12513623f45146d486e392"
+    },
+    {
+      "key": "regulatory86712",
+      "page": 28,
+      "backend": "native",
+      "kind": "review",
+      "file": "regulatory86712-p028-native-review.png",
+      "sha256": "7d9ebbf8862d70a60bb95a2a324546d3be1d441944a66a8f3ba31bbf642f5a19"
+    },
+    {
+      "key": "regulatory86712",
+      "page": 28,
+      "backend": "native",
+      "kind": "overlay",
+      "file": "regulatory86712-p028-native-overlay.png",
+      "sha256": "d1134333c26208fa586e747bf8fea6bd0bedec4a1333b13822b76c39100cf5cd"
+    },
+    {
+      "key": "regulatory86712",
+      "page": 28,
+      "backend": "wasm",
+      "kind": "review",
+      "file": "regulatory86712-p028-wasm-review.png",
+      "sha256": "f2b93716106ca8a6bba4d7d0b53b9091592387ce4efcd7c3d43970c286057c25"
+    },
+    {
+      "key": "regulatory86712",
+      "page": 28,
+      "backend": "wasm",
+      "kind": "overlay",
+      "file": "regulatory86712-p028-wasm-overlay.png",
+      "sha256": "8789ad81d754fdc4f0cec25d37e9fedb6873005704f7e8f00037f7529ad12d10"
+    },
+    {
+      "key": "roadmap-control",
+      "page": 295,
+      "backend": "native",
+      "kind": "review",
+      "file": "roadmap-control-p295-native-review.png",
+      "sha256": "520fdd9aab9822ec3932acfafc16071da1f54fc1e91f3f86ea097b68e74e4b6e"
+    },
+    {
+      "key": "roadmap-control",
+      "page": 295,
+      "backend": "native",
+      "kind": "overlay",
+      "file": "roadmap-control-p295-native-overlay.png",
+      "sha256": "c3519604ac420fc096fa79601be20c5af24020591a3dc9d28374206a5a05cde6"
+    },
+    {
+      "key": "roadmap-control",
+      "page": 295,
+      "backend": "wasm",
+      "kind": "review",
+      "file": "roadmap-control-p295-wasm-review.png",
+      "sha256": "68aaf0775b80b7fb4e73a83ed03517e4f6419601de09930f1a7134f8cfc77deb"
+    },
+    {
+      "key": "roadmap-control",
+      "page": 295,
+      "backend": "wasm",
+      "kind": "overlay",
+      "file": "roadmap-control-p295-wasm-overlay.png",
+      "sha256": "fc066ca79630fcc9abdeecdfb78a750c7228181b5be36fba018fb538de8e309b"
+    },
+    {
+      "key": "cbta1613",
+      "page": 59,
+      "backend": "native",
+      "kind": "review",
+      "file": "cbta1613-p059-native-review.png",
+      "sha256": "4c55b424c1dd1ebf2ae6afd52a6973770484f6fbc3d00cab4a975ccb8cdb2101"
+    },
+    {
+      "key": "cbta1613",
+      "page": 59,
+      "backend": "native",
+      "kind": "overlay",
+      "file": "cbta1613-p059-native-overlay.png",
+      "sha256": "7fbed7b5ab98e5516e5e29d99700d1d6e9f9e285d3caa2a6373c7335c41050f5"
+    },
+    {
+      "key": "cbta1613",
+      "page": 59,
+      "backend": "wasm",
+      "kind": "review",
+      "file": "cbta1613-p059-wasm-review.png",
+      "sha256": "e35467880d77bb8f7018dffd09f06974b6020c113a58f2694181ec919b070b1f"
+    },
+    {
+      "key": "cbta1613",
+      "page": 59,
+      "backend": "wasm",
+      "kind": "overlay",
+      "file": "cbta1613-p059-wasm-overlay.png",
+      "sha256": "8595281e148cffed578ccb5cf27c3c390e29c26a49a718133ded9f8a48ca9c80"
+    }
+  ],
+  "remaining": [
+    "교육과정 편성표416쪽/독립 Print415쪽 회귀",
+    "편람 복원383쪽의 Native/fresh WASM 전쪽 재검증",
+    "새 최종 통합 source 전체 36조건·회귀·lint/build·실제 Studio 소비 및 공개 asset 링크 검증"
+  ],
+  "formal_regression": {
+    "on_tests": 7,
+    "on_pass": 7,
+    "regulatory_tests": 3,
+    "regulatory_pass": 3,
+    "canvaskit_contract_tests": 4,
+    "canvaskit_contract_pass": 4,
+    "new_normal_word_boundary_same_binary": "before1FAIL -> after1PASS",
+    "case": "tests/cases/issue_7881_current_body_frame.rs"
+  },
+  "body_ownership": {
+    "native": {
+      "checked_nonempty": 468,
+      "mismatches": [],
+      "order_reversals": [],
+      "rendered_unique_owners": 781
+    },
+    "wasm": {
+      "checked_nonempty": 468,
+      "mismatches": [],
+      "order_reversals": [],
+      "rendered_unique_owners": 781
+    }
+  }
+}

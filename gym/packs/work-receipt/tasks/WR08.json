@@ -23,6 +23,18 @@
         "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"echo-in.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"입력에코\"}]}",
         "--json"
       ]
+    },
+    {
+      "name": "제출 입력 경로 라이브 일치",
+      "op": "answer_eq",
+      "answer": "input",
+      "path": "input",
+      "cmd": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"echo-in.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"입력에코\"}]}",
+        "--json"
+      ]
     }
   ]
 }

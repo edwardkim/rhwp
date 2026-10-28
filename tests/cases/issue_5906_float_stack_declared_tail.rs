@@ -21,11 +21,10 @@
 use std::path::Path;
 
 use rhwp::document_core::DocumentCore;
+use rhwp::model::control::Control;
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/float-stack-defer.hwp";
-
-/// 2쪽 본문 바닥 = y 90.69 + h 941.12 = 1031.81px.
-const BODY_BOTTOM_PX: f64 = 1031.81;
 
 #[test]
 fn issue_5906_second_float_table_keeps_all_rows_on_page_two() {
@@ -46,30 +45,58 @@ fn issue_5906_second_float_table_keeps_all_rows_on_page_two() {
         "2쪽 표 괘선 경계는 12행 = 13개여야 한다 (결함 시 10행 = 11개): {rules:?}"
     );
 
-    // 표 하단 괘선 — 정본 770.64pt = 1027.5px, 본문 바닥 안이어야 한다.
-    let bottom = *rules.last().expect("괘선 경계");
-    assert!(
-        bottom < BODY_BOTTOM_PX,
-        "표 하단 괘선이 본문 바닥({BODY_BOTTOM_PX:.1}px) 안이어야 한다: {bottom:.1}"
-    );
-    assert!(
-        (1021.0..=1031.0).contains(&bottom),
-        "표 하단 괘선이 정본(1027.5px) 근방이어야 한다: {bottom:.1}"
-    );
-
-    // 마지막 행 상단 — 정본 717.78pt = 957.0px.
+    let tree = core.build_page_render_tree(1).expect("2쪽 렌더 트리");
+    let mut nodes = Vec::new();
+    collect_nodes(&tree.root, &mut nodes);
+    let body = nodes
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::Body { .. }))
+        .expect("본문 영역");
+    let body_bottom = body.bbox.y + body.bbox.height;
+    let bottom = *rules.last().expect("마지막 괘선");
+    assert!(bottom <= body_bottom, "모든 행이 본문 안에 있어야 한다");
     let last_row_top = rules[rules.len() - 2];
+    let table = core.document().sections[0].paragraphs[1]
+        .controls
+        .iter()
+        .filter_map(|control| match control {
+            Control::Table(table) => Some(table),
+            _ => None,
+        })
+        .nth(1)
+        .expect("두 번째 원본 표");
+    let stored_last_height = table
+        .cells
+        .iter()
+        .filter(|cell| cell.row == table.row_count - 1)
+        .map(|cell| f64::from(cell.height) * 96.0 / 7200.0)
+        .fold(0.0, f64::max);
     assert!(
-        (952.0..=962.0).contains(&last_row_top),
-        "마지막 행 상단이 정본(957.0px) 근방이어야 한다: {last_row_top:.1}"
+        bottom > last_row_top && bottom - last_row_top < stored_last_height,
+        "마지막 행은 저장 선언 초과분을 회수해야 한다"
     );
+    let dots: Vec<_> = nodes
+        .iter()
+        .filter_map(|node| match &node.node_type {
+            RenderNodeType::TextRun(run) if run.text == "․" => Some((*node, run)),
+            _ => None,
+        })
+        .collect();
+    assert!(!dots.is_empty(), "원본의 한점 리더가 유지돼야 한다");
+    for (node, run) in dots {
+        let expected = (run.style.font_size + run.style.letter_spacing) * run.style.ratio;
+        assert!(
+            (node.bbox.width - expected).abs() < 0.1,
+            "HFT 한점 리더는 원본 장평·자간을 적용한 전각 전진이어야 한다: 실제={}, 기대={expected}, 원본 HFT={}", node.bbox.width, run.style.hft_fullwidth_dot
+        );
+    }
+}
 
-    // 마지막 행은 저장 cellSz(77.37px)보다 낮아야 한다 — 초과분을 흡수한 결과.
-    let last_row_height = bottom - last_row_top;
-    assert!(
-        (66.0..=74.0).contains(&last_row_height),
-        "마지막 행 높이가 정본(70.5px) 근방이어야 한다 (선언 77.4px 그대로면 결함): {last_row_height:.1}"
-    );
+fn collect_nodes<'a>(node: &'a RenderNode, nodes: &mut Vec<&'a RenderNode>) {
+    nodes.push(node);
+    for child in &node.children {
+        collect_nodes(child, nodes);
+    }
 }
 
 /// 표 괘선 중 가로선(`y1 == y2`, 길이 100px 초과)의 y 를 오름차순으로 모은다.

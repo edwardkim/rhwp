@@ -1,0 +1,285 @@
+{
+  "issue": "https://github.com/edwardkim/rhwp/issues/7445",
+  "head_before": "b04d53951b894b4bb849eee47ed3f80a340b8fab",
+  "user_authorization": "현재 검토 문서를 회귀테스트에서 제외하고 #7445에 추가 이슈로 등록",
+  "runtime_changed": false,
+  "removal_is_resolution": false,
+  "move": {
+    "old": "samples/issue5941/1490000-201600081_roadmap_research.hwp",
+    "new": "mydocs/pr/assets/issue7445/1490000-201600081_roadmap_research.hwp",
+    "sha256": "a06f46ec3f175c7cfa84eb3178b8b3fbdf78e94f71b31d7d87f3417a2617dae9",
+    "bytes": 3923456
+  },
+  "removed_test": "tests/cases/issue_5941_tail_overflow_drift_gate.rs",
+  "removed_test_sha256": "8dc078586331b775dd3112afaf63edcceaa0c8e481a31587fa9c07c37b452c7c",
+  "removed_baseline_rows": [
+    {
+      "path": "tests/fixtures/body_overflow_baseline.tsv",
+      "rows": [
+        "issue5941/1490000-201600081_roadmap_research.hwp\t47"
+      ]
+    },
+    {
+      "path": "tests/fixtures/off_canvas_baseline.tsv",
+      "rows": [
+        "issue5941/1490000-201600081_roadmap_research.hwp\t17"
+      ]
+    },
+    {
+      "path": "tests/fixtures/text_overlap_baseline.tsv",
+      "rows": [
+        "issue5941/1490000-201600081_roadmap_research.hwp\t134"
+      ]
+    },
+    {
+      "path": "tests/fixtures/ir_field_sweep_baseline.tsv",
+      "rows": [
+        "hwp5rb\tissue5941/1490000-201600081_roadmap_research.hwp\tsections[].paragraphs[].controls[].cells[].list_header_width_ref\t1078"
+      ]
+    }
+  ],
+  "reference_pdf": {
+    "path": "pdf/issue7382-regression-review/1490000-201600081_roadmap_research-2020.pdf",
+    "sha256": "133f79cad7b756ebef777d253befb14f9407faaf7fe04eeea66036f3e049bbe7",
+    "pages": 302
+  },
+  "visual": {
+    "backend": "Native",
+    "requested_pages": [
+      1,
+      61,
+      145
+    ],
+    "gate": {
+      "status": "re_review_required",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 84.58019
+        },
+        {
+          "page": 145,
+          "tolerant_content_match_percent": 42.91058
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "output": "output/pr-review/planet6897-7382-20260926/stage66-tail5941/visual-before-native/roadmap5941/manifest.json",
+    "wasm_executed": false,
+    "full_document_executed": false,
+    "review": {
+      "path": "mydocs/pr/assets/issue7445/roadmap5941_native_review_145.png",
+      "sha256": "205e923ad43bdaca2d7d3d6936eff68106efabee02060e6f4eeec4c40224feac"
+    },
+    "overlay": {
+      "path": "mydocs/pr/assets/issue7445/roadmap5941_native_overlay_145.png",
+      "sha256": "cc654eb5c661c5b749b6d5644b64856eeb52f9e2e9d7554dde586175200dd4ee"
+    },
+    "command_result": {
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--key",
+        "roadmap5941",
+        "--hwp",
+        "samples/issue5941/1490000-201600081_roadmap_research.hwp",
+        "--pdf",
+        "pdf/issue7382-regression-review/1490000-201600081_roadmap_research-2020.pdf",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage65-indicators5585/candidate12/rhwp",
+        "--pages",
+        "1,61,145",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage66-tail5941/visual-before-native"
+      ],
+      "exit_code": 1,
+      "seconds": 24.973063291981816
+    },
+    "product_commit": "3f2951b6b0ff522b4f702ed8aa895f8195a43a4a",
+    "cli_sha256": "33323aa2ace4897f300ae1b384e34fb165c961c8131538fa1e93019d24cb02c0"
+  },
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5865123120",
+  "issue_comment_verified": true,
+  "validation": {
+    "base_sha": "443844b593c62a722cf9cc3d9d0256e94ab88cb8",
+    "steps": [
+      {
+        "step": "prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "seconds": 0.9134532916359603
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.47030658274889
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.4714047499001026
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.26559108309447765
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3926236252300441
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 7.550990542396903
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "443844b593c62a722cf9cc3d9d0256e94ab88cb8"
+        ],
+        "exit_code": 0,
+        "seconds": 1.9072605418041348
+      },
+      {
+        "step": "issue_5941_neartop_reset_only_on_empty_page",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "issue_5941_neartop_reset_only_on_empty_page",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 8.05254179239273
+      },
+      {
+        "step": "issue_5941_frame_drift_page_top_sentinel",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "issue_5941_frame_drift_page_top_sentinel",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 5.927574874833226
+      },
+      {
+        "step": "issue_5941_anchor_delay_float_eps",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "issue_5941_anchor_delay_float_eps",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 6.326985332649201
+      }
+    ]
+  },
+  "maintained_tests": {
+    "passed": 4,
+    "failed": 0,
+    "cases": [
+      "issue_5941_neartop_reset_only_on_empty_page",
+      "issue_5941_frame_drift_page_top_sentinel",
+      "issue_5941_anchor_delay_float_eps"
+    ]
+  },
+  "scope_checks": {
+    "remaining_baseline_rows_identical_to_parent": true,
+    "original_sha256_preserved": true,
+    "removed_case_absent_from_prepared_suites": true,
+    "document_absent_from_samples_collection": true,
+    "new_test_functions": 0,
+    "source_side_tests_changed": false
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "original": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+  "original_sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+  "controls": [
+    {
+      "file": "liver7379-cell250-height-0.hwpx",
+      "sha256": "0dabedf6170499af0a8ee29c3a06286e88c4470fb429a98dcff4bce95ce85641",
+      "changes": [
+        {
+          "paragraph": 250,
+          "table_id": 1937553669,
+          "cell": 0,
+          "property": "cellSz.height",
+          "before": 25619,
+          "after": 0
+        }
+      ],
+      "purpose": "수동 단일 속성 대조군이며 원본 입력 시각 통과의 대체 증거가 아님"
+    },
+    {
+      "file": "liver7379-cell250-height-40000.hwpx",
+      "sha256": "31a0ab75c8568eb83344d0c8fb4475b851c09c5392ca9c593383744715eb40cb",
+      "changes": [
+        {
+          "paragraph": 250,
+          "table_id": 1937553669,
+          "cell": 0,
+          "property": "cellSz.height",
+          "before": 25619,
+          "after": 40000
+        }
+      ],
+      "purpose": "수동 단일 속성 대조군이며 원본 입력 시각 통과의 대체 증거가 아님"
+    },
+    {
+      "file": "liver7379-table250-noadjust.hwpx",
+      "sha256": "5cacab984ed3331e7f81fff18ee5b6fa3d313518a9873252145fbb9a64f12d12",
+      "changes": [
+        {
+          "paragraph": 250,
+          "table_id": 1937553669,
+          "property": "noAdjust",
+          "before": 0,
+          "after": 1
+        }
+      ],
+      "purpose": "단일 속성 수동 대조군"
+    },
+    {
+      "file": "liver7379-table250-visible-border.hwpx",
+      "sha256": "2a8ef20d733420888daed1319f7e117ff7567f038b0ff33a6f4e60b8db3f65a0",
+      "changes": [
+        {
+          "paragraph": 250,
+          "table_id": 1937553669,
+          "cells": [
+            0,
+            1
+          ],
+          "property": "borderFillIDRef",
+          "before": 6,
+          "after": 3
+        }
+      ],
+      "purpose": "동일 .12mm 괘선의 NONE을 SOLID로 바꾼 가시 경계 대조군. 실제 원본 출력 일치의 대체 근거가 아님."
+    }
+  ]
+}

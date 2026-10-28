@@ -2,11 +2,11 @@
 
 - 클레임: `M01-f`
 - 생성기: `tools/oracle_public/fatten_catalog.py`
-- 시각: `2026-08-18T10:37:44Z`
-- 링크: **409**
-- 짝 있는 샘플: **389**
-- 짝 없는 샘플: **305**
-- 미사용 오라클 PDF: **84**
+- 시각: `2026-09-03T13:33:12Z`
+- 링크: **1030**
+- 짝 있는 샘플: **565**
+- 짝 없는 샘플: **414**
+- 미사용 오라클 PDF: **216**
 
 ## 산출물
 
@@ -19,8 +19,6 @@
 | `fixtures/pairs/by_format/hwp.jsonl` |
 | `fixtures/pairs/by_format/hwpx.jsonl` |
 | `fixtures/pairs/by_root/pdf.jsonl` |
-| `fixtures/pairs/by_root/pdf-2020.jsonl` |
-| `fixtures/pairs/by_root/pdf-large.jsonl` |
 | `fixtures/pairs/index.tsv` |
 | `reports/coverage_matrix.md` |
 | `reports/coverage_by_directory.md` |
@@ -39,23 +37,23 @@
 | `drafts/examples/report_cheap_anomalies.json` |
 | `drafts/examples/manifest.json` |
 | `drafts/examples/1342000_edu_curriculum_map.md` |
+| `drafts/examples/1342000_edu_curriculum_map-2.md` |
 | `drafts/examples/2025-행정업무운영-편람-최종.md` |
 | `drafts/examples/2025-행정업무운영-편람-최종-2.md` |
 | `drafts/examples/2025-행정업무운영-편람-최종-3.md` |
 | `drafts/examples/2025-행정업무운영-편람-최종-4.md` |
+| `drafts/examples/2025-행정업무운영-편람-최종-5.md` |
+| `drafts/examples/2025-행정업무운영-편람-최종-6.md` |
+| `drafts/examples/2025-행정업무운영-편람-최종-7.md` |
+| `drafts/examples/2025-행정업무운영-편람-최종-8.md` |
+| `drafts/examples/2025-행정업무운영-편람-최종-9.md` |
+| `drafts/examples/2025-행정업무운영-편람-최종-10.md` |
 | `drafts/examples/1130000-201900011_D0150004-1-002_2017년기준-시장구조조사.md` |
-| `drafts/examples/80168_regulatory_analysis.md` |
-| `drafts/examples/1790387_prep_final_report.md` |
-| `drafts/examples/issue1949_giant_cell_nested_tables_perf.md` |
-| `drafts/examples/issue1949_giant_cell_nested_tables_perf-2.md` |
-| `drafts/examples/hwpctl_API_v2.4.md` |
-| `drafts/examples/sungeo.md` |
-| `drafts/examples/kps-ai.md` |
-| `drafts/examples/aift.md` |
-| `drafts/examples/aift-2.md` |
-| `drafts/examples/hwpctl_ParameterSetID_Item_v1.2.md` |
+| `drafts/examples/text_footnote_tail_overpagination.md` |
+| `drafts/examples/text_footnote_tail_overpagination-2.md` |
+| `drafts/examples/정책연구용역사업-중간진도보고서-살아있는-간장-기증자의-의학적-선별기준-연구.md` |
+| `drafts/examples/정책연구용역사업-중간진도보고서-살아있는-간장-기증자의-의학적-선별기준-연구-2.md` |
 | `drafts/examples/hwpspec.md` |
-| `drafts/examples/tac-img-02.md` |
 | `drafts/examples/unmatched-143E433F503322BD33.md` |
 | `drafts/examples/unmatched-156457624_210622-7월부터-해외직구-구매대행업체-등록제-시행.md` |
 | `drafts/examples/unmatched-156636617_240617-2024년-5월-월간-수출입-현황-확정치.md` |

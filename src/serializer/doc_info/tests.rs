@@ -66,6 +66,7 @@ fn test_serialize_face_name_simple() {
         type_info: None,
         default_name: None,
         subst_font: None,
+        native_program: None,
     };
 
     let data = serialize_face_name(&font);
@@ -89,6 +90,7 @@ fn test_serialize_face_name_with_alt() {
         type_info: None,
         default_name: None,
         subst_font: None,
+        native_program: None,
     };
 
     let data = serialize_face_name(&font);
@@ -116,6 +118,7 @@ fn test_serialize_face_name_with_type_info_and_default_name() {
         type_info: Some([2, 11, 6, 0, 0, 1, 1, 1, 1, 1]),
         default_name: Some("Gulim".to_string()),
         subst_font: None,
+        native_program: None,
     };
 
     let data = serialize_face_name(&font);
@@ -289,6 +292,7 @@ fn test_serialize_para_shape_roundtrip() {
         para_level: 0,
         break_latin_word: None,
         hwpx_plain_para_margin: false,
+        hwpx_plain_para_margin_physical: false,
     };
 
     let data = serialize_para_shape(&ps);
@@ -622,6 +626,7 @@ fn test_serialize_doc_info_roundtrip() {
         type_info: None,
         default_name: None,
         subst_font: None,
+        native_program: None,
     });
     doc_info.char_shapes.push(CharShape {
         raw_data: None,
@@ -678,6 +683,7 @@ fn test_serialize_doc_info_roundtrip() {
         para_level: 0,
         break_latin_word: None,
         hwpx_plain_para_margin: false,
+        hwpx_plain_para_margin_physical: false,
     });
     doc_info.styles.push(Style {
         raw_data: None,

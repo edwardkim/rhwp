@@ -76,6 +76,9 @@ mod tests {
 
     fn make_sample() -> CommonObjAttr {
         CommonObjAttr {
+            cell_frame_paint: false,
+            cell_border_paint: None,
+            outside_cell_border_paint: None,
             ctrl_id: 0,
             attr: 0,
             vertical_offset: 1234,

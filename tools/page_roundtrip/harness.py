@@ -52,6 +52,10 @@ HERE = Path(__file__).resolve().parent
 REPO_DEFAULT = HERE.parents[1]
 DEFAULT_CATALOG = HERE / "catalog.json"
 DEFAULT_CI_MANIFEST = HERE / "fixtures" / "ci-subset.json"
+DEFERRED_NAMES = frozenset(
+    (REPO_DEFAULT / "tests/fixtures/deferred_document_regressions.txt")
+    .read_text(encoding="utf-8").splitlines()
+)
 
 
 class PageRoundtripError(Exception):
@@ -340,6 +344,8 @@ def load_manifest(path: Path, repo: Path) -> list[Path]:
         if not rel:
             continue
         doc = Path(str(rel))
+        if doc.name in DEFERRED_NAMES:
+            continue
         if not doc.is_absolute():
             doc = repo / doc
         key = str(doc.resolve()).casefold()
@@ -364,6 +370,8 @@ def iter_docs(roots: Sequence[Path]) -> list[Path]:
     docs: list[Path] = []
     seen: set[str] = set()
     for root in roots:
+        if root.name in DEFERRED_NAMES:
+            continue
         if root.is_file() and root.suffix.lower() in DOC_SUFFIXES:
             key = str(root.resolve()).casefold()
             if key not in seen:
@@ -373,7 +381,8 @@ def iter_docs(roots: Sequence[Path]) -> list[Path]:
         if not root.is_dir():
             continue
         for path in sorted(root.rglob("*")):
-            if not path.is_file() or path.suffix.lower() not in DOC_SUFFIXES:
+            if (not path.is_file() or path.suffix.lower() not in DOC_SUFFIXES
+                    or path.name in DEFERRED_NAMES):
                 continue
             key = str(path.resolve()).casefold()
             if key in seen:

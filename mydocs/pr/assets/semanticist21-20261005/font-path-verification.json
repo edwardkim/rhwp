@@ -1,0 +1,17 @@
+{
+  "source_head": "7ca40721fd09f0fcfeb4573167dde193d9d74235",
+  "environment_variable_unset": true,
+  "fontconfig_match": [
+    "HCR Batang,함초롬바탕",
+    "/usr/local/share/fonts/hwp-convert-mcp-survey/8664669bd2d6-HANBatang.ttf"
+  ],
+  "hancom_install_font": {
+    "path": "/opt/hnc/hoffice11/Shared/TTF/All/HBATANG.TTF",
+    "family": "Haansoft Batang,한컴바탕"
+  },
+  "default_svg_font_faces": [
+    "@font-face { font-family: \"한컴바탕\"; src: local(\"한컴바탕\"), local(\"함초롬바탕\"), local(\"HCR Batang\"); }",
+    "@font-face { font-family: \"함초롬바탕\"; src: local(\"함초롬바탕\"), local(\"HCR Batang\"); }"
+  ],
+  "runtime_output": "output/pr-review/semanticist21-20261005/historical-visual-raw/font-path-verification.json"
+}

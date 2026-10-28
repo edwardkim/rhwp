@@ -1,0 +1,94 @@
+{
+  "codeHead": "cd85bdf434f5c2522f2a24c3a59f3413f644a5a4",
+  "base": "02530b9ed567a44663edb26c65fb565c4a79f00d",
+  "sourcePr": 7382,
+  "sourceHead": "81a402179dc556cce781d844d4b9252be36ba8af",
+  "wholeRasterCapture": "stage333-final; native source 98f2e879c; fresh wasm runtime e89edca3e",
+  "currentHeadWholeExports": "215 Native SVG, 215 Native render trees, 215 fresh WASM SVG byte-identical to whole capture inputs",
+  "currentHeadFreshRasterPages": [
+    {
+      "page": 22,
+      "nativeWasmRasterIdentical": true,
+      "sha256": "1a3d6734b63ca880e18f8adb2d6db6c02faac665d98d3ca55092f7b23b4570f9"
+    },
+    {
+      "page": 66,
+      "nativeWasmRasterIdentical": true,
+      "sha256": "ae35bb8908e9b9681c03fc23b37270847f4e06841d560e65a54a28477c6a1345"
+    },
+    {
+      "page": 67,
+      "nativeWasmRasterIdentical": true,
+      "sha256": "04b21600a062bb9d21d2a960b996c4c55081c05730f6f35b437d42849f46a7a5"
+    },
+    {
+      "page": 88,
+      "nativeWasmRasterIdentical": true,
+      "sha256": "f61f51e5e194677fd723474df3f4a782300ebc8d58bcaa0cffd82234360779b7"
+    },
+    {
+      "page": 163,
+      "nativeWasmRasterIdentical": true,
+      "sha256": "b116d442e8f4186f7372e37cf3be40bddbacb5fcb08b16f5dbf4a9d23eaa53dd"
+    },
+    {
+      "page": 164,
+      "nativeWasmRasterIdentical": true,
+      "sha256": "a60eb6cbc7ece7a272194432e0b86e438c392a92fd881083a67ff7cbd591020e"
+    }
+  ],
+  "pages": 215,
+  "minimumPercent": 90.01587,
+  "below90": 0,
+  "explicitFontEnvironment": "stage325_font_environment.json",
+  "dpi": 96,
+  "fullFontEmbedding": true,
+  "manualReviewedPages": [
+    22,
+    66,
+    67,
+    78,
+    80,
+    84,
+    85,
+    88,
+    131,
+    164,
+    176,
+    183,
+    215
+  ],
+  "footnotesConfirmed": {
+    "84": [
+      131,
+      132,
+      133
+    ],
+    "85": [
+      134,
+      135,
+      136
+    ],
+    "131": [
+      179
+    ],
+    "215": [
+      269,
+      270,
+      271,
+      272,
+      273,
+      274
+    ]
+  },
+  "residuals": [
+    "p22 small chart grid and glyph raster differences",
+    "p164 bottom table border approximately 13.3px lower; same body content and page ownership"
+  ],
+  "silhouetteCaution": "Auxiliary metric, not approval alone. Raw score retained; same-pixel near-color boundary reconciliation does not hide white, missing objects or displacement. TSV-only manifest run_state incomplete is not relabeled complete.",
+  "scopeLimits": [
+    "No default HFT font environment full fidelity claim",
+    "No whole 215-page HWP twin raster comparison",
+    "No whole 21-page Nov2022 fidelity claim; only failed p12 identity-scale test corrected"
+  ]
+}

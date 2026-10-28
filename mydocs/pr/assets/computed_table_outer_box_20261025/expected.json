@@ -1,0 +1,46 @@
+{
+  "column-top-empty-margin-0": {
+    "input_sha256": "d183c665fc835476618b88bc2cc1d3794e7e86615c0a03668b8250818303692f",
+    "pdf_sha256": "65ddc43008c83ed8afc70a7515c07d03fd5a203275e8c19b7d342074bdae0c88",
+    "source_text": "셋째문단",
+    "outer_bottom_hu": 283,
+    "table_left": 117.2173360188802,
+    "table_right": 676.2760009765625,
+    "table_top": 136.01066080729166,
+    "table_bottom": 170.05330403645834,
+    "last_body_top": 195.48394775390625
+  },
+  "column-top-empty-margin-5000": {
+    "input_sha256": "5cab2813a8f3f1806487e7168a59f4be5bc585c76ab79bae7c7909f38ac96218",
+    "pdf_sha256": "4ce159629d7c22fc5d5320f8fe222aacf2522ce38a4be50cd2ad86fa2839c00a",
+    "source_text": "셋째문단",
+    "outer_bottom_hu": 5000,
+    "table_left": 117.2173360188802,
+    "table_right": 676.2760009765625,
+    "table_top": 198.82267252604166,
+    "table_bottom": 232.86531575520834,
+    "last_body_top": 321.10666910807294
+  },
+  "column-top-text-margin-0": {
+    "input_sha256": "3665fc60f5ce83d628c13a0c6f0f46ef0096ef567bee41862eb4a52901c12674",
+    "pdf_sha256": "a439d62b003a02569f41baad15f8967cbb0d72ab4555b1e3a6d6a1fc90b464f9",
+    "source_text": "표뒤글셋째문단",
+    "outer_bottom_hu": 283,
+    "table_left": 117.2173360188802,
+    "table_right": 676.2760009765625,
+    "table_top": 136.01066080729166,
+    "table_bottom": 170.05330403645834,
+    "last_body_top": 195.48394775390625
+  },
+  "column-top-text-margin-5000": {
+    "input_sha256": "3fc94a9f12743188e5222be825455b410bfd6c326ae1e06750b67e3c7fc12ab7",
+    "pdf_sha256": "14fe936ae9c355a3c28af61df25de14165b732037ecadf2a22577559c4d016ed",
+    "source_text": "표뒤글셋째문단",
+    "outer_bottom_hu": 5000,
+    "table_left": 117.2173360188802,
+    "table_right": 676.2760009765625,
+    "table_top": 198.82267252604166,
+    "table_bottom": 232.86531575520834,
+    "last_body_top": 321.10666910807294
+  }
+}

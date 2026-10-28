@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-c-dormant-vertical-geometry-oracle",
+  "issue": 4969,
+  "stage": "W10-Q4-C",
+  "date": "2026-08-30",
+  "status": "qualified-dormant",
+  "maintainerResultApproved": true,
+  "source": "src/renderer/shaping_vertical.rs",
+  "moduleRegistered": false,
+  "productConsumerCount": 0,
+  "productPublished": false,
+  "coordinateContract": {
+    "fontUnitsToPx": "fontSizePx / unitsPerEm",
+    "fontYToScreenY": "screenY = originY - fontY",
+    "verticalAdvance": "nextInlineY = originY - sum(yAdvance) * scale",
+    "sidewaysTransform": "clockwise-90-around-shaped-glyph-origin",
+    "bboxOwner": "single-arc-shared-by-line-bbox-next-origin",
+    "clusterRangeUnit": "source-utf8-bytes"
+  },
+  "inputGeometry": {
+    "fontSizePx": 10.0,
+    "origin": {"x": 100.0, "y": 200.0},
+    "columnPitchPx": 12.0
+  },
+  "oracles": [
+    {
+      "id": "source-han-old-hangul-vertical-rl-upright",
+      "fontSha256": "2f86ef9a52acb6d1dad9d915843239123b635d97edd88fd0573a88ffcb4e16f1",
+      "text": "ᄒᆞᆫ글",
+      "runClass": "cjk-upright",
+      "glyphs": [
+        {"id": 614, "clusterUtf8": [0, 9], "origin": [95.17, 208.8], "bbox": [96.43, 200.41, 6.98, 9.18]},
+        {"id": 1230, "clusterUtf8": [9, 12], "origin": [95.17, 218.8], "bbox": [96.83, 211.19, 6.24, 3.85]},
+        {"id": 1497, "clusterUtf8": [9, 12], "origin": [104.83, 218.8], "bbox": [95.42, 214.74, 9.2, 0.9]},
+        {"id": 2085, "clusterUtf8": [9, 12], "origin": [104.83, 218.8], "bbox": [97.12, 216.59, 5.98, 3.05]}
+      ],
+      "runBbox": [95.42, 200.41, 9.2, 19.23],
+      "inlineAdvancePx": 20.0,
+      "nextInlineOrigin": [100.0, 220.0],
+      "nextColumnOrigin": [88.0, 200.0]
+    },
+    {
+      "id": "noto-latin-sideways",
+      "fontSha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+      "text": "AB",
+      "glyphs": [34, 35],
+      "transform": "clockwise-90",
+      "runBbox": [96.72, 208.84, 7.57, 16.08],
+      "nextInlineOrigin": [100.0, 220.0]
+    },
+    {
+      "id": "noto-latin-upright",
+      "fontSha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+      "text": "AB",
+      "glyphs": [34, 35],
+      "transform": "upright",
+      "runBbox": [97.0, 201.47, 6.0, 17.33],
+      "nextInlineOrigin": [100.0, 220.0]
+    },
+    {
+      "id": "noto-cjk-punctuation",
+      "fontSha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+      "text": "—…",
+      "glyphs": [197, 11826],
+      "transform": "upright",
+      "runBbox": [95.99, 205.68, 8.01, 13.31],
+      "verticalRlNextColumnOrigin": [88.0, 200.0],
+      "verticalLrNextColumnOrigin": [112.0, 200.0]
+    }
+  ],
+  "negativeControls": [
+    {"input": "mixed-cjk-latin", "reason": "mixed-run-unsupported", "fallbackPreserved": true},
+    {"input": "missing-vhea-vmtx", "reason": "vertical-metrics-unavailable", "fallbackPreserved": true},
+    {"input": "horizontal-intent", "reason": "horizontal-intent-unsupported", "fallbackPreserved": true},
+    {"input": "intent-writing-mode-mismatch", "reason": "direction-intent-mismatch", "fallbackPreserved": true},
+    {"input": "non-finite-column-pitch", "reason": "column-pitch-invalid", "fallbackPreserved": true},
+    {"input": "variation-outline-bbox", "reason": "variation-geometry-unsupported", "fallbackPreserved": true}
+  ],
+  "validation": {
+    "nativeTarget": "issue_4969_shaping_request_contract",
+    "nativePassed": 27,
+    "nativeFailed": 0,
+    "q4CNativeTests": 5,
+    "focusedClippy": "passed",
+    "nodeWasmIsolatedPassed": 4,
+    "nodeWasmIsolatedFailed": 0,
+    "nodeWasmSeconds": 0.12,
+    "isolatedTargetBytesApprox": 393216000,
+    "isolatedTargetRemoved": true,
+    "fullCrateDirectWasmDisposition": "not-used-for-verdict",
+    "fullCrateDirectWasmReason": "getrandom-0.3-wasm_js-project-target-configuration"
+  },
+  "horizontalLowererChanged": false,
+  "horizontalControlsChanged": false,
+  "privateCorpusUsed": false,
+  "hyperVUsed": false,
+  "githubMutation": false,
+  "next": "Q4-D-one-surface-bounded-activation-plan-review"
+}

@@ -73,7 +73,7 @@ fn line_y_containing(chars: &[(f64, String)], needle: &str) -> f64 {
 #[test]
 fn issue_2148_degenerate_cell_paragraphs_stack_sequentially() {
     let bytes = std::fs::read(SAMPLE).expect("read sample");
-    let mut doc = HwpDocument::from_bytes(&bytes).expect("parse sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse sample");
     let svg = doc.render_page_svg_native(0).expect("render page 1");
     let chars = collect_text_chars(&svg);
     assert!(

@@ -1,0 +1,237 @@
+{
+  "support": {
+    "enabled": true,
+    "jbig2": false,
+    "jpeg2000": false
+  },
+  "cases": [
+    {
+      "name": "corrupt-JBIG2Decode.pdf",
+      "success": false,
+      "error": "유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+      "milliseconds": 418.69999998807907,
+      "wasmMemoryBytes": 5505024
+    },
+    {
+      "name": "corrupt-JPXDecode.pdf",
+      "success": false,
+      "error": "유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+      "milliseconds": 1.0999999642372131,
+      "wasmMemoryBytes": 5505024
+    },
+    {
+      "name": "jbig2-generic_template0.pdf",
+      "success": false,
+      "error": "유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+      "milliseconds": 1.4000000357627869,
+      "wasmMemoryBytes": 5505024
+    },
+    {
+      "name": "jbig2-mask.pdf",
+      "success": false,
+      "error": "유효하지 않은 파일: PDF 오류: PDF_IMAGE_UNSUPPORTED: image codec or mask is not supported by the bounded import path",
+      "milliseconds": 1.699999988079071,
+      "wasmMemoryBytes": 5505024
+    },
+    {
+      "name": "jbig2-symbol_global.pdf",
+      "success": false,
+      "error": "유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+      "milliseconds": 0.8999999761581421,
+      "wasmMemoryBytes": 5505024
+    },
+    {
+      "name": "jbig2.pdf",
+      "success": false,
+      "error": "유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+      "milliseconds": 0.8999999761581421,
+      "wasmMemoryBytes": 5505024
+    },
+    {
+      "name": "jpx-alpha.pdf",
+      "success": false,
+      "error": "유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+      "milliseconds": 1.199999988079071,
+      "wasmMemoryBytes": 5505024
+    },
+    {
+      "name": "jpx-indexed.pdf",
+      "success": false,
+      "error": "유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+      "milliseconds": 1,
+      "wasmMemoryBytes": 5505024
+    },
+    {
+      "name": "jpx-mask.pdf",
+      "success": false,
+      "error": "유효하지 않은 파일: PDF 오류: PDF_IMAGE_UNSUPPORTED: image codec or mask is not supported by the bounded import path",
+      "milliseconds": 1.2000000476837158,
+      "wasmMemoryBytes": 5505024
+    },
+    {
+      "name": "jpx-palette.pdf",
+      "success": false,
+      "error": "유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+      "milliseconds": 2.5,
+      "wasmMemoryBytes": 5505024
+    },
+    {
+      "name": "jpx-premult.pdf",
+      "success": false,
+      "error": "유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+      "milliseconds": 4.399999976158142,
+      "wasmMemoryBytes": 5505024
+    },
+    {
+      "name": "jpx-tiles.pdf",
+      "success": false,
+      "error": "유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+      "milliseconds": 1,
+      "wasmMemoryBytes": 5505024
+    },
+    {
+      "name": "jpx.pdf",
+      "success": false,
+      "error": "유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+      "milliseconds": 0.8999999761581421,
+      "wasmMemoryBytes": 5505024
+    },
+    {
+      "name": "scan-jbig2-200.pdf",
+      "success": false,
+      "error": "유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+      "milliseconds": 1.4000000357627869,
+      "wasmMemoryBytes": 5505024
+    },
+    {
+      "name": "scan-jbig2.pdf",
+      "success": false,
+      "error": "유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+      "milliseconds": 1.0999999642372131,
+      "wasmMemoryBytes": 5505024
+    },
+    {
+      "name": "scan-jpeg-control-200.pdf",
+      "success": true,
+      "milliseconds": 1111.7000000476837,
+      "wasmMemoryBytes": 22282240,
+      "resourceUsage": {
+        "decodedBytes": 16745482,
+        "codecAllocatedBytes": 16097327,
+        "codecWorkUnits": 0,
+        "parsedObjects": 34,
+        "collectionEntries": 41,
+        "operators": 4,
+        "textBytes": 0,
+        "spans": 0,
+        "referenceVisits": 14,
+        "xobjectVisits": 3,
+        "contentParseCalls": 1,
+        "pageOperatorCacheHits": 2,
+        "pageStreamCacheHits": 2,
+        "formStreamCacheHits": 0,
+        "failure": null
+      }
+    },
+    {
+      "name": "scan-jpeg-control.pdf",
+      "success": true,
+      "milliseconds": 128.60000002384186,
+      "wasmMemoryBytes": 22282240,
+      "resourceUsage": {
+        "decodedBytes": 4320078,
+        "codecAllocatedBytes": 4043855,
+        "codecWorkUnits": 0,
+        "parsedObjects": 34,
+        "collectionEntries": 41,
+        "operators": 4,
+        "textBytes": 0,
+        "spans": 0,
+        "referenceVisits": 14,
+        "xobjectVisits": 3,
+        "contentParseCalls": 1,
+        "pageOperatorCacheHits": 2,
+        "pageStreamCacheHits": 2,
+        "formStreamCacheHits": 0,
+        "failure": null
+      }
+    },
+    {
+      "name": "scan-jpx-200.pdf",
+      "success": false,
+      "error": "유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+      "milliseconds": 2.699999988079071,
+      "wasmMemoryBytes": 22282240
+    },
+    {
+      "name": "scan-jpx.pdf",
+      "success": false,
+      "error": "유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+      "milliseconds": 1.7000000476837158,
+      "wasmMemoryBytes": 22282240
+    }
+  ],
+  "checked": [
+    "support matches requested build",
+    "corrupt-JBIG2Decode.pdf: actual acceptance 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+    "corrupt-JPXDecode.pdf: actual acceptance 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+    "jbig2-generic_template0.pdf: actual acceptance 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+    "jbig2-mask.pdf: actual acceptance 유효하지 않은 파일: PDF 오류: PDF_IMAGE_UNSUPPORTED: image codec or mask is not supported by the bounded import path",
+    "jbig2-symbol_global.pdf: actual acceptance 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+    "jbig2.pdf: actual acceptance 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+    "jpx-alpha.pdf: actual acceptance 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+    "jpx-indexed.pdf: actual acceptance 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+    "jpx-mask.pdf: actual acceptance 유효하지 않은 파일: PDF 오류: PDF_IMAGE_UNSUPPORTED: image codec or mask is not supported by the bounded import path",
+    "jpx-palette.pdf: actual acceptance 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+    "jpx-premult.pdf: actual acceptance 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+    "jpx-tiles.pdf: actual acceptance 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+    "jpx.pdf: actual acceptance 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+    "scan-jbig2-200.pdf: actual acceptance 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+    "scan-jbig2.pdf: actual acceptance 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+    "scan-jpeg-control-200.pdf: actual acceptance success",
+    "scan-jpeg-control-200.pdf: metadata support",
+    "scan-jpeg-control-200.pdf: bounds flag",
+    "scan-jpeg-control-200.pdf: source page ownership",
+    "scan-jpeg-control-200.pdf: hwp reopened",
+    "scan-jpeg-control-200.pdf: hwp retains image",
+    "scan-jpeg-control-200.pdf: hwpx reopened",
+    "scan-jpeg-control-200.pdf: hwpx retains image",
+    "scan-jpeg-control.pdf: actual acceptance success",
+    "scan-jpeg-control.pdf: metadata support",
+    "scan-jpeg-control.pdf: bounds flag",
+    "scan-jpeg-control.pdf: source page ownership",
+    "scan-jpeg-control.pdf: hwp reopened",
+    "scan-jpeg-control.pdf: hwp retains image",
+    "scan-jpeg-control.pdf: hwpx reopened",
+    "scan-jpeg-control.pdf: hwpx retains image",
+    "scan-jpx-200.pdf: actual acceptance 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+    "scan-jpx.pdf: actual acceptance 유효하지 않은 파일: PDF 오류: PDF_PARSE_FAILED: PDF container or extraction could not be processed",
+    "real Worker control success",
+    "Worker malformed input fails",
+    "Worker failure preserves active document",
+    "warm candidate before cancellation",
+    "Worker cancellation code",
+    "cancel observed actual WASM import API entry",
+    "cancellation preserves active document",
+    "Worker recreated after cancel",
+    "warm candidate before deadline",
+    "Worker deadline code",
+    "deadline observed actual WASM import API entry",
+    "deadline preserves active document",
+    "Worker recreated after deadline",
+    "Worker missing codec fails",
+    "missing codec preserves active document",
+    "Worker recovery after missing codec"
+  ],
+  "wasmMemoryBytes": 22282240,
+  "artifacts": {
+    "rhwp.js": {
+      "bytes": 489079,
+      "sha256": "eb7d0eef282086b1369e71989543400fb159ba93a50dbaca056dd6d8a9f1a062"
+    },
+    "rhwp_bg.wasm": {
+      "bytes": 22520674,
+      "sha256": "c6a073a989a47d58198d1c85aadc39060744f7973d36ff5aa8cb59b24c00a7cd"
+    }
+  }
+}

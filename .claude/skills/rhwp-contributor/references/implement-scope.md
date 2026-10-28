@@ -1,39 +1,19 @@
-# 4단 — 구현 범위
+# 구현 범위와 책임 계층
 
-기존 결(명명·주석 밀도·모듈 경계)을 따른다. 이 스킬이 다루는 기여는
-"공식 절차대로 완주"이지, 렌더러나 DocumentCore 를 새로 짜는 일이 아니다.
+허용 범위는 실제 이슈, 사용자 요청과
+[CONTRIBUTING.md](../../../../CONTRIBUTING.md)의 절차로 정한다.
+이 스킬을 고도화했던 과거 작업의 파일 목록을 모든 기여의 수정 허용 목록으로 사용하지 않는다.
 
-## 만져도 되는 것 (이 스킬 고도화 파동)
+- 원인 계층을 수정하고 기존 파서/IR/렌더러/저장 계약을 지킨다.
+- 측정과 paint의 조건, 좌표계, 객체 소유권을 일치시킨다.
+  공통 처리를 개별 control 루프마다 반복하거나 반대로 필요한 객체까지 건너뛰지 않는다.
+- 파서는 누락, 빈 값, 0과 참조를 구분하고 길이 단위, 재귀/자원 제한과 저장 왕복을 보존한다.
+- 정상 사례, 적용 제외 사례와 관련 경계를 테스트한다. 임의 좌표 보정이나 출력 숨김으로
+  문제를 덮지 않으며 같은 값을 set/get하는 시험만으로 실제 Undo/저장을 입증하지 않는다.
+- 다른 사용자의 변경과 공유 산출물을 보존한다. stage는 작업 파일의 명시적인 경로로 제한한다.
 
-- `.claude/skills/rhwp-contributor/` (`SKILL.md`, `references/`, `examples/`, `fixtures/`)
-- `mydocs/working/agent_contributor.md`
-- 이 스킬의 계약 시험 (`tests/cases/agent_contributor_skill_contract.rs`,
-  `scripts/tests/test_agent_contributor.py`)
-
-다른 주제의 기여는 그 이슈가 정한 경로만 만진다.
-
-## 만지지 않는 것
-
-| 금지 | 이유 |
-|------|------|
-| `src/document_core/` 편집 로직 발명 | 기존 CLI 계약 밖 |
-| `gym/` | 이 스킬은 실기여. gym 아님 |
-| 다른 `.claude/skills/*/SKILL.md` | 스킬 본문 재작성 금지. 포인터만 |
-| 열린 PR 이 이미 고치는 파일 | 가로채기 금지 |
-| 새 `[[bin]]` / 새 rhwp 하위명령 | 새 CLI 금지 |
-
-DocumentCore 를 **읽기**는 분석 단계에서 할 수 있다. **새 편집 연산·새
-필드 쓰기 경로를 이 스킬이 설계하지 않는다.**
-
-## 새 표면
-
-새 CLI/MCP 표면이 정말 필요하면
-[에이전트 표면 플레이북](../../../mydocs/manual/agent_surface_playbook.md)
-등재 절차를 **별도 이슈**로 따른다. 이 스킬 파동에서 몰래 추가하지 않는다.
-
-## 닫는 증거
-
-`git diff --name-only upstream/devel` 가 이슈 범위 안이다.
-
-예제: [07_implement_without_documentcore.md](../examples/07_implement_without_documentcore.md),
-[22_no_new_cli.md](../examples/22_no_new_cli.md).
+DocumentCore, CLI, gym 또는 다른 스킬의 변경은 무조건 금지되는 것이 아니다.
+해당 이슈의 승인된 범위인지 확인하고 소유 영역의 아키텍처와 검증 절차를 따른다.
+새 에이전트 표면은
+[agent_surface_playbook.md](../../../../mydocs/manual/agent_surface_playbook.md)의 기존 기능 재사용과 등록 절차를 따른다.
+필요한 범위를 넘어서는 기능 추가나 무관한 정리는 별도 작업으로 분리한다.

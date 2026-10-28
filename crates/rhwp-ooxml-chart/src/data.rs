@@ -136,6 +136,11 @@ pub struct ChartSeries {
     pub labels_shape: Option<BlockShape>,
     /// [#5652] 값 블록(`c:val`/`c:yVal`) 좌표.
     pub values_shape: Option<BlockShape>,
+    /// [#6053] 계열 최상위 `<c:spPr>…</c:spPr>` 구간. 계열을 새로 끼울 때 복제본에서 들어내
+    /// **기본 스타일**로 되돌리는 데 쓴다 — 한컴 편집기가 더한 계열에는 `c:spPr` 이 없다.
+    pub sp_pr_span: Option<Range<usize>>,
+    /// [#6053] 계열 최상위 `<c:marker>` 안의 `<c:symbol …/>` 구간. 들어내면 Auto 마커가 된다.
+    pub symbol_span: Option<Range<usize>>,
 }
 
 /// 차트 하나의 편집 가능한 데이터 지도.
@@ -277,6 +282,13 @@ struct ScanState {
     block: Option<BlockBuild>,
     /// [#6037] `<c:upDownBars>` 를 한 번이라도 봤는가 — 차트 단위 플래그.
     has_up_down_bars: bool,
+    /// [#6053] 계열 최상위 `c:spPr` 의 시작 오프셋과 깊이 — 마커 등 하위 spPr 과 섞이지 않게 센다.
+    sp_pr_depth: usize,
+    sp_pr_start: Option<usize>,
+    /// [#6053] 계열 최상위 `c:marker` 안인가 — 그 안의 `c:symbol` 만 잡는다.
+    marker_depth: usize,
+    /// [#6053] 확장꼴 `<c:symbol …></c:symbol>`(코퍼스 0건, 방어)의 여는 태그 오프셋.
+    symbol_start: Option<usize>,
 }
 
 impl ScanState {
@@ -294,6 +306,10 @@ impl ScanState {
             pt_start: None,
             block: None,
             has_up_down_bars: false,
+            sp_pr_depth: 0,
+            sp_pr_start: None,
+            marker_depth: 0,
+            symbol_start: None,
         }
     }
 
@@ -348,11 +364,8 @@ impl ScanState {
 /// `c:pt` 의 `idx` 속성.
 fn pt_index(e: &BytesStart) -> u32 {
     for attr in e.attributes().flatten() {
-        if attr.key.local_name().as_ref() == b"idx" {
-            return std::str::from_utf8(&attr.value)
-                .ok()
-                .and_then(|s| s.parse().ok())
-                .unwrap_or(0);
+        if attr.key.local_name().as_ref().as_bytes() == b"idx" {
+            return attr.value.as_ref().parse().unwrap_or(0);
         }
     }
     0
@@ -383,15 +396,15 @@ fn prefix_of(e: &BytesStart) -> String {
     let qname = e.name();
     let qname = qname.as_ref();
     let local_len = e.local_name().as_ref().len();
-    String::from_utf8_lossy(&qname[..qname.len().saturating_sub(local_len)]).into_owned()
+    qname[..qname.len().saturating_sub(local_len)].to_owned()
 }
 
 /// [#5652] 속성 `name` 의 값 — quick_xml 이 파싱한 그대로(이스케이프 해제 없음).
 fn attr_value(e: &BytesStart, name: &[u8]) -> Option<String> {
     e.attributes()
         .flatten()
-        .find(|attr| attr.key.local_name().as_ref() == name)
-        .map(|attr| String::from_utf8_lossy(&attr.value).into_owned())
+        .find(|attr| attr.key.local_name().as_ref().as_bytes() == name)
+        .map(|attr| attr.value.as_ref().to_owned())
 }
 
 /// [#5652] 태그 하나의 raw 구간(`tag`, `<` 부터 `>` 까지) 안에서 속성 `name` 의 값 텍스트
@@ -542,7 +555,7 @@ fn note_series_index(state: &mut ScanState, text: &str, tag_range: Range<usize>,
     let Some(cur) = state.cur.as_mut() else {
         return;
     };
-    let slot = match e.local_name().as_ref() {
+    let slot = match e.local_name().as_ref().as_bytes() {
         b"idx" => &mut cur.idx_span,
         b"order" => &mut cur.order_span,
         _ => return,
@@ -580,11 +593,13 @@ pub fn scan_chart_values(xml: &[u8]) -> Result<ChartData, ChartScanError> {
                 skip_depth -= 1;
             }
             Ok(Event::Empty(_)) if skip_depth > 0 => {}
-            Ok(Event::Start(ref e)) if is_skipped(e.local_name().as_ref()) => skip_depth = 1,
+            Ok(Event::Start(ref e)) if is_skipped(e.local_name().as_ref().as_bytes()) => {
+                skip_depth = 1
+            }
             Ok(Event::Start(ref e)) => {
                 // 이번 이벤트의 raw 태그 구간 — `<` 부터 `>` 까지. 속성값 구간은 이 안에서만 찾는다.
                 let tag_range = pos_before..reader.buffer_position() as usize;
-                match e.local_name().as_ref() {
+                match e.local_name().as_ref().as_bytes() {
                     b"ser" => {
                         state.cur = Some(ChartSeries {
                             name: None,
@@ -600,10 +615,29 @@ pub fn scan_chart_values(xml: &[u8]) -> Result<ChartData, ChartScanError> {
                             order_span: None,
                             labels_shape: None,
                             values_shape: None,
+                            sp_pr_span: None,
+                            symbol_span: None,
                         });
                         state.multi_level = false;
                         state.ser_start = pos_before;
                         state.block = None;
+                        state.sp_pr_depth = 0;
+                        state.sp_pr_start = None;
+                        state.marker_depth = 0;
+                        state.symbol_start = None;
+                    }
+                    // [#6053] 계열 최상위 spPr·marker 를 깊이로 가려 잡는다. dPt·dLbls 등
+                    // spPr 을 품는 다른 자식은 SKIPPED_SUBTREES 라 여기 못 온다.
+                    b"spPr" if state.cur.is_some() => {
+                        state.sp_pr_depth += 1;
+                        if state.sp_pr_depth == 1 && state.marker_depth == 0 {
+                            state.sp_pr_start = Some(pos_before);
+                        }
+                    }
+                    b"marker" if state.cur.is_some() => state.marker_depth += 1,
+                    // 확장꼴 `<c:symbol …></c:symbol>`(코퍼스 0건, 방어) — 요소 전체 구간을 잡는다.
+                    b"symbol" if state.marker_depth == 1 => {
+                        state.symbol_start = Some(pos_before);
                     }
                     b"multiLvlStrRef" => state.multi_level = true,
                     b"numCache" | b"numLit" | b"strCache" | b"strLit" => state.in_cache = true,
@@ -633,7 +667,7 @@ pub fn scan_chart_values(xml: &[u8]) -> Result<ChartData, ChartScanError> {
             }
             Ok(Event::Empty(ref e)) => {
                 let tag_range = pos_before..reader.buffer_position() as usize;
-                match e.local_name().as_ref() {
+                match e.local_name().as_ref().as_bytes() {
                     // 빈 요소 `<c:v/>` — 결측치다. 텍스트 구간이 없으니 구간 없이 싣는다.
                     // 읽기는 되고 그 점의 편집만 거부된다.
                     b"v" if state.capturing() => {
@@ -660,12 +694,32 @@ pub fn scan_chart_values(xml: &[u8]) -> Result<ChartData, ChartScanError> {
                     b"idx" | b"order" => note_series_index(&mut state, text, tag_range, e),
                     // [#6037] `<c:upDownBars/>` 자기닫힘 꼴(코퍼스 0건) — 여는 태그와 같이 본다.
                     b"upDownBars" => state.has_up_down_bars = true,
+                    // [#6053] `<c:symbol val="…"/>` — 계열 최상위 marker 안의 것만.
+                    b"symbol" if state.marker_depth == 1 => {
+                        if let Some(ser) = state.cur.as_mut() {
+                            if ser.symbol_span.is_none() {
+                                ser.symbol_span = Some(tag_range.clone());
+                            }
+                        }
+                    }
+                    // 자기닫힘 `<c:marker/>` 는 열고 바로 닫는다.
+                    b"marker" if state.cur.is_some() => {}
+                    // 자기닫힘 `<c:spPr/>`(코퍼스 0건, 방어) — 계열 최상위일 때만 구간으로.
+                    b"spPr" if state.cur.is_some() => {
+                        if state.sp_pr_depth == 0 && state.marker_depth == 0 {
+                            if let Some(ser) = state.cur.as_mut() {
+                                if ser.sp_pr_span.is_none() {
+                                    ser.sp_pr_span = Some(tag_range.clone());
+                                }
+                            }
+                        }
+                    }
                     _ => {}
                 }
             }
             Ok(Event::End(ref e)) => {
                 let end = reader.buffer_position() as usize;
-                match e.local_name().as_ref() {
+                match e.local_name().as_ref().as_bytes() {
                     b"v" => {
                         if let Some(start) = state.v_start.take() {
                             // 닫는 태그 직전 = 텍스트 끝. 닫는 태그 길이를 계산하지 않는다.
@@ -733,6 +787,38 @@ pub fn scan_chart_values(xml: &[u8]) -> Result<ChartData, ChartScanError> {
                         state.in_cache = false;
                         state.cur_idx = None;
                         state.block = None;
+                        state.sp_pr_depth = 0;
+                        state.sp_pr_start = None;
+                        state.marker_depth = 0;
+                        state.symbol_start = None;
+                    }
+                    // [#6053] 계열 최상위 spPr 구간 확정. marker 하위 spPr 은 시작을 기록하지
+                    // 않았으므로(`sp_pr_start` None) 여기서도 아무것도 확정하지 않는다.
+                    b"spPr" if state.cur.is_some() => {
+                        if state.sp_pr_depth > 0 {
+                            state.sp_pr_depth -= 1;
+                            if state.sp_pr_depth == 0 {
+                                if let Some(start) = state.sp_pr_start.take() {
+                                    if let Some(ser) = state.cur.as_mut() {
+                                        if ser.sp_pr_span.is_none() {
+                                            ser.sp_pr_span = Some(start..end);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    b"marker" if state.cur.is_some() => {
+                        state.marker_depth = state.marker_depth.saturating_sub(1);
+                    }
+                    b"symbol" if state.marker_depth == 1 => {
+                        if let Some(start) = state.symbol_start.take() {
+                            if let Some(ser) = state.cur.as_mut() {
+                                if ser.symbol_span.is_none() {
+                                    ser.symbol_span = Some(start..end);
+                                }
+                            }
+                        }
                     }
                     local => {
                         if plot_kind(local).is_some() {

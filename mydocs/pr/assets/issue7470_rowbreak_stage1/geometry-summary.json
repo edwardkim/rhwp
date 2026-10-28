@@ -1,0 +1,106 @@
+[
+  {
+    "sample": "rowbreak-problem-pages.hwp",
+    "before_head": "6b3faf77d8085441f9f26d88d65a49791e910352",
+    "after_head": "7380b29a2ce94be692e44e70cc65868cf87bc835",
+    "before_objects": 11,
+    "after_objects": 11,
+    "geometry_changes": [
+      {
+        "object_index": 3,
+        "delta": {
+          "page": 0,
+          "x": 0.0,
+          "y": 0.0,
+          "w": 0.0,
+          "h": -12.5
+        }
+      },
+      {
+        "object_index": 4,
+        "delta": {
+          "page": 0,
+          "x": 0.0,
+          "y": -3.8,
+          "w": 0.0,
+          "h": -6.3
+        }
+      },
+      {
+        "object_index": 5,
+        "delta": {
+          "page": 0,
+          "x": 0.0,
+          "y": 3.8,
+          "w": 0.0,
+          "h": 0.0
+        }
+      },
+      {
+        "object_index": 7,
+        "delta": {
+          "page": 0,
+          "x": 0.0,
+          "y": 6.7,
+          "w": 0.0,
+          "h": 0.0
+        }
+      }
+    ],
+    "tool_exit": 1
+  },
+  {
+    "sample": "KTX.hwp",
+    "before_head": "6b3faf77d8085441f9f26d88d65a49791e910352",
+    "after_head": "7380b29a2ce94be692e44e70cc65868cf87bc835",
+    "before_objects": 9,
+    "after_objects": 9,
+    "geometry_changes": [],
+    "tool_exit": 0
+  },
+  {
+    "sample": "exam_math.hwp",
+    "before_head": "6b3faf77d8085441f9f26d88d65a49791e910352",
+    "after_head": "7380b29a2ce94be692e44e70cc65868cf87bc835",
+    "before_objects": 9,
+    "after_objects": 9,
+    "geometry_changes": [],
+    "tool_exit": 0
+  },
+  {
+    "sample": "21_언어_기출_편집가능본.hwp",
+    "before_head": "6b3faf77d8085441f9f26d88d65a49791e910352",
+    "after_head": "7380b29a2ce94be692e44e70cc65868cf87bc835",
+    "before_objects": 3,
+    "after_objects": 3,
+    "geometry_changes": [],
+    "tool_exit": 0
+  },
+  {
+    "sample": "aift.hwp",
+    "before_head": "6b3faf77d8085441f9f26d88d65a49791e910352",
+    "after_head": "7380b29a2ce94be692e44e70cc65868cf87bc835",
+    "before_objects": 27,
+    "after_objects": 27,
+    "geometry_changes": [],
+    "tool_exit": 0
+  },
+  {
+    "sample": "biz_plan.hwp",
+    "before_head": "6b3faf77d8085441f9f26d88d65a49791e910352",
+    "after_head": "7380b29a2ce94be692e44e70cc65868cf87bc835",
+    "before_objects": 0,
+    "after_objects": 0,
+    "geometry_changes": [],
+    "tool_exit": 0
+  },
+  {
+    "sample": "pic-in-head-01.hwp",
+    "before_head": "6b3faf77d8085441f9f26d88d65a49791e910352",
+    "after_head": "7380b29a2ce94be692e44e70cc65868cf87bc835",
+    "before_objects": 66,
+    "after_objects": 66,
+    "geometry_changes": [],
+    "tool_exit": 0
+  }
+]

@@ -1,0 +1,1173 @@
+{
+  "source": {
+    "parent": "5a6bef2bfd2173fa8f45fbb4a08527a24da7d786",
+    "base": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+    "binary_sha256": "450dc282867a4dfc63a7f60ce6570192607c4bc042e2535b7c87c77762e6bbb9",
+    "files": {
+      "src/renderer/layout/table_layout.rs": "e577bcb50d5e5649dac3b8bfe43041f95b7f08533f2ddaf4bf77c74628bf9944",
+      "tests/cases/issue_1133_nested_table_horizontal_anchor.rs": "9247c5d7d6be4dfd38fd1b93a4c107f2dc401575e45cc10d2c06eff05b3fcead"
+    }
+  },
+  "first_candidate_source": {
+    "parent": "5a6bef2bfd2173fa8f45fbb4a08527a24da7d786",
+    "base": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+    "binary_sha256": "2a4b5e87c2dc82b8c70dd985fc740bfefc58aa347b685d97938c803c22021566",
+    "files": {
+      "src/renderer/layout/table_layout.rs": "4285ac5c9e4d912b504a2ab5dece424d830a6f437577c10d492cc34d3aad976c",
+      "tests/cases/issue_1133_nested_table_horizontal_anchor.rs": "8310507e70713693b1cfdfacfa044e5db8e55596e7fbedfa0565e37402b0a60e"
+    }
+  },
+  "before_original": [
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 8.183997167274356
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.8242799998261034
+    },
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_1133_native_support_table_keeps_para_left_anchor) | test(issue_1133_hwpx_support_table_keeps_para_left_anchor)"
+      ],
+      "exit_code": 100,
+      "seconds": 205.89583495818079
+    }
+  ],
+  "first_candidate": [
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 7.145086375065148
+    },
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_002",
+        "--test",
+        "regression_suite_017",
+        "--test",
+        "regression_suite_004",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_1133_native_support_table_keeps_para_left_anchor) | test(issue_1133_hwpx_support_table_keeps_para_left_anchor) | test(narrow_nested_table_keeps_declared_width_and_centers) | test(issue_5787_nested_square_table_honors_stored_horz_offset) | test(issue_6787) | test(issue_7066)"
+      ],
+      "exit_code": 0,
+      "seconds": 200.6940597500652
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--bin",
+        "rhwp"
+      ],
+      "exit_code": 0,
+      "seconds": 139.30184670817107
+    }
+  ],
+  "group_before_unselected": [
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.7642810419201851
+    },
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 10.17135495878756
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 1.1506981668062508
+    },
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_005",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_6787_para_anchors_include_group_outer_margin)"
+      ],
+      "exit_code": 4,
+      "seconds": 196.6367752919905
+    }
+  ],
+  "group_before_selected": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_017",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(issue_6787_para_anchors_include_group_outer_margin)"
+    ],
+    "exit_code": 100,
+    "seconds": 6.862458207644522
+  },
+  "group_counterexample": {
+    "input": "samples/issue6787/16774617-electronic-ballot-form.hwp",
+    "reference": "pdf/16774617-electronic-ballot-form-2020.pdf",
+    "page": 1,
+    "dpi": 96,
+    "oracle": {
+      "cards": [
+        122.813,
+        418.655
+      ],
+      "photos": [
+        199.573,
+        497.492
+      ],
+      "button": [
+        312.472
+      ]
+    },
+    "candidate_before_group_fix": {
+      "cards": [
+        119.2,
+        415.1
+      ],
+      "photos": [
+        196.0,
+        494.1
+      ],
+      "button": [
+        312.7
+      ]
+    },
+    "observation": "나란한 카드의 확정 원점은 바깥여백283HU를 누락한다. 사진의 문단 앵커만 복구하면 잘못된 부모 원점을 따른다. 같은 공통 가로 helper로 무리 원점·lane 끝·최종 배치를 확정한다. 기존 same-line 검사는 최종 가로 위치를 검출하지 않는다."
+  },
+  "final_gates": [
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.8329626661725342
+    },
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all"
+      ],
+      "exit_code": 0,
+      "seconds": 7.38949012523517
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.7899994999170303
+    },
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_017",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_002",
+        "--test",
+        "regression_suite_016",
+        "--test",
+        "regression_suite_004",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(issue_1133_nested_table_horizontal_anchor) | test(narrow_nested_table_keeps_declared_width_and_centers) | test(issue_5787_nested_square_table_honors_stored_horz_offset) | test(issue_6787) | test(issue_7066)"
+      ],
+      "exit_code": 0,
+      "seconds": 181.3345831669867
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--bin",
+        "rhwp"
+      ],
+      "exit_code": 0,
+      "seconds": 149.0999288749881
+    },
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 8.491625499911606
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 23.047552207950503
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 15.698761167004704
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 31.65417679119855
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 49.82404320780188
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0,
+      "seconds": 0.809886584058404
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.09467149991542101
+    },
+    {
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "environment": {
+        "CARGO_TARGET_DIR": "target/pr-review"
+      },
+      "exit_code": 0,
+      "seconds": 248.37470491603017
+    }
+  ],
+  "fresh_wasm": {
+    "source": {
+      "parent": "5a6bef2bfd2173fa8f45fbb4a08527a24da7d786",
+      "base": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+      "binary_sha256": "450dc282867a4dfc63a7f60ce6570192607c4bc042e2535b7c87c77762e6bbb9",
+      "files": {
+        "src/renderer/layout/table_layout.rs": "e577bcb50d5e5649dac3b8bfe43041f95b7f08533f2ddaf4bf77c74628bf9944",
+        "tests/cases/issue_1133_nested_table_horizontal_anchor.rs": "9247c5d7d6be4dfd38fd1b93a4c107f2dc401575e45cc10d2c06eff05b3fcead"
+      }
+    },
+    "hashes": [
+      {
+        "pkg/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+        "rhwp-studio/public/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+        "output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/wasm-pkg/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+      },
+      {
+        "pkg/rhwp_bg.wasm": "7329dd272998982fb78030984dcb075ffa68d601750131412efe193c9c6fe6d1",
+        "rhwp-studio/public/rhwp_bg.wasm": "7329dd272998982fb78030984dcb075ffa68d601750131412efe193c9c6fe6d1",
+        "output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/wasm-pkg/rhwp_bg.wasm": "7329dd272998982fb78030984dcb075ffa68d601750131412efe193c9c6fe6d1"
+      }
+    ],
+    "docker_optimized_build": false
+  },
+  "visual_execution": [
+    {
+      "backend": "native",
+      "key": "nested1133-hwp",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue_1133.hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/issue7382-regression-review/issue_1133-2020.pdf",
+        "--key",
+        "nested1133-hwp",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/native",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 27.13100695796311
+    },
+    {
+      "backend": "native",
+      "key": "nested1133-hwpx",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/hwpx/issue_1133.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/hwpx/issue_1133.pdf",
+        "--key",
+        "nested1133-hwpx",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/native",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 22.1591381249018
+    },
+    {
+      "backend": "native",
+      "key": "seal3308",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/task3307/issue3307_outline_number.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/task3307/beopryeong_3307-2020.pdf",
+        "--key",
+        "seal3308",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/native",
+        "--pages",
+        "7",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 1,
+      "seconds": 7.510631124954671
+    },
+    {
+      "backend": "native",
+      "key": "square5787",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue5787/nested_square_table_horz_offset.hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/issue5787/nested_square_table_horz_offset-hwp-2020.pdf",
+        "--key",
+        "square5787",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/native",
+        "--pages",
+        "1",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 1,
+      "seconds": 6.7384282080456614
+    },
+    {
+      "backend": "native",
+      "key": "group6787",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue6787/16774617-electronic-ballot-form.hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/16774617-electronic-ballot-form-2020.pdf",
+        "--key",
+        "group6787",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/native",
+        "--pages",
+        "1",
+        "--dpi",
+        "96"
+      ],
+      "exit_code": 0,
+      "seconds": 8.539047332946211
+    },
+    {
+      "backend": "wasm",
+      "key": "nested1133-hwp",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue_1133.hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/issue7382-regression-review/issue_1133-2020.pdf",
+        "--key",
+        "nested1133-hwp",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/wasm",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/wasm-pkg"
+      ],
+      "exit_code": 0,
+      "seconds": 21.087446791119874
+    },
+    {
+      "backend": "wasm",
+      "key": "nested1133-hwpx",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/hwpx/issue_1133.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/hwpx/issue_1133.pdf",
+        "--key",
+        "nested1133-hwpx",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/wasm",
+        "--pages",
+        "1-3",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/wasm-pkg"
+      ],
+      "exit_code": 0,
+      "seconds": 17.708544916007668
+    },
+    {
+      "backend": "wasm",
+      "key": "seal3308",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/task3307/issue3307_outline_number.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/task3307/beopryeong_3307-2020.pdf",
+        "--key",
+        "seal3308",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/wasm",
+        "--pages",
+        "7",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/wasm-pkg"
+      ],
+      "exit_code": 1,
+      "seconds": 7.577900417149067
+    },
+    {
+      "backend": "wasm",
+      "key": "square5787",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue5787/nested_square_table_horz_offset.hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/issue5787/nested_square_table_horz_offset-hwp-2020.pdf",
+        "--key",
+        "square5787",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/wasm",
+        "--pages",
+        "1",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/wasm-pkg"
+      ],
+      "exit_code": 1,
+      "seconds": 6.714845915790647
+    },
+    {
+      "backend": "wasm",
+      "key": "group6787",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue6787/16774617-electronic-ballot-form.hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/16774617-electronic-ballot-form-2020.pdf",
+        "--key",
+        "group6787",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/rhwp",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/wasm",
+        "--pages",
+        "1",
+        "--dpi",
+        "96",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/wasm-pkg"
+      ],
+      "exit_code": 0,
+      "seconds": 6.378383582923561
+    }
+  ],
+  "normal_control_before_after": [
+    {
+      "key": "seal3308",
+      "tree_equal": true,
+      "svg_equal": true,
+      "raster_equal": true,
+      "before": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 82.74985,
+        "worst_pixel_match_percent": 82.74985,
+        "average_ink_match_percent": 9.91812,
+        "worst_ink_match_percent": 9.91812,
+        "average_visual_accuracy_proxy_percent": 9.91812,
+        "worst_visual_accuracy_proxy_percent": 9.91812,
+        "average_tolerant_content_match_percent": 77.1031,
+        "worst_tolerant_content_match_percent": 77.1031,
+        "worst_pages": [
+          7
+        ]
+      },
+      "after": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 82.74985,
+        "worst_pixel_match_percent": 82.74985,
+        "average_ink_match_percent": 9.91812,
+        "worst_ink_match_percent": 9.91812,
+        "average_visual_accuracy_proxy_percent": 9.91812,
+        "worst_visual_accuracy_proxy_percent": 9.91812,
+        "average_tolerant_content_match_percent": 77.1031,
+        "worst_tolerant_content_match_percent": 77.1031,
+        "worst_pages": [
+          7
+        ]
+      }
+    },
+    {
+      "key": "square5787",
+      "tree_equal": true,
+      "svg_equal": true,
+      "raster_equal": true,
+      "before": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 95.53856,
+        "worst_pixel_match_percent": 95.53856,
+        "average_ink_match_percent": 20.92353,
+        "worst_ink_match_percent": 20.92353,
+        "average_visual_accuracy_proxy_percent": 20.92353,
+        "worst_visual_accuracy_proxy_percent": 20.92353,
+        "average_tolerant_content_match_percent": 59.04745,
+        "worst_tolerant_content_match_percent": 59.04745,
+        "worst_pages": [
+          1
+        ]
+      },
+      "after": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 95.53856,
+        "worst_pixel_match_percent": 95.53856,
+        "average_ink_match_percent": 20.92353,
+        "worst_ink_match_percent": 20.92353,
+        "average_visual_accuracy_proxy_percent": 20.92353,
+        "worst_visual_accuracy_proxy_percent": 20.92353,
+        "average_tolerant_content_match_percent": 59.04745,
+        "worst_tolerant_content_match_percent": 59.04745,
+        "worst_pages": [
+          1
+        ]
+      }
+    },
+    {
+      "key": "group6787",
+      "tree_equal": false,
+      "svg_equal": false,
+      "raster_equal": false,
+      "before": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 93.48789,
+        "worst_pixel_match_percent": 93.48789,
+        "average_ink_match_percent": 15.55879,
+        "worst_ink_match_percent": 15.55879,
+        "average_visual_accuracy_proxy_percent": 15.55879,
+        "worst_visual_accuracy_proxy_percent": 15.55879,
+        "average_tolerant_content_match_percent": 83.51487,
+        "worst_tolerant_content_match_percent": 83.51487,
+        "worst_pages": [
+          1
+        ]
+      },
+      "after": {
+        "compared_pages": 1,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 93.80393,
+        "worst_pixel_match_percent": 93.80393,
+        "average_ink_match_percent": 16.4542,
+        "worst_ink_match_percent": 16.4542,
+        "average_visual_accuracy_proxy_percent": 16.4542,
+        "worst_visual_accuracy_proxy_percent": 16.4542,
+        "average_tolerant_content_match_percent": 91.02058,
+        "worst_tolerant_content_match_percent": 91.02058,
+        "worst_pages": [
+          1
+        ]
+      }
+    }
+  ],
+  "main_tree": [
+    {
+      "key": "main-hwp",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/rhwp",
+        "export-render-tree",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/main-hwp-tree"
+      ],
+      "exit_code": 0,
+      "pages": 215,
+      "changed_pages": [],
+      "before_dir": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage50-float6797/main-tree/hwp"
+    },
+    {
+      "key": "main-hwpx",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/rhwp",
+        "export-render-tree",
+        "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/main-hwpx-tree"
+      ],
+      "exit_code": 0,
+      "pages": 215,
+      "changed_pages": [],
+      "before_dir": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage50-float6797/main-tree/hwpx"
+    }
+  ],
+  "focused_summary": {
+    "passed": 14,
+    "failed": 0,
+    "skipped": 1055,
+    "test_seconds": 1.048
+  },
+  "full_nextest": "최종 보정51 head의 전체 실행은 아직 미실행. 보정50의10337PASS/36FAIL/50SKIP는 이전 제품 해시의 기록이며 현재 head 전체 통과로 승격하지 않음.",
+  "target_coordinates": {
+    "gray_box_native_x": 190.65333333333334,
+    "gray_box_pdf_x": 190.45733642578125,
+    "gray_box_native_width": 469.6933333333334,
+    "gray_box_pdf_width": 469.508
+  },
+  "human_read": [
+    "native/wasm: nested1133-hwp p2 review+overlay",
+    "native/wasm: nested1133-hwpx p2 review+overlay",
+    "native/wasm: group6787 p1 review+overlay"
+  ],
+  "remaining": [
+    "#1133 자동 쪽번호 실제 기준선9.825px 차이",
+    "#1133 HWP 첫/이어받기 조각의 세로 위여백",
+    "#3308 p7/#5787 p1 기존 전체 페이지 gate 보류(수정 전후 동일)",
+    "#6787 카드·사진의 작은 세로 차이 및 글자 형태",
+    "#7382 이전 전체 검사36FAIL 및 전수 시각 보류"
+  ],
+  "unverified": [
+    "Center/Right 앵커의 모든 조합",
+    "무리 구성원마다 다른 바깥여백의 측정/배치 경계"
+  ],
+  "decision": "머지 보류 유지; 가로 보정의 정식/직접 시각 증거와 전체 head 미검증을 구분함",
+  "metrics": {
+    "native": {
+      "nested1133-hwp": {
+        "overlay": {
+          "compared_pages": 3,
+          "pixel_diff_threshold": 32,
+          "average_pixel_match_percent": 92.28512,
+          "worst_pixel_match_percent": 89.43501,
+          "average_ink_match_percent": 29.70926,
+          "worst_ink_match_percent": 13.99954,
+          "average_visual_accuracy_proxy_percent": 29.70926,
+          "worst_visual_accuracy_proxy_percent": 13.99954,
+          "average_tolerant_content_match_percent": 98.36496,
+          "worst_tolerant_content_match_percent": 96.18456,
+          "worst_pages": [
+            3,
+            1,
+            2
+          ]
+        },
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 96.18456
+          },
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 99.22385
+          },
+          {
+            "page": 3,
+            "tolerant_content_match_percent": 99.68648
+          }
+        ]
+      },
+      "nested1133-hwpx": {
+        "overlay": {
+          "compared_pages": 3,
+          "pixel_diff_threshold": 32,
+          "average_pixel_match_percent": 92.22713,
+          "worst_pixel_match_percent": 89.37781,
+          "average_ink_match_percent": 32.42305,
+          "worst_ink_match_percent": 25.77098,
+          "average_visual_accuracy_proxy_percent": 32.42305,
+          "worst_visual_accuracy_proxy_percent": 25.77098,
+          "average_tolerant_content_match_percent": 98.17367,
+          "worst_tolerant_content_match_percent": 96.03909,
+          "worst_pages": [
+            1,
+            3,
+            2
+          ]
+        },
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 96.03909
+          },
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 98.84583
+          },
+          {
+            "page": 3,
+            "tolerant_content_match_percent": 99.6361
+          }
+        ]
+      },
+      "seal3308": {
+        "overlay": {
+          "compared_pages": 1,
+          "pixel_diff_threshold": 32,
+          "average_pixel_match_percent": 82.74985,
+          "worst_pixel_match_percent": 82.74985,
+          "average_ink_match_percent": 9.91812,
+          "worst_ink_match_percent": 9.91812,
+          "average_visual_accuracy_proxy_percent": 9.91812,
+          "worst_visual_accuracy_proxy_percent": 9.91812,
+          "average_tolerant_content_match_percent": 77.1031,
+          "worst_tolerant_content_match_percent": 77.1031,
+          "worst_pages": [
+            7
+          ]
+        },
+        "pages": [
+          {
+            "page": 7,
+            "tolerant_content_match_percent": 77.1031
+          }
+        ]
+      },
+      "square5787": {
+        "overlay": {
+          "compared_pages": 1,
+          "pixel_diff_threshold": 32,
+          "average_pixel_match_percent": 95.53856,
+          "worst_pixel_match_percent": 95.53856,
+          "average_ink_match_percent": 20.92353,
+          "worst_ink_match_percent": 20.92353,
+          "average_visual_accuracy_proxy_percent": 20.92353,
+          "worst_visual_accuracy_proxy_percent": 20.92353,
+          "average_tolerant_content_match_percent": 59.04745,
+          "worst_tolerant_content_match_percent": 59.04745,
+          "worst_pages": [
+            1
+          ]
+        },
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 59.04745
+          }
+        ]
+      },
+      "group6787": {
+        "overlay": {
+          "compared_pages": 1,
+          "pixel_diff_threshold": 32,
+          "average_pixel_match_percent": 93.80393,
+          "worst_pixel_match_percent": 93.80393,
+          "average_ink_match_percent": 16.4542,
+          "worst_ink_match_percent": 16.4542,
+          "average_visual_accuracy_proxy_percent": 16.4542,
+          "worst_visual_accuracy_proxy_percent": 16.4542,
+          "average_tolerant_content_match_percent": 91.02058,
+          "worst_tolerant_content_match_percent": 91.02058,
+          "worst_pages": [
+            1
+          ]
+        },
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 91.02058
+          }
+        ]
+      }
+    },
+    "wasm": {
+      "nested1133-hwp": {
+        "overlay": {
+          "compared_pages": 3,
+          "pixel_diff_threshold": 32,
+          "average_pixel_match_percent": 92.28512,
+          "worst_pixel_match_percent": 89.43501,
+          "average_ink_match_percent": 29.70926,
+          "worst_ink_match_percent": 13.99954,
+          "average_visual_accuracy_proxy_percent": 29.70926,
+          "worst_visual_accuracy_proxy_percent": 13.99954,
+          "average_tolerant_content_match_percent": 98.36496,
+          "worst_tolerant_content_match_percent": 96.18456,
+          "worst_pages": [
+            3,
+            1,
+            2
+          ]
+        },
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 96.18456
+          },
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 99.22385
+          },
+          {
+            "page": 3,
+            "tolerant_content_match_percent": 99.68648
+          }
+        ]
+      },
+      "nested1133-hwpx": {
+        "overlay": {
+          "compared_pages": 3,
+          "pixel_diff_threshold": 32,
+          "average_pixel_match_percent": 92.22713,
+          "worst_pixel_match_percent": 89.37781,
+          "average_ink_match_percent": 32.42305,
+          "worst_ink_match_percent": 25.77098,
+          "average_visual_accuracy_proxy_percent": 32.42305,
+          "worst_visual_accuracy_proxy_percent": 25.77098,
+          "average_tolerant_content_match_percent": 98.17367,
+          "worst_tolerant_content_match_percent": 96.03909,
+          "worst_pages": [
+            1,
+            3,
+            2
+          ]
+        },
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 96.03909
+          },
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 98.84583
+          },
+          {
+            "page": 3,
+            "tolerant_content_match_percent": 99.6361
+          }
+        ]
+      },
+      "seal3308": {
+        "overlay": {
+          "compared_pages": 1,
+          "pixel_diff_threshold": 32,
+          "average_pixel_match_percent": 82.74985,
+          "worst_pixel_match_percent": 82.74985,
+          "average_ink_match_percent": 9.91812,
+          "worst_ink_match_percent": 9.91812,
+          "average_visual_accuracy_proxy_percent": 9.91812,
+          "worst_visual_accuracy_proxy_percent": 9.91812,
+          "average_tolerant_content_match_percent": 77.1031,
+          "worst_tolerant_content_match_percent": 77.1031,
+          "worst_pages": [
+            7
+          ]
+        },
+        "pages": [
+          {
+            "page": 7,
+            "tolerant_content_match_percent": 77.1031
+          }
+        ]
+      },
+      "square5787": {
+        "overlay": {
+          "compared_pages": 1,
+          "pixel_diff_threshold": 32,
+          "average_pixel_match_percent": 95.53856,
+          "worst_pixel_match_percent": 95.53856,
+          "average_ink_match_percent": 20.92353,
+          "worst_ink_match_percent": 20.92353,
+          "average_visual_accuracy_proxy_percent": 20.92353,
+          "worst_visual_accuracy_proxy_percent": 20.92353,
+          "average_tolerant_content_match_percent": 59.04745,
+          "worst_tolerant_content_match_percent": 59.04745,
+          "worst_pages": [
+            1
+          ]
+        },
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 59.04745
+          }
+        ]
+      },
+      "group6787": {
+        "overlay": {
+          "compared_pages": 1,
+          "pixel_diff_threshold": 32,
+          "average_pixel_match_percent": 93.80393,
+          "worst_pixel_match_percent": 93.80393,
+          "average_ink_match_percent": 16.4542,
+          "worst_ink_match_percent": 16.4542,
+          "average_visual_accuracy_proxy_percent": 16.4542,
+          "worst_visual_accuracy_proxy_percent": 16.4542,
+          "average_tolerant_content_match_percent": 91.02058,
+          "worst_tolerant_content_match_percent": 91.02058,
+          "worst_pages": [
+            1
+          ]
+        },
+        "pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 91.02058
+          }
+        ]
+      }
+    }
+  },
+  "assets": [
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage51_native_nested1133-hwp_review_002.png",
+      "source": "output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/native/nested1133-hwp/review/review_002.png",
+      "sha256": "453a8192d203ce9ff6e390597bb6e754d18b721b09d3ba334fa97a63c5a54529"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage51_native_nested1133-hwp_overlay_002.png",
+      "source": "output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/native/nested1133-hwp/overlay/overlay_002.png",
+      "sha256": "48c41096da8a2f9779d7cf2de12e063b0babfea4e71fa2f256c5e82b4894de3d"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage51_native_nested1133-hwpx_review_002.png",
+      "source": "output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/native/nested1133-hwpx/review/review_002.png",
+      "sha256": "f2bd0e058c181b7bba33b881c999e2e6aa5724ccd09f90a458c5424d1643e962"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage51_wasm_nested1133-hwp_review_002.png",
+      "source": "output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/wasm/nested1133-hwp/review/review_002.png",
+      "sha256": "b6fc896667de8c7a01c28742abc3cebee0eca7af8919180dff51e86f4c4fc08e"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage51_wasm_nested1133-hwp_overlay_002.png",
+      "source": "output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/wasm/nested1133-hwp/overlay/overlay_002.png",
+      "sha256": "401211d7887c7cc55bcf0c9c0620d1f6c504d35938bbe6777f8194a84fc97afa"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage51_wasm_nested1133-hwpx_overlay_002.png",
+      "source": "output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/wasm/nested1133-hwpx/overlay/overlay_002.png",
+      "sha256": "e7abb6046159559760dcaabd6fcd46865fd96a85cb16aaea08abd3556d22cdb1"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage51_native_group6787_review_001.png",
+      "source": "output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/native/group6787/review/review_001.png",
+      "sha256": "adaf4c813d7fb5aed052c237c9f350ce7af164f98945608ea8e665b806c7a1e4"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage51_native_group6787_overlay_001.png",
+      "source": "output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/native/group6787/overlay/overlay_001.png",
+      "sha256": "1b14429000a045822fedeab5a0f241d645e1f78dceef9e2b3a10803c4258ba77"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage51_wasm_group6787_review_001.png",
+      "source": "output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/wasm/group6787/review/review_001.png",
+      "sha256": "cecfc5ee240ddd2c290197f349e50b5d7d55aac5bdebf1bdf170264cf293f60c"
+    },
+    {
+      "path": "mydocs/pr/assets/pr7382_20260926/stage51_wasm_group6787_overlay_001.png",
+      "source": "output/pr-review/planet6897-7382-20260926/stage51-nested1133/final/visual/wasm/group6787/overlay/overlay_001.png",
+      "sha256": "5035493ce21667a609176ebfbacbc0fd3596baa431c255b816ae255b65e93aa6"
+    }
+  ]
+}

@@ -15,6 +15,7 @@ use std::fs;
 use std::path::Path;
 
 use rhwp::document_core::DocumentCore;
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 fn core() -> DocumentCore {
     let repo_root = env!("CARGO_MANIFEST_DIR");
@@ -36,19 +37,43 @@ fn issue_2319_form_doc_paginates_to_two_pages() {
 #[test]
 fn issue_2319_form_table_and_guide_tables_split() {
     let core = core();
-    let dump = core.dump_page_items(None);
-    let mut starts: Vec<usize> = dump.match_indices("=== 페이지").map(|(i, _)| i).collect();
-    starts.push(dump.len());
-    let pages: Vec<&str> = starts.windows(2).map(|w| &dump[w[0]..w[1]]).collect();
-    assert_eq!(pages.len(), 2, "페이지 블록 2개");
+    // Inspect the final painted tables, regardless of which PageItem owns
+    // their paragraph. The independent contract is page and object ownership.
+    fn tables<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+        if matches!(node.node_type, RenderNodeType::Table(_)) {
+            out.push(node);
+            return;
+        }
+        for child in &node.children {
+            tables(child, out);
+        }
+    }
+    assert_eq!(core.page_count(), 2, "한컴 기준 2쪽");
+    let first = core.build_page_render_tree(0).expect("신청서 쪽");
+    let second = core.build_page_render_tree(1).expect("안내 쪽");
+    let mut first_tables = Vec::new();
+    let mut second_tables = Vec::new();
+    tables(&first.root, &mut first_tables);
+    tables(&second.root, &mut second_tables);
+    let form: Vec<_> = first_tables
+        .iter()
+        .filter(|node| {
+            matches!(&node.node_type, RenderNodeType::Table(t)
+            if t.para_index == Some(0) && t.control_index == Some(2)
+                && t.row_count == 13 && t.col_count == 11)
+        })
+        .collect();
+    assert_eq!(form.len(), 1, "신청서 표의 쪽 소속·누락·중복");
+    assert!(form[0].bbox.height > 800.0, "신청서 표 높이 붕괴 방지");
     assert!(
-        pages[0].contains("pi=0 ci=2"),
-        "p1 에 13×11 신청서 표(pi=0)가 있어야 함:\n{}",
-        pages[0]
+        matches!(&second_tables.first().expect("안내 표").node_type,
+        RenderNodeType::Table(t) if t.para_index == Some(3) && t.control_index == Some(0)),
+        "2쪽 첫 표는 안내 표여야 한다"
     );
     assert!(
-        pages[1].contains("pi=3 ci=0"),
-        "p2 가 안내 표(pi=3)부터 시작해야 함:\n{}",
-        pages[1]
+        !second_tables.iter().any(
+            |node| matches!(&node.node_type, RenderNodeType::Table(t) if t.para_index == Some(0))
+        ),
+        "신청서 표를 다음 쪽에 중복하지 않는다"
     );
 }

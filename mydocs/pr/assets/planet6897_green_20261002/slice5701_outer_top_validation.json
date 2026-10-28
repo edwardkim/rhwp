@@ -1,0 +1,215 @@
+{
+  "head_before_changes": "5bb0dfb12d30333212fbfe8b2ac8e56c8b68fc25",
+  "status": "위 바깥여백 부분 보정, 문서 피델리티와 최종 PR 미완료",
+  "independent_spec": "mydocs/tech/한글문서파일형식_5.0_revision1.3.md 표69: 개체의 4방향 바깥여백",
+  "source": "mydocs/pr/assets/planet6897_green_20261002/slice5701_hancom_resaved_diagnostic.hwp",
+  "reference": "pdf/issue5701/1270000-202200012-slice-p76-hancom-resaved-2020.pdf",
+  "contract": {
+    "producer": "ParagraphFloatPlacement::stored_host_lines_are_valid: 유효 저장 줄이 개체 앞에서 모두 끝남",
+    "measurement": "column_rowbreak_fragment_opens_outer_top → prepare의 첫 조각 계획 및 continuation/fragment/budget의 위여백 예산",
+    "paint": "동일 column_rowbreak_fragment_opens_outer_top → layout/table_partial의 첫 조각 및 단 상단 이어받기 여백",
+    "excluded": "저장 되감김, 편집/합성 줄, 호스트와 표가 섞이는 줄, 중첩 개체 및 쪽 중간 이어받기는 기존 계약 유지"
+  },
+  "native_before_percent": [
+    76.9839,
+    27.4538,
+    100.0
+  ],
+  "native_after_percent": [
+    96.60598,
+    18.71808,
+    100.0
+  ],
+  "native_exit_code": 1,
+  "native_below_90": [
+    2
+  ],
+  "direct_review": [
+    "slice5701_outer_top_native_p1_review.png",
+    "slice5701_outer_top_native_p2_review.png"
+  ],
+  "remaining": "정본 1쪽 표 앞에 있는 pi8 첫 줄을 Native는 2쪽에 배치함. 2쪽 문단 내용/간격이 한 줄 이상 밀림. 1쪽 점수90 이상도 이 소속 결함의 해결 증거가 아님.",
+  "original_all3_native_trees_unchanged": true,
+  "social6797_all11_native_trees_unchanged": true,
+  "form002_all10_native_trees_unchanged": true,
+  "new_test_functions": 0,
+  "changed_test_functions": 0,
+  "test_removals": 0,
+  "source_files_sha256": {
+    "src/renderer/float_placement.rs": "3a838c29942fe33e5a7e74511c6b588bb69e739e55dd5cd1c4d572eb67f1d632"
+  },
+  "validation_state": "필수 lint/build 및 기존39검사 완료. 부분 보정 시각 결과 기록; #5701 문서 전체 및 최종 PR은 미완료",
+  "logs_stay_under_output": true,
+  "mandatory_gates": {
+    "head_before_changes": "5bb0dfb12d30333212fbfe8b2ac8e56c8b68fc25",
+    "state": "complete",
+    "gates": [
+      {
+        "gate": "focused39",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_012",
+          "--test",
+          "regression_suite_013",
+          "--test",
+          "regression_suite_026",
+          "--test",
+          "regression_suite_028",
+          "-E",
+          "test(/issue_6950_paragraph_end_topbottom_anchor::/) | test(/issue_5584_float_host_title_above_table::/) | test(/issue_6797_table_item_clears_float_band::/) | test(/issue_2097_terminal_row_physical_ownership::/)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 112.307,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-outer-top-focused39.log"
+      },
+      {
+        "gate": "prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.719,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-outer-top-prepare.log"
+      },
+      {
+        "gate": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 5.956,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-outer-top-fmt.log"
+      },
+      {
+        "gate": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 20.951,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-outer-top-native-clippy.log"
+      },
+      {
+        "gate": "wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 14.126,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-outer-top-wasm-clippy.log"
+      },
+      {
+        "gate": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 28.86,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-outer-top-workspace-build.log"
+      },
+      {
+        "gate": "all-target-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 56.562,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-outer-top-all-target-clippy.log"
+      },
+      {
+        "gate": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "6b3faf77d8085441f9f26d88d65a49791e910352"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.56,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-outer-top-manifest.log"
+      },
+      {
+        "gate": "fresh-wasm",
+        "command": [
+          "env",
+          "CARGO_TARGET_DIR=target/pr-review",
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 152.348,
+        "log": "output/pr-review/planet6897-green-20261002/slice5701-outer-top-fresh-wasm.log"
+      }
+    ]
+  },
+  "wasm_sha256": "a434b2fe690ccf0eb9c58f27daef83e1f7f8d96eb159ca6483e98ec1167911b8",
+  "studio_wasm_sha256": "a434b2fe690ccf0eb9c58f27daef83e1f7f8d96eb159ca6483e98ec1167911b8",
+  "fresh_wasm_percent": [
+    96.60598,
+    18.71808,
+    100.0
+  ],
+  "fresh_wasm_exit_code": 1,
+  "native_wasm_all3_png_equal": true,
+  "social6797_fresh_wasm_all11_render_tree_unchanged": true,
+  "social6797_fresh_wasm_all11_raw_svg_unchanged": true,
+  "form002_fresh_wasm_all10_render_tree_unchanged": true,
+  "form002_fresh_wasm_all10_raw_svg_unchanged": true,
+  "mac_local_no_opt": true,
+  "docker_optimized_build": false
+}

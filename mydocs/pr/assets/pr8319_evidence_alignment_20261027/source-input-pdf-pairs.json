@@ -1,0 +1,315 @@
+{
+  "scope": "원 PR 원문 미첨부로 확보한 대체 문서와 PDF 동반 보존",
+  "role_warning": "공식 배포 PDF는 다운로드 원문이며 한컴 Print 기준 PDF로 임의 승격하지 않는다. 기존 재현 입력의 sweep PDF와도 구분한다.",
+  "records": [
+    {
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/2026년+7월+인구동향.hwp",
+      "input_sha256": "6f87a7a4de1e89bab89be40cec8523d106300a259ee953481d3d288f91fd99ad",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/2026년+7월+인구동향-2020.pdf",
+      "pdf_role": "같은 입력의 MCP 2020 Print PDF",
+      "used_as_visual_sweep_baseline": true,
+      "pdf_sha256": "85fe0b2ba7792dcc23b6b3f671ffa59bf0a54cf2cf786b86180da3b21082d3e5",
+      "print_contract_verified": true,
+      "engine": "2020",
+      "job_id": "8132bcef-16b0-4126-b7ff-b5f027746b64",
+      "page_count": 41,
+      "print_result": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8027-official.hwpx",
+      "input_sha256": "e75eb152f9d2059c76c83c631acb64883d413da6d491371a667a5c3740ac6499",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8027-official-2020.pdf",
+      "pdf_role": "같은 입력의 MCP 2020 Print PDF",
+      "used_as_visual_sweep_baseline": true,
+      "pdf_sha256": "e2827da24d2230fc0d0129ab761bc2e4875ba16330c216ff5ecde1ff9386b346",
+      "print_contract_verified": true,
+      "source_page": "https://mofe.go.kr/nw/nes/detailNesDtaView.do?menuNo=4010100&searchBbsId1=MOSFBBS_000000000028&searchNttId1=MOSF_000000000079660",
+      "download_url": "https://mofe.go.kr/com/cmm/fms/FileDown.do?atchFileId=ATCH_000000000032929&fileSn=2",
+      "engine": "2020",
+      "job_id": "1204007e-effe-4420-b18f-8dd0b7a38cbe",
+      "print_result": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8030-new-official.hwp",
+      "input_sha256": "8acbe67ba95fd53432b80cbdbc82e9cb118534775ada58b832437eae2b4ea99c",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8030-new-official-2020.pdf",
+      "pdf_role": "같은 입력의 MCP 2020 Print PDF",
+      "used_as_visual_sweep_baseline": true,
+      "print_contract_verified": true,
+      "pdf_sha256": "b57c3f31d21624a72b7cb9e9182b1d6b6c4d91c70b52069483781af2d1358a2f",
+      "engine": "2020",
+      "job_id": "421668b9-3b31-47b3-9db2-1a9f44649ab5",
+      "print_result": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8031-official.hwp",
+      "input_sha256": "f66e6c1d782d35489adb8a610ea88d4a336a014306d811c0521ddb509c757413",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8031-official-2020.pdf",
+      "pdf_role": "같은 입력의 MCP 2020 Print PDF",
+      "used_as_visual_sweep_baseline": true,
+      "pdf_sha256": "1bfbe9a38f71f379499fddaad247ba47c0c837188bf7757d6c4125e48dff693e",
+      "print_contract_verified": true,
+      "source_page": "https://www.korea.kr/briefing/pressReleaseView.do?newsId=156785547",
+      "download_url": "https://www.korea.kr/common/download.do?fileId=198571910&tblKey=GMN",
+      "engine": "2020",
+      "job_id": "16b5789d-bc2b-4819-bc4d-9ff109eb55e2",
+      "print_result": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8036-seoul-official.hwpx",
+      "input_sha256": "d4bfa888c37087e8632eaf2705a53c7c8d96423ea4a9aa7cd232b172963c3d6f",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8036-seoul-official-2020.pdf",
+      "pdf_role": "같은 입력의 MCP 2020 Print PDF",
+      "used_as_visual_sweep_baseline": true,
+      "print_contract_verified": true,
+      "pdf_sha256": "c75706f95b270d4a1d7b946277b682596024f28995c99ac3fbd4aeb6abd3bd7b",
+      "engine": "2020",
+      "job_id": "792016e8-499e-4125-b52b-612a14d56718",
+      "print_result": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8039-official.hwpx",
+      "input_sha256": "abecaf23efa76ae77ef30979b20bad54470518adb6a2dd73f93ec4066ac16848",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8039-official-2020.pdf",
+      "pdf_role": "같은 입력의 MCP 2020 Print PDF",
+      "used_as_visual_sweep_baseline": true,
+      "print_contract_verified": true,
+      "pdf_sha256": "b0cf082bfdb19e1672e55b85cdc5707a785b4b84ded5de79d52e78e98fbe18d3",
+      "engine": "2020",
+      "job_id": "cb7bd1c0-9058-4b9f-818f-982b12f692bb",
+      "print_result": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8045-mofa.hwp",
+      "input_sha256": "4bf58b220d6a70e7efbc9ad5bf7d501e2f1291430a1fff9b9bb3afc9f25fba6c",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8045-mofa-2020.pdf",
+      "pdf_role": "같은 입력의 MCP 2020 Print PDF",
+      "used_as_visual_sweep_baseline": true,
+      "pdf_sha256": "6cac0eb2d182787be811ef0f6bd5d1dac56df9c4836c3995b0daaf7f0eeecde2",
+      "print_contract_verified": true,
+      "source_page": "https://overseas.mofa.go.kr/cn-qingdao-ko/brd/m_1373/view.do?seq=1291199",
+      "download_url": "https://overseas.mofa.go.kr/cn-qingdao-ko/brd/m_1373/down.do?brd_id=14913&seq=1291199&data_tp=A&file_seq=1",
+      "engine": "2020",
+      "job_id": "07f5c73f-3e04-4912-a76a-0a02be45c9d1",
+      "print_result": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8049-official.hwp",
+      "input_sha256": "29018def6969c60e6b0fb5c7cca06c8fd12a3b1239543c8f3eb1d1d03bc4294e",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8049-official-2020.pdf",
+      "pdf_role": "같은 입력의 한컴 2020 수동 Print PDF",
+      "used_as_visual_sweep_baseline": true,
+      "print_contract_verified": true,
+      "pdf_sha256": "ddc7df829907d31b0befffc663ca0879efacaa0ceae34f92502fe0e99a9a9859",
+      "engine": "2020",
+      "manual_print_receipt": {
+        "pdf": "output/pr-review/pr8319-comment-correction/official-print-pdf/pr8049-official-2020.pdf",
+        "bytes": 2201805,
+        "sha256": "ddc7df829907d31b0befffc663ca0879efacaa0ceae34f92502fe0e99a9a9859",
+        "pages": 82,
+        "metadata": {
+          "Title": "",
+          "Author": "admin",
+          "Subject": "",
+          "Keywords": "",
+          "Creator": "Hwp 2020 11.0.0.9136",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "CreationDate": "D:20261027225949+09'00'",
+          "ModDate": "D:20261027225949+09'00'"
+        },
+        "method": "한컴 2020 파일 → 인쇄 → PDF 수동 출력 요청에 대한 사용자 완료 응답",
+        "host": "win10-ted",
+        "input_sha256": "29018def6969c60e6b0fb5c7cca06c8fd12a3b1239543c8f3eb1d1d03bc4294e",
+        "remote_input": "C:\\temp\\rhwp-pr8328-original-print\\pr8049-official.hwp",
+        "remote_pdf": "C:\\temp\\rhwp-pr8328-original-print\\pr8049-official-2020.pdf"
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8050-law-current.hwp",
+      "input_sha256": "6371d1fcf8f9574430c0df8e6141cd9d7e6b2c11aa10bc3afeeb8e5cdf07cf04",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8050-law-current-2020.pdf",
+      "pdf_role": "같은 입력의 MCP 2020 Print PDF",
+      "used_as_visual_sweep_baseline": true,
+      "pdf_sha256": "7bcbc54f4240b8e5104c8b930b8618cb7fa968b9f158a9b09b961d4924fd8d2c",
+      "print_contract_verified": true,
+      "source_page": "https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=261039",
+      "download_url": "https://www.law.go.kr/LSW/flDownload.do?gubun=&flSeq=138459547&bylClsCd=110202",
+      "engine": "2020",
+      "job_id": "a000699e-6945-434f-9bfd-2e2294ae5c40",
+      "print_result": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8051-official.hwpx",
+      "input_sha256": "690e1cad747b643c331f563780271f1323690aded489f205a5a1eefb037b5b1e",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8051-official-2024.pdf",
+      "pdf_role": "같은 입력의 MCP 2024 Print PDF",
+      "used_as_visual_sweep_baseline": true,
+      "pdf_sha256": "ca0c2d437564ed39779e3c8b739b7176e2dd0d753893c32db48f7e6ac1d579da",
+      "print_contract_verified": true,
+      "source_page": "https://www.mcst.go.kr/site/s_notice/press/pressView.jsp?pSeq=21784",
+      "download_url": "https://www.mcst.go.kr/servlets/eduport/front/upload/UplDownloadFile?pFileName=%5B0418%5D%EB%AC%B8%EC%B2%B4%EB%B6%80%EB%B3%B4%EB%8F%84%EC%9E%90%EB%A3%8C-%EC%84%B8%EA%B3%84+%EC%B1%85%EC%9D%98+%EB%82%A0+%ED%96%89%EC%82%AC+%EA%B0%9C%EC%B5%9C.pdf&pRealName=20250418091519655148778409_PRESS20250418091519492098.pdf&pPath=0302000000",
+      "caveat": "공식 PDF는 물리 5쪽에 2-up spread가 포함되어 개별 페이지의 Print 기준으로 사용하지 않는다.",
+      "engine": "2024",
+      "job_id": "bd541d67-a804-40c1-83f2-c5978456dcf6",
+      "print_result": {
+        "engine": "2024",
+        "hancom_version": "13.0.0.3901",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8053-official.hwpx",
+      "input_sha256": "e720b3b38eb46286c34a1ba6a002c2448c264ec1d13f8e9e3d5279c57f68bfa6",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8053-official-2020.pdf",
+      "pdf_role": "같은 입력의 MCP 2020 Print PDF",
+      "used_as_visual_sweep_baseline": true,
+      "pdf_sha256": "a19baf71541f3e2b19ef3e2cab09fad2f10e150f514e31c4300dd1186548629b",
+      "print_contract_verified": true,
+      "source_page": "https://www.opm.go.kr/opm/news/press-release.do?articleNo=163888&mode=view",
+      "download_url": "https://www.opm.go.kr/opm/news/press-release.do?mode=download&articleNo=163888&attachNo=157358",
+      "engine": "2020",
+      "job_id": "4a44c479-b437-4719-9564-72fc62abb533",
+      "print_result": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8055-official.hwpx",
+      "input_sha256": "adb76fe70975d3f8dae20120d1ea27434f24aa69ebd7e04427b80e547bb78828",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8055-official-2020.pdf",
+      "pdf_role": "같은 입력의 MCP 2020 Print PDF",
+      "used_as_visual_sweep_baseline": true,
+      "print_contract_verified": true,
+      "pdf_sha256": "1bf8b519e921c4e8cb27e5c2dac609ea4e7435b4f925b3ae688ee351057a91ea",
+      "engine": "2020",
+      "job_id": "317bcf20-52d7-47f3-9feb-988077f6e165",
+      "print_result": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8056-official.hwp",
+      "input_sha256": "56b7a19affa96a586c1db2502f3a8f4d597cbafaf1250b7d4214417b94c31905",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8056-official-2024.pdf",
+      "pdf_role": "같은 입력의 MCP 2024 Print PDF",
+      "used_as_visual_sweep_baseline": true,
+      "pdf_sha256": "9767f31c631cfe09b4f102acf6ce5dda4e488079bf6fd2b994e357936c98c4eb",
+      "print_contract_verified": true,
+      "source_page": "https://www.bok.or.kr/portal/bbs/B0000502/view.do?menuNo=200690&nttId=11065634",
+      "download_url": "https://www.bok.or.kr/fileSrc/portal/4de65affd8804634884be801d460d255/2/83aa3a0b9ad843ce93dfcdb5d4fa0b6c.pdf",
+      "engine": "2024",
+      "job_id": "9a63ebc4-62d3-41d3-af48-9ad99a95e65d",
+      "print_result": {
+        "engine": "2024",
+        "hancom_version": "13.0.0.3901",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8057-official.hwpx",
+      "input_sha256": "7180ce00f71bb9fc4285d045b6a0fd8bfbdd1c60642176c95a0496c19463ff6e",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8057-official-2020.pdf",
+      "pdf_role": "같은 입력의 MCP 2020 Print PDF",
+      "used_as_visual_sweep_baseline": true,
+      "pdf_sha256": "ebdcb04f80fd12d8d577e131d0730153fe246c2efd60611648ecc1853286a5df",
+      "print_contract_verified": true,
+      "source_page": "https://mods.go.kr/board.es?act=view&bid=214&list_no=446633&mid=a10301040400",
+      "download_url": "https://mods.go.kr/boardDownload.es?bid=214&list_no=446633&seq=1",
+      "engine": "2020",
+      "job_id": "98488060-52ae-478d-876b-3725cf605c54",
+      "print_result": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8065-law-current.hwp",
+      "input_sha256": "1cbb4f77a3b190a9057081293f4a030055530369c986012327ac49511e82009f",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/pr8065-law-current-2020.pdf",
+      "pdf_role": "같은 입력의 MCP 2020 Print PDF",
+      "used_as_visual_sweep_baseline": true,
+      "pdf_sha256": "4c1921a5b44e59cb2bdc52c2be13c068600a1ff95233af1522834536f2625d86",
+      "print_contract_verified": true,
+      "source_page": "https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=273047",
+      "download_url": "https://www.law.go.kr/LSW/flDownload.do?gubun=&flSeq=154936765&bylClsCd=110202",
+      "engine": "2020",
+      "job_id": "adac163d-2947-48ad-9715-771f9bab225a",
+      "print_result": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/ssec2609.hwpx",
+      "input_sha256": "28f84a2dd9ea81f87f892b8a61e4f72d54bb9fa128dee354bdd223b735c911ec",
+      "pdf": "mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-pdf/hancom-print/ssec2609-2020.pdf",
+      "pdf_role": "같은 입력의 MCP 2020 Print PDF",
+      "used_as_visual_sweep_baseline": true,
+      "pdf_sha256": "7a064de57333d66e4ae90f7063c1687d096117a4112f3e91f5af902ededf9493",
+      "print_contract_verified": true,
+      "source_page": null,
+      "download_url": null,
+      "caveat": "공식 PDF는 81쪽 통합 보도자료이며 해당 HWPX 외 첨부도 포함한다. 1:1 전체 쪽수 기준으로 사용하지 않는다.",
+      "engine": "2020",
+      "job_id": "4c0ede79-26d6-4ba3-920f-ef3161f1614a",
+      "print_result": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    }
+  ]
+}

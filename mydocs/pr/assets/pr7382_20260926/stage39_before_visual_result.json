@@ -1,0 +1,22 @@
+{
+  "command": [
+    "/Users/tsjang/rhwp/venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--hwp",
+    "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+    "--pdf",
+    "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+    "--key",
+    "liver7379",
+    "--rhwp-bin",
+    "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/bin/stage38-after-rhwp",
+    "--out",
+    "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/visual/stage39-before-hwpx-native",
+    "--dpi",
+    "96",
+    "--pages",
+    "126,127"
+  ],
+  "exit_code": 1,
+  "elapsed_seconds": 11.466044083237648
+}

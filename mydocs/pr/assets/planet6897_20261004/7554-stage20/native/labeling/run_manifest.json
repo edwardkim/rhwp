@@ -1,0 +1,37 @@
+{
+  "schema_version": 2,
+  "key": "labeling",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+      "sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860"
+    },
+    "pdf": {
+      "path": "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+      "sha256": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79"
+    },
+    "git_head": "e3c25f4f90c698092c45413bd33529385be050c0",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b"
+    },
+    "svg_rasterizer": "webfont",
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "target/pr-review/release-test/rhwp",
+      "path": "target/pr-review/release-test/rhwp",
+      "sha256": "b8c491de461cff4751a3d41cbf940b54ff8d434681bfb042c528bd3a70f20802"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [],
+  "requested_page_shards": [],
+  "run_state": "incomplete"
+}

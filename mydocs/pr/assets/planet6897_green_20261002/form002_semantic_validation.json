@@ -1,0 +1,127 @@
+{
+  "status": "existing seven SVG/semantic tests and mandatory Rust test gates passed; global final validation pending",
+  "parent_commit": "f686bc265",
+  "test_file": "tests/svg_snapshot.rs",
+  "test_file_sha256": "66f20592a95978d09617ac38a79687c995f090b32af44c916c7aaa47770b39be",
+  "existing_test_case": "svg_snapshot::form_002_page_0",
+  "actual_suite": "regression_suite_007",
+  "tests_run": 7,
+  "passed": 7,
+  "failed": 0,
+  "exit_code": 0,
+  "test_log": "output/pr-review/planet6897-green-20261002/form002-semantic-tests.log",
+  "new_test_attributes": 0,
+  "new_test_fixtures": 0,
+  "golden_updated": false,
+  "semantic_contract": [
+    "independent Hancom PDF total10 pages",
+    "five source tables retain paragraph owner and original row/column topology over ten pages",
+    "paragraph13 only on page1 and paragraph15 only on page2",
+    "independent PDF confirmed page1 final injection-formulation phrase and page2 PFC/GMP resume phrase"
+  ],
+  "visual_evidence": "form002_stored_frame_validation.json",
+  "native_and_fresh_wasm_all_pages_above90": true,
+  "minimum_match_percent": 92.96827,
+  "source_library_unchanged_from_visual_candidate": true,
+  "gates": [
+    {
+      "gate": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-semantic-prepare.log"
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-semantic-fmt.log"
+    },
+    {
+      "gate": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-semantic-native-clippy.log"
+    },
+    {
+      "gate": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-semantic-wasm-clippy.log"
+    },
+    {
+      "gate": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-semantic-workspace-build.log"
+    },
+    {
+      "gate": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-semantic-workspace-clippy.log"
+    },
+    {
+      "gate": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "6b3faf77d8085441f9f26d88d65a49791e910352"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-green-20261002/form002-semantic-manifest.log"
+    }
+  ],
+  "docs_links_exit_code": 0
+}

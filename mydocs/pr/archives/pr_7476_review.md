@@ -1,0 +1,656 @@
+---
+kind: snapshot
+status: active
+canonical: mydocs/manual/pr_review_workflow.md
+last_verified: 2026-10-04
+---
+
+# PR #7476 검토 — 수정: #7418 재조판 줄 채움(condense·목록 마커·구두점 폭)과 host 글·칸 조각 기하를 한/글에 맞춤
+
+## 최종 판정
+
+**메인터너 보정 후 수용 가능.** 원 PR head `d0c18feef2e9a13403482d7b8663a66a422bfaa4`의 직접 병합 판정과 구분합니다. `review/planet6897-green-20261002`의 검증 head `859d1ddefc2f70180fd8009d7124804bdd9d76d8`는 최신 base `1d6bc70767fad365b07afe4ef57972d23b140f2b` 위에서 원 기여·중복 제거·메인터너 보정을 함께 검증했습니다. 원 source head는 접수 이후 바뀌지 않았으며 source CI에 실패·진행 중인 check가 없습니다. 현재 source PR 병합 상태는 `DIRTY`입니다.
+
+- 수용 대상은 보정이 포함된 통합 head입니다. 새 통합 PR의 최신 required CI와 mergeability를 확인한 뒤 승인된 병합·후속처리를 수행합니다. 원 PR 자체를 직접 merge하지 않습니다.
+- 대형/낮은 피델리티 입력의 기존 #7445 이관은 보존했습니다. 이 판정은 해당 문서 전체 피델리티 완료나 관련 issue 전체 해결을 뜻하지 않습니다.
+
+## 기여자 중심 최종 검토 — 2026-10-04
+
+### 기여 내용과 메인터너 보정
+
+condense·목록 마커·구두점 폭과 표 host 글·칸 조각 기하를 한/글 저장 줄 근거에 맞추신 누적 기여입니다.
+
+부분 재조판·이어지는 목록의 내어쓰기·언어별 글꼴 크기·영문 슬롯·저장 프레임 계약을 보존해 통합했습니다. 한컴 근거 없이 늘어나는 baseline과 과거 좌표 핀을 그대로 수용하지 않았습니다. 종료 표의 아래여백 예약/흐름과 각주를 포함한 HWPX 첫 조각의 위여백을 현재 브랜치에서 보정해 90쪽89.91→99.15% 및 전215쪽 최저90.30307%를 확인했습니다.
+
+원 기여의 저자와 출처를 보존했습니다. 해당 PR의 원본 커밋과 현재 리베이스 후 적용 SHA는 [최종 적용 원장](../assets/planet6897_green_20261002/final_applied_provenance.json)에 기록했습니다. 누적 통합의 공통 보정 결과를 이 원 PR만의 단독 결과로 표기하지 않습니다.
+
+### 최종 검증과 조판 원칙
+
+- 검증 head `859d1ddefc2f70180fd8009d7124804bdd9d76d8`: 전체 nextest10,288PASS/0FAIL·50skip(9slow)·497.515초·exit0. release-test/target/pr-review/threads8/no-fail-fast로 수행했습니다.
+- Native Skia 라이브러리4,109PASS/0FAIL·13ignored, 누락 그림2PASS, 직접 PDF4PASS이며 모든 명령exit0입니다. Native/WASM Clippy·fmt·workspace build·all-target Clippy·manifest도exit0입니다. fresh WASM은 Mac 로컬 no-opt 대체 빌드이며 Docker 최적화 검증으로 보고하지 않습니다.
+- 측정→예약/컷→실제 배치·paint가 같은 원점/여백/내용 소유를 소비하도록 검토했습니다. 원본 저장 글줄 유효성·정상 반례·비겹침·누락/중복을 확인하고 문서ID 예외·좌표clamp·출력 숨김·임계값 변경을 보정으로 사용하지 않았습니다. 이전 픽셀 핀은 독립 시각 근거를 확보한 범위에서 기존 검사의 의미 관계로 교정했습니다.
+- [개별 변경 관련 증거](../assets/planet6897_green_20261002/liver_p90_validation.json), [최종 공통 검증](../assets/planet6897_green_20261002/final_validation.json), [원 source head·CI 재조회](../assets/planet6897_green_20261002/final_source_metadata.json), [검증 입력 commit 일치](../assets/planet6897_green_20261002/final_input_commit_check.json).
+- 정책연구 Native/fresh WASM215/PDF215쪽: 최저90.30307%·90% 미달0. 첫 조각 보정90쪽99.15148%·94쪽99.88068%, 종료 조각91쪽98.91458%·95쪽99.15957%를 직접 판독했으며 각주 참조와 소유를 유지했습니다. 전체 SVG215쪽 중 변경2쪽을 새 raster로 확인하고 동일 SVG213쪽은 기존 전쪽 PNG 비교를 재사용했습니다. 전215쪽을 새로 raster했다고 보고하지 않습니다.
+- [Native 전쪽 TSV](../assets/planet6897_green_20261002/liver_p90_native_whole215.tsv), [fresh WASM 전쪽 TSV](../assets/planet6897_green_20261002/liver_p90_wasm_whole215.tsv), [90쪽 review](../assets/planet6897_green_20261002/liver_p90_native_review.png), [94쪽 review](../assets/planet6897_green_20261002/liver_p94_native_review.png). 정상5문서42쪽은 Native tree/fresh WASM SVG가 기존 승인 증적과 동일합니다. 모든 다른 문서의 전체 피델리티를 이215쪽 지표로 대신하지 않습니다.
+
+### Merge 후 contributor PR comment 계획
+
+통합 PR의 merge SHA와 최신 CI URL을 확정한 뒤 이 원 PR에 다음 내용으로 한국어 존댓말 comment를 게시하고, 통합 PR에서 대체 병합됐음을 링크한 뒤 close합니다. 원본 fork branch는 보존하고 관련 issue를 이 기록만으로 자동 종료하지 않습니다.
+
+> 기여해 주신 변경을 통합 브랜치에서 검토했습니다. condense·목록 마커·구두점 폭과 표 host 글·칸 조각 기하를 한/글 저장 줄 근거에 맞추신 누적 기여입니다. 부분 재조판·이어지는 목록의 내어쓰기·언어별 글꼴 크기·영문 슬롯·저장 프레임 계약을 보존해 통합했습니다. 한컴 근거 없이 늘어나는 baseline과 과거 좌표 핀을 그대로 수용하지 않았습니다. 종료 표의 아래여백 예약/흐름과 각주를 포함한 HWPX 첫 조각의 위여백을 현재 브랜치에서 보정해 90쪽89.91→99.15% 및 전215쪽 최저90.30307%를 확인했습니다. 보정된 후보의 전체 회귀10,288건과 Native Skia 검증이 통과했습니다. 수용 범위·잔여 #7445 과제·시각 증적은 개별 검토 문서에 남겼습니다. 통합 PR과 최종 merge SHA·CI 링크를 함께 안내드리겠습니다.
+
+실제 게시에서는 통합 PR/merge SHA/CI URL을 확정 값으로 치환하고 [Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment), 위 대표 PNG의 merge SHA 고정 raw URL, 남은 범위를 포함합니다. UTF-8 본문 파일의 `--body-file`로 게시하고 API 재조회로 한글·링크·게시 내용과 close 상태를 확인합니다.
+
+이하 접수·단계 실행 기록은 과거 head별 이력입니다. 과거의 “보류/진행 중”은 위 최종 검증을 대체하지 않습니다.
+
+## 통합 PR #7568 code candidate CI 완료
+
+- 통합 PR: [#7568](https://github.com/edwardkim/rhwp/pull/7568). 정확한 code candidate `65b2163618e5367c29423c199a6f6810985bcdab`의 Full CI가 완료됐습니다. Build & Test와 Archive A/B/C/D·Native Skia·lint·frontend package, CodeQL 언어 분석, Render Diff, Adapter, Proptest 및 CI Impact Policy가 성공했습니다. 미해당 job의 skipped와 CodeQL의 허용 상태를 개별 원장에 구분했습니다.
+- [CI run 37192651788](https://github.com/edwardkim/rhwp/actions/runs/37192651788) · [CI run 37192651818](https://github.com/edwardkim/rhwp/actions/runs/37192651818) · [CI run 37192651981](https://github.com/edwardkim/rhwp/actions/runs/37192651981) · [CI run 37192651982](https://github.com/edwardkim/rhwp/actions/runs/37192651982) · [CI run 37192652005](https://github.com/edwardkim/rhwp/actions/runs/37192652005) · [CI run 37192652006](https://github.com/edwardkim/rhwp/actions/runs/37192652006) · [CI run 37193719048](https://github.com/edwardkim/rhwp/actions/runs/37193719048)
+- [정확한 candidate check 원장](../assets/planet6897_green_20261002/code_candidate_ci.json). PR은 현재 MERGEABLE/CLEAN입니다. 본 기록은 review-only trailing commit이며 생산 소스·테스트는 candidate 이후 동일합니다. 최신 trailing head의 check·재사용 출처·mergeability를 다시 확인한 뒤 병합합니다.
+
+## 접수·기여자·출처
+
+- 원 PR: https://github.com/edwardkim/rhwp/pull/7476, 작성자 planet6897, base `devel`, 정확한 head `d0c18feef2e9a13403482d7b8663a66a422bfaa4`.
+- reviewer jangster77을 지정했습니다. 원 contributor 변경과 메인터너 충돌 보정을 구분해 기록합니다.
+- 사전 선택: collaborator_external_pr 9.1.1 체리픽 통합 경로; intake/local_validation/visual_fixture_evidence/multi_pr_update_branch/post_merge 적용.
+- source CI는 통합 head 검증을 대체하지 않습니다. 모든 renderer·페이지 변경은 직접 Native/fresh WASM 전쪽 TSV와 영향 경계 review/overlay를 검토합니다.
+
+## 체리픽 계획
+
+| source commit | 판정 | 변경 |
+| --- | --- | --- |
+| `23da3567ecb49bce69d56f43cd041b8cb6eff9cc` | stacked/rebased duplicate | 수정(조판): 칸 문단의 줄 상자도 문단 좌우 여백만큼 들여 잡는다 (#7407) |
+| `b07b421a9d2398eac87e1e5155584e6f4cbddce5` | stacked/rebased duplicate | 수정(조판): 한 줄에 안 들어가는 토큰을 잰 폭으로 자른다 (#7407) |
+| `7a81c50b701bbd590a47ca351a0a0aca9f5c6907` | stacked/rebased duplicate | 문서(증적): #7407 A2b 시각 증적과 코퍼스 변화 3건 판독 |
+| `6a9a03bc235a5c274bef91dfa103337527e98582` | stacked/rebased duplicate | 수정(조판): 칸 문단을 다시 조합하는 경로도 문단 좌우 여백을 뺀다 (#7422) |
+| `d155e91375e8a616384c5c07067a076a1d706bd4` | stacked/rebased duplicate | 문서(증적): #7422 재조합 경로 칸 상자 수정의 시각 증적 |
+| `93c73a032efd9c8d72405622cd3d24553bc93f1b` | candidate | 수정(조판): 칸 안 여백 축소를 줄바꿈으로 안 되는 칸에만 건다 (#7413) |
+| `1752f6fc69bee0dc3d003b202aa84bc3d73ec6e5` | candidate | 수정(조판): condense 로 새 낱말을 시작하려면 줄이 자연폭 안이어야 한다 (#7418) |
+| `c96cc071e93a28fba67daffcc0c786966df0db5b` | candidate | 문서(조사): #7418 condense 규칙 재현 프로브 — 한/글 저장 줄 208/208 |
+| `0928fba0918818bdb0d7a7e7668bac3b093929e2` | candidate | 수정(조판): 줄 맨 앞 공백은 condense 로 줄이지 않는다 (#7418) |
+| `37d2e41891b27559f8b99b03cbbbc1a3a8342400` | candidate | 수정(조판): 공백을 줄여 넣는 판정에는 줄바꿈 여유를 얹지 않는다 (#7418) |
+| `178b658b5e724de7a0ca3631217fac76eaa9986e` | candidate | 수정(조판): 글머리표 폭을 줄 나눔 상자에서 빼고 condense 판정을 한/글에 맞춘다 (#7418) |
+| `fc34d8c73d019901854cbb5c8c655635ae000385` | candidate | 수정(조판): 줄 끝에 건 공백이 문단 끝이면 빈 행을 만들지 않고, 칸·끝 공백 검사를 더한다 (#7418) |
+| `055a054ea081b4f6474d64803a8cc49dd35fee13` | candidate | 수정(조판): 글머리표 자리의 soft hyphen 은 반각 하이픈으로 그리고 잰다 (#7418) |
+| `c6dd5efcc22c92affd2a88ce2e9b760026f65b87` | candidate | 수정(조판): 번호·개요 폭도 줄 나눔 상자에서 뺀다 — 번호를 문서 순서로 미리 계산한다 (#7436) |
+| `8d7f57abcce796660614f2ee3602491ba54e69cc` | candidate | 검사(#7418): #2214 fifth line 경계를 한/글 환경에서 다시 정하고, 번호 파생값을 Debug 동일성에서 뺀다 |
+| `bd8596aacc562fe98e6199a38d241c1b287f771d` | candidate | 수정(조판): 공백 최소값은 자간 적용 전 공백 폭을 기준으로 줄인다 (#7418) |
+| `66b058c5f4dffa470d5d78b1c70f99ce726b2957` | candidate | 수정(조판): 목록 마커 영역을 머리 모양 속성으로 정한다 (#7418) |
+| `f18e4e42458296db504043fb8c9802ebf5ee8512` | candidate | 검증: #7418 머리 모양 검사에 수정 전 일치 수를 적는다 |
+| `47ccfb7375a479f5461259386d1eca6de3009d09` | candidate | 수정(조판): 목록 마커 글자 폭·글자 모양·빈 영역을 한/글에 맞춘다 (#7418) |
+| `8d98868683ddf7cfaf0d0a999636fa34ac2f8a34` | candidate | 수정(조판): 저장 줄 없는 글자처럼 취급 표 host 줄의 줄간격을 계상한다 (#7418, #7344) |
+| `5472db690924061b5f75fa4afc731967287b1164` | candidate | 수정(조판): 쪽 나누기 선언만으로 빈 문단 넘침을 흡수하지 않는다 (#7429) |
+| `5c262e4aca18959268536eb4dab8ce374c4041f6` | candidate | 수정(조판): 칸 선언이 모든 행을 담으면 낡은 표 선언 높이로 행을 늘리지 않는다 (#7418) |
+| `38dafafd4af7c9f3e605a94fb58ea6f463720e53` | candidate | 수정(조판): 중첩 표 행 안의 중첩 표를 행 경계에서 나누고, 일반 격자 묶음의 빈 꼬리도 쪽 바닥에서 자른다 (#7418) |
+| `719339ab2db1824eb3c759d9cf5a561577fbedff` | candidate | 수정(조판): 쪽 경계에 걸친 칸은 안 여백을 깎지 않는다 (#7080) |
+| `7baef3c9dc5ed7696170f2f6ed47354aba8d5f93` | candidate | 수정(조판): 빈 꼬리 문단 흡수를 문서 근거가 있을 때만 하고, 없으면 줄이 온전히 들어가야 한다 (#7429) |
+| `22378bb40280ad325e3502b9d8d6eda557fdc201` | candidate | 검사: 78494 의 쪽 핀을 한 쪽 밀린 현재 흐름으로 옮긴다 (#7422, #6776) |
+| `4bf04154e52f53c10664f76ea9ffd93113118d6e` | candidate | 빌드: WMF/EMF 골든도 LF 로 체크아웃한다 |
+| `74205c26fb751800a0672c6649fc7eaaa24b8a26` | candidate | 수정(조판): 선언 빈 꼬리 압축은 행으로 나뉘는 열이 하나인 묶음에만 (#7418) |
+| `af3a05b926a3ed3bd349f6cd8fdd7a0b24a8ce83` | candidate | 검사: hy_ladder3 칸 넘침 래칫을 7 → 11 로 조인다 (#7418) |
+| `c75bbee725d44e22ef6593c18dcf57e2569cfee8` | candidate | 수정(조판): ASCII 구두점은 영문 슬롯 글꼴로 재고 그린다 (#7418) |
+| `8041f80f113aec2a2717fd75ffc774315c24b11a` | candidate | 검사: 78494 의 쪽 핀을 정본 쪽으로 되돌린다 (#7422, #6776) |
+| `ea41e252b047547407908594236cb33b004b32f0` | candidate | 검사: 구두점 영문 슬롯 단위 시험을 통합 시험으로 옮긴다 (#7418) |
+| `2f0f6ca3c0a23f54392190815bafad7a9ecb5013` | candidate | 수정(조판): 구두점 영문 슬롯은 영문 슬롯이 옛 한컴 영문 글꼴일 때만 건다 (#7418) |
+| `2d213d5d3e68035f6ce052ebc6328a738d0261d1` | candidate | 수정(조판): 구두점 영문 슬롯은 옛 영문 글꼴이 라틴 전용 글꼴로 치환될 때만 (#7418) |
+| `397a5357c51a5ef40a77834061e81674ca25664c` | candidate | 수정(조판): 영문 슬롯 구두점은 run 을 쪼개지 않고 글자 폭만 영문 슬롯으로 잰다 (#7418) |
+| `6d72723b601ed5a8ef0143be4951a3677bab18e2` | candidate | 검사: #4962 공개 coverage 골든의 판정 행을 영문 슬롯 구두점 측정에 맞춘다 (#7418) |
+| `853cd9c497fd19274395d6c6d38a2ff2196d0d1e` | candidate | 수정(조판): 글자 단위 한글 문단은 한글 글자 앞도 줄 끝 후보다 (#7418) |
+| `de25d9512557586d5ac51b8cbd1c9fc202b2ce16` | candidate | 수정(조판): 칸 안 여백 축소 판정은 칸 마지막 줄의 줄간격을 세지 않는다 (#7418, #7413) |
+| `7065555f66ccf0a7a0616cab3ab38c2c9780bf74` | candidate | 수정(조판): 쪽을 넘어 이어지는 목록 문단 조각도 마커 영역만큼 들어간다 (#7418) |
+| `6a9ca07c848abc8aa3203131364e275cb55fc623` | candidate | 수정(조판): 마지막 행 안에서 이어지는 2열 표 조각도 바깥 위 여백을 연다 (#7418) |
+| `219687eec48ee77ae6fa41404f6fa8d433cb5c3d` | candidate | 수정(조판): 표 host 글 뒤 자리차지 표와 칸 중첩 표 행의 기하를 한/글에 맞춘다 (#7418, #6854) |
+| `fe76d00f2682d6e59b5fa4a934aac65913e19664` | candidate | 검사: 표 host 글·칸 조각 기하를 한/글 정본 좌표로 잠근다 (#7418, #6854) |
+| `2576efc2d1372889378d36da56fb397bddcd0b80` | candidate | 수정(조판): host 글 선방출이 다른 표의 쪽 나눔을 바꾸지 않게 좁힌다 (#7418) |
+| `16a78a62f65009a884d46d5422e03b8fcca918c2` | candidate | 수정(조판): host 글 위치는 기존 host 배치 모델로 정하고 임시 규칙 둘을 걷는다 (#7418, #6854) |
+| `ef1921b2700ac602bba98e81726bd4d123457bee` | candidate | 수정(조판): host 글 기록의 쪽 간 누수·저장 줄 근거 여백 축소·글 앞 앵커 분리 (#7418, #7413, #6950) |
+| `d18b1c1e84881023edc85edb70484cb5396d0093` | candidate | 검사: 정본 근거로 기준값 셋을 옮긴다 (#7418) |
+| `375d701b32fd69fa24c6749e6e9450834649e9ff` | candidate | 문서(증적): #7418 대표 쪽 Native·fresh WASM Visual Sweep 증적 |
+| `e5637516ac3bc42888ec505f87ca139751c656e5` | candidate | 수정(조판): 합성 host 줄이 품은 줄간격을 TAC host 규칙이 다시 더하지 않는다 (#7418) |
+| `d3d829abc86350e1862f8c6a805793366817dbd4` | candidate | 검사: #7413 칸 여백 시험 파일을 rustfmt 로 정리한다 (#7418) |
+| `d0c18feef2e9a13403482d7b8663a66a422bfaa4` | candidate | 검사: #7413 시험의 쓰지 않는 재귀 인자를 뺀다 (#7413) |
+
+## 변경 범위와 검토 계획
+
+- 원 PR 변경 4982줄 추가·486줄 삭제·137파일입니다.
+- 생산 경로: `src/diagnostics/ir_field_sweep.rs`, `src/document_core/commands/document.rs`, `src/document_core/mod.rs`, `src/document_core/queries/cursor_rect.rs`, `src/document_core/queries/rendering.rs`, `src/model/paragraph.rs`, `src/parser/hwpx/header.rs`, `src/renderer/composer.rs`, `src/renderer/composer/line_breaking.rs`, `src/renderer/float_placement.rs`, `src/renderer/height_measurer.rs`, `src/renderer/layout.rs`, `src/renderer/layout/paragraph_layout.rs`, `src/renderer/layout/table_cell_content.rs`, `src/renderer/layout/table_layout.rs`, `src/renderer/layout/table_partial.rs`, `src/renderer/layout/text_measurement.rs`, `src/renderer/layout_frame.rs`, `src/renderer/mod.rs`, `src/renderer/pagination.rs`, `src/renderer/pagination/engine.rs`, `src/renderer/style_resolver.rs`, `src/renderer/typeset.rs`, `src/renderer/typeset/paragraph.rs`, `src/renderer/typeset/paragraph/format.rs`, `src/renderer/typeset/paragraph/overflow.rs`, `src/renderer/typeset/section/tail.rs`, `src/renderer/typeset/state/commands.rs`, `src/renderer/typeset/state/data.rs`, `src/renderer/typeset/state/transition.rs`, `src/renderer/typeset/table/block/entry.rs`, `src/renderer/typeset/table/block/prepare.rs`, `src/renderer/typeset/table/continuation/fragment/budget.rs`, `src/renderer/typeset/table/continuation/fragment/emit.rs`, `src/renderer/typeset/table/scan/block_fit.rs`, `src/serializer/hwpx/header.rs`, `src/wasm_api.rs`, `src/wasm_api/tests.rs`.
+- 실제 호출 경로의 측정→예약/컷→paint 소비를 추적하고 정상 대조군·원본 저장 정보의 유효성을 확인합니다. 문단·행·개체·각주 소유와 누락/중복을 기존 검사 의미로 판단하며 픽셀 핀을 승인 근거로 사용하지 않습니다.
+- 원본·기준 PDF와 검토 commit의 실제 파일/해시 일치를 확인합니다. 통합 출력과 PDF의 전체 쪽수가 다르거나 미달쪽이 있으면 재검토합니다. 원 PR의 부분 개선 주장을 전체 피델리티 완료로 확대하지 않습니다.
+- 합성/실물 경계 회귀·전체 nextest threads8·Native Skia3·필수 lint/정책·fresh WASM은 누적 후보에서 순차 수행합니다. 로그는 ignored output에만 저장합니다.
+- 1,000줄 초과 규모이므로 대형 PR 예외 검토를 추가합니다. 포함된 선행/후속 변경과 기준·baseline 교정의 독립 근거를 따로 검토하며 CI green만으로 수용하지 않습니다.
+- #7435 자체는 CI 실패로 이번 선택에서 제외했습니다. 이 green head에는 동일 선행 칸 여백 수정과 후속 rustfmt/unused 인자 제거가 포함됩니다. green #7476의 전체 누적 diff에 속하는 의존 변경으로 출처를 남기고 검토합니다.
+
+## 실행 결과
+
+고유 source commit 63개 체리픽을 완료했습니다. 출처와 보정은 [적용 원장](../assets/planet6897_green_20261002/applied_commits.json)에 기록했습니다. 현재 후보 `ec5ca7c3057a89c9a82bb59a78956a4d5eee567d`의 Native Clippy는 exit0이며 전체 nextest는 실행 중입니다. 최종 회귀·시각 검증은 미완료입니다.
+
+### 체리픽 보정 1: 글머리표 폭과 이어지는 문단
+
+- 원인: #7418의 첫 구간 글머리표 폭 예약과 현재 devel의 부분 재조판·이어지는 문단 내어쓰기 보정이 같은 경로를 수정했습니다.
+- 보정: 첫 가용 구간에서 마커 폭을 한 번 예약하며, 배치는 원 PR의 동일 폭 함수를 사용합니다. 마커를 다시 그리지 않는 이어지는 문단에서도 본문 내어쓰기를 유지합니다.
+- 현재 결과: 충돌을 해소했습니다. 원 PR의 신명조 공백 자연 폭 변경과 기존 12pt 이상 공백 보정의 차이는 통합 후 독립 기준 PDF 및 기존 회귀로 재검증합니다. 이 단계는 테스트 통과 또는 승인 판정이 아닙니다.
+
+### 체리픽 보정 2: 번호·개요 마커 폭
+
+- 문서 순서로 선계산하는 번호·개요 마커 폭을 원 PR대로 적용하면서, 배치에서 같은 `list_marker_hang_px` 결과를 사용합니다. 앞 보정의 이어지는 문단 내어쓰기를 유지합니다. 충돌 해소 단계이며 검증은 통합 후보에서 수행합니다.
+
+### 체리픽 보정 3: 머리 모양 기하
+
+- 원 PR 후속 commit은 단순 문자열 폭을 머리 모양 속성의 공통 기하로 바꾸며, 이어지는 조각도 같은 내어쓰기를 유지합니다. 앞 보정과 의미가 같으므로 새 공통 기하 경로로 합쳤습니다. 검증 대기 상태입니다.
+
+### 체리픽 보정 4: 기존 보류 자료와 합성 마커 겹침
+
+- #7445로 분리한 #4961의 렌더 count/hash 핀은 복구하지 않고 현재 보류 기록을 보존합니다. 새 합성 문서의 의도된 마커 겹침 3건은 원 PR이 제공한 한컴 PDF 근거와 함께 적용하되 통합 출력과 독립 비교 후 유효성을 판단합니다. 기존 실물 문서 허용값을 완화하지 않았습니다.
+
+### 체리픽 보정 5: 합성 사다리 넘침 허용값
+
+- `af3a05b926`은 hy_ladder3 허용값을 7→11로 늘립니다. 원 기여자는 한컴 저장 줄 일치가 19/29→24/29로 개선되어 추가 줄 높이가 사다리 바닥을 넘는다고 설명합니다. 근거 없는 완화와 구분하려면 현재 후보에서 29개 칸의 저장 줄·실제 줄 및 넘침 소유를 직접 확인해야 합니다.
+- 지금은 기존 7을 유지하며 검사 변경 수용을 보류합니다. #7445로 분리된 task2097 자료도 복구하지 않았습니다. 코드 변경 없는 원 commit의 출처는 이 검토 기록에 보존합니다.
+
+### 체리픽 보정 6: 언어별 글꼴 크기와 영문 슬롯
+
+- 현재 devel의 언어별 글꼴 크기 벡터와 원 PR의 옛 영문 슬롯 치환 판정을 모두 유지했습니다. 두 정보의 역할이 달라 한쪽 선언을 삭제하면 현재 글꼴 보정 또는 새 구두점 분기가 깨집니다. 통합 검증 대기 상태입니다.
+
+### 체리픽 보정 7: run 보존과 렌더 해시 보류
+
+- 구두점 폭 측정 변경은 run을 쪼개지 않는 원 PR 후속 구조로 적용했습니다. 이미 #7445로 분리한 missing-face 사례의 레이아웃 해시 핀은 복구하지 않았습니다. SVG 골든 변경은 독립 시각 검증 대상이며 통과로 간주하지 않습니다.
+
+### 체리픽 보정 8: 표 호스트 내용 높이와 저장 프레임
+
+- 원 PR의 호스트 내용 끝(마지막 줄간격 제외)을 예산과 배치에서 같이 소비하도록 적용했습니다. 자동 병합이 같은 오프셋 분기를 중복 삽입한 충돌은 중복 없이 하나로 합쳤습니다.
+- 현재 devel의 단 소유가 같은 저장 프레임 재사용, 첫 조각 바깥 위 여백의 단일 예약, 캡션 호스트 줄간격 공유 함수를 보존했습니다. 원 PR의 배치 모델 없음 판정도 유지합니다. 구문 확인 후 통합 회귀·시각 검증으로 판단합니다.
+
+### 체리픽 보정 9: 임시 호스트 규칙 제거
+
+- 원 PR의 후속 수정대로 배치 모델 없음에 따른 임시 분기를 제거했습니다. 현재 devel의 저장 프레임 소유와 바깥 위 여백 예약은 유지하며 기존 배치 모델을 통해 호스트 글 위치를 계산합니다. 충돌 해소 후 통합 검증 대기입니다.
+
+### 통합 후 보정: 미사용 글머리표 중복 함수 정리
+
+- 최종 원 PR의 머리 모양 기하가 줄 나눔·배치의 공통 경로가 되었습니다. 이전 devel의 단순 글머리표 문자열/폭 함수는 참조가 없어 두 중복 함수를 제거했습니다. 새 원 PR의 머리 모양 속성 계산은 유지합니다. 통합 lint와 회귀 검증 대기입니다.
+
+### 누적 후보 검증 시작
+
+- 검증 코드 head: `ec5ca7c3057a89c9a82bb59a78956a4d5eee567d`. Native Clippy exit0(34.38초). 전체 nextest release-test/threads8/no-fail-fast 실행 중이며 통합 시각 검증은 아직 미완료입니다. 원 PR의 green CI와 구분합니다.
+
+### 메인터너 보정: #7445 80250 baseline 재등록 제거
+
+- 분석: 원 PR의 2열 마지막 행 여백 변경에서 자동 병합된 `80250_regulatory_analysis.hwp` baseline 행 때문에 body_overflow 16개 분할 모두 동일한 입력 누락으로 실패했습니다. 이 문서는 사용자 지시와 독립 검토에 따라 이미 #7445에 보존·분리했습니다. 16개의 독립 제품 결함이 아닙니다.
+- 수정: 재등록 행과 그 설명만 제거해 최신 devel의 제외 결정을 복구했습니다. 제품의 2열 바깥 위 여백 변경과 다른 문서 baseline, 정상 회귀를 유지했습니다. 원본 HWP/PDF 증적은 삭제하지 않았습니다.
+- 결과: diff에서 해당 4줄 외 baseline 변경이 없음을 확인했습니다. 최초 전체 실행의 실패 기록을 보존하고 후속 후보에서 16개 분할을 전부 재검증합니다. 정상 검사 완화·새 skip 분기·일괄 #7445 이관은 없습니다.
+
+### #7445 baseline 복구 재검증 결과
+
+- body_overflow 기존 16개 분할을 nextest release-test/threads8/no-fail-fast로 모두 실행해 16PASS/0FAIL, exit0(62.314초)입니다. 80250 재등록으로 발생했던 최초16FAIL은 해결했습니다. 다른 정상 baseline·공차는 변경하지 않았습니다.
+- 최초 전체 검증의 다른 실패와 통합 시각 게이트는 아직 완료되지 않았습니다.
+
+### 메인터너 보정 사전 분석: 자모 목록 마커의 공백
+
+- 정상 한컴 PDF4쪽의 16/18번 보기는 자모 ㄱ~ㄹ을 각각 두 번 표시합니다. 현재 render tree도 각 자모를 두 번 표시하지만 새 마커 기하 경로는 뒤 간격을 글자 공백 대신 마커 영역으로 예약하여 문자열이 `ㄱ.`입니다. 기존 검사는 `ㄱ. `와 완전 일치해 실패했습니다.
+- 동일 원본과 독립 PDF의 전체 Native TSV는 4/4쪽 90% 이상(95.13~98.65%)이고 쪽수4/4 일치입니다. 번호 글자를 바꾸거나 누락한 것이 아닙니다. 모델 간격 표현에 종속된 끝 공백 비교만 제거하고 실제 표시 자모 종류·각2회·문항별 쪽 소유 계약을 유지하겠습니다.
+
+### 자모 목록 공백 교정 결과
+
+- 끝 공백 비교만 제거해 표시 자모와 각2회 출현·문항별 쪽 소유를 유지했습니다. 파생 manifest를 다시 준비한 뒤 기존 시험지 검사 3개를 nextest release-test/threads8/no-fail-fast로 실행했습니다. 실제 결과는 focused 로그의 최종 summary로 확인합니다. 0개 실행했던 준비 전 호출은 성공 증거에서 제외했습니다.
+
+- 최종 focused 결과는 3PASS/0FAIL, exit0(0.051초)입니다. 신규 검사·현재 좌표 기대값·허용치 변경은 없습니다. [동일 원본 전체4쪽 TSV](../assets/planet6897_green_20261002/exam_social_native.tsv)를 보존했습니다.
+
+### 메인터너 보정 사전 분석: 축소 본문에서 낡은 저장 프레임 허용
+
+- #6950 기존 검사는 본문 아래 여백을 18000HU 늘린 상태에서 표가 본문 하단을 약36px 넘는 실제 결함을 검출했습니다. 검사 허용값을 늘리지 않습니다.
+- 동일 영역을 XML에서 바꾼 별도 진단 입력에서도 `page_avail=138.8`, 실제 행합178.6, `fits=false`인데 저장 프레임 허용89.9가 행 전체 수용을 허락했습니다. 저장 앵커425.1 기준 끝603.7만 확인하고, 선방출된 호스트 뒤 실제 표 원점에서 같은 높이를 수용할 수 있는지는 확인하지 않았습니다. 진단 사본은 output에만 두며 한컴 정답지로 취급하지 않습니다.
+- 첫 조각의 선언 프레임은 저장 앵커와 현재 공유 배치 원점에서 모두 본문 경계에 들어갈 때만 행 경계 증거로 사용하겠습니다. 실제 배치 원점과 다른 낡은 저장 끝으로 본문 초과를 허용하지 않습니다. 기존 #6950 경계·이월·형제 표 검사로 검증하고 원 PR 정상 호스트 사례도 이어 확인합니다.
+
+### 축소 본문 저장 프레임 보정 결과
+
+- 저장 앵커의 끝뿐 아니라 예산·배치 공유 원점에서 선언 프레임을 수용할 수 있는지 검사했습니다. 잘못된 저장 허용으로 온전한 행을 본문 아래까지 수용하지 않습니다.
+- 기존 #6950 검사 28개를 release-test/threads8/no-fail-fast로 실행하여 28PASS/0FAIL, exit0입니다. 본문 축소 3단계와 이월·형제 표·호스트 소유 대조군을 기대값 변경 없이 통과했습니다. 로그: `output/pr-review/planet6897-green-20261002/nextest-6950-corrected.log`.
+- 최초 실패 33개 중 focused에서 28개를 처리했고 5개가 남아 있습니다. 원 PR 정상 호스트 문서의 시각 검증과 최종 전체 테스트는 별도 필수이며 이 결과로 대체하지 않습니다.
+
+### 한국어 주석 보완
+
+- 새로 들어온 문단 여백 상자·확정 원점·두 열 종료 조각 설명의 영문 주석을 한국어로 바꿨습니다. 식별자·수식·관측값은 보존하고 실행 코드는 바꾸지 않았습니다.
+- `cargo fmt --all -- --check`와 `git diff --check`로 형식을 확인합니다. 코드 변경이 없는 설명 보완이며 최종 코드 검증을 대신하지 않습니다.
+
+### 누적 후보 검증 상태 갱신 (2026-10-02)
+
+- GitHub를 다시 조회한 결과 선택 당시의 원 PR head와 CI green 상태가 유지됩니다. #7435는 현재도 non-green이며 선택에 포함하지 않았습니다. 누적 후보는 `review/planet6897-green-20261002`, source 고유 커밋63개입니다.
+- 최초 전체 nextest는 10,283개 중10,250PASS/33FAIL/50SKIP, exit100으로 완료했습니다. 그 뒤 PR별 보정과 focused 재검증으로 최초 실패28개를 처리했으며 5개가 남았습니다. 전체 재실행 통과로 바꾸어 보고하지 않습니다.
+- 각주 빈 번호·합성 사다리·다열 표 대조군·중첩 표 후속 원점의 잔존 5개와 whole fixture 시각 보류를 [현재 검증 기록](../assets/planet6897_green_20261002/review_progress.json)에 기록했습니다. 원 PR별 기존 분석·커밋 출처는 위 내용을 유지합니다.
+- **현재 통합 승인/머지 보류**입니다. 원 PR의 green CI는 누적 후보의 실패 또는 미완료 Native/fresh WASM 시각 검증을 대체하지 않습니다. 새 통합 PR 생성·push·머지는 하지 않았습니다.
+
+### 호스트 배치 정상 대조군 후속 결과
+
+- `issue_7418_host_text_and_split_row_geometry` 기존7개를 현재 코드 보정 후 실행해 7PASS/0FAIL입니다. 두 열 종료 조각의 바깥 여백과 원 PR 호스트 배치 개선을 유지합니다.
+- #7243은 한컴2020 HWPX·2024 HWPX·2024 HWP PDF의26쪽 괘선을 직접 추출했습니다. 모두77.515/145.760/193.868px로 같습니다. 현재 상대 원점 차이를 DPI 오차로 정당화하지 않습니다.
+
+### 메인터너 보정 사전 분석: 조각의 예약 여백과 후속 흐름 끝
+
+- 두 열 종료 조각 여백 확대만 임시 제외한 진단에서 #7243 두 검사가 모두 PASS였습니다. 진단 변경은 복원했습니다. 정상 두 열 표의 위 여백을 없애는 해결은 채택하지 않습니다.
+- 표 조각 예산은 바깥 아래 여백을 실제로 예약한 `fragment_outer_bottom_overhead`를 알고 있지만, 확정한 호스트 배치의 `occupied_bottom`은 비캡션에서 선언 `outer_margin_bottom`을 무조건 더합니다. #7243 26쪽은 아래 여백 예약0인데141HU를 더한 후속 원점을 저장합니다. 배치는 이 저장 원점을 재사용해 후속 표가 약1.8px 밀립니다.
+- 조각 예산의 예약값을 확정 배치의 점유 끝에도 그대로 사용하고, 원점 기반 가용 높이 계산도 같은 값을 빼도록 보정합니다. 위 여백과 표/중첩 Enter 높이는 유지합니다. #7243와 #6950 호스트 경계 및 #7418 정상 두 열 대조군을 함께 재검증합니다.
+
+### 예약 여백 공통 소비 보정 결과
+
+- 비캡션 조각의 원점 기반 예산과 확정 `occupied_bottom`이 실제 예약된 바깥 아래 여백을 소비하도록 맞췄습니다. 위 여백 재개만으로 아래 여백도 다시 더하는 처리를 제거했습니다.
+- #7243 두 검사, #6950 기존28개, #7418 원 PR 정상 대조7개를 현재 보정에서 함께 실행해37PASS/0FAIL입니다. release-test/threads8/no-fail-fast, exit0, `output/pr-review/planet6897-green-20261002/nextest-fragment-reserved-margin.log`. #7243 픽셀 기대값은 변경하지 않았으며 두 열 표의 정상 위 여백도 유지했습니다.
+- 최초 전체 실행의 잔존 실패는5개에서3개로 줄었습니다. 합성 사다리·빈 각주 검사·다열 표 대조군 및 독립 전체 시각/최종 전체 검증은 아직 남아 있습니다.
+
+### 메인터너 보정 9 사전 분석: 분기 없는 HWPX 문단 여백의 단위
+
+- 원본 `samples/task2070/hy_ladder3.hwpx`는 수동 생성본입니다. 독립 한컴 2020 PDF는 2쪽, 현재 Native는 1쪽이며, 1쪽 진단 일치율은 62.41613%입니다. 기존 넘침 허용값 7→11 변경을 승인 근거로 채택하지 않습니다.
+- 한컴 2020에서 같은 원본을 HWP로 저장한 뒤 HWP 파서로 읽은 문단 IR을 대조했습니다. 원본의 분기 없는 `HWPUNIT` 들여쓰기 -2440/-4880은 한컴 HWP에서 -4880/-9760 IR 값입니다. 입력이나 저장 줄을 수정하지 않은 독립 단위 근거입니다.
+- `parse_para_shape_margin_value_child`는 분기 없는 값을 그대로 IR에 넣고, `HwpUnitChar` case는 2배로 변환합니다. 이후 문단 스타일 해석은 공통 IR 값을 2로 나누므로 분기 없는 음수 들여쓰기만 실제의 절반으로 배치됩니다. 파서 → 공통 IR → 스타일 들여쓰기 → 줄 가용 폭/배치 경로의 단위 불일치입니다.
+- 명시적 `unit="HWPUNIT"` 자식만 공통 IR 단위로 정규화하고, 단위가 없는 이전 속성 형식과 switch/default의 왕복 계약은 유지하는 방향을 검증합니다. 기존 파서 검사에 숫자 계약을 보완하고, 한컴 PDF와 원본 사다리 전체 쪽을 다시 비교합니다. 별도 회귀 fixture나 허용값 증가는 추가하지 않습니다.
+
+- 기존 #4898 기록도 대조했습니다. 당시 여백과 고정 줄간격을 함께 2배 변환한 안은 HWP 저장 축에서 58건을 깨뜨렸습니다. 따라서 이번에는 한컴 저장본으로 입증한 여백 자식만 변환하고 고정 줄간격은 변경하지 않습니다. 평문 HWPX 직렬화도 여백을 역변환해 원본 숫자를 보존합니다. 기존 #4898 검사에 IR→물리 단위 및 재파싱 보존을 함께 검증합니다. 속성 형식·switch/default·줄간격은 변경하지 않습니다.
+- 수정 전 기존 파서 검사에 독립 단위 기대값을 보완한 실행은 실패했습니다(-2260, 기대 -4520). 이는 전체 회귀의 새 실패 수가 아니라 단위 결함 재현입니다.
+
+#### 보정 9 결과
+
+- 파서 기존 검사 54개, 평문/switch 왕복 2개, CHAR 홀수 단위 왕복 2개가 통과했습니다. unit-tier 분류 검사도 통과했습니다. 원본 HWPX·넘침 baseline은 변경하지 않았습니다.
+- 1쪽 Native 진단은 62.41613%→90.86083%입니다. 직접 비교 PNG에서 음수 들여쓰기와 첫 여섯 셀 줄 구성이 기준에 맞게 회복됐습니다. 아래 증적은 부분 개선의 증거이며 전체 fixture 승인 근거가 아닙니다.
+- 한컴은 2쪽이고 Native는 여전히 1쪽입니다. 다음 문단이 쪽 밖으로 밀리는 측정/배치 불일치는 별도 보정 대상입니다. fresh WASM 및 전체 쪽 비교는 아직 통과하지 않았으며 #7476 머지 보류를 유지합니다.
+- [독립 한컴 PDF](../../../pdf/task2070/hy-ladder3-2020.pdf), [수정 전 PNG](../assets/planet6897_green_20261002/hy_ladder3_p1_before.png), [단위 보정 PNG](../assets/planet6897_green_20261002/hy_ladder3_p1_margin_fixed.png), [해시·검증 기록](../assets/planet6897_green_20261002/hy_ladder3_margin_validation.json).
+- 앞선 #7243 여백 예약 보정의 새 Native 26쪽은 93.84389%이며, [직접 비교 PNG](../assets/planet6897_green_20261002/regulatory86712_p26_reserved_margin.png)를 확인했습니다. 전체 64쪽의 다른 시각 보류는 별도로 유지합니다.
+
+### 메인터너 보정 10 사전 분석: 미저장 셀의 TAC 흐름 높이
+
+- 단위 보정 뒤에도 사다리 전체 쪽은 1/2로 다릅니다. `RHWP_DIAG_TACCAP`에서 실측 표+후행 간격은 1330.4px인데 host 저장 줄 기반 상한은 55.5px이고 실제 조판 사용 높이는 76.8px입니다. paint는 커진 셀을 그려 뒤 문단까지 쪽 밖으로 밀지만, fit·상한은 작은 host 줄만 예약합니다.
+- 원본은 모든 셀 글줄의 저장 LineSeg가 없는 수동 생성본입니다. 셀은 실제 텍스트로 다시 조판하면서 host의 옛 짧은 줄을 현재 개체 높이의 근거로 쓰는 모순입니다. 독립 한컴 PDF는 표 뒤 `NEXT PARAGRAPH`를 2쪽에 둡니다.
+- 현재 `tac_fit`의 편집 성장 하한 → `typeset_tac_table`의 실제 전진 → `tac_reconcile`의 사후 상한을 추적했습니다. 미저장 텍스트 셀의 실제 높이도 같은 하한으로 연결하고 후속 저장 사다리의 되감기를 막는 방향으로 보정합니다. 저장 셀 줄이 있는 정상 문서는 기존 계약을 유지합니다. 쪽/문단 소속과 전체 2쪽 비교로 결과를 판단하며 baseline은 변경하지 않습니다.
+
+#### 보정 10 결과
+
+- 최종 변경에서 #7418 7개·#5699 2개·#6950 28개·#7243 2개, 기존 관련 검사 총 39개가 통과했습니다. 생성 suite가 재배정된 #7243은 wrapper로 실제 2개 실행을 다시 확인했습니다.
+- 원본 사다리의 Native 전체 2쪽은 기준 PDF와 쪽수가 일치합니다. 1쪽 90.86083%, 2쪽 100.00000%이며, `NEXT PARAGRAPH`는 1쪽에서 사라지고 2쪽에 한 번 나타납니다. 실측 셀 높이를 작은 host 줄로 되돌리는 사후 상한도 제거했습니다.
+- [1쪽 비교](../assets/planet6897_green_20261002/hy_ladder3_p1_current_band.png), [2쪽 비교](../assets/planet6897_green_20261002/hy_ladder3_p2_current_band.png), [현재 코드 해시·검증 기록](../assets/planet6897_green_20261002/hy_ladder3_current_band_validation.json).
+- 넘침 원장 partition14는 원본의 잘못된 들여쓰기 복원 뒤 12줄을 관측해 기존 7줄 기준에서 실패했습니다(그 외 78개 입력은 증가 없음). 7→12 변경은 아직 하지 않았습니다. fresh WASM 전체 2쪽 및 기준 PDF의 잘림 경계를 확인한 뒤 의도된 변화 여부를 판단합니다. 이 원본 표 자체는 한컴도 1쪽에 통배치하고 아래쪽 내용을 자릅니다. 쪽수 복원을 원본 모든 셀 내용의 가시성 확보로 확대하지 않습니다.
+
+### 메인터너 보정 11 사전 판정: 사다리 원장의 의도된 변화
+
+- `bf5eced2a` fresh WASM 전체 2쪽도 Native와 동일하게 90.86083%/100.00000%로 통과했습니다. 기준 PDF와 2/2쪽이며, 실제 WASM SVG·WASM render tree 출처를 확인했습니다.
+- 기존 7줄은 들여쓰기를 절반으로 읽고 뒤 문단까지 같은 쪽 밖으로 보내던 Native 출력의 관측값입니다. 올바른 내어쓰기와 한컴처럼 2쪽으로 이월되는 뒤 문단을 복구한 현재 출력에서 12줄을 관측합니다. 한컴 원본 PDF도 TAC 표를 1쪽에 통배치하고 아래 셀을 자르므로, 표를 임의로 나눠 원장 수만 낮추지 않습니다. 이 판단은 source가 제안한 11줄을 그대로 채택한 것이 아닙니다.
+- 전체 Native/fresh WASM ≥90% 및 쪽·뒤 문단 소속을 확인한 뒤 사다리의 기존 원장 한 행만 7→12로 갱신합니다. 다른 입력의 허용값이나 전체 threshold는 변경하지 않습니다. 기존 partition14와 인접 원장 검사를 실행한 뒤 결과를 기록합니다. 신규 회귀 검사나 입력은 추가하지 않습니다.
+
+#### 보정 11 결과
+
+- 기존 overflow-cell partition14가 통과했습니다(79개 입력, 다른 입력의 증가 없음). 최초 전체 실패 중 사다리 1건을 추가로 처리해 집중 검증으로 처리한 항목은 31/33개입니다. 최종 전체 재실행은 아직 아닙니다.
+- [Native 2쪽 TSV](../assets/planet6897_green_20261002/hy_ladder3_native.tsv), [fresh WASM 2쪽 TSV](../assets/planet6897_green_20261002/hy_ladder3_wasm.tsv)는 `bf5eced2a`에서 생성한 전체 PNG를 재사용해 같은 실루엣 계산식으로 산출했습니다. 추가 원문 재출력으로 기록하지 않습니다.
+- [fresh WASM 1쪽 비교](../assets/planet6897_green_20261002/hy_ladder3_p1_fresh_wasm.png), [fresh WASM 2쪽 비교](../assets/planet6897_green_20261002/hy_ladder3_p2_fresh_wasm.png). Mac `--no-opt` 대체 빌드 통과이며 Docker 최적화 빌드 통과는 아닙니다.
+- 다른 실물 fixture의 잔존 시각 차이와 최종 전체 게이트 때문에 원 PR #7476의 최종 판정은 계속 보류입니다. 사다리 보류 사유만 이번 근거로 해소했습니다.
+
+### 보정 10의 기존 검사 보완
+
+- 전체 Native/fresh WASM 선행 기준을 통과했으므로, 기존 host 줄간격 검사 한 개에 이미 저장소에 있던 사다리의 쪽·뒤 문단 소속 계약을 보완합니다. 신규 test 함수나 fixture는 추가하지 않습니다. 이전 출력의 1쪽/기준 2쪽 차이를 의미로 검사하고, 절대 픽셀 위치를 기대값으로 추가하지 않습니다.
+
+- 보완한 기존 #7418 검사 7개가 모두 통과했습니다. 사다리 계약은 정확한 2쪽, 1쪽 표 유지, 뒤 문단의 2쪽 단일 출현, 표의 임의 분할 금지를 확인합니다. test 함수 수는 7개 그대로이며 새 fixture를 추가하지 않았습니다. 생성 suite는 003으로 재배정되어 wrapper의 실제 7개 실행을 확인했습니다.
+
+### 메인터너 보정 준비: 평문 여백의 패키지 버전 계약
+
+- 전체 실패 `task903_hwpx_h_01_para_shape_margin_children_are_parsed`는 유효합니다. 원본 패키지 xmlVersion1.2의 문단10 들여쓰기 -2800은 이번 한컴2020 재저장에서도 HWP IR -2800으로 유지됩니다. 이전 5b8be2ac8은 이 값을 -5600으로 잘못 확대했습니다.
+- 원본 내용을 그대로 둔 통제 실험: header.xml의 head version만 1.4로 바꾸면 HWP IR은 -2800 그대로입니다. version.xml의 xmlVersion을1.4로 함께 바꾸면 -5600이 됩니다. 반대 방향으로 hy_ladder3 패키지 xmlVersion을1.2로 낮추면 원본 -2440/-4880이 그대로 저장됩니다. h01의 xmlVersion1.3도 -2800입니다. 처리 기준은 파일명·한컴 제품명이 아닌 실제 패키지 XML 버전입니다.
+- 수정 계획: version.xml의 xmlVersion이1.4 이상일 때만 평문 HWPUNIT 여백을 공통 IR 2배로 읽고, 기존1.2/1.3은 원값을 유지합니다. 평문 저장 시에도 같은 읽기 출처를 보존하여 역변환을 적용합니다. switch/default·고정 줄간격은 변경하지 않습니다. 기존 #903 정답 기대값을 유지하고 #4898·#6875·기존 파서 단위 검사 및 정상 hy_ladder3 전2쪽을 검증합니다. 새 회귀 함수·문서는 추가하지 않습니다.
+
+### 패키지 단위 보정 결과와 별도 시각 보류
+
+- `version.xml`의 xmlVersion을 읽어 1.4 이상에서만 평문 물리 여백을 2배 공통 IR로 변환합니다. 읽기 출처를 문단 모양에 보존하여 평문 저장 때 동일한 역변환을 적용합니다. 구버전·판본 미상은 기존 원값, switch/default·고정 줄간격은 기존 계약입니다. 기존 HWP 파서는 이 출처를 사용하지 않습니다.
+- #903 기존 독립 HWP 대조 기대값은 유지했습니다. #903/#4898/#6875 기존5개 PASS, 파서 기존54개 PASS, Clippy --lib release-test exit0. #4898 기존 함수에서1.2/1.3/1.4의 평문 왕복을 검증했으며 새 함수·fixture는 없습니다. 이 보정의 목적은 기존 파싱·저장 계약이며 새 렌더링 golden을 등록하지 않았습니다. [한컴 통제 실험](../assets/planet6897_green_20261002/plain_margin_version_oracle.json), [검증 증적](../assets/planet6897_green_20261002/plain_margin_version_validation.json).
+- 정상 hy_ladder3는 원본/기준/Native/fresh WASM 모두2쪽, 전쪽 최저90.86083%를 유지했습니다. Mac fresh WASM --no-opt exit0이며 Docker 최적화 검증이 아닙니다.
+- h01은 원본/기준/Native/fresh WASM 모두9쪽입니다. 2~9쪽은98% 이상이나1쪽은양쪽53.03132%입니다. 비교 PNG에서 제목 프레임과 이후 본문/표의 위쪽 이동을 직접 확인했습니다. 단위 실패 해결과 전체 문서 승인 판단을 분리합니다. [1쪽 review](../assets/planet6897_green_20261002/plain_margin_version_h01_p1_review.png). 9쪽 문서는 이 브랜치에서 추가 보정할 보류이며 #7445로 이관하거나 renderer 기대값을 느슨하게 하지 않습니다. 전체 회귀 재실행 전이므로 PR 최종 판정은 보류입니다.
+
+### 메인터너 검토 준비: 이미 이관한 Q29 물리쪽의 남은 반대 단정
+
+- 현재17개 재실행은15PASS/2FAIL입니다. #3930 혼합 검사에 `p296은Q29를가지면안된다`는 반대 단정이 남아 있습니다. 독립 한컴2024 PDF의 물리296쪽을 pdftotext로 다시 읽으면 Q27/Q28/Q29가 있고 Q29 표제와 응답이 모두 있습니다. 과거 #7382 보정146도 같은 PDF/원본 SHA로296쪽의Q27/Q29를 확인하고 실패 물리쪽 전제를 #7445 issuecomment-5883936903에 이관했습니다. 현재 단정은 독립 기준과 반대로 기대하므로 renderer를 바꿔 통과시키면 기준에서 멀어집니다.
+- 이 단계는 이미이관한Q29의 잘못된 부정 단정 하나와 전용 상수만 제거합니다. 원본384쪽과 PDF, 나머지 같은 쪽 배치·셀넘침·저장전후13쪽 동일성·바탕쪽/IR 계약을 유지합니다. 현재296쪽을 새로운golden으로 등록하지 않으며, 전체90% 미달 문서의 쪽수나 새로운 렌더링 검사는 추가하지 않습니다. 기존 #7445 기록을 연결하고 새 공개 댓글은 게시하지 않습니다.
+
+- 실행 결과: 잘못된Q29 부재 단정 한곳과 미사용상수만 제거했습니다. 나머지 혼합 계약과 같은파일 기존3함수 모두PASS(nextest release-test threads8, exit0). 저장전후13쪽 결과동일성·기존바탕쪽/IR/표/그림조건을 유지했습니다. 독립 PDF SHA는 기존 #7445 증적과동일합니다. [검증 증적](../assets/planet6897_green_20261002/handbook_q29_inverse_assertion_validation.json). 큰문서의 전체피델리티 이슈나 원본/PDF는 제거하지 않았고 새로운현재쪽 golden도 등록하지 않았습니다.
+- 직전17개 집중재실행은15PASS/2FAIL이며 이중#3930은본단계기존3검사로해결했습니다. 현재남은재현FAIL은 `hwpx_sample2.hwpx`의 off_canvas partition1입니다. 전체 nextest/최종visual은아직미완료입니다.
+
+### 이번 단계 종료 재검증 요약
+
+- head `8927c6ccb`에서 이전 전체 실패17개 이름을 모두 확인했습니다. generated suite 재배정으로16개 실행15PASS/1FAIL과 별도 oracle partition7의1PASS를 합쳐16PASS/1FAIL입니다. 전체10,281개 재실행 결과가 아닙니다. [최종 집중 증적](../assets/planet6897_green_20261002/prior17_final_8927c6ccb.json).
+- 잔존FAIL은29쪽 hwpx_sample2의8쪽표 용지밖1건입니다. h01의1쪽53.03132%와 큰문서 미달쪽, 최신215쪽전쪽Native/freshWASM·전체회귀 검증은 추가보류입니다. 이들을 완료로 간주하거나 blanket baseline 변경·새골든등록·원본삭제를 하지 않았습니다. PR 최종승인/머지준비는미완료입니다.
+
+### h01 1쪽 저장 TAC 앞 빈 줄 보정 사전 분석
+
+- 현재 Native 전9쪽을 재실행해1쪽53.03132%, 나머지98% 이상을 확인했습니다. 첫 로고 표의 괘선은 Native98.2px/PDF100.051px입니다. 호스트의 첫 저장 줄은 빈 줄(text_height100HU+gap44HU), 표 소유 줄은 vpos144HU이며 line_height4091HU가 표3525HU+바깥여백566HU와 정확히 같습니다. 빈 줄의 line_height에는 문단 최대 표 높이가 반복되므로 text_height와 다음 원점이 실제 빈 줄 점유 근거입니다.
+- composer `stored_tac_lines`는 공백 텍스트 캐리어의 앞 빈 줄은 수용하지만 빈 컨트롤 캐리어의 단일 표와 PageNumberPos를 거절합니다. typeset `stored_tac::prepare`의 공통 pen/end가 생성되지 않아 일반 TAC paint/flow가 앞144HU와 뒤 간격을 잃습니다. 쪽번호 위치 지정은 본문 줄을 그리는 개체가 아니므로 저장 빈 줄 연속성·표 소유 높이·단일 마지막 소유 줄을 같은 계약으로 수용합니다. 가시 객체·편집/합성/비연속 줄은 제외합니다.
+- 기존 공통 측정/paint 계획을 사용하고 문서별 수치 보정은 추가하지 않습니다. 첫 표 보정 후 나머지 제목/본문 차이를 별도로 확인하며 기존 관련 검사와 정상 사다리/양돈 자료, Native/fresh WASM 전9쪽을 검증합니다. 신규 검사·fixture·잠정 golden은 추가하지 않습니다.
+
+- 첫 후보는 Native53.03132%로 무변화였습니다. 구역 첫 문단의 `empty_control_stream_position`이 축 보정량이 있다는 이유로 먼저 거절합니다. 초기 진단은 보정량을 잘못 추정했으며 실제 보정량8을 더한ts32는 cc33의 마지막 문단부호입니다. 기존 `stored_text_starts_on_hwp5_axis`는 문단 끝을 넘는 경우만 확인하므로 이 개체 줄을 구별하지 못했습니다. 축 증거가 있는 완전8유닛 스트림만 재사용하고 미확정 HWPX/합성은 계속 거절합니다. 컨트롤 소속 생산 → composer 줄 계획 → typeset pen/end → paint 공통 배치의 연결을 재검증합니다.
+
+- 진단 재확인: cc33/4컨트롤·axis8·offset없음·분할dirty없음·실측47px입니다. 24는 마지막 표의8유닛 슬롯이고32는 문단부호입니다. 완전 제어 스트림의 실제 인라인 개체 시작을 문단부호로 옮기는 보정만 거절하며, 텍스트·불완전 스트림·중간 슬롯의 기존 판정은 유지합니다. 진단용 출력은 최종 코드에서 제거합니다.
+
+- 축 판정 후 첫 표는98.2→100.2px로 PDF100.051px에 맞습니다. 다음 제목 프레임은186.6px/PDF190.192px이며 그 후 본문 차이가 남습니다. p3은 인라인 날짜 표의 소유 줄2131HU가 float offset2346HU 앞에 들어가고, 다음 저장 원점과 차이9067HU가 offset2346+float높이6155+바깥여백566과 정확히 같습니다. 기존 공통 상자 helper가 offset0·표1개만 수용하여 혼합 줄에서 위여백과 전체 점유를 버립니다. 같은 줄의 TAC 소유 높이가 offset 앞 공간에 들어가며 다음 줄이 전체 상자를 닫는 경우만 공통 offset+바깥상자 점유를 생산하여 예약/paint에 전달합니다. 그 밖의 양수 offset, 가시 글자·그림·재조판은 유지합니다.
+
+### h01 시각 보정 중간 결과
+
+- Native/fresh WASM 전9쪽 같은 일치율, 최저1쪽94.28413%, 나머지98% 이상·미달0입니다. 제목/본문/표 위치를 review PNG로 직접 확인했고 마지막 표의 약3px 차이는 잔존합니다. Native/fresh WASM 정상#6797 11쪽·사다리2쪽 렌더 트리는 이전 검증 출력과 전쪽 바이트 동일합니다. 기존 관련62검사62PASS입니다.
+- 새 단일 빈 줄 캐리어에 각주가 있는 경우 공통 단축 대신 기존 일반 예약을 유지하도록 마지막 guard를 보완했습니다. 최종 빌드·lint·출력 동일성·집중 회귀를 재검증합니다. 검증된 기존 h01 검사1개에 저장 빈 줄 점유와 제목 상자의 관계를 보완하며 새 함수/fixture나 절대px 핀을 추가하지 않습니다. 통합PR 준비·최종 전체 검증은 미완료입니다.
+
+### h01 보정 최종 단계 결과
+
+- 마지막 각주 예약 guard·기존 h01 관계 검사 보완 후 기존 관련62건62PASS입니다. Native/fresh WASM 빌드·root/WASM/workspace Clippy·workspace 빌드·fmt·최신base suite 정책·변경 문서 링크 exit0입니다. Mac fresh WASM no-opt 대체 빌드이며 Docker 최적화 검증은 아닙니다.
+- 마지막 생산 코드에서 Native full-font print SVG/렌더 트리와 fresh WASM raw SVG/렌더 트리가 실제 시각 비교 출력과 전9쪽 바이트 동일함을 확인했습니다. 앞선 직접 raster 비교의 Native/WASM 전9쪽 최저94.28413%·미달0 근거를 연결하며 추가 재래스터화로 보고하지 않습니다. 빈 줄 점유·양수offset 바깥상자 관계는 이전 실제 render tree에서2조건 FAIL, 현재2조건 PASS를 확인했고 보완한 Rust 함수도 PASS입니다. 새 test 함수/fixture·baseline·기준 PDF 변경0건입니다.
+- [최종 원장](../assets/planet6897_green_20261002/h01_correction_validation.json), [Native 전9쪽 TSV](../assets/planet6897_green_20261002/h01_corrected_native.tsv), [WASM 전9쪽 TSV](../assets/planet6897_green_20261002/h01_corrected_wasm.tsv), [1쪽 review](../assets/planet6897_green_20261002/h01_corrected_native_p1_review.png), [1쪽 overlay](../assets/planet6897_green_20261002/h01_corrected_native_p1_overlay.png). 첫 페이지에서 마지막 표 약3px 및 제목 글자 미세 차이는 잔존합니다.
+- h01의90% 미달 보류 사유를 해소했습니다. 다른 시각 보류와 최신215쪽 전체 비교·최종 전체 회귀는 별도 미완료이며 #7476/통합 PR 전체를 승인 완료로 표현하지 않습니다. 이 단계 커밋 후 전체 nextest를 실행합니다.
+
+### 전체 검사에서 확인한 메인터너 보정의 반례(#7103)
+
+- h01 메인터너 보정에서 추가한 빈 줄 검증이 음수 줄간격을 무조건 거절해 기존 복수 TAC 표의 원문 계획을 무효화했습니다. 기여자 원 PR의 결함으로 분류하지 않습니다. 원문 빈 줄 높이300HU·간격-92HU·다음 원점208HU는 정상이며, 실제 전진량과 저장 원점 연결을 검사하도록 수정했습니다.
+- 기존4건4FAIL→4PASS, 기존2건의 절대 PDF 좌표를 원문 표 높이·저장 줄 간격·본문 포함·내용 순서로 변경한 뒤에도4PASS입니다. Native/fresh WASM 전1쪽95.54807%, h01 전9쪽 SVG/렌더 트리는 양 backend에서 기존 시각 증적과 바이트 동일합니다. 새 test 함수/fixture/golden은 추가하지 않았습니다. [검증 원장](../assets/planet6897_green_20261002/tac7103_correction_validation.json), [review](../assets/planet6897_green_20261002/tac7103_corrected_native_p1_review.png). 다른 전체 실패와 시각 보류는 미완료입니다.
+
+### 2024 호환 경로 반례 복원
+
+- 메인터너 h01 보정의 단일 TAC 선행 줄 계획이 기존 2024 회수량 적립과 후속 쪽 경계 재적합을 건너뛰어 세대 검사2건이 실패했습니다. 2024의 해당 입력은 기존 일반 경로가 담당하도록 복원했고 기존4검사4PASS입니다. 기본2022·해제 후 pi13=2쪽,2024 pi13=1쪽이며 실제 줄이 단 내부에 포함됩니다. h01 Native/fresh WASM 전9쪽 출력은 이전 시각 증적과 동일합니다. [검증](../assets/planet6897_green_20261002/compat5524_correction_validation.json). Native2024 독립 PDF의 전체 시각 일치율은 미검증이므로 그 범위의 완료나 통합 승인으로 표현하지 않습니다.
+
+### 각주 대조군의 유지보수 보정과 기존 검사 보완(#598)
+
+- 확정 TAC 줄 pen에 저장 원점을 다시 더하던 paint 경로, 문단 앞 간격을 뺀 reset owner 비교, HWP5 쪽 첫 간격을 원점으로 빼던 두 소비자, 감추기 메타데이터 때문에 표 앞 빈 줄을 잃던 경로를 단계별로 보정했습니다. 기여자 원 PR의 잘못으로 일괄 분류하지 않고 통합 브랜치와 메인터너 보정의 공통 경로 반례로 기록합니다.
+- 새 한컴2020 PDF로 Native/fresh WASM 전6쪽 TSV가 동일하며 최저1쪽98.10308%·90미달0입니다. 원문2010 저장본의 engine2020 재출력 PDF를 커밋했고 쪽수6/6·쪽별 텍스트 동일을 확인했습니다.5쪽 원문 나눔고딕과 한컴 바탕 대체 글꼴 차이는 남습니다. 색 있는 표 배경의 실루엣100%를 글꼴 일치로 해석하지 않습니다.
+- 기존 각주 검사5함수는 유지하고, 낡은 절대 클릭 좌표를 실제 페이지0 마커의 구역·문단·제어·번호 소속으로 대체했습니다. 커서 offset과 삭제 후 마커 부재를 유지하며,3쪽 첫 줄의 문단 소속·2쪽 중복 부재를 기존 첫 함수에 보완했습니다. 최초 실패2건을 포함해5건5PASS입니다. 신규 `#[test]` 함수/fixture/golden 추가0·검사 삭제0입니다.
+- [검증 원장](../assets/planet6897_green_20261002/footnote598_final_validation.json), [Native 전6쪽](../assets/planet6897_green_20261002/footnote598_final_native_all6.tsv), [WASM 전6쪽](../assets/planet6897_green_20261002/footnote598_final_wasm_all6.tsv), [3쪽 review](../assets/planet6897_green_20261002/footnote598_final_native_p3_review.png), [5쪽 review](../assets/planet6897_green_20261002/footnote598_final_native_p5_review.png). 다른 전체 회귀 실패와12/215쪽 시각 보류는 남아 있어 통합 PR 승인/준비 완료로 표현하지 않습니다.
+
+### 어울림 그림 뒤 문단의 단 하단 넘침 보정(#6812)
+
+- 통합 후보의 기존 회귀20건 중1건은 그림을 추가했을 때 본문 둘째 줄이 단 하단3.64px 밖에 그려졌습니다. 세 줄 소속과 하단 포함을 확인하는 검사 관계는 정상이며, 기대값을 완화하지 않았습니다.
+- 메인터너 분석에서 첫 TAC 표 소유 줄을 Square 그림의 빈 안내 줄로 제외해 측정은 후행 간격0, paint는12px를 소비하는 불일치를 확인했습니다. 사진·도형 소유 helper에는 표가 포함되지 않으므로 실제 표 제어의 소속 줄과 원본 줄 높이 증거를 보완했습니다. 문서 번호·고정 위치에 따른 예외를 추가하지 않았습니다.
+- 기존20건20PASS와 관련12건12PASS(exit0), 새 검사·픽스쳐·golden 갱신0입니다. [검증 원장](../assets/planet6897_green_20261002/6812_table_owned_line_validation.json), [Native 전11쪽](../assets/planet6897_green_20261002/6812_social6797_current_native_all11.tsv), [WASM 전11쪽](../assets/planet6897_green_20261002/6812_social6797_current_wasm_all11.tsv), [7쪽 review](../assets/planet6897_green_20261002/6812_social6797_current_p7_review.png).
+- #6797은11/11쪽·최저92.15032%·미달0, #598 각주6쪽은 이전 출력과 동일합니다. fresh WASM 전17쪽 SVG는 Native와 동일합니다. 7쪽 첫 표의6.667px 상향은 이번 보정 이전 실행 파일에서도 확인되었으며 이전 원점 보정의 잔차로 재검토합니다. 전체 회귀 및 다른 문서 시각 보류가 남아 있어 승인/PR 준비 완료가 아닙니다.
+
+### 생성 SVG의 두부문자 재확인과 macOS 표준 폰트 경로 보완
+
+- `form-002/page-0.actual.svg`를 재생성하니 API의 기본 Full 임베딩에서 휴먼명조 굵은 face가 local()로 남아 파란 핵심 목표 줄이 두부문자로 표시됐습니다. 명시 경로를 쓴 기존 확인본만으로 기본 API 경로를 확인했다고 보지 않았습니다. 공통 기본 탐색에 macOS 표준 `~/Library/Fonts`를 포함하여 설치된 윤곽선 글꼴을 공급했습니다.
+- 기존 폰트 경로5건5PASS와 unit 정책 검사exit0, 새 test 함수0입니다. 현재 파일은 이전 정상 확인 SVG와 해시 동일이며 새 Chrome 캡처도 픽셀 동일합니다. [현재 PNG](../assets/planet6897_green_20261002/form002_font_after_chrome.png), [검증](../assets/planet6897_green_20261002/form002_font_preview_validation.json). CSS를 제외한 비교 원문과 golden 기대값은 변경하지 않았고, 표 기하에 따른 스냅샷 실패는 계속 보류입니다.175MB 진단 SVG는 요청 경로에 남기고 `.gitignore`로 커밋에서 제외합니다.
+
+## 기존 table-text 검사 보정 — 2026-10-04
+
+- 원 기여자의 재조판 간격 변경 뒤 기존 golden은59글자의 x 문자열 차이로 실패했으며, 내용140글자·세로 위치·전체223요소는 유지됐습니다. 해당1쪽 문서는 독립 한컴2020 PDF와 현재 release-test Native·fresh WASM 전쪽 비교를 마쳤습니다. 두 실행 실루엣100%이며 review에서 실제 표와 숫자를 확인했습니다. 엄격 픽셀70.58156%는 글꼴 획 차이도 포함하므로 완전 픽셀 일치로 보고하지 않습니다.
+- 메인터너 보정은 기존 `svg_snapshot::table_text_page_0` 한 개를 표18칸의 내용·행열 소유·칸 내부 표시·수치와 증감 제목 가운데 정렬 검사로 전환합니다. 새 함수/fixture/production 변경과 golden 갱신은 없습니다. 셀 상대 허용량은 렌더 트리의 소수점 반올림만 처리하며 절대 위치를 고정하지 않습니다.
+- 집중 해당1건1PASS(exit0). 기존 snapshot 묶음도6PASS·form002 배치1FAIL(exit100)로 재확인했습니다. form002 실패나 최종 전체 검증을 이 결과로 승인하지 않습니다. 필수 gate 결과는 [검증 기록](../assets/planet6897_green_20261002/tabletext_semantic_validation.json)에 기록합니다. [Native TSV](../assets/planet6897_green_20261002/tabletext_current_native_all1.tsv), [WASM TSV](../assets/planet6897_green_20261002/tabletext_current_wasm_all1.tsv), [검토 PNG](../assets/planet6897_green_20261002/tabletext_current_p1_review.png).
+
+## #6797 7쪽의 저장 원점 재보정 — 2026-10-04
+
+- 독립 재확인에서 #598 보정 후7쪽 첫 표가6.667px 위로 이동하여 이전98.05666%에서92.15032%로 낮아졌습니다. 원 기여자의 표 내용 변경과 별개로 메인터너가 HWP5에도 확대 적용한 쪽 원점 규칙의 영향입니다. 원본 첫문단69의 글자처럼 취급되는 묶음 도형과 제목이500HU 저장 원점을 함께 소유하는데 일반 텍스트 문단 앞 여백으로 판정했습니다.
+- 공통 `stored_first_margin_is_page_relative`에서 첫문단 TAC 도형을 제외해 페이지네이터·렌더러의 저장 원점 판정을 함께 바로잡았습니다. 해당 표만 기존 정상 위치로 돌아오고 다른10쪽 렌더 트리는 수정 전과 동일합니다. 새 검사·fixture·기대값 변경은 없습니다.
+- 현재 Native 전체11쪽90% 미달0건, 최저95.80181%,7쪽98.05666%입니다. 관련 기존 #6797·#598·#6972·#6812 총32검사32PASS(exit0). #598 전6쪽 현재 Full SVG/렌더 트리는 기존 검증본과 바이트 동일하며 새 raster 실행으로 주장하지 않습니다. 실루엣 점수를 글꼴 획의 완전 일치로 보고하지 않습니다. fresh WASM·필수 gate 결과는 [검증 기록](../assets/planet6897_green_20261002/social6797_origin_validation.json)에 남깁니다. [Native 전쪽 TSV](../assets/planet6897_green_20261002/social6797_origin_native_all11.tsv), [7쪽 review PNG](../assets/planet6897_green_20261002/social6797_origin_p7_review.png). 통합 전체 검증·PR 판정은 보류 상태입니다.
+
+- #6797 최종 단계 결과: 새 WASM 실제 전11쪽 raster·TSV도 Native와 동일하며 미달0건/최저95.80181%,7쪽98.05666%입니다. Native/WASM Clippy·workspace build/all-target Clippy·fmt·고정 base manifest·문서 링크/metadata 검사 모두 exit0. [WASM TSV](../assets/planet6897_green_20261002/social6797_origin_wasm_all11.tsv). 기존 전체 실패 중 남은4함수의 현재 집중 재실행은4FAIL(exit100)로 확인하여 전체 PR 승인으로 보고하지 않습니다.
+
+
+### 메인터너 후속 보정: #5731의 셀 그림 프레임과 빈 자르기 선택
+
+이 단계는 기여자의 해결 범위를 다시 주장하는 것이 아니라 통합 브랜치의 기존 실패를 독립 원문과 한컴 출력으로 재검증한 메인터너 보정입니다. 이전 TAC 선언 높이 재확장 제거 뒤 작은 초기 셀 높이에 둘째 그림이 제한되어 캡션과 겹쳤습니다. 마지막 저장 앵커+그림 높이+유효 안 여백이 개체 프레임을 정확히 닫는 경우에만 그 프레임을 조판과 실제 배치가 함께 소비합니다. 일반 TAC 표의 낡은 선언을 다시 최소 높이로 적용하지 않습니다.
+
+기존35KB 픽스처는 그림을1×1로 치환한 자료였습니다. 본문·서식·메타데이터를 바꾸지 않고 같은 fixture 경로에 원본 BinData6개를 복원했습니다. 동일 원문으로 생성한 MCP2020 직접 PDF와 한컴 HWP 재저장 뒤 PDF는7쪽 모두 동일한96dpi 픽셀 해시입니다. 정본에는 총6그림이 나옵니다. 기존 회귀 주석의 “한컴도7개”와 3쪽의 그림2개 표시 전제는 잘못됐습니다.
+
+첫 그림의 자르기 선택은 폭이 있지만 높이가 역전되어 비어 있습니다. rhwp가 이 선택을 None으로 바꾸면서 원본 전체를 표시한 것이 남은3쪽80.43%의 원인이었습니다. 빈 선택을 보존하고 그 선택 안의 픽셀만 그리는 계약을 SVG/Native Skia/Canvas/HTML/Studio DOM/CanvasKit에 적용했습니다. 원본 그림 개체·저장 글줄 공간·셀 소유와 캡션은 유지합니다. 측정 결과는 `fit_measured_for_host`와 `resolve_row_heights_with_common_fit`에서 같은 그림 프레임을 소비하며, 실제3쪽에서 최종 셀 경계와 두 캡션·그림 자리·뒤 본문까지 확인했습니다.
+
+Native 전7쪽 최저95.59735%, 90% 미달0쪽입니다. 최종 Native CLI에서 재산출한 SVG7개·렌더 트리7개가 비교 산출물과 동일하여 래스터/TSV를 재사용합니다. 기존 테스트1개는 절대 픽셀 고정 대신 쪽수·원문 그림 보존·캡션 내용/순서·셀 내부 포함·빈 선택의 실제 출력으로 변경했습니다. 관련 기존21검사 모두 통과했으며 새 테스트 함수는 추가하지 않았습니다. Studio1,814 PASS/실패0/skip2와 기존 CanvasKit 실제 자르기4모드도 통과했습니다. fresh WASM 전쪽·Native Skia 공식 회귀·최종 전체 검증은 아직 완료하지 않았으므로 이 중간 결과만으로 통합 PR 준비 완료나 승인 완료를 선언하지 않습니다.
+
+- #5731 추가 완료: 새 Mac 로컬 no-opt WASM 전7쪽 TSV는 Native와 동일합니다(최저95.59735%, 미달0쪽). Native Skia 전체 단위4,109 PASS/실패0/skip13. [보정 검증 JSON](../assets/planet6897_green_20261002/cell5731_frame_crop_validation.json)에 정본 PDF 두 경로 비교·그림 복원·전체 TSV·진행 중 검사 상태를 보존합니다. 공식 Skia 개별2종과 보정 전 새 관계 검사 재현은 후속 검증으로 남깁니다.
+
+- #5731 보정 커밋 `14d205d83`: 공식 Native Skia 단위4,109 PASS에 이어 missing-picture2/2, direct-PDF4/4 PASS 및 실제3쪽 PNG 출력0. 직접 Skia3쪽의 한컴 정본 비교도98.07425%입니다. 동일한 기존 관계 검사를 보정 전 Rust 소스에서 실제 실행하자 둘째 그림이 앞 캡션을 덮는 관계 위반으로1 FAIL(exit100)이 재현됐습니다. 보정 소스는 파일별 SHA를 대조해 원상 복원했으며 같은 검사의 수정 후 실행을 진행 중입니다. 새 테스트 함수·기준선 허용치 변경은 없습니다.
+
+- #5731 수정 후 동일 검사1 PASS(exit0)까지 확인했습니다. 보정 전은 컴파일 오류가 아닌 실제 캡션 겹침1 FAIL(exit100)입니다. 13개 보정 Rust 파일의 SHA는 앞서 lint·전쪽 Native/WASM·Skia 검증에 사용한 소스와 동일하게 복원됐습니다. 이 단계 검증은 완료이며, 통합 브랜치의 나머지 차단과 최종 전체 검증을 이어갑니다.
+
+### 메인터너 후속 보정: #1749 재조판 표의 조각 마지막 간격
+
+- 독립 한컴2020 출력에서도4쪽 표의 별표 줄은50/67/10,5쪽은67/22/67/16/67/4입니다. 기존 회귀의 의미 기대값은 유지합니다. 원본 HWPX 셀의 첫5문단에는 저장 LineSeg가 없으므로 저장 프레임 수용 조건을 완화하지 않았습니다.
+- 재조판 마지막 줄 뒤 간격을 현재 조각 끝의 점유로 잘못 더하여10개 별표 줄이5쪽으로 밀렸습니다. 같은 trailing trim을 컷 선택·조각 예약·table_partial 행 배치가 소비하도록 보정했습니다. 저장 줄·개체·중첩 표는 기존 계약을 유지합니다.
+- 기존3검사3 PASS, 관련26검사26 PASS(exit0), Native 전5쪽 최저91.10644%/미달0쪽입니다.5쪽은83.28153→92.61078%. 표 내부 앞 간격과 괘선 표현 차이는 남아 있으며 fresh WASM 전5쪽도 Native와 동일하며 필수 Rust lint/빌드/정책 gate가 모두 통과했습니다. 새 회귀 함수·허용치 변경은 없습니다.
+- [정본 PDF](../../../pdf/task1749/saved_bounds_cumulative_page_break-hwpx-2020.pdf), [검증 JSON](../assets/planet6897_green_20261002/savedbounds1749_reflow_validation.json), [Native 전쪽 TSV](../assets/planet6897_green_20261002/savedbounds1749_reflow_native_all5.tsv), [4쪽 review](../assets/planet6897_green_20261002/savedbounds1749_reflow_p4_review.png), [5쪽 review](../assets/planet6897_green_20261002/savedbounds1749_reflow_p5_review.png). 다른 보류·최종 전체 검증이 남아 통합 승인 보류를 유지합니다.
+
+### form002 바깥 위여백 단계 — 전체 승인 보류
+
+- 원본 `form-002.hwpx`의 선언 첫 조각 높이69446HU와 바깥 위·아래283HU가 본문70012HU를 닫습니다. A4 정규화 본문70014HU와의2HU 차이는 원본 정수 단위로 비교합니다. 폭0 저장 앵커와 구역·단·쪽번호 설정은 별도 가시 글줄을 만들지 않습니다.
+- 첫 조각 배치 원점, 이어받기 예산, 표 paint가 동일한 위여백 소유를 소비하도록 보정했습니다. Native 전10쪽 상단94.48→98.3px, 독립 한컴 PDF98.292px와 대응합니다.
+- 기존 관련 회귀42건42PASS·실패0. Native 전10쪽은9쪽 미달→4쪽 미달(1쪽89.18899%,4쪽83.46681%,8쪽66.25781%,10쪽84.21871%). 첫 여백 보정만으로 전체 승인을 선언하지 않으며 golden과 기존 테스트는 유지합니다.
+- [Native 전쪽 TSV](../assets/planet6897_green_20261002/form002_outer_margin_native_all10.tsv), [1쪽 review](../assets/planet6897_green_20261002/form002_outer_margin_native_p1_review.png), [8쪽 review](../assets/planet6897_green_20261002/form002_outer_margin_native_p8_review.png), [단계 검증](../assets/planet6897_green_20261002/form002_outer_margin_validation.json). fresh WASM 전10쪽 TSV는 Native와 바이트 동일합니다. Mac no-opt WASM·Studio SHA `b47ceadea2e369126397a5abf512eedf257d566a8a81d46f31fb67da71463e2c`, Docker 최적화 대체가 아닙니다. fmt·Native/WASM Clippy·workspace build/all-target Clippy·manifest·문서 링크 검사 모두exit0입니다. 다음은 안내 표 앞뒤 간격·남은 분할 높이를 보정합니다.
+
+### form002 원본 물리 프레임 단계 — 시각 검증 충족, 기존 golden 교체 대기
+
+- 첫 폭0 앵커의 구역 설정이 object-only 판정에서 빠져 첫 표 조각의 빈 하단 밴드가 소실되었습니다. 본문을 닫는 저장 프레임을 기존 첫 조각 예약·paint 계약에 연결했습니다. 내용과 선언 높이 차이가0.5px 미만인 경우도 같은 원본 프레임 소유를 유지하여 말미 접기의 재차감이 발생하지 않게 했습니다.
+- noAdjust 원본의 문단 간 저장 쪽 경계가 단일 남은 프레임임을 확인한 경우, 첫 조각이 소비한 공간을 선언 행 높이에서 뺀 잔여를 다음 조각에 전달합니다. 원본8쪽 해당 셀 잔여는20801HU입니다. 일반 내용 컷·편집본·다중 남은 프레임의 기존 처리 범위는 넓히지 않습니다.
+- Native와 fresh WASM 각각 전10쪽 모두90% 이상, TSV 바이트 동일. 최저8쪽92.96827%,1쪽97.53277%,4쪽98.57131%,10쪽98.34023%. 기존 관련42건42PASS·실패0, 필수 lint·build·manifest 모두exit0. fresh Mac no-opt WASM SHA `4792539457a5da53ff2d1dd8578b5feca7e8f55045d00529b7ee06385bb3d76c`·Studio 동일이며 Docker 최적화 통과로 보고하지 않습니다.
+- 요청된 최신 `.actual.svg`를 다시 생성하고 실제 Chrome 확인: 파란 한글 두부 없음, 실제 체크박스 보존. 8쪽 안내 표의 작은 위치 차이는 남으며90% 충족과 구분합니다. 기존 고정 SVG 기대값1건은 여전히FAIL(exit100)입니다. 다음 단계에서 기존 검사 하나를 원본 표·쪽·분할 문단 소유 의미 검사로 바꿉니다. 신규 회귀 함수·golden 갱신0건, 최종 전체 회귀·남은 다른 문서 보류는 미완료입니다.
+- [정본 PDF](../../../pdf/hwpx/form-002-hwpx-2020.pdf), [검증](../assets/planet6897_green_20261002/form002_stored_frame_validation.json), [Native 전쪽 TSV](../assets/planet6897_green_20261002/form002_stored_frame_native_all10.tsv), [WASM 전쪽 TSV](../assets/planet6897_green_20261002/form002_stored_frame_wasm_all10.tsv), [1쪽 review](../assets/planet6897_green_20261002/form002_stored_frame_native_p1_review.png), [8쪽 review](../assets/planet6897_green_20261002/form002_stored_frame_native_p8_review.png), [최신 Chrome SVG 확인 PNG](../assets/planet6897_green_20261002/form002_stored_frame_current_chrome.png).
+
+### form002 기존 회귀의 의미 검사 전환
+
+- 전10쪽 Native/fresh WASM 최저92.96827% 검증 후, 기존 `svg_snapshot::form_002_page_0` 하나를 수정했습니다. 고정 SVG 바이트 대신 독립 정본의10쪽·원본5개 표의 쪽별 소유/행·열 구조와1→2쪽의13/15번 문단 소유를 검사합니다. PDF에서 확인한 주사제형화 개발 문구와PFC/GMP 재개 문구도 보존하는지 확인합니다. 절대px·새 test 함수·새 fixture·golden 자동갱신은 없습니다.
+- 실제 라우트 `regression_suite_007`, 기존 SVG 묶음7건7PASS·실패0(exit0). 이전 원문/진단 SVG는 요청 경로에 보존하고 커밋에서 제외합니다. [검증](../assets/planet6897_green_20261002/form002_semantic_validation.json). Rust test 필수 fmt·Native/WASM Clippy·workspace build/all-target Clippy·manifest·문서 링크 모두exit0입니다.76076 기존 겹침 차단과 최종 전체 검증은 계속 대기합니다.
+
+### 76076 남은 겹침 차단 — 정확한 입력 기준 재검증 시작
+
+- 현재 head `16b047b10`에서 기존 partition13 재실행1FAIL(exit100),76076 겹침 증가1건을 확인했습니다.진단의0-based `page=5`, 즉 물리6쪽 본문 표의 글줄과 footer 쪽번호가 겹칩니다. 아직 회귀 제외·baseline 기대값 변경은 하지 않았습니다.
+- `samples/issue1891/76076_regulatory_analysis.hwpx`는 실제 OLE HWP5·2018 저장본·82쪽이며 SHA `49bbcc49…`입니다. 기존2020 PDF 대응 기록(#4764)의 원문 `samples/76076_regulatory_analysis.hwp` SHA `3308ba85…`와 다르므로 정확한 입력의 정본을 새로 산출했습니다. 변환용 `.hwp` 사본은 원문과 바이트 동일하며 output 안에서만 사용했습니다.
+- 실제 한컴2020 MCP job `fc7c5c7b-5997-43d1-8759-f0f8e642a29b`,38초 성공,82쪽638,575B,Creator Hwp2020·Producer Hancom PDF1.3.0.550. [정본 PDF](../../../pdf/issue1891/76076-exact-input-hwp2020-20261004.pdf), [입력·실패 분석](../assets/planet6897_green_20261002/76076_exact_reference_analysis.json). Native 전82쪽 TSV를 전체 페이지 범위로 산출 중입니다. 시각 결과 확인 후 이 문서에 한정해 보정 또는#7445 이관 여부를 판단합니다.
+- `upstream/devel` 재확인 `6b3faf77d8085441f9f26d88d65a49791e910352`, 현재 분기에서 누락된 devel 커밋0입니다. PR 생성·전체 최종 검증은 계속 보류합니다.
+
+### 원 PR 최신 head·CI 재확인 — 통합 검증과 구분
+
+- 2026-10-04 API 재조회: 원 PR은 OPEN, head `d0c18feef2e9a13403482d7b8663a66a422bfaa4`로 기존 접수 기록과 같습니다. 원본 저장소의 해당 SHA check 35건은 skipped 4건, success 31건이며 실패·진행 중인 check는 없습니다.
+- 현재 통합 후보 `a73100f16`에서 form002는 Native/fresh WASM 전10쪽 최저92.96827%와 기존 관련42건·SVG 묶음7건의 통과를 확인했습니다. 원 PR CI 통과를 통합 후보 전체 통과로 대체하지 않습니다. 76076 실제 물리6쪽의 본문/쪽번호 겹침, 다른 시각 보류 및 최종 전체 회귀·Skia 검증이 남아 있어 최종 승인·PR 제출은 계속 보류합니다.
+- [정확한 source SHA별 check 증적](../assets/planet6897_green_20261002/source_ci_refresh_after_form002.json). 원 PR mergeability와 통합 분기 충돌 여부는 별개이며, 원 PR의 직접 병합은 수행하지 않았습니다.
+
+### 76076 대용량 피델리티의 제한적 이관 — 결함 해결과 구분
+
+- 정확한 원본/한컴2020 정본82쪽으로 Native 전쪽 TSV를 완료했습니다(exit1은 시각 미달).43쪽이90%미만, 최저7쪽14.15054%, 누락0쪽입니다.5쪽72.51548%,6쪽89.26879%,7쪽14.15054% review를 직접 확인했습니다.6쪽 표 마지막 행이 쪽번호와 겹치고 정본은7쪽으로 나눕니다.7쪽 표 이어받기와 이후 본문 원점도 다릅니다.
+- 대용량 실제 PR 차단 입력에 한정해 [#7445 이관 댓글](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5974222442)을 게시했습니다. API로 UTF-8 본문 일치·BOM 없음을 확인했습니다. `text_overlap_baseline` 자동 수집에서 `issue1891/76076_regulatory_analysis.hwpx` 한 입력만 보류하며 정상 검사·다른 원장·baseline 수치는 변경하지 않습니다. 원본과 새 정본 PDF는 그대로 보존합니다.
+- [전82쪽 TSV](../assets/planet6897_green_20261002/76076_exact_native_all82.tsv), [분석·원본/PDF/범위 증적](../assets/planet6897_green_20261002/76076_exact_reference_analysis.json), [6쪽 review](../assets/planet6897_green_20261002/76076_exact_native_p6_review.png), [7쪽 review](../assets/planet6897_green_20261002/76076_exact_native_p7_review.png). fresh WASM 전82쪽은 미실행이므로 검증 완료로 보고하지 않습니다. 전체 Native/fresh WASM90% 이상·표 행/본문 소유·쪽번호 비겹침 확인 뒤 해당 입력을 복원합니다.
+- 기존 text-overlap16개 분할을 모두 재실행하여16PASS·실패0·exit0을 확인했습니다(47.634초). 최신 라우트는 `regression_suite_025`입니다. 최종 전체 회귀·Skia·다른 시각 보류는 계속 남아 있습니다.
+
+- 이 단계의 fmt·Native/WASM Clippy·workspace build/all-target Clippy·base 대비manifest·문서링크 검사 모두exit0입니다. production source 변경0·신규test 함수0·다른 원장 변경0이며 `.log`는output 안에만 남깁니다. 다음 단계에서 전체nextest를8threads로 실행합니다.
+
+### 전체 회귀의 새 차단4건와 #6764 제한적 분리
+
+- 현재 후보 `670e90c0e`의 전체 nextest는10268건실행·10264PASS·4FAIL·50skip·exit100으로 완료됐습니다(실행446.251초, 컴파일 별도). 실패는 #6764 public-table presence, #7359 page-top spacing, #6855 rewind next-page, #5701 rewound-host follower입니다. 기존 집중 검사 통과가 최종전체 통과를 대체하지 않는다는 반례가 확인됐습니다.
+- #6764는Native202쪽/한컴204쪽이고 표 자체는184→185쪽에 있습니다. 같은 표가 정본186쪽에서 시작하므로 고정183쪽 전제는 현재 전체 피델리티와 맞지 않습니다. 관련183~185쪽 Native/fresh WASM TSV는 바이트 동일하고16.46720%/13.14854%/30.24961%입니다. 내용으로 대응시킨Native184/정본186도26.55007%이며 이전 표 이어받기와 새 표의 시작이 다릅니다. 이는 전체202쪽을 다시 시각 승인한 결과가 아닙니다.
+- [기존 #7445 이관 댓글](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5869952956)에 두 함수가 명시돼 있음을 확인하고 [현재 실패 추가 기록](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5974346179)을 게시했습니다. 현재 실제 차단인 `repaired_public_table_keeps_its_leading_rows_inside_the_paper`와 `issue_6855_rewound_line_starts_the_next_page`만 제거합니다. 원문·PDF·다른baseline·production source는 유지합니다. 통과한 같은파일 `issue_6855_band_page_paints_nothing_below_the_paper`는 그대로 재실행1PASS·실패0입니다.
+- [검증·제외 범위](../assets/planet6897_green_20261002/cbta6764_blocker_analysis.json), [Native TSV](../assets/planet6897_green_20261002/cbta6764_blocker_native.tsv), [WASM TSV](../assets/planet6897_green_20261002/cbta6764_blocker_wasm.tsv), [내용 대응 review PNG](../assets/planet6897_green_20261002/cbta6764_native184_pdf186_review.png). 원본은samples와기존#7445자산에동일SHA로보존하며 새fixture/test함수0건입니다.
+- fmt·Native/WASM Clippy·workspace build/all-target Clippy 통과. 최초manifest는fmt 이후source길이에따른파생suite drift로실패했고, 다시prepare→fmtcheck→all-target Clippy→base대비manifest를수행하여모두exit0을확인했습니다. 공개댓글본문도API로일치·BOM없음을확인했습니다. 이문서의피델리티해결이나최종전체통과로세지않으며 다음은#7359와#5701을개별처리합니다.
+
+### #5701 정확한 슬라이스 정본 및 현재 Skia 완료
+
+- 후보 `6521fe466` Skia 필수검사: lib4109건·missing-picture2건·direct-PDF4건 모두PASS·exit0입니다. 기본 전체 회귀의 알려진 #7359/#5701 차단과 시각 보류는 별도이며 PR 준비 완료로 보고하지 않습니다.
+- #5701의 기존26KB IR 슬라이스를 바이트 동일하게 한컴2020에 전달해 정본을 생성했습니다. job `a49327ba-9db6-49d4-bcb6-0d0ff3a6a7f3`,3쪽74,414B입니다. Native/fresh WASM도3쪽이므로 기존2쪽 전제는 독립 출력과 다릅니다. 그러나 전3쪽 일치율74.52520%·16.00393%·1.68954%이며 양 backend 동일합니다.
+- 첫쪽 review에서 정본이 이월한 표 마지막 두 행을 Native가 한쪽에 남기고, 표 호스트의 앞/뒤 글줄과 후속 문단도 잘못 소유하는 것을 직접 확인했습니다. `dump-pages`는 Table pi7 뒤 PartialParagraph pi7 전체0..4와 FullParagraph pi8을 같은쪽에 둡니다. paint 종료의 하단 보정만으로 쪽 소유를 복구할 수 없습니다. 작은3쪽 입력은 현 브랜치 보정 대상이며 테스트 숫자만 바꾸거나 삭제하지 않습니다.
+- [새 정본 PDF](../../../pdf/issue5701/1270000-202200012-slice-p76-rewound-host-2020.pdf), [분석·정확한 입력/출력 SHA](../assets/planet6897_green_20261002/slice5701_exact_reference_analysis.json), [첫쪽 review](../assets/planet6897_green_20261002/slice5701_before_native_p1_review.png). 원본 문서를 그대로 보존했으며 production/test 변경0건입니다.
+- #7359 전체103쪽 Native TSV 완료:90%미만24쪽·최저79쪽17.93029%, 누락0. [전103쪽 TSV](../assets/planet6897_green_20261002/chemical7359_current_native_all103.tsv). fresh WASM 전103쪽은 미실행이며 해당 회귀의 보정/이관은 아직 결정하지 않았습니다.
+
+### #5701 저장 글 앞 앵커의 공통 계획 — 부분 보정
+
+- 기존 IR 슬라이스의 같은 입력을 한컴2020에서 다시 저장한 진단 사본을 만들었습니다. host pi7의 원본 되감김63298→21050은 정상 재저장에서는35440→37600의 단조 줄로 바뀌고, 표 선언 높이도 전체16행20480HU에서 첫14행17920HU로 바뀝니다. 원본 픽스처는 변경하지 않았으며 진단 사본은 회귀 fixture로 추가하지 않습니다. 재저장 진단 사본의 정확한 PDF도 새로 생성했고, 이전 정확한 입력 PDF와 전3쪽 PNG가 바이트 동일합니다.
+- `ParagraphFloatPlacement::from_stored_head_host`가 실제 글 앞 제어문자와 유효 저장 줄을 검증하고 기존 공통 앵커 계산을 소비하도록 보완했습니다. entry의 통째 fit → prepare의 첫 조각 → 행 스캐너 → 확정 배치가 같은 점유 계획을 소비합니다. 진단 사본의 표 소유가16행 통째 배치에서 독립 정본과 같은14행/2행으로 바뀌었습니다.
+- 최초 적용에서 정상 대조군#6797의7쪽이98.05666→65.34522%로 악화됐습니다. 글 앞 앵커에 문단 앞 간격과 글 끝 남은 폭을 적용한 오류였습니다. 저장 앞 앵커의 원점은 앞 간격 전 문단 시작으로 잡고, 폭에 따른 후행 흐름 전환은 실제 글 끝 제어문자만 소비하도록 수정했습니다. 재검증7쪽98.05666%, Native 전11쪽 렌더 트리가 기존 검증 출력과 바이트 동일하며 관련 기존39검사39PASS입니다. 이 음성 결과와 보정을 숨기지 않고 원장에 남깁니다.
+- 진단 사본 전3쪽 Native 일치율76.98390%·27.45380%·100%입니다. 표 앞에 있어야 할 후속 pi8 첫 줄 소유와 첫 조각 위 바깥여백이 남아 있습니다. 원본 슬라이스의 렌더 트리도 이전 출력과 동일하므로 이번 결과를 원본의 해결로 보고하지 않습니다. 기존2쪽 assertion·픽셀 허용치·test함수/fixture 추가·회귀 삭제0건입니다. 이3쪽 문서는 현 브랜치 보정 대상으로 유지합니다.
+- [부분 보정 원장](../assets/planet6897_green_20261002/slice5701_head_plan_validation.json), [Native 전3쪽 TSV](../assets/planet6897_green_20261002/slice5701_head_plan_native_all3.tsv), [정확한 재저장 진단 사본](../assets/planet6897_green_20261002/slice5701_hancom_resaved_diagnostic.hwp), [그 입력의 정본 PDF](../../../pdf/issue5701/1270000-202200012-slice-p76-hancom-resaved-2020.pdf), [현재 첫쪽 review](../assets/planet6897_green_20261002/slice5701_head_plan_native_p1_review.png). 최종 전체 nextest·Skia와 다른 문서의 시각 보류는 별도 미완료입니다.
+
+- 현재 보정 v2의 기존39검사·fmt·Native/WASM Clippy·workspace build·all-target Clippy·고정base manifest·fresh WASM은 모두exit0입니다. Mac 로컬 no-opt 빌드이며 Docker 최적화 검증이 아닙니다. pkg/Studio WASM SHA는 `e3958626e7b8b87a66de70557ac03bf763455091ea200f752924fa4c84d425f8`로 같습니다. [fresh WASM 전3쪽 TSV](../assets/planet6897_green_20261002/slice5701_head_plan_wasm_all3.tsv)도76.98390%·27.45380%·100%로 Native와 같고 전3쪽 PNG도 바이트 동일합니다. 정상 대조군 fresh WASM7쪽98.05666%·exit0을 확인했으며 현재 review PNG를 직접 판독했습니다. 잔존 차이를 해결한 뒤 최종 전체 검증을 진행합니다.
+
+### #5701 여러 저장 호스트 줄의 바깥 프레임 여백 — 부분 보정
+
+- 사양 표69의 바깥4방향 여백은 개체의 속성입니다. 기존 `column_rowbreak_fragment_opens_outer_top`의 한 저장 줄 전제 때문에 같은 유효 글 앞 앵커의 여러 줄에서는 위 바깥여백을 누락했습니다. 앵커 생성의 저장 줄 판정을 `stored_host_lines_are_valid`로 공유하고, 첫 조각 prepare·이어받기 행 예산·실제 table_partial 출력이 같은 여백 개방 결과를 소비하도록 수정했습니다. 원본 되감김·편집 줄과 표 위에서 끝나지 않는 호스트는 이 새 경로가 아닙니다.
+- Native 진단 사본 전3쪽은96.60598%·18.71808%·100%입니다.1쪽 표 괘선·내용 및2쪽 이어받기 표 위치는 정본과 겹치지만, 후속 pi8 첫 줄을 여전히2쪽에 가져와 이후 본문이 밀립니다.2쪽 수치 악화도 기록하며 1쪽90% 통과만으로 내용 소속까지 해결했다고 판정하지 않습니다. 기존39검사는39PASS·exit0이고, 정상#6797 전11쪽·사용자 요청 form002 전10쪽·원본#5701 전3쪽 Native 렌더 트리는 직전 검증 출력과 모두 바이트 동일합니다. 기존 회귀를 삭제하거나 기대값을 변경하지 않았습니다.
+- [전3쪽 TSV](../assets/planet6897_green_20261002/slice5701_outer_top_native_all3.tsv), [1쪽 review](../assets/planet6897_green_20261002/slice5701_outer_top_native_p1_review.png), [2쪽 review](../assets/planet6897_green_20261002/slice5701_outer_top_native_p2_review.png), [여백 계약·검증 원장](../assets/planet6897_green_20261002/slice5701_outer_top_validation.json). 새 fixture/test함수0건입니다. fresh WASM과 필수 lint 완료 뒤 이 단계를 확정하며, 후속 첫 줄 소유 보정은 다음 단계입니다.
+
+- 이 여백 보정의 fmt·Native/WASM Clippy·workspace build·all-target Clippy·고정base manifest·fresh WASM은 모두exit0입니다. Mac 로컬 no-opt이며 pkg/Studio SHA `a434b2fe690ccf0eb9c58f27daef83e1f7f8d96eb159ca6483e98ec1167911b8`가 같습니다. [fresh WASM 전3쪽 TSV](../assets/planet6897_green_20261002/slice5701_outer_top_wasm_all3.tsv)는96.60598%·18.71808%·100%로 Native와 같고 전3쪽 PNG도 바이트 동일합니다. 정상 #6797 전11쪽과 form002 전10쪽 fresh WASM 렌더 트리·raw SVG도 각각 직전 검증 출력과 바이트 동일합니다. 원본/기존회귀는 유지하며 첫 줄 소유 문제와 최종 전체검증은 다음 단계에서 계속합니다.
+
+### #5701 표 위 후속 첫 줄과 이어받기 아래여백 보정
+
+- 후속 문단 전체만 선행 배치하던 상태에는 부분 소비한 줄 컷이 없었습니다. 저장 되감김 전 줄이 현재 실제 단 너비의 줄 구성과 같은 원점이고 표 상단 전에서 끝나는 경우에만 `ParagraphFragment`와 끝 컷을 함께 확정합니다. state가 같은 조각을 적용하고 다음 쪽은 그 컷 뒤부터 시작합니다. whole-fit은 이미 소비한 줄을 다시 그리지 않으며 첫 이어받기 예산은 현재 표가 차지한 공간을 뺍니다.
+- 최초 줄 소속 보정은98.97935%·87.24739%·100%였습니다.2쪽의 남은3.8px 차이는 문단 첫 줄이 아니라 실제 이어받을 줄이 표의 아래 바깥여백을 닫는 데서 발생했습니다. 같은 시작 컷·현재 행 높이로 마지막 행 수용 예산과 재스캔을 결정하고, emit의 `occupied_bottom`·`NextLine`을 실제 terminal 흐름이 소비하도록 수정했습니다.
+- 최신 source의 Native/fresh WASM 전3쪽은98.97935%·97.81243%·100%, 양쪽exit0·전3쪽 PNG 바이트 동일입니다.1쪽 host4줄·후속 첫1줄·표14행,2쪽 표2행·후속 나머지4줄,3쪽 마지막 `하였음`을 직접 판독했습니다. 유효 한컴 재저장 입력과 정확한 독립 PDF의 결과이며, 원본 수동IR 슬라이스의 개선으로 바꾸어 보고하지 않습니다.
+- 기존 관련40검사40PASS·exit0. fmt·Native/WASM Clippy·workspace build·all-target Clippy·고정base manifest·fresh WASM 모두exit0입니다. 실제 단 너비를 쓰는 최종 source에서 다시 확인했으며 pkg/Studio SHA `d23cc9bee193ac0113e8c698513485e5c9ec39594e1f5b77027ab5475ddbd14a`가 같습니다. Mac 로컬 no-opt 검증입니다. 정상#6797 전11쪽 렌더 트리는 그대로이며 form002 전9쪽은 같고10쪽의 빈 문단2개의 줄/빈run4노드만 이동했습니다. form00210쪽은 새 Native/fresh WASM PNG가 이전 검증 PNG와 바이트 동일하고98.34023%입니다. 빈 문단의 물리 점유를0으로 취급하지 않으며 최종 전체 흐름 검증은 별도로 수행합니다.
+- [Native 전3쪽 TSV](../assets/planet6897_green_20261002/slice5701_prefix_native_all3.tsv), [fresh WASM 전3쪽 TSV](../assets/planet6897_green_20261002/slice5701_prefix_wasm_all3.tsv), [1쪽 review](../assets/planet6897_green_20261002/slice5701_prefix_native_p1_review.png), [2쪽 review](../assets/planet6897_green_20261002/slice5701_prefix_native_p2_review.png), [3쪽 review](../assets/planet6897_green_20261002/slice5701_prefix_native_p3_review.png), [소비 경로·정확한SHA·게이트 원장](../assets/planet6897_green_20261002/slice5701_prefix_validation.json). 신규/변경/삭제 회귀 함수0건입니다. 정상화된 기존 픽스처와 독립3쪽/내용 소속에 맞춘 기존 검사의 교정은 다음 단계이며, 최종 전체 검증과 PR 준비는 아직 완료하지 않았습니다.
+
+### #5701 기존 픽스처 정상화와 의미 회귀 교정
+
+- 기존 수동 IR 추출본은 원문 쪽의 저장 좌표를 남겼고, 독립 한컴 PDF도 기존 검사 전제인 2쪽이 아닌 3쪽입니다. 같은 내용을 한컴2020에서 정상 재저장한 입력으로 기존 픽스처를 교체했습니다. [이전 IR 원본](../assets/planet6897_green_20261002/slice5701_original_ir_before_hancom_resave.hwp)을 바이트 동일하게 보존하고, 두 입력의 독립 PDF도 유지합니다. 원본 IR 입력의 피델리티 해결로 보고하지 않습니다.
+- 교체 파일의 SHA `86dcf229…`는 전3쪽 Native/fresh WASM 검증에 사용한 재저장 진단 사본과 같습니다. 각 쪽 98.97935%·97.81243%·100%와 직접 판독 근거를 재사용합니다. 새 회귀 함수·새 회귀 픽스처는 없으며 기존 검사 한 개를 수정했습니다.
+- 고정 2쪽·후속 문단 전체가 표 아래라는 전제를 독립 정본의 3쪽, 표 14행/2행, 후속 첫 줄 1쪽/나머지4줄 2쪽의 소속 검사로 교정했습니다. 문단·모든 표 칸의 원문 순서/누락/중복, 앞뒤 상자 비겹침과 본문 안쪽 포함도 검사합니다. 자동 불릿은 원본 스타일의 문자로 함께 검증하며 절대 픽셀 핀은 없습니다.
+- 최종 같은 검사 소스와 픽스처로 보정 전 `519127d09`는 후속 첫 줄 0/1 때문에 1FAIL·exit100, 현재 `518d99009`는 관련 41건 41PASS·exit0입니다. fmt·Native/WASM Clippy·workspace build·all-target Clippy·고정 base manifest 모두 exit0입니다. 최초 파생 suite drift와 공유 target 재사용 오류는 실행 근거에서 제외하고, 재준비/명시적 재컴파일 뒤 결과만 수용했습니다.
+- [정확한 입력·검사 해시와 전후 검증](../assets/planet6897_green_20261002/slice5701_regression_correction_validation.json). 최종 전체 회귀·Skia 및 다른 문서의 시각 보류는 미완료이며 통합 PR 준비 완료로 판정하지 않습니다.
+
+### #5701 교정 후 전체 회귀 — 13건 차단 확인
+
+- 검증 head `e580fa109a800ce3d5ba84b0d668981037cb0f8e`, base `6b3faf77d8085441f9f26d88d65a49791e910352`. 전체 nextest를 locked/release-test/shared target/8threads/no-fail-fast로 완료했습니다. 10,266건 실행·10,253PASS·13FAIL·50skip·exit100, 실행405.402초·컴파일2분54초입니다. 실행 중 소스 변경은 없습니다.
+- 교정한 #5701 내용/쪽 소속 검사는 PASS입니다. 기존 #7359 캡션 간격 실패는 남고, #6761 표 뒤 간격·synam001 호스트 제목 간격·#6267 호스트 겹침·oracle partition6의 작은 exclusion probe 2→3쪽 및 text-overlap 8개 분할의 신규 겹침이 검출됐습니다. 집중40/41PASS나 정상 대조군의 시각 통과를 전체 무회귀로 일반화할 수 없습니다.
+- [최종 summary·13개 함수·신규 겹침 입력](../assets/planet6897_green_20261002/whole_after_slice5701_validation.json). 새 실패는 정상 원본과 독립 PDF로 재검토하고, 작은 문서는 현 브랜치에서 보정합니다. 임계값 완화·일괄 회귀 삭제·새 회귀 함수 추가는 하지 않았습니다. 최종 승인/PR 생성은 계속 보류하며 다음은 작은 exclusion probe 쪽수 실패를 분석합니다.
+
+### #1789 표 위 잉크와 표 뒤 빈 줄 점유 보정
+
+- 정상 HWPX `samples/task1789/exclusion_probe_line_spacing.hwpx`와 독립 한컴2020 정본은 2쪽입니다. 전체 회귀의 3쪽 실패는 첫 글줄 뒤 간격까지 배제 프로브에 포함해 위원구성 줄을 표 아래로 밀었기 때문입니다. 프로브는 잉크 높이를 사용하고 뒤 간격은 기존 순차 흐름에서 소비하도록 보정했습니다.
+- 첫 Table의 호스트 LINE_SEG를 단 원점으로 삼으면 측정과 출력의 기준이 갈라져 표 뒤 빈 줄의 16px 공간을 표 안에서 소비했습니다. 실제 본문 흐름으로 원점을 역산하고, 재조판 글줄도 표 예약에 사용한 공통 원점을 전달합니다. 문서 ID/수치 예외, 좌표 clamp, 빈 줄 삭제는 없습니다.
+- 기존 #1789 검사 한 건의 절대 픽셀 핀을 독립 정본의 2쪽, 위원구성은 표 위, 빈 줄·회의내용·다섯 항목은 표 뒤, 행정사항·첨부·결재는 둘째쪽이라는 관계 검사로 교정했습니다. 본문 누락·중복도 원문과 대조합니다. 새 회귀 함수·픽스처·회귀 삭제·기준 PDF 변경0건입니다.
+- 같은 교정 검사로 수정 전 `9f9845afe`는 3/2쪽 1FAIL·exit100, 수정 후 관련65건65PASS·exit0입니다. 첫 보정의 #6950 재조판 대조군 실패는 공통 호스트 원점 전달로 해결했습니다. fmt·Native/WASM Clippy·workspace build·all-target Clippy·고정 base manifest 모두 exit0입니다.
+- 최종 Native/fresh WASM 전2쪽은 96.54137%·94.44785%, 미달0이며 실제 PNG/트리도 전쪽 바이트 동일합니다. Mac no-opt 로컬 빌드이고 Docker 최적화 검증은 아닙니다. 정상 form002 전10쪽·#6797 전11쪽·#5701 전3쪽의 Native/fresh WASM 트리는 이전 독립 PDF 검증 출력과 모두 같습니다.
+- [검증·정확한 SHA·소비 경로](../assets/planet6897_green_20261002/probe1789_origin_validation.json), [Native 전2쪽 TSV](../assets/planet6897_green_20261002/probe1789_origin_native_all2.tsv), [fresh WASM 전2쪽 TSV](../assets/planet6897_green_20261002/probe1789_origin_wasm_all2.tsv), [1쪽 review](../assets/planet6897_green_20261002/probe1789_origin_native_p1_review.png), [2쪽 review](../assets/planet6897_green_20261002/probe1789_origin_native_p2_review.png). 이 보정 완료 후 전체 nextest를 재실행합니다. 다른 시각 보류·최종 Skia·PR/CI/후속처리는 아직 미완료이며 통합 승인 보류입니다.
+
+### #1789 보정 뒤 전체 회귀와 다음 실패 분석
+
+- `53b7b314b`의 깨끗한 working tree에서 locked release-test 전체 nextest를 threads8로 완료했습니다. 10,266실행·10,249PASS(5slow)·17FAIL·50skip, 실행408.881초·exit100입니다. #1789 쪽수 실패는 해결됐지만 #6104 한 건, #7288 두 건, body-overflow partition10/13 두 건이 새로 실패했습니다. 관련65PASS를 전체 통과로 보고하지 않으며 새5건부터 원인 보정 후 기존12건을 이어서 처리합니다.
+- 첫 Table의 저장 좌표가 실제 호스트 글줄을 뜻하는 경우와 표만 배치되어 새 프레임을 여는 경우의 원점 계약을 재검토합니다. 이미 확정한 공통 호스트 원점을 초기 출력 커서도 소비하는지 확인합니다. 아직 이 가설의 production 수정은 없습니다.
+- 기존 합성 #1835 입력은 독립 한컴 PDF와 양쪽 출력 모두3쪽이지만 Native/fresh WASM은 85.09695%·84.10752%·14.25185%입니다. 원본 pi20의 나누지 않음11행 표를 2쪽4행/3쪽7행으로 나누고, PDF는3쪽에11행 전부를 둡니다. 쪽수만 같은 것을 정상으로 간주하지 않습니다. 작은3쪽 문서이므로 현 브랜치에서 개선하며 기존 검사·원본은 유지합니다.
+- [전체 summary·17실패·다음 원인 분석](../assets/planet6897_green_20261002/whole_after_probe1789_validation.json), [#1835 Native 전3쪽 TSV](../assets/planet6897_green_20261002/stale1835_current_native_all3.tsv), [fresh WASM 전3쪽 TSV](../assets/planet6897_green_20261002/stale1835_current_wasm_all3.tsv), [3쪽 review](../assets/planet6897_green_20261002/stale1835_current_native_p3_review.png). 원본/PDF·production·회귀 기대값 변경0건이며 최종 승인·PR 생성·CI·merge·후속처리는 계속 보류입니다.
+
+### 단 시작 원점과 블록 경로 제목 표의 선행 밴드 회피
+
+- 직전 전체17FAIL 중 새5건을 기존 검사 그대로 보정했습니다. 첫 표와 실제 호스트 글줄이 함께 배치되면 측정이 확정한 호스트 원점으로 저장 기준을 역산하고, 글줄 없이 표만 새 단을 열면 저장 프레임 기준을 유지합니다. #7288 두 건과 body-overflow partition10/13 두 건이 통과했습니다.
+- #6104는 공통 글자취급 속성과 저장 table.attr의 차이 때문에 블록 배치 경로로 들어갔습니다. 선행 표 밴드 회피는 측정 current_height만 전진시켰고 출력은 옛 문단 앵커로 돌아갔습니다. 블록 whole-fit에서 회피한 상단·점유 끝을 ParagraphFloatPlacement로 기록하고 renderer의 table_top/resolved_table_origin이 소비하도록 보정했습니다. TAC 전용 경로만 고친 실패 시도와 임시 trace는 최종 소스에서 제거했습니다. 문서 ID·좌표 clamp·회귀 기대값 완화는 없습니다.
+- 같은 관련70검사70PASS·exit0입니다. 새 회귀/픽스처·검사 수정/삭제·정본 PDF 변경0건입니다. fmt·Native/WASM Clippy·workspace build·all-target Clippy·고정base manifest·fresh WASM 모두exit0입니다. Mac no-opt 로컬 검증이고 pkg/Studio SHA가 같습니다.
+- Native/fresh WASM의 #1789 전2쪽은96.54137%·94.44785%, 미달0이며 PNG도 같습니다. 정상 form002 전10쪽·#6797 전11쪽·#5701 전3쪽의 양쪽 렌더 트리는 직전 검증 출력과 모두 바이트 동일합니다. 요청한 form002 첫 쪽 full SVG와 Chrome PNG를 최신 CLI로 재산출하여 두부 없는 확인본과 바이트 동일함을 확인했습니다. 실제 빈 체크박스는 보존합니다.
+- [원점 소비 경로·검증 원장](../assets/planet6897_green_20261002/owned_column_origin_validation.json), [Native 전2쪽 TSV](../assets/planet6897_green_20261002/owned_column_origin_native_all2.tsv), [fresh WASM 전2쪽 TSV](../assets/planet6897_green_20261002/owned_column_origin_wasm_all2.tsv), [1쪽 review](../assets/planet6897_green_20261002/owned_column_origin_native_p1_review.png), [2쪽 review](../assets/planet6897_green_20261002/owned_column_origin_native_p2_review.png), [두부 없는 form002 Chrome 확인본](../assets/planet6897_green_20261002/form002_stored_frame_current_chrome.png). 기존12실패·다른 시각 보류와 최신 전체검증은 다음 단계이며 PR 준비 완료로 판정하지 않습니다.
+
+### 단 원점 보정 후 전체검증과 최신 devel 동기화 준비
+
+- 깨끗한 head `bbcc8006c41c5e6d040ac8ccd0040c708cde5465`에서 locked release-test 전체 nextest threads8을 완료했습니다. 10,266실행·10,254PASS(7slow)·12FAIL·50skip·exit100, 실제 검사424.139초·컴파일4분9초입니다. 새5실패는 전체에서도 통과했고 기존 #6761·synam001·#7359·text-overlap8분할·#6267은 남았습니다. 마지막 대형 표 검사165.047초는 완료/PASS를 확인했으며 출력 공백 때문에 종료하지 않았습니다.
+- 원 PR11개를 다시 조회하여 모두OPEN·head변경 없음·CI실패/진행0을 확인했습니다. 이것을 통합 head의 실패를 대신하는 근거로 쓰지 않습니다. 원격 devel은 `8497729b4`로24개 커밋이 추가되었고 #7563의 공유 TAC 글줄/표 보정이 포함됩니다. 중복 보정을 피하도록 이 결과를 커밋한 뒤 최신 devel로 리베이스하고 재검증합니다.
+- [전체12실패·정확한 head·명령·원 PR 상태](../assets/planet6897_green_20261002/whole_after_owned_column_validation.json). 최신 devel 통합·전체/Skia·시각 보류·PR/CI/후속처리는 미완료이며 승인 보류를 유지합니다.
+
+### 최신 devel #7563 통합과 줄 구성 호출 보정
+
+- `upstream/devel 8497729b4`의 24커밋을 통합하며 기존175커밋을 리베이스했습니다. 원 PR 체리픽 주석63개를 모두 유지했고, 공유 TAC/표 글줄 처리와 기존 불릿 첫 구간 너비 보정을 함께 보존했습니다. 오늘할일의 upstream #7563 기록도 유지했습니다. 백업 브랜치는 PR 종료 때까지 보존합니다.
+- 리베이스 뒤 온전한 낱말의 빈 줄 fit 호출이 이전 인자 형식으로 남아 컴파일하지 못했습니다. 현재 helper의 이전 낱말 너비 `Option<i32>` 계약에 맞게 빈 줄은 `None`을 전달하고 미사용 필드를 제거했습니다. 변경 주석은 한글입니다. 최초 컴파일 실패 결과는 승인 근거에서 제외했습니다.
+- 기존 집중133검사 중122PASS(1slow)·11FAIL·3730skip·exit100, 실제 실행67.719초입니다. upstream 검사 분할이 달라졌으므로 이전12실패에서11실패로 바뀐 숫자만으로 문서가 개선되었다고 판단하지 않습니다. 실제 실패 입력9개와 #6761·synam001·#7359·#6267 차단은 남습니다. 새 회귀 함수·기대값 수정·검사 삭제0건입니다.
+- fmt·Native/WASM Clippy·workspace build·all-target Clippy·최신 base manifest·fresh WASM 모두exit0입니다. Mac no-opt 로컬 빌드입니다. form00210쪽·#6797 11쪽·#5701 3쪽의 Native/fresh WASM 렌더 트리는 직전 독립 PDF 검증 출력과 각각 바이트 동일합니다. #1789 전2쪽과 h01 전9쪽도 양쪽 전쪽90% 이상입니다.
+- #1835는 원본 입력을 한컴2020에서 재출력한3쪽 PDF로 기존 기준을 교체했고 이전 PDF를 증적으로 보존했습니다. 설치한 윤고딕230은 Library/Fonts의 실제 복사본이며 PDF의 `편`·`집` 글리프 윤곽/advance와 같습니다. 그런데 양쪽 전3쪽86.23109%·85.61936%·14.61751%로 미달이며, 마지막11행 표의 2쪽/3쪽 분할이 정본과 다릅니다. 글꼴 설치/재출력을 문제 해결로 보고하지 않습니다. 원본 HWP와 기존 통과 회귀는 유지합니다.
+- [리베이스·코드 해시·게이트·TSV·PDF 근거](../assets/planet6897_green_20261002/rebase7563_validation.json), [#1835 Native 전3쪽 TSV](../assets/planet6897_green_20261002/rebase7563-stale1835-native_all_pages.tsv), [이전 기준 PDF](../assets/planet6897_green_20261002/stale1835_reference_before_20261004.pdf). 최종 전체/Skia·시각 보류와 통합 PR/CI/merge/후속처리는 아직 미완료입니다. 다음 단계는 작은 문서의 실제 표 분할 원인 보정입니다.
+
+### #1835 가시 호스트와 닫힌 전체 표 프레임 — 부분 보정
+
+- 메인터너의 저장 프레임 helper는 빈 호스트·가로 단 기준·문단 간격 없는 사다리만 수용하여 원본의 가시 제목/가로 문단 기준/뒤 문단 간격을 놓쳤습니다. 나누지 않는 표의 실측·선언 높이와 다음 쪽 재시작 좌표가 바깥여백까지 정확히 닫히는 계약을 유지하며, 가로 문단 기준과 조판에서 해석한 문단 앞뒤 간격을 함께 소비하도록 보정했습니다. 문서 말미의 유효한 빈 재시작 줄도 같은 프레임의 끝점으로 판단합니다.
+- 제목을 기존 pre-emitted 표시로 현재 쪽에 한 번 배치하고 표만 deferred_stored_frame으로 이월합니다. 전환의 page_start_stored_frames/paragraph_float_placements와 renderer의 전체 Table이 같은 상단·점유 끝을 소비합니다. 편집/재조판·합성 줄·가시 호스트 표 내부의 저장 쪽 분할·높이 불일치·재시작 좌표 불일치는 받지 않습니다. 원본 HWP/PDF·기존 회귀 기대값 변경과 새 회귀/fixture는0건입니다.
+- 기존 집중133건127PASS(1slow)·6FAIL·3730skip·exit100, 실행62.543초입니다. 기존 text-overlap5분할 실패가 통과하고 새 실패는0건입니다. 남은 겹침 입력은 KTX-003·#6267·#2439이고 #6761·#7359·synam001의 간격 실패도 남습니다. 검사 분할 통과를 관련 문서 전쪽의 피델리티 통과로 일반화하지 않습니다.
+- Native/fresh WASM 모두 #1835 전3쪽86.23109%·97.59989%·97.84834%입니다.2쪽 제목/3쪽 전체11행33칸을 직접 확인했고, 두 backend의 PNG도 전3쪽 바이트 동일합니다. 1쪽의 배경이 정본보다19.2px 길며 마지막 줄간격1440HU와 일치합니다. paragraph_layout의 border_bottom이 줄 상자 대신 trailing gap을 포함한 흐름y를 max로 쓰는 원인을 다음 단계에서 보정합니다.
+- fmt·Native/WASM Clippy·workspace build·all-target Clippy·최신base manifest·fresh WASM 모두exit0입니다. Mac no-opt 로컬 대체 빌드입니다. #1789 전2쪽/h01 전9쪽은 양쪽 전쪽90% 이상이며, form00210쪽·#6797 11쪽·#5701 3쪽 렌더 트리는 양쪽 모두 이전 검증과 바이트 동일합니다.
+- [원인·게이트·정확한 해시·남은 실패](../assets/planet6897_green_20261002/stale1835_closed_frame_validation.json), [Native 전3쪽 TSV](../assets/planet6897_green_20261002/stale1835_closed_frame_stale1835_native_all_pages.tsv), [fresh WASM 전3쪽 TSV](../assets/planet6897_green_20261002/stale1835_closed_frame_stale1835_wasm_all_pages.tsv), [1쪽 review](../assets/planet6897_green_20261002/stale1835_closed_frame_native_p1_review.png), [2쪽 review](../assets/planet6897_green_20261002/stale1835_closed_frame_native_p2_review.png), [3쪽 review](../assets/planet6897_green_20261002/stale1835_closed_frame_native_p3_review.png). 1쪽 미달·기존6실패·다른 시각 보류·최종 전체/Skia가 남아 통합 PR 승인 보류입니다.
+
+### #1835 본문 배경의 마지막 줄 상자 범위 보정
+
+- 1쪽 제목 배경은 원본/정본의 범위보다19.2px 아래까지 칠해졌고, 이는 마지막 줄간격1440HU와 정확히 같습니다. 줄 배치는 그대로 두고, 본문 문단 테두리/배경의 아래 경계를 같은 마지막 줄 상자 결과로 결정했습니다. 다음 문단의 실제 흐름은 종전 줄간격을 소비하며 셀의 독립 테두리 끝점/범위는 유지합니다. 원본 HWP/PDF·표 크기·색상·폰트·visual_sweep 임계값 변경은 없습니다.
+- Native/fresh WASM 전3쪽은97.94299%·97.59989%·97.84834%, 양쪽 미달0이며 전3쪽 PNG도 바이트 동일합니다.1쪽 제목 배경과 네 표/후속 문단,2쪽 마지막 제목/3쪽 전체11행 표를 직접 판독했습니다. 같은 검사 입력과 독립 한컴 정본이며 이전1쪽86.23109%의 잔존 차이를 해결했습니다.
+- 기존 집중135검사129PASS(2slow)·6FAIL·3930skip·exit100, 실제88.699초입니다. 추가 선택한 기존 #5711 음수/양수 줄간격 검사는 모두PASS이고 기존 차단6개가 남습니다. 새 회귀 함수/fixture·기대값 수정/검사 삭제0건이며 좁은 검사 통과를 전체 검증 완료로 보고하지 않습니다.
+- fmt·Native/WASM Clippy·workspace build·all-target Clippy·최신base manifest·fresh WASM 모두exit0입니다. Mac no-opt 로컬 검증입니다. #1789 전2쪽과 h01 전9쪽도 양쪽90% 이상·전쪽 PNG 바이트 동일입니다. 정상 form00210쪽·#6797 11쪽·#5701 3쪽의 양쪽 렌더 트리는 직전 검증과 바이트 동일합니다.
+- [원인·정확한 해시·검증 원장](../assets/planet6897_green_20261002/stale1835_body_border_validation.json), [Native 전3쪽 TSV](../assets/planet6897_green_20261002/stale1835_body_border_stale1835_native_all_pages.tsv), [fresh WASM 전3쪽 TSV](../assets/planet6897_green_20261002/stale1835_body_border_stale1835_wasm_all_pages.tsv), [1쪽 review](../assets/planet6897_green_20261002/stale1835_body_border_native_p1_review.png), [2쪽 review](../assets/planet6897_green_20261002/stale1835_body_border_native_p2_review.png), [3쪽 review](../assets/planet6897_green_20261002/stale1835_body_border_native_p3_review.png). 다음 단계는 이 전쪽90% 이상 근거로 기존 #1835의 고정85px 검사를 내용 포함/비겹침 관계로 교정한 뒤 남은 실제 실패를 보정합니다. 최종 전체/Skia·다른 시각 보류·PR/CI/merge/후속처리는 계속 미완료입니다.
+
+### #1835 기존 픽셀 핀의 내용·쪽 소속 관계 교정
+
+- 위 Native/fresh WASM 전3쪽 최저97.59989%·직접 판독 근거로 기존 두 테스트를 교정했습니다. 85px 높이 하한과1px 여유를 없애고 첫 표4행3열/12칸의 내용 포함·행 비겹침·원문 제목 누락/중복, 후속 셀 편집 제목의 표 뒤 관계를 검사합니다. 마지막 제목은 정본2쪽에 남고 전체11행33칸 표는3쪽에 있어야 합니다.
+- 테스트 함수 두 개의 이름과 개수는 동일하며 새 회귀/픽스처·원본/PDF·production 변경0건입니다. 최신 검사 소스와 다시 준비한 suite에서 두 교정 검사와 기존 SVG snapshot을 포함한9건9PASS·441skip·exit0, 실제0.143초입니다. 픽셀 이동이 달라져도 내용 포함·순서·쪽 소속 계약을 검사합니다.
+- fmt·Native/WASM Clippy·workspace build·all-target Clippy·최신base manifest 모두exit0입니다. production 네 파일 해시를 직전 전쪽 Native/fresh WASM 검증과 다시 대조하여 모두 같음을 확인했습니다. 같은 출력의 시각 근거를 재사용하며 test-only 변경 때문에 WASM을 다시 생성하지 않았습니다.
+- [정확한 검사 해시·함수 수·검증 원장](../assets/planet6897_green_20261002/stale1835_semantic_validation.json). 기존6실패·다른 시각 보류·최종 전체/Skia는 남고 PR/CI/merge/후속처리는 아직 미완료입니다. 다음은 독립 원본/PDF가 모두1쪽인 #6267의 서로 다른 호스트/표 원점 보정입니다. 수치90.034%여도 실제 글줄/표 겹침이 있어 승인하지 않습니다.
+
+
+### #6267 저장 단의 호스트·전체 표 원점 보정과 검토 범위 확정
+
+- 사용자 지시대로 `review/planet6897-green-20261002`가 도입한 회귀만 보정합니다. 정확한 최신base `8497729b4fb0e071c484fc5740f9bb2400bed437`의 동일 원본·동일 검사로 #6267/#6761/#7359/synam001 기존6검사가 모두PASS입니다. base의 KTX·#2439·#6267 글줄 겹침은 모두0건이고 통합 후보는 각각2·1·3건이므로 해당 신규 겹침은 실제 회귀입니다. KTX PDF 교체·글꼴 설치와 기존 문서 전체 피델리티 개선은 이번 보정에 포함하지 않았습니다.
+- #6267의 단은 전체 TAC 표로 시작합니다. 저장 첫 줄0과 같은 단의 유효한 단조 증가 LINE_SEG를 확인한 뒤 저장 호스트 첫 글줄 원점을 공통 배치 결과에 전달했습니다. 글 앞 표는 문단 앞 간격 이전 앵커를 쓰고, 최종 글줄과 표가 같은 원점·점유 끝을 소비합니다. 각주/재조판을 제외한 기존 whole-fit 경로의 물리 종이 예산도 확정한 실제 하단으로 확인합니다. 문서ID·픽셀 예외·좌표clamp·출력 숨김은 없습니다.
+- `entry.rs`의 `source_text_origin → ParagraphFloatPlacement → whole_frame_budget/record_paragraph_float_placement → layout.rs의 paragraph_float_placements`로 측정과 실제 글줄/전체Table의 원점 연결을 확인했습니다. `prepare.rs` 변경은 제외했고 원본 HWPX·독립 한컴 PDF·기존 테스트 함수와 기대값·visual_sweep.py·임계값은 유지했습니다.
+- base 대조 빌드 뒤 첫 집중 실행은59PASS/3FAIL이었습니다. 현재 브랜치 library 재빌드 후 소스·검사 변경 없이 같은62건62PASS·exit0입니다. 초기 실패 로그를 보존하며 그 결과를 통과 증거로 사용하지 않습니다. 확대된 기존135건은130PASS(1slow)/5FAIL·3721skip·실행70.224초·exit100이며 #6267 기존2검사는PASS입니다. 남은 실패는 KTX/#2439의 text-overlap2분할, #6761/#7359/synam001 간격3건입니다.
+- Native/fresh WASM 전1쪽 모두97.26749%이며 전체5행 표와 마지막 본문 비겹침을 review PNG로 직접 확인했습니다. h01 전9쪽은 양쪽 최저94.28413%·미달0이고 정상form00210쪽/#6797 11쪽/#5701 3쪽/#1835 3쪽/#1789 2쪽의 양쪽 렌더 트리는 이전 검증 출력과 바이트 동일합니다. fmt·Native/WASM Clippy·workspace build·all-target Clippy·최신base manifest·fresh WASM 모두exit0입니다. Mac no-opt 로컬 대체 빌드입니다.
+- [정확한 소스·입력 해시와 검증 원장](../assets/planet6897_green_20261002/para6267_scope_validation.json), [동일base 대조](../assets/planet6897_green_20261002/green_review_base_scope_control.json), [Native 전1쪽 TSV](../assets/planet6897_green_20261002/para6267_scope_para6267_native_all_pages.tsv), [fresh WASM 전1쪽 TSV](../assets/planet6897_green_20261002/para6267_scope_para6267_wasm_all_pages.tsv), [review PNG](../assets/planet6897_green_20261002/para6267_scope_native_p1_review.png). #6267 보정만 완료했으며 통합 승인은 계속 보류합니다. 남은5차단·최종 전체/Skia·PR/CI/merge/후속처리는 미완료입니다.
+
+
+### 저장 글 앞 전체 표의 미확정 원점 — 시험 보정 기각
+
+- 다음 원인 분석에서 #7359의 원점33.6px는 문단 앞 간격6.6667px 이전의 기준이며 캡션만 그 간격만큼 위로 이동했음을 확인했습니다. #6761은 저장 원점과 순차 누적 기준이 달라 호스트와 표의 이동량이 다릅니다. 독립base와 같은 원본을 사용했으며 원본/정본/테스트 기대값을 바꾸지 않았습니다.
+- 미확정 stored-head 계획이 전체 표의 기존 배치를 덮어쓰지 않게 하는 시험 보정은 기존135건131PASS(2slow)/4FAIL·3721skip·실행74.242초·exit100입니다. KTX/#2439의 겹침 분할과 #6761이PASS로 바뀌었지만 #5701의 쪽 소속 실패와 새 글줄 겹침20건이 생겼습니다. #7359와 synam001의 기존 실패도 남습니다. 실패 총수 감소를 개선 완료로 판정하지 않습니다.
+- 이 후보는 기각하고 생산 코드를 검증된 `a077a9383`으로 복원했습니다. #6267 보정은 유지합니다. 원점 추정의 제거만으로 #5701의 이미 확정된 전체 표/분할 소유를 잃어서는 안 됩니다. 다음 수정은 해당 소유 계약과 글줄/문단 앞 간격의 소비 지점을 함께 추적한 뒤 수행합니다.
+- [시험 결과와 복원 근거](../assets/planet6897_green_20261002/stored_head_origin_rejected_candidate.json). 현재 남은 차단은 직전5건이며 최종 전체/Skia와 통합 PR/CI/후속처리는 계속 보류합니다. 임시 진단 코드·기각 코드·로그는 커밋에 포함하지 않았습니다.
+
+
+### #7359 절대 좌표 검사 교정 — 시각 검증 선행
+
+- 사용자의 좌표 고정 금지 지시에 따라 현재 브랜치를 막는 기존 검사부터 독립 PDF로 재검토했습니다. 화학제품 문서의 Native 전103쪽 TSV는25쪽 미달입니다. 검사 대상14쪽은 Native/fresh WASM 모두97.87810%이고 두 PNG가 바이트 동일합니다. 생산 소스 해시도 직전 fresh WASM 빌드와 같습니다. 문서 전체를 승인한 근거는 아닙니다.
+- #7359의140.28/172.55/193px 위치와1.5px 허용치를 제거했습니다. 기존 함수 한 건에서14쪽 제목·캡션·표 소속, 원문 내용 각1회 보존, 제목→캡션→소유 표의 비겹침 순서와3행3열을 검사합니다. 전체103쪽 고정 검사도 이 함수의 계약에서 제외했습니다. 새 함수/fixture·production·PDF 변경은 없습니다.
+- Native/fresh WASM 선행 검증 후 교정 검사1건1PASS·235skip·실행0.193초입니다. 캡션이 PDF보다 조금 위에 있는 실제 차이는 남아 있으며 의미 검사 통과를 정확한 위치 일치나 보정 완료로 보고하지 않습니다. 남은 시각 보류는 사용자 지시에 따라 #7445로 이관할 범위를 검증 중입니다.
+- #6761의83쪽은64.92223%이며 표가 앞 문장을 침범하고 뒤 내용도 이동합니다. 정상 출력으로 기대값을 덮어쓰지 않았고 통과 반례와 같은 문서를 사용하는 다른 정상 검사는 유지합니다. synam-001의30쪽89.57062%도 기대값 수정 없이 전35쪽을 재검토합니다.
+- [입력·production 해시와 검증 원장](../assets/planet6897_green_20261002/chemical_regression_recheck_validation.json), [Native 전103쪽 TSV](../assets/planet6897_green_20261002/chemical_regression_recheck_native_all103.tsv), [fresh WASM14쪽 TSV](../assets/planet6897_green_20261002/chemical_regression_recheck_wasm_p14.tsv), [14쪽 review](../assets/planet6897_green_20261002/chemical_regression_recheck_native_p14_review.png), [83쪽 review](../assets/planet6897_green_20261002/chemical_regression_recheck_native_p83_review.png). 최종 게이트 결과는 검증 원장에 연결합니다. 전체/Skia·통합 PR/CI/merge/후속처리는 미완료입니다.
+
+- 이 단계의 fmt·Native/WASM Clippy·workspace build·all-target Clippy·최신base manifest는 모두exit0입니다. 기존1검사 교정만 완료했으며 원문/PDF·production 변경0건입니다.
+
+
+### 사용자 지시 — 현재 통합 차단 중 시각 미달만 #7445 이관
+
+- [#7445 등록](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5977265491): 원본/독립PDF의 정확한 해시·전쪽 TSV·대표 PNG로 재검토한 뒤 현재 통합을 막는 범위만 분리했습니다. 이는 실제 렌더링 결함의 이관이며 정상 출력 승인이나 겹침 검출기 오류 판정이 아닙니다.
+- 화학제품 문서103쪽 중25쪽 미달·최저17.93029%, #6761의83쪽64.92223%입니다. 해당 픽셀 간격 실패 함수1개만 제거했고 정상 반례1개·#7359 의미 검사·다른 정상 검사와 원본/PDF는 유지했습니다.
+- synam-001은 Native 전35쪽 중9쪽 미달·최저53.70706%, 검사30쪽89.57062%입니다. 고정X/8~19px 조건이 있던 실패1함수를 제거했으며 원본/PDF와 다른 검사는 보존했습니다.
+- KTX 전1쪽78.18921%·base0→통합2건, #2439 전10쪽 중8쪽 미달·최저0%·base0→통합1건입니다. 두 입력만 text-overlap 보류 목록에 추가했습니다. 검사 함수를 끄거나 래칫 수치를 늘리지 않았고 다른 원장/정상 회귀는 유지했습니다. 대표 PNG에서 그림·표 내용/정렬 차이도 직접 확인했습니다.
+- Native가90% 선행 조건을 실패하므로 이4문서의 fresh WASM 승인은 주장하지 않습니다. #7445에서 실제 출력을 개선하고 관련 범위의 Native/fresh WASM 최저90% 이상·직접 판독을 확보한 뒤 내용·쪽 소유·순서·비겹침 검사로 복원합니다. 절대 화면 좌표를 복원 조건으로 사용하지 않습니다.
+- [이관 범위·입력·명령·검증 원장](../assets/planet6897_green_20261002/blocking_transfer7445_validation.json), [화학제품 전103쪽 TSV](../assets/planet6897_green_20261002/blocking_transfer7445_chemical_native_all_pages.tsv), [synam 전35쪽 TSV](../assets/planet6897_green_20261002/blocking_transfer7445_synam_native_all_pages.tsv), [KTX 전1쪽 TSV](../assets/planet6897_green_20261002/blocking_transfer7445_ktx_native_all_pages.tsv), [#2439 전10쪽 TSV](../assets/planet6897_green_20261002/blocking_transfer7445_2439_native_all_pages.tsv), [synam30쪽 review](../assets/planet6897_green_20261002/blocking_transfer7445_synam_native_review.png), [KTX review](../assets/planet6897_green_20261002/blocking_transfer7445_ktx_native_review.png), [#2439 review](../assets/planet6897_green_20261002/blocking_transfer7445_2439_native_review.png).
+
+- 이관 후 기존 집중133건133PASS(2slow)·2911skip·실행65.798초·exit0입니다. fmt·Native/WASM Clippy·workspace build·all-target Clippy·최신base manifest 모두exit0입니다. 생산 소스·원본·PDF는 바뀌지 않았습니다. 최종 전체/Skia 검증을 이어갑니다.
+
+
+### #7567 병합 반영 — 최신 devel 리베이스와 계약 호출 동기화
+
+- #7445 분리 단계 뒤 새base `1d6bc7076`의 #7567 RowBreak 변경을 확인했습니다. 이전base 전체 검증은 SIGINT로 중단해 성공으로 사용하지 않았고 로그를 보존했습니다. `backup/planet6897-green-before-7567-20261004`를 남긴 뒤 기존183커밋을 최신devel 위로 리베이스했습니다.
+- 충돌에서는 새 공백 메트릭/번호 파생값, 영문 슬롯 조회, 저장 두 줄/열림·종료 프레임 근거, 일반 재조판 뒤 간격과 TAC 앞 앵커 회수 계약을 함께 유지했습니다. 저장 블록/본문 종료 상자는 각각 입증된 원본 프레임으로 경계를 소유하며 문단 원점0만으로 쪽 경계를 판정하지 않습니다.
+- 빌드에서 남아 있던 `native_tac_next_line_full_spacing` 호출을 새 `tac_next_line_full_spacing`과 전체 compatibility profile 인자로 동기화했습니다. 최초 compile 실패 증거를 남겼고 수정 후 기존133+upstream #7470의6검사139건139PASS(1slow)·3491skip·실행64.277초·exit0입니다. 신규 테스트/fixture는 추가하지 않았습니다.
+- fmt·Native/WASM Clippy·workspace build·all-target Clippy 전부exit0이고 최신base `1d6bc7076`의 manifest도 별도로exit0을 확인했습니다. Native 정상4문서 전41쪽은 모두90% 이상입니다. fresh WASM no-opt 빌드exit0·루트/Studio WASM 해시 동일이며 새 WASM 시각41쪽과 최종 전체/Skia 검증은 진행합니다.
+- [리베이스·집중·빌드·Native41쪽 증적](../assets/planet6897_green_20261002/rebase7567_validation.json). #7445 분리2함수/2원장 입력·원본/PDF·정상 검사 보존 범위는 그대로 유지합니다. 통합PR/CI/merge/후속처리는 아직 미완료입니다.
+
+
+### 최신 #7505 증거를 반영한 2실패 보정
+
+- 새base1d6bc7076/head b45dde605 전체nextest는10,288건 중10,286PASS(9slow)/2FAIL/50skip·exit100입니다. 실패 로그를 보존하며 통과로 보고하지 않습니다.
+- 오래된 #7445 선택 쪽 증거에 근거한 추가2함수 이관은 철회하고 두 함수를 복원했습니다. #7505는 전체10,229PASS·정책연구Native/fresh WASM215쪽 최저90.01587%·미달0을 확인했습니다. 최신 시각 증거를 이전 미달 수치로 대신하지 않습니다. [이관 철회 기록](https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5977600701).
+- 현재 통합 브랜치에서 채움 없는 문단 외곽선의 후행 간격을 복원하고, 닫힌 저장 표 프레임의 본문 예산 검사에 종이 아래 여백 허용이 전달되지 않도록 보정합니다. 원본/PDF·기존 함수는 유지하고 시각 확인 후 고정 좌표를 의미 관계로 교정합니다. 최종 전체/Skia·PR/CI/merge/후속처리는 미완료입니다.
+- 사용자 요청으로 실행 중인 rebase7567 경로와PNG/TSV/렌더트리/기준자료를 보존하고 이전 대형중간SVG2,354개·223,903,712,365bytes를 정리했습니다. output은227GB→19GB이며 삭제목록은ignored output에 남겼습니다.
+
+
+### #7505의 정상 계약 복원과 의미 검사 교정 완료
+
+- 원인: 채움 없는 외곽선까지 후행 줄간격을 제외하고 닫힌 저장 프레임까지 종이 여백 예산을 허용한 현재 브랜치의 두 후속 보정 회귀입니다. `line_flow/spacing→border_bottom→para_border_ranges`와 `closed_source_frame→whole_frame_budget→occupied_bottom fit→통째/분할 소유`의 실제 소비 경로를 보정했습니다. 좌표clamp·문서ID 예외·출력 숨김은 없습니다.
+- 기존 두 실패 함수를 복원했고 삭제0·새 함수0입니다. 1쪽 `native-8-0.hwpx` Native/fresh WASM은 모두96.86991%(이전Native89.37172%)·PNG byte동일입니다. 기존 테두리 함수1개만 고정 좌표48/384/104.619/22.556을 빈 글줄 포함·테두리 단일 소유·뒤 문단과 경계 맞닿음 관계로 교정했습니다. [전후TSV](../assets/planet6897_green_20261002/stored-border-before-after.tsv), [보정review](../assets/planet6897_green_20261002/stored_border_fixed_native_review.png).
+- 기존17건17PASS/0FAIL·625skip·1.089초이며 그림11의 세 본문 예산·HWP/HWPX 내용 단일 소유와 #6267/#1835 기존 검사도 유지했습니다. fmt·Native/WASM Clippy·workspace build·all-target Clippy·최신base manifest exit0입니다. 파생 harness metadata drift는 --prepare 후 같은base check로 확인했고 생성 파일은 커밋하지 않습니다. [보정 원장](../assets/planet6897_green_20261002/restored_two_failures_validation.json).
+- 정상4문서41쪽 Native 렌더트리와 fresh WASM rawSVG는 직전 전쪽 검증과 byte동일이며 모두90% 이상입니다. #6267 Native tree 동일, WASM은 극소 부동소수 표현차가 있어 실제1쪽 새 raster97.26749%로 확인했습니다. 현재 원본 그림11의14쪽 tree도 직전99.80678% 입력과 동일하고 쪽수215입니다. 이 비교를 현재215쪽 전체 시각 승인으로 보고하지 않습니다.
+- 사용자 지목 정책연구 TSV의 기존 미달7쪽은 #7505 동일 글꼴환경으로 재비교했습니다.162/169/173/208/214쪽은 각각100/99.93183/99.68112/96.82326/100%입니다.91쪽85.67511%·95쪽84.98034%의 실제 표 뒤 본문 상향 잔차는 다음 단계에서 현재 브랜치 보정합니다. 이7쪽은 #7445에 이관하지 않습니다. 최종 전체/Skia·PR/CI/merge/후속처리는 미완료입니다.
+
+### 정책연구 미달7쪽 — #7505 기준 재비교와 종료 표 조각 흐름 보정
+
+- 사용자께서 지정하신 이전 TSV의 미달7쪽(91/95/162/169/173/208/214)을 현재 브랜치에서 확인했습니다. #7505가 사용한 같은 원본·독립 PDF·검증된 HumanMyeongJo TrueType 환경을 적용했으며 원본/PDF/visual_sweep.py/임계값은 변경하지 않았습니다. 같은 환경의 현재 출력에서5쪽은90% 이상이고91/95쪽에는 표 뒤 본문의 실제 상향 잔차가 남았습니다. 이7쪽은 #7445로 이관하지 않습니다.
+- 호스트 제목·각주는 앞 프레임에서 이미 소비됐으나 단일 표/빈 호스트 전용 종료 여백 조회에서 제외됐습니다. 단일 표와 주석만 있는 소비 완료 호스트를 판별하고 뒤 저장 줄이 실제 마지막 행 높이+아래 바깥여백의 끝점을 증명할 때 종료 여백을 예약했습니다. 예약만 적용한 후보는 기존54검사PASS였지만 실제 Exclusion 흐름 때문에 시각 미개선이므로 완료로 판정하지 않았습니다.
+- `stored_terminal_rowbreak_outer_margin_with_consumed_host_px → budget.terminal_outer_bottom_overhead → scan.closing_overhead → NextLine 배치 → emit.commit_fragment.occupied_bottom → layout 뒤 문단`을 함께 확인했습니다. 이어받기 여부·이전 호스트 프레임·유효 저장 줄·단일 표/주석·미편집/미재조판·독립 종료식으로 적용합니다. 문서ID/절대픽셀 고정·좌표clamp·임의 여백 가산은 없습니다. 기존 prefix 소유 경로를 유지하며 마지막 유닛이 닫히지 않으면 종료 여백을 소비하지 않습니다.
+- 보정Native7쪽은91쪽98.91458%,95쪽99.15957%,162쪽100%,169쪽99.93183%,173쪽99.68112%,208쪽96.82326%,214쪽100%입니다. [전후 TSV](../assets/planet6897_green_20261002/liver_low7_comparison.tsv), [Native7쪽 TSV](../assets/planet6897_green_20261002/liver_low7_fixed_native.tsv), [91쪽 review](../assets/planet6897_green_20261002/liver_low7_fixed_native_p91_review.png), [95쪽 review](../assets/planet6897_green_20261002/liver_low7_fixed_native_p95_review.png). 두 PNG에서 표 뒤 본문·각주 영역을 직접 대조했고91쪽 참조143/144/145와 각주142~145를 유지했습니다.
+- 기존 집중66검사66PASS/0FAIL·1470skip·4.592초입니다. 새 검사/삭제0입니다. 정상5문서42쪽 Native tree는 기존 전쪽 검증과 byte동일이며 정책연구215쪽 중91/95쪽만 변경·나머지213쪽은 같은 환경 출력과 byte동일합니다. [원인·소스 해시·검증 원장](../assets/planet6897_green_20261002/liver_low7_validation.json), [정상 대조군](../assets/planet6897_green_20261002/liver_low7_native_counter_trees.json), [215쪽 영향 범위](../assets/planet6897_green_20261002/liver_low7_native_tree_impact.json).
+- Native 전215쪽 TSV, fresh WASM, lint/build/manifest를 실행 중입니다. 이 단계는 Native 보정과 집중 회귀 확인이며 최종 전체/Skia·통합 PR·CI/merge/후속처리는 미완료입니다.
+
+### 종료 표 보정 후 전체 자동 검증 완료 — 90쪽 시각 잔차 보류
+
+- 소스 head `f0c5fbf93` 전체 nextest는10,288건 전부PASS·0FAIL·50skip(10slow), 실행626.110초·exit0입니다. `release-test`, `target/pr-review`, threads8로 수행했습니다. 전체 로그는 ignored `output/pr-review/planet6897-green-20261002/liver-final-whole-nextest.log`에 보존합니다.
+- native-skia 라이브러리4,109PASS·0FAIL·13ignored와 누락 그림2PASS·직접 PDF4PASS를 확인했으며 모든 명령 exit0입니다. fmt·Native/WASM Clippy·workspace build·all-target Clippy·manifest도 exit0입니다. fresh WASM은 Mac 로컬 no-opt 대체 빌드입니다.
+- Native/fresh WASM 전215쪽 TSV를 생성했습니다. 지정7쪽은 모두90% 이상이고 두 백엔드 수치가 같습니다. 전체에는90쪽89.91028%가 남아 있으므로 PR 준비 완료로 판정하지 않습니다. [Native 전215쪽 TSV](../assets/planet6897_green_20261002/liver_low7_whole215_native_before_p90_fix.tsv), [WASM 전215쪽 TSV](../assets/planet6897_green_20261002/liver_low7_whole215_wasm_before_p90_fix.tsv), [검증 원장](../assets/planet6897_green_20261002/liver_low7_validation.json).
+- 90쪽은 글꼴환경 유무에 관계없이 같은 수치입니다. #7505 출력과 대조하면 본문·표제 위치는 같고 첫 표 조각이 위 바깥여백283HU만큼 위로 이동했습니다. 첫 조각 배치의 원본 여백 소비 경로를 다음 단계에서 보정합니다. 테스트 추가·삭제와 임계값 변경 없이 기존 검사를 유지했습니다.
+
+### 90쪽 첫 표 조각 위 여백 보정
+
+- 분석: 원본 저장 글줄 뒤에 독립적으로 열리는 단일 표/각주 호스트에서 HWPX 저장 호스트 전달과 주석 허용 판정이 빠졌습니다. 전체 표를 첫 조각 배치로 바꾸며 위 바깥여백283HU가 누락됐습니다. 글꼴환경 유무는 이 잔차를 바꾸지 않았습니다.
+- 코드: 첫 조각 준비가 HWP5/HWPX 저장 호스트를 공통 판정에 전달합니다. 단일 표와 각주·미주만 있는 호스트도 유효 저장 글줄의 개체 앞 종료 계약을 따릅니다. 다른 개체가 함께 있거나 저장 줄이 무효하면 허용하지 않습니다. 예약과 실제 배치가 같은 원점을 소비하며 문서ID/좌표clamp/임계값 변경은 없습니다.
+- 결과: Native/fresh WASM90쪽89.91028→99.15148%,94쪽99.88068%,91쪽98.91458%,95쪽99.15957%이며 네 PNG는 두 백엔드에서 byte동일합니다. 90쪽 표 시작·내용·각주141·쪽 번호를 직접 대조했습니다. [90쪽 review](../assets/planet6897_green_20261002/liver_p90_native_review.png), [94쪽 review](../assets/planet6897_green_20261002/liver_p94_native_review.png).
+- 전215쪽 SVG를 다시 내보내 Native/fresh WASM 모두90/94쪽만 변경됨을 해시로 확인했습니다. 나머지213쪽은 동일 SVG의 기존 raster/비교를 재사용하고 변경2쪽은 새 raster로 교체했습니다. 전쪽 TSV 최저90.30307%·미달0입니다. 전215쪽을 다시 raster했다고 보고하지 않습니다. [Native TSV](../assets/planet6897_green_20261002/liver_p90_native_whole215.tsv), [WASM TSV](../assets/planet6897_green_20261002/liver_p90_wasm_whole215.tsv), [검증 원장](../assets/planet6897_green_20261002/liver_p90_validation.json).
+- 정상5문서42쪽 Native tree/fresh WASM SVG는 기존 검증 출력과 byte동일입니다. 기존 집중31검사31PASS/0FAIL·805skip·3.023초·exit0입니다. 새 검사/삭제0입니다. fmt·Native/WASM Clippy·workspace build·all-target Clippy·manifest 및 fresh WASM 로컬 no-opt 빌드도 exit0입니다. 루트pkg/Studio 공개 JS·WASM 동일성을 확인했습니다.
+- 보정 전 전체10,288PASS는 보존하며 이번 소스의 최종 전체/Skia 검증은 다음 단계입니다. 통합PR·CI/merge/후속처리는 아직 미완료입니다.

@@ -1,5 +1,5 @@
 //! Issue #2158 — HWPX lineseg 재계산이 저장 쪽-상대 vpos 리셋(쪽나눔 인코딩)을
-//! 파괴하던 회귀를 막는 페이지 수 핀.
+//! 파괴하던 회귀를 막는 쪽수·본문 소유 검사.
 //!
 //! HWPX 원본 XML은 HWP5와 동일하게 쪽-상대 vertpos를 저장하며, 직전 문단 대비
 //! 급감(예: sample16 pi87 70412 → pi88 568=sb)이 쪽나눔을 인코딩한다. HWPX 로딩은
@@ -8,38 +8,48 @@
 //! 쪽나눔(#321/#1921)이 무력화 — 동일 문서가 HWP5로는 64쪽(한글 정합), HWPX로는
 //! 63쪽이 되던 결함.
 //!
-//! 권위: 한글 2022 COM per-pi 오라클 (#2154 스윕 + 단건 재검).
+//! 과거 COM 쪽수와 달리 같은 원본의 독립 전체 Print는46쪽이다.
+//! stage2869 전쪽 Native/fresh WASM 검증과 stage2903 직접 판독을 근거로 한다.
 
 use std::fs;
 use std::path::Path;
 
-fn page_count_of(rel: &str) -> u32 {
+fn load(rel: &str) -> rhwp::document_core::DocumentCore {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let path = Path::new(repo_root).join(rel);
     let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {}", path.display(), e));
-    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
-        .unwrap_or_else(|e| panic!("parse {}: {:?}", rel, e));
-    doc.page_count()
-}
-
-#[test]
-fn hwp3_sample16_hwpx_matches_hwp5_and_hangul() {
-    let hwpx = page_count_of("samples/hwp3-sample16-hwp5.hwpx");
-    let hwp5 = page_count_of("samples/hwp3-sample16-hwp5.hwp");
-    assert_eq!(
-        (hwpx, hwp5),
-        (64, 64),
-        "동일 문서 HWPX/HWP5 쪽수는 한글 2022(64쪽)와 삼자 일치해야 함. \
-         hwpx={hwpx} hwp5={hwp5} — hwpx가 63이면 저장 vpos 리셋 신호 파괴(#2158) 회귀."
-    );
+    rhwp::document_core::DocumentCore::from_bytes(&bytes)
+        .unwrap_or_else(|e| panic!("parse {}: {:?}", rel, e))
 }
 
 #[test]
 fn onsaemiro_hwpx_page_count_matches_hangul() {
-    let pages = page_count_of("samples/[2027] 온새미로 1 본교재.hwpx");
+    let doc = load("samples/[2027] 온새미로 1 본교재.hwpx");
     assert_eq!(
-        pages, 47,
-        "온새미로 hwpx 기대 47쪽 (한글 2022 오라클). 실측 {pages}p — \
-         46p면 vpos 리셋 미보존(#2158) 회귀."
+        doc.page_count(),
+        46,
+        "같은 원본의 독립 전체 Print46쪽. 과거47쪽 핀으로 정상 출력을 회귀로 판정하지 않는다."
+    );
+    let layout: serde_json::Value =
+        serde_json::from_str(&doc.get_page_text_layout_native(5).expect("독립 Print6쪽")).unwrap();
+    let runs = layout["runs"].as_array().unwrap();
+    let original = &doc.document().sections[1].paragraphs[32];
+    assert!(original
+        .text
+        .starts_with("수많은 SF 영화나 소설이 유토피아"));
+    let mut next = 0;
+    let mut text = String::new();
+    for run in runs
+        .iter()
+        .filter(|run| run["secIdx"] == 1 && run["paraIdx"] == 32)
+    {
+        assert_eq!(run["charStart"].as_u64(), Some(next), "지문 순서·누락·중복");
+        let value = run["text"].as_str().unwrap();
+        text.push_str(value);
+        next += value.encode_utf16().count() as u64;
+    }
+    assert_eq!(
+        text, original.text,
+        "쪽수와 함께 원문 지문의 쪽 소속·전체 내용 보존"
     );
 }

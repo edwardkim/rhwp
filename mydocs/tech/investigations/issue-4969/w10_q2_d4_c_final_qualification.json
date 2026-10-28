@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-d4-c-final-qualification",
+  "issue": 4969,
+  "stage": "W10-Q2-D4-C",
+  "status": "qualified-bounded",
+  "checkpoints": {
+    "d4ADormantBaseline": "520f14dcf",
+    "d4BActivation": "4992ccbf3"
+  },
+  "productChangeInThisSlice": false,
+  "qualification": {
+    "keepFirstStrictLaneActive": true,
+    "expandLaneNow": false,
+    "laneExpansionBlocker": "prove page-or-document font resource reuse and deduplication before widening",
+    "d5Started": false
+  },
+  "backendSelection": {
+    "canvasKit": "strict-common-glyph-run",
+    "canvasKitBrowser": "strict-common-glyph-run-same-consumer-contract",
+    "canvas2d": "text-run-fallback",
+    "legacySvg": "text-run-fallback",
+    "nativeSkia": "text-run-fallback-until-blob-typeface-construction"
+  },
+  "canvasKitOracle": {
+    "font": "ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf",
+    "modelFontSizePx": 40.0,
+    "ratio": 0.8,
+    "drawFontSizePx": 35.77708763999664,
+    "placementScaleX": 0.8944271909999159,
+    "glyphIds": [614, 1230, 1497, 2085],
+    "pageAdvancePx": 61.824,
+    "currentInk": {
+      "left": 16,
+      "top": 22,
+      "right": 73,
+      "bottom": 55,
+      "width": 58,
+      "height": 34
+    },
+    "pre5821ContractInk": {
+      "left": 16,
+      "top": 18,
+      "right": 73,
+      "bottom": 55,
+      "width": 58,
+      "height": 38
+    },
+    "clusterGlyphRanges": [[0, 1], [1, 4]],
+    "affineRoundTripMismatchPx": 0.0,
+    "strictRejectFallsBackToTextRun": true
+  },
+  "performance": {
+    "protocol": {
+      "buildProfile": "release",
+      "fontBytes": 456688,
+      "warmupIterations": 20,
+      "warmGroups": 9,
+      "warmIterationsPerGroup": 200,
+      "coldSamples": 25,
+      "statistic": "median"
+    },
+    "d4ADormant": {
+      "textRuns": 1,
+      "glyphRuns": 0,
+      "fontBlobs": 0,
+      "fontFaces": 0,
+      "fontBlobBytes": 0,
+      "layerJsonBytes": 6849,
+      "warmLayerMedianUs": 0.843,
+      "coldLayerMedianMs": 1.608
+    },
+    "d4BActive": {
+      "textRuns": 1,
+      "glyphRuns": 1,
+      "fontBlobs": 1,
+      "fontFaces": 1,
+      "fontBlobBytes": 456688,
+      "layerJsonBytes": 619562,
+      "warmLayerMedianUs": 703.6,
+      "coldLayerMedianMs": 2.314
+    },
+    "delta": {
+      "warmLayerUs": 702.757,
+      "warmLayerRatio": 834.638196915777,
+      "coldLayerMs": 0.706,
+      "coldLayerPercent": 43.90547263681592,
+      "layerJsonBytes": 612713,
+      "layerJsonRatio": 90.46021316980581
+    },
+    "interpretation": "the strict lane is correct but copying, hashing, and serializing a 456688-byte portable font in each new layer arena is material; do not widen before resource reuse proof"
+  },
+  "validation": {
+    "nodeWasmHarness": { "passed": 2, "failed": 0 },
+    "dockerWasmReleaseBuild": "pass",
+    "wasmLibClippy": "pass",
+    "nativeSkiaFallback": { "passed": 15, "failed": 0 },
+    "focusedIssue4969AndIssue5821Integration": { "passed": 35, "failed": 0 },
+    "w9ProtectionSubset": { "passed": 6, "failed": 0 },
+    "rustLibrary": { "passed": 3889, "failed": 0, "ignored": 13 },
+    "workspaceAuxiliaryLibraries": { "passed": 182, "failed": 0 },
+    "studio": { "passed": 1221, "failed": 0, "skipped": 1 },
+    "canvasKitFocusedE2E": "pass",
+    "canvasKitFontCoverage": "pass",
+    "rendererContract": "pass",
+    "studioProductionBuild": "pass",
+    "rustUnitTier": { "tests": 4221, "modules": 299, "violations": 0 },
+    "rustfmtAll": "pass",
+    "nativeClippy": "pass"
+  },
+  "integrationHarnessCorrection": {
+    "source": "tests/cases/issue_4969_shaping_composition_handoff.rs",
+    "change": "include shaping_publication module so the source remains self-contained after the earlier owner split",
+    "productDefect": false
+  },
+  "privacy": {
+    "privateCorpusUsed": false,
+    "hostInstalledFontUsed": false,
+    "rawTextOrFontPathInProductTrace": false
+  },
+  "generatedArtifacts": {
+    "preparedOnlyInReviewWorktree": true,
+    "sources": 991,
+    "staticTestAttributes": 4463,
+    "suites": 32,
+    "exceptions": 16,
+    "targets": 48,
+    "includedInSourceCommit": false
+  },
+  "next": "maintainer approval required before D5; resource reuse and deduplication proof required before lane expansion"
+}

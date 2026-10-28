@@ -87,6 +87,8 @@ impl PaginationState {
             return;
         }
         let col_content = ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: self.current_column,
             start_height: 0.0,
             endnote_flow: false,
@@ -100,6 +102,14 @@ impl PaginationState {
             // 아직 만들지 않는다 — TypesetEngine 경로만 채운다.
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
+            stored_column_top_spacings: Default::default(),
+            paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
+            page_band_flow_starts: Default::default(),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -111,6 +121,8 @@ impl PaginationState {
     /// 현재 항목을 ColumnContent로 만들어 (비어있어도) 마지막 페이지에 push
     pub fn flush_column_always(&mut self) {
         let col_content = ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
             column_index: self.current_column,
             start_height: 0.0,
             endnote_flow: false,
@@ -124,6 +136,14 @@ impl PaginationState {
             // 아직 만들지 않는다 — TypesetEngine 경로만 채운다.
             overlay_continuations: Vec::new(),
             overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
+            stored_column_top_spacings: Default::default(),
+            paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
+            page_band_flow_starts: Default::default(),
         };
         if let Some(page) = self.pages.last_mut() {
             page.column_contents.push(col_content);
@@ -281,6 +301,7 @@ impl PaginationState {
         PageContent {
             page_index: self.pages.len() as u32,
             page_number: 0,
+            page_number_restarted: false,
             section_index: self.section_index,
             layout: self.layout.clone(),
             column_contents,

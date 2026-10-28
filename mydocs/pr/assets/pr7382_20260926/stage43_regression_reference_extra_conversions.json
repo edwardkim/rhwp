@@ -1,0 +1,197 @@
+[
+  {
+    "input": "samples/issue1891_external_bindata_link.hwpx",
+    "sha256": "ce9f7275b9c84e4f032c218b9b6f94cf53c24f6e91fba30be7fd55b17acee924",
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": "hancom-office-2018",
+      "version": "10.0.0.11808"
+    },
+    "engine": "2020",
+    "filename": "issue1891_external_bindata_link-2020.pdf",
+    "job_id": "069b2dca-0bc9-4a04-a10c-082fc6f77f56",
+    "status": "succeeded",
+    "error_class": null,
+    "history": [
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:55:53Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:56:10Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:56:27Z"
+      },
+      {
+        "status": "succeeded",
+        "terminal": true,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:56:43Z"
+      }
+    ],
+    "download": {
+      "status": "success",
+      "output_path": "/Users/tsjang/rhwp/pdf/issue7382-regression-review/issue1891_external_bindata_link-2020.pdf",
+      "output_filename": "issue1891_external_bindata_link-2020.pdf",
+      "size": 682201,
+      "sha256": "1a230300ab4e4f7f3bf7e1b56ee96e71b087f0c855e2d874993316ce53ae9bf8"
+    }
+  },
+  {
+    "input": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+    "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": "hancom-office-2010",
+      "version": "8.5.8.1677"
+    },
+    "engine": "2020",
+    "filename": "1480000-201900042-chemical-labeling-standards-2020.pdf",
+    "job_id": "2408aba4-1eeb-44e4-9091-06306bddc871",
+    "status": "succeeded",
+    "error_class": null,
+    "history": [
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:55:54Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:56:11Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:56:27Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:56:44Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:57:00Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:57:16Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:57:32Z"
+      },
+      {
+        "status": "succeeded",
+        "terminal": true,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:57:48Z"
+      }
+    ],
+    "download": {
+      "status": "success",
+      "output_path": "/Users/tsjang/rhwp/pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+      "output_filename": "1480000-201900042-chemical-labeling-standards-2020.pdf",
+      "size": 1245068,
+      "sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047"
+    }
+  },
+  {
+    "input": "samples/issue_1133.hwp",
+    "sha256": "ea03105fa7fa22398f3e370d222f37213e986ecca4b9b97d2847f1bbfe998d3b",
+    "lastSavedWith": {
+      "confidence": "metadata",
+      "product": "hancom-office-2020",
+      "version": "11.0.0.8362"
+    },
+    "engine": "2020",
+    "filename": "issue_1133-2020.pdf",
+    "job_id": "e9b1d0ca-08b2-43ed-bde0-b362376b0f2a",
+    "status": "succeeded",
+    "error_class": null,
+    "history": [
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:55:54Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:56:11Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:56:28Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:56:45Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:57:01Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:57:17Z"
+      },
+      {
+        "status": "queued",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:57:32Z"
+      },
+      {
+        "status": "running",
+        "terminal": false,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:57:49Z"
+      },
+      {
+        "status": "succeeded",
+        "terminal": true,
+        "error_class": null,
+        "checked_utc": "2026-09-27T04:58:05Z"
+      }
+    ],
+    "download": {
+      "status": "success",
+      "output_path": "/Users/tsjang/rhwp/pdf/issue7382-regression-review/issue_1133-2020.pdf",
+      "output_filename": "issue_1133-2020.pdf",
+      "size": 111780,
+      "sha256": "46ca5b1abc40d9479e9eea7994b951ebb82d177ebc448cd09688170effd850ae"
+    }
+  }
+]

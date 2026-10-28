@@ -226,3 +226,121 @@ fn repeated_enter_in_table_cell_advances_to_the_new_third_paragraph() {
         "두 번째 Enter 뒤 캐럿 y가 새 세 번째 문단까지 증가해야 함: {y:?}"
     );
 }
+
+// ── Issue #6882: 편집 세션에서 자란 표의 재조판 ──────────────────────────────
+//
+// 셀 Enter 로 표가 자라도 (1) 분할/병합 명령이 host 문단 측정 캐시를 무효화하지
+// 않아 표가 저장 형상에 얼어붙고, (2) 저장 시점 형상 전용 보정(TAC 비례 축소,
+// 선언 높이 fit-down, 저장 vpos 사다리)이 편집 후의 낡은 좌표로 작동해 후행
+// 문단이 커진 표와 겹치거나 쪽 밖으로 밀렸다. 한글 오라클(합성 픽스처의 원본
+// 실측): 표가 행 단위로 자라다 쪽 잔여를 넘으면 후행 문단 → RowBreak 표 분할 →
+// 표 통째 이월 순으로 쪽이 늘어난다(Enter 8회 3쪽, 20회 4쪽). 병합으로 전량
+// 되돌리면 로드 시점 배분으로 원복된다(행 하한 = baseline_row_heights).
+
+const GROWTH_SAMPLE: &str = "samples/issue6882/synth_cell_enter_table_growth.hwp";
+const GROWTH_TABLE_PARA: usize = 1;
+const GROWTH_TABLE_CTRL: usize = 0;
+const GROWTH_CELL: usize = 31;
+
+fn load_growth_sample() -> DocumentCore {
+    let bytes =
+        std::fs::read(GROWTH_SAMPLE).unwrap_or_else(|e| panic!("read {GROWTH_SAMPLE}: {e}"));
+    DocumentCore::from_bytes(&bytes).unwrap_or_else(|e| panic!("parse {GROWTH_SAMPLE}: {e}"))
+}
+
+/// 픽스처 표의 성장 셀 꼬리에 Enter(문단 분할)를 `count`회 넣는다.
+/// 반환값은 첫 분할 지점 문단 인덱스(병합 원복의 기준점).
+fn enter_in_growth_cell(core: &mut DocumentCore, count: usize) -> usize {
+    let (last_cp, last_len) = {
+        let Control::Table(table) =
+            &core.document().sections[0].paragraphs[GROWTH_TABLE_PARA].controls[GROWTH_TABLE_CTRL]
+        else {
+            panic!("픽스처 표가 없음");
+        };
+        assert!(table.common.treat_as_char, "픽스처 표는 TAC 자리 표시");
+        let paragraphs = &table.cells[GROWTH_CELL].paragraphs;
+        let last = paragraphs.len() - 1;
+        (last, paragraphs[last].char_offsets.len())
+    };
+    for i in 0..count {
+        let (cell_para, offset) = if i == 0 {
+            (last_cp, last_len)
+        } else {
+            (last_cp + i, 0)
+        };
+        core.split_paragraph_in_cell_native(
+            0,
+            GROWTH_TABLE_PARA,
+            GROWTH_TABLE_CTRL,
+            GROWTH_CELL,
+            cell_para,
+            offset,
+            None,
+        )
+        .unwrap_or_else(|e| panic!("split {i}: {e:?}"));
+    }
+    last_cp
+}
+
+#[test]
+fn cell_enter_growth_reflows_following_content_to_new_pages() {
+    let mut core = load_growth_sample();
+    assert_eq!(core.page_count(), 2, "픽스처 열람 쪽수");
+
+    enter_in_growth_cell(&mut core, 8);
+    assert_eq!(
+        core.page_count(),
+        3,
+        "Enter 8회: 자란 표가 후행 문단·RowBreak 표를 다음 쪽으로 밀어야 함"
+    );
+
+    // 렌더 트리가 쪽마다 실제로 만들어지고, 표 노드가 쪽 밖으로 벗어나지 않는다.
+    for page in 0..core.page_count() {
+        let tree = core
+            .build_page_render_tree(page)
+            .unwrap_or_else(|e| panic!("render p{}: {e:?}", page + 1));
+        let page_h = tree.root.bbox.height;
+        fn max_table_bottom(node: &rhwp::renderer::render_tree::RenderNode, out: &mut f64) {
+            if let rhwp::renderer::render_tree::RenderNodeType::Table { .. } = node.node_type {
+                *out = out.max(node.bbox.y + node.bbox.height);
+            }
+            for child in &node.children {
+                max_table_bottom(child, out);
+            }
+        }
+        let mut bottom = 0.0;
+        max_table_bottom(&tree.root, &mut bottom);
+        assert!(
+            bottom <= page_h + 0.5,
+            "p{}: 표 하단({bottom:.1})이 쪽 높이({page_h:.1})를 넘음",
+            page + 1
+        );
+    }
+}
+
+#[test]
+fn cell_enter_growth_whole_table_carries_over_and_merge_restores() {
+    let mut core = load_growth_sample();
+    let anchor = enter_in_growth_cell(&mut core, 20);
+    assert_eq!(
+        core.page_count(),
+        4,
+        "Enter 20회: 표 통째 이월 + 후행 콘텐츠 연쇄 이월로 4쪽"
+    );
+
+    for i in (0..20).rev() {
+        core.merge_paragraph_in_cell_native(
+            0,
+            GROWTH_TABLE_PARA,
+            GROWTH_TABLE_CTRL,
+            GROWTH_CELL,
+            anchor + i + 1,
+        )
+        .unwrap_or_else(|e| panic!("merge {i}: {e:?}"));
+    }
+    assert_eq!(
+        core.page_count(),
+        2,
+        "병합 원복: 행 하한이 로드 시점 배분(baseline)이라 쪽수·형상이 되돌아와야 함"
+    );
+}

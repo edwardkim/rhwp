@@ -1,0 +1,288 @@
+{
+  "branch": "review/planet6897-green-20261002",
+  "head": "92b33d37cc59e80092db8ed8b23c10f86b15a131",
+  "base": "8497729b4fb0e071c484fc5740f9bb2400bed437",
+  "purpose": "이 통합 브랜치의 실제 실패4개 모듈을 동일 upstream/devel에서 대조. 별도 문서 개선/회귀 추가/기준PDF교체는 수행하지 않음",
+  "checkout": "output/pr-review/planet6897-green-20261002/base-control-8497729",
+  "shared_target": "/Users/tsjang/rhwp/target/pr-review",
+  "status": "complete",
+  "test_source_comparison": {
+    "tests/cases/issue_6267_para_float_table_overlap.rs": {
+      "same_as_review": true,
+      "base_sha256": "28f0781d04f16083217fcfb4051d37acc8ea744524f805fb02bbcf5ae6e8aa26",
+      "review_sha256": "28f0781d04f16083217fcfb4051d37acc8ea744524f805fb02bbcf5ae6e8aa26"
+    },
+    "tests/cases/issue_6761_band_absorbs_spacing_before.rs": {
+      "same_as_review": true,
+      "base_sha256": "d3e58667f9502b08d6b5ddcdbf5992091edc00578e209f3a7c90d644e0e6573b",
+      "review_sha256": "d3e58667f9502b08d6b5ddcdbf5992091edc00578e209f3a7c90d644e0e6573b"
+    },
+    "tests/cases/issue_7359_page_top_table_spacing.rs": {
+      "same_as_review": true,
+      "base_sha256": "ecdd9b9214aec1b827c29ff4717617b0bc8ec6f6c9621581f7df545a56efa767",
+      "review_sha256": "ecdd9b9214aec1b827c29ff4717617b0bc8ec6f6c9621581f7df545a56efa767"
+    },
+    "tests/issue_synam001_visible_float_host_line_overlap.rs": {
+      "same_as_review": true,
+      "base_sha256": "de4b20f610439b1c7f3a9b744972140f10aa87f86fc24059ecd306881f592e8c",
+      "review_sha256": "de4b20f610439b1c7f3a9b744972140f10aa87f86fc24059ecd306881f592e8c"
+    }
+  },
+  "gates": [
+    {
+      "name": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.644
+    },
+    {
+      "name": "focused",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test",
+        "regression_suite_026",
+        "--test",
+        "regression_suite_001",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_015",
+        "-E",
+        "test(/issue_6267_para_float_table_overlap::/) | test(/issue_6761_band_absorbs_spacing_before::/) | test(/issue_7359_page_top_table_spacing::/) | test(/issue_synam001_visible_float_host_line_overlap::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 30.364
+    }
+  ],
+  "environment_failure": "대조용 checkout에 saved/blank2010.hwp 내장 리소스가 빠져 컴파일 실패. 회귀 결과로 판정하지 않음",
+  "attempts_before_resource_repair": [
+    {
+      "name": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.62
+    },
+    {
+      "name": "focused",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test",
+        "regression_suite_026",
+        "--test",
+        "regression_suite_001",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_015",
+        "-E",
+        "test(/issue_6267_para_float_table_overlap::/) | test(/issue_6761_band_absorbs_spacing_before::/) | test(/issue_7359_page_top_table_spacing::/) | test(/issue_synam001_visible_float_host_line_overlap::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 101,
+      "seconds": 15.749
+    }
+  ],
+  "attempts_before_embedded_docs_repair": [
+    {
+      "name": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.728
+    },
+    {
+      "name": "focused",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test",
+        "regression_suite_026",
+        "--test",
+        "regression_suite_001",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_015",
+        "-E",
+        "test(/issue_6267_para_float_table_overlap::/) | test(/issue_6761_band_absorbs_spacing_before::/) | test(/issue_7359_page_top_table_spacing::/) | test(/issue_synam001_visible_float_host_line_overlap::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 101,
+      "seconds": 102.717
+    }
+  ],
+  "embedded_doc_resources_restored": [
+    "llms.txt",
+    "mydocs/manual/agent_knowledge_map.md",
+    "mydocs/manual/agent_troubleshooting_guide.md",
+    "mydocs/manual/gym_optional_tool.md",
+    "mydocs/manual/recipes/01_fill_form_and_submit.md",
+    "mydocs/manual/recipes/02_table_csv_roundtrip.md",
+    "mydocs/manual/recipes/03_redact_before_sharing.md",
+    "mydocs/manual/recipes/04_safety_check_untrusted_doc.md",
+    "mydocs/manual/recipes/05_mail_merge_batch_fill.md",
+    "mydocs/manual/recipes/06_visual_regression_before_after.md",
+    "mydocs/tech/agent_roadmap/atlas_r1_r200.md"
+  ],
+  "attempts_before_hml_repair": [
+    {
+      "name": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.713
+    },
+    {
+      "name": "focused",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test",
+        "regression_suite_026",
+        "--test",
+        "regression_suite_001",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_015",
+        "-E",
+        "test(/issue_6267_para_float_table_overlap::/) | test(/issue_6761_band_absorbs_spacing_before::/) | test(/issue_7359_page_top_table_spacing::/) | test(/issue_synam001_visible_float_host_line_overlap::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 101,
+      "seconds": 12.035
+    }
+  ],
+  "compile_resource_scan_restored": [
+    "mydocs/tech/investigations/issue-4939/font_rule_ledger.json",
+    "mydocs/tech/investigations/issue-4961/font_decision_trace_e2e.json",
+    "mydocs/tech/investigations/issue-4962/font_metric_coverage_public_fixtures.json",
+    "mydocs/tech/investigations/issue-4968/fixtures/kerning_pair_fixture.hwpx",
+    "mydocs/tech/investigations/issue-4968/fixtures/kerning_runtime_fixture.hwpx",
+    "mydocs/tech/investigations/issue-4968/fixtures/kerning_runtime_fixture.manifest.json",
+    "rhwp-studio/src/view/canvaskit/glyph-run-fonts.ts",
+    "samples/3-09월_교육_통합_2022.hwp",
+    "samples/exam_eng.hwp",
+    "samples/field-01.hwp",
+    "samples/hml/aligns.hml",
+    "samples/hml/formatting_table.hml",
+    "samples/hwp3-sample14-hwp5.hwp",
+    "samples/hwp3-sample16-hwp5.hwp",
+    "samples/hwp3-sample16.hwp",
+    "samples/hwpjson/clipboard-model.json",
+    "samples/hwpx/143E433F503322BD33.hwpx",
+    "samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx",
+    "samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx",
+    "samples/hwpx/20260909-para-table.hwpx",
+    "samples/hwpx/aift.hwpx",
+    "samples/hwpx/basic-table-01.hwpx",
+    "samples/hwpx/blank_hwpx.hwpx",
+    "samples/hwpx/business_overview.hwpx",
+    "samples/hwpx/eq-002.hwpx",
+    "samples/hwpx/form-002.hwpx",
+    "samples/hwpx/hwpx-02.hwpx",
+    "samples/hwpx/issue_157.hwpx",
+    "samples/hwpx/ref/ref_empty.hwpx",
+    "samples/hwpx/ref/ref_mixed.hwpx",
+    "samples/hwpx/ref/ref_table.hwpx",
+    "samples/hwpx/ref/ref_text.hwpx",
+    "samples/issue5802/hf_cross_section_inherit.hwp",
+    "samples/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp",
+    "samples/issue6712/한국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp",
+    "samples/issue6936/bold-faces.hwp",
+    "samples/issue6936/bold-faces.hwpx",
+    "samples/issue7216/tall_table_after.hwpx",
+    "samples/issue7234/tall_table_cell_row_height.hwpx",
+    "samples/para-001.hwp",
+    "samples/re-align-center-hancom.hwp",
+    "samples/render-p35-font-native-bitmap.hwpx",
+    "samples/rowbreak-problem-pages.hwp",
+    "samples/stored-table-text-tail/native-8-0.hwpx",
+    "samples/table-001.hwp",
+    "samples/tac-img-02.hwpx",
+    "samples/task-001.hwp",
+    "samples/표-텍스트.hwpx",
+    "ttfs/opensource",
+    "ttfs/opensource/NotoSansKR-Regular.ttf",
+    "ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf",
+    "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf"
+  ],
+  "base_cli_sha256": "dab400aec8dd4a89ae5d7b10b6153245d0a77b72764d443ad4120f94c986b3a3",
+  "inputs_same_as_review": {
+    "samples/issue6267/kdt_result_para_float_table.hwpx": true,
+    "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp": true,
+    "samples/synam-001.hwp": true
+  },
+  "scope_decision": "동일 원문/검사의 devel6PASS와 겹침3문서0건을 확인. 현재 통합 브랜치의 해당 회귀만 보정하며 기존 피델리티 문제·새 기준PDF·폰트 보완은 제외.",
+  "anomaly_control": {
+    "ktx003": {
+      "pageCount": 1,
+      "textOverlapCount": 0,
+      "overflowCount": 0
+    },
+    "2439": {
+      "pageCount": 10,
+      "textOverlapCount": 0,
+      "overflowCount": 0
+    },
+    "6267": {
+      "pageCount": 1,
+      "textOverlapCount": 0,
+      "overflowCount": 1
+    }
+  },
+  "review_failures_before_6267_correction": {
+    "ktx003": 2,
+    "2439": 1,
+    "6267": 3
+  }
+}

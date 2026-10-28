@@ -1,0 +1,107 @@
+=== rhwp-chrome 빌드 시작 ===
+
+[1/4] Vite 빌드...
+> npx vite build --config /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/vite.config.ts
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - `__dirname` (../rhwp-chrome/vite.config.ts:11:24). Use `import.meta.dirname` instead
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+vite v8.2.1 building client environment for production...
+[2K
+transforming...<script src="/theme-init.js"> in "/index.html" can't be bundled without type="module" attribute
+<script src="/locale-init.js"> in "/index.html" can't be bundled without type="module" attribute
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by "/Users/tsjang/rhwp/rhwp-studio/node_modules/canvaskit-wasm/bin/canvaskit.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported by "/Users/tsjang/rhwp/rhwp-studio/node_modules/canvaskit-wasm/bin/canvaskit.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+
+/images/icon_small_ko.svg referenced in /images/icon_small_ko.svg didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+/images/icon_small_ko_dark.svg referenced in /images/icon_small_ko_dark.svg didn't resolve at build time, it will remain unchanged to be resolved at runtime
+✓ 271 modules transformed.
+
+(!) outDir /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist is not inside project root and will not be emptied.
+Use --emptyOutDir to override.
+
+rendering chunks...
+computing gzip size...
+../rhwp-chrome/dist/index.html                                    66.97 kB │ gzip:     8.94 kB
+../rhwp-chrome/dist/assets/canvaskit-DB1zH3nD.wasm             7,159.34 kB │ gzip: 2,943.58 kB
+../rhwp-chrome/dist/assets/rhwp_bg-NzTAjaZs.wasm              13,028.49 kB │ gzip: 4,500.54 kB
+../rhwp-chrome/dist/assets/viewer-BDUD3_JM.css                   110.27 kB │ gzip:    19.23 kB
+../rhwp-chrome/dist/assets/rhwp-hwpctrl-plugin.d-BvRk9kiK.js       0.00 kB │ gzip:     0.02 kB
+../rhwp-chrome/dist/assets/canvaskit-renderer-Bp-lxnMr.js        246.50 kB │ gzip:    74.40 kB
+../rhwp-chrome/dist/assets/viewer-9Z9BbnLl.js                  1,810.02 kB │ gzip:   380.14 kB
+
+✓ built in 409ms
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+  RENAME: index.html → viewer.html
+  INJECT: dev-tools-inject.js → viewer.html
+
+[2/4] 확장 파일 복사...
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/manifest.json → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/manifest.json
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/background.js → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/background.js
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/content-script.js → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/content-script.js
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/content-script.css → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/content-script.css
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dev-tools-inject.js → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/dev-tools-inject.js
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/sw → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/sw
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/options.html → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/options.html
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/options.js → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/options.js
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/icons → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/icons
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-studio/public/icons/icon-256.png → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/icons/icon-256.png
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/_locales → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/_locales
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-studio/public/theme-init.js → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/theme-init.js
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-studio/public/locale-init.js → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/locale-init.js
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-studio/public/print.html → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/print.html
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-studio/public/images/icon_small_ko.svg → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/images/icon_small_ko.svg
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-studio/public/images/icon_small_ko_dark.svg → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/images/icon_small_ko_dark.svg
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-studio/public/favicon.ico → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/favicon.ico
+
+[3/4] WASM 복사...
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/pkg/rhwp.js → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/wasm/rhwp.js
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/pkg/rhwp.d.ts → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/wasm/rhwp.d.ts
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/pkg/rhwp_bg.wasm → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/wasm/rhwp_bg.wasm
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/pkg/rhwp_bg.wasm.d.ts → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/wasm/rhwp_bg.wasm.d.ts
+
+[4/4] 폰트 복사...
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/Cafe24Ssurround-v2.0.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/Cafe24Ssurround-v2.0.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/Cafe24Supermagic-Regular-v1.0.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/Cafe24Supermagic-Regular-v1.0.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/D2Coding-Bold.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/D2Coding-Bold.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/D2Coding-Regular.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/D2Coding-Regular.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/GowunBatang-Bold.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/GowunBatang-Bold.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/GowunBatang-Regular.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/GowunBatang-Regular.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/GowunDodum-Regular.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/GowunDodum-Regular.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/Happiness-Sans-Bold.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/Happiness-Sans-Bold.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/Happiness-Sans-Regular.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/Happiness-Sans-Regular.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/Happiness-Sans-Title.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/Happiness-Sans-Title.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/HappinessSansVF.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/HappinessSansVF.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/LatinModernMath-Regular.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/LatinModernMath-Regular.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/NanumGothic-Bold.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/NanumGothic-Bold.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/NanumGothic-ExtraBold.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/NanumGothic-ExtraBold.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/NanumGothic-Regular.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/NanumGothic-Regular.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/NanumGothicCoding-Bold.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/NanumGothicCoding-Bold.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/NanumGothicCoding-Regular.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/NanumGothicCoding-Regular.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/NanumMyeongjo-Bold.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/NanumMyeongjo-Bold.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/NanumMyeongjo-ExtraBold.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/NanumMyeongjo-ExtraBold.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/NanumMyeongjo-Regular.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/NanumMyeongjo-Regular.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/NotoSansKR-Bold.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/NotoSansKR-Bold.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/NotoSansKR-ExtraLight.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/NotoSansKR-ExtraLight.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/NotoSansKR-Regular.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/NotoSansKR-Regular.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/NotoSerifKR-Bold.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/NotoSerifKR-Bold.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/NotoSerifKR-Regular.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/NotoSerifKR-Regular.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/Pretendard-Black.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/Pretendard-Black.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/Pretendard-Bold.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/Pretendard-Bold.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/Pretendard-ExtraBold.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/Pretendard-ExtraBold.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/Pretendard-ExtraLight.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/Pretendard-ExtraLight.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/Pretendard-Light.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/Pretendard-Light.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/Pretendard-Medium.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/Pretendard-Medium.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/Pretendard-Regular.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/Pretendard-Regular.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/Pretendard-SemiBold.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/Pretendard-SemiBold.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/Pretendard-Thin.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/Pretendard-Thin.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/SourceHanSerifK-OldHangul-subset.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/SourceHanSerifK-OldHangul-subset.woff2
+  COPY: /private/tmp/rhwp-pr7142-fix-sandbox/assets/fonts/SpoqaHanSans-Regular.woff2 → /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist/fonts/SpoqaHanSans-Regular.woff2
+  woff2 36개 복사
+
+=== 빌드 완료 ===
+출력: /private/tmp/rhwp-pr7142-fix-sandbox/rhwp-chrome/dist

@@ -9,6 +9,37 @@
 |------|------|---------|------|
 | `NotoSansKR-Regular.ttf` | Noto Sans KR Regular (wght 400, 한글+라틴+글머리/도형 subset) | SIL OFL 1.1 (`NotoSansKR-OFL.txt`) | Task #2190 — CanvasKit 기본 typeface의 KS 기호/Box Drawing coverage |
 | `NotoSansKR-ExtraLight.ttf` | Noto Sans KR ExtraLight (wght 200, 한글+라틴 서브셋) | SIL OFL 1.1 (`NotoSansKR-OFL.txt`) | Task #1224 — 한컴 돋움(Haansoft Dotum)·돋움·굴림 계열의 **획 두께 정합** 대체 |
+| `RHWPOldHangul-Regular.otf` | RHWP Old Hangul subset | SIL OFL 1.1 (`../../assets/fonts/SourceHanSerifK-OFL.txt`) | Task #4969 — exact-source old Hangul·vertical shaping fixture |
+
+### RHWP Old Hangul 수정본과 SFNT 재현
+
+Adobe Source Han Serif K에서 추출된 서브셋이다. 수정본의 family·full name·PostScript 이름과
+CFF 내부 face 이름을 `RHWP Old Hangul` 계열로 변경하고 원본 저작권·OFL 고지는 보존했다.
+문서의 원래 요청 이름과 수정본 공급은 렌더러 대체 규칙으로 연결한다.
+글리프 charstring 2,215개와 advance·cmap·GSUB·GPOS는 이름 변경 전후 동일하다.
+
+이름 재지정과 웹·Native 출력은 다음 명령으로 재생성한다.
+
+```bash
+python3 scripts/rename-old-hangul-font.py --source assets/fonts/RHWPOldHangul-Regular.woff2
+```
+
+웹 WOFF2를 runtime에서 해제하지 않고 다음 명령으로도 OTF를 만들 수 있다.
+
+```bash
+fonttools ttLib.woff2 decompress \
+  assets/fonts/RHWPOldHangul-Regular.woff2 \
+  -o ttfs/opensource/RHWPOldHangul-Regular.otf
+```
+
+- input SHA-256: `1a45a61e9a320c1bc62ca1401f7b23ceffffe8133dc2a9650ad4e12524f8dcab`
+- output SHA-256: `0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4`
+- output bytes: 456,660
+- glyph order·2,215개 outline canonical digest:
+  `1acbf3beaa5fc89482271c9653f709655a483a8124f2adcd070c323117b08bc8`
+
+`head.checkSumAdjustment`를 제외한 실질 table과 glyph outline은 WOFF2 source와 동일하다. 이 OTF는 fixture와
+exact-source shaping 입력이며 제품 WASM에 자동 embedding하지 않는다.
 
 `NotoSansKR-Regular.ttf`와 대응 WOFF2는 Google Fonts `ofl/notosanskr` variable source를
 `wght=400`으로 instance화한 뒤 `tools/subset_noto_sans_kr_regular.py`로 생성한다. 기존

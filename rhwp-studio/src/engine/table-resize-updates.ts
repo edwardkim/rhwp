@@ -17,17 +17,15 @@ export type LocalResizeUpdate = {
   cellIdx: number;
   widthDelta?: number;
   heightDelta?: number;
-  localResize?: boolean;
-  renderWidth?: number;
-  renderHeight?: number;
 };
+
+/** Only pointer gestures that map to durable table geometry may own a drag. */
+export function shouldStartPersistentTableResize(button: number, shiftKey: boolean): boolean {
+  return button === 0 && !shiftKey;
+}
 
 /** 키보드 셀 크기 조절: 1 키스트로크 당 이동량 (HWPUNIT, 약 1mm). */
 const KEYBOARD_RESIZE_DELTA_HWP = 300;
-/** px(96dpi) → HWPUNIT 환산 배율 (7200/96). getCellDisplaySize 와 동일 계약. */
-const RESIZE_HWPUNIT_PER_PX = 75;
-/** 셀 최소 크기 (HWPUNIT) — Rust MIN_CELL_SIZE(200)보다 보수적으로 300. */
-const RESIZE_MIN_CELL_HWP = 300;
 
 function resizeAxis(key: ResizeArrowKey): { isHoriz: boolean; delta: number } {
   const isHoriz = key === 'ArrowLeft' || key === 'ArrowRight';
@@ -50,10 +48,6 @@ function collectUniqueCells(bboxes: CellBbox[]): CellBbox[] {
   return out;
 }
 
-function cellSizeHwp(b: CellBbox, isHoriz: boolean): number {
-  return Math.round((isHoriz ? b.w : b.h) * RESIZE_HWPUNIT_PER_PX);
-}
-
 function axisStart(b: CellBbox, isHoriz: boolean): number {
   return isHoriz ? b.col : b.row;
 }
@@ -62,41 +56,70 @@ function axisEnd(b: CellBbox, isHoriz: boolean): number {
   return axisStart(b, isHoriz) + (isHoriz ? b.colSpan : b.rowSpan) - 1;
 }
 
-function crossContains(b: CellBbox, isHoriz: boolean, position: number): boolean {
-  const start = isHoriz ? b.row : b.col;
-  const span = isHoriz ? b.rowSpan : b.colSpan;
-  return start <= position && position < start + span;
-}
-
 function overlapCount(b: CellBbox, isHoriz: boolean, start: number, end: number): number {
   return Math.max(0, Math.min(axisEnd(b, isHoriz), end) - Math.max(axisStart(b, isHoriz), start) + 1);
 }
 
-/** F5는 병합 셀의 시작 좌표만 보관하므로 실제 병합 범위까지 선택 축을 확장한다. */
-function selectedAxisRange(
-  cells: CellBbox[],
-  range: CellSelectionRange,
-  isHoriz: boolean,
-): { start: number; end: number } | null {
-  const selected = cells.filter(cell =>
-    overlapCount(cell, true, range.startCol, range.endCol) > 0
-      && overlapCount(cell, false, range.startRow, range.endRow) > 0);
-  if (selected.length === 0) return null;
-  return {
-    start: Math.min(...selected.map(cell => axisStart(cell, isHoriz))),
-    end: Math.max(...selected.map(cell => axisEnd(cell, isHoriz))),
-  };
+/**
+ * 셀 선택 범위와 셀이 실제로 겹치는지 판정한다. 병합 셀은 bbox에 시작 행/열만
+ * 저장되므로 시작 좌표를 범위와 직접 비교하면 선택 범위가 병합 셀의 하위 행/열일 때
+ * 그 병합 셀이 통째로 누락된다. F5 키보드 경로(selectedAxisRange)와
+ * 마우스 드래그 경로(finishResizeDrag)가 이 판정 하나를 공유한다.
+ */
+export function cellOverlapsSelectionRange(b: CellBbox, range: CellSelectionRange): boolean {
+  return overlapCount(b, true, range.startCol, range.endCol) > 0
+    && overlapCount(b, false, range.startRow, range.endRow) > 0;
 }
 
-function sizeUpdate(
-  cellIdx: number,
-  isHoriz: boolean,
-  delta: number,
-  renderSize: number,
-): LocalResizeUpdate {
-  return isHoriz
-    ? { cellIdx, widthDelta: delta, localResize: true, renderWidth: renderSize }
-    : { cellIdx, heightDelta: delta, localResize: true, renderHeight: renderSize };
+/**
+ * 셀 선택 상태의 마우스 열 경계 드래그: 경계 왼쪽의 선택 셀에 delta, 오른쪽 이웃에
+ * 반대 delta 를 만들어 표 외곽 폭을 유지한다. 병합 셀은 걸친 모든 행의 이웃을
+ * 보상해야 한다 — 시작 행의 이웃 하나만 보상하면 나머지 행의 열 폭 합이 어긋나
+ * 표가 깨진다 (finishResizeDrag 가 사용).
+ */
+export function buildCellSelectionColumnDragUpdates(
+  selectedBboxes: CellBbox[],
+  allBboxes: CellBbox[],
+  deltaHwpUnit: number,
+): LocalResizeUpdate[] {
+  const updates: LocalResizeUpdate[] = [];
+  const addedNeighbors = new Set<number>();
+  for (const bbox of selectedBboxes) {
+    updates.push({ cellIdx: bbox.cellIdx, widthDelta: deltaHwpUnit });
+    const neighbors = allBboxes.filter(b =>
+      b.col === bbox.col + bbox.colSpan
+      && b.row < bbox.row + bbox.rowSpan
+      && b.row + b.rowSpan > bbox.row);
+    for (const neighbor of neighbors) {
+      if (addedNeighbors.has(neighbor.cellIdx)) continue;
+      updates.push({ cellIdx: neighbor.cellIdx, widthDelta: -deltaHwpUnit });
+      addedNeighbors.add(neighbor.cellIdx);
+    }
+  }
+  return updates;
+}
+
+/**
+ * 경계 반대편에서 보상(-delta)을 받아야 하는 이웃 셀 전부. 병합 셀은 걸친
+ * 모든 행(열 경계)/열(행 경계)의 이웃을 쓸어야 한다 — 시작 행/열의 이웃
+ * 하나만 보상하면 나머지 줄의 폭/높이 합이 어긋나 표 크기가 뒤틀린다.
+ */
+export function findResizeCompensationNeighbors(
+  edge: { type: 'row' | 'col' },
+  bbox: CellBbox,
+  bboxes: CellBbox[],
+): CellBbox[] {
+  if (edge.type === 'col') {
+    return bboxes.filter(b =>
+      b.col === bbox.col + bbox.colSpan
+      && b.row < bbox.row + bbox.rowSpan
+      && b.row + b.rowSpan > bbox.row);
+  }
+
+  return bboxes.filter(b =>
+    b.row === bbox.row + bbox.rowSpan
+    && b.col < bbox.col + bbox.colSpan
+    && b.col + b.colSpan > bbox.col);
 }
 
 /**
@@ -121,92 +144,6 @@ export function buildColumnResizeUpdates(
     if (overlap <= 0) continue;
     const d = delta * overlap;
     updates.push(isHoriz ? { cellIdx: b.cellIdx, widthDelta: d } : { cellIdx: b.cellIdx, heightDelta: d });
-  }
-  return updates;
-}
-
-/**
- * Alt+방향키: 선택 세로 칸/가로줄 전체와 바로 오른쪽/아래 이웃을 반대로
- * 조절해 표 크기를 유지한다. 병합 셀은 걸친 선택 칸/줄 수만큼 delta를
- * 적용한다. 선택의 바깥 경계가 없는 경우에는 표 크기를 바꾸지 않는다.
- */
-export function buildLocalResizeUpdates(
-  bboxes: CellBbox[],
-  range: CellSelectionRange,
-  key: ResizeArrowKey,
-): LocalResizeUpdate[] {
-  const { isHoriz, delta } = resizeAxis(key);
-  const cells = collectUniqueCells(bboxes);
-  const selectedRange = selectedAxisRange(cells, range, isHoriz);
-  if (!selectedRange) return [];
-  const { start: selectionStart, end: selectionEnd } = selectedRange;
-  const selectionSpan = selectionEnd - selectionStart + 1;
-  const neighborAxis = selectionEnd + 1;
-  if (!cells.some(b => axisStart(b, isHoriz) <= neighborAxis && neighborAxis <= axisEnd(b, isHoriz))) {
-    return [];
-  }
-
-  const deltas = new Map<number, { cell: CellBbox; delta: number }>();
-  const addDelta = (cell: CellBbox, amount: number) => {
-    const entry = deltas.get(cell.cellIdx);
-    if (entry) entry.delta += amount;
-    else deltas.set(cell.cellIdx, { cell, delta: amount });
-  };
-  for (const cell of cells) {
-    const selectedCount = overlapCount(cell, isHoriz, selectionStart, selectionEnd);
-    if (selectedCount > 0) addDelta(cell, delta * selectedCount);
-    if (axisStart(cell, isHoriz) <= neighborAxis && neighborAxis <= axisEnd(cell, isHoriz)) {
-      addDelta(cell, -delta * selectionSpan);
-    }
-  }
-  const changed = [...deltas.values()].filter(entry => entry.delta !== 0);
-  if (changed.some(entry => cellSizeHwp(entry.cell, isHoriz) + entry.delta < RESIZE_MIN_CELL_HWP)) {
-    return [];
-  }
-  return changed.map(entry =>
-    sizeUpdate(
-      entry.cell.cellIdx,
-      isHoriz,
-      entry.delta,
-      cellSizeHwp(entry.cell, isHoriz) + entry.delta,
-    ));
-}
-
-/**
- * Shift+방향키: 경계 이동 — 셀이 커진 만큼 이웃이 작아진다. 표 전체 크기 유지.
- *
- * 정책: 항상 선택 끝(오른쪽/아래) 경계를 움직인다. →/↓ 는 바깥으로(셀 +,
- * 이웃 −), ←/↑ 는 안으로(셀 −, 이웃 +). 마지막 칸/줄은 이웃이 없어 no-op.
- */
-export function buildBoundaryResizeUpdates(
-  bboxes: CellBbox[],
-  range: CellSelectionRange,
-  key: ResizeArrowKey,
-): LocalResizeUpdate[] {
-  const { isHoriz, delta } = resizeAxis(key);
-  const cells = collectUniqueCells(bboxes);
-
-  const updates: LocalResizeUpdate[] = [];
-  const processedTargets = new Set<number>();
-  const processedNeighbors = new Set<number>();
-  const laneStart = isHoriz ? range.startRow : range.startCol;
-  const laneEnd = isHoriz ? range.endRow : range.endCol;
-  const edge = isHoriz ? range.endCol : range.endRow;
-  for (let lane = laneStart; lane <= laneEnd; lane++) {
-    const target = cells.find(b =>
-      axisStart(b, isHoriz) <= edge && edge <= axisEnd(b, isHoriz) && crossContains(b, isHoriz, lane));
-    if (!target || processedTargets.has(target.cellIdx)) continue;
-    const neighborAxis = axisEnd(target, isHoriz) + 1;
-    const neighbor = cells.find(b => axisStart(b, isHoriz) === neighborAxis && crossContains(b, isHoriz, lane));
-    if (!target || !neighbor) continue; // 마지막 칸/줄 — 이웃 없음
-    if (cellSizeHwp(target, isHoriz) + delta < RESIZE_MIN_CELL_HWP) continue;
-    if (cellSizeHwp(neighbor, isHoriz) - delta < RESIZE_MIN_CELL_HWP) continue;
-    updates.push(sizeUpdate(target.cellIdx, isHoriz, delta, cellSizeHwp(target, isHoriz) + delta));
-    processedTargets.add(target.cellIdx);
-    if (!processedNeighbors.has(neighbor.cellIdx)) {
-      updates.push(sizeUpdate(neighbor.cellIdx, isHoriz, -delta, cellSizeHwp(neighbor, isHoriz) - delta));
-      processedNeighbors.add(neighbor.cellIdx);
-    }
   }
   return updates;
 }

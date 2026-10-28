@@ -1,0 +1,141 @@
+{
+  "scope": "Neutral opaque whole-source BMP/PNG/GIF in Hancom Print; preserve original source; no effects or explicit PDF-importer interpolation declaration.",
+  "independent_specimens": [
+    {
+      "specimen": "anisotropic-palette-independent",
+      "input_sha256": "3176ad49bce8bca7f7a3e4bf469da5fe566338a095605183f568bfbd522e40f6",
+      "engine": 2020,
+      "job_id": "0e808b24-65fe-44cb-815b-524f899c069d",
+      "pdf_sha256": "94c8cdbc354ae06ee4aa874c3d6ac6d923422c1be953c62c5bc79391a6e471f7",
+      "backend": "hwp-managed-direct-dll-host",
+      "print_mode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "specimen": "bitmap-channel-transfer-independent",
+      "input_sha256": "cdb26249443ca1a2e0200245ece0df75255acc7b20278fbdaa8378e398db9784",
+      "engine": 2020,
+      "job_id": "7f3fee9f-a41d-4cd9-8928-428866e29748",
+      "pdf_sha256": "a26ce51e31a76f7649c23a45b9f9711a735058ef2168487250ff29135229ecc3",
+      "backend": "hwp-managed-direct-dll-host",
+      "print_mode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "specimen": "bitmap-channel-transfer-independent",
+      "input_sha256": "cdb26249443ca1a2e0200245ece0df75255acc7b20278fbdaa8378e398db9784",
+      "engine": 2024,
+      "job_id": "c809e4c5-6378-463f-8f07-0086d93d3ef1",
+      "pdf_sha256": "cb99add7db63dc4f783a7484a611b43175fbd08ab68fa5d3b22ddd223dcf4880",
+      "backend": "hwp-managed-direct-dll-host",
+      "print_mode": "frame_print_to_pdf_ex_one_up"
+    },
+    {
+      "specimen": "bitmap-color-transfer-independent",
+      "input_sha256": "eed906786a2a128d2c9a2e3799b4ae594d35c1f2b66b6b125f9b5e4760eff4c5",
+      "engine": 2024,
+      "job_id": "ff11bfda-2642-4b2c-bd7b-a5ee679adf51",
+      "pdf_sha256": "e6a2960d0b6bef74548bfd581d992a829037f5224a6a20a7394010c93563bf4f",
+      "backend": "hwp-managed-direct-dll-host",
+      "print_mode": "frame_print_to_pdf_ex_one_up"
+    }
+  ],
+  "jpeg": {
+    "palette_threshold": {
+      "lossless_used_colors": [
+        17,
+        18,
+        24,
+        31
+      ],
+      "jpeg_used_colors": [
+        32,
+        256
+      ]
+    },
+    "sampling_factor": [
+      2,
+      2
+    ],
+    "quality_formula": "clamp(floor(75*floor(placement_width*96/layout_dpi)/source_width),35,75)",
+    "chroma_reduction": "2x2 box average with IJG alternating rounding bias",
+    "rounding_correction": {
+      "independent_source137_display80": "Hancom quantization quality 43; rounding would produce 44",
+      "independent_source137_display120": "Hancom quantization quality 65; rounding would produce 66",
+      "target_bmp4": "859 source pixels, 628 nominal display pixels; fresh reference quantization quality 54. Candidate25 rounded to 55; correct to floor in next candidate.",
+      "remaining_source_width_contract": "Independent source GIF width 211 is delivered as width 210 in Print; source conversion width normalization is still under investigation."
+    }
+  },
+  "hancom2024_truecolor": {
+    "condition": "Original RGB colors plus reserved black/white exceed 256",
+    "quantization": "Per-channel RGB555 ordered dither at original source pixel coordinates",
+    "matrix4x4": [
+      [
+        0,
+        8,
+        2,
+        10
+      ],
+      [
+        12,
+        4,
+        14,
+        6
+      ],
+      [
+        3,
+        11,
+        1,
+        9
+      ],
+      [
+        15,
+        7,
+        13,
+        5
+      ]
+    ],
+    "channel_rule": "phase_y=(y-source_height)%4; v=min(248,(c&248)+(8 if 2*(c&7)>matrix[phase_y][x%4] else 0)); output=min(255,v+(v>>5))",
+    "gray_test": "All 1..255 gray tiles plus one chromatic tile: JPEG decoder pixel absolute error 0 with RGB555 4x4; identity for 2020",
+    "rgb_test": [
+      {
+        "source": "image1.bmp",
+        "source_sha256": "ee124683d7303006b290d3833510ae87038e938685b7a3d6a19a9650e1cb0f6b",
+        "decoded_absolute_channel_error": 0,
+        "pixels": 16384
+      },
+      {
+        "source": "image2.png",
+        "source_sha256": "618504d64e898b6fe23b3f4e17de8cac83a07c155f0880b51685703422687cd7",
+        "decoded_absolute_channel_error": 0,
+        "pixels": 16384
+      },
+      {
+        "source": "image3.gif",
+        "source_sha256": "2385683da8b83e98e78dba0ba62a5e8f7f2b2e088e72767235c937fffba25830",
+        "decoded_absolute_channel_error": 0,
+        "pixels": 16384
+      }
+    ]
+  },
+  "previous_implementation": {
+    "approximate_color_transfer_commit": "96d348cf5dde677d28fae3908c838ad34d7208c5",
+    "cubic_contract_commit": "049965c3a418a96588dee2beab509dc2cd5318c7",
+    "cubic_kernel_commit": "da4fe128b52714d21843acce57742e8ce4dd792d",
+    "pr": 8064,
+    "merge": "9b01d5d1447220b3a7345703e79ad42cf3f502f4"
+  },
+  "status": "Candidate28 implements floor JPEG quality and the shared source reference/device frame sampler. Full Native: HWPX63/64, HWP2024 63/64, HWP2022 62/64 raw100; image1/2/4/6 regions on pages1/20/39 are all symmetric unmatched0. Remaining WMF18/35 and fresh optimized WASM are not complete. Regression expectations unchanged.",
+  "integer_quantization": {
+    "upstream": "jpeg-encoder 0.7.1",
+    "source_path": "vendor/rhwp-jpeg-encoder",
+    "correction": "If reciprocal quantization differs by at least half a quantum, recompute using exact integer nearest rounding with ties away from zero.",
+    "verified_qualities": [
+      35,
+      75
+    ],
+    "coefficient_positions": 64,
+    "tables": 2,
+    "i16_values_per_position": 65536,
+    "comparisons": 343932928,
+    "mismatches_after": 0
+  }
+}

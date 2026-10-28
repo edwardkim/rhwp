@@ -1,0 +1,29 @@
+[RustTestSuite] issue_2308_render_normalized_derived_state -> regression_suite_021::issue_2308_render_normalized_derived_state
+[RustTestSuite] cargo test --locked --target-dir /home/edward/mygithub/rhwp/target/pr-review --test regression_suite_021 issue_2308_render_normalized_derived_state::
+   Compiling rhwp v0.8.6 (/tmp/rhwp-pr7518-review-20261004)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.77s
+     Running tests/generated/regression_suite_021.rs (/home/edward/mygithub/rhwp/target/pr-review/debug/deps/regression_suite_021-42a85e32d7dfa39a)
+
+running 6 tests
+test issue_2308_render_normalized_derived_state::issue_2308_short_rowbreak_child_wraps_where_the_authority_pdf_wraps ... ignored, #5193: 프레임 이관 후 이 wrap 핀만 실패. 핀은 한컴 PDF 가 판정하므로 옮기지 않는다 — 프레임이 `를`를 210 HWPUNIT(상자의 0.55%) 여유로 p81 에 싣는 폭 추정 잔차. 위 주석에 판정 피연산자 기록.
+test issue_2308_render_normalized_derived_state::issue_2308_short_rowbreak_child_uses_owner_content_box_only ... ok
+test issue_2308_render_normalized_derived_state::issue_2308_empty_host_paragraph_keeps_block_nested_table_content ... ok
+test issue_2308_render_normalized_derived_state::issue_2308_saved_nested_width_keeps_fragment_geometry ... FAILED
+test issue_2308_render_normalized_derived_state::issue_2308_nested_non_tac_table_uses_table_content_box ... ok
+test issue_2308_render_normalized_derived_state::issue_2308_nested_fragment_cut_does_not_half_paint_boundary_line ... ok
+
+failures:
+
+---- issue_2308_render_normalized_derived_state::issue_2308_saved_nested_width_keeps_fragment_geometry stdout ----
+
+thread 'issue_2308_render_normalized_derived_state::issue_2308_saved_nested_width_keeps_fragment_geometry' (67468) panicked at tests/generated/../issue_2308_render_normalized_derived_state.rs:285:9:
+page 33 nested fragment must preserve PDF-aligned geometry y=400.4 h=636.8; got [(402.3266666666667, 636.9733333333334)]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    issue_2308_render_normalized_derived_state::issue_2308_saved_nested_width_keeps_fragment_geometry
+
+test result: FAILED. 4 passed; 1 failed; 1 ignored; 0 measured; 206 filtered out; finished in 2.27s
+
+error: test failed, to rerun pass `-p rhwp --test regression_suite_021`

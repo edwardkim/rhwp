@@ -120,7 +120,7 @@ def write_index() -> None:
             "agent": ".claude/agents/rhwp-chief.md",
             "loop": "tools/chief/service_loop.py",
             "playbook": "mydocs/manual/chief_playbook.md",
-            "working": "mydocs/working/agent_chief.md",
+            "working": "mydocs/working/archives/agent_chief.md",
             "references": refs,
             "forbiddenTrees": ["gym/"],
             "forbiddenSkillsTouch": [

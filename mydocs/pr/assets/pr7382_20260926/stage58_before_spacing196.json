@@ -1,0 +1,2050 @@
+{
+  "provenance": {
+    "head": "80f7e778a6a0b2979c9cccbcd003a267ce3932e7",
+    "profile": "release-test",
+    "sources": {
+      "src/document_core/queries/rendering.rs": "34b1cba1180f112e0e33673057008b30f85be72c8adeaaca8a0756b784c474c4",
+      "src/paint/json.rs": "9f2b25a1635ac3b43eef55911a41818b4d32eca82da69188d993451df890c81b",
+      "src/paint/resources.rs": "bbc0254ba0bb6051b8fa6c942102db919f82ac52dc48f0df49fd80a2322bbedc",
+      "src/parser/hwpx/section.rs": "0263ddf7762c396a768750a7bda15fd08b081a1145c7dcc07582664802706ea7",
+      "src/renderer/equation/mod.rs": "2db7289682bece0df9ffabd6bf3d0b4b152c65f56ccca60715641ce530c2ce78",
+      "src/renderer/float_placement.rs": "0e6ba4eed184ac0d086394d6e110c22a5f59263e0ba7382b1eae2b44fe46ffe0",
+      "src/renderer/image_resolver.rs": "75dab9fcb9d36654e9f34acc7f428173a7c25b2d152bbd6d49a10dc0f8c769dd",
+      "src/renderer/layout.rs": "315eaa7a234dd6b63edc473c6f72279d32aab0a10b6e636253c0f9b2870c8a70",
+      "src/renderer/layout/paragraph_layout.rs": "4d6b0902ee26f6c8f9744f30556746f0c969d52eae100d325083d6e6c6e87257",
+      "src/renderer/layout/picture_footnote.rs": "68a788f8e348e7ada1ff6403bc22e53136d7a6caa538db20636fee3aa9f5b753",
+      "src/renderer/layout/shape_layout.rs": "e7e775ae58c52b3ceddc704da118f0128619bf4bd74521e4eac24c5ad2e5037d",
+      "src/renderer/layout/table_layout.rs": "0a999c76915e7368595e486904238d23644fe8e1b2afc2aeed306f394f1e4237",
+      "src/renderer/mod.rs": "a9f97bed775b8928eeae72b00301935bbd99f46d032748ba39eb9cc4c8a1bb4b",
+      "src/renderer/skia/renderer.rs": "2fa5d304a9f4537989bd3292e2823cc649a658ab16ddfe67c7590c7604740a20",
+      "src/renderer/svg.rs": "e8b68cfa35ed48272cd5c371243a5f76c214ac948b6ed62065d756a24a5dbfa2",
+      "src/renderer/typeset.rs": "b7ae0c453f04102e20bd2e3aef576357e9b34e12b72c7531a706a7757b4dea1b",
+      "src/renderer/typeset/controls/wrap_flow.rs": "6d16e74329db5dc8f9eb387f8a84978c001471b54c94fa7b695df94dfbd69c9d",
+      "src/renderer/typeset/notes/footnotes/body.rs": "4577a35943f988da404143b0d450a18f9fa4a5c9c9b47a488ca541ec773bb98c",
+      "src/renderer/typeset/notes/footnotes/boundary.rs": "661ba717bb4e20a70fc03b69b953ebf3efd3eff8dbadbc84e08af698ead8206a",
+      "src/renderer/typeset/paragraph.rs": "4ab18085b0c3f40cd947824c06d5d62e643a29c97e7c9e80773efc8575b6e807",
+      "src/renderer/typeset/paragraph/metrics.rs": "bbb6c7241f400f31832890702b7b5380d7b2b07596a09ad5ade753b05745c3f5",
+      "src/renderer/typeset/paragraph/scan.rs": "0be261d36b5beb3daf4e310873715a969f07d1a9d14a2ff2d2a6eadb9a960f35",
+      "src/renderer/typeset/section/controls.rs": "1c995684d2ef15c5e313f2486e246ac3da38c92268672361a9e51c2117d5b1ee",
+      "src/renderer/typeset/section/post_flow.rs": "79c2c264db1e4cc501f4ab70e6dd4d9e5dac99ffc73e1fba801b709889524dad",
+      "src/renderer/typeset/state.rs": "62046ebaa96602ddb8dc63ab6f9a77326245b1ef71f24d70dfc1b69bfd1675c8",
+      "src/renderer/typeset/state/commands.rs": "e16e433a275e441c91d22a997076dc1f64c0a07f22f773bfcb7249109e9cb4bc",
+      "src/renderer/typeset/state/data.rs": "dcef5b9cb1e411fe3c9389d59e99f9fbb312e72e7268a08e3b6440f5232954bc",
+      "src/renderer/typeset/state/transition.rs": "2b1acbc06d15bfdfa9b1ec867f11253b7c3aef3817717b6f86f9cbc83906b3c6",
+      "src/renderer/typeset/table/block/entry.rs": "fcb36afb165b76ebc0ff1e96b8cd7b46cb83823e83e728599524f136846f8105",
+      "src/renderer/typeset/table/block/whole_fit.rs": "052a0509a29a6caf8b08f0e8fc7a022be8bfb9b4e9229ec9ec29500fd3599c49",
+      "src/renderer/typeset/table/continuation/fragment/emit.rs": "05878c9741a4a2ae8d7ff32a74d7fe9506c319af7b5fb99dc57f675789341752",
+      "src/renderer/typeset/table/scan/runner/row_step.rs": "9877c5c6b380e667b882c2dfdc8f82eb2d0a17d393545905547512e2c6543938",
+      "src/renderer/typeset/table/scan/source_frame.rs": "fe5e635dae45d7f3b470ac5a730c8b62b0e8111bce22c815a53c476c8ac57834",
+      "src/renderer/web_canvas.rs": "5d8d30ff300a92048021c6d6b3dacfd94af0257d8718cf5861fcac58d5fb94a7"
+    },
+    "binary_sha256": "338ba45c941831dfc89e642835a83f3188c3c5ad2546647a0466dc173bb4bead"
+  },
+  "page_metrics": {
+    "schema_version": 1,
+    "page": 196,
+    "artifacts": {
+      "svg": "svg/text_footnote_tail_overpagination_196.svg",
+      "render_tree": "render_tree/render_tree_196.json",
+      "rhwp_png": "rhwp_png/rhwp_196.png",
+      "pdf_png": "pdf_png/pdf-196.png",
+      "compare": "compare/compare_196.png",
+      "overlay": "overlay/overlay_196.png",
+      "review": "review/review_196.png",
+      "analysis": "analysis/page_196.json"
+    },
+    "overlay_metrics": {
+      "page": 196,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage58-tail1733/candidate26/visual-tail-shard-native-hwp/tail1733-hwp/rhwp_png/rhwp_196.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage58-tail1733/candidate26/visual-tail-shard-native-hwp/tail1733-hwp/pdf_png/pdf-196.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage58-tail1733/candidate26/visual-tail-shard-native-hwp/tail1733-hwp/overlay/overlay_196.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 37935,
+      "diff_ratio": 0.04254415,
+      "pixel_match_percent": 95.74559,
+      "ink_union_pixels": 44383,
+      "ink_diff_pixels": 37935,
+      "ink_diff_ratio": 0.85471915,
+      "ink_match_percent": 14.52809,
+      "visual_accuracy_proxy_percent": 14.52809,
+      "tolerant_content_match_radius_px": 2,
+      "tolerant_content_match_percent": 91.42464,
+      "mean_abs_channel_delta": 5.566,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        75,
+        714,
+        1095
+      ]
+    },
+    "visual_metrics": {
+      "page": 196,
+      "flags": [],
+      "rhwp_frame": [
+        26,
+        75,
+        768,
+        1097
+      ],
+      "pdf_frame": [
+        26,
+        75,
+        768,
+        1097
+      ],
+      "rhwp_outside_frame_pixels": 0,
+      "pdf_outside_frame_pixels": 0,
+      "rhwp_outside_frame_max_y": null,
+      "pdf_outside_frame_max_y": null,
+      "rhwp_outside_frame_extent_px": null,
+      "pdf_outside_frame_extent_px": null,
+      "frame_is_interior_decoration": true,
+      "frame_overflow_tolerated_bleed": false,
+      "paper_size_footer_frame_bleed": false,
+      "rhwp_outside_frame_bleed_px": 0,
+      "pdf_outside_frame_bleed_px": 0,
+      "content_bottom_delta_px": 11.0,
+      "red_marker_drift": {
+        "rhwp_count": 0,
+        "pdf_count": 0,
+        "paired": 0,
+        "max_abs_delta_px": null,
+        "mean_abs_delta_px": null
+      },
+      "line_band_drift": {
+        "rhwp_count": 29,
+        "pdf_count": 29,
+        "paired": 29,
+        "max_abs_delta_px": 11.5,
+        "p90_abs_delta_px": 10.0,
+        "mean_abs_delta_px": 2.1
+      },
+      "column_line_band_drift": [
+        {
+          "column": 0,
+          "rhwp_frame": [
+            26,
+            75,
+            395,
+            1097
+          ],
+          "pdf_frame": [
+            26,
+            75,
+            395,
+            1097
+          ],
+          "drift": {
+            "rhwp_count": 29,
+            "pdf_count": 29,
+            "paired": 29,
+            "max_abs_delta_px": 11.5,
+            "p90_abs_delta_px": 10.0,
+            "mean_abs_delta_px": 2.1
+          },
+          "rhwp_first_band": {
+            "y0": 77,
+            "y1": 86,
+            "x0": 364,
+            "x1": 393,
+            "pixels": 160,
+            "cy": 81.5
+          },
+          "rhwp_last_band": {
+            "y0": 1085,
+            "y1": 1094,
+            "x0": 76,
+            "x1": 273,
+            "pixels": 640,
+            "cy": 1089.5
+          },
+          "pdf_first_band": {
+            "y0": 77,
+            "y1": 87,
+            "x0": 365,
+            "x1": 393,
+            "pixels": 173,
+            "cy": 82.0
+          },
+          "pdf_last_band": {
+            "y0": 1075,
+            "y1": 1084,
+            "x0": 76,
+            "x1": 272,
+            "pixels": 573,
+            "cy": 1079.5
+          }
+        },
+        {
+          "column": 1,
+          "rhwp_frame": [
+            399,
+            75,
+            768,
+            1097
+          ],
+          "pdf_frame": [
+            399,
+            75,
+            768,
+            1097
+          ],
+          "drift": {
+            "rhwp_count": 27,
+            "pdf_count": 27,
+            "paired": 27,
+            "max_abs_delta_px": 90.0,
+            "p90_abs_delta_px": 51.0,
+            "mean_abs_delta_px": 30.8
+          },
+          "rhwp_first_band": {
+            "y0": 77,
+            "y1": 84,
+            "x0": 401,
+            "x1": 428,
+            "pixels": 79,
+            "cy": 80.5
+          },
+          "rhwp_last_band": {
+            "y0": 1071,
+            "y1": 1080,
+            "x0": 406,
+            "x1": 463,
+            "pixels": 240,
+            "cy": 1075.5
+          },
+          "pdf_first_band": {
+            "y0": 77,
+            "y1": 89,
+            "x0": 401,
+            "x1": 429,
+            "pixels": 119,
+            "cy": 83.0
+          },
+          "pdf_last_band": {
+            "y0": 1060,
+            "y1": 1069,
+            "x0": 408,
+            "x1": 463,
+            "pixels": 249,
+            "cy": 1064.5
+          }
+        }
+      ],
+      "column_line_band_drift_candidates": [],
+      "column_text_flow_masked_line_band_drift": [
+        {
+          "column": 0,
+          "rhwp_frame": [
+            73,
+            73,
+            395,
+            1088
+          ],
+          "pdf_frame": [
+            73,
+            73,
+            395,
+            1088
+          ],
+          "drift": {
+            "rhwp_count": 29,
+            "pdf_count": 29,
+            "paired": 29,
+            "max_abs_delta_px": 11.5,
+            "p90_abs_delta_px": 6.0,
+            "mean_abs_delta_px": 1.9
+          },
+          "rhwp_first_band": {
+            "y0": 76,
+            "y1": 86,
+            "x0": 364,
+            "x1": 393,
+            "pixels": 170,
+            "cy": 81.0
+          },
+          "rhwp_last_band": {
+            "y0": 1085,
+            "y1": 1086,
+            "x0": 78,
+            "x1": 268,
+            "pixels": 106,
+            "cy": 1085.5
+          },
+          "pdf_first_band": {
+            "y0": 76,
+            "y1": 87,
+            "x0": 365,
+            "x1": 393,
+            "pixels": 183,
+            "cy": 81.5
+          },
+          "pdf_last_band": {
+            "y0": 1075,
+            "y1": 1084,
+            "x0": 76,
+            "x1": 272,
+            "pixels": 573,
+            "cy": 1079.5
+          }
+        },
+        {
+          "column": 1,
+          "rhwp_frame": [
+            399,
+            73,
+            721,
+            1088
+          ],
+          "pdf_frame": [
+            399,
+            73,
+            721,
+            1088
+          ],
+          "drift": {
+            "rhwp_count": 27,
+            "pdf_count": 27,
+            "paired": 27,
+            "max_abs_delta_px": 90.0,
+            "p90_abs_delta_px": 51.0,
+            "mean_abs_delta_px": 30.8
+          },
+          "rhwp_first_band": {
+            "y0": 77,
+            "y1": 84,
+            "x0": 401,
+            "x1": 428,
+            "pixels": 79,
+            "cy": 80.5
+          },
+          "rhwp_last_band": {
+            "y0": 1071,
+            "y1": 1080,
+            "x0": 406,
+            "x1": 463,
+            "pixels": 240,
+            "cy": 1075.5
+          },
+          "pdf_first_band": {
+            "y0": 77,
+            "y1": 89,
+            "x0": 401,
+            "x1": 429,
+            "pixels": 119,
+            "cy": 83.0
+          },
+          "pdf_last_band": {
+            "y0": 1060,
+            "y1": 1069,
+            "x0": 408,
+            "x1": 463,
+            "pixels": 249,
+            "cy": 1064.5
+          }
+        }
+      ],
+      "column_text_flow_table_masks": {
+        "rhwp": [],
+        "pdf": []
+      },
+      "column_text_flow_body_frames": {
+        "rhwp": [
+          73,
+          73,
+          721,
+          1088
+        ],
+        "pdf": [
+          73,
+          73,
+          721,
+          1088
+        ]
+      },
+      "column_text_flow_reflowing_float_present": false,
+      "column_text_flow_collapse_candidates": [],
+      "large_ink_region_drift": {
+        "rhwp_count": 6,
+        "pdf_count": 5,
+        "paired": 5,
+        "deltas_px": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          -112.0
+        ],
+        "max_abs_delta_px": 112.0,
+        "mean_abs_delta_px": 22.4,
+        "rhwp_regions": [
+          {
+            "x0": 122.0,
+            "y0": 203.0,
+            "x1": 666.0,
+            "y1": 251.0,
+            "w": 544.0,
+            "h": 48.0,
+            "cy": 227.0,
+            "tiles": 61.0
+          },
+          {
+            "x0": 122.0,
+            "y0": 539.0,
+            "x1": 234.0,
+            "y1": 587.0,
+            "w": 112.0,
+            "h": 48.0,
+            "cy": 563.0,
+            "tiles": 15.0
+          },
+          {
+            "x0": 122.0,
+            "y0": 603.0,
+            "x1": 282.0,
+            "y1": 651.0,
+            "w": 160.0,
+            "h": 48.0,
+            "cy": 627.0,
+            "tiles": 21.0
+          },
+          {
+            "x0": 186.0,
+            "y0": 859.0,
+            "x1": 426.0,
+            "y1": 907.0,
+            "w": 240.0,
+            "h": 48.0,
+            "cy": 883.0,
+            "tiles": 38.0
+          },
+          {
+            "x0": 202.0,
+            "y0": 923.0,
+            "x1": 282.0,
+            "y1": 971.0,
+            "w": 80.0,
+            "h": 48.0,
+            "cy": 947.0,
+            "tiles": 11.0
+          },
+          {
+            "x0": 74.0,
+            "y0": 1035.0,
+            "x1": 458.0,
+            "y1": 1097.0,
+            "w": 384.0,
+            "h": 62.0,
+            "cy": 1066.0,
+            "tiles": 49.0
+          }
+        ],
+        "pdf_regions": [
+          {
+            "x0": 122.0,
+            "y0": 203.0,
+            "x1": 666.0,
+            "y1": 251.0,
+            "w": 544.0,
+            "h": 48.0,
+            "cy": 227.0,
+            "tiles": 60.0
+          },
+          {
+            "x0": 122.0,
+            "y0": 539.0,
+            "x1": 218.0,
+            "y1": 587.0,
+            "w": 96.0,
+            "h": 48.0,
+            "cy": 563.0,
+            "tiles": 13.0
+          },
+          {
+            "x0": 122.0,
+            "y0": 603.0,
+            "x1": 282.0,
+            "y1": 651.0,
+            "w": 160.0,
+            "h": 48.0,
+            "cy": 627.0,
+            "tiles": 19.0
+          },
+          {
+            "x0": 186.0,
+            "y0": 859.0,
+            "x1": 426.0,
+            "y1": 907.0,
+            "w": 240.0,
+            "h": 48.0,
+            "cy": 883.0,
+            "tiles": 35.0
+          },
+          {
+            "x0": 122.0,
+            "y0": 1035.0,
+            "x1": 458.0,
+            "y1": 1083.0,
+            "w": 336.0,
+            "h": 48.0,
+            "cy": 1059.0,
+            "tiles": 40.0
+          }
+        ]
+      },
+      "endnote_shape_ui": {
+        "separator_visible": true,
+        "separator_above_mm": 0.79,
+        "between_notes_mm": 0.0,
+        "separator_below_mm": 2.0,
+        "separator_length_mm": 43.321
+      },
+      "endnote_separator_gap": {
+        "expected_separator": true,
+        "separator_below_mm": 2.0,
+        "separator_above_mm": 0.79,
+        "between_notes_mm": 0.0,
+        "separator_length_px": 163.7,
+        "rhwp": {
+          "expected_separator": true,
+          "candidate_count": 1,
+          "selected": null,
+          "gap_px": null,
+          "first_content_y": null,
+          "first_marker_y": null,
+          "candidates": [
+            {
+              "x0": 75.6,
+              "x1": 264.6,
+              "y0": 1037.5,
+              "y1": 1038.0,
+              "length": 189.0,
+              "cy": 1037.8,
+              "gap_height": 0.5
+            }
+          ]
+        },
+        "pdf": {
+          "expected_separator": true,
+          "candidate_count": 1,
+          "selected": null,
+          "gap_px": null,
+          "first_content_y": null,
+          "first_marker_y": null,
+          "candidates": [
+            {
+              "x0": 76.0,
+              "x1": 266.0,
+              "y0": 1026.0,
+              "y1": 1026.0,
+              "length": 191.0,
+              "cy": 1026.0,
+              "gap_height": 1.0
+            }
+          ]
+        },
+        "gap_delta_px": null
+      },
+      "endnote_no_separator_content_start": null,
+      "between_notes_marker_gap": {
+        "expected_between_notes_mm": 0.0,
+        "expected_between_notes_px": null,
+        "rhwp_marker_count": 0,
+        "pdf_marker_count": 0,
+        "paired_gap_count": 0,
+        "max_abs_delta_px": null,
+        "mean_abs_delta_px": null,
+        "rhwp_marker_y": [],
+        "pdf_marker_y": [],
+        "rhwp_marker_y_by_column": [
+          []
+        ],
+        "pdf_marker_y_by_column": [
+          []
+        ],
+        "rhwp_gaps_px": [],
+        "pdf_gaps_px": [],
+        "pairs": []
+      },
+      "svg": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage58-tail1733/candidate26/visual-tail-shard-native-hwp/tail1733-hwp/svg/text_footnote_tail_overpagination_196.svg",
+      "render_tree_json": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage58-tail1733/candidate26/visual-tail-shard-native-hwp/tail1733-hwp/render_tree/render_tree_196.json",
+      "equation_text_overlap_candidates": [],
+      "square_wrap_text_overlap_candidates": [],
+      "deferred_square_picture_top_drift_candidates": [],
+      "right_table_left_strip_text_deficit_candidates": [],
+      "question_title_text_overlap_candidates": [],
+      "line_order_overlap_candidates": [],
+      "render_tree_frame_tail_overflow_candidates": [],
+      "render_tree_frame_tail_overflow_suppressed_candidates": [],
+      "question_marker_drift_candidates": [],
+      "legacy_glyph_visual_candidates": [],
+      "annotated": null
+    }
+  },
+  "render_tree": {
+    "type": "Page",
+    "bbox": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 793.7,
+      "h": 1122.5
+    },
+    "children": [
+      {
+        "type": "PageBg",
+        "bbox": {
+          "x": 0.0,
+          "y": 0.0,
+          "w": 793.7,
+          "h": 1122.5
+        }
+      },
+      {
+        "type": "Header",
+        "bbox": {
+          "x": 75.6,
+          "y": 75.6,
+          "w": 642.5,
+          "h": 0.0
+        }
+      },
+      {
+        "type": "Body",
+        "bbox": {
+          "x": 75.6,
+          "y": 75.6,
+          "w": 642.5,
+          "h": 1009.1
+        },
+        "children": [
+          {
+            "type": "Column",
+            "bbox": {
+              "x": 75.6,
+              "y": 75.6,
+              "w": 642.5,
+              "h": 1009.1
+            },
+            "col": 0,
+            "children": [
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 75.6,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4211,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 364.1,
+                      "y": 75.6,
+                      "w": 56.0,
+                      "h": 16.0
+                    },
+                    "text": "부속서 ",
+                    "pi": 4211
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 420.1,
+                      "y": 75.6,
+                      "w": 9.5,
+                      "h": 16.0
+                    },
+                    "text": "2",
+                    "pi": 4211
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 101.2,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4212,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 308.9,
+                      "y": 101.2,
+                      "w": 176.0,
+                      "h": 16.0
+                    },
+                    "text": "고속선 운항허가증 양식",
+                    "pi": 4212
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 126.8,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4213,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 126.8,
+                      "w": 642.5,
+                      "h": 16.0
+                    },
+                    "text": "",
+                    "pi": 4213
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 152.4,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4214,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 328.9,
+                      "y": 152.4,
+                      "w": 136.0,
+                      "h": 16.0
+                    },
+                    "text": "고속선 운항허가증",
+                    "pi": 4214
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 178.0,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4215,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 396.9,
+                      "y": 178.0,
+                      "w": 642.5,
+                      "h": 16.0
+                    },
+                    "text": "",
+                    "pi": 4215
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 203.6,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4216,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 126.9,
+                      "y": 203.6,
+                      "w": 252.7,
+                      "h": 16.0
+                    },
+                    "text": "고속선의 안전에 관한 국제 코드, ",
+                    "pi": 4216
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 379.6,
+                      "y": 203.6,
+                      "w": 38.1,
+                      "h": 16.0
+                    },
+                    "text": "2000",
+                    "pi": 4216
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 417.7,
+                      "y": 203.6,
+                      "w": 10.9,
+                      "h": 16.0
+                    },
+                    "text": "1)",
+                    "pi": 4216
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 428.6,
+                      "y": 203.6,
+                      "w": 6.0,
+                      "h": 16.0
+                    },
+                    "text": "(",
+                    "pi": 4216
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 434.6,
+                      "y": 203.6,
+                      "w": 160.0,
+                      "h": 16.0
+                    },
+                    "text": "해사안전위원회 결의 ",
+                    "pi": 4216
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 594.6,
+                      "y": 203.6,
+                      "w": 56.2,
+                      "h": 16.0
+                    },
+                    "text": "97(73))",
+                    "pi": 4216
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 650.8,
+                      "y": 203.6,
+                      "w": 16.0,
+                      "h": 16.0
+                    },
+                    "text": "의",
+                    "pi": 4216
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 229.2,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4217,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 282.5,
+                      "y": 229.2,
+                      "w": 228.7,
+                      "h": 16.0
+                    },
+                    "text": "규정에 의하여 발행되었습니다.",
+                    "pi": 4217
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 254.8,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4218,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 254.8,
+                      "w": 642.5,
+                      "h": 16.0
+                    },
+                    "text": "",
+                    "pi": 4218
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 277.2,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4219,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 277.2,
+                      "w": 53.3,
+                      "h": 16.0
+                    },
+                    "text": "1\t",
+                    "pi": 4219
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 128.9,
+                      "y": 277.2,
+                      "w": 583.3,
+                      "h": 16.0
+                    },
+                    "text": "선   명.................................................................................................................",
+                    "pi": 4219
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 299.6,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4220,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 299.6,
+                      "w": 642.5,
+                      "h": 16.0
+                    },
+                    "text": "",
+                    "pi": 4220
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 322.0,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4221,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 322.0,
+                      "w": 53.3,
+                      "h": 16.0
+                    },
+                    "text": "2\t",
+                    "pi": 4221
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 128.9,
+                      "y": 322.0,
+                      "w": 580.0,
+                      "h": 16.0
+                    },
+                    "text": "제조모델 및 선체번호..........................................................................................",
+                    "pi": 4221
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 344.4,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4222,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 344.4,
+                      "w": 642.5,
+                      "h": 16.0
+                    },
+                    "text": "",
+                    "pi": 4222
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 366.8,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4223,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 366.8,
+                      "w": 53.3,
+                      "h": 16.0
+                    },
+                    "text": "3\t",
+                    "pi": 4223
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 128.9,
+                      "y": 366.8,
+                      "w": 582.7,
+                      "h": 16.0
+                    },
+                    "text": "식별번호 또는 문자..............................................................................................",
+                    "pi": 4223
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 389.2,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4224,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 389.2,
+                      "w": 642.5,
+                      "h": 16.0
+                    },
+                    "text": "",
+                    "pi": 4224
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 411.6,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4225,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 411.6,
+                      "w": 92.6,
+                      "h": 16.0
+                    },
+                    "text": "4\tIMO ",
+                    "pi": 4225
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 168.2,
+                      "y": 411.6,
+                      "w": 32.0,
+                      "h": 16.0
+                    },
+                    "text": "번호",
+                    "pi": 4225
+                  },
+                  {
+                    "type": "FnMarker",
+                    "bbox": {
+                      "x": 200.2,
+                      "y": 411.6,
+                      "w": 14.0,
+                      "h": 16.0
+                    }
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 214.2,
+                      "y": 411.6,
+                      "w": 494.7,
+                      "h": 16.0
+                    },
+                    "text": "..........................................................................................................",
+                    "pi": 4225
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 434.0,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4226,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 434.0,
+                      "w": 642.5,
+                      "h": 16.0
+                    },
+                    "text": "",
+                    "pi": 4226
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 456.4,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4227,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 456.4,
+                      "w": 53.3,
+                      "h": 16.0
+                    },
+                    "text": "5\t",
+                    "pi": 4227
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 128.9,
+                      "y": 456.4,
+                      "w": 580.0,
+                      "h": 16.0
+                    },
+                    "text": "선적항..................................................................................................................",
+                    "pi": 4227
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 478.8,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4228,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 478.8,
+                      "w": 642.5,
+                      "h": 16.0
+                    },
+                    "text": "",
+                    "pi": 4228
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 501.2,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4229,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 501.2,
+                      "w": 53.3,
+                      "h": 16.0
+                    },
+                    "text": "6\t",
+                    "pi": 4229
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 128.9,
+                      "y": 501.2,
+                      "w": 160.0,
+                      "h": 16.0
+                    },
+                    "text": "고속선 분류\t\t",
+                    "pi": 4229
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 288.9,
+                      "y": 501.2,
+                      "w": 11.8,
+                      "h": 16.0
+                    },
+                    "text": "A",
+                    "pi": 4229
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 300.7,
+                      "y": 501.2,
+                      "w": 134.0,
+                      "h": 16.0
+                    },
+                    "text": "류 고속여객선/   ",
+                    "pi": 4229
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 434.7,
+                      "y": 501.2,
+                      "w": 11.3,
+                      "h": 16.0
+                    },
+                    "text": "B",
+                    "pi": 4229
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 446.0,
+                      "y": 501.2,
+                      "w": 190.0,
+                      "h": 16.0
+                    },
+                    "text": "류 고속여객선/고속화물선",
+                    "pi": 4229
+                  },
+                  {
+                    "type": "FnMarker",
+                    "bbox": {
+                      "x": 636.0,
+                      "y": 501.2,
+                      "w": 14.0,
+                      "h": 16.0
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 523.6,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4230,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 523.6,
+                      "w": 642.5,
+                      "h": 16.0
+                    },
+                    "text": "",
+                    "pi": 4230
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 546.0,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4231,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 546.0,
+                      "w": 53.3,
+                      "h": 16.0
+                    },
+                    "text": "7\t",
+                    "pi": 4231
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 128.9,
+                      "y": 546.0,
+                      "w": 582.7,
+                      "h": 16.0
+                    },
+                    "text": "운항자 성명..........................................................................................................",
+                    "pi": 4231
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 568.4,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4232,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 568.4,
+                      "w": 632.0,
+                      "h": 16.0
+                    },
+                    "text": "\t............................................................................................................................",
+                    "pi": 4232
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 590.8,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4233,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 590.8,
+                      "w": 642.5,
+                      "h": 16.0
+                    },
+                    "text": "",
+                    "pi": 4233
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 613.2,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4234,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 613.2,
+                      "w": 53.3,
+                      "h": 16.0
+                    },
+                    "text": "8\t",
+                    "pi": 4234
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 128.9,
+                      "y": 613.2,
+                      "w": 582.7,
+                      "h": 16.0
+                    },
+                    "text": "운항지역 또는 항로..............................................................................................",
+                    "pi": 4234
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 635.6,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4235,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 635.6,
+                      "w": 632.0,
+                      "h": 16.0
+                    },
+                    "text": "\t............................................................................................................................",
+                    "pi": 4235
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 658.0,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4236,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 658.0,
+                      "w": 636.7,
+                      "h": 16.0
+                    },
+                    "text": "\t.............................................................................................................................",
+                    "pi": 4236
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 680.4,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4237,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 680.4,
+                      "w": 642.5,
+                      "h": 16.0
+                    },
+                    "text": "",
+                    "pi": 4237
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 702.8,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4238,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 702.8,
+                      "w": 53.3,
+                      "h": 16.0
+                    },
+                    "text": "9\t",
+                    "pi": 4238
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 128.9,
+                      "y": 702.8,
+                      "w": 580.0,
+                      "h": 16.0
+                    },
+                    "text": "모항지..................................................................................................................",
+                    "pi": 4238
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 725.2,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4239,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 725.2,
+                      "w": 642.5,
+                      "h": 16.0
+                    },
+                    "text": "",
+                    "pi": 4239
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 747.6,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4240,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 747.6,
+                      "w": 53.3,
+                      "h": 16.0
+                    },
+                    "text": "10\t",
+                    "pi": 4240
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 128.9,
+                      "y": 747.6,
+                      "w": 583.3,
+                      "h": 16.0
+                    },
+                    "text": "피항지로부터 최대거리.........................................................................................",
+                    "pi": 4240
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 770.0,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4241,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 770.0,
+                      "w": 636.7,
+                      "h": 16.0
+                    },
+                    "text": "\t.............................................................................................................................",
+                    "pi": 4241
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 792.4,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4242,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 792.4,
+                      "w": 642.5,
+                      "h": 16.0
+                    },
+                    "text": "",
+                    "pi": 4242
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 814.8,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4243,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 814.8,
+                      "w": 53.3,
+                      "h": 16.0
+                    },
+                    "text": "11\t",
+                    "pi": 4243
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 128.9,
+                      "y": 814.8,
+                      "w": 48.0,
+                      "h": 16.0
+                    },
+                    "text": "인원수",
+                    "pi": 4243
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 837.2,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4244,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 837.2,
+                      "w": 642.5,
+                      "h": 16.0
+                    },
+                    "text": "",
+                    "pi": 4244
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 859.6,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4245,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 859.6,
+                      "w": 106.6,
+                      "h": 16.0
+                    },
+                    "text": "\t.1\t",
+                    "pi": 4245
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 182.2,
+                      "y": 859.6,
+                      "w": 526.7,
+                      "h": 16.0
+                    },
+                    "text": "최대 허용여객의 수..................................................................................",
+                    "pi": 4245
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 882.0,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4246,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 882.0,
+                      "w": 106.6,
+                      "h": 16.0
+                    },
+                    "text": "\t.2\t",
+                    "pi": 4246
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 182.2,
+                      "y": 882.0,
+                      "w": 524.7,
+                      "h": 16.0
+                    },
+                    "text": "요구되는 승무원 배치 규모의 수.............................................................",
+                    "pi": 4246
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 904.4,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4247,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 904.4,
+                      "w": 642.5,
+                      "h": 16.0
+                    },
+                    "text": "",
+                    "pi": 4247
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 930.0,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4248,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 930.0,
+                      "w": 53.3,
+                      "h": 16.0
+                    },
+                    "text": "12\t",
+                    "pi": 4248
+                  },
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 128.9,
+                      "y": 930.0,
+                      "w": 579.3,
+                      "h": 16.0
+                    },
+                    "text": "예상되는 최악조건...............................................................................................",
+                    "pi": 4248
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 955.6,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4249,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 955.6,
+                      "w": 632.0,
+                      "h": 16.0
+                    },
+                    "text": "\t............................................................................................................................",
+                    "pi": 4249
+                  }
+                ]
+              },
+              {
+                "type": "TextLine",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 981.2,
+                  "w": 642.5,
+                  "h": 16.0
+                },
+                "pi": 4250,
+                "children": [
+                  {
+                    "type": "TextRun",
+                    "bbox": {
+                      "x": 75.6,
+                      "y": 981.2,
+                      "w": 636.7,
+                      "h": 16.0
+                    },
+                    "text": "\t.............................................................................................................................",
+                    "pi": 4250
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "FootnoteArea",
+        "bbox": {
+          "x": 75.6,
+          "y": 1026.4,
+          "w": 642.5,
+          "h": 58.4
+        },
+        "children": [
+          {
+            "type": "Line",
+            "bbox": {
+              "x": 75.6,
+              "y": 1037.5,
+              "w": 189.0,
+              "h": 0.5
+            }
+          },
+          {
+            "type": "TextLine",
+            "bbox": {
+              "x": 75.6,
+              "y": 1045.8,
+              "w": 642.5,
+              "h": 10.7
+            },
+            "pi": 0,
+            "children": [
+              {
+                "type": "TextRun",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 1045.8,
+                  "w": 0.0,
+                  "h": 10.7
+                },
+                "text": "",
+                "pi": 18446744073709549615
+              },
+              {
+                "type": "TextRun",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 1045.8,
+                  "w": 37.0,
+                  "h": 10.7
+                },
+                "text": "1)\t   ",
+                "pi": 18446744073709549615
+              },
+              {
+                "type": "TextRun",
+                "bbox": {
+                  "x": 112.6,
+                  "y": 1045.8,
+                  "w": 129.0,
+                  "h": 10.7
+                },
+                "text": "이하 \"코드\"라 칭함. - 역주",
+                "pi": 18446744073709549615
+              }
+            ]
+          },
+          {
+            "type": "TextLine",
+            "bbox": {
+              "x": 75.6,
+              "y": 1071.0,
+              "w": 642.5,
+              "h": 10.7
+            },
+            "pi": 18446744073709549614,
+            "children": [
+              {
+                "type": "TextRun",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 1071.0,
+                  "w": 53.3,
+                  "h": 10.7
+                },
+                "text": "*\t",
+                "pi": 18446744073709549614
+              },
+              {
+                "type": "TextRun",
+                "bbox": {
+                  "x": 128.9,
+                  "y": 1071.0,
+                  "w": 81.1,
+                  "h": 10.7
+                },
+                "text": "기구가 총회결의 ",
+                "pi": 18446744073709549614
+              },
+              {
+                "type": "TextRun",
+                "bbox": {
+                  "x": 210.0,
+                  "y": 1071.0,
+                  "w": 48.2,
+                  "h": 10.7
+                },
+                "text": "A.600(15)",
+                "pi": 18446744073709549614
+              },
+              {
+                "type": "TextRun",
+                "bbox": {
+                  "x": 258.2,
+                  "y": 1071.0,
+                  "w": 57.0,
+                  "h": 10.7
+                },
+                "text": "로 채택한- ",
+                "pi": 18446744073709549614
+              },
+              {
+                "type": "TextRun",
+                "bbox": {
+                  "x": 315.2,
+                  "y": 1071.0,
+                  "w": 24.9,
+                  "h": 10.7
+                },
+                "text": "IMO ",
+                "pi": 18446744073709549614
+              },
+              {
+                "type": "TextRun",
+                "bbox": {
+                  "x": 340.0,
+                  "y": 1071.0,
+                  "w": 124.6,
+                  "h": 10.7
+                },
+                "text": "선박식별번호 계획에 따름.",
+                "pi": 18446744073709549614
+              }
+            ]
+          },
+          {
+            "type": "TextLine",
+            "bbox": {
+              "x": 75.6,
+              "y": 1085.4,
+              "w": 642.5,
+              "h": 10.7
+            },
+            "pi": 0,
+            "children": [
+              {
+                "type": "TextRun",
+                "bbox": {
+                  "x": 75.6,
+                  "y": 1085.4,
+                  "w": 16.0,
+                  "h": 10.7
+                },
+                "text": "66)",
+                "pi": 18446744073709549615
+              },
+              {
+                "type": "TextRun",
+                "bbox": {
+                  "x": 91.6,
+                  "y": 1085.4,
+                  "w": 182.0,
+                  "h": 10.7
+                },
+                "text": " \t해당되지 않는 것은 삭제할 것.",
+                "pi": 18446744073709549615
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Footer",
+        "bbox": {
+          "x": 75.6,
+          "y": 1084.7,
+          "w": 642.5,
+          "h": 37.8
+        }
+      }
+    ]
+  }
+}

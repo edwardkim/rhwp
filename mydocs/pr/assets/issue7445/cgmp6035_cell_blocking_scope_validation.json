@@ -1,0 +1,290 @@
+{
+  "stage": 158,
+  "preanalysis": {
+    "stage": 158,
+    "head": "ecdde0050e30e81212f8e3e7720159c85e170df6",
+    "failure": "overflow_cell_lines_do_not_grow_partition_9",
+    "input": "samples/issue6035/cgmp_evaluation_table.hwpx",
+    "actual_failure": "신규발생7줄; 원장 baseline없음",
+    "plan": "현재단독실패재현→정상원문대응PDF 확보→실제overflow쪽 Native/freshWASM 비교와 직접판독→90미만이면 이 실패원장의 해당입력만#7445이관. 정상함수·다른원장·원문·기준값 유지. 90이상이면 의미검사 적절성과 생산원인을 확인해 보정. 새테스트함수추가없음. 최종공통lint는전체보정후최종head에수행."
+  },
+  "code_commit": "0e02483d2aec01174b6fe07a1754b399a6ac2350",
+  "input": {
+    "path": "samples/issue6035/cgmp_evaluation_table.hwpx",
+    "sha256": "0f03119d6ac3e19f74fc9fcec5315ac6ed436bab5abffd0804e9cf3350dd747a",
+    "pages": 50
+  },
+  "reference": {
+    "job_id": "7293d4c7-bd3b-4fb6-ad9f-220809afb218",
+    "status": "success",
+    "output_path": "/Users/tsjang/rhwp/pdf/cgmp_evaluation_table-hwpx-2020.pdf",
+    "output_filename": "cgmp_evaluation_table-hwpx-2020.pdf",
+    "size": 590456,
+    "sha256": "95abf8d1e0f9170cb377fde6f8e84e5fa189086e2dfb4fff3a85010d260bec9c",
+    "path": "pdf/cgmp_evaluation_table-hwpx-2020.pdf",
+    "pages": 48
+  },
+  "before": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "overflow_cell_baseline",
+      "-E",
+      "test(=overflow_cell_lines_do_not_grow_partition_9)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "exit_code": 100,
+    "seconds": 2.877865333110094
+  },
+  "after": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "overflow_cell_baseline",
+      "--test",
+      "regression_suite_002",
+      "-E",
+      "test(=overflow_cell_lines_do_not_grow_partition_9) | test(issue_6035_cell_split_empty_band::)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plans": [
+      {
+        "caseName": "overflow_cell_baseline",
+        "target": "overflow_cell_baseline",
+        "grouped": false
+      },
+      {
+        "caseName": "issue_6035_cell_split_empty_band",
+        "target": "regression_suite_002",
+        "grouped": true
+      }
+    ],
+    "exit_code": 0,
+    "seconds": 10.591290374752134,
+    "passed": 3,
+    "failed": 0,
+    "normal_same_document_cases": 2
+  },
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5886337869",
+  "scope": "실제 셀 넘침 원장 해당입력 assertion만 보류. 수집/분할/관측과 다른입력/원장/기존16함수 및 같은문서 정상2함수 유지. baseline·허용치·생산 변경0.",
+  "visual": {
+    "native": {
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "cgmp6035",
+        "samples/issue6035/cgmp_evaluation_table.hwpx",
+        "pdf/cgmp_evaluation_table-hwpx-2020.pdf",
+        "--dpi",
+        "96",
+        "--rhwp-bin",
+        "output/pr-review/planet6897-7382-20260926/stage157-exam-social-header/candidate3/rhwp",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--pages",
+        "1,44,45,46,47,48",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage158-cell6035/visual-final-native"
+      ],
+      "execution": {
+        "exit_code": 1,
+        "seconds": 61.31737512489781
+      },
+      "run_state": "complete",
+      "completed_pages": [
+        1,
+        44,
+        45,
+        46,
+        47,
+        48
+      ],
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 89.88275
+          },
+          {
+            "page": 44,
+            "tolerant_content_match_percent": 24.9433
+          },
+          {
+            "page": 45,
+            "tolerant_content_match_percent": 14.40999
+          },
+          {
+            "page": 46,
+            "tolerant_content_match_percent": 1.39325
+          },
+          {
+            "page": 47,
+            "tolerant_content_match_percent": 10.84813
+          },
+          {
+            "page": 48,
+            "tolerant_content_match_percent": 0.0
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pages": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 89.88275
+        },
+        {
+          "page": 44,
+          "tolerant_content_match_percent": 24.9433
+        },
+        {
+          "page": 45,
+          "tolerant_content_match_percent": 14.40999
+        },
+        {
+          "page": 46,
+          "tolerant_content_match_percent": 1.39325
+        },
+        {
+          "page": 47,
+          "tolerant_content_match_percent": 10.84813
+        },
+        {
+          "page": 48,
+          "tolerant_content_match_percent": 0.0
+        }
+      ]
+    },
+    "wasm": {
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "cgmp6035",
+        "samples/issue6035/cgmp_evaluation_table.hwpx",
+        "pdf/cgmp_evaluation_table-hwpx-2020.pdf",
+        "--dpi",
+        "96",
+        "--rhwp-bin",
+        "output/pr-review/planet6897-7382-20260926/stage157-exam-social-header/candidate3/rhwp",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--pages",
+        "1,44,45,46,47,48",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage158-cell6035/visual-final-wasm",
+        "--wasm-pkg",
+        "pkg"
+      ],
+      "execution": {
+        "exit_code": 1,
+        "seconds": 116.96603312483057
+      },
+      "run_state": "complete",
+      "completed_pages": [
+        1,
+        44,
+        45,
+        46,
+        47,
+        48
+      ],
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 1,
+            "tolerant_content_match_percent": 89.88275
+          },
+          {
+            "page": 44,
+            "tolerant_content_match_percent": 24.9433
+          },
+          {
+            "page": 45,
+            "tolerant_content_match_percent": 14.41092
+          },
+          {
+            "page": 46,
+            "tolerant_content_match_percent": 1.3634
+          },
+          {
+            "page": 47,
+            "tolerant_content_match_percent": 10.76205
+          },
+          {
+            "page": 48,
+            "tolerant_content_match_percent": 0.0
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "pages": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 89.88275
+        },
+        {
+          "page": 44,
+          "tolerant_content_match_percent": 24.9433
+        },
+        {
+          "page": 45,
+          "tolerant_content_match_percent": 14.41092
+        },
+        {
+          "page": 46,
+          "tolerant_content_match_percent": 1.3634
+        },
+        {
+          "page": 47,
+          "tolerant_content_match_percent": 10.76205
+        },
+        {
+          "page": 48,
+          "tolerant_content_match_percent": 0.0
+        }
+      ]
+    }
+  },
+  "direct_inspection": [
+    "Native46 review와 freshWASM46 standalone overlay: 신청서 앞면/다음내용이한쪽에들어가쪽밖초과. 한컴의앞/뒷면44/45쪽과rhwp46쪽으로소속이틀림.",
+    "선택6쪽검증완료이며전체50쪽시각통과가아님.",
+    "초기 export-render-tree --json은미지원exit2였으며옵션제거후exit0으로수정·재실행. 결함재현으로세지않음."
+  ],
+  "validation_status": "focused3PASS/0FAIL; fmt실행. 필수lint묶음은남은개별보정완료후최종head에수행하며현재PASS로보고하지않음."
+}

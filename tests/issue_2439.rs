@@ -43,6 +43,8 @@ fn load_with_native_hwp5_provenance(sample: &str) -> HwpDocument {
         format: SourceFormat::Hwp5,
         hwp3_lineage: false,
         hwpx_lineage: false,
+        hft_ascii_halfwidth_witnessed: false,
+        stored_rows_before_hancom_2020: false,
     };
     let host = &mut model.sections[0].paragraphs[1];
     host.line_segs[0].tag &= !LineSeg::TAG_IMPLEMENTATION_PROPERTY;
@@ -52,27 +54,6 @@ fn load_with_native_hwp5_provenance(sample: &str) -> HwpDocument {
     table.page_break = TablePageBreak::RowBreak;
     doc.set_document(model);
     assert!(doc.document().layout_profile().native_hwp5_layout());
-    doc
-}
-
-fn isolated_positive_empty_host_doc(top_margin_delta: i16) -> HwpDocument {
-    let mut doc = load_with_native_hwp5_provenance(POSITIVE_EMPTY_HOST_SAMPLE);
-    let mut model = doc.document().clone();
-    // Remove the unrelated float in the preceding title paragraph so the full-table coordinate
-    // is controlled only by this host's paragraph top, offset, and strict outer-top margin.
-    model.sections[0].paragraphs[0]
-        .controls
-        .retain(|control| !matches!(control, Control::Table(_)));
-    let Control::Table(table) = &mut model.sections[0].paragraphs[1].controls[0] else {
-        panic!("positive empty-host fixture must contain a table control");
-    };
-    table.outer_margin_top += top_margin_delta;
-    // [#2808] 접힌 ladder 증거 스탬프 — positive_offset_empty_host_float_advances_flow_
-    // to_its_painted_bottom 의 주석 참조.
-    let host_seg = model.sections[0].paragraphs[1].line_segs[0].clone();
-    let advance = host_seg.line_height + host_seg.line_spacing.max(0);
-    model.sections[0].paragraphs[2].line_segs[0].vertical_pos = host_seg.vertical_pos + advance;
-    doc.set_document(model);
     doc
 }
 
@@ -117,7 +98,6 @@ fn split_positive_empty_host_doc() -> HwpDocument {
     table.cell_grid = (0..usize::from(ROW_COUNT)).map(Some).collect();
     table.repeat_header = true;
     table.common.height = template_cell.height.saturating_mul(u32::from(ROW_COUNT));
-    table.dirty = true;
     doc.set_document(model);
     doc
 }
@@ -240,53 +220,68 @@ fn zero_offset_coanchored_float_reserves_its_full_zone_for_later_siblings() {
 
 #[test]
 fn positive_offset_empty_host_float_advances_flow_to_its_painted_bottom() {
-    let mut doc = load_with_native_hwp5_provenance(POSITIVE_EMPTY_HOST_SAMPLE);
-    // [#2808] painted-bottom 흐름 계약은 접힌 ladder(다음 문단 vpos = host vpos +
-    // host 줄 advance) 증거가 있는 native 문서에서만 성립한다 — #2439 재현 문서의
-    // 저장 형상. 물리 ladder 문서는 stored vpos 가 표 높이를 이미 포함하므로 tail
-    // 가산이 이중 계상이 된다 (10k r19 회귀 4건). 픽스처에 접힌 ladder 를 스탬프해
-    // 실계약 형상을 재현한다.
-    {
-        let mut model = doc.document().clone();
-        let host_seg = model.sections[0].paragraphs[1].line_segs[0].clone();
-        let advance = host_seg.line_height + host_seg.line_spacing.max(0);
-        model.sections[0].paragraphs[2].line_segs[0].vertical_pos = host_seg.vertical_pos + advance;
-        doc.set_document(model);
+    // provenance·합성 태그·vpos를 손으로 바꾸지 않은 실제 한컴 2020 저장본이다.
+    // 같은 바이트의 독립 Print 두 파일은 각 1쪽이며 표 윗변은 96dpi에서 아래 값이다.
+    // 양쪽 Native/fresh WASM raw 100%와 직접 판독 근거는
+    // mydocs/pr/assets/issue_2439/native_outer_box/README.md에 보존한다.
+    fn rendered_text(node: &RenderNode, out: &mut String) {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            out.push_str(&run.text);
+        }
+        for child in &node.children {
+            rendered_text(child, out);
+        }
     }
-    let page = doc
-        .build_page_render_tree(0)
-        .expect("build positive-offset empty-host render tree");
 
-    let (table_top, table_bottom) =
-        find_table_bbox(&page.root, 1, 0).expect("single positive-offset table bbox");
-    let (following_top, _) =
-        find_text_bbox(&page.root, "filler paragraph 01").expect("following paragraph bbox");
+    let mut tops = Vec::new();
+    for (key, print_top) in [
+        ("isolated-base", 165.2586),
+        ("isolated-top-margin", 172.7707),
+    ] {
+        let doc = load_doc(&format!("samples/issue2439/{key}-native-2020.hwp"));
+        assert!(doc.document().layout_profile().native_hwp5_layout());
+        assert_eq!(doc.page_count(), 1, "{key}: 독립 Print와 같은 쪽수");
+        let page = doc.build_page_render_tree(0).expect("저장본 렌더 트리");
+        let (top, bottom) = find_table_bbox(&page.root, 1, 0).expect("원본 host의 표");
+        assert!(
+            (top - print_top).abs() <= 2.0,
+            "{key}: Print 표 윗변 {print_top}, 실제 {top}"
+        );
+        let (cell_top, _) = find_text_bbox(&page.root, "C11").expect("셀 본문");
+        let Control::Table(source_table) = &doc.document().sections[0].paragraphs[1].controls[0]
+        else {
+            panic!("원본 host의 표 control");
+        };
+        // 저장 lineHeight는 안 여백까지 포함한 할당 상자다. TextRun bbox의 그 높이를
+        // 잉크 높이로 취급하지 않고 원본 textHeight가 차지하는 내용 프레임을 검사한다.
+        let stored_text_height = source_table.cells[0].paragraphs[0].line_segs[0].text_height;
+        let cell_content_bottom = cell_top + hwpunit_to_px(stored_text_height, DEFAULT_DPI);
+        assert!(
+            cell_top >= top - 0.5 && cell_content_bottom <= bottom + 0.5,
+            "셀 본문이 표 안에 포함"
+        );
 
+        let mut text = String::new();
+        rendered_text(&page.root, &mut text);
+        assert_eq!(text.matches("C11").count(), 1, "셀 본문 한 번 보존");
+        let mut previous_bottom = bottom;
+        for number in 1..=32 {
+            let needle = format!("filler paragraph {number:02}");
+            assert_eq!(text.matches(&needle).count(), 1, "{needle} 한 번 보존");
+            let (next_top, next_bottom) = find_text_bbox(&page.root, &needle).expect("후속 본문");
+            assert!(
+                next_top >= previous_bottom - 0.5,
+                "{needle}: 표·앞 문단 뒤에 배치"
+            );
+            previous_bottom = next_bottom;
+        }
+        assert!(previous_bottom <= find_body_bottom(&page.root).expect("본문 상자") + 0.5);
+        tops.push(top);
+    }
+    let expected_delta = hwpunit_to_px(567, DEFAULT_DPI);
     assert!(
-        following_top + 0.5 >= table_bottom,
-        "following flow must start at or below the actual painted bottom of a positive-offset \
-         empty-host TopAndBottom float: table=[{table_top:.1},{table_bottom:.1}], \
-         following_top={following_top:.1}",
-    );
-
-    const TOP_MARGIN_DELTA_HU: i16 = 567;
-    let isolated_base_page = isolated_positive_empty_host_doc(0)
-        .build_page_render_tree(0)
-        .expect("build isolated base render tree");
-    let (isolated_base_top, _) =
-        find_table_bbox(&isolated_base_page.root, 1, 0).expect("isolated base table bbox");
-    let larger_top_margin_doc = isolated_positive_empty_host_doc(TOP_MARGIN_DELTA_HU);
-    let larger_margin_page = larger_top_margin_doc
-        .build_page_render_tree(0)
-        .expect("build larger-top-margin render tree");
-    let (larger_margin_top, _) =
-        find_table_bbox(&larger_margin_page.root, 1, 0).expect("larger-top-margin table bbox");
-    let expected_delta = hwpunit_to_px(TOP_MARGIN_DELTA_HU as i32, DEFAULT_DPI);
-    assert!(
-        (larger_margin_top - isolated_base_top - expected_delta).abs() < 0.01,
-        "the full PageItem::Table path must repeat the same strict outer-top margin as the first \
-         PartialTable fragment: base_top={isolated_base_top:.2}, larger_top={larger_margin_top:.2}, \
-         expected_delta={expected_delta:.2}",
+        (tops[1] - tops[0] - expected_delta).abs() <= 2.0,
+        "원본 위여백 차이 567HU를 표 원점에 한 번 반영: {tops:?}",
     );
 }
 

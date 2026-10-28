@@ -16,6 +16,9 @@ export default defineConfig({
   publicDir: false, // public/ 폴더 제외 (samples, images 등 불필요)
   define: {
     __APP_VERSION__: JSON.stringify(studioPkg.version),
+    // AI 도우미는 확장 배포본에 넣지 않는다 — 확장 CSP·키 보관 정책을 따로 정하기 전까지.
+    // 정의하지 않으면 studio 의 `__RHWP_AI__` 참조가 시작 시 ReferenceError 가 된다.
+    __RHWP_AI__: 'false',
   },
   resolve: {
     alias: {

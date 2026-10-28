@@ -14,9 +14,11 @@
 #>
 [CmdletBinding()]
 param(
+  [ValidateSet(4963, 4968)][int]$Issue = 4963,
   [Parameter(Mandatory = $true)][string]$Source,
   [Parameter(Mandatory = $true)][string]$PdfOutput,
   [Parameter(Mandatory = $true)][string]$ResultOutput,
+  [string]$HwpmlOutput = '',
   [Parameter(Mandatory = $true)][string]$DocumentFace,
   [Parameter(Mandatory = $true)][ValidateRange(1, 17)][int]$QueueRank,
   [Parameter(Mandatory = $true)][ValidatePattern('^[0-9a-fA-F]{64}$')]
@@ -79,9 +81,15 @@ if ($sourceSha256 -ne $ExpectedSourceSha256.ToLowerInvariant()) {
 }
 $pdfPath = Resolve-OutputPath $PdfOutput
 $resultPath = Resolve-OutputPath $ResultOutput
+$hwpmlPath = $null
+if (-not [string]::IsNullOrWhiteSpace($HwpmlOutput)) {
+  $hwpmlPath = Resolve-OutputPath $HwpmlOutput
+}
 Ensure-Parent $pdfPath
 Ensure-Parent $resultPath
-foreach ($path in @($pdfPath, $resultPath)) {
+if ($null -ne $hwpmlPath) { Ensure-Parent $hwpmlPath }
+foreach ($path in @($pdfPath, $resultPath, $hwpmlPath)) {
+  if ($null -eq $path) { continue }
   if (Test-Path -LiteralPath $path) { Remove-Item -LiteralPath $path -Force }
 }
 
@@ -92,6 +100,7 @@ $hwp = $null
 $fontSelections = @()
 $fontResourceCounts = @()
 $securityModuleRegistered = $false
+$hwpmlReadback = $null
 try {
   if (-not ('RhwpStage4FontNative' -as [type])) {
     Add-Type @'
@@ -170,6 +179,43 @@ public static class RhwpStage4FontNative {
     throw "Silent empty-open guard failed: PageCount=$pageCount TextLength=$textLength"
   }
 
+  if ($null -ne $hwpmlPath) {
+    $hwpml = [string]$hwp.GetTextFile('HWPML2X', '')
+    if ([string]::IsNullOrWhiteSpace($hwpml)) {
+      throw 'HWPML2X readback returned an empty document.'
+    }
+    # GetTextFile returns a .NET string whose declaration still says UTF-16.
+    # Normalize the declaration before writing the local-only UTF-8 artifact.
+    $serializedHwpml = [regex]::Replace(
+      $hwpml,
+      'encoding="UTF-16"',
+      'encoding="UTF-8"',
+      [System.Text.RegularExpressions.RegexOptions]::IgnoreCase
+    )
+    [System.IO.File]::WriteAllText($hwpmlPath, $serializedHwpml, $Utf8NoBom)
+    $hwpmlReadback = [ordered]@{
+      sha256 = Get-Sha256 $hwpmlPath
+      bytes = [int64](Get-Item -LiteralPath $hwpmlPath).Length
+      charShapeCount = [regex]::Matches(
+        $hwpml,
+        '<CHARSHAPE\b',
+        [System.Text.RegularExpressions.RegexOptions]::IgnoreCase
+      ).Count
+      useKerningTrueCount = [regex]::Matches(
+        $hwpml,
+        'UseKerning="true"',
+        [System.Text.RegularExpressions.RegexOptions]::IgnoreCase
+      ).Count
+      useKerningFalseCount = [regex]::Matches(
+        $hwpml,
+        'UseKerning="false"',
+        [System.Text.RegularExpressions.RegexOptions]::IgnoreCase
+      ).Count
+      useKerningOneCount = [regex]::Matches($hwpml, 'UseKerning="1"').Count
+      useKerningZeroCount = [regex]::Matches($hwpml, 'UseKerning="0"').Count
+    }
+  }
+
   $action = $hwp.CreateAction('FileSaveAsPdf')
   $set = $action.CreateSet()
   $action.GetDefault($set) | Out-Null
@@ -197,7 +243,7 @@ public static class RhwpStage4FontNative {
   $result = [ordered]@{
     schemaVersion = 1
     kind = 'font-oracle-stage4-interactive-result'
-    issue = 4963
+    issue = $Issue
     status = 'observed'
     queueRank = $QueueRank
     documentFace = $DocumentFace
@@ -209,6 +255,7 @@ public static class RhwpStage4FontNative {
       pageCount = $pageCount
       textLength = $textLength
     }
+    hwpmlReadback = $hwpmlReadback
     export = [ordered]@{
       pdfSha256 = Get-Sha256 $pdfPath
       pdfBytes = [int64](Get-Item -LiteralPath $pdfPath).Length
@@ -240,7 +287,7 @@ public static class RhwpStage4FontNative {
   $result = [ordered]@{
     schemaVersion = 1
     kind = 'font-oracle-stage4-interactive-result'
-    issue = 4963
+    issue = $Issue
     status = 'failed'
     queueRank = $QueueRank
     documentFace = $DocumentFace

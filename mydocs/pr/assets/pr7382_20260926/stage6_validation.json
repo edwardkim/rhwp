@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "stage": "maintainer correction 6; held",
+  "producer_head": "913a043269e4a95554a7dbf2f602a27101a798ff",
+  "producer_worktree_rust_diff_sha256": "321e2cbd67753ed84d6a13dc3834ba7aef1508a23f4c5faad9df37fa0add514d",
+  "before_two_note_capacity": {
+    "passed": 0,
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 0.296,
+    "table_bottom_px": 972.1733333333334,
+    "footnote_area_top_px": 945.0066666666668
+  },
+  "focused_initial": {
+    "passed": 13,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 1.502
+  },
+  "focused_and_normal_final": {
+    "passed": 85,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 3.023,
+    "includes": "two-note counter and following-body noncollision; footnote line height/width; normal row cuts/roundtrip"
+  },
+  "page_count": {
+    "actual": 217,
+    "pdf": 215,
+    "status": "re_review_required"
+  },
+  "native": {
+    "pages": [
+      66,
+      67,
+      78,
+      79,
+      80
+    ],
+    "tolerant_content_match_percent": [
+      98.24785,
+      93.58939,
+      97.8181,
+      96.21953,
+      95.66118
+    ],
+    "selected_gate": "passed",
+    "exit_code": 0,
+    "direct_inspection": [
+      "review66",
+      "overlay66",
+      "review67",
+      "overlay67",
+      "review78",
+      "overlay78",
+      "review79",
+      "overlay79",
+      "review80",
+      "overlay80"
+    ],
+    "font_exception": false
+  },
+  "remaining": [
+    "table1822 and later whole pagination",
+    "terminal caption budget failure boundary",
+    "final head full Rust/Skia/lint/fresh WASM"
+  ]
+}

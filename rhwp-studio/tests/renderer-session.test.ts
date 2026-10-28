@@ -69,6 +69,29 @@ function session(
   );
 }
 
+test('explicit CanvasKit waits for font preparation and font invalidation resets resources', async () => {
+  let resets = 0;
+  let preparations = 0;
+  let finish!: () => void;
+  const renderer = fakeRenderer(() => {}, () => { resets++; });
+  const rendererSession = session('canvaskit', async () => renderer, {
+    async prepareCanvasKitDocument(_renderer, report) {
+      assert.equal(report, null);
+      preparations++;
+      if (preparations === 1) await new Promise<void>(resolve => { finish = resolve; });
+    },
+  });
+  const pending = rendererSession.resolve({} as never);
+  await new Promise(resolve => setImmediate(resolve));
+  rendererSession.invalidateDocument();
+  finish();
+  assert.equal(rendererSession.isCurrent(await pending), false);
+  const current = await rendererSession.resolve({} as never);
+  assert.equal(current.backend, 'canvaskit');
+  assert.equal(resets, 1);
+  assert.equal(preparations, 2);
+});
+
 test('auto selects CanvasKit only after a complete eligible document preflight', async () => {
   let preflightCalls = 0;
   let createCalls = 0;

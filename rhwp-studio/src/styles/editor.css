@@ -8,11 +8,18 @@
   /* minmax(0, 1fr): 1fr(=minmax(auto,1fr))은 콘텐츠 기반 최소 크기가 한 방향
      래칫으로 작동해 창을 넓혔다 줄이면 트랙이 줄지 않는다(#1191). 최소를 0으로
      고정해 창 축소 시에도 트랙이 정상 축소되어 가운데 정렬이 유지된다. */
-  grid-template-columns: 20px minmax(0, 1fr);
+  /* 셋째 열은 오른쪽 패널(#side-panel-host) 자리다. 패널이 숨으면 auto 열은 0 이 된다. */
+  grid-template-columns: 20px minmax(0, 1fr) auto;
   grid-template-rows: 20px minmax(0, 1fr);
   flex: 1;
   overflow: hidden;
 }
+
+/* 열이 셋이 되면 자동 배치가 눈금자를 밀어내므로 네 칸을 명시한다. */
+#ruler-corner { grid-column: 1; grid-row: 1; }
+#h-ruler { grid-column: 2; grid-row: 1; }
+#v-ruler { grid-column: 1; grid-row: 2; }
+#scroll-container { grid-column: 2; grid-row: 2; }
 
 /* 눈금자 교차 코너 (좌상단) */
 #ruler-corner {
@@ -72,9 +79,11 @@
   mix-blend-mode: multiply;
 }
 
-#scroll-content.grid-mode canvas,
-#scroll-content.horizontal-page-movement canvas {
-  box-shadow: 0 1px 4px var(--overlay-bg);
+#scroll-content canvas.document-page-canvas,
+#scroll-content .page-placeholder {
+  box-shadow:
+    0 0 0 1px var(--ui-border-strong),
+    0 1px 4px var(--overlay-bg);
 }
 
 /* Drag & Drop */
@@ -87,4 +96,58 @@
 /* 머리말/꼬리말 편집 모드: 본문 영역 dimming */
 #scroll-container.hf-editing {
   background: var(--ui-active);
+}
+
+/* HF 대표 편집: 구역 첫 쪽은 강조하고, 실제 적용 쪽은 연관 영역으로 표시한다. */
+#scroll-content .hf-edit-surface-layer {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+}
+
+#scroll-content canvas.hf-edit-preview-canvas {
+  inset: 0 auto auto 0;
+  z-index: 0;
+  transform: none;
+  transform-origin: top left;
+  background: var(--doc-paper);
+  box-shadow: none;
+}
+
+#scroll-content canvas.hf-edit-guide-canvas {
+  inset: 0 auto auto 0;
+  z-index: 1;
+  transform: none;
+  transform-origin: top left;
+  background: transparent;
+  box-shadow: none;
+}
+
+#scroll-content .hf-edit-region {
+  position: absolute;
+  box-sizing: border-box;
+}
+
+#scroll-content .hf-edit-region.is-representative {
+  z-index: 1;
+}
+
+#scroll-content .hf-edit-badge {
+  position: absolute;
+  z-index: 2;
+  transform: translate(
+    var(--hf-edit-badge-gap, 4px),
+    calc(-100% - var(--hf-edit-badge-gap, 4px))
+  );
+  padding: 1px 4px 2px;
+  background: color-mix(in srgb, var(--doc-paper) 92%, transparent);
+  color: #333333;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  line-height: 1.4;
+  text-shadow:
+    0 1px 0 var(--doc-paper),
+    1px 0 0 var(--doc-paper),
+    -1px 0 0 var(--doc-paper);
+  white-space: nowrap;
 }

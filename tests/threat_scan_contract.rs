@@ -57,6 +57,12 @@ fn build_hwpx(entries: &[(&str, Vec<u8>)]) -> Vec<u8> {
     let mut out = std::io::Cursor::new(Vec::new());
     {
         let mut zip = zip::ZipWriter::new(&mut out);
+        let has_content_manifest = entries
+            .iter()
+            .any(|(name, _)| *name == "Contents/content.hpf");
+        let has_document_header = entries
+            .iter()
+            .any(|(name, _)| *name == "Contents/header.xml");
         for (name, data) in entries {
             let method = if *name == "mimetype" {
                 zip::CompressionMethod::Stored
@@ -66,6 +72,24 @@ fn build_hwpx(entries: &[(&str, Vec<u8>)]) -> Vec<u8> {
             let opts = SimpleFileOptions::default().compression_method(method);
             zip.start_file(*name, opts).expect("zip 엔트리 시작");
             zip.write_all(data).expect("zip 엔트리 쓰기");
+        }
+        if !has_content_manifest {
+            zip.start_file(
+                "Contents/content.hpf",
+                SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated),
+            )
+            .expect("HWPX content manifest 시작");
+            zip.write_all(b"<manifest/>")
+                .expect("HWPX content manifest 쓰기");
+        }
+        if !has_document_header {
+            zip.start_file(
+                "Contents/header.xml",
+                SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated),
+            )
+            .expect("HWPX document header 시작");
+            zip.write_all(b"<header/>")
+                .expect("HWPX document header 쓰기");
         }
         zip.finish().expect("zip 마감");
     }

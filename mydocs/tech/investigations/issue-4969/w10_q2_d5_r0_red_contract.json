@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-d5-r0-resource-red-contract-result",
+  "issue": 4969,
+  "stage": "W10-Q2-D5-R0",
+  "status": "qualified-red",
+  "fixture": "ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf",
+  "fontBytes": 456688,
+  "rustRunMatrix": [
+    {
+      "runs": 1,
+      "explicitBlake3DigestPasses": 2,
+      "faceParseAttempts": 1,
+      "arenaInternAttempts": 1,
+      "fontBlobs": 1,
+      "fontFaces": 1
+    },
+    {
+      "runs": 2,
+      "explicitBlake3DigestPasses": 4,
+      "faceParseAttempts": 2,
+      "arenaInternAttempts": 2,
+      "fontBlobs": 1,
+      "fontFaces": 1
+    },
+    {
+      "runs": 8,
+      "explicitBlake3DigestPasses": 16,
+      "faceParseAttempts": 8,
+      "arenaInternAttempts": 8,
+      "fontBlobs": 1,
+      "fontFaces": 1
+    }
+  ],
+  "rustTarget": {
+    "explicitBlake3DigestPasses": 1,
+    "faceParseAttempts": 1,
+    "arenaInternAttempts": 1,
+    "fontBlobs": 1,
+    "fontFaces": 1,
+    "multiplicityOwner": "unique-exact-source"
+  },
+  "studioInlineMatrix": [
+    {
+      "pages": 1,
+      "presentedInlineBytes": 456688,
+      "retainedBlobs": 1,
+      "retainedBytes": 456688
+    },
+    {
+      "pages": 2,
+      "presentedInlineBytes": 913376,
+      "retainedBlobs": 1,
+      "retainedBytes": 456688
+    },
+    {
+      "pages": 8,
+      "presentedInlineBytes": 3653504,
+      "retainedBlobs": 1,
+      "retainedBytes": 456688
+    }
+  ],
+  "studioByKeyRed": [
+    {
+      "pages": 1,
+      "actualFetches": 0,
+      "actualVerifiedBlobs": 0,
+      "targetFetches": 1,
+      "targetVerifiedBlobs": 1
+    },
+    {
+      "pages": 2,
+      "actualFetches": 0,
+      "actualVerifiedBlobs": 0,
+      "targetFetches": 1,
+      "targetVerifiedBlobs": 1
+    },
+    {
+      "pages": 8,
+      "actualFetches": 0,
+      "actualVerifiedBlobs": 0,
+      "targetFetches": 1,
+      "targetVerifiedBlobs": 1
+    }
+  ],
+  "protectedRegression": {
+    "d4FocusedPassed": 7,
+    "resourceArenaDedupPassed": 1,
+    "studioInlineBaselinePassed": 1,
+    "generatedArtifactsChanged": false,
+    "sourceCfgTestIncrease": false,
+    "productOutputChanged": false
+  },
+  "nextSlice": "Q2-D5-R1",
+  "nextSliceScope": "unique-source-prepared-identity-cache-only",
+  "transportRemainsRedUntil": "Q2-D5-R2",
+  "pushReady": false
+}

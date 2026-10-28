@@ -1,0 +1,22 @@
+{
+  "hwpx": {
+    "before_directory": "output/pr-review/planet6897-7382-20260926/visual/stage39-before-hwpx-native/liver7379/render_tree",
+    "after_directory": "output/pr-review/planet6897-7382-20260926/visual/stage39-after-hwpx-native/liver7379/render_tree",
+    "before_pages": 215,
+    "after_pages": 215,
+    "changed_pages": [
+      126,
+      131
+    ]
+  },
+  "hwp": {
+    "before_directory": "output/pr-review/planet6897-7382-20260926/visual/stage39-before-hwp-native/liver7379/render_tree",
+    "after_directory": "output/pr-review/planet6897-7382-20260926/visual/stage39-after-hwp-native/liver7379/render_tree",
+    "before_pages": 215,
+    "after_pages": 215,
+    "changed_pages": [
+      126,
+      131
+    ]
+  }
+}

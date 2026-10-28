@@ -1,8 +1,8 @@
-import { EventBus } from '@/core/event-bus';
-import { WasmBridge } from '@/core/wasm-bridge';
+import type { EventBus } from '@/core/event-bus';
+import type { WasmBridge } from '@/core/wasm-bridge';
 import type { ParaProperties } from '@/core/types';
-import { VirtualScroll } from './virtual-scroll';
-import { ViewportManager } from './viewport-manager';
+import type { VirtualScroll } from './virtual-scroll';
+import type { ViewportManager } from './viewport-manager';
 import {
   horizontalPinCommit,
   pageMarginPinX,
@@ -19,6 +19,8 @@ import {
   resolveRulerPageIndex,
   type ActivePageSnapshot,
 } from './active-page.ts';
+import { resolveRulerScale } from './ruler-scale.ts';
+import { isRulerLabelInsidePage } from './ruler-label-geometry.ts';
 
 export type { RulerPinCommit };
 
@@ -104,12 +106,16 @@ export class Ruler {
   } | null = null;
   private vDrag: { kind: 'top' | 'bottom'; pageIdx: number; y: number; startY: number } | null = null;
 
-  private onHPinDownBound: (e: MouseEvent) => void;
-  private onHPinHoverBound: (e: MouseEvent) => void;
-  private onVPinDownBound: (e: MouseEvent) => void;
-  private onVPinHoverBound: (e: MouseEvent) => void;
-  private onPinDragMoveBound: (e: MouseEvent) => void;
-  private onPinDragUpBound: (e: MouseEvent) => void;
+  private dragPointerId: number | null = null;
+  private dragCanvas: HTMLCanvasElement | null = null;
+  private onHPinDownBound: (e: PointerEvent) => void;
+  private onHPinHoverBound: (e: PointerEvent) => void;
+  private onVPinDownBound: (e: PointerEvent) => void;
+  private onVPinHoverBound: (e: PointerEvent) => void;
+  private onPinDragMoveBound: (e: PointerEvent) => void;
+  private onPinDragUpBound: (e: PointerEvent) => void;
+  private onPinDragCancelBound: (e: PointerEvent) => void;
+  private onPinDragBlurBound: () => void;
 
   /** 드래그 커밋 싱크 — 문단 서식/쪽 여백 두 종류를 한 콜백으로 묶는다. main.ts가 하나의
    * 핸들러로 연결한다 — 별개 콜백 두 개였을 때 한쪽만 executeOperation 커밋 경로를 타고
@@ -136,17 +142,24 @@ export class Ruler {
     this.onVPinHoverBound = this.onVPinHover.bind(this);
     this.onPinDragMoveBound = this.onPinDragMove.bind(this);
     this.onPinDragUpBound = this.onPinDragUp.bind(this);
-    this.hCanvas.addEventListener('mousedown', this.onHPinDownBound);
-    this.hCanvas.addEventListener('mousemove', this.onHPinHoverBound);
-    this.vCanvas.addEventListener('mousedown', this.onVPinDownBound);
-    this.vCanvas.addEventListener('mousemove', this.onVPinHoverBound);
+    this.onPinDragCancelBound = (e) => {
+      if (this.isDragPointer(e)) this.cancelPinDrag();
+    };
+    this.onPinDragBlurBound = () => this.cancelPinDrag();
+    this.hCanvas.addEventListener('pointerdown', this.onHPinDownBound);
+    this.hCanvas.addEventListener('pointermove', this.onHPinHoverBound);
+    this.vCanvas.addEventListener('pointerdown', this.onVPinDownBound);
+    this.vCanvas.addEventListener('pointermove', this.onVPinHoverBound);
 
     this.unsubscribers.push(
       eventBus.on('viewport-scroll', () => this.scheduleUpdate()),
       eventBus.on('zoom-changed', () => this.scheduleUpdate()),
-      eventBus.on('viewport-resize', () => { this.resize(); this.scheduleUpdate(); }),
+      eventBus.on('viewport-resize', () => this.scheduleUpdate()),
       eventBus.on('document-changed', () => this.scheduleUpdate()),
       eventBus.on('document-view-changed', () => this.scheduleUpdate()),
+      // 문서를 새로 연 직후는 눈금자가 스스로 알 수 없는 유일한 시점이다. 크기도 다시
+      // 잡는다 — 빈 쪽 단계에서 컨테이너가 0 폭이었으면 캔버스가 0 인 채로 남는다.
+      eventBus.on('document-view-loaded', () => this.scheduleUpdate()),
       eventBus.on('theme-changed', () => this.scheduleUpdate()),
       eventBus.on('cursor-para-changed', (props) => this.onParaChanged(props as ParaProperties)),
       eventBus.on('cursor-cell-changed', (data) => this.onCellChanged(data as { inCell: boolean; cellX?: number; cellWidth?: number })),
@@ -175,7 +188,7 @@ export class Ruler {
       }),
     );
 
-    this.resize();
+    this.scheduleUpdate();
   }
 
   private palette(): RulerPalette {
@@ -188,23 +201,26 @@ export class Ruler {
     };
   }
 
-  /** Canvas 물리 크기를 컨테이너에 맞춰 설정 */
-  resize(): void {
-    const dpr = window.devicePixelRatio || 1;
-
-    // 가로 눈금자: 너비 = scroll-container 너비, 높이 = RULER_SIZE
+  /** paint 직전에만 크기를 맞춘다. 같은 width/height 대입도 bitmap을 지우므로 생략한다. */
+  private syncCanvasSize(dpr: number): void {
+    // 두 축을 먼저 측정한 뒤 쓴다. 이벤트 인수 대신 갱신 시점의 실제 컨테이너 크기를 쓴다.
     const hW = this.container.clientWidth;
-    this.hCanvas.width = Math.round(hW * dpr);
-    this.hCanvas.height = Math.round(RULER_SIZE * dpr);
-    this.hCanvas.style.width = `${hW}px`;
-    this.hCanvas.style.height = `${RULER_SIZE}px`;
-
-    // 세로 눈금자: 너비 = RULER_SIZE, 높이 = scroll-container 높이
     const vH = this.container.clientHeight;
-    this.vCanvas.width = Math.round(RULER_SIZE * dpr);
-    this.vCanvas.height = Math.round(vH * dpr);
-    this.vCanvas.style.width = `${RULER_SIZE}px`;
-    this.vCanvas.style.height = `${vH}px`;
+    const hWidth = Math.round(hW * dpr);
+    const vHeight = Math.round(vH * dpr);
+    const thickness = Math.round(RULER_SIZE * dpr);
+    if (this.hCanvas.width !== hWidth) this.hCanvas.width = hWidth;
+    if (this.hCanvas.height !== thickness) this.hCanvas.height = thickness;
+    if (this.vCanvas.width !== thickness) this.vCanvas.width = thickness;
+    if (this.vCanvas.height !== vHeight) this.vCanvas.height = vHeight;
+
+    const hCssWidth = `${hW}px`;
+    const vCssHeight = `${vH}px`;
+    const cssThickness = `${RULER_SIZE}px`;
+    if (this.hCanvas.style.width !== hCssWidth) this.hCanvas.style.width = hCssWidth;
+    if (this.hCanvas.style.height !== cssThickness) this.hCanvas.style.height = cssThickness;
+    if (this.vCanvas.style.width !== cssThickness) this.vCanvas.style.width = cssThickness;
+    if (this.vCanvas.style.height !== vCssHeight) this.vCanvas.style.height = vCssHeight;
   }
 
   /** requestAnimationFrame으로 스로틀링하여 그리기 예약 */
@@ -216,10 +232,28 @@ export class Ruler {
     });
   }
 
-  /** 가로/세로 눈금자를 모두 다시 그린다 */
+  /** 크기 변경과 두 축 paint 사이에 프레임을 넘기지 않는다 (#6187). */
   update(): void {
-    this.drawHorizontal();
-    this.drawVertical();
+    const dpr = window.devicePixelRatio || 1;
+    this.syncCanvasSize(dpr);
+    this.drawHorizontal(dpr);
+    this.drawVertical(dpr);
+  }
+
+  /**
+   * 지금 문서의 쪽 정보를 읽는다. 없는 쪽이면 null.
+   *
+   * 문서가 갈리는 순간에는 가상 스크롤이 아직 옛 문서의 기하를 들고 있어, 새 문서에 없는
+   * 쪽 번호를 "보이는 쪽"으로 준다. 그걸 그대로 getPageInfo 에 넣으면 던지고, 예외가
+   * 그리기 도중에 나므로 눈금자는 눈금 없는 배경 띠만 남긴 채 다음 이벤트까지 그대로 있는다.
+   */
+  private pageInfoOrNull(pageIdx: number): ReturnType<WasmBridge['getPageInfo']> | null {
+    if (!Number.isInteger(pageIdx) || pageIdx < 0 || pageIdx >= this.wasm.pageCount) return null;
+    try {
+      return this.wasm.getPageInfo(pageIdx);
+    } catch {
+      return null;
+    }
   }
 
   /** 페이지 좌측 화면 좌표를 계산한다 (scroll-container 뷰포트 기준). */
@@ -279,10 +313,30 @@ export class Ruler {
     this.scheduleUpdate();
   }
 
-  private onHPinDown(e: MouseEvent): void {
-    // 왼쪽 버튼만. 오른쪽 버튼으로 누르면 드래그가 시작된 채 상황 메뉴가 열리고, 메뉴에서
-    // 뗀 왼쪽 클릭이 그 자리를 여백으로 커밋한다.
-    if (e.button !== 0) return;
+  /** 폭/UA가 아니라 지금 입력을 판정한다. touch/pen의 호환 mouse 이벤트는 구독하지 않는다. */
+  private canStartPinDrag(e: PointerEvent): boolean {
+    return e.pointerType === 'mouse' && e.isPrimary && e.button === 0 && this.dragPointerId === null;
+  }
+
+  private isDragPointer(e: PointerEvent): boolean {
+    return e.pointerType === 'mouse' && e.pointerId === this.dragPointerId;
+  }
+
+  private beginPinDrag(e: PointerEvent, canvas: HTMLCanvasElement): void {
+    this.dragPointerId = e.pointerId;
+    this.dragCanvas = canvas;
+    document.addEventListener('pointermove', this.onPinDragMoveBound);
+    document.addEventListener('pointerup', this.onPinDragUpBound);
+    document.addEventListener('pointercancel', this.onPinDragCancelBound);
+    window.addEventListener('blur', this.onPinDragBlurBound);
+    canvas.addEventListener('lostpointercapture', this.onPinDragCancelBound);
+    canvas.setPointerCapture(e.pointerId);
+    // 핀을 잡은 mouse만 소비한다. 무시한 touch의 기본 스크롤·확대는 막지 않는다.
+    e.preventDefault();
+  }
+
+  private onHPinDown(e: PointerEvent): void {
+    if (!this.canStartPinDrag(e)) return;
     // hasParaInfo 게이트 없음 — ▽(paraIndent)는 hasParaInfo일 때만 drawHorizontal이
     // hPins에 넣으므로 이미 자연히 걸러진다. △(쪽 여백)는 문단 정보와 무관하게 항상
     // 존재해 여기서 막으면 안 된다.
@@ -294,8 +348,7 @@ export class Ruler {
     );
     if (!hit) return;
     this.hDrag = { kind: hit.kind, pageIdx: this.hPageIdx, x, startX: x };
-    document.addEventListener('mousemove', this.onPinDragMoveBound);
-    document.addEventListener('mouseup', this.onPinDragUpBound);
+    this.beginPinDrag(e, this.hCanvas);
   }
 
   /** 마주보는 두 핀 사이에 남겨야 하는 간격 (화면 px).
@@ -327,8 +380,12 @@ export class Ruler {
     };
   }
 
-  private onHPinHover(e: MouseEvent): void {
-    if (this.hDrag) return;
+  private onHPinHover(e: PointerEvent): void {
+    if (e.pointerType !== 'mouse') {
+      this.hCanvas.style.cursor = 'default';
+      return;
+    }
+    if (this.dragPointerId !== null) return;
     const rect = this.hCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -337,14 +394,13 @@ export class Ruler {
         ? 'ew-resize' : 'default';
   }
 
-  private onVPinDown(e: MouseEvent): void {
-    if (e.button !== 0) return;
+  private onVPinDown(e: PointerEvent): void {
+    if (!this.canStartPinDrag(e)) return;
     const y = e.clientY - this.vCanvas.getBoundingClientRect().top;
     const hit = this.vPins.find((p) => Math.abs(p.y - y) <= PIN_HIT_RADIUS);
     if (!hit) return;
     this.vDrag = { kind: hit.kind, pageIdx: hit.pageIdx, y, startY: y };
-    document.addEventListener('mousemove', this.onPinDragMoveBound);
-    document.addEventListener('mouseup', this.onPinDragUpBound);
+    this.beginPinDrag(e, this.vCanvas);
   }
 
   /** 잡은 세로 핀이 움직일 수 있는 범위 (화면 px) — 머리말/꼬리말 안쪽부터 반대쪽 핀까지 */
@@ -362,8 +418,12 @@ export class Ruler {
       : { min: (sibling ?? pageTop) + minGap, max: pageBottom };
   }
 
-  private onVPinHover(e: MouseEvent): void {
-    if (this.vDrag) return;
+  private onVPinHover(e: PointerEvent): void {
+    if (e.pointerType !== 'mouse') {
+      this.vCanvas.style.cursor = 'default';
+      return;
+    }
+    if (this.dragPointerId !== null) return;
     const y = e.clientY - this.vCanvas.getBoundingClientRect().top;
     this.vCanvas.style.cursor =
       this.vPins.some((p) => Math.abs(p.y - y) <= PIN_HIT_RADIUS) ? 'ns-resize' : 'default';
@@ -374,7 +434,13 @@ export class Ruler {
     return Math.min(Math.max(v, range.min), Math.max(range.min, range.max));
   }
 
-  private onPinDragMove(e: MouseEvent): void {
+  private onPinDragMove(e: PointerEvent): void {
+    if (!this.isDragPointer(e)) return;
+    // 창 밖에서 버튼을 뗀 뒤 복귀했거나 chord에서 왼쪽 버튼만 해제된 경우 취소한다.
+    if ((e.buttons & 1) === 0) {
+      this.cancelPinDrag();
+      return;
+    }
     if (this.hDrag) {
       const x = e.clientX - this.hCanvas.getBoundingClientRect().left;
       this.hDrag = { ...this.hDrag, x: Ruler.clampToRange(x, this.hDragRange(this.hDrag.kind)) };
@@ -387,16 +453,14 @@ export class Ruler {
     }
   }
 
-  private onPinDragUp(): void {
+  private onPinDragUp(e: PointerEvent): void {
+    if (!this.isDragPointer(e)) return;
     // 커밋보다 먼저 드래그 상태와 전역 리스너를 정리한다. 커밋이 던지면(드래그 중 쪽 수가
     // 줄어 getPageInfo 가 실패하는 경우 등) 정리 코드에 닿지 못해, 이후 화면 어디서 뗀
     // 마우스든 같은 커밋을 다시 쏘는 상태로 세션이 끝난다.
     const hDrag = this.hDrag;
     const vDrag = this.vDrag;
-    this.hDrag = null;
-    this.vDrag = null;
-    document.removeEventListener('mousemove', this.onPinDragMoveBound);
-    document.removeEventListener('mouseup', this.onPinDragUpBound);
+    this.clearPinDrag();
     this.scheduleUpdate();
 
     // 움직이지 않았으면 커밋하지 않는다. 히트 반경이 8px이라 핀에서 몇 px 벗어난 지점을
@@ -404,6 +468,29 @@ export class Ruler {
     // 쪽 여백 변경은 구역 전체 재래핑까지 부른다.
     if (hDrag && hDrag.x !== hDrag.startX) this.commitHDrag(hDrag);
     if (vDrag && vDrag.y !== vDrag.startY) this.commitVDrag(vDrag);
+  }
+
+  private cancelPinDrag(): void {
+    if (this.dragPointerId === null) return;
+    this.clearPinDrag();
+    this.scheduleUpdate();
+  }
+
+  private clearPinDrag(): void {
+    const canvas = this.dragCanvas;
+    const pointerId = this.dragPointerId;
+    this.hDrag = null;
+    this.vDrag = null;
+    this.dragCanvas = null;
+    this.dragPointerId = null;
+    document.removeEventListener('pointermove', this.onPinDragMoveBound);
+    document.removeEventListener('pointerup', this.onPinDragUpBound);
+    document.removeEventListener('pointercancel', this.onPinDragCancelBound);
+    window.removeEventListener('blur', this.onPinDragBlurBound);
+    canvas?.removeEventListener('lostpointercapture', this.onPinDragCancelBound);
+    if (pointerId !== null && canvas?.hasPointerCapture(pointerId)) canvas.releasePointerCapture(pointerId);
+    this.hCanvas.style.cursor = 'default';
+    this.vCanvas.style.cursor = 'default';
   }
 
   /** 가로 핀 드롭 → 문서 변경. 소유 규칙(△=쪽 여백, ▽=문단 들여쓰기)과 좌표 역함수는
@@ -468,10 +555,9 @@ export class Ruler {
   }
 
   /** 가로 눈금자 그리기 */
-  private drawHorizontal(): void {
+  private drawHorizontal(dpr: number): void {
     const ctx = this.hCtx;
     if (!ctx) return;
-    const dpr = window.devicePixelRatio || 1;
     const canvasW = this.hCanvas.width / dpr;
     const canvasH = RULER_SIZE;
 
@@ -494,7 +580,12 @@ export class Ruler {
 
     const zoom = this.viewportManager.getZoom();
     const scrollX = this.viewportManager.getScrollX();
-    const pageInfo = this.wasm.getPageInfo(pageIdx);
+    const pageInfo = this.pageInfoOrNull(pageIdx);
+    if (!pageInfo) {
+      this.hPins = [];
+      ctx.restore();
+      return;
+    }
 
     // 페이지 화면 좌표 (편집 용지와 정확히 일치)
     const pageScreenLeft = this.getPageScreenLeft(pageIdx, scrollX);
@@ -539,9 +630,24 @@ export class Ruler {
       ctx.fillRect(pageLeftPinX, 0, pageRightPinX - pageLeftPinX, canvasH);
     }
 
-    // mm 눈금 그리기
+    // 용지 전체 범위. 본문 띠만으로는 저배율에서 눈금자가 용지보다 짧아 보이므로
+    // 시작·끝을 명시한다. 문서 좌표는 바꾸지 않는 화면 표시선이다.
+    ctx.strokeStyle = palette.tick;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pageScreenLeft, 0);
+    ctx.lineTo(pageScreenLeft, canvasH);
+    ctx.moveTo(pageScreenLeft + pageDisplayWidth, 0);
+    ctx.lineTo(pageScreenLeft + pageDisplayWidth, canvasH);
+    ctx.stroke();
+
+    // 화면 밀도에 맞춘 mm 눈금 그리기
     const mmPx = PX_PER_MM * zoom;
     const pageWidthMm = Math.ceil(pageInfo.width / PX_PER_MM);
+    const scale = resolveRulerScale(zoom);
+    const labelEvery = Math.max(1, Math.round(scale.labelStepMm / scale.tickStepMm));
+    const middleEvery = Math.max(1, Math.round(labelEvery / 2));
+    const tickCount = Math.floor(pageWidthMm / scale.tickStepMm);
 
     ctx.strokeStyle = palette.tick;
     ctx.fillStyle = palette.text;
@@ -550,21 +656,30 @@ export class Ruler {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
 
-    for (let mm = 0; mm <= pageWidthMm; mm++) {
+    for (let tickIndex = 0; tickIndex <= tickCount; tickIndex++) {
+      const mm = tickIndex * scale.tickStepMm;
       const x = pageScreenLeft + mm * mmPx;
 
       // 화면 밖 스킵
       if (x < -10 || x > canvasW + 10) continue;
 
       let tickH: number;
-      if (mm % 10 === 0) {
+      if (tickIndex % labelEvery === 0) {
         tickH = 10;
-        // 10mm 단위 숫자 (cm 단위로 표시)
+        // 숫자는 cm 단위. 저배율에서는 5cm·10cm처럼 더 큰 단계만 남는다.
         const cm = mm / 10;
         if (cm > 0) {
-          ctx.fillText(`${cm}`, x, 1);
+          const label = `${cm}`;
+          if (isRulerLabelInsidePage(
+            x,
+            ctx.measureText(label).width,
+            pageScreenLeft,
+            pageDisplayWidth,
+          )) {
+            ctx.fillText(label, x, 1);
+          }
         }
-      } else if (mm % 5 === 0) {
+      } else if (tickIndex % middleEvery === 0) {
         tickH = 6;
       } else {
         tickH = 3;
@@ -636,11 +751,10 @@ export class Ruler {
     ctx.restore();
   }
 
-  /** 세로 눈금자 그리기 — 활성 페이지 한 쪽의 눈금만 표시 */
-  private drawVertical(): void {
+  /** 세로 눈금자 그리기 — 마지막 편집 focus 페이지의 눈금을 표시 */
+  private drawVertical(dpr: number): void {
     const ctx = this.vCtx;
     if (!ctx) return;
-    const dpr = window.devicePixelRatio || 1;
     const canvasW = RULER_SIZE;
     const canvasH = this.vCanvas.height / dpr;
 
@@ -652,8 +766,8 @@ export class Ruler {
     ctx.fillStyle = palette.bgMargin;
     ctx.fillRect(0, 0, canvasW, canvasH);
 
-    const pageIdx = this.rulerPageIndex();
-    if (pageIdx === null) {
+    const activePageIdx = this.rulerPageIndex();
+    if (activePageIdx === null) {
       this.vPins = [];
       ctx.restore();
       return;
@@ -662,12 +776,24 @@ export class Ruler {
     const zoom = this.viewportManager.getZoom();
     const scrollY = this.viewportManager.getScrollY();
     const mmPx = PX_PER_MM * zoom;
+    const scale = resolveRulerScale(zoom);
+    const labelEvery = Math.max(1, Math.round(scale.labelStepMm / scale.tickStepMm));
+    const middleEvery = Math.max(1, Math.round(labelEvery / 2));
 
+    // 가로 눈금자와 같은 마지막 편집 focus 쪽 한 장만 그린다. 저배율에서 보이는 모든
+    // 페이지의 숫자를 반복하면 세로 눈금자가 다시 한 덩어리로 뭉치고 #6107 focus 계약도 깨진다.
+    const pageIdx = activePageIdx;
     this.vPins = [];
+    // 격자 보기: 같은 행의 쪽들이 같은 y를 공유해 핀이 겹친다 (가로 눈금자와 같은 이유).
+    const gridMode = this.virtualScroll.isGridMode();
 
     // 페이지 상단의 화면 좌표 (scroll-container 뷰포트 기준)
     const pageScreenTop = this.virtualScroll.getPageOffset(pageIdx) - scrollY;
-    const pageInfo = this.wasm.getPageInfo(pageIdx);
+    const pageInfo = this.pageInfoOrNull(pageIdx);
+    if (!pageInfo) {
+      ctx.restore();
+      return;
+    }
 
     // 핀은 자기가 쓰는 여백의 경계에 선다 — 용지 끝에서 marginTop/marginBottom 만큼.
     // 본문 위 끝(= marginTop + marginHeader)에 그리면 핀 위치와 커밋 값이 머리말만큼
@@ -682,6 +808,16 @@ export class Ruler {
     ctx.fillStyle = palette.bgBody;
     ctx.fillRect(0, marginTopPx, canvasW, marginBottomPx - marginTopPx);
 
+    const pageDisplayHeight = pageInfo.height * zoom;
+    ctx.strokeStyle = palette.tick;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, pageScreenTop);
+    ctx.lineTo(canvasW, pageScreenTop);
+    ctx.moveTo(0, pageScreenTop + pageDisplayHeight);
+    ctx.lineTo(canvasW, pageScreenTop + pageDisplayHeight);
+    ctx.stroke();
+
     // 드래그 중이면 잡은 핀만 마우스 위치로 대체 (라이브 프리뷰)
     const topY = this.vDrag?.kind === 'top' && this.vDrag.pageIdx === pageIdx
       ? this.vDrag.y
@@ -689,10 +825,13 @@ export class Ruler {
     const bottomY = this.vDrag?.kind === 'bottom' && this.vDrag.pageIdx === pageIdx
       ? this.vDrag.y
       : marginBottomPx;
-    this.vPins.push({ kind: 'top', y: topY, pageIdx }, { kind: 'bottom', y: bottomY, pageIdx });
+    if (!gridMode) {
+      this.vPins.push({ kind: 'top', y: topY, pageIdx }, { kind: 'bottom', y: bottomY, pageIdx });
+    }
 
     // mm 눈금 그리기
     const pageHeightMm = Math.ceil(pageInfo.height / PX_PER_MM);
+    const tickCount = Math.floor(pageHeightMm / scale.tickStepMm);
 
     ctx.strokeStyle = palette.tick;
     ctx.fillStyle = palette.text;
@@ -701,16 +840,16 @@ export class Ruler {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    for (let mm = 0; mm <= pageHeightMm; mm++) {
+    for (let tickIndex = 0; tickIndex <= tickCount; tickIndex++) {
+      const mm = tickIndex * scale.tickStepMm;
       const y = pageScreenTop + mm * mmPx;
 
       // 화면 밖 스킵
       if (y < -10 || y > canvasH + 10) continue;
 
       let tickW: number;
-      if (mm % 10 === 0) {
+      if (tickIndex % labelEvery === 0) {
         tickW = 10;
-        // 10mm 단위 숫자 (cm 단위, 세로 텍스트)
         const cm = mm / 10;
         if (cm > 0) {
           ctx.save();
@@ -719,7 +858,7 @@ export class Ruler {
           ctx.fillText(`${cm}`, 0, 0);
           ctx.restore();
         }
-      } else if (mm % 5 === 0) {
+      } else if (tickIndex % middleEvery === 0) {
         tickW = 6;
       } else {
         tickW = 3;
@@ -731,16 +870,19 @@ export class Ruler {
       ctx.stroke();
     }
 
-    // 위/아래 여백 핀 — 활성 페이지의 본문 시작(▽)과 끝(△)만 표시한다.
-    ctx.fillStyle = palette.marker;
-    this.drawTriangleDown(ctx, canvasW / 2, topY, MARKER_SIZE);
-    this.drawTriangleUp(ctx, canvasW / 2, bottomY, MARKER_SIZE);
+    // 위/아래 여백 핀 — 본문 시작(▽)과 끝(△)을 표시한다.
+    if (!gridMode) {
+      ctx.fillStyle = palette.marker;
+      this.drawTriangleDown(ctx, canvasW / 2, topY, MARKER_SIZE);
+      this.drawTriangleUp(ctx, canvasW / 2, bottomY, MARKER_SIZE);
+    }
 
     ctx.restore();
   }
 
   /** 리소스 정리 */
   dispose(): void {
+    this.clearPinDrag();
     if (this.rafId) {
       cancelAnimationFrame(this.rafId);
       this.rafId = 0;
@@ -750,11 +892,9 @@ export class Ruler {
     }
     this.unsubscribers = [];
 
-    this.hCanvas.removeEventListener('mousedown', this.onHPinDownBound);
-    this.hCanvas.removeEventListener('mousemove', this.onHPinHoverBound);
-    this.vCanvas.removeEventListener('mousedown', this.onVPinDownBound);
-    this.vCanvas.removeEventListener('mousemove', this.onVPinHoverBound);
-    document.removeEventListener('mousemove', this.onPinDragMoveBound);
-    document.removeEventListener('mouseup', this.onPinDragUpBound);
+    this.hCanvas.removeEventListener('pointerdown', this.onHPinDownBound);
+    this.hCanvas.removeEventListener('pointermove', this.onHPinHoverBound);
+    this.vCanvas.removeEventListener('pointerdown', this.onVPinDownBound);
+    this.vCanvas.removeEventListener('pointermove', this.onVPinHoverBound);
   }
 }

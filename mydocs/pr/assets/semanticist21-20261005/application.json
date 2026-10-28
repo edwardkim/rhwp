@@ -1,0 +1,528 @@
+[
+  {
+    "pr": 7491,
+    "source": "9e073420e46ad77301fcdb66a54aeb016445fb46",
+    "before": "cdba77b609c399fdef26a6c9e637716aa32c2177",
+    "state": "applied",
+    "applied": "b2f46c739264d7e0aada4a607195e3224bf6688b",
+    "pre_rebase_applied": "9c71a0b86fff848ced50602101d46d53b9f21810",
+    "rebase_state": "already_integrated_upstream"
+  },
+  {
+    "pr": 7491,
+    "source": "d3e32c68357245639a94762e7c774d28cbd2cb96",
+    "before": "9c71a0b86fff848ced50602101d46d53b9f21810",
+    "state": "maintainer-conflict-resolved",
+    "applied": "a6a0661970858c1deca83683f7e91d9f7ed849df",
+    "correction": "SpaceMetric와 HeadType import를 함께 유지; 최신 space metric 재조판 경로 보존",
+    "pre_rebase_applied": "05e3b935251fabd821e39638b9e7b2f04ffb3a07",
+    "rebase_state": "already_integrated_upstream"
+  },
+  {
+    "pr": 7491,
+    "source": "8ec046774129ea2350b66a2ec6cd3f88624440a7",
+    "before": "05e3b935251fabd821e39638b9e7b2f04ffb3a07",
+    "state": "applied",
+    "applied": "c27dddc61209a93048cc078785fea575a61f9480",
+    "pre_rebase_applied": "f4f8075216b9d5d3eafb1967885a9a35bf5e61c8",
+    "rebase_state": "already_integrated_upstream"
+  },
+  {
+    "pr": 7491,
+    "source": "c4367ec03a28369cc6f26b17eca46553ac61514c",
+    "before": "f4f8075216b9d5d3eafb1967885a9a35bf5e61c8",
+    "state": "applied",
+    "applied": "1d1c325ac04fabaf563ec4549011adce8c0d3073",
+    "pre_rebase_applied": "c2ba3a348a4b3e0ef3eb82f85faf62e76e0cce22",
+    "rebase_state": "already_integrated_upstream"
+  },
+  {
+    "pr": 7504,
+    "source": "38ce705edd33c656faf7f5831a19ed8da3864370",
+    "before": "c2ba3a348a4b3e0ef3eb82f85faf62e76e0cce22",
+    "state": "applied",
+    "applied": "7be49957acb3c28e30f33e695f9fd981aec0d7fb",
+    "pre_rebase_applied": "993f4bc14af375c8abd59d902ace954c775d39d8",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7504,
+    "source": "8345ad79ab4334198ae195b417ef53c09bd09e54",
+    "before": "993f4bc14af375c8abd59d902ace954c775d39d8",
+    "state": "applied",
+    "applied": "f8402d2b5732250ee9db9f9b14ef407410f339c4",
+    "pre_rebase_applied": "00c42120cc779e9f2855346ec5c3593cdccb763f",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7504,
+    "source": "71fd3348ffb2125176cbf9ac8b7e38243f6cc285",
+    "before": "00c42120cc779e9f2855346ec5c3593cdccb763f",
+    "state": "applied",
+    "applied": "73eca5df2c9196bf1f3782ab23d3f519475b5bb4",
+    "pre_rebase_applied": "bcc5efc1142f65d9d712cf31654d803561b2e4d2",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7504,
+    "source": "e9f38a16b24c59151c2f721a02172f9329b86675",
+    "before": "bcc5efc1142f65d9d712cf31654d803561b2e4d2",
+    "state": "applied",
+    "applied": "7df834ac5a584350934b6368499a146076addd56",
+    "pre_rebase_applied": "279607f753e44d9c0cc7fae12540d1a279f02558",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7504,
+    "source": "7dc340284bd84e2ee475da3b577146005b989500",
+    "before": "279607f753e44d9c0cc7fae12540d1a279f02558",
+    "state": "applied",
+    "applied": "4cdf97adcdbdb0fa987ab5b08efdf52cfdf978cf",
+    "pre_rebase_applied": "d66a26cdcb09a58b9b341cd8f0b5b8166519749b",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7508,
+    "source": "b53d3621be516ed8f918b321a0e0b01f09f8ff19",
+    "state": "already-applied"
+  },
+  {
+    "pr": 7508,
+    "source": "97dd139fcd58361e5ae4834465bf5408b349d00c",
+    "before": "d66a26cdcb09a58b9b341cd8f0b5b8166519749b",
+    "state": "applied",
+    "applied": "7f88ea699b288b5ecd755fe620c3cdb0d3abc0f6",
+    "pre_rebase_applied": "65e78279a77f352682ee769d35d228a310c9c54a",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7510,
+    "source": "b23337121b6d5c0cb260673bf1564d79957e6340",
+    "before": "65e78279a77f352682ee769d35d228a310c9c54a",
+    "state": "applied",
+    "applied": "e434595ea5212df5234a0ee7f6bc6b5a6dc8aef2",
+    "pre_rebase_applied": "64c0e000b39d73d68f2ed7089eb2759cad168810",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7517,
+    "source": "b82590c79b808f7a1c1a0fa56a3d3cb45298b42f",
+    "before": "64c0e000b39d73d68f2ed7089eb2759cad168810",
+    "state": "applied",
+    "applied": "a9f406c6887aeabfc7f7b1a73af0c856c918efc3",
+    "pre_rebase_applied": "f712c5183b135adc827b31fc309bedfa90ed9662",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7519,
+    "source": "3d67c3efe3d6c31c31427b62953d1c106fbb0760",
+    "before": "f712c5183b135adc827b31fc309bedfa90ed9662",
+    "state": "applied",
+    "applied": "d2c4f581922f0b19ec6bb8563871a6c330c35473",
+    "pre_rebase_applied": "5a1b2621b84350fd094822b06ab2c2ca74c11d37",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7520,
+    "source": "8d3af617522413366a276baa2ce1994a8de2ed13",
+    "before": "5a1b2621b84350fd094822b06ab2c2ca74c11d37",
+    "state": "applied",
+    "applied": "478fd3f069419dcc37037310b1f89af7fe9cad8d",
+    "pre_rebase_applied": "9365c486a934927a6ad688590da863f5a8bb2ea7",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7521,
+    "source": "37f754d514fa944d428fac5a1754eb07ed49d0f5",
+    "before": "9365c486a934927a6ad688590da863f5a8bb2ea7",
+    "state": "applied",
+    "applied": "5bb3a1ae3eacc04a16e06e4fdfe9b3e554ae8812",
+    "pre_rebase_applied": "381c4b1b5cda885f665b864db342570b028df27e",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7521,
+    "source": "6f0df1ae38d6830128916c4e5f773da23a6be804",
+    "before": "381c4b1b5cda885f665b864db342570b028df27e",
+    "state": "applied",
+    "applied": "cb2bd912d5afc28e01015d79caf839664c942e63",
+    "pre_rebase_applied": "a0b0989ef5a026b8381acbe6e6921b73eceaf18b",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7522,
+    "source": "e84767a58b47a6c78886e4a08bcaa86c71921912",
+    "before": "a0b0989ef5a026b8381acbe6e6921b73eceaf18b",
+    "state": "applied",
+    "applied": "df5847602094e70e865607ae12fb61e30ae90bc7",
+    "pre_rebase_applied": "e6e6d1b93e776e671d621a0d1182a8a441ee035e",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7527,
+    "source": "34310be3b84cc39ad9d06ad3eebb27f595eca7ca",
+    "before": "e6e6d1b93e776e671d621a0d1182a8a441ee035e",
+    "state": "applied",
+    "applied": "a2102878c29290ddf59816463e95ac63a9d7df5f",
+    "pre_rebase_applied": "e51b8d26eddf644e5af8329e8d159a8cfa445585",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7530,
+    "source": "eac507104fef759c9c8292a3189906e4ba674c80",
+    "before": "e51b8d26eddf644e5af8329e8d159a8cfa445585",
+    "state": "applied",
+    "applied": "5607397ea0ac68fe7fce809018d180bbf5abba5f",
+    "pre_rebase_applied": "4e255c46bebd5bfd691bbb974b8d12ef97c86ae2",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7530,
+    "source": "dd775bd8703e7b43fc8c042296480ee5942c5a62",
+    "before": "4e255c46bebd5bfd691bbb974b8d12ef97c86ae2",
+    "state": "applied",
+    "applied": "087f705079087870bb48df58bf4daedf97721f94",
+    "pre_rebase_applied": "bc4ef71be312c3fa6064dec4f4445a4754051207",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7530,
+    "source": "c3c0c070fa905c6aecbe7cffdc0c0dee18ab132f",
+    "before": "bc4ef71be312c3fa6064dec4f4445a4754051207",
+    "state": "applied",
+    "applied": "b7fca20aa48be36c8c3f5ef83e37262d99a3afec",
+    "pre_rebase_applied": "cfd3c77f37fd5fe038179900c13714b97873916a",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7558,
+    "source": "61875ba4ced2df54ca5056e8af8c95206cfa3987",
+    "before": "cfd3c77f37fd5fe038179900c13714b97873916a",
+    "state": "applied",
+    "applied": "84f0012e49f480d5d21798bfb3ef76bc14404bfb",
+    "pre_rebase_applied": "ecccbe7fe3769c95fac123ade73a53bd4e497e71",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7560,
+    "source": "ae2768342367638e97499d72134d9f6e4da8dbc4",
+    "before": "ecccbe7fe3769c95fac123ade73a53bd4e497e71",
+    "state": "applied",
+    "applied": "17f7d8a40e3d2525af0bdff31b2793e87c975809",
+    "pre_rebase_applied": "ecefaacd4d4a34d76d8b19d714d78ee860bd339c",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7560,
+    "source": "96323f506bf53225a3b4529050b87eb1427ca3bb",
+    "before": "ecefaacd4d4a34d76d8b19d714d78ee860bd339c",
+    "state": "applied",
+    "applied": "421a410bbb55a86d80a40ea77a327569e3e8f22e",
+    "pre_rebase_applied": "19aad5400df817831683ddca05b3ce39fb613169",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7561,
+    "source": "d41d4c9f77dea148eb551b7c13f45ee54cb161c6",
+    "before": "19aad5400df817831683ddca05b3ce39fb613169",
+    "state": "applied",
+    "applied": "002a88bf30a64c32695c43070a56b159b2620444",
+    "pre_rebase_applied": "01d98304800f00141087221cf6d8541cbbe9a20e",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7561,
+    "source": "3ee6ad8e0222fd2dd74c54ce0fc46751d1331764",
+    "before": "01d98304800f00141087221cf6d8541cbbe9a20e",
+    "state": "applied",
+    "applied": "719173e01da54963925b21f750e22552e29fcb8d",
+    "pre_rebase_applied": "234102b6c5297e83108d780b4aefeb79bb044443",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7562,
+    "source": "94622dcb53ce6e6e0c88ae82fff461055d2b3c90",
+    "before": "234102b6c5297e83108d780b4aefeb79bb044443",
+    "state": "applied",
+    "applied": "082bdb354c72e5ba3c032a1061a687045b45f40f",
+    "pre_rebase_applied": "0bca1742aa0c0cb97d538e5d872273d223c10c93",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7562,
+    "source": "8d3b51ed378692f47b37d79dd94dc58a1adaf758",
+    "before": "0bca1742aa0c0cb97d538e5d872273d223c10c93",
+    "state": "applied",
+    "applied": "0e45bbacdfa180853855d74d7c5ce72aade5fc58",
+    "pre_rebase_applied": "4ce4cb02f625ae5eb6d4bb379fecca9d60f39d8a",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7562,
+    "source": "00fa31e4cc9438a2eaa583c0cded731723e468e3",
+    "before": "4ce4cb02f625ae5eb6d4bb379fecca9d60f39d8a",
+    "state": "applied",
+    "applied": "90730a209638301ac3c061772a4371db1cf88de7",
+    "pre_rebase_applied": "2093e2529545675d1535b3e09cbe0b6d9c6de929",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7565,
+    "source": "7ce5c927e353bed3b5585641ef74c477efee383c",
+    "before": "2093e2529545675d1535b3e09cbe0b6d9c6de929",
+    "state": "applied",
+    "applied": "9fa4680c77b5016b9d76454b59e70aa3ac22ffb6",
+    "pre_rebase_applied": "cc26e29c87e7ca5dc12936ade2e2fae79c369056",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7565,
+    "source": "a65a7664a9d6bc92dc4a9a378c1fcb2af99368df",
+    "before": "cc26e29c87e7ca5dc12936ade2e2fae79c369056",
+    "state": "applied",
+    "applied": "6ae85f8a8b4fcda6f7cea772b4b82635174da80e",
+    "pre_rebase_applied": "f691401c7e49558920cc4cbaf93414f788f91802",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7565,
+    "source": "e36568fb931a4f24aefed82f4d417931c1bd140e",
+    "before": "f691401c7e49558920cc4cbaf93414f788f91802",
+    "state": "applied",
+    "applied": "c334793d6f773acee6f24c9a6a11a01cc4dc1040",
+    "pre_rebase_applied": "34d236cb5f4962d8c18e92b4be21b52af1baba90",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7565,
+    "source": "71c6dc8959f4d79acd449fb88b916ae27affc9c3",
+    "before": "34d236cb5f4962d8c18e92b4be21b52af1baba90",
+    "state": "applied",
+    "applied": "d12d75c82841550777bcad12367c6e2a511f6d8d",
+    "pre_rebase_applied": "94c71d28c081511b0b7ee8958e9672e61970c458",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7571,
+    "source": "dec4e1880f1392c3bbc3bb55998a0c4f4dd3727c",
+    "before": "94c71d28c081511b0b7ee8958e9672e61970c458",
+    "state": "applied",
+    "applied": "a8f4062310e3d0e4fa3aa5c4603ad214c94ea69b",
+    "pre_rebase_applied": "ef5b522d44373303dbd82a771a72f1ca95734827",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7571,
+    "source": "5e2047e256372a081b2634928d3866c544d736c7",
+    "before": "ef5b522d44373303dbd82a771a72f1ca95734827",
+    "state": "applied",
+    "applied": "a7e07c3ad47c78b828a3030832e8fadd498ccacd",
+    "pre_rebase_applied": "37e6bfbdcbf97d7d1c8a2d17ef44373dc5dccafd",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7571,
+    "source": "95820ef52bee3d74dcbccce15cdeb0bb31fa29dd",
+    "before": "37e6bfbdcbf97d7d1c8a2d17ef44373dc5dccafd",
+    "state": "applied",
+    "applied": "cdf43a352b4b291bcd2125969ed796178949e862",
+    "pre_rebase_applied": "0f76e8953dde8f93a7ee04a7998165a56e011755",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7571,
+    "source": "989e0881e5a2e7ff7d69d2249d914d9597db0bfb",
+    "before": "0f76e8953dde8f93a7ee04a7998165a56e011755",
+    "state": "applied",
+    "applied": "34a4eede3de7ba4b712be5ef3d7a0e4e13604dfa",
+    "pre_rebase_applied": "b2e0bad8c83c164c5c8345849951bae7370a0128",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7577,
+    "source": "643467dd8633c2d3131e85d25e6a33f2dba0e0ce",
+    "before": "b2e0bad8c83c164c5c8345849951bae7370a0128",
+    "state": "applied",
+    "applied": "7b10b3d571ed88481acdac2aa78616baded46e43",
+    "pre_rebase_applied": "657b9f50039fd33e680925f93a861cb6aaa39286",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7577,
+    "source": "6065fd827d811c8a8e837c694db0617a1d05beaf",
+    "before": "657b9f50039fd33e680925f93a861cb6aaa39286",
+    "state": "applied",
+    "applied": "76d0f0413b64df22b0c62f3fd3b73b96e6c7f07e",
+    "pre_rebase_applied": "c1dae69e64f3db470d39046685b53a1d3bf0e993",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7577,
+    "source": "767b5ad185da3d05c2b6f84eb8adced747dd8015",
+    "before": "c1dae69e64f3db470d39046685b53a1d3bf0e993",
+    "state": "applied",
+    "applied": "686f316e6894868170a6cbfd56d8bc4eb0dbe5ea",
+    "pre_rebase_applied": "6288a4e7fa8afd662898a24d5a07f3dcf2961880",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7577,
+    "source": "3439c1ccf925ad7ddcfeb59547a6e3ec386496fb",
+    "before": "6288a4e7fa8afd662898a24d5a07f3dcf2961880",
+    "state": "applied",
+    "applied": "a61701ebcaaa0cf2a4de1e3aec197d11dab0c20e",
+    "pre_rebase_applied": "09f327d01a6bf515859b7306c451274f2a06100b",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7577,
+    "source": "2e3eeb52892541ee0089818972a7b48f7e93fcd4",
+    "before": "09f327d01a6bf515859b7306c451274f2a06100b",
+    "state": "applied",
+    "applied": "ddc234529914ef36e5418d8afc247c57933ed94e",
+    "pre_rebase_applied": "4f6c4921e954eed83b0b90afe130b7e317414843",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7578,
+    "source": "c3bb8a72cdd1dc933b35c141b9033692a48dc8a2",
+    "before": "4f6c4921e954eed83b0b90afe130b7e317414843",
+    "state": "applied",
+    "applied": "7cacb796d755ce1870b156c112afd1c8c277ee45",
+    "pre_rebase_applied": "86ed33a8f50c6b36693cc091bb872ea62829e201",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7578,
+    "source": "6bf112ac0d53ce9d958ea571cf3822e571102553",
+    "before": "86ed33a8f50c6b36693cc091bb872ea62829e201",
+    "state": "applied",
+    "applied": "79c4be9c321064d3241a26754d014b73eb1ff1fc",
+    "pre_rebase_applied": "58582b7f94cef0d432ae77bd4de059f06ab84fa3",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7578,
+    "source": "350852e1139eaa8a1f9135b2c05521edc44ea6db",
+    "before": "58582b7f94cef0d432ae77bd4de059f06ab84fa3",
+    "state": "applied",
+    "applied": "a9718e3ff481c41dd1b06c6862a31f8af97e563c",
+    "pre_rebase_applied": "0084c8a7330760959f247c0e6c3f1cb9c391da41",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7578,
+    "source": "30817e498364ec61ee3c43c9c2a88a1ed4c471be",
+    "before": "0084c8a7330760959f247c0e6c3f1cb9c391da41",
+    "state": "applied",
+    "applied": "dd1f092d38d16be18e4f885352eed65ff685d56d",
+    "pre_rebase_applied": "eb49764d6292967a659ecb474b000368b160933c",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7578,
+    "source": "e3268b9bc5aba217e51b3104a87b7a5f19f6491d",
+    "before": "eb49764d6292967a659ecb474b000368b160933c",
+    "state": "applied",
+    "applied": "1f3127ae1265543b700e48ef81109efebe51f6f4",
+    "pre_rebase_applied": "1d809afe7b965c9ea6137012d59d139d63b038d0",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7590,
+    "source": "694d65555982afe6e22af2faa7948235fccb3995",
+    "state": "applied",
+    "applied": "b2e5b43bc305403c9434727626ddca9eb3f1d00b",
+    "pre_rebase_applied": "e0166dc743f12bc22c881402fa5a10598817afb7",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7590,
+    "source": "6529a6aaa6e2be432b42ea101983eba2ce7ec914",
+    "state": "applied",
+    "applied": "c96ee8ecce31b97e42f647f0791c6aa58261bd99",
+    "pre_rebase_applied": "089286608d715ae39a00aade41032980974950ab",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7592,
+    "source": "627c9060867bea690b45c31813d855cd4d8c0fe9",
+    "state": "applied",
+    "applied": "bfc9be54786257d2b9442799ddc9bd5700010a05",
+    "pre_rebase_applied": "4135c1b1a52f1f5f3b97e014934aa31addaf4751",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7592,
+    "source": "89b46177b4d157a742ff38b2055d5f926fde3863",
+    "state": "applied",
+    "applied": "c3450e89558ce8743a400f6a74f062eab2cb8abd",
+    "pre_rebase_applied": "084f4a2c83915cbe01853862b7df5c892b92aec9",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7592,
+    "source": "4bd33c66f5588abf56fbc3a1851e634891abd8dc",
+    "state": "applied",
+    "applied": "af0c9315e30b7c4f513f201ba7d1d6568ee5132d",
+    "pre_rebase_applied": "31f077276efa0c93c6256802d98ad01c32268c59",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7592,
+    "source": "2e1082980708ec36022246f945fd5ff9626cbf87",
+    "state": "applied",
+    "applied": "0b76864a2bf1e2b27eca0678ee6870f8b278b7db",
+    "pre_rebase_applied": "10bb47410c34eb3e7c5970278bed1d8f28b98aff",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7595,
+    "source": "e2b4a4306da4f4910e5bcc3d498fd3a1a50a7586",
+    "state": "applied",
+    "applied": "2496427499366e5c4081248cad915aafac792ae5",
+    "pre_rebase_applied": "75c7cbc9837f84fafc0d4e0fbccd2f5f29b120e8",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7595,
+    "source": "520a8ee399f255d7a6b91477dd744745a47240dd",
+    "state": "maintainer-conflict-resolved",
+    "applied": "6eedec9c24f667ad3fcd442fc122c6d2b11db376",
+    "correction": "HTML parse module 분리와 #7521 보정을 보존하고 새 helper 호출을 inline_content에 적용",
+    "pre_rebase_applied": "576ee0ff35f0fd17d99528f54a5b1a0ad2969e48",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7596,
+    "source": "5b98c883446fd0cc0a733ac21484d8a276cfe6d8",
+    "state": "applied",
+    "applied": "47a176d5f100fb8660b9e489c82a2ada2d2ff572",
+    "pre_rebase_applied": "e79480f113abdbf5520f4e71c6ac384e06c323df",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7596,
+    "source": "1e882aae27ed5474f1794a7d453a552f514b6078",
+    "state": "applied",
+    "applied": "226b567ae9a626268baedac13a73a359f56e997f",
+    "pre_rebase_applied": "b349b4144e4f4fe7db01ae3ea9d34417e52b0ecd",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7597,
+    "source": "cbbfedaf821fb6c0a6022bd7fa31dd6fcca5a04a",
+    "state": "applied",
+    "applied": "5962b4650b7423cf0ca0e3320b142507aed60936",
+    "pre_rebase_applied": "459fe9de0963e13ff84118fc0ae9bc6b51773ca6",
+    "rebase_state": "rebased"
+  },
+  {
+    "pr": 7597,
+    "source": "fe01de7653deb3de002e3207c88c20f2f49c42ea",
+    "state": "applied",
+    "applied": "2231cb02540563408dfc5cde83279eb4e43d0fc1",
+    "pre_rebase_applied": "ee2f5cf8de90db77050ea0e143c8d0d2e6e08110",
+    "rebase_state": "rebased"
+  }
+]

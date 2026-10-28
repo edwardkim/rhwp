@@ -28,7 +28,9 @@ fn page_text(doc: &HwpDocument, page: u32) -> String {
         out.push_str(&after[..close]);
         rest = &after[close..];
     }
-    out.chars().filter(|c| !c.is_whitespace()).collect()
+    // SVG에서 꺾쇠는 XML 엔티티로 저장되므로 실제 문단 문자로 되돌린다.
+    let text: String = out.chars().filter(|c| !c.is_whitespace()).collect();
+    text.replace("&lt;", "<").replace("&gt;", ">")
 }
 
 #[test]
@@ -63,5 +65,23 @@ fn undefined_outline_gets_hancom_default_numbers() {
         p1.contains("1.개정이유") && !p1.contains("1.1.개정이유"),
         "비개요 문단에 기본 개요 번호가 과발동했다: {}",
         &p1[..p1.len().min(120)]
+    );
+
+    // 한컴 2020 기준 출력은 3번 항목의 양쪽 셀을 함께 9쪽에서 시작한다.
+    // 짧은 첫 유닛만 8쪽에 떼어 놓으면 왼쪽 <신 설>과 오른쪽 수당 본문이 갈린다.
+    let p8 = page_text(&doc, 7);
+    let p9 = page_text(&doc, 8);
+    assert!(
+        !p8.contains("3.<신설>"),
+        "3번 항목의 왼쪽 셀이 8쪽에 남았다"
+    );
+    assert!(
+        !p8.contains("공무원수당"),
+        "3번 항목의 오른쪽 셀이 8쪽에 남았다"
+    );
+    assert!(p9.contains("3.<신설>"), "3번 항목의 왼쪽 셀이 9쪽에 없다");
+    assert!(
+        p9.contains("공무원수당"),
+        "3번 항목의 오른쪽 셀이 9쪽에 없다"
     );
 }

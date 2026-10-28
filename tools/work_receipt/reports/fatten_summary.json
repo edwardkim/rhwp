@@ -1,19 +1,19 @@
 {
   "claim": "M-rcpt",
   "issue": 5478,
-  "generatedAt": "2026-08-18T11:28:01Z",
-  "replayCases": 80,
+  "generatedAt": "2026-10-10T07:40:03Z",
+  "replayCases": 77,
   "exceptions": 38,
   "auditLayouts": 20,
   "lineageTopologies": 22,
   "planActions": {
-    "replace_text": 67,
+    "replace_text": 64,
     "fill_fields": 7,
     "set_checkbox": 3,
     "set_cell": 7
   },
   "families": {
-    "공문": 30,
+    "공문": 29,
     "예산": 4,
     "고시": 5,
     "법령": 4,
@@ -22,20 +22,20 @@
     "보안": 2,
     "계약": 6,
     "입찰": 2,
-    "시험": 3,
     "회의록": 2,
     "안건": 1,
     "민원": 2,
     "인사": 2,
     "등기": 2,
-    "감사": 2
+    "감사": 2,
+    "시험": 1
   },
   "exceptionExits": {
     "1": 5,
     "2": 20,
     "3": 13
   },
-  "files": 339,
+  "files": 333,
   "allowedCommands": [
     "replay",
     "audit",

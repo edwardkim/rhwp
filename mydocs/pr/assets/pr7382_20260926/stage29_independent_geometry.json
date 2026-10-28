@@ -1,0 +1,43 @@
+{
+  "source": "samples/issue6312/fiscal_trend_float_table_anchor.hwpx",
+  "source_sha256": "aa804ca85dba392fad80dd78e3b61e668771984720a0a321a0c0ed694233a918",
+  "pdf": "pdf/issue6312/fiscal-trend-float-table-anchor-2020.pdf",
+  "pdf_sha256": "f99cf3992af5c3ae67e8c55b763ac9aa1cef95d164d60eeb73db190cc8120f3f",
+  "page": 3,
+  "source_hu": {
+    "body_top": 7085,
+    "page_vpos_base_after_normalization": 70099,
+    "blank_original_vpos": 25155,
+    "blank_line_height": 1400,
+    "blank_line_spacing": 772,
+    "following_body_original_vpos": 27327,
+    "later_body_original_vpos": 49846
+  },
+  "expected_px": {
+    "blank_top": 429.8666666666667,
+    "blank_content_bottom": 448.53333333333336,
+    "following_body_logical_top": 458.82666666666665,
+    "later_body_logical_top": 759.08
+  },
+  "pdf_visible_first_following_body_top_px": 457.9773,
+  "pdf_visible_later_body_top_px": 757.9694,
+  "before_px": {
+    "following_body_top": 469.12,
+    "lazy_base_hu": 69327
+  },
+  "meaning": "논리 줄 원점과 PDF 가시 glyph 원점을 구분한다; 저장 간격772HU의 이중 계상은10.293333px다.",
+  "normal_partial_table_start_control": {
+    "source": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+    "pdf": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+    "page": 175,
+    "opening_owner": "PartialTable/1822; 처음 확정한 저장 단 원점 없음",
+    "blank_source_vpos_hu": 39848,
+    "blank_height_hu": 1000,
+    "blank_trailing_hu": 1000,
+    "heading_source_vpos_hu": 41848,
+    "pdf_heading_visible_top_px": 641.061,
+    "before_heading_tree_top_px": 641.1,
+    "rejected_candidate_heading_top_px": 627.8,
+    "meaning": "간격 소비만으로 원점 확정이나 기존 누락 간격 bridge 제거를 입증하지 않는다."
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "probeCases": [
+    {
+      "id": "npm-present",
+      "channel": "npm",
+      "identifier": "@rhwp/core",
+      "version": "0.8.6",
+      "httpStatus": 200,
+      "payload": {"name": "@rhwp/core", "version": "0.8.6"},
+      "expectedPresent": true
+    },
+    {
+      "id": "npm-absent",
+      "channel": "npm",
+      "identifier": "@rhwp/editor",
+      "version": "0.8.6",
+      "httpStatus": 404,
+      "payload": {"error": "Not found"},
+      "expectedPresent": false
+    },
+    {
+      "id": "vscode-present-among-history",
+      "channel": "vscode-marketplace",
+      "identifier": "edwardkim.rhwp-vscode",
+      "version": "0.8.6",
+      "httpStatus": 200,
+      "payload": {
+        "results": [
+          {
+            "extensions": [
+              {
+                "publisher": {"publisherName": "edwardkim"},
+                "extensionName": "rhwp-vscode",
+                "versions": [{"version": "0.8.7"}, {"version": "0.8.6"}]
+              }
+            ]
+          }
+        ]
+      },
+      "expectedPresent": true
+    },
+    {
+      "id": "vscode-exact-version-absent",
+      "channel": "vscode-marketplace",
+      "identifier": "edwardkim.rhwp-vscode",
+      "version": "0.8.6",
+      "httpStatus": 200,
+      "payload": {
+        "results": [
+          {
+            "extensions": [
+              {
+                "publisher": {"publisherName": "edwardkim"},
+                "extensionName": "rhwp-vscode",
+                "versions": [{"version": "0.8.5"}]
+              }
+            ]
+          }
+        ]
+      },
+      "expectedPresent": false
+    },
+    {
+      "id": "open-vsx-present",
+      "channel": "open-vsx",
+      "identifier": "edwardkim.rhwp-vscode",
+      "version": "0.8.6",
+      "httpStatus": 200,
+      "payload": {"namespace": "edwardkim", "name": "rhwp-vscode", "version": "0.8.6"},
+      "expectedPresent": true
+    },
+    {
+      "id": "open-vsx-absent",
+      "channel": "open-vsx",
+      "identifier": "edwardkim.rhwp-vscode",
+      "version": "0.8.6",
+      "httpStatus": 404,
+      "payload": {"error": "Not found"},
+      "expectedPresent": false
+    },
+    {
+      "id": "registry-unavailable-is-not-absence",
+      "channel": "npm",
+      "identifier": "@rhwp/core",
+      "version": "0.8.6",
+      "httpStatus": 503,
+      "payload": {"error": "unavailable"},
+      "expectedError": "unexpected-http-status:503"
+    },
+    {
+      "id": "malformed-success-is-not-absence",
+      "channel": "open-vsx",
+      "identifier": "edwardkim.rhwp-vscode",
+      "version": "0.8.6",
+      "httpStatus": 200,
+      "payload": {"namespace": "edwardkim"},
+      "expectedError": "open-vsx-response-mismatch"
+    }
+  ],
+  "aggregateCases": [
+    {
+      "id": "all-unpublished-then-published",
+      "mode": "publish",
+      "extensionsRequested": true,
+      "channels": {
+        "npm-core": {"jobResult": "success", "state": "published"},
+        "npm-editor": {"jobResult": "success", "state": "published"},
+        "vscode-marketplace": {"jobResult": "success", "state": "published"},
+        "open-vsx": {"jobResult": "success", "state": "published"}
+      },
+      "expectedAccepted": true
+    },
+    {
+      "id": "all-already-published",
+      "mode": "publish",
+      "extensionsRequested": true,
+      "channels": {
+        "npm-core": {"jobResult": "success", "state": "already-present"},
+        "npm-editor": {"jobResult": "success", "state": "already-present"},
+        "vscode-marketplace": {"jobResult": "success", "state": "already-present"},
+        "open-vsx": {"jobResult": "success", "state": "already-present"}
+      },
+      "expectedAccepted": true
+    },
+    {
+      "id": "vscode-was-the-only-prior-success",
+      "mode": "publish",
+      "extensionsRequested": true,
+      "channels": {
+        "npm-core": {"jobResult": "success", "state": "published"},
+        "npm-editor": {"jobResult": "success", "state": "published"},
+        "vscode-marketplace": {"jobResult": "success", "state": "already-present"},
+        "open-vsx": {"jobResult": "success", "state": "published"}
+      },
+      "expectedAccepted": true
+    },
+    {
+      "id": "open-vsx-was-the-only-prior-success",
+      "mode": "publish",
+      "extensionsRequested": true,
+      "channels": {
+        "npm-core": {"jobResult": "success", "state": "published"},
+        "npm-editor": {"jobResult": "success", "state": "published"},
+        "vscode-marketplace": {"jobResult": "success", "state": "published"},
+        "open-vsx": {"jobResult": "success", "state": "already-present"}
+      },
+      "expectedAccepted": true
+    },
+    {
+      "id": "lookup-failure-is-failed",
+      "mode": "publish",
+      "extensionsRequested": true,
+      "channels": {
+        "npm-core": {"jobResult": "success", "state": "already-present"},
+        "npm-editor": {"jobResult": "success", "state": "already-present"},
+        "vscode-marketplace": {"jobResult": "success", "state": "already-present"},
+        "open-vsx": {"jobResult": "failure", "state": "failed"}
+      },
+      "expectedAccepted": false
+    },
+    {
+      "id": "verify-only-skips-external-channels",
+      "mode": "verify",
+      "extensionsRequested": true,
+      "channels": {
+        "npm-core": {"jobResult": "skipped", "state": ""},
+        "npm-editor": {"jobResult": "skipped", "state": ""},
+        "vscode-marketplace": {"jobResult": "skipped", "state": ""},
+        "open-vsx": {"jobResult": "skipped", "state": ""}
+      },
+      "expectedAccepted": true
+    }
+  ]
+}

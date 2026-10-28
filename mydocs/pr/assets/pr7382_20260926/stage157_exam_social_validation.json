@@ -1,0 +1,875 @@
+{
+  "stage": 157,
+  "status": "#1100 개별 보정·의미 회귀·전체4쪽 시각 게이트 완료; PR7382 전체 준비는 보류",
+  "source_snapshot": {
+    "starting_head": "8b9783013ef004a396b5595a085f18dcd7dd61f6",
+    "policy_base": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "files": {
+      "src/renderer/composer.rs": "f731042366f4f5f7c8ec8689eb92e67d6d6c9d3ea4daa17f1e1fa9696c2e0048",
+      "src/renderer/layout/paragraph_layout.rs": "8b7efb61d1ecdf52ab23ed4fc2a7a464a5a2042c6aa06fbb25d804fcff4f03b9",
+      "src/renderer/layout/tests.rs": "3e89b84a593ae11532e5895be62bebde05b1c37b5ce4a2bdfdf14d55e92c42b5",
+      "src/renderer/layout/utils.rs": "e760b4117b7846d8b697891434c1cc9b2e04fde2d4f3e7ba6db84cd56e0e9564",
+      "src/renderer/mod.rs": "c0c9757b2c839cd17113a0632e7eff2c6e7871f5904562ef63732721fd3ee1fb",
+      "src/renderer/typeset/controls/stored_tac.rs": "b489a65d1b3faa8ca8bc9643a9b8d584b3a4fa4222dd0dad4d8072e8d61434e7",
+      "tests/issue_1100_exam_social_hwpx_header.rs": "c3097e1f8e94d2a36f5bfca73c43155b6ceb198affa67839ad326a965134d140",
+      "samples/hwpx/exam_social.hwpx": "c11b117dfc55606bb3ea703f9ea5b0a14481f7e70e918bc09ce4e202a04c9fd0",
+      "pdf/exam_social-hwpx-revalidated-2020.pdf": "68a1c41533ebd0e3408799e642e70a2cd04ebf20bb599763e2c3a7331df00b95"
+    },
+    "diff_sha256": "c7dc55d27a675107099e0d135bf304a8d0e57f98e29398900cc0b4a8133622e6"
+  },
+  "code_commit": "4e50d2317e83d408ee12d6adc92d7e9a37aa8fbd",
+  "preanalysis": {
+    "stage": 157,
+    "source_head": "e13abf3b19329a282d05f60e2a96bc6889855de2",
+    "production_source": "c3f748325",
+    "actual_fail": "issue_1100_hwpx_even_header_page_auto_number_replaces_one_placeholder_only",
+    "actual_fail_evidence": "stage156 remaining individual index03 exit100; 첫번호의 기존SVG x/y 절대핀이 실패. 정상2함수는유지.",
+    "input": "samples/hwpx/exam_social.hwpx",
+    "input_sha256": "c11b117dfc55606bb3ea703f9ea5b0a14481f7e70e918bc09ce4e202a04c9fd0",
+    "reference": "pdf/hwpx/exam_social-hwpx-2020.pdf",
+    "pdf_sha256": "a02dda1793da690dc337f717766eb1b1fd5e16b4e02696e82dc438ca769b1e04",
+    "plan": "기존정상한컴PDF/원본대응/출력확인. 현재Native/freshWASM전체4쪽직접비교후90미달이면실제실패함수만#7445이관. 90이상이면PDF·원본저장줄/문자스타일의독립위치로실패원인확인후같은기존검사교정또는메인터너보정. 새함수/허용치완화없음. 현재Cargo개별27검사가끝날때까지source/test수정없음.",
+    "user_steering": "PDF DPI/용지/배율문제를의심해PDF재산출뒤비교하라는지시",
+    "reference_revision": {
+      "new_pdf": "pdf/exam_social-hwpx-revalidated-2020.pdf",
+      "sha256": "68a1c41533ebd0e3408799e642e70a2cd04ebf20bb599763e2c3a7331df00b95",
+      "conversion_job": "4fac148f-c48f-4baf-b82b-de470368ba88",
+      "engine": "2020",
+      "source_saved_product": "hancom-office-2020 11.0.0.8969",
+      "old_paper_pt": [
+        595,
+        841
+      ],
+      "source_paper_hwpunit": [
+        77102,
+        111685
+      ],
+      "new_paper_pt": [
+        771,
+        1116
+      ],
+      "pages": 4,
+      "decision": "기존A4점수를회귀제거근거로사용하지않음. 원문용지에맞는새PDF로재비교뒤판정;테스트변경없음."
+    },
+    "user_override": "2쪽87.65%를여기서메인터너보정으로개선하여기존회귀통과. 이문서만90미달이관방침을철회하고기존함수복원. 새함수추가없음. 정상PDF/Native·freshWASM90이상과기존검사통과후코드/결과커밋.",
+    "latest_user_scope": "1~4쪽모두개선가능여부검토후기존회귀테스트교정. Native/freshWASM전체4쪽최저90이상·기존검사통과를검증. 새함수추가없음.",
+    "correction_plan": {
+      "blank_line_contract": "순수공백 host의 실제소유줄은control위치와저장textpos로선택. 선행blank의th+ls=다음vpos, 실제표줄lh=th=outerheight, 마지막단일표. 저장·비편집·실측표높이일치·전체끝fit인경우만기존StoredTacPlan확장.",
+      "consumer_path": [
+        "composer.rs::stored_tac_lines top/occupied_end/end",
+        "typeset/controls/stored_tac.rs::prepare origin+occupied_end/end 전체fit",
+        "StoredTacPlan::placement -> commit_stored_tac_control -> InlineBoxPlacement",
+        "layout.rs::layout_table_control_block flow_placement/resolved_table_origin -> table_layout.rs flow_table_y; advance_end조기반환으로후행간격재가산없음"
+      ],
+      "independent_geometry": {
+        "native_q10_before": [
+          547.0,
+          795.9,
+          411.9,
+          385.4
+        ],
+        "hancom_q10": [
+          547.04,
+          804.675,
+          412.32,
+          385.149
+        ],
+        "saved_blank_height_hu": 500,
+        "saved_blank_spacing_hu": 200,
+        "saved_table_delta_hu": 700
+      },
+      "page3_number_cause": "치환된표시3의원모델공백을말미공백으로제외해오른쪽정렬원점이밀림. 실제표시문자열로말미공백판정. 모델offset/TAC경계그대로보존.",
+      "page2_header_pin": "PDFnumberbaseline90.36pt=120.48px, 저장글상자top+2805HUbaseline=120.5466667px. 종전122.4266667은1.88px위치오류를고정한기대값. 번호1회/후속fwSpace보존검사유지."
+    },
+    "latest_regression_policy": "사용자지시: 픽셀절대핀을제거하고각쪽문항/문단소속·머리말/꼬리말영역·표와자료의소속·번호1회치환/fwSpace보존검사. 실제배치개선은독립VisualSweep전후로판정.",
+    "page4_numbering_cause": {
+      "source": "원본paraPr25/idRef2 및 paraPr43/idRef7; numFormat=HANGUL_JAMO; format=^1.",
+      "spec": "한글5.0rev1.3 표41 값10=ㄱ/ㄴ/ㄷ",
+      "code": "renderer/layout/utils.rs::numbering_format_to_number_format 에10분기가없어서Digit폴백",
+      "plan": "일반문단번호형식10을한글자모로렌더. 현재문서4쪽16/18번보기와독립PDF를대조. 다른코드/알수없는코드폴백/자동쪽번호의별도코드축유지."
+    }
+  },
+  "pdf_reprint_comparison": {
+    "old_pdf": "pdf/hwpx/exam_social-hwpx-2020.pdf",
+    "old_paper_pt": [
+      595,
+      841
+    ],
+    "new_pdf": "pdf/exam_social-hwpx-revalidated-2020.pdf",
+    "new_paper_pt": [
+      771,
+      1116
+    ],
+    "source_paper_hwpunit": [
+      77102,
+      111685
+    ],
+    "source_logical_dpi": 96,
+    "same_compare_raster_dpi": 96,
+    "new_conversion_job": "4fac148f-c48f-4baf-b82b-de470368ba88",
+    "pages": [
+      {
+        "page": 1,
+        "old_match": 28.32771,
+        "new_match": 93.21648
+      },
+      {
+        "page": 2,
+        "old_match": 33.49255,
+        "new_match": 87.65269
+      },
+      {
+        "page": 3,
+        "old_match": 30.60229,
+        "new_match": 91.97659
+      },
+      {
+        "page": 4,
+        "old_match": 29.31337,
+        "new_match": 93.32797
+      }
+    ],
+    "cause": "이전A4기준은원본사용자정의용지와다른인쇄크기/배율. 벡터PDF의DPI를바꿔저장한것은아니고같은원문을정상용지로다시PDF출력. Native4/4쪽완료;새PDF에서도2쪽배치/차트 차이가 남아87.65269%."
+  },
+  "test_policy": "기존3함수를 쪽·영역·문단 소속·번호/공백 보존으로 교정. 절대픽셀/전체SVG핀 없음. 새 #[test] 함수 0. 위치 개선은 독립 시각 증거로 별도 입증.",
+  "tests": {
+    "original_before": {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_018",
+        "-E",
+        "test(issue_1100_exam_social_hwpx_header::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_1100_exam_social_hwpx_header",
+          "target": "regression_suite_018",
+          "grouped": true
+        }
+      ],
+      "exit_code": 100,
+      "seconds": 12.249173833057284
+    },
+    "semantic_before": {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_018",
+        "-E",
+        "test(issue_1100_exam_social_hwpx_header::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_1100_exam_social_hwpx_header",
+          "target": "regression_suite_018",
+          "grouped": true
+        }
+      ],
+      "exit_code": 100,
+      "seconds": 180.48273141682148,
+      "passed": 2,
+      "failed": 1,
+      "cause": "4쪽16/18 보기의 HANGUL_JAMO를 Digit로 출력; ㄱ marker0/expected2"
+    },
+    "after_controls": {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_014",
+        "--test",
+        "regression_suite_015",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_019",
+        "--test",
+        "regression_suite_025",
+        "--test",
+        "regression_suite_028",
+        "-E",
+        "test(issue_1100_exam_social_hwpx_header::) | test(issue_7081_cell_trailing_space_alignment::) | test(issue_5820_textbox_right_align_trailing_ws::) | test(issue_6986_page_and_total_page_in_one_run::) | test(issue_3216_hf_field_display_space::) | test(issue_7312_tac_stored_band_no_wrap::) | test(issue_6167_leading_space_tac_table_own_line::) | test(issue_6181_inline_tac_table_line_advance::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_1100_exam_social_hwpx_header",
+          "target": "regression_suite_018",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_7081_cell_trailing_space_alignment",
+          "target": "regression_suite_018",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_5820_textbox_right_align_trailing_ws",
+          "target": "regression_suite_014",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_6986_page_and_total_page_in_one_run",
+          "target": "regression_suite_018",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_3216_hf_field_display_space",
+          "target": "regression_suite_019",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_7312_tac_stored_band_no_wrap",
+          "target": "regression_suite_028",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_6167_leading_space_tac_table_own_line",
+          "target": "regression_suite_015",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_6181_inline_tac_table_line_advance",
+          "target": "regression_suite_025",
+          "grouped": true
+        }
+      ],
+      "exit_code": 0,
+      "seconds": 61.3138062087819,
+      "passed": 15,
+      "failed": 0,
+      "skipped": 1263,
+      "case1100_passed": 3
+    },
+    "unit_after": {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--lib",
+        "-E",
+        "test(=renderer::tests::test_format_number_hangul) | test(=renderer::layout::tests::test_numbering_format_to_number_format)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 180.64713145792484,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 4063
+    }
+  },
+  "lint": [
+    {
+      "step": "fmt-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 6.5046955002471805
+    },
+    {
+      "step": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 27.070212959311903
+    },
+    {
+      "step": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 18.361518249846995
+    },
+    {
+      "step": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 44.949910833034664
+    },
+    {
+      "step": "clippy-alltargets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 65.20931591605768
+    },
+    {
+      "step": "manifest-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 5.328178042080253
+    },
+    {
+      "step": "unit-check",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+      ],
+      "exit_code": 0,
+      "seconds": 20.32000633329153
+    }
+  ],
+  "wasm_build": {
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--no-opt"
+    ],
+    "CARGO_TARGET_DIR": "target/pr-review",
+    "exit_code": 0,
+    "seconds": 224.89432558277622
+  },
+  "wasm_producer": {
+    "pkg/rhwp_bg.wasm": "d0880e5e146d3e778d2a9e69f7d0a45a5772d8facd185d6d9fc1ecec1c877711",
+    "rhwp-studio/public/rhwp_bg.wasm": "d0880e5e146d3e778d2a9e69f7d0a45a5772d8facd185d6d9fc1ecec1c877711",
+    "pkg/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+    "rhwp-studio/public/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+  },
+  "native_producer": {
+    "file": "output/pr-review/planet6897-7382-20260926/stage157-exam-social-header/candidate3/rhwp",
+    "sha256": "91687cd67a483ee1692ea5363100243daab898aaa809a2cc54d13680bf021bc3",
+    "build": "mandatory cargo build --locked --workspace --target-dir target/pr-review; dev profile"
+  },
+  "visual": {
+    "visual-revalidated-native": {
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "exam1100-header",
+        "samples/hwpx/exam_social.hwpx",
+        "pdf/exam_social-hwpx-revalidated-2020.pdf",
+        "--dpi",
+        "96",
+        "--rhwp-bin",
+        "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/candidate/rhwp",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage157-exam-social-header/visual-revalidated-native"
+      ],
+      "execution": {
+        "exit_code": 1,
+        "seconds": 62.152270374819636
+      },
+      "completed_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "run_state": "complete",
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 87.65269
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "summary": {
+        "compared_pages": 4,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 86.53275,
+        "worst_pixel_match_percent": 84.87076,
+        "average_ink_match_percent": 19.72527,
+        "worst_ink_match_percent": 16.39187,
+        "average_visual_accuracy_proxy_percent": 19.72527,
+        "worst_visual_accuracy_proxy_percent": 16.39187,
+        "average_tolerant_content_match_percent": 91.54343,
+        "worst_tolerant_content_match_percent": 87.65269,
+        "worst_pages": [
+          3,
+          2,
+          1,
+          4
+        ]
+      },
+      "pages": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 93.21648
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 87.65269
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 91.97659
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 93.32797
+        }
+      ]
+    },
+    "visual-revalidated-wasm": {
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "exam1100-header",
+        "samples/hwpx/exam_social.hwpx",
+        "pdf/exam_social-hwpx-revalidated-2020.pdf",
+        "--dpi",
+        "96",
+        "--rhwp-bin",
+        "output/pr-review/planet6897-7382-20260926/stage152-wmf-vector-mask/candidate/rhwp",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage157-exam-social-header/visual-revalidated-wasm",
+        "--wasm-pkg",
+        "pkg"
+      ],
+      "execution": {
+        "exit_code": 1,
+        "seconds": 88.24195408402011
+      },
+      "completed_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "run_state": "complete",
+      "gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 2,
+            "tolerant_content_match_percent": 87.65269
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "summary": {
+        "compared_pages": 4,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 86.53275,
+        "worst_pixel_match_percent": 84.87076,
+        "average_ink_match_percent": 19.72527,
+        "worst_ink_match_percent": 16.39187,
+        "average_visual_accuracy_proxy_percent": 19.72527,
+        "worst_visual_accuracy_proxy_percent": 16.39187,
+        "average_tolerant_content_match_percent": 91.54343,
+        "worst_tolerant_content_match_percent": 87.65269,
+        "worst_pages": [
+          3,
+          2,
+          1,
+          4
+        ]
+      },
+      "pages": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 93.21648
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 87.65269
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 91.97659
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 93.32797
+        }
+      ]
+    },
+    "visual-final-native": {
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "exam1100-header",
+        "samples/hwpx/exam_social.hwpx",
+        "pdf/exam_social-hwpx-revalidated-2020.pdf",
+        "--dpi",
+        "96",
+        "--rhwp-bin",
+        "output/pr-review/planet6897-7382-20260926/stage157-exam-social-header/candidate3/rhwp",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage157-exam-social-header/visual-final-native"
+      ],
+      "execution": {
+        "exit_code": 0,
+        "seconds": 104.90327866608277
+      },
+      "completed_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "run_state": "complete",
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "summary": {
+        "compared_pages": 4,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 86.88124,
+        "worst_pixel_match_percent": 85.95907,
+        "average_ink_match_percent": 20.36867,
+        "worst_ink_match_percent": 16.4727,
+        "average_visual_accuracy_proxy_percent": 20.36867,
+        "worst_visual_accuracy_proxy_percent": 16.4727,
+        "average_tolerant_content_match_percent": 94.28268,
+        "worst_tolerant_content_match_percent": 92.12235,
+        "worst_pages": [
+          3,
+          2,
+          1,
+          4
+        ]
+      },
+      "pages": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 93.21648
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 96.7839
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 92.12235
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 95.00799
+        }
+      ]
+    },
+    "visual-final-wasm": {
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "exam1100-header",
+        "samples/hwpx/exam_social.hwpx",
+        "pdf/exam_social-hwpx-revalidated-2020.pdf",
+        "--dpi",
+        "96",
+        "--rhwp-bin",
+        "output/pr-review/planet6897-7382-20260926/stage157-exam-social-header/candidate3/rhwp",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage157-exam-social-header/visual-final-wasm",
+        "--wasm-pkg",
+        "pkg"
+      ],
+      "execution": {
+        "exit_code": 0,
+        "seconds": 93.40949554229155
+      },
+      "completed_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "run_state": "complete",
+      "gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      },
+      "summary": {
+        "compared_pages": 4,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 86.88124,
+        "worst_pixel_match_percent": 85.95907,
+        "average_ink_match_percent": 20.36867,
+        "worst_ink_match_percent": 16.4727,
+        "average_visual_accuracy_proxy_percent": 20.36867,
+        "worst_visual_accuracy_proxy_percent": 16.4727,
+        "average_tolerant_content_match_percent": 94.28268,
+        "worst_tolerant_content_match_percent": 92.12235,
+        "worst_pages": [
+          3,
+          2,
+          1,
+          4
+        ]
+      },
+      "pages": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 93.21648
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 96.7839
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 92.12235
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 95.00799
+        }
+      ]
+    }
+  },
+  "native_wasm_raster_sha256": [
+    {
+      "page": 1,
+      "native": "42b183e7132e144b961142a2463eed9b7c98ad8f96c07221aa9ae5823bff4cf7",
+      "wasm": "42b183e7132e144b961142a2463eed9b7c98ad8f96c07221aa9ae5823bff4cf7",
+      "equal": true
+    },
+    {
+      "page": 2,
+      "native": "286cbf53f3fe1480b7359746004ff9e0bd9beaa359d7cc3708b48c78ad368144",
+      "wasm": "286cbf53f3fe1480b7359746004ff9e0bd9beaa359d7cc3708b48c78ad368144",
+      "equal": true
+    },
+    {
+      "page": 3,
+      "native": "fda1f56bdd6a1783f1374e296417768bd94234bbd9a363d7460d65086ccbebe7",
+      "wasm": "fda1f56bdd6a1783f1374e296417768bd94234bbd9a363d7460d65086ccbebe7",
+      "equal": true
+    },
+    {
+      "page": 4,
+      "native": "6f994238aa264e97dfefbd6276b2cf748a80501a74e8387df4dac7fae5b97a35",
+      "wasm": "6f994238aa264e97dfefbd6276b2cf748a80501a74e8387df4dac7fae5b97a35",
+      "equal": true
+    }
+  ],
+  "direct_inspection": {
+    "native_review": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "fresh_wasm_overlay": [
+      2,
+      3,
+      4
+    ],
+    "observations": [
+      "2쪽10번표/자료와 뒤본문이 한컴과 같은 배치로 개선됨: 원점795.9→805.3px; PDF804.675px",
+      "3쪽머리말3의 잘림이 없어지고 한 번만 표시됨",
+      "4쪽16/18번 보기 ㄱ~ㄹ 번호가 정상 PDF와 같은 자모로 복원됨",
+      "1쪽 전체 배치 유지. 제목/본문 글자형과 굵기, 특수기호 및 작은 위치 차이는 남음. Type3 PDF만으로 원본 글꼴 대응은 미검증; 글꼴 예외를 사용하지 않음."
+    ],
+    "interpretation": "90% 관용 내용 실루엣 gate 통과. 엄격 픽셀/잉크 완전일치 또는 전체 피델리티100% 주장은 아님."
+  },
+  "run_correction": {
+    "interrupted": {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--tests",
+        "--test",
+        "regression_suite_014",
+        "--test",
+        "regression_suite_015",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_019",
+        "--test",
+        "regression_suite_025",
+        "--test",
+        "regression_suite_028",
+        "-E",
+        "test(issue_1100_exam_social_hwpx_header::) | test(issue_7081_cell_trailing_space_alignment::) | test(issue_5820_textbox_right_align_trailing_ws::) | test(issue_6986_page_and_total_page_in_one_run::) | test(issue_3216_hf_field_display_space::) | test(issue_7312_tac_stored_band_no_wrap::) | test(issue_6167_leading_space_tac_table_own_line::) | test(issue_6181_inline_tac_table_line_advance::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "plans": [
+        {
+          "caseName": "issue_1100_exam_social_hwpx_header",
+          "target": "regression_suite_018",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_7081_cell_trailing_space_alignment",
+          "target": "regression_suite_018",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_5820_textbox_right_align_trailing_ws",
+          "target": "regression_suite_014",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_6986_page_and_total_page_in_one_run",
+          "target": "regression_suite_018",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_3216_hf_field_display_space",
+          "target": "regression_suite_019",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_7312_tac_stored_band_no_wrap",
+          "target": "regression_suite_028",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_6167_leading_space_tac_table_own_line",
+          "target": "regression_suite_015",
+          "grouped": true
+        },
+        {
+          "caseName": "issue_6181_inline_tac_table_line_advance",
+          "target": "regression_suite_025",
+          "grouped": true
+        }
+      ],
+      "exit_code": -2,
+      "seconds": 391.4967992082238
+    },
+    "reason": "focused 명령에 --tests를 추가하여 선택 외 전체 대상까지 빌드함. 소유 nextest/Cargo를 SIGINT로 중단; 결과PASS로 세지 않음. --test 선택만으로 final-controls 재실행·exit0. 캐시 삭제/소스 변경 없음."
+  },
+  "scope_limits": [
+    "저장 비편집의 순수공백/마지막 단일TAC표 및 저장 text_height+spacing 계약 일치만 새로 수용. 캡션·각주·불일치/편집·여러개체는 기존 일반 경로.",
+    "전체 nextest와 원 PR 전체 Native/freshWASM 최종 검증은 아직 미완료. 이전60FAIL 중34개 처리/26개 개별 검토 대기이며 현재 전체 실패 수를 재실행으로 확정한 값이 아님.",
+    "1~14 자모 형식은 사양/기존 단위 검사, 실제4쪽1~4만 한컴 직접 비교. 범위 밖 번호를 한컴 일치로 보고하지 않음."
+  ]
+}

@@ -10,6 +10,8 @@ import {
   normalizePageMovementSettings,
   type PageMovementSettings,
 } from './page-movement.ts';
+import type { ZoomFitMode } from './zoom-fit.ts';
+import { ZoomInputSettle, type ZoomInputSettleHost } from './zoom-input-settle.ts';
 
 const ZOOM_SETTLE_EPSILON = 0.001;
 const ZOOM_SMOOTHING_TIME_MS = 16;
@@ -31,15 +33,20 @@ export class ViewportManager {
   private zoomAnimating = false;
   private zoomTarget = 1.0;
   private zoomAnchor: ZoomAnchor = CENTER_ZOOM_ANCHOR;
+  private zoomFitMode: ZoomFitMode = 'none';
   private pageMovement: PageMovementSettings = { ...DEFAULT_PAGE_MOVEMENT };
   private onScrollBound: () => void;
   private onWheelBound: (e: WheelEvent) => void;
   private onZoomAnimationFrameBound: (timestamp: number) => void;
   private onResizeObserverErrorBound: (e: ErrorEvent) => void;
   private eventBus: EventBus;
+  private readonly zoomInputSettle: ZoomInputSettle;
 
-  constructor(eventBus: EventBus) {
+  constructor(eventBus: EventBus, settleHost?: ZoomInputSettleHost, quietMs?: number) {
     this.eventBus = eventBus;
+    this.zoomInputSettle = new ZoomInputSettle(
+      generation => this.eventBus.emit('zoom-raster-ready', generation), settleHost, quietMs,
+    );
     this.onScrollBound = this.onScroll.bind(this);
     this.onWheelBound = this.onWheel.bind(this);
     this.onZoomAnimationFrameBound = this.onZoomAnimationFrame.bind(this);
@@ -95,6 +102,7 @@ export class ViewportManager {
       cancelAnimationFrame(this.scrollAnimationFrame);
       this.scrollAnimationFrame = null;
     }
+    this.cancelPendingZoomRaster();
     this.cancelZoomAnimation();
     this.container = null;
   }
@@ -126,6 +134,7 @@ export class ViewportManager {
     const deltaY = this.wheelDeltaPixels(e.deltaY, e.deltaMode);
 
     if (!e.ctrlKey && !e.metaKey) {
+      if (deltaX !== 0 || deltaY !== 0) this.finishPendingZoomRaster();
       if (
         this.container
         && this.pageMovement.direction === 'horizontal'
@@ -171,10 +180,11 @@ export class ViewportManager {
       })
       : CENTER_ZOOM_ANCHOR;
 
-    this.smoothZoomTo(
-      this.zoomTarget * Math.exp(-boundedDelta * WHEEL_ZOOM_SENSITIVITY),
-      anchor,
-    );
+    const target = this.clampZoom(this.zoomTarget * Math.exp(-boundedDelta * WHEEL_ZOOM_SENSITIVITY));
+    // min/max 바깥의 무효 입력으로 정착 timer를 연장하거나 새 raster를 만들지 않는다.
+    if (target === this.zoomTarget) return;
+    this.zoomInputSettle.input();
+    this.applySmoothZoomTo(target, anchor, 'none');
   }
 
   private wheelDeltaPixels(delta: number, deltaMode: number): number {
@@ -211,25 +221,57 @@ export class ViewportManager {
     return this.zoom;
   }
 
-  setZoom(zoom: number, anchor: ZoomAnchor = CENTER_ZOOM_ANCHOR): void {
+  /** 지금 배율이 어떤 맞춤에서 나왔는지 — 수치로 바꾼 직후에는 'none' 이다. */
+  getZoomFitMode(): ZoomFitMode {
+    return this.zoomFitMode;
+  }
+
+  /**
+   * 배율을 정한다. `fitMode` 는 이 배율이 어떤 맞춤 규칙에서 나왔는지다 — 기본값
+   * 'none'(수치 지정)이라 휠·가로바·수치 명령은 저장된 맞춤을 자동으로 푼다.
+   */
+  setZoom(
+    zoom: number,
+    anchor: ZoomAnchor = CENTER_ZOOM_ANCHOR,
+    fitMode: ZoomFitMode = 'none',
+  ): void {
+    this.cancelPendingZoomRaster();
+    this.applyZoom(zoom, anchor, fitMode);
+  }
+
+  private applyZoom(zoom: number, anchor: ZoomAnchor, fitMode: ZoomFitMode): void {
     this.cancelZoomAnimation();
     this.zoomAnchor = normalizeZoomAnchor(anchor);
     this.zoom = this.clampZoom(zoom);
     this.zoomTarget = this.zoom;
+    this.updateZoomFitMode(fitMode);
+    const generation = this.zoomInputSettle.generation;
     this.eventBus.emit('zoom-changed', this.zoom, this.zoomAnchor);
+    this.zoomInputSettle.converge(generation);
   }
 
   smoothZoomBy(delta: number, anchor: ZoomAnchor = CENTER_ZOOM_ANCHOR): void {
     this.smoothZoomTo(this.zoomTarget + delta, anchor);
   }
 
-  smoothZoomTo(zoom: number, anchor: ZoomAnchor = CENTER_ZOOM_ANCHOR): void {
+  smoothZoomTo(
+    zoom: number,
+    anchor: ZoomAnchor = CENTER_ZOOM_ANCHOR,
+    fitMode: ZoomFitMode = 'none',
+  ): void {
+    // 버튼/fit/명시 명령에는 wheel quiet 대기를 적용하지 않는다.
+    this.cancelPendingZoomRaster();
+    this.applySmoothZoomTo(zoom, anchor, fitMode);
+  }
+
+  private applySmoothZoomTo(zoom: number, anchor: ZoomAnchor, fitMode: ZoomFitMode): void {
     this.zoomAnchor = normalizeZoomAnchor(anchor);
     this.zoomTarget = this.clampZoom(zoom);
     if (Math.abs(this.zoomTarget - this.zoom) <= ZOOM_SETTLE_EPSILON) {
-      this.setZoom(this.zoomTarget, this.zoomAnchor);
+      this.applyZoom(this.zoomTarget, this.zoomAnchor, fitMode);
       return;
     }
+    this.updateZoomFitMode(fitMode);
     this.zoomAnimating = true;
     if (this.zoomAnimationFrame === null) {
       this.zoomAnimationFrame = requestAnimationFrame(this.onZoomAnimationFrameBound);
@@ -240,7 +282,35 @@ export class ViewportManager {
     return this.zoomAnimating;
   }
 
+  isZoomRasterPending(): boolean { return this.zoomInputSettle.pending; }
+
+  getZoomInputState(): { inputActive: boolean; rasterPending: boolean; zoomGeneration: number } {
+    return {
+      inputActive: this.zoomInputSettle.inputActive,
+      rasterPending: this.zoomInputSettle.pending,
+      zoomGeneration: this.zoomInputSettle.generation,
+    };
+  }
+
+  isCurrentZoomRasterReady(generation: unknown): boolean {
+    return generation === this.zoomInputSettle.generation && !this.zoomInputSettle.pending;
+  }
+
+  cancelPendingZoomRaster(): boolean {
+    if (!this.zoomInputSettle.cancel()) return false;
+    this.cancelZoomAnimation();
+    return true;
+  }
+
+  finishPendingZoomRaster(): void {
+    if (!this.zoomInputSettle.pending) return;
+    this.cancelZoomAnimation();
+    this.zoomInputSettle.flush();
+  }
+
   private onZoomAnimationFrame(timestamp: number): void {
+    if (!this.zoomAnimating) return;
+    const generation = this.zoomInputSettle.generation;
     this.zoomAnimationFrame = null;
     const elapsed = this.zoomAnimationTimestamp === null
       ? 16
@@ -257,9 +327,17 @@ export class ViewportManager {
     }
     this.eventBus.emit('zoom-changed', this.zoom, this.zoomAnchor);
 
-    if (!settled) {
+    if (settled) this.zoomInputSettle.converge(generation);
+
+    if (!settled && this.zoomAnimating && this.zoomAnimationFrame === null) {
       this.zoomAnimationFrame = requestAnimationFrame(this.onZoomAnimationFrameBound);
     }
+  }
+
+  private updateZoomFitMode(mode: ZoomFitMode): void {
+    if (this.zoomFitMode === mode) return;
+    this.zoomFitMode = mode;
+    this.eventBus.emit('zoom-fit-mode-changed', mode);
   }
 
   private cancelZoomAnimation(): void {

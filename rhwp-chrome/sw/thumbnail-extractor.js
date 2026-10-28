@@ -343,7 +343,7 @@ async function extractPrvImageFromZipAsync(data, maxBytes) {
         // deflate 압축 — DecompressionStream (비동기)
         try {
           const compressed = data.slice(dataStart, dataStart + compSize);
-          const ds = new DecompressionStream('raw');
+          const ds = new DecompressionStream('deflate-raw');
           const writer = ds.writable.getWriter();
           const write = writer.write(compressed).then(() => writer.close());
           const decompressed = await readExactStreamLimited(

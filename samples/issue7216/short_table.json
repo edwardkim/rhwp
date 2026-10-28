@@ -1,0 +1,1 @@
+{"version": "1", "title": "짧은 표", "blocks": [{"type": "paragraph", "text": "3행 표"}, {"type": "table", "rows": [["No", "항목", "설명"], ["1", "항목 1", "설명 1"], ["2", "항목 2", "설명 2"], ["3", "항목 3", "설명 3"]]}, {"type": "paragraph", "text": "표 다음 문단"}]}

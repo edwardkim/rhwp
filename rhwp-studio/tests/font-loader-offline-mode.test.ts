@@ -87,6 +87,7 @@ test('외부 웹폰트 사용 안 함 옵션은 CDN @font-face와 FontFace.load�
 
     assert.equal(styles.length, 1);
     assert.equal(usesJsDelivrFontUrl(styles[0].textContent), false);
+    assert.ok(fontFaceRequests.some(request => request.family === 'RHWP Old Hangul' && request.source.includes('fonts/RHWPOldHangul-Regular.woff2')), '문서 face 목록 밖의 옛한글 paint 공급도 첫 그리기 전에 준비한다');
     assert.equal(fontFaceRequests.some(request => usesExternalFontUrl(request.source)), false);
 
     fontFaceRequests.length = 0;

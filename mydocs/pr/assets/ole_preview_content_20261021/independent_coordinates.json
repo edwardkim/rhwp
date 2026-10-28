@@ -1,0 +1,120 @@
+{
+  "source": "네 독립 한컴 Print PDF의 실제 image XObject 배치. 엔진 좌표에서 역산하지 않았다.",
+  "dpi": 96,
+  "point_to_css": 1.3333333333333333,
+  "page": 1,
+  "frames": [
+    {
+      "label": "ole-caption-hwp-source-as-hwp-hwp",
+      "pdf": "/home/tsjang/rhwp/pdf/semanticist21-20261019/ole-caption-1248/ole-caption-hwp-source-as-hwp-hwp/ole-caption-hwp-source-as-hwp-hwp-2020.pdf",
+      "pdf_sha256": "0df8cf61f8011d70acc223d58da6c7ad93389aa43de0fa1b9017dc68abc6ec5b",
+      "images": [
+        {
+          "xref": 11,
+          "pixel_size": [
+            400,
+            54
+          ],
+          "bbox_points": [
+            85.03399658203125,
+            99.13203430175781,
+            384.781005859375,
+            139.5560302734375
+          ],
+          "bbox_css96": [
+            113.378662109375,
+            132.1760457356771,
+            399.6626790364583,
+            53.898661295572914
+          ]
+        }
+      ]
+    },
+    {
+      "label": "ole-caption-hwp-source-as-hwpx-hwpx",
+      "pdf": "/home/tsjang/rhwp/pdf/semanticist21-20261019/ole-caption-1248/ole-caption-hwp-source-as-hwpx-hwpx/ole-caption-hwp-source-as-hwpx-hwpx-2020.pdf",
+      "pdf_sha256": "60765eeb90a37f33df55143e9b4d3ddb41d84071a622b8ab4a959711eeb4b2b6",
+      "images": [
+        {
+          "xref": 11,
+          "pixel_size": [
+            400,
+            54
+          ],
+          "bbox_points": [
+            85.03399658203125,
+            99.13203430175781,
+            384.781005859375,
+            139.5560302734375
+          ],
+          "bbox_css96": [
+            113.378662109375,
+            132.1760457356771,
+            399.6626790364583,
+            53.898661295572914
+          ]
+        }
+      ]
+    },
+    {
+      "label": "ole-caption-hwpx-source-as-hwp-hwp",
+      "pdf": "/home/tsjang/rhwp/pdf/semanticist21-20261019/ole-caption-1248/ole-caption-hwpx-source-as-hwp-hwp/ole-caption-hwpx-source-as-hwp-hwp-2020.pdf",
+      "pdf_sha256": "a4d96bea067bfe56ce07b06fd5bd58c8bb2720139a57da5161ca4fe2be629306",
+      "images": [
+        {
+          "xref": 11,
+          "pixel_size": [
+            400,
+            54
+          ],
+          "bbox_points": [
+            85.03399658203125,
+            99.13203430175781,
+            384.781005859375,
+            139.5560302734375
+          ],
+          "bbox_css96": [
+            113.378662109375,
+            132.1760457356771,
+            399.6626790364583,
+            53.898661295572914
+          ]
+        }
+      ]
+    },
+    {
+      "label": "ole-caption-hwpx-source-as-hwpx-hwpx",
+      "pdf": "/home/tsjang/rhwp/pdf/semanticist21-20261019/ole-caption-1248/ole-caption-hwpx-source-as-hwpx-hwpx/ole-caption-hwpx-source-as-hwpx-hwpx-2024.pdf",
+      "pdf_sha256": "2be89a66b2adc56e214d19b9b5466f5d3779534a4cedbf10f6cc1417c214534d",
+      "images": [
+        {
+          "xref": 11,
+          "pixel_size": [
+            400,
+            54
+          ],
+          "bbox_points": [
+            85.03399658203125,
+            99.13203430175781,
+            384.781005859375,
+            139.5560302734375
+          ],
+          "bbox_css96": [
+            113.378662109375,
+            132.1760457356771,
+            399.6626790364583,
+            53.898661295572914
+          ]
+        }
+      ]
+    }
+  ],
+  "expected_frame_css96": [
+    113.378662109375,
+    132.1760457356771,
+    399.6626790364583,
+    53.898661295572914
+  ],
+  "tolerance_css_px": 2,
+  "admission": "같은 저장본 네 조건의 Native/fresh raw100% 및 직접 확대 판독 완료"
+}

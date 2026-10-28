@@ -1,0 +1,22 @@
+{
+  "parent_head": "359896c29",
+  "code_sha256": "c5ac884462b7339704fc6ca7aecfb4d7a5a2a8395fd02b0a9d269c26009638b8",
+  "document": "samples/hwpx_sample2.hwpx",
+  "pdf": "pdf/hwpx_sample2-hwpx-2020.pdf",
+  "page_count": 29,
+  "off_canvas_before": 1,
+  "off_canvas_after": 0,
+  "focused": {
+    "run": 95,
+    "passed": 95,
+    "failed": 0,
+    "exit_code": 0,
+    "runtime_seconds": 13.03,
+    "log": "output/pr-review/planet6897-green-20261002/sample2-source-line-owner-focused.log"
+  },
+  "native_selected_pages": {
+    "8": 62.98797,
+    "9": 52.67182
+  },
+  "decision": "용지 밖 보정 확인. 시각 미달과 최종 전체 검증은 보류. 새 회귀 또는 기준값 변경 없음."
+}

@@ -1,0 +1,76 @@
+{
+  "document": "samples/issue1891/86712_regulatory_analysis.hwpx",
+  "pdf": "pdf/issue1891/86712_regulatory_analysis-hwpx-2020.pdf",
+  "pages": 64,
+  "prior_issue_record": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5889443550",
+  "prior_record_scope": "HWP 원문 / #7358 함수1건",
+  "current_extension": "동일 원문 HWPX의 본문 넘침·텍스트 겹침 corpus 및 #5804/#5830/#7243 렌더링 회귀 제거",
+  "authorization": "사용자: 86712 HWP/HWPX 모두 #7445 이관 및 관련 렌더링 회귀 삭제",
+  "native_whole_tsv": "이관 확인 후 중단; 전체64쪽 검증 완료로 보고하지 않음",
+  "source_preserved": true,
+  "pdf_preserved": true,
+  "parser_and_storage_tests_preserved": true,
+  "baseline_rows_removed": 3,
+  "new_tests": 0,
+  "body_fixture_exclusions": 2,
+  "conditional_revision": "사용자가 기존 이관 문서이면 제외 후 다음 진행을 지시함",
+  "removed_test_sources": [
+    "tests/cases/issue_5804_dash_leader_glyphs.rs",
+    "tests/cases/issue_5830_dash_leader_last_line.rs",
+    "tests/cases/issue_7243_nested_fragment_padding.rs",
+    "tests/issue_2279_layout_oracles.rs"
+  ],
+  "removed_test_functions": 14,
+  "text_fixture_exclusions": 2,
+  "validation": {
+    "nextest": {
+      "run": 80,
+      "passed": 74,
+      "failed": 6,
+      "seconds": 119.093,
+      "exit_code": 100,
+      "remaining_failures": "다른 문서 텍스트 겹침6 partition"
+    },
+    "gates": [
+      {
+        "gate": "nextest",
+        "exit_code": 100,
+        "elapsed_seconds": 409.942
+      },
+      {
+        "gate": "native-clippy",
+        "exit_code": 0,
+        "elapsed_seconds": 0.618
+      },
+      {
+        "gate": "wasm-clippy",
+        "exit_code": 0,
+        "elapsed_seconds": 0.254
+      },
+      {
+        "gate": "workspace-build",
+        "exit_code": 0,
+        "elapsed_seconds": 0.452
+      },
+      {
+        "gate": "workspace-clippy",
+        "exit_code": 0,
+        "elapsed_seconds": 18.372
+      }
+    ],
+    "manifest_exit_code": 0,
+    "fmt_exit_code": 0,
+    "diff_exit_code": 0
+  },
+  "documents": [
+    "samples/86712_regulatory_analysis.hwp",
+    "samples/issue1891/86712_regulatory_analysis.hwpx"
+  ],
+  "rendering_scope": "HWP/HWPX 본문 넘침·텍스트 겹침·용지 밖 corpus, 쪽수 원장3행, #1891 쪽수 표본2항목, #7080 글리프 표본1항목",
+  "off_canvas_fixture_exclusions": 2,
+  "validation_source_note": "현재 작업 중 #2137 renderer 후보에서 실행; renderer 후보는 이 이관 커밋에 포함하지 않음",
+  "source_sha256": {
+    "src/renderer/stored_float_anchor.rs": "e39db7868d4ed4597739ce00b0a048b6510583b218e2fd2333f24818e4907d67",
+    "src/renderer/typeset/controls/empty_float.rs": "69bc81af7a7f4b3d7726908617541f1a611e0018ea31e0a29c14f8990ae284b5"
+  }
+}

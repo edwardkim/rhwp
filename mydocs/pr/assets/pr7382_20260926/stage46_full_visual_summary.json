@@ -1,0 +1,1484 @@
+{
+  "runtime_head": "96c4e47771ecf7f46016bffa1e09c467b2878cbb",
+  "automatically_compared_main_pages": 860,
+  "main": [
+    {
+      "backend": "native",
+      "kind": "hwp",
+      "complete_exact_coverage_1_to_215": true,
+      "compared_pages": 215,
+      "below_90_count": 20,
+      "below_threshold_pages": [
+        {
+          "page": 10,
+          "tolerant_content_match_percent": 67.18921
+        },
+        {
+          "page": 17,
+          "tolerant_content_match_percent": 65.05603
+        },
+        {
+          "page": 22,
+          "tolerant_content_match_percent": 89.82528
+        },
+        {
+          "page": 27,
+          "tolerant_content_match_percent": 87.4198
+        },
+        {
+          "page": 28,
+          "tolerant_content_match_percent": 87.87776
+        },
+        {
+          "page": 44,
+          "tolerant_content_match_percent": 71.92862
+        },
+        {
+          "page": 78,
+          "tolerant_content_match_percent": 79.32389
+        },
+        {
+          "page": 79,
+          "tolerant_content_match_percent": 80.63553
+        },
+        {
+          "page": 88,
+          "tolerant_content_match_percent": 89.52975
+        },
+        {
+          "page": 158,
+          "tolerant_content_match_percent": 87.02052
+        },
+        {
+          "page": 162,
+          "tolerant_content_match_percent": 81.06478
+        },
+        {
+          "page": 169,
+          "tolerant_content_match_percent": 61.00773
+        },
+        {
+          "page": 172,
+          "tolerant_content_match_percent": 88.21596
+        },
+        {
+          "page": 173,
+          "tolerant_content_match_percent": 56.65459
+        },
+        {
+          "page": 176,
+          "tolerant_content_match_percent": 85.82731
+        },
+        {
+          "page": 206,
+          "tolerant_content_match_percent": 36.53762
+        },
+        {
+          "page": 207,
+          "tolerant_content_match_percent": 32.39696
+        },
+        {
+          "page": 208,
+          "tolerant_content_match_percent": 85.08928
+        },
+        {
+          "page": 211,
+          "tolerant_content_match_percent": 81.3431
+        },
+        {
+          "page": 214,
+          "tolerant_content_match_percent": 54.78872
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "status": "re_review_required",
+      "runs": [
+        {
+          "name": "native-hwp",
+          "result": {
+            "backend": "native",
+            "kind": "hwp",
+            "command": [
+              "/Users/tsjang/rhwp/venv/bin/python",
+              "scripts/visual_sweep.py",
+              "--hwp",
+              "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+              "--pdf",
+              "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+              "--key",
+              "liver7379",
+              "--rhwp-bin",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+              "--out",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/native-hwp",
+              "--dpi",
+              "96"
+            ],
+            "exit_code": 1,
+            "seconds": 6597.673722208943
+          },
+          "run_state": "complete",
+          "gate": {
+            "status": "re_review_required",
+            "minimum_tolerant_content_match_percent": 90.0,
+            "below_threshold_pages": [
+              {
+                "page": 10,
+                "tolerant_content_match_percent": 67.18921
+              },
+              {
+                "page": 17,
+                "tolerant_content_match_percent": 65.05603
+              },
+              {
+                "page": 22,
+                "tolerant_content_match_percent": 89.82528
+              },
+              {
+                "page": 27,
+                "tolerant_content_match_percent": 87.4198
+              },
+              {
+                "page": 28,
+                "tolerant_content_match_percent": 87.87776
+              },
+              {
+                "page": 44,
+                "tolerant_content_match_percent": 71.92862
+              },
+              {
+                "page": 78,
+                "tolerant_content_match_percent": 79.32389
+              },
+              {
+                "page": 79,
+                "tolerant_content_match_percent": 80.63553
+              },
+              {
+                "page": 88,
+                "tolerant_content_match_percent": 89.52975
+              },
+              {
+                "page": 158,
+                "tolerant_content_match_percent": 87.02052
+              },
+              {
+                "page": 162,
+                "tolerant_content_match_percent": 81.06478
+              },
+              {
+                "page": 169,
+                "tolerant_content_match_percent": 61.00773
+              },
+              {
+                "page": 172,
+                "tolerant_content_match_percent": 88.21596
+              },
+              {
+                "page": 173,
+                "tolerant_content_match_percent": 56.65459
+              },
+              {
+                "page": 176,
+                "tolerant_content_match_percent": 85.82731
+              },
+              {
+                "page": 206,
+                "tolerant_content_match_percent": 36.53762
+              },
+              {
+                "page": 207,
+                "tolerant_content_match_percent": 32.39696
+              },
+              {
+                "page": 208,
+                "tolerant_content_match_percent": 85.08928
+              },
+              {
+                "page": 211,
+                "tolerant_content_match_percent": 81.3431
+              },
+              {
+                "page": 214,
+                "tolerant_content_match_percent": 54.78872
+              }
+            ],
+            "unavailable_metric_pages": [],
+            "font_mismatch_evidence": null
+          },
+          "manifest_sha256": "5266a660fa1fd15672876d47729250bb609f7a8c70d1d4d10fce52d6e5e86360"
+        }
+      ]
+    },
+    {
+      "backend": "native",
+      "kind": "hwpx",
+      "complete_exact_coverage_1_to_215": true,
+      "compared_pages": 215,
+      "below_90_count": 20,
+      "below_threshold_pages": [
+        {
+          "page": 10,
+          "tolerant_content_match_percent": 67.18921
+        },
+        {
+          "page": 17,
+          "tolerant_content_match_percent": 65.05603
+        },
+        {
+          "page": 22,
+          "tolerant_content_match_percent": 89.82528
+        },
+        {
+          "page": 27,
+          "tolerant_content_match_percent": 86.96367
+        },
+        {
+          "page": 28,
+          "tolerant_content_match_percent": 87.87776
+        },
+        {
+          "page": 74,
+          "tolerant_content_match_percent": 86.20891
+        },
+        {
+          "page": 75,
+          "tolerant_content_match_percent": 52.69226
+        },
+        {
+          "page": 88,
+          "tolerant_content_match_percent": 89.52975
+        },
+        {
+          "page": 130,
+          "tolerant_content_match_percent": 89.45772
+        },
+        {
+          "page": 162,
+          "tolerant_content_match_percent": 81.06478
+        },
+        {
+          "page": 163,
+          "tolerant_content_match_percent": 89.396
+        },
+        {
+          "page": 168,
+          "tolerant_content_match_percent": 89.52962
+        },
+        {
+          "page": 169,
+          "tolerant_content_match_percent": 40.47912
+        },
+        {
+          "page": 173,
+          "tolerant_content_match_percent": 84.93428
+        },
+        {
+          "page": 199,
+          "tolerant_content_match_percent": 88.83247
+        },
+        {
+          "page": 206,
+          "tolerant_content_match_percent": 36.53762
+        },
+        {
+          "page": 207,
+          "tolerant_content_match_percent": 32.39696
+        },
+        {
+          "page": 208,
+          "tolerant_content_match_percent": 85.08928
+        },
+        {
+          "page": 211,
+          "tolerant_content_match_percent": 81.3431
+        },
+        {
+          "page": 214,
+          "tolerant_content_match_percent": 82.90745
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "status": "re_review_required",
+      "runs": [
+        {
+          "name": "native-hwpx",
+          "result": {
+            "backend": "native",
+            "kind": "hwpx",
+            "command": [
+              "/Users/tsjang/rhwp/venv/bin/python",
+              "scripts/visual_sweep.py",
+              "--hwp",
+              "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+              "--pdf",
+              "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+              "--key",
+              "liver7379",
+              "--rhwp-bin",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+              "--out",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/native-hwpx",
+              "--dpi",
+              "96"
+            ],
+            "exit_code": 1,
+            "seconds": 6565.306099541951
+          },
+          "run_state": "complete",
+          "gate": {
+            "status": "re_review_required",
+            "minimum_tolerant_content_match_percent": 90.0,
+            "below_threshold_pages": [
+              {
+                "page": 10,
+                "tolerant_content_match_percent": 67.18921
+              },
+              {
+                "page": 17,
+                "tolerant_content_match_percent": 65.05603
+              },
+              {
+                "page": 22,
+                "tolerant_content_match_percent": 89.82528
+              },
+              {
+                "page": 27,
+                "tolerant_content_match_percent": 86.96367
+              },
+              {
+                "page": 28,
+                "tolerant_content_match_percent": 87.87776
+              },
+              {
+                "page": 74,
+                "tolerant_content_match_percent": 86.20891
+              },
+              {
+                "page": 75,
+                "tolerant_content_match_percent": 52.69226
+              },
+              {
+                "page": 88,
+                "tolerant_content_match_percent": 89.52975
+              },
+              {
+                "page": 130,
+                "tolerant_content_match_percent": 89.45772
+              },
+              {
+                "page": 162,
+                "tolerant_content_match_percent": 81.06478
+              },
+              {
+                "page": 163,
+                "tolerant_content_match_percent": 89.396
+              },
+              {
+                "page": 168,
+                "tolerant_content_match_percent": 89.52962
+              },
+              {
+                "page": 169,
+                "tolerant_content_match_percent": 40.47912
+              },
+              {
+                "page": 173,
+                "tolerant_content_match_percent": 84.93428
+              },
+              {
+                "page": 199,
+                "tolerant_content_match_percent": 88.83247
+              },
+              {
+                "page": 206,
+                "tolerant_content_match_percent": 36.53762
+              },
+              {
+                "page": 207,
+                "tolerant_content_match_percent": 32.39696
+              },
+              {
+                "page": 208,
+                "tolerant_content_match_percent": 85.08928
+              },
+              {
+                "page": 211,
+                "tolerant_content_match_percent": 81.3431
+              },
+              {
+                "page": 214,
+                "tolerant_content_match_percent": 82.90745
+              }
+            ],
+            "unavailable_metric_pages": [],
+            "font_mismatch_evidence": null
+          },
+          "manifest_sha256": "10d253afb876c80dae9286cdad0a5497c8f40dbf1bdbca0768f9c4081f0090df"
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "kind": "hwp",
+      "complete_exact_coverage_1_to_215": true,
+      "compared_pages": 215,
+      "below_90_count": 20,
+      "below_threshold_pages": [
+        {
+          "page": 10,
+          "tolerant_content_match_percent": 67.15442
+        },
+        {
+          "page": 17,
+          "tolerant_content_match_percent": 64.9678
+        },
+        {
+          "page": 22,
+          "tolerant_content_match_percent": 89.78966
+        },
+        {
+          "page": 27,
+          "tolerant_content_match_percent": 87.37543
+        },
+        {
+          "page": 28,
+          "tolerant_content_match_percent": 87.94361
+        },
+        {
+          "page": 44,
+          "tolerant_content_match_percent": 71.92862
+        },
+        {
+          "page": 78,
+          "tolerant_content_match_percent": 79.29792
+        },
+        {
+          "page": 79,
+          "tolerant_content_match_percent": 80.6977
+        },
+        {
+          "page": 88,
+          "tolerant_content_match_percent": 89.52078
+        },
+        {
+          "page": 158,
+          "tolerant_content_match_percent": 87.02052
+        },
+        {
+          "page": 162,
+          "tolerant_content_match_percent": 81.06478
+        },
+        {
+          "page": 169,
+          "tolerant_content_match_percent": 61.00773
+        },
+        {
+          "page": 172,
+          "tolerant_content_match_percent": 88.15625
+        },
+        {
+          "page": 173,
+          "tolerant_content_match_percent": 56.61593
+        },
+        {
+          "page": 176,
+          "tolerant_content_match_percent": 85.69843
+        },
+        {
+          "page": 206,
+          "tolerant_content_match_percent": 36.45917
+        },
+        {
+          "page": 207,
+          "tolerant_content_match_percent": 32.27903
+        },
+        {
+          "page": 208,
+          "tolerant_content_match_percent": 85.08928
+        },
+        {
+          "page": 211,
+          "tolerant_content_match_percent": 81.3431
+        },
+        {
+          "page": 214,
+          "tolerant_content_match_percent": 54.78872
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "status": "re_review_required",
+      "runs": [
+        {
+          "name": "wasm-hwp-1-54",
+          "result": {
+            "backend": "wasm",
+            "kind": "hwp",
+            "command": [
+              "/Users/tsjang/rhwp/venv/bin/python",
+              "scripts/visual_sweep.py",
+              "--hwp",
+              "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+              "--pdf",
+              "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+              "--key",
+              "liver7379",
+              "--rhwp-bin",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+              "--out",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/wasm-hwp-1-54",
+              "--dpi",
+              "96",
+              "--pages",
+              "1-54",
+              "--wasm-pkg",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/wasm-pkg"
+            ],
+            "exit_code": 1,
+            "seconds": 1568.6734063751064
+          },
+          "run_state": "complete",
+          "gate": {
+            "status": "re_review_required",
+            "minimum_tolerant_content_match_percent": 90.0,
+            "below_threshold_pages": [
+              {
+                "page": 10,
+                "tolerant_content_match_percent": 67.15442
+              },
+              {
+                "page": 17,
+                "tolerant_content_match_percent": 64.9678
+              },
+              {
+                "page": 22,
+                "tolerant_content_match_percent": 89.78966
+              },
+              {
+                "page": 27,
+                "tolerant_content_match_percent": 87.37543
+              },
+              {
+                "page": 28,
+                "tolerant_content_match_percent": 87.94361
+              },
+              {
+                "page": 44,
+                "tolerant_content_match_percent": 71.92862
+              }
+            ],
+            "unavailable_metric_pages": [],
+            "font_mismatch_evidence": null
+          },
+          "manifest_sha256": "c7540ddcd06a4e5d430241dcb62243bcc94fe8eab4271324af0ef744a4176dbd"
+        },
+        {
+          "name": "wasm-hwp-55-108",
+          "result": {
+            "backend": "wasm",
+            "kind": "hwp",
+            "command": [
+              "/Users/tsjang/rhwp/venv/bin/python",
+              "scripts/visual_sweep.py",
+              "--hwp",
+              "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+              "--pdf",
+              "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+              "--key",
+              "liver7379",
+              "--rhwp-bin",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+              "--out",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/wasm-hwp-55-108",
+              "--dpi",
+              "96",
+              "--pages",
+              "55-108",
+              "--wasm-pkg",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/wasm-pkg"
+            ],
+            "exit_code": 1,
+            "seconds": 1601.5630887090228
+          },
+          "run_state": "complete",
+          "gate": {
+            "status": "re_review_required",
+            "minimum_tolerant_content_match_percent": 90.0,
+            "below_threshold_pages": [
+              {
+                "page": 78,
+                "tolerant_content_match_percent": 79.29792
+              },
+              {
+                "page": 79,
+                "tolerant_content_match_percent": 80.6977
+              },
+              {
+                "page": 88,
+                "tolerant_content_match_percent": 89.52078
+              }
+            ],
+            "unavailable_metric_pages": [],
+            "font_mismatch_evidence": null
+          },
+          "manifest_sha256": "0987ac47272cbde11f43762bbb150e957e77391eb867b1220233515b897e8e6c"
+        },
+        {
+          "name": "wasm-hwp-109-162",
+          "result": {
+            "backend": "wasm",
+            "kind": "hwp",
+            "command": [
+              "/Users/tsjang/rhwp/venv/bin/python",
+              "scripts/visual_sweep.py",
+              "--hwp",
+              "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+              "--pdf",
+              "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+              "--key",
+              "liver7379",
+              "--rhwp-bin",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+              "--out",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/wasm-hwp-109-162",
+              "--dpi",
+              "96",
+              "--pages",
+              "109-162",
+              "--wasm-pkg",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/wasm-pkg"
+            ],
+            "exit_code": 1,
+            "seconds": 1588.5468691671267
+          },
+          "run_state": "complete",
+          "gate": {
+            "status": "re_review_required",
+            "minimum_tolerant_content_match_percent": 90.0,
+            "below_threshold_pages": [
+              {
+                "page": 158,
+                "tolerant_content_match_percent": 87.02052
+              },
+              {
+                "page": 162,
+                "tolerant_content_match_percent": 81.06478
+              }
+            ],
+            "unavailable_metric_pages": [],
+            "font_mismatch_evidence": null
+          },
+          "manifest_sha256": "ff2a9d3f5b362bb997c32ffc2ec94be1000a266b9edf41f06c5778207f4b6a0d"
+        },
+        {
+          "name": "wasm-hwp-163-215",
+          "result": {
+            "backend": "wasm",
+            "kind": "hwp",
+            "command": [
+              "/Users/tsjang/rhwp/venv/bin/python",
+              "scripts/visual_sweep.py",
+              "--hwp",
+              "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+              "--pdf",
+              "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+              "--key",
+              "liver7379",
+              "--rhwp-bin",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+              "--out",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/wasm-hwp-163-215",
+              "--dpi",
+              "96",
+              "--pages",
+              "163-215",
+              "--wasm-pkg",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/wasm-pkg"
+            ],
+            "exit_code": 1,
+            "seconds": 1539.0053170830943
+          },
+          "run_state": "complete",
+          "gate": {
+            "status": "re_review_required",
+            "minimum_tolerant_content_match_percent": 90.0,
+            "below_threshold_pages": [
+              {
+                "page": 169,
+                "tolerant_content_match_percent": 61.00773
+              },
+              {
+                "page": 172,
+                "tolerant_content_match_percent": 88.15625
+              },
+              {
+                "page": 173,
+                "tolerant_content_match_percent": 56.61593
+              },
+              {
+                "page": 176,
+                "tolerant_content_match_percent": 85.69843
+              },
+              {
+                "page": 206,
+                "tolerant_content_match_percent": 36.45917
+              },
+              {
+                "page": 207,
+                "tolerant_content_match_percent": 32.27903
+              },
+              {
+                "page": 208,
+                "tolerant_content_match_percent": 85.08928
+              },
+              {
+                "page": 211,
+                "tolerant_content_match_percent": 81.3431
+              },
+              {
+                "page": 214,
+                "tolerant_content_match_percent": 54.78872
+              }
+            ],
+            "unavailable_metric_pages": [],
+            "font_mismatch_evidence": null
+          },
+          "manifest_sha256": "b1ef63eebedd96467d443608f6d26baccc0e182184df415c0bd7ebc2e580969a"
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "kind": "hwpx",
+      "complete_exact_coverage_1_to_215": true,
+      "compared_pages": 215,
+      "below_90_count": 20,
+      "below_threshold_pages": [
+        {
+          "page": 10,
+          "tolerant_content_match_percent": 67.15442
+        },
+        {
+          "page": 17,
+          "tolerant_content_match_percent": 64.9678
+        },
+        {
+          "page": 22,
+          "tolerant_content_match_percent": 89.78966
+        },
+        {
+          "page": 27,
+          "tolerant_content_match_percent": 86.91834
+        },
+        {
+          "page": 28,
+          "tolerant_content_match_percent": 87.94361
+        },
+        {
+          "page": 74,
+          "tolerant_content_match_percent": 86.45696
+        },
+        {
+          "page": 75,
+          "tolerant_content_match_percent": 52.78823
+        },
+        {
+          "page": 88,
+          "tolerant_content_match_percent": 89.52078
+        },
+        {
+          "page": 130,
+          "tolerant_content_match_percent": 89.68695
+        },
+        {
+          "page": 162,
+          "tolerant_content_match_percent": 81.06478
+        },
+        {
+          "page": 163,
+          "tolerant_content_match_percent": 89.396
+        },
+        {
+          "page": 168,
+          "tolerant_content_match_percent": 89.52962
+        },
+        {
+          "page": 169,
+          "tolerant_content_match_percent": 40.47912
+        },
+        {
+          "page": 173,
+          "tolerant_content_match_percent": 84.93044
+        },
+        {
+          "page": 199,
+          "tolerant_content_match_percent": 89.07548
+        },
+        {
+          "page": 206,
+          "tolerant_content_match_percent": 36.45917
+        },
+        {
+          "page": 207,
+          "tolerant_content_match_percent": 32.27903
+        },
+        {
+          "page": 208,
+          "tolerant_content_match_percent": 85.08928
+        },
+        {
+          "page": 211,
+          "tolerant_content_match_percent": 81.3431
+        },
+        {
+          "page": 214,
+          "tolerant_content_match_percent": 82.90745
+        }
+      ],
+      "unavailable_metric_pages": [],
+      "status": "re_review_required",
+      "runs": [
+        {
+          "name": "wasm-hwpx-1-54",
+          "result": {
+            "backend": "wasm",
+            "kind": "hwpx",
+            "command": [
+              "/Users/tsjang/rhwp/venv/bin/python",
+              "scripts/visual_sweep.py",
+              "--hwp",
+              "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+              "--pdf",
+              "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+              "--key",
+              "liver7379",
+              "--rhwp-bin",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+              "--out",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/wasm-hwpx-1-54",
+              "--dpi",
+              "96",
+              "--pages",
+              "1-54",
+              "--wasm-pkg",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/wasm-pkg"
+            ],
+            "exit_code": 1,
+            "seconds": 1572.026037834119
+          },
+          "run_state": "complete",
+          "gate": {
+            "status": "re_review_required",
+            "minimum_tolerant_content_match_percent": 90.0,
+            "below_threshold_pages": [
+              {
+                "page": 10,
+                "tolerant_content_match_percent": 67.15442
+              },
+              {
+                "page": 17,
+                "tolerant_content_match_percent": 64.9678
+              },
+              {
+                "page": 22,
+                "tolerant_content_match_percent": 89.78966
+              },
+              {
+                "page": 27,
+                "tolerant_content_match_percent": 86.91834
+              },
+              {
+                "page": 28,
+                "tolerant_content_match_percent": 87.94361
+              }
+            ],
+            "unavailable_metric_pages": [],
+            "font_mismatch_evidence": null
+          },
+          "manifest_sha256": "fbd37e1feda24c68b20350ee5add116346742b236b56bf45085ebb588e1ce137"
+        },
+        {
+          "name": "wasm-hwpx-55-108",
+          "result": {
+            "backend": "wasm",
+            "kind": "hwpx",
+            "command": [
+              "/Users/tsjang/rhwp/venv/bin/python",
+              "scripts/visual_sweep.py",
+              "--hwp",
+              "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+              "--pdf",
+              "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+              "--key",
+              "liver7379",
+              "--rhwp-bin",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+              "--out",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/wasm-hwpx-55-108",
+              "--dpi",
+              "96",
+              "--pages",
+              "55-108",
+              "--wasm-pkg",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/wasm-pkg"
+            ],
+            "exit_code": 1,
+            "seconds": 1595.1772712501697
+          },
+          "run_state": "complete",
+          "gate": {
+            "status": "re_review_required",
+            "minimum_tolerant_content_match_percent": 90.0,
+            "below_threshold_pages": [
+              {
+                "page": 74,
+                "tolerant_content_match_percent": 86.45696
+              },
+              {
+                "page": 75,
+                "tolerant_content_match_percent": 52.78823
+              },
+              {
+                "page": 88,
+                "tolerant_content_match_percent": 89.52078
+              }
+            ],
+            "unavailable_metric_pages": [],
+            "font_mismatch_evidence": null
+          },
+          "manifest_sha256": "1b9bbffb23ee0ebdf50a48600855f913fd517ff3f5437aea8b4ae961f59465f8"
+        },
+        {
+          "name": "wasm-hwpx-109-162",
+          "result": {
+            "backend": "wasm",
+            "kind": "hwpx",
+            "command": [
+              "/Users/tsjang/rhwp/venv/bin/python",
+              "scripts/visual_sweep.py",
+              "--hwp",
+              "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+              "--pdf",
+              "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+              "--key",
+              "liver7379",
+              "--rhwp-bin",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+              "--out",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/wasm-hwpx-109-162",
+              "--dpi",
+              "96",
+              "--pages",
+              "109-162",
+              "--wasm-pkg",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/wasm-pkg"
+            ],
+            "exit_code": 1,
+            "seconds": 1596.698734624777
+          },
+          "run_state": "complete",
+          "gate": {
+            "status": "re_review_required",
+            "minimum_tolerant_content_match_percent": 90.0,
+            "below_threshold_pages": [
+              {
+                "page": 130,
+                "tolerant_content_match_percent": 89.68695
+              },
+              {
+                "page": 162,
+                "tolerant_content_match_percent": 81.06478
+              }
+            ],
+            "unavailable_metric_pages": [],
+            "font_mismatch_evidence": null
+          },
+          "manifest_sha256": "7e809459cbb406d62c60bc5c554e61fa89c1a748e0e130e94fc4a1165b6a421b"
+        },
+        {
+          "name": "wasm-hwpx-163-215",
+          "result": {
+            "backend": "wasm",
+            "kind": "hwpx",
+            "command": [
+              "/Users/tsjang/rhwp/venv/bin/python",
+              "scripts/visual_sweep.py",
+              "--hwp",
+              "/Users/tsjang/rhwp/samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+              "--pdf",
+              "/Users/tsjang/rhwp/pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+              "--key",
+              "liver7379",
+              "--rhwp-bin",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+              "--out",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/wasm-hwpx-163-215",
+              "--dpi",
+              "96",
+              "--pages",
+              "163-215",
+              "--wasm-pkg",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/wasm-pkg"
+            ],
+            "exit_code": 1,
+            "seconds": 1519.851315875072
+          },
+          "run_state": "complete",
+          "gate": {
+            "status": "re_review_required",
+            "minimum_tolerant_content_match_percent": 90.0,
+            "below_threshold_pages": [
+              {
+                "page": 163,
+                "tolerant_content_match_percent": 89.396
+              },
+              {
+                "page": 168,
+                "tolerant_content_match_percent": 89.52962
+              },
+              {
+                "page": 169,
+                "tolerant_content_match_percent": 40.47912
+              },
+              {
+                "page": 173,
+                "tolerant_content_match_percent": 84.93044
+              },
+              {
+                "page": 199,
+                "tolerant_content_match_percent": 89.07548
+              },
+              {
+                "page": 206,
+                "tolerant_content_match_percent": 36.45917
+              },
+              {
+                "page": 207,
+                "tolerant_content_match_percent": 32.27903
+              },
+              {
+                "page": 208,
+                "tolerant_content_match_percent": 85.08928
+              },
+              {
+                "page": 211,
+                "tolerant_content_match_percent": 81.3431
+              },
+              {
+                "page": 214,
+                "tolerant_content_match_percent": 82.90745
+              }
+            ],
+            "unavailable_metric_pages": [],
+            "font_mismatch_evidence": null
+          },
+          "manifest_sha256": "169a6e88af4371bb48d715a99a7d3dd35adef630ced1b7467c4633c73c7e1347"
+        }
+      ]
+    }
+  ],
+  "supplement": {
+    "native": [
+      {
+        "backend": "native",
+        "key": "para6950",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "/Users/tsjang/rhwp/samples/hwpx/20260909-para-table.hwpx",
+          "--pdf",
+          "/Users/tsjang/rhwp/pdf/hwpx/20260909-para-table-2024.pdf",
+          "--key",
+          "para6950",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/native-supplement",
+          "--dpi",
+          "96"
+        ],
+        "exit_code": 0,
+        "seconds": 53.12507945811376
+      },
+      {
+        "backend": "native",
+        "key": "anchor6312",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "/Users/tsjang/rhwp/samples/issue6312/fiscal_trend_float_table_anchor.hwpx",
+          "--pdf",
+          "/Users/tsjang/rhwp/pdf/issue6312/fiscal-trend-float-table-anchor-2020.pdf",
+          "--key",
+          "anchor6312",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/native-supplement",
+          "--dpi",
+          "96"
+        ],
+        "exit_code": 0,
+        "seconds": 79.41753158392385
+      },
+      {
+        "backend": "native",
+        "key": "japan6782",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "/Users/tsjang/rhwp/samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+          "--pdf",
+          "/Users/tsjang/rhwp/pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+          "--key",
+          "japan6782",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/native-supplement",
+          "--dpi",
+          "96",
+          "--pages",
+          "76,77,78"
+        ],
+        "exit_code": 1,
+        "seconds": 69.33149070898071
+      },
+      {
+        "backend": "native",
+        "key": "row2097-original",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "/Users/tsjang/rhwp/samples/task2097/rowbreak_midpage_declared_fits.hwpx",
+          "--pdf",
+          "/Users/tsjang/rhwp/pdf/issue2097/rowbreak-midpage-original-2020.pdf",
+          "--key",
+          "row2097-original",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/native-supplement",
+          "--dpi",
+          "96"
+        ],
+        "exit_code": 1,
+        "seconds": 46.395623417105526
+      },
+      {
+        "backend": "native",
+        "key": "row2097-resaved",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "/Users/tsjang/rhwp/samples/issue2097/rowbreak-midpage-resaved-2020.hwpx",
+          "--pdf",
+          "/Users/tsjang/rhwp/pdf/issue2097/rowbreak-midpage-resaved-2020.pdf",
+          "--key",
+          "row2097-resaved",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/native-supplement",
+          "--dpi",
+          "96"
+        ],
+        "exit_code": 0,
+        "seconds": 30.671406916808337
+      },
+      {
+        "backend": "native",
+        "key": "row2105-original",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "/Users/tsjang/rhwp/samples/task2105/rowbreak_table_declared_fits.hwpx",
+          "--pdf",
+          "/Users/tsjang/rhwp/pdf/issue2097/rowbreak-fragment-start-original-2020.pdf",
+          "--key",
+          "row2105-original",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/native-supplement",
+          "--dpi",
+          "96"
+        ],
+        "exit_code": 1,
+        "seconds": 22.35121445916593
+      },
+      {
+        "backend": "native",
+        "key": "row2105-resaved",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "/Users/tsjang/rhwp/samples/issue2097/rowbreak-fragment-start-resaved-2020.hwpx",
+          "--pdf",
+          "/Users/tsjang/rhwp/pdf/issue2097/rowbreak-fragment-start-resaved-2020.pdf",
+          "--key",
+          "row2105-resaved",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/native-supplement",
+          "--dpi",
+          "96"
+        ],
+        "exit_code": 0,
+        "seconds": 21.935818375088274
+      }
+    ],
+    "wasm": [
+      {
+        "backend": "wasm",
+        "key": "para6950",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "/Users/tsjang/rhwp/samples/hwpx/20260909-para-table.hwpx",
+          "--pdf",
+          "/Users/tsjang/rhwp/pdf/hwpx/20260909-para-table-2024.pdf",
+          "--key",
+          "para6950",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/wasm-supplement",
+          "--dpi",
+          "96",
+          "--wasm-pkg",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/wasm-pkg"
+        ],
+        "exit_code": 0,
+        "seconds": 55.88102687522769
+      },
+      {
+        "backend": "wasm",
+        "key": "anchor6312",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "/Users/tsjang/rhwp/samples/issue6312/fiscal_trend_float_table_anchor.hwpx",
+          "--pdf",
+          "/Users/tsjang/rhwp/pdf/issue6312/fiscal-trend-float-table-anchor-2020.pdf",
+          "--key",
+          "anchor6312",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/wasm-supplement",
+          "--dpi",
+          "96",
+          "--wasm-pkg",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/wasm-pkg"
+        ],
+        "exit_code": 0,
+        "seconds": 44.22159912483767
+      },
+      {
+        "backend": "wasm",
+        "key": "japan6782",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "/Users/tsjang/rhwp/samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+          "--pdf",
+          "/Users/tsjang/rhwp/pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+          "--key",
+          "japan6782",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/wasm-supplement",
+          "--dpi",
+          "96",
+          "--pages",
+          "76,77,78",
+          "--wasm-pkg",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/wasm-pkg"
+        ],
+        "exit_code": 1,
+        "seconds": 34.67870666598901
+      },
+      {
+        "backend": "wasm",
+        "key": "row2097-original",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "/Users/tsjang/rhwp/samples/task2097/rowbreak_midpage_declared_fits.hwpx",
+          "--pdf",
+          "/Users/tsjang/rhwp/pdf/issue2097/rowbreak-midpage-original-2020.pdf",
+          "--key",
+          "row2097-original",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/wasm-supplement",
+          "--dpi",
+          "96",
+          "--wasm-pkg",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/wasm-pkg"
+        ],
+        "exit_code": 1,
+        "seconds": 19.25316504202783
+      },
+      {
+        "backend": "wasm",
+        "key": "row2097-resaved",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "/Users/tsjang/rhwp/samples/issue2097/rowbreak-midpage-resaved-2020.hwpx",
+          "--pdf",
+          "/Users/tsjang/rhwp/pdf/issue2097/rowbreak-midpage-resaved-2020.pdf",
+          "--key",
+          "row2097-resaved",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/wasm-supplement",
+          "--dpi",
+          "96",
+          "--wasm-pkg",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/wasm-pkg"
+        ],
+        "exit_code": 0,
+        "seconds": 16.267704042140394
+      },
+      {
+        "backend": "wasm",
+        "key": "row2105-original",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "/Users/tsjang/rhwp/samples/task2105/rowbreak_table_declared_fits.hwpx",
+          "--pdf",
+          "/Users/tsjang/rhwp/pdf/issue2097/rowbreak-fragment-start-original-2020.pdf",
+          "--key",
+          "row2105-original",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/wasm-supplement",
+          "--dpi",
+          "96",
+          "--wasm-pkg",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/wasm-pkg"
+        ],
+        "exit_code": 1,
+        "seconds": 16.64734029211104
+      },
+      {
+        "backend": "wasm",
+        "key": "row2105-resaved",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "scripts/visual_sweep.py",
+          "--hwp",
+          "/Users/tsjang/rhwp/samples/issue2097/rowbreak-fragment-start-resaved-2020.hwpx",
+          "--pdf",
+          "/Users/tsjang/rhwp/pdf/issue2097/rowbreak-fragment-start-resaved-2020.pdf",
+          "--key",
+          "row2105-resaved",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/bin/rhwp",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/visual/wasm-supplement",
+          "--dpi",
+          "96",
+          "--wasm-pkg",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/full-96c4e4777/wasm-pkg"
+        ],
+        "exit_code": 0,
+        "seconds": 13.310907416976988
+      }
+    ]
+  },
+  "native_provenance": {
+    "head_sha": "96c4e47771ecf7f46016bffa1e09c467b2878cbb",
+    "reused_frozen_cli": "stage42-after-rhwp",
+    "runtime_source": {
+      "src/renderer/layout/table_layout.rs": "d7ebc677b38d04674e3d4cca8e767faffc528fd0440df073df84d38addaee80c",
+      "src/renderer/typeset/table/block/prepare.rs": "b808eb832dbe6f0e7a302fe99b4f4df2d225c17fff2fbfb8fd80b0953c7802d0",
+      "src/renderer/typeset/table/block/whole_fit.rs": "9af950373d6bd205a2ecdedfb1f045fd25313bfa419a2748841026a069a1c13d",
+      "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "bd6f0a2e8474c36d290d2bb89638f6e7947c2ecac72a70d5f1cdf28f84144ae8"
+    },
+    "binary_sha256": "d0712acc0a63987360183a0a86c6206f2f5d1f4a9aaab72eb3d6e3f4485d7e45",
+    "reason": "Compiled runtime sources and current committed sources match; later edits only test artifact generation."
+  },
+  "wasm_provenance": {
+    "head": "96c4e47771ecf7f46016bffa1e09c467b2878cbb",
+    "package_sha256": {
+      "rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+      "rhwp_bg.wasm": "65fba8116dc1b727d2eacc150a8b4711e8f01985b97df5f3aecc6b31c66e5bf7"
+    },
+    "root_pkg_studio_and_frozen_copy_identical": true,
+    "local_alternative_build": true,
+    "docker_optimized_build_verified": false,
+    "coverage_per_format": [
+      [
+        1,
+        54
+      ],
+      [
+        55,
+        108
+      ],
+      [
+        109,
+        162
+      ],
+      [
+        163,
+        215
+      ]
+    ]
+  },
+  "input_provenance": {
+    "head": "96c4e47771ecf7f46016bffa1e09c467b2878cbb",
+    "inputs": [
+      {
+        "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113",
+        "head_blob_matches": true
+      },
+      {
+        "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+        "sha256": "b87a6f945fdf752ce603f8aa7b50dbccd38a8dea783e2581acee8a3f6af35916",
+        "head_blob_matches": true
+      },
+      {
+        "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+        "sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+        "head_blob_matches": true
+      },
+      {
+        "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+        "sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59",
+        "head_blob_matches": true
+      }
+    ]
+  },
+  "direct_read_all_860_pages": false,
+  "whole_pr_status": "보류",
+  "font_exception_used": false,
+  "supplement_compared_pages_by_backend": {
+    "native": 18,
+    "wasm": 18
+  }
+}

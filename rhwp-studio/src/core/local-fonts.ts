@@ -5,6 +5,7 @@
  * 글꼴 목록을 조회한다. 저장된 감지 결과는 재사용하되, 새 목록 조회는
  * 사용자 승인 흐름에서만 호출하도록 API를 분리한다.
  */
+import { HostFontSource, type HostFontProvider, type HostFontReference, type HostFontData } from './host-font-provider.ts';
 import { REGISTERED_FONTS } from './font-loader.ts';
 import { setRawCanvasFont } from './canvas-font-raw.ts';
 
@@ -30,10 +31,15 @@ export interface LocalFontRecord {
   fullName: string;
   postscriptName: string;
   style: string;
+  /** SFNT의 실제 face 메타데이터. 이름에서 추정한 스타일보다 우선한다. */
+  weightClass?: number;
+  italic?: boolean;
   displayName: string;
   aliases: string[];
   /** face를 실제 Local Font Access 열거로 얻었는지, 이름 presence probe로만 확인했는지 구분한다. */
   detectionSource?: LocalFontDetectionSource;
+  /** Session-only resource identity; never serialized into browser snapshots. */
+  hostReference?: HostFontReference;
 }
 
 export interface LocalFontSnapshot {
@@ -206,6 +212,8 @@ interface SfntFontNames {
   fullNames: string[];
   postscriptNames: string[];
   styles: string[];
+  weightClass?: number;
+  italic?: boolean;
 }
 
 interface LocalFontLookup {
@@ -388,14 +396,31 @@ async function readSfntFontNames(fontData: FontData): Promise<SfntFontNames> {
     const directoryLength = 12 + tableCount * 16;
     if (blob.size < directoryLength) return emptySfntFontNames();
     const directory = new DataView(await blob.slice(0, directoryLength).arrayBuffer());
+    const metadata = emptySfntFontNames();
+    let headStyle: number | undefined;
     for (let index = 0; index < tableCount; index += 1) {
       const recordOffset = 12 + index * 16;
-      if (sfntTag(directory, recordOffset) !== 'name') continue;
+      const tag = sfntTag(directory, recordOffset);
+      if (tag !== 'name' && tag !== 'OS/2' && tag !== 'head') continue;
       const offset = directory.getUint32(recordOffset + 8, false);
       const length = directory.getUint32(recordOffset + 12, false);
-      if (offset > blob.size || length > blob.size - offset) return emptySfntFontNames();
-      return parseSfntNameTable(await blob.slice(offset, offset + length).arrayBuffer());
+      if (offset > blob.size || length > blob.size - offset) continue;
+      if (tag === 'name') {
+        Object.assign(metadata, parseSfntNameTable(await blob.slice(offset, offset + length).arrayBuffer()));
+      } else if (tag === 'OS/2' && length >= 6) {
+        const os2 = new DataView(await blob.slice(offset, offset + Math.min(length, 64)).arrayBuffer());
+        const weightClass = os2.getUint16(4, false);
+        if (weightClass >= 1 && weightClass <= 1000) metadata.weightClass = weightClass;
+        if (os2.byteLength >= 64) metadata.italic = (os2.getUint16(62, false) & 0x0201) !== 0;
+      } else if (tag === 'head' && length >= 46) {
+        headStyle = new DataView(await blob.slice(offset, offset + 46).arrayBuffer()).getUint16(44, false);
+      }
     }
+    if (headStyle !== undefined) {
+      metadata.weightClass ??= (headStyle & 1) !== 0 ? 700 : 400;
+      metadata.italic ??= (headStyle & 2) !== 0;
+    }
+    return metadata;
   } catch {
     // 메타데이터 보강 실패는 감지 자체를 실패시키지 않고 API 기본 이름만 사용한다.
   }
@@ -437,8 +462,12 @@ function makeLocalFontRecord(
   return {
     family,
     fullName: fullNames[0] ?? family,
-    postscriptName: postscriptNames[0] ?? '',
+    // Local Font Access filters by the API identifier. Localized SFNT aliases
+    // remain display/lookup names; their locale sort order is not face identity.
+    postscriptName: normalizeFontNames([fontData.postscriptName])[0] ?? postscriptNames[0] ?? '',
     style: styles[0] ?? '',
+    ...(sfntNames.weightClass !== undefined ? { weightClass: sfntNames.weightClass } : {}),
+    ...(sfntNames.italic !== undefined ? { italic: sfntNames.italic } : {}),
     displayName: preferredLocalFontDisplayName(fullNames, families) || family,
     aliases,
     detectionSource,
@@ -464,6 +493,9 @@ function normalizeLocalFontRecords(
       fullNames: [],
       postscriptNames: [],
       styles: [],
+      ...(Number.isInteger(data.weightClass) && data.weightClass! >= 1 && data.weightClass! <= 1000
+        ? { weightClass: data.weightClass } : {}),
+      ...(typeof data.italic === 'boolean' ? { italic: data.italic } : {}),
     }, data.detectionSource === 'font-presence-probe' || data.detectionSource === 'local-font-access'
       ? data.detectionSource
       : defaultSource);
@@ -947,8 +979,9 @@ export function resolveLocalFont(fontName: string): LocalFontRecord | null {
 }
 
 /** CSS family와 달리 style별 native Typeface cache를 구분하는 안정 키다. */
-export function localFontFaceKey(record: Pick<LocalFontRecord, 'family' | 'fullName' | 'postscriptName'>): string {
-  return normalizeFontAlias(record.postscriptName || record.fullName || record.family);
+export function localFontFaceKey(record: Pick<LocalFontRecord, 'family' | 'fullName' | 'postscriptName' | 'hostReference'>): string {
+  return record.hostReference?.key
+    || normalizeFontAlias(record.postscriptName || record.fullName || record.family);
 }
 
 function localFontRecordMatchesFontData(record: LocalFontRecord, fontData: FontData): boolean {
@@ -1075,4 +1108,86 @@ export function resetLocalFontsForTests(): void {
   storageLoaded = false;
   lastStorageError = null;
   localFontBytesByPostscriptName.clear();
+}
+
+
+// Host catalogs are deliberately separate from the browser/CSS presence snapshot.
+const hostFontSource = new HostFontSource();
+let hostLookupGeneration = -1;
+let hostLookupReferences: readonly HostFontReference[] = [];
+let hostRecords: LocalFontRecord[] = [];
+let hostLookup = emptyLocalFontLookup();
+hostFontSource.subscribe(() => {
+  hostLookupGeneration = -1;
+  hostLookupReferences = [];
+  hostRecords = [];
+  hostLookup = emptyLocalFontLookup();
+});
+
+export interface LocalFontStyleRequest { weight: number; slant: 'normal' | 'italic' | 'oblique' }
+
+export function setHostFontProvider(provider: HostFontProvider | null): Promise<void> {
+  return hostFontSource.setProvider(provider);
+}
+export function onHostFontsChanged(listener: () => void): () => void {
+  return hostFontSource.subscribe(listener);
+}
+export function hasHostFontProvider(): boolean { return hostFontSource.active; }
+export function prepareHostFontCatalog(): Promise<void> { return hostFontSource.ready(); }
+export function getHostFontState(): { active: boolean; generation: number; count: number; lastError: string | null } {
+  return { active: hostFontSource.active, generation: hostFontSource.generation,
+    count: hostFontSource.references().length, lastError: hostFontSource.lastError };
+}
+
+function currentHostRecords(): LocalFontRecord[] {
+  const references = hostFontSource.references();
+  // The catalog can finish loading without changing the invalidation generation.
+  if (hostLookupGeneration !== hostFontSource.generation
+    || references[0]?.face !== hostLookupReferences[0]?.face || references.length !== hostLookupReferences.length) {
+    hostLookupGeneration = hostFontSource.generation;
+    hostLookupReferences = references;
+    hostRecords = references.map(reference => {
+      const face = reference.face;
+      return { family: face.family, fullName: face.fullName, postscriptName: face.postscriptName,
+        style: face.style, displayName: face.fullName,
+        aliases: normalizeFontNames([face.family, face.fullName, face.postscriptName,
+          `${face.family} ${face.style}`, ...(face.aliases ?? [])]), hostReference: reference };
+    });
+    hostLookup = buildLocalFontLookup(hostRecords);
+  }
+  return hostRecords;
+}
+
+/** Renderer-only resolution. OS/CSS presence probes keep using resolveLocalFont. */
+export function resolveRendererLocalFont(name: string, style?: LocalFontStyleRequest): LocalFontRecord | null {
+  if (!hostFontSource.active) return resolveLocalFont(name);
+  const target = normalizeFontAlias(name);
+  currentHostRecords();
+  const candidates = hostLookup.aliases.get(target) ?? [];
+  const postscript = hostLookup.postscriptNames.get(target) ?? [];
+  if (postscript.length) return postscript.length === 1 ? postscript[0] : null;
+  // A Regular face often has fullName === family. A shared family alias must still
+  // select Bold/Italic from the run style instead of treating that name as exact.
+  if (candidates.length === 1) {
+    const record = candidates[0];
+    if ([record.fullName, `${record.family} ${record.style}`].some(value => normalizeFontAlias(value) === target)
+      && normalizeFontAlias(record.family) !== target) return record;
+  }
+  if (!style) return resolveLocalFontFromLookup(name, hostLookup);
+  const styled = candidates.filter(record => record.hostReference?.face.weight === style.weight
+    && record.hostReference?.face.slant === style.slant);
+  if (styled.length) return styled.length === 1 ? styled[0] : null;
+  // Document styles expose an italic flag, while host catalogs can distinguish
+  // italic from oblique. Prefer the exact slant, then its inclined counterpart.
+  if (style.slant === 'normal') return null;
+  const alternate = candidates.filter(record => record.hostReference?.face.weight === style.weight
+    && record.hostReference?.face.slant === (style.slant === 'italic' ? 'oblique' : 'italic'));
+  return alternate.length === 1 ? alternate[0] : null;
+}
+
+/** Consume the selected face directly, rather than resolving its name a second time. */
+export async function loadRendererLocalFont(record: LocalFontRecord): Promise<HostFontData | null> {
+  if (record.hostReference) return hostFontSource.read(record.hostReference);
+  const bytes = await loadLocalFontBytes(record.postscriptName || record.fullName);
+  return bytes ? { bytes, faceIndex: 0 } : null;
 }

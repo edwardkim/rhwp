@@ -2,14 +2,14 @@
 kind: guide
 status: active
 canonical: gym/docs/tutorial.md
-last_verified: 2026-08-18
+last_verified: 2026-09-02
 ---
 
 # gym 휴게실 · 테마파크 입문 규약
 
 이 문서는 `gym/tutorial/` · `gym/PARK.md` · `gym/INVITE.md` 가
 지켜야 하는 **입문 안내 계약**을 고정한다. 작업 기록은
-[`mydocs/working/gym_tutorial.md`](../../mydocs/working/gym_tutorial.md).
+[`mydocs/working/gym_tutorial.md`](../../mydocs/working/archives/gym_tutorial.md).
 기계 시험은 `scripts/tests/test_gym_tutorial.py` 다.
 
 채점 논리의 정본은 여기가 아니다. 연산자 등록부는
@@ -155,6 +155,7 @@ value_in
 deep_contains
 not_contains
 cell_text_eq
+text_file_envelope_eq
 ```
 
 `GLOBAL_SCAN_OPS = {deep_contains, not_contains}`.
@@ -241,7 +242,7 @@ editor / publisher / operator / boss 는 각 pack 의 **이미 있는
 - 안내 문서가 `gym/core/checks.py` 를 "고친다/추가한다"고 말하지
   않는다
 - PARK · INVITE · 휴게실이 서로를 가리킨다
-- CI 가 이 시험을 호출한다
+- Gym Benchmark Validation이 이 시험을 호출한다
 
 음성 회귀: 임시로 링크를 지운 텍스트는 검사 함수가 문제를 내야
 한다. 통과만 보면 가드가 썩는다.

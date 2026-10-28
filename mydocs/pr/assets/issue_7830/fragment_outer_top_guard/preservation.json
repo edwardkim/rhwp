@@ -1,0 +1,84 @@
+{
+  "source_commit": "c96354d4e67fd88c0eadd9eecb5aebbe043d7373",
+  "introducing_integration_commit": "dcce237f1fb92a8958206a789a70ad48d70f3e12",
+  "source_commit_original": "e64b513ed5faf7392ab187b7cb70bb112cbe05d1",
+  "source_pr": 7965,
+  "source_blob": "324bdf793c5247a7c1078d379c0f50661faf5352",
+  "original_path": "tests/cases/issue_8105_fragment_outer_top_and_restart_trim.rs",
+  "preserved_path": "mydocs/pr/assets/issue_7830/fragment_outer_top_guard/issue_8105_fragment_outer_top_and_restart_trim.rs.txt",
+  "source_sha256": "e4f91c3099e12c41552db2d744a41648f2bbe285e0053f60cb708287118e174b",
+  "removed_functions": [
+    "deferred_first_fragment_spends_its_offset_and_opens_the_outer_top"
+  ],
+  "retained_functions": [
+    "continued_offset_table_reopens_its_outer_top_margin",
+    "own_before_restart_keeps_the_closing_line_on_the_page",
+    "consumed_offset_does_not_reopen_an_already_opened_margin"
+  ],
+  "input": "samples/hwpx_sample2.hwp",
+  "input_sha256": "ca66d521d070ac8442e09fd3f283e17611eb9efb45eb4bf6c3a8f65e604f6b5f",
+  "independent_pdf": "pdf/hwpx_sample2-hwp-2024.pdf",
+  "pdf_sha256": "1b2e13e966787f6b91f590c8901dcb988e73ac7063d5e1cb95c8952400fd9a47",
+  "pdf_pages": 29,
+  "existing_issue": 7830,
+  "measured_base_sha": "80968497c2c178eeecb3b2e1d04d086ad27a0dc7",
+  "measured_candidate_sha": "ca26039dad8dcb07b182dd60136ae4a2aa533bd0",
+  "classification": "New guard reactivation for an already deferred original; full original-output qualification remains incomplete. No production implementation or input/PDF is removed.",
+  "visual_comparison": [
+    {
+      "key": "hwpx-sample2-hwp",
+      "backend": "native",
+      "role": "additional_source_correction",
+      "base_min": 47.7647,
+      "candidate_min": 47.81904,
+      "base_pages": 29,
+      "candidate_pages": 29,
+      "reference_pages": 29,
+      "candidate_below90": [
+        4,
+        8,
+        13,
+        14
+      ],
+      "base_tsv": "/home/tsjang/rhwp/output/pr-review/planet6897-20261018/post8120-base-native-documents-20261021/resumed-20261021/hwpx-sample2-hwp/silhouette.tsv",
+      "candidate_tsv": "/home/tsjang/rhwp/output/pr-review/planet6897-20261018/post8120-candidate-native-documents-20261021/resumed-20261021/hwpx-sample2-hwp/silhouette.tsv",
+      "drops_ge_0_1pp": [
+        {
+          "page": 2,
+          "base": "99.83257",
+          "candidate": "99.67196",
+          "delta_pp": "-0.16061"
+        }
+      ],
+      "comparison_complete": true
+    },
+    {
+      "key": "hwpx-sample2-hwp",
+      "backend": "wasm",
+      "role": "additional_source_correction",
+      "base_min": 48.33502,
+      "candidate_min": 48.38627,
+      "base_pages": 29,
+      "candidate_pages": 29,
+      "reference_pages": 29,
+      "candidate_below90": [
+        4,
+        8,
+        13,
+        14
+      ],
+      "base_tsv": "/home/tsjang/rhwp/output/pr-review/planet6897-20261018/post8120-base-wasm-documents-20261021/resumed-20261021/hwpx-sample2-hwp/silhouette.tsv",
+      "candidate_tsv": "/home/tsjang/rhwp/output/pr-review/planet6897-20261018/post8120-candidate-wasm-documents-20261021/hwpx-sample2-hwp/silhouette.tsv",
+      "drops_ge_0_1pp": [
+        {
+          "page": 2,
+          "base": "99.83602",
+          "candidate": "99.67822",
+          "delta_pp": "-0.15780"
+        }
+      ],
+      "comparison_complete": true
+    }
+  ],
+  "current_p2_regression": "Corrected by c96354d4e6 in common font origin logic; Native p2 returned to base 99.83257, new WASM verification in progress. This archive does not waive that regression."
+}

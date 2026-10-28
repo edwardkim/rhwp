@@ -258,7 +258,10 @@ class FindBinTests(unittest.TestCase):
             old = os.getcwd()
             try:
                 os.chdir(d)
-                self.assertEqual(self.r.find_bin(name), os.path.abspath(target))
+                found = self.r.find_bin(name)
+                # macOS의 /var 별칭도 같은 바이너리를 가리키는 절대 경로여야 한다.
+                self.assertTrue(os.path.isabs(found))
+                self.assertTrue(os.path.samefile(found, target))
             finally:
                 os.chdir(old)
 
@@ -1131,7 +1134,7 @@ class GeneratedCatalogSyncTests(unittest.TestCase):
     def setUp(self):
         self.r = load_runner()
         self.doc = (REPO_ROOT / "gym" / "docs" / "score_runner.md").read_text(encoding="utf-8")
-        self.work = (REPO_ROOT / "mydocs" / "working" / "gym_score_runner.md").read_text(
+        self.work = (REPO_ROOT / "mydocs" / "working" / "archives" / "gym_score_runner.md").read_text(
             encoding="utf-8")
 
     def test_docs_mention_every_kind(self):
@@ -1283,7 +1286,7 @@ class DocsExistTests(unittest.TestCase):
         self.assertIn("kind: guide", text)
 
     def test_working_front_matter(self):
-        text = (REPO_ROOT / "mydocs" / "working" / "gym_score_runner.md").read_text(
+        text = (REPO_ROOT / "mydocs" / "working" / "archives" / "gym_score_runner.md").read_text(
             encoding="utf-8")
         self.assertIn("canonical: mydocs/working/gym_score_runner.md", text)
         self.assertIn("kind: working", text)
@@ -1296,7 +1299,7 @@ class DocsExistTests(unittest.TestCase):
             self.assertIn(f"`{name}`", text, name)
 
     def test_working_records_before_after(self):
-        text = (REPO_ROOT / "mydocs" / "working" / "gym_score_runner.md").read_text(
+        text = (REPO_ROOT / "mydocs" / "working" / "archives" / "gym_score_runner.md").read_text(
             encoding="utf-8")
         self.assertIn("answer.json 배열", text)
         self.assertIn("경로형 바이너리 부재", text)

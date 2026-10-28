@@ -1,11 +1,15 @@
 /** input-handler mouse methods — extracted from InputHandler class */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { hyperlinkAtPointer, hoverHyperlink, rememberHyperlinkClick, followHyperlinkClick } from './input-handler-hyperlink';
 import type { ContextMenuItem } from '@/ui/context-menu';
 import { chartTargetFromSelection, matchChartRef } from '@/core/chart-data-target';
 import * as _connector from './input-handler-connector';
 import { MoveLineEndpointCommand, SetZOrderCommand } from './command';
 import { computeLineEndpointRecord } from './object-drag-record';
+import { emitHeaderFooterModeChanged } from './header-footer-mode';
+import { cacheTableCellBboxes, ensureTableCellBboxCache } from './table-bbox-cache';
+import { shouldStartPersistentTableResize } from './table-resize-updates';
 
 function protectedCellKey(hit: any): string | null {
   if (!hit || hit.isTextBox) return null;
@@ -108,6 +112,35 @@ function selectOleObjectFromHit(this: any, oleHit: any): void {
   this.textarea.focus();
 }
 
+/**
+ * 연결선은 표 셀·글상자 위에 그려질 수 있다. 본문 hit-test를 먼저 처리하면 그
+ * 컨테이너가 선택을 소비하므로, 선 자체의 적중을 먼저 객체 선택으로 확정한다.
+ */
+function selectLineObjectFromHit(this: any, lineHit: any): void {
+  this.cursor.clearSelection();
+  this.exitPictureObjectSelectionIfNeeded();
+  this.cursor.enterPictureObjectSelectionDirect(
+    lineHit.sec,
+    lineHit.ppi,
+    lineHit.ci,
+    'line',
+    lineHit.cellIdx,
+    lineHit.cellParaIdx,
+    lineHit.headerFooter,
+    lineHit.outerTableControlIdx,
+    lineHit.cellPath,
+    lineHit.noteRef,
+    lineHit.missing,
+    lineHit.pageIndex,
+  );
+  this.active = true;
+  this.caret.hide();
+  this.selectionRenderer.clear();
+  this.renderPictureObjectSelection();
+  this.eventBus.emit('picture-object-selection-changed', true);
+  this.textarea.focus();
+}
+
 function selectProtectedCell(this: any, hit: any): void {
   hideProtectedCellHover(this);
   this.cursor.clearSelection();
@@ -167,6 +200,7 @@ function resolveTableResizeHit(
 ): { tableRef: { sec: number; ppi: number; ci: number; pageHint?: number }; bboxes: any[]; pageBboxes: any[] } | null {
   // 일반 클릭에서 새 bbox를 만들면 대형/중첩 표 문서가 수 초 동안 멈춘다.
   // 리사이즈 시작은 이미 확보된 bbox 캐시가 있을 때만 판정하고, 없으면 텍스트 클릭으로 처리한다.
+  // 캐시는 hover 경로(ensureTableCellBboxCache)가 표 진입 시 채워 둔다 (#4117).
   if (self.cachedTableRef && self.cachedCellBboxes?.length) {
     const pageBboxes = self.cachedCellBboxes.filter((b: any) => b.pageIndex === pageIdx);
     if (pageBboxes.length > 0) {
@@ -263,6 +297,7 @@ function promoteCellSelectionDragCandidate(this: any, e: MouseEvent): boolean {
 }
 
 export function onClick(this: any, e: MouseEvent): void {
+  rememberHyperlinkClick(this, e);
   if ((this.wasm?.pageCount ?? 0) <= 0) {
     return;
   }
@@ -692,15 +727,12 @@ export function onClick(this: any, e: MouseEvent): void {
   if (this.cursor.isInCellSelectionMode()) {
     // 우클릭 → 셀 선택 영역 유지 (컨텍스트 메뉴에서 처리)
     if (e.button === 2) return;
-    // 경계선 클릭 → 셀 선택 유지 + 리사이즈 드래그 시작
-    // Shift+드래그는 단일 셀 경계 resize 의도이므로 Shift+클릭 확장 선택보다 먼저 판정한다.
-    if (e.button === 0 && this.tableResizeRenderer) {
+    // Shift+경계 클릭은 아래 셀 범위 선택이 소유한다. 지속 가능한 일반
+    // geometry만 drag listener와 marker lifecycle을 시작한다.
+    if (shouldStartPersistentTableResize(e.button, e.shiftKey) && this.tableResizeRenderer) {
       const ctx = this.cursor.getCellTableContext();
       if (ctx) {
         try {
-          const bboxes = this.wasm.getTableCellBboxes(ctx.sec, ctx.ppi, ctx.ci);
-          this.cachedTableRef = { sec: ctx.sec, ppi: ctx.ppi, ci: ctx.ci };
-          this.cachedCellBboxes = bboxes;
           const zoom = this.viewportManager.getZoom();
           const scrollContent = this.container.querySelector('#scroll-content');
           if (scrollContent) {
@@ -708,10 +740,18 @@ export function onClick(this: any, e: MouseEvent): void {
             const contentX = e.clientX - contentRect.left;
             const contentY = e.clientY - contentRect.top;
             const pageIdx = this.virtualScroll.getPageAtPoint(contentX, contentY);
-            // hover 경로(handleMouseMove)의 캐시 일치 판정이 pageHint 를 비교하므로 여기서
-            // 채워준다. 비워두면 `undefined !== pageIdx` 가 항상 참이라 hover 가 매번
-            // early return 해 표 리사이즈 marker 가 한 번도 표시되지 않는다.
-            this.cachedTableRef.pageHint = pageIdx;
+            // [#4117] 현재 페이지를 hint 로 넘긴다 — 없으면 엔진이 페이지 0부터
+            // 렌더 트리를 훑어 뒤쪽 페이지의 표일수록 느려진다.
+            // [#7442] 중첩 표 ctx 는 경로 API 로 bbox 를 얻고, 캐시 신원에도
+            // 경로를 실어야 finishResizeDrag 가 resizeTableCellsByPath 로 보낸다.
+            const nested = (ctx.cellPath?.length ?? 0) > 1;
+            const bboxes = nested
+              ? this.wasm.getTableCellBboxesByPath(ctx.sec, ctx.ppi, JSON.stringify(ctx.cellPath))
+              : this.wasm.getTableCellBboxes(ctx.sec, ctx.ppi, ctx.ci, pageIdx);
+            const ref = nested
+              ? { sec: ctx.sec, ppi: ctx.ppi, ci: ctx.ci, path: ctx.cellPath }
+              : { sec: ctx.sec, ppi: ctx.ppi, ci: ctx.ci };
+            cacheTableCellBboxes(this, ref, pageIdx, bboxes);
             const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
             const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIdx);
             const pageLeft = this.virtualScroll.getPageLeftResolved(pageIdx, scrollContent.clientWidth);
@@ -721,7 +761,7 @@ export function onClick(this: any, e: MouseEvent): void {
             const edge = this.tableResizeRenderer.hitTestBorder(pageX, pageY, pageBboxes);
             if (edge) {
               e.preventDefault();
-              this.startResizeDrag(edge, pageX, pageY, pageBboxes, e.shiftKey);
+              this.startResizeDrag(edge, pageX, pageY, pageBboxes);
               this.textarea.focus();
               return;
             }
@@ -788,14 +828,14 @@ export function onClick(this: any, e: MouseEvent): void {
   const pageY = (contentY - pageOffset) / zoom;
 
   // 표 경계선 클릭 → 리사이즈 드래그 시작
-  if (e.button === 0 && this.tableResizeRenderer) {
+  if (shouldStartPersistentTableResize(e.button, e.shiftKey) && this.tableResizeRenderer) {
     const resizeHit = resolveTableResizeHit(this, pageIdx, pageX, pageY);
     const edge = resizeHit
       ? this.tableResizeRenderer.hitTestBorder(pageX, pageY, resizeHit.pageBboxes)
       : null;
     if (edge) {
       e.preventDefault();
-      this.startResizeDrag(edge, pageX, pageY, resizeHit!.pageBboxes, e.shiftKey);
+      this.startResizeDrag(edge, pageX, pageY, resizeHit!.pageBboxes);
       this.textarea.focus();
       return;
     }
@@ -808,12 +848,36 @@ export function onClick(this: any, e: MouseEvent): void {
       if (!hfHit.hit) {
         // 본문 영역 클릭 → 편집 모드 탈출 (스크롤 없이 — 이후 hitTest에서 커서 재배치)
         this.cursor.exitHeaderFooterMode();
-        this.eventBus.emit('headerFooterModeChanged', 'none');
+        emitHeaderFooterModeChanged(this.eventBus, this.cursor);
         // 본문 hitTest로 계속 진행
       } else {
+        const clickedIsHeader = hfHit.isHeader ?? (this.cursor.headerFooterMode === 'header');
+        const isPreviewSurface = pageIdx === this.cursor.hfPreviewPage
+          && clickedIsHeader === (this.cursor.headerFooterMode === 'header');
+        const clickedSection = isPreviewSurface
+          ? this.cursor.hfSectionIdx
+          : (hfHit.sectionIndex ?? this.cursor.hfSectionIdx);
+        const clickedApplyTo = isPreviewSurface
+          ? this.cursor.hfApplyTo
+          : (hfHit.applyTo ?? this.cursor.hfApplyTo);
+        const sameTarget = this.cursor.headerFooterMode === (clickedIsHeader ? 'header' : 'footer')
+          && this.cursor.hfSectionIdx === clickedSection
+          && this.cursor.hfApplyTo === clickedApplyTo;
+        if (!sameTarget) {
+          this.cursor.switchHeaderFooterTarget(
+            clickedIsHeader,
+            clickedSection,
+            clickedApplyTo,
+            pageIdx,
+          );
+          emitHeaderFooterModeChanged(this.eventBus, this.cursor);
+        }
+
         // [Task #825] 머리말/꼬리말 편집 모드 — 그림 hit-test 우선, miss 시 텍스트 hit.
         // 머리말 그림은 ImageNode 에 header_footer_ref 동반되어 picHit 정상 반환.
-        const picHit = this.findPictureAtClick(pageIdx, pageX, pageY);
+        const picHit = isPreviewSurface
+          ? null
+          : this.findPictureAtClick(pageIdx, pageX, pageY);
         if (picHit && (picHit.type === 'image' || picHit.type === 'shape' || picHit.type === 'line' || picHit.type === 'ole')) {
           // 머리말 안 그림 객체 선택 → context menu 에 "개체 속성" 표시 가능
           this.cursor.clearSelection();
@@ -826,6 +890,7 @@ export function onClick(this: any, e: MouseEvent): void {
             (picHit as any).cellPath,
             undefined,
             (picHit as any).missing,
+            (picHit as any).pageIndex,
           );
           this.active = true;
           this.caret.hide();
@@ -837,11 +902,29 @@ export function onClick(this: any, e: MouseEvent): void {
         }
         // 머리말/꼬리말 영역 클릭 → 내부 텍스트 히트테스트로 커서 이동
         try {
-          const isHeader = this.cursor.headerFooterMode === 'header';
-          const inHfHit = this.wasm.hitTestInHeaderFooter(pageIdx, isHeader, pageX, pageY);
-          if (inHfHit.hit && inHfHit.paraIndex !== undefined && inHfHit.charOffset !== undefined) {
+          const inHfHit = this.wasm.hitTestInHeaderFooterTarget(
+            pageIdx,
+            clickedSection,
+            clickedIsHeader,
+            clickedApplyTo,
+            pageX,
+            pageY,
+          );
+          if (
+            inHfHit.hit
+            && inHfHit.sectionIndex === clickedSection
+            && inHfHit.applyTo === clickedApplyTo
+            && inHfHit.paraIndex !== undefined
+            && inHfHit.charOffset !== undefined
+          ) {
+            if (e.shiftKey && sameTarget) this.cursor.setHfAnchor();
+            else this.cursor.clearSelection();
             this.cursor.setHfCursorPosition(inHfHit.paraIndex, inHfHit.charOffset);
+            if (!e.shiftKey || !sameTarget) this.cursor.setHfAnchor();
+            this.active = true;
+            this.startTextSelectionDrag(e);
             this.updateCaret();
+            document.addEventListener('mouseup', this.onMouseUpBound, { once: true });
           }
         } catch { /* 무시 */ }
         this.textarea.focus();
@@ -943,9 +1026,13 @@ export function onClick(this: any, e: MouseEvent): void {
     } catch { /* 무시 */ }
   }
 
-  const earlyOleHit = this.findPictureAtClick(pageIdx, pageX, pageY);
-  if (earlyOleHit?.type === 'ole') {
-    selectOleObjectFromHit.call(this, earlyOleHit);
+  const earlyObjectHit = this.findPictureAtClick(pageIdx, pageX, pageY);
+  if (earlyObjectHit?.type === 'ole') {
+    selectOleObjectFromHit.call(this, earlyObjectHit);
+    return;
+  }
+  if (earlyObjectHit?.type === 'line') {
+    selectLineObjectFromHit.call(this, earlyObjectHit);
     return;
   }
 
@@ -960,10 +1047,23 @@ export function onClick(this: any, e: MouseEvent): void {
 
     // 표 경계선 클릭 감지 → 표 객체 선택 (셀 내부에서 외곽 클릭)
     if (hit.parentParaIndex !== undefined && hit.controlIndex !== undefined && !hit.isTextBox) {
-      if (this.isTableBorderClick(pageIdx, pageX, pageY, hit.sectionIndex, hit.parentParaIndex, hit.controlIndex)) {
+      // [#7442] hit 의 칸 경로가 중첩 표 안이면 안쪽 표의 외곽 경계를 먼저 본다.
+      // 평면 bbox 는 최외곽 표만 돌려줘 안쪽 표 테두리 클릭을 개체 선택으로 못 올렸다.
+      const nestedPath = Array.isArray(hit.cellPath) && hit.cellPath.length > 1
+        ? hit.cellPath
+        : undefined;
+      const nestedBorder = nestedPath !== undefined &&
+        this.isNestedTableBorderClick(
+          pageIdx, pageX, pageY, hit.sectionIndex, hit.parentParaIndex, nestedPath,
+        );
+      if (nestedBorder ||
+          this.isTableBorderClick(pageIdx, pageX, pageY, hit.sectionIndex, hit.parentParaIndex, hit.controlIndex)) {
         this.cursor.clearSelection();
         this.cursor.moveToHit(hit); // 셀 위치로 이동 (유효한 렌더링 위치)
-        this.cursor.enterTableObjectSelectionDirect(hit.sectionIndex, hit.parentParaIndex, hit.controlIndex);
+        this.cursor.enterTableObjectSelectionDirect(
+          hit.sectionIndex, hit.parentParaIndex, hit.controlIndex,
+          nestedBorder ? nestedPath : undefined,
+        );
         this.active = true;
         this.caret.hide();
         this.selectionRenderer.clear();
@@ -1041,6 +1141,7 @@ export function onClick(this: any, e: MouseEvent): void {
         this.exitPictureObjectSelectionIfNeeded();
         this.cursor.enterPictureObjectSelectionDirect(
           hit.sectionIndex, hit.parentParaIndex, hit.controlIndex, 'shape',
+          undefined, undefined, undefined, undefined, undefined, undefined, undefined, pageIdx,
         );
         this.active = true;
         this.caret.hide();
@@ -1061,6 +1162,7 @@ export function onClick(this: any, e: MouseEvent): void {
         this.exitPictureObjectSelectionIfNeeded();
         this.cursor.enterPictureObjectSelectionDirect(
           shapeHit.sec, shapeHit.ppi, shapeHit.ci, 'shape',
+          undefined, undefined, undefined, undefined, undefined, undefined, undefined, pageIdx,
         );
         this.active = true;
         this.caret.hide();
@@ -1089,6 +1191,7 @@ export function onClick(this: any, e: MouseEvent): void {
           (tbPic as any).cellPath,
           (tbPic as any).noteRef,
           (tbPic as any).missing,
+          (tbPic as any).pageIndex,
         );
         this.active = true;
         this.caret.hide();
@@ -1136,21 +1239,7 @@ export function onClick(this: any, e: MouseEvent): void {
         }
 
         if (picHit.type === 'line') {
-          // 직선 → 맨 앞으로 이동 후 객체 선택
-          bringShapeToFront.call(this, picHit);
-          this.cursor.clearSelection();
-          this.exitPictureObjectSelectionIfNeeded();
-          // [Task #825] picHit.headerFooter 동반 시 머리말/꼬리말 그림 marker 보존.
-          this.cursor.enterPictureObjectSelectionDirect(
-            picHit.sec, picHit.ppi, picHit.ci, 'line',
-            undefined, undefined, (picHit as any).headerFooter,
-          );
-          this.active = true;
-          this.caret.hide();
-          this.selectionRenderer.clear();
-          this.renderPictureObjectSelection();
-          this.eventBus.emit('picture-object-selection-changed', true);
-          this.textarea.focus();
+          selectLineObjectFromHit.call(this, picHit);
           return;
         }
         if (picHit.type === 'shape') {
@@ -1185,6 +1274,7 @@ export function onClick(this: any, e: MouseEvent): void {
             this.cursor.enterPictureObjectSelectionDirect(
               picHit.sec, picHit.ppi, picHit.ci, 'shape',
               undefined, undefined, (picHit as any).headerFooter,
+              undefined, undefined, undefined, undefined, (picHit as any).pageIndex,
             );
             this.active = true;
             this.caret.hide();
@@ -1207,6 +1297,7 @@ export function onClick(this: any, e: MouseEvent): void {
           (picHit as any).cellPath,
           (picHit as any).noteRef,
           (picHit as any).missing,
+          (picHit as any).pageIndex,
         );
         this.active = true;
         this.caret.hide();
@@ -1322,7 +1413,7 @@ export function onDblClick(this: any, e: MouseEvent): void {
               this.wasm.createHeaderFooter(sectionIdx, isHeader, applyTo);
             }
             this.cursor.enterHeaderFooterMode(isHeader, sectionIdx, applyTo, pageIdx);
-            this.eventBus.emit('headerFooterModeChanged', isHeader ? 'header' : 'footer');
+            emitHeaderFooterModeChanged(this.eventBus, this.cursor);
             this.updateCaret();
             this.textarea.focus();
             return;
@@ -1360,26 +1451,41 @@ export function onDblClick(this: any, e: MouseEvent): void {
         this.eventBus.emit('chart-data-edit-request');
         return;
       }
+      // 한/글 5.x 수식은 OLE로 저장된다. 차트가 아닌 OLE는 명령 쪽에서 Contents를
+      // 검증해 native equation으로 전환한 뒤 수식 편집기를 연다(#7105).
+      e.preventDefault();
+      this.eventBus.emit('equation-edit-request', { sec: ref.sec, ppi: ref.ppi, ci: ref.ci });
+      return;
     }
     // 글상자 객체 → 텍스트 편집 진입
     if (ref && ref.type === 'shape') {
       e.preventDefault();
-      // #686: ppi=0 앵커 도형 (master page 글상자 등)은 모든 페이지에 반복 표시됨.
-      // 텍스트 진입 시 cursor가 page 0으로 잡혀 뷰가 점프하므로, page 0이 아닐 때 차단.
-      if (ref.ppi === 0) {
-        const cursorPage = this.cursor.getRect()?.pageIndex ?? -1;
-        if (cursorPage !== 0) {
-          this.cursor.exitPictureObjectSelection();
-          this.pictureObjectRenderer?.clear();
-          this.eventBus.emit('picture-object-selection-changed', false);
-          this.textarea.focus();
-          return;
+      const pagePoint = this.pagePointFromClientPoint(e.clientX, e.clientY);
+      const hit = this.hitTestFromEvent(e);
+      let canEnter = false;
+      if (pagePoint && hit?.isTextBox && hit.sectionIndex === ref.sec
+          && hit.parentParaIndex === ref.ppi && hit.controlIndex === ref.ci) {
+        try {
+          const path = hit.cellPath ?? [{ controlIndex: ref.ci, cellIndex: 0, cellParaIndex: hit.cellParaIndex ?? 0 }];
+          const target = this.wasm.getCursorRectByPathNear(
+            ref.sec, ref.ppi, JSON.stringify(path), hit.charOffset, pagePoint.pageIdx,
+          );
+          // #686 protects repeated master-page objects whose editable target is
+          // on another page. Paragraph 0 alone does not establish that origin.
+          canEnter = target.pageIndex === pagePoint.pageIdx;
+        } catch {
+          // Unresolvable/repeated drawing is not a body TextBox editing target.
         }
       }
       this.cursor.exitPictureObjectSelection();
       this.pictureObjectRenderer?.clear();
       this.eventBus.emit('picture-object-selection-changed', false);
-      this.enterTextboxEditing(ref.sec, ref.ppi, ref.ci);
+      if (canEnter && hit) {
+        this.cursor.clearSelection();
+        this.cursor.moveToHit(hit);
+        this.cursor.resetPreferredX();
+        this.updateCaret();
+      }
       this.textarea.focus();
       return;
     }
@@ -1430,6 +1536,20 @@ export function onContextMenu(this: any, e: MouseEvent): void {
   let items: ContextMenuItem[] = inTable
     ? this.getTableContextMenuItems()
     : this.getDefaultContextMenuItems();
+
+  const hyperlinkHit = hyperlinkAtPointer(this, e);
+  if (hyperlinkHit) {
+    this.cursor.clearSelection();
+    this.cursor.moveTo(hyperlinkHit.position);
+    this.cursor.resetPreferredX();
+    this.updateCaret();
+    this.selectionRenderer.clear();
+    items = [...items, { type: 'separator' },
+      { type: 'command', commandId: 'hyperlink:edit', label: '하이퍼링크 고치기...' },
+      { type: 'command', commandId: 'hyperlink:remove', label: '하이퍼링크 지우기' }];
+    this.contextMenu.show(e.clientX, e.clientY, items);
+    return;
+  }
 
   // 누름틀 필드 내부이면 필드 메뉴 항목 추가
   try {
@@ -1762,6 +1882,8 @@ export function onMouseMove(this: any, e: MouseEvent): void {
     return;
   }
 
+  if (hoverHyperlink(this, e)) return;
+
   // 표 경계선 hover 감지 (RAF throttle)
   if (this.tableResizeRenderer) {
     if (this.resizeHoverRafId) return;
@@ -1794,13 +1916,20 @@ export function handleResizeHover(this: any, e: MouseEvent): void {
   const pageY = (contentY - pageOffset) / zoom;
 
   // hitTest로 표 셀 위인지 확인
-  let tableRef: { sec: number; ppi: number; ci: number } | null = null;
+  let tableRef: { sec: number; ppi: number; ci: number; path?: any[] } | null = null;
   let tableHit: any = null;
   try {
     const hit = this.wasm.hitTest(pageIdx, pageX, pageY);
     if (hit.parentParaIndex !== undefined && hit.controlIndex !== undefined && !hit.isTextBox) {
       tableHit = hit;
-      tableRef = { sec: hit.sectionIndex, ppi: hit.parentParaIndex, ci: hit.controlIndex };
+      // [#7189] 셀 경로를 함께 싣는다. `sec/ppi/ci` 는 경로의 첫 마디(= 최외곽 표)라,
+      // 중첩 표 위에서도 바깥 표만 가리켜 안쪽 괘선이 캐시에 아예 들어오지 않았다.
+      tableRef = {
+        sec: hit.sectionIndex,
+        ppi: hit.parentParaIndex,
+        ci: hit.controlIndex,
+        path: Array.isArray(hit.cellPath) ? hit.cellPath : undefined,
+      };
     }
   } catch { /* hitTest 실패 시 표 밖 */ }
 
@@ -1826,23 +1955,14 @@ export function handleResizeHover(this: any, e: MouseEvent): void {
     return;
   }
 
-  // 셀 bbox 캐싱 (같은 표면 재사용)
-  // passive hover 중 새 bbox를 만들면 대형/중첩 표에서 커서 이동만으로도 수 초간 멈춘다.
-  // 이미 캐시된 표만 리사이즈 marker를 갱신하고, 실제 리사이즈 시작 판정은 mousedown 경로에서 처리한다.
-  if (!this.cachedTableRef ||
-      this.cachedTableRef.sec !== tableRef.sec ||
-      this.cachedTableRef.ppi !== tableRef.ppi ||
-      this.cachedTableRef.ci !== tableRef.ci ||
-      this.cachedTableRef.pageHint !== pageIdx) {
-    this.tableResizeRenderer.clear();
-    hideProtectedCellHover(this);
-    if (this.container.style.cursor) {
-      this.container.style.cursor = '';
-    }
-    return;
-  }
-
-  if (!this.cachedCellBboxes || this.cachedCellBboxes.length === 0) {
+  // 셀 bbox 캐시 확보 (#4117)
+  // 예전에는 셀 선택 모드 클릭이 채워 둔 캐시가 있을 때만 marker 를 갱신해,
+  // 셀 선택 전에는 리사이즈가 시작되지 않았다. 이제 hover 가 표 진입당 1회
+  // (그리고 document-changed 후 첫 hover 에 1회) 캐시를 채운다. 같은 표 위
+  // 이동은 캐시만 읽으므로 task 2010 이 막은 "이동마다 표 전체 재계산"은
+  // 여전히 일어나지 않는다.
+  const bboxes = ensureTableCellBboxCache(this, tableRef, pageIdx);
+  if (!bboxes || bboxes.length === 0) {
     this.tableResizeRenderer.clear();
     hideProtectedCellHover(this);
     if (this.container.style.cursor) {
@@ -1852,7 +1972,7 @@ export function handleResizeHover(this: any, e: MouseEvent): void {
   }
 
   // 해당 페이지의 셀만 필터
-  const pageBboxes = this.cachedCellBboxes.filter((b: any) => b.pageIndex === pageIdx);
+  const pageBboxes = bboxes.filter((b: any) => b.pageIndex === pageIdx);
   if (pageBboxes.length === 0) {
     this.tableResizeRenderer.clear();
     hideProtectedCellHover(this);
@@ -1880,7 +2000,12 @@ export function handleResizeHover(this: any, e: MouseEvent): void {
   }
 }
 
-export function onMouseUp(this: any, _e: MouseEvent): void {
+export function onMouseUp(this: any, e: MouseEvent): void {
+  try { finishMouseUp.call(this, e); }
+  finally { followHyperlinkClick(this, e); }
+}
+
+function finishMouseUp(this: any, _e: MouseEvent): void {
   // 그림 배치 모드 마우스업 → 삽입 실행
   if (this.imagePlacementMode && this.imagePlacementDrag && this.imagePlacementData) {
     this.finishImagePlacement(_e);
@@ -1955,6 +2080,12 @@ export function onMouseUp(this: any, _e: MouseEvent): void {
       this.cursor.clearSelection();
     }
   }
+  const hfSel = this.cursor.getHeaderFooterSelectionOrdered();
+  if (hfSel) {
+    const samePos = hfSel.start.paraIdx === hfSel.end.paraIdx
+      && hfSel.start.charOffset === hfSel.end.charOffset;
+    if (samePos) this.cursor.clearSelection();
+  }
 
   // [Task #779] mouseup 영역 의 updateCaret 은 scrollCaretIntoView skip.
   // 본질: cursor 변경 trigger 영역 (mousedown / drag selection move 등) 에서 이미 cursor 위치
@@ -1963,6 +2094,7 @@ export function onMouseUp(this: any, _e: MouseEvent): void {
   // 사용자 의도적 scrollbar drag (drag-during-scroll 패턴) 영역 의 caret 원본 위치 자동 복귀
   // 결함 발동.
   this.updateCaret(true);
+
 }
 
 

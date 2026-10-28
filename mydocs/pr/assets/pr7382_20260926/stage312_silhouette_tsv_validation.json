@@ -1,0 +1,63 @@
+{
+  "elapsed_seconds": 0.891,
+  "exit_code": 1,
+  "exact_metric_matches": [
+    {
+      "page": 10,
+      "tsv": 67.90467,
+      "overlay": 67.90467
+    },
+    {
+      "page": 11,
+      "tsv": 99.57078,
+      "overlay": 99.57078
+    },
+    {
+      "page": 17,
+      "tsv": 64.97015,
+      "overlay": 64.97015
+    },
+    {
+      "page": 28,
+      "tsv": 88.24856,
+      "overlay": 88.24856
+    },
+    {
+      "page": 75,
+      "tsv": 52.88891,
+      "overlay": 52.88891
+    },
+    {
+      "page": 84,
+      "tsv": 93.2579,
+      "overlay": 93.2579
+    },
+    {
+      "page": 85,
+      "tsv": 93.59277,
+      "overlay": 93.59277
+    },
+    {
+      "page": 88,
+      "tsv": 89.58124,
+      "overlay": 89.58124
+    }
+  ],
+  "generated_pngs": [],
+  "tool_tests": {
+    "passed": 77,
+    "failed": 0,
+    "exit_code": 0
+  },
+  "source_export": {
+    "page": 11,
+    "exit_code": 0,
+    "metric_tsv": "page\ttolerant_content_match_percent\tbelow_90\n11\t99.57078\t0\n",
+    "pr_review_gate": {
+      "status": "not_evaluated",
+      "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+    },
+    "derived_review_directories": false
+  },
+  "scope": "도구 변경만 검증; renderer 최종 전체 검증 및 각주 소유 차단은 미완료"
+}

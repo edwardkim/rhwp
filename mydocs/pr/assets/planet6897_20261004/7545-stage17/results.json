@@ -1,0 +1,69 @@
+{
+  "status": "requested_p121_correction_verified",
+  "pr_review_status": "held_remaining_document_and_batch_validation",
+  "source_pr": 7545,
+  "source_head": "044027a9030f6893b8369be0e64efbb0ec410d57",
+  "candidate_parent": "8080b9adcc5cd12bc10cdd4978910d38e6588344",
+  "code_file_sha256": {
+    "src/renderer/composer/line_breaking.rs": "7ad5cf1799da1f4955973f2601fb33a22590690481b0e6d2c18c7c2dbde0b4ea",
+    "src/renderer/font_metrics_overlays.rs": "6dcebc84af86ae538ce410c58bc22320f32dd89671ea4ae72518e3871e719c91",
+    "src/renderer/layout/text_measurement.rs": "34a55ca2eadced7ea2dd12bca070873a0f78267c0e85af3eeb98f231f8717cf6",
+    "tests/issue_3820_rowbreak_rowspan_band.rs": "156a82e61f6b6a273dbb32d301d0f5e2a4467130f58cd11a0402df4a40d01b3b"
+  },
+  "native_binary_sha256": "b8c491de461cff4751a3d41cbf940b54ff8d434681bfb042c528bd3a70f20802",
+  "wasm_sha256": "a16f67cc8522c818397f51acebb0e90a654974dc2dcde8c6091e78de76edd4f5",
+  "focused_nextest": {
+    "passed": 96,
+    "failed": 0,
+    "new_tests_added": 0,
+    "log": "output/pr-review/planet6897-20261004/stage17-verified-nextest.log"
+  },
+  "wasm_build": {
+    "exit_code": 0,
+    "mode": "local wasm-pack --no-opt; Docker optimized build is not claimed"
+  },
+  "hwp_p121": {
+    "before": 91.73087,
+    "native": 96.53486,
+    "fresh_wasm": 96.53486,
+    "original_pr_png": 93.56018,
+    "exact_source_rebuilt": 93.77918,
+    "passed": true
+  },
+  "hwpx_p121": {
+    "before": 86.09215,
+    "native": 93.93579,
+    "fresh_wasm": 93.93579,
+    "minimum": 90,
+    "passed": true
+  },
+  "hwpx_p120": {
+    "native": 95.71513,
+    "fresh_wasm": 95.71513
+  },
+  "reference_pdf": {
+    "path": "pdf/issue1891/80168_regulatory_analysis-hwpx-2020.pdf",
+    "sha256": "88996e41ed3e68b15a3cd0eb4eda98845d34225c5dcd2ca547c80ab6e1242744",
+    "pages": 156,
+    "creator": "Hwp 2020",
+    "job_id": "15cd9992-51c1-4364-870d-c6e77a2de755",
+    "replaces_previous_pdf": true
+  },
+  "remaining_validation": {
+    "hwp_p120": 85.38611,
+    "control76076_p35": 94.21576,
+    "control76076_p36": 74.51284,
+    "control76076_p36_before_stage16": 74.71294,
+    "hwpx_page_count": 156,
+    "page_count_equality_is_not_content_alignment": true,
+    "full_document_tsv_after_stage17": "not_completed",
+    "full_batch_nextest": "not_completed"
+  },
+  "document_validation": {
+    "changed_review_links": "passed",
+    "changed_review_metadata": "passed",
+    "global_metadata_audit_existing_errors_outside_scope": 16,
+    "fmt": "passed",
+    "diff_check": "passed"
+  }
+}

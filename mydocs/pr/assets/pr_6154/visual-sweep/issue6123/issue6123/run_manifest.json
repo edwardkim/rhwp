@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "key": "issue6123",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue6123/3112461_railway_emc_criteria.hwpx",
+      "sha256": "23d545bb87dd23ea755de79341a7b2fab57088493d84fbc691172dbcba1927de"
+    },
+    "pdf": {
+      "path": "pdf/issue6123-2020.pdf",
+      "sha256": "da3acec729899697fd3ffa5558acbc46ead0ad0a247253888c055d1fc8b03c22"
+    },
+    "git_head": "f90d68922ad0fd52ed132184eb260d61568dd664",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "f438924fe2a8654d2a6560313971832470a54792bf423ff920a46ae493a98a43"
+    },
+    "rhwp_binary": {
+      "configured": "target/pr-review-planet6897/release/rhwp",
+      "path": "target/pr-review-planet6897/release/rhwp",
+      "sha256": "a13102adb6c081368be2ed23e54fb0c5c6ef6e6f8bf300bce61c530c7c2f9ecc"
+    }
+  },
+  "dpi": 144,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    7,
+    8
+  ],
+  "requested_page_shards": [
+    [
+      7,
+      8
+    ]
+  ],
+  "run_state": "complete"
+}

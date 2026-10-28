@@ -1,0 +1,93 @@
+{
+  "schema_version": 2,
+  "key": "host-font-control",
+  "provenance": {
+    "hwp": {
+      "path": "/Users/melee/Documents/projects/forks/rhwp/samples/re-01-hangul-only-hancom.hwp",
+      "sha256": "61538931d2e2cf38f35050618ce7698960823938884d0d8977812c94587e85fd"
+    },
+    "pdf": {
+      "path": "/Users/melee/Documents/projects/forks/rhwp/pdf/re-01-hangul-only-hancom-2022.pdf",
+      "sha256": "ceb38d48887392ade56aef29be6bb65d77dd89e77a49c4e9b04a9b5323159684"
+    },
+    "git_head": "eb91a11f1052b88ae6efdfeb7e42b6233dbfde84",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "49c53ca246df4b992cb126d5710503d00a6096ce1f766497c809aba06ece9c73"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "/Users/melee/Documents/projects/forks/rhwp/target/pr-review/release-test/rhwp",
+      "path": "/Users/melee/Documents/projects/forks/rhwp/target/pr-review/release-test/rhwp",
+      "sha256": "f8f62b9905be15a11836048337aad1b6b811e6dfe2be2ca05cfb1efffaef352c"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/private/tmp/rhwp-7403/pkg/rhwp.js",
+          "sha256": "8f01a5bcc227a41d72b4aca57792445e9f413c4400154b74bdf8992f35301df3"
+        },
+        {
+          "path": "/private/tmp/rhwp-7403/pkg/rhwp_bg.wasm",
+          "sha256": "fcb45acbe3491a981e02c5f752595fd039ca9a3e6826fe3bd730ae7b9801a35f"
+        }
+      ],
+      "exporter_sha256": "5b51337e43cfb443c3151d2ab47ab8b09d94e6ca493b60eb565cd9d20be82588",
+      "font_policy": "same-input native --embed-fonts=full --font-path /Applications/Hancom Office HWP Viewer.app/Contents/Resources/Hnc/Shared/TTF/Install; font-face CSS only",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "full",
+      "files": [
+        {
+          "path": "/Applications/Hancom Office HWP Viewer.app/Contents/Resources/Hnc/Shared/TTF/Install/HANBatang.ttf",
+          "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104"
+        },
+        {
+          "path": "/Applications/Hancom Office HWP Viewer.app/Contents/Resources/Hnc/Shared/TTF/Install/HANBatangB.ttf",
+          "sha256": "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f"
+        },
+        {
+          "path": "/Applications/Hancom Office HWP Viewer.app/Contents/Resources/Hnc/Shared/TTF/Install/HANBatangExt.ttf",
+          "sha256": "f88d957a26dd5a6360424e37b6d25b4192a83d922b7ac1fa9fb92d34e579afe4"
+        },
+        {
+          "path": "/Applications/Hancom Office HWP Viewer.app/Contents/Resources/Hnc/Shared/TTF/Install/HANDotum.ttf",
+          "sha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898"
+        },
+        {
+          "path": "/Applications/Hancom Office HWP Viewer.app/Contents/Resources/Hnc/Shared/TTF/Install/HANDotumB.ttf",
+          "sha256": "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51"
+        },
+        {
+          "path": "/Applications/Hancom Office HWP Viewer.app/Contents/Resources/Hnc/Shared/TTF/Install/HANDotumExt.ttf",
+          "sha256": "a2828746031f9e725b667ab1e5c96b553b6b42d24d55669a4472605692f8807c"
+        },
+        {
+          "path": "/Applications/Hancom Office HWP Viewer.app/Contents/Resources/Hnc/Shared/TTF/Install/HDotum.TTF",
+          "sha256": "b05e5e2f646961c7bdcb9904a7b6d84d288d9c44c3955d60b254cc8ad2305a76"
+        },
+        {
+          "path": "/Applications/Hancom Office HWP Viewer.app/Contents/Resources/Hnc/Shared/TTF/Install/HYHWPEQ.TTF",
+          "sha256": "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807"
+        },
+        {
+          "path": "/Applications/Hancom Office HWP Viewer.app/Contents/Resources/Hnc/Shared/TTF/Install/HancomEQN.ttf",
+          "sha256": "c249c422e4acbafe2757c0f4a5d714414f84305c728776d889224f6116186e35"
+        }
+      ]
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [
+    1
+  ],
+  "requested_page_shards": [
+    [
+      1
+    ]
+  ],
+  "run_state": "complete"
+}

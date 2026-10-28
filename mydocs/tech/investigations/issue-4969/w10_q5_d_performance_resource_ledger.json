@@ -1,0 +1,291 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q5-performance-wasm-resource-ledger",
+  "issue": 4969,
+  "stage": "W10-Q5-D",
+  "date": "2026-08-31",
+  "status": "qualified-approved",
+  "planApproval": "explicit",
+  "resultApproval": "explicit",
+  "checkpointApproved": true,
+  "current": {
+    "branch": "task_m100_4969_w10_q5",
+    "productMergeHead": "3afbb066fe93724ab44309163a2e04efb954bf18",
+    "q5CCheckpoint": "7d9909791",
+    "productMutation": false,
+    "testSourcesModified": 1,
+    "newIntegrationSources": 0
+  },
+  "measurementProtocol": {
+    "profile": "release-test",
+    "processRunsPerCase": 9,
+    "warmIterations": 64,
+    "p50Method": "sorted-index-4-of-9",
+    "p95Method": "nearest-rank-max-of-9",
+    "sharedTarget": "/home/edward/mygithub/rhwp/target/pr-review",
+    "wallTimeAuthority": "same-host-profile-protocol-observational",
+    "coldPolicy": "observational-no-retrospective-hard-gate"
+  },
+  "q2Current": {
+    "runResourceMatrix": {
+      "runCounts": [1, 2, 8],
+      "textRuns": [1, 2, 8],
+      "glyphRuns": [1, 2, 8],
+      "fontBlobs": [1, 1, 1],
+      "fontFaces": [1, 1, 1],
+      "fontPayloadBytes": [456688, 456688, 456688],
+      "passed": 1,
+      "failed": 0
+    },
+    "pageResourceMatrix": {
+      "pageCounts": [1, 2, 8],
+      "inlinePresentedBytes": [456688, 913376, 3653504],
+      "retainedFontBlobs": [1, 1, 1],
+      "retainedFontBytes": [456688, 456688, 456688],
+      "byKeyFetches": [1, 1, 1],
+      "byKeyTransferredBytes": [456688, 456688, 456688],
+      "nodeTestsPassed": 5,
+      "nodeTestsFailed": 0
+    },
+    "defaultBaselineNineProcess": {
+      "warmElapsedNs": {
+        "p50": 100361,
+        "p95": 197921,
+        "min": 99961,
+        "max": 197921
+      },
+      "coldElapsedNs": {
+        "p50": 2495809,
+        "p95": 3081611,
+        "min": 2448355,
+        "max": 3081611
+      },
+      "pageTreeWarmElapsedNs": {
+        "p50": 1694346,
+        "p95": 1738051,
+        "min": 1633652,
+        "max": 1738051
+      },
+      "identityStableAcrossNine": true,
+      "layerJsonBytes": 619562,
+      "layerJsonBlake3": "0b5212cc076c34dce706039d7c4da85936c0a6769e83f08baa7f158cbd9029de",
+      "canvasKitPlanBytes": 1755,
+      "canvasKitPlanBlake3": "a98e6933d76901cfa55a43205c758675a8864527f87f8bed7a689d16267cbb56"
+    },
+    "structuralAuthority": true,
+    "resourceMultiplicityIncrease": false
+  },
+  "q3Current": {
+    "instanceRunResourceMatrix": {
+      "instanceCounts": [1, 2, 8],
+      "runsPerInstance": [1, 2, 8],
+      "combinations": 9,
+      "digestPassesPerCombination": 1,
+      "sourceFaceParsesPerCombination": 1,
+      "preparedSourcesPerCombination": 1,
+      "arenaInternAttemptsPerCombination": 1,
+      "fontBlobsPerCombination": 1,
+      "fontFacesPerCombination": 1,
+      "sourceBytes": 1503064,
+      "maximum": {
+        "instances": 8,
+        "runsPerInstance": 8,
+        "parsedInstanceFaces": 8,
+        "resultCacheMisses": 8,
+        "resultCacheHits": 56,
+        "cachedResults": 8,
+        "glyphRuns": 64,
+        "glyphOutlines": 64,
+        "payloadBytes": 2613391
+      },
+      "passed": 1,
+      "failed": 0
+    },
+    "nineProcess": {
+      "exactDefault": {
+        "warmP50Ns": 36895,
+        "warmP95Ns": 38096,
+        "coldP50Ns": 5311993,
+        "coldP95Ns": 5515963,
+        "pageTreeWarmP50Ns": 5434134,
+        "pageTreeWarmP95Ns": 5547822,
+        "identityStableAcrossNine": true
+      },
+      "explicitDefault": {
+        "warmP50Ns": 36791,
+        "warmP95Ns": 37190,
+        "coldP50Ns": 5302781,
+        "coldP95Ns": 5522132,
+        "pageTreeWarmP50Ns": 5321418,
+        "pageTreeWarmP95Ns": 5602512,
+        "identityStableAcrossNine": true,
+        "outputIdenticalToExactDefault": true,
+        "warmDeltaFromExactDefaultNs": {
+          "p50": -104,
+          "p95": -906
+        }
+      },
+      "interior": {
+        "warmP50Ns": 146538,
+        "warmP95Ns": 179722,
+        "coldP50Ns": 8118654,
+        "coldP95Ns": 8665067,
+        "pageTreeWarmP50Ns": 5281958,
+        "pageTreeWarmP95Ns": 5635250,
+        "identityStableAcrossNine": true,
+        "warmDeltaFromExactDefaultNs": {
+          "p50": 109643,
+          "p95": 141626
+        }
+      },
+      "max": {
+        "warmP50Ns": 147735,
+        "warmP95Ns": 179920,
+        "coldP50Ns": 7929738,
+        "coldP95Ns": 8718752,
+        "pageTreeWarmP50Ns": 5291164,
+        "pageTreeWarmP95Ns": 6412742,
+        "identityStableAcrossNine": true,
+        "warmDeltaFromExactDefaultNs": {
+          "p50": 110840,
+          "p95": 141824
+        }
+      }
+    },
+    "activationGate": {
+      "p50AbsoluteDeltaLimitNs": 1000000,
+      "p95AbsoluteDeltaLimitNs": 2000000,
+      "interiorPassed": true,
+      "maxPassed": true,
+      "result": "passed"
+    },
+    "defaultIdentity": {
+      "layerJsonBytes": 6382,
+      "layerJsonBlake3": "b9ecf6db7656ed37a921077018339a23791068cbb63b4b30db36f904de494223",
+      "canvasKitPlanBytes": 1290,
+      "canvasKitPlanBlake3": "4509089988701765ee1df4b3d31fa900a189546386f6e1b432d433e6109a7f38",
+      "textRuns": 1,
+      "glyphRuns": 0,
+      "glyphOutlines": 0,
+      "fontBlobs": 0,
+      "fontFaces": 0
+    },
+    "nonDefaultIdentity": {
+      "textRuns": 1,
+      "glyphRuns": 1,
+      "glyphOutlines": 1,
+      "fontBlobs": 1,
+      "fontFaces": 1
+    },
+    "resourceMultiplicityIncrease": false
+  },
+  "q4Reused": {
+    "evidence": "w10_q4_d5_b_performance_correction.json",
+    "measurementProtocol": "release-9-process-20-warmups-64-iterations",
+    "warmLayoutImprovementRatioBeforeOverAfter": 598.6405359947997,
+    "layerBuildImprovementRatioBeforeOverAfter": 339.161579248742,
+    "boundedVerticalB": {
+      "fontBlobs": 1,
+      "fontFaces": 1,
+      "fontPayloadBytes": 2519996,
+      "fallbackTextRuns": 2,
+      "verticalGlyphRuns": 2
+    },
+    "resourceMultiplicityIncrease": false
+  },
+  "wasm": {
+    "q3IndependentCausalSnapshot": {
+      "evidence": "w10_q3_e5_final_qualification.json",
+      "baselineBytes": 9759368,
+      "candidateBytes": 9810922,
+      "deltaBytes": 51554,
+      "deltaPercent": 0.5282514
+    },
+    "q4IndependentCausalSnapshot": {
+      "evidence": "w10_q4_d5_d_causal_wasm_result.json",
+      "aBytes": 9858318,
+      "bBytes": 9894929,
+      "deltaBytes": 36611,
+      "deltaPercent": 0.37137166806751415
+    },
+    "independentDeltasAdded": false,
+    "integratedCausalDeltaClaimed": false,
+    "currentAbsoluteSnapshot": {
+      "evidence": "w10_q5_b_canonical_parity.json",
+      "bytes": 9905805,
+      "sha256": "ed11bdb3bf2b11b44c3f6fed5c16d403257b60b27bffa469e5e3c1dfecf912a4",
+      "imageId": "sha256:bbbc4f8e0f7162b9a9700a592b8959b7c13fee2accbbe6d921586f28a2c55903",
+      "interpretation": "absolute-only-not-causal-delta",
+      "secondDockerBuildRun": false
+    }
+  },
+  "procedureCorrections": [
+    {
+      "kind": "test-only-compile-correction",
+      "detail": "new assertion range was changed from usize to u32 to match source IDs before the passing receipt",
+      "productFailure": false
+    },
+    {
+      "kind": "target-topology-correction",
+      "detail": "one accidental worktree-local target build was stopped and its exact 449 MiB target directory removed; shared pr-review target was preserved",
+      "productFailure": false
+    },
+    {
+      "kind": "studio-dependency-topology-correction",
+      "detail": "first Node attempt lacked worktree node_modules; the primary checkout dependency tree was temporarily linked, 5 tests passed, and the link was removed",
+      "productFailure": false
+    }
+  ],
+  "qualification": {
+    "q2UniqueSourceBounded": true,
+    "q3UniqueSourceAndInstanceBounded": true,
+    "q3PerformanceGatePassed": true,
+    "q4ResourceBoundedEvidenceReusable": true,
+    "comparisonIncompatibleArithmeticCombinations": 0,
+    "resourceMultiplicityIncrease": 0,
+    "productRegression": false,
+    "result": "qualified"
+  },
+  "validation": {
+    "focusedNextest": {
+      "selected": 2,
+      "passed": 2,
+      "failed": 0,
+      "nonSelected": 8910,
+      "elapsedSeconds": 0.901
+    },
+    "studioNode": {
+      "selected": 5,
+      "passed": 5,
+      "failed": 0,
+      "elapsedMilliseconds": 268.992807
+    },
+    "manifest": {
+      "integrationSources": 1075,
+      "staticTestAttributes": 4718,
+      "generatedSuites": 28,
+      "exceptionTargets": 20,
+      "accountedTargets": 48,
+      "expectedTargets": 48,
+      "minimumCases": 6559,
+      "result": "passed"
+    },
+    "cargoFmtAllCheck": "passed",
+    "jsonSyntax": "passed",
+    "gitDiffCheck": "passed"
+  },
+  "boundaries": {
+    "supportTupleExpanded": false,
+    "publicApiChanged": false,
+    "schemaChanged": false,
+    "generatedArtifactsSubmitted": false,
+    "privateCorpusUsed": false,
+    "hyperVUsed": false,
+    "hancomOracleUsed": false,
+    "githubMutated": false
+  },
+  "next": {
+    "stage": "W10-Q5-E",
+    "action": "result-and-checkpoint-approval-before-final-q5-classification"
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "input": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+  "input_sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+  "reference": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+  "reference_sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59",
+  "original_body_host": 1865,
+  "original_note_lines": [
+    {
+      "textpos": "0",
+      "vertpos": "0",
+      "vertsize": "900",
+      "textheight": "900",
+      "baseline": "765",
+      "spacing": "272",
+      "horzpos": "0",
+      "horzsize": "45352",
+      "flags": "393216"
+    },
+    {
+      "textpos": "67",
+      "vertpos": "0",
+      "vertsize": "900",
+      "textheight": "900",
+      "baseline": "765",
+      "spacing": "272",
+      "horzpos": "0",
+      "horzsize": "45352",
+      "flags": "1441792"
+    },
+    {
+      "textpos": "93",
+      "vertpos": "1172",
+      "vertsize": "900",
+      "textheight": "900",
+      "baseline": "765",
+      "spacing": "272",
+      "horzpos": "0",
+      "horzsize": "45352",
+      "flags": "1441792"
+    }
+  ],
+  "independent_pdf_lines": [
+    {
+      "page": 178,
+      "text": "견딜 수 있는 건강한 사람이어야 함.240)  ",
+      "bbox_px96": [
+        112.159993,
+        883.012614,
+        364.559692,
+        896.421061
+      ]
+    },
+    {
+      "page": 178,
+      "text": "240) B형 간염 과거력을 가진 기증자로 이식대상자에게 수술 시에 항바이러스요법을 실시하는 경우, 이식대상자도 ",
+      "bbox_px96": [
+        94.559998,
+        1027.568604,
+        702.987467,
+        1039.248535
+      ]
+    },
+    {
+      "page": 179,
+      "text": "증자가 될 수 있음.241) ",
+      "bbox_px96": [
+        112.159993,
+        136.421061,
+        252.399984,
+        149.70106
+      ]
+    },
+    {
+      "page": 179,
+      "text": "과의사에 의한 장기적 진찰과 advice가 필요함.242)  ",
+      "bbox_px96": [
+        112.159993,
+        243.012614,
+        428.080322,
+        256.421061
+      ]
+    },
+    {
+      "page": 179,
+      "text": "HTLV-1 ",
+      "bbox_px96": [
+        112.0,
+        964.688558,
+        160.426076,
+        976.36849
+      ]
+    },
+    {
+      "page": 179,
+      "text": "http://www.jikeisurgery.jp/diseasegroup/hpb/hepat/cirrhosis/treat_adv.html",
+      "bbox_px96": [
+        112.0,
+        980.368571,
+        501.551229,
+        992.048503
+      ]
+    },
+    {
+      "page": 179,
+      "text": "241) http://www.shinshu-u.ac.jp/faculty/medicine/chair/i-surgery/shinryo/isyoku/living-donor/index.html",
+      "bbox_px96": [
+        94.559998,
+        996.208577,
+        643.471029,
+        1007.888509
+      ]
+    },
+    {
+      "page": 179,
+      "text": "242) ",
+      "bbox_px96": [
+        94.559998,
+        1011.88859,
+        122.985687,
+        1023.568522
+      ]
+    }
+  ]
+}

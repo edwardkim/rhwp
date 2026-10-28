@@ -1,7 +1,7 @@
 ---
 kind: investigation
 status: active
-canonical: mydocs/plans/task_m100_4961.md
+canonical: mydocs/plans/archives/task_m100_4961.md
 last_verified: 2026-08-23
 ---
 
@@ -17,9 +17,9 @@ W2 Font Decision Trace의 계약과 공개 fixture 경계를 보존한다.
 
 ## 2. 권위와 선행 자료
 
-- 수행 범위와 승인 게이트: [`task_m100_4961.md`](../../../plans/task_m100_4961.md)
+- 수행 범위와 승인 게이트: [`task_m100_4961.md`](../../../plans/archives/task_m100_4961.md)
 - W1 원장과 candidate identity: [`issue-4939`](../issue-4939/README.md)
-- 보호 불변식: [`font_metrics_fallback_causal_lineage_20260816.md`](../../../report/font_metrics_fallback_causal_lineage_20260816.md)
+- 보호 불변식: [`font_metrics_fallback_causal_lineage_20260816.md`](../../../report/archives/font_metrics_fallback_causal_lineage_20260816.md)
 - machine-readable trace 계약: [`font_decision_trace.schema.json`](font_decision_trace.schema.json)
 
 W1의 `font_rule_ledger.json`은 historical investigation snapshot이다. W2는 실제 결정이 끝난 뒤
@@ -80,9 +80,20 @@ refactor의 historical digest 차이는 `ledgerSourceDrift`로 노출한다.
 | missing face | `HCI Poppy` → `Palatino Linotype` style substitution → exact metric |
 | document substitute | `KoPubWorld돋움체 Light` + 문서 `HCR Batang` → heuristic advance |
 
-같은 공개 문서의 HWP/HWPX가 동일 객체 상태를 가진 경우에는 record와 `layoutHash`가 같다. 반대로
-`[2027] 온새미로 1 본교재` 쌍처럼 현재 HWPX 객체에만 `substFont`가 존재하면 hash가 다른 것이 정상이다.
-이는 format/version 분기가 아니라 현재 객체의 기능 탐지 결과다.
+구두점 paint 슬롯 분리로 missing-face의 run 수는136→145가 됐지만 원문607문자와
+글꼴 결정은 보존됐다. 프로필 문자는 고정 run 번호 대신 원본 구역·문단·중첩 경로·
+문자 오프셋·글자모양 ID로 한 번만 결합한다. `baselineRecordId`는 당시 관측값이다.
+missing-face의607문자/607record/누락0 기대값은 유지하며, run 수는 같은 공개
+text-layout의 실제 run 수와 대조한다. 다른 문서의 기존 count와 이관된 배치 핀의 범위는 유지한다.
+
+동일 객체 상태의 HWP/HWPX는 record와 `layoutHash`가 같다. 현재 공개 E2E에서는 사용자의
+시험지 작업 분리 지시에 따라 `3-10월_교육_통합_2022.hwp/.hwpx` 입력과 해당 형식 쌍의
+해시 검사를 제거했습니다. 원본 문서와 PDF는 보존하며 시험지 렌더링 수용을 주장하지 않습니다.
+
+`[2027] 온새미로 1 본교재` HWP에도 사양 표 20의 `0x80` 대체 선언이 있습니다.
+원시 FACE_NAME의 언어 슬롯 0·1은 `한컴바탕`, HWPX XML은 `HCR Batang`을 선언합니다.
+두 형식 모두 문서가 선언한 값을 보존하는지 검사합니다. HWP라는 이유로 `substFont=null`을
+기대하지 않으며, 이 검사는 글꼴 진단의 선언 보존 계약으로 렌더링 위치·해시 기대값과 구분합니다.
 
 Stage 4에서 header/footer 내부의 `usize::MAX` 상대 layout marker가 native 64-bit와 wasm32에서 서로 다른
 문단 번호로 직렬화되던 문제를 발견했다. 이 marker는 문서 source 좌표가 아니므로 `null`로 정규화하고
@@ -112,11 +123,11 @@ console.log(trace.layoutHash.value, trace.normalizedHash.value);
 ```
 
 전체 검증 명령과 FI-01~FI-14 판정은
-[`task_m100_4961_stage5.md`](../../../working/task_m100_4961_stage5.md), 완료 조건과 후속 인계는
-[`task_m100_4961_report.md`](../../../report/task_m100_4961_report.md)가 정본이다.
+[`task_m100_4961_stage5.md`](../../../working/archives/task_m100_4961_stage5.md), 완료 조건과 후속 인계는
+[`task_m100_4961_report.md`](../../../report/archives/task_m100_4961_report.md)가 정본이다.
 
 PR self-review의 native snapshot 보정과 standalone fail-closed 회귀 근거는
-[`task_m100_4961_stage6.md`](../../../working/task_m100_4961_stage6.md)에 기록했다.
+[`task_m100_4961_stage6.md`](../../../working/archives/task_m100_4961_stage6.md)에 기록했다.
 
 ## 3.5 W7 canonical registry 연결
 

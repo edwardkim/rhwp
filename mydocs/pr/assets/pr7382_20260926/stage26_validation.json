@@ -1,0 +1,138 @@
+{
+  "source_sha": "ef572b3c9a6a9d19ee9f38e77ef4c4f307abd0c9",
+  "rust_test_diff_sha256": "f4da44c84ca671a78fbc34524d2985af2ee8bbf18a673484929d6aa6032e3027",
+  "runtime_diff_sha256": "c48895464244361d10310b69c9e46953b261dda61046b6db1d30ba605bef0255",
+  "files": {
+    "src/renderer/typeset/paragraph.rs": "9cf64399ce087fa79a7474195db2273135877d04d0789b9d2e389608d4ab0757",
+    "tests/cases/issue_6950_paragraph_end_topbottom_anchor.rs": "d09c90ab44a79c013c84ceef0abd33e97816491bc96cb4d448d854150acd21f4"
+  },
+  "before": {
+    "passed": 22,
+    "failed": 4,
+    "exit_code": 100,
+    "seconds": 0.173
+  },
+  "before_setup_error": {
+    "exit_code": 101,
+    "classification": "공유 캐시의 다른 checkout 라이브러리 재사용; 결함 재현 제외",
+    "recovery": "src/lib.rs mtime만 갱신 후 같은 target에서 현재 root source 재빌드"
+  },
+  "devel": {
+    "head": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+    "passed": 25,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 0.221
+  },
+  "nextest_command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--test",
+    "regression_suite_003",
+    "--test",
+    "regression_suite_005",
+    "--test",
+    "regression_suite_009",
+    "--test",
+    "regression_suite_012",
+    "--test",
+    "regression_suite_016",
+    "--test",
+    "regression_suite_017",
+    "--test",
+    "regression_suite_018",
+    "--test",
+    "regression_suite_025",
+    "--test",
+    "regression_suite_028",
+    "--test-threads",
+    "8",
+    "--no-fail-fast",
+    "-E",
+    "test(issue_6950_paragraph_end_topbottom_anchor) | test(issue_7379_rowbreak_table_footnote_reservation) | test(issue_3738_rowbreak_table_footnote_fragment) | test(issue_1937_rowbreak_footnote_overpagination) | test(issue_2559_footnote_footer_band) | test(issue_6034_footnote_area_reflow_width) | test(issue_4882_policy_report_page_roundtrip) | test(issue_6031_ladder_sb_omitted_tail_overrun) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before) | test(issue_6761_stored_vpos_rewind_page_break) | test(issue_6147_empty_anchor_band_host_line) | test(issue_6312_float_anchor_line_uses_source_vpos)"
+  ],
+  "base": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "after": {
+    "passed": 138,
+    "failed": 2,
+    "tests": 140,
+    "seconds": 17.277,
+    "exit_code": 100
+  },
+  "remaining_6312_before": {
+    "passed": 0,
+    "failed": 2,
+    "seconds": 0.667,
+    "exit_code": 100,
+    "binary": "stage25-after-rhwp",
+    "binary_sha256": "e7fd293dc127810ea4cdb827397b437e1e6c8a676f11c19a50581418f250354b",
+    "classification": "보정26 전 불변 CLI에서도 동일365.7px/두FAIL; 전단계 통합 보류"
+  },
+  "fmt_exit_code": 0,
+  "manifest_policy": {
+    "exit_code": 0,
+    "static_test_attrs": 6197
+  },
+  "source_unit_policy": {
+    "exit_code": 0,
+    "tests": 4205,
+    "modules": 298
+  },
+  "immutable_cli_sha256": "6d029b3ab5d7e3ad30b8f79e489e8a743c1b585c654933c6c3f2d79ed5202733",
+  "cli_build_exit_code": 0,
+  "cli_build_command": "cargo build --locked --profile release-test --target-dir target/pr-review --bin rhwp",
+  "final_cli_6312": {
+    "passed": 0,
+    "failed": 2,
+    "seconds": 0.68,
+    "exit_code": 100
+  },
+  "visual": {
+    "para6950": {
+      "page_count": 3,
+      "pdf_page_count": 3,
+      "scores": [
+        98.66178,
+        99.1346,
+        79.76857
+      ],
+      "exit_code": 1
+    },
+    "liver7379": {
+      "page_count": 215,
+      "pdf_page_count": 215,
+      "pages": [
+        43,
+        44,
+        45,
+        46
+      ],
+      "scores": [
+        91.32182,
+        99.68706,
+        98.61863,
+        97.24002
+      ],
+      "exit_code": 0
+    }
+  },
+  "directly_read_final_images": 14,
+  "baseline_directly_read_images": 6,
+  "remaining_holds": [
+    "#6312 형제 표·호스트 줄 계약 2FAIL",
+    "#6950 3쪽 표 위치 79.76857%",
+    "#7382 11·14쪽 및 최신 전수",
+    "최종 전체 Rust/lint/Skia/fresh WASM"
+  ],
+  "document_validation": {
+    "archive_metadata_errors": [],
+    "markdown_relative_links": "통과",
+    "daily_order_metadata_scope": "orders는 장기 문서 validator의 REQUIRED_PATHS 밖이다. 기존 daily-order/date 형식을 사용하며 장기 문서 kind 오류를 적용하지 않는다."
+  }
+}

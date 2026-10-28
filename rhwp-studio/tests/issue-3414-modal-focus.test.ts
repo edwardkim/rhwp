@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { codeOnly } from './support/source-guard.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -18,7 +19,7 @@ test('마지막 ModalDialog 종료만 편집기 포커스 복원 이벤트를 �
   const dialog = source('src/ui/dialog.ts');
   const hide = slice(dialog, 'hide(): void {', '\n  /** 서브클래스에서 본문 DOM을 생성 */');
 
-  assert.match(dialog, /export const MODAL_DIALOG_CLOSED_EVENT = 'rhwp-modal-dialog-closed'/,
+  assert.match(codeOnly(dialog), /export const MODAL_DIALOG_CLOSED_EVENT = 'rhwp-modal-dialog-closed'/,
     '공통 이벤트 이름을 dialog 모듈이 소유');
   assert.match(hide, /document\.querySelector\('\.modal-overlay'\)/,
     '중첩 모달이 남았는지 확인');

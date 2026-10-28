@@ -1,0 +1,229 @@
+{
+  "source_sha": "e114fa58c2211bbcbf8adf910267075b5a27cd9a",
+  "runtime_diff_sha256": "754064d772b21ede643af3e428978e3da8d595e960270f2938b43f6883be3b9a",
+  "test_diff_sha256": "cfdd60e1b14b75f40dc39b2cae34f12b7df05330cf20bf79edf837e0eafbc945",
+  "files": {
+    "src/renderer/float_placement.rs": "0d5ad46d952e6e4ca75bf9e16108e21438fc246be6ca90da6084e492a21cae09",
+    "src/renderer/typeset/table/block/whole_fit.rs": "44b09dc38f9ae29e2c6f51181e46d384f079c6762cb95c427afc59e45af8fd02",
+    "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "ba38f19c7c08ac8a01c92ee4ea99154cb5db824d4e6eb204aae6f57779c44795"
+  },
+  "base_sha": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "immutable_cli_sha256": "fd802f119e8969224ea813943f059c2fd01d2cfb798fd8759461034ea92abae3",
+  "before": {
+    "passed": 0,
+    "failed": 2,
+    "exit_code": 100,
+    "seconds": 0.197,
+    "cause": "빈 개체 표 원점371.093333px vs 독립374.746667px; 바깥 프레임 누락"
+  },
+  "initial_after": {
+    "passed": 2,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 0.214
+  },
+  "incomplete_expanded_attempt": {
+    "passed": 105,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 4.189,
+    "limitation": "이전 generated suite 번호를 사용해 정상 대조3개가 빠짐; 최종 결과로 쓰지 않음"
+  },
+  "after": {
+    "passed": 108,
+    "failed": 0,
+    "exit_code": 0,
+    "seconds": 4.199,
+    "threads": 8,
+    "manual_IR_boundaries": [
+      "합성 호스트",
+      "합성 다음 줄",
+      "닫힌 상자와 불일치한 다음 저장 위치",
+      "실측 전체와 다른 선언 높이"
+    ],
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_003",
+      "--test",
+      "regression_suite_009",
+      "--test",
+      "regression_suite_014",
+      "--test",
+      "regression_suite_024",
+      "--test",
+      "regression_suite_028",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(issue_6312_float_anchor_line_uses_source_vpos) | test(issue_6312_tab_host_line_kept) | test(issue_6950_paragraph_end_topbottom_anchor) | test(issue_6753_lazy_base_keeps_trimmed_spacing_before) | test(issue_6665_tac_shape_trailing_spacing) | test(issue_6551_tac_shape_advance_keeps_spacing) | test(issue_5788_tac_table_anchor_line_spacing) | test(issue_7379_rowbreak_table_footnote_reservation)"
+    ]
+  },
+  "policies": {
+    "fmt": 0,
+    "manifest": 0,
+    "static_test_attrs": 6206,
+    "source_unit": 0,
+    "source_unit_tests": 4205,
+    "source_unit_modules": 298
+  },
+  "cli_build": {
+    "command": "cargo build --locked --profile release-test --target-dir target/pr-review --bin rhwp",
+    "exit_code": 0,
+    "duration": "1m28s"
+  },
+  "visual": {
+    "hwpx": {
+      "pages": [
+        2,
+        11,
+        12,
+        13,
+        14,
+        23,
+        68,
+        210
+      ],
+      "scores": [
+        94.69572,
+        94.81767,
+        99.76685,
+        94.95824,
+        90.37937,
+        75.76624,
+        90.85432,
+        99.9168
+      ],
+      "directly_read_review_and_overlay_pages": [
+        2,
+        11,
+        12,
+        13,
+        14,
+        23,
+        68,
+        210
+      ],
+      "page_count": [
+        215,
+        215
+      ],
+      "exit_code": 1,
+      "gate": "re_review_required",
+      "remaining": "23쪽 오른쪽 그림/캡션; 점수가 통과한11쪽 그림5 오른쪽 지도와14쪽 그림11도 위치 차이 있음"
+    },
+    "hwp": {
+      "pages": [
+        2,
+        11,
+        12,
+        13,
+        14,
+        23,
+        68,
+        210
+      ],
+      "scores": [
+        91.23975,
+        94.81767,
+        99.76685,
+        96.31315,
+        91.00235,
+        75.76624,
+        90.85432,
+        99.9168
+      ],
+      "directly_read_review_and_overlay_pages": [
+        2,
+        11,
+        12,
+        13,
+        14,
+        23,
+        68,
+        210
+      ],
+      "page_count": [
+        215,
+        215
+      ],
+      "exit_code": 1,
+      "gate": "re_review_required",
+      "remaining": "23쪽 오른쪽 그림/캡션; 점수가 통과한11쪽 그림5 오른쪽 지도와14쪽 그림11도 위치 차이 있음"
+    }
+  },
+  "visual_commands": {
+    "before": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--hwp",
+      "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+      "--pdf",
+      "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+      "--key",
+      "liver7379",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/bin/stage29-after-rhwp",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/visual/stage30-before-hwpx-native",
+      "--dpi",
+      "96",
+      "--pages",
+      "2,11-14,23,68,210"
+    ],
+    "after-hwpx": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--hwp",
+      "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+      "--pdf",
+      "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+      "--key",
+      "liver7379",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/bin/stage30-after-rhwp",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/visual/stage30-after-hwpx-native",
+      "--dpi",
+      "96",
+      "--pages",
+      "2,11-14,23,68,210"
+    ],
+    "after-hwp": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--hwp",
+      "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+      "--pdf",
+      "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+      "--key",
+      "liver7379",
+      "--rhwp-bin",
+      "output/pr-review/planet6897-7382-20260926/bin/stage30-after-rhwp",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/visual/stage30-after-hwp-native",
+      "--dpi",
+      "96",
+      "--pages",
+      "2,11-14,23,68,210"
+    ]
+  },
+  "english_added_explanatory_comments": 0,
+  "remaining": [
+    "11쪽 그림5 오른쪽 지도",
+    "14쪽 그림11",
+    "23쪽 오른쪽 그림/캡션",
+    "최신215쪽 전수·fresh WASM",
+    "보정16 실제 TABLE 편집 반례",
+    "보정27 실제 분할·이월",
+    "최종 전체 nextest/lint/Skia"
+  ]
+}

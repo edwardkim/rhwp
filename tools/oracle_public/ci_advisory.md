@@ -13,7 +13,7 @@ MEGA QUEUE M01-7 (#5357). 한컴 라이선스가 없는 기여자가 커밋된 �
 
 ### 목적
 
-- 커밋된 `pdf/` · `pdf-2020/` (선택 `pdf-large/`) 오라클이 **실제로 있는** 러너에서
+- 커밋된 단일 `pdf/` 오라클이 **실제로 있는** 러너에서
   공개 비교(`tools/oracle_public/page_smoke.py`)를 돌린다.
 - 불일치는 데이터가 된다. 상위 N건을 아티팩트로 올려 사람이 본다.
 - M01-6 `issue_draft.py` 가 있으면 초안 markdown 까지 디스크에 남긴다. `gh issue create`
@@ -69,7 +69,6 @@ MEGA QUEUE M01-7 (#5357). 한컴 라이선스가 없는 기여자가 커밋된 �
 | --- | --- | --- |
 | `top_n` | `10` | 아티팩트로 남길 상위 실패 건수 |
 | `limit` | `0` | 비교할 최대 짝. `0` = 전수 |
-| `include_large` | `false` | `pdf-large/` LFS 실파일을 받을지 |
 
 PR synchronize 마다 돌지 않는다. 메인테이너가 Actions 탭에서 켠다.
 
@@ -109,8 +108,7 @@ Git LFS 포인터(`version https://git-lfs.github.com/spec/v1`) 만 있으면 **
 | `page_smoke.py` 없음 (M01-4 미병합) | skip, `runner-absent` | 0 |
 | `cargo build --bin rhwp` 실패 | skip, `rhwp-build-failed`, 부분 로그 업로드 | 0 |
 
-`pdf-large/` 는 기본 비교 루트에서 뺀다. `.gitattributes` 상 LFS 는 `pdf-large/**/*.pdf`
-뿐이다. `pdf/` · `pdf-2020/` 는 일반 blob 이다.
+모든 오라클 PDF는 일반 Git blob으로 단일 `pdf/` 트리에서 관리한다. LFS 선택 입력은 없다.
 
 ## 5. Sparse checkout
 
@@ -120,11 +118,21 @@ cone 이 자동으로 포함한다.
 ```text
 src
 crates
+vendor
 tests
 samples
+saved/blank2010.hwp
+mydocs/manual/agent_knowledge_map.md
+mydocs/manual/agent_troubleshooting_guide.md
+mydocs/manual/recipes/01_fill_form_and_submit.md
+mydocs/manual/recipes/02_table_csv_roundtrip.md
+mydocs/manual/recipes/03_redact_before_sharing.md
+mydocs/manual/recipes/04_safety_check_untrusted_doc.md
+mydocs/manual/recipes/05_mail_merge_batch_fill.md
+mydocs/manual/recipes/06_visual_regression_before_after.md
+mydocs/tech/agent_roadmap/atlas_r1_r200.md
+mydocs/manual/gym_optional_tool.md
 pdf
-pdf-2020
-pdf-large
 tools
 bindings
 scripts
@@ -132,19 +140,27 @@ scripts
 
 근거:
 
-- `pdf/` · `pdf-2020/` 가 공개 오라클이다. `samples/` 가 짝 문서다.
+- `pdf/` 가 공개 오라클이다. `samples/` 가 짝 문서다.
 - workspace members (`crates/*`, `tools/rhwp-subsecond`, `tools/batch-convert`,
   `bindings/Native`) 가 빠지면 `cargo build --bin rhwp` 가 매니페스트에서 실패한다.
+- `Cargo.toml`의 로컬 `[patch.crates-io]`가 사용하는 `vendor/svg2pdf`도 빌드 입력이다.
+  이 트리가 없으면 Cargo가 비교 실행 전에 exit 101로 종료한다.
+- `saved/blank2010.hwp`와 위 `mydocs/` 파일은 제품 코드의 `include_bytes!`·
+  `include_str!` 입력이다. 루트 `llms.txt`는 cone-mode가 자동으로 포함한다.
 - `tools/oracle_public/` 는 비교 러너·리포트 변환기다.
-- `pdf-large/` 는 목록에 넣되 `lfs: ${{ inputs.include_large }}` 로 실파일 수신을 끈다.
-  기본은 포인터만 받아서 용량을 줄인다.
+- 오라클은 `pdf/` 하나만 sparse checkout 하며 LFS 포인터를 허용하지 않는다.
 
-로컬 재현은 `tools/sparse_clone_hint.py` 의 `visual-regression` 프리셋과 같다.
+로컬 재현은 독립 checkout에서 위 목록을 그대로 적용한다. 공용 worktree의 sparse 설정을
+바꾸지 않는다. 파일 경로를 포함한 cone 목록이므로 `--skip-checks`를 사용한다.
 
 ```text
-git sparse-checkout add pdf pdf-2020
-python tools/sparse_clone_hint.py --task visual-regression --apply
+git sparse-checkout set --cone --skip-checks --stdin < oracle-sparse-paths.txt
+cargo build --locked --release --bin rhwp
 ```
+
+`oracle-sparse-paths.txt`는 위 목록을 한 줄에 한 경로씩 담은 로컬 파일이다. Actions의
+`continue-on-error`는 advisory 성격을 유지하지만, 릴리스 promotion은 artifact의 실제
+verdict를 확인한다. Actions run이 성공이어도 `build-failed`는 통과 증거가 아니다.
 
 ## 6. 비교 명령
 
@@ -155,7 +171,7 @@ python tools/sparse_clone_hint.py --task visual-regression --apply
 3. 짝 소스:
    - `tools/oracle_public/oracle_pairs.json` 이 있으면 `--manifest` (M01-1).
    - 없으면 글롭 `pdf/{stem}.pdf` · `pdf/{stem}-*.pdf` (M01-4 기본).
-4. `include_large != true` 이면 `--pdf-dirs pdf --pdf-dirs pdf-2020`.
+4. 비교 루트는 `--pdf-dirs pdf` 하나다.
 5. `limit > 0` 이면 `--limit N`.
 6. **`--strict` 없음.** `--json` 만.
 
@@ -220,7 +236,7 @@ M01-6 `issue_draft.py` 가 있으면 `failure_report/v1` 로 변환해 `--out or
 | 269쌍 `dump-pages` | 5–15분 | 짝당 30초 상한, 벽시계 22분 |
 | 잡 상한 | 30분 | hang 을 게이트로 승격하지 않음 |
 
-`pdf-large/` 전수는 `include_large=true` 수동 실행으로만 연다.
+전수 실행도 단일 `pdf/` 루트를 사용한다.
 
 cache: `Swatinem/rust-cache` 의 `save-if` 는 `devel`/`main` push 가 아니다. 이 잡은
 `workflow_dispatch` 이므로 restore-only 가 맞다. 캐시 키를 CI Lint 와 섞지 않는다.
@@ -243,7 +259,7 @@ cache: `Swatinem/rust-cache` 의 `save-if` 는 `devel`/`main` push 가 아니다
 ## 10. 로컬에서 같은 계약
 
 ```text
-git sparse-checkout add pdf pdf-2020
+git sparse-checkout add pdf
 cargo build --release --bin rhwp
 python tools/oracle_public/page_smoke.py --json > page-smoke.json
 # --strict 없음

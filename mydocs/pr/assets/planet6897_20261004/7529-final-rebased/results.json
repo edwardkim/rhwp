@@ -1,0 +1,84 @@
+{
+  "verified_head": "3c420a9a5fe823bf6a9fb5e111fac1d67fa61a14",
+  "fresh_wasm_sha256": "41951e9aea7f0e069d9ec3e508fc37c6faf7835f10ba0fc708612c625c03fd7b",
+  "scope": "30442 3·14쪽 / quantum 정상 대조군1쪽; 각 backend 3쪽",
+  "capture": "Chrome headless, DPR1, zoom1, print, CanvasKit software, 페이지 레이어 합성 screenshot",
+  "studio_source_unchanged": true,
+  "below90": 0,
+  "cases": [
+    {
+      "backend": "canvas2d",
+      "case": "acrc",
+      "scores": [
+        [
+          "3",
+          "99.11316",
+          "0",
+          "99.08470",
+          "12"
+        ],
+        [
+          "14",
+          "99.22282",
+          "0",
+          "99.22162",
+          "2"
+        ]
+      ]
+    },
+    {
+      "backend": "canvas2d",
+      "case": "quantum",
+      "scores": [
+        [
+          "1",
+          "98.90923",
+          "0",
+          "98.90727",
+          "2"
+        ]
+      ]
+    },
+    {
+      "backend": "canvaskit",
+      "case": "acrc",
+      "scores": [
+        [
+          "3",
+          "95.73803",
+          "0",
+          "95.71217",
+          "11"
+        ],
+        [
+          "14",
+          "98.61356",
+          "0",
+          "98.61181",
+          "3"
+        ]
+      ]
+    },
+    {
+      "backend": "canvaskit",
+      "case": "quantum",
+      "scores": [
+        [
+          "1",
+          "97.90132",
+          "0",
+          "97.89851",
+          "3"
+        ]
+      ]
+    }
+  ],
+  "canvas2d_minimum": 98.90923,
+  "canvaskit_minimum": 95.73803,
+  "input_sha256": {
+    "samples/issue7015/30442-acrc-recommendation-business-burden.hwp": "abcb65b90aae8af209d69df8a4eb658b569559ff05a81e7370620d848bd708e4",
+    "samples/issue6866/156627451-quantum-science-press-note.hwpx": "57cf43b40a2b465b30c6a3e5ba23fbe7874f93e053336d375d1e0f3925e3ab1b",
+    "pdf/30442-acrc-recommendation-business-burden-2020.pdf": "07e129d80d0f289acfc7b02e2712160e248efff12230c1ed415df29d6e6b064b",
+    "pdf/156627451-quantum-science-press-note-2020.pdf": "b8dd078c223fc257c2175c8c63c1116344a0ab4b6ff45324f56e066399375411"
+  }
+}

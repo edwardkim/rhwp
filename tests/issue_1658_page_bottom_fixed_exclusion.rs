@@ -47,6 +47,54 @@ fn pc_shutdown_bottom_fixed_frames_fit_one_page() {
         1,
         "PC 셧다운 계열(한글 1쪽)이 flow 소비로 over-pagination"
     );
+    let tree = doc.build_page_render_tree(0).expect("PC 셧다운 본문");
+    let items = body_items(&tree.root);
+    let location: Vec<_> = items
+        .iter()
+        .filter(|node| {
+            matches!(&node.node_type, RenderNodeType::TextLine(line)
+            if line.para_index == Some(2))
+        })
+        .collect();
+    let tables: Vec<_> = items
+        .iter()
+        .filter(|node| {
+            matches!(&node.node_type, RenderNodeType::Table(table)
+            if table.para_index == Some(4) && table.control_index == Some(0)
+                && table.cell_context.is_none())
+        })
+        .collect();
+    assert_eq!(location.len(), 1, "청사 위치 문단의 누락·중복");
+    let location_text: String = location[0]
+        .children
+        .iter()
+        .filter_map(|node| match &node.node_type {
+            RenderNodeType::TextRun(run) => Some(run.text.as_str()),
+            _ => None,
+        })
+        .collect();
+    assert!(
+        location_text.contains("서소문청사"),
+        "청사 위치 문구가 사라졌다"
+    );
+    assert_eq!(tables.len(), 1, "신청 표의 누락·중복");
+    assert!(
+        tables[0].bbox.y >= location[0].bbox.y + location[0].bbox.height - 0.5,
+        "청사 위치 문단을 뒤의 신청 표가 가리면 안 된다"
+    );
+}
+
+fn body_items(node: &RenderNode) -> Vec<&RenderNode> {
+    if matches!(node.node_type, RenderNodeType::Column(_)) {
+        return node.children.iter().collect();
+    }
+    if matches!(
+        node.node_type,
+        RenderNodeType::Page(_) | RenderNodeType::Body { .. }
+    ) {
+        return node.children.iter().flat_map(body_items).collect();
+    }
+    Vec::new()
 }
 
 fn max_text_line_bottom(root: &RenderNode) -> f64 {
@@ -77,7 +125,42 @@ fn gwanak_bottom_fixed_frame_renders_at_page_bottom() {
     let tree = doc
         .build_page_render_tree(0)
         .unwrap_or_else(|e| panic!("render p1: {e}"));
+    // 하단 틀 검사만으로 놓쳤던 본문 표와 뒤 문단의 물리 위치도 확인한다.
+    // 독립 한컴 PDF에서 확인한 본문 안 표 → 끝 문단 순서를 검사한다.
+    let items = body_items(&tree.root);
+    let tables: Vec<_> = items
+        .iter()
+        .filter(|node| {
+            matches!(&node.node_type, RenderNodeType::Table(table)
+            if table.para_index == Some(4) && table.control_index == Some(0)
+                && table.cell_context.is_none())
+        })
+        .collect();
+    assert_eq!(tables.len(), 1, "본문 표의 누락·중복");
     let (body_top, body_bottom) = find_body_bbox(&tree.root).expect("body");
+    assert!(
+        tables[0].bbox.y >= body_top - 0.5,
+        "본문 표 상단이 본문 밖이다"
+    );
+    assert!(
+        tables[0].bbox.y + tables[0].bbox.height <= body_bottom + 0.5,
+        "본문 표 하단이 본문 밖이다"
+    );
+    let lines: Vec<_> = items
+        .iter()
+        .filter_map(|node| {
+            if let RenderNodeType::TextLine(line) = &node.node_type {
+                (line.para_index == Some(5)).then_some((node.bbox.y, line.baseline))
+            } else {
+                None
+            }
+        })
+        .collect();
+    assert_eq!(lines.len(), 1, "표 뒤 끝 문단의 누락·중복·잘못된 소유");
+    assert!(
+        lines[0].0 >= tables[0].bbox.y + tables[0].bbox.height - 0.5,
+        "끝 문단이 앞의 본문 표 안으로 되감기면 안 된다"
+    );
     let max_bottom = max_text_line_bottom(&tree.root);
     let threshold = body_top + (body_bottom - body_top) * 0.6;
     assert!(

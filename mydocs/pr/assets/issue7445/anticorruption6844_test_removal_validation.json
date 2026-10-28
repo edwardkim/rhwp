@@ -1,0 +1,486 @@
+{
+  "stage": 86,
+  "code_commit": "6c8a6c8e5e83a992fab14a0d90e3fc31e3e7ad4c",
+  "analysis": {
+    "head": "6a9d9db0d560386bd57ee34e3e72454e3b359c64",
+    "analysis": "고정7번 본문하단 신규3건. 같은 원문의 한컴 PDF와 문제 쪽을 비교하여 쪽수/내용소유/점유높이를 판단한다. 낮은 피델리티면 사용자 승인 범위에서 해당 원문 회귀만 이관하며 다른 원문과 공차는 유지한다.",
+    "files": {
+      "samples/issue6844/30269-anticorruption-recommendation-toc.hwp": {
+        "size": 470016,
+        "sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7"
+      },
+      "pdf/30269-anticorruption-recommendation-toc-2020.pdf": {
+        "size": 572193,
+        "sha256": "d01f9ff59664a9c5b4e1a67e38f0d1c295aac8e22e3fbc07017f938f197822c3",
+        "pages": 22,
+        "metadata": {
+          "format": "PDF 1.6",
+          "title": "",
+          "author": "홍길동",
+          "subject": "",
+          "keywords": "",
+          "creator": "Hwp 2022 0.0.0.0",
+          "producer": "Hancom PDF 1.3.0.550",
+          "creationDate": "D:20260908155935+09'00'",
+          "modDate": "D:20260908155935+09'00'",
+          "trapped": "",
+          "encryption": null
+        }
+      }
+    },
+    "info": {
+      "fonts": [
+        "굴림",
+        "돋움",
+        "바탕",
+        "한컴바탕",
+        "휴먼둥근헤드라인",
+        "HY견고딕",
+        "HY신명조",
+        "HY울릉도M",
+        "HY중고딕",
+        "HY헤드라인M",
+        "휴먼명조",
+        "휴먼고딕",
+        "한양신명조",
+        "한양중고딕",
+        "신명 태명조",
+        "신명 중고딕",
+        "-윤고딕330",
+        "굴림",
+        "돋움",
+        "바탕",
+        "한컴바탕",
+        "휴먼둥근헤드라인",
+        "HY견고딕",
+        "HY신명조",
+        "HY울릉도M",
+        "HY중고딕",
+        "HY헤드라인M",
+        "산세리프",
+        "한양신명조",
+        "한양중고딕",
+        "HCI Tulip",
+        "HCI Hollyhock",
+        "HCI Poppy",
+        "신명 태명조",
+        "신명 중고딕",
+        "-윤고딕330",
+        "굴림",
+        "돋움",
+        "바탕",
+        "한컴바탕",
+        "휴먼둥근헤드라인",
+        "HY견고딕",
+        "HY신명조",
+        "HY울릉도M",
+        "HY중고딕",
+        "HY헤드라인M",
+        "한양신명조",
+        "한양중고딕",
+        "신명 태명조",
+        "신명 중고딕",
+        "-윤고딕330",
+        "굴림",
+        "돋움",
+        "바탕",
+        "한컴바탕",
+        "휴먼둥근헤드라인",
+        "HY견고딕",
+        "HY신명조",
+        "HY울릉도M",
+        "HY중고딕",
+        "HY헤드라인M",
+        "한양신명조",
+        "한양중고딕",
+        "신명 태명조",
+        "신명 중고딕",
+        "-윤고딕330",
+        "굴림",
+        "돋움",
+        "바탕",
+        "한컴바탕",
+        "휴먼둥근헤드라인",
+        "HY견고딕",
+        "HY신명조",
+        "HY울릉도M",
+        "HY중고딕",
+        "HY헤드라인M",
+        "한양신명조",
+        "-윤고딕330",
+        "굴림",
+        "돋움",
+        "바탕",
+        "한컴바탕",
+        "휴먼둥근헤드라인",
+        "HY견고딕",
+        "HY신명조",
+        "HY울릉도M",
+        "HY중고딕",
+        "HY헤드라인M",
+        "한양신명조",
+        "한양중고딕",
+        "신명 견명조",
+        "-윤고딕330",
+        "굴림",
+        "돋움",
+        "바탕",
+        "한컴바탕",
+        "휴먼둥근헤드라인",
+        "HY견고딕",
+        "HY신명조",
+        "HY울릉도M",
+        "HY중고딕",
+        "HY헤드라인M",
+        "명조",
+        "-윤고딕330"
+      ],
+      "format": "hwp5",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": null,
+        "version": "7.5.12.614"
+      },
+      "pageCount": 22,
+      "paraCount": 248,
+      "printMethod": 0,
+      "printMethodImpliesNup": false,
+      "schemaVersion": "1.0",
+      "sections": 1,
+      "sizeBytes": 470016,
+      "source": "samples/issue6844/30269-anticorruption-recommendation-toc.hwp",
+      "title": "국 민 권 익 위 원 회",
+      "untrustedContent": true,
+      "untrustedFields": [
+        "title",
+        "fonts[]"
+      ],
+      "version": "5.0.2.4",
+      "warnings": []
+    },
+    "anomaly": {
+      "emptyPageCount": 0,
+      "hasSignal": true,
+      "mode": "single",
+      "offCanvasCount": 0,
+      "overflowCount": 3,
+      "overflowTolerancePx": 2.0,
+      "overlapCount": 0,
+      "overlapTolerancePx": 2.0,
+      "pageCount": 22,
+      "pageFilter": null,
+      "pages": [
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 24.0,
+                "w": 642.5333333333334,
+                "x": 75.58666666666667,
+                "y": 1045.0933333333332
+              },
+              "boundary": {
+                "h": 933.5200000000001,
+                "w": 642.5333333333334,
+                "x": 75.58666666666667,
+                "y": 94.49333333333334
+              },
+              "maxOver": 41.07999999999993,
+              "nodeType": "TextLine",
+              "overBottom": 41.07999999999993,
+              "overLeft": 0.0,
+              "overRight": 0.0,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/TextLine26"
+            },
+            {
+              "bbox": {
+                "h": 44.50666666666667,
+                "w": 48.10666666666667,
+                "x": 75.58666666666667,
+                "y": 1024.1599999999999
+              },
+              "boundary": {
+                "h": 933.5200000000001,
+                "w": 642.5333333333334,
+                "x": 75.58666666666667,
+                "y": 94.49333333333334
+              },
+              "maxOver": 40.653333333333194,
+              "nodeType": "Rect",
+              "overBottom": 40.653333333333194,
+              "overLeft": 0.0,
+              "overRight": 0.0,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Rect29"
+            },
+            {
+              "bbox": {
+                "h": 44.93333333333333,
+                "w": 580.6666666666666,
+                "x": 133.69333333333333,
+                "y": 1024.1599999999999
+              },
+              "boundary": {
+                "h": 933.5200000000001,
+                "w": 642.5333333333334,
+                "x": 75.58666666666667,
+                "y": 94.49333333333334
+              },
+              "maxOver": 41.07999999999993,
+              "nodeType": "Rect",
+              "overBottom": 41.07999999999993,
+              "overLeft": 0.0,
+              "overRight": 0.0,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/Rect30"
+            }
+          ],
+          "overlap": [],
+          "page": 4,
+          "storedLineEscape": [],
+          "textOverlap": []
+        }
+      ],
+      "schemaVersion": "1.0",
+      "source": "samples/issue6844/30269-anticorruption-recommendation-toc.hwp",
+      "storedLineEscapeCount": 0,
+      "storedLineTolerancePx": 0.5,
+      "strict": false,
+      "textOverlapCount": 0,
+      "types": null,
+      "untrustedContent": false,
+      "untrustedFields": []
+    },
+    "byte_identical_alias": {
+      "source": "samples/issue6023/30269_reform_recommendation.hwp",
+      "sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7",
+      "size": 470016,
+      "meaning": "별도 변형이 아닌 바이트 동일 원문의 중복 등록. 렌더링 검사와 순수 속성 getter/setter 계약을 구분한다."
+    }
+  },
+  "visual_provenance": {
+    "hwp": {
+      "path": "samples/issue6844/30269-anticorruption-recommendation-toc.hwp",
+      "sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7"
+    },
+    "pdf": {
+      "path": "pdf/30269-anticorruption-recommendation-toc-2020.pdf",
+      "sha256": "d01f9ff59664a9c5b4e1a67e38f0d1c295aac8e22e3fbc07017f938f197822c3"
+    },
+    "git_head": "6a9d9db0d560386bd57ee34e3e72454e3b359c64",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "path": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+    },
+    "font_supply": {
+      "mode": "full",
+      "source": "explicit",
+      "file_count": 715,
+      "inventory_sha256": "5e7427d397aac098d9b5c3395fee8e65ee2c1756793d2813f1afd741c0adc3bf",
+      "full_inventory": "output/pr-review/planet6897-7382-20260926/stage86-anticorruption6844/visual-native/anticorruption6844/run_manifest.json"
+    }
+  },
+  "selected_native": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 5,
+        "tolerant_content_match_percent": 68.7493
+      },
+      {
+        "page": 6,
+        "tolerant_content_match_percent": 29.19654
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "native_metrics": [
+    {
+      "page": 2,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 5,
+      "tolerant_content_match_percent": 68.7493
+    },
+    {
+      "page": 6,
+      "tolerant_content_match_percent": 29.19654
+    },
+    {
+      "page": 22,
+      "tolerant_content_match_percent": 94.66351
+    }
+  ],
+  "direct_inspection": "5쪽의 다음 장 제목이 본문하단·쪽번호 영역에 미리 표시되고 도형/본문 위치도 어긋남. 실제 review 직접 확인. 목차4쪽 bbox 계약 자체의 잘못을 확정하지 않음. 같은 원문 전체 피델리티 미달에 따른 사용자 승인 제외.",
+  "whole_native": "미실행",
+  "fresh_wasm": "미실행",
+  "removed_functions": [
+    "issue_6844_intra_run_right_tab_bbox_reaches_the_glyphs",
+    "issue_6844_toc_page_numbers_share_one_right_edge",
+    "issue_6023_halfwidth_corner_bracket_advances_half_em",
+    "issue_6013_stored_chunk_last_line_stays_on_page_10",
+    "issue_7095_first_fragment_starting_at_page_top_is_pinned_too"
+  ],
+  "preserved_sources": [
+    "mydocs/pr/assets/issue7445/30269-anticorruption-recommendation-toc.hwp",
+    "mydocs/pr/assets/issue7445/30269_reform_recommendation.hwp"
+  ],
+  "retained_contracts": "#6806 속성 getter/setter와 저장0높이 복원. 두 함수의 원문 경로를 보존 자산으로 변경; undo 함수의 페이지 조회/SVG assertion만 제거하여 속성 복원 계약 유지. IR추출 자료 보존.",
+  "removed_baseline_rows": {},
+  "production_changes": false,
+  "new_test_functions": 0,
+  "threshold_relaxation": false,
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "6a9d9db0d560386bd57ee34e3e72454e3b359c64",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_009",
+          "--test",
+          "regression_suite_012",
+          "-E",
+          "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_4) or test(=issue_6806_objectprops_getset_identity::shape_feedback_keeps_stored_zero_size) or test(=issue_6806_objectprops_getset_identity::shape_resize_undo_restores_stored_zero_height)"
+        ],
+        "exit_code": 0,
+        "seconds": 11.773424874991179
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.205923082772642
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.45059466687962413
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.2282674158923328
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3531857910566032
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 7.431134917307645
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.2195670837536454
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 8.895135624799877
+      }
+    ]
+  },
+  "focused_summary": [
+    "     Summary [   0.599s] 3 tests run: 3 passed, 477 skipped"
+  ],
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5870283939",
+  "setup_error": "삭제 전 generated suite가 없어진 case를 가리켜 처음fmt 실행이 실패했고, 수정 함수의 남은 빈 줄로 첫fmt-check도 실패. suite 준비/포맷/다시suite 준비 후 최신 target 배정으로 집중 및 필수 lint·정책을 전부 재실행. 초기 결과를 최종 증거로 재사용하지 않음.",
+  "limits": "원문 피델리티 개선/전체 회귀 통과/최종 PR수용 증거로 세지 않음.",
+  "test_source_sha256": {
+    "tests/cases/issue_6806_objectprops_getset_identity.rs": "69c0e53c9eac9bf9bb1c5f3b75e4c4dc7cff28fbbdd7619a076bf3fd9fcab3e9",
+    "tests/cases/issue_7095_page_spanning_fragment_box.rs": "fffcd38e2e4d6fa5da78e8e435dbf46e937f1362b2c553f72c6e9d10e0f583a4"
+  }
+}

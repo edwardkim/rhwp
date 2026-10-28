@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "key": "issue6122",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue6122/2181727_press_guard_test_method.hwp",
+      "sha256": "feb7fd1860b5b1b74e1bd75ec28a6d9ed506db41cfb2c789f06955521d183dc6"
+    },
+    "pdf": {
+      "path": "pdf/issue6122-2020.pdf",
+      "sha256": "d0c9f90023207192ac57772b572a5ee3f1c7902d0e14e34798a66127ce53a17e"
+    },
+    "git_head": "f90d68922ad0fd52ed132184eb260d61568dd664",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "f438924fe2a8654d2a6560313971832470a54792bf423ff920a46ae493a98a43"
+    },
+    "rhwp_binary": {
+      "configured": "target/pr-review-planet6897/release/rhwp",
+      "path": "target/pr-review-planet6897/release/rhwp",
+      "sha256": "a13102adb6c081368be2ed23e54fb0c5c6ef6e6f8bf300bce61c530c7c2f9ecc"
+    }
+  },
+  "dpi": 144,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    6
+  ],
+  "requested_page_shards": [
+    [
+      6
+    ]
+  ],
+  "run_state": "complete"
+}

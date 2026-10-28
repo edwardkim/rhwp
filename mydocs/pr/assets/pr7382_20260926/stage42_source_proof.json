@@ -1,0 +1,11 @@
+{
+  "parent_sha": "02bbe073e7bbb27d631538958cf5f2e9b19c08fb",
+  "files": {
+    "src/renderer/layout/table_layout.rs": "d7ebc677b38d04674e3d4cca8e767faffc528fd0440df073df84d38addaee80c",
+    "src/renderer/typeset/table/block/prepare.rs": "b808eb832dbe6f0e7a302fe99b4f4df2d225c17fff2fbfb8fd80b0953c7802d0",
+    "src/renderer/typeset/table/block/whole_fit.rs": "9af950373d6bd205a2ecdedfb1f045fd25313bfa419a2748841026a069a1c13d",
+    "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "bd6f0a2e8474c36d290d2bb89638f6e7947c2ecac72a70d5f1cdf28f84144ae8"
+  },
+  "runtime_diff_sha256": "898ab8757ce4c6d75922578e41a51c167ddef42f168f353e6c1246c63bb4755f",
+  "test_diff_sha256": "a2c619b341fcbc1323c69f67c1974fa820d86a40f479659b2a0e5f75e51ba937"
+}

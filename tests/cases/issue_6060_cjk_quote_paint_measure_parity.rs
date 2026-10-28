@@ -26,14 +26,21 @@ fn forced(font_family: &str) -> Vec<bool> {
         .collect()
 }
 
-/// #2020 여권신청서: 한컴은 돋움체 계열 「」 를 반각으로 조판한다.
+/// [#6478] 고정폭 계열도 「」 는 **전각**이다 — `#2020` 의 반각 전제를 오라클이 반증했다.
+///
+/// `#2020` 의 원 문서(`samples/issue2020/passport_application_lawgo.hwp`)를 한글 2022 로
+/// 다시 재니 DotumChe 낫표가 9.96pt→폭 **9.96** / 8.04pt→**8.04** 로 전각이다. 설치된
+/// 어떤 폰트도 U+300C 를 반각으로 갖고 있지 않다(Windows batang/gulim 8종, 한컴
+/// HBATANG/HDOTUM 모두 1.0 em). 진짜 반각 낫표는 `｢`(U+FF62)로 코드포인트가 다르다.
+///
+/// **이 파일의 계약(측정 == 페인트)은 그대로다** — 이제 양쪽이 같이 `false` 다.
 #[test]
-fn issue_2020_fixed_width_faces_force_halfwidth_quote() {
+fn issue_6478_fixed_width_faces_keep_fullwidth_quote() {
     for face in ["돋움체", "DotumChe", "굴림체", "GulimChe"] {
         assert_eq!(
             forced(face),
-            vec![true, true],
-            "{face}: 고정폭 메트릭(「 폭 = em_size)은 반각 조판이어야 한다"
+            vec![false, false],
+            "{face}: 고정폭 메트릭이어도 「 는 전각이어야 한다 (한글 2022 실측)"
         );
     }
 }
@@ -65,8 +72,10 @@ fn monospace_faces_outside_name_list_match_measurement() {
     for face in ["바탕체", "BatangChe", "궁서체", "GungsuhChe", "D2Coding"] {
         assert_eq!(
             forced(face),
-            vec![true, true],
-            "{face}: 고정폭 메트릭이면 이름과 무관하게 측정과 같은 반각 판정이어야 한다"
+            vec![false, false],
+            // [#6478] 반각 오버레이 제거 후에도 **측정과 페인트가 같은 답**이라는
+            // 이 파일의 계약은 유지된다 — 이제 양쪽이 같이 `false` 다.
+            "{face}: 이름과 무관하게 측정과 같은 판정이어야 한다"
         );
     }
 }
@@ -89,7 +98,8 @@ fn name_lookalike_outside_metric_db_is_not_forced() {
 /// CSS 체인·따옴표가 붙어도 첫 face 로 판정한다.
 #[test]
 fn css_chain_first_face_decides() {
-    assert_eq!(forced("'돋움체', sans-serif"), vec![true, true]);
+    // [#6478] 첫 face 로 판정한다는 계약은 그대로고, 답만 전각(`false`)으로 바뀌었다.
+    assert_eq!(forced("'돋움체', sans-serif"), vec![false, false]);
     assert_eq!(forced("\"휴먼명조\",serif"), vec![false, false]);
 }
 

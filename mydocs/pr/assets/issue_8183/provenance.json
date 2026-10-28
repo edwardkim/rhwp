@@ -1,0 +1,423 @@
+{
+  "product_source": "cfc5be8fe",
+  "inputs": "pdf/issue8183/provenance.json",
+  "scope": "17 complete pages, Native Skia and optimized fresh WASM Canvas, 96 DPI, compat 2022",
+  "references": "Original PDF; three independently re-encoded Ghostscript references with original evidence retained",
+  "tsv": [
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jbig2_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jbig2-generic_template0_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jbig2-mask_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jbig2-symbol_global_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jpx_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jpx-alpha_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jpx-indexed_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jpx-mask_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jpx-palette_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jpx-premult_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/jpx-tiles_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/scan-jbig2_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/scan-jbig2-200_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/scan-jpeg-control_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/scan-jpeg-control-200_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/scan-jpx_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/native/scan-jpx-200_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jbig2_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jbig2-generic_template0_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jbig2-mask_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jbig2-symbol_global_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jpx_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jpx-alpha_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jpx-indexed_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jpx-mask_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jpx-palette_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jpx-premult_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/jpx-tiles_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/scan-jbig2_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/scan-jbig2-200_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/scan-jpeg-control_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/scan-jpeg-control-200_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/scan-jpx_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/wasm/scan-jpx-200_silhouette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    }
+  ],
+  "base_tsv": [
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-native/jbig2-generic_template0.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-native/jbig2-mask.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-native/jbig2-symbol_global.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-native/jbig2.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-native/jpx-alpha.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-native/jpx-indexed.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-native/jpx-mask.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-native/jpx-palette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-native/jpx-premult.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-native/jpx-tiles.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-native/jpx.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-native/scan-jbig2-200.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-native/scan-jbig2.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-native/scan-jpeg-control-200.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-native/scan-jpeg-control.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-native/scan-jpx-200.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-native/scan-jpx.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-wasm/jbig2-generic_template0.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-wasm/jbig2-mask.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-wasm/jbig2-symbol_global.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-wasm/jbig2.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-wasm/jpx-alpha.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-wasm/jpx-indexed.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-wasm/jpx-mask.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-wasm/jpx-palette.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-wasm/jpx-premult.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-wasm/jpx-tiles.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-wasm/jpx.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-wasm/scan-jbig2-200.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-wasm/scan-jbig2.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-wasm/scan-jpeg-control-200.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-wasm/scan-jpeg-control.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-wasm/scan-jpx-200.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8183/base-wasm/scan-jpx.tsv",
+      "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+    }
+  ],
+  "supplementary_print": {
+    "status": "re_review_required",
+    "reason": "Two tiny RGBA images differ from Hancom Print 1-bit mask conversion; no exception claimed",
+    "evidence": "mydocs/pr/assets/issue_8183/hancom-print/README.md",
+    "tsv": [
+      {
+        "path": "mydocs/pr/assets/issue_8183/hancom-print/native/jbig2-mask.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/hancom-print/native/jbig2-symbol_global.tsv",
+        "sha256": "0cecf1bdfc823493a5a4e0032fe744914d3c41ead2b24bd38fd6bbd4a00af482"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/hancom-print/native/jpx-alpha.tsv",
+        "sha256": "d35d9ea3b3461d1ba4f6e76edec79553f794fcba6f4da6ded8b2279781e63ab5"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/hancom-print/native/jpx-indexed.tsv",
+        "sha256": "7e126f03f57337ededeacf460bb0bd77a6c89b1d8da862edcf2d780c6a8dd59b"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/hancom-print/native/jpx-mask.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/hancom-print/native/jpx-palette.tsv",
+        "sha256": "7e126f03f57337ededeacf460bb0bd77a6c89b1d8da862edcf2d780c6a8dd59b"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/hancom-print/native/jpx-premult.tsv",
+        "sha256": "e2dd08e26b4b15ddb7b939beae4eb56caf330a4b475bd8f86378c4f1f5b5178c"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/hancom-print/native/scan-jbig2-200.tsv",
+        "sha256": "265f4e388237f708f26aae961fd24f3f8e37188ee196c2323d6f21fa5b81ec99"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/hancom-print/native/scan-jpx-200.tsv",
+        "sha256": "f136f2340b58a677ceedb0353dd6d30a99b57a3c69c896e2b2aed5e13f760f34"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/hancom-print/wasm/jbig2-mask.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/hancom-print/wasm/jbig2-symbol_global.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/hancom-print/wasm/jpx-alpha.tsv",
+        "sha256": "d35d9ea3b3461d1ba4f6e76edec79553f794fcba6f4da6ded8b2279781e63ab5"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/hancom-print/wasm/jpx-indexed.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/hancom-print/wasm/jpx-mask.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/hancom-print/wasm/jpx-palette.tsv",
+        "sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/hancom-print/wasm/jpx-premult.tsv",
+        "sha256": "e2dd08e26b4b15ddb7b939beae4eb56caf330a4b475bd8f86378c4f1f5b5178c"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/hancom-print/wasm/scan-jbig2-200.tsv",
+        "sha256": "49d4fea13cdab8b45746eb72b7ac05d6b4493eb610713586759c728e87fdee2c"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/hancom-print/wasm/scan-jpx-200.tsv",
+        "sha256": "1529b3129873e7a3d32300496ae7467d3ffab5835fc65dcbe9255d7d49ce580f"
+      }
+    ],
+    "maintainer_disposition": "reference_defect_accepted_for_two_alpha_cases",
+    "blocks_submission_after_maintainer_decision": false
+  },
+  "performance": {
+    "source": "cfc5be8fe",
+    "base": "d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867",
+    "samples_per_config": 11,
+    "native_samples": 154,
+    "wasm_samples": 154,
+    "native_binary_artifacts": {
+      "base": {
+        "bytes": 70122896,
+        "sha256": "ca6b077c3cd0694cb0f8802156dcf459285989c24a5ae2b5abc043c109846d20"
+      },
+      "default": {
+        "bytes": 70192624,
+        "sha256": "2c7fae7bee442877244db12a962f79a3324fd3205be15190e1660fdcbee159d6"
+      },
+      "jbig2": {
+        "bytes": 70582232,
+        "sha256": "97cff65bca24ce81c962b8998256bd4206b971c1c9c180724723a98c324cc1c6"
+      },
+      "jpx": {
+        "bytes": 70662784,
+        "sha256": "32ff15c362fef45dabe635c6df2f58c46987629056d1edf534be294fd4e02fa2"
+      },
+      "both": {
+        "bytes": 71030536,
+        "sha256": "ca1af0b0f855fabf7117e55b9e7bb712b34ebdb6d651a9b649bfbb00ded6cb37"
+      }
+    },
+    "wasm_sha256": {
+      "base": "79ada316352c7ee4498c1a117b67d41cb69a460da855ebc271f403d47c58fb0d",
+      "default": "94a3b562005854e158f86ffd3cfffa7c4541913ffcfd9e195465ffe641efc385",
+      "jbig2": "4f341f3e41a78407b7f1a96133d909b496bd8d82403fa44fa8f45d15aba1c737",
+      "jpx": "83f6d71d3c0f169df777dfef10203f9e81d588c4fb45c44f350f068c423e9604",
+      "both": "76cb5f0789ddb1c9891fb1d74252eebbaec642d93f50066b153913ac36e615d7"
+    },
+    "files": [
+      {
+        "path": "mydocs/pr/assets/issue_8183/performance/native_samples.tsv",
+        "sha256": "1793e3ed739b5b528d10c203582eb6fd028a753c59d1212e83f193f9ee65326f"
+      },
+      {
+        "path": "mydocs/pr/assets/issue_8183/performance/wasm_samples.tsv",
+        "sha256": "a16bca7f45d20ab6e805aaad31753827c3f3105d6da9bb0efa9d6898199991f9"
+      }
+    ]
+  },
+  "maintainer_decision": {
+    "date": "2026-10-24",
+    "authority": "maintainer instruction in this session",
+    "scope": [
+      "jpx-alpha.pdf p1",
+      "jpx-premult.pdf p1"
+    ],
+    "product_source": "cfc5be8fe",
+    "disposition": "rhwp_correct_hancom_print_reference_defect",
+    "pr_submission_authorized": true,
+    "merge_authorized": false,
+    "numeric_results_changed": false,
+    "evidence": "mydocs/working/task_m100_8183_alpha_visual_review.md"
+  }
+}

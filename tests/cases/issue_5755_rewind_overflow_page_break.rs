@@ -16,6 +16,7 @@
 use std::path::Path;
 
 use rhwp::document_core::DocumentCore;
+use rhwp::renderer::render_tree::RenderNodeType;
 
 const SAMPLE: &str = "samples/issue5755/rewind_overflow_page_break.hwpx";
 
@@ -69,11 +70,18 @@ fn issue_5755_rewound_overflow_paragraph_moves_whole_to_next_page() {
         "되감긴 pi=9 문단이 2쪽에 통째로 있어야 한다(한글 2022 배치)"
     );
 
-    // 1쪽 글자 baseline 이 본문 칸(y=94.5+933.6=1028.1) 안에 있어야 한다.
-    // 결함 시 1027.8/1057.7/…/1177.1 로 용지(1122.5) 밖까지 나갔다.
+    // 본문 경계는 문서의 실제 쪽 틀에서 얻는다. 글자 기준선은 그 안에 있어야 한다.
+    let tree = core.build_page_render_tree(0).expect("1쪽 렌더 트리");
+    let body = tree
+        .root
+        .children
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::Body { .. }))
+        .expect("1쪽 본문 영역");
+    let body_bottom = body.bbox.y + body.bbox.height;
     let max_y = text_baselines(&page1).into_iter().fold(f64::MIN, f64::max);
     assert!(
-        max_y <= 1028.6,
-        "1쪽 최대 글자 baseline({max_y:.1})이 본문 칸 바닥(1028.1) 안이어야 한다"
+        max_y <= body_bottom + 0.5,
+        "1쪽 최대 글자 기준선({max_y:.1})이 본문 바닥({body_bottom:.1}) 안이어야 한다"
     );
 }

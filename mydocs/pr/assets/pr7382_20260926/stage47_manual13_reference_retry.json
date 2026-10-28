@@ -1,0 +1,21 @@
+{
+  "source": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+  "retry_input": "output/pr-review/planet6897-7382-20260926/full-96c4e4777/reference-retry/hwp-format-revision-1.3.hwp",
+  "sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+  "copy_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+  "engine": "2020",
+  "reason": "같은 바이트를 영문 파일명으로 공급해 파일명 관련 변환 실패 여부만 구분",
+  "history": [
+    {
+      "job_id": "ff90ff55-b468-46c9-b70c-7f14d451d57a",
+      "status": "failed",
+      "terminal": true
+    }
+  ],
+  "start": {
+    "job_id": "ff90ff55-b468-46c9-b70c-7f14d451d57a",
+    "status": "queued"
+  },
+  "status": "failed",
+  "job_id": "ff90ff55-b468-46c9-b70c-7f14d451d57a"
+}

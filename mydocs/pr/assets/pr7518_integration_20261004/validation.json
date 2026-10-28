@@ -1,0 +1,218 @@
+{
+  "renderer_code_sha": "d76cd8075c5e98f10da1b48f3af72155d9f3d40d",
+  "test_candidate_sha": "f961b773935d823859efca682c6b2f1b926b6acb",
+  "base_sha": "731de9e1b4bb946d76f35108ed7e186ebe4ebecb",
+  "user_visual_acceptance": {
+    "date": "2026-10-04",
+    "scope": "76076 p33/p34; nested-split page split previously accepted",
+    "instruction": "85% 수준에서 픽셀 일치시키는 수준이면 조판 허용치로는 수용할 수 있습니다. 시각 판정 통과로 진행시킵니다.",
+    "automatic_threshold_unchanged": true
+  },
+  "measurements": {
+    "regulatory_native": {
+      "requested_pages": [
+        33,
+        34
+      ],
+      "completed_pages": [
+        33,
+        34
+      ],
+      "run_state": "complete",
+      "overlay_metrics": {
+        "compared_pages": 2,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 89.15318,
+        "worst_pixel_match_percent": 87.33309,
+        "average_ink_match_percent": 12.38259,
+        "worst_ink_match_percent": 11.13681,
+        "average_visual_accuracy_proxy_percent": 12.38259,
+        "worst_visual_accuracy_proxy_percent": 11.13681,
+        "average_tolerant_content_match_percent": 86.23325,
+        "worst_tolerant_content_match_percent": 85.78689,
+        "worst_pages": [
+          33,
+          34
+        ]
+      },
+      "pr_review_gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 33,
+            "tolerant_content_match_percent": 85.78689
+          },
+          {
+            "page": 34,
+            "tolerant_content_match_percent": 86.67962
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      }
+    },
+    "regulatory_wasm": {
+      "requested_pages": [
+        33,
+        34
+      ],
+      "completed_pages": [
+        33,
+        34
+      ],
+      "run_state": "complete",
+      "overlay_metrics": {
+        "compared_pages": 2,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 89.15318,
+        "worst_pixel_match_percent": 87.33309,
+        "average_ink_match_percent": 12.38259,
+        "worst_ink_match_percent": 11.13681,
+        "average_visual_accuracy_proxy_percent": 12.38259,
+        "worst_visual_accuracy_proxy_percent": 11.13681,
+        "average_tolerant_content_match_percent": 86.23325,
+        "worst_tolerant_content_match_percent": 85.78689,
+        "worst_pages": [
+          33,
+          34
+        ]
+      },
+      "pr_review_gate": {
+        "status": "re_review_required",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 33,
+            "tolerant_content_match_percent": 85.78689
+          },
+          {
+            "page": 34,
+            "tolerant_content_match_percent": 86.67962
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      }
+    },
+    "nested_native": {
+      "requested_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "completed_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "run_state": "complete",
+      "overlay_metrics": {
+        "compared_pages": 4,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 91.75007,
+        "worst_pixel_match_percent": 86.41713,
+        "average_ink_match_percent": 60.70616,
+        "worst_ink_match_percent": 37.18959,
+        "average_visual_accuracy_proxy_percent": 60.70616,
+        "worst_visual_accuracy_proxy_percent": 37.18959,
+        "average_tolerant_content_match_percent": 98.72802,
+        "worst_tolerant_content_match_percent": 97.68812,
+        "worst_pages": [
+          1,
+          2,
+          4,
+          3
+        ]
+      },
+      "pr_review_gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      }
+    },
+    "nested_wasm": {
+      "requested_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "completed_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "run_state": "complete",
+      "overlay_metrics": {
+        "compared_pages": 4,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 91.75007,
+        "worst_pixel_match_percent": 86.41713,
+        "average_ink_match_percent": 60.70616,
+        "worst_ink_match_percent": 37.18959,
+        "average_visual_accuracy_proxy_percent": 60.70616,
+        "worst_visual_accuracy_proxy_percent": 37.18959,
+        "average_tolerant_content_match_percent": 98.72802,
+        "worst_tolerant_content_match_percent": 97.68812,
+        "worst_pages": [
+          1,
+          2,
+          4,
+          3
+        ]
+      },
+      "pr_review_gate": {
+        "status": "passed",
+        "minimum_tolerant_content_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null
+      }
+    }
+  },
+  "assets": {
+    "native_regulatory_p33_review.png": "output/pr-review/pr7518-20261004/integration-7568-regulatory-native/regulatory-integration/review/review_033.png",
+    "native_regulatory_p33_overlay.png": "output/pr-review/pr7518-20261004/integration-7568-regulatory-native/regulatory-integration/overlay/overlay_033.png",
+    "native_regulatory_p34_review.png": "output/pr-review/pr7518-20261004/integration-7568-regulatory-native/regulatory-integration/review/review_034.png",
+    "native_regulatory_p34_overlay.png": "output/pr-review/pr7518-20261004/integration-7568-regulatory-native/regulatory-integration/overlay/overlay_034.png",
+    "wasm_regulatory_p33_review.png": "output/pr-review/pr7518-20261004/integration-7568-regulatory-wasm/regulatory-integration/review/review_033.png",
+    "wasm_regulatory_p33_overlay.png": "output/pr-review/pr7518-20261004/integration-7568-regulatory-wasm/regulatory-integration/overlay/overlay_033.png",
+    "wasm_regulatory_p34_review.png": "output/pr-review/pr7518-20261004/integration-7568-regulatory-wasm/regulatory-integration/review/review_034.png",
+    "wasm_regulatory_p34_overlay.png": "output/pr-review/pr7518-20261004/integration-7568-regulatory-wasm/regulatory-integration/overlay/overlay_034.png",
+    "native_nested_p2_review.png": "output/pr-review/pr7518-20261004/integration-7568-nested-native/nested-integration/review/review_002.png",
+    "native_nested_p2_overlay.png": "output/pr-review/pr7518-20261004/integration-7568-nested-native/nested-integration/overlay/overlay_002.png",
+    "native_nested_p3_review.png": "output/pr-review/pr7518-20261004/integration-7568-nested-native/nested-integration/review/review_003.png",
+    "native_nested_p3_overlay.png": "output/pr-review/pr7518-20261004/integration-7568-nested-native/nested-integration/overlay/overlay_003.png",
+    "wasm_nested_p2_review.png": "output/pr-review/pr7518-20261004/integration-7568-nested-wasm/nested-integration/review/review_002.png",
+    "wasm_nested_p2_overlay.png": "output/pr-review/pr7518-20261004/integration-7568-nested-wasm/nested-integration/overlay/overlay_002.png",
+    "wasm_nested_p3_review.png": "output/pr-review/pr7518-20261004/integration-7568-nested-wasm/nested-integration/review/review_003.png",
+    "wasm_nested_p3_overlay.png": "output/pr-review/pr7518-20261004/integration-7568-nested-wasm/nested-integration/overlay/overlay_003.png"
+  },
+  "checks": {
+    "cdp": "8/8 passed",
+    "fmt_clippy_native_clippy_wasm_build_workspace_clippy_all_targets_manifest": "passed",
+    "source_unit_tier": "passed",
+    "issue_7418": "7/7 passed",
+    "issue_7422": "1/1 passed",
+    "issue_7500": "4/4 passed",
+    "issue_7518": "13 passed / 4 failed"
+  },
+  "remaining_failed_cases": [
+    "auto_height_nested_row_shares_its_reserved_origin_and_child_cut",
+    "independently_regenerated_reflow_context_preserves_units_and_following_rows",
+    "one_cell_nested_fragments_reuse_the_child_unit_ledger",
+    "terminal_physical_tail_is_drawn_after_the_last_content_unit"
+  ],
+  "not_completed": [
+    "whole release-test regression on current source",
+    "current Native Skia checks",
+    "all remaining page split corrections",
+    "merge and original PR close"
+  ]
+}

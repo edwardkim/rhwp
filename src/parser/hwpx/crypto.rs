@@ -18,6 +18,9 @@ fn map_error(error: PasswordCryptoError) -> HwpxError {
         PasswordCryptoError::HwpxEntryLimitExceeded { path, max_bytes } => {
             HwpxError::DecryptedEntryLimitExceeded { path, max_bytes }
         }
+        PasswordCryptoError::HwpxXmlReadBudgetExceeded { path, max_bytes } => {
+            HwpxError::XmlReadBudgetExceeded { path, max_bytes }
+        }
         PasswordCryptoError::HwpxUnsupported(message) => HwpxError::UnsupportedEncryption(message),
         other => HwpxError::UnsupportedEncryption(other.to_string()),
     }

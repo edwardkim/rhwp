@@ -36,24 +36,39 @@ fn para_count(path: &Path) -> usize {
         .len()
 }
 
+/// 문단 중간 오프셋은 문단을 가르고 새 문단에 쪽 나눔을 건다.
+/// (offset 0 = 문단 시작은 가르지 않는다 — `issue_7218_page_break_at_paragraph_start`.)
 #[test]
 fn insert_page_break_splits_paragraph() {
     let src = sample();
+    let doc = HwpDocument::from_bytes(&std::fs::read(&src).unwrap()).unwrap();
+    let (para, _) = doc.document().sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .find(|(_, p)| p.text.chars().count() >= 2)
+        .expect("글자 2개 이상인 문단");
     let before = para_count(Path::new(&src));
     let out = temp("out");
+    let para_arg = para.to_string();
     let args = [
         "edit",
         "insert-page-break",
         src.as_str(),
+        "--para",
+        para_arg.as_str(),
         "--offset",
-        "0",
+        "1",
         "-o",
         out.to_str().unwrap(),
         "--json",
     ];
     let output = run(&args);
     assert_eq!(output.status.code(), Some(0), "{:?}", output);
-    assert!(para_count(&out) > before);
+    assert_eq!(para_count(&out), before + 1);
+    let envelope: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(envelope["paragraphDelta"], 1);
+    assert_eq!(envelope["pageBreakParagraph"], para + 1);
     let _ = std::fs::remove_file(&out);
 }
 

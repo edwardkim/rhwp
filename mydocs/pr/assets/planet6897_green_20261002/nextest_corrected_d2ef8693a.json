@@ -1,0 +1,32 @@
+{
+  "head": "d2ef8693a",
+  "code_head": "0305f8f22",
+  "run": 10281,
+  "passed": 10264,
+  "failed": 17,
+  "skipped": 50,
+  "exit_code": 100,
+  "runtime_seconds": 545.929,
+  "failed_cases": [
+    "overflow_cell_lines_do_not_grow_partition_12",
+    "hwpx_to_hwp_adapter::task903_hwpx_h_01_para_shape_margin_children_are_parsed",
+    "issue_3930_hwpx_hwp_save_layout::issue_3930_preserves_page_count_and_inherited_even_master_page",
+    "oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_7",
+    "issue_7095_multirow_fragment_page_cap::a_multirow_fragment_past_the_page_cap_is_folded_to_it",
+    "off_canvas_baseline::off_canvas_does_not_grow_partition_1",
+    "off_canvas_baseline::off_canvas_does_not_grow_partition_11",
+    "off_canvas_baseline::off_canvas_does_not_grow_partition_13",
+    "off_canvas_baseline::off_canvas_does_not_grow_partition_6",
+    "body_overflow_baseline::body_overflow_does_not_grow_partition_2",
+    "body_overflow_baseline::body_overflow_does_not_grow_partition_4",
+    "body_overflow_baseline::body_overflow_does_not_grow_partition_7",
+    "text_overlap_baseline::text_overlaps_do_not_grow_partition_10",
+    "text_overlap_baseline::text_overlaps_do_not_grow_partition_12",
+    "text_overlap_baseline::text_overlaps_do_not_grow_partition_15",
+    "body_overflow_baseline::body_overflow_does_not_grow_partition_10",
+    "issue_7379_rowbreak_table_footnote_reservation::figure11_closed_frame_preserves_units_across_body_budgets"
+  ],
+  "log_path": "output/pr-review/planet6897-green-20261002/nextest-full-corrected.log",
+  "log_sha256": "8d25e7d3f6aba2483e61e64a18502522cb39147c8d6ca17661f28efc2d3b2ca9",
+  "source_notes": "initial33 focused handled; these17 are newly exposed after corrections; none waived"
+}

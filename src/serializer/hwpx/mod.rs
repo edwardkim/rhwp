@@ -75,6 +75,11 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
     // 3. Contents/header.xml — Stage 1 동적 생성 (IR 기반)
     let header_xml = header::write_header(doc, &ctx)?;
     z.write_deflated("Contents/header.xml", &header_xml)?;
+    let mut hwp3_page_ownership =
+        crate::model::hwp3_page_ownership::PageOwnership::for_document(doc, &header_xml);
+    if let Some(bytes) = crate::model::native_font_program::encode(&doc.doc_info, &header_xml) {
+        z.write_deflated(crate::model::native_font_program::HWPX_ENTRY, &bytes)?;
+    }
 
     // 4. Contents/section{N}.xml — 실제 섹션만큼, 없으면 0개
     let section_hrefs: Vec<String> = (0..doc.sections.len())
@@ -82,21 +87,26 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
         .collect();
     for (i, sec) in doc.sections.iter().enumerate() {
         let xml = section::write_section(sec, doc, i, &mut ctx)?;
+        if let Some(ownership) = &mut hwp3_page_ownership {
+            ownership.push_section(sec, &xml);
+        }
         z.write_deflated(&section_hrefs[i], &xml)?;
     }
 
     // 4b. Contents/masterpage{N}.xml — 바탕쪽 (전 섹션 누적 전역 인덱스).
     //     id/href 의 인덱스는 section.rs 의 idRef 인덱스와 동일 규칙(전역 누적)이라
     //     별도 공유 상태 없이 정합한다.
-    let mut master_items: Vec<(String, String)> = Vec::new();
+    // [#6907] 소속 구역 인덱스를 함께 들고 간다 — `write_content_hpf` 가 바탕쪽을
+    // 그 구역 항목 바로 앞에 써야 매니페스트 순서(= 구역 소속)가 보존된다.
+    let mut master_items: Vec<(usize, String, String)> = Vec::new();
     let mut mp_global = 0usize;
-    for sec in &doc.sections {
+    for (section_idx, sec) in doc.sections.iter().enumerate() {
         for mp in &sec.section_def.master_pages {
             let id = format!("masterpage{}", mp_global);
             let href = format!("Contents/masterpage{}.xml", mp_global);
             let xml = master_page::render_master_page_xml(mp, &id, &mut ctx);
             z.write_deflated(&href, xml.as_bytes())?;
-            master_items.push((id, href));
+            master_items.push((section_idx, id, href));
             mp_global += 1;
         }
     }
@@ -130,6 +140,33 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
         if path.starts_with("Scripts/") {
             z.write_deflated(path, bytes)?;
         }
+    }
+
+    if let Some(bytes) = ctx
+        .table_row_grids
+        .encode()
+        .map_err(SerializeError::UnsupportedInput)?
+    {
+        z.write_deflated(crate::model::table_row_grid::HWPX_ENTRY, &bytes)?;
+        ctx.content_loss
+            .record(crate::model::table_row_grid::native_grid_loss());
+    }
+    if let Some(bytes) =
+        crate::model::border_paint::encode(doc).map_err(SerializeError::UnsupportedInput)?
+    {
+        z.write_deflated(crate::model::border_paint::HWPX_ENTRY, &bytes)?;
+        ctx.content_loss
+            .record(crate::model::border_paint::native_editing_loss());
+    }
+    if let Some(bytes) =
+        crate::model::text_clip::encode(doc).map_err(SerializeError::UnsupportedInput)?
+    {
+        z.write_deflated(crate::model::text_clip::HWPX_ENTRY, &bytes)?;
+        ctx.content_loss
+            .record(crate::model::text_clip::native_visibility_loss());
+    }
+    if let Some(bytes) = crate::model::hyperlink_format::encode(doc) {
+        z.write_deflated(crate::model::hyperlink_format::HWPX_ENTRY, &bytes)?;
     }
 
     // 7. META-INF/container.rdf — header + every section part.
@@ -263,7 +300,21 @@ pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, 
     }
     // HWP3-origin 마커 — 재열람 시 hwp3_lineage 복원(왕복 레이아웃 등식).
     if let Some(marker) = doc.hwpx_aux_entry(crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH) {
-        z.write_deflated(crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH, marker)?;
+        let encoded = hwp3_page_ownership
+            .as_ref()
+            .map(crate::model::hwp3_page_ownership::PageOwnership::encode)
+            .transpose()
+            .map_err(|error| SerializeError::XmlError(error.to_string()))?;
+        z.write_deflated(
+            crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH,
+            encoded.as_deref().unwrap_or(marker),
+        )?;
+    }
+    if doc.layout_profile().hwp3_external_realign() {
+        z.write_deflated(
+            crate::model::document::HWP3_EXTERNAL_REALIGN_HWPX_PATH,
+            b"1",
+        )?;
     }
 
     // 참조 정합성 단언 (Stage 1+)
@@ -712,8 +763,8 @@ mod tests {
             "단별 간격이 왕복에서 보존돼야 함(#4387)"
         );
         assert!(
-            !cd2.proportional_widths,
-            "HWPX colSz 는 절대 HWPUNIT — 비례값 플래그가 켜지면 안 됨"
+            cd2.proportional_widths,
+            "한컴 HWPX colSz의 비례 너비 해석이 왕복에서 보존돼야 함"
         );
     }
 
@@ -792,6 +843,8 @@ mod tests {
             version_info: "Equation Version 60".to_string(),
             raw_ctrl_data: Vec::new(),
             raw_ctrl_seal: None,
+            unpositioned_host_frame_seal: None,
+            legacy_source_frame_seal: None,
         })));
         section.paragraphs.push(para);
         doc.sections.push(section);
@@ -1603,7 +1656,10 @@ mod tests {
         // ZIP 파일 목록에 한컴 필수 11개가 모두 있는지 확인
         let cursor = std::io::Cursor::new(&bytes);
         let archive = zip::ZipArchive::new(cursor).expect("valid zip");
-        let names: Vec<String> = archive.file_names().map(String::from).collect();
+        let names: Vec<String> = archive
+            .file_names()
+            .map(|name| name.expect("ZIP 엔트리 이름").into_owned())
+            .collect();
         let required = [
             "mimetype",
             "version.xml",
@@ -1664,7 +1720,10 @@ mod tests {
         // ZIP에 BinData 엔트리 존재 확인
         let cursor = std::io::Cursor::new(&bytes);
         let archive = zip::ZipArchive::new(cursor).expect("zip");
-        let names: Vec<String> = archive.file_names().map(String::from).collect();
+        let names: Vec<String> = archive
+            .file_names()
+            .map(|name| name.expect("ZIP 엔트리 이름").into_owned())
+            .collect();
         assert!(
             names.iter().any(|n| n.starts_with("BinData/")),
             "BinData/ ZIP entry missing: {:?}",
@@ -1770,7 +1829,7 @@ mod tests {
                 .compression_method(zip::CompressionMethod::Deflated);
             for i in 0..archive.len() {
                 let mut f = archive.by_index(i).expect("entry");
-                let name = f.name().to_string();
+                let name = f.name().expect("ZIP 엔트리 이름").to_string();
                 if name.starts_with("BinData/") {
                     continue;
                 }
@@ -1854,8 +1913,9 @@ mod tests {
         let mut archive = zip::ZipArchive::new(cursor).expect("zip");
         let bin_name = archive
             .file_names()
+            .map(|name| name.expect("ZIP 엔트리 이름"))
             .find(|name| name.starts_with("BinData/") && name.ends_with(".png"))
-            .map(String::from)
+            .map(|name| name.into_owned())
             .expect("png BinData entry");
         let mut bin = archive.by_name(&bin_name).expect("read png BinData");
         let mut actual = Vec::new();
@@ -1911,8 +1971,9 @@ mod tests {
             zip::ZipArchive::new(std::io::Cursor::new(serialized)).expect("roundtrip zip");
         let section_names: Vec<String> = archive
             .file_names()
+            .map(|name| name.expect("ZIP 엔트리 이름"))
             .filter(|name| name.starts_with("Contents/section") && name.ends_with(".xml"))
-            .map(String::from)
+            .map(|name| name.into_owned())
             .collect();
         let mut section_xml = String::new();
         for name in section_names {

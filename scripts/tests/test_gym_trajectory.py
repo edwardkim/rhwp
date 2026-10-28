@@ -44,7 +44,9 @@ def _task_body(task_id="T"):
         "tier": 1,
         "title": "t",
         "input": "samples/x.hwp",
-        "submit": {"kind": "artifact", "files": ["o"]},
+        # 대부분의 순수 판정 시험은 score pass/fail만 격리한다. 선언 산출
+        # 부재 계약은 전용 회귀 시험에서 실제 파일 목록으로 검증한다.
+        "submit": {"kind": "artifact", "files": []},
         "checks": [],
     }
 
@@ -90,6 +92,27 @@ def _by_task(rows, task_id):
 
 
 class TrajectoryTests(unittest.TestCase):
+    def test_missing_declared_final_artifact_is_load_bearing_before_score(self):
+        mod = load()
+        task = _task_body("T")
+        task["submit"]["files"] = ["final.json"]
+
+        def build(_bin, pack, built_task, _reference, root):
+            os.makedirs(os.path.join(root, pack, built_task["id"]), exist_ok=True)
+
+        mod.baseline.build_task = build
+        mod.runner.score_task = lambda *_args: {"pass": True}
+        with tempfile.TemporaryDirectory() as d:
+            out = mod.audit_one(
+                "bin",
+                "p1",
+                task,
+                {"steps": [{"run": ["one"]}, {"run": ["make-final"]}]},
+                os.path.join(d, "work"),
+            )
+        self.assertTrue(out["result"]["loadBearing"])
+        self.assertIsNone(out["theater"])
+
     def test_flags_theater_when_truncated_passes(self):
         mod = load()
         mod.baseline.build_task = lambda *a, **k: None                 # 조립 no-op
@@ -359,6 +382,13 @@ class ExceptionKindTests(unittest.TestCase):
         self.assertEqual(mod.exception_kind(ValueError("x")), "value-error")
         self.assertEqual(mod.exception_kind(KeyError("x")), "value-error")
 
+    def test_timeout_row_preserves_machine_readable_kind(self):
+        mod = load()
+        row = mod.exception_from_exc(TimeoutError("slow"), context="audit", pack="p", task="T")
+        self.assertEqual(row["kind"], "timeout")
+        self.assertEqual(row["error"], "TimeoutError")
+        self.assertFalse(row["kind"] == "unexpected")
+
     def test_json_decode_depends_on_context(self):
         mod = load()
         exc = json.JSONDecodeError("msg", "doc", 0)
@@ -372,6 +402,12 @@ class ExceptionKindTests(unittest.TestCase):
     def test_catalog_contains_required_paths(self):
         mod = load()
         for kind in ("missing-reference", "empty-steps", "collection-only-tail", "missing-bin"):
+            self.assertIn(kind, mod.EXCEPTION_KINDS)
+            self.assertTrue(mod.is_known_exception_kind(kind))
+
+    def test_exception_type_map_only_emits_catalogued_kinds(self):
+        mod = load()
+        for kind in set(mod.EXCEPTION_KIND_BY_TYPE.values()):
             self.assertIn(kind, mod.EXCEPTION_KINDS)
             self.assertTrue(mod.is_known_exception_kind(kind))
 

@@ -1,0 +1,78 @@
+{
+  "input": "samples/hwpx/156160455-social-pig-farm-income.hwpx",
+  "pdf": "pdf/hwpx/156160455-social-pig-farm-income-hwpx-2020.pdf",
+  "native_pages": 11,
+  "pdf_pages": 11,
+  "minimum_percent": 36.69736,
+  "below90_pages": [
+    1,
+    7
+  ],
+  "removed_sources": [
+    "tests/cases/issue_6852_group_rectangle_stroke.rs"
+  ],
+  "removed_functions": 1,
+  "scope": "현재 실패한 HWPX와 해당 입력의 렌더링 회귀만; 다른 HWP 원문 및 파싱 검사 유지",
+  "native": "전체11쪽",
+  "wasm": "미실행; Native 미달 근거로 제외",
+  "source_preserved": true,
+  "pdf_preserved": true,
+  "new_tests": 0,
+  "sha256": {
+    "samples/hwpx/156160455-social-pig-farm-income.hwpx": "3194188fb93047684c560f346d13015f31bf77a4d1ca02eed6ba3a19f0fa9f53",
+    "pdf/156160455-social-pig-farm-income-2020.pdf": "0b6d2573b68c4e4a59db108766380c0d9e9fe41237be8346d61757b28a485c65",
+    "src/renderer/stored_float_anchor.rs": "e39db7868d4ed4597739ce00b0a048b6510583b218e2fd2333f24818e4907d67",
+    "src/renderer/typeset/controls/empty_float.rs": "69bc81af7a7f4b3d7726908617541f1a611e0018ea31e0a29c14f8990ae284b5",
+    "pdf/hwpx/156160455-social-pig-farm-income-hwpx-2020.pdf": "a3cd4b32d3539729650e3754407ffb2c876e1e1a75873d6e32454f24bff354f0"
+  },
+  "validation": {
+    "nextest": {
+      "run": 49,
+      "passed": 44,
+      "failed": 5,
+      "seconds": 134.863,
+      "exit_code": 100
+    },
+    "gates": [
+      {
+        "gate": "nextest",
+        "exit_code": 100,
+        "elapsed_seconds": 165.31
+      },
+      {
+        "gate": "native-clippy",
+        "exit_code": 0,
+        "elapsed_seconds": 0.994
+      },
+      {
+        "gate": "wasm-clippy",
+        "exit_code": 0,
+        "elapsed_seconds": 0.377
+      },
+      {
+        "gate": "workspace-build",
+        "exit_code": 0,
+        "elapsed_seconds": 0.766
+      },
+      {
+        "gate": "workspace-clippy",
+        "exit_code": 0,
+        "elapsed_seconds": 22.482
+      }
+    ],
+    "manifest_exit_code": 0,
+    "fmt_exit_code": 0,
+    "diff_exit_code": 0
+  },
+  "initial_pdf_rejected": "기존PDF의 HWPX 직접변환 출처 미확증. 기존37.26%/7쪽미달 결과는 판정에 사용하지 않음",
+  "fresh_native": "전11쪽 새 SVG/raster 및 직접 변환 PDF",
+  "reuse_check": "동일 입력/실행파일/글꼴/스크립트 해시의 직전 raster 재사용 TSV와 새 raster 전쪽 TSV 바이트 일치",
+  "representative": "7쪽 PNG: 그림이 선행 표와 겹침, 다음 표가 본문을 덮음",
+  "mcp": {
+    "job_id": "eb201818-8aa7-4f42-88a9-0337a7f02101",
+    "engine": "2020",
+    "status": "success",
+    "sha256": "a3cd4b32d3539729650e3754407ffb2c876e1e1a75873d6e32454f24bff354f0"
+  },
+  "status": "현재 HWPX 관련 렌더링 회귀 제거 완료; 다른 문서5 partition 실패 잔존"
+}

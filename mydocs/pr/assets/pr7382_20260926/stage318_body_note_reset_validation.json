@@ -1,0 +1,197 @@
+{
+  "stage": 318,
+  "source_file": "src/renderer/typeset/notes/footnotes/boundary.rs",
+  "source_sha256": "c90a32c5d785d5ba146a9f824c414e1343ca71ee05bdaeeef96a9afbf31f32d2",
+  "focused_passed": 14,
+  "focused_exit": 0,
+  "wasm_build_exit": 0,
+  "backends": {
+    "native": {
+      "exit_code": 0,
+      "scores": [
+        {
+          "page": "73",
+          "tolerant_content_match_percent": "99.80081",
+          "below_90": "0"
+        },
+        {
+          "page": "74",
+          "tolerant_content_match_percent": "97.66915",
+          "below_90": "0"
+        },
+        {
+          "page": "75",
+          "tolerant_content_match_percent": "98.79649",
+          "below_90": "0"
+        },
+        {
+          "page": "76",
+          "tolerant_content_match_percent": "96.93383",
+          "below_90": "0"
+        },
+        {
+          "page": "84",
+          "tolerant_content_match_percent": "97.06154",
+          "below_90": "0"
+        },
+        {
+          "page": "85",
+          "tolerant_content_match_percent": "95.14701",
+          "below_90": "0"
+        },
+        {
+          "page": "131",
+          "tolerant_content_match_percent": "94.77080",
+          "below_90": "0"
+        },
+        {
+          "page": "132",
+          "tolerant_content_match_percent": "99.77961",
+          "below_90": "0"
+        }
+      ],
+      "manifest_sha256": "c5aff184f7ec6757f31f74e40a0815629fe63fb8282fb0cde44f747b6e8d7c1e",
+      "output": "output/pr-review/planet6897-7382-20260926/stage318-native/liver7379",
+      "source_provenance": {
+        "hwp": {
+          "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+          "sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c"
+        },
+        "pdf": {
+          "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+          "sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59"
+        },
+        "git_head": "3c019cbc14c30e6ac0df82ea6ef90b2830a584f4",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "965018ddfad817ab40a20d0dad7038cd065aeb15368847736a3366a4467410e6"
+        },
+        "svg_rasterizer": "webfont",
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "target/pr-review/release-test/rhwp",
+          "path": "target/pr-review/release-test/rhwp",
+          "sha256": "03047e06b000e5bbedc33ca848dc9c934412b90ef55d9892bc5074468cec59c5"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      }
+    },
+    "wasm": {
+      "exit_code": 0,
+      "scores": [
+        {
+          "page": "73",
+          "tolerant_content_match_percent": "99.80081",
+          "below_90": "0"
+        },
+        {
+          "page": "74",
+          "tolerant_content_match_percent": "97.66915",
+          "below_90": "0"
+        },
+        {
+          "page": "75",
+          "tolerant_content_match_percent": "98.79649",
+          "below_90": "0"
+        },
+        {
+          "page": "76",
+          "tolerant_content_match_percent": "96.93383",
+          "below_90": "0"
+        },
+        {
+          "page": "84",
+          "tolerant_content_match_percent": "97.06154",
+          "below_90": "0"
+        },
+        {
+          "page": "85",
+          "tolerant_content_match_percent": "95.14701",
+          "below_90": "0"
+        },
+        {
+          "page": "131",
+          "tolerant_content_match_percent": "94.77080",
+          "below_90": "0"
+        },
+        {
+          "page": "132",
+          "tolerant_content_match_percent": "99.77961",
+          "below_90": "0"
+        }
+      ],
+      "manifest_sha256": "762a39618551e0d815a00ac22db795e8317b529294c4a57a89a01114643f86e6",
+      "output": "output/pr-review/planet6897-7382-20260926/stage318-wasm/liver7379",
+      "source_provenance": {
+        "hwp": {
+          "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+          "sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c"
+        },
+        "pdf": {
+          "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+          "sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59"
+        },
+        "git_head": "3c019cbc14c30e6ac0df82ea6ef90b2830a584f4",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "965018ddfad817ab40a20d0dad7038cd065aeb15368847736a3366a4467410e6"
+        },
+        "svg_rasterizer": "webfont",
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "target/pr-review/release-test/rhwp",
+          "path": "target/pr-review/release-test/rhwp",
+          "sha256": "51045e0b14634cc997c4c17283007041a81d861fdca3973050f26d5a76e9dd18"
+        },
+        "wasm": {
+          "files": [
+            {
+              "path": "/Users/tsjang/rhwp/pkg/rhwp.js",
+              "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+              "sha256": "cda344dfd759ce79649b2de4008524c00330fc27990e10623d8ab4f50c81e9c7"
+            }
+          ],
+          "exporter_sha256": "aaf27aabe09958270a5a8d8b19593a386dd821bb9cbc1e219a9c726c623fea6f",
+          "comparison_profile": "print",
+          "font_policy": "same-input native --font-style; font-face CSS only",
+          "render_tree": "WASM getPageRenderTree"
+        },
+        "font_supply": {
+          "mode": "local",
+          "source": "none",
+          "files": []
+        }
+      }
+    }
+  },
+  "backend_identical_png_pages": 8,
+  "notes": {
+    "page74": [
+      99,
+      100
+    ],
+    "page75": [
+      101
+    ],
+    "remaining_note_issue": 258
+  },
+  "remaining_original_below_90_pages": [
+    10,
+    28,
+    88,
+    107,
+    169,
+    199,
+    207,
+    208,
+    211
+  ],
+  "full_final_validation": "미완료"
+}

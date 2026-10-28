@@ -1,0 +1,25 @@
+{
+  "issue": 7620,
+  "generator": {
+    "path": "samples/issue7620/generate.mjs",
+    "sha256": "1c6d8ef92f1e9768f55ae4db10ef820bcd41d0216f29bbecf10f04c565d2ce5c",
+    "rhwp_source": "d9749c5a15b95206455953494f6fc871c115cef1",
+    "package": "scripts/wasm-pack-locked.sh --target web"
+  },
+  "reference": {
+    "product": "한컴독스 웹서비스 6.3.6 (2026-09-17), 한컴오피스 Web v2 한글 20260812021742",
+    "method": "파일 → 인쇄 시 서버가 생성한 인쇄용 PDF (webhwp/handler/download/...?fileExt=pdf&preview=true)",
+    "pdf_producer": "cairo 1.15.12"
+  },
+  "files": [
+    {
+      "path": "a-rowbreak-float.hwp",
+      "sha256": "44c065e5a770e88903e314b53e1b199f2ab1385e50a79eebb5e8ae8716ec64a3",
+      "bytes": 13312,
+      "source": "generate.mjs 생성 대조군 — 표 쪽 경계 나눔 RowBreak, 표 문단 다음 문단이 빈 문단",
+      "reference_pdf": "pdf/issue7620/a-rowbreak-float-hancomdocs.pdf",
+      "reference_pdf_sha256": "901c26db10c91b3e2284f5506af5c18e7e5c78525ad1b6b9dcd3ea83e73e08e7",
+      "purpose": "통째로 들어가는 RowBreak 빈 개체 앵커 표가 바깥 여백 위·아래를 유지하는지 검사"
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d5-d-clean-room-causal-wasm-result",
+  "issue": 4969,
+  "stage": "W10-Q4-D5-D",
+  "date": "2026-08-31",
+  "status": "qualified-clean-room-causal-wasm",
+  "classification": "qualified-bounded-subset",
+  "maintainerApproval": "explicit",
+  "resultCheckpoint": "95d450dd5",
+  "productMutation": false,
+  "source": {
+    "bHead": "e866bc0b8c7ff88917d4f915575fb6c345ec26c4",
+    "planCheckpoint": "e866bc0b8",
+    "upstreamDevel": "77bcaaa49c89dc12761282c759717188a880064c",
+    "upstreamMergeCommit": "aecdde843b43709fced6924f6ed3a58f24592962"
+  },
+  "cleanRoomA": {
+    "kind": "detached-B-head-with-source-only-reverse",
+    "reverseCommitsNewestFirst": [
+      "513068f8e",
+      "e7f814330",
+      "c9b551909",
+      "d49400aad",
+      "bb334756b",
+      "992fe4acaf92",
+      "d0948166a"
+    ],
+    "sourceAllowlist": [
+      "src/renderer/mod.rs",
+      "src/renderer/shaping_vertical.rs",
+      "src/renderer/kerning.rs",
+      "src/renderer/layout.rs",
+      "src/renderer/layout/table_cell_content.rs",
+      "src/renderer/layout/table_layout.rs",
+      "src/renderer/layout/table_partial.rs",
+      "src/renderer/render_tree.rs",
+      "src/renderer/layer_renderer.rs",
+      "src/paint/mod.rs",
+      "src/paint/builder.rs",
+      "src/paint/resources.rs",
+      "src/paint/shaping_glyph_vertical.rs"
+    ],
+    "trackedDiffMatchesAllowlist": true,
+    "reverseCommitsApplied": 7,
+    "reverseConflicts": 0,
+    "manualConflictResolutions": 0,
+    "patchRejects": 0,
+    "unmergedIndexEntries": 0,
+    "conflictMarkers": 0,
+    "q4DModeOrPublicationSourceMatches": 0,
+    "cargoLockOrFeatureDrift": false,
+    "wasm32CargoCheck": {
+      "status": "passed",
+      "elapsedSeconds": 31.09
+    }
+  },
+  "docker": {
+    "aProject": "rhwp4969d5a",
+    "bProject": "rhwp4969d5b",
+    "separateEmptyVolumes": true,
+    "sameImageId": true,
+    "imageId": "sha256:5a4c93c403abe0eb4eae8b411cddfa53861865d586837f5c1a096a1f1e745cd8",
+    "sameImageMethod": "build A image once and bind both compose tags to that exact image ID before A/B runs",
+    "rustc": "1.93.0 (254b59607 2026-01-19)",
+    "llvm": "21.1.8",
+    "wasmPack": "0.15.0",
+    "buildWallTimeIsConclusion": false
+  },
+  "wasm": {
+    "artifact": "pkg/rhwp_bg.wasm",
+    "a": {
+      "status": "passed",
+      "bytes": 9858318,
+      "sha256": "556ebe8aa85b46b427d0d3954ee3b4fbdc24aea9540c47e813a8baa795de228e",
+      "wallTimeSecondsApprox": 399
+    },
+    "b": {
+      "status": "passed",
+      "bytes": 9894929,
+      "sha256": "d7e4b1198ac17737aa6d423bcdb4ffe35e6083dfda02338d9bffc3503e590aee",
+      "wallTimeSecondsApprox": 395
+    },
+    "bMinusABytes": 36611,
+    "bMinusAPercentOfA": 0.37137166806751415,
+    "historicalAbsoluteDeltaSubstituted": false,
+    "postHocSizeSlaApplied": false
+  },
+  "qualification": {
+    "correctness": "qualified-by-D5-C",
+    "performanceCorrection": "qualified-by-D5-C",
+    "runtimeParity": "qualified-by-D5-C",
+    "causalWasmSize": "available",
+    "supportScope": "boundedVerticalHwp5TableCellV1-unchanged"
+  },
+  "cleanup": {
+    "aWorktreeRegistryRemoved": true,
+    "aWorktreeFilesystemRemoved": true,
+    "composeVolumesRemoved": true,
+    "composeNetworksRemoved": true,
+    "generatedArtifactsStaged": false
+  },
+  "historicalBlockedResult": {
+    "evidence": "mydocs/tech/investigations/issue-4969/w10_q4_d5_c_final_classification.json",
+    "preserved": true,
+    "resolution": "D5-D changed only clean-room baseline construction and satisfied the unchanged causal-size hard gate"
+  },
+  "postResultUpstreamRequalification": {
+    "upstreamDevel": "3b301f725ab48985f19c25784b68448ed4257bfd",
+    "incomingCommits": 12,
+    "mergeCommit": "3d239b5a7",
+    "ahead": 71,
+    "behind": 0,
+    "directFileOverlap": [
+      "mydocs/orders/20260831.md"
+    ],
+    "q4DProductSourceDirectOverlap": 0,
+    "mergeConflict": "daily-order-add-add-preserved-both-sections",
+    "issue4969": {
+      "passed": 112,
+      "failed": 0,
+      "skippedByFilter": 8793
+    },
+    "wasm32CargoCheck": "passed",
+    "rustUnitTier": {
+      "tests": 4223,
+      "modules": 299,
+      "ready": 0,
+      "support": 87,
+      "whiteBox": 4132
+    },
+    "formatAllCheck": "passed",
+    "causalReceiptRepeated": false,
+    "causalReceiptScope": "exact B snapshot e866bc0b8; not relabeled as the merged-head absolute size",
+    "repeatReason": "incoming had no direct Q4-D product source overlap and no post-hoc size threshold exists"
+  },
+  "next": "submission-boundary-after-final-remote-refresh"
+}

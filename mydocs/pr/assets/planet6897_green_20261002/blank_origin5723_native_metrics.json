@@ -1,0 +1,52 @@
+{
+  "summary": {
+    "compared_pages": 1,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 94.62408,
+    "worst_pixel_match_percent": 94.62408,
+    "average_ink_match_percent": 13.03362,
+    "worst_ink_match_percent": 13.03362,
+    "average_visual_accuracy_proxy_percent": 13.03362,
+    "worst_visual_accuracy_proxy_percent": 13.03362,
+    "average_tolerant_content_match_percent": 90.04699,
+    "worst_tolerant_content_match_percent": 90.04699,
+    "worst_pages": [
+      1
+    ]
+  },
+  "pages": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/blank-origin5723-metric-native/blank-origin5723-metric-native/rhwp_png/rhwp_001.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/blank-origin5723-metric-native/blank-origin5723-metric-native/pdf_png/pdf-1.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-green-20261002/blank-origin5723-metric-native/blank-origin5723-metric-native/overlay/overlay_001.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 47935,
+      "diff_ratio": 0.05375916,
+      "pixel_match_percent": 94.62408,
+      "ink_union_pixels": 55119,
+      "ink_diff_pixels": 47935,
+      "ink_diff_ratio": 0.86966382,
+      "ink_match_percent": 13.03362,
+      "visual_accuracy_proxy_percent": 13.03362,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 89.91818,
+      "silhouette_boundary_reconciled_pixels": 71,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 55119,
+      "tolerant_content_match_percent": 90.04699,
+      "mean_abs_channel_delta": 7.258,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        76,
+        92,
+        718,
+        455
+      ]
+    }
+  ]
+}

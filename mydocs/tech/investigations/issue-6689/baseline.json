@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-09-05T10:55:17+09:00",
+  "repository": "edwardkim/rhwp",
+  "git": {
+    "mainSha": "e8800c8def63449808a4092798442652ed460552",
+    "candidateSha": "1c49df3d33a323d459c8e90517f4a0f5bd3c790b",
+    "mergeBase": "51043f5f8d0453b9bc929233de443fa60cb3df4b",
+    "mainOnlyCommitCount": 2,
+    "candidateOnlyCommitCount": 238
+  },
+  "repositoryPolicy": {
+    "mainRequiredChecks": ["Build & Test"],
+    "develRequiredChecks": ["Build & Test"],
+    "defaultWorkflowPermissions": "write",
+    "canApprovePullRequestReviews": false,
+    "rulesetCount": 0
+  },
+  "workflowChanges": [
+    {
+      "path": ".github/workflows/adapter-diff.yml",
+      "status": "modified",
+      "beforeBlob": "4c8f3db30fcf51f8c82c9477eac94ee58ea1fd71",
+      "afterBlob": "e0e97df22a6fae39d8590a945cc78839bf4bb797",
+      "beforeSha256": "2f3ad7bc3dceb6e35015783e39a0c3bb9638ddce1281095f59c96d4a7fa6065b",
+      "afterSha256": "120e7c15e7f4020149bc42d40da7850ccba0ffc6a5bc91847bb96cbb20ae61e1",
+      "manualRiskAxes": ["routing"]
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "status": "modified",
+      "beforeBlob": "da631907e97a8e02b71826d7b27bd6dfc6c765cb",
+      "afterBlob": "00a15c899c83367b7e8788ba4eec163920698681",
+      "beforeSha256": "eee60e00d7c012da926babef98860579176bef0991b311f15e5de8f8d20df16e",
+      "afterSha256": "5fe7b6f8300d3192895c3f26e08f2d80204033d6727a90042b7df846c1855d3e",
+      "manualRiskAxes": ["trigger", "routing", "job-command", "timeout"]
+    },
+    {
+      "path": ".github/workflows/codeql.yml",
+      "status": "modified",
+      "beforeBlob": "7a32c96669f3c557e4395d4c728f3b6e0a0f72a8",
+      "afterBlob": "f3b1206408339f3c5ca638986658d311c81c3534",
+      "beforeSha256": "802fafcac87c651ad49dd5874ff9f116a03dc8e6e07341adda55a1a09df29e60",
+      "afterSha256": "c27bdea6e194832a33c7df152754755f733a456df431b13c0fc5a83afeb69bcf",
+      "manualRiskAxes": ["trigger", "routing", "security"]
+    },
+    {
+      "path": ".github/workflows/deploy-pages.yml",
+      "status": "modified",
+      "beforeBlob": "62637582b0002b7953f176689b336d7792b691c8",
+      "afterBlob": "362ffd1d58fc1f0c0b3cb5e9137adda831aa9b06",
+      "beforeSha256": "dd3c3fd8ce9c290668a3f727691755449b4ada8c8898b090381af92aa84bb808",
+      "afterSha256": "c18c7ec7bd1496ff220df43127151d801a173678cd5e0a9d95db1811edbd68b6",
+      "manualRiskAxes": ["trigger", "deployment"]
+    },
+    {
+      "path": ".github/workflows/gym-release-gate.yml",
+      "status": "modified",
+      "beforeBlob": "2640ac228987c0414f4164a942fd95fa7024fa45",
+      "afterBlob": "7641378c0230e0984a06274a4ef42364b6d98f98",
+      "beforeSha256": "cd6f498c82e4598160ac87a491ac858591218c1e93e829de0366f8be586c1eff",
+      "afterSha256": "f518efe0ecc6baaaef3611ad793024b51d2c52fa7da6c40a32d0666c254efa56",
+      "manualRiskAxes": ["trigger", "job-command", "matrix", "timeout", "concurrency", "action-ref"]
+    },
+    {
+      "path": ".github/workflows/oracle-public-advisory.yml",
+      "status": "modified",
+      "beforeBlob": "c54c8b0c3cf58e15817d376f6b20c7f2ea90c021",
+      "afterBlob": "cfc4e75b710a7e27e9dfcb65f8a598f3843c8040",
+      "beforeSha256": "054968e98364f67461515237c84674967edbf7f46417ea3e4de5130af62e168d",
+      "afterSha256": "b68942055d5e55bd9f41b2e229162123190b1e47c731177de4ddc11a32688af2",
+      "manualRiskAxes": ["trigger", "job-command", "artifact"]
+    },
+    {
+      "path": ".github/workflows/proptest-roundtrip.yml",
+      "status": "modified",
+      "beforeBlob": "5796948eaf6c1a714dcd0c5944b84561e8576832",
+      "afterBlob": "db5ae4564e1622d996c5326efde578ce70c07302",
+      "beforeSha256": "603c60e54949a56f4aa140513a4208d49d3cad01e1f88880f23817450ac6dea2",
+      "afterSha256": "4984ff086c44c6e8fb756dda108c6d18f4abc00be7b7e5693e2b7e057691b4ff",
+      "manualRiskAxes": ["routing"]
+    },
+    {
+      "path": ".github/workflows/render-diff.yml",
+      "status": "modified",
+      "beforeBlob": "b575062a04716be83a1ce118fb229f6365339db8",
+      "afterBlob": "c65103e3368b1ece08cafee146e65f1c54e652c5",
+      "beforeSha256": "359a6fcac387d4c406c35c838d7fc2ca4ea35bb53a94499989db386483f65969",
+      "afterSha256": "39d69ca878896b6359dbaa7b94ba74e94a1621158468443923be84d1a6684c29",
+      "manualRiskAxes": ["trigger", "routing"]
+    }
+  ],
+  "candidateRuns": [
+    {"id": 33935568575, "path": ".github/workflows/codeql.yml", "event": "workflow_dispatch", "headSha": "1c49df3d33a323d459c8e90517f4a0f5bd3c790b", "conclusion": "success"},
+    {"id": 33935431349, "path": ".github/workflows/adapter-diff.yml", "event": "push", "headSha": "1c49df3d33a323d459c8e90517f4a0f5bd3c790b", "conclusion": "success"},
+    {"id": 33935431316, "path": ".github/workflows/codeql.yml", "event": "push", "headSha": "1c49df3d33a323d459c8e90517f4a0f5bd3c790b", "conclusion": "success"},
+    {"id": 33935431404, "path": ".github/workflows/proptest-roundtrip.yml", "event": "push", "headSha": "1c49df3d33a323d459c8e90517f4a0f5bd3c790b", "conclusion": "success"},
+    {"id": 33935431341, "path": ".github/workflows/ci.yml", "event": "push", "headSha": "1c49df3d33a323d459c8e90517f4a0f5bd3c790b", "conclusion": "success"}
+  ],
+  "fuzzSmoke": {
+    "workflowBlob": "b9c7394b1711d6d73463682a2989188cc42e5c30",
+    "develRunCount": 0,
+    "mainRuns": [
+      {"id": 33602887449, "headSha": "f1f9c6ae58344ee9368996d3543f76b9345cf227", "conclusion": "failure", "successfulJobs": 5, "failedJobs": ["fuzz parse_wmf"]},
+      {"id": 33727700561, "headSha": "e8800c8def63449808a4092798442652ed460552", "conclusion": "failure", "successfulJobs": 5, "failedJobs": ["fuzz parse_wmf"]},
+      {"id": 33848537271, "headSha": "e8800c8def63449808a4092798442652ed460552", "conclusion": "failure", "successfulJobs": 5, "failedJobs": ["fuzz parse_wmf"]}
+    ]
+  },
+  "causalChecks": {
+    "sourcePr": 5366,
+    "sourcePrCheckCount": 0,
+    "integrationPr": 5425,
+    "integrationPrWorkflowNames": ["Adapter inter-diff", "Cancel stale PR runs", "CI", "CodeQL", "Proptest roundtrip", "Render Diff"],
+    "fuzzSmokePresent": false
+  }
+}

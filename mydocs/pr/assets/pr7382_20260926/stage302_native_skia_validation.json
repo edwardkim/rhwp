@@ -1,0 +1,49 @@
+{
+  "candidate_head": "3f6e2fb3aab82d2df6dba70f3440ab2fcd75a7a0",
+  "native_skia": {
+    "lib": {
+      "passed": 4109,
+      "failed": 0,
+      "skipped": 13,
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-7382-20260926/stage302-native-skia-lib.log",
+      "log_sha256": "5fe9ec63ea9d4bd0764714793ada567e00e93f29cc05a29b461a6730ae12cf6e"
+    },
+    "placeholder": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 214,
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-7382-20260926/stage302-native-skia-placeholder-retry.log",
+      "log_sha256": "01d91949d926ac4a0f6c3f478683e0920f340639b6707b72155435b4c32bda12"
+    },
+    "direct_pdf": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 201,
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-7382-20260926/stage302-native-skia-direct-pdf.log",
+      "log_sha256": "f2fe990c5675eb90cec1f17f84072d1e6051b0b5250f06b56d02ca707062f200"
+    }
+  },
+  "test_runner": "cargo nextest",
+  "lib_filter": "--lib; no name filter",
+  "first_placeholder_attempt": {
+    "exit_code": 4,
+    "tests_run": 0,
+    "accepted_as_pass": false,
+    "cause": "derived weighted suite placement changed after existing test body update; generated files had earlier placement"
+  },
+  "harness_reprepare": {
+    "module_multiset_unchanged": true,
+    "modules": 1401,
+    "duplicates": 0,
+    "new_test_functions": 0
+  },
+  "devel_refresh": {
+    "remote_sha": "02530b9ed567a44663edb26c65fb565c4a79f00d",
+    "included_by_merge": "1c1d088cb6997ebcbd330c1119d923460aa59bfc",
+    "unincorporated_commits": 0,
+    "remote_confirmed_by": "git fetch upstream devel and git ls-remote upstream refs/heads/devel"
+  }
+}

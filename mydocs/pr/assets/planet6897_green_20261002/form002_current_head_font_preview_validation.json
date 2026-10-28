@@ -1,0 +1,17 @@
+{
+  "head": "7db11c317",
+  "requested_svg": "tests/golden_svg/form-002/page-0.actual.svg",
+  "svg_sha256": "2abbb2ed602e09a1012035da552e6bd457f7a2fd296c429e32448e525e94bec1",
+  "current_chrome_png": "output/pr-review/planet6897-green-20261002/form002-tofu/current-head-preview.png",
+  "png_sha256": "4e9aae49f0ad7476c4f8889cb75544fcf03ee3369e8c16487d83c1c0377897c0",
+  "inspection": "실제 Chrome 출력의 파란 핵심 목표와 본문 한글이 정상이며 원문 체크박스도 보존됨. 그림/페이지 geometry의 golden 실패와 별도로 폰트 두부문자 해결을 확인.",
+  "font_correction_commit": "40eb16ef3",
+  "remaining_same_head_checks": {
+    "tests": 3,
+    "passed": 0,
+    "failed": 3,
+    "exit": 100,
+    "log": "output/pr-review/planet6897-green-20261002/remaining-after5731.log"
+  },
+  "pr_ready": false
+}

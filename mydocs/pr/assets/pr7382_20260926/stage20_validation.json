@@ -1,0 +1,99 @@
+{
+  "producer_head": "5375b1f33bb4ab6b251a954e8fd33806d2626add",
+  "source_diff_sha256": "481af03a6f15c74cdc470c25dc88b379a22e0d94fe284f0fe36a55d93649c472",
+  "files": {
+    "src/renderer/typeset/controls/decoration_host.rs": "3c427cdcd2f385cd380dd0d51cae0988986beb07ef52ec3c4404faa3567eb62d",
+    "src/renderer/typeset/notes/footnotes/body.rs": "87abe29efa01d2c56927337b238a46e8e645fbc76c7680710e25778a848d76a7",
+    "src/renderer/typeset/paragraph/columns.rs": "ed54a91b7703326f5a02f7f71d58caca1e1ba8e6b42715b1226179888225159b",
+    "src/renderer/typeset/paragraph/placement.rs": "222aa00250b4a40b53e4f58cb578fdf3fd3a0a88b2c431bb7f8591504712de19",
+    "src/renderer/typeset/state.rs": "ab5d0886e395f0faf957fb6d5456e6ca166982613d62854f728e0f34185fc8b2",
+    "src/renderer/typeset/state/data.rs": "06acfe3ca5b662593d2eb305bb1f017095a9a423175f478afbb1795140927d5f",
+    "src/renderer/typeset/state/notes.rs": "d6e567dc0c2674f76b7ebbbc38efa5604fef105465b6fb5da6db9c8b001a82d3",
+    "src/renderer/typeset/state/transition.rs": "2312d114103f2a12f9ceae2082c03805d8f0313da6ad6fbe5ae87f3b0de9a518",
+    "tests/cases/issue_7379_rowbreak_table_footnote_reservation.rs": "dc094751e27f4fd85627d6a87d6e554d63fb5046804defd7ed356336fd41ea39"
+  },
+  "before": {
+    "exit_code": 100,
+    "passed": 1,
+    "failed": 1,
+    "seconds": 0.413,
+    "observed_note159_top": 1027.3466666666668,
+    "pdf_note159_top": 1011.728597
+  },
+  "after": {
+    "exit_code": 100,
+    "passed": 86,
+    "failed": 1,
+    "seconds": 5.771,
+    "target_passed": 45,
+    "normal_control_passed": 41,
+    "prior_failure": "Native HWP90 표27 캡션"
+  },
+  "occupied_frame_diagnostic": {
+    "before_exit_code": 100,
+    "before_seconds": 0.015,
+    "after_exit_code": 0,
+    "after_seconds": 0.014,
+    "observed_before": 15.0,
+    "expected": 30.0,
+    "status": "임시 helper 계약 진단. 신규 src 테스트 정책으로 제출 소스에서 제거; 실물 검증의 대용이 아님"
+  },
+  "boundary_controls": {
+    "large_note_before_pass": true,
+    "synthetic_source_rejected": true,
+    "taller_body_line_box_before_pass": true,
+    "taller_body_line_box_defect_detection": false,
+    "taller_body_line_box_preservation_only": true
+  },
+  "harness_selection_error": {
+    "old_suite": "regression_suite_005",
+    "new_suite": "regression_suite_003",
+    "exit_code": 4,
+    "tests": 0,
+    "defect_reproduction": false
+  },
+  "cli_build": {
+    "exit_code": 0,
+    "seconds": 110,
+    "page_count": 215,
+    "pdf_page_count": 215,
+    "binary_sha256": "16c3833ad3df1b9df1b37026d14b11a36710ecf62634291411e53c90f05da11d"
+  },
+  "fmt_check_exit_code": 0,
+  "source_unit_policy": {
+    "exit_code": 0,
+    "base_ref": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+    "tests": 4205,
+    "modules": 298
+  },
+  "visual": {
+    "exit_code": 0,
+    "gate": {
+      "status": "passed",
+      "minimum_tolerant_content_match_percent": 90.0,
+      "below_threshold_pages": [],
+      "unavailable_metric_pages": [],
+      "font_mismatch_evidence": null
+    },
+    "font_mismatch_exception": false,
+    "pages": {
+      "120": 99.67776,
+      "121": 98.96031,
+      "122": 99.37751,
+      "123": 95.08258
+    },
+    "directly_inspected_review_and_overlay": [
+      120,
+      121,
+      122,
+      123
+    ],
+    "residual": "글자 외곽과 간격,123쪽 각주의 줄바꿈 차이가 남음. 완전 일치나 글꼴 예외를 주장하지 않음"
+  },
+  "remaining": "보정 전부터 Native HWP90 표 캡션 결함. 전체 최종 회귀/lint/fresh WASM/전체 시각 gate 미완료로 PR 보류.",
+  "commands": {
+    "regression": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --test regression_suite_003 --test regression_suite_005 --test regression_suite_007 --test regression_suite_019 --test regression_suite_013 --test regression_suite_024 --test-threads 8 --no-fail-fast -E 'test(issue_7379_rowbreak_table_footnote_reservation) | test(issue_3738_rowbreak_table_footnote_fragment) | test(issue_1937_rowbreak_footnote_overpagination) | test(issue_2559_footnote_footer_band) | test(issue_6034_footnote_area_reflow_width) | test(issue_4882_policy_report_page_roundtrip)'",
+    "cli": "cargo build --locked --profile release-test --target-dir target/pr-review --bin rhwp",
+    "visual": "venv/bin/python scripts/visual_sweep.py --key liver7379 --hwp 'samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx' --pdf 'pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf' --rhwp-bin target/pr-review/release-test/rhwp --pages 120,121,122,123 --dpi 96 --out output/pr-review/planet6897-7382-20260926/visual/stage20-native"
+  }
+}

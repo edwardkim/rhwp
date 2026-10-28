@@ -1,0 +1,579 @@
+{
+  "stage": 96,
+  "code_commit": "eb94eba73dfcaa147392ee7b87ab1a58b88f65d6",
+  "analysis": {
+    "head": "2d29ab67a5571d82b21e616adddd319860f645e9",
+    "analysis": "기존30번 신규겹침1건. 같은 원문 독립 PDF를 Mac과 Windows에서 찾고 없으면 승인된2024 MCP client/.env.local의2020 engine으로 새 기준을 생성한다. 실제 표/글줄/쪽수를 비교해90%미달만 승인 제외하고 파서/IR·원문/PDF 보존. 다른 입력/공차 완화 없음.",
+    "files": {
+      "samples/한글문서파일형식_5.0_revision1.3.hwp": {
+        "size": 342528,
+        "sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d"
+      }
+    },
+    "info": {
+      "fonts": [
+        "한컴바탕",
+        "한컴돋움",
+        "한컴산뜻돋움",
+        "함초롬돋움",
+        "함초롬바탕",
+        "Hancom Sans SemiBold",
+        "HY견고딕",
+        "한컴바탕",
+        "한컴돋움",
+        "한컴산뜻돋움",
+        "함초롬돋움",
+        "함초롬바탕",
+        "Hancom Sans SemiBold",
+        "HY견고딕",
+        "함초롬바탕",
+        "한컴돋움",
+        "한컴산뜻돋움",
+        "함초롬돋움",
+        "함초롬바탕",
+        "Hancom Sans SemiBold",
+        "HY견고딕",
+        "한컴바탕",
+        "한컴돋움",
+        "한컴산뜻돋움",
+        "함초롬돋움",
+        "함초롬바탕",
+        "Hancom Sans SemiBold",
+        "HY견고딕",
+        "한컴바탕",
+        "한컴돋움",
+        "한컴산뜻돋움",
+        "함초롬돋움",
+        "함초롬바탕",
+        "Hancom Sans SemiBold",
+        "HY견고딕",
+        "한컴바탕",
+        "한컴돋움",
+        "한컴산뜻돋움",
+        "함초롬돋움",
+        "함초롬바탕",
+        "Hancom Sans SemiBold",
+        "HY견고딕",
+        "한컴바탕",
+        "한컴돋움",
+        "한컴산뜻돋움",
+        "함초롬돋움",
+        "함초롬바탕",
+        "Hancom Sans SemiBold",
+        "HY견고딕"
+      ],
+      "format": "hwp5",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2018",
+        "version": "10.0.0.7282"
+      },
+      "pageCount": 69,
+      "paraCount": 619,
+      "printMethod": null,
+      "printMethodImpliesNup": false,
+      "schemaVersion": "1.0",
+      "sections": 6,
+      "sizeBytes": 342528,
+      "source": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+      "title": "ᄒᆞᆫ글 문서 파일 구조 5.0",
+      "untrustedContent": true,
+      "untrustedFields": [
+        "title",
+        "fonts[]"
+      ],
+      "version": "5.1.0.1",
+      "warnings": []
+    },
+    "anomaly": {
+      "emptyPageCount": 1,
+      "hasSignal": true,
+      "mode": "single",
+      "offCanvasCount": 0,
+      "overflowCount": 1,
+      "overflowTolerancePx": 2.0,
+      "overlapCount": 2,
+      "overlapTolerancePx": 2.0,
+      "pageCount": 69,
+      "pageFilter": null,
+      "pages": [
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [],
+          "overlap": [
+            {
+              "bboxA": {
+                "h": 86.34666666666666,
+                "w": 491.81333333333333,
+                "x": 146.44,
+                "y": 797.48
+              },
+              "bboxB": {
+                "h": 114.33333333333337,
+                "w": 491.81333333333333,
+                "x": 146.44,
+                "y": 879.6666666666667
+              },
+              "overlapArea": 2045.943466666651,
+              "overlapH": 4.159999999999968,
+              "overlapW": 491.81333333333333,
+              "pathA": "Page/Body/Column0/Table15",
+              "pathB": "Page/Body/Column0/Table18",
+              "typeA": "Table",
+              "typeB": "Table"
+            },
+            {
+              "bboxA": {
+                "h": 12.666666666666664,
+                "w": 95.98654400000001,
+                "x": 344.35339466666665,
+                "y": 895.1933333333334
+              },
+              "bboxB": {
+                "h": 114.33333333333337,
+                "w": 491.81333333333333,
+                "x": 146.44,
+                "y": 879.6666666666667
+              },
+              "overlapArea": 1215.8295573333294,
+              "overlapH": 12.666666666666629,
+              "overlapW": 95.98654399999998,
+              "pathA": "Page/Body/Column0/TextLine16",
+              "pathB": "Page/Body/Column0/Table18",
+              "typeA": "TextLine",
+              "typeB": "Table"
+            }
+          ],
+          "page": 48,
+          "storedLineEscape": [],
+          "textOverlap": [
+            {
+              "bboxA": {
+                "h": 12.666666666666664,
+                "w": 95.98654400000001,
+                "x": 344.35339466666665,
+                "y": 895.1933333333334
+              },
+              "bboxB": {
+                "h": 12.0,
+                "w": 47.4354,
+                "x": 319.1466666666667,
+                "y": 901.08
+              },
+              "overlapArea": 150.7103961599999,
+              "overlapH": 6.779999999999973,
+              "overlapW": 22.228672000000074,
+              "pathA": "Page/Body/Column0/TextLine16/TextRun0",
+              "pathB": "Page/Body/Column0/Table18/Cell5/TextLine0/TextRun0",
+              "typeA": "TextRun",
+              "typeB": "TextRun"
+            }
+          ]
+        },
+        {
+          "emptyPage": false,
+          "offCanvas": [],
+          "overflow": [
+            {
+              "bbox": {
+                "h": 15.333333333333336,
+                "w": 579.0400000000001,
+                "x": 118.66666666666667,
+                "y": 1043.56
+              },
+              "boundary": {
+                "h": 930.5066666666668,
+                "w": 601.7066666666667,
+                "x": 96.0,
+                "y": 103.56
+              },
+              "maxOver": 24.82666666666637,
+              "nodeType": "TextLine",
+              "overBottom": 24.82666666666637,
+              "overLeft": 0.0,
+              "overRight": 0.0,
+              "overTop": 0.0,
+              "path": "Page/Body/Column0/TextLine7"
+            }
+          ],
+          "overlap": [],
+          "page": 54,
+          "storedLineEscape": [],
+          "textOverlap": []
+        },
+        {
+          "emptyPage": true,
+          "offCanvas": [],
+          "overflow": [],
+          "overlap": [],
+          "page": 66,
+          "storedLineEscape": [],
+          "textOverlap": []
+        }
+      ],
+      "schemaVersion": "1.0",
+      "source": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+      "storedLineEscapeCount": 0,
+      "storedLineTolerancePx": 0.5,
+      "strict": false,
+      "textOverlapCount": 1,
+      "types": null,
+      "untrustedContent": false,
+      "untrustedFields": []
+    }
+  },
+  "independent_reference": {
+    "decision": "공식 HWP와 저장소 HWP byte SHA-256 동일. 공식 PDF의 Creator와 원문 lastSavedWith 모두2018/10.0.0.7282. 원본 HWP 편집/복호화 없이 공식 배포 PDF를 비교 기준으로 사용.",
+    "official_download": [
+      {
+        "url": "https://cdn.hancom.com/link/docs/%ED%95%9C%EA%B8%80%EB%AC%B8%EC%84%9C%ED%8C%8C%EC%9D%BC%ED%98%95%EC%8B%9D_5.0_revision1.3.hwp",
+        "file": "output/pr-review/planet6897-7382-20260926/stage96-format-spec/official-revision13.hwp",
+        "bytes": 342528,
+        "sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d"
+      },
+      {
+        "url": "https://cdn.hancom.com/link/docs/%ED%95%9C%EA%B8%80%EB%AC%B8%EC%84%9C%ED%8C%8C%EC%9D%BC%ED%98%95%EC%8B%9D_5.0_revision1.3.pdf",
+        "file": "output/pr-review/planet6897-7382-20260926/stage96-format-spec/official-revision13.pdf",
+        "bytes": 830986,
+        "sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782"
+      }
+    ],
+    "pdf_metadata": {
+      "page_count": 71,
+      "metadata": {
+        "format": "PDF 1.4",
+        "title": "",
+        "author": "(주)한글과컴퓨터",
+        "subject": "",
+        "keywords": "",
+        "creator": "Hwp 2018 10.0.0.7282",
+        "producer": "Hancom PDF 1.3.0.532",
+        "creationDate": "D:20181123111447+09'00'",
+        "modDate": "D:20181123111447+09'00'",
+        "trapped": "",
+        "encryption": null
+      },
+      "sample_text": {
+        "1": "글 문서 파일 구조 5.0\nHwp Document File Formats 5.0\nrevision 1.3:20181108\n",
+        "15": "글 문서 파일 형식 5.0\n10\n문단에 컨트롤이 포함되는 경우 컨트롤 헤더 이후로 문단 리스트 헤더와 같은 컨트롤의 레코드 데이터가 \n저장된다.\no 제어 문자 (컨트롤)\n표, 그림 등 일반 문자로 표현할 수 없는 요소를 표현하기 위해서 문자 코드 중 일부분을 특수 용도로 \n사용하고 있다.\n문단 내용 중에 문자 코드가 0-31인 문자들은 특수 용도로 사용된다. 이미 13번 문자는 문단 내용의",
+        "16": "글 문서 파일 형식 5.0\n11\n문서 파일에서 문단 내용을 읽다가 제어 문자를 발견하면, 문서를 읽는 쪽에서는 제어 문자 종류에 \n따라 읽어 들이거나 건너 뛰어 다음 데이터의 시작 위치까지 파일 포인터를 옮기기 위한 적절한 처리를 \n수행해야 한다. 제어 문자 가운데는 또 다른 문단 리스트를 포함하는 경우도 있기 때문에, 제어 문자를 \n일반 문자처럼 처리하면 문서 파일을 정상적으로 읽을 수 ",
+        "48": "글 문서 파일 형식 5.0\n43\nTag ID : HWPTAG_SHAPE_COMPONENT_LINE\n4.3.9.2.3. 사각형 개체\nTag ID : HWPTAG_SHAPE_COMPONENT_RECTANGLE\n4.3.9.2.4. 타원 개체\nTag ID : HWPTAG_SHAPE_COMPONENT_ELLIPSE\n자료형\n길이(바이트)\n설명\nINT32\n4\n시작점 X 좌표\nINT32\n4\n시작점 Y 좌",
+        "49": "글 문서 파일 형식 5.0\n44\n자료형\n길이(바이트)\n설명\nUINT32\n4\n속성(표 97 참조)\nINT32\n4\n중심 좌표의 X 값\nINT32\n4\n중심 좌표의 Y 값\nINT32\n4\n제1축 X 좌표 값\nINT32\n4\n제1축 Y 좌표 값\nINT32\n4\n제2축 X 좌표 값\nINT32\n4\n제2축 Y 좌표 값\nINT32\n4\nstart pos x\nINT32\n4\nstart pos y\nINT32\n4\nend",
+        "50": "글 문서 파일 형식 5.0\n45\n4.3.9.2.5. 다각형 개체\nTag ID : HWPTAG_SHAPE_COMPONENT_POLYGON\n4.3.9.2.6. 호 개체\nTag ID : HWPTAG_SHAPE_COMPONENT_ARC\n4.3.9.2.7. 곡선 개체\n자료형\n길이(바이트)\n설명\nINT16\n2\ncount of points(cnt)\nINT32 array[cnt]\n4×cnt\nx 좌표\nIN",
+        "68": "글 문서 파일 형식 5.0\n63\n4.4.2.3. 히스토리 아이템 버전\nTag ID : HISTORY_RECORD_TYPE_VERSION (0x20)\n4.4.2.4. 히스토리 날짜\nTag ID : HISTORY_RECORD_TYPE_DATE (0x21)\n4.4.2.5. 히스토리 작성자\nTag ID : HISTORY_RECORD_TYPE_WRITER (0x22)\n4.4.2.6. 히스토리 설명\n",
+        "69": "",
+        "71": "글 문서 파일 구조 5.0 \n발행처\n(주) 한글과컴퓨터\n주  소\n(우) 463-400\n경기도 성남시 분당구 대왕판교로 \n644번길 49 한컴타워 10층\n전화: (031) 627-7000\n팩스: (031) 627-7709\n"
+      }
+    },
+    "source_preserved_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+    "failed_conversion_attempts": {
+      "mcp_default_original": "HwpEditorFrame.SaveAsDocument returned false for HWP",
+      "mcp_clear_distribution": "900초 timeout 실패, 출력0byte. 안내문BodyText 때문에 기준으로 수용하지 않음.",
+      "win10_ted_diagnostic_print": "PDF 경로 HWP 중간 저장만 생략한 별도worker를 빌드; Hancom2020 Print action unavailable; 서비스 미배포/원문 불변"
+    },
+    "rust_scope": {
+      "remove_if_under90": [
+        "issue_2099_revision13_page1_prioritizes_old_hangul_font",
+        "spec_revision13_original_is_69_pages",
+        "spec_revision13_export_hwpx_preserves_page_count",
+        "spec_revision13_p015_table73_split_and_p016_keeps_para84"
+      ],
+      "retain": [
+        "spec_revision13_export_hwpx_keeps_origin_marker_and_profile",
+        "spec_revision13_ir_para_count_unchanged",
+        "issue_2099 다른입력3함수"
+      ],
+      "baseline_rows": "body8/offcanvas1 제거, text원장 없음; renderer manifest 없음",
+      "diagnostic_tools": "spec_probe.py 실제입력 경로만 이관. build4882/ledger/transcript/test_analyze의 역사적 기록/순수분석계약은 파일을 열지 않아 유지."
+    }
+  },
+  "visual_provenance": {
+    "hwp": {
+      "path": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+      "sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d"
+    },
+    "pdf": {
+      "path": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+      "sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782"
+    },
+    "git_head": "2d29ab67a5571d82b21e616adddd319860f645e9",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "5a56a38039debd6fd3d6d81170e7185a41da5e225fed77a06714431e0962a8fd"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "path": "output/pr-review/planet6897-7382-20260926/stage69-stored7336/candidate-final/rhwp",
+      "sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7"
+    },
+    "font_supply": {
+      "mode": "full",
+      "source": "explicit",
+      "file_count": 715,
+      "inventory_sha256": "405c24e3d5d9b137193f466ced0e2d962edfe0cd0b970e77b04c293f4ca6ddfd",
+      "full_inventory": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage96-format-spec/visual-native/format-spec13/run_manifest.json"
+    }
+  },
+  "native_gate": {
+    "status": "re_review_required",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 15,
+        "tolerant_content_match_percent": 40.68047
+      },
+      {
+        "page": 16,
+        "tolerant_content_match_percent": 31.25675
+      },
+      {
+        "page": 48,
+        "tolerant_content_match_percent": 38.87576
+      },
+      {
+        "page": 49,
+        "tolerant_content_match_percent": 26.93028
+      },
+      {
+        "page": 50,
+        "tolerant_content_match_percent": 35.3439
+      },
+      {
+        "page": 68,
+        "tolerant_content_match_percent": 18.57411
+      },
+      {
+        "page": 69,
+        "tolerant_content_match_percent": 0.0
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "native_metrics": [
+    {
+      "page": 1,
+      "tolerant_content_match_percent": 96.24622
+    },
+    {
+      "page": 15,
+      "tolerant_content_match_percent": 40.68047
+    },
+    {
+      "page": 16,
+      "tolerant_content_match_percent": 31.25675
+    },
+    {
+      "page": 48,
+      "tolerant_content_match_percent": 38.87576
+    },
+    {
+      "page": 49,
+      "tolerant_content_match_percent": 26.93028
+    },
+    {
+      "page": 50,
+      "tolerant_content_match_percent": 35.3439
+    },
+    {
+      "page": 68,
+      "tolerant_content_match_percent": 18.57411
+    },
+    {
+      "page": 69,
+      "tolerant_content_match_percent": 0.0
+    }
+  ],
+  "run_state": "complete",
+  "direct_inspection": "15쪽은 PDF표5이어받기/표6시작 대신 rhwp표6이어받기/뒤 설명.49쪽은 PDF타원표96/97 대신 곡선표103·수식표104/105·그림표106/107.두쪽머리말 누락.69쪽 공식PDF는 빈쪽이나 rhwp는 발행정보; 공식발행정보는71쪽.15/49/69 review 직접 확인.단순 글꼴 차이 아님.",
+  "native_scope": "선택8쪽 완료.전체71쪽 comparison 미실행.69 SVG/트리 export를 전체비교로 세지 않음.",
+  "fresh_wasm": "미실행",
+  "mutation": {
+    "removed_functions": [
+      "issue_2099_revision13_page1_prioritizes_old_hangul_font",
+      "spec_revision13_original_is_69_pages",
+      "spec_revision13_export_hwpx_preserves_page_count",
+      "spec_revision13_p015_table73_split_and_p016_keeps_para84"
+    ],
+    "preserved_input": {
+      "path": "mydocs/pr/assets/issue7445/한글문서파일형식_5.0_revision1.3.hwp",
+      "sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+      "size": 342528
+    },
+    "baseline_rows": {
+      "tests/fixtures/body_overflow_baseline.tsv": [
+        "한글문서파일형식_5.0_revision1.3.hwp\t8"
+      ],
+      "tests/fixtures/off_canvas_baseline.tsv": [
+        "한글문서파일형식_5.0_revision1.3.hwp\t1"
+      ]
+    },
+    "retained_contracts": [
+      "spec_revision13_export_hwpx_keeps_origin_marker_and_profile",
+      "spec_revision13_ir_para_count_unchanged",
+      "issue_2099 다른 입력3함수"
+    ],
+    "tool_path_updated": "tools/page_roundtrip/spec_probe.py",
+    "historical_records": "build_issue_4882_corpus.py/test_analyze.py/과거 fixture·transcript는 파일을 읽지 않는 역사적 기록/분석계약 유지",
+    "production_changes": false,
+    "new_test_functions": 0,
+    "threshold_relaxation": false
+  },
+  "production_changes": false,
+  "new_test_functions": 0,
+  "threshold_relaxation": false,
+  "gates": {
+    "base_sha": "d6cf1605327ced1c276f17a529192a743a766209",
+    "head": "2d29ab67a5571d82b21e616adddd319860f645e9",
+    "steps": [
+      {
+        "step": "focused-kept",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "regression_suite_003",
+          "--test",
+          "regression_suite_009",
+          "--test",
+          "regression_suite_020",
+          "-E",
+          "test(=text_overlap_baseline::text_overlaps_do_not_grow_partition_10) or test(spec_revision13_) or test(issue_2099_)"
+        ],
+        "exit_code": 100,
+        "seconds": 19.40390779124573
+      },
+      {
+        "step": "fmt-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 6.058795082848519
+      },
+      {
+        "step": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3140365416184068
+      },
+      {
+        "step": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 0.24119316739961505
+      },
+      {
+        "step": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3645981657318771
+      },
+      {
+        "step": "clippy-all-targets",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "seconds": 16.277914458420128
+      },
+      {
+        "step": "manifest-base-check",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 2.6189680001698434
+      },
+      {
+        "step": "unit-tier-base-check",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "d6cf1605327ced1c276f17a529192a743a766209"
+        ],
+        "exit_code": 0,
+        "seconds": 9.284913999959826
+      }
+    ]
+  },
+  "focused_summary": [
+    "        FAIL [   2.725s] (6/6) rhwp::regression_suite_020 text_overlap_baseline::text_overlaps_do_not_grow_partition_10",
+    "     Summary [   2.731s] 6 tests run: 5 passed, 1 failed, 664 skipped",
+    "        FAIL [   2.725s] (6/6) rhwp::regression_suite_020 text_overlap_baseline::text_overlaps_do_not_grow_partition_10"
+  ],
+  "focused_failure": "corpus재배정: pr4093/outline_navigation_panel_demo.hwpx 신규겹침2건.기존30번 pending 유지; 입력별 다음 검토.",
+  "issue_comment": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5871244705",
+  "limits": "입력 미달 사용자 승인 이관.개별기대값 오류확정/피델리티 개선/PR승인/전체회귀 완료 아님.공식PDF 원문대응은 공식HWP exact SHA/같은Creator저장빌드로 고정.변환 실패/보류 산출물은 기준 아님.",
+  "test_source_sha256": {
+    "tests/cases/issue_5128_spec_page_roundtrip.rs": "15033c4cf765a1ee2e4beac8947ad0d31a06a35b36a0381086922708d94af8ed",
+    "tests/issue_2099_araea_pua.rs": "f6518e42e595d5985494605304be2e5d8906d862c9dcbea79c31bc667053c80c"
+  },
+  "conversion_attempt_terminal": {
+    "job_id": "a3313bd8-e42d-40ee-88dc-19e1f58084be",
+    "status": "failed",
+    "elapsed_seconds": 900,
+    "output_bytes": 0,
+    "error": "Hancom 2020 direct conversion exceeded 900 seconds."
+  }
+}

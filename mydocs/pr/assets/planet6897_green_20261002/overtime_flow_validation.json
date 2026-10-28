@@ -1,0 +1,179 @@
+{
+  "date": "2026-10-03",
+  "parent_head": "ef799d88e",
+  "base": "ab4dcfaca5d6c151a814536570b9c7e2832daa8c",
+  "input": "samples/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과).hwpx",
+  "pdf": "pdf/hwpx/opengov/36398366-overtime-hwpx-2020.pdf",
+  "mcp_job": "f8733ae8-e59f-44cc-acb6-10f66e2832fd",
+  "engine": "2020",
+  "pages": 1,
+  "before_percent": 55.15038,
+  "native_percent": 97.00756,
+  "counter_gwanak_native": 99.5428,
+  "target_wasm": 97.00756,
+  "counter2439": {
+    "emptyPageCount": 0,
+    "hasSignal": false,
+    "mode": "single",
+    "offCanvasCount": 0,
+    "overflowCount": 0,
+    "overflowTolerancePx": 1.0,
+    "overlapCount": 0,
+    "overlapTolerancePx": 2.0,
+    "pageCount": 10,
+    "pageFilter": null,
+    "pages": [],
+    "schemaVersion": "1.0",
+    "source": "samples/issue2439/issue2439_repeat_table_overlap.hwp",
+    "storedLineEscapeCount": 0,
+    "storedLineTolerancePx": 0.5,
+    "strict": false,
+    "textOverlapCount": 0,
+    "types": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  },
+  "initial_candidate": {
+    "focused_run": 27,
+    "pass": 26,
+    "fail": 1,
+    "new_overlap_input": "issue2439/issue2439_repeat_table_overlap.hwp",
+    "validation_cancelled_exit": 143,
+    "reason": "양수 오프셋의 별도 후속 소비와 여백 중복 가산. 실패 후보 WASM을 통과 증거로 사용하지 않음"
+  },
+  "final_focused": {
+    "run": 31,
+    "pass": 31,
+    "fail": 0,
+    "seconds": 70.343
+  },
+  "new_tests": 0,
+  "existing_test_functions": 3,
+  "test_change": "기존 함수에 문단 소속·뒤 표 겹침 관계, 고정 px 대신 실제 본문 경계·내용 순서",
+  "regression_deferral_reverted": true,
+  "source_original_preserved": true,
+  "issue7445_post_for_this_input": false,
+  "whole_nextest": "미실행",
+  "integration_pr_ready": false,
+  "candidate_anomaly": {
+    "text_overlap": 0,
+    "off_canvas": 0,
+    "overlap": 0,
+    "body_overflow": 2
+  },
+  "pdf_page_number": "1",
+  "native_tsv_source": "최신 Native review의 동일 Visual Sweep overlay_metrics 필드 추출; PNG-pair TSV도 동일 결과 확인",
+  "sha256": {
+    "samples/hwpx/opengov/36398366_결재문서본문_PC 셧다운 제외 및 초과근무 인정 요청(데이터전략과).hwpx": "8652b57784984a15e7e26a3d676b01b202c614f568059d78bf2f493a3745b2fc",
+    "pdf/hwpx/opengov/36398366-overtime-hwpx-2020.pdf": "d2179adaca8943393d9f2fed4c652da2f351f4a88ce88ec1948ab798095dbf27",
+    "src/renderer/typeset.rs": "6166eb7f4f06733fd9832b1ca0c7a34610004d3fcdae328abe9d77a86a3038db",
+    "src/renderer/typeset/table/block/entry.rs": "99cc71dd9010e142bd6a7d4e881c677d0a16539e074bf445ef32085c91b7e00f",
+    "tests/issue_1658_page_bottom_fixed_exclusion.rs": "1c78f58f02f6f04153043db0e8df76aa961cfb1011d66c735906113fa6f6261b",
+    "target/pr-review/release-test/rhwp": "193f2159193c7ae6f8ea4c63044f7ca89ac850b0e1a149b1d18adc7e40a26f45",
+    "scripts/visual_sweep.py": "72d40725cd1584e6f7a06cb8f290c2e7cd9269706415a13b83ef68b7597df62b",
+    "pkg/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+    "pkg/rhwp_bg.wasm": "240bdd1c93162e38a48691b471c75dc787ec0c262427fd90ee374ccfaa26820e"
+  },
+  "counter_gwanak_wasm": 99.5428,
+  "counter_sample2_native": {
+    "pages": 29,
+    "minimum": 92.22927,
+    "below90": 0
+  },
+  "counter_sample2_wasm": {
+    "pages": 29,
+    "minimum": 92.22927,
+    "below90": 0,
+    "exit_code": 0
+  },
+  "counter_5755_native_wasm": [
+    95.6336,
+    99.13619,
+    99.7054
+  ],
+  "gates": [
+    {
+      "gate": "nextest",
+      "exit_code": 0,
+      "elapsed_seconds": 274.008
+    },
+    {
+      "gate": "wasm-build",
+      "exit_code": 0,
+      "elapsed_seconds": 218.533
+    },
+    {
+      "gate": "native-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 26.664
+    },
+    {
+      "gate": "wasm-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 36.081
+    },
+    {
+      "gate": "workspace-build",
+      "exit_code": 0,
+      "elapsed_seconds": 42.65
+    },
+    {
+      "gate": "workspace-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 74.638
+    },
+    {
+      "gate": "fmt",
+      "exit_code": 0,
+      "elapsed_seconds": 9.087
+    },
+    {
+      "gate": "manifest",
+      "exit_code": 0,
+      "elapsed_seconds": 0.652
+    }
+  ],
+  "final_test_content_gates": [
+    {
+      "gate": "nextest",
+      "exit_code": 0,
+      "elapsed_seconds": 10.799
+    },
+    {
+      "gate": "native-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 0.449
+    },
+    {
+      "gate": "wasm-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 0.303
+    },
+    {
+      "gate": "workspace-build",
+      "exit_code": 0,
+      "elapsed_seconds": 0.497
+    },
+    {
+      "gate": "workspace-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 16.999
+    },
+    {
+      "gate": "fmt",
+      "exit_code": 0,
+      "elapsed_seconds": 8.741
+    },
+    {
+      "gate": "manifest",
+      "exit_code": 0,
+      "elapsed_seconds": 0.54
+    }
+  ],
+  "final_test_content_focused": {
+    "run": 3,
+    "pass": 3,
+    "fail": 0,
+    "seconds": 0.023
+  }
+}

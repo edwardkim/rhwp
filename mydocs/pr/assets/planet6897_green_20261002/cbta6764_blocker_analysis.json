@@ -1,0 +1,198 @@
+{
+  "head": "670e90c0e47aa370c5406303b9dbc9b5665ff20c",
+  "status": "narrow existing #7445 removal: two actually failing functions; normal function remains",
+  "whole_run": {
+    "head": "670e90c0e47aa370c5406303b9dbc9b5665ff20c",
+    "base": "6b3faf77d8085441f9f26d88d65a49791e910352",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--tests",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "state": "complete",
+    "started_unix": 1791067214.782636,
+    "log": "output/pr-review/planet6897-green-20261002/whole-670e90c0e.log",
+    "exit_code": 100,
+    "finished_unix": 1791067757.310762
+  },
+  "whole_summary": {
+    "passed": 10264,
+    "failed": 4,
+    "skipped": 50,
+    "exit_code": 100
+  },
+  "source": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+  "source_sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7",
+  "preserved_identical_source": "mydocs/pr/assets/issue7445/1613000-202200037-air-traffic-controller-cbta.hwp",
+  "pdf": "pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf",
+  "pdf_pages": 204,
+  "native_pages": 202,
+  "native_selected": [
+    {
+      "page": "183",
+      "tolerant_content_match_percent": "16.46720",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "16.18355",
+      "silhouette_boundary_reconciled_pixels": "383"
+    },
+    {
+      "page": "184",
+      "tolerant_content_match_percent": "13.14854",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "12.76774",
+      "silhouette_boundary_reconciled_pixels": "408"
+    },
+    {
+      "page": "185",
+      "tolerant_content_match_percent": "30.24961",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "28.53089",
+      "silhouette_boundary_reconciled_pixels": "1908"
+    }
+  ],
+  "full_document_visual": "not rerun; this is negative evidence at actual blocking pages, not whole fidelity validation",
+  "table_owner": {
+    "section": 2,
+    "paragraph": 4,
+    "control": 0,
+    "rows": 46,
+    "columns": 3,
+    "native_physical_pages": [
+      184,
+      185
+    ],
+    "pdf_first_physical_page": 186
+  },
+  "existing_deferral": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5869952956",
+  "existing_explicit_removal_record": "mydocs/pr/assets/issue7445/air6764_test_removal_validation.json",
+  "actual_failing_functions": [
+    "repaired_public_table_keeps_its_leading_rows_inside_the_paper",
+    "issue_6855_rewound_line_starts_the_next_page"
+  ],
+  "normal_function_kept": "issue_6855_band_page_paints_nothing_below_the_paper",
+  "production_change": false,
+  "other_baselines_changed": false,
+  "source_deletion": false,
+  "fresh_wasm_selected": "mydocs/pr/assets/planet6897_green_20261002/cbta6764_blocker_wasm.tsv",
+  "native_wasm_tsv_bytes_equal": true,
+  "mapped_review": {
+    "native_physical_page": 184,
+    "pdf_physical_page": 186,
+    "tolerant_content_match_percent": 26.55007,
+    "path": "mydocs/pr/assets/planet6897_green_20261002/cbta6764_native184_pdf186_review.png"
+  },
+  "remaining_test_validation": {
+    "test": "issue_6855_band_page_paints_nothing_below_the_paper",
+    "passed": 1,
+    "failed": 0,
+    "exit_code": 0,
+    "log": "output/pr-review/planet6897-green-20261002/cbta6764-remaining-test.log"
+  },
+  "new_test_functions": 0,
+  "issue_followup": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5974346179",
+  "initial_gates": {
+    "base": "6b3faf77d8085441f9f26d88d65a49791e910352",
+    "results": [
+      {
+        "gate": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0
+      },
+      {
+        "gate": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0
+      },
+      {
+        "gate": "wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0
+      },
+      {
+        "gate": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0
+      },
+      {
+        "gate": "all-targets-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0
+      },
+      {
+        "gate": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "6b3faf77d8085441f9f26d88d65a49791e910352"
+        ],
+        "exit_code": 1
+      }
+    ]
+  },
+  "generated_harness_correction": {
+    "cause": "cargo fmt changed the edited test source length after prepare, changing generated suite placement",
+    "prepare_after_fmt_exit_code": 0,
+    "fmt_after_prepare_exit_code": 0,
+    "all_targets_clippy_after_prepare_exit_code": 0,
+    "manifest_after_prepare_exit_code": 0,
+    "log": "output/pr-review/planet6897-green-20261002/cbta6764-defer-manifest-after-prepare.log"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "key": "issue6754",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue6754/156585314-ssagirang-barley.hwp",
+      "sha256": "18350ed16867552fbaef12b0677531c0b37fcc8e585cf7d4ec0a953f812644cf"
+    },
+    "pdf": {
+      "path": "pdf/issue6754-156585314-2020.pdf",
+      "sha256": "f8695727d73acad4ed6402a4a3e127f8d29f9bfc6a59b92b48546f1ddb5b784f"
+    },
+    "git_head": "8204bdb29999fdbf96c3227fa25ee860211fd3b1",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "d367dba28c3620d5d2bba6d236a443597c2710c3b7c2efa06611f087708b94e8"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "target/pr-review-ci-green-20260905/release-test/rhwp",
+      "path": "target/pr-review-ci-green-20260905/release-test/rhwp",
+      "sha256": "d34749fbff8d855ef6f019a6ea9b59b272e287399ea72c2adfa5f229c57ed5fc"
+    }
+  },
+  "dpi": 144,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    3
+  ],
+  "requested_page_shards": [
+    [
+      3
+    ]
+  ],
+  "run_state": "complete"
+}

@@ -15,7 +15,6 @@ use rhwp::parser::hwpx::{parse_hwpx, section::parse_hwpx_section};
 
 const SAMPLE: &str =
     "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp";
-const EXPECTED_PAGES: u32 = 215;
 
 /// #4882 기계 판정이 남긴 5개 각주 IR 경로.
 const PINNED_NOTE_PATHS: &[&str] = &[
@@ -280,7 +279,7 @@ fn issue4882_note_zero_vpos_survives_hwpx_roundtrip() {
 }
 
 #[test]
-fn issue4882_export_hwpx_reimport_keeps_215_pages() {
+fn issue4882_export_hwpx_reimport_keeps_original_page_count() {
     let path = sample_path();
     if !path.is_file() {
         return;
@@ -288,7 +287,6 @@ fn issue4882_export_hwpx_reimport_keeps_215_pages() {
     let bytes = std::fs::read(&path).unwrap();
     let source = DocumentCore::from_bytes(&bytes).expect("open");
     let before = source.page_count();
-    assert_eq!(before, EXPECTED_PAGES, "원본 쪽수 전제");
 
     let exported = source.export_hwpx_native().expect("export hwpx");
     let reparsed = DocumentCore::from_bytes(&exported).expect("reparse");

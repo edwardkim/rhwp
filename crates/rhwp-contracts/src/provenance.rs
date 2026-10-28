@@ -387,6 +387,9 @@ pub const MAP: &[CommandProvenance] = &[
     CommandProvenance {
         command: "run",
         untrusted: &[
+            f("preview", "입력 문서 기준 선검증 결과와 복제 예정 경로"),
+            f("steps[].operationResult", "템플릿 연산의 문서 파생 구조·경로 결과"),
+            f("invalid[].reason", "요청 및 입력 문서의 검증 오류 설명"),
             f("steps[].oldText", "set_cell step 이 덮기 전의 셀 텍스트"),
             f(
                 "steps[].confusable[].lookalikes",
@@ -586,6 +589,13 @@ pub const MAP: &[CommandProvenance] = &[
                안에 있고 봉투에는 없다.",
     },
     CommandProvenance {
+        command: "export-png",
+        untrusted: NONE,
+        note: "매니페스트는 산출 경로·바이트·쪽수·출력 조건뿐이다. 문서 내용은 PNG와 \
+               별도 render tree 파일에 있으며 JSON 봉투에는 없다. metadata-only도 \
+               엔진이 계산한 쪽수만 반환한다.",
+    },
+    CommandProvenance {
         command: "export-pdf",
         untrusted: NONE,
         note: "매니페스트는 backend·경로·바이트·쪽수뿐이다.",
@@ -599,6 +609,13 @@ pub const MAP: &[CommandProvenance] = &[
         command: "export-hwpx",
         untrusted: NONE,
         note: "저장 봉투는 경로·바이트·verify 판정값뿐이다.",
+    },
+    CommandProvenance {
+        command: "import-pdf",
+        untrusted: &[
+            f("diagnostics.pages", "PDF MediaBox와 추출 span의 원본 좌표·쪽 대응"),
+        ],
+        note: "본문은 저장 파일에 있다. 진단의 원본 좌표는 문서 파생 값이며, 경고·문단 정책은 엔진 상수다.",
     },
     CommandProvenance {
         command: "export-hml",

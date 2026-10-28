@@ -1,0 +1,115 @@
+[
+  {
+    "name": "fetch-base",
+    "command": [
+      "git",
+      "fetch",
+      "upstream",
+      "devel"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "fmt-check",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "clippy-native",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "clippy-wasm",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "rhwp",
+      "--lib",
+      "--target",
+      "wasm32-unknown-unknown",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "build-workspace",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "clippy-workspace",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "manifest-policy",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "731de9e1b4bb946d76f35108ed7e186ebe4ebecb"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "unit-tier-policy",
+    "command": [
+      "node",
+      "scripts/rust-unit-test-tiers.mjs",
+      "--check",
+      "--base-ref",
+      "731de9e1b4bb946d76f35108ed7e186ebe4ebecb"
+    ],
+    "exit_code": 0
+  }
+]

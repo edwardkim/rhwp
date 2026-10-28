@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "stage": "maintainer correction 2; held",
+  "base": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "producer_head": "483cfb4f8f87d8f693a2a86c270e9ffbe86769cb",
+  "producer_worktree_rust_diff_sha256": "b592900bf091ed314c81b183b5d96dba1513b8afb321372a7ef60f8bd84f1b10",
+  "focused": {
+    "passed": 5,
+    "failed": 0,
+    "seconds": 0.794,
+    "exit_code": 0
+  },
+  "normal_controls": {
+    "passed": 51,
+    "failed": 0,
+    "seconds": 0.901,
+    "exit_code": 0
+  },
+  "before_coordinate_regression": {
+    "failed": 1,
+    "exit_code": 100,
+    "failure": "first table top 796.92 versus independent PDF799.925"
+  },
+  "intermediate_coordinate_regression": {
+    "failed": 1,
+    "passed": 3,
+    "exit_code": 100,
+    "failure": "following body196.533 versus PDF200.261"
+  },
+  "synthetic_boundary_controls": {
+    "cases": 3,
+    "purpose": "row ownership and caption/footer occupancy only",
+    "also_passed_before": true,
+    "terminal_budget_failure_branch": "not exercised; unverified"
+  },
+  "page_count": {
+    "actual": 219,
+    "pdf": 215,
+    "status": "re_review_required"
+  },
+  "native": {
+    "pages": [
+      66,
+      67
+    ],
+    "tolerant_content_match_percent": [
+      98.24785,
+      93.58939
+    ],
+    "selected_gate": "passed",
+    "exit_code": 0,
+    "direct_inspection": [
+      "review66",
+      "review67",
+      "overlay66",
+      "overlay67"
+    ],
+    "font_exception": false
+  },
+  "remaining": [
+    "whole document pagination",
+    "terminal caption budget failure boundary",
+    "fresh WASM final head",
+    "full final Rust/Skia/lint/policies"
+  ]
+}

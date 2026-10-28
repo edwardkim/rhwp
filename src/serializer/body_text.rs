@@ -24,6 +24,16 @@ use crate::parser::tags;
 
 /// Section을 레코드 바이너리 스트림으로 직렬화
 pub fn serialize_section(section: &Section) -> Vec<u8> {
+    serialize_section_inner(section, None)
+}
+
+/// FileHeader에 실제 기록할 버전으로 새 문단 헤더를 완성한다.
+/// version은 FileHeader[32..36]의 little-endian UINT32다.
+pub(crate) fn serialize_section_for_version(section: &Section, version: u32) -> Vec<u8> {
+    serialize_section_inner(section, Some(version))
+}
+
+fn serialize_section_inner(section: &Section, version: Option<u32>) -> Vec<u8> {
     // 원본 스트림이 있으면 그대로 반환 (완벽한 라운드트립).
     //
     // [#4488] 다만 공개 모델 직접 변경은 raw_stream 을 무효화하지 않으므로,
@@ -55,19 +65,46 @@ pub fn serialize_section(section: &Section) -> Vec<u8> {
     // 시퀀스를 바꾸지 않기 위함.
     let has_real_page_def =
         section.section_def.page_def.width > 0 && section.section_def.page_def.height > 0;
+    // The layout model uses one column when the section has no body ColumnDef.
+    // Publish that definition when rebuilding an edited section: Hancom opens
+    // a secd-only HWP with default paper margins instead of the PAGE_DEF values
+    // (#7491, independent one-column save/print contrast). Raw reuse above still
+    // preserves an unmodified original; exporting never mutates the model.
+    let needs_default_column = !section.paragraphs.iter().any(|p| {
+        p.controls
+            .iter()
+            .any(|c| matches!(c, Control::ColumnDef(_)))
+    });
     let first_para_with_secd = section.paragraphs.first().and_then(|p| {
-        if !has_real_page_def
-            || p.controls
-                .iter()
-                .any(|c| matches!(c, Control::SectionDef(_)))
-        {
+        let needs_secd = !p
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::SectionDef(_)));
+        if !has_real_page_def || (!needs_secd && !needs_default_column) {
             None
         } else {
             let mut clone = p.clone();
-            clone.controls.insert(
-                0,
-                Control::SectionDef(Box::new(section.section_def.clone())),
-            );
+            if needs_secd {
+                clone.controls.insert(
+                    0,
+                    Control::SectionDef(Box::new(section.section_def.clone())),
+                );
+            }
+            if needs_default_column {
+                let leading_defs = clone
+                    .controls
+                    .iter()
+                    .take_while(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)))
+                    .count();
+                clone.controls.insert(
+                    leading_defs,
+                    Control::ColumnDef(crate::model::page::ColumnDef {
+                        column_count: 1,
+                        same_width: true,
+                        ..Default::default()
+                    }),
+                );
+            }
             // [#4680] 정의 제어문자가 글자보다 앞에 놓이도록 자리를 비운다 —
             // 간격이 없으면 `serialize_para_text` 가 텍스트 뒤에 몰아 쓰고, 그런 문서는
             // 한글이 열다 멎는다. 어댑터와 같은 문단 좌표 계약을 적용한다.
@@ -89,10 +126,31 @@ pub fn serialize_section(section: &Section) -> Vec<u8> {
         };
         serialize_paragraph_with_msb(para_ref, 0, is_last, &mut records);
     }
-    if has_memo_tail {
-        serialize_memo_tail(section, &memo_lists, &mut records);
+    if let Some(tail) = &section.trailing_lists {
+        // 본문 재작성과 별개로 저장 소유를 유지한다. 모델 목록을 중복 생성하지 않는다.
+        records.extend(tail.records.iter().map(|raw| Record {
+            tag_id: raw.tag_id,
+            level: raw.level,
+            size: raw.data.len() as u32,
+            data: raw.data.clone(),
+        }));
+    } else {
+        if has_memo_tail {
+            serialize_memo_tail(section, &memo_lists, &mut records);
+        }
+        serialize_master_page_tail(section, &mut records);
     }
-    serialize_master_page_tail(section, &mut records);
+    // 변경추적 병합 문단 여부(UINT16)는 5.0.3.2부터 존재한다. 재귀로 생성한
+    // 머리말·꼬리말·셀 문단도 같은 출력 버전을 따른다. 보존된 24바이트 이상의
+    // 헤더는 건드리지 않으며, 원본 스트림 재사용은 위에서 이미 반환했다.
+    if version.is_some_and(|v| v >= 0x0500_0302) {
+        for record in &mut records {
+            if record.tag_id == tags::HWPTAG_PARA_HEADER && record.data.len() == 22 {
+                record.data.extend_from_slice(&0u16.to_le_bytes());
+                record.size = record.data.len() as u32;
+            }
+        }
+    }
     write_records(&records)
 }
 
@@ -165,7 +223,7 @@ fn serialize_memo_tail(
                 }]
             }),
         line_segs: last_para
-            .map(|p| p.line_segs.clone())
+            .map(|p| p.serializable_line_segs().to_vec())
             .filter(|segs| !segs.is_empty())
             .unwrap_or_else(|| Paragraph::new_empty().line_segs),
         raw_header_extra: vec![0; 12],
@@ -269,8 +327,10 @@ fn serialize_paragraph_with_msb(
         || !para.controls.is_empty()
         || !para.title_marks.is_empty()
         || has_emittable_orphan_end;
+    // An explicit empty PARA_TEXT (just its terminator) is different from
+    // an absent record. Preserve that source distinction on rebuild.
     let (text_data, residue_shifts): (Option<Vec<u8>>, Vec<GuideResidueShift>) =
-        if has_content || (para.has_para_text && para.char_count > 1) {
+        if has_content || para.has_para_text {
             let result = serialize_para_text(para);
             (Some(result.bytes), result.residue_shifts)
         } else {
@@ -288,7 +348,7 @@ fn serialize_paragraph_with_msb(
     let actual_char_count = if let Some(ref td) = text_data {
         (td.len() / 2) as u32
     } else {
-        para.char_count.min(1)
+        1
     };
 
     // [#5961] 저장 lineseg 의 `textpos` 를 **HWP5 문단 축으로 올려서** 내보낸다.
@@ -308,9 +368,10 @@ fn serialize_paragraph_with_msb(
     // HWPX 파서만 채우므로(HWP5·HWP3·HML 출처는 0), x2h 에서만 발동한다. HWPX 재수출
     // (x2x)은 이 함수를 거치지 않고 `serializer/hwpx` 가 날값을 유지한다 — 거기서 축을
     // 옮기면 왕복마다 8씩 흘러내린다(#5943 주석).
+    let serializable_line_segs = para.serializable_line_segs();
     let hwp5_axis_line_segs: Option<Vec<LineSeg>> =
-        (para.hwpx_axis_shift != 0 && !para.line_segs.is_empty()).then(|| {
-            para.line_segs
+        (para.hwpx_axis_shift != 0 && !serializable_line_segs.is_empty()).then(|| {
+            serializable_line_segs
                 .iter()
                 .map(|seg| LineSeg {
                     text_start: para.line_seg_text_start_of(seg.text_start),
@@ -318,7 +379,9 @@ fn serialize_paragraph_with_msb(
                 })
                 .collect()
         });
-    let source_line_segs = hwp5_axis_line_segs.as_deref().unwrap_or(&para.line_segs);
+    let source_line_segs = hwp5_axis_line_segs
+        .as_deref()
+        .unwrap_or(serializable_line_segs);
 
     // [#4677] 본문에 대응하지 않는 lineseg 는 파일에 내보내지 않는다 — 조판 전용 보강 줄과
     // PARA_TEXT 밖을 가리키는 줄 두 갈래다(판정은 `line_segs_within_text` 주석 참조).
@@ -327,16 +390,12 @@ fn serialize_paragraph_with_msb(
     //
     // 범위 판정도 축을 올린 값으로 한다 — `actual_char_count` 는 이 파일에 실제로 실린
     // 글자 수라 언제나 HWP5 축이다.
-    let line_segs_in_range = if para.stored_text_partition_is_dirty() {
+    let line_segs_in_range = if !super::line_cache::can_serialize_line_partition(para) {
         // Text/style mutation retained the old rows only as an edit-reflow
         // template. They are not a serializable partition of the new text.
         &source_line_segs[..0]
     } else {
-        line_segs_within_text(
-            source_line_segs,
-            actual_char_count,
-            para.layout_only_fill_lines,
-        )
+        line_segs_within_text(source_line_segs, actual_char_count)
     };
 
     // PARA_HEADER (effective_char_shapes 길이 반영)
@@ -396,8 +455,9 @@ fn serialize_paragraph_with_msb(
     }
 
     // PARA_RANGE_TAG
-    if !para.range_tags.is_empty() {
-        let data = serialize_para_range_tag(&para.range_tags);
+    let range_tags = para.effective_markpen_range_tags();
+    if !range_tags.is_empty() {
+        let data = serialize_para_range_tag(&range_tags);
         records.push(Record {
             tag_id: tags::HWPTAG_PARA_RANGE_TAG,
             level: base_level + 1,
@@ -515,6 +575,19 @@ fn serialize_para_header_with_mask(
         match para.column_type {
             ColumnBreakType::Section => 0x01,
             ColumnBreakType::MultiColumn => 0x02,
+            // [#4680] 합성 쪽나눔은 저장하지 않는다 — HWPX 저장기가 이미 지키는 계약이고
+            // (`serializer/hwpx/section.rs`), HWP3 파서 주석도 "합성 표시를 남겨 저장 포맷
+            // 방출에서 제외한다"고 적는다. HWP5 경로만 그 표시를 안 봤다.
+            //
+            // HWP3 파서는 저장 당시의 **자연 쪽 경계**(pgy 되돌아감·줄 break_flag)를
+            // `ColumnBreakType::Page` 로 승격해 조판에 쓴다. 그건 사용자의 명시적
+            // 쪽나눔이 아니므로 파일에 쓰면 안 된다 — 한글이 그 문서를 다시 조판할 때
+            // 강제 쪽나눔으로 읽어 쪽이 불어난다.
+            //
+            // 실측(코퍼스 `1480000-201400060`, 한글 2024): 한/글 자신의 HWP5 변환본은
+            // 그 21문단에 0 을 쓰는데 우리는 4(쪽 나누기)를 썼다. 그 바이트만 0 으로
+            // 되돌리면 우리 저장본이 50쪽 -> 45쪽이 된다(한/글 변환본은 40쪽).
+            ColumnBreakType::Page if para.page_break_synthesized => 0x00,
             ColumnBreakType::Page => 0x04,
             ColumnBreakType::Column => 0x08,
             ColumnBreakType::None => 0x00,
@@ -524,7 +597,8 @@ fn serialize_para_header_with_mask(
 
     // count 필드는 실제 데이터 기반으로 항상 재생성 (편집 후 불일치 방지)
     w.write_u16(num_char_shapes as u16).unwrap();
-    w.write_u16(para.range_tags.len() as u16).unwrap();
+    w.write_u16(para.effective_markpen_range_tags().len() as u16)
+        .unwrap();
     w.write_u16(num_line_segs as u16).unwrap();
 
     // instanceId + 추가 바이트: raw_header_extra에서 복원
@@ -534,9 +608,9 @@ fn serialize_para_header_with_mask(
         let extra = &para.raw_header_extra[6..];
         w.write_bytes(extra).unwrap();
     } else {
-        // 새 문단 (HWPX 출처, raw_header_extra 없음): instanceId(4)만 기록.
-        // 한컴 정답지 footnote-01.hwp 의 PARA_HEADER size=22 = 18 (heading) + 4 (instanceId).
-        // 변경추적 UINT16 (size=24 형식) 은 한컴 정답지에 미사용.
+        // 새 문단: 공통 instanceId만 기록한다. 변경추적 UINT16은 섹션의
+        // 레코드를 인코딩하기 전에 실제 출력 FileHeader 버전에 맞춰 추가한다.
+        // footnote-01.hwp의 22바이트 헤더는 5.0.3.0 형식이다.
         w.write_u32(0).unwrap();
     }
 
@@ -646,7 +720,29 @@ fn push_guide_residue(
     });
 }
 
+/// 저장기와 같은 순서로 각 컨트롤의 원본 슬롯 위치를 구한다.
+pub(crate) fn control_stream_slots(para: &Paragraph) -> Vec<Option<(u32, usize)>> {
+    let mut slots = vec![None; para.controls.len()];
+    serialize_para_text_with_slots(para, Some(&mut slots), None);
+    slots
+}
+
+/// 저장기가 실제로 닫는 각 필드의 스트림 경계다.
+pub(crate) fn field_stream_ends(para: &Paragraph) -> Vec<Option<u32>> {
+    let mut ends = vec![None; para.field_ranges.len()];
+    serialize_para_text_with_slots(para, None, Some(&mut ends));
+    ends
+}
+
 fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
+    serialize_para_text_with_slots(para, None, None)
+}
+
+fn serialize_para_text_with_slots(
+    para: &Paragraph,
+    mut slots: Option<&mut [Option<(u32, usize)>]>,
+    mut ends: Option<&mut [Option<u32>]>,
+) -> ParaTextResult {
     let mut code_units: Vec<u16> = Vec::new();
     let text_chars: Vec<char> = para.text.chars().collect();
     let mut ctrl_idx = 0;
@@ -665,12 +761,10 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
     // trailing FIELD_END: control_idx → marker 매핑 (FIELD_BEGIN 직후에 삽입)
     let mut trailing_end_after_ctrl: HashMap<usize, Vec<FieldEndMarker>> = HashMap::new();
     // trailing FIELD_END 중 FIELD_BEGIN이 이미 본문에 배치된 경우 (orphan)
-    let mut trailing_orphan_ends: Vec<u32> = Vec::new();
-    // [#4402] empty_field_ends/trailing_end_after_ctrl 과 같은 키로 안내문 잔재를 매핑 —
+    let trailing_orphan_ends: Vec<u32> = Vec::new();
+    // [#4402] empty_fields/trailing_end_after_ctrl 과 같은 키로 안내문 잔재를 매핑 —
     // 자기 FIELD_END 직전에 되살린다. mismatch(orphan) 경로는 #3545 와 동일하게 제외한다
     // (슬롯 위치 추정이 이미 무너진 퇴화 경로라 주입이 개선이라 단정할 수 없다).
-    let mut empty_field_residues: BTreeMap<usize, Vec<&crate::model::control::GuideResidue>> =
-        BTreeMap::new();
     let mut trailing_residues: HashMap<usize, Vec<&crate::model::control::GuideResidue>> =
         HashMap::new();
 
@@ -681,9 +775,11 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
     // 필드(시작==끝)는 자기 BEGIN 뒤에 END 가 붙어야 한다. 두 경우를 한 통에 담으면 순서를
     // 가릴 수 없다.
     //
-    // - `field_ends`       : 시작 < 끝 — 그 자리의 **모든 것보다 먼저** 나간다.
-    // - `empty_field_ends` : 시작 == 끝 — 자기 BEGIN **직후에** 나간다.
-    let mut empty_field_ends: BTreeMap<usize, Vec<FieldEndMarker>> = BTreeMap::new();
+    // - `field_ends`   : 시작 < 끝 — 그 자리의 **모든 것보다 먼저** 나간다.
+    // - `empty_fields` : 시작 == 끝 — 자기 BEGIN(감싼 안쪽 슬롯이 있으면 그 뒤) **직후에**
+    //   나간다. 같은 자리의 빈 필드 둘을 BEGIN·BEGIN·END·END 로 쓰면 파서가 바깥·안쪽으로
+    //   짝지어 순서가 뒤바뀐다.
+    let mut empty_fields: BTreeMap<usize, Vec<EmptyFieldEnd>> = BTreeMap::new();
     // 컨트롤 → 그 컨트롤이 여는 필드의 시작 문자 위치. FIELD_BEGIN 은 이 위치보다 앞에
     // 나올 수 없다 — 갭 크기만 보고 밀어 넣으면 뒤 필드의 BEGIN 이 앞 갭으로 빨려 들어가
     // 위치 0 에 두 개가 겹쳐 방출된다.
@@ -695,24 +791,20 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
             .or_insert(fr.start_char_idx);
     }
 
-    for fr in &para.field_ranges {
-        let marker = if let Some(control) = para.controls.get(fr.control_idx) {
+    for (index, fr) in para.field_ranges.iter().enumerate() {
+        let mut marker = if let Some(control) = para.controls.get(fr.control_idx) {
             field_end_marker(control)
         } else {
             FieldEndMarker::default()
         };
+        marker.trace_index = Some(index);
         let residue = guide_residue_for(para, fr);
         if fr.end_char_idx < text_len && fr.start_char_idx == fr.end_char_idx {
-            empty_field_ends
-                .entry(fr.end_char_idx)
-                .or_default()
-                .push(marker);
-            if let Some(residue) = residue {
-                empty_field_residues
-                    .entry(fr.end_char_idx)
-                    .or_default()
-                    .push(residue);
-            }
+            empty_fields.entry(fr.end_char_idx).or_default().push((
+                fr.control_idx + fr.inner_slot_count,
+                marker,
+                residue,
+            ));
         } else if fr.end_char_idx < text_len {
             field_ends.entry(fr.end_char_idx).or_default().push(marker);
         } else {
@@ -778,6 +870,19 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
             prev_end += 8;
         }
 
+        // ① 여기서 **끝나는** 필드의 FIELD_END — 이 자리의 무엇보다 먼저 닫는다.
+        //    (그래야 같은 자리에서 시작하는 다음 필드의 BEGIN 과 뒤엉키지 않는다)
+        //    아래 자리표시자 판정보다도 앞서야 한다. 필드 바로 뒤의 자동번호 공백은 이 끝
+        //    슬롯을 지나야 `offset == prev_end` 가 되므로, 늦게 내면 공백을 리터럴로 쓰고
+        //    자동번호를 문단 끝에 덧붙여 다시 열 때 공백이 하나 남는다(#7528).
+        if let Some(markers) = field_ends.get(&i) {
+            for &marker in markers {
+                trace_field_end(marker, prev_end, &mut ends);
+                push_field_end_ctrl(&mut code_units, marker);
+                prev_end += 8;
+            }
+        }
+
         // [Task #1050] AutoNumber placeholder 검출:
         // char_offsets[i] == prev_end 이고 ch == ' ' 이고 다음 char_offset 이 prev_end + 8 +
         // (실제 char 폭)인 경우 = placeholder space (i char 한 자리 차지 + 다음 char 가 8 점프 후).
@@ -804,12 +909,13 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
         // 아직 0 이라 판정이 실패한다 — 그 자리를 채운 뒤 다시 물어야 자리표시자를 알아본다
         // (#4957: `secd`·`cold` 를 앞세운 HWP3 첫 문단).
         //
-        // 두 번째 물음은 `object_only` 로 **U+FFFC 만** 받는다. 공백 자리표시자는 판별자가
-        // 글자가 아니라 `controls[ctrl_idx]` 의 코드(0x0012)뿐인데, 갭을 채우고 나면
-        // `ctrl_idx` 가 다른 컨트롤을 가리킨다 — 그때 다시 물으면 미주 앞의 **진짜 공백**이
-        // 자동번호로 오인돼 먹힌다(#3495 SO-SUEOP 문단 238). `U+FFFC` 는 글자 자체가
-        // 판별자라 이 위험이 없다.
-        let is_placeholder = |prev_end: u32, ctrl_idx: usize, object_only: bool| -> bool {
+        // 두 번째 물음(`after_gap`)도 공백 자리표시자를 받아야 각주·개체 바로 뒤나 구역·단
+        // 정의 뒤의 자동번호가 자기 자리에 써진다. 다만 이때는 자리 폭으로도 가린다. 공백
+        // 자리표시자는 판별자가 글자가 아니라 `controls[ctrl_idx]` 의 코드(0x0012)뿐인데, 갭을
+        // 채우고 나면 `ctrl_idx` 가 다른 컨트롤을 가리켜 미주 앞의 **진짜 공백**이 자동번호로
+        // 오인될 수 있다(#3495 SO-SUEOP 문단 238). 자리표시자는 8유닛이라 다음 글자가 8의
+        // 배수만큼 뒤에 오고, 1유닛인 진짜 공백은 뒤에 슬롯이 붙어도 그렇지 않다.
+        let is_placeholder = |prev_end: u32, ctrl_idx: usize, after_gap: bool| -> bool {
             if offset != prev_end
                 || ctrl_idx >= para.controls.len()
                 || !next_offset.map_or(is_last_text_char, |n| n >= offset + 8)
@@ -831,13 +937,18 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 // placeholder 를 만들지 않으므로, 여기 포함하면 미주 앞의 진짜 공백을
                 // placeholder 로 오인해 컨트롤로 덮어쓴다 (SO-SUEOP.hwp 문단 238:
                 // 공백 12개 -> 11개, 뒤 텍스트가 한 칸 당겨짐).
-                ' ' if !object_only => {
+                ' ' => {
                     matches!(control_char_code_and_id(&para.controls[ctrl_idx]).0, 0x0012)
+                        && (!after_gap
+                            || next_offset.is_none_or(|n| (n - offset).is_multiple_of(8)))
                 }
                 _ => false,
             }
         };
         if is_placeholder(prev_end, ctrl_idx, false) {
+            if let Some(slots) = slots.as_deref_mut() {
+                slots[ctrl_idx] = Some((prev_end, i));
+            }
             let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
             push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
             ctrl_idx += 1;
@@ -850,21 +961,11 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
         // 예약 없이 갭을 컨트롤로 채우면 FIELD_END 전용 갭(8 cu)을 다음 컨트롤이
         // 선점하여 이후 모든 char_offsets 가 시프트되고, 재파싱 시 lineseg
         // text_start 매핑이 어긋나 줄바꿈 위치가 이동한다 (seoul_0043 글상자).
-        // ① 여기서 **끝나는** 필드의 FIELD_END — 이 자리의 무엇보다 먼저 닫는다.
-        //    (그래야 같은 자리에서 시작하는 다음 필드의 BEGIN 과 뒤엉키지 않는다)
-        if let Some(markers) = field_ends.get(&i) {
-            for &marker in markers {
-                push_field_end_ctrl(&mut code_units, marker);
-                prev_end += 8;
-            }
-        }
+        // ① 여기서 끝나는 필드의 FIELD_END 는 위 자리표시자 판정보다 먼저 냈다.
 
-        // ② 갭 채우기 — 빈 필드의 END 자리는 예약해 둔다.
-        let pending_field_end_cus = empty_field_ends
-            .get(&i)
-            .map(|markers| markers.len() as u32 * 8)
-            .unwrap_or(0);
-        while prev_end + 8 + pending_field_end_cus <= offset
+        // ② 갭 채우기 — 아직 닫지 않은 빈 필드의 END 자리는 예약해 둔다.
+        let mut empty_here = empty_fields.remove(&i).unwrap_or_default();
+        while prev_end + 8 + empty_here.len() as u32 * 8 <= offset
             && ctrl_idx < para.controls.len()
             // 필드를 여는 컨트롤은 자기 시작 위치 전에 방출하지 않는다.
             && field_begin_pos
@@ -872,10 +973,21 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 .is_none_or(|&start| start <= i)
         {
             if emits_ctrl_header(&para.controls[ctrl_idx]) {
+                if let Some(slots) = slots.as_deref_mut() {
+                    slots[ctrl_idx] = Some((prev_end, i));
+                }
                 let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
                 push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
                 prev_end += 8;
             }
+            close_empty_fields(
+                &mut empty_here,
+                ctrl_idx,
+                &mut code_units,
+                &mut residue_shifts,
+                &mut prev_end,
+                &mut ends,
+            );
             ctrl_idx += 1;
         }
 
@@ -888,10 +1000,21 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 .is_some_and(|&start| start == i)
         {
             if emits_ctrl_header(&para.controls[ctrl_idx]) {
+                if let Some(slots) = slots.as_deref_mut() {
+                    slots[ctrl_idx] = Some((prev_end, i));
+                }
                 let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
                 push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
                 prev_end += 8;
             }
+            close_empty_fields(
+                &mut empty_here,
+                ctrl_idx,
+                &mut code_units,
+                &mut residue_shifts,
+                &mut prev_end,
+                &mut ends,
+            );
             ctrl_idx += 1;
         }
 
@@ -899,6 +1022,9 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
         //     때문에 실패했을 수 있다. 여기서 걸리면 `ctrl_idx` 가 갭을 채운 만큼 앞으로
         //     가 있어, 자리표시자가 **자기 컨트롤**과 짝지어진다(#4957).
         if is_placeholder(prev_end, ctrl_idx, true) {
+            if let Some(slots) = slots.as_deref_mut() {
+                slots[ctrl_idx] = Some((prev_end, i));
+            }
             let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
             push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
             ctrl_idx += 1;
@@ -906,20 +1032,15 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
             continue;
         }
 
-        // ④ 빈 필드(시작==끝)의 FIELD_END — 자기 BEGIN 직후.
-        // [#4402] 안내문 잔재는 자기 FIELD_END 바로 앞에 되살린다 (HWPX
-        // `emit_field_end_at` 과 동일 순서 — BEGIN 뒤, END 앞).
-        if let Some(residues) = empty_field_residues.get(&i) {
-            for &residue in residues {
-                push_guide_residue(&mut code_units, &mut residue_shifts, residue, prev_end);
-            }
-        }
-        if let Some(markers) = empty_field_ends.get(&i) {
-            for &marker in markers {
-                push_field_end_ctrl(&mut code_units, marker);
-                prev_end += 8;
-            }
-        }
+        // ④ 닫는 슬롯을 이 자리에서 만나지 못한 빈 필드의 FIELD_END.
+        close_empty_fields(
+            &mut empty_here,
+            usize::MAX,
+            &mut code_units,
+            &mut residue_shifts,
+            &mut prev_end,
+            &mut ends,
+        );
 
         // 텍스트 문자 쓰기
         match *ch {
@@ -971,7 +1092,9 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
                 prev_end = offset + 1;
             }
             '\u{2007}' => {
-                if should_serialize_figure_space_as_hwp_fixed_blank(para) {
+                if !para.literal_figure_spaces.contains(&i)
+                    && should_serialize_figure_space_as_hwp_fixed_blank(para)
+                {
                     code_units.push(0x001F);
                 } else {
                     code_units.push(0x2007);
@@ -1025,6 +1148,9 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
 
     while ctrl_idx < para.controls.len() {
         if emits_ctrl_header(&para.controls[ctrl_idx]) {
+            if let Some(slots) = slots.as_deref_mut() {
+                slots[ctrl_idx] = Some((prev_end, text_chars.len()));
+            }
             let (ctrl_code, ctrl_id) = control_char_code_and_id(&para.controls[ctrl_idx]);
             push_extended_ctrl(&mut code_units, ctrl_code, ctrl_id);
             prev_end += 8;
@@ -1040,6 +1166,7 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
         // 이 컨트롤(FIELD_BEGIN)에 대응하는 trailing FIELD_END 삽입
         if let Some(end_markers) = trailing_end_after_ctrl.remove(&ctrl_idx) {
             for marker in end_markers {
+                trace_field_end(marker, prev_end, &mut ends);
                 push_field_end_ctrl(&mut code_units, marker);
                 prev_end += 8;
             }
@@ -1056,7 +1183,9 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
     // HWPX 축 판단(`emit_guide_residue` 는 이 경로를 다루지 않는다)을 그대로 따른다.
     for end_markers in trailing_end_after_ctrl.values() {
         for &marker in end_markers {
+            trace_field_end(marker, prev_end, &mut ends);
             push_field_end_ctrl(&mut code_units, marker);
+            prev_end += 8;
         }
     }
 
@@ -1149,10 +1278,49 @@ fn serialize_para_char_shape(char_shapes: &[CharShapeRef]) -> Vec<u8> {
     w.into_bytes()
 }
 
+/// 본문 중간 빈 필드의 `(닫기 직전 컨트롤 번호, 종료 표지, 되살릴 안내문 잔재)`.
+type EmptyFieldEnd<'a> = (
+    usize,
+    FieldEndMarker,
+    Option<&'a crate::model::control::GuideResidue>,
+);
+
+/// `closed` 번 컨트롤 바로 뒤에서 닫히는 빈 필드의 FIELD_END 를 쓴다. `usize::MAX` 면 남은
+/// 것을 모두 쓴다. [#4402] 안내문 잔재는 자기 FIELD_END 바로 앞에 되살린다 (HWPX
+/// `emit_field_end_at` 과 동일 순서 — BEGIN 뒤, END 앞).
+fn close_empty_fields(
+    pending: &mut Vec<EmptyFieldEnd<'_>>,
+    closed: usize,
+    code_units: &mut Vec<u16>,
+    residue_shifts: &mut Vec<GuideResidueShift>,
+    prev_end: &mut u32,
+    ends: &mut Option<&mut [Option<u32>]>,
+) {
+    pending.retain(|&(close_after, marker, residue)| {
+        if closed != usize::MAX && close_after != closed {
+            return true;
+        }
+        if let Some(residue) = residue {
+            push_guide_residue(code_units, residue_shifts, residue, *prev_end);
+        }
+        trace_field_end(marker, *prev_end, ends);
+        push_field_end_ctrl(code_units, marker);
+        *prev_end += 8;
+        false
+    });
+}
+
 #[derive(Debug, Clone, Copy, Default)]
 struct FieldEndMarker {
     ctrl_id: u32,
     memo_index: u32,
+    trace_index: Option<usize>,
+}
+
+fn trace_field_end(marker: FieldEndMarker, pos: u32, ends: &mut Option<&mut [Option<u32>]>) {
+    if let Some((ends, index)) = ends.as_deref_mut().zip(marker.trace_index) {
+        ends[index] = Some(pos);
+    }
 }
 
 fn field_end_marker(ctrl: &Control) -> FieldEndMarker {
@@ -1164,11 +1332,13 @@ fn field_end_marker(ctrl: &Control) -> FieldEndMarker {
             FieldEndMarker {
                 ctrl_id: tags::FIELD_MEMO,
                 memo_index: memo_field_index(field),
+                trace_index: None,
             }
         }
         Control::Field(field) => FieldEndMarker {
             ctrl_id: field.ctrl_id,
             memo_index: 0,
+            trace_index: None,
         },
         _ => FieldEndMarker::default(),
     }
@@ -1234,13 +1404,8 @@ fn push_field_end_ctrl(code_units: &mut Vec<u16>, marker: FieldEndMarker) {
 /// (`char_count=9`, 줄 `[0, 9]`)이 그렇고, 저장소 샘플 5건에서 40개 문단이 이 형태다.
 /// 한글은 그 문서를 정상 개방하므로 끝 위치를 가리키는 줄은 버릴 값이 아니다. 오라클로
 /// 본문 폐기를 확정한 값은 모두 끝을 **넘어선다**(`char_count=5` 에 `10`, `37` 에 `40`).
-fn line_segs_within_text(
-    line_segs: &[LineSeg],
-    char_count: u32,
-    layout_only_fill_lines: usize,
-) -> &[LineSeg] {
-    let real = line_segs.len().saturating_sub(layout_only_fill_lines);
-    let in_range = line_segs_within_text_axis(&line_segs[..real], char_count);
+fn line_segs_within_text(line_segs: &[LineSeg], char_count: u32) -> &[LineSeg] {
+    let in_range = line_segs_within_text_axis(line_segs, char_count);
     if in_range.is_empty() {
         line_segs
     } else {
@@ -1301,6 +1466,15 @@ fn serialize_para_range_tag(range_tags: &[RangeTag]) -> Vec<u8> {
 fn should_serialize_figure_space_as_hwp_fixed_blank(para: &Paragraph) -> bool {
     const HWP5_AUTONUM_FWSPACE_TRAILING_TAG: u32 = 0x0100_0023;
     const HWP5_FIXED_WIDTH_SPACE_MASK: u32 = 1u32 << 0x001f;
+
+    if !para
+        .text
+        .chars()
+        .enumerate()
+        .any(|(i, ch)| ch == '\u{2007}' && !para.literal_figure_spaces.contains(&i))
+    {
+        return false;
+    }
 
     if para.control_mask & HWP5_FIXED_WIDTH_SPACE_MASK != 0 && para.text.contains('\u{2007}') {
         return true;
@@ -1387,7 +1561,9 @@ fn control_char_code_and_id(ctrl: &Control) -> (u16, u32) {
         // 통째로 버린다(0자·1쪽). `CTRL_CHAR_OVERLAP` 상수는 이름과 달리 'tdut'(덧말)이다.
         Control::Ruby(_) => (0x0017, tags::CTRL_CHAR_OVERLAP),
         Control::CharOverlap(_) => (0x0017, tags::CTRL_TCPS),
-        Control::Field(f) => (0x0003, f.ctrl_id),
+        // Native MEMO의 CTRL_HEADER는 %unk여도 본문 FIELD_BEGIN은 %%me다.
+        // 시작·종료 마커가 같은 메모 정체성을 소비해야 목록 번호와 연결된다.
+        Control::Field(_) => (0x0003, field_end_marker(ctrl).ctrl_id),
         Control::Equation(_) => (0x000B, tags::CTRL_EQUATION),
         Control::Form(_) => (0x000B, tags::CTRL_FORM),
         Control::Unknown(u) => (0x000B, u.ctrl_id),
@@ -2097,6 +2273,39 @@ mod tests {
             1,
             "조판 전용 보강 줄은 레코드에서 제외된다"
         );
+
+        memo_root_copies_only_source_line_segments();
+    }
+
+    fn memo_root_copies_only_source_line_segments() {
+        let mut last = Paragraph::new_empty();
+        last.line_segs = vec![
+            LineSeg {
+                text_start: 0,
+                line_height: 500,
+                ..Default::default()
+            },
+            LineSeg {
+                text_start: 1,
+                line_height: 500,
+                ..Default::default()
+            },
+        ];
+        last.layout_only_fill_lines = 1;
+        let section = Section {
+            paragraphs: vec![last],
+            ..Default::default()
+        };
+        let memo_lists = vec![(1, vec![Paragraph::new_empty()])];
+        let mut records = Vec::new();
+
+        serialize_memo_tail(&section, &memo_lists, &mut records);
+
+        let root_lines = records
+            .iter()
+            .find(|record| record.tag_id == tags::HWPTAG_PARA_LINE_SEG)
+            .expect("memo root line record");
+        assert_eq!(root_lines.data.len(), 36, "one source LineSeg only");
     }
 
     /// PARA_RANGE_TAG 라운드트립
@@ -2504,6 +2713,7 @@ mod tests {
                 ..Default::default()
             },
             paragraphs: vec![para],
+            trailing_lists: None,
             raw_stream: None,
             raw_provenance: None,
         };

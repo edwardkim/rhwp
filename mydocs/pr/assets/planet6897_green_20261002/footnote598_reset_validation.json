@@ -1,0 +1,55 @@
+{
+  "analysis": "저장 첫 줄 top은 문단 앞 간격을 포함한다. 비교 대상만 앞 간격을 빼서 쪽 원점을 적용한 뒤에도4px 차이로 정상 저장 경계를 거절했다.",
+  "source": "samples/footnote-01.hwp",
+  "reference": "pdf/footnote-01-hwp-2020.pdf",
+  "source_first_top_hu": 63029,
+  "source_page_base_hu": 917,
+  "source_first_top_px": 828.16,
+  "current_flow_px": 824.16,
+  "spacing_before_px": 4,
+  "producer_consumer": [
+    "prepare_forced_page_boundary: 앞 간격 포함 첫 줄로 저장 owner 검증",
+    "scan_lines: 첫 조각만 앞 간격 포함; 이월 조각에는0",
+    "table block entry: 같은 owner 조회 원점 사용",
+    "plan_fragment: 기존 sp_b 점유 유지; 새 간격 가산 없음"
+  ],
+  "debug_native_all6_percent": [
+    97.9649,
+    98.41217,
+    98.21245,
+    66.79296,
+    52.81675,
+    100
+  ],
+  "page3_before_percent": 37.65674,
+  "source_ownership": {
+    "page2_pi23_lines": [
+      0,
+      1
+    ],
+    "page3_pi23_lines": [
+      1,
+      2
+    ]
+  },
+  "focused": {
+    "run": 30,
+    "passed": 30,
+    "failed": 0,
+    "exit": 0,
+    "counter": "issue_6718_zero_rewind_in_split_paragraph 1PASS/exit0"
+  },
+  "fresh_wasm": "pending",
+  "full_gate": "pending",
+  "tests_added": 0,
+  "tests_removed": 0,
+  "test_expectations_changed": false,
+  "remaining_below90_pages": [
+    4,
+    5
+  ],
+  "native_clippy_exit": 0,
+  "debug_build_exit": 0,
+  "visual_sweep_exit": 1,
+  "visual_sweep_exit_reason": "정상 TSV 산출; 남은4·5쪽90미달로 보류"
+}

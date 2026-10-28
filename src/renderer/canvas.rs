@@ -30,6 +30,9 @@ pub enum CanvasCommand {
     FillRect(f64, f64, f64, f64, String),
     StrokeRect(f64, f64, f64, f64, String),
     FillText(String, f64, f64),
+    /// K1 layout owner가 확정한 run-relative scalar positions를 보존한다.
+    /// K0는 기존 `FillText`를 유지해 command 형식과 count가 변하지 않는다.
+    FillTextPositioned(String, f64, f64, Vec<f64>),
     DrawLine(f64, f64, f64, f64),
     DrawEllipse(f64, f64, f64, f64),
     DrawImage(f64, f64, f64, f64),
@@ -113,11 +116,12 @@ impl CanvasRenderer {
                 }
             }
             RenderNodeType::TextRun(run) => {
-                self.draw_text(
+                self.draw_text_positioned(
                     run.display_or_text(),
                     node.bbox.x,
                     node.bbox.y + node.bbox.height,
                     &run.style,
+                    run.validated_layout_positions_for(run.display_or_text()),
                 );
             }
             RenderNodeType::Rectangle(rect) => {
@@ -133,7 +137,9 @@ impl CanvasRenderer {
             }
             RenderNodeType::Line(line) => {
                 self.open_shape_transform(&line.transform, &node.bbox);
-                self.draw_line(line.x1, line.y1, line.x2, line.y2, &line.style);
+                for stroke in line.paint_strokes() {
+                    self.draw_line(stroke.x1, stroke.y1, stroke.x2, stroke.y2, &stroke.style);
+                }
             }
             RenderNodeType::Ellipse(ellipse) => {
                 self.open_shape_transform(&ellipse.transform, &node.bbox);
@@ -148,8 +154,11 @@ impl CanvasRenderer {
                 );
             }
             RenderNodeType::Image(img) => {
+                if img.crop.is_some_and(|(l, t, r, b)| r <= l || b <= t) {
+                    return;
+                }
                 // [shot 05] 회전 90/270° 시 bbox extent swap — 이중회전 방지.
-                let eff_bbox = img.transform.effective_image_bbox(&node.bbox);
+                let eff_bbox = img.transformed_paint_bbox(&node.bbox);
                 self.open_shape_transform(&img.transform, &eff_bbox);
                 if let Some(ref data) = img.data {
                     self.draw_image(
@@ -186,7 +195,7 @@ impl CanvasRenderer {
                     self.render_layer_node(child);
                 }
             }
-            LayerNodeKind::ClipRect { child, .. } => {
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
                 self.render_layer_node(child);
             }
             LayerNodeKind::Leaf { ops } => {
@@ -203,12 +212,25 @@ impl CanvasRenderer {
                                 ));
                             }
                         }
-                        PaintOp::TextRun { bbox, run } => {
-                            self.draw_text(
+                        PaintOp::TextRun { bbox, run, .. } => {
+                            self.draw_text_positioned(
                                 run.display_or_text(),
                                 bbox.x,
                                 bbox.y + bbox.height,
                                 &run.style,
+                                run.validated_layout_positions_for(run.display_or_text()),
+                            );
+                        }
+                        PaintOp::ControlLabel { bbox, label } => {
+                            self.draw_text(
+                                label,
+                                bbox.x,
+                                bbox.y + 10.0,
+                                &TextStyle {
+                                    font_size: 10.0,
+                                    color: 0x003333CC,
+                                    ..Default::default()
+                                },
                             );
                         }
                         PaintOp::Rectangle { bbox, rect } => {
@@ -247,7 +269,7 @@ impl CanvasRenderer {
                             resolved,
                         } => {
                             // [shot 05] 회전 90/270° 시 bbox extent swap — 이중회전 방지.
-                            let eff_bbox = image.transform.effective_image_bbox(bbox);
+                            let eff_bbox = image.transformed_paint_bbox(bbox);
                             self.open_shape_transform(&image.transform, &eff_bbox);
                             let data = resolved
                                 .as_deref()
@@ -346,9 +368,30 @@ impl Renderer for CanvasRenderer {
         self.commands.push(CanvasCommand::EndPage);
     }
 
-    fn draw_text(&mut self, text: &str, x: f64, y: f64, _style: &TextStyle) {
-        let text = crate::renderer::composer::expand_pua_render_text(text);
+    fn draw_text(&mut self, text: &str, x: f64, y: f64, style: &TextStyle) {
+        let text = crate::renderer::composer::expand_pua_render_text_in_style(text, style);
         self.commands.push(CanvasCommand::FillText(text, x, y));
+    }
+
+    fn draw_text_positioned(
+        &mut self,
+        text: &str,
+        x: f64,
+        y: f64,
+        style: &TextStyle,
+        positions: Option<&[f64]>,
+    ) {
+        let text = crate::renderer::composer::expand_pua_render_text_in_style(text, style);
+        if let Some(positions) = super::validated_replay_positions(&text, positions) {
+            self.commands.push(CanvasCommand::FillTextPositioned(
+                text,
+                x,
+                y,
+                positions.to_vec(),
+            ));
+        } else {
+            self.commands.push(CanvasCommand::FillText(text, x, y));
+        }
     }
 
     fn draw_rect(
@@ -639,6 +682,7 @@ mod tests {
                 border_fill_id: 0,
                 text_direction: 0,
                 clip: true,
+                closed_reflow_frame: false,
                 page_fragment: false,
                 model_cell_index: Some(0),
             }),
@@ -675,6 +719,7 @@ mod tests {
             rotation: 15.0,
             horz_flip: true,
             vert_flip: false,
+            ..Default::default()
         };
         tree.root.children.push(RenderNode::new(
             1,
@@ -695,6 +740,7 @@ mod tests {
             rotation: 45.0,
             horz_flip: false,
             vert_flip: true,
+            ..Default::default()
         };
         tree.root.children.push(RenderNode::new(
             2,
@@ -714,6 +760,8 @@ mod tests {
                 form_type: FormType::PushButton,
                 caption: "OK".to_string(),
                 text: String::new(),
+                display_text: None,
+                appearance: Default::default(),
                 fore_color: "#000000".to_string(),
                 back_color: "#ffffff".to_string(),
                 value: 0,
@@ -765,6 +813,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 12.0,
             field_marker: Default::default(),
+            layout_positions: None,
             display_text: None,
         }
     }

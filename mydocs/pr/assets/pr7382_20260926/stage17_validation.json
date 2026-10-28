@@ -1,0 +1,116 @@
+{
+  "producer_head": "bacbabc9e4003cc6b47823936ce46753bfd645dc",
+  "rust_test_diff_sha256": "d1abcad092e275a6d3bce3c8f8da9f05056f9e379f474feae37dd7c55bbc6627",
+  "before": {
+    "tests": 1,
+    "passed": 0,
+    "failed": 1,
+    "exit_code": 100,
+    "summary_seconds": 0.166,
+    "observed_top_px": 670.7666666666667,
+    "independent_pdf_top_px": 678.5143636067709
+  },
+  "after": {
+    "tests": 76,
+    "passed": 76,
+    "failed": 0,
+    "exit_code": 0,
+    "summary_seconds": 3.319,
+    "test_threads": 8,
+    "profile": "release-test",
+    "target_dir": "target/pr-review"
+  },
+  "unit_controls": {
+    "tests": 6,
+    "passed": 6,
+    "exit_code": 0,
+    "summary_seconds": 0.225
+  },
+  "build_commands": [
+    {
+      "name": "unit-nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--lib",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "-E",
+        "test(page_bottom_empty_paragraph_before_vpos_reset_does_not_create_blank_page) | test(page_bottom_empty_run_before_vpos_reset_does_not_create_blank_page) | test(issue2424_block_table_context_owns_step_lifecycle) | test(issue_3820_rewinding_rowbreak_uses_painted_first_fragment_boundary) | test(issue_3738_picture_caption_float_clears_caption_before_next_body_text)"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 128.654
+    },
+    {
+      "name": "cli-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--bin",
+        "rhwp"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 117.523
+    }
+  ],
+  "fmt_check_exit_code": 0,
+  "page_count": 215,
+  "reference_page_count": 215,
+  "native_run": {
+    "command": [
+      "venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--key",
+      "liver7379",
+      "--hwp",
+      "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+      "--pdf",
+      "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+      "--rhwp-bin",
+      "target/pr-review/release-test/rhwp",
+      "--pages",
+      "94,95,106,107,108",
+      "--dpi",
+      "96",
+      "--out",
+      "output/pr-review/planet6897-7382-20260926/visual/stage17-native"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 27.654
+  },
+  "native_gate": {
+    "status": "passed",
+    "minimum_tolerant_content_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null
+  },
+  "page_metrics": {
+    "94": 98.91562,
+    "95": 94.55592,
+    "106": 99.94111,
+    "107": 99.02564,
+    "108": 99.94123
+  },
+  "direct_read_review_and_overlay_pages": [
+    94,
+    95,
+    106,
+    107,
+    108
+  ],
+  "added_english_explanation_comment_count": 0,
+  "remaining": "선택 페이지 외 최종 전체·fresh WASM·lint 등 필수 최종 검증 미완료. PR 생성 보류."
+}

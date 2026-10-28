@@ -1,0 +1,298 @@
+{
+  "scope": "고정38의23번 기존93쪽 함수 개별 완료. 전체 PR 준비 완료가 아님.",
+  "preanalysis": {
+    "pdf": "pdf/issue2006/1790387_prep_final_report-2024.pdf",
+    "pdf_sha256": "04b95a6e41420fb45934ce2ee5abd8cf6dac4ce12fd47977dacbe7fca28018a8",
+    "source": "samples/issue2006/1790387_prep_final_report.hwpx",
+    "source_sha256": "c68baed24096386f9041930d24d39409b61ac99463bf04dfd242440dfdeb739f",
+    "page": 93,
+    "independent_pdf": [
+      {
+        "text": "[그림 15] QUANTPrEP을 활용한 PrEP 인구 추계",
+        "bbox_pt": [
+          199.1999969482422,
+          429.0719909667969,
+          406.048828125,
+          439.6319885253906
+        ],
+        "y_96dpi": 572.0959879557291
+      },
+      {
+        "text": "    - 2024년 주민등록연앙인구를 활용하였을 때, 남성동성애자 60,474명, 트랜스여성 17,621명으로 총 78,095명",
+        "bbox_pt": [
+          66.5999984741211,
+          459.7679748535156,
+          538.8346557617188,
+          470.8079833984375
+        ],
+        "y_96dpi": 613.0239664713541
+      },
+      {
+        "text": " 다음으로 미국 CDC에서 2015년에서 추계하여 발표한 논문(MMWR Morb Mortal Wkly Rep. 2015;64(46): ",
+        "bbox_pt": [
+          75.0,
+          514.3680419921875,
+          541.680419921875,
+          525.4080200195312
+        ],
+        "y_96dpi": 685.8240559895834
+      }
+    ],
+    "observations": {
+      "before93": {
+        "path": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fidelity-before/render_tree/render_tree_093.json",
+        "sha256": "d3dd3667e118d3db79ce9b201d183b517cdfa71979c8281dadf382f49ca2171d",
+        "lines": []
+      },
+      "before94": {
+        "path": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/fidelity-before/render_tree/render_tree_094.json",
+        "sha256": "a624599369e2bd9c4cc21783bc9c382fac7a2e9e8c7aaaa774231a0b93ba8402",
+        "lines": [
+          {
+            "text": "[그림 15] QUANTPrEP을 활용한 PrEP 인구 추계",
+            "bbox": {
+              "x": 88.9,
+              "y": 571.5,
+              "w": 629.2,
+              "h": 14.0
+            }
+          },
+          {
+            "text": "    - 2024년 주민등록연앙인구를 활용하였을 때, 남성동성애자 60,474명, 트랜스여성 17,621명으로 총 78,095명",
+            "bbox": {
+              "x": 88.9,
+              "y": 612.5,
+              "w": 629.2,
+              "h": 14.7
+            }
+          },
+          {
+            "text": " 다음으로 미국 CDC에서 2015년에서 추계하여 발표한 논문(MMWR Morb Mortal Wkly Rep. 2015;64(46): ",
+            "bbox": {
+              "x": 88.9,
+              "y": 685.3,
+              "w": 629.2,
+              "h": 14.7
+            }
+          }
+        ]
+      },
+      "after93": {
+        "path": "output/pr-review/planet6897-7382-20260926/stage59-prep2006/candidate3/visual-final-native/prep2006/render_tree/render_tree_093.json",
+        "sha256": "3272e8214912d1760d9777e022d42b690e53fd46e2d63089be18f8b4e9a92270",
+        "lines": [
+          {
+            "text": "[그림 15] QUANTPrEP을 활용한 PrEP 인구 추계",
+            "bbox": {
+              "x": 88.9,
+              "y": 571.5,
+              "w": 629.2,
+              "h": 14.0
+            }
+          },
+          {
+            "text": "    - 2024년 주민등록연앙인구를 활용하였을 때, 남성동성애자 60,474명, 트랜스여성 17,621명으로 총 78,095명",
+            "bbox": {
+              "x": 88.9,
+              "y": 612.5,
+              "w": 629.2,
+              "h": 14.7
+            }
+          },
+          {
+            "text": " 다음으로 미국 CDC에서 2015년에서 추계하여 발표한 논문(MMWR Morb Mortal Wkly Rep. 2015;64(46): ",
+            "bbox": {
+              "x": 88.9,
+              "y": 685.3,
+              "w": 629.2,
+              "h": 14.7
+            }
+          }
+        ]
+      }
+    },
+    "original": [
+      {
+        "pi": 220,
+        "text": "[그림 15] QUANTPrEP을 활용한 PrEP 인구 추계",
+        "linesegs": [
+          {
+            "textpos": "0",
+            "vertpos": "35775",
+            "vertsize": "1050",
+            "textheight": "1050",
+            "baseline": "893",
+            "spacing": "524",
+            "horzpos": "1000",
+            "horzsize": "47188",
+            "flags": "393216"
+          }
+        ],
+        "previous_linesegs": [
+          {
+            "textpos": "0",
+            "vertpos": "34725",
+            "vertsize": "1050",
+            "textheight": "1050",
+            "baseline": "893",
+            "spacing": "0",
+            "horzpos": "1000",
+            "horzsize": "47188",
+            "flags": "393216"
+          }
+        ]
+      },
+      {
+        "pi": 221,
+        "text": "    - 2024년 주민등록연앙인구를 활용하였을 때, 남성동성애자 60,474명, 트랜스여성 17,621명으로 총 78,095명으로 추산되었음. ",
+        "linesegs": [
+          {
+            "textpos": "0",
+            "vertpos": "38849",
+            "vertsize": "1100",
+            "textheight": "1100",
+            "baseline": "935",
+            "spacing": "880",
+            "horzpos": "1000",
+            "horzsize": "47188",
+            "flags": "393216"
+          },
+          {
+            "textpos": "72",
+            "vertpos": "40829",
+            "vertsize": "1100",
+            "textheight": "1100",
+            "baseline": "935",
+            "spacing": "880",
+            "horzpos": "1000",
+            "horzsize": "47188",
+            "flags": "1441792"
+          }
+        ],
+        "previous_linesegs": [
+          {
+            "textpos": "0",
+            "vertpos": "35775",
+            "vertsize": "1050",
+            "textheight": "1050",
+            "baseline": "893",
+            "spacing": "524",
+            "horzpos": "1000",
+            "horzsize": "47188",
+            "flags": "393216"
+          }
+        ]
+      },
+      {
+        "pi": 222,
+        "text": "그림입니다.\n원본 그림의 이름: 아이콘-2.jpg\n원본 그림의 크기: 가로 35pixel, 세로 34pixel 다음으로 미국 CDC에서 2015년에서 추계하여 발표한 논문(MMWR Morb Mortal Wkly Rep. 2015;64(46): 1291-1295.)을 활용하여 전체 PrEP 필요 인구를 추계하였음. ",
+        "linesegs": [
+          {
+            "textpos": "0",
+            "vertpos": "44309",
+            "vertsize": "1100",
+            "textheight": "1100",
+            "baseline": "935",
+            "spacing": "880",
+            "horzpos": "1000",
+            "horzsize": "47188",
+            "flags": "393216"
+          },
+          {
+            "textpos": "83",
+            "vertpos": "46289",
+            "vertsize": "1100",
+            "textheight": "1100",
+            "baseline": "935",
+            "spacing": "880",
+            "horzpos": "1000",
+            "horzsize": "47188",
+            "flags": "1441792"
+          }
+        ],
+        "previous_linesegs": [
+          {
+            "textpos": "0",
+            "vertpos": "38849",
+            "vertsize": "1100",
+            "textheight": "1100",
+            "baseline": "935",
+            "spacing": "880",
+            "horzpos": "1000",
+            "horzsize": "47188",
+            "flags": "393216"
+          },
+          {
+            "textpos": "72",
+            "vertpos": "40829",
+            "vertsize": "1100",
+            "textheight": "1100",
+            "baseline": "935",
+            "spacing": "880",
+            "horzpos": "1000",
+            "horzsize": "47188",
+            "flags": "1441792"
+          }
+        ]
+      }
+    ]
+  },
+  "before": {
+    "head": "6a727833438c0082ed88031d24a0a1412a640e06",
+    "observed": "93쪽에 그림15 캡션/후속 두 문단 없음;94쪽에 같은 좌표로 지연되어 기존 함수FAIL",
+    "exit_code": 100,
+    "evidence": "stage59_prep2006_validation.json before_related 및 원본13PASS/4FAIL 로그",
+    "test_source_sha256": "ab5bd179e72788248118585c0821034bd5d2ca4bb060c8d23f94ee257e5fac6b"
+  },
+  "individual": {
+    "function": "issue_7390_prep_table_rowbreak::prep_page_93_caption_starts_after_saved_picture_bottom",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--test",
+      "regression_suite_016",
+      "-E",
+      "test(/(^|::)issue_7390_prep_table_rowbreak::prep_page_93_caption_starts_after_saved_picture_bottom$/)",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plan": {
+      "caseName": "issue_7390_prep_table_rowbreak",
+      "target": "regression_suite_016",
+      "grouped": true
+    },
+    "exit_code": 0,
+    "seconds": 0.8250372912734747,
+    "head": "b79699eb5db18ce1488e814d4989ce74ec5a9a88",
+    "code_commit": "fd10e7fd9d9fda41648b0d8ba2f57d219ae8d197",
+    "reused_evidence": "stage59_prep2006_validation.json",
+    "source_sha_comparison": "all_equal",
+    "test_source_sha256": "ab5bd179e72788248118585c0821034bd5d2ca4bb060c8d23f94ee257e5fac6b"
+  },
+  "visual_reuse": {
+    "evidence": "stage59_prep2006_validation.json",
+    "evidence_sha256": "abcb40df200bcf766a755974f5f306809fccf1c8757ddb2200ec2825f65fb958",
+    "source_comparison": "all_equal",
+    "count": 280,
+    "native_min": 91.82221,
+    "wasm_min": 91.82221,
+    "direct_assets": [
+      "stage59_after_native_prep2006_review_093.png",
+      "stage59_after_wasm_prep2006_review_093.png"
+    ],
+    "page93_native": 99.39962,
+    "page93_wasm": 99.39962
+  },
+  "code_change": "추가 수정 없이 보정59의 공통 successor 흐름 수정으로 해결",
+  "test_changed": false,
+  "baseline_changed": false,
+  "new_test_functions": 0,
+  "residual": "PDF/실제 캡션572.096/571.5,첫 문단613.024/612.5,CDC685.824/685.3px 약0.5~0.6px. 기존1.5px 공차 유지."
+}

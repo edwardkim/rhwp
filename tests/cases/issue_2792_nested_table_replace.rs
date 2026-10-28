@@ -134,4 +134,5 @@ fn find_next_leaves_nested_cell_hits_out_until_navigation_takes_paths() {
         .search_text_native(OUTER_ONLY, 0, 0, 0, true, true, true)
         .expect("검색 성공");
     assert!(outer.contains(r#""found":true"#), "{outer}");
+    assert!(outer.contains(r#""totalMatchCount":1"#), "{outer}");
 }

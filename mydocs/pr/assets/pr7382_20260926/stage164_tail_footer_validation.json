@@ -1,0 +1,179 @@
+{
+  "stage": 164,
+  "code_head": "e230327f2184d642dc5a82f65bafcb0b9df1b0c5",
+  "preanalysis": {
+    "stage": 164,
+    "head": "6c2ab92a3d2d1e771a3ecfed68f452cd369ffd7e",
+    "item": 8,
+    "test": "stored_table_text_tail::hancom_saved_tail_preserves_pdf_baseline_after_the_table",
+    "analysis": "정상 한컴1쪽·Stage163 Native/fresh WASM96.86991% 검증. 기존 Footer 검사 단독 재실행 후 픽셀 baseline/x/table핀을 저장 줄 소속·표 다음 순서·원문 baseline 관계로 변경. 원문/PDF/함수 보존, 새 함수/이관0.",
+    "current_old_test": "공통 보정163 생산 코드에서 기존 Footer1PASS. 정식 기대값은 정상저장 object/footer LineSeg의 vertical_pos 차와 baseline_distance에서 유도.",
+    "scope": "기존 같은함수만 개선하며 새 renderer 변경/함수/fixture교체/이관은 없다. 현재1쪽 Native/fresh WASM 증거는 동일 생산 코드의 보정163에서 재사용한다.",
+    "contract_note": "기존 Footer 절대값 실패는 전체8px 이동이었고 보정163의 문자테두리/100% 항등성 검사가 검출한다. Footer와 표의 상대 저장 흐름은 보정 전에도 유지되므로 본 함수는 그 정상 계약을 보존한다. 여유 glyph bbox 끝을 실제 글줄 기준선과 혼동한 초안 FAIL은 제외한다."
+  },
+  "current_old_absolute_test": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_003",
+      "-E",
+      "test(=stored_table_text_tail::hancom_saved_tail_preserves_pdf_baseline_after_the_table)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plan": {
+      "caseName": "stored_table_text_tail",
+      "target": "regression_suite_003",
+      "grouped": true
+    },
+    "exit_code": 0,
+    "seconds": 9.420493999961764
+  },
+  "same_final_contract_on_old_producer": [
+    {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_019",
+        "-E",
+        "test(=stored_table_text_tail::hancom_saved_tail_preserves_pdf_baseline_after_the_table)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 152.776364041958
+    }
+  ],
+  "after": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_019",
+      "-E",
+      "test(/stored_table_text_tail::/) and not test(=stored_table_text_tail::one_paragraph_keeps_one_border_across_table_and_text_items)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plan": {
+      "caseName": "stored_table_text_tail",
+      "target": "regression_suite_019",
+      "grouped": true
+    },
+    "exit_code": 0,
+    "seconds": 169.76285087503493
+  },
+  "checks": {
+    "base": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "results": [
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit_code": 0,
+        "seconds": 6.6573824170045555
+      },
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 8.180489249993116
+      },
+      {
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "seconds": 0.7184272920712829
+      },
+      {
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 2.7923743342980742
+      },
+      {
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 11.833427499979734
+      },
+      {
+        "command": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 0.04450241615995765
+      }
+    ]
+  },
+  "test_sha256": "4e5c9774e2b8a506f554bbf3756e3386e4657d59acaa510c0e7b17d9783a3d5e",
+  "summary": [
+    "Summary [   0.043s] 11 tests run: 11 passed, 182 skipped"
+  ],
+  "visual_evidence": "stage163_tail_border_validation.json",
+  "visual_reuse_reason": "보정163 이후 생산 코드 변경0. 입력/PDF·Native/WASM runtime artifact SHA 동일.",
+  "invalid_attempts_excluded": [
+    {
+      "log": "invalid-field-semantic-before-0.log",
+      "exit": 101,
+      "reason": "baseline_distance 필드명 오기·컴파일 실패는 재현 아님"
+    },
+    {
+      "log": "invalid-box-semantic-before-0.log",
+      "exit": 100,
+      "reason": "글꼴 여유 bbox를 실제 줄 기준선과 혼동한 초안·렌더러 결함 증거에서 제외"
+    }
+  ],
+  "scope": "기존 Footer 함수만 절대 좌표에서 원래 문단/줄 소속·표 뒤 상대 흐름·셀 문장 순서/기준선 점유 검사로 교정. 새 테스트 함수/생산/원문/기준 PDF/이관 변경0. 폰트 전체 이동 검출은 보정163 기존 테두리와 글꼴 단위가 담당. 이 함수는 그 결함의 수정 전 FAIL을 주장하지 않음. 최종 전체는 미완료.",
+  "unchanged_style_source": true,
+  "runtime_sha_unchanged": {
+    "output/pr-review/planet6897-7382-20260926/stage163-tail-border/candidate1/rhwp": true,
+    "pkg/rhwp.js": true,
+    "pkg/rhwp_bg.wasm": true
+  }
+}

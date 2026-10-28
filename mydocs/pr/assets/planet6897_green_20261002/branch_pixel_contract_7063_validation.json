@@ -1,0 +1,52 @@
+{
+  "scope": "review/planet6897-green-20261002에서 추가·수정한 검사와 실제 실패 차단만. 저장소 전수 조사 아님.",
+  "parent_head": "9a44495f7",
+  "changed_test": "tests/cases/issue_7063_hwpx_rowbreak_fragment_outer_top.rs",
+  "removed_absolute_expected_px": [
+    89.91,
+    39.64,
+    37.76
+  ],
+  "new_contract": "원본 본문 원점 + 해당 쪽 저장 host vpos + outMargin.top; 이어받기는 이전 host vpos를 소비하지 않음.",
+  "existing_tests": 3,
+  "new_tests": 0,
+  "nextest": {
+    "passed": 3,
+    "failed": 0,
+    "exit_code": 0
+  },
+  "suite_clippy_exit": 0,
+  "fmt_exit": 0,
+  "diff_check_exit": 0,
+  "visual_evidence": {
+    "file": "sample2_crossing_span_validation.json",
+    "pages": 29,
+    "native_min": 92.22927,
+    "fresh_wasm_min": 92.22927,
+    "provenance": "리베이스 전 코드 a5e83c007. 테스트만 수정했고 renderer 변경 없음. 최신 전체 시각 검증 완료로 주장하지 않음."
+  },
+  "remaining_branch_candidates": [
+    {
+      "file": "tests/cases/issue_6976_page_ending_fragment_row_fold.rs",
+      "status": "독립 의미와 관련 시각 증적 확인 후 순차 교정; 현재 미완료"
+    },
+    {
+      "file": "tests/cases/issue_7063_midpage_fragment_box_and_align.rs",
+      "status": "독립 의미와 관련 시각 증적 확인 후 순차 교정; 현재 미완료"
+    },
+    {
+      "file": "tests/cases/issue_7095_multirow_fragment_page_cap.rs",
+      "status": "독립 의미와 관련 시각 증적 확인 후 순차 교정; 현재 미완료"
+    },
+    {
+      "file": "tests/cases/issue_7418_host_text_and_split_row_geometry.rs",
+      "status": "독립 의미와 관련 시각 증적 확인 후 순차 교정; 현재 미완료"
+    },
+    {
+      "file": "tests/issue_2308_render_normalized_derived_state.rs",
+      "status": "독립 의미와 관련 시각 증적 확인 후 순차 교정; 현재 미완료"
+    }
+  ],
+  "excluded_existing_pins": "#7379 파일에서 이번 브랜치 수정은 display_or_text뿐. 기존 정상 assertion 전수 변환 범위로 확장하지 않음.",
+  "integration_pr_ready": false
+}

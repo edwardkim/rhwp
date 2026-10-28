@@ -1,0 +1,11 @@
+== pr6088_issue6031_mcp2020 ==
++ target/pr-review/release-test/rhwp dump-note-shape /home/tsjang/rhwp/samples/issue6031/3249937_asset_management_rules.hwpx
++ target/pr-review/release-test/rhwp export-svg /home/tsjang/rhwp/samples/issue6031/3249937_asset_management_rules.hwpx --font-style -o /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/mcp_hancom2020/pr6088_issue6031/pr6088_issue6031_mcp2020/svg
++ target/pr-review/release-test/rhwp export-render-tree /home/tsjang/rhwp/samples/issue6031/3249937_asset_management_rules.hwpx -o /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/mcp_hancom2020/pr6088_issue6031/pr6088_issue6031_mcp2020/render_tree
+SVG export pages: 60
++ pdftoppm -f 3 -l 3 -r 96 -png /home/tsjang/rhwp/pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue6031_asset_management_rules_3249937_asset_management_rules-2020.pdf /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/mcp_hancom2020/pr6088_issue6031/pr6088_issue6031_mcp2020/pdf_png/pdf
++ pdftoppm -f 6 -l 6 -r 96 -png /home/tsjang/rhwp/pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue6031_asset_management_rules_3249937_asset_management_rules-2020.pdf /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/mcp_hancom2020/pr6088_issue6031/pr6088_issue6031_mcp2020/pdf_png/pdf
++ pdftotext -bbox-layout /home/tsjang/rhwp/pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue6031_asset_management_rules_3249937_asset_management_rules-2020.pdf /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/mcp_hancom2020/pr6088_issue6031/pr6088_issue6031_mcp2020/pdf_bbox.html
+Selected pages: [3, 6]
+Raster PNG pages: rhwp=2, pdf=2
+summary: /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/mcp_hancom2020/pr6088_issue6031/summary.json

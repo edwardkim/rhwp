@@ -1,15 +1,162 @@
 //! 공통 개체 속성/헬퍼 + 새 번호 (object_ops 분할, #1904).
 
-use super::MIN_SHAPE_SIZE;
-use crate::document_core::helpers::{get_textbox_from_shape, get_textbox_from_shape_mut};
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
-use crate::model::event::DocumentEvent;
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::{common_obj_offsets, ShapeObject};
+use crate::model::shape::ShapeObject;
+
+/// [#6740] 변환 파생 상태(`raw_rendering`)의 무효화 판정용 지문.
+///
+/// 직렬화기는 `raw_rendering` 이 비어 있을 때만 변환 행렬을 새로 만든다
+/// (`serializer/control.rs` 의 rendering 블록). 그러므로 setter 가 값 변화 없이
+/// raw 를 비우면 한컴 원본 행렬이 rhwp 재생성본으로 바뀌고, 속성 bag 에는 원본
+/// 바이트가 없으므로 되돌릴 길이 없다(#5890 이중 장부 비용).
+///
+/// #6355 가 그림에서 도입한 판정과 같은 형태다 — 실제로 변환이 바뀐 뒤에만 비운다.
+pub(crate) fn shape_transform_fingerprint(
+    common: &crate::model::shape::CommonObjAttr,
+    attr: &crate::model::shape::ShapeComponentAttr,
+) -> (u32, u32, u32, u32, u32, u32, i16, bool, bool) {
+    (
+        common.width,
+        common.height,
+        common.horizontal_offset,
+        common.vertical_offset,
+        attr.current_width,
+        attr.current_height,
+        attr.rotation_angle,
+        attr.horz_flip,
+        attr.vert_flip,
+    )
+}
+
+/// 다각형의 실제 편집 변환을 저장 행렬에 합성한다.
+/// 위치만 옮기거나 같은 속성을 재적용할 때는 원본 행렬을 보존한다.
+pub(crate) fn update_changed_polygon_geometry(
+    shape: &mut ShapeObject,
+    before: (u32, u32, u32, u32, u32, u32, i16, bool, bool),
+) {
+    let after = shape_transform_fingerprint(shape.common(), shape.shape_attr());
+    let geometry =
+        |f: (u32, u32, u32, u32, u32, u32, i16, bool, bool)| (f.0, f.1, f.4, f.5, f.6, f.7, f.8);
+    if geometry(before) == geometry(after) {
+        return;
+    }
+    let ShapeObject::Polygon(poly) = shape else {
+        return;
+    };
+    let sa = &mut poly.drawing.shape_attr;
+    let source_matrix = [
+        sa.render_sx,
+        sa.render_b,
+        sa.render_tx,
+        sa.render_c,
+        sa.render_sy,
+        sa.render_ty,
+    ];
+    if !sa.has_saved_affine_geometry() || before.0 == 0 || before.1 == 0 || poly.points.is_empty() {
+        sa.raw_rendering.clear();
+        return;
+    }
+    // 변경을 현재 행렬에 누적하면 크기·회전·대칭의 역연산 순서가 달라진다.
+    // 처음 편집한 기준에서 매번 합성해 전체 속성 봉지의 되돌리기도 보존한다.
+    let reference =
+        poly.affine_edit_reference
+            .get_or_insert(crate::model::shape::PolygonAffineEditReference {
+                width: before.0,
+                height: before.1,
+                rotation: before.6,
+                horz_flip: before.7,
+                vert_flip: before.8,
+                matrix: source_matrix,
+            });
+    let sx = f64::from(after.0) / f64::from(reference.width);
+    let sy = f64::from(after.1) / f64::from(reference.height);
+    let base = reference.matrix;
+    let mut m = [
+        base[0] * sx,
+        base[1] * sx,
+        base[2] * sx,
+        base[3] * sy,
+        base[4] * sy,
+        base[5] * sy,
+    ];
+    let mut bounds = (
+        f64::INFINITY,
+        f64::INFINITY,
+        f64::NEG_INFINITY,
+        f64::NEG_INFINITY,
+    );
+    for p in &poly.points {
+        let x = m[0] * f64::from(p.x) + m[1] * f64::from(p.y) + m[2];
+        let y = m[3] * f64::from(p.x) + m[4] * f64::from(p.y) + m[5];
+        bounds.0 = bounds.0.min(x);
+        bounds.1 = bounds.1.min(y);
+        bounds.2 = bounds.2.max(x);
+        bounds.3 = bounds.3.max(y);
+    }
+    let cx = (bounds.0 + bounds.2) / 2.0;
+    let cy = (bounds.1 + bounds.3) / 2.0;
+    if reference.horz_flip != after.7 {
+        m[0] = -m[0];
+        m[1] = -m[1];
+        m[2] = 2.0 * cx - m[2];
+    }
+    if reference.vert_flip != after.8 {
+        m[3] = -m[3];
+        m[4] = -m[4];
+        m[5] = 2.0 * cy - m[5];
+    }
+    let angle = (f64::from(after.6) - f64::from(reference.rotation)).to_radians();
+    let (sin, cos) = angle.sin_cos();
+    let a = cos * m[0] - sin * m[3];
+    let b = cos * m[1] - sin * m[4];
+    let c = sin * m[0] + cos * m[3];
+    let d = sin * m[1] + cos * m[4];
+    let tx = cx + cos * (m[2] - cx) - sin * (m[5] - cy);
+    let ty = cy + sin * (m[2] - cx) + cos * (m[5] - cy);
+    sa.render_sx = a;
+    sa.render_b = b;
+    sa.render_tx = tx;
+    sa.render_c = c;
+    sa.render_sy = d;
+    sa.render_ty = ty;
+    // 저장·재로드도 출력과 같은 합성 행렬을 소비한다.
+    sa.raw_rendering = crate::serializer::control::serialize_affine_rendering(sa);
+}
 
 impl DocumentCore {
+    /// 인라인 개체 편집 뒤 실제 줄과 후속 문단의 저장 흐름을 함께 갱신한다.
+    pub(crate) fn reflow_body_inline_object_change(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        stored_end_before: Option<i32>,
+    ) {
+        self.reflow_paragraph(section_idx, para_idx);
+        self.finish_body_inline_object_reflow(section_idx, para_idx, stored_end_before);
+    }
+
+    /// 이미 구성한 줄 결과를 후속 본문 원점에 반영한다. 같은 문단을 다시 조판하지 않는다.
+    pub(crate) fn finish_body_inline_object_reflow(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        stored_end_before: Option<i32>,
+    ) {
+        let hwp3_layout = self.document.layout_profile().hwp3_layout();
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs,
+            para_idx,
+            None,
+            stored_end_before,
+            &self.styles,
+            self.dpi,
+            hwp3_layout,
+        );
+    }
+
     const COMMON_OBJ_ATTR_KNOWN_MASK: u32 = 0x01
         | (0x03 << 3)
         | (0x07 << 5)
@@ -37,6 +184,51 @@ impl DocumentCore {
                 .controls
                 .iter()
                 .all(|ctrl| matches!(ctrl, Control::SectionDef(_) | Control::ColumnDef(_)))
+    }
+    /// 본문 컨트롤 배열의 변경을 활성 누름틀의 같은 소유 주소에 반영한다.
+    /// 셀 안의 필드는 맨 앞 경로가 본문 소유자이고, 나머지 경로와 필드 번호는 그대로다.
+    pub(crate) fn remap_active_field_root_control(
+        active_field: &mut Option<crate::document_core::ActiveFieldInfo>,
+        section_idx: usize,
+        para_idx: usize,
+        remap: impl FnOnce(usize) -> Option<usize>,
+    ) {
+        let Some(active) = active_field.as_mut() else {
+            return;
+        };
+        if active.section_idx != section_idx || active.para_idx != para_idx {
+            return;
+        }
+        let owner = match active.cell_path.as_mut().and_then(|path| path.first_mut()) {
+            Some((control_idx, _, _)) => control_idx,
+            None => &mut active.control_idx,
+        };
+        if let Some(updated) = remap(*owner) {
+            *owner = updated;
+        } else {
+            *active_field = None;
+        }
+    }
+
+    /// 본문 컨트롤 삽입 뒤 같은 문단의 본문 또는 셀 활성 주소를 민다.
+    pub(crate) fn shift_active_field_for_control_insert(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        control_idx: usize,
+    ) {
+        Self::remap_active_field_root_control(
+            &mut self.active_field,
+            section_idx,
+            para_idx,
+            |index| {
+                Some(if index >= control_idx {
+                    index + 1
+                } else {
+                    index
+                })
+            },
+        );
     }
     /// 컨트롤 삭제 후 문단의 line_segs를 재계산한다.
     ///
@@ -176,11 +368,13 @@ impl DocumentCore {
     ) {
         use crate::document_core::helpers::{json_bool, json_i16, json_str, json_u32};
 
+        // [#6806] 퇴화값 0 만 최소 크기로 올린다. Undo 는 저장된 0 복원을 명시할 수 있다.
+        let restore_stored_zero = json_bool(props_json, "restoreStoredZero") == Some(true);
         if let Some(w) = json_u32(props_json, "width") {
-            c.width = w.max(MIN_SHAPE_SIZE);
+            c.width = super::clamp_degenerate_size(w, c.width, restore_stored_zero);
         }
         if let Some(h) = json_u32(props_json, "height") {
-            c.height = h.max(MIN_SHAPE_SIZE);
+            c.height = super::clamp_degenerate_size(h, c.height, restore_stored_zero);
         }
         if let Some(tac) = json_bool(props_json, "treatAsChar") {
             c.treat_as_char = tac;
@@ -234,12 +428,13 @@ impl DocumentCore {
                 _ => c.text_wrap,
             };
         }
+        // [#6806] 「쪽 영역 안으로 제한」과 「서로 겹침 허용」은 독립이다 — 한컴은 둘을 동시에 켜서
+        // 저장한다(corpus 그림 70·도형 12·표 39건). 종전의 "제한이면 겹침 해제" 결합은 파싱 경로에는
+        // 없고 setter 에만 있어, 같은 봉지를 되먹이는 것만으로 겹침 허용이 꺼졌다.
         if let Some(v) = json_bool(props_json, "restrictInPage") {
             c.flow_with_text = v;
             if v {
                 c.attr |= 1 << 13;
-                c.allow_overlap = false;
-                c.attr &= !(1 << 14);
             } else {
                 c.attr &= !(1 << 13);
             }
@@ -259,10 +454,6 @@ impl DocumentCore {
             } else {
                 c.attr &= !(1 << 20);
             }
-        }
-        if c.flow_with_text {
-            c.allow_overlap = false;
-            c.attr &= !(1 << 14);
         }
         if let Some(v) = json_u32(props_json, "vertOffset") {
             c.vertical_offset = v;
@@ -408,10 +599,11 @@ impl crate::document_core::DocumentCore {
             .insert(insert_idx, Control::NewNumber(new_number));
         paragraph.ctrl_data_records.insert(insert_idx, None);
 
-        paragraph.shift_for_inline_control_insert(char_offset);
+        paragraph.shift_for_inline_control_insert(insert_idx, char_offset);
         paragraph.char_count += 8;
         paragraph.control_mask |= 1u32 << 0x0012;
         paragraph.has_para_text = true;
+        self.shift_active_field_for_control_insert(section_idx, para_idx, insert_idx);
 
         self.reflow_paragraph(section_idx, para_idx);
         self.recompose_section(section_idx);

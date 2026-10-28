@@ -1,0 +1,10 @@
+{
+  "path": "/opt/hnc/hoffice11/Shared/TTF/All/HBATANG.TTF",
+  "family": [
+    "Haansoft Batang",
+    "한컴바탕"
+  ],
+  "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+  "pdf": "samples/hwpx/form-01-2024.pdf",
+  "font_observation": "PyMuPDF spans: Haansoft Batang, approx 10pt; font file fc-scan confirms family; font bytes are local validation input"
+}

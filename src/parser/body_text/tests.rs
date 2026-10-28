@@ -1082,6 +1082,7 @@ fn parse_para_text_reference(data: &[u8]) -> ParaTextParts {
     let mut title_marks: Vec<TitleMark> = Vec::new();
     let mut orphan_field_ends: Vec<OrphanFieldEnd> = Vec::new();
     let mut nb_space_control = false;
+    let mut literal_figure_spaces = Vec::new();
     let mut pos = 0;
     // 확장 컨트롤(extended) 카운터 → controls[] 인덱스와 1:1 대응
     let mut ctrl_idx: usize = 0;
@@ -1196,7 +1197,7 @@ fn parse_para_text_reference(data: &[u8]) -> ParaTextParts {
                 }
             }
             // 자동번호(0x12) / 새번호(0x12): 텍스트에 공백 placeholder 추가
-            // → apply_auto_numbers_to_composed에서 "  " (연속 2공백)으로 번호 삽입
+            // → 렌더러가 이 자리표 글자의 표시 문자열로 번호를 투영한다
             if ch == 0x0012 {
                 char_offsets.push(code_unit_pos);
                 text.push(' ');
@@ -1252,7 +1253,12 @@ fn parse_para_text_reference(data: &[u8]) -> ParaTextParts {
                     continue;
                 }
             }
-            if let Some(c) = char::from_u32(ch as u32) {
+            // [#6873] 짝을 잃은 서로게이트는 버리지 않고 `□` 로 받는다 — 본 구현과 같다.
+            let scalar = char::from_u32(ch as u32).or(Some(super::UNPAIRED_SURROGATE_CHAR));
+            if let Some(c) = scalar {
+                if c == '\u{2007}' {
+                    literal_figure_spaces.push(char_count);
+                }
                 char_offsets.push(code_unit_pos);
                 text.push(c);
                 char_count += 1;
@@ -1263,6 +1269,7 @@ fn parse_para_text_reference(data: &[u8]) -> ParaTextParts {
 
     ParaTextParts {
         text,
+        literal_figure_spaces,
         char_offsets,
         field_ranges,
         tab_extended,
@@ -1300,6 +1307,11 @@ fn assert_decode_identical(data: &[u8]) {
     let new = parse_para_text(data);
     let reference = parse_para_text_reference(data);
     assert_eq!(new.text, reference.text, "text 불일치: {:02x?}", data);
+    assert_eq!(
+        new.literal_figure_spaces, reference.literal_figure_spaces,
+        "리터럴 FIGURE SPACE 출처 불일치: {:02x?}",
+        data
+    );
     assert_eq!(
         new.char_offsets, reference.char_offsets,
         "offsets 불일치: {:02x?}",

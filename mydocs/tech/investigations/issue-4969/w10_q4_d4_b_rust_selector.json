@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d4-b-rust-bounded-selector",
+  "issue": 4969,
+  "stage": "W10-Q4-D4-B",
+  "date": "2026-08-31",
+  "status": "qualified-rust-bounded-selector-result-approved",
+  "resultApproved": true,
+  "planCheckpoint": "c11e84935",
+  "baseUpstreamDevel": "8a150f9a8bb1",
+  "mergeCommit": "bcaf86e18",
+  "redFirst": {
+    "test": "issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf",
+    "failedAt": "CanvasKit-target-selected-TextRun-instead-of-verticalGlyphRun"
+  },
+  "capability": {
+    "provenance": "boundedVerticalHwp5TableCellV1",
+    "variantId": "verticalGlyphRun",
+    "variantPartCount": 1,
+    "writingMode": "vertical-rl",
+    "orientation": "vertical-upright",
+    "direction": "ltr",
+    "bidiLevel": 0,
+    "shapingEngine": "rustybuzz-q4-vertical-v1",
+    "fallbackPolicy": "none",
+    "glyphTransformsAllowed": false,
+    "variationsAllowed": false,
+    "syntheticStyleAllowed": false,
+    "portableStrictExactRequired": true
+  },
+  "selection": {
+    "canvasKitSelectedGlyphRuns": 2,
+    "canvasKitBrowserSelectedGlyphRuns": 2,
+    "replayPlanDirectRequiredGlyphRuns": 2,
+    "publishedFallbackTextRuns": 2,
+    "unsupportedBackendSelectedGlyphRuns": 0,
+    "unsupportedBackendSlotsChecked": 6,
+    "malformedTupleSelectedGlyphRuns": 0,
+    "malformedTupleSlotsChecked": 10,
+    "textV2StrictVerticalSlots": 0,
+    "textV2FallbackSlots": 2
+  },
+  "green": {
+    "atomicActivationPassed": 9,
+    "q4RequestContractPassedExcludingD4FullRed": 21,
+    "layerRendererUnitPassed": 44,
+    "canvasKitPolicyUnitPassed": 50,
+    "integrationManifestSources": 1057,
+    "integrationManifestStaticTestAttrs": 4680,
+    "integrationManifestTargetsPassed": 48,
+    "integrationManifestTargetsTotal": 48,
+    "focusedClippy": "passed",
+    "formatCheck": "passed"
+  },
+  "remainingRed": [
+    "Q4-D4-Studio-runtime-feature-detection-and-pixel-proof"
+  ],
+  "newIntegrationSource": false,
+  "generatedIntegrationArtifacts": false,
+  "publicSchemaChanged": false,
+  "privateCorpusUsed": false,
+  "hyperVUsed": false,
+  "githubMutation": false,
+  "next": "separate-D4-B-checkpoint-approval"
+}

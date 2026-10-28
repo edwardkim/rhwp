@@ -6,6 +6,17 @@
 /// 문서 변경 이벤트
 #[derive(Debug, Clone)]
 pub enum DocumentEvent {
+    /// 개체 슬롯을 옮긴 뒤 새 소유 주소를 알린다.
+    InlineControlMoved {
+        source: crate::document_core::inline_control::InlineControlAddress,
+        destination: crate::document_core::inline_control::InlineControlAddress,
+    },
+    /// Atomic fixed-form fill; paragraph indices are section-local owning roots.
+    TemplateFilled {
+        section: usize,
+        paragraphs: Vec<usize>,
+        targets: usize,
+    },
     // ── 텍스트 편집 ──
     TextInserted {
         section: usize,
@@ -18,6 +29,22 @@ pub enum DocumentEvent {
         para: usize,
         offset: usize,
         count: usize,
+    },
+    /// 머리말/꼬리말의 반열린 범위 `[start, end)`를 원자적으로 치환했다.
+    ///
+    /// `start`/`end`는 변경 전 HF 로컬 좌표이고 `inserted_end`는 변경 후 삽입 범위의
+    /// 끝 좌표다. 따라서 collapsed range는 삽입, 같은 inserted end는 삭제, 나머지는
+    /// 치환으로 손실 없이 구분할 수 있다 (#6453).
+    HeaderFooterTextReplaced {
+        section: usize,
+        is_header: bool,
+        apply_to: u8,
+        start_para: usize,
+        start_offset: usize,
+        end_para: usize,
+        end_offset: usize,
+        inserted_end_para: usize,
+        inserted_end_offset: usize,
     },
     ParagraphSplit {
         section: usize,
@@ -37,6 +64,14 @@ pub enum DocumentEvent {
         para: usize,
     },
 
+    /// 텍스트를 보존한 하이퍼링크 메타데이터 변경.
+    HyperlinkChanged {
+        section: usize,
+        para: usize,
+        cell_path: Vec<(usize, usize, usize)>,
+        field_id: u32,
+    },
+
     // ── 서식 변경 ──
     CharFormatChanged {
         section: usize,
@@ -50,6 +85,13 @@ pub enum DocumentEvent {
     },
 
     // ── 표 구조 ──
+    /// 셀 또는 글상자의 경로로 지정한 내부 표를 삭제했다.
+    CellTableDeleted {
+        section: usize,
+        para: usize,
+        cell_path: Vec<(usize, usize, usize)>,
+        ctrl: usize,
+    },
     TableRowInserted {
         section: usize,
         para: usize,
@@ -143,6 +185,23 @@ impl DocumentEvent {
     /// 이벤트를 JSON 객체 문자열로 직렬화한다.
     pub fn to_json(&self) -> String {
         match self {
+            DocumentEvent::InlineControlMoved { source, destination } => serde_json::json!({"type": "InlineControlMoved", "source": source, "destination": destination}).to_string(),
+            DocumentEvent::HyperlinkChanged {
+                section,
+                para,
+                cell_path,
+                field_id,
+            } => serde_json::json!({ "type": "HyperlinkChanged", "section": section,
+                    "para": para, "cellPath": cell_path, "fieldId": field_id })
+            .to_string(),
+            DocumentEvent::TemplateFilled {
+                section,
+                paragraphs,
+                targets,
+            } => format!(
+                r#"{{"type":"TemplateFilled","section":{},"paragraphs":{:?},"targets":{}}}"#,
+                section, paragraphs, targets
+            ),
             // 텍스트 편집
             DocumentEvent::TextInserted {
                 section,
@@ -161,6 +220,28 @@ impl DocumentEvent {
             } => format!(
                 r#"{{"type":"TextDeleted","section":{},"para":{},"offset":{},"count":{}}}"#,
                 section, para, offset, count
+            ),
+            DocumentEvent::HeaderFooterTextReplaced {
+                section,
+                is_header,
+                apply_to,
+                start_para,
+                start_offset,
+                end_para,
+                end_offset,
+                inserted_end_para,
+                inserted_end_offset,
+            } => format!(
+                r#"{{"type":"HeaderFooterTextReplaced","section":{},"isHeader":{},"applyTo":{},"start":{{"para":{},"offset":{}}},"end":{{"para":{},"offset":{}}},"insertedEnd":{{"para":{},"offset":{}}}}}"#,
+                section,
+                is_header,
+                apply_to,
+                start_para,
+                start_offset,
+                end_para,
+                end_offset,
+                inserted_end_para,
+                inserted_end_offset
             ),
             DocumentEvent::ParagraphSplit {
                 section,
@@ -199,6 +280,25 @@ impl DocumentEvent {
             ),
 
             // 표 구조
+            DocumentEvent::CellTableDeleted {
+                section,
+                para,
+                cell_path,
+                ctrl,
+            } => serde_json::json!({
+                "type": "CellTableDeleted",
+                "section": section,
+                "para": para,
+                "cellPath": cell_path.iter().map(|&(control, cell, paragraph)| {
+                    serde_json::json!({
+                        "controlIndex": control,
+                        "cellIndex": cell,
+                        "cellParaIndex": paragraph,
+                    })
+                }).collect::<Vec<_>>(),
+                "innerControlIndex": ctrl,
+            })
+            .to_string(),
             DocumentEvent::TableRowInserted {
                 section,
                 para,

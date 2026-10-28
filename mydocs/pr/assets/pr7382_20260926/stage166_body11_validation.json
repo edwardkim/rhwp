@@ -1,0 +1,1261 @@
+{
+  "stage": 166,
+  "item": 10,
+  "preanalysis": {
+    "stage": 166,
+    "item": 10,
+    "head": "75bd3b66c97108504235601b2726c3cb98ac7576",
+    "test": "body_overflow_baseline::body_overflow_does_not_grow_partition_11",
+    "analysis": "기존60FAIL 원장의 남은 본문 넘침 분할11을 현재head에서 단독 재실행. 실제 증가 입력과 over_bottom 크기를 구분한 뒤 작은 문서는 현재 브랜치에서 보정. 대용량 복잡 입력만 독립 정상PDF와 부정 시각 근거로 #7445 이관 판별. 정상 원문/다른원장/분할/공차 보존.",
+    "root": "DocumentCore reflow_zero_height_paragraphs: 첫 host0 NO_LS 합성으로 구역 전체 vpos 재계산. 정상 저장 pi18의 [63733,66113,68493,0,..] 내부 경계를 연속 좌표로 덮고 pi29의 명시 pageBreak/700, pi41/72의 다음 TAC 프레임0도 잃음. typeset 저장경계/flow trim query와 paint가 변형된 사다리를 소비해3쪽 연락처 표 이월·5/9쪽 넘침·11/10쪽 차이.",
+    "independent": "정상 Hancom PDF10쪽: 2쪽 pi18의 첫3줄,3쪽 연락처표,4쪽 붙임1,5쪽 붙임2,8쪽 감사합니다,9쪽 붙임3 첫 항목. 원문 XML 18줄3/41/72의0과29 pageBreak1 원점700. 전처리 전 원본 프레임/본체 높이 비교를 사용.",
+    "candidate": "합성하지 않은 유효한 저장 줄의 명시 쪽나눔을 보존. TAC가 자기 저장 줄의 전부를 소유하며 원래 직전 끝+다음 줄 높이가 본문에 들어가지 않는0 원점, 문단 내부 같은 물리 fit 경계를 재계산 사다리에도 보존. 측정/paint가 그 동일한 변환 결과를 소비. ID/좌표 clamp/범위 공차 추가0."
+  },
+  "scope": "작은10쪽 실제 본문 넘침과 저장 프레임·TAC 줄 원점·원 글꼴 공급을 현 브랜치에서 개선. 신규 테스트 함수/이관/기대값·공차 완화0. #1749 기존 HWP 컷 실패는 전후 전체페이지덤프 동일이며 최종 전체 전 별도 재검토.",
+  "sha256": {
+    "samples/issue7196/156760012_page_top_spacing_trim.hwpx": "d8905e1917b4584b543a5b9dd6a5ea62941e9140405be2972c0fc117a33a5c47",
+    "samples/issue7196/156760012_page_top_spacing_trim-2024.pdf": "5db32d3107d229d471eb43b544e2c87a5fade1d1738b4bdea6338958726cc443",
+    "output/pr-review/planet6897-7382-20260926/stage166-body11/candidate5/rhwp": "e64c03c8de7f72cd7c800916d3744a5d582f0f6d25f8676c5e94ffd556dad8c6",
+    "output/pr-review/planet6897-7382-20260926/stage166-body11/fonts/HANYGO230.ttf": "cdf746176aba807cbf9b168c2d749be6270f44f4b80568b9e18b05d1ba53a200",
+    "src/document_core/commands/document.rs": "4861882a7689f325fbba5aa3bc3bd5e3ddc4118de20394af587414963618e434",
+    "src/renderer/composer.rs": "f709ae5eaa03ce4af69d689506bfdfabf2b154eee50da9eceee485b1adcb3278",
+    "src/renderer/layout/table_layout.rs": "358046785f8051cfc17b22d4438697eee84642066ffab9219f67d1d3cdf9a2c6",
+    "src/renderer/svg.rs": "f14169866de2b36ab2c226b09922ce730fc1e177118b63cf2502a360389f3be6",
+    "src/renderer/font_metrics_data.rs": "8c75af1b1cda47d3e63b431756cbc2f059860dcdfe58907dcb58b53acef35721",
+    "src/renderer/font_rule_projections/layout_metric.rs": "b71c36d187013ef8f5f486ebc2760e300afe2388a2433acf27f9873310b57be7",
+    "assets/font-rules/changes/issue-7196-ygodic230-metric-name.json": "32ba0e30b0bbb23fa29f46d56ac2dc6ffd80bfb16315090be1886df0b74cccf9",
+    "scripts/rasterize-svg-webfonts.mjs": "6e53f643f4a23d7e4d4ac9b4e8dd5157e0fc28f5b4fa9c7db21a2d170dc987b5",
+    "scripts/tests/font_rule_projection_gen.test.mjs": "2d4a1f92fa7472f6b9cc1a514eb95c4aa448aa3310395c255c96756e456ddca9",
+    "scripts/tests/font_rule_lifecycle_audit.test.mjs": "93ea09b2be3f06945850518c132bbd386afadbf2db1c48795609ccfe9e66fe0e",
+    "src/renderer/composer/tests.rs": "6c005105cf747fc5b6dd3755feffd7cc5e4d645f335d84e91305018ed85f6f40",
+    "src/renderer/svg/tests.rs": "36c706dc96b2eb368e02e0fd8b1c5be6aa5ec657901d9a5e208e26c819a6c160",
+    "assets/font-rules/font_rule_registry_v2.json": "7f3147e68865b4e667230abd6049fb548945848b3360f14ef82e567bb4d1555c",
+    "assets/font-rules/font_rule_projection_manifest.json": "f3babba8daa6a3253fc29f2075740179a188612b09dcbe493e690b03dc88bea1"
+  },
+  "native_overlay": {
+    "compared_pages": 10,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 92.6409,
+    "worst_pixel_match_percent": 87.88655,
+    "average_ink_match_percent": 32.15769,
+    "worst_ink_match_percent": 19.90993,
+    "average_visual_accuracy_proxy_percent": 32.15769,
+    "worst_visual_accuracy_proxy_percent": 19.90993,
+    "average_tolerant_content_match_percent": 96.24125,
+    "worst_tolerant_content_match_percent": 91.53858,
+    "worst_pages": [
+      6,
+      7,
+      1,
+      3,
+      4,
+      5,
+      8,
+      10,
+      9,
+      2
+    ]
+  },
+  "normal_known_failure": {
+    "scope": "기존 #1749 HWP 대조군의 컷[3] 실패는 보정166 이전에도 컷[2]. 현재단계 생산 변경의 새로운 차이 아님. 검사는 제거하거나 기대값을 완화하지 않았고 최종 전체 전 별도 재검토 대상.",
+    "same_full_page_dump": true,
+    "before_binary": "output/pr-review/planet6897-7382-20260926/stage163-tail-border/candidate1/rhwp",
+    "after_binary": "output/pr-review/planet6897-7382-20260926/stage166-body11/candidate5/rhwp",
+    "page_dump_sha256": {
+      "output/pr-review/planet6897-7382-20260926/stage166-body11/before-1749-hwp-pages.json": "d0b9d63b804f24e6ca032da2e2607afc14e19673f25a119dbafa446458e5d177",
+      "output/pr-review/planet6897-7382-20260926/stage166-body11/candidate5-1749-hwp-pages.json": "d0b9d63b804f24e6ca032da2e2607afc14e19673f25a119dbafa446458e5d177"
+    },
+    "old_failure_log": "output/pr-review/planet6897-7382-20260926/stage166-body11/normal-issue_1749_saved_bounds_page_break.log",
+    "items": [
+      {
+        "controlIndex": 0,
+        "endCut": [
+          2
+        ],
+        "endRow": 3,
+        "endnoteSource": null,
+        "isContinuation": false,
+        "isEndnote": false,
+        "kind": "partialTable",
+        "lineSegs": {
+          "count": 4,
+          "first": {
+            "baselineDistance": 1360,
+            "columnStart": 0,
+            "lineHeight": 1600,
+            "lineSpacing": 1280,
+            "segmentWidth": 49324,
+            "textHeight": 1600,
+            "textStart": 0
+          },
+          "last": {
+            "baselineDistance": 1275,
+            "columnStart": 0,
+            "lineHeight": 1500,
+            "lineSpacing": 1200,
+            "segmentWidth": 49324,
+            "textHeight": 1500,
+            "textStart": 129
+          }
+        },
+        "paraIndex": 52,
+        "startCut": [],
+        "startRow": 0,
+        "table": {
+          "colCount": 3,
+          "rowCount": 3
+        },
+        "vpos": {
+          "first": 50309,
+          "last": 58589,
+          "resets": [],
+          "rewinds": []
+        }
+      },
+      {
+        "controlIndex": 0,
+        "endCut": [],
+        "endRow": 3,
+        "endnoteSource": null,
+        "isContinuation": true,
+        "isEndnote": false,
+        "kind": "partialTable",
+        "lineSegs": {
+          "count": 4,
+          "first": {
+            "baselineDistance": 1360,
+            "columnStart": 0,
+            "lineHeight": 1600,
+            "lineSpacing": 1280,
+            "segmentWidth": 49324,
+            "textHeight": 1600,
+            "textStart": 0
+          },
+          "last": {
+            "baselineDistance": 1275,
+            "columnStart": 0,
+            "lineHeight": 1500,
+            "lineSpacing": 1200,
+            "segmentWidth": 49324,
+            "textHeight": 1500,
+            "textStart": 129
+          }
+        },
+        "paraIndex": 52,
+        "startCut": [
+          2
+        ],
+        "startRow": 2,
+        "table": {
+          "colCount": 3,
+          "rowCount": 3
+        },
+        "vpos": {
+          "first": 50309,
+          "last": 58589,
+          "resets": [],
+          "rewinds": []
+        }
+      }
+    ]
+  },
+  "node_policy": {
+    "tests": 40,
+    "passed": 40,
+    "failed": 0,
+    "projection_check_exit_code": 0
+  },
+  "remaining": "원장17건과 재검출 #1749 기존 HWP 컷1건 개별 재검토. 최종 전체 nextest/NativeSkia/원PR최종 시각/PR준비 미완료.",
+  "capture_lifecycle": {
+    "root": "캡처와 브라우저 정리 뒤 Node의 소유된 Chrome stderr PipeWrap이 남음. active resources PipeWrap3, fd16의 열린 소켓, 임시HTML/profile삭제 및 screenshot 생성 확인.",
+    "correction": "정상 await browser.close() 뒤 browser.process().stdio의 소유 스트림만 destroy. 캡처·폰트 readiness 조건/스크린샷/좌표 불변.",
+    "failed_original_capture": "visual-candidate5-fonts-wasm의 1쪽 캡처 후 idle. 진단 중 기존 Node 종료 후 2쪽으로 진행한 상태에서 이전 전체 프로세스만 종료. exit -15; 통과 증거에서 제외.",
+    "rerun": "Native/freshWASM 모두 final 새 경로에서 전10쪽 재산출.",
+    "existing_raster_tests": {
+      "passed": 7,
+      "failed": 0
+    },
+    "diagnostics": [
+      "raster-idle-diagnostic.json",
+      "raster-pipes-diagnostic.json",
+      "interrupted-capture-processes.json"
+    ],
+    "invariance": {
+      "native_before_after_raster_cleanup_same_png": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  },
+  "focused": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_016",
+      "-E",
+      "test(=body_overflow_baseline::body_overflow_does_not_grow_partition_11)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "plan": {
+      "caseName": "body_overflow_baseline",
+      "target": "regression_suite_016",
+      "grouped": true
+    },
+    "exit_code": 0,
+    "seconds": 10.69280262524262
+  },
+  "normal": [
+    {
+      "case": "issue_1749_saved_bounds_page_break",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_023",
+        "-E",
+        "test(/^issue_1749_saved_bounds_page_break::/) and not test(=issue_1749_saved_bounds_page_break::issue_1811_hwpx_pi52_rowbreak_cut_matches_hwp_reference)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 10.003244707826525
+    },
+    {
+      "case": "issue_2158_hwpx_vpos_reset_preserve",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_025",
+        "-E",
+        "test(/^issue_2158_hwpx_vpos_reset_preserve::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 8.684780500363559
+    },
+    {
+      "case": "issue_6342_tac_overflow_page_split",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_025",
+        "-E",
+        "test(/^issue_6342_tac_overflow_page_split::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 0.390321749728173
+    },
+    {
+      "case": "issue_2311_attachment_poster_intra_para_reset",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_028",
+        "-E",
+        "test(/^issue_2311_attachment_poster_intra_para_reset::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 6.07966991700232
+    },
+    {
+      "case": "issue_5847_x2x_lineseg_vertpos_preserved",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_022",
+        "-E",
+        "test(/^issue_5847_x2x_lineseg_vertpos_preserved::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 8.48080816725269
+    },
+    {
+      "case": "issue_2243",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_020",
+        "-E",
+        "test(/^issue_2243::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 7.929693333804607
+    },
+    {
+      "case": "stored_table_text_tail",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_026",
+        "-E",
+        "test(/^stored_table_text_tail::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 9.131247709039599
+    },
+    {
+      "case": "issue_7196_page_top_spacing_trim_restore",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_005",
+        "-E",
+        "test(/^issue_7196_page_top_spacing_trim_restore::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 8.233848582953215
+    }
+  ],
+  "normal_pass_count": 22,
+  "known_unchanged_failure_count": 1,
+  "unit_pass_count": 3,
+  "checks": {
+    "base": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "results": [
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit_code": 0,
+        "seconds": 9.091832791920751
+      },
+      {
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 7.4975487920455635
+      },
+      {
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "seconds": 0.7421942092478275
+      },
+      {
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 3.3591448343358934
+      },
+      {
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+        ],
+        "exit_code": 0,
+        "seconds": 13.779991209041327
+      },
+      {
+        "command": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 0.13643275015056133
+      }
+    ]
+  },
+  "lint": [
+    {
+      "command": [
+        "venv/bin/python",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage166-body11/checks.py"
+      ],
+      "exit_code": 0,
+      "seconds": 34.70898308325559
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 39.06335383327678
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 19.30313462484628
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 46.607860249932855
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 54.44295966718346
+    }
+  ],
+  "fresh_wasm": {
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--no-opt"
+    ],
+    "env": {
+      "TMPDIR": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage166-body11/tmp",
+      "CARGO_TARGET_DIR": "target/pr-review"
+    },
+    "exit_code": 0,
+    "seconds": 217.7710134172812,
+    "sha256": {
+      "pkg/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+      "pkg/rhwp_bg.wasm": "c18e3a6587807d9a203522a1990088464fb4541f38306a570f5713a0711e5a7c",
+      "rhwp-studio/public/rhwp.js": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133",
+      "rhwp-studio/public/rhwp_bg.wasm": "c18e3a6587807d9a203522a1990088464fb4541f38306a570f5713a0711e5a7c"
+    }
+  },
+  "font_lifecycle_policy": {
+    "before_passed": 6,
+    "before_failed": 2,
+    "after_passed": 8,
+    "after_failed": 0,
+    "reason": "과거 교체2개를 active830으로 고정한 오류를 기존 두 함수에서 생명주기·정확한 규칙ID로 교정. #7196 추가1개와 #7023/#6936 교체 각각 구별. 새 검사 함수0."
+  },
+  "cleanup": {
+    "scope": "이전 후보의 생성 SVG만 삭제. 기준 PDF·원문·PNG·결과 JSON과 최신 candidate5 Native/WASM 산출물 보존.",
+    "count": 95,
+    "bytes": 7286943119,
+    "paths": [
+      "visual-candidate1-native/trim7196/svg/156760012_page_top_spacing_trim_009.svg",
+      "visual-candidate1-native/trim7196/svg/156760012_page_top_spacing_trim_008.svg",
+      "visual-candidate1-native/trim7196/svg/156760012_page_top_spacing_trim_003.svg",
+      "visual-candidate1-native/trim7196/svg/156760012_page_top_spacing_trim_002.svg",
+      "visual-candidate1-native/trim7196/svg/156760012_page_top_spacing_trim_001.svg",
+      "visual-candidate1-native/trim7196/svg/156760012_page_top_spacing_trim_005.svg",
+      "visual-candidate1-native/trim7196/svg/156760012_page_top_spacing_trim_004.svg",
+      "visual-candidate1-native/trim7196/svg/156760012_page_top_spacing_trim_010.svg",
+      "visual-candidate1-native/trim7196/svg/156760012_page_top_spacing_trim_006.svg",
+      "visual-candidate1-native/trim7196/svg/156760012_page_top_spacing_trim_007.svg",
+      "visual-candidate2-native/trim7196/svg/156760012_page_top_spacing_trim_009.svg",
+      "visual-candidate2-native/trim7196/svg/156760012_page_top_spacing_trim_008.svg",
+      "visual-candidate2-native/trim7196/svg/156760012_page_top_spacing_trim_003.svg",
+      "visual-candidate2-native/trim7196/svg/156760012_page_top_spacing_trim_002.svg",
+      "visual-candidate2-native/trim7196/svg/156760012_page_top_spacing_trim_001.svg",
+      "visual-candidate2-native/trim7196/svg/156760012_page_top_spacing_trim_005.svg",
+      "visual-candidate2-native/trim7196/svg/156760012_page_top_spacing_trim_004.svg",
+      "visual-candidate2-native/trim7196/svg/156760012_page_top_spacing_trim_010.svg",
+      "visual-candidate2-native/trim7196/svg/156760012_page_top_spacing_trim_006.svg",
+      "visual-candidate2-native/trim7196/svg/156760012_page_top_spacing_trim_007.svg",
+      "visual-candidate2-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_009.svg",
+      "visual-candidate2-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_008.svg",
+      "visual-candidate2-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_003.svg",
+      "visual-candidate2-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_002.svg",
+      "visual-candidate2-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_001.svg",
+      "visual-candidate2-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_005.svg",
+      "visual-candidate2-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_004.svg",
+      "visual-candidate2-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_010.svg",
+      "visual-candidate2-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_006.svg",
+      "visual-candidate2-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_007.svg",
+      "visual-candidate2-exact-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_009.svg",
+      "visual-candidate2-exact-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_008.svg",
+      "visual-candidate2-exact-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_003.svg",
+      "visual-candidate2-exact-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_002.svg",
+      "visual-candidate2-exact-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_001.svg",
+      "visual-candidate2-exact-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_005.svg",
+      "visual-candidate2-exact-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_004.svg",
+      "visual-candidate2-exact-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_010.svg",
+      "visual-candidate2-exact-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_006.svg",
+      "visual-candidate2-exact-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_007.svg",
+      "visual-candidate3-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_009.svg",
+      "visual-candidate3-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_008.svg",
+      "visual-candidate3-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_003.svg",
+      "visual-candidate3-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_002.svg",
+      "visual-candidate3-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_001.svg",
+      "visual-candidate3-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_005.svg",
+      "visual-candidate3-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_004.svg",
+      "visual-candidate3-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_010.svg",
+      "visual-candidate3-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_006.svg",
+      "visual-candidate3-fonts-native/trim7196/svg/156760012_page_top_spacing_trim_007.svg",
+      "visual-candidate4-selected-native/trim7196/svg/156760012_page_top_spacing_trim_009.svg",
+      "visual-candidate4-selected-native/trim7196/svg/156760012_page_top_spacing_trim_010.svg",
+      "visual-common-native/trim7196/svg/156760012_page_top_spacing_trim_009.svg",
+      "visual-common-native/trim7196/svg/156760012_page_top_spacing_trim_008.svg",
+      "visual-common-native/trim7196/svg/156760012_page_top_spacing_trim_003.svg",
+      "visual-common-native/trim7196/svg/156760012_page_top_spacing_trim_002.svg",
+      "visual-common-native/trim7196/svg/156760012_page_top_spacing_trim_001.svg",
+      "visual-common-native/trim7196/svg/156760012_page_top_spacing_trim_005.svg",
+      "visual-common-native/trim7196/svg/156760012_page_top_spacing_trim_004.svg",
+      "visual-common-native/trim7196/svg/156760012_page_top_spacing_trim_010.svg",
+      "visual-common-native/trim7196/svg/156760012_page_top_spacing_trim_006.svg",
+      "visual-common-native/trim7196/svg/156760012_page_top_spacing_trim_007.svg",
+      "visual-common-wasm/trim7196/svg/wasm_009.svg",
+      "visual-common-wasm/trim7196/svg/wasm_008.svg",
+      "visual-common-wasm/trim7196/svg/wasm_005.svg",
+      "visual-common-wasm/trim7196/svg/wasm_011.svg",
+      "visual-common-wasm/trim7196/svg/wasm_010.svg",
+      "visual-common-wasm/trim7196/svg/wasm_004.svg",
+      "visual-common-wasm/trim7196/svg/wasm_006.svg",
+      "visual-common-wasm/trim7196/svg/wasm_007.svg",
+      "visual-common-wasm/trim7196/svg/wasm_003.svg",
+      "visual-common-wasm/trim7196/svg/wasm_002.svg",
+      "visual-common-wasm/trim7196/svg/wasm_001.svg",
+      "visual-common-wasm/trim7196/font_policy/156760012_page_top_spacing_trim_009.svg",
+      "visual-common-wasm/trim7196/font_policy/156760012_page_top_spacing_trim_008.svg",
+      "visual-common-wasm/trim7196/font_policy/156760012_page_top_spacing_trim_003.svg",
+      "visual-common-wasm/trim7196/font_policy/156760012_page_top_spacing_trim_002.svg",
+      "visual-common-wasm/trim7196/font_policy/156760012_page_top_spacing_trim_001.svg",
+      "visual-common-wasm/trim7196/font_policy/156760012_page_top_spacing_trim_011.svg",
+      "visual-common-wasm/trim7196/font_policy/156760012_page_top_spacing_trim_005.svg",
+      "visual-common-wasm/trim7196/font_policy/156760012_page_top_spacing_trim_004.svg",
+      "visual-common-wasm/trim7196/font_policy/156760012_page_top_spacing_trim_010.svg",
+      "visual-common-wasm/trim7196/font_policy/156760012_page_top_spacing_trim_006.svg",
+      "visual-common-wasm/trim7196/font_policy/156760012_page_top_spacing_trim_007.svg",
+      "visual-common-wasm/trim7196/wasm/raw_svg/wasm_009.svg",
+      "visual-common-wasm/trim7196/wasm/raw_svg/wasm_008.svg",
+      "visual-common-wasm/trim7196/wasm/raw_svg/wasm_005.svg",
+      "visual-common-wasm/trim7196/wasm/raw_svg/wasm_011.svg",
+      "visual-common-wasm/trim7196/wasm/raw_svg/wasm_010.svg",
+      "visual-common-wasm/trim7196/wasm/raw_svg/wasm_004.svg",
+      "visual-common-wasm/trim7196/wasm/raw_svg/wasm_006.svg",
+      "visual-common-wasm/trim7196/wasm/raw_svg/wasm_007.svg",
+      "visual-common-wasm/trim7196/wasm/raw_svg/wasm_003.svg",
+      "visual-common-wasm/trim7196/wasm/raw_svg/wasm_002.svg",
+      "visual-common-wasm/trim7196/wasm/raw_svg/wasm_001.svg"
+    ]
+  },
+  "visual": {
+    "native": {
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--dpi",
+        "96",
+        "--rhwp-bin",
+        "output/pr-review/planet6897-7382-20260926/stage166-body11/candidate5/rhwp",
+        "--embed-fonts=full",
+        "--file-target",
+        "trim7196",
+        "samples/issue7196/156760012_page_top_spacing_trim.hwpx",
+        "samples/issue7196/156760012_page_top_spacing_trim-2024.pdf",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage166-body11/fonts",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-native"
+      ],
+      "exit": {
+        "exit_code": 0,
+        "seconds": 190.23572333389893
+      },
+      "summary": {
+        "compared_pages": 10,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 92.6409,
+        "worst_pixel_match_percent": 87.88655,
+        "average_ink_match_percent": 32.15769,
+        "worst_ink_match_percent": 19.90993,
+        "average_visual_accuracy_proxy_percent": 32.15769,
+        "worst_visual_accuracy_proxy_percent": 19.90993,
+        "average_tolerant_content_match_percent": 96.24125,
+        "worst_tolerant_content_match_percent": 91.53858,
+        "worst_pages": [
+          6,
+          7,
+          1,
+          3,
+          4,
+          5,
+          8,
+          10,
+          9,
+          2
+        ]
+      },
+      "page_scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 97.60475
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.85481
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 99.76396
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 96.96433
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 94.92788
+        },
+        {
+          "page": 6,
+          "tolerant_content_match_percent": 92.79801
+        },
+        {
+          "page": 7,
+          "tolerant_content_match_percent": 91.67665
+        },
+        {
+          "page": 8,
+          "tolerant_content_match_percent": 98.35127
+        },
+        {
+          "page": 9,
+          "tolerant_content_match_percent": 98.93224
+        },
+        {
+          "page": 10,
+          "tolerant_content_match_percent": 91.53858
+        }
+      ],
+      "sweep_summary": [
+        {
+          "key": "trim7196",
+          "hwp": "samples/issue7196/156760012_page_top_spacing_trim.hwpx",
+          "pdf": "samples/issue7196/156760012_page_top_spacing_trim-2024.pdf",
+          "requested_pages": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "completed_pages": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "missing_pages": [],
+          "run_state": "complete",
+          "run_manifest": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-native/trim7196/run_manifest.json",
+          "exported_svg_pages": 10,
+          "exported_render_tree_pages": 10,
+          "exported_pdf_pages": 10,
+          "rasterized_svg_pages": 10,
+          "rasterized_pdf_pages": 10,
+          "svg_pages": 10,
+          "render_tree_pages": 10,
+          "pdf_pages": 10,
+          "compare_pages": 10,
+          "overlay_pages": 10,
+          "review_pages": 10,
+          "pdf_question_markers": 0,
+          "contact_sheet": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-native/trim7196/contact_sheet.png",
+          "overlay_contact_sheet": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-native/trim7196/overlay_contact_sheet.png",
+          "review_contact_sheet": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-native/trim7196/review_contact_sheet.png",
+          "analysis_dir": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-native/trim7196/analysis",
+          "overlay_dir": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-native/trim7196/overlay",
+          "review_dir": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-native/trim7196/review",
+          "note_shape": [
+            {
+              "section": 0,
+              "footnote": {
+                "separatorAboveMm": 2.0,
+                "separatorBelowMm": 2.0,
+                "betweenNotesMm": 2.999,
+                "separatorEnabled": false,
+                "separatorLengthMm": -0.004,
+                "rawSeparatorMarginTopMm": 2.0,
+                "rawSeparatorMarginBottomMm": 0.0,
+                "rawNoteSpacingMm": 2.0,
+                "rawUnknownMm": 2.999
+              },
+              "endnote": {
+                "separatorAboveMm": 2.0,
+                "separatorBelowMm": 2.0,
+                "betweenNotesMm": 2.999,
+                "separatorEnabled": false,
+                "separatorLengthMm": -0.004,
+                "rawSeparatorMarginTopMm": 2.0,
+                "rawSeparatorMarginBottomMm": 0.0,
+                "rawNoteSpacingMm": 2.0,
+                "rawUnknownMm": 2.999
+              }
+            }
+          ],
+          "note_shape_json": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-native/trim7196/analysis/note_shape.json",
+          "overlay_metrics": {
+            "compared_pages": 10,
+            "pixel_diff_threshold": 32,
+            "average_pixel_match_percent": 92.6409,
+            "worst_pixel_match_percent": 87.88655,
+            "average_ink_match_percent": 32.15769,
+            "worst_ink_match_percent": 19.90993,
+            "average_visual_accuracy_proxy_percent": 32.15769,
+            "worst_visual_accuracy_proxy_percent": 19.90993,
+            "average_tolerant_content_match_percent": 96.24125,
+            "worst_tolerant_content_match_percent": 91.53858,
+            "worst_pages": [
+              6,
+              7,
+              1,
+              3,
+              4,
+              5,
+              8,
+              10,
+              9,
+              2
+            ]
+          },
+          "overlay_metrics_json": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-native/trim7196/overlay/overlay_metrics.json",
+          "pr_review_gate": {
+            "status": "passed",
+            "minimum_tolerant_content_match_percent": 90.0,
+            "below_threshold_pages": [],
+            "unavailable_metric_pages": [],
+            "font_mismatch_evidence": null
+          },
+          "visual_metrics": {
+            "analyzed_pages": 10,
+            "flagged_page_count": 0,
+            "frame_overflow_pages": [],
+            "content_bottom_drift_pages": [],
+            "red_marker_drift_pages": [],
+            "question_marker_flow_drift_pages": [],
+            "line_band_drift_pages": [],
+            "column_line_band_drift_pages": [],
+            "column_text_flow_collapse_pages": [],
+            "large_ink_region_drift_pages": [],
+            "endnote_separator_gap_drift_pages": [],
+            "endnote_separator_observed_pages": [],
+            "endnote_separator_gap_pages": [],
+            "endnote_no_separator_content_pages": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10
+            ],
+            "between_notes_marker_gap_pages": [],
+            "equation_text_overlap_pages": [],
+            "square_wrap_text_overlap_pages": [],
+            "deferred_square_picture_top_drift_pages": [],
+            "right_table_left_strip_text_deficit_pages": [],
+            "question_title_text_overlap_pages": [],
+            "line_order_overlap_pages": [],
+            "render_tree_frame_tail_overflow_pages": [],
+            "question_marker_drift_pages": [],
+            "legacy_glyph_visual_pages": [],
+            "metrics_json": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-native/trim7196/analysis/metrics.json",
+            "question_flow_json": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-native/trim7196/analysis/question_flow.json"
+          },
+          "flagged_pages": [],
+          "native_document_pages": 10,
+          "native_export_metadata": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-native/trim7196/native-export.json"
+        }
+      ],
+      "directory": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-native"
+    },
+    "wasm": {
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--dpi",
+        "96",
+        "--rhwp-bin",
+        "output/pr-review/planet6897-7382-20260926/stage166-body11/candidate5/rhwp",
+        "--embed-fonts=full",
+        "--file-target",
+        "trim7196",
+        "samples/issue7196/156760012_page_top_spacing_trim.hwpx",
+        "samples/issue7196/156760012_page_top_spacing_trim-2024.pdf",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage166-body11/fonts",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage67-block6101/fonts",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage59-prep2006/fonts",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-wasm",
+        "--wasm-pkg",
+        "pkg"
+      ],
+      "exit": {
+        "exit_code": 0,
+        "seconds": 310.20694520836696
+      },
+      "summary": {
+        "compared_pages": 10,
+        "pixel_diff_threshold": 32,
+        "average_pixel_match_percent": 92.6705,
+        "worst_pixel_match_percent": 87.88655,
+        "average_ink_match_percent": 32.27919,
+        "worst_ink_match_percent": 19.90993,
+        "average_visual_accuracy_proxy_percent": 32.27919,
+        "worst_visual_accuracy_proxy_percent": 19.90993,
+        "average_tolerant_content_match_percent": 96.23828,
+        "worst_tolerant_content_match_percent": 91.53858,
+        "worst_pages": [
+          6,
+          7,
+          1,
+          3,
+          4,
+          5,
+          8,
+          10,
+          9,
+          2
+        ]
+      },
+      "page_scores": [
+        {
+          "page": 1,
+          "tolerant_content_match_percent": 97.60475
+        },
+        {
+          "page": 2,
+          "tolerant_content_match_percent": 99.85457
+        },
+        {
+          "page": 3,
+          "tolerant_content_match_percent": 99.7708
+        },
+        {
+          "page": 4,
+          "tolerant_content_match_percent": 96.93205
+        },
+        {
+          "page": 5,
+          "tolerant_content_match_percent": 94.92415
+        },
+        {
+          "page": 6,
+          "tolerant_content_match_percent": 92.79801
+        },
+        {
+          "page": 7,
+          "tolerant_content_match_percent": 91.67665
+        },
+        {
+          "page": 8,
+          "tolerant_content_match_percent": 98.35127
+        },
+        {
+          "page": 9,
+          "tolerant_content_match_percent": 98.93197
+        },
+        {
+          "page": 10,
+          "tolerant_content_match_percent": 91.53858
+        }
+      ],
+      "sweep_summary": [
+        {
+          "key": "trim7196",
+          "hwp": "samples/issue7196/156760012_page_top_spacing_trim.hwpx",
+          "pdf": "samples/issue7196/156760012_page_top_spacing_trim-2024.pdf",
+          "requested_pages": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "completed_pages": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "missing_pages": [],
+          "run_state": "complete",
+          "run_manifest": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-wasm/trim7196/run_manifest.json",
+          "exported_svg_pages": 10,
+          "exported_render_tree_pages": 10,
+          "exported_pdf_pages": 10,
+          "rasterized_svg_pages": 10,
+          "rasterized_pdf_pages": 10,
+          "svg_pages": 10,
+          "render_tree_pages": 10,
+          "pdf_pages": 10,
+          "compare_pages": 10,
+          "overlay_pages": 10,
+          "review_pages": 10,
+          "pdf_question_markers": 0,
+          "contact_sheet": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-wasm/trim7196/contact_sheet.png",
+          "overlay_contact_sheet": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-wasm/trim7196/overlay_contact_sheet.png",
+          "review_contact_sheet": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-wasm/trim7196/review_contact_sheet.png",
+          "analysis_dir": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-wasm/trim7196/analysis",
+          "overlay_dir": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-wasm/trim7196/overlay",
+          "review_dir": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-wasm/trim7196/review",
+          "note_shape": [
+            {
+              "section": 0,
+              "footnote": {
+                "separatorAboveMm": 2.0,
+                "separatorBelowMm": 2.0,
+                "betweenNotesMm": 2.999,
+                "separatorEnabled": false,
+                "separatorLengthMm": -0.004,
+                "rawSeparatorMarginTopMm": 2.0,
+                "rawSeparatorMarginBottomMm": 0.0,
+                "rawNoteSpacingMm": 2.0,
+                "rawUnknownMm": 2.999
+              },
+              "endnote": {
+                "separatorAboveMm": 2.0,
+                "separatorBelowMm": 2.0,
+                "betweenNotesMm": 2.999,
+                "separatorEnabled": false,
+                "separatorLengthMm": -0.004,
+                "rawSeparatorMarginTopMm": 2.0,
+                "rawSeparatorMarginBottomMm": 0.0,
+                "rawNoteSpacingMm": 2.0,
+                "rawUnknownMm": 2.999
+              }
+            }
+          ],
+          "note_shape_json": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-wasm/trim7196/analysis/note_shape.json",
+          "overlay_metrics": {
+            "compared_pages": 10,
+            "pixel_diff_threshold": 32,
+            "average_pixel_match_percent": 92.6705,
+            "worst_pixel_match_percent": 87.88655,
+            "average_ink_match_percent": 32.27919,
+            "worst_ink_match_percent": 19.90993,
+            "average_visual_accuracy_proxy_percent": 32.27919,
+            "worst_visual_accuracy_proxy_percent": 19.90993,
+            "average_tolerant_content_match_percent": 96.23828,
+            "worst_tolerant_content_match_percent": 91.53858,
+            "worst_pages": [
+              6,
+              7,
+              1,
+              3,
+              4,
+              5,
+              8,
+              10,
+              9,
+              2
+            ]
+          },
+          "overlay_metrics_json": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-wasm/trim7196/overlay/overlay_metrics.json",
+          "pr_review_gate": {
+            "status": "passed",
+            "minimum_tolerant_content_match_percent": 90.0,
+            "below_threshold_pages": [],
+            "unavailable_metric_pages": [],
+            "font_mismatch_evidence": null
+          },
+          "visual_metrics": {
+            "analyzed_pages": 10,
+            "flagged_page_count": 0,
+            "frame_overflow_pages": [],
+            "content_bottom_drift_pages": [],
+            "red_marker_drift_pages": [],
+            "question_marker_flow_drift_pages": [],
+            "line_band_drift_pages": [],
+            "column_line_band_drift_pages": [],
+            "column_text_flow_collapse_pages": [],
+            "large_ink_region_drift_pages": [],
+            "endnote_separator_gap_drift_pages": [],
+            "endnote_separator_observed_pages": [],
+            "endnote_separator_gap_pages": [],
+            "endnote_no_separator_content_pages": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10
+            ],
+            "between_notes_marker_gap_pages": [],
+            "equation_text_overlap_pages": [],
+            "square_wrap_text_overlap_pages": [],
+            "deferred_square_picture_top_drift_pages": [],
+            "right_table_left_strip_text_deficit_pages": [],
+            "question_title_text_overlap_pages": [],
+            "line_order_overlap_pages": [],
+            "render_tree_frame_tail_overflow_pages": [],
+            "question_marker_drift_pages": [],
+            "legacy_glyph_visual_pages": [],
+            "metrics_json": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-wasm/trim7196/analysis/metrics.json",
+            "question_flow_json": "/Users/tsjang/rhwp/output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-wasm/trim7196/analysis/question_flow.json"
+          },
+          "flagged_pages": []
+        }
+      ],
+      "directory": "output/pr-review/planet6897-7382-20260926/stage166-body11/visual-candidate5-final-wasm"
+    }
+  },
+  "anomaly": {
+    "emptyPageCount": 0,
+    "hasSignal": true,
+    "mode": "single",
+    "offCanvasCount": 0,
+    "overflowCount": 2,
+    "overflowTolerancePx": 1.0,
+    "overlapCount": 0,
+    "overlapTolerancePx": 2.0,
+    "pageCount": 10,
+    "pageFilter": null,
+    "pages": [
+      {
+        "emptyPage": false,
+        "offCanvas": [],
+        "overflow": [
+          {
+            "bbox": {
+              "h": 162.12,
+              "w": 644.4266666666666,
+              "x": 75.58666666666667,
+              "y": 94.46666666666667
+            },
+            "boundary": {
+              "h": 933.5733333333334,
+              "w": 642.5333333333334,
+              "x": 75.58666666666667,
+              "y": 94.46666666666667
+            },
+            "maxOver": 1.893333333333203,
+            "nodeType": "Table",
+            "overBottom": 0.0,
+            "overLeft": 0.0,
+            "overRight": 1.893333333333203,
+            "overTop": 0.0,
+            "path": "Page/Body/Column0/Table0"
+          },
+          {
+            "bbox": {
+              "h": 481.73333333333335,
+              "w": 644.4266666666666,
+              "x": 75.58666666666667,
+              "y": 422.24000000000007
+            },
+            "boundary": {
+              "h": 933.5733333333334,
+              "w": 642.5333333333334,
+              "x": 75.58666666666667,
+              "y": 94.46666666666667
+            },
+            "maxOver": 1.893333333333203,
+            "nodeType": "Table",
+            "overBottom": 0.0,
+            "overLeft": 0.0,
+            "overRight": 1.893333333333203,
+            "overTop": 0.0,
+            "path": "Page/Body/Column0/Table6"
+          }
+        ],
+        "overlap": [],
+        "page": 1,
+        "storedLineEscape": [],
+        "textOverlap": []
+      }
+    ],
+    "schemaVersion": "1.0",
+    "source": "samples/issue7196/156760012_page_top_spacing_trim.hwpx",
+    "storedLineEscapeCount": 0,
+    "storedLineTolerancePx": 0.5,
+    "strict": false,
+    "textOverlapCount": 0,
+    "types": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  },
+  "anomaly_summary": "본문 아래 넘침0, 쪽수10. 기존 표 오른쪽1.8933px2건은 남음; 전체 anomaly0으로 주장하지 않음.",
+  "direct_read": "Native 전10쪽 contact, Native7 review·10 overlay, freshWASM 전10쪽 contact·4/10 standalone overlay 직접 확인. 큰 문단·표 소속 차이/내용 누락/겹침은 없음. 글자형·단어 폭/약1~4px 일부 경계 차이는 남음. 엄격 픽셀 완전 일치로 보고하지 않음.",
+  "code_head": "74b70903be6f3f85d7b2011156937cba789a9af8",
+  "assets": {
+    "stage166_before_native_review_003.png": "e42dfa5354b365370404f5904483ef0687f8a30e27a57ed5515e76b8613f872d",
+    "stage166_native_review_003.png": "63073a1f49b0a969feeb255a71e6f848ddd826eb951bdaf3950e6aaa78000766",
+    "stage166_native_review_009.png": "f96398941da24c9480a2286bcfad3bfbe2e1eeb065fc754372df7778e11305c2",
+    "stage166_native_review_010.png": "93b90852de3730e883accc27849611a9c1c61931c0fba871eac7f5f1323ec39e",
+    "stage166_wasm_overlay_003.png": "551a5e02004b33f30769dae4744aed98e9262c0b0d292a70f451263da4ec7356",
+    "stage166_wasm_overlay_009.png": "fa0a958e745b687012d7b9945da6df51fc91e7b028d8ead2976f7321110cec46",
+    "stage166_wasm_overlay_010.png": "3b043e676d0dc3abbd2f38352bd4ab1f5af8421d4e379f360098c0d693a587e6"
+  }
+}

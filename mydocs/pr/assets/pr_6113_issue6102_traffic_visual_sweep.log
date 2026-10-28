@@ -1,0 +1,10 @@
+== pr_6113_issue6102_traffic ==
++ target/pr-review/release-test/rhwp dump-note-shape /home/tsjang/rhwp/samples/issue6102/36444579_traffic_fine_exemption.hwpx
++ target/pr-review/release-test/rhwp export-svg /home/tsjang/rhwp/samples/issue6102/36444579_traffic_fine_exemption.hwpx --font-style -o /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6113_issue6102_traffic/svg
++ target/pr-review/release-test/rhwp export-render-tree /home/tsjang/rhwp/samples/issue6102/36444579_traffic_fine_exemption.hwpx -o /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6113_issue6102_traffic/render_tree
+SVG export pages: 2
++ pdftoppm -f 1 -l 1 -r 96 -png /home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6113_issue6102_traffic_fine_exemption-local2020.pdf /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6113_issue6102_traffic/pdf_png/pdf
++ pdftotext -bbox-layout /home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6113_issue6102_traffic_fine_exemption-local2020.pdf /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6113_issue6102_traffic/pdf_bbox.html
+Selected pages: [1]
+Raster PNG pages: rhwp=1, pdf=1
+summary: /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/summary.json

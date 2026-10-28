@@ -1,0 +1,53 @@
+status=0
+input=/home/tsjang/rhwp/samples/issue6121/156531618_police_press_header.hwpx
+source_input=/home/tsjang/rhwp/samples/issue6121/156531618_police_press_header.hwpx
+preprocess=none
+target=pdf
+run_cwd=/home/tsjang/hwp-convert
+timeout=300s
+open_method=action
+save_method=action
+save_action=PrintToPDFEx
+pdf_export_mode=print
+print_method=0
+page_setup=none
+patch_table_last_row_count=0
+pdf_page_match=ok
+pdf_page_match_log=/home/tsjang/hwp-convert/out/156531618_police_press_header-to-pdf-2020.log
+pdf_editor_pages=3
+pdf_pages=3
+pdf_content_check=ok_min_size
+pdf_output_bytes=628480
+pdf_min_bytes=4096
+output=/home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6144_issue6121_police_press_header-local2020.pdf
+log=/home/tsjang/hwp-convert/out/156531618_police_press_header-to-pdf-2020.log
+4:stage119_deleting_dtor_290f50 patch applied at 0x7edefa890f50 size=1
+5:stage119_null_out_store_2865c9 patch applied at 0x7edefa8865c9 size=3
+6:stage119_lifetime_guards enabled
+7:stage119_open_attach_3f4740 hook applied target=0x7edef9bf4740 hook=0x5eb92c0d712f trampoline=0x7edeffa5b000 patch_size=16
+8:stage119_view_create_379510 hook applied target=0x7edef9b79510 hook=0x5eb92c0d76cb trampoline=0x7edeffa5a000 patch_size=13
+9:stage119_runtime_hooks enabled core_base=0x7edef9800000 open_thunk=0x7edef9bf4740 open_inner=0x7edef9bf02d0 view_create=0x7edef9b79510
+312:stage119_view_create_hook self=0x5eb95b3462d0 hwnd=0x5eb95b3fad30 rect=0x7ffdaba321e0 marker=0 ctrl=0
+313:  stage119_view_candidate=0x5eb95b3462d0 vtable=0x7edefa3f2810 entry0=0x7edef9b97fd0 /opt/hnc/hoffice11/Bin/libCoreEngine.so+0x397fd0
+314:  stage119_view_candidate_slots=0x5eb95b3462d0 [+0]=0x7edefa3f2810 [+8]=0x7ede00000001 [+10]=0x7edefa3f2d70 [+18]=0 [+20]=0 [+28]=0 [+30]=0x7edef5767b80 [+38]=0x1 [+40]=0 [+48]=0 [+50]=0x7edefa3f2da8 [+58]=0x7edefa3f2e28 [+60]=0x7edefa3f2e50 [+68]=0 [+70]=0 [+78]=0
+315:stage119_view_create_hook_after result=0x1 view_candidate=0x5eb95b3462d0
+959:stage119_view_create_hook self=0x5eb95bae8060 hwnd=0x5eb95e7426c0 rect=0x7ffdaba30ed0 marker=0 ctrl=0x5eb95b326cd0
+960:  stage119_view_candidate=0x5eb95bae8060 vtable=0x7edefa3f2810 entry0=0x7edef9b97fd0 /opt/hnc/hoffice11/Bin/libCoreEngine.so+0x397fd0
+961:  stage119_view_candidate_slots=0x5eb95bae8060 [+0]=0x7edefa3f2810 [+8]=0x5eb900000001 [+10]=0x7edefa3f2d70 [+18]=0 [+20]=0x5eb95bb34800 [+28]=0 [+30]=0x7edef5767b80 [+38]=0x1 [+40]=0 [+48]=0x7ede00000000 [+50]=0x7edefa3f2da8 [+58]=0x7edefa3f2e28 [+60]=0x7edefa3f2e50 [+68]=0x5eb900000000 [+70]=0x18 [+78]=0
+968:stage119_view_create_hook_after result=0x1 view_candidate=0x5eb95bae8060
+1011:stage119_open_attach_hook self=0x5eb95e7b66e8 owner_candidate=0x5eb95e7b66e0 inner=0x5eb95e7ad090 mode=0 out=0x5eb95e757768 path_prefix=/home/tsjang/rhwp/samples/issue6121/156531618_police_press_header.hwpx
+1012:  stage119_open_owner_candidate=0x5eb95e7b66e0 vtable=0x7edefa3d3770 entry0=0x7edef9bf3a70 /opt/hnc/hoffice11/Bin/libCoreEngine.so+0x3f3a70
+1013:  stage119_open_owner_candidate_slots=0x5eb95e7b66e0 [+0]=0x7edefa3d3770 [+8]=0x7edefa3d3bd8 [+10]=0x5eb95e7ad090 [+18]=0x5e41 [+20]=0x20080000005e38 [+28]=0 [+30]=0 [+38]=0 [+40]=0 [+48]=0 [+50]=0 [+58]=0
+1023:stage119_open_attach_hook_after result=1 doc_candidate=0x5eb95e7b66e0
+1059:stage113_bind_doc_candidate begin ctrl=0x5eb95b326cd0 global_ctrl=0x5eb95b326cd0 old_doc=0x5eb95b336350 candidate=0x5eb95e7b66e0
+1060:stage113_bind_doc_candidate_object=0x5eb95e7b66e0 vtable=0x7edefa3d3770 entry0=0x7edef9bf3a70 /opt/hnc/hoffice11/Bin/libCoreEngine.so+0x3f3a70
+1061:stage113_bind_doc_candidate_slots=0x5eb95e7b66e0 [+0]=0x7edefa3d3770 [+8]=0x7edefa3d3bd8 [+10]=0x5eb95e7ad090 [+18]=0x5e41 [+20]=0x20080000005e38 [+28]=0 [+30]=0 [+38]=0 [+40]=0 [+48]=0 [+50]=0 [+58]=0
+1062:stage113_bind_doc_candidate applied slot=ctrl+0x50 old_doc=0x5eb95b336350 new_doc=0x5eb95e7b66e0
+1084:stage118_bind_view_candidate begin ctrl=0x5eb95b326cd0 old_view=0x5eb95b3462d0 candidate=0x5eb95bae8060
+1085:stage118_view_candidate object=0x5eb95bae8060 vtable=0x7edefa3f2810
+1102:stage118_view_candidate_slots=0x5eb95bae8060 [+0]=0x7edefa3f2810 [+8]=0x5eb900000001 [+10]=0x7edefa3f2d70 [+18]=0x5eb95b9fb760 [+20]=0x5eb95bb34800 [+28]=0 [+30]=0x7edef5767b80 [+38]=0x1 [+40]=0 [+48]=0x7ede00000000 [+50]=0x7edefa3f2da8 [+58]=0x7edefa3f2e28 [+60]=0x7edefa3f2e50 [+68]=0x5eb900000000 [+70]=0x18 [+78]=0
+1103:stage118_bind_view_candidate applied slot=ctrl+0x40 old_view=0x5eb95b3462d0 new_view=0x5eb95bae8060
+1543:action_save_result=1 output_size=628480
+1545:exiting via _Exit status=0
+-rw-rw-r-- 1 tsjang tsjang 628480 Aug 26 19:53 /home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6144_issue6121_police_press_header-local2020.pdf
+/home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6144_issue6121_police_press_header-local2020.pdf: PDF document, version 1.7

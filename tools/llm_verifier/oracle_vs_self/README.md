@@ -52,8 +52,8 @@ python tools/llm_verifier/oracle_vs_self/cli.py \
   --has-hangul-pdf 0 --versions none \
   --page-count-match 1 --render-self-pass 1 --cheap-ok 1
 
-python tools/llm_verifier/oracle_vs_self/generate_corpus.py
-python tools/llm_verifier/oracle_vs_self/verify_corpus.py
+python -m tools.llm_verifier.oracle_vs_self.generate_corpus
+python -m tools.llm_verifier.oracle_vs_self.verify_corpus
 python -m unittest discover -s tools/llm_verifier/oracle_vs_self/tests -v
 ```
 

@@ -2,40 +2,31 @@ name: CI
 
 on:
   push:
-    branches: [main, devel]
     tags: ['v*']
-    paths-ignore:
-      - 'mydocs/**'
-      - 'docs/**'
-      - 'samples/**'
-      - 'pdf/**'
-      - 'pdf-2020/**'
-      - 'pdf-large/**'
-      - 'assets/chrome/**'
-      - 'assets/edge/**'
-      - 'assets/logo/**'
-      - 'assets/screenshots/**'
-      - '*.md'
-      - 'LICENSE'
-      - '.github/ISSUE_TEMPLATE/**'
-      - '.github/FUNDING.yml'
-      - '.github/CODE_OF_CONDUCT.md'
-      - '.github/SECURITY.md'
-      - '.github/pull_request_template.md'
-      - '.github/dependabot.yml'
-      - 'rhwp-logo.*'
   pull_request:
     branches: [main, devel]
     types: [opened, reopened, synchronize]
     paths-ignore:
-      - 'docs/**'
       # samples는 required Build & Test를 발행해야 하므로 preflight에서
       # 신규 reference-only와 기존 자료 변경을 구분한다.
       - 'assets/chrome/**'
       - 'assets/edge/**'
       - 'assets/logo/**'
       - 'assets/screenshots/**'
-      - '*.md'
+      # #8267: root instruction documents must reach the fast-pass preflight.
+      - 'CHANGELOG.md'
+      - 'CHANGELOG_EN.md'
+      - 'CONTRIBUTING.md'
+      - 'CONVENTIONS.md'
+      - 'GEMINI.md'
+      - 'QWEN.md'
+      - 'README.md'
+      - 'README_EN.md'
+      - 'ROADMAP.md'
+      - 'SECURITY.md'
+      - 'THIRD_PARTY.md'
+      - 'THIRD_PARTY_LICENSES.md'
+      - 'replit.md'
       - 'LICENSE'
       - '.github/ISSUE_TEMPLATE/**'
       - '.github/FUNDING.yml'
@@ -56,15 +47,29 @@ env:
   CARGO_TERM_COLOR: always
 
 # [Task #1192 F] 같은 PR 에 새 push 가 오면 진행 중 run 을 취소해 중복 실행 제거.
-# cancel-in-progress 는 PR 이벤트에서만 활성화 — devel/main push 머지 검증 run 은 보존.
+# Branch push에서는 검증 CI를 시작하지 않는다. tag/manual 실행은 명시 실행이다.
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  trusted_postmerge_reuse:
+    uses: ./.github/workflows/trusted-postmerge-ci-reuse.yml
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    with:
+      workflow_file: ci.yml
+      require_duration_artifacts: true
+      caller_event_name: ${{ github.event_name }}
+      caller_ref: ${{ github.ref }}
+      caller_sha: ${{ github.sha }}
+
   preflight:
     name: CI preflight
     runs-on: ubuntu-latest
+    needs: [trusted_postmerge_reuse]
     # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     timeout-minutes: 10
     permissions:
@@ -74,9 +79,12 @@ jobs:
       pull-requests: read
       statuses: read
     outputs:
-      fast_pass: ${{ steps.finalize.outputs.fast_pass || 'false' }}
-      reason: ${{ steps.finalize.outputs.reason || 'preflight-unavailable' }}
+      fast_pass: ${{ needs.trusted_postmerge_reuse.outputs.reuse == 'true' && 'true' || steps.finalize.outputs.fast_pass || 'false' }}
+      reason: ${{ needs.trusted_postmerge_reuse.outputs.reuse == 'true' && needs.trusted_postmerge_reuse.outputs.reason || steps.finalize.outputs.reason || 'preflight-unavailable' }}
       candidate_sha: ${{ steps.finalize.outputs.candidate_sha || '' }}
+      postmerge_reuse: ${{ needs.trusted_postmerge_reuse.outputs.reuse || 'false' }}
+      postmerge_source_run_id: ${{ needs.trusted_postmerge_reuse.outputs.source_run_id || '' }}
+      postmerge_refresh_duration_data: ${{ needs.trusted_postmerge_reuse.outputs.refresh_duration_data || 'false' }}
       # [#3790 Stage 4·5B] frontend_mode·render_required·rust_required·
       # native_skia_required는 이 workflow의 worker 조건에 사용한다. codeql_languages는
       # codeql.yml이 같은 trusted-base 판정으로 소비한다. 모든 기본값은 full lane이다.
@@ -84,11 +92,12 @@ jobs:
       frontend_mode: ${{ steps.impact.outputs.frontend_mode || 'package' }}
       render_required: ${{ steps.impact.outputs.render_required || 'true' }}
       native_skia_required: ${{ steps.impact.outputs.native_skia_required || 'true' }}
-      codeql_languages: ${{ steps.impact.outputs.codeql_languages || 'javascript-typescript,python,rust' }}
+      codeql_languages: ${{ steps.impact.outputs.codeql_languages || 'javascript-typescript,python,rust,actions' }}
       classification_status: ${{ steps.impact.outputs.classification_status || 'full' }}
       classifier_version: ${{ steps.impact.outputs.classifier_version || 'unavailable' }}
       impact_reason: ${{ steps.impact.outputs.reason || 'fail-closed:impact-unavailable' }}
       impact_authority: ${{ steps.collect-impact.outputs.authority || 'unavailable' }}
+      security_sweep_samples_json: ${{ steps.collect-impact.outputs.security_sweep_samples_json || '[]' }}
       # [#4029] CI test profile과 archive timeout은 한 step에서 함께 결정한다. output 부재는
       # 검증 강도를 낮추지 않도록 release/60으로 닫는다.
       test_profile: ${{ steps.test-policy.outputs.cargo_profile || 'release' }}
@@ -164,6 +173,10 @@ jobs:
           script: |
             const allowedConclusions = new Set(['success', 'skipped', 'neutral']);
             const { owner, repo } = context.repo;
+            const renderContractPaths = new Set([
+              'mydocs/tech/canvaskit-parity-implementation.md',
+              'mydocs/tech/text-ir-v2.md',
+            ]);
 
             function setResult(fastPass, reason, candidateSha = '') {
               core.setOutput('fast_pass', fastPass ? 'true' : 'false');
@@ -186,36 +199,54 @@ jobs:
 
             function isAllowedReviewPath(file) {
               const filename = file.filename;
-              if (filename.startsWith('mydocs/')) {
+              if (filename === 'AGENTS.md' || filename === 'CLAUDE.md') {
+                return !file.previous_filename
+                  && (file.status === 'added' || file.status === 'modified');
+              }
+              if (filename.startsWith('mydocs/') && !renderContractPaths.has(filename)) {
                 return true;
+              }
+              if (isPdfReferencePath(filename)) {
+                return file.status === 'added' || file.status === 'modified';
               }
               if (file.status !== 'added') {
                 return false;
               }
-              return isReviewReferencePath(filename);
+              return isSampleReferencePath(filename);
             }
 
-            function isReviewReferencePath(filename) {
-              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+            function isSampleReferencePath(filename) {
               return (
                 filename.startsWith('samples/')
                 && (
-                  filename.endsWith('.hwp')
-                  || filename.endsWith('.hwpx')
-                  || filename.endsWith('.pdf')
+                  filename.endsWith('.pdf')
                   || filename.endsWith('.png')
                 )
-              ) || (
+              );
+            }
+
+            function isPdfReferencePath(filename) {
+              const pdfPrefixes = ['pdf/'];
+              return (
                 pdfPrefixes.some((prefix) => filename.startsWith(prefix))
                 && filename.endsWith('.pdf')
               );
             }
 
+            function isReviewReferencePath(filename) {
+              return isSampleReferencePath(filename) || isPdfReferencePath(filename);
+            }
+
+            function isReviewReferenceFile(file) {
+              const filename = file.filename;
+              if (isPdfReferencePath(filename)) {
+                return file.status === 'added' || file.status === 'modified';
+              }
+              return file.status === 'added' && isSampleReferencePath(filename);
+            }
+
             function reviewOnlyLabel(files) {
-              const hasReferenceArtifact = files.some((file) => (
-                file.status === 'added'
-                && isReviewReferencePath(file.filename)
-              ));
+              const hasReferenceArtifact = files.some((file) => isReviewReferenceFile(file));
               return hasReferenceArtifact ? 'review-reference-only' : 'mydocs-only';
             }
 
@@ -244,6 +275,8 @@ jobs:
             }
 
             async function hasTrustedReviewReuse(pr) {
+              if (pr.base?.ref !== 'devel' || pr.base?.repo?.full_name !== `${owner}/${repo}`
+                || pr.head?.repo?.full_name !== `${owner}/${repo}`) return false;
               for (let attempt = 0; attempt < 7; attempt += 1) {
                 const statuses = await github.paginate(github.rest.repos.listCommitStatusesForRef, {
                   owner,
@@ -255,12 +288,14 @@ jobs:
                   .filter((status) => status.context === 'CI Impact Policy')
                   .sort((left, right) => Number(right.id || 0) - Number(left.id || 0))[0];
                 if (latest) {
-                  const fields = new Map(String(latest.description || '').split(';').map((part) => {
+                  const entries = String(latest.description || '').split(';').map((part) => {
                     const separator = part.indexOf('=');
                     return separator > 0
                       ? [part.slice(0, separator), part.slice(separator + 1)]
                       : ['', ''];
-                  }));
+                  });
+                  const fields = new Map(entries);
+                  if (entries.length !== fields.size || entries.some(([key, value]) => !key || !value)) return false;
                   const expectedFields = [
                     'v', 'cv', 'mode', 'rfp', 'wf', 'rust', 'fe', 'render', 'skia', 'ql', 'b',
                   ];
@@ -270,7 +305,7 @@ jobs:
                     && latest.creator?.login === 'github-actions[bot]'
                     && fields.size === expectedFields.length
                     && expectedFields.every((field) => fields.has(field))
-                    && fields.get('v') === '5'
+                    && fields.get('v') === '8'
                     && fields.get('rfp') === '1'
                     && fields.get('b') === pr.base.sha
                     && target
@@ -328,6 +363,9 @@ jobs:
                 };
               }
 
+              if (workflowRun.conclusion !== 'success') {
+                return { state: 'failed', reason: `workflow-not-success:${workflowRun.conclusion}` };
+              }
               const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
                 owner,
                 repo,
@@ -429,8 +467,11 @@ jobs:
               }
 
               const reviewOnlyCandidates = [];
+              const candidatesContainingBase = new Set();
+              let baseMergeCandidateIndex = -1;
               let codeCandidateSha = '';
               let baseMergeBridge = null;
+              let expectedSha = pr.head.sha;
 
               for (let index = commits.length - 1; index >= 0; index -= 1) {
                 const sha = commits[index].sha;
@@ -440,6 +481,10 @@ jobs:
                   ref: sha,
                 });
                 const parents = commit.parents || [];
+                if (sha !== expectedSha || commit.sha !== sha) {
+                  setResult(false, 'review-tail-parent-mismatch');
+                  return;
+                }
                 if (isCurrentBaseUpdateMerge(commit, pr.base.sha)) {
                   if (baseMergeBridge) {
                     setResult(false, `multiple-current-base-update-merges:${sha}`);
@@ -447,6 +492,13 @@ jobs:
                   }
                   const sourceParent = parents.find((parent) => parent.sha !== pr.base.sha);
                   baseMergeBridge = { mergeSha: sha, sourceParentSha: sourceParent.sha };
+                  expectedSha = sourceParent.sha;
+                  // The merge can itself have a green run; do not only search its source parent.
+                  baseMergeCandidateIndex = reviewOnlyCandidates.length;
+                  for (const candidateSha of reviewOnlyCandidates) {
+                    candidatesContainingBase.add(candidateSha);
+                  }
+                  candidatesContainingBase.add(sha);
                   core.info(`including current-base update merge bridge ${sha}`);
                   continue;
                 }
@@ -460,8 +512,9 @@ jobs:
 
                 const reviewOnly = files.every((file) => isAllowedReviewPath(file));
                 if (reviewOnly) {
-                  if (parents.length === 1) {
+                  if (parents.length === 1 && /^[0-9a-f]{40}$/.test(parents[0]?.sha || '')) {
                     reviewOnlyCandidates.push(sha);
+                    expectedSha = parents[0].sha;
                     continue;
                   }
                   setResult(false, `${reviewOnlyLabel(files)}-merge-not-reusable:${sha}`);
@@ -479,11 +532,14 @@ jobs:
               if (codeCandidateSha) {
                 reviewOnlyCandidates.push(codeCandidateSha);
               }
+              if (baseMergeBridge) {
+                reviewOnlyCandidates.splice(baseMergeCandidateIndex, 0, baseMergeBridge.mergeSha);
+              }
 
               for (const candidateSha of reviewOnlyCandidates) {
                 const result = await buildResult(candidateSha, pr);
                 if (result.state === 'green') {
-                  if (baseMergeBridge) {
+                  if (baseMergeBridge && !candidatesContainingBase.has(candidateSha)) {
                     setPendingBaseMergeResult(
                       `build-and-test-green:${result.conclusion}`,
                       candidateSha,
@@ -638,9 +694,23 @@ jobs:
                 : 'checked-out-ref';
             core.setOutput('authority', authority);
 
+            function securitySweepSamples(files) {
+              return files
+                .filter((file) => file.status === 'added')
+                .map((file) => file.filename)
+                .filter((filename) => (
+                  filename.startsWith('samples/')
+                  && /\.(hwp|hwpx|hml)$/i.test(filename)
+                ))
+                .sort();
+            }
+
             function writeInput(input) {
               fs.writeFileSync(inputPath, `${JSON.stringify(input)}\n`, 'utf8');
+              const samplePaths = securitySweepSamples(input.files || []);
+              core.setOutput('security_sweep_samples_json', JSON.stringify(samplePaths));
               core.info(`CI impact input: event=${input.eventName} files=${input.files.length}`);
+              core.info(`security_sweep_samples=${samplePaths.length}`);
             }
 
             function normalizedFiles(files) {
@@ -733,10 +803,11 @@ jobs:
           FRONTEND_MODE: ${{ steps.impact.outputs.frontend_mode || 'package' }}
           RENDER_REQUIRED: ${{ steps.impact.outputs.render_required || 'true' }}
           NATIVE_SKIA_REQUIRED: ${{ steps.impact.outputs.native_skia_required || 'true' }}
-          CODEQL_LANGUAGES: ${{ steps.impact.outputs.codeql_languages || 'javascript-typescript,python,rust' }}
+          CODEQL_LANGUAGES: ${{ steps.impact.outputs.codeql_languages || 'javascript-typescript,python,rust,actions' }}
           CLASSIFICATION_STATUS: ${{ steps.impact.outputs.classification_status || 'full' }}
           CLASSIFIER_VERSION: ${{ steps.impact.outputs.classifier_version || 'unavailable' }}
           IMPACT_REASON: ${{ steps.impact.outputs.reason || 'fail-closed:impact-unavailable' }}
+          SECURITY_SWEEP_SAMPLES_JSON: ${{ steps.collect-impact.outputs.security_sweep_samples_json || '[]' }}
         run: |
           {
             echo '### CI impact classification'
@@ -755,16 +826,65 @@ jobs:
             printf '| classification_status | %s |\n' "${CLASSIFICATION_STATUS}"
             printf '| classifier_version | %s |\n' "${CLASSIFIER_VERSION}"
             printf '| reason | %s |\n' "${IMPACT_REASON}"
+            printf '| security_sweep_samples_json | %s |\n' "\`${SECURITY_SWEEP_SAMPLES_JSON}\`"
           } >> "${GITHUB_STEP_SUMMARY}"
+
+  # A new reusable adapter can be verified before registration on main through
+  # this already registered workflow. Local calls use the caller's exact commit.
+  release-operations-contracts:
+    uses: ./.github/workflows/release-operations-contracts.yml
+    needs: [preflight]
+    if: github.event_name == 'workflow_dispatch' && needs.preflight.result == 'success'
+    permissions:
+      contents: read
+
+  # [#6205] B/C가 같은 측정 정책 commit을 보도록 CI 시작 때 한 번만 SHA를 고정한다.
+  # 데이터 브랜치가 아직 없거나 조회할 수 없으면 committed fallback을 사용한다.
+  resolve-nextest-duration-policy:
+    name: Resolve nextest target duration policy
+    runs-on: ubuntu-latest
+    needs: [preflight]
+    if: >-
+      ${{
+        always()
+        && needs.preflight.result == 'success'
+        && needs.preflight.outputs.fast_pass != 'true'
+        && needs.preflight.outputs.rust_required == 'true'
+      }}
+    permissions:
+      contents: read
+    outputs:
+      duration_policy_sha: ${{ steps.resolve.outputs.duration_policy_sha || '' }}
+    steps:
+      - id: resolve
+        shell: bash
+        env:
+          METRICS_REF: refs/heads/ci-metrics/nextest-target-durations
+        run: |
+          set -euo pipefail
+
+          if policy_sha="$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" "${METRICS_REF}" | awk 'NR == 1 { print $1 }')"; then
+            :
+          else
+            policy_sha=''
+          fi
+
+          if [[ -n "${policy_sha}" ]]; then
+            printf 'duration_policy_sha=%s\n' "${policy_sha}" >> "${GITHUB_OUTPUT}"
+            printf 'Using duration policy commit %s.\n' "${policy_sha}" >> "${GITHUB_STEP_SUMMARY}"
+          else
+            echo 'duration_policy_sha=' >> "${GITHUB_OUTPUT}"
+            echo 'Duration policy data is unavailable; using the committed fallback.' >> "${GITHUB_STEP_SUMMARY}"
+          fi
 
   # [#2393] 기본 테스트 병렬화 — CI impact preflight가 frontend·Rust·Native Skia
   # gate와 worker 조건을 나누는 경계다.
-  # [#5737] archive A는 source-side lib test, B/C는 integration target을 교차 분배해
-  # 각각 compile/link한다. A는 두 hash worker, B/C는 각각 한 worker가 소비한다.
+  # [#6251] archive A는 source-side lib test를 단일 worker가 소비하고, B/C/D/E는
+  # integration target을 시간 기준으로 분배해 각각 compile/link한다.
   # required check 는 집계 job "Build & Test" 로 불변이다.
   # [#5388] M04-4: tests/cases/prop_*_roundtrip.rs 는 정규 shard 가 archive 에서
   # 자동 실행한다. 전용 싼 job 은 .github/workflows/proptest-roundtrip.yml
-  # (원본 부재 skip). 5번째 shard 를 넣지 않는다 — 집계는 4 worker 합이다.
+  # (원본 부재 skip). #8267: 다섯 archive의 예상 수와 다섯 worker 실행 수를 각각 대조한다.
   build-test-archive-a:
     uses: ./.github/workflows/build-nextest-archives.yml
     needs: [preflight]
@@ -786,13 +906,14 @@ jobs:
 
   build-test-archive-b:
     uses: ./.github/workflows/build-nextest-archives.yml
-    needs: [preflight]
+    needs: [preflight, resolve-nextest-duration-policy]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
         && needs.preflight.outputs.rust_required == 'true'
+        && needs.resolve-nextest-duration-policy.result == 'success'
       }}
     permissions:
       contents: read
@@ -801,17 +922,19 @@ jobs:
       timeout_minutes: ${{ fromJSON(needs.preflight.outputs.test_archive_timeout_minutes || '60') }}
       archive_label: b
       target_group: integration-b
+      duration_policy_sha: ${{ needs.resolve-nextest-duration-policy.outputs.duration_policy_sha }}
 
 
   build-test-archive-c:
     uses: ./.github/workflows/build-nextest-archives.yml
-    needs: [preflight]
+    needs: [preflight, resolve-nextest-duration-policy]
     if: >-
       ${{
         always()
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
         && needs.preflight.outputs.rust_required == 'true'
+        && needs.resolve-nextest-duration-policy.result == 'success'
       }}
     permissions:
       contents: read
@@ -820,6 +943,48 @@ jobs:
       timeout_minutes: ${{ fromJSON(needs.preflight.outputs.test_archive_timeout_minutes || '60') }}
       archive_label: c
       target_group: integration-c
+      duration_policy_sha: ${{ needs.resolve-nextest-duration-policy.outputs.duration_policy_sha }}
+
+
+  build-test-archive-d:
+    uses: ./.github/workflows/build-nextest-archives.yml
+    needs: [preflight, resolve-nextest-duration-policy]
+    if: >-
+      ${{
+        always()
+        && needs.preflight.result == 'success'
+        && needs.preflight.outputs.fast_pass != 'true'
+        && needs.preflight.outputs.rust_required == 'true'
+        && needs.resolve-nextest-duration-policy.result == 'success'
+      }}
+    permissions:
+      contents: read
+    with:
+      cargo_profile: ${{ needs.preflight.outputs.test_profile || 'release' }}
+      timeout_minutes: ${{ fromJSON(needs.preflight.outputs.test_archive_timeout_minutes || '60') }}
+      archive_label: d
+      target_group: integration-d
+      duration_policy_sha: ${{ needs.resolve-nextest-duration-policy.outputs.duration_policy_sha }}
+
+  build-test-archive-e:
+    uses: ./.github/workflows/build-nextest-archives.yml
+    needs: [preflight, resolve-nextest-duration-policy]
+    if: >-
+      ${{
+        always()
+        && needs.preflight.result == 'success'
+        && needs.preflight.outputs.fast_pass != 'true'
+        && needs.preflight.outputs.rust_required == 'true'
+        && needs.resolve-nextest-duration-policy.result == 'success'
+      }}
+    permissions:
+      contents: read
+    with:
+      cargo_profile: ${{ needs.preflight.outputs.test_profile || 'release' }}
+      timeout_minutes: ${{ fromJSON(needs.preflight.outputs.test_archive_timeout_minutes || '60') }}
+      archive_label: e
+      target_group: integration-e
+      duration_policy_sha: ${{ needs.resolve-nextest-duration-policy.outputs.duration_policy_sha }}
 
   lint:
     name: Lint (fmt, clippy, WASM check)
@@ -846,7 +1011,7 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Rust build cache
-        uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2.9.1
+        uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2.9.3 이후 workspace root key 보정
         with:
           shared-key: lint
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
@@ -859,25 +1024,73 @@ jobs:
       - name: Format check
         run: cargo fmt --all -- --check
 
+      - name: Validate Visual Sweep PNG contracts
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y poppler-utils
+          rhwp_visual_contract_env="${RUNNER_TEMP}/rhwp-visual-sweep-contracts"
+          python3 -m venv "$rhwp_visual_contract_env"
+          "$rhwp_visual_contract_env/bin/python" -m pip install Pillow==12.3.0 fonttools==4.64.0 pypdfium2==5.13.0
+          "$rhwp_visual_contract_env/bin/python" -m unittest discover -s scripts/tests -p 'test_visual_sweep*.py'
+
       - name: Validate CI impact classifier
         run: |
           node --test scripts/tests/ci-impact-classifier.test.cjs
           node --test scripts/tests/ci-impact-policy.test.cjs
+          node --test scripts/tests/ci-impact-controller-contract.test.cjs
+          node --test scripts/tests/ci-workflow-evidence.test.cjs
+          node --test scripts/tests/collect-postmerge-duration-data.test.mjs
+          python3 -m unittest scripts/tests/test_postmerge_duration_workflow.py
+          node --test scripts/tests/ci-impact-report.test.cjs
           python3 -m unittest scripts/tests/test_ci_impact_workflow.py
 
       - name: Validate Rust test suite manifest
         env:
-          RHWP_TEST_POLICY_BASE_REF: ${{ github.event.pull_request.base.sha || '' }}
+          RHWP_TEST_POLICY_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          RHWP_TEST_POLICY_BASE_BRANCH: ${{ github.event.pull_request.base.ref || '' }}
+          RHWP_TEST_POLICY_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          RHWP_TEST_POLICY_HEAD_BRANCH: ${{ github.event.pull_request.head.ref || '' }}
+          RHWP_TEST_POLICY_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name || '' }}
+          RHWP_REPOSITORY: ${{ github.repository }}
         run: |
+          policy_base_ref="$RHWP_TEST_POLICY_BASE_SHA"
+
+          # main이 현행 test-policy 도입 전 release라면 canonical devel -> main
+          # promotion에서 누적된 검증 완료 source를 모두 신규 위반으로 오판한다. 같은
+          # 저장소의 exact promotion이고 base가 head의 조상이며 synthetic merge tree가
+          # head tree와 같을 때만 증분 기준을 devel head로 전환한다. 전체 manifest와
+          # unit-tier 검사는 아래에서 그대로 실행한다.
+          if [[ "$RHWP_TEST_POLICY_BASE_BRANCH" == "main" \
+            && "$RHWP_TEST_POLICY_HEAD_BRANCH" == "devel" \
+            && "$RHWP_TEST_POLICY_HEAD_REPOSITORY" == "$RHWP_REPOSITORY" ]]; then
+            if [[ -z "$RHWP_TEST_POLICY_BASE_SHA" || -z "$RHWP_TEST_POLICY_HEAD_SHA" ]]; then
+              echo "::error::canonical devel -> main promotion SHA가 비어 있습니다."
+              exit 1
+            fi
+            if ! git merge-base --is-ancestor \
+              "$RHWP_TEST_POLICY_BASE_SHA" "$RHWP_TEST_POLICY_HEAD_SHA"; then
+              echo "::error::main은 canonical devel promotion head의 조상이어야 합니다."
+              exit 1
+            fi
+            checkout_tree="$(git rev-parse 'HEAD^{tree}')"
+            head_tree="$(git rev-parse "${RHWP_TEST_POLICY_HEAD_SHA}^{tree}")"
+            if [[ "$checkout_tree" != "$head_tree" ]]; then
+              echo "::error::devel -> main synthetic merge tree가 canonical head tree와 다릅니다."
+              exit 1
+            fi
+            policy_base_ref="$RHWP_TEST_POLICY_HEAD_SHA"
+            echo "canonical devel -> main promotion: incremental policy base=$policy_base_ref"
+          fi
+
           base_args=()
-          if [[ -n "$RHWP_TEST_POLICY_BASE_REF" ]]; then
-            base_args=(--base-ref "$RHWP_TEST_POLICY_BASE_REF")
+          if [[ -n "$policy_base_ref" ]]; then
+            base_args=(--base-ref "$policy_base_ref")
           fi
           node --test scripts/tests/rust-test-suite-manifest.test.mjs
           node scripts/rust-test-suite-manifest.mjs --check "${base_args[@]}"
           node --test scripts/tests/rust-unit-test-tiers.test.mjs
           node scripts/rust-unit-test-tiers.mjs --check "${base_args[@]}"
-          node scripts/run-rust-test.mjs --print issue_1035_alignment
+          node scripts/run-rust-test.mjs --print mcp_password_contract
 
       - name: Test internal Rust crates
         run: |
@@ -902,8 +1115,11 @@ jobs:
           cargo test --manifest-path tools/llm_verifier/repeat_eval/Cargo.toml
           cargo test --manifest-path tools/llm_verifier/tool_version_gate/Cargo.toml
 
+      - name: Validate Visual Sweep PNG server
+        run: node --test scripts/tests/visual-sweep-png-server.test.mjs
+
       - name: Validate Render Diff trigger policy
-        run: python3 -m unittest scripts/tests/test_render_diff_workflow.py
+        run: python3 -m unittest scripts/tests/test_render_diff_workflow.py scripts/tests/test_verify_release_wasm.py
 
       - name: Validate canvaskit-parity batch map
         run: python3 -m unittest scripts/tests/test_canvaskit_parity_batches.py
@@ -913,40 +1129,28 @@ jobs:
       # 추가하면 그 테스트가 실패하므로 여기 한 줄을 같이 넣어야 한다.
       - name: Validate workflow contracts
         run: |
+          node --test scripts/tests/issue-form-labels.test.mjs
+          node --test scripts/tests/verify-trusted-postmerge-ci-reuse.test.mjs
+          node --test scripts/tests/verify-trusted-postmerge-ci-reuse-squash.test.mjs
+          node --test scripts/tests/verify-trusted-postmerge-review-bridge.test.mjs
           python3 -m unittest scripts/tests/test_cache_sweep_workflow.py
           python3 -m unittest scripts/tests/test_cancel_stale_pr_runs_workflow.py
           python3 -m unittest scripts/tests/test_ci_impact_policy_workflow.py
           python3 -m unittest scripts/tests/test_codeql_workflow.py
           python3 -m unittest scripts/tests/test_nextest_archive_workflow.py
+          python3 -m unittest scripts/tests/test_oracle_public_advisory_workflow.py
+          python3 -m unittest scripts/tests/test_workflow_promotion_evidence.py
+          python3 -m unittest scripts/tests/test_workflow_promotion_gate_workflow.py
+          python3 -m unittest scripts/tests/test_workflow_promotion_preflight.py
           python3 -m unittest scripts/tests/test_release_channel_policy_workflow.py
           python3 -m unittest scripts/tests/test_review_only_fast_pass_workflows.py
-          python3 -m unittest scripts/tests/test_gym_release_gate_workflow.py
           python3 -m unittest scripts/tests/test_proptest_roundtrip_workflow.py
           python3 -m unittest scripts/tests/test_adapter_diff_workflow.py
+          python3 -m unittest scripts/tests/test_trusted_postmerge_ci_reuse_workflow.py
           python3 -m unittest scripts/tests/test_llm_verifier_workflow.py
           python3 -m unittest scripts/tests/test_undo_depth_e2e_workflow.py
           python3 -m unittest scripts/tests/test_workflow_contract_wiring.py
-
-      - name: Validate gym scorer contracts
-        run: |
-          python3 -m unittest scripts/tests/test_gym_score.py
-          python3 -m unittest scripts/tests/test_gym_packs.py
-          python3 -m unittest scripts/tests/test_gym_audit.py
-          python3 -m unittest scripts/tests/test_gym_certify.py
-          python3 -m unittest scripts/tests/test_gym_trajectory.py
-          python3 -m unittest scripts/tests/test_gym_leaderboard.py
-          python3 -m unittest scripts/tests/test_gym_robustness.py
-          python3 -m unittest scripts/tests/test_gym_fuzz_corpus.py
-          python3 -m unittest scripts/tests/test_gym_release_diff.py
-          python3 -m unittest scripts/tests/test_gym_discriminate.py
-          python3 -m unittest scripts/tests/test_gym_oracle_probe.py
-          python3 -m unittest scripts/tests/test_gym_differential.py
-          python3 -m unittest scripts/tests/test_gym_tutorial.py
-
-      # [#4855] 경쟁 벤치 하네스 순수 로직 가드 — 집계·능력 매트릭스·리포트 렌더·정직한
-      # 저하(못 돌린 도구는 'n/a: 이유', 숫자 날조 금지)를 바이너리·외부도구 없이 검증한다.
-      - name: Validate competitive benchmark harness contract
-        run: python3 -m unittest scripts/tests/test_gym_competitive_bench.py
+          python3 -m unittest scripts/tests/test_wasm_pack_locked.py
 
       # [#4715] 채택 척추 — 에이전트 작업 표준(AWS)이 전 표면에서 정합한지.
       # 바이너리 불요(커밋 문서만) — 표면이 늘어도 표준 링크가 끊기지 않게 한다.
@@ -1062,7 +1266,7 @@ jobs:
       # Linux-cargo-* namespace 대신 Native Skia 전용 shared key를 사용한다.
       # PR은 restore-only, devel/main push만 save하는 신뢰 경계를 유지한다.
       - name: Rust build cache
-        uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2.9.1
+        uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2.9.3 이후 workspace root key 보정
         with:
           shared-key: native-skia
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
@@ -1121,9 +1325,16 @@ jobs:
               node scripts/run-rust-test.mjs --cargo-test issue_1144_native -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2225_missing_picture_placeholder -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test render_p37_direct_pdf_export -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_7950_pdf_paint -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2083_hide_fill_page_background -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2292_chart_png_clip -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2293_chart_png_text -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_7820_sixel_contract -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_8150_kitty_contract -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_4961_font_decision_trace -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_7902_original_frame_and_content -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_8160_hwp2022_paragraph_relations -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test native_fractional_glyph_origin -- --profile release-test --features native-skia --verbose
               ;;
             release)
               echo "profile=release event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
@@ -1132,9 +1343,16 @@ jobs:
               node scripts/run-rust-test.mjs --cargo-test issue_1144_native -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2225_missing_picture_placeholder -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test render_p37_direct_pdf_export -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_7950_pdf_paint -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2083_hide_fill_page_background -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2292_chart_png_clip -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2293_chart_png_text -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_7820_sixel_contract -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_8150_kitty_contract -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_4961_font_decision_trace -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_7902_original_frame_and_content -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_8160_hwp2022_paragraph_relations -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test native_fractional_glyph_origin -- --release --features native-skia --verbose
               ;;
             *)
               echo "::error::Unknown test profile: ${TEST_PROFILE}"
@@ -1156,7 +1374,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22'
           cache: npm
@@ -1175,8 +1393,8 @@ jobs:
   frontend-package-gates:
     name: Frontend package gates
     runs-on: ubuntu-latest
-    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
-    timeout-minutes: 20
+    # [#6717] 직렬 package 설치가 지연돼도 회귀 gate를 실행할 여유를 두되 hang은 실패로 드러낸다.
+    timeout-minutes: 30
     # [#3268] Frontend는 Lint의 산출물을 읽지 않고 독립 runner에서 별도 target/cache를 쓴다.
     # preflight의 fast-pass·영향 판정만 기다려 Lint와 병렬 시작한다. Lint 실패 시 Frontend가
     # 끝날 수는 있지만 Native/archive는 아래 두 worker의 성공을 모두 계속 요구한다.
@@ -1213,7 +1431,7 @@ jobs:
         run: wasm-pack build --target web --dev
 
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22'
           cache: npm
@@ -1222,16 +1440,27 @@ jobs:
             rhwp-chrome/package-lock.json
             rhwp-firefox/package-lock.json
             rhwp-vscode/package-lock.json
+            scripts/frontend-metrics/package-lock.json
 
       - name: Install frontend package dependencies
         run: |
-          npm --prefix rhwp-studio ci
-          npm --prefix rhwp-chrome ci
-          npm --prefix rhwp-firefox ci
-          npm --prefix rhwp-vscode ci
+          npm --prefix rhwp-studio ci --no-audit --prefer-offline
+          npm --prefix rhwp-chrome ci --no-audit --prefer-offline
+          npm --prefix rhwp-firefox ci --no-audit --prefer-offline
+          npm --prefix rhwp-vscode ci --no-audit --prefer-offline
 
       - name: Verify WASM bindings and editor embed contract
-        run: node --test scripts/frontend-wasm-bindings.test.mjs scripts/frontend-editor-embed.test.mjs
+        # 아래 trace 검사는 Studio 단위 검사나 Rust suite에서 자동 수집하지 않는다.
+        # 같은 fresh WASM을 재사용하며 별도 빌드나 job을 만들지 않는다.
+        run: |
+          node --test scripts/frontend-wasm-bindings.test.mjs scripts/frontend-editor-embed.test.mjs
+          node --test scripts/tests/font_decision_trace_contract.test.mjs scripts/tests/font_decision_trace_e2e.test.mjs
+
+      - name: Verify build dependency compatibility
+        run: |
+          npm --prefix scripts/frontend-metrics ci --no-audit --prefer-offline
+          node --test scripts/tests/frontend-dependency-compat.test.mjs
+          node scripts/frontend-metrics.mjs --out output/frontend-metrics/metrics.json --summary output/frontend-metrics/summary.md
 
       - name: Run editor package tests when declared
         run: npm --prefix npm/editor test --if-present
@@ -1266,6 +1495,9 @@ jobs:
           echo "CHROME_PATH=$chrome_path" >> "$GITHUB_ENV"
           echo "PUPPETEER_EXECUTABLE_PATH=$chrome_path" >> "$GITHUB_ENV"
 
+      - name: Validate Visual Sweep Canvas font binding
+        run: VISUAL_SWEEP_CHROME="$CHROME_PATH" node --test scripts/tests/visual-sweep-canvas-fonts.browser.mjs
+
       # [#5959] 스냅샷 예산 축출 회귀 게이트(#5769) — 실 wasm 과 실 브라우저를
       # 구동해야 하므로 스텁 wasm 을 쓰는 unit 모드가 아닌 package 모드에서만 단다.
       - name: Run undo depth measurement gate (#5769)
@@ -1273,6 +1505,13 @@ jobs:
         env:
           VITE_PORT: '7700'
         run: npm run e2e:undo-depth
+
+      - name: Run Studio responsive toolbar gate (#6118, #6138)
+        # CI wiring: rhwp-studio/e2e/responsive.test.mjs via npm e2e:responsive.
+        working-directory: rhwp-studio
+        env:
+          VITE_PORT: '7720'
+        run: npm run e2e:responsive
 
       - name: Build Studio
         run: npm --prefix rhwp-studio run build
@@ -1318,32 +1557,12 @@ jobs:
     permissions:
       contents: read
     with:
-      label: Archive A shard 1
+      label: Archive A
       count_label: a-1
       archive_label: a
       filterset: "all()"
-      partition: "hash:1/2"
-
-
-  test-archive-a-shard-2:
-    uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, build-test-archive-a]
-    if: >-
-      ${{
-        always()
-        && needs.preflight.result == 'success'
-        && needs.preflight.outputs.fast_pass != 'true'
-        && needs.preflight.outputs.rust_required == 'true'
-        && needs['build-test-archive-a'].result == 'success'
-      }}
-    permissions:
-      contents: read
-    with:
-      label: Archive A shard 2
-      count_label: a-2
-      archive_label: a
-      filterset: "all()"
-      partition: "hash:2/2"
+      partition: "hash:1/1"
+      security_sweep_samples_json: ${{ needs.preflight.outputs.security_sweep_samples_json || '[]' }}
 
 
   test-archive-b-shard-1:
@@ -1365,6 +1584,7 @@ jobs:
       archive_label: b
       filterset: "all()"
       partition: "hash:1/1"
+      security_sweep_samples_json: ${{ needs.preflight.outputs.security_sweep_samples_json || '[]' }}
 
 
   test-archive-c-shard-1:
@@ -1386,7 +1606,185 @@ jobs:
       archive_label: c
       filterset: "all()"
       partition: "hash:1/1"
+      security_sweep_samples_json: ${{ needs.preflight.outputs.security_sweep_samples_json || '[]' }}
 
+
+  test-archive-d-shard-1:
+    uses: ./.github/workflows/run-nextest-archives.yml
+    needs: [preflight, build-test-archive-d]
+    if: >-
+      ${{
+        always()
+        && needs.preflight.result == 'success'
+        && needs.preflight.outputs.fast_pass != 'true'
+        && needs.preflight.outputs.rust_required == 'true'
+        && needs['build-test-archive-d'].result == 'success'
+      }}
+    permissions:
+      contents: read
+    with:
+      label: Archive D
+      count_label: d-1
+      archive_label: d
+      filterset: "all()"
+      partition: "hash:1/1"
+      security_sweep_samples_json: ${{ needs.preflight.outputs.security_sweep_samples_json || '[]' }}
+
+
+  test-archive-e-shard-1:
+    uses: ./.github/workflows/run-nextest-archives.yml
+    needs: [preflight, build-test-archive-e]
+    if: >-
+      ${{
+        always()
+        && needs.preflight.result == 'success'
+        && needs.preflight.outputs.fast_pass != 'true'
+        && needs.preflight.outputs.rust_required == 'true'
+        && needs['build-test-archive-e'].result == 'success'
+      }}
+    permissions:
+      contents: read
+    with:
+      label: Archive E
+      count_label: e-1
+      archive_label: e
+      filterset: "all()"
+      partition: "hash:1/1"
+      security_sweep_samples_json: ${{ needs.preflight.outputs.security_sweep_samples_json || '[]' }}
+
+
+  workflow-promotion-preflight:
+    name: Workflow promotion preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [preflight]
+    if: >-
+      ${{
+        github.event_name == 'pull_request'
+        && github.base_ref == 'main'
+        && github.head_ref == 'devel'
+        && github.event.pull_request.head.repo.full_name == github.repository
+      }}
+    permissions:
+      actions: read
+      contents: read
+      issues: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Verify canonical promotion topology
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "$(git rev-parse HEAD)" != "${CANDIDATE_SHA}" ]]; then
+            echo "::error::checkout is not the canonical candidate SHA"
+            exit 1
+          fi
+          if ! git cat-file -e "${BASE_SHA}^{commit}"; then
+            echo "::error::main base commit is unavailable in the checkout"
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "${BASE_SHA}" "${CANDIDATE_SHA}"; then
+            echo "::error::main must be an ancestor of the canonical devel candidate"
+            exit 1
+          fi
+          merge_tree="$(git merge-tree --write-tree "${BASE_SHA}" "${CANDIDATE_SHA}")"
+          candidate_tree="$(git rev-parse "${CANDIDATE_SHA}^{tree}")"
+          if [[ "${merge_tree}" != "${candidate_tree}" ]]; then
+            echo "::error::main/devel merge tree differs from the exact candidate tree"
+            exit 1
+          fi
+
+      - name: Build workflow promotion inventory
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+          EVIDENCE_DIR: ${{ runner.temp }}/workflow-promotion
+        run: |
+          set -euo pipefail
+          mkdir -p "${EVIDENCE_DIR}"
+          python3 scripts/workflow_promotion_preflight.py inventory \
+            --repo . \
+            --base-sha "${BASE_SHA}" \
+            --candidate-sha "${CANDIDATE_SHA}" \
+            --policy scripts/workflow_promotion_policy.json \
+            --format json > "${EVIDENCE_DIR}/inventory.json"
+          python3 scripts/workflow_promotion_preflight.py inventory \
+            --repo . \
+            --base-sha "${BASE_SHA}" \
+            --candidate-sha "${CANDIDATE_SHA}" \
+            --policy scripts/workflow_promotion_policy.json \
+            --format markdown >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Collect exact-head Actions evidence
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          EVIDENCE_DIR: ${{ runner.temp }}/workflow-promotion
+          RELEASE_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: >-
+          python3 scripts/workflow_promotion_evidence.py
+          --inventory "${EVIDENCE_DIR}/inventory.json"
+          --runs-output "${EVIDENCE_DIR}/runs.json"
+          --waivers-output "${EVIDENCE_DIR}/waivers.json"
+          --issue-number "${RELEASE_PR_NUMBER}"
+          --trusted-maintainer edwardkim
+
+      - name: Verify workflow promotion evidence
+        id: verify-promotion
+        continue-on-error: true
+        env:
+          EVIDENCE_DIR: ${{ runner.temp }}/workflow-promotion
+        run: >-
+          python3 scripts/workflow_promotion_preflight.py verify
+          --inventory "${EVIDENCE_DIR}/inventory.json"
+          --runs "${EVIDENCE_DIR}/runs.json"
+          --waivers "${EVIDENCE_DIR}/waivers.json"
+          --trusted-maintainer edwardkim
+          > "${EVIDENCE_DIR}/verdict.json"
+
+      - name: Summarize workflow promotion verdict
+        if: ${{ always() }}
+        shell: bash
+        env:
+          EVIDENCE_DIR: ${{ runner.temp }}/workflow-promotion
+        run: |
+          if [[ -f "${EVIDENCE_DIR}/verdict.json" ]]; then
+            {
+              echo
+              echo '## Workflow promotion verdict'
+              echo
+              echo '```json'
+              cat "${EVIDENCE_DIR}/verdict.json"
+              echo '```'
+            } >> "${GITHUB_STEP_SUMMARY}"
+          fi
+
+      - name: Upload workflow promotion evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: workflow-promotion-evidence-${{ github.run_id }}
+          path: ${{ runner.temp }}/workflow-promotion
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Enforce workflow promotion verdict
+        if: ${{ always() }}
+        env:
+          VERIFY_OUTCOME: ${{ steps.verify-promotion.outcome }}
+        run: |
+          if [[ "${VERIFY_OUTCOME}" != "success" ]]; then
+            echo "::error::workflow promotion evidence is incomplete or invalid"
+            exit 1
+          fi
 
   build-and-test:
     name: Build & Test
@@ -1398,14 +1796,18 @@ jobs:
       - build-test-archive-a
       - build-test-archive-b
       - build-test-archive-c
+      - build-test-archive-d
+      - build-test-archive-e
       - test-archive-a-shard-1
-      - test-archive-a-shard-2
       - test-archive-b-shard-1
       - test-archive-c-shard-1
+      - test-archive-d-shard-1
+      - test-archive-e-shard-1
       - lint
       - native-skia-tests
       - frontend-unit-gates
       - frontend-package-gates
+      - workflow-promotion-preflight
     if: ${{ always() }}
     permissions:
       contents: read
@@ -1417,11 +1819,12 @@ jobs:
             needs.preflight.outputs.fast_pass != 'true'
             && needs.preflight.outputs.rust_required == 'true'
             && needs['test-archive-a-shard-1'].result == 'success'
-            && needs['test-archive-a-shard-2'].result == 'success'
             && needs['test-archive-b-shard-1'].result == 'success'
             && needs['test-archive-c-shard-1'].result == 'success'
+            && needs['test-archive-d-shard-1'].result == 'success'
+            && needs['test-archive-e-shard-1'].result == 'success'
           }}
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: archive-expected-${{ github.run_id }}-a
           path: archive-expected-a
@@ -1431,11 +1834,12 @@ jobs:
             needs.preflight.outputs.fast_pass != 'true'
             && needs.preflight.outputs.rust_required == 'true'
             && needs['test-archive-a-shard-1'].result == 'success'
-            && needs['test-archive-a-shard-2'].result == 'success'
             && needs['test-archive-b-shard-1'].result == 'success'
             && needs['test-archive-c-shard-1'].result == 'success'
+            && needs['test-archive-d-shard-1'].result == 'success'
+            && needs['test-archive-e-shard-1'].result == 'success'
           }}
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: archive-expected-${{ github.run_id }}-b
           path: archive-expected-b
@@ -1445,25 +1849,58 @@ jobs:
             needs.preflight.outputs.fast_pass != 'true'
             && needs.preflight.outputs.rust_required == 'true'
             && needs['test-archive-a-shard-1'].result == 'success'
-            && needs['test-archive-a-shard-2'].result == 'success'
             && needs['test-archive-b-shard-1'].result == 'success'
             && needs['test-archive-c-shard-1'].result == 'success'
+            && needs['test-archive-d-shard-1'].result == 'success'
+            && needs['test-archive-e-shard-1'].result == 'success'
           }}
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: archive-expected-${{ github.run_id }}-c
           path: archive-expected-c
+
+      - name: Download archive D expected count
+        if: >-
+          ${{
+            needs.preflight.outputs.fast_pass != 'true'
+            && needs.preflight.outputs.rust_required == 'true'
+            && needs['test-archive-a-shard-1'].result == 'success'
+            && needs['test-archive-b-shard-1'].result == 'success'
+            && needs['test-archive-c-shard-1'].result == 'success'
+            && needs['test-archive-d-shard-1'].result == 'success'
+            && needs['test-archive-e-shard-1'].result == 'success'
+          }}
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: archive-expected-${{ github.run_id }}-d
+          path: archive-expected-d
+      - name: Download archive E expected count
+        if: >-
+          ${{
+            needs.preflight.outputs.fast_pass != 'true'
+            && needs.preflight.outputs.rust_required == 'true'
+            && needs['test-archive-a-shard-1'].result == 'success'
+            && needs['test-archive-b-shard-1'].result == 'success'
+            && needs['test-archive-c-shard-1'].result == 'success'
+            && needs['test-archive-d-shard-1'].result == 'success'
+            && needs['test-archive-e-shard-1'].result == 'success'
+          }}
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: archive-expected-${{ github.run_id }}-e
+          path: archive-expected-e
       - name: Download shard counts
         if: >-
           ${{
             needs.preflight.outputs.fast_pass != 'true'
             && needs.preflight.outputs.rust_required == 'true'
             && needs['test-archive-a-shard-1'].result == 'success'
-            && needs['test-archive-a-shard-2'].result == 'success'
             && needs['test-archive-b-shard-1'].result == 'success'
             && needs['test-archive-c-shard-1'].result == 'success'
+            && needs['test-archive-d-shard-1'].result == 'success'
+            && needs['test-archive-e-shard-1'].result == 'success'
           }}
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: shard-count-*
           path: shard-counts
@@ -1473,24 +1910,28 @@ jobs:
             needs.preflight.outputs.fast_pass != 'true'
             && needs.preflight.outputs.rust_required == 'true'
             && needs['test-archive-a-shard-1'].result == 'success'
-            && needs['test-archive-a-shard-2'].result == 'success'
             && needs['test-archive-b-shard-1'].result == 'success'
             && needs['test-archive-c-shard-1'].result == 'success'
+            && needs['test-archive-d-shard-1'].result == 'success'
+            && needs['test-archive-e-shard-1'].result == 'success'
           }}
         run: |
           read -r expected_a < archive-expected-a/archive-expected-total.txt
           read -r expected_b < archive-expected-b/archive-expected-total.txt
           read -r expected_c < archive-expected-c/archive-expected-total.txt
+          read -r expected_d < archive-expected-d/archive-expected-total.txt
+          read -r expected_e < archive-expected-e/archive-expected-total.txt
           read -r a1 < shard-counts/shard-count-a-1/shard-count-a-1.txt
-          read -r a2 < shard-counts/shard-count-a-2/shard-count-a-2.txt
           read -r b1 < shard-counts/shard-count-b-1/shard-count-b-1.txt
           read -r c1 < shard-counts/shard-count-c-1/shard-count-c-1.txt
-          if ! [[ "$expected_a" =~ ^[0-9]+$ && "$expected_b" =~ ^[0-9]+$ && "$expected_c" =~ ^[0-9]+$ && "$a1" =~ ^[0-9]+$ && "$a2" =~ ^[0-9]+$ && "$b1" =~ ^[0-9]+$ && "$c1" =~ ^[0-9]+$ ]]; then
+          read -r d1 < shard-counts/shard-count-d-1/shard-count-d-1.txt
+          read -r e1 < shard-counts/shard-count-e-1/shard-count-e-1.txt
+          if ! [[ "$expected_a" =~ ^[0-9]+$ && "$expected_b" =~ ^[0-9]+$ && "$expected_c" =~ ^[0-9]+$ && "$expected_d" =~ ^[0-9]+$ && "$expected_e" =~ ^[0-9]+$ && "$a1" =~ ^[0-9]+$ && "$b1" =~ ^[0-9]+$ && "$c1" =~ ^[0-9]+$ && "$d1" =~ ^[0-9]+$ && "$e1" =~ ^[0-9]+$ ]]; then
             echo "::error::archive expected counts and shard counts must be non-negative integers"
             exit 1
           fi
-          if (( a1 + a2 != expected_a )); then
-            echo "::error::Archive A shard total mismatch: $a1 + $a2 != $expected_a"
+          if (( a1 != expected_a )); then
+            echo "::error::Archive A shard total mismatch: $a1 != $expected_a"
             exit 1
           fi
           if (( b1 != expected_b )); then
@@ -1501,7 +1942,15 @@ jobs:
             echo "::error::Archive C shard total mismatch: $c1 != $expected_c"
             exit 1
           fi
-          printf 'archive_total=%s shard_total=%s\n' "$((expected_a + expected_b + expected_c))" "$((a1 + a2 + b1 + c1))"
+          if (( d1 != expected_d )); then
+            echo "::error::Archive D shard total mismatch: $d1 != $expected_d"
+            exit 1
+          fi
+          if (( e1 != expected_e )); then
+            echo "::error::Archive E shard total mismatch: $e1 != $expected_e"
+            exit 1
+          fi
+          printf 'archive_total=%s shard_total=%s\n' "$((expected_a + expected_b + expected_c + expected_d + expected_e))" "$((a1 + b1 + c1 + d1 + e1))"
       - name: Check Build & Test worker results
         env:
           PREFLIGHT_RESULT: ${{ needs.preflight.result }}
@@ -1512,15 +1961,32 @@ jobs:
           BUILD_ARCHIVE_A_RESULT: ${{ needs['build-test-archive-a'].result }}
           BUILD_ARCHIVE_B_RESULT: ${{ needs['build-test-archive-b'].result }}
           BUILD_ARCHIVE_C_RESULT: ${{ needs['build-test-archive-c'].result }}
+          BUILD_ARCHIVE_D_RESULT: ${{ needs['build-test-archive-d'].result }}
+          BUILD_ARCHIVE_E_RESULT: ${{ needs['build-test-archive-e'].result }}
           TEST_ARCHIVE_A_1_RESULT: ${{ needs['test-archive-a-shard-1'].result }}
-          TEST_ARCHIVE_A_2_RESULT: ${{ needs['test-archive-a-shard-2'].result }}
           TEST_ARCHIVE_B_1_RESULT: ${{ needs['test-archive-b-shard-1'].result }}
           TEST_ARCHIVE_C_1_RESULT: ${{ needs['test-archive-c-shard-1'].result }}
+          TEST_ARCHIVE_D_1_RESULT: ${{ needs['test-archive-d-shard-1'].result }}
+          TEST_ARCHIVE_E_1_RESULT: ${{ needs['test-archive-e-shard-1'].result }}
           LINT_RESULT: ${{ needs.lint.result }}
           NATIVE_SKIA_RESULT: ${{ needs['native-skia-tests'].result }}
           FRONTEND_UNIT_RESULT: ${{ needs['frontend-unit-gates'].result }}
           FRONTEND_PACKAGE_RESULT: ${{ needs['frontend-package-gates'].result }}
+          PROMOTION_RESULT: ${{ needs['workflow-promotion-preflight'].result }}
+          CANONICAL_PROMOTION: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref == 'devel' && github.event.pull_request.head.repo.full_name == github.repository }}
         run: |
+          case "${CANONICAL_PROMOTION}" in
+            true)
+              [[ "${PROMOTION_RESULT}" == "success" ]] || { echo "::error::Canonical devel -> main promotion evidence failed: ${PROMOTION_RESULT}"; exit 1; }
+              ;;
+            false)
+              [[ "${PROMOTION_RESULT}" == "skipped" ]] || { echo "::error::Workflow promotion gate must be skipped outside canonical release PRs: ${PROMOTION_RESULT}"; exit 1; }
+              ;;
+            *)
+              echo "::error::Unknown canonical promotion state: ${CANONICAL_PROMOTION}"
+              exit 1
+              ;;
+          esac
           if [[ "${PREFLIGHT_RESULT}" != "success" ]]; then
             echo "::error::CI preflight did not succeed: ${PREFLIGHT_RESULT}"
             exit 1
@@ -1530,10 +1996,10 @@ jobs:
             exit 0
           fi
           failed=0
-          rust_results="${LINT_RESULT}/${BUILD_ARCHIVE_A_RESULT}/${BUILD_ARCHIVE_B_RESULT}/${BUILD_ARCHIVE_C_RESULT}/${TEST_ARCHIVE_A_1_RESULT}/${TEST_ARCHIVE_A_2_RESULT}/${TEST_ARCHIVE_B_1_RESULT}/${TEST_ARCHIVE_C_1_RESULT}"
+          rust_results="${LINT_RESULT}/${BUILD_ARCHIVE_A_RESULT}/${BUILD_ARCHIVE_B_RESULT}/${BUILD_ARCHIVE_C_RESULT}/${BUILD_ARCHIVE_D_RESULT}/${BUILD_ARCHIVE_E_RESULT}/${TEST_ARCHIVE_A_1_RESULT}/${TEST_ARCHIVE_B_1_RESULT}/${TEST_ARCHIVE_C_1_RESULT}/${TEST_ARCHIVE_D_1_RESULT}/${TEST_ARCHIVE_E_1_RESULT}"
           case "${RUST_REQUIRED}" in
-            true) [[ "$rust_results" == "success/success/success/success/success/success/success/success" ]] || { echo "::error::Rust lane expected success for lint/three builders/four workers, got: $rust_results"; failed=1; } ;;
-            false) [[ "$rust_results" == "skipped/skipped/skipped/skipped/skipped/skipped/skipped/skipped" ]] || { echo "::error::Rust lane expected skipped, got: $rust_results"; failed=1; } ;;
+            true) [[ "$rust_results" == "success/success/success/success/success/success/success/success/success/success/success" ]] || { echo "::error::Rust lane expected success for lint/five builders/five workers, got: $rust_results"; failed=1; } ;;
+            false) [[ "$rust_results" == "skipped/skipped/skipped/skipped/skipped/skipped/skipped/skipped/skipped/skipped/skipped" ]] || { echo "::error::Rust lane expected skipped, got: $rust_results"; failed=1; } ;;
             *) echo "::error::Unknown rust_required: ${RUST_REQUIRED}"; failed=1 ;;
           esac
           case "${NATIVE_SKIA_REQUIRED}" in

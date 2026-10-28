@@ -1,0 +1,273 @@
+{
+  "scope": "사용자 지시로 #1921 37쪽 보정을 #7445로 이관; 실패한 후속 제목 검사1건만 제외, 정상4건 유지",
+  "before_head": "d296e37d5fa3c5497b650581371baa072aa2b6c5",
+  "source": {
+    "path": "samples/issue1921/59043_regulatory_analysis.hwp",
+    "bytes": 10454528,
+    "sha256": "da9f9c9862475d1710f6ecf93e3ce134726054fe0be0d9523b9d60d1a90c82ef"
+  },
+  "reference_pdf": {
+    "path": "pdf/issue1921/59043_regulatory_analysis-2022.pdf",
+    "bytes": 2525605,
+    "sha256": "fade38ba20113ab52eaf42c55eec207943fe66e1b18efdeee06bfa65a1d64fa1"
+  },
+  "native_binary": {
+    "path": "target/pr-review/release-test/rhwp",
+    "bytes": 27115568,
+    "sha256": "81719b56558c7d862691137dd68833832e4058b216c20c56a63164e96b733dd6"
+  },
+  "pages": 37,
+  "below_90": 19,
+  "minimum_percent": 33.38675,
+  "below_90_pages": [
+    {
+      "page": "3",
+      "tolerant_content_match_percent": "79.34814",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "79.34814",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "8",
+      "tolerant_content_match_percent": "89.60545",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "89.54344",
+      "silhouette_boundary_reconciled_pixels": "216"
+    },
+    {
+      "page": "10",
+      "tolerant_content_match_percent": "88.04405",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "87.29471",
+      "silhouette_boundary_reconciled_pixels": "2029"
+    },
+    {
+      "page": "11",
+      "tolerant_content_match_percent": "89.37122",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "89.12901",
+      "silhouette_boundary_reconciled_pixels": "502"
+    },
+    {
+      "page": "14",
+      "tolerant_content_match_percent": "73.35487",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "73.35487",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "15",
+      "tolerant_content_match_percent": "81.76801",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "81.76801",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "19",
+      "tolerant_content_match_percent": "41.23502",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "41.23502",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "20",
+      "tolerant_content_match_percent": "59.85011",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "59.85011",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "21",
+      "tolerant_content_match_percent": "88.97513",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "88.97513",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "22",
+      "tolerant_content_match_percent": "88.85540",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "88.85540",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "23",
+      "tolerant_content_match_percent": "88.14471",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "88.14471",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "24",
+      "tolerant_content_match_percent": "72.57361",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "72.57361",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "25",
+      "tolerant_content_match_percent": "33.97549",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "33.97549",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "28",
+      "tolerant_content_match_percent": "72.23327",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "72.23327",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "29",
+      "tolerant_content_match_percent": "62.99599",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "62.99599",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "30",
+      "tolerant_content_match_percent": "74.16467",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "74.16467",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "35",
+      "tolerant_content_match_percent": "87.17372",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "87.17372",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "36",
+      "tolerant_content_match_percent": "64.42733",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "64.42733",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "37",
+      "tolerant_content_match_percent": "33.38675",
+      "below_90": "1",
+      "silhouette_raw_match_percent": "33.38675",
+      "silhouette_boundary_reconciled_pixels": "0"
+    }
+  ],
+  "tsv": {
+    "path": "mydocs/pr/assets/issue7445/regulatory1921_native_all37.tsv",
+    "bytes": 1040,
+    "sha256": "04370b5c52eb19f05d534ec1ab9fa43cc68ff7686ae4ab3037a9c2842f21c0fa"
+  },
+  "raster_reuse": {
+    "current_print_svg_pages": 37,
+    "all_byte_identical": true,
+    "proof": "output/pr-review/planet6897-green-20261002/1921-transfer-current/svg-comparison.json",
+    "note": "현재 head의 full-font print SVG 전37쪽과 기존 SVG가 동일하여 PNG 재사용 후 TSV 재산출. 새 PDF나 재래스터화로 표현하지 않음.",
+    "svg_comparison": {
+      "old_count": 37,
+      "current_count": 37,
+      "all_byte_identical": true
+    },
+    "tree_comparison": {
+      "exit": 0,
+      "old_pages": 37,
+      "new_pages": 37,
+      "changed": []
+    }
+  },
+  "fresh_wasm_all37": "미실행",
+  "renderer_changes": false,
+  "removed_tests": [
+    "regulatory_59043_page36_keeps_nested_source_and_following_headings"
+  ],
+  "preserved_tests": 4,
+  "integration_pr_ready": false,
+  "before_nextest": {
+    "passed": 4,
+    "failed": 1,
+    "exit": 100,
+    "source_head": "d296e37d5fa3c5497b650581371baa072aa2b6c5",
+    "log": "output/pr-review/planet6897-green-20261002/1921-transfer-current/before-nextest.log"
+  },
+  "after_gates": [
+    {
+      "gate": "focused",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_017",
+        "-E",
+        "test(issue_1921_59043_pagination_pin::) | test(issue_6797_table_item_clears_float_band::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 8.164
+    },
+    {
+      "gate": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 13.063
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 6.31
+    },
+    {
+      "gate": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "6b3faf77d8085441f9f26d88d65a49791e910352"
+      ],
+      "exit": 0,
+      "seconds": 0.427
+    }
+  ],
+  "after_focused": {
+    "passed": 9,
+    "failed": 0,
+    "scope": "유지한 #1921 4건과 #6797 5건"
+  },
+  "document_links_exit": 0,
+  "publication": {
+    "id": 5970120438,
+    "url": "https://github.com/edwardkim/rhwp/issues/7445#issuecomment-5970120438",
+    "body_sha256": "52494718395680ce4d40700f4fc7034805fb223ddbe60d312764e39e653ee684",
+    "verified_api_body_exact": true,
+    "local_correction_commit": "124c026c9ac4c0ef7d0b0efee08466b673024563"
+  }
+}

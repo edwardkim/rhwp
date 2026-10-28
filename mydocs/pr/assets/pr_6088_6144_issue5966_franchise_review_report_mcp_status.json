@@ -1,0 +1,37 @@
+{
+  "job_id": "2f14bf49-0358-4a6c-bd19-d74a7220c795",
+  "status": "succeeded",
+  "phase": "completed",
+  "target": "pdf",
+  "engine": "2020",
+  "created_at": "2026-08-26T10:09:46.187Z",
+  "started_at": "2026-08-26T11:09:58.493Z",
+  "completed_at": "2026-08-26T11:11:08.350Z",
+  "expired_at": null,
+  "elapsed_seconds": 69,
+  "queue_position": null,
+  "output_bytes": 1261043,
+  "delivery": {
+    "status": "not_requested",
+    "attempts": 0,
+    "output_path": null,
+    "saved_at": null,
+    "error": null
+  },
+  "result": {
+    "job_id": "2f14bf49-0358-4a6c-bd19-d74a7220c795",
+    "status": "success",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "12.0.0.4605",
+    "backend": "hwp-managed-direct-dll-host",
+    "input_format": "hwp",
+    "format": "pdf",
+    "bytes": 1261043,
+    "elapsed_ms": 69855,
+    "worker_elapsed_ms": 69262,
+    "worker_bits": 32
+  },
+  "error": null,
+  "terminal": true
+}

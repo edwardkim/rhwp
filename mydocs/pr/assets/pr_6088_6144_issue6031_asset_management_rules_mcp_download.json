@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "job_id": "e35bff7a-b084-4091-8520-e560d676a2f4",
+  "output_path": "/home/tsjang/rhwp/pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue6031_asset_management_rules_3249937_asset_management_rules-2020.pdf",
+  "output_filename": "pr_6088_6144_issue6031_asset_management_rules_3249937_asset_management_rules-2020.pdf",
+  "size": 686269,
+  "sha256": "19226f8e3e564bcc8e1c4cad6a1a8259f5e1bf7821d8a81b371aa84f1e5c0c3f",
+  "server": {
+    "job_id": "e35bff7a-b084-4091-8520-e560d676a2f4",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "3249937_asset_management_rules.hwpx",
+    "output_filename": "pr_6088_6144_issue6031_asset_management_rules_3249937_asset_management_rules-2020.pdf",
+    "size": 686269,
+    "sha256": "19226f8e3e564bcc8e1c4cad6a1a8259f5e1bf7821d8a81b371aa84f1e5c0c3f",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "12.0.0.4605",
+    "backend": "hwp-managed-direct-dll-host",
+    "elapsed_ms": 46393,
+    "worker_elapsed_ms": 45844,
+    "worker_bits": 32
+  }
+}

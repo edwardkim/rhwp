@@ -1,0 +1,348 @@
+{
+  "backend": "wasm",
+  "scope": "17 selected pages; full numeric gate separate",
+  "base_sha": "238de6de41a208648f4ade6b494fe433a81c1fce",
+  "head_producer": "e01e7540fd4c8a67ce5d1d1e5802170973acb998",
+  "pages": [
+    {
+      "case": "symbol-slot-2020",
+      "page": 1,
+      "paths": [
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/base/wasm/symbol-slot-2020/symbol-slot-2020/rhwp_png/rhwp_001.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/symbol-slot-2020/symbol-slot-2020/rhwp_png/rhwp_001.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/symbol-slot-2020/symbol-slot-2020/pdf_png/pdf-001.png"
+      ],
+      "sha256": [
+        "748ba5cf1070f3efaee10d6cbf7e2acb67beab29e2730bb594d5405d276c178b",
+        "748ba5cf1070f3efaee10d6cbf7e2acb67beab29e2730bb594d5405d276c178b",
+        "47e3b021cddfa51722543be9d298a7ac5e896c205fd3f82972462ce52e83c711"
+      ],
+      "base_head_rgb_equal": true,
+      "review": "images/symbol-slot-2020-p001-full.png",
+      "directly_inspected": true,
+      "assessment": "preserved",
+      "observation": "기호와 후속 한글 원점·전진폭 유지. base/head RGB 동일.",
+      "review_sha256": "71b77124649bd651ce5cc2a9f4cd259265b67a2e3d0a633ee587a0551087dd12"
+    },
+    {
+      "case": "symbol-slot-2024",
+      "page": 1,
+      "paths": [
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/base/wasm/symbol-slot-2024/symbol-slot-2024/rhwp_png/rhwp_001.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/symbol-slot-2024/symbol-slot-2024/rhwp_png/rhwp_001.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/symbol-slot-2024/symbol-slot-2024/pdf_png/pdf-001.png"
+      ],
+      "sha256": [
+        "748ba5cf1070f3efaee10d6cbf7e2acb67beab29e2730bb594d5405d276c178b",
+        "748ba5cf1070f3efaee10d6cbf7e2acb67beab29e2730bb594d5405d276c178b",
+        "47e3b021cddfa51722543be9d298a7ac5e896c205fd3f82972462ce52e83c711"
+      ],
+      "base_head_rgb_equal": true,
+      "review": "images/symbol-slot-2024-p001-full.png",
+      "directly_inspected": true,
+      "assessment": "preserved",
+      "observation": "2024 기호와 후속 한글 원점·전진폭 유지. base/head RGB 동일.",
+      "review_sha256": "71b77124649bd651ce5cc2a9f4cd259265b67a2e3d0a633ee587a0551087dd12"
+    },
+    {
+      "case": "onsaemiro-control",
+      "page": 36,
+      "paths": [
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/base/wasm/onsaemiro-control/onsaemiro-control/rhwp_png/rhwp_036.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/onsaemiro-control/onsaemiro-control/rhwp_png/rhwp_036.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/onsaemiro-control/onsaemiro-control/pdf_png/pdf-036.png"
+      ],
+      "sha256": [
+        "6bb523e7cc571944f3e41d71c30a019e447c273b419061c1479c147f9cdc7782",
+        "6bb523e7cc571944f3e41d71c30a019e447c273b419061c1479c147f9cdc7782",
+        "9f97727fd672d399185dc6385262ec6b06c755cb492ee18e9240912566d05184"
+      ],
+      "base_head_rgb_equal": true,
+      "review": "images/onsaemiro-control-p036-full.png",
+      "directly_inspected": true,
+      "assessment": "preserved",
+      "observation": "㉠~㉤ 선택지와 후속 본문 줄 순서·간격 유지. base/head RGB 동일.",
+      "review_sha256": "be8fc2561af3266e15a0e5b57ecc10b797786799b8bf5bb1d200b60a8d7b511e"
+    },
+    {
+      "case": "titled-host",
+      "page": 1,
+      "paths": [
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/base/wasm/titled-host/titled-host/rhwp_png/rhwp_001.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/titled-host/titled-host/rhwp_png/rhwp_001.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/titled-host/titled-host/pdf_png/pdf-001.png"
+      ],
+      "sha256": [
+        "3a3773688e5f70315b80d12752bc59395a372c18bba35957d0c33d48a72312cd",
+        "3a3773688e5f70315b80d12752bc59395a372c18bba35957d0c33d48a72312cd",
+        "f2e391fdb1b6ee5be94c4a1ce4ad93a0722af5d36723ad2611d87a03ac587e4c"
+      ],
+      "base_head_rgb_equal": true,
+      "review": "images/titled-host-p001-full.png",
+      "directly_inspected": true,
+      "assessment": "preserved",
+      "observation": "T1/T3/T2/T4의 배치와 K1 제목·본문 흐름 유지. base/head RGB 동일.",
+      "review_sha256": "fb80fa553d286c28d724413b458693dee66be781cd39e641f2d8d36074263ed3"
+    },
+    {
+      "case": "saved-host",
+      "page": 1,
+      "paths": [
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/base/wasm/saved-host/saved-host/rhwp_png/rhwp_001.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/saved-host/saved-host/rhwp_png/rhwp_001.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/saved-host/saved-host/pdf_png/pdf-001.png"
+      ],
+      "sha256": [
+        "3a3773688e5f70315b80d12752bc59395a372c18bba35957d0c33d48a72312cd",
+        "3a3773688e5f70315b80d12752bc59395a372c18bba35957d0c33d48a72312cd",
+        "f2e391fdb1b6ee5be94c4a1ce4ad93a0722af5d36723ad2611d87a03ac587e4c"
+      ],
+      "base_head_rgb_equal": true,
+      "review": "images/saved-host-p001-full.png",
+      "directly_inspected": true,
+      "assessment": "preserved",
+      "observation": "빈 host와 양수 오프셋 표, 제목·후속 본문 원점 유지. base/head RGB 동일.",
+      "review_sha256": "fb80fa553d286c28d724413b458693dee66be781cd39e641f2d8d36074263ed3"
+    },
+    {
+      "case": "saved-host",
+      "page": 4,
+      "paths": [
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/base/wasm/saved-host/saved-host/rhwp_png/rhwp_004.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/saved-host/saved-host/rhwp_png/rhwp_004.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/saved-host/saved-host/pdf_png/pdf-004.png"
+      ],
+      "sha256": [
+        "7ebe373c9dff6565bb4ed0ae7f35642aaef3e2e6fc2862b0354528b9eb205a8d",
+        "7ebe373c9dff6565bb4ed0ae7f35642aaef3e2e6fc2862b0354528b9eb205a8d",
+        "31ef9a8e50ddd458c85693b2fcceda07fcb29248ba1fb43406d6904aa026a8de"
+      ],
+      "base_head_rgb_equal": true,
+      "review": "images/saved-host-p004-full.png",
+      "directly_inspected": true,
+      "assessment": "preserved",
+      "observation": "빈 host와 양수 오프셋 표, 제목·후속 본문 원점 유지. base/head RGB 동일.",
+      "review_sha256": "2459c7719af164175e9d3336e113f23568fe8bc484df0742bdd45af11e03b2fd"
+    },
+    {
+      "case": "omitted-after",
+      "page": 2,
+      "paths": [
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/base/wasm/omitted-after/omitted-after/rhwp_png/rhwp_002.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/omitted-after/omitted-after/rhwp_png/rhwp_002.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/omitted-after/omitted-after/pdf_png/pdf-002.png"
+      ],
+      "sha256": [
+        "095e92830df1a5d295f3718a9ef91cda8e8e2f14877813fd6b813c088e891513",
+        "095e92830df1a5d295f3718a9ef91cda8e8e2f14877813fd6b813c088e891513",
+        "13202af5889a9e4d6b0ff24a42059602f0d750cc79ad0ced64a618ed12baeed6"
+      ],
+      "base_head_rgb_equal": true,
+      "review": "images/omitted-after-p002-full.png",
+      "directly_inspected": true,
+      "assessment": "preserved",
+      "observation": "저장 위치 기반 간격과 후속 문단 줄 구성 유지. base/head RGB 동일.",
+      "review_sha256": "a5c01cdaaf285a4f19ea3e54bde7d75e40a8dce8e328c783a935cbccb2740fed"
+    },
+    {
+      "case": "offset-min",
+      "page": 1,
+      "paths": [
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/base/wasm/offset-min/offset-min/rhwp_png/rhwp_001.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/offset-min/offset-min/rhwp_png/rhwp_001.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/offset-min/offset-min/pdf_png/pdf-001.png"
+      ],
+      "sha256": [
+        "bdcefa16472373563b6a6d25ae8da64e1e50e25c5fda191f8177b4615cb29673",
+        "bdcefa16472373563b6a6d25ae8da64e1e50e25c5fda191f8177b4615cb29673",
+        "1a88b5ad9c211f12ab31258dc5ebe9dba61aaa1daea446e23170aef378122bcc"
+      ],
+      "base_head_rgb_equal": true,
+      "review": "images/offset-min-p001-full.png",
+      "directly_inspected": true,
+      "assessment": "preserved",
+      "observation": "첫 표 조각·본문 목록·아래 표 소유 유지. base/head RGB 동일.",
+      "review_sha256": "67fe6c790967e20cee157947e15489915123a7084819725e454e8f1fd451fc00"
+    },
+    {
+      "case": "rowspan-header",
+      "page": 2,
+      "paths": [
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/base/wasm/rowspan-header/rowspan-header/rhwp_png/rhwp_002.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/rowspan-header/rowspan-header/rhwp_png/rhwp_002.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/rowspan-header/rowspan-header/pdf_png/pdf-002.png"
+      ],
+      "sha256": [
+        "5c168138929ac37d261ebe8d987d081f7513526b8f0acc60651502df892d4246",
+        "5c168138929ac37d261ebe8d987d081f7513526b8f0acc60651502df892d4246",
+        "cb7b59aabbca8a7f8a4febcc8239b8b658b65da3fdccc449eb4e64a24213b2ca"
+      ],
+      "base_head_rgb_equal": true,
+      "review": "images/rowspan-header-p002-full.png",
+      "directly_inspected": true,
+      "assessment": "preserved",
+      "observation": "반복 제목행과 rowspan·본문/범례 흐름 유지. base/head RGB 동일.",
+      "review_sha256": "c8f79109c10e21e1cd701da33ad4988fe8512fc5569e67ee5016c2996bb85bbe"
+    },
+    {
+      "case": "rowspan-header",
+      "page": 3,
+      "paths": [
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/base/wasm/rowspan-header/rowspan-header/rhwp_png/rhwp_003.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/rowspan-header/rowspan-header/rhwp_png/rhwp_003.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/rowspan-header/rowspan-header/pdf_png/pdf-003.png"
+      ],
+      "sha256": [
+        "a39b2bdc304496070f3ccc272ebc00f0d4a326aed1da35410822768df2771f38",
+        "a39b2bdc304496070f3ccc272ebc00f0d4a326aed1da35410822768df2771f38",
+        "d8adeb690ac249933b44af36b4acf3cf6704c97821b0db6a0d53fd781ca20835"
+      ],
+      "base_head_rgb_equal": true,
+      "review": "images/rowspan-header-p003-full.png",
+      "directly_inspected": true,
+      "assessment": "preserved",
+      "observation": "반복 제목행과 rowspan·본문/범례 흐름 유지. base/head RGB 동일.",
+      "review_sha256": "6489a85541c2b57ac4656a85401dc9c11b931c0425c4d60decc4ea2d68279285"
+    },
+    {
+      "case": "policy1790387-actual",
+      "page": 6,
+      "paths": [
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/base/wasm/policy1790387-actual/policy1790387-actual/rhwp_png/rhwp_006.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/policy1790387-actual/policy1790387-actual/rhwp_png/rhwp_006.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/policy1790387-actual/policy1790387-actual/pdf_png/pdf-006.png"
+      ],
+      "sha256": [
+        "a39b2bdc304496070f3ccc272ebc00f0d4a326aed1da35410822768df2771f38",
+        "a39b2bdc304496070f3ccc272ebc00f0d4a326aed1da35410822768df2771f38",
+        "d8adeb690ac249933b44af36b4acf3cf6704c97821b0db6a0d53fd781ca20835"
+      ],
+      "base_head_rgb_equal": true,
+      "review": "images/policy1790387-actual-p006-full.png",
+      "directly_inspected": true,
+      "assessment": "preserved",
+      "observation": "연구자 표의 반복 제목과 후속 건강결과 표 시작 유지. base/head RGB 동일.",
+      "review_sha256": "6489a85541c2b57ac4656a85401dc9c11b931c0425c4d60decc4ea2d68279285"
+    },
+    {
+      "case": "curriculum-control",
+      "page": 48,
+      "paths": [
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/base/wasm/curriculum-control/curriculum-control/rhwp_png/rhwp_048.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/curriculum-control/curriculum-control/rhwp_png/rhwp_048.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/curriculum-control/curriculum-control/pdf_png/pdf-048.png"
+      ],
+      "sha256": [
+        "c7f4f51af932416e5cb0d79e0cdd6f2f956bbd41d46b48c099b8f2cce3e5d9a4",
+        "c7f4f51af932416e5cb0d79e0cdd6f2f956bbd41d46b48c099b8f2cce3e5d9a4",
+        "35344ca697b7a4560462ce8961df3d11a6ed8d241ecde061261f2ae2f30a9a44"
+      ],
+      "base_head_rgb_equal": true,
+      "review": "images/curriculum-control-p048-full.png",
+      "directly_inspected": true,
+      "assessment": "preserved",
+      "observation": "48쪽 없음의 중앙 정렬, 87쪽 이웃 셀 선언 띠, 178쪽 절대 쪽 프레임의 첫 이어받기 본문 유지. 각각 확대 판독; base/head RGB 동일.",
+      "review_sha256": "a3dd7111a885470ada09fcb4c0da246464331c3763ff90ea130c4ad859041748"
+    },
+    {
+      "case": "curriculum-control",
+      "page": 87,
+      "paths": [
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/base/wasm/curriculum-control/curriculum-control/rhwp_png/rhwp_087.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/curriculum-control/curriculum-control/rhwp_png/rhwp_087.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/curriculum-control/curriculum-control/pdf_png/pdf-087.png"
+      ],
+      "sha256": [
+        "793e0ca6498fba330769a0ce8efae2292f27a035423bddb7b4933d6be75b64c9",
+        "793e0ca6498fba330769a0ce8efae2292f27a035423bddb7b4933d6be75b64c9",
+        "f540a666ddb9d238695a91539e6da4f7e9d453a29d68c69ea22567069e1d5e59"
+      ],
+      "base_head_rgb_equal": true,
+      "review": "images/curriculum-control-p087-full.png",
+      "directly_inspected": true,
+      "assessment": "preserved",
+      "observation": "48쪽 없음의 중앙 정렬, 87쪽 이웃 셀 선언 띠, 178쪽 절대 쪽 프레임의 첫 이어받기 본문 유지. 각각 확대 판독; base/head RGB 동일.",
+      "review_sha256": "321229d8050c796c7a6fd411547e72095031dd3ec6809072b810846d27c5ba84"
+    },
+    {
+      "case": "curriculum-control",
+      "page": 178,
+      "paths": [
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/base/wasm/curriculum-control/curriculum-control/rhwp_png/rhwp_178.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/curriculum-control/curriculum-control/rhwp_png/rhwp_178.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/curriculum-control/curriculum-control/pdf_png/pdf-178.png"
+      ],
+      "sha256": [
+        "d84b647bacafeb1a928dce30841281e6c26174488ddbe57c3a96f87cbe3bbe0f",
+        "d84b647bacafeb1a928dce30841281e6c26174488ddbe57c3a96f87cbe3bbe0f",
+        "399d354a0fba09d2b1c43efb8b5092df7d003618c511d12263d80b282fe0b79d"
+      ],
+      "base_head_rgb_equal": true,
+      "review": "images/curriculum-control-p178-full.png",
+      "directly_inspected": true,
+      "assessment": "preserved",
+      "observation": "48쪽 없음의 중앙 정렬, 87쪽 이웃 셀 선언 띠, 178쪽 절대 쪽 프레임의 첫 이어받기 본문 유지. 각각 확대 판독; base/head RGB 동일.",
+      "review_sha256": "d3d662282f66395c455512b8b6f0da2335ac677dc4ff565143574f776e1cff78"
+    },
+    {
+      "case": "regulatory86712",
+      "page": 27,
+      "paths": [
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/base/wasm/regulatory86712/regulatory86712/rhwp_png/rhwp_027.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/regulatory86712/regulatory86712/rhwp_png/rhwp_027.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/regulatory86712/regulatory86712/pdf_png/pdf-027.png"
+      ],
+      "sha256": [
+        "daa8aca614f8eaa45352662b14ff637c8fa71dc5b95925df00a0fffd8b985df6",
+        "daa8aca614f8eaa45352662b14ff637c8fa71dc5b95925df00a0fffd8b985df6",
+        "42c5722df05535fc338f592f1dbbeab8e7960f4758847d909b89e3afb9f9a3b1"
+      ],
+      "base_head_rgb_equal": true,
+      "review": "images/regulatory86712-p027-full.png",
+      "directly_inspected": true,
+      "assessment": "preserved",
+      "observation": "이어받은 근거설명 셀의 닫는 선과 하단 연도 표, 쪽번호 유지. base/head RGB 동일.",
+      "review_sha256": "5e07c959325317265f90c029a5662e05b1e9c88f8fe34f9342eda83673ae091b"
+    },
+    {
+      "case": "cbta1613",
+      "page": 48,
+      "paths": [
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/base/wasm/cbta1613/cbta1613/rhwp_png/rhwp_048.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/cbta1613/cbta1613/rhwp_png/rhwp_048.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/cbta1613/cbta1613/pdf_png/pdf-048.png"
+      ],
+      "sha256": [
+        "9aee12813c85c5a1e9cbb2a41ac6b5133495ea038d67626385f9b41cd0c9cb89",
+        "d15916b1c3d779aa4244d05fd185d72d590afa546ba80bffebc9e29ae13c29ce",
+        "a60a077ffe8d0c50e5f4c5f52a1c6544a80fde33b2047510fcff76e557629dc6"
+      ],
+      "base_head_rgb_equal": false,
+      "review": "images/cbta1613-p048-full.png",
+      "directly_inspected": true,
+      "assessment": "preserved",
+      "observation": "기존 그림 내부 작은 글자의 농도 차이가 독립 Print 대비 남아 있다. base/head의 본문·그림·아래 비교표 배치와 내용 유지. 48쪽 raw는 base 91.71286%, head 91.70207%로 0.01079%p 하락하여 0.1%p 기준 이내다. 이 입력을 raw100으로 판정하지 않는다.",
+      "review_sha256": "648c371739cc85a1468d417926f2bc3b1fd5ede2f190bb2492ca86bf0db55522"
+    },
+    {
+      "case": "onsaemiro-converted-control",
+      "page": 46,
+      "paths": [
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/base/wasm/onsaemiro-converted-control/onsaemiro-converted-control/rhwp_png/rhwp_046.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/onsaemiro-converted-control/onsaemiro-converted-control/rhwp_png/rhwp_046.png",
+        "output/pr-review/issue8160-20261022/rebase8231/fix1/incoming/head/wasm/onsaemiro-converted-control/onsaemiro-converted-control/pdf_png/pdf-046.png"
+      ],
+      "sha256": [
+        "3f8f502541cf94566410c9691fc042bceb4acf055d0b30ef6bfb6d117d13df79",
+        "e08aa2cbb037e052ca971f99e384bc6e8be8c0898e2999293b7749abaa344866",
+        "4db00754e33ec4cd7a79e643f50aac0e08f358c49268242fc48851b8163c97a1"
+      ],
+      "base_head_rgb_equal": false,
+      "review": "images/onsaemiro-converted-control-p046-focus.png",
+      "directly_inspected": true,
+      "assessment": "preserved",
+      "observation": "기존 #7881의 독립 Print 글꼴 환경을 양쪽에 적용했다. 46쪽 제목·연한 프레임·비어 있는 본문과 바닥글을 전체 및 확대 이미지로 대조했다. base/head raw는 모두 100.00000%이며 RGB 동일성을 뜻하지 않는다.",
+      "review_sha256": "7c84ac91318f2976130ba3c3e92885a800a99683cbaf814a6a0d0cafa36879c5"
+    }
+  ]
+}

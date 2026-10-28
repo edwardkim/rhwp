@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="793.7066666666667" height="1122.5066666666667" viewBox="0 0 793.7066666666667 1122.5066666666667">
+<style>
+@font-face { font-family: "휴먼명조"; src: local("HCR Batang"), local("함초롬바탕"), local("Batang"), local("바탕"), local("AppleMyungjo"), local("Noto Serif CJK KR"), local("휴먼명조"), local("HumanMyeongJo"); }
+@font-face { font-family: "휴먼명조"; src: local("HCR Batang Bold"), local("함초롬바탕 Bold"); font-weight: bold; }
+</style>
+
+<defs>
+<clipPath id="body-clip-3"><rect x="113.37333333333333" y="132.26666666666668" width="850.44" height="876.8800000000001"/></clipPath>
+</defs>
+<rect x="0" y="0" width="793.7066666666667" height="1122.5066666666667" fill="#ffffff"/>
+<g clip-path="url(#body-clip-3)"></g>
+</svg>

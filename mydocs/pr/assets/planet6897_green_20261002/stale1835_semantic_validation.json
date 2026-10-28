@@ -1,0 +1,163 @@
+{
+  "head_before_correction": "49050cb47ea53cd7e47d1763b76aa9ef10ad2c34",
+  "analysis": {
+    "independent_evidence": "mydocs/pr/assets/planet6897_green_20261002/stale1835_body_border_validation.json",
+    "native_and_fresh_wasm_min_percent": 97.59989,
+    "pages": 3,
+    "reason": "기존85px 높이 하한과1px 여유는 실제 내용/쪽 소속 계약을 고정 좌표로 대신했다",
+    "replacement": "기존 두 함수의 개수 유지. 첫4행3열의 칸 내용 포함과 행 비겹침, 후속 셀 편집 제목의 표 뒤 관계, 마지막 제목은2쪽/전체11행33칸 표는3쪽 관계 확인",
+    "functions_added": 0,
+    "fixtures_added": 0,
+    "source_or_reference_changed": false
+  },
+  "gates": {
+    "head_before_changes": "49050cb47ea53cd7e47d1763b76aa9ef10ad2c34",
+    "state": "complete",
+    "gates": [
+      {
+        "gate": "focused",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--test",
+          "regression_suite_009",
+          "--test",
+          "regression_suite_015",
+          "-E",
+          "test(/issue_1835_tac_stale_height::/) | test(/svg_snapshot::/)",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 108.343,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-semantic-focused.log"
+      },
+      {
+        "gate": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 6.307,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-semantic-fmt.log"
+      },
+      {
+        "gate": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.401,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-semantic-native-clippy.log"
+      },
+      {
+        "gate": "wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.217,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-semantic-wasm-clippy.log"
+      },
+      {
+        "gate": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "target/pr-review"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.38,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-semantic-workspace-build.log"
+      },
+      {
+        "gate": "all-target-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 14.034,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-semantic-all-target-clippy.log"
+      },
+      {
+        "gate": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "8497729b4fb0e071c484fc5740f9bb2400bed437"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.803,
+        "log": "output/pr-review/planet6897-green-20261002/stale1835-semantic-manifest.log"
+      }
+    ]
+  },
+  "test_functions": [
+    "tac_stale_height_table_expands_to_content",
+    "tac_stale_height_following_paragraph_flows_below_table"
+  ],
+  "test_count_before": 2,
+  "test_count_after": 2,
+  "test_sha256": "dd6563609848edd8ca46875d6eef659195d43e510ebd97b1e8cba026e34e23cf",
+  "implementation_unchanged": {
+    "src/renderer/layout/paragraph_layout.rs": "bb6ed8f4292913a23f47f4b3e436b64de2e60bf5106043df1d5e8262b2faa235",
+    "src/renderer/float_placement.rs": "4db856f5eba6f3c19851e290ce559be82200bcc51130f1deb3875ecc033d7d35",
+    "src/renderer/composer/line_breaking.rs": "47b2e5b89f4b65d1a7e0ff70d8202482530fa929ad10a808a50224a97ae3a047",
+    "src/renderer/layout.rs": "e456a378e18e4095de0d1bf8d3297e6770e1bfe3d76ff29c6b309db3d864310a",
+    "src/renderer/typeset/table/block/entry.rs": "099b4635c13b75be427d385299727d314380fae4407e4dacfdb9617ae6692a5a"
+  },
+  "full_visual_evidence": "mydocs/pr/assets/planet6897_green_20261002/stale1835_body_border_validation.json",
+  "summary": [
+    "Summary [   0.143s] 9 tests run: 9 passed, 441 skipped"
+  ],
+  "removed_pins": [
+    "table.bbox.height > 85.0",
+    "table_bottom - 1.0"
+  ],
+  "replacement": "4행3열/12칸·첫행 원문 제목·내용 포함·행 비겹침, 후속 문단은 표 뒤, 마지막 제목은2쪽/전체11행33칸 표는3쪽",
+  "decision": "이 단계9PASS·필수lint통과. 전체6실패와시각보류·최종전체/Skia/PR미완료"
+}

@@ -3,8 +3,10 @@
 use serde::Deserialize;
 use serde_json::json;
 
+use crate::document_core::helpers::{find_logical_control_positions, logical_to_text_offset};
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
+use crate::model::control::Control;
 use crate::renderer::composer::is_lang_neutral;
 use crate::renderer::font_decision::*;
 use crate::renderer::layout::trace_char_width_decisions;
@@ -13,8 +15,11 @@ use crate::renderer::render_tree::{
     PageRenderTree, RenderNode, RenderNodeType, TextLineNode, TextRunNode,
 };
 use crate::renderer::style_resolver::{
-    detect_lang_category, lookup_font_name_decision, FontSubstitutionBoundary,
+    detect_lang_category, lookup_font_name_in_environment, FontSubstitutionBoundary,
 };
+
+#[path = "font_decision/direct_metric_rule.rs"]
+mod direct_metric_rule;
 
 const DEFAULT_MAX_CHARACTERS: usize = 1024;
 const MAX_CHARACTERS: usize = 4096;
@@ -42,12 +47,36 @@ fn options(options_json: &str) -> Result<TraceLimits, HwpError> {
     Ok(TraceLimits { max_characters })
 }
 
-fn collect_runs<'a>(node: &'a RenderNode, runs: &mut Vec<&'a TextRunNode>) {
+fn collect_runs<'a>(
+    node: &'a RenderNode,
+    runs: &mut Vec<(&'a TextRunNode, bool)>,
+    source_frame: Option<bool>,
+    in_container: bool,
+    in_text_box: bool,
+) {
+    let in_container = in_container
+        || matches!(
+            node.node_type,
+            RenderNodeType::TableCell(_) | RenderNodeType::TextBox
+        );
+    let in_text_box = in_text_box || matches!(node.node_type, RenderNodeType::TextBox);
+    // 조상 줄은 새 컨테이너 문단의 원문 소유자가 아니다.
+    let source_frame = match &node.node_type {
+        RenderNodeType::Header | RenderNodeType::Footer | RenderNodeType::FootnoteArea => None,
+        RenderNodeType::TextLine(line) if line.caption_owner.is_some() => None,
+        RenderNodeType::TextLine(_) => source_frame.map(|_| true),
+        RenderNodeType::TableCell(_) | RenderNodeType::TextBox => source_frame.map(|_| false),
+        _ => source_frame,
+    };
     if let RenderNodeType::TextRun(run) = &node.node_type {
-        runs.push(run);
+        let has_source_path = !in_container
+            || run.cell_context.as_ref().is_some_and(|context| {
+                !context.path.is_empty() && (!in_text_box || context.in_textbox)
+            });
+        runs.push((run, source_frame == Some(true) && has_source_path));
     }
     for child in &node.children {
-        collect_runs(child, runs);
+        collect_runs(child, runs, source_frame, in_container, in_text_box);
     }
 }
 
@@ -171,14 +200,18 @@ fn source_paragraph_index(run: &TextRunNode) -> Option<usize> {
         .filter(|index| *index < usize::MAX.saturating_sub(4096))
 }
 
-fn source_matches(core: &DocumentCore, run: &TextRunNode, offset: usize, ch: char) -> bool {
-    let (Some(section), Some(paragraph), Some(char_start)) = (
-        run.section_index,
-        source_paragraph_index(run),
-        run.char_start,
-    ) else {
-        return false;
-    };
+fn source_character(
+    core: &DocumentCore,
+    run: &TextRunNode,
+    offset: usize,
+    in_text_line: bool,
+) -> Option<(usize, char)> {
+    if !in_text_line {
+        return None;
+    }
+    let section = run.section_index?;
+    let paragraph = source_paragraph_index(run)?;
+    let mut logical_offset = run.char_start?.checked_add(offset)?;
     let path: Vec<(usize, usize, usize)> = run
         .cell_context
         .as_ref()
@@ -190,10 +223,41 @@ fn source_matches(core: &DocumentCore, run: &TextRunNode, offset: usize, ch: cha
                 .collect()
         })
         .unwrap_or_default();
-    core.resolve_control_para(section, paragraph, &path)
-        .ok()
-        .and_then(|para| para.text.chars().nth(char_start + offset))
-        .is_some_and(|source| source == ch)
+    let para = core.resolve_control_para(section, paragraph, &path).ok()?;
+    let control_positions = find_logical_control_positions(para);
+    let text_positions = para.control_text_positions();
+    let mut note_positions: Vec<usize> = para
+        .controls
+        .iter()
+        .zip(&control_positions)
+        .zip(text_positions)
+        .filter_map(|((control, position), text_position)| {
+            (text_position == 0 && matches!(control, Control::Footnote(_) | Control::Endnote(_)))
+                .then_some(*position)
+        })
+        .collect();
+    note_positions.sort_unstable();
+    // 선두 참조 번호는 note_reference가 줄 밖의 prefix로 방출해 런 주소에서 제외된다.
+    // 줄 안의 참조 번호는 emit_line_runs가 이미 논리 한 칸을 반영하므로 다시 더하지 않는다.
+    for note_position in note_positions {
+        if note_position > logical_offset {
+            break;
+        }
+        logical_offset = logical_offset.checked_add(1)?;
+    }
+    for (control, position) in para.controls.iter().zip(control_positions) {
+        // shortcut: 겹침 런의 원문 소유권을 전달할 때까지 첫 겹침부터 뒤 주소는 확정하지 않는다.
+        if (matches!(control, Control::CharOverlap(_)) && position <= logical_offset)
+            || (control.is_logical_inline() && position == logical_offset)
+        {
+            return None;
+        }
+    }
+    let (scalar_offset, _) = logical_to_text_offset(para, logical_offset);
+    para.text
+        .chars()
+        .nth(scalar_offset)
+        .map(|character| (scalar_offset, character))
 }
 
 fn measurement_provenance() -> Result<ProvenanceDecision, HwpError> {
@@ -222,13 +286,17 @@ fn style_provenance(
     generated_rule_id: &str,
 ) -> Result<ProvenanceDecision, HwpError> {
     let language = boundary.language_condition(source);
+    let mut conditions = json!({ "languageSlot": language });
+    if boundary == FontSubstitutionBoundary::MissingProgram {
+        conditions["availability"] = json!("primary-and-document-substitute-missing");
+    }
     let provenance = linked_provenance(
         json!({
             "sourceBoundaryId": boundary.source_boundary_id(),
             "candidateKind": "finite-mapping",
             "sourceFace": source,
             "targetOrPolicy": target,
-            "conditions": { "languageSlot": language },
+            "conditions": conditions,
             "order": null,
         }),
         "rust-style-resolution",
@@ -264,6 +332,47 @@ fn subst_font_provenance(
     .map_err(|error| HwpError::RenderError(format!("font trace provenance: {error}")))
 }
 
+fn document_substitute_lookup_provenance(
+    source: &str,
+    target: &str,
+    language_slot: usize,
+    generated_rule_id: &str,
+) -> Result<ProvenanceDecision, HwpError> {
+    let rule = crate::renderer::font_rule_layout_name_projection::find_font_rule_layout_name(
+        "rust-style-resolution.document-substitute",
+        source,
+        language_slot,
+    )
+    .filter(|rule| {
+        rule.rule_id == generated_rule_id
+            && rule.target_face_or_policy == target
+            && rule.mode == "direct"
+            && rule.conditions.alt_type == Some("1")
+            && rule.conditions.availability == Some("nonembedded-ttf-document-substitute")
+    })
+    .ok_or_else(|| HwpError::RenderError("font trace document substitute rule mismatch".into()))?;
+    let identity = json!({
+        "sourceBoundaryId": rule.source_boundary_id,
+        "candidateKind": "finite-mapping",
+        "sourceFace": source,
+        "targetOrPolicy": target,
+        "conditions": {"languageSlot":"all", "altType":"1", "availability":"nonembedded-ttf-document-substitute"},
+        "order": null,
+    });
+    let candidate_id = crate::renderer::font_decision::candidate_id(identity)
+        .map_err(|error| HwpError::RenderError(format!("font trace provenance: {error}")))?;
+    Ok(ProvenanceDecision {
+        candidate_id,
+        rule_id: Some(rule.rule_id.into()),
+        evidence_anchor: format!("assets/font-rules/font_rule_registry_v2.json#{}", rule.rule_id),
+        source_owner: "rust-style-resolution".into(),
+        relation_type: Some(rule.relation_type.into()),
+        evidence_status: Some("verified-by-test".into()),
+        known_limitations: vec!["Document substitute candidate lookup, not SFNT identity or proof of actual paint supply.".into()],
+        reason: None,
+    })
+}
+
 pub(super) fn metric_alias_relation(source: &str, target: &str) -> (&'static str, &'static str) {
     if source == "HY각헤드라인M" || target == "Pretendard" || target == "Noto Serif KR" {
         ("metric-surrogate", "historical")
@@ -277,17 +386,44 @@ fn metric_alias_provenance(
     target: &str,
     generated_rule_id: &str,
 ) -> Result<ProvenanceDecision, HwpError> {
+    // v2는 change-set에 기록된 ID를 허용한다. 해시에서 나온다는 과거 가정 대신
+    // 실제 폭 선택에 쓴 canonical projection의 전체 identity를 검증한다.
+    let rule =
+        crate::renderer::font_rule_layout_metric_projection::find_font_rule_layout_metric(source)
+            .filter(|rule| {
+                rule.rule_id == generated_rule_id
+                    && rule.source_boundary_id == "rust-metric.metric-alias"
+                    && rule.source_face == Some(source)
+                    && rule.target_face_or_policy == target
+                    && rule.decision_plane == "layout-metric"
+                    && rule.order.is_none()
+                    && rule.conditions.language_slot.is_none()
+                    && rule.conditions.alt_type.is_none()
+                    && rule.conditions.availability.is_none()
+                    && rule.conditions.profile.is_none()
+            })
+            .ok_or_else(|| {
+                HwpError::RenderError(format!(
+                    "font trace provenance: selected metric projection mismatch for {source}"
+                ))
+            })?;
     let (relation_type, evidence_status) = metric_alias_relation(source, target);
     let is_surrogate = relation_type == "metric-surrogate";
-    let provenance = linked_provenance(
-        json!({
-            "sourceBoundaryId": "rust-metric.metric-alias",
-            "candidateKind": "finite-mapping",
-            "sourceFace": source,
-            "targetOrPolicy": target,
-            "conditions": {},
-            "order": null,
-        }),
+    let identity = json!({
+        "sourceBoundaryId": "rust-metric.metric-alias",
+        "candidateKind": "finite-mapping",
+        "sourceFace": source,
+        "targetOrPolicy": target,
+        "conditions": {},
+        "order": null,
+    });
+    if let Some(provenance) =
+        direct_metric_rule::provenance(source, target, generated_rule_id, &identity)?
+    {
+        return Ok(provenance);
+    }
+    let mut provenance = linked_provenance(
+        identity,
         "rust-metric",
         relation_type,
         evidence_status,
@@ -298,32 +434,57 @@ fn metric_alias_provenance(
         },
     )
     .map_err(|error| HwpError::RenderError(format!("font trace provenance: {error}")))?;
-    if provenance.rule_id.as_deref() != Some(generated_rule_id) {
-        return Err(HwpError::RenderError(format!(
-            "font trace provenance: generated metric ruleId mismatch for {source}"
-        )));
-    }
+    // candidate_id와 과거 증적 앵커·확실성은 보존한다. 현재 선택 규칙의 ID는
+    // 위에서 검증한 생성 projection이 소유하며 서술형 ID도 그대로 연결한다.
+    provenance.rule_id = Some(rule.rule_id.to_owned());
     Ok(provenance)
 }
 
 fn metric_entry_provenance(
     metric: &crate::renderer::font_metrics_data::MetricLookupDecision<'_>,
+    character: char,
 ) -> Result<ProvenanceDecision, HwpError> {
+    if let Some((source, symbol)) =
+        crate::renderer::font_metrics_data::core14_metric_source(metric.metric)
+    {
+        let mut provenance = unlinked_provenance(
+            json!({
+                "sourceBoundaryId":"rust-metric.adobe-core14",
+                "candidateKind":"metric-entry", "sourceFace":metric.metric.name,
+                "targetOrPolicy":format!("metric-entry:{}",metric.entry_index),
+                "conditions":{"bold":metric.metric.bold,"italic":metric.metric.italic,
+                    "emSize":metric.metric.em_size,"latinRangeSymbol":symbol,"afmSource":source},
+                "order":null,
+            }),
+            "adobe-core14-afm",
+        )
+        .map_err(|error| HwpError::RenderError(format!("font trace provenance: {error}")))?;
+        provenance.evidence_anchor = source.into();
+        provenance.reason = Some("publishedAfmOutsideHistoricalLedger".into());
+        provenance.known_limitations.push("Published advances do not establish the installed paint font or recover a missing PDF font program.".into());
+        return Ok(provenance);
+    }
+    let mut identity = json!({
+        "sourceBoundaryId": "rust-metric.metric-table",
+        "candidateKind": "metric-entry",
+        "sourceFace": metric.metric.name,
+        "targetOrPolicy": format!("metric-entry:{}", metric.entry_index),
+        "conditions": {
+            "bold": metric.metric.bold,
+            "italic": metric.metric.italic,
+            "emSize": metric.metric.em_size,
+            "latinRangeSymbol": format!("FONT_{}_LATIN_RANGES", metric.entry_index),
+            "hangulSymbol": metric.metric.hangul.as_ref().map(|_| format!("FONT_{}_HANGUL", metric.entry_index)),
+        },
+        "order": null,
+    });
+    if crate::renderer::font_metrics_data::uses_hangul_jamo_overlay(metric.metric, character) {
+        identity["conditions"]["latinRangeSymbol"] = serde_json::Value::Null;
+        identity["conditions"]["hangulJamoModule"] =
+            json!("src/renderer/font_metric_hangul_jamo.rs");
+    }
     linked_provenance(
-        json!({
-            "sourceBoundaryId": "rust-metric.metric-table",
-            "candidateKind": "metric-entry",
-            "sourceFace": metric.metric.name,
-            "targetOrPolicy": format!("metric-entry:{}", metric.entry_index),
-            "conditions": {
-                "bold": metric.metric.bold,
-                "italic": metric.metric.italic,
-                "emSize": metric.metric.em_size,
-                "latinRangeSymbol": format!("FONT_{}_LATIN_RANGES", metric.entry_index),
-                "hangulSymbol": metric.metric.hangul.as_ref().map(|_| format!("FONT_{}_HANGUL", metric.entry_index)),
-            },
-            "order": null,
-        }),
+        identity,
         "rust-metric",
         "metric-entry",
         "verified-by-test",
@@ -358,11 +519,26 @@ fn transform_steps(
     }
     let mut steps = Vec::new();
     if decision.metric.is_some_and(|metric| metric.bold_fallback) {
+        let hft_bold = decision.width_source == "metricHftBoldAdvance";
         steps.push(DecisionStep {
             kind: "boldFallback".into(),
             input: Some("bold".into()),
-            output: Some("regularMetricAdvance".into()),
-            reason: Some("fauxBoldDoesNotChangeLayoutAdvance".into()),
+            output: Some(
+                if hft_bold {
+                    "hftBoldAdvance"
+                } else {
+                    "regularMetricAdvance"
+                }
+                .into(),
+            ),
+            reason: Some(
+                if hft_bold {
+                    "hftBoldAddsRelativeAdvance"
+                } else {
+                    "fauxBoldDoesNotChangeLayoutAdvance"
+                }
+                .into(),
+            ),
         });
     }
     if (run.style.ratio - 1.0).abs() > f64::EPSILON {
@@ -584,8 +760,7 @@ impl DocumentCore {
                         paragraph_box,
                         &self.styles,
                         self.dpi,
-                        self.effective_layout_profile()
-                            .legacy_hwp3_stored_geometry(),
+                        self.effective_layout_profile().stored_geometry_policy(),
                         miss_policy,
                     );
                     let reason = match disposition {
@@ -696,15 +871,15 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         let applied_limits = requested_limits;
         let mut runs = Vec::new();
-        collect_runs(&tree.root, &mut runs);
+        collect_runs(&tree.root, &mut runs, Some(false), false, false);
         let characters_seen = runs
             .iter()
-            .map(|run| run.text.chars().count())
+            .map(|(run, _)| run.text.chars().count())
             .sum::<usize>();
         let mut records = Vec::with_capacity(characters_seen.min(applied_limits.max_characters));
         let mut source_mapping_mismatch = false;
         let mut ledger_rule_missing = false;
-        'runs: for (run_index, run) in runs.iter().enumerate() {
+        'runs: for (run_index, (run, in_text_line)) in runs.iter().enumerate() {
             let chars: Vec<char> = run.text.chars().collect();
             let language_slots = run_language_slots(&chars, run_style_language_slot(self, run));
             let width_decisions = trace_char_width_decisions(&run.text, &run.style);
@@ -717,7 +892,8 @@ impl DocumentCore {
                 if records.len() >= applied_limits.max_characters {
                     break 'runs;
                 }
-                let source_complete = source_matches(self, run, run_offset, ch);
+                let source_character = source_character(self, run, run_offset, *in_text_line);
+                let source_complete = source_character.is_some_and(|(_, source)| source == ch);
                 source_mapping_mismatch |= !source_complete;
                 let font_decision = run.char_shape_id.and_then(|char_shape_id| {
                     self.document
@@ -725,16 +901,45 @@ impl DocumentCore {
                         .char_shapes
                         .get(char_shape_id as usize)
                         .map(|shape| {
-                            lookup_font_name_decision(
+                            lookup_font_name_in_environment(
                                 &self.document.doc_info,
                                 language_slot,
                                 shape.font_ids[language_slot],
+                                self.font_environment.as_ref(),
                             )
                         })
                 });
                 let mut provenance = vec![measurement_provenance()?];
                 let mut name_steps = Vec::new();
                 if let Some(font) = &font_decision {
+                    if let (Some(source), Some(target), Some(rule_id)) = (
+                        font.requested_subst_font.as_deref(),
+                        font.subst_font.as_deref(),
+                        font.document_substitute_rule_id,
+                    ) {
+                        name_steps.push(DecisionStep {
+                            kind: "documentSubstituteLookup".into(),
+                            input: Some(source.into()),
+                            output: Some(target.into()),
+                            reason: Some(
+                                "candidateBeforeProgramAvailabilityAndCallerOverride".into(),
+                            ),
+                        });
+                        provenance.push(document_substitute_lookup_provenance(
+                            source,
+                            target,
+                            font.language_slot,
+                            rule_id,
+                        )?);
+                    }
+                    if let Some(profile_id) = &font.environment_profile_id {
+                        name_steps.push(DecisionStep {
+                            kind: "fontEnvironment".into(),
+                            input: font.requested_face.clone(),
+                            output: font.normalized_face.clone(),
+                            reason: Some(profile_id.clone()),
+                        });
+                    }
                     if let (Some(boundary), Some(source), Some(target)) = (
                         font.substitution_boundary,
                         font.requested_face.as_deref(),
@@ -759,9 +964,12 @@ impl DocumentCore {
                             rule_id,
                         )?);
                     }
-                    if let (Some(source), Some(substitute)) =
-                        (font.normalized_face.as_deref(), font.subst_font.as_deref())
-                    {
+                    if let (Some(source), Some(substitute)) = (
+                        font.normalized_face.as_deref(),
+                        font.subst_font
+                            .as_deref()
+                            .filter(|_| font.environment_profile_id.is_none()),
+                    ) {
                         name_steps.push(DecisionStep {
                             kind: "documentSubstFont".into(),
                             input: Some(source.into()),
@@ -789,17 +997,39 @@ impl DocumentCore {
                             })?,
                         )?);
                     }
-                    provenance.push(metric_entry_provenance(&metric)?);
+                    provenance.push(metric_entry_provenance(
+                        &metric,
+                        width.measurement_character.unwrap_or(ch),
+                    )?);
                 }
                 let requested_face = width
                     .metric
                     .map(|metric| metric.requested_name.to_string())
                     .or_else(|| {
-                        run.style
-                            .font_family
-                            .split(',')
-                            .next()
-                            .map(|face| face.trim().to_string())
+                        // 원본 부분 메트릭을 소비한 글리프는 표시 폴백으로 기록하지 않는다.
+                        let family = if width.width_source == "measuredOriginalGlyph" {
+                            let latin = ch
+                                .is_ascii_punctuation()
+                                .then_some(run.style.ascii_punct_latin.as_deref())
+                                .flatten();
+                            latin
+                                .and_then(|slot| {
+                                    slot.original_glyph_metric_family
+                                        .as_deref()
+                                        .map(String::as_str)
+                                        .or(slot.metric_font_family.as_deref())
+                                })
+                                .or(run
+                                    .style
+                                    .original_glyph_metric_family
+                                    .as_deref()
+                                    .map(String::as_str))
+                                .or(run.style.metric_font_family.as_deref())
+                                .unwrap_or(&run.style.font_family)
+                        } else {
+                            &run.style.font_family
+                        };
+                        family.split(',').next().map(|face| face.trim().to_string())
                     });
                 let layout_metric = LayoutMetricDecision {
                     requested_face: requested_face.clone(),
@@ -814,11 +1044,12 @@ impl DocumentCore {
                     metric_entry: width.metric.map(|metric| metric.entry_index),
                     character_match: width.character_match.into(),
                     width_source: width.width_source.into(),
+                    measurement_character: width.measurement_character.map(|ch| ch.to_string()),
                     base_advance_hwpunit: Some(px_to_hwpunit(width.base_width_px, self.dpi)),
                     transforms: transform_steps(run, ch, width),
                     final_advance_hwpunit: Some(px_to_hwpunit(width.final_width_px, self.dpi)),
                 };
-                let source_offset = run.char_start.map(|start| start + run_offset);
+                let source_offset = source_character.map(|(offset, _)| offset);
                 let requested_document_face = font_decision
                     .as_ref()
                     .and_then(|font| font.requested_face.clone());
@@ -848,7 +1079,7 @@ impl DocumentCore {
                         embedded: font_decision.as_ref().and_then(|font| font.embedded),
                         subst_font: font_decision
                             .as_ref()
-                            .and_then(|font| font.subst_font.clone()),
+                            .and_then(|font| font.requested_subst_font.clone()),
                     },
                     layout_name: LayoutNameDecision {
                         requested_face: requested_document_face,
@@ -864,13 +1095,25 @@ impl DocumentCore {
                     paint: PaintDecision::stage3(
                         Some(run.style.font_family.clone()),
                         native_observer.map(|observe| {
-                            observe(&run.style.font_family, ch, run.style.bold, run.style.italic)
+                            observe(
+                                &crate::renderer::native_font_family_for_style(&run.style),
+                                ch,
+                                run.style.bold,
+                                run.style.italic,
+                            )
                         }),
                         native_unavailable_reason,
                     ),
                     layout_metric,
                     provenance,
-                    oracle: OracleDecision::not_provided(),
+                    oracle: self.font_environment.as_ref().map_or_else(
+                        OracleDecision::not_provided,
+                        |env| OracleDecision {
+                            status: "declared".into(),
+                            profile_id: Some(env.id().into()),
+                            known_limitations: vec!["Caller-declared environment; backend font availability and PDF equivalence are not verified.".into()],
+                        },
+                    ),
                 });
             }
         }

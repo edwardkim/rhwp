@@ -1,0 +1,1661 @@
+{
+  "pr8055-split-successor": {
+    "input": "pr8055-split-successor.hwpx",
+    "format": "hwpx",
+    "input_sha256": "3ff76f31741b7cf06d21a0784d52e57bf6a03aa52e1250af0fbc6383fc14ef82",
+    "pdf_sha256": "01a4fcbecc36c8c98ce3e8cc9e85ff0f550c737d1e89736d99e57da0498d4f11",
+    "policy": "None",
+    "mode": "unrestricted",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "",
+        "spans": [],
+        "table": true,
+        "grid_rows": 58,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 1126.288,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              152.49095662434897,
+              171.82843017578125,
+              165.75645955403647
+            ]
+          }
+        ],
+        "table": false,
+        "grid_rows": 0,
+        "first_grid_y": null,
+        "last_grid_y": null,
+        "grid_left": null,
+        "grid_right": null
+      }
+    ]
+  },
+  "unsplit-rows-2-body-true-flow-false-hwp": {
+    "input": "unsplit-rows-2-body-true-flow-false.hwp",
+    "format": "hwp",
+    "input_sha256": "c96ec32b71a8d5bf0b249d1131c0d539c9fc994fd1283de86b8bf2a1299dee66",
+    "pdf_sha256": "292f03828fbce39c8d17c5bed6049f46d16e9fdff974758f91a4f8a5b7489e73",
+    "policy": "None",
+    "mode": "unrestricted",
+    "source_rows": 2,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞다음 문단",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          },
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              195.48394775390625,
+              171.82843017578125,
+              208.74945068359375
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 2,
+        "first_grid_y": 157.26799,
+        "last_grid_y": 191.4707,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "unsplit-rows-2-body-true-flow-false-hwpx": {
+    "input": "unsplit-rows-2-body-true-flow-false.hwpx",
+    "format": "hwpx",
+    "input_sha256": "de4b2c644110fb10ad45abc76a4e9e78b5bab2f25db89f506334c2a6bb2abb6b",
+    "pdf_sha256": "ff468af32568ca4f15ac8ce21f47e18796cea43b8906c8cbcaef3ab34fa75a20",
+    "policy": "None",
+    "mode": "unrestricted",
+    "source_rows": 2,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞다음 문단",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          },
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              195.48394775390625,
+              171.82843017578125,
+              208.74945068359375
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 2,
+        "first_grid_y": 157.26799,
+        "last_grid_y": 191.4707,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "unsplit-rows-60-body-false-flow-false-hwp": {
+    "input": "unsplit-rows-60-body-false-flow-false.hwp",
+    "format": "hwp",
+    "input_sha256": "04aa864cbcf7adadb0f03194d256c671be82a8e813679c9e201a69ddaf96dcdc",
+    "pdf_sha256": "2bcdbf148b789dde22eb380b5b4d75903792d7095a6163794f2c8e57cdfd819f",
+    "policy": "None",
+    "mode": "unrestricted",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "",
+        "spans": [],
+        "table": true,
+        "grid_rows": 58,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 1126.288,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              152.49095662434897,
+              171.82843017578125,
+              165.75645955403647
+            ]
+          }
+        ],
+        "table": false,
+        "grid_rows": 0,
+        "first_grid_y": null,
+        "last_grid_y": null,
+        "grid_left": null,
+        "grid_right": null
+      }
+    ]
+  },
+  "unsplit-rows-60-body-false-flow-false-hwpx": {
+    "input": "unsplit-rows-60-body-false-flow-false.hwpx",
+    "format": "hwpx",
+    "input_sha256": "6385173536ee9a3d9216475dc06d8e2b940aa71b9e22cc3b907bb018d413da50",
+    "pdf_sha256": "7aad8a7b6fdc46befcd6a3efc1ee086b1c26cf428c3896a51f03784a8301fbad",
+    "policy": "None",
+    "mode": "unrestricted",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "",
+        "spans": [],
+        "table": true,
+        "grid_rows": 58,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 1126.288,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              152.49095662434897,
+              171.82843017578125,
+              165.75645955403647
+            ]
+          }
+        ],
+        "table": false,
+        "grid_rows": 0,
+        "first_grid_y": null,
+        "last_grid_y": null,
+        "grid_left": null,
+        "grid_right": null
+      }
+    ]
+  },
+  "unsplit-rows-60-body-true-flow-false-hwp": {
+    "input": "unsplit-rows-60-body-true-flow-false.hwp",
+    "format": "hwp",
+    "input_sha256": "a1c2dae66795e7bd207b8817833cc93d15a11df36e2e00258fd05d71ab065934",
+    "pdf_sha256": "75b33803221b49c6c65e1e58f3b0883224c487cea98c2d0767c86e86b9bee7ae",
+    "policy": "None",
+    "mode": "unrestricted",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 57,
+        "first_grid_y": 157.26799,
+        "last_grid_y": 1130.44401,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              152.49095662434897,
+              171.82843017578125,
+              165.75645955403647
+            ]
+          }
+        ],
+        "table": false,
+        "grid_rows": 0,
+        "first_grid_y": null,
+        "last_grid_y": null,
+        "grid_left": null,
+        "grid_right": null
+      }
+    ]
+  },
+  "unsplit-rows-60-body-true-flow-false-hwpx": {
+    "input": "unsplit-rows-60-body-true-flow-false.hwpx",
+    "format": "hwpx",
+    "input_sha256": "5adf5ee423ae214dc0cdae9018b7a8f5c46541d4bef79a3b6f5868ea17fde60a",
+    "pdf_sha256": "6c29caf101bb742f01956baed6a88cbe45156783043a6e1d94b769d96fff19f0",
+    "policy": "None",
+    "mode": "unrestricted",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 57,
+        "first_grid_y": 157.26799,
+        "last_grid_y": 1130.44401,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              152.49095662434897,
+              171.82843017578125,
+              165.75645955403647
+            ]
+          }
+        ],
+        "table": false,
+        "grid_rows": 0,
+        "first_grid_y": null,
+        "last_grid_y": null,
+        "grid_left": null,
+        "grid_right": null
+      }
+    ]
+  },
+  "unsplit-rows-2-body-true-flow-true-hwp": {
+    "input": "unsplit-rows-2-body-true-flow-true.hwp",
+    "format": "hwp",
+    "input_sha256": "646500477abb2e47f76ddc3f70ae5262f17bc0e1b53bab73b08ab0dc477bb5a7",
+    "pdf_sha256": "b78c533914306b4239a01e3eaa2e79b2fe51b8db37adea48f327f9d95b1bbc1e",
+    "policy": "None",
+    "mode": "restricted",
+    "source_rows": 2,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞다음 문단",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          },
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              195.48394775390625,
+              171.82843017578125,
+              208.74945068359375
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 2,
+        "first_grid_y": 157.26799,
+        "last_grid_y": 191.4707,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "unsplit-rows-2-body-true-flow-true-hwpx": {
+    "input": "unsplit-rows-2-body-true-flow-true.hwpx",
+    "format": "hwpx",
+    "input_sha256": "72f69c0548407966396fbf6312b3e96848f5232bcc8a522120fe594a97ea0f2d",
+    "pdf_sha256": "0c4417bc0273294ed83282198427648740e12a5e9fae2fbfa9bd7221b1726cd7",
+    "policy": "None",
+    "mode": "restricted",
+    "source_rows": 2,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞다음 문단",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          },
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              195.48394775390625,
+              171.82843017578125,
+              208.74945068359375
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 2,
+        "first_grid_y": 157.26799,
+        "last_grid_y": 191.4707,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "unsplit-rows-60-body-false-flow-true-hwp": {
+    "input": "unsplit-rows-60-body-false-flow-true.hwp",
+    "format": "hwp",
+    "input_sha256": "237e8cf358b557573946fc0a5c3bf8d69c8f22fd4800063689647e24b55db386",
+    "pdf_sha256": "75f803801a08911edf23f2d28267e59e90ab62ce7dca75b70afcf1da3f550fe8",
+    "policy": "None",
+    "mode": "restricted",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              173.74772135416666,
+              171.82843017578125,
+              187.01322428385416
+            ]
+          }
+        ],
+        "table": false,
+        "grid_rows": 0,
+        "first_grid_y": null,
+        "last_grid_y": null,
+        "grid_left": null,
+        "grid_right": null
+      },
+      {
+        "page": 2,
+        "text": "",
+        "spans": [],
+        "table": true,
+        "grid_rows": 58,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 1126.288,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "unsplit-rows-60-body-false-flow-true-hwpx": {
+    "input": "unsplit-rows-60-body-false-flow-true.hwpx",
+    "format": "hwpx",
+    "input_sha256": "8b7d04d7d2e3089cf42854956826c5e684813e4ed8944ce22d2b5dee3021818f",
+    "pdf_sha256": "83325fd92299c1050647eddf6e7aa893bf507b7325c8ff42ae460f3ec847f854",
+    "policy": "None",
+    "mode": "restricted",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              173.74772135416666,
+              171.82843017578125,
+              187.01322428385416
+            ]
+          }
+        ],
+        "table": false,
+        "grid_rows": 0,
+        "first_grid_y": null,
+        "last_grid_y": null,
+        "grid_left": null,
+        "grid_right": null
+      },
+      {
+        "page": 2,
+        "text": "",
+        "spans": [],
+        "table": true,
+        "grid_rows": 58,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 1126.288,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "unsplit-rows-60-body-true-flow-true-hwp": {
+    "input": "unsplit-rows-60-body-true-flow-true.hwp",
+    "format": "hwp",
+    "input_sha256": "a863e332eb61c579ff718c4facc8e3f6ed81e6c7e848afd4f564c7e817fd78d0",
+    "pdf_sha256": "2c4fb7344da8aa163a11f9078d3cff0f3a66dc686699c4158886c0850eca8821",
+    "policy": "None",
+    "mode": "restricted",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞다음 문단",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          },
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              195.164306640625,
+              171.82843017578125,
+              208.4298095703125
+            ]
+          }
+        ],
+        "table": false,
+        "grid_rows": 0,
+        "first_grid_y": null,
+        "last_grid_y": null,
+        "grid_left": null,
+        "grid_right": null
+      },
+      {
+        "page": 2,
+        "text": "",
+        "spans": [],
+        "table": true,
+        "grid_rows": 58,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 1126.288,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "unsplit-rows-60-body-true-flow-true-hwpx": {
+    "input": "unsplit-rows-60-body-true-flow-true.hwpx",
+    "format": "hwpx",
+    "input_sha256": "1344468277b0aece56dcb8d14cc2e0a24f14c36b634f5437c31b9f1edff6dfa4",
+    "pdf_sha256": "d7c1337736e7f25eb00f108b4b9e5adf6800832b485a3e1689340a947825d091",
+    "policy": "None",
+    "mode": "restricted",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞다음 문단",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          },
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              195.164306640625,
+              171.82843017578125,
+              208.4298095703125
+            ]
+          }
+        ],
+        "table": false,
+        "grid_rows": 0,
+        "first_grid_y": null,
+        "last_grid_y": null,
+        "grid_left": null,
+        "grid_right": null
+      },
+      {
+        "page": 2,
+        "text": "",
+        "spans": [],
+        "table": true,
+        "grid_rows": 58,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 1126.288,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-2-policy-2-body-true-flow-false-hwp": {
+    "input": "split-rows-2-policy-2-body-true-flow-false.hwp",
+    "format": "hwp",
+    "input_sha256": "738938dfb8bf48d064c77ee80b27c896f5fed4fb36bbfc3b99e524aadaedb446",
+    "pdf_sha256": "1b64416748a74577e59b06c45fdf8617694827cd6545a731d5b5198ece031c8e",
+    "policy": "RowBreak",
+    "mode": "split",
+    "source_rows": 2,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞다음 문단",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          },
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              195.48394775390625,
+              171.82843017578125,
+              208.74945068359375
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 2,
+        "first_grid_y": 157.26799,
+        "last_grid_y": 191.4707,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-2-policy-2-body-true-flow-false-hwpx": {
+    "input": "split-rows-2-policy-2-body-true-flow-false.hwpx",
+    "format": "hwpx",
+    "input_sha256": "df0761e19a28e2fb6a24a43729aad50c2125b4b4e3eb90294c12d04f2addd93e",
+    "pdf_sha256": "9225f5b261afc98c5b62f48cbf2f333b070db87cead92930f5311ad3e4de71c6",
+    "policy": "RowBreak",
+    "mode": "split",
+    "source_rows": 2,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞다음 문단",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          },
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              195.48394775390625,
+              171.82843017578125,
+              208.74945068359375
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 2,
+        "first_grid_y": 157.26799,
+        "last_grid_y": 191.4707,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-2-policy-2-body-true-flow-true-hwp": {
+    "input": "split-rows-2-policy-2-body-true-flow-true.hwp",
+    "format": "hwp",
+    "input_sha256": "78245b088a8079d95091c5493b9770c2f2f5907095bfdf2ef5e0266db8a8d647",
+    "pdf_sha256": "e5d0239462b34fdce20cafac5616da8bbfde6129dc8fbec7441a843b967d9f43",
+    "policy": "RowBreak",
+    "mode": "split",
+    "source_rows": 2,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞다음 문단",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          },
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              195.48394775390625,
+              171.82843017578125,
+              208.74945068359375
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 2,
+        "first_grid_y": 157.26799,
+        "last_grid_y": 191.4707,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-2-policy-2-body-true-flow-true-hwpx": {
+    "input": "split-rows-2-policy-2-body-true-flow-true.hwpx",
+    "format": "hwpx",
+    "input_sha256": "8a7b283ed2e84fce140ba3a236763f72467c869d64a39725d93cc926cf86ea85",
+    "pdf_sha256": "1572fa21545218fae29b115971f96987514d3954dd515fb6b8d8209df823fb76",
+    "policy": "RowBreak",
+    "mode": "split",
+    "source_rows": 2,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞다음 문단",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          },
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              195.48394775390625,
+              171.82843017578125,
+              208.74945068359375
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 2,
+        "first_grid_y": 157.26799,
+        "last_grid_y": 191.4707,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-60-policy-1-body-false-flow-false-hwp": {
+    "input": "split-rows-60-policy-1-body-false-flow-false.hwp",
+    "format": "hwp",
+    "input_sha256": "1970e825317a42533ba8c6d4ed56adbb7060d408f5f483b33871095f5ea78c7b",
+    "pdf_sha256": "f7411d9f84b590e9f4ef11dce37437062ee0100521f36828072848b298cef67a",
+    "policy": "CellBreak",
+    "mode": "split",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "",
+        "spans": [],
+        "table": true,
+        "grid_rows": 50,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 989.63737,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              310.718017578125,
+              171.82843017578125,
+              323.9835205078125
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 10,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 306.70402,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-60-policy-1-body-false-flow-false-hwpx": {
+    "input": "split-rows-60-policy-1-body-false-flow-false.hwpx",
+    "format": "hwpx",
+    "input_sha256": "59b53a4206de44fceb9ca261a4b9863141d273681f32bdaf35a539e054b251d2",
+    "pdf_sha256": "2084407f9a16e2df2b45676f1a27a065822953a8cabeec21ed278e03a48a738f",
+    "policy": "CellBreak",
+    "mode": "split",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "",
+        "spans": [],
+        "table": true,
+        "grid_rows": 50,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 989.63737,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              310.718017578125,
+              171.82843017578125,
+              323.9835205078125
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 10,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 306.70402,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-60-policy-1-body-false-flow-true-hwp": {
+    "input": "split-rows-60-policy-1-body-false-flow-true.hwp",
+    "format": "hwp",
+    "input_sha256": "003c4e66ec315a3c55e54b5c6071ea1bb6ea68109755211ea00cedafa21f82c5",
+    "pdf_sha256": "b955540eeafbd8d42b26c4b4394f894d26759c946200bd635c96fcf5ef820b98",
+    "policy": "CellBreak",
+    "mode": "split",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "",
+        "spans": [],
+        "table": true,
+        "grid_rows": 50,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 989.63737,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              310.718017578125,
+              171.82843017578125,
+              323.9835205078125
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 10,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 306.70402,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-60-policy-1-body-false-flow-true-hwpx": {
+    "input": "split-rows-60-policy-1-body-false-flow-true.hwpx",
+    "format": "hwpx",
+    "input_sha256": "98fa77f2ca070dfbcb65e78495793944b5d8cbdd9ced01085ee19e5adec9810a",
+    "pdf_sha256": "2f9f77ef788462238ad6c722f9bd893d2a8e1dc7c5b50e75d267df5a0e4d0555",
+    "policy": "CellBreak",
+    "mode": "split",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "",
+        "spans": [],
+        "table": true,
+        "grid_rows": 50,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 989.63737,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              310.718017578125,
+              171.82843017578125,
+              323.9835205078125
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 10,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 306.70402,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-60-policy-1-body-true-flow-false-hwp": {
+    "input": "split-rows-60-policy-1-body-true-flow-false.hwp",
+    "format": "hwp",
+    "input_sha256": "644901bd995acd625330d877a17d5bd5dd1eb0e5af9ee78435c7420651cd0ad6",
+    "pdf_sha256": "fcd6f34db16245e51a5a1c73a43a2c73e54aaf67fde4a43099b3974235d772d7",
+    "policy": "CellBreak",
+    "mode": "split",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 49,
+        "first_grid_y": 157.26799,
+        "last_grid_y": 993.95199,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              327.8193359375,
+              171.82843017578125,
+              341.0848388671875
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 11,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 323.80534,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-60-policy-1-body-true-flow-false-hwpx": {
+    "input": "split-rows-60-policy-1-body-true-flow-false.hwpx",
+    "format": "hwpx",
+    "input_sha256": "564ca5b608a4aac4abf57150d923046805b0c464a9328e42bea36b71b1f96278",
+    "pdf_sha256": "307cbfc81c1a36006c77ddd7ace4761749f52324b7cc3d1f5115d96682d4b28a",
+    "policy": "CellBreak",
+    "mode": "split",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 49,
+        "first_grid_y": 157.26799,
+        "last_grid_y": 993.95199,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              327.8193359375,
+              171.82843017578125,
+              341.0848388671875
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 11,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 323.80534,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-60-policy-1-body-true-flow-true-hwp": {
+    "input": "split-rows-60-policy-1-body-true-flow-true.hwp",
+    "format": "hwp",
+    "input_sha256": "5ed501d4d351a87cfdb8f746ba8ccc91478cf546b3163249c302f2cdd1e0f33d",
+    "pdf_sha256": "fa4c01aa76310792997b974f8fc4f0f1c478280607e00fb1e6d9fcf873e7de47",
+    "policy": "CellBreak",
+    "mode": "split",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 49,
+        "first_grid_y": 157.26799,
+        "last_grid_y": 993.95199,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              327.8193359375,
+              171.82843017578125,
+              341.0848388671875
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 11,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 323.80534,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-60-policy-1-body-true-flow-true-hwpx": {
+    "input": "split-rows-60-policy-1-body-true-flow-true.hwpx",
+    "format": "hwpx",
+    "input_sha256": "ca311d1bfb16f5ed91926519dd0db7bb8426ea136dec180ac1f81784a03f3bcc",
+    "pdf_sha256": "ec9eb3a3e00a281d5fb5d4d82c18e7e60e37fb55d496ee2ed19745d04d329e7f",
+    "policy": "CellBreak",
+    "mode": "split",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 49,
+        "first_grid_y": 157.26799,
+        "last_grid_y": 993.95199,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              327.8193359375,
+              171.82843017578125,
+              341.0848388671875
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 11,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 323.80534,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-60-policy-2-body-false-flow-false-hwp": {
+    "input": "split-rows-60-policy-2-body-false-flow-false.hwp",
+    "format": "hwp",
+    "input_sha256": "576eb4f967a3a235e3c2cf03e61c35806ca7e6e67504badc8bf2c91adf58bf14",
+    "pdf_sha256": "f81833f4d3892fd1cabc5f581c8f5a752be31e18492dea121e0293b96c321c91",
+    "policy": "RowBreak",
+    "mode": "split",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "",
+        "spans": [],
+        "table": true,
+        "grid_rows": 50,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 989.63737,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              310.718017578125,
+              171.82843017578125,
+              323.9835205078125
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 10,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 306.70402,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-60-policy-2-body-false-flow-false-hwpx": {
+    "input": "split-rows-60-policy-2-body-false-flow-false.hwpx",
+    "format": "hwpx",
+    "input_sha256": "851996a76cbf4d13482923d7e74dca6684d3c746a93c1ab2862ae5bc7b6b188f",
+    "pdf_sha256": "f56b6c350310eca354f6e11908fa78b10b1ad6a4569e42d01ec66939e9574d11",
+    "policy": "RowBreak",
+    "mode": "split",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "",
+        "spans": [],
+        "table": true,
+        "grid_rows": 50,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 989.63737,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              310.718017578125,
+              171.82843017578125,
+              323.9835205078125
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 10,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 306.70402,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-60-policy-2-body-false-flow-true-hwp": {
+    "input": "split-rows-60-policy-2-body-false-flow-true.hwp",
+    "format": "hwp",
+    "input_sha256": "ee0df89dab1d9cfc79c452121a9175d56f1884d7d67d5729f7e7d7b667205cb6",
+    "pdf_sha256": "65e2ee9627827a3fd67031039ae7ed10ff41d6d1efe0e700c323ffa13d65eea5",
+    "policy": "RowBreak",
+    "mode": "split",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "",
+        "spans": [],
+        "table": true,
+        "grid_rows": 50,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 989.63737,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              310.718017578125,
+              171.82843017578125,
+              323.9835205078125
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 10,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 306.70402,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-60-policy-2-body-false-flow-true-hwpx": {
+    "input": "split-rows-60-policy-2-body-false-flow-true.hwpx",
+    "format": "hwpx",
+    "input_sha256": "db238bc983393a7ceb2f9e6982f22b9361b11ed2b38b75e4b4ad8418542a9081",
+    "pdf_sha256": "d6ec5f4900c5be2b8f125dd5fba70b54431384e6bd30a6a7dc601f0007a412d5",
+    "policy": "RowBreak",
+    "mode": "split",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "",
+        "spans": [],
+        "table": true,
+        "grid_rows": 50,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 989.63737,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              310.718017578125,
+              171.82843017578125,
+              323.9835205078125
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 10,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 306.70402,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-60-policy-2-body-true-flow-false-hwp": {
+    "input": "split-rows-60-policy-2-body-true-flow-false.hwp",
+    "format": "hwp",
+    "input_sha256": "57fd431b2591da337b995cb997c57202e0bf6b3e5dab892430aac7bcf9c83f18",
+    "pdf_sha256": "929682328faf83e6efc6d70d8717628e0ef6585d10eae4a2ae5dae0c85039bae",
+    "policy": "RowBreak",
+    "mode": "split",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 49,
+        "first_grid_y": 157.26799,
+        "last_grid_y": 993.95199,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              327.8193359375,
+              171.82843017578125,
+              341.0848388671875
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 11,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 323.80534,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-60-policy-2-body-true-flow-false-hwpx": {
+    "input": "split-rows-60-policy-2-body-true-flow-false.hwpx",
+    "format": "hwpx",
+    "input_sha256": "f5c371cadbf838bf772370c1420e1cd2ade3eaad293af609dfbc9bc0406a7e69",
+    "pdf_sha256": "0eb48a66297a609c8a077db4d4e855c88a9dc5ea3ecc168ae4f91538be205e4b",
+    "policy": "RowBreak",
+    "mode": "split",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 49,
+        "first_grid_y": 157.26799,
+        "last_grid_y": 993.95199,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              327.8193359375,
+              171.82843017578125,
+              341.0848388671875
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 11,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 323.80534,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-60-policy-2-body-true-flow-true-hwp": {
+    "input": "split-rows-60-policy-2-body-true-flow-true.hwp",
+    "format": "hwp",
+    "input_sha256": "f567e9f7d0e2a752b235550666a11ecf5b324d9c136bf0c1eda5687fb786e4ea",
+    "pdf_sha256": "6618cd63be3ba20c0d19b0a4ed3fcbda82bbd442015537f5b288dfbe79c213c4",
+    "policy": "RowBreak",
+    "mode": "split",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 49,
+        "first_grid_y": 157.26799,
+        "last_grid_y": 993.95199,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              327.8193359375,
+              171.82843017578125,
+              341.0848388671875
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 11,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 323.80534,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "split-rows-60-policy-2-body-true-flow-true-hwpx": {
+    "input": "split-rows-60-policy-2-body-true-flow-true.hwpx",
+    "format": "hwpx",
+    "input_sha256": "d167a39e3242e6c90f7d3753f94efc3c8ea0502d8ca2be1c66e0eaa87471eaee",
+    "pdf_sha256": "557f628ba1107d6a7b485db2c9c47a2282fb23c4f110d12fa2b384b57c1b5e49",
+    "policy": "RowBreak",
+    "mode": "split",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 49,
+        "first_grid_y": 157.26799,
+        "last_grid_y": 993.95199,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              327.8193359375,
+              171.82843017578125,
+              341.0848388671875
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 11,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 323.80534,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "hancom-saved-public-rowbreak-normalized-2020": {
+    "input": "public-rowbreak-normalized-2020.hwp",
+    "format": "hwp",
+    "input_sha256": "5c6e9dcc37c42de5f2d4c9972eb339e476672ac60da02135e7ec2e483d5ed34d",
+    "pdf_sha256": "93cc27c42b7db35f13e8925c651c883e90b390e68bbf068ad4865e2437bec22f",
+    "policy": "RowBreak",
+    "mode": "split",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "",
+        "spans": [],
+        "table": true,
+        "grid_rows": 50,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 989.63737,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      },
+      {
+        "page": 2,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              310.718017578125,
+              171.82843017578125,
+              323.9835205078125
+            ]
+          }
+        ],
+        "table": true,
+        "grid_rows": 10,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 306.70402,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "hancom-unsplit-saved-body-false": {
+    "input": "unsplit-saved-body-false.hwp",
+    "format": "hwp",
+    "input_sha256": "706d2e7c891eb018ce2ab78f43f9bd86dee58cbedf71b56530fc651b00768a9e",
+    "pdf_sha256": "5b623751a84426780f3366f0758e685306f8fe335db1df47c15a245a0e19d71f",
+    "policy": "None",
+    "mode": "restricted",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "다음 문단",
+        "spans": [
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              173.74772135416666,
+              171.82843017578125,
+              187.01322428385416
+            ]
+          }
+        ],
+        "table": false,
+        "grid_rows": 0,
+        "first_grid_y": null,
+        "last_grid_y": null,
+        "grid_left": null,
+        "grid_right": null
+      },
+      {
+        "page": 2,
+        "text": "",
+        "spans": [],
+        "table": true,
+        "grid_rows": 58,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 1126.288,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  },
+  "hancom-unsplit-saved-body-true": {
+    "input": "unsplit-saved-body-true.hwp",
+    "format": "hwp",
+    "input_sha256": "9a98e160a2b7435accb739f5e2e269a005166d57b31e41d608ba55a115eeeea0",
+    "pdf_sha256": "0d70289f22fc962e1c07da4ea65ab98cf884d2cbbd5cd38bf98fd94e8d6fd767",
+    "policy": "None",
+    "mode": "restricted",
+    "source_rows": 60,
+    "pages": [
+      {
+        "page": 1,
+        "text": "앞다음 문단",
+        "spans": [
+          {
+            "text": "앞",
+            "bbox": [
+              113.37855021158855,
+              132.51278686523438,
+              126.253173828125,
+              145.77828979492188
+            ]
+          },
+          {
+            "text": "다음 문단",
+            "bbox": [
+              113.37855021158855,
+              195.164306640625,
+              171.82843017578125,
+              208.4298095703125
+            ]
+          }
+        ],
+        "table": false,
+        "grid_rows": 0,
+        "first_grid_y": null,
+        "last_grid_y": null,
+        "grid_left": null,
+        "grid_right": null
+      },
+      {
+        "page": 2,
+        "text": "",
+        "spans": [],
+        "table": true,
+        "grid_rows": 58,
+        "first_grid_y": 136.01066,
+        "last_grid_y": 1126.288,
+        "grid_left": 117.05733235677083,
+        "grid_right": 676.5959879557291
+      }
+    ]
+  }
+}

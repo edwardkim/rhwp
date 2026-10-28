@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/agent_knowledge_map.md
-last_verified: 2026-08-23
+last_verified: 2026-10-23
 ---
 
 # 에이전트 지식 지도 — rhwp 참조 문서의 단일 진입점
@@ -13,6 +13,11 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 **단일 출처 원칙**: 이 지도는 요약과 앵커만 담는다. 상세 서술·수치·절차의 권위는
 각 canonical 문서([CLI 명령어 매뉴얼](cli_commands.md) 등)에 있으며, 이 지도와
 다르면 그쪽을 따른다. 새 표면이 머지되면 해당 행만 추가한다(기존 행 재서술 금지).
+
+**PR 시각 무회귀를 검토할 때**: 최신 SHA의 upstream/devel과 후보 head의 전쪽
+Native/fresh WASM TSV를 같은 조건·페이지로 비교한다. **2%p 초과 하락한 쪽이 있으면
+90% 이상이어도 PR 재검토**다. 평균·CI 통과로 대체하지 않는다.
+[권위 절차](verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)와 [PR workflow](pr_review_workflow.md)를 먼저 읽는다.
 
 ## 0. 이 지도의 실측 기준
 
@@ -87,7 +92,8 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | 하려는 일 | 명령 (MCP 도구) | 판정 필드 | 권위 |
 |---|---|---|---|
 | 쪽을 SVG 로 | `export-svg --json` (`hwp_export_svg`) | `pages[].path`·`renderedCount` | [CLI 매뉴얼](cli_commands.md) §1 |
-| 쪽을 PNG 로 (VLM 입력) | `export-png --vlm-target claude` | 파일 산출 (`--json` 없음) | [export-png 매뉴얼](export_png_command.md) |
+| 쪽을 PNG 로 (VLM 입력) | `export-png --json --vlm-target claude` (`hwp_export_png`) | `pages[].path`·`renderedCount` | [export-png 매뉴얼](export_png_command.md) |
+| 터미널에 PNG 표시 | `export-kitty --page 0 --width 360` (Native CLI 전용) | 그래픽 stdout·진단 stderr·종료 코드, JSON 미지원 | [Kitty 출력 가이드](export_kitty_command.md) |
 | 제출용 PDF | `export-pdf --json` (`hwp_export_pdf`) | `output`·`bytes`·`backend` | [CLI 매뉴얼](cli_commands.md) §export-pdf |
 | 바뀐 쪽만 렌더 | 편집 봉투 `changedPages` → `export-svg -p N` | `changedPages[]` | [표면 플레이북 §9](agent_surface_playbook.md) |
 | 세션 안에서 렌더 | `hwp_doc_render_page` (서버 전용) | `bytes`·`output` | [MCP 가이드](mcp_integration_guide.md) |
@@ -148,7 +154,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 
 | 하려는 일 | 명령 (MCP 도구) | 판정 필드 | 권위 |
 |---|---|---|---|
-| 두 문서 IR 차이 | `ir-diff --json` (`hwp_ir_diff`) | `identical`·`diffCount`·`categories` | [ir-diff 매뉴얼](ir_diff_command.md) |
+| 두 문서 IR 차이 | `ir-diff --json` (`hwp_ir_diff`) | `identical`·`diffCount`·`categories`·`pageCountA`·`pageCountB` | [ir-diff 매뉴얼](ir_diff_command.md) |
 | 라운드트립 시각 회귀 | `render-diff --json` (`hwp_render_diff`) | `status`·`maxDisp`·`regression` | [CLI 매뉴얼](cli_commands.md) §render-diff |
 | 조판 결과 덤프 | `dump-pages --json` | `pages[].columns[].items[]` | [dump 매뉴얼](dump_command.md) |
 | IR 모양 코드 생성 | `export-ir-schema --json` | `schema`·`definitionCount` | [CLI 매뉴얼](cli_commands.md) |
@@ -230,6 +236,21 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | [9 — 폴더 문서 대량 추출·변환](recipes/09_bulk_extract_convert.md) | 폴더 단위 메타·본문·표 데이터 추출과 일괄 변환 | `batch info`·`batch export-text`·`batch extract-data`·`batch convert` |
 | [10 — 배포 전 보안 점검 스윕](recipes/10_security_sweep_before_share.md) | 송신 전 은닉·주입·유니코드 기만·개인정보 재검사 | `inspect hidden-text`·`inspect injection`·`inspect unicode`·`edit redact`·`edit sanitize` |
 
+### 1-3-2. Gym 과제를 풀거나 벤치마크를 감사하려는가
+
+먼저 참가자와 메인테이너 감사 역할을 분리한다. 참가자는 기준풀이 `reference/`를 읽지
+않고 task를 스스로 수행한다. 메인테이너 감사는 exact source·runner·binary 신원을 고정한
+뒤 양성 기준풀이, 음성 판별력, 경로 필요성을 각각 판정한다.
+
+| 역할 | 첫 문서 | 운영 정본 |
+| --- | --- | --- |
+| Gym 참가자 | [Gym 참가자 안내](../../gym/README.md) | [Gym 범위 AI 에이전트 지침](../../gym/AGENTS.md)의 참가자 모드 |
+| 인간 개발자·메인테이너 | [Gym 벤치마크 수동 운영 매뉴얼](gym_benchmark_operations.md) | 개별 [`gym/docs/`](../../gym/docs/) 도구 규약 |
+| AI 메인테이너·감사자 | [Gym 범위 AI 에이전트 지침](../../gym/AGENTS.md) | [Gym 벤치마크 수동 운영 매뉴얼](gym_benchmark_operations.md) |
+
+Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등성이나 제품 릴리스 적합성을
+판정하지 않는다.
+
 ### 1-4. 다른 언어에서 쓰려는가 — 기계 스키마 사용
 
 공식 Python·Node 바인딩과 해당 패키지 배포는 v0.8.4에서 철회됐다
@@ -298,14 +319,15 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `export-ir-schema --json` | 아니오 |
 | `export-capabilities-schema --json` | 아니오 |
 
-같은 명령이라도 모드에 따라 다르다: `run` 은 **실행 모드에서는** `untrustedContent`
-를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
-`untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
+같은 명령이라도 모드에 따라 다르다. 현재 `run`은 실행·dry-run 모두 출처 표지를 싣는다.
+이전 버전의 dry-run에는 표지가 없었으므로 키 부재를 false로 해석하지 않는다.
+`edit set-cell` 은 `oldText` 때문에 `untrustedContent:true`,
+`edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 334개 필드
+### 2-2. 전수 사전 — 342개 필드
 
-`capabilities` 의 `recordFields` 고유 **325개**와 그 밖의 실측·참조 필드를 합친
-334개다. `등장 명령` 은 자기서술
+`capabilities` 의 `recordFields` 고유 **334개**와 그 밖의 실측·참조 필드를 합친
+342개다. `등장 명령` 은 자기서술
 기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
@@ -455,7 +477,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `charts` | array | 차트 목록. `charts` 명령은 `{index,section,paragraph,control}`(`--chart N`=`index+1`). `chart-to-csv` 는 `{chart,rowCount,colCount,csv,output?}` — `csv` 는 **문서 파생** | `charts`·`chart-to-csv` |
 | `chart` | number | 대상 차트 번호. **문서 순서 1부터**(표의 `table` 은 0부터 — 다른 규약이다) | `chart-to-csv`·`csv-to-chart` |
 | `wrote` | array | **어느 표현에 실제로 썼나** — `["zipPart","nestedCopy"]`(HWPX) / `["nestedCopy"]`(HWP5) / `[]`(거부·dry-run·무변경). 값이 OOXML 두 곳에 중복 저장돼 있어 한쪽만 쓰면 HWP 변환에서 편집이 사라진다 | `csv-to-chart`·`edit set-chart-data` |
-| `changed[].op` | string | [#5652] 구조 편집 항목 — `appendPoints`/`truncatePoints`(`series`,`block`,`before`,`after` = 점 개수) · `renameSeries`(`series`,`from`,`to`) · `relabel`(`series`,`point`,`from`,`to`) · `appendSeries`(`series`,`name`) · `truncateSeries`(`before`,`after` = 계열 수). `from`/`to` 는 문서 파생(변경 전 이름·라벨), `before`/`after` 는 엔진 개수다. `--structure`/`structure:true` 에서만 나온다 | `csv-to-chart`·`edit set-chart-data` |
+| `changed[].op` | string | [#5652] 구조 편집 항목 — `appendPoints`/`truncatePoints`(`series`,`block`,`before`,`after` = 점 개수) · `renameSeries`(`series`,`from`,`to`) · `relabel`(`series`,`point`,`from`,`to`) · `appendSeries`(`series`,`name`) · `truncateSeries`(`before`,`after` = 계열 수) · [#6053] `insertSeries`(`at`,`name` — 정체 경로 비꼬리 삽입, `at` 은 최종 문서 자리, 새 계열은 기본 스타일) · `removeSeries`(`at`,`name` — 정체 경로 비꼬리 삭제, `at` 은 원본 자리, `name` 은 문서 파생). `from`/`to` 는 문서 파생(변경 전 이름·라벨), `before`/`after` 는 엔진 개수다. `--structure`/`structure:true` 에서만 나온다 | `csv-to-chart`·`edit set-chart-data` |
 
 `rowCount`/`colCount`/`changed`/`changedCount`/`invalid` 는 표 소절과 같은 뜻이되 좌표가
 다르다 — 차트의 `changed[]` 는 `{series,point|x,from,to}` 또는 구조 항목 `{op,…}` 다.
@@ -490,6 +512,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `output` | string | **실제로 저장된 경로. 저장했을 때만 실린다** — dry-run·치환 0건이면 키 자체가 없다 | 산출 계열 13종 |
 | `outputFormat` | string | 산출 형식(`hwp5`·`hwpx`·`csv`) — 입력 형식 보존 규약의 결과 | `run`·`table-to-csv`·`csv-to-table`·`edit` |
 | `bytes` | number | 산출물 크기 | `export-pdf`·`export-hwpx`·`export-hml`·`export-doclang`·`convert`·`build-from-ingest`·`thumbnail` |
+| `diagnostics` | object | PDF 가져오기 진단. 원본 쪽·좌표 대응(`pages`)은 문서 파생 값이며 경고·처리 정책과 구분한다. `parserAllocationBoundsProven:false`는 전체 할당 경계 미입증을 뜻한다 | `import-pdf` |
 | `changedPages` | number[]\|null | **재조판 후 0 기준으로 바뀐 쪽.** `null` = 확정 불가(전체를 봐야 한다). dry-run 은 항상 `null` | `edit` 3종·`csv-to-table`·`run` |
 | `verify` | object\|null | `{identical,diffCount}` 자기검증 결과. `--verify` 를 주지 않으면 **`null`** (실측) | `run`·`export-hwpx`·`csv-to-table`·`convert`·`edit` |
 | `verifyPages` | object\|null | 쪽 수 대조 결과. `--verify-pages` 없으면 `null` | `export-hwpx`·`convert` |
@@ -518,6 +541,9 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 |---|---|---|---|
 | `planVersion` | string | 계획서 버전. `"1.0"` 이 아니면 실행 0 · exit 2 | `run` |
 | `steps` | array\|number | `run` 은 실행 저널(step 마다 `action` 과 판정 필드), `replay` 는 실행된 step 수 — **같은 이름, 다른 타입** | `run`·`replay` |
+| `steps[].operationResult` | object | 템플릿 채우기 3종 및 다른 문서 가져오기의 적용 결과·원형/복사본 경로 대응표. 문서 파생 데이터로 취급한다. | `run` |
+| `steps[].source` | object | 다른 문서 가져오기에 사용한 원본 `{path,sha256}`. SHA-256은 실제로 읽고 파싱한 원본 바이트의 지문이다. | `run` |
+| `steps[].workload` | object | records·targets·replacementTextBytes 입력 작업량. 실행 시간·메모리 실측값이 아니다. | `run` |
 | `invalid` | array | **정적 선검증 위반.** 비어 있지 않으면 한 step 도 실행하지 않는다 | `run` |
 | `preconditionFailed` | object\|null | **CAS 판정** (#4378 R22·R24) — `{kind:"inputSha256",expected,actual}`. 계획 수립 시점의 입력 지문과 실행 시점의 실제 지문이 다르다는 뜻이고, 실행 0 · 디스크 무변경 · **exit 3**. `invalid[]` 는 비어 있다 — 계획이 무효한 게 아니라 문서가 바뀐 것이다. `--dry-run` 도 같은 판정을 낸다. `null`/부재 = 대조하지 않았거나 일치 | `run`·`edit …  --expect-sha256` |
 | `nextCall` | object | **다음에 그대로 부를 호출** — `{name, arguments, why}`. `name` 은 실존 명령, `arguments` 는 그 뒤에 이어 붙일 argv 조각이다. CAS 거부에서는 기대 해시를 실제 해시로 갈아 끼운 계획을 `--dry-run` 으로 재선검증하는 호출이 온다(통과하면 `--dry-run` 만 빼고 재실행, `invalid` 가 나오면 문서를 다시 읽고 재계획). MCP 오류 봉투(R72)·CLI `수복:` 줄과 같은 어휘 | `run` |
@@ -686,7 +712,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
-| `identical` | bool | IR 이 같은가. **차이는 오류가 아니라 데이터(exit 3)** | `ir-diff`·`verify` 안 |
+| `identical` | bool | IR 필드와 `pageCount` 가 같은가. 쪽수가 달라도 false. **차이는 오류가 아니라 데이터(exit 3)** | `ir-diff`·`verify` 안 |
 | `diffCount` | number | 차이 개수 | `ir-diff`·`verify` 안 |
 | `categories` | object | 차이의 분류별 개수 — 키 이름 자체가 문서 파생일 수 있다 | `ir-diff` |
 | `status` | string | `render-diff` 판정(`OK`·`OVER` 등) | `render-diff` |
@@ -701,18 +727,20 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `worstPage` | number | 최대 변위가 난 쪽 | `render-diff` |
 | `overPages` | number | 임계를 넘은 쪽 수 | `render-diff` |
 | `structPages` / `hardStructPages` | number | 구조 불일치 쪽 수 / 그중 완화 규칙으로도 못 넘긴 쪽 수 | `render-diff` |
-| `pageCountA` / `pageCountB` | number | 양쪽 쪽 수 | `render-diff` |
+| `pageCountA` / `pageCountB` | number | 양쪽 쪽 수. `ir-diff` 는 `info --json` 과 같은 조판 쪽수 | `render-diff`·`ir-diff` |
 | `pageCountMismatch` | bool | 쪽 수가 다른가 | `render-diff` |
 | `pageFilter` | number\|null | `-p` 로 좁혔나. `null` = 전 쪽 | `render-diff`·`dump-pages`·`layout-anomaly` |
 | `strict` | bool | 확정 이상 신호를 종료 코드 3으로 취급할지. 빈 쪽 신호는 `true`여도 실패시키지 않는다 | `layout-anomaly` |
 | `overflowTolerancePx` | number | 본문 여백 밖 이탈을 overflow로 볼 최소 거리(px) | `layout-anomaly` |
 | `overlapTolerancePx` | number | 두 요소 겹침을 overlap으로 볼 최소 폭·높이(px) | `layout-anomaly` |
+| `storedLineTolerancePx` | number | stored-line-escape 에서 렌더 줄과 저장 줄을 같다고 볼 여유(px), 기본 0.5 | `layout-anomaly` |
 | `overflowCount` | number | 전 쪽에서 확정한 overflow 신호 수 | `layout-anomaly` |
 | `offCanvasCount` | number | 전 쪽에서 캔버스 완전히 밖으로 벗어난 노드 수 | `layout-anomaly` |
 | `overlapCount` | number | 전 쪽에서 확정한 overlap 신호 수 | `layout-anomaly` |
 | `textOverlapCount` | number | 전 쪽에서 확정한 text-overlap(텍스트 런 bbox 교차) 신호 수 | `layout-anomaly` |
+| `storedLineEscapeCount` | number | 전 쪽에서 확정한 stored-line-escape(저장 줄을 재현한 줄의 글자가 남의 저장 줄 baseline 에 앉음) 신호 수 | `layout-anomaly` |
 | `emptyPageCount` | number | 내용이 없는 중간 쪽 가능성 신호 수 | `layout-anomaly` |
-| `hasSignal` | bool | overflow·overlap·text-overlap 확정 신호가 하나 이상 있는가(`empty_page` 제외) | `layout-anomaly` |
+| `hasSignal` | bool | overflow·off-canvas·overlap·text-overlap·stored-line-escape 확정 신호가 하나 이상 있는가(`empty_page` 제외) | `layout-anomaly` |
 | `mode` | string | 단건 `"single"` / 배치 `"batch"` | `layout-anomaly` |
 | `types` | array\|null | `--types` 로 좁힌 노드 타입. `null` = 기본 검사 대상 전부 | `layout-anomaly` |
 
@@ -728,9 +756,11 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
-| `outputDir` | string | 여러 파일을 담은 폴더 | `export-svg`·`export-markdown` |
-| `renderedCount` | number | 실제로 렌더한 쪽 수(`-p` 로 좁히면 1) | `export-svg`·`export-pdf`·`export-markdown` |
-| `backend` | string | PDF 백엔드(`svg`·`direct`) | `export-pdf` |
+| `outputDir` | string | 여러 파일을 담은 폴더 | `export-svg`·`export-png`·`export-markdown` |
+| `renderedCount` | number | 실제로 렌더한 쪽 수. PNG의 반복 `-p`는 선택 쪽 수, `--metadata-only`는0 | `export-svg`·`export-png`·`export-pdf`·`export-markdown` |
+| `backend` | string | PDF 백엔드(`svg`·`direct`) 또는 PNG 백엔드(`native-skia`) | `export-pdf`·`export-png` |
+| `comparisonProfile` | string | 출력 프로필(`screen`·`print`). 기본 screen, PDF 시각 비교는 print | `export-png` |
+| `layoutGeneration` | string | 적용한 한컴 호환 조판 세대(`2022`·`2024`) | `export-png` |
 | `mime` | string | 썸네일 MIME. **`.png` 로 저장해도 원본이 GIF 면 `image/gif`** (실측) | `thumbnail` |
 | `doclangVersion` | string | DocLang 판본 | `export-doclang` |
 | `assetsDir` / `assetCount` | string / number | 이진 자원 폴더와 개수 | `export-doclang` |
@@ -949,6 +979,15 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 담는다(`fill_fields` 면 `filledCount`·`notFound`·`ambiguous`·`confusable`).
 `invalid[]` 는 `{step, action, reason}`, `preview[]` 는
 `{step, action, targets:[{name,occurrence,sameNameCount,value}]}` 다.
+
+템플릿 action의 `preview[]`에는 `operationResult`·`workload`가 실린다. 기존 action의
+`targets`와 혼동하지 않는다. dry-run은 실제 detached 준비까지 하되 IR·파일은 변경하지 않는다.
+
+`import_paragraph_block`은 `source:{path,sha256}`와 `request`를 받는 단독 step이다.
+`preview[]`/`steps[]`에 `source`(실제 읽은 바이트의 SHA-256)와 `operationResult`를 내며
+`workload`는 없다. 자원 집계는 `operationResult.result.resources`다. 원본 지문 불일치는
+`preconditionFailed.kind=sourceSha256`, exit 3이다. 원본/대상 경로·저장·반환 경로 레시피는
+[템플릿 자동화](template_automation.md)의 CLI/MCP 가져오기를 따른다.
 
 #### `export-structure` — `structure`
 
@@ -1213,7 +1252,7 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_apply_cell_style` | `edit apply-cell-style --json` | `path`,`table`,`row`,`col`,`style` |
 | `hwp_apply_para_format_in_cell` | `edit apply-para-format-in-cell --json` | `path`,`table`,`row`,`col`,`props` |
 | `hwp_delete_control` | `edit delete-control --json` | `path`,`section`,`paragraph`,`ctrl` |
-| `hwp_insert_table` | `edit insert-table --json` | `path`,`rows`,`cols` |
+| `hwp_insert_table` | `edit insert-table --json` | `path`,`rows`,`cols`; 선택 `atField`,`widths`,`alignments`,`repeatHeader` ([계약](cli_commands.md#edit-insert-table)) |
 | `hwp_insert_text_in_cell` | `edit insert-text-in-cell --json` | `path`,`table`,`row`,`col`,`text` |
 | `hwp_delete_table` | `edit delete-table --json` | `path`,`table` |
 | `hwp_insert_header_footer` | `edit insert-header-footer --json` | `path` |

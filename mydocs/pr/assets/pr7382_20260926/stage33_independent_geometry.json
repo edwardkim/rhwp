@@ -1,0 +1,173 @@
+{
+  "original": "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+  "original_sha256": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79",
+  "original_creator": "Hwp 2022 0.0.0.0",
+  "original_pdf_pages": 103,
+  "source_provenance": {
+    "original": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+    "original_sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+    "stream": "BodyText/Section4",
+    "records": [
+      {
+        "record_data_offset": 72018,
+        "vertical_offset": 780,
+        "width": 3634,
+        "height": 3806,
+        "attr": 74064400
+      },
+      {
+        "record_data_offset": 72362,
+        "vertical_offset": 862,
+        "width": 3608,
+        "height": 3866,
+        "attr": 69870096
+      }
+    ],
+    "variants": [
+      {
+        "name": "zero",
+        "input": "output/pr-review/planet6897-7382-20260926/controls/stage33/japan-cell-zero.hwp",
+        "sha256": "ec8eaaf96ca68e1fa09dff44e111a6dc36d10f8efc87f8d079ab45e2e40f1123",
+        "vertical_offsets_hu": [
+          0,
+          0
+        ],
+        "all_other_cfb_streams_identical": true,
+        "all_other_record_bytes_identical": true
+      },
+      {
+        "name": "forward-750",
+        "input": "output/pr-review/planet6897-7382-20260926/controls/stage33/japan-cell-forward-750.hwp",
+        "sha256": "234a4853c6de1ba087c4dad817e94fab826f7082eeeda05629592c8b6f7cf557",
+        "vertical_offsets_hu": [
+          1530,
+          1612
+        ],
+        "all_other_cfb_streams_identical": true,
+        "all_other_record_bytes_identical": true
+      }
+    ],
+    "input_generation": "원본 HWP 공통 개체 레코드의 세로 오프셋 두 UINT32만 수정; 재저장/LineSeg 재생성 아님"
+  },
+  "controls": {
+    "zero": {
+      "pdf": "pdf/issue6782/japan-cell-zero-2020.pdf",
+      "sha256": "f684293132279bb672e16470df9d56454aa1223ba35dc61223eb8e5e9e39afff",
+      "creator": "Hwp 2020 0.0.0.0",
+      "pages": 103,
+      "text_geometry_changed_pages": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        23
+      ],
+      "image_geometry_changed_pages": [
+        65,
+        77
+      ],
+      "japan_images_bbox_pt": [
+        [
+          497.13299560546875,
+          239.25802612304688,
+          533.2340087890625,
+          277.85601806640625
+        ],
+        [
+          461.3919982910156,
+          239.25901794433594,
+          497.73199462890625,
+          277.25701904296875
+        ]
+      ],
+      "job_id": "b500bc4c-ce69-4a2c-9378-eeead29e5488",
+      "engine": 2020,
+      "elapsed_seconds": 47,
+      "input_generation": "원본 두 공통 레코드 UINT32 세로 오프셋만 변경; 한컴 재저장본 아님"
+    },
+    "forward-750": {
+      "pdf": "pdf/issue6782/japan-cell-forward-750-2020.pdf",
+      "sha256": "0af6875e9a4f611706911bbdc9a04e49d3ef2692890a82a7ab618f0bf2378abf",
+      "creator": "Hwp 2020 0.0.0.0",
+      "pages": 103,
+      "text_geometry_changed_pages": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        23
+      ],
+      "image_geometry_changed_pages": [
+        65,
+        77
+      ],
+      "japan_images_bbox_pt": [
+        [
+          497.13299560546875,
+          249.32699584960938,
+          533.2340087890625,
+          287.92498779296875
+        ],
+        [
+          461.3919982910156,
+          248.48899841308594,
+          497.73199462890625,
+          286.48699951171875
+        ]
+      ],
+      "job_id": "a3aebd91-9cbe-45da-bedb-300134f2ad95",
+      "engine": 2020,
+      "elapsed_seconds": 55,
+      "input_generation": "원본 두 공통 레코드 UINT32 세로 오프셋만 변경; 한컴 재저장본 아님"
+    }
+  },
+  "interpretation": "0 대조는 두 그림 상단319.012/319.011px로 정렬된다. +750은331.319/332.436px로 옮겨져 단순10px 이동과 다르다. 뒤 대조는 개체 끝5478HU가 저장 빈 줄 vpos4728을 넘어 원본 닫힌 프레임을 깨므로 정상 저장 조판/재조판 계약으로 일반화하지 않는다.",
+  "same_engine_original": {
+    "pdf": "pdf/issue6782/japan-cell-original-2020.pdf",
+    "sha256": "c1d1684e2407db89f95f9c7692a33cc120a490fda879cce403c807dcf3ccb883",
+    "pages": 103,
+    "creator": "Hwp 2020 0.0.0.0",
+    "job_id": "6d677f79-bc27-49ef-b8c2-79f2859d6efa",
+    "engine": 2020,
+    "elapsed_seconds": 45,
+    "controls_comparison": {
+      "zero": {
+        "text_geometry_changed_pages": [],
+        "image_geometry_changed_pages": [
+          77
+        ]
+      },
+      "forward-750": {
+        "text_geometry_changed_pages": [],
+        "image_geometry_changed_pages": [
+          77
+        ]
+      }
+    },
+    "meaning": "기존 PDF의6–23쪽 텍스트/65쪽 그림 차이는 이번 오프셋 변화가 아니라 출력 환경 차이이며 같은 엔진 기준에서 제외된다."
+  }
+}

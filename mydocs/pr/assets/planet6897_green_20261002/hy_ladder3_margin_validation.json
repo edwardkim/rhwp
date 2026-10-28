@@ -1,0 +1,24 @@
+{
+  "status": "partial_correction_full_fixture_hold",
+  "source_base_head": "a3751f64d281c528b13bc2fc8b302ba9530b0ac9",
+  "source_worktree_modified": true,
+  "input_unchanged": true,
+  "hancom_engine": "2020",
+  "pdf_job_id": "a2031364-5b22-4229-b46a-073988d08872",
+  "native_document_pages": 1,
+  "independent_pdf_pages": 2,
+  "page1_before_percent": 62.41613,
+  "page1_after_percent": 90.86083,
+  "fresh_wasm": "not_run",
+  "parser_tests_passed": 54,
+  "plain_switch_roundtrip_tests_passed": 2,
+  "char_unit_roundtrip_tests_passed": 2,
+  "overflow_baseline_changed": false,
+  "sha256": {
+    "samples/task2070/hy_ladder3.hwpx": "42b120273f3f8836157617500103a852003e41c65647568354d536c0eef9da50",
+    "pdf/task2070/hy-ladder3-2020.pdf": "8ae8ea959dd342a2b2240d781706ba2a72e93474c8d0d7394d0da9bf819e23db",
+    "src/parser/hwpx/header.rs": "04f7bd48bd4940a7b5d576feef4b4d3235b6241cf4f15683fab75b4b6f8f061d",
+    "src/serializer/hwpx/header.rs": "b1d3d8c455f5870b5ee93a562a24fb9737e1a4baff9dd4cbfbbab02758abca4b",
+    "target/pr-review/release-test/rhwp": "ea7fbb80166c2b920ddd1d281ce245b70e6861443da0f06c44dec6c8fd8c1a6d"
+  }
+}

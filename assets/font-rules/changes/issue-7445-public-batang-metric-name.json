@@ -1,0 +1,57 @@
+{
+  "changeSetId": "issue-7445.public-batang-metric-name",
+  "decisionPlane": "layout-metric",
+  "evidenceRecords": [
+    {
+      "evidenceId": "evidence.issue-7445.public-batang-metrics",
+      "kind": "aggregate-measurement",
+      "licenseOrProvenance": "공식 Google Fonts OFL 배포본과 기존 Batang regular 폭 표11636항목 대조. ASCII·현대 한글 전부 일치. NBSP는 기존 공통 U+0020 정규화 계약으로 처리한다. 역사적 원장의 전체 계보 승격은 아니다.",
+      "parentEvidenceIds": [],
+      "sha256": "84c210d7a62d3748294566085dc3138453bcd0ab2d4f1cc48b2791dbcf6176ae",
+      "source": "assets/font-rules/evidence/issue-7445-public-batang-metrics.json"
+    }
+  ],
+  "expectedDelta": {
+    "activeRuleDelta": 1,
+    "projectionId": "rust-layout-metric",
+    "unchangedProjectionIds": [
+      "rust-layout-name",
+      "canvas2d-paint",
+      "canvas2d-webfont",
+      "canvaskit-sfnt"
+    ]
+  },
+  "issue": 7445,
+  "kind": "font-rule-change-set",
+  "operations": [
+    {
+      "operationId": "operation.issue-7445.public-batang-metric-name",
+      "rule": {
+        "conditions": {},
+        "decisionPlane": "layout-metric",
+        "evidenceIds": [
+          "evidence.issue-7445.public-batang-metrics"
+        ],
+        "metricEntryIds": [
+          "font-metric.edec2573883b7b4dc023"
+        ],
+        "order": null,
+        "projection": {
+          "id": "rust-layout-metric",
+          "mode": "direct"
+        },
+        "projectionSequence": 70,
+        "relationType": "metric-surrogate",
+        "ruleId": "rule.rust-metric.issue-7445.public-batang-name",
+        "sourceBoundaryId": "rust-metric.metric-alias",
+        "sourceFace": "RHWP Public Batang",
+        "supply": null,
+        "targetFaceOrPolicy": "Batang"
+      },
+      "type": "add-rule"
+    }
+  ],
+  "parentRegistrySha256": "b06c8523c8347b3b4a227cf68b858953d9641fb52ab64bb8a203211835bdb8e6",
+  "schemaVersion": "2.0",
+  "sequence": 12
+}

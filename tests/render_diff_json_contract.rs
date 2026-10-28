@@ -627,7 +627,7 @@ fn mcp_manifest_registers_hwp_render_diff_fully_wired() {
 
 #[test]
 fn help_documents_json_and_the_exit_three_rule() {
-    let help = run(&["--help"]);
+    let help = run(&["render-diff", "--help"]);
     let text = String::from_utf8_lossy(&help.stdout);
     let block: Vec<&str> = text
         .lines()

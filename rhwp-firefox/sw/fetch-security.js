@@ -162,16 +162,29 @@ function isPrivateIPv4(host) {
 function isPrivateIPv6(host) {
   if (!host.includes(':')) return false;
 
-  const normalized = host.toLowerCase();
-  return (
-    normalized === '::1' ||
-    normalized === '::' ||
-    normalized.startsWith('fe80:') ||
-    normalized.startsWith('fc') ||
-    normalized.startsWith('fd') ||
-    normalized.startsWith('::ffff:127.') ||
-    normalized.startsWith('::ffff:10.') ||
-    normalized.startsWith('::ffff:192.168.') ||
-    normalized.startsWith('::ffff:169.254.')
-  );
+  // URL.hostname canonicalizes dotted mapped IPv4 into hexadecimal words.
+  // Expand the address before classifying; textual prefix checks miss that form.
+  const halves = host.toLowerCase().split('::');
+  if (halves.length > 2) return true;
+  const words = part => part ? part.split(':').map(word =>
+    /^[0-9a-f]{1,4}$/.test(word) ? parseInt(word, 16) : NaN) : [];
+  const left = words(halves[0]);
+  const right = halves.length === 2 ? words(halves[1]) : [];
+  const missing = 8 - left.length - right.length;
+  if (left.concat(right).some(Number.isNaN) ||
+      (halves.length === 2 ? missing < 1 : missing !== 0)) return true;
+  const address = halves.length === 2
+    ? [...left, ...Array(missing).fill(0), ...right] : left;
+
+  if (address.slice(0, 5).every(word => word === 0) && address[5] === 0xffff) {
+    const high = address[6];
+    const low = address[7];
+    return isPrivateIPv4(`${high >> 8}.${high & 255}.${low >> 8}.${low & 255}`);
+  }
+  // Unspecified, loopback and deprecated IPv4-compatible ::/96 addresses;
+  // link-local fe80::/10, unique-local fc00::/7 and multicast ff00::/8.
+  return address.slice(0, 6).every(word => word === 0) ||
+    (address[0] & 0xffc0) === 0xfe80 ||
+    (address[0] & 0xfe00) === 0xfc00 ||
+    (address[0] & 0xff00) === 0xff00;
 }

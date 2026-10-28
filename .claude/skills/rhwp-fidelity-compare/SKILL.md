@@ -283,7 +283,7 @@ direct pair 에서만 쓴다. `bunjang` 동반 PDF 는 등급이 "참고" 이며
 28. [27_exception_catalog.md](references/27_exception_catalog.md) — 예외 카탈로그
 
 예제: [examples/](examples/). 기계 가독 픽스처: [fixtures/](fixtures/).
-처리 결과: [`mydocs/working/agent_fidelity_compare.md`](../../../mydocs/working/agent_fidelity_compare.md)
+처리 결과: [`mydocs/working/agent_fidelity_compare.md`](../../../mydocs/working/archives/agent_fidelity_compare.md)
 
 ## 권위
 

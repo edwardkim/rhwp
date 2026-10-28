@@ -45,3 +45,45 @@ pub fn parse_points16(c: &mut Cursor<'_>) -> Result<(RectL, Vec<(i16, i16)>), Er
     }
     Ok((bounds, pts))
 }
+
+/// MS-EMF 2.3.5.29: 전체 점 배열을 다각형별 점 수로 나눈다.
+/// 선언 수를 검증한 뒤 할당해 손상된 수치가 메모리 예약으로 이어지지 않게 한다.
+pub fn parse_poly_polygon16(c: &mut Cursor<'_>) -> Result<(RectL, Vec<Vec<(i16, i16)>>), Error> {
+    let bounds = RectL::read(c)?;
+    let polygons = c.u32()? as usize;
+    let points = c.u32()? as usize;
+    if polygons > c.remaining() / 4 {
+        return Err(Error::UnexpectedEof {
+            at: c.position(),
+            need: polygons.saturating_mul(4),
+        });
+    }
+    let mut counts = Vec::with_capacity(polygons);
+    let mut total = 0usize;
+    for _ in 0..polygons {
+        let count = c.u32()? as usize;
+        total = total.saturating_add(count);
+        counts.push(count);
+    }
+    if total != points {
+        return Err(Error::InvalidPolygonPointCount {
+            declared: points,
+            actual: total,
+        });
+    }
+    if points > c.remaining() / 4 {
+        return Err(Error::UnexpectedEof {
+            at: c.position(),
+            need: points.saturating_mul(4),
+        });
+    }
+    let mut result = Vec::with_capacity(polygons);
+    for count in counts {
+        let mut polygon = Vec::with_capacity(count);
+        for _ in 0..count {
+            polygon.push((c.u16()? as i16, c.u16()? as i16));
+        }
+        result.push(polygon);
+    }
+    Ok((bounds, result))
+}

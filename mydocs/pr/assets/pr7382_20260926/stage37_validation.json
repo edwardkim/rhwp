@@ -1,0 +1,158 @@
+{
+  "source_sha": "ce5862a3be578298026a4ca128b6517f648021ae",
+  "base_sha": "eb9142dd7c73297d555383d7d8434a470bdef26e",
+  "runtime_change": false,
+  "files": {
+    "tests/issue_2097_rowbreak_midpage_declared_fits.rs": "4a5b74bd4465ae4250e8d18ede15cd28044dc614834ebd8c463354f42bd56960",
+    "tests/cases/issue_2097_terminal_row_physical_ownership.rs": "7f79b86f040a7339520d4b5de67c95e8e2d5b82e1063c6ebf4b25af2b8f3c318"
+  },
+  "before": {
+    "passed": 1,
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 0.019,
+    "classification": "이전 합성 기대의 실패, 새 구현 결함 검출로 보고하지 않음"
+  },
+  "after": {
+    "passed": 90,
+    "failed": 1,
+    "exit_code": 100,
+    "seconds": 5.984,
+    "threads": 8,
+    "remaining_failure": "issue_2105_rowbreak_table_placed_whole_by_declared_height"
+  },
+  "before_command": {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--test",
+      "regression_suite_002",
+      "--test",
+      "regression_suite_010",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(issue_2097_rowbreak_midpage_declared_fits) | test(issue_2097_3080901_real_doc_pin)"
+    ],
+    "exit_code": 100,
+    "elapsed_seconds": 106.05184324970469
+  },
+  "after_command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--test",
+    "regression_suite_002",
+    "--test",
+    "regression_suite_003",
+    "--test",
+    "regression_suite_004",
+    "--test",
+    "regression_suite_006",
+    "--test",
+    "regression_suite_010",
+    "--test",
+    "regression_suite_016",
+    "--test",
+    "regression_suite_017",
+    "--test",
+    "regression_suite_021",
+    "--test",
+    "regression_suite_022",
+    "--test-threads",
+    "8",
+    "--no-fail-fast",
+    "-E",
+    "test(issue_2097_terminal_row_physical_ownership) | test(issue_2097_rowbreak_midpage_declared_fits) | test(issue_2097_none_table_declared_fits) | test(issue_2097_3080901_real_doc_pin) | test(issue_2097_1730000_real_doc_pin) | test(issue_2097_band_fill) | test(issue_2097_squeeze) | test(issue_2105_rowbreak_table_declared_fits) | test(issue_7379_rowbreak_table_footnote_reservation)"
+  ],
+  "after_result": {
+    "exit_code": 100,
+    "elapsed_seconds": 37.870668458752334
+  },
+  "policies": [
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "eb9142dd7c73297d555383d7d8434a470bdef26e"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "manifest_static_attrs": 6227,
+  "source_unit_tests": 4205,
+  "source_unit_modules": 298,
+  "attempts": [
+    {
+      "log": "stage37-after.log",
+      "passed": 88,
+      "failed": 2,
+      "exit_code": 100,
+      "classification": "뒤 문단 그룹 원점을 가시 줄 원점으로 잘못 선택한 신규 검사를 실제 TextLine으로 수정; 나머지 실패는#2105"
+    },
+    {
+      "log": "stage37-stage33-synthetic-visual.log",
+      "classification": "venv Python symlink를 resolve하여 다른 interpreter로 실행한 PIL 환경 실패; 올바른 venv 절대 경로로 재실행",
+      "exit_code": 1
+    },
+    {
+      "log": "stage37-resave-start.log",
+      "classification": "같은 HWPX 형식 저장은 MCP client가 지원하지 않아 HWP를 거쳐 실제 한컴 저장으로 재생성",
+      "exit_code": 1
+    }
+  ],
+  "directly_read_png_count": 16,
+  "visual_classification": "재생성 대조군 Native2쪽 gate passed. 원본 수동 입력/실문서 시각 gate 미충족; 원본 실패 보존",
+  "runtime_sha256": {
+    "src/renderer/layout.rs": "2214fb9270354ab02fcb8ce405489ba5574895966830cd9857b596e5eab37e81",
+    "src/renderer/layout/table_layout.rs": "65c1ecd6bb6fc41fda94324044422f7670f90b832ea40f404d634765d2f8fc77"
+  },
+  "logs": [
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/logs/stage37-before.log",
+      "sha256": "c02acad018fe0b42629c4f484086f671fc062be0f52ffbb08d28138b5d91bb2e"
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/logs/stage37-after.log",
+      "sha256": "5e40679220c446dbc214e48ad29ec5cfb95f72fec586adc06102093f99794fd7"
+    },
+    {
+      "path": "output/pr-review/planet6897-7382-20260926/logs/stage37-after-final.log",
+      "sha256": "c3dbe9e12f6957fde637f542f898b8b9a0064f8eadc1ba0f69e97a0b797af105"
+    }
+  ]
+}

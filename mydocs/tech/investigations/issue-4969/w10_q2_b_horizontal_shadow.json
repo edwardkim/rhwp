@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-b-horizontal-shadow-result",
+  "issue": 4969,
+  "stage": "W10-Q2-B",
+  "status": "qualified",
+  "productOutputChange": false,
+  "context": {
+    "exactSourceOwner": "w9-exact-font-source-registry",
+    "registryGenerationInCacheKey": true,
+    "faceParseScope": "once-per-exact-source-per-transaction",
+    "resultOwner": "Arc<HorizontalShapingMeasurement>",
+    "composerConsumerCount": 0,
+    "layoutConsumerCount": 0,
+    "paintConsumerCount": 0
+  },
+  "cache": {
+    "keyEqualityIncludesFullText": true,
+    "sourceHandle": true,
+    "fontSizeBitIdentity": true,
+    "widthRatioBitIdentity": true,
+    "scriptLanguage": true,
+    "orderedFeatures": true,
+    "entryLimit": 4096,
+    "textByteLimit": 1048576,
+    "glyphLimit": 262144,
+    "clusterLimit": 262144,
+    "sample": {
+      "misses": 2,
+      "hits": 1,
+      "parsedFaces": 1,
+      "wrongResultReuse": 0
+    }
+  },
+  "measurement": {
+    "writingMode": "horizontal-tb",
+    "direction": "ltr",
+    "fontUnitToPxOnce": true,
+    "clusterUtf8BoundaryValidated": true,
+    "clusterScalarRangeOwned": true,
+    "clusterAlignedRangeWidthOnly": true,
+    "fakeScalarAdvances": false
+  },
+  "fixtureCondition": {
+    "effectiveFontSizePx": 10.0,
+    "widthRatio": 0.8
+  },
+  "fixtureDeltas": [
+    {
+      "lane": "k0-to-w9-k1",
+      "font": "NotoSansKR-Regular",
+      "textClass": "latin-pair",
+      "baselinePx": 9.464,
+      "shapedPx": 9.32,
+      "deltaPx": -0.144,
+      "glyphCountChanged": false,
+      "clusterCountChanged": false
+    },
+    {
+      "lane": "latin-liga",
+      "font": "NotoSansKR-Regular",
+      "textClass": "office-ligature",
+      "baselinePx": 20.504,
+      "shapedPx": 20.488,
+      "deltaPx": -0.016,
+      "baselineGlyphs": 6,
+      "shapedGlyphs": 4,
+      "ligatureScalarRange": [1, 4]
+    },
+    {
+      "lane": "old-hangul",
+      "font": "SourceHanSerifK-OldHangul-subset",
+      "textClass": "jamo-composition",
+      "baselinePx": null,
+      "baselineReason": "nominal-cmap-advance-unavailable-for-all-scalars",
+      "shapedPx": 15.456,
+      "scalarCount": 4,
+      "glyphCount": 4,
+      "clusterCount": 2,
+      "unsplittableScalarRange": [0, 3]
+    }
+  ],
+  "privacy": {
+    "rawTextInTrace": false,
+    "fontPayloadInTrace": false,
+    "localPathInTrace": false,
+    "privateCorpusUsed": false
+  },
+  "validation": {
+    "nativeFocused": {
+      "passed": 5,
+      "failed": 0,
+      "wallSeconds": 0.64,
+      "maxRssKiB": 30652
+    },
+    "nodeWasmFocused": {
+      "passed": 5,
+      "failed": 0,
+      "runtimeSeconds": 3.42,
+      "isolatedHarnessRemoved": true
+    },
+    "nativeWasmParityMismatches": 0,
+    "q2aFocusedRegression": {
+      "passed": 12,
+      "failed": 0
+    },
+    "cargoCheckLib": "pass",
+    "cargoClippyLibDenyWarnings": "pass",
+    "cargoClippyWasm32LibDenyWarnings": "pass",
+    "diffCheck": "pass"
+  },
+  "next": "maintainer approval required before Q2-C cluster-aware product activation"
+}

@@ -1,0 +1,10 @@
+== pr_6096_issue6086 ==
++ target/pr-review/release-test/rhwp dump-note-shape /home/tsjang/rhwp/samples/issue6086/30098_resident_registration_reform.hwp
++ target/pr-review/release-test/rhwp export-svg /home/tsjang/rhwp/samples/issue6086/30098_resident_registration_reform.hwp --font-style -o /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6096_issue6086/svg
++ target/pr-review/release-test/rhwp export-render-tree /home/tsjang/rhwp/samples/issue6086/30098_resident_registration_reform.hwp -o /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6096_issue6086/render_tree
+SVG export pages: 15
++ pdftoppm -f 4 -l 4 -r 96 -png /home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6096_issue6086_resident_registration_reform-local2020.pdf /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6096_issue6086/pdf_png/pdf
++ pdftotext -bbox-layout /home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6096_issue6086_resident_registration_reform-local2020.pdf /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6096_issue6086/pdf_bbox.html
+Selected pages: [4]
+Raster PNG pages: rhwp=1, pdf=1
+summary: /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/summary.json

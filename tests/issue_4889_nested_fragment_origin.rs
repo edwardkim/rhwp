@@ -72,8 +72,14 @@ fn issue_4889_nested_fragment_origin_stays_on_page() {
         .filter(|node| matches!(node.node_type, RenderNodeType::TextRun(_)))
         .filter(|node| node.bbox.y + node.bbox.height > 0.0)
         .count();
+    // [#4915] 임계를 100 → 60 으로 조정. 종전 100 은 조각화가 안 되던 시절의
+    // 뭉친 분배(쪽별 글자수 [118, 780, 33])를 기준으로 잡은 값이다. reset-free
+    // 다쪽 1×1 표를 canonical 원장으로 투영한 뒤에는 분배가 한/글
+    // ([627, 747, 419])과 정렬돼 p2 가 96 run 이 된다 — 내용이 준 것이 아니라
+    // **다른 쪽으로 옮겨 간** 것이다. 조각이 비는 회귀(0~수십 run)와는 계속
+    // 구분된다.
     assert!(
-        visible_runs > 100,
+        visible_runs > 60,
         "p2 에 보이는 TextRun 이 {visible_runs}개뿐이다 — 조각이 사실상 비었다"
     );
 }

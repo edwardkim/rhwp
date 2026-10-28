@@ -1,6 +1,6 @@
 // 다운로드 인터셉터 공통 판정 로직 (Chrome / Firefox 공용)
 //
-// Chrome(onDeterminingFilename)·Firefox(onCreated/onChanged) 모두 동일한
+// Chrome·Firefox의 onCreated/onChanged adapter가 동일한
 // 판정 기준을 사용하도록 추출한 순수 함수. 브라우저 API에 의존하지 않아
 // 단위 테스트 가능.
 //
@@ -11,12 +11,27 @@
 // 관련 이슈:
 // - #198: Chrome 마지막 저장 위치 보존 + DEXT5 블랙리스트 + MIME 힌트
 // - #207: 동일 판정 로직을 Firefox 측에도 적용
+// - #7664: 로컬 file:// HWP 는 저장 위치 대화상자로 filename 이 비어도 URL 경로로 판정
 
 /** filename 또는 URL 에서 .hwp/.hwpx/.hml 확장자를 감지 (쿼리 문자열 허용). */
 export const HWP_EXTENSION_RE = /\.(hwp|hwpx|hml)(\?|$)/i;
 
 /** 한컴 HWP/HWPX MIME 타입 힌트 (소문자 비교). */
 export const HWP_MIME_HINTS = ['haansoft', 'x-hwp', 'hwp+zip'];
+
+/** 확정 파일명에서 HWP가 아님을 강하게 나타내는 문서 확장자. */
+export const NON_HWP_EXTENSION_RE = /\.(?:xls|xlsx|xlsm|xlsb|xlt|xltx|doc|docx|docm|dot|dotx|ppt|pptx|pptm|pot|potx|pdf|zip|odt|ods|odp)(?:[?#]|$)/i;
+
+/** generic/octet-stream과 달리 HWP가 아님을 강하게 나타내는 MIME prefix. */
+export const NON_HWP_MIME_PREFIXES = [
+  'application/vnd.openxmlformats-officedocument.',
+  'application/vnd.ms-excel',
+  'application/vnd.ms-word',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.oasis.opendocument.',
+  'application/pdf',
+  'application/zip',
+];
 
 /**
  * 재요청 불가 다운로드 패턴 (#198).
@@ -31,35 +46,116 @@ export const NON_REFETCHABLE_PATTERNS = [
 ];
 
 /**
- * 다운로드 항목이 HWP/HWPX 인지 판별 (#198 / #207).
+ * 로컬 file:// URL의 경로가 .hwp/.hwpx/.hml 인지 판별한다 (#7664).
  *
- * filename / url / finalUrl / mime / referrer 어느 조합이든 수용.
- * Chrome `chrome.downloads.DownloadItem` 과 Firefox `browser.downloads.DownloadItem`
- * 모두 대응 (필드 부재 시 안전하게 false 반환).
+ * file:// URL은 디스크에 있는 실제 파일 자체이므로 redirect나 첨부 파일명으로 바뀌지 않는다.
+ * 쿼리·fragment는 경로가 아니므로 pathname만 본다.
  *
- * @param {{filename?: string, url?: string, finalUrl?: string, mime?: string, referrer?: string}} item
+ * @param {string} url
  * @returns {boolean}
  */
-export function shouldInterceptDownload(item) {
-  if (!item) return false;
+export function isLocalHwpFileUrl(url) {
+  if (typeof url !== 'string' || !url.startsWith('file:')) return false;
+  try {
+    return HWP_EXTENSION_RE.test(new URL(url).pathname);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * 로컬 file:// HWP URL의 표시용 파일명 (#7664).
+ *
+ * 저장 위치 확인 대화상자가 떠 있는 동안은 `DownloadItem.filename`이 비어 있으므로
+ * URL 경로의 마지막 요소를 쓴다. URL 경로의 퍼센트 인코딩은 전송 표현이므로 디코딩한다.
+ *
+ * @param {string} url
+ * @returns {string}
+ */
+export function localHwpFileUrlFilename(url) {
+  if (!isLocalHwpFileUrl(url)) return '';
+  const leaf = new URL(url).pathname.split('/').pop() || '';
+  try {
+    return decodeURIComponent(leaf);
+  } catch {
+    return leaf;
+  }
+}
+
+/**
+ * 다운로드 항목의 HWP 자동 열기 여부를 근거 우선순위와 이벤트 단계로 판별한다.
+ *
+ * filename / url / finalUrl / mime / referrer의 충돌을 명시적으로 해소한다.
+ * Chrome `chrome.downloads.DownloadItem` 과 Firefox `browser.downloads.DownloadItem`
+ * 모두 대응한다.
+ *
+ * @param {{filename?: string, url?: string, finalUrl?: string, mime?: string, referrer?: string}} item
+ * @param {{metadataFinalized?: boolean}} [context]
+ * @returns {{action: 'intercept'|'defer'|'ignore', reason: string}}
+ */
+export function classifyDownload(item, { metadataFinalized = false } = {}) {
+  if (!item) return { action: 'ignore', reason: 'no-hwp-evidence' };
 
   // 재요청 불가 패턴 (POST / 세션 의존 핸들러)
   const url = item.url || '';
   const referrer = item.referrer || '';
   if (NON_REFETCHABLE_PATTERNS.some(re => re.test(url) || re.test(referrer))) {
-    return false;
+    return { action: 'ignore', reason: 'non-refetchable' };
   }
 
   const filename = item.filename || '';
-  if (HWP_EXTENSION_RE.test(filename)) return true;
+  if (HWP_EXTENSION_RE.test(filename)) {
+    return { action: 'intercept', reason: 'hwp-filename' };
+  }
+  if (NON_HWP_EXTENSION_RE.test(filename)) {
+    return { action: 'ignore', reason: 'non-hwp-filename' };
+  }
 
-  if (HWP_EXTENSION_RE.test(url)) return true;
+  const mime = (item.mime || '').trim().toLowerCase();
+  if (NON_HWP_MIME_PREFIXES.some(prefix => mime.startsWith(prefix))) {
+    return { action: 'ignore', reason: 'non-hwp-mime' };
+  }
+
+  // #7664: Chrome "다운로드 전 저장 위치 확인" 대화상자가 떠 있는 동안 filename은 비어 있고,
+  // 대화상자를 취소하면 interrupted로 끝나 재판정 기회가 없다. 로컬 파일의 URL 경로는
+  // 확정 근거이므로 filename 확정을 기다리지 않는다. 위의 재요청 불가·비-HWP 우선순위는 유지한다.
+  if (isLocalHwpFileUrl(url)) {
+    return { action: 'intercept', reason: 'local-hwp-file-url' };
+  }
 
   const finalUrl = item.finalUrl || '';
-  if (finalUrl !== url && HWP_EXTENSION_RE.test(finalUrl)) return true;
+  const hasHwpEvidence = HWP_EXTENSION_RE.test(url)
+    || (finalUrl !== url && HWP_EXTENSION_RE.test(finalUrl))
+    || HWP_MIME_HINTS.some(hint => mime.includes(hint));
 
-  const mime = (item.mime || '').toLowerCase();
-  if (HWP_MIME_HINTS.some(hint => mime.includes(hint))) return true;
+  if (!hasHwpEvidence) {
+    return { action: 'ignore', reason: 'no-hwp-evidence' };
+  }
 
-  return false;
+  if (!metadataFinalized) {
+    return { action: 'defer', reason: 'provisional-hwp-evidence' };
+  }
+
+  return { action: 'intercept', reason: 'final-hwp-evidence' };
+}
+
+/**
+ * 기존 boolean 소비자를 위한 호환 wrapper.
+ *
+ * 단계 정보가 없는 호출은 종전처럼 현재 item을 최종 메타데이터로 보고 판정한다.
+ * Chrome/Firefox observer는 반드시 `classifyDownload()`에 실제 단계 context를 전달한다.
+ *
+ * @param {{filename?: string, url?: string, finalUrl?: string, mime?: string, referrer?: string}} item
+ * @returns {boolean}
+ */
+export function shouldInterceptDownload(item) {
+  return classifyDownload(item, { metadataFinalized: true }).action === 'intercept';
+}
+
+/** Editor saves use Blob URLs under this runtime's exact origin (#6964). */
+export function isOwnExtensionBlobDownload(item, extensionRoot) {
+  return typeof item?.url === 'string'
+    && typeof extensionRoot === 'string'
+    && /^(?:moz|chrome)-extension:\/\/[^/]+\/$/.test(extensionRoot)
+    && item.url.startsWith(`blob:${extensionRoot}`);
 }

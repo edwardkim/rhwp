@@ -1,0 +1,9 @@
+{
+  "source": "pdf/issue7998/structure-borders/native-pen-blue.pdf",
+  "sourceSha256": "95fbf537cde5c843e2fc38b7ec185658fda8df63a0f89e64af8495fd2815cb0c",
+  "change": "All /F1 10 Tf -> /F1 10.5 Tf; explicit Arial family; source Tm matrices, paths and media box unchanged; rebuilt PDF xref and length only",
+  "sha256": "5b14fca0ca26cbb4473293f6fa0ed72ab049dd84b1e016eced96d2ce5a3dbc32",
+  "initialDiagnosticSha256": "7db03cef17104bf898a1fb0e6e772ef7fd6d3651dccdc1c569ddf542d6cfce67",
+  "streamLengthQualification": "Replaced initial Length909 with exact data length908; the delimiter LF before endstream is excluded. Tf/Tm/CTM/paths and media box unchanged.",
+  "qualification": "task_m100_7998_stage31.md; Native/fresh WASM and same saved HWP/HWPX independent Hancom Print; maintainer passed baseline visual/editing scope 2026-10-20"
+}

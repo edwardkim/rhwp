@@ -1293,7 +1293,7 @@ class RepoLayoutSmokeTests(unittest.TestCase):
     def test_docs_were_added_next_to_tool_contract(self):
         root = TOOL.parents[2]
         self.assertTrue((root / "gym" / "docs" / "discriminate.md").is_file())
-        self.assertTrue((root / "mydocs" / "working" / "gym_discriminate.md").is_file())
+        self.assertTrue((root / "mydocs" / "working" / "archives" / "gym_discriminate.md").is_file())
 
 
 class CatchableExceptionCatalogTests(unittest.TestCase):
@@ -1506,7 +1506,7 @@ class ExtraHelperContractTests(unittest.TestCase):
 
     def test_working_doc_points_at_issue(self):
         root = TOOL.parents[2]
-        text = (root / "mydocs" / "working" / "gym_discriminate.md").read_text(encoding="utf-8")
+        text = (root / "mydocs" / "working" / "archives" / "gym_discriminate.md").read_text(encoding="utf-8")
         self.assertIn("#5255", text)
         self.assertIn("feat/gym-discriminate-hardening", text)
         self.assertIn("audit.py", text)

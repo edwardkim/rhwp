@@ -1,0 +1,9 @@
+   Compiling rhwp v0.8.6 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 10.34s
+     Running tests/generated/regression_suite_012.rs (target/pr7118-7187-20260916/release-test/deps/regression_suite_012-81c2f47ea8b0ee0e)
+
+running 2 tests
+test cell_square_picture_anchor::issue_4059_cell_square_picture_stays_inside_its_cell ... ok
+test cell_square_picture_anchor::issue_7182_rowbreak_cell_picture_only_paragraphs_render_inside_their_cells ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.02s

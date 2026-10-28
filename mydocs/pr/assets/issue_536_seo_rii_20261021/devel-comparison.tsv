@@ -1,0 +1,9 @@
+key	backend	page	base_raw_percent	candidate_raw_percent	drop_percent_points	base_tsv	candidate_tsv
+body-list-typed	native	1	100.00000	100.00000	0.00000	base/native/body-list-typed.tsv	candidate/native/body-list-typed.tsv
+body-list-typed	wasm	1	100.00000	100.00000	0.00000	shared-wasm/body-list-typed.tsv	shared-wasm/body-list-typed.tsv
+helvetica-styles	native	1	99.63470	99.63470	0.00000	base/native/helvetica-styles.tsv	candidate/native/helvetica-styles.tsv
+helvetica-styles	wasm	1	99.63691	99.63691	0.00000	shared-wasm/helvetica-styles.tsv	shared-wasm/helvetica-styles.tsv
+pic-crop-01	native	1	99.99508	99.99508	0.00000	base/native/pic-crop-01.tsv	candidate/native/pic-crop-01.tsv
+pic-crop-01	wasm	1	99.29125	99.29125	0.00000	shared-wasm/pic-crop-01.tsv	shared-wasm/pic-crop-01.tsv
+shape-group-02	native	1	100.00000	100.00000	0.00000	base/native/shape-group-02.tsv	candidate/native/shape-group-02.tsv
+shape-group-02	wasm	1	100.00000	100.00000	0.00000	shared-wasm/shape-group-02.tsv	shared-wasm/shape-group-02.tsv

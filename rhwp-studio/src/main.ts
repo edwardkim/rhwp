@@ -1,10 +1,22 @@
+import { installCommandErrorGlobalRouting, StudioCommandError, inspectCommandError, type CommandErrorV1 } from '@/core/command-error';
+import { setHostFontProvider, onHostFontsChanged, hasHostFontProvider, prepareHostFontCatalog, getHostFontState, localFontFaceKey, type LocalFontRecord } from '@/core/local-fonts';
+import { collectHostFontRequests, collectDocumentCanvasKitFontUsage, resolveDocumentCanvasKitFontUsage, type DocumentCanvasKitFontUsage } from '@/core/host-font-requests';
 import { WasmBridge } from '@/core/wasm-bridge';
-import type { DocumentInfo, PageInfo } from '@/core/types';
+import { installDocumentTitle } from '@/ui/document-title';
+import type { CanvasKitDocumentPreflight, DocumentInfo, PageInfo } from '@/core/types';
 import { EventBus } from '@/core/event-bus';
 import { assertRemoteDocumentBytes } from '@/core/document-signature';
 import { CanvasView } from '@/view/canvas-view';
 import { InputHandler } from '@/engine/input-handler';
 import { Toolbar } from '@/ui/toolbar';
+import { initIconToolbarScroller } from '@/ui/icon-toolbar-scroller';
+import { initStyleToolbarOverflow } from '@/ui/style-toolbar-overflow';
+import {
+  closeToolbarSplitMenus,
+  moveToolbarSplitFocus,
+  setToolbarSplitOpen,
+  toolbarSplitItems,
+} from '@/ui/toolbar-split-menu';
 import { MenuBar } from '@/ui/menu-bar';
 import { loadWebFonts, resolveCanvasKitFontPlan } from '@/core/font-loader';
 import { withCanvasKitSurfaceBlockers } from '@/core/canvaskit-document-preflight';
@@ -18,6 +30,7 @@ import type { StudioPlugin } from '@/plugin/types';
 import { CommandDispatcher } from '@/command/dispatcher';
 import type { EditorContext, CommandServices, EditorEditMode } from '@/command/types';
 import { defaultShortcuts, matchShortcut } from '@/command/shortcut-map';
+import { handleDocumentSelectAllShortcut, isTextEditingTarget } from '@/command/document-shortcut-guard';
 import { confirmSaveBeforeReplacingDocument, fileCommands } from '@/command/commands/file';
 import { editCommands } from '@/command/commands/edit';
 import { syncClipMenu, syncTextMarkMenu, syncToolboxMenu, viewCommands } from '@/command/commands/view';
@@ -29,9 +42,11 @@ import { toolCommands } from '@/command/commands/tool';
 import { installPwaFileHandling, type FileHandlingWindowLike } from '@/command/pwa-file-handling';
 import {
   isSupportedDocumentFileName,
+  documentFileInputAccept,
+  unsupportedDocumentMessage,
   type FileSystemFileHandleLike,
 } from '@/command/file-system-access';
-import { forgetConvertedHmlSaveHandle } from '@/command/save-target';
+import { forgetConvertedHmlSaveHandle, forgetConvertedPdfSaveHandle } from '@/command/save-target';
 import { ContextMenu } from '@/ui/context-menu';
 import { CommandPalette } from '@/ui/command-palette';
 import { MODAL_DIALOG_CLOSED_EVENT } from '@/ui/dialog';
@@ -65,10 +80,15 @@ import { clearAutosaveDrafts, deleteAutosaveDraft, listAutosaveDrafts, type Auto
 import { recoveryFileName } from '@/recovery/recovery-format';
 import { showAutosaveRecoveryDialog } from '@/recovery/recovery-ui';
 import { CellSelectionRenderer } from '@/engine/cell-selection-renderer';
+import { cellSelectionPhaseLabel, type CellSelectionPhase } from '@/engine/cell-selection-phase';
 import { TableObjectRenderer } from '@/engine/table-object-renderer';
 import { TableResizeRenderer } from '@/engine/table-resize-renderer';
 import { Ruler } from '@/view/ruler';
 import { detectPlatformKind } from '@/engine/navigation-keymap';
+import {
+  headerFooterApplyToLabel,
+  parseHeaderFooterModeChanged,
+} from '@/engine/header-footer-mode';
 import {
   percentToZoomSliderPosition,
   zoomPercentShortcutTitle,
@@ -82,20 +102,35 @@ import {
   resolveRenderProfile,
   type RenderBackendFallbackReason,
 } from '@/view/render-backend';
-import {
-  calculateArrangementFitWidthZoom,
-  calculateFitPageZoom,
-} from '@/view/zoom-fit';
+import { normalizeZoomFitMode, resolveZoomFitZoom, type ZoomFitMode } from '@/view/zoom-fit';
+import { CENTER_ZOOM_ANCHOR } from '@/view/zoom-anchor';
 import { withBusyCursor } from '@/view/busy-cursor';
 import { formatPageIndicator } from '@/view/page-indicator';
 import { installEmbedRuntime } from '@/embed/runtime';
+import { subscribeFieldChanges } from '@/embed/field-events';
 import type { EmbedRendererRuntimeRequestV1 } from '@/embed/rpc-router';
 import { enrichFontDecisionTrace } from '@/core/font-decision-trace';
 import { DocumentAgentController } from '@/document-agent/controller';
+import { initI18n, t } from '@/i18n/index.ts';
+import { SidePanelController, createDomSidePanelView } from '@/view/side-panel-host';
+import { navigateToSearchHit } from '@/ui/find-dialog';
+
+// 언어팩 초기화 — 정적 마크업의 라벨을 결정된 로케일로 갱신한다. 카탈로그에 없는 키는
+// 원문(ko)으로 물러나므로 번역이 없는 상태에서도 화면은 도입 전과 같다.
+initI18n();
 
 const wasm = new WasmBridge();
+installDocumentTitle(wasm);
 const eventBus = new EventBus();
 const documentState = new DocumentDirtyState(eventBus);
+installCommandErrorGlobalRouting(window);
+// WKWebView 등 직접 호스트는 EventTarget을 구독하고 이 조회로 현재 문서 세션을 확인한다.
+Object.defineProperty(window, 'rhwpCommandErrors', { value: Object.freeze({
+  capability: 'command-error-v1',
+  isHandledError: (error: unknown) => error instanceof StudioCommandError,
+  inspect: inspectCommandError,
+  getState: () => inputHandler?.getCommandErrorState() ?? null,
+}), configurable: true });
 documentState.installBeforeUnload(window);
 const autosaveManager = new AutosaveManager({
   exportBytes: () => wasm.exportHwp(),
@@ -112,6 +147,8 @@ initThemeSync((effective, mode) => {
 // 저장된 도구 상자(기본/서식) 보이기·숨기기 복원 — 문서 로드와 무관하고, WASM 초기화보다
 // 먼저 반영해야 숨긴 도구 모음이 잠깐 보였다 사라지지 않는다(모듈 스크립트라 DOM 은 이미 파싱됨).
 syncToolboxMenu();
+const iconToolbarScroller = initIconToolbarScroller(document.getElementById('icon-toolbar'));
+initStyleToolbarOverflow(document.getElementById('style-bar'));
 
 /**
  * 호스트 저장 완료 통지 (#2660).
@@ -132,6 +169,7 @@ async function completeHostSave(fileName?: string): Promise<{ ok: true; wasDirty
 // 호스트를 위해 프로덕션 빌드에도 항상 노출한다 (iframe 호스트는 embed RPC 사용).
 (window as any).rhwpStudio = {
   notifySaved: (fileName?: string) => completeHostSave(fileName),
+  fonts: { setProvider: setHostFontProvider, getState: getHostFontState },
 };
 
 // E2E 테스트용 전역 노출 (개발 모드 전용)
@@ -229,7 +267,7 @@ function getContext(): EditorContext {
     showControlCodes: wasm.getShowControlCodes(),
     showParagraphMarks: wasm.getShowParagraphMarks(),
     isDirty: documentState.isDirty(),
-    sourceFormat: hasDoc ? (wasm.getSourceFormat() as 'hwp' | 'hwpx' | 'hml') : undefined,
+    sourceFormat: hasDoc ? (wasm.getSourceFormat() as 'hwp' | 'hwpx' | 'hml' | 'pdf') : undefined,
   };
 }
 
@@ -240,7 +278,7 @@ function setEditMode(mode: EditorEditMode): void {
   document.querySelectorAll('[data-cmd="view:form-mode"]').forEach(el => {
     el.classList.toggle('active', mode === 'form');
   });
-  sbMessage().textContent = mode === 'form' ? '양식 모드' : '기본 편집 모드';
+  sbMessage().textContent = mode === 'form' ? t('ui.sbMessage.formMode') : t('ui.sbMessage.editMode');
   eventBus.emit('edit-mode-changed', mode);
   eventBus.emit('command-state-changed');
 }
@@ -254,7 +292,7 @@ const commandServices: CommandServices = {
   getViewportManager: () => canvasView?.getViewportManager() ?? null,
   gotoPage: (globalPage) => canvasView?.gotoPage(globalPage) ?? false,
   refreshDocumentStatus: () => {
-    sbMessage().textContent = `${wasm.fileName} — ${wasm.pageCount}페이지`;
+    sbMessage().textContent = t('ui.sbMessage.filePages', { p1: wasm.fileName, p2: wasm.pageCount });
   },
   setEditMode,
 };
@@ -285,11 +323,27 @@ async function resolvePlugin(id: string): Promise<StudioPlugin> {
     // 번들에 있는 이름만 허용한다. 동적 import 라 올리지 않으면 코드도 로드되지 않는다.
     return (await import('@rhwp/hwpctrl/studio-plugin')).hwpctrlStudioPlugin as StudioPlugin;
   }
+  // `RHWP_WITHOUT_AI=1` 빌드에서는 이 분기와 AI 청크·SDK 가 통째로 사라진다.
+  if (__RHWP_AI__ && id === 'ai-assistant') {
+    return (await import('@/ai/plugin')).aiAssistantPlugin;
+  }
   if (import.meta.env.DEV && id === 'dev-probe') {
     return (await import('@/plugin/dev-probe-plugin')).devProbePlugin;
   }
   throw new Error(`허용되지 않은 플러그인: ${id}`);
 }
+
+/**
+ * 오른쪽 패널 자리. embed 모드에는 두지 않는다 — 문서를 어디로 보낼지는 embed 호스트가 정한다.
+ */
+const sidePanelRoot = document.getElementById('side-panel-host');
+const sidePanels = chromeMode !== 'embed' && sidePanelRoot
+  ? new SidePanelController(createDomSidePanelView(
+    sidePanelRoot,
+    t('ui.sidePanel.close'),
+    () => document.getElementById('scroll-container')?.focus(),
+  ))
+  : undefined;
 
 const plugins = new PluginHostRegistry({
   wasm,
@@ -297,8 +351,30 @@ const plugins = new PluginHostRegistry({
   eventBus,
   getInputHandler: () => inputHandler,
   loadDocument: (bytes, fileName) => loadBytes(bytes, fileName ?? 'document.hwp', null),
-  createBlankDocument: () => { void createNewDocument(); },
+  createBlankDocument: async (options) => {
+    if (options?.confirmUnsaved && !await canReplaceCurrentDocument()) return false;
+    await createNewDocument();
+    return true;
+  },
   resolve: resolvePlugin,
+  sidePanels,
+  selectTextRange: (range) => {
+    if (!inputHandler) return false;
+    navigateToSearchHit(inputHandler, {
+      found: true,
+      sec: range.section,
+      para: range.paragraph,
+      charOffset: range.charOffset,
+      length: range.length,
+      ...(range.cell ? {
+        cellContext: {
+          parentPara: range.cell.parentPara, ctrlIdx: range.cell.controlIndex,
+          cellIdx: range.cell.cellIndex, cellPara: range.cell.cellPara,
+        },
+      } : {}),
+    });
+    return true;
+  },
 });
 (window as any).rhwpStudio.plugins = plugins;
 
@@ -306,10 +382,10 @@ const plugins = new PluginHostRegistry({
 // registerAll이 메뉴 클릭·단축키·전역 단축키·커맨드 팔레트가 모두 지나는 choke point라
 // 이 필터 하나로 충분하다. 파일 수명주기 커맨드에 더해 edit:compare-documents도 거른다:
 // 비교 실행이 오른쪽 문서를 현재 에디터에 로드하는, 호스트가 감지할 수 없는 문서 교체
-// 진입점이다. shortcut-map은 그대로 둔다: 매핑이 남아야 Ctrl+S/Ctrl+P가 preventDefault로
-// 계속 삼켜져 브라우저 저장/인쇄 대화상자로 빠지지 않고, Ctrl+Shift+S가 후순위
-// table:block-sum 매핑으로 폴스루하지 않는다. 미등록 커맨드 dispatch는 무해하게 false를
-// 반환한다.
+// 진입점이다. shortcut-map의 파일 매핑은 그대로 둔다: 매핑이 남아야 Ctrl+S/Ctrl+P가
+// preventDefault로 계속 삼켜져 브라우저 저장/인쇄 대화상자로 빠지지 않는다.
+// Ctrl+Shift+S의 셀 블록 문맥 라우터도 Save As가 미등록이면 이벤트만 소비하므로
+// table:block-sum으로 폴스루하지 않는다. 미등록 커맨드 dispatch는 무해하게 false를 반환한다.
 registry.registerAll(
   chromeMode === 'embed'
     ? fileCommands.filter((cmd) => !EMBED_HIDDEN_FILE_COMMAND_IDS.includes(cmd.id))
@@ -453,15 +529,15 @@ async function updateLoadProgress(percent: number, label: string): Promise<void>
  * face는 prepareCanvasKitDocument에서 먼저 준비하고, 여기서는 문서 전체 face 및 사용자가
  * 새로 승인한 local face를 보충한 뒤 현재 뷰만 다시 그린다.
  */
-function prepareCanvasKitLocalFonts(fontNames: readonly string[] | undefined): void {
+function prepareCanvasKitLocalFonts(fontNames: readonly string[] | undefined, refresh = false): void {
   const renderer = canvasView?.getRenderBackend() === 'canvaskit'
     ? rendererSession?.getCanvasKitRenderer() ?? null
     : null;
-  if (!renderer || !fontNames?.length) return;
-  const requestedFonts = [...fontNames];
+  if (!renderer || (!fontNames?.length && !refresh)) return;
+  const requestedFonts = [...(fontNames ?? [])];
   void (async () => {
     await loadStoredLocalFonts();
-    await renderer.prepareLocalFonts(requestedFonts);
+    await renderer.prepareLocalFonts(requestedFonts, { refresh });
     if (
       renderer === rendererSession?.getCanvasKitRenderer()
       && canvasView?.getRenderBackend() === 'canvaskit'
@@ -495,6 +571,25 @@ async function initialize(): Promise<void> {
     const canvaskitMode = canvaskitModeRequest.mode;
     const canvaskitSurfaceRequest = resolveCanvasKitSurfaceRequest(window.location.search);
     const renderProfile = resolveRenderProfile(window.location.search);
+    // Each renderer decision owns a fresh report (document/edit/resource revision).
+    // Share declarations only; local/host availability is resolved again after preparation.
+    const documentFontUsage = new WeakMap<CanvasKitDocumentPreflight, DocumentCanvasKitFontUsage[]>();
+    const documentFontRequirements = (report: CanvasKitDocumentPreflight) => {
+      const required = report.requiredFontFamilies;
+      if (!report.complete || required.length === 0) return required;
+      let usage = documentFontUsage.get(report);
+      if (!usage) {
+        if (!wasm.getDocumentInfo().fontSubstitutions?.length) return required;
+        function* pageTrees() {
+          for (let page = 0; page < wasm.pageCount; page++) {
+            yield wasm.getPageLayerTreeObject(page, renderProfile);
+          }
+        }
+        usage = collectDocumentCanvasKitFontUsage(pageTrees());
+        documentFontUsage.set(report, usage);
+      }
+      return resolveDocumentCanvasKitFontUsage(required, usage);
+    };
     const diagnosticsBackendRequest: EmbedRendererRuntimeRequestV1['backend'] =
       renderBackendRequest.backend === 'auto'
         ? { ...renderBackendRequest, backend: 'canvas2d' }
@@ -525,40 +620,68 @@ async function initialize(): Promise<void> {
         msg.textContent = 'CanvasKit 로딩 중...';
         const { CanvasKitLayerRenderer } = await import('@/view/canvaskit-renderer');
         return CanvasKitLayerRenderer.create(mode, surface, {
-          requirePreparedFontFamilies: renderBackendRequest.backend === 'auto',
+          requirePreparedFontFamilies: true,
         });
       },
       {
         transformCanvasKitPreflight(report) {
+          if (!report.complete) return report;
           const plan = resolveCanvasKitFontPlan(
-            report.requiredFontFamilies,
+            documentFontRequirements(report),
             extensionViewerSettings,
           );
           const blockers = plan.unavailableFonts.map(font => `fontUnavailable:${font}`);
-          return withCanvasKitSurfaceBlockers(
-            report,
-            blockers,
-          );
+          const transformed = withCanvasKitSurfaceBlockers(report, blockers);
+          const usage = documentFontUsage.get(report);
+          if (usage) documentFontUsage.set(transformed, usage);
+          return transformed;
         },
         async prepareCanvasKitDocument(renderer, report) {
-          const plan = resolveCanvasKitFontPlan(
-            report.requiredFontFamilies,
-            extensionViewerSettings,
-          );
-          if (plan.unavailableFonts.length > 0) {
-            throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${plan.unavailableFonts.join(', ')}`);
+          if (hasHostFontProvider()) {
+            const documentGeneration = wasm.documentGeneration;
+            const generation = getHostFontState().generation;
+            await prepareHostFontCatalog();
+            if (generation !== getHostFontState().generation || documentGeneration !== wasm.documentGeneration) return;
+            const records = new Map<string, LocalFontRecord>();
+            for (let page = 0; page < wasm.pageCount; page++) {
+              for (const record of collectHostFontRequests(wasm.getPageLayerTreeObject(page, renderProfile))) {
+                records.set(localFontFaceKey(record), record);
+              }
+            }
+            await renderer.prepareHostFonts([...records.values()],
+              (bytes, faceIndex) => wasm.prepareOrdinaryTextFont(bytes, faceIndex));
           }
+          // Explicit selection bypasses auto eligibility, not font preparation.
+          const fontRequirements = report ?? wasm.getCanvasKitDocumentPreflight(
+            canvaskitModeRequest.mode,
+            renderProfile,
+          );
+          if (!fontRequirements.complete) {
+            throw new Error('CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다');
+          }
+          let requiredFontFamilies: readonly string[] = fontRequirements.requiredFontFamilies;
           try {
             // 저장된 Local Font Access 권한이 있으면 첫 replay부터 원 face의 SFNT bytes를
             // CanvasKit에 전달한다. CSS local()에서 EBDT face가 두부로 바뀌는 경로를 타지 않는다.
             await loadStoredLocalFonts();
-            await renderer.prepareLocalFonts(report.requiredFontFamilies);
+            requiredFontFamilies = documentFontRequirements(fontRequirements);
+            await renderer.prepareLocalFonts(requiredFontFamilies);
           } catch (error) {
             // 로컬 권한이 만료됐거나 face 읽기에 실패해도 portable bundled face로 계속 연다.
             console.warn(
               '[CanvasKit] 저장된 로컬 Typeface 사전 준비 실패, bundled fallback으로 계속합니다:',
               error,
             );
+          }
+          const plan = resolveCanvasKitFontPlan(
+            requiredFontFamilies,
+            extensionViewerSettings,
+          );
+          const unavailableFonts = plan.unavailableFonts.filter(
+            family => !renderer.hasPreparedFontFamily(family),
+          );
+          if (unavailableFonts.length > 0) {
+            throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${unavailableFonts.join(', ')}`);
           }
           await renderer.prepareBundledFonts(plan.sources);
         },
@@ -598,6 +721,18 @@ async function initialize(): Promise<void> {
       canvasView.getVirtualScroll(),
       canvasView.getViewportManager(),
     );
+    inputHandler.configureCommandErrors({
+      isDirty: () => documentState.isDirty(),
+      render: () => canvasView!.refreshDocumentAgentMutation(),
+      publish: (payload: CommandErrorV1) => {
+        window.dispatchEvent(new CustomEvent('rhwp-command-error', { detail: payload }));
+        eventBus.emit('command-error', payload);
+        if (payload.documentSessionId !== inputHandler?.getCommandErrorState()?.documentSessionId) return;
+        showToast({ message: payload.recovery === 'succeeded'
+          ? '명령을 완료하지 못했습니다. 편집 상태를 복구했습니다.'
+          : '편집 상태를 확인할 수 없습니다. 문서를 다시 열어 주세요.' });
+      },
+    });
     inputHandler.setEditMode(editMode);
     documentAgent?.dispose();
     documentAgent = new DocumentAgentController({
@@ -650,7 +785,11 @@ async function initialize(): Promise<void> {
     inputHandler.setContextMenu(new ContextMenu(dispatcher, registry));
     inputHandler.setCommandPalette(new CommandPalette(registry, dispatcher));
     inputHandler.setCellSelectionRenderer(
-      new CellSelectionRenderer(container, canvasView.getVirtualScroll()),
+      new CellSelectionRenderer(
+        container,
+        canvasView.getVirtualScroll(),
+        (phase) => eventBus.emit('cell-selection-phase-changed', phase),
+      ),
     );
     inputHandler.setTableObjectRenderer(
       new TableObjectRenderer(container, canvasView.getVirtualScroll()),
@@ -675,34 +814,65 @@ async function initialize(): Promise<void> {
         const cmd = (btn as HTMLElement).dataset.cmd;
         if (cmd) dispatcher.dispatch(cmd, { anchorEl: btn as HTMLElement });
       });
+      btn.addEventListener('click', (event) => {
+        if ((event as MouseEvent).detail !== 0) return;
+        const cmd = (btn as HTMLElement).dataset.cmd;
+        if (cmd) dispatcher.dispatch(cmd, { anchorEl: btn as HTMLElement });
+      });
     });
 
-    // 스플릿 버튼 드롭다운 메뉴
     document.querySelectorAll('.tb-split').forEach(split => {
-      const arrow = split.querySelector('.tb-split-arrow');
+      const arrow = split.querySelector<HTMLButtonElement>('.tb-split-arrow');
+      const menu = split.querySelector<HTMLElement>('.tb-split-menu');
       if (arrow) {
-        arrow.addEventListener('mousedown', (e) => {
+        arrow.setAttribute('aria-haspopup', 'menu');
+        arrow.setAttribute('aria-expanded', 'false');
+        arrow.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
-          // 다른 열린 메뉴 닫기
-          document.querySelectorAll('.tb-split.open').forEach(s => {
-            if (s !== split) s.classList.remove('open');
+          closeToolbarSplitMenus(document, split);
+          const open = !split.classList.contains('open');
+          setToolbarSplitOpen(split, open, {
+            focus: open && (e as MouseEvent).detail === 0 ? 'first' : undefined,
           });
-          split.classList.toggle('open');
+        });
+        arrow.addEventListener('keydown', (event) => {
+          if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+          event.preventDefault();
+          closeToolbarSplitMenus(document, split);
+          setToolbarSplitOpen(split, true, {
+            focus: event.key === 'ArrowDown' ? 'first' : 'last',
+          });
         });
       }
       split.querySelectorAll('.tb-split-item[data-cmd]').forEach(item => {
-        item.addEventListener('mousedown', (e) => {
+        item.addEventListener('click', (e) => {
           e.preventDefault();
-          split.classList.remove('open');
+          setToolbarSplitOpen(split, false, { returnFocus: (e as MouseEvent).detail === 0 });
           const cmd = (item as HTMLElement).dataset.cmd;
           if (cmd) dispatcher.dispatch(cmd, { anchorEl: item as HTMLElement });
         });
       });
+      menu?.addEventListener('keydown', (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          setToolbarSplitOpen(split, false, { returnFocus: true });
+        } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          event.preventDefault();
+          moveToolbarSplitFocus(split, target, event.key === 'ArrowDown' ? 1 : -1);
+        } else if (event.key === 'Home' || event.key === 'End') {
+          event.preventDefault();
+          const items = toolbarSplitItems(split);
+          (event.key === 'Home' ? items[0] : items.at(-1))?.focus({ preventScroll: true });
+        }
+      });
     });
     // 외부 클릭 시 스플릿 메뉴 닫기
     document.addEventListener('mousedown', () => {
-      document.querySelectorAll('.tb-split.open').forEach(s => s.classList.remove('open'));
+      closeToolbarSplitMenus(document);
     });
 
     // #780: 도구 모음/서식 도구 모음 영역 mousedown 시 focus 이동 방지
@@ -751,6 +921,15 @@ async function initialize(): Promise<void> {
 
     // E2E 테스트용 전역 노출 (개발 모드 전용)
     if (import.meta.env.DEV) {
+      if (new URLSearchParams(window.location.search).get('scrollProbe') === '1') {
+        const { installPageScrollProbe } = await import('./dev/page-scroll-probe');
+        installPageScrollProbe(canvasView, ruler, wasm, eventBus, async path => {
+          const response = await fetch(`/samples/${encodeURI(path)}`);
+          if (!response.ok) throw new Error(`fixture ${response.status}: ${path}`);
+          await loadBytes(new Uint8Array(await response.arrayBuffer()), path.split('/').pop()!, null,
+            performance.now(), { skipRecent: true, suppressDialogs: true });
+        });
+      }
       (window as any).__inputHandler = inputHandler;
       (window as any).__canvasView = canvasView;
       (window as any).__renderBackend = null;
@@ -778,10 +957,11 @@ function setupModalFocusRestore(): void {
 
 /** 포커스 주인과 무관하게 문서를 움직여야 하는 키 — 편집기 경로로 넘긴다. */
 const DOCUMENT_NAVIGATION_KEYS = new Set(['PageUp', 'PageDown', 'Home', 'End']);
-const GLOBAL_ZOOM_SHORTCUTS = new Set([
+const GLOBAL_VIEW_SHORTCUTS = new Set([
   'view:zoom-in',
   'view:zoom-out',
   'view:zoom-100',
+  'view:toolbox-basic',
 ]);
 
 /**
@@ -790,16 +970,15 @@ const GLOBAL_ZOOM_SHORTCUTS = new Set([
  */
 function setupGlobalShortcuts(): void {
   document.addEventListener('keydown', (e) => {
-    // input/textarea 등 편집 가능 요소 내부에서는 무시
-    const target = e.target as HTMLElement;
-    if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) return;
+    // 네이티브 입력 및 contentEditable 내부의 키는 해당 요소가 소유한다.
+    if (isTextEditingTarget(e.target)) return;
 
     // PgUp/PgDn·Home/End 는 문서를 보며 움직이는 키다. 툴바 버튼·서식 콤보를 한 번
     // 누르면 포커스가 편집기 textarea 를 떠나 InputHandler 가 키를 받지 못하고, 스크롤
     // 컨테이너도 포커스 대상이 아니라 브라우저 기본 동작조차 없어 통째로 무동작이 된다.
     // 편집기가 활성이면 keydown 을 그대로 편집기 경로에 넘겨, 포커스가 어디에 있든 같은
     // 분기·같은 결과(캐럿 이동 + 화면 이동)를 준다 — 여기에 로직을 복제하지 않는다.
-    // (textarea/input 이 target 이면 위에서 이미 return 하므로 이중 실행되지 않고,
+    // (글자 편집 요소가 target 이면 위에서 이미 return 하므로 이중 실행되지 않고,
     //  모달이 떠 있으면 Dialog 의 capture 핸들러가 먼저 전파를 끊는다.)
     // select 등 이 키를 자체 소비하는 위젯보다 문서 이동을 우선한다 — studio 에서
     // chrome 위젯은 스쳐 가는 대상이고 사용자가 보고 있는 것은 문서다.
@@ -815,10 +994,10 @@ function setupGlobalShortcuts(): void {
         return;
       }
     }
-    // 배율 키는 편집 textarea에서는 InputHandler가 소유하고, 그 밖의 포커스에서는
+    // 배율·도구 상자 키는 편집 textarea에서는 InputHandler가 소유하고, 그 밖의 포커스에서는
     // 이 전역 경로가 같은 커맨드를 한 번만 실행한다. 브라우저 기본 페이지 줌은 막는다.
     const globalShortcutId = matchShortcut(e, defaultShortcuts);
-    if (globalShortcutId && GLOBAL_ZOOM_SHORTCUTS.has(globalShortcutId)) {
+    if (globalShortcutId && GLOBAL_VIEW_SHORTCUTS.has(globalShortcutId)) {
       e.preventDefault();
       dispatcher.dispatch(globalShortcutId);
       return;
@@ -831,6 +1010,13 @@ function setupGlobalShortcuts(): void {
       if (commandId === 'edit:undo' || commandId === 'edit:redo') {
         const result = dispatcher.dispatchWithResult(commandId);
         if (result.ok || result.reason === 'threw') e.preventDefault();
+      } else if (commandId === 'edit:select-all') {
+        handleDocumentSelectAllShortcut(
+          e,
+          document.querySelector('.modal-overlay'),
+          () => { dispatcher.dispatchWithResult(commandId); },
+          () => { inputHandler?.focus(); },
+        );
       }
       return;
     }
@@ -858,6 +1044,7 @@ function setupGlobalShortcuts(): void {
 
 function setupFileInput(): void {
   const fileInput = document.getElementById('file-input') as HTMLInputElement;
+  fileInput.accept = documentFileInputAccept(wasm.hasPdfImportCapability());
 
   fileInput.addEventListener('change', async (e) => {
     const input = e.target as HTMLInputElement;
@@ -865,8 +1052,8 @@ function setupFileInput(): void {
     delete input.dataset.skipUnsavedGuard;
     const file = input.files?.[0];
     if (!file) return;
-    if (!isSupportedDocumentFileName(file.name)) {
-      alert('HWP/HWPX/HML 파일만 지원합니다.');
+    if (!isSupportedDocumentFileName(file.name, wasm.hasPdfImportCapability())) {
+      alert(unsupportedDocumentMessage(file.name, wasm.hasPdfImportCapability()));
       fileInput.value = '';
       return;
     }
@@ -895,12 +1082,12 @@ function setupFileInput(): void {
     const dropName = file.name.toLowerCase();
     const imageExts = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp'];
     const isImage = imageExts.some(ext => dropName.endsWith(ext));
-    const isDoc = isSupportedDocumentFileName(dropName);
+    const isDoc = isSupportedDocumentFileName(dropName, wasm.hasPdfImportCapability());
     // embed 프로파일: 문서 드롭은 호스트가 감지할 수 없는 문서 교체 경로이므로 무시한다.
     // 이미지 드롭은 수명주기가 아니라 편집 기능이라 그대로 둔다.
     if (chromeMode === 'embed' && isDoc) return;
     if (!isImage && !isDoc) {
-      alert('HWP/HWPX/HML 파일 또는 이미지 파일만 지원합니다.');
+      alert(unsupportedDocumentMessage(dropName, wasm.hasPdfImportCapability(), true));
       return;
     }
 
@@ -958,11 +1145,10 @@ function setupZoomControls(): void {
   const zoomIn = document.getElementById('sb-zoom-in') as HTMLButtonElement;
   const zoomOut = document.getElementById('sb-zoom-out') as HTMLButtonElement;
   const zoomRange = document.getElementById('sb-zoom-range') as HTMLInputElement;
-  const zoomRangeWrap = zoomRange.closest('.stb-zoom-range-wrap')!;
   const platform = detectPlatformKind();
 
-  zoomIn.title = zoomPercentShortcutTitle('확대', 'Ctrl++', platform);
-  zoomOut.title = zoomPercentShortcutTitle('축소', 'Ctrl+-', platform);
+  zoomIn.title = zoomPercentShortcutTitle('zoomIn', 'Ctrl++', platform);
+  zoomOut.title = zoomPercentShortcutTitle('zoomOut', 'Ctrl+-', platform);
   zoomIn.addEventListener('click', () => {
     dispatcher.dispatch('view:zoom-in');
   });
@@ -973,7 +1159,6 @@ function setupZoomControls(): void {
     const percent = zoomSliderPositionToPercent(Number(zoomRange.value));
     zoomRange.value = String(percentToZoomSliderPosition(percent));
     zoomRange.setAttribute('aria-valuetext', `${percent}%`);
-    zoomRangeWrap.classList.toggle('is-neutral', percent === 100);
     vm.setZoom(percent / 100);
   });
   zoomRange.addEventListener('keydown', (event) => {
@@ -1007,35 +1192,12 @@ function setupZoomControls(): void {
     vm.setZoom(next / 100);
   });
 
-  // 폭 맞춤: 용지 폭에 맞게 줌 조절
+  // 폭 맞춤·쪽 맞춤은 메뉴/단축키와 같은 커맨드를 탄다 — 계산과 저장 자리가 하나여야 한다.
   document.getElementById('sb-zoom-fit-width')!.addEventListener('click', () => {
-    if (wasm.pageCount === 0) return;
-    const container = document.getElementById('scroll-container')!;
-    const pageInfo = wasm.getPageInfo(0);
-    // pageInfo.width는 이미 px 단위 (96dpi 기준)
-    const zoom = calculateArrangementFitWidthZoom({
-      containerWidth: container.clientWidth,
-      pageWidth: pageInfo.width,
-      arrangement: canvasView!.getPageArrangement(),
-    });
-    console.log(`[zoom-fit-width] container=${container.clientWidth} page=${pageInfo.width} zoom=${zoom.toFixed(3)}`);
-    vm.setZoom(zoom);
+    dispatcher.dispatch('view:zoom-fit-width');
   });
-
-  // 쪽 맞춤: 한 페이지 전체가 보이도록 줌 조절
   document.getElementById('sb-zoom-fit')!.addEventListener('click', () => {
-    if (wasm.pageCount === 0) return;
-    const container = document.getElementById('scroll-container')!;
-    const pageInfo = wasm.getPageInfo(0);
-    // pageInfo.width/height는 이미 px 단위 (96dpi 기준)
-    const zoom = calculateFitPageZoom(
-      container.clientWidth,
-      container.clientHeight,
-      pageInfo.width,
-      pageInfo.height,
-    );
-    console.log(`[zoom-fit-page] containerW=${container.clientWidth} containerH=${container.clientHeight} pageW=${pageInfo.width} pageH=${pageInfo.height} zoom=${zoom.toFixed(3)}`);
-    vm.setZoom(zoom);
+    dispatcher.dispatch('view:zoom-fit-page');
   });
 
   // 한컴 상황 선처럼 돋보기와 배율 표시 전체가 하나의 대화상자 진입점이다.
@@ -1069,8 +1231,14 @@ function setupEventListeners(): void {
       documentPageNumber: pageInfo?.pageNumber,
     });
     if (pageInfo) {
-      sbSection().textContent = `구역: ${pageInfo.sectionIndex + 1} / ${totalSections}`;
+      sbSection().textContent = t('ui.sbSection.text', { p1: pageInfo.sectionIndex + 1, p2: totalSections });
     }
+  });
+
+  // 맞춤 선택은 배율 수치가 아니라 규칙이므로 그 자체를 저장한다 — 휠·가로바·수치 배율은
+  // 뷰포트가 'none' 을 알려 저장된 맞춤을 푼다.
+  eventBus.on('zoom-fit-mode-changed', (mode) => {
+    userSettings.setZoomFitMode(normalizeZoomFitMode(mode));
   });
 
   eventBus.on('zoom-level-display', (zoom) => {
@@ -1080,16 +1248,21 @@ function setupEventListeners(): void {
     if (range) {
       range.value = String(percentToZoomSliderPosition(percent));
       range.setAttribute('aria-valuetext', `${percent}%`);
-      range.closest('.stb-zoom-range-wrap')?.classList.toggle(
-        'is-neutral',
-        percent === 100,
-      );
     }
   });
 
   // 삽입/수정 모드 토글
   eventBus.on('insert-mode-changed', (insertMode) => {
-    document.getElementById('sb-mode')!.textContent = (insertMode as boolean) ? '삽입' : '수정';
+    document.getElementById('sb-mode')!.textContent = (insertMode as boolean) ? t('ui.sbMode.label') : t('ui.sbMode.label.overwrite');
+  });
+
+  eventBus.on('cell-selection-phase-changed', (nextPhase) => {
+    const selectionStatus = document.getElementById('sb-cell-selection')!;
+    const phase = nextPhase as CellSelectionPhase | null;
+    selectionStatus.hidden = phase === null;
+    const nextLabel = phase === null ? '' : cellSelectionPhaseLabel(phase);
+    // zoom·방향키로 동일 단계를 다시 그릴 때 live region을 반복 발화하지 않는다.
+    if (selectionStatus.textContent !== nextLabel) selectionStatus.textContent = nextLabel;
   });
 
   eventBus.on('document-mutated', (reason) => {
@@ -1110,19 +1283,34 @@ function setupEventListeners(): void {
     }
   });
 
+  onHostFontsChanged(() => {
+    if (!canvasView || wasm.pageCount === 0) return;
+    wasm.invalidateCanvasMetricFonts();
+    void canvasView.refreshFontResources().catch(error => {
+      console.warn('[HostFonts] View refresh failed:', error);
+    });
+  });
+
   eventBus.on('local-fonts-changed', () => {
     if (!canvasView || wasm.pageCount === 0) return;
     const state = getLocalFontState();
     const generation = `${state.detectedAt ?? 'none'}:${state.source ?? 'none'}:${state.count}`;
     if (generation === lastAppliedLocalFontGeneration) return;
     lastAppliedLocalFontGeneration = generation;
+    wasm.invalidateCanvasMetricFonts();
 
     if (canvasView.getRenderBackend() === 'canvaskit') {
       // CanvasKit은 browser CSS를 쓰지 않으므로 local SFNT 준비가 끝난 뒤 helper가 한 번 갱신한다.
-      prepareCanvasKitLocalFonts(currentDocumentFonts);
+      prepareCanvasKitLocalFonts(currentDocumentFonts, true);
       return;
     }
     // Canvas2D는 Rust layout과 문서를 다시 열지 않고 현재 보이는 view만 새 family chain으로 그린다.
+    eventBus.emit('document-view-changed');
+  });
+
+  document.fonts.addEventListener('loadingdone', () => {
+    if (!canvasView || wasm.pageCount === 0) return;
+    wasm.invalidateCanvasMetricFonts();
     eventBus.emit('document-view-changed');
   });
 
@@ -1152,9 +1340,17 @@ function setupEventListeners(): void {
   // 개체 선택 시 회전/대칭 버튼 그룹 표시/숨김
   const rotateGroup = document.querySelector('.tb-rotate-group') as HTMLElement | null;
   let noteToolbarActive = false;
+  let headerFooterToolbarActive = false;
+  let pictureObjectSelected = false;
+  const syncRotateGroup = (): void => {
+    if (rotateGroup) {
+      rotateGroup.hidden = !pictureObjectSelected || noteToolbarActive || headerFooterToolbarActive;
+    }
+  };
   if (rotateGroup) {
     eventBus.on('picture-object-selection-changed', (selected) => {
-      rotateGroup.style.display = (selected as boolean) && !noteToolbarActive ? '' : 'none';
+      pictureObjectSelected = selected as boolean;
+      syncRotateGroup();
     });
   }
 
@@ -1162,22 +1358,36 @@ function setupEventListeners(): void {
   const hfGroup = document.querySelector('.tb-headerfooter-group') as HTMLElement | null;
   const hfLabel = hfGroup?.querySelector('.tb-hf-label') as HTMLElement | null;
   const noteGroup = document.querySelector('.tb-note-group') as HTMLElement | null;
-  const defaultTbGroups = document.querySelectorAll('#icon-toolbar > .tb-group:not(.tb-headerfooter-group):not(.tb-note-group):not(.tb-rotate-group), #icon-toolbar > .tb-sep');
+  const defaultTbGroups = document.querySelectorAll('#icon-toolbar .tb-scroll-track > .tb-group:not(.tb-headerfooter-group):not(.tb-note-group):not(.tb-rotate-group), #icon-toolbar .tb-scroll-track > .tb-sep');
   const scrollContainer = document.getElementById('scroll-container');
   const styleBar = document.getElementById('style-bar');
 
-  eventBus.on('headerFooterModeChanged', (mode) => {
-    const isActive = (mode as string) !== 'none';
+  const hfLiveStatus = document.getElementById('hf-edit-status-live');
+  eventBus.on('headerFooterModeChanged', (payload) => {
+    const state = parseHeaderFooterModeChanged(payload);
+    const isActive = state !== 'none';
+    headerFooterToolbarActive = isActive;
+    iconToolbarScroller?.resetToStart();
     // 도구상자 전환
     if (hfGroup) {
-      hfGroup.style.display = isActive ? '' : 'none';
+      hfGroup.hidden = !isActive;
     }
     if (hfLabel) {
-      hfLabel.textContent = (mode as string) === 'header' ? '머리말' : (mode as string) === 'footer' ? '꼬리말' : '';
+      const kind = state === 'none' ? '' : state.mode === 'header' ? t('ui.tbHfLabel.header') : t('ui.tbHfLabel.footer');
+      const target = state === 'none' ? '' : headerFooterApplyToLabel(state.applyTo);
+      hfLabel.textContent = state === 'none' ? '' : t('ui.tbHfLabel.editing', { p1: kind, p2: target });
+      hfLabel.dataset.mode = state === 'none' ? '' : state.mode;
+      hfLabel.dataset.applyTo = state === 'none' ? '' : String(state.applyTo);
+      if (hfLiveStatus) {
+        hfLiveStatus.textContent = state === 'none'
+          ? t('ui.hfLiveStatus.ended')
+          : t('ui.hfLiveStatus.editing', { p1: kind, p2: target, p3: state.sectionIdx + 1 });
+      }
     }
     defaultTbGroups.forEach((el) => {
-      (el as HTMLElement).style.display = isActive ? 'none' : '';
+      (el as HTMLElement).hidden = isActive;
     });
+    syncRotateGroup();
     // 서식 도구 모음은 머리말/꼬리말 편집 시에도 유지 (문단/글자 모양 설정 필요)
     // 본문 dimming
     if (scrollContainer) {
@@ -1192,16 +1402,45 @@ function setupEventListeners(): void {
   eventBus.on('footnoteModeChanged', (active) => {
     const isActive = active as boolean;
     noteToolbarActive = isActive;
+    iconToolbarScroller?.resetToStart();
     if (noteGroup) {
-      noteGroup.style.display = isActive ? '' : 'none';
-    }
-    if (rotateGroup && isActive) {
-      rotateGroup.style.display = 'none';
+      noteGroup.hidden = !isActive;
     }
     defaultTbGroups.forEach((el) => {
-      (el as HTMLElement).style.display = isActive ? 'none' : '';
+      (el as HTMLElement).hidden = isActive;
     });
+    syncRotateGroup();
   });
+}
+
+/**
+ * 저장된 쪽 맞춤/폭 맞춤을 새로 연 문서에 되돌린다.
+ *
+ * 저장값은 배율 수치가 아니라 맞춤 규칙이라, 쪽 크기가 다른 문서에서도 그 문서의 쪽으로
+ * 다시 계산한다. 수치 배율('none')이면 지금 배율을 건드리지 않는다.
+ *
+ * 되돌릴 맞춤은 문서를 열기 **전에** 읽어 인자로 받는다 — 좁은 창의 자동 폭 맞춤처럼
+ * 로드 중에 배율을 정하는 경로가 저장값을 먼저 'none' 으로 지워 버리기 때문이다.
+ */
+function applySavedZoomFitMode(mode: ZoomFitMode): void {
+  if (mode === 'none') return;
+  const vm = canvasView?.getViewportManager();
+  const container = document.getElementById('scroll-container');
+  if (!vm || !container || wasm.pageCount === 0) return;
+  try {
+    // getPageInfo 의 width/height 는 이미 px 단위 (96dpi 기준)
+    const pageInfo = wasm.getPageInfo(0);
+    const zoom = resolveZoomFitZoom(mode, {
+      containerWidth: container.clientWidth,
+      containerHeight: container.clientHeight,
+      pageWidth: pageInfo.width,
+      pageHeight: pageInfo.height,
+      arrangement: userSettings.getViewSettings().pageArrangement,
+    });
+    if (zoom !== null) vm.setZoom(zoom, CENTER_ZOOM_ANCHOR, mode);
+  } catch (error) {
+    console.warn('[main] 저장된 맞춤 배율 복원 실패:', error);
+  }
 }
 
 /** 문서 초기화 공통 시퀀스 (loadFile, createNewDocument 양쪽에서 사용) */
@@ -1223,30 +1462,38 @@ async function initializeDocument(
 ): Promise<void> {
   const msg = sbMessage();
   try {
+    // 이미 승인된 snapshot을 권한 prompt 없이 준비한 뒤 프로그램을 선택한다.
+    await loadStoredLocalFonts();
+    // 실제 프로그램을 먼저 확정한 뒤 같은 문서 정보로 공급과 view를 준비한다.
+    await wasm.prepareDeclaredFontEnvironment(canvasView?.getRenderBackend());
+    docInfo = wasm.getDocumentInfo();
     setDocumentFontSubstitutions(docInfo.fontSubstitutions);
-    currentDocumentFonts = [...(docInfo.fontsUsed ?? [])];
+    currentDocumentFonts = [...new Set([
+      ...(docInfo.fontsUsed ?? []),
+      ...(docInfo.fontSubstitutions ?? []).map(([, target]) => target),
+    ])];
     lastAppliedLocalFontGeneration = null;
     console.log('[initDoc] 1. 폰트 로딩 시작');
     await updateLoadProgress(55, '폰트 준비 중...');
-    if (docInfo.fontsUsed?.length) {
-      await loadWebFonts(docInfo.fontsUsed, (loaded, total) => {
+    if (currentDocumentFonts.length) {
+      await loadWebFonts(currentDocumentFonts, (loaded, total) => {
         const fontPercent = total > 0 ? 55 + Math.round((loaded / total) * 20) : 65;
         msg.textContent = `파일 로딩 ${fontPercent}% - 폰트 로딩 중... (${loaded}/${total})`;
       }, extensionViewerSettings);
     }
     console.log('[initDoc] 2. 폰트 로딩 완료');
-    // 저장 snapshot은 권한 prompt 없이 읽을 수 있다. Canvas2D 첫 paint의 family 해소가
-    // 이미 승인된 exact local face를 놓치지 않도록 문서 view보다 먼저 준비한다 (#4739).
-    await loadStoredLocalFonts();
     await updateLoadProgress(75, '문서 상태 적용 중...');
     totalSections = docInfo.sectionCount ?? 1;
-    sbSection().textContent = `구역: 1 / ${totalSections}`;
+    sbSection().textContent = t('ui.sbSection.text', { p1: 1, p2: totalSections });
     applySavedTextMarkSettings();
     console.log('[initDoc] 3. inputHandler deactivate');
     inputHandler?.deactivate();
     console.log('[initDoc] 4. canvasView loadDocument');
     await updateLoadProgress(82, '페이지 렌더 준비 중...');
+    const savedZoomFitMode = userSettings.getViewSettings().zoomFitMode;
     await canvasView?.loadDocument();
+    // 쪽 크기를 알 수 있는 첫 시점이다 — 저장된 맞춤은 이 문서의 쪽으로 다시 계산한다.
+    applySavedZoomFitMode(savedZoomFitMode);
     prepareCanvasKitLocalFonts(docInfo.fontsUsed);
     console.log('[initDoc] 5. toolbar setEnabled');
     await updateLoadProgress(90, '도구 모음 준비 중...');
@@ -1357,7 +1604,7 @@ function passwordOpenFailure(error: unknown): Error {
  * 일반 열기를 먼저 시도하고, 지원되는 HWP3/HWP5 암호 문서가 감지된 경우에만 암호
  * 입력 UI로 전환한다. 암호 문자열은 이 함수의 단일 시도 범위를 벗어나 보관하지 않는다.
  */
-async function loadPasswordProtectedDocument(data: Uint8Array, fileName: string): Promise<DocumentInfo> {
+async function openPasswordProtectedDocument(data: Uint8Array, fileName: string): Promise<void> {
   let retryMessage: string | undefined;
 
   while (true) {
@@ -1365,7 +1612,8 @@ async function loadPasswordProtectedDocument(data: Uint8Array, fileName: string)
     if (password === null) throw new DocumentOpenCancelledError();
 
     try {
-      return wasm.loadDocumentWithPassword(data, password, fileName);
+      wasm.loadDocumentWithPassword(data, password, fileName);
+      return;
     } catch (error) {
       // CFB 암호문은 인증 태그가 없으므로 오입력과 암호화 데이터 손상을 완전히 구분할 수
       // 없다. 두 경우만 재입력 상태로 안내하고, 지원하지 않는 암호화/DRM 등은 원래의
@@ -1388,7 +1636,8 @@ async function loadDocumentForOpen(data: Uint8Array, fileName: string): Promise<
     return wasm.loadDocument(data, fileName);
   } catch (error) {
     if (!isPasswordRequiredError(error)) throw error;
-    return loadPasswordProtectedDocument(data, fileName);
+    await openPasswordProtectedDocument(data, fileName);
+    return wasm.getDocumentInfo();
   }
 }
 
@@ -1459,8 +1708,18 @@ async function loadBytes(
     // 문서가 갈렸다 — 빌린 핸들을 쥔 플러그인에 새 lease 를 준다. 알리지 않으면 그쪽만 옛
     // 문서를 계속 만진다(세대 검사가 잡아 DOCUMENT_RELEASED 로 끊긴다).
     plugins.notifyDocumentSwap();
+    // [#7194] 같은 사실을 앱 안쪽에도 알린다. 종전에는 문서 교체 신호가
+    // `open-document-bytes` 이벤트뿐이었는데, 그 이벤트를 거치는 열기 경로는 여섯 중
+    // 하나(`open-document-bytes` 핸들러)뿐이다 — 드롭·파일 input·`?url=`·자동저장 복구·
+    // 호스트 API 는 이 깔때기를 직접 부른다. 그래서 표 resize 런타임 캐시가 이전 문서의
+    // 칸 좌표를 그대로 들고 살아남았다(`cachedTableRef` 는 `{sec, ppi, ci}` 라 문서가
+    // 바뀌어도 신선도 검사를 통과한다 — 3184241).
+    eventBus.emit('document-swapped');
     await updateLoadProgress(45, '자동 저장 준비 중...');
     forgetConvertedHmlSaveHandle(fileHandle);
+    forgetConvertedPdfSaveHandle(fileHandle);
+    // Imported PDF handles are retained for identity checks/recent files; resolveSaveTarget
+    // forces a different output until a converted HWP/HWPX handle has been published.
     wasm.currentFileHandle = fileHandle;
 
     // 최근 문서 기록 — 문서 로드 성공 직후, 폰트/모달 등 블로킹 UI 단계 이전에 기록한다.
@@ -1482,7 +1741,7 @@ async function loadBytes(
     );
     await updateLoadProgress(50, '문서 초기화 중...');
     const elapsed = performance.now() - startTime;
-    await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지 (${elapsed.toFixed(1)}ms)`, {
+    await initializeDocument(docInfo, t('ui.sbMessage.filePagesTimed', { p1: fileName, p2: docInfo.pageCount, p3: elapsed.toFixed(1) }), {
       suppressDialogs: options.suppressDialogs,
     });
   });
@@ -1542,7 +1801,7 @@ async function renderRecentSubmenu(): Promise<void> {
 
   const frag = document.createDocumentFragment();
   if (recents.length === 0) {
-    frag.append(makeItem({ label: '(최근 문서 없음)', disabled: true }));
+    frag.append(makeItem({ label: t('menu.file.label.x46b91c'), disabled: true }));
   } else {
     const visibleRecents = recentSubmenuExpanded
       ? recents
@@ -1636,7 +1895,7 @@ async function createNewDocument(): Promise<void> {
         { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
         { discardPreviousDraft: true },
       );
-      await initializeDocument(docInfo, `새 문서.hwp — ${docInfo.pageCount}페이지`);
+      await initializeDocument(docInfo, t('ui.sbMessage.newDocPages', { p1: docInfo.pageCount }));
     });
   } catch (error) {
     msg.textContent = `새 문서 생성 실패: ${error}`;
@@ -1847,12 +2106,29 @@ const initPromise = initialize();
 void initPromise.then(() => {
   if (!rendererInitialized) return;
   maybeShowSkinOnboarding();
+  // 내장 AI 도우미. 최상위 창의 studio 에서만 자동으로 올린다 — iframe 으로 넣은 studio 는
+  // 호스트가 고른 플러그인만 가진다(`plugins.load('ai-assistant')` 로 직접 올릴 수는 있다).
+  // 실패해도 편집기는 그대로 쓸 수 있어야 하므로 로그만 남긴다.
+  if (__RHWP_AI__ && sidePanels && window.parent === window) {
+    plugins.load('ai-assistant').catch((error) => console.error('[main] AI 도우미 로드 실패', error));
+  }
 });
 
 installEmbedRuntime({
   hostWindow: window,
   parentWindow: window.parent,
+  subscribeCommandError: (listener) => eventBus.on('command-error', listener),
   subscribeDocumentChanged: (listener) => eventBus.on('document-agent-changed', listener),
+  subscribeFieldChanged: (listener) => {
+    // 연결마다 새로 센다 — 직전 누름틀 기억이 다른 세션으로 새지 않게.
+    return subscribeFieldChanges(eventBus, (fieldId) => {
+      try {
+        return wasm.getFieldList().find((field) => field.fieldId === fieldId && !field.cellField)?.name ?? '';
+      } catch {
+        return '';
+      }
+    }, listener);
+  },
   handlers: {
     async ready() {
       await initPromise;
@@ -1865,6 +2141,10 @@ installEmbedRuntime({
       }
       await loadBytes(data, fileName, null, undefined, { suppressDialogs });
       return { pageCount: wasm.pageCount };
+    },
+    async getCommandErrorState() {
+      await initPromise;
+      return inputHandler?.getCommandErrorState() ?? null;
     },
     async pageCount() {
       await initPromise;
@@ -1897,9 +2177,11 @@ installEmbedRuntime({
         },
       );
     },
-    async getPageSvg(page) {
+    async getPageSvg(page, profile) {
       await initPromise;
-      return wasm.renderPageSvg(page);
+      // 인자 없는 기존 호출은 종전 경로 그대로(화면 렌더). 인쇄·PDF 호스트는 'print' 를 넘겨
+      // editor_only 노드(#3375/#4379)를 뺀 SVG 를 받는다.
+      return profile === undefined ? wasm.renderPageSvg(page) : wasm.renderPageSvgWithProfile(page, profile);
     },
     async exportHwp() {
       await initPromise;

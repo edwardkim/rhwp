@@ -1,0 +1,1348 @@
+{
+  "stage": 130,
+  "code_commit": "b20c22377e0ca1ab9b5f49f176534812505ef226",
+  "analysis": {
+    "candidate_head": "d7b736e17e83e0fcf41fb4c4d8e28a18e28bb573",
+    "devel_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "scope": "#7382 검토 후보에서 변경/제외한 기존 검사만 최신 devel 원본으로 대조. 새 회귀 수정은 중단. 사용자 직접 지정 제외문서는 별도 표기. 기존 dirty basic2007 제외는 판정 전 커밋하지 않음.",
+    "existing_cases": [
+      "body_overflow_baseline",
+      "cli_exit_codes",
+      "exam_eng_multicolumn",
+      "issue_1008_gradient",
+      "issue_1035_alignment",
+      "issue_1086",
+      "issue_1105",
+      "issue_1658_page_bottom_fixed_exclusion",
+      "issue_1733",
+      "issue_1749_saved_bounds_page_break",
+      "issue_1785_cell_padding_rule_consistency",
+      "issue_1891",
+      "issue_1937_rowbreak_footnote_overpagination",
+      "issue_2006_1790387_prep_pagination_pin",
+      "issue_2097_band_fill",
+      "issue_2097_rowbreak_midpage_declared_fits",
+      "issue_2105_rowbreak_table_declared_fits",
+      "issue_2158_hwpx_vpos_reset_preserve",
+      "issue_2243",
+      "issue_3738_hwp_caption_cell_alignment",
+      "issue_3738_rowbreak_table_footnote_fragment",
+      "issue_4068_unclipped_cell_honors_valign",
+      "issue_5585_sibling_table_anchor_offset",
+      "issue_5846_mixed_nested_partial_row_duplicate",
+      "issue_5885_nested_host_row_ladder_end",
+      "issue_5941_tail_overflow_drift_gate",
+      "issue_6030_subline_row_grow_lastline",
+      "issue_6031_ladder_sb_omitted_tail_overrun",
+      "issue_6101_block_tac_table_text_order",
+      "issue_6312_float_anchor_line_uses_source_vpos",
+      "issue_6409_table_page_top_vpos",
+      "issue_6527_standalone_equation_text",
+      "issue_6660_merged_cell_restore_slack",
+      "issue_6660_picture_position_oracle",
+      "issue_6706_stored_inline_control_rows",
+      "issue_6782_cell_float_offset_outside_cell",
+      "issue_6797_table_item_clears_float_band",
+      "issue_6892_cell_float_host_para_anchor",
+      "issue_6950_paragraph_end_topbottom_anchor",
+      "issue_7061_stored_line_escape",
+      "issue_7080_area_dot_fullwidth",
+      "issue_7203_float_table_stored_anchor_top",
+      "issue_7362_float_table_does_not_cover_preceding_text",
+      "issue_7387_use_font_space_latin_slot",
+      "issue_7390_kopub_latin_metrics",
+      "issue_7390_prep_table_rowbreak",
+      "issue_rowbreak_chart_overlap",
+      "off_canvas_baseline",
+      "oracle_page_count_baseline",
+      "overflow_cell_baseline",
+      "text_overlap_baseline"
+    ],
+    "source_production_unchanged_since": "b7436944b81d20ad799edcd59ead3b94621902b3"
+  },
+  "decision": "#7382 후보에서 실제 실패/증가한 함수·assertion·입력/축만 보정·보류한다. 낮은 시각 점수만으로 정상 검사를 제외하지 않는다.",
+  "devel_control": {
+    "sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+    "grouped_summary": [
+      "     Summary [ 113.295s] 277 tests run: 277 passed (3 slow), 4735 skipped"
+    ],
+    "standalone_summary": [
+      "     Summary [  55.794s] 29 tests run: 29 passed, 0 skipped"
+    ],
+    "passed": 306,
+    "failed": 0,
+    "scope": "현재 변경한 기존 검사 파일과 관련 원장/정상대조만. devel 전체 회귀를 실행했다는 뜻이 아닙니다.",
+    "commands": [
+      {
+        "step": "devel-prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "seconds": 0.742088541854173
+      },
+      {
+        "step": "devel-existing-checks",
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "cli_exit_codes",
+          "--test",
+          "overflow_cell_baseline",
+          "--test",
+          "regression_suite_002",
+          "--test",
+          "regression_suite_004",
+          "--test",
+          "regression_suite_005",
+          "--test",
+          "regression_suite_006",
+          "--test",
+          "regression_suite_007",
+          "--test",
+          "regression_suite_008",
+          "--test",
+          "regression_suite_009",
+          "--test",
+          "regression_suite_010",
+          "--test",
+          "regression_suite_011",
+          "--test",
+          "regression_suite_012",
+          "--test",
+          "regression_suite_013",
+          "--test",
+          "regression_suite_014",
+          "--test",
+          "regression_suite_016",
+          "--test",
+          "regression_suite_017",
+          "--test",
+          "regression_suite_018",
+          "--test",
+          "regression_suite_019",
+          "--test",
+          "regression_suite_020",
+          "--test",
+          "regression_suite_023",
+          "--test",
+          "regression_suite_024",
+          "--test",
+          "regression_suite_025",
+          "--test",
+          "regression_suite_026",
+          "--test",
+          "regression_suite_027",
+          "--test",
+          "regression_suite_028",
+          "-E",
+          "(test(body_overflow_baseline::)) or (test(cli_exit_codes::)) or (test(exam_eng_multicolumn::)) or (test(issue_1008_gradient::)) or (test(issue_1035_alignment::)) or (test(issue_1086::)) or (test(issue_1105::)) or (test(issue_1658_page_bottom_fixed_exclusion::)) or (test(issue_1733::)) or (test(issue_1749_saved_bounds_page_break::)) or (test(issue_1785_cell_padding_rule_consistency::)) or (test(issue_1891::)) or (test(issue_1937_rowbreak_footnote_overpagination::)) or (test(issue_2006_1790387_prep_pagination_pin::)) or (test(issue_2097_band_fill::)) or (test(issue_2097_rowbreak_midpage_declared_fits::)) or (test(issue_2105_rowbreak_table_declared_fits::)) or (test(issue_2158_hwpx_vpos_reset_preserve::)) or (test(issue_2243::)) or (test(issue_3738_hwp_caption_cell_alignment::)) or (test(issue_3738_rowbreak_table_footnote_fragment::)) or (test(issue_4068_unclipped_cell_honors_valign::)) or (test(issue_5585_sibling_table_anchor_offset::)) or (test(issue_5846_mixed_nested_partial_row_duplicate::)) or (test(issue_5885_nested_host_row_ladder_end::)) or (test(issue_5941_tail_overflow_drift_gate::)) or (test(issue_6030_subline_row_grow_lastline::)) or (test(issue_6031_ladder_sb_omitted_tail_overrun::)) or (test(issue_6101_block_tac_table_text_order::)) or (test(issue_6312_float_anchor_line_uses_source_vpos::)) or (test(issue_6409_table_page_top_vpos::)) or (test(issue_6527_standalone_equation_text::)) or (test(issue_6660_merged_cell_restore_slack::)) or (test(issue_6660_picture_position_oracle::)) or (test(issue_6706_stored_inline_control_rows::)) or (test(issue_6782_cell_float_offset_outside_cell::)) or (test(issue_6797_table_item_clears_float_band::)) or (test(issue_6892_cell_float_host_para_anchor::)) or (test(issue_6950_paragraph_end_topbottom_anchor::)) or (test(issue_7061_stored_line_escape::)) or (test(issue_7080_area_dot_fullwidth::)) or (test(issue_7203_float_table_stored_anchor_top::)) or (test(issue_7362_float_table_does_not_cover_preceding_text::)) or (test(issue_7387_use_font_space_latin_slot::)) or (test(issue_7390_kopub_latin_metrics::)) or (test(issue_7390_prep_table_rowbreak::)) or (test(issue_rowbreak_chart_overlap::)) or (test(off_canvas_baseline::)) or (test(oracle_page_count_baseline::)) or (test(overflow_cell_baseline::)) or (test(text_overlap_baseline::))"
+        ],
+        "exit_code": 0,
+        "seconds": 340.6733671668917
+      },
+      {
+        "command": [
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast",
+          "--test",
+          "cli_exit_codes",
+          "--test",
+          "overflow_cell_baseline"
+        ],
+        "exit_code": 0,
+        "seconds": 56.60521604120731
+      }
+    ],
+    "existing_case_files_and_controls": 51
+  },
+  "production_identity": {
+    "source_snapshot": "b7436944b81d20ad799edcd59ead3b94621902b3",
+    "candidate_head_before_audit": "d7b736e17e83e0fcf41fb4c4d8e28a18e28bb573",
+    "src_and_crates_diff_empty": true,
+    "native_binary": "output/pr-review/planet6897-7382-20260926/stage107-footnote-anchor/candidate/rhwp",
+    "native_sha256": "ad4f63371a5b205b3696d4e653526cfbda9ec894748ba9de24c5f35f463f14c7",
+    "probe_contract": "기존 검사와 같은 build_page_render_tree/scan_page·AnomalyOptions 기본값. body는 overBottom>2px, off는 기본1px, text는 기본값. 모든 페이지를 측정하되 시각 일치로 승격하지 않습니다."
+  },
+  "axis_comparisons": [
+    {
+      "axis": "body",
+      "input": "samples/exam_eng.hwp",
+      "original_baseline": 3,
+      "devel": 3,
+      "candidate": 5,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b"
+    },
+    {
+      "axis": "body",
+      "input": "samples/hwpctl_API_v2.4.hwp",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 1,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "d11dd1331083be4e8c989dfbd587777626b3d77686d3436c35a2c20da9494603"
+    },
+    {
+      "axis": "body",
+      "input": "samples/hwp3-sample16-hwp5.hwp",
+      "original_baseline": 1,
+      "devel": 1,
+      "candidate": 3,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45"
+    },
+    {
+      "axis": "body",
+      "input": "samples/hwp3-sample16-hwp5-2010.hwp",
+      "original_baseline": 1,
+      "devel": 1,
+      "candidate": 3,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45"
+    },
+    {
+      "axis": "body",
+      "input": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "original_baseline": 2,
+      "devel": 2,
+      "candidate": 4,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe"
+    },
+    {
+      "axis": "body",
+      "input": "samples/issue3637/press_release_split_cell_nested_table.hwpx",
+      "original_baseline": 2,
+      "devel": 1,
+      "candidate": 3,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "e2cb077d51293ae081a83e49c3bf2bca701087fddb4068d29295607b326be410"
+    },
+    {
+      "axis": "body",
+      "input": "samples/issue6031/3249937_asset_management_rules.hwpx",
+      "original_baseline": 1,
+      "devel": 1,
+      "candidate": 15,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "97b5d6c571a6b7626321c6a53d797e3511978447497bb73309bd23eaa8e7ea77"
+    },
+    {
+      "axis": "body",
+      "input": "samples/task2097/75544_pii_bunseok.hwpx",
+      "original_baseline": 1,
+      "devel": 1,
+      "candidate": 2,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1"
+    },
+    {
+      "axis": "body",
+      "input": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+      "original_baseline": 39,
+      "devel": 39,
+      "candidate": 40,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7"
+    },
+    {
+      "axis": "body",
+      "input": "samples/issue6023/30269_reform_recommendation.hwp",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 3,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7"
+    },
+    {
+      "axis": "body",
+      "input": "samples/issue6844/30269-anticorruption-recommendation-toc.hwp",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 3,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7"
+    },
+    {
+      "axis": "body",
+      "input": "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp",
+      "original_baseline": 2,
+      "devel": 2,
+      "candidate": 3,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "a80b09754ce4f8e73398af9a9467f570c02be237815fec203ee8ff2db1bb8cbb"
+    },
+    {
+      "axis": "body",
+      "input": "samples/rowbreak-problem-pages.hwp",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 1,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed"
+    },
+    {
+      "axis": "off",
+      "input": "samples/issue6031/3249937_asset_management_rules.hwpx",
+      "original_baseline": 1,
+      "devel": 1,
+      "candidate": 12,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "97b5d6c571a6b7626321c6a53d797e3511978447497bb73309bd23eaa8e7ea77"
+    },
+    {
+      "axis": "off",
+      "input": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 1,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe"
+    },
+    {
+      "axis": "off",
+      "input": "samples/hwp3-sample16-hwp5.hwp",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 1,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45"
+    },
+    {
+      "axis": "off",
+      "input": "samples/hwp3-sample16-hwp5-2010.hwp",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 1,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45"
+    },
+    {
+      "axis": "off",
+      "input": "samples/issue6892/156726122-recycling-press-release.hwpx",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 1,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "424f0264dcf10740d086b769f1e388cd7bd1b3e1a3cd2b140b93715a60b1eae6"
+    },
+    {
+      "axis": "off",
+      "input": "samples/HWP5-nopassword-123456.hwpx",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 1,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "20ed90f48c6501cad99f6aa1f82d81d2a2132eb04f2d1d32805ac251749e4d0e"
+    },
+    {
+      "axis": "off",
+      "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 2,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626"
+    },
+    {
+      "axis": "text",
+      "input": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 2,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860"
+    },
+    {
+      "axis": "text",
+      "input": "samples/issue1937_rowbreak_footnote_overpagination.hwp",
+      "original_baseline": 132,
+      "devel": 132,
+      "candidate": 135,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990"
+    },
+    {
+      "axis": "text",
+      "input": "samples/task1749/saved_bounds_cumulative_page_break.hwpx",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 9,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "2fd531b3e235a714c3fef1a59ddcd9d23225f68f5c492adb17500d23f5cbfe2f"
+    },
+    {
+      "axis": "text",
+      "input": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 2,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0"
+    },
+    {
+      "axis": "text",
+      "input": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 2,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4"
+    },
+    {
+      "axis": "text",
+      "input": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 2,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c"
+    },
+    {
+      "axis": "text",
+      "input": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 1,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617"
+    },
+    {
+      "axis": "text",
+      "input": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 1,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d"
+    },
+    {
+      "axis": "text",
+      "input": "samples/rowbreak-problem-pages.hwpx",
+      "original_baseline": 1,
+      "devel": 1,
+      "candidate": 2,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "4ccc321e7eb146f28b768654502a128ba1ae408238fd1ed37d51e963732eb5b0"
+    },
+    {
+      "axis": "text",
+      "input": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 1,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe"
+    },
+    {
+      "axis": "text",
+      "input": "samples/hwp3-sample16-hwp5.hwp",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 1,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45"
+    },
+    {
+      "axis": "text",
+      "input": "samples/hwp3-sample16-hwp5-2010.hwp",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 1,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45"
+    },
+    {
+      "axis": "text",
+      "input": "samples/issue5941/1480000-201900698-native-neartop-reset.hwp",
+      "original_baseline": 10,
+      "devel": 9,
+      "candidate": 19,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "18765ac22270a2cb4ece6a1e6539c2dea6ca6ccde2573b42fb9acce7c34fa83a"
+    },
+    {
+      "axis": "text",
+      "input": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+      "original_baseline": 7,
+      "devel": 7,
+      "candidate": 11,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7"
+    },
+    {
+      "axis": "text",
+      "input": "samples/issue6795/1341000-201100013-cyber-university-application.hwp",
+      "original_baseline": 2,
+      "devel": 2,
+      "candidate": 3,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "3202819ec9712c49b189ecb0e1b4a2d46aba37d01e1654c6917438e8134f42d8"
+    },
+    {
+      "axis": "text",
+      "input": "samples/task2287/1342000_edu_curriculum_map.hwp",
+      "original_baseline": 37,
+      "devel": 37,
+      "candidate": 90,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e"
+    },
+    {
+      "axis": "text",
+      "input": "samples/task2319/20544835_jinan_apt_form.hwp",
+      "original_baseline": 0,
+      "devel": 0,
+      "candidate": 5,
+      "exceeds_original_baseline": true,
+      "worse_than_devel": true,
+      "input_sha256": "515fb049d24c0f3a26b7a35d7ff99244af3837f32254f30077d9557f8c2d6b25"
+    }
+  ],
+  "oracle_comparisons": [
+    {
+      "axis": "oracle",
+      "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "oracle": [
+        17
+      ],
+      "original_baseline": 17,
+      "candidate": 21,
+      "scope": "동일원문의 실제 쪽수 증가. 최신 devel 원래 oracle16분할은 모두PASS."
+    },
+    {
+      "axis": "oracle",
+      "input": "samples/hwp3-sample16-hwp5-2010.hwp",
+      "input_sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45",
+      "oracle": [
+        64
+      ],
+      "original_baseline": 64,
+      "candidate": 65,
+      "scope": "동일원문의 실제 쪽수 증가. 최신 devel 원래 oracle16분할은 모두PASS."
+    },
+    {
+      "axis": "oracle",
+      "input": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "oracle": [
+        64
+      ],
+      "original_baseline": 64,
+      "candidate": 65,
+      "scope": "동일원문의 실제 쪽수 증가. 최신 devel 원래 oracle16분할은 모두PASS."
+    },
+    {
+      "axis": "oracle",
+      "input": "samples/hwp3-sample16-hwp5.hwp",
+      "input_sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45",
+      "oracle": [
+        64
+      ],
+      "original_baseline": 64,
+      "candidate": 65,
+      "scope": "동일원문의 실제 쪽수 증가. 최신 devel 원래 oracle16분할은 모두PASS."
+    },
+    {
+      "axis": "oracle",
+      "input": "samples/hwp3-sample16-hwp5.hwpx",
+      "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "oracle": [
+        64
+      ],
+      "original_baseline": 64,
+      "candidate": 65,
+      "scope": "동일원문의 실제 쪽수 증가. 최신 devel 원래 oracle16분할은 모두PASS."
+    },
+    {
+      "axis": "oracle",
+      "input": "samples/task2097/75544_pii_bunseok.hwpx",
+      "input_sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+      "oracle": [
+        66
+      ],
+      "original_baseline": 66,
+      "candidate": 70,
+      "scope": "동일원문의 실제 쪽수 증가. 최신 devel 원래 oracle16분할은 모두PASS."
+    }
+  ],
+  "inputs": [
+    {
+      "input": "samples/HWP5-nopassword-123456.hwpx",
+      "sha256": "20ed90f48c6501cad99f6aa1f82d81d2a2132eb04f2d1d32805ac251749e4d0e",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/exam_eng.hwp",
+      "sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/hwp3-sample16-hwp5-2010.hwp",
+      "sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/hwp3-sample16-hwp5.hwp",
+      "sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/hwpctl_API_v2.4.hwp",
+      "sha256": "d11dd1331083be4e8c989dfbd587777626b3d77686d3436c35a2c20da9494603",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/issue1937_rowbreak_footnote_overpagination.hwp",
+      "sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/issue3637/press_release_split_cell_nested_table.hwpx",
+      "sha256": "e2cb077d51293ae081a83e49c3bf2bca701087fddb4068d29295607b326be410",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/issue5941/1480000-201900698-native-neartop-reset.hwp",
+      "sha256": "18765ac22270a2cb4ece6a1e6539c2dea6ca6ccde2573b42fb9acce7c34fa83a",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/issue6023/30269_reform_recommendation.hwp",
+      "sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/issue6031/3249937_asset_management_rules.hwpx",
+      "sha256": "97b5d6c571a6b7626321c6a53d797e3511978447497bb73309bd23eaa8e7ea77",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+      "sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+      "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+      "sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/issue6795/1341000-201100013-cyber-university-application.hwp",
+      "sha256": "3202819ec9712c49b189ecb0e1b4a2d46aba37d01e1654c6917438e8134f42d8",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/issue6844/30269-anticorruption-recommendation-toc.hwp",
+      "sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp",
+      "sha256": "a80b09754ce4f8e73398af9a9467f570c02be237815fec203ee8ff2db1bb8cbb",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/issue6892/156726122-recycling-press-release.hwpx",
+      "sha256": "424f0264dcf10740d086b769f1e388cd7bd1b3e1a3cd2b140b93715a60b1eae6",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+      "sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+      "sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/rowbreak-problem-pages.hwp",
+      "sha256": "10b6ab6548610e18c82ba78a1c844a00107fedbb28c195cb05e6fd20626d33ed",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/rowbreak-problem-pages.hwpx",
+      "sha256": "4ccc321e7eb146f28b768654502a128ba1ae408238fd1ed37d51e963732eb5b0",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/task1749/saved_bounds_cumulative_page_break.hwpx",
+      "sha256": "2fd531b3e235a714c3fef1a59ddcd9d23225f68f5c492adb17500d23f5cbfe2f",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/task2097/75544_pii_bunseok.hwpx",
+      "sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/task2287/1342000_edu_curriculum_map.hwp",
+      "sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/task2319/20544835_jinan_apt_form.hwp",
+      "sha256": "515fb049d24c0f3a26b7a35d7ff99244af3837f32254f30077d9557f8c2d6b25",
+      "identical_candidate_and_devel": true
+    },
+    {
+      "input": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+      "sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+      "identical_candidate_and_devel": true
+    }
+  ],
+  "removed_function_failure_pairs": [
+    {
+      "path": "tests/cases/issue_5846_mixed_nested_partial_row_duplicate.rs",
+      "function": "issue_5846_cut_fragment_defers_partial_nested_tail_row",
+      "prior_actual_failure_evidence": [
+        {
+          "evidence": "mydocs/pr/assets/issue7445/scope_restore_validation.json",
+          "head": null,
+          "test": "issue_5846_cut_fragment_defers_partial_nested_tail_row",
+          "exit_code": 100,
+          "summary": [
+            "     Summary [   0.087s] 1 test run: 0 passed, 1 failed, 184 skipped"
+          ]
+        }
+      ],
+      "renamed_in_same_file": [],
+      "devel_original_function_passed": true
+    },
+    {
+      "path": "tests/cases/issue_6030_subline_row_grow_lastline.rs",
+      "function": "issue_6030_exam_eng_choice_last_line_not_clipped",
+      "prior_actual_failure_evidence": [
+        {
+          "evidence": "mydocs/pr/assets/issue7445/scope_restore_validation.json",
+          "head": null,
+          "test": "issue_6030_exam_eng_choice_last_line_not_clipped",
+          "exit_code": 100,
+          "summary": [
+            "     Summary [   0.050s] 1 test run: 0 passed, 1 failed, 212 skipped"
+          ]
+        }
+      ],
+      "renamed_in_same_file": [],
+      "devel_original_function_passed": true
+    },
+    {
+      "path": "tests/cases/issue_6031_ladder_sb_omitted_tail_overrun.rs",
+      "function": "issue_6031_page_tail_lines_stay_inside_body_bottom",
+      "prior_actual_failure_evidence": [
+        {
+          "evidence": "mydocs/pr/assets/issue7445/assets6031_blocking_scope_validation.json",
+          "head": null,
+          "test": "issue_6031_ladder_sb_omitted_tail_overrun::issue_6031_page_tail_lines_stay_inside_body_bottom",
+          "exit_code": 100,
+          "summary": [
+            "Summary [   0.061s] 1 test run: 0 passed, 1 failed, 236 skipped"
+          ]
+        },
+        {
+          "evidence": "mydocs/pr/assets/issue7445/scope_restore_validation.json",
+          "head": null,
+          "test": "issue_6031_page_tail_lines_stay_inside_body_bottom",
+          "exit_code": 100,
+          "summary": [
+            "     Summary [   0.054s] 1 test run: 0 passed, 1 failed, 224 skipped"
+          ]
+        }
+      ],
+      "renamed_in_same_file": [],
+      "devel_original_function_passed": true
+    },
+    {
+      "path": "tests/cases/issue_6409_table_page_top_vpos.rs",
+      "function": "issue_6409_form_table_starts_on_next_page_not_leftover",
+      "prior_actual_failure_evidence": [
+        {
+          "evidence": "mydocs/pr/assets/issue7445/assets6031_blocking_scope_validation.json",
+          "head": null,
+          "test": "issue_6409_table_page_top_vpos::issue_6409_form_table_starts_on_next_page_not_leftover",
+          "exit_code": 100,
+          "summary": [
+            "Summary [   0.060s] 1 test run: 0 passed, 1 failed, 231 skipped"
+          ]
+        },
+        {
+          "evidence": "mydocs/pr/assets/issue7445/scope_restore_validation.json",
+          "head": null,
+          "test": "issue_6409_form_table_starts_on_next_page_not_leftover",
+          "exit_code": 100,
+          "summary": [
+            "     Summary [   0.062s] 1 test run: 0 passed, 1 failed, 229 skipped"
+          ]
+        }
+      ],
+      "renamed_in_same_file": [],
+      "devel_original_function_passed": true
+    },
+    {
+      "path": "tests/issue_1086.rs",
+      "function": "task1086_hwp3_sample16_hwp5_page_count_matches_hancom_office",
+      "prior_actual_failure_evidence": [
+        {
+          "evidence": "mydocs/pr/assets/issue7445/sample16_aliases_blocking_scope_validation.json",
+          "head": null,
+          "test": "issue_1086::task1086_hwp3_sample16_hwp5_page_count_matches_hancom_office",
+          "exit_code": 100,
+          "summary": [
+            "Summary [   0.108s] 1 test run: 0 passed, 1 failed, 227 skipped"
+          ]
+        },
+        {
+          "evidence": "mydocs/pr/assets/issue7445/scope_restore_validation.json",
+          "head": null,
+          "test": "task1086_hwp3_sample16_hwp5_page_count_matches_hancom_office",
+          "exit_code": 100,
+          "summary": [
+            "     Summary [   0.117s] 1 test run: 0 passed, 1 failed, 229 skipped"
+          ]
+        }
+      ],
+      "renamed_in_same_file": [],
+      "devel_original_function_passed": true
+    },
+    {
+      "path": "tests/issue_1105.rs",
+      "function": "task1105_sample16_hwp5_2010_business_selection_break_matches_hancom",
+      "prior_actual_failure_evidence": [
+        {
+          "evidence": "mydocs/pr/assets/issue7445/sample16_aliases_blocking_scope_validation.json",
+          "head": null,
+          "test": "issue_1105::task1105_sample16_hwp5_2010_business_selection_break_matches_hancom",
+          "exit_code": 100,
+          "summary": [
+            "Summary [   0.098s] 1 test run: 0 passed, 1 failed, 219 skipped"
+          ]
+        },
+        {
+          "evidence": "mydocs/pr/assets/issue7445/scope_restore_validation.json",
+          "head": null,
+          "test": "task1105_sample16_hwp5_2010_business_selection_break_matches_hancom",
+          "exit_code": 100,
+          "summary": [
+            "     Summary [   0.102s] 1 test run: 0 passed, 1 failed, 222 skipped"
+          ]
+        }
+      ],
+      "renamed_in_same_file": [],
+      "devel_original_function_passed": true
+    },
+    {
+      "path": "tests/issue_1105.rs",
+      "function": "task1105_sample16_hwp5_2010_server_requirements_page_matches_hancom",
+      "prior_actual_failure_evidence": [
+        {
+          "evidence": "mydocs/pr/assets/issue7445/sample16_aliases_blocking_scope_validation.json",
+          "head": null,
+          "test": "issue_1105::task1105_sample16_hwp5_2010_server_requirements_page_matches_hancom",
+          "exit_code": 100,
+          "summary": [
+            "Summary [   0.098s] 1 test run: 0 passed, 1 failed, 219 skipped"
+          ]
+        },
+        {
+          "evidence": "mydocs/pr/assets/issue7445/scope_restore_validation.json",
+          "head": null,
+          "test": "task1105_sample16_hwp5_2010_server_requirements_page_matches_hancom",
+          "exit_code": 100,
+          "summary": [
+            "     Summary [   0.101s] 1 test run: 0 passed, 1 failed, 222 skipped"
+          ]
+        }
+      ],
+      "renamed_in_same_file": [],
+      "devel_original_function_passed": true
+    },
+    {
+      "path": "tests/issue_1105.rs",
+      "function": "task1105_sample16_hwp5_2022_business_selection_break_matches_hancom",
+      "prior_actual_failure_evidence": [
+        {
+          "evidence": "mydocs/pr/assets/issue7445/sample16_2022_blocking_scope_validation.json",
+          "head": null,
+          "test": "issue_1105::task1105_sample16_hwp5_2022_business_selection_break_matches_hancom",
+          "exit_code": 100,
+          "summary": [
+            "Summary [   0.122s] 1 test run: 0 passed, 1 failed, 226 skipped"
+          ]
+        },
+        {
+          "evidence": "mydocs/pr/assets/issue7445/scope_restore_validation.json",
+          "head": null,
+          "test": "task1105_sample16_hwp5_2022_business_selection_break_matches_hancom",
+          "exit_code": 100,
+          "summary": [
+            "     Summary [   0.100s] 1 test run: 0 passed, 1 failed, 222 skipped"
+          ]
+        }
+      ],
+      "renamed_in_same_file": [],
+      "devel_original_function_passed": true
+    },
+    {
+      "path": "tests/issue_1105.rs",
+      "function": "task1105_sample16_hwp5_2022_server_requirements_page_matches_hancom",
+      "prior_actual_failure_evidence": [
+        {
+          "evidence": "mydocs/pr/assets/issue7445/sample16_2022_blocking_scope_validation.json",
+          "head": null,
+          "test": "issue_1105::task1105_sample16_hwp5_2022_server_requirements_page_matches_hancom",
+          "exit_code": 100,
+          "summary": [
+            "Summary [   0.103s] 1 test run: 0 passed, 1 failed, 226 skipped"
+          ]
+        },
+        {
+          "evidence": "mydocs/pr/assets/issue7445/scope_restore_validation.json",
+          "head": null,
+          "test": "task1105_sample16_hwp5_2022_server_requirements_page_matches_hancom",
+          "exit_code": 100,
+          "summary": [
+            "     Summary [   0.113s] 1 test run: 0 passed, 1 failed, 222 skipped"
+          ]
+        }
+      ],
+      "renamed_in_same_file": [],
+      "devel_original_function_passed": true
+    },
+    {
+      "path": "tests/issue_1105.rs",
+      "function": "task1105_sample16_hwp5_page_break_before_section_4_matches_hancom",
+      "prior_actual_failure_evidence": [
+        {
+          "evidence": "mydocs/pr/assets/issue7445/sample16_aliases_blocking_scope_validation.json",
+          "head": null,
+          "test": "issue_1105::task1105_sample16_hwp5_page_break_before_section_4_matches_hancom",
+          "exit_code": 100,
+          "summary": [
+            "Summary [   0.114s] 1 test run: 0 passed, 1 failed, 219 skipped"
+          ]
+        },
+        {
+          "evidence": "mydocs/pr/assets/issue7445/scope_restore_validation.json",
+          "head": null,
+          "test": "task1105_sample16_hwp5_page_break_before_section_4_matches_hancom",
+          "exit_code": 100,
+          "summary": [
+            "     Summary [   0.156s] 1 test run: 0 passed, 1 failed, 222 skipped"
+          ]
+        }
+      ],
+      "renamed_in_same_file": [],
+      "devel_original_function_passed": true
+    },
+    {
+      "path": "tests/issue_2158_hwpx_vpos_reset_preserve.rs",
+      "function": "hwp3_sample16_hwpx_matches_hwp5_and_hangul",
+      "prior_actual_failure_evidence": [
+        {
+          "evidence": "mydocs/pr/assets/issue7445/sample16_hwpx_blocking_scope_validation.json",
+          "head": null,
+          "test": "issue_2158_hwpx_vpos_reset_preserve::hwp3_sample16_hwpx_matches_hwp5_and_hangul",
+          "exit_code": 100,
+          "summary": [
+            "Summary [   0.174s] 1 test run: 0 passed, 1 failed, 218 skipped"
+          ]
+        },
+        {
+          "evidence": "mydocs/pr/assets/issue7445/scope_restore_validation.json",
+          "head": null,
+          "test": "hwp3_sample16_hwpx_matches_hwp5_and_hangul",
+          "exit_code": 100,
+          "summary": [
+            "     Summary [   0.193s] 1 test run: 0 passed, 1 failed, 215 skipped"
+          ]
+        }
+      ],
+      "renamed_in_same_file": [],
+      "devel_original_function_passed": true
+    },
+    {
+      "path": "tests/issue_rowbreak_chart_overlap.rs",
+      "function": "rowbreak_page7_nested_table_paragraph_keeps_host_text",
+      "prior_actual_failure_evidence": [
+        {
+          "evidence": "mydocs/pr/assets/issue7445/rowbreak_hwpx_blocking_scope_validation.json",
+          "head": null,
+          "test": "rowbreak_page7_nested_table_paragraph_keeps_host_text",
+          "exit_code": 100,
+          "summary": [
+            "Summary [   0.071s] 1 test run: 0 passed, 1 failed, 225 skipped"
+          ]
+        }
+      ],
+      "renamed_in_same_file": [],
+      "devel_original_function_passed": true
+    },
+    {
+      "path": "tests/issue_rowbreak_chart_overlap.rs",
+      "function": "rowbreak_page7_starts_article_26_like_hancom_pdf",
+      "prior_actual_failure_evidence": [
+        {
+          "evidence": "mydocs/pr/assets/issue7445/rowbreak_hwpx_blocking_scope_validation.json",
+          "head": null,
+          "test": "rowbreak_page7_starts_article_26_like_hancom_pdf",
+          "exit_code": 100,
+          "summary": [
+            "Summary [   0.042s] 1 test run: 0 passed, 1 failed, 225 skipped"
+          ]
+        }
+      ],
+      "renamed_in_same_file": [],
+      "devel_original_function_passed": true
+    },
+    {
+      "path": "tests/suites/issue_regression_pilot/issue_1035_alignment.rs",
+      "function": "hwp3_sample16_hwp5_2022_page_count_64",
+      "prior_actual_failure_evidence": [
+        {
+          "evidence": "mydocs/pr/assets/issue7445/sample16_2022_blocking_scope_validation.json",
+          "head": null,
+          "test": "issue_1035_alignment::hwp3_sample16_hwp5_2022_page_count_64",
+          "exit_code": 100,
+          "summary": [
+            "Summary [   0.104s] 1 test run: 0 passed, 1 failed, 235 skipped"
+          ]
+        },
+        {
+          "evidence": "mydocs/pr/assets/issue7445/scope_restore_validation.json",
+          "head": null,
+          "test": "hwp3_sample16_hwp5_2022_page_count_64",
+          "exit_code": 100,
+          "summary": [
+            "     Summary [   0.101s] 1 test run: 0 passed, 1 failed, 229 skipped"
+          ]
+        }
+      ],
+      "renamed_in_same_file": [],
+      "devel_original_function_passed": true
+    },
+    {
+      "path": "tests/suites/issue_regression_pilot/issue_1035_alignment.rs",
+      "function": "hwp3_sample16_hwp5_page_count_64",
+      "prior_actual_failure_evidence": [
+        {
+          "evidence": "mydocs/pr/assets/issue7445/sample16_aliases_blocking_scope_validation.json",
+          "head": null,
+          "test": "issue_1035_alignment::hwp3_sample16_hwp5_page_count_64",
+          "exit_code": 100,
+          "summary": [
+            "Summary [   0.117s] 1 test run: 0 passed, 1 failed, 220 skipped"
+          ]
+        },
+        {
+          "evidence": "mydocs/pr/assets/issue7445/scope_restore_validation.json",
+          "head": null,
+          "test": "hwp3_sample16_hwp5_page_count_64",
+          "exit_code": 100,
+          "summary": [
+            "     Summary [   0.115s] 1 test run: 0 passed, 1 failed, 229 skipped"
+          ]
+        }
+      ],
+      "renamed_in_same_file": [],
+      "devel_original_function_passed": true
+    }
+  ],
+  "other_function_dispositions": {
+    "explicit_user_fixture_deferral": [
+      "issue_5941_drift_past_saved_tail_still_grants_overflow"
+    ],
+    "previous_maintainer_contract_replacements": [
+      "paragraph_error_matches_the_table_error",
+      "object_only_paragraph_finishes_once_before_a_text_and_table_paragraph",
+      "issue_2097_midpage_rowbreak_table_placed_whole_by_declared_height",
+      "issue_2105_rowbreak_table_placed_whole_by_declared_height"
+    ],
+    "scope": "기존 한컴/저장 줄 근거의 보정과 이미 만든 검사는 사용자 지시에 따라 유지. 새 테스트를 추가하지 않습니다."
+  },
+  "nonblocking_changes_restored": [
+    {
+      "path": "tests/cases/issue_6527_standalone_equation_text.rs",
+      "reason": "실패 기대값 보정이나 검사 범위 축소가 아닌 동일 samples 경로의 helper 재작성. #7382 차단 해결에 필요하지 않아 기존 helper/call 형태로 복원할 후보. 사용자 요청의 한국어 주석은 유지.",
+      "change": "diff --git a/tests/cases/issue_6527_standalone_equation_text.rs b/tests/cases/issue_6527_standalone_equation_text.rs\nindex b57525cf6..715dc0582 100644\n--- a/tests/cases/issue_6527_standalone_equation_text.rs\n+++ b/tests/cases/issue_6527_standalone_equation_text.rs\n@@ -16,9 +16,7 @@ fn equations(node: &RenderNode, in_line: bool, result: &mut Vec<(String, bool)>)\n }\n \n fn assert_sample_equations(sample: &str, inline: bool) {\n-    let path = std::path::Path::new(env!(\"CARGO_MANIFEST_DIR\"))\n-        .join(\"samples\")\n-        .join(sample);\n+    let path = std::path::Path::new(env!(\"CARGO_MANIFEST_DIR\")).join(sample);\n     let bytes = std::fs::read(path).expect(\"read public sample\");\n     let core = DocumentCore::from_bytes(&bytes).expect(\"parse public sample\");\n     let tree = core.build_page_render_tree(5).expect(\"page 6 render tree\");\n@@ -41,10 +39,10 @@ fn assert_sample_equations(sample: &str, inline: bool) {\n \n #[test]\n fn standalone_equations_are_extracted_once_in_reading_order() {\n-    assert_sample_equations(\"hwp3-sample16.hwp\", false);\n+    assert_sample_equations(\"samples/hwp3-sample16.hwp\", false);\n }\n \n #[test]\n fn inline_equations_are_extracted_once_in_reading_order() {\n-    assert_sample_equations(\"hwp3-sample16-hwp5.hwpx\", true);\n+    assert_sample_equations(\"samples/hwp3-sample16-hwp5.hwpx\", true);\n }\n"
+    },
+    {
+      "path": "tests/cases/issue_7387_use_font_space_latin_slot.rs",
+      "reason": "실패 기대값 보정이나 검사 범위 축소가 아닌 동일 samples 경로의 helper 재작성. #7382 차단 해결에 필요하지 않아 기존 helper/call 형태로 복원할 후보. 사용자 요청의 한국어 주석은 유지.",
+      "change": "diff --git a/tests/cases/issue_7387_use_font_space_latin_slot.rs b/tests/cases/issue_7387_use_font_space_latin_slot.rs\nindex 54c4e11c4..65edbb572 100644\n--- a/tests/cases/issue_7387_use_font_space_latin_slot.rs\n+++ b/tests/cases/issue_7387_use_font_space_latin_slot.rs\n@@ -59,7 +59,7 @@ fn collect(node: &RenderNode, out: &mut Vec<Run>) {\n }\n \n fn open(name: &str) -> DocumentCore {\n-    let path = std::path::Path::new(env!(\"CARGO_MANIFEST_DIR\")).join(format!(\"samples/{name}\"));\n+    let path = std::path::Path::new(env!(\"CARGO_MANIFEST_DIR\")).join(name);\n     DocumentCore::from_bytes(&std::fs::read(path).expect(\"공개 회귀 문서\")).expect(\"문서 파싱\")\n }\n \n@@ -96,7 +96,7 @@ fn line_span(doc: &DocumentCore, page: u32, needle: &str) -> Option<(f64, f64)>\n \n #[test]\n fn use_font_space_line_width_matches_hancom_in_absolute_px() {\n-    let doc = open(\"hwpctl_API_v2.4.hwp\");\n+    let doc = open(\"samples/hwpctl_API_v2.4.hwp\");\n     for (page, needle, oracle_ink_px) in [\n         (\n             14u32,\n@@ -138,7 +138,7 @@ fn use_font_space_line_width_matches_hancom_in_absolute_px() {\n /// 아래 구간을 벗어난다.\n #[test]\n fn latin_slot_with_half_em_space_keeps_half_width() {\n-    let doc = open(\"task2430/1382000_domestic_violence_survey.hwp\");\n+    let doc = open(\"samples/task2430/1382000_domestic_violence_survey.hwp\");\n     // 줄 앞의 `7.` 은 문단 자동 번호라 별도 run 이다. 줄 전체를 짝짓는다.\n     let needle = \"7.만일이연구에참여하지않는다면불이익이있습니까?\";\n     let (span, _) = line_span(&doc, 17, needle).expect(\"17쪽의 7번 문항 줄\");\n"
+    },
+    {
+      "path": "tests/cli_exit_codes.rs",
+      "reason": "실패 기대값 보정이나 검사 범위 축소가 아닌 동일 samples 경로의 helper 재작성. #7382 차단 해결에 필요하지 않아 기존 helper/call 형태로 복원할 후보. 사용자 요청의 한국어 주석은 유지.",
+      "change": "diff --git a/tests/cli_exit_codes.rs b/tests/cli_exit_codes.rs\nindex a13de810f..751af2884 100644\n--- a/tests/cli_exit_codes.rs\n+++ b/tests/cli_exit_codes.rs\n@@ -32,9 +32,7 @@ fn sample_path() -> PathBuf {\n \n /// 샘플을 결정적으로 손상시켜(바이트 플립) 임시 파일로 쓴다 — 퍼징 재현자용.\n fn write_flipped(sample: &str, flip_pct: usize, label: &str) -> PathBuf {\n-    let src = Path::new(env!(\"CARGO_MANIFEST_DIR\"))\n-        .join(\"samples\")\n-        .join(sample);\n+    let src = Path::new(env!(\"CARGO_MANIFEST_DIR\")).join(sample);\n     let mut data = std::fs::read(&src).expect(\"샘플 읽기\");\n     let pos = data.len() * flip_pct / 100;\n     data[pos] ^= 0xFF;\n@@ -51,22 +49,23 @@ fn write_flipped(sample: &str, flip_pct: usize, label: &str) -> PathBuf {\n fn corrupt_input_does_not_panic_in_renderer() {\n     // 초인적 규모 퍼징이 잡은 렌더러 오버플로 사이트들의 재현자 — info(레이아웃) 와\n     // export-text(전체 렌더) 두 경로 모두.\n+    // #7445의 원문 피델리티 검사와 구분한다. 원문90% 위치를 손상한 입력의 패닉 방지다.\n     for (sample, pct, cmd, label) in [\n-        (\"hwp3-sample11.hwp\", 45, \"info\", \"typeset-vpos\"),\n+        (\"samples/hwp3-sample11.hwp\", 45, \"info\", \"typeset-vpos\"),\n         (\n-            \"issue1949_giant_cell_nested_tables_perf.hwp\",\n+            \"samples/issue1949_giant_cell_nested_tables_perf.hwp\",\n             55,\n             \"info\",\n             \"tablelayout-vpos\",\n         ),\n         (\n-            \"HWP5-nopassword-123456.hwp\",\n+            \"samples/HWP5-nopassword-123456.hwp\",\n             90,\n             \"export-text\",\n             \"typeset-lhls\",\n         ),\n         (\n-            \"issue1937_rowbreak_footnote_overpagination.hwp\",\n+            \"samples/issue1937_rowbreak_footnote_overpagination.hwp\",\n             90,\n             \"export-text\",\n             \"heightmeasurer-vpos\",\n"
+    },
+    {
+      "path": "tests/fixtures/render_page_samples.tsv",
+      "reason": "동반 제거된 sample16-HWP5 및 PII 두 행은 nextest의 형태 계약을 막지 않습니다. tools/render_page_gate.py는 이 파일을 기본으로 읽지 않으며 실패 종료를 내는 PR 필수 게이트도 아닙니다. 실제 oracle 실패는 별도 oracle baseline 축에 한정합니다. 다른 시각 점수만으로 이 자료의 두 정상 행을 제외할 이유가 없어 원래 행을 복원합니다.",
+      "rows": [
+        "samples/hwp3-sample16-hwp5.hwp\t64\t64\t0",
+        "samples/task2097/75544_pii_bunseok.hwpx\t66\t66\t0"
+      ]
+    }
+  ],
+  "row_restoration": {
+    "path": "tests/fixtures/render_page_samples.tsv",
+    "before_sha256": "524202bfc7d139bb9aff293ab03b29f3b35f8d03d44421bae7b6760fd87eabad",
+    "after_sha256": "96159e100b0267125a936a3e2a8f42fcb860a431235ba37cbee33ab7b8731b29",
+    "restored_rows": [
+      "samples/hwp3-sample16-hwp5.hwp\t64\t64\t0",
+      "samples/task2097/75544_pii_bunseok.hwpx\t66\t66\t0"
+    ],
+    "other_bytes_preserved": true
+  },
+  "restoration_validation": {
+    "source_test_summary": [
+      "     Summary [   1.270s] 17 tests run: 17 passed, 412 skipped"
+    ],
+    "fixture_contract_summary": [
+      "     Summary [   0.016s] 6 tests run: 6 passed, 223 skipped"
+    ],
+    "passed": 23,
+    "failed": 0,
+    "gates": {
+      "base_sha": "0e8fd49fb868da0d47ac1294dcbbda81f0211233",
+      "head": "489afde93e7e247f87c9e3647a03e75e84a58c4c",
+      "steps": [
+        {
+          "step": "focused-kept",
+          "command": [
+            "cargo",
+            "nextest",
+            "run",
+            "--locked",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--test-threads",
+            "8",
+            "--no-fail-fast",
+            "--test",
+            "cli_exit_codes",
+            "--test",
+            "regression_suite_005",
+            "--test",
+            "regression_suite_028",
+            "-E",
+            "(test(issue_6527_standalone_equation_text::)) or (test(issue_7387_use_font_space_latin_slot::)) or (binary(=cli_exit_codes))"
+          ],
+          "exit_code": 0,
+          "seconds": 119.1889035422355
+        },
+        {
+          "step": "fmt-check",
+          "command": [
+            "cargo",
+            "fmt",
+            "--all",
+            "--",
+            "--check"
+          ],
+          "exit_code": 0,
+          "seconds": 6.469065541867167
+        },
+        {
+          "step": "clippy-native",
+          "command": [
+            "cargo",
+            "clippy",
+            "--locked",
+            "--target-dir",
+            "target/pr-review",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit_code": 0,
+          "seconds": 0.3832719582132995
+        },
+        {
+          "step": "clippy-wasm",
+          "command": [
+            "cargo",
+            "clippy",
+            "--locked",
+            "-p",
+            "rhwp",
+            "--lib",
+            "--target",
+            "wasm32-unknown-unknown",
+            "--target-dir",
+            "target/pr-review",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit_code": 0,
+          "seconds": 0.22940079169347882
+        },
+        {
+          "step": "workspace-build",
+          "command": [
+            "cargo",
+            "build",
+            "--locked",
+            "--workspace",
+            "--target-dir",
+            "target/pr-review"
+          ],
+          "exit_code": 0,
+          "seconds": 0.3622023342177272
+        },
+        {
+          "step": "clippy-all-targets",
+          "command": [
+            "cargo",
+            "clippy",
+            "--locked",
+            "--workspace",
+            "--all-targets",
+            "--target-dir",
+            "target/pr-review",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit_code": 0,
+          "seconds": 5.220204458106309
+        },
+        {
+          "step": "manifest-base-check",
+          "command": [
+            "node",
+            "scripts/rust-test-suite-manifest.mjs",
+            "--check",
+            "--base-ref",
+            "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+          ],
+          "exit_code": 0,
+          "seconds": 2.5861585419625044
+        },
+        {
+          "step": "unit-tier-base-check",
+          "command": [
+            "node",
+            "scripts/rust-unit-test-tiers.mjs",
+            "--check",
+            "--base-ref",
+            "0e8fd49fb868da0d47ac1294dcbbda81f0211233"
+          ],
+          "exit_code": 0,
+          "seconds": 8.998670083004981
+        }
+      ]
+    },
+    "fixture_contract_command": {
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--test",
+        "regression_suite_012",
+        "-E",
+        "test(render_page_samples_fixture_contract::)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 8.355611917097121
+    },
+    "source_scope": "Rust 변경은 helper의 기존 경로 구성 복원뿐. 기대값/공차/함수 수·생산코드 불변. TSV는 원본 두 행만 복원했고 나머지 바이트 불변."
+  },
+  "remaining": "보정129의 oracle5실패와 기존 body/cell/시장/manifest 등 실제 실패는 유지. 최종 개별검증·전체 nextest·Native/fresh WASM 및 PR 준비는 미완료. 추가 실패를 자동 #7445로 이관하지 않습니다.",
+  "cleanup": "이번에 만든 clean devel 대조 worktree만 Cargo/Rust0프로세스 확인 후 제거. 다른 worktree/target/pr-review/검증 증거는 보존.",
+  "logs": "output/pr-review/planet6897-7382-20260926/stage130-scope-audit/",
+  "new_test_functions": 0,
+  "new_renderer_changes": false
+}

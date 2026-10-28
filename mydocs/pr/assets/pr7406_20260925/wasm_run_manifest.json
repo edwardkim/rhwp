@@ -1,0 +1,144 @@
+{
+  "schema_version": 2,
+  "key": "prep7406",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue2006/1790387_prep_final_report.hwpx",
+      "sha256": "c68baed24096386f9041930d24d39409b61ac99463bf04dfd242440dfdeb739f"
+    },
+    "pdf": {
+      "path": "pdf/issue2006/1790387_prep_final_report-2024.pdf",
+      "sha256": "04b95a6e41420fb45934ce2ee5abd8cf6dac4ce12fd47977dacbe7fca28018a8"
+    },
+    "git_head": "9e7518243b251193ee91378e2d09e754d0223d64",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "e67bf1ef9a9798e1f1ddaafcf38cb354668772b5ccf1c7b6c0e11e0ae1129d07"
+    },
+    "svg_rasterizer": "webfont",
+    "rhwp_binary": {
+      "configured": "target/pr-review/debug/rhwp",
+      "path": "target/pr-review/debug/rhwp",
+      "sha256": "b4387ef0ee9939bac7861a92fa01f4689f1152f8763c7d19457b1b5fbce1e137"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp.js",
+          "sha256": "2b7e7bb01cbbff0cb0d3c9a3222c6cb187f9d9710045013bcfb077d7abef4133"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "sha256": "3df341e2575f4da056cfe335591fb13466ad299079fac26fb2f3ca1c3479e73a"
+        }
+      ],
+      "exporter_sha256": "5b51337e43cfb443c3151d2ab47ab8b09d94e6ca493b60eb565cd9d20be82588",
+      "font_policy": "same-input native --font-style; font-face CSS only",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "local",
+      "source": "none",
+      "files": []
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": {
+    "path": "mydocs/pr/assets/pr7406_20260925/font_mismatch_001.md",
+    "sha256": "3d95b2300a34d2a7df056a1d0ae9d4cd463c36251616b0ac2fc4eb264c344ae5"
+  },
+  "requested_pages": [
+    1,
+    13,
+    14,
+    15,
+    26,
+    27,
+    32,
+    33,
+    34,
+    35,
+    39,
+    40,
+    41,
+    50,
+    51,
+    52,
+    56,
+    57,
+    58,
+    60,
+    61,
+    62,
+    67,
+    68,
+    69,
+    70,
+    76,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    104,
+    105,
+    106,
+    108
+  ],
+  "requested_page_shards": [
+    [
+      1,
+      13,
+      14,
+      15,
+      26,
+      27,
+      32,
+      33,
+      34,
+      35,
+      39,
+      40,
+      41,
+      50,
+      51,
+      52,
+      56,
+      57,
+      58,
+      60,
+      61,
+      62,
+      67,
+      68,
+      69,
+      70,
+      76,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      104,
+      105,
+      106,
+      108
+    ]
+  ],
+  "run_state": "complete"
+}

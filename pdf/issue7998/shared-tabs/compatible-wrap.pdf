@@ -1,0 +1,36 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 1 /Kids [3 0 R] >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 400 260] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 254 >>
+stream
+BT /F1 10 Tf 1 0 0 1 20 210 Tm (ALPHA) Tj ET
+BT /F1 10 Tf 1 0 0 1 70 210 Tm (BETA GAMMA DELTA EPSILON) Tj ET
+BT /F1 10 Tf 1 0 0 1 20 196 Tm (LONGGAMMALONG) Tj ET
+BT /F1 10 Tf 1 0 0 1 140 196 Tm (DELTA) Tj ET
+BT /F1 10 Tf 1 0 0 1 20 160 Tm (SECOND) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000545 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+615
+%%EOF

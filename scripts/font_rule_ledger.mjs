@@ -65,12 +65,8 @@ const CONDITION_FIELDS = [
 
 const GENERATOR_VERSION = '2.0.0';
 const PUBLIC_PARITY_FIXTURES = [
-  'samples/exam_kor.hwp',
-  'samples/exam_eng.hwp',
-  'samples/exam_math.hwp',
-  'samples/exam_science.hwp',
   'samples/synam-001.hwp',
-  'samples/aift.hwp',
+  'mydocs/pr/assets/issue7445/aift74/aift.hwp',
   'samples/2010-01-06.hwp',
 ];
 
@@ -831,31 +827,31 @@ export function buildBaseline(candidates, repositoryRoot = SCRIPT_ROOT) {
         id: 'font-rule-ledger-contract',
         command: 'node --test scripts/tests/font_rule_ledger.test.mjs',
         status: 'required',
-        evidence: 'mydocs/working/task_m100_4939_stage2.md',
+        evidence: 'mydocs/working/archives/task_m100_4939_stage2.md',
       },
       {
         id: 'rust-font-metrics',
         command: 'cargo test --profile release-test --lib font_metrics',
         status: 'required',
-        evidence: 'mydocs/working/task_m100_4939_stage2.md',
+        evidence: 'mydocs/working/archives/task_m100_4939_stage2.md',
       },
       {
         id: 'studio-font-contracts',
         command: 'node --test rhwp-studio/tests/font-substitution.test.ts rhwp-studio/tests/local-fonts.test.ts rhwp-studio/tests/canvaskit-font-plan.test.ts rhwp-studio/tests/canvaskit-sfnt-face.test.ts rhwp-studio/tests/renderer-baseline-font-loading.test.ts',
         status: 'required',
-        evidence: 'mydocs/working/task_m100_4939_stage2.md',
+        evidence: 'mydocs/working/archives/task_m100_4939_stage2.md',
       },
       {
         id: 'font-assets',
         command: 'node --test scripts/frontend-font-assets.test.mjs',
         status: 'required',
-        evidence: 'mydocs/working/task_m100_4939_stage2.md',
+        evidence: 'mydocs/working/archives/task_m100_4939_stage2.md',
       },
       {
         id: 'native-wasm-public-parity',
         command: `node scripts/svg_native_wasm_diff.mjs ${PUBLIC_PARITY_FIXTURES.join(' ')}`,
         status: 'required',
-        evidence: 'mydocs/working/task_m100_4939_stage2.md',
+        evidence: 'mydocs/working/archives/task_m100_4939_stage2.md',
       },
     ],
   };

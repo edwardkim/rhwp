@@ -1,0 +1,73 @@
+{
+  "status": "individual_correction_and_visual_pass_integration_pending",
+  "parent_head": "f2eb602754b7b5bdb39eace353c75b5ef3ba89c3",
+  "nextest": {
+    "passed": 39,
+    "failed": 0,
+    "skipped": 1717,
+    "exit_code": 0,
+    "log_path": "output/pr-review/planet6897-20261004/stage5-7547-nextest.log",
+    "log_sha256": "4532297e1fead4823b7e57ab62830460db967be43f522eb6f0e5091222d36dc3"
+  },
+  "source_sha256": {
+    "src/renderer/typeset/table/continuation/fragment/scan.rs": "29392e51e08f3bac33f8eb97df5729a974d21a31d3b54b0f1247865bcd07cd6d",
+    "src/renderer/typeset/table/scan/runner/row_step.rs": "efa6671abba7a52db54cf15e218deb0d7a4b112e4b3444e349db617de07933c1",
+    "src/renderer/typeset/table/scan/source_frame.rs": "7dd183ea3b131f1be5e6c5bbc78688c51f92eb79821efc2c1ba026df15ef5ed3"
+  },
+  "remaining": [
+    "final integration gates and other individual PR reviews"
+  ],
+  "code_candidate": "c8c5f535cd3ebf331cadc2714c68af9fdc663a4d",
+  "visual": {
+    "issue6929_native": {
+      "pages": 17,
+      "minimum_percent": 95.23424,
+      "below_90": 0,
+      "tsv_sha256": "36fb6fa935771b00aa697e097f30dd0590ec97466409523771065dc5dcd25497",
+      "output_path": "output/pr-review/planet6897-20261004/stage5-native/issue6929"
+    },
+    "issue6929_wasm": {
+      "pages": 17,
+      "minimum_percent": 95.23424,
+      "below_90": 0,
+      "tsv_sha256": "36fb6fa935771b00aa697e097f30dd0590ec97466409523771065dc5dcd25497",
+      "output_path": "output/pr-review/planet6897-20261004/stage5-wasm/issue6929"
+    },
+    "issue1133-hwp_native": {
+      "pages": 3,
+      "minimum_percent": 97.99734,
+      "below_90": 0,
+      "tsv_sha256": "cf56f789a1e3ea79e0ff9096d07cfe6f6ec66f59540cba4dd62cb8c54f187ca2",
+      "output_path": "output/pr-review/planet6897-20261004/stage5-native/issue1133-hwp"
+    },
+    "issue1133-hwp_wasm": {
+      "pages": 3,
+      "minimum_percent": 97.99734,
+      "below_90": 0,
+      "tsv_sha256": "cf56f789a1e3ea79e0ff9096d07cfe6f6ec66f59540cba4dd62cb8c54f187ca2",
+      "output_path": "output/pr-review/planet6897-20261004/stage5-wasm/issue1133-hwp"
+    },
+    "issue1133-hwpx_native": {
+      "pages": 3,
+      "minimum_percent": 98.00366,
+      "below_90": 0,
+      "tsv_sha256": "15d54fe27444a60a8105cf87aaaa86bd2d12188c9182234d855523e3e13f0a69",
+      "output_path": "output/pr-review/planet6897-20261004/stage5-native-extra/issue1133-hwpx"
+    },
+    "issue1133-hwpx_wasm": {
+      "pages": 3,
+      "minimum_percent": 98.00366,
+      "below_90": 0,
+      "tsv_sha256": "15d54fe27444a60a8105cf87aaaa86bd2d12188c9182234d855523e3e13f0a69",
+      "output_path": "output/pr-review/planet6897-20261004/stage5-wasm/issue1133-hwpx"
+    }
+  },
+  "native_run_note": "17쪽과 HWP 3쪽 산출 후 잘못된 HWPX 경로로 최초 명령 exit1. HWPX는 올바른 samples/hwpx 경로의 별도 명령 exit0으로 전쪽 재검증.",
+  "wasm_build": {
+    "command": "CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt",
+    "exit_code": 0,
+    "duration_seconds": 175,
+    "kind": "Mac local alternative; not Docker optimized",
+    "log_sha256": "a06a298b5317dadce7bf6f54c9aedd4d54aae44b67d357f71a58ec2d9994f746"
+  }
+}

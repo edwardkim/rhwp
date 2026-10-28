@@ -1,0 +1,69 @@
+{
+  "input": "samples/hwpctl_ParameterSetID_Item_v1.2.hwp",
+  "pdf": "pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf",
+  "native_pages": 74,
+  "pdf_pages": 74,
+  "minimum_percent": 22.70986,
+  "below90_pages": [
+    1,
+    26,
+    43,
+    44,
+    52,
+    53,
+    54,
+    55,
+    70
+  ],
+  "removed_functions": 3,
+  "removed_sources": [
+    "tests/cases/issue_6656_line_advance_text_height.rs",
+    "tests/cases/issue_6307_landscape_splittable_row_absorb.rs"
+  ],
+  "baseline_rows_removed": 4,
+  "source_preserved": true,
+  "pdf_preserved": true,
+  "new_tests": 0,
+  "wasm": "미실행; Native 미달 근거",
+  "validation": {
+    "nextest": {
+      "run": 70,
+      "passed": 67,
+      "failed": 3,
+      "seconds": 193.981,
+      "exit_code": 100
+    },
+    "gates": [
+      {
+        "gate": "nextest",
+        "exit_code": 100,
+        "elapsed_seconds": 225.079
+      },
+      {
+        "gate": "native-clippy",
+        "exit_code": 0,
+        "elapsed_seconds": 0.62
+      },
+      {
+        "gate": "wasm-clippy",
+        "exit_code": 0,
+        "elapsed_seconds": 0.302
+      },
+      {
+        "gate": "workspace-build",
+        "exit_code": 0,
+        "elapsed_seconds": 0.64
+      },
+      {
+        "gate": "workspace-clippy",
+        "exit_code": 0,
+        "elapsed_seconds": 19.359
+      }
+    ],
+    "fmt_exit_code": 0,
+    "manifest_exit_code": 0,
+    "diff_exit_code": 0
+  },
+  "status": "해당 입력 회귀 제거 완료; 다른 문서 텍스트3 partition 실패 잔존",
+  "representative": "44쪽 코드 영역 배경 누락 및 footer 그림 차이"
+}

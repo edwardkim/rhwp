@@ -1,0 +1,227 @@
+//! 일반 행의 저장 프레임 선택과 통째 수용 Query. 실제 수용·컷 선택·이월은 부모 소유다.
+
+use super::row::RowScanQuery;
+use super::RowBlockQuery;
+use crate::model::provenance::LayoutCompatibilityProfile;
+use crate::renderer::layout::table_layout::RowCutResult;
+
+pub(in crate::renderer::typeset) struct SourceFrameQuery<'a> {
+    pub(in crate::renderer::typeset) row: &'a RowScanQuery<'a>,
+    pub(in crate::renderer::typeset) row_start_cut: &'a [usize],
+    pub(in crate::renderer::typeset) row_count: usize,
+    pub(in crate::renderer::typeset) is_continuation: bool,
+    pub(in crate::renderer::typeset) profile: &'a LayoutCompatibilityProfile,
+}
+
+/// 세 높이와 예산을 합치지 않는다. 실제로 앞서 수용한 높이/행 간격/현재 요구 높이다.
+pub(in crate::renderer::typeset) struct WholeRowBudget {
+    pub(in crate::renderer::typeset) consumed: f64,
+    pub(in crate::renderer::typeset) cs_before: f64,
+    pub(in crate::renderer::typeset) row_total: f64,
+    pub(in crate::renderer::typeset) avail_for_rows: f64,
+    pub(in crate::renderer::typeset) strict_painted_bottom_fit: bool,
+    pub(in crate::renderer::typeset) source_first_fragment_overflow_allowance: f64,
+    pub(in crate::renderer::typeset) source_first_fragment_row_end: Option<usize>,
+    pub(in crate::renderer::typeset) ordinary_declared_band_can_split: bool,
+}
+
+pub(in crate::renderer::typeset) struct SourceFrameSelection {
+    pub(in crate::renderer::typeset) terminal_response_before_empty_spacer: bool,
+    pub(in crate::renderer::typeset) two_line_terminal_response_source_frame: Option<f64>,
+    pub(in crate::renderer::typeset) stored_source_frame: Option<RowCutResult>,
+    pub(in crate::renderer::typeset) terminal_source_frame: bool,
+    pub(in crate::renderer::typeset) continued_source_frame: bool,
+    pub(in crate::renderer::typeset) opening_source_frame: bool,
+    pub(in crate::renderer::typeset) mid_source_frame: bool,
+    pub(in crate::renderer::typeset) whole_row_fits: bool,
+}
+
+impl SourceFrameQuery<'_> {
+    /// reflow/빈 행 조회는 선행 guard가 성립할 때만 호출한다. 컷을 복제하지 않는다.
+    pub(in crate::renderer::typeset) fn resolve(
+        &self,
+        budget: WholeRowBudget,
+        table_text_reflowed: impl Fn() -> bool,
+        row_has_no_text_or_controls: impl Fn(usize) -> bool,
+    ) -> SourceFrameSelection {
+        let Self {
+            row,
+            row_start_cut,
+            row_count,
+            is_continuation,
+            profile,
+        } = *self;
+        let RowScanQuery {
+            rows,
+            r,
+            cursor_row,
+            ..
+        } = *row;
+        let RowBlockQuery {
+            layout_engine,
+            mt,
+            table,
+            styles,
+            rowspan_touched,
+            ..
+        } = *rows;
+        let WholeRowBudget {
+            consumed,
+            cs_before,
+            row_total,
+            avail_for_rows,
+            strict_painted_bottom_fit,
+            source_first_fragment_overflow_allowance,
+            source_first_fragment_row_end,
+            ordinary_declared_band_can_split,
+        } = budget;
+        // The final visible response is followed by a row without text or
+        // controls. Its stored row height is authoritative for whole-row ownership;
+        // browser-composed height may be larger solely because of font
+        // metrics and must not create a tail-only physical page.
+        let terminal_response_before_empty_spacer = mt.allows_row_break_split()
+            && r + 2 == row_count
+            && row_start_cut.is_empty()
+            && !rowspan_touched.get(r).copied().unwrap_or(true)
+            && (row_has_no_text_or_controls(r + 1)
+                || layout_engine.row_has_only_empty_spacer_units(table, r + 1, styles));
+        let two_line_terminal_response_source_frame = (profile.hwpx_stored_layout()
+            && r > cursor_row
+            && terminal_response_before_empty_spacer
+            && table.outer_margin_bottom > 0)
+            .then(|| layout_engine.row_two_line_source_frame_height(table, r, styles))
+            .flatten();
+        // Same-paragraph HWPX resets and original Native plain-text frame
+        // boundaries retain their physical fragment ownership. Native paragraph
+        // resets require a coherent cell coordinate stream and original row
+        // boxes extending beyond the declared object frame; local zeros alone
+        // do not establish a source-owned cut.
+        let native_text_source_frame = layout_engine
+            .native_stored_row_has_text_frame_boundary(table, r, styles)
+            && !rowspan_touched.get(r).copied().unwrap_or(true);
+        let stored_source_frame = ((native_text_source_frame
+            || (profile.hwpx_stored_layout()
+                && layout_engine.row_has_stored_vpos_frame_rewind(table, r)
+                && layout_engine.row_has_single_visible_source_cell(table, r, styles)))
+            && !table.common.treat_as_char
+            && mt.allows_row_break_split()
+            && !rowspan_touched.get(r).copied().unwrap_or(true))
+        .then(|| layout_engine.stored_frame_cut_for_row(table, r, row_start_cut, styles))
+        .flatten();
+        let terminal_source_frame = profile.hwpx_stored_layout()
+            && r + 2 == row_count
+            && r > cursor_row
+            && row_start_cut.is_empty()
+            && layout_engine.row_has_stored_vpos_frame_rewind(table, r);
+        let continued_source_frame =
+            is_continuation && !row_start_cut.is_empty() && stored_source_frame.is_some();
+        // direct HWPX의 첫 RowBreak 조각도 저장 LINE_SEG frame이 물리 owner를
+        // 명시할 수 있다. 일반 capacity cut이 frame 끝 직전에서 멈추면 다음
+        // fragment가 그 짧은 tail만 소유해 쪽 하나가 늘어난다. 이 경우에는
+        // 기존 source-frame cut이 가진 정확한 CellUnit 끝을 첫 조각에도 쓴다.
+        // 편집 뒤 reflow된 텍스트는 저장 좌표를 그대로 신뢰할 수 없으므로
+        // continuation/terminal 경로와 달리 새 첫-fragment 경로에서는 제외한다.
+        let opening_source_frame = !is_continuation
+            && r == cursor_row
+            && row_start_cut.is_empty()
+            && !table_text_reflowed()
+            && stored_source_frame.is_some();
+        // [#5584 ②] 조각 **중간 행**(r > cursor_row)에서도 capacity cut 이 저장
+        // 프레임 끝 직전에 멈추면 다음 fragment 가 짧은 tail(한 유닛)만 소유해
+        // 쪽 하나가 늘어난다 — 3232693 p1: r=7 budget 153.9 에 141.3 소비 후
+        // 다음 유닛(21.3)이 12.7px 부족으로 밀리고, p2 가 그 한 유닛만 담은 채
+        // 저장 리셋에서 끊겨 5쪽(한글 4쪽). opening 경로와 같은 저장 계약이되,
+        // 중간 행은 근소 초과(한 유닛 규모)일 때만 프레임 끝까지 당긴다 —
+        // 상한은 아래 확장 지점에서 검사한다.
+        let mid_source_frame = !is_continuation
+            && r > cursor_row
+            && row_start_cut.is_empty()
+            && !table_text_reflowed()
+            && stored_source_frame.is_some();
+        let single_visible_source_frame = profile.hwpx_stored_layout()
+            && stored_source_frame.is_some()
+            && layout_engine.row_has_stored_vpos_frame_rewind(table, r)
+            && layout_engine.row_has_single_visible_source_cell(table, r, styles);
+        let strict_nonterminal_rounding_fit = strict_painted_bottom_fit
+            && r + 1 < row_count
+            && consumed + cs_before + row_total <= avail_for_rows + 0.5;
+        // 전체 행의 선언 프레임 여유가 셀의 명시적인 다음 쪽 꼬리를 흡수하지 않는다.
+        // 실제 예산 안에 들어가는 행은 기존대로 수용하고, 초과 수용만 컷에 맡긴다.
+        let terminal_zero_origin_cut = (profile.hwpx_stored_layout()
+            || profile.hwp5_stored_pagination_layout())
+            && row_start_cut.is_empty()
+            && !table_text_reflowed()
+            && layout_engine
+                .row_stored_zero_origin_cut(table, r, styles)
+                .is_some();
+        let source_frame_whole_row_fits = !terminal_zero_origin_cut
+            // #5585: 일반 선언 행의 초과 밴드는 다음 쪽에 이어져야 한다.
+            // 초과 허용으로 온전한 행을 받으면 paint가 첫 프레임에서 잘라
+            // 버린 빈 밴드와 다음 행의 쪽 소유를 스캐너가 잃는다.
+            && !ordinary_declared_band_can_split
+            && source_first_fragment_overflow_allowance > 0.0
+            && source_first_fragment_row_end == Some(r + 1)
+            // Source object-height slack may absorb an empty physical band,
+            // but it cannot consume visible content that belongs beyond the
+            // actual row budget. The same content/alignment query is used by
+            // ordinary band splitting, independently of the stored border.
+            && layout_engine.row_aligned_content_bottom(
+                table,
+                r,
+                layout_engine.row_complete_cut_content_height(table, r, styles),
+                row_total,
+                styles,
+            ) <= avail_for_rows - consumed - cs_before + 0.5
+            && consumed + cs_before + row_total
+                <= avail_for_rows + source_first_fragment_overflow_allowance;
+        // A direct HWPX row with one visible owner and a structural empty
+        // partner has an explicit source fragment boundary.  Let the
+        // row-cut walk retain it; ordinary and multi-owner rows keep the
+        // measured whole-row fast path. The same rule applies to original
+        // Native cells whose two local-zero line boxes close the stored row.
+        // Spare capacity cannot merge their independently owned source frames.
+        // HU-derived row sums can exceed the identical source frame by binary
+        // summation error. Bound that error by the number of accumulated rows;
+        // this does not grant any additional physical layout space.
+        let candidate_end = consumed + cs_before + row_total;
+        let sum_roundoff =
+            f64::EPSILON * (r + 3) as f64 * candidate_end.abs().max(avail_for_rows.abs());
+        // 원본 원점0 재시작은 둘로 나뉜다. 첫 개체 프레임을 가로지르는 재시작은 선언
+        // 기하가 인증하므로 언제나 물리 경계다. 그 뒤 행의 재시작은 저장 당시 쪽 나눔의
+        // 기록이라, 지금 흐름에서 그 행이 남은 예산에 통째로 들어가면 경계가 아니다 —
+        // 저장 쪽 나눔이 다른 자리로 옮겨 간 것이다(1342000 구역 12 표 행 132: 저장 2줄
+        // `vpos 0/0` 이 쪽 위 120px 지점에서 행을 끊어 한 쪽이 213px 만 쓰고 끝났다.
+        // 한/글 2022 PDF 는 그 행을 끊지 않는다). 쪽 끝에 걸린 행은 종전대로 그 재시작에서
+        // 자른다(table_scattered_header_rowbreak 47→48쪽 row99 「6가 크로 / 뮴)」).
+        let saved_zero_origin_frame = match layout_engine.row_saved_zero_origin_text_frame(table, r)
+        {
+            Some(crate::renderer::layout::SavedZeroOriginWitness::OpeningFrame) => true,
+            Some(crate::renderer::layout::SavedZeroOriginWitness::LaterPage) => {
+                candidate_end > avail_for_rows + sum_roundoff
+            }
+            None => false,
+        };
+        let declared_source_frame = (native_text_source_frame && stored_source_frame.is_some())
+            || (row_start_cut.is_empty()
+                && !table_text_reflowed()
+                && (layout_engine.row_has_declared_stored_frame(table, r)
+                    || layout_engine.native_saved_two_line_row_frame(table, r, styles)
+                    || saved_zero_origin_frame));
+        let whole_row_fits = !declared_source_frame
+            && !terminal_zero_origin_cut
+            && ((!single_visible_source_frame && candidate_end <= avail_for_rows + sum_roundoff)
+                || strict_nonterminal_rounding_fit
+                || source_frame_whole_row_fits);
+
+        SourceFrameSelection {
+            terminal_response_before_empty_spacer,
+            two_line_terminal_response_source_frame,
+            stored_source_frame,
+            terminal_source_frame,
+            continued_source_frame,
+            opening_source_frame,
+            mid_source_frame,
+            whole_row_fits,
+        }
+    }
+}

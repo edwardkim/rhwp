@@ -1,0 +1,150 @@
+{
+  "kind": "multi_pr_review_validation",
+  "date": "2026-08-27",
+  "branch": "review/open-prs-6178-6198-20260827",
+  "base": {
+    "remote": "upstream/devel",
+    "sha": "529ab90c25d5aead724cb67d0d63920c1f580ad3"
+  },
+  "head_before_pr6178_update": "81265b486ba76d9f7dbcd858e01eed831abe4586",
+  "validated_head": "d5d43caa9eb2ea616155d9309b1da6f452aa8d3d",
+  "included_prs": [
+    {
+      "number": 6178,
+      "head": "8bfd9404fa12d3e435ffe7551eec11f1aeaf0a39",
+      "status": "open-non-draft-clean",
+      "note": "8bfd9404f was pushed after the first cherry-pick and was later applied into this branch."
+    },
+    {
+      "number": 6182,
+      "head": "f74bdfe17fe52cdb19cfea01e0f724993b578558",
+      "status": "open-non-draft-dirty-on-source-pr",
+      "note": "Integrated with a package.json conflict resolution that preserves both e2e:responsive and e2e:issue-6053."
+    },
+    {
+      "number": 6188,
+      "head": "192451e9a0abd0ae1d9c761cd2ccf07aee53c3d6",
+      "status": "open-non-draft-clean",
+      "note": "Integrated without source-code conflict; order-file conflict and EOF whitespace were corrected by the maintainer."
+    },
+    {
+      "number": 6193,
+      "head": "e28f977e0d6365308473ee4b7434c9173a355783",
+      "status": "open-non-draft-clean"
+    },
+    {
+      "number": 6195,
+      "head": "0b5a810b22dcbe117dc0b963edcf2625aa145850",
+      "status": "open-non-draft-clean"
+    },
+    {
+      "number": 6198,
+      "head": "82a82d154b899fe4b24efd6a170451daab13ea5b",
+      "status": "open-non-draft-clean"
+    }
+  ],
+  "excluded_range_prs": [
+    {
+      "number": 6183,
+      "reason": "closed"
+    },
+    {
+      "number": 6191,
+      "reason": "already merged"
+    }
+  ],
+  "reviewer_assignment": {
+    "reviewer": "jangster77",
+    "method": "REST requested_reviewers API",
+    "prs": [6178, 6182, 6188, 6193, 6195, 6198]
+  },
+  "maintainer_corrections": [
+    {
+      "commit": "8420824d9",
+      "area": "rhwp-studio/package.json",
+      "reason": "merge conflict while applying PR #6182",
+      "resolution": "kept both upstream e2e:responsive and PR e2e:issue-6053 scripts"
+    },
+    {
+      "commit": "8d5bbf29a",
+      "area": "mydocs/orders/20260827.md",
+      "reason": "merge conflict while applying PR #6188",
+      "resolution": "preserved existing devel records and appended the #6149 table"
+    },
+    {
+      "commit": "81265b486",
+      "area": "rhwp-studio/src/view/page-gap.ts, rhwp-studio/src/view/ruler-scale.ts, rhwp-studio/tests/ruler-scale.test.ts",
+      "reason": "git diff --check reported blank line at EOF",
+      "resolution": "removed trailing blank lines"
+    }
+  ],
+  "local_validation": [
+    {
+      "command": "cargo fmt --all -- --check",
+      "result": "pass"
+    },
+    {
+      "command": "git diff --check upstream/devel...HEAD",
+      "result": "pass"
+    },
+    {
+      "command": "node scripts/rust-unit-test-tiers.mjs --check",
+      "result": "pass",
+      "summary": "4221 tests / 299 modules / ready 0 / support 87 / white-box 4130 / cfg support items 28"
+    },
+    {
+      "command": "node scripts/rust-test-suite-manifest.mjs --prepare && node scripts/rust-test-suite-manifest.mjs --check",
+      "result": "pass",
+      "summary": "981 sources / 4398 static test attrs / 32 suites + 9 exceptions = 41/48 integration targets / nextest minimum 6559 cases / weight 766113..771107"
+    },
+    {
+      "command": "cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 12 --no-fail-fast",
+      "result": "pass",
+      "summary": "8438 tests run: 8438 passed (10 slow), 43 skipped; 924.930s"
+    },
+    {
+      "command": "cargo clippy --locked --all-targets --target-dir target/pr-review -- -D warnings",
+      "result": "pass",
+      "summary": "finished in 58.69s"
+    },
+    {
+      "command": "cargo test --locked --profile release-test --target-dir target/pr-review --features native-skia --lib",
+      "result": "pass",
+      "summary": "167 passed; 0 failed"
+    },
+    {
+      "command": "node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- --cargo-profile release-test --target-dir target/pr-review --features native-skia",
+      "result": "pass",
+      "summary": "2 tests run: 2 passed"
+    },
+    {
+      "command": "node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- --cargo-profile release-test --target-dir target/pr-review --features native-skia",
+      "result": "pass",
+      "summary": "4 tests run: 4 passed"
+    },
+    {
+      "command": "CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg",
+      "result": "pass",
+      "summary": "Done in 8m 58s"
+    },
+    {
+      "command": "npm --prefix rhwp-studio test",
+      "result": "pass",
+      "summary": "1222 tests, 1221 pass, 0 fail, 1 skipped"
+    },
+    {
+      "command": "npm --prefix rhwp-studio run build",
+      "result": "pass"
+    },
+    {
+      "command": "npm --prefix rhwp-studio run e2e:issue-6053",
+      "result": "pass",
+      "summary": "#6053 e2e all stages passed"
+    },
+    {
+      "command": "npm --prefix rhwp-studio run e2e:responsive",
+      "result": "pass",
+      "summary": "943 passed, 0 failed"
+    }
+  ]
+}
