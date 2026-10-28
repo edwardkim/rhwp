@@ -3,6 +3,18 @@
 /// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. 병합 `devel` 기준 46건(2026-08-30 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     (
+        "host_font_environment.rs",
+        "prepare_declared_font_fallbacks_with",
+        Exempt::SessionState,
+        "실제 글꼴 공급 관측과 파생 조판 캐시만 갱신한다. issue_8153_scoped_host_font_selection에서 관측 적용 전후 원본 저장 바이트를 대조한다.",
+    ),
+    (
+        "host_font_environment.rs",
+        "set_observed_font_fallbacks_native",
+        Exempt::SessionState,
+        "공급 관측을 검증한 뒤 같은 세션 환경 갱신 경로에 전달한다. issue_8153_scoped_host_font_selection에서 공개 API 적용 전후 원본 저장 바이트를 대조한다.",
+    ),
+    (
         "commands/border_paint_edit.rs",
         "discard_border_paint_undo_native",
         Exempt::SessionState,

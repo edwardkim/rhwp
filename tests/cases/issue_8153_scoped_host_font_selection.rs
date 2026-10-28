@@ -89,4 +89,31 @@ fn observed_host_fallback_still_selects_an_unclaimed_source() {
         "같은 공급 관측은 반복 재조판하지 않는다"
     );
     assert_eq!(core.export_hwp_native().unwrap(), original);
+
+    let mut public_core = self::core();
+    let public_original = public_core.export_hwp_native().unwrap();
+    let records: Vec<_> = public_core
+        .declared_font_fallback_requests()
+        .into_iter()
+        .map(|request| {
+            serde_json::json!({
+                "request": {
+                    "family": request.family,
+                    "fallback": request.fallback,
+                    "bold": request.bold,
+                    "italic": request.italic,
+                },
+                "source": {
+                    "family": "Observed Fixture",
+                    "sha256": "ab".repeat(32),
+                    "faceIndex": 0,
+                },
+            })
+        })
+        .collect();
+    assert!(public_core
+        .set_observed_font_fallbacks_native(&serde_json::to_string(&records).unwrap())
+        .unwrap());
+    assert_eq!(public_core.observed_font_fallbacks().len(), records.len());
+    assert_eq!(public_core.export_hwp_native().unwrap(), public_original);
 }
