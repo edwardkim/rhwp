@@ -1431,7 +1431,11 @@ fn empty_char_overlap_retains_frame_without_svg_ink() {
         16.0,
         16.0,
     );
-    assert_eq!(renderer.output(), before, "빈 구성은 SVG 잉크를 출력하지 않는다");
+    assert_eq!(
+        renderer.output(),
+        before,
+        "빈 구성은 SVG 잉크를 출력하지 않는다"
+    );
     renderer.draw_char_overlap(
         "가",
         &style,
@@ -1445,7 +1449,10 @@ fn empty_char_overlap_retains_frame_without_svg_ink() {
         16.0,
         16.0,
     );
-    assert!(renderer.output().contains("가"), "실제 구성 글자는 출력한다");
+    assert!(
+        renderer.output().contains("가"),
+        "실제 구성 글자는 출력한다"
+    );
 }
 
 /// [#4158] 실제 CharOverlap의 U+F02B1은 raw border가 0이어도 문자 자체의 의미에 따라

@@ -1322,7 +1322,8 @@ fn assert_decode_identical(data: &[u8]) {
     );
     assert_eq!(
         new.nb_space_control_indices, reference.nb_space_control_indices,
-        "묶음 빈칸 출처 불일치: {:02x?}", data
+        "묶음 빈칸 출처 불일치: {:02x?}",
+        data
     );
     let fr_new: Vec<_> = new.field_ranges.iter().map(field_range_key).collect();
     let fr_ref: Vec<_> = reference.field_ranges.iter().map(field_range_key).collect();
