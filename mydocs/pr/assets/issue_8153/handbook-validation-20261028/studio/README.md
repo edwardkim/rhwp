@@ -40,7 +40,8 @@ CanvasKit software를 요청한 두 원본은 둘 다 전체 383쪽이 사전 �
 `9454c941a1a1bd16ea87d1a744695aa1bddc2fe48d167c086ce656b445f0f902`이며,
 실행 중 브라우저가 받은 WASM의 해시와 일치한다. JS 원본과 Vite 응답의 해시는 위에
 기록한 값과 같다. 검증용 작업 트리의 Git 기준점은 `a1e511dbebcc27e187ff847d5510358fa9fbada4`이고,
-제품 코드와 테스트는 `412426515e`의 내용과 바이트 단위로 대조했다.
+제품 소스, 공용 크레이트·vendor, 빌드 설정·스크립트와 `tests/cases`, `tests/common`은
+`412426515e`의 내용과 바이트 단위로 대조했다. Studio 소스도 같은 커밋과 비교했다.
 
 직접 Canvas2D를 요청한 6개 화면과 CanvasKit 요청 후 Canvas2D로 대체된 6개 화면은
 각각 위의 해당 쪽 정식 PNG와 SHA-256이 일치한다. CanvasKit 직접 화면은 여전히
