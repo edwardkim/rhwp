@@ -33,7 +33,11 @@ fn initialization_uses_parser_budget_and_editing_owns_its_lifetime() {
         let mut limited = policy;
         limited.backend.decoded_bytes = parsed.metadata.resource_usage.decoded_bytes;
         let mut refused = PdfImportSession::new(limited).unwrap();
-        let error = refused.open(PDF, &options).unwrap_err().to_string();
+        let error = refused
+            .open(PDF, &options)
+            .err()
+            .expect("bounded initialization must refuse")
+            .to_string();
         assert!(error.contains("PDF_RESOURCE_LIMIT:"), "{error}");
         assert!(refused.open(PDF, &options).is_err());
         let mut fresh = PdfImportSession::new(policy).unwrap();
