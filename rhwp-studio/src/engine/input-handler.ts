@@ -2535,18 +2535,34 @@ export class InputHandler {
 
   /** 셀 블록 안 모든 셀의 모든 문단을 문단 서식 대상으로 만든다 */
   private getParaFormatTargetsForCellBlock(block: SelectedCellBlock): ParaFormatTarget[] {
-    // 중첩 표 문단 서식은 목표 밖(getParaFormatTargetsForRange 도 동일 하계)이다.
-    if (block.cellPath) return [];
     return paraFormatTargetsForCellBlock(
       block,
-      (cellIdx) => this.wasm.getCellParagraphCount(block.sec, block.ppi, block.ci, cellIdx),
+      (cellIdx) => block.cellPath
+        ? this.wasm.getCellParagraphCountByPath(
+            block.sec, block.ppi, JSON.stringify(withCellPathTarget(block.cellPath, cellIdx)),
+          )
+        : this.wasm.getCellParagraphCount(block.sec, block.ppi, block.ci, cellIdx),
     );
   }
 
   private getParaFormatTargetsForRange(start: DocumentPosition, end: DocumentPosition): ParaFormatTarget[] {
     if (this.cursor.isInHeaderFooter() || this.cursor.isInFootnote()) return [];
     if (start.isTextBox || end.isTextBox) return [];
-    if ((start.cellPath?.length ?? 0) > 1 || (end.cellPath?.length ?? 0) > 1) return [];
+    if ((start.cellPath?.length ?? 0) > 1 || (end.cellPath?.length ?? 0) > 1) {
+      if (start.parentParaIndex === undefined || !isSameSelectionCellContainer(start, end)) return [];
+      const path = start.cellPath!;
+      const first = path[path.length - 1];
+      const last = end.cellPath![end.cellPath!.length - 1];
+      const targets: ParaFormatTarget[] = [];
+      for (let para = Math.min(first.cellParaIndex, last.cellParaIndex);
+        para <= Math.max(first.cellParaIndex, last.cellParaIndex); para++) {
+        targets.push({
+          kind: 'cellPath', sec: start.sectionIndex, parentPara: start.parentParaIndex,
+          path: withCellPathTarget(path, first.cellIndex, para),
+        });
+      }
+      return targets;
+    }
 
     const startInCell = start.parentParaIndex !== undefined;
     const endInCell = end.parentParaIndex !== undefined;
@@ -6027,7 +6043,8 @@ export class InputHandler {
   applyStyle(styleId: number): void {
     try {
       const targets = this.getParaFormatTargetsAtCursor();
-      if (targets.length === 0) return;
+      // 스타일에는 글자 모양도 포함된다. 중첩 셀 스타일은 별도 경로가 필요하다.
+      if (targets.length === 0 || targets.some(target => target.kind === 'cellPath')) return;
       const cursorBefore = this.cursor.getPosition();
       const operation = (wasm: WasmBridge): DocumentPosition => {
         for (const target of targets) {
@@ -6035,6 +6052,7 @@ export class InputHandler {
             wasm.applyStyle(target.sec, target.para, styleId);
             continue;
           }
+          if (target.kind !== 'cell') continue;
           wasm.applyCellStyle(
             target.sec,
             target.parentPara,
@@ -6183,6 +6201,11 @@ export class InputHandler {
     }
     const pos = this.cursor.getPosition();
     if (pos.parentParaIndex !== undefined) {
+      if ((pos.cellPath?.length ?? 0) > 1) {
+        return this.wasm.getCellParaPropertiesAtByPath(
+          pos.sectionIndex, pos.parentParaIndex, JSON.stringify(pos.cellPath),
+        );
+      }
       return this.wasm.getCellParaPropertiesAt(
         pos.sectionIndex, pos.parentParaIndex, pos.controlIndex!,
         pos.cellIndex!, pos.cellParaIndex!,

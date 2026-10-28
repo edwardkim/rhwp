@@ -3112,6 +3112,21 @@ export class WasmBridge {
     return (this.doc as any).setNumberingRestart(sec, para, mode, startNum);
   }
 
+  getCellParaPropertiesAtByPath(sec: number, parentPara: number, pathJson: string): ParaProperties {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse(this.doc.getCellParaPropertiesAtByPath(sec, parentPara, pathJson));
+  }
+
+  applyParaFormatInCellByPath(sec: number, parentPara: number, pathJson: string, propsJson: string): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.applyParaFormatInCellByPath(sec, parentPara, pathJson, propsJson);
+  }
+
+  setCellParaShapeIdByPath(sec: number, parentPara: number, pathJson: string, paraShapeId: number): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return this.doc.setCellParaShapeIdByPath(sec, parentPara, pathJson, paraShapeId);
+  }
+
   applyParaFormat(sec: number, para: number, propsJson: string): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.applyParaFormat(sec, para, propsJson);

@@ -61,7 +61,7 @@ pub(super) fn para_shape_mods_affect_text_flow(mods: &crate::model::style::ParaS
 }
 
 // ID 복원도 적용과 같은 흐름 속성 및 문단 간격만 비교한다.
-fn cell_para_shape_affects_vpos(
+pub(super) fn cell_para_shape_affects_vpos(
     before: &crate::model::style::ParaShape,
     after: &crate::model::style::ParaShape,
 ) -> bool {

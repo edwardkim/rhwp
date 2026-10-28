@@ -1431,6 +1431,7 @@ export class ApplyCharFormatCommand implements EditCommand {
 
 export type ParaFormatTarget =
   | { kind: 'body'; sec: number; para: number }
+  | { kind: 'cellPath'; sec: number; parentPara: number; path: CellPathEntry[] }
   | { kind: 'cell'; sec: number; parentPara: number; controlIdx: number; cellIdx: number; cellParaIdx: number };
 
 interface ParaShapeHistoryEntry {
@@ -1442,7 +1443,9 @@ interface ParaShapeHistoryEntry {
 function getParaShapeId(wasm: WasmBridge, target: ParaFormatTarget): number {
   const props = target.kind === 'body'
     ? wasm.getParaPropertiesAt(target.sec, target.para)
-    : wasm.getCellParaPropertiesAt(
+    : target.kind === 'cellPath'
+      ? wasm.getCellParaPropertiesAtByPath(target.sec, target.parentPara, JSON.stringify(target.path))
+      : wasm.getCellParaPropertiesAt(
         target.sec,
         target.parentPara,
         target.controlIdx,
@@ -1461,6 +1464,10 @@ function applyParaFormatToTarget(wasm: WasmBridge, target: ParaFormatTarget, pro
     wasm.applyParaFormat(target.sec, target.para, propsJson);
     return;
   }
+  if (target.kind === 'cellPath') {
+    wasm.applyParaFormatInCellByPath(target.sec, target.parentPara, JSON.stringify(target.path), propsJson);
+    return;
+  }
   wasm.applyParaFormatInCell(
     target.sec,
     target.parentPara,
@@ -1474,6 +1481,10 @@ function applyParaFormatToTarget(wasm: WasmBridge, target: ParaFormatTarget, pro
 function restoreParaShapeId(wasm: WasmBridge, target: ParaFormatTarget, paraShapeId: number): void {
   if (target.kind === 'body') {
     wasm.setParaShapeId(target.sec, target.para, paraShapeId);
+    return;
+  }
+  if (target.kind === 'cellPath') {
+    wasm.setCellParaShapeIdByPath(target.sec, target.parentPara, JSON.stringify(target.path), paraShapeId);
     return;
   }
   wasm.setCellParaShapeId(
@@ -1500,9 +1511,11 @@ export class ApplyParaFormatCommand implements EditCommand {
 
   execute(wasm: WasmBridge): DocumentPosition {
     if (this.entries.length > 0 && this.entries.every(entry => entry.afterParaShapeId !== undefined)) {
-      for (const entry of this.entries) {
-        restoreParaShapeId(wasm, entry.target, entry.afterParaShapeId!);
-      }
+      wasm.runInBatch(() => {
+        for (const entry of this.entries) {
+          restoreParaShapeId(wasm, entry.target, entry.afterParaShapeId!);
+        }
+      });
       return { ...this.cursorBefore };
     }
 
@@ -1527,9 +1540,11 @@ export class ApplyParaFormatCommand implements EditCommand {
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    for (const entry of this.entries) {
-      restoreParaShapeId(wasm, entry.target, entry.beforeParaShapeId);
-    }
+    wasm.runInBatch(() => {
+      for (const entry of this.entries) {
+        restoreParaShapeId(wasm, entry.target, entry.beforeParaShapeId);
+      }
+    });
     return { ...this.cursorBefore };
   }
 
