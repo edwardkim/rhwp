@@ -207,3 +207,19 @@ WASM으로 2배 확대해 확인했다. 선택한 마지막 줄·앞뒤 문장�
 | --- | --- | --- |
 | HWP | [review](native/handbook-hwp-p312-review.png) · [overlay](native/handbook-hwp-p312-overlay.png) | [review](wasm/handbook-hwp-p312-review.png) · [overlay](wasm/handbook-hwp-p312-overlay.png) |
 | HWPX | [review](native/handbook-hwpx-p312-review.png) · [overlay](native/handbook-hwpx-p312-overlay.png) | [review](wasm/handbook-hwpx-p312-review.png) · [overlay](wasm/handbook-hwpx-p312-overlay.png) |
+
+## 314→315쪽 법령 대조표 이어받기
+
+두 독립 Print PDF와 두 원본의 Native·fresh WASM render tree에서 314쪽의
+`제5조(문서 처리의 기본 원칙)`과 315쪽의 `시스템 또는 업무관리시스템`을
+확인했다. 각 출력에서 앞 문구는 314쪽에 한 번, 이어지는 문구는 315쪽에 한 번
+나타나고 반대쪽에는 없다. 후보 조판 항목의 앞 끝 컷과 뒤 시작 컷은 모두 `[4,1]`이다.
+두 원본·두 경로·두 쪽의 raw는 모두 100.00000%다. overlay에서 표 테두리와
+이어지는 본문을 직접 확인했고 획 농도·가장자리 차이가 보인다.
+
+| 원본·쪽 | Native | fresh WASM |
+| --- | --- | --- |
+| HWP 314 | [review](native/handbook-hwp-p314-review.png) · [overlay](native/handbook-hwp-p314-overlay.png) | [review](wasm/handbook-hwp-p314-review.png) · [overlay](wasm/handbook-hwp-p314-overlay.png) |
+| HWP 315 | [review](native/handbook-hwp-p315-review.png) · [overlay](native/handbook-hwp-p315-overlay.png) | [review](wasm/handbook-hwp-p315-review.png) · [overlay](wasm/handbook-hwp-p315-overlay.png) |
+| HWPX 314 | [review](native/handbook-hwpx-p314-review.png) · [overlay](native/handbook-hwpx-p314-overlay.png) | [review](wasm/handbook-hwpx-p314-review.png) · [overlay](wasm/handbook-hwpx-p314-overlay.png) |
+| HWPX 315 | [review](native/handbook-hwpx-p315-review.png) · [overlay](native/handbook-hwpx-p315-overlay.png) | [review](wasm/handbook-hwpx-p315-review.png) · [overlay](wasm/handbook-hwpx-p315-overlay.png) |
