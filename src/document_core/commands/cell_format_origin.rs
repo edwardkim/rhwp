@@ -54,21 +54,34 @@ impl DocumentCore {
         if old_spacing == new_spacing {
             return Ok(());
         }
-        let paragraph = self.resolve_paragraph_by_path(section, parent, path)?;
+        // 평면 셀 API는 표/그림 캡션의 특수 셀 인덱스도 해석한다.
+        // 중첩 경로 resolver로 바꾸면 기존 캡션의 앞 간격 편집이 실패한다.
+        let resolve = |path: &[(usize, usize, usize)]| {
+            if let &[(control, cell, index)] = path {
+                self.get_cell_paragraph_ref(section, parent, control, cell, index)
+                    .ok_or_else(|| HwpError::RenderError("셀 문단을 찾을 수 없음".into()))
+            } else {
+                self.resolve_paragraph_by_path(section, parent, path)
+            }
+        };
+        let paragraph = resolve(path)?;
         let resets = index.checked_sub(1).and_then(|previous| {
-            self.resolve_paragraph_by_path(section, parent, &sibling_path(previous))
+            resolve(&sibling_path(previous))
                 .ok()
                 .map(|previous| cell_vpos_resets(previous, paragraph))
         });
-        let next_reset = self
-            .resolve_paragraph_by_path(section, parent, &sibling_path(index + 1))
+        let next_reset = resolve(&sibling_path(index + 1))
             .ok()
             .map(|next| cell_vpos_resets(paragraph, next));
         let stored = !crate::renderer::para_has_no_stored_line_segs(paragraph);
         let old_lead =
             crate::renderer::cell_first_para_stored_lead(paragraph, old_spacing, self.dpi);
         let delta = crate::renderer::px_to_hwpunit(new_spacing - old_lead, self.dpi);
-        let paragraph = self.get_cell_paragraph_mut_by_path(section, parent, path)?;
+        let paragraph = if let &[(control, cell, index)] = path {
+            self.get_cell_paragraph_mut(section, parent, control, cell, index)?
+        } else {
+            self.get_cell_paragraph_mut_by_path(section, parent, path)?
+        };
         if let Some(reset) = resets {
             paragraph.cell_vpos_reset = Some(reset);
         }
@@ -80,8 +93,12 @@ impl DocumentCore {
             }
         }
         if let Some(reset) = next_reset {
-            self.get_cell_paragraph_mut_by_path(section, parent, &sibling_path(index + 1))?
-                .cell_vpos_reset = Some(reset);
+            let next = if let &[(control, cell, index)] = path {
+                self.get_cell_paragraph_mut(section, parent, control, cell, index + 1)?
+            } else {
+                self.get_cell_paragraph_mut_by_path(section, parent, &sibling_path(index + 1))?
+            };
+            next.cell_vpos_reset = Some(reset);
         }
         Ok(())
     }

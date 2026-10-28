@@ -17,6 +17,10 @@ impl DocumentCore {
         parent: usize,
         path: &[(usize, usize, usize)],
     ) -> Result<String, HwpError> {
+        if let [entry] = path {
+            return self
+                .get_cell_para_properties_at_native(section, parent, entry.0, entry.1, entry.2);
+        }
         if path.is_empty() {
             return Err(HwpError::RenderError("빈 셀 경로".into()));
         }

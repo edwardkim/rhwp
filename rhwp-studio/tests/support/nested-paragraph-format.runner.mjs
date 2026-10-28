@@ -136,6 +136,31 @@ for (const depth of [2, 3]) {
   history.clear(wasm);
   doc.free();
 }
-console.log('NESTED_PARAGRAPH_FORMAT_OK: depth 2/3, block/range/caret, excluded cells, undo/redo, HWP/HWPX');
+// 기존 flat API의 캡션 특수 인덱스도 공통 원점 갱신을 거친다.
+const captionDoc = HwpDocument.createEmpty();
+try {
+  captionDoc.createBlankDocument();
+  captionDoc.pasteHtml(0, 0, 0, '<table><tr><td>caption-cell</td></tr></table>');
+  const match = JSON.parse(captionDoc.searchAllText('caption-cell', false, true))[0];
+  const ci = match.cellContext.ctrlIdx;
+  captionDoc.setTableProperties(0, 0, ci, '{"hasCaption":true}');
+  const props = () => JSON.parse(captionDoc.getCellParaPropertiesAt(0, 0, ci, 65534, 0));
+  const before = props();
+  const wasm = Object.create(WasmBridge.prototype);
+  wasm.doc = captionDoc;
+  const command = new ApplyParaFormatCommand([
+    { kind: 'cell', sec: 0, parentPara: 0, controlIdx: ci, cellIdx: 65534, cellParaIdx: 0 },
+  ], { spacingBefore: 600 }, { sectionIndex: 0, paragraphIndex: 0, charOffset: 0 });
+  command.execute(wasm);
+  assert.ok(props().spacingBefore > before.spacingBefore);
+  const after = props();
+  command.undo(wasm);
+  assert.deepEqual(props(), before, '캡션의 앞 간격과 모양 ID를 복원한다');
+  command.execute(wasm);
+  assert.deepEqual(props(), after);
+  const path = JSON.stringify([{ controlIndex: ci, cellIndex: 65534, cellParaIndex: 0 }]);
+  assert.deepEqual(JSON.parse(captionDoc.getCellParaPropertiesAtByPath(0, 0, path)), after);
+} finally { captionDoc.free(); }
+console.log('NESTED_PARAGRAPH_FORMAT_OK: depth 2/3, block/range/caret, captions, undo/redo, HWP/HWPX');
 
 } finally { await vite.close(); }
