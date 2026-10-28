@@ -136,3 +136,11 @@ HWPX 368쪽의 [독립 Print와 fresh WASM 확대 비교](wasm/handbook-hwpx-p36
 접수인 셀의 점 세 개, 콜론, 괄호와 표 아래 경계를 대조했다. 기호의 순서와 셀
 안 위치는 대응하며 획 농도·가장자리 차이가 보인다. 두 이미지는 같은 영역을
 4배로 표시했으며 이 판독은 HWPX fresh WASM에 한정한다.
+
+HWP 368쪽의 [Print·Native·fresh WASM 확대 비교](handbook-hwp-p368-three-way.png)도
+같은 셀의 기호 수량·순서와 아래 경계를 확인했다. 획의 농도·가장자리 차이는
+남으며 이 판독은 해당 셀에 한정한다. 세 이미지는 같은 영역을 2배로 표시했다.
+
+HWP [148쪽](handbook-hwp-p148-three-way.png)과 [327쪽](handbook-hwp-p327-three-way.png)도
+같은 영역의 Print·Native·fresh WASM을 2배로 대조했다. 선택한 마지막 줄과 앞뒤
+내용은 대응하며 획 농도·가장자리 차이가 보인다. 각 이미지의 판독 범위에 한정한다.
