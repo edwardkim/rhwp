@@ -129,3 +129,10 @@ HWPX 327쪽의 [독립 Print와 fresh WASM 확대 비교](wasm/handbook-hwpx-p32
 [base HWPX WASM TSV](base/wasm/handbook-hwpx.tsv)의 최저 raw는 91.90995%이며,
 반올림 전 raw 기준 후보 대비 하락 0쪽, 개선 252쪽, 동일 131쪽이다. 동일한
 기준 WASM과 각 원본의 실제 지정 글꼴 환경을 사용했다.
+
+## 368쪽 접수인 기호 확대 판독
+
+HWPX 368쪽의 [독립 Print와 fresh WASM 확대 비교](wasm/handbook-hwpx-p368-dot-review.png)에서
+접수인 셀의 점 세 개, 콜론, 괄호와 표 아래 경계를 대조했다. 기호의 순서와 셀
+안 위치는 대응하며 획 농도·가장자리 차이가 보인다. 두 이미지는 같은 영역을
+4배로 표시했으며 이 판독은 HWPX fresh WASM에 한정한다.
