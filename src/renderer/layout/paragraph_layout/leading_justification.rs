@@ -48,17 +48,22 @@ impl<'a> LeadingSpacePlan<'a> {
                 prepared.runs.push(run.clone());
                 continue;
             }
-            // 이 범위는 위에서 확인한 ASCII 공백뿐이므로 문자·바이트 경계가 같다.
-            let take = remaining.min(run.text.len());
-            if take == run.text.len() {
+            // 선두 범위는 문자 인덱스이므로 UTF-8 바이트 경계로 변환한다.
+            let take = remaining.min(run.text.chars().count());
+            let split_byte = run
+                .text
+                .char_indices()
+                .nth(take)
+                .map_or(run.text.len(), |(byte, _)| byte);
+            if split_byte == run.text.len() {
                 prepared.runs.push(run.clone());
             } else {
                 let mut prefix = run.clone();
-                prefix.text.truncate(take);
+                prefix.text.truncate(split_byte);
                 prefix.display_text = run.display_for_model_range(0, take);
                 prepared.runs.push(prefix);
                 let mut rest = run.clone();
-                rest.text = run.text[take..].to_owned();
+                rest.text = run.text[split_byte..].to_owned();
                 rest.display_text = run.display_for_model_range(take, run.source_scalar_count());
                 prepared.runs.push(rest);
             }

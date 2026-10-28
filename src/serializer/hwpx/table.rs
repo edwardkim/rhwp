@@ -1831,6 +1831,7 @@ mod tests {
                         inner_char_size: -3,
                         expansion: 1,
                         char_shape_ids: vec![37, u32::MAX],
+                        hwp_wire_chars: false,
                     },
                 ));
         }

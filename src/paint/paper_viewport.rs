@@ -850,10 +850,6 @@ impl PagePaintContext {
             || image.transform.has_transform()
             || image.crop.is_some()
             || image.content_inset.is_some()
-            || !matches!(
-                image.fill_mode,
-                Some(ImageFillMode::FitToSize | ImageFillMode::Total)
-            )
         {
             return None;
         }
@@ -869,6 +865,20 @@ impl PagePaintContext {
             return None;
         }
         let bounds = node.bbox;
+        // 가운데 채움의 원본이 양축 모두 채움 영역보다 큰 경우에는
+        // 한컴 Print가 영역에 맞춘 채움과 같은 장치 프레임을 사용한다.
+        // 원본 크기가 명시된 도형과 한 축이라도 영역에 들어가는 그림은
+        // 가운데 정렬 계약이 다르므로 기존 경로에서 처리한다.
+        let fills_area = matches!(
+            image.fill_mode,
+            Some(ImageFillMode::FitToSize | ImageFillMode::Total)
+        ) || (image.fill_mode == Some(ImageFillMode::Center)
+            && image.original_size.is_none()
+            && bounds.width < f64::from(header.width)
+            && bounds.height < f64::from(header.height));
+        if !fills_area {
+            return None;
+        }
         let background = node.table_background_paint;
         let left = self.fill_device_coordinate(bounds.x, pixel, 0, background);
         let top = self.fill_device_coordinate(bounds.y, pixel, 1, background);

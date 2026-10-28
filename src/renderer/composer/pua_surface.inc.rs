@@ -508,6 +508,7 @@ fn try_convert_pua_enclosed_numbers<S: crate::storage::Storage>(
                                 border_type,
                                 inner_char_size: 0,
                                 composition: None,
+                                empty_ink: false,
                             }),
                             footnote_marker: None,
                             display_text: None,

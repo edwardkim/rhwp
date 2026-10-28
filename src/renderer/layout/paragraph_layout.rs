@@ -1409,11 +1409,13 @@ fn tac_offsets_for_line(
 /// - `last_inline_object_pos`: 이 줄이 소유한 TAC 개체 중 마지막 것의 절대 char 위치.
 ///   개체가 없으면 `None` — 종전 동작 그대로.
 /// - `stop_on_underline`: 밑줄 친 말미 공백에서 멈춘다(가운데 정렬 전용 규칙).
+/// - `measure_width`: 총 글줄 폭을 계산한 것과 같은 정밀도의 측정 함수.
 pub(crate) fn trailing_space_width_after_last_inline_object(
     line: &ComposedLine,
     last_inline_object_pos: Option<usize>,
     styles: &ResolvedStyleSet,
     stop_on_underline: bool,
+    measure_width: fn(&str, &TextStyle) -> f64,
 ) -> f64 {
     let run_chars = |r: &crate::renderer::composer::ComposedTextRun| -> usize {
         if r.inserted_control_text && r.char_overlap.is_none() {
@@ -2188,7 +2190,11 @@ fn unjustified_leading_spaces_by_run(line: &ComposedLine, limit: usize) -> Vec<u
         .iter()
         .map(|run| {
             let text = effective_text_for_metrics(run);
-            let count = text.chars().take_while(|ch| *ch == ' ').count().min(budget);
+            let Some(source_count) = leading_spaces::source_leading_spaces(run) else {
+                budget = 0;
+                return 0;
+            };
+            let count = source_count.min(budget);
             budget -= count;
             if count < text.chars().count() {
                 budget = 0;
@@ -3495,6 +3501,7 @@ impl LayoutEngine {
             last_inline_object_pos,
             styles,
             style.alignment == Alignment::Center,
+            estimate_text_width,
         );
         // 텍스트와 같은 원본 줄 소속의 들여쓰기·내어쓰기 결과를 소비한다.
         let indent = crate::renderer::equation_tac_flow::paragraph_line_indent_for_source(
@@ -7436,6 +7443,7 @@ impl LayoutEngine {
                         .max(),
                     styles,
                     true,
+                    estimate_text_width_exact,
                 )
             } else {
                 // 문단 끝·명시 개행의 작성 공백과 밑줄 친 공백은 유지한다.
@@ -7726,6 +7734,7 @@ impl LayoutEngine {
                         // ④ 밑줄 친 말미 공백은 보이는 콘텐츠 — Center 는 제외 대상에서
                         // 뺀다(Right 는 기존 검증 동작 유지).
                         center_excludes_trailing_ws,
+                        estimate_text_width_exact,
                     )
                 } else {
                     0.0

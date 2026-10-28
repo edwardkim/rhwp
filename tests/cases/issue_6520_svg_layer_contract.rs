@@ -495,6 +495,7 @@ fn layer_builder_char_overlap_selects_only_the_explicit_visual() {
         border_type: 1,
         inner_char_size: 100,
         composition: None,
+        empty_ink: false,
     });
     tree.root.children.push(RenderNode::new(
         44,
@@ -592,12 +593,14 @@ fn same_bounds_visual_op_cannot_cover_a_different_text_run() {
         border_type: 1,
         inner_char_size: 100,
         composition: None,
+        empty_ink: false,
     });
     let mut different = fallback.clone();
     different.char_overlap = Some(rhwp::renderer::composer::CharOverlapInfo {
         border_type: 3,
         inner_char_size: 100,
         composition: None,
+        empty_ink: false,
     });
     let tree = PageLayerTree::new(
         80.0,
@@ -722,6 +725,7 @@ fn raw_svg_placeholder_and_explicit_text_visual_ops_are_serialized() {
         border_type: 1,
         inner_char_size: 100,
         composition: None,
+        empty_ink: false,
     });
     let mut control_mark = text_run(" ");
     control_mark.is_para_end = true;

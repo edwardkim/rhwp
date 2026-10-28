@@ -104,6 +104,7 @@ fn text_run_node(n: &serde_json::Value, bbox: BoundingBox) -> RenderNode {
                     border_type: 1,
                     inner_char_size: 100,
                     composition: None,
+                    empty_ink: false,
                 })
             } else {
                 None

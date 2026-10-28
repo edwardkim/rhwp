@@ -719,6 +719,7 @@ fn test_layout_with_composed_styles() {
     let styles = ResolvedStyleSet {
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
+        script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
         char_overlap_size_bounds: None,
         source_char_shapes: Default::default(),
@@ -877,6 +878,7 @@ fn test_layout_multi_run_x_position() {
     let styles = ResolvedStyleSet {
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
+        script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
         char_overlap_size_bounds: None,
         source_char_shapes: Default::default(),
@@ -985,6 +987,7 @@ fn test_resolved_to_text_style() {
     let styles = ResolvedStyleSet {
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
+        script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
         char_overlap_size_bounds: None,
         source_char_shapes: Default::default(),
@@ -1030,6 +1033,7 @@ fn test_resolved_to_text_style_with_ratio() {
     let styles = ResolvedStyleSet {
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
+        script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
         char_overlap_size_bounds: None,
         source_char_shapes: Default::default(),

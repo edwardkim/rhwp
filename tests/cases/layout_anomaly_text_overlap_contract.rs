@@ -269,6 +269,7 @@ fn intentional_char_overlap_runs_are_not_flagged() {
             border_type: 1,
             inner_char_size: 100,
             composition: None,
+            empty_ink: false,
         });
     }
     let other = text_run_at("나", 12.0, 10.0, 20.0, 12.0);

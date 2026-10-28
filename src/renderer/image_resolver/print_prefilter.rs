@@ -37,12 +37,12 @@ fn integrated_weight(x: f64) -> i64 {
     (cumulative(midpoint) * ONE as f64).round() as i64
 }
 
-fn weights(source: u32, destination: u32) -> Vec<Vec<(usize, i64)>> {
-    let step = f64::from(source) / f64::from(destination);
+fn weights(source: u32, destination: u32, origin: u32, span: u32) -> Vec<Vec<(usize, i64)>> {
+    let step = f64::from(span) / f64::from(destination);
     let support = step.max(1.0);
     (0..destination)
         .map(|pixel| {
-            let centre = f64::from(pixel) * step;
+            let centre = f64::from(origin) + f64::from(pixel) * step;
             // 범위 밖의 표본은 투명하다. 남은 계수 합을 다시 1로 정규화하지 않는다.
             let first = ((centre - 2.0 * support - 0.5).ceil() as i64).max(0);
             let last = ((centre + 2.0 * support + 0.5).floor() as i64).min(i64::from(source) - 1);
@@ -83,14 +83,27 @@ pub(super) fn resize_opaque(
     (dw, dh): (u32, u32),
 ) -> Option<image::RgbaImage> {
     let (width, height) = source.dimensions();
+    resize_opaque_window(source, [0, 0, width, height], (dw, dh))
+}
+
+/// 잘린 창의 표본 중심은 원본 좌표에 두고, 필터는 원본 창 밖의 유효 픽셀도 소비한다.
+pub(super) fn resize_opaque_window(
+    source: &image::RgbaImage,
+    [left, top, right, bottom]: [u32; 4],
+    (dw, dh): (u32, u32),
+) -> Option<image::RgbaImage> {
+    let (width, height) = source.dimensions();
+    if left >= right || top >= bottom || right > width || bottom > height {
+        return None;
+    }
     length(width, height)?;
     let temporary_len = length(dw, height)?;
     let output_len = length(dw, dh)?;
     if source.pixels().any(|p| p[3] != 255) {
         return None;
     }
-    let horizontal = weights(width, dw);
-    let vertical = weights(height, dh);
+    let horizontal = weights(width, dw, left, right - left);
+    let vertical = weights(height, dh, top, bottom - top);
     let mut temporary = vec![0_u8; temporary_len];
     for y in 0..height as usize {
         for (x, taps) in horizontal.iter().enumerate() {

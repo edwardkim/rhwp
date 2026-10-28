@@ -3873,31 +3873,36 @@ impl LayoutEngine {
             // run 만 보고 뒤에서 세면 로고 사이 4칸(26.7px)까지 걷어내 로고가
             // 그만큼 우측으로 밀리고 마지막 로고가 글상자 밖으로 잘린다.
             // paragraph_layout 의 셀-밖 Right 경로와 **같은 헬퍼**를 쓴다.
-            let trailing_ws_width: f64 = if para_alignment == Alignment::Right
-                && pi < composed_paras.len()
-            {
-                let comp = &composed_paras[pi];
-                comp.lines
-                    .get(inline_line_idx)
-                    .map(|line| {
-                        let line_end = line.char_start
-                            + line
-                                .runs
+            let trailing_ws_width: f64 =
+                if para_alignment == Alignment::Right && pi < composed_paras.len() {
+                    let comp = &composed_paras[pi];
+                    comp.lines
+                        .get(inline_line_idx)
+                        .map(|line| {
+                            let line_end = line.char_start
+                                + line
+                                    .runs
+                                    .iter()
+                                    .map(|r| r.text.chars().count())
+                                    .sum::<usize>();
+                            let last_obj = comp
+                                .tac_controls
                                 .iter()
-                                .map(|r| r.text.chars().count())
-                                .sum::<usize>();
-                        let last_obj = comp
-                            .tac_controls
-                            .iter()
-                            .map(|(pos, _, _)| *pos)
-                            .filter(|pos| *pos >= line.char_start && *pos <= line_end)
-                            .max();
-                        trailing_space_width_after_last_inline_object(line, last_obj, styles, false)
-                    })
-                    .unwrap_or(0.0)
-            } else {
-                0.0
-            };
+                                .map(|(pos, _, _)| *pos)
+                                .filter(|pos| *pos >= line.char_start && *pos <= line_end)
+                                .max();
+                            trailing_space_width_after_last_inline_object(
+                                line,
+                                last_obj,
+                                styles,
+                                false,
+                                estimate_text_width,
+                            )
+                        })
+                        .unwrap_or(0.0)
+                } else {
+                    0.0
+                };
             let total_line_width = total_inline_width + first_line_text_width - trailing_ws_width;
             let mut inline_x = match para_alignment {
                 Alignment::Center | Alignment::Distribute => {

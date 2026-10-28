@@ -551,6 +551,7 @@ fn overlap_runs_do_not_gain_normal_text_decorations_or_tab_leaders() {
         border_type: 1,
         inner_char_size: 90,
         composition: None,
+        empty_ink: false,
     });
     run.style.tab_leaders.push(TabLeaderInfo {
         start_x: 2.0,

@@ -172,6 +172,51 @@ fn synthetic_symbol_program(symbol: char) -> Vec<u8> {
     bytes
 }
 
+// 기존 테스트의 합성 글꼴 공급 전·후 및 해제 후에 호출한다.
+fn assert_layer_display(core: &DocumentCore, symbol: char, expected: &str) {
+    fn collect<'a>(
+        value: &'a serde_json::Value,
+        symbol: char,
+        runs: &mut Vec<&'a serde_json::Value>,
+    ) {
+        match value {
+            serde_json::Value::Object(object) => {
+                if object.get("type").and_then(|v| v.as_str()) == Some("textRun")
+                    && object
+                        .get("text")
+                        .and_then(|v| v.as_str())
+                        .is_some_and(|text| text.contains(symbol))
+                {
+                    runs.push(value);
+                }
+                for child in object.values() {
+                    collect(child, symbol, runs);
+                }
+            }
+            serde_json::Value::Array(array) => {
+                for child in array {
+                    collect(child, symbol, runs);
+                }
+            }
+            _ => {}
+        }
+    }
+    let layer = core
+        .build_page_layer_tree_with_profile(0, rhwp::paint::RenderProfile::Print)
+        .unwrap();
+    let value: serde_json::Value = serde_json::from_str(&layer.to_json()).unwrap();
+    let mut runs = Vec::new();
+    collect(&value, symbol, &mut runs);
+    assert_eq!(runs.len(), 1, "원 기호의 레이어 소속을 보존한다");
+    let run = runs[0];
+    let rendered = run
+        .get("displayText")
+        .and_then(|v| v.as_str())
+        .or_else(|| run.get("text").and_then(|v| v.as_str()))
+        .unwrap();
+    assert_eq!(rendered, expected, "CanvasKit이 소비하는 표시 문자열");
+}
+
 fn assert_prepared_source_symbol(symbol: char, fallback: &str) {
     use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
@@ -214,6 +259,7 @@ fn assert_prepared_source_symbol(symbol: char, fallback: &str) {
     let original = format!("{:?}", core.document());
     let before = core.build_page_render_tree(0).unwrap();
     assert_eq!(displayed_pointer(&before.root, symbol), Some(fallback));
+    assert_layer_display(&core, symbol, fallback);
     let program = synthetic_symbol_program(symbol);
     assert!(core
         .prepare_native_pua_fonts_with(|request| {
@@ -227,6 +273,7 @@ fn assert_prepared_source_symbol(symbol: char, fallback: &str) {
         Some(symbol.to_string().as_str()),
         "실제 원 glyph를 선택한 뒤 이전 Unicode 표시를 남기지 않는다"
     );
+    assert_layer_display(&core, symbol, &symbol.to_string());
     let (advance, size) = source_advance(&prepared.root, symbol).unwrap();
     assert!(
         (advance - size * 0.9).abs() <= 4.0 / 75.0,
@@ -236,6 +283,7 @@ fn assert_prepared_source_symbol(symbol: char, fallback: &str) {
     core.clear_native_pua_fonts();
     let cleared = core.build_page_render_tree(0).unwrap();
     assert_eq!(displayed_pointer(&cleared.root, symbol), Some(fallback));
+    assert_layer_display(&core, symbol, fallback);
     assert_eq!(format!("{:?}", core.document()), original);
 }
 

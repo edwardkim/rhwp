@@ -38,7 +38,10 @@ fn is_print_bitmap_candidate(image: &ImageNode) -> bool {
             .is_some_and(|data| format(data).is_some())
 }
 
-pub(crate) fn print_bitmap_payload(image: &ImageNode) -> Option<ResolvedImagePayload> {
+pub(crate) fn print_bitmap_payload(
+    image: &ImageNode,
+    in_shape_group: bool,
+) -> Option<ResolvedImagePayload> {
     if !is_print_bitmap_candidate(image) {
         return None;
     }
@@ -52,11 +55,18 @@ pub(crate) fn print_bitmap_payload(image: &ImageNode) -> Option<ResolvedImagePay
     if window.contained && window.is_partial() && image.fill_mode.is_none() {
         let bounds = window.bounds;
         let data = memoized(
-            Conversion::Hancom2024BitmapWindow { bounds },
+            Conversion::Hancom2024BitmapWindow {
+                bounds,
+                group: in_shape_group,
+            },
             source,
             || {
-                let (mut visible, quantized) =
-                    decode_transfer_pixels(source, format(source)?, Some(bounds))?;
+                let (mut visible, quantized) = decode_transfer_pixels_for_group(
+                    source,
+                    format(source)?,
+                    Some(bounds),
+                    in_shape_group,
+                )?;
                 if quantized {
                     let (width, height) = visible.dimensions();
                     super::print_rgb555::quantize(visible.as_mut(), width, height)?;
@@ -75,7 +85,7 @@ pub(crate) fn print_bitmap_payload(image: &ImageNode) -> Option<ResolvedImagePay
         return None;
     }
     Some(ResolvedImagePayload {
-        data: bitmap_bytes_to_png(source)?,
+        data: bitmap_bytes_to_png(source, in_shape_group)?,
         mime: "image/png",
         kind: ResolvedImageKind::FormatConverted,
         suppress_effects: false,
@@ -125,19 +135,26 @@ fn exceeds_palette<'a>(pixels: impl Iterator<Item = &'a image::Rgba<u8>>) -> boo
     false
 }
 
-pub(super) fn bitmap_bytes_to_png(data: &[u8]) -> Option<Vec<u8>> {
-    memoized(Conversion::Hancom2024Bitmap, data, || {
-        let (mut decoded, quantized) = decode_transfer_pixels(data, format(data)?, None)?;
-        // 한컴의 팔레트 전달은 흑백 두 예약색을 포함한 RGB 색 수로 구분한다.
-        // 원본이 255/256색이어도 빠진 예약색을 더하면 팔레트 용량을 넘을 수 있다.
-        // 알파는 별도의 투명도이며 RGB 팔레트의 색 수에 합산하지 않는다.
-        if !quantized {
-            return None;
-        }
-        let (width, height) = decoded.dimensions();
-        super::print_rgb555::quantize(decoded.as_mut(), width, height)?;
-        to_png(decoded, data, true)
-    })
+pub(super) fn bitmap_bytes_to_png(data: &[u8], in_shape_group: bool) -> Option<Vec<u8>> {
+    memoized(
+        Conversion::Hancom2024Bitmap {
+            group: in_shape_group,
+        },
+        data,
+        || {
+            let (mut decoded, quantized) =
+                decode_transfer_pixels_for_group(data, format(data)?, None, in_shape_group)?;
+            // 한컴의 팔레트 전달은 흑백 두 예약색을 포함한 RGB 색 수로 구분한다.
+            // 원본이 255/256색이어도 빠진 예약색을 더하면 팔레트 용량을 넘을 수 있다.
+            // 알파는 별도의 투명도이며 RGB 팔레트의 색 수에 합산하지 않는다.
+            if !quantized {
+                return None;
+            }
+            let (width, height) = decoded.dimensions();
+            super::print_rgb555::quantize(decoded.as_mut(), width, height)?;
+            to_png(decoded, data, true)
+        },
+    )
 }
 
 /// 변환 전에 원본 팔레트를 판정하고, 선택한 같은 창만 Print에 전달한다.
@@ -145,6 +162,15 @@ pub(super) fn decode_transfer_pixels(
     data: &[u8],
     format: image::ImageFormat,
     bounds: Option<[u32; 4]>,
+) -> Option<(image::RgbaImage, bool)> {
+    decode_transfer_pixels_for_group(data, format, bounds, false)
+}
+
+fn decode_transfer_pixels_for_group(
+    data: &[u8],
+    format: image::ImageFormat,
+    bounds: Option<[u32; 4]>,
+    in_shape_group: bool,
 ) -> Option<(image::RgbaImage, bool)> {
     let visible = |decoded: image::DynamicImage| {
         let rgba = decoded.to_rgba8();
@@ -160,7 +186,11 @@ pub(super) fn decode_transfer_pixels(
     if quantized && format == image::ImageFormat::Jpeg {
         // 팔레트 분류용 버퍼와 Print 디코딩 버퍼를 동시에 보존하지 않는다.
         drop(rgba);
-        rgba = visible(decode_print_bitmap(data, format)?);
+        rgba = visible(if in_shape_group {
+            print_jpeg::decode_jpeg(data, true)?
+        } else {
+            decode_print_bitmap(data, format)?
+        });
     }
     Some((rgba, quantized))
 }

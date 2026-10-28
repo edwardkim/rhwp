@@ -18,6 +18,7 @@ pub(crate) mod dot_leader;
 pub mod font;
 pub mod font_glyph;
 mod font_size;
+mod group_picture;
 mod json;
 pub mod layer_tree;
 pub(crate) mod metafile;

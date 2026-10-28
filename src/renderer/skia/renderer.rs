@@ -4035,6 +4035,7 @@ mod tests {
                 border_type: 1,
                 inner_char_size: 90,
                 composition: None,
+                empty_ink: false,
             }),
             border_fill_id: 0,
             baseline: 22.0,

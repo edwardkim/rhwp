@@ -26,6 +26,10 @@ export function textRequiresComplexShaping(text: string): boolean {
       || STANDALONE_PICTOGRAPH.test(character)
       // 기존 그림자 원형 기호는 Extended_Pictographic 속성이 없는 일반 기호다.
       || (codePoint >= 0x1f53e && codePoint <= 0x1f53f)
+      // 보충 사설 사용 영역도 BMP 사설 영역과 같이 공급된 단일 글리프를 재생한다.
+      // 결합 문자·변형 선택자·연결자는 아래 범주 검사에서 계속 보류한다.
+      || (codePoint >= 0xf0000 && codePoint <= 0xffffd)
+      || (codePoint >= 0x100000 && codePoint <= 0x10fffd)
       || (codePoint >= 0x20000 && codePoint <= 0x323af);
     if (!nominalGlyphReplayIsSafe || COMPLEX_SHAPING_UNICODE_CATEGORY.test(character)) {
       return true;

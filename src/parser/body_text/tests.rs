@@ -1083,6 +1083,7 @@ fn parse_para_text_reference(data: &[u8]) -> ParaTextParts {
     let mut orphan_field_ends: Vec<OrphanFieldEnd> = Vec::new();
     let mut nb_space_control = false;
     let mut literal_figure_spaces = Vec::new();
+    let mut nb_space_control_indices = Vec::new();
     let mut pos = 0;
     // 확장 컨트롤(extended) 카운터 → controls[] 인덱스와 1:1 대응
     let mut ctrl_idx: usize = 0;
@@ -1225,6 +1226,7 @@ fn parse_para_text_reference(data: &[u8]) -> ParaTextParts {
                 }
                 0x001E => {
                     char_offsets.push(code_unit_pos);
+                    nb_space_control_indices.push(char_count);
                     text.push('\u{00A0}'); // 묶음 빈칸 (HWP 5.0 표 7: 코드 30, NO-BREAK SPACE)
                     char_count += 1;
                     // [#5174] 제품 경로와 같이 표기 출처를 남긴다.
@@ -1276,6 +1278,7 @@ fn parse_para_text_reference(data: &[u8]) -> ParaTextParts {
         title_marks,
         orphan_field_ends,
         nb_space_control,
+        nb_space_control_indices,
     }
 }
 
@@ -1316,6 +1319,10 @@ fn assert_decode_identical(data: &[u8]) {
         new.char_offsets, reference.char_offsets,
         "offsets 불일치: {:02x?}",
         data
+    );
+    assert_eq!(
+        new.nb_space_control_indices, reference.nb_space_control_indices,
+        "묶음 빈칸 출처 불일치: {:02x?}", data
     );
     let fr_new: Vec<_> = new.field_ranges.iter().map(field_range_key).collect();
     let fr_ref: Vec<_> = reference.field_ranges.iter().map(field_range_key).collect();

@@ -3146,6 +3146,7 @@ export class CanvasKitLayerRenderer {
         type: 'charOverlap',
         bbox: op.bbox,
         text: op.text,
+        displayText: op.displayText,
         baseline: op.baseline ?? op.style?.fontSize ?? 12,
         rotation: op.rotation ?? 0,
         isVertical: op.isVertical === true,
@@ -3738,6 +3739,7 @@ export class CanvasKitLayerRenderer {
       this.unsupportedOps.add('charOverlap:invalidGeometry');
       return;
     }
+    if (op.displayText === '' && op.charOverlap.borderType === 0) return;
     const fontSize = Math.max(1, rawFontSize);
     const requestedFontFamily = primaryFontFamily(style.fontFamily);
     const preparedTypeface = this.findPreparedTypeface(style.fontFamily, style);

@@ -1667,6 +1667,7 @@ export interface LayerCharOverlapOp {
   type: 'charOverlap';
   bbox: LayerBounds;
   text: string;
+  displayText?: string;
   baseline: number;
   rotation: number;
   isVertical: boolean;

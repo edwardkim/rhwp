@@ -28,7 +28,10 @@ pub(crate) fn print_area_sampling(
     image: &ImageNode,
     resolved: Option<&ResolvedImagePayload>,
 ) -> bool {
-    if (super::print_alpha_2024::eligible(image)
+    if (resolved.is_some_and(|payload| {
+        payload.kind == ResolvedImageKind::OutputDeviceWindow
+            && super::png_sampling::print_separate_alpha(&payload.data)
+    })) || (super::print_alpha_2024::eligible(image)
         && resolved.is_some_and(|payload| super::png_sampling::print_separate_alpha(&payload.data)))
         || crate::paint::metafile_picture::is_device_picture(image, resolved)
         || super::print_picture_resample::is_device_picture(image, resolved)
@@ -74,7 +77,15 @@ pub(crate) fn print_device_image_payload(
     image: &ImageNode,
     width_points: f64,
     logical_size_points: (f64, f64),
+    in_shape_group: bool,
 ) -> Option<ResolvedImagePayload> {
+    // 묶음의 원본 그림은 자식 창이 아니라 전체 자원을 Print에 싣는 독립 계약이다.
+    // 묶음 재생의 clip·행렬은 기존 경로를 보존한다.
+    if !in_shape_group {
+        if let Some(payload) = super::print_bitmap_window::payload(image, width_points) {
+            return Some(payload);
+        }
+    }
     if let Some(payload) =
         super::print_picture_resample::payload(image, logical_size_points, width_points)
     {
@@ -117,11 +128,13 @@ pub(crate) fn print_device_image_payload(
         return None;
     }
     // 색 변환과 압축이 같은 창을 소비하며, 색 전달을 다시 적용하지 않는다.
-    let base = super::resolve_image_payload(image).unwrap_or_else(|| ResolvedImagePayload {
-        data: source.to_vec(),
-        mime: detect_image_mime_type(source),
-        kind: ResolvedImageKind::FormatConverted,
-        suppress_effects: false,
+    let base = super::resolve_image_payload_for_print(image, in_shape_group).unwrap_or_else(|| {
+        ResolvedImagePayload {
+            data: source.to_vec(),
+            mime: detect_image_mime_type(source),
+            kind: ResolvedImageKind::FormatConverted,
+            suppress_effects: false,
+        }
     });
     if image.crop.is_some() && base.kind != ResolvedImageKind::OutputDeviceWindow {
         let (left, top, right, bottom) = image.crop?;

@@ -256,3 +256,30 @@ Windows에서 원본 RGBA와 실제 객체 형식을 확인했다. 같은 정수
 새 결과는 ignored `p141-installed-crop-stage/{source-format-findings.json,
 source-format-comparison.json,scan0/source-format-comparison.json}`에 있다.
 설치본의 사설 분석 기록은 output에만 두며 Git에는 포함하지 않는다.
+
+## 2026-10-28: 묶음 그림의 원본과 물리 자르기
+
+HWP 5.0 4.3.9.7의 묶음 소유 관계와 그림 속성의 원본 자르기 범위를 확인했다.
+독립 한컴 2024 Print의 131·140쪽은 묶음 자식 그림의 전체 자원을 배치하고
+물리 창으로 자른다. 이 Print 경로는 독립 출력으로 확인한 것이며, 사양이
+표본화 알고리즘까지 규정한다고 해석하지 않는다. 공통 paint에서 실제 묶음 자식의
+전체 자원과 물리 clip을 함께 전달하고 원본 순서와 소유자를 유지한다.
+
+두 편람의 직전 후보에서 Native raw는 131쪽 99.99509%, 140쪽 99.99785%였고,
+공통 그림 보정 후보에서는 두 쪽 모두 Native와 fresh WASM이 100%였다.
+확대 대조로 해당 그림과 물리 창을 확인했으며 색상 차이가 없다는 뜻은 아니다.
+독립 PDF의 clip 연산자에서 환산한 위치와 원본 소유·누락·중복을
+`tests/cases/issue_8153_group_bitmap_clip.rs`에서 보호한다. 보정 전 라이브러리는
+두 형식·두 쪽의 네 검사에서 그림 소유 clip 누락으로 실패했고, 보정 후 네 검사에서
+통과했다. 정식 suite 자동 수집과 현재 소스의 최종 전체 시각 검증은 진행 중이다.
+
+후속 컴파일 오류를 수정하기 위해 표본화 계산의 모듈 위치를 분리했다. 계산 본문과
+마스크 처리 본문은 분리 전과 동일하지만, 소스 변경 후 Native와 fresh WASM을 다시
+빌드해 검증하기 전까지 위 집중 결과를 최종 소스의 TSV로 사용하지 않는다. 141쪽과
+그 밖의 100% 미만 쪽 및 43쪽 옛한글 모양도 아직 남아 있다.
+
+분리 전 후보의 fresh WASM도 독립 Print와 같은 크기의 그림 영역에서 직접 확대
+대조했다. 131·140쪽의 그림 프레임과 내부 내용이 대응하며, 색 차이는 별도 차이
+패널에 남는다. 두 형식의 해당 WASM 출력 RGB는 서로 같다. 진단 패널과 SHA는 ignored
+`bitmap-group-clip-wasm-standard/wasm-focused/handbook-hwpx/direct-review/review.json`에
+기록했다. 소스 분리 후에는 같은 범위를 다시 확인한다.

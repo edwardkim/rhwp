@@ -51,6 +51,7 @@ pub struct LayerBuilder {
     prior_print_solid_fill: bool,
     hangul2024_print: bool,
     metafile_catalogue: Option<std::sync::Arc<super::metafile_print::Catalogue>>,
+    shape_group_depth: usize,
 }
 
 impl LayerBuilder {
@@ -70,6 +71,7 @@ impl LayerBuilder {
             prior_print_solid_fill: false,
             hangul2024_print: false,
             metafile_catalogue: None,
+            shape_group_depth: 0,
         }
     }
 
@@ -228,6 +230,10 @@ impl LayerBuilder {
             self.image_reference_origin = (node.bbox.x, node.bbox.y);
         }
         let previous_context = self.page_context;
+        let previous_group_depth = self.shape_group_depth;
+        if matches!(&node.node_type, RenderNodeType::Group(_)) {
+            self.shape_group_depth += 1;
+        }
         self.page_context = self.page_context.map(|context| context.for_children(node));
         if matches!(&node.node_type, RenderNodeType::Group(group) if group.paint_transform.is_some())
         {
@@ -239,6 +245,7 @@ impl LayerBuilder {
             .filter_map(|child| self.build_node(child))
             .collect::<Vec<_>>();
         self.page_context = previous_context;
+        self.shape_group_depth = previous_group_depth;
         if self.output_options.show_control_codes {
             let label = match &node.node_type {
                 // 그림·수식은 전용 paint 하위화 경로에서 조판부호를 생성한다.
@@ -357,6 +364,14 @@ impl LayerBuilder {
             )]),
             RenderNodeType::TextRun(run) => {
                 let mut run = run.clone();
+                if run
+                    .char_overlap
+                    .as_ref()
+                    .is_some_and(|overlap| overlap.empty_ink)
+                {
+                    // 조판에 사용한 원문과 프레임은 유지하고, paint 복제본의 잉크만 비운다.
+                    run.display_text = Some(String::new());
+                }
                 let mut leader_paths = Vec::new();
                 if self.profile == RenderProfile::Print && self.hangul2024_print && !run.is_vertical
                 {
@@ -448,6 +463,8 @@ impl LayerBuilder {
                 let fill = self
                     .page_context
                     .and_then(|context| context.bitmap_fill_frame(node, image, pixel));
+                let centered_fill_frame = fill.is_some()
+                    && image.fill_mode == Some(crate::model::style::ImageFillMode::Center);
                 let mut frame = if let Some(fill) = fill {
                     image_fill_clip = Some(fill.clip);
                     fill.image
@@ -477,71 +494,79 @@ impl LayerBuilder {
                 } else {
                     let mut image = image.clone();
                     image.hancom2024_print_bitmap = self.hancom2024_print_bitmap;
-                    crate::renderer::image_resolver::publish_print_jpeg_crop(&mut image);
-                    let mut resolved = (self.profile == RenderProfile::Print)
-                        .then(|| {
-                            crate::renderer::image_resolver::print_jpeg_payload(
-                                &image,
-                                frame,
-                                self.layout_dpi,
-                            )
-                        })
-                        .flatten()
-                        .or_else(|| {
-                            if self.profile != RenderProfile::Print || self.hancom2024_print_bitmap
-                            {
-                                return None;
-                            }
-                            super::metafile_print::payload(
-                                &image,
-                                node.bbox,
-                                self.image_page_size,
-                                self.image_reference_origin,
-                                self.layout_dpi,
-                                &self.metafile_fonts,
-                                self.metafile_catalogue.as_deref()?,
-                            )
-                        })
-                        .or_else(|| {
-                            pixel
-                                .and_then(|_| {
-                                    self.page_context?.image_codec_width_points(&image, frame)
-                                })
-                                .and_then(|width| {
-                                    crate::renderer::image_resolver::print_device_image_payload(
-                                        &image,
-                                        width,
-                                        (
-                                            node.bbox.width * 72.0 / self.layout_dpi,
-                                            node.bbox.height * 72.0 / self.layout_dpi,
-                                        ),
-                                    )
-                                })
-                        })
-                        .or_else(|| {
-                            pixel.and_then(|pixel| {
-                                super::metafile_surface::picture_payload(
+                    if centered_fill_frame {
+                        // 원본의 가운데 채움 속성은 유지하고, 공통 프레임으로
+                        // 투영한 paint 연산만 그 프레임 전체에 그림을 재생한다.
+                        image.fill_mode = Some(crate::model::style::ImageFillMode::FitToSize);
+                    }
+                    let group_projection = (self.shape_group_depth > 0
+                        && image_fill_clip.is_none())
+                    .then(|| super::group_picture::project(&image, frame, self.layout_dpi))
+                    .flatten();
+                    if let Some((full, image, payload)) = group_projection {
+                        image_fill_clip = Some(frame);
+                        vec![PaintOp::image(full, image, Some(payload))]
+                    } else {
+                        crate::renderer::image_resolver::publish_print_jpeg_crop(&mut image);
+                        let mut resolved = (self.profile == RenderProfile::Print)
+                            .then(|| {
+                                crate::renderer::image_resolver::print_jpeg_payload(
                                     &image,
                                     frame,
-                                    pixel,
-                                    &self.metafile_fonts,
+                                    self.layout_dpi,
                                 )
                             })
-                        })
-                        .or_else(|| {
-                            crate::paint::metafile::image_payload(
-                                &image,
-                                node.bbox,
-                                self.metafile_device_pixel_width,
-                                &self.metafile_fonts,
+                            .flatten()
+                            .or_else(|| {
+                                if self.profile != RenderProfile::Print || self.hancom2024_print_bitmap { return None; }
+                                super::metafile_print::payload(
+                                    &image, node.bbox, self.image_page_size, self.image_reference_origin,
+                                    self.layout_dpi, &self.metafile_fonts, self.metafile_catalogue.as_deref()?,
+                                )
+                            })
+                            .or_else(|| {
+                                pixel
+                                    .and_then(|_| {
+                                        self.page_context?.image_codec_width_points(&image, frame)
+                                    })
+                                    .and_then(|width| {
+                                        crate::renderer::image_resolver::print_device_image_payload(
+                                            &image,
+                                            width,
+                                            (
+                                                node.bbox.width * 72.0 / self.layout_dpi,
+                                                node.bbox.height * 72.0 / self.layout_dpi,
+                                            ),
+                                            self.shape_group_depth > 0,
+                                        )
+                                    })
+                            })
+                            .or_else(|| {
+                                pixel.and_then(|pixel| {
+                                    super::metafile_surface::picture_payload(
+                                        &image,
+                                        frame,
+                                        pixel,
+                                        &self.metafile_fonts,
+                                    )
+                                })
+                            })
+                            .or_else(|| {
+                                crate::paint::metafile::image_payload(
+                                    &image,
+                                    node.bbox,
+                                    self.metafile_device_pixel_width,
+                                    &self.metafile_fonts,
+                                )
+                            });
+                        if let Some(window) =
+                            crate::renderer::image_resolver::resolve_print_jpeg_window(
+                                &mut image,
+                                resolved.as_ref(),
                             )
-                        });
-                    if let Some(window) = crate::renderer::image_resolver::resolve_print_jpeg_window(
-                        &mut image,
-                        resolved.as_ref(),
-                    ) {
-                        resolved = Some(window);
-                    }
+                        {
+                            resolved = Some(window);
+                        }
                     if let Some(payload) = resolved.as_mut().filter(|p| {
                         crate::renderer::image_resolver::png_sampling::print_jpeg_transfer(&p.data)
                             && !image.transform.has_transform()
@@ -575,7 +600,8 @@ impl LayerBuilder {
                             resolved = Some(payload);
                         }
                     }
-                    vec![PaintOp::image(frame, image, resolved)]
+                        vec![PaintOp::image(frame, image, resolved)]
+                    }
                 };
                 if self.output_options.show_control_codes {
                     ops.push(PaintOp::control_label(frame, "[그림]"));

@@ -66,8 +66,17 @@ pub(super) fn payload(image: &ImageNode, width_points: f64) -> Option<ResolvedIm
 /// 색과 coverage를 따로 표본화하는 공통 payload를 생성한다.
 /// 복원한 straight RGB와 원본 PArgb의 색 전달 계약은 호출자가 구분한다.
 pub(super) fn encode_planes(
+    rgba: image::RgbaImage,
+    quality: u8,
+    color: impl Fn(u8, u8) -> u8,
+) -> Option<Vec<u8>> {
+    encode_planes_with_palette(rgba, quality, true, color)
+}
+
+pub(super) fn encode_planes_with_palette(
     mut rgba: image::RgbaImage,
     quality: u8,
+    quantize: bool,
     color: impl Fn(u8, u8) -> u8,
 ) -> Option<Vec<u8>> {
     let (width, height) = rgba.dimensions();
@@ -81,7 +90,9 @@ pub(super) fn encode_planes(
         }
         pixel[3] = 255;
     }
-    super::print_rgb555::quantize(rgba.as_mut(), width, height)?;
+    if quantize {
+        super::print_rgb555::quantize(rgba.as_mut(), width, height)?;
+    }
     let jpeg = print_codec::encode_rgb(image::DynamicImage::ImageRgba8(rgba).to_rgb8(), quality)?;
     let pixels = print_tone::decode_jpeg_fill_rgb(&jpeg)?.into_raw();
     let mut combined = Vec::with_capacity(mask.len() * 4);

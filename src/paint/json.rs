@@ -23,7 +23,9 @@ use crate::paint::{
     SvgGlyphPayload, TextDecorationKind, TextSourceAnnotation, TextSourceEntry, TextSourceId,
     TextSourceRange, TextSourceSpan, TextSourceTable, TextV2Diagnostics, LAYER_TREE_SCHEMA,
 };
+#[cfg(test)]
 use crate::renderer::composer::expand_pua_render_text;
+use crate::renderer::composer::expand_pua_render_text_in_style;
 use crate::renderer::equation::ast::MatrixStyle;
 use crate::renderer::equation::layout::{LayoutBox, LayoutKind};
 use crate::renderer::equation::symbols::{DecoKind, FontStyleKind};
@@ -914,6 +916,9 @@ impl PaintOp {
                     run.is_vertical,
                     json_escape(text_orientation_str(run)),
                 );
+                if let Some(display) = &run.display_text {
+                    let _ = write!(buf, ",\"displayText\":{}", json_escape(display));
+                }
                 buf.push_str(",\"style\":");
                 write_text_style(buf, &run.style);
                 buf.push_str(",\"paintStyle\":");
@@ -1984,7 +1989,7 @@ fn write_bounded_text_positions(buf: &mut String, text: &str, style: &TextStyle)
 }
 
 fn display_text_for_text_run(run: &TextRunNode) -> Option<String> {
-    let display_text = expand_pua_render_text(run.display_or_text());
+    let display_text = expand_pua_render_text_in_style(run.display_or_text(), &run.style);
     (display_text != run.text.as_str()).then_some(display_text)
 }
 
@@ -3837,6 +3842,7 @@ mod tests {
                     border_type: 1,
                     inner_char_size: 90,
                     composition: None,
+                    empty_ink: false,
                 }),
                 border_fill_id: 0,
                 baseline: 13.0,
@@ -4160,6 +4166,7 @@ mod tests {
                 border_type: 2,
                 inner_char_size: 80,
                 composition: None,
+                empty_ink: false,
             }),
             border_fill_id: 0,
             baseline: 11.0,
@@ -4372,6 +4379,7 @@ mod tests {
                 border_type: 1,
                 inner_char_size: 100,
                 composition: None,
+                empty_ink: false,
             }),
             border_fill_id: 0,
             baseline: 10.0,

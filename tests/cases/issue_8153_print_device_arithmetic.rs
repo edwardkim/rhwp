@@ -6,7 +6,7 @@ mod print_paper;
 #[path = "../../src/renderer/print_picture_pen.rs"]
 mod print_picture_pen;
 #[allow(dead_code)]
-#[path = "../../src/renderer/print_image_sampling.rs"]
+#[path = "../../src/renderer/print_image_sampling_core.rs"]
 mod print_sampling;
 
 use print_paper::{reference_geometry, PrintPaper};

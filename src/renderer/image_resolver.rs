@@ -15,6 +15,7 @@ mod print_window;
 pub(crate) use print_tone::decode_print_jpeg_replay;
 pub(crate) use print_tone::print_bitmap_payload;
 mod print_alpha;
+mod print_bitmap_window;
 mod print_codec;
 mod print_fill_jpeg;
 mod print_picture_resample;
@@ -143,7 +144,9 @@ enum Conversion {
         contrast: i8,
         grayscale: bool,
     },
-    Hancom2024Bitmap,
+    Hancom2024Bitmap {
+        group: bool,
+    },
     PrintJpeg {
         quality: u8,
         expand: bool,
@@ -159,6 +162,7 @@ enum Conversion {
     },
     Hancom2024BitmapWindow {
         bounds: [u32; 4],
+        group: bool,
     },
     Hancom2024PrintJpeg {
         quality: u8,
@@ -167,6 +171,12 @@ enum Conversion {
         quality: u8,
     },
     Hancom2024PrintResampled {
+        width: u32,
+        height: u32,
+        quality: u8,
+    },
+    Hancom2024ResampledBitmapWindow {
+        bounds: [u32; 4],
         width: u32,
         height: u32,
         quality: u8,
@@ -329,7 +339,7 @@ pub(crate) fn emitted_source_image_bytes(
         }
     }
     if variant == crate::paint::SourceImageVariant::Hancom2024Bitmap {
-        if let Some(bytes) = print_tone::bitmap_bytes_to_png(data) {
+        if let Some(bytes) = print_tone::bitmap_bytes_to_png(data, false) {
             return ("image/png", std::borrow::Cow::Owned(bytes));
         }
     }
@@ -394,7 +404,15 @@ pub(crate) fn resolved_image_effects(
 }
 
 pub(crate) fn resolve_image_payload(image: &ImageNode) -> Option<ResolvedImagePayload> {
-    let base = resolve_unadjusted_image_payload(image);
+    resolve_image_payload_for_print(image, false)
+}
+
+/// 묶음 그림의 원본 JPEG 디코딩과 단독 그림의 디코딩을 같은 자원 경로에서 구분한다.
+pub(crate) fn resolve_image_payload_for_print(
+    image: &ImageNode,
+    in_shape_group: bool,
+) -> Option<ResolvedImagePayload> {
+    let base = resolve_unadjusted_image_payload(image, in_shape_group);
     let mut resolved = picture_adjustments::resolve_picture_tone(image, base);
     if let (Some(source), Some(payload)) = (image.data.as_deref(), resolved.as_mut()) {
         png_sampling::preserve(source, &mut payload.data);
@@ -402,8 +420,11 @@ pub(crate) fn resolve_image_payload(image: &ImageNode) -> Option<ResolvedImagePa
     resolved
 }
 
-fn resolve_unadjusted_image_payload(image: &ImageNode) -> Option<ResolvedImagePayload> {
-    if let Some(payload) = print_bitmap_payload(image) {
+fn resolve_unadjusted_image_payload(
+    image: &ImageNode,
+    in_shape_group: bool,
+) -> Option<ResolvedImagePayload> {
+    if let Some(payload) = print_bitmap_payload(image, in_shape_group) {
         return Some(payload);
     }
     let data = image.data.as_deref()?;

@@ -8,7 +8,7 @@ use super::paint_op::{
 };
 use super::{LayerNode, LayerNodeKind, PageLayerTree, MAX_POSITIONED_CONTROL_MARKS_PER_RUN};
 use crate::model::style::UnderlineType;
-use crate::renderer::composer::expand_pua_render_text;
+use crate::renderer::composer::expand_pua_render_text_in_style;
 use crate::renderer::render_tree::{BoundingBox, ShapeTransform, TextRunNode};
 use crate::renderer::{
     clamp_tab_leader_end_x, svg_arc_to_beziers, LineRenderType, LineStyle, PathCommand, ShadowStyle,
@@ -1003,7 +1003,7 @@ pub(super) fn bounded_text_prefix(text: &str) -> (String, bool) {
 
 pub(super) fn bounded_display_text_for_run(run: &TextRunNode) -> (String, bool) {
     let (source_prefix, source_complete) = bounded_text_prefix(run.display_or_text());
-    let display_text = expand_pua_render_text(&source_prefix);
+    let display_text = expand_pua_render_text_in_style(&source_prefix, &run.style);
     let (display_prefix, display_complete) = bounded_text_prefix(&display_text);
     (display_prefix, source_complete && display_complete)
 }

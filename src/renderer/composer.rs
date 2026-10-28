@@ -63,6 +63,9 @@ pub struct CharOverlapInfo {
     /// 원문 컨트롤의 문자별 스타일과 펼침. 폰트 인코딩 PUA는 별도 계약을 쓴다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub composition: Option<Box<super::char_overlap::Composition>>,
+    /// 겹침 프레임은 보존하되 구성 글자의 잉크를 출력하지 않는다.
+    #[serde(skip)]
+    pub empty_ink: bool,
 }
 crate::storage::clone_fields!(CharOverlapInfo, {border_type, inner_char_size, composition});
 

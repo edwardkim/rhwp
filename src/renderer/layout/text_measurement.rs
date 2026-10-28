@@ -1976,12 +1976,14 @@ fn char_width_decision_with_hft_tracking<'a>(
     // [#7387] `CharShape.use_font_space` 가 켜진 run 의 공백은 반각이 아니라 **영문 슬롯**
     // 글꼴이 선언한 공백 전진폭이다. 아래 메트릭 갈래는 공백을 무조건 `em_size/2` 로
     // 누르고(그 run 자신의 글꼴로), 영문 슬롯을 볼 방법이 없으므로 여기서 먼저 가른다.
-    // 묶음 빈칸(U+00A0)은 #6646 에 따라 일반 공백과 같은 전진폭을 쓴다.
+    // 묶음 빈칸은 #6646의 반각 글꼴 메트릭을 사용하되, 원본 제어와 리터럴 모두
+    // `useFontSpace`의 영문 공백을 소비하지 않는다. 한컴 2024 Print에서 글꼴 3종,
+    // 장평 3종, 자간 3종과 useFontSpace 양쪽을 대조한 54행에서 확인했다.
     //
     // 폭은 메트릭 갈래와 같은 `quantize_hwp_px` 격자(1/75px = HWPUNIT)에 올린다.
     // 이게 없으면 영문 슬롯 글꼴의 공백이 마침 반각과 같은 run(예: 영문 슬롯이
     // 휴먼명조 — 256/512 = 0.5 em)까지 공백마다 0.013px 씩 어긋난다.
-    let font_space_width = matches!(c, ' ' | '\u{00A0}')
+    let font_space_width = (c == ' ')
         .then_some(style.font_space_em)
         .flatten()
         .map(|em| quantize_hwp_px(font_size * em));
