@@ -1622,3 +1622,6 @@ editor·공통 PDF 테스트 경로도 빠져 유효한 전체 결과가 아니�
 두 건은 Node용 WASM 부재가 이유여서 같은 커밋의 내부 검증용 `pkg-node`를
 빌드한 뒤 각각 재실행한다. 해당 로그는 ignored `studio-unit-ffae46-r2-20261029.log`,
 `isolated-ffae46-node-wasm-build-20261029.log`다. web WASM 전쪽은 진행 중이다.
+Node용 WASM 빌드는 완료했으며, 건너뛴 두 검사와 같은 파일의 나머지 검사까지
+6건을 재실행해 모두 통과했다. 해당 재실행은 실패·건너뜀 0건이다.
+로그는 ignored `studio-node-wasm-skipped-tests-20261029.log`다.
