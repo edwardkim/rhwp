@@ -98,3 +98,84 @@ fn hchar_array_reads_little_endian_internal_codes() {
     assert_eq!(decode_hchar_array(&bytes), "A가");
     assert_ne!(decode_hwp3_string(&bytes), "A가");
 }
+
+// ---------- 같은 문서의 렌더링 정합 (#8304 PR 범위) ----------
+//
+// 이 문서의 Print PDF(`pdf/HWP3-password-123456.pdf`) 대비 24쪽 중 23쪽이 90% 미만이던 원인을
+// 한컴 HWP5 변환본과 대조해 고쳤다. 기대값은 모두 그 변환본의 저장값이다.
+
+/// 문단 앞뒤 간격과 첫 줄 위치가 문단 365개 모두 한컴 HWP5 와 같다. 종전 암호 전용 ×4
+/// 간격은 쪽 맨 위 제목의 앞 간격을 저장 vpos 보다 작게 만들어 그 쪽 본문을 4px 올렸고,
+/// 글자처럼 취급 표 문단의 앞 간격 생략은 3쪽 표 뒤 내용을 9px 올렸다.
+#[test]
+fn password_hwp3_paragraph_spacing_and_line_positions_match_hancom_hwp5() {
+    let hwp3 = open(HWP3, Some("123456"));
+    let hancom = open(HANCOM_HWP5, None);
+    let (a, b) = (hwp3.document(), hancom.document());
+    let (pa, pb) = (&a.sections[0].paragraphs, &b.sections[0].paragraphs);
+    assert_eq!(pa.len(), pb.len(), "문단 수");
+    for (i, (x, y)) in pa.iter().zip(pb).enumerate() {
+        let sx = &a.doc_info.para_shapes[x.para_shape_id as usize];
+        let sy = &b.doc_info.para_shapes[y.para_shape_id as usize];
+        assert_eq!(
+            (sx.spacing_before, sx.spacing_after),
+            (sy.spacing_before, sy.spacing_after),
+            "문단 {i} 앞뒤 간격"
+        );
+        assert_eq!(
+            x.line_segs.first().map(|l| l.vertical_pos),
+            y.line_segs.first().map(|l| l.vertical_pos),
+            "문단 {i} 첫 줄 위치"
+        );
+    }
+    assert_eq!(hwp3.page_count(), hancom.page_count(), "쪽수");
+}
+
+/// 추가 정보 블록 #6 의 쪽 배경 그림은 구역 첫 쪽에만 그린다 — 한컴 HWP5 의 구역 정의
+/// bit 9(0x0200). 종전에는 모든 쪽 본문 위에 그림이 깔렸다.
+#[test]
+fn password_hwp3_page_background_is_first_page_only() {
+    let hwp3 = open(HWP3, Some("123456"));
+    let hancom = open(HANCOM_HWP5, None);
+    let (a, b) = (
+        &hwp3.document().sections[0].section_def,
+        &hancom.document().sections[0].section_def,
+    );
+    assert!(b.first_page_fill && b.flags & 0x0200 != 0, "한컴 HWP5 기준");
+    assert_eq!(
+        (a.first_page_fill, a.first_page_border, a.flags & 0x0300),
+        (b.first_page_fill, b.first_page_border, b.flags & 0x0300)
+    );
+}
+
+/// 글이 든 하이퍼텍스트 상자는 상자와 글을 보존한다(한컴 HWP5: 글상자). 종전에는 빈
+/// 하이퍼링크만 남아 17쪽 `홈페이지()`, 24쪽 `인터넷:` 뒤 글이 사라졌다.
+#[test]
+fn password_hwp3_hypertext_box_keeps_its_text() {
+    let hwp3 = open(HWP3, Some("123456"));
+    let pages: Vec<String> = (0..hwp3.page_count())
+        .map(|p| hwp3.extract_page_text_native(p).expect("쪽 글"))
+        .collect();
+    assert!(pages[16].contains("http://www.hnc.co.kr"), "17쪽");
+    assert!(
+        pages[23].contains("고객지원(http://haansoft.netian.com)"),
+        "24쪽"
+    );
+}
+
+/// 반례: 빈 하이퍼텍스트 상자(hwp3-sample16 목차)는 한컴 Print 에 아무것도 그려지지 않으므로
+/// 종전대로 하이퍼링크 슬롯으로 남는다. 이 문서는 기존 90% 미만 쪽이 있어 배치(쪽수)는
+/// 고정하지 않고 컨트롤 구조만 본다 — 시각 무변화는 PR 의 전쪽 TSV 로 확인했다.
+#[test]
+fn empty_hypertext_box_stays_a_hyperlink_slot() {
+    let core = open("samples/hwp3-sample16.hwp", None);
+    let mut hyperlinks = 0;
+    for para in &core.document().sections[0].paragraphs {
+        for control in &para.controls {
+            if matches!(control, Control::Hyperlink(_)) {
+                hyperlinks += 1;
+            }
+        }
+    }
+    assert_eq!(hyperlinks, 4);
+}

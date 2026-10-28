@@ -499,11 +499,10 @@ fn hwp3_picture_image_effect(info_buf: &[u8]) -> (i8, i8, crate::model::image::I
 
 const HWP3_TO_IR_PARA_UNIT: i32 = 8;
 // HWP3 문단 여백(left/right/indent)과 문단 앞뒤 간격은 같은 `hunit`으로
-// 표기되지만, 일반 HWP3의 HWP5 저장 왕복 계약은 둘 다 ×8이다. 한글 97 암호
-// 원본은 별도 검증에서 문단 앞뒤 간격만 ×4로 해석해야 한컴 PDF와 일치했다.
-// 따라서 이 차이는 암호 복호화 경로에서만 선택한다. 전역 ×4 정규화는 일반 HWP3
-// 문서를 HWP5로 저장한 뒤의 기하를 바꿔 #1892 라운드트립 회귀를 만들었다.
-const HWP3_PASSWORD_TO_IR_PARA_SPACING_UNIT: i32 = 4;
+// 표기되고, HWP5 저장 계약은 둘 다 ×8이다. [#8304] 한글 97 암호 원본도 같다 —
+// 같은 문서를 한컴 2024 가 HWP5 로 저장한 `HWP5-nopassword-123456.hwp` 의 문단
+// 365개 앞뒤 간격이 모두 ×8 값이다. 종전 암호 전용 ×4 는 쪽 맨 위 문단의 앞 간격을
+// 저장 vpos 보다 작게 만들어(1.9px < 3.8px) 그 쪽 본문 전체를 4px 위로 올렸다.
 
 fn hwp3_para_metric_to_ir(value: i16) -> i32 {
     (value as i32) * HWP3_TO_IR_PARA_UNIT
@@ -513,13 +512,8 @@ fn hwp3_para_metric_u16_to_ir(value: u16) -> i32 {
     (value as i32) * HWP3_TO_IR_PARA_UNIT
 }
 
-fn hwp3_para_spacing_to_ir(value: u16, use_password_layout_contract: bool) -> i32 {
-    let unit = if use_password_layout_contract {
-        HWP3_PASSWORD_TO_IR_PARA_SPACING_UNIT
-    } else {
-        HWP3_TO_IR_PARA_UNIT
-    };
-    (value as i32) * unit
+fn hwp3_para_spacing_to_ir(value: u16) -> i32 {
+    (value as i32) * HWP3_TO_IR_PARA_UNIT
 }
 
 fn hwp3_tab_position_to_ir(value: u16) -> u32 {
@@ -757,8 +751,8 @@ fn convert_para_shape_with_layout_contract(
         ps.line_spacing = hwp3_ps.line_spacing as i32;
     }
 
-    ps.spacing_after = hwp3_para_spacing_to_ir(hwp3_ps.margin_bottom, use_password_layout_contract);
-    ps.spacing_before = hwp3_para_spacing_to_ir(hwp3_ps.margin_top, use_password_layout_contract);
+    ps.spacing_after = hwp3_para_spacing_to_ir(hwp3_ps.margin_bottom);
+    ps.spacing_before = hwp3_para_spacing_to_ir(hwp3_ps.margin_top);
     ps.alignment = match hwp3_ps.align {
         0 | 6 => crate::model::style::Alignment::Justify,
         1 => crate::model::style::Alignment::Left,
@@ -949,21 +943,14 @@ fn hwp3_square_wrap_line_box(
     }
 }
 
-fn hwp3_para_flow_spacing(
-    para_shape: Option<&crate::model::style::ParaShape>,
-    use_password_layout_contract: bool,
-) -> (i32, i32) {
+fn hwp3_para_flow_spacing(para_shape: Option<&crate::model::style::ParaShape>) -> (i32, i32) {
     let Some(ps) = para_shape else {
         return (0, 0);
     };
 
-    // 평문 HWP3는 ParaShape에 ×8로 보존한 뒤 흐름 좌표에서 절반(×4)을 쓴다.
-    // 실제 암호 HWP3만 ParaShape·흐름 모두 ×4 계약이므로 추가 축소가 없다.
-    let scale = if use_password_layout_contract { 1 } else { 2 };
-    (
-        ps.spacing_before.max(0).saturating_div(scale),
-        ps.spacing_after.max(0).saturating_div(scale),
-    )
+    // ParaShape 에 ×8로 보존한 간격을 흐름 좌표에서는 절반(×4)으로 쓴다 — 저장 vpos 와
+    // 같은 스케일이다(암호 HWP3 도 같다, #8304).
+    (ps.spacing_before.max(0) / 2, ps.spacing_after.max(0) / 2)
 }
 
 /// 단일 inline 개체만 있는 본문 줄의 종료 간격을 인접 저장 프레임에서 읽는다.
@@ -2365,7 +2352,20 @@ fn parse_object_control_char(
     let emit_visible_object_slot = !omit_visible_marker;
 
     if ch == 10 {
-        if parsed_is_hypertext {
+        // [#8304] 하이퍼텍스트 상자도 1x1 표 구조로 저장된다(스펙 박스 종류 3=버튼 + 기타
+        // 옵션 하이퍼텍스트 비트). 같은 문서를 한컴 2024 가 HWP5 로 저장하면 그 자리에
+        // 글상자와 안의 글(`고객지원(http://haansoft.netian.com)`)이 남는데, 종전에는 표를
+        // 버리고 하이퍼링크 컨트롤만 남겨 상자 안 글이 화면에서 사라졌다. 글이 든 상자는
+        // 아래 상자 종류별 경로(버튼 = 표)로 보존한다. 빈 상자는 한컴 Print 에 아무것도
+        // 그려지지 않으므로(hwp3-sample16 2쪽 목차) 종전대로 하이퍼링크 슬롯만 둔다.
+        let hypertext_box_has_text = parsed_table.as_ref().is_some_and(|table| {
+            table
+                .cells
+                .iter()
+                .flat_map(|cell| &cell.paragraphs)
+                .any(|para| para.text.chars().any(|c| !c.is_whitespace()))
+        });
+        if parsed_is_hypertext && !hypertext_box_has_text {
             let mut text = String::new();
             if let Some(table) = &parsed_table {
                 if let Some(cell) = table.cells.first() {
@@ -3422,7 +3422,7 @@ fn parse_paragraph_list_inner(
         }
         let para_shape = doc_para_shapes.get(para_shape_id as usize);
         let para_line_box = hwp3_para_line_box(para_shape, column_width_hu);
-        let para_flow_spacing = hwp3_para_flow_spacing(para_shape, use_password_layout_contract);
+        let para_flow_spacing = hwp3_para_flow_spacing(para_shape);
 
         let fallback_text_height = base_size as i32;
         // [Task #604 Stage D-2] HWP5 IR 정합: percent 줄간격도 lh=th, ls=th*(ratio-100)/100
@@ -4101,13 +4101,11 @@ fn parse_paragraph_list_inner(
             // 가 한글97 layout 시점에 본 line 부터 새 페이지 인식). HWP5 v2024 변환본의
             // paragraph 내 ls[i].vpos=0 영역 정합 (typeset Task #321 vpos-reset guard
             // 영역 trigger 정합).
-            // 암호 HWP3 inline 표의 `spacing_before`는 표 호스트가 아닌 선행 문단의
-            // `spacing_after`로 이미 반영된다. 둘을 누적하면 같은 문서의 HWP5 변환본과
-            // 한컴 PDF보다 표가 아래로 한 번 더 밀린다. 일반 HWP3의 before/after
-            // 계약은 유지한다.
-            if !para.line_segs.is_empty()
-                && !(use_password_layout_contract && hwp3_paragraph_has_treat_as_char_table(&para))
-            {
+            // [#8304] 글자처럼 취급 표 호스트도 자기 앞 간격을 누적한다. 같은 문서의 한컴
+            // HWP5 변환본은 표 문단 첫 줄 vpos 에 앞 문단 뒤 간격과 표 문단 앞 간격을 모두
+            // 넣는다(3쪽 표: 2984 + 1600 + 568 + 568 = 5720). 종전 암호 전용 생략은 표
+            // 뒤 내용을 9px 위로 올렸다.
+            if !para.line_segs.is_empty() {
                 acc_section_vpos = acc_section_vpos.saturating_add(para_flow_spacing.0);
             }
             for (i, seg) in para.line_segs.iter_mut().enumerate() {
@@ -4800,6 +4798,12 @@ fn parse_hwp3_inner(
             page_border.borders = [bl, bl, bl, bl];
         }
         if let Some(background) = background_image {
+            // [#8304] 쪽 배경 그림은 구역 첫 쪽에만 그린다. 같은 문서를 한컴 2024 가 HWP5 로
+            // 저장하면 구역 정의 bit 9(첫 쪽에만 배경, 0x0200)를 켜고 bit 8(테두리)은 끈다.
+            // 독립 Print PDF 도 2쪽부터 배경 그림이 없다. 블록 #6 의 어느 예약 필드가 이
+            // 선택을 담는지는 표본이 하나라 확정하지 못했다(후보: 오프셋 0·292 값 1).
+            section_def.flags |= 0x0200;
+            section_def.first_page_fill = true;
             page_border.fill.fill_type = crate::model::style::FillType::Image;
             page_border.fill.image = Some(crate::model::style::ImageFill {
                 fill_mode: background.fill_mode,
@@ -5913,10 +5917,10 @@ mod tests {
     }
 
     #[test]
-    fn hwp3_para_spacing_uses_password_contract_only_when_requested() {
-        // 일반 HWP3 저장 왕복은 모든 문단 metric을 ×8로 보존한다. 한글 97 암호
-        // fixture의 PDF/HWP5 대조에서만 문단 간격 ×4 계약이 필요하다. 둘을
-        // 전역으로 섞으면 #1892 HWP3 도형 문서의 라운드트립 기하가 달라진다.
+    fn hwp3_para_spacing_is_x8_for_plain_and_password_documents() {
+        // HWP3 문단 metric 은 HWP5 저장 계약에서 모두 ×8이다. [#8304] 한글 97 암호 원본도
+        // 같다 — 같은 문서의 한컴 2024 HWP5 변환본(HWP5-nopassword-123456.hwp)은 문단
+        // 365개의 앞뒤 간격을 ×8 값으로 저장한다. 흐름 좌표는 그 절반(저장 vpos 스케일)이다.
         let mut hwp3_ps = crate::parser::hwp3::records::Hwp3ParaShape::default();
         hwp3_ps.left_margin = 875;
         hwp3_ps.margin_top = 71;
@@ -5928,25 +5932,18 @@ mod tests {
         assert_eq!(ps.spacing_before, 568, "일반 HWP3 문단 앞 간격은 71×8");
         assert_eq!(ps.spacing_after, 1136, "일반 HWP3 문단 뒤 간격은 142×8");
         assert_eq!(
-            hwp3_para_flow_spacing(Some(&ps), false),
+            hwp3_para_flow_spacing(Some(&ps)),
             (284, 568),
-            "일반 HWP3 문단 간격은 저장 vpos와 같은 스케일로 누적해야 한다"
+            "문단 간격은 저장 vpos와 같은 스케일로 누적해야 한다"
         );
 
         let password_ps = convert_para_shape_with_layout_contract(&hwp3_ps, &mut Vec::new(), true);
         assert_eq!(
-            password_ps.spacing_before, 284,
-            "암호 HWP3 문단 앞 간격은 71×4"
+            (password_ps.spacing_before, password_ps.spacing_after),
+            (ps.spacing_before, ps.spacing_after),
+            "암호 HWP3 문단 앞뒤 간격도 ×8"
         );
-        assert_eq!(
-            password_ps.spacing_after, 568,
-            "암호 HWP3 문단 뒤 간격은 142×4"
-        );
-        assert_eq!(
-            hwp3_para_flow_spacing(Some(&password_ps), true),
-            (284, 568),
-            "암호 HWP3 문단 간격은 PDF 대조 계약의 ×4로 누적해야 한다"
-        );
+        assert_eq!(hwp3_para_flow_spacing(Some(&password_ps)), (284, 568));
     }
 
     #[test]
