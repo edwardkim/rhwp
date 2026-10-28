@@ -1596,3 +1596,6 @@ indexed 18개 모두 `printArea`였으므로 색 확장 여부와 `catmullRom` �
 분리 커밋의 HWP Native 전 383쪽 측정은 이후 완료됐으며 이전 후보와 모든
 쪽의 raw 및 미대응 픽셀 수가 같다. 최저는 130쪽 99.96463%, 완전 일치
 380쪽이다. HWPX Native 전쪽과 fresh WASM은 진행 중이다.
+HWPX Native도 이후 전 383쪽을 완료했다. 두 형식 모두 이전 후보 대비 raw와
+미대응 픽셀 수가 달라진 쪽은 0쪽이고 최저 raw는 99.96463%다. 입력·독립 PDF와
+각 PDF 페이지 이미지 SHA-256을 확인했다. fresh WASM은 아직 빌드 중이다.
