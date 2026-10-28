@@ -85,7 +85,7 @@ fn serialize_section_inner(section: &Section, version: Option<u32>) -> Vec<u8> {
         } else {
             let mut clone = p.clone();
             if needs_secd {
-                clone.controls.insert(
+                clone.insert_leading_definition(
                     0,
                     Control::SectionDef(Box::new(section.section_def.clone())),
                 );
@@ -96,7 +96,7 @@ fn serialize_section_inner(section: &Section, version: Option<u32>) -> Vec<u8> {
                     .iter()
                     .take_while(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)))
                     .count();
-                clone.controls.insert(
+                clone.insert_leading_definition(
                     leading_defs,
                     Control::ColumnDef(crate::model::page::ColumnDef {
                         column_count: 1,
@@ -105,15 +105,6 @@ fn serialize_section_inner(section: &Section, version: Option<u32>) -> Vec<u8> {
                     }),
                 );
             }
-            // [#4680] 정의 제어문자가 글자보다 앞에 놓이도록 자리를 비운다 —
-            // 간격이 없으면 `serialize_para_text` 가 텍스트 뒤에 몰아 쓰고, 그런 문서는
-            // 한글이 열다 멎는다. 어댑터와 같은 문단 좌표 계약을 적용한다.
-            let leading_defs = clone
-                .controls
-                .iter()
-                .take_while(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)))
-                .count();
-            clone.reserve_leading_extended_control_slots(leading_defs);
             Some(clone)
         }
     });

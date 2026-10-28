@@ -1059,6 +1059,57 @@ impl Paragraph {
         self.shift_position_metadata_for_stream_insertion(insert_pos, 8);
     }
 
+    /// 구역·단 정의를 보강할 때 기존 선행 컨트롤의 슬롯과 소유 인덱스를 보존한다.
+    pub(crate) fn insert_leading_definition(&mut self, index: usize, control: Control) {
+        debug_assert!(matches!(
+            control,
+            Control::SectionDef(_) | Control::ColumnDef(_)
+        ));
+        let leading_defs = self
+            .controls
+            .iter()
+            .take_while(|control| matches!(control, Control::SectionDef(_) | Control::ColumnDef(_)))
+            .count();
+        debug_assert!(index <= leading_defs);
+        let existing_room = self.char_offsets.first().copied().unwrap_or(0);
+        let auxiliary_slots = self
+            .field_ranges
+            .iter()
+            .filter(|range| range.end_char_idx == 0)
+            .count()
+            + self
+                .orphan_field_ends
+                .iter()
+                .filter(|end| end.char_idx == 0)
+                .count()
+            + self
+                .title_marks
+                .iter()
+                .filter(|mark| mark.char_idx == 0)
+                .count();
+        // 선행 갭은 머리말·누름틀 등이 이미 쓰고 있으므로 빈 예약 공간만 재사용한다.
+        let occupied_controls = (existing_room as usize / 8)
+            .saturating_sub(auxiliary_slots)
+            .min(self.controls.len());
+        let required_slots = occupied_controls.max(leading_defs) + auxiliary_slots + 1;
+        let shift = (required_slots as u32 * 8).saturating_sub(existing_room);
+        for offset in &mut self.char_offsets {
+            *offset += shift;
+        }
+        self.shift_position_metadata_for_stream_insertion(
+            (index as u32 * 8).min(existing_room),
+            shift,
+        );
+        for range in &mut self.field_ranges {
+            if range.control_idx >= index {
+                range.control_idx += 1;
+            }
+        }
+        self.align_ctrl_data_records();
+        self.ctrl_data_records.insert(index, None);
+        self.controls.insert(index, control);
+    }
+
     /// 선행 확장 제어문자가 들어갈 만큼 첫 텍스트 앞 스트림 좌표를 확보한다.
     ///
     /// `SectionDef`·`ColumnDef`처럼 문단 첫 글자보다 앞에 와야 하는 확장 제어문자는 각각
