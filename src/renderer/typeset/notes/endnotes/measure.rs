@@ -19,14 +19,18 @@ pub(super) struct EndnoteColumnGeometry {
 include!("stored_ink_fit.inc.rs");
 
 /// 한 문단의 fit 판정들이 같은 단을 다시 그리는 호출은 몇 호출 안에서 되풀이된다.
-const ENDNOTE_COLUMN_REPLAY_MEMO_LEN: usize = 8;
+pub(in crate::renderer::typeset) const ENDNOTE_COLUMN_REPLAY_MEMO_LEN: usize = 8;
 
 /// scratch 단 측정 키에 문단 입력을 싣는다. `NumberingMarker` 는 `Debug` 로 값을
 /// 드러내지 않으므로 번호 문자열과 머리 속성을 따로 싣는다. 표 칸·주석·글상자 안
 /// 문단의 번호는 `{paragraph:?}` 에도 드러나지 않는다. 번호는 조판 전에 정해지고
 /// 조판은 `line_segs` 만 고치므로, 구역 진입 때 비우는 이 재사용 안에서 같은 문단의
 /// 중첩 번호는 바뀌지 않는다.
-fn push_replay_paragraph_key(key: &mut String, index: usize, paragraph: &Paragraph) {
+pub(in crate::renderer::typeset) fn push_replay_paragraph_key(
+    key: &mut String,
+    index: usize,
+    paragraph: &Paragraph,
+) {
     use crate::model::paragraph::NumberingMarker;
     use std::fmt::Write;
     let marker = match &paragraph.numbering_marker {
@@ -42,7 +46,7 @@ impl TypesetEngine {
     /// 그 입력 전부를 담으므로 같은 키의 최근 결과를 그대로 돌려준다. 키가 입력을
     /// 빠뜨리면 다른 측정에 같은 결과를 돌려주므로, 검증을 켜면 재사용할 때마다 다시
     /// 측정해 비트 단위로 비교한다.
-    fn replay_endnote_column(
+    pub(in crate::renderer::typeset) fn replay_endnote_column(
         &self,
         key: String,
         measure: impl FnOnce() -> (f64, Option<f64>),
@@ -871,63 +875,5 @@ impl TypesetEngine {
             None,
         );
         (y_after - y_start).max(0.0)
-    }
-}
-
-#[cfg(test)]
-mod replay_memo_tests {
-    use super::*;
-    use crate::model::paragraph::{MarkerHead, NumberingMarker};
-
-    #[test]
-    fn same_column_input_reuses_scratch_measure_until_evicted() {
-        let mut engine = TypesetEngine::new(96.0);
-        engine.endnote_replay_verify = false;
-        let calls = std::cell::Cell::new(0);
-        let measure = |bottom: f64| {
-            calls.set(calls.get() + 1);
-            (bottom, Some(bottom - 1.0))
-        };
-        let replay = |key: &str, bottom: f64| {
-            engine.replay_endnote_column(key.to_string(), || measure(bottom))
-        };
-        assert_eq!(replay("column", 10.0), (10.0, Some(9.0)));
-        assert_eq!(replay("column", 99.0), (10.0, Some(9.0)));
-        assert_eq!(calls.get(), 1);
-        for index in 0..ENDNOTE_COLUMN_REPLAY_MEMO_LEN {
-            replay(&format!("other-{index}"), 1.0);
-        }
-        assert_eq!(replay("column", 20.0), (20.0, Some(19.0)));
-        assert_eq!(calls.get(), ENDNOTE_COLUMN_REPLAY_MEMO_LEN + 2);
-    }
-
-    #[test]
-    #[should_panic(expected = "미주 단 측정 키가 scratch 입력을 빠뜨렸다")]
-    fn verify_rejects_reuse_when_key_misses_an_input() {
-        let mut engine = TypesetEngine::new(96.0);
-        engine.endnote_replay_verify = true;
-        engine.replay_endnote_column("column".to_string(), || (10.0, None));
-        engine.replay_endnote_column("column".to_string(), || (10.0, None));
-        engine.replay_endnote_column("column".to_string(), || (11.0, None));
-    }
-
-    #[test]
-    fn numbering_marker_hidden_from_debug_still_separates_keys() {
-        let key = |marker: NumberingMarker| {
-            let paragraph = Paragraph {
-                numbering_marker: marker,
-                ..Default::default()
-            };
-            let mut key = String::new();
-            push_replay_paragraph_key(&mut key, 0, &paragraph);
-            key
-        };
-        let text = |number: &str| NumberingMarker::Text(number.into(), MarkerHead::default());
-        assert_ne!(key(text("1.")), key(text("2.")));
-        assert_ne!(
-            key(NumberingMarker::Unresolved),
-            key(NumberingMarker::Absent)
-        );
-        assert_eq!(key(text("1.")), key(text("1.")));
     }
 }

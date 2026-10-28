@@ -76,7 +76,8 @@ fn in_place_plan_json(input: &std::path::Path, sha: &str, find: &str, replace: &
 }
 
 fn tmp(name: &str) -> std::path::PathBuf {
-    std::env::temp_dir().join(format!("cas_contract_{name}.hwp"))
+    // 같은 호스트에서 겹친 검증 프로세스가 서로의 입력·출력을 지우지 않게 한다.
+    std::env::temp_dir().join(format!("cas_contract_{}_{name}.hwp", std::process::id()))
 }
 
 // ── run 계획서 축 (R22) ──────────────────────────────────────────────────

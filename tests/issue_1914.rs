@@ -47,8 +47,16 @@ fn issue_1914_parse_document_sniffs_content_for_all_formats() {
 #[test]
 fn issue_1914_roundtrip_gates_classify_masqueraded_files_as_format_skip() {
     let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"));
-    let tmp = std::env::temp_dir().join("issue_1914_gate_probe");
-    fs::create_dir_all(&tmp).expect("temp dir");
+    // 다른 사용자·프로세스가 남긴 공용 폴더를 재사용하지 않는다.
+    let tmp = std::env::temp_dir().join(format!(
+        "issue_1914_gate_probe_{}_{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("temp timestamp")
+            .as_nanos()
+    ));
+    fs::create_dir(&tmp).expect("temp dir");
 
     // HWP5(OLE) 실체 → .hwpx 확장자 (10k 서베이 49건 클래스)
     let masq_hwpx = tmp.join("ole_as.hwpx");
@@ -96,6 +104,7 @@ fn issue_1914_roundtrip_gates_classify_masqueraded_files_as_format_skip() {
         "hwp5-roundtrip HWP3 실체: FORMAT_SKIP+실체 안내여야 함 (종전 오도성 IR_DIFF, #1892): {text}"
     );
     assert!(ok, "FORMAT_SKIP 은 하드 실패가 아님 (exit 0): {text}");
+    fs::remove_dir_all(&tmp).expect("remove temp dir");
 }
 
 /// [#3289] 아카이브 실행 시 컴파일타임 경로는 빌드 러너 전용이므로,
