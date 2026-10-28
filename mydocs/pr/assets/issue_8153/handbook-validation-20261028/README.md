@@ -181,3 +181,15 @@ WASM으로 2배 확대해 확인했다. 선택한 마지막 줄·앞뒤 문장�
 같은 마지막 글줄 및 뒤 본문을 독립 Print·Native·fresh WASM으로 2배 확대해
 비교했다. 표시한 글줄의 내용과 줄바꿈은 대응하며, 글꼴 획 농도와 가장자리
 차이는 남는다. 이 판독은 이미지에 표시된 영역에 한정한다.
+
+## 311쪽 법령 대조표 첫 조각
+
+두 편람의 311쪽은 구역 11 문단 3의 첫 표 조각이며 각 Native·fresh WASM raw는
+100.00000%다. 같은 쪽의 독립 Print와 출력에서 표 머리, 좌우 열, 첫 본문과
+첫 조각 하단을 확인했다. 획 농도와 가장자리 차이가 보인다. 312쪽의 이어받기
+내용·컷과 원점 수용 조건은 이 한 장의 점수만으로 판정하지 않는다.
+
+| 원본 | Native | fresh WASM |
+| --- | --- | --- |
+| HWP | [review](native/handbook-hwp-p311-review.png) · [overlay](native/handbook-hwp-p311-overlay.png) | [review](wasm/handbook-hwp-p311-review.png) · [overlay](wasm/handbook-hwp-p311-overlay.png) |
+| HWPX | [review](native/handbook-hwpx-p311-review.png) · [overlay](native/handbook-hwpx-p311-overlay.png) | [review](wasm/handbook-hwpx-p311-review.png) · [overlay](wasm/handbook-hwpx-p311-overlay.png) |
