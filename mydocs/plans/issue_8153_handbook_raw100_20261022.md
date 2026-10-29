@@ -1685,3 +1685,6 @@ ignored 분리 소스에 옮기고, 0.5px 차이 조건을 제거한 뒤 이어�
 미대응 픽셀 수는 기존 후보와 같았다. 입력·PDF·실험 소스의 해시와 결과는
 ignored `structural-origin-native-focus-20261029/result.json`에 기록한다.
 표본 결과는 전쪽 Native·fresh WASM과 나머지 회귀의 성공을 대신하지 않는다.
+이어 실행한 화면 밖 배치 partition 10은 분리 실험에서도 기존 후보와 같이
+신규 1건으로 실패했다. 원점 실험이 그 회귀를 해결한 것은 아니다. 결과는
+ignored `structural-origin-off-canvas-10-20261029.log`다.
