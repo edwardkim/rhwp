@@ -217,13 +217,26 @@ pub(crate) fn project_current_source_program_rows_with_storage<S: crate::storage
         let mut fallbacks = crate::storage::optional(storage.vec(0), failure)?;
         for run in composed.lines.iter().flat_map(|line| &line.runs) {
             if run.text.chars().all(char::is_whitespace) {
+                let original = styles.char_styles.get(run.char_style_id as usize)?;
+                let primary = super::super::style_resolver::primary_font_name(original.font_family_for_lang(run.lang_index));
+                if !original.font_metric_trusted_for_lang(run.lang_index)
+                    && crate::renderer::layout::verified_source_projection_face(primary, original.bold, original.italic)
+                    && !crate::renderer::layout::verified_source_projection_text(primary, original.bold, original.italic, &run.text) {
+                    return None;
+                }
                 continue;
             }
             let fallback = styles.source_program_projection_slots.get(&(run.char_style_id, run.lang_index))?;
             if run.inserted_control_text {
                 return None;
             }
-            styles.char_styles.get(run.char_style_id as usize)?;
+            let original = styles.char_styles.get(run.char_style_id as usize)?;
+            if !original.font_metric_trusted_for_lang(run.lang_index)
+                && !crate::renderer::layout::verified_source_projection_text(
+                    super::super::style_resolver::primary_font_name(original.font_family_for_lang(run.lang_index)),
+                    original.bold, original.italic, &run.text) {
+                return None;
+            }
             crate::storage::optional(storage.push(&mut fallbacks, (run.char_style_id, fallback)), failure)?;
         }
         if fallbacks.is_empty() {

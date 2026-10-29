@@ -1164,6 +1164,27 @@ static KOPUB_DOTUM_LATIN_0: [u16; 95] = [
     232, 891, 562, 549, 562, 562, 341, 506, 341, 562, 504, 802, 506, 504, 451, 310, 386, 310, 527,
 ];
 
+/// 저장 줄의 재구성에 사용할 수 있는 실제 원본 전진 표인가.
+/// KoPub Dotum Light의 전진은 독립 Print와 TTF에서 확인했다(#7765).
+/// 글꼴의 모든 문자를 인증하지 않으며 검증된 범위만 별도로 확인한다.
+pub(crate) fn verified_source_projection_face(face: &str, bold: bool, italic: bool) -> bool {
+    !bold && !italic && matches!(face.trim(), "KoPub돋움체 Light" | "KoPub Dotum Light")
+}
+
+pub(crate) fn verified_source_projection_text(
+    face: &str,
+    bold: bool,
+    italic: bool,
+    text: &str,
+) -> bool {
+    verified_source_projection_face(face, bold, italic)
+        && text.chars().all(|ch| {
+            (' '..='~').contains(&ch)
+                || ('가'..='힣').contains(&ch)
+                || super::kopub_symbol_metrics::advance_em(true, false, ch).is_some()
+        })
+}
+
 /// [#7390] `KoPubBatang` 기본 라틴 문자 전진폭. 위와 같은 출처·같은 규약이다.
 static KOPUB_BATANG_LATIN_0: [u16; 95] = [
     312, 312, 312, 573, 573, 745, 789, 312, 312, 312, 419, 648, 312, 503, 312, 468, 573, 573, 573,

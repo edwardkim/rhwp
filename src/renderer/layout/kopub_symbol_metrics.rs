@@ -76,6 +76,8 @@ const BATANG: &[(u32, u16)] = &[
 const DOTUM: &[(u32, u16)] = &[
     (0xb7, 319),
     (0xd7, 900),
+    // KoPub Dotum Light TTF와 #7765 독립 Print의 12pt 전진 5.94pt가 일치한다.
+    (0x2013, 495),
     (0x2018, 290),
     (0x2019, 290),
     (0x201c, 410),
