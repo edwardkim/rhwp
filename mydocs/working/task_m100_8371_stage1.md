@@ -34,3 +34,10 @@
 - 71쪽은 선택한 실제 세나루 OTF와 Canvas 측정 세션을 공통 조판에 공급한 뒤 82.99% → 99.99%가 됐다. 139쪽과 312쪽은 100.00%다. Canvas 측정 없는 기존 결과는 이 수치의 증거로 재사용하지 않는다.
 - 66쪽의 글머리표 세 줄에는 Native와 WASM 모두 기준 PDF와 크기·간격 차이가 보인다. 90% 통과만으로 이 차이를 해결했다고 판정하지 않는다.
 - 최적화 포함 빌드·해당 산출물의 재출력과 전체 Rust 검증은 계속 진행한다. 진단 빌드의 전쪽 점수는 최종 fresh WASM 검증을 대신하지 않는다.
+
+## 최적화 WASM 전쪽 검증
+
+- 2026-10-30 KST에 공용 `target/pr-review`와 Cargo 작업 8개를 사용해 최적화 포함 WASM 빌드를 완료했다. 빌드 로그는 `output/issue8371/wasm-hft-otf-optimized-build.log`이다.
+- 최적화 WASM SHA-256은 `360c16f99234145f823abc6bd1cbdf0e41d0bb60ff243cdbc5f7fbec8e93ff10`, JS SHA-256은 `d516f564d0c822a1936bd893c7850ff39c29ff935ac4f1e058506158ddf1e5e7`이다. `pkg`와 Studio public의 대응 산출물 해시가 각각 일치했다.
+- 같은 Print PDF와 실제 연결 그림을 사용한 fresh WASM 전763쪽은 raw 최저 97.14%(66쪽), 90% 미만 0쪽, 미대응 픽셀 0인 쪽 438쪽이다. 312쪽은 100.00%이며 Native에서도 100.00%다. TSV는 `output/issue8371/fresh-wasm-optimized-final-scores/silhouette.tsv`, 실행 기록은 `output/issue8371/fresh-wasm-optimized-final/wasm-export-complete.json`이다.
+- 선택한 312쪽과 66쪽은 Native 및 WASM의 review·overlay를 PDF와 직접 대조했다. 312쪽의 선행·후속 문단 소속과 첫 줄의 한컴 PDF 문자 원점은 글꼴에 독립적인 관계형 및 ±1px 검사로 보호한다. 해당 Rust 회귀 검사의 실행 결과와 66쪽 차이 판정은 이어서 기록한다.
