@@ -1826,3 +1826,14 @@ ignored `tab-fragment-candidate-native-focus-20261029/result.json`에 있다.
 100.00% 미만은 두 원본 모두 보정 제외한 130쪽 99.96%뿐이다. HWPX TSV와
 페이지별 비교는 ignored `tab-fragment-candidate-native-whole-20261029/`에
 있다. fresh WASM은 아직 최적화 중이며 Native 결과로 대신하지 않는다.
+
+커밋 `71732b1f02`의 소스·테스트 검증 사본에서 Git blob 5,074개,
+도구 파일 3,507개와 `.agents`·`.claude`·`saved` 추적 파일 3,008개를
+대조해 누락·차이 없음을 확인했다. 처음 사본에 빠진 `.github` 추적 파일
+39개는 같은 커밋에서 복원한 뒤 검증했다. 정식 `--prepare`와 고정 base
+`9418ed0c7c`를 지정한 `--check`는 1,748개 소스, 28 suite·20 예외,
+48/48 target으로 통과했다. 로그와 사본 무결성 결과는 ignored
+`committed-head-suite-{prepare,base-check}-20261029.log` 및
+`committed-head-validation-*-audit-20261029.json`에 있다. 첫 `--generate`는
+정식 절차가 아니어서 실패했고, base 검사도 샌드박스의 Git subprocess
+`EPERM` 후 읽기 가능한 환경에서 재실행해 통과했다.
