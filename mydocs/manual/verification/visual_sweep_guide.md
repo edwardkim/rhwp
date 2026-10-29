@@ -160,6 +160,13 @@ python3 scripts/visual_sweep.py --silhouette-only \
 열어 `page`별 `silhouette_raw_match_percent`를 Native/WASM 간 대조하고, `below_90`과
 최저값을 확인한다. 이 값은 **실루엣 일치율 보조값**이며 전체 렌더링 정확도나 구조 일치율이 아니다.
 
+실행 로그의 JSON 요약은 대상 `key`, 비교 쪽수 `pages`, 소수 둘째 자리 표시 최저값
+`minimum`, raw 미대응 픽셀이 실제로 0인 쪽수 `exact100`을 보여 준다. 페이지별 정수
+미대응은 `silhouette_manifest.json`의 `silhouette_raw_unmatched_pixels`에서 확인한다.
+기존 PDF는 `--pdf`로 그대로 지정하며 PDF를 다시 변환하지 않는다. 검증용 시스템 글꼴이
+필요하면 `--font-path`를 디렉터리마다 지정하고, 동일한 매핑은 `--font-environment`로
+전달한다. 전체 로그는 예를 들어 `> output/<실행>.log 2>&1`로 보관한다.
+
 검증 대상 전체 문서에서 Native와 fresh WASM TSV를 각각 먼저 산출하고,
 비교 쪽수·최저 일치율·90% 미만/누락 쪽을 결과보고와 PR 본문에 기록한다.
 WASM은 같은 원문·PDF에 `--wasm-pkg pkg`와 검증한 `--rhwp-bin`을 명시한다.
