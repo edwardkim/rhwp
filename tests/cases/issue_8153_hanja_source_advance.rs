@@ -1,11 +1,11 @@
 //! 관계형·고정형: 한자 고유 전진과 뒤 글자모양의 원점·원문 순서를 보호한다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:50:20+09:00 (098f4d2de8).
-//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 166쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 166쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
+//! 주석 갱신: 2026-10-29T23:07:41+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (e2ba672b87).
+//! 2026-10-29 측정: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 166쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 166쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/audit-d412-20261029/README.md.
 //! 독립 2024 Print 166쪽, 96dpi. 두 원본 Native/fresh DEV WASM raw 100%·0픽셀.
 //! 실제 프로그램 여섯 개의 cmap/hmtx와 수정 전 FAIL/후 PASS 근거는
 //! `mydocs/plans/issue_8153_hanja_glyph_advance_20261027.md`에 연결한다.
@@ -103,11 +103,11 @@ fn check(ext: &str) {
     assert_eq!(found.len(), 1);
     let (bbox, run) = found[0];
     assert!(
-        (bbox.x - 455.84001).abs() <= 2.,
-        "독립 Print 원점 455.84001±2px, 실제 {}",
+        (bbox.x - 455.84001).abs() <= 1.,
+        "독립 Print 원점 455.84001±1px, 실제 {}",
         bbox.x
     );
-    assert!((bbox.y + run.baseline - 708.64).abs() <= 2.);
+    assert!((bbox.y + run.baseline - 708.64).abs() <= 1.);
 }
 #[test]
 fn hwpx_original_hanja_keeps_next_style_origin() {

@@ -1,15 +1,15 @@
 //! 관계형·고정형: 묶음 안의 잘린 그림은 전체 원본과 물리 Print clip을 보존한다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:50:20+09:00 (098f4d2de8).
-//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 131쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 140쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 131쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 140쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
+//! 주석 갱신: 2026-10-29T23:07:41+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (e2ba672b87).
+//! 2026-10-29 측정: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 131쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 140쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 131쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 140쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/audit-d412-20261029/README.md.
 //! 131·140쪽은 두 원본의 Native/fresh WASM raw 100% 및 독립 Print 확대 대조를 통과했다.
-//! Print PDF의 점 단위 clip을 96dpi 좌상단 좌표로 변환해 ±2px로 검증한다.
+//! Print PDF의 점 단위 clip을 96dpi 좌상단 좌표로 변환해 ±1px로 검증한다.
 #![cfg(not(target_arch = "wasm32"))]
 use rhwp::{
     paint::{ClipKind, LayerNode, LayerNodeKind, PaintOp, RenderProfile},
@@ -103,7 +103,7 @@ fn verify(ext: &str, page: u32, bin: u16, clip_pt: [f64; 4]) {
         .zip(expected)
     {
         assert!(
-            (actual - reference).abs() <= 2.,
+            (actual - reference).abs() <= 1.,
             "Print crop 경계: {actual} / {reference}"
         );
     }

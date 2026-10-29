@@ -1,11 +1,11 @@
 //! 관계형·고정형: 글자처럼 취급되는 그림 뒤 공백과 가운데 정렬을 보호한다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:50:20+09:00 (098f4d2de8).
-//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 93쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 93쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
+//! 주석 갱신: 2026-10-29T23:07:41+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (e2ba672b87).
+//! 2026-10-29 측정: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 93쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 93쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/audit-d412-20261029/README.md.
 //! HWP 5.0 표 44·70의 정렬/흐름과 93쪽 한컴 Print를 대조한다.
 #![cfg(not(target_arch = "wasm32"))]
 use rhwp::{
@@ -83,7 +83,7 @@ fn verify(ext: &str) {
         "원본 줄의 중앙과 글자처럼 취급되는 그림의 중앙: {picture_center} / {expected_center}"
     );
     assert!(
-        (space.x - (picture.x + picture.width)).abs() <= 2.,
+        (space.x - (picture.x + picture.width)).abs() <= 1.,
         "후행 공백은 그림 뒤에 남는다"
     );
     let layer = core
@@ -93,7 +93,7 @@ fn verify(ext: &str) {
     find_paint(&layer.root, &mut painted);
     assert_eq!(painted.len(), 1);
     assert!(
-        (painted[0].x - 103.80799865722656 * 4. / 3.).abs() <= 2.,
+        (painted[0].x - 103.80799865722656 * 4. / 3.).abs() <= 1.,
         "독립 Print의 그림 시작 영역"
     );
 }

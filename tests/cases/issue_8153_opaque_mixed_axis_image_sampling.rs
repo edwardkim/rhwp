@@ -1,12 +1,12 @@
 //! 관계형·고정형: 독립 2024 Print의 그림 틀 모서리와 닫힘 선을 보호한다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:50:20+09:00 (098f4d2de8).
-//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 239쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 239쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
-// 96dpi CSS px, 잉크 임계값 232, 독립 PDF 점의 허용 오차 ±2px다.
+//! 주석 갱신: 2026-10-29T23:07:41+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (e2ba672b87).
+//! 2026-10-29 측정: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 239쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 239쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/audit-d412-20261029/README.md.
+// 96dpi CSS px, 잉크 임계값 232, 독립 PDF 점의 허용 오차 ±1px다.
 // 근거와 Native/fresh WASM TSV는 issue_8153_mixed_axis_bitmap_sampling_20261026.md 참조.
 // tests/cases의 정식 suite에서 native-skia feature로 실행한다.
 
@@ -60,10 +60,10 @@ fn frame_parts(node: &LayerNode, parts: &mut Vec<(u32, BoundingBox)>) {
 #[cfg(feature = "native-skia")]
 fn has_ink_near(raster: &RasterPixels, x: usize, y: usize) -> bool {
     let opaque = raster.opaque_rgba_on_white().unwrap();
-    assert!(x >= 2 && x + 2 < raster.width as usize);
-    assert!(y >= 2 && y + 2 < raster.height as usize);
-    (y - 2..=y + 2).any(|yy| {
-        (x - 2..=x + 2).any(|xx| {
+    assert!(x >= 1 && x + 1 < raster.width as usize);
+    assert!(y >= 1 && y + 1 < raster.height as usize);
+    (y - 1..=y + 1).any(|yy| {
+        (x - 1..=x + 1).any(|xx| {
             let at = (yy * raster.width as usize + xx) * 4;
             opaque[at..at + 3].iter().any(|channel| *channel < 232)
         })
@@ -117,7 +117,7 @@ fn check(extension: &str) {
     for (x, y) in [(626, 623), (300, 886)] {
         assert!(
             has_ink_near(&raster, x, y),
-            "{extension}: 독립 Print의 239쪽 ({x},{y}) 그림 테두리에서 ±2px 안의 잉크 보존"
+            "{extension}: 독립 Print의 239쪽 ({x},{y}) 그림 테두리에서 ±1px 안의 잉크 보존"
         );
     }
 }

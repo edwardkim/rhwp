@@ -1,11 +1,11 @@
 //! 관계형·고정형: 선언 크기의 두 축 재표본화·원본 소유·독립 Print 경계.
-//! 주석 갱신: 2026-10-29T18:16:47+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (e2ba672b87).
-//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 144쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 144쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
+//! 주석 갱신: 2026-10-29T23:07:41+09:00; 직전 파일 커밋: 2026-10-29T18:20:22+09:00 (973f47601f).
+//! 2026-10-29 측정: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 144쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 144쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/audit-d412-20261029/README.md.
 //! Native 0fcbd1e42e / 표준 최적화 fresh WASM 70e060edad의 두 원본 144쪽 raw 100%·미대응 0.
 //! 이 이전 런의 두 원본 전쪽 최저는 Native 99.96446%, WASM 99.96402%다.
 //! 원본/PDF SHA·96dpi·TSV·확대 판독·독립 정수 경계 대조는
@@ -61,7 +61,7 @@ fn collect<'a>(node: &'a LayerNode, body: bool, images: &mut Vec<Picture<'a>>) {
 }
 fn near(actual: f64, expected: f64) {
     assert!(
-        (actual - expected).abs() <= 2.,
+        (actual - expected).abs() <= 1.,
         "독립 Print 96dpi 경계: {actual} vs {expected}"
     )
 }
