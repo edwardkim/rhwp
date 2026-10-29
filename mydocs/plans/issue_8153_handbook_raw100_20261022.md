@@ -1744,3 +1744,9 @@ fresh WASM과 나머지 회귀는 별도로 확인한다.
 `shared-tab-origin-fresh-wasm-20261029/receipt.json`, 전쪽 결과와 TSV는
 같은 디렉터리의 `whole/` 아래에 있다. 남은 회귀와 원점 조건의 일반성은
 이 측정과 별도로 확인해야 하므로 제품 적용을 완료로 판정하지 않는다.
+
+탭 원점을 포함한 분리 실험의 Native `dump-pages --compat 2024 --json`을
+기존 후보의 덤프와 비교했다. HWP와 HWPX 각각 383쪽의 페이지 구성 항목에
+차이는 없었다. 덤프와 SHA-256은 ignored
+`shared-tab-origin-handbook-page-owners-20261029/`에 기록했다. 이 비교는
+원점 조건의 일반성이나 전체 회귀 검사 결과를 대신하지 않는다.
