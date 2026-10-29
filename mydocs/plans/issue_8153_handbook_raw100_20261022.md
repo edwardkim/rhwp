@@ -1716,3 +1716,12 @@ WASM 해시는 ignored `structural-origin-fresh-wasm-20261029/receipt.json`,
 글자처럼 취급하는 표를 수용하지 않으므로 이 두 사례를 실험 분기의 직접
 반례나 일반성 입증으로 사용하지 않는다. 상세와 덤프 SHA-256은 ignored
 `structural-origin-handbook-page-owners-20261029/summary.json`에 기록했다.
+
+글자 겹침의 기존 독립 Print·저장 탭 조사에서, 탭을 소유한 텍스트 조각의
+원점을 인라인 개체 이전 런 원점과 혼동하는 경로를 확인했다. 기존 미커밋
+후보 중 해당 공통 측정·배치 변경만 원점 분리 실험에 추가해 별도 소스에서
+실행했다. 글자 겹침 partition 12와 7은 각각 통과했고, 편람 탭·표 이어받기와
+기존 탭 계약을 포함한 집중 검사 26건도 통과했다. ignored 로그는
+`shared-tab-origin-overlap-{12,7}-20261029.log`와
+`shared-tab-origin-focused-20261029.log`다. 편람의 실제 Native/fresh WASM
+출력 및 나머지 회귀는 아직 확인 전이며 이 실험은 제품에 적용하지 않았다.
