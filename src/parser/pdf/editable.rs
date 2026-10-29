@@ -336,13 +336,92 @@ fn restore_fixed_trailing(
         shape.line_spacing = 2 * pitch;
     }
     let pitch = shape.line_spacing / 2;
-    let Some(last) = paragraph.line_segs.last_mut() else {
-        return Ok(0);
+    let end = |rows: &[crate::model::paragraph::LineSeg]| {
+        rows.last().map_or(0, |s| {
+            s.vertical_pos + s.line_height + s.line_spacing.max(0)
+        })
     };
-    let trailing = (pitch - last.line_height).max(0);
-    let grown = trailing - last.line_spacing.max(0);
-    last.line_spacing = trailing;
-    Ok(grown.max(0))
+    let before = end(&paragraph.line_segs);
+    // [#8361] 조각마다(저장 줄 되감기 사이) 한/글처럼 `조각 첫 줄 + 줄 번호 × 피치` 로 다시 둔다.
+    let mut base = 0;
+    let mut row = 0;
+    let mut previous = i32::MIN;
+    for seg in &mut paragraph.line_segs {
+        if seg.vertical_pos < previous || previous == i32::MIN {
+            base = seg.vertical_pos;
+            row = 0;
+        }
+        previous = seg.vertical_pos;
+        seg.vertical_pos = base + row * pitch;
+        seg.line_spacing = (pitch - seg.line_height).max(0);
+        row += 1;
+    }
+    Ok(end(&paragraph.line_segs) - before)
+}
+
+/// [#8361] 단 기준 저장 줄로 본 원본 본문 아래 끝(HWPUNIT, 본문 위 끝 기준). 들어간 줄 바닥의
+/// 최댓값 이상이고, 문단 안에서 다음 단·쪽으로 넘어간 줄(저장 줄 되감기 직후 줄)이 앞 단에 놓였을
+/// 바닥의 최솟값보다 1 작다. 그 최솟값이 들어간 줄보다 위인 경우(다른 이유로 일찍 끊긴 단)는
+/// 아래 끝으로 설명되지 않아 쓰지 않는다.
+fn column_cut_bottom(paragraphs: &[Paragraph]) -> Option<i32> {
+    let rows = || paragraphs.iter().flat_map(|p| &p.line_segs);
+    let filled = rows().map(|seg| seg.vertical_pos + seg.line_height).max()?;
+    paragraphs
+        .iter()
+        .flat_map(|p| p.line_segs.windows(2))
+        .filter(|pair| pair[1].vertical_pos < pair[0].vertical_pos)
+        .map(|pair| {
+            pair[0].vertical_pos
+                + pair[0].line_height
+                + pair[0].line_spacing.max(0)
+                + pair[1].line_height
+        })
+        .filter(|&spilled| spilled > filled)
+        .min()
+        .map(|spilled| spilled - 1)
+}
+
+/// [#8361] 한/글은 단 안 문단을 `앞 문단 끝(마지막 줄 + 꼬리 줄간격) + 아래 간격 + 앞 간격` 에
+/// 차례로 쌓는다. PDF 관측 위치는 글자 상자 기준이라 문단 마지막 줄이 피치보다 짧게 관측되고(한
+/// 쪽 13·5쪽 문단 경계마다 110HU), 그 자리를 그대로 저장하면 한/글만 문단 경계마다 내려가 단
+/// 끝 줄이 다음 단으로 넘어갔다. 단 첫 문단은 원래 자리에 두고 나머지 저장 줄을 같은 규칙으로
+/// 다시 매긴다(앞 간격은 이미 PDF 간격에서 앞 문단 끝을 뺀 값이다).
+fn restack_columns(doc: &Document, body: &mut [Paragraph]) {
+    let mut end: Option<i32> = None;
+    for paragraph in body.iter_mut() {
+        if paragraph.column_type != ColumnBreakType::None {
+            end = None;
+        }
+        let Some(shape) = doc
+            .doc_info
+            .para_shapes
+            .get(paragraph.para_shape_id as usize)
+        else {
+            continue;
+        };
+        let Some(first) = paragraph.line_segs.first().map(|seg| seg.vertical_pos) else {
+            continue;
+        };
+        // Paragraph measures are stored as twice HWPUNIT.
+        if let Some(previous_end) = end {
+            let shift = previous_end + shape.spacing_before.max(0) / 2 - first;
+            // 이어 붙인 문단의 되감기(다음 단·쪽) 뒤 줄은 그 단의 자리에 둔다.
+            let mut previous = i32::MIN;
+            for seg in &mut paragraph.line_segs {
+                if seg.vertical_pos < previous {
+                    break;
+                }
+                previous = seg.vertical_pos;
+                seg.vertical_pos += shift;
+            }
+        }
+        end = paragraph.line_segs.last().map(|seg| {
+            seg.vertical_pos
+                + seg.line_height
+                + seg.line_spacing.max(0)
+                + shape.spacing_after.max(0) / 2
+        });
+    }
 }
 
 /// 같은 단 안에서 이어지는 저장 줄 사이 피치(HWPUNIT). PDF 관측 피치는 반올림으로 한두
@@ -487,7 +566,7 @@ fn assemble(
                     joined += 1;
                 }
                 _ => {
-                    if carried_trailing > 0 {
+                    if carried_trailing != 0 {
                         let shape = &mut doc.doc_info.para_shapes[paragraph.para_shape_id as usize];
                         // Paragraph measures are stored as twice HWPUNIT.
                         shape.spacing_before = (shape.spacing_before - 2 * carried_trailing).max(0);
@@ -960,9 +1039,31 @@ pub(super) fn reflow(
             let positioned =
                 page.frames.len() - placed[page_no].iter().filter(|g| g.is_some()).count();
             allocation.push(&mut pages_report, request_json!(allocation, {"sourceSection":page.section,"columns":count,"bodyParagraphs":moved,"positionedFrames":positioned})?)?;
+            restack_columns(doc, &mut body);
             allocation.push(&mut pages_flow, (anchor, body, keep_anchor))?;
         }
         let joined = assemble(doc, &mut section.paragraphs, pages_flow, allocation)?;
+        // 이어 붙인 문단은 꼬리 줄간격·피치를 다시 잡으므로 이어 붙인 뒤 한 번 더 쌓는다.
+        restack_columns(doc, &mut section.paragraphs);
+        // [#8361] 본문 아래 끝은 원본의 본문 아래 끝이어야 한/글도 원본 자리에서 단·쪽을 넘긴다.
+        // 글상자 아래 변(관측 글자 범위)은 줄 상자보다 낮아 본문이 약 한 줄간격 길어졌고, 원본에서
+        // 다음 줄이 들어가지 않아 다음 단으로 이어진 문단을 한/글은 다시 짜며 앞 단에 한 줄 더
+        // 채웠다(4쪽 왼쪽 단). 원본 아래 끝은 [들어간 줄 바닥의 최댓값, 넘어간 줄 바닥의 최솟값)
+        // 사이에 있다. 한/글 줄 위치는 고정 피치로 다시 짜여 저장 위치보다 조금 낮게 나오므로
+        // 위 끝(넘어간 줄 바로 앞)을 쓴다. 넘어간 줄이 없으면 종전 값을 둔다.
+        if let Some(bottom) = column_cut_bottom(&section.paragraphs) {
+            let fitted = (height - margin_top - bottom).max(0);
+            if fitted > margin_bottom {
+                section.section_def.page_def.margin_bottom = fitted as u32;
+                for paragraph in &mut section.paragraphs {
+                    for control in &mut paragraph.controls {
+                        if let Control::SectionDef(def) = control {
+                            def.page_def.margin_bottom = fitted as u32;
+                        }
+                    }
+                }
+            }
+        }
         mark_indented_rows(doc, &mut section.paragraphs);
         allocation.push(&mut report, request_json!(allocation, {"pages":pages_report,"columns":count,"columnGap":gap,"joinedParagraphs":joined,"margins":[margin_left,margin_top,margin_right,margin_bottom],"observedTailBands":tail_bands})?)?;
         allocation.push(&mut doc.sections, section)?;
