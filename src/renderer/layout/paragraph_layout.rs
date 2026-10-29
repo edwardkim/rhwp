@@ -9527,7 +9527,8 @@ impl LayoutEngine {
                                 let seg_text: String =
                                     run_chars[seg_start..rel_pos].iter().collect();
                                 // [#7254] 조각 폭도 반올림하지 않는다 — 조각 경계마다 반올림하면 누적된다.
-                                let seg_style = text_style.for_text_fragment(seg_start);
+                                let seg_style =
+                                    text_style.for_source_text_fragment(seg_start, &run_chars);
                                 let seg_display = run.display_for_model_range(seg_start, rel_pos);
                                 let seg_w = estimate_text_width_exact(
                                     seg_display.as_deref().unwrap_or(&seg_text),
@@ -9618,7 +9619,8 @@ impl LayoutEngine {
                         if seg_start < run_chars.len() {
                             let seg_text: String = run_chars[seg_start..].iter().collect();
                             // [#7254] 조각 폭도 반올림하지 않는다 — 조각 경계마다 반올림하면 누적된다.
-                            let seg_style = text_style.for_text_fragment(seg_start);
+                            let seg_style =
+                                text_style.for_source_text_fragment(seg_start, &run_chars);
                             let seg_display =
                                 run.display_for_model_range(seg_start, run_chars.len());
                             let seg_w = estimate_text_width_exact(
@@ -9768,7 +9770,8 @@ impl LayoutEngine {
                     // tac 앞 텍스트 세그먼트 렌더링
                     if seg_start < tac_rel {
                         let seg_text: String = run_chars[seg_start..tac_rel].iter().collect();
-                        let mut seg_style = text_style.for_text_fragment(seg_start);
+                        let mut seg_style =
+                            text_style.for_source_text_fragment(seg_start, &run_chars);
                         // 상위 런의 리더를 상속하지 않고, 탭을 소유한 조각에서 다시 계산한다.
                         seg_style.tab_leaders.clear();
                         seg_style.line_x_offset = x - col_area.x - tab_origin_shift;
@@ -9793,7 +9796,15 @@ impl LayoutEngine {
                                 &seg_text,
                                 &positions,
                                 &seg_style,
-                                &composed.tab_extended,
+                                &composed.tab_extended[inline_tab_cursor_render
+                                    .saturating_add(
+                                        run_chars
+                                            .iter()
+                                            .take(seg_start)
+                                            .filter(|c| **c == '\t')
+                                            .count(),
+                                    )
+                                    .min(composed.tab_extended.len())..],
                             );
                         }
                         // [#7254] 조각 폭도 반올림하지 않는다 — 조각 경계마다 반올림하면 누적된다.
@@ -10315,17 +10326,42 @@ impl LayoutEngine {
                 // 마지막 tac 이후 텍스트 세그먼트 렌더링
                 let remaining: String = run_chars[seg_start..].iter().collect();
                 if !remaining.is_empty() {
-                    let mut seg_style = text_style.for_text_fragment(seg_start);
+                    let mut seg_style = text_style.for_source_text_fragment(seg_start, &run_chars);
                     // 상위 런의 리더를 상속하지 않고, 탭을 소유한 조각에서 다시 계산한다.
                     seg_style.tab_leaders.clear();
                     seg_style.line_x_offset = x - col_area.x - tab_origin_shift;
+                    // 인라인 개체를 통과한 뒤 실제 탭을 소유한 조각의 원점과
+                    // 저장 전진을 함께 사용한다. 런의 시작점은 개체 앞일 수 있다.
+                    if has_tabs && TextRunNode::ends_with_alignment_tab(&remaining) {
+                        let tab_count = remaining.chars().filter(|c| *c == '\t').count();
+                        if tab_count > 0 {
+                            pending_right_tab_render = resolve_last_tab_pending(
+                                &remaining,
+                                tab_count - 1,
+                                &seg_style.inline_tabs,
+                                &seg_style,
+                                &tab_stops,
+                                tab_width,
+                                auto_tab_right,
+                                available_width,
+                            );
+                        }
+                    }
                     if has_tabs && remaining.contains('\t') {
                         let positions = compute_char_positions(&remaining, &seg_style);
                         seg_style.tab_leaders = extract_tab_leaders_with_extended(
                             &remaining,
                             &positions,
                             &seg_style,
-                            &composed.tab_extended,
+                            &composed.tab_extended[inline_tab_cursor_render
+                                .saturating_add(
+                                    run_chars
+                                        .iter()
+                                        .take(seg_start)
+                                        .filter(|c| **c == '\t')
+                                        .count(),
+                                )
+                                .min(composed.tab_extended.len())..],
                         );
                     }
                     let seg_display = run.display_for_model_range(seg_start, run_chars.len());
@@ -10381,7 +10417,7 @@ impl LayoutEngine {
                     x += seg_w;
                 } else if is_last_run {
                     // 마지막 run이 tac로 끝나는 경우: 빈 TextRun으로 is_para_end 표시
-                    let mut seg_style = text_style.for_text_fragment(seg_start);
+                    let mut seg_style = text_style.for_source_text_fragment(seg_start, &run_chars);
                     // 상위 런의 리더를 상속하지 않고, 탭을 소유한 조각에서 다시 계산한다.
                     seg_style.tab_leaders.clear();
                     seg_style.line_x_offset = x - col_area.x - tab_origin_shift;
@@ -11124,8 +11160,9 @@ impl LayoutEngine {
                 let tac_rel = tac_abs_pos - run_char_pos_est;
                 if seg_start_est < tac_rel {
                     let seg: String = run_chars_est[seg_start_est..tac_rel].iter().collect();
-                    ts.line_x_offset = est_x;
-                    est_x += estimate_text_width_exact(&seg, &ts);
+                    let mut seg_style = ts.for_source_text_fragment(seg_start_est, &run_chars_est);
+                    seg_style.line_x_offset = est_x;
+                    est_x += estimate_text_width_exact(&seg, &seg_style);
                 }
                 est_x += tac_w;
                 included_tac_width_in_est += tac_w;
@@ -11139,6 +11176,7 @@ impl LayoutEngine {
             if seg_start_est == 0 && run.display_text.is_some() {
                 remaining_est = effective_text_for_metrics(run).to_string();
             }
+            ts = ts.for_source_text_fragment(seg_start_est, &run_chars_est);
             ts.line_x_offset = est_x;
             super::leader_tab::apply_cross_run_width(
                 &mut ts,
@@ -11156,11 +11194,16 @@ impl LayoutEngine {
             // [Task #279] trailing 공백 (\t 뒤에 따라오는 ' ') 도 허용 — 목차 소제목의
             // 들여쓰기 문단에서 한컴이 "\t " 형태로 저장하는 케이스가 있음.
             if TextRunNode::ends_with_alignment_tab(&run.text) {
-                let run_tab_count = run.text.chars().filter(|c| *c == '\t').count();
+                let pending_text = if TextRunNode::ends_with_alignment_tab(&remaining_est) {
+                    &remaining_est
+                } else {
+                    &run.text
+                };
+                let run_tab_count = pending_text.chars().filter(|c| *c == '\t').count();
                 if run_tab_count > 0 {
                     let last_inline_idx = run_tab_count - 1;
                     pending_right_tab_est = resolve_last_tab_pending(
-                        &run.text,
+                        pending_text,
                         last_inline_idx,
                         &ts.inline_tabs,
                         &ts,

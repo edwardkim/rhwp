@@ -639,6 +639,18 @@ impl TextStyle {
         style
     }
 
+    /// 원문 앞 조각이 소비한 저장 탭을 건너뛰고 남은 조각의 스타일을 만든다.
+    pub(crate) fn for_source_text_fragment(&self, scalar_start: usize, source: &[char]) -> Self {
+        let mut style = self.for_text_fragment(scalar_start);
+        let prior_tabs = source
+            .iter()
+            .take(scalar_start)
+            .filter(|c| **c == '\t')
+            .count();
+        style.inline_tabs = self.inline_tabs.iter().skip(prior_tabs).copied().collect();
+        style
+    }
+
     /// 위첨자/아래첨자 run 의 **그리기** 글꼴 크기와 baseline 을 계산한다.
     ///
     /// SVG·Canvas·HTML·Skia·paint JSON 이 각자 하드코딩하던 동일 상수를 한곳으로
