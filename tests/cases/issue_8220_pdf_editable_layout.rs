@@ -1,3 +1,6 @@
+//! 2026-10-29 source fa254efdfe, base f291d772a1, 96dpi: 보정한 3/12/13쪽은 Native 99.79/99.37/99.53%, fresh WASM 99.80/99.35/99.53%이며 직접 확대 판독을 마쳤다.
+//! 세 editable PDF의 전쪽 양쪽 최저 98.48% 이상·독립 PDF 쪽수 일치. 새 ±2px 좌표는 원본 PDF의 PyMuPDF paint baseline에서 읽었다.
+//! 현행 증거: mydocs/pr/assets/issue_8174/t09/verification_manifest.json 및 independent-pdf-baselines.json. 기존 본문 소유·정상 연결·편집·양쪽 저장 검사는 유지한다.
 //! 검사 유형: 관계형·고정형.
 //! 2026-10-27 측정 raw(96dpi, PDFium, PDF editable 가져오기): 21_언어_기출_편집가능본-2010.pdf 7쪽 Native 99.82145% / fresh WASM 99.77620%; 전16쪽 최저 98.80885% / 98.69835%.
 //! 21_언어_기출_편집가능본-2020.pdf 7쪽 99.58789% / 99.18794%; 전15쪽 최저 99.13134% / 98.69133%.
@@ -412,5 +415,94 @@ fn editing_a_joined_paragraph_reflows_it_in_its_column() {
             stored_rows(p),
             "rows of `{head}` survive an edit elsewhere"
         );
+    }
+}
+
+/// Independent baseline coordinates are read from the original PDF paint at
+/// 96 dpi, rather than from the inferred HWP line grid. The first two macOS
+/// rows remain positioned owners; the following body must occupy the next row.
+#[test]
+fn editable_keeps_positioned_prefix_and_observed_paragraph_tail_bands() {
+    fn text(node: &RenderNode) -> String {
+        let mut value = match &node.node_type {
+            RenderNodeType::TextRun(run) => run.text.clone(),
+            _ => String::new(),
+        };
+        for child in &node.children {
+            value.push_str(&text(child));
+        }
+        value
+    }
+    fn first_paint(node: &RenderNode) -> Option<(f64, f64)> {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            if !run.text.trim().is_empty() {
+                return Some((node.bbox.x, node.bbox.y + run.baseline));
+            }
+        }
+        node.children.iter().find_map(first_paint)
+    }
+    fn positions(node: &RenderNode, prefix: &str, out: &mut Vec<(f64, f64)>) {
+        if matches!(node.node_type, RenderNodeType::TextLine(_))
+            && norm(&text(node)).starts_with(prefix)
+        {
+            out.push(first_paint(node).expect("source row paints text"));
+        }
+        for child in &node.children {
+            positions(child, prefix, out);
+        }
+    }
+    let cases: &[(&str, u32, &[(&str, f64, f64)])] = &[
+        (
+            "21_언어_기출_편집가능본.pdf",
+            2,
+            &[
+                ("의할", 128.48, 220.80),
+                ("그렇다면", 141.76, 244.96),
+                ("풍경화가아닌동양의산수화를", 128.48, 269.12),
+            ],
+        ),
+        (
+            "21_언어_기출_편집가능본-2020.pdf",
+            11,
+            &[("아래그래프에서S자곡선은", 617.88, 274.92)],
+        ),
+        (
+            "21_언어_기출_편집가능본-2010.pdf",
+            12,
+            &[("아래그래프에서S자곡선은", 155.35, 276.36)],
+        ),
+    ];
+    for &(name, page, rows) in cases {
+        // Import the complete PDF so that page and column continuations are
+        // exercised before observing these source rows.
+        let core = import(name, PdfImportLayout::Editable);
+        let tree = core.build_page_render_tree(page).unwrap();
+        let mut previous_baseline = None;
+        for &(prefix, x, baseline) in rows {
+            let mut found = Vec::new();
+            positions(&tree.root, prefix, &mut found);
+            assert_eq!(
+                found.len(),
+                1,
+                "{name} p{} `{prefix}` occurs once",
+                page + 1
+            );
+            let actual = found[0];
+            assert!(
+                (actual.0 - x).abs() <= 2.0,
+                "{name} `{prefix}` source x: {actual:?}"
+            );
+            assert!(
+                (actual.1 - baseline).abs() <= 2.0,
+                "{name} `{prefix}` source baseline: {actual:?}"
+            );
+            if let Some(previous) = previous_baseline {
+                assert!(
+                    actual.1 > previous,
+                    "{name}: prefix and body keep source row order"
+                );
+            }
+            previous_baseline = Some(actual.1);
+        }
     }
 }

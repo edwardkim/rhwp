@@ -347,3 +347,23 @@ HWPX로 동일한 Native renderer를 실행하니 90.29%에서 99.37%로 회복�
 제품 Source freeze 후 opt1 Native·표준 최적화 WASM과 최종 전체 검증을 진행한다.
 명시한 같은 글꼴의 새 devel 검증은 Native/fresh WASM 각각 67건·956쪽을 완료했으며
 전체 90% 이상·쪽수 일치를 확인했다. 이 base 통과를 후보 통과로 대신하지 않는다.
+
+
+### 명시적 글꼴 조건의 최종 PDF 배치 회귀 보호
+
+프로덕션 source `fa254efdfe`의 opt1 Native와 실제 wasm-opt fresh WASM에서 세 PDF를
+전체 가져와 전쪽 비교했다. 양쪽 전쪽 최저 98.48% 이상·원본 PDF 쪽수 일치를 확인했다.
+macOS 3쪽은 Native 99.79% / WASM 99.80%, 2020 12쪽 99.37% / 99.35%,
+2010 13쪽 99.53% / 99.53%다. 원본·새 devel·현재 후보를 같은 영역으로 확대 판독해
+선행 두 줄과 후속 본문·보기 상자의 위치/줄 순서가 유지됨을 확인했다.
+
+이 선행 확인 뒤 기존 `issue_8220_pdf_editable_layout` 모듈에 회귀 1건을 추가했다.
+기대 좌표는 별도 PyMuPDF로 원본 PDF의 paint baseline을 읽은 96 DPI 값이며 ±2px를
+적용한다. 같은 검사 원문과 독립 실행 harness에서 수정 전 `ceda3a7953`는 macOS 3쪽
+본문 baseline 220.53px / 원본 269.12px로 FAIL, `fa254efdfe`는 세 경계 모두 PASS다.
+기존 본문 소유·정상 단/쪽 연결·7쪽 좌표·편집·양쪽 저장/재열기 4건도 유지했고 공식 자동
+수집 경로에서 전체 모듈 5건 PASS를 확인했다. 최초 집중 실행의 0건 수집은 검증으로 세지
+않았으며 파생 harness를 prepare한 뒤 실제 5건 실행을 확인했다.
+
+동일 최적화 WASM으로 Studio Node·타입/build·실제 Worker/Studio·편집 우선 환경 설정과
+editor binding/type/pack을 통과했다. 이 결과와 전체 Rust·포장·전체 전쪽 완료는 구분한다.
