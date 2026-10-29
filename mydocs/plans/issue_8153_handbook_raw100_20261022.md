@@ -1688,3 +1688,7 @@ ignored `structural-origin-native-focus-20261029/result.json`에 기록한다.
 이어 실행한 화면 밖 배치 partition 10은 분리 실험에서도 기존 후보와 같이
 신규 1건으로 실패했다. 원점 실험이 그 회귀를 해결한 것은 아니다. 결과는
 ignored `structural-origin-off-canvas-10-20261029.log`다.
+같은 실험 바이너리로 저장 원점의 정상 대조군을 포함한 중첩 셀 모듈 전체를
+실행한 결과 2건 모두 통과했다. ignored 로그는
+`structural-origin-issue1488-all-20261029.log`다. 쪽 소유 조건의 일반성과
+남은 겹침·화면 밖 실패의 해결 근거는 별도로 필요하다.
