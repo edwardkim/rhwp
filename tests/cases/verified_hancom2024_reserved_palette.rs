@@ -1,5 +1,5 @@
 //! 관계형·고정형: 예약색 소유 관계와 독립 Print의 색·표본 계약을 검사한다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:51:51+09:00 (1ce28cc7bd).
+//! 주석 갱신: 2026-10-30T05:24:13+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
 //! 2026-10-29 측정 raw(96dpi, PDFium, 2px): 예약색 1쪽 Native 100.00000% / fresh WASM 100.00000%,
 //! 색상 팔레트 1쪽 Native 100.00000% / fresh WASM 100.00000%.
 //! 각 문서 전 1쪽 최저 Native·fresh WASM 각각 100.00000%.
@@ -133,10 +133,8 @@ fn verify_profile(
                 .unwrap();
             assert!(maximum_error <= 1,
                 "새 독립 Print JPEG의 전체 계조·색상: owner={owner:?}, maximum_error={maximum_error}");
-            assert_eq!(
-                inline_ops[index]["imageReconstruction"].as_str() == Some("catmullRom"),
-                changes
-            );
+            // 색상 확장과 장치 표본화는 서로 다른 계약이다. 실제 색은 위의
+            // 독립 Print 자원과 비교하며 표본화는 별도 면적 표본 검사로 보호한다.
         } else {
             assert_eq!(emitted.as_raw(), source.as_raw(), "Screen 원본 RGBA 보존");
         }
