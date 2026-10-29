@@ -194,6 +194,11 @@ pub(crate) fn declared_original_glyph_advance_em(
     if face == "명조" && !bold && !italic && matches!(character, '─' | '│' | '═') {
         return Some(1.0);
     }
+    // 원본 명조의 글머리표는 한컴 Print에서 한 글자 폭을 점유한다.
+    // 원본 프로그램이 해당 글리프를 제공하면 호출자가 그 실제 폭을 우선한다.
+    if face == "명조" && !bold && !italic && character == '•' {
+        return Some(1.0);
+    }
     original_glyph_advance_em(face, bold, italic, character).or_else(|| {
         (face == "한양중고딕" && !bold && !italic && matches!(character, '\u{2018}' | '\u{2019}'))
             .then_some(225.0 / 1000.0)

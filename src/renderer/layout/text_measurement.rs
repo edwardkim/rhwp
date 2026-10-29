@@ -948,6 +948,8 @@ pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::sto
             top_underline_phase: None,
             fixed_glyph_advances: false,
             source_font_is_hft: cs.source_hft_for_lang(lang_index),
+            source_hwp3_hft_bold: (styles.hwp3_variant || styles.source_hwp3_native)
+                && cs.source_hft_for_lang(lang_index),
             hft_print_frame: cs.hft_print_frame_for_lang(lang_index),
             preserve_glyph_ink: cs
                 .font_families_preserve_glyph_ink
@@ -2451,15 +2453,40 @@ fn char_width_decision_with_hft_tracking<'a>(
         && style.bold
         && !c.is_whitespace()
         && !c.is_control()
-        && if otf_advance.is_some() {
-            style
+    {
+        if otf_advance.is_some() {
+            // 합성 굵기는 실제 글꼴 폭을 바꾸지 않는다. 원본에 독립적으로
+            // 확인된 꾸밈 전진 계약이 있는 경우에만 추가 폭을 적용한다.
+            if style
                 .native_otf_metrics
                 .as_ref()
                 .is_some_and(|font| font.needs_faux_bold())
+            {
+                if style.source_hwp3_hft_bold {
+                    font_size * 0.05
+                } else {
+                    let original_face = latin.map_or(
+                        style.original_glyph_metric_family.as_deref(),
+                        |slot| slot.original_glyph_metric_family.as_deref(),
+                    );
+                    crate::renderer::legacy_font_advances::bold_advance(
+                        style,
+                        c,
+                        base_width_raw,
+                        font_size,
+                        original_face.map(String::as_str),
+                    )
+                }
+            } else {
+                0.0
+            }
+        } else if source_hft_metric
+            || (style.source_font_is_hft && width_source == "heuristicFullwidth")
+        {
+            font_size * 0.05
         } else {
-            source_hft_metric || (style.source_font_is_hft && width_source == "heuristicFullwidth")
-        } {
-        font_size * 0.05
+            0.0
+        }
     } else {
         0.0
     };

@@ -51,6 +51,7 @@ pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
     let profile = document.layout_profile();
     let lookup = missing_fonts::try_lookup_context(document, storage)?;
     let mut styles = try_resolve_styles_with_variant(&lookup, dpi, profile.hwp3_layout(), storage)?;
+    styles.source_hwp3_native = profile.hwp3_native_layout();
     if missing_fonts::missing_char_table(document) {
         styles.page_number_char_style_id = Some(0);
         styles.page_number_font_is_hft = false;
@@ -357,6 +358,7 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
         page_number::resolve(doc_info, false);
 
     let mut styles = ResolvedStyleSet {
+        source_hwp3_native: false,
         source_program_projection_slots: Default::default(),
         script_metrics: Default::default(),
         native_pua_fonts: Default::default(),

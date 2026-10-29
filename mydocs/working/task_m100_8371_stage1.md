@@ -55,3 +55,12 @@
 - #3308 연속 하이픈 검사는 기대한 SVG 선분을 찾지 못했다. 현재 SVG에는 하이픈 글자 요소가 보인다. 같은 원본·Print와 기존 수정 이력을 확인했으며, 기준 브랜치와 글꼴 환경을 대조해 실제 출력과 검사의 타당성을 판정한다. SVG 예비 review와 overlay는 `output/issue8371/regression-triage/outline-svg/outline/`에 있다.
 - 새 OTF 공급 함수는 문서 IR이 아닌 세션 글꼴과 파생 배치를 갱신한다. 무효화 검사에 세션 상태로 분류하고, 합성 OTF 공급·해제 전후 IR 및 HWP 저장 바이트가 유지되는 검사를 추가했다. 집중 검사 3개는 `output/issue8371/regression-triage/otf-session-tests-v2.log`에서 통과했다.
 - 전체 테스트의 실패와 최종 head의 Native/fresh WASM 재검증이 남아 있으므로 PR 준비 완료가 아니다.
+
+## 빈 문단과 실제 OTF 폭의 회귀 보정
+
+- 고정 기준 `upstream/devel` `f125c735c7d2d44eaa44b78c70465bc89af45fb1`에서 수납대장과 연속 하이픈 기존 검사 두 개는 같은 환경에서 통과했다. `output/issue8371/regression-triage/base-failing-tests-focused.log`에 기록했다.
+- 수납대장 앞에는 저장 줄 정보가 없는 빈 문단이 있다. 새 쪽 첫 줄 감춤이 이 문단의 실제 줄 상자를 숨겨 뒤 표를 약 22.5px 위로 이동시켰다. 저장 줄이 없는 문단은 새 숨김 표식으로 추정하지 않고 기존 배치에 맡긴다. 이전 SVG 진단 35.52%에서 보정 후 99.98%이며, 새 Native 전4쪽 최저는 99.60%다. 독립 좌표와 소속 관계를 보호하던 기존 검사는 유지하고 통과했다.
+- HWP5 원본의 휴먼명조 OTF 굵기 표현에 확인되지 않은 0.05em을 더해 제목이 벌어진 사례를 발견했다. 실제 OTF 전진을 사용하면서 독립 Print로 확인된 원본 굵기 계약만 추가한다. HWP3 원본 및 변환 계보는 별도로 확인한 HFT 굵기 전진을 보존하며, 원본 HWP3 출처를 해소된 스타일에서 측정까지 전달한다. 해당 HWP5 원본 17쪽은 Native 83.37%에서 94.93%로 개선됐고 전17쪽 최저도 94.93%다.
+- sample10 66쪽의 원본 명조 글머리표는 독립 Print에서 1em을 점유한다. 실제 선택 OTF가 해당 글리프를 제공하면 OTF 폭을 우선하고, 없으면 원본 폭을 사용한다. Native 66쪽은 97.21%에서 99.70%로 개선됐고, 전763쪽 최저는 98.29%, 90% 미만 0쪽이다. Native TSV는 `output/issue8371/regression-triage/sample10-native-v6/sample10/silhouette.tsv`다.
+- 최종 후보의 집중 검사는 수납대장, sample10 312쪽 경계, OTF 공급 전후 저장 보존과 무효화 분류를 포함해 5개 통과했다. 로그는 `output/issue8371/regression-triage/focused-v6.log`다. 하이픈은 Native에서 첫 획이 한컴 Print와 같은 행에 있지만 기존 검사가 특정 SVG 요소만 요구해 실패한다. 해당 원본의 Native 전쪽은 90% 이상이고, fresh WASM 전쪽과 실제 잉크를 확인한 뒤 관계형 검사로 재검토한다.
+- 위 결과는 Native 및 집중 검사다. 최적화 WASM 전쪽, 최종 전체 회귀와 PR 필수 검증은 아직 완료하지 않았다.

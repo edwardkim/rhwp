@@ -23,7 +23,10 @@ pub(crate) fn page_starts_with_hidden_empty_lines(
     items: &[PageItem],
     hidden: &std::collections::HashSet<usize>,
 ) -> bool {
-    para.controls.is_empty()
+    // 저장 줄이 없는 빈 문단은 실제 줄 상자를 소유할 수 있다. 저장 쪽의
+    // 숨김 표식으로 추정하지 않고 기존 빈 문단 배치에 맡긴다.
+    !para.line_segs.is_empty()
+        && para.controls.is_empty()
         && para
             .text
             .chars()
