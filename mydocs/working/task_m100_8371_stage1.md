@@ -81,3 +81,4 @@
 
 - 전체 nextest 재실행 중 라이브러리 단위 테스트의 기존 `ResolvedStyleSet` 초기화 여섯 곳에서 새 `source_hwp3_native` 필드가 누락되어 컴파일이 실패했다. 이 입력들은 HWP3 원본이 아니므로 `false`를 명시했다. 실패 로그는 `output/issue8371/full-rust-nextest-final-v11.log`이며, 라이브러리 테스트 전체 컴파일과 전체 nextest를 다시 확인한다.
 - 최신 WASM 산출물의 sample10 전763쪽 TSV는 `output/issue8371/final-head/sample10-wasm-scores/silhouette.tsv`이며 최저 99.02%, 90% 미만 0쪽이다.
+- 제출용 sample10 TSV와 312쪽 Native·WASM review 및 overlay를 현재 구현의 결과로 갱신했다. 최신 WASM 66·312쪽 PNG는 직접 판독한 이전 출력과 각각 SHA-256이 동일하다.
