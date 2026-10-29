@@ -10,6 +10,7 @@ pub(in crate::renderer::typeset) struct SourceFrameQuery<'a> {
     pub(in crate::renderer::typeset) row_start_cut: &'a [usize],
     pub(in crate::renderer::typeset) row_count: usize,
     pub(in crate::renderer::typeset) is_continuation: bool,
+    pub(in crate::renderer::typeset) source_frame_origin_unverified: bool,
     pub(in crate::renderer::typeset) profile: &'a LayoutCompatibilityProfile,
 }
 
@@ -49,6 +50,7 @@ impl SourceFrameQuery<'_> {
             row_start_cut,
             row_count,
             is_continuation,
+            source_frame_origin_unverified,
             profile,
         } = *self;
         let RowScanQuery {
@@ -101,17 +103,17 @@ impl SourceFrameQuery<'_> {
             && !rowspan_touched.get(r).copied().unwrap_or(true);
         // 현재 이어받기 컷이 원본 프레임 중간이면 저장 재시작을 이 물리 쪽의
         // 끝으로 강제할 수 없다. whole-row fit도 같은 소유 판정을 소비한다.
-        let stored_source_frame =
-            (layout_engine.row_start_owns_stored_frame(table, r, row_start_cut, styles)
-                && (native_text_source_frame
-                    || (profile.hwpx_stored_layout()
-                        && layout_engine.row_has_stored_vpos_frame_rewind(table, r)
-                        && layout_engine.row_has_single_visible_source_cell(table, r, styles)))
-                && !table.common.treat_as_char
-                && mt.allows_row_break_split()
-                && !rowspan_touched.get(r).copied().unwrap_or(true))
-            .then(|| layout_engine.stored_frame_cut_for_row(table, r, row_start_cut, styles))
-            .flatten();
+        let stored_source_frame = (!source_frame_origin_unverified
+            && layout_engine.row_start_owns_stored_frame(table, r, row_start_cut, styles)
+            && (native_text_source_frame
+                || (profile.hwpx_stored_layout()
+                    && layout_engine.row_has_stored_vpos_frame_rewind(table, r)
+                    && layout_engine.row_has_single_visible_source_cell(table, r, styles)))
+            && !table.common.treat_as_char
+            && mt.allows_row_break_split()
+            && !rowspan_touched.get(r).copied().unwrap_or(true))
+        .then(|| layout_engine.stored_frame_cut_for_row(table, r, row_start_cut, styles))
+        .flatten();
         let terminal_source_frame = profile.hwpx_stored_layout()
             && r + 2 == row_count
             && r > cursor_row

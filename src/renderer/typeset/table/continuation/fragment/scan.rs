@@ -233,6 +233,17 @@ impl TypesetEngine {
         // [Task #1025] split_block_start: 블록 분할 시 연속분 커서 복귀 기록.
         let issue2424_scan_started = profile.enabled.then(std::time::Instant::now);
         let scan_vars = BlockRowScanVars {
+            // 이전 쪽에서 이어진 문단 뒤의 저장 줄은 원래 쪽 좌표계일 수 있다.
+            // 첫 표 프레임을 현재 흐름 원점에서 인증하지 못했다면 그 내부 컷도
+            // 현재 쪽의 경계로 승격하지 않는다. 이어받은 표 조각은 별도로 판정한다.
+            source_frame_origin_unverified: !is_continuation
+                && saved_first_fragment_source_frame.is_none()
+                && para_idx.checked_sub(1).is_some_and(|previous| {
+                    matches!(st.current_items.last(),
+                        Some(crate::renderer::pagination::PageItem::PartialParagraph {
+                            para_index, start_line, ..
+                        }) if *para_index == previous && *start_line > 0)
+                }),
             cursor_row,
             row_count: scan_row_count,
             cs,

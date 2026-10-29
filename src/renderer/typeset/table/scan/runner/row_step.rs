@@ -384,6 +384,7 @@ impl TypesetEngine {
                 row_start_cut,
                 row_count,
                 is_continuation,
+                source_frame_origin_unverified: v.source_frame_origin_unverified,
                 profile: &st.profile,
             }
             .resolve(
