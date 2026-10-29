@@ -1,12 +1,11 @@
 //! 관계형·고정형: WMF Print의 전체 원본·물리 crop·소유와 독립 PDF ±2px 경계를 보호한다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:50:20+09:00 (098f4d2de8).
+//! 주석 갱신: 2026-10-30T06:53:02+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 130쪽 Native 99.96463% / fresh WASM 99.96402%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 130쪽 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWP 130쪽 Native 99.96% / fresh WASM 99.96%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 130쪽 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
 //! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
-//! Native/fresh DEV WASM 36bae7c0ed의 두 원본 130쪽 raw는 각각 99.96446/99.96402다.
 //! 96dpi·입력/PDF SHA·전체 Native/핵심 WASM TSV·확대 판독과 수정 전후 근거는
 //! `mydocs/plans/issue_8153_wmf_print_raster_20261027.md`에 연결한다.
 //! PDF 130쪽의 전체 이미지 matrix와 별도 clip에서 읽은 독립 96dpi 경계다.
