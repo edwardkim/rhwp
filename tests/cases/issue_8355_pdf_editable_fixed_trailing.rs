@@ -105,3 +105,71 @@ fn fixed_line_value_follows_the_rows_of_the_whole_paragraph() {
     }
     assert!(checked > 20, "검사한 긴 고정 줄간격 문단 {checked}개");
 }
+
+#[test]
+fn column_paragraphs_stack_like_hancom_reflow() {
+    // [#8361] 한/글은 단 안 문단을 `앞 문단 끝(마지막 줄 + 꼬리) + 아래 간격 + 앞 간격` 에 차례로
+    // 쌓는다. 저장 줄이 이 자리와 다르면 rhwp(저장 줄)와 한/글(재조판)이 단 끝 줄을 다른 단에 둔다.
+    let core = import_editable();
+    let doc = core.document();
+    let mut checked = 0;
+    let paragraphs = &doc.sections[0].paragraphs;
+    for pair in paragraphs.windows(2) {
+        let (previous, next) = (&pair[0], &pair[1]);
+        if next.column_type != rhwp::model::paragraph::ColumnBreakType::None {
+            continue;
+        }
+        let (Some(last), Some(first)) = (previous.line_segs.last(), next.line_segs.first()) else {
+            continue;
+        };
+        // 이어 붙인 문단의 되감기나 쪽 첫머리는 쌓기 대상이 아니다.
+        if first.vertical_pos <= last.vertical_pos {
+            continue;
+        }
+        let before = &doc.doc_info.para_shapes[previous.para_shape_id as usize];
+        let after = &doc.doc_info.para_shapes[next.para_shape_id as usize];
+        let expected = last.vertical_pos
+            + last.line_height
+            + last.line_spacing.max(0)
+            + before.spacing_after.max(0) / 2
+            + after.spacing_before.max(0) / 2;
+        assert!(
+            (first.vertical_pos - expected).abs() <= 2,
+            "«{}» 저장 위치 {} / 한/글 쌓기 {}",
+            next.text.chars().take(16).collect::<String>(),
+            first.vertical_pos,
+            expected
+        );
+        checked += 1;
+    }
+    assert!(checked > 100, "검사한 단 안 문단 경계 {checked}개");
+}
+
+#[test]
+fn body_bottom_sits_between_filled_and_spilled_rows() {
+    // [#8361] 원본에서 다음 단으로 넘어간 줄은 본문 아래 끝에 들어가지 않아야 하고, 들어간 줄은
+    // 모두 들어가야 한다 — 한/글이 같은 자리에서 단을 넘긴다.
+    let core = import_editable();
+    let doc = core.document();
+    let page = &doc.sections[0].section_def.page_def;
+    let body = page.height as i32 - page.margin_top as i32 - page.margin_bottom as i32;
+    let rows = || doc.sections[0].paragraphs.iter().flat_map(|p| &p.line_segs);
+    let filled = rows()
+        .map(|s| s.vertical_pos + s.line_height)
+        .max()
+        .unwrap();
+    assert!(filled <= body, "들어간 줄 바닥 {filled} ≤ 본문 {body}");
+    for p in &doc.sections[0].paragraphs {
+        for pair in p.line_segs.windows(2) {
+            if pair[1].vertical_pos < pair[0].vertical_pos {
+                let spilled = pair[0].vertical_pos
+                    + pair[0].line_height
+                    + pair[0].line_spacing.max(0)
+                    + pair[1].line_height;
+                if spilled > filled {
+                    assert!(spilled > body, "넘어간 줄 바닥 {spilled} > 본문 {body}");
+                }
+            }
+        }
+    }
+}
