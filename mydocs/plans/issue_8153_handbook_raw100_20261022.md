@@ -1700,3 +1700,11 @@ ignored `structural-origin-off-canvas-10-20261029.log`다.
 TSV는 같은 디렉터리의 `handbook-hwp/score/`, `handbook-hwpx/score/`에 있다.
 이 결과는 fresh WASM 전쪽과 미해결 회귀를 대신하지 않으며 실험 조건을
 제품에 적용할 근거로 단독 사용하지 않는다.
+
+같은 분리 실험 소스의 최적화 fresh WASM도 두 원본 각각 전 383쪽을
+비교했다. 기존 후보와 페이지별 원래 정밀 raw 및 미대응 픽셀 수가 달라진
+쪽은 두 원본 모두 없으며, 최저 raw는 130쪽 99.96402%다. 실험 소스 및
+WASM 해시는 ignored `structural-origin-fresh-wasm-20261029/receipt.json`,
+전쪽 결과와 TSV는 같은 디렉터리의 `whole/` 아래에 있다. 최초 실행은 로컬
+서버 `EPERM`으로 출력 전에 실패했고, 접근 가능한 환경의 재실행은 성공했다.
+이 전쪽 측정은 미해결 회귀나 원점 조건의 일반성 검증을 대신하지 않는다.
