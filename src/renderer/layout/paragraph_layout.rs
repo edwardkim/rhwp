@@ -6746,9 +6746,10 @@ impl LayoutEngine {
             let stored_textbox_line = cell_ctx.as_ref().is_some_and(|ctx| ctx.in_textbox)
                 && wrap_anchor.is_none()
                 && !inline_tac_segment_is_paragraph_width
-                // 저장 줄의 폭은 해당 글상자의 내용 프레임을 벗어날 수 없다.
-                // HWP3 파서가 내부 문단에 임시 열 폭을 넣은 경우도 여기서 구분한다.
-                && comp_line.segment_width <= col_area_w_hu
+                // HWP3 원본 글상자의 파서는 실제 폭이 아닌 임시 열 폭을 만들 수 있다.
+                // HWP5/HWPX의 저장 줄 폭은 글상자 내용 폭과 별도인 원본 기록이다.
+                && (!self.profile.get().hwp3_native_layout()
+                    || comp_line.segment_width <= col_area_w_hu)
                 && stored_textbox_frame::owns_frame(para, composed, line_idx);
             let uses_stored_segment_geometry = physical_frame_rows
                 || stored_textbox_line
