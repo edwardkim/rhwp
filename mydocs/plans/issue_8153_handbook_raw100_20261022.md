@@ -1820,3 +1820,9 @@ ignored `tab-fragment-candidate-native-focus-20261029/result.json`에 있다.
 130쪽 99.96463%다. TSV와 페이지별 비교는 ignored
 `tab-fragment-candidate-native-whole-20261029/handbook-hwp/` 및 그 상위
 `result.json`에 있다. HWPX 전쪽과 fresh WASM은 아직 진행 중이다.
+
+이어 HWPX Native 전 383쪽도 완료됐다. 두 편람 각각 전쪽 PNG SHA-256,
+정밀 raw와 미대응 픽셀 수는 기존 후보와 모두 같다. 두 자리 TSV에서
+100.00% 미만은 두 원본 모두 보정 제외한 130쪽 99.96%뿐이다. HWPX TSV와
+페이지별 비교는 ignored `tab-fragment-candidate-native-whole-20261029/`에
+있다. fresh WASM은 아직 최적화 중이며 Native 결과로 대신하지 않는다.
