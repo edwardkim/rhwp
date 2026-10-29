@@ -1791,3 +1791,10 @@ fresh WASM과 나머지 회귀는 별도로 확인한다.
 페이지 소유 함수 `false`도 재현했다. 로그는 ignored
 `stored-prefix-original-binary-trace-20261029.log`이며, 이것만으로 저장
 줄의 원래 쪽 소유나 새 보정 조건을 확정하지 않는다.
+
+탭 조각 후보는 원문 앞 조각에서 소비한 탭 수만큼 저장 레코드를 넘기고,
+개체·각주 경계의 조각과 탭 리더가 해당 순번을 사용하도록 실험했다.
+저장 전진과 동적 탭의 합성 계약 검사 2건은 통과했다. 실험 소스 해시는
+ignored `tab-origin-fragment-candidate-source-20261029.json`, 실행 결과는
+`tab-fragment-candidate-contract-20261029.log`다. 이는 helper 계약에 대한
+결과이며 편람 출력·전체 회귀·실제 제품 적용의 완료를 뜻하지 않는다.
