@@ -1,7 +1,7 @@
 # #8371 1단계 — 로컬 글꼴과 HWP3 조판 분석
 
 - 작업 기준: `f125c735c7d2d44eaa44b78c70465bc89af45fb1`, 브랜치 `fix/issue8371-installed-hft-font`.
-- 상태: Native 전쪽 검증과 Studio 단위 테스트를 수행했다. fresh WASM 시각 검증과 전체 Rust 회귀 검증은 진행 중이며 PR 제출 준비 완료가 아니다.
+- 상태: Native와 fresh WASM 전쪽 검증 및 Studio 단위 테스트를 수행했다. 전체 Rust 회귀 재검증과 나머지 제출 전 검사가 진행 중이므로 PR 제출 준비 완료가 아니다.
 - 원본: `samples/hwp3-sample10.hwp`, SHA-256 `d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48`.
 - 독립 기준: 사용자가 한컴 2020에서 원본 그대로 Print한 전체 763쪽 PDF. SHA-256 `310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918`, 96,185,197바이트. 지침의 50 MiB 이상 PDF 보존 규칙에 따라 `/home/tsjang/rhwp-local-pdf/issue8371/hwp3-sample10-2020.pdf`에 보존하며 Git과 PR 첨부에서 제외한다. 기준 PDF는 재생성하지 않았다.
 
@@ -83,3 +83,5 @@
 - 최신 WASM 산출물의 sample10 전763쪽 TSV는 `output/issue8371/final-head/sample10-wasm-scores/silhouette.tsv`이며 최저 99.02%, 90% 미만 0쪽이다.
 - 제출용 sample10 TSV와 312쪽 Native·WASM review 및 overlay를 현재 구현의 결과로 갱신했다. 최신 WASM 66·312쪽 PNG는 직접 판독한 이전 출력과 각각 SHA-256이 동일하다.
 - 회귀 실패와 직접 관련된 원본 세 건의 전쪽 TSV도 `mydocs/pr/assets/issue_8371/regression/`에 보존한다. 영월 수납대장 4쪽의 최저는 Native 99.60%·WASM 99.59%, `issue3307_outline_number.hwpx` 9쪽은 93.25%·97.18%, `issue2007_nested_cell_pagination_42065.hwp` 17쪽은 94.93%·96.35%다. 각각 같은 원본과 독립 Print PDF를 비교했다. 최종 WASM 검증 로그는 `output/issue8371/final-head/{yeongwol-wasm-retry2,outline-wasm,nested-wasm}.log`다.
+- 테스트용 초기화 보완 후 `CARGO_BUILD_JOBS=8 cargo test --lib --profile release-test --target-dir target/pr-review --no-run`은 종료 코드 0이었다. 이어서 `CARGO_BUILD_JOBS=8 cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 12 --no-fail-fast`를 실행해 12,041개 전체가 통과했고 45개를 건너뛰었다. 종료 코드 0이며 로그는 `output/issue8371/full-rust-nextest-final-v12.log`다. 수납대장과 연속 하이픈의 보완 검사도 이 실행에서 통과했다.
+- 글꼴 메트릭 추가로 인라인 텍스트 렌더 노드 크기가 Clippy의 variant 크기 차이 기준을 넘어, 빈번한 텍스트 노드마다 별도 힙 할당을 만들지 않도록 해당 enum에 한정한 lint 예외와 이유를 추가했다. 실행 동작 변경은 없다. `cargo fmt --all -- --check`와 Native·WASM·workspace 전체 Clippy가 통과했으며 로그는 `output/issue8371/fmt-final-v2.log`, `output/issue8371/clippy-{native,wasm,workspace}-final-v2.log`다.
