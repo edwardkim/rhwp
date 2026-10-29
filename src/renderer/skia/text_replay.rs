@@ -924,6 +924,7 @@ impl SkiaTextReplay<'_> {
                         font_size,
                         &mark_style,
                         self.font_mgr,
+                        self.geometric_text,
                     ) {
                         font.set_scale_x(geometry.ratio as f32);
                         font.set_skew_x((geometry.skew_x * geometry.ratio) as f32);
