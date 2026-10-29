@@ -621,7 +621,10 @@ impl EmbeddedTextMeasurer {
                                     && chars[i + 1..].iter().any(|ch| !ch.is_whitespace()) =>
                                 {
                                     let seg_w = measure_segment_from(
-                                        &chars, &cluster_len, i + 1, &char_width,
+                                        &chars,
+                                        &cluster_len,
+                                        i + 1,
+                                        &char_width,
                                     );
                                     total = inline_right_tab::text_start(
                                         style, total, tab_target, seg_w,

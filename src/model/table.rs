@@ -732,7 +732,11 @@ impl Table {
         storage: &S,
     ) -> Result<Vec<i32>, S::Error> {
         let mut owners = self.fallback_paragraph_frame_owner_widths_with_storage(storage)?;
-        for (row, frames) in self.closing_row_frames_with_storage(storage)?.into_iter().enumerate() {
+        for (row, frames) in self
+            .closing_row_frames_with_storage(storage)?
+            .into_iter()
+            .enumerate()
+        {
             for frame in frames.into_iter().flatten() {
                 if usize::from(self.cells[frame.cell_index].row) == row {
                     owners[frame.cell_index] = frame.width_hu.min(i64::from(i32::MAX)) as i32;

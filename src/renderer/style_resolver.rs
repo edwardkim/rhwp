@@ -453,7 +453,9 @@ fn refresh_source_program_projection_slots_with_storage<S: storage::Storage>(
                 continue;
             }
             // 원본 프로그램의 전진폭이 검증된 경우에만 저장 줄을 다시 구성한다.
-            if style.font_metric_trusted_for_lang(language) || super::layout::verified_source_projection_face(primary, style.bold, style.italic) {
+            if style.font_metric_trusted_for_lang(language)
+                || super::layout::verified_source_projection_face(primary, style.bold, style.italic)
+            {
                 if fallback_char_styles.is_none() {
                     fallback_char_styles = Some(build_fallback()?);
                 }

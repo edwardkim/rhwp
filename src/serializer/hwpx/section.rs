@@ -1596,7 +1596,9 @@ where
                 ) =>
             {
                 flush_buf_with_storage(&mut t_xml, &mut buf, storage)?;
-                storage.push_str(&mut t_xml, "<hp:nbSpace/>").map_err(xml_error)?;
+                storage
+                    .push_str(&mut t_xml, "<hp:nbSpace/>")
+                    .map_err(xml_error)?;
             }
             // [#4895] 소프트 하이픈(U+00AD)은 U+2007 과 달리 **원본 표기를 따라간다.**
             // 종전에는 늘 `<hp:hyphen/>` 요소로 내렸는데(#4776), 한컴이 만든 문서는
