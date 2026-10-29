@@ -6,6 +6,7 @@ pub struct SpaceCompression {
     pub(crate) end: usize,
     pub(crate) reduction_px: f64,
 }
+crate::storage::clone_fields!(SpaceCompression, {start, end, reduction_px});
 
 impl SpaceCompression {
     pub(crate) fn reduction_at(&self, scalar: usize) -> f64 {

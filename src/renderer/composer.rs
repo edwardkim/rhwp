@@ -67,7 +67,7 @@ pub struct CharOverlapInfo {
     #[serde(skip)]
     pub empty_ink: bool,
 }
-crate::storage::clone_fields!(CharOverlapInfo, {border_type, inner_char_size, composition});
+crate::storage::clone_fields!(CharOverlapInfo, {border_type, inner_char_size, composition, empty_ink});
 
 /// 구성된 텍스트 런 (줄 내 동일 스타일 + 동일 언어 구간)
 #[derive(Debug, Clone, Default)]

@@ -19,6 +19,7 @@ pub struct ContinuousTextShadow {
     pub source_hash: [u8; 32],
     pub face_index: u32,
 }
+crate::storage::clone_fields!(ContinuousTextShadow, {delta, device_pixel, source_hash, face_index});
 
 impl ContinuousTextShadow {
     pub fn offsets(&self) -> impl Iterator<Item = [f64; 2]> + '_ {

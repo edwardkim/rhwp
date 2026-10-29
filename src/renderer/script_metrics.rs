@@ -13,6 +13,7 @@ pub enum ScriptMetricsContract {
     /// 실제 한컴 2024 저장·Print 18조건과 원본 두 편람의 대조 결과.
     Hangul2024,
 }
+crate::storage::clone_copy!(ScriptMetricsContract);
 
 impl ScriptMetricsContract {
     pub(crate) fn for_profile(profile: LayoutCompatibilityProfile) -> Self {

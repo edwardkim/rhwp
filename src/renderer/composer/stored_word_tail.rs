@@ -214,28 +214,26 @@ pub(crate) fn project_current_source_program_rows_with_storage<S: crate::storage
             super::compose_paragraph_in_context_with_storage(para, styles, storage),
             failure,
         )?;
-        let mut has_text = false;
-        let mut fallback_styles =
-            crate::storage::optional(crate::storage::try_clone(styles, storage), failure)?;
-        fallback_styles.source_program_projection_slots.clear();
+        let mut fallbacks = crate::storage::optional(storage.vec(0), failure)?;
         for run in composed.lines.iter().flat_map(|line| &line.runs) {
             if run.text.chars().all(char::is_whitespace) {
                 continue;
             }
-            has_text = true;
-            let fallback = styles
-                .source_program_projection_slots
-                .get(&(run.char_style_id, run.lang_index))?;
+            let fallback = styles.source_program_projection_slots.get(&(run.char_style_id, run.lang_index))?;
             if run.inserted_control_text {
                 return None;
             }
-            *fallback_styles
-                .char_styles
-                .get_mut(run.char_style_id as usize)? =
-                crate::storage::optional(crate::storage::try_clone(fallback, storage), failure)?;
+            styles.char_styles.get(run.char_style_id as usize)?;
+            crate::storage::optional(storage.push(&mut fallbacks, (run.char_style_id, fallback)), failure)?;
         }
-        if !has_text {
+        if fallbacks.is_empty() {
             return None;
+        }
+        let mut fallback_styles = crate::storage::optional(crate::storage::try_clone(styles, storage), failure)?;
+        fallback_styles.source_program_projection_slots = Default::default();
+        for (id, fallback) in fallbacks {
+            *fallback_styles.char_styles.get_mut(id as usize)? =
+                crate::storage::optional(crate::storage::try_clone(fallback, storage), failure)?;
         }
         let first = para.line_segs.first()?.vertical_pos;
         let frame = box_.frame(first);

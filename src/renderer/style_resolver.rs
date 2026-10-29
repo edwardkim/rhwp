@@ -402,7 +402,7 @@ fn refresh_source_program_projection_slots_with_storage<S: storage::Storage>(
     styles: &mut ResolvedStyleSet,
     storage: &S,
 ) -> Result<(), S::Error> {
-    styles.source_program_projection_slots.clear();
+    styles.source_program_projection_slots = Default::default();
     let dpi = styles.resolved_dpi.unwrap_or(96.0);
     let mut fallback_char_styles = None;
     let mut build_fallback = || -> Result<Vec<ResolvedCharStyle>, S::Error> {
@@ -470,7 +470,7 @@ fn refresh_source_program_projection_slots_with_storage<S: storage::Storage>(
                 {
                     let copied = crate::storage::try_clone(fallback, storage)?;
                     storage.insert_map(
-                        &mut styles.source_program_projection_slots,
+                        std::sync::Arc::make_mut(&mut styles.source_program_projection_slots),
                         (shape_id as u32, language),
                         copied,
                     )?;
