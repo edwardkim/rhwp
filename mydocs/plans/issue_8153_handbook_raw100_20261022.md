@@ -1692,3 +1692,11 @@ ignored `structural-origin-off-canvas-10-20261029.log`다.
 실행한 결과 2건 모두 통과했다. ignored 로그는
 `structural-origin-issue1488-all-20261029.log`다. 쪽 소유 조건의 일반성과
 남은 겹침·화면 밖 실패의 해결 근거는 별도로 필요하다.
+
+분리 실험의 Native 전쪽도 두 원본 각각 383쪽을 측정했다. 각 쪽의 원래
+정밀 raw와 미대응 픽셀 수를 기존 후보와 대조한 결과 두 원본 모두 변경된
+쪽이 없고 최저 raw는 130쪽 99.96463%다. 입력·PDF·실험 소스·바이너리 해시와
+전쪽 결과는 ignored `structural-origin-native-whole-20261029/result.json`,
+TSV는 같은 디렉터리의 `handbook-hwp/score/`, `handbook-hwpx/score/`에 있다.
+이 결과는 fresh WASM 전쪽과 미해결 회귀를 대신하지 않으며 실험 조건을
+제품에 적용할 근거로 단독 사용하지 않는다.
