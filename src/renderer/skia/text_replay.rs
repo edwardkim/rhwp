@@ -120,7 +120,14 @@ impl SkiaTextReplay<'_> {
                             family,
                             font_style,
                         );
-                        return fonts::for_text(&chain, sample, size, style, self.font_mgr, self.geometric_text);
+                        return fonts::for_text(
+                            &chain,
+                            sample,
+                            size,
+                            style,
+                            self.font_mgr,
+                            self.geometric_text,
+                        );
                     }
                     if crate::renderer::pua_glyph::candidate(sample).is_some() {
                         if let Some(primary) = typeface_chain.first() {
@@ -137,7 +144,14 @@ impl SkiaTextReplay<'_> {
                             }
                         }
                     }
-                    fonts::for_text(&typeface_chain, sample, size, style, self.font_mgr, self.geometric_text)
+                    fonts::for_text(
+                        &typeface_chain,
+                        sample,
+                        size,
+                        style,
+                        self.font_mgr,
+                        self.geometric_text,
+                    )
                 };
                 let baseline_y = if baseline > 0.0 {
                     bbox.y + baseline

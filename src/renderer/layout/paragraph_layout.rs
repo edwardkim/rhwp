@@ -39,8 +39,8 @@ pub(crate) enum ParagraphLineRange {
     Partial { start: usize, end: usize },
 }
 
-mod inline_table_context;
 mod condense_spacing;
+mod inline_table_context;
 mod justification_spacing;
 mod leading_justification;
 mod leading_spaces;

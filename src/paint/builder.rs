@@ -147,7 +147,8 @@ impl LayerBuilder {
         if self.profile == RenderProfile::Print
             && !fonts.is_empty()
             && (super::metafile::has_wmf(&tree.root)
-                || (self.hancom2024_print_bitmap && super::text_shadow::needs_font_metrics(&tree.root))
+                || (self.hancom2024_print_bitmap
+                    && super::text_shadow::needs_font_metrics(&tree.root))
                 || super::dot_leader::needs_font_program(&tree.root))
         {
             for font in fonts {
@@ -518,10 +519,19 @@ impl LayerBuilder {
                             })
                             .flatten()
                             .or_else(|| {
-                                if self.profile != RenderProfile::Print || self.hancom2024_print_bitmap { return None; }
+                                if self.profile != RenderProfile::Print
+                                    || self.hancom2024_print_bitmap
+                                {
+                                    return None;
+                                }
                                 super::metafile_print::payload(
-                                    &image, node.bbox, self.image_page_size, self.image_reference_origin,
-                                    self.layout_dpi, &self.metafile_fonts, self.metafile_catalogue.as_deref()?,
+                                    &image,
+                                    node.bbox,
+                                    self.image_page_size,
+                                    self.image_reference_origin,
+                                    self.layout_dpi,
+                                    &self.metafile_fonts,
+                                    self.metafile_catalogue.as_deref()?,
                                 )
                             })
                             .or_else(|| {
@@ -567,39 +577,42 @@ impl LayerBuilder {
                         {
                             resolved = Some(window);
                         }
-                    if let Some(payload) = resolved.as_mut().filter(|p| {
-                        crate::renderer::image_resolver::png_sampling::print_jpeg_transfer(&p.data)
-                            && !image.transform.has_transform()
-                    }) {
-                        if let Some(frame) = crate::renderer::print_raster::PrintRasterFrame::new(
-                            self.image_page_size,
-                            self.image_reference_origin,
-                            node.bbox,
-                            self.layout_dpi,
-                        ) {
-                            frame.attach(&mut payload.data);
-                        }
-                    }
-                    if self.profile == RenderProfile::Print {
-                        if let Some((alpha_frame, payload)) =
-                            crate::renderer::print_raster::PrintRasterFrame::new(
-                                self.image_page_size,
-                                self.image_reference_origin,
-                                node.bbox,
-                                self.layout_dpi,
-                            )
-                            .and_then(|source| {
-                                crate::renderer::image_resolver::print_alpha_payload(
-                                    &image,
-                                    source,
+                        if let Some(payload) = resolved.as_mut().filter(|p| {
+                            crate::renderer::image_resolver::png_sampling::print_jpeg_transfer(
+                                &p.data,
+                            ) && !image.transform.has_transform()
+                        }) {
+                            if let Some(frame) =
+                                crate::renderer::print_raster::PrintRasterFrame::new(
+                                    self.image_page_size,
+                                    self.image_reference_origin,
+                                    node.bbox,
                                     self.layout_dpi,
                                 )
-                            })
-                        {
-                            frame = alpha_frame;
-                            resolved = Some(payload);
+                            {
+                                frame.attach(&mut payload.data);
+                            }
                         }
-                    }
+                        if self.profile == RenderProfile::Print {
+                            if let Some((alpha_frame, payload)) =
+                                crate::renderer::print_raster::PrintRasterFrame::new(
+                                    self.image_page_size,
+                                    self.image_reference_origin,
+                                    node.bbox,
+                                    self.layout_dpi,
+                                )
+                                .and_then(|source| {
+                                    crate::renderer::image_resolver::print_alpha_payload(
+                                        &image,
+                                        source,
+                                        self.layout_dpi,
+                                    )
+                                })
+                            {
+                                frame = alpha_frame;
+                                resolved = Some(payload);
+                            }
+                        }
                         vec![PaintOp::image(frame, image, resolved)]
                     }
                 };

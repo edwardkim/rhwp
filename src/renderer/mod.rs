@@ -79,8 +79,8 @@ pub mod pdf;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod pdf_raster_fidelity;
 mod physical_units;
-pub(crate) mod pua_glyph;
 pub(crate) mod print_picture_pen;
+pub(crate) mod pua_glyph;
 pub mod pua_oldhangul;
 pub mod raster_pixels;
 pub(crate) mod raster_stroke;
@@ -103,9 +103,9 @@ mod stroke_pattern;
 pub(crate) mod table_row_frame;
 pub(crate) mod text_font_coverage;
 pub mod text_font_presentation;
+pub(crate) mod text_glyph_visibility;
 pub(crate) mod text_ink;
 pub(crate) mod text_italic;
-pub(crate) mod text_glyph_visibility;
 // Q4-D1 registers the exact-source-bound vertical owner while all product
 // layout/publication callers remain closed until their own approved slices.
 pub(crate) mod anisotropic_sampling;
@@ -113,8 +113,8 @@ pub(crate) mod contextual_text;
 pub(crate) mod cubic_sampling;
 pub mod native_pua_fonts;
 pub(crate) mod pdf_stroke;
-pub(crate) mod print_raster;
 pub(crate) mod print_image_sampling;
+pub(crate) mod print_raster;
 #[allow(dead_code)]
 pub(crate) mod shaping_vertical;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]

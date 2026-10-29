@@ -202,7 +202,9 @@ pub(crate) fn resolve_styles_with_environment(
                                 || has_own_metric_table(&face, style.bold, style.italic)
                                 || crate::renderer::font_metrics_data::has_declared_original_glyph_metrics(face)
                         });
-                    if keep_source_metrics && source_font.is_none_or(|face| face.native_program.is_none()) {
+                    if keep_source_metrics
+                        && source_font.is_none_or(|face| face.native_program.is_none())
+                    {
                         style.font_families_metric_face[lang] = original
                             .requested_face
                             .as_deref()

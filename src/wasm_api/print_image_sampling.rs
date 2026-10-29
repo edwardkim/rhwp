@@ -87,8 +87,6 @@ pub fn resample_print_bitmap_rgba(
     .map(|raster| raster.rgba)
 }
 
-
-
 #[wasm_bindgen(js_name = mapPrintBitmapImage)]
 pub fn map_print_bitmap_image(rectangle: &[f64], transform: &[f64]) -> JsValue {
     let (Ok([x, y, width, height]), Ok(matrix)) = (

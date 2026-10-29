@@ -20,12 +20,11 @@ impl LayoutEngine {
 
     pub(crate) fn native_stored_table_has_fragment_frames(&self, table: &Table) -> bool {
         self.original_stored_table_frame_is_usable(
-                table,
-                self.render_normalization
-                    .borrow()
-                    .table_text_reflowed(table),
-            )
-            && self.indexed_stored_row_boxes_exceed_object_frame(table)
+            table,
+            self.render_normalization
+                .borrow()
+                .table_text_reflowed(table),
+        ) && self.indexed_stored_row_boxes_exceed_object_frame(table)
     }
 
     /// 부모의 저장 조각 좌표계가 남아 있는가. 옛 컷의 수용 가능 여부와는 별도다.

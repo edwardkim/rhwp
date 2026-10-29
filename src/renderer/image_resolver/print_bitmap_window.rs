@@ -1,8 +1,8 @@
 //! 잘린 불투명 비트맵의 Print 원본 창과 공통 재표본화.
 
 use super::{
-    detect_image_mime_type, memoized, print_alpha_2024 as print_alpha, print_codec, print_prefilter, print_tone,
-    Conversion,
+    detect_image_mime_type, memoized, print_alpha_2024 as print_alpha, print_codec,
+    print_prefilter, print_tone, Conversion,
 };
 use crate::model::image::ImageEffect;
 use crate::paint::{ResolvedImageKind, ResolvedImagePayload};

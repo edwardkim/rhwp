@@ -203,6 +203,7 @@ fn empty_char_overlap_retains_frame_without_svg_ink() {
                 border_type: 0,
                 inner_char_size: 0,
                 empty_ink,
+                composition: None,
             }),
             border_fill_id: 0,
             baseline: 16.0,

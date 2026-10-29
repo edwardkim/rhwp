@@ -5,9 +5,9 @@ use super::super::kerning::{ExactFontSourceHandle, KerningRunMeasurement, Kernin
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{TabLeaderInfo, TabStop, TextStyle};
 
+mod inline_right_tab;
 mod kopub_cjk_coverage;
 mod kopub_symbol_advances;
-mod inline_right_tab;
 
 // ── TextMeasurer trait ──────────────────────────────────────────────
 
@@ -2148,9 +2148,13 @@ fn char_width_decision_with_hft_tracking<'a>(
         let verified_named_primary_missing = !style.source_font_is_hft
             && measured_family == display_family
             && font_metrics_data::verified_named_program_has_glyph(
-                measured_family, style.bold, style.italic, c,
+                measured_family,
+                style.bold,
+                style.italic,
+                c,
             ) == Some(false);
-        let verified_primary_missing = verified_primary_missing || verified_named_primary_missing
+        let verified_primary_missing = verified_primary_missing
+            || verified_named_primary_missing
             || (!style.source_font_is_hft
                 && measured_family == display_family
                 && KoPubFamily::from_primary(measured_family).is_some_and(|family| {

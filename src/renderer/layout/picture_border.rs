@@ -5,7 +5,8 @@ use crate::model::image::Picture;
 use crate::renderer::hwpunit_to_px;
 use crate::renderer::image_geometry::PictureSourceRect;
 use crate::renderer::render_tree::{
-    BoundingBox, NodeId, PageLayoutContext, RectangleNode, RenderNode, RenderNodeType, ShapeTransform,
+    BoundingBox, NodeId, PageLayoutContext, RectangleNode, RenderNode, RenderNodeType,
+    ShapeTransform,
 };
 
 /// 저장 묶음 행렬이 이미 적용된 그림에 원본 회전·대칭을 다시 적용하지 않는다.
@@ -31,9 +32,12 @@ impl LayoutEngine {
         w: f64,
         h: f64,
     ) {
-        if let Some(border) =
-            self.make_picture_border_node(tree, picture, BoundingBox::new(x, y, w, h), image_frame_owner)
-        {
+        if let Some(border) = self.make_picture_border_node(
+            tree,
+            picture,
+            BoundingBox::new(x, y, w, h),
+            image_frame_owner,
+        ) {
             parent.children.push(border);
         }
     }

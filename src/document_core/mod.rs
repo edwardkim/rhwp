@@ -17,9 +17,9 @@ mod canvas_metrics;
 mod native_pua_fonts;
 pub use native_pua_fonts::NativePuaFontRequest;
 mod font_environment;
+mod host_font_environment;
 mod loaded_frame_restore;
 mod table_reflow_owners;
-mod host_font_environment;
 pub use canvas_metric_requests::{CanvasMetricBatch, CanvasMetricReply, CanvasMetricRequest};
 pub use host_font_environment::{
     DeclaredFontFallbackRequest, ObservedFontFallback, ObservedFontSource,

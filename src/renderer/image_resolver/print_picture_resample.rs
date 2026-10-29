@@ -4,7 +4,10 @@
 //! 소수 DPI 비교 대신 정수 장치 크기를 먼저 확정한다. 한 축 축소가 필요하면
 //! 다른 축 확대도 같은 자원에 반영한다. 편집 원본과 최종 그림 위치는 유지한다.
 
-use super::{detect_image_mime_type, memoized, print_alpha_2024 as print_alpha, print_codec, print_tone, Conversion};
+use super::{
+    detect_image_mime_type, memoized, print_alpha_2024 as print_alpha, print_codec, print_tone,
+    Conversion,
+};
 use crate::model::image::ImageEffect;
 use crate::paint::{ResolvedImageKind, ResolvedImagePayload};
 use crate::renderer::image_header::{CANVASKIT_MAX_IMAGE_DIMENSION, CANVASKIT_MAX_IMAGE_PIXELS};

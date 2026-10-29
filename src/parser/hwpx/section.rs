@@ -753,7 +753,12 @@ fn parse_paragraph_body(
                             para.control_mask |= 1u32 << 0x001F;
                         }
                         let part_base = text_parts.len();
-                        nb_space_parts.extend(content.nb_space_parts.iter().map(|&(part, index)| (part_base + part, index)));
+                        nb_space_parts.extend(
+                            content
+                                .nb_space_parts
+                                .iter()
+                                .map(|&(part, index)| (part_base + part, index)),
+                        );
                         text_parts.extend(content.parts);
                         para.tab_extended.extend(content.tabs);
                         // [#5174] 묶음 빈칸의 출처 표기를 문단에 남긴다 — 직렬화기가 이

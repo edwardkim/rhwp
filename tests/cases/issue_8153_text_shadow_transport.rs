@@ -282,6 +282,7 @@ fn displayed_shadow_ink_expands_body_clip_and_preserves_owned_cell_clip() {
                     border_fill_id: 0,
                     text_direction: 0,
                     clip: true,
+                    closed_reflow_frame: false,
                     page_fragment: false,
                     model_cell_index: Some(0),
                 }),

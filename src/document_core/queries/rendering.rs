@@ -1742,7 +1742,8 @@ impl DocumentCore {
                 .with_layout_dpi(self.dpi)
                 .with_metafile_fonts(&if profile == RenderProfile::Print
                     && (crate::paint::metafile::has_wmf(&tree.root)
-                        || (self.hangul2024_compat && crate::paint::text_shadow::needs_font_metrics(&tree.root))
+                        || (self.hangul2024_compat
+                            && crate::paint::text_shadow::needs_font_metrics(&tree.root))
                         || crate::paint::dot_leader::needs_font_program(&tree.root))
                 {
                     metafile_fonts::with_document_fonts(&self.metafile_fonts, &self.document)

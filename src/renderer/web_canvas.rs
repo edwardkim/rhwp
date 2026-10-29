@@ -14,9 +14,9 @@ mod image_coverage;
 mod image_reduction;
 #[cfg(target_arch = "wasm32")]
 mod metafile_print;
+mod print_image_sampling;
 #[cfg(target_arch = "wasm32")]
 mod print_jpeg;
-mod print_image_sampling;
 #[cfg(target_arch = "wasm32")]
 mod rectangle_fill;
 #[cfg(target_arch = "wasm32")]
@@ -3248,7 +3248,11 @@ impl Renderer for WebCanvasRenderer {
         if self.print_area_sampling
             && self.high_quality_images
             && print_image_sampling::draw_encoded(
-                &self.ctx, data, (x, y, w, h), (self.width, self.height), self.scale,
+                &self.ctx,
+                data,
+                (x, y, w, h),
+                (self.width, self.height),
+                self.scale,
             )
         {
             return;
