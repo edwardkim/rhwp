@@ -1,5 +1,7 @@
-//! 독립 한컴 2024 Print의 보이는 팔레트와 소유·원본 순서 및 재조회를 보호한다.
-//! 동일 입력의 Native·fresh WASM 1쪽 raw 실루엣은 각각 100%다.
+//! 관계형·고정형: 독립 한컴 2024 Print의 팔레트, 소유·순서와 그림 자원을 검사한다.
+//! 2026-10-19 측정 raw(96dpi, PDFium, 2px): 1쪽 Native 99.98227% / fresh WASM 99.98255%.
+//! 전 1쪽 최저 Native 99.98227% / fresh WASM 99.98255%; 현재 head 재측정 전이다.
+//! 근거: mydocs/pr/assets/issue7642/bitmap_visible_palette_20261019/README.md.
 //! 그림 자원의 크기와 회색값은 독립 PDF의 이미지 자원에서 확인했다.
 use base64::Engine;
 use rhwp::paint::{

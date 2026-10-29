@@ -1,3 +1,23 @@
+//! 관계형·고정형: 반복 제목 셀의 빈 줄과 저장 줄 전진을 검사한다.
+//! HWP 2026-10-19 측정 raw(96dpi, PDFium, 2px):
+//! 1쪽 Native 99.99629% / fresh WASM 99.99872%.
+//! 2쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! 3쪽 Native 99.98581% / fresh WASM 99.98414%.
+//! 4쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! 5쪽 Native 99.99894% / fresh WASM 100.00000%.
+//! 6쪽 Native 99.95485% / fresh WASM 99.95697%.
+//! 전 6쪽 최저 Native 99.95485% / fresh WASM 99.95697%.
+//! HWPX 2026-10-25 측정 raw(96dpi, PDFium, 2px):
+//! 1쪽 Native 96.34873% / fresh WASM 96.28920%.
+//! 2쪽 Native 96.40344% / fresh WASM 96.33558%.
+//! 3쪽 Native 95.84490% / fresh WASM 95.96239%.
+//! 4쪽 Native 97.01122% / fresh WASM 97.15078%.
+//! 5쪽 Native 96.40254% / fresh WASM 96.64068%.
+//! 6쪽 Native 97.04618% / fresh WASM 96.86672%.
+//! 전 6쪽 최저 Native 95.84490% / fresh WASM 95.96239%.
+//! HWP 근거: mydocs/pr/assets/issue7642/final_sweep_20261019/README.md.
+//! HWPX 근거: mydocs/pr/assets/integration-planet6897/final-validation-20261025/README.md.
+//! 두 수치는 각 근거의 원본·독립 Print와 당시 source의 측정 결과이며 현재 head 재측정 전이다.
 //! #7032: 저장된 빈 셀 문단은 LINE_SEG가 없어도 한 줄을 소유한다.
 //! HWPX 검증 문서와 메인터너의 한컴 판독을 독립 대조군으로 사용한다.
 #![cfg(not(target_arch = "wasm32"))]
