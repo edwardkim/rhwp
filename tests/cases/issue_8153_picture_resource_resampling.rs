@@ -1,5 +1,5 @@
 //! 관계형·고정형: 선언 크기의 두 축 재표본화·원본 소유·독립 Print 경계.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:50:20+09:00 (098f4d2de8).
+//! 주석 갱신: 2026-10-29T18:16:47+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (e2ba672b87).
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
 //! HWP 144쪽 Native 100.00000% / fresh WASM 100.00000%.
 //! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
@@ -130,7 +130,7 @@ fn verify(extension: &str) {
                 .payload
                 .data
                 .windows(6)
-                .any(|bytes| bytes == b"rhWP\x04\x01"),
+                .any(|bytes| bytes == b"rhWP\x05\x01"),
             "공통 별도 평면 표본 계약"
         );
         assert!(device.pixels().all(|p| p[3] == 0 || p[3] == 255));
