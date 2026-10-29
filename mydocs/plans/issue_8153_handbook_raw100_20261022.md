@@ -1837,3 +1837,8 @@ ignored `tab-fragment-candidate-native-focus-20261029/result.json`에 있다.
 `committed-head-validation-*-audit-20261029.json`에 있다. 첫 `--generate`는
 정식 절차가 아니어서 실패했고, base 검사도 샌드박스의 Git subprocess
 `EPERM` 후 읽기 가능한 환경에서 재실행해 통과했다.
+
+정식 `--prepare`로 다시 생성한 suite에서 `tests/cases/*8153*.rs` 46개가
+모두 정확히 한 번 수집되는 것을 확인했다. 파일별 suite 대응은 ignored
+`committed-head-issue8153-collection-20261029.json`에 기록했다. 수집 확인은
+검사 실행과 통과를 뜻하지 않는다.
