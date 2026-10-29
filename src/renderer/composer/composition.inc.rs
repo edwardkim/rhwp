@@ -723,11 +723,12 @@ pub(crate) fn tac_next_line_full_spacing(
             .iter()
             .enumerate()
             .any(|(ci, _)| owned_rowbreak_tac_height(para, ci).is_some());
-    // 저장 줄의 닫힌 사다리는 컨테이너와 무관하다. 원본 HWPX도 같은
-    // 원점·점유 높이·문단 간격을 입증하면 fit과 paint가 그 끝을 함께 쓴다.
+    // 저장 줄의 닫힌 사다리는 컨테이너와 다른 문단의 편집 여부에 무관하다.
+    // 이 줄과 후속 줄의 원점·점유 높이·문단 간격이 유효하면 fit과 paint가
+    // 같은 끝을 쓴다. 해당 줄의 텍스트·셀 서식이 바뀌었으면 수용하지 않는다.
     let stored_host = (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
-        && !profile.session_edited()
         && !para.stored_text_partition_is_dirty()
+        && !para.cell_format_vpos_dirty
         && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0;
     // 다음 흐름 개체가 도형이어도 같은 문단의 저장 줄 간격을 소유한다.
     // 표 개수만 세어 마지막 표로 판단하면 두 줄 사이의 거리를 절반으로 줄인다.

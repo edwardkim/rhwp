@@ -5720,12 +5720,17 @@ impl LayoutEngine {
                             self.dpi,
                         );
                         let pad_v = (pad_top + pad_bottom).max(effective_pad_v);
-                        self.stored_plain_cell_content_minimum(cell, line_based, effective_pad_v)
-                            .unwrap_or_else(|| {
-                                crate::renderer::float_placement::stored_text_cell_required_height(
-                                    line_based, decl_h, pad_v,
-                                )
-                            })
+                        self.stored_plain_cell_content_minimum(
+                            cell,
+                            table,
+                            line_based,
+                            effective_pad_v,
+                        )
+                        .unwrap_or_else(|| {
+                            crate::renderer::float_placement::stored_text_cell_required_height(
+                                line_based, decl_h, pad_v,
+                            )
+                        })
                     } else {
                         line_based + pad_top + pad_bottom
                     };
@@ -5841,7 +5846,7 @@ impl LayoutEngine {
                     let raw_pad_v =
                         hwpunit_to_px(cell.effective_vertical_padding_hu(&table.padding), self.dpi);
                     let pad_v = (pad_top + pad_bottom).max(raw_pad_v);
-                    self.stored_plain_cell_content_minimum(cell, line_based, raw_pad_v)
+                    self.stored_plain_cell_content_minimum(cell, table, line_based, raw_pad_v)
                         .unwrap_or_else(|| {
                             crate::renderer::float_placement::stored_text_cell_required_height(
                                 line_based, decl_h, pad_v,
