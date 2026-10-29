@@ -76,3 +76,8 @@
 - 시스템에 등록된 Trebuchet MS는 `post` 이름 표의 글리프 수가 `maxp`와 달라 브라우저가 거절했다. 검증용 공급본의 이름 표만 보정하고 원본·공급본 해시와 보정 사유를 기록한다. 합성 손상 입력에서 `glyf`·`hmtx`·`cmap` 보존을 검증했으며, 실제 수납대장의 자동 공급 WASM 전4쪽 최저는 99.59%다. 로그는 `output/issue8371/regression-triage/sweep-post-repair-tests.log`다.
 - 연속 하이픈 검사는 두 원본 모두 Native/fresh WASM 전쪽 90% 이상과 3쪽·8쪽의 Print 비교를 확인했다. 두 쪽의 Native는 각각 95.12%·96.63%이므로 절대 좌표 대신 원문 하이픈 수, 표 셀 소유와 숨긴 글자의 대체 선분 관계를 검사하도록 변경했다. 새 검사와 수납대장·sample10 경계 검사를 함께 실행해 3개 모두 통과했다. 로그는 `output/issue8371/regression-triage/focused-relational-v10.log`다. 전체 회귀 재검증은 남았다.
 - 시스템 글꼴 자동 공급으로 다시 출력한 sample10 WASM 전763쪽은 최저 99.02%, 90% 미만 0쪽이며 312쪽은 실제 미대응 픽셀 0이다. 자동 목록을 사용한 66·312쪽 PNG는 앞서 직접 판독한 PNG와 각각 SHA-256이 일치한다. TSV는 `output/issue8371/regression-triage/sample10-wasm-auto-scores-v10/silhouette.tsv`다.
+
+## 전체 검사 컴파일 보완
+
+- 전체 nextest 재실행 중 라이브러리 단위 테스트의 기존 `ResolvedStyleSet` 초기화 여섯 곳에서 새 `source_hwp3_native` 필드가 누락되어 컴파일이 실패했다. 이 입력들은 HWP3 원본이 아니므로 `false`를 명시했다. 실패 로그는 `output/issue8371/full-rust-nextest-final-v11.log`이며, 라이브러리 테스트 전체 컴파일과 전체 nextest를 다시 확인한다.
+- 최신 WASM 산출물의 sample10 전763쪽 TSV는 `output/issue8371/final-head/sample10-wasm-scores/silhouette.tsv`이며 최저 99.02%, 90% 미만 0쪽이다.

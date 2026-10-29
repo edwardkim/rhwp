@@ -717,6 +717,7 @@ fn test_layout_with_composed_styles() {
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
 
     let styles = ResolvedStyleSet {
+        source_hwp3_native: false,
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
         script_metrics: Default::default(),
@@ -876,6 +877,7 @@ fn test_layout_multi_run_x_position() {
 
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
     let styles = ResolvedStyleSet {
+        source_hwp3_native: false,
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
         script_metrics: Default::default(),
@@ -985,6 +987,7 @@ fn test_resolved_to_text_style() {
     use crate::renderer::style_resolver::ResolvedCharStyle;
 
     let styles = ResolvedStyleSet {
+        source_hwp3_native: false,
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
         script_metrics: Default::default(),
@@ -1031,6 +1034,7 @@ fn test_resolved_to_text_style_with_ratio() {
     use crate::renderer::style_resolver::ResolvedCharStyle;
 
     let styles = ResolvedStyleSet {
+        source_hwp3_native: false,
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
         script_metrics: Default::default(),
