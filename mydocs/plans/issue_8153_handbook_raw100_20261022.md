@@ -1731,3 +1731,9 @@ WASM 해시는 ignored `structural-origin-fresh-wasm-20261029/receipt.json`,
 14쪽의 원래 정밀 raw와 미대응 픽셀 수가 기존 후보와 같다. 실험 소스와 바이너리
 해시 및 결과는 ignored `shared-tab-origin-native-focus-20261029/result.json`이다.
 전쪽 Native·fresh WASM과 나머지 회귀 확인 전에는 이 표본을 완료 판정에 쓰지 않는다.
+
+탭 원점 분리 실험의 Native 전쪽 비교는 두 원본 각각 383쪽을 완료했다.
+기존 후보 대비 정밀 raw와 미대응 픽셀 수가 바뀐 쪽은 없고 두 원본의 최저는
+130쪽 99.96463%다. 입력·PDF·실험 소스·바이너리 해시와 페이지별 결과는
+ignored `shared-tab-origin-native-whole-20261029/result.json`에 있다.
+fresh WASM과 나머지 회귀는 별도로 확인한다.
