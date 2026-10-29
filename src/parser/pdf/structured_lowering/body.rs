@@ -17,6 +17,25 @@ fn intersects(a: &CommonObjAttr, b: &CommonObjAttr) -> bool {
         && ay < by + b.height as f32 / 100.
         && by < ay + a.height as f32 / 100.
 }
+/// 그림이 아래 글자를 가릴 수 있는가. PDF 가 상자 테두리·밑줄을 짧은 변 1pt 이하의 채움
+/// 사각형으로 그린 선(편집 우선 가져오기 시험지: 0.24~0.36pt)과, 채움·그림자가 없는 도형은
+/// 글자 잉크를 덮지 않는다 — 낱말을 두른 상자의 변은 글자 옆·위·아래를 지난다.
+fn paint_occludes(control: &Control) -> bool {
+    const RULE_THICKNESS: u32 = 100; // 1pt
+    match control {
+        Control::Shape(shape) => {
+            let common = shape.common();
+            if common.width.min(common.height) <= RULE_THICKNESS {
+                return false;
+            }
+            shape.drawing().is_none_or(|drawing| {
+                drawing.fill.fill_type != crate::model::style::FillType::None
+                    || drawing.shadow_type != 0
+            })
+        }
+        _ => true,
+    }
+}
 fn paint_order(
     controls: &[Control],
     consumed: &BTreeSet<usize>,
@@ -39,10 +58,20 @@ fn paint_order(
         if frame.z_order <= first || frame.z_order >= last {
             continue;
         }
-        if consumed
-            .iter()
-            .any(|&source| paint_frame(&controls[source]).is_some_and(|s| intersects(frame, s)))
-        {
+        // [#8362] 채움도 그림자도 없는 도형(낱말을 두른 테두리 상자 등)은 글자를 가리지 않아
+        // 본문과의 그리기 순서가 화면에 드러나지 않는다. 이 상자 때문에 문단 전체를 위치 고정
+        // 낱말 글상자로 남기면, 그 줄들이 흐름에서 자리를 차지하지 않아 한/글이 다음 글을 그
+        // 자리로 끌어올려 겹쳐 그린다(편집 우선 가져오기 8·15쪽).
+        if !paint_occludes(c) {
+            continue;
+        }
+        // [#8362] 본문을 한 층으로 다시 그리면 이 그림은 모든 본문 글자 아래로 간다. 화면이
+        // 달라지는 것은 이 그림이 원본에서 덮던 글자, 곧 이 그림보다 먼저 그린 겹친 글자뿐이다.
+        // 낱말을 두른 상자처럼 그 안 글자보다 먼저 그린 그림은 순서를 바꿔도 같다.
+        if consumed.iter().any(|&source| {
+            paint_frame(&controls[source])
+                .is_some_and(|s| s.z_order < frame.z_order && intersects(frame, s))
+        }) {
             return Err(
                 "overlapping source paint interleaves body text; retain source owners".into(),
             );
