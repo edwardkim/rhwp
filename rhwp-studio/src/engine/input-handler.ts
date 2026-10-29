@@ -321,6 +321,14 @@ function createOverlayLabel(x: number, y: number, text: string): HTMLDivElement 
   return label;
 }
 
+/** 연속 형광펜 모드 커서: 펜 몸통을 선택한 색으로 칠한 SVG (핫스팟 = 펜촉) */
+function highlightPenCursor(color: string): string {
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'>`
+    + `<path d='M13 2l5 5-9 9H4v-5z' fill='${color}' stroke='#333' stroke-width='1.2'/>`
+    + `<path d='M2 18h7' stroke='${color}' stroke-width='2.5'/></svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}") 2 18, text`;
+}
+
 /** 클릭 커서 배치 + 키보드 입력을 처리한다 */
 export class InputHandler {
   private cursor: CursorState;
@@ -447,6 +455,8 @@ export class InputHandler {
   // 도형/글상자 삽입 배치 모드 상태
   private shapePlacementType: string = 'rectangle'; // 'rectangle' | 'ellipse' | 'line' | 'arc' | 'polygon' | 'textbox' | 'connector-*'
   private textboxPlacementMode = false;
+  /** 연속 형광펜 모드 색 (null 이면 비활성). 드래그로 블록을 잡을 때마다 이 색을 칠한다. */
+  private highlightPenColor: string | null = null;
   private textboxPlacementDrag: {
     startClientX: number; startClientY: number;
     currentClientX: number; currentClientY: number;
@@ -756,6 +766,22 @@ export class InputHandler {
       this.clearTableResizeRuntimeCache();
     });
 
+    // 형광펜 색 선택: 블록이 있으면 즉시 칠하고, 없으면 연속 형광펜 모드로 진입한다.
+    eventBus.on('highlight-pick', (color) => {
+      if (!this.active) return;
+      if (this.editMode === 'form') return;
+      if (this.cursor.hasSelection()) {
+        this.applyCharFormat({ shadeColor: color as string });
+      } else {
+        this.setHighlightPen(color as string);
+      }
+      this.focusTextarea();
+    });
+    eventBus.on('highlight-pen-exit', () => {
+      this.setHighlightPen(null);
+      this.focusTextarea();
+    });
+
     // Toolbar에서 서식 적용 요청 수신 (글꼴명, 크기, 색상 — 커맨드 시스템 미경유)
     eventBus.on('format-char', (props) => {
       if (!this.active) return;
@@ -766,6 +792,26 @@ export class InputHandler {
       // 서식바 조작으로 빠진 포커스를 항상 복원
       this.focusTextarea();
     });
+  }
+
+  /** 연속 형광펜 모드 진입(color)/종료(null) */
+  setHighlightPen(color: string | null): void {
+    if (this.highlightPenColor === color) return;
+    this.highlightPenColor = color;
+    this.container.classList.toggle('highlight-pen-mode', color != null);
+    if (color) {
+      this.container.style.setProperty('--highlight-pen-cursor', highlightPenCursor(color));
+    } else {
+      this.container.style.removeProperty('--highlight-pen-cursor');
+    }
+    this.eventBus.emit('highlight-pen-changed', color);
+  }
+
+  /** 연속 형광펜 모드에서 드래그로 잡은 블록에 형광펜을 칠하고 블록을 해제한다 */
+  private applyHighlightPenToSelection(): void {
+    if (!this.highlightPenColor || !this.cursor.hasSelection()) return;
+    this.applyCharFormat({ shadeColor: this.highlightPenColor });
+    this.cursor.clearSelection();
   }
 
   /** 줌·resize 뒤 VirtualScroll 확정 좌표에 캐럿과 선택 오버레이를 다시 투영한다. */

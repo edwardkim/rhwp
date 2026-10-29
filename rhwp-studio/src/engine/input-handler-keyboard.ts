@@ -805,6 +805,13 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
     return; // 다른 키 무시
   }
 
+  // 연속 형광펜 모드에서 Escape → 종료
+  if (this.highlightPenColor && e.key === 'Escape') {
+    e.preventDefault();
+    this.setHighlightPen(null);
+    return;
+  }
+
   // 그림 배치 모드에서 Escape → 취소
   if (this.imagePlacementMode && e.key === 'Escape') {
     e.preventDefault();
