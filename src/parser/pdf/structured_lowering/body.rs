@@ -36,6 +36,35 @@ fn paint_occludes(control: &Control) -> bool {
         _ => true,
     }
 }
+/// 끼어든 그림이 있으면 그 문단들을 한 글상자로 묶지 않는다. 묶음을 나누는 판정은 그림이
+/// 글자를 가리는지와 무관하다 — 테두리 상자 안팎 글을 한 글상자로 합치면 상자 안 배치가
+/// 사라진다(편집 우선 가져오기 1쪽 머리 상자).
+fn paint_interleaves(
+    controls: &[Control],
+    consumed: &BTreeSet<usize>,
+    removed: &BTreeSet<usize>,
+) -> bool {
+    let mut layers = consumed
+        .iter()
+        .filter_map(|&i| paint_frame(&controls[i]).map(|f| f.z_order));
+    let Some(initial) = layers.next() else {
+        return true;
+    };
+    let (first, last) = layers.fold((initial, initial), |(first, last), z| {
+        (first.min(z), last.max(z))
+    });
+    controls.iter().enumerate().any(|(i, c)| {
+        !consumed.contains(&i)
+            && !removed.contains(&i)
+            && paint_frame(c).is_some_and(|frame| {
+                frame.z_order > first
+                    && frame.z_order < last
+                    && consumed.iter().any(|&source| {
+                        paint_frame(&controls[source]).is_some_and(|s| intersects(frame, s))
+                    })
+            })
+    })
+}
 fn paint_order(
     controls: &[Control],
     consumed: &BTreeSet<usize>,
@@ -78,6 +107,41 @@ fn paint_order(
         }
     }
     Ok(last)
+}
+/// 본문 층 사이에 끼었지만 겹친 본문 글자가 모두 나중에 그려진 가리는 그림. 본문을 한 층으로
+/// 다시 그리면 이 그림은 그 글자들 아래에 있어야 원본과 같다 — 흐름 본문 위에 그리는 기본
+/// 배치(글 앞)로 두면 채움이 낱말을 덮는다(편집 우선 가져오기 7쪽 «르포르» 상자).
+fn paints_beneath_body<'a>(
+    controls: &'a [Control],
+    consumed: &'a BTreeSet<usize>,
+    removed: &'a BTreeSet<usize>,
+) -> impl Iterator<Item = usize> + 'a {
+    let mut layers = consumed
+        .iter()
+        .filter_map(|&i| paint_frame(&controls[i]).map(|f| f.z_order));
+    let bounds = layers.next().map(|initial| {
+        layers.fold((initial, initial), |(first, last), z| {
+            (first.min(z), last.max(z))
+        })
+    });
+    let (first, last) = bounds.unwrap_or((0, 0));
+    controls
+        .iter()
+        .enumerate()
+        .filter(move |&(i, c)| {
+            bounds.is_some()
+                && !consumed.contains(&i)
+                && !removed.contains(&i)
+                && paint_occludes(c)
+                && paint_frame(c).is_some_and(|frame| {
+                    frame.z_order > first
+                        && frame.z_order < last
+                        && consumed.iter().any(|&source| {
+                            paint_frame(&controls[source]).is_some_and(|s| intersects(frame, s))
+                        })
+                })
+        })
+        .map(|(i, _)| i)
 }
 struct Prepared<'a> {
     proposal: &'a ParagraphProposal,
@@ -196,6 +260,7 @@ struct Output {
     frames: Vec<Control>,
     reports: Vec<Value>,
     paragraphs: usize,
+    beneath: BTreeSet<usize>,
 }
 impl Output {
     fn commit(
@@ -256,6 +321,12 @@ impl Output {
                 allocation
                     .push(&mut self.frames, control)
                     .map_err(message)?;
+                allocation
+                    .extend_set(
+                        &mut self.beneath,
+                        paints_beneath_body(controls, &owned, removed),
+                    )
+                    .map_err(message)?;
                 allocation.extend_set(removed, owned).map_err(message)?;
                 *next_id = next;
                 true
@@ -279,7 +350,7 @@ pub(super) fn lower(
     typography: &std::cell::RefCell<Vec<Value>>,
     removed: &mut BTreeSet<usize>,
     next_id: &mut u32,
-) -> Result<(Vec<Control>, Value), String> {
+) -> Result<(Vec<Control>, Value, BTreeSet<usize>), String> {
     let allocation = Allocation(&page.import_budget);
     let mut output = Output::default();
     for (ri, region) in page.recognition.body.iter().enumerate() {
@@ -307,7 +378,7 @@ pub(super) fn lower(
                             .flat_map(|b: &Prepared<'_>| b.owned.iter().copied()),
                     )
                     .map_err(message)?;
-                if paint_order(controls, &joined, removed).is_err() {
+                if paint_interleaves(controls, &joined, removed) {
                     output.commit(
                         ri,
                         region,
@@ -420,5 +491,6 @@ pub(super) fn lower(
     Ok((
         output.frames,
         request_json!(allocation, {"frames":output.reports,"semanticParagraphs":output.paragraphs,"policy":"owner-local representable proposals; original scalars/joins; cumulative frame LineSegs; ambiguous metrics and interleaved paint retained"})?,
+        output.beneath,
     ))
 }

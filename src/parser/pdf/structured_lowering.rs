@@ -2233,7 +2233,7 @@ pub(super) fn lower(
     let allocation = Allocation(&page.import_budget);
     let mut report = super::lowering::lower(page, doc, next_id)?;
     let section = doc.sections.len() - 1;
-    let controls = std::mem::take(&mut doc.sections[section].paragraphs[0].controls);
+    let mut controls = std::mem::take(&mut doc.sections[section].paragraphs[0].controls);
     let mut span_controls = allocation.filled(page.spans.len(), None).map_err(message)?;
     let mut shape_ids = allocation.filled(page.spans.len(), None).map_err(message)?;
     let mut image_controls = allocation.filled(page.images.len(), 0).map_err(message)?;
@@ -2640,7 +2640,7 @@ pub(super) fn lower(
     let root_count = tables.len();
     *next_id = fragment_ids.get();
     let table_count = table_count(&tables);
-    let (body_frames, body_mapping) = body::lower(
+    let (body_frames, body_mapping, beneath) = body::lower(
         page,
         doc,
         &controls,
@@ -2651,6 +2651,14 @@ pub(super) fn lower(
         &mut removed,
         next_id,
     )?;
+    // [#8362] 본문 글자보다 먼저 그린 가리는 그림은 다시 그린 본문 아래에 둔다.
+    for &i in &beneath {
+        match &mut controls[i] {
+            Control::Shape(shape) => shape.common_mut().text_wrap = TextWrap::BehindText,
+            Control::Picture(picture) => picture.common.text_wrap = TextWrap::BehindText,
+            _ => {}
+        }
+    }
     let mut retained: Vec<_> = allocation
         .collect(
             controls
