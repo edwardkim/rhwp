@@ -1,17 +1,17 @@
 //! 관계형·고정형: 여러 저장 프레임을 가진 일반 행의 첫 물리 상자와 내용 소유.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:50:20+09:00 (098f4d2de8).
-//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 316쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 326쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 344쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 352쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 316쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 326쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 344쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 352쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
+//! 주석 갱신: 2026-10-29T22:33:41+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (e2ba672b87).
+//! 2026-10-29 측정: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 316쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 326쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 344쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 352쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 316쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 326쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 344쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 352쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/audit-d412-20261029/README.md.
 //! 독립 근거: issue_8153_ordinary_row_opening_frame_20261026.md.
 #![cfg(not(target_arch = "wasm32"))]
 use rhwp::{model::control::Control, paint::RenderProfile, DocumentCore};
@@ -117,11 +117,11 @@ fn check(extension: &str, page: u32) {
     lines.sort_by(|a, b| a[0].total_cmp(&b[0]));
     assert_eq!(lines.len(), 3, "표 바깥선과 열 경계의 소유");
     for (line, x) in lines.iter().zip([94.550669, 502.510661, 910.472005]) {
-        assert!((line[0] - x).abs() <= 2.0, "독립 Print의 열 경계");
-        assert!((line[1] - 94.298665).abs() <= 2.0, "표 머리의 시작");
+        assert!((line[0] - x).abs() <= 1.0, "독립 Print의 열 경계");
+        assert!((line[1] - 94.298665).abs() <= 1.0, "표 머리의 시작");
         assert!(
-            (line[3] - 644.263997).abs() <= 2.0,
-            "{extension} {page}쪽: 독립 Print의 일반 행 첫 종료선 644.263997±2px, 실제 {}",
+            (line[3] - 644.263997).abs() <= 1.0,
+            "{extension} {page}쪽: 독립 Print의 일반 행 첫 종료선 644.263997±1px, 실제 {}",
             line[3]
         );
     }

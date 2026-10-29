@@ -1,12 +1,12 @@
 //! 관계형·고정형: 이어받은 일반 행도 독립 Print의 물리 종료선을 소유한다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:51:17+09:00 (4c123bb2b7).
-//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 312쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 312쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
-//! 312쪽의 표·셀·내용 컷을 보존하고 세 세로선의 끝을 ±2px로 확인한다.
+//! 주석 갱신: 2026-10-29T22:33:41+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (e2ba672b87).
+//! 2026-10-29 측정: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 312쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 312쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/audit-d412-20261029/README.md.
+//! 312쪽의 표·셀·내용 컷을 보존하고 세 세로선의 끝을 ±1px로 확인한다.
 //! 근거: mydocs/report/issue_8153_ordinary_row_continuation_frame_20261026.md.
 #![cfg(not(target_arch = "wasm32"))]
 use rhwp::{model::control::Control, paint::RenderProfile, DocumentCore};
@@ -98,11 +98,11 @@ fn check(extension: &str) {
     lines.sort_by(|a, b| a[0].total_cmp(&b[0]));
     assert_eq!(lines.len(), 3, "같은 표의 바깥/열 경계 세로선");
     for (line, x) in lines.iter().zip([94.55067, 502.51066, 910.47201]) {
-        assert!((line[0] - x).abs() <= 2.0, "독립 Print의 열 경계");
-        assert!((line[1] - 94.29867).abs() <= 2.0, "표 머리와 시작 경계");
+        assert!((line[0] - x).abs() <= 1.0, "독립 Print의 열 경계");
+        assert!((line[1] - 94.29867).abs() <= 1.0, "표 머리와 시작 경계");
         assert!(
-            (line[3] - 644.264).abs() <= 2.0,
-            "{extension}: 312쪽 일반 행의 독립 Print 세로 종료선 644.264±2px, 실제 {}",
+            (line[3] - 644.264).abs() <= 1.0,
+            "{extension}: 312쪽 일반 행의 독립 Print 세로 종료선 644.264±1px, 실제 {}",
             line[3]
         );
     }

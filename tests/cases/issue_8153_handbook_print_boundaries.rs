@@ -1,27 +1,27 @@
 //! 관계형·고정형: #8153 독립 한컴 2024 KoPub Print의 핵심 출력 경계.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:50:35+09:00 (6dd236266a).
-//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 9쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 94쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 149쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 153쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 163쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 309쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 310쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 383쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 9쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 94쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 149쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 153쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 163쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 309쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 310쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 383쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
+//! 주석 갱신: 2026-10-29T22:33:40+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (e2ba672b87).
+//! 2026-10-29 측정: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 9쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 94쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 149쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 153쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 163쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 309쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 310쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 383쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 9쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 94쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 149쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 153쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 163쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 309쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 310쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 383쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/audit-d412-20261029/README.md.
 //! 두 원본의 383쪽 소유, 묶음 그림/crop/테두리, 중첩 표의 실제 행 하한을 함께 보호한다.
-//! 좌표는 독립 PDF의 pt를 96dpi CSS px로 환산하며 허용 오차는 ±2px다.
+//! 좌표는 독립 PDF의 pt를 96dpi CSS px로 환산하며 허용 오차는 ±1px다.
 //! Native/fresh WASM TSV·입력/PDF SHA·직접 판독은 #8153 검증 기록에 연결한다.
 //! 근거: mydocs/plans/issue_8153_handbook_regression_replacement_20261025.md.
 #![cfg(not(target_arch = "wasm32"))]
@@ -70,8 +70,8 @@ fn ops<'a>(node: &'a LayerNode, found: &mut Vec<(Option<u32>, &'a PaintOp)>) {
 
 fn near(actual: f64, expected: f64, label: &str) {
     assert!(
-        actual.is_finite() && (actual - expected).abs() <= 2.0,
-        "{label}: {actual}, 기준 {expected}, 허용 ±2px"
+        actual.is_finite() && (actual - expected).abs() <= 1.0,
+        "{label}: {actual}, 기준 {expected}, 허용 ±1px"
     );
 }
 

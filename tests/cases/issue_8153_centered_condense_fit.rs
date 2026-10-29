@@ -1,11 +1,11 @@
 //! 관계형·고정형: 가운데 정렬의 원래 글자·공백 fit을 공백 전용 압축으로 바꾸지 않는다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:50:36+09:00 (99f4f7d444).
-//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 46쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 46쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
+//! 주석 갱신: 2026-10-29T22:33:40+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (e2ba672b87).
+//! 2026-10-29 측정: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 46쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 46쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/audit-d412-20261029/README.md.
 //! 두 원본 46쪽의 독립 Print 전진과 같은 글줄의 원문·소유를 보호한다.
 #![cfg(not(target_arch = "wasm32"))]
 use rhwp::{
@@ -43,8 +43,8 @@ fn positions(run: &TextRunNode) -> Vec<f64> {
     })
 }
 fn in_range(value: f64, low: f64, high: f64, label: &str) {
-    // 독립 Print에서 관찰한 전진 범위에 96dpi 기준 ±2px를 허용한다.
-    let tolerance = 2.0;
+    // 독립 Print에서 관찰한 전진 범위에 96dpi 기준 ±1px를 허용한다.
+    let tolerance = 1.0;
     assert!(
         (low - tolerance..=high + tolerance).contains(&value),
         "독립 Print의 {label}: {low}..{high}, 실제 {value}"

@@ -1,12 +1,12 @@
 //! 관계형·고정형: 동일한 저장 TAC 줄의 pen·본체와 비흐름 장식 소유를 보존한다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:50:20+09:00 (098f4d2de8).
-//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 116쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 116쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
-//! 독립 2024 Print 116쪽의 내부 표 좌표는 ±2px로 확인한다.
+//! 주석 갱신: 2026-10-29T22:33:40+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (e2ba672b87).
+//! 2026-10-29 측정: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 116쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 116쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/audit-d412-20261029/README.md.
+//! 독립 2024 Print 116쪽의 내부 표 좌표는 ±1px로 확인한다.
 //! 동일 원본 HU의 형식 간 원점 동등성도 검사해 여백 중복을 보호한다.
 //! 근거: mydocs/plans/issue_8153_decorated_tac_margin_20261025.md.
 #![cfg(not(target_arch = "wasm32"))]
@@ -111,8 +111,8 @@ fn origins(extension: &str) -> Vec<BoundingBox> {
                     (inner.y + inner.height, 211.6589966),
                 ] {
                     assert!(
-                        (actual - point * 96.0 / 72.0).abs() <= 2.0,
-                        "독립 Print의 내부 표 경계: {actual}, 기준 {point}pt, ±2px"
+                        (actual - point * 96.0 / 72.0).abs() <= 1.0,
+                        "독립 Print의 내부 표 경계: {actual}, 기준 {point}pt, ±1px"
                     );
                 }
                 assert!(inner.y >= node.bbox.y);

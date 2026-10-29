@@ -1,18 +1,18 @@
 //! 관계형·고정형: 독립 Print 날짜 원점과 셀 소유를 보호한다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:50:20+09:00 (098f4d2de8).
-//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 80쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 85쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 86쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 87쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 80쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 85쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 86쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 87쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
-//! 두 원본의 80·85~87쪽 Native/fresh WASM raw98% 이상, 96dpi, ±2px.
+//! 주석 갱신: 2026-10-29T22:33:41+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (e2ba672b87).
+//! 2026-10-29 측정: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 80쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 85쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 86쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 87쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 80쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 85쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 86쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 87쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/audit-d412-20261029/README.md.
+//! 두 원본의 80·85~87쪽 Native/fresh WASM raw98% 이상, 96dpi, ±1px.
 //! 독립 근거와 원본 SHA: issue_8153_stored_cell_width_20261024.md.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -63,7 +63,7 @@ fn check(extension: &str) {
         assert_eq!(found.len(), 1, "{extension} {page}쪽 날짜 내용·수량 보존");
         let (node, cell) = found[0];
         assert!(
-            (node.bbox.x - first_digit).abs() <= 2.0,
+            (node.bbox.x - first_digit).abs() <= 1.0,
             "{extension} {page}쪽 독립 Print 날짜 원점 {first_digit}, 실제 {}",
             node.bbox.x
         );

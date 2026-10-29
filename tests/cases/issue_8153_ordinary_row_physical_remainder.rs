@@ -1,15 +1,15 @@
 //! 관계형·고정형: 내용 프레임 수와 분리해 일반 행의 물리 잔여·다음 컷을 보존한다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:50:20+09:00 (098f4d2de8).
-//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 317쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 327쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 353쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 317쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 327쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 353쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
+//! 주석 갱신: 2026-10-29T22:33:41+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (e2ba672b87).
+//! 2026-10-29 측정: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 317쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 327쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 353쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 317쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 327쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 353쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/audit-d412-20261029/README.md.
 //! 이전 후보의 두 편람 전쪽 Native/fresh 표준 WASM 최저 99.96446/99.96402%와 독립 Print 근거는
 //! mydocs/plans/issue_8153_ordinary_row_remainder_20261027.md에 연결한다.
 #![cfg(not(target_arch = "wasm32"))]
@@ -109,11 +109,11 @@ fn check(extension: &str) {
         assert_eq!(lines.len(), 3, "표 양 끝과 두 열 사이 경계");
         // 독립 Print의 96dpi 표 외곽이다. 구현의 상자 높이에서 복사하지 않는다.
         for (line, x) in lines.iter().zip([94.550669, 502.510661, 910.472005]) {
-            assert!((line[0] - x).abs() <= 2.0);
-            assert!((line[1] - 94.298665).abs() <= 2.0);
+            assert!((line[0] - x).abs() <= 1.0);
+            assert!((line[1] - 94.298665).abs() <= 1.0);
             assert!(
-                (line[3] - 644.263997).abs() <= 2.0,
-                "{extension} {page}쪽: 물리 잔여를 넘긴 끝선 644.263997±2px, 실제 {}",
+                (line[3] - 644.263997).abs() <= 1.0,
+                "{extension} {page}쪽: 물리 잔여를 넘긴 끝선 644.263997±1px, 실제 {}",
                 line[3]
             );
         }

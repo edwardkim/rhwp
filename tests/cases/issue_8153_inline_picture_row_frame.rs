@@ -1,11 +1,11 @@
 //! 관계형·고정형: 원본 그림 줄의 상자와 셀 안 여백을 같은 행에서 소비한다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:51:17+09:00 (4c123bb2b7).
-//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 86쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 86쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
+//! 주석 갱신: 2026-10-29T22:33:40+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (e2ba672b87).
+//! 2026-10-29 측정: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 86쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 86쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/audit-d412-20261029/README.md.
 //! 근거: mydocs/report/issue_8153_inline_picture_row_frame_20261026.md.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -49,8 +49,8 @@ fn paint<'a>(node: &'a LayerNode, ops: &mut Vec<&'a PaintOp>) {
 
 fn near(actual: f64, expected: f64, label: &str) {
     assert!(
-        actual.is_finite() && (actual - expected).abs() <= 2.0,
-        "{label}: {actual}, 독립 기준 {expected}, 허용 ±2px"
+        actual.is_finite() && (actual - expected).abs() <= 1.0,
+        "{label}: {actual}, 독립 기준 {expected}, 허용 ±1px"
     );
 }
 

@@ -1,11 +1,11 @@
 //! 관계형·고정형: 셀 안 그림은 소유 줄의 위치를 유지하고 셀 안에 표시된다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:51:16+09:00 (1315268095).
-//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 260쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 260쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
+//! 주석 갱신: 2026-10-29T22:33:41+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (e2ba672b87).
+//! 2026-10-29 측정: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 260쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 260쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/audit-d412-20261029/README.md.
 //! 첫 줄과 그림 소유 줄의 저장 위치 차이는 원본에서 확인하고, 그림 상단은 독립 Print와 비교한다.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -99,7 +99,7 @@ fn verify(extension: &str) {
     );
     assert!(picture.y >= cell.y && picture.y + picture.height <= cell.y + cell.height);
     // 원본 그림의 문단 기준 수직 오프셋 73HU를 해당 글줄에 적용한다.
-    assert!((picture.y - line.y - 73.0 * 96.0 / 7200.0).abs() <= 2.0);
+    assert!((picture.y - line.y - 73.0 * 96.0 / 7200.0).abs() <= 1.0);
     // 양쪽 독립 Print 260쪽 이미지 xref 1992의 사각형을 96dpi로 환산한다.
     let expected_points = [115.915, 469.155, 236.145, 498.192];
     let actual = [
@@ -110,7 +110,7 @@ fn verify(extension: &str) {
     ];
     for (edge, expected) in actual.into_iter().zip(expected_points) {
         assert!(
-            (edge - expected * 96.0 / 72.0).abs() <= 2.0,
+            (edge - expected * 96.0 / 72.0).abs() <= 1.0,
             "독립 Print 그림 경계: 실제 {edge}, 기준 {}",
             expected * 96.0 / 72.0
         );

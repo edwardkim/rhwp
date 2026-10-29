@@ -1,11 +1,11 @@
 //! 관계형·고정형: 가운데 그림 채움의 셀 영역과 독립 Print 프레임을 보존한다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:50:20+09:00 (098f4d2de8).
-//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 123쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 123쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
+//! 주석 갱신: 2026-10-29T22:33:40+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (e2ba672b87).
+//! 2026-10-29 측정: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 123쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 123쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/audit-d412-20261029/README.md.
 //! 두 원본 123쪽은 변경 전 Native·fresh WASM raw 98% 이상이며,
 //! 독립 한컴 2024 Print PDF의 이미지와 클립을 확대 대조했다.
 #![cfg(not(target_arch = "wasm32"))]
@@ -92,7 +92,7 @@ fn verify(ext: &str) {
         .zip(expected)
     {
         assert!(
-            (actual - reference).abs() <= 2.0,
+            (actual - reference).abs() <= 1.0,
             "독립 Print 클립: {actual} / {reference}"
         );
     }

@@ -1,11 +1,11 @@
 //! 관계형·고정형: 원본 자간은 숫자 윤곽을 늘리지 않고 문단 끝 밑줄에 남지 않는다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:50:36+09:00 (99f4f7d444).
-//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 111쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 111쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
+//! 주석 갱신: 2026-10-29T22:33:41+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (e2ba672b87).
+//! 2026-10-29 측정: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 111쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 111쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/audit-d412-20261029/README.md.
 //! 독립 Print 111쪽의 숫자 메트릭과 밑줄을 대조한다. 전체 쪽수·소유는 보존한다.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -132,7 +132,7 @@ fn verify_underline(extension: &str) {
     // 두 문단 끝은 마지막 가시 glyph 뒤의 자간을 제외한다.
     for ((_, width), points) in found.iter().zip([58.856, 22.536, 22.415]) {
         assert!(
-            (width - points * 96.0 / 72.0).abs() <= 2.0,
+            (width - points * 96.0 / 72.0).abs() <= 1.0,
             "원본 소유를 유지한 밑줄의 독립 길이: 실제 {width}, Print {points}pt"
         );
     }

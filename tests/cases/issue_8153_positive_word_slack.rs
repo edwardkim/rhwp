@@ -1,11 +1,11 @@
 //! 관계형·고정형: 낱말을 넓히는 줄과 독립 Print의 단어 원점을 보호한다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:50:20+09:00 (098f4d2de8).
-//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 136쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 136쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
+//! 주석 갱신: 2026-10-29T22:33:41+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (e2ba672b87).
+//! 2026-10-29 측정: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! HWP 136쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 136쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/audit-d412-20261029/README.md.
 //! 독립 2024 Print 136쪽, 96dpi의 단어 원점과 저장 줄·셀의 내용 순서를 보호한다.
 //! 양쪽 원본 Native/fresh DEV WASM raw 100%·미대응 0픽셀과 수정 전 FAIL/후 PASS는
 //! `mydocs/plans/issue_8153_justify_float_residual_20261027.md`에 연결한다.
@@ -75,9 +75,9 @@ fn verify(extension: &str) {
     let x = bbox.x + positions[character];
     let baseline = bbox.y + run.baseline;
     // 독립 Print PDF의 물리 136쪽: 원점 585.59998px, 기준선 856.47998px.
-    assert!((x - 585.59998).abs() <= 2.0, "독립 단어 원점: {x}");
+    assert!((x - 585.59998).abs() <= 1.0, "독립 단어 원점: {x}");
     assert!(
-        (baseline - 856.47998).abs() <= 2.0,
+        (baseline - 856.47998).abs() <= 1.0,
         "독립 기준선: {baseline}"
     );
 
