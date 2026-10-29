@@ -1725,3 +1725,9 @@ WASM 해시는 ignored `structural-origin-fresh-wasm-20261029/receipt.json`,
 `shared-tab-origin-overlap-{12,7}-20261029.log`와
 `shared-tab-origin-focused-20261029.log`다. 편람의 실제 Native/fresh WASM
 출력 및 나머지 회귀는 아직 확인 전이며 이 실험은 제품에 적용하지 않았다.
+
+탭 원점을 포함한 분리 실험의 Native CLI로 두 편람 각각 9·46·86·130·131·
+140·148·232·260·291·309·314·315·327쪽을 독립 PDF와 대조했다. 두 형식 모두
+14쪽의 원래 정밀 raw와 미대응 픽셀 수가 기존 후보와 같다. 실험 소스와 바이너리
+해시 및 결과는 ignored `shared-tab-origin-native-focus-20261029/result.json`이다.
+전쪽 Native·fresh WASM과 나머지 회귀 확인 전에는 이 표본을 완료 판정에 쓰지 않는다.
