@@ -2928,7 +2928,6 @@ impl HeightMeasurer {
     ) -> Option<f64> {
         if !(self.is_native_hwp5 || self.hwpx_stored_layout)
             || self.is_hwp3_variant
-            || self.session_edited
             || self.render_normalization.cell_frame_reflowed(table, cell)
         {
             return None;

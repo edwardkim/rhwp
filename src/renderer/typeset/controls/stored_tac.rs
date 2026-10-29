@@ -605,10 +605,12 @@ pub(super) fn prepare(
         return None;
     }
     // 완전한 저장 줄 계약은 표별 높이를 합산하지 않고, 같은 pen/end를 배치에도 전달한다.
-    if !page.profile.session_edited()
-        && (page.profile.hwp5_container()
-            || page.profile.hwp5_stored_pagination_layout()
-            || page.profile.hwpx_stored_layout())
+    // 다른 문단의 편집은 이 줄의 소유·높이를 무효화하지 않는다. 아래의 원본 줄
+    // 유효성, 현재 측정 높이, 앞 내용의 끝과 가용 공간으로 재사용을 판단한다.
+    // 실제로 자란 표는 measured_fits에서 거절하여 일반 재조판 경로로 보낸다.
+    if (page.profile.hwp5_container()
+        || page.profile.hwp5_stored_pagination_layout()
+        || page.profile.hwpx_stored_layout())
         && page.side_wrap_empty
     {
         // 저장 단일 개체 줄은 캡션과 바깥 여백도 소유한다. 같은 줄의 공백은

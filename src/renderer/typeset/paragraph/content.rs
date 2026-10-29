@@ -9,6 +9,7 @@ use crate::renderer::{hwpunit_to_px, pagination::PageItem};
 /// 단의 원본 글줄 축과 구성 메트릭이 그대로일 때의 실제 하단.
 /// 순차 fit 커서에서 생략한 간격을 글줄의 물리 원점으로 대신하지 않는다.
 /// 다른 단 원점·미주·재조판은 이 저장 좌표 계약으로 인증하지 않는다.
+/// 다른 문단의 편집 여부 대신 이 줄의 dirty 상태·구성 메트릭과 수용한 단 축을 검사한다.
 pub(super) fn stored_content_bottom(
     st: &TypesetState,
     para: &Paragraph,
@@ -19,7 +20,6 @@ pub(super) fn stored_content_bottom(
 ) -> Option<f64> {
     if !(st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
         || st.profile.hwp3_layout()
-        || st.profile.session_edited()
         || st.current_endnote_flow
         || st.vpos_ladder_dirty
         || para.stored_text_partition_is_dirty()
