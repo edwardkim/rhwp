@@ -52,4 +52,4 @@ Native는 `NativePngExporter`의 Print context에 같은 FontEnvironment를 설�
 
 공통 배치의 별도 SVG 소비도 4쪽에서 확인했다. 동일 폰트 환경의 편집 전/삽입·삭제 후 SVG가 바이트 단위로 같았고, 로컬 폰트를 공급한 Chrome raster에서 머리말·중첩 셀·뒤 본문을 직접 읽었다. SVG raster를 Native Skia 또는 WASM Canvas 증거로 대신하지 않는다. 실행 로그·SVG 및 폰트가 포함된 임시 산출물은 ignored `output/pr-review/pr8040/`의 정리 대상이다.
 
-신규 정식 `tests/cases/issue_8040_later_section_edit.rs`는 설치 글꼴 없이 문서 쪽·본문/표/셀/머리말 소유와 순서, 중립 편집의 배치 불변 관계를 검사한다. 독립 PDF의 절대 좌표를 새로 고정하지 않는다. 기존 `verified_social_print_host_frames`의 독립 근거가 있는 1쪽 좌표 검사는 변경하지 않았으며 HWP/HWPX·분리본 4건이 통과했다. 전체 suite/lint 결과는 [검토 기록](../../pr_8040_review.md)을 따른다.
+신규 정식 `tests/cases/issue_8040_later_section_edit.rs`는 설치 글꼴 없이 문서 쪽·본문/표/셀/머리말 소유와 순서, 중립 편집의 배치 불변 관계를 검사한다. 독립 PDF의 절대 좌표를 새로 고정하지 않는다. 기존 `verified_social_print_host_frames`의 독립 근거가 있는 1쪽 좌표 검사는 변경하지 않았으며 HWP/HWPX·분리본 4건이 통과했다. 전체 suite/lint 결과는 [검토 기록](../../archives/pr_8040_review.md)을 따른다.

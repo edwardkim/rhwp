@@ -1,10 +1,10 @@
-> 현재 상태(2026-10-29): 메인테이너 보정의 Native/fresh WASM 전쪽 시각 검증과 확대 판독을 완료했다. 필수 로컬 검증을 모두 통과했다. 통합 PR의 최신 head CI 확인과 머지가 남았다. [최종 시각 증거](assets/issue_8040/README.md).
+> 통합 직전 검토(2026-10-30): 메인테이너 보정의 Native/fresh WASM 시각 검증·필수 로컬 검사·code head GitHub CI를 모두 통과했다. 후행 문서 head의 확인과 최종 merge SHA는 원 PR의 merge 결과 및 contributor comment로 연결한다. [최종 시각 증거](../assets/issue_8040/README.md).
 
 # PR #8040 검토 — 반복 저장과 편집 후 머리말 상속
 
 ## 현재 판정
 
-**메인테이너 보정 후 수용 가능 — 필수 로컬 검증과 시각 검증 완료, 통합 head CI 대기.** 반복 저장 문제는 선행 PR에서 이미 해결됐으며, 이번 후보는 뒤 구역 편집의 머리말 상속과 본문·중첩 표 배치를 보정했다. 원본·실제 삽입·삽입 후 삭제·HWPX 대조군의 Native/fresh WASM 전쪽 검증과 확대 판독을 완료했다. 예외 없이 본문 배치도 수정하라는 메인테이너 결정에 따라 기존 배치 결함을 면제하지 않았다. 아래 초기 보류와 중간 측정은 원인 추적 기록이며 현재 결과는 문서 끝의 최종 검증 기록과 [시각 증거](assets/issue_8040/README.md)를 따른다.
+**메인테이너 보정 후 수용 가능 — 통합 code head의 로컬·시각·GitHub CI 통과.** 반복 저장 문제는 선행 PR에서 이미 해결됐으며, 이번 후보는 뒤 구역 편집의 머리말 상속과 본문·중첩 표 배치를 보정했다. 원본·실제 삽입·삽입 후 삭제·HWPX 대조군의 Native/fresh WASM 전쪽 검증과 확대 판독을 완료했다. 예외 없이 본문 배치도 수정하라는 메인테이너 결정에 따라 기존 배치 결함을 면제하지 않았다. 아래 초기 보류와 중간 측정은 원인 추적 기록이며 현재 결과는 문서 끝의 최종 검증 기록과 [시각 증거](../assets/issue_8040/README.md)를 따른다.
 
 ## 최초 조사 판정 — 보정 전
 
@@ -35,7 +35,7 @@
 
 현행 `src/parser/mod.rs:577–598`은 HWP3 계보 표시만 설정하고 HWP5 원본 간격·저장 좌표를 보존한다. 과거 `normalize_variant_paragraph_vpos` 함수와 호출은 없다.
 
-같은 전제 차이는 #7994를 다룬 원 PR #8028에서도 확인됐다. 후속 메인터너 보정 `60500e68eedf3aadce82720359e3e2a2341a7b7f`와 [#8148](https://github.com/edwardkim/rhwp/pull/8148)의 실제 통합 `2e087a5b4bc1515ad877e8020b30114639a59392`를 추적했다. [독립 인쇄 재검토 기록](assets/issue7445/deferred-20261020/source-pr8028/README.md)은 중복 간격 복원 때문에 같은 한컴 소비자의 출력이 24→27쪽이 되고, 이를 제거한 뒤 24쪽으로 복원됐음을 기록한다. 이 과거 HWPX 증거를 이번 HWP5 저장의 새 시각 검증으로 사용하지 않는다.
+같은 전제 차이는 #7994를 다룬 원 PR #8028에서도 확인됐다. 후속 메인터너 보정 `60500e68eedf3aadce82720359e3e2a2341a7b7f`와 [#8148](https://github.com/edwardkim/rhwp/pull/8148)의 실제 통합 `2e087a5b4bc1515ad877e8020b30114639a59392`를 추적했다. [독립 인쇄 재검토 기록](../assets/issue7445/deferred-20261020/source-pr8028/README.md)은 중복 간격 복원 때문에 같은 한컴 소비자의 출력이 24→27쪽이 되고, 이를 제거한 뒤 24쪽으로 복원됐음을 기록한다. 이 과거 HWPX 증거를 이번 HWP5 저장의 새 시각 검증으로 사용하지 않는다.
 
 현재 devel에서 원 PR의 테스트 파일을 변경 없이 임시 진단 하네스로 실행했다.
 
@@ -160,7 +160,7 @@ rhwp 첫 기여와 구체적인 재현 검사를 보내주셔서 감사합니다
 
 ### 최종 소스의 시각 검증과 정식 회귀
 
-본문 code commit은 `f8f31d0166`이다. Native 및 fresh optimized WASM에 같은 로컬 글꼴 프로그램을 명시해 실제 편집 API를 실행했다. 새 WASM은 release 빌드와 `wasm-opt`를 완료했고 Chrome 155.0.8059.79에서 실제 Canvas PNG를 출력했다. [입력·소스·빌드 해시](assets/issue_8040/provenance.json)와 [전쪽 TSV·대표 PNG](assets/issue_8040/README.md)를 보존했다. 폰트 바이너리·임베딩 SVG·로그는 제출하지 않는다.
+본문 code commit은 `f8f31d0166`이다. Native 및 fresh optimized WASM에 같은 로컬 글꼴 프로그램을 명시해 실제 편집 API를 실행했다. 새 WASM은 release 빌드와 `wasm-opt`를 완료했고 Chrome 155.0.8059.79에서 실제 Canvas PNG를 출력했다. [입력·소스·빌드 해시](../assets/issue_8040/provenance.json)와 [전쪽 TSV·대표 PNG](../assets/issue_8040/README.md)를 보존했다. 폰트 바이너리·임베딩 SVG·로그는 제출하지 않는다.
 
 | 실제 상태 | Native 최저 | fresh WASM 최저 | 전체 쪽수 |
 | --- | --- | --- | --- |
@@ -201,8 +201,31 @@ Native Skia는 정본의 `cargo test --locked --profile release-test --features 
 
 필수 로컬 검사와 통합 PR의 최신 head CI, 실제 merge SHA 및 원 PR의 merged 상태를 확인한 뒤 게시한다. 첫 기여와 재현 검사에 한국어 존댓말로 감사와 환영을 전한다. 원 기여의 유효한 머리말 상속 방향, 선행 #8064에서 이미 해결된 저장 문제, 최신 자원 정책 및 독립 Print 비교에 따라 추가한 본문·중첩 셀 보정을 구별한다. contributor fork branch는 유지한다.
 
-시각 수치는 위 표의 삽입/삽입·삭제 및 HWPX 전쪽 최저값을 사용하고, 글리프 차이가 남는다는 범위도 그대로 알린다. 통합 merge SHA에 실제 존재하는 `mydocs/pr/assets/issue_8040/native-p004-review.png`, `wasm-p004-review.png` 및 각 overlay를 Markdown 이미지로 표시한다. 전체 TSV·검토 기록과 [Visual Sweep 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment)을 연결한다. 폰트 바이너리나 폰트가 임베딩된 SVG는 게시하지 않는다. CI와 merge 값은 지금 추정해 채우지 않고 완료 후 실제 API 결과를 사용한다.
+시각 수치는 위 표의 삽입/삽입·삭제 및 HWPX 전쪽 최저값을 사용하고, 글리프 차이가 남는다는 범위도 그대로 알린다. 통합 merge SHA에 실제 존재하는 `mydocs/pr/assets/issue_8040/native-p004-review.png`, `wasm-p004-review.png` 및 각 overlay를 Markdown 이미지로 표시한다. 전체 TSV·검토 기록과 [Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)을 연결한다. 폰트 바이너리나 폰트가 임베딩된 SVG는 게시하지 않는다. CI와 merge 값은 지금 추정해 채우지 않고 완료 후 실제 API 결과를 사용한다.
 
 ### 제출 전 셀프 리뷰
 
-원 입력 속성에서 공통 저장 줄·셀 최소 높이 생산자, 측정, fit/paint 소비 경로를 대조했다. 전역 편집 플래그를 제거한 자리의 실제 dirty·현재 높이·줄 소유 검증은 유지되고, 실제 셀 성장·페이지 분할의 기존 전체 회귀가 통과했다. 문서 식별자/고정 수치 분기나 좌표 clamp는 추가하지 않았다. 머리말은 bounded 공통 수집기와 fallible clone을 두 경로에서 사용한다. 원본·실제 편집 저장본·독립 Print의 커밋 바이트와 측정 SHA는 provenance로 확인했고, 새 관계 검사 2건은 정식 suite에서도 통과했다. 로컬 검토에서 남은 차단 결함은 발견하지 못했다. 통합 PR의 CI와 최종 base/head 확인은 제출 후 별도 판정한다.
+원 입력 속성에서 공통 저장 줄·셀 최소 높이 생산자, 측정, fit/paint 소비 경로를 대조했다. 전역 편집 플래그를 제거한 자리의 실제 dirty·현재 높이·줄 소유 검증은 유지되고, 실제 셀 성장·페이지 분할의 기존 전체 회귀가 통과했다. 문서 식별자/고정 수치 분기나 좌표 clamp는 추가하지 않았다. 머리말은 bounded 공통 수집기와 fallible clone을 두 경로에서 사용한다. 원본·실제 편집 저장본·독립 Print의 커밋 바이트와 측정 SHA는 provenance로 확인했고, 새 관계 검사 2건은 정식 suite에서도 통과했다. 로컬 검토에서 남은 차단 결함은 발견하지 못했다. 아래와 같이 통합 code head의 CI도 통과했다. 최종 base/head 및 후행 문서 검사는 merge 직전 다시 확인한다.
+
+### 통합 PR과 exact code head CI
+
+[통합 PR #8377](https://github.com/edwardkim/rhwp/pull/8377), code candidate `54ece955b623b6b8cb0f8d60de7279b203231e90`. 원 contributor head `2cfe84e5c72c430057d63c295a6103c29164440e`가 조상임을 확인했다. 제출 시점부터 코드 변경 없이 같은 SHA에서 아래 검증을 완료했다.
+
+| GitHub 검사 | 실제 결과 |
+| --- | --- |
+| [CI / Build & Test](https://github.com/edwardkim/rhwp/actions/runs/40896229309) | SUCCESS, attempt 2. lint·Native Skia 및 A/B/C/D/E 회귀 성공 |
+| [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/40896229288) | SUCCESS, Rust 분석 오류 없음·결과 0건 |
+| [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/40896229087) | SUCCESS, 실제 WASM Canvas 검증 |
+| [Proptest roundtrip](https://github.com/edwardkim/rhwp/actions/runs/40896229106) | SUCCESS |
+| [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/40896229400) | SUCCESS |
+| [CI Impact Policy Controller](https://github.com/edwardkim/rhwp/actions/runs/40896229225) | SUCCESS |
+
+회귀 worker는 A 3,801 / B 1,554 / C 2,069 / D 2,713 / E 1,716, 합계 **11,853 PASS / 45 skipped**다. 로컬은 workspace 라이브러리까지 포함한 12,047 PASS이며 서로 다른 실행 범위를 같은 수로 기록하지 않는다. CI 집계도 archive별 예상 runnable 수와 실제 worker 수를 확인해 성공했다.
+
+별도 GHAS CodeQL check `123534422974`는 neutral이다. 변경하지 않은 JavaScript·Python 구성의 비교 자료가 없다는 경고이며, Rust merge ref 분석 `c9a4bda9b4c6e0d1aef11e9c686f42fa61a938dd`는 error 없음·results 0이다. 해당 PR ref의 open alert 조회도 0건이었다. 분석 설정이나 경고 분류를 변경하지 않았다.
+
+첫 D worker `123536196464`는 00:12:06 KST에 `git fetch --depth=1`을 시작한 뒤 약 24분간 체크아웃을 완료하지 못했다. 제품 테스트는 실행 전이었다. 사용자가 처음에는 현재 실행 대기를 선택했고, 이후 “중지시키고 이쪽만 재실행”을 승인했다. 일반 취소 요청 뒤에도 종료되지 않아 같은 run을 force-cancel했으며, 완료 상태를 확인한 다음 `gh run rerun --repo edwardkim/rhwp --job 123536196464`로 D와 종속 집계만 재실행했다. 다른 성공 job은 유지했다.
+
+새 runner의 [D worker `123551305766`](https://github.com/edwardkim/rhwp/actions/runs/40896229309/job/123551305766)는 fetch를 마치고 2,713건을 678.269초에 통과했다. [최종 집계 `123559654425`](https://github.com/edwardkim/rhwp/actions/runs/40896229309/job/123559654425)도 성공했다. latest Jobs API에서 복사된 A/B/C/E job ID를 새 실행으로 세지 않았고, 실제 시작 시각과 원 attempt 로그를 대조했다.
+
+후행 commit은 이 검토 문서의 archive 이동, 시각 증거 README 링크, `mydocs/orders/20261030.md`만 포함한다. 제품 소스·테스트·fixture·workflow·baseline을 바꾸거나 devel을 반복 merge하지 않는다. 사용자 승인 범위로 후행 head CI·최신 merge tree 확인, 일반 merge, 원 PR merged 상태 확인과 contributor 안내·devel sync·임시 산출물 정리를 진행한다. 완료 후 정확한 merge SHA·후행 CI URL은 원 PR contributor comment와 로컬 작업 로그에 남긴다.
