@@ -3346,3 +3346,102 @@ fn whitespace_tac_carrier_paint_y_rejects_missing_or_block_tac() {
         None
     );
 }
+
+// 저장 탭 세 개 중 첫 탭은 선행 인라인 개체 이전에 있고, 나머지 둘은 뒤 조각에 있다.
+// 각 저장 전진은 차례로 7200·14400·21600 HU이고 마지막 탭은 오른쪽 정렬이다.
+#[test]
+fn source_fragment_tab_record_order_preserves_stored_advance() {
+    use super::paragraph_layout::{resolve_last_tab_pending, PendingTab};
+    let extensions = [mk_ext(7200, 1, 0), mk_ext(14400, 1, 0), mk_ext(21600, 2, 0)];
+    let mut style = TextStyle {
+        line_x_offset: 20.0,
+        ..mk_text_style()
+    };
+    style.inline_tabs = extensions.to_vec();
+    let unsliced =
+        resolve_last_tab_pending("\t\t", 2, &extensions, &style, &[], 48.0, false, 1000.0);
+    let source = ['\t', 'X', '\t', '\t'];
+    style = style.for_source_text_fragment(2, &source);
+    let aligned = resolve_last_tab_pending(
+        "\t\t",
+        1,
+        &style.inline_tabs,
+        &style,
+        &[],
+        48.0,
+        false,
+        1000.0,
+    );
+    assert_eq!(
+        aligned,
+        Some(PendingTab::StoredStart {
+            position: 500.0,
+            fill_type: 0
+        })
+    );
+    assert_ne!(
+        unsliced, aligned,
+        "조각 앞에서 소비한 탭의 레코드를 다시 사용하면 안 된다"
+    );
+}
+
+#[test]
+fn source_fragment_tab_record_boundaries_preserve_dynamic_stop() {
+    use super::paragraph_layout::{resolve_last_tab_pending, PendingTab};
+    let extensions = [mk_ext(7200, 1, 0), mk_ext(14400, 2, 3)];
+    let style = TextStyle {
+        inline_tabs: extensions.to_vec(),
+        line_x_offset: 20.0,
+        ..mk_text_style()
+    };
+    let source = ['가', '\t', '나', '\t'];
+    assert_eq!(
+        style.for_source_text_fragment(1, &source).inline_tabs,
+        extensions
+    );
+    let suffix = style.for_source_text_fragment(3, &source);
+    assert_eq!(suffix.inline_tabs, extensions[1..]);
+    assert_eq!(
+        resolve_last_tab_pending(
+            "\t",
+            0,
+            &suffix.inline_tabs,
+            &suffix,
+            &[],
+            48.0,
+            false,
+            1000.0
+        ),
+        Some(PendingTab::StoredStart {
+            position: 212.0,
+            fill_type: 3
+        }),
+    );
+    let stops = [TabStop {
+        position: 300.0,
+        tab_type: 1,
+        fill_type: 0,
+    }];
+    let dynamic = TextStyle {
+        inline_tabs: Vec::new(),
+        ..style
+    }
+    .for_source_text_fragment(3, &source);
+    assert!(dynamic.inline_tabs.is_empty());
+    assert_eq!(
+        resolve_last_tab_pending(
+            "\t",
+            0,
+            &dynamic.inline_tabs,
+            &dynamic,
+            &stops,
+            48.0,
+            false,
+            1000.0
+        ),
+        Some(PendingTab::Right {
+            position: 300.0,
+            fill_type: 0
+        }),
+    );
+}
