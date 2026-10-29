@@ -1,5 +1,10 @@
-//! #8160: sample16 회귀 검사 통합. 이전 등록: tests/cases/verified_sample16_all_pages.rs
-//! #8160: 새 Hancom Print와 Native/fresh 표준 WASM 전 384쪽 raw 100% 뒤 등록.
+//! 관계형·고정형: 세 원본의 내용 소유와 독립 Print 좌표.
+//! 주석 갱신: 2026-10-30 04:26 KST; 직전 파일 변경: df85dd5967 (2026-10-25 20:20:40 +09:00).
+//! 2026-10-30 측정 raw(96dpi, PDFium): 세 원본 각 64쪽, 쪽별 수치는 아래 TSV 참조.
+//! HWPX·2024 HWP 각각 18쪽 Native 99.99% / fresh WASM 99.99%,
+//! 35쪽 99.99% / 100.00%, 나머지 62쪽 각 100.00%; 전쪽 최저 각 99.99% / 99.99%.
+//! 2022 HWP 전 64쪽 Native·fresh WASM 각 100.00%; 전쪽 최저 각 100.00%.
+//! 근거: mydocs/pr/assets/issue_8160/rebase-ad4bf269-20261030/README.md.
 //! 세 원본 각각 64쪽의 내용·기준선·가로 원점과 중요 표·그림·산식·꼬리말의
 //! 독립 px 좌표, 원본 본문/셀/글상자 주소를 함께 보호한다.
 #![cfg(not(target_arch = "wasm32"))]
@@ -189,12 +194,18 @@ fn verify(fixture: &str) {
     let mut seen = BTreeSet::new();
     for (index, page) in contract.pages.iter().enumerate() {
         assert_eq!(page.page, index + 1, "전체 쪽 순서·중복·누락");
+        // 두 경로의 전쪽 TSV에서 해당 원본·쪽의 표시값이 모두 100.00%인 경우만 1px이다.
+        let tolerance = if contract.compat2024 && matches!(page.page, 18 | 35) {
+            2.0
+        } else {
+            1.0
+        };
         assert!(
             !page.anchors.is_empty(),
             "표지·목차·본문·서식 모두 중요 내용 보호"
         );
         let tree = core.build_page_render_tree(index as u32).unwrap();
-        verify_regions(&core, &tree.root, page);
+        verify_regions(&core, &tree.root, page, tolerance);
         let mut body = Vec::new();
         lines(&tree.root, false, &mut body);
         let mut previous_baseline = f64::NEG_INFINITY;
@@ -233,6 +244,7 @@ fn verify(fixture: &str) {
                     page.origin_x,
                     page.page,
                     "핵심 글줄 가로 원점",
+                    tolerance,
                 );
             }
             let original = source(&core, anchor);
@@ -254,10 +266,11 @@ fn verify(fixture: &str) {
                 prior_end = Some(end);
                 let actual_baseline = node.bbox.y + run.baseline;
                 assert!(
-                    (actual_baseline - anchor.baseline).abs() <= 2.0,
-                    "{} {}쪽 독립 Print 기준선 ±2px: {}, expected={}, actual={}",
+                    (actual_baseline - anchor.baseline).abs() <= tolerance,
+                    "{} {}쪽 독립 Print 기준선 ±{}px: {}, expected={}, actual={}",
                     contract.sample,
                     page.page,
+                    tolerance,
                     anchor.text,
                     anchor.baseline,
                     actual_baseline
@@ -287,14 +300,14 @@ fn verify(fixture: &str) {
     }
 }
 
-fn near(actual: f64, expected: f64, page: usize, label: &str) {
+fn near(actual: f64, expected: f64, page: usize, label: &str, tolerance: f64) {
     assert!(
-        actual.is_finite() && (actual - expected).abs() <= 2.0,
-        "{page}쪽 {label} ±2px: expected={expected}, actual={actual}"
+        actual.is_finite() && (actual - expected).abs() <= tolerance,
+        "{page}쪽 {label} ±{tolerance}px: expected={expected}, actual={actual}"
     );
 }
 
-fn verify_regions(core: &DocumentCore, root: &RenderNode, page: &Page) {
+fn verify_regions(core: &DocumentCore, root: &RenderNode, page: &Page, tolerance: f64) {
     let expected_count = match page.page {
         6 => 16,
         18 => 3,
@@ -353,7 +366,7 @@ fn verify_regions(core: &DocumentCore, root: &RenderNode, page: &Page) {
                     .zip(expected)
                     .zip(["산식 첫 글자", "분수선 높이", "분수선 길이"])
             {
-                near(*actual, *expected, page.page, label);
+                near(*actual, *expected, page.page, label, tolerance);
             }
         }
     }
@@ -382,12 +395,19 @@ fn verify_regions(core: &DocumentCore, root: &RenderNode, page: &Page) {
             "본문으로 소유 이동 없음"
         );
         assert!(run.cell_context.is_none());
-        near(node.bbox.x, footer.x, page.page, "꼬리말 가로 원점");
+        near(
+            node.bbox.x,
+            footer.x,
+            page.page,
+            "꼬리말 가로 원점",
+            tolerance,
+        );
         near(
             node.bbox.y + run.baseline,
             footer.baseline,
             page.page,
             "꼬리말 기준선",
+            tolerance,
         );
     }
     let mut seen = BTreeSet::new();
@@ -446,13 +466,36 @@ fn verify_regions(core: &DocumentCore, root: &RenderNode, page: &Page) {
         };
         let bbox = node.bbox;
         let actual = [bbox.x, bbox.y, bbox.x + bbox.width, bbox.y + bbox.height];
+        // 2022 Print의 35쪽 그림은 PDF에서 41,763개 조각으로 출력된다.
+        // PDF의 그림 경계 추정치와 모델 이미지 프레임 끝의 소유는 동일하지 않다.
+        // 원본 HWPUNIT의 프레임 높이와 출력 프레임을 따로 비교한다.
+        let source_image_height = match source {
+            Control::Picture(picture)
+                if tolerance == 1.0 && page.page == 35 && region.owner == [0, 606, 0] =>
+            {
+                Some(f64::from(picture.common.height) * 96.0 / 7200.0)
+            }
+            _ => None,
+        };
         for ((actual, expected), edge) in
             actual
                 .into_iter()
                 .zip(region.edges)
                 .zip(["왼쪽", "위쪽", "오른쪽", "아래쪽"])
         {
-            near(actual, expected, page.page, edge);
+            if edge == "아래쪽" && source_image_height.is_some() {
+                continue;
+            }
+            near(actual, expected, page.page, edge, tolerance);
+        }
+        if let Some(expected) = source_image_height {
+            near(
+                bbox.height,
+                expected,
+                page.page,
+                "원본 그림 프레임 높이",
+                tolerance,
+            );
         }
     }
 }
