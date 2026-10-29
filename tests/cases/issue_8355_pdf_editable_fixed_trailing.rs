@@ -2,27 +2,45 @@
 //! 줄간격 문단은 마지막 줄까지 `줄 높이 + 줄간격 = 고정값 / 2` 다(10k 코퍼스 표본 전부). PDF 편집
 //! 우선 가져오기는 마지막 줄 줄간격을 0 으로 두고 문단 끝을 줄 바닥으로 재어, 한/글이 문단마다
 //! 그 몫만큼 더 내려 같은 저장본을 18쪽(rhwp 16쪽)으로 그렸다.
+//! 예외는 원본 PDF 가 다음 글상자를 고정 피치보다 가까이 둔 관측 꼬리 구간(#8220
+//! `observedTailBands`)뿐이다 — 그 줄은 원본 위치를 따르며 가져오기 보고서에 기록된다.
 #![cfg(feature = "pdf-import")]
 
 use rhwp::model::style::LineSpacingType;
-use rhwp::parser::pdf::{PdfImportLayout, PdfImportOptions};
+use rhwp::parser::pdf::{parse_pdf_with_options, PdfImportLayout, PdfImportOptions};
 use rhwp::DocumentCore;
 
-fn import_editable() -> DocumentCore {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("samples/21_언어_기출_편집가능본-2010.pdf");
-    let options = PdfImportOptions {
+const SOURCE: &str = "samples/21_언어_기출_편집가능본-2010.pdf";
+
+fn options() -> PdfImportOptions {
+    PdfImportOptions {
         layout: PdfImportLayout::Editable,
         ..PdfImportOptions::default()
-    };
-    DocumentCore::from_pdf_bytes(&std::fs::read(path).unwrap(), &options).unwrap()
+    }
+}
+
+fn source_bytes() -> Vec<u8> {
+    std::fs::read(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SOURCE)).unwrap()
+}
+
+fn import_editable() -> DocumentCore {
+    DocumentCore::from_pdf_bytes(&source_bytes(), &options()).unwrap()
 }
 
 #[test]
 fn fixed_line_paragraphs_keep_the_pitch_on_their_last_row() {
-    let core = import_editable();
-    let doc = core.document();
+    let result = parse_pdf_with_options(&source_bytes(), &options()).unwrap();
+    // 원본 PDF 가 다음 글상자를 피치보다 가까이 둔 구간에서 받아들인 꼬리 줄간격들.
+    let mut bands: Vec<i64> = result.metadata.editable_layout["sections"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .flat_map(|section| section["observedTailBands"].as_array().into_iter().flatten())
+        .map(|band| band["acceptedTailHu"].as_i64().unwrap())
+        .collect();
+    let doc = &result.document;
     let mut checked = 0;
+    let mut banded = 0;
     for paragraph in doc.sections.iter().flat_map(|s| &s.paragraphs) {
         let shape = &doc.doc_info.para_shapes[paragraph.para_shape_id as usize];
         if shape.line_spacing_type != LineSpacingType::Fixed || paragraph.line_segs.len() < 2 {
@@ -33,15 +51,31 @@ fn fixed_line_paragraphs_keep_the_pitch_on_their_last_row() {
         if pitch <= last.line_height {
             continue;
         }
-        assert_eq!(
-            last.line_height + last.line_spacing,
-            pitch,
-            "고정 줄간격 문단의 마지막 줄 «{}»",
-            paragraph.text.chars().take(16).collect::<String>()
-        );
+        let head = paragraph.text.chars().take(16).collect::<String>();
+        if last.line_height + last.line_spacing != pitch {
+            // 피치를 줄인 꼬리는 원본이 관측한 구간 하나로 설명돼야 한다. 늘리지는 않는다.
+            assert!(
+                last.line_height + last.line_spacing < pitch,
+                "고정 줄간격 문단의 마지막 줄 «{head}»이 피치 {pitch}를 넘는다"
+            );
+            let band = bands
+                .iter()
+                .position(|&tail| tail == i64::from(last.line_spacing))
+                .unwrap_or_else(|| {
+                    panic!("고정 줄간격 문단의 마지막 줄 «{head}»: 관측 구간 없이 피치 {pitch}보다 짧다")
+                });
+            bands.swap_remove(band);
+            banded += 1;
+            continue;
+        }
         checked += 1;
     }
     assert!(checked > 50, "검사한 고정 줄간격 본문 문단 {checked}개");
+    // 관측 구간은 예외다 — 대부분의 고정 줄간격 문단은 피치를 그대로 차지한다.
+    assert!(
+        banded * 4 < checked,
+        "관측 구간 {banded}개 / 피치를 지킨 문단 {checked}개"
+    );
 }
 
 #[test]
