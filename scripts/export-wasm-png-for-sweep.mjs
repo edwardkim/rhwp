@@ -396,23 +396,17 @@ async function main() {
             }
             await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
             return {width: canvas.width, height: canvas.height,
-                    tree: doc.canvasMetricsActive()
-                      ? doc.getCanvasPageLayerTree(number - 1, 'print', false)
-                      : doc.getPageRenderTree(number - 1)};
+                    tree: doc.getPageRenderTree(number - 1)};
           }, {number, scale: settings.scale});
           result.png = await page.evaluate(encodeCanvasOnWhitePaper, 'page');
           const tree = JSON.parse(result.tree);
-          const validTree = info.canvasMetricsActive
-            ? tree.root && tree.pageWidth > 0 && tree.pageHeight > 0
-            : tree.type && tree.bbox;
-          if (!validTree || !(result.width > 0 && result.height > 0)) throw Error(`p${number} Canvas 산출물 손상`);
+          if (!tree.type || !tree.bbox || !(result.width > 0 && result.height > 0)) throw Error(`p${number} Canvas 산출물 손상`);
           const bytes = Buffer.from(result.png, 'base64');
           if (!bytes.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10]))) throw Error(`p${number} PNG signature 손상`);
           const suffix = String(number).padStart(3, '0');
           writeFileSync(join(output, 'rhwp_png', `rhwp_${suffix}.png`), bytes);
           writeFileSync(join(output, 'render_tree', `render_tree_${suffix}.json`), result.tree);
           pageRecords.push({page: number, pngSha256: sha(bytes), width: result.width, height: result.height,
-                            treeFormat: info.canvasMetricsActive ? 'canvas-layer-tree' : 'render-tree',
                             canvasContext: captureCanvasContext});
           console.log(`Canvas PNG p${suffix}: worker ${index + 1}`);
         }
