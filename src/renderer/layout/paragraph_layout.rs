@@ -743,8 +743,8 @@ pub(crate) fn numbering_head_text(
 /// 줄 나눔은 문단 하나만 보고 줄을 채우므로 계수기를 가질 수 없다. 쪽 나누기 전에 여기서
 /// 번호를 정해 두면 줄 나눔(마커 폭)과 배치(그리는 번호)가 같은 문자열을 쓴다.
 ///
-/// 순서는 구역 → 문단 → 그 문단의 표 칸 문단(재귀)이다. 계수기는 구역을 넘어 이어진다
-/// (배치의 쪽별 재생과 같은 연속). 빈 기본 표 앵커 문단은 배치가 계수기를 진행하지 않으므로
+/// 순서는 구역 → 문단 → 그 문단의 표 칸·머리말·꼬리말 문단(재귀)이다. 계수기는 구역을 넘어
+/// 이어진다(배치의 쪽별 재생과 같은 연속). 빈 기본 표 앵커 문단은 배치가 계수기를 진행하지 않으므로
 /// 여기서도 건너뛴다.
 pub(crate) fn assign_numbering_markers(
     sections: &mut [crate::model::document::Section],
@@ -769,12 +769,27 @@ pub(crate) fn assign_numbering_markers(
             _ => NumberingMarker::Absent,
         };
         for control in &mut para.controls {
-            if let Control::Table(table) = control {
-                for cell in &mut table.cells {
-                    for cell_para in &mut cell.paragraphs {
-                        visit(cell_para, styles, outline_numbering_id, state);
+            match control {
+                Control::Table(table) => {
+                    for cell in &mut table.cells {
+                        for cell_para in &mut cell.paragraphs {
+                            visit(cell_para, styles, outline_numbering_id, state);
+                        }
                     }
                 }
+                // 머리말·꼬리말 문단도 조판부호 자리에서 본문과 한 계수기로 센다. 한/글 12.30
+                // PDF: 첫 문단에 든 머리말의 번호·개요 문단이 1·2, 이어지는 본문이 3·4 다.
+                Control::Header(header) => {
+                    for hf_para in &mut header.paragraphs {
+                        visit(hf_para, styles, outline_numbering_id, state);
+                    }
+                }
+                Control::Footer(footer) => {
+                    for hf_para in &mut footer.paragraphs {
+                        visit(hf_para, styles, outline_numbering_id, state);
+                    }
+                }
+                _ => {}
             }
         }
     }
