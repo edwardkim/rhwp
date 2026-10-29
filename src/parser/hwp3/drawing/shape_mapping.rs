@@ -9,15 +9,6 @@ fn hwp3_margin_to_i16(raw_margin: u32) -> i16 {
     scaled.clamp(i16::MIN as i64, i16::MAX as i64) as i16
 }
 
-/// 표 68의 개체 폭과 표 69의 좌우 글상자 여백을 공통 줄 프레임으로 전달한다.
-fn textbox_inner_width_hu(header: &Hwp3DrawingObjectCommonHeader) -> i32 {
-    let width = header.object_size[0]
-        .saturating_mul(HWP3_UNIT_SCALE as u32)
-        .min(i32::MAX as u32) as i32;
-    let margin = i32::from(hwp3_margin_to_i16(header.basic_attr.textbox_margin[0]));
-    width.saturating_sub(margin.saturating_mul(2)).max(0)
-}
-
 /// HWP3 사각형의 무색·무늬 없음 sentinel을 채우기 없음으로 판정한다.
 ///
 /// `fill_color`의 high byte는 표 69의 RGB 영역이 아니다. 실제 HWP3 원본에서
@@ -134,10 +125,10 @@ pub(super) fn map_to_shape_object(
                     doc_border_fills,
                     doc_tab_defs,
                     pic_name_to_id,
-                    0, // body_left_hu: 드로잉 내부 텍스트, wrap zone 불필요
-                    textbox_inner_width_hu(&hdr), // 글상자 안쪽 폭
-                    0, // body_height_hu: 도형 내부 텍스트는 본문 페이지 분할 제외
-                    false, // 복호화 원본의 본문 Square-wrap 계약은 적용하지 않음
+                    0,            // body_left_hu: 드로잉 내부 텍스트, wrap zone 불필요
+                    i32::MAX / 2, // column_width_hu
+                    0,            // body_height_hu: 도형 내부 텍스트는 본문 페이지 분할 제외
+                    false,        // 복호화 원본의 본문 Square-wrap 계약은 적용하지 않음
                 )?;
                 parsed_paragraphs = paras;
             }
@@ -181,10 +172,10 @@ pub(super) fn map_to_shape_object(
                 doc_border_fills,
                 doc_tab_defs,
                 pic_name_to_id,
-                0, // body_left_hu: 드로잉 내부 텍스트, wrap zone 불필요
-                textbox_inner_width_hu(&header), // 글상자 안쪽 폭
-                0, // body_height_hu: 도형 내부 텍스트는 본문 페이지 분할 제외
-                false, // 복호화 원본의 본문 Square-wrap 계약은 적용하지 않음
+                0,            // body_left_hu: 드로잉 내부 텍스트, wrap zone 불필요
+                i32::MAX / 2, // column_width_hu
+                0,            // body_height_hu: 도형 내부 텍스트는 본문 페이지 분할 제외
+                false,        // 복호화 원본의 본문 Square-wrap 계약은 적용하지 않음
             ) {
                 Ok(paras) => parsed_paragraphs = paras,
                 Err(error @ Hwp3Error::NestingLimitExceeded { .. }) => return Err(error),

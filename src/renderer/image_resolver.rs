@@ -14,7 +14,6 @@ mod print_window;
 #[cfg(target_arch = "wasm32")]
 pub(crate) use print_tone::decode_print_jpeg_replay;
 pub(crate) use print_tone::print_bitmap_payload;
-mod print_alpha;
 mod print_bitmap_window;
 mod print_codec;
 mod print_fill_jpeg;
