@@ -1798,3 +1798,8 @@ fresh WASM과 나머지 회귀는 별도로 확인한다.
 ignored `tab-origin-fragment-candidate-source-20261029.json`, 실행 결과는
 `tab-fragment-candidate-contract-20261029.log`다. 이는 helper 계약에 대한
 결과이며 편람 출력·전체 회귀·실제 제품 적용의 완료를 뜻하지 않는다.
+
+같은 탭 조각 후보의 편람 빈 캐리어, 글자 간격, 표 이어받기 물리 띠,
+서명 행과 핵심 출력 경계 집중 검사 12건이 모두 통과했다. 실행 로그는
+ignored `tab-fragment-candidate-handbook-focused-20261029.log`다. 이 결과는
+독립 Print와의 Native/fresh WASM 전쪽 비교나 다른 회귀 실패를 대신하지 않는다.
