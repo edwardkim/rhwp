@@ -1,5 +1,12 @@
 import {installIntrinsicCanvasFont} from '../rhwp-studio/src/core/canvas-intrinsic-font.mjs';
 
+// 같은 family·굵기·기울기의 실제 공급 후보에서는 CFF OTF를 먼저 쓴다.
+function preferredFontForKey(fonts, key) {
+  return fonts.filter(font => font.families.some(name =>
+    `${name.toLowerCase()}|${font.weight}|${font.style}` === key))
+    .toSorted((a, b) => Number(Boolean(b.openTypeCff)) - Number(Boolean(a.openTypeCff)))[0];
+}
+
 // fontdb 0.23의 style/weight 우선순위로 실제 요청한 메타파일 face만 고른다.
 export function selectMetafileFontFaces(fonts, requests) {
   const selected = new Set();
@@ -102,8 +109,7 @@ export async function prepareHftOtfFonts(owner, fonts, loadBytes) {
     const selected = selectMetafileFontFaces(fonts, [{families: [request.family],
       weight: request.bold ? 700 : 400, italic: request.italic}]);
     for (const key of selected) {
-      const record = fonts.find(font => font.families.some(name =>
-        `${name.toLowerCase()}|${font.weight}|${font.style}` === key));
+      const record = preferredFontForKey(fonts, key);
       if (!record) continue;
       let bytes = loaded.get(record.sha256);
       if (!bytes) { bytes = await loadBytes(record); loaded.set(record.sha256, bytes); }

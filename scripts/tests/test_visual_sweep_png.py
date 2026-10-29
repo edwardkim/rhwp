@@ -236,6 +236,27 @@ class PngExportTests(unittest.TestCase):
         self.assertFalse(png.png_export_has_pages(self.base, False, [2]))
 
 
+class SystemFontDiscoveryTests(unittest.TestCase):
+    def test_linux_fontconfig_returns_existing_supported_files_once(self):
+        with tempfile.TemporaryDirectory() as folder:
+            first = Path(folder) / '가.otf'
+            second = Path(folder) / 'b.ttf'
+            ignored = Path(folder) / 'not-a-font.txt'
+            for path in (first, second, ignored):
+                path.write_bytes(b'fixture')
+            output = '\n'.join(map(str, [second, first, second, ignored, Path(folder) / 'missing.otf']))
+            with (patch.object(sweep.platform, 'system', return_value='Linux'),
+                  patch.object(sweep.subprocess, 'run', return_value=SimpleNamespace(stdout=output))):
+                self.assertEqual(sweep.linux_system_font_files(), sorted([first, second]))
+
+    def test_missing_fontconfig_and_other_platforms_have_no_automatic_files(self):
+        with (patch.object(sweep.platform, 'system', return_value='Linux'),
+              patch.object(sweep.subprocess, 'run', side_effect=FileNotFoundError)):
+            self.assertEqual(sweep.linux_system_font_files(), [])
+        with patch.object(sweep.platform, 'system', return_value='Windows'):
+            self.assertEqual(sweep.linux_system_font_files(), [])
+
+
 class RasterDispatchTests(unittest.TestCase):
     def test_png_inventory_records_explicit_program_file_and_rejects_missing_source(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -277,6 +298,19 @@ class RasterDispatchTests(unittest.TestCase):
 
 
 class EmbeddedFontCatalogueTests(unittest.TestCase):
+    def test_catalog_marks_cff_from_actual_program_for_cached_and_new_faces(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            source = root / 'fixture.otf'
+            shutil.copyfile(Path(__file__).parents[2] / 'tests/fixtures/fonts/RHWPHftOutline.otf', source)
+            adapter = SimpleNamespace(resolve_input_path=lambda base, path: Path(path),
+                sha256_file=lambda path: hashlib.sha256(Path(path).read_bytes()).hexdigest(),
+                write_json_atomic=lambda path, value: Path(path).write_text(json.dumps(value)))
+            for _ in range(2):
+                records = json.loads(png.font_catalog(adapter, root, [source], root).read_text())['faces']
+                self.assertTrue(records)
+                self.assertTrue(all(record['openTypeCff'] for record in records))
+
     def test_empty_vtt_source_is_removed_without_changing_render_tables(self):
         from fontTools.ttLib import TTCollection, TTFont
         from fontTools.ttLib.sfnt import SFNTWriter

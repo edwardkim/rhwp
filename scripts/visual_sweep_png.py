@@ -319,6 +319,10 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
                     collection.close()
                 else:
                     fonts[0].close()
+    # 캐시된 목록도 실제 공급 SFNT의 CFF 여부를 확인한다.
+    for record in records:
+        with Path(record['path']).open('rb') as program:
+            record['openTypeCff'] = program.read(4) == b'OTTO'
     path = base / 'font-catalog.json'
     vs.write_json_atomic(path, {'faces': records})
     return path

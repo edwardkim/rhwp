@@ -104,6 +104,13 @@ test('CFF와 collection을 개별 TrueType 프로그램으로 오인하지 않�
   assert.equal(hasOpenTypeCffSignature(bytes([0, 1, 0, 0])), false);
 });
 
+test('같은 글꼴과 스타일의 CFF OTF를 TTF보다 먼저 선택한다', () => {
+  const plan = {requests: [{primary: ['휴먼명조'], substitute: []}], embeddedFamilies: []};
+  const ttf = {families: ['휴먼명조'], weight: 400, style: 'normal', openTypeCff: false};
+  const otf = {families: ['휴먼명조'], weight: 400, style: 'normal', openTypeCff: true};
+  assert.deepEqual(selectSweepProgramFaces(plan, [ttf, otf]), [{query: '휴먼명조', face: otf}]);
+});
+
 function programFixture({badHash = false, loadError = false, responseOk = true} = {}) {
   const bytes = Uint8Array.from([0, 1, 0, 0, 42]).buffer;
   const events = [], fonts = {ready: Promise.resolve(), add: face => events.push(`add:${face.family}`)};

@@ -12,7 +12,8 @@ test('실제 선택한 CFF만 전달하고 없는 face와 TTF는 HFT 경로에 �
   const owner = {getNativeOtfFontRequests: () => JSON.stringify(requests),
     prepareNativeOtfFonts(provider) { for (const request of requests) received.push(provider(JSON.stringify(request))); }};
   const fonts = [
-    {families: ['Installed'], weight: 400, style: 'normal', sha256: 'cff'},
+    {families: ['Installed'], weight: 400, style: 'normal', sha256: 'ttf', openTypeCff: false},
+    {families: ['Installed'], weight: 400, style: 'normal', sha256: 'cff', openTypeCff: true},
     {families: ['TrueType'], weight: 400, style: 'normal', sha256: 'ttf'},
   ];
   const proof = await prepareHftOtfFonts(owner, fonts, async face =>

@@ -38,7 +38,8 @@ export function selectSweepProgramFaces(plan, fonts) {
     // 어느 것을 사용할지는 여기서 결정하지 않고 실제 준비된 후보만 반환한다.
     const candidates = fonts.filter(face => face.families.some(name => name.toLowerCase() === query.toLowerCase())
       && !face.families.some(name => embedded.has(name.toLowerCase())));
-    const face = candidates.toSorted((a, b) => rank(a) - rank(b))[0];
+    const face = candidates.toSorted((a, b) => rank(a) - rank(b)
+      || Number(Boolean(b.openTypeCff)) - Number(Boolean(a.openTypeCff)))[0];
     return face ? [{query, face}] : [];
   });
 }

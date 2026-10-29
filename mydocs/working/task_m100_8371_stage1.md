@@ -65,3 +65,11 @@
 - 최종 후보의 집중 검사는 수납대장, sample10 312쪽 경계, OTF 공급 전후 저장 보존과 무효화 분류를 포함해 5개 통과했다. 로그는 `output/issue8371/regression-triage/focused-v6.log`다. 하이픈은 Native에서 첫 획이 한컴 Print와 같은 행에 있지만 기존 검사가 특정 SVG 요소만 요구해 실패한다. 해당 원본의 Native 전쪽은 90% 이상이고, fresh WASM 전쪽과 실제 잉크를 확인한 뒤 관계형 검사로 재검토한다.
 - 위 결과는 Native 및 집중 검사다. 최적화 WASM 전쪽, 최종 전체 회귀와 PR 필수 검증은 아직 완료하지 않았다.
 - 변경한 Rust 파일의 서식을 정리하고 `rustfmt --check`를 통과했다. 로그는 `output/issue8371/regression-triage/rustfmt-check-v7.log`다.
+
+## 시스템 글꼴 공급과 새 WASM 검증
+
+- 최적화 WASM SHA-256은 `1fae6535a3608cd68aa1cd808b528b80b270e0be5ad537a7a852d8ea214ffa59`이며, `pkg`와 Studio public의 WASM 및 JS 해시가 각각 같다. 빌드 로그는 `output/issue8371/regression-triage/wasm-build-v7-allowed.log`다.
+- sample10의 같은 Print PDF와 실제 연결 그림을 사용한 fresh WASM 전763쪽은 최저 99.02%, 90% 미만 0쪽이며 쪽수도 763쪽으로 일치했다. 312쪽은 Native와 WASM 모두 raw 미대응 픽셀 0이다. TSV는 `output/issue8371/regression-triage/sample10-wasm-scores-v7/silhouette.tsv`다.
+- Linux에서 별도 경로가 없을 때 WASM Visual Sweep의 기존 기본 목록은 비어 있었다. 이 상태에서 두 번째 하이픈 원본 17쪽은 87.80%였으나, 실제 설치된 휴먼명조 OTF를 공급하면 94.70%였다. 빈 공급 결과를 정상 글꼴 환경의 회귀나 통과 증거로 쓰지 않는다.
+- 명시한 글꼴 경로가 없으면 Fontconfig에 실제 등록된 글꼴 파일을 자동 열거한다. 같은 family·스타일·굵기에서 실제 CFF OTF를 TTF보다 먼저 공급하며, 프로그램 바이트의 SFNT 서명으로 형식을 확인한다. 캐시된 글꼴 목록에도 같은 확인을 적용한다. 실제 전17쪽 자동 공급 검증은 최저 96.35%이며 휴먼명조 OTF 공급 해시를 `output/issue8371/regression-triage/nested-wasm-auto-v9/nested/wasm-export-complete.json`에 기록했다.
+- Visual Sweep Python 검사 33개와 OTF 우선 공급 Node 검사 파일 2개가 통과했다. 로그는 `output/issue8371/regression-triage/sweep-system-font-tests-v3.log`, `output/issue8371/regression-triage/sweep-otf-order-tests.log`다. 나머지 원본의 자동 공급 WASM 재검증과 하이픈 관계형 회귀·전체 테스트는 계속 진행한다.
