@@ -1,4 +1,4 @@
-//! 관계형·고정형: 글꼴 결정 추적과 공개 API 결과 계약.
+//! 관계형: 글꼴 결정 추적과 공개 API 결과 계약.
 use rhwp::document_core::DocumentCore;
 
 mod corpus_scope {

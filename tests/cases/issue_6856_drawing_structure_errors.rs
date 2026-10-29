@@ -1,4 +1,4 @@
-//! 관계형·고정형: 불완전한 도형 입력의 파서 오류와 보존 계약.
+//! 관계형: 불완전한 도형 입력의 파서 오류와 보존 계약.
 //! 유효한 한컴 문서가 아닌 의도적으로 불완전한 파서 입력이다.
 use rhwp::model::shape::{GroupShape, RectangleShape, ShapeObject, TextBox};
 use rhwp::model::{control::Control, document::Section, paragraph::Paragraph};

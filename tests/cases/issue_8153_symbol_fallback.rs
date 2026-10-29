@@ -1,4 +1,4 @@
-//! 관계형·고정형: 빈 cmap 기호와 실제 fallback의 잉크를 최종 Native paint에서 확인한다.
+//! 관계형: 빈 cmap 기호와 실제 fallback의 잉크를 최종 Native paint에서 확인한다.
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
 //! 이 검사는 합성 입력을 사용하며 아래 수치는 관련 편람의 별도 시각 검증이다.
 //! HWP 200쪽 Native 100.00000% / fresh WASM 100.00000%.

@@ -1,4 +1,9 @@
-//! 관계형·고정형: PDF 래스터 비교와 합성 페이지 분류 계약.
+//! 관계형·고정형: 합성 PDF·래스터의 분류와 페이지 격리 계약.
+//! 실제 HWP/HWPX를 렌더링하거나 독립 Print PDF와 비교하는 검사가 아니다.
+//! raw 일치율·Native/fresh WASM 쪽별 측정과 DPI는 해당하지 않는다.
+//! 활성 corpus 목록 185쪽과 쪽별 합성 격리 사례를 사용하며, 실제 출력의 피델리티를 증명하지 않는다.
+//! 근거: tests/fixtures/issue_4764/README.md,
+//! mydocs/plans/issue_8153_handbook_regression_replacement_20261025.md.
 //! #4764: #3820의 쪽수 고정 이후 남은 PDF 래스터 충실도 검사.
 //!
 //! #3772의 ExtraLight 굵게 처리와 #3773의 svg2pdf SubsetError는 변경하지 않는다.
