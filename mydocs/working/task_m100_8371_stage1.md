@@ -64,3 +64,4 @@
 - sample10 66쪽의 원본 명조 글머리표는 독립 Print에서 1em을 점유한다. 실제 선택 OTF가 해당 글리프를 제공하면 OTF 폭을 우선하고, 없으면 원본 폭을 사용한다. Native 66쪽은 97.21%에서 99.70%로 개선됐고, 전763쪽 최저는 98.29%, 90% 미만 0쪽이다. Native TSV는 `output/issue8371/regression-triage/sample10-native-v6/sample10/silhouette.tsv`다.
 - 최종 후보의 집중 검사는 수납대장, sample10 312쪽 경계, OTF 공급 전후 저장 보존과 무효화 분류를 포함해 5개 통과했다. 로그는 `output/issue8371/regression-triage/focused-v6.log`다. 하이픈은 Native에서 첫 획이 한컴 Print와 같은 행에 있지만 기존 검사가 특정 SVG 요소만 요구해 실패한다. 해당 원본의 Native 전쪽은 90% 이상이고, fresh WASM 전쪽과 실제 잉크를 확인한 뒤 관계형 검사로 재검토한다.
 - 위 결과는 Native 및 집중 검사다. 최적화 WASM 전쪽, 최종 전체 회귀와 PR 필수 검증은 아직 완료하지 않았다.
+- 변경한 Rust 파일의 서식을 정리하고 `rustfmt --check`를 통과했다. 로그는 `output/issue8371/regression-triage/rustfmt-check-v7.log`다.

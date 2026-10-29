@@ -2449,47 +2449,44 @@ fn char_width_decision_with_hft_tracking<'a>(
     // 원본 HFT의 굵기는 intrinsic 글리프 폭을 바꾸지 않고 약0.05em의
     // 추가 전진을 준다. 독립 Print 22행의 굵기·크기·자간 대조를 따른다.
     // 표시용 TTF의 bold 메트릭이나 배분 자간과 구분하고 원본 자간을 함께 소비한다.
-    let font_tracking = if include_hft_bold_tracking
-        && style.bold
-        && !c.is_whitespace()
-        && !c.is_control()
-    {
-        if otf_advance.is_some() {
-            // 합성 굵기는 실제 글꼴 폭을 바꾸지 않는다. 원본에 독립적으로
-            // 확인된 꾸밈 전진 계약이 있는 경우에만 추가 폭을 적용한다.
-            if style
-                .native_otf_metrics
-                .as_ref()
-                .is_some_and(|font| font.needs_faux_bold())
-            {
-                if style.source_hwp3_hft_bold {
-                    font_size * 0.05
+    let font_tracking =
+        if include_hft_bold_tracking && style.bold && !c.is_whitespace() && !c.is_control() {
+            if otf_advance.is_some() {
+                // 합성 굵기는 실제 글꼴 폭을 바꾸지 않는다. 원본에 독립적으로
+                // 확인된 꾸밈 전진 계약이 있는 경우에만 추가 폭을 적용한다.
+                if style
+                    .native_otf_metrics
+                    .as_ref()
+                    .is_some_and(|font| font.needs_faux_bold())
+                {
+                    if style.source_hwp3_hft_bold {
+                        font_size * 0.05
+                    } else {
+                        let original_face = latin
+                            .map_or(style.original_glyph_metric_family.as_deref(), |slot| {
+                                slot.original_glyph_metric_family.as_deref()
+                            });
+                        crate::renderer::legacy_font_advances::bold_advance(
+                            style,
+                            c,
+                            base_width_raw,
+                            font_size,
+                            original_face.map(String::as_str),
+                        )
+                    }
                 } else {
-                    let original_face = latin.map_or(
-                        style.original_glyph_metric_family.as_deref(),
-                        |slot| slot.original_glyph_metric_family.as_deref(),
-                    );
-                    crate::renderer::legacy_font_advances::bold_advance(
-                        style,
-                        c,
-                        base_width_raw,
-                        font_size,
-                        original_face.map(String::as_str),
-                    )
+                    0.0
                 }
+            } else if source_hft_metric
+                || (style.source_font_is_hft && width_source == "heuristicFullwidth")
+            {
+                font_size * 0.05
             } else {
                 0.0
             }
-        } else if source_hft_metric
-            || (style.source_font_is_hft && width_source == "heuristicFullwidth")
-        {
-            font_size * 0.05
         } else {
             0.0
-        }
-    } else {
-        0.0
-    };
+        };
     let extra_char_spacing = if i < style.unjustified_leading_spaces {
         0.0
     } else {
