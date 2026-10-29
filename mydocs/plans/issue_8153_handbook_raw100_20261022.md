@@ -1737,3 +1737,10 @@ WASM 해시는 ignored `structural-origin-fresh-wasm-20261029/receipt.json`,
 130쪽 99.96463%다. 입력·PDF·실험 소스·바이너리 해시와 페이지별 결과는
 ignored `shared-tab-origin-native-whole-20261029/result.json`에 있다.
 fresh WASM과 나머지 회귀는 별도로 확인한다.
+
+같은 탭 원점 분리 실험의 최적화 fresh WASM도 두 원본 각각 전 383쪽을
+비교했다. 기존 후보 대비 정밀 raw와 미대응 픽셀 수가 바뀐 쪽은 없고
+최저 raw는 130쪽 99.96402%다. 실험 소스·WASM 해시는 ignored
+`shared-tab-origin-fresh-wasm-20261029/receipt.json`, 전쪽 결과와 TSV는
+같은 디렉터리의 `whole/` 아래에 있다. 남은 회귀와 원점 조건의 일반성은
+이 측정과 별도로 확인해야 하므로 제품 적용을 완료로 판정하지 않는다.
