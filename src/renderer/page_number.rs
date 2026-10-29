@@ -489,7 +489,6 @@ mod tests {
             fragment_row_heights: None,
             fragment_block_frames: Vec::new(),
             end_row_owns_stored_frame: false,
-            first_fragment_origin: None,
         }]);
         assert_eq!(a.assign(&p1), 1);
 
@@ -512,7 +511,6 @@ mod tests {
             fragment_row_heights: None,
             fragment_block_frames: Vec::new(),
             end_row_owns_stored_frame: false,
-            first_fragment_origin: None,
         }]);
         assert_eq!(a.assign(&p2), 2);
     }

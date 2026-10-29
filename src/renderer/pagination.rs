@@ -1197,8 +1197,6 @@ pub enum PageItem {
         fragment_block_frames: Vec<(usize, usize)>,
         /// 예산에서 인증·수용한 종료 행의 저장 물리 프레임 소유. 배치가 다시 추정하지 않는다.
         end_row_owns_stored_frame: bool,
-        /// 조판이 수용한 첫 조각 원점. 바깥 None은 이전 생성 경로를 뜻한다.
-        first_fragment_origin: Option<Option<f64>>,
     },
     /// 그리기 개체
     Shape {
@@ -1538,7 +1536,6 @@ impl PageItem {
                 fragment_row_heights,
                 fragment_block_frames,
                 end_row_owns_stored_frame,
-                first_fragment_origin,
             } => PageItem::PartialTable {
                 para_index: adjust(*para_index),
                 control_index: *control_index,
@@ -1557,7 +1554,6 @@ impl PageItem {
                 fragment_row_heights: fragment_row_heights.clone(),
                 fragment_block_frames: fragment_block_frames.clone(),
                 end_row_owns_stored_frame: *end_row_owns_stored_frame,
-                first_fragment_origin: *first_fragment_origin,
             },
             PageItem::Shape {
                 para_index,

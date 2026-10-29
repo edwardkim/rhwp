@@ -131,7 +131,6 @@ impl FragmentInput<'_> {
 
 #[derive(Clone, Copy)]
 struct FragmentBudget {
-    accepted_first_fragment_origin: Option<f64>,
     caption_extra: f64,
     host_before_overhead: f64,
     terminal_outer_bottom_overhead: f64,

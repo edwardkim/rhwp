@@ -3225,17 +3225,11 @@ impl DocumentCore {
             fragment_row_heights,
             fragment_block_frames,
             end_row_owns_stored_frame,
-            first_fragment_origin,
         }) = col.items.first()
         else {
             return Ok(Unsupported);
         };
         if *para_index != parent_para_idx || *control_index != control_idx {
-            return Ok(Unsupported);
-        }
-        // 빠른 셀 프로브는 열의 시작 원점을 전제한다. 조판이 별도 원점을
-        // 수용한 조각은 그 값을 소비하는 전체 페이지 배치에 위임한다.
-        if first_fragment_origin.is_some_and(|origin| origin.is_some()) {
             return Ok(Unsupported);
         }
         // host 문단 앵커의 Shape/Table 아이템은 shape_reserved 사전 점프를 만들 수

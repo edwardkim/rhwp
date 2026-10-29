@@ -710,8 +710,8 @@ impl TypesetEngine {
                 // Capacity can pass an authenticated source frame even when
                 // its measured height is smaller. Such a boundary limits unit
                 // ownership; it is not only a positive height extension.
-                let source_frame_contracts_capacity = !v.displaced_opening_source_frame
-                    && stored_source_frame.as_ref().is_some_and(|frame| {
+                let source_frame_contracts_capacity =
+                    stored_source_frame.as_ref().is_some_and(|frame| {
                         frame.hit_hard_break
                             && frame.end_cut.len() == res.end_cut.len()
                             && frame.end_cut != res.end_cut

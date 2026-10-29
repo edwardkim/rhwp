@@ -11087,7 +11087,6 @@ impl LayoutEngine {
                     None,
                     &[],
                     false,
-                    None,
                     &overlay_ctx,
                     col_area.y,
                 );
@@ -12432,7 +12431,6 @@ impl LayoutEngine {
                 fragment_row_heights,
                 fragment_block_frames,
                 end_row_owns_stored_frame,
-                first_fragment_origin,
             } => {
                 y_offset = self.layout_partial_table_item(
                     tree,
@@ -12455,7 +12453,6 @@ impl LayoutEngine {
                     fragment_row_heights.as_deref(),
                     fragment_block_frames,
                     *end_row_owns_stored_frame,
-                    *first_fragment_origin,
                     &ctx,
                     y_offset,
                 );
@@ -16022,7 +16019,6 @@ impl LayoutEngine {
         fragment_row_heights: Option<&[f64]>,
         fragment_block_frames: &[(usize, usize)],
         end_row_owns_stored_frame: bool,
-        first_fragment_origin: Option<Option<f64>>,
         ctx: &ColumnItemCtx,
         mut y_offset: f64,
     ) -> f64 {
@@ -16205,30 +16201,26 @@ impl LayoutEngine {
         let pt_y_start = if let Some(para) = paragraphs.get(para_index) {
             if let Some(Control::Table(t)) = para.controls.get(control_index) {
                 if !is_continuation {
-                    let stored_top = first_fragment_origin.map_or_else(
-                        || {
-                            native_hwp5_internal_reset_rowbreak_first_fragment_saved_top(
-                                self.profile.get().hwp5_stored_pagination_layout(),
+                    if let Some(stored_top) =
+                        native_hwp5_internal_reset_rowbreak_first_fragment_saved_top(
+                            self.profile.get().hwp5_stored_pagination_layout(),
+                            para,
+                            para_index.checked_sub(1).and_then(|i| paragraphs.get(i)),
+                            paragraphs.get(para_index + 1),
+                            t,
+                            col_area,
+                            self.dpi,
+                        )
+                        .or_else(|| {
+                            self.native_text_frame_first_fragment_saved_top(
                                 para,
                                 para_index.checked_sub(1).and_then(|i| paragraphs.get(i)),
-                                paragraphs.get(para_index + 1),
                                 t,
                                 col_area,
-                                self.dpi,
+                                styles,
                             )
-                            .or_else(|| {
-                                self.native_text_frame_first_fragment_saved_top(
-                                    para,
-                                    para_index.checked_sub(1).and_then(|i| paragraphs.get(i)),
-                                    t,
-                                    col_area,
-                                    styles,
-                                )
-                            })
-                        },
-                        |accepted| accepted.map(|offset| col_area.y + offset),
-                    );
-                    if let Some(stored_top) = stored_top {
+                        })
+                    {
                         stored_top
                     } else if !t.common.treat_as_char
                         && matches!(

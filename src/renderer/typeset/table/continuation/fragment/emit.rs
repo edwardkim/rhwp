@@ -1189,7 +1189,6 @@ impl TypesetEngine {
                     fragment_row_heights: fragment_rows.clone(),
                     fragment_block_frames: fragment_block_frames.clone(),
                     end_row_owns_stored_frame: completed_empty_row_frame,
-                    first_fragment_origin: Some(budget.accepted_first_fragment_origin),
                 });
                 // 마지막 조각: spacing_after만 포함 (페이지 분할기 engine.rs:1051과 동일)
                 // 호스트 줄 전진과 양의 오프셋은 원래 앵커 조각의 계약이며,
@@ -1782,7 +1781,6 @@ impl TypesetEngine {
                 || (is_continuation && stored_complete_extent.is_some())
                 || span_band_owns_end_row
                 || completed_empty_row_frame,
-            first_fragment_origin: Some(budget.accepted_first_fragment_origin),
         });
         // 저장 호스트 원점이 없는 조각은 흐름 좌표로 같은 상자를 잰다 — 위는 흐름 커서 +
         // 호스트·세로 오프셋, 아래는 비끝 조각 상자 바닥(7062 2~9쪽 996.49 ↔ 정본 996.43).

@@ -1440,30 +1440,13 @@ impl TypesetEngine {
         // 경계도 소유한다. legacy 원점이 있다고 이 조회를 생략하면 후속 컷은
         // safety band에서 먼저 잘려 원본 frame 중간에 여분 쪽을 만든다.
         // 인증한 text frame을 우선하고 같은 원점을 fit과 paint에 전달한다.
-        // 앞 문단이 이전 쪽에서 이어졌으면 저장 vpos는 앞 쪽의 좌표계를 계속
-        // 사용할 수 있다. 그 값을 새 쪽의 절대 원점으로 인증하지 않고, 이미
-        // 수용한 이어받기 글줄의 실제 흐름 원점을 사용한다.
-        let previous_paragraph_continues = para_idx.checked_sub(1).is_some_and(|previous| {
-            matches!(st.current_items.last(),
-                Some(PageItem::PartialParagraph { para_index, start_line, .. })
-                    if *para_index == previous && *start_line > 0)
-        });
-        let saved_text_frame_top = layout_engine.native_text_frame_first_fragment_saved_top(
+        let source_text_frame_top = layout_engine.native_text_frame_first_fragment_saved_top(
             para,
             para_idx.checked_sub(1).and_then(|i| paragraphs_all.get(i)),
             table,
             &st.inline_flow_column(),
             styles,
         );
-        // 이어진 직전 글줄과 저장 host 원점이 서로 다른 쪽 좌표계에 있으면
-        // 해당 첫 프레임의 행 컷도 현재 쪽에 그대로 수용할 수 없다.
-        let displaced_opening_source_frame = previous_paragraph_continues
-            && saved_text_frame_top.is_some_and(|top| {
-                (top - st.inline_flow_column().y - st.current_height).abs() > 0.5
-            });
-        let source_text_frame_top = (!displaced_opening_source_frame)
-            .then_some(saved_text_frame_top)
-            .flatten();
         // The authenticated cut and both boxes also own their original first
         // anchor. Reusing only the cut while keeping a drifted sequential
         // cursor places a correct fragment in the wrong part of the page.
@@ -1507,7 +1490,6 @@ impl TypesetEngine {
         };
         let prepared = BlockTableContinuationPreparedState {
             computed_host_tail,
-            displaced_opening_source_frame,
             first_anchor_offset_consumed,
             opening_rowspan_block_cuts_after_first_row,
             host_placement: source_single_cell_first_placement.or(fragment_host_placement),
