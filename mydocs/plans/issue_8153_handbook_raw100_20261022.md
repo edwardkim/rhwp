@@ -1667,3 +1667,14 @@ baseline 6건도 두 쪽에서 같다. 검사 코드 차이는 편람의 제외 
 기준 로그는 ignored `base-9418-overlap-partition-12-20261029.log`와
 `base-9418-overlap-partition-7-20261029.log`다. 공통 경로와 실행 환경을
 추적해야 하며 기준 통과를 후보 통과로 해석하지 않는다.
+
+기존 미커밋 실험에서 첫 저장 원점을 조판에서 배치로 전달하는 관련 변경만
+ignored 분리 소스에 옮기고, 0.5px 차이 조건을 제거한 뒤 이어받은 앞 문단의
+소유 조건을 시험했다. 이 실험에서 중첩 셀 검사 1건과 편람 HWP·HWPX의
+314·315쪽 물리 띠 검사 2건은 통과했다. 반면 글자 겹침 partition 12와 7은
+각각 기존과 같은 6건 신규, 6→9건 증가로 여전히 실패했다. 실험 조건이 모든
+이어받기 문단에 타당한지와 전체 편람의 두 출력 경로 보존은 입증되지 않았다.
+따라서 제품 코드에는 적용하지 않았다. 각각의 ignored 로그는
+`structural-origin-issue1488-r2-20261029.log`,
+`structural-origin-handbook-band-20261029.log`,
+`structural-origin-overlap-{12,7}-20261029.log`다.
