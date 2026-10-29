@@ -1,3 +1,4 @@
+//! 관계형·고정형: WMF 마스크의 색 선택과 비트 연산 계약.
 //! [#6865] `PATINVERT → DPa → PATINVERT`의 마스크는 바탕과 브러시 색을 선택한다.
 //!
 //! `PATINVERT → DPa → PATINVERT`의 비트 연산은 `(D XOR G) AND M XOR G`다.

@@ -1,3 +1,4 @@
+//! 관계형·고정형: 합성 렌더 트리의 이상 판정 계약.
 //! [#5459] layout-anomaly 판정 픽스처·성적표 고도화 (M02-f).
 //!
 //! `tests/fixtures/layout_anomaly_m02f/` 의 합성 트리·verdict 행렬·transcript 를

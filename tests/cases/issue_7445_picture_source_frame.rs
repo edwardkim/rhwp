@@ -1,3 +1,10 @@
+//! 관계형·고정형: 그림 프레임과 줄 점유·테두리 소유 계약.
+//! 과거 측정 raw(192dpi, PDFium; 측정일 확인 필요): 공개 그림 1쪽 Native 99.90570% / fresh WASM 99.90577%,
+//! 셀 그림 1쪽 각 100.00000%; 각 전 1쪽 최저도 동일하다.
+//! issue_265.hwp 1쪽 Native 99.01890% / fresh WASM 98.86844%, 전 16쪽 최저도 동일하다.
+//! 근거: tests/fixtures/issue7445_picture_source_frame/README.md,
+//! mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/picture-source-frame/README.md.
+//! 위 수치는 당시 증거이며 현재 head의 재측정 결과가 아니다.
 //! 원본 그림 프레임·줄 점유·테두리 소유를 같은 출력 경로에서 보호한다.
 //! 독립 Hancom Print와 Native/fresh WASM 전쪽 결과는 fixture README에 기록한다.
 #![cfg(not(target_arch = "wasm32"))]

@@ -1,3 +1,4 @@
+//! 관계형·고정형: 합성 렌더 트리와 SVG 레이어 출력 계약.
 //! #6520: 실제 SVG 출력이 정규 `PageLayerTree` 그리기 계약을 소비한다.
 
 use rhwp::model::shape::TextWrap;
