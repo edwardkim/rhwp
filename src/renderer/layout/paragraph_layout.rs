@@ -8850,12 +8850,11 @@ impl LayoutEngine {
             .flat_map(|line| &line.runs)
             .filter(|run| run.inserted_control_text && run.char_overlap.is_some())
             .count();
+        let mut emitted_tac_controls = std::collections::HashSet::new();
         let mut overlap_controls = para
             .into_iter()
             .flat_map(|p| p.controls.iter().enumerate())
-            .filter(
-                |(_, control)| matches!(control, Control::CharOverlap(co) if !co.chars.is_empty()),
-            )
+            .filter(|(_, control)| matches!(control, Control::CharOverlap(_)))
             .skip(prior_overlaps);
         for (run_idx, run) in comp_line.runs.iter().enumerate() {
             // 같은 원문 자리의 주석/겹침 순서는 모델 control 순서로 판별한다.
@@ -9310,12 +9309,15 @@ impl LayoutEngine {
                 && !next_line_starts_at_run_end;
             let run_tacs: Vec<(usize, f64, usize)> = tac_offsets_px
                 .iter()
-                .filter(|(pos, _, _)| {
-                    *pos >= run_char_pos
+                .filter(|(pos, _, ci)| {
+                    !emitted_tac_controls.contains(ci)
+                        && (overlap_control_index.is_some_and(|overlap| {
+                            *pos == run_char_pos && *ci < overlap
+                        }) || (*pos >= run_char_pos
                         && (*pos < run_char_end
                             || ((allow_end_tac
                                 || (stored_tac_assignment && is_last_run_of_line(run_idx)))
-                                && *pos == run_char_end))
+                                && *pos == run_char_end))))
                         // [#5727] 저장 lineseg 가 개체에 배정한 빈 줄이 소유한 경계
                         // TAC 는 다음 줄 run 에 다시 싣지 않는다 — 실으면 개체가 이
                         // 줄로 끌려 내려오고 텍스트가 개체 폭만큼 오른쪽으로 밀린다.
@@ -9324,6 +9326,7 @@ impl LayoutEngine {
                 })
                 .map(|(pos, w, ci)| (pos - run_char_pos, *w, *ci))
                 .collect();
+            emitted_tac_controls.extend(run_tacs.iter().map(|(_, _, ci)| *ci));
 
             // [Task #960] env-gated TAC line-mapping 추적
             if std::env::var("RHWP_DEBUG_PARA_TAC").is_ok() && !tac_offsets_px.is_empty() {
@@ -10992,12 +10995,11 @@ impl LayoutEngine {
             .flat_map(|line| &line.runs)
             .filter(|run| run.inserted_control_text && run.char_overlap.is_some())
             .count();
+        let mut included_tac_controls = std::collections::HashSet::new();
         let mut overlap_controls = para
             .into_iter()
             .flat_map(|p| p.controls.iter().enumerate())
-            .filter(
-                |(_, control)| matches!(control, Control::CharOverlap(co) if !co.chars.is_empty()),
-            )
+            .filter(|(_, control)| matches!(control, Control::CharOverlap(_)))
             .skip(prior_overlaps);
         for (run_idx_est, run) in comp_line.runs.iter().enumerate() {
             let overlap_control_index = if run.inserted_control_text && run.char_overlap.is_some() {
@@ -11119,6 +11121,17 @@ impl LayoutEngine {
             }
             // 글자겹침 run: PUA 다자리 숫자는 1글자 폭, 그 외는 font_size * char_count
             if let Some(overlap) = &run.char_overlap {
+                if let Some(overlap_index) = overlap_control_index {
+                    for &(pos, width, control) in line_tac_offsets_for_width {
+                        if pos == run_char_pos_est
+                            && control < overlap_index
+                            && included_tac_controls.insert(control)
+                        {
+                            est_x += width;
+                            included_tac_width_in_est += width;
+                        }
+                    }
+                }
                 let w = crate::renderer::char_overlap::advance(&run.text, overlap, &ts);
                 est_x += w + note_width;
                 run_char_pos_est = run_char_end_est;
@@ -11149,13 +11162,16 @@ impl LayoutEngine {
                     .map(|r| r.source_scalar_count())
                     .sum::<usize>()
                     + comp_line.char_start;
-            for &(tac_abs_pos, tac_w, _) in
+            for &(tac_abs_pos, tac_w, tac_control) in
                 line_tac_offsets_for_width.iter().filter(|(pos, _, _)| {
                     *pos >= run_char_pos_est
                         && (*pos < run_char_end_est
                             || (is_last_run_est_tac && *pos == run_char_end_est))
                 })
             {
+                if !included_tac_controls.insert(tac_control) {
+                    continue;
+                }
                 let tac_rel = tac_abs_pos - run_char_pos_est;
                 if seg_start_est < tac_rel {
                     let seg: String = run_chars_est[seg_start_est..tac_rel].iter().collect();

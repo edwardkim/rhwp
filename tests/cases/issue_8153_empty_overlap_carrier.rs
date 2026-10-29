@@ -1,5 +1,5 @@
 //! 관계형: 빈 글자 겹침의 캐리어는 한 프레임을 차지하지만 문자를 그리지 않는다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T15:05:10+09:00 (8dde2eb731).
+//! 주석 갱신: 2026-10-29T21:02:08+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (e2ba672b87).
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
 //! HWP 59쪽 Native 100.00000% / fresh WASM 100.00000%.
 //! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
@@ -19,6 +19,18 @@ fn nodes<'a>(n: &'a RenderNode, out: &mut Vec<(&'a RenderNode, &'a TextRunNode)>
     }
     for c in &n.children {
         nodes(c, out)
+    }
+}
+fn groups_with_text<'a>(n: &'a RenderNode, text: &str, out: &mut Vec<&'a RenderNode>) {
+    if matches!(n.node_type, RenderNodeType::Group(_)) {
+        let mut text_nodes = Vec::new();
+        nodes(n, &mut text_nodes);
+        if text_nodes.iter().any(|(_, run)| run.text == text) {
+            out.push(n);
+        }
+    }
+    for child in &n.children {
+        groups_with_text(child, text, out);
     }
 }
 fn paints<'a>(n: &'a LayerNode, out: &mut Vec<&'a TextRunNode>) {
@@ -73,6 +85,21 @@ fn check(ext: &str) {
         .copied()
         .find(|(_, r)| r.text == ",")
         .expect("후속 쉼표");
+    let mut groups = Vec::new();
+    groups_with_text(&tree.root, "거", &mut groups);
+    let adjacent_groups: Vec<_> = groups
+        .into_iter()
+        .filter(|group| {
+            (group.bbox.y - frame.bbox.y).abs() < frame.bbox.height
+                && group.bbox.x >= prefix_node.bbox.x + prefix_node.bbox.width - 1.0 / 75.0
+                && group.bbox.x <= comma.bbox.x
+        })
+        .collect();
+    assert_eq!(adjacent_groups.len(), 1, "같은 글줄의 원 안 도형은 하나다");
+    assert!(
+        adjacent_groups[0].bbox.x + adjacent_groups[0].bbox.width <= frame.bbox.x + 1.0 / 75.0,
+        "원본 컨트롤 순서대로 도형 다음에 빈 프레임을 배치한다"
+    );
     assert!(
         frame.bbox.width > 0.0
             && frame.bbox.x >= prefix_node.bbox.x + prefix_node.bbox.width - 1.0 / 75.0
