@@ -35,11 +35,18 @@ function isTrap(error: unknown): boolean {
     || (error instanceof AggregateError && error.errors.some(isTrap));
 }
 
+// 비보안 컨텍스트(LAN IP의 http 등)에는 crypto.randomUUID가 없다. getRandomValues는
+// 보안 컨텍스트가 아니어도 있으므로 같은 128비트 난수로 세션 ID를 만든다.
+function sessionInstanceId(): string {
+  const uuid = globalThis.crypto.randomUUID?.();
+  if (uuid) return uuid;
+  const bytes = globalThis.crypto.getRandomValues(new Uint8Array(16));
+  return `s_${Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
+}
+
 export class CommandErrorBoundary {
   private sequence = 0;
-  // 비보안 컨텍스트(LAN IP의 http 등)에는 crypto.randomUUID가 없다.
-  private readonly instance = globalThis.crypto?.randomUUID?.()
-    ?? `s_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+  private readonly instance = sessionInstanceId();
   private blockedSession: string | null = null;
   private pendingSession: string | null = null;
   private lastError: StudioCommandError | null = null;
