@@ -20,8 +20,53 @@ fn utf16(bytes: &[u8]) -> Result<String, HwpError> {
     .map_err(|_| invalid())
 }
 
+/// `Scripts/DefaultJScript` 가 deflate 로 저장돼 있는지.
+///
+/// HWP5 원본은 FileHeader 압축 비트가 0 이면 이 스트림도 압축하지 않고 저장한다.
+/// 다른 형식에서 합성한 스트림(HWPX 파서의 contract stream 등)은 늘 압축한다.
+pub(crate) fn streams_are_compressed(document: &Document) -> bool {
+    document.header.compressed
+        || document.provenance.format != crate::model::provenance::SourceFormat::Hwp5
+}
+
+fn is_distribution_wrapped(bytes: &[u8]) -> bool {
+    bytes.starts_with(
+        &(u32::from(crate::parser::tags::HWPTAG_DISTRIBUTE_DOC_DATA) | (256 << 20)).to_le_bytes(),
+    )
+}
+
+/// HWP 로 저장할 `Scripts/*` 스트림을 출력 FileHeader 의 압축 상태로 다시 인코딩한다.
+///
+/// HWP5 는 Scripts 저장소의 스트림도 문서 압축 비트를 따른다. 메모리의 스트림 상태
+/// ([`streams_are_compressed`])와 출력 압축 비트가 다르면 deflate 를 풀거나 다시 건다.
+/// 배포용 래핑, 다른 경로, 해제에 실패한 바이트는 `None` 으로 원본을 그대로 둔다.
+pub(crate) fn recode_script_stream(path: &str, bytes: &[u8], compressed: bool) -> Option<Vec<u8>> {
+    use std::io::{Read, Write};
+    if !path.trim_start_matches('/').starts_with("Scripts/")
+        || bytes.len() > MAX_SCRIPT_BYTES
+        || is_distribution_wrapped(bytes)
+    {
+        return None;
+    }
+    if compressed {
+        let mut encoder =
+            flate2::write::DeflateEncoder::new(Vec::new(), flate2::Compression::default());
+        encoder.write_all(bytes).ok()?;
+        encoder.finish().ok()
+    } else {
+        let mut raw = Vec::new();
+        flate2::read::DeflateDecoder::new(bytes)
+            .take((MAX_SCRIPT_BYTES + 1) as u64)
+            .read_to_end(&mut raw)
+            .ok()?;
+        (raw.len() <= MAX_SCRIPT_BYTES).then_some(raw)
+    }
+}
+
+/// `compressed` 는 [`streams_are_compressed`] 의 판정이다.
 pub(crate) fn script_sources_from_streams(
     streams: &[(String, Vec<u8>)],
+    compressed: bool,
 ) -> Result<(String, String), HwpError> {
     use std::io::Read;
     let Some((_, bytes)) = streams
@@ -37,18 +82,18 @@ pub(crate) fn script_sources_from_streams(
     // self-describing record remains after convert_to_editable clears the
     // document flag, so inspect the stream contract, not that mutable flag.
     // Bound the stored input above and the decrypted/decompressed result here.
-    let distribution_header =
-        (u32::from(crate::parser::tags::HWPTAG_DISTRIBUTE_DOC_DATA) | (256 << 20)).to_le_bytes();
-    let raw = if bytes.starts_with(&distribution_header) {
+    let raw = if is_distribution_wrapped(bytes) {
         crate::parser::crypto::decrypt_viewtext_section_limited(bytes, true, MAX_SCRIPT_BYTES)
             .map_err(|_| invalid())?
-    } else {
+    } else if compressed {
         let mut raw = Vec::new();
         flate2::read::DeflateDecoder::new(bytes.as_slice())
             .take((MAX_SCRIPT_BYTES + 1) as u64)
             .read_to_end(&mut raw)
             .map_err(|_| invalid())?;
         raw
+    } else {
+        bytes.clone()
     };
     if raw.len() > MAX_SCRIPT_BYTES {
         return Err(invalid());
@@ -79,6 +124,6 @@ pub(crate) fn scripts(document: &Document) -> Result<(String, String), HwpError>
         document.hwpx_aux_entry("Scripts/sourceScripts"),
     ) {
         (Some(header), Some(source)) => Ok((utf16(header)?, utf16(source)?)),
-        _ => script_sources_from_streams(&document.extra_streams),
+        _ => script_sources_from_streams(&document.extra_streams, streams_are_compressed(document)),
     }
 }

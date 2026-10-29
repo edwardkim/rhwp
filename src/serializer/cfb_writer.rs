@@ -305,6 +305,18 @@ where
     let mut extra_streams = storage
         .clone_record(&doc.extra_streams)
         .map_err(storage_error)?;
+    // Scripts 저장소 스트림도 출력 압축 비트를 따른다. HWPX 출처 IR 은 deflate 로 합성한
+    // 스크립트를 압축 비트 0 헤더와 함께 들고 있어, 그대로 쓰면 본문은 비압축인데 스크립트만
+    // 압축된 파일이 된다(#8374).
+    if crate::model::form_script::streams_are_compressed(doc) != compressed {
+        for (path, bytes) in extra_streams.iter_mut() {
+            if let Some(recoded) =
+                crate::model::form_script::recode_script_stream(path, bytes, compressed)
+            {
+                *bytes = recoded;
+            }
+        }
+    }
     extra_streams.retain(|(path, _)| path != crate::model::border_paint::HWP_STREAM);
     if let Some(bytes) = crate::model::border_paint::encode_with_storage(doc, storage)
         .map_err(SerializeError::UnsupportedInput)?

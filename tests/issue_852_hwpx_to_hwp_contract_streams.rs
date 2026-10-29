@@ -154,12 +154,12 @@ fn form_01_body_text_has_five_form_records() {
 fn form_01_scripts_default_jscript_matches_golden() {
     let hwp = convert("form-01.hwpx");
     let converted_scripts = read_stream(&hwp, "/Scripts/DefaultJScript");
-    let converted_raw = maybe_decompress(&converted_scripts);
+    let converted_raw = decode_by_file_header(&hwp, &converted_scripts);
 
     let golden_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/form-01.hwp");
     let golden_bytes = std::fs::read(&golden_path).expect("read golden");
     let golden_scripts = read_stream(&golden_bytes, "/Scripts/DefaultJScript");
-    let golden_raw = maybe_decompress(&golden_scripts);
+    let golden_raw = decode_by_file_header(&golden_bytes, &golden_scripts);
 
     assert_eq!(
         converted_raw,
@@ -229,6 +229,21 @@ fn form_02_keeps_nine_streams_and_five_forms() {
         })
         .count();
     assert_eq!(form_count, 5, "form-02 expected 5 forms, got {form_count}");
+}
+
+/// Scripts 저장소 스트림은 FileHeader 압축 비트(속성 bit 0)를 따른다(#8374).
+/// 원문의 첫 바이트는 글자 수라서 BodyText 용 레코드 휴리스틱으로는 가릴 수 없다.
+fn decode_by_file_header(hwp: &[u8], stream: &[u8]) -> Vec<u8> {
+    let header = read_stream(hwp, "/FileHeader");
+    let flags = u32::from_le_bytes([header[36], header[37], header[38], header[39]]);
+    if flags & 1 == 0 {
+        return stream.to_vec();
+    }
+    let mut out = Vec::new();
+    DeflateDecoder::new(stream)
+        .read_to_end(&mut out)
+        .expect("압축 문서의 Scripts 스트림은 raw deflate");
+    out
 }
 
 fn hex_first(data: &[u8], n: usize) -> String {

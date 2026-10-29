@@ -219,6 +219,7 @@ impl DocumentCore {
                         .unwrap_or_else(|| {
                             extract_combobox_items_from_script(
                                 &self.document.extra_streams,
+                                crate::model::form_script::streams_are_compressed(&self.document),
                                 &f.name,
                             )
                         });
@@ -316,9 +317,9 @@ fn form_type_to_str(ft: FormType) -> &'static str {
 }
 
 /// extra_streams에서 Scripts/DefaultJScript 스트림을 찾아 디코딩한다.
-/// HWP 스크립트는 zlib 압축 + UTF-16LE로 저장됨.
-fn decode_hwp_script(extra_streams: &[(String, Vec<u8>)]) -> Option<String> {
-    crate::model::form_script::script_sources_from_streams(extra_streams)
+/// HWP 스크립트는 UTF-16LE이고, 문서가 압축 문서이면 deflate로 압축돼 있다.
+fn decode_hwp_script(extra_streams: &[(String, Vec<u8>)], compressed: bool) -> Option<String> {
+    crate::model::form_script::script_sources_from_streams(extra_streams, compressed)
         .ok()
         .map(|(header, source)| format!("{header}\n{source}"))
 }
@@ -328,9 +329,10 @@ fn decode_hwp_script(extra_streams: &[(String, Vec<u8>)]) -> Option<String> {
 /// 패턴: `컨트롤이름.InsertString("항목텍스트", 인덱스);`
 fn extract_combobox_items_from_script(
     extra_streams: &[(String, Vec<u8>)],
+    compressed: bool,
     control_name: &str,
 ) -> Vec<String> {
-    let script = match decode_hwp_script(extra_streams) {
+    let script = match decode_hwp_script(extra_streams, compressed) {
         Some(s) => s,
         None => return Vec::new(),
     };
