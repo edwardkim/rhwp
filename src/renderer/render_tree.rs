@@ -454,6 +454,8 @@ fn json_escape(s: &str) -> String {
 }
 
 /// 렌더 노드 종류
+// 공개 렌더 트리의 텍스트 런마다 별도 할당을 추가하지 않고 기존 API를 유지한다.
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, Serialize)]
 pub enum RenderNodeType {
     /// 페이지 루트 노드
