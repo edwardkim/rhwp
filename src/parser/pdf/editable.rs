@@ -137,6 +137,70 @@ fn take_frame(paragraph: &mut Paragraph, inst_id: u32) -> Option<Vec<Paragraph>>
     rect.drawing.text_box.map(|b| b.paragraphs)
 }
 
+/// A retained text owner in the column's leading band must travel with its
+/// first flow paragraph. Otherwise joining that paragraph to the previous
+/// column/page discards the band when pagination selects a continuation origin.
+fn take_positioned_prefix(
+    anchor: &mut Paragraph,
+    committed: &std::collections::BTreeSet<u32>,
+    column: (i32, i32),
+    body_top: i32,
+    flow_top: i32,
+    allocation: Allocation<'_>,
+) -> Result<Option<Paragraph>, PdfImportError> {
+    use crate::model::shape::{HorzRelTo, VertRelTo};
+    let owns_prefix = |control: &Control| {
+        let Control::Shape(shape) = control else {
+            return false;
+        };
+        let ShapeObject::Rectangle(rect) = &**shape else {
+            return false;
+        };
+        if rect.drawing.text_box.is_none()
+            || committed.contains(&rect.drawing.inst_id)
+            || rect.common.vert_rel_to != VertRelTo::Paper
+            || rect.common.horz_rel_to != HorzRelTo::Paper
+        {
+            return false;
+        }
+        let left = i64::from(rect.common.horizontal_offset);
+        let top = i64::from(rect.common.vertical_offset);
+        let right = left + i64::from(rect.common.width);
+        let bottom = top + i64::from(rect.common.height);
+        left < i64::from(column.1)
+            && right > i64::from(column.0)
+            && top < i64::from(flow_top)
+            && bottom > i64::from(body_top)
+            && bottom <= i64::from(flow_top)
+    };
+    let count = anchor.controls.iter().filter(|c| owns_prefix(c)).count();
+    if count == 0 {
+        return Ok(None);
+    }
+    let mut prefix = Paragraph::new_empty();
+    allocation.reserve(&mut prefix.controls, count)?;
+    let aligned_records = anchor.ctrl_data_records.len() == anchor.controls.len();
+    if aligned_records {
+        allocation.reserve(&mut prefix.ctrl_data_records, count)?;
+    }
+    for index in (0..anchor.controls.len()).rev() {
+        if owns_prefix(&anchor.controls[index]) {
+            prefix.controls.push(anchor.controls.remove(index));
+            if aligned_records {
+                prefix
+                    .ctrl_data_records
+                    .push(anchor.ctrl_data_records.remove(index));
+            }
+        }
+    }
+    prefix.controls.reverse();
+    prefix.ctrl_data_records.reverse();
+    let slots = 8 * count as u32;
+    prefix.char_count += slots;
+    anchor.char_count -= slots;
+    Ok(Some(prefix))
+}
+
 /// Move every control of `anchor` to the front of `paragraph`. Each extended
 /// control takes eight stream units ahead of the first character, so text,
 /// character shape and line start positions shift with it.
@@ -571,6 +635,63 @@ pub(super) fn reflow(
         let margin_top = hu(body_top).max(0);
         let margin_bottom =
             (height - hu(flowing().map(|f| f.bottom).fold(f32::MIN, f32::max))).max(0);
+        let mut flow_bottoms = allocation
+            .try_collect(run.iter().map(|page| {
+                allocation.collect(page.frames.iter().map(|frame| hu(frame.bottom)))
+            }))?;
+        let mut tail_bands = Vec::new();
+        // The ordinary reflow witness also infers a tail after its last row.
+        // Reconcile that tail with the next observed frame, preserving both
+        // accepted line boxes and the confirmed body paragraph owners.
+        for (page_index, (page, owners)) in run.iter().zip(&mut placed).enumerate() {
+            for column in 0..count {
+                let mut order = allocation
+                    .collect((0..page.frames.len()).filter(|&i| owners[i] == Some(column)))?;
+                allocation.sort_by(&mut order, |&a, &b| {
+                    page.frames[a].top.total_cmp(&page.frames[b].top)
+                })?;
+                for pair in order.windows(2) {
+                    let index = pair[0];
+                    let next_top = hu(page.frames[pair[1]].top);
+                    let bottom = &mut flow_bottoms[page_index][index];
+                    if next_top >= *bottom {
+                        continue;
+                    }
+                    let last = old[page.section - base].paragraphs[0]
+                        .controls
+                        .iter_mut()
+                        .find_map(|control| match control {
+                            Control::Shape(shape) => match &mut **shape {
+                                ShapeObject::Rectangle(rect)
+                                    if rect.drawing.inst_id == page.frames[index].inst_id =>
+                                {
+                                    rect.drawing
+                                        .text_box
+                                        .as_mut()?
+                                        .paragraphs
+                                        .last_mut()?
+                                        .line_segs
+                                        .last_mut()
+                                }
+                                _ => None,
+                            },
+                            _ => None,
+                        });
+                    if let Some(last) = last {
+                        let content_end = i64::from(*bottom) - i64::from(last.line_spacing);
+                        // A paragraph's inferred interline tail is not
+                        // observed occupied content. Grant only the available
+                        // source band, without cutting any accepted line box.
+                        if last.line_spacing > 0 && i64::from(next_top) >= content_end {
+                            let before = last.line_spacing;
+                            last.line_spacing = (i64::from(next_top) - content_end) as i32;
+                            *bottom = next_top;
+                            allocation.push(&mut tail_bands, request_json!(allocation, {"sourceSection":page.section,"instanceId":page.frames[index].inst_id,"contentEndHu":content_end,"sourceBandEndHu":next_top,"inferredTailHu":before,"acceptedTailHu":last.line_spacing})?)?;
+                        }
+                    }
+                }
+            }
+        }
         let mut section = allocation.clone_section(&old[first])?;
         section.paragraphs.clear();
         {
@@ -610,6 +731,13 @@ pub(super) fn reflow(
         let mut pages_report = Vec::new();
         let mut pages_flow = Vec::new();
         for (page_no, page) in run.iter().enumerate() {
+            let committed = allocation.set_from(
+                page.frames
+                    .iter()
+                    .zip(&placed[page_no])
+                    .filter(|(_, owner)| owner.is_some())
+                    .map(|(frame, _)| frame.inst_id),
+            )?;
             let mut anchor = std::mem::take(&mut old[page.section - base].paragraphs[0]);
             if page_no == 0 {
                 // The section opens with its definition and column grid as the
@@ -671,6 +799,7 @@ pub(super) fn reflow(
                 let mut previous_bottom =
                     margin_top + if g == 0 { ANCHOR_HEIGHT * anchors } else { 0 };
                 let col_left = column_left(g);
+                let mut first_in_column = true;
                 for &i in &members {
                     let frame = &page.frames[i];
                     let Some(owner_left) = anchor.controls.iter().find_map(|c| match c {
@@ -688,6 +817,21 @@ pub(super) fn reflow(
                         continue;
                     };
                     let top = hu(frame.top);
+                    if first_in_column {
+                        if let Some(first) = paragraphs.first_mut() {
+                            if let Some(prefix) = take_positioned_prefix(
+                                &mut anchor,
+                                &committed,
+                                boxes[g],
+                                margin_top,
+                                top,
+                                allocation,
+                            )? {
+                                attach_leading_controls(first, prefix, allocation)?;
+                            }
+                            first_in_column = false;
+                        }
+                    }
                     let shift_x = owner_left - col_left;
                     for (pi, p) in paragraphs.iter_mut().enumerate() {
                         let shape = &mut doc.doc_info.para_shapes[p.para_shape_id as usize];
@@ -723,7 +867,7 @@ pub(super) fn reflow(
                         paragraphs[0].column_type = ColumnBreakType::Column;
                         current_column = g;
                     }
-                    previous_bottom = hu(frame.bottom);
+                    previous_bottom = flow_bottoms[page_no][i];
                     moved += paragraphs.len();
                     allocation.extend(&mut body, paragraphs)?;
                 }
@@ -735,7 +879,7 @@ pub(super) fn reflow(
         }
         let joined = assemble(doc, &mut section.paragraphs, pages_flow, allocation)?;
         mark_indented_rows(doc, &mut section.paragraphs);
-        allocation.push(&mut report, request_json!(allocation, {"pages":pages_report,"columns":count,"columnGap":gap,"joinedParagraphs":joined,"margins":[margin_left,margin_top,margin_right,margin_bottom]})?)?;
+        allocation.push(&mut report, request_json!(allocation, {"pages":pages_report,"columns":count,"columnGap":gap,"joinedParagraphs":joined,"margins":[margin_left,margin_top,margin_right,margin_bottom],"observedTailBands":tail_bands})?)?;
         allocation.push(&mut doc.sections, section)?;
     }
     Ok(request_json!(allocation, {"layout":"editable","sections":report})?)

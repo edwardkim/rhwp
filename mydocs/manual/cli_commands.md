@@ -96,6 +96,8 @@ Sixel과 Kitty 모두 **렌더링 호스트에 글꼴이 필요**하다. SSH이�
 `--font-path /실제/글꼴/디렉터리` 또는 개별 글꼴 파일을 지정한다. 여러 경로는 옵션을 반복한다.
 표·그림이 보이는데 한글만 비면 로컬 터미널 글꼴 설정부터 바꾸지 말고 이 경로를 확인한다.
 글꼴 공급 뒤 `.six`·`.kitty` 저장 파일도 다시 생성한다.
+수식은 본문과 별도의 face를 사용할 수 있다. 문서가 `HYhwpEQ` 또는 `HancomEQN`을
+사용하면 해당 `HYHWPEQ.TTF`·`HancomEQN.ttf`도 같은 방법으로 공급한다.
 실행 예시는 [Sixel 글꼴 설정](export_sixel_command.md#한글이나-일부-글자가-보이지-않을-때)과
 [Kitty 글꼴 설정](export_kitty_command.md#ssh와-실제-터미널-확인)을 따른다.
 

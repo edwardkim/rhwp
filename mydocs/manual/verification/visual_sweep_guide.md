@@ -391,6 +391,11 @@ render tree 중 한 쪽이 누락되면 성공으로 처리하지 않는다. 패
 같은 `@font-face` 공급을 적용하며 WASM의 text·좌표·render tree는 Native 것으로 대체하지 않는다.
 mode와 해당 디렉터리의 폰트 파일 hash가 바뀌면 `--resume`은 이전 증적을 거부한다.
 
+본문과 수식의 face를 각각 확인한다. 수식에 `HYhwpEQ` 또는 `HancomEQN`을 사용하면 설치된
+`HYHWPEQ.TTF`·`HancomEQN.ttf` 중 해당 프로그램도 명시한 경로에 공급한다. 두 face의
+메트릭은 서로 다르므로 임의로 치환하지 않는다. base/후보와 Native/fresh WASM 모두 같은
+원본 프로그램·우선순위로 다시 출력하고, 글꼴 공급 전의 미달 결과와 구분해 기록한다.
+
 ```bash
 venv/bin/python scripts/visual_sweep.py \
   --file-target bold samples/issue2470/36382471_masked.hwpx pdf/issue2470/36382471_masked-2022.pdf \
