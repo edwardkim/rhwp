@@ -37,7 +37,9 @@ function isTrap(error: unknown): boolean {
 
 export class CommandErrorBoundary {
   private sequence = 0;
-  private readonly instance = crypto.randomUUID();
+  // 비보안 컨텍스트(LAN IP의 http 등)에는 crypto.randomUUID가 없다.
+  private readonly instance = globalThis.crypto?.randomUUID?.()
+    ?? `s_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
   private blockedSession: string | null = null;
   private pendingSession: string | null = null;
   private lastError: StudioCommandError | null = null;
