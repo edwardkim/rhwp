@@ -1803,3 +1803,10 @@ ignored `tab-origin-fragment-candidate-source-20261029.json`, 실행 결과는
 서명 행과 핵심 출력 경계 집중 검사 12건이 모두 통과했다. 실행 로그는
 ignored `tab-fragment-candidate-handbook-focused-20261029.log`다. 이 결과는
 독립 Print와의 Native/fresh WASM 전쪽 비교나 다른 회귀 실패를 대신하지 않는다.
+
+탭 조각 후보의 Native Skia를 빌드해 두 편람의 9·43·46·86·131·140·141·
+148·232·260·280·291·309·314·315·327쪽을 기존 독립 Print와 비교했다.
+두 원본 모두 기존 후보와 정밀 raw 및 미대응 픽셀 수가 같으며, 탭 회귀
+대상 280쪽은 raw 100%·미대응 0이다. 빌드 소스·바이너리 해시와 결과는
+ignored `tab-fragment-candidate-native-focus-20261029/result.json`에 있다.
+이는 표본 검사이며 전쪽 Native·fresh WASM 검증을 대신하지 않는다.
