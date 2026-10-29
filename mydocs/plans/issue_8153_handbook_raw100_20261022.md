@@ -1750,3 +1750,11 @@ fresh WASM과 나머지 회귀는 별도로 확인한다.
 차이는 없었다. 덤프와 SHA-256은 ignored
 `shared-tab-origin-handbook-page-owners-20261029/`에 기록했다. 이 비교는
 원점 조건의 일반성이나 전체 회귀 검사 결과를 대신하지 않는다.
+
+현재 `tests/cases/*8153*.rs` 46개 파일의 첫 모듈 주석을 점검했다. 첫 줄의
+관계형·고정형 표시, Native·WASM·96dpi·전 383쪽 표기와 존재하는 정식
+근거 문서 경로는 모두 확인됐다. `HWP/HWPX N쪽 Native … / fresh WASM …`
+형식으로 분리된 126개 원본·쪽 항목은 정식 보존 TSV의 두 자리 수치와
+일치한다. 이는 다른 형식의 측정 문구나 검사 내용 자체의 전체 검증을
+대신하지 않는다. 파일별 형식 점검은 ignored
+`issue8153-test-header-audit-20261029.json`에 기록했다.
