@@ -2281,6 +2281,9 @@ fn task290_inline_left_returns_none() {
 
 #[test]
 fn task290_inline_right_preserves_stored_advance_with_auto_tab() {
+    // 같은 저장 탭 계약의 조각별 순서와 동적 정지도 함께 확인한다.
+    source_fragment_tab_record_order_preserves_stored_advance();
+    source_fragment_tab_record_boundaries_preserve_dynamic_stop();
     // 유효한 저장 줄의 전진은 자동 우측 속성과 별개다. 재조판은 생산자가 제거한다.
     let ext = vec![mk_ext(200, 2, 3)]; // RIGHT, fill=dot
     let ts = mk_text_style();
@@ -3349,7 +3352,6 @@ fn whitespace_tac_carrier_paint_y_rejects_missing_or_block_tac() {
 
 // 저장 탭 세 개 중 첫 탭은 선행 인라인 개체 이전에 있고, 나머지 둘은 뒤 조각에 있다.
 // 각 저장 전진은 차례로 7200·14400·21600 HU이고 마지막 탭은 오른쪽 정렬이다.
-#[test]
 fn source_fragment_tab_record_order_preserves_stored_advance() {
     use super::paragraph_layout::{resolve_last_tab_pending, PendingTab};
     let extensions = [mk_ext(7200, 1, 0), mk_ext(14400, 1, 0), mk_ext(21600, 2, 0)];
@@ -3385,7 +3387,6 @@ fn source_fragment_tab_record_order_preserves_stored_advance() {
     );
 }
 
-#[test]
 fn source_fragment_tab_record_boundaries_preserve_dynamic_stop() {
     use super::paragraph_layout::{resolve_last_tab_pending, PendingTab};
     let extensions = [mk_ext(7200, 1, 0), mk_ext(14400, 2, 3)];
