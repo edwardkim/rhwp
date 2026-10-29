@@ -400,3 +400,14 @@ API의 base/후보 305개 단언·44개 기록과 editor/Studio의 현재 검증
 
 이 원장은 일반 opt3/LTO/cgu1 release·최종 14개 archive/외부 소비·다페이지 성능의
 아직 실행 중인 단계를 완료로 표시하지 않는다. 같은 최종 생산 코드에서 순차 진행한다.
+
+
+### T09 로컬 종료·폰트 비교 확정
+
+일반 opt3/LTO/cgu1 release build와 library 3,800 + 내부 182 PASS·12 ignore·승인한 page-border 1건 제외, CLI smoke를 실제 완료했다. 전체 nextest 12,038 PASS·46 skip·실패 0과 별개인 정식 release 검증이다. source `27a3c1b86c`에서 실제 archive 14개·16,603,252 bytes의 strict gzip/원본/고지/digest와 독립 Rust·CLI·공개 계약 54개·WASM on/off 소비도 완료했다. 실제 registry 업로드는 하지 않았다. 이후 생산 Rust/회귀/binding은 바꾸지 않았다.
+
+수식 원본 두 파일의 바이트 일치와 본문용 설치/subset/HFT Print 프로그램의 출처를 구분한 설정 5개를 정식 asset에 연결했다. Native/fresh WASM 각각 전쪽 1,682쪽의 raw 최저 91.04%/91.15%, 3,156쪽 base 대조·직접 판독 근거를 제출한다.
+
+추가 성능 관측은 로컬 글꼴을 준비한 115쪽 HWP/HWPX 16회를 완료했다. 3회 중앙값에서 UI 열기는 약 12.26%/17.52% 짧았고 편집 응답은 혼합 결과다. HWPX IME 약 201ms와 두 번째 rAF 약 0.61초는 양쪽에 남는다. 415쪽은 기준과 후보 모두 폰트 준비 뒤 초기 화면에서 완료 지연을 관측했다. 잘못 전달한 Vite 설정과 공유 캐시 504는 보정했지만 이 조건도 끝까지 완료하지 못했으므로 성능 미판정이다. 시간 제한·정식 회귀 기대값을 바꾸거나 24회 성능 통과로 기록하지 않는다. 이 추가 관측은 정식 T09 기능/시각/포장 결과와 구분한다.
+
+[완료 보고](../report/task_m100_8174_report.md)·[원본 TSV와 PNG](../pr/assets/issue_8174/t09/README.md)·[비용 관측](../pr/assets/issue_8174/t09/performance.json)에 최종 source와 한계를 연결했다. J01–J05의 필수 로컬 검증을 마쳤으며 다음은 승인된 J06 Open PR·code CI·self-review/trailing CI·일반 merge·후속 처리다.

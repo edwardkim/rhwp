@@ -5,6 +5,9 @@ Native와 실제 wasm-opt fresh WASM을 같은 입력·독립 PDF·같은 글꼴
 본문과 별도로 실제 `HYHWPEQ`·`HancomEQN`을 공급했다. 글꼴 프로그램의 glyph ID·advance·outline을 바꾸거나 임의 face로 대체하지 않았다.
 작업·이전 통합 보존 99건·726쪽과 새 devel 보존 67건·956쪽은 각 실행 경로의 검증 항목 수다. 동일 원본의 다른 경로 및 일부 중복 대조군을 포함하며 고유 문서 수로 표시하지 않는다.
 비공개 15쪽 PDF는 수치만 제출한다. 원본·식별 이미지·텍스트·글꼴 바이너리·토큰은 공개하지 않는다.
+
+글꼴 조건: [환경 설정과 원본 프로그램 대응 증거](font-conditions/provenance.json?raw=1). 본문용 설정 5개와 설치 원본/동일 glyph subset/독립 HFT Print 프로그램의 출처를 구분했다. 글꼴 프로그램은 포함하지 않는다. 수식 두 파일은 설치 원본과 전체 바이트가 같다.
+
 완료 페이지의 독립 ±2px 회귀·같은 source의 직접 판독 및 남은 차이는 T09 보고를 따른다. 점수를 모든 기존 피델리티 결함 해결로 해석하지 않는다.
 
 | 구분 | 실행 | 검증 항목 | 쪽수 | raw 최저 | 전쪽 TSV |
@@ -597,3 +600,5 @@ Native와 실제 wasm-opt fresh WASM을 같은 입력·독립 PDF·같은 글꼴
 | candidate/new8348 | wasm | hairline-sungeo | 94 | 98.96000% | [원문](candidate/wasm/new8348/hairline-sungeo.tsv?raw=1) |
 | candidate/new8348 | wasm | topbottom-original | 1 | 99.93000% | [원문](candidate/wasm/new8348/topbottom-original.tsv?raw=1) |
 | candidate/new8348 | wasm | rowspan-header-original | 52 | 98.51000% | [원문](candidate/wasm/new8348/rowspan-header-original.tsv?raw=1) |
+
+비용 관측: [실행 조건과 수치](performance.json?raw=1)·[115쪽 집계 TSV](performance-summary.tsv?raw=1). 115쪽 16회는 완료했고, 415쪽은 기준/후보 모두 UI 완료 지연으로 성능 미판정이다. 이를 전체 성능 통과로 해석하지 않는다.

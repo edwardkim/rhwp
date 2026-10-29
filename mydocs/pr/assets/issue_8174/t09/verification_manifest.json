@@ -16163,5 +16163,87 @@
       "baseTsv": "base/wasm/new8348/rowspan-header-original.tsv",
       "candidateTsv": "candidate/wasm/new8348/rowspan-header-original.tsv"
     }
-  ]
+  ],
+  "fontConditions": {
+    "directory": "font-conditions",
+    "provenance": "font-conditions/provenance.json",
+    "programBinariesPublished": false,
+    "files": [
+      {
+        "path": "font-conditions/cff-cid.json",
+        "bytes": 114,
+        "sha256": "91e2c0a2e38f69965f284169b7134f57a6e8dbfe808d9903cf1166d895875f94"
+      },
+      {
+        "path": "font-conditions/clip-text.json",
+        "bytes": 113,
+        "sha256": "50b380c8ffa38a0ac36f489057cd691abe66bdbcaa6773cbae78a68fcfe498b2"
+      },
+      {
+        "path": "font-conditions/distribution.json",
+        "bytes": 99,
+        "sha256": "f9c9a09e7047a4cc68f34c12adba3b64b2e209a004fb35ac006ffccdadd07a27"
+      },
+      {
+        "path": "font-conditions/print-2020.json",
+        "bytes": 151,
+        "sha256": "52ff610398e9364e7657b1fa452766572442807c5f1c71e2d666294a6ecb2140"
+      },
+      {
+        "path": "font-conditions/print-2024.json",
+        "bytes": 165,
+        "sha256": "46b8716a3944754224f92e0297f4e5a372bf7d569a7a809efd5adae884d5441c"
+      },
+      {
+        "path": "font-conditions/provenance.json",
+        "bytes": 35922,
+        "sha256": "fbd1b25045d17fd03905023ca623cab45d13bd977ca5192ab9bcc3247e9f3da0"
+      }
+    ]
+  },
+  "finalLocalVerification": {
+    "productionSourceSha": "fa254efdfe9e33c4dcaf54c0ac3e534819111a9e",
+    "testBindingSourceSha": "a4111b02fb75bc9cf869cdbf26af6d8e95ea187c",
+    "packageSourceSha": "27a3c1b86cc50a115aa63b9a4f97d2bd4e297a62",
+    "nextest": {
+      "passed": 12038,
+      "skipped": 46,
+      "failed": 0
+    },
+    "standardRelease": {
+      "build": true,
+      "libraryPassed": 3800,
+      "internalLibraryPassed": 182,
+      "ignored": 12,
+      "authorizedExcluded": 1
+    },
+    "nativeSkia": {
+      "libraryPassed": 3857,
+      "internalLibraryPassed": 182,
+      "requiredRenderGates": true
+    },
+    "packaging": {
+      "archives": 14,
+      "archiveBytes": 16603252,
+      "publicContractPassed": 54,
+      "strictGzip": true,
+      "rustCliWasmConsumed": true,
+      "realRegistryPublish": false
+    },
+    "performance": {
+      "successful115PageTrials": 16,
+      "measured115PageTrials": 12,
+      "curriculumVerdict": "not established on both",
+      "file": "performance.json",
+      "summary": "performance-summary.tsv"
+    },
+    "performance.json": {
+      "bytes": 123261,
+      "sha256": "4960af71c4e1382b259b0ddc5aaef25e0466590150ea5a2e1cd53ac0c10b8992"
+    },
+    "performance-summary.tsv": {
+      "bytes": 1005,
+      "sha256": "4f148ce11536fdcbb8faeca5d0ab816d07e3f08a9a8e9f648bf8ff32d8a14c35"
+    }
+  }
 }

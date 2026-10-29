@@ -1,0 +1,3760 @@
+{
+  "baseSha": "f291d772a105d46a4d4d7f40ed13e82391ebdc1a",
+  "productionSourceSha": "fa254efdfe9e33c4dcaf54c0ac3e534819111a9e",
+  "browser": "HeadlessChrome/155.0.8059.79",
+  "startedAt": "2026-10-29T04:08:32.108Z",
+  "finishedAt": "2026-10-29T04:11:41.885Z",
+  "config": {
+    "cadenceMs": 150,
+    "englishInputs": 6,
+    "imeInputs": 3,
+    "curriculumInputsPerPage": 3,
+    "viewport": [
+      1280,
+      900
+    ],
+    "fontsPreparedBeforeOpen": true,
+    "externalWebFonts": false,
+    "externalFontControl": "RHWP_DISABLE_EXTERNAL_WEBFONTS=1 via normal Vite define",
+    "warmupRun": 0
+  },
+  "fixtures": [
+    {
+      "id": "giant-hwp",
+      "format": "hwp",
+      "path": "samples/issue1949_giant_cell_nested_tables_perf.hwp",
+      "pages": 115
+    },
+    {
+      "id": "giant-hwpx",
+      "format": "hwpx",
+      "path": "samples/issue1949_giant_cell_nested_tables_perf.hwpx",
+      "pages": 115
+    }
+  ],
+  "method": "Normal Studio open-document-bytes path after explicit bundled font preparation on the initial blank document, private Vite dependency caches, fresh browser contexts, run 0 warmup then alternating order runs 1-3. Summary is median of per-run medians for edits. Exact text/cursor, page count and deferred completion asserted; no product source/timeout changes.",
+  "initialAttempts": "Earlier attempts timed out at the 415-page baseline and candidate font preparation stage. Their externalWebFonts=false field was not effective: the Vite process had not received the environment. A later no-CDN cold attempt also stalled on the baseline. A shared Vite dependency cache produced HTTP 504 in another preparation attempt. Final cohort isolates both caches, explicitly prepares local font faces before document timing, and verifies the Vite define and zero external resource requests. These prepared-font results do not establish cold opening latency. Initial attempts are not included in measured samples.",
+  "summary": [
+    {
+      "fixture": "giant-hwp",
+      "metric": "loadMs",
+      "baseline": 5973.699999809265,
+      "candidate": 5241.299999952316,
+      "changePercent": -12.260408120266064
+    },
+    {
+      "fixture": "giant-hwp",
+      "metric": "wasmLoadMs",
+      "baseline": 1280.5999999046326,
+      "candidate": 1104.5999999046326,
+      "changePercent": -13.743557708348186
+    },
+    {
+      "fixture": "giant-hwp",
+      "metric": "fontPreparationMs",
+      "baseline": 704.0999999046326,
+      "candidate": 733,
+      "changePercent": 4.104530620548474
+    },
+    {
+      "fixture": "giant-hwp",
+      "metric": "english.syncDispatchMs",
+      "baseline": 2.0,
+      "candidate": 1.9500000476837158,
+      "changePercent": -2.499997615814209
+    },
+    {
+      "fixture": "giant-hwp",
+      "metric": "english.inputToFirstRafMs",
+      "baseline": 103.00000011920929,
+      "candidate": 104.74999988079071,
+      "changePercent": 1.6990288927728248
+    },
+    {
+      "fixture": "giant-hwp",
+      "metric": "english.inputToSecondRafMs",
+      "baseline": 115.05000007152557,
+      "candidate": 116.70000004768372,
+      "changePercent": 1.4341590396630632
+    },
+    {
+      "fixture": "giant-hwp",
+      "metric": "ime.syncDispatchMs",
+      "baseline": 10,
+      "candidate": 9.599999904632568,
+      "changePercent": -4.000000953674321
+    },
+    {
+      "fixture": "giant-hwp",
+      "metric": "ime.inputToFirstRafMs",
+      "baseline": 113.29999995231628,
+      "candidate": 110.90000009536743,
+      "changePercent": -2.1182699540678973
+    },
+    {
+      "fixture": "giant-hwp",
+      "metric": "ime.inputToSecondRafMs",
+      "baseline": 124.70000004768372,
+      "candidate": 122.29999995231628,
+      "changePercent": -1.9246191615474806
+    },
+    {
+      "fixture": "giant-hwpx",
+      "metric": "loadMs",
+      "baseline": 4508.900000095367,
+      "candidate": 3718.899999856949,
+      "changePercent": -17.520903107669483
+    },
+    {
+      "fixture": "giant-hwpx",
+      "metric": "wasmLoadMs",
+      "baseline": 1001,
+      "candidate": 804.2999999523163,
+      "changePercent": -19.650349655113253
+    },
+    {
+      "fixture": "giant-hwpx",
+      "metric": "fontPreparationMs",
+      "baseline": 742.6000001430511,
+      "candidate": 735.6000001430511,
+      "changePercent": -0.9426339885068025
+    },
+    {
+      "fixture": "giant-hwpx",
+      "metric": "english.syncDispatchMs",
+      "baseline": 2.9499999284744263,
+      "candidate": 3.200000047683716,
+      "changePercent": 8.474580517653617
+    },
+    {
+      "fixture": "giant-hwpx",
+      "metric": "english.inputToFirstRafMs",
+      "baseline": 103.30000007152557,
+      "candidate": 103.79999995231628,
+      "changePercent": 0.4840269897817162
+    },
+    {
+      "fixture": "giant-hwpx",
+      "metric": "english.inputToSecondRafMs",
+      "baseline": 116.64999997615814,
+      "candidate": 116.04999995231628,
+      "changePercent": -0.5143592147145215
+    },
+    {
+      "fixture": "giant-hwpx",
+      "metric": "ime.syncDispatchMs",
+      "baseline": 201.90000009536743,
+      "candidate": 201.20000004768372,
+      "changePercent": -0.346706313696421
+    },
+    {
+      "fixture": "giant-hwpx",
+      "metric": "ime.inputToFirstRafMs",
+      "baseline": 304.2999999523163,
+      "candidate": 300.80000019073486,
+      "changePercent": -1.1501806645185297
+    },
+    {
+      "fixture": "giant-hwpx",
+      "metric": "ime.inputToSecondRafMs",
+      "baseline": 617.2000000476837,
+      "candidate": 612.5,
+      "changePercent": -0.7615035721517449
+    }
+  ],
+  "trials": [
+    {
+      "run": 0,
+      "warmup": true,
+      "fixture": "giant-hwp",
+      "variant": "baseline",
+      "appReadyMs": 733,
+      "fontPreparation": {
+        "milliseconds": 752.2000000476837,
+        "names": [
+          "HY헤드라인M",
+          "HYHeadLine M",
+          "HYHeadLine Medium",
+          "HY견고딕",
+          "HYGothic-Extra",
+          "HY그래픽",
+          "HYGraphic-Medium",
+          "HY그래픽M",
+          "HY견명조",
+          "HYMyeongJo-Extra",
+          "HY신명조",
+          "HY중고딕",
+          "한양중고딕",
+          "양재튼튼체B",
+          "Malgun Gothic",
+          "맑은 고딕",
+          "돋움",
+          "돋움체",
+          "굴림",
+          "굴림체",
+          "새굴림",
+          "Haansoft Dotum",
+          "바탕",
+          "바탕체",
+          "궁서",
+          "궁서체",
+          "새궁서",
+          "나눔고딕",
+          "나눔명조",
+          "나눔고딕코딩",
+          "나눔고딕_코딩",
+          "NanumGothic",
+          "Palatino Linotype",
+          "Noto Sans KR",
+          "Noto Sans KR ExtraLight",
+          "Noto Serif KR",
+          "Pretendard",
+          "Pretendard Thin",
+          "Pretendard ExtraLight",
+          "Pretendard Light",
+          "Pretendard Medium",
+          "Pretendard SemiBold",
+          "Pretendard Bold",
+          "Pretendard ExtraBold",
+          "Pretendard Black",
+          "D2Coding",
+          "해피니스 산스 레귤러",
+          "Happiness Sans Regular",
+          "해피니스 산스 볼드",
+          "Happiness Sans Bold",
+          "해피니스 산스 타이틀",
+          "Happiness Sans Title",
+          "해피니스 산스 VF",
+          "Happiness Sans VF",
+          "Cafe24 Ssurround Bold",
+          "카페24 슈퍼매직",
+          "Cafe24 Supermagic",
+          "Latin Modern Math",
+          "SpoqaHanSans",
+          "고운바탕",
+          "고운돋움",
+          "RHWP Old Hangul",
+          "Noto Sans Symbols2",
+          "RHWP Public Batang"
+        ],
+        "fontFaces": 114
+      },
+      "wasmSha256": "e69235d9336e855892c0bc49d72f10fc6f932ae9efddf09fc9bc6f8ee07e335f",
+      "loadTiming": {
+        "started": 2283.600000143051,
+        "wasmCalls": [
+          1326.0999999046326
+        ],
+        "doneMs": 5966.199999809265,
+        "twoRafMs": 5980.199999809265
+      },
+      "fonts": {
+        "fontStatus": "loaded",
+        "fontFaces": 114,
+        "resources": []
+      },
+      "edits": [
+        {
+          "metric": "english",
+          "count": 6,
+          "samples": [
+            {
+              "syncDispatchMs": 8.899999856948853,
+              "inputToFirstRafMs": 108.59999990463257,
+              "inputToSecondRafMs": 120.19999980926514,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 2.200000047683716,
+              "inputToFirstRafMs": 102.5,
+              "inputToSecondRafMs": 114.89999985694885,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.29999995231628
+            },
+            {
+              "syncDispatchMs": 1.7000000476837158,
+              "inputToFirstRafMs": 101.29999995231628,
+              "inputToSecondRafMs": 116,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.29999995231628
+            },
+            {
+              "syncDispatchMs": 2,
+              "inputToFirstRafMs": 103.59999990463257,
+              "inputToSecondRafMs": 116.09999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            },
+            {
+              "syncDispatchMs": 1.8999998569488525,
+              "inputToFirstRafMs": 101.69999980926514,
+              "inputToSecondRafMs": 112.89999985694885,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.40000009536743
+            },
+            {
+              "syncDispatchMs": 2,
+              "inputToFirstRafMs": 101.90000009536743,
+              "inputToSecondRafMs": 113.30000019073486,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.19999980926514
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 591.5999999046326,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        },
+        {
+          "metric": "ime",
+          "count": 3,
+          "samples": [
+            {
+              "syncDispatchMs": 11.799999952316284,
+              "inputToFirstRafMs": 114.39999985694885,
+              "inputToSecondRafMs": 126,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 9.700000047683716,
+              "inputToFirstRafMs": 111.5,
+              "inputToSecondRafMs": 122.79999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            },
+            {
+              "syncDispatchMs": 10.300000190734863,
+              "inputToFirstRafMs": 111.70000004768372,
+              "inputToSecondRafMs": 123,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.89999985694885
+            },
+            {
+              "syncDispatchMs": 8.899999856948853,
+              "inputToFirstRafMs": 109.59999990463257,
+              "inputToSecondRafMs": 121,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.60000014305115
+            },
+            {
+              "syncDispatchMs": 10.600000143051147,
+              "inputToFirstRafMs": 111.10000014305115,
+              "inputToSecondRafMs": 126.60000014305115,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.09999990463257
+            },
+            {
+              "syncDispatchMs": 9.700000047683716,
+              "inputToFirstRafMs": 112.10000014305115,
+              "inputToSecondRafMs": 122.70000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.79999995231628
+            },
+            {
+              "syncDispatchMs": 9.800000190734863,
+              "inputToFirstRafMs": 109.70000004768372,
+              "inputToSecondRafMs": 120.10000014305115,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            },
+            {
+              "syncDispatchMs": 9.100000143051147,
+              "inputToFirstRafMs": 109,
+              "inputToSecondRafMs": 120,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            },
+            {
+              "syncDispatchMs": 9,
+              "inputToFirstRafMs": 109.09999990463257,
+              "inputToSecondRafMs": 119.59999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.40000009536743
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 574.7999999523163,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        }
+      ]
+    },
+    {
+      "run": 0,
+      "warmup": true,
+      "fixture": "giant-hwp",
+      "variant": "candidate",
+      "appReadyMs": 736,
+      "fontPreparation": {
+        "milliseconds": 704,
+        "names": [
+          "HY헤드라인M",
+          "HYHeadLine M",
+          "HYHeadLine Medium",
+          "HY견고딕",
+          "HYGothic-Extra",
+          "HY그래픽",
+          "HYGraphic-Medium",
+          "HY그래픽M",
+          "HY견명조",
+          "HYMyeongJo-Extra",
+          "HY신명조",
+          "HY중고딕",
+          "한양중고딕",
+          "양재튼튼체B",
+          "Malgun Gothic",
+          "맑은 고딕",
+          "돋움",
+          "돋움체",
+          "굴림",
+          "굴림체",
+          "새굴림",
+          "Haansoft Dotum",
+          "바탕",
+          "바탕체",
+          "궁서",
+          "궁서체",
+          "새궁서",
+          "나눔고딕",
+          "나눔명조",
+          "나눔고딕코딩",
+          "나눔고딕_코딩",
+          "NanumGothic",
+          "Palatino Linotype",
+          "Noto Sans KR",
+          "Noto Sans KR ExtraLight",
+          "Noto Serif KR",
+          "Pretendard",
+          "Pretendard Thin",
+          "Pretendard ExtraLight",
+          "Pretendard Light",
+          "Pretendard Medium",
+          "Pretendard SemiBold",
+          "Pretendard Bold",
+          "Pretendard ExtraBold",
+          "Pretendard Black",
+          "D2Coding",
+          "해피니스 산스 레귤러",
+          "Happiness Sans Regular",
+          "해피니스 산스 볼드",
+          "Happiness Sans Bold",
+          "해피니스 산스 타이틀",
+          "Happiness Sans Title",
+          "해피니스 산스 VF",
+          "Happiness Sans VF",
+          "Cafe24 Ssurround Bold",
+          "카페24 슈퍼매직",
+          "Cafe24 Supermagic",
+          "Latin Modern Math",
+          "SpoqaHanSans",
+          "고운바탕",
+          "고운돋움",
+          "RHWP Old Hangul",
+          "Noto Sans Symbols2",
+          "RHWP Public Batang"
+        ],
+        "fontFaces": 114
+      },
+      "wasmSha256": "6bbd2a8bbefb62180f984b6a3ddc01443af7d3ef0b446dd3ab4df01bd4f8b34e",
+      "loadTiming": {
+        "started": 2286.4000000953674,
+        "wasmCalls": [
+          1105.7000000476837
+        ],
+        "doneMs": 5188.200000047684,
+        "twoRafMs": 5211.099999904633
+      },
+      "fonts": {
+        "fontStatus": "loaded",
+        "fontFaces": 114,
+        "resources": []
+      },
+      "edits": [
+        {
+          "metric": "english",
+          "count": 6,
+          "samples": [
+            {
+              "syncDispatchMs": 9.700000047683716,
+              "inputToFirstRafMs": 115,
+              "inputToSecondRafMs": 127.40000009536743,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 1.7999999523162842,
+              "inputToFirstRafMs": 100.60000014305115,
+              "inputToSecondRafMs": 112.79999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            },
+            {
+              "syncDispatchMs": 1.8999998569488525,
+              "inputToFirstRafMs": 100.59999990463257,
+              "inputToSecondRafMs": 112,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.10000014305115
+            },
+            {
+              "syncDispatchMs": 1.7999999523162842,
+              "inputToFirstRafMs": 99.79999995231628,
+              "inputToSecondRafMs": 111.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            },
+            {
+              "syncDispatchMs": 2,
+              "inputToFirstRafMs": 102.89999985694885,
+              "inputToSecondRafMs": 115,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            },
+            {
+              "syncDispatchMs": 1.9000000953674316,
+              "inputToFirstRafMs": 101.20000004768372,
+              "inputToSecondRafMs": 114.40000009536743,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.19999980926514
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 602.1000001430511,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        },
+        {
+          "metric": "ime",
+          "count": 3,
+          "samples": [
+            {
+              "syncDispatchMs": 11.399999856948853,
+              "inputToFirstRafMs": 111.19999980926514,
+              "inputToSecondRafMs": 126.59999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 9.599999904632568,
+              "inputToFirstRafMs": 110.39999985694885,
+              "inputToSecondRafMs": 121.79999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.5
+            },
+            {
+              "syncDispatchMs": 9.700000047683716,
+              "inputToFirstRafMs": 108.5,
+              "inputToSecondRafMs": 119.70000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.89999985694885
+            },
+            {
+              "syncDispatchMs": 8.900000095367432,
+              "inputToFirstRafMs": 107.29999995231628,
+              "inputToSecondRafMs": 118.79999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            },
+            {
+              "syncDispatchMs": 9,
+              "inputToFirstRafMs": 107.79999995231628,
+              "inputToSecondRafMs": 119,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            },
+            {
+              "syncDispatchMs": 9.600000143051147,
+              "inputToFirstRafMs": 111.40000009536743,
+              "inputToSecondRafMs": 123.30000019073486,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.29999995231628
+            },
+            {
+              "syncDispatchMs": 8.700000047683716,
+              "inputToFirstRafMs": 106,
+              "inputToSecondRafMs": 116.79999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.90000009536743
+            },
+            {
+              "syncDispatchMs": 8.900000095367432,
+              "inputToFirstRafMs": 107.5,
+              "inputToSecondRafMs": 118.70000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.09999990463257
+            },
+            {
+              "syncDispatchMs": 9.5,
+              "inputToFirstRafMs": 108.5,
+              "inputToSecondRafMs": 118.70000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 578.6000001430511,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        }
+      ]
+    },
+    {
+      "run": 0,
+      "warmup": true,
+      "fixture": "giant-hwpx",
+      "variant": "baseline",
+      "appReadyMs": 733,
+      "fontPreparation": {
+        "milliseconds": 710.6999998092651,
+        "names": [
+          "HY헤드라인M",
+          "HYHeadLine M",
+          "HYHeadLine Medium",
+          "HY견고딕",
+          "HYGothic-Extra",
+          "HY그래픽",
+          "HYGraphic-Medium",
+          "HY그래픽M",
+          "HY견명조",
+          "HYMyeongJo-Extra",
+          "HY신명조",
+          "HY중고딕",
+          "한양중고딕",
+          "양재튼튼체B",
+          "Malgun Gothic",
+          "맑은 고딕",
+          "돋움",
+          "돋움체",
+          "굴림",
+          "굴림체",
+          "새굴림",
+          "Haansoft Dotum",
+          "바탕",
+          "바탕체",
+          "궁서",
+          "궁서체",
+          "새궁서",
+          "나눔고딕",
+          "나눔명조",
+          "나눔고딕코딩",
+          "나눔고딕_코딩",
+          "NanumGothic",
+          "Palatino Linotype",
+          "Noto Sans KR",
+          "Noto Sans KR ExtraLight",
+          "Noto Serif KR",
+          "Pretendard",
+          "Pretendard Thin",
+          "Pretendard ExtraLight",
+          "Pretendard Light",
+          "Pretendard Medium",
+          "Pretendard SemiBold",
+          "Pretendard Bold",
+          "Pretendard ExtraBold",
+          "Pretendard Black",
+          "D2Coding",
+          "해피니스 산스 레귤러",
+          "Happiness Sans Regular",
+          "해피니스 산스 볼드",
+          "Happiness Sans Bold",
+          "해피니스 산스 타이틀",
+          "Happiness Sans Title",
+          "해피니스 산스 VF",
+          "Happiness Sans VF",
+          "Cafe24 Ssurround Bold",
+          "카페24 슈퍼매직",
+          "Cafe24 Supermagic",
+          "Latin Modern Math",
+          "SpoqaHanSans",
+          "고운바탕",
+          "고운돋움",
+          "RHWP Old Hangul",
+          "Noto Sans Symbols2",
+          "RHWP Public Batang"
+        ],
+        "fontFaces": 114
+      },
+      "wasmSha256": "e69235d9336e855892c0bc49d72f10fc6f932ae9efddf09fc9bc6f8ee07e335f",
+      "loadTiming": {
+        "started": 2190.0999999046326,
+        "wasmCalls": [
+          996.5
+        ],
+        "doneMs": 4486,
+        "twoRafMs": 4497.900000095367
+      },
+      "fonts": {
+        "fontStatus": "loaded",
+        "fontFaces": 114,
+        "resources": []
+      },
+      "edits": [
+        {
+          "metric": "english",
+          "count": 6,
+          "samples": [
+            {
+              "syncDispatchMs": 6.700000047683716,
+              "inputToFirstRafMs": 107,
+              "inputToSecondRafMs": 119.90000009536743,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 6.200000047683716,
+              "inputToFirstRafMs": 116,
+              "inputToSecondRafMs": 131.70000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            },
+            {
+              "syncDispatchMs": 3.0999999046325684,
+              "inputToFirstRafMs": 102.09999990463257,
+              "inputToSecondRafMs": 117.40000009536743,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.5
+            },
+            {
+              "syncDispatchMs": 2.799999952316284,
+              "inputToFirstRafMs": 102,
+              "inputToSecondRafMs": 113.29999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.20000004768372
+            },
+            {
+              "syncDispatchMs": 2.9000000953674316,
+              "inputToFirstRafMs": 107.90000009536743,
+              "inputToSecondRafMs": 119.79999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.09999990463257
+            },
+            {
+              "syncDispatchMs": 2.8000001907348633,
+              "inputToFirstRafMs": 103,
+              "inputToSecondRafMs": 114.60000014305115,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.29999995231628
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 797.7000000476837,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        },
+        {
+          "metric": "ime",
+          "count": 3,
+          "samples": [
+            {
+              "syncDispatchMs": 205.40000009536743,
+              "inputToFirstRafMs": 304.59999990463257,
+              "inputToSecondRafMs": 634.2000000476837,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 215.79999995231628,
+              "inputToFirstRafMs": 317.7999999523163,
+              "inputToSecondRafMs": 636.5999999046326,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 316.90000009536743
+            },
+            {
+              "syncDispatchMs": 202.5,
+              "inputToFirstRafMs": 302.80000019073486,
+              "inputToSecondRafMs": 615.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 334.19999980926514
+            },
+            {
+              "syncDispatchMs": 203.80000019073486,
+              "inputToFirstRafMs": 301.90000009536743,
+              "inputToSecondRafMs": 614.1000001430511,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 314
+            },
+            {
+              "syncDispatchMs": 196.29999995231628,
+              "inputToFirstRafMs": 300.89999985694885,
+              "inputToSecondRafMs": 607.7999999523163,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 313.60000014305115
+            },
+            {
+              "syncDispatchMs": 196.39999985694885,
+              "inputToFirstRafMs": 296,
+              "inputToSecondRafMs": 614.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 312.2000000476837
+            },
+            {
+              "syncDispatchMs": 210,
+              "inputToFirstRafMs": 308,
+              "inputToSecondRafMs": 616.9000000953674,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 306.89999985694885
+            },
+            {
+              "syncDispatchMs": 198.79999995231628,
+              "inputToFirstRafMs": 297.89999985694885,
+              "inputToSecondRafMs": 616.5999999046326,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 319.40000009536743
+            },
+            {
+              "syncDispatchMs": 208.10000014305115,
+              "inputToFirstRafMs": 308.2000000476837,
+              "inputToSecondRafMs": 319.10000014305115,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 308.89999985694885
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 776,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        }
+      ]
+    },
+    {
+      "run": 0,
+      "warmup": true,
+      "fixture": "giant-hwpx",
+      "variant": "candidate",
+      "appReadyMs": 724,
+      "fontPreparation": {
+        "milliseconds": 707,
+        "names": [
+          "HY헤드라인M",
+          "HYHeadLine M",
+          "HYHeadLine Medium",
+          "HY견고딕",
+          "HYGothic-Extra",
+          "HY그래픽",
+          "HYGraphic-Medium",
+          "HY그래픽M",
+          "HY견명조",
+          "HYMyeongJo-Extra",
+          "HY신명조",
+          "HY중고딕",
+          "한양중고딕",
+          "양재튼튼체B",
+          "Malgun Gothic",
+          "맑은 고딕",
+          "돋움",
+          "돋움체",
+          "굴림",
+          "굴림체",
+          "새굴림",
+          "Haansoft Dotum",
+          "바탕",
+          "바탕체",
+          "궁서",
+          "궁서체",
+          "새궁서",
+          "나눔고딕",
+          "나눔명조",
+          "나눔고딕코딩",
+          "나눔고딕_코딩",
+          "NanumGothic",
+          "Palatino Linotype",
+          "Noto Sans KR",
+          "Noto Sans KR ExtraLight",
+          "Noto Serif KR",
+          "Pretendard",
+          "Pretendard Thin",
+          "Pretendard ExtraLight",
+          "Pretendard Light",
+          "Pretendard Medium",
+          "Pretendard SemiBold",
+          "Pretendard Bold",
+          "Pretendard ExtraBold",
+          "Pretendard Black",
+          "D2Coding",
+          "해피니스 산스 레귤러",
+          "Happiness Sans Regular",
+          "해피니스 산스 볼드",
+          "Happiness Sans Bold",
+          "해피니스 산스 타이틀",
+          "Happiness Sans Title",
+          "해피니스 산스 VF",
+          "Happiness Sans VF",
+          "Cafe24 Ssurround Bold",
+          "카페24 슈퍼매직",
+          "Cafe24 Supermagic",
+          "Latin Modern Math",
+          "SpoqaHanSans",
+          "고운바탕",
+          "고운돋움",
+          "RHWP Old Hangul",
+          "Noto Sans Symbols2",
+          "RHWP Public Batang"
+        ],
+        "fontFaces": 114
+      },
+      "wasmSha256": "6bbd2a8bbefb62180f984b6a3ddc01443af7d3ef0b446dd3ab4df01bd4f8b34e",
+      "loadTiming": {
+        "started": 2254.0999999046326,
+        "wasmCalls": [
+          805.3000001907349
+        ],
+        "doneMs": 3758.7000000476837,
+        "twoRafMs": 3769.2000000476837
+      },
+      "fonts": {
+        "fontStatus": "loaded",
+        "fontFaces": 114,
+        "resources": []
+      },
+      "edits": [
+        {
+          "metric": "english",
+          "count": 6,
+          "samples": [
+            {
+              "syncDispatchMs": 7.5,
+              "inputToFirstRafMs": 108.59999990463257,
+              "inputToSecondRafMs": 122.09999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 4.400000095367432,
+              "inputToFirstRafMs": 105.60000014305115,
+              "inputToSecondRafMs": 125.10000014305115,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.89999985694885
+            },
+            {
+              "syncDispatchMs": 3,
+              "inputToFirstRafMs": 101.79999995231628,
+              "inputToSecondRafMs": 116.59999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.60000014305115
+            },
+            {
+              "syncDispatchMs": 2.700000047683716,
+              "inputToFirstRafMs": 100.30000019073486,
+              "inputToSecondRafMs": 111.90000009536743,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.39999985694885
+            },
+            {
+              "syncDispatchMs": 3.200000047683716,
+              "inputToFirstRafMs": 104.90000009536743,
+              "inputToSecondRafMs": 123.40000009536743,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            },
+            {
+              "syncDispatchMs": 3.200000047683716,
+              "inputToFirstRafMs": 102.20000004768372,
+              "inputToSecondRafMs": 114.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.5
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 589.5999999046326,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        },
+        {
+          "metric": "ime",
+          "count": 3,
+          "samples": [
+            {
+              "syncDispatchMs": 202.09999990463257,
+              "inputToFirstRafMs": 301.39999985694885,
+              "inputToSecondRafMs": 615.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 203.29999995231628,
+              "inputToFirstRafMs": 302.59999990463257,
+              "inputToSecondRafMs": 613.2000000476837,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 313.2999999523163
+            },
+            {
+              "syncDispatchMs": 200.20000004768372,
+              "inputToFirstRafMs": 299.2999999523163,
+              "inputToSecondRafMs": 611.0999999046326,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 314.2999999523163
+            },
+            {
+              "syncDispatchMs": 202,
+              "inputToFirstRafMs": 300.59999990463257,
+              "inputToSecondRafMs": 619.6999998092651,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 310.90000009536743
+            },
+            {
+              "syncDispatchMs": 206.29999995231628,
+              "inputToFirstRafMs": 306.7000000476837,
+              "inputToSecondRafMs": 618,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 313.39999985694885
+            },
+            {
+              "syncDispatchMs": 201.90000009536743,
+              "inputToFirstRafMs": 300.10000014305115,
+              "inputToSecondRafMs": 608.4000000953674,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 318.2999999523163
+            },
+            {
+              "syncDispatchMs": 199.10000014305115,
+              "inputToFirstRafMs": 297.2000000476837,
+              "inputToSecondRafMs": 606.9000000953674,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 311.5
+            },
+            {
+              "syncDispatchMs": 198.39999985694885,
+              "inputToFirstRafMs": 298.39999985694885,
+              "inputToSecondRafMs": 612.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 308.80000019073486
+            },
+            {
+              "syncDispatchMs": 204.70000004768372,
+              "inputToFirstRafMs": 303.09999990463257,
+              "inputToSecondRafMs": 314.7999999523163,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 309.7999999523163
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 590.2999999523163,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        }
+      ]
+    },
+    {
+      "run": 1,
+      "warmup": false,
+      "fixture": "giant-hwp",
+      "variant": "candidate",
+      "appReadyMs": 605,
+      "fontPreparation": {
+        "milliseconds": 689.2000000476837,
+        "names": [
+          "HY헤드라인M",
+          "HYHeadLine M",
+          "HYHeadLine Medium",
+          "HY견고딕",
+          "HYGothic-Extra",
+          "HY그래픽",
+          "HYGraphic-Medium",
+          "HY그래픽M",
+          "HY견명조",
+          "HYMyeongJo-Extra",
+          "HY신명조",
+          "HY중고딕",
+          "한양중고딕",
+          "양재튼튼체B",
+          "Malgun Gothic",
+          "맑은 고딕",
+          "돋움",
+          "돋움체",
+          "굴림",
+          "굴림체",
+          "새굴림",
+          "Haansoft Dotum",
+          "바탕",
+          "바탕체",
+          "궁서",
+          "궁서체",
+          "새궁서",
+          "나눔고딕",
+          "나눔명조",
+          "나눔고딕코딩",
+          "나눔고딕_코딩",
+          "NanumGothic",
+          "Palatino Linotype",
+          "Noto Sans KR",
+          "Noto Sans KR ExtraLight",
+          "Noto Serif KR",
+          "Pretendard",
+          "Pretendard Thin",
+          "Pretendard ExtraLight",
+          "Pretendard Light",
+          "Pretendard Medium",
+          "Pretendard SemiBold",
+          "Pretendard Bold",
+          "Pretendard ExtraBold",
+          "Pretendard Black",
+          "D2Coding",
+          "해피니스 산스 레귤러",
+          "Happiness Sans Regular",
+          "해피니스 산스 볼드",
+          "Happiness Sans Bold",
+          "해피니스 산스 타이틀",
+          "Happiness Sans Title",
+          "해피니스 산스 VF",
+          "Happiness Sans VF",
+          "Cafe24 Ssurround Bold",
+          "카페24 슈퍼매직",
+          "Cafe24 Supermagic",
+          "Latin Modern Math",
+          "SpoqaHanSans",
+          "고운바탕",
+          "고운돋움",
+          "RHWP Old Hangul",
+          "Noto Sans Symbols2",
+          "RHWP Public Batang"
+        ],
+        "fontFaces": 114
+      },
+      "wasmSha256": "6bbd2a8bbefb62180f984b6a3ddc01443af7d3ef0b446dd3ab4df01bd4f8b34e",
+      "loadTiming": {
+        "started": 2118.5999999046326,
+        "wasmCalls": [
+          1089.7000000476837
+        ],
+        "doneMs": 5263.100000143051,
+        "twoRafMs": 5280.800000190735
+      },
+      "fonts": {
+        "fontStatus": "loaded",
+        "fontFaces": 114,
+        "resources": []
+      },
+      "edits": [
+        {
+          "metric": "english",
+          "count": 6,
+          "samples": [
+            {
+              "syncDispatchMs": 9.299999952316284,
+              "inputToFirstRafMs": 108.89999985694885,
+              "inputToSecondRafMs": 122,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 2,
+              "inputToFirstRafMs": 102.29999995231628,
+              "inputToSecondRafMs": 114.70000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.59999990463257
+            },
+            {
+              "syncDispatchMs": 1.7999999523162842,
+              "inputToFirstRafMs": 101.40000009536743,
+              "inputToSecondRafMs": 112.40000009536743,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.20000004768372
+            },
+            {
+              "syncDispatchMs": 1.7999999523162842,
+              "inputToFirstRafMs": 102.70000004768372,
+              "inputToSecondRafMs": 114.70000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            },
+            {
+              "syncDispatchMs": 1.9000000953674316,
+              "inputToFirstRafMs": 101.70000004768372,
+              "inputToSecondRafMs": 113.80000019073486,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.09999990463257
+            },
+            {
+              "syncDispatchMs": 1.7999999523162842,
+              "inputToFirstRafMs": 102.20000004768372,
+              "inputToSecondRafMs": 115.29999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.10000014305115
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 586.1000001430511,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        },
+        {
+          "metric": "ime",
+          "count": 3,
+          "samples": [
+            {
+              "syncDispatchMs": 11.400000095367432,
+              "inputToFirstRafMs": 110.60000014305115,
+              "inputToSecondRafMs": 122.70000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 9.799999952316284,
+              "inputToFirstRafMs": 108.70000004768372,
+              "inputToSecondRafMs": 120,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.70000004768372
+            },
+            {
+              "syncDispatchMs": 10,
+              "inputToFirstRafMs": 108.79999995231628,
+              "inputToSecondRafMs": 122.29999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            },
+            {
+              "syncDispatchMs": 9.5,
+              "inputToFirstRafMs": 109.29999995231628,
+              "inputToSecondRafMs": 121.20000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.20000004768372
+            },
+            {
+              "syncDispatchMs": 9.200000047683716,
+              "inputToFirstRafMs": 110.5,
+              "inputToSecondRafMs": 123.59999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.70000004768372
+            },
+            {
+              "syncDispatchMs": 9.400000095367432,
+              "inputToFirstRafMs": 111,
+              "inputToSecondRafMs": 122.90000009536743,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.59999990463257
+            },
+            {
+              "syncDispatchMs": 9.599999904632568,
+              "inputToFirstRafMs": 110.09999990463257,
+              "inputToSecondRafMs": 121.09999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.70000004768372
+            },
+            {
+              "syncDispatchMs": 8.900000095367432,
+              "inputToFirstRafMs": 109.5,
+              "inputToSecondRafMs": 120.90000009536743,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.79999995231628
+            },
+            {
+              "syncDispatchMs": 9.799999952316284,
+              "inputToFirstRafMs": 112,
+              "inputToSecondRafMs": 123.29999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.20000004768372
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 577.7999999523163,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        }
+      ]
+    },
+    {
+      "run": 1,
+      "warmup": false,
+      "fixture": "giant-hwp",
+      "variant": "baseline",
+      "appReadyMs": 602,
+      "fontPreparation": {
+        "milliseconds": 704.0999999046326,
+        "names": [
+          "HY헤드라인M",
+          "HYHeadLine M",
+          "HYHeadLine Medium",
+          "HY견고딕",
+          "HYGothic-Extra",
+          "HY그래픽",
+          "HYGraphic-Medium",
+          "HY그래픽M",
+          "HY견명조",
+          "HYMyeongJo-Extra",
+          "HY신명조",
+          "HY중고딕",
+          "한양중고딕",
+          "양재튼튼체B",
+          "Malgun Gothic",
+          "맑은 고딕",
+          "돋움",
+          "돋움체",
+          "굴림",
+          "굴림체",
+          "새굴림",
+          "Haansoft Dotum",
+          "바탕",
+          "바탕체",
+          "궁서",
+          "궁서체",
+          "새궁서",
+          "나눔고딕",
+          "나눔명조",
+          "나눔고딕코딩",
+          "나눔고딕_코딩",
+          "NanumGothic",
+          "Palatino Linotype",
+          "Noto Sans KR",
+          "Noto Sans KR ExtraLight",
+          "Noto Serif KR",
+          "Pretendard",
+          "Pretendard Thin",
+          "Pretendard ExtraLight",
+          "Pretendard Light",
+          "Pretendard Medium",
+          "Pretendard SemiBold",
+          "Pretendard Bold",
+          "Pretendard ExtraBold",
+          "Pretendard Black",
+          "D2Coding",
+          "해피니스 산스 레귤러",
+          "Happiness Sans Regular",
+          "해피니스 산스 볼드",
+          "Happiness Sans Bold",
+          "해피니스 산스 타이틀",
+          "Happiness Sans Title",
+          "해피니스 산스 VF",
+          "Happiness Sans VF",
+          "Cafe24 Ssurround Bold",
+          "카페24 슈퍼매직",
+          "Cafe24 Supermagic",
+          "Latin Modern Math",
+          "SpoqaHanSans",
+          "고운바탕",
+          "고운돋움",
+          "RHWP Old Hangul",
+          "Noto Sans Symbols2",
+          "RHWP Public Batang"
+        ],
+        "fontFaces": 114
+      },
+      "wasmSha256": "e69235d9336e855892c0bc49d72f10fc6f932ae9efddf09fc9bc6f8ee07e335f",
+      "loadTiming": {
+        "started": 2086.7000000476837,
+        "wasmCalls": [
+          1280.5999999046326
+        ],
+        "doneMs": 6015.5,
+        "twoRafMs": 6028.400000095367
+      },
+      "fonts": {
+        "fontStatus": "loaded",
+        "fontFaces": 114,
+        "resources": []
+      },
+      "edits": [
+        {
+          "metric": "english",
+          "count": 6,
+          "samples": [
+            {
+              "syncDispatchMs": 8.800000190734863,
+              "inputToFirstRafMs": 109.60000014305115,
+              "inputToSecondRafMs": 122,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 2.0999999046325684,
+              "inputToFirstRafMs": 102.89999985694885,
+              "inputToSecondRafMs": 115.69999980926514,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.30000019073486
+            },
+            {
+              "syncDispatchMs": 1.7000000476837158,
+              "inputToFirstRafMs": 103.5,
+              "inputToSecondRafMs": 118.29999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.39999985694885
+            },
+            {
+              "syncDispatchMs": 2,
+              "inputToFirstRafMs": 110.79999995231628,
+              "inputToSecondRafMs": 123.70000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.90000009536743
+            },
+            {
+              "syncDispatchMs": 2,
+              "inputToFirstRafMs": 105.79999995231628,
+              "inputToSecondRafMs": 117.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.29999995231628
+            },
+            {
+              "syncDispatchMs": 2.1000001430511475,
+              "inputToFirstRafMs": 103.5,
+              "inputToSecondRafMs": 114.90000009536743,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.29999995231628
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 593.9000000953674,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        },
+        {
+          "metric": "ime",
+          "count": 3,
+          "samples": [
+            {
+              "syncDispatchMs": 12.099999904632568,
+              "inputToFirstRafMs": 133.79999995231628,
+              "inputToSecondRafMs": 145.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 9.5,
+              "inputToFirstRafMs": 110.90000009536743,
+              "inputToSecondRafMs": 122.20000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.29999995231628
+            },
+            {
+              "syncDispatchMs": 10.400000095367432,
+              "inputToFirstRafMs": 112.29999995231628,
+              "inputToSecondRafMs": 123.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.70000004768372
+            },
+            {
+              "syncDispatchMs": 9,
+              "inputToFirstRafMs": 110.80000019073486,
+              "inputToSecondRafMs": 122.80000019073486,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.59999990463257
+            },
+            {
+              "syncDispatchMs": 11,
+              "inputToFirstRafMs": 119.39999985694885,
+              "inputToSecondRafMs": 134.79999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.30000019073486
+            },
+            {
+              "syncDispatchMs": 9.400000095367432,
+              "inputToFirstRafMs": 110.80000019073486,
+              "inputToSecondRafMs": 121.70000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.19999980926514
+            },
+            {
+              "syncDispatchMs": 9.299999952316284,
+              "inputToFirstRafMs": 110.79999995231628,
+              "inputToSecondRafMs": 121.09999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.80000019073486
+            },
+            {
+              "syncDispatchMs": 9,
+              "inputToFirstRafMs": 110.20000004768372,
+              "inputToSecondRafMs": 121.09999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.59999990463257
+            },
+            {
+              "syncDispatchMs": 9.799999952316284,
+              "inputToFirstRafMs": 111.09999990463257,
+              "inputToSecondRafMs": 122.20000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.20000004768372
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 595.5,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        }
+      ]
+    },
+    {
+      "run": 1,
+      "warmup": false,
+      "fixture": "giant-hwpx",
+      "variant": "candidate",
+      "appReadyMs": 607,
+      "fontPreparation": {
+        "milliseconds": 735.6000001430511,
+        "names": [
+          "HY헤드라인M",
+          "HYHeadLine M",
+          "HYHeadLine Medium",
+          "HY견고딕",
+          "HYGothic-Extra",
+          "HY그래픽",
+          "HYGraphic-Medium",
+          "HY그래픽M",
+          "HY견명조",
+          "HYMyeongJo-Extra",
+          "HY신명조",
+          "HY중고딕",
+          "한양중고딕",
+          "양재튼튼체B",
+          "Malgun Gothic",
+          "맑은 고딕",
+          "돋움",
+          "돋움체",
+          "굴림",
+          "굴림체",
+          "새굴림",
+          "Haansoft Dotum",
+          "바탕",
+          "바탕체",
+          "궁서",
+          "궁서체",
+          "새궁서",
+          "나눔고딕",
+          "나눔명조",
+          "나눔고딕코딩",
+          "나눔고딕_코딩",
+          "NanumGothic",
+          "Palatino Linotype",
+          "Noto Sans KR",
+          "Noto Sans KR ExtraLight",
+          "Noto Serif KR",
+          "Pretendard",
+          "Pretendard Thin",
+          "Pretendard ExtraLight",
+          "Pretendard Light",
+          "Pretendard Medium",
+          "Pretendard SemiBold",
+          "Pretendard Bold",
+          "Pretendard ExtraBold",
+          "Pretendard Black",
+          "D2Coding",
+          "해피니스 산스 레귤러",
+          "Happiness Sans Regular",
+          "해피니스 산스 볼드",
+          "Happiness Sans Bold",
+          "해피니스 산스 타이틀",
+          "Happiness Sans Title",
+          "해피니스 산스 VF",
+          "Happiness Sans VF",
+          "Cafe24 Ssurround Bold",
+          "카페24 슈퍼매직",
+          "Cafe24 Supermagic",
+          "Latin Modern Math",
+          "SpoqaHanSans",
+          "고운바탕",
+          "고운돋움",
+          "RHWP Old Hangul",
+          "Noto Sans Symbols2",
+          "RHWP Public Batang"
+        ],
+        "fontFaces": 114
+      },
+      "wasmSha256": "6bbd2a8bbefb62180f984b6a3ddc01443af7d3ef0b446dd3ab4df01bd4f8b34e",
+      "loadTiming": {
+        "started": 2185.7999999523163,
+        "wasmCalls": [
+          782.2000000476837
+        ],
+        "doneMs": 3718.899999856949,
+        "twoRafMs": 3732.399999856949
+      },
+      "fonts": {
+        "fontStatus": "loaded",
+        "fontFaces": 114,
+        "resources": []
+      },
+      "edits": [
+        {
+          "metric": "english",
+          "count": 6,
+          "samples": [
+            {
+              "syncDispatchMs": 7.200000047683716,
+              "inputToFirstRafMs": 108,
+              "inputToSecondRafMs": 121.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 5.599999904632568,
+              "inputToFirstRafMs": 105.40000009536743,
+              "inputToSecondRafMs": 122.20000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.70000004768372
+            },
+            {
+              "syncDispatchMs": 3.1000001430511475,
+              "inputToFirstRafMs": 103.20000004768372,
+              "inputToSecondRafMs": 114.70000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.79999995231628
+            },
+            {
+              "syncDispatchMs": 2.8999998569488525,
+              "inputToFirstRafMs": 103.39999985694885,
+              "inputToSecondRafMs": 115.39999985694885,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.40000009536743
+            },
+            {
+              "syncDispatchMs": 3.299999952316284,
+              "inputToFirstRafMs": 104.20000004768372,
+              "inputToSecondRafMs": 116.70000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.09999990463257
+            },
+            {
+              "syncDispatchMs": 3,
+              "inputToFirstRafMs": 102,
+              "inputToSecondRafMs": 114.20000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.5
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 594.3999998569489,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        },
+        {
+          "metric": "ime",
+          "count": 3,
+          "samples": [
+            {
+              "syncDispatchMs": 203.40000009536743,
+              "inputToFirstRafMs": 304.90000009536743,
+              "inputToSecondRafMs": 616.7999999523163,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 201.20000004768372,
+              "inputToFirstRafMs": 300,
+              "inputToSecondRafMs": 612.6000001430511,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 317.2999999523163
+            },
+            {
+              "syncDispatchMs": 200.90000009536743,
+              "inputToFirstRafMs": 300.80000019073486,
+              "inputToSecondRafMs": 608.9000000953674,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 312.2999999523163
+            },
+            {
+              "syncDispatchMs": 196.69999980926514,
+              "inputToFirstRafMs": 296.09999990463257,
+              "inputToSecondRafMs": 610.5999999046326,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 313.30000019073486
+            },
+            {
+              "syncDispatchMs": 203.09999990463257,
+              "inputToFirstRafMs": 301.90000009536743,
+              "inputToSecondRafMs": 612.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 309.09999990463257
+            },
+            {
+              "syncDispatchMs": 197.90000009536743,
+              "inputToFirstRafMs": 299.90000009536743,
+              "inputToSecondRafMs": 610.4000000953674,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 313
+            },
+            {
+              "syncDispatchMs": 200.90000009536743,
+              "inputToFirstRafMs": 299.2999999523163,
+              "inputToSecondRafMs": 615.2999999523163,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 311.7999999523163
+            },
+            {
+              "syncDispatchMs": 205.59999990463257,
+              "inputToFirstRafMs": 304.40000009536743,
+              "inputToSecondRafMs": 622.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 311.2000000476837
+            },
+            {
+              "syncDispatchMs": 207.19999980926514,
+              "inputToFirstRafMs": 306.89999985694885,
+              "inputToSecondRafMs": 318.39999985694885,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 315.90000009536743
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 575.5999999046326,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        }
+      ]
+    },
+    {
+      "run": 1,
+      "warmup": false,
+      "fixture": "giant-hwpx",
+      "variant": "baseline",
+      "appReadyMs": 585,
+      "fontPreparation": {
+        "milliseconds": 742.6000001430511,
+        "names": [
+          "HY헤드라인M",
+          "HYHeadLine M",
+          "HYHeadLine Medium",
+          "HY견고딕",
+          "HYGothic-Extra",
+          "HY그래픽",
+          "HYGraphic-Medium",
+          "HY그래픽M",
+          "HY견명조",
+          "HYMyeongJo-Extra",
+          "HY신명조",
+          "HY중고딕",
+          "한양중고딕",
+          "양재튼튼체B",
+          "Malgun Gothic",
+          "맑은 고딕",
+          "돋움",
+          "돋움체",
+          "굴림",
+          "굴림체",
+          "새굴림",
+          "Haansoft Dotum",
+          "바탕",
+          "바탕체",
+          "궁서",
+          "궁서체",
+          "새궁서",
+          "나눔고딕",
+          "나눔명조",
+          "나눔고딕코딩",
+          "나눔고딕_코딩",
+          "NanumGothic",
+          "Palatino Linotype",
+          "Noto Sans KR",
+          "Noto Sans KR ExtraLight",
+          "Noto Serif KR",
+          "Pretendard",
+          "Pretendard Thin",
+          "Pretendard ExtraLight",
+          "Pretendard Light",
+          "Pretendard Medium",
+          "Pretendard SemiBold",
+          "Pretendard Bold",
+          "Pretendard ExtraBold",
+          "Pretendard Black",
+          "D2Coding",
+          "해피니스 산스 레귤러",
+          "Happiness Sans Regular",
+          "해피니스 산스 볼드",
+          "Happiness Sans Bold",
+          "해피니스 산스 타이틀",
+          "Happiness Sans Title",
+          "해피니스 산스 VF",
+          "Happiness Sans VF",
+          "Cafe24 Ssurround Bold",
+          "카페24 슈퍼매직",
+          "Cafe24 Supermagic",
+          "Latin Modern Math",
+          "SpoqaHanSans",
+          "고운바탕",
+          "고운돋움",
+          "RHWP Old Hangul",
+          "Noto Sans Symbols2",
+          "RHWP Public Batang"
+        ],
+        "fontFaces": 114
+      },
+      "wasmSha256": "e69235d9336e855892c0bc49d72f10fc6f932ae9efddf09fc9bc6f8ee07e335f",
+      "loadTiming": {
+        "started": 2135.5,
+        "wasmCalls": [
+          1001
+        ],
+        "doneMs": 4536.900000095367,
+        "twoRafMs": 4548.5
+      },
+      "fonts": {
+        "fontStatus": "loaded",
+        "fontFaces": 114,
+        "resources": []
+      },
+      "edits": [
+        {
+          "metric": "english",
+          "count": 6,
+          "samples": [
+            {
+              "syncDispatchMs": 6.400000095367432,
+              "inputToFirstRafMs": 109,
+              "inputToSecondRafMs": 123.20000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 2.8999998569488525,
+              "inputToFirstRafMs": 103.29999995231628,
+              "inputToSecondRafMs": 117.29999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.60000014305115
+            },
+            {
+              "syncDispatchMs": 2.9000000953674316,
+              "inputToFirstRafMs": 103,
+              "inputToSecondRafMs": 118.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.09999990463257
+            },
+            {
+              "syncDispatchMs": 2.9000000953674316,
+              "inputToFirstRafMs": 103.30000019073486,
+              "inputToSecondRafMs": 115.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.29999995231628
+            },
+            {
+              "syncDispatchMs": 2.799999952316284,
+              "inputToFirstRafMs": 102.5,
+              "inputToSecondRafMs": 114.60000014305115,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.20000004768372
+            },
+            {
+              "syncDispatchMs": 12.300000190734863,
+              "inputToFirstRafMs": 126.20000004768372,
+              "inputToSecondRafMs": 138,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.29999995231628
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 785.0999999046326,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        },
+        {
+          "metric": "ime",
+          "count": 3,
+          "samples": [
+            {
+              "syncDispatchMs": 211.90000009536743,
+              "inputToFirstRafMs": 318.80000019073486,
+              "inputToSecondRafMs": 654.1000001430511,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 220.09999990463257,
+              "inputToFirstRafMs": 323.59999990463257,
+              "inputToSecondRafMs": 640.8999998569489,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 331.10000014305115
+            },
+            {
+              "syncDispatchMs": 200.40000009536743,
+              "inputToFirstRafMs": 300.30000019073486,
+              "inputToSecondRafMs": 612.3000001907349,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 340.89999985694885
+            },
+            {
+              "syncDispatchMs": 200.39999985694885,
+              "inputToFirstRafMs": 301.09999990463257,
+              "inputToSecondRafMs": 616.8999998569489,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 311.60000014305115
+            },
+            {
+              "syncDispatchMs": 204.69999980926514,
+              "inputToFirstRafMs": 304.59999990463257,
+              "inputToSecondRafMs": 614.2999999523163,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 312.7000000476837
+            },
+            {
+              "syncDispatchMs": 200,
+              "inputToFirstRafMs": 299.09999990463257,
+              "inputToSecondRafMs": 608.2999999523163,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 315.5
+            },
+            {
+              "syncDispatchMs": 201.90000009536743,
+              "inputToFirstRafMs": 298.5,
+              "inputToSecondRafMs": 615.9000000953674,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 310.19999980926514
+            },
+            {
+              "syncDispatchMs": 205.19999980926514,
+              "inputToFirstRafMs": 306.5,
+              "inputToSecondRafMs": 618.0999999046326,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 309.80000019073486
+            },
+            {
+              "syncDispatchMs": 200.29999995231628,
+              "inputToFirstRafMs": 300.10000014305115,
+              "inputToSecondRafMs": 310.7000000476837,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 318.39999985694885
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 778.5999999046326,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "warmup": false,
+      "fixture": "giant-hwp",
+      "variant": "baseline",
+      "appReadyMs": 693,
+      "fontPreparation": {
+        "milliseconds": 694.5999999046326,
+        "names": [
+          "HY헤드라인M",
+          "HYHeadLine M",
+          "HYHeadLine Medium",
+          "HY견고딕",
+          "HYGothic-Extra",
+          "HY그래픽",
+          "HYGraphic-Medium",
+          "HY그래픽M",
+          "HY견명조",
+          "HYMyeongJo-Extra",
+          "HY신명조",
+          "HY중고딕",
+          "한양중고딕",
+          "양재튼튼체B",
+          "Malgun Gothic",
+          "맑은 고딕",
+          "돋움",
+          "돋움체",
+          "굴림",
+          "굴림체",
+          "새굴림",
+          "Haansoft Dotum",
+          "바탕",
+          "바탕체",
+          "궁서",
+          "궁서체",
+          "새궁서",
+          "나눔고딕",
+          "나눔명조",
+          "나눔고딕코딩",
+          "나눔고딕_코딩",
+          "NanumGothic",
+          "Palatino Linotype",
+          "Noto Sans KR",
+          "Noto Sans KR ExtraLight",
+          "Noto Serif KR",
+          "Pretendard",
+          "Pretendard Thin",
+          "Pretendard ExtraLight",
+          "Pretendard Light",
+          "Pretendard Medium",
+          "Pretendard SemiBold",
+          "Pretendard Bold",
+          "Pretendard ExtraBold",
+          "Pretendard Black",
+          "D2Coding",
+          "해피니스 산스 레귤러",
+          "Happiness Sans Regular",
+          "해피니스 산스 볼드",
+          "Happiness Sans Bold",
+          "해피니스 산스 타이틀",
+          "Happiness Sans Title",
+          "해피니스 산스 VF",
+          "Happiness Sans VF",
+          "Cafe24 Ssurround Bold",
+          "카페24 슈퍼매직",
+          "Cafe24 Supermagic",
+          "Latin Modern Math",
+          "SpoqaHanSans",
+          "고운바탕",
+          "고운돋움",
+          "RHWP Old Hangul",
+          "Noto Sans Symbols2",
+          "RHWP Public Batang"
+        ],
+        "fontFaces": 114
+      },
+      "wasmSha256": "e69235d9336e855892c0bc49d72f10fc6f932ae9efddf09fc9bc6f8ee07e335f",
+      "loadTiming": {
+        "started": 2161,
+        "wasmCalls": [
+          1258
+        ],
+        "doneMs": 5902.799999952316,
+        "twoRafMs": 5913.799999952316
+      },
+      "fonts": {
+        "fontStatus": "loaded",
+        "fontFaces": 114,
+        "resources": []
+      },
+      "edits": [
+        {
+          "metric": "english",
+          "count": 6,
+          "samples": [
+            {
+              "syncDispatchMs": 8.599999904632568,
+              "inputToFirstRafMs": 110.69999980926514,
+              "inputToSecondRafMs": 122.89999985694885,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 2.0999999046325684,
+              "inputToFirstRafMs": 101.69999980926514,
+              "inputToSecondRafMs": 114.79999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            },
+            {
+              "syncDispatchMs": 1.9000000953674316,
+              "inputToFirstRafMs": 102.30000019073486,
+              "inputToSecondRafMs": 117,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.19999980926514
+            },
+            {
+              "syncDispatchMs": 1.9000000953674316,
+              "inputToFirstRafMs": 103.70000004768372,
+              "inputToSecondRafMs": 115.30000019073486,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            },
+            {
+              "syncDispatchMs": 1.8999998569488525,
+              "inputToFirstRafMs": 102.89999985694885,
+              "inputToSecondRafMs": 114.39999985694885,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.10000014305115
+            },
+            {
+              "syncDispatchMs": 2.1000001430511475,
+              "inputToFirstRafMs": 101.90000009536743,
+              "inputToSecondRafMs": 113.10000014305115,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.09999990463257
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 648.7999999523163,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        },
+        {
+          "metric": "ime",
+          "count": 3,
+          "samples": [
+            {
+              "syncDispatchMs": 14.400000095367432,
+              "inputToFirstRafMs": 118.80000019073486,
+              "inputToSecondRafMs": 135.80000019073486,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 10.299999952316284,
+              "inputToFirstRafMs": 121.59999990463257,
+              "inputToSecondRafMs": 134.09999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.60000014305115
+            },
+            {
+              "syncDispatchMs": 10.799999952316284,
+              "inputToFirstRafMs": 126.89999985694885,
+              "inputToSecondRafMs": 139.29999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.70000004768372
+            },
+            {
+              "syncDispatchMs": 9.400000095367432,
+              "inputToFirstRafMs": 145.70000004768372,
+              "inputToSecondRafMs": 158.09999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.09999990463257
+            },
+            {
+              "syncDispatchMs": 10.099999904632568,
+              "inputToFirstRafMs": 128.79999995231628,
+              "inputToSecondRafMs": 144.70000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 158.20000004768372
+            },
+            {
+              "syncDispatchMs": 9.699999809265137,
+              "inputToFirstRafMs": 127.39999985694885,
+              "inputToSecondRafMs": 147.69999980926514,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.20000004768372
+            },
+            {
+              "syncDispatchMs": 9.400000095367432,
+              "inputToFirstRafMs": 132.90000009536743,
+              "inputToSecondRafMs": 146.20000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.89999985694885
+            },
+            {
+              "syncDispatchMs": 9.099999904632568,
+              "inputToFirstRafMs": 114.59999990463257,
+              "inputToSecondRafMs": 126.29999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.60000014305115
+            },
+            {
+              "syncDispatchMs": 10,
+              "inputToFirstRafMs": 110.59999990463257,
+              "inputToSecondRafMs": 121.70000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.29999995231628
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 670.7999999523163,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "warmup": false,
+      "fixture": "giant-hwp",
+      "variant": "candidate",
+      "appReadyMs": 754,
+      "fontPreparation": {
+        "milliseconds": 736.1000001430511,
+        "names": [
+          "HY헤드라인M",
+          "HYHeadLine M",
+          "HYHeadLine Medium",
+          "HY견고딕",
+          "HYGothic-Extra",
+          "HY그래픽",
+          "HYGraphic-Medium",
+          "HY그래픽M",
+          "HY견명조",
+          "HYMyeongJo-Extra",
+          "HY신명조",
+          "HY중고딕",
+          "한양중고딕",
+          "양재튼튼체B",
+          "Malgun Gothic",
+          "맑은 고딕",
+          "돋움",
+          "돋움체",
+          "굴림",
+          "굴림체",
+          "새굴림",
+          "Haansoft Dotum",
+          "바탕",
+          "바탕체",
+          "궁서",
+          "궁서체",
+          "새궁서",
+          "나눔고딕",
+          "나눔명조",
+          "나눔고딕코딩",
+          "나눔고딕_코딩",
+          "NanumGothic",
+          "Palatino Linotype",
+          "Noto Sans KR",
+          "Noto Sans KR ExtraLight",
+          "Noto Serif KR",
+          "Pretendard",
+          "Pretendard Thin",
+          "Pretendard ExtraLight",
+          "Pretendard Light",
+          "Pretendard Medium",
+          "Pretendard SemiBold",
+          "Pretendard Bold",
+          "Pretendard ExtraBold",
+          "Pretendard Black",
+          "D2Coding",
+          "해피니스 산스 레귤러",
+          "Happiness Sans Regular",
+          "해피니스 산스 볼드",
+          "Happiness Sans Bold",
+          "해피니스 산스 타이틀",
+          "Happiness Sans Title",
+          "해피니스 산스 VF",
+          "Happiness Sans VF",
+          "Cafe24 Ssurround Bold",
+          "카페24 슈퍼매직",
+          "Cafe24 Supermagic",
+          "Latin Modern Math",
+          "SpoqaHanSans",
+          "고운바탕",
+          "고운돋움",
+          "RHWP Old Hangul",
+          "Noto Sans Symbols2",
+          "RHWP Public Batang"
+        ],
+        "fontFaces": 114
+      },
+      "wasmSha256": "6bbd2a8bbefb62180f984b6a3ddc01443af7d3ef0b446dd3ab4df01bd4f8b34e",
+      "loadTiming": {
+        "started": 2386.7000000476837,
+        "wasmCalls": [
+          1107.3999998569489
+        ],
+        "doneMs": 5241.299999952316,
+        "twoRafMs": 5264.799999952316
+      },
+      "fonts": {
+        "fontStatus": "loaded",
+        "fontFaces": 114,
+        "resources": []
+      },
+      "edits": [
+        {
+          "metric": "english",
+          "count": 6,
+          "samples": [
+            {
+              "syncDispatchMs": 13,
+              "inputToFirstRafMs": 117.5,
+              "inputToSecondRafMs": 130.59999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 2.0999999046325684,
+              "inputToFirstRafMs": 106.09999990463257,
+              "inputToSecondRafMs": 119.59999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.20000004768372
+            },
+            {
+              "syncDispatchMs": 1.9000000953674316,
+              "inputToFirstRafMs": 106.29999995231628,
+              "inputToSecondRafMs": 117.90000009536743,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.39999985694885
+            },
+            {
+              "syncDispatchMs": 1.8999998569488525,
+              "inputToFirstRafMs": 102.39999985694885,
+              "inputToSecondRafMs": 114.59999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.10000014305115
+            },
+            {
+              "syncDispatchMs": 2,
+              "inputToFirstRafMs": 104.60000014305115,
+              "inputToSecondRafMs": 117.30000019073486,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.19999980926514
+            },
+            {
+              "syncDispatchMs": 2.1000001430511475,
+              "inputToFirstRafMs": 103.90000009536743,
+              "inputToSecondRafMs": 116.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.20000004768372
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 625.5,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        },
+        {
+          "metric": "ime",
+          "count": 3,
+          "samples": [
+            {
+              "syncDispatchMs": 10.900000095367432,
+              "inputToFirstRafMs": 111.5,
+              "inputToSecondRafMs": 123.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 9.800000190734863,
+              "inputToFirstRafMs": 110.70000004768372,
+              "inputToSecondRafMs": 122.30000019073486,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.29999995231628
+            },
+            {
+              "syncDispatchMs": 10.400000095367432,
+              "inputToFirstRafMs": 111,
+              "inputToSecondRafMs": 122.20000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.90000009536743
+            },
+            {
+              "syncDispatchMs": 9,
+              "inputToFirstRafMs": 110,
+              "inputToSecondRafMs": 122.10000014305115,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.59999990463257
+            },
+            {
+              "syncDispatchMs": 9.200000047683716,
+              "inputToFirstRafMs": 111,
+              "inputToSecondRafMs": 121.90000009536743,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.20000004768372
+            },
+            {
+              "syncDispatchMs": 9.5,
+              "inputToFirstRafMs": 110.90000009536743,
+              "inputToSecondRafMs": 122.29999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.5
+            },
+            {
+              "syncDispatchMs": 9.200000047683716,
+              "inputToFirstRafMs": 111.30000019073486,
+              "inputToSecondRafMs": 122.80000019073486,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.79999995231628
+            },
+            {
+              "syncDispatchMs": 9.200000047683716,
+              "inputToFirstRafMs": 110,
+              "inputToSecondRafMs": 121.09999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.40000009536743
+            },
+            {
+              "syncDispatchMs": 9.599999904632568,
+              "inputToFirstRafMs": 109.5,
+              "inputToSecondRafMs": 120.29999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.40000009536743
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 584.5,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "warmup": false,
+      "fixture": "giant-hwpx",
+      "variant": "baseline",
+      "appReadyMs": 580,
+      "fontPreparation": {
+        "milliseconds": 683.5,
+        "names": [
+          "HY헤드라인M",
+          "HYHeadLine M",
+          "HYHeadLine Medium",
+          "HY견고딕",
+          "HYGothic-Extra",
+          "HY그래픽",
+          "HYGraphic-Medium",
+          "HY그래픽M",
+          "HY견명조",
+          "HYMyeongJo-Extra",
+          "HY신명조",
+          "HY중고딕",
+          "한양중고딕",
+          "양재튼튼체B",
+          "Malgun Gothic",
+          "맑은 고딕",
+          "돋움",
+          "돋움체",
+          "굴림",
+          "굴림체",
+          "새굴림",
+          "Haansoft Dotum",
+          "바탕",
+          "바탕체",
+          "궁서",
+          "궁서체",
+          "새궁서",
+          "나눔고딕",
+          "나눔명조",
+          "나눔고딕코딩",
+          "나눔고딕_코딩",
+          "NanumGothic",
+          "Palatino Linotype",
+          "Noto Sans KR",
+          "Noto Sans KR ExtraLight",
+          "Noto Serif KR",
+          "Pretendard",
+          "Pretendard Thin",
+          "Pretendard ExtraLight",
+          "Pretendard Light",
+          "Pretendard Medium",
+          "Pretendard SemiBold",
+          "Pretendard Bold",
+          "Pretendard ExtraBold",
+          "Pretendard Black",
+          "D2Coding",
+          "해피니스 산스 레귤러",
+          "Happiness Sans Regular",
+          "해피니스 산스 볼드",
+          "Happiness Sans Bold",
+          "해피니스 산스 타이틀",
+          "Happiness Sans Title",
+          "해피니스 산스 VF",
+          "Happiness Sans VF",
+          "Cafe24 Ssurround Bold",
+          "카페24 슈퍼매직",
+          "Cafe24 Supermagic",
+          "Latin Modern Math",
+          "SpoqaHanSans",
+          "고운바탕",
+          "고운돋움",
+          "RHWP Old Hangul",
+          "Noto Sans Symbols2",
+          "RHWP Public Batang"
+        ],
+        "fontFaces": 114
+      },
+      "wasmSha256": "e69235d9336e855892c0bc49d72f10fc6f932ae9efddf09fc9bc6f8ee07e335f",
+      "loadTiming": {
+        "started": 2010.2000000476837,
+        "wasmCalls": [
+          1017.2000000476837
+        ],
+        "doneMs": 4508.900000095367,
+        "twoRafMs": 4532
+      },
+      "fonts": {
+        "fontStatus": "loaded",
+        "fontFaces": 114,
+        "resources": []
+      },
+      "edits": [
+        {
+          "metric": "english",
+          "count": 6,
+          "samples": [
+            {
+              "syncDispatchMs": 10.300000190734863,
+              "inputToFirstRafMs": 117.20000004768372,
+              "inputToSecondRafMs": 130.90000009536743,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 2.8999998569488525,
+              "inputToFirstRafMs": 101.89999985694885,
+              "inputToSecondRafMs": 114.09999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.60000014305115
+            },
+            {
+              "syncDispatchMs": 3,
+              "inputToFirstRafMs": 107.70000004768372,
+              "inputToSecondRafMs": 122.70000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            },
+            {
+              "syncDispatchMs": 2.799999952316284,
+              "inputToFirstRafMs": 102,
+              "inputToSecondRafMs": 113,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.29999995231628
+            },
+            {
+              "syncDispatchMs": 2.8000001907348633,
+              "inputToFirstRafMs": 102.60000014305115,
+              "inputToSecondRafMs": 114.10000014305115,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.09999990463257
+            },
+            {
+              "syncDispatchMs": 3.200000047683716,
+              "inputToFirstRafMs": 103.90000009536743,
+              "inputToSecondRafMs": 115.20000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 804.2999999523163,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        },
+        {
+          "metric": "ime",
+          "count": 3,
+          "samples": [
+            {
+              "syncDispatchMs": 225.10000014305115,
+              "inputToFirstRafMs": 345.5,
+              "inputToSecondRafMs": 666.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 210.59999990463257,
+              "inputToFirstRafMs": 308.89999985694885,
+              "inputToSecondRafMs": 626.7000000476837,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 358.10000014305115
+            },
+            {
+              "syncDispatchMs": 203.29999995231628,
+              "inputToFirstRafMs": 301.7000000476837,
+              "inputToSecondRafMs": 607.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 325.2999999523163
+            },
+            {
+              "syncDispatchMs": 195.5,
+              "inputToFirstRafMs": 295.5,
+              "inputToSecondRafMs": 610.8999998569489,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 312.40000009536743
+            },
+            {
+              "syncDispatchMs": 204,
+              "inputToFirstRafMs": 304.2999999523163,
+              "inputToSecondRafMs": 623.0999999046326,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 307
+            },
+            {
+              "syncDispatchMs": 207.29999995231628,
+              "inputToFirstRafMs": 308.09999990463257,
+              "inputToSecondRafMs": 617.2000000476837,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 315.2999999523163
+            },
+            {
+              "syncDispatchMs": 198.80000019073486,
+              "inputToFirstRafMs": 298.2000000476837,
+              "inputToSecondRafMs": 614.1000001430511,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 319.39999985694885
+            },
+            {
+              "syncDispatchMs": 205.09999990463257,
+              "inputToFirstRafMs": 304.7000000476837,
+              "inputToSecondRafMs": 620.5999999046326,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 309.90000009536743
+            },
+            {
+              "syncDispatchMs": 204.10000014305115,
+              "inputToFirstRafMs": 303.90000009536743,
+              "inputToSecondRafMs": 316,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 317.09999990463257
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 772.0999999046326,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "warmup": false,
+      "fixture": "giant-hwpx",
+      "variant": "candidate",
+      "appReadyMs": 733,
+      "fontPreparation": {
+        "milliseconds": 737.1000001430511,
+        "names": [
+          "HY헤드라인M",
+          "HYHeadLine M",
+          "HYHeadLine Medium",
+          "HY견고딕",
+          "HYGothic-Extra",
+          "HY그래픽",
+          "HYGraphic-Medium",
+          "HY그래픽M",
+          "HY견명조",
+          "HYMyeongJo-Extra",
+          "HY신명조",
+          "HY중고딕",
+          "한양중고딕",
+          "양재튼튼체B",
+          "Malgun Gothic",
+          "맑은 고딕",
+          "돋움",
+          "돋움체",
+          "굴림",
+          "굴림체",
+          "새굴림",
+          "Haansoft Dotum",
+          "바탕",
+          "바탕체",
+          "궁서",
+          "궁서체",
+          "새궁서",
+          "나눔고딕",
+          "나눔명조",
+          "나눔고딕코딩",
+          "나눔고딕_코딩",
+          "NanumGothic",
+          "Palatino Linotype",
+          "Noto Sans KR",
+          "Noto Sans KR ExtraLight",
+          "Noto Serif KR",
+          "Pretendard",
+          "Pretendard Thin",
+          "Pretendard ExtraLight",
+          "Pretendard Light",
+          "Pretendard Medium",
+          "Pretendard SemiBold",
+          "Pretendard Bold",
+          "Pretendard ExtraBold",
+          "Pretendard Black",
+          "D2Coding",
+          "해피니스 산스 레귤러",
+          "Happiness Sans Regular",
+          "해피니스 산스 볼드",
+          "Happiness Sans Bold",
+          "해피니스 산스 타이틀",
+          "Happiness Sans Title",
+          "해피니스 산스 VF",
+          "Happiness Sans VF",
+          "Cafe24 Ssurround Bold",
+          "카페24 슈퍼매직",
+          "Cafe24 Supermagic",
+          "Latin Modern Math",
+          "SpoqaHanSans",
+          "고운바탕",
+          "고운돋움",
+          "RHWP Old Hangul",
+          "Noto Sans Symbols2",
+          "RHWP Public Batang"
+        ],
+        "fontFaces": 114
+      },
+      "wasmSha256": "6bbd2a8bbefb62180f984b6a3ddc01443af7d3ef0b446dd3ab4df01bd4f8b34e",
+      "loadTiming": {
+        "started": 2312.5,
+        "wasmCalls": [
+          804.2999999523163
+        ],
+        "doneMs": 3726.5,
+        "twoRafMs": 3746.2000000476837
+      },
+      "fonts": {
+        "fontStatus": "loaded",
+        "fontFaces": 114,
+        "resources": []
+      },
+      "edits": [
+        {
+          "metric": "english",
+          "count": 6,
+          "samples": [
+            {
+              "syncDispatchMs": 8.5,
+              "inputToFirstRafMs": 107.29999995231628,
+              "inputToSecondRafMs": 125.79999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 3.0999999046325684,
+              "inputToFirstRafMs": 102.29999995231628,
+              "inputToSecondRafMs": 115,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.79999995231628
+            },
+            {
+              "syncDispatchMs": 3.200000047683716,
+              "inputToFirstRafMs": 103.29999995231628,
+              "inputToSecondRafMs": 118,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.29999995231628
+            },
+            {
+              "syncDispatchMs": 2.799999952316284,
+              "inputToFirstRafMs": 101.20000004768372,
+              "inputToSecondRafMs": 113.29999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.40000009536743
+            },
+            {
+              "syncDispatchMs": 2.799999952316284,
+              "inputToFirstRafMs": 100.70000004768372,
+              "inputToSecondRafMs": 112.79999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.09999990463257
+            },
+            {
+              "syncDispatchMs": 3.0999999046325684,
+              "inputToFirstRafMs": 103.29999995231628,
+              "inputToSecondRafMs": 115.79999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.10000014305115
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 575.5,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        },
+        {
+          "metric": "ime",
+          "count": 3,
+          "samples": [
+            {
+              "syncDispatchMs": 206.29999995231628,
+              "inputToFirstRafMs": 304.7999999523163,
+              "inputToSecondRafMs": 621.3999998569489,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 205.40000009536743,
+              "inputToFirstRafMs": 305,
+              "inputToSecondRafMs": 619,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 316.89999985694885
+            },
+            {
+              "syncDispatchMs": 203,
+              "inputToFirstRafMs": 302.59999990463257,
+              "inputToSecondRafMs": 625.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 316.80000019073486
+            },
+            {
+              "syncDispatchMs": 211.90000009536743,
+              "inputToFirstRafMs": 310.90000009536743,
+              "inputToSecondRafMs": 640.9000000953674,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 314.89999985694885
+            },
+            {
+              "syncDispatchMs": 211.29999995231628,
+              "inputToFirstRafMs": 318.39999985694885,
+              "inputToSecondRafMs": 645.7999999523163,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 322.90000009536743
+            },
+            {
+              "syncDispatchMs": 217.20000004768372,
+              "inputToFirstRafMs": 316.10000014305115,
+              "inputToSecondRafMs": 633.6000001430511,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 330.09999990463257
+            },
+            {
+              "syncDispatchMs": 208.19999980926514,
+              "inputToFirstRafMs": 306.2999999523163,
+              "inputToSecondRafMs": 317.69999980926514,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 327.60000014305115
+            },
+            {
+              "syncDispatchMs": 205.59999990463257,
+              "inputToFirstRafMs": 303.89999985694885,
+              "inputToSecondRafMs": 635.0999999046326,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 317.7999999523163
+            },
+            {
+              "syncDispatchMs": 216,
+              "inputToFirstRafMs": 320.2999999523163,
+              "inputToSecondRafMs": 332.09999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 315.2999999523163
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 584.6000001430511,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        }
+      ]
+    },
+    {
+      "run": 3,
+      "warmup": false,
+      "fixture": "giant-hwp",
+      "variant": "candidate",
+      "appReadyMs": 617,
+      "fontPreparation": {
+        "milliseconds": 733,
+        "names": [
+          "HY헤드라인M",
+          "HYHeadLine M",
+          "HYHeadLine Medium",
+          "HY견고딕",
+          "HYGothic-Extra",
+          "HY그래픽",
+          "HYGraphic-Medium",
+          "HY그래픽M",
+          "HY견명조",
+          "HYMyeongJo-Extra",
+          "HY신명조",
+          "HY중고딕",
+          "한양중고딕",
+          "양재튼튼체B",
+          "Malgun Gothic",
+          "맑은 고딕",
+          "돋움",
+          "돋움체",
+          "굴림",
+          "굴림체",
+          "새굴림",
+          "Haansoft Dotum",
+          "바탕",
+          "바탕체",
+          "궁서",
+          "궁서체",
+          "새궁서",
+          "나눔고딕",
+          "나눔명조",
+          "나눔고딕코딩",
+          "나눔고딕_코딩",
+          "NanumGothic",
+          "Palatino Linotype",
+          "Noto Sans KR",
+          "Noto Sans KR ExtraLight",
+          "Noto Serif KR",
+          "Pretendard",
+          "Pretendard Thin",
+          "Pretendard ExtraLight",
+          "Pretendard Light",
+          "Pretendard Medium",
+          "Pretendard SemiBold",
+          "Pretendard Bold",
+          "Pretendard ExtraBold",
+          "Pretendard Black",
+          "D2Coding",
+          "해피니스 산스 레귤러",
+          "Happiness Sans Regular",
+          "해피니스 산스 볼드",
+          "Happiness Sans Bold",
+          "해피니스 산스 타이틀",
+          "Happiness Sans Title",
+          "해피니스 산스 VF",
+          "Happiness Sans VF",
+          "Cafe24 Ssurround Bold",
+          "카페24 슈퍼매직",
+          "Cafe24 Supermagic",
+          "Latin Modern Math",
+          "SpoqaHanSans",
+          "고운바탕",
+          "고운돋움",
+          "RHWP Old Hangul",
+          "Noto Sans Symbols2",
+          "RHWP Public Batang"
+        ],
+        "fontFaces": 114
+      },
+      "wasmSha256": "6bbd2a8bbefb62180f984b6a3ddc01443af7d3ef0b446dd3ab4df01bd4f8b34e",
+      "loadTiming": {
+        "started": 2183.0999999046326,
+        "wasmCalls": [
+          1104.5999999046326
+        ],
+        "doneMs": 5229.099999904633,
+        "twoRafMs": 5247
+      },
+      "fonts": {
+        "fontStatus": "loaded",
+        "fontFaces": 114,
+        "resources": []
+      },
+      "edits": [
+        {
+          "metric": "english",
+          "count": 6,
+          "samples": [
+            {
+              "syncDispatchMs": 15.400000095367432,
+              "inputToFirstRafMs": 128.10000014305115,
+              "inputToSecondRafMs": 141,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 2,
+              "inputToFirstRafMs": 101.90000009536743,
+              "inputToSecondRafMs": 114.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.70000004768372
+            },
+            {
+              "syncDispatchMs": 1.9000000953674316,
+              "inputToFirstRafMs": 100.90000009536743,
+              "inputToSecondRafMs": 112.40000009536743,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.29999995231628
+            },
+            {
+              "syncDispatchMs": 2,
+              "inputToFirstRafMs": 106.70000004768372,
+              "inputToSecondRafMs": 118.80000019073486,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            },
+            {
+              "syncDispatchMs": 1.8999998569488525,
+              "inputToFirstRafMs": 106.69999980926514,
+              "inputToSecondRafMs": 119.19999980926514,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.30000019073486
+            },
+            {
+              "syncDispatchMs": 1.9000000953674316,
+              "inputToFirstRafMs": 102.79999995231628,
+              "inputToSecondRafMs": 114.59999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.09999990463257
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 628.2000000476837,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        },
+        {
+          "metric": "ime",
+          "count": 3,
+          "samples": [
+            {
+              "syncDispatchMs": 11,
+              "inputToFirstRafMs": 117.20000004768372,
+              "inputToSecondRafMs": 129.80000019073486,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 10.200000047683716,
+              "inputToFirstRafMs": 113.70000004768372,
+              "inputToSecondRafMs": 125.90000009536743,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.20000004768372
+            },
+            {
+              "syncDispatchMs": 10.5,
+              "inputToFirstRafMs": 111.20000004768372,
+              "inputToSecondRafMs": 123,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.5
+            },
+            {
+              "syncDispatchMs": 9.400000095367432,
+              "inputToFirstRafMs": 114.10000014305115,
+              "inputToSecondRafMs": 126.70000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.79999995231628
+            },
+            {
+              "syncDispatchMs": 9.099999904632568,
+              "inputToFirstRafMs": 108,
+              "inputToSecondRafMs": 119.09999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.60000014305115
+            },
+            {
+              "syncDispatchMs": 9.299999952316284,
+              "inputToFirstRafMs": 108.09999990463257,
+              "inputToSecondRafMs": 119.79999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.29999995231628
+            },
+            {
+              "syncDispatchMs": 23,
+              "inputToFirstRafMs": 137.90000009536743,
+              "inputToSecondRafMs": 149.70000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.79999995231628
+            },
+            {
+              "syncDispatchMs": 10.900000095367432,
+              "inputToFirstRafMs": 110,
+              "inputToSecondRafMs": 125.80000019073486,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.29999995231628
+            },
+            {
+              "syncDispatchMs": 10,
+              "inputToFirstRafMs": 113.09999990463257,
+              "inputToSecondRafMs": 124.09999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.10000014305115
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 600.9000000953674,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        }
+      ]
+    },
+    {
+      "run": 3,
+      "warmup": false,
+      "fixture": "giant-hwp",
+      "variant": "baseline",
+      "appReadyMs": 599,
+      "fontPreparation": {
+        "milliseconds": 706.1000001430511,
+        "names": [
+          "HY헤드라인M",
+          "HYHeadLine M",
+          "HYHeadLine Medium",
+          "HY견고딕",
+          "HYGothic-Extra",
+          "HY그래픽",
+          "HYGraphic-Medium",
+          "HY그래픽M",
+          "HY견명조",
+          "HYMyeongJo-Extra",
+          "HY신명조",
+          "HY중고딕",
+          "한양중고딕",
+          "양재튼튼체B",
+          "Malgun Gothic",
+          "맑은 고딕",
+          "돋움",
+          "돋움체",
+          "굴림",
+          "굴림체",
+          "새굴림",
+          "Haansoft Dotum",
+          "바탕",
+          "바탕체",
+          "궁서",
+          "궁서체",
+          "새궁서",
+          "나눔고딕",
+          "나눔명조",
+          "나눔고딕코딩",
+          "나눔고딕_코딩",
+          "NanumGothic",
+          "Palatino Linotype",
+          "Noto Sans KR",
+          "Noto Sans KR ExtraLight",
+          "Noto Serif KR",
+          "Pretendard",
+          "Pretendard Thin",
+          "Pretendard ExtraLight",
+          "Pretendard Light",
+          "Pretendard Medium",
+          "Pretendard SemiBold",
+          "Pretendard Bold",
+          "Pretendard ExtraBold",
+          "Pretendard Black",
+          "D2Coding",
+          "해피니스 산스 레귤러",
+          "Happiness Sans Regular",
+          "해피니스 산스 볼드",
+          "Happiness Sans Bold",
+          "해피니스 산스 타이틀",
+          "Happiness Sans Title",
+          "해피니스 산스 VF",
+          "Happiness Sans VF",
+          "Cafe24 Ssurround Bold",
+          "카페24 슈퍼매직",
+          "Cafe24 Supermagic",
+          "Latin Modern Math",
+          "SpoqaHanSans",
+          "고운바탕",
+          "고운돋움",
+          "RHWP Old Hangul",
+          "Noto Sans Symbols2",
+          "RHWP Public Batang"
+        ],
+        "fontFaces": 114
+      },
+      "wasmSha256": "e69235d9336e855892c0bc49d72f10fc6f932ae9efddf09fc9bc6f8ee07e335f",
+      "loadTiming": {
+        "started": 2079.9000000953674,
+        "wasmCalls": [
+          1313.2999999523163
+        ],
+        "doneMs": 5973.699999809265,
+        "twoRafMs": 5996.899999856949
+      },
+      "fonts": {
+        "fontStatus": "loaded",
+        "fontFaces": 114,
+        "resources": []
+      },
+      "edits": [
+        {
+          "metric": "english",
+          "count": 6,
+          "samples": [
+            {
+              "syncDispatchMs": 9.100000143051147,
+              "inputToFirstRafMs": 108.60000014305115,
+              "inputToSecondRafMs": 121.30000019073486,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 2,
+              "inputToFirstRafMs": 101.80000019073486,
+              "inputToSecondRafMs": 115.20000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.5
+            },
+            {
+              "syncDispatchMs": 1.7999999523162842,
+              "inputToFirstRafMs": 104.29999995231628,
+              "inputToSecondRafMs": 119.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.20000004768372
+            },
+            {
+              "syncDispatchMs": 1.7999999523162842,
+              "inputToFirstRafMs": 102.90000009536743,
+              "inputToSecondRafMs": 113.90000009536743,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            },
+            {
+              "syncDispatchMs": 2,
+              "inputToFirstRafMs": 101.40000009536743,
+              "inputToSecondRafMs": 113,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.20000004768372
+            },
+            {
+              "syncDispatchMs": 2.1000001430511475,
+              "inputToFirstRafMs": 103.10000014305115,
+              "inputToSecondRafMs": 114.60000014305115,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.09999990463257
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 595.6999998092651,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        },
+        {
+          "metric": "ime",
+          "count": 3,
+          "samples": [
+            {
+              "syncDispatchMs": 11.700000047683716,
+              "inputToFirstRafMs": 113.29999995231628,
+              "inputToSecondRafMs": 124.70000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 10.200000047683716,
+              "inputToFirstRafMs": 111.90000009536743,
+              "inputToSecondRafMs": 122.60000014305115,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.89999985694885
+            },
+            {
+              "syncDispatchMs": 9.900000095367432,
+              "inputToFirstRafMs": 147.30000019073486,
+              "inputToSecondRafMs": 157.70000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.5
+            },
+            {
+              "syncDispatchMs": 11.400000095367432,
+              "inputToFirstRafMs": 135.29999995231628,
+              "inputToSecondRafMs": 150.09999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 157.90000009536743
+            },
+            {
+              "syncDispatchMs": 11.399999856948853,
+              "inputToFirstRafMs": 113.59999990463257,
+              "inputToSecondRafMs": 129.29999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.20000004768372
+            },
+            {
+              "syncDispatchMs": 22.799999952316284,
+              "inputToFirstRafMs": 129.20000004768372,
+              "inputToSecondRafMs": 139.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.59999990463257
+            },
+            {
+              "syncDispatchMs": 8.699999809265137,
+              "inputToFirstRafMs": 108.89999985694885,
+              "inputToSecondRafMs": 119.19999980926514,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.10000014305115
+            },
+            {
+              "syncDispatchMs": 9,
+              "inputToFirstRafMs": 108.40000009536743,
+              "inputToSecondRafMs": 119.10000014305115,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.89999985694885
+            },
+            {
+              "syncDispatchMs": 9.899999856948853,
+              "inputToFirstRafMs": 111.09999990463257,
+              "inputToSecondRafMs": 121.89999985694885,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.10000014305115
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 566.0999999046326,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        }
+      ]
+    },
+    {
+      "run": 3,
+      "warmup": false,
+      "fixture": "giant-hwpx",
+      "variant": "candidate",
+      "appReadyMs": 713,
+      "fontPreparation": {
+        "milliseconds": 699.3000001907349,
+        "names": [
+          "HY헤드라인M",
+          "HYHeadLine M",
+          "HYHeadLine Medium",
+          "HY견고딕",
+          "HYGothic-Extra",
+          "HY그래픽",
+          "HYGraphic-Medium",
+          "HY그래픽M",
+          "HY견명조",
+          "HYMyeongJo-Extra",
+          "HY신명조",
+          "HY중고딕",
+          "한양중고딕",
+          "양재튼튼체B",
+          "Malgun Gothic",
+          "맑은 고딕",
+          "돋움",
+          "돋움체",
+          "굴림",
+          "굴림체",
+          "새굴림",
+          "Haansoft Dotum",
+          "바탕",
+          "바탕체",
+          "궁서",
+          "궁서체",
+          "새궁서",
+          "나눔고딕",
+          "나눔명조",
+          "나눔고딕코딩",
+          "나눔고딕_코딩",
+          "NanumGothic",
+          "Palatino Linotype",
+          "Noto Sans KR",
+          "Noto Sans KR ExtraLight",
+          "Noto Serif KR",
+          "Pretendard",
+          "Pretendard Thin",
+          "Pretendard ExtraLight",
+          "Pretendard Light",
+          "Pretendard Medium",
+          "Pretendard SemiBold",
+          "Pretendard Bold",
+          "Pretendard ExtraBold",
+          "Pretendard Black",
+          "D2Coding",
+          "해피니스 산스 레귤러",
+          "Happiness Sans Regular",
+          "해피니스 산스 볼드",
+          "Happiness Sans Bold",
+          "해피니스 산스 타이틀",
+          "Happiness Sans Title",
+          "해피니스 산스 VF",
+          "Happiness Sans VF",
+          "Cafe24 Ssurround Bold",
+          "카페24 슈퍼매직",
+          "Cafe24 Supermagic",
+          "Latin Modern Math",
+          "SpoqaHanSans",
+          "고운바탕",
+          "고운돋움",
+          "RHWP Old Hangul",
+          "Noto Sans Symbols2",
+          "RHWP Public Batang"
+        ],
+        "fontFaces": 114
+      },
+      "wasmSha256": "6bbd2a8bbefb62180f984b6a3ddc01443af7d3ef0b446dd3ab4df01bd4f8b34e",
+      "loadTiming": {
+        "started": 2227.399999856949,
+        "wasmCalls": [
+          809
+        ],
+        "doneMs": 3711.7999999523163,
+        "twoRafMs": 3732
+      },
+      "fonts": {
+        "fontStatus": "loaded",
+        "fontFaces": 114,
+        "resources": []
+      },
+      "edits": [
+        {
+          "metric": "english",
+          "count": 6,
+          "samples": [
+            {
+              "syncDispatchMs": 7.099999904632568,
+              "inputToFirstRafMs": 106.70000004768372,
+              "inputToSecondRafMs": 119.20000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 5.5,
+              "inputToFirstRafMs": 105.70000004768372,
+              "inputToSecondRafMs": 123.20000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.79999995231628
+            },
+            {
+              "syncDispatchMs": 3.1999998092651367,
+              "inputToFirstRafMs": 120.79999995231628,
+              "inputToSecondRafMs": 135.59999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.60000014305115
+            },
+            {
+              "syncDispatchMs": 2.9000000953674316,
+              "inputToFirstRafMs": 102.5,
+              "inputToSecondRafMs": 114.20000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.39999985694885
+            },
+            {
+              "syncDispatchMs": 3,
+              "inputToFirstRafMs": 102.89999985694885,
+              "inputToSecondRafMs": 115.09999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.10000014305115
+            },
+            {
+              "syncDispatchMs": 14.100000143051147,
+              "inputToFirstRafMs": 129.40000009536743,
+              "inputToSecondRafMs": 141.90000009536743,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.39999985694885
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 583.5,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        },
+        {
+          "metric": "ime",
+          "count": 3,
+          "samples": [
+            {
+              "syncDispatchMs": 203.79999995231628,
+              "inputToFirstRafMs": 304.59999990463257,
+              "inputToSecondRafMs": 613.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 198,
+              "inputToFirstRafMs": 297.09999990463257,
+              "inputToSecondRafMs": 608.2999999523163,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 316.7999999523163
+            },
+            {
+              "syncDispatchMs": 202,
+              "inputToFirstRafMs": 299.7000000476837,
+              "inputToSecondRafMs": 612,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 309.09999990463257
+            },
+            {
+              "syncDispatchMs": 201.10000014305115,
+              "inputToFirstRafMs": 301.40000009536743,
+              "inputToSecondRafMs": 608.9000000953674,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 311
+            },
+            {
+              "syncDispatchMs": 196.39999985694885,
+              "inputToFirstRafMs": 295.09999990463257,
+              "inputToSecondRafMs": 603,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 314.10000014305115
+            },
+            {
+              "syncDispatchMs": 197.40000009536743,
+              "inputToFirstRafMs": 297.10000014305115,
+              "inputToSecondRafMs": 604.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 306.19999980926514
+            },
+            {
+              "syncDispatchMs": 197,
+              "inputToFirstRafMs": 296.59999990463257,
+              "inputToSecondRafMs": 613.8999998569489,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 308.30000019073486
+            },
+            {
+              "syncDispatchMs": 203.5,
+              "inputToFirstRafMs": 306.2000000476837,
+              "inputToSecondRafMs": 622.1000001430511,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 308.19999980926514
+            },
+            {
+              "syncDispatchMs": 204.10000014305115,
+              "inputToFirstRafMs": 304.7000000476837,
+              "inputToSecondRafMs": 316.10000014305115,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 317.7000000476837
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 579.9000000953674,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        }
+      ]
+    },
+    {
+      "run": 3,
+      "warmup": false,
+      "fixture": "giant-hwpx",
+      "variant": "baseline",
+      "appReadyMs": 707,
+      "fontPreparation": {
+        "milliseconds": 742.7999999523163,
+        "names": [
+          "HY헤드라인M",
+          "HYHeadLine M",
+          "HYHeadLine Medium",
+          "HY견고딕",
+          "HYGothic-Extra",
+          "HY그래픽",
+          "HYGraphic-Medium",
+          "HY그래픽M",
+          "HY견명조",
+          "HYMyeongJo-Extra",
+          "HY신명조",
+          "HY중고딕",
+          "한양중고딕",
+          "양재튼튼체B",
+          "Malgun Gothic",
+          "맑은 고딕",
+          "돋움",
+          "돋움체",
+          "굴림",
+          "굴림체",
+          "새굴림",
+          "Haansoft Dotum",
+          "바탕",
+          "바탕체",
+          "궁서",
+          "궁서체",
+          "새궁서",
+          "나눔고딕",
+          "나눔명조",
+          "나눔고딕코딩",
+          "나눔고딕_코딩",
+          "NanumGothic",
+          "Palatino Linotype",
+          "Noto Sans KR",
+          "Noto Sans KR ExtraLight",
+          "Noto Serif KR",
+          "Pretendard",
+          "Pretendard Thin",
+          "Pretendard ExtraLight",
+          "Pretendard Light",
+          "Pretendard Medium",
+          "Pretendard SemiBold",
+          "Pretendard Bold",
+          "Pretendard ExtraBold",
+          "Pretendard Black",
+          "D2Coding",
+          "해피니스 산스 레귤러",
+          "Happiness Sans Regular",
+          "해피니스 산스 볼드",
+          "Happiness Sans Bold",
+          "해피니스 산스 타이틀",
+          "Happiness Sans Title",
+          "해피니스 산스 VF",
+          "Happiness Sans VF",
+          "Cafe24 Ssurround Bold",
+          "카페24 슈퍼매직",
+          "Cafe24 Supermagic",
+          "Latin Modern Math",
+          "SpoqaHanSans",
+          "고운바탕",
+          "고운돋움",
+          "RHWP Old Hangul",
+          "Noto Sans Symbols2",
+          "RHWP Public Batang"
+        ],
+        "fontFaces": 114
+      },
+      "wasmSha256": "e69235d9336e855892c0bc49d72f10fc6f932ae9efddf09fc9bc6f8ee07e335f",
+      "loadTiming": {
+        "started": 2209.2000000476837,
+        "wasmCalls": [
+          996.6999998092651
+        ],
+        "doneMs": 4499.799999952316,
+        "twoRafMs": 4515
+      },
+      "fonts": {
+        "fontStatus": "loaded",
+        "fontFaces": 114,
+        "resources": []
+      },
+      "edits": [
+        {
+          "metric": "english",
+          "count": 6,
+          "samples": [
+            {
+              "syncDispatchMs": 6.199999809265137,
+              "inputToFirstRafMs": 104.79999995231628,
+              "inputToSecondRafMs": 117.79999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 3.299999952316284,
+              "inputToFirstRafMs": 103,
+              "inputToSecondRafMs": 115.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.5
+            },
+            {
+              "syncDispatchMs": 3.4000000953674316,
+              "inputToFirstRafMs": 104,
+              "inputToSecondRafMs": 122.79999995231628,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.39999985694885
+            },
+            {
+              "syncDispatchMs": 2.700000047683716,
+              "inputToFirstRafMs": 105.5,
+              "inputToSecondRafMs": 117.09999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 149.70000004768372
+            },
+            {
+              "syncDispatchMs": 2.799999952316284,
+              "inputToFirstRafMs": 104.70000004768372,
+              "inputToSecondRafMs": 116.20000004768372,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150
+            },
+            {
+              "syncDispatchMs": 2.799999952316284,
+              "inputToFirstRafMs": 102,
+              "inputToSecondRafMs": 113.59999990463257,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 150.20000004768372
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 778.5999999046326,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        },
+        {
+          "metric": "ime",
+          "count": 3,
+          "samples": [
+            {
+              "syncDispatchMs": 205,
+              "inputToFirstRafMs": 305.5,
+              "inputToSecondRafMs": 631.1999998092651,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": null
+            },
+            {
+              "syncDispatchMs": 213.39999985694885,
+              "inputToFirstRafMs": 314.09999990463257,
+              "inputToSecondRafMs": 644.0999999046326,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 317.5
+            },
+            {
+              "syncDispatchMs": 212.5,
+              "inputToFirstRafMs": 313.60000014305115,
+              "inputToSecondRafMs": 620.7000000476837,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 330.89999985694885
+            },
+            {
+              "syncDispatchMs": 194.90000009536743,
+              "inputToFirstRafMs": 295.5,
+              "inputToSecondRafMs": 606.5,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 325.7000000476837
+            },
+            {
+              "syncDispatchMs": 201.5,
+              "inputToFirstRafMs": 299.89999985694885,
+              "inputToSecondRafMs": 613.0999999046326,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 306.90000009536743
+            },
+            {
+              "syncDispatchMs": 201.79999995231628,
+              "inputToFirstRafMs": 302.09999990463257,
+              "inputToSecondRafMs": 619,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 311.2999999523163
+            },
+            {
+              "syncDispatchMs": 203.90000009536743,
+              "inputToFirstRafMs": 306.09999990463257,
+              "inputToSecondRafMs": 616,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 313.2999999523163
+            },
+            {
+              "syncDispatchMs": 201.29999995231628,
+              "inputToFirstRafMs": 299.5,
+              "inputToSecondRafMs": 624,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 316.90000009536743
+            },
+            {
+              "syncDispatchMs": 200.70000004768372,
+              "inputToFirstRafMs": 313.90000009536743,
+              "inputToSecondRafMs": 325.2999999523163,
+              "requestedCadenceMs": 150,
+              "actualStartIntervalMs": 310.39999985694885
+            }
+          ],
+          "finalPagination": {
+            "pendingBefore": true,
+            "flushed": true,
+            "flushMs": 784,
+            "pendingAfter": false,
+            "pages": 115
+          }
+        }
+      ]
+    }
+  ],
+  "curriculum": {
+    "status": "not_established_on_both",
+    "baseline": "415 pages parsed; same private-cache/prepared-local-font diagnostic timed out after fonts completed, before initial view completion.",
+    "candidate": "Same private-cache/prepared-local-font condition: synchronous WASM load 51250.800 ms, then UI completion timed out at initial canvasView.loadDocument. No editing samples completed.",
+    "performanceClaim": "No loading or editing performance conclusion for this 415-page sample.",
+    "candidateWasmLoadMs": 51250.800000190735,
+    "error": "open-document-bytes:done timeout",
+    "contract": "Additional environment-dependent performance observation, with no predetermined product latency threshold. Formal T09 functional/visual/package gates are recorded separately. No assertion or timeout was relaxed."
+  }
+}
