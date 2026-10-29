@@ -1810,3 +1810,7 @@ ignored `tab-fragment-candidate-handbook-focused-20261029.log`다. 이 결과는
 대상 280쪽은 raw 100%·미대응 0이다. 빌드 소스·바이너리 해시와 결과는
 ignored `tab-fragment-candidate-native-focus-20261029/result.json`에 있다.
 이는 표본 검사이며 전쪽 Native·fresh WASM 검증을 대신하지 않는다.
+
+같은 탭 조각 후보의 280쪽 우측 정렬 정지 회귀는 HWP와 HWPX 각 1건,
+총 2건 통과했다. 실행 로그는 ignored
+`tab-fragment-candidate-280-regression-20261029.log`다.
