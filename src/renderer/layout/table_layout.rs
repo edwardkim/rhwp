@@ -21455,10 +21455,12 @@ impl LayoutEngine {
             );
         if !(native_row_source || hwpx_row_source)
             || self.profile.get().session_edited()
+            // 다른 행의 재조판은 이 행의 저장 셀 상자를 무효화하지 않는다.
+            // 해당 행을 덮는 셀과 앞 흐름의 실제 변경만 프레임 수용을 막는다.
             || self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .row_frame_reflowed(table, row)
             || table.common.treat_as_char
             || table.row_count <= 1
         {
