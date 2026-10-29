@@ -310,6 +310,30 @@ fn join(
     Ok(())
 }
 
+/// [#8355] 한/글은 고정 줄간격 문단의 마지막 줄도 고정 피치를 차지한다. 이어 붙인 문단의
+/// 마지막 줄은 뒤 조각(한 줄짜리면 피치를 관측하지 못한 조각)에서 왔으므로 남은 문단 모양의
+/// 피치로 꼬리 줄간격을 다시 두고, 늘어난 몫을 돌려준다.
+fn restore_fixed_trailing(doc: &Document, paragraph: &mut Paragraph) -> i32 {
+    let Some(shape) = doc
+        .doc_info
+        .para_shapes
+        .get(paragraph.para_shape_id as usize)
+    else {
+        return 0;
+    };
+    if shape.line_spacing_type != crate::model::style::LineSpacingType::Fixed {
+        return 0;
+    }
+    let pitch = shape.line_spacing / 2;
+    let Some(last) = paragraph.line_segs.last_mut() else {
+        return 0;
+    };
+    let trailing = (pitch - last.line_height).max(0);
+    let grown = trailing - last.line_spacing.max(0);
+    last.line_spacing = trailing;
+    grown.max(0)
+}
+
 /// Body rows take the paragraph indent from the row tag, not from their
 /// start position: a positive indent marks the first row, a negative
 /// (hanging) indent the rows after it. Frame rows stored the indent in
@@ -410,6 +434,9 @@ fn assemble(
                 allocation.push(out, anchor)?;
             }
         }
+        // [#8355] 이어 붙인 문단이 마지막 줄에 새로 차지한 꼬리 줄간격(HWPUNIT). 다음 문단의
+        // 앞 간격은 이어 붙이기 전 조각의 줄 바닥에서 잰 값이라 그만큼 뺀다.
+        let mut carried_trailing = 0;
         for (j, paragraph) in body.into_iter().enumerate() {
             match out.last_mut() {
                 Some(previous) if cut[j] => {
@@ -419,9 +446,18 @@ fn assemble(
                         doc.doc_info.para_shapes[paragraph.para_shape_id as usize].spacing_after;
                     doc.doc_info.para_shapes[previous.para_shape_id as usize].spacing_after = after;
                     join(previous, &paragraph, allocation)?;
+                    carried_trailing = restore_fixed_trailing(doc, previous);
                     joined += 1;
                 }
-                _ => allocation.push(out, paragraph)?,
+                _ => {
+                    if carried_trailing > 0 {
+                        let shape = &mut doc.doc_info.para_shapes[paragraph.para_shape_id as usize];
+                        // Paragraph measures are stored as twice HWPUNIT.
+                        shape.spacing_before = (shape.spacing_before - 2 * carried_trailing).max(0);
+                    }
+                    carried_trailing = 0;
+                    allocation.push(out, paragraph)?;
+                }
             }
         }
     }
@@ -867,13 +903,19 @@ pub(super) fn reflow(
                         paragraphs[0].column_type = ColumnBreakType::Column;
                         current_column = g;
                     }
-                    // [#8355] 글상자 아래 변은 마지막 줄 바닥이다. 그 줄이 차지하는 꼬리
-                    // 줄간격(고정 줄간격 문단)은 다음 글상자까지의 앞 간격에서 뺀다.
-                    let trailing = paragraphs
-                        .last()
-                        .and_then(|p| p.line_segs.last())
-                        .map_or(0, |seg| seg.line_spacing.max(0));
-                    previous_bottom = flow_bottoms[page_no][i] + trailing;
+                    // [#8355] 다음 글상자까지의 앞 간격은 이 글상자의 흐름 끝에서 잰다 — 마지막
+                    // 줄의 위치 + 줄 높이 + 꼬리 줄간격(고정 줄간격 문단은 마지막 줄도 고정
+                    // 피치를 차지한다). 글상자 아래 변은 테두리 여백을 포함할 수 있어 흐름 끝이
+                    // 아니다(시험지 «보기» 상자 뒤 선택지가 한/글에서 11px 위).
+                    previous_bottom = paragraphs.last().and_then(|p| p.line_segs.last()).map_or(
+                        flow_bottoms[page_no][i],
+                        |seg| {
+                            margin_top
+                                + seg.vertical_pos
+                                + seg.line_height
+                                + seg.line_spacing.max(0)
+                        },
+                    );
                     moved += paragraphs.len();
                     allocation.extend(&mut body, paragraphs)?;
                 }
