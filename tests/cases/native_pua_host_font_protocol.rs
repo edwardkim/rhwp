@@ -9,6 +9,30 @@
 use rhwp::document_core::DocumentCore;
 
 #[test]
+fn otf_session_supply_preserves_document_and_saved_bytes() {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "가").unwrap();
+    let mut document = core.document().clone();
+    for font in document.doc_info.font_faces.iter_mut().flatten() {
+        font.alt_type = 2;
+    }
+    core.set_document(document);
+    let before = format!("{:?}", core.document());
+    let saved = core.export_hwp_native().unwrap();
+    assert!(!core.native_otf_font_requests().is_empty());
+    let font = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
+    assert!(core
+        .prepare_native_otf_fonts_with(|_| Some((font.to_vec(), 0)))
+        .unwrap());
+    assert_eq!(format!("{:?}", core.document()), before);
+    assert_eq!(core.export_hwp_native().unwrap(), saved);
+    assert!(core.prepare_native_otf_fonts_with(|_| None).unwrap());
+    assert_eq!(format!("{:?}", core.document()), before);
+    assert_eq!(core.export_hwp_native().unwrap(), saved);
+}
+
+#[test]
 fn pua_supply_clear_preserves_explicit_exact_font_owner() {
     let mut core = DocumentCore::new_empty();
     let bytes = include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf");

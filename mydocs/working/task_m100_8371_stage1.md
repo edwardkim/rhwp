@@ -47,3 +47,11 @@
 - 312쪽의 첫 `SQL)` 문단과 선행 쪽 제목, 같은 쪽 후속 본문을 원본 텍스트와 쪽 소속으로 확인한다. 독립 한컴 Print PDF의 첫 글자 원점은 PDFium `FPDFText_GetCharOrigin`으로 읽은 96 dpi 쪽 좌표 `(113.3786, 142.4044)`이며, x와 기준선에 각각 ±1px을 적용한다.
 - `tests/cases/issue_8371_hwp3_page_boundary_pdf_origin.rs`는 설치 글꼴 파일을 적재하지 않는 `DocumentCore` 경로를 사용한다. 기본 환경과 빈 Fontconfig 설정 및 `RHWP_FONT_PATH`를 제거한 환경에서 각각 1개 테스트가 통과했다. 로그는 `output/issue8371/font-independent-boundary-nextest.log`, `output/issue8371/font-independent-empty-fontconfig-nextest.log`다.
 - Native·최적화 WASM 전쪽 TSV와 312쪽 review·overlay를 `mydocs/pr/assets/issue_8371/`에 보존한다. Native의 이전 전쪽 캡처는 이후 변경한 Native 소스와 최종 head에서 다시 출력해 대조할 예정이다. 테스트와 전쪽 검증을 구분하며 전체 Rust 검증은 아직 완료하지 않았다.
+
+## 전체 회귀와 OTF 세션 보존 확인
+
+- `c6db7a6783`에서 공용 `target/pr-review`, Cargo 작업 8개, 테스트 스레드 12개로 전체 nextest를 실행했다. 12,040개 실행 중 12,037개 통과, 3개 실패, 45개 건너뜀이고 종료 코드는 100이다. 로그는 `output/issue8371/full-rust-nextest.log`다.
+- 영월 수납대장 4쪽은 기존 한컴 Print와 비교할 때 표 원점이 기대값보다 위에 있다. 현재 release-test 실행 파일의 SVG 예비 대조에서는 raw 35.52%이며 기존 검증 기록은 해당 쪽의 Native·WASM 100%다. 기준 `upstream/devel`과 현재 head를 같은 환경에서 비교하고 원인을 고친다. 예비 review와 overlay는 `output/issue8371/regression-triage/yeongwol-svg-allowed/yeongwol/`에 있다.
+- #3308 연속 하이픈 검사는 기대한 SVG 선분을 찾지 못했다. 현재 SVG에는 하이픈 글자 요소가 보인다. 같은 원본·Print와 기존 수정 이력을 확인했으며, 기준 브랜치와 글꼴 환경을 대조해 실제 출력과 검사의 타당성을 판정한다. SVG 예비 review와 overlay는 `output/issue8371/regression-triage/outline-svg/outline/`에 있다.
+- 새 OTF 공급 함수는 문서 IR이 아닌 세션 글꼴과 파생 배치를 갱신한다. 무효화 검사에 세션 상태로 분류하고, 합성 OTF 공급·해제 전후 IR 및 HWP 저장 바이트가 유지되는 검사를 추가했다. 집중 검사 3개는 `output/issue8371/regression-triage/otf-session-tests-v2.log`에서 통과했다.
+- 전체 테스트의 실패와 최종 head의 Native/fresh WASM 재검증이 남아 있으므로 PR 준비 완료가 아니다.
