@@ -59,6 +59,21 @@ pub(in crate::renderer::typeset) fn decide_whole_fit(
         dpi,
         || st.available_height(),
     );
+    // 같은 자동 경계 재판정을 전체 문단 fit에도 전달한다. 앞 단계에서
+    // 경계를 무시한 뒤 저장 되감김으로 다시 페이지를 넘기지 않는다.
+    let reconsider_synthetic_break = st.col_count == 1
+        && crate::renderer::pagination::reconsider_synthetic_text_page_break(
+            para,
+            &st.current_items,
+            &st.hidden_empty_paras,
+            st.hide_empty_line,
+            st.hidden_line_reflow_active,
+            available - st.current_height,
+            dpi,
+        );
+    let stored_vpos_rewind_break = stored_vpos_rewind_break && !reconsider_synthetic_break;
+    let stored_vpos_rewind_overflow_break =
+        stored_vpos_rewind_overflow_break && !reconsider_synthetic_break;
     if std::env::var("RHWP_DIAG_COMPAT24").is_ok()
         && stored_vpos_rewinds(preceding_stored_vpos(paragraphs, para_idx), para)
     {

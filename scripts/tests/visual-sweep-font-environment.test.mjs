@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {createHash, webcrypto} from 'node:crypto';
-import {applySweepFontEnvironment, selectSweepProgramFaces, hasTrueTypeSfntSignature,
+import {applySweepFontEnvironment, selectSweepProgramFaces, hasTrueTypeSfntSignature, hasOpenTypeCffSignature,
   loadSweepFontPrograms} from '../visual-sweep-font-environment.mjs';
 
 function documentFixture() {
@@ -28,17 +28,15 @@ test('준비된 프로그램의 공통 환경을 첫 페이지 수 계산 전에
   assert.equal(doc.source, original, '선택 환경은 source font·본문을 편집하지 않는다');
 });
 
-test('명시 대체가 없으면 Native와 같은 null 환경이며 미사용 사전 face를 선택하지 않는다', async () => {
+test('대체가 없어도 설치된 원본 HFT 프로그램을 선택한다', async () => {
   const doc = documentFixture();
   doc.getDocumentFontSelectionPlan = () => JSON.stringify({environmentId: null,
-    requests: [{primary: ['Unused Legacy Face'], substitute: []}]});
-  const result = await applySweepFontEnvironment(doc, null, async () => {
-    throw Error('조판 선택에 쓰이지 않는 사전 face의 로드를 요구하면 안 된다');
-  });
-  assert.equal(result.source, 'noDeclaredSubstitutions');
-  assert.equal(result.environment, null);
-  assert.equal(doc.pageCount(), 3);
-  assert.deepEqual(result.loaded, []);
+    requests: [{primary: ['Installed Program'], substitute: []}]});
+  const result = await applySweepFontEnvironment(doc, null, async () => ({programs: [
+    {query: 'Installed Program', family: 'Installed Program', programId: 'loaded-cff', openTypeCff: true},
+  ]}));
+  assert.equal(result.source, 'preparedPrograms');
+  assert.equal(doc.pageCount(), 2);
 });
 
 test('명시 환경은 자동 선택보다 우선한다', async () => {
@@ -102,6 +100,8 @@ test('CFF와 collection을 개별 TrueType 프로그램으로 오인하지 않�
   for (const value of [[], [0, 1], [79, 84, 84, 79], [116, 116, 99, 102]]) {
     assert.equal(hasTrueTypeSfntSignature(bytes(value)), false);
   }
+  assert.equal(hasOpenTypeCffSignature(bytes([79, 84, 84, 79])), true);
+  assert.equal(hasOpenTypeCffSignature(bytes([0, 1, 0, 0])), false);
 });
 
 function programFixture({badHash = false, loadError = false, responseOk = true} = {}) {

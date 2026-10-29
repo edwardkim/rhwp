@@ -7,7 +7,7 @@ import { ordinaryTextFontFaceData, type OrdinaryTextFontSource } from './ordinar
 import { NativePuaFontSession, type NativePuaFontDocument } from './native-pua-font-session';
 import { CanvasFontResolutionScope } from './canvas-font-resolution-scope';
 import { MetafileFontSession, type MetafileFontDocument } from './metafile-font-session';
-import { hasHostFontProvider, prepareHostFontCatalog, getHostFontState, localFontFaceKey, type LocalFontRecord } from './local-fonts';
+import { hasHostFontProvider, prepareHostFontCatalog, getHostFontState, getLocalFontState, localFontFaceKey, type LocalFontRecord } from './local-fonts';
 import { collectHostFontRequests } from './host-font-requests';
 import type { CanvasMetricDocument } from './canvas-metric-session';
 import { requireCharShapeRunsDocument, parseCharShapeRuns, validateCharShapeRuns } from './char-shape-runs';
@@ -229,7 +229,6 @@ import {
   documentSubstituteFamilies,
   formatCssFontFamilyList,
   parseCssFontFamilyList,
-  resolveFont,
 } from './font-substitution';
 import { rememberRawCanvasFontDescriptor } from './canvas-font-raw';
 import type { FileSystemFileHandleLike } from '@/command/file-system-access';
@@ -281,10 +280,14 @@ function substituteCssFontFamily(cssFont: string): string {
   // 표시 정책이 제외한 원 face를 엔진 체인에서 다시 넣지 않는다. 예를 들어
   // 휴먼명조 → HY신명조 치환 후 원 face가 남으면, HY신명조가 없는 macOS에서
   // legacy 휴먼명조를 선택해 한글이 .notdef로 그려지고 뒤의 fallback에 도달하지 않는다.
-  const primaryAllowed = resolveFont(primary, 0, 0) === primary
-    || studioChain.some(name => name.toLocaleLowerCase('en-US') === primary.toLocaleLowerCase('en-US'));
+  const primaryAllowed = studioChain.some(name =>
+    name.toLocaleLowerCase('en-US') === primary.toLocaleLowerCase('en-US'));
+  const localFontsEnabled = getLocalFontState().stored;
   for (const name of incoming) {
     if (name === primary && !primaryAllowed) continue;
+    // 감지 승인이 없으면 엔진의 설치 face 별칭으로 원본 로컬 글꼴이 우회되지 않게 한다.
+    if (!localFontsEnabled && !studioChain.some(candidate =>
+      candidate.toLocaleLowerCase('en-US') === name.toLocaleLowerCase('en-US'))) continue;
     push(name);
   }
   for (const name of studioChain.slice(1)) push(name);
@@ -323,7 +326,7 @@ function installCanvasFontSubstitution(): void {
   canvasFontSubstitutionInstalled = true;
 }
 
-import { prepareDeclaredFontPrograms, type DocumentFontSelectionPlan } from './declared-font-environment';
+import { declaredOpenTypeProgram, prepareDeclaredFontPrograms, type DocumentFontSelectionPlan } from './declared-font-environment';
 
 interface DocumentFontEnvironmentApi {
   getDocumentFontSelectionPlan(): string;
@@ -391,6 +394,13 @@ export class WasmBridge {
     } else {
       this.hostCanvasFonts.reset();
       this.nativePuaFonts.clear(doc as unknown as NativePuaFontDocument | null);
+      if (backend === 'canvas2d') {
+        const otfDoc = doc as unknown as NativePuaFontDocument | null;
+        otfDoc?.prepareNativeOtfFonts?.(raw => {
+          const request = JSON.parse(raw) as {family: string};
+          return declaredOpenTypeProgram(request.family);
+        });
+      }
     }
     const metricDoc = this.canvasMetricDocument();
     if (!metricDoc || !current()) return false;
@@ -430,6 +440,9 @@ export class WasmBridge {
   private _documentDigest: string | null = null;
   /** 같은 바이트를 다시 열어도 구분되는 문서 인스턴스 세대. */
   private _documentGeneration = 0;
+  private automaticFontEnvironment: { generation: number; id: string } | null = null;
+  private automaticFontPrograms: { generation: number; fingerprint: string } | null = null;
+  private automaticFontRequest = 0;
   private readonly layerResourceStore = new LayerResourceStore();
   /** 개발 진단에서만 읽는 wasm 선형 메모리. 일반 wasm-glue에는 없을 수 있다. */
   private wasmLinearMemory: WebAssembly.Memory | null = null;
@@ -1042,17 +1055,33 @@ export class WasmBridge {
       || typeof api.buildFontEnvironmentFromAvailablePrograms !== 'function'
       || typeof api.setFontEnvironment !== 'function') return false;
     const generation = this._documentGeneration;
-    const current = () => this.doc === doc && this._documentGeneration === generation;
+    const request = ++this.automaticFontRequest;
+    const current = () => this.doc === doc && this._documentGeneration === generation
+      && this.automaticFontRequest === request;
     const plan = JSON.parse(api.getDocumentFontSelectionPlan()) as DocumentFontSelectionPlan;
     // 사용자 명시 환경을 자동 선택으로 덮어쓰지 않는다.
-    if (plan.environmentId !== null) return false;
+    const owned = this.automaticFontEnvironment?.generation === generation
+      ? this.automaticFontEnvironment.id : null;
+    if (plan.environmentId !== null && plan.environmentId !== owned) return false;
     const programs = await prepareDeclaredFontPrograms(plan, current, inspectFontSymbols);
     if (!current()) return false;
     try {
+      const latest = JSON.parse(api.getDocumentFontSelectionPlan()) as DocumentFontSelectionPlan;
+      if (latest.environmentId !== plan.environmentId) return false;
+      // 같은 이름의 글꼴 파일이 바뀌어도 문서가 실제 조회하는 프로그램은 갱신한다.
+      const fingerprint = JSON.stringify(programs.programs.map(program => [program.query, program.programId])
+        .sort((left, right) => left[0].localeCompare(right[0])));
+      const programsChanged = this.automaticFontPrograms?.generation === generation
+        && this.automaticFontPrograms.fingerprint !== fingerprint;
       const environment = api.buildFontEnvironmentFromAvailablePrograms(JSON.stringify(programs));
-      const changed = environment !== 'null' && api.setFontEnvironment(environment);
-      this.invalidateCanvasMetricFonts();
-      return changed;
+      const parsed = environment === 'null' ? null : JSON.parse(environment) as { id: string };
+      const changed = parsed ? api.setFontEnvironment(environment)
+        : owned !== null ? api.setFontEnvironment(undefined) : false;
+      this.automaticFontEnvironment = parsed ? { generation, id: parsed.id } : null;
+      this.automaticFontPrograms = { generation, fingerprint };
+      if (!changed && programsChanged) this.refreshLayout();
+      if (changed || programsChanged) this.invalidateCanvasMetricFonts();
+      return changed || programsChanged;
     } catch (error) {
       // 유효하지 않은 공급 snapshot으로 문서 로드를 중단하거나 기존 환경을 바꾸지 않는다.
       console.warn('[WasmBridge] 선언 글꼴 환경을 적용하지 못했습니다', error);
@@ -1063,6 +1092,18 @@ export class WasmBridge {
   getDocumentInfo(): DocumentInfo {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getDocumentInfo());
+  }
+
+  /** 열거에서 빠진 문서 원본 글꼴도 재감지의 확인 후보에 포함한다. */
+  getDocumentFontCandidates(): string[] {
+    if (!this.doc) return [];
+    const api = this.doc as unknown as Partial<DocumentFontEnvironmentApi>;
+    const names = [...(this.getDocumentInfo().fontsUsed ?? [])];
+    if (typeof api.getDocumentFontSelectionPlan === 'function') {
+      const plan = JSON.parse(api.getDocumentFontSelectionPlan()) as DocumentFontSelectionPlan;
+      names.push(...plan.requests.flatMap(request => [request.source, ...request.primary, ...request.substitute]));
+    }
+    return [...new Set(names)];
   }
 
   getPageDef(sectionIdx: number): PageDef {

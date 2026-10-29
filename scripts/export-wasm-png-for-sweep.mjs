@@ -4,7 +4,7 @@ import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
 import http from 'node:http';
-import {createRequire} from 'node:module';
+import {createRequire, stripTypeScriptTypes} from 'node:module';
 import {dirname, join, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {isDeepStrictEqual} from 'node:util';
@@ -135,6 +135,10 @@ async function main() {
       || new Set(wanted).size !== wanted.length)) throw Error('선택 쪽이 올바르지 않습니다.');
   const environmentJson = settings.fontEnvironment ? readFileSync(settings.fontEnvironment, 'utf8') : null;
   const sourceBytes = readFileSync(input);
+  const require = createRequire(join(root, 'rhwp-studio/package.json'));
+  const studioModule = name => stripTypeScriptTypes(
+    readFileSync(join(root, 'rhwp-studio/src/core', name), 'utf8'), {mode: 'strip'},
+  );
   const observedFontFallbacks = settings.observedFontReceipt
     ? validateObservedFontReceipt(JSON.parse(readFileSync(settings.observedFontReceipt, 'utf8')),
       sourceBytes, environmentJson) : [];
@@ -145,6 +149,8 @@ async function main() {
     ['/source', ['application/octet-stream', sourceBytes]],
     ['/font-registration.mjs', ['application/javascript', readFileSync(join(root, 'scripts/visual-sweep-font-registration.mjs'))]],
     ['/sweep-font-environment.js', ['application/javascript', readFileSync(join(root, 'scripts/visual-sweep-font-environment.mjs'))]],
+    ['/canvas-metric-session.js', ['application/javascript', studioModule('canvas-metric-session.ts')]],
+    ['/supplemental-text-metrics.ts', ['application/javascript', studioModule('supplemental-text-metrics.ts')]],
     ['/rhwp-studio/src/core/canvas-intrinsic-font.mjs', ['application/javascript', readFileSync(join(root, 'rhwp-studio/src/core/canvas-intrinsic-font.mjs'))]],
   ]);
   const linkedImages = (settings.linkedImages || []).map((asset, index) => {
@@ -164,7 +170,6 @@ async function main() {
   await new Promise((accept, reject) => {
     server.once('error', reject); server.listen(0, '127.0.0.1', accept);
   });
-  const require = createRequire(join(root, 'rhwp-studio/package.json'));
   let pageCount;
   let environmentSignature;
   let fontEnvironment;
@@ -235,7 +240,7 @@ async function main() {
               return imageDescriptor.set.call(this, value);
             },
           });
-          const {prepareNativePuaFonts, prepareObservedFontFallbacks} = await import('/font-registration.mjs');
+          const {prepareNativePuaFonts, prepareObservedFontFallbacks, prepareHftOtfFonts} = await import('/font-registration.mjs');
           const loadBytes = async record => {
             const response = await fetch(record.url);
             if (!response.ok) throw Error('공급 글꼴을 읽을 수 없습니다.');
@@ -243,7 +248,15 @@ async function main() {
           };
           const observedFonts = await prepareObservedFontFallbacks(doc, fonts, observedFontFallbacks, loadBytes);
           const nativePuaFonts = await prepareNativePuaFonts(doc, fonts, loadBytes);
-          return {pageCount: doc.pageCount(), version: module.version(), nativePuaFonts, observedFonts, fontEnvironment};
+          const hftOtfFonts = await prepareHftOtfFonts(doc, fonts, loadBytes);
+          // Studio와 같은 Canvas 측정 세션을 페이지 수 조회 전에 적용한다.
+          const {CanvasMetricSession} = await import('/canvas-metric-session.js');
+          const metricSession = new CanvasMetricSession();
+          await metricSession.prepare(doc, {document: 1, fonts: 1}, 'canvas2d', () => true,
+            () => document.fonts.ready, () => document.createElement('canvas').getContext('2d'));
+          if (metricSession.lastError) throw Error(`Canvas 글꼴 폭 준비 실패: ${metricSession.lastError}`);
+          const canvasMetricsActive = doc.canvasMetricsActive();
+          return {pageCount: doc.pageCount(), version: module.version(), nativePuaFonts, hftOtfFonts, observedFonts, fontEnvironment, canvasMetricsActive};
         }, {compat: settings.compat, environmentJson, fonts, observedFontFallbacks, linkedImages});
         const signature = JSON.stringify(info.fontEnvironment);
         if (environmentSignature !== undefined && environmentSignature !== signature) throw Error('WASM 작업자의 실제 글꼴 환경이 다릅니다.');
@@ -261,7 +274,9 @@ async function main() {
         const embedded = await page.evaluate(({pages}) => {
           const doc = globalThis.sweepDocument, faces = new Map();
           for (const page of pages) {
-            const tree = JSON.parse(doc.getPageLayerTreeWithProfile(page - 1, 'print', true, true));
+            const tree = JSON.parse(doc.canvasMetricsActive()
+              ? doc.getCanvasPageLayerTree(page - 1, 'print', true)
+              : doc.getPageLayerTreeWithProfile(page - 1, 'print', true, true));
             for (const face of tree.fontResources?.faces || []) {
               const blob = tree.fontResources.blobs.find(blob => blob.id === face.blobKey);
               if (!blob || blob.source !== 'embedded') continue;
@@ -381,22 +396,28 @@ async function main() {
             }
             await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
             return {width: canvas.width, height: canvas.height,
-                    tree: doc.getPageRenderTree(number - 1)};
+                    tree: doc.canvasMetricsActive()
+                      ? doc.getCanvasPageLayerTree(number - 1, 'print', false)
+                      : doc.getPageRenderTree(number - 1)};
           }, {number, scale: settings.scale});
           result.png = await page.evaluate(encodeCanvasOnWhitePaper, 'page');
           const tree = JSON.parse(result.tree);
-          if (!tree.type || !tree.bbox || !(result.width > 0 && result.height > 0)) throw Error(`p${number} Canvas 산출물 손상`);
+          const validTree = info.canvasMetricsActive
+            ? tree.root && tree.pageWidth > 0 && tree.pageHeight > 0
+            : tree.type && tree.bbox;
+          if (!validTree || !(result.width > 0 && result.height > 0)) throw Error(`p${number} Canvas 산출물 손상`);
           const bytes = Buffer.from(result.png, 'base64');
           if (!bytes.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10]))) throw Error(`p${number} PNG signature 손상`);
           const suffix = String(number).padStart(3, '0');
           writeFileSync(join(output, 'rhwp_png', `rhwp_${suffix}.png`), bytes);
           writeFileSync(join(output, 'render_tree', `render_tree_${suffix}.json`), result.tree);
           pageRecords.push({page: number, pngSha256: sha(bytes), width: result.width, height: result.height,
+                            treeFormat: info.canvasMetricsActive ? 'canvas-layer-tree' : 'render-tree',
                             canvasContext: captureCanvasContext});
           console.log(`Canvas PNG p${suffix}: worker ${index + 1}`);
         }
-        workers.push({index, pages, fonts: fontInfo, nativePuaFonts: info.nativePuaFonts,
-          observedFonts: info.observedFonts, fontEnvironment: info.fontEnvironment,
+        workers.push({index, pages, fonts: fontInfo, nativePuaFonts: info.nativePuaFonts, hftOtfFonts: info.hftOtfFonts,
+          observedFonts: info.observedFonts, fontEnvironment: info.fontEnvironment, canvasMetricsActive: info.canvasMetricsActive,
           canvasContext, browser: await browser.version()});
         await page.evaluate(() => { globalThis.sweepDocument.free(); delete globalThis.sweepDocument; });
       } finally {

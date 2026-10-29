@@ -898,6 +898,16 @@ fn hwp3_para_line_box(
 /// 추가한 좌표를 사용한다.
 const HWP3_SQUARE_WRAP_TEXT_GAP_HU: i32 = 640;
 
+fn hwp3_square_wrap_occupied_width(width: i32, right: i32, password: bool) -> i32 {
+    if password {
+        width
+    } else {
+        // 배치 단계가 그림 왼쪽 바깥 여백을 원점에 반영한다. 여기서는
+        // 글줄을 막는 오른쪽 바깥 여백만 더해 중복 반영을 피한다.
+        width.saturating_add(right)
+    }
+}
+
 /// HWP3 Square 그림 옆 텍스트의 저장 line box를 공통 IR 좌표계로 만든다.
 ///
 /// 일반 문단의 `para_line_box`는 이미 좌·우 문단 여백을 포함한다. 따라서 그림
@@ -3459,7 +3469,11 @@ fn parse_paragraph_list_inner(
                 {
                     use crate::model::shape::HorzRelTo;
                     let h_off = pic.common.horizontal_offset as i32;
-                    let pic_w = pic.common.width as i32;
+                    let pic_w = hwp3_square_wrap_occupied_width(
+                        pic.common.width as i32,
+                        pic.common.margin.right as i32,
+                        use_password_layout_contract,
+                    );
 
                     // 용지 기준 오프셋을 컬럼 기준으로 변환
                     let pic_left_col = match pic.common.horz_rel_to {
@@ -4055,7 +4069,11 @@ fn parse_paragraph_list_inner(
                     {
                         use crate::model::shape::HorzRelTo;
                         let h_off = cm.horizontal_offset as i32;
-                        let pic_w = cm.width as i32;
+                        let pic_w = hwp3_square_wrap_occupied_width(
+                            cm.width as i32,
+                            cm.margin.right as i32,
+                            use_password_layout_contract,
+                        );
                         let pic_left_col = match cm.horz_rel_to {
                             HorzRelTo::Paper => h_off - body_left_hu,
                             _ => h_off,

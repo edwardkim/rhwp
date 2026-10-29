@@ -195,7 +195,8 @@ pub(crate) fn resolve_styles_with_environment(
                     // 자동 표시용 선택은 저장된 원본 HFT 메트릭의 변경이 아니다.
                     let keep_source_metrics = !primary_true_type_program
                         && environment.is_some_and(|env| env.preserves_source_metrics())
-                        && original.alt_type == Some(2)
+                        && (original.alt_type == Some(2)
+                            || style.font_families_source_hft[lang])
                         && original.embedded != Some(true)
                         && original.requested_face.as_deref().is_some_and(|face| {
                             crate::renderer::font_metrics_data::legacy_hft_metric_face(face).is_some()

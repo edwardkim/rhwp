@@ -933,6 +933,15 @@ pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::sto
                     )
                 })
                 .flatten(),
+            native_otf_metrics: (!styles.has_exact_font_source(char_style_id, lang_index))
+                .then(|| {
+                    styles.native_pua_fonts.get_otf(
+                        cs.font_family_for_lang(lang_index),
+                        cs.bold,
+                        cs.italic,
+                    )
+                })
+                .flatten(),
             bidi_layout: None,
             emphasis_skip_first_cluster: false,
             top_underline_font_size: None,
@@ -2398,6 +2407,23 @@ fn char_width_decision_with_hft_tracking<'a>(
     // authentic DB glyph advances or explicit HWP rules. Collection and layout
     // share this eligibility decision; synthetic PUA boxes remain shapes.
     let dash_leader = is_dash_leader_run(chars, i);
+    // Native paint와 동일한 확인된 OTF가 해당 글리프를 공급하면 그 전진폭을
+    // 우선한다. 없는 글리프와 특수 공백은 기존 원본 HFT 계약에 남긴다.
+    let otf_advance =
+        if cluster_len[i] <= 1 && !dash_leader && !c.is_whitespace() && !c.is_control() {
+            style
+                .native_otf_metrics
+                .as_ref()
+                .and_then(|font| font.advance_em(c))
+        } else {
+            None
+        };
+    let (base_width_raw, width_source) = if let Some(em) = otf_advance {
+        em_exact = Some(em);
+        (font_size * em, "nativeOtf")
+    } else {
+        (base_width_raw, width_source)
+    };
     let supplement = (allow_supplemental
         && super::super::supplemental_metrics::accepts_prepared_glyph_advance(width_source)
         && !dash_leader
@@ -2425,8 +2451,14 @@ fn char_width_decision_with_hft_tracking<'a>(
         && style.bold
         && !c.is_whitespace()
         && !c.is_control()
-        && source_hft_metric
-    {
+        && if otf_advance.is_some() {
+            style
+                .native_otf_metrics
+                .as_ref()
+                .is_some_and(|font| font.needs_faux_bold())
+        } else {
+            source_hft_metric || (style.source_font_is_hft && width_source == "heuristicFullwidth")
+        } {
         font_size * 0.05
     } else {
         0.0
@@ -2478,11 +2510,12 @@ fn char_width_decision_with_hft_tracking<'a>(
         font_size * ratio,
         original_glyph_face.map(String::as_str),
     );
-    let bold_tracking_px = if include_hft_bold_tracking && !source_hft_metric {
-        bold_tracking_px
-    } else {
-        0.0
-    };
+    let bold_tracking_px =
+        if include_hft_bold_tracking && font_tracking == 0.0 && otf_advance.is_none() {
+            bold_tracking_px
+        } else {
+            0.0
+        };
     final_width_px += bold_tracking_px;
     if c == ' ' && i >= style.unjustified_leading_spaces {
         final_width_px += style.extra_word_spacing;

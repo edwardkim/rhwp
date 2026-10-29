@@ -1,6 +1,28 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {prepareNativePuaFonts} from '../visual-sweep-font-registration.mjs';
+import {prepareNativePuaFonts, prepareHftOtfFonts} from '../visual-sweep-font-registration.mjs';
+
+test('실제 선택한 CFF만 전달하고 없는 face와 TTF는 HFT 경로에 남긴다', async () => {
+  const requests = [
+    {family: 'Installed', bold: true, italic: false},
+    {family: 'TrueType', bold: false, italic: false},
+    {family: 'Missing', bold: false, italic: false},
+  ];
+  const received = [];
+  const owner = {getNativeOtfFontRequests: () => JSON.stringify(requests),
+    prepareNativeOtfFonts(provider) { for (const request of requests) received.push(provider(JSON.stringify(request))); }};
+  const fonts = [
+    {families: ['Installed'], weight: 400, style: 'normal', sha256: 'cff'},
+    {families: ['TrueType'], weight: 400, style: 'normal', sha256: 'ttf'},
+  ];
+  const proof = await prepareHftOtfFonts(owner, fonts, async face =>
+    Uint8Array.from(face.sha256 === 'cff' ? [79, 84, 84, 79] : [0, 1, 0, 0]).buffer);
+  assert.deepEqual([...received[0]], [79, 84, 84, 79]);
+  assert.equal(received[1], null);
+  assert.equal(received[2], null);
+  assert.equal(proof[0].weight, 400, '굵은 face가 없을 때 실제 선택한 일반 face를 전달한다');
+  assert.equal(proof.length, 1);
+});
 test('실제 적재한 face 순서로 PUA 공급을 판단하고 지원하지 않은 주 face 뒤의 fallback을 사용한다',async()=>{
  const oldDoc=globalThis.document,oldFont=globalThis.FontFace;
  const loaded=[];globalThis.document={fonts:new Set()};globalThis.FontFace=class{constructor(family,bytes){this.family=family;loaded.push([family,new Uint8Array(bytes)[0]])}async load(){return this}};

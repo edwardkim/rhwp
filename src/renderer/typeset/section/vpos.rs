@@ -145,7 +145,16 @@ impl TypesetEngine {
         // 컬럼 첫 항목: anchor + page_base 확립 (렌더러 2186/2216 정합).
         // items.first() 의 vpos 를 page_base 로, 현 current_height 를 anchor 로 둔다.
         let mut first_item_stored_top: Option<f64> = None;
-        if st.current_items.is_empty() {
+        let starts_after_hidden_lines = !st.current_items.is_empty()
+            && crate::renderer::pagination::page_has_only_hidden_empty_lines(
+                &st.current_items,
+                &st.hidden_empty_paras,
+            );
+        if st.current_items.is_empty() || starts_after_hidden_lines {
+            if starts_after_hidden_lines {
+                // 숨긴 쪽 첫 줄은 다음 문단의 저장 좌표 기준을 소유하지 않는다.
+                st.record_previous_layout_paragraph(None);
+            }
             st.record_vpos_column_anchor(st.current_height);
             st.record_vpos_page_origin(
                 paragraphs

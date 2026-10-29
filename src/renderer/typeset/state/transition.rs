@@ -99,6 +99,7 @@ impl TypesetState {
                 has_stored_line_segs: false,
                 hide_empty_line: false,
                 hidden_empty_lines: 0,
+                hidden_line_reflow_active: false,
                 hidden_empty_page_idx: usize::MAX,
                 hidden_empty_paras: std::collections::HashSet::new(),
                 page_tail_spilled_floats: std::collections::HashSet::new(),

@@ -264,6 +264,8 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) hide_empty_line: bool,
     /// [Task #362] 현재 페이지에서 감춘 빈 줄 수 (페이지마다 reset, 최대 2).
     pub(in crate::renderer::typeset) hidden_empty_lines: u32,
+    /// 숨긴 첫 줄로 달라진 물리 쪽 경계가 저장 경계와 다시 맞을 때까지 유지한다.
+    pub(in crate::renderer::typeset) hidden_line_reflow_active: bool,
     /// [Task #362] 감춘 빈 줄이 적용된 페이지 인덱스 (페이지 변경 감지용).
     pub(in crate::renderer::typeset) hidden_empty_page_idx: usize,
     /// [Task #362] hide_empty_line 으로 감춘 paragraph 인덱스 (PaginationResult 에 포함).

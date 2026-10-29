@@ -73,6 +73,9 @@ pub struct AvailableFontProgram {
     pub program_id: String,
     #[serde(default)]
     pub true_type: bool,
+    /// 실제 바이트에서 확인한 OpenType CFF 프로그램이다.
+    #[serde(default)]
+    pub open_type_cff: bool,
 }
 
 /// 실제 프로그램 공급과 존재 확인은 서로 다른 증거다. 이름만 확인된
@@ -98,11 +101,39 @@ fn is_false(value: &bool) -> bool {
 
 /// 같은 프로그램의 이름만 조회한다. 화면용 호환 fallback은 설치 증거가 아니다.
 pub(crate) fn program_names(name: &str) -> Vec<String> {
-    std::iter::once(name)
+    let mut names: Vec<String> = std::iter::once(name)
         .chain(super::installed_font_program_aliases(name).iter().copied())
         .filter(|name| FontEnvironment::valid_name(name))
         .map(str::to_owned)
-        .collect()
+        .collect();
+    // 확인된 HFT 계열의 # 이름은 원래 이름을 우선 조회한다. 원본 프로그램이
+    // 없을 때만 #을 뺀 설치 프로그램도 후보로 제시하며, 존재 확인은 공급자가 한다.
+    if let Some(unprefixed) = name.strip_prefix('#') {
+        if super::font_rule_layout_name_projection::find_font_rule_layout_name(
+            "rust-style-resolution.hft",
+            name,
+            0,
+        )
+        .is_some()
+            && FontEnvironment::valid_name(unprefixed)
+        {
+            names.push(unprefixed.to_owned());
+        }
+    }
+    names
+}
+
+/// HWP3에는 유형 필드가 없다. 확인된 HFT 이름은 유형 미상이라도 원 프로그램을 조회한다.
+fn may_select_hft_program(font: &crate::model::style::Font, language: usize) -> bool {
+    font.native_program.is_none()
+        && (font.alt_type == 2
+            || (font.alt_type == 0
+                && super::font_rule_layout_name_projection::find_font_rule_layout_name(
+                    "rust-style-resolution.hft",
+                    &font.name,
+                    language,
+                )
+                .is_some()))
 }
 
 impl FontEnvironment {
@@ -197,12 +228,22 @@ impl FontEnvironment {
                 let Ok(font_id) = u16::try_from(index) else {
                     continue;
                 };
+                let mut primary_names = if may_select_hft_program(font, language) {
+                    program_names(&font.name)
+                } else {
+                    Vec::new()
+                };
+                for name in program_names(primary) {
+                    if !primary_names.contains(&name) {
+                        primary_names.push(name);
+                    }
+                }
                 requests.push((
                     language,
                     font_id,
                     DocumentFontSelectionRequest {
                         source: font.name.clone(),
-                        primary: program_names(primary),
+                        primary: primary_names,
                         public_fallback:
                             super::font_rule_layout_name_projection::find_font_rule_layout_name(
                                 "rust-style-resolution.missing-program",
@@ -255,10 +296,11 @@ impl FontEnvironment {
                     .font_faces
                     .get(language_slot)
                     .and_then(|faces| faces.get(font_id as usize));
-                (program.true_type
-                    && program.query == request.source
-                    && source
-                        .is_some_and(|font| font.alt_type == 2 && font.native_program.is_none()))
+                let is_source_program = program.query == request.source
+                    || request.source.strip_prefix('#') == Some(program.query.as_str());
+                ((program.true_type || program.open_type_cff)
+                    && is_source_program
+                    && source.is_some_and(|font| may_select_hft_program(font, language_slot)))
                 .then_some((program, None))
             } else {
                 request
@@ -300,7 +342,8 @@ impl FontEnvironment {
                         Some((left, right))
                             if left.0.family == right.0.family
                                 && left.0.program_id == right.0.program_id
-                                && left.0.true_type == right.0.true_type =>
+                                && left.0.true_type == right.0.true_type
+                                && left.0.open_type_cff == right.0.open_type_cff =>
                         {
                             // 같은 프로그램이라도 선택 사유가 다른 슬롯은 전역 조건의
                             // 증거가 아니다. 공급 선택은 유지하고 조건 출처만 제외한다.
@@ -320,11 +363,15 @@ impl FontEnvironment {
             .collect();
         // 다른 프로그램이 같은 최종 family를 주장하면 슬롯 주소만으로 paint를
         // 구분할 수 없다. 그런 모호성은 기존처럼 수용하지 않는다.
-        let mut family_programs: BTreeMap<(String, String), Option<(String, bool)>> =
+        let mut family_programs: BTreeMap<(String, String), Option<(String, bool, bool)>> =
             BTreeMap::new();
         for (_, _, source, candidate) in &slot_candidates {
             if let Some((program, _)) = candidate {
-                let identity = (program.program_id.clone(), program.true_type);
+                let identity = (
+                    program.program_id.clone(),
+                    program.true_type,
+                    program.open_type_cff,
+                );
                 family_programs
                     .entry((source.clone(), program.family.clone()))
                     .and_modify(|previous| {
@@ -352,6 +399,7 @@ impl FontEnvironment {
                 digest.update([0]);
             }
             digest.update([u8::from(selected.true_type)]);
+            digest.update([u8::from(selected.open_type_cff)]);
             if selected.true_type {
                 true_type_faces.insert(selected.family.clone());
             }
@@ -381,6 +429,7 @@ impl FontEnvironment {
                 digest.update([0]);
             }
             digest.update([u8::from(program.true_type)]);
+            digest.update([u8::from(program.open_type_cff)]);
             if let Some(rule) = rule {
                 digest.update(rule.as_bytes());
                 digest.update([0]);
@@ -486,9 +535,15 @@ impl FontEnvironment {
     ) -> Result<Option<Self>, HwpError> {
         use sha2::{Digest, Sha256};
         let needs_primary_program_identity =
-            doc_info.font_faces.iter().flatten().any(|font| {
-                !font.is_embedded && font.alt_type == 2 && font.native_program.is_none()
-            });
+            doc_info
+                .font_faces
+                .iter()
+                .enumerate()
+                .any(|(language, fonts)| {
+                    fonts
+                        .iter()
+                        .any(|font| !font.is_embedded && may_select_hft_program(font, language))
+                });
         if !needs_primary_program_identity
             && !Self::document_requests(doc_info).iter().any(|request| {
                 !request.substitute.is_empty() || !request.public_fallback.is_empty()
@@ -512,6 +567,30 @@ impl FontEnvironment {
                     })
                     .and_then(|id| database.face(id))
                     .or_else(|| database.faces().find(|face| face.post_script_name == query))?;
+                // 같은 family와 스타일의 설치본 중 CFF OpenType을 먼저 사용한다.
+                // PostScript 이름을 직접 지정한 조회는 다른 face로 바꾸지 않는다.
+                let face = if face.post_script_name == query
+                    && !face.families.iter().any(|(name, _)| name == query)
+                {
+                    face
+                } else {
+                    database
+                        .faces()
+                        .find(|candidate| {
+                            candidate.style == face.style
+                                && candidate.weight == face.weight
+                                && candidate.stretch == face.stretch
+                                && candidate.families.iter().any(|(name, _)| {
+                                    face.families.iter().any(|(original, _)| original == name)
+                                })
+                                && database
+                                    .with_face_data(candidate.id, |bytes, _| {
+                                        bytes.get(..4) == Some(b"OTTO")
+                                    })
+                                    .unwrap_or(false)
+                        })
+                        .unwrap_or(face)
+                };
                 let family = face.families.first()?.0.clone();
                 database.with_face_data(face.id, |bytes, index| {
                     let offset = if bytes.get(..4) == Some(b"ttcf") {
@@ -524,6 +603,7 @@ impl FontEnvironment {
                         bytes.get(offset..offset.checked_add(4)?),
                         Some(b"\0\x01\0\0" | b"true")
                     );
+                    let open_type_cff = bytes.get(offset..offset.checked_add(4)?) == Some(b"OTTO");
                     let mut digest = Sha256::new();
                     digest.update(bytes);
                     digest.update(index.to_be_bytes());
@@ -531,6 +611,7 @@ impl FontEnvironment {
                         query: query.into(),
                         family,
                         true_type,
+                        open_type_cff,
                         program_id: digest
                             .finalize()
                             .iter()

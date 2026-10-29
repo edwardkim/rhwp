@@ -3,14 +3,17 @@ import assert from 'node:assert/strict';
 
 import {
   clearStoredLocalFonts,
+  changedLocalFontNames,
   detectLocalFonts,
   getDetectedLocalFonts,
   getLocalFontRecords,
   getLocalFontState,
   getLocalFonts,
   localFontFaceKey,
+  localFontNamesIntersect,
   loadLocalFontBytes,
   loadLocalFontBytesFor,
+  loadPreferredLocalFontBytes,
   loadStoredLocalFonts,
   resetLocalFontsForTests,
   resolveLocalFont,
@@ -24,6 +27,43 @@ import {
 } from '../src/core/canvas-font-raw.ts';
 
 const STORAGE_KEY = 'rhwp-local-fonts';
+
+test('변경된 face 이름을 문서 글꼴과 대조해 무관한 재감지를 구분한다', () => {
+  const font = (family: string, aliases: string[]) => ({
+    family, fullName: family, postscriptName: `${family}-Regular`, style: 'Regular',
+    displayName: family, aliases, detectionSource: 'local-font-access' as const,
+  });
+  const strawberry = font('Strawberry', ['Strawberry', '딸기']);
+  const other = font('Other', ['Other']);
+  assert.deepEqual(changedLocalFontNames([strawberry], [strawberry]), []);
+  assert.equal(localFontNamesIntersect(['딸기'], changedLocalFontNames([strawberry], [strawberry, other])), false);
+  assert.equal(localFontNamesIntersect(['딸기'], changedLocalFontNames([other], [other, strawberry])), true);
+  assert.equal(localFontNamesIntersect(['딸기'], changedLocalFontNames([strawberry], [])), true);
+});
+
+test('같은 PostScript 이름의 프로그램 중 CFF와 TrueType 바이트를 구분한다', async () => {
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'queryLocalFonts');
+  const record = { family: 'Example', fullName: 'Example Regular', postscriptName: 'Example-Regular',
+    style: 'Regular', displayName: 'Example', aliases: ['Example'], detectionSource: 'local-font-access' as const };
+  const sfnt = (signature: number) => {
+    const bytes = new ArrayBuffer(4);
+    new DataView(bytes).setUint32(0, signature);
+    return bytes;
+  };
+  let values = [0x00010000, 0x4f54544f];
+  Object.defineProperty(globalThis, 'queryLocalFonts', { configurable: true,
+    value: async () => values.map(signature => ({ ...record, blob: async () => new Blob([sfnt(signature)]) })) });
+  try {
+    let selected = await loadPreferredLocalFontBytes(record);
+    assert.equal(new DataView(selected!).getUint32(0), 0x4f54544f);
+    values = [0x00010000];
+    selected = await loadPreferredLocalFontBytes(record);
+    assert.equal(new DataView(selected!).getUint32(0), 0x00010000);
+  } finally {
+    if (previous) Object.defineProperty(globalThis, 'queryLocalFonts', previous);
+    else Reflect.deleteProperty(globalThis, 'queryLocalFonts');
+  }
+});
 
 type TestGlobals = typeof globalThis & {
   browser?: unknown;
@@ -237,6 +277,34 @@ function createSfntWithNameRecords(entries: ReadonlyArray<{
   });
   return bytes;
 }
+
+test('같은 family의 여러 face 수는 감지 직후와 저장본 재로드에서 유지된다', async () => {
+  const g = globalThis as TestGlobals;
+  const originals = { browser: g.browser, chrome: g.chrome, document: g.document,
+    localStorage: g.localStorage, queryLocalFonts: g.queryLocalFonts };
+  resetLocalFontsForTests();
+  g.browser = undefined;
+  g.chrome = undefined;
+  g.localStorage = createStorage();
+  g.queryLocalFonts = async () => [
+    { family: 'Example', fullName: 'Example Regular', postscriptName: 'Example-Regular', style: 'Regular' },
+    { family: 'Example', fullName: 'Example Bold', postscriptName: 'Example-Bold', style: 'Bold' },
+  ];
+  try {
+    await detectLocalFonts({ force: true });
+    assert.equal(getLocalFontState().count, 2);
+    assert.equal(getLocalFontRecords({ includeRegistered: true }).length, 2);
+    resetLocalFontsForTests();
+    await loadStoredLocalFonts();
+    assert.equal(getLocalFontState().count, 2);
+    assert.equal(getLocalFontRecords({ includeRegistered: true }).length, 2);
+    assert.equal(getDetectedLocalFonts().length, 1, 'family 수와 face 수는 서로 다르다');
+  } finally {
+    await clearStoredLocalFonts();
+    resetLocalFontsForTests();
+    restoreGlobals(originals);
+  }
+});
 
 test('저장된 localStorage snapshot 로드는 queryLocalFonts를 호출하지 않는다', async () => {
   const g = globalThis as TestGlobals;

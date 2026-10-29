@@ -461,6 +461,7 @@ impl Paginator {
 
         // 빈 줄 감추기: 페이지 시작 부분에서 감춘 빈 줄 수 (최대 2개)
         let mut hidden_empty_lines: u8 = 0;
+        let mut hidden_line_reflow_active = false;
         let mut hidden_empty_page: usize = 0; // 현재 감추기 중인 페이지
         let mut hidden_empty_paras: std::collections::HashSet<usize> =
             std::collections::HashSet::new();
@@ -532,8 +533,25 @@ impl Paginator {
             const LAYOUT_DRIFT_SAFETY_PX: f64 = 4.0;
 
             // 쪽/단 나누기 감지
-            let force_page_break = para.column_type == ColumnBreakType::Page
-                || para.column_type == ColumnBreakType::Section;
+            let reconsider_synthetic_break = st.col_count == 1
+                && reconsider_synthetic_text_page_break(
+                    para,
+                    &st.current_items,
+                    &hidden_empty_paras,
+                    hide_empty_line,
+                    hidden_line_reflow_active,
+                    available_height - st.current_height,
+                    self.dpi,
+                );
+            if matches!(
+                para.column_type,
+                ColumnBreakType::Page | ColumnBreakType::Section
+            ) {
+                hidden_line_reflow_active = reconsider_synthetic_break;
+            }
+            let force_page_break = (para.column_type == ColumnBreakType::Page
+                || para.column_type == ColumnBreakType::Section)
+                && !reconsider_synthetic_break;
 
             // ParaShape의 "문단 앞에서 항상 쪽 나눔" 속성
             let para_style = para_styles.get(para.para_shape_id as usize);
@@ -687,7 +705,8 @@ impl Paginator {
             // 주장하면 한/글이 그 사이에서 쪽을 넘긴 것이다. 넘침 사유가 아니어서
             // rhwp 흐름으로는 재현되지 않으므로 저장값을 신뢰한다.
             // 다단(단 경계에서 vpos 가 정상적으로 0 으로 되감김)과 어울림 밴드는 제외한다.
-            let stored_vpos_reset_break = st.col_count == 1
+            let stored_vpos_reset_break = !reconsider_synthetic_break
+                && st.col_count == 1
                 && wrap_around_cs < 0
                 && para.column_type == ColumnBreakType::None
                 && para_idx > 0
@@ -705,11 +724,37 @@ impl Paginator {
 
             if (force_page_break
                 || para_style_break
-                || variant_vpos_reset_break
+                || (variant_vpos_reset_break && !reconsider_synthetic_break)
                 || stored_vpos_reset_break)
                 && !st.current_items.is_empty()
             {
                 self.process_page_break_with_storage(&mut st, storage)?;
+            }
+
+            // 저장 쪽 경계가 먼저 적용된 경우에도 새 쪽 앞의 빈 줄 감춤을
+            // 적용한다. 직전 overflow 검사만으로는 강제·저장 경계에서 시작한
+            // 빈 문단을 감지하지 못한다. 이미 감춘 표식은 쪽의 내용으로 세지
+            // 않으며, 구역 옵션이 켜진 경우에만 최대 두 줄까지 처리한다.
+            if hide_empty_line {
+                let current_page = st.pages.len();
+                if current_page != hidden_empty_page {
+                    hidden_empty_page = current_page;
+                    hidden_empty_lines = 0;
+                }
+                if hidden_empty_lines < 2
+                    && page_starts_with_hidden_empty_lines(
+                        para,
+                        &st.current_items,
+                        &hidden_empty_paras,
+                    )
+                {
+                    hidden_empty_lines += 1;
+                    hidden_line_reflow_active = true;
+                    if !hidden_empty_paras.contains(&para_idx) {
+                        storage.insert_set(&mut hidden_empty_paras, para_idx)?;
+                    }
+                    para_height = 0.0;
+                }
             }
 
             // tac 표: 표 실측 높이 + 텍스트 줄 높이(th)로 판단 (Task #19)

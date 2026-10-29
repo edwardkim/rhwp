@@ -90,6 +90,37 @@ export async function installCanvasFont(family, bytes, descriptors, sourceOwner 
   return font;
 }
 
+// 실제 Canvas에서 선택한 HFT 대체 OTF의 같은 바이트를 공통 조판에 공급한다.
+export async function prepareHftOtfFonts(owner, fonts, loadBytes) {
+  if (typeof owner?.getNativeOtfFontRequests !== 'function'
+      || typeof owner?.prepareNativeOtfFonts !== 'function') {
+    throw Error('HFT OpenType 폭 공급 API가 없는 WASM입니다.');
+  }
+  const requests = JSON.parse(owner.getNativeOtfFontRequests());
+  const programs = new Map(), loaded = new Map(), proofs = [];
+  for (const request of requests) {
+    const selected = selectMetafileFontFaces(fonts, [{families: [request.family],
+      weight: request.bold ? 700 : 400, italic: request.italic}]);
+    for (const key of selected) {
+      const record = fonts.find(font => font.families.some(name =>
+        `${name.toLowerCase()}|${font.weight}|${font.style}` === key));
+      if (!record) continue;
+      let bytes = loaded.get(record.sha256);
+      if (!bytes) { bytes = await loadBytes(record); loaded.set(record.sha256, bytes); }
+      if (bytes.byteLength < 4 || new DataView(bytes).getUint32(0) !== 0x4f54544f) continue;
+      programs.set(JSON.stringify([request.family, request.bold, request.italic]), new Uint8Array(bytes));
+      proofs.push({family: request.family, bold: request.bold, italic: request.italic,
+        weight: record.weight, style: record.style, sha256: record.sha256});
+      break;
+    }
+  }
+  owner.prepareNativeOtfFonts(raw => {
+    const request = JSON.parse(raw);
+    return programs.get(JSON.stringify([request.family, request.bold, request.italic])) ?? null;
+  });
+  return proofs;
+}
+
 // Native의 원 face 부재 관측과 같은 프로그램을 공급할 때만 공통 측정 face를 확정한다.
 // 부분적인 브라우저 글꼴 목록이나 document.fonts.check로 설치 부재를 추측하지 않는다.
 export async function prepareObservedFontFallbacks(owner, fonts, records, loadBytes) {

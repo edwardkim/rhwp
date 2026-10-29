@@ -30,12 +30,51 @@ pub fn is_supported_symbol(character: char) -> bool {
 
 const MAX_PROGRAMS: usize = 256;
 const MAX_FONT_BYTES: usize = 32 * 1024 * 1024;
+const MAX_OTF_BYTES: usize = 64 * 1024 * 1024;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct NativePuaMetrics {
     digest: [u8; 32],
     face_index: u32,
     advances: [Option<f64>; SUPPORTED_SYMBOLS.len()],
+}
+
+/// Native paint가 실제 선택한 OpenType CFF 프로그램의 전진폭이다.
+#[derive(Debug)]
+pub struct NativeOtfMetrics {
+    bytes: Arc<[u8]>,
+    face_index: u32,
+    digest: [u8; 32],
+    faux_bold: bool,
+    advances: std::sync::Mutex<BTreeMap<char, Option<f64>>>,
+}
+
+impl PartialEq for NativeOtfMetrics {
+    fn eq(&self, other: &Self) -> bool {
+        self.digest == other.digest
+            && self.face_index == other.face_index
+            && self.faux_bold == other.faux_bold
+    }
+}
+
+impl NativeOtfMetrics {
+    pub fn needs_faux_bold(&self) -> bool {
+        self.faux_bold
+    }
+    pub fn advance_em(&self, character: char) -> Option<f64> {
+        let mut cache = self.advances.lock().ok()?;
+        if let Some(advance) = cache.get(&character) {
+            return *advance;
+        }
+        let value = (|| {
+            let face = ttf_parser::Face::parse(&self.bytes, self.face_index).ok()?;
+            let glyph = face.glyph_index(character).filter(|id| id.0 != 0)?;
+            let width = face.glyph_hor_advance(glyph)?;
+            Some(f64::from(width) / f64::from(face.units_per_em()))
+        })();
+        cache.insert(character, value);
+        value
+    }
 }
 
 impl NativePuaMetrics {
@@ -56,9 +95,62 @@ struct LiteralSpaceMetric {
 pub struct NativePuaFonts {
     programs: BTreeMap<String, BTreeMap<(bool, bool), Arc<NativePuaMetrics>>>,
     literal_spaces: BTreeMap<String, BTreeMap<(bool, bool), LiteralSpaceMetric>>,
+    otf_programs: BTreeMap<String, BTreeMap<(bool, bool), Arc<NativeOtfMetrics>>>,
 }
 
 impl NativePuaFonts {
+    pub fn clear_otf(&mut self) {
+        self.otf_programs.clear();
+    }
+    pub fn register_otf(
+        &mut self,
+        family: &str,
+        bold: bool,
+        italic: bool,
+        bytes: &[u8],
+        face_index: u32,
+    ) -> Result<(), &'static str> {
+        if family.is_empty()
+            || family.len() > 4096
+            || bytes.len() > MAX_FONT_BYTES
+            || bytes.get(..4) != Some(b"OTTO")
+        {
+            return Err("invalid native OpenType CFF program");
+        }
+        let face = ttf_parser::Face::parse(bytes, face_index)
+            .map_err(|_| "invalid native OpenType CFF face")?;
+        if self.otf_programs.values().map(BTreeMap::len).sum::<usize>() >= MAX_PROGRAMS {
+            return Err("native OpenType program limit exceeded");
+        }
+        let total = self
+            .otf_programs
+            .values()
+            .flat_map(BTreeMap::values)
+            .map(|font| font.bytes.len())
+            .sum::<usize>();
+        if total.saturating_add(bytes.len()) > MAX_OTF_BYTES {
+            return Err("native OpenType byte limit exceeded");
+        }
+        self.otf_programs
+            .entry(family.to_owned())
+            .or_default()
+            .insert(
+                (bold, italic),
+                Arc::new(NativeOtfMetrics {
+                    bytes: Arc::from(bytes),
+                    face_index,
+                    digest: Sha256::digest(bytes).into(),
+                    faux_bold: bold && !face.is_bold(),
+                    advances: Default::default(),
+                }),
+            );
+        Ok(())
+    }
+
+    pub fn get_otf(&self, family: &str, bold: bool, italic: bool) -> Option<Arc<NativeOtfMetrics>> {
+        self.otf_programs.get(family)?.get(&(bold, italic)).cloned()
+    }
+
     /// 실제 표시 face의 선택은 공급자의 책임이다. 이름만으로 호출하지 않는다.
     /// 동일 프로그램은 멱등이며 글꼴 세대 교체의 다른 프로그램은 새 snapshot이 된다.
     pub fn register(

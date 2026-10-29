@@ -421,7 +421,8 @@ pub(super) fn match_system_family_style(
             return cached;
         }
 
-        let matched = (if has_system_family(system_families, family) {
+        let system_family = has_system_family(system_families, family);
+        let matched = (if system_family {
             font_mgr.match_family_style(family, style)
         } else {
             // 설치된 style set의 name ID 6만 조회한다. 없는 이름을 OS에
@@ -430,6 +431,32 @@ pub(super) fn match_system_family_style(
         })
         .filter(|typeface| !is_placeholder_typeface(typeface))
         .or_else(|| recover_installed_system_typeface(font_mgr, family, style));
+        // 같은 family와 같은 스타일의 설치본이 여러 형식이면 OTF를 먼저
+        // 표시한다. PostScript 지정과 서로 다른 스타일은 바꾸지 않는다.
+        let matched = if system_family {
+            matched.and_then(|original| {
+                let original_style = FontStyleCacheKey::new(original.font_style());
+                let mut set = font_mgr.match_family(family);
+                let selected = (0..set.count()).find_map(|index| {
+                    let (candidate_style, _) = set.style(index);
+                    if FontStyleCacheKey::new(candidate_style) != original_style {
+                        return None;
+                    }
+                    let candidate = set.new_typeface(index)?;
+                    let cff = if let Some((data, _)) = candidate.to_existing_font_data() {
+                        data.as_bytes().get(..4) == Some(b"OTTO")
+                    } else {
+                        candidate
+                            .to_font_bytes()
+                            .is_some_and(|(bytes, _)| bytes.get(..4) == Some(b"OTTO"))
+                    };
+                    cff.then_some(candidate)
+                });
+                Some(selected.unwrap_or(original))
+            })
+        } else {
+            matched
+        };
         cache.borrow_mut().insert(key, matched.clone());
         matched
     })

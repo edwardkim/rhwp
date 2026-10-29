@@ -854,6 +854,49 @@ impl HwpDocument {
             .map_err(|e| JsValue::from_str(&e.to_string()))
     }
 
+    #[wasm_bindgen(js_name = getNativeOtfFontRequests)]
+    pub fn get_native_otf_font_requests_wasm(&self) -> Result<String, JsValue> {
+        serde_json::to_string(&self.native_otf_font_requests())
+            .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+
+    /// 미리 준비한 실제 face만 동기 공급하고 모든 선택을 한 번에 조판한다.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = prepareNativeOtfFonts)]
+    pub fn prepare_native_otf_fonts_wasm(
+        &mut self,
+        provider: &js_sys::Function,
+    ) -> Result<bool, JsValue> {
+        use wasm_bindgen::JsCast;
+        let mut prepared = std::collections::BTreeMap::new();
+        for request in self.native_otf_font_requests() {
+            let key = serde_json::to_string(&request)
+                .map_err(|error| JsValue::from_str(&error.to_string()))?;
+            let value = provider.call1(&JsValue::NULL, &JsValue::from_str(&key))?;
+            if value.is_null() || value.is_undefined() {
+                continue;
+            }
+            if !value.is_instance_of::<js_sys::Uint8Array>() {
+                return Err(JsValue::from_str(
+                    "OTF provider must return Uint8Array or null",
+                ));
+            }
+            if js_sys::Uint8Array::new(&value).length() > 32 * 1024 * 1024 {
+                return Err(JsValue::from_str("OTF provider program exceeds limit"));
+            }
+            prepared.insert(
+                (request.family, request.bold, request.italic),
+                js_sys::Uint8Array::new(&value).to_vec(),
+            );
+        }
+        self.prepare_native_otf_fonts_with(|request| {
+            prepared
+                .remove(&(request.family.clone(), request.bold, request.italic))
+                .map(|bytes| (bytes, 0))
+        })
+        .map_err(JsValue::from)
+    }
+
     #[wasm_bindgen(js_name = registerNativePuaFont)]
     pub fn register_native_pua_font_wasm(
         &mut self,

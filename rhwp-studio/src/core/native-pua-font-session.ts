@@ -8,9 +8,17 @@ export interface NativePuaFontDocument {
   registerNativePuaFont?(family: string, bold: boolean, italic: boolean, bytes: Uint8Array, faceIndex: number): boolean;
   registerLiteralFigureSpaceFont?(family: string, bold: boolean, italic: boolean, bytes: Uint8Array, faceIndex: number): boolean;
   clearNativePuaFonts?(): void;
+  getNativeOtfFontRequests?(): string;
+  prepareNativeOtfFonts?(provider: (request: string) => Uint8Array | null): boolean;
 }
 interface Request { literal_figure_space?: boolean; family: string; paint_families?: string[]; bold: boolean; italic: boolean }
 interface State { generation: string; requests: string; keys: Set<string> }
+
+function otfFace(request: Request): LocalFontRecord | null {
+  const slant = request.italic ? 'italic' : 'normal';
+  return resolveRendererLocalFont(request.family, {weight: request.bold ? 700 : 400, slant})
+    ?? (request.bold ? resolveRendererLocalFont(request.family, {weight: 400, slant}) : null);
+}
 
 /** FontFace의 준비·선택이 확인된 현재 호스트 세대에서만 원 PUA를 허용한다. */
 export class NativePuaFontSession {
@@ -30,6 +38,10 @@ export class NativePuaFontSession {
         if (record?.hostReference) selected.set(localFontFaceKey(record), record);
       }
     }
+    for (const request of JSON.parse(owner?.getNativeOtfFontRequests?.() ?? '[]') as Request[]) {
+      const record = otfFace(request);
+      if (record?.hostReference) selected.set(localFontFaceKey(record), record);
+    }
     return [...selected.values()];
   }
 
@@ -44,9 +56,11 @@ export class NativePuaFontSession {
       this.prepared.set(owner, state);
     }
     if (!hasHostFontProvider()) return true;
-    const raw = owner.getNativePuaFontRequests();
+    const puaRaw = owner.getNativePuaFontRequests();
+    const otfRaw = owner.getNativeOtfFontRequests?.() ?? '[]';
+    const raw = JSON.stringify([puaRaw, otfRaw]);
     if (state.requests === raw) return true;
-    const requests: Request[] = JSON.parse(raw);
+    const requests: Request[] = JSON.parse(puaRaw);
     let settled = true;
     for (const request of requests) {
       const key = JSON.stringify([request.family, request.bold, request.italic, Boolean(request.literal_figure_space)]);
@@ -70,6 +84,25 @@ export class NativePuaFontSession {
           break;
         }
       }
+    }
+    if (owner.prepareNativeOtfFonts) {
+      const programs = new Map<string, Uint8Array>();
+      for (const request of JSON.parse(otfRaw) as Request[]) {
+        const record = otfFace(request);
+        if (!record?.hostReference) continue;
+        if (!isPrepared(record)) { settled = false; continue; }
+        const data = await loadRendererLocalFont(record);
+        if (!current() || this.prepared.get(owner) !== state
+          || generation !== `${fontGeneration}:${getHostFontState().generation}`) return false;
+        const bytes = data && normalizeFontFaceData(data.bytes, data.faceIndex ?? 0);
+        if (!bytes || bytes.byteLength < 4 || new DataView(bytes).getUint32(0) !== 0x4f54544f) continue;
+        programs.set(JSON.stringify([request.family, request.bold, request.italic]), new Uint8Array(bytes));
+      }
+      if (!settled) return false;
+      owner.prepareNativeOtfFonts(rawRequest => {
+        const request: Request = JSON.parse(rawRequest);
+        return programs.get(JSON.stringify([request.family, request.bold, request.italic])) ?? null;
+      });
     }
     if (settled) state.requests = raw;
     return current();

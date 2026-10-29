@@ -1,11 +1,41 @@
 // 글꼴 공급의 비동기 소유 계약 검사다. mock bytes를 실제 cmap/시각 증거로 쓰지 않는다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { NativePuaFontSession } from '../src/core/native-pua-font-session.ts';
 import { setHostFontProvider } from '../src/core/local-fonts.ts';
 import type { HostFontData } from '../src/core/host-font-provider.ts';
 
 let serial = 0;
+
+test('굵은 HFT 요청에 실제 선택한 일반 OTF를 공급하고 세대가 바뀌면 다시 준비한다', async () => {
+  const font = readFileSync(new URL('../../tests/fixtures/fonts/RHWPHftOutline.otf', import.meta.url));
+  const bytes = font.buffer.slice(font.byteOffset, font.byteOffset + font.byteLength) as ArrayBuffer;
+  const request = {family: 'Fixture', bold: true, italic: false};
+  let reads = 0, calls = 0;
+  await setHostFontProvider({
+    async getSnapshot() { return {revision: 'otf-regular', faces: [{id: 'fixture', family: 'Fixture',
+      fullName: 'Fixture', postscriptName: 'Fixture', style: 'Regular', weight: 400, slant: 'normal'}]}; },
+    async readFace() { reads++; return {bytes}; }, subscribe() { return () => {}; },
+  });
+  const owner = {
+    getNativePuaFontRequests: () => '[]', registerNativePuaFont: () => false,
+    getNativeOtfFontRequests: () => JSON.stringify([request]),
+    prepareNativeOtfFonts(provider: (raw: string) => Uint8Array | null) {
+      calls++; assert.equal(new DataView(provider(JSON.stringify(request))!.buffer).getUint32(0), 0x4f54544f); return true;
+    },
+    clearNativePuaFonts() {},
+  };
+  try {
+    const session = new NativePuaFontSession();
+    assert.equal(session.records(owner).length, 1);
+    assert.equal(await session.prepare(owner, 1, () => true, () => true), true);
+    assert.equal(await session.prepare(owner, 1, () => true, () => true), true);
+    assert.equal(calls, 1); assert.equal(reads, 1);
+    assert.equal(await session.prepare(owner, 2, () => true, () => true), true);
+    assert.equal(calls, 2);
+  } finally { await setHostFontProvider(null); }
+});
 async function fixture(fallback = false) {
   const revision = `pua-session-${++serial}`;
   const families = fallback ? ['Primary', 'Fallback'] : ['Primary'];
