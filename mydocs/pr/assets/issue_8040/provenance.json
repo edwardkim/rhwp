@@ -1,0 +1,40 @@
+{
+  "sourceCommit": "f8f31d0166ae98f0d15e010ba89c7006452531d4",
+  "fixedBase": "784ef465d8867efa8a7b6361175e7254c3bafac4",
+  "latestCompatibleBase": "1cb3a6dae1094f6ed552a8fdbffea8b89868d555",
+  "sourceFiles": {
+    "src/document_core/queries/rendering.rs": "bc4de9dc29abc1e0e8199b007b8e61306c06ba10d4cb6aab8fd363c4c5e89f8e",
+    "src/renderer/composer/composition.inc.rs": "edb1ccee21c4c57a00497b11d358c3c63bc7286c2d33a4373ebc0eee3d578d1f",
+    "src/renderer/height_measurer.rs": "fcd20915fdbf4ddd33d975165ed16080fc811fe042868f052b332af8ee807588",
+    "src/renderer/layout/table_layout.rs": "70c45c1d44482f6a42328e6346f19dfee501693d221beb55bb7a10b65cc9cfab",
+    "src/renderer/layout/table_layout/stored_plain_cell_minimum.rs": "b7b338fd328759d2e0a3b65098bbe9f7d84b5d80e9c0277d9de95f493c10e2d0",
+    "src/renderer/typeset/controls/stored_tac.rs": "c0634d916d5a9d25ace8171fe56043f50f0e60410fd3e010f2a0fb9f999444f9",
+    "src/renderer/typeset/paragraph/content.rs": "bc7fa081418d743a395e7aee298c93f62e258549890e4b8ac76d44e99e3a1614"
+  },
+  "inputs": {
+    "samples/exam_social.hwp": "ef1f84e7dd213194e68c243a67b0b60022472d9fa81e4db8dcf9bd9be0825146",
+    "samples/hwpx/exam_social.hwpx": "c11b117dfc55606bb3ea703f9ea5b0a14481f7e70e918bc09ce4e202a04c9fd0",
+    "samples/pr8040/exam-social-insert.hwp": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+    "samples/pr8040/exam-social-insert-delete.hwp": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+    "pdf/pr8040/exam-social-insert-2020.pdf": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+    "pdf/pr8040/exam-social-insert-delete-2020.pdf": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+    "pdf/issue7642-exam-print/exam-08-exam_social-hwp-print-2020.pdf": "9cf208b8d0c2e5b9b814f1c6def5d28370d38e2c120b984590fdd3326d1c8799",
+    "pdf/issue7642-exam-print/exam-13-exam_social-hwpx-print-2020.pdf": "ef470c55d315f900220e6bcbd83df10f374a99d2cd010ffb29abd2e214eb7000"
+  },
+  "nativeBinarySha256": "2bfc90710770ddc1a19945bda8cb3a78b9c116559095648ea57e782532db3a3d",
+  "wasmPackage": {
+    "rhwp.js": "8db5a374494ec01e885dbb649735ff1446802bc12addc556f5520097f06c4ee3",
+    "rhwp_bg.wasm": "956c224b1a730a9bcba92c012beb1db601a9bb6c70cd7e3e2b2718346adeef84"
+  },
+  "profile": "print",
+  "compat": "2022",
+  "dpi": 96,
+  "wasmBuild": "wasm-pack --release; wasm-opt completed; 13m55s",
+  "chrome": "155.0.8059.79",
+  "date": "2026-10-29",
+  "fontsLocalOnly": true,
+  "referenceJobs": [
+    "c1661260-a8de-4484-96d0-d93cc5549197",
+    "b04e86d5-061f-4141-bb42-771f2a978b5f"
+  ]
+}

@@ -1,0 +1,290 @@
+[
+  {
+    "languageSlot": 0,
+    "fontId": 3,
+    "source": "신명 견명조",
+    "target": "SinmyeongGyeonmyeongjo-TEGMJHG",
+    "file": "TEGMJHG.otf",
+    "sha256": "131637753baf43730900998e21694da10d6b12ca08d08634bc1c00d39f30fd92",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 0,
+    "fontId": 4,
+    "source": "신명 디나루",
+    "target": "SinmyeongDinaru-TEDNRHG",
+    "file": "TEDNRHG.otf",
+    "sha256": "00eae1decfbbee1f2344ff95ec396eacd7581a70d65849a3305d3e2df5137b13",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 0,
+    "fontId": 5,
+    "source": "신명 신그래픽",
+    "target": "SinmyeongSingraphic-TESGRHG",
+    "file": "TESGRHG.otf",
+    "sha256": "2845c370f3eb07eaea5e76ffef82fd104108c406d9dd2c1803aa5c1036612cf7",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 0,
+    "fontId": 6,
+    "source": "신명 중고딕",
+    "target": "SinmyeongJunggothic-TEJGTHG",
+    "file": "TEJGTHG.otf",
+    "sha256": "a2b6e400e1e8beaea1661e55bf5977ee823e2a4ae67033e758574f9238611860",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 0,
+    "fontId": 7,
+    "source": "신명 중명조",
+    "target": "SinmyeongJungmyeongjo-TEJMJHG",
+    "file": "TEJMJHG.otf",
+    "sha256": "674bc8b40889eefecddc7833cfd6de1367bc7ed15656814b3cbf6a26fea211cf",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 0,
+    "fontId": 8,
+    "source": "신명 태고딕",
+    "target": "SinmyeongTaegothic-TETGTHG",
+    "file": "TETGTHG.otf",
+    "sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 0,
+    "fontId": 9,
+    "source": "한양견명조",
+    "target": "HYGyeonmyeongjo-HGGMJ",
+    "file": "HGGMJ.otf",
+    "sha256": "34e58d7685669addf992dd969f14bfea6eb3f7b7aa2b3ff17bba1275d353768b",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 0,
+    "fontId": 10,
+    "source": "한양신명조",
+    "target": "HYSinmyeongjo-HGSMJ",
+    "file": "HGSMJ.otf",
+    "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 1,
+    "fontId": 3,
+    "source": "신명 견명조",
+    "target": "SinmyeongGyeonmyeongjo-TEGMJEN",
+    "file": "TEGMJEN.otf",
+    "sha256": "fc341efba989722650bbba15690cbf91db2eb34fdc0eaaad6c8f04ea4a26154f",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 1,
+    "fontId": 4,
+    "source": "신명 디나루",
+    "target": "SinmyeongDinaru-TEDNREN",
+    "file": "TEDNREN.otf",
+    "sha256": "d292d1972ff9de8641c52e3bff41fa0d5ba012c3fd0a1b6514f49e4a5f29fced",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 1,
+    "fontId": 5,
+    "source": "신명 신그래픽",
+    "target": "SinmyeongSingraphic-TESGREN",
+    "file": "TESGREN.otf",
+    "sha256": "653e3453afb3a8a44144b7b9dc5e149f2ae7924c9f908ee04f171749935768cc",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 1,
+    "fontId": 6,
+    "source": "신명 중고딕",
+    "target": "SinmyeongJunggothic-TEJGTEN",
+    "file": "TEJGTEN.otf",
+    "sha256": "e5a90d4446f551d3ae2f412990fe8011395a2d75e5af3ea7f2ed51dde5be366e",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 1,
+    "fontId": 7,
+    "source": "신명 중명조",
+    "target": "SinmyeongJungmyeongjo-TEJMJEN",
+    "file": "TEJMJEN.otf",
+    "sha256": "becde524c507ba1e555360eae97f99e1770ac4403a55eda2b8b64ff313d602c9",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 1,
+    "fontId": 8,
+    "source": "신명 태고딕",
+    "target": "SinmyeongTaegothic-TETGTEN",
+    "file": "TETGTEN.otf",
+    "sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 1,
+    "fontId": 9,
+    "source": "한양견명조",
+    "target": "HYGyeonmyeongjo-ENGMJ",
+    "file": "ENGMJ.otf",
+    "sha256": "92f7b9f4aab6a183da9adedc051eeadb329db563bfb5a3187e4cc861365e633c",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 1,
+    "fontId": 10,
+    "source": "한양신명조",
+    "target": "HYSinmyeongjo-ENSMJ",
+    "file": "ENSMJ.otf",
+    "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 2,
+    "fontId": 3,
+    "source": "신명 견명조",
+    "target": "SinmyeongGyeonmyeongjo-TEGMJHJ",
+    "file": "TEGMJHJ.otf",
+    "sha256": "2d7451e56c62084fa3debd781825890e18c12fef78409f656057d687a3abd684",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 2,
+    "fontId": 4,
+    "source": "신명 중고딕",
+    "target": "SinmyeongJunggothic-TEJGTHJ",
+    "file": "TEJGTHJ.otf",
+    "sha256": "5c9e1ea0fc307c155ae7910a9d4acdf618d72ae78489aeac28902c680e426cce",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 2,
+    "fontId": 5,
+    "source": "신명 중명조",
+    "target": "SinmyeongJungmyeongjo-TEJMJHJ",
+    "file": "TEJMJHJ.otf",
+    "sha256": "ae4361b1549046dfc09b9415a9a8cdb52a076e96c8415b9eefd046d82465e1be",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 2,
+    "fontId": 6,
+    "source": "신명 태고딕",
+    "target": "SinmyeongTaegothic-TETGTHJ",
+    "file": "TETGTHJ.otf",
+    "sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 2,
+    "fontId": 7,
+    "source": "한양신명조",
+    "target": "HYSinmyeongjo-HJSMJ",
+    "file": "HJSMJ.otf",
+    "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 3,
+    "fontId": 3,
+    "source": "신명 견명조",
+    "target": "SinmyeongGyeonmyeongjo-TEGMJJP",
+    "file": "TEGMJJP.otf",
+    "sha256": "aad05d3cb2ebc9c2e5bc7fb731745179ec51d75fb9b54fb61b2950bf19a305c4",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 3,
+    "fontId": 4,
+    "source": "신명 신명조",
+    "target": "SinmyeongSinmyeongjo-TESMJJP",
+    "file": "TESMJJP.otf",
+    "sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 3,
+    "fontId": 5,
+    "source": "신명 중고딕",
+    "target": "SinmyeongJunggothic-TEJGTJP",
+    "file": "TEJGTJP.otf",
+    "sha256": "96ee02cb33abb83c7985bed4ff49e7b8c3757299865e06f13c61c750a1f98d1c",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 3,
+    "fontId": 6,
+    "source": "신명 태고딕",
+    "target": "SinmyeongTaegothic-TETGTJP",
+    "file": "TETGTJP.otf",
+    "sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 3,
+    "fontId": 7,
+    "source": "한양신명조",
+    "target": "HYSinmyeongjo-JPSMJ",
+    "file": "JPSMJ.otf",
+    "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 4,
+    "fontId": 3,
+    "source": "한양신명조",
+    "target": "HYSinmyeongjo-ENSMJ",
+    "file": "ENSMJ.otf",
+    "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 5,
+    "fontId": 3,
+    "source": "신명 견명조",
+    "target": "SinmyeongGyeonmyeongjo-TEGMJSP",
+    "file": "TEGMJSP.otf",
+    "sha256": "a73255db51e05eb4a170321f1f6b0288a9dcf7d0e5b86a1e553c16a5635c263b",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 5,
+    "fontId": 4,
+    "source": "신명 태그래픽",
+    "target": "SinmyeongTaegraphic-TETGRSP",
+    "file": "TETGRSP.otf",
+    "sha256": "4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 5,
+    "fontId": 5,
+    "source": "한양신명조",
+    "target": "HYSinmyeongjo-SPSMJ",
+    "file": "SPSMJ.otf",
+    "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 5,
+    "fontId": 6,
+    "source": "한양중고딕",
+    "target": "HYJunggothic-SPJGT",
+    "file": "SPJGT.otf",
+    "sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+    "markerSupported": true
+  },
+  {
+    "languageSlot": 6,
+    "fontId": 3,
+    "source": "명조",
+    "target": "Myeongjo-HGMJ",
+    "file": "HGMJ.otf",
+    "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+    "markerSupported": true
+  }
+]
