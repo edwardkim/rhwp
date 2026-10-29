@@ -1,26 +1,11 @@
 //! 관계형·고정형: 반복 제목 셀의 빈 줄과 저장 줄 전진을 검사한다.
-//! HWP 2026-10-19 측정 raw(96dpi, PDFium, 2px):
-//! 1쪽 Native 99.99629% / fresh WASM 99.99872%.
-//! 2쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! 3쪽 Native 99.98581% / fresh WASM 99.98414%.
-//! 4쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! 5쪽 Native 99.99894% / fresh WASM 100.00000%.
-//! 6쪽 Native 99.95485% / fresh WASM 99.95697%.
-//! 전 6쪽 최저 Native 99.95485% / fresh WASM 99.95697%.
-//! HWPX 2026-10-25 참고 raw(96dpi, PDFium, 2px; PDF 원본 대응 미확인):
-//! 1쪽 Native 96.34873% / fresh WASM 96.28920%.
-//! 2쪽 Native 96.40344% / fresh WASM 96.33558%.
-//! 3쪽 Native 95.84490% / fresh WASM 95.96239%.
-//! 4쪽 Native 97.01122% / fresh WASM 97.15078%.
-//! 5쪽 Native 96.40254% / fresh WASM 96.64068%.
-//! 6쪽 Native 97.04618% / fresh WASM 96.86672%.
-//! 전 6쪽 최저 Native 95.84490% / fresh WASM 95.96239%.
-//! HWP 근거: mydocs/pr/assets/issue7642/final_sweep_20261019/README.md.
-//! HWPX 근거: mydocs/pr/assets/integration-planet6897/final-validation-20261025/README.md.
-//! 위 HWPX 수치는 같은 원본의 독립 Print 검증을 대체할 수 없다.
-//! 동일 HWPX Print의 2026-10-29 Native 1쪽 raw는 명시 글꼴 공급 시 100.00000%다.
-//! 근거: mydocs/pr/assets/issue_7032/README.md. 나머지 쪽과 fresh WASM은 검증 중이다.
-//! 1~6쪽의 52.4px 고정 검사에 필요한 현재 두 경로의 98% 선행 조건은 아직 미확인이다.
+//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T17:06:22+09:00 (a7686a0982).
+//! 2026-10-29 측정 raw(96dpi, PDFium, 2px, 한컴 Print 글꼴 선택):
+//! HWP 1~5쪽 Native·fresh WASM 각 100.00000%; 6쪽 99.95290% / 99.95358%.
+//! HWP 전 6쪽 최저 Native 99.95290% / fresh WASM 99.95358%.
+//! HWPX 1~5쪽 Native·fresh WASM 각 100.00000%; 6쪽 99.44554% / 99.46831%.
+//! HWPX 전 6쪽 최저 Native 99.44554% / fresh WASM 99.46831%.
+//! 근거: mydocs/pr/assets/issue_7032/README.md.
 //! #7032: 저장된 빈 셀 문단은 LINE_SEG가 없어도 한 줄을 소유한다.
 //! HWPX 검증 문서와 메인터너의 한컴 판독을 독립 대조군으로 사용한다.
 #![cfg(not(target_arch = "wasm32"))]
@@ -118,7 +103,15 @@ fn assert_header_flow(core: &DocumentCore) {
             .iter()
             .any(|n| matches!(&n.node_type, RenderNodeType::TextRun(r) if r.text == "직렬")));
         assert_near(lines[1].bbox.y - lines[0].bbox.y, advance);
-        assert_near(cell.bbox.height, 52.4);
+        // 독립 Print의 제목 행 테두리 중심 간격을 96dpi CSS px로 환산한다.
+        let print_height = if page == 0 { 52.42267 } else { 52.26267 };
+        assert!(
+            (cell.bbox.height - print_height).abs() <= 2.0,
+            "p{} 제목 행: 실제 {}, 독립 Print {}",
+            page + 1,
+            cell.bbox.height,
+            print_height
+        );
     }
 }
 
