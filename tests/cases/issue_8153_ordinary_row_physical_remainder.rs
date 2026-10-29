@@ -1,5 +1,5 @@
 //! 관계형·고정형: 내용 프레임 수와 분리해 일반 행의 물리 잔여·다음 컷을 보존한다.
-//! 주석 갱신: 2026-10-30T06:54:13+09:00; 직전 파일 커밋: 2026-10-30T02:18:21+09:00 (4b565ad236).
+//! 주석 갱신: 2026-10-30T07:09:37+09:00; 직전 파일 커밋: 2026-10-30T06:54:26+09:00 (15447e583e).
 //! 2026-10-29 측정: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
 //! HWP 317쪽 Native 100.00% / fresh WASM 100.00%.
 //! HWP 327쪽 Native 100.00% / fresh WASM 100.00%.
@@ -10,7 +10,7 @@
 //! HWPX 353쪽 Native 100.00% / fresh WASM 100.00%.
 //! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
 //! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/audit-d412-20261029/README.md.
-//! 이전 후보의 두 편람 전쪽 Native/fresh 표준 WASM 최저 99.96446/99.96%와 독립 Print 근거는
+//! 이전 후보의 두 편람 전쪽 Native/fresh 표준 WASM 최저 99.96/99.96%와 독립 Print 근거는
 //! mydocs/plans/issue_8153_ordinary_row_remainder_20261027.md에 연결한다.
 #![cfg(not(target_arch = "wasm32"))]
 
