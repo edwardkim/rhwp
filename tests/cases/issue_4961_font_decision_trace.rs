@@ -1,4 +1,6 @@
 //! 관계형: 글꼴 결정 추적과 공개 API 결과 계약.
+//! 원본 소유·API 결과·왕복 보존을 검사하며 raw 일치율 측정은 이 검사의 대상이 아니다.
+//! 근거: mydocs/tech/investigations/issue-4961/font_decision_trace_e2e.json.
 use rhwp::document_core::DocumentCore;
 
 mod corpus_scope {

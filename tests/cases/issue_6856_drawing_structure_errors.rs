@@ -1,4 +1,6 @@
 //! 관계형: 불완전한 도형 입력의 파서 오류와 보존 계약.
+//! 손상한 합성 입력의 파서 오류 전파를 검사하며 정상 문서의 시각 일치율을 측정하지 않는다.
+//! 근거: mydocs/tech/한글문서파일형식_5.0_revision1.3.md.
 //! 유효한 한컴 문서가 아닌 의도적으로 불완전한 파서 입력이다.
 use rhwp::model::shape::{GroupShape, RectangleShape, ShapeObject, TextBox};
 use rhwp::model::{control::Control, document::Section, paragraph::Paragraph};
