@@ -1,3 +1,8 @@
+//! 관계형: 합성 표의 제목 칸 테두리와 나머지 칸의 개방을 검사한다.
+//! 2026-10-26 측정 raw(96dpi, 한컴 2020 Print, 2px 실루엣):
+//! 합성 HWPX 1쪽 Native 100.00000% / fresh WASM 100.00000%; 전 1쪽 최저도 각각 같다.
+//! 측정 당시 제품 소스: be1b4f2ddb7c730075d15cea1d844dbf7826d024.
+//! 근거: tests/fixtures/issue_8153_cell_none_border/README.md.
 //! #6311의 실제 틀은 #6619에서 확인한 cellzone이 소유한다.
 //! zone이 없는 기존 합성 입력의 독립 Print는 제목 칸 네 변만 출력한다.
 //! #8153의 Native/fresh WASM raw100 확인 후 잘못된 표 외곽 기대값을 정정했다.
