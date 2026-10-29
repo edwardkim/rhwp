@@ -216,7 +216,8 @@ fn exercise(
             let actual = word_x(&original, &source_path, word);
             assert!(
                 (actual - x * 96. / 72.).abs() <= 2.,
-                "independent PDF destination within2px: {name} {word}"
+                "독립 PDF 위치의 ±2px 범위: {name} {word}, 실제={actual}, 기대={}",
+                x * 96. / 72.
             );
             (word, actual)
         })
