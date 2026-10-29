@@ -7,7 +7,7 @@
 //! 5쪽 Native 99.99894% / fresh WASM 100.00000%.
 //! 6쪽 Native 99.95485% / fresh WASM 99.95697%.
 //! 전 6쪽 최저 Native 99.95485% / fresh WASM 99.95697%.
-//! HWPX 2026-10-25 측정 raw(96dpi, PDFium, 2px):
+//! HWPX 2026-10-25 참고 raw(96dpi, PDFium, 2px; PDF 원본 대응 미확인):
 //! 1쪽 Native 96.34873% / fresh WASM 96.28920%.
 //! 2쪽 Native 96.40344% / fresh WASM 96.33558%.
 //! 3쪽 Native 95.84490% / fresh WASM 95.96239%.
@@ -17,8 +17,10 @@
 //! 전 6쪽 최저 Native 95.84490% / fresh WASM 95.96239%.
 //! HWP 근거: mydocs/pr/assets/issue7642/final_sweep_20261019/README.md.
 //! HWPX 근거: mydocs/pr/assets/integration-planet6897/final-validation-20261025/README.md.
-//! 두 수치는 각 근거의 원본·독립 Print와 당시 source의 측정 결과이며 현재 head 재측정 전이다.
-//! 1~6쪽의 52.4px 고정 검사는 위 HWPX 과거 측정으로 98% 선행 조건을 입증하지 못한다.
+//! 위 HWPX 수치는 같은 원본의 독립 Print 검증을 대체할 수 없다.
+//! 동일 HWPX Print의 2026-10-29 Native 1쪽 raw는 명시 글꼴 공급 시 100.00000%다.
+//! 근거: mydocs/pr/assets/issue_7032/README.md. 나머지 쪽과 fresh WASM은 검증 중이다.
+//! 1~6쪽의 52.4px 고정 검사에 필요한 현재 두 경로의 98% 선행 조건은 아직 미확인이다.
 //! #7032: 저장된 빈 셀 문단은 LINE_SEG가 없어도 한 줄을 소유한다.
 //! HWPX 검증 문서와 메인터너의 한컴 판독을 독립 대조군으로 사용한다.
 #![cfg(not(target_arch = "wasm32"))]
