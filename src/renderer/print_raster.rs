@@ -141,17 +141,20 @@ impl PrintRasterFrame {
         let (sx, sy) = (ptw / (pw / 12.0).round(), pth / (ph / 12.0).round());
         // Print PDF 좌표는 소수 3자리, PDFium 행렬은 f32다. 양쪽 반올림을 보존한다.
         let decimal = |v: f64| ((v * 1000.0).round() / 1000.0) as f32;
-        let (dx, dy) = ((dw / ptw) as f32, (dh / pth) as f32);
+        // 버퍼 크기의 올림은 PDF 물리 좌표의 확대 배율을 바꾸지 않는다.
+        // PDFium의 정확한 96dpi 행렬과 같은 축으로 그림과 클립을 표본화한다.
+        let (dx, dy) = ((matrix[0] / 0.75) as f32, (matrix[1] / 0.75) as f32);
+        let page_bottom = pth as f32 * dy;
         let il = decimal(l * sx) * dx;
-        let ib = dh as f32 - decimal(pth - (t + mh) * sy) * dy;
+        let ib = page_bottom - decimal(pth - (t + mh) * sy) * dy;
         let it = ib - decimal(mh * sy) * dy;
         let ir = il + decimal(mw * sx) * dx;
         let (ox, oy) = (il.floor(), it.floor());
         let (iw, ih) = ((ir.ceil() - ox) as u32, (ib.ceil() - oy) as u32);
         let cl = (decimal(l * sx) * dx).floor().max(ox);
-        let ct = (dh as f32 - decimal(pth - t * sy) * dy).floor().max(oy);
+        let ct = (page_bottom - decimal(pth - t * sy) * dy).floor().max(oy);
         let cr = (decimal(r * sx) * dx).ceil().min(ox + iw as f32);
-        let cb = (dh as f32 - decimal(pth - b * sy) * dy)
+        let cb = (page_bottom - decimal(pth - b * sy) * dy)
             .ceil()
             .min(oy + ih as f32);
         let (width, height) = ((cr - cl) as u32, (cb - ct) as u32);
