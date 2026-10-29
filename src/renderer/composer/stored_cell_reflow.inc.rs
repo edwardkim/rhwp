@@ -137,11 +137,10 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band_with_storag
             }))
         || (crate::renderer::para_has_no_stored_line_segs(para)
             && (known_square_band
-                || para.controls.iter().any(|control| {
-                    matches!(control, crate::model::control::Control::Picture(picture)
-                    if !picture.common.treat_as_char
-                    && picture.common.text_wrap == crate::model::shape::TextWrap::Square)
-                }))
+                || para
+                    .controls
+                    .iter()
+                    .any(line_breaking::control_is_square_float_object))
             && line_breaking::supports_picture_band_frame_controls(para))
         // 실측 인라인 표의 현재 프레임은 글자 없는 host와 여러 표도 구성한다.
         // 나머지 경로는 기존의 보이는 글자+단일 TAC 표 수용 계약을 유지한다.
