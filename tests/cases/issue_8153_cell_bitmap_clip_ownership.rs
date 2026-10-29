@@ -166,6 +166,7 @@ mod cell_clip_contract {
             border_fill_id: 0,
             text_direction: 0,
             clip: true,
+            closed_reflow_frame: false,
             page_fragment: fragment,
             model_cell_index: None,
         };
