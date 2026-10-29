@@ -305,6 +305,16 @@ where
     let mut extra_streams = storage
         .clone_record(&doc.extra_streams)
         .map_err(storage_error)?;
+    // [#8374] Scripts 는 이 파일의 압축 비트를 따른다 — 원본과 형태가 다르면 맞춘다.
+    for (path, bytes) in &mut extra_streams {
+        if path.trim_start_matches('/') == "Scripts/DefaultJScript" {
+            if let Some(converted) =
+                crate::model::form_script::script_stream_for_hwp(doc, bytes, compressed)
+            {
+                *bytes = converted;
+            }
+        }
+    }
     extra_streams.retain(|(path, _)| path != crate::model::border_paint::HWP_STREAM);
     if let Some(bytes) = crate::model::border_paint::encode_with_storage(doc, storage)
         .map_err(SerializeError::UnsupportedInput)?

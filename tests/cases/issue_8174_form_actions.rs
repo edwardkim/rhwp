@@ -201,3 +201,106 @@ fn distribution_script_envelope_survives_editable_conversion_and_hwpx_export() {
         assert_eq!(document.hwpx_aux_entry(path).unwrap(), expected);
     }
 }
+
+/// [#8374] 비압축 HWP5(FileHeader bit 0 = 0)는 `Scripts/DefaultJScript` 도 deflate 없이
+/// 저장한다. 기대값은 저장 원문(글자 수 u32 + UTF-16LE, 두 번)을 여기서 직접 해독한 값이다.
+fn raw_script_parts(stream: &[u8]) -> [Vec<u8>; 2] {
+    let mut offset = 0;
+    [(), ()].map(|_| {
+        let count = u32::from_le_bytes(stream[offset..offset + 4].try_into().unwrap()) as usize;
+        offset += 4;
+        let part = stream[offset..offset + count * 2].to_vec();
+        offset += count * 2;
+        part
+    })
+}
+
+#[test]
+fn uncompressed_hwp5_scripts_convert_to_hwpx_parts() {
+    for path in [
+        "samples/issue5699/37787_regulatory_impact.hwp",
+        "samples/hwpers_test4_complex_table.hwp",
+    ] {
+        let bytes = std::fs::read(path).unwrap();
+        let core = DocumentCore::from_bytes(&bytes).unwrap();
+        assert!(!core.document().header.compressed, "{path}: 비압축 원본");
+        let stream = &core
+            .document()
+            .extra_streams
+            .iter()
+            .find(|(p, _)| p.trim_start_matches('/') == "Scripts/DefaultJScript")
+            .unwrap_or_else(|| panic!("{path}: 스크립트 스트림"))
+            .1;
+        let [header, source] = raw_script_parts(stream);
+        assert!(!header.is_empty(), "{path}: 머리 스크립트가 있어야 한다");
+        let exported = core
+            .export_hwpx_native()
+            .unwrap_or_else(|e| panic!("{path}: HWPX 저장 {e}"));
+        let document = rhwp::parse_document(&exported).unwrap();
+        assert_eq!(
+            document.hwpx_aux_entry("Scripts/headerScripts"),
+            Some(header.as_slice()),
+            "{path}"
+        );
+        assert_eq!(
+            document.hwpx_aux_entry("Scripts/sourceScripts"),
+            Some(source.as_slice()),
+            "{path}"
+        );
+    }
+}
+
+/// 반례: HWPX 파서는 스크립트 없는 HWPX 에도 HWP5 압축형 `DefaultJScript` 를 합성하고
+/// 문서 헤더는 비압축이다. 헤더 비트만 따르면 이 문서의 HWPX 저장이 깨진다. 압축 HWP5
+/// 대조군도 같은 경로를 지난다.
+#[test]
+fn compressed_script_producers_still_export_to_hwpx() {
+    for path in [
+        "samples/hwpx/143E433F503322BD33.hwpx",
+        "samples/hwpx/156160455-social-pig-farm-income.hwpx",
+        "samples/hwpx_sample2.hwp",
+    ] {
+        let core = DocumentCore::from_bytes(&std::fs::read(path).unwrap()).unwrap();
+        assert!(
+            core.document()
+                .extra_streams
+                .iter()
+                .any(
+                    |(p, b)| p.trim_start_matches('/') == "Scripts/DefaultJScript" && !b.is_empty()
+                ),
+            "{path}: 스크립트 스트림이 저장 경로에 들어가야 한다"
+        );
+        core.export_hwpx_native()
+            .unwrap_or_else(|e| panic!("{path}: HWPX 저장 {e}"));
+    }
+}
+
+/// [#8374] HWP 저장은 `DefaultJScript` 를 그 파일의 압축 비트에 맞춰 쓴다. HWPX 원본을
+/// 비압축 HWP 로 쓰면 스크립트도 원문(글자 수 + UTF-16LE)이어야 하고, 내용은 원본 HWPX
+/// 의 `Scripts/*` 와 같다.
+#[test]
+fn hwp_export_stores_scripts_in_the_file_compression_form() {
+    let original = sample();
+    let expected = [
+        original
+            .document()
+            .hwpx_aux_entry("Scripts/headerScripts")
+            .unwrap()
+            .to_vec(),
+        original
+            .document()
+            .hwpx_aux_entry("Scripts/sourceScripts")
+            .unwrap()
+            .to_vec(),
+    ];
+    let reopened = DocumentCore::from_bytes(&original.export_hwp_native().unwrap()).unwrap();
+    assert!(!reopened.document().header.compressed);
+    let stream = &reopened
+        .document()
+        .extra_streams
+        .iter()
+        .find(|(p, _)| p.trim_start_matches('/') == "Scripts/DefaultJScript")
+        .unwrap()
+        .1;
+    assert_eq!(raw_script_parts(stream), expected);
+}

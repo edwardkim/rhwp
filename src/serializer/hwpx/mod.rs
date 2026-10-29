@@ -241,9 +241,8 @@ where
             path.trim_start_matches('/') == "Scripts/DefaultJScript" && !bytes.is_empty()
         })
     {
-        let (header, source) =
-            crate::model::form_script::script_sources_from_streams(&doc.extra_streams)
-                .map_err(|error| SerializeError::UnsupportedInput(error.to_string()))?;
+        let (header, source) = crate::model::form_script::script_sources_from_streams(doc)
+            .map_err(|error| SerializeError::UnsupportedInput(error.to_string()))?;
         if !header.is_empty() || !source.is_empty() {
             for (id, path, text) in [
                 ("rhwpHeaderScript", "Scripts/headerScripts", header),

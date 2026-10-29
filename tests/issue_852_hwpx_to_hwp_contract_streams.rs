@@ -37,20 +37,13 @@ fn read_stream(hwp: &[u8], path: &str) -> Vec<u8> {
     buf
 }
 
-/// HWP5 BodyText/Section0 압축 여부는 FileHeader flag 로 결정. 변환 결과는
-/// HWPX parser 가 `doc.header.compressed = false` 작성 → uncompressed.
-/// 그러나 한컴 호환을 위해 양쪽 모두 처리.
-fn maybe_decompress(stream: &[u8]) -> Vec<u8> {
-    // HWP5 raw record 의 첫 바이트 패턴: tag (10 bit) 가 0x42 (PARA_HEADER) 면 uncompressed.
-    // deflate stream 의 첫 바이트는 보통 0x78 (zlib) 또는 임의 (raw deflate).
-    // 단순 휴리스틱: 첫 4 bytes 를 HWP5 record header 로 해석 시도.
-    if stream.len() >= 4 {
-        let h = u32::from_le_bytes([stream[0], stream[1], stream[2], stream[3]]);
-        let tag = h & 0x3FF;
-        // 합리적 tag 범위 (0x42 ~ 0x5b 가 BodyText 영역)
-        if tag >= 0x40 && tag <= 0x80 {
-            return stream.to_vec();
-        }
+/// HWP5 스트림의 압축 여부는 FileHeader 속성 bit 0 로 결정한다(BodyText·Scripts 공통, #8374).
+/// 변환 결과는 HWPX parser 가 `doc.header.compressed = false` 를 작성 → uncompressed,
+/// 한컴 정답지는 압축본이다.
+fn maybe_decompress(hwp: &[u8], stream: &[u8]) -> Vec<u8> {
+    let file_header = read_stream(hwp, "/FileHeader");
+    if file_header[36] & 0x01 == 0 {
+        return stream.to_vec();
     }
     let mut dec = DeflateDecoder::new(stream);
     let mut out = Vec::new();
@@ -124,7 +117,7 @@ fn form_01_keeps_nine_cfb_streams() {
 fn form_01_body_text_has_five_form_records() {
     let hwp = convert("form-01.hwpx");
     let section0 = read_stream(&hwp, "/BodyText/Section0");
-    let raw = maybe_decompress(&section0);
+    let raw = maybe_decompress(&hwp, &section0);
     let recs = walk_records(&raw);
 
     // CTRL_HEADER (tag 0x47 = 71) with ctrl_id "form" (LE "mrof") + child FORM_OBJECT (0x5b = 91)
@@ -154,12 +147,12 @@ fn form_01_body_text_has_five_form_records() {
 fn form_01_scripts_default_jscript_matches_golden() {
     let hwp = convert("form-01.hwpx");
     let converted_scripts = read_stream(&hwp, "/Scripts/DefaultJScript");
-    let converted_raw = maybe_decompress(&converted_scripts);
+    let converted_raw = maybe_decompress(&hwp, &converted_scripts);
 
     let golden_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/form-01.hwp");
     let golden_bytes = std::fs::read(&golden_path).expect("read golden");
     let golden_scripts = read_stream(&golden_bytes, "/Scripts/DefaultJScript");
-    let golden_raw = maybe_decompress(&golden_scripts);
+    let golden_raw = maybe_decompress(&golden_bytes, &golden_scripts);
 
     assert_eq!(
         converted_raw,
@@ -181,7 +174,7 @@ fn form_01_scripts_default_jscript_matches_golden() {
 fn form_01_body_text_has_click_here_with_ctrl_data() {
     let hwp = convert("form-01.hwpx");
     let section0 = read_stream(&hwp, "/BodyText/Section0");
-    let raw = maybe_decompress(&section0);
+    let raw = maybe_decompress(&hwp, &section0);
     let recs = walk_records(&raw);
 
     let mut found_clk_with_ctrl_data = false;
@@ -220,7 +213,7 @@ fn form_02_keeps_nine_streams_and_five_forms() {
 
     // 5 Form pairs
     let section0 = read_stream(&hwp, "/BodyText/Section0");
-    let raw = maybe_decompress(&section0);
+    let raw = maybe_decompress(&hwp, &section0);
     let recs = walk_records(&raw);
     let form_count = recs
         .iter()
