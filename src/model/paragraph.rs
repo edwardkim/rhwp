@@ -1192,7 +1192,7 @@ impl Paragraph {
         if gap_end < gap_start + CTRL_CHAR_CODE_UNITS {
             return;
         }
-        self.remove_stream_slot(gap_start);
+        self.remove_stream_slot(gap_start, true);
     }
 
     /// `controls[control_idx]` 를 빼고 그 8유닛 자리를 걷어낸다.
@@ -1223,9 +1223,26 @@ impl Paragraph {
             slot_start = Some(prev_end + (control_idx - ci) as u32 * CTRL_CHAR_CODE_UNITS);
         }
         if let Some(start) = slot_start {
-            self.remove_stream_slot(start);
+            self.remove_stream_slot(start, true);
         }
+        self.remove_control_entry(control_idx)
+    }
 
+    /// [#8306] HWPX 저장이 접는 컨트롤(같은 문단의 두 번째 이후 쪽 번호 위치, #6869)의
+    /// 자리를 저장기와 같은 좌표로 걷어낸다.
+    ///
+    /// 자리는 [`Self::control_utf16_positions`] 로 찾는다(필드 끝·제목 차례 표시 같은 부수
+    /// 슬롯을 건너뛰는 공용 결과). [`Self::remove_control`] 과 달리 같은 자리로 모인 글자
+    /// 모양을 합치지 않는다 — HWPX 저장기는 그 경계를 빈 run 으로 남기므로 재파싱 IR 에도
+    /// 그대로 남는다.
+    pub(crate) fn remove_control_slot_like_hwpx_export(&mut self, control_idx: usize) -> Control {
+        if let Some(&start) = self.control_utf16_positions().get(control_idx) {
+            self.remove_stream_slot(start, false);
+        }
+        self.remove_control_entry(control_idx)
+    }
+
+    fn remove_control_entry(&mut self, control_idx: usize) -> Control {
         let removed = self.controls.remove(control_idx);
         if control_idx < self.ctrl_data_records.len() {
             self.ctrl_data_records.remove(control_idx);
@@ -1243,7 +1260,8 @@ impl Paragraph {
 
     /// `slot_start` 에서 시작하는 8유닛 자리를 스트림에서 걷어내고 같은 좌표를 쓰는
     /// 문단 메타데이터를 당긴다.
-    fn remove_stream_slot(&mut self, slot_start: u32) {
+    /// `merge_same_position_shapes` 면 같은 자리로 모인 글자모양을 하나로 합친다(편집 경로).
+    fn remove_stream_slot(&mut self, slot_start: u32, merge_same_position_shapes: bool) {
         let slot_end = slot_start + CTRL_CHAR_CODE_UNITS;
         for offset in &mut self.char_offsets {
             if *offset >= slot_end {
@@ -1261,13 +1279,15 @@ impl Paragraph {
             pull(&mut shape.start_pos);
         }
         // 같은 자리로 모인 글자모양은 그 자리 글자에 쓰이는 뒤의 것만 남긴다.
-        self.char_shapes.dedup_by(|later, kept| {
-            let same = later.start_pos == kept.start_pos;
-            if same {
-                kept.char_shape_id = later.char_shape_id;
-            }
-            same
-        });
+        if merge_same_position_shapes {
+            self.char_shapes.dedup_by(|later, kept| {
+                let same = later.start_pos == kept.start_pos;
+                if same {
+                    kept.char_shape_id = later.char_shape_id;
+                }
+                same
+            });
+        }
         for tag in &mut self.range_tags {
             pull(&mut tag.start);
             pull(&mut tag.end);

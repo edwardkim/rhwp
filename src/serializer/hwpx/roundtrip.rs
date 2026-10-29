@@ -755,6 +755,138 @@ fn is_hwpx_to_hwp_incomparable(d: &IrDifference) -> bool {
         _ => false,
     }
 }
+/// [#8306] `export-hwpx --verify` 의 기대 IR — 원본 IR 에 HWPX 저장의 **의도된 정규화**를
+/// 저장기와 같은 규칙으로 먼저 적용한다.
+///
+/// - 같은 문단의 두 번째 이후 쪽 번호 위치(#6869): 저장기는 내지 않고 그 자리만큼 뒤
+///   위치를 당긴다. 같은 판정([`super::section::hwpx_collapsed_page_number_pos_indices`])으로
+///   컨트롤과 그 8유닛 자리를 걷어낸다([`Paragraph::remove_control_slot_like_hwpx_export`]).
+/// - 줄이 모두 reflow 합성(bit 31)인 문단(#5847): 저장기는 `linesegarray` 를 내지 않는다
+///   ([`super::section::line_segs_are_all_synthetic`]).
+///
+/// 재파싱 IR 에도 같은 함수를 적용한다 — 합성 줄은 rhwp 가 불러올 때 다시 만들고, 접기는
+/// 이미 접힌 문단에서 아무것도 바꾸지 않는다. 비교 자체(`diff_documents`)는 바꾸지 않는다
+/// (범용 `ir-diff` 도 그 함수를 쓴다). 이 정규화로 설명되지 않는 차이는 그대로 손실로
+/// 보고된다.
+///
+/// [`Paragraph::remove_control_slot_like_hwpx_export`]: crate::model::paragraph::Paragraph::remove_control_slot_like_hwpx_export
+pub fn hwpx_export_expected_document(doc: &Document) -> Document {
+    let mut expected = doc.clone();
+    for section in &mut expected.sections {
+        for para in &mut section.paragraphs {
+            normalize_paragraph_like_hwpx_export(para);
+        }
+    }
+    expected
+}
+
+fn normalize_paragraph_like_hwpx_export(para: &mut crate::model::paragraph::Paragraph) {
+    use crate::model::control::Control;
+
+    for control in &mut para.controls {
+        match control {
+            Control::Table(table) => {
+                for cell in &mut table.cells {
+                    cell.paragraphs
+                        .iter_mut()
+                        .for_each(normalize_paragraph_like_hwpx_export);
+                }
+                if let Some(caption) = &mut table.caption {
+                    caption
+                        .paragraphs
+                        .iter_mut()
+                        .for_each(normalize_paragraph_like_hwpx_export);
+                }
+            }
+            Control::Picture(picture) => {
+                if let Some(caption) = &mut picture.caption {
+                    caption
+                        .paragraphs
+                        .iter_mut()
+                        .for_each(normalize_paragraph_like_hwpx_export);
+                }
+            }
+            Control::Shape(shape) => {
+                if let Some(text_box) = shape_text_box_mut(shape) {
+                    text_box
+                        .paragraphs
+                        .iter_mut()
+                        .for_each(normalize_paragraph_like_hwpx_export);
+                }
+                if let Some(caption) = shape_caption_mut(shape) {
+                    caption
+                        .paragraphs
+                        .iter_mut()
+                        .for_each(normalize_paragraph_like_hwpx_export);
+                }
+            }
+            Control::Footnote(note) => note
+                .paragraphs
+                .iter_mut()
+                .for_each(normalize_paragraph_like_hwpx_export),
+            Control::Endnote(note) => note
+                .paragraphs
+                .iter_mut()
+                .for_each(normalize_paragraph_like_hwpx_export),
+            Control::Header(header) => header
+                .paragraphs
+                .iter_mut()
+                .for_each(normalize_paragraph_like_hwpx_export),
+            Control::Footer(footer) => footer
+                .paragraphs
+                .iter_mut()
+                .for_each(normalize_paragraph_like_hwpx_export),
+            _ => {}
+        }
+    }
+
+    // 뒤에서부터 걷어내야 앞 컨트롤의 자리 좌표가 유지된다.
+    for index in super::section::hwpx_collapsed_page_number_pos_indices(para)
+        .into_iter()
+        .rev()
+    {
+        para.remove_control_slot_like_hwpx_export(index);
+    }
+    if super::section::line_segs_are_all_synthetic(&para.line_segs) {
+        para.line_segs.clear();
+    }
+}
+
+fn shape_text_box_mut(
+    s: &mut crate::model::shape::ShapeObject,
+) -> Option<&mut crate::model::shape::TextBox> {
+    use crate::model::shape::ShapeObject::*;
+    match s {
+        Line(x) => x.drawing.text_box.as_mut(),
+        Rectangle(x) => x.drawing.text_box.as_mut(),
+        Ellipse(x) => x.drawing.text_box.as_mut(),
+        Arc(x) => x.drawing.text_box.as_mut(),
+        Polygon(x) => x.drawing.text_box.as_mut(),
+        Curve(x) => x.drawing.text_box.as_mut(),
+        Chart(x) => x.drawing.text_box.as_mut(),
+        Ole(x) => x.drawing.text_box.as_mut(),
+        Group(_) | Picture(_) => None,
+    }
+}
+
+fn shape_caption_mut(
+    s: &mut crate::model::shape::ShapeObject,
+) -> Option<&mut crate::model::shape::Caption> {
+    use crate::model::shape::ShapeObject::*;
+    match s {
+        Line(x) => x.drawing.caption.as_mut(),
+        Rectangle(x) => x.drawing.caption.as_mut(),
+        Ellipse(x) => x.drawing.caption.as_mut(),
+        Arc(x) => x.drawing.caption.as_mut(),
+        Polygon(x) => x.drawing.caption.as_mut(),
+        Curve(x) => x.drawing.caption.as_mut(),
+        Chart(x) => x.caption.as_mut(),
+        Ole(x) => x.caption.as_mut(),
+        Group(x) => x.caption.as_mut(),
+        Picture(x) => x.caption.as_mut(),
+    }
+}
+
 pub fn diff_documents(a: &Document, b: &Document) -> IrDiff {
     let mut diff = IrDiff::default();
 

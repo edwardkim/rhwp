@@ -1221,10 +1221,7 @@ where
         // 플래그가 그대로 실려 한글 2022 가 캐시를 신뢰하다 조판을 폐기한다
         // (08818: 81쪽 → 5쪽). 원본과 같게 방출을 생략해 한글이 재계산하게 한다
         // (#1380 계약). HWP5→HWPX materialize 는 별도 placeholder 를 쓰므로 무관.
-        let all_synthetic = !axis_line_segs.is_empty()
-            && axis_line_segs
-                .iter()
-                .all(|s| s.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0);
+        let all_synthetic = line_segs_are_all_synthetic(axis_line_segs);
         Ok(
             if !axis_line_segs.is_empty() && position_axis_intact && !all_synthetic {
                 // IR 기반 출력 — 원본 lineseg 값 보존 (#177)
@@ -1258,6 +1255,28 @@ where
         )
     })()
     .map_err(|error| SerializeError::XmlError(format!("HWPX lineseg: {error}")))
+}
+
+/// [#5847] 문단의 저장 줄이 **모두** reflow 합성(bit 31)인가 — HWPX 저장은 이런 문단의
+/// `linesegarray` 를 내지 않는다. `export-hwpx --verify` 의 기대 IR 도 이 판정을 쓴다(#8306).
+pub(crate) fn line_segs_are_all_synthetic(line_segs: &[LineSeg]) -> bool {
+    !line_segs.is_empty()
+        && line_segs
+            .iter()
+            .all(|s| s.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+}
+
+/// [#6869] HWPX 저장이 접는(내지 않는) 쪽 번호 위치 컨트롤의 인덱스 — 한 문단에서 첫 번째를
+/// 뺀 나머지다. 방출은 `SerializeContext::para_page_num_pos_emitted` 로 같은 규칙을 따르고,
+/// `export-hwpx --verify` 의 기대 IR 은 이 목록의 자리를 걷어낸다(#8306).
+pub(crate) fn hwpx_collapsed_page_number_pos_indices(para: &Paragraph) -> Vec<usize> {
+    para.controls
+        .iter()
+        .enumerate()
+        .filter(|(_, control)| matches!(control, Control::PageNumberPos(_)))
+        .map(|(index, _)| index)
+        .skip(1)
+        .collect()
 }
 
 /// [#5140] 한컴 사용자 정의 기호를 HWPX 표기(평면 15 보충 PUA)로 올린다.
