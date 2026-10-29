@@ -361,6 +361,7 @@ impl TypesetEngine {
                     fragment_row_heights,
                     fragment_block_frames,
                     end_row_owns_stored_frame,
+                    first_fragment_origin,
                 } => lookup_local(*para_index).map(|l| PageItem::PartialTable {
                     para_index: l + 1,
                     control_index: *control_index,
@@ -379,6 +380,7 @@ impl TypesetEngine {
                     fragment_row_heights: fragment_row_heights.clone(),
                     fragment_block_frames: fragment_block_frames.clone(),
                     end_row_owns_stored_frame: *end_row_owns_stored_frame,
+                    first_fragment_origin: *first_fragment_origin,
                 }),
                 PageItem::Shape {
                     para_index,

@@ -1962,6 +1962,7 @@ impl TypesetEngine {
             .max(0.0);
 
         FragmentBudget {
+            accepted_first_fragment_origin,
             fragment_opens_outer_top,
             physical_content_limit,
             caption_extra,

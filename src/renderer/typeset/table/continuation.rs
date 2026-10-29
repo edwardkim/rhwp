@@ -142,6 +142,8 @@ pub(in crate::renderer::typeset) struct BlockTableContinuationPreparedState {
     /// 첫 조각 전에 소비하지 않은 현재 줄 범위는 마지막 조각이 소유한다.
     pub(in crate::renderer::typeset) computed_host_tail:
         Option<crate::renderer::typeset::paragraph::metrics::FormattedHostTail>,
+    /// 첫 저장 host 프레임이 실제 첫 조각의 쪽 원점과 다른 좌표계를 소유한다.
+    pub(in crate::renderer::typeset) displaced_opening_source_frame: bool,
     /// 첫 행을 전혀 소비하지 못해 저장 호스트 쪽을 떠난 실제 전이 사실.
     /// 예산과 출력은 새 쪽에서 문단 앵커 거리를 다시 적용하지 않는다.
     pub(in crate::renderer::typeset) first_anchor_offset_consumed: bool,

@@ -233,6 +233,8 @@ impl TypesetEngine {
         // [Task #1025] split_block_start: 블록 분할 시 연속분 커서 복귀 기록.
         let issue2424_scan_started = profile.enabled.then(std::time::Instant::now);
         let scan_vars = BlockRowScanVars {
+            displaced_opening_source_frame: input.prepared.displaced_opening_source_frame
+                && !is_continuation,
             cursor_row,
             row_count: scan_row_count,
             cs,

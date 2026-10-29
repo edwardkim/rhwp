@@ -33,6 +33,8 @@ pub(in crate::renderer::typeset) struct BlockTableRowScan {
 /// [#2085] 표 행-스캔의 조각-스코프 읽기 스칼라 묶음.
 #[derive(Clone, Copy)]
 pub(in crate::renderer::typeset) struct BlockRowScanVars {
+    /// 첫 조각의 저장 host 프레임이 현재 쪽에 수용되지 않았다.
+    pub(in crate::renderer::typeset) displaced_opening_source_frame: bool,
     pub(in crate::renderer::typeset) cursor_row: usize,
     pub(in crate::renderer::typeset) row_count: usize,
     pub(in crate::renderer::typeset) cs: f64,

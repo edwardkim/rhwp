@@ -7760,6 +7760,7 @@ mod tests {
     fn issue2424_block_table_context_owns_step_lifecycle() {
         let prepared = BlockTableContinuationPreparedState {
             computed_host_tail: None,
+            displaced_opening_source_frame: false,
             first_anchor_offset_consumed: false,
             opening_rowspan_block_cuts_after_first_row: false,
             host_placement: None,
@@ -7996,6 +7997,7 @@ mod tests {
                 fragment_row_heights: None,
                 fragment_block_frames: Vec::new(),
                 end_row_owns_stored_frame: false,
+                first_fragment_origin: None,
             }]),
             page_with_items(vec![PageItem::PartialTable {
                 para_index: 7,
@@ -8015,6 +8017,7 @@ mod tests {
                 fragment_row_heights: None,
                 fragment_block_frames: Vec::new(),
                 end_row_owns_stored_frame: false,
+                first_fragment_origin: None,
             }]),
         ];
 

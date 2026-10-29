@@ -234,6 +234,7 @@ fn fragment(
         fragment_row_heights: None,
         fragment_block_frames: Vec::new(),
         end_row_owns_stored_frame: false,
+        first_fragment_origin: None,
     }];
     LayoutEngine::new(96.0).build_render_tree(
         page,

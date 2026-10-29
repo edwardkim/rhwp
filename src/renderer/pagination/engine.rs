@@ -3032,6 +3032,7 @@ impl Paginator {
                             fragment_row_heights: None,
                             fragment_block_frames: Vec::new(),
                             end_row_owns_stored_frame: false,
+                            first_fragment_origin: None,
                         },
                     )?;
                     // 마지막 부분 표: spacing_after도 포함 (레이아웃과 일치)
@@ -3063,6 +3064,7 @@ impl Paginator {
                     fragment_row_heights: None,
                     fragment_block_frames: Vec::new(),
                     end_row_owns_stored_frame: false,
+                            first_fragment_origin: None,
                 },
             )?;
             st.advance_column_or_new_page_with_storage(storage)?;
