@@ -16270,13 +16270,63 @@
   "securityBotReview": {
     "report": "mydocs/working/task_m100_8174_security_bot_review.md",
     "evidence": "security-review.json",
-    "sha256": "5f8db83af1b255b67bb0e813ff1c0d247146b6c730725a0a4fc730a7d1a7331d",
+    "sha256": "3acae39cf6053e3c63da04e2f991dc8d0e3199f8371eecc2163ac5d7b829f29d",
     "openCodeqlAlerts": 173,
     "sarifFlows": 688,
-    "proposedDisposition": "false positive; pending explicit approval",
+    "proposedDisposition": "false positive; explicitly approved and applied",
     "secretAlert": 1,
-    "secretProposedDisposition": "used_in_tests; pending explicit approval",
+    "secretProposedDisposition": "used_in_tests; explicitly approved and applied",
     "priorDismissalsKept": 29,
-    "dependabotAlertsVerified": false
+    "dependabotAlertsVerified": false,
+    "dispositionApplied": true,
+    "codeqlClassified": 173,
+    "secretResolvedAs": "used_in_tests",
+    "codeqlOpenOnPrMergeRef": 0,
+    "previous29DispositionsUnchanged": true,
+    "ghasSuccess": true,
+    "currentCodeHead": "f1437377645256367fd53bc1eae724a3c4cb5e19"
+  },
+  "finalCodeCI": {
+    "head": "f1437377645256367fd53bc1eae724a3c4cb5e19",
+    "workflows": [
+      {
+        "id": 40821242533,
+        "name": "CI",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/40821242533",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 40821242513,
+        "name": "CodeQL",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/40821242513",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 40821242540,
+        "name": "Render Diff",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/40821242540",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 40821242576,
+        "name": "Adapter inter-diff",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/40821242576",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 40821242569,
+        "name": "Proptest roundtrip",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/40821242569",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "ghasCodeql": "success",
+    "defaultFeatureTestsPassed": 11845,
+    "defaultFeatureTestsSkipped": 45
   }
 }

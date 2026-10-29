@@ -1,8 +1,8 @@
 # #8174 / PR #8360 — 보안 봇 검출 검토
 
-2026-10-29. code head `a89456207de3bd4dacae2ba3ca5531e5e290675a`, 실제 PR merge ref `refs/pull/8360/merge`의 commit `8b3029fe0047342fdf1f42e7739782215969c8a0`을 검토했다. 분석 workflow 성공과 GHAS 보안 판정은 별개다. 현재 GHAS `CodeQL`은 **173 high로 실패**이며 원격 분류는 아직 변경하지 않았다.
+2026-10-29. code head `a89456207de3bd4dacae2ba3ca5531e5e290675a`, 실제 PR merge ref `refs/pull/8360/merge`의 commit `8b3029fe0047342fdf1f42e7739782215969c8a0`을 검토했다. 분석 workflow 성공과 GHAS 보안 판정은 별개다. 검토 시작 시 GHAS `CodeQL`은 **173 high로 실패**했다. 이후 명시 승인으로 분류를 적용했으며 현재 결과는 마지막 절에 기록한다.
 
-| 구분 | 실제 관측 | 로컬 판정과 제안 |
+| 구분 | 최초 검토 시 관측 | 최초 로컬 판정과 제안 |
 | --- | --- | --- |
 | PR CodeQL open | `rust/cleartext-logging` 173건, 모두 같은 `font_families_metric_trusted`에서 시작 | 173건을 `false positive`로 분류하는 안을 제안한다. 승인 전 원격 상태 유지. |
 | Secret scanning #1 | AI provider E2E의 합성 Google 형식 key, `E2E`·`PROVIDERKEY` 표식, 외부 provider 요청 전부 mock 응답 | `used_in_tests` 분류를 제안한다. 실제 키 값·토큰을 문서에 넣거나 실제 provider로 유효성을 시험하지 않았다. |
@@ -41,3 +41,9 @@
 ## 원격 처리 경계
 
 [GitHub 운영 규칙 9.4](../manual/github_operations.md#94-codeql-alert-귀속과-used-in-tests-근거-보존)는 “분류 변경은 O1 보안 metadata mutation이므로 명시 승인 없이 `false positive`, `won't fix` 등으로 재분류하지 않는다”고 정한다. 제안은 **새 173건의 false positive 분류와 합성 fixture 경고 #1의 used_in_tests 처리**다. 기존 29건, 탐지 규칙·설정·권한은 유지한다. 승인 뒤 대상·전후 상태와 exact head의 GHAS를 재조회한다.
+
+## 사용자 승인과 실제 적용 결과
+
+2026-10-29 사용자가 두 분류 변경을 명시 승인했다. 승인한 동일 173개 ID가 새 head `f1437377645256367fd53bc1eae724a3c4cb5e19`의 PR merge ref에도 일치하는지 먼저 확인하고 각 상태를 재조회해 false positive로 분류했다. 합성 key #1도 used_in_tests로 resolved 처리했다. 기존 dismissed 29건의 상태/사유는 전후 동일하며 보안 설정은 변경하지 않았다.
+
+적용 후 PR merge ref의 open CodeQL은 0건, 같은 head의 GHAS CodeQL·Build & Test·모든 check run이 성공했다. 새 Rust analysis `2051308996` / merge commit `bf15ecba43da6139d33e913005678707aabf3126`의 192개 결과와 모든 source/sink/flow 위치는 이전 analysis와 정규화 후 동일하다. artifact 표 번호를 제외하고 대체 flow 나열 순서만 정규화했으며 각 flow 내부 순서는 보존했다. 원시 query 결과를 제거한 source 수정으로 기록하지 않는다.

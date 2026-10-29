@@ -422,3 +422,9 @@ PR code head `a89456207d`의 [일반 CI](https://github.com/edwardkim/rhwp/actio
 하네스가 renderer와 같은 SSR WASM module을 실제 제품 bytes로 초기화하도록 했다. SVG의 실제 CanvasKit image replay를 확인하고 별도의 단색 glyph 대조군으로 기존 `canvas.drawPath` 검사도 유지했다. 기존 resource/hash·손상 이미지·readiness 단언은 제거하지 않았다. 보정한 `npm run e2e:renderer-contract`는 후보와 같은 하네스를 적용한 base 제품 양쪽에서 PASS, `npm run e2e:canvaskit-font-coverage`와 `node --check e2e/renderer-contract.test.mjs`도 PASS다. base 파일은 원래 commit bytes로 복원했다.
 
 변경은 E2E 하네스와 기록뿐이다. 생산 Rust/Studio renderer·생성 JS/WASM·회귀 module·archive payload와 시각 출력은 바뀌지 않았다. 이미 통과한 로컬 Rust·시각·포장 검증은 그 source 동일성을 확인해 유지한다. 새 head의 GitHub CI가 모두 성공한 뒤 self-review/trailing을 작성한다.
+
+### 정확한 code head CI·승인된 보안 분류와 self-review
+
+`f1437377645256367fd53bc1eae724a3c4cb5e19`의 Full CI·CodeQL·Render Diff·Adapter·Proptest가 성공했다. CI 5개 default-feature shard는 총 11,845 PASS·45 skip이며 새 PDF 배치 검사와 page-border도 PASS했다. 사용자 명시 승인으로 CodeQL 173건을 false positive, 합성 E2E key #1을 used_in_tests로 분류한 뒤 GHAS·모든 check run과 기존 29건 보존을 재확인했다. 새/이전 Rust SARIF 192개 결과와 source/sink/flow 위치도 정규화 후 동일하다.
+
+정식 [리뷰](../pr/archives/pr_8360_review.md)·[구현 검토](../pr/archives/pr_8360_review_impl.md)·오늘할일은 이 code head CI 성공 뒤 문서 trailing으로 작성했다. 생산 source/회귀/binding·제품·archive payload는 바꾸지 않았다. trailing head의 실제 CI와 최신 merge tree를 확인한 뒤 승인된 일반 merge·후속 처리를 진행한다.

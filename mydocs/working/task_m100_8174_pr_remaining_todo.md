@@ -175,3 +175,7 @@ S09와 S53의 동일 Studio 비교다. 로딩 중앙값은 소폭 줄었지만 �
 결정·구현 계획·S05–S08 실행 기록과 현재 source의 operator 기본값/수집 코드를 대조하고,
 MD07의 수용과 이 목록을 기록했다. 이 최초 브리핑 시점의 제품 기본값은 400만이었으며, 후속 T01 구현에서 800만으로 바뀌었다.
 이번에는 제품 코드·잠금 의존성·기존 WIP/산출물을 변경하지 않았다. PR도 생성하지 않았다.
+
+## PR #8360 code CI와 self-review
+
+정확한 code head `f1437377645256367fd53bc1eae724a3c4cb5e19`의 Full Actions·GHAS가 성공했고 보안 분류 173+1건의 명시 승인/적용과 기존 29건 보존을 확인했다. [정식 리뷰](../pr/archives/pr_8360_review.md)에 결과를 기록했다. 남은 원격 단계는 문서 trailing CI·일반 merge·devel 동기화·issue/comment·정리이며 실제 registry 게시와 구분한다.
