@@ -1814,3 +1814,9 @@ ignored `tab-fragment-candidate-native-focus-20261029/result.json`에 있다.
 같은 탭 조각 후보의 280쪽 우측 정렬 정지 회귀는 HWP와 HWPX 각 1건,
 총 2건 통과했다. 실행 로그는 ignored
 `tab-fragment-candidate-280-regression-20261029.log`다.
+
+탭 조각 후보의 HWP Native 전 383쪽은 기존 후보와 PNG SHA-256이 모두 같고,
+정밀 raw와 미대응 픽셀 수도 변한 쪽이 없다. 최저 raw는 추가 보정을 제외한
+130쪽 99.96463%다. TSV와 페이지별 비교는 ignored
+`tab-fragment-candidate-native-whole-20261029/handbook-hwp/` 및 그 상위
+`result.json`에 있다. HWPX 전쪽과 fresh WASM은 아직 진행 중이다.
