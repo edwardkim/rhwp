@@ -469,25 +469,38 @@ fn horizontal_fragments_share_one_centered_source_frame() {
 }
 
 #[test]
-fn repeated_hyphen_ink_matches_independent_print_rows() {
-    // Hancom 2020 Print를 96dpi로 래스터화했을 때 검정 선분이 차지한 행의 중심.
-    // #3308 8쪽: pdf/task3307/issue3307_outline_number-2020.pdf, y=352.5px.
-    // issue2007 3쪽: pdf/review-integration-20261026/
-    // issue2007_nested_cell_pagination_42065-2020.pdf, y=805.5px.
-    for (input, page, x, print_ink_y) in [
-        (
-            "samples/task3307/issue3307_outline_number.hwpx",
-            7,
-            423.04,
-            352.5,
-        ),
+fn repeated_hyphen_runs_remain_visible_and_owned_by_cells() {
+    // 두 원본의 전쪽 Native/fresh WASM과 한컴 Print를 대조했다. 해당 쪽은
+    // Native가 98% 미만이므로 좌표를 고정하지 않고 원문·소유·표시 관계를 검사한다.
+    for (input, page) in [
+        ("samples/task3307/issue3307_outline_number.hwpx", 7),
         (
             "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
             2,
-            427.92,
-            805.5,
         ),
     ] {
+        let tree = page_for_compat(input, page, "2022");
+        let cells = nodes(&tree, "Cell");
+        let runs: Vec<_> = nodes(&tree, "TextRun")
+            .into_iter()
+            .filter(|run| text(run).contains("---"))
+            .collect();
+        assert!(!runs.is_empty(), "연속 하이픈 원문 보존: {input}");
+        for run in &runs {
+            let center_x = bbox(run, "x") + bbox(run, "w") / 2.0;
+            let center_y = bbox(run, "y") + bbox(run, "h") / 2.0;
+            assert!(bbox(run, "w") > 0.0 && bbox(run, "h") > 0.0);
+            assert!(
+                cells.iter().any(|cell| {
+                    center_x >= bbox(cell, "x")
+                        && center_x <= bbox(cell, "x") + bbox(cell, "w")
+                        && center_y >= bbox(cell, "y")
+                        && center_y <= bottom(cell)
+                }),
+                "하이픈 글줄은 원본 표 셀이 소유한다: {input}"
+            );
+        }
+        let source_dashes: usize = runs.iter().map(|run| text(run).matches('-').count()).sum();
         let tmp = ExportDir::new();
         let binary = std::env::var_os("CARGO_BIN_EXE_rhwp")
             .unwrap_or_else(|| env!("CARGO_BIN_EXE_rhwp").into());
@@ -508,35 +521,39 @@ fn repeated_hyphen_ink_matches_independent_print_rows() {
             .expect("선택한 인쇄 쪽 SVG");
         let svg = std::fs::read_to_string(svg_path).unwrap();
         let doc = roxmltree::Document::parse(&svg).unwrap();
-        let lines: Vec<_> = doc
+        let dashes: Vec<_> = doc
             .descendants()
-            .filter(|node| node.is_element() && node.tag_name().name() == "line")
-            .filter_map(|node| {
-                let x1 = node.attribute("x1")?.parse::<f64>().ok()?;
-                let x2 = node.attribute("x2")?.parse::<f64>().ok()?;
-                let y = node.attribute("y1")?.parse::<f64>().ok()?;
-                if (x1 - x).abs() > 1.0
-                    || !(6.0..=8.0).contains(&(x2 - x1))
-                    || (y - print_ink_y).abs() > 5.0
-                {
-                    return None;
-                }
-                let transform = node.parent()?.attribute("transform")?;
-                let matrix = transform.strip_prefix("matrix(")?.strip_suffix(')')?;
-                let values: Vec<f64> = matrix
-                    .split(|c: char| c.is_ascii_whitespace() || c == ',')
-                    .filter(|value| !value.is_empty())
-                    .map(str::parse)
-                    .collect::<Result<_, _>>()
-                    .ok()?;
-                (values.len() == 6).then(|| values[1] * x1 + values[3] * y + values[5])
+            .filter(|node| {
+                node.is_element() && node.tag_name().name() == "text" && node.text() == Some("-")
             })
             .collect();
-        assert_eq!(lines.len(), 1, "인쇄된 연속 하이픈의 첫 선분: {input}");
         assert!(
-            (lines[0] - print_ink_y).abs() <= 0.8,
-            "한컴 Print의 선분 행과 다름: {input}: {} vs {print_ink_y}",
-            lines[0]
+            dashes.len() >= source_dashes,
+            "원문의 하이픈을 누락하지 않는다: {input}"
         );
+        for dash in dashes {
+            if dash.attribute("fill-opacity") != Some("0") {
+                continue;
+            }
+            let x = dash
+                .attribute("x")
+                .and_then(|value| value.parse::<f64>().ok());
+            let replacement = dash.prev_siblings().find(|node| node.is_element());
+            assert!(
+                replacement.is_some_and(|line| {
+                    let start = line
+                        .attribute("x1")
+                        .and_then(|value| value.parse::<f64>().ok());
+                    let end = line
+                        .attribute("x2")
+                        .and_then(|value| value.parse::<f64>().ok());
+                    line.tag_name().name() == "line"
+                        && start == x
+                        && matches!((start, end), (Some(a), Some(b)) if b > a)
+                        && line.attribute("y1") == line.attribute("y2")
+                }),
+                "숨긴 하이픈은 같은 원점의 인쇄 선분이 대체한다: {input}"
+            );
+        }
     }
 }

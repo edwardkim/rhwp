@@ -298,6 +298,32 @@ class RasterDispatchTests(unittest.TestCase):
 
 
 class EmbeddedFontCatalogueTests(unittest.TestCase):
+    def test_post_glyph_count_repair_preserves_rendering_tables(self):
+        from fontTools.ttLib import TTFont
+        from fontTools.ttLib.sfnt import SFNTWriter
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            original = Path(__file__).parents[2] / 'tests/fixtures/fonts/RHWPHostFixture-Regular.ttf'
+            source = root / 'broken.ttf'
+            with TTFont(original, lazy=True) as font, source.open('wb') as output:
+                tags = sorted(font.reader.keys())
+                writer = SFNTWriter(output, len(tags), font.sfntVersion)
+                for tag in tags:
+                    value = font.reader[tag]
+                    if tag == 'post':
+                        value = value[:32] + (font['maxp'].numGlyphs - 1).to_bytes(2, 'big') + value[34:]
+                    writer[tag] = value
+                writer.close()
+            adapter = SimpleNamespace(resolve_input_path=lambda base, path: Path(path),
+                sha256_file=lambda path: hashlib.sha256(Path(path).read_bytes()).hexdigest(),
+                write_json_atomic=lambda path, value: Path(path).write_text(json.dumps(value)))
+            records = json.loads(png.font_catalog(adapter, root, [source], root).read_text())['faces']
+            self.assertIn('post-format2-glyph-count', records[0]['repairs'])
+            with TTFont(source, lazy=True) as before, TTFont(records[0]['path'], lazy=True) as after:
+                self.assertEqual(int.from_bytes(after.reader['post'][32:34], 'big'), after['maxp'].numGlyphs)
+                for tag in ('glyf', 'hmtx', 'cmap'):
+                    self.assertEqual(before.reader[tag], after.reader[tag], tag)
+
     def test_catalog_marks_cff_from_actual_program_for_cached_and_new_faces(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
