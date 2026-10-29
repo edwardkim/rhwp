@@ -1,4 +1,5 @@
 //! 관계형·고정형: 독립 한컴 2024 Print의 팔레트, 소유·순서와 그림 자원을 검사한다.
+//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T16:28:28+09:00 (4be5621e06).
 //! 2026-10-19 측정 raw(96dpi, PDFium, 2px): 1쪽 Native 99.98227% / fresh WASM 99.98255%.
 //! 전 1쪽 최저 Native 99.98227% / fresh WASM 99.98255%; 현재 head 재측정 전이다.
 //! 근거: mydocs/pr/assets/issue7642/bitmap_visible_palette_20261019/README.md.

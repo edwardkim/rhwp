@@ -1,4 +1,5 @@
 //! 관계형: 글꼴 결정 추적과 공개 API 결과 계약.
+//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T16:49:36+09:00 (caa53280c1).
 //! 원본 소유·API 결과·왕복 보존을 검사하며 raw 일치율 측정은 이 검사의 대상이 아니다.
 //! 근거: mydocs/tech/investigations/issue-4961/font_decision_trace_e2e.json.
 use rhwp::document_core::DocumentCore;
