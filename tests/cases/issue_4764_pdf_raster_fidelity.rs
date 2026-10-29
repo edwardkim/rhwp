@@ -1,5 +1,5 @@
 //! 관계형·고정형: 합성 PDF·래스터의 분류와 페이지 격리 계약.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T16:48:38+09:00 (0942e59bc7).
+//! 주석 갱신: 2026-10-30T05:03:40+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
 //! 실제 HWP/HWPX를 렌더링하거나 독립 Print PDF와 비교하는 검사가 아니다.
 //! raw 일치율·Native/fresh WASM 쪽별 측정과 DPI는 해당하지 않는다.
 //! 활성 corpus 목록 185쪽과 쪽별 합성 격리 사례를 사용하며, 실제 출력의 피델리티를 증명하지 않는다.
@@ -453,7 +453,6 @@ fn issue_4764_pdf_page_manifest_builds() {
     let text = std::fs::read_to_string(fixture("pdf_pages.tsv")).unwrap();
     let expected: HashSet<_> = load_all_records()
         .into_iter()
-        .filter(|row| row.page_index.is_multiple_of(23))
         .map(|row| (row.corpus, row.page_index))
         .collect();
     assert!(

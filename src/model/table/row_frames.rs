@@ -72,8 +72,10 @@ impl Table {
                 }
                 // 병합 셀은 열 코어뿐 아니라 그 사이의 원본 간격도 점유한다.
                 // 이 간격을 마지막 셀에 다시 몰면 같은 걸침 셀의 시작이 행마다 달라진다.
-                let width_hu =
-                    i64::from(cell.width) + self.inner_cell_spacing_hu(usize::from(cell.col_span));
+                // 안 여백과 최소 내용 폭을 포함한 실제 폭이 선언된 표 폭을 넘으면
+                // 저장 행을 완결 프레임으로 수용하지 않고 기존 공통 그리드에 맡긴다.
+                let width_hu = i64::from(self.physical_cell_width_hu(cell))
+                    + self.inner_cell_spacing_hu(usize::from(cell.col_span));
                 frames.push(RowCellFrame {
                     cell_index: index,
                     start_hu: cursor,
