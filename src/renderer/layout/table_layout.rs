@@ -2873,11 +2873,12 @@ impl LayoutEngine {
         row: usize,
         styles: &ResolvedStyleSet,
     ) -> bool {
-        self.native_stored_table_has_fragment_frames(table)
+        // 다른 행의 정규화로 표 전체가 재조판 표시되더라도 이 행의 원본 프레임은
+        // 보존될 수 있다. 행을 덮는 셀이나 앞 흐름이 바뀐 경우에는 수용하지 않는다.
+        !self.render_normalization.borrow().row_frame_reflowed(table, row)
             && table.cells.iter().any(|cell| {
                 usize::from(cell.row) == row
-                    && cell.row_span == 1
-                    && stored_text_paragraphs_share_vpos_frame(cell, styles, self.dpi)
+                    && self.original_stored_text_frame_cell(cell, table, styles)
                     && stored_plain_text_cell_has_frame_reset(cell, styles, self.dpi)
             })
     }
