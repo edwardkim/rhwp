@@ -749,12 +749,20 @@ const vite = await createServer({
 });
 let CanvasKitLayerRendererRuntime;
 let glyphOutlinePayloadResourceKeyRuntime;
+let svgGlyphRasterAvailable = false;
 try {
   ({ CanvasKitLayerRenderer: CanvasKitLayerRendererRuntime } = await vite.ssrLoadModule(
     '/src/view/canvaskit-renderer.ts',
   ));
   ({ glyphOutlinePayloadResourceKey: glyphOutlinePayloadResourceKeyRuntime }
     = await vite.ssrLoadModule('/src/view/glyph-outline-payload-status.ts'));
+  const wasm = await vite.ssrLoadModule('@wasm/rhwp.js');
+  svgGlyphRasterAvailable = typeof wasm.prepareStaticSvgRaster === 'function';
+  if (svgGlyphRasterAvailable) {
+    // SSR loads the wrapper without the browser application's WASM startup.
+    // Initialize that same module before exercising the real SVG raster path.
+    wasm.initSync({ module: fs.readFileSync(path.join(repoRoot, 'pkg/rhwp_bg.wasm')) });
+  }
 } finally {
   await vite.close();
 }
@@ -1766,6 +1774,13 @@ function runExecutableFontNativeGlyphReplay() {
     setFillType() {},
     delete() { events.push('path.delete'); },
   });
+  class FakePathBuilder {
+    moveTo() {}
+    lineTo() {}
+    close() {}
+    detach() { return fakePath(); }
+    delete() {}
+  }
   const canvasKit = {
     MakeImageFromEncoded(bytes) {
       events.push(`image.decode:${bytes.byteLength}`);
@@ -1777,6 +1792,7 @@ function runExecutableFontNativeGlyphReplay() {
         return fakePath();
       },
     },
+    PathBuilder: FakePathBuilder,
     Paint: FakePaint,
     PaintStyle: { Fill: 0, Stroke: 1 },
     FillType: { EvenOdd: 0, Winding: 1 },
@@ -1876,7 +1892,30 @@ function runExecutableFontNativeGlyphReplay() {
   };
   svg.payloadResourceKey = `${glyphOutlinePayloadResourceKeyRuntime(svg)}:resource:${svgResourceKey}`;
   assert.equal(renderer.glyphOutlineVariantReplayable(svg), true);
+  const svgImageDrawsBefore = events.filter(event => event === 'canvas.drawImageRect').length;
   renderer.renderGlyphOutline(canvas, svg);
+  if (svgGlyphRasterAvailable) {
+    assert.equal(
+      events.filter(event => event === 'canvas.drawImageRect').length,
+      svgImageDrawsBefore + 1,
+      'the initialized SVG raster API must reach CanvasKit image replay',
+    );
+  }
+
+  // Keep the path replay contract independently of SVG's raster implementation.
+  renderer.renderGlyphOutline(canvas, {
+    type: 'glyphOutline',
+    bbox: { x: 0, y: 0, width: 16, height: 16 },
+    payloadKind: 'monochromeFill',
+    placement: { runToPage: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 } },
+    paths: [{ commands: [
+      { type: 'moveTo', x: 0, y: 0 },
+      { type: 'lineTo', x: 16, y: 0 },
+      { type: 'lineTo', x: 16, y: 16 },
+      { type: 'closePath' },
+    ] }],
+    diagnostics: { strictVisualEligible: true },
+  });
 
   const corrupt = { ...bitmap, payloadResourceKey: 'glyphPayload:bitmapGlyph:resource:img:missing' };
   assert.equal(renderer.glyphOutlineVariantReplayable(corrupt), false);

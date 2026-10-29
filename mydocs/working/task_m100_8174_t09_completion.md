@@ -411,3 +411,14 @@ API의 base/후보 305개 단언·44개 기록과 editor/Studio의 현재 검증
 추가 성능 관측은 로컬 글꼴을 준비한 115쪽 HWP/HWPX 16회를 완료했다. 3회 중앙값에서 UI 열기는 약 12.26%/17.52% 짧았고 편집 응답은 혼합 결과다. HWPX IME 약 201ms와 두 번째 rAF 약 0.61초는 양쪽에 남는다. 415쪽은 기준과 후보 모두 폰트 준비 뒤 초기 화면에서 완료 지연을 관측했다. 잘못 전달한 Vite 설정과 공유 캐시 504는 보정했지만 이 조건도 끝까지 완료하지 못했으므로 성능 미판정이다. 시간 제한·정식 회귀 기대값을 바꾸거나 24회 성능 통과로 기록하지 않는다. 이 추가 관측은 정식 T09 기능/시각/포장 결과와 구분한다.
 
 [완료 보고](../report/task_m100_8174_report.md)·[원본 TSV와 PNG](../pr/assets/issue_8174/t09/README.md)·[비용 관측](../pr/assets/issue_8174/t09/performance.json)에 최종 source와 한계를 연결했다. J01–J05의 필수 로컬 검증을 마쳤으며 다음은 승인된 J06 Open PR·code CI·self-review/trailing CI·일반 merge·후속 처리다.
+
+
+### PR #8360 Render Diff의 SSR 하네스 보정
+
+PR code head `a89456207d`의 [일반 CI](https://github.com/edwardkim/rhwp/actions/runs/40816876944)·CodeQL·Adapter·Proptest는 성공했다. Archive A에서는 로컬 승인 제외였던 page-border 검사도 실제 PASS했다. [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/40816877007)는 이미지 비교 전 `e2e:renderer-contract`의 SVG glyph replayability 단언에서 실패했다.
+
+기존 glyph 계약 `d84eaa6f70e` → resource proof 보정 `23a8952efc8` → 로컬 glyph 하네스 보정 `e164f0fbab`와 고정 base `f291d772a1`을 추적했다. 같은 계약은 base에서 PASS였고, S04 `101fed8737`가 공통 SVG raster API를 연결한 후보에서 FAIL이었다. Vite SSR은 새 API wrapper를 불러오지만 일반 browser startup의 WASM 초기화를 실행하지 않는다. 같은 SVG를 실제 초기화된 제품으로 처리하면 PNG 94 bytes·예약 1,024 bytes로 정상 생성됐다.
+
+하네스가 renderer와 같은 SSR WASM module을 실제 제품 bytes로 초기화하도록 했다. SVG의 실제 CanvasKit image replay를 확인하고 별도의 단색 glyph 대조군으로 기존 `canvas.drawPath` 검사도 유지했다. 기존 resource/hash·손상 이미지·readiness 단언은 제거하지 않았다. 보정한 `npm run e2e:renderer-contract`는 후보와 같은 하네스를 적용한 base 제품 양쪽에서 PASS, `npm run e2e:canvaskit-font-coverage`와 `node --check e2e/renderer-contract.test.mjs`도 PASS다. base 파일은 원래 commit bytes로 복원했다.
+
+변경은 E2E 하네스와 기록뿐이다. 생산 Rust/Studio renderer·생성 JS/WASM·회귀 module·archive payload와 시각 출력은 바뀌지 않았다. 이미 통과한 로컬 Rust·시각·포장 검증은 그 source 동일성을 확인해 유지한다. 새 head의 GitHub CI가 모두 성공한 뒤 self-review/trailing을 작성한다.

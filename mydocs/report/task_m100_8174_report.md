@@ -1,6 +1,6 @@
 # #8174 — 0.9.0 패키징·기본 기능·자원 정책 보고
 
-2026-10-29. T01–T08을 마쳤고, T09의 필수 기능·시각·포장 검증은 최신 devel `f291d772a105d46a4d4d7f40ed13e82391ebdc1a`의 실제 코드까지 통합한 후보에서 완료했다. 추가 다페이지 성능 관측의 415쪽 미판정은 아래에 구분한다. 현재 생산 Rust는 `fa254efdfe9e33c4dcaf54c0ac3e534819111a9e`, PDF 배치 회귀와 생성 binding 기록은 `a4111b02fb`다. 이전 `237ded61b4` 후보의 통과를 현재 후보의 통과로 대신하지 않는다. PR 생성·push·merge·crates.io 업로드는 아직 실행하지 않았다.
+2026-10-29. T01–T08을 마쳤고, T09의 필수 기능·시각·포장 검증은 최신 devel `f291d772a105d46a4d4d7f40ed13e82391ebdc1a`의 실제 코드까지 통합한 후보에서 완료했다. 추가 다페이지 성능 관측의 415쪽 미판정은 아래에 구분한다. 현재 생산 Rust는 `fa254efdfe9e33c4dcaf54c0ac3e534819111a9e`, PDF 배치 회귀와 생성 binding 기록은 `a4111b02fb`다. 이전 `237ded61b4` 후보의 통과를 현재 후보의 통과로 대신하지 않는다. [PR #8360](https://github.com/edwardkim/rhwp/pull/8360)을 Open으로 생성했다. 초기 head의 일반 CI·CodeQL·Adapter·Proptest는 성공했고 Render Diff의 SSR 하네스 초기화 누락을 보정했다. 새 head CI 확인과 self-review·merge가 남으며 crates.io 업로드는 실행하지 않았다.
 
 ## 구현 범위
 
@@ -77,3 +77,7 @@ PDF 2010 fidelity 15쪽의 두 줄 라벨 `[A]`는 닫는 괄호의 렌더 트�
 ## 다음 절차
 
 T09 J01–J05의 필수 로컬 게이트와 공개 증적을 확정했다. 추가 성능 관측에서 완료하지 못한 415쪽 UI를 통과로 표시하지 않았으며 제품의 보편적인 성능 개선을 주장하지 않는다. 승인 범위에 따라 Open PR을 만들고 정확한 code head GitHub CI 성공 뒤 archive self-review·오늘할일을 문서 trailing으로 반영한다. 그 head의 CI와 최신 base 병합 가능성을 확인해 일반 merge·후속 동기화/issue/comment/정리까지 진행한다. registry 게시·owner 변경·태그는 실행하지 않는다. 상세 이력은 [T09 작업 기록](../working/task_m100_8174_t09_completion.md)을 따른다.
+
+Render Diff 보정은 [T09 기록](../working/task_m100_8174_t09_completion.md#pr-8360-render-diff의-ssr-하네스-보정)을 따른다. 생산 renderer를 바꾸지 않고 실제 WASM 초기화·SVG image replay와 단색 glyph path 대조를 하네스에 연결했다. 기존 검사는 유지했고 후보/기준 제품의 동일 하네스 및 CanvasKit 글꼴 coverage를 통과했다.
+
+[보안 봇 검토](../working/task_m100_8174_security_bot_review.md): 분석 workflow 성공과 별개로 GHAS는 173 high로 실패했다. 모든 source는 글꼴 메트릭 `Vec<bool>`이어서 오탐 분류를 제안했고, 합성 provider key #1도 테스트 fixture로 확인했다. 명시 승인 전 분류·설정은 변경하지 않았으며 보안 check 해소 전 merge를 보류한다.

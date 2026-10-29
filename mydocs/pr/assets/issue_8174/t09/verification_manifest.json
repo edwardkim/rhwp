@@ -16245,5 +16245,38 @@
       "bytes": 1005,
       "sha256": "4f148ce11536fdcbb8faeca5d0ab816d07e3f08a9a8e9f648bf8ff32d8a14c35"
     }
+  },
+  "rendererContractCorrection": {
+    "initialHead": "a89456207de3bd4dacae2ba3ca5531e5e290675a",
+    "failedRun": "https://github.com/edwardkim/rhwp/actions/runs/40816877007",
+    "failure": "renderer-contract SVG glyph replay used an uninitialized WASM wrapper in Vite SSR",
+    "baseSource": "f291d772a105d46a4d4d7f40ed13e82391ebdc1a",
+    "originCommits": [
+      "d84eaa6f70e",
+      "23a8952efc8",
+      "e164f0fbab"
+    ],
+    "newRasterIntegration": "101fed873791a343788e658ba53e672be6256bf0",
+    "beforeCandidate": "FAIL at SVG replayability",
+    "beforeBase": "PASS",
+    "afterCandidate": "PASS",
+    "afterSameHarnessWithBaseProduct": "PASS",
+    "fontCoverage": "PASS",
+    "existingAssertionsRemoved": false,
+    "productionSourceChanged": false,
+    "nativeWasmProductsChanged": false,
+    "harnessSha256": "a14551dbce33014c092745bd00999bfe1dc1285d9a5f7f2835dec402e91976f5"
+  },
+  "securityBotReview": {
+    "report": "mydocs/working/task_m100_8174_security_bot_review.md",
+    "evidence": "security-review.json",
+    "sha256": "5f8db83af1b255b67bb0e813ff1c0d247146b6c730725a0a4fc730a7d1a7331d",
+    "openCodeqlAlerts": 173,
+    "sarifFlows": 688,
+    "proposedDisposition": "false positive; pending explicit approval",
+    "secretAlert": 1,
+    "secretProposedDisposition": "used_in_tests; pending explicit approval",
+    "priorDismissalsKept": 29,
+    "dependabotAlertsVerified": false
   }
 }
