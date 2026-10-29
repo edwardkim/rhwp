@@ -1,25 +1,31 @@
 # #8079 굵은 글자 보통 면 전진폭 — PR 시각 증적
 
-- code head: `b0405a2a845a93b985f4db2826c7a3c5b266d5b9` (branch `fix/8079-bold-regular-advance-devel`)
-- base: `stream/devel` `2e087a5b4bc1515ad877e8020b30114639a59392`
-- 규칙 1(`694bad7c1`·`48fc85794`): 굵은 TrueType 글자는 Bold 면으로 그리되 전진폭은 같은 family 보통 면 값(선언 HFT 제외).
-- 규칙 2(`c842b9fa2`): 줄 끝 공백(문단 끝·명시 개행 포함)은 줄 맞춤 압축 판정에서 뺀다.
-- 규칙 3(`b0405a2a8`): `고딕` HFT 프로그램의 ASCII는 반각(0.5em) 고정폭으로 잰다.
+- code head: `bba7229a1b` (branch `fix/8079-bold-regular-advance-devel`)
+- base: `stream/devel` `f291d772a1`
+- 규칙 1(`be034df9b6`·`7d78d7ea6b`·`bba7229a1b`): 굵은 TrueType 글자는 Bold 면으로 그리되 전진폭은
+  같은 family 보통 면 값(선언 HFT 제외).
+- 이전 head 의 규칙 2(줄 끝 공백 압축)·규칙 3(`고딕` HFT ASCII 반각)은 뺐다. devel 이 같은 결함을 이미
+  고쳤고, 두 규칙의 검사는 devel `f291d772a1` 에서 이 PR 없이 통과한다.
+  - 규칙 2: #8188 `17225375ff` 의 `paragraph_layout/trailing_space_fit.rs`(`tail_only_overflow`).
+  - 규칙 3: #8191 `6097253468` 의 `font_metrics_overlays.rs::declared_original_glyph_advance_em`
+    (`고딕`·`명조`·`산세리프` 선언 HFT 의 ASCII 0.5em).
 - Native: `cargo build --release --locked --features native-skia --bin rhwp`
-  (`CARGO_TARGET_DIR=target/pr-review`), head binary sha256
-  `b8c7828a781f742afe4b019a74247faadba26fcd41434b17422df5499e6fda02`;
-  devel binary(같은 명령, `2e087a5b4`) `0b3d676b55d4f2b88568cd624e71ac1de5bdbb5c5606c0a3fcae882bbcc84cd2`.
-- fresh WASM: 저장소 루트에서 `CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg`,
-  `pkg/rhwp_bg.wasm` = `rhwp-studio/public/rhwp_bg.wasm` sha256
-  `b50e358cc5eedb495f4a1a9929ed15af2a9ef6d1d8861aa5e565f10b2f5424de`.
+  (`--target-dir target/pr-review`), head binary sha256
+  `ff5a59258798da8b756e42f66762cdaeaa4c8d32d3dab102a201b20ac1a39507`,
+  devel binary(같은 명령, `f291d772a1`) `b70945001cc946c277a835ed1b0e4b944106f31644c4b48d4dea7e1a90600046`.
+- fresh WASM: 저장소 루트에서 `CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg`.
+  head `pkg/rhwp_bg.wasm` = `rhwp-studio/public/rhwp_bg.wasm` sha256
+  `0556961a30acb3ceea54a37db1469a271fa0fccede411cf5184ae085fb51d80a`,
+  devel `4aab4720df9490e433e6c40e667c6bc90df1d8c128f78caeff824aec4b29f033`.
 
 ## 방법
 
 `scripts/visual_sweep.py`, 96dpi, Print profile, `--rasterizer png`. compat는 기준 PDF 세대
 (2020 또는 연도 없음 → `2022`, 2024 → `2024`). 판정값 `silhouette_raw_match_percent`
 (내용 마스크 232 이진화, 2px 이웃 관용). 색상 경계 보정값은 진단값이며 판정에 쓰지 않았다.
-글꼴: 문서별로 쓰는 face만 모은 디렉터리(각 6.2MiB 이하)를 `RHWP_FONT_PATH` 첫 항목에 두고
-기본 경로(`ttfs/hwp`·`ttfs/windows`·KoPub)를 뒤에 붙였다. Native·WASM·devel 모두 같다.
+글꼴: 문서 SVG 가 쓰는 face 의 파일을 모은 디렉터리(64MiB 미만, 글자 run 의 첫 family 우선)를
+`RHWP_FONT_PATH` 첫 항목에 두고 기본 경로(`ttfs/hwp`·`ttfs/windows`·KoPub)를 뒤에 붙였다.
+Native·WASM·devel 모두 같다.
 
 ```bash
 RHWP_FONT_PATH=<문서별 글꼴>:<기본 경로> python3 scripts/visual_sweep.py --dpi 96 --rhwp-bin <rhwp> \
@@ -30,67 +36,48 @@ RHWP_FONT_PATH=<같음> python3 scripts/visual_sweep.py --dpi 96 --rhwp-bin <hea
 
 ## 대표 쪽 (raw 2px 실루엣, %)
 
-| key | 입력 | 기준 PDF | 쪽 | devel Native | head Native | head WASM | 규칙 |
-| --- | --- | --- | ---: | ---: | ---: | ---: | --- |
-| oss | `samples/2026_oss_rst.hwp` | `pdf/hwpx/2026_oss_rst.pdf` | 1 | 98.71 | 99.91 | 100.00 | 1 |
-| d1613 | `samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp` | `pdf/1613000-202200037-air-traffic-controller-cbta-2020.pdf` | 42 | 95.22 | 97.32 | 97.38 | 1 |
-| hs2 | `samples/hwpx_sample2.hwp` | `pdf/hwpx_sample2-hwp-2024.pdf` | 2 | 99.85 | 99.98 | 99.99 | 1+2 |
-| air | `samples/issue6793/1611000-201000141-small-air-transport-study.hwp` | `pdf/1611000-201000141-small-air-transport-study-2020.pdf` | 5 | 98.54 | 99.82 | 99.92 | 2 |
-| h3s11 | `samples/hwp3-sample11-hwpx.hwpx` | `pdf/hwp3-sample11-hwpx-hwpx-2020.pdf` | 66 | 90.48 | 95.81 | 94.99 | 2+3 |
-| synth | `samples/issue6882/synth_cell_enter_table_growth.hwp` | `pdf/synth_cell_enter_table_growth-2020.pdf` | 1 | 99.80 | 99.80 | 99.81 | 3 |
-| k113 (내림) | `samples/issue6551/113424_evaluation_guideline.hwpx` | `pdf/113424_evaluation_guideline-2024.pdf` | 36 | 96.64 | 96.15 | 96.24 | 2 |
-| so8 (내림) | `samples/SO-SUEOP.hwpx` | `pdf/SO-SUEOP-hwpx-2024.pdf` | 8 | 97.57 | 96.95 | 97.01 | 3 |
+| key | 입력 | 기준 PDF | 쪽 | devel N | head N | devel W | head W |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: |
+| oss | `samples/2026_oss_rst.hwp` | `pdf/hwpx/2026_oss_rst.pdf` | 1 | 98.70 | 99.93 | 98.73 | 100.00 |
+| d1613 | `samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp` | `pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf` | 42 | 96.09 | 98.23 | 95.97 | 98.21 |
+| hs2 | `samples/hwpx_sample2.hwp` | `pdf/hwpx_sample2-hwp-2024.pdf` | 2 | 99.45 | 99.84 | 99.44 | 99.82 |
+| k113 | `samples/issue6551/113424_evaluation_guideline.hwpx` | `pdf/113424_evaluation_guideline-2024.pdf` | 5 | 99.19 | 99.35 | 98.87 | 99.06 |
 
-`pr_review_gate`([gate.json](gate.json)): 8쪽 × devel·head Native·head WASM 24회 모두 `passed`,
-`page_count_mismatch=false`.
+`pr_review_gate`([gate.json](gate.json)): 4쪽 × devel Native·head Native·head WASM 12회 모두 `passed`,
+`page_count_mismatch=false`. 그림 이름은 `devel-*`(devel Native), `native-*`, `wasm-*`(head)이다.
 
-- hs2 p2: 첫 줄 `입주자 모집공고일(2026.05.29.) 현재 …`가 PDF와 겹친다.
-- air p5: `◦ 해외 소형 항공운송사업 운영 실태 및 발전 가능성 조사 ` 줄의 한글 전진이 20.00px로 PDF(20.00px)와 같다.
-- h3s11 p66: `A.V.Aho, P.J. Weinberger, B. Kernigham` 영문이 PDF와 같은 0.5em 간격이다.
-- synth p1: `*` 전진 6.03px(PDF 6.08px, 수정 전 7.00px).
-- k113 p36: 압축을 없애자 글자 간격은 PDF와 같아졌지만, 내어쓰기 문단의 줄 시작이 PDF보다 5.2px 오른쪽이다
-  (기존 차이). 종전 압축이 그 차이를 일부 가렸다.
-- so8 p8: 굵은·기울인·밑줄 `고딕` HFT(장평 95%, 자간 −1%) `일본 헌병`의 한글에 HFT 굵기 추가 전진(0.05em)이
-  붙는데, 한컴 PDF에는 없다(12.62px). 같은 `고딕` HFT 굵게가 hwp3-sample4-hwp5 3쪽에서는 1.055em이고,
-  한양견명조 굵은·기울임(child_policy 5쪽)도 추가 전진이 있다. 이 반례를 가르는 조건은 찾지 못했다.
+- oss p1: 본문 속 굵은 맑은 고딕 숫자·영문(`~2026. 8. 27.(목) 18:00`, `HWP(HWPX)`, `10pt`)과 그 뒤 글자가
+  PDF 와 같은 위치다(devel 은 Bold 폭으로 뒤가 밀린다).
+- d1613 p42: 굵은 머리말 `제2장 ICAO가 제시하는 CBTA의 …` 줄 길이가 PDF 와 같아졌다(devel 은 겹침 윤곽).
+- hs2 p2: 첫 줄 `입주자 모집공고일(2026.05.29.) 현재 …`의 줄 끝이 PDF 와 같다.
+- 본문 명조류의 굵기·글자 모양 차이는 devel 과 같은 기존 글꼴 차이다.
 
 ## 바뀐 쪽 전체
 
-samples 1,167개 SVG md5 A/B (devel → head): 쪽수가 맞는 한컴 PDF가 있는 쪽을 Native로 채점했다
-([tsv/changed-devel-vs-head-native.tsv](tsv/changed-devel-vs-head-native.tsv)).
+samples 1,378개 SVG md5 A/B (devel `f291d772a1` → head): 163문서 1,199쪽이 바뀌었고 쪽수가 바뀐 문서는 없다.
+쪽수가 맞는 한컴 PDF 가 있는 115문서 1,042쪽을 Native·WASM 의 devel·head 로 채점했다
+([tsv/changed-devel-vs-head.tsv](tsv/changed-devel-vs-head.tsv)). 48문서는 쪽수가 맞는 PDF 가 없다.
 
-| 경로 | 채점 쪽 | 0.1%p 이상 오름 | 0.1%p 이상 내림 | 새로 90% 미만 | 새로 90% 이상 | 90% 미만 devel → head |
-| --- | ---: | ---: | ---: | ---: | ---: | --- |
-| Native devel→head | 1,890 | 647 | 57 | 0 | 185 | 386 → 201 |
-| WASM devel→규칙 1 | 1,039 | 120 | 8 | 0 | 0 | |
-| WASM 규칙 1→규칙 2 | 606 | 270 | 6 | 0 | 0 | |
-| WASM 규칙 2→규칙 3 | 318 | 256 | 49 | 0 | 186 | |
+| 경로 | 채점 쪽 | 0.1%p 이상 오름 | 0.1%p 이상 내림 | 새로 90% 미만 | 90% 미만 devel → head |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Native | 1,042 | 140 | 1 | 0 | 39 → 39 |
+| fresh WASM | 1,042 | 136 | 3 | 0 | 38 → 38 |
 
-- WASM은 규칙별 단계로 쟀다(`tsv/step1-*`, `tsv/step2-*`, `tsv/step3-*`).
-- Native에서 0.3%p 이상 내린 쪽:
-  - 90% 이상에 남은 쪽은 so8 p8, k113 p36, 1341000 연구보고서 p77(97.32→97.01) 셋이다.
-  - 나머지 46쪽은 hwp3-sample11 HWP5·HWPX(같은 문서 두 저장본)의 쪽이다. devel에서도 90% 미만이었다.
-    영문 폭이 PDF와 같아지면서, 다른 원인의 줄 시작 차이를 넓은 영문이 가리던 효과가 사라졌다.
-  - hwp3-sample11-hwpx 전체로는 90% 미만이 137쪽 → 45쪽이다.
-- WASM 측정 실패 문서(devel·head 공통): `issue4090/156492236_규제샌드박스_min.hwpx`(그림 decode),
-  `issue6300/trade_report_forced_break_object.hwp`(부분 글꼴).
+- 0.1%p 이상 내린 쪽은 모두 devel 부터 90% 미만인 쪽이고 폭은 −0.14%p 이하다:
+  `issue6879/156767332-broadcast-revenue-attachment.hwp` p8(N 43.01→42.87, W 43.03→42.91)·p4(W 72.74→72.62),
+  `issue6044/156513948.hwpx` p30(W 85.62→85.50).
+- 이전 head 에서 규칙 2·3 으로 바뀌던 1611000-201000141, synth_cell_enter_table_growth, hwp3-sample11,
+  SO-SUEOP 은 이제 SVG 가 devel 과 같다.
+- 80168, 1342000 은 SVG 가 devel 과 같다. 1130000 은 p3 만 바뀐다(N 94.55→94.55, W 94.63→94.63).
 
 ## 정식 검사 fixture 전쪽
 
-- 2026_oss_rst HWP·HWPX(규칙 1): 6쪽 head 최저 Native 99.91 / WASM 100.00.
-- issue5169(HFT 반례): 6쪽 head 최저 Native 98.23 / WASM 99.38.
-- 1611000-201000141(규칙 2): 12쪽 head 최저 Native 98.39 / WASM 98.50.
-- synth_cell_enter_table_growth(규칙 3): 2쪽 head 최저 Native 99.80 / WASM 99.81.
+`tsv/*full-{native,wasm}.tsv`, head.
+- 2026_oss_rst HWP·HWPX: 6쪽씩, 최저 Native 99.92 / WASM 100.00.
+- issue5169(HFT 반례, `pdf/issue7674/issue5169_viewtext_changetracking-2020.pdf`): 6쪽, 최저 Native 99.39 / WASM 99.48.
 
 ## 정본 전수 (규칙 1 근거)
 
 [census-malgun-bold-digit-ascii.txt](census-malgun-bold-digit-ascii.txt): 굵은 맑은 고딕을 담은 한컴 PDF 222개를 대상으로 했다.
 - 방법: 글자 원점(pdfium)으로 잰 전진을 같은 줄 이웃 한글 전진으로 나눈다. 장평·자간이 상쇄된다. 그 비를 보통/Bold hmtx와 비교했다.
 - 결과: 숫자 보통 9,081 · Bold 76, 영문 보통 9,788 · Bold 146. 장평·자간과 관계없이 보통 면 폭이다.
-
-## 규칙 3 근거
-
-한컴 Print의 `고딕` HFT Type3 프로그램은 ASCII 95자의 glyph 폭이 모두 500/1000이다.
-- 확인한 PDF: `pdf/hwp3-sample11-hwpx-hwpx-2020.pdf`, `pdf/hwp3-sample11-hwp-2020.pdf` 66쪽.
-- 측정법(pdfium `FPDFFont_GetGlyphWidth`) 검증: 같은 PDF의 TrueType Haansoft Batang에서는 비례 폭이 나온다.
-- HWP3 원본(비HFT `고딕`)은 이미 0.5em 반각으로 재고 있었다.

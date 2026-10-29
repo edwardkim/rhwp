@@ -1,0 +1,1043 @@
+sample	pdf	page	native_devel	native_head	wasm_devel	wasm_head
+samples/2026_oss_rst.hwp	pdf/hwpx/2026_oss_rst.pdf	1	98.70	99.93	98.73	100.00
+samples/2026_oss_rst.hwp	pdf/hwpx/2026_oss_rst.pdf	2	99.99	99.99	100.00	100.00
+samples/2026_oss_rst.hwp	pdf/hwpx/2026_oss_rst.pdf	4	99.99	99.99	100.00	100.00
+samples/2026_oss_rst.hwp	pdf/hwpx/2026_oss_rst.pdf	5	99.99	99.99	100.00	100.00
+samples/2026_oss_rst.hwp	pdf/hwpx/2026_oss_rst.pdf	6	100.00	100.00	100.00	100.00
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-hwp-2020.pdf	7	99.92	99.98	99.97	99.99
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-hwp-2020.pdf	19	99.86	99.86	99.68	99.68
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-hwp-2020.pdf	27	99.94	99.96	99.93	99.93
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-hwp-2020.pdf	30	99.30	99.30	99.67	99.68
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-hwp-2020.pdf	31	78.99	78.99	78.94	78.94
+samples/2022년 국립국어원 업무계획.hwp	pdf/2022년 국립국어원 업무계획-hwp-2020.pdf	32	100.00	100.00	100.00	100.00
+samples/basic/Worldcup_FIFA2010_32.hwp	pdf/basic/Worldcup_FIFA2010_32-hwp-2020.pdf	1	97.97	97.97	97.96	97.96
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	18	99.99	99.99	99.98	99.98
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	19	100.00	100.00	99.99	100.00
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	20	96.04	96.02	96.40	96.37
+samples/86712_regulatory_analysis.hwp	pdf/86712_regulatory_analysis-hwp-2024.pdf	21	40.13	40.12	40.07	40.06
+samples/추진일정.hwp	pdf/추진일정-hwp-2020.pdf	1	95.54	95.54	95.82	95.80
+samples/exam_eng.hwp	pdf/issue7642-exam-print/exam-02-exam_eng-hwp-print-2020.pdf	1	98.61	98.62	98.88	98.88
+samples/exam_eng.hwp	pdf/issue7642-exam-print/exam-02-exam_eng-hwp-print-2020.pdf	4	97.45	97.57	97.81	97.94
+samples/hcar-001.hwp	pdf/hwpx/hcar-001.pdf	1	99.52	99.79	99.62	99.87
+samples/hcar-001.hwp	pdf/hwpx/hcar-001.pdf	2	99.96	99.96	100.00	100.00
+samples/hcar-001.hwp	pdf/hwpx/hcar-001.pdf	3	99.93	99.93	99.96	99.96
+samples/hcar-001.hwp	pdf/hwpx/hcar-001.pdf	4	99.81	99.91	99.83	99.91
+samples/hcar-001.hwp	pdf/hwpx/hcar-001.pdf	5	30.28	30.28	29.82	29.82
+samples/hcar-001.hwp	pdf/hwpx/hcar-001.pdf	6	99.80	99.96	99.82	99.99
+samples/hwp3-sample4.hwp	pdf/hwp3-sample4-hwp5-hwp-2020.pdf	14	99.95	99.97	99.94	99.96
+samples/hwp3-sample4-hwp5.hwp	pdf/hwp3-sample4-hwp5-hwp-2020.pdf	14	99.95	99.97	99.94	99.96
+samples/hwpctl_Action_Table__v1.1.hwp	pdf/hwpctl_Action_Table__v1.1-hwp-2020.pdf	1	73.05	73.04	73.06	73.06
+samples/hwpctl_Action_Table__v1.1.hwp	pdf/hwpctl_Action_Table__v1.1-hwp-2020.pdf	2	97.74	97.74	97.74	97.74
+samples/hwpctl_Action_Table__v1.1.hwp	pdf/hwpctl_Action_Table__v1.1-hwp-2020.pdf	3	97.87	97.87	97.87	97.87
+samples/hwpctl_Action_Table__v1.1.hwp	pdf/hwpctl_Action_Table__v1.1-hwp-2020.pdf	4	97.68	97.68	97.68	97.68
+samples/hwpctl_Action_Table__v1.1.hwp	pdf/hwpctl_Action_Table__v1.1-hwp-2020.pdf	5	97.77	97.77	97.78	97.78
+samples/hwpctl_Action_Table__v1.1.hwp	pdf/hwpctl_Action_Table__v1.1-hwp-2020.pdf	6	97.91	97.91	97.92	97.92
+samples/hwpctl_Action_Table__v1.1.hwp	pdf/hwpctl_Action_Table__v1.1-hwp-2020.pdf	7	97.91	97.91	97.92	97.92
+samples/hwpctl_Action_Table__v1.1.hwp	pdf/hwpctl_Action_Table__v1.1-hwp-2020.pdf	8	97.87	97.87	97.88	97.88
+samples/hwpctl_Action_Table__v1.1.hwp	pdf/hwpctl_Action_Table__v1.1-hwp-2020.pdf	9	97.32	97.32	97.32	97.32
+samples/hwpctl_Action_Table__v1.1.hwp	pdf/hwpctl_Action_Table__v1.1-hwp-2020.pdf	10	97.76	97.76	97.76	97.76
+samples/hwpctl_Action_Table__v1.1.hwp	pdf/hwpctl_Action_Table__v1.1-hwp-2020.pdf	11	97.92	97.92	97.93	97.93
+samples/hwpctl_Action_Table__v1.1.hwp	pdf/hwpctl_Action_Table__v1.1-hwp-2020.pdf	12	97.76	97.76	97.76	97.76
+samples/hwpctl_Action_Table__v1.1.hwp	pdf/hwpctl_Action_Table__v1.1-hwp-2020.pdf	13	97.40	97.40	97.41	97.41
+samples/hwpctl_Action_Table__v1.1.hwp	pdf/hwpctl_Action_Table__v1.1-hwp-2020.pdf	14	99.30	99.30	99.30	99.30
+samples/hwpctl_Action_Table__v1.1.hwp	pdf/hwpctl_Action_Table__v1.1-hwp-2020.pdf	15	97.31	97.31	97.31	97.31
+samples/hwpctl_Action_Table__v1.1.hwp	pdf/hwpctl_Action_Table__v1.1-hwp-2020.pdf	16	99.30	99.30	99.30	99.30
+samples/hwp-multi-002.hwp	pdf/hwp-multi-002-hwp-2020.pdf	1	99.88	99.90	100.00	100.00
+samples/hwp-multi-002.hwp	pdf/hwp-multi-002-hwp-2020.pdf	2	99.18	99.18	99.15	99.14
+samples/hwp-multi-002.hwp	pdf/hwp-multi-002-hwp-2020.pdf	3	99.94	99.94	99.94	99.94
+samples/hwp-multi-002.hwp	pdf/hwp-multi-002-hwp-2020.pdf	5	99.69	99.68	99.65	99.65
+samples/hwp-multi-002.hwp	pdf/hwp-multi-002-hwp-2020.pdf	6	100.00	100.00	100.00	100.00
+samples/추진일정.hwpx	pdf/추진일정-hwpx-2024.pdf	1	95.54	95.54	95.82	95.80
+samples/hwp-multi-001.hwp	pdf/hwp-multi-001-2022.pdf	1	99.27	99.28	99.58	99.58
+samples/hwp-multi-001.hwp	pdf/hwp-multi-001-2022.pdf	2	99.81	100.00	99.72	100.00
+samples/hwp-multi-001.hwp	pdf/hwp-multi-001-2022.pdf	3	99.89	99.89	100.00	100.00
+samples/hwp-multi-001.hwp	pdf/hwp-multi-001-2022.pdf	4	99.89	99.89	100.00	100.00
+samples/hwp-multi-001.hwp	pdf/hwp-multi-001-2022.pdf	5	99.86	99.86	99.97	99.97
+samples/hwp-multi-001.hwp	pdf/hwp-multi-001-2022.pdf	6	99.89	99.89	100.00	100.00
+samples/hwp-multi-001.hwp	pdf/hwp-multi-001-2022.pdf	7	99.84	99.84	100.00	100.00
+samples/hwp-multi-001.hwp	pdf/hwp-multi-001-2022.pdf	8	99.85	99.85	100.00	100.00
+samples/hwp-multi-001.hwp	pdf/hwp-multi-001-2022.pdf	9	99.23	99.22	99.24	99.23
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx	pdf/hwpx/2024년 1분기 해외직접투자 보도자료 ff-hwpx-2020.pdf	1	98.64	98.65	99.03	99.03
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx	pdf/hwpx/2024년 1분기 해외직접투자 보도자료 ff-hwpx-2020.pdf	2	99.78	99.99	99.71	99.99
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx	pdf/hwpx/2024년 1분기 해외직접투자 보도자료 ff-hwpx-2020.pdf	3	99.77	99.80	100.00	100.00
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx	pdf/hwpx/2024년 1분기 해외직접투자 보도자료 ff-hwpx-2020.pdf	4	99.77	99.78	99.98	100.00
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx	pdf/hwpx/2024년 1분기 해외직접투자 보도자료 ff-hwpx-2020.pdf	5	99.77	99.79	100.00	100.00
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx	pdf/hwpx/2024년 1분기 해외직접투자 보도자료 ff-hwpx-2020.pdf	6	99.74	99.76	100.00	100.00
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx	pdf/hwpx/2024년 1분기 해외직접투자 보도자료 ff-hwpx-2020.pdf	7	99.73	99.74	99.98	100.00
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx	pdf/hwpx/2024년 1분기 해외직접투자 보도자료 ff-hwpx-2020.pdf	8	99.79	99.81	100.00	100.00
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx	pdf/hwpx/2024년 1분기 해외직접투자 보도자료 ff-hwpx-2020.pdf	9	99.23	99.22	99.24	99.23
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	1	83.95	83.95	83.97	83.97
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	2	97.50	97.50	97.51	97.51
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	3	97.65	97.65	97.67	97.67
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	4	98.77	98.77	98.77	98.77
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	5	95.15	95.15	95.17	95.17
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	6	96.14	96.14	96.16	96.16
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	7	93.46	93.46	93.47	93.47
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	8	95.45	95.45	95.47	95.47
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	9	94.95	94.95	94.96	94.96
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	10	98.01	98.01	98.01	98.01
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	11	97.76	97.77	97.77	97.77
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	12	95.82	95.82	95.82	95.82
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	13	90.85	90.85	90.85	90.85
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	14	96.71	96.71	96.72	96.72
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	15	92.09	92.09	92.09	92.09
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	16	92.20	92.20	92.24	92.24
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	17	96.95	96.95	96.95	96.95
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	18	92.52	92.52	92.52	92.52
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	19	96.93	96.92	96.94	96.94
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	20	97.02	97.02	97.04	97.04
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	21	96.97	96.98	96.99	96.99
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	22	95.79	95.79	95.81	95.81
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	23	93.19	93.19	93.19	93.20
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	24	95.83	95.83	95.85	95.85
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	25	94.90	94.90	94.90	94.90
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	26	94.02	94.02	94.02	94.02
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	27	91.86	91.86	91.87	91.87
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	28	94.83	94.83	94.85	94.85
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	29	93.49	93.48	93.51	93.51
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	30	97.37	97.37	97.37	97.37
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	31	97.16	97.16	97.17	97.18
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	32	92.05	92.05	92.06	92.06
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	33	93.07	93.07	93.09	93.09
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	34	94.13	94.13	94.16	94.16
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	35	95.77	95.77	95.78	95.78
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	36	95.13	95.13	95.15	95.15
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	37	90.93	90.93	90.93	90.93
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	38	93.20	93.20	93.21	93.21
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	39	94.90	94.90	94.91	94.91
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	40	94.60	94.60	94.61	94.61
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	41	97.10	97.10	97.11	97.11
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	42	95.46	95.45	95.47	95.47
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	43	51.60	51.60	51.75	51.75
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	44	21.64	21.64	21.81	21.81
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	45	91.85	91.85	91.86	91.86
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	46	91.80	91.79	91.81	91.81
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	47	95.36	95.36	95.38	95.38
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	48	97.11	97.11	97.12	97.12
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	49	96.86	96.86	96.86	96.86
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	50	97.85	97.85	97.85	97.85
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	51	95.56	95.56	95.57	95.58
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	52	97.14	97.14	97.15	97.15
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	53	96.89	96.89	96.90	96.90
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	54	97.85	97.85	97.86	97.86
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	55	95.69	95.69	95.69	95.69
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	56	92.87	92.87	92.89	92.89
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	57	97.17	97.17	97.18	97.18
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	58	93.94	93.94	93.95	93.95
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	59	98.06	98.06	98.07	98.07
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	60	96.13	96.13	96.14	96.14
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	61	90.96	90.96	90.95	90.96
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	62	91.63	91.63	91.63	91.63
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	63	93.67	93.67	93.69	93.69
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	64	93.96	93.96	93.98	93.98
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	65	95.38	95.38	95.40	95.40
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	66	96.34	96.34	96.34	96.34
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	67	95.65	95.65	95.65	95.65
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	68	95.78	95.78	95.78	95.78
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	69	98.26	98.26	98.26	98.26
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	70	98.74	98.74	98.74	98.74
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	71	97.43	97.44	97.44	97.44
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	72	94.10	94.10	94.19	94.19
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	73	97.40	97.40	97.41	97.41
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	pdf/hwpctl_ParameterSetID_Item_v1.2-hwp-2020.pdf	74	95.91	95.91	95.92	95.91
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff-hwp-2020.pdf	1	98.64	98.65	99.03	99.03
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff-hwp-2020.pdf	2	99.78	99.99	99.71	99.99
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff-hwp-2020.pdf	3	99.77	99.80	100.00	100.00
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff-hwp-2020.pdf	4	99.77	99.78	99.98	100.00
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff-hwp-2020.pdf	5	99.77	99.79	100.00	100.00
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff-hwp-2020.pdf	6	99.74	99.76	100.00	100.00
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff-hwp-2020.pdf	7	99.73	99.74	99.98	100.00
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff-hwp-2020.pdf	8	99.79	99.81	100.00	100.00
+samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff-hwp-2020.pdf	9	99.23	99.22	99.24	99.23
+samples/hwpx/2024년 연간 해외직접투자 보도자료 _ ff.hwpx	pdf/hwpx/2024년 연간 해외직접투자 보도자료 _ ff-hwpx-2020.pdf	1	99.41	99.41	99.99	99.99
+samples/hwpx/2024년 연간 해외직접투자 보도자료 _ ff.hwpx	pdf/hwpx/2024년 연간 해외직접투자 보도자료 _ ff-hwpx-2020.pdf	2	99.82	99.99	99.77	99.99
+samples/hwpx/2024년 연간 해외직접투자 보도자료 _ ff.hwpx	pdf/hwpx/2024년 연간 해외직접투자 보도자료 _ ff-hwpx-2020.pdf	3	99.54	99.53	99.79	99.79
+samples/hwpx/2024년 연간 해외직접투자 보도자료 _ ff.hwpx	pdf/hwpx/2024년 연간 해외직접투자 보도자료 _ ff-hwpx-2020.pdf	4	99.78	99.78	100.00	100.00
+samples/hwpx/2024년 연간 해외직접투자 보도자료 _ ff.hwpx	pdf/hwpx/2024년 연간 해외직접투자 보도자료 _ ff-hwpx-2020.pdf	5	99.83	99.84	100.00	100.00
+samples/hwpx/2024년 연간 해외직접투자 보도자료 _ ff.hwpx	pdf/hwpx/2024년 연간 해외직접투자 보도자료 _ ff-hwpx-2020.pdf	6	92.50	92.50	91.70	91.67
+samples/hwpx/2024년 연간 해외직접투자 보도자료 _ ff.hwpx	pdf/hwpx/2024년 연간 해외직접투자 보도자료 _ ff-hwpx-2020.pdf	7	91.19	91.18	90.68	90.63
+samples/hwpx/2024년 연간 해외직접투자 보도자료 _ ff.hwpx	pdf/hwpx/2024년 연간 해외직접투자 보도자료 _ ff-hwpx-2020.pdf	8	99.85	99.86	100.00	100.00
+samples/hwpx/2024년 연간 해외직접투자 보도자료 _ ff.hwpx	pdf/hwpx/2024년 연간 해외직접투자 보도자료 _ ff-hwpx-2020.pdf	9	98.91	98.91	98.92	98.90
+samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx	pdf/hwpx/2024년 2분기 해외직접투자 보도자료ff-hwpx-2020.pdf	1	99.41	99.41	99.76	99.76
+samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx	pdf/hwpx/2024년 2분기 해외직접투자 보도자료ff-hwpx-2020.pdf	2	99.80	99.99	99.72	99.99
+samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx	pdf/hwpx/2024년 2분기 해외직접투자 보도자료ff-hwpx-2020.pdf	3	99.74	99.74	100.00	100.00
+samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx	pdf/hwpx/2024년 2분기 해외직접투자 보도자료ff-hwpx-2020.pdf	4	99.79	99.79	100.00	100.00
+samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx	pdf/hwpx/2024년 2분기 해외직접투자 보도자료ff-hwpx-2020.pdf	5	99.76	99.77	100.00	100.00
+samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx	pdf/hwpx/2024년 2분기 해외직접투자 보도자료ff-hwpx-2020.pdf	6	99.76	99.78	100.00	100.00
+samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx	pdf/hwpx/2024년 2분기 해외직접투자 보도자료ff-hwpx-2020.pdf	7	99.73	99.73	100.00	100.00
+samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx	pdf/hwpx/2024년 2분기 해외직접투자 보도자료ff-hwpx-2020.pdf	8	99.78	99.79	100.00	100.00
+samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx	pdf/hwpx/2024년 2분기 해외직접투자 보도자료ff-hwpx-2020.pdf	9	99.22	99.22	99.24	99.23
+samples/hwpx/2026_oss_rst.hwpx	pdf/hwpx/2026_oss_rst.pdf	1	98.70	99.93	98.73	100.00
+samples/hwpx/2026_oss_rst.hwpx	pdf/hwpx/2026_oss_rst.pdf	2	99.99	99.99	100.00	100.00
+samples/hwpx/2026_oss_rst.hwpx	pdf/hwpx/2026_oss_rst.pdf	4	99.99	99.99	100.00	100.00
+samples/hwpx/2026_oss_rst.hwpx	pdf/hwpx/2026_oss_rst.pdf	5	99.99	99.99	100.00	100.00
+samples/hwpx/2026_oss_rst.hwpx	pdf/hwpx/2026_oss_rst.pdf	6	100.00	100.00	100.00	100.00
+samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx	pdf/hwpx/2025년 1분기 해외직접투자 보도자료f-hwpx-2020.pdf	1	99.56	99.56	99.82	99.82
+samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx	pdf/hwpx/2025년 1분기 해외직접투자 보도자료f-hwpx-2020.pdf	2	99.64	99.84	99.58	99.84
+samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx	pdf/hwpx/2025년 1분기 해외직접투자 보도자료f-hwpx-2020.pdf	3	99.72	99.75	100.00	100.00
+samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx	pdf/hwpx/2025년 1분기 해외직접투자 보도자료f-hwpx-2020.pdf	4	99.77	99.78	100.00	100.00
+samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx	pdf/hwpx/2025년 1분기 해외직접투자 보도자료f-hwpx-2020.pdf	5	99.76	99.76	100.00	100.00
+samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx	pdf/hwpx/2025년 1분기 해외직접투자 보도자료f-hwpx-2020.pdf	6	99.72	99.74	100.00	100.00
+samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx	pdf/hwpx/2025년 1분기 해외직접투자 보도자료f-hwpx-2020.pdf	7	99.72	99.73	99.98	100.00
+samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx	pdf/hwpx/2025년 1분기 해외직접투자 보도자료f-hwpx-2020.pdf	8	99.75	99.76	100.00	100.00
+samples/hwpx/2025년 1분기 해외직접투자 보도자료f.hwpx	pdf/hwpx/2025년 1분기 해외직접투자 보도자료f-hwpx-2020.pdf	9	98.62	98.62	98.63	98.62
+samples/hwpx/20260909-para-table.hwpx	pdf/hwpx/20260909-para-table-2024.pdf	2	99.79	99.98	99.75	100.00
+samples/hwpx/20260909-para-table.hwpx	pdf/hwpx/20260909-para-table-2024.pdf	3	99.78	99.98	99.77	99.98
+samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx	pdf/hwpx/2025년 2분기 해외직접투자 (최종)-hwpx-2020.pdf	1	93.29	93.30	93.40	93.40
+samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx	pdf/hwpx/2025년 2분기 해외직접투자 (최종)-hwpx-2020.pdf	2	99.43	99.63	99.60	99.87
+samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx	pdf/hwpx/2025년 2분기 해외직접투자 (최종)-hwpx-2020.pdf	3	99.52	99.54	99.83	99.83
+samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx	pdf/hwpx/2025년 2분기 해외직접투자 (최종)-hwpx-2020.pdf	4	99.79	99.79	100.00	100.00
+samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx	pdf/hwpx/2025년 2분기 해외직접투자 (최종)-hwpx-2020.pdf	5	99.76	99.76	100.00	100.00
+samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx	pdf/hwpx/2025년 2분기 해외직접투자 (최종)-hwpx-2020.pdf	6	99.76	99.76	99.99	99.99
+samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx	pdf/hwpx/2025년 2분기 해외직접투자 (최종)-hwpx-2020.pdf	7	99.71	99.71	100.00	100.00
+samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx	pdf/hwpx/2025년 2분기 해외직접투자 (최종)-hwpx-2020.pdf	8	99.76	99.76	100.00	100.00
+samples/hwpx/2025년 2분기 해외직접투자 (최종).hwpx	pdf/hwpx/2025년 2분기 해외직접투자 (최종)-hwpx-2020.pdf	9	98.91	98.91	98.92	98.90
+samples/hwpx/form-002.hwpx	pdf/hwpx/form-002-hwpx-2020.pdf	1	96.83	96.83	97.23	97.23
+samples/hwpx/form-002.hwpx	pdf/hwpx/form-002-hwpx-2020.pdf	2	99.98	99.98	99.99	99.99
+samples/hwpx/form-002.hwpx	pdf/hwpx/form-002-hwpx-2020.pdf	3	96.96	97.07	97.38	97.47
+samples/hwpx/form-002.hwpx	pdf/hwpx/form-002-hwpx-2020.pdf	4	99.99	99.99	100.00	100.00
+samples/hwpx/form-002.hwpx	pdf/hwpx/form-002-hwpx-2020.pdf	5	96.95	96.96	97.34	97.35
+samples/hwpx/form-002.hwpx	pdf/hwpx/form-002-hwpx-2020.pdf	6	99.99	99.99	100.00	100.00
+samples/hwpx/form-002.hwpx	pdf/hwpx/form-002-hwpx-2020.pdf	7	96.53	96.84	96.93	97.26
+samples/hwpx/form-002.hwpx	pdf/hwpx/form-002-hwpx-2020.pdf	8	99.99	99.99	100.00	100.00
+samples/hwpx/form-002.hwpx	pdf/hwpx/form-002-hwpx-2020.pdf	9	96.77	96.95	97.18	97.36
+samples/hwpx/form-002.hwpx	pdf/hwpx/form-002-hwpx-2020.pdf	10	99.98	99.98	100.00	100.00
+samples/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff-hwp-2020.pdf	1	98.64	98.65	99.03	99.03
+samples/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff-hwp-2020.pdf	2	99.78	99.99	99.71	99.99
+samples/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff-hwp-2020.pdf	3	99.77	99.80	100.00	100.00
+samples/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff-hwp-2020.pdf	4	99.77	99.78	99.98	100.00
+samples/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff-hwp-2020.pdf	5	99.77	99.79	100.00	100.00
+samples/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff-hwp-2020.pdf	6	99.74	99.76	100.00	100.00
+samples/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff-hwp-2020.pdf	7	99.73	99.74	99.98	100.00
+samples/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff-hwp-2020.pdf	8	99.79	99.81	100.00	100.00
+samples/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff.hwp	pdf/hwpx/hancom-hwp/2024년 1분기 해외직접투자 보도자료 ff-hwp-2020.pdf	9	99.23	99.22	99.24	99.23
+samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp	pdf/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff-hwp-2020.pdf	1	99.42	99.42	99.99	99.99
+samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp	pdf/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff-hwp-2020.pdf	2	99.82	99.99	99.77	99.99
+samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp	pdf/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff-hwp-2020.pdf	3	99.54	99.53	99.79	99.79
+samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp	pdf/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff-hwp-2020.pdf	4	99.78	99.78	100.00	100.00
+samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp	pdf/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff-hwp-2020.pdf	5	99.83	99.84	100.00	100.00
+samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp	pdf/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff-hwp-2020.pdf	6	92.50	92.50	91.70	91.67
+samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp	pdf/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff-hwp-2020.pdf	7	91.19	91.18	90.68	90.63
+samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp	pdf/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff-hwp-2020.pdf	8	99.85	99.86	100.00	100.00
+samples/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff.hwp	pdf/hwpx/hancom-hwp/2024년 연간 해외직접투자 보도자료 _ ff-hwp-2020.pdf	9	98.91	98.91	98.92	98.90
+samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp	pdf/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff-hwp-2020.pdf	1	99.41	99.41	99.76	99.76
+samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp	pdf/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff-hwp-2020.pdf	2	99.80	99.99	99.72	99.99
+samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp	pdf/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff-hwp-2020.pdf	3	99.75	99.75	100.00	100.00
+samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp	pdf/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff-hwp-2020.pdf	4	99.79	99.79	100.00	100.00
+samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp	pdf/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff-hwp-2020.pdf	5	99.76	99.77	100.00	100.00
+samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp	pdf/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff-hwp-2020.pdf	6	99.75	99.78	100.00	100.00
+samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp	pdf/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff-hwp-2020.pdf	7	99.73	99.73	100.00	100.00
+samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp	pdf/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff-hwp-2020.pdf	8	99.78	99.79	100.00	100.00
+samples/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff.hwp	pdf/hwpx/hancom-hwp/2024년 2분기 해외직접투자 보도자료ff-hwp-2020.pdf	9	99.22	99.22	99.24	99.23
+samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp	pdf/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f-hwp-2020.pdf	1	99.56	99.56	99.82	99.82
+samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp	pdf/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f-hwp-2020.pdf	2	99.64	99.84	99.58	99.84
+samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp	pdf/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f-hwp-2020.pdf	3	99.72	99.75	100.00	100.00
+samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp	pdf/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f-hwp-2020.pdf	4	99.77	99.78	100.00	100.00
+samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp	pdf/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f-hwp-2020.pdf	5	99.76	99.76	100.00	100.00
+samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp	pdf/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f-hwp-2020.pdf	6	99.72	99.74	100.00	100.00
+samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp	pdf/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f-hwp-2020.pdf	7	99.72	99.73	99.98	100.00
+samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp	pdf/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f-hwp-2020.pdf	8	99.75	99.76	100.00	100.00
+samples/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f.hwp	pdf/hwpx/hancom-hwp/2025년 1분기 해외직접투자 보도자료f-hwp-2020.pdf	9	98.62	98.62	98.63	98.62
+samples/hwpx/hancom-hwp/form-002.hwp	pdf/hwpx/hancom-hwp/form-002-hwp-2020.pdf	1	99.66	99.66	99.81	99.81
+samples/hwpx/hancom-hwp/form-002.hwp	pdf/hwpx/hancom-hwp/form-002-hwp-2020.pdf	2	99.97	99.97	100.00	100.00
+samples/hwpx/hancom-hwp/form-002.hwp	pdf/hwpx/hancom-hwp/form-002-hwp-2020.pdf	3	99.52	99.66	99.71	99.83
+samples/hwpx/hancom-hwp/form-002.hwp	pdf/hwpx/hancom-hwp/form-002-hwp-2020.pdf	4	99.98	99.98	100.00	100.00
+samples/hwpx/hancom-hwp/form-002.hwp	pdf/hwpx/hancom-hwp/form-002-hwp-2020.pdf	5	99.62	99.66	99.79	99.82
+samples/hwpx/hancom-hwp/form-002.hwp	pdf/hwpx/hancom-hwp/form-002-hwp-2020.pdf	6	99.98	99.98	100.00	100.00
+samples/hwpx/hancom-hwp/form-002.hwp	pdf/hwpx/hancom-hwp/form-002-hwp-2020.pdf	7	99.34	99.66	99.46	99.81
+samples/hwpx/hancom-hwp/form-002.hwp	pdf/hwpx/hancom-hwp/form-002-hwp-2020.pdf	8	99.97	99.97	100.00	100.00
+samples/hwpx/hancom-hwp/form-002.hwp	pdf/hwpx/hancom-hwp/form-002-hwp-2020.pdf	9	99.46	99.66	99.62	99.82
+samples/hwpx/hancom-hwp/form-002.hwp	pdf/hwpx/hancom-hwp/form-002-hwp-2020.pdf	10	99.98	99.98	100.00	100.00
+samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp	pdf/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종)-hwp-2020.pdf	1	93.29	93.30	93.40	93.40
+samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp	pdf/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종)-hwp-2020.pdf	2	99.43	99.63	99.60	99.87
+samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp	pdf/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종)-hwp-2020.pdf	3	99.52	99.54	99.83	99.83
+samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp	pdf/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종)-hwp-2020.pdf	4	99.79	99.79	100.00	100.00
+samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp	pdf/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종)-hwp-2020.pdf	5	99.76	99.76	100.00	100.00
+samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp	pdf/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종)-hwp-2020.pdf	6	99.76	99.76	99.99	99.99
+samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp	pdf/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종)-hwp-2020.pdf	7	99.71	99.71	100.00	100.00
+samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp	pdf/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종)-hwp-2020.pdf	8	99.76	99.76	100.00	100.00
+samples/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종).hwp	pdf/hwpx/hancom-hwp/2025년 2분기 해외직접투자 (최종)-hwp-2020.pdf	9	98.91	98.91	98.92	98.90
+samples/hwpx/hancom-hwp/hwpx-01.hwp	pdf/hwpx/hancom-hwp/hwpx-01-hwp-2020.pdf	1	98.82	98.83	99.03	99.04
+samples/hwpx/hancom-hwp/hwpx-01.hwp	pdf/hwpx/hancom-hwp/hwpx-01-hwp-2020.pdf	2	99.78	99.99	99.71	99.99
+samples/hwpx/hancom-hwp/hwpx-01.hwp	pdf/hwpx/hancom-hwp/hwpx-01-hwp-2020.pdf	3	99.77	99.80	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-01.hwp	pdf/hwpx/hancom-hwp/hwpx-01-hwp-2020.pdf	4	99.77	99.78	99.98	100.00
+samples/hwpx/hancom-hwp/hwpx-01.hwp	pdf/hwpx/hancom-hwp/hwpx-01-hwp-2020.pdf	5	99.77	99.79	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-01.hwp	pdf/hwpx/hancom-hwp/hwpx-01-hwp-2020.pdf	6	99.74	99.76	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-01.hwp	pdf/hwpx/hancom-hwp/hwpx-01-hwp-2020.pdf	7	99.73	99.74	99.98	100.00
+samples/hwpx/hancom-hwp/hwpx-01.hwp	pdf/hwpx/hancom-hwp/hwpx-01-hwp-2020.pdf	8	99.79	99.81	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-01.hwp	pdf/hwpx/hancom-hwp/hwpx-01-hwp-2020.pdf	9	99.23	99.22	99.24	99.23
+samples/hwpx/hancom-hwp/hwpx-h-01.hwp	pdf/hwpx/hancom-hwp/hwpx-h-01-hwp-2020.pdf	1	98.82	98.83	99.03	99.04
+samples/hwpx/hancom-hwp/hwpx-h-01.hwp	pdf/hwpx/hancom-hwp/hwpx-h-01-hwp-2020.pdf	2	99.78	99.99	99.71	99.99
+samples/hwpx/hancom-hwp/hwpx-h-01.hwp	pdf/hwpx/hancom-hwp/hwpx-h-01-hwp-2020.pdf	3	99.77	99.80	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-h-01.hwp	pdf/hwpx/hancom-hwp/hwpx-h-01-hwp-2020.pdf	4	99.77	99.78	99.98	100.00
+samples/hwpx/hancom-hwp/hwpx-h-01.hwp	pdf/hwpx/hancom-hwp/hwpx-h-01-hwp-2020.pdf	5	99.77	99.79	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-h-01.hwp	pdf/hwpx/hancom-hwp/hwpx-h-01-hwp-2020.pdf	6	99.74	99.76	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-h-01.hwp	pdf/hwpx/hancom-hwp/hwpx-h-01-hwp-2020.pdf	7	99.73	99.74	99.98	100.00
+samples/hwpx/hancom-hwp/hwpx-h-01.hwp	pdf/hwpx/hancom-hwp/hwpx-h-01-hwp-2020.pdf	8	99.79	99.81	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-h-01.hwp	pdf/hwpx/hancom-hwp/hwpx-h-01-hwp-2020.pdf	9	99.23	99.22	99.24	99.23
+samples/hwpx/hancom-hwp/hwpx-02.hwp	pdf/hwpx/hancom-hwp/hwpx-02-hwp-2020.pdf	1	99.73	99.73	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-02.hwp	pdf/hwpx/hancom-hwp/hwpx-02-hwp-2020.pdf	2	99.82	99.99	99.77	99.99
+samples/hwpx/hancom-hwp/hwpx-02.hwp	pdf/hwpx/hancom-hwp/hwpx-02-hwp-2020.pdf	3	99.54	99.53	99.79	99.79
+samples/hwpx/hancom-hwp/hwpx-02.hwp	pdf/hwpx/hancom-hwp/hwpx-02-hwp-2020.pdf	4	99.78	99.78	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-02.hwp	pdf/hwpx/hancom-hwp/hwpx-02-hwp-2020.pdf	5	99.83	99.84	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-02.hwp	pdf/hwpx/hancom-hwp/hwpx-02-hwp-2020.pdf	6	92.50	92.50	91.70	91.67
+samples/hwpx/hancom-hwp/hwpx-02.hwp	pdf/hwpx/hancom-hwp/hwpx-02-hwp-2020.pdf	7	91.19	91.18	90.68	90.63
+samples/hwpx/hancom-hwp/hwpx-02.hwp	pdf/hwpx/hancom-hwp/hwpx-02-hwp-2020.pdf	8	99.85	99.86	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-02.hwp	pdf/hwpx/hancom-hwp/hwpx-02-hwp-2020.pdf	9	98.91	98.91	98.92	98.90
+samples/hwpx/hancom-hwp/hwpx-h-03.hwp	pdf/hwpx/hancom-hwp/hwpx-h-03-hwp-2020.pdf	1	99.56	99.56	99.82	99.82
+samples/hwpx/hancom-hwp/hwpx-h-03.hwp	pdf/hwpx/hancom-hwp/hwpx-h-03-hwp-2020.pdf	2	99.64	99.84	99.58	99.84
+samples/hwpx/hancom-hwp/hwpx-h-03.hwp	pdf/hwpx/hancom-hwp/hwpx-h-03-hwp-2020.pdf	3	99.72	99.75	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-h-03.hwp	pdf/hwpx/hancom-hwp/hwpx-h-03-hwp-2020.pdf	4	99.77	99.78	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-h-03.hwp	pdf/hwpx/hancom-hwp/hwpx-h-03-hwp-2020.pdf	5	99.76	99.76	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-h-03.hwp	pdf/hwpx/hancom-hwp/hwpx-h-03-hwp-2020.pdf	6	99.72	99.74	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-h-03.hwp	pdf/hwpx/hancom-hwp/hwpx-h-03-hwp-2020.pdf	7	99.72	99.73	99.98	100.00
+samples/hwpx/hancom-hwp/hwpx-h-03.hwp	pdf/hwpx/hancom-hwp/hwpx-h-03-hwp-2020.pdf	8	99.75	99.76	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-h-03.hwp	pdf/hwpx/hancom-hwp/hwpx-h-03-hwp-2020.pdf	9	98.62	98.62	98.63	98.62
+samples/hwpx/hancom-hwp/hwpx-h-02.hwp	pdf/hwpx/hancom-hwp/hwpx-h-02-hwp-2020.pdf	1	93.29	93.30	93.40	93.40
+samples/hwpx/hancom-hwp/hwpx-h-02.hwp	pdf/hwpx/hancom-hwp/hwpx-h-02-hwp-2020.pdf	2	99.43	99.63	99.60	99.87
+samples/hwpx/hancom-hwp/hwpx-h-02.hwp	pdf/hwpx/hancom-hwp/hwpx-h-02-hwp-2020.pdf	3	99.52	99.54	99.83	99.83
+samples/hwpx/hancom-hwp/hwpx-h-02.hwp	pdf/hwpx/hancom-hwp/hwpx-h-02-hwp-2020.pdf	4	99.79	99.79	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-h-02.hwp	pdf/hwpx/hancom-hwp/hwpx-h-02-hwp-2020.pdf	5	99.76	99.76	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-h-02.hwp	pdf/hwpx/hancom-hwp/hwpx-h-02-hwp-2020.pdf	6	99.76	99.76	99.99	99.99
+samples/hwpx/hancom-hwp/hwpx-h-02.hwp	pdf/hwpx/hancom-hwp/hwpx-h-02-hwp-2020.pdf	7	99.71	99.71	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-h-02.hwp	pdf/hwpx/hancom-hwp/hwpx-h-02-hwp-2020.pdf	8	99.76	99.76	100.00	100.00
+samples/hwpx/hancom-hwp/hwpx-h-02.hwp	pdf/hwpx/hancom-hwp/hwpx-h-02-hwp-2020.pdf	9	98.91	98.91	98.92	98.90
+samples/hwpx/hcar-001.hwpx	pdf/hwpx/hcar-001.pdf	1	94.56	94.79	94.68	94.87
+samples/hwpx/hcar-001.hwpx	pdf/hwpx/hcar-001.pdf	2	99.96	99.96	100.00	100.00
+samples/hwpx/hcar-001.hwpx	pdf/hwpx/hcar-001.pdf	3	99.93	99.93	99.96	99.96
+samples/hwpx/hcar-001.hwpx	pdf/hwpx/hcar-001.pdf	4	99.81	99.91	99.83	99.91
+samples/hwpx/hcar-001.hwpx	pdf/hwpx/hcar-001.pdf	5	45.55	45.57	44.61	44.61
+samples/hwpx/hcar-001.hwpx	pdf/hwpx/hcar-001.pdf	6	99.80	99.96	99.82	99.99
+samples/hwpx/issue_1133.hwpx	pdf/issue7382-regression-review/issue_1133-2020.pdf	1	97.80	97.80	98.05	98.05
+samples/hwpx/issue_1133.hwpx	pdf/issue7382-regression-review/issue_1133-2020.pdf	2	99.11	99.11	99.16	99.16
+samples/hwpx/hwpx-h-01.hwpx	pdf/hwpx/hwpx-h-01-hwpx-2020.pdf	1	98.82	98.83	99.03	99.04
+samples/hwpx/hwpx-h-01.hwpx	pdf/hwpx/hwpx-h-01-hwpx-2020.pdf	2	99.78	99.99	99.71	99.99
+samples/hwpx/hwpx-h-01.hwpx	pdf/hwpx/hwpx-h-01-hwpx-2020.pdf	3	99.77	99.80	100.00	100.00
+samples/hwpx/hwpx-h-01.hwpx	pdf/hwpx/hwpx-h-01-hwpx-2020.pdf	4	99.77	99.78	99.98	100.00
+samples/hwpx/hwpx-h-01.hwpx	pdf/hwpx/hwpx-h-01-hwpx-2020.pdf	5	99.77	99.79	100.00	100.00
+samples/hwpx/hwpx-h-01.hwpx	pdf/hwpx/hwpx-h-01-hwpx-2020.pdf	6	99.74	99.76	100.00	100.00
+samples/hwpx/hwpx-h-01.hwpx	pdf/hwpx/hwpx-h-01-hwpx-2020.pdf	7	99.73	99.74	99.98	100.00
+samples/hwpx/hwpx-h-01.hwpx	pdf/hwpx/hwpx-h-01-hwpx-2020.pdf	8	99.79	99.81	100.00	100.00
+samples/hwpx/hwpx-h-01.hwpx	pdf/hwpx/hwpx-h-01-hwpx-2020.pdf	9	99.23	99.22	99.24	99.23
+samples/hwpx/hwpx-01.hwpx	pdf/hwpx/hwpx-01-hwpx-2020.pdf	1	98.82	98.83	99.03	99.04
+samples/hwpx/hwpx-01.hwpx	pdf/hwpx/hwpx-01-hwpx-2020.pdf	2	99.78	99.99	99.71	99.99
+samples/hwpx/hwpx-01.hwpx	pdf/hwpx/hwpx-01-hwpx-2020.pdf	3	99.77	99.80	100.00	100.00
+samples/hwpx/hwpx-01.hwpx	pdf/hwpx/hwpx-01-hwpx-2020.pdf	4	99.77	99.78	99.98	100.00
+samples/hwpx/hwpx-01.hwpx	pdf/hwpx/hwpx-01-hwpx-2020.pdf	5	99.77	99.79	100.00	100.00
+samples/hwpx/hwpx-01.hwpx	pdf/hwpx/hwpx-01-hwpx-2020.pdf	6	99.74	99.76	100.00	100.00
+samples/hwpx/hwpx-01.hwpx	pdf/hwpx/hwpx-01-hwpx-2020.pdf	7	99.73	99.74	99.98	100.00
+samples/hwpx/hwpx-01.hwpx	pdf/hwpx/hwpx-01-hwpx-2020.pdf	8	99.79	99.81	100.00	100.00
+samples/hwpx/hwpx-01.hwpx	pdf/hwpx/hwpx-01-hwpx-2020.pdf	9	99.23	99.22	99.24	99.23
+samples/hwpx/hwpx-h-02.hwpx	pdf/hwpx/hwpx-h-02-hwpx-2020.pdf	1	93.30	93.30	93.40	93.40
+samples/hwpx/hwpx-h-02.hwpx	pdf/hwpx/hwpx-h-02-hwpx-2020.pdf	2	99.43	99.63	99.60	99.87
+samples/hwpx/hwpx-h-02.hwpx	pdf/hwpx/hwpx-h-02-hwpx-2020.pdf	3	99.52	99.54	99.83	99.83
+samples/hwpx/hwpx-h-02.hwpx	pdf/hwpx/hwpx-h-02-hwpx-2020.pdf	4	99.79	99.79	100.00	100.00
+samples/hwpx/hwpx-h-02.hwpx	pdf/hwpx/hwpx-h-02-hwpx-2020.pdf	5	99.76	99.76	100.00	100.00
+samples/hwpx/hwpx-h-02.hwpx	pdf/hwpx/hwpx-h-02-hwpx-2020.pdf	6	99.76	99.76	99.99	99.99
+samples/hwpx/hwpx-h-02.hwpx	pdf/hwpx/hwpx-h-02-hwpx-2020.pdf	7	99.71	99.71	100.00	100.00
+samples/hwpx/hwpx-h-02.hwpx	pdf/hwpx/hwpx-h-02-hwpx-2020.pdf	8	99.76	99.76	100.00	100.00
+samples/hwpx/hwpx-h-02.hwpx	pdf/hwpx/hwpx-h-02-hwpx-2020.pdf	9	98.91	98.91	98.92	98.90
+samples/hwpx/hwpx-h-03.hwpx	pdf/hwpx/hwpx-h-03-hwpx-2020.pdf	1	99.56	99.56	99.82	99.82
+samples/hwpx/hwpx-h-03.hwpx	pdf/hwpx/hwpx-h-03-hwpx-2020.pdf	2	99.64	99.84	99.58	99.84
+samples/hwpx/hwpx-h-03.hwpx	pdf/hwpx/hwpx-h-03-hwpx-2020.pdf	3	99.72	99.75	100.00	100.00
+samples/hwpx/hwpx-h-03.hwpx	pdf/hwpx/hwpx-h-03-hwpx-2020.pdf	4	99.77	99.78	100.00	100.00
+samples/hwpx/hwpx-h-03.hwpx	pdf/hwpx/hwpx-h-03-hwpx-2020.pdf	5	99.76	99.76	100.00	100.00
+samples/hwpx/hwpx-h-03.hwpx	pdf/hwpx/hwpx-h-03-hwpx-2020.pdf	6	99.72	99.74	100.00	100.00
+samples/hwpx/hwpx-h-03.hwpx	pdf/hwpx/hwpx-h-03-hwpx-2020.pdf	7	99.72	99.73	99.98	100.00
+samples/hwpx/hwpx-h-03.hwpx	pdf/hwpx/hwpx-h-03-hwpx-2020.pdf	8	99.75	99.76	100.00	100.00
+samples/hwpx/hwpx-h-03.hwpx	pdf/hwpx/hwpx-h-03-hwpx-2020.pdf	9	98.62	98.62	98.63	98.62
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	2	99.64	99.65	99.68	99.68
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	5	99.19	99.19	99.81	99.81
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	6	98.59	98.59	98.63	98.63
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	7	99.68	99.68	100.00	100.00
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	8	99.51	99.51	99.89	99.89
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	9	99.48	99.48	99.83	99.83
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	10	99.76	99.76	99.81	99.81
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	11	99.54	99.54	99.90	99.90
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	12	99.51	99.51	99.75	99.75
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	13	99.50	99.50	99.87	99.87
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	14	99.30	99.30	99.48	99.48
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	15	99.91	99.91	100.00	100.00
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	16	99.22	99.22	99.75	99.75
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	17	96.18	96.18	96.38	96.38
+samples/hwpx/hancom-hwp/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	18	99.25	99.25	100.00	100.00
+samples/issue_1133.hwp	pdf/issue7382-regression-review/issue_1133-2020.pdf	1	97.80	97.80	98.05	98.05
+samples/issue_1133.hwp	pdf/issue7382-regression-review/issue_1133-2020.pdf	2	99.11	99.11	99.16	99.16
+samples/issue1133/page-number-bottom15.hwpx	pdf/issue1133/page-number-bottom15-2020.pdf	1	97.81	97.81	98.05	98.05
+samples/issue1133/page-number-bottom15.hwpx	pdf/issue1133/page-number-bottom15-2020.pdf	2	99.11	99.11	99.13	99.13
+samples/issue1133/page-number-footer15.hwpx	pdf/issue1133/page-number-footer15-2020.pdf	1	97.80	97.80	98.05	98.05
+samples/issue1133/page-number-footer15.hwpx	pdf/issue1133/page-number-footer15-2020.pdf	2	99.10	99.10	99.13	99.13
+samples/hwpx/aift.hwpx	pdf/issue5961-axis/aift-2020.pdf	7	99.81	99.81	100.00	100.00
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	1	92.94	93.20	94.36	94.60
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	2	99.45	99.84	99.44	99.82
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	3	98.80	98.99	98.79	98.98
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	4	99.98	99.98	99.99	100.00
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	5	99.76	99.79	99.80	99.84
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	6	99.84	99.84	100.00	100.00
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	7	99.87	99.87	100.00	100.00
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	8	54.22	54.31	55.21	55.27
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	9	99.19	99.97	99.15	99.99
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	10	99.87	99.87	100.00	100.00
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	11	99.05	99.96	99.06	99.99
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	12	99.85	99.98	99.78	100.00
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	13	99.30	99.37	99.27	99.35
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	14	96.81	96.80	96.69	96.67
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	15	99.88	99.94	99.94	100.00
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	16	99.54	99.59	99.58	99.66
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	17	99.85	99.95	99.91	100.00
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	18	99.26	99.92	99.30	100.00
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	19	99.94	99.94	99.94	99.94
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	20	99.98	99.98	100.00	100.00
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	21	98.93	98.92	99.82	99.82
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	22	99.15	99.14	99.22	99.21
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	24	100.00	100.00	100.00	100.00
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	25	99.99	99.99	100.00	100.00
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	26	100.00	100.00	100.00	100.00
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	27	98.79	98.79	98.73	98.72
+samples/hwpx_sample2.hwpx	pdf/hwpx_sample2-hwpx-2020.pdf	29	99.70	99.73	99.98	100.00
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	1	96.23	96.48	96.26	96.48
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	2	99.45	99.84	99.44	99.82
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	3	98.80	98.99	98.79	98.98
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	4	99.98	99.98	99.99	100.00
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	5	99.76	99.79	99.80	99.84
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	6	99.84	99.84	100.00	100.00
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	7	99.87	99.87	100.00	100.00
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	8	95.83	95.92	95.76	95.85
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	9	99.19	99.97	99.15	99.99
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	10	99.87	99.87	100.00	100.00
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	11	99.05	99.96	99.06	99.99
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	12	99.85	99.98	99.78	100.00
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	13	99.30	99.37	99.27	99.35
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	14	97.46	97.45	97.69	97.65
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	15	99.88	99.94	99.94	100.00
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	16	99.54	99.59	99.58	99.66
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	17	99.85	99.95	99.91	100.00
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	18	99.26	99.92	99.30	100.00
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	19	99.94	99.94	99.94	99.94
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	20	99.98	99.98	100.00	100.00
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	21	99.71	99.71	99.81	99.81
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	22	99.15	99.14	99.22	99.21
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	24	100.00	100.00	100.00	100.00
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	25	99.99	99.99	100.00	100.00
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	26	100.00	100.00	100.00	100.00
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	27	98.79	98.79	98.73	98.72
+samples/hwpx_sample2.hwp	pdf/hwpx_sample2-hwp-2024.pdf	29	99.70	99.73	99.98	100.00
+samples/hwpx/mel-001.hwpx	pdf/hwpx/mel-001-hwpx-2020.pdf	2	99.64	99.65	99.68	99.68
+samples/hwpx/mel-001.hwpx	pdf/hwpx/mel-001-hwpx-2020.pdf	5	99.19	99.19	99.81	99.81
+samples/hwpx/mel-001.hwpx	pdf/hwpx/mel-001-hwpx-2020.pdf	6	98.59	98.59	98.63	98.63
+samples/hwpx/mel-001.hwpx	pdf/hwpx/mel-001-hwpx-2020.pdf	7	99.68	99.68	100.00	100.00
+samples/hwpx/mel-001.hwpx	pdf/hwpx/mel-001-hwpx-2020.pdf	8	99.51	99.51	99.89	99.89
+samples/hwpx/mel-001.hwpx	pdf/hwpx/mel-001-hwpx-2020.pdf	9	99.48	99.48	99.83	99.83
+samples/hwpx/mel-001.hwpx	pdf/hwpx/mel-001-hwpx-2020.pdf	10	99.76	99.76	99.81	99.81
+samples/hwpx/mel-001.hwpx	pdf/hwpx/mel-001-hwpx-2020.pdf	11	99.54	99.54	99.90	99.90
+samples/hwpx/mel-001.hwpx	pdf/hwpx/mel-001-hwpx-2020.pdf	12	99.51	99.51	99.75	99.75
+samples/hwpx/mel-001.hwpx	pdf/hwpx/mel-001-hwpx-2020.pdf	13	99.50	99.50	99.87	99.87
+samples/hwpx/mel-001.hwpx	pdf/hwpx/mel-001-hwpx-2020.pdf	14	99.30	99.30	99.48	99.48
+samples/hwpx/mel-001.hwpx	pdf/hwpx/mel-001-hwpx-2020.pdf	15	99.91	99.91	100.00	100.00
+samples/hwpx/mel-001.hwpx	pdf/hwpx/mel-001-hwpx-2020.pdf	16	99.22	99.22	99.75	99.75
+samples/hwpx/mel-001.hwpx	pdf/hwpx/mel-001-hwpx-2020.pdf	17	96.18	96.18	96.38	96.38
+samples/hwpx/mel-001.hwpx	pdf/hwpx/mel-001-hwpx-2020.pdf	18	99.25	99.25	100.00	100.00
+samples/issue1891/86712_regulatory_analysis.hwpx	pdf/issue1891/86712_regulatory_analysis-hwpx-2020.pdf	18	99.99	99.99	99.98	99.98
+samples/issue1891/86712_regulatory_analysis.hwpx	pdf/issue1891/86712_regulatory_analysis-hwpx-2020.pdf	19	100.00	100.00	99.99	100.00
+samples/issue1891/86712_regulatory_analysis.hwpx	pdf/issue1891/86712_regulatory_analysis-hwpx-2020.pdf	20	96.04	96.02	96.40	96.37
+samples/issue1891/86712_regulatory_analysis.hwpx	pdf/issue1891/86712_regulatory_analysis-hwpx-2020.pdf	21	40.10	40.10	40.05	40.04
+samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwp	pdf/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향-hwp-2022.pdf	1	97.35	97.35	97.58	97.58
+samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwp	pdf/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향-hwp-2022.pdf	2	99.02	99.91	98.96	100.00
+samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwp	pdf/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향-hwp-2022.pdf	3	98.26	98.87	98.23	98.84
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	1	99.96	99.96	99.99	99.99
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	2	99.59	99.55	99.62	99.59
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	3	80.79	80.79	80.50	80.50
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	4	99.71	99.80	99.81	99.89
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	5	99.86	99.86	99.99	99.99
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	6	98.82	99.31	98.92	99.35
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	7	92.58	93.02	92.72	93.08
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	8	93.71	94.05	93.34	93.64
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	10	99.06	99.01	99.15	99.10
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	11	99.48	99.81	99.41	99.82
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	12	99.93	99.93	99.95	99.95
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	14	97.29	97.35	97.30	97.35
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	15	99.41	99.45	99.51	99.56
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	16	99.98	99.98	100.00	100.00
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	17	99.97	99.97	100.00	100.00
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	18	99.92	99.99	99.93	100.00
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	19	99.98	99.98	99.99	99.99
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	20	99.98	99.98	99.99	99.99
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	21	99.98	99.98	100.00	100.00
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	22	99.22	99.22	99.57	99.57
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	23	85.92	85.90	85.81	85.79
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	24	88.83	88.82	88.74	88.72
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	25	99.37	99.54	99.37	99.54
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	26	96.48	96.48	96.67	96.67
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	27	84.88	84.91	84.78	84.79
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	28	99.83	99.91	99.93	100.00
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	29	99.77	99.98	99.80	100.00
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	30	99.89	99.89	100.00	100.00
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	31	99.94	99.94	99.98	99.98
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	32	99.83	99.83	99.82	99.82
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	33	99.90	99.90	100.00	100.00
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	34	99.59	99.59	99.73	99.73
+samples/hwpx/pr-1674.hwpx	pdf/hwpx/pr-1674-hwpx-2020.pdf	35	99.88	99.88	99.89	99.89
+samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwpx	pdf/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향-hwpx-2022.pdf	1	92.29	92.28	92.26	92.26
+samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwpx	pdf/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향-hwpx-2022.pdf	2	99.02	99.91	98.96	100.00
+samples/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향.hwpx	pdf/issue2020/(250813) (보도자료) 2025년 7월중 가계대출 동향-hwpx-2022.pdf	3	98.26	98.87	98.23	98.84
+samples/issue2083_hide_fill_page.hwpx	pdf/issue2083_hide_fill_page-hwpx-2020.pdf	2	99.98	99.98	100.00	100.00
+samples/issue2470/36341511_masked.hwpx	pdf/issue2470/36341511_masked-2022.pdf	2	99.54	99.54	99.54	99.54
+samples/issue1921/59043_regulatory_analysis.hwp	pdf/issue1921/59043_regulatory_analysis-2022.pdf	14	75.57	75.56	75.73	75.76
+samples/issue3257/webhangul_product_spec_v1.1.hwp	pdf/issue3257/webhangul_product_spec_v1.1-hwp-2020.pdf	1	99.88	99.90	100.00	100.00
+samples/issue3257/webhangul_product_spec_v1.1.hwp	pdf/issue3257/webhangul_product_spec_v1.1-hwp-2020.pdf	2	99.18	99.18	99.15	99.14
+samples/issue3257/webhangul_product_spec_v1.1.hwp	pdf/issue3257/webhangul_product_spec_v1.1-hwp-2020.pdf	3	99.94	99.94	99.94	99.94
+samples/issue3257/webhangul_product_spec_v1.1.hwp	pdf/issue3257/webhangul_product_spec_v1.1-hwp-2020.pdf	5	99.69	99.68	99.65	99.65
+samples/issue3257/webhangul_product_spec_v1.1.hwp	pdf/issue3257/webhangul_product_spec_v1.1-hwp-2020.pdf	6	100.00	100.00	100.00	100.00
+samples/issue3637/press_release_split_cell_nested_table.hwpx	pdf/issue3637/press_release_split_cell_nested_table-hwpx-2020.pdf	2	93.85	93.85	93.84	93.83
+samples/issue3637/press_release_split_cell_nested_table.hwpx	pdf/issue3637/press_release_split_cell_nested_table-hwpx-2020.pdf	4	99.99	99.99	99.95	99.95
+samples/issue3637/press_release_split_cell_nested_table.hwpx	pdf/issue3637/press_release_split_cell_nested_table-hwpx-2020.pdf	5	98.65	98.65	98.60	98.60
+samples/issue3637/press_release_split_cell_nested_table.hwpx	pdf/issue3637/press_release_split_cell_nested_table-hwpx-2020.pdf	6	99.87	99.88	99.78	99.78
+samples/issue3637/press_release_split_cell_nested_table.hwpx	pdf/issue3637/press_release_split_cell_nested_table-hwpx-2020.pdf	10	99.30	99.30	99.25	99.25
+samples/issue5584/3232693_employment_support_criteria.hwpx	pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue6025_employment_support_criteria_3232693_employment_support_criteria-2020.pdf	1	99.54	99.54	99.79	99.79
+samples/issue5543_carried_anchor_ladder.hwpx	pdf/issue5543_carried_anchor_ladder-2020.pdf	3	99.63	99.63	99.94	99.94
+samples/issue5543_carried_anchor_ladder.hwpx	pdf/issue5543_carried_anchor_ladder-2020.pdf	4	99.18	99.18	99.66	99.66
+samples/issue4599/1790387_policy_progress.hwpx	pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf	2	99.96	99.98	99.94	100.00
+samples/issue4599/1790387_policy_progress.hwpx	pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf	8	99.99	99.99	99.98	99.98
+samples/issue4599/1790387_policy_progress.hwpx	pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf	9	100.00	100.00	100.00	100.00
+samples/issue4599/1790387_policy_progress.hwpx	pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf	10	100.00	100.00	100.00	100.00
+samples/issue4599/1790387_policy_progress.hwpx	pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf	11	99.98	99.98	99.98	99.98
+samples/issue4599/1790387_policy_progress.hwpx	pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf	12	100.00	100.00	100.00	100.00
+samples/issue4599/1790387_policy_progress.hwpx	pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf	13	100.00	100.00	100.00	100.00
+samples/issue4599/1790387_policy_progress.hwpx	pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf	14	99.98	99.98	99.98	99.98
+samples/issue4599/1790387_policy_progress.hwpx	pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf	15	100.00	100.00	100.00	100.00
+samples/issue4599/1790387_policy_progress.hwpx	pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf	16	100.00	100.00	100.00	100.00
+samples/issue4599/1790387_policy_progress.hwpx	pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf	17	99.73	99.73	99.72	99.72
+samples/issue4599/1790387_policy_progress.hwpx	pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf	18	99.94	99.94	99.93	99.93
+samples/issue4599/1790387_policy_progress.hwpx	pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf	19	100.00	100.00	100.00	100.00
+samples/issue4599/1790387_policy_progress.hwpx	pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf	22	98.86	98.86	99.63	99.63
+samples/issue4599/1790387_policy_progress.hwpx	pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf	23	99.05	99.05	99.68	99.68
+samples/issue4599/1790387_policy_progress.hwpx	pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf	24	99.03	99.03	99.60	99.62
+samples/issue4599/1790387_policy_progress.hwpx	pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf	26	98.86	98.86	99.61	99.61
+samples/issue4599/1790387_policy_progress.hwpx	pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf	27	98.99	98.99	99.60	99.60
+samples/issue4599/1790387_policy_progress.hwpx	pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf	43	99.96	99.96	99.98	99.98
+samples/issue5755/rewind_overflow_page_break.hwpx	pdf/issue5755/rewind_overflow_page_break-2020.pdf	3	99.98	99.99	99.87	99.88
+samples/issue5756/156732409_superscript_advance.hwp	pdf/issue7642-failed-regression-print-20261015/156732409_superscript_advance-2020.pdf	2	98.64	98.68	98.68	98.71
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	2	99.99	100.00	100.00	100.00
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	3	99.99	99.99	100.00	100.00
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	4	99.97	99.99	99.99	99.99
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	5	99.94	99.99	99.92	100.00
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	6	99.94	99.99	99.94	100.00
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	7	99.97	100.00	99.95	100.00
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	8	99.99	100.00	99.96	99.97
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	9	99.84	99.84	99.83	99.83
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	10	99.96	99.99	99.95	100.00
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	11	99.96	99.99	99.96	99.99
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	12	100.00	100.00	99.98	100.00
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	13	99.96	99.96	99.96	99.96
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	14	99.94	99.94	99.95	99.95
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	15	99.87	99.87	99.84	99.84
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	16	100.00	100.00	100.00	100.00
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	17	99.99	99.99	100.00	100.00
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	18	99.97	99.97	99.94	99.94
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	19	100.00	100.00	100.00	100.00
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	20	100.00	100.00	100.00	100.00
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	21	99.99	100.00	100.00	100.00
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	22	100.00	100.00	100.00	100.00
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	23	99.99	99.99	99.99	100.00
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	24	99.80	99.99	99.81	99.99
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	25	98.96	99.98	99.04	100.00
+samples/issue5877/fragment_ghost_vrules.hwp	pdf/fragment_ghost_vrules-2020.pdf	26	91.29	91.23	91.97	91.92
+samples/issue6025/3232693_employment_support_criteria.hwpx	pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue6025_employment_support_criteria_3232693_employment_support_criteria-2020.pdf	1	99.54	99.54	99.79	99.79
+samples/issue6060/30307_local_service_reform.hwp	pdf/issue6060/30307_local_service_reform-2020.pdf	3	99.80	99.84	99.90	99.90
+samples/issue6101/36501883_approval_doc_body.hwpx	pdf/pr7382/36501883_approval_doc_body-2020.pdf	1	99.21	99.30	99.18	99.31
+samples/issue6101/36361137_firefighter_training_plan.hwpx	pdf/pr7382/36361137_firefighter_training_plan-2020.pdf	2	100.00	100.00	100.00	100.00
+samples/issue6132/156482639_startup_ir_contest.hwp	pdf/issue6132/156482639_startup_ir_contest-2020.pdf	8	99.80	99.98	99.80	99.95
+samples/issue6132/156482639_startup_ir_contest.hwp	pdf/issue6132/156482639_startup_ir_contest-2020.pdf	10	99.55	99.55	99.58	99.58
+samples/issue6145/worklife_balance_index_156607916.hwpx	pdf/planet-review-20260917/worklife_balance_index_156607916-2020.pdf	3	98.38	98.38	98.45	98.45
+samples/issue6145/worklife_balance_index_156607916.hwpx	pdf/planet-review-20260917/worklife_balance_index_156607916-2020.pdf	4	99.45	99.44	99.51	99.51
+samples/issue6145/worklife_balance_index_156607916.hwpx	pdf/planet-review-20260917/worklife_balance_index_156607916-2020.pdf	5	99.84	99.84	99.93	99.93
+samples/issue6196/cell_char_spacing_fit.hwp	pdf/pr_6275/by_saved_version/pr6275_issue6196_cell_char_spacing_fit-2020.pdf	1	52.49	52.51	52.74	52.74
+samples/issue6312/tab_host_own_line.hwpx	pdf/issue6312/tab_host_own_line-2024.pdf	1	75.13	75.44	70.43	70.74
+samples/issue6451/underline_run_fragments.hwpx	pdf/underline_run_fragments-2020.pdf	2	99.96	99.96	100.00	100.00
+samples/issue6451/underline_run_fragments.hwpx	pdf/underline_run_fragments-2020.pdf	3	99.76	99.76	99.76	99.76
+samples/issue6451/underline_run_fragments.hwpx	pdf/underline_run_fragments-2020.pdf	4	99.71	99.89	99.64	100.00
+samples/issue6451/underline_run_fragments.hwpx	pdf/underline_run_fragments-2020.pdf	5	99.18	99.18	99.19	99.19
+samples/issue6451/underline_run_fragments.hwpx	pdf/underline_run_fragments-2020.pdf	6	98.64	98.68	98.70	98.88
+samples/issue6469/wmf_fill_shapes.hwpx	pdf/issue6469/wmf_fill_shapes-2020.pdf	11	99.75	99.98	99.65	99.90
+samples/issue6469/wmf_fill_shapes.hwpx	pdf/issue6469/wmf_fill_shapes-2020.pdf	12	97.80	98.15	97.79	98.11
+samples/issue6469/wmf_fill_shapes.hwpx	pdf/issue6469/wmf_fill_shapes-2020.pdf	13	99.50	99.80	99.28	99.63
+samples/issue6469/wmf_fill_shapes.hwpx	pdf/issue6469/wmf_fill_shapes-2020.pdf	14	99.97	99.98	99.93	99.93
+samples/issue6469/wmf_fill_shapes.hwpx	pdf/issue6469/wmf_fill_shapes-2020.pdf	15	99.74	99.75	99.96	99.98
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	1	99.17	99.95	99.09	99.88
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	2	99.99	100.00	99.99	100.00
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	4	99.96	99.96	99.98	99.98
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	5	99.20	99.20	99.19	99.18
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	6	99.90	99.90	99.90	99.90
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	7	99.59	99.59	99.60	99.60
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	8	99.83	99.83	99.90	99.90
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	9	99.98	99.98	99.98	99.98
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	10	99.80	99.94	99.80	99.91
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	11	99.37	99.85	99.37	99.88
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	13	99.99	99.99	99.99	99.99
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	20	99.14	99.14	99.27	99.27
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	21	99.99	99.99	99.99	99.99
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	22	99.96	99.96	99.95	99.96
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	23	99.99	99.99	99.99	99.99
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	24	99.99	99.99	99.98	99.98
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	25	99.99	99.99	99.99	99.99
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	26	99.99	99.99	99.99	99.99
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	27	99.97	99.97	99.98	99.98
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	28	99.99	99.99	99.99	99.99
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	29	99.99	99.99	99.98	99.98
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	30	99.98	99.98	99.98	99.98
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	31	99.99	99.99	99.98	99.98
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	32	99.99	99.99	99.98	99.98
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	33	99.31	99.42	99.31	99.41
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	34	98.17	98.28	98.11	98.21
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	35	99.76	99.98	99.77	99.97
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	36	99.69	99.80	99.68	99.78
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	37	98.19	98.30	98.14	98.25
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	38	99.70	99.97	99.71	99.97
+samples/issue6300/trade_report_forced_break_object.hwp	pdf/issue6300/trade_report_forced_break_object-2024.pdf	39	98.73	98.73	98.76	98.76
+samples/issue6284/child_policy_top_caption_charts.hwpx	pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6295_issue6284_child_policy_top_caption_charts-2020.pdf	5	99.53	99.53	99.52	99.52
+samples/issue6284/child_policy_top_caption_charts.hwpx	pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6295_issue6284_child_policy_top_caption_charts-2020.pdf	6	95.60	95.62	95.49	95.52
+samples/issue6284/child_policy_top_caption_charts.hwpx	pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6295_issue6284_child_policy_top_caption_charts-2020.pdf	7	94.15	94.10	93.93	93.94
+samples/issue6284/child_policy_top_caption_charts.hwpx	pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6295_issue6284_child_policy_top_caption_charts-2020.pdf	11	82.24	82.22	82.06	82.04
+samples/issue6284/child_policy_top_caption_charts.hwpx	pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6295_issue6284_child_policy_top_caption_charts-2020.pdf	16	95.41	95.41	95.69	95.69
+samples/issue6284/child_policy_top_caption_charts.hwpx	pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6295_issue6284_child_policy_top_caption_charts-2020.pdf	17	85.02	85.01	85.08	85.07
+samples/issue6284/child_policy_top_caption_charts.hwpx	pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6295_issue6284_child_policy_top_caption_charts-2020.pdf	18	77.37	77.36	77.41	77.39
+samples/issue6284/child_policy_top_caption_charts.hwpx	pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6295_issue6284_child_policy_top_caption_charts-2020.pdf	22	53.86	53.86	53.92	53.92
+samples/issue6284/child_policy_top_caption_charts.hwpx	pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6295_issue6284_child_policy_top_caption_charts-2020.pdf	24	76.78	76.74	76.76	76.69
+samples/issue6284/child_policy_top_caption_charts.hwpx	pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6295_issue6284_child_policy_top_caption_charts-2020.pdf	29	88.95	88.95	89.17	89.17
+samples/issue6284/child_policy_top_caption_charts.hwpx	pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6295_issue6284_child_policy_top_caption_charts-2020.pdf	30	94.91	94.91	95.04	95.04
+samples/issue6712/한국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp	pdf/issue6712/한국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방-2020.pdf	1	98.84	98.84	98.87	98.86
+samples/issue6712/한국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp	pdf/issue6712/한국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방-2020.pdf	2	92.13	92.13	92.48	92.48
+samples/issue6551/113424_evaluation_guideline.hwpx	pdf/113424_evaluation_guideline-2024.pdf	5	99.19	99.35	98.87	99.06
+samples/issue6551/113424_evaluation_guideline.hwpx	pdf/113424_evaluation_guideline-2024.pdf	34	99.66	99.66	99.63	99.63
+samples/issue6551/113424_evaluation_guideline.hwpx	pdf/113424_evaluation_guideline-2024.pdf	35	99.65	99.65	99.54	99.55
+samples/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp	pdf/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방-review-20261009-2024.pdf	1	91.36	91.34	99.10	99.10
+samples/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp	pdf/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방-review-20261009-2024.pdf	2	90.23	90.24	92.84	92.84
+samples/issue6044/156513948.hwpx	pdf/pr6940-156513948-source-2020.pdf	4	91.59	91.58	91.55	91.54
+samples/issue6044/156513948.hwpx	pdf/pr6940-156513948-source-2020.pdf	5	93.29	93.27	93.30	93.29
+samples/issue6044/156513948.hwpx	pdf/pr6940-156513948-source-2020.pdf	7	99.90	99.90	99.91	99.91
+samples/issue6044/156513948.hwpx	pdf/pr6940-156513948-source-2020.pdf	8	93.66	93.64	93.62	93.59
+samples/issue6044/156513948.hwpx	pdf/pr6940-156513948-source-2020.pdf	9	98.98	99.04	99.11	99.13
+samples/issue6044/156513948.hwpx	pdf/pr6940-156513948-source-2020.pdf	20	99.46	99.46	99.52	99.52
+samples/issue6044/156513948.hwpx	pdf/pr6940-156513948-source-2020.pdf	21	99.99	99.99	100.00	100.00
+samples/issue6044/156513948.hwpx	pdf/pr6940-156513948-source-2020.pdf	23	99.95	99.95	99.94	99.94
+samples/issue6044/156513948.hwpx	pdf/pr6940-156513948-source-2020.pdf	28	99.79	99.87	99.85	99.88
+samples/issue6044/156513948.hwpx	pdf/pr6940-156513948-source-2020.pdf	29	99.99	99.99	100.00	100.00
+samples/issue6044/156513948.hwpx	pdf/pr6940-156513948-source-2020.pdf	30	88.27	88.22	85.62	85.50
+samples/issue6862/2249811-vessel-collision-analysis-form.hwp	pdf/2249811-vessel-collision-analysis-form-2020.pdf	1	98.20	98.24	98.13	98.20
+samples/issue6879/156767332-broadcast-revenue-attachment.hwp	pdf/156767332-broadcast-revenue-attachment-2020.pdf	2	99.81	99.95	99.90	100.00
+samples/issue6879/156767332-broadcast-revenue-attachment.hwp	pdf/156767332-broadcast-revenue-attachment-2020.pdf	3	99.08	99.43	99.26	99.43
+samples/issue6879/156767332-broadcast-revenue-attachment.hwp	pdf/156767332-broadcast-revenue-attachment-2020.pdf	4	72.74	72.67	72.74	72.62
+samples/issue6879/156767332-broadcast-revenue-attachment.hwp	pdf/156767332-broadcast-revenue-attachment-2020.pdf	5	99.58	99.95	99.74	100.00
+samples/issue6879/156767332-broadcast-revenue-attachment.hwp	pdf/156767332-broadcast-revenue-attachment-2020.pdf	6	99.76	99.92	99.89	100.00
+samples/issue6879/156767332-broadcast-revenue-attachment.hwp	pdf/156767332-broadcast-revenue-attachment-2020.pdf	8	43.01	42.87	43.03	42.91
+samples/issue6866/156627451-quantum-science-press-note.hwpx	pdf/156627451-quantum-science-press-note-2020.pdf	11	99.31	99.47	99.27	99.44
+samples/issue6866/156627451-quantum-science-press-note.hwpx	pdf/156627451-quantum-science-press-note-2020.pdf	12	99.07	99.26	99.08	99.25
+samples/issue6866/156627451-quantum-science-press-note.hwpx	pdf/156627451-quantum-science-press-note-2020.pdf	13	99.73	99.90	99.75	99.95
+samples/issue6866/156627451-quantum-science-press-note.hwpx	pdf/156627451-quantum-science-press-note-2020.pdf	14	99.97	99.98	99.93	99.93
+samples/issue6866/156627451-quantum-science-press-note.hwpx	pdf/156627451-quantum-science-press-note-2020.pdf	15	99.63	99.63	99.76	99.77
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/issue7642-legal-table-origin/78494-virtual-convergence-industry-decree-2020.pdf	5	99.92	99.93	99.91	99.91
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/issue7642-legal-table-origin/78494-virtual-convergence-industry-decree-2020.pdf	8	99.14	99.15	99.13	99.13
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/issue7642-legal-table-origin/78494-virtual-convergence-industry-decree-2020.pdf	15	99.93	99.94	99.98	99.97
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/issue7642-legal-table-origin/78494-virtual-convergence-industry-decree-2020.pdf	28	99.92	99.92	99.91	99.91
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/issue7642-legal-table-origin/78494-virtual-convergence-industry-decree-2020.pdf	31	98.41	98.45	98.44	98.48
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/issue7642-legal-table-origin/78494-virtual-convergence-industry-decree-2020.pdf	40	99.92	99.92	99.94	99.94
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/issue7642-legal-table-origin/78494-virtual-convergence-industry-decree-2020.pdf	49	98.98	98.99	99.00	99.00
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	pdf/issue7642-legal-table-origin/78494-virtual-convergence-industry-decree-2020.pdf	63	99.97	99.97	99.96	99.96
+samples/issue6896/156564340-ip-dispute-mediation.hwpx	pdf/156564340-ip-dispute-mediation-2020.pdf	3	99.70	99.72	99.70	99.71
+samples/issue6929/148776468_search_ad_terms_press_release.hwp	pdf/issue6929/148776468_search_ad_terms_press_release-hwp-2020.pdf	1	99.86	99.86	99.87	99.87
+samples/issue6929/148776468_search_ad_terms_press_release.hwp	pdf/issue6929/148776468_search_ad_terms_press_release-hwp-2020.pdf	4	99.87	99.87	99.95	99.95
+samples/issue7062/tac_object_host_line_height.hwp	pdf/tac_object_host_line_height-2020.pdf	1	97.16	97.46	97.63	97.93
+samples/issue7062/tac_object_host_line_height.hwp	pdf/tac_object_host_line_height-2020.pdf	2	99.51	99.51	99.52	99.52
+samples/issue7062/tac_object_host_line_height.hwp	pdf/tac_object_host_line_height-2020.pdf	3	96.92	96.93	97.31	97.32
+samples/issue7062/tac_object_host_line_height.hwp	pdf/tac_object_host_line_height-2020.pdf	4	98.83	98.83	98.91	98.90
+samples/issue7062/tac_object_host_line_height.hwp	pdf/tac_object_host_line_height-2020.pdf	5	96.33	96.33	96.65	96.65
+samples/issue7062/tac_object_host_line_height.hwp	pdf/tac_object_host_line_height-2020.pdf	6	99.26	99.45	99.35	99.51
+samples/issue7062/tac_object_host_line_height.hwp	pdf/tac_object_host_line_height-2020.pdf	7	97.53	97.53	97.84	97.83
+samples/issue7312/36494702_approval_tac_band.hwpx	pdf/issue7312/36494702_approval_tac_band-2020.pdf	1	99.47	99.99	99.43	100.00
+samples/issue7336/nested_table_fragment_cut.hwp	pdf/issue7336/nested_table_fragment_cut-2020.pdf	2	100.00	100.00	100.00	100.00
+samples/issue7336/nested_table_fragment_cut.hwp	pdf/issue7336/nested_table_fragment_cut-2020.pdf	4	99.95	99.99	99.94	99.98
+samples/issue7336/nested_table_fragment_cut.hwp	pdf/issue7336/nested_table_fragment_cut-2020.pdf	5	97.84	98.47	97.73	98.28
+samples/issue7336/nested_table_fragment_cut.hwp	pdf/issue7336/nested_table_fragment_cut-2020.pdf	6	100.00	100.00	100.00	100.00
+samples/issue7235/156086935_none_image_fill.hwp	pdf/issue7642-anomaly-contract-print-20261014/156086935_none_image_fill-2020.pdf	1	99.91	99.91	99.69	99.69
+samples/issue7235/156086935_none_image_fill.hwp	pdf/issue7642-anomaly-contract-print-20261014/156086935_none_image_fill-2020.pdf	9	99.95	99.95	99.95	99.95
+samples/issue7336/stored_frame_page_larger_rowbreak.hwpx	pdf/issue7336/stored_frame_page_larger_rowbreak-2020.pdf	5	100.00	100.00	100.00	100.00
+samples/issue7336/stored_frame_page_larger_rowbreak.hwpx	pdf/issue7336/stored_frame_page_larger_rowbreak-2020.pdf	6	98.87	98.90	99.30	99.33
+samples/issue7336/stored_frame_page_larger_rowbreak.hwpx	pdf/issue7336/stored_frame_page_larger_rowbreak-2020.pdf	7	96.57	96.55	96.86	96.84
+samples/issue7622/curly_quote_tac_native.hwpx	pdf/issue7622/curly_quote_tac_native-2020.pdf	1	72.03	72.03	100.00	100.00
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	9	98.38	98.39	98.35	98.36
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	10	98.35	98.35	98.36	98.36
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	11	98.68	98.69	98.31	98.31
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	12	99.44	99.44	99.38	99.38
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	13	98.01	98.02	97.94	97.95
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	16	98.06	98.53	98.00	98.49
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	17	99.39	99.39	99.38	99.38
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	18	97.81	98.46	97.77	98.45
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	19	98.52	98.53	98.46	98.46
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	20	98.27	98.75	98.17	98.67
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	21	98.83	98.84	98.73	98.73
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	22	98.16	98.66	98.02	98.55
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	23	98.90	98.91	98.84	98.84
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	24	98.47	98.98	98.29	98.83
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	25	99.29	99.29	99.25	99.26
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	26	97.83	98.09	97.82	98.10
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	27	98.18	98.18	98.10	98.10
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	28	98.38	98.85	98.26	98.75
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	29	99.57	99.58	99.53	99.53
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	30	97.96	98.53	97.83	98.43
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	31	97.55	97.56	97.55	97.55
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	32	99.18	99.53	99.09	99.45
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	33	98.48	98.48	98.46	98.46
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	34	97.51	98.65	97.30	98.49
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	35	99.45	99.46	99.36	99.36
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	36	98.57	99.19	98.46	99.12
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	37	98.49	98.50	98.46	98.46
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	38	98.53	99.13	98.44	99.08
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	39	98.40	98.40	98.24	98.24
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	40	97.67	98.24	97.63	98.23
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	41	98.74	98.75	98.70	98.70
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	42	96.09	98.23	95.97	98.21
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	43	98.48	98.48	98.16	98.16
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	44	97.71	98.45	97.53	98.31
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	47	97.38	97.38	97.74	97.74
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	48	91.79	91.78	91.89	91.89
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	49	97.74	97.74	98.15	98.16
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	50	98.70	98.73	98.83	98.88
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	51	97.51	97.52	97.57	97.57
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	52	98.59	98.61	98.69	98.72
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	53	98.70	98.70	98.67	98.68
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	54	99.30	99.31	99.36	99.39
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	55	98.45	98.50	98.01	98.02
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	56	98.41	98.43	98.46	98.51
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	57	97.99	98.00	98.03	98.03
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	58	97.29	97.30	97.32	97.35
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	59	95.99	95.98	95.88	95.87
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	60	97.79	97.81	97.96	98.00
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	61	98.57	98.58	98.47	98.47
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	62	99.26	99.28	99.31	99.36
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	63	99.19	99.20	99.06	99.07
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	64	98.30	98.33	98.47	98.52
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	65	99.27	99.28	99.22	99.22
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	66	98.65	98.66	98.77	98.81
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	67	98.36	98.37	98.33	98.33
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	68	98.02	98.04	98.19	98.23
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	69	98.34	98.38	98.16	98.17
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	70	98.33	98.35	98.35	98.40
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	71	98.33	98.34	98.25	98.25
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	72	97.12	97.22	97.70	97.96
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	75	98.38	98.38	98.01	98.01
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	76	98.07	98.07	98.06	98.06
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	77	97.88	97.89	97.87	97.87
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	78	98.00	97.98	97.94	97.92
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	79	99.36	99.37	99.25	99.26
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	80	98.02	98.01	98.02	98.02
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	81	97.98	97.99	97.97	97.97
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	82	98.21	98.20	98.21	98.20
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	83	98.04	98.05	98.06	98.07
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	84	97.51	97.50	97.49	97.48
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	85	98.07	98.08	98.06	98.06
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	86	98.24	98.24	98.19	98.18
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	87	98.07	98.08	98.09	98.10
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	88	98.22	98.22	98.01	98.00
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	89	98.30	98.30	98.22	98.23
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	90	98.87	98.86	99.03	99.02
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	91	98.22	98.23	98.07	98.07
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	92	98.29	98.28	98.36	98.35
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	93	98.10	98.11	98.02	98.02
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	94	99.87	99.87	99.80	99.80
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	95	97.83	97.84	97.80	97.80
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	96	96.12	96.11	96.16	96.15
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	99	98.51	98.51	98.43	98.44
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	100	99.26	99.27	99.22	99.23
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	101	98.03	98.03	98.00	98.01
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	102	97.78	97.79	97.87	97.89
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	103	99.12	99.12	99.10	99.10
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	104	97.94	97.95	97.96	97.97
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	105	98.26	98.26	98.23	98.23
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	106	98.24	98.25	98.08	98.09
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	107	98.53	98.54	98.49	98.50
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	108	98.92	98.93	98.82	98.84
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	109	98.21	98.22	98.21	98.21
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	110	97.82	97.83	97.82	97.83
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	111	98.40	98.41	98.28	98.28
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	112	97.01	97.02	97.06	97.07
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	113	97.81	97.81	97.78	97.78
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	114	98.00	98.02	97.97	98.00
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	117	98.27	98.28	98.18	98.19
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	118	96.57	96.56	96.47	96.46
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	119	98.12	98.12	98.02	98.02
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	120	99.10	99.09	99.06	99.06
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	121	99.33	99.34	99.30	99.31
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	122	98.44	98.44	98.36	98.35
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	123	98.92	98.93	98.96	98.96
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	124	98.97	98.97	98.95	98.95
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	125	98.47	98.48	98.39	98.39
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	126	99.41	99.41	99.34	99.34
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	127	99.42	99.44	99.39	99.40
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	128	99.36	99.35	99.16	99.15
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	129	97.67	97.67	97.68	97.68
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	133	98.59	98.61	98.58	98.59
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	137	99.94	99.96	99.91	99.91
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	139	99.95	99.97	99.93	99.93
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	141	99.45	99.46	99.33	99.33
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	143	99.95	99.97	99.92	99.92
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	145	99.94	99.96	99.91	99.92
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	147	99.94	99.96	99.91	99.91
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	149	99.95	99.97	99.92	99.92
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	151	99.93	99.96	99.90	99.90
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	153	99.95	99.97	99.91	99.92
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	155	99.95	99.97	99.93	99.93
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	157	99.94	99.97	99.91	99.92
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	159	99.95	99.97	99.92	99.92
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	161	99.94	99.97	99.91	99.92
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	163	99.95	99.97	99.91	99.91
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	165	99.82	99.84	99.91	99.92
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	167	99.94	99.96	99.91	99.92
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	169	99.79	99.87	99.69	99.70
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	171	99.94	99.96	99.91	99.91
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	173	99.95	99.97	99.93	99.93
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	175	99.94	99.97	99.92	99.92
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	177	99.84	99.86	99.92	99.92
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	179	99.95	99.97	99.91	99.92
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	181	99.95	99.97	99.91	99.91
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	183	99.95	99.98	99.92	99.92
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	185	99.73	99.96	99.69	99.90
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	186	99.77	99.95	99.74	99.90
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	187	99.94	99.95	99.89	99.90
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	188	99.73	99.94	99.71	99.88
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	189	99.88	99.96	99.83	99.91
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	190	99.96	99.96	99.90	99.90
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	191	99.85	99.95	99.83	99.88
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	192	99.95	99.95	99.90	99.90
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	193	99.91	99.93	99.81	99.82
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	195	99.96	99.97	99.92	99.92
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	197	99.97	99.97	99.93	99.93
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	199	99.96	99.97	99.93	99.93
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	201	99.96	99.97	99.93	99.93
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	pdf/issue6764/1613000-202200037-air-traffic-controller-cbta-hwp-2020.pdf	203	99.84	99.86	99.78	99.79
+samples/issues/2809/jubo_20260104.hwp	pdf/issue-2809-jubo_20260104-2020.pdf	3	99.27	99.27	99.30	99.30
+samples/issues/2809/jubo_20260104.hwp	pdf/issue-2809-jubo_20260104-2020.pdf	4	98.34	98.34	98.37	98.36
+samples/multi-table-001.hwp	pdf/multi-table-001-hwp-2020.pdf	2	97.50	97.50	97.47	97.46
+samples/issue8060/71352_lpg_regulatory_impact.hwp	pdf/issue8060/71352_lpg_regulatory_impact-2024.pdf	8	99.87	99.87	99.93	99.93
+samples/issue8060/71352_lpg_regulatory_impact.hwp	pdf/issue8060/71352_lpg_regulatory_impact-2024.pdf	10	99.99	99.99	99.92	99.92
+samples/issue8060/71352_lpg_regulatory_impact.hwp	pdf/issue8060/71352_lpg_regulatory_impact-2024.pdf	11	99.99	99.99	99.94	99.94
+samples/multi-table-002.hwp	pdf/multi-table-002-hwp-2020.pdf	2	99.64	99.64	99.66	99.66
+samples/pic-in-head-02.hwp	pdf/pic-in-head-02-hwp-2020.pdf	1	99.95	99.99	99.96	99.97
+samples/pic-in-head-02.hwp	pdf/pic-in-head-02-hwp-2020.pdf	3	90.33	90.32	90.11	90.11
+samples/pic-in-head-02.hwp	pdf/pic-in-head-02-hwp-2020.pdf	4	60.52	60.51	59.97	59.97
+samples/pic-in-head-02.hwp	pdf/pic-in-head-02-hwp-2020.pdf	5	99.97	99.97	99.96	99.96
+samples/pic-in-head-02.hwp	pdf/pic-in-head-02-hwp-2020.pdf	6	99.99	99.99	99.99	99.99
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-hwp-2020.pdf	1	100.00	100.00	100.00	100.00
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-hwp-2020.pdf	3	98.81	100.00	98.76	100.00
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-hwp-2020.pdf	4	100.00	100.00	100.00	100.00
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-hwp-2020.pdf	5	99.97	99.97	99.96	99.96
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-hwp-2020.pdf	7	100.00	100.00	100.00	100.00
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-hwp-2020.pdf	9	100.00	100.00	100.00	100.00
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-hwp-2020.pdf	11	56.38	56.38	56.64	56.64
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-hwp-2020.pdf	12	100.00	100.00	100.00	100.00
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-hwp-2020.pdf	13	100.00	100.00	100.00	100.00
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-hwp-2020.pdf	14	100.00	100.00	100.00	100.00
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-hwp-2020.pdf	15	100.00	100.00	100.00	100.00
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-hwp-2020.pdf	17	99.50	99.50	99.51	99.51
+samples/pic-in-head-01.hwp	pdf/pic-in-head-01-hwp-2020.pdf	18	99.91	99.91	99.91	99.91
+samples/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	2	99.64	99.65	99.68	99.68
+samples/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	5	99.19	99.19	99.81	99.81
+samples/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	6	98.59	98.59	98.63	98.63
+samples/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	7	99.68	99.68	100.00	100.00
+samples/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	8	99.51	99.51	99.89	99.89
+samples/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	9	99.48	99.48	99.83	99.83
+samples/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	10	99.76	99.76	99.81	99.81
+samples/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	11	99.54	99.54	99.90	99.90
+samples/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	12	99.51	99.51	99.75	99.75
+samples/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	13	99.50	99.50	99.87	99.87
+samples/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	14	99.30	99.30	99.48	99.48
+samples/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	15	99.91	99.91	100.00	100.00
+samples/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	16	99.22	99.22	99.75	99.75
+samples/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	17	96.18	96.18	96.38	96.38
+samples/mel-001.hwp	pdf/mel-001-hwp-2020.pdf	18	99.25	99.25	100.00	100.00
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-hwp-2020.pdf	1	100.00	100.00	100.00	100.00
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-hwp-2020.pdf	3	98.81	100.00	98.76	100.00
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-hwp-2020.pdf	4	100.00	100.00	100.00	100.00
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-hwp-2020.pdf	5	99.97	99.97	99.96	99.96
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-hwp-2020.pdf	7	100.00	100.00	100.00	100.00
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-hwp-2020.pdf	9	100.00	100.00	100.00	100.00
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-hwp-2020.pdf	11	56.38	56.38	56.64	56.64
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-hwp-2020.pdf	12	100.00	100.00	100.00	100.00
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-hwp-2020.pdf	13	100.00	100.00	100.00	100.00
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-hwp-2020.pdf	14	100.00	100.00	100.00	100.00
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-hwp-2020.pdf	15	100.00	100.00	100.00	100.00
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-hwp-2020.pdf	17	99.50	99.50	99.51	99.51
+samples/pic-in-table-01.hwp	pdf/pic-in-table-01-hwp-2020.pdf	18	99.91	99.91	99.91	99.91
+samples/rowbreak-problem-pages.hwp	pdf/rowbreak-problem-pages-hwp-2024.pdf	15	99.94	99.94	99.97	99.97
+samples/rowbreak-problem-pages.hwp	pdf/rowbreak-problem-pages-hwp-2024.pdf	16	98.47	98.47	98.43	98.43
+samples/rowbreak-problem-pages.hwp	pdf/rowbreak-problem-pages-hwp-2024.pdf	18	99.67	99.67	99.68	99.68
+samples/rowbreak-problem-pages.hwpx	pdf/rowbreak-problem-pages-hwpx-2020.pdf	15	99.94	99.94	99.97	99.97
+samples/rowbreak-problem-pages.hwpx	pdf/rowbreak-problem-pages-hwpx-2020.pdf	16	98.47	98.47	98.43	98.43
+samples/rowbreak-problem-pages.hwpx	pdf/rowbreak-problem-pages-hwpx-2020.pdf	18	99.67	99.67	99.68	99.68
+samples/table-vpos-01.hwp	pdf/table-vpos-01-hwp-2020.pdf	5	99.79	99.79	99.99	99.99
+samples/table-vpos-01.hwpx	pdf/table-vpos-01-hwpx-2020.pdf	5	99.79	99.79	99.99	99.99
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	1	99.96	99.96	99.99	99.99
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	2	99.89	99.90	99.92	99.93
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	3	80.93	80.93	80.61	80.61
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	4	99.71	99.80	99.81	99.89
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	5	99.86	99.86	99.99	99.99
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	6	98.82	99.31	98.92	99.35
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	7	92.58	93.02	92.72	93.08
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	8	93.89	94.23	93.49	93.80
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	10	99.65	99.94	99.68	99.98
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	11	99.57	99.91	99.51	99.92
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	12	99.93	99.93	99.95	99.95
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	14	97.23	97.29	97.24	97.29
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	15	99.41	99.45	99.51	99.56
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	16	99.98	99.98	100.00	100.00
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	17	99.97	99.97	100.00	100.00
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	18	99.92	99.99	99.93	100.00
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	19	96.39	96.39	96.65	96.65
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	20	99.98	99.98	99.99	99.99
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	21	99.98	99.98	100.00	100.00
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	22	99.22	99.22	99.57	99.57
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	23	68.47	68.43	68.28	68.24
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	24	70.64	70.60	70.71	70.67
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	25	99.37	99.54	99.37	99.54
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	26	96.48	96.48	96.67	96.67
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	27	84.88	84.91	84.78	84.79
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	28	99.83	99.91	99.93	100.00
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	29	99.77	99.98	99.80	100.00
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	30	99.89	99.89	100.00	100.00
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	31	99.94	99.94	99.98	99.98
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	32	99.83	99.83	99.82	99.82
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	33	99.90	99.90	100.00	100.00
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	34	99.59	99.59	99.73	99.73
+samples/pr-1674.hwp	pdf/pr-1674-hwp-2020.pdf	35	99.88	99.88	99.89	99.89
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	1	99.65	99.80	99.67	99.80
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	2	99.69	99.73	99.72	99.74
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	3	99.35	99.75	99.31	99.75
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	4	99.80	99.91	99.78	99.92
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	5	98.69	98.71	98.64	98.65
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	7	99.97	99.97	99.97	99.97
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	8	95.97	95.97	96.05	96.05
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	9	99.77	99.81	99.77	99.81
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	10	99.86	99.86	99.85	99.85
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	11	99.34	99.55	99.29	99.52
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	12	99.89	100.00	99.91	100.00
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	13	98.86	98.86	98.83	98.84
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	17	100.00	100.00	100.00	100.00
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	18	99.98	100.00	99.98	100.00
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	19	99.06	99.05	99.12	99.11
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	20	98.05	98.05	98.10	98.10
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	21	98.28	98.26	98.34	98.31
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	22	97.55	97.53	97.57	97.56
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	23	100.00	100.00	100.00	100.00
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	24	98.62	98.62	98.64	98.64
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	26	98.75	98.75	98.82	98.82
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	27	99.53	99.61	99.93	100.00
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	28	100.00	100.00	100.00	100.00
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	29	98.51	98.86	98.48	98.83
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	30	99.42	99.83	99.43	99.81
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	33	98.91	98.90	98.93	98.93
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	34	99.91	99.87	99.95	99.92
+samples/synam-001.hwp	pdf/synam-001-hwp-2020.pdf	35	99.47	99.51	99.50	99.51
+samples/kps-ai.hwp	pdf/kps-ai-2022.pdf	6	96.55	96.55	97.47	97.47
+samples/kps-ai.hwp	pdf/kps-ai-2022.pdf	7	98.72	99.25	99.11	99.68
+samples/kps-ai.hwp	pdf/kps-ai-2022.pdf	8	98.71	98.72	99.98	99.98
+samples/kps-ai.hwp	pdf/kps-ai-2022.pdf	10	93.88	93.88	93.83	93.83
+samples/kps-ai.hwp	pdf/kps-ai-2022.pdf	60	99.30	99.50	99.68	99.85
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	2	99.84	99.84	99.89	99.89
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	4	100.00	100.00	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	19	84.99	85.00	85.37	85.37
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	22	99.98	99.98	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	23	99.07	99.07	99.19	99.19
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	25	99.99	99.99	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	27	99.99	99.99	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	28	99.99	99.99	99.99	99.99
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	31	99.90	99.90	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	33	99.79	99.79	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	34	99.95	99.95	99.87	99.86
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	35	99.87	99.95	99.73	99.87
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	36	99.89	99.89	99.78	99.78
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	37	99.96	99.96	99.85	99.86
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	38	99.85	99.85	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	39	99.94	99.94	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	40	100.00	100.00	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	41	100.00	100.00	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	42	100.00	100.00	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	43	99.79	99.79	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	44	99.57	99.57	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	45	77.63	77.62	77.71	77.71
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	46	65.97	65.97	65.64	65.64
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	47	99.77	99.77	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	48	99.95	99.95	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	49	99.72	99.72	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	50	100.00	100.00	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	51	100.00	100.00	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	52	99.98	99.98	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	53	64.92	64.87	64.54	64.48
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	56	99.99	99.99	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	57	99.99	99.99	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	58	99.50	99.50	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	59	99.71	99.71	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	60	100.00	100.00	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	61	100.00	100.00	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	62	99.92	99.93	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	63	99.82	99.94	99.82	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	64	100.00	100.00	100.00	100.00
+samples/tac-img-02.hwpx	pdf/tac-img-02-hwpx-2024.pdf	65	99.88	100.00	99.82	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	2	99.84	99.84	99.89	99.89
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	4	100.00	100.00	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	19	100.00	100.00	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	22	99.98	99.98	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	23	99.07	99.07	99.19	99.19
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	25	99.99	99.99	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	27	99.99	99.99	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	28	99.89	99.89	99.93	99.93
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	31	99.90	99.90	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	33	99.79	99.79	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	34	99.95	99.95	99.87	99.86
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	35	99.87	99.95	99.73	99.87
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	36	99.89	99.89	99.78	99.78
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	37	99.96	99.96	99.85	99.86
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	38	99.85	99.85	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	39	99.94	99.94	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	40	100.00	100.00	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	41	100.00	100.00	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	42	100.00	100.00	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	43	99.79	99.79	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	44	99.57	99.57	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	45	99.65	99.65	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	46	99.55	99.55	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	47	99.77	99.77	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	48	99.95	99.95	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	49	99.72	99.72	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	50	100.00	100.00	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	51	100.00	100.00	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	52	99.98	99.98	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	53	99.99	100.00	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	56	99.99	99.99	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	57	99.99	99.99	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	58	99.50	99.50	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	59	99.71	99.71	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	60	100.00	100.00	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	61	100.00	100.00	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	62	99.92	99.93	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	63	99.82	99.94	99.82	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	64	100.00	100.00	100.00	100.00
+samples/tac-img-02.hwp	pdf/tac-img-02-hwp-2020.pdf	65	99.88	100.00	99.82	100.00
+samples/task2097/1741000_project_application.hwp	pdf/task2097/1741000_project_application-hwp-2020.pdf	1	98.30	98.99	98.44	99.10
+samples/task2097/1741000_project_application.hwp	pdf/task2097/1741000_project_application-hwp-2020.pdf	2	99.89	99.90	99.83	99.83
+samples/task2093/1192000_hydrogen_policy_research.hwp	pdf/task2093/1192000_hydrogen_policy_research-hwp-2020.pdf	12	78.23	78.23	78.04	78.04
+samples/task2097/21217935_simsa_jipyo.hwp	pdf/21217935_simsa_jipyo-hwp-2020.pdf	1	99.29	99.40	99.30	99.40
+samples/task2097/21217935_simsa_jipyo.hwp	pdf/21217935_simsa_jipyo-hwp-2020.pdf	2	99.81	100.00	99.77	100.00
+samples/task2097/21217935_simsa_jipyo.hwp	pdf/21217935_simsa_jipyo-hwp-2020.pdf	3	97.55	97.67	97.39	97.55
+samples/task2097/21217935_simsa_jipyo.hwp	pdf/21217935_simsa_jipyo-hwp-2020.pdf	4	99.96	99.99	99.94	100.00
+samples/task2097/21217935_simsa_jipyo.hwp	pdf/21217935_simsa_jipyo-hwp-2020.pdf	5	99.87	100.00	99.87	100.00
+samples/task2097/21217935_simsa_jipyo.hwp	pdf/21217935_simsa_jipyo-hwp-2020.pdf	6	99.79	100.00	99.75	100.00
+samples/task2097/21217935_simsa_jipyo.hwp	pdf/21217935_simsa_jipyo-hwp-2020.pdf	7	99.91	99.98	99.89	100.00
+samples/task2097/21217935_simsa_jipyo.hwp	pdf/21217935_simsa_jipyo-hwp-2020.pdf	8	99.94	99.96	99.93	99.99
+samples/task3236/issue3236_split_table.hwpx	pdf/task3236/issue3236_split_table-hwpx-2020.pdf	2	99.93	99.93	99.98	100.00
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf	12	99.97	99.98	99.95	99.99
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf	31	99.96	99.98	99.97	99.98
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf	32	96.83	96.82	96.98	96.97
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf	33	99.98	99.99	99.96	99.97
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf	35	99.72	99.73	99.98	100.00
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf	55	99.29	99.98	99.24	99.98
+samples/task2097/75544_pii_bunseok.hwpx	pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf	59	99.74	99.84	99.79	99.86
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf	3	94.55	94.55	94.63	94.63
