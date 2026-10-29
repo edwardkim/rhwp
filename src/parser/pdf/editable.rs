@@ -563,6 +563,16 @@ fn assemble(
                     doc.doc_info.para_shapes[previous.para_shape_id as usize].spacing_after = after;
                     join(previous, &paragraph, allocation)?;
                     carried_trailing = restore_fixed_trailing(doc, previous, allocation)?;
+                    // [#8362] 뒤 조각의 다음 글이 그림으로 시작하면 사이 간격은 이 문단의 아래
+                    // 간격에 들어 있다. 늘어난 꼬리 몫은 거기서 먼저 뺀다 — 다음 문단 앞 간격에서만
+                    // 빼면 같은 몫이 두 번 들어가 원본보다 한 줄간격 벌어졌다(2010판 6쪽 첫 줄 뒤).
+                    if carried_trailing > 0 {
+                        let shape = &mut doc.doc_info.para_shapes[previous.para_shape_id as usize];
+                        // Paragraph measures are stored as twice HWPUNIT.
+                        let taken = (2 * carried_trailing).min(shape.spacing_after.max(0));
+                        shape.spacing_after -= taken;
+                        carried_trailing -= taken / 2;
+                    }
                     joined += 1;
                 }
                 _ => {
