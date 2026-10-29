@@ -1842,3 +1842,10 @@ ignored `tab-fragment-candidate-native-focus-20261029/result.json`에 있다.
 모두 정확히 한 번 수집되는 것을 확인했다. 파일별 suite 대응은 ignored
 `committed-head-issue8153-collection-20261029.json`에 기록했다. 수집 확인은
 검사 실행과 통과를 뜻하지 않는다.
+
+탭 조각 실험 소스의 표준 최적화 fresh WASM 빌드는 잡 8개와
+`codegen-units=16`으로 종료 코드 0을 확인했다. 최종 WASM SHA-256은
+`58a2d437e8e18bfae4801dea1cec6fccb4f09e7bbce372c632309a809f670d2b`다.
+실험 소스·glue 해시와 빌드 기록은 ignored
+`tab-fragment-candidate-fresh-wasm-20261029/receipt.json`에 있다. 브라우저
+전쪽 출력은 이 빌드 완료와 별도이며 실행 중이다.
