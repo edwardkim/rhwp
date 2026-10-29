@@ -1,8 +1,12 @@
-> 현재 상태(2026-10-29): 메인테이너 보정의 Native/fresh WASM 전쪽 시각 검증과 확대 판독을 완료했다. 전체 로컬 회귀를 진행 중이며 PR 제출·머지 완료는 아직 아니다. [최종 시각 증거](assets/issue_8040/README.md).
+> 현재 상태(2026-10-29): 메인테이너 보정의 Native/fresh WASM 전쪽 시각 검증과 확대 판독을 완료했다. 필수 로컬 검증을 모두 통과했다. 통합 PR의 최신 head CI 확인과 머지가 남았다. [최종 시각 증거](assets/issue_8040/README.md).
 
 # PR #8040 검토 — 반복 저장과 편집 후 머리말 상속
 
-## 최종 판정
+## 현재 판정
+
+**메인테이너 보정 후 수용 가능 — 필수 로컬 검증과 시각 검증 완료, 통합 head CI 대기.** 반복 저장 문제는 선행 PR에서 이미 해결됐으며, 이번 후보는 뒤 구역 편집의 머리말 상속과 본문·중첩 표 배치를 보정했다. 원본·실제 삽입·삽입 후 삭제·HWPX 대조군의 Native/fresh WASM 전쪽 검증과 확대 판독을 완료했다. 예외 없이 본문 배치도 수정하라는 메인테이너 결정에 따라 기존 배치 결함을 면제하지 않았다. 아래 초기 보류와 중간 측정은 원인 추적 기록이며 현재 결과는 문서 끝의 최종 검증 기록과 [시각 증거](assets/issue_8040/README.md)를 따른다.
+
+## 최초 조사 판정 — 보정 전
 
 **머지 보류 — 저장 문제는 최신 devel에서 해결됐지만, 뒤 구역 편집 후 짝수 쪽 머리말 소실은 재현된다.**
 
@@ -168,6 +172,37 @@ Native와 WASM 모두 삽입·삭제 후 네 쪽 PNG가 같은 실행 경로의 
 
 위 측정 뒤 `tests/cases/issue_8040_later_section_edit.rs`의 관계 검사 2건을 정식 자동 수집 경로에 추가했다. 실제 삽입 직후 홀짝 머리말 소유와 삽입·삭제 후 모든 쪽의 내용 순서·문단/표/셀 소유·변하지 않은 배치 상자를 검사한다. 하드코딩한 좌표나 설치 폰트 가정은 없다. 본문 관계 검사 초안은 1a7c5ad250에서 2쪽 첫 표가 올라가 FAIL, 후보에서 PASS이며 정식 두 검사도 로컬 진단 실행에서 통과했다. 기존 정확한 px 검사는 변경하지 않았다.
 
-추가 실행은 원본 호스트 경계 4건, 실제 셀 Enter 성장/복구 5건, 관련 편집 들여쓰기·상속·저장 글줄 26건 PASS다. 합성 Both/Odd/Even·중첩·첫쪽 감추기 12조합 진단은 별도 증거이며 한컴 일치 증거로 승격하지 않는다. 전체 suite의 최종 결과는 아직 대기 중이다.
+추가 실행은 원본 호스트 경계 4건, 실제 셀 Enter 성장/복구 5건, 관련 편집 들여쓰기·상속·저장 글줄 26건 PASS다. 합성 Both/Odd/Even·중첩·첫쪽 감추기 12조합 진단은 별도 증거이며 한컴 일치 증거로 승격하지 않는다.
+
+### 필수 로컬 검증
+
+검증 head `9de78e8aef`, runtime source `f8f31d0166`, Rust 1.93.1, Linux/WSL2. 공용 `target/pr-review`, build jobs 6, `release-test`의 opt-level 1 / codegen-units 64를 사용했다. 검사 중 제품 소스와 기대값은 변경하지 않았다.
+
+| 필수 검사 | 결과 |
+| --- | --- |
+| `cargo fmt --all -- --check` | PASS |
+| `cargo clippy --locked -- -D warnings` | PASS |
+| `cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings` | PASS |
+| `cargo build --locked --workspace` | PASS |
+| `cargo clippy --locked --workspace --all-targets -- -D warnings` | PASS |
+| suite manifest 준비·검사 | PASS: source 1,887개, integration target 48개; 새 검사 2건 자동 수집 |
+| `cargo nextest run --locked --cargo-profile release-test --tests --no-fail-fast` | PASS: 55 binaries, 12,047 passed / 45 skipped / 0 failed, 실행 1,955.330초 |
+| Native Skia lib·missing picture·direct PDF | PASS: lib 4,040 passed / 12 ignored, missing picture 2/2, direct PDF 14/14 |
+| fresh release WASM·wasm-opt·Chrome Canvas·전쪽 TSV·확대 판독 | PASS: 위 정식 시각 증거 |
+| 문서 상대 링크·`git diff --check` | PASS |
+
+Native Skia는 정본의 `cargo test --locked --profile release-test --features native-skia --lib`와 `scripts/run-rust-test.mjs`의 `issue_2225_missing_picture_placeholder`, `render_p37_direct_pdf_export`를 순서대로 실행했다. 각 helper의 다른 suite 항목 skip은 명시한 case 필터의 결과이며 전체 회귀는 별도로 완료했다.
+
+전체 nextest의 `default` 프로필을 그대로 사용했으며 이번 작업에서 skip·필터를 추가하지 않았다. 로컬 nextest 0.9.137은 필수 최소 버전을 충족한다. 권장 0.9.140 안내와 CI duration 프로필의 미지원 JUnit 설정 경고는 있었지만 실제 기본 프로필 회귀는 exit 0으로 완료했다. 임시 실행 로그는 `output/pr-review/pr8040/logs/final-*.log`에 있으며 종료 정리 대상이다.
 
 최신 upstream/devel은 `1cb3a6dae1094f6ed552a8fdbffea8b89868d555`다. 추가된 #8196은 Studio 선택 배치·renderer 준비 경합 보정이며 Rust/common API 변경은 없다. 원 해결·통합 검토 기록과 변경 파일을 확인했고 `git merge-tree --write-tree HEAD upstream/devel`은 충돌 없이 `7e552f3723a32dc8446c0ba1eb8e88cd57cdfbe3`을 만들었다. 단순 base 갱신 때문에 source를 재작성하거나 이미 완료한 WASM을 재빌드하지 않는다. 새 Studio 기능을 이 작업에서 통합해 실행 검증했다고 주장하지 않으며, 제출/병합 직전 최신 base·head CI·충돌 상태는 다시 확인한다.
+
+### Merge 후 contributor PR comment 계획
+
+필수 로컬 검사와 통합 PR의 최신 head CI, 실제 merge SHA 및 원 PR의 merged 상태를 확인한 뒤 게시한다. 첫 기여와 재현 검사에 한국어 존댓말로 감사와 환영을 전한다. 원 기여의 유효한 머리말 상속 방향, 선행 #8064에서 이미 해결된 저장 문제, 최신 자원 정책 및 독립 Print 비교에 따라 추가한 본문·중첩 셀 보정을 구별한다. contributor fork branch는 유지한다.
+
+시각 수치는 위 표의 삽입/삽입·삭제 및 HWPX 전쪽 최저값을 사용하고, 글리프 차이가 남는다는 범위도 그대로 알린다. 통합 merge SHA에 실제 존재하는 `mydocs/pr/assets/issue_8040/native-p004-review.png`, `wasm-p004-review.png` 및 각 overlay를 Markdown 이미지로 표시한다. 전체 TSV·검토 기록과 [Visual Sweep 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment)을 연결한다. 폰트 바이너리나 폰트가 임베딩된 SVG는 게시하지 않는다. CI와 merge 값은 지금 추정해 채우지 않고 완료 후 실제 API 결과를 사용한다.
+
+### 제출 전 셀프 리뷰
+
+원 입력 속성에서 공통 저장 줄·셀 최소 높이 생산자, 측정, fit/paint 소비 경로를 대조했다. 전역 편집 플래그를 제거한 자리의 실제 dirty·현재 높이·줄 소유 검증은 유지되고, 실제 셀 성장·페이지 분할의 기존 전체 회귀가 통과했다. 문서 식별자/고정 수치 분기나 좌표 clamp는 추가하지 않았다. 머리말은 bounded 공통 수집기와 fallible clone을 두 경로에서 사용한다. 원본·실제 편집 저장본·독립 Print의 커밋 바이트와 측정 SHA는 provenance로 확인했고, 새 관계 검사 2건은 정식 suite에서도 통과했다. 로컬 검토에서 남은 차단 결함은 발견하지 못했다. 통합 PR의 CI와 최종 base/head 확인은 제출 후 별도 판정한다.
