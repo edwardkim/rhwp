@@ -2,6 +2,73 @@
 
 ## 최종 판정
 
+**승인 — 2026-10-29 리베이스·보정 head를 재검토했으며 추가 결함을 발견하지 않았다.**
+
+검토 code SHA는 `9d4a974db0d31ed302df4f2da0f513fd6c9b9577`, 통합 base는
+`6a3cb5a9c194366169a9bb11ee75b6addfa2e8c4`다. 사용자의 재리뷰 요청에 따른 collaborator
+본인 PR의 self-review이며 GitHub self-approve·reviewer 지정·병합은 수행하지 않았다.
+문서-only trailing head의 실제 CI 확인과 사용자 병합 승인은 별도 조건이다.
+
+### 재검토 경로와 범위
+
+기본 경로는 `collaborator_self_merge`, 보조 경로는 `intake_and_review`, `local_validation`,
+`visual_fixture_evidence`, `review_template`, `rework_and_exceptions`, `review_only_fast_pass`다.
+PR 작성자는 postmelee, 대상은 devel, #8103은 참조이며 붙여넣기 성능은 #8197에서 추적한다.
+19개 파일·1,760줄 추가·48줄 삭제를 제품 코드, 회귀 검사, 검증 기록으로 나눠 검토했다.
+
+최신 upstream/devel `784ef465d8`까지 merge simulation은 충돌 없이 통과했다.
+새 base의 #8372는 Native host 패키징이며 이번 Studio 변경과 별개다. 이를 source에 다시
+리베이스하지 않았으며 해당 Native 패키지 기능을 이 후보에서 실행했다고 주장하지 않는다.
+
+### 코드와 실행 증거 대조
+
+| 검토 항목 | 근거와 판정 |
+| --- | --- |
+| 이전 보류 해소 | 현재 준비 실패는 공통 prepareRendererRevision에서 portable metrics·Canvas2D로 복구한다. stale·dispose 실패는 최신 pending을 변경하지 않는다. 충족 |
+| Undo 선택과 줌 | 현재 anchor/focus를 확정 page origin에 투영하고 reveal 예약만 별도로 소비한다. 실제 Backspace·Undo·Redo, 역선택·선택 해제·문서 교체를 확인했다. 충족 |
+| 충돌 해소 | #8360의 backendChanged → releaseAllRenderedPages → discardAll 순서를 유지했다. 같은 backend는 context를 폐기하지 않는다. 충족 |
+| 로컬 필수 검증 | 같은 code tree의 unit 2,675 PASS, 실제 WASM 타입 production build, package 계약 3 PASS, fresh WASM 최적화 완료. 충족 |
+| 재리뷰 추가 실행 | 실제 CanvasView 경계·surface cache·zoom scheduler 64 PASS, Chrome auto WebGL 선택 E2E 160 PASS. pageerror·caught render error 0. 충족 |
+| 리베이스 기능 보존 | 아래 구현 보고서의 base/후보 Undo 99·전체 선택 63·Enter 84·줌 37·모달 4·provider 34·PDF Studio 14 PASS 및 Worker 271개 단언을 대조했다. 충족 |
+| 일반성과 소비 경로 | 문서별 분기·clamp·golden 완화 없이 공통 준비 수명과 DOM 선택 투영을 수정했다. Canvas2D·CanvasKit·auto의 실제 실행 증거를 분리했다. 충족 |
+| 줄 구성·분할·이어받기·Print 기하 | Rust/model/serializer/paint 기하를 변경하지 않는다. 이 PR의 DOM overlay·context 수명 계약에는 비해당 |
+| 실물 fixture·기준값·전쪽 Print TSV | 실물 조판 회귀나 인쇄 기대값을 추가·변경하지 않았다. 합성 편집 동작과 화면 선택 계약이며 Native/한컴 fidelity 판정은 비해당 |
+| 주장과 증거 | 실패 주입을 자연 발생 자원 오류로 표시하지 않는다. 실제 package 타입 검증 성공과 base의 테스트 전용 CI stub API 누락 실패를 구분했다. 충족 |
+
+[충돌 해소·기능 보존 보고서](../../report/task_m100_8103_report.md)의 2026-10-29 절에
+입력·실행 명령·이전 base/head·반영 PR·WASM 해시·제약을 기록했다. 그 code tree는 현재 SHA와 같으며
+전체 2,675개 검사·633개 선택 E2E를 불필요하게 반복하지 않았다. 이번 추가 실행은
+`node --test tests/selection-layout-refresh.test.ts tests/canvas-view-surface-cache.test.ts tests/canvas-view-zoom-scheduler.test.ts`와
+`node e2e/selection-layout-issue8103.test.mjs --mode=headless --renderer=auto --surface=webgl`이다.
+Chrome·7700·SwiftShader 환경은 구현 보고서와 같고 로그는 ignored
+`output/pr-review/8196/rebase-20261029/review-focused.log`, `review-webgl.log`에 남겼다.
+
+### 정확한 code head CI
+
+- [CI 40870269748](https://github.com/edwardkim/rhwp/actions/runs/40870269748): success
+- [Render Diff·CanvasKit 40870269581](https://github.com/edwardkim/rhwp/actions/runs/40870269581): success
+- [CodeQL 40870269648](https://github.com/edwardkim/rhwp/actions/runs/40870269648): success
+- [Adapter inter-diff 40870269749](https://github.com/edwardkim/rhwp/actions/runs/40870269749): success
+- [Proptest 40870269729](https://github.com/edwardkim/rhwp/actions/runs/40870269729): success
+- CI Impact Policy: success. 영향 정책의 skipped job·GHAS neutral을 실제 실행 통과로 세지 않는다.
+
+### 시각 판독과 남은 범위
+
+[66% 마지막 쪽 PNG](../assets/issue_8103/auto-66-last-page.png)를 다시 열어 P369~P399와 선택 음영의
+일치를 확인했다. 이 파일은 직전 보정에서 만든 동일 code tree 증적이며 이번 재리뷰의 새 캡처로
+표시하지 않는다. 새 브라우저 실행에서도 400문단·10쪽·400개 음영, 재선택 없는 실제 삭제 범위와
+스크롤·줌 중 투영을 확인했다. 한컴 Print 일치율이나 수식·실물 조판 개선을 주장하지 않는다.
+
+### Merge 후 contributor PR comment 계획
+
+사용자가 병합을 승인하고 실제 merge가 끝난 뒤에만 merge SHA·CI·보정 결과·#8197 분리를
+한국어 존댓말로 게시한다. [Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)을
+연결하되 본 검토는 DOM 선택 판독임을 명시하며 존재하지 않는 TSV 수치를 쓰지 않는다.
+이미지는 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/issue_8103/auto-66-last-page.png`를
+사용한다. asset의 devel 반영 확인 → body-file 게시 → API 재조회 순서를 따른다.
+
+## 이전 판정 이력 — 2026-10-26
+
 **승인 — #8103 범위의 P2 보정과 로컬 재검증, 정확한 code head CI를 완료했다.**
 
 2026-10-26 collaborator 본인 PR 검토다. 검증 code head는 `1a5cea08307132d3deba18a1a01b85869717b726`다.
