@@ -4225,7 +4225,6 @@ impl LayoutEngine {
 
                         let ch = text_chars[ch_idx];
                         let (lang, ch_w) = text_metrics.at(ch_idx);
-                        carry_lang = lang;
                         let ts = with_stored_tabs(
                             metric_scope.style(styles, cs_id, lang, ch_idx),
                             ch_idx,

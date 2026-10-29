@@ -348,10 +348,6 @@ impl crate::wmf::converter::Player for SVGPlayer {
                 dest_width,
                 y_dest,
                 x_dest,
-                src_width,
-                src_height,
-                x_src,
-                y_src,
                 target,
                 ..
             } => {
