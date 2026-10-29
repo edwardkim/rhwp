@@ -452,15 +452,8 @@ fn refresh_source_program_projection_slots_with_storage<S: storage::Storage>(
             {
                 continue;
             }
-            let own_metric = style.font_metric_trusted_for_lang(language)
-                || super::font_metrics_data::layout_metric_face_name(
-                    primary,
-                    style.bold,
-                    style.italic,
-                )
-                .as_deref()
-                    == Some(primary);
-            if own_metric {
+            // 원본 프로그램의 전진폭이 검증된 경우에만 저장 줄을 다시 구성한다.
+            if style.font_metric_trusted_for_lang(language) {
                 if fallback_char_styles.is_none() {
                     fallback_char_styles = Some(build_fallback()?);
                 }
