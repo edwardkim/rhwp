@@ -41,3 +41,9 @@
 - 최적화 WASM SHA-256은 `360c16f99234145f823abc6bd1cbdf0e41d0bb60ff243cdbc5f7fbec8e93ff10`, JS SHA-256은 `d516f564d0c822a1936bd893c7850ff39c29ff935ac4f1e058506158ddf1e5e7`이다. `pkg`와 Studio public의 대응 산출물 해시가 각각 일치했다.
 - 같은 Print PDF와 실제 연결 그림을 사용한 fresh WASM 전763쪽은 raw 최저 97.14%(66쪽), 90% 미만 0쪽, 미대응 픽셀 0인 쪽 438쪽이다. 312쪽은 100.00%이며 Native에서도 100.00%다. TSV는 `output/issue8371/fresh-wasm-optimized-final-scores/silhouette.tsv`, 실행 기록은 `output/issue8371/fresh-wasm-optimized-final/wasm-export-complete.json`이다.
 - 선택한 312쪽과 66쪽은 Native 및 WASM의 review·overlay를 PDF와 직접 대조했다. 312쪽의 선행·후속 문단 소속과 첫 줄의 한컴 PDF 문자 원점은 글꼴에 독립적인 관계형 및 ±1px 검사로 보호한다. 해당 Rust 회귀 검사의 실행 결과와 66쪽 차이 판정은 이어서 기록한다.
+
+## 글꼴 비의존 ±1px 회귀
+
+- 312쪽의 첫 `SQL)` 문단과 선행 쪽 제목, 같은 쪽 후속 본문을 원본 텍스트와 쪽 소속으로 확인한다. 독립 한컴 Print PDF의 첫 글자 원점은 PDFium `FPDFText_GetCharOrigin`으로 읽은 96 dpi 쪽 좌표 `(113.3786, 142.4044)`이며, x와 기준선에 각각 ±1px을 적용한다.
+- `tests/cases/issue_8371_hwp3_page_boundary_pdf_origin.rs`는 설치 글꼴 파일을 적재하지 않는 `DocumentCore` 경로를 사용한다. 기본 환경과 빈 Fontconfig 설정 및 `RHWP_FONT_PATH`를 제거한 환경에서 각각 1개 테스트가 통과했다. 로그는 `output/issue8371/font-independent-boundary-nextest.log`, `output/issue8371/font-independent-empty-fontconfig-nextest.log`다.
+- Native·최적화 WASM 전쪽 TSV와 312쪽 review·overlay를 `mydocs/pr/assets/issue_8371/`에 보존한다. Native의 이전 전쪽 캡처는 이후 변경한 Native 소스와 최종 head에서 다시 출력해 대조할 예정이다. 테스트와 전쪽 검증을 구분하며 전체 Rust 검증은 아직 완료하지 않았다.
