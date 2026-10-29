@@ -1,5 +1,7 @@
 //! 관계형: 칸 대각선 모양 코드마다 그리는 대각선 수와 방향, 꼭짓점을 검사한다.
-//! MEASUREMENT
+//! 2026-10-29 측정 raw(96dpi, pdfium, 2px 실루엣): 1쪽 Native 99.99% / fresh WASM 100.00%,
+//! 전1쪽 최저 99.99% / 100.00%. 같은 조건의 devel `f291d772a`은 97.59% / 97.59%.
+//! 근거: `mydocs/pr/assets/cell-diagonal-shape-codes/*-silhouette.tsv`, `pdf/cell_diagonal_shapes/`.
 //!
 //! BORDER_FILL attr의 대각선 모양은 `/`(bit 2~4)와 `\`(bit 5~7)마다 3비트다.
 //! HWPX는 이 값을 NONE(0)·CENTER(0b010)·CENTER_BELOW(0b011)·CENTER_ABOVE(0b110)·
