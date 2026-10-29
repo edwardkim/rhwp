@@ -48,10 +48,20 @@ impl DocumentCore {
         &mut self,
         mut provider: impl FnMut(&NativePuaFontRequest) -> Option<(Vec<u8>, u32)>,
     ) -> Result<bool, HwpError> {
+        self.prepare_native_otf_fonts_multiple_with(|request| {
+            provider(request).into_iter().collect()
+        })
+    }
+
+    /// 같은 family의 분할 프로그램을 paint 후보 순서대로 공급한다.
+    pub(crate) fn prepare_native_otf_fonts_multiple_with(
+        &mut self,
+        mut provider: impl FnMut(&NativePuaFontRequest) -> Vec<(Vec<u8>, u32)>,
+    ) -> Result<bool, HwpError> {
         let mut fonts = (*self.native_pua_fonts).clone();
         fonts.clear_otf();
         for request in self.native_otf_font_requests() {
-            if let Some((bytes, index)) = provider(&request) {
+            for (bytes, index) in provider(&request) {
                 // 범위를 넘거나 읽을 수 없는 face는 원본 HFT 경로를 유지한다.
                 let _ = fonts.register_otf(
                     &request.family,

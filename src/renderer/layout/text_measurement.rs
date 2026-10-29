@@ -2457,7 +2457,7 @@ fn char_width_decision_with_hft_tracking<'a>(
                 if style
                     .native_otf_metrics
                     .as_ref()
-                    .is_some_and(|font| font.needs_faux_bold())
+                    .is_some_and(|font| font.needs_faux_bold(c))
                 {
                     if style.source_hwp3_hft_bold {
                         font_size * 0.05

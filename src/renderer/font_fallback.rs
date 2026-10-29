@@ -86,6 +86,8 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
     // 세리프 키워드 (영문) — "serif" 포함하되 "sans" 부분 문자열을 가진 폰트명 전체 제외
     if lower.contains("times")
         || lower.contains("hymjre")
+        || lower.contains("myeongjo")
+        || lower.contains("myungjo")
         || lower.contains("palatino")
         || lower.contains("georgia")
         || lower.contains("batang")
@@ -108,5 +110,18 @@ pub fn generic_fallback_for_weight(font_family: &str, bold: bool) -> String {
         drop_noto_sans_kr_extralight(chain)
     } else {
         chain.to_string()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::generic_fallback;
+
+    #[test]
+    fn romanized_myeongjo_names_keep_serif_fallback() {
+        for name in ["HY Sinmyeongjo", "Sinmyeong Jungmyeongjo", "AppleMyungjo"] {
+            assert!(generic_fallback(name).ends_with(",serif"), "{name}");
+        }
+        assert!(generic_fallback("Sinmyeong Junggothic").ends_with(",sans-serif"));
     }
 }

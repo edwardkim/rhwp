@@ -42,36 +42,48 @@ pub struct NativePuaMetrics {
 /// Native paint가 실제 선택한 OpenType CFF 프로그램의 전진폭이다.
 #[derive(Debug)]
 pub struct NativeOtfMetrics {
+    programs: Vec<NativeOtfProgram>,
+    advances: std::sync::Mutex<BTreeMap<char, Option<(f64, bool)>>>,
+}
+
+#[derive(Debug, Clone)]
+struct NativeOtfProgram {
     bytes: Arc<[u8]>,
     face_index: u32,
     digest: [u8; 32],
     faux_bold: bool,
-    advances: std::sync::Mutex<BTreeMap<char, Option<f64>>>,
 }
 
 impl PartialEq for NativeOtfMetrics {
     fn eq(&self, other: &Self) -> bool {
-        self.digest == other.digest
-            && self.face_index == other.face_index
-            && self.faux_bold == other.faux_bold
+        self.programs.len() == other.programs.len()
+            && self.programs.iter().zip(&other.programs).all(|(a, b)| {
+                a.digest == b.digest && a.face_index == b.face_index && a.faux_bold == b.faux_bold
+            })
     }
 }
 
 impl NativeOtfMetrics {
-    pub fn needs_faux_bold(&self) -> bool {
-        self.faux_bold
+    pub fn needs_faux_bold(&self, character: char) -> bool {
+        self.glyph_metric(character).is_some_and(|(_, faux)| faux)
     }
     pub fn advance_em(&self, character: char) -> Option<f64> {
+        self.glyph_metric(character).map(|(advance, _)| advance)
+    }
+    fn glyph_metric(&self, character: char) -> Option<(f64, bool)> {
         let mut cache = self.advances.lock().ok()?;
         if let Some(advance) = cache.get(&character) {
             return *advance;
         }
-        let value = (|| {
-            let face = ttf_parser::Face::parse(&self.bytes, self.face_index).ok()?;
+        let value = self.programs.iter().find_map(|program| {
+            let face = ttf_parser::Face::parse(&program.bytes, program.face_index).ok()?;
             let glyph = face.glyph_index(character).filter(|id| id.0 != 0)?;
             let width = face.glyph_hor_advance(glyph)?;
-            Some(f64::from(width) / f64::from(face.units_per_em()))
-        })();
+            Some((
+                f64::from(width) / f64::from(face.units_per_em()),
+                program.faux_bold,
+            ))
+        });
         cache.insert(character, value);
         value
     }
@@ -98,6 +110,49 @@ pub struct NativePuaFonts {
     otf_programs: BTreeMap<String, BTreeMap<(bool, bool), Arc<NativeOtfMetrics>>>,
 }
 
+#[cfg(test)]
+mod otf_program_tests {
+    use super::NativePuaFonts;
+
+    #[test]
+    fn split_family_uses_the_program_that_contains_each_character() {
+        // 저장소의 합성 CFF 글꼴은 가만 지원한다. 같은 글꼴의 cmap을 나로
+        // 바꿔 서로 다른 문자를 공급하는 두 번째 프로그램을 메모리에서 만든다.
+        let first = include_bytes!("../../tests/fixtures/fonts/RHWPHftOutline.otf");
+        let mut second = first.to_vec();
+        let table_count = u16::from_be_bytes([second[4], second[5]]) as usize;
+        let cmap = (0..table_count)
+            .find_map(|index| {
+                let pos = 12 + index * 16;
+                (second.get(pos..pos + 4) == Some(b"cmap")).then(|| {
+                    u32::from_be_bytes(second[pos + 8..pos + 12].try_into().unwrap()) as usize
+                })
+            })
+            .unwrap();
+        let sub =
+            cmap + u32::from_be_bytes(second[cmap + 8..cmap + 12].try_into().unwrap()) as usize;
+        assert_eq!(u16::from_be_bytes([second[sub], second[sub + 1]]), 4);
+        // 첫 세그먼트의 end/start와 idDelta를 가에서 나로 옮긴다.
+        for offset in [sub + 14, sub + 20] {
+            assert_eq!(&second[offset..offset + 2], &[0xac, 0x00]);
+            second[offset..offset + 2].copy_from_slice(&[0xb0, 0x98]);
+        }
+        let delta = 1u16.wrapping_sub('나' as u16).to_be_bytes();
+        second[sub + 24..sub + 26].copy_from_slice(&delta);
+        let mut fonts = NativePuaFonts::default();
+        fonts
+            .register_otf("synthetic", false, false, first, 0)
+            .unwrap();
+        fonts
+            .register_otf("synthetic", false, false, &second, 0)
+            .unwrap();
+        let metrics = fonts.get_otf("synthetic", false, false).unwrap();
+        assert!(metrics.advance_em('가').is_some());
+        assert!(metrics.advance_em('나').is_some());
+        assert!(metrics.advance_em('다').is_none());
+    }
+}
+
 impl NativePuaFonts {
     pub fn clear_otf(&mut self) {
         self.otf_programs.clear();
@@ -119,28 +174,51 @@ impl NativePuaFonts {
         }
         let face = ttf_parser::Face::parse(bytes, face_index)
             .map_err(|_| "invalid native OpenType CFF face")?;
-        if self.otf_programs.values().map(BTreeMap::len).sum::<usize>() >= MAX_PROGRAMS {
+        let count = self
+            .otf_programs
+            .values()
+            .flat_map(BTreeMap::values)
+            .map(|font| font.programs.len())
+            .sum::<usize>();
+        if count >= MAX_PROGRAMS {
             return Err("native OpenType program limit exceeded");
         }
         let total = self
             .otf_programs
             .values()
             .flat_map(BTreeMap::values)
+            .flat_map(|font| &font.programs)
             .map(|font| font.bytes.len())
             .sum::<usize>();
         if total.saturating_add(bytes.len()) > MAX_OTF_BYTES {
             return Err("native OpenType byte limit exceeded");
         }
+        let old = self
+            .otf_programs
+            .get(family)
+            .and_then(|v| v.get(&(bold, italic)));
+        let digest: [u8; 32] = Sha256::digest(bytes).into();
+        if old.is_some_and(|font| {
+            font.programs
+                .iter()
+                .any(|p| p.digest == digest && p.face_index == face_index)
+        }) {
+            return Ok(());
+        }
+        let mut programs = old.map_or_else(Vec::new, |font| font.programs.clone());
+        programs.push(NativeOtfProgram {
+            bytes: Arc::from(bytes),
+            face_index,
+            digest,
+            faux_bold: bold && !face.is_bold(),
+        });
         self.otf_programs
             .entry(family.to_owned())
             .or_default()
             .insert(
                 (bold, italic),
                 Arc::new(NativeOtfMetrics {
-                    bytes: Arc::from(bytes),
-                    face_index,
-                    digest: Sha256::digest(bytes).into(),
-                    faux_bold: bold && !face.is_bold(),
+                    programs,
                     advances: Default::default(),
                 }),
             );

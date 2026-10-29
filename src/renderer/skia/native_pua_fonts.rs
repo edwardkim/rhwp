@@ -8,7 +8,7 @@ use crate::{document_core::DocumentCore, renderer::TextStyle, HwpError};
 
 impl SkiaLayerRenderer {
     pub fn prepare_native_otf_fonts(&self, core: &mut DocumentCore) -> Result<bool, HwpError> {
-        core.prepare_native_otf_fonts_with(|request| {
+        core.prepare_native_otf_fonts_multiple_with(|request| {
             let style = font_style_for_text(&TextStyle {
                 font_family: request.family.clone(),
                 bold: request.bold,
@@ -23,32 +23,37 @@ impl SkiaLayerRenderer {
                 &request.family,
                 style,
             );
-            let selected = candidates
-                .first()
-                .filter(|candidate| candidate.source != "legacy")?;
-            let (bytes, index) =
-                if let Some((data, index)) = selected.typeface.to_existing_font_data() {
-                    (data.as_bytes().to_vec(), index)
-                } else {
-                    selected.typeface.to_font_bytes()?
-                };
-            if bytes.get(..4) != Some(b"OTTO") || bytes.len() > 32 * 1024 * 1024 {
-                return None;
-            }
-            let names = super::super::font_lookup::supplied_family_names(
-                &bytes,
-                index,
-                &selected.typeface.family_name(),
-            );
-            if !names.iter().any(|name| {
-                request
-                    .family
-                    .split(',')
-                    .any(|family| family.trim() == name)
-            }) {
-                return None;
-            }
-            Some((bytes, index))
+            candidates
+                .into_iter()
+                .filter_map(|selected| {
+                    if selected.source == "legacy" {
+                        return None;
+                    }
+                    let (bytes, index) =
+                        if let Some((data, index)) = selected.typeface.to_existing_font_data() {
+                            (data.as_bytes().to_vec(), index)
+                        } else {
+                            selected.typeface.to_font_bytes()?
+                        };
+                    if bytes.get(..4) != Some(b"OTTO") || bytes.len() > 32 * 1024 * 1024 {
+                        return None;
+                    }
+                    let names = super::super::font_lookup::supplied_family_names(
+                        &bytes,
+                        index,
+                        &selected.typeface.family_name(),
+                    );
+                    names
+                        .iter()
+                        .any(|name| {
+                            request
+                                .family
+                                .split(',')
+                                .any(|family| family.trim() == name)
+                        })
+                        .then_some((bytes, index))
+                })
+                .collect()
         })
     }
 
