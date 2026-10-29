@@ -1678,3 +1678,10 @@ ignored 분리 소스에 옮기고, 0.5px 차이 조건을 제거한 뒤 이어�
 `structural-origin-issue1488-r2-20261029.log`,
 `structural-origin-handbook-band-20261029.log`,
 `structural-origin-overlap-{12,7}-20261029.log`다.
+
+분리 실험의 Native CLI를 다시 빌드하고 두 편람 각각 9·86·131·140·260·291·
+309·312·314·315·316·326·344·352쪽을 기존 독립 한컴 2024 Print PDF와
+96dpi PDFium·2px raw 조건으로 비교했다. 두 원본 모두 검사한 14쪽의 raw와
+미대응 픽셀 수는 기존 후보와 같았다. 입력·PDF·실험 소스의 해시와 결과는
+ignored `structural-origin-native-focus-20261029/result.json`에 기록한다.
+표본 결과는 전쪽 Native·fresh WASM과 나머지 회귀의 성공을 대신하지 않는다.
