@@ -423,6 +423,7 @@ pub(crate) fn parse_hwpx_with_reservation(
         "Preview/PrvImage.png",
         crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH,
         crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH,
+        crate::model::document::HWP3_ORIGIN_HWPX_PARAGRAPH_AXIS_PATH,
         crate::model::document::HWP3_EXTERNAL_REALIGN_HWPX_PATH,
     ];
     let mut hwpx_aux_entries: Vec<(String, Vec<u8>)> = Vec::new();
@@ -545,8 +546,11 @@ pub(crate) fn parse_hwpx_with_reservation(
     let has_hwp3_origin = hwpx_aux_entries
         .iter()
         .any(|(path, _)| path == crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH);
+    // [#8303] HWP3 원본 산출물도 같은 문단 축 표지를 별도 엔트리로 싣는다.
     let paragraph_axis = hwpx_aux_entries.iter().any(|(path, value)| {
-        path == crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH
+        (path == crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH
+            || (has_hwp3_origin
+                && path == crate::model::document::HWP3_ORIGIN_HWPX_PARAGRAPH_AXIS_PATH))
             && value == crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS
     });
     let _hwp5_origin_guard = section::Hwp5OriginSourceGuard::set(has_hwp5_origin, paragraph_axis);
