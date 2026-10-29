@@ -88,3 +88,11 @@
 - 단위 테스트 분류 정책 검사는 4,099개 테스트를 확인해 통과했다. 현재 생성된 suite와 정책으로 재산출한 suite는 모두 동일한 1,865개 원본 테스트 파일을 포함하지만 suite별 배정이 달라 `--check`가 drift를 보고했다. 실행 중인 전체 검사를 종료한 뒤 `--prepare`와 정책 검사를 수행한다. 로그는 `output/issue8371/unit-test-tiers-final.log`, `output/issue8371/suite-manifest-final-allowed.log`다.
 - lint 예외를 포함한 소스에서 전체 nextest를 다시 실행해 12,041개 모두 통과하고 45개를 건너뛰었다. 로그는 `output/issue8371/full-rust-nextest-final-v13.log`다. 그 뒤 파생 suite를 `--prepare`로 재생성하고 `--check`를 통과했으며, workspace 전체 빌드도 통과했다. 로그는 `output/issue8371/suite-prepare-final.log`, `output/issue8371/suite-manifest-final-prepared.log`, `output/issue8371/workspace-build-final.log`다.
 - 이후 `upstream/devel`이 `ad4bf269ffef5adf2142b33004a9981fad7ce804`로 바뀐 것을 확인했다. 재생성된 suite의 집중 검사를 마친 다음 리베이스하고 새 base의 조판·편집 기능과 이 작업의 출력·회귀를 함께 다시 검증한다. 위 통과 결과는 이전 base의 증거다.
+
+## 새 기준 기능 보존 검증과 남은 후퇴
+
+- `ad4bf269ffef5adf2142b33004a9981fad7ce804` 위로 리베이스한 소스 `6aa38f7d6d`에서 전체 nextest 12,049개가 통과했고 45개를 건너뛰었다. #8040·#7905와 기존 실패를 포함한 집중 검사 11개도 통과했다. 로그는 `output/issue8371/rebase-full-nextest.log`, `output/issue8371/rebase-focused.log`다.
+- sample10의 새 Native와 최적화 WASM 전763쪽은 각각 최저 98.29%, 99.02%이며 두 TSV 모두 리베이스 전 검증본과 바이트가 같다. 66·312쪽 PNG도 각각 이전 직접 판독본과 바이트가 같다. TSV는 `output/issue8371/rebase-native-sample10/sample10/silhouette.tsv`, `output/issue8371/rebase-wasm-sample10-scores/silhouette.tsv`다.
+- #8040의 원본·삽입·삽입 후 삭제·HWPX 저장본을 Print와 전쪽 비교한 결과 Native 최저 98.64·98.61·98.61·97.33%, WASM 최저 98.77·98.73·98.73·97.47%다. 저장본의 재열기 출력이며 실제 편집 직후 출력과 혼동하지 않는다. 같은 환경의 새 base와 비교하면 Native 일부 쪽이 0.1%p 이상 하락해 원인 보정이 남았다. 결과는 `output/issue8371/rebase-{base-native,native-base-features,wasm-8040}/`이다.
+- #7905 원본의 동일 환경 Native 비교는 base 대비 1쪽 91.44→88.35%, 2쪽 93.51→86.32%, 3쪽 38.22→38.04%, 4쪽 57.57→60.26%, 5쪽 36.28→50.51%, 6쪽 42.35→40.61%다. 기준부터 3~6쪽은 미달이지만 현재 변경으로 1·2·3·6쪽이 후퇴했으므로 보정이 필요하다. 기준과 현재 비교 이미지는 `output/issue8371/rebase-law-{base,head}-panels/`에 있다.
+- 실제 시스템 OTF의 같은 family에 영문 전용 `ENGGT.otf`와 한글 전용 `HGGGT.otf` 등이 존재한다. 영문 family 별칭을 기존 굵기 판정에 추가하는 실험은 1쪽 88.35→88.37%로 효과가 없어 되돌렸다. 한글 전용 OTF를 별도 공급한 진단 역시 1쪽 86.94%, 2쪽 88.72%로 해결되지 않았다. 글꼴 이름이나 파일 순서만 원인으로 확정하지 않으며 원본 선언→실제 선택 글리프·메트릭→paint를 계속 대조한다. 실험 로그는 `output/issue8371/rebase-weight-candidate.log`, `output/issue8371/korean-otf-probe.log`다. 후퇴가 남아 PR은 준비 완료가 아니다.
