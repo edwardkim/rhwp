@@ -588,6 +588,7 @@ fn synthetic_overlap_cannot_claim_repeated_source_and_real_pua_keeps_source() {
         inner_char_size: 100,
         expansion: 0,
         char_shape_ids: vec![0],
+        hwp_wire_chars: false,
     })];
     para.char_offsets = vec![0, 9];
     para.char_count = 11;
