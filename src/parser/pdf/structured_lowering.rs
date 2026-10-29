@@ -1214,13 +1214,25 @@ fn paragraph(
     } else {
         100
     };
+    // [#8355] 한/글은 고정 줄간격 문단의 마지막 줄도 고정 피치를 차지한다 — 한/글 저장본의
+    // 고정 줄간격 문단은 마지막 줄까지 `줄 높이 + 줄간격 = 고정값 / 2` 다. 마지막 줄 줄간격을
+    // 0 으로 두고 문단 끝을 줄 바닥으로 재면, 그 뒤 간격에 같은 몫이 한 번 더 들어가 한/글에서
+    // 문단마다 그만큼 내려간다(편집 우선 가져오기 저장본 1쪽 오른쪽 단 −37px).
+    let mut bottom = last_end;
+    if fixed_line_height {
+        if let Some(last) = para.line_segs.last_mut() {
+            let trailing = (style.line_spacing / 2 - last.line_height).max(0);
+            last.line_spacing = trailing;
+            bottom += trailing as f32 / 100.;
+        }
+    }
     para.para_shape_id = doc.doc_info.para_shapes.len() as u16;
     allocation
         .push(&mut doc.doc_info.para_shapes, style)
         .map_err(message)?;
     Ok(FlowItem {
         top,
-        bottom: last_end,
+        bottom,
         paragraph: para,
     })
 }

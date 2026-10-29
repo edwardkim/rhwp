@@ -867,7 +867,13 @@ pub(super) fn reflow(
                         paragraphs[0].column_type = ColumnBreakType::Column;
                         current_column = g;
                     }
-                    previous_bottom = flow_bottoms[page_no][i];
+                    // [#8355] 글상자 아래 변은 마지막 줄 바닥이다. 그 줄이 차지하는 꼬리
+                    // 줄간격(고정 줄간격 문단)은 다음 글상자까지의 앞 간격에서 뺀다.
+                    let trailing = paragraphs
+                        .last()
+                        .and_then(|p| p.line_segs.last())
+                        .map_or(0, |seg| seg.line_spacing.max(0));
+                    previous_bottom = flow_bottoms[page_no][i] + trailing;
                     moved += paragraphs.len();
                     allocation.extend(&mut body, paragraphs)?;
                 }
