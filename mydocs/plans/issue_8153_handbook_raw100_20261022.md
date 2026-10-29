@@ -1649,3 +1649,13 @@ Node용 WASM 빌드는 완료했으며, 건너뛴 두 검사와 같은 파일의
 `final-individual-continuous_child_cut_shares_parent_alignment_and_preserves_all_child_text-20261029.log`에
 있다. 재실행 환경과 제품 코드 외의 모든 조건이 같다고 확정한 것은 아니며,
 공통 조판 경로의 원인과 편람 보정 보존을 확인해야 한다.
+
+고정 후보에서 저장 첫 조각 원점의 소비 경로를 추적했다. `block/prepare.rs`는
+인증한 저장 원점을 `first_fragment_saved_offset`으로 넘기고, `fragment/budget.rs`는
+해당 원점을 수용하면 `align_flow_to`로 예산의 흐름을 이동한다. 반면 `layout.rs`의
+`layout_partial_table_item`은 동일 helper를 다시 호출해 원점을 선택한다. 따라서
+조판이 수용·거부한 결과가 출력까지 전달되는지 별도로 확인해야 한다.
+HWP 5.0 표 62는 줄의 세로 위치와 페이지 첫 줄 플래그를 정의하지만 이 원점들의
+차이를 0.5px로 판정하는 규칙은 제시하지 않는다. 기존 미커밋 실험의 해당 수치를
+정답으로 채택하지 않았고, 쪽 소유 근거와 기존 편람 출력 보존을 확인하기 전에는
+제품 변경을 확정하지 않는다.
