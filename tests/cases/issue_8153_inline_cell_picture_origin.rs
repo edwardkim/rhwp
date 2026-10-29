@@ -1,10 +1,10 @@
 //! 관계형·고정형: 셀의 글자처럼 취급한 그림은 표의 원본 단 참조 축을 보존한다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T14:50:20+09:00 (098f4d2de8).
+//! 주석 갱신: 2026-10-30T06:54:13+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 139쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 139쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWP 139쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 139쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
 //! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 독립 한컴 2024 Print 139쪽의 원래 bitmap만 비교하므로 시스템 글꼴은 필요 없다.
 #![cfg(all(feature = "native-skia", not(target_arch = "wasm32")))]

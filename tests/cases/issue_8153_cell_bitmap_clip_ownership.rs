@@ -1,12 +1,12 @@
 //! 관계형: Q 셀 배경의 물리 Print 창과 본문 clip의 소유를 구분한다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T15:27:23+09:00 (b05965b4a4).
+//! 주석 갱신: 2026-10-30T06:54:13+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 291쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 301쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 291쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 301쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWP 291쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 301쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 291쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 301쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
 //! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 두 원본 291·301쪽은 Native/fresh DEV WASM에서 각각 raw 100%·미대응 0이다.
 //! 독립 Print 확대 판독과 수정 전 FAIL/후 PASS는

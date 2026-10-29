@@ -1,10 +1,10 @@
 //! 관계형·고정형: 병합 셀의 안쪽 열 간격과 걸침 셀의 동일한 물리 경계를 보존한다.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T16:48:38+09:00 (0942e59bc7).
+//! 주석 갱신: 2026-10-30T06:54:13+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
-//! HWP 35쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWP 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
-//! HWPX 35쪽 Native 100.00000% / fresh WASM 100.00000%.
-//! HWPX 전 383쪽 최저 Native 99.96463% / fresh WASM 99.96402%.
+//! HWP 35쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 35쪽 Native 100.00% / fresh WASM 100.00%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
 //! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
 //! 두 원본 35쪽은 독립 Print와 Native/fresh WASM raw100인 정상 대조군이다.
 #![cfg(not(target_arch = "wasm32"))]
