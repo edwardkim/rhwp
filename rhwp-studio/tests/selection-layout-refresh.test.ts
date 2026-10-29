@@ -194,6 +194,7 @@ test('자원 준비 중의 viewport·page replay는 최신 revision 준비 뒤�
       },
       wasm: { prepareCanvasMetrics: () => (++prepares === 1 ? first : second).promise },
       pageRenderer: {
+        getBackend: () => 'canvaskit',
         configure: () => { configured++; return false; },
         invalidateDocumentRevision() {},
       },
@@ -241,7 +242,7 @@ test('현재 준비 실패만 portable fallback으로 복구하고 stale·dispos
         rendererRefreshDeferred: false, rendererSession: session,
         wasm: { prepareCanvasMetrics: () => pending, invalidateCanvasMetrics: () => { invalidated++; } },
         viewportManager: { cancelPendingZoomRaster: () => false },
-        pageRenderer: { configure: () => { applied++; return false; }, invalidateDocumentRevision() {} },
+        pageRenderer: { getBackend: () => 'canvas2d', configure: () => { applied++; return false; }, invalidateDocumentRevision() {} },
         eventBus: { emit() {} },
       });
       const result = view.prepareRendererRevision(1, boundary === 'resolve'
@@ -272,6 +273,31 @@ test('현재 준비 실패만 portable fallback으로 복구하고 stale·dispos
         assert.equal(applied, 1);
         assert.equal(view.deferRenderUntilRendererReady(), false, '같은 revision에서 repaint를 재개한다');
       }
+    }
+  } finally { await vite.close(); }
+});
+
+test('backend 전환은 최신 base의 페이지 정리 뒤 context를 폐기하고 준비 대기를 해제한다', async () => {
+  const vite = await createServer({ root: fileURLToPath(new URL('..', import.meta.url)),
+    appType: 'custom', logLevel: 'silent', server: { middlewareMode: true } });
+  try {
+    const { CanvasView } = await vite.ssrLoadModule('/src/view/canvas-view.ts');
+    for (const backend of ['canvaskit', 'canvas2d']) {
+      const calls: string[] = [];
+      const view = Object.assign(Object.create(CanvasView.prototype), {
+        rendererSelectionPending: true, rendererRefreshDeferred: true,
+        activeRendererDecisionKey: 'old', viewportManager: { cancelPendingZoomRaster: () => false },
+        pageSurfaceLru: { clear: () => calls.push('lru') },
+        pageRenderer: { getBackend: () => 'canvaskit', configure: () => true },
+        releaseAllRenderedPages: () => calls.push('pages'),
+        canvasPool: { discardAll: () => calls.push('contexts') },
+        eventBus: { emit: () => calls.push('selection') },
+      });
+      assert.equal(view.applyRendererSelection({ backend, diagnostics: { decisionKey: 'new', renderProfile: 'screen' } }), true);
+      assert.deepEqual(calls, backend === 'canvas2d'
+        ? ['lru', 'pages', 'contexts', 'selection'] : ['lru', 'selection']);
+      assert.equal(view.rendererSelectionPending, false);
+      assert.equal(view.rendererRefreshDeferred, false);
     }
   } finally { await vite.close(); }
 });

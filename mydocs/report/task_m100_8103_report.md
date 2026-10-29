@@ -466,3 +466,76 @@ WASM은 같은 Rust 입력으로 10월 24일 fresh 빌드했던 산출물을 재
 기하와 출력 기대값 변경은 없다. DOM 선택 투영·renderer 준비 수명 검증을 한컴 Print fidelity
 검증으로 주장하지 않는다. 새 WebGL 66% 마지막 쪽 PNG를 직접 열어 P369~P399의 본문과
 음영을 확인하고 제출 asset을 갱신했다. 새 code head CI와 최종 self-review는 후속 기록한다.
+
+## 2026-10-29 최신 devel 충돌 해소와 재검증
+
+이 절은 리베이스 후 구현·실행 기록이며 최종 self-review 판정은 후속 단계다.
+이전 승인과 CI는 `1dd927f6f0dbc92398f565ee78f55788c4a35fed`/그 code head의 과거 결과다.
+사용자가 충돌 해소와 검증을 승인했으며 merge는 수행하지 않았다.
+
+- 이전 base: `9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a`.
+- 새 base: `6a3cb5a9c194366169a9bb11ee75b6addfa2e8c4`.
+- 리베이스 직후: `3b0acdb3be68003d20c1adb86acedb12db3214c0`.
+- 원 head는 `codex/issue-8103-before-rebase-20261029`에 보존했다. 기존 생성 JS도
+  `preserve issue8103 generated WASM glue before approved rebase 20261029` stash에 보존했다.
+
+### 충돌 해소
+
+#8360 (`f125c735c7`)의 `discardAll()`은 동일 기능이므로 base 구현을 그대로 유지했다.
+CanvasView도 base의 `backendChanged → releaseAllRenderedPages → discardAll`을 유지했다.
+이후 후보의 pending/deferred 해제·epoch fence·준비 실패 fallback을 적용한다.
+`range-diff`에서 이 중복 보정 제거 외 제품 변경의 의도를 보존했는지 확인했다.
+새 회귀는 backend 전환의 정리 순서와 같은 backend의 context 재사용을 검사한다.
+
+새 base의 실제 `getBackend()` 소비에 맞춰 테스트 대역 두 곳을 보완했다.
+기존 줌 E2E는 checkbox 클릭 후 플랫폼별 focus에 의존해 base에서 실패했다.
+배율 입력 자체에 focus한 뒤 Enter를 보내도록 해 원래의 입력 제출 계약을 실행했다.
+전체 선택 E2E는 앱 객체 생성 후 500ms만 기다리고 첫 canvas를 클릭하거나 문서 로드를 await하지
+않아 후보에서 초기 클릭이 실패했다. 실제 canvas·loadDocument Promise 완료를 기다리도록
+보정했다. 기존 내용·선택·스크롤·이벤트 단언과 배율 허용 범위는 완화하지 않았다.
+#8360의 기존 `issue8174-modal-focus.test.mjs` manifest 누락도 등록했다.
+
+### 검증 결과와 base 대조
+
+| 항목 | base / 후보 결과 |
+| --- | --- |
+| 전체 Studio/editor 단위 | 후보 2,675 PASS / 0 FAIL / 0 SKIP |
+| 실제 WASM 타입·production build | 후보 exit 0 |
+| WASM/editor package 계약 | 3 PASS |
+| 선택 E2E Canvas2D+auto / CanvasKit / auto WebGL | 후보 314 / 159 / 160 PASS, pageerror·caught render error 0 |
+| 기존 Undo / 전체 선택 / Enter / 줌 | 양쪽 각각 99 / 63 / 84 / 37 PASS |
+| 모달 입력 소유 / AI provider | 양쪽 각각 4 / 34 PASS |
+| PDF Studio 요청 실패·취소·복구·편집·HWPX 재열기 | 양쪽 각각 14 PASS |
+| 실제 PDF WASM/Worker 계약 | 271개 단언, 결과의 workers 카운터 11, test exit 0 |
+| renderer 계약 / E2E manifest | exit 0 / 174개와 174행 일치 |
+| 문서 링크·공백·고정 base 병합 시뮬레이션 | 통과 |
+
+검증 로그·비교 서버·입력 PR 본문은 ignored `output/pr-review/8196/rebase-20261029/`에 있다.
+비교 서버 7701은 새 base의 변경 대상 네 제품 파일을 git blob 원문으로 공급하고, 후보 7700은
+작업 트리를 공급했다. 나머지 제품 소스·의존성·WASM은 동일하다. HTTP로 실제 공급 소스를
+읽어 후보의 `prepareRendererRevision`이 base 응답에는 없는 것을 확인했다.
+
+반영 PR의 실제 공통 소비 경로는 다음과 같이 대조했다.
+
+| 반영 범위 | 소비 경로·검증과 판정 |
+| --- | --- |
+| #8360 PDF·context 정리 | CanvasView 문서 교체·backend 전환·모달·PDF Worker/실제 Studio 경로를 양쪽 실행, 유지 |
+| #8348 Studio provider·편집 | 같은 provider E2E와 Undo/선택/모달/Enter를 양쪽 실행, 유지 |
+| #8228/#8319/#8328의 글꼴·조판·CanvasKit 및 #8188/#8116/#7905 조판 | 새 base의 엔진·serializer·Native 출력·CanvasKit replay 구현을 수정하지 않았다. 후보 차이는 DOM 선택/준비 수명 네 파일뿐이다. 같은 fresh 엔진의 세 browser backend와 실제 문서 교체를 실행했다. Native 출력·줄 메트릭·Print 기하를 바꾸는 경로는 비해당이며 해당 PR의 독립 출력 증거를 재측정했다고 주장하지 않는다. |
+| #8284 등 의존성·CI·문서 PR | lockfile대로 npm ci, 실제 package build와 전체 unit을 실행했다. CI·정책·배포 source는 base와 동일하며 게시/배포는 비해당 |
+
+Rust·crates·vendor·rhwp-shared·npm/editor·scripts·workflow와 CanvasPool의 base 대비 diff가 0임을
+기록했다. 새 base/후보의 원본 PDF 입력 `pdf/issue8174/features/icc-rgb.pdf` 표시를 실제 캡처해
+대조했다. constrained/standard의 문서 영역은 같고 차이는 상태줄 처리 시간 88/126 픽셀뿐이다.
+같은 배율의 두 standard PNG를 직접 열어 네 색 영역·쪽 외곽·원점을 확인했다.
+새 WebGL 66% 마지막 쪽 캡처도 직접 열어 P369~P399의 음영·본문 일치를 확인했다.
+한컴 Print 일치나 기존 조판 PR 전체의 새 Visual Sweep으로 표시하지 않는다.
+
+fresh WASM은 호스트 locked wrapper, `CARGO_BUILD_JOBS=8`, release codegen-units 16으로
+wasm-opt까지 완료했다. pkg/public SHA-256은 모두
+`3fd93067969ecb08c7c8014abb3e849641480b0518a1ea36d816944406531c87`다.
+`tsconfig.ci-unit.json`은 base와 동일한 테스트 전용 stub에 새 API가 없어 실패했으며,
+Studio source 변경에 적용되는 package 경로의 실제 WASM 생성 타입·production build를 완료했다.
+테스트 전용 stub을 이번 범위에서 임의로 완화하지 않았다.
+
+새 head CI와 충돌 해소의 원격 확인 뒤 재리뷰한다. 이전 self-review 승인을 새 head에 자동 적용하지 않는다.

@@ -1,5 +1,5 @@
 import {
-  runTest, setTestCase, createNewDocument, loadHwpFile, clickEditArea, screenshot, assert,
+  runTest, setTestCase, createNewDocument, loadHwpFile, clickEditArea, waitForCanvas, screenshot, assert,
 } from './helpers.mjs';
 
 const pageErrors = [];
@@ -41,7 +41,7 @@ const buildDoc = (page) => createNewDocument(page)
     for (const b of w.getTableCellBboxes(0, created.paraIdx, created.controlIdx, 0) || []) {
       w.doc.insertTextInCell(0, created.paraIdx, created.controlIdx, b.cellIdx, 0, 0, `${'ABC'[b.col]}${b.row + 1}`);
     }
-    window.__canvasView?.loadDocument?.();
+    await window.__canvasView?.loadDocument?.();
     await nf(); await nf();
     return { paraIdx: created.paraIdx, controlIdx: created.controlIdx };
   }));
@@ -99,6 +99,7 @@ const installRectSpy = (page) => page.evaluate(() => {
 
 await runTest('⌘A 전체 선택 — 셀/글상자 범위 + 표 하이라이트 + 포커스 밖', async ({ page }) => {
   page.on('pageerror', (err) => pageErrors.push(String(err)));
+  await waitForCanvas(page);
   await clickEditArea(page);
   await page.evaluate(() => {
     const btn = [...document.querySelectorAll('button')].find(b => b.textContent?.includes('시작하기'));
@@ -509,7 +510,7 @@ await runTest('⌘A 전체 선택 — 셀/글상자 범위 + 표 하이라이트
         w.doc.insertText(0, i, 0, `LINE ${i}`);
         w.doc.splitParagraph(0, i, String(`LINE ${i}`).length);
       }
-      window.__canvasView?.loadDocument?.();
+      await window.__canvasView?.loadDocument?.();
       await nf(); await nf();
       return w.pageCount ?? w.getPageCount?.();
     });

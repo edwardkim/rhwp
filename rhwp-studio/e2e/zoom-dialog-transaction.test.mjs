@@ -198,6 +198,8 @@ runTest('Issue #6109 사용자 배율·보기 설정 transaction', async ({ page
   );
   await page.click('input[name="page-arrangement"][value="double"]');
   await page.click('input[aria-label="마우스 휠을 사용하여 좌우로 스크롤하기"]');
+  // 배율 입력의 Enter 계약을 검사한다. checkbox 클릭 후 focus는 플랫폼마다 다르다.
+  await page.focus('input[aria-label="사용자 정의 배율"]');
   await page.keyboard.press('Enter');
   await page.waitForSelector('.zoom-dialog', { hidden: true });
   await delay(page, 150);
