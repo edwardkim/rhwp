@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — 검증 진행 중.** 최신 devel에서의 재현, 실제 편집·저장·재열기 및 Native/fresh WASM 시각 검증을 완료한 뒤 판정한다.
+**메인터너 보정 후 수용 가능 — #8222 해결 범위의 로컬 검증 완료.** 탭 편집·저장 소유를 보존하고 최신 Storage·묶음 빈칸 복사 계약을 유지했다. 원격 CI·push·merge는 아직 실행하지 않았다.
 
 ## 접수 정보
 
@@ -25,12 +25,12 @@
 
 - `samples/lseg-05-tab.hwp`: 실제 한컴 저장본, Hancom Office 2010. 기존 독립 기준 `pdf/lseg-05-tab-hwp-2020.pdf`.
 - 기본 편집 경로: WASM `insertText`, `deleteText`, `splitParagraph`, `mergeParagraph` → HWP 저장 → 재열기.
-- 기본 회귀 대조: 원 PR의 5개 계약 검사를 고정 devel과 누적 후보에서 실행한다. 별도 worktree와 공용 `target/pr-review`를 사용하며 Cargo는 순차 실행한다.
+- 기본 회귀 대조: 원 PR의 5개 계약 검사를 고정 devel과 누적 후보에서 실행했다. 별도 worktree와 공용 `target/pr-review`를 사용하며 Cargo는 순차 실행한다.
 - 고정 devel 결과: 1개 통과, 삽입·삭제·분할·병합 4개 실패. 원 문제는 최신 devel에서도 남아 있다.
 - base WASM에서 실제 탭 문서 편집·저장·재열기를 실행했다. 텍스트와 1쪽은 보존되지만, 이것만으로 탭 소유·시각 통과를 판정하지 않는다.
-- 로그와 진단 산출물: `output/pr-review/chrisryugj-20261031/`. 최종 시각 증거는 정식 경로에 보존한 뒤 종료 정리한다.
+- 로그와 진단 산출물: `output/pr-review/chrisryugj-20261031/`. 시각 증거는 아래 정식 경로에 보존했고, 처리 종료 시 임시 산출물을 정리한다.
 
-현재 원 PR CI의 성공은 참고 정보이며, 메인터너 후보의 검증 완료를 대신하지 않는다. 보정 후보의 집중 검사 5개는 통과했다. 전체 필수 회귀·lint, 새 WASM 빌드 및 편집 후 독립 Print 대조는 진행 중이다.
+원 PR CI의 성공은 참고 정보이며 메인터너 후보의 검증을 대신하지 않는다. 원 PR의 집중 검사 5개는 실제 재컴파일한 후보에서 통과했다. 실제 편집 경로·시각 결과와 공통 검증 결과는 아래에 구분한다.
 
 공용 target의 첫 후보 실행은 오래된 base rlib를 재사용해 대조 증거에서 제외했다. 후보 `src/lib.rs`의 수정 시각을 갱신해 실제 재컴파일을 확인한 뒤 5개 통과를 기록했다. 캐시 전체를 지우거나 기대값을 바꾸지 않았다.
 
@@ -39,3 +39,48 @@
 HWP 5.0 revision 1.3 표 6의 코드 9는 inline 탭이며 8개 WCHAR 슬롯을 차지한다. 원본 PARA_TEXT에서 읽은 7개 확장 word는 탭 문자 순서에 대응한다. `Paragraph` 편집 → `composer/composition.inc.rs`의 저장 줄 유효성 판정 → `layout/text_measurement.rs`의 탭 종류·폭·리더 소비 → paint 순서를 확인했다. 저장 줄이 없는 재조판 경로는 기존 규칙대로 TabDef를 사용하며, 이번 PR은 그 판정을 완화하지 않는다. 저장 후 다시 열린 문서와 편집 직후 화면을 각각 비교한다.
 
 2026-10-31 새 한컴 2020 Print 작업 `81d841c7-2ac6-4897-8927-74fe1d6e348c`는 버전 `11.0.0.9136`, `pdf_print_method: 0`, `hancom2020_pdf_driver_one_up`으로 완료했다. 새 출력의 96 DPI 래스터는 기존 기준 PDF와 픽셀 단위로 동일해 기존 PDF를 재사용한다.
+
+## 시각 검증과 실제 편집 결과
+
+[정식 증거](assets/chrisryugj_20261031/README.md)에 원본·삽입·삭제·분할·재병합의 각 1쪽 전체
+Native/fresh WASM TSV, 원 PNG, 같은 영역의 확대 판독과 한컴 Print 출처를 보존했다.
+전쪽 최저는 Native 98.04650%, 재열기 WASM 97.89252%이며 같은 입력의 devel 대비 하락은 0이다.
+실제 편집 직후 Canvas는 삽입에서 97.32876% → 97.89491%로 개선되고 나머지 세 동작은 유지됐다.
+탭 뒤 글자·분할 뒤 본문·후속 문단의 소유·내용 순서와 줄바꿈·간격을 직접 확인했다.
+
+Native CLI와 WASM의 삽입 저장본은 SHA-256까지 같다. devel은 새 탭에 기존 폭을 잘못 붙이고
+마지막 탭에 자리표를 썼으나, 후보는 새 탭의 자리표와 기존 두 탭의 원 확장 word를 제 순서에 쓴다.
+기존 합성 계약 검사에 실제 DocumentCore 편집·저장·재열기 검사를 보강했다. 시각 검증을 마친
+편집본 HWP/PDF는 `samples/pr8224/`, `pdf/pr8224/`에 보존하며 새 px golden은 추가하지 않는다.
+
+Native 라이브러리 검사는 4,040개 통과, 기존 ignored 12개다. 기존 문단 병합 검사 안에서 작은
+Storage 한도의 거부와 정상 한도의 처리를 확인했다. Native 그림 placeholder 2개, direct PDF 22개도 통과했다. Native/WASM 및 workspace all-target Clippy, workspace build, fmt, suite manifest와 unit-tier 검사를 통과했다. 전체 회귀와 신규 sample 보안 검사도 아래와 같이 통과했다.
+
+## 동일 원본의 기존 회귀 검토
+
+`lseg-05-tab.hwp` 참조를 추적했다. #6520의 출력 경로 간 동일성 검사는 이미 관계형이므로 유지한다.
+#6800의 `a_mid_run_tab_with_text_after_it_is_untouched`는 `width > 400px` 핀을 사용하고 있었다.
+원 #6801 → 메인터너 보정 `daf5744bfd4` → [기존 검토](archives/pr_6801_review.md)와
+후속 이관 `39a634e5476`을 확인했다. 이번 원본은 전쪽 Native/fresh WASM 90% 이상 및 직접 판독을
+마쳤으므로 같은 함수 안에서 탭 뒤 가시문자의 문자 경계가 bbox에 포함되는 관계로 바꿨다.
+공개 JSON의 0.1px 반올림 정밀도만 허용하며 고정 위치·폭을 새로 지정하지 않는다. 다른 원본의 검사는
+유지한다. 새 실제 DocumentCore 검사는 편집 후 저장·재열기의 텍스트 순서와 탭 소유를 보완한다.
+
+## 최종 공통 검증과 원격 처리 조건
+
+- 전체 release-test: **12,207개 통과 / 실패 0 / 기존 skip 45**, 496.765초. 탭 6개·그룹 3개 포함.
+- Native Skia: lib 4,040개, 그림 placeholder 2개, direct PDF 22개 통과. lib 기존 ignored 12개.
+- fmt, Native/WASM Clippy, workspace build 및 all-target Clippy, suite manifest·unit-tier 모두 통과.
+- 새 편집 HWP 4개를 명시한 보안·injection 검사 20개 통과. 전체 실행에서 빈 입력으로 반환된 결과와 구분한다.
+- 독립 시각 증거·변경 테스트 3개 rustfmt·문서 링크·diff whitespace 확인 완료.
+- [정식 게이트와 로그](assets/chrisryugj_20261031/README.md#최종-로컬-게이트).
+
+제품 보정 `f85410c616`, 테스트·기록 시작점 `b8c0ef2e4b`와 이 문서의 최종 커밋을 구분한다.
+검증 worktree와 기본 작업공간의 제품·변경 테스트 파일은 SHA-256으로 동일하다. 실제 사용한 기존
+입력은 Git blob과 대조했고 새 편집 입력·PDF도 이 검토 기록과 같은 커밋에 포함한다.
+
+2026-10-31 확인한 devel은 `55f40ecd99485a1c9b1f7cdc709cb6efcb9e9b29`이며 두 원 head는 변경되지 않았다.
+본인 계정의 열린 PR은 0개였다. 원격 처리 승인을 받으면 기여 커밋을 조상으로 유지한 통합 branch를
+push하고 Open PR의 정확한 head CI·self-review·최신 base와의 충돌 여부를 확인한다.
+최종 merge SHA·CI·검토 증거를 원 PR별 존댓말 댓글로 안내하며 시각 판정에 사용한 #8224에는
+SHA 고정 비교 이미지와 Print 링크를 포함한다. 아직 원격 push·PR·댓글·merge를 수행하지 않았다.

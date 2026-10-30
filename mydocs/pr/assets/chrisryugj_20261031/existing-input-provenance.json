@@ -1,0 +1,32 @@
+[
+  {
+    "path": "samples/lseg-05-tab.hwp",
+    "sha256": "0066108df04204324c0802414087563e7673e30f3d142dd014af14e318153d2c",
+    "commit": "b8c0ef2e4ba1b827db13b9b86bf355f7e27f5e4f",
+    "gitBlobMatches": true
+  },
+  {
+    "path": "pdf/lseg-05-tab-hwp-2020.pdf",
+    "sha256": "abae782496f671569b55ae788185adc45cfd2864aa611c11a4e51c3990193010",
+    "commit": "b8c0ef2e4ba1b827db13b9b86bf355f7e27f5e4f",
+    "gitBlobMatches": true
+  },
+  {
+    "path": "samples/basic/sungeo.hwp",
+    "sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+    "commit": "b8c0ef2e4ba1b827db13b9b86bf355f7e27f5e4f",
+    "gitBlobMatches": true
+  },
+  {
+    "path": "samples/issue6542/156678235_mid_para_vpos_rewind.hwp",
+    "sha256": "bd2a04f4f969bdad693b21cb26fe61c16f36a14bc5b442c79a2c862777d2419c",
+    "commit": "b8c0ef2e4ba1b827db13b9b86bf355f7e27f5e4f",
+    "gitBlobMatches": true
+  },
+  {
+    "path": "samples/hwp-multi-001.hwp",
+    "sha256": "cb810b94394d8116de0aff1be70d5c63f381090a55050c77f02d4ba67e89523e",
+    "commit": "b8c0ef2e4ba1b827db13b9b86bf355f7e27f5e4f",
+    "gitBlobMatches": true
+  }
+]

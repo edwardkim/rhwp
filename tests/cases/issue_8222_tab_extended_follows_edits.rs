@@ -1,6 +1,9 @@
 //! 관계형: 탭 확장 정보의 소유·순서 보존.
-//! 주석 갱신: 2026-10-31T01:36:11+09:00; 직전 파일 커밋: 2026-10-25T19:23:19+09:00 (caabfdc2c4568f8f151c79d9d86c8df56779c52a).
-//! 합성 Paragraph의 탭 문자와 확장 word 배열의 순서·소유 관계를 검사한다. 렌더러를 호출하지 않아 이 검사 자체의 시각 수치는 비해당이다. 실제 편집 문서의 Native/fresh WASM 검증은 아래 검토 기록에서 별도로 판정한다.
+//! 주석 갱신: 2026-10-31T02:04:18+09:00; 직전 파일 커밋: 2026-10-31T01:36:40+09:00 (b8c0ef2e4ba1b827db13b9b86bf355f7e27f5e4f).
+//! 합성 Paragraph 및 실제 HWP의 DocumentCore 편집·저장 왕복에서 탭 확장 word의 소유·순서를 검사한다. px 좌표를 고정하지 않는다.
+//! 실제 원본·편집본 별도 검증: 2026-10-31, 96 DPI PDFium, 2px raw 실루엣, 각 1쪽.
+//! 원본 Native 98.06% / fresh WASM 97.91%; 삽입·삭제 98.05% / 97.89%; 분할 98.10% / 98.00%; 재병합 98.06% / 97.91%.
+//! 5개 문서 전쪽 최저 Native 98.05% / fresh WASM 97.89%. 정식 증거: mydocs/pr/assets/chrisryugj_20261031/README.md.
 //! 근거: mydocs/pr/pr_8224_review.md.
 //!
 //! [#8222] 글을 넣고 지우고 나누고 합쳐도 `tab_extended` 는 문단의 탭 글자와 차례로 짝이 맞는다.
@@ -88,4 +91,44 @@ fn paragraph_without_stored_tab_data_stays_without() {
     };
     para.insert_text_at(1, "\tB");
     assert!(para.tab_extended.is_empty());
+}
+
+#[test]
+fn document_core_edits_keep_serialized_tab_ownership() {
+    use rhwp::DocumentCore;
+
+    let mut core =
+        DocumentCore::from_bytes(include_bytes!("../../samples/lseg-05-tab.hwp")).unwrap();
+    let original = core.document().sections[0].paragraphs[2].clone();
+    assert_eq!(
+        original.tab_extended.len(),
+        2,
+        "source must contain both tabs"
+    );
+
+    core.insert_text_native(0, 2, 0, "새\t").unwrap();
+    let inserted = rhwp::parse_document(&core.export_hwp_with_adapter().unwrap()).unwrap();
+    let tabs = &inserted.sections[0].paragraphs[2].tab_extended;
+    assert_eq!(tabs[0], TAB_EXT_PLACEHOLDER);
+    assert_eq!(&tabs[1..], original.tab_extended.as_slice());
+
+    core.delete_text_native(0, 2, 0, 2).unwrap();
+    let split = original.text.chars().position(|c| c == '\t').unwrap() + 1;
+    core.split_paragraph_native(0, 2, split, None).unwrap();
+    let separated = rhwp::parse_document(&core.export_hwp_with_adapter().unwrap()).unwrap();
+    let paragraphs = &separated.sections[0].paragraphs;
+    assert_eq!(paragraphs[2].tab_extended, original.tab_extended[..1]);
+    assert_eq!(paragraphs[3].tab_extended, original.tab_extended[1..]);
+    assert_eq!(
+        format!("{}{}", paragraphs[2].text, paragraphs[3].text),
+        original.text
+    );
+
+    core.merge_paragraph_native(0, 3).unwrap();
+    let restored = rhwp::parse_document(&core.export_hwp_with_adapter().unwrap()).unwrap();
+    assert_eq!(restored.sections[0].paragraphs[2].text, original.text);
+    assert_eq!(
+        restored.sections[0].paragraphs[2].tab_extended,
+        original.tab_extended
+    );
 }
