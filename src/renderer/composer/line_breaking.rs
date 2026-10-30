@@ -270,13 +270,41 @@ fn break_before_text_token(
     // 여는 따옴표와 방향이 명시된 여는 괄호/따옴표는 기존 금칙을 유지한다.
     let closing_apostrophe =
         previous == '\'' && start_idx >= 2 && text_chars[start_idx - 2].is_alphanumeric();
+    // 독립 한컴 Print의 `<개정 ...>`은 여는 꺾쇠와 다음 글자가 한 줄을
+    // 소유한다. 단독 `<`는 비교·리다이렉션 연산자로 줄 끝에 올 수 있으므로
+    // 뒤에 공백 없이 이어지는 짝 닫힘이 확인된 경우에만 이 계약을 쓴다.
+    let paired_angle_open = previous == '<'
+        && text_chars
+            .get(start_idx)
+            .is_some_and(|c| !c.is_whitespace())
+        && text_chars[start_idx..]
+            .iter()
+            .take_while(|c| !matches!(**c, '\n' | '\r' | '<'))
+            .any(|c| *c == '>');
     // [#2185] bit7=1 = 글자 단위
     korean_break_unit == 1
         && start_idx > line_start_idx
         && text_chars.get(start_idx).is_some_and(|c| is_hangul(*c))
         && text_chars.get(start_idx - 1).is_some_and(|prev| {
-            !prev.is_whitespace() && (!is_line_end_forbidden(*prev) || closing_apostrophe)
+            !prev.is_whitespace()
+                && !paired_angle_open
+                && (!is_line_end_forbidden(*prev) || closing_apostrophe)
         })
+}
+
+#[cfg(test)]
+#[test]
+fn paired_angle_opener_stays_with_text_but_operator_keeps_its_boundary() {
+    let paired: Vec<_> = "끝.<개정 2020>".chars().collect();
+    let first_inside = paired.iter().position(|c| *c == '<').unwrap() + 1;
+    assert!(!break_before_text_token(&paired, first_inside, 0, 1));
+    let operator: Vec<_> = "값<한계".chars().collect();
+    let rhs = operator.iter().position(|c| *c == '<').unwrap() + 1;
+    assert!(break_before_text_token(&operator, rhs, 0, 1));
+    assert!(
+        !is_line_end_forbidden('<'),
+        "독립 출력의 줄 끝 연산자는 유지한다"
+    );
 }
 
 /// 독립 Print에서 낱말 유지 문단도 한점 리더·분철점 뒤에서 나뉜다.

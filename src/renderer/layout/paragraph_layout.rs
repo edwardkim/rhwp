@@ -7580,63 +7580,68 @@ impl LayoutEngine {
                         && line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
                 })
                 .map(|(_, (_, correction))| hwpunit_to_px(i32::from(*correction) * 4, self.dpi));
-            let (mut extra_word_sp, extra_char_sp, extra_dash_sp) =
-                if compression.is_some() {
-                    (0.0, 0.0, 0.0)
-                } else if is_hancom_company_pua_logo_line {
-                    // 이 줄의 trailing space는 뒤의 treat-as-char logo 그림 앞 공백이다.
-                    // 회사명 자체에는 자간을 추가하지 않고 이 공백 하나가 남는 폭을 전부
-                    // 흡수하게 해야 Hancom PDF의 좌측 회사명·우측 logo 배치가 유지된다.
-                    ((available_width - total_text_width).max(0.0), 0.0, 0.0)
-                } else if runs_all_whitespace
-                    && !is_last_line_of_para
-                    && !has_forced_break
-                    && line_tac_offsets_for_width.is_empty()
-                    && !needs_justify
-                    && !needs_distribute
-                {
-                    // Soft wrapping can consume a row of separator spaces beyond
-                    // the frame. Keep their decoration advances instead of fitting
-                    // them like glyphs. Paragraph-end/forced-break spaces remain
-                    // authored content and retain the normal line-fit contract.
-                    (0.0, 0.0, 0.0)
-                } else {
-                    compute_line_extra_spacing_with_dash_plan(
-                        comp_line,
-                        leading_space_plan.leading_spaces,
-                        line_tac_offsets_for_width
-                            .iter()
-                            .filter(|(_, width, _)| *width > 0.0)
-                            .count(),
-                        trailing_space_limit,
-                        &leading_space_plan,
-                        soft_wrap_separator_width,
-                        terminal_tracking_for_fit,
-                        &unjustified_leading_spaces,
-                        styles,
-                        visible_line_measure.as_ref(),
-                        alignment,
-                        cell_ctx.is_some(),
-                        needs_justify_spacing,
-                        false,
-                        needs_distribute,
-                        has_tabs,
-                        renders_synthetic_wrap_trailing_space,
-                        suppress_cell_overflow_spacing,
-                        converge_auto_shrink_cell,
-                        total_char_count,
-                        total_text_width,
-                        available_width,
-                        tab_width,
-                        &mut dash_extra_by_run,
-                        note_line.trailing_slots,
-                    )
-                };
+            let (mut extra_word_sp, extra_char_sp, extra_dash_sp) = if compression.is_some() {
+                (0.0, 0.0, 0.0)
+            } else if is_hancom_company_pua_logo_line {
+                // 이 줄의 trailing space는 뒤의 treat-as-char logo 그림 앞 공백이다.
+                // 회사명 자체에는 자간을 추가하지 않고 이 공백 하나가 남는 폭을 전부
+                // 흡수하게 해야 Hancom PDF의 좌측 회사명·우측 logo 배치가 유지된다.
+                ((available_width - total_text_width).max(0.0), 0.0, 0.0)
+            } else if runs_all_whitespace
+                && !is_last_line_of_para
+                && !has_forced_break
+                && line_tac_offsets_for_width.is_empty()
+                && !needs_justify
+                && !needs_distribute
+            {
+                // Soft wrapping can consume a row of separator spaces beyond
+                // the frame. Keep their decoration advances instead of fitting
+                // them like glyphs. Paragraph-end/forced-break spaces remain
+                // authored content and retain the normal line-fit contract.
+                (0.0, 0.0, 0.0)
+            } else {
+                compute_line_extra_spacing_with_dash_plan(
+                    comp_line,
+                    leading_space_plan.leading_spaces,
+                    line_tac_offsets_for_width
+                        .iter()
+                        .filter(|(_, width, _)| *width > 0.0)
+                        .count(),
+                    trailing_space_limit,
+                    &leading_space_plan,
+                    soft_wrap_separator_width,
+                    terminal_tracking_for_fit,
+                    &unjustified_leading_spaces,
+                    styles,
+                    visible_line_measure.as_ref(),
+                    alignment,
+                    cell_ctx.is_some(),
+                    needs_justify_spacing,
+                    false,
+                    needs_distribute,
+                    has_tabs,
+                    renders_synthetic_wrap_trailing_space,
+                    suppress_cell_overflow_spacing,
+                    converge_auto_shrink_cell,
+                    total_char_count,
+                    total_text_width,
+                    available_width,
+                    tab_width,
+                    &mut dash_extra_by_run,
+                    note_line.trailing_slots,
+                )
+            };
             if compression.is_none() && !is_hancom_company_pua_logo_line {
                 if let Some(correction) = hwp3_saved_space {
-                    // 저장 공백 보정은 낱말 간격만 대체한다. 같은 줄의 대시 복원과
-                    // 글자 배분은 공통 계획을 그대로 소비해야 한다.
-                    extra_word_sp = correction;
+                    // 저장 보정은 당시 글꼴 메트릭으로 계산한 값이다. 현재 줄 구성의
+                    // 수용 예산을 원본 1 hunit의 양자화 범위보다 초과하면 낡은
+                    // 보정을 사용하지 않고 같은 공통 측정 계획의 값을 유지한다.
+                    // 허용된 저장 보정은 낱말 간격만 대체하며 대시 복원과 글자
+                    // 배분은 공통 계획을 그대로 소비한다.
+                    let source_quantum = hwpunit_to_px(4, self.dpi);
+                    if correction <= extra_word_sp + source_quantum {
+                        extra_word_sp = correction;
+                    }
                 }
             }
 

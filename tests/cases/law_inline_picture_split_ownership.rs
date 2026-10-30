@@ -15,6 +15,73 @@ fn walk<'a>(node: &'a Value, out: &mut Vec<&'a Value>) {
 }
 
 #[test]
+fn paired_angle_opener_stays_with_the_following_line() {
+    let input =
+        include_bytes!("../../mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx");
+    let mut doc = HwpDocument::from_bytes(input).unwrap();
+    doc.set_hangul2024_compat(false);
+    let page: Value = serde_json::from_str(&doc.get_page_render_tree(0).unwrap()).unwrap();
+    let mut nodes = Vec::new();
+    walk(&page, &mut nodes);
+    let lines: Vec<String> = nodes
+        .iter()
+        .filter(|node| node["type"] == "TextLine" && node["pi"] == 10)
+        .map(|line| {
+            line["children"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(|node| node["text"].as_str())
+                .collect()
+        })
+        .collect();
+    assert_eq!(lines.len(), 2, "원문의 문단과 내용 소유를 유지한다");
+    assert!(!lines[0].trim_end().ends_with('<'));
+    assert!(lines[1].trim_start().starts_with("<개정"));
+}
+
+#[test]
+fn missing_paragraph_shape_uses_hancom_default_without_changing_explicit_shapes() {
+    let input =
+        include_bytes!("../../mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx");
+    let core = rhwp::DocumentCore::from_bytes(input).unwrap();
+    let document = core.document();
+    let paragraphs = &document.sections[0].paragraphs;
+    let missing = &paragraphs[156];
+    let explicit = &paragraphs[155];
+    assert!(missing.text.is_empty());
+    assert_eq!(
+        document.doc_info.para_shapes[missing.para_shape_id as usize].line_spacing,
+        160
+    );
+    assert_eq!(
+        document.doc_info.para_shapes[explicit.para_shape_id as usize].line_spacing,
+        130
+    );
+
+    let mut doc = HwpDocument::from_bytes(input).unwrap();
+    doc.set_hangul2024_compat(false);
+    let page: Value = serde_json::from_str(&doc.get_page_render_tree(5).unwrap()).unwrap();
+    let mut nodes = Vec::new();
+    walk(&page, &mut nodes);
+    let line = |paragraph| {
+        nodes
+            .iter()
+            .find(|node| node["type"] == "TextLine" && node["pi"] == paragraph)
+            .expect("빈 문단과 후속 문장은 같은 쪽에 각각 한 번 배치된다")
+    };
+    let empty = line(156);
+    let following = line(157);
+    let top = empty["bbox"]["y"].as_f64().unwrap();
+    let height = empty["bbox"]["h"].as_f64().unwrap();
+    let next_top = following["bbox"]["y"].as_f64().unwrap();
+    assert!(
+        (next_top - top - height * 1.6).abs() < height / 100.0,
+        "참조를 생략한 빈 문단은 한컴 기본 줄 간격을 소비한다"
+    );
+}
+
+#[test]
 fn text_before_inline_picture_stays_on_current_page_and_picture_moves_once() {
     let input =
         include_bytes!("../../mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx");

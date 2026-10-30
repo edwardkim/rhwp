@@ -26,6 +26,13 @@ pub(crate) fn page_starts_with_hidden_empty_lines(
     // 저장 줄이 없는 빈 문단은 실제 줄 상자를 소유할 수 있다. 저장 쪽의
     // 숨김 표식으로 추정하지 않고 기존 빈 문단 배치에 맡긴다.
     !para.line_segs.is_empty()
+        // 명시 쪽·구역 나누기를 소유한 문단은 사용자가 만든 줄 상자를
+        // 유지한다. 저장 조판에서 추정한 자동 경계만 숨김 대상이 될 수 있다.
+        && (!matches!(
+            para.column_type,
+            crate::model::paragraph::ColumnBreakType::Page
+                | crate::model::paragraph::ColumnBreakType::Section
+        ) || para.page_break_synthesized)
         && para.controls.is_empty()
         && para
             .text

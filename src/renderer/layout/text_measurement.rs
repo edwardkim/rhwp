@@ -2422,8 +2422,17 @@ fn char_width_decision_with_hft_tracking<'a>(
     // authentic DB glyph advances or explicit HWP rules. Collection and layout
     // share this eligibility decision; synthetic PUA boxes remain shapes.
     let dash_leader = is_dash_leader_run(chars, i);
-    // Native paint와 동일한 확인된 OTF가 해당 글리프를 공급하면 그 전진폭을
-    // 우선한다. 없는 글리프와 특수 공백은 기존 원본 HFT 계약에 남긴다.
+    // Native paint와 동일한 OTF의 글리프를 우선 사용한다. 다만 독립 Print와
+    // 원본 HFT로 확인한 전진은 표시용 프로그램의 hmtx와 별도의 조판 계약이다.
+    let verified_source_advance = matches!(
+        width_source,
+        "measuredOriginalGlyph" | "implicitSymbolProgram" | "verifiedSourcePua"
+    ) || (style.source_font_is_hft
+        && character_match == "hit"
+        && width_source == "embeddedMetric"
+        && metric.is_some_and(|found| {
+            font_metrics_data::is_verified_original_hft_advance(found.metric)
+        }));
     let otf_metrics = latin.map_or(style.native_otf_metrics.as_ref(), |slot| {
         slot.native_otf_metrics.as_ref()
     });
@@ -2431,6 +2440,7 @@ fn char_width_decision_with_hft_tracking<'a>(
             && !dash_leader
             && !c.is_whitespace()
             && !c.is_control()
+            && !verified_source_advance
             // HFT 원본 기호를 Unicode 표시 기호로 치환한 경우, 표시용
             // OTF의 전진은 원본 기호의 전진과 다를 수 있다. 원본 PUA
             // 공급자가 확인된 경우에는 위에서 원문을 유지하므로 제외되지 않는다.
@@ -3116,6 +3126,48 @@ pub(crate) fn estimate_text_width_with_storage<S: crate::storage::Storage>(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn verified_hft_advance_survives_a_supplied_display_otf() {
+        // 합성 CFF를 사용해 시스템 글꼴에 의존하지 않는다.
+        let mut cff = include_bytes!("../../../tests/fixtures/fonts/RHWPHftOutline.otf").to_vec();
+        let count = u16::from_be_bytes([cff[4], cff[5]]) as usize;
+        let cmap = (0..count)
+            .find_map(|index| {
+                let pos = 12 + index * 16;
+                (cff.get(pos..pos + 4) == Some(b"cmap")).then(|| {
+                    u32::from_be_bytes(cff[pos + 8..pos + 12].try_into().unwrap()) as usize
+                })
+            })
+            .unwrap();
+        let sub = cmap + u32::from_be_bytes(cff[cmap + 8..cmap + 12].try_into().unwrap()) as usize;
+        for offset in [sub + 14, sub + 20] {
+            cff[offset..offset + 2].copy_from_slice(&('A' as u16).to_be_bytes());
+        }
+        cff[sub + 24..sub + 26].copy_from_slice(&1u16.wrapping_sub('A' as u16).to_be_bytes());
+        let mut fonts = crate::renderer::native_pua_fonts::NativePuaFonts::default();
+        fonts
+            .register_otf("synthetic", false, false, &cff, 0)
+            .unwrap();
+        let mut style = TextStyle {
+            font_family: "HCI Poppy".into(),
+            font_size: 20.0,
+            source_font_is_hft: true,
+            ..Default::default()
+        };
+        let before = char_width_decision(&['A'], &[1], 0, &style, false).base_width_px;
+        style.native_otf_metrics = fonts.get_otf("synthetic", false, false);
+        let with_otf = char_width_decision(&['A'], &[1], 0, &style, false);
+        assert_eq!(with_otf.base_width_px, before);
+        assert_ne!(with_otf.width_source, "nativeOtf");
+        style.source_font_is_hft = false;
+        let explicit_otf = char_width_decision(&['A'], &[1], 0, &style, false);
+        assert_eq!(explicit_otf.width_source, "nativeOtf");
+        assert_ne!(
+            explicit_otf.base_width_px, before,
+            "서로 다른 원본·OTF 전진을 구분한다"
+        );
+    }
 
     #[test]
     fn hft_mapped_symbol_retains_source_advance_with_display_otf() {

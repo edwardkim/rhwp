@@ -27,6 +27,33 @@ fn make_paragraph_with_height(line_height: i32) -> Paragraph {
     }
 }
 
+#[test]
+fn explicit_page_and_section_breaks_keep_their_empty_line_box() {
+    use crate::model::paragraph::ColumnBreakType;
+    use std::collections::HashSet;
+
+    let hidden = HashSet::new();
+    let mut para = make_paragraph_with_height(1000);
+    for explicit in [ColumnBreakType::Page, ColumnBreakType::Section] {
+        para.column_type = explicit;
+        para.page_break_synthesized = false;
+        assert!(
+            !page_starts_with_hidden_empty_lines(&para, &[], &hidden),
+            "명시적 경계가 소유한 빈 줄은 생략할 수 없다"
+        );
+        para.page_break_synthesized = true;
+        assert!(
+            page_starts_with_hidden_empty_lines(&para, &[], &hidden),
+            "저장 조판에서 합성한 경계는 기존 숨김 계약을 유지한다"
+        );
+    }
+    para.line_segs.clear();
+    assert!(
+        !page_starts_with_hidden_empty_lines(&para, &[], &hidden),
+        "저장 줄이 없는 문단의 줄 상자는 추측해 숨기지 않는다"
+    );
+}
+
 fn missing_lineseg_fragment_boundary_is_identical_in_both_paginators() {
     let para = Paragraph {
         text: "visible converted paragraph".to_string(),
