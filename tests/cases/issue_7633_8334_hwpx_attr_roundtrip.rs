@@ -1,3 +1,22 @@
+//! 관계형·고정형: 왕복 전후의 줄표·셀 방향·쪽별 본문 비교(관계)와, 원본의 줄표 문자·셀 방향
+//! 값을 한컴 저장본·Print 에서 정한 값(`'\0'`, `'-'`, 2, 1)으로 직접 확인(고정)한다.
+//! 주석 갱신: 2026-10-31T00:20:00+09:00; 직전 파일 커밋: 2026-10-30T21:55:47+09:00 (f70ac1731).
+//! 2026-10-30 측정 raw(96dpi, pdftoppm, `scripts/visual_sweep.py --compat 2022`, head 의 HWPX
+//! 저장본은 `rhwp export-hwpx` 로 생성), 핵심 쪽 Native / fresh WASM, 전체 쪽 최저 Native / fresh WASM:
+//! - `samples/hwp-3.0-HWPML.hwp` HWPX 저장본 ↔ `pdf/hwp-3.0-HWPML-2020.pdf`: 56쪽 100.00000% /
+//!   100.00000%; 전122쪽 최저 92.77% / 92.76% (원본 HWP 도 같은 값).
+//! - `samples/table-vpos-01.hwpx` 원본·HWPX 저장본 ↔ `pdf/table-vpos-01-hwpx-2020.pdf`: 2쪽
+//!   99.75829% / 99.83761%; 전5쪽 최저 99.29% / 99.41%.
+//! - `samples/k-water-rfp.hwp` HWPX 저장본 ↔ `pdf/k-water-rfp-2022.pdf`: 13쪽 99.48712% /
+//!   99.50864%; 전27쪽 최저 97.16% / 97.16%.
+//! - `samples/hwpx/k-water-rfp.hwpx` ↔ `pdf/k-water-rfp-2022.pdf`: 13쪽 99.36856% / 99.41063%;
+//!   전27쪽 최저 97.16% / 97.16%.
+//! - `samples/issue6029/3200477_icao_procedure.hwpx` 원본·HWPX 저장본 ↔
+//!   `pdf/issue6029-3200477_icao_procedure-2024.pdf`: 1쪽 97.77789% / 98.54904%; 전1쪽 같은 값.
+//!
+//! 근거: mydocs/pr/assets/issue_7633_8334/{native,wasm}/ 의 `*_silhouette.tsv`·review·overlay PNG,
+//! mydocs/pr/assets/issue_7633_8334/zoom/.
+//!
 //! [Issue #7633 · #8334] HWPX 읽기·쓰기가 쪽 번호 줄표와 셀 세로쓰기 방향을 보존한다.
 //!
 //! - #7633: HWP5 `pgnp` 의 줄표 문자가 0 인 쪽 번호(한컴 PDF `1`)를 HWPX 에
@@ -109,13 +128,20 @@ fn page_number_without_dash_survives_hwpx_roundtrip() {
 /// #7633 반례: 한컴 HWPX 의 `sideChar="-"` 는 줄표로 읽고, 다시 저장해도 줄표를 둔다.
 #[test]
 fn hancom_dash_page_number_keeps_dash() {
-    let original = load("samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx");
+    let original = load("samples/table-vpos-01.hwpx");
     let dashes = page_number_dashes(&original);
     assert!(
         !dashes.is_empty() && dashes.iter().all(|c| *c == '-'),
         "{dashes:?}"
     );
-    assert_eq!(page_number_dashes(&reopen_as_hwpx(&original)), dashes);
+
+    let hwpx = reopen_as_hwpx(&original);
+    assert_eq!(page_number_dashes(&hwpx), dashes);
+    assert_eq!(
+        page_texts(&hwpx),
+        page_texts(&original),
+        "쪽 번호를 포함한 쪽별 본문이 원본과 같아야 한다"
+    );
 }
 
 /// #8334: 세로 영문 세움 셀(값 2)은 HWPX 왕복 뒤에도 세로로 남는다.

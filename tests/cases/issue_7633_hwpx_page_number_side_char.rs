@@ -1,3 +1,25 @@
+//! 관계형·고정형: HWPX 저장본과 원본의 쪽별 본문 비교(관계)와, 저장한 `sideChar` 값·쪽 번호
+//! 글(`1`, `- 2 -`, `1`..`5`)을 한컴 2024 Print 에서 정한 값으로 직접 확인(고정)한다.
+//! 주석 갱신: 2026-10-31T00:20:00+09:00; 직전 파일 커밋: 2026-10-30T21:55:47+09:00 (a7abcc41a).
+//! 2026-10-30 측정 raw(96dpi, pdftoppm, `scripts/visual_sweep.py --compat 2022`), 핵심 쪽
+//! Native / fresh WASM, 전체 쪽 최저 Native / fresh WASM:
+//! - `samples/hwpspec.hwp` ↔ `pdf/hwpspec-2024.pdf`: 11쪽 99.70223% / 99.70229%; 전178쪽 최저
+//!   92.39% / 92.38%. HWPX 저장본 ↔ `pdf/page-number-side-char/hwpspec-rhwp-hwpx-2024.pdf`:
+//!   11쪽 99.67885% / 99.67892%; 전178쪽 최저 92.78% / 92.77%.
+//! - `samples/hwp-3.0-HWPML.hwp` HWPX 저장본 ↔
+//!   `pdf/page-number-side-char/hwp-3.0-HWPML-rhwp-hwpx-2024.pdf`: 20쪽 99.97955% / 99.99319%;
+//!   전122쪽 최저 92.77% / 92.76%.
+//! - `samples/issue6924/148751598-briefing.hwp` ↔ `pdf/148751598-briefing-2020.pdf`: 2쪽
+//!   97.97793% / 97.96957%; 전6쪽 최저 96.25% / 96.19%. HWPX 저장본 ↔
+//!   `pdf/page-number-side-char/148751598-briefing-rhwp-hwpx-2024.pdf`: 2쪽 98.07079% / 98.06380%;
+//!   전6쪽 최저 96.27% / 96.20%.
+//! - `samples/page-number-side-char/table-vpos-01-no-dash.hwpx` ↔
+//!   `pdf/page-number-side-char/table-vpos-01-no-dash-2024.pdf`: 2쪽 99.75823% / 99.83757%;
+//!   전5쪽 최저 99.29% / 99.41%.
+//!
+//! 근거: mydocs/pr/assets/issue_7633_8334/sidechar/{native,wasm}/ 의 `*_silhouette.tsv`·review·
+//! overlay PNG, mydocs/pr/assets/issue_7633_8334/zoom/page_numbers_pdf_native_wasm_devel.png.
+//!
 //! [Issue #7633] 쪽 번호 줄표(HWP5 PageNumberPos 의 마지막 WCHAR)와 HWPX `sideChar` 를 같은 값으로
 //! 왕복한다. `issue_7633_8334_hwpx_attr_roundtrip.rs` 의 HWPML 왕복을 한컴 Print 기준으로 보강한다.
 //!
