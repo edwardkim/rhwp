@@ -12,8 +12,9 @@
 | HWP 2022 | [TSV](hwp2022-native.tsv) | [TSV](hwp2022-wasm.tsv) | 없음 |
 
 세 입력 모두 Native와 WASM의 23·59쪽은 100.00%이며, HWP 2022의 기존 해당 좌표 검사는
-독립 Print 좌표 기준 ±1px로 검사한다. [HWP 2022 23쪽 WASM overlay](hwp2022-p023-wasm-overlay.png)는
-기존 PDF와 같은 쪽을 겹친 것이다. 점수는 2px 이웃 안의 실루엣 판정이며 픽셀 색상의 완전 일치를
+독립 Print 좌표 기준 ±1px로 검사한다. HWP 2022 23쪽은 같은 PDF와 비교한 [Native review](hwp2022-p023-native-review.png)·
+[Native overlay](hwp2022-p023-native-overlay.png), [WASM review](hwp2022-p023-wasm-review.png)·
+[WASM overlay](hwp2022-p023-wasm-overlay.png)를 보존한다. 점수는 2px 이웃 안의 실루엣 판정이며 픽셀 색상의 완전 일치를
 뜻하지 않는다.
 
 Native 실행 파일 SHA-256: `4db09178e15359b6cbd2f0601e31f9217b77a4451d027065c7f92973b40d90b4`.
