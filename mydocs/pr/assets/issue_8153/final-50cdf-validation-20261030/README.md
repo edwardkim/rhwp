@@ -65,3 +65,5 @@ CanvasKit software 요청은 두 원본 모두 383쪽이 준비 상한 128쪽을
 | --- | --- | --- |
 | Native | [review](handbook-hwp-p205-native-review.png) | [overlay](handbook-hwp-p205-native-overlay.png) |
 | fresh WASM | [review](handbook-hwp-p205-wasm-review.png) | [overlay](handbook-hwp-p205-wasm-overlay.png) |
+
+- 같은 쪽의 실제 Native Skia PNG: [편람 HWP 205쪽](handbook-hwp-p205-native-skia.png), SHA-256 `a5da35a6fe58797d28aa1c38cf8e18096114d5be66afa97f0942e90102e69dd8`. Studio Canvas2D 화면은 위 최신 WASM 재확인 절의 기존 이미지를 사용한다.
