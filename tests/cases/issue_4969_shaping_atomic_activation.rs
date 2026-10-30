@@ -897,7 +897,10 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
         );
         json.len()
             .checked_sub(
-                capability_wire_bytes + visual_feature_bytes + visual_wire_bytes + raster_policy_bytes,
+                capability_wire_bytes
+                    + visual_feature_bytes
+                    + visual_wire_bytes
+                    + raster_policy_bytes,
             )
             .expect("capability wire overhead")
     };
