@@ -256,6 +256,29 @@ pub struct DocInfo {
     pub raw_provenance: Option<crate::model::raw_provenance::DocInfoSeal>,
 }
 
+impl DocInfo {
+    /// 문서의 변경 추적 설정(`<hh:trackchageConfig flags>` · HWP5 `HWPTAG_TRACKCHANGE` 첫 `u32`).
+    ///
+    /// 이 값은 이름과 달리 **조판에 영향을 준다** — 한글이 `flags="0"` 문서를 열면 같은
+    /// 내용이 한 쪽 더 늘어난다(00295 실측: 원본 1쪽, rhwp 저장본 2쪽, 이 값만 56 으로
+    /// 바꾸면 다시 1쪽). HWP5 는 `HWPTAG_TRACKCHANGE` 레코드 첫 `u32` 에 싣는다(파서가
+    /// 모델링하지 않아 `extra_records` 에 원시 보존된다). 레코드가 없으면 56 — 한컴
+    /// 실측이다: 코퍼스 6,473 문서 중 4,588 이 레코드를 갖고 그중 4,555 가 56 이며,
+    /// 레코드가 **없는** 문서(00000·00001)를 한글로 저장해도 `flags="56"` 이 나온다.
+    /// 4바이트가 안 되는 손상 레코드도 기본값으로 떨어진다.
+    pub fn track_change_flags(&self) -> u32 {
+        self.extra_records
+            .iter()
+            .find(|r| r.tag_id == crate::parser::tags::HWPTAG_TRACKCHANGE)
+            .and_then(|r| r.data.get(..4))
+            .map(|b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]))
+            .unwrap_or(TRACK_CHANGE_FLAGS_DEFAULT)
+    }
+}
+
+/// 한컴이 `HWPTAG_TRACKCHANGE` 없는 문서에 쓰는 변경 추적 설정값 (실측).
+pub const TRACK_CHANGE_FLAGS_DEFAULT: u32 = 56;
+
 /// HWP5 `HWPTAG_DOC_DATA` 안에서 인쇄 방식을 담는 키.
 ///
 /// 레코드는 `(u32 key, u32 value)` 의 평평한 목록이고 **키 순서가 문서마다 다르다** —

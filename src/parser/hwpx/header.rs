@@ -199,6 +199,7 @@ pub(super) fn parse_hwpx_header_with_plain_margin_units(
                     b"linkinfo" => {
                         parse_doc_option_linkinfo(e, &mut doc_info);
                     }
+                    b"trackchageConfig" => parse_track_change_config(e, &mut doc_info),
                     // [Task #1058 후속] BULLET 누락 시 한컴이 default 글머리표를 본문
                     // paragraph 에 자동 부여. HWPX `<hh:bullet id="N" char="❏" useImage="0">`
                     // 4개 → HWP BULLET record 4개. 누락 시 일반 문단 시작 글머리표 부작용.
@@ -236,6 +237,7 @@ pub(super) fn parse_hwpx_header_with_plain_margin_units(
                     b"linkinfo" => {
                         parse_doc_option_linkinfo(e, &mut doc_info);
                     }
+                    b"trackchageConfig" => parse_track_change_config(e, &mut doc_info),
                     _ => {}
                 }
             }
@@ -356,6 +358,33 @@ fn parse_doc_option_linkinfo(e: &quick_xml::events::BytesStart, doc_info: &mut D
         level: 1,
         data: track_change,
     });
+}
+
+/// `<hh:trackchageConfig flags>` 를 HWP5 `HWPTAG_TRACKCHANGE` 첫 `u32` 에 싣는다.
+///
+/// 레코드는 `parse_doc_option_linkinfo` 가 한컴 기본값(56)으로 먼저 만든다 — 헤더에서
+/// `docOption` 이 `trackchageConfig` 앞에 온다. 한글 2024 는 HWPX 를 HWP 로 저장할 때 이
+/// 값을 그대로 옮긴다(exam_social 의 flags 를 0·1·2·4·8·16·24·32·40·48·56·64 로 바꿔
+/// 저장한 레코드가 모두 같은 값). 종전에는 56 을 고정해 `flags="0"` 문서가 HWP 저장에서
+/// 56 으로 바뀌었다.
+fn parse_track_change_config(e: &quick_xml::events::BytesStart, doc_info: &mut DocInfo) {
+    let Some(flags) = e
+        .attributes()
+        .flatten()
+        .find(|attr| attr.key.as_ref().as_bytes() == b"flags")
+        .map(|attr| parse_u32(&attr))
+    else {
+        return;
+    };
+    if let Some(record) = doc_info
+        .extra_records
+        .iter_mut()
+        .find(|r| r.tag_id == tags::HWPTAG_TRACKCHANGE)
+    {
+        if record.data.len() >= 4 {
+            record.data[..4].copy_from_slice(&flags.to_le_bytes());
+        }
+    }
 }
 
 fn parse_memo_shape(e: &quick_xml::events::BytesStart, doc_info: &mut DocInfo) {
