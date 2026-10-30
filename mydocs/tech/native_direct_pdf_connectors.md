@@ -2,7 +2,7 @@
 kind: reference
 status: active
 canonical: mydocs/tech/native_direct_pdf_connectors.md
-last_verified: 2026-10-26
+last_verified: 2026-10-31
 ---
 
 # Native Direct PDF 연결선과 화살촉
@@ -84,5 +84,15 @@ rhwp export-pdf "samples/2025 행정업무운영 편람(최종).hwp" \
   --backend direct --profile print --page 62 -o output/issue7501-page63.direct.pdf
 ```
 
-최종 한컴 자료·전체 코퍼스·실물 OS/GPU 대조는 사용자 지시에 따른 후속 검증이다.
-실행한 검사와 현재 HEAD의 결과는 PR 본문에 별도로 기록한다.
+## 메인테이너 실물 검증
+
+2026-10-30 최신 devel `96ccd55759`와 통합 제품 소스 `c3f5cbd6d7`를 대조했다.
+편람 63쪽과 289쪽은 base의 엄격한 검사에서 거부됐고, 후보에서는 각각 1쪽 Direct PDF를
+생성했다. 명시한 같은 글꼴 환경에서 독립 한컴 2024 Print와 96 dpi 실루엣 100.00%를
+확인하고 연결선·화살촉·본문 간격을 확대 판독했다. 기존 공통 replay와 Print 사이의 획 굵기·AA
+잔차는 구분해 기록했다. 편람 383쪽 Native/fresh WASM 출력은 각 backend에서 base와
+byte-identical이며 전쪽 최저 실루엣은 각각 99.96%였다.
+
+입력·글꼴·실행 경로·쪽 대응과 확대 이미지는
+[메인테이너 검증 근거](../pr/assets/seo_rii_20261030/README.md)에 있다.
+두 쪽의 Direct PDF 성공을 문서 전체 Direct PDF 지원이나 OS/GPU 검증으로 확대하지 않는다.

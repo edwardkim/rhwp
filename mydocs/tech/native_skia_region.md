@@ -2,7 +2,7 @@
 kind: reference
 status: active
 canonical: mydocs/tech/native_skia_region.md
-last_verified: 2026-10-26
+last_verified: 2026-10-31
 ---
 
 # Native Skia region rendering
@@ -152,3 +152,12 @@ disable/bypass, failed requests, edit/IME/font invalidation, page/scale reuse,
 LRU eviction under entry/byte limits, and off-page reads. It makes no wall-clock
 speed, subtree-culling, presentation,
 GPU acceleration, or final Hancom fidelity claim.
+
+## 메인테이너 실물 검증
+
+2026-10-30 네 실제 HWP 입력에서 scale 0.75/1/1.25의 full/prepared/host 출력,
+고정 타일의 겹치는 viewport, 캐시 왕복과 무효화 계약을 검증했다. 독립 Print와의 타일
+시각 비교는 scale 1(96 dpi)에서 수행했고 전쪽 최저는 99.66%였다. 두 페이지로 복제한
+진단 입력의 0→1→0 요청은 base replay 3/hit 0에서 후보 replay 2/hit 1로 바뀌었고,
+모든 frame은 해당 페이지의 full-page crop와 같았다. 전체 프로세스 메모리나 OS 표시 속도의
+개선률은 측정하지 않았다. [입력·코드·결과](../pr/assets/seo_rii_20261030/README.md)를 참고한다.

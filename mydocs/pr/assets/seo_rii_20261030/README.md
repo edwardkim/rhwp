@@ -2,7 +2,7 @@
 
 ## 검증 상태
 
-로컬 검증 진행 중. 기준 `96ccd557592a711f215e7ad28822f4c7a3f00c15`, 통합 제품 소스
+로컬 필수 검증 완료(2026-10-31). 기준 `96ccd557592a711f215e7ad28822f4c7a3f00c15`, 통합 제품 소스
 `c3f5cbd6d7beecdaa231cd3a40080f2e7f3c8c1e`. 이후 테스트 첫머리 주석은 입력·계약과
 시각 증거의 관계를 설명하며 제품 코드나 assertion은 바꾸지 않는다.
 
@@ -47,7 +47,7 @@
 - 실제 네 문서의 prepared/host는 full-page 픽셀과 동일. 후보 왕복 0→1→0은 replay 2/hit 1.
 - 후보 Native의 다섯 문서 전쪽 최저 99.66%, 편람 383쪽 최저 99.96%.
 - 편람 63쪽·289쪽 Direct PDF 생성과 기준 Print 실루엣 100.00%.
-- baseline 대조·fresh WASM·Native/WASM Clippy 완료. workspace·Native all-target lint와 전체 회귀는 진행 중이며 아직 완료 판정하지 않는다.
+- baseline 대조·fresh WASM·전체 lint·workspace build·전체 회귀 완료. 원격 게시·CI·merge는 별도 승인 전이다.
 
 ## 전쪽 실측과 전후 비교
 
@@ -72,7 +72,8 @@
 
 새 타일 API는 기존 CLI를 바꾸지 않으므로 `consumer_probe.rs`로 별도 실행했다.
 네 실물 문서를 각각 세 배율로 실행했고 viewport가 512px 경계를 가로질러 움직일 때의
-겹치는 픽셀이 일치한다. 타일 출력의 독립 Print 최저값은 99.66%다. 기존 full/prepared/host
+겹치는 픽셀이 일치한다. 타일 출력의 독립 Print 비교는 scale 1(96 dpi)에서 수행했고 최저값은 99.66%다.
+다른 두 배율은 raw crop·겹침 계약을 검사했으며 독립 Print 측정과 구분한다. 기존 full/prepared/host
 12개 실물 PNG는 base와 byte-identical이다([소비 경로 비교](consumer-comparison.json)).
 0→1→0 왕복은 base replay 3/hit 0 → 후보 replay 2/hit 1이며 각 frame은 해당 페이지의
 full-page crop와 같다. timing JSON은 로컬 진단값이고 빌드와 CPU를 공유했으므로 시스템 전체의
@@ -129,3 +130,28 @@ Direct PDF 지원 완료로 확대하지 않는다. 생성 PDF에서 선택 문�
   실제 byte-identical PNG를 확인했다.
 - [글꼴 출처·hash](font-provenance.json). 편람용 HBATANG 부분집합은 원 프로그램의 해당
   951개 codepoint에 대해 분해한 outline과 advance가 같은지 확인했다. 글꼴 파일은 저장소에 넣지 않았다.
+
+## 최종 로컬 게이트
+
+[실행 결과와 명령](validation-results.json): 전체 nextest **12,198 PASS / 0 FAIL / 45 skipped**,
+실행 517.660초, 장시간 검사 1건. 테스트용 최적화 컴파일 10m54s는 실행 시간과 구분한다.
+Native 집중 81건, Native lib 4,040건(ignored 12), placeholder 2건, CI Node/Python 각 95건도
+통과했다. 이 숫자들은 각 실행의 결과이며 서로 겹치는 검사를 합쳐 고유 테스트 수로 표시하지 않는다.
+Native feature-off session 3건은 전체 nextest에서 실제 실행됐다.
+
+fmt, Native/WASM32/workspace all-target/Native Skia all-target Clippy(`-D warnings`), workspace
+build, suite manifest, actionlint, workflow shell syntax와 diff check를 통과했다.
+테스트 첫머리 주석이 source byte weight를 바꿔 파생 harness가 달라졌고, `--prepare`로 재생성한
+후 정책 check와 전체 실행을 마쳤다. `tests/generated/`와 파생 manifest는 커밋하지 않는다.
+
+[편람의 기존 검사 참조 목록](handbook-existing-test-inventory.json)은 42개 source의 위치와
+불변 여부를 기록한 목록이다. 목록 수집만을 assertion 검토나 시각 판정으로 간주하지 않는다.
+독립 Print 경계를 고정한 `issue_8153_handbook_print_boundaries` 등은 기존 근거에 연결된
+관계·좌표 검사를 유지했고, 이번 양쪽 전쪽 실측에서도 모든 페이지가 98% 이상이다.
+이번 보정은 기존 회귀의 기대값·baseline·assertion을 바꾸지 않았다.
+
+[원 PR CI 참고값](original-ci.json)과 후보의 로컬 검증을 구분한다. 원 네 PR의 실패는 모두
+fork enforcement 정책이며 기존 성공한 Full CI를 이번 통합 후보의 CI 성공으로 대체하지 않는다.
+현재 본인 계정의 열린 PR은 없으며 remote devel은 고정 base와 같음을 재확인했다.
+원격 게시 승인 뒤 실제 최종 head의 raw 증적을 내려받아 hash를 확인하고, 새 CI와 mergeability를
+확인한 뒤 승인 범위의 통합·후속 기록을 진행한다.
