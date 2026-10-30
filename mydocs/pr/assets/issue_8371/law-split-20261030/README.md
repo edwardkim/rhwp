@@ -16,3 +16,5 @@
 [Native 전체 TSV](native.tsv)와 [fresh WASM 전체 TSV](wasm.tsv)는 실행 원본이다. 1쪽의 `<개정 ...>` 줄 소속과 양쪽 정렬을 Native [review](native-review-001.png)·[overlay](native-overlay-001.png), WASM [review](wasm-review-001.png)·[overlay](wasm-overlay-001.png)로 대조했다. 6쪽 빈 문단 뒤 부칙 위치도 Native [review](native-review-006.png)·[overlay](native-overlay-006.png), WASM [review](wasm-review-006.png)·[overlay](wasm-overlay-006.png)로 대조했다. 같은 폴더의 기존 Native 2쪽 및 WASM 3쪽 이미지는 이전 중간 측정의 증거다.
 
 한컴 2020 저장 대조에서는 원본의 생략된 문단 모양 참조가 160% 기본 줄 간격으로 해석됐다. 같은 빈 문단에 `paraPrIDRef="0"`을 명시한 합성 대조군은 참조 0번의 130%로 저장됐다. 제품은 이 두 경우를 구분하며, 회귀 검사는 글꼴 설치와 Visual Sweep에 의존하지 않고 문단의 줄 소속과 상대적 배치를 확인한다.
+
+리베이스 후 후보의 같은 입력 5쪽을 다시 대조한 증거는 Native [review](native-review-005.png)·[overlay](native-overlay-005.png)와 fresh WASM [review](wasm-review-005.png)·[overlay](wasm-overlay-005.png)다. 원본과 한컴 Print는 위와 같으며, 각각의 출력 PNG는 [리베이스 후 전쪽 정밀 대조](../rebase-55f40/README.md)에 기록한 실행에서 가져왔다. 5쪽 raw는 Native 99.99347%, WASM 100.00%다.
