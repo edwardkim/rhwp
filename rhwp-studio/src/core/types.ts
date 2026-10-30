@@ -1616,7 +1616,7 @@ export interface LayerTextDecorationOp {
       browserOffset: number;
       browserAlignEnd?: boolean;
     };
-    /** 실제 글줄 메트릭과 독립 Print로 해소한 기하. 클라이언트에서 크기를 다시 추정하지 않는다. */
+    /** 기존 키를 유지하며 위 밑줄·아래 일점쇄선의 공통 기하를 전달한다. 크기를 다시 추정하지 않는다. */
     topUnderline?: {
       phase?: number;
       strokes: Array<{ offset: number; width: number; dash: number[] }>;

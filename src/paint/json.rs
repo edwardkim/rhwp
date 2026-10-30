@@ -2991,7 +2991,7 @@ fn write_text_decoration(
     let _ = write!(buf, "],\"positionsComplete\":{complete}");
     if kind == TextDecorationKind::Underline {
         if let Some(top) =
-            crate::renderer::text_decoration::top_underline_geometry(&run.style, font_size)
+            crate::renderer::text_decoration::underline_geometry(&run.style, font_size)
         {
             let _ = write!(
                 buf,

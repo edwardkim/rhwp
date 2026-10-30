@@ -806,7 +806,7 @@ impl SkiaTextReplay<'_> {
                         // [#5730] 아래 밑줄은 기준선 + 0.17em (한글 2022 프로브 실측) —
                         // 이중/삼중선(shape 7~10)은 em 비례 실측표를 따른다.
                         // SVG 백엔드(renderer/svg.rs)와 같은 표(text_decoration)를 소비한다.
-                        let top = crate::renderer::text_decoration::top_underline_geometry(
+                        let top = crate::renderer::text_decoration::underline_geometry(
                             style,
                             font_size as f64,
                         );

@@ -4160,7 +4160,7 @@ export class CanvasKitLayerRenderer {
     const draw = (originX: number, originY: number) => {
       const baselineY = originY + decoration.baseline;
       if (decoration.kind === 'underline') {
-        if (decoration.underline === 'top' && decoration.topUnderline) {
+        if ((decoration.underline === 'top' || decoration.underline === 'bottom') && decoration.topUnderline) {
           if (textWidth <= 0) return;
           const geometry = decoration.topUnderline;
           const phase = geometry.phase ?? 0;
