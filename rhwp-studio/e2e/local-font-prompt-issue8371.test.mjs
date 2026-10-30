@@ -1,4 +1,4 @@
-import { assert, loadApp, runTest, setTestCase } from './helpers.mjs';
+import { assert, clickEditArea, createNewDocument, loadApp, runTest, setTestCase, typeText } from './helpers.mjs';
 import path from 'node:path';
 
 runTest('초기화 후 문서 글꼴 사용 선택', async ({ page }) => {
@@ -11,6 +11,23 @@ runTest('초기화 후 문서 글꼴 사용 선택', async ({ page }) => {
     const fonts = await import('/src/core/local-fonts.ts');
     await fonts.clearStoredLocalFonts();
   });
+  setTestCase('빈 문서는 글꼴 선택창 없이 첫 입력과 문단 나누기가 가능하다');
+  await createNewDocument(page);
+  const blankDialog = await page.evaluate(() => [...document.querySelectorAll('.modal-overlay button')]
+    .some(button => button.textContent?.includes('대체 글꼴로 보기')));
+  assert(!blankDialog, '새 빈 문서에는 원본 글꼴 선택창을 띄우지 않는다');
+  await clickEditArea(page);
+  await typeText(page, 'first');
+  await page.keyboard.press('Enter');
+  await typeText(page, 'second');
+  const blank = await page.evaluate(() => ({
+    count: window.__wasm.getParagraphCount(0),
+    first: window.__wasm.getParagraphLength(0, 0),
+    second: window.__wasm.getParagraphLength(0, 1),
+  }));
+  assert(blank.count === 2 && blank.first >= 5 && blank.second >= 6,
+    `첫 입력과 문단 나누기가 보존된다: ${JSON.stringify(blank)}`);
+  await createNewDocument(page);
   setTestCase('문서를 열면 로컬 감지 또는 대체 글꼴 사용을 묻는다');
   const input = await page.$('#file-input');
   await input.uploadFile(path.resolve('../samples/eq-002.hwp'));

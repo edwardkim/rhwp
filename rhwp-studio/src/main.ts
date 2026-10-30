@@ -1500,7 +1500,7 @@ function applySavedTextMarkSettings(): void {
 async function initializeDocument(
   docInfo: DocumentInfo,
   displayName: string,
-  options: { suppressDialogs?: boolean } = {},
+  options: { suppressDialogs?: boolean; suppressLocalFontPrompt?: boolean } = {},
 ): Promise<void> {
   const msg = sbMessage();
   try {
@@ -1564,7 +1564,7 @@ async function initializeDocument(
       console.warn('[validation] 감지 실패 (치명적이지 않음):', e);
     }
 
-    if (!options.suppressDialogs) {
+    if (!options.suppressDialogs && !options.suppressLocalFontPrompt) {
       await promptLocalFontsIfNeeded(displayName);
     }
 
@@ -1995,7 +1995,10 @@ async function createNewDocument(): Promise<void> {
         { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
         { discardPreviousDraft: true },
       );
-      await initializeDocument(docInfo, t('ui.sbMessage.newDocPages', { p1: docInfo.pageCount }));
+      // 빈 문서는 사용자 파일의 원본 글꼴이 없으므로 확인창 없이 바로 편집한다.
+      await initializeDocument(docInfo, t('ui.sbMessage.newDocPages', { p1: docInfo.pageCount }), {
+        suppressLocalFontPrompt: true,
+      });
     });
   } catch (error) {
     msg.textContent = `새 문서 생성 실패: ${error}`;
