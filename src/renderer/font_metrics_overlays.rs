@@ -182,9 +182,17 @@ pub(crate) fn declared_original_glyph_advance_em(
         return Some(0.5);
     }
     // 원본 HNC 반각 괘선과 Unicode 전각 괘선은 같은 표시 모양이어도
-    // 다른 프로그램이다. 원본 sample11의 한컴2020 Print는 이 HNC 선을
-    // Haansoft Batang의512/1024em으로 출력한다. BMP HWP5 표기도 같은 키다.
-    if face == "명조" && !bold && !italic && matches!(character, '\u{F080F}' | '\u{A80F}') {
+    // 다른 프로그램이다. 원본 sample11의 한컴 2020 Print는 가는 선을 반각으로
+    // 출력한다. sample10의 690·732·746·761쪽과 #5793 Print도 원본 이중선을
+    // 반각으로 확인한다. BMP HWP5 표기도 같은 원본 기호다.
+    if face == "명조"
+        && !bold
+        && !italic
+        && matches!(
+            character,
+            '\u{F080F}' | '\u{A80F}' | '\u{F0827}' | '\u{A827}'
+        )
+    {
         return Some(0.5);
     }
     // 별도 빈 HWPX의 명조 HFT ASCII/선문자 표본을 한컴2020 Print:

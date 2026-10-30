@@ -7561,6 +7561,15 @@ impl LayoutEngine {
                         && !p.stored_text_partition_is_dirty()
                         && !p.layout_object_projection
                         && p.layout_space_metrics.is_empty()
+                            && !p.hwp3_saved_space_corrections.is_empty()
+                        // 내부 낱말 공백이 없는 줄은 원본 공백 보정으로
+                        // 글자 사이 배분까지 대체할 수 없다. 예를 들어 표의
+                        // 한 단어가 다음 줄로 이어지면 글자 단위 정렬이 필요하다.
+                        && {
+                            let chars = leading_space_plan.spacing_chars();
+                            let text: String = chars.iter().map(|(ch, _)| *ch).collect();
+                            text.trim_matches(' ').contains(' ')
+                        }
                 })
                 .and_then(|p| {
                     p.line_segs
@@ -7572,61 +7581,70 @@ impl LayoutEngine {
                         && line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
                 })
                 .map(|(_, (_, correction))| hwpunit_to_px(i32::from(*correction) * 4, self.dpi));
-            let (extra_word_sp, extra_char_sp, extra_dash_sp) = if compression.is_some() {
-                (0.0, 0.0, 0.0)
-            } else if is_hancom_company_pua_logo_line {
-                // 이 줄의 trailing space는 뒤의 treat-as-char logo 그림 앞 공백이다.
-                // 회사명 자체에는 자간을 추가하지 않고 이 공백 하나가 남는 폭을 전부
-                // 흡수하게 해야 Hancom PDF의 좌측 회사명·우측 logo 배치가 유지된다.
-                ((available_width - total_text_width).max(0.0), 0.0, 0.0)
-            } else if let Some(correction) = hwp3_saved_space {
-                // 한글 3.0 저장 줄의 공백 보정은 각 공백에 더하는 원본 값이다.
-                // 글꼴 변경 등으로 줄이 다시 구성되면 위의 출처 검사가 이를 거부한다.
-                (correction, 0.0, 0.0)
-            } else if runs_all_whitespace
-                && !is_last_line_of_para
-                && !has_forced_break
-                && line_tac_offsets_for_width.is_empty()
-                && !needs_justify
-                && !needs_distribute
-            {
-                // Soft wrapping can consume a row of separator spaces beyond
-                // the frame. Keep their decoration advances instead of fitting
-                // them like glyphs. Paragraph-end/forced-break spaces remain
-                // authored content and retain the normal line-fit contract.
-                (0.0, 0.0, 0.0)
-            } else {
-                compute_line_extra_spacing_with_dash_plan(
-                    comp_line,
-                    leading_space_plan.leading_spaces,
-                    line_tac_offsets_for_width
-                        .iter()
-                        .filter(|(_, width, _)| *width > 0.0)
-                        .count(),
-                    trailing_space_limit,
-                    &leading_space_plan,
-                    soft_wrap_separator_width,
-                    terminal_tracking_for_fit,
-                    &unjustified_leading_spaces,
-                    styles,
-                    visible_line_measure.as_ref(),
-                    alignment,
-                    cell_ctx.is_some(),
-                    needs_justify_spacing,
-                    false,
-                    needs_distribute,
-                    has_tabs,
-                    renders_synthetic_wrap_trailing_space,
-                    suppress_cell_overflow_spacing,
-                    converge_auto_shrink_cell,
-                    total_char_count,
-                    total_text_width,
-                    available_width,
-                    tab_width,
-                    &mut dash_extra_by_run,
-                    note_line.trailing_slots,
-                )
-            };
+            let (mut extra_word_sp, extra_char_sp, extra_dash_sp) =
+                if compression.is_some() {
+                    (0.0, 0.0, 0.0)
+                } else if is_hancom_company_pua_logo_line {
+                    // 이 줄의 trailing space는 뒤의 treat-as-char logo 그림 앞 공백이다.
+                    // 회사명 자체에는 자간을 추가하지 않고 이 공백 하나가 남는 폭을 전부
+                    // 흡수하게 해야 Hancom PDF의 좌측 회사명·우측 logo 배치가 유지된다.
+                    ((available_width - total_text_width).max(0.0), 0.0, 0.0)
+                } else if runs_all_whitespace
+                    && !is_last_line_of_para
+                    && !has_forced_break
+                    && line_tac_offsets_for_width.is_empty()
+                    && !needs_justify
+                    && !needs_distribute
+                {
+                    // Soft wrapping can consume a row of separator spaces beyond
+                    // the frame. Keep their decoration advances instead of fitting
+                    // them like glyphs. Paragraph-end/forced-break spaces remain
+                    // authored content and retain the normal line-fit contract.
+                    (0.0, 0.0, 0.0)
+                } else {
+                    compute_line_extra_spacing_with_dash_plan(
+                        comp_line,
+                        leading_space_plan.leading_spaces,
+                        line_tac_offsets_for_width
+                            .iter()
+                            .filter(|(_, width, _)| *width > 0.0)
+                            .count(),
+                        trailing_space_limit,
+                        &leading_space_plan,
+                        soft_wrap_separator_width,
+                        terminal_tracking_for_alignment(
+                            comp_line,
+                            styles,
+                            &line_tac_offsets_for_width,
+                            true,
+                        ),
+                        &unjustified_leading_spaces,
+                        styles,
+                        centered_measure.as_ref(),
+                        alignment,
+                        cell_ctx.is_some(),
+                        needs_justify,
+                        false,
+                        needs_distribute,
+                        has_tabs,
+                        renders_synthetic_wrap_trailing_space,
+                        suppress_cell_overflow_spacing,
+                        converge_auto_shrink_cell,
+                        total_char_count,
+                        total_text_width,
+                        available_width,
+                        tab_width,
+                        &mut dash_extra_by_run,
+                        note_line.trailing_slots,
+                    )
+                };
+            if compression.is_none() && !is_hancom_company_pua_logo_line {
+                if let Some(correction) = hwp3_saved_space {
+                    // 저장 공백 보정은 낱말 간격만 대체한다. 같은 줄의 대시 복원과
+                    // 글자 배분은 공통 계획을 그대로 소비해야 한다.
+                    extra_word_sp = correction;
+                }
+            }
 
             let line_plain_text: String = comp_line.runs.iter().map(|r| r.text.as_str()).collect();
             let is_answer_sheet_number_label =

@@ -53,6 +53,7 @@ pub struct NativePuaMetrics {
 pub struct NativeOtfMetrics {
     programs: Vec<NativeOtfProgram>,
     advances: std::sync::Mutex<BTreeMap<char, Option<(f64, bool)>>>,
+    coverage: std::sync::Mutex<BTreeMap<char, bool>>,
 }
 
 #[derive(Debug, Clone)]
@@ -74,6 +75,24 @@ impl PartialEq for NativeOtfMetrics {
 }
 
 impl NativeOtfMetrics {
+    /// 글리프 공급 여부는 CFF 전진 사용 여부와 다르다. TTF도 표시할 수 있다.
+    pub fn has_glyph(&self, character: char) -> bool {
+        let Ok(mut cache) = self.coverage.lock() else {
+            return false;
+        };
+        if let Some(found) = cache.get(&character) {
+            return *found;
+        }
+        let found = self.programs.iter().any(|program| {
+            ttf_parser::Face::parse(&program.bytes, program.face_index)
+                .ok()
+                .and_then(|face| face.glyph_index(character))
+                .is_some_and(|glyph| glyph.0 != 0)
+        });
+        cache.insert(character, found);
+        found
+    }
+
     pub fn needs_faux_bold(&self, character: char) -> bool {
         self.glyph_metric(character).is_some_and(|(_, faux)| faux)
     }
@@ -211,6 +230,7 @@ impl NativePuaFonts {
                 Arc::new(NativeOtfMetrics {
                     programs,
                     advances: Default::default(),
+                    coverage: Default::default(),
                 }),
             );
         Ok(())

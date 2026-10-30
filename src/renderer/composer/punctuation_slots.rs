@@ -69,7 +69,13 @@ pub(super) fn try_character_style<S: crate::renderer::style_resolver::storage::S
     Ok(output)
 }
 
-fn slot(ch: char, inherited: usize, regenerated: bool, style: Option<&ResolvedCharStyle>) -> usize {
+fn slot(
+    ch: char,
+    inherited: usize,
+    regenerated: bool,
+    style: Option<&ResolvedCharStyle>,
+    styles: &ResolvedStyleSet,
+) -> usize {
     let Some(style) = style else {
         return inherited;
     };
@@ -79,7 +85,27 @@ fn slot(ch: char, inherited: usize, regenerated: bool, style: Option<&ResolvedCh
         != style.font_size_for_lang(1)
         || style.letter_spacing_for_lang(inherited) != style.letter_spacing_for_lang(1)
         || style.ratio_for_lang(inherited) != style.ratio_for_lang(1);
-    if style.explicit_latin_slot && super::is_latin_slot_punct(ch) {
+    // 한글 3.0에서 상속된 한글 프로그램에 구두점이 없고 원문의 영문
+    // 프로그램에 있으면, 그 글리프를 공급하는 슬롯이 측정과 paint를 함께 소유한다.
+    // 양쪽 프로그램이 확인되지 않으면 기존 원본 폭 계약을 유지한다.
+    let supplied_latin_punctuation = styles.source_hwp3_native
+        && inherited != 1
+        && ch.is_ascii_punctuation()
+        && styles
+            .native_pua_fonts
+            .get_otf(
+                style.font_family_for_lang(inherited),
+                style.bold,
+                style.italic,
+            )
+            .is_some_and(|font| !font.has_glyph(ch))
+        && styles
+            .native_pua_fonts
+            .get_otf(style.font_family_for_lang(1), style.bold, style.italic)
+            .is_some_and(|font| font.has_glyph(ch));
+    if supplied_latin_punctuation {
+        1
+    } else if style.explicit_latin_slot && super::is_latin_slot_punct(ch) {
         1
     } else if explicit_metrics_differ
         && (matches!(ch, ' ' | '\u{00a0}') || ch.is_ascii_punctuation())
@@ -108,6 +134,7 @@ pub(super) fn metric_slot(
         inherited,
         false,
         styles.char_styles.get(style_id as usize),
+        styles,
     )
 }
 
@@ -122,10 +149,9 @@ pub(super) fn try_resolve_run_slots<S: crate::storage::Storage>(
         for run in std::mem::take(&mut line.runs) {
             let style = styles.char_styles.get(run.char_style_id as usize);
             if run.char_overlap.is_some()
-                || !run
-                    .text
-                    .chars()
-                    .any(|ch| slot(ch, run.lang_index, regenerated, style) != run.lang_index)
+                || !run.text.chars().any(|ch| {
+                    slot(ch, run.lang_index, regenerated, style, styles) != run.lang_index
+                })
             {
                 storage.push(&mut resolved, run)?;
                 continue;
@@ -138,7 +164,7 @@ pub(super) fn try_resolve_run_slots<S: crate::storage::Storage>(
             let mut lang = run.lang_index;
             let mut origin = run.neutral_space_origin;
             for (scalar, (byte, ch)) in run.text.char_indices().enumerate() {
-                let next = slot(ch, run.lang_index, regenerated, style);
+                let next = slot(ch, run.lang_index, regenerated, style, styles);
                 let next_origin = space_origin(ch, run.lang_index, style);
                 if (next, next_origin) != (lang, origin) {
                     if byte > start {
@@ -183,4 +209,71 @@ pub(super) fn try_resolve_run_slots<S: crate::storage::Storage>(
         line.runs = resolved;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::renderer::native_pua_fonts::NativePuaFonts;
+    use std::sync::Arc;
+
+    #[test]
+    fn hwp3_missing_punctuation_uses_only_a_confirmed_latin_program() {
+        let style = ResolvedCharStyle {
+            font_families: vec!["fixture-korean".into(), "fixture-latin".into()],
+            ..Default::default()
+        };
+        let mut fonts = NativePuaFonts::default();
+        fonts
+            .register_otf(
+                "fixture-korean",
+                false,
+                false,
+                include_bytes!("../../../tests/fixtures/fonts/RHWPHftOutline.otf"),
+                0,
+            )
+            .unwrap();
+        fonts
+            .register_otf(
+                "fixture-latin",
+                false,
+                false,
+                include_bytes!("../../../tests/fixtures/fonts/RHWPEquationLatinOnly.ttf"),
+                0,
+            )
+            .unwrap();
+        let mut styles = ResolvedStyleSet {
+            source_hwp3_native: true,
+            native_pua_fonts: Arc::new(fonts),
+            ..Default::default()
+        };
+        assert_eq!(slot('(', 0, false, Some(&style), &styles), 1);
+        assert_eq!(slot('가', 0, false, Some(&style), &styles), 0);
+        styles.source_hwp3_native = false;
+        assert_eq!(slot('(', 0, false, Some(&style), &styles), 0);
+        styles.source_hwp3_native = true;
+        styles.native_pua_fonts = Arc::new(NativePuaFonts::default());
+        assert_eq!(slot('(', 0, false, Some(&style), &styles), 0);
+        let mut fonts = NativePuaFonts::default();
+        fonts
+            .register_otf(
+                "fixture-korean",
+                false,
+                false,
+                include_bytes!("../../../tests/fixtures/fonts/RHWPEquationCJKRegular.ttf"),
+                0,
+            )
+            .unwrap();
+        fonts
+            .register_otf(
+                "fixture-latin",
+                false,
+                false,
+                include_bytes!("../../../tests/fixtures/fonts/RHWPEquationLatinOnly.ttf"),
+                0,
+            )
+            .unwrap();
+        styles.native_pua_fonts = Arc::new(fonts);
+        assert_eq!(slot('(', 0, false, Some(&style), &styles), 0);
+    }
 }
