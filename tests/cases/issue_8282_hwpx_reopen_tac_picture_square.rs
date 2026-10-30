@@ -1,16 +1,18 @@
-//! [#8282] HWPX 로 저장한 뒤 다시 열어도 글자처럼 그림 + 어울림 부동 도형 문단의 배치가 같다.
+//! [#8282] HWPX 로 저장한 뒤 다시 열어도 글자처럼 그림 + 어울림 부동 도형 문단의 배치가 같고,
+//! 어울림 개체가 줄 폭을 한/글처럼 줄인다.
 //!
 //! 결함: HWPX 저장은 편집한 문단의 `linesegarray` 를 뺀다. rhwp 가 다시 열면 그 문단을 저장 줄 없이
 //! 현재 프레임에서 재조판하는데, 그림 밴드 프레임은 어울림 **그림** 하나만 받고 어울림 **도형**은
 //! 받지 않았다. 그래서 합성 줄(글자 높이)만 남아 글자처럼 그림의 높이가 줄에서 빠지고, 뒤 문단이
-//! 그만큼 위로 올라왔다(#8271 의 줄 폭 중립 배치와 같은 경로).
+//! 그만큼 위로 올라왔다(#8271 의 줄 폭 중립 배치와 같은 경로). 또 저장 줄 없는 문단의 어울림
+//! 개체는 자기 문단과 뒤 문단의 줄을 줄이지 않았다.
 //!
-//! 독립 기준: 같은 문서의 저장 전 배치와 HWP 저장본(저장 줄 보존)을 다시 연 배치가 서로 같다.
-//! 저장·재열기는 배치를 바꾸지 않아야 한다. 어울림 도형은 어울림 그림과 같은 부동 개체 하나로
-//! 같은 프레임이 받는다(대조군: 어울림 그림은 종전에도 같았다).
-//!
-//! 이 검사는 저장·재열기의 일관성만 고정한다. 어울림 개체가 그림 줄과 겹칠 때 줄 폭을 얼마나
-//! 줄이는지는 한컴 Print 와 Visual Sweep 으로 확인한다.
+//! 독립 기준:
+//! - 같은 문서의 저장 전 배치와 HWP 저장본을 다시 연 배치가 HWPX 재열기와 같다.
+//! - 커밋한 합성 HWPX 의 한/글 2020 Print PDF(`pdf/issue8282/*-2020.pdf`)에서 읽은 줄 나눔과
+//!   개체 회피 관계: 어울림 개체와 겹치는 줄은 개체 바깥 여백 상자 왼쪽에서 끝나고, 개체 아래
+//!   줄은 전폭이며, 개체 옆의 뒤 문단은 개체 오른쪽에서 시작한다. 글상자 윗변은 오프셋에 위
+//!   바깥여백을 더한 자리다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -326,4 +328,131 @@ fn committed_fixtures_match_the_in_memory_reopen() {
             &placement(&fixture),
         );
     }
+}
+
+fn find_all(node: &RenderNode, pred: &dyn Fn(&RenderNode) -> bool, out: &mut Vec<BoundingBox>) {
+    if pred(node) {
+        out.push(node.bbox);
+    }
+    for child in &node.children {
+        find_all(child, pred, out);
+    }
+}
+
+const HU_PX: f64 = 96.0 / 7200.0;
+/// 글상자 바깥여백(283 HU)·크기(17008×5669 HU).
+const BOX_MARGIN_PX: f64 = 283.0 * HU_PX;
+const BOX_WIDTH_PX: f64 = 17008.0 * HU_PX;
+const BOX_HEIGHT_PX: f64 = 5669.0 * HU_PX;
+
+fn fixture(path: &str) -> DocumentCore {
+    DocumentCore::from_bytes(
+        &std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(path)).expect("fixture"),
+    )
+    .expect("parse fixture")
+}
+
+/// 글상자 잉크(사각형). 그림 fixture 에는 없다.
+fn textbox(core: &DocumentCore) -> BoundingBox {
+    let tree = core.build_page_render_tree(0).expect("page 1");
+    let mut boxes = Vec::new();
+    find_all(
+        &tree.root,
+        &|n| matches!(n.node_type, RenderNodeType::Rectangle(_)) && n.bbox.width > 200.0,
+        &mut boxes,
+    );
+    assert_eq!(boxes.len(), 1, "글상자 하나");
+    boxes[0]
+}
+
+/// 한/글 2020 Print: 줄과 겹치는 어울림 개체 왼쪽에서 앞 두 줄이 끝나고(「…어울」「…쓴 문」),
+/// 개체 아래 셋째 줄은 전폭이다. 같은 관계를 편집 직후·HWP·HWPX 가 모두 낸다.
+#[test]
+fn square_textbox_carves_its_own_host_lines_like_hancom_print() {
+    let path = "samples/issue8282/tac_picture_square_textbox_overlap.hwpx";
+    let core = fixture(path);
+    let ink = textbox(&core);
+    // 용지 기준 오프셋(34016, 9000 HU) + 바깥여백.
+    assert!(
+        (ink.x - (34016.0 * HU_PX + BOX_MARGIN_PX)).abs() <= 0.5
+            && (ink.y - (9000.0 * HU_PX + BOX_MARGIN_PX)).abs() <= 0.5,
+        "{path}: 글상자 잉크({:.1},{:.1})는 오프셋+바깥여백에 놓인다",
+        ink.x,
+        ink.y
+    );
+    let outer_left = ink.x - BOX_MARGIN_PX;
+    let outer_bottom = ink.y + BOX_HEIGHT_PX + BOX_MARGIN_PX;
+    let lines = placement(&core).lines;
+    let texts: Vec<_> = lines
+        .iter()
+        .map(|(_, t)| t.trim_end().to_string())
+        .collect();
+    assert_eq!(texts.len(), 4, "{path}: host 세 줄 + 다음 문단 — {texts:?}");
+    assert!(
+        texts[0].ends_with("어울") && texts[1].ends_with("쓴 문") && texts[2].ends_with("끝."),
+        "{path}: 한/글 Print 와 같은 줄 나눔 — {texts:?}"
+    );
+    for (bbox, text) in &lines[..2] {
+        assert!(
+            bbox.y < outer_bottom && bbox.x + bbox.width <= outer_left + 0.5,
+            "{path}: 「{text}」 줄({:.1}–{:.1})은 글상자 바깥 왼쪽({outer_left:.1})에서 끝난다",
+            bbox.x,
+            bbox.x + bbox.width
+        );
+    }
+    assert!(
+        lines[2].0.y >= outer_bottom - 0.5 && lines[2].0.x + lines[2].0.width > outer_left,
+        "{path}: 글상자 아래 셋째 줄은 전폭이다"
+    );
+    let edited = edited(LONG, 34016, 9000, false);
+    assert_same_placement("편집 직후", &placement(&core), &placement(&edited));
+    assert_same_placement(
+        "HWP 저장본",
+        &placement(&core),
+        &placement(&reopen_hwp(&edited)),
+    );
+}
+
+/// 한/글 2020 Print: host 줄 아래 어울림 글상자 옆에서 뒤 문단이 글상자 오른쪽으로 비켜 선다.
+/// 뒤 문단의 저장 줄은 저장 줄 없는 host 의 개체를 증언하지 않는다(전폭 저장 줄).
+#[test]
+fn square_textbox_of_uncached_host_moves_next_paragraph_beside_it() {
+    let path = "samples/issue8282/tac_picture_square_textbox.hwpx";
+    let core = fixture(path);
+    assert!(
+        !core.document().sections[0].paragraphs[1]
+            .line_segs
+            .is_empty(),
+        "전제: 뒤 문단은 저장 줄이 있다"
+    );
+    let ink = textbox(&core);
+    let outer_right = ink.x + BOX_WIDTH_PX + BOX_MARGIN_PX;
+    let lines = placement(&core).lines;
+    let (next, text) = lines.last().expect("다음 문단");
+    assert_eq!(text.trim_end(), "다음 문단");
+    assert!(
+        next.y < ink.y + BOX_HEIGHT_PX && next.y + next.height > ink.y - BOX_MARGIN_PX,
+        "{path}: 다음 문단 줄은 글상자 세로 범위에 있다"
+    );
+    assert!(
+        next.x >= outer_right - 0.5,
+        "{path}: 다음 문단({:.1})은 글상자 바깥 오른쪽({outer_right:.1}) 뒤에서 시작한다",
+        next.x
+    );
+}
+
+/// 대조군: 어울림 그림이 첫 줄만 덮으면 둘째 줄부터 전폭이다(한/글 2020 Print 「…어울」 뒤
+/// 「…겹치는 세로」).
+#[test]
+fn square_picture_carves_only_the_lines_it_overlaps() {
+    let path = "samples/issue8282/tac_picture_square_picture_overlap.hwpx";
+    let texts: Vec<_> = placement(&fixture(path))
+        .lines
+        .iter()
+        .map(|(_, t)| t.trim_end().to_string())
+        .collect();
+    assert!(
+        texts.len() == 4 && texts[0].ends_with("어울") && texts[1].ends_with("겹치는 세로"),
+        "{path}: 한/글 Print 와 같은 줄 나눔 — {texts:?}"
+    );
 }

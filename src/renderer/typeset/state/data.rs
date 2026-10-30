@@ -146,6 +146,10 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 현재 쪽에 실제 배치된 그림의 점유 영역(용지 좌표). 다음 단에도 간섭할 수 있다.
     pub(in crate::renderer::typeset) side_wrap_exclusions:
         std::collections::BTreeMap<(usize, usize), crate::renderer::layout_frame::FrameExclusion>,
+    /// [#8282] 저장 줄 없는 host 의 배제 영역. 한/글이 그 개체 둘레로 뒤 문단을 조판한 적이
+    /// 없으므로 뒤 문단의 저장 줄은 이 개체를 증언하지 않는다.
+    pub(in crate::renderer::typeset) unwitnessed_side_wraps:
+        std::collections::BTreeSet<(usize, usize)>,
     pub(in crate::renderer::typeset) inline_placements: std::collections::HashMap<
         (usize, usize),
         crate::renderer::float_placement::InlineBoxPlacement,

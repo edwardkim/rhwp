@@ -1081,6 +1081,19 @@ impl LayoutEngine {
             {
                 x += hwpunit_to_px(i32::from(common.margin.left), self.dpi);
             }
+            // [#8282] 같은 어울림 도형의 위 바깥여백도 세로 위치에 가산한다(용지 기준
+            // 글상자 오프셋 15000·9000 HU + 여백 283 HU: 한/글 2020 Print PDF 의 상자 윗변이
+            // 오프셋보다 3.8px 아래). 배제 상자(`shape_exclusion`)는 오프셋에서 시작해
+            // 여백을 포함하므로 잉크는 그 안쪽에 놓인다. 실측이 Top 정렬뿐이라 나머지는 유지.
+            if !common.treat_as_char
+                && matches!(common.text_wrap, crate::model::shape::TextWrap::Square)
+                && matches!(
+                    common.vert_align,
+                    crate::model::shape::VertAlign::Top | crate::model::shape::VertAlign::Inside
+                )
+            {
+                y += hwpunit_to_px(i32::from(common.margin.top), self.dpi);
+            }
             // 자리차지 OLE의 위 여백은 잉크 원점과 본문 예약 높이에 함께 속한다.
             // 일반 문단도 단 이월과 동일한 확정 프레임을 소비한다.
             let y = crate::renderer::float_placement::column_ole_placement(shape, para_y, self.dpi)
