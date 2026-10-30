@@ -1,8 +1,8 @@
 //! 관계형·고정형: HWPX 저장본과 원본의 쪽별 본문 비교(관계)와, 저장한 `sideChar` 값·쪽 번호
 //! 글(`1`, `- 2 -`, `1`..`5`)을 한컴 2024 Print 에서 정한 값으로 직접 확인(고정)한다.
-//! 주석 갱신: 2026-10-31T00:20:00+09:00; 직전 파일 커밋: 2026-10-30T21:55:47+09:00 (a7abcc41a).
-//! 2026-10-30 측정 raw(96dpi, pdftoppm, `scripts/visual_sweep.py --compat 2022`), 핵심 쪽
-//! Native / fresh WASM, 전체 쪽 최저 Native / fresh WASM:
+//! 주석 갱신: 2026-10-31T06:25:00+09:00; 직전 파일 커밋: 2026-10-31T05:08:14+09:00 (7b2495fb8).
+//! 2026-10-31 devel 55f40ecd9 위 head 측정 raw(96dpi, pdftoppm, `scripts/visual_sweep.py
+//! --compat 2022`), 핵심 쪽 Native / fresh WASM, 전체 쪽 최저 Native / fresh WASM:
 //! - `samples/hwpspec.hwp` ↔ `pdf/hwpspec-2024.pdf`: 11쪽 99.70223% / 99.70229%; 전178쪽 최저
 //!   92.39% / 92.38%. HWPX 저장본 ↔ `pdf/page-number-side-char/hwpspec-rhwp-hwpx-2024.pdf`:
 //!   11쪽 99.67885% / 99.67892%; 전178쪽 최저 92.78% / 92.77%.

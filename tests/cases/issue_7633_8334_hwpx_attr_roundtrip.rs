@@ -1,8 +1,9 @@
 //! 관계형·고정형: 왕복 전후의 줄표·셀 방향·쪽별 본문 비교(관계)와, 원본의 줄표 문자·셀 방향
 //! 값을 한컴 저장본·Print 에서 정한 값(`'\0'`, `'-'`, 2, 1)으로 직접 확인(고정)한다.
-//! 주석 갱신: 2026-10-31T00:20:00+09:00; 직전 파일 커밋: 2026-10-30T21:55:47+09:00 (f70ac1731).
-//! 2026-10-30 측정 raw(96dpi, pdftoppm, `scripts/visual_sweep.py --compat 2022`, head 의 HWPX
-//! 저장본은 `rhwp export-hwpx` 로 생성), 핵심 쪽 Native / fresh WASM, 전체 쪽 최저 Native / fresh WASM:
+//! 주석 갱신: 2026-10-31T06:25:00+09:00; 직전 파일 커밋: 2026-10-31T05:08:14+09:00 (2d17f0045).
+//! 2026-10-31 devel 55f40ecd9 위 head 측정 raw(96dpi, pdftoppm, `scripts/visual_sweep.py
+//! --compat 2022`, head 의 HWPX 저장본은 `rhwp export-hwpx` 로 생성), 핵심 쪽 Native / fresh
+//! WASM, 전체 쪽 최저 Native / fresh WASM:
 //! - `samples/hwp-3.0-HWPML.hwp` HWPX 저장본 ↔ `pdf/hwp-3.0-HWPML-2020.pdf`: 56쪽 100.00000% /
 //!   100.00000%; 전122쪽 최저 92.77% / 92.76% (원본 HWP 도 같은 값).
 //! - `samples/table-vpos-01.hwpx` 원본·HWPX 저장본 ↔ `pdf/table-vpos-01-hwpx-2020.pdf`: 2쪽
