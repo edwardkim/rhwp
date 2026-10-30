@@ -2338,14 +2338,21 @@ impl Paragraph {
 
         // 0. tab_extended: 두 문단의 짝을 각자 탭 수에 맞춘 뒤 잇는다
         if !self.tab_extended.is_empty() || !other.tab_extended.is_empty() {
-            let own_tabs = Self::tab_count(&self.text.chars().collect::<Vec<_>>());
+            let own_tabs = self.text.chars().filter(|&ch| ch == '\t').count();
             self.tab_extended.truncate(own_tabs);
+            let missing_tabs = own_tabs - self.tab_extended.len();
+            storage.reserve(&mut self.tab_extended, missing_tabs)?;
             self.tab_extended.resize(own_tabs, TAB_EXT_PLACEHOLDER);
-            let other_tabs = Self::tab_count(&other.text.chars().collect::<Vec<_>>());
-            let mut theirs = other.tab_extended.clone();
-            theirs.truncate(other_tabs);
-            theirs.resize(other_tabs, TAB_EXT_PLACEHOLDER);
-            self.tab_extended.extend(theirs);
+            let other_tabs = other.text.chars().filter(|&ch| ch == '\t').count();
+            storage.extend(
+                &mut self.tab_extended,
+                other
+                    .tab_extended
+                    .iter()
+                    .copied()
+                    .chain(std::iter::repeat(TAB_EXT_PLACEHOLDER))
+                    .take(other_tabs),
+            )?;
         }
 
         // 1. 텍스트 결합
