@@ -540,7 +540,8 @@ fn repeated_hyphen_runs_remain_visible_and_owned_by_cells() {
             let x = dash
                 .attribute("x")
                 .and_then(|value| value.parse::<f64>().ok());
-            let replacement = dash.prev_siblings().find(|node| node.is_element());
+            // prev_siblings는 현재 노드부터 시작하므로 실제 이전 형제부터 찾는다.
+            let replacement = dash.prev_siblings().skip(1).find(|node| node.is_element());
             assert!(
                 replacement.is_some_and(|line| {
                     let start = line
