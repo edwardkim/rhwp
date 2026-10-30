@@ -236,18 +236,22 @@ test('every direct CLI page renderer caller has an explicit workflow-consumer de
   }
 });
 
-test('Native Skia integration test and support changes run Rust and Native Skia without Canvas', () => {
+test('Native Skia source, integration test and support changes run Rust and Native Skia without Canvas', () => {
   for (const filename of [
+    'src/native_host/region_cache.rs',
     'tests/cases/issue_7820_sixel_contract.rs',
     'tests/cases/issue_8150_kitty_contract.rs',
     'tests/cases/issue_4961_font_decision_trace.rs',
     'tests/cases/issue_7902_original_frame_and_content.rs',
     'tests/cases/issue_8160_hwp2022_paragraph_relations.rs',
     'tests/cases/issue_7950_pdf_paint.rs',
+    'tests/cases/issue_536_native_region_cache.rs',
     'tests/cases/native_fractional_glyph_origin.rs',
     'tests/cases/issue_8153_opaque_mixed_axis_image_sampling.rs',
     'tests/cases/issue_8153_print_glyph_geometry.rs',
     'tests/cases/issue_8153_symbol_fallback.rs',
+    'tests/cases/skia_region_plan.rs',
+    'tests/cases/skia_host_surface.rs',
     'tests/cli_exit_codes_native.rs',
     'tests/issue_1144_native.rs',
     'tests/issue_2083_hide_fill_page_background.rs',

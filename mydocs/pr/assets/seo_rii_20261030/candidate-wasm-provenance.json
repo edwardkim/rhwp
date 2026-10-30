@@ -1,0 +1,20 @@
+{
+  "rhwp.js": {
+    "sha256": "248cef6af1ccba826afe12f12f517e56e87638b422a4d9af4d7952d0ae717d8d",
+    "bytes": 514131,
+    "publicMatches": true
+  },
+  "rhwp_bg.wasm": {
+    "sha256": "0a68e189b1b5cedfe66a4cba3f348426bb5562098f61fdc21a8c038dc049923a",
+    "bytes": 25784754,
+    "publicMatches": true
+  },
+  "rhwp.d.ts": {
+    "sha256": "4e7e7f83d645f82dd2e2a48774e645efa9bb4309a45cd3ce4d3f2865a9cd5a9f",
+    "bytes": 205601
+  },
+  "rhwp_bg.wasm.d.ts": {
+    "sha256": "0d29e0a8adbf57ddeb97dd51234c956baf5536715adba413057a666e3152e8d8",
+    "bytes": 71765
+  }
+}
