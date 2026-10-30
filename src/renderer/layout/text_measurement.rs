@@ -2427,12 +2427,19 @@ fn char_width_decision_with_hft_tracking<'a>(
     let otf_metrics = latin.map_or(style.native_otf_metrics.as_ref(), |slot| {
         slot.native_otf_metrics.as_ref()
     });
-    let otf_advance =
-        if cluster_len[i] <= 1 && !dash_leader && !c.is_whitespace() && !c.is_control() {
-            otf_metrics.and_then(|font| font.advance_em(c))
-        } else {
-            None
-        };
+    let otf_advance = if cluster_len[i] <= 1
+            && !dash_leader
+            && !c.is_whitespace()
+            && !c.is_control()
+            // HFT 원본 기호를 Unicode 표시 기호로 치환한 경우, 표시용
+            // OTF의 전진은 원본 기호의 전진과 다를 수 있다. 원본 PUA
+            // 공급자가 확인된 경우에는 위에서 원문을 유지하므로 제외되지 않는다.
+            && !(style.source_font_is_hft && c != chars[i])
+    {
+        otf_metrics.and_then(|font| font.advance_em(c))
+    } else {
+        None
+    };
     let (base_width_raw, width_source) = if let Some(em) = otf_advance {
         em_exact = Some(em);
         (font_size * em, "nativeOtf")
@@ -2441,6 +2448,7 @@ fn char_width_decision_with_hft_tracking<'a>(
     };
     let supplement = (allow_supplemental
         && super::super::supplemental_metrics::accepts_prepared_glyph_advance(width_source)
+        && !(style.source_font_is_hft && c != chars[i])
         && !dash_leader
         && !c.is_whitespace()
         && !c.is_control()
@@ -3108,6 +3116,73 @@ pub(crate) fn estimate_text_width_with_storage<S: crate::storage::Storage>(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn hft_mapped_symbol_retains_source_advance_with_display_otf() {
+        // 저장소 합성 CFF의 단일 글리프를 표시용 ═에 대응시킨다.
+        // 시스템 글꼴을 사용하지 않으며 원본 PUA 자체는 지원하지 않는다.
+        let mut cff = include_bytes!("../../../tests/fixtures/fonts/RHWPHftOutline.otf").to_vec();
+        let count = u16::from_be_bytes([cff[4], cff[5]]) as usize;
+        let cmap = (0..count)
+            .find_map(|index| {
+                let pos = 12 + index * 16;
+                (cff.get(pos..pos + 4) == Some(b"cmap")).then(|| {
+                    u32::from_be_bytes(cff[pos + 8..pos + 12].try_into().unwrap()) as usize
+                })
+            })
+            .unwrap();
+        let sub = cmap + u32::from_be_bytes(cff[cmap + 8..cmap + 12].try_into().unwrap()) as usize;
+        assert_eq!(u16::from_be_bytes([cff[sub], cff[sub + 1]]), 4);
+        for offset in [sub + 14, sub + 20] {
+            cff[offset..offset + 2].copy_from_slice(&('═' as u16).to_be_bytes());
+        }
+        cff[sub + 24..sub + 26].copy_from_slice(&1u16.wrapping_sub('═' as u16).to_be_bytes());
+        let mut fonts = crate::renderer::native_pua_fonts::NativePuaFonts::default();
+        fonts
+            .register_otf("synthetic", false, false, &cff, 0)
+            .unwrap();
+        let mut style = TextStyle {
+            font_family: "synthetic".into(),
+            font_size: 20.0,
+            source_font_is_hft: true,
+            ..Default::default()
+        };
+        let source = ['\u{F0827}'];
+        let before = char_width_decision(&source, &[1], 0, &style, false).base_width_px;
+        style.native_otf_metrics = fonts.get_otf("synthetic", false, false);
+        let mapped = char_width_decision(&source, &[1], 0, &style, false);
+        let literal = char_width_decision(&['═'], &[1], 0, &style, false);
+        assert_eq!(mapped.base_width_px, before, "원본 기호의 전진 보존");
+        assert_eq!(
+            literal.width_source, "nativeOtf",
+            "실제 문자에는 OTF 전진 사용"
+        );
+
+        use crate::renderer::supplemental_metrics::{
+            MetricBackend, MetricContext, SupplementalMetric, SupplementalMetricStore,
+        };
+        let context = MetricContext {
+            document_generation: 1,
+            font_generation: 1,
+            backend: MetricBackend::Canvas2d,
+        };
+        let mut store = SupplementalMetricStore::new(context);
+        style.native_otf_metrics = None;
+        let canvas =
+            SupplementalMetric::backend_measured(&style, "═", "synthetic".into(), 18.0).unwrap();
+        store.replace(context, vec![canvas]).unwrap();
+        store.bind_style(context, &mut style).unwrap();
+        let mapped = char_width_decision(&source, &[1], 0, &style, true);
+        let literal = char_width_decision(&['═'], &[1], 0, &style, true);
+        assert_eq!(
+            mapped.base_width_px, before,
+            "Canvas 측정도 원본 기호 전진을 보존"
+        );
+        assert_eq!(
+            literal.base_width_px, 18.0,
+            "실제 문자에는 Canvas 측정 사용"
+        );
+    }
 
     #[test]
     fn issue_4442_noto_sans_kr_regular_ascii_shared_width_uses_tracked_advances() {
