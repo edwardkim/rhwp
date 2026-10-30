@@ -477,7 +477,7 @@ pub(super) fn match_system_family_style(
         // 같은 family와 같은 스타일의 설치본이 여러 형식이면 OTF를 먼저
         // 표시한다. PostScript 지정과 서로 다른 스타일은 바꾸지 않는다.
         let matched = if system_family {
-            matched.and_then(|original| {
+            matched.map(|original| {
                 let original_style = FontStyleCacheKey::new(original.font_style());
                 let mut set = font_mgr.match_family(family);
                 let selected = (0..set.count()).find_map(|index| {
@@ -495,7 +495,7 @@ pub(super) fn match_system_family_style(
                     };
                     cff.then_some(candidate)
                 });
-                Some(selected.unwrap_or(original))
+                selected.unwrap_or(original)
             })
         } else {
             matched

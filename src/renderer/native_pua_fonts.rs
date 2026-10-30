@@ -110,49 +110,6 @@ pub struct NativePuaFonts {
     otf_programs: BTreeMap<String, BTreeMap<(bool, bool), Arc<NativeOtfMetrics>>>,
 }
 
-#[cfg(test)]
-mod otf_program_tests {
-    use super::NativePuaFonts;
-
-    #[test]
-    fn split_family_uses_the_program_that_contains_each_character() {
-        // 저장소의 합성 CFF 글꼴은 가만 지원한다. 같은 글꼴의 cmap을 나로
-        // 바꿔 서로 다른 문자를 공급하는 두 번째 프로그램을 메모리에서 만든다.
-        let first = include_bytes!("../../tests/fixtures/fonts/RHWPHftOutline.otf");
-        let mut second = first.to_vec();
-        let table_count = u16::from_be_bytes([second[4], second[5]]) as usize;
-        let cmap = (0..table_count)
-            .find_map(|index| {
-                let pos = 12 + index * 16;
-                (second.get(pos..pos + 4) == Some(b"cmap")).then(|| {
-                    u32::from_be_bytes(second[pos + 8..pos + 12].try_into().unwrap()) as usize
-                })
-            })
-            .unwrap();
-        let sub =
-            cmap + u32::from_be_bytes(second[cmap + 8..cmap + 12].try_into().unwrap()) as usize;
-        assert_eq!(u16::from_be_bytes([second[sub], second[sub + 1]]), 4);
-        // 첫 세그먼트의 end/start와 idDelta를 가에서 나로 옮긴다.
-        for offset in [sub + 14, sub + 20] {
-            assert_eq!(&second[offset..offset + 2], &[0xac, 0x00]);
-            second[offset..offset + 2].copy_from_slice(&[0xb0, 0x98]);
-        }
-        let delta = 1u16.wrapping_sub('나' as u16).to_be_bytes();
-        second[sub + 24..sub + 26].copy_from_slice(&delta);
-        let mut fonts = NativePuaFonts::default();
-        fonts
-            .register_otf("synthetic", false, false, first, 0)
-            .unwrap();
-        fonts
-            .register_otf("synthetic", false, false, &second, 0)
-            .unwrap();
-        let metrics = fonts.get_otf("synthetic", false, false).unwrap();
-        assert!(metrics.advance_em('가').is_some());
-        assert!(metrics.advance_em('나').is_some());
-        assert!(metrics.advance_em('다').is_none());
-    }
-}
-
 impl NativePuaFonts {
     pub fn clear_otf(&mut self) {
         self.otf_programs.clear();
@@ -363,5 +320,48 @@ impl NativePuaFonts {
 
     pub fn get(&self, family: &str, bold: bool, italic: bool) -> Option<Arc<NativePuaMetrics>> {
         self.programs.get(family)?.get(&(bold, italic)).cloned()
+    }
+}
+
+#[cfg(test)]
+mod otf_program_tests {
+    use super::NativePuaFonts;
+
+    #[test]
+    fn split_family_uses_the_program_that_contains_each_character() {
+        // 저장소의 합성 CFF 글꼴은 가만 지원한다. 같은 글꼴의 cmap을 나로
+        // 바꿔 서로 다른 문자를 공급하는 두 번째 프로그램을 메모리에서 만든다.
+        let first = include_bytes!("../../tests/fixtures/fonts/RHWPHftOutline.otf");
+        let mut second = first.to_vec();
+        let table_count = u16::from_be_bytes([second[4], second[5]]) as usize;
+        let cmap = (0..table_count)
+            .find_map(|index| {
+                let pos = 12 + index * 16;
+                (second.get(pos..pos + 4) == Some(b"cmap")).then(|| {
+                    u32::from_be_bytes(second[pos + 8..pos + 12].try_into().unwrap()) as usize
+                })
+            })
+            .unwrap();
+        let sub =
+            cmap + u32::from_be_bytes(second[cmap + 8..cmap + 12].try_into().unwrap()) as usize;
+        assert_eq!(u16::from_be_bytes([second[sub], second[sub + 1]]), 4);
+        // 첫 세그먼트의 end/start와 idDelta를 가에서 나로 옮긴다.
+        for offset in [sub + 14, sub + 20] {
+            assert_eq!(&second[offset..offset + 2], &[0xac, 0x00]);
+            second[offset..offset + 2].copy_from_slice(&[0xb0, 0x98]);
+        }
+        let delta = 1u16.wrapping_sub('나' as u16).to_be_bytes();
+        second[sub + 24..sub + 26].copy_from_slice(&delta);
+        let mut fonts = NativePuaFonts::default();
+        fonts
+            .register_otf("synthetic", false, false, first, 0)
+            .unwrap();
+        fonts
+            .register_otf("synthetic", false, false, &second, 0)
+            .unwrap();
+        let metrics = fonts.get_otf("synthetic", false, false).unwrap();
+        assert!(metrics.advance_em('가').is_some());
+        assert!(metrics.advance_em('나').is_some());
+        assert!(metrics.advance_em('다').is_none());
     }
 }
