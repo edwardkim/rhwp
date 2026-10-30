@@ -3737,6 +3737,39 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 셀 블록의 너비 또는 높이를 같게 맞춘다 (한컴 [표 - 셀 너비를 같게 / 셀 높이를 같게]).
+    ///
+    /// 블록은 격자 행·열 범위(양 끝 포함)의 직사각형이고 `axis`는 `"width"` 또는 `"height"`다.
+    /// 블록 밖 셀이 제자리를 지키도록 표 격자를 다시 나눈다.
+    /// 반환: JSON `{"ok":true,"rowCount":N,"colCount":M,"cellMap":[..]}` — `cellMap[옛 셀 번호]`는 새 셀 번호다.
+    #[wasm_bindgen(js_name = equalizeTableCellSizes)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn equalize_table_cell_sizes(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        control_idx: u32,
+        start_row: u16,
+        start_col: u16,
+        end_row: u16,
+        end_col: u16,
+        axis: &str,
+    ) -> Result<String, JsValue> {
+        let axis = match axis {
+            "width" => crate::model::table::CellSizeAxis::Width,
+            "height" => crate::model::table::CellSizeAxis::Height,
+            _ => return Err(JsValue::from_str("axis는 width 또는 height입니다")),
+        };
+        self.equalize_table_cell_sizes_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            control_idx as usize,
+            (start_row, start_col, end_row, end_col),
+            axis,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// [#7189] 중첩 표의 셀 크기를 셀 경로로 조절한다 (배치).
     ///
     /// `cell_path_json`: `[{"controlIndex":0,"cellIndex":0,"cellParaIndex":9},...]`

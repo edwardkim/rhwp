@@ -2610,6 +2610,100 @@ impl DocumentCore {
         Ok("{\"ok\":true}".to_string())
     }
 
+    /// 셀 블록의 너비 또는 높이를 같게 맞춘다 (한컴 [표 - 셀 너비를 같게 / 셀 높이를 같게]).
+    ///
+    /// 블록은 `(start_row, start_col)`~`(end_row, end_col)` 격자 범위의 직사각형이다.
+    /// 너비는 저장한 셀 너비로, 높이는 화면에 그린 행 높이로 블록 길이를 재고 블록의
+    /// 셀 수로 나눈다. 블록 밖 셀은 제자리를 지키도록 격자를 다시 나눈다
+    /// (`Table::equalize_cell_block`). 반환: `{"ok":true,"rowCount":..,"colCount":..,"cellMap":[..]}`
+    /// — `cellMap[옛 셀 번호]`는 다시 정렬한 뒤의 셀 번호다.
+    #[allow(clippy::too_many_arguments)]
+    pub fn equalize_table_cell_sizes_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        block: (u16, u16, u16, u16),
+        axis: crate::model::table::CellSizeAxis,
+    ) -> Result<String, HwpError> {
+        use crate::model::table::CellSizeAxis;
+        self.ensure_table_cell_topology_supported(section_idx, parent_para_idx, control_idx)?;
+        let bounds = match axis {
+            CellSizeAxis::Width => self
+                .get_table_mut(section_idx, parent_para_idx, control_idx)?
+                .column_bounds()
+                .ok_or_else(|| {
+                    HwpError::RenderError(
+                        "행마다 칸 경계가 달라 셀 너비를 같게 맞출 수 없습니다".to_string(),
+                    )
+                })?,
+            CellSizeAxis::Height => {
+                self.paginate_if_needed();
+                let row_count = usize::from(
+                    self.get_table_mut(section_idx, parent_para_idx, control_idx)?
+                        .row_count,
+                );
+                let rows = self
+                    .measured_tables
+                    .get(section_idx)
+                    .and_then(|tables| {
+                        tables.iter().find(|t| {
+                            t.para_index == parent_para_idx
+                                && t.control_index == control_idx
+                                && t.unwrapped_table_depth == 0
+                                && t.row_heights.len() == row_count
+                        })
+                    })
+                    .ok_or_else(|| {
+                        HwpError::RenderError(
+                            "표의 행 높이를 재지 못해 셀 높이를 같게 맞출 수 없습니다".to_string(),
+                        )
+                    })?;
+                let mut bounds = vec![0i64];
+                let mut total = 0.0f64;
+                for height in &rows.row_heights {
+                    total += height * 7200.0 / self.dpi;
+                    bounds.push(total.round() as i64);
+                }
+                bounds
+            }
+        };
+        let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
+        let (moved_to, widened) = table
+            .equalize_cell_block(axis, block, &bounds)
+            .map_err(HwpError::RenderError)?;
+        let (row_count, col_count) = (table.row_count, table.col_count);
+        let reflow: Vec<(usize, usize)> = widened
+            .into_iter()
+            .map(|i| (i, table.cells[i].paragraphs.len()))
+            .collect();
+        self.reflow_table_cell_paragraphs(section_idx, parent_para_idx, control_idx, &reflow);
+        // 편집 세션의 재측정은 직전 측정의 행 배분을 행별 하한으로 둔다. 맞춘 크기가 새 기준이므로
+        // 이 표의 직전 측정을 버린다. 그대로 두면 행 수가 같은 블록에서 줄인 행이 옛 높이로 돌아간다.
+        if let Some(measured) = self.measured_sections.get_mut(section_idx) {
+            measured
+                .tables
+                .retain(|t| t.para_index != parent_para_idx || t.control_index != control_idx);
+        }
+
+        self.document.sections[section_idx].raw_stream = None;
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+
+        self.event_log.push(DocumentEvent::CellSplit {
+            section: section_idx,
+            para: parent_para_idx,
+            ctrl: control_idx,
+        });
+        let moved_to: Vec<String> = moved_to.iter().map(usize::to_string).collect();
+        Ok(super::super::helpers::json_ok_with(&format!(
+            "\"rowCount\":{},\"colCount\":{},\"cellMap\":[{}]",
+            row_count,
+            col_count,
+            moved_to.join(",")
+        )))
+    }
+
     /// 표의 열별 폭(HWPUNIT)을 절대값으로 설정한다 (네이티브).
     ///
     /// `widths.len()` 은 표의 열 수와 같아야 한다. `insert_table_column` 과 달리
