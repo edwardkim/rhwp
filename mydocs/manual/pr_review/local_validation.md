@@ -592,7 +592,100 @@ merge 판단에서는 다음 경계를 적용한다.
 패턴을 따른다. 근거와 재현 조건은 [#3289 CI 보고서](../../report/archives/task_m100_3289_report.md#멀티러너-거버넌스-운영-규칙)에
 기록되어 있다.
 
-일반 Rust 검증 예시는 다음과 같다. 명령은 같은 checkout에서 동시에 실행하지 않는다.
+### 회귀 테스트의 최소 글꼴 환경
+
+전체 회귀와 변경 범위의 집중 회귀는 별도로 설치한 상용 글꼴이나 개인 글꼴을 볼 수 없는
+**최소 글꼴 환경**에서 실행한다. 운영체제 동작에 필요한 기본 글꼴, 저장소의 라이선스 확인된
+기본 fallback과 검사가 명시적으로 공급하는 라이선스 확인 fixture만 허용한다. OS 기본 글꼴은
+그 종류를 기록하며 특정 시스템 글꼴이 있어야 테스트가 통과하도록 기대값을 만들지 않는다.
+글꼴 프로그램 자체를 검사할 때도 필요한 fixture를
+명시하며 시스템 설치 여부로 건너뛰지 않는다. 같은 조건에서 CI도 재현할 수 있어야 한다.
+실제 노출된 글꼴 파일 목록, 격리 방법, 실행 명령과 결과를 기록한다. 이 환경의 회귀 결과와
+독립 한컴 Print PDF에 맞는 글꼴을 공급한 Visual Sweep 결과는 별도로 보고한다.
+
+`FONTCONFIG_FILE`만 설정해 `fc-list`를 줄이는 것으로 격리를 판정하지 않는다. Native 코드는
+시스템 글꼴 디렉터리를 직접 탐색할 수 있고, `RHWP_FONT_PATH`, 명시적 경로 또는 브라우저의
+로컬 글꼴 접근도 별도 공급 경로다. 격리된 컨테이너나 OS의 파일 시스템 격리에서 이 경로들을
+함께 제한하고, 환경별 실제 탐색 경로와 목록을 확인한다. Docker는 필수가 아니다. Windows·macOS도
+같은 조건의 격리 환경을 사용한다. 격리할 수 없으면 회귀 검증을 완료한 것으로 기록하지 않는다.
+
+Ubuntu에서 `bwrap`을 사용할 수 있고 사용자 글꼴 경로가 아래와 같은 경우의 예시는 다음과 같다.
+실제 경로가 다르거나 추가 글꼴 디렉터리가 있으면 해당 경로도 숨긴다. 이 예시는 공용
+`target/pr-review`를 그대로 사용한다. Fontconfig 목록뿐 아니라 명시 경로와 fixture도 확인한다.
+
+~~~bash
+rhwp_minfont_dir="$PWD/output/pr-review/minimal-font"
+mkdir -p "$rhwp_minfont_dir/cache"
+cat > "$rhwp_minfont_dir/fonts.conf" <<EOF
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+<fontconfig><dir>$PWD/ttfs/opensource</dir><cachedir>$rhwp_minfont_dir/cache</cachedir></fontconfig>
+EOF
+bwrap --bind / / \
+  --tmpfs /usr/share/fonts --tmpfs /usr/local/share/fonts \
+  --tmpfs "$HOME/.local/share/fonts" \
+  --setenv FONTCONFIG_FILE "$rhwp_minfont_dir/fonts.conf" --unsetenv RHWP_FONT_PATH \
+  --chdir "$PWD" sh -c 'fc-list -f "%{file}\n"; exec "$@"' sh \
+  cargo nextest run --locked --cargo-profile release-test \
+  --target-dir "${rhwp_review_target_dir:?공용 target 경로를 먼저 고정하세요}" \
+  --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
+~~~
+
+`$HOME/.local/share/fonts`가 없는 환경에서는 그 `--tmpfs` 인자를 생략한다. 집중 검사와 Native
+Skia 검사에도 같은 격리를 적용하고, 실제 글꼴 프로그램을 시험하는 fixture는 별도 명시한다.
+스크립트나 테스트가 시스템 디렉터리의 파일을 직접 공급한다면 목록 확인만으로 통과시키지 않고
+해당 공급 경로를 수정하거나 격리한다.
+
+#### macOS
+
+개인 Mac의 글꼴을 비활성화하거나 삭제하지 않는다. 별도로 설치한 글꼴과 로컬 글꼴 접근 권한이
+없는 깨끗한 macOS 가상 머신 또는 검증 전용 계정·격리 환경을 사용한다. 계정만 분리하면
+`/Library/Fonts`의 공유 글꼴은 그대로 보이므로, 시스템에 추가된 글꼴까지 차단하지 못하면 깨끗한
+가상 머신을 사용한다. `/System/Library/Fonts` 등 OS 기본 글꼴은 보존하고 목록에 기록한다.
+`system_profiler`의 결과를 기준 목록과 대조해 한컴·개인 글꼴이 없음을 확인한다. Fontconfig
+목록만으로 CoreText가 볼 수 있는 글꼴이 격리됐다고 판단하지 않는다.
+
+~~~bash
+mkdir -p output/pr-review/minimal-font
+system_profiler SPFontsDataType -json > output/pr-review/minimal-font/macos-fonts.json
+env -u RHWP_FONT_PATH cargo nextest run --locked --cargo-profile release-test \
+  --target-dir target/pr-review --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast \
+  > output/pr-review/minimal-font/macos-nextest.log 2>&1
+~~~
+
+Native Skia와 집중 검사도 이 격리 환경에서 같은 target을 순차 재사용한다. 브라우저 검사는
+로컬 글꼴 접근을 거부한 상태에서 기본 동작을 확인하며, 실제 OTF 공급 기능은 라이선스 확인
+fixture를 명시하는 별도의 검사로 실행한다.
+
+#### Windows
+
+개인 PC의 글꼴을 삭제하지 않는다. 한컴·사용자 글꼴을 추가하지 않은 깨끗한 Windows 가상
+머신이나 Windows Sandbox를 사용한다. Windows 기본 글꼴은 보존하고 목록·해시를 기록하며,
+사용자별 글꼴 등록과 명시적 글꼴 경로도 확인한다. DirectWrite가 보는 글꼴을 Fontconfig
+목록으로 대신하지 않는다. Windows 작업공간에 checkout과 공용 `target/pr-review`를 둔다.
+
+~~~powershell
+New-Item -ItemType Directory -Force output/pr-review/minimal-font | Out-Null
+Get-ChildItem "$env:WINDIR\Fonts" -File | Get-FileHash -Algorithm SHA256 |
+  Export-Csv output/pr-review/minimal-font/windows-fonts.csv -NoTypeInformation -Encoding UTF8
+Get-ItemProperty 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Fonts' -ErrorAction SilentlyContinue |
+  ConvertTo-Json | Set-Content output/pr-review/minimal-font/windows-user-fonts.json -Encoding UTF8
+Remove-Item Env:RHWP_FONT_PATH -ErrorAction SilentlyContinue
+cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review `
+  --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast *> output/pr-review/minimal-font/windows-nextest.log
+if ($LASTEXITCODE -ne 0) { throw '최소 글꼴 전체 회귀 실패' }
+~~~
+
+운영체제 기본 목록과 별도 설치 글꼴을 구분하고, 사용자 글꼴 등록이 없다는 결과도 확인한다.
+Native Skia와 집중 검사는 같은 Windows 격리 환경에서 순차 실행한다. 각 OS의 결과는 서로
+대체하지 않으며, 실제로 실행한 OS와 환경을 명시한다.
+
+OTF를 포함한 글꼴 파일을 저장소·배포 패키지·테스트 fixture에 넣기 전에 출처, 해당 파일과
+파생물의 라이선스 및 재배포 권한을 확인하고 라이선스가 요구하는 전문·저작권 고지를 함께
+제공한다. 해당되는 서드파티 리소스는 `THIRD_PARTY_LICENSES.md`에도 기록한다. 절차가 끝나지
+않은 글꼴은 배포하지 않는다. 로컬 설치·시각 검증에서 사용했다는 사실은 배포 권한이 아니다.
+
+일반 Rust 검증 명령은 위 최소 글꼴 격리 안에서 실행한다. 명령은 같은 checkout에서 동시에 실행하지 않는다.
 
 ~~~bash
 cargo nextest run --locked \
