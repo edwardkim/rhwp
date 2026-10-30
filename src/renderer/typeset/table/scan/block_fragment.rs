@@ -169,6 +169,25 @@ impl<'a> SelectedBlockCut<'a> {
             }
         }
         let physical = rows.fragment_height(block, end_row, start, &self.cut_res.end_cut);
+        let next_visible =
+            rows.layout_engine
+                .row_complete_cut_content_height(rows.table, end_row, rows.styles);
+        let next_declared = rows
+            .table
+            .cells
+            .iter()
+            .filter(|cell| {
+                cell.row as usize == end_row && cell.row_span == 1 && cell.height <= i32::MAX as u32
+            })
+            .map(|cell| crate::renderer::hwpunit_to_px(cell.height as i32, dpi))
+            .fold(0.0, f64::max);
+        // 남은 한 행의 내용과 원본 최소 상자를 먼저 보존한다. 쪽에 남은 방을
+        // 전부 요구하면, 앞 조각에 실제로 배정할 수 있는 빈 띠까지 기각하게 된다.
+        // 이미 수용한 완전 행의 물리 높이를 줄이는 용도로는 이 잔고를 쓰지 않는다.
+        let source_prefix = source_height - next_declared.max(next_visible);
+        if source_prefix >= physical {
+            boundary_budget = boundary_budget.min(source_prefix);
+        }
         let before_last = rows.fragment_height(block, end_row - 1, start, &self.cut_res.end_cut)
             + if end_row > block.b_start + 1 {
                 rows.cs
@@ -182,9 +201,6 @@ impl<'a> SelectedBlockCut<'a> {
             rows.styles,
         );
         let next_height = source_height - boundary_budget;
-        let next_visible =
-            rows.layout_engine
-                .row_complete_cut_content_height(rows.table, end_row, rows.styles);
         ((physical - boundary_budget).abs() > 0.5
             && visible <= band
             && band > 0.0

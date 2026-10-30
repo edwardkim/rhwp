@@ -7,6 +7,15 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 Copyright © 2024 Unicode, Inc.이며 [Unicode License v3](assets/licenses/Unicode-3.0.txt)를 적용한다.
 원문 SHA-256은 `764f420cedfc8b43d9fec251c957a5d55fc45d40f6573f162990ed1dce7e36e0`이다.
 
+Print JPEG 인코더의 원래 라이선스·저작권 고지는 `vendor/rhwp-jpeg-encoder/LICENSE-*`에 있다.
+Print JPEG 디코더의 선택 변환은 공개 Intel MediaSDK 정수 IDCT(MIT)를 Rust로 번역하고,
+IJG 보간 규칙을 재표현한다. Intel 저작권·MIT 고지는
+`src/renderer/image_resolver/print_jpeg_idct.rs`, IJG 원문과 배포 조건은
+`vendor/rhwp-zune-jpeg/README.ijg`, 해당 구현은 `vendor/rhwp-zune-jpeg/src/ijg_upsampler.rs`와
+최종 JPEG 재생의 `vendor/rhwp-zune-jpeg/src/ijg_replay.rs`,
+변경 설명은 `vendor/rhwp-zune-jpeg/RHWP_PATCHES.md`에 있다.
+This software is based in part on the work of the Independent JPEG Group.
+
 기준 파일:
 
 - `Cargo.toml` / `Cargo.lock` (`rhwp` v0.9.0)
@@ -42,6 +51,8 @@ Copyright © 2024 Unicode, Inc.이며 [Unicode License v3](assets/licenses/Unico
 | getrandom | 0.4.3 | MIT OR Apache-2.0 | rust-random/getrandom | 서명 키 난수 생성 |
 | hmac | 0.13.0 | MIT OR Apache-2.0 | RustCrypto/MACs | HWPX 무결성 |
 | image | 0.25.10 | MIT OR Apache-2.0 | image-rs/image | BMP/JPEG/PNG 디코딩 |
+| rhwp-zune-jpeg | 0.5.15-rhwp.1 | (MIT OR Apache-2.0 OR Zlib) AND IJG | etemesi254/zune-image, IJG | 요청별 할당 예산·인스턴스별 Print 변환; 기본 PDF import decoder는 원래 변환 유지 |
+| rhwp-jpeg-encoder | 0.7.1-rhwp.1 | (MIT OR Apache-2.0) AND IJG | vstroebel/jpeg-encoder | Print의 공통 스칼라 JPEG 인코딩; 원본·변경 내역은 `vendor/rhwp-jpeg-encoder/` |
 | js-sys | 0.3.102 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | WASM JS interop |
 | office_oxide | 0.1.9 | MIT OR Apache-2.0 | yfedoseev/office_oxide | `pdf-import` optional 호환성 제약; PDF 전이 의존성 |
 | paste | 1.0.15 | MIT OR Apache-2.0 | dtolnay/paste | 매크로 보조 |
@@ -441,6 +452,11 @@ GUST Font License를 유지하며 사설 글꼴의 윤곽·바이트는 포함�
 ---
 
 ## 직접 포팅한 알고리즘
+
+공통 Print 장치 면적 표본(`src/renderer/print_image_sampling.rs`)은 공개 PDFium
+`chromium/7999`의 CStretchEngine 고정소수점 산술 계약을 적용한다. 원래 PDFium Authors와
+Foxit Software의 저작권 고지 및 BSD-3-Clause 조건은 `licenses/pdfium/LICENSE`에 보존한다.
+이 항목은 Cargo 크레이트 의존성이 아니다. 출처는 `licenses/pdfium/README.md`에 있다.
 
 ### Volexity hwp-extract
 

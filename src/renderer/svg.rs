@@ -1368,7 +1368,12 @@ impl SvgRenderer {
         // 동일 의미. 같은 plane 내부는 안정 정렬로 기존 트리 순서를 보존한다.
         // (PNG=native Skia / 웹캔버스=CanvasKit 는 PaintOp replay plane 으로 이미
         //  정정됨 — PR #1163 / #1017. 본 변경은 SVG 경로 정합.)
-        if Self::children_need_plane_reorder(node) {
+        if matches!(node.node_type, RenderNodeType::Column(_)) {
+            // 본문은 LayerBuilder와 같은 흐름/앵커 순서를 소비한다.
+            for child in crate::renderer::paint_order::children(node) {
+                self.render_node(child);
+            }
+        } else if Self::children_need_plane_reorder(node) {
             let mut ordered: Vec<&RenderNode> = node.children.iter().collect();
             ordered.sort_by_key(|c| Self::node_z_sort_key(c));
             for child in ordered {
@@ -2608,6 +2613,9 @@ impl SvgRenderer {
         bbox_w: f64,
         bbox_h: f64,
     ) {
+        if overlap.empty_ink {
+            return;
+        }
         let font_size = style.effective_font_size();
         let chars: Vec<char> = text.chars().collect();
         if chars.is_empty() {
@@ -3438,7 +3446,7 @@ impl Renderer for SvgRenderer {
 
         // HFT와 TrueType의 장평 변환을 같은 스타일 계약에서 소비한다.
         let (font_size, ratio) = style.ratio_draw_params(font_size);
-        let has_ratio = (ratio - 1.0).abs() > 0.01;
+        let has_ratio = style.has_horizontal_ratio();
 
         // 공통 스타일 속성 구성 (fill 제외 — 그림자/원본에서 각각 설정)
         // [#7151] 합성 볼드는 굵기를 획으로 명시한다 — 색이 fill 과 같아야 하므로
@@ -3594,75 +3602,76 @@ impl Renderer for SvgRenderer {
         // 그림자 렌더링 (원본 아래에 오프셋된 그림자색 텍스트)
         if !self.suppress_text_glyphs && style.shadow_type > 0 {
             let shadow_color = color_to_svg(style.shadow_color);
-            let dx = style.shadow_offset_x;
-            let dy = style.shadow_offset_y;
-            for (char_idx, cluster_str) in clusters.iter() {
-                let painted = visual_positions
-                    .as_ref()
-                    .map(|p| p.mirrored(cluster_str, *char_idx))
-                    .unwrap_or(std::borrow::Cow::Borrowed(cluster_str.as_str()));
-                let cluster_str = painted.as_ref();
-                // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
-                if cluster_str.chars().all(char::is_whitespace) {
-                    continue;
-                }
-                if cluster_str == "․" {
-                    if let Some(ink) = super::render_tree::fullwidth_onepoint_ink(style, font_size)
-                    {
-                        self.output.push_str(&format!(
+            for [dx, dy] in crate::paint::text_shadow::offsets(style) {
+                for (char_idx, cluster_str) in clusters.iter() {
+                    let painted = visual_positions
+                        .as_ref()
+                        .map(|p| p.mirrored(cluster_str, *char_idx))
+                        .unwrap_or(std::borrow::Cow::Borrowed(cluster_str.as_str()));
+                    let cluster_str = painted.as_ref();
+                    // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
+                    if super::text_glyph_visibility::is_nonprinting_cluster(cluster_str) {
+                        continue;
+                    }
+                    if cluster_str == "․" {
+                        if let Some(ink) =
+                            super::render_tree::fullwidth_onepoint_ink(style, font_size)
+                        {
+                            self.output.push_str(&format!(
                             "<ellipse cx=\"{:.4}\" cy=\"{:.4}\" rx=\"{:.4}\" ry=\"{:.4}\" fill=\"{}\"/>\n",
                             x + char_positions[*char_idx] + ink.center_x + dx,
                             y - ink.above_baseline + dy, ink.radius_x, ink.radius_y, shadow_color));
+                            continue;
+                        }
+                    }
+                    if is_middle_dot(cluster_str) {
+                        let adv = cluster_advance(*char_idx, cluster_str);
+                        let cx = x + cluster_x(*char_idx, cluster_str) + adv / 2.0 + dx;
+                        let cy = y + dot_cy_offset + dy;
+                        self.output.push_str(&format!(
+                            "<circle cx=\"{:.4}\" cy=\"{:.4}\" r=\"{:.4}\" fill=\"{}\"/>\n",
+                            cx, cy, dot_radius, shadow_color,
+                        ));
                         continue;
                     }
-                }
-                if is_middle_dot(cluster_str) {
-                    let adv = cluster_advance(*char_idx, cluster_str);
-                    let cx = x + cluster_x(*char_idx, cluster_str) + adv / 2.0 + dx;
-                    let cy = y + dot_cy_offset + dy;
-                    self.output.push_str(&format!(
-                        "<circle cx=\"{:.4}\" cy=\"{:.4}\" r=\"{:.4}\" fill=\"{}\"/>\n",
-                        cx, cy, dot_radius, shadow_color,
-                    ));
-                    continue;
-                }
-                let char_x = x + cluster_x(*char_idx, cluster_str) + dx;
-                let char_y = y + dy;
-                let length_attrs = svg_cluster_text_length_attrs(
-                    cluster_str,
-                    glyph_advance(*char_idx, cluster_str),
-                    style,
-                    script_advance_scale,
-                    ratio,
-                );
-                let shadow_attrs = attrs_for_cluster(cluster_str, &shadow_color);
-                let skew = italic_face(cluster_str)
-                    .filter(|face| !face.slanted)
-                    .map_or(0.0, |_| super::text_italic::SKEW_X);
-                if has_ratio || skew != 0.0 {
-                    let transform = if skew == 0.0 {
-                        format!("scale({ratio:.4},1)")
+                    let char_x = x + cluster_x(*char_idx, cluster_str) + dx;
+                    let char_y = y + dy;
+                    let length_attrs = svg_cluster_text_length_attrs(
+                        cluster_str,
+                        glyph_advance(*char_idx, cluster_str),
+                        style,
+                        script_advance_scale,
+                        ratio,
+                    );
+                    let shadow_attrs = attrs_for_cluster(cluster_str, &shadow_color);
+                    let skew = italic_face(cluster_str)
+                        .filter(|face| !face.slanted)
+                        .map_or(0.0, |_| super::text_italic::SKEW_X);
+                    if has_ratio || skew != 0.0 {
+                        let transform = if skew == 0.0 {
+                            format!("scale({ratio:.4},1)")
+                        } else {
+                            format!("matrix({ratio:.4} 0 {} 1 0 0)", ratio * skew)
+                        };
+                        self.output.push_str(&format!(
+                            "<text transform=\"translate({},{}) {}\" {}{}>{}</text>\n",
+                            char_x,
+                            char_y,
+                            transform,
+                            shadow_attrs,
+                            length_attrs,
+                            escape_xml(&pua_glyph::display(&source_coverage, cluster_str, style)),
+                        ));
                     } else {
-                        format!("matrix({ratio:.4} 0 {} 1 0 0)", ratio * skew)
-                    };
-                    self.output.push_str(&format!(
-                        "<text transform=\"translate({},{}) {}\" {}{}>{}</text>\n",
-                        char_x,
-                        char_y,
-                        transform,
-                        shadow_attrs,
-                        length_attrs,
-                        escape_xml(&pua_glyph::display(&source_coverage, cluster_str, style)),
-                    ));
-                } else {
-                    self.output.push_str(&format!(
-                        "<text x=\"{}\" y=\"{}\" {}{}>{}</text>\n",
-                        char_x,
-                        char_y,
-                        shadow_attrs,
-                        length_attrs,
-                        escape_xml(&pua_glyph::display(&source_coverage, cluster_str, style)),
-                    ));
+                        self.output.push_str(&format!(
+                            "<text x=\"{}\" y=\"{}\" {}{}>{}</text>\n",
+                            char_x,
+                            char_y,
+                            shadow_attrs,
+                            length_attrs,
+                            escape_xml(&pua_glyph::display(&source_coverage, cluster_str, style)),
+                        ));
+                    }
                 }
             }
         }
@@ -3677,7 +3686,7 @@ impl Renderer for SvgRenderer {
                     .unwrap_or(std::borrow::Cow::Borrowed(cluster_str.as_str()));
                 let cluster_str = painted.as_ref();
                 // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
-                if cluster_str.chars().all(char::is_whitespace) {
+                if super::text_glyph_visibility::is_nonprinting_cluster(cluster_str) {
                     continue;
                 }
                 if cluster_str == "-" {

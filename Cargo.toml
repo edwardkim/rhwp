@@ -338,6 +338,7 @@ unicode-bidi-mirroring = "0.4.0"
 unicode-properties = { version = "0.1.4", default-features = false, features = ["general-category"] }
 unicode-width = "0.2.2"
 image = { version = "0.25", default-features = false, features = ["bmp", "gif", "jpeg", "png", "tiff"] }
+zune-print = { package = "rhwp-zune-jpeg", path = "vendor/rhwp-zune-jpeg", version = "=0.5.15-rhwp.1", default-features = false, features = ["std"] }
 jpeg-encoder = { package = "rhwp-jpeg-encoder", path = "vendor/rhwp-jpeg-encoder", version = "=0.7.1-rhwp.1" }
 tiny-skia = { version = "0.12", optional = true, default-features = false, features = ["std", "simd"] }
 pcx = "0.2"

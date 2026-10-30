@@ -2178,6 +2178,7 @@ dependencies = [
  "rhwp-password-crypto",
  "rhwp-pdf-import-backend",
  "rhwp-svg2pdf",
+ "rhwp-zune-jpeg",
  "roxmltree 0.21.1",
  "rustybuzz",
  "serde",

@@ -128,7 +128,8 @@ impl Composition {
         let character = self
             .border
             .or_else(|| self.characters.first().map(|v| v.0))
-            .unwrap_or(' ');
+            // 빈 겹침도 한컴 저장본의 전각 캐리어 한 칸을 점유한다.
+            .unwrap_or('\u{3000}');
         EmbeddedTextMeasurer.estimate_text_width(&character.to_string(), &self.owner_style)
     }
 }

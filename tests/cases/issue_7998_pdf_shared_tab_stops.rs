@@ -1,4 +1,10 @@
-//! Independent source gaps stay editable, without rewriting authored spaces.
+//! 관계형·고정형: PDF 가져오기에서 공백과 공유 탭 정지점 보존 계약.
+//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T16:50:42+09:00 (e12889867b).
+//! 2026-10-20 기록 raw(96dpi): 독립 source PDF 4개는 각각 전 1쪽이며,
+//! cross-stops·same-stops·compatible-wrap·multi-stop-cross-row의 1쪽 Native / fresh WASM은
+//! 모두 100% / 100%, 각 전쪽 최저도 같다. 편집 저장본의 점수와 구분한다.
+//! 근거: mydocs/working/task_m100_7998_stage35.md. 당시 결과이며 현재 head 재측정 전이다.
+//! 작성된 공백을 바꾸지 않으면서 독립 원본 간격을 편집 가능하게 유지한다.
 #![cfg(feature = "pdf-import")]
 use rhwp::{
     model::{control::Control, paragraph::Paragraph},
@@ -239,7 +245,8 @@ fn exercise(name: &str, expected: &str, stop_words: &[(&str, f64)]) {
             let actual = word_x(&original, &source_path, word);
             assert!(
                 (actual - x * 96. / 72.).abs() <= 2.,
-                "independent PDF destination within2px: {name} {word}"
+                "독립 PDF 위치의 ±2px 범위: {name} {word}, 실제={actual}, 기대={}",
+                x * 96. / 72.
             );
             (word, actual)
         })

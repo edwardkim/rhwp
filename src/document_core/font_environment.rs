@@ -35,10 +35,11 @@ impl DocumentCore {
         if let Some(environment) = &environment {
             environment.validate()?;
         }
-        if self.font_environment == environment {
+        if self.font_environment == environment && self.host_font_environment.is_none() {
             return Ok(false);
         }
         self.font_environment = environment;
+        self.host_font_environment = None;
         // Measurements and pending requests from the former font generation must not survive.
         self.canvas_metrics = None;
         self.pending_pagination_job = None;

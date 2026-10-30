@@ -1,3 +1,7 @@
+//! 관계형: 문서 제목 추출과 정보 출력의 API 계약.
+//! 주석 갱신: 2026-10-30T10:05:44+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
+//! 근거: mydocs/manual/cli_commands.md의 info·batch info 출력 계약.
+//! 추출 텍스트와 info 출력의 관계 검사이며 페이지별 raw 시각 측정은 대상이 아니다.
 //! [#3407] `info --json`·`batch info` 봉투의 `title` 필드 계약 테스트.
 //!
 //! 계약: `title` 은 렌더된 페이지 텍스트(`export-text --json` 과 같은 원천)의
@@ -120,7 +124,7 @@ fn first_meaningful_line_via_export_text(rel: &str) -> Option<String> {
     None
 }
 
-// ── info --json title ──────────────────────────────────────────────────────
+// ── info --json 제목 ──────────────────────────────────────────────────────
 
 #[test]
 fn info_json_title_is_cover_first_meaningful_line() {
@@ -162,7 +166,7 @@ fn info_json_title_matches_export_text_first_line() {
     }
 }
 
-// ── batch info --json title ────────────────────────────────────────────────
+// ── batch info --json 제목 ────────────────────────────────────────────────
 
 #[test]
 fn batch_info_records_carry_title() {

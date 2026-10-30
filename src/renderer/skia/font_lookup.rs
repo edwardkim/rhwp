@@ -130,7 +130,7 @@ fn text_family_candidates_for_weight(requested: &str, bold: bool) -> Vec<String>
     families
 }
 
-fn declared_family_candidates(requested: &str) -> Vec<String> {
+pub(super) fn declared_family_candidates(requested: &str) -> Vec<String> {
     let mut families = Vec::new();
     // CSS 체인을 하나의 family 이름으로 조회하면 설치된 첫 face도 놓친다.
     // SVG/Canvas와 같은 원본 순서·설치 별칭·굵기 접미사 해소를 소비한다.
@@ -232,7 +232,7 @@ pub(super) fn select_typeface_for_character<'a>(
     chain: &'a [TypefaceCandidate],
     character: char,
 ) -> Option<&'a TypefaceCandidate> {
-    if character.is_whitespace() {
+    if crate::renderer::text_glyph_visibility::is_nonprinting_character(character) {
         return chain
             .iter()
             .find(|candidate| !is_placeholder_typeface(&candidate.typeface));
@@ -241,6 +241,27 @@ pub(super) fn select_typeface_for_character<'a>(
     chain.iter().find(|candidate| {
         !is_placeholder_typeface(&candidate.typeface)
             && candidate.typeface.unichar_to_glyph(codepoint) != 0
+            && !has_empty_symbol_glyph(&candidate.typeface, character)
+    })
+}
+
+fn has_empty_symbol_glyph(typeface: &Typeface, character: char) -> bool {
+    if !crate::renderer::font_symbol_coverage::is_visible_symbol(character) {
+        return false;
+    }
+    EMPTY_SYMBOL_CACHE.with(|cache| {
+        let mut cache = cache.borrow_mut();
+        let empty = cache.entry(typeface.unique_id()).or_insert_with(|| {
+            typeface
+                .to_existing_font_data()
+                .map_or_else(Default::default, |(data, index)| {
+                    crate::renderer::font_symbol_coverage::empty_symbol_codepoints(
+                        data.as_bytes(),
+                        index,
+                    )
+                })
+        });
+        empty.contains(&(character as u32))
     })
 }
 
@@ -355,6 +376,8 @@ struct FontLookupKey {
 }
 
 thread_local! {
+    static EMPTY_SYMBOL_CACHE: RefCell<HashMap<u32, std::collections::BTreeSet<u32>>> =
+        RefCell::new(HashMap::new());
     static PLACEHOLDER_TYPEFACE_CACHE: RefCell<HashMap<u32, bool>> =
         RefCell::new(HashMap::new());
     static SYSTEM_PROGRAM_DATABASE: RefCell<Option<usvg::fontdb::Database>> =

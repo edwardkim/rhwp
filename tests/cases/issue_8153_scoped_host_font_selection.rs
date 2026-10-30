@@ -1,0 +1,127 @@
+//! 관계형: 공급 관측은 먼저 선택한 문서 슬롯/전역 프로그램을 덮어쓰지 않는다.
+//! 주석 갱신: 2026-10-30T06:54:13+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
+//! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
+//! 이 검사는 합성 입력을 사용하며 아래 수치는 관련 편람의 별도 시각 검증이다.
+//! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! HWPX 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
+//! 근거: mydocs/pr/assets/issue_8153/handbook-validation-20261028/README.md.
+//! 합성 세션 프로토콜 검사이며 실물 글꼴 설치나 픽셀 일치의 증거가 아니다.
+//! 특정 편람 쪽을 입력으로 사용하지 않는다. 글꼴 이름과 대체 선언의 근거는
+//! mydocs/tech/한글문서파일형식_5.0_revision1.3.md의 글꼴과 ID 매핑 표다.
+#![cfg(not(target_arch = "wasm32"))]
+
+use rhwp::{
+    document_core::ObservedFontSource, model::style::SubstFont,
+    renderer::font_environment::FontEnvironment, DocumentCore,
+};
+
+const SOURCE: &str = "RHWP Scoped Fixture";
+
+fn core() -> DocumentCore {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    let mut document = core.document().clone();
+    for font in document.doc_info.font_faces.iter_mut().flatten() {
+        font.name = SOURCE.into();
+        font.alt_type = 1;
+        font.subst_font = Some(SubstFont {
+            face: "Observed Fixture".into(),
+            font_type: 1,
+            ..Default::default()
+        });
+    }
+    core.set_document(document);
+    assert!(!core.declared_font_fallback_requests().is_empty());
+    core
+}
+
+fn observed() -> ObservedFontSource {
+    ObservedFontSource {
+        family: "Observed Fixture".into(),
+        sha256: "ab".repeat(32),
+        face_index: 0,
+    }
+}
+
+#[test]
+fn observed_host_fallback_preserves_scoped_and_explicit_global_selections() {
+    for json in [
+        r#"{"id":"scoped-programs","substitutions":{},"documentSubstitutions":[{"languageSlot":0,"fontId":0,"source":"RHWP Scoped Fixture","target":"Slot A","programId":"program-a"},{"languageSlot":1,"fontId":0,"source":"RHWP Scoped Fixture","target":"Slot B","programId":"program-b"}]}"#,
+        r#"{"id":"explicit-program","substitutions":{"RHWP Scoped Fixture":"Explicit Fixture"}}"#,
+    ] {
+        let mut core = core();
+        let original = core.export_hwp_native().unwrap();
+        let environment = FontEnvironment::from_json(json).unwrap();
+        core.set_font_environment(Some(environment.clone()))
+            .unwrap();
+        let mut observations = 0;
+        let changed = core
+            .prepare_declared_font_fallbacks_with(|_| {
+                observations += 1;
+                Some(observed())
+            })
+            .expect("주소별 프로그램에 충돌하는 전역 관측을 추가하지 않는다");
+        assert_eq!(observations, 0, "이미 선택한 소스를 전역 관측하지 않는다");
+        assert!(!changed);
+        assert_eq!(core.resolved_font_environment(), Some(&environment));
+        assert!(core.observed_font_fallbacks().is_empty());
+        assert_eq!(core.export_hwp_native().unwrap(), original);
+    }
+}
+
+#[test]
+fn observed_host_fallback_still_selects_an_unclaimed_source() {
+    let mut core = core();
+    let original = core.export_hwp_native().unwrap();
+    let mut observations = 0;
+    assert!(core
+        .prepare_declared_font_fallbacks_with(|_| {
+            observations += 1;
+            Some(observed())
+        })
+        .unwrap());
+    assert!(
+        observations > 0,
+        "선택하지 않은 원본 대체 요청은 공급자가 확인한다"
+    );
+    let expected = FontEnvironment::from_json(
+        r#"{"id":"observed-host-fonts","substitutions":{"RHWP Scoped Fixture":"Observed Fixture"},"trueTypeFaces":["Observed Fixture"]}"#,
+    )
+    .unwrap();
+    assert_eq!(core.resolved_font_environment(), Some(&expected));
+    assert_eq!(core.observed_font_fallbacks().len(), observations);
+    assert!(
+        !core
+            .prepare_declared_font_fallbacks_with(|_| Some(observed()))
+            .unwrap(),
+        "같은 공급 관측은 반복 재조판하지 않는다"
+    );
+    assert_eq!(core.export_hwp_native().unwrap(), original);
+
+    let mut public_core = self::core();
+    let public_original = public_core.export_hwp_native().unwrap();
+    let records: Vec<_> = public_core
+        .declared_font_fallback_requests()
+        .into_iter()
+        .map(|request| {
+            serde_json::json!({
+                "request": {
+                    "family": request.family,
+                    "fallback": request.fallback,
+                    "bold": request.bold,
+                    "italic": request.italic,
+                },
+                "source": {
+                    "family": "Observed Fixture",
+                    "sha256": "ab".repeat(32),
+                    "faceIndex": 0,
+                },
+            })
+        })
+        .collect();
+    assert!(public_core
+        .set_observed_font_fallbacks_native(&serde_json::to_string(&records).unwrap())
+        .unwrap());
+    assert_eq!(public_core.observed_font_fallbacks().len(), records.len());
+    assert_eq!(public_core.export_hwp_native().unwrap(), public_original);
+}

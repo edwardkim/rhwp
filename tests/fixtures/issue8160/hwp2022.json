@@ -82,9 +82,9 @@
         185,
         102
       ],
-      "oracle": "tests/fixtures/issue8160/hwp2022-header-logo.png",
-      "oracle_sha256": "18521b9bee58b9000c5886974abf10ecdffe54bafb557ee22ca72b612f7b2a67",
-      "reference_page_png_sha256": "6052593e338fb506d8a33a03fe01f3790515a87ef1238b4ea98053bc822ba596",
+      "oracle": "tests/fixtures/issue8160/hwp2022-header-logo-exact-96dpi.png",
+      "oracle_sha256": "665529c19b43b9ddd5711c8b12b095f9bc747c22e8e8f98885f9df761dba0e13",
+      "reference_page_png_sha256": "dadd39d960f9e74022953e80b7a2c53dbcda94b2937013bc05421994a6e4d5e8",
       "threshold": 232,
       "symmetric_radius_pixels": 2
     }

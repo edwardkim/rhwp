@@ -1220,11 +1220,7 @@ fn prepare_paragraph_projection(
         let char_shape_id = find_active_char_shape(&para.char_shapes, utf16_pos);
         let text_style = metric_scope.style(styles, char_shape_id, language_index, index);
         let base_font_size = text_style.effective_font_size();
-        let effective_font_size_px = if text_style.superscript || text_style.subscript {
-            base_font_size * crate::renderer::SCRIPT_FONT_SCALE
-        } else {
-            base_font_size
-        };
+        let effective_font_size_px = text_style.script_font_size(base_font_size);
         let width_ratio = if text_style.ratio > 0.0 {
             text_style.ratio
         } else {
@@ -1563,6 +1559,12 @@ fn condense_space_savings_hwp(space_width_hwp: i32, condense_min_space: u8) -> i
     }
     let shrink_percent = condense_min_space.min(75) as i32;
     space_width_hwp * shrink_percent / 100
+}
+
+/// 실제 배치도 줄 수용과 같은 원본 HU 공백 예산을 소비한다.
+pub(crate) fn condense_space_savings_px(space_width_px: f64, percent: u8, dpi: f64) -> f64 {
+    let source_width = to_hwp(space_width_px * crate::renderer::DEFAULT_DPI / dpi);
+    crate::renderer::hwpunit_to_px(condense_space_savings_hwp(source_width, percent), dpi)
 }
 
 fn condensed_line_width_hwp(width_hwp: i32, space_savings_hwp: i32) -> i32 {

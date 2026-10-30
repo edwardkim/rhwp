@@ -2222,6 +2222,7 @@ fn clip_kind_detail(clip_kind: ClipKind) -> &'static str {
         ClipKind::TableCell => "tableCell",
         ClipKind::TextBox => "textBox",
         ClipKind::Generic => "generic",
+        ClipKind::PrintBitmapFill => "printBitmapFill",
     }
 }
 
@@ -2393,6 +2394,7 @@ fn resolved_image_kind_detail(value: ResolvedImageKind) -> &'static str {
         ResolvedImageKind::FormatConverted => "formatConverted",
         ResolvedImageKind::SourceWindow => "sourceWindow",
         ResolvedImageKind::OutputDevice => "outputDevice",
+        ResolvedImageKind::OutputDeviceWindow => "outputDeviceWindow",
         ResolvedImageKind::BakedWatermark => "bakedWatermark",
     }
 }
@@ -3145,6 +3147,7 @@ mod tests {
             border_type: 1,
             inner_char_size: 100,
             composition: None,
+            empty_ink: false,
         });
         superscript
             .style
@@ -3204,6 +3207,7 @@ mod tests {
             border_type: 1,
             inner_char_size: 100,
             composition: None,
+            empty_ink: false,
         });
         let rotated_tree = tree_with_ops(vec![PaintOp::char_overlap(bbox(), rotated)]);
         let rotated_plan =
@@ -3223,6 +3227,7 @@ mod tests {
             border_type: 9,
             inner_char_size: 100,
             composition: None,
+            empty_ink: false,
         });
         let mut invalid_leader = text_run("A");
         invalid_leader

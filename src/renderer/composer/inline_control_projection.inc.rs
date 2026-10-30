@@ -124,10 +124,7 @@ fn try_inject_char_overlap_text<S: crate::storage::Storage>(
     // CharOverlap별 (텍스트위치, 런) 수집
     let mut insertions: Vec<(usize, ComposedTextRun)> = storage.vec(0)?;
     for (ctrl_idx, co) in &char_overlap_indices {
-        let text = storage.chars(co.chars.iter().copied())?;
-        if text.is_empty() {
-            continue;
-        }
+        let text = char_overlap_flow_text(&co.chars, storage)?;
         let stored_char_style_id = co
             .char_shape_ids
             .iter()
@@ -164,6 +161,10 @@ fn try_inject_char_overlap_text<S: crate::storage::Storage>(
                     inner_char_size: styles
                         .map_or(co.inner_char_size, |s| s.char_overlap_inner_size(co.inner_char_size)),
                     composition,
+                    // HWP의 프레임 문자와 HWPX의 명시적 전각 공백은 다르다.
+                    empty_ink: co.border_type == 0
+                        && (co.chars.is_empty()
+                            || (co.hwp_wire_chars && co.chars.as_slice() == ['\u{3000}'])),
                 }),
                 footnote_marker: None,
                 display_text: None,

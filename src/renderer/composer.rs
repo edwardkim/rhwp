@@ -63,8 +63,11 @@ pub struct CharOverlapInfo {
     /// 원문 컨트롤의 문자별 스타일과 펼침. 폰트 인코딩 PUA는 별도 계약을 쓴다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub composition: Option<Box<super::char_overlap::Composition>>,
+    /// 겹침 프레임은 보존하되 구성 글자의 잉크를 출력하지 않는다.
+    #[serde(skip)]
+    pub empty_ink: bool,
 }
-crate::storage::clone_fields!(CharOverlapInfo, {border_type, inner_char_size, composition});
+crate::storage::clone_fields!(CharOverlapInfo, {border_type, inner_char_size, composition, empty_ink});
 
 /// 구성된 텍스트 런 (줄 내 동일 스타일 + 동일 언어 구간)
 #[derive(Debug, Clone, Default)]
@@ -324,6 +327,7 @@ include!("composer/pua_surface.inc.rs");
 mod empty_line_metrics;
 pub(crate) mod inline_box_rows;
 mod line_breaking;
+pub(crate) use line_breaking::condense_space_savings_px;
 pub(crate) use line_breaking::try_reflow_line_segs;
 
 mod picture_anchor_projection;

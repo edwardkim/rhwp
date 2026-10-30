@@ -2764,6 +2764,41 @@ export class HwpDocument {
         }
     }
     /**
+     * 같은 cmap 판정으로 아직 공급되지 않은 글리프만 다음 후보에 전달한다.
+     * @param {Uint8Array} bytes
+     * @param {number} face_index
+     * @param {string} text
+     * @returns {string | undefined}
+     */
+    fontMissingText(bytes, face_index, text) {
+        const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_fontMissingText(this.__wbg_ptr, ptr0, len0, face_index, ptr1, len1);
+        let v3;
+        if (ret[0] !== 0) {
+            v3 = getStringFromWasm0(ret[0], ret[1]);
+            wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        }
+        return v3;
+    }
+    /**
+     * 공급 후보를 등록하기 전에 실제 cmap를 대조한다. CSS 이름 검사가 아니다.
+     * @param {Uint8Array} bytes
+     * @param {number} face_index
+     * @param {string} text
+     * @returns {boolean}
+     */
+    fontSupportsText(bytes, face_index, text) {
+        const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_fontSupportsText(this.__wbg_ptr, ptr0, len0, face_index, ptr1, len1);
+        return ret !== 0;
+    }
+    /**
      * [#4709] SVG 메트릭 face 주석 부착 여부를 반환한다.
      * @returns {boolean}
      */
@@ -3973,6 +4008,27 @@ export class HwpDocument {
         }
     }
     /**
+     * @returns {string}
+     */
+    getDeclaredFontFallbackRequests() {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_getDeclaredFontFallbackRequests(this.__wbg_ptr);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
      * 문서가 선언한 실제 프로그램 후보와 현재 환경을 호스트에 전달한다.
      * @returns {string}
      */
@@ -4318,6 +4374,26 @@ export class HwpDocument {
             return getStringFromWasm0(ptr2, len2);
         } finally {
             wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
+     * FontFace와 Native fallback이 같은 실제 기호 공급 판정을 사용한다.
+     * @param {Uint8Array} bytes
+     * @param {number} face_index
+     * @returns {string}
+     */
+    getFontSymbolUnicodeRange(bytes, face_index) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_getFontSymbolUnicodeRange(this.__wbg_ptr, ptr0, len0, face_index);
+            deferred2_0 = ret[0];
+            deferred2_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
         }
     }
     /**
@@ -6833,6 +6909,27 @@ export class HwpDocument {
         let deferred2_1;
         try {
             const ret = wasm.hwpdocument_getTextRange(this.__wbg_ptr, section_idx, para_idx, char_offset, count);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    getTextShadowFontRequests() {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_getTextShadowFontRequests(this.__wbg_ptr);
             var ptr1 = ret[0];
             var len1 = ret[1];
             if (ret[3]) {
@@ -11108,6 +11205,20 @@ export class HwpDocument {
         }
     }
     /**
+     * 호출자는 원 face 부재·실제 대체 프로그램·입력 대응을 확인한 관측만 전달한다.
+     * @param {string} json
+     * @returns {boolean}
+     */
+    setObservedFontFallbacks(json) {
+        const ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_setObservedFontFallbacks(this.__wbg_ptr, ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] !== 0;
+    }
+    /**
      * 구역의 쪽 테두리/배경 설정을 변경하고 재페이지네이션한다.
      * @param {number} section_idx
      * @param {string} json
@@ -12505,6 +12616,28 @@ export function extractThumbnail(data) {
 }
 
 /**
+ * FontFace unicodeRange가 Native와 같은 빈 기호 제외 결과를 소비한다.
+ * 빈 문자열은 제한 없음이다. 원본 bytes/cmap/glyph/advance를 수정하지 않는다.
+ * @param {Uint8Array} data
+ * @param {number} face_index
+ * @returns {string}
+ */
+export function fontSymbolUnicodeRange(data, face_index) {
+    let deferred2_0;
+    let deferred2_1;
+    try {
+        const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.fontSymbolUnicodeRange(ptr0, len0, face_index);
+        deferred2_0 = ret[0];
+        deferred2_1 = ret[1];
+        return getStringFromWasm0(ret[0], ret[1]);
+    } finally {
+        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+    }
+}
+
+/**
  * WASM panic hook 초기화 (한 번만 실행)
  */
 export function init_panic_hook() {
@@ -12520,6 +12653,49 @@ export function isPrintMetafile(data) {
     const len0 = WASM_VECTOR_LEN;
     const ret = wasm.isPrintMetafile(ptr0, len0);
     return ret !== 0;
+}
+
+/**
+ * CanvasKit의 실제 장치 행렬도 Native/Canvas2D와 같은 clip 계산에 전달한다.
+ * @param {Float64Array} rectangle
+ * @param {Float64Array} transform
+ * @returns {any}
+ */
+export function mapPrintBitmapClip(rectangle, transform) {
+    const ptr0 = passArrayF64ToWasm0(rectangle, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(transform, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.mapPrintBitmapClip(ptr0, len0, ptr1, len1);
+    return ret;
+}
+
+/**
+ * @param {Float64Array} rectangle
+ * @param {Float64Array} transform
+ * @returns {any}
+ */
+export function mapPrintBitmapImage(rectangle, transform) {
+    const ptr0 = passArrayF64ToWasm0(rectangle, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(transform, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.mapPrintBitmapImage(ptr0, len0, ptr1, len1);
+    return ret;
+}
+
+/**
+ * @param {Float64Array} rectangle
+ * @param {Float64Array} transform
+ * @returns {any}
+ */
+export function mapPrintRectangleFill(rectangle, transform) {
+    const ptr0 = passArrayF64ToWasm0(rectangle, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(transform, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.mapPrintRectangleFill(ptr0, len0, ptr1, len1);
+    return ret;
 }
 
 /**
@@ -12557,6 +12733,66 @@ export function prepareStaticSvgRaster(options_json, fragment) {
     const len1 = WASM_VECTOR_LEN;
     const ret = wasm.prepareStaticSvgRaster(ptr0, len0, ptr1, len1);
     return ret;
+}
+
+/**
+ * CanvasKit도 실제 출력 변환과 공통 Rust의 그림 외곽 pen 결과를 소비한다.
+ * @param {Float64Array} pen
+ * @param {Float64Array} transform
+ * @returns {number | undefined}
+ */
+export function printPicturePenWidth(pen, transform) {
+    const ptr0 = passArrayF64ToWasm0(pen, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(transform, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.printPicturePenWidth(ptr0, len0, ptr1, len1);
+    return ret[0] === 0 ? undefined : ret[1];
+}
+
+/**
+ * @param {Uint8Array} rgba
+ * @param {number} source_width
+ * @param {number} source_height
+ * @param {number} x
+ * @param {number} y
+ * @param {number} width
+ * @param {number} height
+ * @param {number} page_width
+ * @param {number} page_height
+ * @param {number} scale
+ * @returns {any}
+ */
+export function rasterizePrintImageRGBA(rgba, source_width, source_height, x, y, width, height, page_width, page_height, scale) {
+    const ptr0 = passArray8ToWasm0(rgba, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.rasterizePrintImageRGBA(ptr0, len0, source_width, source_height, x, y, width, height, page_width, page_height, scale);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * encoded straight RGB와 별도 이진 마스크를 공통 Rust에서 표본화한다.
+ * @param {Uint8Array} encoded
+ * @param {number} x
+ * @param {number} y
+ * @param {number} width
+ * @param {number} height
+ * @param {number} page_width
+ * @param {number} page_height
+ * @param {number} scale
+ * @returns {any}
+ */
+export function rasterizePrintMaskedImage(encoded, x, y, width, height, page_width, page_height, scale) {
+    const ptr0 = passArray8ToWasm0(encoded, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.rasterizePrintMaskedImage(ptr0, len0, x, y, width, height, page_width, page_height, scale);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
 }
 
 /**
@@ -12863,6 +13099,10 @@ function __wbg_get_imports() {
             const ret = arg0[arg1 >>> 0];
             return ret;
         },
+        __wbg_has_b3a6e6d0d28295fa: function() { return handleError(function (arg0, arg1) {
+            const ret = Reflect.has(arg0, arg1);
+            return ret;
+        }, arguments); },
         __wbg_height_e56f6fb197710e09: function(arg0) {
             const ret = arg0.height;
             return ret;

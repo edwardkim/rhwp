@@ -96,7 +96,8 @@ fn is_false(value: &bool) -> bool {
     !value
 }
 
-fn program_names(name: &str) -> Vec<String> {
+/// 같은 프로그램의 이름만 조회한다. 화면용 호환 fallback은 설치 증거가 아니다.
+pub(crate) fn program_names(name: &str) -> Vec<String> {
     std::iter::once(name)
         .chain(super::installed_font_program_aliases(name).iter().copied())
         .filter(|name| FontEnvironment::valid_name(name))
@@ -105,6 +106,35 @@ fn program_names(name: &str) -> Vec<String> {
 }
 
 impl FontEnvironment {
+    pub(crate) fn with_observed_substitutions(
+        base: Option<&Self>,
+        replacements: BTreeMap<String, String>,
+    ) -> Result<Option<Self>, HwpError> {
+        if replacements.is_empty() {
+            return Ok(None);
+        }
+        let mut result = base.cloned().unwrap_or(Self {
+            id: "observed-host-fonts".to_owned(),
+            substitutions: BTreeMap::new(),
+            selection_rules: BTreeMap::new(),
+            true_type_faces: Vec::new(),
+            preserve_source_metrics: false,
+            document_substitutions: Vec::new(),
+            glyph_fallbacks: BTreeMap::new(),
+        });
+        for (family, target) in replacements {
+            if result.has_source_selection(&family) {
+                continue;
+            }
+            result.substitutions.insert(family, target.clone());
+            if !result.true_type_faces.contains(&target) {
+                result.true_type_faces.push(target);
+            }
+        }
+        result.validate()?;
+        Ok(Some(result))
+    }
+
     /// 원본과 문서 지정 내장 프로그램을 같은 이름 집합으로 보존한다.
     pub(crate) fn embedded_program_names(
         doc_info: &crate::model::document::DocInfo,
@@ -622,6 +652,15 @@ impl FontEnvironment {
 
     pub(crate) fn replacement(&self, face: &str) -> Option<&str> {
         self.substitutions.get(face).map(String::as_str)
+    }
+
+    /// family 단위 관측은 원본 주소별 프로그램 선택을 덮어쓸 수 없다.
+    pub(crate) fn has_source_selection(&self, face: &str) -> bool {
+        self.substitutions.contains_key(face)
+            || self
+                .document_substitutions
+                .iter()
+                .any(|selection| selection.source == face)
     }
 
     fn document_substitution(

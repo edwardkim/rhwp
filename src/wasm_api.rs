@@ -46,6 +46,7 @@ use crate::renderer::DEFAULT_DPI;
 mod bitmap_raster;
 mod canvas_metrics;
 mod form_action;
+mod host_font_environment;
 mod hyperlink;
 mod layout_generation;
 #[cfg(all(feature = "pdf-import", target_arch = "wasm32"))]
@@ -838,6 +839,12 @@ impl HwpDocument {
     #[wasm_bindgen(js_name = getMetafileFontRequests)]
     pub fn get_metafile_font_requests(&self) -> Result<String, JsValue> {
         self.get_metafile_font_requests_native()
+            .map_err(JsValue::from)
+    }
+
+    #[wasm_bindgen(js_name = getTextShadowFontRequests)]
+    pub fn get_text_shadow_font_requests(&self) -> Result<String, JsValue> {
+        self.get_text_shadow_font_requests_native()
             .map_err(JsValue::from)
     }
 

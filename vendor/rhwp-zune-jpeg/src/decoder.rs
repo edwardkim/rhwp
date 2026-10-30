@@ -19,7 +19,7 @@ use zune_core::log::{error, trace, warn};
 use zune_core::options::DecoderOptions;
 
 use crate::color_convert::choose_ycbcr_to_rgb_convert_func;
-use crate::components::{Components, SampleRatios};
+use crate::components::Components;
 use crate::errors::{DecodeErrors, UnsupportedSchemes};
 use crate::headers::{
     parse_app1, parse_app13, parse_app14, parse_app2, parse_dqt, parse_huffman, parse_sos,
@@ -27,12 +27,10 @@ use crate::headers::{
 };
 use crate::huffman::HuffmanTable;
 use crate::idct::{choose_idct_1x1_func, choose_idct_4x4_func, choose_idct_func};
+pub(crate) use crate::image_info::ExtendedXmpSegment;
+pub use crate::image_info::{GainMapInfo, ImageInfo};
 use crate::marker::Marker;
 use crate::misc::SOFMarkers;
-use crate::upsampler::{
-    choose_horizontal_samp_function, choose_hv_samp_function, choose_v_samp_function,
-    generic_sampler, upsample_no_op,
-};
 
 /// Maximum components
 pub(crate) const MAX_COMPONENTS: usize = 4;
@@ -133,6 +131,7 @@ pub struct JpegDecoder<'a, T> {
     // of this struct, we check if we can switch to a faster one which
     // depend on certain CPU extensions.
     pub(crate) idct_func: IDCTPtr,
+    pub(crate) sampling_transform: Option<crate::transforms::SamplingSelector>,
     /// Specialized IDCT when we can guarantee only few coefficients are non-zero.
     ///
     /// **The callee must uphold a contract**. See [`choose_idct_4x4_func`].
@@ -190,6 +189,7 @@ where
             num_scans: 0,
             scan_subsampled: false,
             idct_func: choose_idct_func(&options),
+            sampling_transform: None,
             idct_4x4_func: choose_idct_4x4_func(&options),
             idct_1x1_func: choose_idct_1x1_func(&options),
             color_convert_16: color_convert,
@@ -912,46 +912,6 @@ where
         JpegDecoder::default(options, buf)
     }
 
-    /// Set up-sampling routines in case an image is down sampled
-    pub(crate) fn set_upsampling(&mut self) -> Result<(), DecodeErrors> {
-        // no sampling, return early
-        // check if horizontal max ==1
-        if self.h_max == self.v_max && self.h_max == 1 {
-            return Ok(());
-        }
-
-        for comp in &mut self.components {
-            let hs = self.h_max / comp.horizontal_sample;
-            let vs = self.v_max / comp.vertical_sample;
-
-            let samp_factor = match (hs, vs) {
-                (1, 1) => {
-                    comp.sample_ratio = SampleRatios::None;
-                    upsample_no_op
-                }
-                (2, 1) => {
-                    comp.sample_ratio = SampleRatios::H;
-                    choose_horizontal_samp_function(&self.options)
-                }
-                (1, 2) => {
-                    comp.sample_ratio = SampleRatios::V;
-                    choose_v_samp_function(&self.options)
-                }
-                (2, 2) => {
-                    comp.sample_ratio = SampleRatios::HV;
-                    choose_hv_samp_function(&self.options)
-                }
-                (hs, vs) => {
-                    comp.sample_ratio = SampleRatios::Generic(hs, vs);
-                    generic_sampler()
-                }
-            };
-            comp.setup_upsample_scanline(self.allocation)?;
-            comp.up_sampler = samp_factor;
-        }
-
-        return Ok(());
-    }
     #[must_use]
     /// Get the width of the image as a u16
     ///
@@ -981,108 +941,5 @@ where
         } else {
             None
         };
-    }
-}
-
-#[derive(Default, Clone, Eq, PartialEq, Debug)]
-pub struct GainMapInfo {
-    pub data: Vec<u8>,
-}
-
-#[derive(Default, Clone, Eq, PartialEq, Debug)]
-pub(crate) struct ExtendedXmpSegment {
-    pub(crate) offset: u32,
-    pub(crate) total_size: u32,
-    pub(crate) guid: Vec<u8>,
-    pub(crate) data: Vec<u8>,
-}
-
-/// A struct representing Image Information
-#[derive(Default, Clone, Eq, PartialEq)]
-#[allow(clippy::module_name_repetitions)]
-pub struct ImageInfo {
-    /// Width of the image
-    pub width: u16,
-    /// Height of image
-    pub height: u16,
-    /// PixelDensity
-    pub pixel_density: u8,
-    /// Start of frame markers
-    pub sof: SOFMarkers,
-    /// Horizontal sample
-    pub x_density: u16,
-    /// Vertical sample
-    pub y_density: u16,
-    /// Number of components
-    pub components: u8,
-    /// Gain Map information, useful for
-    /// UHDR images
-    pub gain_map_info: Vec<GainMapInfo>,
-    /// Multi picture information, useful for
-    /// UHDR images
-    pub multi_picture_information: Option<Vec<u8>>,
-    /// Exif Data
-    pub exif_data: Option<Vec<u8>>,
-    /// XMP Data
-    pub xmp_data: Option<Vec<u8>>,
-    /// IPTC Data
-    pub iptc_data: Option<Vec<u8>>,
-    /// Extended XMP Data
-    pub extended_xmp: Option<Vec<u8>>,
-    /// Extended XMP Guid
-    pub extended_xmp_guid: Option<Vec<u8>>,
-    /// Image sub-sampling ratio
-    pub sample_ratio: SampleRatios,
-    /// The offset at which Multi picture information was found
-    pub multi_picture_information_offset: Option<u64>,
-}
-
-impl ImageInfo {
-    /// Set width of the image
-    ///
-    /// Found in the start of frame
-
-    pub(crate) fn set_width(&mut self, width: u16) {
-        self.width = width;
-    }
-
-    /// Set height of the image
-    ///
-    /// Found in the start of frame
-
-    pub(crate) fn set_height(&mut self, height: u16) {
-        self.height = height;
-    }
-
-    /// Set the image density
-    ///
-    /// Found in the start of frame
-
-    pub(crate) fn set_density(&mut self, density: u8) {
-        self.pixel_density = density;
-    }
-
-    /// Set image Start of frame marker
-    ///
-    /// found in the Start of frame header
-
-    pub(crate) fn set_sof_marker(&mut self, marker: SOFMarkers) {
-        self.sof = marker;
-    }
-
-    /// Set image x-density(dots per pixel)
-    ///
-    /// Found in the APP(0) marker
-    #[allow(dead_code)]
-    pub(crate) fn set_x(&mut self, sample: u16) {
-        self.x_density = sample;
-    }
-
-    /// Set image y-density
-    ///
-    /// Found in the APP(0) marker
-    #[allow(dead_code)]
-    pub(crate) fn set_y(&mut self, sample: u16) {
-        self.y_density = sample;
     }
 }

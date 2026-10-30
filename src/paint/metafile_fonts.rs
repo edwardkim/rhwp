@@ -4,7 +4,7 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 
 use resvg::usvg::fontdb::{Database, Family, Source, Style, Weight, ID};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use super::metafile_surface::SurfaceCache;
 
@@ -22,7 +22,7 @@ pub(crate) struct MetafileFonts {
     requests: Arc<Mutex<Option<(u32, String)>>>,
 }
 
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct FontRequest {
     pub families: Vec<String>,
     pub weight: u16,
@@ -143,6 +143,39 @@ fn default_database() -> Arc<Database> {
 }
 
 impl MetafileFonts {
+    /// 세션에 명시적으로 공급한 프로그램만 새 텍스트 효과의 근거로 쓴다.
+    pub(super) fn is_supplied_face(&self, id: ID) -> bool {
+        self.aliases
+            .values()
+            .any(|(_, _, supplied)| *supplied == id)
+    }
+
+    /// 텍스트 효과는 같은 family/style 해소와 명시 공급 프로그램만 소비한다.
+    pub(super) fn supplied_faces_for_style(&self, style: &crate::renderer::TextStyle) -> Vec<ID> {
+        let database = self.database();
+        let weight = match style.css_font_weight() {
+            Some("bold") => 700,
+            Some(value) => value.parse().unwrap_or(400),
+            None => 400,
+        };
+        crate::renderer::internal_font_family_members(&style.font_family)
+            .into_iter()
+            .filter_map(|name| {
+                database.query(&resvg::usvg::fontdb::Query {
+                    families: &[Family::Name(name)],
+                    weight: Weight(weight),
+                    style: if style.italic {
+                        Style::Italic
+                    } else {
+                        Style::Normal
+                    },
+                    ..Default::default()
+                })
+            })
+            .filter(|id| self.is_supplied_face(*id))
+            .collect()
+    }
+
     pub(crate) fn cached_requests(&self, epoch: u32) -> Option<String> {
         self.requests
             .lock()
