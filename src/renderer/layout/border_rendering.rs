@@ -1094,6 +1094,19 @@ fn create_edge_border_line_nodes(
     nodes
 }
 
+/// 글자·문단 테두리로 긋는 선인지 판정한다. 한/글 Mac 12.30 Print PDF는 입체선(14~17)으로
+/// 지정한 글자·문단 테두리를 긋지 않는다. 표 칸·쪽 테두리는 근거가 없어 이 판정을 쓰지 않는다.
+pub(crate) fn text_border_is_drawn(border: &BorderLine) -> bool {
+    !matches!(
+        border.line_type,
+        BorderLineType::None
+            | BorderLineType::Thick3D
+            | BorderLineType::Thick3DReverse
+            | BorderLineType::Thin3D
+            | BorderLineType::Thin3DReverse
+    )
+}
+
 /// 테두리선 Line 노드 생성 (이중선/삼중선 지원)
 /// None 타입이면 빈 벡터 반환
 pub(crate) fn create_border_line_nodes(
