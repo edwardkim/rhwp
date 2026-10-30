@@ -167,8 +167,7 @@ impl TypesetEngine {
                             });
                         let clears_page_square_table = (st.profile.hwpx_stored_layout()
                             || st.profile.hwp5_stored_pagination_layout())
-                            && !st.profile.session_edited()
-                            && crate::renderer::layout::stored_first_line_clears_page_square_table(
+                            && crate::renderer::layout::stored_page_square_preserves_source_origin(
                                 paragraphs, para_idx, &st.layout, self.dpi,
                             );
                         if clears_page_square_table {
@@ -229,8 +228,7 @@ impl TypesetEngine {
                 });
             if let Some(first) = page_first {
                 if (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
-                    && !st.profile.session_edited()
-                    && crate::renderer::layout::stored_first_line_clears_page_square_table(
+                    && crate::renderer::layout::stored_page_square_preserves_source_origin(
                         paragraphs, first, &st.layout, self.dpi,
                     )
                 {

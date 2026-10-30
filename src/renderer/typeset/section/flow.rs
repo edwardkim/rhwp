@@ -412,8 +412,7 @@ impl TypesetEngine {
                 .unwrap_or(para_idx);
             let title_page = st.col_count == 1
                 && (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
-                && !st.profile.session_edited()
-                && crate::renderer::layout::stored_first_line_clears_page_square_table(
+                && crate::renderer::layout::stored_page_square_preserves_source_origin(
                     paragraphs,
                     page_opener,
                     &st.layout,
@@ -428,6 +427,30 @@ impl TypesetEngine {
                 // 원점만 바로잡는다. 이 쪽의 저장 사다리는 지금까지처럼 앞 간격 회수나
                 // 뒤로 스냅하는 근거로 쓰지 않는다(그리는 쪽의 순차 흐름과 같게).
                 st.record_vpos_ladder_validity(true);
+            }
+            // 절대 위치 표의 앵커 줄 뒤 TAC도 일반 글줄과 같은 저장 원점을
+            // 소비한다. 앵커가 옆 차선에 남으면 그 줄의 끝과 표 아래의 다음
+            // 저장 줄 사이에 빈 밴드가 있다. 이 간격을 paint에서 따로 더하지
+            // 않고 공통 HeightCursor를 통해 fit와 실제 배치에 함께 전달한다.
+            if title_page
+                && !title_page_start
+                && para.controls.iter().any(|control| {
+                    matches!(control, Control::Table(table) if table.common.treat_as_char)
+                })
+                && !para.controls.iter().any(|control| {
+                    matches!(control, Control::Table(table)
+                        if !table.common.treat_as_char
+                            && matches!(table.common.vert_rel_to,
+                                crate::model::shape::VertRelTo::Page | crate::model::shape::VertRelTo::Paper))
+                })
+            {
+                let spacing_before = styles
+                    .para_styles
+                    .get(para.para_shape_id as usize)
+                    .map_or(0.0, |style| style.spacing_before);
+                self.vpos_snap_current_height_with_storage(
+                    st, para_idx, paragraphs, composed, styles, spacing_before, storage,
+                )?;
             }
             // 표 문단: Phase 2에서 전환 예정. 현재는 기존 방식 호환용 stub.
             self.typeset_table_paragraph_with_storage(
