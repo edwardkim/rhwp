@@ -48,3 +48,6 @@ HWP·PDF·96dpi와 같은 글꼴 경로·환경 파일을 지정해 전 383쪽�
 위해 브라우저 프로토콜 제한을 60분으로 지정했다. [HWPX 기준 fresh WASM TSV](base-handbook-hwpx-wasm.tsv)는 229쪽 개선, 154쪽 동일,
 하락 0쪽이며 기준 최저는 96.20%, 후보 최저는 99.96%다. 기준과 후보 HWPX WASM 출력의
 글꼴 환경 설정도 동일하다.
+
+[Studio 205쪽 실화면](studio-p205/README.md)은 두 원본의 Canvas2D와 CanvasKit 요청 시
+실제 전환 결과, 수신 WASM 해시를 별도로 기록한다.
