@@ -48,5 +48,11 @@
 ## 회귀 검사의 글꼴 환경 확인
 
 - 2026-10-30 KST, 검토 소스 `23acf787e316d5b9adbce0f952c5104b6af315fd`의 관련 회귀 32개 모듈·89건을 Linux에서 실행하여 89건 통과, 실패·무시 0건을 확인했다. 이 모듈들에는 추가·변경한 ±1px 고정형 69개 함수가 포함된다. [함수별 목록](px-regression-inventory.md).
-- Fontconfig 목록을 비우고 `RHWP_FONT_PATH`를 해제했다. 이어서 `bwrap`으로 `/usr/share/fonts`, `/usr/local/share/fonts`, `~/.local/share/fonts`, `/opt/hnc`를 빈 tmpfs로 가린 상태에서 관련 테스트 이름과 건수가 일치하는 기존 suite 바이너리를 다시 실행하여 같은 89건이 통과했다. 바이너리는 이름과 건수로 선택했으므로 각각이 해당 소스에서 빌드된 것인지는 별도로 확정하지 않았다. 저장소에 포함된 기존 테스트 자원은 이용할 수 있으며 새 글꼴은 배포하지 않는다.
+- Fontconfig 목록을 비우고 `RHWP_FONT_PATH`를 해제했다. 이어서 `bwrap`으로 `/usr/share/fonts`, `/usr/local/share/fonts`, `~/.local/share/fonts`, `/opt/hnc`를 빈 tmpfs로 가린 상태에서 `cargo nextest list`가 검증 worktree 소스에서 식별한 16개 suite 바이너리의 실제 경로와 SHA-256을 기록하고, 각 바이너리를 이 격리 환경에서 직접 실행해 같은 89건이 통과했다. 격리 안에서 Nextest가 자식 프로세스 실행에 `Permission denied`를 반환하여 직접 실행 방식으로 검증했다. 저장소에 포함된 기존 테스트 자원은 이용할 수 있으며 새 글꼴은 배포하지 않는다.
 - 이는 위 Linux 환경에서 시스템 글꼴이 없는 조건의 실행 결과다. 다른 운영체제나 모든 글꼴 조합에서 동일한 결과를 보장한다는 의미는 아니다. 시각 TSV는 별도로 기록된 Print 비교 환경에서 측정했다.
+
+## 최신 fresh WASM의 Studio 205쪽 재확인
+
+2026-10-30 Linux headless Chrome에서 `50cdf6701fcd9b646a403f03f61e8c5fd8c2bd74` 생산 fresh WASM으로 편람 HWP·HWPX를 각각 열었다. 브라우저가 받은 WASM은 SHA-256 `f9e11ac702fc94a0f9abd4033ba27104b86166983085b9c659730a0658b196c9`이며, 두 원본 모두 383쪽과 이미지 로드 실패 0건을 확인했다. 실제 Canvas2D 205쪽 캡처는 이전에 정식 보존한 [HWP 화면](../rebase-ad4-validation-20261030/studio-p205/handbook-hwp-p205-canvas2d.png), [HWPX 화면](../rebase-ad4-validation-20261030/studio-p205/handbook-hwpx-p205-canvas2d.png)과 각각 픽셀 단위로 동일하다.
+
+CanvasKit software 요청은 두 원본 모두 383쪽이 준비 상한 128쪽을 넘어 Canvas2D로 전환됐다. 따라서 이 실행은 CanvasKit 실출력 성공을 뜻하지 않는다. 화면 검증과 독립 Print TSV는 서로 다른 검증 경로다.
