@@ -619,12 +619,7 @@ mod tests {
         picture.shape_attr.current_height = 18956;
 
         assert_eq!(picture_flow_frame_size_hu(&picture), (14847, 10230));
-    }
-
-    /// 저장 행렬이 있는 떠 있는 그림은 변환 전 크기를 개체 틀로 확대하지 않는다.
-    #[test]
-    fn picture_flow_frame_uses_common_for_saved_affine_float() {
-        use super::picture_flow_frame_size_hu;
+        // 저장 행렬이 있는 떠 있는 그림도 변환 전 크기로 틀을 확대하지 않는다.
         let mut picture = Picture::default();
         picture.common.treat_as_char = false;
         picture.common.text_wrap = crate::model::shape::TextWrap::BehindText;
