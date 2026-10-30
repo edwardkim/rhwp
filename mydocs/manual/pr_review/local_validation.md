@@ -621,9 +621,11 @@ cat > "$rhwp_minfont_dir/fonts.conf" <<EOF
 <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
 <fontconfig><dir>$PWD/ttfs/opensource</dir><cachedir>$rhwp_minfont_dir/cache</cachedir></fontconfig>
 EOF
-bwrap --bind / / \
-  --tmpfs /usr/share/fonts --tmpfs /usr/local/share/fonts \
-  --tmpfs "$HOME/.local/share/fonts" \
+bwrap --ro-bind /usr /usr --symlink usr/bin /bin --symlink usr/lib /lib --symlink usr/lib64 /lib64 \
+  --ro-bind /etc /etc --proc /proc --dev /dev --ro-bind /sys /sys --bind /tmp /tmp \
+  --dir "$HOME" --bind "$PWD" "$PWD" --bind "$HOME/.cargo" "$HOME/.cargo" \
+  --ro-bind "$HOME/.rustup" "$HOME/.rustup" \
+  --tmpfs /usr/share/fonts --tmpfs /usr/local/share/fonts --setenv HOME "$HOME" \
   --setenv FONTCONFIG_FILE "$rhwp_minfont_dir/fonts.conf" --unsetenv RHWP_FONT_PATH \
   --chdir "$PWD" sh -c 'fc-list -f "%{file}\n"; exec "$@"' sh \
   cargo nextest run --locked --cargo-profile release-test \
@@ -631,8 +633,10 @@ bwrap --bind / / \
   --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 ~~~
 
-`$HOME/.local/share/fonts`가 없는 환경에서는 그 `--tmpfs` 인자를 생략한다. 집중 검사와 Native
-Skia 검사에도 같은 격리를 적용하고, 실제 글꼴 프로그램을 시험하는 fixture는 별도 명시한다.
+위 예시는 Ubuntu의 `/usr`·Rust 설치 위치를 전제로 하며 홈의 사용자 글꼴과 `/opt`를 노출하지
+않는다. 다른 도구 설치 위치나 OS 구조가 다르면 필요한 경로만 추가하고 글꼴이 함께 노출되지
+않는지 확인한다. 집중 검사와 Native Skia 검사에도 같은 격리를 적용하고, 실제 글꼴 프로그램을
+시험하는 fixture는 별도 명시한다.
 스크립트나 테스트가 시스템 디렉터리의 파일을 직접 공급한다면 목록 확인만으로 통과시키지 않고
 해당 공급 경로를 수정하거나 격리한다.
 
