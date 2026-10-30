@@ -20,3 +20,21 @@
 - 같은 입력/PDF·compat 2022·96dpi·실제 글꼴 환경으로 최신 base와 후보의 전쪽 TSV를 산출한다. 90% 최소값·2%p 초과 하락·쪽수·내용 소유를 확인하고 대표 PNG를 직접 판독한다.
 - 원 PR의 기존 GitHub CI는 과거 원 head의 참고 증거다. 메인테이너 보정 통합 후보는 새 코드의 focused·필수 lint·회귀·최적화 WASM 검증을 수행한다.
 - 임시 로그·원격 metadata: `output/pr-review/davindev-20261030/`. 수용에 사용하는 원본·PDF·최종 TSV·대표 PNG는 정식 경로에 보존한다.
+
+## 통합 후보의 로컬 검증 (2026-10-30)
+
+공통 `form_drawing`의 양식 bbox·caption 원점을 그대로 소비하고, SVG·WebCanvas·Native Skia·
+Studio CanvasKit 각각에서 같은 개체 bbox를 clip으로 적용한다. 캡션과 primitive의 배치 수치를
+변경하지 않으며 save/restore 또는 그룹 종료로 뒤 개체에 clip이 누출되지 않게 한다.
+SVG 충돌에서는 `font_codepoints` 등록을 유지했고, Canvas2D와 함께 공통
+`text_italic::CSS_STYLE`을 유지했다. 기존 devel의 글꼴 기능을 삭제해 충돌을 푼 것이 아니다.
+
+코드 head `770b073d24085b056c8a0f4263e2214b8b53ae08`에서 검증했다. 이후 새 테스트의
+첫머리에 실측 근거 주석을 추가했으며 구현·assertion은 바꾸지 않았다.
+
+- [전쪽 TSV·직접 비교·출력 출처](assets/davindev_20261030/README.md): 5개 원본, 각 1쪽. Native/fresh WASM 10건 모두 90% 이상.
+- 관련 focused 회귀 24건 통과: #8122, #8118, #8166, #7642, #8168, #7062, 기존 양식 appearance.
+- Studio 단위 검사 2,673건 통과, 2건 skip, 실패 0건. TypeScript 검사와 renderer-contract E2E 통과.
+- Canvas2D·CanvasKit compat/default의 screen/print 18회 실제 캡처, 비교 12건 통과.
+- Native·WASM 최적화 빌드 완료. SVG 글꼴 임베딩과 공통 italic 정책을 보존했다.
+- 전체 Rust 회귀·Native Skia 필수 검사·필수 lint는 진행 중이다. 완료 전 원격 처리를 하지 않는다.

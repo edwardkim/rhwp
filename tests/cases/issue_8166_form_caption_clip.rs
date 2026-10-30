@@ -1,3 +1,11 @@
+//! 관계형 회귀: 원본의 소유·포함·정렬 또는 캡션 영역 계약.
+//! 2026-10-30 측정: Visual Sweep raw(96dpi, pdftoppm, 색상 경계 보정 전 2px 내용 실루엣).
+//! form_checkbox_width_1100.hwp: 전1쪽(1쪽) Native 96.21% / fresh WASM 95.98%; 각 전쪽 최저 동일.
+//! form_checkbox_width_3000.hwp: 전1쪽(1쪽) Native 96.27% / fresh WASM 96.05%; 각 전쪽 최저 동일.
+//! form_checkbox_width_9921.hwp: 전1쪽(1쪽) Native 96.62% / fresh WASM 96.40%; 각 전쪽 최저 동일.
+//! 근거: mydocs/pr/assets/davindev_20261030/README.md.
+//! 실물 원본의 시각 검증과 간격·폭 변형 입력의 계약 검사는 구분한다.
+//!
 //! #8166 양식 개체의 캡션은 개체 영역 밖으로 그려지지 않는다.
 //!
 //! 기준: form-01 의 체크 상자 폭만 3000·1100 HWPUNIT 로 줄인 저장본을 한컴 웹기안기로 인쇄하면
