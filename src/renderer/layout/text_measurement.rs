@@ -1043,6 +1043,15 @@ pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::sto
                     storage.bytes(std::mem::size_of::<crate::renderer::LatinSlotMetrics>())?;
                     Ok(Box::new(crate::renderer::LatinSlotMetrics {
                         font_family: storage.string(cs.font_family_for_lang(1))?,
+                        native_otf_metrics: (!styles.has_exact_font_source(char_style_id, 1))
+                            .then(|| {
+                                styles.native_pua_fonts.get_otf(
+                                    cs.font_family_for_lang(1),
+                                    cs.bold,
+                                    cs.italic,
+                                )
+                            })
+                            .flatten(),
                         metric_font_family: cs
                             .metric_face_for_lang(1)
                             .map(|face| storage.string(face))
@@ -2379,6 +2388,10 @@ fn char_width_decision_with_hft_tracking<'a>(
             || c == '\u{3000}'
             || is_cjk_char(c)
             || is_fullwidth_symbol(c)
+            // 한컴 Print의 HFT 기호 슬롯에서 원본 폭을 찾지 못한 ∼와 ※는
+            // 전각으로 전진한다. 실제 글리프 메트릭이 있으면 위의 hit 또는
+            // 아래의 준비된 OTF 전진이 우선한다.
+            || (style.source_font_is_hft && matches!(c, '\u{223C}' | '\u{203B}'))
             || (latin.is_none() && embedded.metric.is_some() && c == '\u{2024}')
         {
             (
@@ -2411,12 +2424,12 @@ fn char_width_decision_with_hft_tracking<'a>(
     let dash_leader = is_dash_leader_run(chars, i);
     // Native paint와 동일한 확인된 OTF가 해당 글리프를 공급하면 그 전진폭을
     // 우선한다. 없는 글리프와 특수 공백은 기존 원본 HFT 계약에 남긴다.
+    let otf_metrics = latin.map_or(style.native_otf_metrics.as_ref(), |slot| {
+        slot.native_otf_metrics.as_ref()
+    });
     let otf_advance =
         if cluster_len[i] <= 1 && !dash_leader && !c.is_whitespace() && !c.is_control() {
-            style
-                .native_otf_metrics
-                .as_ref()
-                .and_then(|font| font.advance_em(c))
+            otf_metrics.and_then(|font| font.advance_em(c))
         } else {
             None
         };
@@ -2454,12 +2467,8 @@ fn char_width_decision_with_hft_tracking<'a>(
             if otf_advance.is_some() {
                 // 합성 굵기는 실제 글꼴 폭을 바꾸지 않는다. 원본에 독립적으로
                 // 확인된 꾸밈 전진 계약이 있는 경우에만 추가 폭을 적용한다.
-                if style
-                    .native_otf_metrics
-                    .as_ref()
-                    .is_some_and(|font| font.needs_faux_bold(c))
-                {
-                    if style.source_hwp3_hft_bold {
+                if otf_metrics.is_some_and(|font| font.needs_faux_bold(c)) {
+                    if style.source_hwp3_hft_bold || source_hft_metric {
                         font_size * 0.05
                     } else {
                         let original_face = latin

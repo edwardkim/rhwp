@@ -579,6 +579,8 @@ crate::storage::clone_fields!(TextStyle, {continuous_shadow, inherited_half_spac
 #[derive(Debug, Clone, PartialEq)]
 pub struct LatinSlotMetrics {
     pub font_family: String,
+    /// 영문 슬롯이 실제 선택한 OTF의 글리프별 전진.
+    pub native_otf_metrics: Option<std::sync::Arc<native_pua_fonts::NativeOtfMetrics>>,
     pub metric_font_family: Option<String>,
     /// 확인된 원본 글리프만 사용하는 부분 메트릭. 미확인 글자는 표시 face에 남는다.
     /// 불변 이름을 공유하여 런 복제와 enum의 인라인 메모리를 줄인다.
@@ -588,7 +590,7 @@ pub struct LatinSlotMetrics {
     pub ratio: f64,
 }
 
-crate::storage::clone_fields!(LatinSlotMetrics, {font_family, metric_font_family, original_glyph_metric_family, font_metric_trusted, letter_spacing, ratio});
+crate::storage::clone_fields!(LatinSlotMetrics, {font_family, native_otf_metrics, metric_font_family, original_glyph_metric_family, font_metric_trusted, letter_spacing, ratio});
 crate::storage::clone_copy!(crate::model::style::UnderlineType);
 
 /// 위첨자/아래첨자 글리프를 그릴 때 적용하는 본문 대비 글꼴 크기 배율.
