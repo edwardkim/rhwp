@@ -310,6 +310,67 @@ fn join(
     Ok(())
 }
 
+/// [#8355] 한/글은 고정 줄간격 문단의 마지막 줄도 고정 피치를 차지한다. 이어 붙인 문단의
+/// 마지막 줄은 뒤 조각(한 줄짜리면 피치를 관측하지 못한 조각)에서 왔으므로 남은 문단 모양의
+/// 피치로 꼬리 줄간격을 다시 두고, 늘어난 몫을 돌려준다.
+///
+/// 한/글은 고정값 하나로 문단 전체를 짠다. 앞 조각(한두 줄)에서 잰 피치를 그대로 두면 뒤
+/// 조각의 줄마다 그 차이가 쌓이므로(12쪽 24줄 +17px), 이어 붙인 문단의 줄 피치 중앙값으로
+/// 고정값을 다시 잡는다. 저장 줄 되감기(다음 단·쪽)는 피치가 아니다.
+fn restore_fixed_trailing(
+    doc: &mut Document,
+    paragraph: &mut Paragraph,
+    allocation: Allocation<'_>,
+) -> Result<i32, PdfImportError> {
+    let Some(shape) = doc
+        .doc_info
+        .para_shapes
+        .get_mut(paragraph.para_shape_id as usize)
+    else {
+        return Ok(0);
+    };
+    if shape.line_spacing_type != crate::model::style::LineSpacingType::Fixed {
+        return Ok(0);
+    }
+    if let Some(pitch) = median_row_pitch(&paragraph.line_segs, allocation)? {
+        shape.line_spacing = 2 * pitch;
+    }
+    let pitch = shape.line_spacing / 2;
+    let Some(last) = paragraph.line_segs.last_mut() else {
+        return Ok(0);
+    };
+    let trailing = (pitch - last.line_height).max(0);
+    let grown = trailing - last.line_spacing.max(0);
+    last.line_spacing = trailing;
+    Ok(grown.max(0))
+}
+
+/// 같은 단 안에서 이어지는 저장 줄 사이 피치(HWPUNIT). PDF 관측 피치는 반올림으로 한두
+/// HWPUNIT 씩 오가므로(1919/1931) 중앙값 근처(±5%) 피치의 평균을 쓴다 — 한/글은 이 값 하나로
+/// 모든 줄을 짜므로 한쪽 값을 고르면 줄마다 그 반올림 차이가 쌓인다.
+fn median_row_pitch(
+    rows: &[crate::model::paragraph::LineSeg],
+    allocation: Allocation<'_>,
+) -> Result<Option<i32>, PdfImportError> {
+    let mut pitches = allocation.collect(
+        rows.windows(2)
+            .map(|pair| pair[1].vertical_pos - pair[0].vertical_pos)
+            .filter(|&pitch| pitch > 0),
+    )?;
+    if pitches.is_empty() {
+        return Ok(None);
+    }
+    allocation.sort_by(&mut pitches, i32::cmp)?;
+    let median = pitches[pitches.len() / 2];
+    let (sum, count) = pitches
+        .iter()
+        .filter(|&&pitch| (pitch - median).abs() * 20 <= median)
+        .fold((0_i64, 0_i64), |(sum, count), &pitch| {
+            (sum + i64::from(pitch), count + 1)
+        });
+    Ok(Some((sum as f64 / count as f64).round() as i32))
+}
+
 /// Body rows take the paragraph indent from the row tag, not from their
 /// start position: a positive indent marks the first row, a negative
 /// (hanging) indent the rows after it. Frame rows stored the indent in
@@ -410,6 +471,9 @@ fn assemble(
                 allocation.push(out, anchor)?;
             }
         }
+        // [#8355] 이어 붙인 문단이 마지막 줄에 새로 차지한 꼬리 줄간격(HWPUNIT). 다음 문단의
+        // 앞 간격은 이어 붙이기 전 조각의 줄 바닥에서 잰 값이라 그만큼 뺀다.
+        let mut carried_trailing = 0;
         for (j, paragraph) in body.into_iter().enumerate() {
             match out.last_mut() {
                 Some(previous) if cut[j] => {
@@ -419,9 +483,18 @@ fn assemble(
                         doc.doc_info.para_shapes[paragraph.para_shape_id as usize].spacing_after;
                     doc.doc_info.para_shapes[previous.para_shape_id as usize].spacing_after = after;
                     join(previous, &paragraph, allocation)?;
+                    carried_trailing = restore_fixed_trailing(doc, previous, allocation)?;
                     joined += 1;
                 }
-                _ => allocation.push(out, paragraph)?,
+                _ => {
+                    if carried_trailing > 0 {
+                        let shape = &mut doc.doc_info.para_shapes[paragraph.para_shape_id as usize];
+                        // Paragraph measures are stored as twice HWPUNIT.
+                        shape.spacing_before = (shape.spacing_before - 2 * carried_trailing).max(0);
+                    }
+                    carried_trailing = 0;
+                    allocation.push(out, paragraph)?;
+                }
             }
         }
     }
@@ -867,7 +940,19 @@ pub(super) fn reflow(
                         paragraphs[0].column_type = ColumnBreakType::Column;
                         current_column = g;
                     }
-                    previous_bottom = flow_bottoms[page_no][i];
+                    // [#8355] 다음 글상자까지의 앞 간격은 이 글상자의 흐름 끝에서 잰다 — 마지막
+                    // 줄의 위치 + 줄 높이 + 꼬리 줄간격(고정 줄간격 문단은 마지막 줄도 고정
+                    // 피치를 차지한다). 글상자 아래 변은 테두리 여백을 포함할 수 있어 흐름 끝이
+                    // 아니다(시험지 «보기» 상자 뒤 선택지가 한/글에서 11px 위).
+                    previous_bottom = paragraphs.last().and_then(|p| p.line_segs.last()).map_or(
+                        flow_bottoms[page_no][i],
+                        |seg| {
+                            margin_top
+                                + seg.vertical_pos
+                                + seg.line_height
+                                + seg.line_spacing.max(0)
+                        },
+                    );
                     moved += paragraphs.len();
                     allocation.extend(&mut body, paragraphs)?;
                 }
