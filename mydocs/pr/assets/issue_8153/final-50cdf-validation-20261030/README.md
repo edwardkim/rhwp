@@ -44,3 +44,9 @@
 - [handbook-hwp-wasm-p130-overlay.png](handbook-hwp-wasm-p130-overlay.png): `9c0c0d40a03a4bbc91b2eea7da41b2ffc40e2a919082234f4cab8c7350a7f75c`
 - [issue7905-wasm-p001-overlay.png](issue7905-wasm-p001-overlay.png): `39ba6e39f9f922b4ecd7706db644d662cf191b580135c48a894ab3a0950ea66e`
 - [sample16-hwpx-wasm-p018-overlay.png](sample16-hwpx-wasm-p018-overlay.png): `1a2ced75def8af29db724e42f1f7785684bfb6523def74c7d7d88cf1547f20ed`
+
+## 회귀 검사의 글꼴 환경 확인
+
+- 2026-10-30 KST, 검토 소스 `23acf787e316d5b9adbce0f952c5104b6af315fd`의 관련 회귀 32개 모듈·89건을 Linux에서 실행하여 89건 통과, 실패·무시 0건을 확인했다. 이 모듈들에는 추가·변경한 ±1px 고정형 69개 함수가 포함된다. [함수별 목록](px-regression-inventory.md).
+- Fontconfig 목록을 비우고 `RHWP_FONT_PATH`를 해제했다. 이어서 `bwrap`으로 `/usr/share/fonts`, `/usr/local/share/fonts`, `~/.local/share/fonts`, `/opt/hnc`를 빈 tmpfs로 가린 상태에서 관련 테스트 이름과 건수가 일치하는 기존 suite 바이너리를 다시 실행하여 같은 89건이 통과했다. 바이너리는 이름과 건수로 선택했으므로 각각이 해당 소스에서 빌드된 것인지는 별도로 확정하지 않았다. 저장소에 포함된 기존 테스트 자원은 이용할 수 있으며 새 글꼴은 배포하지 않는다.
+- 이는 위 Linux 환경에서 시스템 글꼴이 없는 조건의 실행 결과다. 다른 운영체제나 모든 글꼴 조합에서 동일한 결과를 보장한다는 의미는 아니다. 시각 TSV는 별도로 기록된 Print 비교 환경에서 측정했다.
