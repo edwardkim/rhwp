@@ -1,8 +1,9 @@
 //! 관계형·고정형: 그림 문단의 내용 소유·순서·겹침과 독립 Print 쪽 수.
-//! 주석 갱신: 2026-10-30T16:20:11+09:00; 직전 파일 커밋: 2026-10-30T15:31:23+09:00 (`77fbef6da4a83d0671c5e9ed0a8b1bb3b4777788`).
-//! 2026-10-30 중간 측정 raw(96 DPI, PDFium, 2px 이웃): 2쪽 Native 98.86% / WASM 98.87%,
-//! 3쪽 Native 99.80% / WASM 99.81%; 전 6쪽 최저 Native 97.47% / WASM 97.46%.
-//! 근거: mydocs/pr/assets/issue_8371/law-split-20261030/README.md. 최종 head 재측정 필요.
+//! 주석 갱신: 2026-10-31T00:16:01+09:00; 직전 파일 커밋: 2026-10-30T23:08:46+09:00 (`8f3d099de5b8569ae44405858d8210588ed3898e`).
+//! 2026-10-30 측정 raw(96 DPI, PDFium, 2px 이웃): 1쪽 Native 99.97% / WASM 99.90%,
+//! 6쪽 Native 99.98% / WASM 100.00%, 2쪽 Native 98.86% / WASM 98.19%,
+//! 3쪽 Native 99.80% / WASM 99.82%; 전 6쪽 최저 Native 98.86% / WASM 98.19%.
+//! 근거: mydocs/pr/assets/issue_8371/law-split-20261030/README.md.
 #![cfg(not(target_arch = "wasm32"))]
 use rhwp::wasm_api::HwpDocument;
 use serde_json::Value;

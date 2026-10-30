@@ -1,9 +1,9 @@
 //! 관계형: 한글 3.0 저장 줄의 공백 보정과 편집 무효화 계약.
-//! 주석 갱신: 2026-10-30T17:28:27+09:00; 신규 파일로 직전 파일 커밋 없음.
-//! 2026-10-30 중간 측정 raw(96 DPI, PDFium, 2px 이웃): 28쪽 Native 99.06% / fresh WASM 99.02%,
-//! 193쪽 Native 98.29% / fresh WASM 99.99%; 전 763쪽 최저 Native 98.29% / WASM 99.02%.
+//! 주석 갱신: 2026-10-31T00:28:31+09:00; 직전 파일 커밋: 2026-10-30T20:09:17+09:00 (`8258ed92866228d5ef99958140a7dd0c2f895a3e`).
+//! 2026-10-30 측정 raw(96 DPI, PDFium, 2px 이웃): 28쪽 Native/fresh WASM 각 100.00%,
+//! 193쪽 각 100.00%; 전 763쪽 최저 Native 99.41% / fresh WASM 99.40%.
 //! 근거: mydocs/pr/assets/issue_8371/sample10-native.tsv, mydocs/pr/assets/issue_8371/sample10-wasm.tsv,
-//! mydocs/working/task_m100_8371_stage1.md. 최종 head 재측정 필요.
+//! mydocs/working/task_m100_8371_stage1.md.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::{
