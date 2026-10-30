@@ -1,5 +1,5 @@
 //! 검사 유형: 관계형. 합성 글꼴 프로그램의 선택·대체 계약을 검증한다.
-//! 주석 갱신: 2026-10-31T02:20:22+09:00; 직전 파일 커밋: 2026-10-31T00:41:08+09:00 (`7024bca2b9f274923194a7373696b0d2dd7959dc`).
+//! 주석 갱신: 2026-10-31T07:12:47+09:00; 직전 파일 커밋: 2026-10-31T03:34:36+09:00 (`f3a88f72646d7682ae48804e78332f5dea1f34f4`).
 //! 실제 입력 `samples/hwp3-sample10.hwp`, 한컴 2020 Print, 96 DPI, 2px 이웃 raw.
 //! 2026-10-30 측정: 1쪽 Native/fresh WASM 각 99.96%; 전 763쪽 최저 각 99.41% / 99.40%.
 //! 근거: `mydocs/pr/assets/issue_8371/sample10-native.tsv`, `sample10-wasm.tsv`, `sample10-validation.md`.
@@ -567,7 +567,7 @@ mod native_otf_program_contract {
     fn collection(first: &[u8], second: &[u8]) -> Vec<u8> {
         let mut result = b"ttcf\0\x01\0\0\0\0\0\x02\0\0\0\0\0\0\0\0".to_vec();
         for (index, source) in [first, second].into_iter().enumerate() {
-            while result.len() % 4 != 0 {
+            while !result.len().is_multiple_of(4) {
                 result.push(0);
             }
             let start = u32::try_from(result.len()).unwrap();
