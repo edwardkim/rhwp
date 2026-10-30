@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — 검증 진행 중.** 최신 devel에서 원 증상과 통합 후보의 실제 Native/fresh WASM 출력을 확인한 뒤 판정을 갱신한다. 현재 상태는 기여 코드의 거부 판정이 아니다.
+**메인테이너 보정 후 수용 가능 — 로컬 필수 검증 완료.** 통합 후보의 원격 최신 head CI를 확인한 뒤 승인된 merge를 진행한다. 원 기여 커밋의 이력은 모두 보존한다.
 
 ## 접수와 범위
 
@@ -64,7 +64,9 @@ SVG 충돌에서는 `font_codepoints` 등록을 유지했고, Canvas2D와 함께
 - #8389 보존: 편람 HWP/HWPX 각각 383쪽의 Native·WASM 총 1,532쪽은 최신 기준과
   모두 바이트 단위로 같다. 전쪽 최저 99.96%, 독립 PDF 쪽수 일치, 130·205쪽 확대 판독 완료.
 - Format·Native/WASM Clippy·workspace build·workspace all-targets Clippy·manifest와
-  관련 회귀 26건은 통과했다. 전체 회귀·Native Skia 필수 검사는 진행 중이다.
+  관련 회귀 26건은 통과했다. 전체 Rust 회귀 12,198건 통과(45건 skip, 실패 0건),
+  실행 524.345초다. Native Skia lib 4,040건 통과(12건 ignored), 그림 누락 2건과
+  직접 PDF 출력 14건도 모두 통과했다.
 
 공유 Cargo 캐시가 한 번 기준 바이너리를 후보 빌드에 재사용한 것을 바이너리 SHA 대조로
 발견했다. 그 실행은 무효로 분리했다. 후보 root crate의 실제 재컴파일 뒤 Native SHA
@@ -90,3 +92,15 @@ SVG의 `font_codepoints`와 공통 italic 스타일은 충돌 보정 뒤 유지�
 폭 1100/3000/9921HU 원본·독립 Print와 합성 폭 계약을 구분했고, 기존
 `form_classic_appearance` 검사와 함께 통과했다. 원본 단위에서 환산한 폭 계약을 유지했고
 실물의 잘못된 절대 좌표나 golden을 추가하지 않았다. 페이지 분할·이어받기는 변경하지 않는다.
+
+## 제출 전 최종 상태
+
+- 검증 제품/테스트 소스: `d94c7aa124`; 제품 출력 소스 `d189352a1b`와의 차이는 실측 주석뿐이다.
+- 이후 로컬 변경은 mydocs 증거·검토 기록으로 한정된다. 코드·assertion·입력은 바꾸지 않았다.
+- 중단된 전체 회귀 컴파일은 성공으로 세지 않고 로그를 분리했다. 재개 실행에서 전체 회귀와
+  Native Skia 세 필수 항목의 exit 0을 확인했다. 이미 통과한 lint·Studio·시각 검증은 재사용했다.
+- 제출 브랜치는 현행 명명 규칙에 맞춰 `review/integration-20261030-davindev-rendering`으로
+  이름만 정렬했다. 기존 `review/davindev-20261030`과 같은 이력이며 rebase·코드 변경은 없다.
+- 신규 PR 선행 조회에서 본인 PR #8392의 CI 진행을 확인했다. 실패·충돌 여부를 관찰하며
+  다른 작업의 branch·source를 임의로 보정하지 않는다.
+- LFS 신규 객체 없음, 문서 링크·입력 및 증거 해시 확인, devel merge-tree 충돌 없음.
