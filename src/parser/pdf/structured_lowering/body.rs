@@ -296,6 +296,18 @@ impl Output {
             lines().map(|l| l.right).fold(f32::MIN, f32::max),
             batch.last().map_or(0., |p| p.item.bottom),
         ];
+        // Each paragraph's widest source line: its own measure, which a
+        // shared frame edge (a full-width question line above a boxed passage)
+        // would overstate.
+        let paragraph_rights: Vec<f32> = allocation
+            .collect(batch.iter().map(|p| {
+                p.proposal
+                    .lines
+                    .iter()
+                    .map(|l| l.right)
+                    .fold(f32::MIN, f32::max)
+            }))
+            .map_err(message)?;
         let mut owned = BTreeSet::new();
         let mut flow = Vec::new();
         for p in batch.drain(..) {
@@ -317,7 +329,7 @@ impl Output {
         let committed = match built {
             Ok((next, control)) => {
                 self.paragraphs += count;
-                allocation.push(&mut self.reports, request_json!(allocation, {"region":ri,"status":"paragraph_ir","instanceId":*next_id,"paragraphCount":count,"textBox":text_box,"spans":spans})?).map_err(message)?;
+                allocation.push(&mut self.reports, request_json!(allocation, {"region":ri,"status":"paragraph_ir","instanceId":*next_id,"paragraphCount":count,"textBox":text_box,"paragraphRights":paragraph_rights,"spans":spans})?).map_err(message)?;
                 allocation
                     .push(&mut self.frames, control)
                     .map_err(message)?;

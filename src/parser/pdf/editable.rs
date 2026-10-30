@@ -29,6 +29,8 @@ pub(super) struct BodyFrame {
     pub top: f32,
     pub right: f32,
     pub bottom: f32,
+    /// Widest source line of each paragraph, in frame order.
+    pub paragraph_rights: Vec<f32>,
 }
 
 /// Frames committed on one output section (one source page).
@@ -52,12 +54,19 @@ pub(super) fn page_frames(
             .filter_map(|f| {
                 let b = f["textBox"].as_array()?;
                 let n = |i: usize| b.get(i)?.as_f64().map(|v| v as f32);
+                let paragraph_rights = f["paragraphRights"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                    .filter_map(|v| v.as_f64().map(|v| v as f32))
+                    .collect();
                 Some(BodyFrame {
                     inst_id: u32::try_from(f["instanceId"].as_u64()?).ok()?,
                     left: n(0)?,
                     top: n(1)?,
                     right: n(2)?,
                     bottom: n(3)?,
+                    paragraph_rights,
                 })
             }),
     )?;
@@ -66,6 +75,10 @@ pub(super) fn page_frames(
 
 /// Height in HWPUNIT that an anchor line (no text) takes in its column.
 const ANCHOR_HEIGHT: i32 = 100;
+
+/// HWPUNIT a row keeps beyond its widest source line, so that the substitute
+/// font's rounding does not push the line's last character to the next row.
+const ROW_END_SLACK: i32 = 100;
 
 fn hu(points: f32) -> i32 {
     (points * 100.0).round() as i32
@@ -308,6 +321,34 @@ fn join(
     )?;
     previous.line_segs = rows;
     Ok(())
+}
+
+/// The pieces of a joined paragraph were measured in their own frames, so
+/// their rows can end at different edges. One paragraph shape serves all the
+/// rows: every row takes the widest piece's end, and the right margin follows.
+fn unify_row_end(doc: &mut Document, paragraph: &mut Paragraph) {
+    let (Some(first), Some(end)) = (
+        paragraph.line_segs.first(),
+        paragraph
+            .line_segs
+            .iter()
+            .map(|seg| seg.column_start + seg.segment_width)
+            .max(),
+    ) else {
+        return;
+    };
+    let grown = end - (first.column_start + first.segment_width);
+    if let Some(shape) = doc
+        .doc_info
+        .para_shapes
+        .get_mut(paragraph.para_shape_id as usize)
+    {
+        // Paragraph measures are stored as twice HWPUNIT.
+        shape.margin_right -= 2 * grown;
+    }
+    for seg in &mut paragraph.line_segs {
+        seg.segment_width = end - seg.column_start;
+    }
 }
 
 /// [#8355] 한/글은 고정 줄간격 문단의 마지막 줄도 고정 피치를 차지한다. 이어 붙인 문단의
@@ -562,6 +603,7 @@ fn assemble(
                         doc.doc_info.para_shapes[paragraph.para_shape_id as usize].spacing_after;
                     doc.doc_info.para_shapes[previous.para_shape_id as usize].spacing_after = after;
                     join(previous, &paragraph, allocation)?;
+                    unify_row_end(doc, previous);
                     carried_trailing = restore_fixed_trailing(doc, previous, allocation)?;
                     // [#8362] 뒤 조각의 다음 글이 그림으로 시작하면 사이 간격은 이 문단의 아래
                     // 간격에 들어 있다. 늘어난 꼬리 몫은 거기서 먼저 뺀다 — 다음 문단 앞 간격에서만
@@ -827,19 +869,16 @@ pub(super) fn reflow(
                                 ShapeObject::Rectangle(rect)
                                     if rect.drawing.inst_id == page.frames[index].inst_id =>
                                 {
-                                    rect.drawing
-                                        .text_box
-                                        .as_mut()?
-                                        .paragraphs
-                                        .last_mut()?
-                                        .line_segs
-                                        .last_mut()
+                                    rect.drawing.text_box.as_mut()?.paragraphs.last_mut()
                                 }
                                 _ => None,
                             },
                             _ => None,
                         });
-                    if let Some(last) = last {
+                    if let Some(paragraph) = last {
+                        let Some(last) = paragraph.line_segs.last_mut() else {
+                            continue;
+                        };
                         let content_end = i64::from(*bottom) - i64::from(last.line_spacing);
                         // A paragraph's inferred interline tail is not
                         // observed occupied content. Grant only the available
@@ -847,6 +886,20 @@ pub(super) fn reflow(
                         if last.line_spacing > 0 && i64::from(next_top) >= content_end {
                             let before = last.line_spacing;
                             last.line_spacing = (i64::from(next_top) - content_end) as i32;
+                            let cut = before - last.line_spacing;
+                            // Hancom lays a fixed-pitch paragraph's last row
+                            // out at the pitch again; its spacing after gives
+                            // the cut back. Stored rows already end at the band.
+                            if let Some(shape) = doc
+                                .doc_info
+                                .para_shapes
+                                .get_mut(paragraph.para_shape_id as usize)
+                            {
+                                if shape.line_spacing_type == LineSpacingType::Fixed {
+                                    // Paragraph measures are stored as twice HWPUNIT.
+                                    shape.spacing_after -= 2 * cut;
+                                }
+                            }
                             *bottom = next_top;
                             allocation.push(&mut tail_bands, request_json!(allocation, {"sourceSection":page.section,"instanceId":page.frames[index].inst_id,"contentEndHu":content_end,"sourceBandEndHu":next_top,"inferredTailHu":before,"acceptedTailHu":last.line_spacing})?)?;
                         }
@@ -995,20 +1048,34 @@ pub(super) fn reflow(
                         }
                     }
                     let shift_x = owner_left - col_left;
+                    let paragraphs_len = paragraphs.len();
                     for (pi, p) in paragraphs.iter_mut().enumerate() {
                         let shape = &mut doc.doc_info.para_shapes[p.para_shape_id as usize];
                         // Paragraph measures are stored as twice HWPUNIT.
                         shape.margin_left = (shape.margin_left + 2 * shift_x).max(0);
-                        shape.margin_right = 0;
+                        // A paragraph's rows end at its widest source line,
+                        // not at the column edge: Hancom pulls the next row's
+                        // characters into any slack as wide as one of them.
+                        // A negative right margin never widens a Hancom row,
+                        // so the measure stops at the column edge.
+                        let right = frame
+                            .paragraph_rights
+                            .get(pi)
+                            .copied()
+                            .filter(|_| frame.paragraph_rights.len() == paragraphs_len)
+                            .unwrap_or(frame.right);
+                        let inset = (boxes[g].1 - hu(right) - ROW_END_SLACK).max(0);
+                        shape.margin_right = 2 * (inset - inset.rem_euclid(4));
                         if pi == 0 {
                             shape.spacing_before = 2 * (top - previous_bottom).max(0);
                         }
                         // Body rows reproduce the frame the renderer derives
                         // from the column and the paragraph shape: every row
                         // starts at the left margin (the indent is applied
-                        // inside the row) and ends at the column's right edge
-                        // snapped down to 4 HWPUNIT. Rows that miss this key
-                        // are broken again with substitute font metrics.
+                        // inside the row) and ends at the right margin, from
+                        // the column's right edge snapped down to 4 HWPUNIT.
+                        // Rows that miss this key are broken again with
+                        // substitute font metrics.
                         let start = shape.margin_left / 2;
                         let end = column_width_of(g)
                             - column_width_of(g).rem_euclid(4)

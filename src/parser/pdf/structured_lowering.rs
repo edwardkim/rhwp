@@ -245,6 +245,11 @@ fn positioned_span_style(
     Ok(id)
 }
 
+/// Points a source row's last visible glyph outline gives back. Hancom 2024
+/// moved a column-wide title's final word to the next row until its last glyph
+/// was about 0.12pt narrower; ratio rounds up to keep at least this guard.
+const ROW_END_GUARD_PT: f64 = 0.2;
+
 /// Fit the ordinary spacing field after selecting an ordinary ratio. The
 /// common final measurer, including font-space and punctuation rules, remains
 /// the authority for the emitted advance.
@@ -359,7 +364,13 @@ fn observed_line_text(
         .ok_or("empty source line")?
         .origin;
     let mut emitted_advance = 0.;
-    for glyph in &content.characters {
+    // Nothing on the row follows the last visible glyph. A row that ends at the
+    // column edge still has to fit under Hancom's rounding of every advance.
+    let last_visible = content
+        .characters
+        .iter()
+        .rposition(|glyph| !glyph.character.is_whitespace());
+    for (index, glyph) in content.characters.iter().enumerate() {
         let base_id = shape_ids[glyph.span].ok_or("missing source style")?;
         let source = &page.spans[glyph.span];
         // PDF font size already includes script scaling. Preserve it and encode
@@ -400,11 +411,29 @@ fn observed_line_text(
         let source_start = (f64::from(glyph.origin) - f64::from(origin)) * 96. / 72.;
         let source_advance = f64::from(glyph.advance) * 96. / 72.;
         let desired = source_start + source_advance - emitted_advance;
+        // Hancom fits a row without its last glyph's spacing, so only a
+        // narrower outline leaves room; spacing then restores the source end.
+        let guarded = if last_visible == Some(index) && style.ratio > 0. {
+            let percent = base_width / (style.ratio * 100.);
+            ratio - (ROW_END_GUARD_PT * 96. / 72. / percent).ceil()
+        } else {
+            ratio
+        };
         // Preserve the established representable path. Search the combined
         // field contract only when that path cannot encode a blank separator.
         let ordinary = if (50. ..=200.).contains(&ratio) {
-            fit_spacing(&mut style, &widths, ratio as u8, desired)?
-                .map(|(s, _, measured)| (ratio as u8, s, measured))
+            let mut fit = None;
+            if guarded != ratio && (50. ..=200.).contains(&guarded) {
+                fit = fit_spacing(&mut style, &widths, guarded as u8, desired)?
+                    .map(|(s, _, measured)| (guarded as u8, s, measured));
+            }
+            // The guard is a margin, not a source displacement: drop it
+            // rather than the line when spacing cannot restore the end.
+            if fit.is_none() {
+                fit = fit_spacing(&mut style, &widths, ratio as u8, desired)?
+                    .map(|(s, _, measured)| (ratio as u8, s, measured));
+            }
+            fit
         } else {
             None
         };
