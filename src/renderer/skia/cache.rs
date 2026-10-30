@@ -327,6 +327,7 @@ pub(super) struct ReplayCacheContext<'a> {
     pub policy: ReplayPolicy,
     pub raster_target: bool,
     pub geometric_text: bool,
+    pub device_clip: bool,
     pub bitmap_paper_grid: Option<crate::renderer::bitmap_raster::PrintPaperGrid>,
     pub diagnostics: &'a RefCell<ReplayDiagnostics>,
 }
@@ -352,6 +353,7 @@ impl<'a> ReplayCacheContext<'a> {
                 strict,
                 raster_target,
                 tree.preserves_raster_text_geometry(),
+                tree.uses_raster_clip_coverage(),
                 digest,
             ))
         });
@@ -369,6 +371,7 @@ impl<'a> ReplayCacheContext<'a> {
             policy: ReplayPolicy::new(tree.profile),
             raster_target,
             geometric_text: tree.preserves_raster_text_geometry(),
+            device_clip: tree.uses_raster_clip_coverage(),
             bitmap_paper_grid: None,
             diagnostics,
         }
@@ -420,12 +423,12 @@ mod tests {
     use std::cell::RefCell;
 
     #[test]
-    fn print_text_geometry_separates_replay_cache_keys() {
+    fn print_2024_raster_separates_replay_cache_keys() {
         let root = LayerNode::leaf(BoundingBox::new(0.0, 0.0, 40.0, 40.0), None, Vec::new());
         let mut legacy = PageLayerTree::with_profile(40.0, 40.0, root, RenderProfile::Print);
-        legacy.resources.set_print_text_geometry(Some(false));
+        legacy.resources.set_print_2024_raster(Some(false));
         let mut modern = legacy.clone();
-        modern.resources.set_print_text_geometry(Some(true));
+        modern.resources.set_print_2024_raster(Some(true));
         let diagnostics = RefCell::new(ReplayDiagnostics::new(&legacy));
         let old = ReplayCacheContext::new(&legacy, 1.0, false, true, &diagnostics);
         let new = ReplayCacheContext::new(&modern, 1.0, false, true, &diagnostics);
@@ -433,5 +436,7 @@ mod tests {
         assert_ne!(old.seed, new.seed);
         assert!(!old.geometric_text);
         assert!(new.geometric_text);
+        assert!(!old.device_clip);
+        assert!(new.device_clip);
     }
 }

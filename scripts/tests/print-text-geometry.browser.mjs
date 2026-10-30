@@ -49,6 +49,12 @@ test('실제 Canvas Print 글리프는 기하 모드를 소비하고 Screen으�
       const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
       if (!('textRendering' in ctx)) throw Error('기하 모드를 실제 지원하는 브라우저가 필요합니다.');
       const original = ctx.fillText.bind(ctx); const calls = [];
+      const originalRect = ctx.rect.bind(ctx); const rectangles = [];
+      ctx.rect = (...args) => {
+        const m = ctx.getTransform();
+        rectangles.push({args, transform: [m.a, m.b, m.c, m.d, m.e, m.f]});
+        return originalRect(...args);
+      };
       ctx.fillText = (...args) => {
         const m = ctx.getTransform();
         calls.push({text: args[0], mode: ctx.textRendering, font: ctx.font,
@@ -59,13 +65,16 @@ test('실제 Canvas Print 글리프는 기하 모드를 소비하고 Screen으�
       for (const [compat, profile] of [[true, 'screen'], [true, 'print'], [false, 'print'], [true, 'print'], [true, 'screen']]) {
         doc.setHangul2024Compat(compat);
         calls.length = 0;
+        rectangles.length = 0;
         doc.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', profile);
         const rgba = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
         let ink = 0;
         for (let i = 0; i < rgba.length; i += 4) {
           if (rgba[i + 3] > 0 && Math.min(rgba[i], rgba[i + 1], rgba[i + 2]) < 232) ink++;
         }
-        rows.push({compat, profile, calls: [...calls], ink, tree: doc.getPageRenderTree(0)});
+        rows.push({compat, profile, calls: [...calls], rectangles: [...rectangles], ink,
+          layer: JSON.parse(doc.getPageLayerTreeWithProfile(0, profile, true, true)),
+          tree: doc.getPageRenderTree(0)});
       }
       return rows;
     } finally { doc.free(); }
@@ -79,6 +88,23 @@ test('실제 Canvas Print 글리프는 기하 모드를 소비하고 Screen으�
     assert.deepEqual(row.calls.map(call => call.transform), first.calls.map(call => call.transform),
       '글리프 원점·장평을 모드 보정 수치로 바꾸지 않는다');
     const expected = row.profile === 'print' && row.compat ? 'geometricPrecision' : 'auto';
+    assert.equal(row.layer.rasterClipCoverage, row.profile === 'print' && row.compat);
+    const clips = [];
+    const visit = node => {
+      if (node.kind === 'clipRect' && node.clipKind === 'body') clips.push(node.clip);
+      if (node.child) visit(node.child);
+      for (const child of node.children || []) visit(child);
+    };
+    visit(row.layer.root);
+    assert.ok(clips.length > 0, '본문 clip이 실제 재생 경로에 있어야 한다');
+    for (const clip of clips) {
+      const expectedRect = row.layer.rasterClipCoverage
+        ? [Math.floor(clip.x), Math.floor(clip.y), Math.ceil(clip.x + clip.width) - Math.floor(clip.x), Math.ceil(clip.y + clip.height) - Math.floor(clip.y)]
+        : [clip.x, clip.y, clip.width, clip.height];
+      assert.ok(row.rectangles.some(rect => rect.transform.every((v, i) => v === [1, 0, 0, 1, 0, 0][i])
+        && rect.args.every((v, i) => Math.abs(v - expectedRect[i]) < 0.002)),
+      `본문 clip 재생이 세대 정책을 소비해야 한다: ${JSON.stringify({compat: row.compat, expectedRect, rectangles: row.rectangles})}`);
+    }
     assert.ok(row.calls.every(call => call.mode === expected),
       `실제 glyph paint의 ${row.profile} 모드: ${JSON.stringify(row.calls)}`);
   }

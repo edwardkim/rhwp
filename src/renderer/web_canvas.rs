@@ -453,6 +453,7 @@ pub struct WebCanvasRenderer {
     bitmap_paper_grid: Option<super::bitmap_raster::PrintPaperGrid>,
     print_area_sampling: bool,
     print_stroke_adjustment: bool,
+    print_device_clip: bool,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -488,6 +489,7 @@ impl WebCanvasRenderer {
             bitmap_paper_grid: None,
             print_area_sampling: false,
             print_stroke_adjustment: false,
+            print_device_clip: false,
         })
     }
 
@@ -556,12 +558,14 @@ impl WebCanvasRenderer {
         self.render_profile = crate::paint::RenderProfile::Screen;
         text_geometry::configure(&self.ctx, false);
         self.print_stroke_adjustment = false;
+        self.print_device_clip = false;
         self.render_node(&tree.root);
     }
 
     /// 레이어 트리를 Canvas에 렌더링
     pub fn render_layer_tree(&mut self, tree: &PageLayerTree) {
         self.print_stroke_adjustment = tree.profile == crate::paint::RenderProfile::Print;
+        self.print_device_clip = tree.uses_raster_clip_coverage();
         self.high_quality_images = matches!(
             tree.profile,
             crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
@@ -1721,7 +1725,7 @@ impl WebCanvasRenderer {
                     self.render_layer_node(child, active_layer);
                     return;
                 }
-                let clip = if self.print_stroke_adjustment {
+                let clip = if self.print_device_clip {
                     self.ctx
                         .get_transform()
                         .ok()

@@ -15,7 +15,7 @@ pub struct LayerTreeSchema {
 
 pub const LAYER_TREE_SCHEMA: LayerTreeSchema = LayerTreeSchema {
     schema_version: 1,
-    // 35: 페이지의 Print 글자 래스터 기하 정책을 명시한다.
+    // 35: 페이지의 Print 글자 기하와 clip 래스터 정책을 명시한다.
     schema_minor_version: 35,
     resource_table_version: 1,
     resource_table_minor_version: 6,

@@ -407,6 +407,7 @@ export class CanvasKitLayerRenderer {
   private readonly croppedEffectImages = new WeakMap<SkImage, { width: number; height: number }>();
   private nextImageKey = 1;
   private currentProfile: LayerRenderProfile = 'screen';
+  private currentRasterClipCoverage = false;
   private svgRasterScale = 1;
   private currentRasterScale = 1;
   private preferRasterDepth = 0;
@@ -1019,6 +1020,7 @@ export class CanvasKitLayerRenderer {
       const canvas = surface.getCanvas();
       this.currentResources = tree.resources;
       this.currentProfile = tree.profile ?? 'screen';
+      this.currentRasterClipCoverage = tree.rasterClipCoverage ?? (this.currentProfile === 'print');
       this.currentRasterScale = scale;
       this.currentImageBytesResolver = resolveImageBytes;
       this.currentFontResources = tree.fontResources;
@@ -1108,6 +1110,7 @@ export class CanvasKitLayerRenderer {
       this.currentBitmapPaperGrid = null;
       this.currentOp = null;
       this.currentProfile = 'screen';
+      this.currentRasterClipCoverage = false;
       this.currentRasterScale = 1;
       this.preferRasterDepth = 0;
       this.currentResources = undefined;
@@ -1994,7 +1997,7 @@ export class CanvasKitLayerRenderer {
       return;
     }
     canvas.clipRect(
-      canvasKitCanonicalClipRect(profile === 'print'
+      canvasKitCanonicalClipRect(profile === 'print' && this.currentRasterClipCoverage
         ? printRectangleClip(canvas, node.clip) : node.clip, (x, y, width, height) =>
         this.canvasKit.XYWHRect(x, y, width, height),
       ),

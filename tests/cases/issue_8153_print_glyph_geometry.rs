@@ -1,5 +1,5 @@
 //! 관계형·고정형: Print의 소수 원점과 Screen 격자를 합성 glyph로 대조한다.
-//! 주석 갱신: 2026-10-30T12:54:39+09:00; 직전 파일 커밋: 2026-10-30T06:54:26+09:00 (15447e583e).
+//! 주석 갱신: 2026-10-30T13:15:50+09:00; 직전 파일 커밋: 2026-10-30T12:58:03+09:00 (242038e53f).
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
 //! 이 검사는 합성 입력을 사용하며 아래 수치는 관련 편람의 별도 시각 검증이다.
 //! 관련 실사례 HWP 79쪽 Native 100.00% / fresh WASM 100.00%.
@@ -22,6 +22,10 @@ use rhwp::renderer::TextStyle;
 
 #[test]
 fn explicit_print_generation_survives_layer_cache_transitions() {
+    let root = LayerNode::leaf(BoundingBox::new(0.0, 0.0, 10.0, 10.0), None, Vec::new());
+    let direct = PageLayerTree::with_profile(10.0, 10.0, root, RenderProfile::Print);
+    assert!(direct.preserves_raster_text_geometry());
+    assert!(direct.uses_raster_clip_coverage());
     let mut core = rhwp::DocumentCore::new_empty();
     core.create_blank_document_native().unwrap();
     core.insert_text_native(0, 0, 0, "H").unwrap();
@@ -31,12 +35,15 @@ fn explicit_print_generation_survives_layer_cache_transitions() {
             .build_page_layer_tree_with_profile(0, RenderProfile::Print)
             .unwrap();
         assert_eq!(print.preserves_raster_text_geometry(), enabled);
+        assert_eq!(print.uses_raster_clip_coverage(), enabled);
         let exported: serde_json::Value = serde_json::from_str(&print.to_json()).unwrap();
         assert_eq!(exported["rasterTextGeometry"], enabled);
+        assert_eq!(exported["rasterClipCoverage"], enabled);
         let screen = core
             .build_page_layer_tree_with_profile(0, RenderProfile::Screen)
             .unwrap();
         assert!(!screen.preserves_raster_text_geometry());
+        assert!(!screen.uses_raster_clip_coverage());
     }
 }
 

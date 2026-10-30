@@ -21,7 +21,12 @@ pub struct PageLayerTree {
 impl PageLayerTree {
     /// 명시적 인쇄 세대가 없으면 기존 Print layer의 기하 정책을 보존한다.
     pub fn preserves_raster_text_geometry(&self) -> bool {
-        self.profile == RenderProfile::Print && self.resources.print_text_geometry().unwrap_or(true)
+        self.profile == RenderProfile::Print && self.resources.print_2024_raster().unwrap_or(true)
+    }
+
+    /// 2024 Print는 원본 clip의 장치 포함 경계를 사용한다.
+    pub fn uses_raster_clip_coverage(&self) -> bool {
+        self.profile == RenderProfile::Print && self.resources.print_2024_raster().unwrap_or(true)
     }
 
     pub fn new(page_width: f64, page_height: f64, mut root: LayerNode) -> Self {

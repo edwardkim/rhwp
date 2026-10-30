@@ -50,7 +50,7 @@ pub struct LayerBuilder {
     metafile_fonts: super::metafile_fonts::MetafileFonts,
     prior_print_solid_fill: bool,
     hangul2024_print: bool,
-    print_text_geometry: Option<bool>,
+    print_2024_raster: Option<bool>,
     metafile_catalogue: Option<std::sync::Arc<super::metafile_print::Catalogue>>,
     shape_group_depth: usize,
 }
@@ -71,7 +71,7 @@ impl LayerBuilder {
             metafile_fonts: Default::default(),
             prior_print_solid_fill: false,
             hangul2024_print: false,
-            print_text_geometry: None,
+            print_2024_raster: None,
             metafile_catalogue: None,
             shape_group_depth: 0,
         }
@@ -122,7 +122,7 @@ impl LayerBuilder {
 
     pub(crate) fn with_hangul2024_print(mut self, enabled: bool) -> Self {
         self.hangul2024_print = enabled;
-        self.print_text_geometry = Some(enabled);
+        self.print_2024_raster = Some(enabled);
         self
     }
 
@@ -200,7 +200,7 @@ impl LayerBuilder {
                 .with_bin_data_epoch(self.bin_data_epoch);
         layer_tree
             .resources
-            .set_print_text_geometry(self.print_text_geometry);
+            .set_print_2024_raster(self.print_2024_raster);
         publish_line_decoration_trims(&mut layer_tree.root);
         // Vertical exact-source publication owns its leaf slots first. The
         // horizontal and nominal lowerers remain independent and only share

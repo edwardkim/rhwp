@@ -132,7 +132,7 @@ impl PageLayerTree {
         buf.push('{');
         let _ = write!(
             buf,
-            "\"schemaVersion\":{},\"schemaMinorVersion\":{},\"schema\":{{\"major\":{},\"minor\":{}}},\"resourceTableVersion\":{},\"resourceTableMinorVersion\":{},\"resourceTable\":{{\"major\":{},\"minor\":{}}},\"unit\":{},\"coordinateSystem\":{},\"profile\":{},\"rasterTextGeometry\":{},\"imageBytes\":{},\"buildOptions\":{{\"showTransparentBorders\":{},\"clipEnabled\":{}}},\"debugOptions\":{{\"debugOverlay\":{}}},\"outputOptions\":{{\"showParagraphMarks\":{},\"showControlCodes\":{},\"showTransparentBorders\":{},\"clipEnabled\":{},\"debugOverlay\":{}}},\"pageWidth\":{:.3},\"pageHeight\":{:.3},\"root\":",
+            "\"schemaVersion\":{},\"schemaMinorVersion\":{},\"schema\":{{\"major\":{},\"minor\":{}}},\"resourceTableVersion\":{},\"resourceTableMinorVersion\":{},\"resourceTable\":{{\"major\":{},\"minor\":{}}},\"unit\":{},\"coordinateSystem\":{},\"profile\":{},\"rasterTextGeometry\":{},\"rasterClipCoverage\":{},\"imageBytes\":{},\"buildOptions\":{{\"showTransparentBorders\":{},\"clipEnabled\":{}}},\"debugOptions\":{{\"debugOverlay\":{}}},\"outputOptions\":{{\"showParagraphMarks\":{},\"showControlCodes\":{},\"showTransparentBorders\":{},\"clipEnabled\":{},\"debugOverlay\":{}}},\"pageWidth\":{:.3},\"pageHeight\":{:.3},\"root\":",
             LAYER_TREE_SCHEMA.schema_version,
             LAYER_TREE_SCHEMA.schema_minor_version,
             LAYER_TREE_SCHEMA.schema_version,
@@ -145,6 +145,7 @@ impl PageLayerTree {
             json_escape(LAYER_TREE_SCHEMA.coordinate_system),
             json_escape(render_profile_str(self.profile)),
             self.preserves_raster_text_geometry(),
+            self.uses_raster_clip_coverage(),
             // [#3315] 이 문서를 어떤 **모드**로 요청했는지 — `inline` 이면 바이트가 op 안에,
             // `byKey` 면 키로 따로 받는다.
             //

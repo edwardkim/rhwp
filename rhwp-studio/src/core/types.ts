@@ -989,6 +989,9 @@ export interface PageLayerTree {
   unit?: 'px';
   coordinateSystem?: string;
   profile?: LayerRenderProfile;
+  /** Print 재생에서 지정된 글자 기하와 clip 장치 포함 정책이다. */
+  rasterTextGeometry?: boolean;
+  rasterClipCoverage?: boolean;
   buildOptions?: {
     showTransparentBorders?: boolean;
     clipEnabled?: boolean;
