@@ -56,3 +56,12 @@
 2026-10-30 Linux headless Chrome에서 `50cdf6701fcd9b646a403f03f61e8c5fd8c2bd74` 생산 fresh WASM으로 편람 HWP·HWPX를 각각 열었다. 브라우저가 받은 WASM은 SHA-256 `f9e11ac702fc94a0f9abd4033ba27104b86166983085b9c659730a0658b196c9`이며, 두 원본 모두 383쪽과 이미지 로드 실패 0건을 확인했다. 실제 Canvas2D 205쪽 캡처는 이전에 정식 보존한 [HWP 화면](../rebase-ad4-validation-20261030/studio-p205/handbook-hwp-p205-canvas2d.png), [HWPX 화면](../rebase-ad4-validation-20261030/studio-p205/handbook-hwpx-p205-canvas2d.png)과 각각 픽셀 단위로 동일하다.
 
 CanvasKit software 요청은 두 원본 모두 383쪽이 준비 상한 128쪽을 넘어 Canvas2D로 전환됐다. 따라서 이 실행은 CanvasKit 실출력 성공을 뜻하지 않는다. 화면 검증과 독립 Print TSV는 서로 다른 검증 경로다.
+
+### 편람 HWP 205쪽 Native·fresh WASM 비교
+
+위 전쪽 TSV를 생산한 Native·WASM의 같은 205쪽 PNG와 SHA가 확인된 기존 Print PDF 래스터로 review·overlay를 만들었다. 두 경로 모두 raw 표시값은 100.00%다. 주황은 양쪽 색 차이이며 점수 100.00%가 픽셀 완전 일치를 뜻하지 않는다.
+
+| 출력 | review | overlay |
+| --- | --- | --- |
+| Native | [review](handbook-hwp-p205-native-review.png) | [overlay](handbook-hwp-p205-native-overlay.png) |
+| fresh WASM | [review](handbook-hwp-p205-wasm-review.png) | [overlay](handbook-hwp-p205-wasm-overlay.png) |
