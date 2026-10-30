@@ -1598,6 +1598,9 @@ impl DocumentCore {
         let para = &mut self.document.sections[sec_idx].paragraphs[para_idx];
         para.para_shape_id = new_id;
         restamp_indentation(&mut para.line_segs, old_indent, new_indent);
+        let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
+            &self.document.sections[sec_idx].paragraphs[para_idx],
+        );
 
         // 줄바꿈에 영향을 주는 변경 시 LineSeg 재계산 (compose는 LineSeg 값을 그대로
         // 사용하므로). 줄간격뿐 아니라 여백/들여쓰기/줄나눔 단위도 사용 가능 폭·토큰
@@ -1620,6 +1623,25 @@ impl DocumentCore {
                 ParagraphBox::body_for_style(col_width, para_style, self.dpi),
                 &styles,
                 self.dpi,
+            );
+        }
+
+        // 문단 간격은 줄 나눔을 바꾸지 않지만 이 문단과 뒤 문단의 저장 세로 위치를 옮긴다.
+        // 다시 계산하지 않으면 편집 전 세로 위치로 그려 간격이 보이지 않는다.
+        if para_shape_mods_affect_text_flow(&mods)
+            || mods.spacing_before.is_some()
+            || mods.spacing_after.is_some()
+        {
+            let styles = self.resolve_render_styles();
+            let hwp3_layout = self.document.layout_profile().hwp3_layout();
+            crate::renderer::composer::recalculate_section_vpos(
+                &mut self.document.sections[sec_idx].paragraphs,
+                para_idx,
+                None,
+                stored_end_for_reset,
+                &styles,
+                self.dpi,
+                hwp3_layout,
             );
         }
 
@@ -1680,9 +1702,21 @@ impl DocumentCore {
             let old_id = self.document.sections[sec_idx].paragraphs[para_idx].para_shape_id;
             let (old_indent, new_indent) = self.para_shape_indents(old_id, para_shape_id);
             let para = &mut self.document.sections[sec_idx].paragraphs[para_idx];
+            let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(para);
             para.para_shape_id = para_shape_id;
             restamp_indentation(&mut para.line_segs, old_indent, new_indent);
             reflow_line_segs(para, available_box, &styles, self.dpi);
+            // 되돌린 문단 간격도 이 문단과 뒤 문단의 저장 세로 위치에 반영한다.
+            let hwp3_layout = self.document.layout_profile().hwp3_layout();
+            crate::renderer::composer::recalculate_section_vpos(
+                &mut self.document.sections[sec_idx].paragraphs,
+                para_idx,
+                None,
+                stored_end_for_reset,
+                &styles,
+                self.dpi,
+                hwp3_layout,
+            );
         }
 
         self.document.sections[sec_idx].raw_stream = None;
