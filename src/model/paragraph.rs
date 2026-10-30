@@ -1409,6 +1409,13 @@ impl Paragraph {
         inserted_at
     }
 
+    /// `tab_extended` 는 문단의 탭 글자와 차례로 짝이 맞는다(직렬화가 `tab_idx` 로 하나씩 꺼낸다).
+    /// 글을 넣고 지우고 나누고 합칠 때 그 짝을 지키지 않으면, 기존 탭의 폭이 뒤 탭으로 밀려
+    /// 한/글에서 탭 자리가 틀어진다. 새로 생긴 탭은 값을 모르는 탭(`TAB_EXT_PLACEHOLDER`)으로 둔다.
+    fn tab_count(chars: &[char]) -> usize {
+        chars.iter().filter(|&&c| c == '\t').count()
+    }
+
     /// [`insert_text_at`](Self::insert_text_at) 과 같되, `after_inline_control` 이면
     /// `char_offset` 자리에 놓인 개체 **뒤**(다음 글자 앞)에 넣는다 (#7444).
     /// 글자 위치만으로는 개체 앞뒤를 가릴 수 없어 논리 오프셋 입력이 이 값을 넘긴다.
@@ -1640,6 +1647,14 @@ impl Paragraph {
         }
 
         super::hyperlink_format::text_edit(self, char_offset, char_offset, new_chars.len());
+        // 5-0. tab_extended: 넣은 탭을 그 자리 차례에 끼워 기존 탭과의 짝을 지킨다
+        let new_tabs = Self::tab_count(&new_chars);
+        if new_tabs > 0 && !self.tab_extended.is_empty() {
+            let at =
+                Self::tab_count(&text_chars[..effective_char_offset]).min(self.tab_extended.len());
+            self.tab_extended
+                .splice(at..at, std::iter::repeat_n(TAB_EXT_PLACEHOLDER, new_tabs));
+        }
         // 5-1. field_ranges: 삽입 지점 이후의 char 인덱스 시프트
         let inserted_len = new_chars.len();
         for fr in &mut self.field_ranges {
@@ -1794,6 +1809,13 @@ impl Paragraph {
         }
 
         super::hyperlink_format::text_edit(self, char_offset, del_end, 0);
+        // 5-0. tab_extended: 지운 탭의 짝을 뺀다
+        let gone_tabs = Self::tab_count(&text_chars[char_offset..del_end]);
+        if gone_tabs > 0 && !self.tab_extended.is_empty() {
+            let at = Self::tab_count(&text_chars[..char_offset]).min(self.tab_extended.len());
+            let end = (at + gone_tabs).min(self.tab_extended.len());
+            self.tab_extended.drain(at..end);
+        }
         // 5-1. field_ranges: 삭제 범위에 따라 축소/조정
         for fr in &mut self.field_ranges {
             if fr.start_char_idx >= del_end {
@@ -1869,6 +1891,10 @@ impl Paragraph {
         );
         let text_positions = self.control_text_positions();
         let text_chars: Vec<char> = self.text.chars().collect();
+        // 나눈 자리 뒤의 탭은 확장 데이터와 함께 새 문단으로 간다
+        let tab_split = Self::tab_count(&text_chars[..split_pos.min(text_chars.len())])
+            .min(self.tab_extended.len());
+        let new_tab_extended = self.tab_extended.split_off(tab_split);
         // 문단 끝 자동 번호 뒤에서 나누면 번호는 자리표 글자와 함께 앞 문단에 남는다.
         let kept_number = (split_pos == text_chars.len())
             .then(|| self.trailing_auto_number(&text_positions))
@@ -2236,7 +2262,7 @@ impl Paragraph {
             char_count_msb: false,
             raw_header_extra: new_raw_header_extra,
             has_para_text: new_has_para_text,
-            tab_extended: Vec::new(),
+            tab_extended: new_tab_extended,
             title_marks: new_title_marks,
             // [#6956] 형광펜 표지도 분할 위치 기준으로 갈라 준다.
             markpen_marks: new_markpen_marks,
@@ -2309,6 +2335,18 @@ impl Paragraph {
         } else {
             0
         } + trailing_ctrl_units;
+
+        // 0. tab_extended: 두 문단의 짝을 각자 탭 수에 맞춘 뒤 잇는다
+        if !self.tab_extended.is_empty() || !other.tab_extended.is_empty() {
+            let own_tabs = Self::tab_count(&self.text.chars().collect::<Vec<_>>());
+            self.tab_extended.truncate(own_tabs);
+            self.tab_extended.resize(own_tabs, TAB_EXT_PLACEHOLDER);
+            let other_tabs = Self::tab_count(&other.text.chars().collect::<Vec<_>>());
+            let mut theirs = other.tab_extended.clone();
+            theirs.truncate(other_tabs);
+            theirs.resize(other_tabs, TAB_EXT_PLACEHOLDER);
+            self.tab_extended.extend(theirs);
+        }
 
         // 1. 텍스트 결합
         storage.push_str(&mut self.text, &other.text)?;
