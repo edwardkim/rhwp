@@ -9,6 +9,9 @@ sample10은 원본과 사용자 제공 한컴 2020 Print PDF의 763쪽을 대조
 99.411348592795%이며 90% 미만과 이전 정상 후보 대비 하락은 0쪽이다. PNG도 763쪽 모두
 이전 후보와 같다. [전쪽 정밀 대조](sample10-native-exact.tsv)와 상위 `sample10-native.tsv`는
 각각 이전 후보 대비 변화와 Print 대비 측정이다.
+fresh WASM도 763쪽을 모두 측정했으며 최저 raw는 99.397203419141%, 90% 미만과 이전 정상
+후보 대비 하락은 0쪽이다. PNG와 정수 집계도 전쪽 동일하다. [WASM 전쪽 정밀 대조](sample10-wasm-exact.tsv)와
+상위 `sample10-wasm.tsv`는 각각 이전 후보 대비 변화와 Print 대비 측정이다.
 
 #8394의 입력 6개와 Print PDF 해시는 [원 통합 PR의 입력 목록](../../seo_rii_20261030/inputs.json)과
 같다. 새 기준과 실제 후보를 같은 명시 글꼴·96 DPI 조건으로 출력한 [Native 전쪽 대조](seo-native-exact.tsv)는
