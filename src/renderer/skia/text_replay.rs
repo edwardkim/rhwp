@@ -27,6 +27,7 @@ mod overlap;
 pub(super) struct SkiaTextReplay<'a> {
     pub(super) canvas: &'a Canvas,
     pub(super) raster_target: bool,
+    pub(super) geometric_text: bool,
     pub(super) hft_outline_enabled: bool,
     pub(super) font_mgr: &'a FontMgr,
     pub(super) text_shaper: &'a std::cell::OnceCell<Option<skia_safe::Shaper>>,
@@ -119,7 +120,14 @@ impl SkiaTextReplay<'_> {
                             family,
                             font_style,
                         );
-                        return fonts::for_text(&chain, sample, size, style, self.font_mgr);
+                        return fonts::for_text(
+                            &chain,
+                            sample,
+                            size,
+                            style,
+                            self.font_mgr,
+                            self.geometric_text,
+                        );
                     }
                     if crate::renderer::pua_glyph::candidate(sample).is_some() {
                         if let Some(primary) = typeface_chain.first() {
@@ -131,11 +139,19 @@ impl SkiaTextReplay<'_> {
                                     size,
                                     style,
                                     self.font_mgr,
+                                    self.geometric_text,
                                 );
                             }
                         }
                     }
-                    fonts::for_text(&typeface_chain, sample, size, style, self.font_mgr)
+                    fonts::for_text(
+                        &typeface_chain,
+                        sample,
+                        size,
+                        style,
+                        self.font_mgr,
+                        self.geometric_text,
+                    )
                 };
                 let baseline_y = if baseline > 0.0 {
                     bbox.y + baseline
@@ -343,7 +359,7 @@ impl SkiaTextReplay<'_> {
                     let (fs, r) = style.ratio_draw_params(font_size as f64);
                     (fs as f32, r as f32)
                 };
-                let has_ratio = (ratio - 1.0).abs() > 0.01;
+                let has_ratio = style.has_horizontal_ratio();
                 let shaped_spans = if suppress_glyphs {
                     Vec::new()
                 } else {
@@ -433,7 +449,9 @@ impl SkiaTextReplay<'_> {
                         // U+FFFC의 실제 개체는 별도 paint op가 소유한다. 문자 인덱스를
                         // 제거하면 뒤 cluster의 저장 위치가 달라지므로 그대로 건너뛴다.
                         if cluster.starts_with('\u{FFFC}')
-                            || cluster.chars().all(char::is_whitespace)
+                            || crate::renderer::text_glyph_visibility::is_nonprinting_cluster(
+                                cluster,
+                            )
                         {
                             continue;
                         }
@@ -559,6 +577,10 @@ impl SkiaTextReplay<'_> {
                                         let mut number_font =
                                             Font::new(face.typeface.clone(), font_size);
                                         number_font.set_edging(font::Edging::AntiAlias);
+                                        fonts::preserve_geometry(
+                                            &mut number_font,
+                                            self.geometric_text,
+                                        );
                                         let mut frame_paint = Paint::default();
                                         frame_paint.set_anti_alias(true);
                                         frame_paint.set_style(paint::Style::Stroke);
@@ -695,7 +717,14 @@ impl SkiaTextReplay<'_> {
                                 canvas.save();
                                 canvas.translate((char_x, char_y));
                                 canvas.scale((scale, 1.0));
-                                canvas.draw_str(glyph_text, (0.0, 0.0), &font, glyph_paint);
+                                fonts::draw_positioned_cluster(
+                                    canvas,
+                                    glyph_text,
+                                    (0.0, 0.0),
+                                    &font,
+                                    glyph_paint,
+                                    self.geometric_text,
+                                );
                                 canvas.restore();
                                 continue;
                             }
@@ -733,11 +762,13 @@ impl SkiaTextReplay<'_> {
                                     glyph_paint,
                                     self.raster_target,
                                 ) {
-                                    canvas.draw_str(
+                                    fonts::draw_positioned_cluster(
+                                        canvas,
                                         glyph_text,
-                                        (char_x + fit_dx, char_y),
+                                        (char_x, char_y),
                                         &font,
                                         glyph_paint,
+                                        self.geometric_text,
                                     );
                                 }
                                 continue;
@@ -752,7 +783,14 @@ impl SkiaTextReplay<'_> {
                                 if !hft_outline.as_ref().is_some_and(|outline| {
                                     outline.draw(canvas, glyph_text, &font, (0.0, 0.0), glyph_paint)
                                 }) {
-                                    canvas.draw_str(glyph_text, (0.0, 0.0), &font, glyph_paint);
+                                    fonts::draw_positioned_cluster(
+                                        canvas,
+                                        glyph_text,
+                                        (0.0, 0.0),
+                                        &font,
+                                        glyph_paint,
+                                        self.geometric_text,
+                                    );
                                 }
                                 canvas.restore();
                             } else if !hft_outline.as_ref().is_some_and(|outline| {
@@ -764,19 +802,26 @@ impl SkiaTextReplay<'_> {
                                     glyph_paint,
                                 )
                             }) {
-                                canvas.draw_str(glyph_text, (char_x, char_y), &font, glyph_paint);
+                                fonts::draw_positioned_cluster(
+                                    canvas,
+                                    glyph_text,
+                                    (char_x, char_y),
+                                    &font,
+                                    glyph_paint,
+                                    self.geometric_text,
+                                );
                             }
                         }
                     }
                 };
 
                 if !suppress_glyphs {
-                    if style.shadow_type > 0 {
+                    for [shadow_x, shadow_y] in crate::paint::text_shadow::offsets(style) {
                         draw_text_pass(
                             colorref_to_skia(style.shadow_color, 1.0),
                             0.0,
-                            style.shadow_offset_x as f32,
-                            style.shadow_offset_y as f32,
+                            shadow_x as f32,
+                            shadow_y as f32,
                         );
                     }
                     if style.outline_type > 0 {
@@ -879,6 +924,7 @@ impl SkiaTextReplay<'_> {
                         font_size,
                         &mark_style,
                         self.font_mgr,
+                        self.geometric_text,
                     ) {
                         font.set_scale_x(geometry.ratio as f32);
                         font.set_skew_x((geometry.skew_x * geometry.ratio) as f32);

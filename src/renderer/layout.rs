@@ -5,6 +5,7 @@
 
 mod auto_number_positions;
 mod decorated_tac_frame;
+mod table_paint_order;
 mod textless_shape_host;
 use decorated_tac_frame::tac_has_only_in_front_decoration_shapes_before;
 pub(crate) use decorated_tac_frame::{
@@ -3762,7 +3763,8 @@ pub(crate) use text_measurement::{
     find_next_tab_stop, hancom_regenerated_space_width, has_hft_bold_tracking, is_cjk_char,
     is_halfwidth_cjk_quote, kopub_declared_space_em, kopub_space_advance_em,
     resolved_letter_spacing, resolved_to_text_style, split_into_clusters,
-    trace_char_width_decisions, try_resolved_to_text_style, CharWidthDecision,
+    trace_char_width_decisions, try_resolved_to_text_style, verified_source_projection_face,
+    verified_source_projection_text, CharWidthDecision,
 };
 // [#6060] forces_halfwidth_cjk_quote 는 통합 테스트
 // (tests/cases/issue_6060_cjk_quote_paint_measure_parity.rs) 에서 측정-페인트 정합을
@@ -4822,7 +4824,7 @@ impl LayoutEngine {
                 inside_textbox: bool,
             ) {
                 // 배치 bbox는 변환 원점을 소유한다. clip만 실제 채움 경로를 포함한다.
-                let mut cb = super::filled_path_bounds::including_filled_path(node);
+                let mut cb = super::filled_path_bounds::including_shape_ink(node);
                 // 위 밑줄·강조점은 글줄 상자 위로 그려져 첫 줄에서 본문 clip 에 잘린다.
                 // 글자 상자는 캐럿/선택이 쓰므로 키우지 않고 clip 에만 잉크를 합친다.
                 // 글상자 안은 글상자 자체 clip 이 자르므로 반영하지 않는다.

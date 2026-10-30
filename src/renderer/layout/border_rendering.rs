@@ -187,7 +187,16 @@ fn merge_edge_slot(slot: &mut Option<BorderEdge>, border: &BorderLine, side: Bor
                     horizontal_top: Some(true),
                 }
             } else if line == existing.line {
-                existing
+                // 같은 색 획도 좌표 소유는 아래 셀 상단이다. 방문 순서가
+                // 달라도 같은 물리 행을 선택하며, 아래 획이 없으면 위 하단을 유지한다.
+                if horizontal_top == Some(true) {
+                    BorderEdge {
+                        horizontal_top,
+                        ..existing
+                    }
+                } else {
+                    existing
+                }
             } else {
                 BorderEdge {
                     horizontal_top,
@@ -210,6 +219,28 @@ pub(crate) use row_column_geometry::RowColumnGeometry;
 /// HWP에서는 각 셀이 독립적인 너비를 가질 수 있어, 같은 열이라도 행마다 열 경계 위치가 다를 수 있다.
 /// col_span==1인 셀의 실제 너비를 사용하고, 해당 위치에 셀이 없으면 전역 col_widths를 폴백한다.
 pub(crate) fn build_row_col_x(
+    table: &Table,
+    col_widths: &[f64],
+    col_count: usize,
+    row_count: usize,
+    cell_spacing: f64,
+    dpi: f64,
+    width_scale: f64,
+) -> Result<RowColumnGeometry, TableGridTooLarge> {
+    let mut geometry = build_fallback_row_col_x(
+        table,
+        col_widths,
+        col_count,
+        row_count,
+        cell_spacing,
+        dpi,
+        width_scale,
+    )?;
+    geometry.apply_closing_rows(table, dpi, width_scale);
+    Ok(geometry)
+}
+
+fn build_fallback_row_col_x(
     table: &Table,
     col_widths: &[f64],
     col_count: usize,
@@ -721,8 +752,8 @@ pub(crate) fn apply_table_border_overrides(
 ///
 /// 칸이 덮는 바깥 변은 칸 자신의 테두리가 정한다. 칸 테두리가 NONE 이면 한컴도
 /// 표 테두리로 메우지 않는다(사행행위 시설완료 신고서 처리절차 표, 한컴 2020 PDF).
-/// 표 테두리는 칸이 안 덮는 구멍과 테두리 참조가 없는(`border_fill_id == 0`) 칸의
-/// 변에만 보충한다 (#6311). 일러두기 틀의 바깥 선은 cellzone 이 그린다 (#6619).
+/// 테두리 참조가 없는 칸도 그 공간을 차지하므로, 표 테두리는 칸이 덮지 않는
+/// 구멍에만 보충한다 (#6311). 일러두기 틀의 바깥 선은 cellzone이 그린다 (#6619).
 pub(crate) fn apply_table_outer_border_fill(
     h_edges: &mut [Vec<Option<BorderEdge>>],
     v_edges: &mut [Vec<Option<BorderEdge>>],
@@ -743,8 +774,7 @@ pub(crate) fn apply_table_outer_border_fill(
     for cell in cells {
         let c = cell.col as usize;
         let r = cell.row as usize;
-        // 테두리 참조가 없는 칸은 바깥 변을 소유하지 않는다.
-        if c >= col_count || r >= row_count || cell.border_fill_id == 0 {
+        if c >= col_count || r >= row_count {
             continue;
         }
         let ec = (c + cell.col_span as usize).min(col_count);
@@ -816,9 +846,17 @@ pub(crate) fn render_edge_borders(
     for (ri, h_row) in h_edges.iter().enumerate() {
         let row_node_start = nodes.len();
         let y = table_y + row_y.get(ri).copied().unwrap_or(0.0);
-        // 행 경계의 열 위치: 경계 아래 행 (또는 마지막 행) 기준
-        let ref_row = ri.min(row_count.saturating_sub(1));
-        let ref_cx = &row_col_x[ref_row.min(row_col_x.len() - 1)];
+        // 아래 행의 가상 열은 위 셀의 실제 끝점이 아니다. 획 소유 행을 따른다.
+        let edge_positions = |edge: &BorderEdge| {
+            let row = if edge.horizontal_top == Some(false) {
+                ri.saturating_sub(1)
+            } else {
+                ri
+            };
+            &row_col_x[row
+                .min(row_count.saturating_sub(1))
+                .min(row_col_x.len() - 1)]
+        };
         let mut seg_start: Option<usize> = None;
         let mut seg_border: Option<BorderEdge> = None;
 
@@ -829,6 +867,7 @@ pub(crate) fn render_edge_borders(
                         && e.width == s.width
                         && e.color == s.color
                         && e.underpaint_color == s.underpaint_color
+                        && e.horizontal_top == s.horizontal_top
                 }
                 _ => false,
             };
@@ -839,6 +878,7 @@ pub(crate) fn render_edge_borders(
                 } else {
                     // 다른 스타일 → 이전 세그먼트 마무리
                     if let (Some(start), Some(ref sb)) = (seg_start, seg_border) {
+                        let ref_cx = edge_positions(sb);
                         let x1 = table_x + ref_cx[start];
                         let x2 = table_x + ref_cx[ci];
                         nodes.extend(create_edge_border_line_nodes(tree, &sb, x1, y, x2, y));
@@ -848,6 +888,7 @@ pub(crate) fn render_edge_borders(
                 }
             } else {
                 if let (Some(start), Some(ref sb)) = (seg_start, seg_border) {
+                    let ref_cx = edge_positions(sb);
                     let x1 = table_x + ref_cx[start];
                     let x2 = table_x + ref_cx[ci];
                     nodes.extend(create_edge_border_line_nodes(tree, &sb, x1, y, x2, y));
@@ -858,6 +899,7 @@ pub(crate) fn render_edge_borders(
         }
         // 마지막 세그먼트
         if let (Some(start), Some(ref sb)) = (seg_start, seg_border) {
+            let ref_cx = edge_positions(sb);
             let x1 = table_x + ref_cx[start];
             let x2 = table_x + ref_cx.get(h_row.len()).copied().unwrap_or(ref_cx[start]);
             nodes.extend(create_edge_border_line_nodes(tree, &sb, x1, y, x2, y));

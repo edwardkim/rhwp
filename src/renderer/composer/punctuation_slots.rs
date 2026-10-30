@@ -30,6 +30,7 @@ pub(super) fn apply_space_origin(
         // 환산하므로 영문 자간·글자 위치와 원본 글자모양을 바꾸지 않는다.
         output.font_space_em =
             Some(0.5 * source.font_size_for_lang(origin) * source.ratio_for_lang(origin) / em);
+        output.inherited_half_space_em = true;
     }
 }
 

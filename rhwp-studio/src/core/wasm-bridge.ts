@@ -14,6 +14,7 @@ import { requireCharShapeRunsDocument, parseCharShapeRuns, validateCharShapeRuns
 import type { CharShapeRun } from './types';
 import type { HyperlinkTarget, HyperlinkContext } from './hyperlink';
 import * as wasmExports from '@wasm/rhwp.js';
+import { inspectFontSymbols } from './wasm-font-symbol-coverage';
 import { hasPdfImportCapability } from './pdf-import-capability';
 import { createDocumentForBytes } from './pdf-import-layout';
 import { userSettings } from './user-settings';
@@ -333,7 +334,7 @@ interface DocumentFontEnvironmentApi {
 export class WasmBridge {
   private doc: HwpDocument | null = null;
   private canvasMetrics = new CanvasMetricSession();
-  private readonly hostCanvasFonts = new HostCanvasFontSession();
+  private readonly hostCanvasFonts = new HostCanvasFontSession(inspectFontSymbols);
   private readonly nativePuaFonts = new NativePuaFontSession();
   private readonly metafileFonts = new MetafileFontSession();
   private canvasFontGeneration = 0;
@@ -1045,7 +1046,7 @@ export class WasmBridge {
     const plan = JSON.parse(api.getDocumentFontSelectionPlan()) as DocumentFontSelectionPlan;
     // 사용자 명시 환경을 자동 선택으로 덮어쓰지 않는다.
     if (plan.environmentId !== null) return false;
-    const programs = await prepareDeclaredFontPrograms(plan, current);
+    const programs = await prepareDeclaredFontPrograms(plan, current, inspectFontSymbols);
     if (!current()) return false;
     try {
       const environment = api.buildFontEnvironmentFromAvailablePrograms(JSON.stringify(programs));

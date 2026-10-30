@@ -281,7 +281,7 @@ impl LayoutEngine {
             // (인라인 TAC 그림은 박스 프레임 시각이고 InFrontOfText 표가
             //  본문 콘텐츠로 그 위에 그려져야 함).
             let border_node =
-                self.make_picture_border_node(tree, pic, img_node.bbox);
+                self.make_picture_border_node(tree, pic, img_node.bbox, img_node.id);
             let insert_pos = col_node.children.iter().position(|c| {
                 matches!(&c.node_type, RenderNodeType::Table(t)
                     if t.para_index == Some(para_index))

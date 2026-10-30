@@ -80,6 +80,7 @@ mod tests {
         let styles = ResolvedStyleSet {
             source_program_projection_slots: Default::default(),
             isolated_jamo_font: None,
+            script_metrics: Default::default(),
             native_pua_fonts: Default::default(),
             char_overlap_size_bounds: None,
             source_char_shapes: Default::default(),

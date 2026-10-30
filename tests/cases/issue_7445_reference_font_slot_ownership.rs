@@ -1,4 +1,11 @@
-//! 독립 Print의 원 글꼴·영문 슬롯 소유를 source 글자와 최종 전진 관계로 보호한다.
+//! 관계형·고정형: 원 글꼴·영문 슬롯 소유와 본문의 보존을 검사한다.
+//! 주석 갱신: 2026-10-30T06:08:07+09:00; 직전 파일 커밋: 2026-10-30T06:01:43+09:00 (739bf70d61).
+//! 2026-10-24 측정 raw(96dpi, PDFium, 2px): Native / fresh WASM(no-opt), 당시 증거다.
+//! 변환 HWP 5쪽 99.53% / 99.91%, 전 16쪽 최저 98.84% / 99.50%.
+//! 신청서 HWP 1쪽 98.76% / 98.80%, 전 2쪽 최저도 각각 같다.
+//! 자산관리 HWPX 57쪽 99.92% / 99.90%, 전 60쪽 최저 96.08% / 96.08%.
+//! 우수사례 HWP 3쪽 97.85% / 97.80%, 전 3쪽 최저도 각각 같다.
+//! 근거: mydocs/pr/assets/issue7445/completed-20261009/final-20261024/README.md.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -9,6 +16,15 @@ fn load(path: &str) -> DocumentCore {
     let bytes =
         std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(path)).expect("정식 원본 sample");
     DocumentCore::from_bytes(&bytes).expect("원본 문서 로드")
+}
+
+fn semantic_text(node: &rhwp::renderer::render_tree::RenderNode, output: &mut String) {
+    if let rhwp::renderer::render_tree::RenderNodeType::TextRun(run) = &node.node_type {
+        output.extend(run.text.chars().filter(|ch| !ch.is_whitespace()));
+    }
+    for child in &node.children {
+        semantic_text(child, output);
+    }
 }
 
 /// 전16쪽 Native/fresh 90%와 제목 확대 확인 뒤 추가한다.
@@ -125,6 +141,10 @@ fn collection_alias_preserves_requested_face_and_body_in_public_svg() {
             .flat_map(|run| run["text"].as_str().unwrap().chars())
             .filter(|ch| !ch.is_whitespace())
             .collect();
+        let tree = core.build_page_render_tree(page).unwrap();
+        let mut ordered_body = String::new();
+        semantic_text(&tree.root, &mut ordered_body);
+        assert_eq!(requested_body, ordered_body, "공개 텍스트의 원본 읽기 순서");
         assert!(
             layout["runs"]
                 .as_array()
@@ -162,6 +182,33 @@ fn collection_alias_preserves_requested_face_and_body_in_public_svg() {
             // source를 대체 이름으로 바꾸지 않고 일반 fallback보다 먼저 공급한다.
             assert_eq!(families.get(1).copied(), Some("Dotum"));
         }
-        assert_eq!(painted_body, requested_body, "본문의 순서·누락·중복 보존");
+        // 겹침 순서에 따라 paint 전체 순서는 읽기 순서와 다를 수 있다.
+        // 문자의 누락·중복과 각 원본 런의 순서는 각각 유지한다.
+        let counts = |body: &str| {
+            let mut counts = std::collections::BTreeMap::new();
+            for ch in body.chars() {
+                *counts.entry(ch).or_insert(0usize) += 1;
+            }
+            counts
+        };
+        assert_eq!(
+            counts(&painted_body),
+            counts(&requested_body),
+            "본문 누락·중복 없음"
+        );
+        for run in layout["runs"].as_array().unwrap() {
+            let text: String = run["text"]
+                .as_str()
+                .unwrap()
+                .chars()
+                .filter(|ch| !ch.is_whitespace())
+                .collect();
+            if !text.is_empty() {
+                assert!(
+                    painted_body.contains(&text),
+                    "원본 런 내부 순서 보존: {text}"
+                );
+            }
+        }
     }
 }

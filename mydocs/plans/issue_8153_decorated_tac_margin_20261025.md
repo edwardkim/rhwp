@@ -1,0 +1,81 @@
+# #8153: 독립 TAC 줄과 비흐름 장식의 바깥 여백
+
+작업 브랜치는 `task/8153-handbook-raw100`이다. 사용자 지시에 따라 현재 base를
+유지하고 `upstream/devel` 동기화·리베이스를 하지 않는다.
+
+## 실제 원본과 관측
+
+116쪽의 두 형식은 같은 1×1 TAC 표 `2015664433`을 가진다. 원본 본체 높이는
+6761HU, 위·아래 바깥 여백은 각각 140HU다. 호스트의 저장 줄은 vpos=4440HU,
+높이=textheight=7041HU, baseline=5985HU, 후행 간격=1440HU다.
+같은 호스트의 묶음 `2015664439`는 글 앞으로·비흐름 장식이다.
+셀 속 비TAC 표의 원래 세로 offset은 1864HU다. 입력의 두 계약을 구분한다.
+
+`68dbcdc78f` Native에서 HWP의 외부 표 원점은 약 210.3px, HWPX는 약 208.5px다.
+셀의 글자와 내부 표도 같은 140HU만큼 다르다. 내부 표 상단은 HWP 약 243.2px,
+HWPX 약 241.4px이며 독립 Print의 내부 가로선은 두 형식 모두 180.9420166pt다.
+현재 HWP의 미대응은 465픽셀, HWPX는 1픽셀이다. 이 수치만으로 여백을 빼지 않는다.
+
+별도 확대에서 묶음의 열린 화살표도 실제 Print보다 가늘게 보인다. 선 스타일과
+중복 PDF paint는 별도 확인 대상으로 두고, 표의 원점과 화살촉을 같은 원인으로
+추정하지 않는다. 그림/메타파일 변환으로 이 116쪽 결함을 설명할 수는 없다.
+
+## 원인 경로와 검증 순서
+
+`stored_tac::prepare_coanchored_first_line`은 원본 HWP5와 저장 줄의 종료를 인증한
+뒤 `origin + outer_margin_top`을 확정한다. 같은 문단의 비흐름 장식이 TAC의 줄
+점유·표 본체 원점에 영향을 주는지, 이미 소비한 여백을 다시 더하는지 추적한다.
+`InlineBoxPlacement.y/advance_end` → 실제 TAC 표 배치 → 내부 문단·표/테두리를
+같이 대조한다. 측정·fit·paint의 소비 지점에서 서로 다른 원점을 채택하지 않는다.
+
+원 해결 #7333의 PR #7377, 통합 `c84a8f8e1`, 보정 `027f42834`와 이 브랜치의
+저장 TAC 소유 변경 및 정상 대조 기록을 유지한다. 사양의 HWPUNIT·여백·줄 소속은
+그대로 읽고, 사양이 명시하지 않은 Print의 실제 배치 순서는 독립 출력으로 확인한다.
+
+ignored `p116-tac-margin-controls/`에는 원래 표/장식을 보존한 한 구역 대조군을
+두었다. 장식 유무와 위·아래 여백 0/140HU만 교차하고, 바뀐 입력의 오래된 LineSeg는
+제거해 한컴이 다시 조판하게 한다. 원본의 383쪽 대응을 이 합성 대조군으로 대신하지
+않는다. 생성 코드·원본/입력 SHA·실제 Print 영수증·PDF와 Native 결과를 연결한다.
+
+대조군과 원본에서 원인을 입증한 뒤 공통 소유 결과를 보정한다. 특정 표 ID·140HU·
+페이지·형식만으로 offset을 빼는 분기를 추가하지 않는다. 원본 두 형식의 앞뒤 내용,
+정상 TAC/장식 대조, Native/fresh WASM의 전쪽 비교와 직접 확대 판독을 진행한다.
+현재는 원인 조사이며 새 보정·100% 또는 필수 전체 테스트의 완료 기록이 아니다.
+
+## 실제 호출 경로에서 확인한 중복
+
+현재 producer의 `RHWP_DIAG_TAC` 실행에서 두 형식 모두 호스트 884 진입 커서가
+59.2px, page base=0, column anchor=0이며 뒤 커서도 172.3px로 같다.
+형식별 흐름 높이 차이나 이전 문단 앵커의 누적 차이가 아니다.
+
+HWP가 사용하는 `prepare_coanchored_first_line`의 `InlineBoxPlacement.y`는
+`origin + outer_margin_top`이다. `commit_stored_tac_control`은 이 값을 그대로
+보존하지만 `layout_table_control_block`의 수직 소유 소비자는
+`col_area.y + placement.y + outer_margin_top`으로 본체 원점을 만든다.
+즉 같은 원본 위 여백을 생산·소비에서 두 번 계상한다.
+`InlineBoxPlacement`의 명시 계약은 여백 포함 줄의 pen이며, 다른 두 저장 TAC 생산자와
+`physical_tac::prepare`도 여백 전 `origin`을 전달한다. 문제 생산자를 이 공통 계약에
+맞춘다. 원래의 줄 수용·종료·문단 뒤 전진량과 소비자의 여백 처리는 변경하지 않는다.
+
+장식 유무의 독립 한컴 Print 대조는 같은 표·텍스트 원점을 출력했다. 바깥 여백을
+0 → 140HU로 바꾸면 양쪽 조건 모두 같은 방향으로 이동한다. 따라서 장식 조건으로
+여백을 제거하는 규칙을 만들 근거가 아니다. 실제 변경은 생산자의 중복 가산 제거다.
+
+## 실제 후보의 Native 검증
+
+후보 source는 `6e0114e077dd2354266dbe18e7935341a6fbd7a4`이며 jobs 8·고정
+`target/pr-review`의 Native 빌드는 6분 18초, 종료 코드 0이다. 실제 원본의 같은
+저장 줄을 대조한 새 관계형 검사는 수정 전 HWP 210.346667px·HWPX 208.48px의
+차이에서 실패하고 수정 후 통과했다. 내부 표의 독립 Print ±2px와 쪽·문단 소유,
+관인/서명 생략의 내용 수량과 앞뒤 순서를 함께 확인했다.
+
+기존 #7333의 14개 정상 회귀와 이번 검사를 포함한 집중 회귀 38건은 모두 통과했다.
+편람 Native 전체 766개 중 변경은 HWP 116쪽 한 개이며 미대응 465 → 1픽셀,
+raw 98.93498% → 99.99767%다. 다른 765개에는 미대응 증가가 없다.
+두 문서의 Native 최저 raw는 각각 99.36039%다. 116쪽의 얇은 화살표와 남은
+1픽셀은 계속 확인하며, 이 원점 보정을 116쪽 또는 전쪽 100% 완료로 바꾸지 않는다.
+
+ignored `handbook-decorated-tac-candidate/`의 producer 영수증,
+`selected-regressions-run.log`, `native-focus-result.json`, `whole-native-exact-audit.json`,
+`native-improvement-summary.json`에 연결한다. 같은 source의 최적화 fresh WASM과
+최종 전체 Rust/lint/Skia/Studio 게이트는 진행 중 또는 미실행이며 이 기록으로 대체하지 않는다.

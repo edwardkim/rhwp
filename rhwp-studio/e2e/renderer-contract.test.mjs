@@ -1476,6 +1476,21 @@ function runExecutableTextSpecialReplay() {
     legacyVisuals: { charOverlap: 'mirror' },
   });
   const mirrorEvents = events.slice(beforeMirror);
+  const beforeEmptyOverlap = events.length;
+  renderer.renderOp(canvas, {
+    type: 'charOverlap',
+    bbox: { x: 10, y: 20, width: 16, height: 16 },
+    text: '\u3000',
+    displayText: '',
+    baseline: 12,
+    rotation: 0,
+    isVertical: false,
+    style: { fontSize: 16 },
+    positions: [0, 16],
+    positionsComplete: true,
+    charOverlap: { borderType: 0, innerCharSize: 100 },
+  }, 'screen');
+  assert.deepEqual(events.slice(beforeEmptyOverlap), [], '빈 겹침은 원문 프레임을 보존하고 잉크를 그리지 않는다');
   const beforeMalformed = events.length;
   renderer.renderOp(canvas, {
     type: 'textDecoration',
@@ -2221,7 +2236,7 @@ requireSnippet(
 
 requireSnippet(
   renderRectangleBody,
-  /this\.drawStyledShape\(canvas, op\.bbox, op\.style,[\s\S]*?drawRRect[\s\S]*?drawRect/,
+  /this\.drawStyledShape\(canvas, bounds, style,[\s\S]*?drawRRect[\s\S]*?drawRect/,
   'rectangle replay should stay on drawStyledShape and handle rounded and plain rectangles',
 );
 requireSnippet(
@@ -2343,7 +2358,7 @@ requireSnippet(
 );
 requireSnippet(
   renderTextRunBody,
-  /let fontSize = baseFontSize;[\s\S]*?let baselineShift = 0;[\s\S]*?style\.superscript[\s\S]*?fontSize = baseFontSize \* 0\.7;[\s\S]*?baselineShift -= baseFontSize \* 0\.3;[\s\S]*?style\.subscript[\s\S]*?fontSize = baseFontSize \* 0\.7;[\s\S]*?baselineShift \+= baseFontSize \* 0\.15;/,
+  /const \{ fontSize, baselineShift \} = scriptDrawMetrics\(style, baseFontSize\);[\s\S]*?runPositions\[\(index - runStart\) \* 2 \+ 1\] = baselineShift;/,
   'textRun replay should apply superscript/subscript offsets in run-local space',
 );
 requireSnippet(

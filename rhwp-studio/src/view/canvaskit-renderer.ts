@@ -6,11 +6,15 @@ import { textRequiresComplexShaping } from './canvaskit/nominal-text-replay.ts';
 import { singleDigitGeometry } from './canvaskit/boxed-digit-geometry.ts';
 import { imageRectIsReduced, imageRectUsesCubic } from './canvaskit/image-reduction.ts';
 import { rasterLineGeometry } from './canvaskit/raster-stroke.ts';
+import { textShadowOffsets } from './canvaskit/text-shadow.ts';
+import { scriptDrawMetrics } from './canvaskit/script-metrics.ts';
 import { shouldDrawPageMarginGuides } from './page-margin-guides.ts';
 import squareGradientSkSL from '../../../src/renderer/square_gradient.sksl?raw';
 import * as bitmapRasterWasm from '@wasm/rhwp.js';
 import { drawAnisotropicPrintImage, drawPrintFrameImage } from './canvaskit/anisotropic-image.ts';
 import { drawPrintMetafile, isPrintMetafile } from './canvaskit/metafile-print.ts';
+import { drawPrintAreaImage } from './canvaskit/print-image-sampling.ts';
+import { printRectangleClip, printRectangleFill, printBitmapImage, printPicturePenWidth } from './canvaskit/print-device-rectangle.ts';
 import CanvasKitInit from 'canvaskit-wasm';
 import { blake3 } from '@noble/hashes/blake3.js';
 import type {
@@ -403,7 +407,9 @@ export class CanvasKitLayerRenderer {
   private readonly croppedEffectImages = new WeakMap<SkImage, { width: number; height: number }>();
   private nextImageKey = 1;
   private currentProfile: LayerRenderProfile = 'screen';
+  private currentRasterClipCoverage = false;
   private svgRasterScale = 1;
+  private currentRasterScale = 1;
   private preferRasterDepth = 0;
   private readonly surfaceCache = new CanvasKitSurfaceCache();
   private readonly staticPictures = new BoundedNativeCache<StaticPictureEntry>(32, 64 * 1024 * 1024, entry => entry.picture.delete());
@@ -1014,6 +1020,8 @@ export class CanvasKitLayerRenderer {
       const canvas = surface.getCanvas();
       this.currentResources = tree.resources;
       this.currentProfile = tree.profile ?? 'screen';
+      this.currentRasterClipCoverage = tree.rasterClipCoverage ?? (this.currentProfile === 'print');
+      this.currentRasterScale = scale;
       this.currentImageBytesResolver = resolveImageBytes;
       this.currentFontResources = tree.fontResources;
       this.glyphRunFonts.registerResources(
@@ -1102,6 +1110,8 @@ export class CanvasKitLayerRenderer {
       this.currentBitmapPaperGrid = null;
       this.currentOp = null;
       this.currentProfile = 'screen';
+      this.currentRasterClipCoverage = false;
+      this.currentRasterScale = 1;
       this.preferRasterDepth = 0;
       this.currentResources = undefined;
       this.currentImageBytesResolver = undefined;
@@ -1987,7 +1997,8 @@ export class CanvasKitLayerRenderer {
       return;
     }
     canvas.clipRect(
-      canvasKitCanonicalClipRect(node.clip, (x, y, width, height) =>
+      canvasKitCanonicalClipRect(profile === 'print' && this.currentRasterClipCoverage
+        ? printRectangleClip(canvas, node.clip) : node.clip, (x, y, width, height) =>
         this.canvasKit.XYWHRect(x, y, width, height),
       ),
       this.canvasKit.ClipOp?.Intersect ?? 0,
@@ -2163,13 +2174,18 @@ export class CanvasKitLayerRenderer {
 
   private renderRectangle(canvas: SkCanvas, op: LayerRectangleOp): void {
     this.withImageTransform(canvas, op.bbox, op.transform, () => {
-      this.drawStyledShape(canvas, op.bbox, op.style, (paint) => {
+      const bounds = this.currentProfile === 'print' && op.printFillCoverage === 'device'
+        ? printRectangleFill(canvas, op.bbox) : op.bbox;
+      const penWidth = this.currentProfile === 'print' && op.printPicturePen
+        ? printPicturePenWidth(canvas, op.printPicturePen) : undefined;
+      const style = penWidth === undefined ? op.style : { ...op.style, strokeWidth: penWidth };
+      this.drawStyledShape(canvas, bounds, style, (paint) => {
         if (op.strokeJoin === 'round') paint.setStrokeJoin(this.canvasKit.StrokeJoin.Round);
         const cornerRadius = op.cornerRadius ?? 0;
         if (cornerRadius > 0) {
-          canvas.drawRRect(this.canvasKit.RRectXY(this.rect(op.bbox), cornerRadius, cornerRadius), paint);
+          canvas.drawRRect(this.canvasKit.RRectXY(this.rect(bounds), cornerRadius, cornerRadius), paint);
         } else {
-          canvas.drawRect(this.rect(op.bbox), paint);
+          canvas.drawRect(this.rect(bounds), paint);
         }
       }, op.gradient);
     });
@@ -2391,7 +2407,8 @@ export class CanvasKitLayerRenderer {
         draw(paint);
       } else {
         if ((style.shadowType ?? 0) > 0) {
-          draw(effectPaint(style.shadowColor || '#000000'), style.shadowOffsetX ?? 0, style.shadowOffsetY ?? 0);
+          const shadowPaint = effectPaint(style.shadowColor || '#000000');
+          for (const [x, y] of textShadowOffsets(style)) draw(shadowPaint, x, y);
         }
         if ((style.outlineType ?? 0) > 0) {
           const stroke = this.makeStrokePaint(style.color ?? '#000000', Math.max(size / 25, 0.5));
@@ -2839,6 +2856,15 @@ export class CanvasKitLayerRenderer {
     );
     const opacity = Number.isFinite(op.opacity) ? Math.max(0, Math.min(1, op.opacity ?? 1)) : 1;
     const drawImage = (dstX: number, dstY: number, dstW: number, dstH: number) => {
+      if (this.currentProfile === 'print' && op.printImageCoverage === 'device') {
+        const mapped = printBitmapImage(canvas, { x: dstX, y: dstY, width: dstW, height: dstH });
+        dstX = mapped.x; dstY = mapped.y; dstW = mapped.width; dstH = mapped.height;
+      }
+      if ((op.imageReconstruction === 'printArea' || op.imageReconstruction === 'printMaskedArea') && !crop && opacity === 1
+        && this.currentProfile === 'print' && this.preferRasterDepth === 0 && this.currentPageExtent
+        && drawPrintAreaImage(this.canvasKit, canvas, image,
+          { x: dstX, y: dstY, width: dstW, height: dstH }, this.currentPageExtent, this.currentRasterScale,
+          op.imageReconstruction === 'printMaskedArea' ? this.printMaskedImageBytes(op) : undefined)) return;
       const src = crop
         ? this.canvasKit.XYWHRect(crop.x, crop.y, crop.width, crop.height)
         : this.canvasKit.XYWHRect(0, 0, imageWidth, imageHeight);
@@ -3123,6 +3149,7 @@ export class CanvasKitLayerRenderer {
         type: 'charOverlap',
         bbox: op.bbox,
         text: op.text,
+        displayText: op.displayText,
         baseline: op.baseline ?? op.style?.fontSize ?? 12,
         rotation: op.rotation ?? 0,
         isVertical: op.isVertical === true,
@@ -3196,15 +3223,7 @@ export class CanvasKitLayerRenderer {
         || (code >= 0xd7b0 && code <= 0xd7ff);
     });
     const effectPaints: SkPaint[] = [];
-    let fontSize = baseFontSize;
-    let baselineShift = 0;
-    if (style.superscript) {
-      fontSize = baseFontSize * 0.7;
-      baselineShift -= baseFontSize * 0.3;
-    } else if (style.subscript) {
-      fontSize = baseFontSize * 0.7;
-      baselineShift += baseFontSize * 0.15;
-    }
+    const { fontSize, baselineShift } = scriptDrawMetrics(style, baseFontSize);
     const placementMatrix = this.affineToCanvasKitMatrix(op.placement?.runToPage);
     const originX = placementMatrix ? 0 : op.bbox.x;
     const originY = placementMatrix
@@ -3636,7 +3655,7 @@ export class CanvasKitLayerRenderer {
           if (shadowType > 0) {
             const shadowPaint = this.makeFillPaint(style.shadowColor ?? style.color ?? '#000000');
             effectPaints.push(shadowPaint);
-            drawPass(shadowPaint, shadowOffsetX, shadowOffsetY);
+            for (const [x, y] of textShadowOffsets(style)) drawPass(shadowPaint, x, y);
           }
           if (outlineType > 0) {
             const outlineFillPaint = this.makeFillPaint('#ffffff');
@@ -3723,6 +3742,7 @@ export class CanvasKitLayerRenderer {
       this.unsupportedOps.add('charOverlap:invalidGeometry');
       return;
     }
+    if (op.displayText === '' && op.charOverlap.borderType === 0) return;
     const fontSize = Math.max(1, rawFontSize);
     const requestedFontFamily = primaryFontFamily(style.fontFamily);
     const preparedTypeface = this.findPreparedTypeface(style.fontFamily, style);
@@ -5813,6 +5833,18 @@ export class CanvasKitLayerRenderer {
       paint.setStrokeCap(previousCap);
       effect.delete?.();
     }
+  }
+
+  private printMaskedImageBytes(op: LayerImageOp): Uint8Array {
+    // imageForOp가 검증한 동일 resource를 공통 sampler에 encoded 그대로 전달한다.
+    const index = this.layerResourceIndex(op.imageRef, this.currentResources?.imageKeys,
+      this.currentResources?.images?.length ?? 0);
+    const resource = index === null ? undefined : this.currentResources?.images?.[index];
+    const source = resource ?? op.base64
+      ?? (op.sourceImageKey ? this.currentImageBytesResolver?.(op.sourceImageKey) : undefined);
+    const bytes = this.imageResourceBytes(source ?? undefined);
+    if (!bytes) throw new Error('Print 색·마스크의 원본 바이트가 없습니다.');
+    return bytes;
   }
 
   private imageForOp(op: LayerImageOp): SkImage | null {

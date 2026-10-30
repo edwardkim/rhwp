@@ -1,35 +1,40 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { HostCanvasFontSession, scopedHostCanvasFont, withHostCanvasFonts } from '../src/core/host-canvas-fonts.ts';
 import { setHostFontProvider, resolveRendererLocalFont } from '../src/core/local-fonts.ts';
+import type { FontSymbolInspector } from '../src/core/font-symbol-coverage.ts';
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
   const promise = new Promise<T>(done => { resolve = done; });
   return { promise, resolve };
 }
-async function fixture() {
+async function fixture(inspect?: FontSymbolInspector, bytes = Uint8Array.of(1, 2, 3).buffer) {
   const oldDocument = globalThis.document;
   const oldFontFace = globalThis.FontFace;
   const fonts = new Set<FontFace>();
+  const registrations: Array<{ bytes: ArrayBuffer; descriptors: FontFaceDescriptors }> = [];
   let loaded = () => Promise.resolve();
   class FakeFontFace {
     family: string;
-    constructor(family: string, _bytes: ArrayBuffer, _descriptors: FontFaceDescriptors) { this.family = family; }
+    constructor(family: string, bytes: ArrayBuffer, descriptors: FontFaceDescriptors) {
+      this.family = family; registrations.push({ bytes, descriptors });
+    }
     async load() { await loaded(); return this; }
   }
   Object.assign(globalThis, { document: { fonts }, FontFace: FakeFontFace });
-  const session = new HostCanvasFontSession();
+  const session = new HostCanvasFontSession(inspect);
   let changed = () => {};
   const provider = {
     async getSnapshot() { return { revision: 'r1', faces: [{ id: 'face', family: 'Host Test',
       fullName: 'Host Test Italic', postscriptName: 'HostTest-Italic', style: 'Italic', weight: 400, slant: 'italic' as const }] }; },
-    async readFace() { return { bytes: Uint8Array.of(1, 2, 3).buffer }; },
+    async readFace() { return { bytes }; },
     subscribe(listener: () => void) { changed = listener; return () => {}; },
   };
   await setHostFontProvider(provider);
   const records = () => [resolveRendererLocalFont('Host Test', { weight: 400, slant: 'italic' })!];
-  return { session, provider, records, fonts, changed: () => changed(), setLoad: (fn: typeof loaded) => { loaded = fn; },
+  return { session, provider, records, fonts, registrations, changed: () => changed(), setLoad: (fn: typeof loaded) => { loaded = fn; },
     async dispose() { session.reset(); await setHostFontProvider(null); Object.assign(globalThis, { document: oldDocument, FontFace: oldFontFace }); } };
 }
 
@@ -49,6 +54,24 @@ test('host aliases exist only in synchronous measurement/paint scope and are rel
     await setHostFontProvider(null);
     assert.equal(f.fonts.size, 0);
     assert.deepEqual(f.session.diagnostics(), { loaded: 0, pending: 0, failed: 0 });
+  } finally { await f.dispose(); }
+});
+
+test('host FontFace와 주입한 공통 기호 검사기는 같은 실제 프로그램을 소비한다', async () => {
+  const original = Uint8Array.from(readFileSync(new URL('../../tests/fixtures/fonts/RHWPHostFixture-Regular.ttf', import.meta.url))).buffer;
+  const observed: Array<{ bytes: Uint8Array; faceIndex: number }> = [];
+  const f = await fixture((bytes, faceIndex) => {
+    observed.push({ bytes, faceIndex }); return 'U+0-26AA,U+26AC-10FFFF';
+  }, original);
+  try {
+    await f.session.prepare(f.records());
+    assert.equal(f.fonts.size, 1);
+    assert.equal(observed.length, 1);
+    assert.equal(observed[0].faceIndex, 0, '정규화한 단일 face의 실제 index');
+    assert.equal(observed[0].bytes.buffer, f.registrations[0].bytes, 'FontFace와 검사기의 동일한 프로그램 바이트');
+    assert.deepEqual(f.registrations[0].descriptors, {
+      weight: '400', style: 'italic', unicodeRange: 'U+0-26AA,U+26AC-10FFFF',
+    });
   } finally { await f.dispose(); }
 });
 

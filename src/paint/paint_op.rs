@@ -41,6 +41,8 @@ pub enum ResolvedImageKind {
     SourceWindow,
     /// 출력 크기·장치에 따라 바이트가 달라지는 변환. 원본 bin 키와 구분한다.
     OutputDevice,
+    /// 원본 가시 창을 이미 담은 출력 바이트. painter에서 crop을 다시 적용하지 않는다.
+    OutputDeviceWindow,
     BakedWatermark,
 }
 
@@ -262,8 +264,8 @@ impl PaintOp {
         })
     }
 
-    /// All decoration consumers replay this placement, without mutating the
-    /// semantic run used by source binding, selection and variant validation.
+    /// 모든 장식 소비자가 같은 배치를 재생한다. 원본 소유·선택·variant 검증에
+    /// 사용하는 semantic run은 수정하지 않는다.
     pub(crate) fn decoration_replay(
         &self,
     ) -> Option<(BoundingBox, std::borrow::Cow<'_, TextRunNode>)> {
@@ -271,22 +273,33 @@ impl PaintOp {
             bbox,
             run,
             paint_geometry,
+            kind,
+            trim_trailing_spaces,
             ..
         } = self
         else {
             return None;
         };
-        let Some(geometry) = paint_geometry else {
+        let terminal_positions = (*kind == TextDecorationKind::Underline
+            && *trim_trailing_spaces == 0)
+            .then(|| crate::renderer::glyph_fit::terminal_underline_positions(run))
+            .flatten();
+        if paint_geometry.is_none() && terminal_positions.is_none() {
             return Some((*bbox, std::borrow::Cow::Borrowed(run.as_ref())));
-        };
+        }
+        let scale = paint_geometry.map_or(1.0, |geometry| geometry.inline_scale);
+        let mut replay_bbox = paint_geometry.map_or(*bbox, |geometry| geometry.bbox);
+        let terminal_changed = terminal_positions.is_some();
+        let positions = terminal_positions
+            .map(std::borrow::Cow::Owned)
+            .unwrap_or_else(|| run.replay_positions_for(run.display_or_text()));
+        if terminal_changed {
+            // 장식 폭은 공통 replay의 끝점과 같은 좌표계를 쓴다.
+            replay_bbox.width = positions.last().copied().unwrap_or(0.0) * scale;
+        }
         let mut replay = run.as_ref().clone();
-        replay.layout_positions = Some(
-            run.replay_positions_for(run.display_or_text())
-                .iter()
-                .map(|position| position * geometry.inline_scale)
-                .collect(),
-        );
-        Some((geometry.bbox, std::borrow::Cow::Owned(replay)))
+        replay.layout_positions = Some(positions.iter().map(|position| position * scale).collect());
+        Some((replay_bbox, std::borrow::Cow::Owned(replay)))
     }
 
     pub fn control_label(bbox: BoundingBox, label: impl Into<String>) -> Self {
@@ -337,6 +350,9 @@ impl PaintOp {
         resolved: Option<ResolvedImagePayload>,
     ) -> Self {
         image.original_size_hu = crate::renderer::image_resolver::image_crop_reference(&image);
+        if let Some(payload) = resolved.as_ref() {
+            crate::renderer::image_resolver::normalize_resolved_image_window(&mut image, payload);
+        }
         Self::Image {
             bbox,
             image: Box::new(image),
@@ -2067,6 +2083,7 @@ pub struct GlyphRunDiagnostics {
 
 #[derive(Debug, Clone)]
 pub struct PaintTextStyle {
+    pub script_metrics: crate::renderer::script_metrics::ScriptMetricsContract,
     pub font_family: String,
     pub font_size: f64,
     pub font_position: Option<i8>,
@@ -2082,6 +2099,8 @@ pub struct PaintTextStyle {
     pub shadow_color: ColorRef,
     pub shadow_offset_x: f64,
     pub shadow_offset_y: f64,
+    /// 공통 paint에서 확정한 연속 표본을 직렬화 소비자에게도 전달한다.
+    pub continuous_shadow: Option<crate::paint::text_shadow::ContinuousTextShadow>,
     pub emboss: bool,
     pub engrave: bool,
     pub superscript: bool,
@@ -2097,6 +2116,7 @@ pub struct PaintTextStyle {
 impl From<&TextStyle> for PaintTextStyle {
     fn from(style: &TextStyle) -> Self {
         Self {
+            script_metrics: style.script_metrics,
             font_family: style.font_family.clone(),
             font_size: style.font_size,
             font_position: style.font_position,
@@ -2112,6 +2132,7 @@ impl From<&TextStyle> for PaintTextStyle {
             shadow_color: style.shadow_color,
             shadow_offset_x: style.shadow_offset_x,
             shadow_offset_y: style.shadow_offset_y,
+            continuous_shadow: style.continuous_shadow.clone(),
             emboss: style.emboss,
             engrave: style.engrave,
             superscript: style.superscript,

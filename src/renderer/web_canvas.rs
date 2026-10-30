@@ -9,11 +9,18 @@ use super::contextual_text;
 #[cfg(target_arch = "wasm32")]
 mod cubic_reduction;
 #[cfg(target_arch = "wasm32")]
+mod image_coverage;
+#[cfg(target_arch = "wasm32")]
 mod image_reduction;
 #[cfg(target_arch = "wasm32")]
 mod metafile_print;
+mod print_image_sampling;
 #[cfg(target_arch = "wasm32")]
 mod print_jpeg;
+#[cfg(target_arch = "wasm32")]
+mod rectangle_fill;
+#[cfg(target_arch = "wasm32")]
+mod text_geometry;
 
 #[cfg(target_arch = "wasm32")]
 use base64::Engine;
@@ -45,8 +52,8 @@ use crate::model::style::UnderlineType;
 use crate::paint::replay_order::layer_node_has_replay_plane;
 use crate::paint::{
     paint_op_replay_plane_with_layer, render_layer_replay_plane, text_visual_replay_role,
-    validate_text_variant_scope, ClipKind, GroupKind, LayerNode, LayerNodeKind, PageLayerTree,
-    PaintOp, PaintReplayPlane, TextDecorationKind, TextVisualReplayRole,
+    validate_text_variant_scope, GroupKind, LayerNode, LayerNodeKind, PageLayerTree, PaintOp,
+    PaintReplayPlane, TextDecorationKind, TextVisualReplayRole,
 };
 
 const TEXT_MARK_CLIP_RIGHT_PAD: f64 = 48.0;
@@ -179,6 +186,11 @@ fn cached_decoded_image_canvas(data: &[u8], key: u64) -> Option<HtmlCanvasElemen
         }
         canvas
     })
+}
+
+#[cfg(target_arch = "wasm32")]
+fn cached_image_canvas(data: &[u8]) -> Option<HtmlCanvasElement> {
+    cached_decoded_image_canvas(data, hash_bytes(data))
 }
 
 /// 빠른 해시 (FNV-1a 64비트)
@@ -439,6 +451,9 @@ pub struct WebCanvasRenderer {
     high_quality_images: bool,
     render_profile: crate::paint::RenderProfile,
     bitmap_paper_grid: Option<super::bitmap_raster::PrintPaperGrid>,
+    print_area_sampling: bool,
+    print_stroke_adjustment: bool,
+    print_device_clip: bool,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -472,6 +487,9 @@ impl WebCanvasRenderer {
             high_quality_images: false,
             render_profile: crate::paint::RenderProfile::Screen,
             bitmap_paper_grid: None,
+            print_area_sampling: false,
+            print_stroke_adjustment: false,
+            print_device_clip: false,
         })
     }
 
@@ -538,16 +556,22 @@ impl WebCanvasRenderer {
     /// 렌더 트리를 Canvas에 렌더링
     pub fn render_tree(&mut self, tree: &PageRenderTree) {
         self.render_profile = crate::paint::RenderProfile::Screen;
+        text_geometry::configure(&self.ctx, false);
+        self.print_stroke_adjustment = false;
+        self.print_device_clip = false;
         self.render_node(&tree.root);
     }
 
     /// 레이어 트리를 Canvas에 렌더링
     pub fn render_layer_tree(&mut self, tree: &PageLayerTree) {
+        self.print_stroke_adjustment = tree.profile == crate::paint::RenderProfile::Print;
+        self.print_device_clip = tree.uses_raster_clip_coverage();
         self.high_quality_images = matches!(
             tree.profile,
             crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
         );
         self.render_profile = tree.profile;
+        text_geometry::configure(&self.ctx, tree.preserves_raster_text_geometry());
         self.hft_outline_enabled = matches!(
             tree.profile,
             crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
@@ -884,15 +908,30 @@ impl WebCanvasRenderer {
                 image,
                 resolved,
             } => {
-                if let Some(resolved) = resolved.as_deref() {
+                let fallback = resolved
+                    .is_none()
+                    .then(|| super::image_resolver::resolve_image_payload(image))
+                    .flatten();
+                let resolved = resolved.as_deref().or(fallback.as_ref());
+                let prepared = super::image_resolver::image_for_resolved_window(image, resolved);
+                let image = prepared.as_ref();
+                let previous_print_area = self.print_area_sampling;
+                self.print_area_sampling =
+                    super::image_resolver::print_area_sampling(image, resolved);
+                // 출력 색의 중복 처리를 막으려고 carrier 표식이 지워지기 전에
+                // 원래 그림 계약과 실제 장치 행렬에서 목적 영역을 확정한다.
+                let bbox =
+                    image_coverage::bounds(&self.ctx, *bbox, image, self.print_stroke_adjustment);
+                if let Some(resolved) = resolved {
                     let image = crate::renderer::image_resolver::image_node_with_resolved_payload(
                         image,
                         Some(resolved),
                     );
-                    self.render_image(bbox, &image, true);
+                    self.render_image(&bbox, &image, true);
                 } else {
-                    self.render_image(bbox, image, true);
+                    self.render_image(&bbox, image, true);
                 }
+                self.print_area_sampling = previous_print_area;
             }
             PaintOp::Equation { bbox, equation } => {
                 self.render_equation(bbox, equation);
@@ -1137,13 +1176,32 @@ impl WebCanvasRenderer {
         if rect.round_stroke_join {
             self.ctx.set_line_join("round");
         }
+        let fill_bounds =
+            rectangle_fill::bounds(&self.ctx, *bbox, rect, self.print_stroke_adjustment);
+        let mut style = std::borrow::Cow::Borrowed(&rect.style);
+        if self.print_stroke_adjustment {
+            let minimum = self.ctx.get_transform().ok().and_then(|matrix| {
+                super::raster_stroke::minimum_width([
+                    matrix.a(),
+                    matrix.b(),
+                    matrix.c(),
+                    matrix.d(),
+                ])
+            });
+            if let Some(width) = rect
+                .print_picture_pen
+                .and_then(|pen| super::print_picture_pen::raster_width(pen, minimum))
+            {
+                style.to_mut().stroke_width = width;
+            }
+        }
         self.draw_rect_with_gradient(
-            bbox.x,
-            bbox.y,
-            bbox.width,
-            bbox.height,
+            fill_bounds.x,
+            fill_bounds.y,
+            fill_bounds.width,
+            fill_bounds.height,
             rect.corner_radius,
-            &rect.style,
+            &style,
             rect.gradient.as_deref(),
         );
         self.ctx.set_line_join(&previous_join);
@@ -1662,49 +1720,38 @@ impl WebCanvasRenderer {
                 self.render_layer_node(child, active_layer);
                 self.ctx.restore();
             }
-            LayerNodeKind::ClipRect {
-                clip,
-                child,
-                clip_kind,
-            } => {
+            LayerNodeKind::ClipRect { clip, child, .. } => {
                 if !self.layer_clip_enabled {
                     self.render_layer_node(child, active_layer);
                     return;
                 }
-                match clip_kind {
-                    ClipKind::Body => {
-                        self.ctx.save();
-                        self.ctx.begin_path();
-                        self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
-                        self.ctx.clip();
-                        self.render_layer_node(child, active_layer);
-                        self.ctx.restore();
-                    }
-                    ClipKind::TableCell => {
-                        self.ctx.save();
-                        self.ctx.begin_path();
-                        self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
-                        self.ctx.clip();
-                        self.render_layer_node(child, active_layer);
-                        self.ctx.restore();
-                    }
-                    ClipKind::TextBox => {
-                        self.ctx.save();
-                        self.ctx.begin_path();
-                        self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
-                        self.ctx.clip();
-                        self.render_layer_node(child, active_layer);
-                        self.ctx.restore();
-                    }
-                    ClipKind::Generic => {
-                        self.ctx.save();
-                        self.ctx.begin_path();
-                        self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
-                        self.ctx.clip();
-                        self.render_layer_node(child, active_layer);
-                        self.ctx.restore();
-                    }
-                }
+                let clip = if self.print_device_clip {
+                    self.ctx
+                        .get_transform()
+                        .ok()
+                        .and_then(|matrix| {
+                            crate::paint::device_clip::rectangle(
+                                *clip,
+                                [
+                                    matrix.a(),
+                                    matrix.b(),
+                                    matrix.c(),
+                                    matrix.d(),
+                                    matrix.e(),
+                                    matrix.f(),
+                                ],
+                            )
+                        })
+                        .unwrap_or(*clip)
+                } else {
+                    *clip
+                };
+                self.ctx.save();
+                self.ctx.begin_path();
+                self.ctx.rect(clip.x, clip.y, clip.width, clip.height);
+                self.ctx.clip();
+                self.render_layer_node(child, active_layer);
+                self.ctx.restore();
             }
             LayerNodeKind::Leaf { ops } => {
                 for op in ops {
@@ -2648,7 +2695,7 @@ impl Renderer for WebCanvasRenderer {
         let font_size = font_setup.draw_size();
         let y = font_setup.baseline();
         let ratio = font_setup.horizontal_scale();
-        let has_ratio = (ratio - 1.0).abs() > 0.01;
+        let has_ratio = style.has_horizontal_ratio();
         let font = font_setup.descriptor();
         let old_hangul_font = font_setup.old_hangul_descriptor();
         self.ctx.set_font(font);
@@ -2738,7 +2785,7 @@ impl Renderer for WebCanvasRenderer {
                         .unwrap_or(std::borrow::Cow::Borrowed(cluster_str.as_str()));
                     let cluster_str = painted.as_ref();
                     // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
-                    if cluster_str.chars().all(char::is_whitespace) {
+                    if super::text_glyph_visibility::is_nonprinting_cluster(cluster_str) {
                         continue;
                     }
                     if let Some((cx, cy, rx, ry)) =
@@ -3202,6 +3249,18 @@ impl Renderer for WebCanvasRenderer {
                 }
             }
         }
+        if self.print_area_sampling
+            && self.high_quality_images
+            && print_image_sampling::draw_encoded(
+                &self.ctx,
+                data,
+                (x, y, w, h),
+                (self.width, self.height),
+                self.scale,
+            )
+        {
+            return;
+        }
         let prepared = self.ctx.get_transform().ok().and_then(|matrix| {
             crate::renderer::bitmap_raster::prepare_bitmap(
                 data,
@@ -3423,6 +3482,22 @@ impl WebCanvasRenderer {
 
         let decoded = cached_decoded_image_canvas(data, key);
         if let Some(canvas) = decoded {
+            if self.print_area_sampling
+                && self.high_quality_images
+                && sx == 0.0
+                && sy == 0.0
+                && sw == f64::from(canvas.width())
+                && sh == f64::from(canvas.height())
+                && print_image_sampling::draw(
+                    &self.ctx,
+                    &canvas,
+                    (dx, dy, dw, dh),
+                    (self.width, self.height),
+                    self.scale,
+                )
+            {
+                return;
+            }
             let _ = self
                 .ctx
                 .draw_image_with_html_canvas_element_and_sw_and_sh_and_dx_and_dy_and_dw_and_dh(
@@ -3514,7 +3589,7 @@ impl WebCanvasRenderer {
                     .map(|p| p.mirrored(cluster_str, *char_idx))
                     .unwrap_or(std::borrow::Cow::Borrowed(cluster_str.as_str()));
                 let cs = painted.as_ref();
-                if cs == " " || cs == "\t" || cs == "\u{2007}" {
+                if super::text_glyph_visibility::is_nonprinting_cluster(cs) {
                     continue;
                 }
                 if cs.chars().count() == 1
@@ -3613,9 +3688,9 @@ impl WebCanvasRenderer {
         // 그림자 (원본 아래에 그림자색으로 오프셋 렌더)
         if style.shadow_type > 0 {
             let shadow_css = color_to_css(style.shadow_color);
-            let dx = style.shadow_offset_x;
-            let dy = style.shadow_offset_y;
-            render_pass(&self.ctx, dx, dy, &shadow_css, false, "", 0.0);
+            for [dx, dy] in crate::paint::text_shadow::offsets(style) {
+                render_pass(&self.ctx, dx, dy, &shadow_css, false, "", 0.0);
+            }
         }
 
         // 외곽선 (fillText(흰색) + strokeText(글자색))
@@ -3719,6 +3794,9 @@ impl WebCanvasRenderer {
         bbox_w: f64,
         bbox_h: f64,
     ) {
+        if overlap.empty_ink {
+            return;
+        }
         let font_size = style.effective_font_size();
         let chars: Vec<char> = text.chars().collect();
         if chars.is_empty() {

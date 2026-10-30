@@ -605,18 +605,24 @@ impl TypesetEngine {
                 .zip(end.last_height)
                 .is_some_and(|(first, height)| {
                     let (_, last, _) = input.source.measured_table.row_block_for(first);
+                    // 스캔이 완전 행 밴드를 수용하면 내용 컷을 비우고 마지막
+                    // 행 상자를 전달한다. 이 명시적 종료를 빈 유닛 선택으로 다시
+                    // 해석하면 이미 사용한 앞 행 높이가 다음 조각의 원장에서 빠진다.
+                    let closed_boundary =
+                        end.complete_cut && end.cut.is_empty() && first < end.row && end.row < last;
                     height.is_finite()
                         && height > 0.0
-                        && input
-                            .prepared
-                            .layout_engine
-                            .row_block_cut_complete_prefix_end(
-                                input.source.row_geometry_table,
-                                (first, last),
-                                end.cut,
-                                input.source.styles,
-                            )
-                            == Some(end.row)
+                        && (closed_boundary
+                            || input
+                                .prepared
+                                .layout_engine
+                                .row_block_cut_complete_prefix_end(
+                                    input.source.row_geometry_table,
+                                    (first, last),
+                                    end.cut,
+                                    input.source.styles,
+                                )
+                                == Some(end.row))
                 });
         let keeps_source_boxes = self.stored_header_physical_rows(st, input.source)
             || input

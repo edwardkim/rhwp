@@ -4,6 +4,8 @@ use super::paragraph::Paragraph;
 use super::style::{Fill, ShapeBorderLine};
 use super::*;
 
+pub(crate) mod shadow;
+
 /// `raw_ctrl_data` (CTRL_HEADER) 바이트 오프셋 상수.
 ///
 /// `parse_common_obj_attr` 및 `serialize_common_obj_attr` 과 일치해야 한다.
@@ -816,9 +818,9 @@ pub struct CurveShape {
     pub common: CommonObjAttr,
     /// 그리기 공통 속성
     pub drawing: DrawingObjAttr,
-    /// 제어점 좌표 목록
+    /// 곡선이 통과하는 원본 점 체인 (베지어 제어점 배열이 아님)
     pub points: Vec<Point>,
-    /// 세그먼트 타입 목록 (0: line, 1: curve)
+    /// 인접한 점 사이의 구간 종류: points.len() - 1개 (0: line, 1: curve)
     pub segment_types: Vec<u8>,
 }
 

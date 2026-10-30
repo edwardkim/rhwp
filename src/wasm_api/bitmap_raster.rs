@@ -2,6 +2,17 @@
 
 use wasm_bindgen::prelude::*;
 
+/// CanvasKit도 실제 출력 변환과 공통 Rust의 그림 외곽 pen 결과를 소비한다.
+#[wasm_bindgen(js_name = printPicturePenWidth)]
+pub fn print_picture_pen_width(pen: &[f64], transform: &[f64]) -> Option<f64> {
+    let pen: [f64; 2] = pen.try_into().ok()?;
+    let transform: [f64; 4] = transform.try_into().ok()?;
+    crate::renderer::print_picture_pen::raster_width(
+        pen,
+        crate::renderer::raster_stroke::minimum_width(transform),
+    )
+}
+
 #[wasm_bindgen(js_name = prepareBitmapRaster)]
 pub fn prepare_bitmap_raster(
     bytes: &[u8],

@@ -27,9 +27,10 @@ pub struct Picture {
     pub border_width: i32,
     /// 테두리 속성
     pub border_attr: ShapeBorderLine,
-    /// 이미지 테두리 좌표 X (4개)
+    /// 그림 꼭짓점의 앞 네 INT32: [pt0.x, pt0.y, pt1.x, pt1.y].
+    /// 기존 필드명과 달리 X 좌표만의 배열이 아니다.
     pub border_x: [i32; 4],
-    /// 이미지 테두리 좌표 Y (4개)
+    /// 그림 꼭짓점의 뒤 네 INT32: [pt2.x, pt2.y, pt3.x, pt3.y].
     pub border_y: [i32; 4],
     /// 자르기 정보
     pub crop: CropInfo,
@@ -52,10 +53,11 @@ pub struct Picture {
     pub effects: PictureEffects,
     /// 캡션
     pub caption: Option<super::shape::Caption>,
-    /// HWPX `<hp:imgDim>` 원본 이미지 픽셀 크기 (#1389).
+    /// HWP5 표 116의 기준 이미지 크기(HWPUNIT 두 개), HWPX `<hp:imgDim>` 대응.
     ///
-    /// imgClip extent 와 독립(전수 측정: 불일치 24/170) — 원본 이미지 픽셀 크기를
-    /// verbatim 보존한다. (dimwidth, dimheight). HWPX 파서만 적재.
+    /// crop과 같은 원본 좌표계의 전체 범위이며 디코딩된 bitmap 픽셀 크기와 구별한다.
+    /// imgClip extent와 독립(전수 측정: 불일치 24/170)인 (dimwidth, dimheight)를
+    /// 그대로 보존한다. HWP5·HWPX 파서가 모두 적재한다.
     pub img_dim: (u32, u32),
     /// HWPX `<hp:pic reverse="...">` 값 — 그림 좌우 반전(한컴 Automation
     /// `InsertPicture`의 `reverse` 옵션과 동일 개념). 파서가 읽지 않고 직렬화기가

@@ -1954,6 +1954,7 @@ def subpixel_tolerant_content_match_details(
         "silhouette_method": SILHOUETTE_METHOD,
         "silhouette_raw_match_percent": round((1.0 - raw_mismatched / content_union) * 100.0, 5)
         if content_union else 100.0,
+        "silhouette_raw_unmatched_pixels": raw_mismatched,
         "silhouette_boundary_reconciled_pixels": reconciled,
         "silhouette_color_tolerance": DEFAULT_PIXEL_DIFF_THRESHOLD,
         "silhouette_content_union_pixels": content_union,
@@ -5511,6 +5512,13 @@ def write_silhouette_tsv(
                 "reason": "외부 연결 그림 영역 제외 비교; 해당 영역과 겹친 내용은 검증하지 않았습니다"}
     write_json_atomic(out_dir / "silhouette_manifest.json", manifest)
     print(f"실루엣 보조값 {len(pairs)}쪽: {tsv}", flush=True)
+    # 표시값은 TSV와 같은 정밀도로 출력하고 실제 일치 여부는 정수 픽셀로 센다.
+    # 출력이 100.00%여도 반올림 전 미대응 픽셀이 있을 수 있다.
+    minimum = min(float(item["silhouette_raw_match_percent"]) for item in metrics)
+    unmatched = [item.get("silhouette_raw_unmatched_pixels") for item in metrics]
+    exact = sum(value == 0 for value in unmatched) if all(type(value) is int for value in unmatched) else None
+    print(json.dumps({"key": key, "pages": len(metrics), "minimum": f"{minimum:.2f}",
+                      "exact100": exact}, ensure_ascii=False), flush=True)
     return manifest
 
 

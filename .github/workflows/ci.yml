@@ -1350,6 +1350,9 @@ jobs:
               node scripts/run-rust-test.mjs --cargo-test issue_8160_hwp2022_paragraph_relations -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test native_fractional_glyph_origin -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test skia_native_glyph_replay -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_8153_opaque_mixed_axis_image_sampling -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_8153_print_glyph_geometry -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_8153_symbol_fallback -- --profile release-test --features native-skia --verbose
               ;;
             release)
               echo "profile=release event=${GITHUB_EVENT_NAME} ref=${GITHUB_REF}"
@@ -1369,6 +1372,9 @@ jobs:
               node scripts/run-rust-test.mjs --cargo-test issue_8160_hwp2022_paragraph_relations -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test native_fractional_glyph_origin -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test skia_native_glyph_replay -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_8153_opaque_mixed_axis_image_sampling -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_8153_print_glyph_geometry -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_8153_symbol_fallback -- --release --features native-skia --verbose
               ;;
             *)
               echo "::error::Unknown test profile: ${TEST_PROFILE}"
