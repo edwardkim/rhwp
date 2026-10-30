@@ -46,3 +46,12 @@
 ## 후속 처리
 
 maintainer 일반 경로의 운영 기록으로 archive review·시각 asset·오늘할일을 devel에 직접 반영한다. contributor fork branch는 보존한다. 알려진 BOX 차이는 향후 개선 대상으로 남으며 이 작업에서 새 이슈·기능 수정으로 확대하지 않는다.
+
+### 후속 처리 완료
+
+- 운영 기록 `f3ff65bb58b166278ec4b10ee6fd5c1979b18555`를 devel에 반영했다. source·test·workflow 변경은 없다.
+- [첫 기여 감사·수용 결정 댓글](https://github.com/edwardkim/rhwp/pull/8165#issuecomment-6513463331)을 게시하고 API로 본문과 SHA 고정 이미지의 blob 바이트를 확인했다.
+- 작성자 merged PR 검색 결과는 #8165 한 건으로, rhwp 첫 PR merge임을 확인했다. 기존 PR의 `author_association` API 값은 조회 시점에 FIRST_TIME_CONTRIBUTOR였다. GitHub 표시 갱신까지 완료했다고 주장하지 않는다.
+- [duration 작업 40991431207](https://github.com/edwardkim/rhwp/actions/runs/40991431207)은 성공했다. 결과는 `ready:false`, `no-verified-pr-duration-measurements`로 데이터 갱신 보류다. 검증 CI를 재실행하지 않았다.
+- devel을 upstream/devel로 fast-forward하고 동일 상태를 확인했다. 별도 worktree는 만들지 않았다. 다른 4건의 미병합 검토 이력을 가진 `review/pblsketch-20261030` 로컬 브랜치는 보존한다.
+- 사용 중인 파일 참조 없음 확인 후 루트 `output/` 전체를 삭제했다(209,728 → 0 bytes). debug는 기존부터 없으며 부재를 확인했다. 디스크 가용 공간은 269,557,755,904 → 269,557,997,568 bytes다. release-test/WASM 공유 산출물은 보존한다.
