@@ -1,5 +1,7 @@
 //! 관계형·고정형: 합성 렌더 트리의 이상 판정 계약.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T16:29:24+09:00 (248aa46562).
+//! 주석 갱신: 2026-10-30T10:05:44+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
+//! 합성 트리의 진단 결과와 봉투 계약으로 문서별 raw 시각 측정은 해당하지 않는다.
+//! 근거: tests/fixtures/layout_anomaly_m02f/README.md, mydocs/manual/cli_commands.md.
 //! [#5459] layout-anomaly 판정 픽스처·성적표 고도화 (M02-f).
 //!
 //! `tests/fixtures/layout_anomaly_m02f/` 의 합성 트리·verdict 행렬·transcript 를
