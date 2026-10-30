@@ -12,6 +12,10 @@ sample10은 원본과 사용자 제공 한컴 2020 Print PDF의 763쪽을 대조
 fresh WASM도 763쪽을 모두 측정했으며 최저 raw는 99.397203419141%, 90% 미만과 이전 정상
 후보 대비 하락은 0쪽이다. PNG와 정수 집계도 전쪽 동일하다. [WASM 전쪽 정밀 대조](sample10-wasm-exact.tsv)와
 상위 `sample10-wasm.tsv`는 각각 이전 후보 대비 변화와 Print 대비 측정이다.
+WASM 측정 이후 제품 코드에서 바뀐 경로는 `src/renderer/skia/`의 Native 전용 파일뿐이며,
+해당 모듈은 `not(target_arch = "wasm32")` 조건이다. `pkg`와 Studio의 WASM SHA-256은 모두
+`5ccf5d7efc0467488729124e95667c020e71671f29e4641f02b3555bc3637040`, JS SHA-256은 모두
+`9c6a4a72058364ef04ff13299ce395592fb6a8c23e8fc5b34dafe2f7c053f034`으로 일치한다.
 
 이후 Native 제어 기호 글꼴 후보만 보정한 실행 파일 SHA-256
 `1e0ee0de6c71d27fc7b12611306c9519daebd8403353695575b4bb90578267b4`로 sample10을
@@ -26,6 +30,8 @@ fresh WASM도 763쪽을 모두 측정했으며 최저 raw는 99.397203419141%, 9
 리베이스로 반영한 기능 보존 확인에만 사용했다. [로컬 글꼴 해시](seo-rii-local-fonts.json)에서
 일부는 원 통합 PR의 해시와 다르므로 그 점수와 직접 비교하지 않고 현재 환경에서 양쪽을 새로
 출력했다. 글꼴 프로그램 자체는 제출하지 않는다.
+최종 Native 실행 파일로 다시 출력한 [388쪽 대조](seo-final-native-exact.tsv)에서도 새 기준
+대비 raw 하락은 0쪽이며 PNG가 전쪽 바이트 단위로 같다. 최저 raw는 98.928024502297%다.
 
 기준 Native 실행 파일 SHA-256은 `3d35006a37ab9e819c3eba55bd37e36976c0efd9a1bb807e8fdc8f6dde6e654c`,
 후보는 `8b81ce61050b7cc15557c26fa0c8aafce2e9d5b5d79bfffb15a3d170da2590f8`이다.
