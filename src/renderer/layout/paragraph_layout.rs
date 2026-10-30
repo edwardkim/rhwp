@@ -7553,6 +7553,25 @@ impl LayoutEngine {
             } else {
                 vec![0; leading_space_plan.line.runs.len()]
             };
+            let mut dash_extra_by_run = None;
+            let hwp3_saved_space = para
+                .filter(|p| {
+                    needs_justify
+                        && alignment == Alignment::Justify
+                        && !p.stored_text_partition_is_dirty()
+                        && !p.layout_object_projection
+                        && p.layout_space_metrics.is_empty()
+                })
+                .and_then(|p| {
+                    p.line_segs
+                        .get(line_idx)
+                        .zip(p.hwp3_saved_space_corrections.get(line_idx))
+                })
+                .filter(|(line, (start, _))| {
+                    line.text_start == *start
+                        && line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                })
+                .map(|(_, (_, correction))| hwpunit_to_px(i32::from(*correction) * 4, self.dpi));
             let (extra_word_sp, extra_char_sp, extra_dash_sp) = if compression.is_some() {
                 (0.0, 0.0, 0.0)
             } else if is_hancom_company_pua_logo_line {
@@ -7560,6 +7579,10 @@ impl LayoutEngine {
                 // 회사명 자체에는 자간을 추가하지 않고 이 공백 하나가 남는 폭을 전부
                 // 흡수하게 해야 Hancom PDF의 좌측 회사명·우측 logo 배치가 유지된다.
                 ((available_width - total_text_width).max(0.0), 0.0, 0.0)
+            } else if let Some(correction) = hwp3_saved_space {
+                // 한글 3.0 저장 줄의 공백 보정은 각 공백에 더하는 원본 값이다.
+                // 글꼴 변경 등으로 줄이 다시 구성되면 위의 출처 검사가 이를 거부한다.
+                (correction, 0.0, 0.0)
             } else if runs_all_whitespace
                 && !is_last_line_of_para
                 && !has_forced_break

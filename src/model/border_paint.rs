@@ -507,6 +507,11 @@ pub(crate) fn prepend_cell_paint(p: &mut Paragraph, mut paint: Vec<Control>) {
             *start = p.line_segs[i].text_start;
         }
     }
+    for (start, _) in &mut p.hwp3_saved_space_corrections {
+        if let Some(i) = old_line_starts.iter().position(|old| old == start) {
+            *start = p.line_segs[i].text_start;
+        }
+    }
 }
 
 fn frame_attributes(a: &CommonObjAttr) -> bool {

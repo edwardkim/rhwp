@@ -60,6 +60,10 @@ pub struct Paragraph {
     pub char_shapes: Vec<CharShapeRef>,
     /// 줄 레이아웃 정보
     pub line_segs: Vec<LineSeg>,
+    /// 한글 3.0 저장 줄의 원본 공백 보정값(1/1800인치). 줄 시작 UTF-16 위치와 짝을 이룬다.
+    /// 편집 또는 줄 교체 시 무효화하며 HWP5/HWPX 직렬화 속성이 아니다.
+    #[serde(skip_serializing)]
+    pub hwp3_saved_space_corrections: Vec<(u32, i16)>,
     /// 재조판이 선택한 줄별 공백 규칙. 파일 속성이 아닌 현재 줄 구성의 출처다.
     /// 각 항목은 해당 LineSeg의 text_start와 결합하며, 줄 교체 시 함께 교체한다.
     #[serde(skip_serializing)]
@@ -946,6 +950,7 @@ impl Paragraph {
     #[inline]
     pub fn invalidate_layout_inputs(&mut self) {
         self.stored_text_partition_dirty = true;
+        self.hwp3_saved_space_corrections.clear();
         self.layout_object_projection = false;
         self.layout_field_values.clear();
     }
@@ -958,6 +963,7 @@ impl Paragraph {
     /// Replace stored rows and their validity state at one owner boundary.
     pub(crate) fn replace_line_segs(&mut self, line_segs: Vec<LineSeg>) {
         self.line_segs = line_segs;
+        self.hwp3_saved_space_corrections.clear();
         self.layout_object_projection = false;
         self.layout_space_metrics.clear();
         // A fresh vector has no renderer-appended suffix and cannot reuse a
@@ -2213,6 +2219,7 @@ impl Paragraph {
             char_shapes: new_char_shapes,
             line_segs: new_line_segs,
             layout_space_metrics: Vec::new(),
+            hwp3_saved_space_corrections: Vec::new(),
             layout_object_projection: false,
             layout_field_values: Vec::new(),
             // 분리된 문단의 줄은 새로 계산된 것이라 조판 전용 보강 줄이 없다 (#4677).

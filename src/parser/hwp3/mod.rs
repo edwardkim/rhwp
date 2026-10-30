@@ -3562,6 +3562,10 @@ fn parse_paragraph_list_inner(
                 } else {
                     utf16_len
                 };
+                // 저장 줄의 공백 보정은 HWP3 hunit(1/1800인치)이다.
+                // UTF-16 줄 시작과 함께 보존해 편집·재조판 시 stale 값과 구분한다.
+                para.hwp3_saved_space_corrections
+                    .push((text_start, linfo.space_correction));
                 let text_end = line_infos
                     .get(line_index + 1)
                     .and_then(|line| hwp3_char_to_utf16_pos.get(line.start_pos as usize))
