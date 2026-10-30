@@ -155,3 +155,9 @@ fork enforcement 정책이며 기존 성공한 Full CI를 이번 통합 후보�
 현재 본인 계정의 열린 PR은 없으며 remote devel은 고정 base와 같음을 재확인했다.
 원격 게시 승인 뒤 실제 최종 head의 raw 증적을 내려받아 hash를 확인하고, 새 CI와 mergeability를
 확인한 뒤 승인 범위의 통합·후속 기록을 진행한다.
+
+## 최종 통합 (2026-10-31)
+
+[통합 PR #8394](https://github.com/edwardkim/rhwp/pull/8394)를 merge commit `7d4741392bb2ffaf308f5ce1cf6ba7f4deeeb1c9`로 반영했다. 원 PR 네 건도 모두 MERGED이며 원 커밋이 조상으로 남는다.
+제출 head `d5a7d933f83550e89aabc3b08795724873051f34`의 Full CI·CodeQL·Render Diff·Proptest·Adapter·CI 정책이 성공했다. 원격 기본 회귀 12,004 PASS / 0 FAIL / 45 skipped, Native 새 cache 21·planner 10·host surface 9 및 Direct PDF 22건의 실제 통과를 확인했다.
+[최종 CI·self-review 영수증](integration-result.json). 앞 절의 원격 승인 전 상태는 로컬 검증 당시 기록이며 최종 상태는 이 절을 따른다. #536·#7501은 OPEN을 유지한다.

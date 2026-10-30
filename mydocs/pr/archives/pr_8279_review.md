@@ -3,8 +3,8 @@
 ## 최종 판정
 
 **메인터너 보정 후 수용 가능 — #7501 연결선·화살촉 PDF 범위의 로컬 검증 완료.**
-최신 devel에 대한 보정과 필수 검증을 완료했다. 원격 push·통합 PR 생성·최종 head CI·merge는
-아직 수행하지 않았으며 작업지시자의 해당 원격 범위 승인이 다음 조건이다.
+최신 devel에 대한 보정과 필수 검증을 완료했고 [통합 PR #8394](https://github.com/edwardkim/rhwp/pull/8394)로 merge했다.
+merge `7d4741392bb2ffaf308f5ce1cf6ba7f4deeeb1c9`. 원 기여 커밋과 저자를 보존했다.
 
 ## 접수와 범위
 
@@ -14,7 +14,7 @@
 - 통합 제품 소스: `c3f5cbd6d7beecdaa231cd3a40080f2e7f3c8c1e`.
 - 검증된 공통 arrow geometry와 Native replay를 Direct PDF에 허용한다. 잘못된 몸통·끝점·접선·f32 outline은 거부한다.
 - 원 stack은 #8270 → #8275 → #8276 → #8279이며 최종 head merge로 모든 기여자 commit을 보존했다.
-- [수행 계획](seo_rii_20261030_review_impl.md), [공통 근거](assets/seo_rii_20261030/README.md).
+- [수행 계획](seo_rii_20261030_review_impl.md), [공통 근거](../assets/seo_rii_20261030/README.md).
 
 ## 메인터너 보정
 
@@ -27,7 +27,7 @@
 ## 검증과 다음 조건
 
 원 head CI와 메인터너 후보의 로컬 실행은 분리한다. 실제 명령·입력·TSV·PNG와 완료 범위는
-[공통 근거](assets/seo_rii_20261030/README.md)에 기록한다. 필수 로컬 검증은 완료했으며 원격 push·통합 PR
+[공통 근거](../assets/seo_rii_20261030/README.md)에 기록한다. 필수 로컬 검증은 완료했으며 원격 push·통합 PR
 생성·통합 승인 범위를 확인한다. 이번 지시는 로컬 보정을 승인한 것이며 아직 새 원격 조치는 수행하지 않았다.
 
 
@@ -47,3 +47,16 @@
 원 PR의 통합 상태와 이력을 확인하고 최종 merge SHA·CI·시각 자료 링크를 포함한 한국어
 후속 comment를 준비한다. #536 전체 Native 추적 범위와 편람 전체 Direct PDF 지원을
 완료한 것으로 닫지 않는다.
+
+## 최종 CI·self-review·통합 확인
+
+- 제출 head `d5a7d933f83550e89aabc3b08795724873051f34`의 [Full CI](https://github.com/edwardkim/rhwp/actions/runs/41081855120), CodeQL·Render Diff·Proptest·Adapter와 CI 정책이 성공했다.
+- self-review에서 LRU 전체 예산·키·무효화, tile origin/guard/offset, PDF 공통 geometry와 admission, CI 기존 검사 보존을 확인했으며 통합을 막는 결함을 발견하지 못했다. 공식 GitHub APPROVE 이벤트는 제출하지 않았다.
+- 사용자 승인 범위에서 merge commit `7d4741392bb2ffaf308f5ce1cf6ba7f4deeeb1c9`로 원 기여 이력을 통합했다. 최신 base 충돌 검사를 통과했고 실제 통합 head의 CI를 사용했다.
+- 위 원격 승인 전·계획 문단은 검토 당시 기록이다. 최종 상태는 이 절과 첫 판정을 따른다. #536·#7501은 Refs 범위로 유지하며 임의 close하지 않는다.
+
+## Merge 후 contributor PR comment 계획
+
+- 원 기여의 연결선·화살촉 Direct PDF 지원를 인정하고 최신 devel CI 충돌을 메인테이너가 보정한 이유, 통합 PR/merge SHA, 실제 CI·로컬 결과를 게시한다.
+- Native/fresh WASM 각 388쪽 전후 byte-identical·편람 최저 각 99.96%, 63/289쪽 Direct PDF raw 100.00%와 지원 범위를 구분한다.
+- merge SHA의 편람 p63 Native/fresh WASM review와 overlay를 표시하고 Visual Sweep 정본 링크, 획 굵기·AA 잔차를 함께 기록한다. 원본 fork branch는 삭제하지 않는다.
