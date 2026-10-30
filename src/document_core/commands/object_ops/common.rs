@@ -47,18 +47,38 @@ pub(crate) fn update_changed_polygon_geometry(
         return;
     };
     let sa = &mut poly.drawing.shape_attr;
-    let source_matrix = [
-        sa.render_sx,
-        sa.render_b,
-        sa.render_tx,
-        sa.render_c,
-        sa.render_sy,
-        sa.render_ty,
-    ];
-    if !sa.has_saved_affine_geometry() || before.0 == 0 || before.1 == 0 || poly.points.is_empty() {
+    if before.0 == 0 || before.1 == 0 || poly.points.is_empty() {
         sa.raw_rendering.clear();
         return;
     }
+    let source_matrix = if sa.has_saved_affine_geometry() || poly.affine_edit_reference.is_some() {
+        [
+            sa.render_sx,
+            sa.render_b,
+            sa.render_tx,
+            sa.render_c,
+            sa.render_sy,
+            sa.render_ty,
+        ]
+    } else {
+        // 저장 행렬이 없는 다각형도 첫 변환부터 같은 합성 행렬을 쓴다. 편집 중 그림과
+        // 저장·재열기 그림이 같은 중심 기준 행렬을 소비해 개체가 옮겨지지 않는다.
+        let scale = |size: u32, original: u32| {
+            if original > 0 {
+                f64::from(size) / f64::from(original)
+            } else {
+                1.0
+            }
+        };
+        [
+            scale(before.0, sa.original_width),
+            0.0,
+            0.0,
+            0.0,
+            scale(before.1, sa.original_height),
+            0.0,
+        ]
+    };
     // 변경을 현재 행렬에 누적하면 크기·회전·대칭의 역연산 순서가 달라진다.
     // 처음 편집한 기준에서 매번 합성해 전체 속성 봉지의 되돌리기도 보존한다.
     let reference =

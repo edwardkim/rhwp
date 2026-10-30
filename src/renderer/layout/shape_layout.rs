@@ -2262,8 +2262,9 @@ impl LayoutEngine {
                         commands.push(PathCommand::ClosePath);
                     }
                 }
+                // 돌린 다각형의 개체 틀은 다른 도형처럼 돌리기 전 상자다. 회전은 각도로 따로 준다.
                 let (paint_x, paint_y, paint_w, paint_h) =
-                    if source_affine && !poly.points.is_empty() {
+                    if source_affine && !poly.points.is_empty() && sa.rotation_angle % 360 == 0 {
                         (
                             path_bounds.0,
                             path_bounds.1,
