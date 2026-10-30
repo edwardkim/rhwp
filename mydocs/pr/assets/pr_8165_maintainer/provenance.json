@@ -1,0 +1,93 @@
+{
+  "base": "ad4bf269ffef5adf2142b33004a9981fad7ce804",
+  "code_candidate": "cffa5c8619662945ba82bd1a0798ac3347884425",
+  "verification_followup": "f1b1e3438c",
+  "inputs": [
+    {
+      "pr": 8165,
+      "head": "0de61c2578063775dde80b6ccdc41e2a8ed8841f",
+      "source": "samples/header-footer-paper-frame.hwpx",
+      "sha256": "8589147dc4a70140d9ccd0c83b899932432541c9db9e714cc59cfdd4c16c67b6"
+    },
+    {
+      "pr": 8165,
+      "head": "0de61c2578063775dde80b6ccdc41e2a8ed8841f",
+      "source": "samples/master-page-section-carry.hwpx",
+      "sha256": "0b3ee48e3a4af08c8dc27359c258c080cc88d7086c7bb649e71a8b89482c2f28"
+    }
+  ],
+  "results": [
+    {
+      "backend": "native",
+      "key": "header-footer",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_raw_match_percent": 91.11882
+        }
+      ],
+      "input_sha256": "8589147dc4a70140d9ccd0c83b899932432541c9db9e714cc59cfdd4c16c67b6",
+      "pdf_sha256": "6eef9e9a4f0b5345468c3be6c29ed4998613f981dea96cc2225cc0930795ddfc",
+      "pages": {
+        "rhwp": 1,
+        "pdf": 1
+      }
+    },
+    {
+      "backend": "native",
+      "key": "master-carry",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_raw_match_percent": 100.0
+        },
+        {
+          "page": 2,
+          "silhouette_raw_match_percent": 100.0
+        }
+      ],
+      "input_sha256": "0b3ee48e3a4af08c8dc27359c258c080cc88d7086c7bb649e71a8b89482c2f28",
+      "pdf_sha256": "c72a180ce2fc841acb87dcba264f99af53a230575fbef8c08cdba31fc2ef1619",
+      "pages": {
+        "rhwp": 2,
+        "pdf": 2
+      }
+    },
+    {
+      "backend": "wasm",
+      "key": "header-footer",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_raw_match_percent": 91.03647
+        }
+      ],
+      "input_sha256": "8589147dc4a70140d9ccd0c83b899932432541c9db9e714cc59cfdd4c16c67b6",
+      "pdf_sha256": "6eef9e9a4f0b5345468c3be6c29ed4998613f981dea96cc2225cc0930795ddfc",
+      "pages": {
+        "rhwp": 1,
+        "pdf": 1
+      }
+    },
+    {
+      "backend": "wasm",
+      "key": "master-carry",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_raw_match_percent": 100.0
+        },
+        {
+          "page": 2,
+          "silhouette_raw_match_percent": 100.0
+        }
+      ],
+      "input_sha256": "0b3ee48e3a4af08c8dc27359c258c080cc88d7086c7bb649e71a8b89482c2f28",
+      "pdf_sha256": "c72a180ce2fc841acb87dcba264f99af53a230575fbef8c08cdba31fc2ef1619",
+      "pages": {
+        "rhwp": 2,
+        "pdf": 2
+      }
+    }
+  ]
+}
