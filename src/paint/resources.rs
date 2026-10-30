@@ -22,6 +22,8 @@ pub const RESOURCE_KEY_ALGORITHM: &str = "blake3";
 pub struct ResourceArena {
     /// 그림 신원 키에 섞는 문서 단위 세대. 기존 공개 `PageLayerTree` 모양은 바꾸지 않는다.
     source_image_epoch: u32,
+    /// 문서가 명시한 Print 글자 래스터 정책. 직접 만든 layer는 기존 기본값을 쓴다.
+    print_text_geometry: Option<bool>,
     image_bytes: Vec<Vec<u8>>,
     image_hashes: Vec<u64>,
     image_fingerprints: Vec<[u8; 16]>,
@@ -42,6 +44,13 @@ pub struct ResourceArena {
 }
 
 impl ResourceArena {
+    pub(crate) fn set_print_text_geometry(&mut self, enabled: Option<bool>) {
+        self.print_text_geometry = enabled;
+    }
+
+    pub(crate) fn print_text_geometry(&self) -> Option<bool> {
+        self.print_text_geometry
+    }
     pub(crate) fn set_source_image_epoch(&mut self, epoch: u32) {
         self.source_image_epoch = epoch;
     }

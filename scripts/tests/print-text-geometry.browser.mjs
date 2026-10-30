@@ -56,7 +56,8 @@ test('실제 Canvas Print 글리프는 기하 모드를 소비하고 Screen으�
         return original(...args);
       };
       const rows = [];
-      for (const profile of ['screen', 'print', 'screen', 'print']) {
+      for (const [compat, profile] of [[true, 'screen'], [true, 'print'], [false, 'print'], [true, 'print'], [true, 'screen']]) {
+        doc.setHangul2024Compat(compat);
         calls.length = 0;
         doc.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', profile);
         const rgba = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
@@ -64,18 +65,20 @@ test('실제 Canvas Print 글리프는 기하 모드를 소비하고 Screen으�
         for (let i = 0; i < rgba.length; i += 4) {
           if (rgba[i + 3] > 0 && Math.min(rgba[i], rgba[i + 1], rgba[i + 2]) < 232) ink++;
         }
-        rows.push({profile, calls: [...calls], ink, tree: doc.getPageRenderTree(0)});
+        rows.push({compat, profile, calls: [...calls], ink, tree: doc.getPageRenderTree(0)});
       }
       return rows;
     } finally { doc.free(); }
   });
-  const first = result[0];
+  const firstByCompat = new Map();
   for (const row of result) {
+    const first = firstByCompat.get(row.compat) || row;
+    firstByCompat.set(row.compat, first);
     assert.ok(row.ink > 0 && row.calls.some(call => call.text === 'H'), JSON.stringify(row));
     assert.equal(row.tree, first.tree, '프로필 전환으로 원본 배치·소속을 바꾸지 않는다');
     assert.deepEqual(row.calls.map(call => call.transform), first.calls.map(call => call.transform),
       '글리프 원점·장평을 모드 보정 수치로 바꾸지 않는다');
-    const expected = row.profile === 'print' ? 'geometricPrecision' : 'auto';
+    const expected = row.profile === 'print' && row.compat ? 'geometricPrecision' : 'auto';
     assert.ok(row.calls.every(call => call.mode === expected),
       `실제 glyph paint의 ${row.profile} 모드: ${JSON.stringify(row.calls)}`);
   }

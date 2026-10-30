@@ -19,6 +19,11 @@ pub struct PageLayerTree {
 }
 
 impl PageLayerTree {
+    /// 명시적 인쇄 세대가 없으면 기존 Print layer의 기하 정책을 보존한다.
+    pub fn preserves_raster_text_geometry(&self) -> bool {
+        self.profile == RenderProfile::Print && self.resources.print_text_geometry().unwrap_or(true)
+    }
+
     pub fn new(page_width: f64, page_height: f64, mut root: LayerNode) -> Self {
         let mut next_text_source_id = 0;
         bind_text_run_sources(&mut root, &mut next_text_source_id);

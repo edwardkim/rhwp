@@ -554,7 +554,7 @@ impl WebCanvasRenderer {
     /// 렌더 트리를 Canvas에 렌더링
     pub fn render_tree(&mut self, tree: &PageRenderTree) {
         self.render_profile = crate::paint::RenderProfile::Screen;
-        text_geometry::configure(&self.ctx, self.render_profile);
+        text_geometry::configure(&self.ctx, false);
         self.print_stroke_adjustment = false;
         self.render_node(&tree.root);
     }
@@ -567,7 +567,7 @@ impl WebCanvasRenderer {
             crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
         );
         self.render_profile = tree.profile;
-        text_geometry::configure(&self.ctx, self.render_profile);
+        text_geometry::configure(&self.ctx, tree.preserves_raster_text_geometry());
         self.hft_outline_enabled = matches!(
             tree.profile,
             crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
