@@ -58,3 +58,10 @@ Native 캐시·타일·Direct PDF 집중 검사는 별도로 완료해 기록한
 `native_host`, `renderer/pdf`, `renderer/skia`뿐이며 모두 WASM에서 제외된다. Cargo·의존성·
 WASM 출력 스크립트도 변경되지 않아 이 기준 패키지를 재사용했다. 후보는 위에 기록한 fresh
 WASM 패키지다. 편람은 기능 보존 대조군으로만 실행했다.
+
+최소 글꼴 환경의 첫 Native Skia 집중 회귀는 416개 중 415개 통과·1개 실패였다. 실패한
+`distinct_pages_keep_their_own_exact_full_page_crops_on_warm_round_trips`는 두 쪽을 텍스트로
+구별했으나 시스템 글꼴이 없으면 양쪽이 흰색이 되어 서로 다르다는 전제에서 실패했다. 원 PR의
+동일 검사도 같은 입력을 사용한다. 두 쪽에 서로 다른 합성 사각형을 넣고 기존 full-page crop·
+캐시 재사용 assertion은 유지했으며, 보정한 검사는 같은 최소 글꼴 환경에서 개별 통과했다.
+전체 집중 회귀는 보정 후 다시 실행한다.
