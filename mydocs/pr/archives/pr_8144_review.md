@@ -2,7 +2,17 @@
 
 ## 최종 판정
 
-**승인.** 원 기여 head `72181b51b0a734c23cad9c3f0a0f5649e391b150`을 보존하고 최신 devel과 통합했다. 최종 코드 `21ba44e3ea75966321d7184e2d94a8620e378013`의 필수 로컬 검증과 편집 저장본의 독립 Print 확인을 완료했다. 남은 merge 전 조건은 제출한 통합 PR의 최신 head CI 성공과 충돌 없음 확인이다. 사용자는 완전한 처리와 메인터너 보정·수용을 승인했다.
+**승인.** 원 기여 head `72181b51b0a734c23cad9c3f0a0f5649e391b150`을 보존하고 최신 devel과 통합했다. 최종 코드 `21ba44e3ea75966321d7184e2d94a8620e378013`의 필수 로컬 검증과 편집 저장본의 독립 Print 확인을 완료했다. [통합 PR #8388](https://github.com/edwardkim/rhwp/pull/8388)의 최신 head CI 성공과 clean merge-tree를 확인하고 2026-10-30 17:39 KST에 merge했다. 사용자는 완전한 처리와 메인터너 보정·수용을 승인했다.
+
+## 통합 결과
+
+- 통합 PR [#8388](https://github.com/edwardkim/rhwp/pull/8388), 제출 head `a1e43d51171bae0ce89167afe0d807cdcf66c17f`, merge `4aac600e3d5305025e20e6a661288e83346495f2`.
+- 원 #8144와 #8121도 모두 GitHub `merged=true`로 확인했다. 원 커밋은 merge 조상에 남아 있으며 fork branch를 삭제하지 않는다.
+- 최종 [CI](https://github.com/edwardkim/rhwp/actions/runs/41024314508), [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/41024314748), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/41024315243), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/41024314628), [Adapter](https://github.com/edwardkim/rhwp/actions/runs/41024315384), [변경 범위 판정](https://github.com/edwardkim/rhwp/actions/runs/41024313989) 모두 성공. check 33 success / 5 skipped / 실패 0.
+- [메인터너 self-review](https://github.com/edwardkim/rhwp/pull/8388#pullrequestreview-5709906084). fresh base `168aaaf2bf5a4ef5ecc70a61087aeabf2d9d2433`의 clean merge-tree와 실제 merge tree `94976f660b60e5cdd87969121119004a75d34484`가 같다.
+- 후속 기록은 maintainer 직접 반영 경로다. 이 운영 커밋은 archive·오늘할일·증적의 중복 정리만 포함하며 코드·테스트를 변경하지 않는다. PR 본문과 README가 사용하는 `<출력>/<문서>/silhouette.tsv`는 그대로 보존한다. 이전 측정값을 포함한 미참조 평탄 TSV 복사본 72개를 제거했다.
+- merge 후 [duration metadata 갱신](https://github.com/edwardkim/rhwp/actions/runs/41027934553): 성공. 검증된 PR 측정으로 `ci-metrics/nextest-target-durations`를 `8cd3a6e62`로 갱신했다. 검증 CI는 다시 실행하지 않았다.
+- contributor comment는 아래 계획대로 merge SHA의 PNG와 함께 이 운영 커밋 반영 후 게시한다. 종료 정리의 실제 실행 로그는 `/tmp/rhwp-pr8144-cleanup-20261030.json`에 남긴다. 다른 보류 작업이 있는 `review/pblsketch-20261030`는 유지한다.
 
 ## 범위·승인·이력
 
@@ -29,7 +39,7 @@
 
 ## 시각 검증과 글꼴
 
-최종 [전쪽 결과 표](assets/pr_8144/results-table.md), [TSV·대표 PNG·재현 명령](assets/pr_8144/README.md), [입력/출력 해시·한컴 작업·빌드 provenance](assets/pr_8144/provenance.json)를 보존한다. 원 기여의 입력/PDF를 유지하고, 추가 대조군은 [fixture 생성 기록](../../tests/fixtures/pr8144/README.md)에 연결했다.
+최종 [전쪽 결과 표](../assets/pr_8144/results-table.md), [TSV·대표 PNG·재현 명령](../assets/pr_8144/README.md), [입력/출력 해시·한컴 작업·빌드 provenance](../assets/pr_8144/provenance.json)를 보존한다. 원 기여의 입력/PDF를 유지하고, 추가 대조군은 [fixture 생성 기록](../../../tests/fixtures/pr8144/README.md)에 연결했다.
 
 실제 한컴 2024 Print에서 포함된 Haansoft Batang·KoPubBatangLight·KoPubDotumLight를 확인했다. 로컬 `HBATANG.TTF`를 먼저, KoPub 디렉터리를 다음으로 공급하고 선언한 나눔스퀘어 대체 환경을 base/후보·Native/WASM에 동일 적용했다. 전체 HWP 글꼴 디렉터리를 공급하면 기존 Native 64MiB 총 예산에 필요한 폰트가 밀려날 수 있어 최종 검증은 실제 필요한 약 59MiB로 제한했다. 글꼴 프로그램·등록 예산 코드는 변경하지 않았다. 로컬 글꼴 파일은 커밋하지 않았다.
 
@@ -39,7 +49,7 @@
 
 최종 Native/fresh WASM의 제목·회색 TAC 상자·글머리표·괄호·각주 번호·본문/각주 줄간격을 독립 Print와 같은 영역에서 확인했다. 선행 9개 빈 문단은 실제 공간을 점유하고 명시적 쪽 나눔은 첫 쪽의 빈 문단과 둘째 쪽의 제목·본문을 구분한다. 편집 3경로는 삽입 글자와 뒤 표/본문을 보존하고, 각주의 불필요한 검정 구분선은 사라졌다. 제목의 세부 글자 폭·rasterization 차이는 남지만 표 경계·본문 시작·줄바꿈·각주 영역의 겹침이나 누락은 없다. 원 PDF의 고딕/현재 Print의 바탕 대체 차이도 별도 기록했다.
 
-[변경 전후 관계 검사](assets/pr_8144/relations-before-after.md)는 실제 base/후보 RenderTree에서 영향 사례 10개가 양쪽 backend 모두 FAIL→PASS, 여유 폭 정상 대조군은 PASS→PASS임을 보여 준다. Rust 회귀를 base에서 실행했다고 주장하는 자료가 아니라 실제 출력의 독립적인 비겹침·순서 대조다. 정식 12개 회귀는 원본 속성·셀 내용·소유·순서·undo/재열기를 검사하며 설치 글꼴이나 임의 px 핀에 의존하지 않는다.
+[변경 전후 관계 검사](../assets/pr_8144/relations-before-after.md)는 실제 base/후보 RenderTree에서 영향 사례 10개가 양쪽 backend 모두 FAIL→PASS, 여유 폭 정상 대조군은 PASS→PASS임을 보여 준다. Rust 회귀를 base에서 실행했다고 주장하는 자료가 아니라 실제 출력의 독립적인 비겹침·순서 대조다. 정식 12개 회귀는 원본 속성·셀 내용·소유·순서·undo/재열기를 검사하며 설치 글꼴이나 임의 px 핀에 의존하지 않는다.
 
 ## 실제 검증 결과
 
