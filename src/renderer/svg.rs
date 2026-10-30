@@ -3438,7 +3438,21 @@ impl Renderer for SvgRenderer {
         // 공통 스타일 속성 구성 (fill 제외 — 그림자/원본에서 각각 설정)
         // [#7151] 합성 볼드는 굵기를 획으로 명시한다 — 색이 fill 과 같아야 하므로
         // 속성 자체는 fill 을 아는 `attrs_for_cluster` 에서 붙인다.
-        let faux_bold_stroke = faux_bold_stroke_width(style, font_size);
+        // 외곽선 글자는 채우지 않고 윤곽만 긋는다. 합성 볼드 획과 겹치지 않게 그 획은 끈다.
+        let outline_attrs = super::stroke_pattern::char_outline_stroke(style.outline_type).map(
+            |(width, intervals)| {
+                let mut attrs = format!(
+                    " stroke=\"{color}\" stroke-width=\"{width:.2}\" stroke-linecap=\"round\" stroke-linejoin=\"round\""
+                );
+                if !intervals.is_empty() {
+                    let pattern: Vec<String> = intervals.iter().map(|v| format!("{v:.2}")).collect();
+                    attrs.push_str(&format!(" stroke-dasharray=\"{}\"", pattern.join(" ")));
+                }
+                attrs
+            },
+        );
+        let faux_bold_stroke =
+            faux_bold_stroke_width(style, font_size).filter(|_| outline_attrs.is_none());
         let mut base_attrs = format!("font-size=\"{}\"", font_size);
         if faux_bold_stroke.is_none() {
             if style.is_visually_bold() {
@@ -3782,7 +3796,10 @@ impl Renderer for SvgRenderer {
                     script_advance_scale,
                     ratio,
                 );
-                let common_attrs = attrs_for_cluster(cluster_str, &color);
+                let common_attrs = match &outline_attrs {
+                    Some(stroke) => attrs_for_cluster(cluster_str, "none") + stroke,
+                    None => attrs_for_cluster(cluster_str, &color),
+                };
                 let glyph_text = pua_glyph::display(&source_coverage, cluster_str, style);
                 let skew = italic_face(cluster_str)
                     .filter(|face| !face.slanted)

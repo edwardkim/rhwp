@@ -392,6 +392,9 @@ impl SkiaTextReplay<'_> {
                     }
                 };
                 let is_middle_dot = crate::renderer::render_tree::is_vector_middle_dot;
+                // 외곽선 글자는 SVG·Canvas와 같은 굵기·반복 구간으로 윤곽만 긋는다.
+                let outline =
+                    crate::renderer::stroke_pattern::char_outline_stroke(style.outline_type);
                 let draw_text_pass = |color: Color, stroke_width: f32, dx: f32, dy: f32| {
                     let mut text_paint = Paint::default();
                     text_paint.set_anti_alias(true);
@@ -399,6 +402,20 @@ impl SkiaTextReplay<'_> {
                     if stroke_width > 0.0 {
                         text_paint.set_style(paint::Style::Stroke);
                         text_paint.set_stroke_width(stroke_width);
+                        text_paint.set_stroke_cap(paint::Cap::Round);
+                        text_paint.set_stroke_join(paint::Join::Round);
+                        if let Some((_, intervals)) =
+                            outline.as_ref().filter(|(_, v)| !v.is_empty())
+                        {
+                            let intervals: Vec<f32> = intervals.iter().map(|v| *v as f32).collect();
+                            text_paint
+                                .set_path_effect(skia_safe::PathEffect::dash(&intervals, 0.0));
+                        }
+                        super::line_replay::floor_stroke_to_device(
+                            canvas,
+                            &mut text_paint,
+                            self.raster_target,
+                        );
                     } else {
                         text_paint.set_style(paint::Style::Fill);
                     }
@@ -779,13 +796,8 @@ impl SkiaTextReplay<'_> {
                             style.shadow_offset_y as f32,
                         );
                     }
-                    if style.outline_type > 0 {
-                        draw_text_pass(
-                            colorref_to_skia(style.color, 1.0),
-                            (font_size * 0.08).max(0.8),
-                            0.0,
-                            0.0,
-                        );
+                    if let Some((width, _)) = &outline {
+                        draw_text_pass(colorref_to_skia(style.color, 1.0), *width as f32, 0.0, 0.0);
                     }
                     if style.emboss {
                         draw_text_pass(Color::WHITE, 0.0, -1.0, -1.0);
@@ -794,7 +806,9 @@ impl SkiaTextReplay<'_> {
                         draw_text_pass(Color::from_argb(255, 96, 96, 96), 0.0, -1.0, -1.0);
                         draw_text_pass(Color::WHITE, 0.0, 1.0, 1.0);
                     }
-                    draw_text_pass(colorref_to_skia(style.color, 1.0), 0.0, 0.0, 0.0);
+                    if outline.is_none() {
+                        draw_text_pass(colorref_to_skia(style.color, 1.0), 0.0, 0.0, 0.0);
+                    }
                 }
 
                 for &(left, right) in &segments {
