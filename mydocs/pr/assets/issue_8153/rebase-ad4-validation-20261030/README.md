@@ -33,13 +33,15 @@ Native 실행 파일 SHA-256은 `4db09178e15359b6cbd2f0601e31f9217b77a4451d02706
 ## 리베이스 기준과의 대조
 
 기준 `ad4bf269ffef5adf2142b33004a9981fad7ce804`의 기존 Native 실행 파일로 같은
-HWP·PDF·96dpi·글꼴 환경의 전 383쪽을 비교했다. [기준 Native TSV](base-handbook-hwp-native.tsv)와
+HWP·PDF·96dpi와 같은 글꼴 경로·환경 파일을 지정해 전 383쪽을 비교했다. 기준 Native는
+실제 글꼴 환경 메타데이터를 출력하지 않으므로 선택된 글꼴의 동일성까지 확인한 것은 아니다. [기준 Native TSV](base-handbook-hwp-native.tsv)와
 위 후보 TSV의 소수 둘째 자리 표시값을 같은 쪽끼리 대조하면 227쪽 개선, 156쪽 동일,
 하락 0쪽이다. 기준 최저는 59.60%, 90% 미만은 154쪽 59.60%, 155쪽 71.46%,
 156쪽 74.74%이며 후보의 세 쪽은 모두 100.00%다.
 [후보 154쪽 Native overlay](handbook-hwp-p154-native-overlay.png)에서 표 조각과 후속 내용을 확인한다.
 [HWPX 기준 Native TSV](base-handbook-hwpx-native.tsv)는 같은 383쪽에서 231쪽 개선,
 152쪽 동일, 하락 0쪽이다. 기준 최저는 96.25%, 후보 최저는 99.96%다.
+기준과 후보 HWP WASM 출력 메타데이터의 글꼴 환경 설정은 동일하다.
 [HWP 기준 fresh WASM TSV](base-handbook-hwp-wasm.tsv)는 225쪽 개선, 158쪽 동일,
 하락 0쪽이다. 기준 최저는 60.01%, 90% 미만은 154쪽 60.01%, 155쪽 71.56%,
 156쪽 74.76%이며 후보의 세 쪽은 모두 100.00%다. 기준 WASM은 재시도에서 초기 조판을
