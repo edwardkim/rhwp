@@ -1,60 +1,77 @@
-# PR #8144 — 제목 표 아래 본문·빈 문단의 완결 처리
+# PR #8144 — 제목 표와 본문 흐름의 완결 처리
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능 — 보정·재검증 진행 중.** 2026-10-30 사용자가 이 PR의 완결 처리를 지시했다. 앞서 승인한 충돌 보정과 수용 가능한 PR의 머지·기여자 안내 범위를 이어서 수행한다. 아래 미실행 항목을 완료로 판정하지 않는다.
+**승인.** 원 기여 head `72181b51b0a734c23cad9c3f0a0f5649e391b150`을 보존하고 최신 devel과 통합했다. 최종 코드 `21ba44e3ea75966321d7184e2d94a8620e378013`의 필수 로컬 검증과 편집 저장본의 독립 Print 확인을 완료했다. 남은 merge 전 조건은 제출한 통합 PR의 최신 head CI 성공과 충돌 없음 확인이다. 사용자는 완전한 처리와 메인터너 보정·수용을 승인했다.
 
-## 고정 범위와 처리 경로
+## 범위·승인·이력
 
-- 원 PR: https://github.com/edwardkim/rhwp/pull/8144, pblsketch, head `72181b51b0a734c23cad9c3f0a0f5649e391b150`.
-- 최신 base: `168aaaf2bf5a4ef5ecc70a61087aeabf2d9d2433`.
-- 기본 작업 branch: `review/pr8144-completion`. 과거 누적 `review/pblsketch-20261030`는 다른 보류 작업·기준 PDF의 보존용이며 통째로 반영하지 않는다.
-- maintainer 일반 경로와 intake/local_validation/visual_fixture_evidence/rework_and_exceptions/post_merge를 적용한다. 첫 기여 수용은 #8165에서 이미 완료했다.
-- #8144는 #8121 head `5462965c8f7769bb6738814bf1eb0a90f12040b5`를 조상으로 포함한다. 같은 host의 Square/TAC 배치도 필수 검증 범위다. #8269 등의 코드는 포함하지 않는다.
-- 원 기여 이력을 보존해 최신 devel와 통합하고 메인터너 보정을 분리한다. 로컬 필수 검증을 마친 통합 head를 일반 PR로 제출하고 최신 GitHub CI·self-review 뒤 merge한다. 원 PR의 merged 상태와 기여자 안내까지 확인한다.
-- #8145의 기존 Native 제목 누락 예외를 이번 PR에 확대하지 않는다. 원본 교체·임의 좌표 보정·허용치 완화로 통과시키지 않는다.
+- 사용자 지시: 2026-10-30 “8144 PR을 완전하게 처리해서 마무리”. 앞서 승인한 메인터너 충돌 보정과 수용 가능한 기여 PR의 머지·기여자 안내를 이어 수행한다.
+- [원 PR #8144](https://github.com/edwardkim/rhwp/pull/8144): pblsketch, devel 대상, bug/layout/rendering/table, milestone 1. 원 head는 최신 devel과 충돌해 직접 머지할 수 없다.
+- 기준 devel `168aaaf2bf5a4ef5ecc70a61087aeabf2d9d2433`; branch `review/pr8144-completion`.
+- 원 head는 [#8121](https://github.com/edwardkim/rhwp/pull/8121)의 `5462965c8f7769bb6738814bf1eb0a90f12040b5`를 조상으로 포함한다. 같은 host의 Square/TAC도 필수 범위다. 다른 보류 #8269 코드는 포함하지 않는다.
+- 범위 기록 `5054b02af9` → 기여 이력 보존 merge `2ca841aa3c` → 공통 행/원점 보정 `dba42989ba` → 각주 색 없음 보정 `21ba44e3ea`.
+- 원 #8144/#8121은 별도 해결 대상 issue가 없는 공개 재현 PR이다. #7699/#7548은 참조 계약이며 이 처리에서 다시 close하지 않는다.
+- 과거 누적 `review/pblsketch-20261030`는 다른 보류 작업 보존용으로 유지한다. #8145의 글꼴 예외를 확대 적용하지 않는다.
+- maintainer 일반 경로, intake/local_validation/visual_fixture_evidence/rework_and_exceptions/post_merge를 적용했다. 원 기여의 첫 기여 수용은 #8165에서 이미 완료했다.
 
-## 확인한 문제와 독립 근거
+## 원인과 공통 조판 계약
 
-1. 원본 3개는 한컴 2024로 실제 저장한 문서이며 원 PR에 독립 Print PDF가 있다. 선행 빈 문단은 1000HU 줄 높이와 600HU 간격으로 점유하고 제목 host·TAC 문단이 뒤따른다.
-2. 같은 host의 #8121 원본은 저장 줄 하나에 Square anchor와 TAC 표가 함께 있으나, 독립 한컴 Print와 실제 재저장본은 anchor 줄과 표 줄을 나누어 배치한다. 기존 누적 후보의 단순 배제 영역 회피는 표와 뒤 본문이 한 줄 높은 상태였다. 현재 문서의 control 순서·실제 너비와 공통 줄 계획을 추적한다.
-3. `stored_first_line_clears_page_square_table`의 8문단 제한은 물리 쪽 경계가 아니다. 저장 줄·명시적 쪽/단 나눔·dirty 상태의 유효한 경계로 판정해야 한다. 정상 한컴 저장을 거친 9개 선행 빈 문단·명시적 쪽 나눔 대조군을 준비한다.
-4. 최신 devel의 #7699 상단 예약, #2019 빈 문단 계약, #7548 어울림 흐름, #8174의 공통 줄/원점·Storage 전달을 보존한다. 기존 #8165·#8145도 정상 대조군으로 확인한다.
+| 주장 | 원본·독립 근거 | 생산 → 측정 → 배치 | 결과와 비적용 경계 |
+|---|---|---|---|
+| 같은 host의 Square 앵커와 TAC도 실제 줄 소속을 갖는다 | 원 control 순서, 저장 가로 폭 40816HU와 TAC 40819HU, 독립 Print의 2줄. 한컴 정상 재저장 전폭/10HU 여유 폭 대조군은 각각 2줄/1줄 | `typeset/inline_flow/plan.rs`가 공통 `ObjectPlacementFrame`의 배제 영역과 원점을 계산 → `paragraph_flow.rs`가 `InlineFlowPlan.occupied_end`로 fit하고 같은 plan을 commit → `layout/paragraph_layout.rs`가 그 행과 부동 표 확정 원점을 paint | 별도 host y 보정을 제거. dirty·합성·가변 폭 저장 줄은 프레임 보존의 근거로 쓰지 않는다. 캡션·중첩 표·셀 각주는 기존 소유자에게 반환 |
+| 제목 아래 저장 원점과 빈 줄을 보존한다 | 실제 한컴 HWP/HWPX 저장 LineSeg, 원 사례 3개와 9개 선행 빈 문단, 독립 Print | `stored_page_square_preserves_source_origin`이 같은 물리 쪽의 유효 저장 줄과 제목 바닥 관계를 인증 → typeset이 원점 0과 host 줄 점유를 기록 → layout과 `HeightCursor`가 같은 원점을 소비 | 임의 8문단 상한 제거. 명시적 쪽/단 나눔, 되감김, dirty, 합성, 누락 줄, 본문 높이가 탐색 경계. #7699 상단 예약과 중복하지 않음 |
+| 명시적 새 쪽의 TAC가 제목과 겹치지 않는다 | 한컴 정상 저장의 명시적 2쪽 문서: 빈 문단은 p1, 제목·TAC·본문은 p2 | `section/flow.rs`의 후속 TAC도 `vpos_snap_current_height_with_storage`를 소비 → `HeightCursor`가 인증된 새 쪽 원점을 중간 문단의 로컬 0과 구분 → fit/배치에 같은 높이 전달 | 원점을 paint에서 별도로 더하거나 출력 clamp로 겹침을 가리지 않음. 양쪽 실제 전체 2쪽과 내용 소유 확인 |
+| 편집·되돌리기·재열기도 같은 계약을 유지한다 | 원 HWPX의 후속 표 host pi4, 선행 빈 문단 pi0, 같은 host pi0에 `검증 ` 삽입. 정확히 그 export 바이트를 독립 Print | `DocumentCore`/실제 브라우저 `HwpDocument`의 스냅샷·insert·export·restore API → 같은 저장 바이트 재열기 | 전역 session 편집 여부로 깨끗한 다른 저장 문단을 버리지 않음. 해당 문단의 dirty/합성 여부로 판정 |
+| 각주 구분선의 명시적 색 없음을 보존한다 | 원 HWPX `noteLine color="none"`, 독립 Print의 선 부재. #1984 원 `4aeea2e90f` → 통합 `1bfeabcae6`은 RGB·여백만 보존했음을 확인 | 공통 HWPX ColorRef parser/serializer → `note_separator::has_ink`를 각주·미주 layout이 소비 | 선의 잉크만 없애고 예약 높이·위아래 여백·각주 내용 위치는 유지. 검정색 대조군은 선만 추가 |
 
-현재 base Native 재출력: same-host 51.06666%, title-inline 42.35117%, 빈 문단 HWP 44.94916%, HWPX 47.02465%; 각 1쪽. 원 사례는 아직 해결되지 않았다. base 최적화 WASM도 완료했다. 같은 순서로 51.10469%, 42.06504%, 44.88125%, 46.77153%이며 각 1쪽이다.
+분할 컷·rowspan·이어받기 계산은 변경하지 않았다. 새 행 경로는 전체 plan이 실제 예산에 들어갈 때 commit하며, 들어가지 않는 분할과 셀 각주 예약은 상태를 변경하기 전에 기존 소유자에게 반환한다. 기존 열 전환도 후보 plan 전체가 새 열 예산에 들어가는지 확인한다. 명시적 쪽 경계는 새 2쪽 원본, 기존 분할 경로는 전체 회귀로 확인한다.
 
-## 완료 조건
+## 시각 검증과 글꼴
 
-- 현재 base + 원 기여 코드의 충돌을 계약에 따라 보정하고, 줄 구성·점유 끝·실제 배치가 같은 결과를 소비하도록 수정한다.
-- 원본 4개, 적용/비적용 경계, 편집·저장·재열기, 관련 정상 대조군을 실제 실행한다. 편집은 같은 저장본의 독립 Print를 확보한다.
-- 전쪽 Native/fresh WASM 90% 이상·PDF 쪽수 일치·base 대비 2%p 초과 하락 없음 및 직접 확대 판독을 충족한다. 관련한 기존 회귀가 실패하면 원 해결 PR·보정·독립 증거를 먼저 대조한다.
-- 시각 조건을 충족한 뒤 정식 관계형 회귀를 보완하고 수정 전 FAIL/후 PASS를 확인한다. 임의 문단 수와 px 핀을 기대값으로 삼지 않는다.
-- Rust lint 전 묶음, 전체 release-test, Native Skia 3종, 최적화 WASM·실제 브라우저 시각 검증을 완료한다. 새 보정 head에는 원 PR의 과거 녹색 CI로 필수 검증을 대신하지 않는다.
-- 입력·PDF·TSV·대표 PNG와 정확한 source/build를 정식 경로에 반영한 뒤 PR 제출·CI·머지·후속 안내·정리를 완료한다.
+최종 [전쪽 결과 표](assets/pr_8144/results-table.md), [TSV·대표 PNG·재현 명령](assets/pr_8144/README.md), [입력/출력 해시·한컴 작업·빌드 provenance](assets/pr_8144/provenance.json)를 보존한다. 원 기여의 입력/PDF를 유지하고, 추가 대조군은 [fixture 생성 기록](../../tests/fixtures/pr8144/README.md)에 연결했다.
 
-작업 중 로그·진단은 `output/pr-review/pr8144-completion/`에만 보관한다. 구현의 실제 소비 경로와 각 검증 결과는 완료 시 이 문서에 이어 기록한다.
+실제 한컴 2024 Print에서 포함된 Haansoft Batang·KoPubBatangLight·KoPubDotumLight를 확인했다. 로컬 `HBATANG.TTF`를 먼저, KoPub 디렉터리를 다음으로 공급하고 선언한 나눔스퀘어 대체 환경을 base/후보·Native/WASM에 동일 적용했다. 전체 HWP 글꼴 디렉터리를 공급하면 기존 Native 64MiB 총 예산에 필요한 폰트가 밀려날 수 있어 최종 검증은 실제 필요한 약 59MiB로 제한했다. 글꼴 프로그램·등록 예산 코드는 변경하지 않았다. 로컬 글꼴 파일은 커밋하지 않았다.
 
-## 메인터너 보정 진행
+원 PDF 제목은 고딕 글꼴이고 현재 한컴 Print는 바탕 대체 글꼴이다. 원 PDF 비교도 유지하며 새 Print로 점수를 대체하지 않았다. 현재 Print에서는 제목·회색 상자·글머리표·본문·각주를 같은 프로그램으로 대조한다. 확대 판독에서 발견한 `none` 구분선도 실제 보정했다. 수식 개체는 이 표본들에 없으며, 괄호·작은 기호·글머리표·각주 번호와 줄간격을 직접 확인한다.
 
-- 범위 기록 `5054b02af9`, 원 기여 통합 `2ca841aa3c`. 원 head `72181b51b0`와 최신 devel 이력을 모두 보존했다. `layout.rs`의 서로 다른 helper와 원점 유지 조건을 함께 살렸고, `flow.rs`의 Storage 전달, `vpos.rs`의 현재 source height cursor·후속 원점 연결을 보존했다. 아직 원격에 게시하지 않았다.
-- 같은 문단의 Square 앵커와 TAC는 `inline_flow::plan_with_storage`의 원본 control 순서·공통 행 계획으로 처리한다. `typeset/inline_flow/plan.rs`에서 동일한 `ObjectPlacementFrame`으로 배제 영역과 부동 표 원점을 확정한다. `paragraph_flow.rs`가 `occupied_end`로 수용하고 `plan.end`로 전진한다. `layout_inline_flow_plan`은 같은 행의 TAC box와 확정 부동 표 원점을 소비한다. 캡션·중첩 표·각주 또는 전체가 들어가지 않는 분할은 기존 소유자로 반환하며, 원 기여의 별도 host 보정 계산은 공통 행 계산으로 대체한다.
-- 같은 host 원본의 실제 저장 줄 폭은 40816HU, 용지 여백 계산 폭은 40819HU다. TAC 폭 40819HU를 후자로만 비교하면 앵커와 한 줄로 합쳐진다. 정상 저장본의 일정한 가로 프레임은 보존하되 줄 소속은 공통 계획에서 다시 계산한다. dirty·합성·가변 폭 줄은 이 저장 프레임의 근거로 쓰지 않는다. 독립 한컴 정상 저장의 전폭 대조군은 2줄, TAC를 10HU 좁힌 대조군은 1줄로 출력한다. 이 대조군은 원 사례를 대체하지 않는다.
-- 8문단 상한은 제거했다. 명시적 쪽·단 나눔, 저장 줄 되감김, 본문 높이 밖, dirty·합성·누락 줄이 실제 탐색 경계다. 첫 줄이 제목 바닥에서 시작하거나, 첫 앵커 줄은 원점 0에 있고 다음 줄이 제목 바닥에서 시작한다는 저장 증거로 원점 유지 여부를 정한다. 문서 전체의 편집 플래그 대신 해당 저장 문단의 유효성을 확인한다.
-- 첫 보정 Native: 원본 3개 93.95562/94.29047/93.89490%, 9개 선행 빈 문단 97.76588%. 두 번째 보정에서 같은 host 원본은 96.98633%, 정상 한컴 전폭/여유 폭 대조군은 97.76588/97.76974%다. 명시적 쪽 나눔 뒤 원점 보정과 최종 WASM은 검증 중이다.
-- #7699 HWP/HWPX/좁은 표, #7548 저장/재조판, #8145 cellzone, #8165 머리말·꼬리말은 첫 보정 Native에서 base와 같은 수치다. #7699 최저 99.07819%, #7548 99.81020%, cellzone 99.54886%, 머리말·꼬리말 91.11882%다. 최종 head의 재검증을 대신하지 않는다.
+## 직접 판독과 관계 회귀
 
-### 글꼴 판독
+최종 Native/fresh WASM의 제목·회색 TAC 상자·글머리표·괄호·각주 번호·본문/각주 줄간격을 독립 Print와 같은 영역에서 확인했다. 선행 9개 빈 문단은 실제 공간을 점유하고 명시적 쪽 나눔은 첫 쪽의 빈 문단과 둘째 쪽의 제목·본문을 구분한다. 편집 3경로는 삽입 글자와 뒤 표/본문을 보존하고, 각주의 불필요한 검정 구분선은 사라졌다. 제목의 세부 글자 폭·rasterization 차이는 남지만 표 경계·본문 시작·줄바꿈·각주 영역의 겹침이나 누락은 없다. 원 PDF의 고딕/현재 Print의 바탕 대체 차이도 별도 기록했다.
 
-기본 환경의 회색 상자에서 글머리표 TextRun은 렌더 트리에 있고 위치도 셀 내부다. 설치한 나눔스퀘어의 `U+2022`는 cmap 항목은 있으나 `glyf`의 contour 수가 0이다. 같은 파일은 Linux와 Windows 폰트 디렉터리에 있다. 기준 same-host PDF의 실제 포함 face는 Haansoft Batang·KoPubBatangLight·KoPubDotumLight다. 확인한 로컬 `ttfs/hwp/HBATANG.TTF` 공급과 명시적 나눔스퀘어→Haansoft Batang 환경의 진단에서는 글머리표가 나타나고 98.58014%다. 이 설정은 원본·기본 렌더러를 바꾸지 않는다. 양쪽 base/후보와 Native/WASM에 같은 선언을 공급한 별도 검증 및 글꼴 해시·독립 Print 출처를 최종 증거에 보존한다.
+[변경 전후 관계 검사](assets/pr_8144/relations-before-after.md)는 실제 base/후보 RenderTree에서 영향 사례 10개가 양쪽 backend 모두 FAIL→PASS, 여유 폭 정상 대조군은 PASS→PASS임을 보여 준다. Rust 회귀를 base에서 실행했다고 주장하는 자료가 아니라 실제 출력의 독립적인 비겹침·순서 대조다. 정식 12개 회귀는 원본 속성·셀 내용·소유·순서·undo/재열기를 검사하며 설치 글꼴이나 임의 px 핀에 의존하지 않는다.
 
-### 명시적 쪽 나눔과 편집 경계
+## 실제 검증 결과
 
-명시적 새 쪽의 Square 앵커가 옆 차선의 vpos 0 줄을 소유할 때, 뒤 TAC의 저장 첫 줄은 제목 바닥에 있다. `place_paragraph_flow_with_storage`가 TAC에도 공통 `vpos_snap_current_height_with_storage`를 호출하고, `HeightCursor`는 명시적 새 쪽·인증된 0 원점·유효한 저장 줄인 경우를 중간 문단의 로컬 0과 구분한다. 같은 커서 결과를 TAC fit와 확정 배치가 소비한다. 임의 높이를 더하거나 paint에서 겹침을 가리지 않는다. Native 수정 전 본문 쪽 40.50489%, 보정 후 97.78154%이며 첫 빈 쪽은 100%다. 전체 2쪽이 독립 Print와 같다.
+- 집중 회귀 12건: PASS. 현재 suite manifest가 배정한 실제 모듈을 선택했다.
+- 전체 `cargo nextest run --locked --cargo-profile release-test --tests --test-threads 6 --no-fail-fast`: **12,062 passed, 45 skipped, 0 failed**. 실행 2,190초. 기존 nextest 제외 설정을 유지했다.
+- Native Skia: root lib **3,858 passed, 12 ignored**, workspace lib 15/165/2 passed; missing picture 2 passed; direct PDF 14 passed.
+- 최종 Native CLI와 최적화 WASM 빌드: PASS. 실제 Chrome Canvas에서 실행했으며 producer 해시는 provenance에 기록했다.
+- 원 사례·경계·편집 재열기 14개 비교: 15쪽/경로, Native/fresh WASM 모두 전쪽 90% 이상·독립 PDF 쪽수 일치·누락 없음. 원 PDF 포함 최저 Native 94.76313%, WASM 94.55817%; 현재 한컴 Print 비교 최저 98.71947%/98.69053%.
+- 기존 정상 대조군 7개: 13쪽/경로, 악화 없음. 실제 편집 3건도 각 1쪽/경로이며 PNG 재열기·undo·Native/WASM 저장 바이트 동일성을 확인했다.
+- `cargo fmt --all -- --check`: PASS.
+- Native/WASM/workspace all-target Clippy (`-D warnings`), workspace build, manifest check, `git diff --check`, 문서 링크 검사 3개: PASS.
 
-실제 `DocumentCore`에서 뒤 본문(pi4), 선행 빈 문단(pi0), 같은 host(pi0)에 각각 `검증 `을 삽입했다. 현재 Native에서 각 1쪽이며 undo PNG는 해당 before PNG와 바이트가 같다. 실제 내보낸 HWPX의 한컴 Print 작업은 대기/실행 중이며, 이를 포함한 최종 Native/WASM 비교와 관계형 회귀 보완은 다음 검증 단계에서 완료한다. 진단 프로브는 현재 Native 빌드의 `release-test/deps/librhwp.rlib`를 명시해 연결했다.
+로컬 빌드는 공용 `target/pr-review`, `CARGO_BUILD_JOBS=6`, release-test opt-level 1/codegen-units 64를 사용했다. `src`는 `21ba44e3ea` 이후 바뀌지 않았다. Studio 소스·패키지·workflow는 변경하지 않았으므로 Studio 전용 테스트나 배포를 추가하지 않았다. 실제 WASM 브라우저 출력·편집 검증은 위와 같이 완료했다.
 
-### 최종 확대 판독에서 확인한 각주 구분선 보정
+초기 dba 전체 회귀는 6,987건 통과 후 위 각주 보정을 위해 SIGINT로 중단했다. 실행 중이던 6건의 signal 종료를 제품 실패 또는 통과로 계산하지 않는다. 첫 최종 집중 실행도 prepare 후 suite가 재배정되어 0건 선택되어 종료됐으므로 통과 근거에서 제외했다. 현재 manifest의 suite 021/025로 12건을 실제 실행했다. 이후 그 배정으로 전체 12,062건을 실제 통과했다. 최종 측정 주석의 파일 바이트 수 변화 때문에 마지막 manifest 검사에서 자동 suite 배정 drift가 발생했다. 정식 `--prepare`로 재생성하고 모듈 1,872개의 집합 동일성, 실행 대상으로 발견된 12,062건과 전체 PASS 기록의 논리 테스트 이름 집합 동일성(누락·추가 0)을 확인했다. 새 배정의 실행 파일 컴파일·집중 9+3건·workspace all-target Clippy·fmt·manifest를 통과했다. 코드나 테스트 동작은 바뀌지 않아 36분의 전체 실행을 중복하지 않았다. 테스트 집합 해시는 provenance에 남겼다.
 
-`dba42989ba`의 전쪽 수치는 통과했지만 원 HWPX의 `noteLine color="none"`이 검정으로 바뀌어 각주 앞 짧은 선이 남았다. 이전 #8121/#8144 본문도 이 차이를 기록했다. #1984의 원 해결 커밋 `4aeea2e90f` 및 통합 `1bfeabcae6`은 여백·굵기·RGB 보존을 추가했으나 `none`은 파서에서 무시하고 라이터가 검정으로 저장했다. 현재 독립 Print에는 선이 없다. 이를 점수 통과로 면제하지 않고 같은 원본의 완결 범위에 포함했다.
+## Self-review
 
-공통 HWPX ColorRef 파싱·직렬화를 재사용해 `none`을 보존하고, 각주·미주의 공통 잉크 판정으로 선의 색 없음만 처리한다. 주석 예약 높이·위아래 여백·내용 원점은 유지한다. 이는 잘못된 위치를 숨기는 처리가 아니라 원본의 명시적 색 없음 속성을 적용하는 것이다. dba의 전체 회귀는 보정 전 산출물 검증이므로 중단했으며 최종 코드에서 다시 수행한다. 앞서 통과한 제목/편집 수치는 진단 이력으로 유지하고 최종 증적을 새 출력으로 교체한다.
+공통 조판 원칙의 적용 대상은 저장 원점과 Square/TAC 행 계획이다. 입력의 유효 저장 폭·vpos → 공통 frame/plan → fit/commit → 실제 paint 소비를 대조했고, 별도 backend y 보정 대신 확정된 원점을 공유한다. 문서 ID·8문단 상한·출력 감추기 분기는 사용하지 않는다. 빈 문단은 글자가 없어도 줄 공간을 소유하며, 여유 폭 정상 대조군은 같은 줄을 유지한다. 새 전체 plan이 예산에 맞지 않는 경로는 기존 분할 소유자에게 반환한다.
+
+메인터너 보정은 기존 #7699의 상단 예약, #7548의 저장 줄/부동 표 계약과 Storage 오류 전달을 유지한다. 각주 색 없음은 공통 ColorRef를 왕복 보존하고 각주·미주에서 같은 잉크 판정을 쓴다. 저장본과 실제 편집본을 각각 독립 Print로 비교했으며, 새 회귀는 시각 증거 확보 후 추가했다. 현재 대상의 기존 절대 px 핀은 관계 검사로 바꿨고 소스 줄 메트릭·바깥여백에서 얻는 독립 계약은 유지했다.
+
+이 검토는 메인터너 자신의 통합 보정에 대한 self-review다. 원 PR의 과거 CI나 작성자 캡처로 최종 후보 검증을 대신하지 않는다. 최종 local gate와 제출 head CI를 아래 기록 및 GitHub 상태로 확인한 뒤 merge한다.
+
+## Merge 후 contributor PR comment 계획
+
+원 기여의 제목 아래 원점·빈 문단 보존 성과를 먼저 인정하고, 최신 devel 통합·공통 행 계획·9개 빈 줄과 명시적 쪽 경계·각주 색 없음 보정을 설명한다. 기여 이력을 보존한 통합 PR과 실제 merge SHA, 로컬/CI 결과, 전쪽 수치와 직접 판독 결론을 존댓말로 전달한다.
+
+[Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 연결하고 아래 asset을 실제 merge SHA로 고정해 Markdown 이미지로 게시한다.
+
+- `mydocs/pr/assets/pr_8144/candidate/{native,wasm}/same-host/review/review_001.png`
+- `mydocs/pr/assets/pr_8144/candidate/{native,wasm}/nine-empty-break/review/review_002.png`
+- URL: `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/<asset-path>`
+
+merge 뒤 원 #8144/#8121의 merged 상태와 조상 포함을 확인한다. active review archive 이동·오늘할일 운영 기록·devel 동기화 뒤 `--body-file`로 게시하고 API로 한글·URL·중복 여부를 확인한다. 완료 증적은 정식 경로에 보존하고 root `output/` 전체 및 유휴 `target/pr-review/debug`를 정리한다.

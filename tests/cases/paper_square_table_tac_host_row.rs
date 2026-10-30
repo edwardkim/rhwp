@@ -1,4 +1,11 @@
-#![cfg(not(target_arch = "wasm32"))]
+//! 관계형: 같은 host의 Square 앵커 줄과 TAC 줄의 소유·순서·뒤 본문 비겹침.
+//! 측정 2026-10-30, 96 DPI, 색상 경계 보정 전 2px silhouette_raw_match_percent.
+//! paper-square-table-tac-host.hwpx: 전체 1쪽, Native/최저 98.84484%, fresh WASM/최저 98.80408%.
+//! same-host-full-row.hwp: 전체 1쪽, Native/최저 98.84715%, fresh WASM/최저 98.80599%.
+//! same-host-with-spare-width.hwp: 전체 1쪽, Native/최저 98.84554%, fresh WASM/최저 98.80318%.
+//! source 21ba44e3ea; 한컴 2024 Print, 전체 TSV·PNG·입력/글꼴 해시·실행 명령:
+//! mydocs/pr/assets/pr_8144/README.md.
+//!
 //! 쪽·종이 기준 어울림 표와 같은 문단의 글자처럼 취급 표는 옆에 들어갈 폭이 없으면
 //! 어울림 표의 바깥 아래 여백 아래 줄에 놓이고, 뒤 문단도 그 줄 아래에서 이어진다.
 //!
@@ -6,6 +13,8 @@
 //! vpos 가 증언한다, #7548). 그런데 host 자신의 글자처럼 취급 표 줄은 그 상자를 보지 않고
 //! 문단 시작에 계상되어, 뒤 문단의 저장 TAC 줄 원점이 상자 높이만큼 위로 당겨졌다.
 //! 표본은 한글 2024 가 다시 저장한 HWPX 다(내용은 무의미한 글자로 바꿨다).
+#![cfg(not(target_arch = "wasm32"))]
+
 use rhwp::model::control::Control;
 use rhwp::wasm_api::HwpDocument;
 use serde_json::Value;
@@ -41,8 +50,23 @@ fn boxes(doc: &HwpDocument, page: u32) -> Vec<(String, u64, Option<u64>, f64, f6
 
 #[test]
 fn host_inline_table_clears_paper_square_table_and_successors_follow() {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
-    let doc = HwpDocument::from_bytes(&std::fs::read(path).unwrap()).unwrap();
+    assert_host_rows(SAMPLE);
+}
+
+#[test]
+fn normal_hancom_full_width_table_owns_a_separate_row() {
+    assert_host_rows("tests/fixtures/pr8144/same-host-full-row.hwp");
+}
+
+#[test]
+fn normal_hancom_spare_width_table_shares_the_anchor_row() {
+    assert_host_rows("tests/fixtures/pr8144/same-host-with-spare-width.hwp");
+}
+
+fn assert_host_rows(sample: &str) {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(sample);
+    let mut doc = HwpDocument::from_bytes(&std::fs::read(path).unwrap()).unwrap();
+    doc.set_hangul2024_compat(true);
     assert_eq!(doc.page_count(), 1, "독립 한글 출력과 같은 쪽 수");
 
     let host = &doc.document().sections[0].paragraphs[0];
@@ -75,6 +99,27 @@ fn host_inline_table_clears_paper_square_table_and_successors_follow() {
         inline_top >= floor - 0.5,
         "글자처럼 취급 표({inline_top:.1})가 어울림 표 바깥 상자({floor:.1})와 겹친다"
     );
+
+    let Control::Table(inline_source) = &host.controls[inline as usize] else {
+        unreachable!()
+    };
+    let source_width = i64::from(inline_source.common.width)
+        + i64::from(inline_source.outer_margin_left)
+        + i64::from(inline_source.outer_margin_right);
+    let frame_width = i64::from(host.line_segs[0].segment_width);
+    if source_width > frame_width {
+        let shape = host.char_shape_id_at(0).expect("앵커 줄의 원본 글자 모양");
+        let em = f64::from(doc.document().doc_info.char_shapes[shape as usize].base_size) / 75.0;
+        assert!(
+            inline_top - floor >= em - 0.5,
+            "폭을 넘는 TAC 앞에는 실제 앵커 줄이 있어야 한다: {sample}"
+        );
+    } else {
+        assert!(
+            (inline_top - floor).abs() <= 0.5,
+            "같은 줄에 들어가는 TAC는 제목 바깥 상자 아래의 앵커 줄을 공유한다: {sample}"
+        );
+    }
 
     // 뒤 문단의 표와 글줄은 모두 host 표 아래에서 시작하고 서로 겹치지 않는다.
     let mut successors: Vec<_> = boxes
