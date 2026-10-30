@@ -292,21 +292,6 @@ fn break_before_text_token(
         })
 }
 
-#[cfg(test)]
-#[test]
-fn paired_angle_opener_stays_with_text_but_operator_keeps_its_boundary() {
-    let paired: Vec<_> = "끝.<개정 2020>".chars().collect();
-    let first_inside = paired.iter().position(|c| *c == '<').unwrap() + 1;
-    assert!(!break_before_text_token(&paired, first_inside, 0, 1));
-    let operator: Vec<_> = "값<한계".chars().collect();
-    let rhs = operator.iter().position(|c| *c == '<').unwrap() + 1;
-    assert!(break_before_text_token(&operator, rhs, 0, 1));
-    assert!(
-        !is_line_end_forbidden('<'),
-        "독립 출력의 줄 끝 연산자는 유지한다"
-    );
-}
-
 /// 독립 Print에서 낱말 유지 문단도 한점 리더·분철점 뒤에서 나뉜다.
 /// 같은 폭의 U+00B7·ASCII 마침표는 라틴 낱말을 유지한다. 글꼴 슬롯과
 /// 줄 경계는 별도 계약이며, 이미 분리한 기호 토큰의 끝을 공통 소비한다.

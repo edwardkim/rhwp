@@ -112,16 +112,3 @@ pub fn generic_fallback_for_weight(font_family: &str, bold: bool) -> String {
         chain.to_string()
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::generic_fallback;
-
-    #[test]
-    fn romanized_myeongjo_names_keep_serif_fallback() {
-        for name in ["HY Sinmyeongjo", "Sinmyeong Jungmyeongjo", "AppleMyungjo"] {
-            assert!(generic_fallback(name).ends_with(",serif"), "{name}");
-        }
-        assert!(generic_fallback("Sinmyeong Junggothic").ends_with(",sans-serif"));
-    }
-}

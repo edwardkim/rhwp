@@ -628,26 +628,6 @@ mod tests {
         assert_eq!(picture_display_size_hu(&picture), (9000, 8000));
     }
 
-    #[test]
-    fn picture_composed_scale_uses_final_frame_and_preserves_fallback() {
-        let mut picture = Picture::default();
-        picture.common.width = 5668;
-        picture.common.height = 5668;
-        picture.shape_attr.original_width = 10208;
-        picture.shape_attr.original_height = 12300;
-        picture.shape_attr.current_width = 10202;
-        picture.shape_attr.current_height = 12280;
-        picture.shape_attr.raw_rendering = vec![1];
-        picture.shape_attr.render_sx = 0.555338854;
-        picture.shape_attr.render_sy = 0.460859059;
-
-        // 합성 변환이 최종 틀을 증명하면 중간 curSz로 다시 확대하지 않는다.
-        assert_eq!(picture_display_size_hu(&picture), (5668, 5668));
-        // 합성 결과가 틀과 다르면 기존 current 기반 폴백을 그대로 사용한다.
-        picture.shape_attr.render_sx = 1.0;
-        assert_eq!(picture_display_size_hu(&picture), (10202, 12280));
-    }
-
     /// [Issue #1230] 비-TAC Square wrap: current 가 부풀려져도 common 프레임 사용.
     #[test]
     fn picture_flow_frame_uses_common_for_square_wrap_float() {

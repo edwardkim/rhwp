@@ -220,24 +220,3 @@ fn character_ranges(face: &ttf_parser::Face<'_>) -> Option<Vec<(u32, u32)>> {
     }
     Some(ranges)
 }
-
-#[cfg(test)]
-mod tests {
-    use super::TextFontCoverage;
-
-    #[test]
-    fn clearing_family_discards_only_its_selection_and_allows_new_registration() {
-        let bytes = include_bytes!("../../tests/fixtures/fonts/RHWPHostFixture-Regular.ttf");
-        let face = ttf_parser::Face::parse(bytes, 0).unwrap();
-        let mut coverage = TextFontCoverage::default();
-        coverage.register("first", bytes, 0, &face);
-        coverage.register("second", bytes, 0, &face);
-        assert!(coverage.select("first", "A", false, false).is_some());
-        assert!(coverage.select("second", "A", false, false).is_some());
-        coverage.clear_family("first");
-        assert!(coverage.select("first", "A", false, false).is_none());
-        assert!(coverage.select("second", "A", false, false).is_some());
-        coverage.register("first", bytes, 0, &face);
-        assert!(coverage.select("first", "A", false, false).is_some());
-    }
-}

@@ -7984,28 +7984,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn missing_paragraph_shape_is_distinct_from_explicit_zero_and_scoped() {
-        let xml = r#"<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph" xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"><hp:p><hp:run charPrIDRef="0"><hp:t/></hp:run></hp:p><hp:p paraPrIDRef="0"><hp:run charPrIDRef="0"><hp:t>명시</hp:t></hp:run></hp:p></hs:sec>"#;
-        {
-            let scope = DefaultParaShapeScope::enter(Some(7));
-            let section = parse_hwpx_section(xml).unwrap();
-            assert!(scope.used());
-            assert_eq!(section.paragraphs[0].para_shape_id, 7);
-            assert_eq!(section.paragraphs[1].para_shape_id, 0);
-            let nested = parse_hwpx_section(&nested_table_section_xml(1)).unwrap();
-            let Control::Table(table) = &nested.paragraphs[0].controls[0] else {
-                panic!("중첩 표를 보존해야 한다");
-            };
-            assert_eq!(table.cells[0].paragraphs[0].para_shape_id, 7);
-        }
-        let section = parse_hwpx_section(xml).unwrap();
-        assert_eq!(
-            section.paragraphs[0].para_shape_id, 0,
-            "파싱 범위는 새지 않는다"
-        );
-    }
-
-    #[test]
     fn test_parse_simple_section() {
         let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
 <hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"

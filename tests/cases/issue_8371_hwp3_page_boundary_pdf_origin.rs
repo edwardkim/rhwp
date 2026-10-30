@@ -1,7 +1,7 @@
 //! 검사 유형: 관계형·고정형. 글꼴 파일이나 시스템 글꼴에 의존하지 않는 쪽 경계 검사.
-//! 주석 갱신: 2026-10-31T00:28:31+09:00; 직전 파일 커밋: 2026-10-30T20:08:21+09:00 (`9edfcfb1dfa7b3228397c6cef0760b0ab4a537e7`).
+//! 주석 갱신: 2026-10-31T02:20:22+09:00; 직전 파일 커밋: 2026-10-31T00:41:14+09:00 (`12fec16b4b7ef7855e2f3f909ad1573c527e368a`).
 //! 원본 `samples/hwp3-sample10.hwp`, 한컴 2020 Print, 96dpi, compat2022.
-//! 2026-10-30 측정 raw(2px 이웃): 312쪽 Native/fresh WASM 각 100.00%,
+//! 2026-10-30 측정 raw(2px 이웃): 312·763쪽 Native/fresh WASM 각 100.00%,
 //! 전 763쪽 최저 Native 99.41% / fresh WASM 99.40%.
 //! 독립 PDF 312쪽 첫 `SQL)`의 글자 원점은 (113.3786, 142.4044) CSS px다.
 //! 첫 좌표는 글줄 시작, 둘째 좌표는 기준선이다. 원본 Print에서 PDFium 문자 원점을 읽었다.
@@ -73,5 +73,31 @@ fn cached_page_boundary_keeps_source_order_and_pdf_line_origin() {
     assert!(
         node.bbox.y < following.bbox.y,
         "SQL 문단은 후속 본문보다 앞에 있어야 한다"
+    );
+}
+
+#[test]
+fn standalone_angle_operator_remains_at_the_print_line_end() {
+    let core = DocumentCore::from_bytes(include_bytes!("../../samples/hwp3-sample10.hwp")).unwrap();
+    let page = core.build_page_render_tree(762).unwrap();
+    let mut nodes = Vec::new();
+    collect(&page.root, &mut nodes);
+    let matches: Vec<_> = nodes
+        .iter()
+        .filter_map(|node| match &node.node_type {
+            RenderNodeType::TextRun(run) if run.text.contains("sqldba lmode=y <") => {
+                Some(run.text.as_str())
+            }
+            _ => None,
+        })
+        .collect();
+    assert_eq!(
+        matches.len(),
+        1,
+        "독립 Print의 명령문은 누락·중복 없이 보존된다"
+    );
+    assert!(
+        matches[0].trim_end().ends_with('<'),
+        "단독 연산자는 인쇄된 줄 끝에 남는다"
     );
 }
