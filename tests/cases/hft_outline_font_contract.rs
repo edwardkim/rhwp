@@ -50,6 +50,12 @@ fn registering_paint_source_preserves_document_and_replaces_unsupported_programs
     assert!(!core
         .register_hft_outline_font_native(FAMILY, woff, 0)
         .unwrap());
+    assert!(core
+        .register_hft_outline_font_native(FAMILY, &[], 0)
+        .is_err());
+    assert!(!core
+        .register_hft_outline_font_native(FAMILY, CFF, 999)
+        .unwrap());
     core.clear_text_font_family_native(FAMILY);
     assert!(core
         .register_hft_outline_font_native(FAMILY, CFF, 0)
@@ -69,12 +75,26 @@ fn registering_paint_source_preserves_document_and_replaces_unsupported_programs
         saved_before,
         "paint registry는 실제 저장 HWP 바이트에 반영되지 않는다"
     );
-    assert!(core
-        .register_hft_outline_font_native(FAMILY, &[], 0)
-        .is_err());
-    assert!(!core
-        .register_hft_outline_font_native(FAMILY, CFF, 999)
-        .unwrap());
+
+    // raw_stream を持つ実際の HWP 入力でも paint セッションは保存に影響しない。
+    let mut opened = DocumentCore::from_bytes(include_bytes!("../../saved/blank2010.hwp")).unwrap();
+    assert!(opened
+        .document()
+        .sections
+        .iter()
+        .any(|section| section.raw_stream.is_some()));
+    let original_ir = format!("{:?}", opened.document());
+    let original_bytes = rhwp::serializer::serialize_document(opened.document()).unwrap();
+    opened
+        .register_text_font_glyph_coverage_native(FAMILY, CFF, 0)
+        .unwrap();
+    opened.clear_text_font_family_native(FAMILY);
+    assert_eq!(format!("{:?}", opened.document()), original_ir);
+    assert_eq!(
+        rhwp::serializer::serialize_document(opened.document()).unwrap(),
+        original_bytes,
+        "実際の HWP を開いても paint セッションの変更は保存されない"
+    );
 }
 
 #[cfg(feature = "native-skia")]
