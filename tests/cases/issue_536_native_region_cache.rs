@@ -608,7 +608,19 @@ fn distinct_pages_keep_their_own_exact_full_page_crops_on_warm_round_trips() {
     core.set_document(document);
     for (section, width) in [(0, 9000), (1, 5000)] {
         core.create_shape_control_native(
-            section, 0, 0, width, 6750, 0, 0, true, "Square", "rectangle", false, false, &[],
+            section,
+            0,
+            0,
+            width,
+            6750,
+            0,
+            0,
+            true,
+            "Square",
+            "rectangle",
+            false,
+            false,
+            &[],
         )
         .unwrap();
     }
