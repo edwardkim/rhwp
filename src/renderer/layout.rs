@@ -7402,13 +7402,19 @@ impl LayoutEngine {
                 } else {
                     // 이어받는 외곽선은 필요한 면만 그린다. 채우기는 아래 문단별 paint가 소유한다.
                     let mut push_border_line =
-                        |border: &BorderLine, x1: f64, y1: f64, x2: f64, y2: f64| {
+                        |border: &BorderLine,
+                         far_side: bool,
+                         x1: f64,
+                         y1: f64,
+                         x2: f64,
+                         y2: f64| {
                             if !para_border_is_visible(border) {
                                 return;
                             }
-                            let nodes = super::layout::border_rendering::create_border_line_nodes(
-                                tree, border, x1, y1, x2, y2,
-                            );
+                            let nodes =
+                                super::layout::border_rendering::create_box_border_line_nodes(
+                                    tree, border, far_side, x1, y1, x2, y2,
+                                );
                             for node in nodes {
                                 border_nodes.push(node);
                             }
@@ -7418,13 +7424,13 @@ impl LayoutEngine {
                     let y_top = rect_y;
                     let y_bot = rect_y + rect_h;
                     if let Some(borders) = borders {
-                        push_border_line(&borders[0], x_left, y_top, x_left, y_bot);
-                        push_border_line(&borders[1], x_right, y_top, x_right, y_bot);
+                        push_border_line(&borders[0], false, x_left, y_top, x_left, y_bot);
+                        push_border_line(&borders[1], true, x_right, y_top, x_right, y_bot);
                         if !skip_top {
-                            push_border_line(&borders[2], x_left, y_top, x_right, y_top);
+                            push_border_line(&borders[2], false, x_left, y_top, x_right, y_top);
                         }
                         if !skip_bottom {
-                            push_border_line(&borders[3], x_left, y_bot, x_right, y_bot);
+                            push_border_line(&borders[3], true, x_left, y_bot, x_right, y_bot);
                         }
                     }
                 }
