@@ -132,8 +132,11 @@ fn decode_image_to_canvas(data: &[u8]) -> Option<HtmlCanvasElement> {
     if super::image_resolver::png_sampling::print_jpeg_transfer(data) {
         return print_jpeg::decode(data);
     }
-    let dynimg = image::load_from_memory(data).ok()?;
-    let rgba = dynimg.to_rgba8();
+    // 레이어 트리의 회색 JPEG 판정이 같은 바이트를 막 디코드했으면 그 픽셀을 쓴다.
+    let rgba = match super::image_resolver::take_decoded(data) {
+        Some(rgba) => rgba,
+        None => image::load_from_memory(data).ok()?.to_rgba8(),
+    };
     let (iw, ih) = (rgba.width(), rgba.height());
     if iw == 0 || ih == 0 {
         return None;
