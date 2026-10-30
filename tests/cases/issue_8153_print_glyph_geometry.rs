@@ -1,5 +1,5 @@
 //! 관계형·고정형: Print의 소수 원점과 Screen 격자를 합성 glyph로 대조한다.
-//! 주석 갱신: 2026-10-30T14:55:18+09:00; 직전 파일 커밋: 2026-10-30T14:42:51+09:00 (56f1426c8e).
+//! 주석 갱신: 2026-10-30T14:56:45+09:00; 직전 파일 커밋: 2026-10-30T14:55:31+09:00 (80ca89e99f).
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
 //! 이 검사는 합성 입력을 사용하며 아래 수치는 관련 편람의 별도 시각 검증이다.
 //! 관련 실사례 HWP 79쪽 Native 100.00% / fresh WASM 100.00%.
@@ -16,9 +16,9 @@
 use rhwp::paint::{CacheHint, GroupKind, LayerNode, PageLayerTree, PaintOp, RenderProfile};
 use rhwp::renderer::layer_renderer::RasterRenderOptions;
 use rhwp::renderer::raster_pixels::RasterPixels;
-use rhwp::renderer::render_tree::{BoundingBox, TextRunNode};
+use rhwp::renderer::render_tree::{BoundingBox, RectangleNode, TextRunNode};
 use rhwp::renderer::skia::SkiaLayerRenderer;
-use rhwp::renderer::TextStyle;
+use rhwp::renderer::{ShapeStyle, TextStyle};
 
 #[test]
 fn explicit_print_generation_survives_layer_cache_transitions() {
@@ -63,7 +63,21 @@ fn print_generation_uses_distinct_native_picture_cache_entries() {
         tree.root = LayerNode::group(
             bounds,
             None,
-            vec![LayerNode::leaf(bounds, None, Vec::new())],
+            vec![LayerNode::leaf(
+                bounds,
+                None,
+                vec![PaintOp::rectangle(
+                    bounds,
+                    RectangleNode::new(
+                        0.0,
+                        ShapeStyle {
+                            fill_color: Some(0),
+                            ..Default::default()
+                        },
+                        None,
+                    ),
+                )],
+            )],
             CacheHint::StaticSubtree,
             GroupKind::Generic,
         );
