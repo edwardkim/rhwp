@@ -1,4 +1,8 @@
-//! 한컴 Print와 같은 글자처럼 그림 문단의 쪽 소속·내용 보존 계약.
+//! 관계형·고정형: 그림 문단의 내용 소유·순서·겹침과 독립 Print 쪽 수.
+//! 주석 갱신: 2026-10-30T16:20:11+09:00; 직전 파일 커밋: 2026-10-30T15:31:23+09:00 (`77fbef6da4a83d0671c5e9ed0a8b1bb3b4777788`).
+//! 2026-10-30 중간 측정 raw(96 DPI, PDFium, 2px 이웃): 2쪽 Native 98.86% / WASM 98.87%,
+//! 3쪽 Native 99.80% / WASM 99.81%; 전 6쪽 최저 Native 97.47% / WASM 97.46%.
+//! 근거: mydocs/pr/assets/issue_8371/law-split-20261030/README.md. 최종 head 재측정 필요.
 #![cfg(not(target_arch = "wasm32"))]
 use rhwp::wasm_api::HwpDocument;
 use serde_json::Value;

@@ -220,7 +220,13 @@ pub(super) fn typeface_candidates_for_families(
             // 글리프를 담을 수 있다. 원 family의 CFF를 먼저 찾고, 없는
             // 글리프는 같은 family의 다른 프로그램을 대체 family보다 앞에 둔다.
             if has_system_family(system_families, family) {
-                for candidate in matching_system_programs(font_mgr, family, typeface.font_style()) {
+                // fontconfig의 합성 Bold는 매칭 결과의 스타일만 바꾼다.
+                // 실제 Regular 프로그램을 기준으로 같은 family의 분리된
+                // 글리프 공급자를 찾고, paint에서 요청한 굵기를 적용한다.
+                let program_style =
+                    super::synthetic_typeface::unemboldened_typeface(font_mgr, &typeface)
+                        .map_or_else(|| typeface.font_style(), |face| face.font_style());
+                for candidate in matching_system_programs(font_mgr, family, program_style) {
                     push(candidate, "system");
                 }
             }
@@ -522,6 +528,79 @@ pub(super) fn legacy_typeface_for_style(font_mgr: &FontMgr, style: FontStyle) ->
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn synthetic_bold_keeps_split_family_glyphs() {
+        const MARKER: &str = "RHWP_TEST_SPLIT_CFF_CHILD";
+        if std::env::var_os(MARKER).is_some() {
+            let manager = FontMgr::default();
+            let families = collect_system_families(&manager);
+            let (_, chain) = text_typeface_candidates(
+                &manager,
+                &families,
+                &TypefaceCatalog::default(),
+                &TypefaceCatalog::default(),
+                "RHWP HFT Outline Fixture",
+                FontStyle::bold(),
+            );
+            for ch in ['가', '나'] {
+                let selected = select_typeface_for_character(&chain, ch)
+                    .expect("같은 family의 글리프가 보존되어야 한다");
+                assert_eq!(selected.source, "system");
+                assert_eq!(selected.typeface.family_name(), "RHWP HFT Outline Fixture");
+            }
+            return;
+        }
+        let dir = std::env::temp_dir().join(format!("rhwp-split-bold-{}", std::process::id()));
+        std::fs::create_dir_all(dir.join("fonts")).unwrap();
+        std::fs::create_dir_all(dir.join("cache")).unwrap();
+        let first = include_bytes!("../../../tests/fixtures/fonts/RHWPHftOutline.otf");
+        std::fs::write(dir.join("fonts/first.otf"), first).unwrap();
+        let mut second = first.to_vec();
+        let count = u16::from_be_bytes([second[4], second[5]]) as usize;
+        let cmap = (0..count)
+            .find_map(|index| {
+                let at = 12 + index * 16;
+                (second.get(at..at + 4) == Some(b"cmap")).then(|| {
+                    u32::from_be_bytes(second[at + 8..at + 12].try_into().unwrap()) as usize
+                })
+            })
+            .unwrap();
+        let sub =
+            cmap + u32::from_be_bytes(second[cmap + 8..cmap + 12].try_into().unwrap()) as usize;
+        assert_eq!(u16::from_be_bytes([second[sub], second[sub + 1]]), 4);
+        for offset in [sub + 14, sub + 20] {
+            assert_eq!(&second[offset..offset + 2], &[0xac, 0x00]);
+            second[offset..offset + 2].copy_from_slice(&('나' as u16).to_be_bytes());
+        }
+        second[sub + 24..sub + 26].copy_from_slice(&1u16.wrapping_sub('나' as u16).to_be_bytes());
+        std::fs::write(dir.join("fonts/second.otf"), second).unwrap();
+        let conf = format!(
+            r#"<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd"><fontconfig><dir>{}/fonts</dir><cachedir>{}/cache</cachedir><match target="font"><test name="weight" compare="less_eq"><const>medium</const></test><test target="pattern" name="weight" compare="more_eq"><const>bold</const></test><edit name="embolden" mode="assign"><bool>true</bool></edit><edit name="weight" mode="assign"><const>bold</const></edit></match></fontconfig>"#,
+            dir.display(),
+            dir.display()
+        );
+        let config = dir.join("fonts.conf");
+        std::fs::write(&config, conf).unwrap();
+        let result = std::process::Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "renderer::skia::font_lookup::tests::synthetic_bold_keeps_split_family_glyphs",
+                "--nocapture",
+            ])
+            .env(MARKER, "1")
+            .env("FONTCONFIG_FILE", config)
+            .output()
+            .unwrap();
+        std::fs::remove_dir_all(dir).unwrap();
+        assert!(
+            result.status.success(),
+            "isolated synthetic family: {}\n{}",
+            String::from_utf8_lossy(&result.stdout),
+            String::from_utf8_lossy(&result.stderr)
+        );
+    }
 
     #[test]
     fn missing_family_is_filtered_before_system_lookup() {

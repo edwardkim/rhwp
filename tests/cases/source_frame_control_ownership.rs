@@ -1,11 +1,13 @@
 //! 검사 유형: 관계형·고정형.
+//! 주석 갱신: 2026-10-30T16:20:02+09:00; 직전 파일 커밋: 2026-10-30T15:31:14+09:00 (`67d4e07b2ffec3f789d0f94e1b4c90caa947e83c`).
 //! 2026-10-28 측정 raw(96dpi, PDFium): issue8168의 multiline above·below 및 page-relative HWP, issue8271의 topandbottom·behindtext HWPX는 각각 1쪽 Native·fresh WASM 100.00000%, 전1쪽 최저 각 100.00000%.
-//! issue2007_nested_cell_pagination_42065.hwp: 3쪽 99.84704% / 99.82862%, 11쪽 98.82265% / 98.87353%; 전17쪽 최저 94.47057% / 94.39749%.
+//! issue2007_nested_cell_pagination_42065.hwp: 2026-10-30 중간 측정 3쪽 95.12% / 99.75%; 전 17쪽 최저 94.93% / 96.35%.
 //! sungeo.hwp: 21쪽 99.94109% / 99.98302%, 22쪽 99.93511% / 99.97305%; 전94쪽 최저 99.85164% / 99.92219%.
 //! hwpspec.hwp: 23쪽 99.99389% / 99.79148%, 54쪽 각 99.99765%; 전178쪽 최저 92.45593% / 92.83271%.
 //! 중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp: 1쪽 99.16453% / 99.14176%, 2쪽 93.57998% / 93.34172%; 전2쪽 최저 93.57998% / 93.34172%.
-//! issue3307_outline_number.hwpx: 8쪽 99.98280% / 99.96373%; 전9쪽 최저 97.30996% / 97.15648%.
-//! 각 수치 쌍의 순서는 Native / fresh WASM이다. 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
+//! issue3307_outline_number.hwpx: 2026-10-30 중간 측정 8쪽 96.63% / 99.94%; 전 9쪽 최저 93.25% / 97.18%.
+//! 각 수치 쌍의 순서는 Native / fresh WASM이다. 수정 문서의 근거: mydocs/pr/assets/issue_8371/regression/.
+//! 최종 head 재측정이 필요하다. 나머지 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
 //! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json,
 //! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/header-evidence-ted3-matrix.json.
 //!
