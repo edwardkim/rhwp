@@ -364,7 +364,9 @@ fn task888_basic_table_materializes_hancom_table_attrs() {
             table.raw_ctrl_data[2],
             table.raw_ctrl_data[3],
         ]),
-        0x082a_2210
+        // [#8339] 한글 2024 가 이 HWPX 를 HWP 로 저장한 값. trackchageConfig flags=56 의
+        // 0x08 이 bit 28 을 켠다.
+        0x182a_2210
     );
 }
 

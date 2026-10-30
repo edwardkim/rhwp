@@ -56,6 +56,9 @@ fn issue_1061_equation_attr_bit27_materialized() {
 }
 
 /// HWPX → HWP 라운드트립 시 첫 수식의 attr 가 정답지 (samples/math-001.hwp) 의 0x0C2A2211 정합.
+///
+/// [#8339] bit 28 만 다르다. 정답지 HWP 는 이 HWPX 를 저장한 것이 아니고, 한글 2024 가 이
+/// HWPX(trackchageConfig flags=56)를 HWP 로 저장하면 수식 전부 0x1C2A2211 이 된다.
 #[test]
 fn issue_1061_first_equation_attr_matches_oracle() {
     let mut doc = load("samples/hwpx/math-001.hwpx");
@@ -80,7 +83,7 @@ fn issue_1061_first_equation_attr_matches_oracle() {
     };
 
     let saved = first_attr(&re_doc).expect("저장본 첫 수식");
-    let oracle = first_attr(&oracle_doc).expect("정답지 첫 수식");
+    let oracle = first_attr(&oracle_doc).expect("정답지 첫 수식") | (1 << 28);
     assert_eq!(
         saved, oracle,
         "첫 수식 attr 정답지 정합 필요. saved=0x{:08X} oracle=0x{:08X}",

@@ -3801,14 +3801,6 @@ fn parse_object_element_attrs(
         common.instance_id = ids.instid;
     }
 
-    // HWP5 공통 개체 attr bit 28은 한컴 2020이 `numberingType="PICTURE"`인
-    // 일반 도형/그림/묶음을 HWP로 저장할 때 함께 기록한다. 차트·OLE 경로는 이미
-    // 같은 보정을 하지만, 공용 개체 경로에서 빠지면 HWPX -> HWP 저장본의 바탕쪽과
-    // 본문 PICTURE 개체가 한컴 저장본과 다른 attr을 갖는다.
-    if common.numbering_type == crate::model::shape::ObjectNumberingType::Picture {
-        common.hwp5_gen_shape_attr_bit28 = true;
-    }
-
     ids
 }
 
@@ -7465,7 +7457,6 @@ fn parse_hp_chart_element(
     let mut chart_num: u16 = 0;
     let mut chart_id_ref: Option<String> = None;
     let mut id_attr: u32 = 0;
-    let mut numbering_type_picture = false;
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref().as_bytes() {
@@ -7474,7 +7465,6 @@ fn parse_hp_chart_element(
             // 필드는 이것뿐이라, bool 지역 변수만으로는 저장 시 항상 NONE 으로
             // 되쓰인다(공용 도형 파서 section.rs:2892 와 동일 패턴으로 맞춤).
             b"numberingType" => {
-                numbering_type_picture = attr_str(&attr).eq_ignore_ascii_case("PICTURE");
                 common.numbering_type = match attr_str(&attr).to_ascii_uppercase().as_str() {
                     "PICTURE" => crate::model::shape::ObjectNumberingType::Picture,
                     "TABLE" => crate::model::shape::ObjectNumberingType::Table,
@@ -7538,9 +7528,6 @@ fn parse_hp_chart_element(
         &mut caption,
         &mut line_shape,
     )?;
-    if numbering_type_picture {
-        common.hwp5_gen_shape_attr_bit28 = true;
-    }
     common.attr = pack_hwpx_common_obj_attr(&common);
 
     if chart_num == 0 {
@@ -7584,7 +7571,6 @@ fn parse_hp_ole_element(
     let mut common = CommonObjAttr::default();
     common.hwp5_gen_shape_attr_bit26 = true;
     let mut bin_id: u32 = 0;
-    let mut numbering_type_picture = false;
     let mut draw_aspect = OleDrawingAspect::default();
     // [#4669] `id` 는 `instid` 와 별개 값이다(한컴 원산 실측). 종전에는 id arm 이
     // 없어(차트는 #3546 에서 받음) 재방출 id 가 "0" 또는 instid 로 되쓰였다.
@@ -7603,7 +7589,6 @@ fn parse_hp_ole_element(
             // 필드는 이것뿐이라, bool 지역 변수만으로는 저장 시 항상 NONE 으로
             // 되쓰인다(공용 도형 파서 section.rs:2892 와 동일 패턴으로 맞춤).
             b"numberingType" => {
-                numbering_type_picture = attr_str(&attr).eq_ignore_ascii_case("PICTURE");
                 common.numbering_type = match attr_str(&attr).to_ascii_uppercase().as_str() {
                     "PICTURE" => crate::model::shape::ObjectNumberingType::Picture,
                     "TABLE" => crate::model::shape::ObjectNumberingType::Table,
@@ -7683,9 +7668,6 @@ fn parse_hp_ole_element(
         &mut caption,
         &mut line_shape,
     )?;
-    if numbering_type_picture {
-        common.hwp5_gen_shape_attr_bit28 = true;
-    }
     common.attr = pack_hwpx_common_obj_attr(&common);
 
     let mut ole = OleShape::default();
@@ -10028,10 +10010,9 @@ mod tests {
             panic!("expected rectangle shape");
         };
         assert_eq!(rect.round_rate, 50);
-        assert!(
-            rect.common.hwp5_gen_shape_attr_bit28,
-            "numberingType=PICTURE는 한컴 HWP5 공통 개체 bit 28로 저장돼야 한다"
-        );
+        // [#8339] bit 28 은 번호 범주가 아니라 HWP 저장 시점의 문서 설정이 정한다 —
+        // 파서는 세우지 않고 HWPX→HWP 어댑터가 정한다.
+        assert!(!rect.common.hwp5_gen_shape_attr_bit28);
     }
 
     #[test]

@@ -86,8 +86,10 @@ pub struct AdapterReport {
     pub text_box_para_header_tail_materialized: u32,
     /// HWPX 출처 일반 paragraph PARA_HEADER tail materialize 횟수
     pub para_header_tail_materialized: u32,
-    /// [#4677] 캡션 달린 묶음 개체의 번호 범주 비트(bit28→bit29) 보정 횟수
+    /// [#4677] 캡션 달린 묶음 개체의 캡션 비트(bit29) 보정 횟수
     pub captioned_group_numbering_bit_materialized: u32,
+    /// [#8339] 개체 공통 attr bit 28 을 한컴 HWPX→HWP 저장 규칙으로 정한 개체 수
+    pub object_attr_bit28_materialized: u32,
     /// HWPX 수식(Equation) CTRL_HEADER attr 중 한컴 저장 관례 비트 보강 횟수 (Task #1061)
     pub equation_ctrl_header_attr_materialized: u32,
     /// HWPX 수식(Equation) EQEDIT 의 font_name/version_info 정답지 정합 정정 횟수 (Task #1061 Stage 2)
@@ -233,6 +235,11 @@ fn convert_to_hwp_ir<S: crate::storage::Storage>(
     normalize_doc_properties_for_hwp(doc, &mut report);
     materialize_hwp5_bin_data_order(doc, &mut report, storage)?;
     normalize_bin_data_for_hwp(doc, &mut report);
+    // [#8339] 표 어댑터가 CTRL_HEADER 를 `raw_ctrl_data` 로 굳히기 전에 정해야 한다.
+    // 차트 fold 뒤라 HWP 로 나갈 OLE 개체가 이미 제자리에 있다.
+    if source_is_hwpx {
+        materialize_object_attr_bit28(doc, &mut report);
+    }
 
     // Stage 4: SectionDef 컨트롤 삽입 (HWPX 파서가 만들지 않으므로 직렬화기가 PAGE_DEF 출력 못 함)
     // [#5249] secd tail 길이는 저장될 FileHeader 버전이 정한다. 위
@@ -2013,12 +2020,10 @@ fn materialize_fixed_width_space_control(
     report.header_footer_fwspace_control_materialized += 1;
 }
 
-/// [#4677] 캡션 달린 묶음 개체(`<hp:container>`)의 번호 범주 비트를 한컴 값으로 맞춘다.
+/// [#4677] 캡션 달린 묶음 개체(`<hp:container>`)에 한컴 캡션 비트(bit 29)를 세운다.
 ///
-/// 파서는 `numberingType="PICTURE"` 개체에 attr **bit 28** 을 세운다
-/// (`parser/hwpx/section.rs` — 한컴 2020 저장본 근거). 그런데 한글 2022 는 **캡션이 달린
-/// 묶음**을 저장할 때 같은 자리에 **bit 29** 를 쓴다. 오라클 실측(12.0.0.535, 같은 문서를
-/// 한글로 열어 다시 저장):
+/// 한글 2022 는 **캡션이 달린 묶음**을 저장할 때 **bit 29** 를 쓴다. 오라클 실측(12.0.0.535,
+/// 같은 문서를 한글로 열어 다시 저장):
 ///
 /// | 개체 | 한컴 attr | rhwp attr |
 /// |---|---|---|
@@ -2028,21 +2033,150 @@ fn materialize_fixed_width_space_control(
 /// 이 한 비트가 어긋나면 한글은 문서를 열되 **본문을 통째로 버린다**(0자·1쪽). 캡션을 빼거나
 /// 묶음을 빼면 정상 개방되는 것으로 트리거를 확정했고, 비트만 바꿔 다시 측정해 회복을 확인했다
 /// (00900·00911·01134·02315 네 문서가 글자수·쪽수까지 원본과 일치).
+///
+/// 표에서 bit 28 은 꺼져 있었지만 캡션 없는 그림(`0x040A2310`)도 같았다 — bit 28 은 번호
+/// 범주가 아니라 [`materialize_object_attr_bit28`] 의 문서 규칙이 정하므로 여기서는 건드리지
+/// 않는다. 한글 2024 의 HWPX→HWP 저장도 캡션 달린 묶음에 bit 28 과 29 를 함께 쓴다(#8339).
 fn materialize_captioned_group_numbering_bit(
     common: &mut crate::model::shape::CommonObjAttr,
     report: &mut AdapterReport,
 ) {
-    const PICTURE_NUMBERING_BIT: u32 = 1 << 28;
     const CAPTIONED_GROUP_NUMBERING_BIT: u32 = 1 << 29;
 
     if common.attr & CAPTIONED_GROUP_NUMBERING_BIT != 0 {
         return;
     }
 
-    common.attr &= !PICTURE_NUMBERING_BIT;
     common.attr |= CAPTIONED_GROUP_NUMBERING_BIT;
-    common.hwp5_gen_shape_attr_bit28 = false;
     report.captioned_group_numbering_bit_materialized += 1;
+}
+
+/// [#8339] HWPX 출처 개체의 공통 attr **bit 28** 을 한컴 HWPX→HWP 저장 규칙으로 정한다.
+///
+/// bit 28 은 번호 범주가 아니다. 범주는 bit 26-27 의 2비트다(#8294). HWPX 에는 이 비트에
+/// 대응하는 속성이 없고, 한글이 개체를 새로 만들 때 문서 설정과 개체 위치로 정해 찍는다.
+/// 한글 2024(13.0.0.564) COM 으로 한컴 HWPX 를 HWP 로 저장해 확인했다.
+///
+/// - `<hh:trackchageConfig flags>` 에 **0x08** 이 있으면 모든 개체(표·그림·도형·차트·OLE·
+///   수식)에 bit 28 을 켠다 — 한컴 HWPX 176문서 중 flags=56 인 174문서와 요소가 없는(56)
+///   1문서의 개체 26,644개 전부. exam_social·eq-002 의 flags 만 바꾼 변형도 8·24·40·56 은
+///   전부 켜지고, 0·1·2·4·16·32·48·64 는 아래 위치 규칙만 남는다.
+/// - flags 에 0x08 이 없어도 **바탕쪽·머리말·꼬리말** 안의 개체(그 안의 표 셀 포함)는 켠다.
+///   본문·각주·미주의 개체는 끈다(3-09월_교육_통합_2023 의 flags=0 변형: 머리말 표·도형은
+///   켜지고, 각주·미주의 수식 1,119개·도형 20개와 본문 개체는 꺼진다).
+///
+/// 종전 파서는 `numberingType="PICTURE"` 개체에만 켰다. 한글 저장본의 같은 HWPX 요소가
+/// bit 28 0 과 1 로 갈리는 이유(쌍 문서는 다른 버전이 만든 HWP)를 번호 범주로 오인한
+/// 것이다. 묶음 자식·글상자 안 개체도 위치 규칙을 따르도록 같은 문맥으로 내려간다.
+fn materialize_object_attr_bit28(doc: &mut Document, report: &mut AdapterReport) {
+    const TRACK_CHANGE_STAMPS_OBJECTS: u32 = 0x08;
+
+    fn stamp(
+        common: &mut crate::model::shape::CommonObjAttr,
+        on: bool,
+        report: &mut AdapterReport,
+    ) {
+        const BIT28: u32 = 1 << 28;
+        // 묶은 `attr` 도 같이 맞춘다 — 뒤의 표 CTRL_HEADER 재구성이 차이를 변환으로 센다.
+        common.attr = if on {
+            common.attr | BIT28
+        } else {
+            common.attr & !BIT28
+        };
+        if common.hwp5_gen_shape_attr_bit28 != on {
+            common.hwp5_gen_shape_attr_bit28 = on;
+            report.object_attr_bit28_materialized += 1;
+        }
+    }
+
+    fn walk_paragraphs(
+        paragraphs: &mut [Paragraph],
+        all: bool,
+        page_frame: bool,
+        report: &mut AdapterReport,
+    ) {
+        for para in paragraphs {
+            for ctrl in &mut para.controls {
+                walk_control(ctrl, all, page_frame, report);
+            }
+        }
+    }
+
+    fn walk_shape(
+        shape: &mut ShapeObject,
+        all: bool,
+        page_frame: bool,
+        report: &mut AdapterReport,
+    ) {
+        stamp(shape.common_mut(), all || page_frame, report);
+        if let Some(drawing) = shape.drawing_mut() {
+            if let Some(text_box) = &mut drawing.text_box {
+                walk_paragraphs(&mut text_box.paragraphs, all, page_frame, report);
+            }
+            if let Some(caption) = &mut drawing.caption {
+                walk_paragraphs(&mut caption.paragraphs, all, page_frame, report);
+            }
+        }
+        match shape {
+            ShapeObject::Group(group) => {
+                if let Some(caption) = &mut group.caption {
+                    walk_paragraphs(&mut caption.paragraphs, all, page_frame, report);
+                }
+                for child in &mut group.children {
+                    walk_shape(child, all, page_frame, report);
+                }
+            }
+            ShapeObject::Picture(pic) => {
+                if let Some(caption) = &mut pic.caption {
+                    walk_paragraphs(&mut caption.paragraphs, all, page_frame, report);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn walk_control(ctrl: &mut Control, all: bool, page_frame: bool, report: &mut AdapterReport) {
+        let on = all || page_frame;
+        match ctrl {
+            Control::Table(table) => {
+                stamp(&mut table.common, on, report);
+                for cell in &mut table.cells {
+                    walk_paragraphs(&mut cell.paragraphs, all, page_frame, report);
+                }
+                if let Some(caption) = &mut table.caption {
+                    walk_paragraphs(&mut caption.paragraphs, all, page_frame, report);
+                }
+            }
+            Control::Picture(pic) => {
+                stamp(&mut pic.common, on, report);
+                if let Some(caption) = &mut pic.caption {
+                    walk_paragraphs(&mut caption.paragraphs, all, page_frame, report);
+                }
+            }
+            Control::Shape(shape) => walk_shape(shape, all, page_frame, report),
+            Control::Equation(eq) => stamp(&mut eq.common, on, report),
+            Control::Header(header) => walk_paragraphs(&mut header.paragraphs, all, true, report),
+            Control::Footer(footer) => walk_paragraphs(&mut footer.paragraphs, all, true, report),
+            Control::Footnote(note) => {
+                walk_paragraphs(&mut note.paragraphs, all, page_frame, report)
+            }
+            Control::Endnote(note) => {
+                walk_paragraphs(&mut note.paragraphs, all, page_frame, report)
+            }
+            Control::HiddenComment(comment) => {
+                walk_paragraphs(&mut comment.paragraphs, all, page_frame, report)
+            }
+            _ => {}
+        }
+    }
+
+    let all = doc.doc_info.track_change_flags() & TRACK_CHANGE_STAMPS_OBJECTS != 0;
+    for section in &mut doc.sections {
+        for master_page in &mut section.section_def.master_pages {
+            walk_paragraphs(&mut master_page.paragraphs, all, true, report);
+        }
+        walk_paragraphs(&mut section.paragraphs, all, false, report);
+    }
 }
 
 fn materialize_para_header_tail<S: crate::storage::Storage>(
@@ -3963,10 +4097,9 @@ mod tests {
                 _ => None,
             })
             .expect("묶음 개체가 남아 있어야 한다");
-        assert_eq!(
-            group.common.attr & (1 << 28),
-            0,
-            "PICTURE 번호 비트(bit28)는 지운다"
+        assert!(
+            group.common.hwp5_gen_shape_attr_bit28,
+            "[#8339] bit28 은 문서 규칙을 따른다 — 변경 추적 레코드가 없으면 한컴 기본 56(0x08 포함)"
         );
         assert_ne!(
             group.common.attr & (1 << 29),
