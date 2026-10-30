@@ -4914,7 +4914,7 @@ impl DocumentCore {
         let measurer = HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(profile.hwp3_layout())
             .with_stored_geometry_policy(profile.stored_geometry_policy())
-            .with_native_hwp5(profile.native_hwp5_layout())
+            .with_native_hwp5(profile.hwp5_stored_pagination_layout())
             .with_hwpx_stored_layout(profile.hwpx_stored_layout())
             .with_hwp5_origin_hwpx(profile.hwp5_origin_hwpx())
             .with_session_edited(profile.session_edited())
@@ -5304,7 +5304,7 @@ impl DocumentCore {
         let measurer = HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(profile.hwp3_layout())
             .with_stored_geometry_policy(profile.stored_geometry_policy())
-            .with_native_hwp5(profile.native_hwp5_layout())
+            .with_native_hwp5(profile.hwp5_stored_pagination_layout())
             .with_hwpx_stored_layout(profile.hwpx_stored_layout())
             .with_hwp5_origin_hwpx(profile.hwp5_origin_hwpx())
             .with_session_edited(profile.session_edited())
@@ -6303,7 +6303,7 @@ impl DocumentCore {
                         projected = crate::renderer::composer::inline_box_rows::normalized_host_with_table_height_with_storage(paragraph, &self.styles, |table, ci| {
                             let measured = crate::renderer::height_measurer::HeightMeasurer::new(self.dpi)
                                 .with_stored_geometry_policy(profile.stored_geometry_policy())
-                                .with_native_hwp5(profile.native_hwp5_layout())
+                                .with_native_hwp5(profile.hwp5_stored_pagination_layout())
                                 .with_hwpx_stored_layout(profile.hwpx_stored_layout())
                                 .with_session_edited(profile.session_edited())
                                 .measure_table_with_storage(table, 0, ci, &self.styles, storage)?;
