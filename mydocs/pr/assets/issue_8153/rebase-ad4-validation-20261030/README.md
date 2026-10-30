@@ -29,3 +29,13 @@ Native 실행 파일 SHA-256은 `4db09178e15359b6cbd2f0601e31f9217b77a4451d02706
 [기준 자료](../../../../../tests/fixtures/issue8153/README.md)에 정리했다. 양 원본에서 문자
 370쪽·빈 12쪽·표지 그림 1쪽을 확인한다. HWP와 HWPX 두 검사는 각각 모든 쪽을 실행해
 통과했고, Fontconfig가 글꼴을 0개 반환하는 환경에서도 다시 통과했다.
+
+## 리베이스 기준과의 대조
+
+기준 `ad4bf269ffef5adf2142b33004a9981fad7ce804`의 기존 Native 실행 파일로 같은
+HWP·PDF·96dpi·글꼴 환경의 전 383쪽을 비교했다. [기준 Native TSV](base-handbook-hwp-native.tsv)와
+위 후보 TSV의 소수 둘째 자리 표시값을 같은 쪽끼리 대조하면 227쪽 개선, 156쪽 동일,
+하락 0쪽이다. 기준 최저는 59.60%, 90% 미만은 154쪽 59.60%, 155쪽 71.46%,
+156쪽 74.74%이며 후보의 세 쪽은 모두 100.00%다.
+[후보 154쪽 Native overlay](handbook-hwp-p154-native-overlay.png)에서 표 조각과 후속 내용을 확인한다.
+기준 HWPX Native와 두 원본의 기준 WASM 결과는 별도 실행 중이다.
