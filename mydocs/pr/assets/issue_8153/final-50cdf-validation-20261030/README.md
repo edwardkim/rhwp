@@ -67,3 +67,12 @@ CanvasKit software 요청은 두 원본 모두 383쪽이 준비 상한 128쪽을
 | fresh WASM | [review](handbook-hwp-p205-wasm-review.png) | [overlay](handbook-hwp-p205-wasm-overlay.png) |
 
 - 같은 쪽의 실제 Native Skia PNG: [편람 HWP 205쪽](handbook-hwp-p205-native-skia.png), SHA-256 `a5da35a6fe58797d28aa1c38cf8e18096114d5be66afa97f0942e90102e69dd8`. Studio Canvas2D 화면은 위 최신 WASM 재확인 절의 기존 이미지를 사용한다.
+
+## PR 준비 추가 검증
+
+- 검증 worktree `23acf787e316d5b9adbce0f952c5104b6af315fd`에서 `cargo build --locked --release`는 37분 4초에 통과했다. 이 커밋 이후 제출 후보까지 제품·테스트 코드는 바뀌지 않았다.
+- `cargo test --locked --release --lib` 최초 실행은 3,790건 통과·11건 실패·12건 ignored였다. 11건은 worktree의 `output/`에 쓸 수 없어 발생했다. 출력 경로를 저장소의 ignored `output/`에 연결한 뒤 같은 release 테스트 바이너리에서 실패 11건을 각각 실행해 모두 통과했다. 전체 lib를 새로 실행한 결과와 구분한다.
+- `cargo test --locked --doc`은 디스크 부족으로 최초 실패한 뒤 종료된 검토 전용 증분 캐시를 정리하고 재실행해 8건 통과·3건 ignored였다.
+- CI workflow의 actionlint, Node 정책 334건과 Python workflow 196건이 통과했다. 기본 feature에 포함되지 않는 Native Skia 전용 세 검사는 별도 경로에서 실행한다.
+- Studio renderer 계약과 합성 보충 사설 글리프 브라우저 검사를 최신 fresh WASM으로 재실행해 통과했다. 합성 글꼴은 메모리에서 처리하며 폰트 파일을 추가하지 않았다.
+- 위 89건 외에 Native Skia 글리프 기하 5건과 기호 대체 1건도 실제 시스템 글꼴 경로를 가린 상태에서 통과했다. 글꼴 격리 확인 범위는 총 95건이다.
