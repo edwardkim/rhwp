@@ -17,7 +17,7 @@ pub(crate) fn normalized_host(
     normalized_host_with_table_height(source, styles, |table, index| {
         let measured = HeightMeasurer::new(dpi)
             .with_stored_geometry_policy(profile.stored_geometry_policy())
-            .with_native_hwp5(profile.native_hwp5_layout())
+            .with_native_hwp5(profile.hwp5_stored_pagination_layout())
             .with_hwpx_stored_layout(profile.hwpx_stored_layout())
             .with_session_edited(profile.session_edited())
             .measure_table(table, 0, index, styles);

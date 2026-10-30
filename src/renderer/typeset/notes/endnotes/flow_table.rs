@@ -65,7 +65,7 @@ impl TypesetEngine {
         let measurer = HeightMeasurer::new(self.dpi)
             .with_hwp3_variant(profile.hwp3_layout())
             .with_stored_geometry_policy(profile.stored_geometry_policy())
-            .with_native_hwp5(profile.native_hwp5_layout())
+            .with_native_hwp5(profile.hwp5_stored_pagination_layout())
             .with_hwpx_stored_layout(profile.hwpx_stored_layout())
             .with_session_edited(profile.session_edited())
             .with_render_normalization(std::sync::Arc::clone(&self.render_normalization));
