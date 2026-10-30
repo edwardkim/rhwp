@@ -6,4 +6,6 @@
 
 96 DPI PDFium 및 색상 경계 보정 전 2px 내용 실루엣을 사용했으며 독립 PDF·Native·fresh WASM은 모두 763쪽이다. Native 최저는 757쪽 99.41135%, fresh WASM 최저도 같은 쪽 99.39720%이고 90% 미만은 없다. 전쪽 원본 TSV는 [Native](sample10-native.tsv)와 [WASM](sample10-wasm.tsv)이다.
 
-최저 쪽의 [Native review](sample10-native-p757-review.png)·[overlay](sample10-native-p757-overlay.png), [WASM review](sample10-wasm-p757-review.png)·[overlay](sample10-wasm-p757-overlay.png)를 함께 대조했다. 가운데 흐름도의 선과 글자 농도에는 기준 PDF와 차이가 남는다. 별도 기재한 실물 차이를 높은 점수로 면제하지 않는다.
+최저 쪽의 [Native review](sample10-native-p757-review.png)·[overlay](sample10-native-p757-overlay.png), [WASM review](sample10-wasm-p757-review.png)·[overlay](sample10-wasm-p757-overlay.png)를 함께 대조했다. 757쪽 흐름도의 기준 PDF에서는 일부 글자가 가려지지만 RHWP는 원본 글자를 온전히 표시한다. 288 DPI [확대 비교](rebase-55f40/sample10-p757-detail-review.png)·[overlay](rebase-55f40/sample10-p757-detail-overlay.png)와 [PDFium·Poppler 비교](rebase-55f40/sample10-p757-pdf-rasterizers-review.png)·[overlay](rebase-55f40/sample10-p757-pdf-rasterizers-overlay.png)에서 두 PDF 렌더러가 같은 가림을 보였다.
+
+PDF 757쪽의 그리기 순서를 독립적으로 읽으면 `fail` 텍스트 뒤에 불투명 RGB 이미지가 해당 문자 영역과 겹쳐 그려진다. 예를 들어 텍스트의 PDF 쪽 좌표는 `(251.14, 311.00)–(269.19, 319.99)`, 바로 뒤 이미지의 영역은 `(251.98, 309.50)–(275.85, 321.01)`이다. 이 이미지에는 별도 alpha mask가 없다. 이는 기준 PDF의 가림을 설명하는 관측이며, 한컴이 해당 이미지를 생성한 원인이나 편집 화면의 표시까지 단정하지 않는다. 원본의 문자를 의도적으로 숨기는 보정은 추가하지 않았다.
