@@ -78,6 +78,28 @@ pub(crate) fn picture_data_is_unusable(data: Option<&[u8]>) -> bool {
 /// 되어(00493: 188.5×134.0mm 가 712×712px) 지면 밖으로 나간다. 프레임 값이 온전하면
 /// 회전 후 프레임(common)을 그대로 쓴다.
 pub(crate) fn picture_display_size_hu(picture: &Picture) -> (i32, i32) {
+    // 변환 행렬의 합성이 원래 그림을 저장된 개체 틀로 축소하는 경우 curSz는
+    // 중간 단계의 크기다. 이를 최종 틀과 축별 max하면 그림이 다시 커진다.
+    // 행렬과 HWPUNIT의 직렬화 반올림 차이만 허용하고, 서로 다른 크기를 나타내는
+    // 손상된 common/current 사례는 기존 폴백을 유지한다.
+    let attr = &picture.shape_attr;
+    if picture.common.width > 0
+        && picture.common.height > 0
+        && attr.original_width > 0
+        && attr.original_height > 0
+        && !attr.raw_rendering.is_empty()
+        && attr.render_b == 0.0
+        && attr.render_c == 0.0
+        && attr.rotation_angle.rem_euclid(360) == 0
+    {
+        let transformed_width = f64::from(attr.original_width) * attr.render_sx.abs();
+        let transformed_height = f64::from(attr.original_height) * attr.render_sy.abs();
+        if (transformed_width - f64::from(picture.common.width)).abs() <= 2.0
+            && (transformed_height - f64::from(picture.common.height)).abs() <= 2.0
+        {
+            return (picture.common.width as i32, picture.common.height as i32);
+        }
+    }
     if picture.shape_attr.rotation_angle.rem_euclid(360) != 0
         && picture.common.width > 0
         && picture.common.height > 0
@@ -604,6 +626,26 @@ mod tests {
         picture.shape_attr.current_height = 4000;
 
         assert_eq!(picture_display_size_hu(&picture), (9000, 8000));
+    }
+
+    #[test]
+    fn picture_composed_scale_uses_final_frame_and_preserves_fallback() {
+        let mut picture = Picture::default();
+        picture.common.width = 5668;
+        picture.common.height = 5668;
+        picture.shape_attr.original_width = 10208;
+        picture.shape_attr.original_height = 12300;
+        picture.shape_attr.current_width = 10202;
+        picture.shape_attr.current_height = 12280;
+        picture.shape_attr.raw_rendering = vec![1];
+        picture.shape_attr.render_sx = 0.555338854;
+        picture.shape_attr.render_sy = 0.460859059;
+
+        // 합성 변환이 최종 틀을 증명하면 중간 curSz로 다시 확대하지 않는다.
+        assert_eq!(picture_display_size_hu(&picture), (5668, 5668));
+        // 합성 결과가 틀과 다르면 기존 current 기반 폴백을 그대로 사용한다.
+        picture.shape_attr.render_sx = 1.0;
+        assert_eq!(picture_display_size_hu(&picture), (10202, 12280));
     }
 
     /// [Issue #1230] 비-TAC Square wrap: current 가 부풀려져도 common 프레임 사용.
