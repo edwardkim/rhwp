@@ -108,7 +108,8 @@ pub(crate) fn picture_display_size_hu(picture: &Picture) -> (i32, i32) {
 /// 비-TAC + 텍스트가 옆으로 흐르는 wrap(Square/Tight/Through)에서는 파일
 /// LINE_SEG(sw)/레이아웃이 `common`(개체 틀) 크기로 자리를 예약하므로, 표시도
 /// 그 틀에 맞춰야 본문과 겹치지 않는다 (한컴 정합 — KICE EMF: common=198px 로
-/// 그림, current=367px 는 과대). 그 외(TAC 인라인, TopAndBottom 등)는 종전
+/// 그림, current=367px 는 과대). 저장 아핀 변환을 가진 비-TAC 그림도 변환 전
+/// 크기를 개체 틀로 다시 사용하지 않고 공통 개체 크기를 소비한다. 그 외는 종전
 /// `picture_display_size_hu`(max(common, current)) 유지 — #1122 문26(주머니
 /// 그림: TAC, common.width 가 손상되어 current 가 정답) 회귀 방지.
 /// 상대 크기 축의 common 값은 비율이므로 저장된 현재 HU 크기를 사용한다.
@@ -121,7 +122,13 @@ pub(crate) fn picture_flow_frame_size_hu(picture: &Picture) -> (i32, i32) {
                 | crate::model::shape::TextWrap::Tight
                 | crate::model::shape::TextWrap::Through
         );
-    if flows_beside && picture.common.width > 0 && picture.common.height > 0 {
+    let saved_float_transform = !picture.common.treat_as_char
+        && picture.shape_attr.group_level == 0
+        && picture.shape_attr.has_saved_affine_geometry();
+    if (flows_beside || saved_float_transform)
+        && picture.common.width > 0
+        && picture.common.height > 0
+    {
         crate::renderer::stored_picture_metrics::stored_picture_size_hu(picture)
     } else {
         picture_display_size_hu(picture)
@@ -612,6 +619,24 @@ mod tests {
         picture.shape_attr.current_height = 18956;
 
         assert_eq!(picture_flow_frame_size_hu(&picture), (14847, 10230));
+    }
+
+    /// 저장 행렬이 있는 떠 있는 그림은 변환 전 크기를 개체 틀로 확대하지 않는다.
+    #[test]
+    fn picture_flow_frame_uses_common_for_saved_affine_float() {
+        use super::picture_flow_frame_size_hu;
+        let mut picture = Picture::default();
+        picture.common.treat_as_char = false;
+        picture.common.text_wrap = crate::model::shape::TextWrap::BehindText;
+        picture.common.width = 6000;
+        picture.common.height = 5000;
+        picture.shape_attr.current_width = 12000;
+        picture.shape_attr.current_height = 10000;
+        picture.shape_attr.raw_rendering = vec![1];
+        picture.shape_attr.render_sx = 0.5;
+        picture.shape_attr.render_sy = 0.5;
+
+        assert_eq!(picture_flow_frame_size_hu(&picture), (6000, 5000));
     }
 
     /// [Issue #1230/#1122] TAC 인라인은 종전 max 유지 (문26 주머니 그림 회귀 방지).
