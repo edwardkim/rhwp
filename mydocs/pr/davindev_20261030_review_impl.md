@@ -25,3 +25,9 @@ Native 글꼴 입력 한도를 지키기 위해 편람의 한컴바탕만 로컬
 원본 HWPX의 Unicode 집합에 포함되는 986개 문자의 원본·subset 윤곽과 advance가
 동일함을 확인했다. KoPub 6종·HCR Batang·Wingdings는 원본 프로그램을 공급한다.
 이 private 글꼴과 글꼴을 포함한 SVG는 공개 asset에 추가하지 않는다.
+
+## 원격 처리 승인
+
+2026-10-30 작업지시자가 회귀 테스트 통과 후 원격 push와 머지를 승인했다.
+세 원 PR의 커밋을 조상으로 보존한 통합 브랜치를 제출하고 최신 head CI와 self-review를
+확인한 뒤 merge commit으로 통합한다. 원 PR별 판정·기여 범위는 별도로 기록한다.

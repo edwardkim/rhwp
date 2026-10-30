@@ -21,7 +21,7 @@
 - 원 PR의 기존 GitHub CI는 과거 원 head의 참고 증거다. 메인테이너 보정 통합 후보는 새 코드의 focused·필수 lint·회귀·최적화 WASM 검증을 수행한다.
 - 임시 로그·원격 metadata: `output/pr-review/davindev-20261030/`. 수용에 사용하는 원본·PDF·최종 TSV·대표 PNG는 정식 경로에 보존한다.
 
-## 최신 devel 재현 결과
+## 최초 기준 2d535febe0의 재현 결과
 
 동일 공개 원본의 Native/fresh WASM에서 제목 테두리 그림은 이미 존재한다. Native 렌더 트리의 `Image(pi=0,ci=3)`는 1개이며, 그림과 소유 줄 상자는 모두 `(96.9,94.5,599.9,91.7)`이다. 다음 문단 줄 y=207.5로 그림 아래끝 186.2보다 아래다. 이 관측은 현재 devel에서 원 그림 누락 증상이 해소됐다는 근거이며, 과거 head의 FAIL을 현재 base의 FAIL로 재사용하지 않는다.
 
@@ -49,3 +49,42 @@
 - 이전 후보의 Native Skia lib: rhwp 3,858건 및 하위 라이브러리 182건 통과, 12건 ignored.
 - 검증 도중 #8389·#8390이 devel에 통합되어 기준이 `cb9c45cf774a03eddb5d56fdb1fd28919f10a969`로 바뀌었다. 뒤의 Native 그림·PDF 검사는 완료하지 않고 이전 후보용 빌드를 중단했다.
 - 새 기준과의 merge-tree는 충돌 없이 생성된다. 위 결과는 이전 기준의 역사 기록이며, 최신 기준의 완료 판정을 대신하지 않는다. 최신 devel 반영 뒤 영향 경계·출력·필수 검증을 확인한다.
+
+## 최신 devel 반영 뒤 검증 (2026-10-30)
+
+기준은 `cb9c45cf774a03eddb5d56fdb1fd28919f10a969`, 제품 소스는
+`d189352a1b3b0e09718022f7da47daaa5205fab9`다. 로컬 `d94c7aa124`는 실측 주석과
+증거 문서·TSV만 갱신했으며 assertion과 제품 코드는 바꾸지 않았다.
+
+- [새 기준의 전쪽 TSV](assets/davindev_20261030/rebase-cb9c45/README.md): 원 사례 5개, 각 1쪽.
+  후보 전쪽 최저 Native 96.21%, fresh WASM 95.98%; 독립 PDF와 전체 쪽수 일치.
+- 글상자는 Native 85.19→99.55%, WASM 85.70→99.42%다. Native에서 제목 영역 밖의
+  본문·그림 픽셀은 기준과 동일하다. 그림 단일 출력·소유 줄 내부·후속 본문 순서도 보존한다.
+- 좁은 캡션은 Native 88.77→96.21%, WASM 88.15→95.98%다. 넓은 캡션 대조군의
+  하락은 각각 0.14%p·0.15%p로 2%p 기준 이내다. 실제 1100/3000/9921HU에서
+  캡션 숨김/경계 잘림/전체 표시를 Native·WASM·Studio의 같은 영역에서 직접 확인했다.
+- SVG 5건의 실측도 90% 이상이며 임베딩 글꼴 2종의 Unicode cmap 검사를 통과했다.
+- Studio TypeScript, 단위 검사 2,692건(2건 skip), renderer 계약·CanvasKit 글꼴 E2E 통과.
+  실제 Canvas2D·CanvasKit compat/default의 screen/print 18회 캡처와 비교 12건을 완료했고
+  runtime 오류·hard gate 위반은 0건이다. CanvasKit은 software 경로다.
+- #8389 보존: 편람 HWP/HWPX 각각 383쪽의 Native·WASM 총 1,532쪽은 최신 기준과
+  모두 바이트 단위로 같다. 전쪽 최저 99.96%, 독립 PDF 쪽수 일치, 130·205쪽 확대 판독 완료.
+- Format·Native/WASM Clippy·workspace build·workspace all-targets Clippy·manifest와
+  관련 회귀 26건은 통과했다. 전체 회귀·Native Skia 필수 검사는 진행 중이다.
+
+공유 Cargo 캐시가 한 번 기준 바이너리를 후보 빌드에 재사용한 것을 바이너리 SHA 대조로
+발견했다. 그 실행은 무효로 분리했다. 후보 root crate의 실제 재컴파일 뒤 Native SHA
+`8114f5e93b0c544a66c7dad8bfe2a533691a9a5d5568c49a71b55915e28503a0`, WASM SHA
+`ce942e2d6e3d37dc4fd593cae55423b5b9303f510405d868a91c57bf39196f8d`에서 위 결과를 다시 확인했다.
+
+2026-10-30 작업지시자는 남은 회귀 통과 뒤 원격 push와 머지를 승인했다. 통합 후보의
+로컬 필수 검사와 원격 최신 head CI를 완료한 뒤 기여 이력을 보존하는 merge로 처리한다.
+
+## 조판 원칙과 소비 경로 self-review
+
+`layout_tac_picture_item`의 문단 경로 출력 여부 → 조합 줄 유무/같은 소유의 실제 Image 검색 →
+이미 등록된 inline 위치 → 그림 노드 생성 여부를 확인했다. 검색은 저장 줄 없는 조합 결과가
+비어 있는 문단의 경계에서만 필요하며 `FullParagraph` 존재만으로 출력 완료를 가정하지 않는다.
+현재 base에서 이미 한 번 표시되는 원본을 새 FAIL→PASS로 주장하지 않는다. 추가 방어와
+단일 출력·소유 줄 포함·뒤 문단 순서 회귀의 수용이며 #7642/#8168 정상 대조군도 통과했다.
+해당 원본 참조는 이 관계형 검사에서 확인했고 잘못된 고정 px 기대값을 추가하거나 남기지 않았다.
