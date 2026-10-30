@@ -5773,23 +5773,35 @@ impl DocumentCore {
                 }
             }
 
-            // 구역 간 쪽번호 연속: NewNumber(Page) 컨트롤이 없으면 이전 구역에서 이어짐
-            if idx > 0 && carry_last_page_number > 0 {
+            // 구역 시작 쪽 번호: 구역 정의의 시작 번호(한/글 [구역 설정]-[시작 쪽 번호]-사용자,
+            // `page_num > 0`)가 있으면 구역 첫 쪽을 그 번호로 매긴다. 없으면 NewNumber(Page)
+            // 컨트롤이 없을 때 이전 구역에서 이어짐.
+            let start_page_num = u32::from(section.section_def.page_num);
+            let page_number_offset = if start_page_num > 0 {
+                start_page_num - 1
+            } else if idx > 0 {
                 use crate::model::control::{AutoNumberType, Control};
                 let has_new_number = section.paragraphs.iter().any(|p|
                     p.controls.iter().any(|c| matches!(c, Control::NewNumber(nn) if nn.number_type == AutoNumberType::Page))
                 );
-                if !has_new_number {
-                    // [Issue #6206] 표 셀 안 `newNum` 은 위 최상위 스캔(`has_new_number`)에
-                    // 걸리지 않는다. 그런 구역에도 carry 를 더하되, 재시작이 발화한 쪽부터는
-                    // 멈춘다 — `새 번호로 시작` 값은 절대값이라 carry 를 얹으면 안 된다.
-                    // (재시작 앞 쪽들은 종전대로 앞 구역에서 이어져야 한다.)
-                    for page in &mut result.pages {
-                        if page.page_number_restarted {
-                            break;
-                        }
-                        page.page_number += carry_last_page_number;
+                if has_new_number {
+                    0
+                } else {
+                    carry_last_page_number
+                }
+            } else {
+                0
+            };
+            if page_number_offset > 0 {
+                // [Issue #6206] 표 셀 안 `newNum` 은 위 최상위 스캔(`has_new_number`)에
+                // 걸리지 않는다. 그런 구역에도 carry 를 더하되, 재시작이 발화한 쪽부터는
+                // 멈춘다 — `새 번호로 시작` 값은 절대값이라 carry 를 얹으면 안 된다.
+                // (재시작 앞 쪽들은 종전대로 앞 구역에서 이어져야 한다.)
+                for page in &mut result.pages {
+                    if page.page_number_restarted {
+                        break;
                     }
+                    page.page_number += page_number_offset;
                 }
             }
 
