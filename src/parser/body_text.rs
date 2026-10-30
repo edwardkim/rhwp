@@ -351,6 +351,15 @@ pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
                 let ctrl_data_record = if matches!(control, Control::SectionDef(_)) {
                     section_def_ctrl_data_index(&ctrl_records[1..], ctrl_records[0].level)
                         .map(|index| &ctrl_records[index + 1])
+                } else if matches!(control, Control::Shape(_)) {
+                    // [#8225] 그리기 개체는 CTRL_HEADER 바로 아래나 맨 위 SHAPE_COMPONENT 바로 아래의
+                    // CTRL_DATA 만 이 컨트롤의 것이다. 묶음 안 자식 도형의 CTRL_DATA 는 그 자식이
+                    // `ShapeComponentAttr.ctrl_data` 로 갖는다 — 여기서 가져가면 저장 때 두 번 쓰인다.
+                    let max_level = ctrl_records[0].level + 2;
+                    ctrl_records[1..]
+                        .iter()
+                        .take_while(|r| r.tag_id != tags::HWPTAG_CTRL_HEADER)
+                        .find(|r| r.tag_id == tags::HWPTAG_CTRL_DATA && r.level <= max_level)
                 } else {
                     ctrl_records[1..]
                         .iter()
