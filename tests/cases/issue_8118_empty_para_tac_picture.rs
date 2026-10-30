@@ -1,8 +1,9 @@
 //! 관계형 회귀: 원본의 소유·포함·정렬 또는 캡션 영역 계약.
-//! 2026-10-30 측정: Visual Sweep raw(96dpi, pdftoppm, 색상 경계 보정 전 2px 내용 실루엣).
-//! empty_para_tac_picture.hwp: 전1쪽(1쪽) Native 99.73% / fresh WASM 99.63%; 각 전쪽 최저 동일.
+//! 주석 갱신: 2026-10-30T20:59:49+09:00; 직전 파일 커밋: 2026-10-30T18:58:26+09:00 (e0d33573b8d5cf5d2c60edffdfa2b4bc5cfa1800).
+//! 2026-10-30 측정: Visual Sweep raw(96dpi, PDFium, 색상 경계 보정 전 2px 내용 실루엣).
+//! empty_para_tac_picture.hwp: 전1쪽(1쪽) Native 99.72% / fresh WASM 99.63%; 각 전쪽 최저 동일.
 //! 최신 devel에서도 그림의 소유·단일 출력 관계는 통과한다. 제목 위치 개선은 선행 #8134다.
-//! 근거: mydocs/pr/assets/davindev_20261030/README.md.
+//! 근거: mydocs/pr/assets/davindev_20261030/rebase-cb9c45/README.md.
 //! 실물 원본의 시각 검증과 간격·폭 변형 입력의 계약 검사는 구분한다.
 //!
 //! [#8118] 저장 줄도 글자도 없는 문단의 글자처럼 취급 그림이 그려지지 않던 결함의 회귀 가드.
