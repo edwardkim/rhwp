@@ -51,3 +51,17 @@ HWP·PDF·96dpi와 같은 글꼴 경로·환경 파일을 지정해 전 383쪽�
 
 [Studio 205쪽 실화면](studio-p205/README.md)은 두 원본의 Canvas2D와 CanvasKit 요청 시
 실제 전환 결과, 수신 WASM 해시를 별도로 기록한다.
+
+## 그림 프레임 보정 후 재측정
+
+제품 source `80818c7e0dde36a002a81b3684de8beb4c49a032`의 공통 그림 프레임 보정 후
+두 편람을 같은 원본·독립 PDF·글꼴 환경과 96dpi에서 Native와 최적화 fresh WASM으로
+각각 전 383쪽 다시 출력했다. Native 실행 파일 SHA-256은
+`ef4fc6d9db0c0dfc175c909a11d28023b7b35e9d8bd7ceb831cd4866d7f848ee`, WASM SHA-256은
+`a6af020f54b8d6cae07defde72ad2e2a6c92da60aa93eb58869948af680352ff`다.
+
+네 경로의 TSV는 위 정식 TSV와 각각 바이트 단위로 같다. 각 경로는 130쪽 99.96%,
+나머지 382쪽 100.00%이며 최저는 99.96%다. Native 출력·기준 PDF PNG의 매니페스트
+SHA와 WASM 출력 PNG의 실행 기록 SHA도 전쪽 확인했다. 글꼴 원장은 로컬 시스템에서
+공급했으며 글꼴 프로그램은 배포하지 않는다. 이 절은 해당 source에서의 두 편람
+시각 측정이며, 다른 입력의 기능 보존이나 이후 변경의 전체 회귀 완료를 뜻하지 않는다.
