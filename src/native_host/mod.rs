@@ -286,6 +286,27 @@ impl NativeDocumentSession {
         }
     }
 
+    /// Opt-in fixed-grid rendering for large pages and high scales.
+    /// The full-page exact-crop API remains available through `render_region`.
+    pub fn render_tiled_region(
+        &self,
+        page: u32,
+        region: crate::renderer::raster_pixels::RasterRegion,
+        scale: f64,
+    ) -> Result<NativeFrame, NativeHostError> {
+        self.check_page(page)?;
+        Self::check_scale(scale)?;
+        #[cfg(feature = "native-skia")]
+        {
+            self.render_tiled_region_uncached(page, region, scale)
+        }
+        #[cfg(not(feature = "native-skia"))]
+        {
+            let _ = region;
+            Err(NativeHostError::FeatureDisabled)
+        }
+    }
+
     #[cfg(feature = "native-skia")]
     fn renderer(&self) -> &crate::renderer::skia::SkiaLayerRenderer {
         self.renderer.get_or_init(|| {

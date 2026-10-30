@@ -40,6 +40,19 @@ fn issue_536_native_session_without_skia_reports_capability_error() {
         session.render_page(0, 1.0),
         Err(NativeHostError::FeatureDisabled)
     ));
+    assert!(matches!(
+        session.render_tiled_region(
+            0,
+            rhwp::renderer::raster_pixels::RasterRegion {
+                x: 0.0,
+                y: 0.0,
+                width: 1.0,
+                height: 1.0,
+            },
+            1.0
+        ),
+        Err(NativeHostError::FeatureDisabled)
+    ));
 }
 
 #[cfg(feature = "native-skia")]

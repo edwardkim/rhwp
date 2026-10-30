@@ -6,6 +6,11 @@ use crate::renderer::raster_pixels::RasterRegion;
 
 use super::SkiaLayerRenderer;
 
+enum WorkingRaster {
+    FullPage,
+    Tiles,
+}
+
 /// A validated region on the scaled full-page pixel grid.
 ///
 /// Constructing a plan does not create a renderer, discover fonts, allocate a
@@ -50,6 +55,37 @@ impl SkiaRegionPlan {
         page_height: f64,
         region: RasterRegion,
         options: RasterRenderOptions,
+    ) -> LayerRenderResult<Self> {
+        Self::plan(
+            page_width,
+            page_height,
+            region,
+            options,
+            WorkingRaster::FullPage,
+        )
+    }
+
+    pub(super) fn for_tiles(
+        page_width: f64,
+        page_height: f64,
+        region: RasterRegion,
+        options: RasterRenderOptions,
+    ) -> LayerRenderResult<Self> {
+        Self::plan(
+            page_width,
+            page_height,
+            region,
+            options,
+            WorkingRaster::Tiles,
+        )
+    }
+
+    fn plan(
+        page_width: f64,
+        page_height: f64,
+        region: RasterRegion,
+        options: RasterRenderOptions,
+        working: WorkingRaster,
     ) -> LayerRenderResult<Self> {
         SkiaLayerRenderer::validate_raster_options(options)?;
         let invalid = || HwpError::RenderError("invalid raster region geometry".into());
@@ -135,11 +171,18 @@ impl SkiaRegionPlan {
         ));
         let limit = || HwpError::ResourceLimit("raster region working budget exceeded".into());
         let working_bytes = if intersection.is_some() {
-            let working_pixels = (page_width as u64)
-                .checked_mul(page_height as u64)
+            let (working_width, working_height) = match working {
+                WorkingRaster::FullPage => (page_width, page_height),
+                WorkingRaster::Tiles => {
+                    let dimension = super::tiled_region::SkiaTilePlan::MAX_WORKING_DIMENSION;
+                    (page_width.min(dimension), page_height.min(dimension))
+                }
+            };
+            let working_pixels = (working_width as u64)
+                .checked_mul(working_height as u64)
                 .ok_or_else(limit)?;
-            if page_width > Self::MAX_WORKING_DIMENSION
-                || page_height > Self::MAX_WORKING_DIMENSION
+            if working_width > Self::MAX_WORKING_DIMENSION
+                || working_height > Self::MAX_WORKING_DIMENSION
                 || working_pixels > Self::MAX_WORKING_PIXELS
             {
                 return Err(limit());
