@@ -1,5 +1,5 @@
 //! 관계형·고정형: Print의 소수 원점과 Screen 격자를 합성 glyph로 대조한다.
-//! 주석 갱신: 2026-10-30T14:41:31+09:00; 직전 파일 커밋: 2026-10-30T13:16:40+09:00 (5620ff0475).
+//! 주석 갱신: 2026-10-30T14:55:18+09:00; 직전 파일 커밋: 2026-10-30T14:42:51+09:00 (56f1426c8e).
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
 //! 이 검사는 합성 입력을 사용하며 아래 수치는 관련 편람의 별도 시각 검증이다.
 //! 관련 실사례 HWP 79쪽 Native 100.00% / fresh WASM 100.00%.
@@ -67,6 +67,7 @@ fn print_generation_uses_distinct_native_picture_cache_entries() {
             CacheHint::StaticSubtree,
             GroupKind::Generic,
         );
+        tree.text_sources = Default::default();
         assert_eq!(tree.preserves_raster_text_geometry(), enabled);
         assert_eq!(tree.uses_raster_clip_coverage(), enabled);
         trees.push(tree);
