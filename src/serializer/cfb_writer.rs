@@ -195,6 +195,7 @@ where
         if split_starts.is_empty() {
             let prepared =
                 super::form_identity::prepare_section(section, doc, &mut form_id_allocator)?;
+            let prepared = super::hwpx_lineage_lines::prepare_section(prepared, doc);
             let bytes = super::body_text::try_serialize_section_for_version(
                 &prepared,
                 output_version,
@@ -248,6 +249,7 @@ where
             };
             let prepared =
                 super::form_identity::prepare_section(&sub, doc, &mut form_id_allocator)?;
+            let prepared = super::hwpx_lineage_lines::prepare_section(prepared, doc);
             section_bytes_list.push(
                 super::body_text::try_serialize_section_for_version(
                     &prepared,

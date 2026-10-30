@@ -52,7 +52,8 @@ use crate::serializer::hwpx::serialize_hwpx;
 use crate::serializer::SerializeError;
 
 mod export_cache;
-pub use export_cache::diff_exported_hwpx_documents;
+pub(crate) use export_cache::project_paragraphs as project_exported_line_caches;
+pub use export_cache::{diff_exported_hwp_documents, diff_exported_hwpx_documents};
 
 /// IR diff 결과 — 발견된 차이 목록을 보관.
 #[derive(Debug, Default)]

@@ -25,7 +25,21 @@ pub fn diff_exported_hwpx_documents(expected: &Document, actual: &Document) -> I
     diff_documents(&expected, &actual)
 }
 
-fn project_paragraphs(paragraphs: &mut [Paragraph]) {
+/// [#8310] HWP 저장 자기검증 — 다시 연 저장본이 원본 HWPX 의 저장 줄 계약을 지닌 변환본
+/// (`Document::hwpx_origin_keeps_source_lines`)일 때만 HWPX 와 같은 줄 캐시 계약으로 비교한다.
+/// 그 밖의 HWP 저장은 종전대로 `diff_documents` 로 엄격하게 비교한다.
+pub fn diff_exported_hwp_documents(expected: &Document, actual: &Document) -> IrDiff {
+    if actual.hwpx_origin_keeps_source_lines() {
+        diff_exported_hwpx_documents(expected, actual)
+    } else {
+        diff_documents(expected, actual)
+    }
+}
+
+/// 저장기가 파일에 싣는 줄 캐시로 문단을 투영한다 — 임시 재조판 줄은 비우고, 원본 줄은
+/// 원본 좌표 스냅샷(#5847)으로 되돌린다. HWPX 저장기와 원본 저장 줄 계약 HWP 저장(#8310)이
+/// 같은 계약을 쓴다.
+pub(crate) fn project_paragraphs(paragraphs: &mut [Paragraph]) {
     for para in paragraphs {
         // #5847: 임시 재조판 줄은 파일에 싣지 않는다. 정상 원본 줄은 유지한다.
         if !crate::serializer::line_cache::can_serialize_line_partition(para)

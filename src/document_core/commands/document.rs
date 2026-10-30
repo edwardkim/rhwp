@@ -327,11 +327,17 @@ impl DocumentCore {
             && document
                 .hwpx_aux_entry(crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
                 .is_some();
-        let use_xml_import_semantics = matches!(
-            source_format,
-            crate::parser::FileFormat::Hwpx | crate::parser::FileFormat::Hml
-        ) && !hwp5_origin_hwpx
-            && !document.layout_profile().hwp3_native_layout();
+        // [#8310] 한컴 HWPX 에서 만든 HWP(`/RhwpHwpxOrigin` = 2)는 원본 HWPX 의 저장 줄
+        // 계약을 지닌다 — 원본 좌표와 "저장 줄 없음". 같은 문서가 같은 조판 입력이 되도록
+        // HWPX 와 같은 XML import 규칙으로 연다.
+        let use_xml_import_semantics =
+            (matches!(
+                source_format,
+                crate::parser::FileFormat::Hwpx | crate::parser::FileFormat::Hml
+            ) || (matches!(source_format, crate::parser::FileFormat::Hwp)
+                && document.hwpx_origin_keeps_source_lines()))
+                && !hwp5_origin_hwpx
+                && !document.layout_profile().hwp3_native_layout();
 
         // 비표준 lineseg 감지 — reflow 이전 시점에 IR을 그대로 검증.
         // 경고는 사용자에게 고지되며, 자동 reflow 는 `needs_line_seg_reflow` 조건에만 한정.
@@ -2837,7 +2843,13 @@ impl DocumentCore {
         let lower_markers = |doc: &mut Document| {
             super::header_footer_ops::lower_header_footer_field_markers(doc, &self.file_name, true)
         };
-        let serialized = if matches!(self.source_format, crate::parser::FileFormat::Hwp) {
+        // [#8302] rhwp 가 HWPX 에서 만든 HWP(`/RhwpHwpxOrigin`, `hwpx_lineage`)는 HWP5 계보가
+        // 아니다. 그 IR 은 HWPX 저장 계약(줄 축·저장 줄 유무)을 그대로 지니므로 HWP5-origin
+        // 마커를 붙이지 않고 HWPX 출처와 같은 경로로 내보낸다. 마커를 붙이면 다시 연 HWPX 가
+        // HWP5-origin 호환 계약으로 조판돼 원본 HWPX 와 쪽수가 갈린다(36376848: 1쪽 → 2쪽).
+        let serialized = if matches!(self.source_format, crate::parser::FileFormat::Hwp)
+            && !self.document.provenance.hwpx_lineage
+        {
             let mut doc = self.document.clone();
             if let Some((_, value)) = doc
                 .hwpx_aux_entries

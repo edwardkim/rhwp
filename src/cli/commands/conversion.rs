@@ -372,7 +372,7 @@ pub(crate) fn convert_hwp(args: &[String]) -> i32 {
                         let expected = verify_expected
                             .as_ref()
                             .expect("verify expected snapshot must exist");
-                        let diff = rhwp::serializer::hwpx::roundtrip::diff_documents(
+                        let diff = rhwp::serializer::hwpx::roundtrip::diff_exported_hwp_documents(
                             expected,
                             reloaded.document(),
                         );
@@ -574,7 +574,9 @@ pub(crate) fn export_hwpx(args: &[String]) -> i32 {
                     }
 
                     if verify_options.verify {
-                        let diff = rhwp::serializer::hwpx::roundtrip::diff_documents(
+                        // [#8310] HWPX 자기검증은 편집 경로(#5819)와 같이 저장기의 줄 캐시
+                        // 계약(임시 재조판 줄 생략·원본 좌표)을 적용해 비교한다.
+                        let diff = rhwp::serializer::hwpx::roundtrip::diff_exported_hwpx_documents(
                             doc.document(),
                             reloaded.document(),
                         );

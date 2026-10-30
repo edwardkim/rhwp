@@ -38,6 +38,14 @@ pub const HWP3_EXTERNAL_REALIGN_HWPX_PATH: &str = "META-INF/rhwp-hwp3-external-r
 /// 마커가 사라지며 그 문서는 진짜 native HWP5 가 되므로 시멘틱이 자기일관적이다.
 pub const HWPX_ORIGIN_STREAM_PATH: &str = "/RhwpHwpxOrigin";
 
+/// [#8310] `/RhwpHwpxOrigin` 값 — 원본 HWPX 의 저장 줄 계약을 지닌 변환본.
+///
+/// 한컴 HWPX(rhwp 출처 표식 없음)에서 만든 HWP 는 본문 저장 줄을 원본 HWPX 와 같게 쓴다 —
+/// 원본 좌표 스냅샷(#5847)과 "저장 줄 없음". 다시 열 때 HWPX 와 같은 XML import 규칙으로
+/// 줄을 재구성해야 같은 조판 입력이 된다. 종전 값 `1` 은 이 계약 없이 쓴 변환본이므로
+/// 값으로 구분해 종전 파일의 읽기 규칙을 바꾸지 않는다.
+pub const HWPX_ORIGIN_SOURCE_LINES: &[u8] = b"2";
+
 /// [#3707] HWP3 출처 마커. `RhwpHwpxOrigin` 과 같은 방식이다.
 ///
 /// HWP3 파싱은 `apply_hwp3_origin_fixup` 으로 `margin_bottom` 에서 1600 HU(21.3px)를
@@ -377,6 +385,16 @@ impl Document {
             .iter()
             .find(|(p, _)| p == path)
             .map(|(_, d)| d.as_slice())
+    }
+
+    /// [#8310] 이 HWP 가 원본 HWPX 의 저장 줄 계약(원본 좌표·저장 줄 없음)을 지니는가.
+    ///
+    /// `/RhwpHwpxOrigin` 의 값이 [`HWPX_ORIGIN_SOURCE_LINES`] 일 때만 참이다. 종전 값(`1`)의
+    /// 변환본과 rhwp HWP3 출처 HWPX 에서 만든 HWP 는 종전처럼 HWP 규칙으로 줄을 읽는다.
+    pub fn hwpx_origin_keeps_source_lines(&self) -> bool {
+        self.extra_streams.iter().any(|(path, value)| {
+            path == HWPX_ORIGIN_STREAM_PATH && value == HWPX_ORIGIN_SOURCE_LINES
+        })
     }
 
     /// [#2403 Stage 1] 레이아웃 호환 정책 질의 표면.
