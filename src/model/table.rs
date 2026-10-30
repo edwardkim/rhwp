@@ -7,6 +7,10 @@ use super::*;
 #[path = "table_inline_grid.rs"]
 mod inline_grid;
 
+#[path = "table_equal_size.rs"]
+mod equal_size;
+pub use equal_size::CellSizeAxis;
+
 /// [#2722] `Table::rebuild_grid()` 가 예약할 수 있는 최대 그리드 칸 수.
 ///
 /// 실측 근거: `samples/` 전수 조사(파일 343개, 중첩 포함 표 5,353개)에서
