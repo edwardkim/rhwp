@@ -38,4 +38,6 @@ HWP·PDF·96dpi·글꼴 환경의 전 383쪽을 비교했다. [기준 Native TSV
 하락 0쪽이다. 기준 최저는 59.60%, 90% 미만은 154쪽 59.60%, 155쪽 71.46%,
 156쪽 74.74%이며 후보의 세 쪽은 모두 100.00%다.
 [후보 154쪽 Native overlay](handbook-hwp-p154-native-overlay.png)에서 표 조각과 후속 내용을 확인한다.
-기준 HWPX Native와 두 원본의 기준 WASM 결과는 별도 실행 중이다.
+[HWPX 기준 Native TSV](base-handbook-hwpx-native.tsv)는 같은 383쪽에서 231쪽 개선,
+152쪽 동일, 하락 0쪽이다. 기준 최저는 96.25%, 후보 최저는 99.96%다.
+두 원본의 기준 WASM 결과는 별도 실행 중이다.
