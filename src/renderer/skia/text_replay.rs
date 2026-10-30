@@ -89,7 +89,7 @@ impl SkiaTextReplay<'_> {
                     &crate::renderer::native_font_family_for_style(style),
                     font_style,
                 );
-                let hft_outline = (self.hft_outline_enabled
+                let hft_outline_family = (self.hft_outline_enabled
                     && crate::renderer::hft_outline::supports_style(style))
                 .then(|| {
                     let family = crate::renderer::hft_outline::first_family(&style.font_family);
@@ -105,9 +105,30 @@ impl SkiaTextReplay<'_> {
                         .or_else(|| {
                             match_supplied_family(self.bundled_typefaces, family, font_style)
                         })?;
-                    super::hft_outline::HftOutlineReplay::new(&face)
+                    Some(face.family_name())
                 })
                 .flatten();
+                // 같은 family의 한글·영문 CFF는 서로 다른 Typeface일 수 있다.
+                // 실제 glyph를 그리는 face의 윤곽을 지연 준비하고 다른 family의
+                // fallback에는 원본 HFT 윤곽 규칙을 적용하지 않는다.
+                let hft_outlines = std::cell::RefCell::new(std::collections::HashMap::new());
+                let draw_hft_outline =
+                    |canvas: &Canvas, text: &str, font: &Font, origin, paint: &Paint| {
+                        let Some(family) = hft_outline_family.as_ref() else {
+                            return false;
+                        };
+                        let face = font.typeface();
+                        if !face.family_name().eq_ignore_ascii_case(family) {
+                            return false;
+                        }
+                        let mut outlines = hft_outlines.borrow_mut();
+                        let outline = outlines
+                            .entry(face.unique_id())
+                            .or_insert_with(|| super::hft_outline::HftOutlineReplay::new(&face));
+                        outline
+                            .as_ref()
+                            .is_some_and(|outline| outline.draw(canvas, text, font, origin, paint))
+                    };
                 let font_for_text = |sample: &str, size: f32| {
                     if let Some(family) =
                         crate::renderer::measured_glyph_supplier::family(style, sample)
@@ -780,36 +801,24 @@ impl SkiaTextReplay<'_> {
                                 canvas.save();
                                 canvas.translate((char_x + fit_dx, char_y));
                                 canvas.scale((ratio * fit_scale, 1.0));
-                                if !hft_outline.as_ref().is_some_and(|outline| {
-                                    outline.draw(canvas, glyph_text, &font, (0.0, 0.0), glyph_paint)
-                                }) {
-                                    fonts::draw_positioned_cluster(
-                                        canvas,
-                                        glyph_text,
-                                        (0.0, 0.0),
-                                        &font,
-                                        glyph_paint,
-                                        self.geometric_text,
-                                    );
+                                if !draw_hft_outline(
+                                    canvas,
+                                    glyph_text,
+                                    &font,
+                                    (0.0, 0.0),
+                                    glyph_paint,
+                                ) {
+                                    fonts::draw_positioned_cluster(canvas, glyph_text, (0.0, 0.0), &font, glyph_paint, self.geometric_text);
                                 }
                                 canvas.restore();
-                            } else if !hft_outline.as_ref().is_some_and(|outline| {
-                                outline.draw(
-                                    canvas,
-                                    glyph_text,
-                                    &font,
-                                    (char_x, char_y),
-                                    glyph_paint,
-                                )
-                            }) {
-                                fonts::draw_positioned_cluster(
-                                    canvas,
-                                    glyph_text,
-                                    (char_x, char_y),
-                                    &font,
-                                    glyph_paint,
-                                    self.geometric_text,
-                                );
+                            } else if !draw_hft_outline(
+                                canvas,
+                                glyph_text,
+                                &font,
+                                (char_x, char_y),
+                                glyph_paint,
+                            ) {
+                                fonts::draw_positioned_cluster(canvas, glyph_text, (char_x, char_y), &font, glyph_paint, self.geometric_text);
                             }
                         }
                     }

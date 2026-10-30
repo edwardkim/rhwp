@@ -35,7 +35,11 @@ impl SkiaLayerRenderer {
                         } else {
                             selected.typeface.to_font_bytes()?
                         };
-                    if bytes.get(..4) != Some(b"OTTO") || bytes.len() > 32 * 1024 * 1024 {
+                    if !matches!(
+                        bytes.get(..4),
+                        Some(b"OTTO" | b"\0\x01\0\0" | b"true" | b"ttcf")
+                    ) || bytes.len() > 32 * 1024 * 1024
+                    {
                         return None;
                     }
                     let names = super::super::font_lookup::supplied_family_names(

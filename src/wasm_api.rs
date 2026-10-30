@@ -802,6 +802,11 @@ impl HwpDocument {
     }
 
     /// 호스트가 실제 FontFace에 적재한 프로그램의 호환 글리프 지원을 등록한다.
+    #[wasm_bindgen(js_name = clearTextFontFamily)]
+    pub fn clear_text_font_family_wasm(&mut self, family: &str) {
+        self.clear_text_font_family_native(family);
+    }
+
     #[wasm_bindgen(js_name = registerTextFontGlyphCoverage)]
     pub fn register_text_font_glyph_coverage(
         &mut self,
@@ -876,23 +881,39 @@ impl HwpDocument {
             if value.is_null() || value.is_undefined() {
                 continue;
             }
-            if !value.is_instance_of::<js_sys::Uint8Array>() {
-                return Err(JsValue::from_str(
-                    "OTF provider must return Uint8Array or null",
-                ));
+            let values: Vec<JsValue> = if js_sys::Array::is_array(&value) {
+                let array = js_sys::Array::from(&value);
+                if array.length() > 256 {
+                    return Err(JsValue::from_str(
+                        "OTF provider program count exceeds limit",
+                    ));
+                }
+                array.iter().collect()
+            } else {
+                vec![value]
+            };
+            let mut programs = Vec::with_capacity(values.len());
+            let mut total_bytes = 0usize;
+            for value in values {
+                if !value.is_instance_of::<js_sys::Uint8Array>() {
+                    return Err(JsValue::from_str(
+                        "OTF provider must return Uint8Array, an array of Uint8Array, or null",
+                    ));
+                }
+                let array = js_sys::Uint8Array::new(&value);
+                let length = array.length() as usize;
+                total_bytes = total_bytes.saturating_add(length);
+                if length > 32 * 1024 * 1024 || total_bytes > 64 * 1024 * 1024 {
+                    return Err(JsValue::from_str("OTF provider program exceeds limit"));
+                }
+                programs.push((array.to_vec(), 0));
             }
-            if js_sys::Uint8Array::new(&value).length() > 32 * 1024 * 1024 {
-                return Err(JsValue::from_str("OTF provider program exceeds limit"));
-            }
-            prepared.insert(
-                (request.family, request.bold, request.italic),
-                js_sys::Uint8Array::new(&value).to_vec(),
-            );
+            prepared.insert((request.family, request.bold, request.italic), programs);
         }
-        self.prepare_native_otf_fonts_with(|request| {
+        self.prepare_native_otf_fonts_multiple_with(|request| {
             prepared
                 .remove(&(request.family.clone(), request.bold, request.italic))
-                .map(|bytes| (bytes, 0))
+                .unwrap_or_default()
         })
         .map_err(JsValue::from)
     }

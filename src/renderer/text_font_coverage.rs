@@ -35,6 +35,32 @@ pub(crate) struct PaintFace {
 }
 
 impl TextFontCoverage {
+    pub fn clear_family(&mut self, family: &str) {
+        let catalog = Arc::make_mut(&mut self.0);
+        catalog.unknown.remove(family);
+        let keys: Vec<_> = catalog
+            .keys
+            .keys()
+            .filter(|(name, _, _)| name == family)
+            .cloned()
+            .collect();
+        for key in keys {
+            if let Some(id) = catalog.keys.remove(&key) {
+                catalog.db.remove_face(id);
+                catalog.coverage.remove(&id);
+            }
+        }
+        let active: HashSet<usize> = catalog
+            .coverage
+            .values()
+            .map(|ranges| Arc::as_ptr(ranges) as *const () as usize)
+            .collect();
+        catalog
+            .programs
+            .retain(|_, ranges| active.contains(&(Arc::as_ptr(ranges) as *const () as usize)));
+        catalog.ranges = catalog.programs.values().map(|ranges| ranges.len()).sum();
+    }
+
     pub fn disable_family(&mut self, family: &str) {
         let catalog = Arc::make_mut(&mut self.0);
         if catalog.unknown.len() < MAX_FACES {
@@ -193,4 +219,25 @@ fn character_ranges(face: &ttf_parser::Face<'_>) -> Option<Vec<(u32, u32)>> {
         }
     }
     Some(ranges)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::TextFontCoverage;
+
+    #[test]
+    fn clearing_family_discards_only_its_selection_and_allows_new_registration() {
+        let bytes = include_bytes!("../../tests/fixtures/fonts/RHWPHostFixture-Regular.ttf");
+        let face = ttf_parser::Face::parse(bytes, 0).unwrap();
+        let mut coverage = TextFontCoverage::default();
+        coverage.register("first", bytes, 0, &face);
+        coverage.register("second", bytes, 0, &face);
+        assert!(coverage.select("first", "A", false, false).is_some());
+        assert!(coverage.select("second", "A", false, false).is_some());
+        coverage.clear_family("first");
+        assert!(coverage.select("first", "A", false, false).is_none());
+        assert!(coverage.select("second", "A", false, false).is_some());
+        coverage.register("first", bytes, 0, &face);
+        assert!(coverage.select("first", "A", false, false).is_some());
+    }
 }

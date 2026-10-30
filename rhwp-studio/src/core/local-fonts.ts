@@ -1243,6 +1243,28 @@ export function resolveRendererLocalFont(name: string, style?: LocalFontStyleReq
   return alternate.length === 1 ? alternate[0] : null;
 }
 
+/** 같은 family/style의 분할 프로그램을 호스트가 열거한 순서대로 반환한다.
+ * 명시 PostScript 이름이나 중복 식별자의 모호성은 기존처럼 해소하지 않는다. */
+export function resolveRendererLocalFontCandidates(name: string, style: LocalFontStyleRequest): LocalFontRecord[] {
+  const single = resolveRendererLocalFont(name, style);
+  if (single) return [single];
+  if (!hostFontSource.active) return [];
+  const target = normalizeFontAlias(name);
+  currentHostRecords();
+  if (hostLookup.postscriptNames.has(target)) return [];
+  const candidates = hostLookup.aliases.get(target) ?? [];
+  const exact = candidates.filter(record => record.hostReference?.face.weight === style.weight
+    && record.hostReference?.face.slant === style.slant);
+  const alternate = style.slant === 'normal' ? [] : candidates.filter(record =>
+    record.hostReference?.face.weight === style.weight
+    && record.hostReference?.face.slant === (style.slant === 'italic' ? 'oblique' : 'italic'));
+  const selected = exact.length ? exact : alternate;
+  if (selected.length < 2 || new Set(selected.map(record => normalizeFontAlias(record.family))).size !== 1) return [];
+  const ids = selected.map(record => normalizeFontAlias(record.postscriptName));
+  if (ids.some(id => !id) || new Set(ids).size !== ids.length) return [];
+  return selected;
+}
+
 /** Consume the selected face directly, rather than resolving its name a second time. */
 export async function loadRendererLocalFont(record: LocalFontRecord): Promise<HostFontData | null> {
   if (record.hostReference) return hostFontSource.read(record.hostReference);

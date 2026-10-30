@@ -1,7 +1,10 @@
 //! 실제 paint 공급자가 준비한 SFNT에서만 원 PUA 표시와 전진폭을 선택한다.
 //! 폰트 bytes와 윤곽은 보관하지 않으며, 문서 IR의 family와 문자도 변경하지 않는다.
 
-use std::{collections::BTreeMap, sync::Arc};
+use std::{
+    collections::{BTreeMap, HashSet},
+    sync::Arc,
+};
 
 use sha2::{Digest, Sha256};
 
@@ -32,6 +35,12 @@ const MAX_PROGRAMS: usize = 256;
 const MAX_FONT_BYTES: usize = 32 * 1024 * 1024;
 const MAX_OTF_BYTES: usize = 64 * 1024 * 1024;
 
+/// TTC/OTC는 컨테이너 표식이므로 선택한 face의 실제 윤곽 형식을 확인한다.
+pub(crate) fn is_cff_program(bytes: &[u8], face_index: u32) -> bool {
+    ttf_parser::Face::parse(bytes, face_index)
+        .is_ok_and(|face| face.tables().cff.is_some() || face.tables().cff2.is_some())
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct NativePuaMetrics {
     digest: [u8; 32],
@@ -39,7 +48,7 @@ pub struct NativePuaMetrics {
     advances: [Option<f64>; SUPPORTED_SYMBOLS.len()],
 }
 
-/// Native paint가 실제 선택한 OpenType CFF 프로그램의 전진폭이다.
+/// 실제 paint 후보 순서에 따른 CFF 전진과 앞선 TTF의 선택 경계다.
 #[derive(Debug)]
 pub struct NativeOtfMetrics {
     programs: Vec<NativeOtfProgram>,
@@ -52,6 +61,7 @@ struct NativeOtfProgram {
     face_index: u32,
     digest: [u8; 32],
     faux_bold: bool,
+    cff: bool,
 }
 
 impl PartialEq for NativeOtfMetrics {
@@ -75,15 +85,26 @@ impl NativeOtfMetrics {
         if let Some(advance) = cache.get(&character) {
             return *advance;
         }
-        let value = self.programs.iter().find_map(|program| {
-            let face = ttf_parser::Face::parse(&program.bytes, program.face_index).ok()?;
-            let glyph = face.glyph_index(character).filter(|id| id.0 != 0)?;
-            let width = face.glyph_hor_advance(glyph)?;
-            Some((
-                f64::from(width) / f64::from(face.units_per_em()),
-                program.faux_bold,
-            ))
-        });
+        let mut value = None;
+        for program in &self.programs {
+            let Ok(face) = ttf_parser::Face::parse(&program.bytes, program.face_index) else {
+                continue;
+            };
+            let Some(glyph) = face.glyph_index(character).filter(|id| id.0 != 0) else {
+                continue;
+            };
+            // 앞선 실제 TTF가 glyph를 그리면 뒤의 CFF 폭으로 대체하지 않는다.
+            // 원본 HFT 폭 계약을 유지하도록 None을 반환한다.
+            if program.cff {
+                value = face.glyph_hor_advance(glyph).map(|width| {
+                    (
+                        f64::from(width) / f64::from(face.units_per_em()),
+                        program.faux_bold,
+                    )
+                });
+            }
+            break;
+        }
         cache.insert(character, value);
         value
     }
@@ -125,12 +146,27 @@ impl NativePuaFonts {
         if family.is_empty()
             || family.len() > 4096
             || bytes.len() > MAX_FONT_BYTES
-            || bytes.get(..4) != Some(b"OTTO")
+            || !matches!(
+                bytes.get(..4),
+                Some(b"OTTO" | b"\0\x01\0\0" | b"true" | b"ttcf")
+            )
         {
-            return Err("invalid native OpenType CFF program");
+            return Err("invalid native font program");
         }
-        let face = ttf_parser::Face::parse(bytes, face_index)
-            .map_err(|_| "invalid native OpenType CFF face")?;
+        let face =
+            ttf_parser::Face::parse(bytes, face_index).map_err(|_| "invalid native font face")?;
+        let digest: [u8; 32] = Sha256::digest(bytes).into();
+        let old = self
+            .otf_programs
+            .get(family)
+            .and_then(|v| v.get(&(bold, italic)));
+        if old.is_some_and(|font| {
+            font.programs
+                .iter()
+                .any(|p| p.digest == digest && p.face_index == face_index)
+        }) {
+            return Ok(());
+        }
         let count = self
             .otf_programs
             .values()
@@ -140,34 +176,32 @@ impl NativePuaFonts {
         if count >= MAX_PROGRAMS {
             return Err("native OpenType program limit exceeded");
         }
-        let total = self
+        let mut seen = HashSet::new();
+        let mut shared = None;
+        let mut total = 0usize;
+        for program in self
             .otf_programs
             .values()
             .flat_map(BTreeMap::values)
             .flat_map(|font| &font.programs)
-            .map(|font| font.bytes.len())
-            .sum::<usize>();
-        if total.saturating_add(bytes.len()) > MAX_OTF_BYTES {
-            return Err("native OpenType byte limit exceeded");
+        {
+            if seen.insert(program.digest) {
+                total = total.saturating_add(program.bytes.len());
+            }
+            if program.digest == digest {
+                shared = Some(Arc::clone(&program.bytes));
+            }
         }
-        let old = self
-            .otf_programs
-            .get(family)
-            .and_then(|v| v.get(&(bold, italic)));
-        let digest: [u8; 32] = Sha256::digest(bytes).into();
-        if old.is_some_and(|font| {
-            font.programs
-                .iter()
-                .any(|p| p.digest == digest && p.face_index == face_index)
-        }) {
-            return Ok(());
+        if shared.is_none() && total.saturating_add(bytes.len()) > MAX_OTF_BYTES {
+            return Err("native OpenType byte limit exceeded");
         }
         let mut programs = old.map_or_else(Vec::new, |font| font.programs.clone());
         programs.push(NativeOtfProgram {
-            bytes: Arc::from(bytes),
+            bytes: shared.unwrap_or_else(|| Arc::from(bytes)),
             face_index,
             digest,
             faux_bold: bold && !face.is_bold(),
+            cff: is_cff_program(bytes, face_index),
         });
         self.otf_programs
             .entry(family.to_owned())
@@ -327,6 +361,50 @@ impl NativePuaFonts {
 mod otf_program_tests {
     use super::NativePuaFonts;
 
+    fn collection(first: &[u8], second: &[u8]) -> Vec<u8> {
+        let mut result = b"ttcf\0\x01\0\0\0\0\0\x02\0\0\0\0\0\0\0\0".to_vec();
+        for (index, source) in [first, second].into_iter().enumerate() {
+            while result.len() % 4 != 0 {
+                result.push(0);
+            }
+            let start = u32::try_from(result.len()).unwrap();
+            result[12 + index * 4..16 + index * 4].copy_from_slice(&start.to_be_bytes());
+            let mut face = source.to_vec();
+            let tables = u16::from_be_bytes([face[4], face[5]]) as usize;
+            for table in 0..tables {
+                let pos = 12 + table * 16 + 8;
+                let offset = u32::from_be_bytes(face[pos..pos + 4].try_into().unwrap());
+                face[pos..pos + 4].copy_from_slice(&(offset + start).to_be_bytes());
+            }
+            result.extend(face);
+        }
+        result
+    }
+
+    #[test]
+    fn collection_uses_each_faces_actual_outline_and_shares_bytes() {
+        let cff = include_bytes!("../../tests/fixtures/fonts/RHWPHftOutline.otf");
+        let ttf = include_bytes!("../../tests/fixtures/fonts/RHWPHostFixture-Regular.ttf");
+        let data = collection(cff, ttf);
+        assert!(super::is_cff_program(&data, 0));
+        assert!(!super::is_cff_program(&data, 1));
+        assert!(!super::is_cff_program(&data, 2));
+        let mut fonts = NativePuaFonts::default();
+        fonts
+            .register_otf("collection", false, false, &data, 0)
+            .unwrap();
+        fonts
+            .register_otf("collection", false, false, &data, 1)
+            .unwrap();
+        let metrics = fonts.get_otf("collection", false, false).unwrap();
+        assert!(metrics.advance_em('가').is_some());
+        assert_eq!(metrics.advance_em('A'), None);
+        assert!(std::sync::Arc::ptr_eq(
+            &metrics.programs[0].bytes,
+            &metrics.programs[1].bytes
+        ));
+    }
+
     #[test]
     fn split_family_uses_the_program_that_contains_each_character() {
         // 저장소의 합성 CFF 글꼴은 가만 지원한다. 같은 글꼴의 cmap을 나로
@@ -363,5 +441,46 @@ mod otf_program_tests {
         assert!(metrics.advance_em('가').is_some());
         assert!(metrics.advance_em('나').is_some());
         assert!(metrics.advance_em('다').is_none());
+    }
+
+    #[test]
+    fn earlier_true_type_glyph_blocks_a_later_cff_advance() {
+        let ttf = include_bytes!("../../tests/fixtures/fonts/RHWPHostFixture-Regular.ttf");
+        let mut cff = include_bytes!("../../tests/fixtures/fonts/RHWPHftOutline.otf").to_vec();
+        let count = u16::from_be_bytes([cff[4], cff[5]]) as usize;
+        let cmap = (0..count)
+            .find_map(|index| {
+                let pos = 12 + index * 16;
+                (cff.get(pos..pos + 4) == Some(b"cmap")).then(|| {
+                    u32::from_be_bytes(cff[pos + 8..pos + 12].try_into().unwrap()) as usize
+                })
+            })
+            .unwrap();
+        let sub = cmap + u32::from_be_bytes(cff[cmap + 8..cmap + 12].try_into().unwrap()) as usize;
+        assert_eq!(u16::from_be_bytes([cff[sub], cff[sub + 1]]), 4);
+        for offset in [sub + 14, sub + 20] {
+            cff[offset..offset + 2].copy_from_slice(&('A' as u16).to_be_bytes());
+        }
+        cff[sub + 24..sub + 26].copy_from_slice(&1u16.wrapping_sub('A' as u16).to_be_bytes());
+
+        let mut before = super::NativePuaFonts::default();
+        before.register_otf("same", false, false, ttf, 0).unwrap();
+        before.register_otf("same", false, false, &cff, 0).unwrap();
+        assert_eq!(
+            before
+                .get_otf("same", false, false)
+                .unwrap()
+                .advance_em('A'),
+            None
+        );
+
+        let mut after = super::NativePuaFonts::default();
+        after.register_otf("same", false, false, &cff, 0).unwrap();
+        after.register_otf("same", false, false, ttf, 0).unwrap();
+        assert!(after
+            .get_otf("same", false, false)
+            .unwrap()
+            .advance_em('A')
+            .is_some());
     }
 }

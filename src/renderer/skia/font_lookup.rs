@@ -216,11 +216,11 @@ pub(super) fn typeface_candidates_for_families(
         .then(|| match_system_family_style(font_mgr, system_families, family, style))
         .flatten()
         {
-            // 같은 family와 스타일이라도 한글·영문 OTF가 서로 다른 글리프를
-            // 담을 수 있다. 실제 문자를 공급하는 원 family의 프로그램을 먼저
-            // 찾도록 모든 동일 스타일 CFF 후보를 대체 family보다 앞에 둔다.
+            // 같은 family와 스타일이라도 한글·영문 OTF와 TTF가 서로 다른
+            // 글리프를 담을 수 있다. 원 family의 CFF를 먼저 찾고, 없는
+            // 글리프는 같은 family의 다른 프로그램을 대체 family보다 앞에 둔다.
             if has_system_family(system_families, family) {
-                for candidate in matching_system_otfs(font_mgr, family, typeface.font_style()) {
+                for candidate in matching_system_programs(font_mgr, family, typeface.font_style()) {
                     push(candidate, "system");
                 }
             }
@@ -392,40 +392,48 @@ thread_local! {
         const { RefCell::new(None) };
     static SYSTEM_TYPEFACE_CACHE: RefCell<HashMap<FontLookupKey, Option<Typeface>>> =
         RefCell::new(HashMap::new());
-    static SYSTEM_OTF_CANDIDATES: RefCell<HashMap<FontLookupKey, Vec<Typeface>>> =
+    static SYSTEM_PROGRAM_CANDIDATES: RefCell<HashMap<FontLookupKey, Vec<Typeface>>> =
         RefCell::new(HashMap::new());
     static LEGACY_TYPEFACE_CACHE: RefCell<HashMap<FontStyleCacheKey, Option<Typeface>>> =
         RefCell::new(HashMap::new());
 }
 
-fn matching_system_otfs(font_mgr: &FontMgr, family: &str, style: FontStyle) -> Vec<Typeface> {
+fn typeface_is_cff(typeface: &Typeface) -> bool {
+    if let Some((data, index)) = typeface.to_existing_font_data() {
+        return crate::renderer::native_pua_fonts::is_cff_program(data.as_bytes(), index);
+    }
+    typeface.to_font_bytes().is_some_and(|(bytes, index)| {
+        crate::renderer::native_pua_fonts::is_cff_program(&bytes, index)
+    })
+}
+
+fn matching_system_programs(font_mgr: &FontMgr, family: &str, style: FontStyle) -> Vec<Typeface> {
     let key = FontLookupKey {
         family: family.to_owned(),
         style: FontStyleCacheKey::new(style),
     };
-    SYSTEM_OTF_CANDIDATES.with(|cache| {
+    SYSTEM_PROGRAM_CANDIDATES.with(|cache| {
         if let Some(found) = cache.borrow().get(&key) {
             return found.clone();
         }
         let mut set = font_mgr.match_family(family);
-        let found: Vec<_> = (0..set.count())
+        let mut found: Vec<_> = (0..set.count())
             .filter_map(|index| {
                 if FontStyleCacheKey::new(set.style(index).0) != key.style {
                     return None;
                 }
                 let candidate = set.new_typeface(index)?;
-                let cff = candidate
-                    .to_existing_font_data()
-                    .map(|(data, _)| data.as_bytes().get(..4) == Some(b"OTTO"))
-                    .or_else(|| {
-                        candidate
-                            .to_font_bytes()
-                            .map(|(bytes, _)| bytes.get(..4) == Some(b"OTTO"))
-                    })
-                    .unwrap_or(false);
-                cff.then_some(candidate)
+                let cff = typeface_is_cff(&candidate);
+                Some((candidate, cff))
             })
             .collect();
+        // 여러 TTF의 선택 정책은 이 경로에서 바꾸지 않는다. CFF가 있을 때만
+        // 그 뒤에 같은 스타일의 TTF를 글리프 fallback 후보로 연결한다.
+        if !found.iter().any(|(_, cff)| *cff) {
+            found.clear();
+        }
+        found.sort_by_key(|(_, cff)| !cff);
+        let found: Vec<_> = found.into_iter().map(|(candidate, _)| candidate).collect();
         cache.borrow_mut().insert(key, found.clone());
         found
     })
@@ -486,14 +494,7 @@ pub(super) fn match_system_family_style(
                         return None;
                     }
                     let candidate = set.new_typeface(index)?;
-                    let cff = if let Some((data, _)) = candidate.to_existing_font_data() {
-                        data.as_bytes().get(..4) == Some(b"OTTO")
-                    } else {
-                        candidate
-                            .to_font_bytes()
-                            .is_some_and(|(bytes, _)| bytes.get(..4) == Some(b"OTTO"))
-                    };
-                    cff.then_some(candidate)
+                    typeface_is_cff(&candidate).then_some(candidate)
                 });
                 selected.unwrap_or(original)
             })

@@ -992,6 +992,15 @@ export class HwpDocument {
         }
     }
     /**
+     * 호스트가 실제 FontFace에 적재한 프로그램의 호환 글리프 지원을 등록한다.
+     * @param {string} family
+     */
+    clearTextFontFamily(family) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.hwpdocument_clearTextFontFamily(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
      * 내부 클립보드에 컨트롤(표/그림/도형)이 포함되어 있는지 확인한다.
      * @returns {boolean}
      */
@@ -9428,7 +9437,6 @@ export class HwpDocument {
         return ret[0] !== 0;
     }
     /**
-     * 호스트가 실제 FontFace에 적재한 프로그램의 호환 글리프 지원을 등록한다.
      * @param {string} family
      * @param {Uint8Array} bytes
      * @param {number} face_index
@@ -13100,6 +13108,10 @@ function __wbg_get_imports() {
             const len1 = WASM_VECTOR_LEN;
             getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
             getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
+        },
+        __wbg_from_74f3d90e0ff11240: function(arg0) {
+            const ret = Array.from(arg0);
+            return ret;
         },
         __wbg_getContext_71c33f14b63da593: function() { return handleError(function (arg0, arg1, arg2) {
             const ret = arg0.getContext(getStringFromWasm0(arg1, arg2));

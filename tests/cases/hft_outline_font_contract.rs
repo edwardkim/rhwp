@@ -166,4 +166,78 @@ mod native {
             paint(4.1, false, RenderProfile::Screen)
         );
     }
+
+    #[test]
+    fn split_cff_uses_selected_glyph_outline_in_print_profile() {
+        // 첫 face는 가, 같은 family의 두 번째 face는 나만 제공한다.
+        let mut second = CFF.to_vec();
+        let count = u16::from_be_bytes([second[4], second[5]]) as usize;
+        let cmap = (0..count)
+            .find_map(|index| {
+                let pos = 12 + index * 16;
+                (second.get(pos..pos + 4) == Some(b"cmap")).then(|| {
+                    u32::from_be_bytes(second[pos + 8..pos + 12].try_into().unwrap()) as usize
+                })
+            })
+            .unwrap();
+        let sub =
+            cmap + u32::from_be_bytes(second[cmap + 8..cmap + 12].try_into().unwrap()) as usize;
+        assert_eq!(u16::from_be_bytes([second[sub], second[sub + 1]]), 4);
+        for offset in [sub + 14, sub + 20] {
+            second[offset..offset + 2].copy_from_slice(&('나' as u16).to_be_bytes());
+        }
+        second[sub + 24..sub + 26].copy_from_slice(&1u16.wrapping_sub('나' as u16).to_be_bytes());
+        let renderer = SkiaLayerRenderer::new()
+            .try_with_font_data(&[CFF.to_vec(), second])
+            .unwrap();
+        let paint_at = |y| {
+            let run = TextRunNode {
+                text: "나".into(),
+                style: TextStyle {
+                    font_family: FAMILY.into(),
+                    font_size: 32.0,
+                    source_font_is_hft: true,
+                    ..Default::default()
+                },
+                char_shape_id: None,
+                para_shape_id: None,
+                section_index: None,
+                para_index: None,
+                char_start: None,
+                cell_context: None,
+                is_para_end: false,
+                is_line_break_end: false,
+                rotation: 0.0,
+                is_vertical: false,
+                char_overlap: None,
+                border_fill_id: 0,
+                baseline: 32.0,
+                field_marker: Default::default(),
+                layout_positions: None,
+                display_text: None,
+            };
+            let mut tree = PageLayerTree::new(
+                64.0,
+                64.0,
+                LayerNode::leaf(
+                    BoundingBox::new(0.0, 0.0, 64.0, 64.0),
+                    None,
+                    vec![PaintOp::text_run(BoundingBox::new(8.0, y, 40.0, 40.0), run)],
+                ),
+            );
+            tree.profile = RenderProfile::Print;
+            center(
+                &renderer
+                    .render_pixels_with_options(&tree, RasterRenderOptions::default())
+                    .unwrap(),
+            )
+        };
+        let first = paint_at(4.1);
+        let quarter = paint_at(4.35);
+        let whole = paint_at(5.1);
+        assert!(
+            first < quarter && quarter < whole,
+            "선택된 두 번째 CFF도 소수 원점 이동을 보존해야 한다: {first}, {quarter}, {whole}"
+        );
+    }
 }

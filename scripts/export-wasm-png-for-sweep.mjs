@@ -351,31 +351,58 @@ async function main() {
               if (fonts.some(record => record.families.some(name => name.toLowerCase() === family))) requested.add(family);
             }
           }
-          const supplied = new Set(), loaded = [];
-          for (const record of fonts) {
-            const aliases = record.families.filter(family => requested.has(family.toLowerCase()));
-            const selected = aliases.filter(family => !supplied.has(`${family.toLowerCase()}|${record.weight}|${record.style}`));
-            if (!selected.length) continue;
-            const response = await fetch(record.url);
-            if (!response.ok) throw Error(`공급 글꼴을 읽을 수 없습니다: ${record.url}`);
-            const bytes = await response.arrayBuffer();
-            for (const family of selected) {
-              let textProgramSha256 = null;
-              let font;
-              try {
-                font = await installCanvasFont(family, bytes, {weight: String(record.weight), style: record.style}, doc,
-                  metafileFaces.has(`${family.toLowerCase()}|${record.weight}|${record.style}`),
-                  intrinsicRequested.has(family.toLowerCase()), async program => {
-                    const digest = await crypto.subtle.digest('SHA-256', program);
-                    textProgramSha256 = [...new Uint8Array(digest)]
-                      .map(byte => byte.toString(16).padStart(2, '0')).join('');
-                  });
-                if (font.family !== family) throw Error(`Canvas 글꼴의 등록 이름이 다릅니다: ${family} → ${font.family}`);
-              }
-              catch (error) { throw Error(`선택한 Canvas 글꼴을 적재할 수 없습니다: ${family}, ${record.source}, ${error}`); }
-              supplied.add(`${family.toLowerCase()}|${record.weight}|${record.style}`);
-              loaded.push({family, registeredFamily: font.family, sourceSha256: record.sourceSha256, sha256: record.sha256, textProgramSha256, faceIndex: record.faceIndex, weight: record.weight, style: record.style, repairs: record.repairs, sourceKind: record.sourceKind || 'external'});
+          const supplied = new Set(), loaded = [], familyFaces = new Map(), clearedSplitFamilies = new Set();
+          for (const record of fonts) for (const family of record.families) {
+            const key = `${family.toLowerCase()}|${record.weight}|${record.style}`;
+            const group = familyFaces.get(key) ?? [];
+            if (!group.some(candidate => candidate.sha256 === record.sha256)) group.push(record);
+            familyFaces.set(key, group);
+          }
+          for (const record of fonts) for (const family of record.families) {
+            const familyKey = family.toLowerCase();
+            const key = `${familyKey}|${record.weight}|${record.style}`;
+            const group = familyFaces.get(key) ?? [];
+            if (requested.has(familyKey) && !clearedSplitFamilies.has(familyKey)
+                && group.length > 1 && group.some(candidate => candidate.openTypeCff)) {
+              doc.clearTextFontFamily?.(family);
+              clearedSplitFamilies.add(familyKey);
             }
+          }
+          const jobs = [], seenFamilies = new Set();
+          for (const record of fonts) for (const family of record.families) {
+            const key = `${family.toLowerCase()}|${record.weight}|${record.style}`;
+            if (!requested.has(family.toLowerCase()) || seenFamilies.has(key)) continue;
+            seenFamilies.add(key);
+            const group = familyFaces.get(key) ?? [];
+            const cff = group.filter(candidate => candidate.openTypeCff);
+            const ordered = cff.length ? [...cff, ...group.filter(candidate => !candidate.openTypeCff)] : group.slice(0, 1);
+            // CSS는 나중에 등록한 face를 먼저 검색하므로 후보 순서의 역순으로 적재한다.
+            for (const candidate of [...ordered].reverse()) jobs.push({family, key, record: candidate, ordered});
+          }
+          const bytesCache = new Map();
+          for (const {family, key, record, ordered} of jobs) {
+            if (supplied.has(`${key}|${record.sha256}`)) continue;
+            let bytes = bytesCache.get(record.sha256);
+            if (!bytes) {
+              const response = await fetch(record.url);
+              if (!response.ok) throw Error(`공급 글꼴을 읽을 수 없습니다: ${record.url}`);
+              bytes = await response.arrayBuffer(); bytesCache.set(record.sha256, bytes);
+            }
+            let textProgramSha256 = null;
+            let font;
+            try {
+              font = await installCanvasFont(family, bytes, {weight: String(record.weight), style: record.style}, doc,
+                metafileFaces.has(`${family.toLowerCase()}|${record.weight}|${record.style}`),
+                intrinsicRequested.has(family.toLowerCase()), async program => {
+                  const digest = await crypto.subtle.digest('SHA-256', program);
+                  textProgramSha256 = [...new Uint8Array(digest)]
+                    .map(byte => byte.toString(16).padStart(2, '0')).join('');
+                }, ordered[0] === record, ordered.length < 2);
+              if (font.family !== family) throw Error(`Canvas 글꼴의 등록 이름이 다릅니다: ${family} → ${font.family}`);
+            }
+            catch (error) { throw Error(`선택한 Canvas 글꼴을 적재할 수 없습니다: ${family}, ${record.source}, ${error}`); }
+            supplied.add(`${family.toLowerCase()}|${record.weight}|${record.style}|${record.sha256}`);
+            loaded.push({family, registeredFamily: font.family, sourceSha256: record.sourceSha256, sha256: record.sha256, textProgramSha256, faceIndex: record.faceIndex, weight: record.weight, style: record.style, repairs: record.repairs, sourceKind: record.sourceKind || 'external'});
           }
           await document.fonts.ready;
           // 캐시에 적재되기만 하고 아직 paint되지 않은 그림은 준비 뒤 다시 재생한다.
