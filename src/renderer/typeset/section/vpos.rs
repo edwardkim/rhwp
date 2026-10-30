@@ -144,6 +144,7 @@ impl TypesetEngine {
         }
         // 컬럼 첫 항목: anchor + page_base 확립 (렌더러 2186/2216 정합).
         // items.first() 의 vpos 를 page_base 로, 현 current_height 를 anchor 로 둔다.
+        let mut first_item_stored_top: Option<f64> = None;
         if st.current_items.is_empty() {
             st.record_vpos_column_anchor(st.current_height);
             st.record_vpos_page_origin(
@@ -164,7 +165,19 @@ impl TypesetEngine {
                                     self.dpi,
                                 )
                             });
-                        if margin_is_page_relative {
+                        let clears_page_square_table = (st.profile.hwpx_stored_layout()
+                            || st.profile.hwp5_stored_pagination_layout())
+                            && !st.profile.session_edited()
+                            && crate::renderer::layout::stored_first_line_clears_page_square_table(
+                                paragraphs, para_idx, &st.layout, self.dpi,
+                            );
+                        if clears_page_square_table {
+                            first_item_stored_top = Some(
+                                st.vpos_col_anchor
+                                    + crate::renderer::hwpunit_to_px(seg.vertical_pos, self.dpi),
+                            );
+                        }
+                        if margin_is_page_relative || clears_page_square_table {
                             0
                         } else {
                             seg.vertical_pos
@@ -190,6 +203,41 @@ impl TypesetEngine {
                     }),
             );
             st.record_vpos_ladder_validity(false);
+            if first_item_stored_top.is_some() {
+                // 제목 표 아래 쪽 시작은 원점만 바로잡는다. 저장 사다리를 앞 간격 회수나
+                // 뒤로 스냅하는 근거로 쓰지 않는 것은 그리는 쪽의 순차 흐름과 같다.
+                st.mark_vpos_ladder_dirty();
+            }
+        }
+        // 제목 표 host 가 쪽을 연 쪽에서는 그 host 의 표 항목 뒤에 쪽 원점이 지워진다. 그 쪽
+        // 첫 줄이 제목 표 아래에서 시작했다면 host 바로 뒤 문단의 원점은 계속 0 이다(그리는
+        // 쪽과 같은 판정). 다른 문단의 표가 지운 원점은 되살리지 않는다.
+        if st.vpos_page_base.is_none() && st.vpos_lazy_base.is_none() {
+            let page_first = st
+                .current_items
+                .first()
+                .and_then(|item| match item {
+                    crate::renderer::pagination::PageItem::Table { para_index, .. } => {
+                        Some(*para_index)
+                    }
+                    _ => None,
+                })
+                .filter(|first| {
+                    st.current_items.iter().all(|item| {
+                        crate::renderer::typeset::page_item_para_index(item) == Some(*first)
+                    })
+                });
+            if let Some(first) = page_first {
+                if (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
+                    && !st.profile.session_edited()
+                    && crate::renderer::layout::stored_first_line_clears_page_square_table(
+                        paragraphs, first, &st.layout, self.dpi,
+                    )
+                {
+                    st.record_vpos_page_origin(Some(0));
+                    st.record_vpos_origin_provenance(true);
+                }
+            }
         }
         // [#7824] 합성 줄(`TAG_IMPLEMENTATION_PROPERTY`)만 가진 문단이 흐름에 들어오면 이 쪽의
         // 사다리는 한/글 사다리가 아니다 — 로드 재구성이 그 문단에 rhwp 의 누적 좌표를 주므로,
@@ -225,6 +273,9 @@ impl TypesetEngine {
         } else {
             hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles)
         };
+        if let Some(top) = first_item_stored_top {
+            y = y.max(top);
+        }
         // 재조판된 저장 문단이 행을 줄였으면 후속 저장 사다리의 절대 vpos는
         // 옛 행 수를 담고 있다. 동일 쪽에서 회수한 높이를 뺀 뒤 흐름 뒤로만 스냅한다.
         if st.profile.hwpx_stored_layout()

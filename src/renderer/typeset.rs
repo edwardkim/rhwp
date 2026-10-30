@@ -1053,9 +1053,22 @@ fn para_is_pre_paper_page_square_table_scaffold(para_idx: usize, paragraphs: &[P
         return false;
     }
 
-    paragraphs
+    let Some(next) = paragraphs
         .get(para_idx + 1)
-        .is_some_and(para_is_paper_page_square_empty_table_anchor)
+        .filter(|next| para_is_paper_page_square_empty_table_anchor(next))
+    else {
+        return false;
+    };
+    // 원본 저장 사다리가 이 빈 문단을 지나며 앞으로 나아갔다면 한/글은 이 문단에 줄을
+    // 줬다(표 앞 빈 줄도 본문 흐름을 차지한다). 그 경우는 스캐폴드로 감추지 않는다.
+    // 합성 줄은 이 증거로 쓰지 않는다.
+    !matches!(
+        (para.line_segs.last(), next.line_segs.first()),
+        (Some(own), Some(following))
+            if own.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && following.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && following.vertical_pos > own.vertical_pos
+    )
 }
 
 fn para_is_post_paper_page_square_table_scaffold(
@@ -4630,6 +4643,52 @@ impl TypesetEngine {
             placement.clearance = (placement.y - column.y - natural_top).max(0.0);
             placement
         });
+        // 같은 host 의 쪽·종이 기준 어울림 표는 개체 줄만이 아니라 host 의 앞 저장 줄(개체
+        // 앵커만 든 빈 줄 포함)도 막는다. 그런 저장본의 vpos 는 앞 줄 = 상자 바닥, 개체 줄 =
+        // 그 다음 줄이다. 앞 줄들과 개체 줄을 한 띠로 자리를 찾고 개체를 앞 줄 높이만큼
+        // 내린다. 한/글 2024 는 같은 문단을 다시 저장하면 한 줄로 합치므로 그 경우 상자는
+        // 저장 줄을 따라 한 줄만큼 낮다(줄 다시 나누기는 이 변경의 범위 밖).
+        let host_exclusions = st.host_page_anchored_square_exclusions(para_idx, para, ctrl_idx);
+        if !host_exclusions.is_empty() {
+            let host_top = natural_top.max(st.inline_box_flow_bottom) - before_text;
+            let combined: Vec<_> = exclusions.iter().cloned().chain(host_exclusions).collect();
+            if let Some(mut placement) = super::float_placement::place_inline_box(
+                (column.x + left)..(column.x + column.width - right),
+                column.y + host_top,
+                advance,
+                before_text + band_height,
+                style.map_or(crate::model::style::Alignment::Left, |s| s.alignment),
+                &combined,
+                self.dpi,
+            ) {
+                placement.y += before_text;
+                placement.clearance = (placement.y - column.y - natural_top).max(0.0);
+                if side_wrap_placement.is_none_or(|current| placement.y > current.y) {
+                    side_wrap_placement = Some(placement);
+                }
+            } else if side_wrap_placement.is_none() {
+                // 개체 줄이 이미 상자 아래에서 시작해도(쪽 첫 줄이 제목 표 아래인 쪽) 자리를
+                // 확정해 둔다. 확정이 없으면 그리는 쪽은 상자 옆 글 줄을 먼저 그린 뒤 표를
+                // 그 줄 아래에 다시 놓아 줄 하나만큼 내려간다.
+                let top = natural_top.max(st.inline_box_flow_bottom);
+                let slack = (column.width - left - right - advance).max(0.0);
+                let offset =
+                    match style.map_or(crate::model::style::Alignment::Left, |s| s.alignment) {
+                        crate::model::style::Alignment::Right => slack,
+                        crate::model::style::Alignment::Center => slack / 2.0,
+                        _ => 0.0,
+                    };
+                side_wrap_placement = Some(super::float_placement::InlineBoxPlacement {
+                    x: column.x + left + offset,
+                    y: column.y + top,
+                    clearance: (top - natural_top).max(0.0),
+                    resolved_x: false,
+                    advance_end: None,
+                    stored_horizontal_pen: None,
+                    stored_column_frame: None,
+                });
+            }
+        }
         let clearance = side_wrap_placement.map_or(0.0, |p| p.clearance);
         // 회피 프레임에서 수용한 원본 개체 줄은 본체·바깥여백·뒤 간격을
         // 하나의 끝점으로 발행한다. 저장 줄 상한이 이 공간을 회수하거나
