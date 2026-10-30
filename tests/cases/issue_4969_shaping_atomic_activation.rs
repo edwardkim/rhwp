@@ -1,4 +1,8 @@
-//! Issue #4969 W10-Q2-D4-B: the first product lane activates atomically.
+//! 관계형·고정형: 합성 입력의 글리프 소유·원자적 게시와 직렬화 크기 계약.
+//! 주석 갱신: 2026-10-30T14:21:27+09:00; 직전 파일 커밋: 2026-10-30T14:19:53+09:00 (1425610bd40e8bf376015c449e07c91d7d007283).
+//! 빈 문서와 저장소 글꼴을 이용한 합성 계약 검사로, 실제 문서의 시각 출력 검사가 아니므로
+//! 독립 PDF 대비 Native·fresh WASM raw 측정은 해당하지 않는다.
+//! 근거: mydocs/working/archives/task_m100_4969_w10_q4_d3_b.md.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
