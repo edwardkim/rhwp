@@ -38,3 +38,22 @@ PDF 문자 추출의 원점과 기준선에서 실제 편람 렌더 트리의 �
 [Native·fresh WASM 전쪽 실루엣 TSV와 205쪽 판독](../../../mydocs/pr/assets/issue_8153/rebase-ad4-validation-20261030/README.md)에서
 두 원본의 130쪽만 각 99.96%, 나머지 각 100.00%임을 확인했다. 130쪽은 ±2px, 다른
 내용 쪽은 ±1px를 적용한다. 회귀 검사는 글꼴 파일을 공급하거나 시스템 글꼴을 요구하지 않는다.
+
+## 전쪽 검사 수정 전후 실행
+
+2026-10-30에 동일한 검사 파일과 두 JSON을 리베이스 기준
+`ad4bf269ffef5adf2142b33004a9981fad7ce804`의 별도 소스에 연결해 `release-test`로 실행했다.
+기준 코드에서는 HWP와 HWPX가 각각 좌표 assertion으로 실패했고, 현재 후보에서는 두 검사 모두
+통과했다. 예를 들어 HWP 154쪽 문자 기준선은 독립 Print의 337.92px에 대해 기준 코드에서
+327.13px였으며 허용 오차는 ±1px다. HWPX에서는 149쪽 기준선이 826.09px로 독립 Print의
+829.76px와 달랐다. 이는 각 검사에서 실제로 검출한 차이이며 다른 모든 조판 차이의 검출을
+뜻하지는 않는다.
+
+- 검사 파일 SHA-256: `9b2a28f17d0c1567a55c27690d6b9a0e075bac3de39c53858448a604081e879d`.
+- HWP JSON SHA-256: `48c6a7d31a2d9e6048b8e651806d051b5a8f5d4c077d5ba0876e08cd0d65c4cc`.
+- HWPX JSON SHA-256: `d29a0631740097c0adad448d20682b7a2dcb7bb9ec6c73bc68875be2d5c1bc2d`.
+- 기준 실행: 같은 검사 파일을 별도 소스의 integration test로 연결한 뒤
+  `cargo test --offline --profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --test issue8153_before -- --nocapture`.
+  두 검사 모두 좌표 assertion 실패, 종료 코드 101.
+- 후보 실행: 같은 검사와 JSON을 자동 수집하는 `regression_suite_009`에서 nextest로 실행해
+  두 검사 통과. 제품 코드는 위 TSV의 후보와 동일하다.
