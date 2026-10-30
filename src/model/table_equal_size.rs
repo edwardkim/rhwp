@@ -12,8 +12,9 @@ pub enum CellSizeAxis {
     Height,
 }
 
-/// 블록 경계에 걸친 셀이나 줄마다 셀 수가 다른 블록은 맞추지 않는다.
-const UNEVEN_BLOCK: &str = "줄마다 셀 수가 달라 크기를 같게 맞출 수 없습니다";
+/// 여러 줄에 걸친 병합 셀이 줄마다 다른 자리를 받으면 맞추지 않는다.
+const CROSSING_LINES: &str =
+    "여러 줄에 걸친 병합 셀의 경계가 줄마다 달라 크기를 같게 맞출 수 없습니다";
 
 impl Table {
     /// 칸 경계 위치(HWPUNIT, 길이 = 열 수 + 1)를 셀 너비에서 구한다.
@@ -56,9 +57,10 @@ impl Table {
     /// 블록(행·열 포함 범위)의 셀을 `axis` 방향으로 같은 크기로 맞추고 격자를 다시 나눈다.
     ///
     /// `bounds`는 그 방향 격자선 위치(HWPUNIT, 길이 = 줄 수 + 1)다. 너비는 칸 경계,
-    /// 높이는 화면에 그린 행 경계를 넘긴다. 블록의 줄(높이면 열, 너비면 행)마다 셀 수가
-    /// 같아야 하고, 블록 길이를 그 수로 나눠 반올림한 값이 모든 블록 셀의 크기가 된다.
-    /// 반올림으로 생긴 차이만큼 블록 끝 뒤 경계와 표 크기를 함께 민다. 블록 밖 셀의
+    /// 높이는 화면에 그린 행 경계를 넘긴다. 블록의 줄(높이면 열, 너비면 행)마다 블록 길이를
+    /// 그 줄의 셀 수로 나눠 반올림한 값이 그 줄 셀의 크기가 된다. 여러 줄에 걸친 셀은
+    /// 줄마다 같은 자리를 받아야 한다. 반올림으로 생긴 차이만큼 블록 끝 뒤 경계와 표 크기를
+    /// 함께 민다. 블록 밖 셀의
     /// 높이 선언은 그대로 두고, 너비는 새 경계 사이 거리로 맞춘다.
     ///
     /// 반환: (옛 셀 번호마다 정렬한 뒤의 새 번호, 너비가 바뀐 셀의 새 번호).
@@ -138,45 +140,65 @@ impl Table {
                 line.push((s, i));
             }
         }
-        let mut rank: Vec<Option<usize>> = vec![None; self.cells.len()];
-        let count = per_line[0].len();
+        let start = bounds[a0];
+        let extent = bounds[a1] - start;
+        // 줄마다 그 줄의 칸 수로 블록 길이를 나눈다(한컴 12.30 실측: 두 칸 줄 6750HU, 세 칸 줄 4500HU).
+        let mut sizes = Vec::with_capacity(per_line.len());
         for line in &mut per_line {
             line.sort_unstable();
-            if line.len() != count {
-                return Err(UNEVEN_BLOCK.to_string());
+            let n = line.len() as i64;
+            let size = (extent + n / 2) / n;
+            if n == 0 || size <= 0 || size > i64::from(u32::MAX) {
+                return Err("셀 블록 크기가 올바르지 않습니다".to_string());
             }
+            sizes.push(size);
+        }
+        // 반올림한 줄 길이 가운데 가장 긴 것이 새 블록 끝이다. 줄마다 마지막 칸이 그 끝까지 닿는다.
+        // ponytail: 줄마다 반올림 차이가 다르면 마지막 칸이 몇 HU 다르다. 한컴 저장본은 나머지가 없는 경우만 확인했다.
+        let end = per_line
+            .iter()
+            .zip(&sizes)
+            .map(|(line, size)| start + size * line.len() as i64)
+            .max()
+            .unwrap_or(start + extent);
+        let shift = end - (start + extent);
+        let mut block_edges: Vec<Option<(i64, i64)>> = vec![None; self.cells.len()];
+        for (line, &size) in per_line.iter().zip(&sizes) {
             let mut next = a0;
             for (k, &(s, i)) in line.iter().enumerate() {
-                if s != next || rank[i].is_some_and(|r| r != k) {
-                    return Err(UNEVEN_BLOCK.to_string());
+                let k = k as i64;
+                let edge = (
+                    start + k * size,
+                    if k + 1 == line.len() as i64 {
+                        end
+                    } else {
+                        start + (k + 1) * size
+                    },
+                );
+                if s != next {
+                    return Err("표 격자가 올바르지 않습니다".to_string());
                 }
-                rank[i] = Some(k);
+                // 여러 줄에 걸친 칸은 줄마다 같은 자리에 와야 한다.
+                if block_edges[i].is_some_and(|known| known != edge) {
+                    return Err(CROSSING_LINES.to_string());
+                }
+                block_edges[i] = Some(edge);
                 next = along(&self.cells[i]).1;
             }
             if next != a1 {
                 return Err("표 격자가 올바르지 않습니다".to_string());
             }
         }
-
-        let start = bounds[a0];
-        let extent = bounds[a1] - start;
-        let n = count as i64;
-        let size = (extent + n / 2) / n;
-        if size <= 0 || size > i64::from(u32::MAX) {
-            return Err("셀 블록 크기가 올바르지 않습니다".to_string());
-        }
-        let shift = size * n - extent;
         let moved = |at: usize| bounds[at] + if at >= a1 { shift } else { 0 };
         let edges: Vec<(i64, i64)> = self
             .cells
             .iter()
-            .zip(&rank)
-            .map(|(cell, rank)| match rank {
-                Some(k) => (start + *k as i64 * size, start + (*k as i64 + 1) * size),
-                None => {
+            .zip(&block_edges)
+            .map(|(cell, edge)| {
+                edge.unwrap_or_else(|| {
                     let (s, e) = along(cell);
                     (moved(s), moved(e))
-                }
+                })
             })
             .collect();
         let mut grid: Vec<i64> = edges.iter().flat_map(|&(s, e)| [s, e]).collect();
@@ -210,7 +232,7 @@ impl Table {
                 cell.row = at;
                 cell.row_span = span;
                 if in_block[i] {
-                    cell.height = size as u32;
+                    cell.height = (e - s) as u32;
                 }
             } else {
                 cell.col = at;
