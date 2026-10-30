@@ -1,5 +1,5 @@
 //! 관계형·고정형: 합성 입력의 글리프 소유·원자적 게시와 직렬화 크기 계약.
-//! 주석 갱신: 2026-10-30T14:21:27+09:00; 직전 파일 커밋: 2026-10-30T14:19:53+09:00 (1425610bd40e8bf376015c449e07c91d7d007283).
+//! 주석 갱신: 2026-10-30T15:27:48+09:00; 직전 파일 커밋: 2026-10-30T14:21:47+09:00 (d5fc184645).
 //! 빈 문서와 저장소 글꼴을 이용한 합성 계약 검사로, 실제 문서의 시각 출력 검사가 아니므로
 //! 독립 PDF 대비 Native·fresh WASM raw 측정은 해당하지 않는다.
 //! 근거: mydocs/working/archives/task_m100_4969_w10_q4_d3_b.md.
@@ -778,10 +778,10 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
         .map(|(_, bytes)| bytes.len())
         .sum::<usize>();
     assert_eq!(font_payload_bytes, 2_519_996);
-    // P45/P46/P47 and editable text clipping add these root knownFeatures capabilities to every export, including
-    // rejected publication. They describe writer support, not this fixture's
-    // glyphs or resources. Account for exactly their JSON strings + separators
-    // while retaining the original payload/structure size receipts unchanged.
+    // P45/P46/P47과 편집 가능한 글자 클리핑은 게시가 거부된 경우를 포함해
+    // 모든 출력의 루트 knownFeatures에 기능을 추가한다. 이 값은 출력기의 지원을
+    // 나타내며 이 입력의 글리프나 자원이 아니다. JSON 문자열과 구분자 크기만
+    // 정확히 제외해 기존 페이로드·구조 크기 검증값을 유지한다.
     const ADDED_CAPABILITIES: [&str; 6] = [
         "text.glyphOutline.colorLayers.colrV1.sourceOver",
         "text.glyphOutline.colorLayers.colrV1.clip",
@@ -838,10 +838,10 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
             .len()
             + 1;
 
-        // P47 exports recording bounds separately from unchanged logical boxes.
-        // This receipt checks field shape and canonical wire cost; it does not
-        // establish new geometry goldens or replace visual-bounds geometry tests.
-        // Only actual layer nodes are visited, never arbitrary metadata.
+        // P47은 기존 논리 상자와 별도로 기록 영역을 출력한다.
+        // 이 검사는 필드 형태와 정식 직렬화 크기를 확인하며 새 좌표 기준을
+        // 만들거나 시각 영역 좌표 검사를 대신하지 않는다.
+        // 임의의 메타데이터가 아니라 실제 레이어 노드만 순회한다.
         let mut nodes = vec![&value["root"]];
         let mut visual_count = 0;
         let mut empty_group_count = 0;
