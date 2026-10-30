@@ -49,4 +49,10 @@ fresh WASM도 763쪽을 모두 측정했으며 최저 raw는 99.397203419141%, 9
 | 63 | 0 / 99,670 | [비교](direct-pdf-p063-review.png) | [겹침](direct-pdf-p063-overlay.png) |
 | 289 | 0 / 203,464 | [비교](direct-pdf-p289-review.png) | [겹침](direct-pdf-p289-overlay.png) |
 
-WASM 전쪽 비교와 Native 캐시·타일·Direct PDF 집중 검사는 별도로 완료해 기록한다.
+[fresh WASM 전쪽 대조](seo-wasm-exact.tsv)는 같은 입력·기준 PDF·글꼴로 비교한 388쪽에서
+raw 하락이 없고 후보 최저는 94.651780708383%다. 하락은 표시 소수값이 아니라 정수 집계의
+정확한 분수로 확인했다. Native 캐시·타일·Direct PDF 집중 검사는 별도로 완료해 기록한다.
+기준 WASM 패키지는 직전 기준 `96ccd`에서 빌드했다. 이후 `55f40`까지 변경된 Rust 경로는
+`native_host`, `renderer/pdf`, `renderer/skia`뿐이며 모두 WASM에서 제외된다. Cargo·의존성·
+WASM 출력 스크립트도 변경되지 않아 이 기준 패키지를 재사용했다. 후보는 위에 기록한 fresh
+WASM 패키지다. 편람은 기능 보존 대조군으로만 실행했다.
