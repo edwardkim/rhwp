@@ -796,6 +796,17 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
         })
         .sum::<usize>();
     let publication_json_bytes = |json: &str, value: &serde_json::Value| {
+        // 인쇄 세대 정책은 글리프 게시와 무관한 루트 메타데이터다. 값과
+        // 직렬화 형식을 확인한 뒤 기존 게시 크기 영수증에서만 제외한다.
+        let raster_policy_bytes = ["rasterTextGeometry", "rasterClipCoverage"]
+            .iter()
+            .map(|key| {
+                let policy = value[*key].as_bool().expect("래스터 정책은 불리언");
+                let field = format!(",\"{key}\":{policy}");
+                assert_eq!(json.matches(&field).count(), 1, "래스터 정책은 한 번 기록");
+                field.len()
+            })
+            .sum::<usize>();
         let known = value["knownFeatures"]
             .as_array()
             .expect("known capabilities");
@@ -885,7 +896,9 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
             "no visual metadata outside the accounted layer nodes"
         );
         json.len()
-            .checked_sub(capability_wire_bytes + visual_feature_bytes + visual_wire_bytes)
+            .checked_sub(
+                capability_wire_bytes + visual_feature_bytes + visual_wire_bytes + raster_policy_bytes,
+            )
             .expect("capability wire overhead")
     };
     let accepted_publication_bytes = publication_json_bytes(&accepted_json, &accepted);
