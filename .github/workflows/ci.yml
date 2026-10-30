@@ -1112,6 +1112,7 @@ jobs:
             --exclude rhwp-subsecond \
             --exclude rhwp-native-ffi \
             --exclude batch-convert \
+            --exclude llm-verifier-verdict-protocol \
             --lib
 
       # 독립 verifier 패키지는 root Cargo target과 Python workflow 계약 범위 밖이다.
@@ -1205,10 +1206,11 @@ jobs:
       # 게이트 불일치로 `--workspace` 를 상시 깨뜨렸기 때문이다. 그 결함을 고쳐
       # **워크스페이스 전체**로 넓힌다. 앞으로 추가되는 멤버가 자동으로 검사 대상이
       # 되며, 깨진 채 들어오면 여기서 막힌다(그것이 이 가드의 목적이다).
+      # [#8391] verdict_protocol만 자동 CI에서 제외한다. 소스와 수동 실행은 유지한다.
       - name: Check workspace members (FFI bindings, tools)
         run: |
-          cargo build --workspace
-          cargo clippy --workspace --all-targets -- -D warnings
+          cargo build --workspace --exclude llm-verifier-verdict-protocol
+          cargo clippy --workspace --exclude llm-verifier-verdict-protocol --all-targets -- -D warnings
 
       # [로드맵 R12] 에이전트 표면 선검사 — 실패 경로 전수(전 명령 "없는 파일" 호출
       # → exit≠0 + stdout 0바이트)·미선언 명령 감지(capabilities 에 flags 를 선언하지
