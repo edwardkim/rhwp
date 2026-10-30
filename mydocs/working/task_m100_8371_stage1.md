@@ -1,5 +1,10 @@
 # #8371 1단계 — 로컬 글꼴과 HWP3 조판 분석
 
+> 이 문서의 최초 상태와 아래 단계별 항목은 당시의 작업 이력이다. 최신 전쪽 측정·기준 PDF
+> 경로는 [sample10 검증 기록](../pr/assets/issue_8371/sample10-validation.md)과
+> [리베이스 후 검증 기록](../pr/assets/issue_8371/rebase-55f40/README.md)을 따른다.
+> 기준 PDF는 현재 `pdf/issue8371/hwp3-sample10-2020.pdf`에 커밋되어 있다.
+
 - 작업 기준: `f125c735c7d2d44eaa44b78c70465bc89af45fb1`, 브랜치 `fix/issue8371-installed-hft-font`.
 - 상태: Native와 fresh WASM 전쪽 검증 및 Studio 단위 테스트를 수행했다. 전체 Rust 회귀 재검증과 나머지 제출 전 검사가 진행 중이므로 PR 제출 준비 완료가 아니다.
 - 원본: `samples/hwp3-sample10.hwp`, SHA-256 `d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48`.
