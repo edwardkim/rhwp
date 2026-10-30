@@ -2939,7 +2939,8 @@ fn parse_table_cell(
                                 b"borderFillIDRef" => cell.border_fill_id = parse_u16(&attr),
                                 b"textDirection" => {
                                     let val = attr_str(&attr);
-                                    cell.text_direction = if val == "VERTICAL" { 1 } else { 0 };
+                                    cell.text_direction =
+                                        cell_text_direction_from_hwpx(val.as_str());
                                 }
                                 b"vAlign" => {
                                     cell.vertical_align = match attr_str(&attr).as_str() {
@@ -2968,7 +2969,7 @@ fn parse_table_cell(
                                 // 유실됐다(cellPr 경로는 serializer 가 방출하지 않음).
                                 b"textDirection" => {
                                     cell.text_direction =
-                                        if attr_str(&attr) == "VERTICAL" { 1 } else { 0 };
+                                        cell_text_direction_from_hwpx(attr_str(&attr).as_str());
                                 }
                                 // [#4898] 줄바꿈 방식. 종전엔 읽지 않아 HWP5 저장에서 항상
                                 // BREAK(0)이 됐고, SQUEEZE 셀은 한글이 줄을 다시 나눠
@@ -2990,7 +2991,8 @@ fn parse_table_cell(
                                 b"borderFillIDRef" => cell.border_fill_id = parse_u16(&attr),
                                 b"textDirection" => {
                                     let val = attr_str(&attr);
-                                    cell.text_direction = if val == "VERTICAL" { 1 } else { 0 };
+                                    cell.text_direction =
+                                        cell_text_direction_from_hwpx(val.as_str());
                                 }
                                 b"vAlign" => {
                                     cell.vertical_align = match attr_str(&attr).as_str() {
@@ -5419,6 +5421,18 @@ fn parse_page_hiding_attrs(e: &quick_xml::events::BytesStart) -> PageHide {
     ph
 }
 
+/// [#8334] 셀 `textDirection` → HWP5 LIST_HEADER 텍스트 방향(bit 16~18).
+///
+/// 한컴 저장본 대응(k-water-rfp HWP·HWPX): HWP5 값 2 인 세로 셀 3개가 HWPX 에서
+/// `VERTICALALL`(세로 영문 세움) 3건이다. `VERTICAL` 은 종전대로 1 이다.
+fn cell_text_direction_from_hwpx(value: &str) -> u8 {
+    match value {
+        "VERTICAL" => 1,
+        "VERTICALALL" => 2,
+        _ => 0,
+    }
+}
+
 fn parse_page_num_attrs(e: &quick_xml::events::BytesStart) -> PageNumberPos {
     let mut pn = PageNumberPos::default();
     for attr in e.attributes().flatten() {
@@ -5454,9 +5468,15 @@ fn parse_page_num_attrs(e: &quick_xml::events::BytesStart) -> PageNumberPos {
                     _ => 0,
                 };
             }
+            // [#7633] 줄표(측면) 문자. 한/글은 `""`·공백·속성 없음을 줄표 없는 쪽 번호로,
+            // `"-"` 만 `- 1 -` 로 그린다. 빈 값을 `'-'` 로 채우면 줄표가 새로 생긴다.
             b"sideChar" => {
                 let s = attr_str(&attr);
-                pn.dash_char = s.chars().next().unwrap_or('-');
+                pn.dash_char = s
+                    .chars()
+                    .next()
+                    .filter(|c| !c.is_whitespace())
+                    .unwrap_or('\0');
             }
             _ => {}
         }

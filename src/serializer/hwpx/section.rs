@@ -4113,11 +4113,13 @@ fn render_page_num_with_storage<S: crate::storage::Storage>(
 where
     S::Error: std::fmt::Display,
 {
-    // dash_char 기본값은 '-' (모델: 항상 '-'); '\0'이면 '-'로 폴백.
-    let side = if pn.dash_char == '\0' {
-        '-'
+    // [#7633] HWP5 `pgnp` 의 줄표 문자가 0 이면 줄표 없는 쪽 번호다(한컴 PDF `1`, hwpspec).
+    // 한/글은 `sideChar=""` 를 줄표 없음으로 그린다 — 종전처럼 `'-'` 로 채우면 `- 1 -` 가 된다.
+    // 속성을 생략하면 스키마 기본값 `"-"` 로 읽힐 수 있으므로 빈 값을 명시한다.
+    let side = if pn.dash_char == '\0' || pn.dash_char.is_whitespace() {
+        String::new()
     } else {
-        pn.dash_char
+        xml_value(storage, pn.dash_char)?
     };
     xml_value(
         storage,
@@ -4125,7 +4127,7 @@ where
             r#"<hp:ctrl><hp:pageNum pos="{}" formatType="{}" sideChar="{}"/></hp:ctrl>"#,
             page_num_pos_to_str(pn.position),
             page_num_format_to_str(pn.format),
-            xml_escape_with_storage(&xml_value(storage, side)?, storage)?,
+            xml_escape_with_storage(&side, storage)?,
         ),
     )
 }
