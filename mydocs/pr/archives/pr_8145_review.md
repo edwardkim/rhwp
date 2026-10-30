@@ -46,3 +46,20 @@
 - 실제 merge tree가 위 독립 검증 후보 tree와 정확히 같다.
 - [승인 리뷰](https://github.com/edwardkim/rhwp/pull/8145#pullrequestreview-5708077932)를 게시했고 원 PR은 MERGED다.
 - 원 head의 Full CI·Native Skia·lint·개별 CodeQL 언어·Render Diff·Adapter·Proptest 성공을 승인 직전에 확인했다.
+
+## 후속 처리 완료
+
+- 운영 기록 `599f325849ff6d798f50d20d174a1f93433ec10d`를 devel에 반영했다. 허용된 archive·asset·오늘할일만 포함하며 source·test·workflow는 변경하지 않았다.
+- [기여자 감사·보류 정정 댓글](https://github.com/edwardkim/rhwp/pull/8145#issuecomment-6514997214)을 게시했다. 게시 후 API의 한글·본문 일치와 SHA 고정 이미지 3개의 blob 바이트를 확인했다.
+- 로컬 누적 검토 브랜치 `review/pblsketch-20261030`의 상태도 별도 로컬 커밋 `31541ebe2a`로 갱신했다. 남은 #8121·#8144·#8269 및 독립 기준 PDF가 있어 이 브랜치는 유지하며 원격에 push하지 않았다. contributor fork도 보존한다.
+- 실행 중인 빌드·테스트·변환과 대상 경로 열린 파일 참조가 없음을 확인한 뒤 정리했다. 임시 백업·압축은 만들지 않았다.
+
+| 삭제 경로 | 삭제 전 논리 크기 | 완료 상태 |
+| --- | ---: | --- |
+| `/tmp/rhwp-pr8145-accept` | 9,124,017,227 bytes | 디렉터리 부재 확인 |
+| `/home/edward/mygithub/rhwp/output` | 318,045,491 bytes | 디렉터리 부재 확인 |
+| `/home/edward/mygithub/rhwp/target/pr-review/debug` | 0 bytes | 디렉터리 부재 확인 |
+
+디스크 가용 공간: 259,809,415,168 → 269,408,190,464 bytes. 공유 release-test/WASM profile, 소스·기준 자료·사용자 글꼴은 보존했다.
+
+[duration 갱신 작업](https://github.com/edwardkim/rhwp/actions/runs/41003044978)은 성공했다. 원 CI의 b worker 측정 자료를 사용할 수 없어 `ready:false`, `no-verified-pr-duration-measurements`로 갱신을 보류했다. 검증 CI를 다시 실행하지 않았다. 이 결과는 제품 검증 실패가 아니다. Close Issues on devel Push도 성공했으며 이번 PR에 별도 닫을 이슈는 없다.
