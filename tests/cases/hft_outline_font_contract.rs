@@ -50,6 +50,10 @@ fn registering_paint_source_preserves_document_and_replaces_unsupported_programs
     assert!(!core
         .register_hft_outline_font_native(FAMILY, woff, 0)
         .unwrap());
+    core.clear_text_font_family_native(FAMILY);
+    assert!(core
+        .register_hft_outline_font_native(FAMILY, CFF, 0)
+        .unwrap());
     assert_eq!(
         core.get_document_info(),
         before,
