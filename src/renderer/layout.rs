@@ -12535,7 +12535,7 @@ impl LayoutEngine {
             self.dpi,
         );
         let center_y = y_offset + geometry.center_offset;
-        if geometry.width > 0.0 {
+        if geometry.width > 0.0 && super::note_separator::has_ink(color) {
             let (dash, line_type) = super::line_style::hwp_line_type(line_type);
             let sep_length = note_separator_length_px(separator_length, col_area.width, self.dpi);
             let line_id = tree.next_id();

@@ -323,10 +323,7 @@ fn note_color_hex_with_storage<S: crate::storage::Storage>(
 where
     S::Error: std::fmt::Display,
 {
-    let r = c & 0xFF;
-    let g = (c >> 8) & 0xFF;
-    let b = (c >> 16) & 0xFF;
-    xml_value(storage, format_args!("#{r:02X}{g:02X}{b:02X}"))
+    super::shape::color_to_hex_with_storage(c, storage)
 }
 
 /// [#1984] FootnoteShape → `<hp:noteLine .../>` + `<hp:noteSpacing .../>` 두 요소.

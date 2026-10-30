@@ -1565,22 +1565,24 @@ impl LayoutEngine {
                 footnote_separator_length_px(shape.separator_length, fn_area.width, self.dpi);
             let line_width = border_width_to_px(shape.separator_line_width).max(0.5);
 
-            let sep_id = tree.next_id();
-            let sep_line = LineNode::new(
-                fn_area.x,
-                y,
-                fn_area.x + sep_length,
-                y,
-                LineStyle {
-                    color: shape.separator_color,
-                    width: line_width,
-                    dash: StrokeDash::Solid,
-                    ..Default::default()
-                },
-            );
-            let sep_bbox = sep_line.ink_bbox();
-            let sep_node = RenderNode::new(sep_id, RenderNodeType::Line(sep_line), sep_bbox);
-            fn_node.children.push(sep_node);
+            if crate::renderer::note_separator::has_ink(shape.separator_color) {
+                let sep_id = tree.next_id();
+                let sep_line = LineNode::new(
+                    fn_area.x,
+                    y,
+                    fn_area.x + sep_length,
+                    y,
+                    LineStyle {
+                        color: shape.separator_color,
+                        width: line_width,
+                        dash: StrokeDash::Solid,
+                        ..Default::default()
+                    },
+                );
+                let sep_bbox = sep_line.ink_bbox();
+                let sep_node = RenderNode::new(sep_id, RenderNodeType::Line(sep_line), sep_bbox);
+                fn_node.children.push(sep_node);
+            }
             y += line_width;
 
             // (3) 구분선 아래 여백

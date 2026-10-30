@@ -2,6 +2,11 @@
 
 use super::{hwpunit_to_px, layout::border_width_to_px};
 
+/// 색 없음은 잉크만 없앤다. 선언된 구분선 여백과 주석 흐름은 유지한다.
+pub(crate) fn has_ink(color: crate::model::ColorRef) -> bool {
+    color != crate::model::color::NONE
+}
+
 /// 경계 바로 앞에서 실제로 마지막 줄까지 소비한 본문의 줄간격.
 /// 다른 단의 꼬리나 표·그림 뒤의 이전 글줄 간격을 거슬러 회수하지 않는다.
 pub(crate) fn completed_body_tail_spacing_hu(

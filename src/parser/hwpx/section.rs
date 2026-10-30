@@ -1432,19 +1432,8 @@ fn parse_note_pr_children(
                                     }
                                 }
                                 b"color" => {
-                                    if let Ok(s) =
-                                        std::str::from_utf8(attr.value.as_ref().as_bytes())
-                                    {
-                                        // "#RRGGBB" → ColorRef (0xBBGGRR LE = HWP 표준)
-                                        if let Some(hex) = s.strip_prefix('#') {
-                                            if let Ok(rgb) = u32::from_str_radix(hex, 16) {
-                                                let r = (rgb >> 16) & 0xFF;
-                                                let g = (rgb >> 8) & 0xFF;
-                                                let b = rgb & 0xFF;
-                                                shape.separator_color = b << 16 | g << 8 | r;
-                                            }
-                                        }
-                                    }
+                                    // 공통 ColorRef 계약으로 명시적 "none"도 보존한다.
+                                    shape.separator_color = parse_color(&attr);
                                 }
                                 _ => {}
                             }
