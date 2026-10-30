@@ -34,11 +34,33 @@ pub(in crate::renderer::typeset) fn build_plan_with_storage<S: crate::storage::S
     let Some(style) = styles.para_styles.get(para.para_shape_id as usize) else {
         return Ok(None);
     };
-    let container = LayoutRect {
+    let mut container = LayoutRect {
         x: column.x + style.margin_left,
         width: (column.width - style.margin_left - style.margin_right).max(0.0),
         ..column
     };
+    // 정상 저장본의 일정한 줄 폭은 실제 사용한 가로 프레임이다. 용지 여백의
+    // 환산 폭으로 넓히면 정확히 경계에 놓인 TAC가 앞 앵커와 같은 줄로 합쳐진다.
+    // 줄 소속은 다시 계산하되 유효한 가로 프레임은 보존한다. 편집·합성 줄이나
+    // 어울림으로 폭이 달라진 저장 줄은 이 단축의 근거가 아니다.
+    if inline_flow::supports_page_square_table_rows(para)
+        && !para.stored_text_partition_is_dirty()
+        && !para.cell_format_vpos_dirty
+    {
+        if let Some(first) = para.line_segs.first().filter(|first| {
+            first.segment_width > 0
+                && first.column_start == 0
+                && para.line_segs.iter().all(|line| {
+                    line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                        && line.column_start == first.column_start
+                        && line.segment_width == first.segment_width
+                })
+        }) {
+            container.width = container
+                .width
+                .min(crate::renderer::hwpunit_to_px(first.segment_width, dpi));
+        }
+    }
     let paper = LayoutRect {
         x: 0.0,
         y: 0.0,
@@ -74,6 +96,15 @@ pub(in crate::renderer::typeset) fn build_plan_with_storage<S: crate::storage::S
         alignment: style.alignment,
         dpi,
     };
+    // 쪽·종이 기준 표는 앵커 줄의 y와 독립적인 상자다. 같은 문단의
+    // 줄 구성도 이 프레임의 배제 영역을 소비하며 paint는 아래 확정 좌표를 쓴다.
+    for control in &para.controls {
+        if let crate::model::control::Control::Table(table) = control {
+            if let Some(exclusion) = frame.page_anchored_square_table_exclusion(table) {
+                storage.push(&mut exclusions, exclusion)?;
+            }
+        }
+    }
     let plan = if inline_flow::supports_plain_text(para) {
         inline_flow::plan_plain_text_with_storage(para, styles, &frame, &exclusions, storage)?
     } else {
@@ -104,6 +135,32 @@ pub(in crate::renderer::typeset) fn build_plan_with_storage<S: crate::storage::S
         return Ok(None);
     };
     plan = resolved;
+    for item in &mut plan.boxes {
+        let inline_flow::InlineFlowContent::FloatingTable {
+            control,
+            resolved_position,
+        } = &mut item.content
+        else {
+            continue;
+        };
+        let crate::model::control::Control::Table(table) = &para.controls[*control] else {
+            continue;
+        };
+        if frame.page_anchored_square_table_exclusion(table).is_some() {
+            let margin = |value: i16| crate::renderer::hwpunit_to_px(i32::from(value), dpi);
+            let width = crate::renderer::hwpunit_to_px(table.common.width as i32, dpi)
+                + margin(table.outer_margin_left)
+                + margin(table.outer_margin_right);
+            let height = crate::renderer::hwpunit_to_px(table.common.height as i32, dpi)
+                + margin(table.outer_margin_top)
+                + margin(table.outer_margin_bottom);
+            let (left, top) = frame.position(&table.common, width, height);
+            *resolved_position = Some((
+                left + margin(table.outer_margin_left),
+                top + margin(table.outer_margin_top),
+            ));
+        }
+    }
     plan.relative_to(column.x, column.y);
     Ok(Some(plan))
 }

@@ -444,9 +444,46 @@ impl TypesetState {
         para: &Paragraph,
         table: &crate::model::table::Table,
     ) {
-        if !crate::renderer::para_has_no_stored_line_segs(para) {
-            return;
+        match self.register_page_anchored_square_table_with_storage(
+            para_index,
+            control_index,
+            para,
+            table,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(()) => {}
+            Err(never) => match never {},
         }
+    }
+
+    pub(in crate::renderer::typeset) fn register_page_anchored_square_table_with_storage<
+        S: crate::storage::Storage,
+    >(
+        &mut self,
+        para_index: usize,
+        control_index: usize,
+        para: &Paragraph,
+        table: &crate::model::table::Table,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        if !crate::renderer::para_has_no_stored_line_segs(para) {
+            return Ok(());
+        }
+        if let Some(exclusion) = self.page_anchored_square_table_exclusion(table) {
+            storage.insert_tree_map(
+                &mut self.data.side_wrap_exclusions,
+                (para_index, control_index),
+                exclusion,
+            )?;
+        }
+        Ok(())
+    }
+
+    /// 쪽·종이 기준 어울림 표의 상자. 위치가 host 흐름과 무관하므로 단 원점만 쓴다.
+    fn page_anchored_square_table_exclusion(
+        &self,
+        table: &crate::model::table::Table,
+    ) -> Option<crate::renderer::layout_frame::FrameExclusion> {
         let column = self.inline_flow_column();
         let paper = crate::renderer::page_layout::LayoutRect {
             x: 0.0,
@@ -463,11 +500,7 @@ impl TypesetState {
             alignment: crate::model::style::Alignment::Left,
             dpi: self.data.layout.dpi,
         };
-        if let Some(exclusion) = frame.page_anchored_square_table_exclusion(table) {
-            self.data
-                .side_wrap_exclusions
-                .insert((para_index, control_index), exclusion);
-        }
+        frame.page_anchored_square_table_exclusion(table)
     }
 
     /// 본문 항목 외에 이 쪽에서 실제 방출할 개체·어울림도 단의 내용이다.

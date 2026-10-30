@@ -3294,7 +3294,10 @@ impl LayoutEngine {
             match &item.content {
                 InlineFlowContent::Text { .. } => {}
                 InlineFlowContent::Picture { .. } | InlineFlowContent::FloatingShape { .. } => {}
-                InlineFlowContent::FloatingTable { control } => {
+                InlineFlowContent::FloatingTable {
+                    control,
+                    resolved_position,
+                } => {
                     let Control::Table(table) = &para.controls[*control] else {
                         continue;
                     };
@@ -3330,6 +3333,9 @@ impl LayoutEngine {
                             super::super::float_placement::signed_hwpunit(common.vertical_offset),
                             self.dpi,
                         ) + hwpunit_to_px(i32::from(table.outer_margin_top), self.dpi);
+                    let (left, top) = resolved_position
+                        .map(|(left, top)| (col_area.x + left, col_area.y + top))
+                        .unwrap_or((left, top));
                     let measured = measured_tables
                         .iter()
                         .find(|m| m.para_index == para_index && m.control_index == *control);
