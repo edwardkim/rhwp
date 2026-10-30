@@ -1,5 +1,5 @@
 page	tolerant_content_match_percent	below_90	silhouette_raw_match_percent	silhouette_boundary_reconciled_pixels
-1	99.73	0	98.58	5642
+1	99.73	0	98.54	5828
 2	100.00	0	100.00	0
 3	99.76	0	99.75	4
 4	99.91	0	99.91	4
@@ -31,8 +31,8 @@ page	tolerant_content_match_percent	below_90	silhouette_raw_match_percent	silhou
 30	100.00	0	99.99	4
 31	99.95	0	99.94	3
 32	100.00	0	99.99	4
-33	99.95	0	99.95	3
-34	99.78	0	99.78	4
+33	99.95	0	99.94	3
+34	99.79	0	99.78	4
 35	100.00	0	99.99	3
 36	100.00	0	100.00	4
 37	99.98	0	99.98	3
@@ -40,12 +40,12 @@ page	tolerant_content_match_percent	below_90	silhouette_raw_match_percent	silhou
 39	99.98	0	99.98	3
 40	99.97	0	99.97	4
 41	99.95	0	99.95	3
-42	99.96	0	99.96	4
+42	99.98	0	99.98	4
 43	100.00	0	100.00	3
 44	100.00	0	100.00	4
 45	100.00	0	100.00	3
 46	99.97	0	99.97	4
-47	99.87	0	99.86	3
+47	99.88	0	99.87	3
 48	99.99	0	99.99	4
 49	100.00	0	100.00	3
 50	100.00	0	100.00	4
@@ -53,7 +53,7 @@ page	tolerant_content_match_percent	below_90	silhouette_raw_match_percent	silhou
 52	99.89	0	99.89	4
 53	99.98	0	99.98	3
 54	100.00	0	99.97	4
-55	99.11	0	98.75	936
+55	99.11	0	98.75	952
 56	100.00	0	100.00	0
 57	99.99	0	99.99	0
 58	100.00	0	100.00	0
@@ -68,7 +68,7 @@ page	tolerant_content_match_percent	below_90	silhouette_raw_match_percent	silhou
 67	99.96	0	99.96	0
 68	99.94	0	99.94	0
 69	99.96	0	99.96	0
-70	99.90	0	99.90	0
+70	99.89	0	99.89	0
 71	99.83	0	99.83	0
 72	99.95	0	99.95	0
 73	99.95	0	99.95	0
