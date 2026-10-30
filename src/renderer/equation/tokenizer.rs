@@ -124,30 +124,22 @@ impl Tokenizer {
 
     /// 위치 `self.pos`부터 키워드가 prefix로 매치되는지 확인
     fn matches_at(&self, kw: &str) -> bool {
-        let kw_chars: Vec<char> = kw.chars().collect();
-        if self.pos + kw_chars.len() > self.chars.len() {
-            return false;
-        }
-        for (i, &c) in kw_chars.iter().enumerate() {
-            if self.chars[self.pos + i] != c {
-                return false;
-            }
-        }
-        true
+        self.matches_at_by(kw, |source, keyword| source == keyword)
     }
 
     /// 위치 `self.pos`부터 ASCII 키워드가 대소문자 무시 prefix로 매치되는지 확인
     fn matches_at_ascii_ci(&self, kw: &str) -> bool {
-        let kw_chars: Vec<char> = kw.chars().collect();
-        if self.pos + kw_chars.len() > self.chars.len() {
+        self.matches_at_by(kw, |source, keyword| source.eq_ignore_ascii_case(&keyword))
+    }
+
+    /// 키워드 탐색마다 문자 벡터를 만들지 않고 남은 입력과 바로 비교한다.
+    fn matches_at_by(&self, kw: &str, same: impl Fn(char, char) -> bool) -> bool {
+        let Some(rest) = self.chars.get(self.pos..) else {
             return false;
-        }
-        for (i, &c) in kw_chars.iter().enumerate() {
-            if !self.chars[self.pos + i].eq_ignore_ascii_case(&c) {
-                return false;
-            }
-        }
-        true
+        };
+        let mut rest = rest.iter();
+        kw.chars()
+            .all(|keyword| rest.next().is_some_and(|&source| same(source, keyword)))
     }
 
     /// 명령어/식별자 읽기 (영문자+숫자)
@@ -173,7 +165,11 @@ impl Tokenizer {
         // 다음 토큰에 맡긴다. 혼합 대소문자를 새로운 명령으로 합치지 않는다.
         if self.document_commands {
             for name in ["OVERLINE", "UNDERLINE", "OVER", "UNDER", "ATOP"] {
-                if self.matches_at(name) || self.matches_at(&name.to_ascii_lowercase()) {
+                if self.matches_at(name)
+                    || self.matches_at_by(name, |source, keyword| {
+                        source == keyword.to_ascii_lowercase()
+                    })
+                {
                     self.pos += name.len();
                     let value = if name == "UNDER" {
                         "UNDERLINE".to_owned()
