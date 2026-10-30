@@ -84,8 +84,16 @@ SHA-256·이전/보존 경로·활성 유지/제거 목록·복원 조건을 기
 모든 PR review Cargo 실행은 기본 증분 빌드를 사용한다. macOS·Linux·Windows 모두 각 host의 **기본 rhwp
 작업공간 아래 `target/pr-review` 한 곳**을 Native·WASM·lint·회귀에 재사용한다. review worktree가 바뀌어도
 동일한 물리 경로를 절대 경로로 전달한다. `target/<issue>`, `target/pr-<번호>`, `target/pr-review/<issue>`나
-worktree 안의 별도 `target/pr-review`를 새로 만들지 않는다. Cargo가 소스 경로·feature·compiler 변경을 판별해
-필요한 unit만 다시 빌드하며, 캐시 재사용이 최종 head 검증을 생략하는 근거는 아니다.
+worktree 안의 별도 `target/pr-review`를 새로 만들지 않는다. Cargo의 캐시를 재사용하더라도 실제
+산출물의 소유와 최종 head 검증을 확인한다.
+
+같은 target에서 base와 후보 worktree를 번갈아 빌드하면 공통 경로의 실행 파일이나
+`deps/librhwp.rlib`가 다른 worktree의 산출물로 덮일 수 있다. Cargo가 빠르게 성공하거나 실행 파일의
+해시가 바뀌었다는 사실만으로 후보 라이브러리가 연결됐다고 판정하지 않는다. worktree를 바꾼 뒤
+소유가 의심되면 공유 target을 삭제하지 말고 해당 worktree의 **라이브러리와 실행 파일을 함께**
+다시 빌드한다. 상세 빌드 로그에서 두 소스 unit의 재컴파일을 확인하고, 후보의 알려진 동작을
+대표 입력으로 실행해 base와 구분한다. 실행 파일은 worktree별로 복사해 SHA-256을 기록한 뒤
+시각 비교에 사용한다. 검증 중 발견된 잘못된 비교는 근거에서 제거하고 실제 후보로 다시 수행한다.
 
 `target/pr-review`는 **이동하거나 이름을 바꾸지 않는다**. 일부 통합 테스트의 `CARGO_BIN_EXE_*` fallback은
 컴파일 당시 절대 target 경로를 가질 수 있어, 빌드 뒤 directory를 옮기면 실행 파일을 찾지 못한다. 최초
