@@ -383,6 +383,7 @@ fn restore_fixed_trailing(
         })
     };
     let before = end(&paragraph.line_segs);
+    let observed_tail = paragraph.line_segs.last().map(|seg| seg.line_spacing);
     // [#8361] 조각마다(저장 줄 되감기 사이) 한/글처럼 `조각 첫 줄 + 줄 번호 × 피치` 로 다시 둔다.
     let mut base = 0;
     let mut row = 0;
@@ -396,6 +397,20 @@ fn restore_fixed_trailing(
         seg.vertical_pos = base + row * pitch;
         seg.line_spacing = (pitch - seg.line_height).max(0);
         row += 1;
+    }
+    // [#8362] 음수 아래 간격은 뒤 조각 마지막 줄의 꼬리를 관측 구간으로 줄인 몫이다. 한/글은
+    // 마지막 줄을 피치로 다시 짜고 그 간격을 빼지만 rhwp는 저장 꼬리를 따르고 음수 간격을
+    // 무시한다. 관측 꼬리를 그대로 두고 아래 간격을 다시 맞춘 피치에서 잰 몫으로 고쳐야 두
+    // 엔진이 다음 문단을 같은 자리에 둔다(2010판 7쪽 «물론 르포르도» 뒤 rhwp 만 57 아래).
+    if shape.spacing_after < 0 {
+        if let (Some(last), Some(tail)) = (paragraph.line_segs.last_mut(), observed_tail) {
+            let tail = tail.max(0);
+            if tail < last.line_spacing {
+                // Paragraph measures are stored as twice HWPUNIT.
+                shape.spacing_after = 2 * (tail - last.line_spacing);
+                last.line_spacing = tail;
+            }
+        }
     }
     Ok(end(&paragraph.line_segs) - before)
 }

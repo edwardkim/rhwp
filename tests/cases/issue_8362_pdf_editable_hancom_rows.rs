@@ -27,7 +27,7 @@ fn next_paragraph_after_a_fixed_line_paragraph_stacks_where_hancom_puts_it() {
     // 구간으로 줄였으면 그 몫이 문단 간격에 들어 있어야 두 자리가 같다(13쪽 24번 제목 뒤 571).
     let core = import_editable();
     let doc = core.document();
-    let (mut checked, mut shortened) = (0, 0);
+    let (mut checked, mut shortened, mut crossing) = (0, 0, 0);
     for pair in doc.sections[0].paragraphs.windows(2) {
         let (previous, next) = (&pair[0], &pair[1]);
         if next.column_type != rhwp::model::paragraph::ColumnBreakType::None {
@@ -40,15 +40,12 @@ fn next_paragraph_after_a_fixed_line_paragraph_stacks_where_hancom_puts_it() {
         if first.vertical_pos <= last.vertical_pos {
             continue;
         }
-        // 단을 넘어 이어지는 문단(저장 줄 되감기)의 마지막 줄은 한/글 실험 범위 밖이다 — 2010판
-        // 7쪽 «물론 르포르도» 뒤는 원본과 같은 자리에 오지만 이 식보다 57 아래다.
-        if previous
+        // 단을 넘어 이어지는 문단(저장 줄 되감기)도 같은 식이다 — 2010판 7쪽 «물론 르포르도»·9쪽
+        // «만연한 마흐디» 뒤는 한/글과 원본이 이 식의 자리에 둔다(rhwp 는 57·59 아래였다).
+        let crosses = previous
             .line_segs
             .windows(2)
-            .any(|rows| rows[1].vertical_pos < rows[0].vertical_pos)
-        {
-            continue;
-        }
+            .any(|rows| rows[1].vertical_pos < rows[0].vertical_pos);
         let before = &doc.doc_info.para_shapes[previous.para_shape_id as usize];
         let after = &doc.doc_info.para_shapes[next.para_shape_id as usize];
         let pitch = before.line_spacing / 2;
@@ -68,8 +65,15 @@ fn next_paragraph_after_a_fixed_line_paragraph_stacks_where_hancom_puts_it() {
         if last.line_height + last.line_spacing < pitch {
             shortened += 1;
         }
+        if crosses {
+            crossing += 1;
+        }
     }
     assert!(checked > 100, "검사한 고정 줄간격 문단 경계 {checked}개");
+    assert!(
+        crossing >= 2,
+        "단을 넘어 이어지는 문단 뒤 경계 {crossing}개"
+    );
     assert!(shortened > 0, "꼬리를 원본 구간으로 줄인 문단 경계가 없다");
 }
 
