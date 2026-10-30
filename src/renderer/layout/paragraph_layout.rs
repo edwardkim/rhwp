@@ -7553,7 +7553,6 @@ impl LayoutEngine {
             } else {
                 vec![0; leading_space_plan.line.runs.len()]
             };
-            let mut dash_extra_by_run = None;
             let hwp3_saved_space = para
                 .filter(|p| {
                     needs_justify
@@ -7620,7 +7619,7 @@ impl LayoutEngine {
                         ),
                         &unjustified_leading_spaces,
                         styles,
-                        centered_measure.as_ref(),
+                        visible_line_measure.as_ref(),
                         alignment,
                         cell_ctx.is_some(),
                         needs_justify,
