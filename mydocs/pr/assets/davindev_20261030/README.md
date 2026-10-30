@@ -82,8 +82,8 @@ Studio Chrome 155에서 3개 폭 × screen/print × Canvas2D/CanvasKit compat/de
 
 ## 검토 기록
 
-- [#8134](../../pr_8134_review.md)
-- [#8147](../../pr_8147_review.md)
-- [#8175](../../pr_8175_review.md)
+- [#8134](../../archives/pr_8134_review.md)
+- [#8147](../../archives/pr_8147_review.md)
+- [#8175](../../archives/pr_8175_review.md)
 
 이 문서는 시각 근거이며 전체 Rust 회귀·lint 완료나 원격 merge 승인을 대신하지 않는다.

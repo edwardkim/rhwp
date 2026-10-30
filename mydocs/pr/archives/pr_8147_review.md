@@ -1,38 +1,44 @@
-# PR #8175 — 양식 캡션의 개체 영역 clipping
+# PR #8147 — 빈 문단의 글자처럼 취급 그림
 
 ## 최종 판정
 
-**메인테이너 보정 후 수용 가능 — 로컬 필수 검증 완료.** 통합 후보의 원격 최신 head CI를 확인한 뒤 승인된 merge를 진행한다. 원 기여 커밋의 이력은 모두 보존한다.
+**승인·머지 완료.** [통합 PR #8393](https://github.com/edwardkim/rhwp/pull/8393)의 merge `16797c520cb46fd3b1c1ea9072cb7fb5f0aa79b6`로 반영했고 원 PR #8147도 GitHub에서 MERGED임을 확인했다.
 
 ## 접수와 범위
 
-- 원 PR: https://github.com/edwardkim/rhwp/pull/8175; davindev, CONTRIBUTOR, Open, non-draft, base devel.
-- 원 head: `5e0c3562846f16078fa1d4e2e32a7301766197c1` (`kidsnote/rhwp:fix/form-caption-clip`).
+- 원 PR: https://github.com/edwardkim/rhwp/pull/8147; davindev, CONTRIBUTOR, Open, non-draft, base devel.
+- 원 head: `07dc67ee6503d6101fd14f2ea96b41b7abba5803` (`kidsnote/rhwp:fix/no-ls-empty-tac-picture`).
 - 기준 devel: `2d535febe00a61585b6770cb95860fee912bbe54`; 검토 브랜치 `review/davindev-20261030`.
-- 관련 이슈: #8166. 메인테이너 `edwardkim`의 reviewer 지정을 API로 확인했다(2026-10-30).
+- 관련 이슈: #8118. 메인테이너 `edwardkim`의 reviewer 지정을 API로 확인했다(2026-10-30).
 - 기본 경로: maintainer_general. 보조 경로: intake_and_review, local_validation, visual_fixture_evidence, multi_pr_update_branch. #8175는 rework_and_exceptions도 적용한다.
 - 사용자 승인: 세 PR 검토. #8175의 SVG·Canvas2D 충돌은 최신 기울임꼴·글꼴 임베딩을 보존하고 clipping·대체 목록을 통합하는 메인테이너 보정을 별도로 승인했다. 원격 게시·push·merge는 아직 수행하지 않았다.
 
 ## 선행 이력과 검증 계획
 
-#8174의 통합 f125c735c7에서 들어온 공통 기울임꼴과 SVG 글꼴 임베딩을 유지한다. 캡션 clip은 최신 devel에도 없어 원 문제의 실제 출력을 확인한다. 폭 9921/3000/1100HU의 같은 저장본·Print PDF를 Native, fresh WASM, Studio Canvas2D/CanvasKit에서 대조한다.
+#8147은 #8134 위에 쌓인 스택 PR이다. 그림 누락 수정과 프레임 재조합 뒤 중복 방지까지 포함한다. 원 사례의 그림 소유·개수·줄 포함·뒤 문단 순서와 기존 #7642 대조군을 확인한다.
 
 - 같은 입력/PDF·compat 2022·96dpi·실제 글꼴 환경으로 최신 base와 후보의 전쪽 TSV를 산출한다. 90% 최소값·2%p 초과 하락·쪽수·내용 소유를 확인하고 대표 PNG를 직접 판독한다.
 - 원 PR의 기존 GitHub CI는 과거 원 head의 참고 증거다. 메인테이너 보정 통합 후보는 새 코드의 focused·필수 lint·회귀·최적화 WASM 검증을 수행한다.
 - 임시 로그·원격 metadata: `output/pr-review/davindev-20261030/`. 수용에 사용하는 원본·PDF·최종 TSV·대표 PNG는 정식 경로에 보존한다.
 
+## 최초 기준 2d535febe0의 재현 결과
+
+동일 공개 원본의 Native/fresh WASM에서 제목 테두리 그림은 이미 존재한다. Native 렌더 트리의 `Image(pi=0,ci=3)`는 1개이며, 그림과 소유 줄 상자는 모두 `(96.9,94.5,599.9,91.7)`이다. 다음 문단 줄 y=207.5로 그림 아래끝 186.2보다 아래다. 이 관측은 현재 devel에서 원 그림 누락 증상이 해소됐다는 근거이며, 과거 head의 FAIL을 현재 base의 FAIL로 재사용하지 않는다.
+
+남은 제목 두 줄의 y=142.3/190.3은 #8122의 정렬 문제다. 통합 후보에서는 y=105.0/153.0으로 복원되고 기존 그림 좌표·개수는 유지된다. Native 실루엣 89.20→99.73%의 개선을 #8147만의 새 그림 복원으로 주장하지 않는다. 최종 수용 방향은 추가 방어 코드·관계 회귀의 가치와 나머지 검증을 구분해 결정한다.
+
 ## 통합 후보의 로컬 검증 (2026-10-30)
 
-공통 `form_drawing`의 양식 bbox·caption 원점을 그대로 소비하고, SVG·WebCanvas·Native Skia·
-Studio CanvasKit 각각에서 같은 개체 bbox를 clip으로 적용한다. 캡션과 primitive의 배치 수치를
-변경하지 않으며 save/restore 또는 그룹 종료로 뒤 개체에 clip이 누출되지 않게 한다.
-SVG 충돌에서는 `font_codepoints` 등록을 유지했고, Canvas2D와 함께 공통
-`text_italic::CSS_STYLE`을 유지했다. 기존 devel의 글꼴 기능을 삭제해 충돌을 푼 것이 아니다.
+현행 base의 실제 출력에서 그림 누락은 재현되지 않는다. 후보의 변경은 FullParagraph 항목의
+존재만으로 그림 출력을 가정하지 않고, 조합 줄 또는 같은 section/paragraph/control 그림의
+실제 존재를 확인하는 방어 로직이다. 원 PR의 과거 FAIL을 현행 base의 FAIL로 기록하지 않는다.
+새 검사는 그림의 단일 출력·소유 줄 내부 포함·뒤 문단 순서를 보호하며 현재 base에서도 이 관계는
+이미 성립한다. #7642와 #8168의 인접 경계 focused 검사도 함께 통과했다.
 
 코드 head `770b073d24085b056c8a0f4263e2214b8b53ae08`에서 검증했다. 이후 새 테스트의
 첫머리에 실측 근거 주석을 추가했으며 구현·assertion은 바꾸지 않았다.
 
-- [전쪽 TSV·직접 비교·출력 출처](assets/davindev_20261030/README.md): 5개 원본, 각 1쪽. Native/fresh WASM 10건 모두 90% 이상.
+- [전쪽 TSV·직접 비교·출력 출처](../assets/davindev_20261030/README.md): 5개 원본, 각 1쪽. Native/fresh WASM 10건 모두 90% 이상.
 - 관련 focused 회귀 24건 통과: #8122, #8118, #8166, #7642, #8168, #7062, 기존 양식 appearance.
 - Studio 단위 검사 2,673건 통과, 2건 skip, 실패 0건. TypeScript 검사와 renderer-contract E2E 통과.
 - Canvas2D·CanvasKit compat/default의 screen/print 18회 실제 캡처, 비교 12건 통과.
@@ -50,7 +56,7 @@ SVG 충돌에서는 `font_codepoints` 등록을 유지했고, Canvas2D와 함께
 `d189352a1b3b0e09718022f7da47daaa5205fab9`다. 로컬 `d94c7aa124`는 실측 주석과
 증거 문서·TSV만 갱신했으며 assertion과 제품 코드는 바꾸지 않았다.
 
-- [새 기준의 전쪽 TSV](assets/davindev_20261030/rebase-cb9c45/README.md): 원 사례 5개, 각 1쪽.
+- [새 기준의 전쪽 TSV](../assets/davindev_20261030/rebase-cb9c45/README.md): 원 사례 5개, 각 1쪽.
   후보 전쪽 최저 Native 96.21%, fresh WASM 95.98%; 독립 PDF와 전체 쪽수 일치.
 - 글상자는 Native 85.19→99.55%, WASM 85.70→99.42%다. Native에서 제목 영역 밖의
   본문·그림 픽셀은 기준과 동일하다. 그림 단일 출력·소유 줄 내부·후속 본문 순서도 보존한다.
@@ -73,25 +79,17 @@ SVG 충돌에서는 `font_codepoints` 등록을 유지했고, Canvas2D와 함께
 `8114f5e93b0c544a66c7dad8bfe2a533691a9a5d5568c49a71b55915e28503a0`, WASM SHA
 `ce942e2d6e3d37dc4fd593cae55423b5b9303f510405d868a91c57bf39196f8d`에서 위 결과를 다시 확인했다.
 
-Print와 다른 기존 체크 상자 크기·라디오 외곽선 일부 및 글자 획 차이는 남아 있다.
-수정 전후 확대 비교에서 이 차이는 기준에도 존재하고, 후보에서 새로 생긴 차이로 기록하지
-않는다. 이 PR의 개선은 캡션의 개체 영역 제한이며 양식 appearance 전체의 Print 일치를
-완료했다고 주장하지 않는다. 함초롬돋움 원본을 추가 공급한 글상자 진단도 기존 Native
-픽셀과 같았으므로 남은 획 차이를 해당 글꼴의 단순 누락으로 단정하지 않는다.
-
 2026-10-30 작업지시자는 남은 회귀 통과 뒤 원격 push와 머지를 승인했다. 통합 후보의
 로컬 필수 검사와 원격 최신 head CI를 완료한 뒤 기여 이력을 보존하는 merge로 처리한다.
 
 ## 조판 원칙과 소비 경로 self-review
 
-원본의 양식 폭(HWPUNIT) → 공통 배치 `FormObject` bbox → 공통 `form_drawing` →
-SVG/WebCanvas/Skia/CanvasKit의 같은 bbox clip을 확인했다. 잘못된 조판 좌표를 숨기는
-보정이 아니라 독립 Print에서 확인한 컨트롤의 그리기 경계다. backend별 clip API는 다르지만
-경계를 각각 추측하지 않고 공통 bbox를 소비하며 save/restore가 다음 개체에 영향을 주지 않는다.
-SVG의 `font_codepoints`와 공통 italic 스타일은 충돌 보정 뒤 유지한다.
-폭 1100/3000/9921HU 원본·독립 Print와 합성 폭 계약을 구분했고, 기존
-`form_classic_appearance` 검사와 함께 통과했다. 원본 단위에서 환산한 폭 계약을 유지했고
-실물의 잘못된 절대 좌표나 golden을 추가하지 않았다. 페이지 분할·이어받기는 변경하지 않는다.
+`layout_tac_picture_item`의 문단 경로 출력 여부 → 조합 줄 유무/같은 소유의 실제 Image 검색 →
+이미 등록된 inline 위치 → 그림 노드 생성 여부를 확인했다. 검색은 저장 줄 없는 조합 결과가
+비어 있는 문단의 경계에서만 필요하며 `FullParagraph` 존재만으로 출력 완료를 가정하지 않는다.
+현재 base에서 이미 한 번 표시되는 원본을 새 FAIL→PASS로 주장하지 않는다. 추가 방어와
+단일 출력·소유 줄 포함·뒤 문단 순서 회귀의 수용이며 #7642/#8168 정상 대조군도 통과했다.
+해당 원본 참조는 이 관계형 검사에서 확인했고 잘못된 고정 px 기대값을 추가하거나 남기지 않았다.
 
 ## 제출 전 최종 상태
 
@@ -104,3 +102,18 @@ SVG의 `font_codepoints`와 공통 italic 스타일은 충돌 보정 뒤 유지�
 - 신규 PR 선행 조회에서 본인 PR #8392의 CI 진행을 확인했다. 실패·충돌 여부를 관찰하며
   다른 작업의 branch·source를 임의로 보정하지 않는다.
 - LFS 신규 객체 없음, 문서 링크·입력 및 증거 해시 확인, devel merge-tree 충돌 없음.
+
+## 최종 CI·통합 확인
+
+- 정확한 head `69c786e8a29e18385b5ea71e96b4f6bf3534eb22`의 [Full CI](https://github.com/edwardkim/rhwp/actions/runs/41061600370), [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/41061600268), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/41061600162), [Adapter](https://github.com/edwardkim/rhwp/actions/runs/41061600284), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/41061600190)와 CI Impact Policy가 성공했다.
+- self-review에서 이번 통합을 막는 새 회귀를 확인하지 못했다. 원 기여 커밋의 조상 관계를 보존하며
+  `--merge --admin --match-head-commit 69c786e8a29e18385b5ea71e96b4f6bf3534eb22`로 통합했다. squash하지 않았다.
+- 검토 도중 추가된 #8392의 devel `e27f72ed4c`는 CI 설정·검사·문서만 변경했다. 실제 merge tree
+  `6614d2ce717464ffe7a3ac1b724df922127626b8`가 직전 simulation과 같고 제품·테스트·입력 tree는
+  검증 후보 그대로다. 새 CI 설정은 devel과 동일하게 보존됐다.
+- 2026-10-30 22:45 KST에 통합 PR과 원 PR 3건 모두 MERGED가 됐다. #8122·#8118·#8166은
+  devel push 후 자동으로 CLOSED가 된 것을 확인했다. #8118은 원 증상이 이미 해소된 상태에서
+  방어·회귀 보강을 수용한 것이며 신규 증상 해결로 과장하지 않는다.
+- 원본·증거 링크 53개의 다운로드 바이트와 GitHub 본문 이미지 13개의 실제 표시를 확인했다.
+- 사용자 승인 범위의 push·merge를 완료했다. 별도 contributor/issue 댓글은 게시하지 않았으며,
+  최종 검토 결과와 시각 증거는 통합 PR 본문과 이 기록에서 확인할 수 있다.
