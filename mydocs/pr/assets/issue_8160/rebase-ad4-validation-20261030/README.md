@@ -22,3 +22,11 @@ Native 실행 파일 SHA-256: `4db09178e15359b6cbd2f0601e31f9217b77a4451d027065c
 빌드 병렬도 8, WASM `codegen-units=16`을 사용했다. 이후 커밋은 Rust 서식, lint 범위와
 회귀 주석을 정리했으며 렌더링 동작을 변경하지 않았다. 검증용 폰트는 로컬 시스템에서 공급했고
 폰트 파일을 이 증거에 포함하지 않았다.
+
+다른 두 입력의 23쪽도 동일 원본·독립 Print 쪽에서 Native와 fresh WASM을 나란히 확인했다.
+각 화면의 raw 표시값은 100.00%다.
+
+| 원본 | Native review | Native overlay | WASM review | WASM overlay |
+| --- | --- | --- | --- | --- |
+| HWPX | [review](hwpx-p023-native-review.png) | [overlay](hwpx-p023-native-overlay.png) | [review](hwpx-p023-wasm-review.png) | [overlay](hwpx-p023-wasm-overlay.png) |
+| HWP 2024 | [review](hwp2024-p023-native-review.png) | [overlay](hwp2024-p023-native-overlay.png) | [review](hwp2024-p023-wasm-review.png) | [overlay](hwp2024-p023-wasm-overlay.png) |
