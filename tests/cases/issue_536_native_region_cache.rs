@@ -1,3 +1,8 @@
+//! 관계형·고정형: 합성 PageLayerTree와 new_blank 문서의 crop 동등성, 고정 타일 겹침, LRU 용량·무효화 계약.
+//! 주석 갱신: 2026-10-30T23:23:28+09:00; 직전 파일 커밋: 2026-10-26T18:25:02+09:00 (06bf9c11002879934831f5c2276fe2b267cc8be0).
+//! 실물 페이지의 조판 좌표를 고정하는 검사가 아니므로 이 assertion의 raw 시각 측정값은 비해당이다.
+//! 합성 알고리즘 계약과 별도의 Native/fresh WASM 실물 검증을 구분한다.
+//! 근거: mydocs/pr/assets/seo_rii_20261030/README.md.
 //! Region cache checks use the same direct full-page Skia raster as reference.
 //! They prove immutable crop equivalence and bounded replay reuse, not Hancom
 //! visual parity, OS presentation performance or subtree culling.
