@@ -29,6 +29,8 @@ pub(super) struct BodyFrame {
     pub top: f32,
     pub right: f32,
     pub bottom: f32,
+    /// Widest source line of each paragraph, in frame order.
+    pub paragraph_rights: Vec<f32>,
 }
 
 /// Frames committed on one output section (one source page).
@@ -52,12 +54,19 @@ pub(super) fn page_frames(
             .filter_map(|f| {
                 let b = f["textBox"].as_array()?;
                 let n = |i: usize| b.get(i)?.as_f64().map(|v| v as f32);
+                let paragraph_rights = f["paragraphRights"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                    .filter_map(|v| v.as_f64().map(|v| v as f32))
+                    .collect();
                 Some(BodyFrame {
                     inst_id: u32::try_from(f["instanceId"].as_u64()?).ok()?,
                     left: n(0)?,
                     top: n(1)?,
                     right: n(2)?,
                     bottom: n(3)?,
+                    paragraph_rights,
                 })
             }),
     )?;
@@ -66,6 +75,10 @@ pub(super) fn page_frames(
 
 /// Height in HWPUNIT that an anchor line (no text) takes in its column.
 const ANCHOR_HEIGHT: i32 = 100;
+
+/// HWPUNIT a row keeps beyond its widest source line, so that the substitute
+/// font's rounding does not push the line's last character to the next row.
+const ROW_END_SLACK: i32 = 100;
 
 fn hu(points: f32) -> i32 {
     (points * 100.0).round() as i32
@@ -310,6 +323,189 @@ fn join(
     Ok(())
 }
 
+/// The pieces of a joined paragraph were measured in their own frames, so
+/// their rows can end at different edges. One paragraph shape serves all the
+/// rows: every row takes the widest piece's end, and the right margin follows.
+fn unify_row_end(doc: &mut Document, paragraph: &mut Paragraph) {
+    let (Some(first), Some(end)) = (
+        paragraph.line_segs.first(),
+        paragraph
+            .line_segs
+            .iter()
+            .map(|seg| seg.column_start + seg.segment_width)
+            .max(),
+    ) else {
+        return;
+    };
+    let grown = end - (first.column_start + first.segment_width);
+    if let Some(shape) = doc
+        .doc_info
+        .para_shapes
+        .get_mut(paragraph.para_shape_id as usize)
+    {
+        // Paragraph measures are stored as twice HWPUNIT.
+        shape.margin_right -= 2 * grown;
+    }
+    for seg in &mut paragraph.line_segs {
+        seg.segment_width = end - seg.column_start;
+    }
+}
+
+/// [#8355] 한/글은 고정 줄간격 문단의 마지막 줄도 고정 피치를 차지한다. 이어 붙인 문단의
+/// 마지막 줄은 뒤 조각(한 줄짜리면 피치를 관측하지 못한 조각)에서 왔으므로 남은 문단 모양의
+/// 피치로 꼬리 줄간격을 다시 두고, 늘어난 몫을 돌려준다.
+///
+/// 한/글은 고정값 하나로 문단 전체를 짠다. 앞 조각(한두 줄)에서 잰 피치를 그대로 두면 뒤
+/// 조각의 줄마다 그 차이가 쌓이므로(12쪽 24줄 +17px), 이어 붙인 문단의 줄 피치 중앙값으로
+/// 고정값을 다시 잡는다. 저장 줄 되감기(다음 단·쪽)는 피치가 아니다.
+fn restore_fixed_trailing(
+    doc: &mut Document,
+    paragraph: &mut Paragraph,
+    allocation: Allocation<'_>,
+) -> Result<i32, PdfImportError> {
+    let Some(shape) = doc
+        .doc_info
+        .para_shapes
+        .get_mut(paragraph.para_shape_id as usize)
+    else {
+        return Ok(0);
+    };
+    if shape.line_spacing_type != crate::model::style::LineSpacingType::Fixed {
+        return Ok(0);
+    }
+    if let Some(pitch) = median_row_pitch(&paragraph.line_segs, allocation)? {
+        shape.line_spacing = 2 * pitch;
+    }
+    let pitch = shape.line_spacing / 2;
+    let end = |rows: &[crate::model::paragraph::LineSeg]| {
+        rows.last().map_or(0, |s| {
+            s.vertical_pos + s.line_height + s.line_spacing.max(0)
+        })
+    };
+    let before = end(&paragraph.line_segs);
+    let observed_tail = paragraph.line_segs.last().map(|seg| seg.line_spacing);
+    // [#8361] 조각마다(저장 줄 되감기 사이) 한/글처럼 `조각 첫 줄 + 줄 번호 × 피치` 로 다시 둔다.
+    let mut base = 0;
+    let mut row = 0;
+    let mut previous = i32::MIN;
+    for seg in &mut paragraph.line_segs {
+        if seg.vertical_pos < previous || previous == i32::MIN {
+            base = seg.vertical_pos;
+            row = 0;
+        }
+        previous = seg.vertical_pos;
+        seg.vertical_pos = base + row * pitch;
+        seg.line_spacing = (pitch - seg.line_height).max(0);
+        row += 1;
+    }
+    // [#8362] 음수 아래 간격은 뒤 조각 마지막 줄의 꼬리를 관측 구간으로 줄인 몫이다. 한/글은
+    // 마지막 줄을 피치로 다시 짜고 그 간격을 빼지만 rhwp는 저장 꼬리를 따르고 음수 간격을
+    // 무시한다. 관측 꼬리를 그대로 두고 아래 간격을 다시 맞춘 피치에서 잰 몫으로 고쳐야 두
+    // 엔진이 다음 문단을 같은 자리에 둔다(2010판 7쪽 «물론 르포르도» 뒤 rhwp 만 57 아래).
+    if shape.spacing_after < 0 {
+        if let (Some(last), Some(tail)) = (paragraph.line_segs.last_mut(), observed_tail) {
+            let tail = tail.max(0);
+            if tail < last.line_spacing {
+                // Paragraph measures are stored as twice HWPUNIT.
+                shape.spacing_after = 2 * (tail - last.line_spacing);
+                last.line_spacing = tail;
+            }
+        }
+    }
+    Ok(end(&paragraph.line_segs) - before)
+}
+
+/// [#8361] 단 기준 저장 줄로 본 원본 본문 아래 끝(HWPUNIT, 본문 위 끝 기준). 들어간 줄 바닥의
+/// 최댓값 이상이고, 문단 안에서 다음 단·쪽으로 넘어간 줄(저장 줄 되감기 직후 줄)이 앞 단에 놓였을
+/// 바닥의 최솟값보다 1 작다. 그 최솟값이 들어간 줄보다 위인 경우(다른 이유로 일찍 끊긴 단)는
+/// 아래 끝으로 설명되지 않아 쓰지 않는다.
+fn column_cut_bottom(paragraphs: &[Paragraph]) -> Option<i32> {
+    let rows = || paragraphs.iter().flat_map(|p| &p.line_segs);
+    let filled = rows().map(|seg| seg.vertical_pos + seg.line_height).max()?;
+    paragraphs
+        .iter()
+        .flat_map(|p| p.line_segs.windows(2))
+        .filter(|pair| pair[1].vertical_pos < pair[0].vertical_pos)
+        .map(|pair| {
+            pair[0].vertical_pos
+                + pair[0].line_height
+                + pair[0].line_spacing.max(0)
+                + pair[1].line_height
+        })
+        .filter(|&spilled| spilled > filled)
+        .min()
+        .map(|spilled| spilled - 1)
+}
+
+/// [#8361] 한/글은 단 안 문단을 `앞 문단 끝(마지막 줄 + 꼬리 줄간격) + 아래 간격 + 앞 간격` 에
+/// 차례로 쌓는다. PDF 관측 위치는 글자 상자 기준이라 문단 마지막 줄이 피치보다 짧게 관측되고(한
+/// 쪽 13·5쪽 문단 경계마다 110HU), 그 자리를 그대로 저장하면 한/글만 문단 경계마다 내려가 단
+/// 끝 줄이 다음 단으로 넘어갔다. 단 첫 문단은 원래 자리에 두고 나머지 저장 줄을 같은 규칙으로
+/// 다시 매긴다(앞 간격은 이미 PDF 간격에서 앞 문단 끝을 뺀 값이다).
+fn restack_columns(doc: &Document, body: &mut [Paragraph]) {
+    let mut end: Option<i32> = None;
+    for paragraph in body.iter_mut() {
+        if paragraph.column_type != ColumnBreakType::None {
+            end = None;
+        }
+        let Some(shape) = doc
+            .doc_info
+            .para_shapes
+            .get(paragraph.para_shape_id as usize)
+        else {
+            continue;
+        };
+        let Some(first) = paragraph.line_segs.first().map(|seg| seg.vertical_pos) else {
+            continue;
+        };
+        // Paragraph measures are stored as twice HWPUNIT.
+        if let Some(previous_end) = end {
+            let shift = previous_end + shape.spacing_before.max(0) / 2 - first;
+            // 이어 붙인 문단의 되감기(다음 단·쪽) 뒤 줄은 그 단의 자리에 둔다.
+            let mut previous = i32::MIN;
+            for seg in &mut paragraph.line_segs {
+                if seg.vertical_pos < previous {
+                    break;
+                }
+                previous = seg.vertical_pos;
+                seg.vertical_pos += shift;
+            }
+        }
+        end = paragraph.line_segs.last().map(|seg| {
+            seg.vertical_pos
+                + seg.line_height
+                + seg.line_spacing.max(0)
+                + shape.spacing_after.max(0) / 2
+        });
+    }
+}
+
+/// 같은 단 안에서 이어지는 저장 줄 사이 피치(HWPUNIT). PDF 관측 피치는 반올림으로 한두
+/// HWPUNIT 씩 오가므로(1919/1931) 중앙값 근처(±5%) 피치의 평균을 쓴다 — 한/글은 이 값 하나로
+/// 모든 줄을 짜므로 한쪽 값을 고르면 줄마다 그 반올림 차이가 쌓인다.
+fn median_row_pitch(
+    rows: &[crate::model::paragraph::LineSeg],
+    allocation: Allocation<'_>,
+) -> Result<Option<i32>, PdfImportError> {
+    let mut pitches = allocation.collect(
+        rows.windows(2)
+            .map(|pair| pair[1].vertical_pos - pair[0].vertical_pos)
+            .filter(|&pitch| pitch > 0),
+    )?;
+    if pitches.is_empty() {
+        return Ok(None);
+    }
+    allocation.sort_by(&mut pitches, i32::cmp)?;
+    let median = pitches[pitches.len() / 2];
+    let (sum, count) = pitches
+        .iter()
+        .filter(|&&pitch| (pitch - median).abs() * 20 <= median)
+        .fold((0_i64, 0_i64), |(sum, count), &pitch| {
+            (sum + i64::from(pitch), count + 1)
+        });
+    Ok(Some((sum as f64 / count as f64).round() as i32))
+}
+
 /// Body rows take the paragraph indent from the row tag, not from their
 /// start position: a positive indent marks the first row, a negative
 /// (hanging) indent the rows after it. Frame rows stored the indent in
@@ -410,6 +606,9 @@ fn assemble(
                 allocation.push(out, anchor)?;
             }
         }
+        // [#8355] 이어 붙인 문단이 마지막 줄에 새로 차지한 꼬리 줄간격(HWPUNIT). 다음 문단의
+        // 앞 간격은 이어 붙이기 전 조각의 줄 바닥에서 잰 값이라 그만큼 뺀다.
+        let mut carried_trailing = 0;
         for (j, paragraph) in body.into_iter().enumerate() {
             match out.last_mut() {
                 Some(previous) if cut[j] => {
@@ -419,9 +618,29 @@ fn assemble(
                         doc.doc_info.para_shapes[paragraph.para_shape_id as usize].spacing_after;
                     doc.doc_info.para_shapes[previous.para_shape_id as usize].spacing_after = after;
                     join(previous, &paragraph, allocation)?;
+                    unify_row_end(doc, previous);
+                    carried_trailing = restore_fixed_trailing(doc, previous, allocation)?;
+                    // [#8362] 뒤 조각의 다음 글이 그림으로 시작하면 사이 간격은 이 문단의 아래
+                    // 간격에 들어 있다. 늘어난 꼬리 몫은 거기서 먼저 뺀다 — 다음 문단 앞 간격에서만
+                    // 빼면 같은 몫이 두 번 들어가 원본보다 한 줄간격 벌어졌다(2010판 6쪽 첫 줄 뒤).
+                    if carried_trailing > 0 {
+                        let shape = &mut doc.doc_info.para_shapes[previous.para_shape_id as usize];
+                        // Paragraph measures are stored as twice HWPUNIT.
+                        let taken = (2 * carried_trailing).min(shape.spacing_after.max(0));
+                        shape.spacing_after -= taken;
+                        carried_trailing -= taken / 2;
+                    }
                     joined += 1;
                 }
-                _ => allocation.push(out, paragraph)?,
+                _ => {
+                    if carried_trailing != 0 {
+                        let shape = &mut doc.doc_info.para_shapes[paragraph.para_shape_id as usize];
+                        // Paragraph measures are stored as twice HWPUNIT.
+                        shape.spacing_before = (shape.spacing_before - 2 * carried_trailing).max(0);
+                    }
+                    carried_trailing = 0;
+                    allocation.push(out, paragraph)?;
+                }
             }
         }
     }
@@ -665,26 +884,69 @@ pub(super) fn reflow(
                                 ShapeObject::Rectangle(rect)
                                     if rect.drawing.inst_id == page.frames[index].inst_id =>
                                 {
-                                    rect.drawing
-                                        .text_box
-                                        .as_mut()?
-                                        .paragraphs
-                                        .last_mut()?
-                                        .line_segs
-                                        .last_mut()
+                                    rect.drawing.text_box.as_mut()?.paragraphs.last_mut()
                                 }
                                 _ => None,
                             },
                             _ => None,
                         });
-                    if let Some(last) = last {
+                    if let Some(paragraph) = last {
+                        let blank_row = paragraph.line_segs.len() == 1
+                            && !paragraph.text.is_empty()
+                            && paragraph.text.chars().all(char::is_whitespace);
+                        let Some(last) = paragraph.line_segs.last_mut() else {
+                            continue;
+                        };
                         let content_end = i64::from(*bottom) - i64::from(last.line_spacing);
+                        let row_top = content_end - i64::from(last.line_height);
+                        // [#8381] 공백만 있는 줄은 잉크가 없어 글자 상자가 점유한 내용이 아니다.
+                        // 그 줄은 다음 관측 줄까지의 띠만 차지한다. 저장 줄 높이를 그 띠로 줄이고,
+                        // 한/글이 마지막 줄을 다시 짜는 고정 피치도 같은 띠로 둔다(무표기본 13쪽
+                        // 지문 상자 맨 위 « » 줄: 글자 11.04pt, 다음 줄까지 6.6pt — 두 엔진이 본문을
+                        // 4.4pt 아래에 그렸다).
+                        if blank_row
+                            && i64::from(next_top) < content_end
+                            && i64::from(next_top) > row_top
+                        {
+                            let band = (i64::from(next_top) - row_top) as i32;
+                            let before = last.line_height + last.line_spacing;
+                            last.line_height = band;
+                            last.text_height = last.text_height.min(band);
+                            last.line_spacing = 0;
+                            if let Some(shape) = doc
+                                .doc_info
+                                .para_shapes
+                                .get_mut(paragraph.para_shape_id as usize)
+                            {
+                                if shape.line_spacing_type == LineSpacingType::Fixed {
+                                    // Paragraph measures are stored as twice HWPUNIT.
+                                    shape.line_spacing = 2 * band;
+                                }
+                            }
+                            *bottom = next_top;
+                            allocation.push(&mut tail_bands, request_json!(allocation, {"sourceSection":page.section,"instanceId":page.frames[index].inst_id,"contentEndHu":content_end,"sourceBandEndHu":next_top,"inferredTailHu":before,"acceptedTailHu":band})?)?;
+                            continue;
+                        }
                         // A paragraph's inferred interline tail is not
                         // observed occupied content. Grant only the available
                         // source band, without cutting any accepted line box.
                         if last.line_spacing > 0 && i64::from(next_top) >= content_end {
                             let before = last.line_spacing;
                             last.line_spacing = (i64::from(next_top) - content_end) as i32;
+                            let cut = before - last.line_spacing;
+                            // Hancom lays a fixed-pitch paragraph's last row
+                            // out at the pitch again; its spacing after gives
+                            // the cut back. Stored rows already end at the band.
+                            if let Some(shape) = doc
+                                .doc_info
+                                .para_shapes
+                                .get_mut(paragraph.para_shape_id as usize)
+                            {
+                                if shape.line_spacing_type == LineSpacingType::Fixed {
+                                    // Paragraph measures are stored as twice HWPUNIT.
+                                    shape.spacing_after -= 2 * cut;
+                                }
+                            }
                             *bottom = next_top;
                             allocation.push(&mut tail_bands, request_json!(allocation, {"sourceSection":page.section,"instanceId":page.frames[index].inst_id,"contentEndHu":content_end,"sourceBandEndHu":next_top,"inferredTailHu":before,"acceptedTailHu":last.line_spacing})?)?;
                         }
@@ -833,20 +1095,34 @@ pub(super) fn reflow(
                         }
                     }
                     let shift_x = owner_left - col_left;
+                    let paragraphs_len = paragraphs.len();
                     for (pi, p) in paragraphs.iter_mut().enumerate() {
                         let shape = &mut doc.doc_info.para_shapes[p.para_shape_id as usize];
                         // Paragraph measures are stored as twice HWPUNIT.
                         shape.margin_left = (shape.margin_left + 2 * shift_x).max(0);
-                        shape.margin_right = 0;
+                        // A paragraph's rows end at its widest source line,
+                        // not at the column edge: Hancom pulls the next row's
+                        // characters into any slack as wide as one of them.
+                        // A negative right margin never widens a Hancom row,
+                        // so the measure stops at the column edge.
+                        let right = frame
+                            .paragraph_rights
+                            .get(pi)
+                            .copied()
+                            .filter(|_| frame.paragraph_rights.len() == paragraphs_len)
+                            .unwrap_or(frame.right);
+                        let inset = (boxes[g].1 - hu(right) - ROW_END_SLACK).max(0);
+                        shape.margin_right = 2 * (inset - inset.rem_euclid(4));
                         if pi == 0 {
                             shape.spacing_before = 2 * (top - previous_bottom).max(0);
                         }
                         // Body rows reproduce the frame the renderer derives
                         // from the column and the paragraph shape: every row
                         // starts at the left margin (the indent is applied
-                        // inside the row) and ends at the column's right edge
-                        // snapped down to 4 HWPUNIT. Rows that miss this key
-                        // are broken again with substitute font metrics.
+                        // inside the row) and ends at the right margin, from
+                        // the column's right edge snapped down to 4 HWPUNIT.
+                        // Rows that miss this key are broken again with
+                        // substitute font metrics.
                         let start = shape.margin_left / 2;
                         let end = column_width_of(g)
                             - column_width_of(g).rem_euclid(4)
@@ -867,7 +1143,19 @@ pub(super) fn reflow(
                         paragraphs[0].column_type = ColumnBreakType::Column;
                         current_column = g;
                     }
-                    previous_bottom = flow_bottoms[page_no][i];
+                    // [#8355] 다음 글상자까지의 앞 간격은 이 글상자의 흐름 끝에서 잰다 — 마지막
+                    // 줄의 위치 + 줄 높이 + 꼬리 줄간격(고정 줄간격 문단은 마지막 줄도 고정
+                    // 피치를 차지한다). 글상자 아래 변은 테두리 여백을 포함할 수 있어 흐름 끝이
+                    // 아니다(시험지 «보기» 상자 뒤 선택지가 한/글에서 11px 위).
+                    previous_bottom = paragraphs.last().and_then(|p| p.line_segs.last()).map_or(
+                        flow_bottoms[page_no][i],
+                        |seg| {
+                            margin_top
+                                + seg.vertical_pos
+                                + seg.line_height
+                                + seg.line_spacing.max(0)
+                        },
+                    );
                     moved += paragraphs.len();
                     allocation.extend(&mut body, paragraphs)?;
                 }
@@ -875,9 +1163,31 @@ pub(super) fn reflow(
             let positioned =
                 page.frames.len() - placed[page_no].iter().filter(|g| g.is_some()).count();
             allocation.push(&mut pages_report, request_json!(allocation, {"sourceSection":page.section,"columns":count,"bodyParagraphs":moved,"positionedFrames":positioned})?)?;
+            restack_columns(doc, &mut body);
             allocation.push(&mut pages_flow, (anchor, body, keep_anchor))?;
         }
         let joined = assemble(doc, &mut section.paragraphs, pages_flow, allocation)?;
+        // 이어 붙인 문단은 꼬리 줄간격·피치를 다시 잡으므로 이어 붙인 뒤 한 번 더 쌓는다.
+        restack_columns(doc, &mut section.paragraphs);
+        // [#8361] 본문 아래 끝은 원본의 본문 아래 끝이어야 한/글도 원본 자리에서 단·쪽을 넘긴다.
+        // 글상자 아래 변(관측 글자 범위)은 줄 상자보다 낮아 본문이 약 한 줄간격 길어졌고, 원본에서
+        // 다음 줄이 들어가지 않아 다음 단으로 이어진 문단을 한/글은 다시 짜며 앞 단에 한 줄 더
+        // 채웠다(4쪽 왼쪽 단). 원본 아래 끝은 [들어간 줄 바닥의 최댓값, 넘어간 줄 바닥의 최솟값)
+        // 사이에 있다. 한/글 줄 위치는 고정 피치로 다시 짜여 저장 위치보다 조금 낮게 나오므로
+        // 위 끝(넘어간 줄 바로 앞)을 쓴다. 넘어간 줄이 없으면 종전 값을 둔다.
+        if let Some(bottom) = column_cut_bottom(&section.paragraphs) {
+            let fitted = (height - margin_top - bottom).max(0);
+            if fitted > margin_bottom {
+                section.section_def.page_def.margin_bottom = fitted as u32;
+                for paragraph in &mut section.paragraphs {
+                    for control in &mut paragraph.controls {
+                        if let Control::SectionDef(def) = control {
+                            def.page_def.margin_bottom = fitted as u32;
+                        }
+                    }
+                }
+            }
+        }
         mark_indented_rows(doc, &mut section.paragraphs);
         allocation.push(&mut report, request_json!(allocation, {"pages":pages_report,"columns":count,"columnGap":gap,"joinedParagraphs":joined,"margins":[margin_left,margin_top,margin_right,margin_bottom],"observedTailBands":tail_bands})?)?;
         allocation.push(&mut doc.sections, section)?;

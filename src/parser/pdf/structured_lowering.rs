@@ -245,6 +245,11 @@ fn positioned_span_style(
     Ok(id)
 }
 
+/// Points a source row's last visible glyph outline gives back. Hancom 2024
+/// moved a column-wide title's final word to the next row until its last glyph
+/// was about 0.12pt narrower; ratio rounds up to keep at least this guard.
+const ROW_END_GUARD_PT: f64 = 0.2;
+
 /// Fit the ordinary spacing field after selecting an ordinary ratio. The
 /// common final measurer, including font-space and punctuation rules, remains
 /// the authority for the emitted advance.
@@ -359,7 +364,13 @@ fn observed_line_text(
         .ok_or("empty source line")?
         .origin;
     let mut emitted_advance = 0.;
-    for glyph in &content.characters {
+    // Nothing on the row follows the last visible glyph. A row that ends at the
+    // column edge still has to fit under Hancom's rounding of every advance.
+    let last_visible = content
+        .characters
+        .iter()
+        .rposition(|glyph| !glyph.character.is_whitespace());
+    for (index, glyph) in content.characters.iter().enumerate() {
         let base_id = shape_ids[glyph.span].ok_or("missing source style")?;
         let source = &page.spans[glyph.span];
         // PDF font size already includes script scaling. Preserve it and encode
@@ -400,11 +411,29 @@ fn observed_line_text(
         let source_start = (f64::from(glyph.origin) - f64::from(origin)) * 96. / 72.;
         let source_advance = f64::from(glyph.advance) * 96. / 72.;
         let desired = source_start + source_advance - emitted_advance;
+        // Hancom fits a row without its last glyph's spacing, so only a
+        // narrower outline leaves room; spacing then restores the source end.
+        let guarded = if last_visible == Some(index) && style.ratio > 0. {
+            let percent = base_width / (style.ratio * 100.);
+            ratio - (ROW_END_GUARD_PT * 96. / 72. / percent).ceil()
+        } else {
+            ratio
+        };
         // Preserve the established representable path. Search the combined
         // field contract only when that path cannot encode a blank separator.
         let ordinary = if (50. ..=200.).contains(&ratio) {
-            fit_spacing(&mut style, &widths, ratio as u8, desired)?
-                .map(|(s, _, measured)| (ratio as u8, s, measured))
+            let mut fit = None;
+            if guarded != ratio && (50. ..=200.).contains(&guarded) {
+                fit = fit_spacing(&mut style, &widths, guarded as u8, desired)?
+                    .map(|(s, _, measured)| (guarded as u8, s, measured));
+            }
+            // The guard is a margin, not a source displacement: drop it
+            // rather than the line when spacing cannot restore the end.
+            if fit.is_none() {
+                fit = fit_spacing(&mut style, &widths, ratio as u8, desired)?
+                    .map(|(s, _, measured)| (ratio as u8, s, measured));
+            }
+            fit
         } else {
             None
         };
@@ -1214,13 +1243,38 @@ fn paragraph(
     } else {
         100
     };
+    // [#8355] 한/글은 고정 줄간격 문단의 마지막 줄도 고정 피치를 차지한다 — 한/글 저장본의
+    // 고정 줄간격 문단은 마지막 줄까지 `줄 높이 + 줄간격 = 고정값 / 2` 다. 마지막 줄 줄간격을
+    // 0 으로 두고 문단 끝을 줄 바닥으로 재면, 그 뒤 간격에 같은 몫이 한 번 더 들어가 한/글에서
+    // 문단마다 그만큼 내려간다(편집 우선 가져오기 저장본 1쪽 오른쪽 단 −37px).
+    //
+    // [#8361] 저장 줄도 한/글이 짜는 대로 `첫 줄 + 줄 번호 × 고정 피치` 에 둔다. PDF 관측 줄
+    // 위치에는 피치가 짧은 줄(줄간격 707HU 등)이 섞여, 한/글이 그 줄마다 1.5px 씩 더 내려가
+    // 단 끝 줄이 다음 단으로 넘어갔다(13쪽 → 14쪽).
+    let mut bottom = last_end;
+    if fixed_line_height {
+        let pitch = style.line_spacing / 2;
+        if let Some(origin) = para.line_segs.first().map(|seg| seg.vertical_pos) {
+            for (row, seg) in para.line_segs.iter_mut().enumerate() {
+                seg.vertical_pos = origin + row as i32 * pitch;
+                seg.line_spacing = (pitch - seg.line_height).max(0);
+            }
+        }
+        if let Some(last) = para.line_segs.last() {
+            bottom = top
+                + (last.vertical_pos - para.line_segs[0].vertical_pos
+                    + last.line_height
+                    + last.line_spacing) as f32
+                    / 100.;
+        }
+    }
     para.para_shape_id = doc.doc_info.para_shapes.len() as u16;
     allocation
         .push(&mut doc.doc_info.para_shapes, style)
         .map_err(message)?;
     Ok(FlowItem {
         top,
-        bottom: last_end,
+        bottom,
         paragraph: para,
     })
 }
@@ -2208,7 +2262,7 @@ pub(super) fn lower(
     let allocation = Allocation(&page.import_budget);
     let mut report = super::lowering::lower(page, doc, next_id)?;
     let section = doc.sections.len() - 1;
-    let controls = std::mem::take(&mut doc.sections[section].paragraphs[0].controls);
+    let mut controls = std::mem::take(&mut doc.sections[section].paragraphs[0].controls);
     let mut span_controls = allocation.filled(page.spans.len(), None).map_err(message)?;
     let mut shape_ids = allocation.filled(page.spans.len(), None).map_err(message)?;
     let mut image_controls = allocation.filled(page.images.len(), 0).map_err(message)?;
@@ -2615,7 +2669,7 @@ pub(super) fn lower(
     let root_count = tables.len();
     *next_id = fragment_ids.get();
     let table_count = table_count(&tables);
-    let (body_frames, body_mapping) = body::lower(
+    let (body_frames, body_mapping, beneath) = body::lower(
         page,
         doc,
         &controls,
@@ -2626,6 +2680,14 @@ pub(super) fn lower(
         &mut removed,
         next_id,
     )?;
+    // [#8362] 본문 글자보다 먼저 그린 가리는 그림은 다시 그린 본문 아래에 둔다.
+    for &i in &beneath {
+        match &mut controls[i] {
+            Control::Shape(shape) => shape.common_mut().text_wrap = TextWrap::BehindText,
+            Control::Picture(picture) => picture.common.text_wrap = TextWrap::BehindText,
+            _ => {}
+        }
+    }
     let mut retained: Vec<_> = allocation
         .collect(
             controls
