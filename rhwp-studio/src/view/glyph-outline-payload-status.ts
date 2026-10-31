@@ -58,6 +58,7 @@ export function glyphOutlinePaintIsSupported(op: LayerGlyphOutlineOp): boolean {
     && (style.underline ?? 'none') === 'none' && (style.emphasisDot ?? 0) === 0
     && [style.strikethrough, style.superscript, style.subscript, style.emboss, style.engrave]
       .every(value => value === undefined || value === false)
+    && style.textPaint === undefined
     && (style.shadowType ?? 0) === 0 && (style.outlineType ?? 0) === 0
     && [style.shadowOffsetX ?? 0, style.shadowOffsetY ?? 0].every(isPortableGlyphScalar)
     && (shade === '#ffffff' || shade === '#000000');

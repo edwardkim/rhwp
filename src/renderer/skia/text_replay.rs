@@ -429,13 +429,22 @@ impl SkiaTextReplay<'_> {
                     }
                 };
                 let is_middle_dot = crate::renderer::render_tree::is_vector_middle_dot;
-                let draw_text_pass = |color: Color, stroke_width: f32, dx: f32, dy: f32| {
+                let draw_text_pass = |color: Color, stroke_width: Option<f32>, dx: f32, dy: f32| {
                     let mut text_paint = Paint::default();
                     text_paint.set_anti_alias(true);
                     text_paint.set_color(color);
-                    if stroke_width > 0.0 {
+                    if let Some(stroke_width) = stroke_width {
                         text_paint.set_style(paint::Style::Stroke);
                         text_paint.set_stroke_width(stroke_width);
+                        if let Some(explicit) = style.text_paint {
+                            text_paint
+                                .set_stroke_miter(explicit.paint.miter_limit_milli as f32 / 1000.0);
+                            text_paint.set_stroke_join(match explicit.paint.line_join {
+                                1 => paint::Join::Round,
+                                2 => paint::Join::Bevel,
+                                _ => paint::Join::Miter,
+                            });
+                        }
                     } else {
                         text_paint.set_style(paint::Style::Fill);
                     }
@@ -667,7 +676,7 @@ impl SkiaTextReplay<'_> {
                         if let Some(mut font) = font_for_text(cluster, font_size) {
                             // 독립 Print의 regular 프로그램 합성 굵기는 같은 윤곽선의
                             // fill+stroke(0.02em)다. 실제 bold face와 outline pass는 보존한다.
-                            let regular = (style.bold && stroke_width == 0.0)
+                            let regular = (style.bold && stroke_width.is_none())
                                 .then(|| unemboldened_typeface(self.font_mgr, &font.typeface()))
                                 .flatten();
                             let synthetic_bold = regular.is_some();
@@ -842,7 +851,7 @@ impl SkiaTextReplay<'_> {
                     for [shadow_x, shadow_y] in crate::paint::text_shadow::offsets(style) {
                         draw_text_pass(
                             colorref_to_skia(style.shadow_color, 1.0),
-                            0.0,
+                            None,
                             shadow_x as f32,
                             shadow_y as f32,
                         );
@@ -850,19 +859,37 @@ impl SkiaTextReplay<'_> {
                     if style.outline_type > 0 {
                         draw_text_pass(
                             colorref_to_skia(style.color, 1.0),
-                            (font_size * 0.08).max(0.8),
+                            Some((font_size * 0.08).max(0.8)),
                             0.0,
                             0.0,
                         );
                     }
                     if style.emboss {
-                        draw_text_pass(Color::WHITE, 0.0, -1.0, -1.0);
-                        draw_text_pass(Color::from_argb(255, 96, 96, 96), 0.0, 1.0, 1.0);
+                        draw_text_pass(Color::WHITE, None, -1.0, -1.0);
+                        draw_text_pass(Color::from_argb(255, 96, 96, 96), None, 1.0, 1.0);
                     } else if style.engrave {
-                        draw_text_pass(Color::from_argb(255, 96, 96, 96), 0.0, -1.0, -1.0);
-                        draw_text_pass(Color::WHITE, 0.0, 1.0, 1.0);
+                        draw_text_pass(Color::from_argb(255, 96, 96, 96), None, -1.0, -1.0);
+                        draw_text_pass(Color::WHITE, None, 1.0, 1.0);
                     }
-                    draw_text_pass(colorref_to_skia(style.color, 1.0), 0.0, 0.0, 0.0);
+                    if let Some(explicit) = style.text_paint {
+                        let p = explicit.paint;
+                        if p.fill {
+                            draw_text_pass(
+                                colorref_to_skia(style.color, f32::from(p.fill_alpha) / 255.0),
+                                None,
+                                0.0,
+                                0.0,
+                            );
+                        }
+                        draw_text_pass(
+                            colorref_to_skia(p.stroke_color, f32::from(p.stroke_alpha) / 255.0),
+                            Some(explicit.width as f32),
+                            0.0,
+                            0.0,
+                        );
+                    } else {
+                        draw_text_pass(colorref_to_skia(style.color, 1.0), None, 0.0, 0.0);
+                    }
                 }
 
                 for &(left, right) in &segments {

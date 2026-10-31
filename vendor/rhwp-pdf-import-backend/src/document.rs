@@ -18764,7 +18764,10 @@ impl PdfDocument {
                     | Operator::Quote { .. }
                     | Operator::DoubleQuote { .. }
             ) {
-                extractor.record_text_clip(self.import_budget().map(AsRef::as_ref))?;
+                extractor.record_text_clip(
+                    state_stack.current(),
+                    self.import_budget().map(AsRef::as_ref),
+                )?;
             }
             if self.process_path_color_operator(&op, &mut extractor, state_stack.current_mut())? {
                 continue;
@@ -18790,6 +18793,7 @@ impl PdfDocument {
                     if let Some(resources) = extractor.current_resources() {
                         let (fill, stroke) = self.paint_alpha(resources, &dict_name)?;
                         let state = state_stack.current_mut();
+                        self.apply_path_line_state(resources, &dict_name, state)?;
                         if let Some(alpha) = fill {
                             state.fill_alpha = alpha;
                         }
@@ -18805,6 +18809,12 @@ impl PdfDocument {
                     let state = state_stack.current_mut();
                     state.dash_pattern = (!array.is_empty()).then_some((array, phase));
                     extractor.update_from_path_state(state);
+                },
+                Operator::Tr { render } => {
+                    state_stack.current_mut().text_render_mode = render;
+                },
+                Operator::SetMiterLimit { limit } => {
+                    state_stack.current_mut().miter_limit = limit;
                 },
                 Operator::SetLineWidth { width } => {
                     state_stack.current_mut().line_width = width;
@@ -18907,7 +18917,10 @@ impl PdfDocument {
                         self.process_form_xobject_paths(&name, &mut extractor, &mut state_stack, 1)
                     {
                         self.check_import_budget()?;
-                        if matches!(e, Error::UnsupportedPattern(_)) {
+                        if matches!(
+                            e,
+                            Error::UnsupportedPattern(_) | Error::UnsupportedTextPaint(_)
+                        ) {
                             return Err(e);
                         }
                         log::warn!(
@@ -19438,7 +19451,10 @@ impl PdfDocument {
                     | Operator::Quote { .. }
                     | Operator::DoubleQuote { .. }
             ) {
-                extractor.record_text_clip(self.import_budget().map(AsRef::as_ref))?;
+                extractor.record_text_clip(
+                    state_stack.current(),
+                    self.import_budget().map(AsRef::as_ref),
+                )?;
             }
             if self.process_path_color_operator(&op, extractor, state_stack.current_mut())? {
                 continue;
@@ -19464,6 +19480,7 @@ impl PdfDocument {
                     if let Some(resources) = extractor.current_resources() {
                         let (fill, stroke) = self.paint_alpha(resources, &dict_name)?;
                         let state = state_stack.current_mut();
+                        self.apply_path_line_state(resources, &dict_name, state)?;
                         if let Some(alpha) = fill {
                             state.fill_alpha = alpha;
                         }
@@ -19477,6 +19494,12 @@ impl PdfDocument {
                     let state = state_stack.current_mut();
                     state.dash_pattern = (!array.is_empty()).then_some((array, phase));
                     extractor.update_from_path_state(state);
+                },
+                Operator::Tr { render } => {
+                    state_stack.current_mut().text_render_mode = render;
+                },
+                Operator::SetMiterLimit { limit } => {
+                    state_stack.current_mut().miter_limit = limit;
                 },
                 Operator::SetLineWidth { width } => {
                     state_stack.current_mut().line_width = width;
@@ -19556,7 +19579,10 @@ impl PdfDocument {
                         depth + 1,
                     ) {
                         self.check_import_budget()?;
-                        if matches!(e, Error::UnsupportedPattern(_)) {
+                        if matches!(
+                            e,
+                            Error::UnsupportedPattern(_) | Error::UnsupportedTextPaint(_)
+                        ) {
                             return Err(e);
                         }
                         log::warn!("Failed to process nested XObject '{}': {}", nested_name, e);

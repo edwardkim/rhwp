@@ -3524,8 +3524,15 @@ impl Renderer for SvgRenderer {
                 "font-family=\"{}\" {} fill=\"{}\"{}",
                 escape_xml(selected_family.as_deref().unwrap_or(cluster_font_family)),
                 attrs,
-                fill,
-                faux_bold_stroke.map_or_else(String::new, |w| faux_bold_stroke_attr(w, fill)),
+                if style.text_paint.is_some_and(|p| !p.paint.fill) { "none" } else { fill },
+                style.text_paint.map_or_else(
+                    || faux_bold_stroke.map_or_else(String::new, |w| faux_bold_stroke_attr(w, fill)),
+                    |p| format!(" stroke=\"{}\" stroke-width=\"{}\" stroke-linejoin=\"{}\" stroke-miterlimit=\"{}\" fill-opacity=\"{}\" stroke-opacity=\"{}\" paint-order=\"fill stroke\"{}",
+                        color_to_svg(p.paint.stroke_color), if p.width == 0.0 { 1.0 } else { p.width },
+                        match p.paint.line_join { 1 => "round", 2 => "bevel", _ => "miter" },
+                        f64::from(p.paint.miter_limit_milli) / 1000.0,
+                        f64::from(p.paint.fill_alpha) / 255.0, f64::from(p.paint.stroke_alpha) / 255.0,
+                        if p.width == 0.0 { " vector-effect=\"non-scaling-stroke\"" } else { "" })),
             )
         };
 

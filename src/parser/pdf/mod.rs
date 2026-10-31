@@ -101,7 +101,9 @@ impl PdfImportError {
         let kind = match &error {
             Error::ImportResourceLimit(_) => "resource_limit",
             Error::EncryptedPdf => "encrypted",
-            Error::Unsupported(_) | Error::UnsupportedPattern(_) => "unsupported",
+            Error::Unsupported(_)
+            | Error::UnsupportedPattern(_)
+            | Error::UnsupportedTextPaint(_) => "unsupported",
             Error::UnsupportedFilter(_) => "unsupported_filter",
             Error::Image(_) => "image",
             Error::Font(_) => "font",
@@ -116,6 +118,10 @@ impl PdfImportError {
         };
         let detail = error.to_string();
         let mut result = match error {
+            Error::UnsupportedTextPaint(_) => Self::new(
+                "PDF_TEXT_UNSUPPORTED",
+                "PDF text paint is unsupported or invalid",
+            ),
             pdf_oxide::error::Error::UnsupportedPattern(_) => Self::new(
                 "PDF_PATTERN_UNSUPPORTED",
                 "PDF pattern paint is unsupported or invalid",
@@ -251,6 +257,7 @@ struct ExtractedPage {
     span_orders: Vec<Vec<usize>>,
     span_fonts: Vec<Option<std::sync::Arc<pdf_oxide::fonts::FontInfo>>>,
     span_clips: Vec<Option<std::sync::Arc<pdf_oxide::elements::PathClip>>>,
+    span_paints: Vec<Option<crate::model::text_paint::TextPaint>>,
     images: Vec<PdfImage>,
     image_orders: Vec<Vec<usize>>,
     paths: Vec<PathContent>,

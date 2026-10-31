@@ -10,6 +10,21 @@ rhwp 내부 보안 패치 dependency이며, 원 저작권·라이선스·NOTICE�
 
 ## 원본과 추적
 
+### #8403 문자 획 관측
+
+`extract_paths_with_clips`의 실제 text-show 장부에 `Tr=1/2`의 획 두께·색·채움 여부·
+투명도·선 연결·miter를 추가한다. page/Form의 q/Q 상태와 ExtGState를 재사용하며,
+획 두께는 글자 크기가 아니라 사용자 좌표계와 균일 CTM으로 변환한다. 텍스트를 그림으로
+치환하거나 weight를 강제로 올리지 않는다. 비균일 CTM·점선·글리프 clip 결합 등 아직
+표현하지 못하는 획은 `UnsupportedTextPaint`로 전달한다. 호출자는
+`PDF_TEXT_UNSUPPORTED`로 표시한다. 일반 검색 API의 반환 계약은 바꾸지 않는다.
+
+본체 lowering은 내장 OpenType name 테이블의 실제 family를 사용한다. PDF BaseFont의
+PostScript 이름에서 임의 suffix를 잘라 family를 추정하지 않는다. 관측·family 문자열과
+캐시는 기존 요청 예산 안에서 보관한다. 구현과 검증 기록은 #8403 수행 문서에 연결한다.
+
+### upstream 식별
+
 - 출처: <https://crates.io/crates/pdf_oxide/0.3.78>
 - upstream repository: <https://github.com/yfedoseev/pdf_oxide>
 - `.crate` SHA-256: `95b1ecc1a60a314fbd1aea5fe8f700ec32af1efa70fef5c6879162444da3437d`
@@ -32,6 +47,22 @@ rhwp 내부 보안 패치 dependency이며, 원 저작권·라이선스·NOTICE�
 - 원본 archive의 파일 해시 목록은 수정하지 않으며, 이 고지 변경은 원본과의 차이로 남긴다.
 
 ## 보안 패치 경계
+
+### 이미지 타일 패턴 추출 (#8403)
+
+- `document/pattern_images.rs`의 공통 walker가 페이지·Form·패턴 셀의 이미지 paint를
+  처리한다. `PatternType=1`·`PaintType=1`의 이미지 패턴은 부모 초기 좌표계·Matrix·BBox·
+  XStep/YStep·채움 clip을 적용한다. 음수 간격도 같은 정수 격자로 처리한다.
+- 경로 색 상태에 Pattern을 보존해 이전 단색으로 채우는 문제를 막는다. 패턴 채움과
+  함께 있는 단색 윤곽선은 이미지 뒤에 그린다. 지원하지 않는 패턴 윤곽선·비이미지 셀 paint는
+  `UnsupportedPattern`으로 거부하며 rhwp는 `PDF_PATTERN_UNSUPPORTED`로 전달한다.
+- 가시 영역에서 타일 인덱스 범위를 계산한다. 타일·Form 방문과 깊이, 셀 연산자 replay,
+  핸들·색 이름·캐시 복사는 기존 요청 예산을 소비한다. 순환 리소스·0인 간격·비유한 기하는
+  정상 출력으로 숨기지 않는다. 기존 공유 stream cache를 유지한다.
+- 같은 셀의 paint 위치별 픽셀·mask 결과는 타일 간 공유한다. 배치별 복사는 예산을 계상하고
+  opacity·clip·CTM을 각각 적용한다. 페이지 전체를 래스터화하지 않는다.
+- 원본 사례의 기존 문자 외곽선 차이와 최종 검증 상태는
+  `mydocs/working/task_m100_8403_visual_gate.md`에 별도로 기록한다.
 
 - #8174의 Native 작업자 정책 전달을 위해 `PdfImportLimits`에 `Deserialize`를 추가했다.
   입력 복사 전의 frontend 검증과 `ImportBudget::new`의 유한·비영 한도 검증을 유지한다.

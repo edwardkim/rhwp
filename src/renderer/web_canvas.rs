@@ -2906,7 +2906,14 @@ impl Renderer for WebCanvasRenderer {
                             font_size
                         );
                         self.ctx.set_font(&fallback_font);
-                        let _ = self.ctx.fill_text(cluster_str, char_x, y);
+                        Self::fill_positioned_text(
+                            &self.ctx,
+                            cluster_str,
+                            char_x,
+                            y,
+                            style,
+                            font_size,
+                        );
                         self.ctx.restore();
                         self.ctx.set_font(font); // 원래 폰트 복원
                         continue;
@@ -3541,6 +3548,34 @@ impl WebCanvasRenderer {
         style: &TextStyle,
         font_size: f64,
     ) {
+        if let Some(explicit) = style.text_paint {
+            ctx.save();
+            let opacity = ctx.global_alpha();
+            if explicit.paint.fill {
+                ctx.set_global_alpha(opacity * f64::from(explicit.paint.fill_alpha) / 255.0);
+                let _ = ctx.fill_text(text, x, y);
+            }
+            ctx.set_global_alpha(opacity * f64::from(explicit.paint.stroke_alpha) / 255.0);
+            ctx.set_stroke_style_str(&color_to_css(explicit.paint.stroke_color));
+            let width = if explicit.width == 0.0 {
+                ctx.get_transform()
+                    .ok()
+                    .and_then(|m| super::raster_stroke::minimum_width([m.a(), m.b(), m.c(), m.d()]))
+                    .unwrap_or(1.0)
+            } else {
+                explicit.width
+            };
+            ctx.set_line_width(width);
+            ctx.set_line_join(match explicit.paint.line_join {
+                1 => "round",
+                2 => "bevel",
+                _ => "miter",
+            });
+            ctx.set_miter_limit(f64::from(explicit.paint.miter_limit_milli) / 1000.0);
+            let _ = ctx.stroke_text(text, x, y);
+            ctx.restore();
+            return;
+        }
         let _ = ctx.fill_text(text, x, y);
         if let Some(width) = super::faux_bold_stroke_width(style, font_size) {
             ctx.save();

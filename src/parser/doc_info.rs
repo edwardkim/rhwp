@@ -647,6 +647,7 @@ fn parse_char_shape(data: &[u8]) -> Result<CharShape, DocInfoError> {
     let use_font_space = (attr & (1 << 25)) != 0;
 
     Ok(CharShape {
+        text_paint: None,
         raw_data: None,
         font_ids,
         ratios,

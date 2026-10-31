@@ -38,7 +38,7 @@ mod text;
 pub use image::{ColorSpace, ImageContent, ImageFormat};
 pub use path::{
     LineCap, LineJoin, PathClip, PathClipObservation, PathClipObservations, PathContent,
-    PathOperation, PathPaint,
+    PathOperation, PathPaint, TextStrokePaint,
 };
 pub use table::{
     TableCellAlign, TableCellContent, TableCellVAlign, TableContent, TableContentStyle,

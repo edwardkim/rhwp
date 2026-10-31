@@ -348,6 +348,97 @@ impl PdfDocument {
     }
 
     /// One colour operator implementation for page and nested Form extraction.
+    /// ExtGState line parameters share the same user-space contract as w/j/M.
+    pub(crate) fn apply_path_line_state(
+        &self,
+        resources: &Object,
+        name: &str,
+        state: &mut PathGraphicsState,
+    ) -> Result<()> {
+        let resources = shallow(self, resources, 0)?;
+        let Some(states) = resources.as_dict().and_then(|d| d.get("ExtGState")) else {
+            return Ok(());
+        };
+        let states = shallow(self, states, 0)?;
+        let Some(value) = states.as_dict().and_then(|d| d.get(name)) else {
+            return Ok(());
+        };
+        let value = shallow(self, value, 0)?;
+        let Some(dict) = value.as_dict() else {
+            return Err(Error::UnsupportedTextPaint("invalid ExtGState".into()));
+        };
+        let number = |key: &str| -> Result<Option<f32>> {
+            let Some(value) = dict.get(key) else {
+                return Ok(None);
+            };
+            let value = shallow(self, value, 0)?;
+            let n = value
+                .as_real()
+                .or_else(|| value.as_integer().map(|v| v as f64));
+            n.filter(|n| n.is_finite() && n.abs() <= f64::from(f32::MAX))
+                .map(|n| Some(n as f32))
+                .ok_or_else(|| {
+                    Error::UnsupportedTextPaint("invalid ExtGState line parameter".into())
+                })
+        };
+        if let Some(w) = number("LW")? {
+            state.line_width = w;
+        }
+        if let Some(m) = number("ML")? {
+            state.miter_limit = m;
+        }
+        if let Some(j) = number("LJ")? {
+            if j.fract() != 0.0 || !(0.0..=2.0).contains(&j) {
+                return Err(Error::UnsupportedTextPaint("invalid ExtGState line join".into()));
+            }
+            state.line_join = j as u8;
+        }
+        if let Some(cap) = number("LC")? {
+            if cap.fract() != 0.0 || !(0.0..=2.0).contains(&cap) {
+                return Err(Error::UnsupportedTextPaint("invalid ExtGState line cap".into()));
+            }
+            state.line_cap = cap as u8;
+        }
+        // Keep path dash state accurate; text consumers explicitly reject non-solid dashes.
+        if dict.contains_key("D") {
+            let dash = shallow(self, &dict["D"], 0)?;
+            let Some(pair) = dash.as_array().filter(|a| a.len() == 2) else {
+                return Err(Error::UnsupportedTextPaint("invalid ExtGState dash".into()));
+            };
+            let array = shallow(self, &pair[0], 0)?;
+            let Some(array) = array.as_array().filter(|a| a.len() <= 256) else {
+                return Err(Error::UnsupportedTextPaint("invalid ExtGState dash array".into()));
+            };
+            let mut values = Vec::new();
+            if let Some(budget) = self.import_budget() {
+                budget.charge_cache_copy(array.len() * std::mem::size_of::<f32>())?;
+            }
+            for value in array {
+                let value = shallow(self, value, 0)?;
+                let Some(n) = value
+                    .as_real()
+                    .or_else(|| value.as_integer().map(|v| v as f64))
+                    .filter(|n| n.is_finite() && *n >= 0.0 && *n <= f64::from(f32::MAX))
+                else {
+                    return Err(Error::UnsupportedTextPaint(
+                        "invalid ExtGState dash length".into(),
+                    ));
+                };
+                values.push(n as f32);
+            }
+            let phase = shallow(self, &pair[1], 0)?;
+            let Some(phase) = phase
+                .as_real()
+                .or_else(|| phase.as_integer().map(|v| v as f64))
+                .filter(|n| n.is_finite() && n.abs() <= f64::from(f32::MAX))
+            else {
+                return Err(Error::UnsupportedTextPaint("invalid ExtGState dash phase".into()));
+            };
+            state.dash_pattern = (!values.is_empty()).then_some((values, phase as f32));
+        }
+        Ok(())
+    }
+
     pub(crate) fn process_path_color_operator(
         &self,
         op: &Operator,

@@ -820,6 +820,12 @@ pub(crate) fn parse_hwpx_with_reservation(
     ) {
         crate::model::text_clip::decode(&mut doc, &bytes);
     }
+    if let Ok(bytes) = reader.read_file_bytes_limited(
+        crate::model::text_paint::HWPX_ENTRY,
+        crate::model::text_paint::MAX_BYTES,
+    ) {
+        crate::model::text_paint::decode(&mut doc, &bytes);
+    }
     if let Ok(bytes) =
         reader.read_file_bytes_limited(crate::model::hyperlink_format::HWPX_ENTRY, 16 * 1024 * 1024)
     {

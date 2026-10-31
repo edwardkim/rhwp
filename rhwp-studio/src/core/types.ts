@@ -1185,6 +1185,11 @@ export interface LayerPageBackgroundOp {
 }
 
 export interface LayerTextStyle {
+  textPaint?: {
+    width: number;
+    paint: { fill: boolean; width_mpt: number; stroke_color: number; fill_alpha: number;
+      stroke_alpha: number; line_join: number; miter_limit_milli: number };
+  };
   /** 줄 전체에서 해소한 방향. 논리 positions와 원문 주소는 유지한다. */
   bidiLayout?: {
     scalarCount: number;

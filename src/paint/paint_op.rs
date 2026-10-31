@@ -2083,6 +2083,7 @@ pub struct GlyphRunDiagnostics {
 
 #[derive(Debug, Clone)]
 pub struct PaintTextStyle {
+    pub text_paint: Option<crate::model::text_paint::TextPaintStyle>,
     pub script_metrics: crate::renderer::script_metrics::ScriptMetricsContract,
     pub font_family: String,
     pub font_size: f64,
@@ -2127,6 +2128,7 @@ impl From<&TextStyle> for PaintTextStyle {
             strikethrough: style.strikethrough,
             ratio: style.ratio,
             tab_leaders: style.tab_leaders.clone(),
+            text_paint: style.text_paint,
             outline_type: style.outline_type,
             shadow_type: style.shadow_type,
             shadow_color: style.shadow_color,
@@ -2163,7 +2165,8 @@ impl PaintTextStyle {
     /// for fill-only consumers or change the default text variant policy.
     pub fn is_simple_glyph_run_replay(&self) -> bool {
         let ratio = if self.ratio > 0.0 { self.ratio } else { 1.0 };
-        (ratio - 1.0).abs() <= 0.001
+        self.text_paint.is_none()
+            && (ratio - 1.0).abs() <= 0.001
             && self.font_size.is_finite()
             && self.font_size > 0.0
             && self.font_size <= 4096.0

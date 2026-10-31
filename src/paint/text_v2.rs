@@ -827,6 +827,7 @@ fn line_break_risk_for_run(leaf_path: &str, run: &TextRunNode) -> Option<TextV2L
     }
     if run.style.underline != UnderlineType::None
         || run.style.strikethrough
+        || run.style.text_paint.is_some()
         || run.style.outline_type != 0
         || run.style.shadow_type != 0
         || run.style.emboss

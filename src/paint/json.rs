@@ -1886,6 +1886,10 @@ fn write_text_style(buf: &mut String, style: &TextStyle) {
     if style.kerning {
         buf.push_str(",\"kerning\":true");
     }
+    if let Some(paint) = style.text_paint {
+        buf.push_str(",\"textPaint\":");
+        buf.push_str(&serde_json::to_string(&paint).expect("finite resolved text paint"));
+    }
     write_synthetic_italic_skew(buf, style.italic);
     if let Some(layout) = &style.bidi_layout {
         buf.push_str(",\"bidiLayout\":");
@@ -1935,6 +1939,10 @@ fn write_paint_text_style(buf: &mut String, style: &PaintTextStyle) {
         json_escape(&color_ref_to_css(style.shade_color)),
         style.emphasis_dot,
     );
+    if let Some(paint) = style.text_paint {
+        buf.push_str(",\"textPaint\":");
+        buf.push_str(&serde_json::to_string(&paint).expect("finite resolved text paint"));
+    }
     write_synthetic_italic_skew(buf, style.italic);
     style.script_metrics.write_json(
         buf,

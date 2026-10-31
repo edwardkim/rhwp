@@ -114,6 +114,9 @@ pub struct SubstFont {
 /// 스펙 위반값 0 이 된다(#4141).
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct CharShape {
+    /// Explicit glyph paint; independent of font weight and advance metrics.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text_paint: Option<super::text_paint::TextPaint>,
     /// 원본 레코드 바이트 (라운드트립 보존용, 있으면 직렬화 시 우선 사용)
     pub raw_data: Option<Vec<u8>>,
     /// 언어별 글꼴 ID 참조값 (한글, 영어, 한자, 일어, 기타, 기호, 사용자)
@@ -230,6 +233,7 @@ pub struct CharShape {
 impl Default for CharShape {
     fn default() -> Self {
         Self {
+            text_paint: None,
             raw_data: None,
             font_ids: [0; 7],
             // ↓ 파생값 0 은 OWPML 유효범위 50~200 밖 — positiveInteger 라 타입 수준 불법 (#4161)
@@ -271,7 +275,8 @@ impl Default for CharShape {
 /// CharShape 비교: raw_data 필드 제외 (라운드트립용 원본 바이트는 논리적 동일성과 무관)
 impl PartialEq for CharShape {
     fn eq(&self, other: &Self) -> bool {
-        self.font_ids == other.font_ids
+        self.text_paint == other.text_paint
+            && self.font_ids == other.font_ids
             && self.ratios == other.ratios
             && self.spacings == other.spacings
             && self.relative_sizes == other.relative_sizes

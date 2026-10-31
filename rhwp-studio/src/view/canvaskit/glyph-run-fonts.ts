@@ -588,6 +588,7 @@ function glyphRunPaintIsSupported(run: LayerGlyphRunOp, fillOnly: boolean): bool
   return Math.abs(ratio - 1) <= 0.001
     && (style.underline ?? 'none') === 'none'
     && style.strikethrough !== true
+    && style.textPaint === undefined
     && (!fillOnly || ((style.outlineType ?? 0) === 0 && (style.shadowType ?? 0) === 0
       && style.emboss !== true && style.engrave !== true))
     && style.superscript !== true

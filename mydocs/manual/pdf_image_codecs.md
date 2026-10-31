@@ -16,6 +16,22 @@ PDF 가져오기·JBIG2·JPEG 2000·ICC 색 변환은 기본 빌드에 포함됩
 
 ## 필요한 코덱 확인
 
+### 이미지 패턴과 문자 외곽선
+
+#8403 작업 브랜치는 이미지로 구성된 coloured tiling pattern을 가져옵니다. 패턴의
+배치·반복·clip과 이미지의 투명도를 함께 적용합니다. 지원하지 않는 패턴은 검정 단색으로
+대체하지 않고 `PDF_PATTERN_UNSUPPORTED`로 알립니다.
+
+PDF의 정밀 문자 획은 채움 여부·두께·색·투명도를 별도로 보존합니다. HWP/HWPX 저장 시
+RHWP 확장 메타데이터로 보관하므로 rhwp에서 다시 열고 편집할 수 있습니다. 한컴 등 다른
+편집기가 이 확장을 지원한다는 뜻은 아닙니다. 저장 결과의 content-loss 진단은 이 차이를
+`MetadataReduced`로 표시합니다. CLI `import-pdf`의 성공 JSON이 이 저장 진단을 모두
+노출하는 것은 아니므로, 다른 편집기에 제출할 때는 해당 제품의 실제 출력을 확인해야 합니다.
+비균일 변환·점선·글리프 clip이 결합된 획은 현재 `PDF_TEXT_UNSUPPORTED` 대상입니다.
+배포본의 지원 여부는 #8403의 통합·빌드 상태를 확인해야 합니다.
+
+### 빌드 기능 확인 명령
+
 ```bash
 rhwp capabilities
 pdfimages -list input.pdf
@@ -132,6 +148,7 @@ CARGO_TARGET_DIR="${rhwp_review_target_dir:?공용 target의 절대 경로를 �
 | `PDF_IMPORT_DISABLED` | PDF 자체를 제외한 빌드입니다. `pdf-import` 또는 필요한 코덱 feature를 포함합니다. |
 | `PDF_PARSE_FAILED`와 미활성 filter 진단 | 현재 산출물의 지원 정보를 확인하고 기본 기능을 포함한 빌드인지 확인합니다. 손상된 입력도 이 코드일 수 있으므로 코드만으로 미활성을 단정하지 않습니다. |
 | `PDF_IMAGE_UNSUPPORTED` | 지원하지 않는 mask·색 공간·성분 조합일 수 있습니다. 진단과 원본을 확인합니다. |
+| `PDF_PATTERN_UNSUPPORTED` | 이미지 코덱과 별개로 PDF 패턴의 그리기 방식 또는 정의를 처리하지 못한 경우입니다. 코덱 feature를 추가해도 해결되지 않습니다. 상세 진단의 패턴 종류·리소스·기하 조건을 확인합니다. |
 | `PDF_RESOURCE_LIMIT` | 현재 요청 예산을 초과했습니다. 지원 코덱이어도 발생합니다. 원본 도구에서 해상도·그림 수를 줄이거나 선택 쪽을 나눕니다. |
 
 기본 빌드도 기존 단일 예약·누적 decoded·그림 픽셀 한도를 유지하며 decoder·ICC의
