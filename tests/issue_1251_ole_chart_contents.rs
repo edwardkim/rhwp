@@ -284,7 +284,10 @@ fn issue_1283_hwpx_to_hwp_save_keeps_ole_as_storage() {
     );
     assert!(exported_ole.common.flow_with_text);
     assert!(exported_ole.common.size_protect);
-    assert!(exported_ole.common.hwp5_gen_shape_attr_bit26);
+    assert_eq!(
+        exported_ole.common.numbering_type,
+        rhwp::model::shape::ObjectNumberingType::Picture
+    );
     assert!(exported_ole.common.hwp5_gen_shape_attr_bit28);
     assert_eq!(
         exported_ole.drawing.shape_attr.ctrl_id,

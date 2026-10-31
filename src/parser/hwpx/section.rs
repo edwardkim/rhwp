@@ -2688,16 +2688,8 @@ fn parse_size_criterion(value: &str, allow_column_para: bool) -> SizeCriterion {
 }
 
 fn materialize_hwpx_table_attrs(table: &mut Table, table_record_flags: u32) {
-    const HWPX_TABLE_NUMBERING_BIT: u32 = 0x0800_0000;
-
-    // [#2697] "표 번호" 비트는 numberingType 이 실제로 TABLE 일 때만 세운다. 종전 무조건 OR
-    // 은 numberingType="PICTURE" 표에서 IR 모순(numbering_type=Picture ↔ attr=TABLE)을 만든다.
-    // 차트 파서(5800)가 PICTURE 를 별도 비트로 분기하는 것과 같은 취지.
-    let mut attr = pack_hwpx_common_obj_attr(&table.common);
-    if table.common.numbering_type == crate::model::shape::ObjectNumberingType::Table {
-        attr |= HWPX_TABLE_NUMBERING_BIT;
-    }
-    table.common.attr = attr;
+    // [#2697·#8335] 번호 범주 비트는 `pack_hwpx_common_obj_attr` 가 numberingType 에서 만든다.
+    table.common.attr = pack_hwpx_common_obj_attr(&table.common);
     // HWPX keeps semantic placement in hp:pos, while legacy layout code still reads
     // table.attr bit0 for some inline-table decisions. Only mirror the minimum
     // renderer compatibility bit here; the HWP5 storage attr is packed later by
@@ -2753,9 +2745,8 @@ fn pack_hwpx_common_obj_attr(common: &CommonObjAttr) -> u32 {
     if common.size_protect {
         attr |= 1 << 20;
     }
-    if common.hwp5_gen_shape_attr_bit26 {
-        attr |= 1 << 26;
-    }
+    // [#8335] 번호 범주는 HWP5 와 같은 bit 26-27 자리에 `numberingType` 으로 둔다.
+    attr |= common.numbering_type.hwp5_attr_bits();
     if common.hwp5_gen_shape_attr_bit28 {
         attr |= 1 << 28;
     }
@@ -3126,7 +3117,6 @@ fn parse_picture(
 ) -> Result<Control, HwpxError> {
     let mut img_attr = ImageAttr::default();
     let mut common = CommonObjAttr::default();
-    common.hwp5_gen_shape_attr_bit26 = true;
     let mut shape_attr = ShapeComponentAttr::default();
     let mut crop = CropInfo::default();
     let mut padding = crate::model::Padding::default();
@@ -3794,7 +3784,6 @@ fn parse_object_element_attrs(
     common: &mut CommonObjAttr,
     shape_attr: &mut ShapeComponentAttr,
 ) -> ObjectElementIds {
-    common.hwp5_gen_shape_attr_bit26 = true;
     let mut ids = ObjectElementIds::default();
     for attr in e.attributes().flatten() {
         match attr.key.as_ref().as_bytes() {
@@ -7501,7 +7490,6 @@ fn parse_hp_chart_element(
     use crate::model::shape::OleShape;
 
     let mut common = CommonObjAttr::default();
-    common.hwp5_gen_shape_attr_bit26 = true;
     let mut chart_num: u16 = 0;
     let mut chart_id_ref: Option<String> = None;
     let mut id_attr: u32 = 0;
@@ -7622,7 +7610,6 @@ fn parse_hp_ole_element(
     use crate::model::shape::OleDrawingAspect;
 
     let mut common = CommonObjAttr::default();
-    common.hwp5_gen_shape_attr_bit26 = true;
     let mut bin_id: u32 = 0;
     let mut numbering_type_picture = false;
     let mut draw_aspect = OleDrawingAspect::default();
@@ -9301,7 +9288,13 @@ mod tests {
             other => panic!("expected shape control, got {:?}", other),
         };
 
-        assert_eq!(line.common.attr, 0x044a_4700);
+        // `numberingType` 이 없으면 OWPML 기본값 `NONE` 이라 번호 범주 bit 26-27 은 0 이다
+        // (#8335). 한컴 exam_social 원본은 `PICTURE` 를 명시해 bit 26 이 켜진다.
+        assert_eq!(
+            line.common.numbering_type,
+            crate::model::shape::ObjectNumberingType::None
+        );
+        assert_eq!(line.common.attr, 0x004a_4700);
         assert_eq!(line.common.text_wrap, TextWrap::BehindText);
         assert_eq!(line.common.width_criterion, SizeCriterion::Absolute);
         assert_eq!(line.common.height_criterion, SizeCriterion::Absolute);

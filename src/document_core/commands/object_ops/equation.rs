@@ -567,8 +567,9 @@ impl DocumentCore {
             common: CommonObjAttr {
                 ctrl_id: CTRL_EQUATION,
                 // 한컴 저장본의 인라인 수식 계약: 문단 기준 위치, 절대 크기,
-                // 글자처럼 취급, 글과 함께 이동, 위아래 배치.
+                // 글자처럼 취급, 글과 함께 이동, 위아래 배치, 수식 번호 범주(bit 26-27 = 3).
                 attr: 0x0C2A_2311,
+                numbering_type: crate::model::shape::ObjectNumberingType::Equation,
                 treat_as_char: true,
                 width,
                 height,
@@ -584,7 +585,6 @@ impl DocumentCore {
                 vert_rel_to: VertRelTo::Para,
                 horz_rel_to: HorzRelTo::Para,
                 text_wrap: TextWrap::TopAndBottom,
-                hwp5_gen_shape_attr_bit26: true,
                 description: "수식입니다.".to_string(),
                 ..Default::default()
             },

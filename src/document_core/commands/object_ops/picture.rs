@@ -1606,7 +1606,6 @@ impl DocumentCore {
                     ctrl_id: 0x67736F20,
                     attr: common_attr,
                     numbering_type: crate::model::shape::ObjectNumberingType::Picture,
-                    hwp5_gen_shape_attr_bit26: true,
                     treat_as_char: false,
                     vert_rel_to: VertRelTo::Para,
                     horz_rel_to: HorzRelTo::Para,
@@ -1693,7 +1692,6 @@ impl DocumentCore {
                 ctrl_id: 0x67736F20,
                 attr: common_attr,
                 numbering_type: crate::model::shape::ObjectNumberingType::Picture,
-                hwp5_gen_shape_attr_bit26: true,
                 treat_as_char: false,
                 vert_rel_to: VertRelTo::Paper,
                 horz_rel_to: HorzRelTo::Paper,
@@ -1775,7 +1773,6 @@ impl DocumentCore {
             ctrl_id: 0x67736F20, // "gso " — GenShape
             attr: common_attr,
             numbering_type: crate::model::shape::ObjectNumberingType::Picture,
-            hwp5_gen_shape_attr_bit26: true,
             treat_as_char: false,
             vert_rel_to: VertRelTo::Paper,
             horz_rel_to: HorzRelTo::Paper,
