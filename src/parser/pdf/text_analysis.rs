@@ -5,6 +5,8 @@ use serde::Serialize;
 use std::ops::Range;
 
 pub(super) const MAX_GLYPHS: usize = 32_768;
+/// 첨자 기준선 이동 한계(0.5em)에 두는 부동소수 여유. 이웃 줄은 1em 이상 떨어져 있다.
+const SCRIPT_RAISE_TOLERANCE_EM: f32 = 0.01;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -260,8 +262,11 @@ impl ObservedText {
                         (s.bounds.x - (b.x + b.width)).max(b.x - (s.bounds.x + s.bounds.width));
                     gap >= -anchor.font_size * 0.25 && gap <= anchor.font_size
                 });
+                // [#8381] 한/글 위 첨자는 기준선을 정확히 0.5em 올린다. 경계를 그대로 비교하면
+                // PDF 좌표의 부동소수 오차가 같은 첨자를 줄마다 다르게 갈라, 2010판 14쪽 «NAD⁺는»
+                // 의 «+» 만 독립 줄이 되어 뒤 내용이 6.5px 밀렸다(0.5em 보다 0.00003pt 큼).
                 let script = s.font_size < anchor.font_size * 0.85
-                    && delta <= anchor.font_size * 0.5
+                    && delta <= anchor.font_size * (0.5 + SCRIPT_RAISE_TOLERANCE_EM)
                     && adjacent;
                 if same_baseline || script {
                     if best.is_none_or(|(_, d)| delta < d) {
