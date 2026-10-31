@@ -1,5 +1,5 @@
 //! 관계형·고정형(독립 원본 속성) 회귀: PDF 이미지 패턴, 저장 재열기와 내용 보존.
-//! 주석 갱신: 2026-10-31T14:10:29+09:00. 새 파일이므로 직전 파일 변경 커밋은 없음.
+//! 주석 갱신: 2026-10-31T14:40:26+09:00. 직전 파일 변경: 2aceae6e46, 2026-10-31T14:29:28+09:00.
 //! 측정: 2026-10-31, 96dpi print, 색상 경계 보정 전 2px raw 실루엣.
 //! 제품 source 19c6b60f97, 최적화 WASM SHA-256 23de6d71ed04f0372f9346112caf7a027f9068a1d736029a7d117f9e61e0190e.
 //! 문자 획/편집 PDF 각 7쪽: Native/fresh WASM 전쪽 각각 100.00%; CanvasKit 획 7쪽 100.00%.
@@ -159,4 +159,48 @@ fn malformed_patterns_are_rejected_and_do_not_poison_next_import() {
         assert!(e.to_string().contains(code), "{e}");
         verify(&DocumentCore::from_pdf_bytes(PDF, &Default::default()).unwrap());
     }
+}
+
+#[test]
+fn worker_handoff_keeps_pdf_crop_reference_on_hwp_save() {
+    use rhwp::document_core::PdfImportSession;
+    fn crops(core: &DocumentCore) -> Vec<(u32, u32, i32, i32, i32, i32)> {
+        core.document()
+            .sections
+            .iter()
+            .flat_map(|section| &section.paragraphs)
+            .flat_map(|paragraph| &paragraph.controls)
+            .filter_map(|control| match control {
+                rhwp::model::control::Control::Picture(pic) => Some((
+                    pic.img_dim.0,
+                    pic.img_dim.1,
+                    pic.crop.left,
+                    pic.crop.top,
+                    pic.crop.right,
+                    pic.crop.bottom,
+                )),
+                _ => None,
+            })
+            .collect()
+    }
+    let original = DocumentCore::from_pdf_bytes(PDF, &Default::default()).unwrap();
+    let expected = crops(&original);
+    assert!(
+        expected
+            .iter()
+            .any(|&(w, _, left, _, right, _)| { right - left > 0 && (right - left) < w as i32 }),
+        "source has clipped edge tiles"
+    );
+    let handoff = original.export_hwpx_native().unwrap();
+    let mut request = PdfImportSession::new(Default::default()).unwrap();
+    let editor = request.reopen_hwpx_export(&handoff, 1024 * 1024).unwrap();
+    assert_eq!(crops(&editor), expected);
+    let saved = editor.export_hwp_with_adapter_snapshot().unwrap();
+    let reopened = DocumentCore::from_bytes(&saved).unwrap();
+    assert_eq!(
+        crops(&reopened),
+        expected,
+        "handoff must not erase the full crop coordinate system"
+    );
+    verify(&reopened);
 }

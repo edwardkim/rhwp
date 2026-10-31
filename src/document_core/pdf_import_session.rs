@@ -177,11 +177,16 @@ impl PdfImportSession {
                     crate::parser::pdf::PdfImportError::backend(e),
                 )
             })?;
-            let core = DocumentCore::from_parsed_document_with_storage(
+            let mut core = DocumentCore::from_parsed_document_with_storage(
                 parsed,
                 crate::parser::FileFormat::Hwpx,
                 &crate::parser::pdf::allocation::Allocation(&self.request),
             )?;
+            // HWPX is the worker's transfer container, not the imported source.
+            // Keep its load semantics, but use PDF export adaptation thereafter:
+            // HWPX-only picture-extra normalization would erase the PDF crop's
+            // explicit image reference dimensions on the next HWP save (#8403).
+            core.source_format = crate::parser::FileFormat::Pdf;
             self.request.check().map_err(|e| {
                 self.storage_error(
                     "editor reopen",

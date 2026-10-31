@@ -97,3 +97,27 @@ MuPDF 96dpi 출력은 해당 글자를 완전히 생략했고, Poppler는 같은
 자료: `stroke-reference-poppler/`, `stroke-native-poppler-scores/silhouette.tsv`,
 `stroke-native-final-hwp-scores/silhouette.tsv`, `stroke-native-final-hwpx-scores/silhouette.tsv`.
 이 기록은 WASM 완료를 뜻하지 않는다.
+
+## PDF Worker 전달 뒤 HWP 자르기 보존
+
+첫 fresh WASM의 이미지 패턴 5쪽은 직접 열기 99.98%, HWP 재열기 98.91%였다.
+직접 확대 판독에서 3쪽 Form의 오른쪽 타일과 5쪽 일부 경계가 HWP 저장 뒤 짧아졌다.
+90% 통과를 이 차이의 면제 사유로 쓰지 않고 실제 저장 경로를 추적했다.
+
+PDF lowering은 원본 2×2 이미지에 `img_dim=(150,150)`과 부분 선택 `crop.right=75`를
+생성한다. Worker의 HWPX 전달본도 두 값을 보존한다. 그러나
+`PdfImportSession::reopen_hwpx_export`가 `source_format=Hwpx`로 Core를 만들고,
+Studio `exportHwp`가 HWPX 전용 adapter를 실행하면서 SC_PICTURE extra의 기준 크기를
+0으로 기록했다. 원본 단위가 사라져 부분 선택이 잘못 해석됐다. 직접 Native PDF 저장은
+`source_format=Pdf`이므로 같은 문제가 없었다.
+
+선행 계보는 `47216ca6bd0`(#3930)의 한컴 HWPX 그림 extra 계약 →
+`4662c069e5`(#7913)의 PDF 전용 HWP 변환 분리 → `f125c735c7`(#8360)의 요청 예산을
+적용한 Worker 재열기다. #3930의 독립 한컴 저장·인쇄 근거와 이미 합쳐진 해당 변환을
+그대로 유지한다. 전달용 HWPX는 기존 방식으로 읽되 이 PDF 전용 API가 만든 Core의
+원본 형식을 Pdf로 복원해 다음 저장이 PDF 변환을 소비하게 한다. 일반 HWPX 열기와
+HWPX 전용 그림 변환은 바꾸지 않는다.
+
+수정 전 증거: `wasm-controls-hwp/page-3.png`, `wasm-controls-hwp/page-5.png`,
+`controls.hwpx`의 `imgDim=(150,150)`, `controls.hwp` 재변환본의 `imgDim=(0,0)`.
+수정 후에는 같은 Worker 전달·실제 HWP 저장·재열기와 5쪽 시각 비교를 다시 수행한다.
