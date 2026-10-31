@@ -4328,10 +4328,11 @@ impl WebCanvasRenderer {
                                 img_w,
                                 img_h,
                             );
-                        let is_cropped = src_x > 0.5
-                            || src_y > 0.5
-                            || (src_w - img_w).abs() > 1.0
-                            || (src_h - img_h).abs() > 1.0;
+                        let is_cropped = !crate::renderer::svg::image_source_is_full(
+                            (src_x, src_y, src_w, src_h),
+                            img_w,
+                            img_h,
+                        );
                         if is_cropped {
                             self.draw_image_cropped(
                                 data,

@@ -2289,10 +2289,8 @@ impl SvgRenderer {
                         let (src_x, src_y, src_w, src_h) =
                             compute_image_crop_src((cl, ct, cr, cb), crop_reference, img_w, img_h);
                         // 전체 이미지 대비 잘림이 있는지 확인
-                        let is_cropped = src_x > 0.5
-                            || src_y > 0.5
-                            || (src_w - img_w).abs() > 1.0
-                            || (src_h - img_h).abs() > 1.0;
+                        let is_cropped =
+                            !image_source_is_full((src_x, src_y, src_w, src_h), img_w, img_h);
                         if is_cropped {
                             // SVG: 중첩 svg + viewBox로 crop 영역만 표시
                             self.output.push_str(&format!(
@@ -4394,6 +4392,13 @@ pub(crate) fn convert_wmf_to_svg(data: &[u8]) -> Option<Vec<u8>> {
         }
     }
     Some(fallback)
+}
+
+/// A source-pixel difference is real content, even when it is only one pixel.
+/// In a two-pixel pattern tile it can select half the image. Compare the source
+/// window itself; display scale and pixel rounding do not erase that selection.
+pub(crate) fn image_source_is_full(source: (f64, f64, f64, f64), width: f64, height: f64) -> bool {
+    source == (0.0, 0.0, width, height)
 }
 
 /// 이미지 데이터에서 픽셀 크기(width, height)를 파싱한다.
