@@ -6,6 +6,10 @@ use crate::renderer::typeset::{
 };
 
 impl TypesetState {
+    pub(in crate::renderer::typeset) fn set_hidden_line_reflow_active(&mut self, active: bool) {
+        self.data.hidden_line_reflow_active = active;
+    }
+
     pub(in crate::renderer::typeset) fn replace_deferred_table_successor_start(
         &mut self,
         start: Option<usize>,

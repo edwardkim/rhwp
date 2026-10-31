@@ -182,6 +182,11 @@ pub(crate) struct HftOutlineFonts {
 }
 
 impl HftOutlineFonts {
+    pub(crate) fn clear_family(&mut self, family: &str) {
+        self.pua_coverage.clear_family(family);
+        self.faces.remove(&first_family(family).to_lowercase());
+    }
+
     pub(crate) fn register(
         &mut self,
         family: &str,

@@ -1,4 +1,6 @@
-//! 선택적 글꼴 등록의 공개 API 계약. 픽셀 좌표나 특정 사설 글꼴을 요구하지 않는다.
+//! 검사 유형: 관계형. 선택적 글꼴 등록과 해제의 공개 API 계약이다.
+//! 주석 갱신: 2026-10-31T02:27:30+09:00; 직전 파일 커밋: 2026-10-27T12:55:48+09:00 (`0bb537818bc04638bf9e51f335d337f105d56555`).
+//! 라이선스를 확인한 저장소 글꼴로 공급·해제 관계를 검사한다. 실물 페이지 좌표나 사설 글꼴을 요구하지 않는다.
 use std::collections::HashMap;
 
 use quick_xml::{events::Event, Reader};
@@ -104,6 +106,58 @@ fn oversized_optional_face_keeps_loading_and_invalidates_prior_style_inference()
         .unwrap();
     assert_eq!(painted_text_attributes(&core), fallback);
     assert_eq!(core.export_hwp_native().unwrap(), hwp);
+}
+
+#[test]
+fn clearing_one_family_preserves_the_other_and_allows_reregistration() {
+    let mut core = document("H", true);
+    let first_id = core.find_or_create_font_id_native(FAMILY);
+    let second_id = core.find_or_create_font_id_native("Coverage Second");
+    let program = source_font();
+    core.register_text_font_glyph_coverage_native(FAMILY, &program, 0)
+        .unwrap();
+    core.register_text_font_glyph_coverage_native("Coverage Second", &program, 0)
+        .unwrap();
+    let first = painted_text_attributes(&core)["font-family"].clone();
+    assert_eq!(first, "'coverage source'");
+    core.clear_text_font_family_native(FAMILY);
+    let after_clear = painted_text_attributes(&core);
+    assert_ne!(
+        after_clear["font-family"], first,
+        "해제된 family 대신 대체 글꼴을 선택한다"
+    );
+    core.apply_char_format_native(
+        0,
+        0,
+        0,
+        1,
+        &format!(r#"{{"fontId":{second_id},"italic":true}}"#),
+    )
+    .unwrap();
+    assert_eq!(
+        painted_text_attributes(&core)["font-family"],
+        "'coverage second'",
+        "다른 family는 유지된다"
+    );
+    core.apply_char_format_native(
+        0,
+        0,
+        0,
+        1,
+        &format!(r#"{{"fontId":{first_id},"italic":true}}"#),
+    )
+    .unwrap();
+    assert_eq!(
+        painted_text_attributes(&core)["font-family"],
+        after_clear["font-family"]
+    );
+    core.register_text_font_glyph_coverage_native(FAMILY, &program, 0)
+        .unwrap();
+    assert_eq!(
+        painted_text_attributes(&core)["font-family"],
+        first,
+        "해제한 family를 다시 등록할 수 있다"
+    );
 }
 
 /// 실제 공개 프로그램의 H 윤곽에 합성 cmap 주소만 부여한다.

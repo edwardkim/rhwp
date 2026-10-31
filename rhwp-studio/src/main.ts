@@ -71,11 +71,16 @@ import { DocumentDirtyState } from '@/core/document-dirty-state';
 import { initThemeSync, setThemeMode, getThemeMode, getEffectiveTheme } from '@/core/theme';
 import { maybeShowSkinOnboarding } from '@/ui/skin-onboarding-dialog';
 import { analyzeDocumentFonts } from '@/core/document-font-status';
+import { clearDeclaredLocalPrograms } from '@/core/declared-font-environment';
+import { showLocalFontsModalIfNeeded } from '@/ui/local-fonts-modal';
 import { setDocumentFontSubstitutions } from '@/core/font-substitution';
 import {
   clearStoredLocalFonts,
+  changedLocalFontNames,
   detectLocalFonts,
+  getLocalFontRecords,
   getLocalFontState,
+  localFontNamesIntersect,
   loadStoredLocalFonts,
   resolveLocalFont,
 } from '@/core/local-fonts';
@@ -1305,21 +1310,44 @@ function setupEventListeners(): void {
     });
   });
 
-  eventBus.on('local-fonts-changed', () => {
+  eventBus.on('local-fonts-changed', (payload) => {
+    if ((payload as { source?: string } | undefined)?.source === 'options-dialog-clear') {
+      clearDeclaredLocalPrograms();
+    }
     if (!canvasView || wasm.pageCount === 0) return;
     const state = getLocalFontState();
     const generation = `${state.detectedAt ?? 'none'}:${state.source ?? 'none'}:${state.count}`;
     if (generation === lastAppliedLocalFontGeneration) return;
     lastAppliedLocalFontGeneration = generation;
-    wasm.invalidateCanvasMetricFonts();
+    const changedNames = (payload as { changedNames?: string[] } | undefined)?.changedNames;
+    const relevant = !changedNames || localFontNamesIntersect(wasm.getDocumentFontCandidates(), changedNames);
+    const documentGeneration = wasm.documentGeneration;
 
     if (canvasView.getRenderBackend() === 'canvaskit') {
       // CanvasKit은 browser CSS를 쓰지 않으므로 local SFNT 준비가 끝난 뒤 helper가 한 번 갱신한다.
-      prepareCanvasKitLocalFonts(currentDocumentFonts, true);
+      if (relevant) {
+        wasm.invalidateCanvasMetricFonts();
+        wasm.refreshLayout();
+        prepareCanvasKitLocalFonts(currentDocumentFonts, true);
+      }
       return;
     }
-    // Canvas2D는 Rust layout과 문서를 다시 열지 않고 현재 보이는 view만 새 family chain으로 그린다.
-    eventBus.emit('document-view-changed');
+    // 새로 감지한 프로그램을 문서의 자동 글꼴 환경에도 반영한다.
+    void wasm.prepareDeclaredFontEnvironment('canvas2d').then(changed => {
+      if (!canvasView || wasm.pageCount === 0 || wasm.documentGeneration !== documentGeneration) return;
+      if (!changed && !relevant) return;
+      if (!changed) {
+        wasm.invalidateCanvasMetricFonts();
+        wasm.refreshLayout();
+      }
+      const info = wasm.getDocumentInfo();
+      setDocumentFontSubstitutions(info.fontSubstitutions);
+      currentDocumentFonts = [...new Set([
+        ...(info.fontsUsed ?? []),
+        ...(info.fontSubstitutions ?? []).map(([, target]) => target),
+      ])];
+      eventBus.emit('document-view-changed');
+    }).catch(error => console.warn('[LocalFonts] View refresh failed:', error));
   });
 
   document.fonts.addEventListener('loadingdone', () => {
@@ -1472,7 +1500,7 @@ function applySavedTextMarkSettings(): void {
 async function initializeDocument(
   docInfo: DocumentInfo,
   displayName: string,
-  options: { suppressDialogs?: boolean } = {},
+  options: { suppressDialogs?: boolean; suppressLocalFontPrompt?: boolean } = {},
 ): Promise<void> {
   const msg = sbMessage();
   try {
@@ -1536,8 +1564,8 @@ async function initializeDocument(
       console.warn('[validation] 감지 실패 (치명적이지 않음):', e);
     }
 
-    if (!options.suppressDialogs) {
-      await promptLocalFontsIfNeeded(docInfo, displayName);
+    if (!options.suppressDialogs && !options.suppressLocalFontPrompt) {
+      await promptLocalFontsIfNeeded(displayName);
     }
 
     // 로컬 글꼴 감지 결과가 뷰를 갱신한 뒤에 캐럿을 연결해야 입력 포커스가 재설정과 경합하지 않는다.
@@ -1556,21 +1584,22 @@ async function initializeDocument(
   }
 }
 
-async function promptLocalFontsIfNeeded(docInfo: DocumentInfo, displayName: string): Promise<void> {
-  if (!docInfo.fontsUsed?.length) return;
-
-  // 문서를 열 때마다 로컬 글꼴 감지 안내 모달을 띄우면 열람 흐름이 끊긴다. 저장된 감지 결과가
-  // 있으면 그대로 재사용하고, 없으면 대체 글꼴로 조용히 표시한다. 수동 감지는 옵션 대화상자의
-  // '로컬 글꼴 감지하기'로 계속 실행할 수 있다.
+async function promptLocalFontsIfNeeded(displayName: string): Promise<void> {
   try {
     if (!getLocalFontState().loaded) await loadStoredLocalFonts();
-    const report = analyzeDocumentFonts(docInfo.fontsUsed);
+    if (getLocalFontState().stored) return;
+    const candidates = wasm.getDocumentFontCandidates();
+    if (!candidates.length) return;
+    const report = analyzeDocumentFonts(candidates);
     if (!report.shouldPromptLocalAccess) return;
-    console.log(
-      `[local-fonts] 감지 안내 모달 생략 — 대체 글꼴로 표시 (확인 필요 ${report.summary.needsLocalCheck}개, 문서 ${displayName})`,
-    );
+    const choice = await showLocalFontsModalIfNeeded(report, extensionViewerSettings);
+    if (choice !== 'detect') return;
+    const before = getLocalFontRecords({ includeRegistered: true });
+    const fonts = await detectLocalFonts({ force: true, candidateFamilies: candidates });
+    const changedNames = changedLocalFontNames(before, getLocalFontRecords({ includeRegistered: true }));
+    eventBus.emit('local-fonts-changed', { fonts, changedNames, source: 'document-font-prompt' });
   } catch (error) {
-    console.warn('[local-fonts] 저장된 감지 결과 로드 실패 (치명적이지 않음):', error);
+    console.warn(`[local-fonts] ${displayName} 글꼴 확인 실패:`, error);
   }
 }
 
@@ -1977,7 +2006,10 @@ async function createNewDocument(): Promise<void> {
         { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
         { discardPreviousDraft: true },
       );
-      await initializeDocument(docInfo, t('ui.sbMessage.newDocPages', { p1: docInfo.pageCount }));
+      // 빈 문서는 사용자 파일의 원본 글꼴이 없으므로 확인창 없이 바로 편집한다.
+      await initializeDocument(docInfo, t('ui.sbMessage.newDocPages', { p1: docInfo.pageCount }), {
+        suppressLocalFontPrompt: true,
+      });
     });
   } catch (error) {
     msg.textContent = `새 문서 생성 실패: ${error}`;

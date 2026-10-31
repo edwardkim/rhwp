@@ -160,14 +160,27 @@ const OS_FONT_CANDIDATES = [
 ];
 const detectedOSFonts = new Set<string>();
 const detectedOSFontFamilies = new Set<string>();
+const resettableLocalFaces = new Set<FontFace>();
 
 /** 실제 local() 프로그램 로드가 끝난 face만 공급하고 CDN 덮어쓰기를 막는다. */
-export function registerLoadedLocalFontFace(face: FontFace): void {
+export function registerLoadedLocalFontFace(face: FontFace, resettable = true): void {
   if (face.status !== 'loaded') throw new Error('로컬 글꼴 프로그램이 로드되지 않았습니다');
   document.fonts.add(face);
+  if (resettable) resettableLocalFaces.add(face);
   const name = face.family.replace(/^['"]|['"]$/g, '');
   detectedOSFonts.add(name);
   detectedOSFontFamilies.add(normalizeFontFamily(name));
+}
+
+/** 사용자가 감지 결과를 초기화하면 이 세션에서 등록한 로컬 face도 해제한다. */
+export function clearLoadedLocalFontFaces(): void {
+  for (const face of resettableLocalFaces) {
+    document.fonts.delete(face);
+    const name = face.family.replace(/^['"]|['"]$/g, '');
+    detectedOSFonts.delete(name);
+    detectedOSFontFamilies.delete(normalizeFontFamily(name));
+  }
+  resettableLocalFaces.clear();
 }
 
 /**

@@ -51,6 +51,7 @@ pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
     let profile = document.layout_profile();
     let lookup = missing_fonts::try_lookup_context(document, storage)?;
     let mut styles = try_resolve_styles_with_variant(&lookup, dpi, profile.hwp3_layout(), storage)?;
+    styles.source_hwp3_native = profile.hwp3_native_layout();
     if missing_fonts::missing_char_table(document) {
         styles.page_number_char_style_id = Some(0);
         styles.page_number_font_is_hft = false;
@@ -195,7 +196,8 @@ pub(crate) fn resolve_styles_with_environment(
                     // 자동 표시용 선택은 저장된 원본 HFT 메트릭의 변경이 아니다.
                     let keep_source_metrics = !primary_true_type_program
                         && environment.is_some_and(|env| env.preserves_source_metrics())
-                        && original.alt_type == Some(2)
+                        && (original.alt_type == Some(2)
+                            || style.font_families_source_hft[lang])
                         && original.embedded != Some(true)
                         && original.requested_face.as_deref().is_some_and(|face| {
                             crate::renderer::font_metrics_data::legacy_hft_metric_face(face).is_some()
@@ -356,6 +358,7 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
         page_number::resolve(doc_info, false);
 
     let mut styles = ResolvedStyleSet {
+        source_hwp3_native: false,
         source_program_projection_slots: Default::default(),
         script_metrics: Default::default(),
         native_pua_fonts: Default::default(),

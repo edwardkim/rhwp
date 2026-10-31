@@ -485,6 +485,8 @@ pub(crate) fn parse_hwpx_with_reservation(
         .is_some_and(physical_para_margin_units_from_version);
     let (mut doc_info, doc_properties) =
         header::parse_hwpx_header_with_plain_margin_units(&header_xml, physical_plain_margin)?;
+    let default_para_shape_id = u16::try_from(doc_info.para_shapes.len()).ok();
+    let default_para_shape_scope = section::DefaultParaShapeScope::enter(default_para_shape_id);
     if let Ok(bytes) = reader.read_file_bytes_limited(
         crate::model::native_font_program::HWPX_ENTRY,
         crate::model::native_font_program::MAX_BYTES,
@@ -730,6 +732,17 @@ pub(crate) fn parse_hwpx_with_reservation(
     }
 
     // Document 조립
+    if default_para_shape_scope.used() {
+        // 한컴 2020 저장 대조: 참조 생략은 명시적 0번이 아닌 160% 기본 모양이다.
+        // 명시 참조는 그대로 보존하며 중첩 문단도 같은 모델 모양을 사용한다.
+        doc_info.para_shapes.push(crate::model::style::ParaShape {
+            attr1: 0x180,
+            line_spacing: 160,
+            line_spacing_v2: 160,
+            border_fill_id: u16::from(!doc_info.border_fills.is_empty()),
+            ..Default::default()
+        });
+    }
     let model_header = FileHeader {
         version: HwpVersion {
             major: 5,

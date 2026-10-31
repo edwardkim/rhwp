@@ -933,12 +933,23 @@ pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::sto
                     )
                 })
                 .flatten(),
+            native_otf_metrics: (!styles.has_exact_font_source(char_style_id, lang_index))
+                .then(|| {
+                    styles.native_pua_fonts.get_otf(
+                        cs.font_family_for_lang(lang_index),
+                        cs.bold,
+                        cs.italic,
+                    )
+                })
+                .flatten(),
             bidi_layout: None,
             emphasis_skip_first_cluster: false,
             top_underline_font_size: None,
             top_underline_phase: None,
             fixed_glyph_advances: false,
             source_font_is_hft: cs.source_hft_for_lang(lang_index),
+            source_hwp3_hft_bold: (styles.hwp3_variant || styles.source_hwp3_native)
+                && cs.source_hft_for_lang(lang_index),
             hft_print_frame: cs.hft_print_frame_for_lang(lang_index),
             preserve_glyph_ink: cs
                 .font_families_preserve_glyph_ink
@@ -1032,6 +1043,15 @@ pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::sto
                     storage.bytes(std::mem::size_of::<crate::renderer::LatinSlotMetrics>())?;
                     Ok(Box::new(crate::renderer::LatinSlotMetrics {
                         font_family: storage.string(cs.font_family_for_lang(1))?,
+                        native_otf_metrics: (!styles.has_exact_font_source(char_style_id, 1))
+                            .then(|| {
+                                styles.native_pua_fonts.get_otf(
+                                    cs.font_family_for_lang(1),
+                                    cs.bold,
+                                    cs.italic,
+                                )
+                            })
+                            .flatten(),
                         metric_font_family: cs
                             .metric_face_for_lang(1)
                             .map(|face| storage.string(face))
@@ -2368,6 +2388,10 @@ fn char_width_decision_with_hft_tracking<'a>(
             || c == '\u{3000}'
             || is_cjk_char(c)
             || is_fullwidth_symbol(c)
+            // 한컴 Print의 HFT 기호 슬롯에서 원본 폭을 찾지 못한 ∼와 ※는
+            // 전각으로 전진한다. 실제 글리프 메트릭이 있으면 위의 hit 또는
+            // 아래의 준비된 OTF 전진이 우선한다.
+            || (style.source_font_is_hft && matches!(c, '\u{223C}' | '\u{203B}'))
             || (latin.is_none() && embedded.metric.is_some() && c == '\u{2024}')
         {
             (
@@ -2398,8 +2422,43 @@ fn char_width_decision_with_hft_tracking<'a>(
     // authentic DB glyph advances or explicit HWP rules. Collection and layout
     // share this eligibility decision; synthetic PUA boxes remain shapes.
     let dash_leader = is_dash_leader_run(chars, i);
+    // Native paint와 동일한 OTF의 글리프를 우선 사용한다. 다만 독립 Print와
+    // 원본 HFT로 확인한 전진은 표시용 프로그램의 hmtx와 별도의 조판 계약이다.
+    let verified_source_advance = matches!(
+        width_source,
+        "measuredOriginalGlyph" | "implicitSymbolProgram" | "verifiedSourcePua"
+    ) || (style.source_font_is_hft
+        && character_match == "hit"
+        && width_source == "embeddedMetric"
+        && metric.is_some_and(|found| {
+            font_metrics_data::is_verified_original_hft_advance(found.metric)
+        }));
+    let otf_metrics = latin.map_or(style.native_otf_metrics.as_ref(), |slot| {
+        slot.native_otf_metrics.as_ref()
+    });
+    let otf_advance = if cluster_len[i] <= 1
+            && !dash_leader
+            && !c.is_whitespace()
+            && !c.is_control()
+            && !verified_source_advance
+            // HFT 원본 기호를 Unicode 표시 기호로 치환한 경우, 표시용
+            // OTF의 전진은 원본 기호의 전진과 다를 수 있다. 원본 PUA
+            // 공급자가 확인된 경우에는 위에서 원문을 유지하므로 제외되지 않는다.
+            && !(style.source_font_is_hft && c != chars[i])
+    {
+        otf_metrics.and_then(|font| font.advance_em(c))
+    } else {
+        None
+    };
+    let (base_width_raw, width_source) = if let Some(em) = otf_advance {
+        em_exact = Some(em);
+        (font_size * em, "nativeOtf")
+    } else {
+        (base_width_raw, width_source)
+    };
     let supplement = (allow_supplemental
         && super::super::supplemental_metrics::accepts_prepared_glyph_advance(width_source)
+        && !(style.source_font_is_hft && c != chars[i])
         && !dash_leader
         && !c.is_whitespace()
         && !c.is_control()
@@ -2421,16 +2480,40 @@ fn char_width_decision_with_hft_tracking<'a>(
     // 원본 HFT의 굵기는 intrinsic 글리프 폭을 바꾸지 않고 약0.05em의
     // 추가 전진을 준다. 독립 Print 22행의 굵기·크기·자간 대조를 따른다.
     // 표시용 TTF의 bold 메트릭이나 배분 자간과 구분하고 원본 자간을 함께 소비한다.
-    let font_tracking = if include_hft_bold_tracking
-        && style.bold
-        && !c.is_whitespace()
-        && !c.is_control()
-        && source_hft_metric
-    {
-        font_size * 0.05
-    } else {
-        0.0
-    };
+    let font_tracking =
+        if include_hft_bold_tracking && style.bold && !c.is_whitespace() && !c.is_control() {
+            if otf_advance.is_some() {
+                // 합성 굵기는 실제 글꼴 폭을 바꾸지 않는다. 원본에 독립적으로
+                // 확인된 꾸밈 전진 계약이 있는 경우에만 추가 폭을 적용한다.
+                if otf_metrics.is_some_and(|font| font.needs_faux_bold(c)) {
+                    if style.source_hwp3_hft_bold || source_hft_metric {
+                        font_size * 0.05
+                    } else {
+                        let original_face = latin
+                            .map_or(style.original_glyph_metric_family.as_deref(), |slot| {
+                                slot.original_glyph_metric_family.as_deref()
+                            });
+                        crate::renderer::legacy_font_advances::bold_advance(
+                            style,
+                            c,
+                            base_width_raw,
+                            font_size,
+                            original_face.map(String::as_str),
+                        )
+                    }
+                } else {
+                    0.0
+                }
+            } else if source_hft_metric
+                || (style.source_font_is_hft && width_source == "heuristicFullwidth")
+            {
+                font_size * 0.05
+            } else {
+                0.0
+            }
+        } else {
+            0.0
+        };
     let extra_char_spacing = if i < style.unjustified_leading_spaces {
         0.0
     } else {
@@ -2478,11 +2561,12 @@ fn char_width_decision_with_hft_tracking<'a>(
         font_size * ratio,
         original_glyph_face.map(String::as_str),
     );
-    let bold_tracking_px = if include_hft_bold_tracking && !source_hft_metric {
-        bold_tracking_px
-    } else {
-        0.0
-    };
+    let bold_tracking_px =
+        if include_hft_bold_tracking && font_tracking == 0.0 && otf_advance.is_none() {
+            bold_tracking_px
+        } else {
+            0.0
+        };
     final_width_px += bold_tracking_px;
     if c == ' ' && i >= style.unjustified_leading_spaces {
         final_width_px += style.extra_word_spacing;

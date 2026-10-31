@@ -1,5 +1,5 @@
 //! 관계형·고정형: 합성 PageLayerTree와 new_blank 문서의 crop 동등성, 고정 타일 겹침, LRU 용량·무효화 계약.
-//! 주석 갱신: 2026-10-30T23:23:28+09:00; 직전 파일 커밋: 2026-10-26T18:25:02+09:00 (06bf9c11002879934831f5c2276fe2b267cc8be0).
+//! 주석 갱신: 2026-10-31T06:04:03+09:00; 직전 파일 커밋: 2026-10-30T23:30:13+09:00 (f3a57f2e6b7d6c59172cd76b5a597ae9c1439ff7).
 //! 실물 페이지의 조판 좌표를 고정하는 검사가 아니므로 이 assertion의 raw 시각 측정값은 비해당이다.
 //! 합성 알고리즘 계약과 별도의 Native/fresh WASM 실물 검증을 구분한다.
 //! 근거: mydocs/pr/assets/seo_rii_20261030/README.md.
@@ -601,7 +601,31 @@ fn native_page_round_trips_and_scale_keys_reuse_snapshots_until_explicit_clear()
 
 #[test]
 fn distinct_pages_keep_their_own_exact_full_page_crops_on_warm_round_trips() {
-    let session = session(true);
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    let mut document = core.document().clone();
+    document.sections.push(document.sections[0].clone());
+    core.set_document(document);
+    for (section, width) in [(0, 9000), (1, 5000)] {
+        core.create_shape_control_native(
+            section,
+            0,
+            0,
+            width,
+            6750,
+            0,
+            0,
+            true,
+            "Square",
+            "rectangle",
+            false,
+            false,
+            &[],
+        )
+        .unwrap();
+    }
+    assert_eq!(core.page_count(), 2);
+    let session = NativeDocumentSession::from_core(core);
     let scale = 0.5;
     let references = [
         session.render_page(0, scale).unwrap(),

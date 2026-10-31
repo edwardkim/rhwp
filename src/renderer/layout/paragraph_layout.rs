@@ -7553,7 +7553,34 @@ impl LayoutEngine {
             } else {
                 vec![0; leading_space_plan.line.runs.len()]
             };
-            let (extra_word_sp, extra_char_sp, extra_dash_sp) = if compression.is_some() {
+            let hwp3_saved_space = para
+                .filter(|p| {
+                    needs_justify
+                        && alignment == Alignment::Justify
+                        && !p.stored_text_partition_is_dirty()
+                        && !p.layout_object_projection
+                        && p.layout_space_metrics.is_empty()
+                            && !p.hwp3_saved_space_corrections.is_empty()
+                        // 내부 낱말 공백이 없는 줄은 원본 공백 보정으로
+                        // 글자 사이 배분까지 대체할 수 없다. 예를 들어 표의
+                        // 한 단어가 다음 줄로 이어지면 글자 단위 정렬이 필요하다.
+                        && {
+                            let chars = leading_space_plan.spacing_chars();
+                            let text: String = chars.iter().map(|(ch, _)| *ch).collect();
+                            text.trim_matches(' ').contains(' ')
+                        }
+                })
+                .and_then(|p| {
+                    p.line_segs
+                        .get(line_idx)
+                        .zip(p.hwp3_saved_space_corrections.get(line_idx))
+                })
+                .filter(|(line, (start, _))| {
+                    line.text_start == *start
+                        && line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                })
+                .map(|(_, (_, correction))| hwpunit_to_px(i32::from(*correction) * 4, self.dpi));
+            let (mut extra_word_sp, extra_char_sp, extra_dash_sp) = if compression.is_some() {
                 (0.0, 0.0, 0.0)
             } else if is_hancom_company_pua_logo_line {
                 // 이 줄의 trailing space는 뒤의 treat-as-char logo 그림 앞 공백이다.
@@ -7604,6 +7631,19 @@ impl LayoutEngine {
                     note_line.trailing_slots,
                 )
             };
+            if compression.is_none() && !is_hancom_company_pua_logo_line {
+                if let Some(correction) = hwp3_saved_space {
+                    // 저장 보정은 당시 글꼴 메트릭으로 계산한 값이다. 현재 줄 구성의
+                    // 수용 예산을 원본 1 hunit의 양자화 범위보다 초과하면 낡은
+                    // 보정을 사용하지 않고 같은 공통 측정 계획의 값을 유지한다.
+                    // 허용된 저장 보정은 낱말 간격만 대체하며 대시 복원과 글자
+                    // 배분은 공통 계획을 그대로 소비한다.
+                    let source_quantum = hwpunit_to_px(4, self.dpi);
+                    if correction <= extra_word_sp + source_quantum {
+                        extra_word_sp = correction;
+                    }
+                }
+            }
 
             let line_plain_text: String = comp_line.runs.iter().map(|r| r.text.as_str()).collect();
             let is_answer_sheet_number_label =

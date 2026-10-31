@@ -1,6 +1,6 @@
 import { fontProgramOwnsFamily, intrinsicCanvasSourceFamily } from './canvas-intrinsic-font.mjs';
 import { getHostFontState, localFontFaceKey, loadRendererLocalFont,
-  onHostFontsChanged, resolveRendererLocalFont, type LocalFontRecord } from './local-fonts.ts';
+  onHostFontsChanged, resolveRendererLocalFontCandidates, type LocalFontRecord } from './local-fonts.ts';
 import { parseCssFontFamilyList, formatCssFontFamilyList } from './font-substitution.ts';
 import { ordinaryTextFontFaceData, type OrdinaryTextFontSource } from './ordinary-text-font.ts';
 import { fontSymbolDescriptors, type FontSymbolInspector } from './font-symbol-coverage.ts';
@@ -15,6 +15,7 @@ interface CanvasHostFace {
 }
 type CanvasFontContext = Pick<CanvasRenderingContext2D, 'font' | 'measureText'>;
 interface CanvasFontSourceOwner extends OrdinaryTextFontSource {
+  clearTextFontFamily?: (family: string) => unknown;
   registerTextFontGlyphCoverage?: (family: string, bytes: Uint8Array, faceIndex: number) => unknown;
   registerHftOutlineFont?: (family: string, bytes: Uint8Array, faceIndex: number) => unknown;
 }
@@ -81,6 +82,20 @@ export class HostCanvasFontSession {
     if (typeof FontFace === 'undefined' || typeof document === 'undefined') return;
     this.fontSet = document.fonts;
     const epoch = this.epoch;
+    const clearedSplitFamilies = new Set<string>();
+    for (const record of records) {
+      const face = record.hostReference?.face;
+      if (!face) continue;
+      for (const family of new Set([record.family, ...record.aliases])) {
+        const candidates = resolveRendererLocalFontCandidates(family,
+          {weight: Number(face.weight ?? 400), slant: face.slant ?? 'normal'});
+        const key = family.toLowerCase();
+        if (candidates.length > 1 && !clearedSplitFamilies.has(key)) {
+          sourceOwner?.clearTextFontFamily?.(family);
+          clearedSplitFamilies.add(key);
+        }
+      }
+    }
     for (const record of records) {
       if (epoch !== this.epoch || !isCurrent()) return;
       const key = localFontFaceKey(record);
@@ -88,8 +103,15 @@ export class HostCanvasFontSession {
       const register = (loaded: CanvasHostFace) => {
         if (!isCurrent()) return;
         for (const family of new Set([record.family, ...record.aliases])) {
-          sourceOwner?.registerTextFontGlyphCoverage?.(family, new Uint8Array(loaded.bytes), 0);
-          if (Number(record.hostReference!.face.weight ?? 400) === 400
+          const face = record.hostReference!.face;
+          const candidates = resolveRendererLocalFontCandidates(family,
+            {weight: Number(face.weight ?? 400), slant: face.slant ?? 'normal'});
+          // coverage 저장소는 같은 스타일의 여러 프로그램을 확정하지 못한다.
+          // 마지막 조각의 cmap을 family 전체의 coverage로 오인하지 않는다.
+          if (candidates.length < 2) {
+            sourceOwner?.registerTextFontGlyphCoverage?.(family, new Uint8Array(loaded.bytes), 0);
+          }
+          if (candidates.length < 2 && Number(record.hostReference!.face.weight ?? 400) === 400
             && (record.hostReference!.face.slant ?? 'normal') === 'normal') {
             sourceOwner?.registerHftOutlineFont?.(family, new Uint8Array(loaded.bytes), 0);
           }
@@ -138,6 +160,17 @@ export class HostCanvasFontSession {
       const prepared = this.faces.get(key);
       if (prepared && epoch === this.epoch) register(prepared);
     }
+    // 윤곽 저장소는 family당 한 face를 소유한다. 모든 후보를 준비한 뒤
+    // Canvas가 먼저 검색하는 CFF 하나만 등록하고 나머지 glyph는 Canvas에 맡긴다.
+    for (const family of clearedSplitFamilies) {
+      const candidates = resolveRendererLocalFontCandidates(family, {weight: 400, slant: 'normal'});
+      if (candidates.length < 2) continue;
+      const loaded = candidates.map(record => this.faces.get(localFontFaceKey(record)));
+      if (loaded.some(face => !face)) continue;
+      const first = loaded.find(face => face && face.bytes.byteLength >= 4
+        && new DataView(face.bytes).getUint32(0) === 0x4f54544f);
+      if (first) sourceOwner?.registerHftOutlineFont?.(family, new Uint8Array(first.bytes), 0);
+    }
   }
 
   resolve(cssFont: string): string | null {
@@ -156,17 +189,33 @@ export class HostCanvasFontSession {
     const prepared: string[] = [];
     for (const [index, family] of families.entries()) {
       const requested = index === 0 ? intrinsic ?? family : family;
-      const record = resolveRendererLocalFont(requested, { weight: index === 0 && intrinsic ? 400 : weight, slant });
-      const loaded = record?.hostReference ? this.faces.get(localFontFaceKey(record)) : null;
-      if (!loaded) continue;
-      // 실제 프로그램 소유 검증은 원 face에 적용하고 뒤 후보도 세션 별칭으로 공급한다.
-      if (index === 0 && intrinsic !== null && !loaded.ownership.has(intrinsic)) {
-        loaded.ownership.set(intrinsic, fontProgramOwnsFamily(loaded.bytes, intrinsic));
+      let records = resolveRendererLocalFontCandidates(requested,
+        { weight: index === 0 && intrinsic ? 400 : weight, slant });
+      if (!records.length && weight >= 600) {
+        records = resolveRendererLocalFontCandidates(requested, { weight: 400, slant });
       }
-      const ownsIntrinsic = index === 0 && intrinsic !== null && loaded.ownership.get(intrinsic) === true;
-      if (index === 0 && intrinsic !== null && !ownsIntrinsic) return null;
-      const selectedAlias = ownsIntrinsic ? loaded.intrinsicAlias : loaded.alias;
-      if (!prepared.includes(selectedAlias)) prepared.push(selectedAlias);
+      const loadedFaces = records.map(record => record.hostReference ? this.faces.get(localFontFaceKey(record)) : null);
+      // 부분 준비 시 표시와 측정의 후보가 달라진다. 다 준비되면 CFF를
+      // TTF보다 먼저 조회하고 각 형식 안에서는 호스트 순서를 보존한다.
+      if (records.length > 1 && loadedFaces.some(face => !face)) continue;
+      if (records.length > 1 && !loadedFaces.some(face => face && face.bytes.byteLength >= 4
+        && new DataView(face.bytes).getUint32(0) === 0x4f54544f)) continue;
+      loadedFaces.sort((a, b) => {
+        const cff = (face: CanvasHostFace | null | undefined) => face && face.bytes.byteLength >= 4
+          && new DataView(face.bytes).getUint32(0) === 0x4f54544f;
+        return Number(Boolean(cff(b))) - Number(Boolean(cff(a)));
+      });
+      for (const loaded of loadedFaces) {
+        if (!loaded) continue;
+        // 실제 프로그램 소유 검증은 원 face에 적용하고 뒤 후보도 세션 별칭으로 공급한다.
+        if (index === 0 && intrinsic !== null && !loaded.ownership.has(intrinsic)) {
+          loaded.ownership.set(intrinsic, fontProgramOwnsFamily(loaded.bytes, intrinsic));
+        }
+        const ownsIntrinsic = index === 0 && intrinsic !== null && loaded.ownership.get(intrinsic) === true;
+        if (index === 0 && intrinsic !== null && !ownsIntrinsic) return null;
+        const selectedAlias = ownsIntrinsic ? loaded.intrinsicAlias : loaded.alias;
+        if (!prepared.includes(selectedAlias)) prepared.push(selectedAlias);
+      }
     }
     return prepared.length ? `${match[1]}${match[2]} ${formatCssFontFamilyList([...prepared, ...families])}` : null;
   }

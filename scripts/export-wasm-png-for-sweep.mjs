@@ -4,7 +4,7 @@ import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
 import http from 'node:http';
-import {createRequire} from 'node:module';
+import {createRequire, stripTypeScriptTypes} from 'node:module';
 import {dirname, join, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {isDeepStrictEqual} from 'node:util';
@@ -135,6 +135,10 @@ async function main() {
       || new Set(wanted).size !== wanted.length)) throw Error('선택 쪽이 올바르지 않습니다.');
   const environmentJson = settings.fontEnvironment ? readFileSync(settings.fontEnvironment, 'utf8') : null;
   const sourceBytes = readFileSync(input);
+  const require = createRequire(join(root, 'rhwp-studio/package.json'));
+  const studioModule = name => stripTypeScriptTypes(
+    readFileSync(join(root, 'rhwp-studio/src/core', name), 'utf8'), {mode: 'strip'},
+  );
   const observedFontFallbacks = settings.observedFontReceipt
     ? validateObservedFontReceipt(JSON.parse(readFileSync(settings.observedFontReceipt, 'utf8')),
       sourceBytes, environmentJson) : [];
@@ -145,6 +149,8 @@ async function main() {
     ['/source', ['application/octet-stream', sourceBytes]],
     ['/font-registration.mjs', ['application/javascript', readFileSync(join(root, 'scripts/visual-sweep-font-registration.mjs'))]],
     ['/sweep-font-environment.js', ['application/javascript', readFileSync(join(root, 'scripts/visual-sweep-font-environment.mjs'))]],
+    ['/canvas-metric-session.js', ['application/javascript', studioModule('canvas-metric-session.ts')]],
+    ['/supplemental-text-metrics.ts', ['application/javascript', studioModule('supplemental-text-metrics.ts')]],
     ['/rhwp-studio/src/core/canvas-intrinsic-font.mjs', ['application/javascript', readFileSync(join(root, 'rhwp-studio/src/core/canvas-intrinsic-font.mjs'))]],
   ]);
   const linkedImages = (settings.linkedImages || []).map((asset, index) => {
@@ -164,7 +170,6 @@ async function main() {
   await new Promise((accept, reject) => {
     server.once('error', reject); server.listen(0, '127.0.0.1', accept);
   });
-  const require = createRequire(join(root, 'rhwp-studio/package.json'));
   let pageCount;
   let environmentSignature;
   let fontEnvironment;
@@ -235,7 +240,7 @@ async function main() {
               return imageDescriptor.set.call(this, value);
             },
           });
-          const {prepareNativePuaFonts, prepareObservedFontFallbacks} = await import('/font-registration.mjs');
+          const {prepareNativePuaFonts, prepareObservedFontFallbacks, prepareHftOtfFonts} = await import('/font-registration.mjs');
           const loadBytes = async record => {
             const response = await fetch(record.url);
             if (!response.ok) throw Error('공급 글꼴을 읽을 수 없습니다.');
@@ -243,7 +248,15 @@ async function main() {
           };
           const observedFonts = await prepareObservedFontFallbacks(doc, fonts, observedFontFallbacks, loadBytes);
           const nativePuaFonts = await prepareNativePuaFonts(doc, fonts, loadBytes);
-          return {pageCount: doc.pageCount(), version: module.version(), nativePuaFonts, observedFonts, fontEnvironment};
+          const hftOtfFonts = await prepareHftOtfFonts(doc, fonts, loadBytes);
+          // Studio와 같은 Canvas 측정 세션을 페이지 수 조회 전에 적용한다.
+          const {CanvasMetricSession} = await import('/canvas-metric-session.js');
+          const metricSession = new CanvasMetricSession();
+          await metricSession.prepare(doc, {document: 1, fonts: 1}, 'canvas2d', () => true,
+            () => document.fonts.ready, () => document.createElement('canvas').getContext('2d'));
+          if (metricSession.lastError) throw Error(`Canvas 글꼴 폭 준비 실패: ${metricSession.lastError}`);
+          const canvasMetricsActive = doc.canvasMetricsActive();
+          return {pageCount: doc.pageCount(), version: module.version(), nativePuaFonts, hftOtfFonts, observedFonts, fontEnvironment, canvasMetricsActive};
         }, {compat: settings.compat, environmentJson, fonts, observedFontFallbacks, linkedImages});
         const signature = JSON.stringify(info.fontEnvironment);
         if (environmentSignature !== undefined && environmentSignature !== signature) throw Error('WASM 작업자의 실제 글꼴 환경이 다릅니다.');
@@ -261,7 +274,9 @@ async function main() {
         const embedded = await page.evaluate(({pages}) => {
           const doc = globalThis.sweepDocument, faces = new Map();
           for (const page of pages) {
-            const tree = JSON.parse(doc.getPageLayerTreeWithProfile(page - 1, 'print', true, true));
+            const tree = JSON.parse(doc.canvasMetricsActive()
+              ? doc.getCanvasPageLayerTree(page - 1, 'print', true)
+              : doc.getPageLayerTreeWithProfile(page - 1, 'print', true, true));
             for (const face of tree.fontResources?.faces || []) {
               const blob = tree.fontResources.blobs.find(blob => blob.id === face.blobKey);
               if (!blob || blob.source !== 'embedded') continue;
@@ -336,31 +351,58 @@ async function main() {
               if (fonts.some(record => record.families.some(name => name.toLowerCase() === family))) requested.add(family);
             }
           }
-          const supplied = new Set(), loaded = [];
-          for (const record of fonts) {
-            const aliases = record.families.filter(family => requested.has(family.toLowerCase()));
-            const selected = aliases.filter(family => !supplied.has(`${family.toLowerCase()}|${record.weight}|${record.style}`));
-            if (!selected.length) continue;
-            const response = await fetch(record.url);
-            if (!response.ok) throw Error(`공급 글꼴을 읽을 수 없습니다: ${record.url}`);
-            const bytes = await response.arrayBuffer();
-            for (const family of selected) {
-              let textProgramSha256 = null;
-              let font;
-              try {
-                font = await installCanvasFont(family, bytes, {weight: String(record.weight), style: record.style}, doc,
-                  metafileFaces.has(`${family.toLowerCase()}|${record.weight}|${record.style}`),
-                  intrinsicRequested.has(family.toLowerCase()), async program => {
-                    const digest = await crypto.subtle.digest('SHA-256', program);
-                    textProgramSha256 = [...new Uint8Array(digest)]
-                      .map(byte => byte.toString(16).padStart(2, '0')).join('');
-                  });
-                if (font.family !== family) throw Error(`Canvas 글꼴의 등록 이름이 다릅니다: ${family} → ${font.family}`);
-              }
-              catch (error) { throw Error(`선택한 Canvas 글꼴을 적재할 수 없습니다: ${family}, ${record.source}, ${error}`); }
-              supplied.add(`${family.toLowerCase()}|${record.weight}|${record.style}`);
-              loaded.push({family, registeredFamily: font.family, sourceSha256: record.sourceSha256, sha256: record.sha256, textProgramSha256, faceIndex: record.faceIndex, weight: record.weight, style: record.style, repairs: record.repairs, sourceKind: record.sourceKind || 'external'});
+          const supplied = new Set(), loaded = [], familyFaces = new Map(), clearedSplitFamilies = new Set();
+          for (const record of fonts) for (const family of record.families) {
+            const key = `${family.toLowerCase()}|${record.weight}|${record.style}`;
+            const group = familyFaces.get(key) ?? [];
+            if (!group.some(candidate => candidate.sha256 === record.sha256)) group.push(record);
+            familyFaces.set(key, group);
+          }
+          for (const record of fonts) for (const family of record.families) {
+            const familyKey = family.toLowerCase();
+            const key = `${familyKey}|${record.weight}|${record.style}`;
+            const group = familyFaces.get(key) ?? [];
+            if (requested.has(familyKey) && !clearedSplitFamilies.has(familyKey)
+                && group.length > 1 && group.some(candidate => candidate.openTypeCff)) {
+              doc.clearTextFontFamily?.(family);
+              clearedSplitFamilies.add(familyKey);
             }
+          }
+          const jobs = [], seenFamilies = new Set();
+          for (const record of fonts) for (const family of record.families) {
+            const key = `${family.toLowerCase()}|${record.weight}|${record.style}`;
+            if (!requested.has(family.toLowerCase()) || seenFamilies.has(key)) continue;
+            seenFamilies.add(key);
+            const group = familyFaces.get(key) ?? [];
+            const cff = group.filter(candidate => candidate.openTypeCff);
+            const ordered = cff.length ? [...cff, ...group.filter(candidate => !candidate.openTypeCff)] : group.slice(0, 1);
+            // CSS는 나중에 등록한 face를 먼저 검색하므로 후보 순서의 역순으로 적재한다.
+            for (const candidate of [...ordered].reverse()) jobs.push({family, key, record: candidate, ordered});
+          }
+          const bytesCache = new Map();
+          for (const {family, key, record, ordered} of jobs) {
+            if (supplied.has(`${key}|${record.sha256}`)) continue;
+            let bytes = bytesCache.get(record.sha256);
+            if (!bytes) {
+              const response = await fetch(record.url);
+              if (!response.ok) throw Error(`공급 글꼴을 읽을 수 없습니다: ${record.url}`);
+              bytes = await response.arrayBuffer(); bytesCache.set(record.sha256, bytes);
+            }
+            let textProgramSha256 = null;
+            let font;
+            try {
+              font = await installCanvasFont(family, bytes, {weight: String(record.weight), style: record.style}, doc,
+                metafileFaces.has(`${family.toLowerCase()}|${record.weight}|${record.style}`),
+                intrinsicRequested.has(family.toLowerCase()), async program => {
+                  const digest = await crypto.subtle.digest('SHA-256', program);
+                  textProgramSha256 = [...new Uint8Array(digest)]
+                    .map(byte => byte.toString(16).padStart(2, '0')).join('');
+                }, ordered[0] === record, ordered.length < 2);
+              if (font.family !== family) throw Error(`Canvas 글꼴의 등록 이름이 다릅니다: ${family} → ${font.family}`);
+            }
+            catch (error) { throw Error(`선택한 Canvas 글꼴을 적재할 수 없습니다: ${family}, ${record.source}, ${error}`); }
+            supplied.add(`${family.toLowerCase()}|${record.weight}|${record.style}|${record.sha256}`);
+            loaded.push({family, registeredFamily: font.family, sourceSha256: record.sourceSha256, sha256: record.sha256, textProgramSha256, faceIndex: record.faceIndex, weight: record.weight, style: record.style, repairs: record.repairs, sourceKind: record.sourceKind || 'external'});
           }
           await document.fonts.ready;
           // 캐시에 적재되기만 하고 아직 paint되지 않은 그림은 준비 뒤 다시 재생한다.
@@ -395,8 +437,8 @@ async function main() {
                             canvasContext: captureCanvasContext});
           console.log(`Canvas PNG p${suffix}: worker ${index + 1}`);
         }
-        workers.push({index, pages, fonts: fontInfo, nativePuaFonts: info.nativePuaFonts,
-          observedFonts: info.observedFonts, fontEnvironment: info.fontEnvironment,
+        workers.push({index, pages, fonts: fontInfo, nativePuaFonts: info.nativePuaFonts, hftOtfFonts: info.hftOtfFonts,
+          observedFonts: info.observedFonts, fontEnvironment: info.fontEnvironment, canvasMetricsActive: info.canvasMetricsActive,
           canvasContext, browser: await browser.version()});
         await page.evaluate(() => { globalThis.sweepDocument.free(); delete globalThis.sweepDocument; });
       } finally {

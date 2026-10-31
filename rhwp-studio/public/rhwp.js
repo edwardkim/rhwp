@@ -992,6 +992,15 @@ export class HwpDocument {
         }
     }
     /**
+     * 호스트가 실제 FontFace에 적재한 프로그램의 호환 글리프 지원을 등록한다.
+     * @param {string} family
+     */
+    clearTextFontFamily(family) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.hwpdocument_clearTextFontFamily(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
      * 내부 클립보드에 컨트롤(표/그림/도형)이 포함되어 있는지 확인한다.
      * @returns {boolean}
      */
@@ -4869,6 +4878,27 @@ export class HwpDocument {
         let deferred2_1;
         try {
             const ret = wasm.hwpdocument_getMetafileFontRequests(this.__wbg_ptr);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    getNativeOtfFontRequests() {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_getNativeOtfFontRequests(this.__wbg_ptr);
             var ptr1 = ret[0];
             var len1 = ret[1];
             if (ret[3]) {
@@ -9238,6 +9268,18 @@ export class HwpDocument {
         }
     }
     /**
+     * 미리 준비한 실제 face만 동기 공급하고 모든 선택을 한 번에 조판한다.
+     * @param {Function} provider
+     * @returns {boolean}
+     */
+    prepareNativeOtfFonts(provider) {
+        const ret = wasm.hwpdocument_prepareNativeOtfFonts(this.__wbg_ptr, provider);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] !== 0;
+    }
+    /**
      * 한/글 5.x/97 OLE 수식을 편집 가능한 native equation으로 변환한다.
      * @param {number} section_idx
      * @param {number} para_idx
@@ -9395,7 +9437,6 @@ export class HwpDocument {
         return ret[0] !== 0;
     }
     /**
-     * 호스트가 실제 FontFace에 적재한 프로그램의 호환 글리프 지원을 등록한다.
      * @param {string} family
      * @param {Uint8Array} bytes
      * @param {number} face_index
@@ -13068,6 +13109,10 @@ function __wbg_get_imports() {
             getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
             getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
         },
+        __wbg_from_74f3d90e0ff11240: function(arg0) {
+            const ret = Array.from(arg0);
+            return ret;
+        },
         __wbg_getContext_71c33f14b63da593: function() { return handleError(function (arg0, arg1, arg2) {
             const ret = arg0.getContext(getStringFromWasm0(arg1, arg2));
             return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
@@ -13208,6 +13253,10 @@ function __wbg_get_imports() {
             const ret = new Image();
             return ret;
         }, arguments); },
+        __wbg_new_77cc4f4f472aeb81: function(arg0) {
+            const ret = new Uint8Array(arg0);
+            return ret;
+        },
         __wbg_new_ebe3e0f6837f0879: function() {
             const ret = new Object();
             return ret;

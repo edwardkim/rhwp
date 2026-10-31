@@ -4171,6 +4171,11 @@ mod tests {
             ..Default::default()
         });
         let output = SkiaLayerRenderer::new()
+            .try_with_font_data(&[include_bytes!(
+                "../../../ttfs/opensource/RHWPPublicBatang-Regular.ttf"
+            )
+            .to_vec()])
+            .expect("load licensed test font")
             .render_raster_with_options(&tree, RasterRenderOptions::default())
             .expect("render control marks");
         let image = decode_rgba(&output.bytes);
@@ -4392,6 +4397,13 @@ mod tests {
             ),
         );
         let output = SkiaLayerRenderer::new()
+            .try_with_font_data(&[include_bytes!(
+                "../../../assets/fonts/LatinModernMath-VariableOutline-subset.otf"
+            )
+            .to_vec()])
+            .expect("load licensed test font")
+            .with_font_family_alias("Latin Modern Math", "RHWP LMM Variable Outline")
+            .expect("bind equation family to the supplied fixture")
             .render_raster_with_options(&tree, RasterRenderOptions::default())
             .expect("render atop equation");
         let image = decode_rgba(&output.bytes);

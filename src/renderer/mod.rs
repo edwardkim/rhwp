@@ -342,6 +342,9 @@ pub struct TextStyle {
     /// 호스트가 실제 paint에 준비한 글꼴의 원 PUA 표시·전진 계약이다.
     #[serde(skip)]
     pub native_pua_metrics: Option<std::sync::Arc<native_pua_fonts::NativePuaMetrics>>,
+    /// Native paint가 실제 공급한 OTF의 세션 전진폭.
+    #[serde(skip)]
+    pub native_otf_metrics: Option<std::sync::Arc<native_pua_fonts::NativeOtfMetrics>>,
     /// 글줄 전체에서 계산한 표시 방향. 모델/저장 스타일과 논리 전진은 바꾸지 않는다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bidi_layout: Option<BidiLayout>,
@@ -375,6 +378,9 @@ pub struct TextStyle {
     /// 표시용 대체 face와 구분한 원본 언어 슬롯의 HFT 선언이다.
     #[serde(skip_serializing)]
     pub source_font_is_hft: bool,
+    /// HWP3 원본의 HFT 굵기 전진 계약을 적용한다.
+    #[serde(skip_serializing)]
+    pub source_hwp3_hft_bold: bool,
     /// 원본 글자 스타일에서 크기를 해소했는지. 명시적인 0과 미지정을 구별한다.
     #[serde(skip_serializing)]
     pub resolved_font_size: bool,
@@ -567,12 +573,14 @@ pub struct TextStyle {
     #[serde(skip_serializing)]
     pub ascii_punct_latin: Option<Box<LatinSlotMetrics>>,
 }
-crate::storage::clone_fields!(TextStyle, {continuous_shadow, inherited_half_space_em, script_metrics, shadow_offset_percent, space_compression, literal_figure_space, literal_figure_space_em, native_pua_metrics, bidi_layout, emphasis_skip_first_cluster, top_underline_font_size, top_underline_phase, supplemental_metrics, isolated_jamo_font, font_family, font_size, fixed_glyph_advances, source_font_is_hft, resolved_font_size, font_position, hft_print_frame, preserve_glyph_ink, color, bold, italic, underline, strikethrough, kerning, letter_spacing, ratio, default_tab_width, tab_stops, auto_tab_right, auto_left_tab_position, available_width, line_x_offset, text_start_offset, right_tab_block_width_override, tab_leaders, inline_tabs, extra_word_spacing, unjustified_leading_spaces, extra_char_spacing, extra_dash_advance, outline_type, shadow_type, shadow_color, shadow_offset_x, shadow_offset_y, emboss, engrave, superscript, subscript, emphasis_dot, underline_shape, strike_shape, underline_color, strike_color, shade_color, font_metric_trusted, glyph_fallback_advance_explicit, metric_font_family, original_glyph_metric_family, font_space_em, layout_half_space, regenerated_font_metrics, hft_hangul_face, hft_font_face, hft_fullwidth_dot, ascii_punct_latin});
+crate::storage::clone_fields!(TextStyle, {continuous_shadow, inherited_half_space_em, script_metrics, shadow_offset_percent, space_compression, literal_figure_space, literal_figure_space_em, native_pua_metrics, native_otf_metrics, bidi_layout, emphasis_skip_first_cluster, top_underline_font_size, top_underline_phase, supplemental_metrics, isolated_jamo_font, font_family, font_size, fixed_glyph_advances, source_font_is_hft, source_hwp3_hft_bold, resolved_font_size, font_position, hft_print_frame, preserve_glyph_ink, color, bold, italic, underline, strikethrough, kerning, letter_spacing, ratio, default_tab_width, tab_stops, auto_tab_right, auto_left_tab_position, available_width, line_x_offset, text_start_offset, right_tab_block_width_override, tab_leaders, inline_tabs, extra_word_spacing, unjustified_leading_spaces, extra_char_spacing, extra_dash_advance, outline_type, shadow_type, shadow_color, shadow_offset_x, shadow_offset_y, emboss, engrave, superscript, subscript, emphasis_dot, underline_shape, strike_shape, underline_color, strike_color, shade_color, font_metric_trusted, glyph_fallback_advance_explicit, metric_font_family, original_glyph_metric_family, font_space_em, layout_half_space, regenerated_font_metrics, hft_hangul_face, hft_font_face, hft_fullwidth_dot, ascii_punct_latin});
 
 /// [#7418] 영문 슬롯의 기본 메트릭 — [`TextStyle::ascii_punct_latin`] 참조.
 #[derive(Debug, Clone, PartialEq)]
 pub struct LatinSlotMetrics {
     pub font_family: String,
+    /// 영문 슬롯이 실제 선택한 OTF의 글리프별 전진.
+    pub native_otf_metrics: Option<std::sync::Arc<native_pua_fonts::NativeOtfMetrics>>,
     pub metric_font_family: Option<String>,
     /// 확인된 원본 글리프만 사용하는 부분 메트릭. 미확인 글자는 표시 face에 남는다.
     /// 불변 이름을 공유하여 런 복제와 enum의 인라인 메모리를 줄인다.
@@ -582,7 +590,7 @@ pub struct LatinSlotMetrics {
     pub ratio: f64,
 }
 
-crate::storage::clone_fields!(LatinSlotMetrics, {font_family, metric_font_family, original_glyph_metric_family, font_metric_trusted, letter_spacing, ratio});
+crate::storage::clone_fields!(LatinSlotMetrics, {font_family, native_otf_metrics, metric_font_family, original_glyph_metric_family, font_metric_trusted, letter_spacing, ratio});
 crate::storage::clone_copy!(crate::model::style::UnderlineType);
 
 /// 위첨자/아래첨자 글리프를 그릴 때 적용하는 본문 대비 글꼴 크기 배율.
@@ -836,6 +844,7 @@ impl Default for TextStyle {
             font_size: 0.0,
             fixed_glyph_advances: false,
             source_font_is_hft: false,
+            source_hwp3_hft_bold: false,
             resolved_font_size: false,
             font_position: None,
             hft_print_frame: false,
@@ -879,6 +888,7 @@ impl Default for TextStyle {
             shade_color: 0x00FFFFFF,
             font_metric_trusted: false,
             native_pua_metrics: None,
+            native_otf_metrics: None,
             glyph_fallback_advance_explicit: false,
             metric_font_family: None,
             original_glyph_metric_family: None,

@@ -645,6 +645,27 @@ def default_sweep_font_paths() -> list[Path]:
     return []
 
 
+def linux_system_font_files() -> list[Path]:
+    """WASM 직접 출력에 Fontconfig가 실제 등록한 프로그램을 공급한다."""
+    if platform.system() != "Linux":
+        return []
+    try:
+        result = subprocess.run(
+            ["fc-list", "--format", "%{file}\n"],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return []
+    supported = {".ttf", ".otf", ".ttc", ".woff", ".woff2"}
+    return sorted({
+        path for value in result.stdout.splitlines()
+        if (path := Path(value)).is_file() and path.suffix.lower() in supported
+    })
+
+
 def svg_font_export_options(root: Path, mode: str | None, paths: list[Path], *, allow_files: bool = False) -> tuple[list[str], dict[str, object]]:
     """검증에 공급할 글꼴과 해시를 고정한다. 글꼴 파일은 진단용 SVG에만 포함한다."""
     if mode == "subset":
@@ -1608,14 +1629,20 @@ def render_target(
         }
     if wasm_pkg is not None:
         provenance["wasm"] = wasm_package_provenance(root, wasm_pkg, rasterizer)
+    system_font_supply = False
     if png_module is not None and not font_paths:
         font_paths = default_sweep_font_paths()
+        if wasm_pkg is not None and not font_paths:
+            font_paths = linux_system_font_files()
+            system_font_supply = bool(font_paths)
     font_args, font_supply = svg_font_export_options(
         root, "full" if png_module and font_paths else embed_fonts, font_paths or [],
         allow_files=png_module is not None,
     )
     if png_module is not None:
         font_supply["mode"] = "direct-font-programs"
+        if system_font_supply:
+            font_supply["source"] = "system_fontconfig"
     provenance["font_supply"] = font_supply
     if wasm_pkg is not None and rasterizer == "svg":
         provenance["wasm"]["font_policy"] = "same-input native " + " ".join(font_args) + "; font-face CSS only"

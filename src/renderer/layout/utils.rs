@@ -78,6 +78,28 @@ pub(crate) fn picture_data_is_unusable(data: Option<&[u8]>) -> bool {
 /// 되어(00493: 188.5×134.0mm 가 712×712px) 지면 밖으로 나간다. 프레임 값이 온전하면
 /// 회전 후 프레임(common)을 그대로 쓴다.
 pub(crate) fn picture_display_size_hu(picture: &Picture) -> (i32, i32) {
+    // 변환 행렬의 합성이 원래 그림을 저장된 개체 틀로 축소하는 경우 curSz는
+    // 중간 단계의 크기다. 이를 최종 틀과 축별 max하면 그림이 다시 커진다.
+    // 행렬과 HWPUNIT의 직렬화 반올림 차이만 허용하고, 서로 다른 크기를 나타내는
+    // 손상된 common/current 사례는 기존 폴백을 유지한다.
+    let attr = &picture.shape_attr;
+    if picture.common.width > 0
+        && picture.common.height > 0
+        && attr.original_width > 0
+        && attr.original_height > 0
+        && !attr.raw_rendering.is_empty()
+        && attr.render_b == 0.0
+        && attr.render_c == 0.0
+        && attr.rotation_angle.rem_euclid(360) == 0
+    {
+        let transformed_width = f64::from(attr.original_width) * attr.render_sx.abs();
+        let transformed_height = f64::from(attr.original_height) * attr.render_sy.abs();
+        if (transformed_width - f64::from(picture.common.width)).abs() <= 2.0
+            && (transformed_height - f64::from(picture.common.height)).abs() <= 2.0
+        {
+            return (picture.common.width as i32, picture.common.height as i32);
+        }
+    }
     if picture.shape_attr.rotation_angle.rem_euclid(360) != 0
         && picture.common.width > 0
         && picture.common.height > 0

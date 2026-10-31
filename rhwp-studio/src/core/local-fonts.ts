@@ -963,6 +963,25 @@ export function getLocalFontRecords(options: GetLocalFontsOptions = {}): LocalFo
   return cachedFontRecords.filter(record => !record.aliases.some(name => REGISTERED_FONTS.has(name)));
 }
 
+/** 감지 전후 달라진 face의 모든 조회 이름이다. */
+export function changedLocalFontNames(before: readonly LocalFontRecord[], after: readonly LocalFontRecord[]): string[] {
+  const key = (record: LocalFontRecord): string => JSON.stringify({
+    family: record.family, fullName: record.fullName, postscriptName: record.postscriptName,
+    style: record.style, weightClass: record.weightClass, italic: record.italic,
+    aliases: [...record.aliases].sort(), detectionSource: record.detectionSource,
+  });
+  const oldKeys = new Set(before.map(key));
+  const newKeys = new Set(after.map(key));
+  return [...new Set([...before.filter(record => !newKeys.has(key(record))),
+    ...after.filter(record => !oldKeys.has(key(record)))].flatMap(record =>
+    [record.family, record.fullName, record.postscriptName, ...record.aliases]))];
+}
+
+export function localFontNamesIntersect(left: readonly string[], right: readonly string[]): boolean {
+  const names = new Set(left.map(normalizeFontAlias));
+  return right.some(name => names.has(normalizeFontAlias(name)));
+}
+
 /** 캐시된 로컬 글꼴 목록을 동기적으로 반환 (감지 전이면 빈 배열) */
 export function getLocalFonts(options: GetLocalFontsOptions = {}): string[] {
   return normalizeFamilies(getLocalFontRecords(options).map(record => record.displayName));
@@ -976,6 +995,22 @@ export function getDetectedLocalFonts(): string[] {
 /** HWP/CSS 글꼴명에서 동일한 설치 글꼴 face를 찾는다. */
 export function resolveLocalFont(fontName: string): LocalFontRecord | null {
   return resolveLocalFontFromLookup(fontName, cachedFontLookup);
+}
+
+/** 같은 family·스타일의 실제 face만 프로그램 형식 비교 대상으로 반환한다. */
+export function resolveLocalFontProgramCandidates(fontName: string): LocalFontRecord[] {
+  const matches = (cachedFontLookup.aliases.get(normalizeFontAlias(fontName)) ?? [])
+    .filter(record => record.detectionSource === 'local-font-access' && record.postscriptName);
+  const exact = resolveLocalFont(fontName);
+  const reference = exact ?? matches.find(record =>
+    (!record.weightClass || record.weightClass === 400) && !record.italic
+    && /^(regular|normal|book|roman|보통|일반)$/i.test(record.style.trim()));
+  if (!reference) return [];
+  const family = normalizeFontAlias(reference.family);
+  const style = normalizeFontAlias(reference.style);
+  return matches.filter(record => normalizeFontAlias(record.family) === family
+    && normalizeFontAlias(record.style) === style
+    && record.weightClass === reference.weightClass && record.italic === reference.italic);
 }
 
 /** CSS family와 달리 style별 native Typeface cache를 구분하는 안정 키다. */
@@ -1078,6 +1113,28 @@ export async function loadLocalFontBytes(fontName: string): Promise<ArrayBuffer 
   return (await loadLocalFontBytesFor([fontName])).get(localFontFaceKey(record)) ?? null;
 }
 
+/** 동일 PostScript 이름으로 열거된 프로그램도 실제 바이트로 CFF를 우선한다. */
+export async function loadPreferredLocalFontBytes(record: LocalFontRecord): Promise<ArrayBuffer | null> {
+  const query = (globalThis as LocalFontGlobal).queryLocalFonts;
+  if (!query || !record.postscriptName || record.detectionSource !== 'local-font-access') return null;
+  try {
+    const candidates = await query({ postscriptNames: [record.postscriptName] });
+    let fallback: ArrayBuffer | null = null;
+    for (const candidate of candidates) {
+      if (!candidate.blob || !localFontRecordMatchesFontData(record, candidate)) continue;
+      const bytes = await (await candidate.blob()).arrayBuffer();
+      if (bytes.byteLength < 4) continue;
+      const signature = new DataView(bytes).getUint32(0);
+      if (signature === 0x4f54544f) return bytes;
+      // 형식 미확인 바이트도 기존처럼 FontFace 로드를 시도하되 공급 형식은 인증하지 않는다.
+      if (!fallback && signature !== 0x74746366) fallback = bytes;
+    }
+    return fallback;
+  } catch {
+    return null;
+  }
+}
+
 /** 현재 로컬 글꼴 감지/저장 상태를 반환한다. */
 export function getLocalFontState(): LocalFontState {
   const method = getLocalFontDetectionMethod();
@@ -1093,7 +1150,8 @@ export function getLocalFontState(): LocalFontState {
     source: cachedSnapshot?.source ?? null,
     complete,
     storage: getStorageKind(),
-    count: cachedSnapshot?.families.length ?? 0,
+    // 설정 화면과 목록 모두 저장된 face 수를 표시한다. family는 여러 face를 합친다.
+    count: cachedFontRecords.length,
     checkedFamilies,
     probedFamilies: cachedSnapshot?.probedFamilies ?? [],
     unresolvedFamilies: cachedSnapshot?.unresolvedFamilies ?? [],
@@ -1183,6 +1241,28 @@ export function resolveRendererLocalFont(name: string, style?: LocalFontStyleReq
   const alternate = candidates.filter(record => record.hostReference?.face.weight === style.weight
     && record.hostReference?.face.slant === (style.slant === 'italic' ? 'oblique' : 'italic'));
   return alternate.length === 1 ? alternate[0] : null;
+}
+
+/** 같은 family/style의 분할 프로그램을 호스트가 열거한 순서대로 반환한다.
+ * 명시 PostScript 이름이나 중복 식별자의 모호성은 기존처럼 해소하지 않는다. */
+export function resolveRendererLocalFontCandidates(name: string, style: LocalFontStyleRequest): LocalFontRecord[] {
+  const single = resolveRendererLocalFont(name, style);
+  if (single) return [single];
+  if (!hostFontSource.active) return [];
+  const target = normalizeFontAlias(name);
+  currentHostRecords();
+  if (hostLookup.postscriptNames.has(target)) return [];
+  const candidates = hostLookup.aliases.get(target) ?? [];
+  const exact = candidates.filter(record => record.hostReference?.face.weight === style.weight
+    && record.hostReference?.face.slant === style.slant);
+  const alternate = style.slant === 'normal' ? [] : candidates.filter(record =>
+    record.hostReference?.face.weight === style.weight
+    && record.hostReference?.face.slant === (style.slant === 'italic' ? 'oblique' : 'italic'));
+  const selected = exact.length ? exact : alternate;
+  if (selected.length < 2 || new Set(selected.map(record => normalizeFontAlias(record.family))).size !== 1) return [];
+  const ids = selected.map(record => normalizeFontAlias(record.postscriptName));
+  if (ids.some(id => !id) || new Set(ids).size !== ids.length) return [];
+  return selected;
 }
 
 /** Consume the selected face directly, rather than resolving its name a second time. */

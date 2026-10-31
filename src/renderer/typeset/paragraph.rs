@@ -363,6 +363,11 @@ pub(super) fn place_split_paragraph_with_storage<S: crate::storage::Storage>(
             &st.current_items,
         ) else {
             st.advance_column_or_new_page_with_storage(storage)?;
+            if cursor_line == 0
+                && try_absorb_empty_page_start_with_storage(st, para_idx, para, storage)?
+            {
+                return Ok(());
+            }
             on_entry_page = false;
             continue;
         };
@@ -993,6 +998,9 @@ pub(super) fn place_after_failed_fit_with_storage<S: crate::storage::Storage>(
         dpi,
     ) {
         st.advance_column_or_new_page_with_storage(storage)?;
+        if try_absorb_empty_page_start_with_storage(st, para_idx, para, storage)? {
+            return Ok(());
+        }
         safety.entry = safety.continuation;
     }
 
@@ -1265,7 +1273,9 @@ pub(super) fn try_absorb_empty_paragraph_with_storage<S: crate::storage::Storage
     // Paginator (engine.rs:85-106) 와 동일 시멘틱.
     // (kps-ai p67~70 case: PartialTable 후속 빈 paragraphs 가 다수 발생, 한컴은 표시 안 함.)
     if st.hide_empty_line {
-        st.begin_empty_paragraph_page();
+        if try_absorb_empty_page_start_with_storage(st, para_idx, para, storage)? {
+            return Ok(true);
+        }
         if empty::hide_overflowing_empty(
             para,
             fmt,
@@ -1299,6 +1309,31 @@ pub(super) fn try_absorb_empty_paragraph_with_storage<S: crate::storage::Storage
             }
         },
     )
+}
+
+/// 쪽 진입 후 재시도에서도 첫 빈 줄 감추기를 동일하게 적용한다.
+fn try_absorb_empty_page_start_with_storage<S: crate::storage::Storage>(
+    st: &mut TypesetState,
+    para_idx: usize,
+    para: &Paragraph,
+    storage: &S,
+) -> Result<bool, S::Error> {
+    if !st.hide_empty_line {
+        return Ok(false);
+    }
+    st.begin_empty_paragraph_page();
+    if st.hidden_empty_lines < 2
+        && crate::renderer::pagination::page_starts_with_hidden_empty_lines(
+            para,
+            &st.current_items,
+            &st.hidden_empty_paras,
+        )
+    {
+        st.commit_counted_hidden_paragraph_with_storage(para_idx, storage)?;
+        st.set_hidden_line_reflow_active(true);
+        return Ok(true);
+    }
+    Ok(false)
 }
 
 pub(super) struct WholeFitDecision {

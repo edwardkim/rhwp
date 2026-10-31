@@ -1,6 +1,42 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {prepareNativePuaFonts} from '../visual-sweep-font-registration.mjs';
+import {prepareNativePuaFonts, prepareHftOtfFonts} from '../visual-sweep-font-registration.mjs';
+
+test('실제 선택한 CFF만 전달하고 없는 face와 TTF는 HFT 경로에 남긴다', async () => {
+  const requests = [
+    {family: 'Installed', bold: true, italic: false},
+    {family: 'TrueType', bold: false, italic: false},
+    {family: 'Missing', bold: false, italic: false},
+  ];
+  const received = [];
+  const owner = {getNativeOtfFontRequests: () => JSON.stringify(requests),
+    prepareNativeOtfFonts(provider) { for (const request of requests) received.push(provider(JSON.stringify(request))); }};
+  const fonts = [
+    {families: ['Installed'], weight: 400, style: 'normal', sha256: 'ttf', openTypeCff: false},
+    {families: ['Installed'], weight: 400, style: 'normal', sha256: 'cff', openTypeCff: true},
+    {families: ['TrueType'], weight: 400, style: 'normal', sha256: 'ttf'},
+  ];
+  const proof = await prepareHftOtfFonts(owner, fonts, async face =>
+    Uint8Array.from(face.sha256 === 'cff' ? [79, 84, 84, 79] : [0, 1, 0, 0]).buffer);
+  assert.deepEqual([...received[0]], [79, 84, 84, 79]);
+  assert.equal(received[1], null);
+  assert.equal(received[2], null);
+  assert.equal(proof[0].weight, 400, '굵은 face가 없을 때 실제 선택한 일반 face를 전달한다');
+  assert.equal(proof.length, 1);
+});
+test('같은 family의 분할 CFF는 표시 후보 순서로 모두 전달한다', async () => {
+  const request = {family: 'Split', bold: false, italic: false};
+  let received;
+  const owner = {getNativeOtfFontRequests: () => JSON.stringify([request]),
+    prepareNativeOtfFonts(provider) { received = provider(JSON.stringify(request)); }};
+  const fonts = ['first', 'second'].map((sha256, i) => ({families: ['Split'], weight: 400,
+    style: 'normal', sha256, openTypeCff: true, index: i}));
+  const proofs = await prepareHftOtfFonts(owner, fonts, async record =>
+    Uint8Array.of(79, 84, 84, 79, record.index).buffer);
+  assert.ok(Array.isArray(received));
+  assert.deepEqual(received.map(bytes => bytes[4]), [0, 1]);
+  assert.deepEqual(proofs.map(proof => proof.sha256), ['first', 'second']);
+});
 test('실제 적재한 face 순서로 PUA 공급을 판단하고 지원하지 않은 주 face 뒤의 fallback을 사용한다',async()=>{
  const oldDoc=globalThis.document,oldFont=globalThis.FontFace;
  const loaded=[];globalThis.document={fonts:new Set()};globalThis.FontFace=class{constructor(family,bytes){this.family=family;loaded.push([family,new Uint8Array(bytes)[0]])}async load(){return this}};
@@ -12,6 +48,23 @@ test('실제 적재한 face 순서로 PUA 공급을 판단하고 지원하지 �
  }finally{globalThis.document=oldDoc;globalThis.FontFace=oldFont}
 });
 test('구형 WASM에는 등록을 시도하지 않고 기존 표시 경로를 유지한다',async()=>{assert.deepEqual(await prepareNativePuaFonts({},[],()=>{throw Error('unexpected read')}),[])});
+
+test('분할 CFF의 첫 face가 PUA를 공급하지 못하면 다음 face를 검사한다', async () => {
+  const oldDoc = globalThis.document, oldFont = globalThis.FontFace;
+  globalThis.document = {fonts: new Set()};
+  globalThis.FontFace = class {constructor(family) { this.family = family; } async load() { return this; }};
+  try {
+    const calls = [], owner = {getNativePuaFontRequests: () => JSON.stringify([
+      {family: 'Split', paint_families: ['Split'], bold: false, italic: false},
+    ]), registerNativePuaFont(_family, _bold, _italic, bytes) { calls.push(bytes[4]); return bytes[4] === 2; }};
+    const fonts = [1, 2].map(id => ({families: ['Split'], weight: 400, style: 'normal',
+      sha256: `sha${id}`, sourceSha256: `source${id}`, openTypeCff: true, id}));
+    const proof = await prepareNativePuaFonts(owner, fonts, async record =>
+      Uint8Array.of(79, 84, 84, 79, record.id).buffer);
+    assert.deepEqual(calls, [1, 2]);
+    assert.equal(proof[0].sha256, 'sha2');
+  } finally { globalThis.document = oldDoc; globalThis.FontFace = oldFont; }
+});
 
 test('같은 실제 face를 한 번 적재하고 PUA·리터럴 공백의 서로 다른 등록 경로에 공급한다', async () => {
   const oldDoc = globalThis.document, oldFont = globalThis.FontFace;

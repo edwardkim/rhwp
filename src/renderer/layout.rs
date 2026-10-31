@@ -7899,10 +7899,16 @@ impl LayoutEngine {
             )
         })
         .flatten();
+        // 옵션으로 숨긴 쪽 시작 표식은 저장 좌표의 기준을 소유하지 않는다.
+        // 다음 실제 흐름 요소를 측정과 배치의 원점 선택에 함께 사용한다.
+        let first_flow_item = col_content.items.iter().find(|item| match item {
+            PageItem::FullParagraph { para_index } => {
+                !self.hidden_empty_paras.borrow().contains(para_index)
+            }
+            _ => true,
+        });
         // 첫 문단과 표는 실제 수용에서 확정한 같은 측정 원점을 소비한다.
-        let measured_first_origin = col_content
-            .items
-            .first()
+        let measured_first_origin = first_flow_item
             .and_then(|item| {
                 let para_index = match item {
                     PageItem::FullParagraph { para_index } | PageItem::Table { para_index, .. } => {
@@ -7957,9 +7963,7 @@ impl LayoutEngine {
         } else {
             opening_tac_origin
                 .map(|(_, origin)| origin)
-                .or_else(|| col_content
-            .items
-            .first()
+                .or_else(|| first_flow_item
             .and_then(|item| {
                 match item {
                     PageItem::FullParagraph { .. } | PageItem::PartialParagraph { .. } => {
@@ -8013,14 +8017,14 @@ impl LayoutEngine {
                     || page_square_preserves_source_origin
                 {
                     0
-                } else if let Some(frame) = col_content.items.first().and_then(|item| match item {
+                } else if let Some(frame) = first_flow_item.and_then(|item| match item {
                     PageItem::FullParagraph { para_index }
                     | PageItem::PartialParagraph { para_index, start_line: 0, .. } =>
                         col_content.stored_column_top_spacings.get(para_index),
                     _ => None,
                 }) {
                     frame.source_origin_hu
-                } else if let Some(PageItem::FullParagraph { para_index }) = col_content.items.first() {
+                } else if let Some(PageItem::FullParagraph { para_index }) = first_flow_item {
                     let margin = paragraphs
                         .get(*para_index)
                         .map(|first| synthesized_first_margin_hu(first, styles, self.dpi))
@@ -8739,6 +8743,7 @@ impl LayoutEngine {
             hcursor.stored_boundary_spacing_before = 0.0;
             if !shape_jumped
                 && !session_fresh_partial_table
+                && !self.hidden_empty_paras.borrow().contains(&item_para)
                 && (!prev_tac_seg_applied
                     || current_is_endnote_question_title
                     || prev_tac_host_sibling_float)
@@ -9357,7 +9362,7 @@ impl LayoutEngine {
                         }
                     }
                 }
-            } else {
+            } else if !self.hidden_empty_paras.borrow().contains(&item_para) {
                 hcursor.prev_layout_para = Some(item_para);
                 hcursor.prev_reissued_equation_rows =
                     composed.get(item_para).is_some_and(|actual| {

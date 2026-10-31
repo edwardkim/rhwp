@@ -62,7 +62,7 @@ export async function selectTextEffectFontFaces(owner, fonts, requests, loadByte
   return selected;
 }
 
-export async function installCanvasFont(family, bytes, descriptors, sourceOwner = null, metafileSelected = false, intrinsicRequested = false, onPrepared = null) {
+export async function installCanvasFont(family, bytes, descriptors, sourceOwner = null, metafileSelected = false, intrinsicRequested = false, onPrepared = null, registerOutline = true, registerCoverage = true) {
   // 제품과 같은 Rust 함수를 사용한다. 원본 메타파일·명시 컬러 자원은 바꾸지 않는다.
   const prepared = sourceOwner?.ordinaryTextFontProgram?.(new Uint8Array(bytes), 0);
   const paintBytes = prepared ? Uint8Array.from(prepared).buffer : bytes;
@@ -79,15 +79,53 @@ export async function installCanvasFont(family, bytes, descriptors, sourceOwner 
     sourceOwner.registerMetafileFont(family, new Uint8Array(bytes), 0);
   }
   // 브라우저와 같은 프로그램만 paint 세션에 전달한다.
-  if (typeof sourceOwner?.registerTextFontGlyphCoverage === 'function') {
+  if (registerCoverage && typeof sourceOwner?.registerTextFontGlyphCoverage === 'function') {
     sourceOwner.registerTextFontGlyphCoverage(family, new Uint8Array(paintBytes), 0);
   }
-  if (typeof sourceOwner?.registerHftOutlineFont === 'function'
+  if (registerOutline && typeof sourceOwner?.registerHftOutlineFont === 'function'
       && String(descriptors.weight || '400') === '400'
       && (descriptors.style || 'normal') === 'normal') {
     sourceOwner.registerHftOutlineFont(family, new Uint8Array(paintBytes), 0);
   }
   return font;
+}
+
+// 실제 Canvas에서 선택한 HFT 대체 OTF의 같은 바이트를 공통 조판에 공급한다.
+export async function prepareHftOtfFonts(owner, fonts, loadBytes) {
+  if (typeof owner?.getNativeOtfFontRequests !== 'function'
+      || typeof owner?.prepareNativeOtfFonts !== 'function') {
+    throw Error('HFT OpenType 폭 공급 API가 없는 WASM입니다.');
+  }
+  const requests = JSON.parse(owner.getNativeOtfFontRequests());
+  const programs = new Map(), loaded = new Map(), proofs = [];
+  for (const request of requests) {
+    const selected = selectMetafileFontFaces(fonts, [{families: [request.family],
+      weight: request.bold ? 700 : 400, italic: request.italic}]);
+    for (const key of selected) {
+      const matches = fonts.filter(record => record.families.some(name =>
+        `${name.toLowerCase()}|${record.weight}|${record.style}` === key));
+      const cff = matches.filter(record => record.openTypeCff);
+      const records = cff.length ? cff : matches.slice(0, 1);
+      const selected = [], seen = new Set();
+      for (const record of records) {
+        if (seen.has(record.sha256)) continue;
+        seen.add(record.sha256);
+        let bytes = loaded.get(record.sha256);
+        if (!bytes) { bytes = await loadBytes(record); loaded.set(record.sha256, bytes); }
+        if (bytes.byteLength < 4 || new DataView(bytes).getUint32(0) !== 0x4f54544f) continue;
+        selected.push(new Uint8Array(bytes));
+        proofs.push({family: request.family, bold: request.bold, italic: request.italic,
+          weight: record.weight, style: record.style, sha256: record.sha256});
+      }
+      if (selected.length) programs.set(JSON.stringify([request.family, request.bold, request.italic]), selected);
+    }
+  }
+  owner.prepareNativeOtfFonts(raw => {
+    const request = JSON.parse(raw);
+    const selected = programs.get(JSON.stringify([request.family, request.bold, request.italic]));
+    return selected?.length === 1 ? selected[0] : selected ?? null;
+  });
+  return proofs;
 }
 
 // Native의 원 face 부재 관측과 같은 프로그램을 공급할 때만 공통 측정 face를 확정한다.
@@ -143,25 +181,34 @@ export async function prepareNativePuaFonts(owner, fonts, loadBytes) {
         [{families: [family], weight: request.bold ? 700 : 400, italic: request.italic}]);
       let accepted = false;
       for (const key of selected) {
-        const record = fonts.find(font => font.families.some(name =>
+        const matches = fonts.filter(font => font.families.some(name =>
           `${name.toLowerCase()}|${font.weight}|${font.style}` === key));
-        if (!record) continue;
-        let bytes = loaded.get(key);
-        if (!bytes) {
-          bytes = await loadBytes(record);
-          await installCanvasFont(family, bytes,
-            {weight: String(record.weight), style: record.style}, owner);
-          loaded.set(key, bytes);
+        const cff = matches.filter(record => record.openTypeCff);
+        const records = cff.length ? [...cff, ...matches.filter(record => !record.openTypeCff)] : matches.slice(0, 1);
+        const seen = new Set();
+        for (const record of records) {
+          if (seen.has(record.sha256)) continue;
+          seen.add(record.sha256);
+          const programKey = `${key}|${record.sha256}`;
+          let bytes = loaded.get(programKey);
+          if (!bytes) {
+            bytes = await loadBytes(record);
+            await installCanvasFont(family, bytes,
+              {weight: String(record.weight), style: record.style}, owner,
+              false, false, null, records.length < 2, records.length < 2);
+            loaded.set(programKey, bytes);
+          }
+          const register = request.literal_figure_space
+            ? owner.registerLiteralFigureSpaceFont : owner.registerNativePuaFont;
+          if (typeof register === 'function' && register.call(owner, request.family,
+            request.bold, request.italic, new Uint8Array(bytes), 0)) {
+            proofs.push({family: request.family, literalFigureSpace: Boolean(request.literal_figure_space), selectedFamily: family, weight: record.weight,
+              style: record.style, sha256: record.sha256, sourceSha256: record.sourceSha256});
+            accepted = true;
+            break;
+          }
         }
-        const register = request.literal_figure_space
-          ? owner.registerLiteralFigureSpaceFont : owner.registerNativePuaFont;
-        if (typeof register === 'function' && register.call(owner, request.family,
-          request.bold, request.italic, new Uint8Array(bytes), 0)) {
-          proofs.push({family: request.family, literalFigureSpace: Boolean(request.literal_figure_space), selectedFamily: family, weight: record.weight,
-            style: record.style, sha256: record.sha256, sourceSha256: record.sourceSha256});
-          accepted = true;
-          break;
-        }
+        if (accepted) break;
       }
       if (accepted) break;
     }

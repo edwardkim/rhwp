@@ -537,6 +537,27 @@ thread_local! {
     /// `parse_paragraph` 는 표 셀·글상자·각주 등 여러 경로에서 재귀 호출되므로
     /// 파라미터를 관통시키지 않고 형제 가드(`HWPX_SECTION_DEPTH`)와 같은 방식으로 나른다.
     static HWPX_SECTION_HAS_SIZED_LINESEG: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+    // 전체 패키지의 문단 모양 목록에 추가할 한컴 기본 모양 ID와 사용 여부.
+    // 표 셀·글상자·각주 등 중첩 문단도 같은 패키지 계약을 소비한다.
+    static HWPX_DEFAULT_PARA_SHAPE: std::cell::Cell<Option<(Option<u16>, bool)>> = const { std::cell::Cell::new(None) };
+}
+
+pub(super) struct DefaultParaShapeScope(Option<(Option<u16>, bool)>);
+
+impl DefaultParaShapeScope {
+    pub(super) fn enter(id: Option<u16>) -> Self {
+        Self(HWPX_DEFAULT_PARA_SHAPE.with(|state| state.replace(Some((id, false)))))
+    }
+
+    pub(super) fn used(&self) -> bool {
+        HWPX_DEFAULT_PARA_SHAPE.with(|state| state.get().is_some_and(|(_, used)| used))
+    }
+}
+
+impl Drop for DefaultParaShapeScope {
+    fn drop(&mut self) {
+        HWPX_DEFAULT_PARA_SHAPE.with(|state| state.set(self.0));
+    }
 }
 
 /// 구역 XML 에 **높이가 0 이 아닌 lineseg** 가 하나라도 있는지 훑는다.
@@ -644,6 +665,7 @@ fn parse_paragraph_body(
     let mut hp_p_id: u32 = 0;
     let mut has_column_break_attr = false;
     let mut has_page_break_attr = false;
+    let mut has_para_shape_ref = false;
     for attr in e.attributes().flatten() {
         match attr.key.as_ref().as_bytes() {
             b"id" => {
@@ -651,7 +673,10 @@ fn parse_paragraph_body(
                     hp_p_id = s.parse::<u32>().unwrap_or(0);
                 }
             }
-            b"paraPrIDRef" => para.para_shape_id = parse_u16(&attr),
+            b"paraPrIDRef" => {
+                has_para_shape_ref = true;
+                para.para_shape_id = parse_u16(&attr);
+            }
             b"styleIDRef" => para.style_id = parse_u8(&attr),
             b"columnBreak" => {
                 if parse_u8(&attr) == 1 {
@@ -667,6 +692,20 @@ fn parse_paragraph_body(
             }
             _ => {}
         }
+    }
+
+    if !has_para_shape_ref {
+        HWPX_DEFAULT_PARA_SHAPE.with(|state| -> Result<(), HwpxError> {
+            if let Some((id, _)) = state.get() {
+                para.para_shape_id = id.ok_or_else(|| {
+                    HwpxError::XmlError(
+                        "문단 모양 목록에 기본 모양을 추가할 공간이 없습니다".into(),
+                    )
+                })?;
+                state.set(Some((id, true)));
+            }
+            Ok(())
+        })?;
     }
 
     // 문단 내용 파싱

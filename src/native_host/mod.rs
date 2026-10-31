@@ -126,6 +126,15 @@ pub struct NativeDocumentSession {
 impl NativeDocumentSession {
     pub fn from_core(core: DocumentCore) -> Self {
         let fonts = fonts::NativeFontState::from_environment(core.font_environment().cloned());
+        #[cfg(feature = "native-skia")]
+        let (core, renderer) = {
+            let mut core = core;
+            let renderer = crate::renderer::skia::SkiaLayerRenderer::new()
+                .with_cache_limits(MAX_RENDER_CACHE_ENTRIES, MAX_RENDER_CACHE_BYTES);
+            // 공급을 확인하지 못하면 원본 HFT 메트릭을 유지한다.
+            let _ = renderer.prepare_native_otf_fonts(&mut core);
+            (core, std::cell::OnceCell::from(renderer))
+        };
         Self {
             core,
             revision: 0,
@@ -134,7 +143,7 @@ impl NativeDocumentSession {
             saved_revision: None,
             pending_save: None,
             #[cfg(feature = "native-skia")]
-            renderer: std::cell::OnceCell::new(),
+            renderer,
             #[cfg(feature = "native-skia")]
             region_cache: std::cell::RefCell::new(region_cache::NativeRegionCache::default()),
             _thread_affinity: PhantomData,

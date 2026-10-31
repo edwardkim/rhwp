@@ -1,7 +1,10 @@
 //! 실제 paint 공급자가 준비한 SFNT에서만 원 PUA 표시와 전진폭을 선택한다.
 //! 폰트 bytes와 윤곽은 보관하지 않으며, 문서 IR의 family와 문자도 변경하지 않는다.
 
-use std::{collections::BTreeMap, sync::Arc};
+use std::{
+    collections::{BTreeMap, HashSet},
+    sync::Arc,
+};
 
 use sha2::{Digest, Sha256};
 
@@ -30,12 +33,100 @@ pub fn is_supported_symbol(character: char) -> bool {
 
 const MAX_PROGRAMS: usize = 256;
 const MAX_FONT_BYTES: usize = 32 * 1024 * 1024;
+const MAX_OTF_BYTES: usize = 64 * 1024 * 1024;
+
+/// TTC/OTC는 컨테이너 표식이므로 선택한 face의 실제 윤곽 형식을 확인한다.
+pub(crate) fn is_cff_program(bytes: &[u8], face_index: u32) -> bool {
+    ttf_parser::Face::parse(bytes, face_index)
+        .is_ok_and(|face| face.tables().cff.is_some() || face.tables().cff2.is_some())
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct NativePuaMetrics {
     digest: [u8; 32],
     face_index: u32,
     advances: [Option<f64>; SUPPORTED_SYMBOLS.len()],
+}
+
+/// 실제 paint 후보 순서에 따른 CFF 전진과 앞선 TTF의 선택 경계다.
+#[derive(Debug)]
+pub struct NativeOtfMetrics {
+    programs: Vec<NativeOtfProgram>,
+    advances: std::sync::Mutex<BTreeMap<char, Option<(f64, bool)>>>,
+    coverage: std::sync::Mutex<BTreeMap<char, bool>>,
+}
+
+#[derive(Debug, Clone)]
+struct NativeOtfProgram {
+    bytes: Arc<[u8]>,
+    face_index: u32,
+    digest: [u8; 32],
+    faux_bold: bool,
+    cff: bool,
+}
+
+impl PartialEq for NativeOtfMetrics {
+    fn eq(&self, other: &Self) -> bool {
+        self.programs.len() == other.programs.len()
+            && self.programs.iter().zip(&other.programs).all(|(a, b)| {
+                a.digest == b.digest && a.face_index == b.face_index && a.faux_bold == b.faux_bold
+            })
+    }
+}
+
+impl NativeOtfMetrics {
+    /// 글리프 공급 여부는 CFF 전진 사용 여부와 다르다. TTF도 표시할 수 있다.
+    pub fn has_glyph(&self, character: char) -> bool {
+        let Ok(mut cache) = self.coverage.lock() else {
+            return false;
+        };
+        if let Some(found) = cache.get(&character) {
+            return *found;
+        }
+        let found = self.programs.iter().any(|program| {
+            ttf_parser::Face::parse(&program.bytes, program.face_index)
+                .ok()
+                .and_then(|face| face.glyph_index(character))
+                .is_some_and(|glyph| glyph.0 != 0)
+        });
+        cache.insert(character, found);
+        found
+    }
+
+    pub fn needs_faux_bold(&self, character: char) -> bool {
+        self.glyph_metric(character).is_some_and(|(_, faux)| faux)
+    }
+    pub fn advance_em(&self, character: char) -> Option<f64> {
+        self.glyph_metric(character).map(|(advance, _)| advance)
+    }
+    fn glyph_metric(&self, character: char) -> Option<(f64, bool)> {
+        let mut cache = self.advances.lock().ok()?;
+        if let Some(advance) = cache.get(&character) {
+            return *advance;
+        }
+        let mut value = None;
+        for program in &self.programs {
+            let Ok(face) = ttf_parser::Face::parse(&program.bytes, program.face_index) else {
+                continue;
+            };
+            let Some(glyph) = face.glyph_index(character).filter(|id| id.0 != 0) else {
+                continue;
+            };
+            // 앞선 실제 TTF가 glyph를 그리면 뒤의 CFF 폭으로 대체하지 않는다.
+            // 원본 HFT 폭 계약을 유지하도록 None을 반환한다.
+            if program.cff {
+                value = face.glyph_hor_advance(glyph).map(|width| {
+                    (
+                        f64::from(width) / f64::from(face.units_per_em()),
+                        program.faux_bold,
+                    )
+                });
+            }
+            break;
+        }
+        cache.insert(character, value);
+        value
+    }
 }
 
 impl NativePuaMetrics {
@@ -56,9 +147,99 @@ struct LiteralSpaceMetric {
 pub struct NativePuaFonts {
     programs: BTreeMap<String, BTreeMap<(bool, bool), Arc<NativePuaMetrics>>>,
     literal_spaces: BTreeMap<String, BTreeMap<(bool, bool), LiteralSpaceMetric>>,
+    otf_programs: BTreeMap<String, BTreeMap<(bool, bool), Arc<NativeOtfMetrics>>>,
 }
 
 impl NativePuaFonts {
+    pub fn clear_otf(&mut self) {
+        self.otf_programs.clear();
+    }
+    pub fn register_otf(
+        &mut self,
+        family: &str,
+        bold: bool,
+        italic: bool,
+        bytes: &[u8],
+        face_index: u32,
+    ) -> Result<(), &'static str> {
+        if family.is_empty()
+            || family.len() > 4096
+            || bytes.len() > MAX_FONT_BYTES
+            || !matches!(
+                bytes.get(..4),
+                Some(b"OTTO" | b"\0\x01\0\0" | b"true" | b"ttcf")
+            )
+        {
+            return Err("invalid native font program");
+        }
+        let face =
+            ttf_parser::Face::parse(bytes, face_index).map_err(|_| "invalid native font face")?;
+        let digest: [u8; 32] = Sha256::digest(bytes).into();
+        let old = self
+            .otf_programs
+            .get(family)
+            .and_then(|v| v.get(&(bold, italic)));
+        if old.is_some_and(|font| {
+            font.programs
+                .iter()
+                .any(|p| p.digest == digest && p.face_index == face_index)
+        }) {
+            return Ok(());
+        }
+        let count = self
+            .otf_programs
+            .values()
+            .flat_map(BTreeMap::values)
+            .map(|font| font.programs.len())
+            .sum::<usize>();
+        if count >= MAX_PROGRAMS {
+            return Err("native OpenType program limit exceeded");
+        }
+        let mut seen = HashSet::new();
+        let mut shared = None;
+        let mut total = 0usize;
+        for program in self
+            .otf_programs
+            .values()
+            .flat_map(BTreeMap::values)
+            .flat_map(|font| &font.programs)
+        {
+            if seen.insert(program.digest) {
+                total = total.saturating_add(program.bytes.len());
+            }
+            if program.digest == digest {
+                shared = Some(Arc::clone(&program.bytes));
+            }
+        }
+        if shared.is_none() && total.saturating_add(bytes.len()) > MAX_OTF_BYTES {
+            return Err("native OpenType byte limit exceeded");
+        }
+        let mut programs = old.map_or_else(Vec::new, |font| font.programs.clone());
+        programs.push(NativeOtfProgram {
+            bytes: shared.unwrap_or_else(|| Arc::from(bytes)),
+            face_index,
+            digest,
+            faux_bold: bold && !face.is_bold(),
+            cff: is_cff_program(bytes, face_index),
+        });
+        self.otf_programs
+            .entry(family.to_owned())
+            .or_default()
+            .insert(
+                (bold, italic),
+                Arc::new(NativeOtfMetrics {
+                    programs,
+                    advances: Default::default(),
+                    coverage: Default::default(),
+                }),
+            );
+        Ok(())
+    }
+
+    pub fn get_otf(&self, family: &str, bold: bool, italic: bool) -> Option<Arc<NativeOtfMetrics>> {
+        self.otf_programs.get(family)?.get(&(bold, italic)).cloned()
+    }
+
     /// 실제 표시 face의 선택은 공급자의 책임이다. 이름만으로 호출하지 않는다.
     /// 동일 프로그램은 멱등이며 글꼴 세대 교체의 다른 프로그램은 새 snapshot이 된다.
     pub fn register(

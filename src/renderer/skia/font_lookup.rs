@@ -216,6 +216,20 @@ pub(super) fn typeface_candidates_for_families(
         .then(|| match_system_family_style(font_mgr, system_families, family, style))
         .flatten()
         {
+            // 같은 family와 스타일이라도 한글·영문 OTF와 TTF가 서로 다른
+            // 글리프를 담을 수 있다. 원 family의 CFF를 먼저 찾고, 없는
+            // 글리프는 같은 family의 다른 프로그램을 대체 family보다 앞에 둔다.
+            if has_system_family(system_families, family) {
+                // fontconfig의 합성 Bold는 매칭 결과의 스타일만 바꾼다.
+                // 실제 Regular 프로그램을 기준으로 같은 family의 분리된
+                // 글리프 공급자를 찾고, paint에서 요청한 굵기를 적용한다.
+                let program_style =
+                    super::synthetic_typeface::unemboldened_typeface(font_mgr, &typeface)
+                        .map_or_else(|| typeface.font_style(), |face| face.font_style());
+                for candidate in matching_system_programs(font_mgr, family, program_style) {
+                    push(candidate, "system");
+                }
+            }
             push(typeface, "system");
         }
         for typeface in bundled_typefaces.candidates(family, style) {
@@ -384,8 +398,51 @@ thread_local! {
         const { RefCell::new(None) };
     static SYSTEM_TYPEFACE_CACHE: RefCell<HashMap<FontLookupKey, Option<Typeface>>> =
         RefCell::new(HashMap::new());
+    static SYSTEM_PROGRAM_CANDIDATES: RefCell<HashMap<FontLookupKey, Vec<Typeface>>> =
+        RefCell::new(HashMap::new());
     static LEGACY_TYPEFACE_CACHE: RefCell<HashMap<FontStyleCacheKey, Option<Typeface>>> =
         RefCell::new(HashMap::new());
+}
+
+fn typeface_is_cff(typeface: &Typeface) -> bool {
+    if let Some((data, index)) = typeface.to_existing_font_data() {
+        return crate::renderer::native_pua_fonts::is_cff_program(data.as_bytes(), index);
+    }
+    typeface.to_font_bytes().is_some_and(|(bytes, index)| {
+        crate::renderer::native_pua_fonts::is_cff_program(&bytes, index)
+    })
+}
+
+fn matching_system_programs(font_mgr: &FontMgr, family: &str, style: FontStyle) -> Vec<Typeface> {
+    let key = FontLookupKey {
+        family: family.to_owned(),
+        style: FontStyleCacheKey::new(style),
+    };
+    SYSTEM_PROGRAM_CANDIDATES.with(|cache| {
+        if let Some(found) = cache.borrow().get(&key) {
+            return found.clone();
+        }
+        let mut set = font_mgr.match_family(family);
+        let mut found: Vec<_> = (0..set.count())
+            .filter_map(|index| {
+                if FontStyleCacheKey::new(set.style(index).0) != key.style {
+                    return None;
+                }
+                let candidate = set.new_typeface(index)?;
+                let cff = typeface_is_cff(&candidate);
+                Some((candidate, cff))
+            })
+            .collect();
+        // 여러 TTF의 선택 정책은 이 경로에서 바꾸지 않는다. CFF가 있을 때만
+        // 그 뒤에 같은 스타일의 TTF를 글리프 fallback 후보로 연결한다.
+        if !found.iter().any(|(_, cff)| *cff) {
+            found.clear();
+        }
+        found.sort_by_key(|(_, cff)| !cff);
+        let found: Vec<_> = found.into_iter().map(|(candidate, _)| candidate).collect();
+        cache.borrow_mut().insert(key, found.clone());
+        found
+    })
 }
 
 pub(super) fn collect_system_families(font_mgr: &FontMgr) -> SystemFontFamilies {
@@ -421,7 +478,8 @@ pub(super) fn match_system_family_style(
             return cached;
         }
 
-        let matched = (if has_system_family(system_families, family) {
+        let system_family = has_system_family(system_families, family);
+        let matched = (if system_family {
             font_mgr.match_family_style(family, style)
         } else {
             // 설치된 style set의 name ID 6만 조회한다. 없는 이름을 OS에
@@ -430,6 +488,25 @@ pub(super) fn match_system_family_style(
         })
         .filter(|typeface| !is_placeholder_typeface(typeface))
         .or_else(|| recover_installed_system_typeface(font_mgr, family, style));
+        // 같은 family와 같은 스타일의 설치본이 여러 형식이면 OTF를 먼저
+        // 표시한다. PostScript 지정과 서로 다른 스타일은 바꾸지 않는다.
+        let matched = if system_family {
+            matched.map(|original| {
+                let original_style = FontStyleCacheKey::new(original.font_style());
+                let mut set = font_mgr.match_family(family);
+                let selected = (0..set.count()).find_map(|index| {
+                    let (candidate_style, _) = set.style(index);
+                    if FontStyleCacheKey::new(candidate_style) != original_style {
+                        return None;
+                    }
+                    let candidate = set.new_typeface(index)?;
+                    typeface_is_cff(&candidate).then_some(candidate)
+                });
+                selected.unwrap_or(original)
+            })
+        } else {
+            matched
+        };
         cache.borrow_mut().insert(key, matched.clone());
         matched
     })
@@ -452,6 +529,7 @@ pub(super) fn legacy_typeface_for_style(font_mgr: &FontMgr, style: FontStyle) ->
 mod tests {
     use super::*;
 
+    #[cfg(target_os = "linux")]
     #[test]
     fn missing_family_is_filtered_before_system_lookup() {
         installed_localized_family_is_not_discarded_by_primary_name_enumeration();
