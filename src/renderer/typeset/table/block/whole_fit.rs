@@ -24,7 +24,6 @@ pub(super) struct WholeFitInput {
 
 pub(super) struct WholeFit {
     pub(super) para_has_stored_line_seg: bool,
-    pub(super) single_row_object_height_advance: Option<f64>,
     pub(super) fits_after_overlay_shapes: bool,
     pub(super) stored_rewinding_rowbreak_uses_painted_row_footprint: bool,
     pub(super) whole_fit_table_total: f64,
@@ -489,19 +488,6 @@ impl TypesetEngine {
             single_row_object_declared_fits_current,
         } = fit;
         let para_has_stored_line_seg = para.line_segs.iter().any(|ls| !is_synthetic_line_seg(ls));
-        let single_row_object_height_fits_current = single_row_object_declared_fits_current;
-        // HWP5-origin HWPX는 저장 object 높이 기준으로는 현재 쪽에 들어가지만,
-        // cell 내용 측정치는 더 큰 1행 자리차지 표를 쪽 하단까지 차지한 것으로
-        // 기록한다. native HWP는 RowBreak fragment의 실제 소비량을 따라야 하므로
-        // 이 HWPX 호환 보정을 적용하지 않는다.
-        let single_row_object_height_advance =
-            (st.profile.hwp5_origin_hwpx() && single_row_object_height_fits_current).then(|| {
-                if st.current_height + table_total > available {
-                    (available - st.current_height).max(0.0)
-                } else {
-                    declared_object_total
-                }
-            });
 
         let fits_after_overlay_shapes =
             st.current_column_has_only_overlay_shapes() && table_total <= available + 12.0;
@@ -845,7 +831,6 @@ impl TypesetEngine {
             });
         WholeFit {
             para_has_stored_line_seg,
-            single_row_object_height_advance,
             fits_after_overlay_shapes,
             stored_rewinding_rowbreak_uses_painted_row_footprint,
             whole_fit_table_total,

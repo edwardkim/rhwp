@@ -1639,7 +1639,6 @@ impl TypesetEngine {
 
         let super::whole_fit::WholeFit {
             para_has_stored_line_seg,
-            single_row_object_height_advance,
             fits_after_overlay_shapes,
             stored_rewinding_rowbreak_uses_painted_row_footprint,
             whole_fit_table_total,
@@ -1696,8 +1695,6 @@ impl TypesetEngine {
             placement.occupied_bottom - st.current_height
         } else if let Some((source_top, source_bottom)) = saved_table_source_frame {
             source_bottom - source_top
-        } else if let Some(advance) = single_row_object_height_advance {
-            advance
         } else if is_para_topbottom_float(&table.common)
             && (para_has_non_whitespace_text(para)
                 || coanchored_visible_float
@@ -2372,7 +2369,6 @@ impl TypesetEngine {
             && !stored_cell_frames_require_split
             && (st.current_height + whole_fit_table_total <= available
                 || fits_after_overlay_shapes
-                || single_row_object_height_advance.is_some()
                 || declared_table_whole_fits
                 || saved_host_line_after_stack_fits
                 || saved_table_source_frame.is_some());
@@ -2578,7 +2574,6 @@ impl TypesetEngine {
             let unreserved_flow_tail = if resolved_host_placement.is_none()
                 && !coanchored_visible_float
                 && saved_table_source_frame.is_none()
-                && single_row_object_height_advance.is_none()
                 && matches!(
                     table.page_break,
                     crate::model::table::TablePageBreak::RowBreak
@@ -2590,11 +2585,10 @@ impl TypesetEngine {
             // [#3674 진단] fit 분기 발동 사유 — 동작 불변.
             if std::env::var("RHWP_DIAG_SPLITSCAN").is_ok() {
                 eprintln!(
-                    "DIAG_FIT pi={} sec={} plain={} overlay={} single={} declared={} saved={} cur_h={:.1} total={:.1} avail={:.1}",
+                    "DIAG_FIT pi={} sec={} plain={} overlay={} declared={} saved={} cur_h={:.1} total={:.1} avail={:.1}",
                     para_idx, st.section_index,
                     st.current_height + whole_fit_table_total <= available,
                     fits_after_overlay_shapes,
-                    single_row_object_height_advance.is_some(),
                     declared_table_whole_fits,
                     saved_host_line_after_stack_fits,
                     st.current_height, whole_fit_table_total, available,
