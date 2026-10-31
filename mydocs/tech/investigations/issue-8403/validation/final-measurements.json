@@ -1,0 +1,484 @@
+{
+  "measured_at": "2026-10-31T16:36:04.458744+09:00",
+  "wasm": [
+    {
+      "name": "wasm-original",
+      "pages": 8,
+      "minimum": 94.6,
+      "values": [
+        94.6,
+        99.55,
+        99.64,
+        98.32,
+        99.9,
+        95.65,
+        96.9,
+        98.7
+      ]
+    },
+    {
+      "name": "wasm-original-hwp",
+      "pages": 8,
+      "minimum": 94.6,
+      "values": [
+        94.6,
+        99.55,
+        99.64,
+        98.32,
+        99.9,
+        95.65,
+        96.9,
+        98.7
+      ]
+    },
+    {
+      "name": "wasm-original-hwpx",
+      "pages": 8,
+      "minimum": 94.6,
+      "values": [
+        94.6,
+        99.55,
+        99.64,
+        98.32,
+        99.9,
+        95.65,
+        96.9,
+        98.7
+      ]
+    },
+    {
+      "name": "wasm-legacy-a",
+      "pages": 6,
+      "minimum": 99.17,
+      "values": [
+        99.17,
+        100.0,
+        100.0,
+        99.83,
+        99.75,
+        99.75
+      ]
+    },
+    {
+      "name": "wasm-legacy-a-hwp",
+      "pages": 6,
+      "minimum": 99.21,
+      "values": [
+        99.21,
+        100.0,
+        100.0,
+        99.83,
+        99.75,
+        99.74
+      ]
+    },
+    {
+      "name": "wasm-legacy-a-hwpx",
+      "pages": 6,
+      "minimum": 99.21,
+      "values": [
+        99.21,
+        100.0,
+        100.0,
+        99.83,
+        99.75,
+        99.74
+      ]
+    },
+    {
+      "name": "wasm-legacy-b",
+      "pages": 6,
+      "minimum": 98.75,
+      "values": [
+        99.61,
+        99.77,
+        99.99,
+        99.6,
+        99.43,
+        98.75
+      ]
+    },
+    {
+      "name": "wasm-legacy-b-hwp",
+      "pages": 6,
+      "minimum": 98.66,
+      "values": [
+        99.6,
+        99.77,
+        99.99,
+        99.6,
+        99.43,
+        98.66
+      ]
+    },
+    {
+      "name": "wasm-legacy-b-hwpx",
+      "pages": 6,
+      "minimum": 98.66,
+      "values": [
+        99.6,
+        99.77,
+        99.99,
+        99.6,
+        99.43,
+        98.66
+      ]
+    },
+    {
+      "name": "wasm-controls",
+      "pages": 5,
+      "minimum": 99.98,
+      "values": [
+        100.0,
+        99.98,
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    {
+      "name": "wasm-controls-hwp",
+      "pages": 5,
+      "minimum": 99.98,
+      "values": [
+        100.0,
+        99.98,
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    {
+      "name": "wasm-controls-hwpx",
+      "pages": 5,
+      "minimum": 99.98,
+      "values": [
+        100.0,
+        99.98,
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    {
+      "name": "wasm-stroke",
+      "pages": 7,
+      "minimum": 100.0,
+      "values": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    {
+      "name": "wasm-stroke-hwp",
+      "pages": 7,
+      "minimum": 100.0,
+      "values": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    {
+      "name": "wasm-stroke-hwpx",
+      "pages": 7,
+      "minimum": 100.0,
+      "values": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    {
+      "name": "wasm-stroke-edited",
+      "pages": 7,
+      "minimum": 100.0,
+      "values": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    {
+      "name": "wasm-stroke-edited-hwp",
+      "pages": 7,
+      "minimum": 100.0,
+      "values": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    {
+      "name": "wasm-stroke-edited-hwpx",
+      "pages": 7,
+      "minimum": 100.0,
+      "values": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    {
+      "name": "canvaskit-stroke",
+      "pages": 7,
+      "minimum": 100.0,
+      "values": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    {
+      "name": "canvaskit-controls",
+      "pages": 5,
+      "minimum": 99.98,
+      "values": [
+        100.0,
+        99.98,
+        100.0,
+        100.0,
+        100.0
+      ]
+    }
+  ],
+  "native": [
+    {
+      "name": "native-original",
+      "pages": 8,
+      "minimum": 94.7,
+      "values": [
+        94.7,
+        98.54,
+        99.69,
+        98.36,
+        99.92,
+        95.66,
+        96.91,
+        98.55
+      ]
+    },
+    {
+      "name": "native-original-hwp",
+      "pages": 8,
+      "minimum": 94.7,
+      "values": [
+        94.7,
+        98.54,
+        99.69,
+        98.36,
+        99.92,
+        95.66,
+        96.91,
+        98.55
+      ]
+    },
+    {
+      "name": "native-original-hwpx",
+      "pages": 8,
+      "minimum": 94.7,
+      "values": [
+        94.7,
+        98.54,
+        99.69,
+        98.36,
+        99.92,
+        95.66,
+        96.91,
+        98.55
+      ]
+    },
+    {
+      "name": "native-patterns",
+      "pages": 5,
+      "minimum": 99.98,
+      "values": [
+        100.0,
+        99.98,
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    {
+      "name": "native-patterns-hwp",
+      "pages": 5,
+      "minimum": 99.98,
+      "values": [
+        100.0,
+        99.98,
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    {
+      "name": "native-patterns-hwpx",
+      "pages": 5,
+      "minimum": 99.98,
+      "values": [
+        100.0,
+        99.98,
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    {
+      "name": "native-stroke",
+      "pages": 7,
+      "minimum": 100.0,
+      "values": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    {
+      "name": "native-stroke-hwp",
+      "pages": 7,
+      "minimum": 100.0,
+      "values": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    {
+      "name": "native-edited-hwp",
+      "pages": 7,
+      "minimum": 100.0,
+      "values": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    {
+      "name": "native-stroke-hwpx",
+      "pages": 7,
+      "minimum": 100.0,
+      "values": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    {
+      "name": "native-edited-hwpx",
+      "pages": 7,
+      "minimum": 100.0,
+      "values": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ]
+    },
+    {
+      "name": "native-legacy",
+      "pages": 12,
+      "minimum": 99.2,
+      "values": [
+        99.37,
+        99.94,
+        99.97,
+        99.84,
+        99.91,
+        99.85,
+        99.88,
+        99.87,
+        99.85,
+        99.97,
+        99.97,
+        99.2
+      ]
+    },
+    {
+      "name": "native-legacy-hwp",
+      "pages": 12,
+      "minimum": 99.2,
+      "values": [
+        99.37,
+        99.94,
+        99.97,
+        99.84,
+        99.91,
+        99.85,
+        99.88,
+        99.87,
+        99.85,
+        99.97,
+        99.97,
+        99.2
+      ]
+    },
+    {
+      "name": "native-legacy-hwpx",
+      "pages": 12,
+      "minimum": 99.2,
+      "values": [
+        99.37,
+        99.94,
+        99.97,
+        99.84,
+        99.91,
+        99.85,
+        99.88,
+        99.87,
+        99.85,
+        99.97,
+        99.97,
+        99.2
+      ]
+    }
+  ]
+}

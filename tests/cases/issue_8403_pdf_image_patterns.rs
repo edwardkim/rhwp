@@ -1,13 +1,14 @@
-//! 관계형·고정형(독립 원본 속성) 회귀: PDF 이미지 패턴, 저장 재열기와 내용 보존.
-//! 주석 갱신: 2026-10-31T14:40:26+09:00. 직전 파일 변경: 2aceae6e46, 2026-10-31T14:29:28+09:00.
+//! 관계형·고정형(독립 원본 속성) 회귀: PDF 패턴·문자 획, 편집과 저장 재열기 보존.
+//! 주석 갱신: 2026-10-31T16:33:18+09:00. 직전 파일 변경: dd2b6b5dbc, 2026-10-31T14:40:26+09:00.
 //! 측정: 2026-10-31, 96dpi print, 색상 경계 보정 전 2px raw 실루엣.
-//! 제품 source 19c6b60f97, 최적화 WASM SHA-256 23de6d71ed04f0372f9346112caf7a027f9068a1d736029a7d117f9e61e0190e.
+//! 제품 source 6d95c45f08, 최적화 WASM SHA-256 17942ab2a5243aa9be2aea558c7449519b3607ca20368c1c94eee41cb1c52f69.
 //! 문자 획/편집 PDF 각 7쪽: Native/fresh WASM 전쪽 각각 100.00%; CanvasKit 획 7쪽 100.00%.
 //! 이미지 패턴 PDF 5쪽: Native/fresh WASM 각각 [100,99.98,100,100,100], 최저 99.98%.
-//! 패턴 HWP 재열기 WASM 전쪽 최저 98.91%; 문자 획 양식·편집 저장은 양쪽 전쪽 100.00%.
+//! 패턴 HWP/HWPX 재열기와 CanvasKit도 전쪽 최저 99.98%; 문자 획·편집 저장은 양쪽 전쪽 100.00%.
+//! 패턴 3쪽은 양쪽 raw 100.00%와 직접 색상 판독 완료. 반쪽 타일의 원본 열 선택을 추가 보호한다.
 //! 독립 기준은 생성기의 PDF 연산자와 Poppler/MuPDF 출력이다. 제품 PNG를 기준으로 쓰지 않는다.
 //! 증거: mydocs/tech/investigations/issue-8403/validation/README.md 및 전쪽 TSV/PNG.
-//! 절대 px 좌표를 고정하지 않는다. 이미지 위상·채움/획·q/Q·글자 편집·저장 보존 관계를 검사한다.
+//! 절대 페이지 px를 고정하지 않는다. 소유한 타일 내부의 원본 색상·선택 폭과 내용 보존을 검사한다.
 #![cfg(feature = "pdf-import")]
 use rhwp::DocumentCore;
 const PDF: &[u8] = include_bytes!("../../pdf/issue8403/image-patterns.pdf");
@@ -50,6 +51,51 @@ fn verify(core: &DocumentCore) {
                 .any(|n| n.attribute("fill") == Some("#000000")),
             "unsupported pattern must not retain stale black fill"
         );
+    }
+    // The independent PDF's Form ends halfway through a two-column tile.
+    // Cropping its left column must select one of two source pixels, not shrink
+    // both columns into the half-width frame. This also checks saved reopens.
+    let cropped_svg = core
+        .render_page_svg_layer_with_profile_native(2, rhwp::paint::RenderProfile::Print)
+        .unwrap();
+    let cropped_xml = roxmltree::Document::parse(&cropped_svg).unwrap();
+    let half_tiles: Vec<_> = cropped_xml
+        .descendants()
+        .filter(|node| node.has_tag_name("svg") && node.attribute("viewBox") == Some("0 0 1 2"))
+        .collect();
+    assert!(
+        !half_tiles.is_empty(),
+        "one source pixel is a real half-tile selection"
+    );
+    #[cfg(feature = "native-skia")]
+    {
+        let png = core
+            .render_page_png_native_with_profile_and_export_options(
+                2,
+                rhwp::paint::RenderProfile::Print,
+                &rhwp::document_core::queries::rendering::PngExportOptions {
+                    dpi: Some(96.),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        let pixels = image::load_from_memory(&png).unwrap().into_rgb8();
+        for tile in half_tiles {
+            let attr = |name| tile.attribute(name).unwrap().parse::<f64>().unwrap();
+            let (x, y, w, h) = (attr("x"), attr("y"), attr("width"), attr("height"));
+            // Inspect the selected tile's interior, not an absolute page pin.
+            // Source pixels are red/green above blue/yellow; only left remains.
+            for (fraction, expected) in [(0.25, [255, 0, 0]), (0.75, [0, 0, 255])] {
+                let actual = pixels.get_pixel(
+                    (x + w / 2.).floor() as u32,
+                    (y + h * fraction).floor() as u32,
+                );
+                assert_eq!(
+                    actual.0, expected,
+                    "cropped tile sampled the wrong source column"
+                );
+            }
+        }
     }
     // Both page-5 fills share one pattern phase despite a later 100pt CTM translation.
     // SVG image definitions can omit x; the paint instances own placement.

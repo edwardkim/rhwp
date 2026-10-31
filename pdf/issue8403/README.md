@@ -6,7 +6,8 @@
 - `image-patterns.pdf`: 5쪽. 이미지로 채운 타일 패턴, 음수 간격·전단·clip,
   Form의 자원/초기 좌표계, SMask와 외부 alpha, paint 시 CTM 변경 뒤에도 유지되는 위상.
 - `text-stroke.pdf`: 7쪽. 채움+획, 획만 표시, ExtGState의 색/alpha/두께,
-  round join/miter, 균일 배율, 폭 0 hairline, 중첩 Form. 각 쪽의 두 번째 문장은
+  round join/miter, 같은 1/1000pt 획 폭으로 표현되는 직교 배율과 빈 dash 배열,
+  균일 배율, 폭 0 hairline, 중첩 Form. 각 쪽의 두 번째 문장은
   q/Q가 복원한 일반 채움 대조군이다.
 - `text-stroke-edited.pdf`: 같은 연산자에서 `Stroke`를 `ktroke`로 바꾼 독립 편집 기준.
 - 나머지 PDF: 간격 0·과도한 반복·재귀·미지원 pattern 종류/paint·특이 행렬,

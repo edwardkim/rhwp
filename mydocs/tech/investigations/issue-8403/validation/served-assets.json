@@ -1,0 +1,12 @@
+[
+  {
+    "path": "/rhwp.js",
+    "bytes": 514269,
+    "sha256": "42c7661f0c0dd2228778ee0384c245af82a0d63f0df1af3738e89fd84404d761"
+  },
+  {
+    "path": "/rhwp_bg.wasm",
+    "bytes": 25859978,
+    "sha256": "17942ab2a5243aa9be2aea558c7449519b3607ca20368c1c94eee41cb1c52f69"
+  }
+]

@@ -1,0 +1,54 @@
+[
+  {
+    "aliases": [
+      "Batang",
+      "바탕"
+    ],
+    "sha256": "84c2e62b431babe924e0facc25190d71676a253aa42656bef18985c262c2e849"
+  },
+  {
+    "aliases": [
+      "BatangChe",
+      "바탕체"
+    ],
+    "sha256": "c8e22f49f3f5636438adb689c1452a3667669b31630031a62f8c7d48b3fa2568"
+  },
+  {
+    "aliases": [
+      "Gulim",
+      "굴림"
+    ],
+    "sha256": "e591f1158572de8da4109db4e22ae7bb98cb7d9ae42ec0da24b071547dfd85fa"
+  },
+  {
+    "aliases": [
+      "DotumChe",
+      "돋움체"
+    ],
+    "sha256": "ef95e1d603ea44ffac604f5ca3719ed2ae32ba37e4f4f6e929509fcf759c06d8"
+  },
+  {
+    "aliases": [
+      "HCR Dotum",
+      "HCRDotum",
+      "함초롬돋움"
+    ],
+    "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43"
+  },
+  {
+    "aliases": [
+      "HCR Batang",
+      "HCRBatang",
+      "함초롬바탕"
+    ],
+    "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+  },
+  {
+    "aliases": [
+      "H2hdrM",
+      "HYHeadLine M",
+      "HY헤드라인M"
+    ],
+    "sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5"
+  }
+]

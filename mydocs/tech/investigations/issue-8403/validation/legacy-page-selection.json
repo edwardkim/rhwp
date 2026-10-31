@@ -1,0 +1,25 @@
+{
+  "source": "pdf/pr7704/6778-square-2020.pdf",
+  "sourcePages": 12,
+  "nativeDirectAndHwp": "all pages in one document",
+  "nativeHwpxAndWasm": {
+    "legacy-a": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "legacy-b": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  "reason": "CLI full HWPX serialization reached the standard cumulative decoded-work limit; policy unchanged.",
+  "baselineFailureVerified": false
+}

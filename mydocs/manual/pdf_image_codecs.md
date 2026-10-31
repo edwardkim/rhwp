@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pdf_image_codecs.md
-last_verified: 2026-10-24
+last_verified: 2026-10-31
 ---
 
 # PDF 이미지 코덱과 색 변환
@@ -150,6 +150,7 @@ CARGO_TARGET_DIR="${rhwp_review_target_dir:?공용 target의 절대 경로를 �
 | `PDF_PARSE_FAILED`와 미활성 filter 진단 | 현재 산출물의 지원 정보를 확인하고 기본 기능을 포함한 빌드인지 확인합니다. 손상된 입력도 이 코드일 수 있으므로 코드만으로 미활성을 단정하지 않습니다. |
 | `PDF_IMAGE_UNSUPPORTED` | 지원하지 않는 mask·색 공간·성분 조합일 수 있습니다. 진단과 원본을 확인합니다. |
 | `PDF_PATTERN_UNSUPPORTED` | 이미지 코덱과 별개로 PDF 패턴의 그리기 방식 또는 정의를 처리하지 못한 경우입니다. 코덱 feature를 추가해도 해결되지 않습니다. 상세 진단의 패턴 종류·리소스·기하 조건을 확인합니다. |
+| `PDF_TEXT_UNSUPPORTED` | 현재 모델로 정확히 보존할 수 없는 문자 paint입니다. 점선·비균일 획 변환·글리프 clip·패턴 채움 여부를 확인합니다. 글꼴 설치나 이미지 코덱 추가로 해결되는 오류가 아닙니다. |
 | `PDF_RESOURCE_LIMIT` | 현재 요청 예산을 초과했습니다. 지원 코덱이어도 발생합니다. 원본 도구에서 해상도·그림 수를 줄이거나 선택 쪽을 나눕니다. |
 
 기본 빌드도 기존 단일 예약·누적 decoded·그림 픽셀 한도를 유지하며 decoder·ICC의
