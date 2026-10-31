@@ -156,7 +156,11 @@ pub(super) fn extract(
         .spans
         .checked_add(spans.len())
         .ok_or_else(|| PdfImportError::budget("span count overflow"))?;
-    if spans.len() > 20_000 || paths.len() > 20_000 || budget.spans > budget.policy.backend.spans {
+    // Paths already consumed the request-wide operation budget above. The
+    // bounded extractor reserves their storage; lowering checks format ID
+    // capacity before materialization. A second fixed path-count cap would
+    // reject dense pages independently of their selected request policy.
+    if spans.len() > 20_000 || budget.spans > budget.policy.backend.spans {
         return Err(PdfImportError::budget("extracted element budget exceeded"));
     }
     for span in &spans {

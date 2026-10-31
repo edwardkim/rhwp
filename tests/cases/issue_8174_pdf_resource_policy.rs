@@ -20,6 +20,10 @@ fn image_pdf() -> Vec<u8> {
         b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 100] /Resources << /XObject << /Im1 5 0 R >> >> /Contents 4 0 R >>".to_vec(),
         stream, image,
     ];
+    pdf_objects(&objects)
+}
+
+fn pdf_objects(objects: &[Vec<u8>]) -> Vec<u8> {
     let mut bytes = b"%PDF-1.4\n".to_vec();
     let mut offsets = Vec::new();
     for (index, object) in objects.iter().enumerate() {
@@ -41,6 +45,101 @@ fn image_pdf() -> Vec<u8> {
         .as_bytes(),
     );
     bytes
+}
+
+#[test]
+fn standard_accepts_object_rich_catalog_and_keeps_constrained_and_host_limits() {
+    // Scalars in a private catalog array consume real parser objects even
+    // though no additional xref objects or visible content are introduced.
+    let catalog = format!(
+        "<< /Type /Catalog /Pages 2 0 R /Probe [{}] >>",
+        "0 ".repeat(60_000)
+    );
+    let source = pdf_objects(&[
+        catalog.into_bytes(),
+        b"<< /Type /Pages /Count 1 /Kids [3 0 R] >>".to_vec(),
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 100] /Resources << >> >>".to_vec(),
+    ]);
+    let standard = PdfImportPolicy::default();
+    let result = parse_pdf_with_policy(&source, &Default::default(), standard).unwrap();
+    let used = result.metadata.resource_usage.parsed_objects;
+    assert!(used > 50_000);
+    for policy in [
+        PdfImportPolicy::for_profile(PdfImportProfile::Constrained),
+        standard
+            .with_limits_json(r#"{"backend":{"objects":50000}}"#)
+            .unwrap(),
+        standard
+            .with_limits_json(&json!({"backend":{"objects":used-1}}).to_string())
+            .unwrap(),
+    ] {
+        let error = parse_pdf_with_policy(&source, &Default::default(), policy)
+            .err()
+            .unwrap();
+        assert_eq!(error.code, "PDF_RESOURCE_LIMIT");
+        let failure = error
+            .diagnostics
+            .unwrap()
+            .resource_usage
+            .unwrap()
+            .failure
+            .unwrap();
+        assert_eq!(failure.reason, "parsed object count");
+        assert_eq!(failure.limit, Some(policy.backend.objects));
+    }
+    let exact = standard
+        .with_limits_json(&json!({"backend":{"objects":used}}).to_string())
+        .unwrap();
+    assert!(parse_pdf_with_policy(&source, &Default::default(), exact).is_ok());
+    assert!(parse_pdf_with_policy(&image_pdf(), &Default::default(), standard).is_ok());
+}
+
+#[test]
+fn standard_accepts_8k_samples_but_keeps_explicit_pixel_and_buffer_caps() {
+    use std::io::Write;
+    // A generated constant-gray 8K sample. This verifies source pixel storage
+    // and resource admission, not placement or a rendered-page golden.
+    let mut encoder = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::fast());
+    let row = [137; 7680];
+    for _ in 0..4320 {
+        encoder.write_all(&row).unwrap();
+    }
+    let pixels = encoder.finish().unwrap();
+    let mut image = format!("<< /Type /XObject /Subtype /Image /Width 7680 /Height 4320 /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /FlateDecode /Length {} >>\nstream\n", pixels.len()).into_bytes();
+    image.extend(pixels);
+    image.extend(b"\nendstream");
+    let content = b"q 40 0 0 20 10 10 cm /Im Do /Im Do Q";
+    let mut stream = format!("<< /Length {} >>\nstream\n", content.len()).into_bytes();
+    stream.extend(content);
+    stream.extend(b"\nendstream");
+    let source = pdf_objects(&[
+        b"<< /Type /Catalog /Pages 2 0 R >>".to_vec(),
+        b"<< /Type /Pages /Count 1 /Kids [3 0 R] >>".to_vec(),
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 100] /Resources << /XObject << /Im 5 0 R >> >> /Contents 4 0 R >>".to_vec(),
+        stream, image,
+    ]);
+    let standard = PdfImportPolicy::default();
+    for limits in [
+        r#"{"maxImagePixels":16000000}"#,
+        r#"{"maxDocumentImagePixels":64000000}"#,
+        r#"{"backend":{"streamBytes":33554432}}"#,
+        r#"{"backend":{"codecAllocationBytes":1024}}"#,
+    ] {
+        let policy = standard.with_limits_json(limits).unwrap();
+        let error = parse_pdf_with_policy(&source, &Default::default(), policy)
+            .err()
+            .unwrap_or_else(|| panic!("expected resource rejection for {limits}"));
+        assert_eq!(error.code, "PDF_RESOURCE_LIMIT", "{limits}: {error:?}");
+    }
+    let parsed = parse_pdf_with_policy(&source, &Default::default(), standard).unwrap();
+    assert_eq!(parsed.document.bin_data_content.len(), 2);
+    for binary in &parsed.document.bin_data_content {
+        let image = image::load_from_memory(&binary.data.load())
+            .unwrap()
+            .to_luma8();
+        assert_eq!(image.dimensions(), (7680, 4320));
+        assert!(image.as_raw().iter().all(|&sample| sample == 137));
+    }
 }
 
 #[test]

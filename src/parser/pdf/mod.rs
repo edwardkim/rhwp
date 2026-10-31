@@ -523,9 +523,15 @@ pub(crate) fn parse_pdf_with_request(
         pdf.check_import_budget().map_err(|error| {
             PdfImportError::backend(error).at("lower", Some(source_page), Some(&request))
         })?;
-        let report = lowered.map_err(|_| {
-            PdfImportError::new("PDF_LOWERING_FAILED", "PDF content could not be lowered")
-        })?;
+        let report =
+            lowered.map_err(|detail| {
+                let mut error =
+                    PdfImportError::new("PDF_LOWERING_FAILED", "PDF content could not be lowered")
+                        .at("lower", Some(source_page), Some(&request));
+                // Keep document-derived detail in opt-in diagnostics, never Display.
+                error.diagnostics.as_mut().unwrap().backend_message = Some(detail);
+                error
+            })?;
         if options.layout == PdfImportLayout::Editable {
             let frames = editable::page_frames(section, &report, allocation)?;
             allocation.push(&mut body_frames, frames)?;

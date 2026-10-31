@@ -103,8 +103,8 @@ xref 복구 scan을 요청에 계상하지만 전체 parser·font·cache의 할�
 
 | 입력/작업 | 현재 기본 제한과 관측 가능한 결과 | 근거 |
 | --- | --- | --- |
-| PDF 입력·쪽 선택 | 입력 64 MiB, 선택한 원본 쪽 최대 1,024개. stream/codec 단일 예약 32 MiB, 그림 하나 16,000,000픽셀·문서 합계 64,000,000픽셀 등 독립 한도도 적용한다. 자원 한도 초과는 `PDF_RESOURCE_LIMIT`이다. 작은 파일도 디코딩 작업량 때문에 거부될 수 있다. | [frontend](../../src/parser/pdf/mod.rs), [그림 추출](../../src/parser/pdf/extract.rs), [제품 요청 정책](../../src/parser/pdf/policy.rs), [backend 한도](../../vendor/rhwp-pdf-import-backend/src/import_limits.rs) |
-| PDF 코덱·ICC·복구의 예약·작업량 | 단일 예약 32 MiB와 요청의 누적 decoded 예산을 함께 적용한다. 논리 작업량 기본값은 `codecWorkUnits = 1,000,000,000`이며 `resourcePolicy.backend.codecWorkUnits`·`resourceUsage.codecWorkUnits`로 확인한다. 밀리초나 CPU 명령 수가 아니다. | [요청 연결](../../vendor/rhwp-pdf-import-backend/src/codec_resource.rs), [할당·작업 계상](../../vendor/rhwp-pdf-import-backend/src/import_limits.rs) |
+| PDF 입력·쪽 선택 | 입력 64 MiB, 선택한 원본 쪽 최대 1,024개. 표준 프로필은 파싱 객체 값 200,000개, stream/codec 단일 예약 256 MiB, 그림 하나 64,000,000픽셀·배치 누적 2,000,000,000픽셀 등 독립 한도도 적용한다. 자원 한도 초과는 `PDF_RESOURCE_LIMIT`이다. 작은 파일도 디코딩 작업량 때문에 거부될 수 있다. | [frontend](../../src/parser/pdf/mod.rs), [그림 추출](../../src/parser/pdf/extract.rs), [제품 요청 정책](../../src/parser/pdf/policy.rs), [backend 한도](../../vendor/rhwp-pdf-import-backend/src/import_limits.rs) |
+| PDF 코덱·ICC·복구의 예약·작업량 | 표준 256 MiB·절약 32 MiB의 단일 예약과 요청의 누적 decoded 예산을 함께 적용한다. 논리 작업량 기본값은 `codecWorkUnits = 1,000,000,000`이며 `resourcePolicy.backend.codecWorkUnits`·`resourceUsage.codecWorkUnits`로 확인한다. 밀리초나 CPU 명령 수가 아니다. | [요청 연결](../../vendor/rhwp-pdf-import-backend/src/codec_resource.rs), [할당·작업 계상](../../vendor/rhwp-pdf-import-backend/src/import_limits.rs) |
 | PDF operator·참조·글꼴·decoded 누적량 | 선택 쪽수와 명시한 host 정책에 따라 유한한 요청 예산을 적용한다. backend의 단독 기본값과 본체가 덮어쓴 값은 다르다. `resourcePolicy`·`resourceUsage`에서 해당 요청의 정책과 사용량을 확인한다. | [제품 요청 정책](../../src/parser/pdf/policy.rs), [metadata](../../src/parser/pdf/mod.rs) |
 | CLI PDF 작업자 수명·출력 | `standard`는 wall 120초·최종 출력 128 MiB·진단 32 MiB, `constrained`는 30초·32 MiB·8 MiB다. Linux 작업자에는 각각 주소 공간 4/1 GiB와 CPU 90/20초 제한을 적용한다. 초과·실패 시 작업자를 종료하고 기존 출력을 유지한다. RSS·부모·프로세스 트리 전체의 메모리 상한과 구분한다. | [자원 정책과 OS별 적용 범위](pdf_resource_policies.md), [Native 감독](../../src/resource_supervisor.rs), [CLI](../../src/cli/commands/pdf_import.rs) |
 | Studio PDF·단추·보호 복구 | PDF UI 기본 deadline은 30초다. 단추 Worker 기본 1초·실행 20,000단계이며 복구 평문은 최대 64 MiB다. 각 경계의 실패는 부분 문서로 성공시키지 않는다. 전체 process RSS 상한이 아니다. | [Studio 가이드](studio_document_features.md) |
@@ -114,9 +114,9 @@ xref 복구 scan을 요청에 계상하지만 전체 parser·font·cache의 할�
 
 PDF의 쪽 선택은 입력 파일 전체를 읽고 컨테이너·공유 자원을 검사하는 비용까지 없애지 않는다.
 한도 오류를 정상적인 빈 출력이나 앞부분만 성공한 결과로 처리하지 않는다.
-비 JPEG 경로의 기존 8×픽셀 사전 예약과 단일 32 MiB 한도를 함께 적용하면 약 419만 픽셀을
-넘는 그림이 픽셀 한도보다 먼저 거부될 수 있다. A4 200 DPI는 검증했으나 더 높은 해상도의
-수용은 보장하지 않는다. 기본 코덱 제공이 자동 축소나 한도 해제를 뜻하지 않는다.
+그림의 선언 픽셀 한도 외에 실제 디코딩·색 변환·mask·PNG 저장의 단일/누적 예약도 적용한다.
+표준 한도를 늘려도 모든 코덱·채널 조합이 픽셀 상한까지 성공한다는 보장은 없다.
+절약 프로필의 기존 한도는 유지한다. 기본 코덱 제공이 자동 축소나 한도 해제를 뜻하지 않는다.
 공개 CLI 동작과 쪽 선택 방법은 [CLI 매뉴얼](cli_commands.md#pdf-가져오기-기본-포함)을 따른다.
 
 ## 기본 기능 확대 이후에도 남은 검증 과제

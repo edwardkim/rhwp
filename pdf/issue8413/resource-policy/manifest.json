@@ -1,0 +1,20 @@
+{
+  "kind": "public synthetic PDF resource-policy controls",
+  "files": [
+    {
+      "file": "resource-8k.pdf",
+      "sha256": "745498ae5b869bd153bab8c32b03d5dbb3e8d1b762ae6761beadb7c27adaf134",
+      "bytes": 33334
+    },
+    {
+      "file": "resource-dense.pdf",
+      "sha256": "ea96f43b5499b4f94f4a2b675566d223d6830654f971b5eeec7b596ad22a23d5",
+      "bytes": 1812
+    },
+    {
+      "file": "resource-objects-nonempty.pdf",
+      "sha256": "d5e8fc6b11cca358d91fc621498c06e3b4a48d1fa5dc469f63ff4b96e0ac9a81",
+      "bytes": 120563
+    }
+  ]
+}

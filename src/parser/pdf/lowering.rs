@@ -414,12 +414,10 @@ pub(super) fn lower(
         {
             return Err("rotated/mirrored/sheared image is not supported by this POC".into());
         }
-        if u64::from(image.width()) * u64::from(image.height()) > 16000000 {
-            return Err(
-                "image pixel budget exceeded (after extraction; not a parser allocation guarantee)"
-                    .into(),
-            );
-        }
+        // extract() validates both source and composited pixel dimensions
+        // against this request's policy before constructing ExtractedPage.
+        // PNG encoding independently enforces the same request's buffer/work
+        // limits; a second fixed pixel cap here would override that policy.
         allocation
             .push(
                 &mut image_sources,

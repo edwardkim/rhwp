@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pdf_resource_policies.md
-last_verified: 2026-10-26
+last_verified: 2026-11-01
 ---
 
 # PDF 가져오기 자원 정책
@@ -13,7 +13,8 @@ last_verified: 2026-10-26
 유지된다. Native는 [#8174 v2-S01](../working/task_m100_8174_v2_stage1.md), WASM·공통 Worker는
 [v2-S03](../working/task_m100_8174_v2_stage3.md)의 로컬 구현 범위이며,
 기본 코덱·ICC 등 F01–F08 전체의 완료 상태는 [보안 현황](security_feature_limits.md)을 따른다.
-현재 구현은 #8174의 로컬 작업 브랜치이며 `devel`·registry 배포 완료를 뜻하지 않는다.
+아래의 표준 한도 확대는 [#8413–#8416 작업](../working/task_m100_8413_implementation.md)의
+로컬 변경이며, 이 변경의 `devel`·registry 배포 완료를 뜻하지 않는다.
 
 ## 프로필과 명시적 조정
 
@@ -56,6 +57,15 @@ rhwp import-pdf input.pdf result.hwpx --resource-limits limits.json --json
 64 KiB 이하의 JSON 객체이며, 미지·중복 키·`null`·음수·0·실수·overflow·프로필보다 큰 값은
 입력을 열기 전에 exit 2로 거부한다. 프로필이나 파일 옵션을 중복 지정해도 exit 2다.
 출력 렌더링의 `--profile print`와 `--resource-profile`은 다른 옵션이다.
+
+`PDF_RESOURCE_LIMIT: content operators`·`parsed object count`·그림 픽셀/버퍼 오류가 나면
+우선 표준 프로필을 선택하고 이전에 입력한 낮은 개별 한도를 지운다. Studio는 「표준」과
+「기본 한도 사용」을 선택하고, CLI는 `--resource-profile standard`로 실행하면서 불필요한
+`--resource-limits` 파일을 제외한다. JSON은 선택한 프로필보다 높이는 수단이 아니다.
+아래 값은 이 브랜치에서 확대한 정책이며 이전 WASM/CLI에는 적용되지 않는다. Studio도
+새 WASM을 적용해야 한다. 표준에서도 다른 한도가 소진되면 원본 쪽 선택과 실제 사용량을
+확인한다. `*_UNSUPPORTED`는 자원 부족과 다른 기능 오류이므로 한도를 올려 해결하지 않는다.
+
 이 옵션은 `import-pdf` 전용이다. HWP5 압축 stream·HWPX ZIP/XML의 기존 읽기 한도를
 조정하지 않으며, 해당 형식의 한도는 [보안 현황](security_feature_limits.md#자원-한도로-거부하는-입력)을
 따른다.
@@ -64,13 +74,15 @@ rhwp import-pdf input.pdf result.hwpx --resource-limits limits.json --json
 | --- | ---: | ---: | --- |
 | 입력 | 64 MiB | 16 MiB | 작업자가 이 값 + 1바이트까지만 읽고 초과를 검사 |
 | 선택한 쪽 | 1,024 | 64 | 전체 원본 쪽수와 분리하며 범위 확장 전에 검사 |
-| content operators | 최대 8,000,000 | 250,000 | 어휘 파싱의 누적 명령 수. 선택 쪽당 250,000과 더 낮은 host cap도 적용 |
-| 그림 한 개 | 16,000,000 px | 4,000,000 px | 선언·합성된 이미지 면적 검사 |
-| 문서 누적 그림 | 64,000,000 px | 16,000,000 px | 선택한 쪽의 실제 처리 누적량 |
+| content operators | 최대 8,000,000 | 250,000 | 어휘 파싱의 누적 명령 수. 선택 쪽수로 축소하지 않으며 더 낮은 host cap 유지 |
+| 파싱 객체 값 | 200,000 | 50,000 | 간접 객체뿐 아니라 사전·배열 안의 scalar도 포함 |
+| 단일 stream 버퍼 | 256 MiB | 32 MiB | 압축 해제·operator 수집 등의 개별 출력 backing |
+| 그림 한 개 | 64,000,000 px | 4,000,000 px | 선언·합성된 이미지 면적 검사 |
+| 문서 누적 그림 | 2,000,000,000 px | 16,000,000 px | 선택한 쪽의 실제 처리 누적량 |
 | decoded 작업 | 최대 2 GiB | 256 MiB | 누적 예약 카운터이며 live heap이 아님 |
 | collection entries | 400,000 | 100,000 | xref·객체 컬렉션 등의 누적 항목 |
 | font entries | 1,000,000 | 100,000 | Type1/CFF/TrueType의 map·glyph name·Unicode memo 등 누적 확장 작업 |
-| codec 단일 예약 | 32 MiB | 32 MiB | decoder 예약과 누적 decoded 예산에 함께 적용 |
+| codec 단일 예약 | 256 MiB | 32 MiB | decoder 예약과 누적 decoded 예산에 함께 적용 |
 | codec 작업량 | 1,000,000,000 | 1,000,000,000 | 논리 작업 단위이며 실행 시간이 아님 |
 | wall timeout | 120초 | 30초 | 부모가 감시하는 작업 수명 |
 | CPU 시간 | 90초 | 20초 | Linux 작업자 프로세스 CPU 제한 |
@@ -78,12 +90,17 @@ rhwp import-pdf input.pdf result.hwpx --resource-limits limits.json --json
 | 직렬화 출력 | 128 MiB | 32 MiB | 부모가 받을 최종 HWP/HWPX 바이트 |
 | JSON 진단 | 32 MiB | 8 MiB | 작업자 응답의 메타데이터 크기 |
 
-선택한 쪽을 알게 되면 공통 parser가 operator·span·참조·path 예산을 추가로 좁힌다.
+선택한 쪽을 알게 되면 공통 parser가 span·참조 예산을 추가로 좁힌다. 명령·경로 복잡도는
+쪽수로 예측할 수 없어 operator와 문서 path 작업량은 프로필/host의 요청 상한을 유지한다.
+문서 path 상한은 standard 1,000,000, constrained 80,000이며 개별 경로의 20,000 상한도 유지한다.
 operator 수집 Vec도 capacity를 늘리기 전에 단일 `streamBytes` 한도와 같은 요청의 decoded
 예산을 검사한다. 따라서 한 stream에 명령을 집중해도 모두 모은 뒤에야 복사 한도로 거절하지
-않는다. 800만은 선택 문서 전체의 작업량 상한이며 한 stream의 버퍼 한도를 함께 올리지 않는다.
+않는다. 800만은 선택 문서 전체의 작업량 상한이며 단일 버퍼의 허용량을 보장하지 않는다.
 실제 유효값은 성공 봉투의 `diagnostics.resourcePolicy`, 사용량은 `diagnostics.resourceUsage`로
-확인한다. decoded 작업은 공유 폰트·paint와 Core 초기화·첫 저장·진단 인코딩까지 같은 요청에서
+확인한다. 표준의 큰 이미지/버퍼 한도는 원본 해상도를 유지하기 위한 유한한 상한이다.
+이미지 재배치도 픽셀 작업량에 누적하며, 개별 값이 남아 있어도 decoded 작업·코덱 작업량·
+OS/Worker 제한에서 실패할 수 있다. 자동 축소하거나 한도 초과를 성공으로 처리하지 않는다.
+decoded 작업은 공유 폰트·paint와 Core 초기화·첫 저장·진단 인코딩까지 같은 요청에서
 누적하므로 선택 쪽수로 축소하지 않는다. 한 쪽도 standard의 최대 2 GiB 또는 더 낮게 지정한
 host cap을 사용한다. constrained의 256 MiB 상한도 유지된다. 이는 누적 예약 작업량이며
 실제 메모리 사용량을 허용하는 보장이 아니다. 한 값이 남아 있어도 독립된 다른 한도가 먼저
