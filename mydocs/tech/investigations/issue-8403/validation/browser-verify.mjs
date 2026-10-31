@@ -20,7 +20,7 @@ async function openBytes(page,bytes,name,pdf=true){
  if(pdf){await page.waitForSelector('.dialog-pdf-import');await page.click('.dialog-pdf-import .dialog-btn-primary');}
 }
 async function done(page){
- await page.waitForFunction(()=>window.__patternResult!==null&&!document.documentElement.classList.contains('rhwp-busy'),{timeout:120000});
+ await page.waitForFunction(()=>{const dialog=[...document.querySelectorAll('.modal-overlay')].find(d=>d.querySelector('.dialog-title')?.textContent.startsWith('로컬 글꼴 감지')); const button=dialog&&[...dialog.querySelectorAll('button')].find(b=>b.textContent==='대체 글꼴로 보기'); if(button){window.__fontChoice8403=(window.__fontChoice8403||0)+1;button.click();}return window.__patternResult!==null&&!document.documentElement.classList.contains('rhwp-busy');},{timeout:120000});
  assert.equal((await page.evaluate(()=>window.__patternResult)).ok,true);
  await page.evaluate(()=>document.fonts.ready);
 }
@@ -28,7 +28,7 @@ async function capture(page,name){
  const result=await page.evaluate(name=>{
   const doc=window.__wasm.doc;
   return Array.from({length:doc.pageCount()},(_,i)=>{
-   const c=document.createElement('canvas');doc.renderPageToCanvasFilteredWithProfile(i,c,1,'all','print');
+   const c=document.createElement('canvas');window.__wasm.renderPageToCanvasFiltered(i,c,1,'all','print');
    if(name.startsWith('controls')&&i===2)window.__assert8403PatternCrop(c);
    // PDF text lives in positioned text boxes; getPageText reads root-body paragraphs only.
    const text=JSON.parse(doc.getPageTextLayout(i)).runs.map(run=>run.text).join('');
@@ -70,18 +70,31 @@ await runTest('PDF pattern images, saves and failed-import recovery (#8403)',asy
  writeFileSync(new URL('served-assets.json',out),JSON.stringify(served,null,2));
  await page.evaluate(()=>window.__eventBus.on('open-document-bytes:done',r=>{if(r.requestId==='pattern-8403')window.__patternResult=r;}));
  for(const [name,path,count] of [...(process.env.RHWP_8403_ORIGINAL ? [['original',process.env.RHWP_8403_ORIGINAL,8]] : []),['controls',fileURLToPath(new URL('image-patterns.pdf',fixture)),5],['stroke',fileURLToPath(new URL('text-stroke.pdf',fixture)),7],['legacy-a',fileURLToPath(new URL('pdf/pr7704/6778-square-2020.pdf',project)),6],['legacy-b',fileURLToPath(new URL('pdf/pr7704/6778-square-2020.pdf',project)),6]]){
-  if(name==='legacy-a'&&existsSync(new URL('local-font-manifest.json',out))){
+  const fontManifest=name==='original'?'original-font-manifest.json':name==='legacy-a'?'local-font-manifest.json':null;
+  if(fontManifest&&existsSync(new URL(fontManifest,out))){
    const fontEvidence=[];
-   for(const entry of JSON.parse(readFileSync(new URL('local-font-manifest.json',out),'utf8'))){
+   await page.evaluate(()=>{window.__fontPrograms8403=[];});
+   for(const entry of JSON.parse(readFileSync(new URL(fontManifest,out),'utf8'))){
     const bytes=readFileSync(entry.path);
-    await page.evaluate(async({aliases,base64})=>{
+    await page.evaluate(async({aliases,base64,weight})=>{
      const {registerLoadedLocalFontFace}=await import('/src/core/font-loader.ts');
      const bytes=Uint8Array.from(atob(base64),c=>c.charCodeAt(0));
-     for(const alias of aliases){const face=await new FontFace(alias,bytes).load();document.fonts.add(face);registerLoadedLocalFontFace(face);}
-    },{aliases:entry.aliases,base64:bytes.toString('base64')});
-    fontEvidence.push({aliases:entry.aliases,sha256:hash(bytes)});
+     window.__fontPrograms8403.push({id:'font-'+window.__fontPrograms8403.length,aliases,weight,bytes});
+     for(const alias of aliases){const face=await new FontFace(alias,bytes,{weight:String(weight||400)}).load();document.fonts.add(face);registerLoadedLocalFontFace(face);}
+    },{aliases:entry.aliases,base64:bytes.toString('base64'),weight:entry.weight||400});
+    fontEvidence.push({aliases:entry.aliases,weight:entry.weight||400,sha256:hash(bytes),sourceSha256:entry.sourceSha256||hash(bytes),repairs:entry.repairs||[]});
    }
-   writeFileSync(new URL('local-font-evidence.json',out),JSON.stringify(fontEvidence,null,2));
+   // Use Studio's supported host provider and bridge, not a raw Canvas call
+   // that bypasses the host font session and its consent-aware family policy.
+   await page.evaluate(async()=>{
+    const data=window.__fontPrograms8403;
+    await window.rhwpStudio.fonts.setProvider({
+     async getSnapshot(){return {revision:'issue8403-'+data.length,faces:data.map(p=>({id:p.id,family:p.aliases[0],fullName:p.aliases[0]+' '+p.weight,postscriptName:'',style:p.weight>=700?'Bold':'Regular',aliases:p.aliases,weight:p.weight,slant:'normal'}))};},
+     async readFace(id){const p=data.find(p=>p.id===id);if(!p)throw Error('missing explicit font '+id);return {bytes:p.bytes.slice().buffer};},
+     subscribe(){return ()=>{};},
+    });
+   });
+   writeFileSync(new URL(name==='original'?'original-font-evidence.json':'local-font-evidence.json',out),JSON.stringify(fontEvidence,null,2));
   }
   if(name.startsWith('legacy-')){
    // The complete 12-page document exceeds the standard cumulative HWPX
@@ -165,5 +178,6 @@ await runTest('PDF pattern images, saves and failed-import recovery (#8403)',asy
   assert.equal(await page.evaluate(()=>window.__wasm.doc.pageCount()),5);
   records.push({name,rejected:true,recovered:true});console.log('PASS rejected and recovered',name);
  }
+ records.push({name:'local-font-prompt',choice:'web-substitute',count:await page.evaluate(()=>window.__fontChoice8403||0)});
  writeFileSync(new URL('browser-verify-result.json',out),JSON.stringify(records,null,2));
 });

@@ -1,0 +1,10 @@
+[
+  {
+    "backend": "canvas2d",
+    "exit": 0
+  },
+  {
+    "backend": "canvaskit",
+    "exit": 0
+  }
+]

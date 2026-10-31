@@ -1,0 +1,121 @@
+[
+  {
+    "name": "base-hft-native",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/minfont-base.sh",
+      "node",
+      "scripts/run-rust-test.mjs",
+      "hft_outline_font_contract",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia"
+    ],
+    "exit": 0,
+    "seconds": 19.34
+  },
+  {
+    "name": "base-native",
+    "command": [
+      "/home/edward/mygithub/rhwp/venv/bin/python",
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/native-base.py"
+    ],
+    "exit": 0,
+    "seconds": 8.17
+  },
+  {
+    "name": "base-pr149-native",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/rhwp-base",
+      "export-png",
+      "/home/edward/mygithub/rhwp/samples/pr-149.hwp",
+      "--profile",
+      "print",
+      "--font-path",
+      "/usr/share/fonts/truetype/nanum",
+      "--json",
+      "-o",
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/base-pr149-native"
+    ],
+    "exit": 0,
+    "seconds": 0.16
+  },
+  {
+    "name": "base-wasm-build",
+    "command": [
+      "docker",
+      "compose",
+      "-p",
+      "rhwp",
+      "--env-file",
+      ".env.docker",
+      "run",
+      "--rm",
+      "--no-deps",
+      "--user",
+      "1002:1002",
+      "--env",
+      "HOST_UID=1002",
+      "--env",
+      "HOST_GID=1002",
+      "--env",
+      "CARGO_BUILD_JOBS=14",
+      "--env",
+      "CARGO_TARGET_DIR=/review-target",
+      "--volume",
+      "/home/edward/mygithub/rhwp/target/pr-review:/review-target",
+      "wasm"
+    ],
+    "exit": 0,
+    "seconds": 1047.86
+  },
+  {
+    "name": "base-hft-browser",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/minfont.sh",
+      "node",
+      "--test",
+      "scripts/tests/hft-outline-font-selection.browser.mjs"
+    ],
+    "exit": 0,
+    "seconds": 1.57
+  },
+  {
+    "name": "base-browser",
+    "command": [
+      "node",
+      "e2e/run-with-vite.mjs",
+      "--",
+      "node",
+      "../mydocs/tech/investigations/issue-8403/validation/browser-verify.mjs",
+      "--mode=headless"
+    ],
+    "exit": 0,
+    "seconds": 100.69
+  },
+  {
+    "name": "base-wasm-scores",
+    "command": [
+      "/home/edward/mygithub/rhwp/venv/bin/python",
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/scores-base.py"
+    ],
+    "exit": 0,
+    "seconds": 10.83
+  },
+  {
+    "name": "base-pr149-browser",
+    "command": [
+      "node",
+      "e2e/run-with-vite.mjs",
+      "--",
+      "node",
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/pr149-rebase.mjs",
+      "--mode=headless"
+    ],
+    "exit": 0,
+    "seconds": 4.29
+  }
+]

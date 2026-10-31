@@ -237,3 +237,25 @@ pr-149는 독립 2022 PDF와 같은 제품의 Native/fresh WASM 전 1쪽을 추�
 
 [완료 보고서](../report/task_m100_8403_report.md)와 정식 validation 경로에 결과를 보존했다.
 비공개 원본과 로컬 글꼴 바이트는 포함하지 않았다. 로컬 완료이며 원격 PR·push·머지는 수행하지 않았다.
+
+
+### 최신 devel 통합과 PR 제출 후보 — 2026-10-31
+
+작업지시자가 PR 생성·self-review·머지를 승인했고 전쪽 raw 90% 이상을 제출 조건으로
+확인했다. 기준 `99a176b7cb`에 #8397의 HFT/host font 정책을 유지해 통합했다.
+Native `21a4902f14`와 fresh WASM `b13334f327`의 제품 코드는 동일하며 차이는
+테스트 helper의 cfg(test) 소속뿐이다. 원본 8쪽은 두 저장 형식까지 Native 최저 94.70%,
+WASM 94.77%로 통과했다. 241개 페이지 비교 모두 90% 이상, base 대비 최대 감소 0.02%p다.
+HFT 별도 763쪽은 Native와 WASM 각각 base/candidate PNG가 전부 바이트 동일했다.
+
+기본 전체 회귀 12,233건, Native 라이브러리 4,040건, Studio 2,700건이 통과했다.
+최종 helper 1건, 첨부 문서 6개를 명시한 보안 검사 20건, 신규 샘플 포함 6종 래칫 81건,
+fmt·lint·manifest·unit tier·문서 링크까지 통과했다. 기존 기대값·baseline 완화는 없다.
+하네스의 새 글꼴 선택창·host provider/bridge 적용, 큰 글꼴 전달 분리, 공유 캐시 복원과
+불필요한 전체 테스트 실행 파일 준비 중단은 [최종 증거](../tech/investigations/issue-8403/validation/rebase/README.md)에
+구분했다. 제품 수정을 추가하거나 이전 실패를 지우지 않았다.
+
+실제 Studio 공개 대조군의 Canvas2D/CanvasKit을 확인했다. 원본은 일부 글꼴 미준비로
+Canvas2D에 fallback되어 실제 backend를 그대로 기록했다. 비공개 원본·로컬 글꼴 바이트는
+게시하지 않는다. 승인된 Open PR → 동일 head CI → self-review 문서 trailing → CI 확인 →
+머지 순서로 원격 처리를 진행한다. 상세 결과는 [완료 보고서](../report/task_m100_8403_report.md)를 따른다.

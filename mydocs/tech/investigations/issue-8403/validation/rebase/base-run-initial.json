@@ -1,0 +1,29 @@
+[
+  {
+    "name": "base-hft-native",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/minfont-base.sh",
+      "node",
+      "scripts/run-rust-test.mjs",
+      "hft_outline_font_contract",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia"
+    ],
+    "exit": 0,
+    "seconds": 19.34
+  },
+  {
+    "name": "base-native",
+    "command": [
+      "/home/edward/mygithub/rhwp/venv/bin/python",
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/native-base.py"
+    ],
+    "exit": 1,
+    "seconds": 18.87
+  }
+]

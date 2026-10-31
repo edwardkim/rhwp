@@ -7,6 +7,43 @@ last_verified: 2026-10-31
 
 # #8403 시각 검증과 회귀 등록 근거
 
+## 최신 devel 통합 후 최종 근거
+
+기준 `99a176b7cb`, Native `21a4902f14`, 최적화 WASM `b13334f327`에서 재검증했다.
+두 생산 코드의 차이는 테스트 helper 위치뿐이다. 최종 WASM SHA-256은
+`b9a7ebc5875dee4cd2d068a2e3bf3283b8beede8fd8f26c24eca0cb0d1f78d78`다.
+최종 자료는 [rebase/](rebase/)이며 아래 이전 결과와 구분한다.
+
+| 입력/동작 | 쪽수 | Native 최저 | fresh WASM 최저 |
+| --- | ---: | ---: | ---: |
+| 비공개 원본 및 HWP/HWPX 재열기 | 각각 8 | 94.70% | 94.77% |
+| 공개 패턴 및 HWP/HWPX 재열기 | 각각 5 | 99.98% | 99.98% |
+| 공개 문자 획·14곳 편집 및 HWP/HWPX 재열기 | 각각 7 | 100.00% | 100.00% |
+| 기존 PDF 대조군 직접 출력 | 12 | 99.20% | 98.85% |
+| 기존 PDF 대조군 HWP/HWPX 재열기 | 각각 12 | 99.20% | 98.79% |
+
+공개 CanvasKit 12쪽도 패턴 최저 99.98%, 문자 100.00%다. 실제 Studio 화면의
+Canvas2D/CanvasKit PNG와 backend 판정은 `rebase/studio-screen/`에 보존했다.
+원본은 Arial·Droid Sans Fallback 리소스 미준비로 Canvas2D fallback되어
+원본 CanvasKit 성공으로 집계하지 않는다. 비공개 원본 화면은 공개하지 않는다.
+
+지원되는 host font provider로 실제 글꼴을 공급하고 Studio bridge의 Canvas 경로로
+출력했다. raw WASM Canvas를 직접 호출해 host 글꼴 정책을 우회한 초기 결과는
+최종 판정에서 제외했다. 원본 글꼴은 `original-font-manifest.json`, 기존 대조군은
+`local-font-manifest.json`으로 지정한다. 각 항목은 `path`, `aliases`, 선택적인
+`weight`이며, 동일 파일은 browser FontFace와 host provider 양쪽에 공급한다.
+큰 글꼴은 파일별로 전송한다. 빈 VTT 테이블의 기존 OTS 정규화 내역과 원본/처리 후
+SHA는 `rebase/candidate/original-font-evidence.json`에 있다. 글꼴 바이트는 게시하지 않는다.
+
+[검증한 HWP/HWPX 6개와 해시](inputs/README.md)를 첨부했다. Native에서 저장한
+동일 바이트를 fresh WASM으로 다시 열어 38쪽을 비교했고 최저 99.98%였다.
+검증한 제품 코드 이후에는 문서·증적·검증 하네스만 갱신한다.
+
+## 리베이스 전 검증 이력
+
+다음 수치와 이 디렉터리 루트의 TSV/PNG는 최초 검증 이력이다. 최종 제출의 새 기준
+검증은 위 `rebase/` 근거를 사용한다.
+
 2026-10-31. 제품 구현 `6d95c45f08`, base `3c01421e89a562de4ba8b021a4cdf943af60b58d`.
 최적화 fresh WASM의 SHA-256은
 `17942ab2a5243aa9be2aea558c7449519b3607ca20368c1c94eee41cb1c52f69`다.
