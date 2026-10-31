@@ -4,11 +4,9 @@
 //! samples/ 디렉토리에 테스트 파일이 없으면 건너뜀.
 
 #[cfg(test)]
-#[path = "../../../tests/common/svg_image_frames.rs"]
-mod svg_image_frames;
-
-#[cfg(test)]
 mod tests {
+    include!("../../../tests/common/svg_image_frames.rs");
+
     use std::path::Path;
 
     use crate::model::page::{ColumnDef, PageDef};
@@ -570,7 +568,7 @@ mod tests {
 
         // Read the painted viewport, including a cropped nested SVG. Intrinsic
         // source pixels and the following text's y are not picture positions.
-        let mut image_ys: Vec<f64> = super::svg_image_frames::image_frames(&svg)
+        let mut image_ys: Vec<f64> = image_frames(&svg)
             .into_iter()
             .map(|frame| frame[1])
             .collect();
