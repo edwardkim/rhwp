@@ -35,6 +35,32 @@ pub(crate) struct PaintFace {
 }
 
 impl TextFontCoverage {
+    pub fn clear_family(&mut self, family: &str) {
+        let catalog = Arc::make_mut(&mut self.0);
+        catalog.unknown.remove(family);
+        let keys: Vec<_> = catalog
+            .keys
+            .keys()
+            .filter(|(name, _, _)| name == family)
+            .cloned()
+            .collect();
+        for key in keys {
+            if let Some(id) = catalog.keys.remove(&key) {
+                catalog.db.remove_face(id);
+                catalog.coverage.remove(&id);
+            }
+        }
+        let active: HashSet<usize> = catalog
+            .coverage
+            .values()
+            .map(|ranges| Arc::as_ptr(ranges) as *const () as usize)
+            .collect();
+        catalog
+            .programs
+            .retain(|_, ranges| active.contains(&(Arc::as_ptr(ranges) as *const () as usize)));
+        catalog.ranges = catalog.programs.values().map(|ranges| ranges.len()).sum();
+    }
+
     pub fn disable_family(&mut self, family: &str) {
         let catalog = Arc::make_mut(&mut self.0);
         if catalog.unknown.len() < MAX_FACES {

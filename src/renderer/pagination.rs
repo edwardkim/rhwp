@@ -17,6 +17,61 @@ use crate::model::header_footer::HeaderFooterApply;
 use crate::model::page::{ColumnDef, PageDef};
 use crate::model::paragraph::Paragraph;
 
+/// 쪽 시작의 숨김 표식은 본문 점유가 아니다. 빈 컨트롤 호스트는 제외한다.
+pub(crate) fn page_starts_with_hidden_empty_lines(
+    para: &Paragraph,
+    items: &[PageItem],
+    hidden: &std::collections::HashSet<usize>,
+) -> bool {
+    // 저장 줄이 없는 빈 문단은 실제 줄 상자를 소유할 수 있다. 저장 쪽의
+    // 숨김 표식으로 추정하지 않고 기존 빈 문단 배치에 맡긴다.
+    !para.line_segs.is_empty()
+        // 명시 쪽·구역 나누기를 소유한 문단은 사용자가 만든 줄 상자를
+        // 유지한다. 저장 조판에서 추정한 자동 경계만 숨김 대상이 될 수 있다.
+        && (!matches!(
+            para.column_type,
+            crate::model::paragraph::ColumnBreakType::Page
+                | crate::model::paragraph::ColumnBreakType::Section
+        ) || para.page_break_synthesized)
+        && para.controls.is_empty()
+        && para
+            .text
+            .chars()
+            .all(|c| c.is_control() || c.is_whitespace())
+        && page_has_only_hidden_empty_lines(items, hidden)
+}
+
+pub(crate) fn page_has_only_hidden_empty_lines(
+    items: &[PageItem],
+    hidden: &std::collections::HashSet<usize>,
+) -> bool {
+    items.iter().all(|item| match item {
+        PageItem::FullParagraph { para_index } => hidden.contains(para_index),
+        _ => false,
+    })
+}
+
+/// 쪽 첫 빈 줄을 감춰 공간이 바뀌면 이전 조판의 자동 경계는 fit으로 재판정한다.
+/// 명시적 쪽 나누기와 개체를 소유한 문단은 저장된 경계를 유지한다.
+pub(crate) fn reconsider_synthetic_text_page_break(
+    para: &Paragraph,
+    items: &[PageItem],
+    hidden: &std::collections::HashSet<usize>,
+    hide_empty_line: bool,
+    reflow_active: bool,
+    remaining_height: f64,
+    dpi: f64,
+) -> bool {
+    hide_empty_line
+        && para.page_break_synthesized
+        && para.controls.is_empty()
+        && para.line_segs.first().is_some_and(|line| {
+            line.line_height > 0 && super::hwpunit_to_px(line.line_height, dpi) <= remaining_height
+        })
+        && (reflow_active
+            || matches!(items.first(), Some(PageItem::FullParagraph { para_index }) if hidden.contains(para_index)))
+}
+
 pub fn estimate_footnote_note_height(footnote: &Footnote, dpi: f64) -> f64 {
     let mut height = 0.0;
     for para in &footnote.paragraphs {

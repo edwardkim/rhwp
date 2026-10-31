@@ -1812,7 +1812,12 @@ impl TypesetEngine {
             // This slot is a physical source fragment. The unit walker
             // determines ownership inside it; a nearest row boundary and
             // body-tail allowance cannot authorize another source row.
-            (frame.height, None, 0.0, frame.complete_last_row)
+            (
+                (frame.height - hwpunit_to_px(table.outer_cell_spacing_hu(), self.dpi)).max(0.0),
+                None,
+                0.0,
+                frame.complete_last_row,
+            )
         } else {
             (
                 avail_for_rows,

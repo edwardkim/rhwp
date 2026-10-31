@@ -476,6 +476,7 @@ impl Allocation<'_> {
                 self.payload::<(u32, crate::model::paragraph::SpaceMetric)>(
                     para.layout_space_metrics.len(),
                 )?;
+                self.payload::<(u32, i16)>(para.hwp3_saved_space_corrections.len())?;
                 self.record_work(&(
                     &para.layout_field_values,
                     &para.source_line_seg_vertical_pos,

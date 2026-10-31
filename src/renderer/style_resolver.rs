@@ -51,6 +51,7 @@ pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
     let profile = document.layout_profile();
     let lookup = missing_fonts::try_lookup_context(document, storage)?;
     let mut styles = try_resolve_styles_with_variant(&lookup, dpi, profile.hwp3_layout(), storage)?;
+    styles.source_hwp3_native = profile.hwp3_native_layout();
     if missing_fonts::missing_char_table(document) {
         styles.page_number_char_style_id = Some(0);
         styles.page_number_font_is_hft = false;
@@ -135,6 +136,7 @@ pub(crate) fn resolve_styles_with_environment(
     profile: crate::model::provenance::LayoutCompatibilityProfile,
 ) -> ResolvedStyleSet {
     let mut styles = resolve_styles_for_document(document, dpi);
+    styles.script_metrics = super::script_metrics::ScriptMetricsContract::for_profile(profile);
     // 독립 동일 입력의 2020은 HCRDotum을 강제하고, 2024는 원 face/대체 face의
     // 자모 전진을 유지한다. 세대는 기존 명시적 출력 profile에서만 받는다.
     styles.isolated_jamo_font = (!profile.hangul2024_layout()
@@ -194,15 +196,14 @@ pub(crate) fn resolve_styles_with_environment(
                     // 자동 표시용 선택은 저장된 원본 HFT 메트릭의 변경이 아니다.
                     let keep_source_metrics = !primary_true_type_program
                         && environment.is_some_and(|env| env.preserves_source_metrics())
-                        && original.alt_type == Some(2)
+                        && (original.alt_type == Some(2)
+                            || style.font_families_source_hft[lang])
                         && original.embedded != Some(true)
                         && original.requested_face.as_deref().is_some_and(|face| {
                             crate::renderer::font_metrics_data::legacy_hft_metric_face(face).is_some()
                                 || has_own_metric_table(&face, style.bold, style.italic)
                                 || crate::renderer::font_metrics_data::has_declared_original_glyph_metrics(face)
                         });
-                    // 원 프로그램 선택이 이미 지정한 메트릭 face는 같은 표시
-                    // family의 다른 슬롯이 공급한 TTF 인증으로 다시 추측하지 않는다.
                     if keep_source_metrics
                         && source_font.is_none_or(|face| face.native_program.is_none())
                     {
@@ -357,7 +358,9 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
         page_number::resolve(doc_info, false);
 
     let mut styles = ResolvedStyleSet {
+        source_hwp3_native: false,
         source_program_projection_slots: Default::default(),
+        script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
         char_overlap_size_bounds: None,
         source_char_shapes: {
@@ -402,7 +405,7 @@ fn refresh_source_program_projection_slots_with_storage<S: storage::Storage>(
     styles: &mut ResolvedStyleSet,
     storage: &S,
 ) -> Result<(), S::Error> {
-    styles.source_program_projection_slots.clear();
+    styles.source_program_projection_slots = Default::default();
     let dpi = styles.resolved_dpi.unwrap_or(96.0);
     let mut fallback_char_styles = None;
     let mut build_fallback = || -> Result<Vec<ResolvedCharStyle>, S::Error> {
@@ -452,15 +455,10 @@ fn refresh_source_program_projection_slots_with_storage<S: storage::Storage>(
             {
                 continue;
             }
-            let own_metric = style.font_metric_trusted_for_lang(language)
-                || super::font_metrics_data::layout_metric_face_name(
-                    primary,
-                    style.bold,
-                    style.italic,
-                )
-                .as_deref()
-                    == Some(primary);
-            if own_metric {
+            // 원본 프로그램의 전진폭이 검증된 경우에만 저장 줄을 다시 구성한다.
+            if style.font_metric_trusted_for_lang(language)
+                || super::layout::verified_source_projection_face(primary, style.bold, style.italic)
+            {
                 if fallback_char_styles.is_none() {
                     fallback_char_styles = Some(build_fallback()?);
                 }
@@ -470,7 +468,7 @@ fn refresh_source_program_projection_slots_with_storage<S: storage::Storage>(
                 {
                     let copied = crate::storage::try_clone(fallback, storage)?;
                     storage.insert_map(
-                        &mut styles.source_program_projection_slots,
+                        std::sync::Arc::make_mut(&mut styles.source_program_projection_slots),
                         (shape_id as u32, language),
                         copied,
                     )?;

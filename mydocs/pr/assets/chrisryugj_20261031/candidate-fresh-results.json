@@ -1,0 +1,14 @@
+[
+  {
+    "tree": "candidate",
+    "case": "issue_8222_tab_extended_follows_edits",
+    "exit": 0,
+    "seconds": 258.29
+  },
+  {
+    "tree": "candidate",
+    "case": "issue_8225_group_child_ctrl_data",
+    "exit": 0,
+    "seconds": 15.14
+  }
+]

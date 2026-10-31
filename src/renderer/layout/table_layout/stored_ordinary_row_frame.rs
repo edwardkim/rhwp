@@ -361,32 +361,41 @@ impl LayoutEngine {
         Some(hwpunit_to_px(table.common.height as i32, self.dpi))
     }
 
-    /// 저장 쪽 경계에서 선택한 유닛을 실제 마지막 행 상자 안에 놓는다.
+    /// 저장 컷과 같은 물리 상자를 첫 조각·이어받기에서 예약한다.
+    /// 이어받은 상자는 앞 조각을 차감한 동일 행의 잔여만 사용한다.
     pub(crate) fn stored_ordinary_row_end_frame(
         &self,
         table: &Table,
         row: usize,
-        start: &[usize],
-        end: &[usize],
+        cut: (&[usize], &[usize]),
         available: f64,
+        carried: Option<f64>,
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
+        let (start, end) = cut;
         let cells = self.ordinary_row_cells_for_cut(table, row, end, styles)?;
-        if !start.is_empty()
-            || end.len() != cells.len()
+        if end.len() != cells.len()
             || !(self.stored_ordinary_row_cut_has_physical_frame(table, row, start, end, styles)
                 || self.row_cut_consumes_all_ordinary_units(table, row, end, styles))
-            || !self.row_cut_remaining_is_single_stored_frame(table, row, end, None, styles)
         {
             return None;
         }
-        let full = cells
-            .iter()
-            .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
-            .fold(0.0, f64::max);
+        let full = if start.is_empty() {
+            // 뒤에 남은 저장 내용 프레임 수는 현재 수용 상자의 크기가 아니다.
+            // 첫 컷도 원본 선언을 현재 예산 안에서 받고 실제 수용분만 다음에 차감한다.
+            cells
+                .iter()
+                .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
+                .fold(0.0, f64::max)
+        } else {
+            // 미소비 내용이 여러 쪽이어도 같은 물리 잔여를 이어받는다.
+            // 블록 컷이나 알 수 없는 prefix를 원본 전체 높이로 추측하지 않는다.
+            if start.len() != cells.len() {
+                return None;
+            }
+            carried.filter(|height| height.is_finite() && *height > 0.0)?
+        };
         let content = self.stored_ordinary_row_cut_height(table, row, start, end, styles)?;
-        // 내용이 든 첫 조각은 원본 최소가 들어가면 그 높이에서 닫는다.
-        // 남은 쪽 공간이 선언보다 큰 경우에도 내용 높이로만 축소하지 않는다.
         (available.is_finite() && available >= content).then_some(full.min(available).max(content))
     }
 
@@ -422,8 +431,22 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
         let cells = self.ordinary_row_cells_for_cut(table, row, cut, styles)?;
+        let single_frame =
+            self.row_cut_remaining_is_single_stored_frame(table, row, cut, None, styles);
+        // 문단 사이의 로컬 원점은 선언 전체에서 뺄 물리 프레임을 증언하지 않는다.
+        // 여러 프레임의 새 잔여는 같은 원본 문단 안의 쪽 재시작이 소유해야 한다.
+        // 이미 인증해 이어받은 잔여는 현재 수용분만 차감한다.
+        let owns_physical_remainder = single_frame
+            || carried.is_some()
+            || cells.iter().zip(cut).any(|(cell, &next)| {
+                self.cell_units(cell, table, styles)
+                    .get(next)
+                    .is_some_and(|unit| {
+                        Self::stored_in_paragraph_unit_is_original_restart(cell, unit)
+                    })
+            });
         if cut.len() != cells.len()
-            || !self.row_cut_remaining_is_single_stored_frame(table, row, cut, None, styles)
+            || !owns_physical_remainder
             || !(self.stored_ordinary_row_cut_has_physical_frame(table, row, &[], cut, styles)
                 || self.stored_single_line_row_is_fragmentable(table, row, styles)
                 || carried.is_some()
@@ -441,7 +464,12 @@ impl LayoutEngine {
             .iter()
             .map(|cell| self.cell_units(cell, table, styles).len())
             .collect();
-        if let Some(height) = self.stored_ordinary_closing_text_frame(table, row, cut, styles) {
+        // 여러 내용 프레임도 같은 원본 행의 물리 잔여를 이어받는다.
+        // 한 프레임 조건은 마지막 텍스트 프레임으로 잔여를 대체할 때만 필요하다.
+        let closing = single_frame
+            .then(|| self.stored_ordinary_closing_text_frame(table, row, cut, styles))
+            .flatten();
+        if let Some(height) = closing {
             // 내용 합보다 큰 저장 높이도 앞 쪽에서 접힌 간격을 담을 수 있다.
             // 원본 Common 상자가 첫 내용 컷의 물리 공간을 함께 증언한
             // 경우에만 선언 최소의 잔여를 유지한다. 그 근거가 없는 후속

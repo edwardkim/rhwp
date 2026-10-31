@@ -1,5 +1,13 @@
-//! #7032: a saved empty cell paragraph owns a line even without LINE_SEG.
-//! The HWPX fixture and the maintainer's Hancom judgment are independent controls.
+//! 관계형·고정형: 반복 제목 셀의 빈 줄과 저장 줄 전진을 검사한다.
+//! 주석 갱신: 2026-10-30T14:47:29+09:00; 직전 파일 커밋: 2026-10-30T02:17:49+09:00 (d3097b656d).
+//! 2026-10-29 측정 raw(96dpi, PDFium, 2px, 한컴 Print 글꼴 선택):
+//! HWP 1~5쪽 Native·fresh WASM 각 100.00%; 6쪽 99.95% / 99.95%.
+//! HWP 전 6쪽 최저 Native 99.95% / fresh WASM 99.95%.
+//! HWPX 1~5쪽 Native·fresh WASM 각 100.00%; 6쪽 99.45% / 99.47%.
+//! HWPX 전 6쪽 최저 Native 99.45% / fresh WASM 99.47%.
+//! 근거: mydocs/pr/assets/issue_7032/README.md.
+//! #7032: 저장된 빈 셀 문단은 LINE_SEG가 없어도 한 줄을 소유한다.
+//! HWPX 검증 문서와 메인터너의 한컴 판독을 독립 대조군으로 사용한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::model::{control::Control, table::Cell};
@@ -62,7 +70,7 @@ fn assert_header_flow(core: &DocumentCore) {
         shape.line_spacing_type,
         rhwp::model::style::LineSpacingType::Fixed
     );
-    // HWP fixed spacing is stored at twice the effective HWPUNIT advance.
+    // HWP 고정 줄간격은 실제 HWPUNIT 전진값의 두 배로 저장된다.
     let advance = f64::from(shape.line_spacing) / 2.0 * 96.0 / 7200.0;
     // #7445: HWP의 6→7쪽 실패와 첫 여섯 쪽의 머리행 계약을 구분합니다.
     // 정상 HWPX의 6쪽 핀은 해당 검사에서 유지합니다.
@@ -95,7 +103,15 @@ fn assert_header_flow(core: &DocumentCore) {
             .iter()
             .any(|n| matches!(&n.node_type, RenderNodeType::TextRun(r) if r.text == "직렬")));
         assert_near(lines[1].bbox.y - lines[0].bbox.y, advance);
-        assert_near(cell.bbox.height, 52.4);
+        // 독립 Print의 제목 행 테두리 중심 간격을 96dpi CSS px로 환산한다.
+        let print_height = if page == 0 { 52.42267 } else { 52.26267 };
+        assert!(
+            (cell.bbox.height - print_height).abs() <= 2.0,
+            "p{} 제목 행: 실제 {}, 독립 Print {}",
+            page + 1,
+            cell.bbox.height,
+            print_height
+        );
     }
 }
 
@@ -139,15 +155,15 @@ fn hwp_header_text_origin_matches_stored_hwpx_control() {
         assert_eq!((a.len(), b.len()), (2, 2));
         for (a, b) in a.iter().zip(&b) {
             assert_near(a.bbox.y, b.bbox.y);
-            // Fixed-spacing fallback and stored LINE_SEG may encode the line
-            // box differently. Ownership and the next origin must agree, not
-            // the internal height/spacing split of the two formats.
+            // 고정 줄간격 대체 경로와 저장 LINE_SEG는 줄 상자를 서로 다르게
+            // 인코딩할 수 있다. 두 형식의 내부 높이·간격 분리가 아니라 줄의
+            // 소유와 다음 원점이 일치해야 한다.
         }
     }
 }
 
-// Internal rendering contract, not a serialized Hancom fixture or a pagination
-// oracle: retain A4 and supply explicit canonical paragraph-atom cut windows.
+// 저장된 한컴 검증 문서나 쪽 나눔 정답지가 아닌 내부 렌더링 계약이다.
+// A4를 유지하고 정규 문단 단위의 명시적 절단 범위를 제공한다.
 fn fragment(
     cut: Option<(usize, usize)>,
     align: rhwp::model::table::VerticalAlign,
@@ -195,7 +211,7 @@ fn fragment(
         cell.is_header = false;
         cell.height = 12000;
         cell.vertical_align = align;
-        // empty, empty, text, empty: one canonical atom per paragraph.
+        // 빈 문단, 빈 문단, 텍스트, 빈 문단 순서로 문단당 정규 단위 하나를 둔다.
         cell.paragraphs = vec![empty.clone(), empty.clone(), text.clone(), empty.clone()];
     }
     let paragraphs = vec![Paragraph {
@@ -225,8 +241,8 @@ fn fragment(
         is_block_split: false,
         start_cut_is_block: false,
         row_cursor_is_nested: false,
-        // Hold the physical frame constant when comparing alignment. A natural
-        // cut otherwise sizes the fragment to consumed content, unlike uncut.
+        // 정렬을 비교할 때 물리 프레임을 고정한다. 그렇지 않으면 자연 분할이
+        // 미분할과 달리 소비한 내용에 맞춰 조각 크기를 정한다.
         end_row_height_override: cut.map(|_| measured.tables[0].row_heights[0]),
         start_row_height_override: None,
         straddle_row_relief: Vec::new(),
@@ -306,11 +322,11 @@ fn cut_window_emits_only_owned_empty_paragraphs_once() {
             "cut {start}..{end}"
         );
         if let Some(first) = lines.first() {
-            // Paragraphs outside the window must not consume vertical space.
+            // 절단 범위 밖의 문단은 세로 공간을 소비하지 않아야 한다.
             assert_near(first.bbox.y - header(&tree.root).bbox.y, origin);
         }
         for pair in lines.windows(2) {
-            // Consecutive selected atoms consume exactly one line advance each.
+            // 연속으로 선택된 각 단위는 정확히 한 줄의 전진 공간을 소비한다.
             assert_near(pair[1].bbox.y - pair[0].bbox.y, advance);
         }
         for line in lines {

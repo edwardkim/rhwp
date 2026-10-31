@@ -7,6 +7,16 @@
  */
 
 const catalog = {
+  "dialog.localFontList.button": "로컬 글꼴 목록",
+  "dialog.localFontList.title": "로컬 글꼴 목록",
+  "dialog.localFontList.close": "닫기",
+  "dialog.localFontList.search": "글꼴 이름 검색",
+  "dialog.localFontList.count": "{p1}개 표시 / 전체 {p2}개 face",
+  "dialog.localFontList.family": "글꼴 family",
+  "dialog.localFontList.names": "글꼴 이름과 별칭",
+  "dialog.localFontList.style": "스타일",
+  "dialog.localFontList.postscript": "PostScript 이름",
+  "dialog.localFontList.presenceOnly": "존재만 확인",
   "editor.crossSectionSelectionUnsupported": "구역을 걸친 선택 편집은 아직 지원하지 않습니다. 구역별로 선택해 편집하세요.",
   "dialog.fill.keepGradient": "기존 그라데이션 유지",
   "dialog.fill.keepImage": "기존 그림 배경 유지",

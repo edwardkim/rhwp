@@ -661,7 +661,12 @@ fn compute_control_mask(para: &Paragraph) -> u32 {
     // serialize_para_text 가 같은 조건으로만 코드 0x1E 를 방출하므로 둘이 함께 움직인다.
     // 리터럴 원본(한컴 실측 111문서·2,131문단: PARA_TEXT `a0 00`, 비트 30 없음)에 비트를
     // 세우면 PARA_HEADER 가 있지도 않은 제어문자를 주장해 헤더/텍스트가 어긋난다.
-    if para.text.contains('\u{00A0}') && para.control_mask & (1u32 << 0x001E) != 0 {
+    if para
+        .text
+        .chars()
+        .enumerate()
+        .any(|(index, ch)| ch == '\u{00A0}' && para.nb_space_is_control_at(index))
+    {
         mask |= 1u32 << 0x001E;
     }
     // [#4895] 하이픈 (0x0018) 비트는 **출처가 제어 표기였을 때만** 유지한다.
@@ -1295,12 +1300,10 @@ fn try_serialize_para_text_with_slots<S: crate::storage::Storage>(
             // (10k 코퍼스 실측: 제어 표기 151문서·3,422문단 · 리터럴 111문서·2,131문단,
             // 한 문단이 둘을 섞는 경우는 0건).
             //
-            // 한글은 제어코드를 텍스트 추출에 싣지 않고 리터럴은 싣는다. 그래서 리터럴
-            // 원본을 제어코드로 바꾸면 저장본에서 글자가 사라진다(#4895 하이픈에서 실측된
-            // 것과 같은 파손). 출처 신호는 PARA_HEADER `control_mask` 비트 30 이다 —
-            // HWP5 원본에서 이 비트는 제어코드 존재와 5,553/5,553(100%) 일치하고,
-            // HWPX 원본은 파서가 `<hp:nbSpace/>` 를 만났을 때 세운다.
-            '\u{00A0}' if para.control_mask & (1u32 << 0x001E) != 0 => {
+            // 한글은 제어코드를 텍스트 추출에 싣지 않고 리터럴은 싣는다. 혼용 문단도
+            // 각 문자의 원본 표기를 따라야 한다. 개별 출처가 없는 기존 입력만 문단의
+            // control_mask 비트 30으로 판정한다.
+            '\u{00A0}' if para.nb_space_is_control_at(i) => {
                 // 묶음 빈칸 (HWP 5.0 표 7: 코드 30). 코드 24(0x18)는 하이픈이므로
                 // 여기 쓰면 안 된다 (#1793).
                 storage.push(&mut code_units, 0x001E)?;

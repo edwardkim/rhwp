@@ -1,0 +1,386 @@
+[
+  {
+    "name": "tab-original",
+    "defaultFontBaseCandidateTreesIdentical": true,
+    "textIdentical": true,
+    "pages": [
+      1,
+      1
+    ],
+    "baseInputSha256": "3237cc8ac162b089a2946942c4f83070e84bfa9bfbc8147b051d2403ba4240f2",
+    "candidateInputSha256": "3237cc8ac162b089a2946942c4f83070e84bfa9bfbc8147b051d2403ba4240f2",
+    "baseTabs": [
+      {
+        "section": "Section0",
+        "paragraph": 2,
+        "text": "이 파일은 탭시작\t\t탭끝 라인 세그먼트 비교를 위한 통제된 아래 한글 파일의 필요성으로 작성된 문서입니다. 문단과 문단 사이의 간격과 한 문단에서 텍스트 흐름에 의해 줄넘김되는 경우를 역엔지니어링으로 동일하게 구현하기 위한 목적입니다.",
+        "tabs": [
+          [
+            4000,
+            0,
+            256,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            4000,
+            0,
+            256,
+            0,
+            0,
+            0,
+            9
+          ]
+        ]
+      }
+    ],
+    "candidateTabs": [
+      {
+        "section": "Section0",
+        "paragraph": 2,
+        "text": "이 파일은 탭시작\t\t탭끝 라인 세그먼트 비교를 위한 통제된 아래 한글 파일의 필요성으로 작성된 문서입니다. 문단과 문단 사이의 간격과 한 문단에서 텍스트 흐름에 의해 줄넘김되는 경우를 역엔지니어링으로 동일하게 구현하기 위한 목적입니다.",
+        "tabs": [
+          [
+            4000,
+            0,
+            256,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            4000,
+            0,
+            256,
+            0,
+            0,
+            0,
+            9
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "name": "tab-insert",
+    "defaultFontBaseCandidateTreesIdentical": true,
+    "textIdentical": true,
+    "pages": [
+      1,
+      1
+    ],
+    "baseInputSha256": "8b4d69830c1d1a364fa0add7f3b1bb9924f8715092e22b465fa65649705b5dd4",
+    "candidateInputSha256": "431084096480f4dbf40359a51fb6918671c81b2170182e8818e6f4b7613513e7",
+    "baseTabs": [
+      {
+        "section": "Section0",
+        "paragraph": 2,
+        "text": "새\t이 파일은 탭시작\t\t탭끝 라인 세그먼트 비교를 위한 통제된 아래 한글 파일의 필요성으로 작성된 문서입니다. 문단과 문단 사이의 간격과 한 문단에서 텍스트 흐름에 의해 줄넘김되는 경우를 역엔지니어링으로 동일하게 구현하기 위한 목적입니다.",
+        "tabs": [
+          [
+            4000,
+            0,
+            256,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            4000,
+            0,
+            256,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            9
+          ]
+        ]
+      }
+    ],
+    "candidateTabs": [
+      {
+        "section": "Section0",
+        "paragraph": 2,
+        "text": "새\t이 파일은 탭시작\t\t탭끝 라인 세그먼트 비교를 위한 통제된 아래 한글 파일의 필요성으로 작성된 문서입니다. 문단과 문단 사이의 간격과 한 문단에서 텍스트 흐름에 의해 줄넘김되는 경우를 역엔지니어링으로 동일하게 구현하기 위한 목적입니다.",
+        "tabs": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            4000,
+            0,
+            256,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            4000,
+            0,
+            256,
+            0,
+            0,
+            0,
+            9
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "name": "tab-delete",
+    "defaultFontBaseCandidateTreesIdentical": true,
+    "textIdentical": true,
+    "pages": [
+      1,
+      1
+    ],
+    "baseInputSha256": "71c76ad5dc326670ce7b0610efc17a67709660c2826ffaa3c430a1f3a1d5936e",
+    "candidateInputSha256": "71c76ad5dc326670ce7b0610efc17a67709660c2826ffaa3c430a1f3a1d5936e",
+    "baseTabs": [
+      {
+        "section": "Section0",
+        "paragraph": 2,
+        "text": "이 파일은 탭시작\t탭끝 라인 세그먼트 비교를 위한 통제된 아래 한글 파일의 필요성으로 작성된 문서입니다. 문단과 문단 사이의 간격과 한 문단에서 텍스트 흐름에 의해 줄넘김되는 경우를 역엔지니어링으로 동일하게 구현하기 위한 목적입니다.",
+        "tabs": [
+          [
+            4000,
+            0,
+            256,
+            0,
+            0,
+            0,
+            9
+          ]
+        ]
+      }
+    ],
+    "candidateTabs": [
+      {
+        "section": "Section0",
+        "paragraph": 2,
+        "text": "이 파일은 탭시작\t탭끝 라인 세그먼트 비교를 위한 통제된 아래 한글 파일의 필요성으로 작성된 문서입니다. 문단과 문단 사이의 간격과 한 문단에서 텍스트 흐름에 의해 줄넘김되는 경우를 역엔지니어링으로 동일하게 구현하기 위한 목적입니다.",
+        "tabs": [
+          [
+            4000,
+            0,
+            256,
+            0,
+            0,
+            0,
+            9
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "name": "tab-split",
+    "defaultFontBaseCandidateTreesIdentical": true,
+    "textIdentical": true,
+    "pages": [
+      1,
+      1
+    ],
+    "baseInputSha256": "8ba6441bb873d40351830e45cb447bd60266f0579da2bc51d0fed5289ab749ee",
+    "candidateInputSha256": "d56775d73d56562654787f11ad4308c77caf0797a445b4438ad1c24e24c70044",
+    "baseTabs": [
+      {
+        "section": "Section0",
+        "paragraph": 2,
+        "text": "이 파일은 탭시작\t",
+        "tabs": [
+          [
+            4000,
+            0,
+            256,
+            0,
+            0,
+            0,
+            9
+          ]
+        ]
+      },
+      {
+        "section": "Section0",
+        "paragraph": 3,
+        "text": "\t탭끝 라인 세그먼트 비교를 위한 통제된 아래 한글 파일의 필요성으로 작성된 문서입니다. 문단과 문단 사이의 간격과 한 문단에서 텍스트 흐름에 의해 줄넘김되는 경우를 역엔지니어링으로 동일하게 구현하기 위한 목적입니다.",
+        "tabs": [
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            9
+          ]
+        ]
+      }
+    ],
+    "candidateTabs": [
+      {
+        "section": "Section0",
+        "paragraph": 2,
+        "text": "이 파일은 탭시작\t",
+        "tabs": [
+          [
+            4000,
+            0,
+            256,
+            0,
+            0,
+            0,
+            9
+          ]
+        ]
+      },
+      {
+        "section": "Section0",
+        "paragraph": 3,
+        "text": "\t탭끝 라인 세그먼트 비교를 위한 통제된 아래 한글 파일의 필요성으로 작성된 문서입니다. 문단과 문단 사이의 간격과 한 문단에서 텍스트 흐름에 의해 줄넘김되는 경우를 역엔지니어링으로 동일하게 구현하기 위한 목적입니다.",
+        "tabs": [
+          [
+            4000,
+            0,
+            256,
+            0,
+            0,
+            0,
+            9
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "name": "tab-split-merge",
+    "defaultFontBaseCandidateTreesIdentical": true,
+    "textIdentical": true,
+    "pages": [
+      1,
+      1
+    ],
+    "baseInputSha256": "63d1c2f0518c047a4b789a2df12c697f265f65d5846a7c1b2906d7fb88fd5867",
+    "candidateInputSha256": "63d1c2f0518c047a4b789a2df12c697f265f65d5846a7c1b2906d7fb88fd5867",
+    "baseTabs": [
+      {
+        "section": "Section0",
+        "paragraph": 2,
+        "text": "이 파일은 탭시작\t\t탭끝 라인 세그먼트 비교를 위한 통제된 아래 한글 파일의 필요성으로 작성된 문서입니다. 문단과 문단 사이의 간격과 한 문단에서 텍스트 흐름에 의해 줄넘김되는 경우를 역엔지니어링으로 동일하게 구현하기 위한 목적입니다.",
+        "tabs": [
+          [
+            4000,
+            0,
+            256,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            4000,
+            0,
+            256,
+            0,
+            0,
+            0,
+            9
+          ]
+        ]
+      }
+    ],
+    "candidateTabs": [
+      {
+        "section": "Section0",
+        "paragraph": 2,
+        "text": "이 파일은 탭시작\t\t탭끝 라인 세그먼트 비교를 위한 통제된 아래 한글 파일의 필요성으로 작성된 문서입니다. 문단과 문단 사이의 간격과 한 문단에서 텍스트 흐름에 의해 줄넘김되는 경우를 역엔지니어링으로 동일하게 구현하기 위한 목적입니다.",
+        "tabs": [
+          [
+            4000,
+            0,
+            256,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            4000,
+            0,
+            256,
+            0,
+            0,
+            0,
+            9
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "name": "group-touch",
+    "defaultFontBaseCandidateTreesIdentical": true,
+    "textIdentical": true,
+    "pages": [
+      94,
+      94
+    ],
+    "baseInputSha256": "f67bb162118b976afeff15df673dedb244f1b2e001541ff0ebadba7a8d9242a4",
+    "candidateInputSha256": "f7fa7d320e990bec9923694e8828c3b885adfc5c46184ee82c77070e23f5a033",
+    "originalChild": 24,
+    "baseChild": 0,
+    "candidateChild": 24,
+    "candidateExactPayloads": true
+  },
+  {
+    "name": "child-touch",
+    "defaultFontBaseCandidateTreesIdentical": true,
+    "textIdentical": true,
+    "pages": [
+      7,
+      7
+    ],
+    "baseInputSha256": "42b77f43e641ceea3ef77e3240ea4111340bbd08621d62bb9c8f80e5fd245f7b",
+    "candidateInputSha256": "9feb1b97a271b61a33c99a70591e6df22fc410846b73e590534c36552af9d1db",
+    "originalChild": 1,
+    "baseChild": 0,
+    "candidateChild": 1,
+    "candidateExactPayloads": true
+  },
+  {
+    "name": "multi-touch",
+    "defaultFontBaseCandidateTreesIdentical": true,
+    "textIdentical": true,
+    "pages": [
+      9,
+      9
+    ],
+    "baseInputSha256": "1bd7b5edc226c844cf8f4449fd5aa776b9ab7ab9ae89833a27cae77a953fc474",
+    "candidateInputSha256": "f0d1b17b2890e7725bcb369b24828d27a312f17fe43ef42092e4e378c2d2691e",
+    "originalChild": 1,
+    "baseChild": 0,
+    "candidateChild": 1,
+    "candidateExactPayloads": true
+  }
+]

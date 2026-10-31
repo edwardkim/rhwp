@@ -12,6 +12,7 @@ pub(super) struct ParagraphBoundary<'a> {
     pub para_style: Option<&'a crate::renderer::style_resolver::ResolvedParaStyle>,
     pub para_style_break: bool,
     pub force_page_break: bool,
+    pub reconsider_synthetic_break: bool,
     pub overlay_columndef_separator_break: bool,
 }
 impl TypesetEngine {
@@ -265,8 +266,25 @@ impl TypesetEngine {
         }
 
         // 쪽 나누기
-        let force_page_break = para.column_type == ColumnBreakType::Page
-            || para.column_type == ColumnBreakType::Section;
+        let reconsider_synthetic_break = st.col_count == 1
+            && crate::renderer::pagination::reconsider_synthetic_text_page_break(
+                para,
+                &st.current_items,
+                &st.hidden_empty_paras,
+                st.hide_empty_line,
+                st.hidden_line_reflow_active,
+                st.available_height() - st.current_height,
+                self.dpi,
+            );
+        if matches!(
+            para.column_type,
+            ColumnBreakType::Page | ColumnBreakType::Section
+        ) {
+            st.set_hidden_line_reflow_active(reconsider_synthetic_break);
+        }
+        let force_page_break = (para.column_type == ColumnBreakType::Page
+            || para.column_type == ColumnBreakType::Section)
+            && !reconsider_synthetic_break;
         let para_style = styles.para_styles.get(para.para_shape_id as usize);
         let para_style_break = para_style.map(|s| s.page_break_before).unwrap_or(false);
 
@@ -277,7 +295,8 @@ impl TypesetEngine {
         // sample16-2022 pi=87 (빈 문단, text_len=0) skip ✓
         // sample16-2022 pi=118 (content, sb=284) skip ✓
         // sample16-2022 pi=316 (content, sb=0) skip ✓
-        let variant_vpos_reset_break = profile.hwp3_layout()
+        let variant_vpos_reset_break = !reconsider_synthetic_break
+            && profile.hwp3_layout()
             && !st.stored_paragraph_boundary_already_open(paragraphs, para_idx)
             && self.judge_hwp3_variant_vpos_reset_break(
                 para,
@@ -350,6 +369,7 @@ impl TypesetEngine {
             para_style,
             para_style_break,
             force_page_break,
+            reconsider_synthetic_break,
             overlay_columndef_separator_break,
         }))
     }

@@ -1,0 +1,249 @@
+{
+  "head": "298d1ecc520014c2d18cf8c9016471f586967c03",
+  "base": "55f40ecd99485a1c9b1f7cdc709cb6efcb9e9b29",
+  "observedAt": "2026-10-31T00:48:59.148385+00:00",
+  "mergeTree": "9cfc1e37e5b1d112e905fd9fb39ab6deb5ca56f3",
+  "checks": [
+    {
+      "name": "Build & Test",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124244722100"
+    },
+    {
+      "name": "CodeQL",
+      "status": "completed",
+      "conclusion": "neutral",
+      "url": "https://github.com/edwardkim/rhwp/runs/124241514280"
+    },
+    {
+      "name": "test-archive-e-shard-1 / Default-feature tests (Archive E)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124240878585"
+    },
+    {
+      "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124240436602"
+    },
+    {
+      "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124240140785"
+    },
+    {
+      "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124240125701"
+    },
+    {
+      "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124240059650"
+    },
+    {
+      "name": "Frontend package gates",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124232758343"
+    },
+    {
+      "name": "WASM Build",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124232660939"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868777/job/124232546136"
+    },
+    {
+      "name": "Analyze (python)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868777/job/124232546108"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868777/job/124232545966"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868777/job/124232545953"
+    },
+    {
+      "name": "build-test-archive-e / Build test archive (e)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124232345749"
+    },
+    {
+      "name": "build-test-archive-b / Build test archive (b)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124232345551"
+    },
+    {
+      "name": "build-test-archive-d / Build test archive (d)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124232345478"
+    },
+    {
+      "name": "build-test-archive-c / Build test archive (c)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124232345463"
+    },
+    {
+      "name": "CodeQL preflight",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868777/job/124232297108"
+    },
+    {
+      "name": "adapter inter-diff",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868808/job/124232065580"
+    },
+    {
+      "name": "release-operations-contracts",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124232028904"
+    },
+    {
+      "name": "Workflow promotion preflight",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124232028767"
+    },
+    {
+      "name": "native-host-package",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124232018746"
+    },
+    {
+      "name": "Frontend unit gates",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124232012571"
+    },
+    {
+      "name": "prop roundtrip",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868795/job/124231990500"
+    },
+    {
+      "name": "adapter inter-diff preflight",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868808/job/124231970781"
+    },
+    {
+      "name": "build-test-archive-a / Build test archive (a)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124231966533"
+    },
+    {
+      "name": "Native Skia tests",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124231966406"
+    },
+    {
+      "name": "Lint (fmt, clippy, WASM check)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124231966402"
+    },
+    {
+      "name": "Resolve nextest target duration policy",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124231966397"
+    },
+    {
+      "name": "Proptest preflight",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868795/job/124231880714"
+    },
+    {
+      "name": "Canvas visual diff",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868776/job/124231847019"
+    },
+    {
+      "name": "CI preflight",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124231815372"
+    },
+    {
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868795/job/124231724537"
+    },
+    {
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868865/job/124231724360"
+    },
+    {
+      "name": "Evaluate trusted CI impact policy",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868686/job/124231723302"
+    },
+    {
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868777/job/124231722021"
+    },
+    {
+      "name": "Render Diff preflight",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868776/job/124231720443"
+    },
+    {
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41104868808/job/124231718870"
+    }
+  ],
+  "statuses": [
+    {
+      "context": "CI Impact Policy",
+      "state": "success",
+      "target_url": "https://github.com/edwardkim/rhwp/actions/runs/41108714192"
+    }
+  ],
+  "policyRetry": {
+    "run": 41108714192,
+    "attempt": 2,
+    "conclusion": "success",
+    "scope": "one explicitly approved policy audit rerun; product CI unchanged"
+  }
+}

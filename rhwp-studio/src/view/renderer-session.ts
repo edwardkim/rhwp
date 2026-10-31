@@ -19,7 +19,8 @@ export type RendererSelectionReason =
   | 'superseded'
   | 'canvaskitInitializationFailed'
   | 'canvaskitResourcePreparationFailed'
-  | 'canvaskitRuntimeFailed';
+  | 'canvaskitRuntimeFailed'
+  | 'rendererPreparationFailed';
 
 export interface RendererSessionDiagnostics {
   schemaVersion: 1;
@@ -205,6 +206,12 @@ export class RendererSession {
       'canvaskitRuntimeFailed',
       'canvaskitRuntimeFailed',
     );
+  }
+
+  /** CanvasView가 현재 epoch의 준비 실패를 확인한 뒤에만 호출한다. */
+  fallbackFromPreparationFailure(error: unknown): RendererSessionSelection {
+    return this.fallbackForCurrentDecision(error, this.decisionKey(),
+      'rendererPreparationFailed', 'rendererPreparationFailed')!;
   }
 
   private fallbackForCurrentDecision(

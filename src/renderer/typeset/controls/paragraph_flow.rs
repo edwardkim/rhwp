@@ -28,7 +28,9 @@ fn try_place_reflowed_table_rows_with_storage<S: crate::storage::Storage>(
     measured_tables: &[MeasuredTable],
     storage: &S,
 ) -> Result<bool, S::Error> {
-    if !crate::renderer::inline_flow::supports_table_text_rows_with_storage(para, storage)? {
+    if !crate::renderer::inline_flow::supports_table_text_rows_with_storage(para, storage)?
+        && !crate::renderer::inline_flow::supports_page_square_table_rows(para)
+    {
         return Ok(false);
     }
     let build = |st: &TypesetState, start: f64, preceding: bool| {
@@ -79,6 +81,13 @@ fn try_place_reflowed_table_rows_with_storage<S: crate::storage::Storage>(
         plan = candidate;
     }
     st.commit_inline_flow_with_storage(para_idx, plan, storage)?;
+    for (control, item) in para.controls.iter().enumerate() {
+        if let Control::Table(table) = item {
+            st.register_page_anchored_square_table_with_storage(
+                para_idx, control, para, table, storage,
+            )?;
+        }
+    }
     Ok(true)
 }
 

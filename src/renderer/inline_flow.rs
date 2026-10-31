@@ -16,7 +16,8 @@ pub(crate) use source_addresses::text_logical_starts;
 mod table_rows;
 pub(crate) use table_rows::{
     standalone_table_fragment_owner, standalone_table_fragment_owner_with_storage,
-    supports_table_text_rows, supports_table_text_rows_with_storage,
+    supports_page_square_table_rows, supports_table_text_rows,
+    supports_table_text_rows_with_storage,
 };
 
 mod stored_host;
@@ -53,6 +54,8 @@ pub enum InlineFlowContent {
     /// Width-neutral object anchored to the physical text row.
     FloatingTable {
         control: usize,
+        /// 쪽 기준 개체는 줄 회피와 동일한 프레임에서 확정한 본체 원점을 소비한다.
+        resolved_position: Option<(f64, f64)>,
     },
     FloatingShape {
         control: usize,
@@ -161,6 +164,14 @@ impl InlineFlowPlan {
             p.table_left = p.table_left.map(|left| left - x);
         }
         for item in &mut self.boxes {
+            if let InlineFlowContent::FloatingTable {
+                resolved_position: Some((left, top)),
+                ..
+            } = &mut item.content
+            {
+                *left -= x;
+                *top -= y;
+            }
             item.x -= x;
             item.y -= y;
         }
@@ -282,7 +293,10 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                     storage.push(
                         &mut atoms,
                         Atom::Box(InlineFlowBox {
-                            content: InlineFlowContent::FloatingTable { control: ci },
+                            content: InlineFlowContent::FloatingTable {
+                                control: ci,
+                                resolved_position: None,
+                            },
                             x: 0.0,
                             y: 0.0,
                             width: 0.0,

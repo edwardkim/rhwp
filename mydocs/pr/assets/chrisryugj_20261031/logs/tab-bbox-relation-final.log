@@ -1,0 +1,14 @@
+[RustTestSuite] issue_6800_tab_run_bbox_width -> regression_suite_013::issue_6800_tab_run_bbox_width
+[RustTestSuite] cargo nextest run --locked --test regression_suite_013 -E test(/(^|::)issue_6800_tab_run_bbox_width::/) --cargo-profile release-test a_mid_run_tab_with_text_after_it_is_untouched
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/candidate-source)
+    Finished `release-test` profile [optimized] target(s) in 11.83s
+────────────
+ Nextest run ID a51c9e2b-3a44-4a2e-b31c-88f9ed55bed0 with nextest profile: default
+    Starting 1 test across 1 binary (293 tests skipped)
+        PASS [   0.010s] (1/1) rhwp::regression_suite_013 issue_6800_tab_run_bbox_width::a_mid_run_tab_with_text_after_it_is_untouched
+────────────
+     Summary [   0.011s] 1 test run: 1 passed, 293 skipped
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+info: update nextest with cargo nextest self update, or bypass check with --override-version-check

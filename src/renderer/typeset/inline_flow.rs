@@ -93,6 +93,18 @@ impl TypesetEngine {
         // 마지막 줄 뒤 간격은 다음 흐름의 전진량이다. 표 경로와 같은
         // 실제 행·개체 하단으로 수용하고, 확정 뒤에는 end 전체를 전진한다.
         if plan.occupied_end() > st.available_height() + 0.01 {
+            // 현재 단에 앞 행이 실제로 들어가면 문단 전체를 다음 단으로 옮기지
+            // 않는다. 아직 inline plan의 부분 행 소유자가 없으므로, 제외 영역과
+            // 부동 도형에 의존하지 않는 경우 기존 문단 분할 소유자에게 맡긴다.
+            // 그 소유자는 측정한 줄 범위를 paint에도 전달한다.
+            if picture_rows
+                && !plan.carved
+                && plan.floating_shapes.is_empty()
+                && plan.rows.len() > 1
+                && plan.rows[0].y + plan.rows[0].height <= st.available_height()
+            {
+                return Ok(false);
+            }
             // 새 단 후보가 실제로 수용 가능할 때만 상태를 전진한다.
             // 한 단보다 큰 혼합 문단의 fragment owner는 아직 기존 경로에 있다.
             let Some(candidate) = build(st, 0.0, false)? else {

@@ -470,6 +470,7 @@ impl TypesetEngine {
                 // accepted stored origin above. Explicit zero/shape/column
                 // boundaries retain their separate ownership contracts.
                 let trigger = trigger
+                    && !boundary.reconsider_synthetic_break
                     && !reset_consumed_by_empty_prefix
                     && !st.stored_paragraph_boundary_already_open(paragraphs, para_idx)
                     && !stored_boundary_invalidated_by_reflow

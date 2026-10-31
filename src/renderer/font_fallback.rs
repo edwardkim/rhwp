@@ -86,6 +86,8 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
     // 세리프 키워드 (영문) — "serif" 포함하되 "sans" 부분 문자열을 가진 폰트명 전체 제외
     if lower.contains("times")
         || lower.contains("hymjre")
+        || lower.contains("myeongjo")
+        || lower.contains("myungjo")
         || lower.contains("palatino")
         || lower.contains("georgia")
         || lower.contains("batang")

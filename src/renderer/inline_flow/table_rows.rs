@@ -105,3 +105,38 @@ pub(crate) fn supports_table_text_rows_with_storage<S: crate::storage::Storage>(
             c => super::super::composer::control_is_width_neutral_marker(c),
         }))
 }
+
+/// 절대 쪽·종이 기준 어울림 표의 앵커와 TAC 개체도 원본 control 순서의
+/// 같은 글줄 구성에 참여한다. 저장 줄 하나라는 이유로 너비 부족이나
+/// 작성 개행을 무시하지 않는다. 캡션·중첩 표·각주는 기존 분할 소유자에게 남긴다.
+pub(crate) fn supports_page_square_table_rows(para: &Paragraph) -> bool {
+    use crate::model::shape::{TextWrap, VertRelTo};
+    let page_square = |table: &crate::model::table::Table| {
+        !table.common.treat_as_char
+            && table.common.text_wrap == TextWrap::Square
+            && matches!(table.common.vert_rel_to, VertRelTo::Page | VertRelTo::Paper)
+    };
+    !para.text.contains('\t')
+        && para
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::Table(t) if page_square(t)))
+        && para
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::Table(t) if t.common.treat_as_char))
+        && para.controls.iter().all(|c| match c {
+            Control::Table(t) => {
+                (t.common.treat_as_char || page_square(t))
+                    && t.caption.is_none()
+                    && !t.cells.iter().any(|cell| {
+                        cell.paragraphs.iter().any(|p| {
+                            p.controls
+                                .iter()
+                                .any(|c| matches!(c, Control::Footnote(_) | Control::Table(_)))
+                        })
+                    })
+            }
+            c => super::super::composer::control_is_width_neutral_marker(c),
+        })
+}

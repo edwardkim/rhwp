@@ -1,0 +1,171 @@
+[
+  {
+    "gate": "prepare",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--prepare"
+    ],
+    "exit": 0,
+    "seconds": 1.4
+  },
+  {
+    "gate": "native-lib",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--lib"
+    ],
+    "exit": 0,
+    "seconds": 313.69
+  },
+  {
+    "gate": "native-placeholder",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_2225_missing_picture_placeholder",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--test-threads",
+      "8"
+    ],
+    "exit": 0,
+    "seconds": 12.56
+  },
+  {
+    "gate": "native-direct-pdf",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "render_p37_direct_pdf_export",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--test-threads",
+      "8"
+    ],
+    "exit": 0,
+    "seconds": 12.19
+  },
+  {
+    "gate": "fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 21.7
+  },
+  {
+    "gate": "clippy-native",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 120.86
+  },
+  {
+    "gate": "clippy-wasm",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "rhwp",
+      "--lib",
+      "--target",
+      "wasm32-unknown-unknown",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 111.59
+  },
+  {
+    "gate": "workspace-build",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace"
+    ],
+    "exit": 0,
+    "seconds": 578.23
+  },
+  {
+    "gate": "clippy-workspace",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 135.84
+  },
+  {
+    "gate": "manifest",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "55f40ecd99485a1c9b1f7cdc709cb6efcb9e9b29"
+    ],
+    "exit": 0,
+    "seconds": 0.74
+  },
+  {
+    "gate": "unit-tiers",
+    "command": [
+      "node",
+      "scripts/rust-unit-test-tiers.mjs",
+      "--check",
+      "--base-ref",
+      "55f40ecd99485a1c9b1f7cdc709cb6efcb9e9b29"
+    ],
+    "exit": 0,
+    "seconds": 10.37
+  },
+  {
+    "gate": "full-nextest",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--tests",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "exit": 0,
+    "seconds": 922.1
+  }
+]

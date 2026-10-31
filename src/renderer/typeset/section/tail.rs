@@ -161,8 +161,20 @@ impl TypesetEngine {
                 let mut idx = para_idx + 1;
                 let mut prev = para;
                 let mut found = false;
+                let mut empty_advance_hu: i32 = para
+                    .line_segs
+                    .iter()
+                    .map(|line| line.line_height.saturating_add(line.line_spacing))
+                    .sum();
                 while let Some(next_para) = paragraphs.get(idx) {
                     if next_para.text.is_empty() && next_para.controls.is_empty() {
+                        empty_advance_hu = empty_advance_hu.saturating_add(
+                            next_para
+                                .line_segs
+                                .iter()
+                                .map(|line| line.line_height.saturating_add(line.line_spacing))
+                                .sum(),
+                        );
                         prev = next_para;
                         idx += 1;
                         continue;
@@ -177,6 +189,18 @@ impl TypesetEngine {
                     // 글이 있는 문단은 앞 빈 줄의 뒤쪽 경계다. 그 문단 다음의
                     // reset을 앞당겨 적용하면 실제 본문 앞 빈 줄의 점유가 사라진다.
                     found = reset_after_empty_run
+                        && !(st.col_count == 1
+                            && crate::renderer::pagination::reconsider_synthetic_text_page_break(
+                                next_para,
+                                &st.current_items,
+                                &st.hidden_empty_paras,
+                                st.hide_empty_line,
+                                st.hidden_line_reflow_active,
+                                st.available_height()
+                                    - st.current_height
+                                    - hwpunit_to_px(empty_advance_hu, self.dpi),
+                                self.dpi,
+                            ))
                         && !stored_tail_boundary_invalidated_at_current_flow(
                             st, paragraphs, idx, styles,
                         );

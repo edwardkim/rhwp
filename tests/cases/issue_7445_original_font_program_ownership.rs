@@ -1,3 +1,14 @@
+//! 관계형·고정형: 원본 글꼴 프로그램과 기호의 소유 계약.
+//! 주석 갱신: 2026-10-30T12:45:07+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (55d447871d).
+//! 2026-10-24 측정 raw(96dpi, PDFium, 2px): Native / fresh WASM(no-opt).
+//! 일·생활균형 HWPX 4쪽 99.69% / 99.69%, 5쪽 99.98% / 99.98%; 전 6쪽 최저 98.95% / 98.94%.
+//! 자산관리 HWPX 56쪽 99.98% / 99.98%; 전 60쪽 최저 96.08% / 96.08%.
+//! 개인정보 HWPX 18·43쪽 각 100.00% / 100.00%; 전 66쪽 최저 96.57% / 96.57%.
+//! 근거: mydocs/pr/assets/issue7445/completed-20261009/final-20261024/README.md.
+//! sample11은 원본 글꼴 선언만 검사한다. 2026-10-19 raw(192dpi, pdftoppm, 2px):
+//! 전 151쪽 최저 Native 90.06% / fresh WASM 90.07%; 해당 검사에 고정된 대상 쪽은 없다.
+//! 근거: mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/sample11-current-20261019/README.md.
+//! 수치는 각 증거의 당시 측정이며 현재 head를 재측정한 결과가 아니다.
 //! 원본 글꼴 프로그램·기호 소유는 공개 글꼴 결정 API로 확인한다.
 //! 전쪽 Native/fresh WASM90%와 해당 쪽98%·직접 판독을 마친 실물 경계는
 //! 내용 관계와 독립±2CSSpx로 함께 보호한다. 근거: stage5 C75/C76 보고서.
@@ -557,8 +568,8 @@ fn worklife_declared_hft_quote_keeps_the_following_year_in_canvas_print() {
         backend: MetricBackend::Canvas2d,
     };
     let batch = core.collect_canvas_metric_requests(context).unwrap();
-    // The actual Studio fallback measured the source HFT quote as a full em.
-    // Feed that real observation through the public preparation/selection path.
+    // 실제 Studio 대체 글꼴은 원본 HFT 따옴표의 폭을 1em으로 측정했다.
+    // 이 관측을 공개 준비·선택 경로에 전달한다.
     let replies = batch
         .requests
         .iter()
@@ -624,9 +635,9 @@ fn worklife_declared_hft_quote_keeps_the_following_year_in_canvas_print() {
     assert_eq!(owners.len(), 1);
     assert!(owners[0]["text"].as_str().unwrap().starts_with("22"));
     let x = owners[0]["placement"]["runToPage"]["e"].as_f64().unwrap();
-    // C80: Native/fresh WASM all6 pages >=90%; p4=99.04483/99.03763%.
-    // Independent2020 Print p4 H2hdrM year origin82.3953476pt ->96CSSpx.
-    // T16 quote ToUnicode2019, Widths225, FontMatrix.001; no font hmtx inference.
+    // C80: Native/fresh WASM 전 6쪽이 90% 이상이며 4쪽은 99.04483/99.03763%다.
+    // 독립 2020 Print 4쪽 H2hdrM 연도 원점은 82.3953476pt이며 96 CSS px로 환산한다.
+    // T16 따옴표는 ToUnicode 2019, Widths 225, FontMatrix .001이며 hmtx를 추정하지 않는다.
     assert!(
         (x - 109.86046346028646).abs() <= 2.0,
         "year after HFT quote: {x}"
@@ -953,7 +964,7 @@ fn pii_declared_ttf_closing_angles_keep_source_order_and_independent_ends() {
     }
     let core = pii_declared_program_core();
     // 전66쪽 Native/fresh WASM90% 및18/43쪽 양쪽100%·review/overlay 직접 판독 후 추가.
-    // PDF CTM .12pt *96/72: p18 x1222,size125,W500 →205.52CSSpx;
+    // PDF CTM .12pt × 96/72: 18쪽 x1222, size125, W500 → 205.52 CSS px;
     // p43 x1021,size117,W500 →172.72CSSpx. 평균 점수나 후보 좌표를 근거로 삼지 않는다.
     for (page, count, label, expected_end) in
         [(18, 1, " 규제 개요 ", 205.52), (43, 2, "신  설", 172.72)]

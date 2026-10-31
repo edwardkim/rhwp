@@ -1044,6 +1044,9 @@ mod support;
         }
         self.assertTrue(release_test)
         self.assertEqual(release_test, release)
+        # These native-only cases live below tests/cases, outside the root-file
+        # discovery above, and default-feature archives compile them out.
+        self.assertTrue({"skia_region_plan", "skia_host_surface"}.issubset(release_test))
 
     def test_rust_workers_wait_only_for_their_archive_partition(self) -> None:
         for archive_label, index, partition in (

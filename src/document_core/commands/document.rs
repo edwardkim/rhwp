@@ -407,6 +407,7 @@ impl DocumentCore {
             hft_outline_fonts: Default::default(),
             metafile_fonts: Default::default(),
             font_environment: None,
+            host_font_environment: None,
             composed: Vec::new(),
             body_page_field_error: None,
             render_normalization: super::super::RenderNormalizationState::default(),
@@ -3157,6 +3158,7 @@ impl DocumentCore {
     pub fn set_document(&mut self, doc: Document) {
         self.border_paint_store.clear();
         self.document = doc;
+        self.host_font_environment = None;
         self.canvas_metrics = None;
         self.render_normalization.text_reflowed_tables.clear();
         self.bump_bin_data_epoch();

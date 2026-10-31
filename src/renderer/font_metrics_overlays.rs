@@ -182,9 +182,17 @@ pub(crate) fn declared_original_glyph_advance_em(
         return Some(0.5);
     }
     // 원본 HNC 반각 괘선과 Unicode 전각 괘선은 같은 표시 모양이어도
-    // 다른 프로그램이다. 원본 sample11의 한컴2020 Print는 이 HNC 선을
-    // Haansoft Batang의512/1024em으로 출력한다. BMP HWP5 표기도 같은 키다.
-    if face == "명조" && !bold && !italic && matches!(character, '\u{F080F}' | '\u{A80F}') {
+    // 다른 프로그램이다. 원본 sample11의 한컴 2020 Print는 가는 선을 반각으로
+    // 출력한다. sample10의 690·732·746·761쪽과 #5793 Print도 원본 이중선을
+    // 반각으로 확인한다. BMP HWP5 표기도 같은 원본 기호다.
+    if face == "명조"
+        && !bold
+        && !italic
+        && matches!(
+            character,
+            '\u{F080F}' | '\u{A80F}' | '\u{F0827}' | '\u{A827}'
+        )
+    {
         return Some(0.5);
     }
     // 별도 빈 HWPX의 명조 HFT ASCII/선문자 표본을 한컴2020 Print:
@@ -192,6 +200,11 @@ pub(crate) fn declared_original_glyph_advance_em(
     // 미확인 선문자·다른 프로그램·style에는 반영하지 않는다. 대상 본문의
     // 연결선 길이나 원점을 늘리는 대신 같은 원본 문자 전진을 측정·paint가 쓴다.
     if face == "명조" && !bold && !italic && matches!(character, '─' | '│' | '═') {
+        return Some(1.0);
+    }
+    // 원본 명조의 글머리표는 한컴 Print에서 한 글자 폭을 점유한다.
+    // 원본 프로그램이 해당 글리프를 제공하면 호출자가 그 실제 폭을 우선한다.
+    if face == "명조" && !bold && !italic && character == '•' {
         return Some(1.0);
     }
     original_glyph_advance_em(face, bold, italic, character).or_else(|| {

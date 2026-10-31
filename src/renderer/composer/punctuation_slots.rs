@@ -30,6 +30,7 @@ pub(super) fn apply_space_origin(
         // 환산하므로 영문 자간·글자 위치와 원본 글자모양을 바꾸지 않는다.
         output.font_space_em =
             Some(0.5 * source.font_size_for_lang(origin) * source.ratio_for_lang(origin) / em);
+        output.inherited_half_space_em = true;
     }
 }
 
@@ -68,7 +69,13 @@ pub(super) fn try_character_style<S: crate::renderer::style_resolver::storage::S
     Ok(output)
 }
 
-fn slot(ch: char, inherited: usize, regenerated: bool, style: Option<&ResolvedCharStyle>) -> usize {
+fn slot(
+    ch: char,
+    inherited: usize,
+    regenerated: bool,
+    style: Option<&ResolvedCharStyle>,
+    styles: &ResolvedStyleSet,
+) -> usize {
     let Some(style) = style else {
         return inherited;
     };
@@ -78,7 +85,27 @@ fn slot(ch: char, inherited: usize, regenerated: bool, style: Option<&ResolvedCh
         != style.font_size_for_lang(1)
         || style.letter_spacing_for_lang(inherited) != style.letter_spacing_for_lang(1)
         || style.ratio_for_lang(inherited) != style.ratio_for_lang(1);
-    if style.explicit_latin_slot && super::is_latin_slot_punct(ch) {
+    // 한글 3.0에서 상속된 한글 프로그램에 구두점이 없고 원문의 영문
+    // 프로그램에 있으면, 그 글리프를 공급하는 슬롯이 측정과 paint를 함께 소유한다.
+    // 양쪽 프로그램이 확인되지 않으면 기존 원본 폭 계약을 유지한다.
+    let supplied_latin_punctuation = styles.source_hwp3_native
+        && inherited != 1
+        && ch.is_ascii_punctuation()
+        && styles
+            .native_pua_fonts
+            .get_otf(
+                style.font_family_for_lang(inherited),
+                style.bold,
+                style.italic,
+            )
+            .is_some_and(|font| !font.has_glyph(ch))
+        && styles
+            .native_pua_fonts
+            .get_otf(style.font_family_for_lang(1), style.bold, style.italic)
+            .is_some_and(|font| font.has_glyph(ch));
+    if supplied_latin_punctuation {
+        1
+    } else if style.explicit_latin_slot && super::is_latin_slot_punct(ch) {
         1
     } else if explicit_metrics_differ
         && (matches!(ch, ' ' | '\u{00a0}') || ch.is_ascii_punctuation())
@@ -107,6 +134,7 @@ pub(super) fn metric_slot(
         inherited,
         false,
         styles.char_styles.get(style_id as usize),
+        styles,
     )
 }
 
@@ -121,10 +149,9 @@ pub(super) fn try_resolve_run_slots<S: crate::storage::Storage>(
         for run in std::mem::take(&mut line.runs) {
             let style = styles.char_styles.get(run.char_style_id as usize);
             if run.char_overlap.is_some()
-                || !run
-                    .text
-                    .chars()
-                    .any(|ch| slot(ch, run.lang_index, regenerated, style) != run.lang_index)
+                || !run.text.chars().any(|ch| {
+                    slot(ch, run.lang_index, regenerated, style, styles) != run.lang_index
+                })
             {
                 storage.push(&mut resolved, run)?;
                 continue;
@@ -137,7 +164,7 @@ pub(super) fn try_resolve_run_slots<S: crate::storage::Storage>(
             let mut lang = run.lang_index;
             let mut origin = run.neutral_space_origin;
             for (scalar, (byte, ch)) in run.text.char_indices().enumerate() {
-                let next = slot(ch, run.lang_index, regenerated, style);
+                let next = slot(ch, run.lang_index, regenerated, style, styles);
                 let next_origin = space_origin(ch, run.lang_index, style);
                 if (next, next_origin) != (lang, origin) {
                     if byte > start {

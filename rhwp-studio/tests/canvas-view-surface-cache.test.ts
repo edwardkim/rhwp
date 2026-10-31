@@ -472,3 +472,33 @@ test('CanvasView는 원본 논리 크기를 유지하며 공통 Print 종이 표
     await vite.close();
   }
 });
+
+
+test('backend 전환 시 active와 익명 pool canvas의 고정 context를 함께 폐기한다', async () => {
+  const previousDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
+  const vite = await createServer({
+    root: fileURLToPath(new URL('..', import.meta.url)),
+    appType: 'custom', logLevel: 'silent', server: { middlewareMode: true },
+  });
+  try {
+    Object.defineProperty(globalThis, 'document', { configurable: true,
+      value: { createElement: () => new FakeCanvas() } });
+    const { CanvasPool } = await vite.ssrLoadModule('/src/view/canvas-pool.ts');
+    const pool = new CanvasPool();
+    const active = pool.acquire(0);
+    const pooled = pool.acquire(1);
+    pool.release(1);
+    assert.equal(pool.totalCount, 2);
+    pool.discardAll();
+    assert.equal(pool.totalCount, 0);
+    const next = pool.acquire(0);
+    assert.notEqual(next, active);
+    assert.notEqual(next, pooled);
+    pool.release(0);
+    assert.equal(pool.acquire(0), next, '같은 backend에서는 기존 pool 재사용을 유지한다');
+  } finally {
+    if (previousDocument) Object.defineProperty(globalThis, 'document', previousDocument);
+    else Reflect.deleteProperty(globalThis, 'document');
+    await vite.close();
+  }
+});

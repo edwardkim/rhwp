@@ -949,7 +949,7 @@ impl DocumentCore {
                                 &self.document.doc_info,
                                 language_slot,
                                 shape.font_ids[language_slot],
-                                self.font_environment.as_ref(),
+                                self.resolved_font_environment(),
                             )
                         })
                 });
@@ -1150,7 +1150,7 @@ impl DocumentCore {
                     ),
                     layout_metric,
                     provenance,
-                    oracle: self.font_environment.as_ref().map_or_else(
+                    oracle: self.resolved_font_environment().map_or_else(
                         OracleDecision::not_provided,
                         |env| OracleDecision {
                             status: "declared".into(),

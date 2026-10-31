@@ -801,6 +801,7 @@ fn parse_ruby(ctrl_data: &[u8]) -> Control {
 
 fn parse_char_overlap(ctrl_data: &[u8]) -> Control {
     let mut co = CharOverlap::default();
+    co.hwp_wire_chars = true;
     if ctrl_data.len() < 2 {
         return Control::CharOverlap(co);
     }

@@ -6,6 +6,8 @@ use super::*;
 
 #[path = "table_inline_grid.rs"]
 mod inline_grid;
+#[path = "table/row_frames.rs"]
+mod row_frames;
 
 /// [#2722] `Table::rebuild_grid()` 가 예약할 수 있는 최대 그리드 칸 수.
 ///
@@ -83,15 +85,16 @@ pub struct Table {
 }
 
 /// 표 쪽 나눔 종류
-/// bit 0-1: 0=나누지 않음, 1=셀 단위로 나눔, 2=나눔(행 단위)
+/// bit 0-1: 0=나누지 않음, 1=셀 단위로 나눔, 2=나눔(글줄부터 이어받기).
+/// 공식 원문의 값 2 중복 기재 정정은 mydocs/tech/hwp_spec_errata.md §35 참조.
 #[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum TablePageBreak {
     /// 나누지 않음 (0)
     #[default]
     None,
-    /// 셀 단위로 나눔 (1) — 행 내부(인트라-로우) 분할 허용
+    /// 셀 단위로 나눔 (1) — 경계에 걸린 셀 전체를 다음 쪽으로 이동(HWPX TABLE)
     CellBreak,
-    /// 나눔 (2) — 행 경계에서만 나눔 (인트라-로우 분할 없음)
+    /// 나눔 (2) — 경계에 걸린 글줄부터 다음 쪽으로 이어받음(HWPX CELL)
     RowBreak,
 }
 crate::storage::clone_copy!(TablePageBreak);
@@ -714,17 +717,9 @@ impl Table {
         PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS.with(|calls| calls.get())
     }
 
-    /// Widths owned by cell paragraph frames before padding and paragraph margins.
-    ///
-    /// Native tables may repeat a row with raw cell widths whose sum is a few
-    /// HWPUNIT short of the table's resolved column grid. Those raw values are
-    /// serialization auxiliaries, not independent row boundaries. Use genuine
-    /// base-track evidence and place any positive table-width residual on the
-    /// last column without inferring a prior editing gesture.
-    ///
-    /// This is deliberately batch-shaped. Row-role inference examines the table
-    /// as a whole, so repeating it once per cell makes large native tables
-    /// quadratic and can prevent on-demand reflow from completing.
+    /// 문단 프레임은 여백을 빼기 전의 실제 셀 폭을 소비한다. 원본 구획을
+    /// 완결한 행은 마지막 셀에서 표 외곽을 닫고, 그 밖의 보조 폭은 기존
+    /// 공통 grid 해석을 유지한다. 셀마다 표 전체를 다시 탐색하지 않는다.
     pub(crate) fn paragraph_frame_owner_widths(&self) -> Vec<i32> {
         match self.paragraph_frame_owner_widths_with_storage(&crate::storage::Unbounded) {
             Ok(value) => value,
@@ -733,6 +728,25 @@ impl Table {
     }
 
     pub(crate) fn paragraph_frame_owner_widths_with_storage<S: crate::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<Vec<i32>, S::Error> {
+        let mut owners = self.fallback_paragraph_frame_owner_widths_with_storage(storage)?;
+        for (row, frames) in self
+            .closing_row_frames_with_storage(storage)?
+            .into_iter()
+            .enumerate()
+        {
+            for frame in frames.into_iter().flatten() {
+                if usize::from(self.cells[frame.cell_index].row) == row {
+                    owners[frame.cell_index] = frame.width_hu.min(i64::from(i32::MAX)) as i32;
+                }
+            }
+        }
+        Ok(owners)
+    }
+
+    fn fallback_paragraph_frame_owner_widths_with_storage<S: crate::storage::Storage>(
         &self,
         storage: &S,
     ) -> Result<Vec<i32>, S::Error> {

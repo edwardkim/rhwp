@@ -2103,6 +2103,33 @@ fn serialize_group_child(
     type_level: u16, // 도형별 태그 level
     records: &mut Vec<Record>,
 ) {
+    let start = records.len();
+    serialize_group_child_records(child, comp_level, type_level, records);
+    // [#8225] 자식 도형의 CTRL_DATA 는 그 SHAPE_COMPONENT 바로 뒤(자식 레벨)에 둔다 — 파서가 읽은 자리
+    if let Some(data) = child.shape_attr().ctrl_data.as_ref() {
+        if records
+            .get(start)
+            .is_some_and(|r| r.tag_id == tags::HWPTAG_SHAPE_COMPONENT && r.level == comp_level)
+        {
+            records.insert(
+                start + 1,
+                Record {
+                    tag_id: tags::HWPTAG_CTRL_DATA,
+                    level: comp_level + 1,
+                    size: data.len() as u32,
+                    data: data.clone(),
+                },
+            );
+        }
+    }
+}
+
+fn serialize_group_child_records(
+    child: &ShapeObject,
+    comp_level: u16, // SHAPE_COMPONENT level
+    type_level: u16, // 도형별 태그 level
+    records: &mut Vec<Record>,
+) {
     use crate::parser::tags;
 
     match child {

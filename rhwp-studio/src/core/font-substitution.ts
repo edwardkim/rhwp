@@ -208,7 +208,7 @@ function installedFaceName(
   // A width-only presence probe can also see the platform's LastResort font.
   // With an authorized catalog available, an unmatched name is unverified;
   // do not promote that probe to the selected original program.
-  if (getLocalFontState().source === 'local-font-access') return null;
+  if (!getLocalFontState().stored || getLocalFontState().source === 'local-font-access') return null;
   return detectedOSFontIndex().get(normalizedFamilyKey(fontName)) ?? null;
 }
 

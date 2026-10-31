@@ -717,8 +717,10 @@ fn test_layout_with_composed_styles() {
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
 
     let styles = ResolvedStyleSet {
+        source_hwp3_native: false,
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
+        script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
         char_overlap_size_bounds: None,
         source_char_shapes: Default::default(),
@@ -875,8 +877,10 @@ fn test_layout_multi_run_x_position() {
 
     let composed: Vec<_> = paragraphs.iter().map(|p| compose_paragraph(p)).collect();
     let styles = ResolvedStyleSet {
+        source_hwp3_native: false,
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
+        script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
         char_overlap_size_bounds: None,
         source_char_shapes: Default::default(),
@@ -983,8 +987,10 @@ fn test_resolved_to_text_style() {
     use crate::renderer::style_resolver::ResolvedCharStyle;
 
     let styles = ResolvedStyleSet {
+        source_hwp3_native: false,
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
+        script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
         char_overlap_size_bounds: None,
         source_char_shapes: Default::default(),
@@ -1028,8 +1034,10 @@ fn test_resolved_to_text_style_with_ratio() {
     use crate::renderer::style_resolver::ResolvedCharStyle;
 
     let styles = ResolvedStyleSet {
+        source_hwp3_native: false,
         source_program_projection_slots: Default::default(),
         isolated_jamo_font: None,
+        script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
         char_overlap_size_bounds: None,
         source_char_shapes: Default::default(),
@@ -2211,11 +2219,76 @@ fn task290_inline_left_returns_none() {
         "abc\t", 0, &ext, &ts, &tab_stops, 48.0, true, 420.0,
     );
     assert_eq!(result, None, "LEFT inline 은 pending 없음");
+    {
+        use super::paragraph_layout::{resolve_last_tab_pending, PendingTab};
+        let style = TextStyle {
+            font_size: 16.0,
+            line_x_offset: 20.0,
+            ..Default::default()
+        };
+        let stops = [TabStop {
+            position: 300.0,
+            tab_type: 1,
+            fill_type: 3,
+        }];
+        for fill in [0, 3] {
+            let extensions = [mk_ext(7500, 2, fill)];
+            let pending =
+                resolve_last_tab_pending("\t", 0, &extensions, &style, &stops, 48.0, false, 420.0)
+                    .unwrap();
+            assert_eq!(
+                pending,
+                PendingTab::StoredStart {
+                    position: 120.0,
+                    fill_type: fill
+                }
+            );
+            // 독립 한컴 저장/Print 대조: fwSpace는 저장 탭 뒤에서 1/4em을 전진한다.
+            let carried = pending.carry_over_blank("\u{2007}", &style);
+            assert_eq!(
+                carried,
+                PendingTab::StoredStart {
+                    position: 124.0,
+                    fill_type: fill
+                }
+            );
+            let same_run = resolve_last_tab_pending(
+                "\t\u{2007}",
+                0,
+                &extensions,
+                &style,
+                &stops,
+                48.0,
+                false,
+                420.0,
+            );
+            assert_eq!(
+                same_run,
+                Some(carried),
+                "공백의 런 분리와 무관하게 전진 유지"
+            );
+            for aligned in [
+                PendingTab::Right {
+                    position: 300.0,
+                    fill_type: fill,
+                },
+                PendingTab::Center {
+                    position: 300.0,
+                    fill_type: fill,
+                },
+            ] {
+                assert_eq!(aligned.carry_over_blank("\u{2007}", &style), aligned);
+            }
+        }
+    }
 }
 
 #[test]
-fn task290_inline_right_uses_tabdef() {
-    // inline 이 RIGHT (ext[2] high=2) 면 TabDef find_next_tab_stop 경로로 폴스루
+fn task290_inline_right_preserves_stored_advance_with_auto_tab() {
+    // 같은 저장 탭 계약의 조각별 순서와 동적 정지도 함께 확인한다.
+    source_fragment_tab_record_order_preserves_stored_advance();
+    source_fragment_tab_record_boundaries_preserve_dynamic_stop();
+    // 유효한 저장 줄의 전진은 자동 우측 속성과 별개다. 재조판은 생산자가 제거한다.
     let ext = vec![mk_ext(200, 2, 3)]; // RIGHT, fill=dot
     let ts = mk_text_style();
     let tab_stops = vec![TabStop {
@@ -2224,13 +2297,39 @@ fn task290_inline_right_uses_tabdef() {
         fill_type: 3,
     }];
     let result = super::paragraph_layout::resolve_last_tab_pending(
-        "abc\t", 0, &ext, &ts, &tab_stops, 48.0, false, 420.0,
+        "\t", 0, &ext, &ts, &tab_stops, 48.0, true, 420.0,
     );
     assert_eq!(
         result,
-        Some((300.0, 1, 3)),
-        "RIGHT inline → TabDef 기반 위치, fill=dot"
+        Some(super::paragraph_layout::PendingTab::StoredStart {
+            position: 200.0 * 96.0 / 7200.0,
+            fill_type: 3
+        }),
+        "RIGHT inline → 원본 전진 유지, 자동 속성으로 TabDef 정지를 재적용하지 않음"
     );
+    {
+        use super::paragraph_layout::{resolve_last_tab_pending, PendingTab};
+        let style = TextStyle {
+            line_x_offset: 20.0,
+            ..Default::default()
+        };
+        let extensions = [[0, 1, 0x0203, 0, 0, 0, 9]];
+        let stops = [TabStop {
+            position: 300.0,
+            tab_type: 1,
+            fill_type: 3,
+        }];
+        let pending =
+            resolve_last_tab_pending("\t", 0, &extensions, &style, &stops, 48.0, false, 420.0)
+                .unwrap();
+        assert_eq!(
+            pending,
+            PendingTab::StoredStart {
+                position: 20.0 + 65536.0 * 96.0 / 7200.0,
+                fill_type: 3
+            }
+        );
+    }
 }
 
 #[test]
@@ -2248,7 +2347,10 @@ fn task290_inline_center_uses_tabdef() {
     );
     assert_eq!(
         result,
-        Some((200.0, 2, 0)),
+        Some(super::paragraph_layout::PendingTab::Center {
+            position: 200.0,
+            fill_type: 0
+        }),
         "CENTER inline → TabDef 기반 위치, fill 없음"
     );
 }
@@ -2268,9 +2370,40 @@ fn task290_no_inline_fallback_to_tabdef() {
     );
     assert_eq!(
         result,
-        Some((250.0, 1, 0)),
+        Some(super::paragraph_layout::PendingTab::Right {
+            position: 250.0,
+            fill_type: 0
+        }),
         "inline 없음 → TabDef RIGHT stop 사용, fill 없음"
     );
+    {
+        use super::paragraph_layout::{resolve_last_tab_pending, PendingTab};
+        let style = TextStyle::default();
+        let stops = [TabStop {
+            position: 300.0,
+            tab_type: 1,
+            fill_type: 3,
+        }];
+        let zero_advance = [mk_ext(0, 2, 3)];
+        let placeholder = [[0, 0, 0, 0, 0, 0, 9]];
+        for (extensions, auto_right) in [
+            (&zero_advance[..], true),
+            (&placeholder[..], false),
+            (&[][..], false),
+        ] {
+            let pending = resolve_last_tab_pending(
+                "\t", 0, extensions, &style, &stops, 48.0, auto_right, 420.0,
+            )
+            .unwrap();
+            assert_eq!(
+                pending,
+                PendingTab::Right {
+                    position: 300.0,
+                    fill_type: 3
+                }
+            );
+        }
+    }
 }
 
 #[test]
@@ -2287,11 +2420,12 @@ fn task290_no_inline_auto_tab_right_fallthrough() {
         "abcdef\t", 0, &ext, &ts, &tab_stops, 48.0, true, 420.0,
     );
     assert!(result.is_some(), "auto_tab_right 폴스루 → Some");
-    let (tp, tt, _ft) = result.unwrap();
-    assert_eq!(tt, 1, "auto_tab_right 은 RIGHT(1)");
-    assert!(
-        (tp - 420.0).abs() < 0.1,
-        "tab_pos 는 available_width 에 고정"
+    assert_eq!(
+        result.unwrap(),
+        super::paragraph_layout::PendingTab::Right {
+            position: 420.0,
+            fill_type: 0
+        }
     );
 }
 
@@ -3217,5 +3351,102 @@ fn whitespace_tac_carrier_paint_y_rejects_missing_or_block_tac() {
             96.0,
         ),
         None
+    );
+}
+
+// 저장 탭 세 개 중 첫 탭은 선행 인라인 개체 이전에 있고, 나머지 둘은 뒤 조각에 있다.
+// 각 저장 전진은 차례로 7200·14400·21600 HU이고 마지막 탭은 오른쪽 정렬이다.
+fn source_fragment_tab_record_order_preserves_stored_advance() {
+    use super::paragraph_layout::{resolve_last_tab_pending, PendingTab};
+    let extensions = [mk_ext(7200, 1, 0), mk_ext(14400, 1, 0), mk_ext(21600, 2, 0)];
+    let mut style = TextStyle {
+        line_x_offset: 20.0,
+        ..mk_text_style()
+    };
+    style.inline_tabs = extensions.to_vec();
+    let unsliced =
+        resolve_last_tab_pending("\t\t", 2, &extensions, &style, &[], 48.0, false, 1000.0);
+    let source = ['\t', 'X', '\t', '\t'];
+    style = style.for_source_text_fragment(2, &source);
+    let aligned = resolve_last_tab_pending(
+        "\t\t",
+        1,
+        &style.inline_tabs,
+        &style,
+        &[],
+        48.0,
+        false,
+        1000.0,
+    );
+    assert_eq!(
+        aligned,
+        Some(PendingTab::StoredStart {
+            position: 500.0,
+            fill_type: 0
+        })
+    );
+    assert_ne!(
+        unsliced, aligned,
+        "조각 앞에서 소비한 탭의 레코드를 다시 사용하면 안 된다"
+    );
+}
+
+fn source_fragment_tab_record_boundaries_preserve_dynamic_stop() {
+    use super::paragraph_layout::{resolve_last_tab_pending, PendingTab};
+    let extensions = [mk_ext(7200, 1, 0), mk_ext(14400, 2, 3)];
+    let style = TextStyle {
+        inline_tabs: extensions.to_vec(),
+        line_x_offset: 20.0,
+        ..mk_text_style()
+    };
+    let source = ['가', '\t', '나', '\t'];
+    assert_eq!(
+        style.for_source_text_fragment(1, &source).inline_tabs,
+        extensions
+    );
+    let suffix = style.for_source_text_fragment(3, &source);
+    assert_eq!(suffix.inline_tabs, extensions[1..]);
+    assert_eq!(
+        resolve_last_tab_pending(
+            "\t",
+            0,
+            &suffix.inline_tabs,
+            &suffix,
+            &[],
+            48.0,
+            false,
+            1000.0
+        ),
+        Some(PendingTab::StoredStart {
+            position: 212.0,
+            fill_type: 3
+        }),
+    );
+    let stops = [TabStop {
+        position: 300.0,
+        tab_type: 1,
+        fill_type: 0,
+    }];
+    let dynamic = TextStyle {
+        inline_tabs: Vec::new(),
+        ..style
+    }
+    .for_source_text_fragment(3, &source);
+    assert!(dynamic.inline_tabs.is_empty());
+    assert_eq!(
+        resolve_last_tab_pending(
+            "\t",
+            0,
+            &dynamic.inline_tabs,
+            &dynamic,
+            &stops,
+            48.0,
+            false,
+            1000.0
+        ),
+        Some(PendingTab::Right {
+            position: 300.0,
+            fill_type: 0
+        }),
     );
 }

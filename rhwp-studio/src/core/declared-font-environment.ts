@@ -1,7 +1,8 @@
-import { registerLoadedLocalFontFace } from './font-loader.ts';
+import { clearLoadedLocalFontFaces, registerLoadedLocalFontFace } from './font-loader.ts';
 import { FONT_RULE_WEBFONT_ENTRIES } from './font-rule-runtime.ts';
-import { loadLocalFontBytes, resolveLocalFont } from './local-fonts.ts';
+import { loadPreferredLocalFontBytes, resolveLocalFontProgramCandidates } from './local-fonts.ts';
 import { normalizeFontFaceData } from './sfnt-face.ts';
+import { fontSymbolDescriptors, type FontSymbolInspector } from './font-symbol-coverage.ts';
 
 export interface DocumentFontSelectionPlan {
   environmentId: string | null;
@@ -16,23 +17,43 @@ interface LoadedProgram {
   programId: string;
   face: FontFace;
   trueType: boolean;
+  openTypeCff: boolean;
 }
 
-let programGeneration = 0;
 const loadedPrograms = new Map<string, LoadedProgram>();
 const suppliedAliases = new Map<string, string>();
 
-async function loadLocalProgram(query: string): Promise<LoadedProgram | null> {
+/** 이미 승인·적재한 같은 family의 CFF 바이트만 조판 공급에 사용한다. */
+export function declaredOpenTypeProgram(family: string): Uint8Array | null {
+  const normalized = family.trim().toLocaleLowerCase();
+  const match = [...loadedPrograms.values()].find(program => program.openTypeCff
+    && (program.family.toLocaleLowerCase() === normalized || program.query.toLocaleLowerCase() === normalized));
+  return match ? new Uint8Array(match.bytes) : null;
+}
+
+/** 로컬 감지 초기화 시 바이트·별칭·CSS face를 함께 해제한다. */
+export function clearDeclaredLocalPrograms(): void {
+  clearLoadedLocalFontFaces();
+  loadedPrograms.clear();
+  suppliedAliases.clear();
+}
+
+async function loadLocalProgram(query: string, inspect?: FontSymbolInspector): Promise<LoadedProgram | null> {
   // local() can report loaded while the platform supplies LastResort glyphs.
   // Only a face from the already authorized catalog may become a declared
   // local program. An unverified name remains on the ordinary fallback path.
-  const record = resolveLocalFont(query);
-  if (record?.detectionSource !== 'local-font-access') return null;
-  const cached = loadedPrograms.get(query);
-  if (cached) return cached;
+  const records = resolveLocalFontProgramCandidates(query);
+  if (!records.length) return null;
   try {
     // 원본 API face의 바이트를 직접 로드한다. 읽기/형식 실패는 공급 완료가 아니다.
-    const original = await loadLocalFontBytes(query);
+    let original: ArrayBuffer | null = null;
+    for (const record of records) {
+      const candidate = await loadPreferredLocalFontBytes(record);
+      if (!candidate || candidate.byteLength < 4) continue;
+      const signature = new DataView(candidate).getUint32(0);
+      if (signature === 0x4f54544f) { original = candidate; break; }
+      if (!original && signature !== 0x74746366) original = candidate;
+    }
     // The approved API returns bytes for the matched face. A native local()
     // cascade can silently replace missing glyphs with LastResort. Let the
     // browser consume that same program directly, including its cmap.
@@ -41,11 +62,18 @@ async function loadLocalProgram(query: string): Promise<LoadedProgram | null> {
     // 유지하며 디렉터리·cmap 등 브라우저가 거부하는 메타데이터만 같은 방식으로 준비한다.
     const bytes = normalizeFontFaceData(original, 0);
     if (!bytes) return null;
-    const face = new FontFace(query, bytes);
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    const programId = `browser-local-${[...new Uint8Array(digest)]
+      .map(byte => byte.toString(16).padStart(2, '0')).join('')}`;
+    const cached = loadedPrograms.get(query);
+    if (cached?.programId === programId) return cached;
+    const face = new FontFace(query, bytes, fontSymbolDescriptors(bytes, {}, inspect));
     await face.load();
+    if (cached) document.fonts.delete(cached.face);
     const signature = bytes.byteLength >= 4 ? new DataView(bytes).getUint32(0) : 0;
     const trueType = signature === 0x00010000 || signature === 0x74727565;
-    const program = { query, family: query, bytes, programId: `browser-local-${++programGeneration}`, face, trueType };
+    const openTypeCff = signature === 0x4f54544f;
+    const program = { query, family: query, bytes, programId, face, trueType, openTypeCff };
     loadedPrograms.set(query, program);
     return program;
   } catch {
@@ -59,6 +87,7 @@ export interface DeclaredFontProgram {
   family: string;
   programId: string;
   trueType: boolean;
+  openTypeCff: boolean;
 }
 
 export interface DeclaredFontProgramSnapshot {
@@ -104,7 +133,7 @@ async function loadPublicProgram(query: string): Promise<LoadedProgram | null> {
     const programId = `browser-canonical-${[...new Uint8Array(digest)]
       .map(byte => byte.toString(16).padStart(2, '0')).join('')}`;
     const program = { query, family: query, bytes, programId, face,
-      trueType: flavor === 0x00010000 || flavor === 0x74727565 };
+      trueType: flavor === 0x00010000 || flavor === 0x74727565, openTypeCff: flavor === 0x4f54544f };
     publicPrograms.set(query, program);
     return program;
   } catch {
@@ -117,6 +146,7 @@ async function loadPublicProgram(query: string): Promise<LoadedProgram | null> {
 export async function prepareDeclaredFontPrograms(
   plan: DocumentFontSelectionPlan,
   isCurrent: () => boolean,
+  inspect?: FontSymbolInspector,
 ): Promise<DeclaredFontProgramSnapshot> {
   const empty = (): DeclaredFontProgramSnapshot => ({ programs: [], publicFallbackBlockedSources: [] });
   const names = [...new Set(plan.requests.flatMap(request => [...request.primary, ...request.substitute]))];
@@ -124,7 +154,7 @@ export async function prepareDeclaredFontPrograms(
   const programs = new Map<string, LoadedProgram>();
   const embedded = new Set(plan.embeddedFamilies ?? []);
   for (const name of names) {
-    const program = await loadLocalProgram(name);
+    const program = await loadLocalProgram(name, inspect);
     if (!isCurrent()) return empty();
     if (program) programs.set(name, program);
   }
@@ -156,7 +186,7 @@ export async function prepareDeclaredFontPrograms(
       programs.set(name, program);
       // 공개 대체는 최종 family로 출력한다. 원본 이름의 CSS alias를 만들지 않아
       // 다음 문서의 실제 원본 프로그램을 이전 공개 alias가 가리지 않는다.
-      registerLoadedLocalFontFace(program.face);
+      registerLoadedLocalFontFace(program.face, false);
       break;
     }
   }
@@ -168,7 +198,7 @@ export async function prepareDeclaredFontPrograms(
       if (!selected) continue;
       if (!embedded.has(selected.family)) registerLoadedLocalFontFace(selected.face);
       if (embedded.has(requested) || requested === selected.query || suppliedAliases.get(requested) === selected.programId) continue;
-      const alias = new FontFace(requested, selected.bytes);
+      const alias = new FontFace(requested, selected.bytes, fontSymbolDescriptors(selected.bytes, {}, inspect));
       try {
         await alias.load();
         if (!isCurrent()) return empty();
@@ -180,7 +210,7 @@ export async function prepareDeclaredFontPrograms(
     }
   }
   return {
-    programs: [...programs.values()].map(({ query, family, programId, trueType }) => ({ query, family, programId, trueType })),
+    programs: [...programs.values()].map(({ query, family, programId, trueType, openTypeCff }) => ({ query, family, programId, trueType, openTypeCff })),
     publicFallbackBlockedSources: [...blocked],
   };
 }

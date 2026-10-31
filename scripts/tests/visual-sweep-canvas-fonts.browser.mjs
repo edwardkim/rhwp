@@ -1,6 +1,8 @@
 import './issue_8160_print_jpeg_frame.browser.mjs';
 import './picture-tones.browser.mjs';
 import './hft-outline-font-selection.browser.mjs';
+import './print-text-geometry.browser.mjs';
+import './split-otf-canvas.browser.mjs';
 // 실제 Chrome·FontFace·공개 Noto 글꼴로 PNG exporter의 글꼴 연결을 검사한다.
 // 아래 adapter 계약과, import한 실제 WASM의 HFT face 선택 계약을 각각 실행한다.
 import assert from 'node:assert/strict';
@@ -42,6 +44,10 @@ test('공급한 실제 font program을 사용하고 워밍업 Canvas 상태를 �
     export const version=()=> 'canvas-font-contract-adapter';
     export class HwpDocument {
       pageCount(){return 1;} setHangul2024Compat(){} free(){}
+      getNativeOtfFontRequests(){return '[]';} prepareNativeOtfFonts(){return false;}
+      collectCanvasMetricRequests(){return '{"revision":0,"requests":[]}';}
+      registerCanvasMetricReplies(){return false;} selectCanvasMetrics(){return false;}
+      canvasMetricsActive(){return false;}
       getDocumentFontSelectionPlan(){return '{"environmentId":null,"requests":[]}';}
       buildFontEnvironmentFromAvailablePrograms(programs){
         if(programs!=='[]')throw Error('Canvas adapter has no document substitutions');

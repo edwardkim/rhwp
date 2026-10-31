@@ -326,6 +326,9 @@ pub struct CharOverlap {
     pub expansion: u8,
     /// 글자 속성(charshape) ID 배열
     pub char_shape_ids: Vec<u32>,
+    /// HWP 바이너리 레코드의 문자 배열 여부. 원문 배열은 그대로 보존한다.
+    #[serde(skip)]
+    pub hwp_wire_chars: bool,
 }
 
 /// 감추기 ('pghd' 컨트롤)

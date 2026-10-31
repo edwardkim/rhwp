@@ -1,0 +1,796 @@
+{
+  "source_commit": "21ba44e3ea75966321d7184e2d94a8620e378013",
+  "base_commit": "168aaaf2bf5a4ef5ecc70a61087aeabf2d9d2433",
+  "candidate_build": {
+    "source": "21ba44e3ea75966321d7184e2d94a8620e378013",
+    "native_sha256": "d15ae3bd189f480b524130e66641051c058dce27800094d2589491736cb4457e",
+    "wasm_sha256": "082c321b597fb74cfb5ecdbbd1b7b495e638a48dd913887543e0f6bb3bade5ce",
+    "js_sha256": "8db5a374494ec01e885dbb649735ff1446802bc12addc556f5520097f06c4ee3"
+  },
+  "base_build": {
+    "source": "168aaaf2bf5a4ef5ecc70a61087aeabf2d9d2433",
+    "native_sha256": "d47bd0ca1322748026312518737a805be627bc2c526cf30b590a68a3e12fcb5a",
+    "wasm_sha256": "7072406ccfeb33b2c2b067230df62c02427490e318f42175289cdb52ed3761dc",
+    "js_sha256": "8db5a374494ec01e885dbb649735ff1446802bc12addc556f5520097f06c4ee3"
+  },
+  "hancom_outputs": [
+    {
+      "path": "pdf/title_page_start/maintainer/same-host-edited-2024.pdf",
+      "sha256": "32c1d03e428d0a6201e9e54c675de667dde646285aabf715e8a772b75aaebb15",
+      "job": {
+        "job_id": "a21f083c-4548-439f-ac32-f658102766df",
+        "status": "success",
+        "target": "pdf",
+        "input_filename": "edited.hwpx",
+        "output_filename": "same-host-edited-2024.pdf",
+        "size": 22803,
+        "sha256": "32c1d03e428d0a6201e9e54c675de667dde646285aabf715e8a772b75aaebb15",
+        "mime_type": "application/pdf",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "elapsed_ms": 17565,
+        "worker_elapsed_ms": 15072,
+        "worker_bits": 32,
+        "input_preprocess": "none"
+      }
+    },
+    {
+      "path": "pdf/title_page_start/maintainer/title-body-edited-2024.pdf",
+      "sha256": "88bac88f9c9a37e6d1bdcd39abb2ab23db326baa79c8e126e78cfe432be3c5a8",
+      "job": {
+        "job_id": "ab4b55bf-e82d-4789-b8cd-c3138c56814a",
+        "status": "success",
+        "target": "pdf",
+        "input_filename": "edited.hwpx",
+        "output_filename": "title-body-edited-2024.pdf",
+        "size": 22741,
+        "sha256": "88bac88f9c9a37e6d1bdcd39abb2ab23db326baa79c8e126e78cfe432be3c5a8",
+        "mime_type": "application/pdf",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "elapsed_ms": 17063,
+        "worker_elapsed_ms": 14512,
+        "worker_bits": 32,
+        "input_preprocess": "none"
+      }
+    },
+    {
+      "path": "pdf/title_page_start/maintainer/title-leading-edited-2024.pdf",
+      "sha256": "da10d4440b948e201efc79d06b5bc55ff065ef9bb678d4cda7bb5ce7841b3723",
+      "job": {
+        "job_id": "58934f91-708f-47db-9d79-8e3420cd9489",
+        "status": "success",
+        "target": "pdf",
+        "input_filename": "edited.hwpx",
+        "output_filename": "title-leading-edited-2024.pdf",
+        "size": 22797,
+        "sha256": "da10d4440b948e201efc79d06b5bc55ff065ef9bb678d4cda7bb5ce7841b3723",
+        "mime_type": "application/pdf",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "elapsed_ms": 19211,
+        "worker_elapsed_ms": 16554,
+        "worker_bits": 32,
+        "input_preprocess": "none"
+      }
+    },
+    {
+      "path": "tests/fixtures/pr8144/nine-leading-empty-page-break.hwp",
+      "sha256": "bcd80f6d7c4f8360a693dee2b9e13f3866aad8fd337531df154ac3906a2ffa8f",
+      "job": {
+        "job_id": "5f9d2764-cadd-4b10-8fe9-1334f82641d9",
+        "status": "success",
+        "target": "hwp",
+        "input_filename": "nine-leading-empty-page-break-seed.hwpx",
+        "output_filename": "nine-leading-empty-page-break.hwp",
+        "size": 16896,
+        "sha256": "bcd80f6d7c4f8360a693dee2b9e13f3866aad8fd337531df154ac3906a2ffa8f",
+        "mime_type": "application/x-hwp",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": null,
+        "logical_page_count": null,
+        "pdf_print_method": null,
+        "pdf_output_mode": "",
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "elapsed_ms": 12505,
+        "worker_elapsed_ms": 10157,
+        "worker_bits": 32,
+        "input_preprocess": "none"
+      }
+    },
+    {
+      "path": "pdf/title_page_start/maintainer/nine-leading-empty-page-break-2024.pdf",
+      "sha256": "669054a780e34384cd92850143c19dfc26dda0d697771bd07164cd38a592a047",
+      "job": {
+        "job_id": "e362b358-4637-40bf-988c-2d1080e1f409",
+        "status": "success",
+        "target": "pdf",
+        "input_filename": "nine-leading-empty-page-break.hwp",
+        "output_filename": "nine-leading-empty-page-break.pdf",
+        "size": 22076,
+        "sha256": "669054a780e34384cd92850143c19dfc26dda0d697771bd07164cd38a592a047",
+        "mime_type": "application/pdf",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 2,
+        "logical_page_count": null,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "elapsed_ms": 17919,
+        "worker_elapsed_ms": 15315,
+        "worker_bits": 32,
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "path": "pdf/title_page_start/maintainer/nine-leading-empty-2024.pdf",
+      "sha256": "7145013ce31225844553dd2a7735633f2ca463615560bfd3e465bb80f9d5f204",
+      "job": {
+        "job_id": "35f3a696-7604-46db-8e54-7df60e351001",
+        "status": "success",
+        "target": "pdf",
+        "input_filename": "nine-leading-empty.hwp",
+        "output_filename": "nine-leading-empty.pdf",
+        "size": 21903,
+        "sha256": "7145013ce31225844553dd2a7735633f2ca463615560bfd3e465bb80f9d5f204",
+        "mime_type": "application/pdf",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "elapsed_ms": 13711,
+        "worker_elapsed_ms": 12803,
+        "worker_bits": 32,
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "path": "tests/fixtures/pr8144/same-host-full-row.hwp",
+      "sha256": "4d2a1ba2b05432e02ec4f9e5dace702a50d8c26efdea64766817f19c2f715f34",
+      "job": {
+        "job_id": "a9df3ab0-9830-455b-86ab-02c2911ae86b",
+        "status": "success",
+        "target": "hwp",
+        "input_filename": "same-host-full-row-seed.hwpx",
+        "output_filename": "same-host-full-row.hwp",
+        "size": 35840,
+        "sha256": "4d2a1ba2b05432e02ec4f9e5dace702a50d8c26efdea64766817f19c2f715f34",
+        "mime_type": "application/x-hwp",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": null,
+        "logical_page_count": null,
+        "pdf_print_method": null,
+        "pdf_output_mode": "",
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "elapsed_ms": 8958,
+        "worker_elapsed_ms": 8136,
+        "worker_bits": 32,
+        "input_preprocess": "none"
+      }
+    },
+    {
+      "path": "pdf/title_page_start/maintainer/same-host-full-row-2024.pdf",
+      "sha256": "790a241ea049032e269a1404b89149eba34b415b6276fcb042e7729283214148",
+      "job": {
+        "job_id": "1b4959bc-c6d4-4d59-a6f5-e43f1d5367a5",
+        "status": "success",
+        "target": "pdf",
+        "input_filename": "same-host-full-row.hwp",
+        "output_filename": "same-host-full-row.pdf",
+        "size": 21895,
+        "sha256": "790a241ea049032e269a1404b89149eba34b415b6276fcb042e7729283214148",
+        "mime_type": "application/pdf",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "elapsed_ms": 13378,
+        "worker_elapsed_ms": 12515,
+        "worker_bits": 32,
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "path": "tests/fixtures/pr8144/same-host-with-spare-width.hwp",
+      "sha256": "35629dfe1e1576a99f40385d9291c56376eed89842ca482f43fbb6166bd3752c",
+      "job": {
+        "job_id": "878b241f-8545-41a9-b8ac-c0342191b374",
+        "status": "success",
+        "target": "hwp",
+        "input_filename": "same-host-with-spare-width-seed.hwpx",
+        "output_filename": "same-host-with-spare-width.hwp",
+        "size": 35840,
+        "sha256": "35629dfe1e1576a99f40385d9291c56376eed89842ca482f43fbb6166bd3752c",
+        "mime_type": "application/x-hwp",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": null,
+        "logical_page_count": null,
+        "pdf_print_method": null,
+        "pdf_output_mode": "",
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "elapsed_ms": 8717,
+        "worker_elapsed_ms": 7894,
+        "worker_bits": 32,
+        "input_preprocess": "none"
+      }
+    },
+    {
+      "path": "pdf/title_page_start/maintainer/same-host-with-spare-width-2024.pdf",
+      "sha256": "95c8b8b12436a3c6181cd4e3b0a8346c4ad88584b4d55fbf41723258f5b69030",
+      "job": {
+        "job_id": "b65cea14-14ce-4d6b-9358-a73e2f090e6f",
+        "status": "success",
+        "target": "pdf",
+        "input_filename": "same-host-with-spare-width.hwp",
+        "output_filename": "same-host-with-spare-width.pdf",
+        "size": 21808,
+        "sha256": "95c8b8b12436a3c6181cd4e3b0a8346c4ad88584b4d55fbf41723258f5b69030",
+        "mime_type": "application/pdf",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "elapsed_ms": 14543,
+        "worker_elapsed_ms": 13101,
+        "worker_bits": 32,
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "path": "pdf/title_page_start/maintainer/title-empty-hwp-2024.pdf",
+      "sha256": "eabd56c038ff4345126604503cf4aa64a7784dd72b1c06ea8842741c1fc6b293",
+      "job": {
+        "job_id": "5a3b5b71-542a-47a9-9f44-7c102d623193",
+        "status": "success",
+        "target": "pdf",
+        "input_filename": "title-table-after-empty-paragraph.hwp",
+        "output_filename": "title-empty-hwp-2024.pdf",
+        "size": 21962,
+        "sha256": "eabd56c038ff4345126604503cf4aa64a7784dd72b1c06ea8842741c1fc6b293",
+        "mime_type": "application/pdf",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "elapsed_ms": 17194,
+        "worker_elapsed_ms": 14211,
+        "worker_bits": 32,
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "path": "pdf/title_page_start/maintainer/title-empty-hwpx-2024.pdf",
+      "sha256": "757c270b05c163a11fcd46233a35691c513a105d957c5e917cc78f1bf11f930d",
+      "job": {
+        "job_id": "0375220a-6c2f-4b3d-9a63-0140c473579e",
+        "status": "success",
+        "target": "pdf",
+        "input_filename": "title-table-after-empty-paragraph.hwpx",
+        "output_filename": "title-empty-hwpx-2024.pdf",
+        "size": 21962,
+        "sha256": "757c270b05c163a11fcd46233a35691c513a105d957c5e917cc78f1bf11f930d",
+        "mime_type": "application/pdf",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "elapsed_ms": 17992,
+        "worker_elapsed_ms": 15368,
+        "worker_bits": 32,
+        "input_preprocess": "none"
+      }
+    },
+    {
+      "path": "pdf/title_page_start/maintainer/title-inline-2024.pdf",
+      "sha256": "c4eb62d9a6456c072b6a42b5b140f9644bc04adc30f1c23676dafb03f1f4e118",
+      "job": {
+        "job_id": "47d30f8a-5e30-4e45-a968-bb0d567e9fc6",
+        "status": "success",
+        "target": "pdf",
+        "input_filename": "title-table-then-inline-table.hwpx",
+        "output_filename": "title-inline-2024.pdf",
+        "size": 21958,
+        "sha256": "c4eb62d9a6456c072b6a42b5b140f9644bc04adc30f1c23676dafb03f1f4e118",
+        "mime_type": "application/pdf",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "elapsed_ms": 13813,
+        "worker_elapsed_ms": 12472,
+        "worker_bits": 32,
+        "input_preprocess": "none"
+      }
+    },
+    {
+      "path": "tests/fixtures/pr8144/nine-leading-empty.hwp",
+      "sha256": "b32062acc9f7fead1c3647c04cdf78f4caed8e274a407f210fec595f35100374",
+      "job": {
+        "job_id": "111af493-df38-49b4-8a0a-c11ec733b010",
+        "status": "success",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwpx",
+        "format": "hwp",
+        "bytes": 36352,
+        "pdf_page_count": null,
+        "logical_page_count": null,
+        "elapsed_ms": 9232,
+        "worker_elapsed_ms": 8365,
+        "worker_bits": 32,
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "input_preprocess": "none",
+        "pdf_print_method": null,
+        "pdf_output_mode": ""
+      }
+    }
+  ],
+  "fonts": [
+    {
+      "path": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+      "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+      "bytes": 32361044
+    },
+    {
+      "path": "/home/edward/mygithub/ttfs/kopub/KoPub Batang Bold.ttf",
+      "sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b",
+      "bytes": 6536212
+    },
+    {
+      "path": "/home/edward/mygithub/ttfs/kopub/KoPub Batang Light.ttf",
+      "sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+      "bytes": 6481172
+    },
+    {
+      "path": "/home/edward/mygithub/ttfs/kopub/KoPub Batang Medium.ttf",
+      "sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4",
+      "bytes": 6414208
+    },
+    {
+      "path": "/home/edward/mygithub/ttfs/kopub/KoPub Dotum Bold.ttf",
+      "sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275",
+      "bytes": 2968028
+    },
+    {
+      "path": "/home/edward/mygithub/ttfs/kopub/KoPub Dotum Light.ttf",
+      "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+      "bytes": 2994860
+    },
+    {
+      "path": "/home/edward/mygithub/ttfs/kopub/KoPub Dotum Medium.ttf",
+      "sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+      "bytes": 2975032
+    }
+  ],
+  "validation_files": [
+    {
+      "path": "pdf/title_page_start/maintainer/nine-leading-empty-2024.pdf",
+      "sha256": "7145013ce31225844553dd2a7735633f2ca463615560bfd3e465bb80f9d5f204",
+      "bytes": 21903
+    },
+    {
+      "path": "pdf/title_page_start/maintainer/nine-leading-empty-page-break-2024.pdf",
+      "sha256": "669054a780e34384cd92850143c19dfc26dda0d697771bd07164cd38a592a047",
+      "bytes": 22076
+    },
+    {
+      "path": "pdf/title_page_start/maintainer/same-host-edited-2024.pdf",
+      "sha256": "32c1d03e428d0a6201e9e54c675de667dde646285aabf715e8a772b75aaebb15",
+      "bytes": 22803
+    },
+    {
+      "path": "pdf/title_page_start/maintainer/same-host-full-row-2024.pdf",
+      "sha256": "790a241ea049032e269a1404b89149eba34b415b6276fcb042e7729283214148",
+      "bytes": 21895
+    },
+    {
+      "path": "pdf/title_page_start/maintainer/same-host-with-spare-width-2024.pdf",
+      "sha256": "95c8b8b12436a3c6181cd4e3b0a8346c4ad88584b4d55fbf41723258f5b69030",
+      "bytes": 21808
+    },
+    {
+      "path": "pdf/title_page_start/maintainer/title-body-edited-2024.pdf",
+      "sha256": "88bac88f9c9a37e6d1bdcd39abb2ab23db326baa79c8e126e78cfe432be3c5a8",
+      "bytes": 22741
+    },
+    {
+      "path": "pdf/title_page_start/maintainer/title-empty-hwp-2024.pdf",
+      "sha256": "eabd56c038ff4345126604503cf4aa64a7784dd72b1c06ea8842741c1fc6b293",
+      "bytes": 21962
+    },
+    {
+      "path": "pdf/title_page_start/maintainer/title-empty-hwpx-2024.pdf",
+      "sha256": "757c270b05c163a11fcd46233a35691c513a105d957c5e917cc78f1bf11f930d",
+      "bytes": 21962
+    },
+    {
+      "path": "pdf/title_page_start/maintainer/title-inline-2024.pdf",
+      "sha256": "c4eb62d9a6456c072b6a42b5b140f9644bc04adc30f1c23676dafb03f1f4e118",
+      "bytes": 21958
+    },
+    {
+      "path": "pdf/title_page_start/maintainer/title-leading-edited-2024.pdf",
+      "sha256": "da10d4440b948e201efc79d06b5bc55ff065ef9bb678d4cda7bb5ce7841b3723",
+      "bytes": 22797
+    },
+    {
+      "path": "pdf/title_page_start/title-table-after-empty-paragraph-hwp-2024.pdf",
+      "sha256": "e7b2c919f339506aeebc94223d60b0c5364914853a04ffa800182062423bc5cf",
+      "bytes": 189935
+    },
+    {
+      "path": "pdf/title_page_start/title-table-after-empty-paragraph-hwpx-2024.pdf",
+      "sha256": "c1cf793ad1da717b292ac8a9dc3ef64e65f160aacc009faad2c4053cd9d3e5ff",
+      "bytes": 189937
+    },
+    {
+      "path": "pdf/title_page_start/title-table-then-inline-table-hwpx-2024.pdf",
+      "sha256": "749d340a8cc4bfbdac7317acc2635a323c6008be82507ca1220e25221432f02e",
+      "bytes": 189999
+    },
+    {
+      "path": "samples/paper-square-table-tac-host.hwpx",
+      "sha256": "3caa6a7579208c69e19fbfcb30536731dde32871ca8e1835351e485494a3614f",
+      "bytes": 30629
+    },
+    {
+      "path": "samples/title-table-after-empty-paragraph.hwp",
+      "sha256": "465d4f8f4b69f17bb519be5fea4dd73dd31b1ef01e9f2b9ca1daa2ca81761560",
+      "bytes": 33280
+    },
+    {
+      "path": "samples/title-table-after-empty-paragraph.hwpx",
+      "sha256": "f0bd8b6931c80e86a38ebfb182df654b445380af82720ff1aa63f51a376768f0",
+      "bytes": 30653
+    },
+    {
+      "path": "samples/title-table-then-inline-table.hwpx",
+      "sha256": "a8c41628c068aa9266c742153aebde21296667235d6569c89c3e8915470e0f3d",
+      "bytes": 35776
+    },
+    {
+      "path": "tests/fixtures/pr8144/nine-leading-empty-page-break.hwp",
+      "sha256": "bcd80f6d7c4f8360a693dee2b9e13f3866aad8fd337531df154ac3906a2ffa8f",
+      "bytes": 16896
+    },
+    {
+      "path": "tests/fixtures/pr8144/nine-leading-empty.hwp",
+      "sha256": "b32062acc9f7fead1c3647c04cdf78f4caed8e274a407f210fec595f35100374",
+      "bytes": 36352
+    },
+    {
+      "path": "tests/fixtures/pr8144/same-host-edited.hwpx",
+      "sha256": "561e08eefb42a195a20438b852b4b3f227b82f7d9efa9cdc8735119b6c92aefe",
+      "bytes": 30645
+    },
+    {
+      "path": "tests/fixtures/pr8144/same-host-full-row.hwp",
+      "sha256": "4d2a1ba2b05432e02ec4f9e5dace702a50d8c26efdea64766817f19c2f715f34",
+      "bytes": 35840
+    },
+    {
+      "path": "tests/fixtures/pr8144/same-host-with-spare-width.hwp",
+      "sha256": "35629dfe1e1576a99f40385d9291c56376eed89842ca482f43fbb6166bd3752c",
+      "bytes": 35840
+    },
+    {
+      "path": "tests/fixtures/pr8144/title-body-edited.hwpx",
+      "sha256": "4c139c07202ff7f8cf1129e9193b0827f7c7b7e13bfc428a296f9a5af4cef903",
+      "bytes": 30670
+    },
+    {
+      "path": "tests/fixtures/pr8144/title-leading-edited.hwpx",
+      "sha256": "81bd158a0a455117794a23213aa8c01223643d5725462e7d79566c779736f95d",
+      "bytes": 30660
+    }
+  ],
+  "control_inputs": [
+    {
+      "case": "kiit-hwp",
+      "compat": "2022",
+      "input": {
+        "path": "tests/fixtures/issue_7699/kiit-standard-original.hwp",
+        "sha256": "0e9d59a6ecf52dce759598997568680edc3955b189efdfb9b115ec9b2cc3057c"
+      },
+      "reference": {
+        "path": "pdf/pr7699-kiit-standard-2020.pdf",
+        "sha256": "e9ed8db0abf47eaaef4d0c14aed49a5a1943f29c304555dc076593222b8c77fb"
+      }
+    },
+    {
+      "case": "kiit-hwpx",
+      "compat": "2022",
+      "input": {
+        "path": "tests/fixtures/issue_7699/kiit-standard-hancom.hwpx",
+        "sha256": "f330fdcff5e78d50bed278a5bbfc514409caa00053f53ba4e7c24cdc4eb33b99"
+      },
+      "reference": {
+        "path": "pdf/pr7699-kiit-hancom-hwpx-2020.pdf",
+        "sha256": "e58e449ece97a37694824042dbe7764095fcaf462bd883fbf8155399f6bb710f"
+      }
+    },
+    {
+      "case": "kiit-narrow",
+      "compat": "2022",
+      "input": {
+        "path": "tests/fixtures/issue_7699/kiit-narrow85-hancom.hwp",
+        "sha256": "3886833ba1af65f61a0cbcededbba73c0b3f1a2a7c83f65f03ccc19ae22e07f2"
+      },
+      "reference": {
+        "path": "pdf/pr7699-kiit-narrow85-2020.pdf",
+        "sha256": "77507f0aaca100b8a46381c71b4b30d5c4ad4323d3bc37ee0b01c3e5d5548a10"
+      }
+    },
+    {
+      "case": "page-square",
+      "compat": "2022",
+      "input": {
+        "path": "samples/page_anchored_square/page_anchored_square.hwp",
+        "sha256": "36571e1991a5fdb9f0646284ab92a47db2e9a697e70bd2ff15d1bce1b222936b"
+      },
+      "reference": {
+        "path": "pdf/page_anchored_square/page_anchored_square-2020.pdf",
+        "sha256": "736a7b58e5ba418b05bddbf0f154f683e3c4c16a0444a70059564084c82a0af7"
+      }
+    },
+    {
+      "case": "page-square-reflow",
+      "compat": "2022",
+      "input": {
+        "path": "samples/page_anchored_square/page_anchored_square_reflow.hwpx",
+        "sha256": "988763f863459da6fb26874cd963065ba22aee9d111ee2e29e60c68d08911f95"
+      },
+      "reference": {
+        "path": "pdf/page_anchored_square/page_anchored_square-2020.pdf",
+        "sha256": "736a7b58e5ba418b05bddbf0f154f683e3c4c16a0444a70059564084c82a0af7"
+      }
+    },
+    {
+      "case": "cellzone",
+      "compat": "2024",
+      "input": {
+        "path": "samples/cellzone-merged-end-fill.hwpx",
+        "sha256": "a64e772b67d89bd0da2f901e34b703bbe878f510f9bf3440aad082a076f7839c"
+      },
+      "reference": {
+        "path": "pdf/pblsketch_review_20261030/cellzone-merged-end-fill-2024.pdf",
+        "sha256": "7b40481db67e9ecb5cde7bb8982147506e91d5b162abe3ef7d13c1be47871b77"
+      }
+    },
+    {
+      "case": "header-footer",
+      "compat": "2024",
+      "input": {
+        "path": "samples/header-footer-paper-frame.hwpx",
+        "sha256": "8589147dc4a70140d9ccd0c83b899932432541c9db9e714cc59cfdd4c16c67b6"
+      },
+      "reference": {
+        "path": "pdf/pblsketch_review_20261030/header-footer-paper-frame-2024.pdf",
+        "sha256": "6eef9e9a4f0b5345468c3be6c29ed4998613f981dea96cc2225cc0930795ddfc"
+      }
+    }
+  ],
+  "tested_regressions": [
+    {
+      "path": "tests/cases/title_table_page_start_row.rs",
+      "sha256": "909d5753304a56fe5e42032716172b4527d86f551ed8ad70ba6babd29c66bbdb"
+    },
+    {
+      "path": "tests/cases/paper_square_table_tac_host_row.rs",
+      "sha256": "b0ff74d6602f51eb296166fce3569ddf7816e430f179284b35185f24d71d7a9c"
+    }
+  ],
+  "test_discovery_equivalence": {
+    "executed_and_refreshed_case_count": 12062,
+    "ignored_count": 45,
+    "logical_test_set_sha256": "7cb6fab104e8c1505451a286c66420fba15bd790b6ced27be9834c9f2837b3af",
+    "same_sources": 1872,
+    "reassigned_sources": 1002,
+    "note": "Measurement-comment byte size changed suite weights only. Final generated targets compiled; exact logical test set equals full successful run; focused 9+3 and workspace all-target Clippy passed again."
+  }
+}

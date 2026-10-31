@@ -114,7 +114,7 @@ impl SkiaLayerRenderer {
     }
 }
 
-fn clear_color(options: RasterRenderOptions) -> Color {
+pub(super) fn clear_color(options: RasterRenderOptions) -> Color {
     if let Some(color) = options.background_color {
         colorref_to_skia(color, 1.0)
     } else if options.transparent {

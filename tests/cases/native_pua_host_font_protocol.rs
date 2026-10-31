@@ -1,8 +1,36 @@
+//! 관계형: 글꼴 소유자 등록과 해제의 세션 프로토콜 계약.
+//! 주석 갱신: 2026-10-30T10:05:44+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
+//! 근거: tests/fixtures/fonts/RHWPHostFixture.LICENSE.md, tests/fixtures/fonts/RHWPEquationFonts.LICENSE.md.
+//! 글꼴 등록·해제 전후의 세션 소유 관계 검사이며 페이지별 raw 측정은 대상이 아니다.
 //! 실제 글꼴 요청 이름과 명시 exact 소유자의 세션 프로토콜 계약.
 //! 실제 페이지 좌표나 한컴 피델리티의 기대값을 고정하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
+
+#[test]
+fn otf_session_supply_preserves_document_and_saved_bytes() {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "가").unwrap();
+    let mut document = core.document().clone();
+    for font in document.doc_info.font_faces.iter_mut().flatten() {
+        font.alt_type = 2;
+    }
+    core.set_document(document);
+    let before = format!("{:?}", core.document());
+    let saved = core.export_hwp_native().unwrap();
+    assert!(!core.native_otf_font_requests().is_empty());
+    let font = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
+    assert!(core
+        .prepare_native_otf_fonts_with(|_| Some((font.to_vec(), 0)))
+        .unwrap());
+    assert_eq!(format!("{:?}", core.document()), before);
+    assert_eq!(core.export_hwp_native().unwrap(), saved);
+    assert!(core.prepare_native_otf_fonts_with(|_| None).unwrap());
+    assert_eq!(format!("{:?}", core.document()), before);
+    assert_eq!(core.export_hwp_native().unwrap(), saved);
+}
 
 #[test]
 fn pua_supply_clear_preserves_explicit_exact_font_owner() {
@@ -79,7 +107,18 @@ fn host_font_request_names_are_not_css_quoted() {
 
 #[test]
 fn source_pointer_requests_its_program_without_reclassifying_unicode_pointer() {
-    for (text, requires_source_program) in [("\u{f02fc}", true), ("►", false)] {
+    for (text, requires_source_program) in [
+        ("\u{f02fc}", true),
+        ("►", false),
+        ("\u{f031c}", true),
+        ("■", false),
+        ("\u{f03a7}", true),
+        ("⊟", false),
+        ("\u{f03a8}", true),
+        ("⊞", false),
+        ("\u{f0848}", true),
+        ("━", false),
+    ] {
         let mut core = DocumentCore::from_bytes(include_bytes!("../../saved/blank2010.hwp"))
             .expect("실제 빈 문서");
         core.insert_text_native(0, 0, 0, text).unwrap();
@@ -100,7 +139,7 @@ fn source_pointer_requests_its_program_without_reclassifying_unicode_pointer() {
 
 /// 저장소가 직접 만든 MIT 합성 윤곽의 cmap만 메모리에서 바꾼다.
 /// 외부 글꼴·새 배포 파일 없이 원 glyph가 실제로 있는 공급 프로그램을 만든다.
-fn synthetic_pointer_program() -> Vec<u8> {
+fn synthetic_symbol_program(symbol: char) -> Vec<u8> {
     let source = include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf");
     let face = ttf_parser::Face::parse(source, 0).unwrap();
     let glyph = face.glyph_index('A').unwrap();
@@ -128,7 +167,14 @@ fn synthetic_pointer_program() -> Vec<u8> {
     cmap.extend(12u32.to_be_bytes());
     cmap.extend(12u16.to_be_bytes());
     cmap.extend(0u16.to_be_bytes());
-    for value in [28u32, 0, 1, 0xF02FC, 0xF02FC, u32::from(glyph.0)] {
+    for value in [
+        28u32,
+        0,
+        1,
+        symbol as u32,
+        symbol as u32,
+        u32::from(glyph.0),
+    ] {
         cmap.extend(value.to_be_bytes());
     }
     let checksum = |data: &[u8]| {
@@ -149,27 +195,73 @@ fn synthetic_pointer_program() -> Vec<u8> {
     bytes[head_offset + 8..head_offset + 12].copy_from_slice(&adjustment.to_be_bytes());
     assert_eq!(checksum(&bytes), 0xB1B0AFBA);
     let mapped = ttf_parser::Face::parse(&bytes, 0).unwrap();
-    assert_eq!(mapped.glyph_index('\u{f02fc}'), Some(glyph));
+    assert_eq!(mapped.glyph_index(symbol), Some(glyph));
     assert!(mapped.glyph_index('►').is_none());
     bytes
 }
 
-#[test]
-fn prepared_source_glyph_replaces_an_earlier_unicode_display_and_clear_restores_it() {
+// 기존 테스트의 합성 글꼴 공급 전·후 및 해제 후에 호출한다.
+fn assert_layer_display(core: &DocumentCore, symbol: char, expected: &str) {
+    fn collect<'a>(
+        value: &'a serde_json::Value,
+        symbol: char,
+        runs: &mut Vec<&'a serde_json::Value>,
+    ) {
+        match value {
+            serde_json::Value::Object(object) => {
+                if object.get("type").and_then(|v| v.as_str()) == Some("textRun")
+                    && object
+                        .get("text")
+                        .and_then(|v| v.as_str())
+                        .is_some_and(|text| text.contains(symbol))
+                {
+                    runs.push(value);
+                }
+                for child in object.values() {
+                    collect(child, symbol, runs);
+                }
+            }
+            serde_json::Value::Array(array) => {
+                for child in array {
+                    collect(child, symbol, runs);
+                }
+            }
+            _ => {}
+        }
+    }
+    let layer = core
+        .build_page_layer_tree_with_profile(0, rhwp::paint::RenderProfile::Print)
+        .unwrap();
+    let value: serde_json::Value = serde_json::from_str(&layer.to_json()).unwrap();
+    let mut runs = Vec::new();
+    collect(&value, symbol, &mut runs);
+    assert_eq!(runs.len(), 1, "원 기호의 레이어 소속을 보존한다");
+    let run = runs[0];
+    let rendered = run
+        .get("displayText")
+        .and_then(|v| v.as_str())
+        .or_else(|| run.get("text").and_then(|v| v.as_str()))
+        .unwrap();
+    assert_eq!(rendered, expected, "CanvasKit이 소비하는 표시 문자열");
+}
+
+fn assert_prepared_source_symbol(symbol: char, fallback: &str) {
     use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
-    fn displayed_pointer(node: &RenderNode) -> Option<&str> {
+    fn displayed_pointer(node: &RenderNode, symbol: char) -> Option<&str> {
         if let RenderNodeType::TextRun(run) = &node.node_type {
-            if run.text.contains('\u{f02fc}') {
+            if run.text.contains(symbol) {
                 return Some(run.display_or_text());
             }
         }
-        node.children.iter().find_map(displayed_pointer)
+        node.children
+            .iter()
+            .find_map(|child| displayed_pointer(child, symbol))
     }
 
-    fn source_advance(node: &RenderNode) -> Option<(f64, f64)> {
+    fn source_advance(node: &RenderNode, symbol: char) -> Option<(f64, f64)> {
         if let RenderNodeType::TextRun(run) = &node.node_type {
-            if run.text.contains('\u{f02fc}') {
+            if run.text.contains(symbol) {
                 assert_eq!(run.style.ratio, 1.0);
                 assert_eq!(run.style.letter_spacing, 0.0);
                 assert!(run.style.font_size > 0.0);
@@ -177,11 +269,14 @@ fn prepared_source_glyph_replaces_an_earlier_unicode_display_and_clear_restores_
                 return Some((node.bbox.width, run.style.font_size));
             }
         }
-        node.children.iter().find_map(source_advance)
+        node.children
+            .iter()
+            .find_map(|child| source_advance(child, symbol))
     }
 
     let mut core = DocumentCore::from_bytes(include_bytes!("../../saved/blank2010.hwp")).unwrap();
-    core.insert_text_native(0, 0, 0, "\u{f02fc}").unwrap();
+    core.insert_text_native(0, 0, 0, &symbol.to_string())
+        .unwrap();
     let mut document = core.document().clone();
     for language in &mut document.doc_info.font_faces {
         for font in language {
@@ -191,8 +286,9 @@ fn prepared_source_glyph_replaces_an_earlier_unicode_display_and_clear_restores_
     core.set_document(document);
     let original = format!("{:?}", core.document());
     let before = core.build_page_render_tree(0).unwrap();
-    assert_eq!(displayed_pointer(&before.root), Some("►"));
-    let program = synthetic_pointer_program();
+    assert_eq!(displayed_pointer(&before.root, symbol), Some(fallback));
+    assert_layer_display(&core, symbol, fallback);
+    let program = synthetic_symbol_program(symbol);
     assert!(core
         .prepare_native_pua_fonts_with(|request| {
             assert!(request.family.starts_with("RHWP Host Fixture"));
@@ -201,11 +297,12 @@ fn prepared_source_glyph_replaces_an_earlier_unicode_display_and_clear_restores_
         .unwrap());
     let prepared = core.build_page_render_tree(0).unwrap();
     assert_eq!(
-        displayed_pointer(&prepared.root),
-        Some("\u{f02fc}"),
+        displayed_pointer(&prepared.root, symbol),
+        Some(symbol.to_string().as_str()),
         "실제 원 glyph를 선택한 뒤 이전 Unicode 표시를 남기지 않는다"
     );
-    let (advance, size) = source_advance(&prepared.root).unwrap();
+    assert_layer_display(&core, symbol, &symbol.to_string());
+    let (advance, size) = source_advance(&prepared.root, symbol).unwrap();
     assert!(
         (advance - size * 0.9).abs() <= 4.0 / 75.0,
         "합성 원본 SFNT의 독립 hmtx 900/1000 전진을 배치도 소비한다"
@@ -213,6 +310,32 @@ fn prepared_source_glyph_replaces_an_earlier_unicode_display_and_clear_restores_
     assert_eq!(format!("{:?}", core.document()), original);
     core.clear_native_pua_fonts();
     let cleared = core.build_page_render_tree(0).unwrap();
-    assert_eq!(displayed_pointer(&cleared.root), Some("►"));
+    assert_eq!(displayed_pointer(&cleared.root, symbol), Some(fallback));
+    assert_layer_display(&core, symbol, fallback);
     assert_eq!(format!("{:?}", core.document()), original);
+}
+
+#[test]
+fn prepared_source_glyph_replaces_an_earlier_unicode_display_and_clear_restores_it() {
+    assert_prepared_source_symbol('\u{f02fc}', "►");
+}
+
+#[test]
+fn source_square_uses_supplied_hmtx_and_clear_restores_unicode_fallback() {
+    assert_prepared_source_symbol('\u{f031c}', "■");
+}
+
+#[test]
+fn additional_source_box_minus_preserves_its_program_and_fallback() {
+    assert_prepared_source_symbol('\u{f03a7}', "⊟");
+}
+
+#[test]
+fn additional_source_box_plus_preserves_its_program_and_fallback() {
+    assert_prepared_source_symbol('\u{f03a8}', "⊞");
+}
+
+#[test]
+fn additional_source_dash_preserves_its_program_and_fallback() {
+    assert_prepared_source_symbol('\u{f0848}', "━");
 }

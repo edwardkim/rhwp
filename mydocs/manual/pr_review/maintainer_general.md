@@ -10,6 +10,10 @@ last_verified: 2026-10-06
 이 경로는 admin 또는 branch-protection bypass 권한을 가진 maintainer가 외부 contributor PR을 일반 방식으로
 검토·merge하는 기본 경로다. collaborator 경로는 이 문서를 대체하지 않는다.
 
+단독 PR 검토·체리픽과 다수 PR 통합의 새 브랜치는
+[브랜치 명명 규칙](../codex/docs_and_git_workflow.md#외부-pr-검토와-체리픽-통합-브랜치-명명)을 따른다.
+원 PR의 원격 head는 유지하고, 통합 브랜치의 원 PR·적용 SHA·순서를 검토 기록에 남긴다.
+
 ## 렌더링 회귀의 추가·변경과 메인터너 보정
 
 새 회귀의 추가와 실패한 기존 회귀의 변경은 관련 모든 페이지의 Native/fresh WASM 일치율이

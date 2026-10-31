@@ -499,7 +499,7 @@ fn analyze_paragraph(
                 &core.document.doc_info,
                 language,
                 char_shape.font_ids[language],
-                core.font_environment.as_ref(),
+                core.resolved_font_environment(),
             );
             let Some(requested_face) = name_decision
                 .requested_face

@@ -537,6 +537,27 @@ thread_local! {
     /// `parse_paragraph` 는 표 셀·글상자·각주 등 여러 경로에서 재귀 호출되므로
     /// 파라미터를 관통시키지 않고 형제 가드(`HWPX_SECTION_DEPTH`)와 같은 방식으로 나른다.
     static HWPX_SECTION_HAS_SIZED_LINESEG: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+    // 전체 패키지의 문단 모양 목록에 추가할 한컴 기본 모양 ID와 사용 여부.
+    // 표 셀·글상자·각주 등 중첩 문단도 같은 패키지 계약을 소비한다.
+    static HWPX_DEFAULT_PARA_SHAPE: std::cell::Cell<Option<(Option<u16>, bool)>> = const { std::cell::Cell::new(None) };
+}
+
+pub(super) struct DefaultParaShapeScope(Option<(Option<u16>, bool)>);
+
+impl DefaultParaShapeScope {
+    pub(super) fn enter(id: Option<u16>) -> Self {
+        Self(HWPX_DEFAULT_PARA_SHAPE.with(|state| state.replace(Some((id, false)))))
+    }
+
+    pub(super) fn used(&self) -> bool {
+        HWPX_DEFAULT_PARA_SHAPE.with(|state| state.get().is_some_and(|(_, used)| used))
+    }
+}
+
+impl Drop for DefaultParaShapeScope {
+    fn drop(&mut self) {
+        HWPX_DEFAULT_PARA_SHAPE.with(|state| state.set(self.0));
+    }
 }
 
 /// 구역 XML 에 **높이가 0 이 아닌 lineseg** 가 하나라도 있는지 훑는다.
@@ -644,6 +665,7 @@ fn parse_paragraph_body(
     let mut hp_p_id: u32 = 0;
     let mut has_column_break_attr = false;
     let mut has_page_break_attr = false;
+    let mut has_para_shape_ref = false;
     for attr in e.attributes().flatten() {
         match attr.key.as_ref().as_bytes() {
             b"id" => {
@@ -651,7 +673,10 @@ fn parse_paragraph_body(
                     hp_p_id = s.parse::<u32>().unwrap_or(0);
                 }
             }
-            b"paraPrIDRef" => para.para_shape_id = parse_u16(&attr),
+            b"paraPrIDRef" => {
+                has_para_shape_ref = true;
+                para.para_shape_id = parse_u16(&attr);
+            }
             b"styleIDRef" => para.style_id = parse_u8(&attr),
             b"columnBreak" => {
                 if parse_u8(&attr) == 1 {
@@ -669,9 +694,25 @@ fn parse_paragraph_body(
         }
     }
 
+    if !has_para_shape_ref {
+        HWPX_DEFAULT_PARA_SHAPE.with(|state| -> Result<(), HwpxError> {
+            if let Some((id, _)) = state.get() {
+                para.para_shape_id = id.ok_or_else(|| {
+                    HwpxError::XmlError(
+                        "문단 모양 목록에 기본 모양을 추가할 공간이 없습니다".into(),
+                    )
+                })?;
+                state.set(Some((id, true)));
+            }
+            Ok(())
+        })?;
+    }
+
     // 문단 내용 파싱
     let mut buf = Vec::new();
     let mut text_parts: Vec<String> = Vec::new();
+    // 각 요소의 조각·스칼라 위치를 실제 모델 문자 위치로 투영할 때 사용한다.
+    let mut nb_space_parts: Vec<(usize, usize)> = Vec::new();
     let mut current_char_shape_id: u32 = 0;
     let mut char_shape_changes: Vec<(u32, u32)> = Vec::new(); // (utf16_pos, char_shape_id)
                                                               // 템플릿 첫 run 의 secPr/colPr 뒤에는 같은 charPrIDRef 의 텍스트 run 이 한 번 더
@@ -750,6 +791,13 @@ fn parse_paragraph_body(
                         if content.fixed_space_element {
                             para.control_mask |= 1u32 << 0x001F;
                         }
+                        let part_base = text_parts.len();
+                        nb_space_parts.extend(
+                            content
+                                .nb_space_parts
+                                .iter()
+                                .map(|&(part, index)| (part_base + part, index)),
+                        );
                         text_parts.extend(content.parts);
                         para.tab_extended.extend(content.tabs);
                         // [#5174] 묶음 빈칸의 출처 표기를 문단에 남긴다 — 직렬화기가 이
@@ -1057,9 +1105,10 @@ fn parse_paragraph_body(
     }
     let mut visual_text = String::new();
     let mut char_offsets: Vec<u32> = Vec::new();
+    let mut nb_space_control_indices = Vec::new();
     let mut utf16_pos: u32 = 0;
 
-    for part in &text_parts {
+    for (part_index, part) in text_parts.iter().enumerate() {
         match part.as_str() {
             "\u{0002}" | "\u{0003}" | "\u{0004}" => {
                 utf16_pos += 8;
@@ -1094,7 +1143,10 @@ fn parse_paragraph_body(
                 utf16_pos += 8;
             }
             _ => {
-                for c in part.chars() {
+                for (index, c) in part.chars().enumerate() {
+                    if nb_space_parts.contains(&(part_index, index)) {
+                        nb_space_control_indices.push(char_offsets.len());
+                    }
                     char_offsets.push(utf16_pos);
                     visual_text.push(c);
                     utf16_pos += hwpx_char_utf16_width_on_axis(c, axis_5251);
@@ -1105,6 +1157,7 @@ fn parse_paragraph_body(
 
     para.text = visual_text;
     para.char_offsets = char_offsets;
+    para.nb_space_control_indices = Some(nb_space_control_indices);
     para.char_count = utf16_pos + 1; // +1 for 끝 마커
 
     // [#5961] 저장 lineseg 가 HWP5 축보다 얼마나 짧은지 기록한다.
@@ -1432,19 +1485,8 @@ fn parse_note_pr_children(
                                     }
                                 }
                                 b"color" => {
-                                    if let Ok(s) =
-                                        std::str::from_utf8(attr.value.as_ref().as_bytes())
-                                    {
-                                        // "#RRGGBB" → ColorRef (0xBBGGRR LE = HWP 표준)
-                                        if let Some(hex) = s.strip_prefix('#') {
-                                            if let Ok(rgb) = u32::from_str_radix(hex, 16) {
-                                                let r = (rgb >> 16) & 0xFF;
-                                                let g = (rgb >> 8) & 0xFF;
-                                                let b = rgb & 0xFF;
-                                                shape.separator_color = b << 16 | g << 8 | r;
-                                            }
-                                        }
-                                    }
+                                    // 공통 ColorRef 계약으로 명시적 "none"도 보존한다.
+                                    shape.separator_color = parse_color(&attr);
                                 }
                                 _ => {}
                             }
@@ -2154,6 +2196,7 @@ struct ParsedTextContent {
     hyphen_element: bool,
     fixed_space_element: bool,
     literal_figure_spaces: Vec<usize>,
+    nb_space_parts: Vec<(usize, usize)>,
 }
 
 fn visible_text_part_len(parts: &[String]) -> usize {
@@ -2195,6 +2238,7 @@ fn read_text_content_with_tabs(reader: &mut Reader<&[u8]>) -> Result<ParsedTextC
     let mut text = String::new();
     let mut tab_ext_buf: Vec<[u16; 7]> = Vec::new();
     let mut saw_nb_space_element = false;
+    let mut nb_space_parts = Vec::new();
     let mut saw_hyphen_element = false;
     let mut saw_fixed_space_element = false;
     let mut literal_figure_spaces = Vec::new();
@@ -2242,12 +2286,11 @@ fn read_text_content_with_tabs(reader: &mut Reader<&[u8]>) -> Result<ParsedTextC
                         // 다시 계산한다. 버리면 그 뒤 탭이 남의 확장을 쓴다.
                         tab_ext_buf.push(parse_tab_extension(ce));
                     }
-                    // [#5174] 묶음 빈칸은 요소·리터럴 두 표기가 다 쓰인다(한컴 HWPX 실측:
-                    // 요소 26문서 · 리터럴 20문서 · 혼용 0문서). 한글은 요소를 텍스트 추출에
-                    // 싣지 않고 리터럴은 싣기 때문에, 표기를 바꿔 저장하면 추출 텍스트가
-                    // 원본과 달라진다. IR 이 두 표기를 구분해야 왕복이 닫히므로 요소 표기를
-                    // 만나면 `control_mask` 비트 30(HWP5 제어코드 0x1E 자리)을 신호로 세운다.
+                    // [#5174] 한글은 요소 표기와 리터럴을 텍스트 추출에서 구분한다.
+                    // 문단 존재 비트와 함께 이 조각 안의 개별 문자 위치를 보존해
+                    // 한 문단에 두 표기가 섞여도 원본 순서대로 저장한다.
                     b"nbSpace" => {
+                        nb_space_parts.push((parts.len(), text.chars().count()));
                         text.push('\u{00A0}');
                         saw_nb_space_element = true;
                     }
@@ -2326,6 +2369,7 @@ fn read_text_content_with_tabs(reader: &mut Reader<&[u8]>) -> Result<ParsedTextC
         hyphen_element: saw_hyphen_element,
         fixed_space_element: saw_fixed_space_element,
         literal_figure_spaces,
+        nb_space_parts,
     })
 }
 
@@ -3089,7 +3133,7 @@ fn parse_picture(
     let mut border_x = [0i32; 4];
     let mut border_y = [0i32; 4];
     let mut border_line: Option<ShapeBorderLine> = None;
-    let mut img_dim: (u32, u32) = (0, 0); // [#1389] hp:imgDim 원본 이미지 픽셀 크기
+    let mut img_dim: (u32, u32) = (0, 0); // [#1389] hp:imgDim 원본 crop 좌표계의 기준 크기
     let mut href: Option<String> = None;
     let mut picture_instance_id = 0;
     let mut effects = PictureEffects::default();
@@ -4536,15 +4580,7 @@ fn parse_shape_shadow_attr(e: &quick_xml::events::BytesStart) -> (u32, u32, i32,
     for attr in e.attributes().flatten() {
         match attr.key.as_ref().as_bytes() {
             b"type" => {
-                shadow_type = match attr_str(&attr).as_str() {
-                    "NONE" => 0,
-                    "LEFT_TOP" => 1,
-                    "RIGHT_TOP" => 2,
-                    "LEFT_BOTTOM" => 3,
-                    "RIGHT_BOTTOM" => 4,
-                    "CENTER" | "INSIDE" | "OUTSIDE" => 5,
-                    _ => 0,
-                };
+                shadow_type = crate::model::shape::shadow::from_hwpx(&attr_str(&attr));
             }
             b"color" => shadow_color = parse_color(&attr),
             b"offsetX" => shadow_offset_x = parse_i32(&attr),
@@ -4702,6 +4738,7 @@ fn parse_shape_object(
     // [Task #1067] polygon / curve 의 가변 꼭짓점 `<hc:pt x=... y=.../>` 누적.
     // 기존 pt0/pt1/pt2/pt3 (rect 의 4 꼭짓점) 와 별개.
     let mut polygon_points: Vec<crate::model::Point> = Vec::new();
+    let mut curve_segment_types = Vec::new();
     // [Task #1598] ellipse / arc 전용 지오메트리 (`<hc:center>`/`<hc:ax1>`/...).
     // 미적재 시 한글이 타원/호를 다르게 렌더 → 누적 레이아웃 변동 → 페이지 붕괴(#1589 잔여).
     let mut e_center = crate::model::Point::default();
@@ -4823,15 +4860,19 @@ fn parse_shape_object(
                     }
                     // [#1200] curve 의 가변 꼭짓점이 `<hp:seg x1 y1 x2 y2>` (점-대-점 chain)
                     // 으로 인코딩된 경우. `<hc:pt>` 미사용 curve 는 이 경로로 점을 채운다.
-                    // seg 는 제어점이 아닌 sampled 꼭짓점이므로 폴리라인(LineTo)으로 재구성:
-                    // 첫 seg 의 시작점 1회 + 각 seg 의 끝점.
+                    // 첫 시작점과 각 끝점을 보존하고 구간 종류를 별도로 읽는다.
+                    // HWP5와 같은 점 체인이며 cubic 제어점 배열이 아니다.
                     b"seg" => {
                         let mut x1: i32 = 0;
                         let mut y1: i32 = 0;
                         let mut x2: i32 = 0;
                         let mut y2: i32 = 0;
+                        let mut segment_type = 0;
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref().as_bytes() {
+                                b"type" => {
+                                    segment_type = u8::from(attr_str(&attr) == "CURVE");
+                                }
                                 b"x1" => x1 = parse_i32(&attr),
                                 b"y1" => y1 = parse_i32(&attr),
                                 b"x2" => x2 = parse_i32(&attr),
@@ -4843,6 +4884,7 @@ fn parse_shape_object(
                             polygon_points.push(crate::model::Point { x: x1, y: y1 });
                         }
                         polygon_points.push(crate::model::Point { x: x2, y: y2 });
+                        curve_segment_types.push(segment_type);
                     }
                     b"startPt" => {
                         for attr in ce.attributes().flatten() {
@@ -5021,10 +5063,8 @@ fn parse_shape_object(
             drawing,
             // CurveShape 도 동일 패턴 — 누락 시 곡선 미표시.
             points: polygon_points,
-            // HWPX `hp:seg type="CURVE"`는 점-대-점 체인의 표기일 뿐 HWP5 `1`이 요구하는
-            // 베지어 제어점 2개를 담지 않는다. 그대로 옮기면 renderer가 세 점씩 소비하므로
-            // 비워서 기존의 LineTo 체인 렌더 계약을 유지한다(#1200, #4676).
-            segment_types: Vec::new(),
+            // 각 인접한 점 사이의 LINE/CURVE를 HWP5와 동일한 종류로 보존한다.
+            segment_types: curve_segment_types,
         }),
         _ => ShapeObject::Rectangle(RectangleShape {
             common,
@@ -8618,10 +8658,9 @@ mod tests {
     }
 
     /// [#1200, #4676] curve 도형의 geometry 가 `<hp:seg x1 y1 x2 y2>` (점-대-점 chain)
-    /// 으로 인코딩된 경우 CurveShape.points 가 채워져야 한다. HWPX CURVE 타입은 HWP5
-    /// 베지어 제어점 규약과 다르므로 segment_types를 비워 LineTo 체인으로 렌더한다.
+    /// 으로 인코딩된 경우 점과 각 구간의 LINE/CURVE 종류를 함께 보존한다.
     #[test]
-    fn test_parse_curve_seg_populates_points_without_hwp5_bezier_types() {
+    fn test_parse_curve_seg_preserves_points_and_segment_types() {
         // seg chain: (10,10)->(90,10)->(90,90)->(10,10) (폐곡선)
         let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
 <hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
@@ -8658,11 +8697,7 @@ mod tests {
         // 첫 seg 시작점 + 각 seg 끝점 = 4점 chain
         let pts: Vec<(i32, i32)> = curve.points.iter().map(|p| (p.x, p.y)).collect();
         assert_eq!(pts, vec![(10, 10), (90, 10), (90, 90), (10, 10)]);
-        assert!(
-            curve.segment_types.is_empty(),
-            "HWPX CURVE 타입은 HWP5 베지어 제어점 규약으로 매핑하면 안 됨: {:?}",
-            curve.segment_types
-        );
+        assert_eq!(curve.segment_types, vec![1, 0, 1], "원본 구간 종류 보존");
     }
 
     #[test]

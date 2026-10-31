@@ -1,0 +1,80 @@
+[
+  {
+    "key": "body-list-typed",
+    "input": {
+      "path": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+      "bytes": 4096,
+      "sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687"
+    },
+    "reference": {
+      "path": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+      "bytes": 19110,
+      "sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3"
+    }
+  },
+  {
+    "key": "helvetica-styles",
+    "input": {
+      "path": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+      "bytes": 4096,
+      "sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da"
+    },
+    "reference": {
+      "path": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+      "bytes": 43664,
+      "sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba"
+    }
+  },
+  {
+    "key": "pic-crop-01",
+    "input": {
+      "path": "samples/pic-crop-01.hwp",
+      "bytes": 131072,
+      "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c"
+    },
+    "reference": {
+      "path": "pdf/pic-crop-01-2022.pdf",
+      "bytes": 19211,
+      "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3"
+    }
+  },
+  {
+    "key": "shape-group-02",
+    "input": {
+      "path": "samples/shape-group-02.hwp",
+      "bytes": 16384,
+      "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f"
+    },
+    "reference": {
+      "path": "pdf/shape-group-02-hwp-2020.pdf",
+      "bytes": 89651,
+      "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7"
+    }
+  },
+  {
+    "key": "re-03-latin",
+    "input": {
+      "path": "samples/re-03-latin-only-hancom.hwp",
+      "bytes": 9216,
+      "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f"
+    },
+    "reference": {
+      "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+      "bytes": 11752,
+      "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3"
+    }
+  },
+  {
+    "key": "handbook-hwp",
+    "input": {
+      "path": "samples/2025 행정업무운영 편람(최종).hwp",
+      "bytes": 10687488,
+      "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f"
+    },
+    "reference": {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+      "bytes": 4692840,
+      "sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593"
+    }
+  }
+]

@@ -54,6 +54,14 @@ pub(crate) use legacy_hft::{
     is_metric_face as is_legacy_hft_metric_face, metric_face_name as legacy_hft_metric_face,
 };
 
+/// 독립 Print와 원본 HFT에서 확인한 전진 표인지 구분한다.
+/// 표시용 글꼴 프로그램의 hmtx는 이 표의 원본 정밀도를 대신하지 않는다.
+pub(crate) fn is_verified_original_hft_advance(metric: &FontMetric) -> bool {
+    hci_poppy::METRICS
+        .iter()
+        .any(|source| std::ptr::eq(source, metric))
+}
+
 #[derive(Debug)]
 pub struct HangulMetric {
     pub cho_groups: u8,

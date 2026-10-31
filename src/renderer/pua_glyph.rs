@@ -115,6 +115,12 @@ fn primary(family: &str) -> String {
 }
 
 impl FontCoverage {
+    pub(crate) fn clear_family(&mut self, family: &str) {
+        let family = primary(family);
+        self.faces.retain(|(name, _, _), _| name != &family);
+        self.text_faces.clear_family(&family);
+    }
+
     /// 미검증 스타일이 같은 family의 이전 양수 coverage를 재사용하지 않게 한다.
     /// 선택적 보조 정보의 상한 때문에 브라우저의 정상 글꼴 적재를 실패시키지 않는다.
     fn disable_family(&mut self, family: String) -> bool {

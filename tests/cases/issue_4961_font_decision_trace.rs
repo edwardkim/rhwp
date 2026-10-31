@@ -1,3 +1,7 @@
+//! 관계형: 글꼴 결정 추적과 공개 API 결과 계약.
+//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T16:49:36+09:00 (caa53280c1).
+//! 원본 소유·API 결과·왕복 보존을 검사하며 raw 일치율 측정은 이 검사의 대상이 아니다.
+//! 근거: mydocs/tech/investigations/issue-4961/font_decision_trace_e2e.json.
 use rhwp::document_core::DocumentCore;
 
 mod corpus_scope {
@@ -107,9 +111,9 @@ fn font_trace_profiles_follow_source_ownership_and_preserve_font_decisions() {
     let with = traces
         .get(feature["withSubstFont"].as_str().expect("with subst id"))
         .expect("with subst trace");
-    // #8109: the HWP counterpart has standard FACE_NAME alternatives too.
-    // Independent DocInfo bytes show 217 alternative records; the exact-face
-    // fixture has none. Keep this metadata contrast separate from render pins.
+    // #8109: 대응하는 HWP에도 표준 FACE_NAME 대체 항목이 있다.
+    // 독립 DocInfo 바이트에는 대체 레코드 217개가 있지만 정확한 글꼴을 지정한
+    // 검증 문서에는 없다. 이 메타데이터 차이는 렌더 위치 검사와 구분한다.
     let counterpart = traces
         .get(
             feature["withHwpSubstFont"]
@@ -588,6 +592,7 @@ fn synthetic_overlap_cannot_claim_repeated_source_and_real_pua_keeps_source() {
         inner_char_size: 100,
         expansion: 0,
         char_shape_ids: vec![0],
+        hwp_wire_chars: false,
     })];
     para.char_offsets = vec![0, 9];
     para.char_count = 11;
