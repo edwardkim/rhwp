@@ -30,6 +30,25 @@ pub struct PathClipObservation {
     pub clip: std::sync::Arc<PathClip>,
 }
 
+/// ISO 32000-1 9.3.6 text paint, in page user-space points.
+#[derive(Debug, Clone, Copy)]
+pub struct TextStrokePaint {
+    /// Whether the glyph interior is filled before stroking.
+    pub fill: bool,
+    /// Stroke width in page points; zero denotes a device hairline.
+    pub width: f32,
+    /// Resolved stroking RGB colour.
+    pub color: (f32, f32, f32),
+    /// Nonstroking opacity.
+    pub fill_alpha: f32,
+    /// Stroking opacity.
+    pub stroke_alpha: f32,
+    /// PDF line join code (miter, round, bevel).
+    pub line_join: u8,
+    /// Miter length to line-width ratio.
+    pub miter_limit: f32,
+}
+
 /// Bounded observation ledger, separate from the live graphics state.
 #[derive(Debug, Default)]
 pub struct PathClipObservations {
@@ -42,6 +61,8 @@ pub struct PathClipObservations {
     pub text_uses: Vec<(Vec<usize>, Option<std::sync::Arc<PathClip>>)>,
     /// Missing uses disqualify clip-based semantic inference, not live PDF paint.
     pub text_uses_omitted: usize,
+    /// Actual stroking text-show state, keyed by the full invocation path.
+    pub text_paints: Vec<(Vec<usize>, TextStrokePaint)>,
 }
 
 /// Paint metadata retained by the bounded positional importer.

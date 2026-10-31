@@ -51,6 +51,59 @@ fn imported_font_family(name: &str) -> &str {
     }
 }
 
+/// OpenType name IDs identify the family independently of a PDF BaseFont label.
+/// A subset's PostScript label need not be an installed CSS/Skia family name.
+fn program_family(
+    font: &pdf_oxide::fonts::FontInfo,
+    allocation: Allocation<'_>,
+) -> Result<Option<String>, String> {
+    let Some(bytes) = &font.embedded_font_data else {
+        return Ok(None);
+    };
+    let Ok(face) = ttf_parser::Face::parse(bytes, 0) else {
+        return Ok(None);
+    };
+    for id in [
+        ttf_parser::name_id::FAMILY,
+        ttf_parser::name_id::TYPOGRAPHIC_FAMILY,
+    ] {
+        let names = face.names();
+        let selected = names
+            .into_iter()
+            .filter(|n| {
+                n.name_id == id && n.is_unicode() && !n.name.is_empty() && n.name.len() <= 1024
+            })
+            .min_by_key(|n| (n.language_id != 0x0409, n.language_id));
+        if let Some(name) = selected {
+            // UTF-16 -> UTF-8 needs at most 3 bytes per code unit; reserve before decoding.
+            if name.name.len() % 2 != 0 {
+                continue;
+            }
+            let mut value = allocation
+                .string_capacity(name.name.len() * 2)
+                .map_err(message)?;
+            let mut valid = true;
+            for ch in char::decode_utf16(
+                name.name
+                    .chunks_exact(2)
+                    .map(|b| u16::from_be_bytes([b[0], b[1]])),
+            ) {
+                match ch {
+                    Ok(ch) if !ch.is_control() => value.push(ch),
+                    _ => {
+                        valid = false;
+                        break;
+                    }
+                }
+            }
+            if valid && !value.trim().is_empty() {
+                return Ok(Some(value));
+            }
+        }
+    }
+    Ok(None)
+}
+
 pub(super) fn component(width: u32, height: u32) -> ShapeComponentAttr {
     ShapeComponentAttr {
         original_width: width,
@@ -400,22 +453,38 @@ pub(super) fn lower(
     // Reuse equal source styles within a page instead of allocating one per
     // PDF text-show. Source spans and paint order remain separately recorded.
     let mut source_shapes = std::collections::BTreeMap::new();
+    let mut program_families = std::collections::BTreeMap::new();
     for (span_index, span) in page.spans.iter().enumerate() {
         if span.text.is_empty() {
             continue;
         }
-        let font_name = if span.font_name == "Unknown" || span.font_name.is_empty() {
+        let scoped_font = page.span_fonts[span_index].as_ref();
+        let key = scoped_font.map(|font| std::sync::Arc::as_ptr(font) as usize);
+        if let (Some(key), Some(font)) = (key, scoped_font) {
+            if !program_families.contains_key(&key) {
+                let family = program_family(font, allocation)?;
+                allocation
+                    .insert(&mut program_families, key, family)
+                    .map_err(message)?;
+            }
+        }
+        let declared_family = key
+            .and_then(|key| program_families.get(&key))
+            .and_then(Option::as_deref);
+        let font_name = if let Some(family) = declared_family {
+            family
+        } else if span.font_name == "Unknown" || span.font_name.is_empty() {
             unknown_fonts += 1;
             "함초롬바탕"
         } else {
             imported_font_family(&span.font_name)
         };
-        if font_name == "Arial" && span.font_name != "Arial" {
+        if font_name != span.font_name {
             allocation
                 .insert(
                     &mut font_identity_mappings,
                     span.font_name.as_str(),
-                    font_name,
+                    allocation.string(font_name).map_err(message)?,
                 )
                 .map_err(message)?;
         }
@@ -489,6 +558,7 @@ pub(super) fn lower(
         cs.bold = span.font_weight.is_bold();
         cs.italic = span.is_italic;
         cs.text_color = rgb(span.color);
+        cs.text_paint = page.span_paints[span_index];
         // PDF space advances belong to the source font/text state, not HWP's
         // default half-em space. Select the existing common IR contract only
         // when measured origin-to-origin spaces agree with the declared metric.
@@ -529,6 +599,7 @@ pub(super) fn lower(
             cs.italic,
             cs.text_color,
             cs.use_font_space,
+            cs.text_paint,
         );
         let shape = if let Some(&id) = source_shapes.get(&key) {
             id

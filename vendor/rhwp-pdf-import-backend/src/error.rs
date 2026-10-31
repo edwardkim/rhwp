@@ -73,6 +73,14 @@ pub enum Error {
     #[error("Unsupported feature: {0}")]
     Unsupported(String),
 
+    /// Pattern paint cannot be represented by the bounded editable importer.
+    #[error("Unsupported PDF pattern paint: {0}")]
+    UnsupportedPattern(String),
+
+    /// Text paint cannot be represented without changing its glyph appearance.
+    #[error("Unsupported PDF text paint: {0}")]
+    UnsupportedTextPaint(String),
+
     // Additional error types for later phases
     /// Invalid PDF structure (generic)
     #[error("Invalid PDF: {0}")]

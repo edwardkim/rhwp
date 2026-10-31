@@ -31,6 +31,7 @@ pub mod style;
 pub mod table;
 pub(crate) mod table_row_grid;
 pub mod text_clip;
+pub mod text_paint;
 
 /// HWP 내부 단위 (1/7200 인치, 부호 없음)
 pub type HwpUnit = u32;

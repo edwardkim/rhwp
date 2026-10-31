@@ -13144,6 +13144,10 @@ function __wbg_get_imports() {
             const ret = arg0[arg1 >>> 0];
             return ret;
         },
+        __wbg_globalAlpha_21742bf1d3356cb4: function(arg0) {
+            const ret = arg0.globalAlpha;
+            return ret;
+        },
         __wbg_has_b3a6e6d0d28295fa: function() { return handleError(function (arg0, arg1) {
             const ret = Reflect.has(arg0, arg1);
             return ret;

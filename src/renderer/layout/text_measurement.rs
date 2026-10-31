@@ -1020,6 +1020,7 @@ pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::sto
             unjustified_leading_spaces: 0,
             extra_char_spacing: 0.0,
             extra_dash_advance: 0.0,
+            text_paint: cs.text_paint,
             outline_type: cs.outline_type,
             shadow_type: cs.shadow_type,
             shadow_offset_percent: Some([cs.shadow_offset_x, cs.shadow_offset_y]),

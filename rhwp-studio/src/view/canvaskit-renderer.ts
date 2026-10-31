@@ -234,7 +234,7 @@ function normalizedFontFamily(value: string | null | undefined): string {
 
 function textRunHasPaintEffects(style: NonNullable<LayerTextRunOp['style']>): boolean {
   const shadeColor = (style.shadeColor ?? '#ffffff').toLowerCase();
-  return (style.outlineType ?? 0) !== 0
+  return style.textPaint !== undefined || (style.outlineType ?? 0) !== 0
     || (style.shadowType ?? 0) !== 0
     || style.emboss === true
     || style.engrave === true
@@ -3206,6 +3206,19 @@ export class CanvasKitLayerRenderer {
       this.unsupportedOps.add('textRun:invalidGeometry');
       return;
     }
+    if (style.textPaint) {
+      const { width, paint: p } = style.textPaint;
+      if (!p || typeof p.fill !== 'boolean' || !Number.isFinite(width) || width < 0
+        || width > 1_000_000 || ![p.stroke_color, p.fill_alpha, p.stroke_alpha,
+          p.line_join, p.miter_limit_milli].every(Number.isInteger)
+        || p.stroke_color < 0 || p.stroke_color > 0xffffff
+        || p.fill_alpha < 0 || p.fill_alpha > 255 || p.stroke_alpha < 0 || p.stroke_alpha > 255
+        || p.line_join < 0 || p.line_join > 2 || p.miter_limit_milli < 1000
+        || p.miter_limit_milli > 1_000_000) {
+        this.unsupportedOps.add('textRun:invalidGeometry');
+        return;
+      }
+    }
     const verticalPresentationText = op.isVertical
       && op.orientation !== 'vertical-sideways'
       ? VERTICAL_PRESENTATION_BASE_TEXT.get(replayText)
@@ -3657,7 +3670,23 @@ export class CanvasKitLayerRenderer {
             effectPaints.push(shadowPaint);
             for (const [x, y] of textShadowOffsets(style)) drawPass(shadowPaint, x, y);
           }
-          if (outlineType > 0) {
+          if (style.textPaint) {
+            const { width, paint: source } = style.textPaint;
+            const color = `#${[source.stroke_color & 255, (source.stroke_color >>> 8) & 255,
+              (source.stroke_color >>> 16) & 255].map(v => v.toString(16).padStart(2, '0')).join('')}`;
+            const stroke = this.makeStrokePaint(color, width);
+            stroke.setStrokeWidth(width);
+            effectPaints.push(stroke);
+            stroke.setAlphaf(source.stroke_alpha / 255);
+            stroke.setStrokeMiter(source.miter_limit_milli / 1000);
+            stroke.setStrokeJoin(source.line_join === 1 ? this.canvasKit.StrokeJoin.Round
+              : source.line_join === 2 ? this.canvasKit.StrokeJoin.Bevel : this.canvasKit.StrokeJoin.Miter);
+            if (source.fill) {
+              paint.setAlphaf(source.fill_alpha / 255);
+              drawPass(paint);
+            }
+            drawPass(stroke);
+          } else if (outlineType > 0) {
             const outlineFillPaint = this.makeFillPaint('#ffffff');
             effectPaints.push(outlineFillPaint);
             const outlineStrokePaint = this.makeStrokePaint(

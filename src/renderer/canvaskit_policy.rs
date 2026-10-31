@@ -2237,7 +2237,8 @@ fn text_run_transition_detail(
     if !text_visual_geometry_is_valid(bbox, run, &display_text) {
         return Some("invalidGeometry");
     }
-    let has_paint_effects = run.style.outline_type != 0
+    let has_paint_effects = run.style.text_paint.is_some()
+        || run.style.outline_type != 0
         || run.style.shadow_type != 0
         || run.style.emboss
         || run.style.engrave

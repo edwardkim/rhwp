@@ -27,6 +27,13 @@
 //! 그래프가 18쪽에 잘못 들어간다. 새 한컴 PDF와 대조한 18/19쪽 경계를 함께 잠근다.
 #![cfg(not(target_arch = "wasm32"))]
 
+mod svg_image_frames {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/common/svg_image_frames.rs"
+    ));
+}
+
 use std::path::Path;
 
 use rhwp::document_core::DocumentCore;
@@ -55,20 +62,10 @@ fn open(sample: &str) -> DocumentCore {
 
 /// SVG 의 `<image …>` 를 `(y, height)` 로 걷는다.
 fn images(svg: &str) -> Vec<(f64, f64)> {
-    let mut out = Vec::new();
-    for chunk in svg.split("<image ").skip(1) {
-        let head = &chunk[..chunk.find('>').unwrap_or(chunk.len())];
-        let attr = |name: &str| -> Option<f64> {
-            let key = format!("{name}=\"");
-            let s = head.find(&key)? + key.len();
-            let e = head[s..].find('"')?;
-            head[s..s + e].parse::<f64>().ok()
-        };
-        if let (Some(y), Some(h)) = (attr("y"), attr("height")) {
-            out.push((y, h));
-        }
-    }
-    out
+    svg_image_frames::image_frames(svg)
+        .into_iter()
+        .map(|[_, y, _, h]| (y, h))
+        .collect()
 }
 
 fn page_svg(core: &DocumentCore, page: u32) -> String {

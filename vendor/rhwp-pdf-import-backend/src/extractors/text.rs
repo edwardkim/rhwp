@@ -3737,6 +3737,18 @@ impl<'doc> TextExtractor<'doc> {
                         | Operator::CloseFillStrokeEvenOdd
                         | Operator::Do { .. }
                         | Operator::InlineImage { .. }
+                        | Operator::Tr { .. }
+                        | Operator::SetLineWidth { .. }
+                        | Operator::SetLineJoin { .. }
+                        | Operator::SetMiterLimit { .. }
+                        | Operator::SetDash { .. }
+                        | Operator::SetStrokeRgb { .. }
+                        | Operator::SetStrokeGray { .. }
+                        | Operator::SetStrokeCmyk { .. }
+                        | Operator::SetStrokeColorSpace { .. }
+                        | Operator::SetStrokeColor { .. }
+                        | Operator::SetStrokeColorN { .. }
+                        | Operator::SetExtGState { .. }
                         // Runs on opposite sides of a graphics-state/clip boundary
                         // must keep their own source order and active clip witness.
                         | Operator::SaveState

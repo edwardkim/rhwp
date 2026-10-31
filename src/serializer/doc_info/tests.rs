@@ -136,6 +136,7 @@ fn test_serialize_face_name_with_type_info_and_default_name() {
 #[test]
 fn test_serialize_char_shape_roundtrip() {
     let cs = CharShape {
+        text_paint: None,
         raw_data: None,
         font_ids: [0, 1, 2, 0, 0, 0, 0],
         ratios: [100, 80, 100, 100, 100, 100, 100],
@@ -629,6 +630,7 @@ fn test_serialize_doc_info_roundtrip() {
         native_program: None,
     });
     doc_info.char_shapes.push(CharShape {
+        text_paint: None,
         raw_data: None,
         font_ids: [0; 7],
         ratios: [100; 7],

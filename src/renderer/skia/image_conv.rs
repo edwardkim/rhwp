@@ -317,10 +317,11 @@ pub(super) fn draw_image_bytes(
                     f64::from(window.width),
                     f64::from(window.height),
                 );
-                src_x <= 0.5
-                    && src_y <= 0.5
-                    && (src_w - f64::from(window.width)).abs() <= 1.0
-                    && (src_h - f64::from(window.height)).abs() <= 1.0
+                crate::renderer::svg::image_source_is_full(
+                    (src_x, src_y, src_w, src_h),
+                    f64::from(window.width),
+                    f64::from(window.height),
+                )
             })
         });
     let key = byte_key(
@@ -484,11 +485,12 @@ pub(super) fn draw_image_bytes(
             decoded_width as f64,
             decoded_height as f64,
         );
+        let is_cropped = !crate::renderer::svg::image_source_is_full(
+            (src_x, src_y, src_w, src_h),
+            f64::from(decoded_width),
+            f64::from(decoded_height),
+        );
         let (src_x, src_y, src_w, src_h) = (src_x as f32, src_y as f32, src_w as f32, src_h as f32);
-        let is_cropped = src_x > 0.5
-            || src_y > 0.5
-            || (src_w - decoded_width).abs() > 1.0
-            || (src_h - decoded_height).abs() > 1.0;
         if is_cropped && src_w > 0.0 && src_h > 0.0 {
             Some(Rect::from_xywh(src_x, src_y, src_w, src_h))
         } else {

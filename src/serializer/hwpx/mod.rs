@@ -294,6 +294,18 @@ where
             )
             .map_err(context::context_error)?;
     }
+    if let Some(bytes) = crate::model::text_paint::encode_with_storage(doc, storage)
+        .map_err(SerializeError::UnsupportedInput)?
+    {
+        z.write_deflated(crate::model::text_paint::HWPX_ENTRY, &bytes)?;
+        ctx.content_loss
+            .record_with_storage(
+                crate::model::text_paint::native_visibility_loss_with_storage(storage)
+                    .map_err(context::context_error)?,
+                storage,
+            )
+            .map_err(context::context_error)?;
+    }
     if let Some(bytes) = crate::model::hyperlink_format::encode_with_storage(doc, storage)
         .map_err(SerializeError::UnsupportedInput)?
     {

@@ -147,10 +147,12 @@ export function imageCropSourceRect(
   const clampedHeight = clamp(height, 0, imageHeight - clampedY);
   if (clampedWidth <= 0 || clampedHeight <= 0) return null;
 
-  const isCropped = x > 0.5
-    || y > 0.5
-    || Math.abs(clampedWidth - imageWidth) > 1
-    || Math.abs(clampedHeight - imageHeight) > 1;
+  // One source pixel may be half a two-pixel tile. Do not discard a real
+  // selection based on an absolute pixel tolerance (same contract as Rust).
+  const isCropped = clampedX !== 0
+    || clampedY !== 0
+    || clampedWidth !== imageWidth
+    || clampedHeight !== imageHeight;
   if (!isCropped) return null;
 
   return {

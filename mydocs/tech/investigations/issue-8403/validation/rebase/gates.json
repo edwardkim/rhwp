@@ -1,0 +1,150 @@
+[
+  {
+    "name": "manifest",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--prepare"
+    ],
+    "exit": 0,
+    "seconds": 1.31
+  },
+  {
+    "name": "fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 21.84
+  },
+  {
+    "name": "nextest",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--tests",
+      "--test-threads",
+      "14",
+      "--no-fail-fast"
+    ],
+    "exit": 0,
+    "seconds": 1385.51
+  },
+  {
+    "name": "native-lib",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--lib"
+    ],
+    "exit": 0,
+    "seconds": 361.69
+  },
+  {
+    "name": "native-pattern",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_8403_pdf_image_patterns",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia"
+    ],
+    "exit": 0,
+    "seconds": 311.92
+  },
+  {
+    "name": "native-direct",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "render_p37_direct_pdf_export",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia"
+    ],
+    "exit": 0,
+    "seconds": 1.27
+  },
+  {
+    "name": "lint-all",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 122.23
+  },
+  {
+    "name": "lint-wasm",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "rhwp",
+      "--lib",
+      "--target",
+      "wasm32-unknown-unknown",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 82.42
+  },
+  {
+    "name": "build-native",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "-v"
+    ],
+    "exit": 0,
+    "seconds": 368.86
+  }
+]

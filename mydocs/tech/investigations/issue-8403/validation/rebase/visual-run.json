@@ -1,0 +1,162 @@
+[
+  {
+    "name": "candidate-lint-native",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/minfont.sh",
+      "cargo",
+      "clippy",
+      "--locked",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 84.04
+  },
+  {
+    "name": "candidate-workspace-build",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/minfont.sh",
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "exit": 0,
+    "seconds": 121.55
+  },
+  {
+    "name": "candidate-native-placeholder",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/minfont.sh",
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_2225_missing_picture_placeholder",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia"
+    ],
+    "exit": 0,
+    "seconds": 326.19
+  },
+  {
+    "name": "candidate-manifest-check",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "99a176b7cb"
+    ],
+    "exit": 0,
+    "seconds": 0.72
+  },
+  {
+    "name": "candidate-hft-native",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/minfont.sh",
+      "node",
+      "scripts/run-rust-test.mjs",
+      "hft_outline_font_contract",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia"
+    ],
+    "exit": 0,
+    "seconds": 18.75
+  },
+  {
+    "name": "candidate-native",
+    "command": [
+      "/home/edward/mygithub/rhwp/venv/bin/python",
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/native-candidate.py"
+    ],
+    "exit": 0,
+    "seconds": 26.97
+  },
+  {
+    "name": "candidate-pr149-native",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/rhwp-candidate",
+      "export-png",
+      "/home/edward/mygithub/rhwp/samples/pr-149.hwp",
+      "--profile",
+      "print",
+      "--font-path",
+      "/usr/share/fonts/truetype/nanum",
+      "--json",
+      "-o",
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/candidate-pr149-native"
+    ],
+    "exit": 0,
+    "seconds": 0.13
+  },
+  {
+    "name": "candidate-wasm-build",
+    "command": [
+      "docker",
+      "wait",
+      "rhwp-wasm-run-1ef8020e3510"
+    ],
+    "exit": 0,
+    "note": "Continued observing the original container after host supervisor exit 143; no compilation restarted. Full build log is candidate-wasm-build-resumed.log."
+  },
+  {
+    "name": "candidate-hft-browser",
+    "command": [
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/minfont.sh",
+      "node",
+      "--test",
+      "scripts/tests/hft-outline-font-selection.browser.mjs"
+    ],
+    "exit": 0,
+    "seconds": 2.08
+  },
+  {
+    "name": "candidate-browser",
+    "command": [
+      "node",
+      "e2e/run-with-vite.mjs",
+      "--",
+      "node",
+      "../mydocs/tech/investigations/issue-8403/validation/browser-verify.mjs",
+      "--mode=headless"
+    ],
+    "exit": 0,
+    "seconds": 106.58
+  },
+  {
+    "name": "candidate-wasm-scores",
+    "command": [
+      "/home/edward/mygithub/rhwp/venv/bin/python",
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/rebase/scores-candidate.py"
+    ],
+    "exit": 0,
+    "seconds": 10.79
+  },
+  {
+    "name": "candidate-pr149-browser",
+    "command": [
+      "node",
+      "e2e/run-with-vite.mjs",
+      "--",
+      "node",
+      "/home/edward/mygithub/rhwp/output/black-image-20261031/pr149-rebase.mjs",
+      "--mode=headless"
+    ],
+    "exit": 0,
+    "seconds": 4.013832330703735
+  }
+]

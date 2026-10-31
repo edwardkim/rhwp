@@ -860,6 +860,7 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
         ratio,
         ratios,
         border_fill_id: cs.border_fill_id,
+        text_paint: cs.text_paint.map(|paint| paint.at_dpi(dpi)),
         outline_type: cs.outline_type,
         shadow_type: cs.shadow_type,
         shadow_color: cs.shadow_color,

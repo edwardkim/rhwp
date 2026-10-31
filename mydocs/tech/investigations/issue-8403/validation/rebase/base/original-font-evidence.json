@@ -1,0 +1,144 @@
+[
+  {
+    "aliases": [
+      "NanumBarunGothic",
+      "나눔바른고딕"
+    ],
+    "weight": 400,
+    "sha256": "9b872773134e2e4d8c0b17021266786576db06c843ede0d0b523b214a450756c",
+    "sourceSha256": "9b872773134e2e4d8c0b17021266786576db06c843ede0d0b523b214a450756c",
+    "repairs": []
+  },
+  {
+    "aliases": [
+      "NanumBarunGothic",
+      "NanumBarunGothic Bold",
+      "나눔바른고딕",
+      "나눔바른고딕 Bold"
+    ],
+    "weight": 600,
+    "sha256": "39bba4cd9bd2986143825c8654abbb62443914ab33b346c0c929a916f5d98bf2",
+    "sourceSha256": "39bba4cd9bd2986143825c8654abbb62443914ab33b346c0c929a916f5d98bf2",
+    "repairs": []
+  },
+  {
+    "aliases": [
+      "NanumGothic",
+      "나눔고딕"
+    ],
+    "weight": 400,
+    "sha256": "badb9944d99fc61dc918977b6bf3f8989904665c1205afc1402ed75126c56d79",
+    "sourceSha256": "48a28e97b34fc8e5b157657633670cd1b7de126cfc414da65ce9c3d5bc8be733",
+    "repairs": [
+      "empty-vtt-source-table:TSI3"
+    ]
+  },
+  {
+    "aliases": [
+      "NanumGothic",
+      "NanumGothic Bold",
+      "NanumGothicBold",
+      "나눔고딕",
+      "나눔고딕 Bold"
+    ],
+    "weight": 600,
+    "sha256": "29cb423610c71bcbbbbbbc15f8cfd504ba923bf2b5af659f29ca2dca4311a97a",
+    "sourceSha256": "454eb3f503f377782a99eb84fc4bb7dde22a0f075d41b47427737f2985053bc9",
+    "repairs": [
+      "empty-vtt-source-table:TSI3"
+    ]
+  },
+  {
+    "aliases": [
+      "NanumGothicCoding",
+      "나눔고딕코딩"
+    ],
+    "weight": 400,
+    "sha256": "787effd7efed2abca88ade231faa8191f4e9fcf85b1805a13ee1dc3724b72089",
+    "sourceSha256": "787effd7efed2abca88ade231faa8191f4e9fcf85b1805a13ee1dc3724b72089",
+    "repairs": []
+  },
+  {
+    "aliases": [
+      "NanumGothicCoding",
+      "NanumGothicCoding-Bold",
+      "나눔고딕코딩",
+      "나눔고딕코딩-Bold"
+    ],
+    "weight": 700,
+    "sha256": "77a6de97c176b76ef9a683b565a1e6f4ce40b499c72a2972c4b5bdf7c6b8e7a0",
+    "sourceSha256": "77a6de97c176b76ef9a683b565a1e6f4ce40b499c72a2972c4b5bdf7c6b8e7a0",
+    "repairs": []
+  },
+  {
+    "aliases": [
+      "NanumMyeongjo",
+      "나눔명조"
+    ],
+    "weight": 400,
+    "sha256": "a21faae83d2d16d11c639f04f25fbe410eda905969ad75eff50d63ca31569f25",
+    "sourceSha256": "a21faae83d2d16d11c639f04f25fbe410eda905969ad75eff50d63ca31569f25",
+    "repairs": []
+  },
+  {
+    "aliases": [
+      "NanumMyeongjo",
+      "NanumMyeongjo Bold",
+      "NanumMyeongjoBold",
+      "나눔명조",
+      "나눔명조 Bold"
+    ],
+    "weight": 600,
+    "sha256": "cb47c5d029dd5ee5b8f6fe142c468d670edbe4e9caaad33b91e6ac399e99194a",
+    "sourceSha256": "cb47c5d029dd5ee5b8f6fe142c468d670edbe4e9caaad33b91e6ac399e99194a",
+    "repairs": []
+  },
+  {
+    "aliases": [
+      "NanumSquare",
+      "NanumSquare Bold",
+      "나눔스퀘어",
+      "나눔스퀘어 Bold"
+    ],
+    "weight": 700,
+    "sha256": "f737d58294faec9c632189af3a2a3e48e49c03c0256de09db61e879e2857bfbf",
+    "sourceSha256": "f737d58294faec9c632189af3a2a3e48e49c03c0256de09db61e879e2857bfbf",
+    "repairs": []
+  },
+  {
+    "aliases": [
+      "NanumSquare",
+      "NanumSquare Regular",
+      "나눔스퀘어",
+      "나눔스퀘어 Regular"
+    ],
+    "weight": 400,
+    "sha256": "5a51deae5237435d9a0bc0cc6cc30619a914b29801f895698cfdacadcad06e94",
+    "sourceSha256": "5a51deae5237435d9a0bc0cc6cc30619a914b29801f895698cfdacadcad06e94",
+    "repairs": []
+  },
+  {
+    "aliases": [
+      "NanumSquareRound",
+      "NanumSquareRound Bold",
+      "나눔스퀘어라운드",
+      "나눔스퀘어라운드 Bold"
+    ],
+    "weight": 700,
+    "sha256": "61fd37816a1ee1a9336876742392d80bdafd340e5124a088aeda20446e2e15de",
+    "sourceSha256": "61fd37816a1ee1a9336876742392d80bdafd340e5124a088aeda20446e2e15de",
+    "repairs": []
+  },
+  {
+    "aliases": [
+      "NanumSquareRound",
+      "NanumSquareRound Regular",
+      "나눔스퀘어라운드",
+      "나눔스퀘어라운드 Regular"
+    ],
+    "weight": 400,
+    "sha256": "52862fdf05b55ba886ca21998222d9598ef84c975e68046b9a8d8f1af09228a0",
+    "sourceSha256": "52862fdf05b55ba886ca21998222d9598ef84c975e68046b9a8d8f1af09228a0",
+    "repairs": []
+  }
+]

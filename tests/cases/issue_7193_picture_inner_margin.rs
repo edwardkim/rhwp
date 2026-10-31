@@ -17,6 +17,13 @@
 //! 수정 전 rhwp 는 틀 전체(72.0×56.7px)에 그림을 늘여 그려 세로가 2.1배였다.
 #![cfg(not(target_arch = "wasm32"))]
 
+mod svg_image_frames {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/common/svg_image_frames.rs"
+    ));
+}
+
 use std::path::Path;
 
 const HWPX: &str = "samples/issue7193/2983289_picture_inner_margin.hwpx";
@@ -45,22 +52,10 @@ struct Rect {
 
 /// SVG `<image>` 요소의 실제 그림 사각형.
 fn svg_images(svg: &str) -> Vec<Rect> {
-    let mut out = Vec::new();
-    for chunk in svg.split("<image").skip(1) {
-        let head = &chunk[..chunk.find('>').unwrap_or(chunk.len())];
-        let attr = |k: &str| -> Option<f64> {
-            let pat = format!(" {k}=\"");
-            let i = head.find(&pat)? + pat.len();
-            let rest = &head[i..];
-            rest[..rest.find('"')?].parse().ok()
-        };
-        if let (Some(x), Some(y), Some(w), Some(h)) =
-            (attr("x"), attr("y"), attr("width"), attr("height"))
-        {
-            out.push(Rect { x, y, w, h });
-        }
-    }
-    out
+    svg_image_frames::image_frames(svg)
+        .into_iter()
+        .map(|[x, y, w, h]| Rect { x, y, w, h })
+        .collect()
 }
 
 /// 렌더 트리 `Image` 노드의 bbox(개체 틀).

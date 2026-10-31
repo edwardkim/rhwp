@@ -351,6 +351,29 @@ where
             )
             .map_err(storage_error)?;
     }
+    extra_streams.retain(|(path, _)| path != crate::model::text_paint::HWP_STREAM);
+    if let Some(bytes) = crate::model::text_paint::encode_with_storage(doc, storage)
+        .map_err(SerializeError::UnsupportedInput)?
+    {
+        storage
+            .push(
+                &mut extra_streams,
+                (
+                    storage
+                        .string(crate::model::text_paint::HWP_STREAM)
+                        .map_err(storage_error)?,
+                    bytes,
+                ),
+            )
+            .map_err(storage_error)?;
+        content_loss
+            .record_with_storage(
+                crate::model::text_paint::native_visibility_loss_with_storage(storage)
+                    .map_err(storage_error)?,
+                storage,
+            )
+            .map_err(storage_error)?;
+    }
     // HWPX에 보존한 재정렬 요청도 HWP 저장·재열기에서 같은 계약을 유지한다.
     if doc.layout_profile().hwp3_external_realign()
         && !extra_streams

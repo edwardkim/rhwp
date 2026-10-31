@@ -1,0 +1,11 @@
+{
+  "source": "55557c3816",
+  "nativeSha256": "542ab658da9b3faade6247e36af7c2bb56c393ce057a524a0028ebbb837ff28b",
+  "wasmSha256": "a5533d35b4a4fc96c0b98d168b665054ee02d6d6139794f44912ba0f679a48c2",
+  "input": "pdf/issue8403/image-patterns.pdf",
+  "page": 3,
+  "dpi": 96,
+  "sourceSelection": "left one of two source columns, full height",
+  "observation": "right edge tile incorrectly contains green/yellow from unselected right source column",
+  "afterProductSource": "6d95c45f08"
+}

@@ -1,0 +1,200 @@
+[
+  {
+    "name": "patterns",
+    "page": 1,
+    "backend": "canvaskit",
+    "rendererSession": {
+      "schemaVersion": 1,
+      "request": {
+        "backend": "canvaskit",
+        "source": "url",
+        "requested": "canvaskit"
+      },
+      "requestedBackend": "canvaskit",
+      "effectiveBackend": "canvaskit",
+      "selectionReason": "explicitCanvasKit",
+      "fallbackReason": null,
+      "documentRevision": 4,
+      "resourceGeneration": 4,
+      "renderProfile": "screen",
+      "documentDigest": "blake3:afe5117d8a1b4f09f23cde56012ae0c02c946dcb7046e5da46d66e7e12b6e0ce",
+      "decisionKey": "blake3:afe5117d8a1b4f09f23cde56012ae0c02c946dcb7046e5da46d66e7e12b6e0ce|revision:4|profile:screen|resources:4|request:canvaskit|mode:default",
+      "preflight": null,
+      "initializationError": null,
+      "selectionError": null
+    },
+    "clip": {
+      "x": 676.65625,
+      "y": 140,
+      "width": 266.6875,
+      "height": 186.6875
+    },
+    "zoom": "1",
+    "pageCount": 5
+  },
+  {
+    "name": "patterns",
+    "page": 3,
+    "backend": "canvaskit",
+    "rendererSession": {
+      "schemaVersion": 1,
+      "request": {
+        "backend": "canvaskit",
+        "source": "url",
+        "requested": "canvaskit"
+      },
+      "requestedBackend": "canvaskit",
+      "effectiveBackend": "canvaskit",
+      "selectionReason": "explicitCanvasKit",
+      "fallbackReason": null,
+      "documentRevision": 4,
+      "resourceGeneration": 4,
+      "renderProfile": "screen",
+      "documentDigest": "blake3:afe5117d8a1b4f09f23cde56012ae0c02c946dcb7046e5da46d66e7e12b6e0ce",
+      "decisionKey": "blake3:afe5117d8a1b4f09f23cde56012ae0c02c946dcb7046e5da46d66e7e12b6e0ce|revision:4|profile:screen|resources:4|request:canvaskit|mode:default",
+      "preflight": null,
+      "initializationError": null,
+      "selectionError": null
+    },
+    "clip": {
+      "x": 676.65625,
+      "y": 487.390625,
+      "width": 266.6875,
+      "height": 186.6875
+    },
+    "zoom": "1",
+    "pageCount": 5
+  },
+  {
+    "name": "stroke",
+    "page": 1,
+    "backend": "canvaskit",
+    "rendererSession": {
+      "schemaVersion": 1,
+      "request": {
+        "backend": "canvaskit",
+        "source": "url",
+        "requested": "canvaskit"
+      },
+      "requestedBackend": "canvaskit",
+      "effectiveBackend": "canvaskit",
+      "selectionReason": "explicitCanvasKit",
+      "fallbackReason": null,
+      "documentRevision": 6,
+      "resourceGeneration": 6,
+      "renderProfile": "screen",
+      "documentDigest": "blake3:c3208efbfb3b9acea807894d8b2cfa9ce53d8817f2c67f560f018d666af27a24",
+      "decisionKey": "blake3:c3208efbfb3b9acea807894d8b2cfa9ce53d8817f2c67f560f018d666af27a24|revision:6|profile:screen|resources:6|request:canvaskit|mode:default",
+      "preflight": null,
+      "initializationError": null,
+      "selectionError": null
+    },
+    "clip": {
+      "x": 530,
+      "y": 140,
+      "width": 560,
+      "height": 320
+    },
+    "zoom": "1",
+    "pageCount": 7
+  },
+  {
+    "name": "stroke",
+    "page": 2,
+    "backend": "canvaskit",
+    "rendererSession": {
+      "schemaVersion": 1,
+      "request": {
+        "backend": "canvaskit",
+        "source": "url",
+        "requested": "canvaskit"
+      },
+      "requestedBackend": "canvaskit",
+      "effectiveBackend": "canvaskit",
+      "selectionReason": "explicitCanvasKit",
+      "fallbackReason": null,
+      "documentRevision": 6,
+      "resourceGeneration": 6,
+      "renderProfile": "screen",
+      "documentDigest": "blake3:c3208efbfb3b9acea807894d8b2cfa9ce53d8817f2c67f560f018d666af27a24",
+      "decisionKey": "blake3:c3208efbfb3b9acea807894d8b2cfa9ce53d8817f2c67f560f018d666af27a24|revision:6|profile:screen|resources:6|request:canvaskit|mode:default",
+      "preflight": null,
+      "initializationError": null,
+      "selectionError": null
+    },
+    "clip": {
+      "x": 530,
+      "y": 140,
+      "width": 560,
+      "height": 320
+    },
+    "zoom": "1",
+    "pageCount": 7
+  },
+  {
+    "name": "original",
+    "page": 1,
+    "backend": "canvas2d",
+    "rendererSession": {
+      "schemaVersion": 1,
+      "request": {
+        "backend": "canvaskit",
+        "source": "url",
+        "requested": "canvaskit"
+      },
+      "requestedBackend": "canvaskit",
+      "effectiveBackend": "canvas2d",
+      "selectionReason": "canvaskitResourcePreparationFailed",
+      "fallbackReason": "canvaskitResourcePreparationFailed",
+      "documentRevision": 8,
+      "resourceGeneration": 8,
+      "renderProfile": "screen",
+      "documentDigest": "blake3:7e2e341d3bf2ce0be945a7165defb71819352535b1456af5732b0f2319ca7403",
+      "decisionKey": "blake3:7e2e341d3bf2ce0be945a7165defb71819352535b1456af5732b0f2319ca7403|revision:8|profile:screen|resources:8|request:canvaskit|mode:default",
+      "preflight": null,
+      "initializationError": null,
+      "selectionError": "CanvasKit font family가 준비되지 않았습니다: Arial, Droid Sans Fallback"
+    },
+    "clip": {
+      "x": 170,
+      "y": 140,
+      "width": 1280,
+      "height": 720
+    },
+    "zoom": "1",
+    "pageCount": 8
+  },
+  {
+    "name": "original",
+    "page": 3,
+    "backend": "canvas2d",
+    "rendererSession": {
+      "schemaVersion": 1,
+      "request": {
+        "backend": "canvaskit",
+        "source": "url",
+        "requested": "canvaskit"
+      },
+      "requestedBackend": "canvaskit",
+      "effectiveBackend": "canvas2d",
+      "selectionReason": "canvaskitResourcePreparationFailed",
+      "fallbackReason": "canvaskitResourcePreparationFailed",
+      "documentRevision": 8,
+      "resourceGeneration": 8,
+      "renderProfile": "screen",
+      "documentDigest": "blake3:7e2e341d3bf2ce0be945a7165defb71819352535b1456af5732b0f2319ca7403",
+      "decisionKey": "blake3:7e2e341d3bf2ce0be945a7165defb71819352535b1456af5732b0f2319ca7403|revision:8|profile:screen|resources:8|request:canvaskit|mode:default",
+      "preflight": null,
+      "initializationError": null,
+      "selectionError": "CanvasKit font family가 준비되지 않았습니다: Arial, Droid Sans Fallback"
+    },
+    "clip": {
+      "x": 170,
+      "y": 140,
+      "width": 1280,
+      "height": 720
+    },
+    "zoom": "1",
+    "pageCount": 8
+  }
+]

@@ -802,6 +802,10 @@ fn text_bounds(logical: BoundingBox, run: &TextRunNode) -> BoundingBox {
     if run.style.outline_type != 0 || run.style.emboss || run.style.engrave {
         padding = padding.max(font_size * 0.15);
     }
+    if let Some(p) = run.style.text_paint {
+        let width = if p.width == 0.0 { 1.0 } else { p.width };
+        padding = padding.max(width * f64::from(p.paint.miter_limit_milli) / 2000.0);
+    }
     if run.style.emphasis_dot != 0 {
         padding = padding.max(font_size * 0.35);
     }

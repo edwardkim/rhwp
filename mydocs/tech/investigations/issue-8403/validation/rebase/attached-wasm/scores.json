@@ -1,0 +1,32 @@
+[
+  {
+    "file": "patterns.hwp",
+    "pages": 5,
+    "minimum": 99.98
+  },
+  {
+    "file": "patterns.hwpx",
+    "pages": 5,
+    "minimum": 99.98
+  },
+  {
+    "file": "stroke.hwp",
+    "pages": 7,
+    "minimum": 100.0
+  },
+  {
+    "file": "stroke.hwpx",
+    "pages": 7,
+    "minimum": 100.0
+  },
+  {
+    "file": "stroke-edited.hwp",
+    "pages": 7,
+    "minimum": 100.0
+  },
+  {
+    "file": "stroke-edited.hwpx",
+    "pages": 7,
+    "minimum": 100.0
+  }
+]

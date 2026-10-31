@@ -96,6 +96,35 @@ pub(super) fn extract(
             )
         })?);
     }
+    let mut paints = std::collections::BTreeMap::new();
+    for (order, paint) in &clips.text_paints {
+        allocation.tree_entry::<&Vec<usize>, &pdf_oxide::elements::TextStrokePaint>()?;
+        paints.insert(order, paint);
+    }
+    let mut span_paints = allocation.vec(span_orders.len())?;
+    for order in &span_orders {
+        let paint = paints.get(order).map(|p| {
+            let color = p.color;
+            crate::model::text_paint::TextPaint {
+                fill: p.fill,
+                width_mpt: (f64::from(p.width) * 1000.).round() as u32,
+                stroke_color: super::lowering::rgb(pdf_oxide::layout::Color::new(
+                    color.0, color.1, color.2,
+                )),
+                fill_alpha: (p.fill_alpha.clamp(0., 1.) * 255.).round() as u8,
+                stroke_alpha: (p.stroke_alpha.clamp(0., 1.) * 255.).round() as u8,
+                line_join: p.line_join,
+                miter_limit_milli: (p.miter_limit * 1000.).round() as u32,
+            }
+        });
+        if paint.is_some_and(|p| !p.valid()) {
+            return Err(PdfImportError::new(
+                "PDF_TEXT_UNSUPPORTED",
+                "invalid text stroke paint",
+            ));
+        }
+        span_paints.push(paint);
+    }
     for path in &paths {
         let next = budget
             .path_operations
@@ -384,6 +413,7 @@ pub(super) fn extract(
         span_orders,
         span_fonts,
         span_clips,
+        span_paints,
         images,
         image_orders,
         paths,
