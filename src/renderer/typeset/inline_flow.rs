@@ -44,31 +44,32 @@ impl TypesetEngine {
         let column = st.inline_flow_column();
         let table_text_rows = inline_flow::supports_table_text_rows_with_storage(para, storage)?;
         let picture_rows = inline_flow::supports_picture_rows(para);
+        // [#8282] 저장 줄이 있는 본문은 증언 없는 어울림 개체가 있을 때만 후보다.
+        let reflow_stored_text =
+            !st.unwitnessed_side_wraps.is_empty() && inline_flow::supports_stored_plain_text(para);
         if !inline_flow::supports(para, super::super::px_to_hwpunit(column.width, self.dpi))
             && !inline_flow::supports_plain_text(para)
+            && !inline_flow::supports_square_float_host(para)
+            && !reflow_stored_text
         {
             return Ok(false);
         }
         if !table_text_rows
             && !picture_rows
             && st.side_wrap_exclusions.is_empty()
-            && !para.controls.iter().any(|c| {
-                matches!(c, Control::Picture(p) if !p.common.treat_as_char
-                && p.common.text_wrap == crate::model::shape::TextWrap::Square)
-            })
+            && !para
+                .controls
+                .iter()
+                .any(crate::renderer::composer::control_is_square_float_object)
         {
             // 어울림 입력이 없는 기존 inline 문단에서는 토큰/plan도 만들지 않는다.
             return Ok(false);
         }
         let build = |st: &TypesetState, start: f64, preceding: bool| {
+            let mut input = st.inline_flow_input(start, preceding);
+            input.reflow_stored_text = reflow_stored_text;
             plan::build_plan_with_storage(
-                st.inline_flow_input(start, preceding),
-                para,
-                para_index,
-                styles,
-                tables,
-                self.dpi,
-                storage,
+                input, para, para_index, styles, tables, self.dpi, storage,
             )
         };
         let Some(mut plan) = build(st, st.current_height, true)? else {
@@ -88,6 +89,18 @@ impl TypesetEngine {
             && !plan.carved
             && (plan.text_rows.is_none() || !follows_shared_rows)
         {
+            return Ok(false);
+        }
+        if reflow_stored_text
+            && !plan.carved_by_any(
+                st.unwitnessed_side_wraps
+                    .iter()
+                    .filter_map(|key| st.side_wrap_exclusions.get(key)),
+                column.y,
+                self.dpi,
+            )
+        {
+            // 저장 줄은 증언된 개체에 대해서는 정본이다. 증언 없는 개체와 겹칠 때만 대체한다.
             return Ok(false);
         }
         // 마지막 줄 뒤 간격은 다음 흐름의 전진량이다. 표 경로와 같은

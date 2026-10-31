@@ -332,8 +332,8 @@ pub(crate) use line_breaking::try_reflow_line_segs;
 
 mod picture_anchor_projection;
 pub(crate) use line_breaking::{
-    control_is_width_neutral_marker, frame_metrics_for_line, paragraph_end_font_size_px,
-    text_word_ranges, text_word_ranges_with_storage,
+    control_is_square_float_object, control_is_width_neutral_marker, frame_metrics_for_line,
+    paragraph_end_font_size_px, text_word_ranges, text_word_ranges_with_storage,
 };
 pub mod lineseg_compare;
 
@@ -342,8 +342,8 @@ pub(crate) use line_breaking::{
     layout_paragraph_in_frame_with_storage, layout_picture_anchor_in_frame, layout_picture_band,
     paragraph_flow_end, recalculate_section_vpos, reflow_line_segs,
     reflow_line_segs_after_cell_split, reflow_line_segs_after_cell_text_edit,
-    reflow_line_segs_in_stored_section, restamp_indentation, tokenize_paragraph, BreakToken,
-    StoredRowMissPolicy,
+    reflow_line_segs_in_stored_section, restamp_indentation, supports_picture_band_frame_controls,
+    tokenize_paragraph, BreakToken, StoredRowMissPolicy,
 };
 
 #[cfg(test)]

@@ -3572,6 +3572,16 @@ pub(crate) fn control_is_line_width_neutral_float_object(control: &Control) -> b
         )
 }
 
+/// 글자처럼 취급하지 않은 어울림(Square) 그림·도형 — 그림 밴드 프레임이 받는 부동 개체.
+pub(crate) fn control_is_square_float_object(control: &Control) -> bool {
+    let common = match control {
+        Control::Picture(picture) => &picture.common,
+        Control::Shape(shape) => shape.common(),
+        _ => return false,
+    };
+    !common.treat_as_char && matches!(common.text_wrap, crate::model::shape::TextWrap::Square)
+}
+
 /// 대체 메트릭으로 폭이 바뀐 수식의 첫 소유 줄만 저장 캐시 경계로 삼는다.
 /// 앞쪽의 정상 줄과 각주 앵커까지 함께 재조판하면 무관한 문단 배치가 바뀐다.
 pub(super) fn remeasured_equation_start_row(para: &Paragraph) -> Option<usize> {
@@ -3704,11 +3714,17 @@ pub(super) fn supports_tac_table_band_frame_controls(para: &Paragraph) -> bool {
     tac_tables == 1 || (tac_tables > 1 && crate::renderer::para_has_no_stored_line_segs(para))
 }
 
-pub(super) fn supports_picture_band_frame_controls(para: &Paragraph) -> bool {
+pub(crate) fn supports_picture_band_frame_controls(para: &Paragraph) -> bool {
     let mut non_tac_pictures = 0usize;
     for control in &para.controls {
         match control {
             Control::Picture(picture) if !picture.common.treat_as_char => {
+                non_tac_pictures += 1;
+            }
+            // 어울림 도형도 어울림 그림과 같은 부동 개체 하나다 — 자기 상자는 도형 소유자가
+            // 배치하고, 이 프레임은 같은 문단의 글자·글자처럼 개체 줄을 짠다. 사양하면 저장 줄
+            // 없는 문단이 합성 줄로 남아 글자처럼 그림의 줄 높이를 잃는다(#8282).
+            square if control_is_square_float_object(square) => {
                 non_tac_pictures += 1;
             }
             // 글자처럼 취급 그림은 fill 이 인라인 토큰으로 폭을 계상한다

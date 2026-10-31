@@ -19,6 +19,8 @@ pub(in crate::renderer::typeset) struct InlineFlowInput<'a> {
     pub start: f64,
     pub exclusions: Option<&'a BTreeMap<(usize, usize), FrameExclusion>>,
     pub visible_float_exclusions: Option<&'a [super::super::VisibleFloatExclusion]>,
+    /// [#8282] 증언 없는 앞 어울림 개체를 피하도록 저장 줄 있는 본문도 재조판한다.
+    pub reflow_stored_text: bool,
 }
 
 pub(in crate::renderer::typeset) fn build_plan_with_storage<S: crate::storage::Storage>(
@@ -105,8 +107,18 @@ pub(in crate::renderer::typeset) fn build_plan_with_storage<S: crate::storage::S
             }
         }
     }
-    let plan = if inline_flow::supports_plain_text(para) {
+    let plan = if inline_flow::supports_plain_text(para)
+        || (input.reflow_stored_text && inline_flow::supports_stored_plain_text(para))
+    {
         inline_flow::plan_plain_text_with_storage(para, styles, &frame, &exclusions, storage)?
+    } else if inline_flow::supports_square_float_host(para) {
+        inline_flow::plan_square_float_host_with_storage(
+            para,
+            styles,
+            &frame,
+            &exclusions,
+            storage,
+        )?
     } else {
         inline_flow::plan_with_storage(
             para,

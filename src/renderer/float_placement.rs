@@ -6734,6 +6734,39 @@ impl ObjectPlacementFrame<'_> {
         })
     }
 
+    /// [#8282] 어울림 도형의 바깥 여백 포함 상자. 그림과 같은 흐름 배제 계약이다.
+    /// 캡션 도형은 캡션 상자를 따로 가지므로 기존 경로에 남긴다.
+    pub(crate) fn shape_exclusion(
+        &self,
+        shape: &crate::model::shape::ShapeObject,
+    ) -> Option<FrameExclusion> {
+        let common = shape.common();
+        if common.treat_as_char
+            || common.text_wrap != TextWrap::Square
+            || super::composer::shape_caption_for_layout(shape).is_some()
+        {
+            return None;
+        }
+        let margin = &common.margin;
+        let width = i64::from(common.width) + i64::from(margin.left) + i64::from(margin.right);
+        let height = i64::from(common.height) + i64::from(margin.top) + i64::from(margin.bottom);
+        let width = hwpunit_to_px(i32::try_from(width).ok()?, self.dpi);
+        let height = hwpunit_to_px(i32::try_from(height).ok()?, self.dpi);
+        let (x, y) = self.position(common, width, height);
+        if width <= 0.0
+            || height <= 0.0
+            || ![x, y, width, height].iter().all(|value| value.is_finite())
+        {
+            return None;
+        }
+        let hu = |px| super::px_to_hwpunit(px, self.dpi);
+        Some(FrameExclusion {
+            horizontal: hu(x)..hu(x + width),
+            vertical: hu(y)..hu(y + height),
+            policy: frame_exclusion_policy(common.text_flow),
+        })
+    }
+
     /// [#7548] 쪽·종이 기준 어울림(Square) 표의 바깥 여백 포함 상자.
     ///
     /// 문단 기준 표는 host 문단 frame(`plan_square_table_host`)이 같은 상자를 만든다.
