@@ -2906,14 +2906,18 @@ impl Renderer for WebCanvasRenderer {
                             font_size
                         );
                         self.ctx.set_font(&fallback_font);
-                        Self::fill_positioned_text(
-                            &self.ctx,
-                            cluster_str,
-                            char_x,
-                            y,
-                            style,
-                            font_size,
-                        );
+                        if style.text_paint.is_some() {
+                            Self::fill_positioned_text(
+                                &self.ctx,
+                                cluster_str,
+                                char_x,
+                                y,
+                                style,
+                                font_size,
+                            );
+                        } else {
+                            let _ = self.ctx.fill_text(cluster_str, char_x, y);
+                        }
                         self.ctx.restore();
                         self.ctx.set_font(font); // 원래 폰트 복원
                         continue;
