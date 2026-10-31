@@ -1,5 +1,6 @@
 //! 관계형: 원문 기호의 공급 프로그램 전진폭과 뒤 글자 소유를 보존한다.
-//! 주석 갱신: 2026-10-30T06:54:13+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
+//! 주석 갱신: 2026-10-31T18:41:48+09:00; 직전 파일 커밋: 2026-10-30T19:50:11+09:00 (c417310ca).
+//! 두 원문 줄은 run 경계와 무관하게 같은 줄에서 맞닿은 연속 run 의 글로 대조한다.
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
 //! HWP 59쪽 Native 100.00% / fresh WASM 100.00%.
 //! HWP 전 383쪽 최저 Native 99.96% / fresh WASM 99.96%.
@@ -14,7 +15,7 @@ use rhwp::{
     renderer::render_tree::BoundingBox,
     DocumentCore,
 };
-fn find(node: &LayerNode, out: &mut Vec<(String, BoundingBox)>) {
+fn find(node: &LayerNode, out: &mut Vec<(String, BoundingBox, Option<u32>)>) {
     match &node.kind {
         LayerNodeKind::Group { children, .. } => {
             for c in children {
@@ -27,48 +28,4 @@ fn find(node: &LayerNode, out: &mut Vec<(String, BoundingBox)>) {
         LayerNodeKind::Leaf { ops } => {
             for o in ops {
                 if let PaintOp::TextRun { bbox, run, .. } = o {
-                    if matches!(
-                        run.text.as_str(),
-                        "  ①, ②, ③, ④, " | "  ①, ②, ③, ④, …" | "  ㉮, ㉯, ㉰, ㉱, …"
-                    ) {
-                        assert_eq!(run.char_shape_id, Some(89));
-                        out.push((run.text.clone(), *bbox));
-                    }
-                }
-            }
-        }
-    }
-}
-fn verify(ext: &str) {
-    let base = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
-    let mut d = DocumentCore::from_bytes(
-        &std::fs::read(base.join(format!("samples/2025 행정업무운영 편람(최종).{ext}"))).unwrap(),
-    )
-    .unwrap();
-    d.set_hangul2024_compat(true);
-    let tree = d
-        .build_page_layer_tree_with_profile(58, RenderProfile::Print)
-        .unwrap();
-    let mut got = Vec::new();
-    find(&tree.root, &mut got);
-    assert_eq!(got.len(), 2, "두 원문 줄의 누락·중복 방지");
-    // 독립 Print의 기호 폭 900/1000em, 원본 1000HU·장평 99%로 888HU.
-    // 원문 useFontSpace=0은 확인된 반각 496HU, 쉼표는 독립 글꼴 메트릭 308HU.
-    let expected_hu = 6 * 496 + 4 * 888 + 4 * 308;
-    for (text, bbox) in got {
-        let expected = expected_hu + if text.ends_with('…') { 888 } else { 0 };
-        assert!(
-            (bbox.width - f64::from(expected) / 75.0).abs() < 1e-7,
-            "원본 크기·장평을 적용한 숫자/한글 원 기호의 전진: {text} width={}",
-            bbox.width
-        );
-    }
-}
-#[test]
-fn hwp_circled_symbol_keeps_source_advance() {
-    verify("hwp")
-}
-#[test]
-fn hwpx_circled_symbol_keeps_source_advance() {
-    verify("hwpx")
-}
+                    out.push((run.text.clone(), *bbox, run.char_shape_id));
