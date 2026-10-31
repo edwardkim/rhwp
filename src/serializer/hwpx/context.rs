@@ -240,9 +240,14 @@ impl SerializeContext {
         ctx.numbering_ids.reservation = reservation.clone();
         ctx.style_ids.reservation = reservation;
 
+        // [#8303] HWP3 원본 산출물도 문단 축으로 낸다 — 한컴 2020·2024 가 같은 HWP3 을
+        // 저장한 HWPX 의 `textpos` 축이다. 표지 엔트리는 `serialize_hwpx` 가 함께 쓴다.
         ctx.line_segs_on_paragraph_axis = doc
             .hwpx_aux_entry(crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
-            == Some(crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS);
+            == Some(crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS)
+            || doc
+                .hwpx_aux_entry(crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH)
+                .is_some();
         // [#7526] rhwp 원본 마커를 싣는 산출물은 rhwp 축 계약을 따른다. 그 파일에서 읽은
         // 문단은 이미 그 축이고(`hwpx_axis_shift` 0 아님), 편집으로 다시 조판한 문단만
         // HWP5 축이라 문단마다 가른다(`render_paragraph_parts`).

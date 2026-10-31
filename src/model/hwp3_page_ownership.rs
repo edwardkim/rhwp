@@ -34,7 +34,11 @@ struct ControlAxis {
     placeholders: Vec<usize>,
     offsets: Vec<u32>,
     char_count: u32,
-    axis_shift: u32,
+    // [#8303] 줄 시작 보정폭(`hwpx_axis_shift`)은 싣지 않는다. 그 값은 원본 IR 의 저장 줄과
+    // 문자 축의 관계인데, HWPX 파일의 `textpos` 는 저장기가 HWP5 전용 슬롯만큼 이미 내려
+    // 쓴 값이다(#5943). 다시 읽은 파일 축의 보정폭은 파서가 마커와 머리 run 으로 센다
+    // (#7526). 원본 값(HWP3 은 0)으로 덮어쓰면 다시 저장할 때마다 같은 폭을 또 뺀다.
+    // 옛 마커의 `axis_shift` 키는 읽을 때 무시한다.
 }
 
 impl ControlAxis {
@@ -58,7 +62,6 @@ impl ControlAxis {
             placeholders,
             offsets: para.char_offsets.clone(),
             char_count: para.char_count,
-            axis_shift: para.hwpx_axis_shift,
         })
     }
 
@@ -97,7 +100,6 @@ impl ControlAxis {
         para.text = text;
         para.char_offsets.clone_from(&self.offsets);
         para.char_count = self.char_count;
-        para.hwpx_axis_shift = self.axis_shift;
     }
 }
 

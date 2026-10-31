@@ -488,6 +488,11 @@ where
             crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH,
             encoded.as_deref().unwrap_or(marker),
         )?;
+        // [#8303] 위 `line_segs_on_paragraph_axis` 로 낸 `textpos` 축을 표시한다.
+        z.write_deflated(
+            crate::model::document::HWP3_ORIGIN_HWPX_PARAGRAPH_AXIS_PATH,
+            crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS,
+        )?;
     }
     if doc.layout_profile().hwp3_external_realign() {
         z.write_deflated(

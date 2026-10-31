@@ -24,6 +24,14 @@ pub const HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS: &[u8] = b"2:paragraph-utf16";
 /// 없으면 render-diff 왕복이 프로파일 차이만큼 갈라진다(hwp3-sample p7 14.9px).
 pub const HWP3_ORIGIN_HWPX_MARKER_PATH: &str = "META-INF/rhwp-hwp3-origin";
 
+/// [#8303] HWP3 원본에서 만든 HWPX 가 `textpos` 를 문단 UTF-16 축으로 싣는다는 생산자 표지.
+///
+/// 값은 [`HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS`] 와 같다. 한컴 2020·2024 가 같은 HWP3 을 HWPX 로
+/// 저장할 때 구역·단 정의 자리를 센 축으로 쓰고(`hwp3-table-caption` 문단 0 줄 1:
+/// `textpos=62`), 그 자리를 뺀 값(46)은 한컴이 표를 한 줄 아래에 인쇄한다. HWP3 원본의
+/// 마커 값(`hwp3_page_ownership`)과 분리해 두어, 표지가 없는 이전 산출물은 종전 축으로 읽는다.
+pub const HWP3_ORIGIN_HWPX_PARAGRAPH_AXIS_PATH: &str = "META-INF/rhwp-hwp3-paragraph-axis";
+
 /// 원본 HWP3의 외부 생성·재정렬 요청을 저장 왕복에서 보존한다.
 pub const HWP3_EXTERNAL_REALIGN_STREAM_PATH: &str = "/RhwpHwp3ExternalRealign";
 pub const HWP3_EXTERNAL_REALIGN_HWPX_PATH: &str = "META-INF/rhwp-hwp3-external-realign";
