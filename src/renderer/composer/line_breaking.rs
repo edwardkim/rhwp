@@ -3572,6 +3572,22 @@ pub(crate) fn control_is_line_width_neutral_float_object(control: &Control) -> b
         )
 }
 
+/// 어울림(Square)·Tight·Through 비-TAC 도형. 그림과 달리 이 배제 밴드를 줄 폭에 모델링하는
+/// 소유자(`layout_picture_band` 같은)가 없다 — 편집 경로도 이 도형의 host 줄을 전폭으로 만든다.
+/// 저장 줄 없는 host 의 프레임이 이 도형 때문에 사양하면 같은 문단의 글자처럼 개체가 줄 높이를
+/// 잃어, 편집 직후·HWP 저장본과 HWPX 저장본의 배치가 갈린다(#8282). 한/글 2024 는 이 도형이
+/// host 줄과 겹치지 않을 때 그 줄을 전폭·개체 높이로 저장한다. 겹칠 때 줄을 좁히는 규칙은 아직
+/// 어느 경로에도 없다(별도 결함).
+pub(crate) fn control_is_unbanded_float_shape(control: &Control) -> bool {
+    use crate::model::shape::TextWrap;
+    matches!(control, Control::Shape(shape)
+    if !shape.common().treat_as_char
+        && matches!(
+            shape.common().text_wrap,
+            TextWrap::Square | TextWrap::Tight | TextWrap::Through
+        ))
+}
+
 /// 대체 메트릭으로 폭이 바뀐 수식의 첫 소유 줄만 저장 캐시 경계로 삼는다.
 /// 앞쪽의 정상 줄과 각주 앵커까지 함께 재조판하면 무관한 문단 배치가 바뀐다.
 pub(super) fn remeasured_equation_start_row(para: &Paragraph) -> Option<usize> {
@@ -3741,6 +3757,7 @@ fn supports_inline_picture_frame_controls(para: &Paragraph) -> bool {
         && para.controls.iter().all(|control| match control {
             Control::Picture(picture) if picture.common.treat_as_char => picture.caption.is_none(),
             float if control_is_line_width_neutral_float_object(float) => true,
+            shape if control_is_unbanded_float_shape(shape) => true,
             Control::Picture(_) => false,
             other => control_is_width_neutral_marker(other),
         })
