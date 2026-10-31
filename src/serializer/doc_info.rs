@@ -919,6 +919,19 @@ fn write_serialize_bullet<W: std::io::Write>(
     Ok(())
 }
 
+/// 모델 줄간격의 HWP5 구 필드(attr1 종류, `line_spacing`)와 5.0.2.5 필드(attr3 종류,
+/// `line_spacing_v2`). «최소»는 새 필드에만 있고 구 필드는 한/글처럼 비율 100 을 둔다.
+fn line_spacing_fields(ps: &ParaShape) -> (u32, i32, u32, u32) {
+    use crate::model::style::LineSpacingType;
+    let value = ps.line_spacing.max(0) as u32;
+    match ps.line_spacing_type {
+        LineSpacingType::Percent => (0, ps.line_spacing, 0, value),
+        LineSpacingType::Fixed => (1, ps.line_spacing, 1, value),
+        LineSpacingType::SpaceOnly => (2, ps.line_spacing, 2, value),
+        LineSpacingType::Minimum => (0, 100, 3, value),
+    }
+}
+
 pub fn serialize_para_shape(ps: &ParaShape) -> Vec<u8> {
     let mut w = ByteWriter::new();
     write_serialize_para_shape(ps, &mut w).expect("Vec binary writer");
@@ -931,14 +944,14 @@ fn write_serialize_para_shape<W: std::io::Write>(
 ) -> std::io::Result<()> {
     // attr1: 원본 비트를 기반으로, 모델링된 필드 반영
     let mut attr1 = ps.attr1;
+    // [#8352] 줄간격은 구 필드(attr1 bit 0-1 + `line_spacing`)와 5.0.2.5 필드(attr3 bit 0-4 +
+    // `line_spacing_v2`) 두 곳에 둔다. 한/글은 새 필드를 읽고, 한/글 저장본은 비율·고정·여백만은
+    // 두 필드가 같고 «최소»만 구 필드가 비율 100 자리표시다(코퍼스 문단 모양 52,409개 예외 0).
+    // 원본 attr3·v2 를 그대로 쓰면 줄간격을 바꾼 문단 모양을 한/글이 옛 값으로 읽는다.
+    let (old_type, old_value, new_type, new_value) = line_spacing_fields(ps);
     // bits 0-1: line_spacing_type
     attr1 &= !0x03;
-    attr1 |= match ps.line_spacing_type {
-        crate::model::style::LineSpacingType::Percent => 0,
-        crate::model::style::LineSpacingType::Fixed => 1,
-        crate::model::style::LineSpacingType::SpaceOnly => 2,
-        crate::model::style::LineSpacingType::Minimum => 3,
-    };
+    attr1 |= old_type;
     // bits 2-4: alignment
     attr1 &= !(0x07 << 2);
     attr1 |= (match ps.alignment {
@@ -982,7 +995,7 @@ fn write_serialize_para_shape<W: std::io::Write>(
     w.write_i32(ps.indent)?;
     w.write_i32(ps.spacing_before)?;
     w.write_i32(ps.spacing_after)?;
-    w.write_i32(ps.line_spacing)?;
+    w.write_i32(old_value)?;
     w.write_u16(ps.tab_def_id)?;
     w.write_u16(ps.numbering_id)?;
     w.write_u16(ps.border_fill_id)?;
@@ -992,9 +1005,9 @@ fn write_serialize_para_shape<W: std::io::Write>(
     // 속성2 (5.0.1.7 이상)
     w.write_u32(ps.attr2)?;
     // 속성3 - 줄 간격 종류 확장 (5.0.2.5 이상)
-    w.write_u32(ps.attr3)?;
+    w.write_u32((ps.attr3 & !0x1f) | new_type)?;
     // 줄 간격 (5.0.2.5 이상)
-    w.write_u32(ps.line_spacing_v2)?;
+    w.write_u32(new_value)?;
     // 한컴 편집기가 현재 HWP5 저장 시 붙이는 PARA_SHAPE 말미 4바이트.
     //
     // 공개 스펙 표 43은 전체 길이를 54바이트로 적지만, 한컴이 HWPX를 HWP로
