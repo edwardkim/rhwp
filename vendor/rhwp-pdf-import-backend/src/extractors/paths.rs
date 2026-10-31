@@ -806,10 +806,19 @@ impl PathExtractor {
                 let scale2 = m.a * m.a + m.b * m.b;
                 // Line width lives in user space, not text space (9.3.6).
                 // An anisotropic CTM needs an affine stroke, not an averaged width.
+                // The editable consumer stores widths in 1/1000 pt. Orthogonal
+                // axes that quantize to the very same width are representable
+                // without adding a document-specific scale tolerance (printer
+                // CTMs can carry independently rounded X/Y device resolutions).
+                let width_x = state.line_width * scale2.sqrt();
+                let width_y = state.line_width * (m.c * m.c + m.d * m.d).sqrt();
                 if !scale2.is_finite()
                     || scale2 <= 0.0
+                    || m.c * m.c + m.d * m.d <= 0.0
                     || (m.a * m.c + m.b * m.d).abs() > scale2 * 1e-6
-                    || (m.c * m.c + m.d * m.d - scale2).abs() > scale2 * 1e-6
+                    || !width_y.is_finite()
+                    || (f64::from(width_x) * 1000.0).round()
+                        != (f64::from(width_y) * 1000.0).round()
                     || !state.line_width.is_finite()
                     || state.line_width < 0.0
                     || !state.miter_limit.is_finite()
@@ -841,7 +850,7 @@ impl PathExtractor {
                     self.paint.source_order.clone(),
                     crate::elements::TextStrokePaint {
                         fill: state.text_render_mode == 2,
-                        width: state.line_width * scale2.sqrt(),
+                        width: width_x,
                         color: state.stroke_color_rgb,
                         fill_alpha: state.fill_alpha,
                         stroke_alpha: state.stroke_alpha,

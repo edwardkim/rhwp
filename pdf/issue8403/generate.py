@@ -67,7 +67,7 @@ def make_text(filename,word):
    resources=int(d.xref_get_key(p.xref,'Resources')[1].split()[0])
    d.xref_set_key(resources,'ExtGState','<< /GS << /ca .5 /CA .75 /LW 1.1 /LJ 1 /ML 3 >> >>')
    before=b'/GS gs 2 Tr 0 0 .8 RG 1 .1 .1 rg '
-  elif mode==3: before=b'1.715 w 2 Tr 1 j 2 M 0 .4 0 RG '
+  elif mode==3: before=b'[] 0 d 1.715 w 2 Tr 1 j 2 M 0 .4 0 RG 1 0 0 1.00001 0 0 cm '
   elif mode==4: before=b'1.715 w 2 Tr 0 0 0 RG 1.2 0 0 1.2 0 -20 cm '
   else: before=b'0 w 1 Tr 0 0 0 RG '
   # Put state inside q before the text object, so the later control proves Q restoration.

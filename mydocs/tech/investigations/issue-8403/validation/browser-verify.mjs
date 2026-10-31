@@ -39,7 +39,7 @@ async function capture(page,name){
 }
 await runTest('PDF pattern images, saves and failed-import recovery (#8403)',async({page})=>{
  await page.evaluate(()=>window.__eventBus.on('open-document-bytes:done',r=>{if(r.requestId==='pattern-8403')window.__patternResult=r;}));
- for(const [name,path,count] of [...(process.env.RHWP_8403_ORIGINAL ? [['original',process.env.RHWP_8403_ORIGINAL,8]] : []),['controls',fileURLToPath(new URL('image-patterns.pdf',fixture)),5],['stroke',fileURLToPath(new URL('text-stroke.pdf',fixture)),7]]){
+ for(const [name,path,count] of [...(process.env.RHWP_8403_ORIGINAL ? [['original',process.env.RHWP_8403_ORIGINAL,8]] : []),['controls',fileURLToPath(new URL('image-patterns.pdf',fixture)),5],['stroke',fileURLToPath(new URL('text-stroke.pdf',fixture)),7],['legacy',fileURLToPath(new URL('pdf/pr7704/6778-square-2020.pdf',project)),12]]){
   await openBytes(page,readFileSync(path),name+'.pdf');await done(page);
   const initial=await capture(page,name);assert.equal(initial.length,count);
   if(name==='stroke'){
