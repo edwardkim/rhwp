@@ -1,0 +1,40 @@
+{
+  "pr": 8395,
+  "head": "298d1ecc520014c2d18cf8c9016471f586967c03",
+  "merge": "21ef5020f763e474ff652df5c2c9adf94efededc",
+  "mode": "self-review",
+  "findings": [],
+  "sourcePrs": {
+    "8224": {
+      "head": "caabfdc2c4568f8f151c79d9d86c8df56779c52a",
+      "merged": true,
+      "merge": "c85560c786c61c5e8a93929c22bc0e9c0936b8b1"
+    },
+    "8233": {
+      "head": "d9c8a71b642fad1ee8221f4036817a23dfe15f10",
+      "merged": true,
+      "merge": "86f4879934d1fc903b8497d011fdd7db9dede38f"
+    }
+  },
+  "ciRun": 41104868865,
+  "policy": {
+    "run": 41108714192,
+    "attempt": 2,
+    "conclusion": "success",
+    "reasonForApprovedRetry": "Completed jobs temporarily exposed nonterminal step records through Jobs API; all records became terminal before the single approved audit retry."
+  },
+  "issues": {
+    "8222": "closed/completed",
+    "8225": "open; partial child CTRL_DATA preservation only"
+  },
+  "selfReviewComment": "https://github.com/edwardkim/rhwp/pull/8395#issuecomment-6536743274",
+  "durationRefresh": {
+    "run": 41152214941,
+    "conclusion": "success",
+    "ready": true,
+    "reason": "successful-pr-worker-measurements",
+    "refreshedTargets": 46,
+    "publishedCommit": "fe3d55b99",
+    "branch": "ci-metrics/nextest-target-durations"
+  }
+}

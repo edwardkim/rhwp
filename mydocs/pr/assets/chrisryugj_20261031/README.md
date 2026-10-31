@@ -1,8 +1,8 @@
 # chrisryugj PR #8224·#8233 검증 증거
 
-최종 PR 판정은 [#8224 검토](../../pr_8224_review.md)와 [#8233 검토](../../pr_8233_review.md)를 따른다.
+최종 PR 판정은 [#8224 검토](../../archives/pr_8224_review.md)와 [#8233 검토](../../archives/pr_8233_review.md)를 따른다.
 이 문서는 2026-10-31 실제 실행한 저장·시각·공통 검증의 근거다. 필수 로컬 검증을 완료했으며,
-원격 push·새 PR·CI·머지는 별도 승인 및 실행 대상이다.
+승인된 원격 처리와 CI·self-review를 마치고 PR #8395로 머지했다.
 
 ## 비교 기준과 producer
 
@@ -129,3 +129,10 @@ devel은 각각 0개였다. 기본 글꼴 조건에서 base와 후보의 94·7·
 전체 회귀의 신규 sample 검사는 환경변수 없는 실행과 구분하여 4개 입력을 명시한 후 별도 실행했다.
 보안 집중 실행에서 제외된 12,232개는 필터 비선택 건수이며 전체 실행의 skip 45개와 구분한다.
 workspace build의 orchestration 시간에는 후속 테스트 보정 대기가 포함되어 있고 실제 Cargo 빌드는 2분 50초다.
+
+## 원격 통합
+
+[PR #8395](https://github.com/edwardkim/rhwp/pull/8395)의 검증 head `298d1ecc520014c2d18cf8c9016471f586967c03`를
+merge `21ef5020f763e474ff652df5c2c9adf94efededc`로 반영했다. 원 PR 두 건도 모두 MERGED다.
+[최종 CI 상태](ci-checks-final.json)와 [통합 결과](integration-result.json)를 보존했다.
+GitHub Jobs API의 단계 기록 지연 후 승인된 정책 감사만 한 번 재실행했으며, 제품 CI는 재실행하지 않았다.
