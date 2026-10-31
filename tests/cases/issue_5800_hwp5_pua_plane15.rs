@@ -28,10 +28,11 @@ fn hwp5_raw_symbols_reach_the_display_table() {
         "═",
         "0xA832 는 U+F0832 와 같은 글자 — 이중 가로 괘선으로 그려야 함",
     );
+    // [#8201] U+F012B 는 렌더러 합성 기호라 표시 문자열 대신 정규화한 원 키를 유지한다.
     assert_eq!(
         expand_pua_render_text("도장란 \u{A12B}"),
-        "도장란 (인)",
-        "0xA12B 는 U+F012B 와 같은 글자 — 도장란 `(인)`",
+        "도장란 \u{F012B}",
+        "0xA12B 는 U+F012B 와 같은 글자 — 평면 15 키로 정규화돼 서명·날인 합성 기호가 됨",
     );
     assert_eq!(
         expand_pua_render_text("\u{A289}\u{A28A}"),

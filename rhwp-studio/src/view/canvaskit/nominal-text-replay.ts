@@ -1,3 +1,5 @@
+import { enclosedPua } from '../../core/enclosed-pua.ts';
+
 // 일반 glyph replay의 문자 범위 계약. 조합/형식 문자와 복합 script는 계속 shaping 경로로 보낸다.
 const COMPLEX_SHAPING_UNICODE_CATEGORY = /[\p{M}\p{Cf}\p{Emoji_Modifier}]/u;
 const STANDALONE_PICTOGRAPH = /\p{Extended_Pictographic}/u;
@@ -8,8 +10,7 @@ export function textRequiresComplexShaping(text: string): boolean {
     const isOldHangul = (codePoint >= 0x1100 && codePoint <= 0x11ff)
       || (codePoint >= 0xa960 && codePoint <= 0xa97f)
       || (codePoint >= 0xd7b0 && codePoint <= 0xd7ff);
-    const isBoxedPua = codePoint >= 0xf02b0 && codePoint <= 0xf02c4;
-    if (isOldHangul || isBoxedPua) continue;
+    if (isOldHangul || enclosedPua(codePoint)) continue;
 
     const nominalGlyphReplayIsSafe = codePoint <= 0x02ff
       || (codePoint >= 0x0370 && codePoint <= 0x058f)

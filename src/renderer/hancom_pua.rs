@@ -16,7 +16,9 @@ static VERIFIED_HANCOM_PUA_DISPLAY: &[(u32, &str)] = &[
     // `img-start-001.hwp` p1 본문 bullet. 한글 2022 PDF 실측: 16갈래 물방울-꽃잎
     // 방사 asterisk — 공개 글꼴의 16각 asterisk 로 의미 보존한다.
     (0xF0090, "✺"),
-    // `복학원서.hwp` 서명란. Hancom PDF: `(인)`.
+    // 서명·날인 기호. 한컴 PDF는 타원 안 '인' 한 글자(1em)로 그리며, 평문 paint와 폭은
+    // 렌더러 합성(`EnclosedPua::CircledSeal`, #8201)이 소유한다. 이 값은 텍스트 표면과
+    // 글자겹침 안쪽 표시가 쓰는 읽기 문자열이다.
     (0xF012B, "(인)"),
     // `hwp3-sample11`(HWP3→HWP5 변환본) p23 NVRAM 바이트 라벨 ⓪..⑨.
     // Hancom PDF `pdf/hwp3-sample11-2020.pdf` p23 실측: 라벨 줄이

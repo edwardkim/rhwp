@@ -951,6 +951,13 @@ function runExecutableTextReplay(op, {
         paint: paint ? { kind: paint.kind, color: paint.color, width: paint.width } : null,
       });
     },
+    drawOval(rect, paint) {
+      events.push({
+        type: 'canvas.drawOval',
+        rect,
+        paint: paint ? { kind: paint.kind, color: paint.color, width: paint.width } : null,
+      });
+    },
     drawParagraph(_paragraph, x, y) {
       events.push({ type: 'canvas.drawParagraph', x, y });
       if (drawParagraphError) throw drawParagraphError;
@@ -2963,6 +2970,42 @@ assert.equal(
   boxedPuaRatioReplay.events.some(event => event.type === 'canvas.drawRect'),
   true,
   'boxed-PUA with 장평 should keep the bounded vector box',
+);
+// [#8201] 한컴 서명·날인 기호 U+F012B는 원 글리프가 없을 때 같은 동봉 em 메트릭으로
+// 타원 테두리와 안쪽 '인'을 합성한다. 괄호 세 글자 `(인)`로 펼치지 않는다.
+const sealReplay = runExecutableTextReplay({
+  type: 'textRun',
+  bbox: { x: 0, y: 20, width: 20, height: 20 },
+  text: '\u{F012B}',
+  baseline: 15,
+  positions: [0, 13.333],
+  style: { fontFamily: 'Prepared', fontSize: 13.333 },
+}, {
+  glyphIds: [0],
+  fallbackGlyphIds: [0],
+  symbolGlyphIds: [0],
+  usePreparedTypeface: true,
+});
+assert.equal(sealReplay.unsupportedOps.has('textRun:glyphMapping'), false);
+assert.equal(
+  sealReplay.unsupportedOps.has('textRun:scriptTextRequiresShaping'),
+  false,
+  'Hancom seal PUA must not fail closed as a shaping gap',
+);
+assert.equal(
+  sealReplay.events.filter(event => event.type === 'canvas.drawOval').length,
+  1,
+  'Hancom seal PUA should draw one ellipse frame',
+);
+assert.equal(
+  sealReplay.events.some(event => event.type === 'canvas.drawRect'),
+  false,
+  'Hancom seal PUA should not use the boxed-number square frame',
+);
+assert.deepEqual(
+  sealReplay.events.filter(event => event.type === 'canvas.drawText').map(event => event.text),
+  ['인'],
+  'Hancom seal PUA should draw only the inner 인 without parentheses',
 );
 for (const markerText of ['[표]', '[그림]']) {
   const controlCodeMarkerReplay = runExecutableTextReplay({

@@ -2047,10 +2047,10 @@ fn char_width_decision_with_hft_tracking<'a>(
     {
         em_exact = Some(em);
         (font_size * em, "verifiedSourcePua", None, "exact")
-    } else if crate::renderer::boxed_pua_number(c).is_some() {
-        // 한컴 네모 숫자의 합성 전진은 1em이다. 독립 Print와 Haansoft Batang의
+    } else if let Some(enclosed) = crate::renderer::enclosed_pua(c) {
+        // 한컴 합성 PUA 기호의 전진은 1em이다. 독립 Print와 Haansoft Batang의
         // 해당 PUA hmtx가 같은 값을 준다. 뒤따르는 일반 □의 글꼴 폭과 구분한다.
-        (font_size, "boxedPuaFullwidth", None, "notApplicable")
+        (font_size, enclosed.width_source(), None, "notApplicable")
     } else {
         // [#7391] 폭 표를 고를 때만 선언 face 로 되돌린다.
         let metric_family = match latin {
@@ -2463,7 +2463,7 @@ fn char_width_decision_with_hft_tracking<'a>(
         && !dash_leader
         && !c.is_whitespace()
         && !c.is_control()
-        && crate::renderer::boxed_pua_number(c).is_none())
+        && crate::renderer::enclosed_pua(c).is_none())
     .then(|| {
         let snapshot = style.supplemental_metrics.as_ref()?;
         snapshot.lookup(snapshot.context(), style, c)

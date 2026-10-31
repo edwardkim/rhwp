@@ -1,6 +1,6 @@
 import type { LayerEquationLayoutBox, LayerNode, LayerTextStyle, PageLayerTree } from './types.ts';
 import { resolveRendererLocalFont, localFontFaceKey, type LocalFontRecord } from './local-fonts.ts';
-import boxedDigitMetrics from '../../../assets/fonts/boxed-digit-metrics.json' with { type: 'json' };
+import { enclosedPua, enclosedPuaHasMetrics, enclosedPuaMetrics } from './enclosed-pua.ts';
 import { ordinaryTextFontFamilies, parseCssFontFamilyList } from './font-substitution.ts';
 
 export function hostFontStyle(style?: LayerTextStyle): { weight: number; slant: 'normal' | 'italic' } {
@@ -159,12 +159,12 @@ export function collectHostFontRequests(tree: PageLayerTree): LocalFontRecord[] 
         selectTextFaces(family, style);
       }
       if ([...op.text].some(character => {
-        const code = character.codePointAt(0) ?? 0;
-        return code >= 0xf02b0 && code <= 0xf02b9;
+        const glyph = enclosedPua(character.codePointAt(0) ?? 0);
+        return glyph !== null && enclosedPuaHasMetrics(glyph);
       })) {
-        const numberFace = resolveRendererLocalFont(boxedDigitMetrics.numberFace,
+        const innerFace = resolveRendererLocalFont(enclosedPuaMetrics.innerFace,
           { weight: 400, slant: 'normal' });
-        if (numberFace?.hostReference) selected.set(localFontFaceKey(numberFace), numberFace);
+        if (innerFace?.hostReference) selected.set(localFontFaceKey(innerFace), innerFace);
       }
     }
   }

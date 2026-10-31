@@ -1,10 +1,21 @@
-//! Equation faces requested by body and nested content for renderer font supply.
+//! Faces requested by body and nested content for renderer font supply:
+//! equation faces and the public faces of synthesized Hancom PUA glyphs (#8201).
 
 use crate::model::{control::Control, paragraph::Paragraph, shape::ShapeObject};
 use std::collections::BTreeSet;
 
 pub(crate) fn collect(paragraphs: &[Paragraph], fonts: &mut BTreeSet<String>) {
     for paragraph in paragraphs {
+        for ch in paragraph.text.chars() {
+            let key = crate::renderer::composer::hancom_symbol_display_key(ch);
+            if let Some(glyph) = crate::renderer::enclosed_pua(key) {
+                fonts.extend(
+                    crate::renderer::enclosed_pua_geometry::public_faces(glyph)
+                        .iter()
+                        .cloned(),
+                );
+            }
+        }
         for control in &paragraph.controls {
             match control {
                 Control::Equation(equation) => {

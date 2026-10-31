@@ -14,7 +14,6 @@ pub(crate) mod arrow;
 #[cfg(any(feature = "native-skia", target_arch = "wasm32"))]
 pub(crate) mod bitmap_raster;
 pub(crate) mod blank_band;
-pub(crate) mod boxed_digit_geometry;
 pub mod canvas;
 pub mod canvas_text_font;
 pub mod canvaskit_policy;
@@ -24,6 +23,7 @@ pub mod composer;
 mod conjoining_jamo;
 pub use conjoining_jamo::IsolatedJamoFont;
 pub(crate) mod emphasis;
+pub(crate) mod enclosed_pua_geometry;
 pub(crate) mod endnote_spacing;
 pub mod equation;
 pub(crate) mod equation_tac_flow;
@@ -3712,6 +3712,43 @@ pub(crate) fn boxed_pua_number(ch: char) -> Option<u32> {
     (0xF02B0..=0xF02C4)
         .contains(&code_point)
         .then(|| code_point - 0xF02B0)
+}
+
+/// 렌더러가 테두리와 안쪽 글자로 합성하는 한컴 PUA 기호.
+///
+/// 평문 흐름에서 1em 전진을 받고, paint는 `enclosed_pua_geometry`의 동봉 em 메트릭으로
+/// 테두리와 공급된 일반 글자를 그린다. IR과 표시 문자열은 원 코드포인트를 보존한다.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum EnclosedPua {
+    /// 사각 안 숫자 0~20 (#6127).
+    BoxedNumber(u32),
+    /// 서명·날인 기호 U+F012B — 타원 안 '인' (#8201).
+    CircledSeal,
+}
+
+pub(crate) fn enclosed_pua(ch: char) -> Option<EnclosedPua> {
+    if ch == '\u{F012B}' {
+        return Some(EnclosedPua::CircledSeal);
+    }
+    boxed_pua_number(ch).map(EnclosedPua::BoxedNumber)
+}
+
+impl EnclosedPua {
+    /// 테두리 안에 그리는 일반 글자.
+    pub(crate) fn inner_text(self) -> String {
+        match self {
+            EnclosedPua::BoxedNumber(number) => number.to_string(),
+            EnclosedPua::CircledSeal => enclosed_pua_geometry::circled_seal_text().to_owned(),
+        }
+    }
+
+    /// 1em 전진을 정한 근거. 글꼴 결정 진단의 `reason`으로도 노출된다.
+    pub(crate) fn width_source(self) -> &'static str {
+        match self {
+            EnclosedPua::BoxedNumber(_) => "boxedPuaFullwidth",
+            EnclosedPua::CircledSeal => "circledSealPuaFullwidth",
+        }
+    }
 }
 
 /// 실제 `CharOverlap`에 저장된 한컴 사각 안 숫자의 렌더 의미를 반환한다 (#4158).

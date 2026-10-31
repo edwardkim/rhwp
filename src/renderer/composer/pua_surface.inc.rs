@@ -241,6 +241,10 @@ pub(crate) fn hancom_symbol_display_key(ch: char) -> char {
 /// 다문자 확장과 글자겹침 숫자는 각 구성 owner의 계약을 유지한다.
 pub(crate) fn single_scalar_display_char(ch: char) -> char {
     let key = hancom_symbol_display_key(ch);
+    // 합성 기호는 정규화한 원 키 자체가 표시 기호다. paint가 테두리와 안쪽 글자를 그린다.
+    if super::enclosed_pua(key).is_some() {
+        return key;
+    }
     if let Some(display) = pua_plain_text_display(key) {
         let mut chars = display.chars();
         if let Some(first) = chars.next() {
@@ -318,7 +322,10 @@ fn try_expand_pua_surface<S: crate::storage::Storage>(
     for ch in text.chars() {
         // [#5800] HWP5 원시 기호값을 먼저 평면-15 키로 정규화한다.
         let ch = hancom_symbol_display_key(ch);
-        if program.is_some_and(|program| program.advance_em(ch).is_some()) {
+        // 실제 공급 원 glyph와 렌더러 합성 기호(#8201)는 Unicode 표시 대체보다 우선한다.
+        if program.is_some_and(|program| program.advance_em(ch).is_some())
+            || super::enclosed_pua(ch).is_some()
+        {
             storage.push_char(&mut out, ch)?;
         } else if let Some(dot) = tone_mark_display(ch) {
             storage.push_char(&mut out, dot)?;
