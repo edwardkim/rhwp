@@ -14,8 +14,13 @@ async function openBytes(page, bytes, fileName) {
   }, {bytes, fileName});
 }
 async function waitDone(page) {
-  await page.waitForFunction(() => window.__openResult !== null
-    && !document.documentElement.classList.contains('rhwp-busy'));
+  await page.waitForFunction(() => {
+    // #8397의 실제 글꼴 선택 단계를 거친다. 로컬 글꼴 권한은 요청하지 않는다.
+    const prompt = [...document.querySelectorAll('.modal-overlay')].find(el =>
+      el.querySelector('.dialog-title')?.textContent.includes('로컬 글꼴 감지'));
+    [...(prompt?.querySelectorAll('button') ?? [])].find(el => el.textContent === '대체 글꼴로 보기')?.click();
+    return window.__openResult !== null && !document.documentElement.classList.contains('rhwp-busy');
+  });
   return page.evaluate(() => window.__openResult);
 }
 async function checkChoice(page) {
@@ -103,12 +108,12 @@ await runTest('PDF 선택·변환·재시도의 커서 수명 (#8398)', async ({
   await page.click(`${dialog} .dialog-btn-primary`);
   await page.waitForFunction(() => window.__pdfWorkers === 1);
   const working = await page.$eval(dialog, d => ({disabled: d.querySelector('.dialog-btn-primary').disabled,
-    cancelDisabled: d.querySelector('.dialog-btn:not(.dialog-btn-primary)').disabled,
+    cancelDisabled: d.querySelector('.dialog-footer .dialog-btn:not(.dialog-btn-primary)').disabled,
     status: d.querySelector('[role="status"]').textContent,
-    cursor: getComputedStyle(d.querySelector('.dialog-btn:not(.dialog-btn-primary)')).cursor}));
+    cursor: getComputedStyle(d.querySelector('.dialog-footer .dialog-btn:not(.dialog-btn-primary)')).cursor}));
   assert.equal(working.disabled, true); assert.equal(working.cancelDisabled, false);
   assert.notEqual(working.cursor, 'wait'); assert.ok(working.status.length > 0);
-  await page.click(`${dialog} .dialog-btn:not(.dialog-btn-primary)`);
+  await page.click(`${dialog} .dialog-footer .dialog-btn:not(.dialog-btn-primary)`);
   await page.waitForFunction(() => !document.querySelector('.dialog-pdf-import')
     && !document.documentElement.classList.contains('rhwp-busy') && document.querySelector('#file-input').value === '');
   assert.equal(await page.evaluate(() => window.__terminatedWorkers), 1);
