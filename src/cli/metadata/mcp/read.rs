@@ -299,7 +299,9 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
                     "path": { "type": "string", "description": "입력 PDF 경로" },
                     "output": { "type": "string", "description": "출력 .hwpx 또는 .hwp 경로" },
                     "sourcePages": { "type": "string", "description": "0-based 증가 목록·포함 범위 (예: 0,6-7). 생략하면 전체 쪽" },
-                    "layout": { "type": "string", "enum": ["fidelity", "editable"], "description": "fidelity(기본): 본문 영역마다 위치 고정 글상자. editable: 본문 문단을 구역 본문 흐름으로 배치" }
+                    "layout": { "type": "string", "enum": ["fidelity", "editable"], "description": "fidelity(기본): 위치 고정 글상자. editable: 구역 본문 흐름" },
+                    "resourceProfile": { "type": "string", "enum": ["standard", "constrained"], "description": "유한한 요청·실행 한도 프로필. 기본 standard" },
+                    "resourceLimits": { "type": "string", "description": "선택한 프로필 이내의 policy/execution 조정 JSON 파일 경로" }
                 },
                 "required": ["path", "output"]
             }),
@@ -307,9 +309,11 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
             serde_json::json!(["import-pdf", "{path}", "{output}", "--json"]),
             serde_json::json!([
                 { "when": "sourcePages", "args": ["--source-pages", "{sourcePages}"] },
-                { "when": "layout", "args": ["--layout", "{layout}"] }
+                { "when": "layout", "args": ["--layout", "{layout}"] },
+                { "when": "resourceProfile", "args": ["--resource-profile", "{resourceProfile}"] },
+                { "when": "resourceLimits", "args": ["--resource-limits", "{resourceLimits}"] }
             ]),
-            &["schemaVersion", "source", "output", "format", "bytes", "pageCount", "diagnostics"],
+            &["schemaVersion", "source", "output", "format", "bytes", "pageCount", "diagnostics", "resourceProfile", "execution"],
         ),
         tool(
             "hwp_export_hml",

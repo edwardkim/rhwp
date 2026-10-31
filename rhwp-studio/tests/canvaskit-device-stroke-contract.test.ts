@@ -25,6 +25,23 @@ function renderer() {
   });
 }
 
+test('Print clip은 전달된 세대 정책에 따라 원본 또는 장치 경계를 선택한다', () => {
+  const value = renderer();
+  value.renderNode = () => {};
+  let seen: number[] = [];
+  const canvas = {
+    save() {}, restore() {},
+    clipRect(rect: ArrayLike<number>) { seen = Array.from(rect); },
+    getTotalMatrix() { throw new Error('장치 경계 변환 호출'); },
+  };
+  const node = { kind: 'clipRect', clip: { x: 10.25, y: 20.5, width: 30.25, height: 40.5 }, child: {} };
+  value.currentRasterClipCoverage = false;
+  value.renderClipNode(canvas, node, 'print', 'flow', null);
+  assert.deepEqual(seen, [10.25, 20.5, 40.5, 61]);
+  value.currentRasterClipCoverage = true;
+  assert.throws(() => value.renderClipNode(canvas, node, 'print', 'flow', null), /장치 경계 변환 호출/);
+});
+
 for (const [label, matrix, expected] of [
   ['identity', [1, 0, 0, 0, 1, 0, 0, 0, 1], 1],
   ['half-scale group', [.5, 0, 0, 0, .5, 0, 0, 0, 1], 2],

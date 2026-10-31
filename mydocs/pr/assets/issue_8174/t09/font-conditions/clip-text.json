@@ -1,0 +1,6 @@
+{
+  "id": "actual-embedded-dejavu-book-family",
+  "substitutions": {
+    "DejaVu Sans Book": "DejaVu Sans"
+  }
+}

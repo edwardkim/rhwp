@@ -1,0 +1,194 @@
+{
+  "documents": 1,
+  "pages": 15,
+  "privateInput": "not_published",
+  "source": {
+    "beforeNative": "fd4386a5cc6f5bb4dfcd0a530d2b56ee4a363fa3",
+    "beforeWasm": "8a3746a75d1156a99d116f8bacfdee2ba3a66f30",
+    "candidate": "9cabbff39da17da869bfff3048cfa328b3c17b7b"
+  },
+  "scores": [
+    {
+      "runtime": "native",
+      "page": 1,
+      "beforeRaw": 99.20655,
+      "afterRaw": 99.2365
+    },
+    {
+      "runtime": "native",
+      "page": 2,
+      "beforeRaw": 99.22534,
+      "afterRaw": 99.23106
+    },
+    {
+      "runtime": "native",
+      "page": 3,
+      "beforeRaw": 99.32474,
+      "afterRaw": 99.38617
+    },
+    {
+      "runtime": "native",
+      "page": 4,
+      "beforeRaw": 99.29776,
+      "afterRaw": 99.36917
+    },
+    {
+      "runtime": "native",
+      "page": 5,
+      "beforeRaw": 99.46429,
+      "afterRaw": 99.46798
+    },
+    {
+      "runtime": "native",
+      "page": 6,
+      "beforeRaw": 99.37626,
+      "afterRaw": 99.39221
+    },
+    {
+      "runtime": "native",
+      "page": 7,
+      "beforeRaw": 99.27611,
+      "afterRaw": 99.2761
+    },
+    {
+      "runtime": "native",
+      "page": 8,
+      "beforeRaw": 99.32852,
+      "afterRaw": 99.3303
+    },
+    {
+      "runtime": "native",
+      "page": 9,
+      "beforeRaw": 99.2783,
+      "afterRaw": 99.3652
+    },
+    {
+      "runtime": "native",
+      "page": 10,
+      "beforeRaw": 99.19869,
+      "afterRaw": 99.22147
+    },
+    {
+      "runtime": "native",
+      "page": 11,
+      "beforeRaw": 99.30458,
+      "afterRaw": 99.30458
+    },
+    {
+      "runtime": "native",
+      "page": 12,
+      "beforeRaw": 99.17548,
+      "afterRaw": 99.1755
+    },
+    {
+      "runtime": "native",
+      "page": 13,
+      "beforeRaw": 99.10575,
+      "afterRaw": 99.13508
+    },
+    {
+      "runtime": "native",
+      "page": 14,
+      "beforeRaw": 99.33914,
+      "afterRaw": 99.34403
+    },
+    {
+      "runtime": "native",
+      "page": 15,
+      "beforeRaw": 99.29441,
+      "afterRaw": 99.31553
+    },
+    {
+      "runtime": "wasm",
+      "page": 1,
+      "beforeRaw": 99.4028,
+      "afterRaw": 99.42523
+    },
+    {
+      "runtime": "wasm",
+      "page": 2,
+      "beforeRaw": 99.30539,
+      "afterRaw": 99.31285
+    },
+    {
+      "runtime": "wasm",
+      "page": 3,
+      "beforeRaw": 99.40703,
+      "afterRaw": 99.46235
+    },
+    {
+      "runtime": "wasm",
+      "page": 4,
+      "beforeRaw": 99.40666,
+      "afterRaw": 99.45871
+    },
+    {
+      "runtime": "wasm",
+      "page": 5,
+      "beforeRaw": 99.54354,
+      "afterRaw": 99.54643
+    },
+    {
+      "runtime": "wasm",
+      "page": 6,
+      "beforeRaw": 99.48233,
+      "afterRaw": 99.4882
+    },
+    {
+      "runtime": "wasm",
+      "page": 7,
+      "beforeRaw": 99.35217,
+      "afterRaw": 99.35327
+    },
+    {
+      "runtime": "wasm",
+      "page": 8,
+      "beforeRaw": 99.43967,
+      "afterRaw": 99.44243
+    },
+    {
+      "runtime": "wasm",
+      "page": 9,
+      "beforeRaw": 99.3824,
+      "afterRaw": 99.42996
+    },
+    {
+      "runtime": "wasm",
+      "page": 10,
+      "beforeRaw": 99.28887,
+      "afterRaw": 99.31683
+    },
+    {
+      "runtime": "wasm",
+      "page": 11,
+      "beforeRaw": 99.37165,
+      "afterRaw": 99.37165
+    },
+    {
+      "runtime": "wasm",
+      "page": 12,
+      "beforeRaw": 99.25102,
+      "afterRaw": 99.25102
+    },
+    {
+      "runtime": "wasm",
+      "page": 13,
+      "beforeRaw": 99.09012,
+      "afterRaw": 99.11167
+    },
+    {
+      "runtime": "wasm",
+      "page": 14,
+      "beforeRaw": 99.40073,
+      "afterRaw": 99.40338
+    },
+    {
+      "runtime": "wasm",
+      "page": 15,
+      "beforeRaw": 99.34609,
+      "afterRaw": 99.36428
+    }
+  ],
+  "savedWasmAll15PagesPixelIdentical": true,
+  "existingFontOutlineDifferences": "retained and directly inspected; not a claim of exact source font recovery"
+}

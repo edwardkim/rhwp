@@ -1,3 +1,8 @@
+//! 관계형·고정형: 합성 PageLayerTree와 new_blank 문서의 crop 동등성, 고정 타일 겹침, LRU 용량·무효화 계약.
+//! 주석 갱신: 2026-10-31T06:04:03+09:00; 직전 파일 커밋: 2026-10-30T23:30:13+09:00 (f3a57f2e6b7d6c59172cd76b5a597ae9c1439ff7).
+//! 실물 페이지의 조판 좌표를 고정하는 검사가 아니므로 이 assertion의 raw 시각 측정값은 비해당이다.
+//! 합성 알고리즘 계약과 별도의 Native/fresh WASM 실물 검증을 구분한다.
+//! 근거: mydocs/pr/assets/seo_rii_20261030/README.md.
 //! Region cache checks use the same direct full-page Skia raster as reference.
 //! They prove immutable crop equivalence and bounded replay reuse, not Hancom
 //! visual parity, OS presentation performance or subtree culling.
@@ -5,14 +10,16 @@
 
 use rhwp::document_core::native_interaction::{NativeTextPosition, NativeTextSelection};
 use rhwp::native_host::editor::NativeEditor;
-use rhwp::native_host::region_cache::{DEFAULT_REGION_CACHE_BYTES, MAX_REGION_CACHE_BYTES};
+use rhwp::native_host::region_cache::{
+    DEFAULT_REGION_CACHE_BYTES, MAX_REGION_CACHE_BYTES, MAX_REGION_CACHE_ENTRIES,
+};
 use rhwp::native_host::{NativeDocumentSession, NativeHostError};
-use rhwp::paint::{ClipKind, LayerNode, PageLayerTree, PaintOp};
+use rhwp::paint::{CacheHint, ClipKind, GroupKind, LayerNode, PageLayerTree, PaintOp};
 use rhwp::renderer::font_environment::FontEnvironment;
 use rhwp::renderer::layer_renderer::RasterRenderOptions;
 use rhwp::renderer::raster_pixels::{RasterPixels, RasterRegion, RasterRegionPixels};
 use rhwp::renderer::render_tree::{BoundingBox, EllipseNode, RectangleNode};
-use rhwp::renderer::skia::{SkiaLayerRenderer, SkiaRegionPlan};
+use rhwp::renderer::skia::{SkiaLayerRenderer, SkiaRegionPlan, SkiaTilePlan};
 use rhwp::renderer::{GradientFillInfo, ShapeStyle};
 use rhwp::{DocumentCore, HwpError};
 
@@ -93,6 +100,290 @@ fn assert_crop(full: &RasterPixels, region: &RasterRegionPixels, padding: [u8; 4
             );
         }
     }
+}
+
+#[test]
+fn one_tile_matches_the_existing_full_page_raster_and_padding_policy() {
+    let renderer = SkiaLayerRenderer::new().with_cache_limits(0, 0);
+    for scale in [0.75, 1.25, 2.0] {
+        for (background_color, transparent, padding) in [
+            (None, true, [0; 4]),
+            (None, false, [255; 4]),
+            (Some(0x332211), true, [0x11, 0x22, 0x33, 255]),
+        ] {
+            let options = RasterRenderOptions {
+                scale,
+                background_color,
+                transparent,
+                dpi: Some(144.0),
+                ..Default::default()
+            };
+            let full = renderer
+                .render_pixels_with_options(&page(), options)
+                .unwrap();
+            for region in [
+                request(),
+                RasterRegion {
+                    x: -2.3,
+                    y: -1.2,
+                    ..request()
+                },
+                RasterRegion {
+                    x: 50.25,
+                    y: 39.5,
+                    ..request()
+                },
+            ] {
+                let tile = renderer
+                    .render_tiled_region_pixels_with_options(&page(), region, options)
+                    .unwrap();
+                assert_crop(&full, &tile, padding);
+                assert_eq!(tile.pixels.color_space, full.color_space);
+                assert_eq!(tile.pixels.dpi, full.dpi);
+            }
+        }
+    }
+}
+
+fn tile_boundary_page() -> PageLayerTree {
+    let bounds = BoundingBox::new(0.0, 0.0, 710.5, 685.25);
+    let mut tree = PageLayerTree::new(
+        bounds.width,
+        bounds.height,
+        LayerNode::clip_rect(
+            bounds,
+            None,
+            BoundingBox::new(233.25, 235.5, 460.25, 435.5),
+            LayerNode::leaf(
+                bounds,
+                None,
+                vec![
+                    PaintOp::rectangle(
+                        BoundingBox::new(234.75, 237.25, 465.0, 430.5),
+                        RectangleNode::new(
+                            2.0,
+                            ShapeStyle {
+                                opacity: 0.75,
+                                ..Default::default()
+                            },
+                            Some(Box::new(GradientFillInfo {
+                                gradient_type: 1,
+                                angle: 45,
+                                center_x: 50,
+                                center_y: 50,
+                                colors: vec![0xff, 0xff0000],
+                                positions: vec![0.0, 1.0],
+                            })),
+                        ),
+                    ),
+                    PaintOp::ellipse(
+                        BoundingBox::new(240.2, 245.75, 452.5, 420.25),
+                        EllipseNode::new(
+                            ShapeStyle {
+                                fill_color: Some(0x00ff00),
+                                opacity: 166.0 / 255.0,
+                                ..Default::default()
+                            },
+                            None,
+                        ),
+                    ),
+                ],
+            ),
+            ClipKind::Generic,
+        ),
+    );
+    tree.root = LayerNode::group(
+        bounds,
+        None,
+        vec![tree.root],
+        CacheHint::StaticSubtree,
+        GroupKind::Generic,
+    );
+    tree
+}
+
+#[test]
+fn fixed_grid_tiles_keep_overlap_pixels_stable_across_window_and_cache_changes() {
+    let renderer = SkiaLayerRenderer::new();
+    let uncached = SkiaLayerRenderer::new().with_cache_limits(0, 0);
+    let tree = tile_boundary_page();
+    for scale in [0.75, 1.25, 1.5] {
+        for (background_color, transparent, padding) in [
+            (None, true, [0; 4]),
+            (None, false, [255; 4]),
+            (Some(0x332211), true, [0x11, 0x22, 0x33, 255]),
+        ] {
+            let options = RasterRenderOptions {
+                scale,
+                background_color,
+                transparent,
+                ..Default::default()
+            };
+            let full = renderer
+                .render_tiled_region_pixels_with_options(
+                    &tree,
+                    RasterRegion {
+                        x: 0.0,
+                        y: 0.0,
+                        width: tree.page_width,
+                        height: tree.page_height,
+                    },
+                    options,
+                )
+                .unwrap();
+            assert_eq!(full.origin_x, 0);
+            assert_eq!(full.origin_y, 0);
+            assert!(
+                SkiaTilePlan::new(
+                    tree.page_width,
+                    tree.page_height,
+                    RasterRegion {
+                        x: 0.0,
+                        y: 0.0,
+                        width: tree.page_width,
+                        height: tree.page_height
+                    },
+                    options
+                )
+                .unwrap()
+                .tile_count()
+                    > 1
+            );
+            // Cross both grid axes, request overlapping parts, and include the
+            // last fractional page column/row and off-page clear padding.
+            for region in [
+                RasterRegion {
+                    x: 220.3,
+                    y: 230.2,
+                    width: 400.4,
+                    height: 380.1,
+                },
+                RasterRegion {
+                    x: 340.5,
+                    y: 345.25,
+                    width: 235.0,
+                    height: 220.75,
+                },
+                RasterRegion {
+                    x: -1.3,
+                    y: -2.2,
+                    width: 714.6,
+                    height: 690.4,
+                },
+                RasterRegion {
+                    x: 650.25,
+                    y: 630.75,
+                    width: 65.5,
+                    height: 60.5,
+                },
+            ] {
+                let output = renderer
+                    .render_tiled_region_pixels_with_options(&tree, region, options)
+                    .unwrap();
+                assert_crop(&full.pixels, &output, padding);
+                assert_eq!(
+                    output,
+                    uncached
+                        .render_tiled_region_pixels_with_options(&tree, region, options)
+                        .unwrap()
+                );
+            }
+        }
+    }
+    assert!(renderer.cache_stats().pictures.hits > 0);
+    assert_eq!(uncached.cache_stats().pictures.hits, 0);
+}
+
+#[test]
+fn a_large_page_renders_a_small_tile_without_a_full_page_bitmap() {
+    let renderer = SkiaLayerRenderer::new();
+    let mut tree = page();
+    tree.page_width = 20_000.0;
+    tree.page_height = 30_000.0;
+    let options = RasterRenderOptions::default();
+    assert!(renderer
+        .render_region_pixels_with_options(&tree, request(), options)
+        .is_err());
+    let output = renderer
+        .render_tiled_region_pixels_with_options(&tree, request(), options)
+        .unwrap();
+    let reference = renderer
+        .render_tiled_region_pixels_with_options(&page(), request(), options)
+        .unwrap();
+    assert_eq!(output, reference);
+    assert!(output
+        .pixels
+        .bytes
+        .chunks_exact(4)
+        .any(|pixel| pixel[3] != 0));
+    let before = renderer.cache_stats();
+    let offpage = renderer
+        .render_tiled_region_pixels_with_options(
+            &tree,
+            RasterRegion {
+                x: -4.0,
+                y: -4.0,
+                width: 2.0,
+                height: 2.0,
+            },
+            options,
+        )
+        .unwrap();
+    assert_eq!(offpage.pixels.bytes, vec![0; 16]);
+    assert_eq!(
+        renderer.cache_stats(),
+        before,
+        "off-page windows do not replay"
+    );
+    tree.page_width = f64::from(SkiaRegionPlan::MAX_EXACT_PIXEL);
+    tree.page_height = tree.page_width;
+    let edge = renderer
+        .render_tiled_region_pixels_with_options(
+            &tree,
+            RasterRegion {
+                x: tree.page_width - 2.0,
+                y: tree.page_height - 2.0,
+                width: 2.0,
+                height: 2.0,
+            },
+            options,
+        )
+        .unwrap();
+    assert_eq!(edge.origin_x, SkiaRegionPlan::MAX_EXACT_PIXEL - 2);
+    assert_eq!(edge.origin_y, SkiaRegionPlan::MAX_EXACT_PIXEL - 2);
+    assert_eq!(edge.pixels.bytes, vec![0; 16]);
+}
+
+#[test]
+fn native_tiled_frames_allow_high_scale_and_preserve_the_page_cache() {
+    let session = session(false);
+    session.render_region(0, request(), 0.5).unwrap();
+    let before = session.region_cache_stats();
+    assert!(session.render_region(0, request(), 16.0).is_err());
+    let frame = session.render_tiled_region(0, request(), 16.0).unwrap();
+    frame.pixels.validate().unwrap();
+    assert_eq!(frame.revision, session.revision());
+    assert_eq!(frame.font_generation, session.font_generation());
+    assert_eq!(frame.origin_x, (request().x * 16.0).floor() as i32);
+    assert_eq!(frame.origin_y, (request().y * 16.0).floor() as i32);
+    assert_eq!(session.region_cache_stats(), before);
+    assert!(session
+        .render_tiled_region(u32::MAX, request(), 1.0)
+        .is_err());
+    assert!(session.render_tiled_region(0, request(), f64::NAN).is_err());
+    assert!(session
+        .render_tiled_region(
+            0,
+            RasterRegion {
+                width: 0.0,
+                ..request()
+            },
+            1.0
+        )
+        .is_err());
+    assert_eq!(session.region_cache_stats(), before);
+    session.render_region(0, request(), 0.5).unwrap();
+    assert_eq!(session.region_cache_stats().hits, before.hits + 1);
 }
 
 #[test]
@@ -213,16 +504,31 @@ fn preparing_a_wholly_off_page_request_avoids_an_oversized_working_bitmap() {
 }
 
 fn session(two_pages: bool) -> NativeDocumentSession {
+    session_with_pages(if two_pages { 2 } else { 1 })
+}
+
+fn session_with_pages(pages: usize) -> NativeDocumentSession {
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native().unwrap();
     core.insert_text_native(0, 0, 0, "Skia 가😀").unwrap();
-    if two_pages {
+    if pages > 1 {
         let mut document = core.document().clone();
-        document.sections.push(document.sections[0].clone());
+        for _ in 1..pages {
+            document.sections.push(document.sections[0].clone());
+        }
         core.set_document(document);
-        assert!(core.page_count() >= 2);
+        for section in 1..pages {
+            core.insert_text_native(section, 0, 0, &format!("Different page {section}: ABC "))
+                .unwrap();
+        }
+        assert_eq!(core.page_count() as usize, pages);
     }
     NativeDocumentSession::from_core(core)
+}
+
+fn page_bytes(session: &NativeDocumentSession, page: u32, scale: f64) -> usize {
+    let size = session.page_size(page).unwrap();
+    (size.width * scale).ceil() as usize * (size.height * scale).ceil() as usize * 4
 }
 
 #[test]
@@ -264,25 +570,167 @@ fn native_regions_replay_once_then_reuse_one_bounded_page_for_moving_windows() {
 }
 
 #[test]
-fn native_page_scale_and_explicit_clear_replace_or_invalidate_the_one_entry() {
+fn native_page_round_trips_and_scale_keys_reuse_snapshots_until_explicit_clear() {
     let session = session(true);
     session.render_region(0, request(), 0.5).unwrap();
     session.render_region(1, request(), 0.5).unwrap();
     assert_eq!(session.region_cache_stats().replays, 2);
-    assert_eq!(session.region_cache_stats().evictions, 1);
+    assert_eq!(session.region_cache_stats().entries, 2);
+    assert_eq!(session.region_cache_stats().evictions, 0);
     session.render_region(0, request(), 0.5).unwrap();
     session.render_region(0, request(), 0.75).unwrap();
-    assert_eq!(session.region_cache_stats().replays, 4);
-    assert_eq!(session.region_cache_stats().evictions, 3);
+    assert_eq!(session.region_cache_stats().replays, 3);
+    assert_eq!(session.region_cache_stats().hits, 1);
+    assert_eq!(session.region_cache_stats().entries, 3);
+    assert_eq!(session.region_cache_stats().evictions, 0);
+    assert_eq!(
+        session.region_cache_stats().retained_bytes,
+        page_bytes(&session, 0, 0.5) + page_bytes(&session, 1, 0.5) + page_bytes(&session, 0, 0.75)
+    );
     let before_clear = session.region_cache_stats();
     session.clear_caches();
     let cleared = session.region_cache_stats();
     assert_eq!(cleared.entries, 0);
     assert_eq!(cleared.retained_bytes, 0);
     assert_eq!(cleared.replays, before_clear.replays);
+    assert_eq!(cleared.evictions, before_clear.evictions + 3);
     assert_eq!(cleared.invalidations, before_clear.invalidations + 1);
     session.render_region(0, request(), 0.75).unwrap();
-    assert_eq!(session.region_cache_stats().replays, 5);
+    assert_eq!(session.region_cache_stats().replays, 4);
+}
+
+#[test]
+fn distinct_pages_keep_their_own_exact_full_page_crops_on_warm_round_trips() {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    let mut document = core.document().clone();
+    document.sections.push(document.sections[0].clone());
+    core.set_document(document);
+    for (section, width) in [(0, 9000), (1, 5000)] {
+        core.create_shape_control_native(
+            section,
+            0,
+            0,
+            width,
+            6750,
+            0,
+            0,
+            true,
+            "Square",
+            "rectangle",
+            false,
+            false,
+            &[],
+        )
+        .unwrap();
+    }
+    assert_eq!(core.page_count(), 2);
+    let session = NativeDocumentSession::from_core(core);
+    let scale = 0.5;
+    let references = [
+        session.render_page(0, scale).unwrap(),
+        session.render_page(1, scale).unwrap(),
+    ];
+    assert_ne!(references[0].pixels.bytes, references[1].pixels.bytes);
+    for page in [0, 1, 0, 1] {
+        let size = session.page_size(page).unwrap();
+        let frame = session
+            .render_region(
+                page,
+                RasterRegion {
+                    x: -1.3,
+                    y: -2.2,
+                    width: size.width + 2.6,
+                    height: size.height + 4.4,
+                },
+                scale,
+            )
+            .unwrap();
+        assert_crop(
+            &references[page as usize].pixels,
+            &RasterRegionPixels {
+                pixels: frame.pixels,
+                origin_x: frame.origin_x,
+                origin_y: frame.origin_y,
+            },
+            [255; 4],
+        );
+    }
+    let stats = session.region_cache_stats();
+    assert_eq!(stats.replays, 2);
+    assert_eq!(stats.misses, 2);
+    assert_eq!(stats.hits, 2);
+    assert_eq!(stats.entries, 2);
+    assert_eq!(
+        stats.retained_bytes,
+        references
+            .iter()
+            .map(|frame| frame.pixels.bytes.len())
+            .sum::<usize>()
+    );
+}
+
+#[test]
+fn entry_cap_evicts_the_least_recently_used_scale_after_a_successful_hit() {
+    assert_eq!(MAX_REGION_CACHE_ENTRIES, 4);
+    let session = session(false);
+    let scales = [0.125, 0.25, 0.375, 0.5, 0.625];
+    for scale in &scales[..4] {
+        session.render_region(0, request(), *scale).unwrap();
+    }
+    let filled = session.region_cache_stats();
+    assert_eq!(filled.entries, MAX_REGION_CACHE_ENTRIES);
+    assert_eq!(filled.replays, 4);
+    assert_eq!(
+        filled.retained_bytes,
+        scales[..4]
+            .iter()
+            .map(|scale| page_bytes(&session, 0, *scale))
+            .sum::<usize>()
+    );
+    session.render_region(0, request(), scales[0]).unwrap();
+    session.render_region(0, request(), scales[4]).unwrap();
+    let replaced = session.region_cache_stats();
+    assert_eq!(replaced.entries, MAX_REGION_CACHE_ENTRIES);
+    assert_eq!(replaced.evictions, 1);
+    assert_eq!(replaced.replays, 5);
+    assert_eq!(
+        replaced.retained_bytes,
+        [scales[0], scales[2], scales[3], scales[4]]
+            .iter()
+            .map(|scale| page_bytes(&session, 0, *scale))
+            .sum::<usize>()
+    );
+    session.render_region(0, request(), scales[0]).unwrap();
+    assert_eq!(session.region_cache_stats().hits, 2);
+    session.render_region(0, request(), scales[1]).unwrap();
+    assert_eq!(session.region_cache_stats().replays, 6);
+    assert_eq!(session.region_cache_stats().evictions, 2);
+}
+
+#[test]
+fn total_byte_cap_evicts_the_least_recently_used_page_before_the_entry_cap() {
+    let session = session_with_pages(3);
+    let scale = 0.5;
+    let budget = page_bytes(&session, 0, scale) + page_bytes(&session, 1, scale);
+    assert!(budget < DEFAULT_REGION_CACHE_BYTES);
+    session.set_region_cache_limit(budget).unwrap();
+    session.render_region(0, request(), scale).unwrap();
+    session.render_region(1, request(), scale).unwrap();
+    assert_eq!(session.region_cache_stats().retained_bytes, budget);
+    session.render_region(0, request(), scale).unwrap();
+    session.render_region(2, request(), scale).unwrap();
+    let replaced = session.region_cache_stats();
+    assert_eq!(replaced.entries, 2);
+    assert!(replaced.entries < MAX_REGION_CACHE_ENTRIES);
+    assert_eq!(replaced.retained_bytes, budget);
+    assert_eq!(replaced.replays, 3);
+    assert_eq!(replaced.evictions, 1);
+    session.render_region(0, request(), scale).unwrap();
+    assert_eq!(session.region_cache_stats().hits, 2);
+    session.render_region(1, request(), scale).unwrap();
+    assert_eq!(session.region_cache_stats().replays, 4);
+    assert_eq!(session.region_cache_stats().retained_bytes, budget);
 }
 
 #[test]
@@ -347,10 +795,30 @@ fn a_page_above_the_retention_cap_evicts_the_old_entry_and_replays_on_each_reque
 }
 
 #[test]
-fn invalid_regions_and_rejected_font_updates_leave_the_retained_frame_usable() {
+fn an_oversized_page_evicts_all_retained_pages_before_bypassing_retention() {
+    let session = session(true);
+    session.render_region(0, request(), 0.5).unwrap();
+    session.render_region(1, request(), 0.5).unwrap();
+    assert_eq!(session.region_cache_stats().entries, 2);
+    assert!(page_bytes(&session, 0, 2.0) > DEFAULT_REGION_CACHE_BYTES);
+    session.render_region(0, request(), 2.0).unwrap();
+    let stats = session.region_cache_stats();
+    assert_eq!(stats.entries, 0);
+    assert_eq!(stats.retained_bytes, 0);
+    assert_eq!(stats.evictions, 2);
+    assert_eq!(stats.replays, 3);
+    assert_eq!(stats.bypassed_oversized, 1);
+}
+
+#[test]
+fn invalid_requests_and_rejected_updates_preserve_all_entries_and_lru_order() {
     let mut session = session(false);
-    let first = session.render_region(0, request(), 0.75).unwrap().pixels;
+    let scales = [0.125, 0.25, 0.375, 0.5];
+    for scale in scales {
+        session.render_region(0, request(), scale).unwrap();
+    }
     let before = session.region_cache_stats();
+    assert_eq!(before.entries, MAX_REGION_CACHE_ENTRIES);
     assert!(session
         .render_region(
             0,
@@ -358,44 +826,65 @@ fn invalid_regions_and_rejected_font_updates_leave_the_retained_frame_usable() {
                 width: 0.0,
                 ..request()
             },
-            0.75
+            scales[0]
         )
         .is_err());
-    assert!(session.render_region(u32::MAX, request(), 0.75).is_err());
+    assert!(session
+        .render_region(u32::MAX, request(), scales[0])
+        .is_err());
     assert!(session.render_region(0, request(), f64::NAN).is_err());
+    assert!(matches!(
+        session.set_region_cache_limit(MAX_REGION_CACHE_BYTES + 1),
+        Err(NativeHostError::LimitExceeded(_))
+    ));
     assert!(session
         .set_font_sources(&["/missing/rhwp-p67-font.ttf".into()], None)
         .is_err());
     assert_eq!(session.region_cache_stats(), before);
     assert!(!session.set_font_sources(&[], None).unwrap());
     assert_eq!(session.region_cache_stats(), before);
-    assert_eq!(
-        session.render_region(0, request(), 0.75).unwrap().pixels,
-        first
-    );
-    assert_eq!(session.region_cache_stats().replays, 1);
+    session
+        .set_region_cache_limit(DEFAULT_REGION_CACHE_BYTES)
+        .unwrap();
+    assert_eq!(session.region_cache_stats(), before);
+    session.render_region(0, request(), 0.625).unwrap();
+    assert_eq!(session.region_cache_stats().replays, 5);
+    session.render_region(0, request(), scales[1]).unwrap();
     assert_eq!(session.region_cache_stats().hits, 1);
+    // The failed request for scales[0] must not have promoted the oldest key.
+    session.render_region(0, request(), scales[0]).unwrap();
+    assert_eq!(session.region_cache_stats().replays, 6);
 }
 
 #[test]
 fn font_generation_change_invalidates_even_when_document_revision_is_unchanged() {
-    let mut session = session(false);
-    session.render_region(0, request(), 0.75).unwrap();
+    let mut session = session(true);
+    for page in 0..2 {
+        session.render_region(page, request(), 0.5).unwrap();
+    }
+    assert_eq!(session.region_cache_stats().entries, 2);
     let environment =
         FontEnvironment::from_json(r#"{"id":"p67-font-generation","substitutions":{}}"#).unwrap();
     assert!(session.set_font_sources(&[], Some(environment)).unwrap());
     assert_eq!(session.revision(), 0);
     assert_eq!(session.font_generation(), 1);
     assert_eq!(session.region_cache_stats().entries, 0);
-    let frame = session.render_region(0, request(), 0.75).unwrap();
-    assert_eq!(frame.font_generation, 1);
-    assert_eq!(session.region_cache_stats().replays, 2);
+    assert_eq!(session.region_cache_stats().retained_bytes, 0);
+    assert_eq!(session.region_cache_stats().evictions, 2);
+    for page in 0..2 {
+        let frame = session.render_region(page, request(), 0.5).unwrap();
+        assert_eq!(frame.font_generation, 1);
+    }
+    assert_eq!(session.region_cache_stats().replays, 4);
 }
 
 #[test]
 fn edits_undo_and_redo_invalidate_region_snapshots_and_stamp_new_revision() {
-    let session = session(false);
-    session.render_region(0, request(), 0.75).unwrap();
+    let session = session(true);
+    for page in 0..2 {
+        session.render_region(page, request(), 0.5).unwrap();
+    }
+    assert_eq!(session.region_cache_stats().entries, 2);
     let position = NativeTextPosition {
         section: 0,
         paragraph: 0,
@@ -412,24 +901,45 @@ fn edits_undo_and_redo_invalidate_region_snapshots_and_stamp_new_revision() {
     .unwrap();
     let edited = editor.replace_selection(0, "한글").unwrap();
     assert_eq!(editor.session().region_cache_stats().entries, 0);
-    let frame = editor.session().render_region(0, request(), 0.75).unwrap();
-    assert_eq!(frame.revision, edited.revision);
-    assert_eq!(editor.session().region_cache_stats().replays, 2);
+    assert_eq!(editor.session().region_cache_stats().retained_bytes, 0);
+    for page in 0..2 {
+        let frame = editor
+            .session()
+            .render_region(page, request(), 0.5)
+            .unwrap();
+        assert_eq!(frame.revision, edited.revision);
+    }
+    assert_eq!(editor.session().region_cache_stats().replays, 4);
     let undone = editor.undo(edited.revision).unwrap();
     assert_eq!(editor.session().region_cache_stats().entries, 0);
-    let frame = editor.session().render_region(0, request(), 0.75).unwrap();
-    assert_eq!(frame.revision, undone.revision);
+    assert_eq!(editor.session().region_cache_stats().retained_bytes, 0);
+    for page in 0..2 {
+        let frame = editor
+            .session()
+            .render_region(page, request(), 0.5)
+            .unwrap();
+        assert_eq!(frame.revision, undone.revision);
+    }
+    assert_eq!(editor.session().region_cache_stats().replays, 6);
     let redone = editor.redo(undone.revision).unwrap();
     assert_eq!(editor.session().region_cache_stats().entries, 0);
-    let frame = editor.session().render_region(0, request(), 0.75).unwrap();
-    assert_eq!(frame.revision, redone.revision);
-    assert_eq!(editor.session().region_cache_stats().replays, 4);
+    assert_eq!(editor.session().region_cache_stats().retained_bytes, 0);
+    for page in 0..2 {
+        let frame = editor
+            .session()
+            .render_region(page, request(), 0.5)
+            .unwrap();
+        assert_eq!(frame.revision, redone.revision);
+    }
+    assert_eq!(editor.session().region_cache_stats().replays, 8);
 }
 
 #[test]
 fn composition_preview_and_cancel_invalidate_without_leaving_a_stale_cached_page() {
-    let session = session(false);
-    session.render_region(0, request(), 0.75).unwrap();
+    let session = session(true);
+    for page in 0..2 {
+        session.render_region(page, request(), 0.5).unwrap();
+    }
     let position = NativeTextPosition {
         section: 0,
         paragraph: 0,
@@ -445,22 +955,35 @@ fn composition_preview_and_cancel_invalidate_without_leaving_a_stale_cached_page
     )
     .unwrap();
     let id = editor.begin_composition(0).unwrap().composition_id.unwrap();
-    assert_eq!(editor.session().region_cache_stats().entries, 1);
+    assert_eq!(editor.session().region_cache_stats().entries, 2);
     let preview = editor.update_composition(0, id, "한글").unwrap();
     assert_eq!(editor.session().region_cache_stats().entries, 0);
-    editor.session().render_region(0, request(), 0.75).unwrap();
-    assert_eq!(editor.session().region_cache_stats().replays, 2);
+    assert_eq!(editor.session().region_cache_stats().retained_bytes, 0);
+    for page in 0..2 {
+        editor
+            .session()
+            .render_region(page, request(), 0.5)
+            .unwrap();
+    }
+    assert_eq!(editor.session().region_cache_stats().replays, 4);
     let cancelled = editor.cancel_composition(preview.revision, id).unwrap();
     assert_eq!(editor.session().region_cache_stats().entries, 0);
-    let frame = editor.session().render_region(0, request(), 0.75).unwrap();
-    assert_eq!(frame.revision, cancelled.revision);
-    assert_eq!(editor.session().region_cache_stats().replays, 3);
+    assert_eq!(editor.session().region_cache_stats().retained_bytes, 0);
+    for page in 0..2 {
+        let frame = editor
+            .session()
+            .render_region(page, request(), 0.5)
+            .unwrap();
+        assert_eq!(frame.revision, cancelled.revision);
+    }
+    assert_eq!(editor.session().region_cache_stats().replays, 6);
 }
 
 #[test]
-fn off_page_requests_do_not_replay_or_replace_a_small_retained_page() {
+fn off_page_requests_do_not_replay_or_replace_small_retained_pages() {
     let session = session(true);
     session.render_region(0, request(), 0.5).unwrap();
+    session.render_region(1, request(), 0.5).unwrap();
     let before = session.region_cache_stats();
     let off_page = RasterRegion {
         x: -4.0,
@@ -468,19 +991,19 @@ fn off_page_requests_do_not_replay_or_replace_a_small_retained_page() {
         width: 2.0,
         height: 2.0,
     };
-    let frame = session.render_region(1, off_page, 0.5).unwrap();
+    let frame = session.render_region(1, off_page, 0.75).unwrap();
     assert!(frame
         .pixels
         .bytes
         .chunks_exact(4)
         .all(|pixel| pixel == [255; 4]));
     let after = session.region_cache_stats();
-    assert_eq!(after.entries, 1);
+    assert_eq!(after.entries, 2);
     assert_eq!(after.retained_bytes, before.retained_bytes);
     assert_eq!(after.replays, before.replays);
     assert_eq!(after.evictions, before.evictions);
     assert_eq!(after.off_page_requests, 1);
     session.render_region(0, request(), 0.5).unwrap();
     assert_eq!(session.region_cache_stats().hits, 1);
-    assert_eq!(session.region_cache_stats().replays, 1);
+    assert_eq!(session.region_cache_stats().replays, 2);
 }

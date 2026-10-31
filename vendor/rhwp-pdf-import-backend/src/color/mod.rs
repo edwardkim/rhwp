@@ -148,7 +148,7 @@ impl IccHeader {
 /// module. The raw bytes are retained so the CMM can build its own
 /// compiled transform from them; `header` is the eagerly-parsed
 /// 128-byte prefix for cheap interrogation without re-parsing.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct IccProfile {
     /// Full profile bytes (post-FlateDecode). May be many hundreds of
     /// KiB for real CMYK production profiles.
@@ -160,7 +160,18 @@ pub struct IccProfile {
     /// buffers unexpectedly.
     n_components: u8,
     header: IccHeader,
+    budget: Option<Arc<crate::import_limits::ImportBudget>>,
+    transforms: Arc<std::sync::Mutex<Vec<(RenderingIntent, Arc<Transform>)>>>,
 }
+
+impl PartialEq for IccProfile {
+    fn eq(&self, other: &Self) -> bool {
+        self.bytes == other.bytes
+            && self.n_components == other.n_components
+            && self.header == other.header
+    }
+}
+impl Eq for IccProfile {}
 
 impl IccProfile {
     /// Parse profile bytes, cross-checking the dictionary's declared
@@ -182,7 +193,26 @@ impl IccProfile {
             bytes: Arc::new(bytes),
             n_components: declared_n,
             header,
+            budget: None,
+            transforms: Arc::new(std::sync::Mutex::new(Vec::new())),
         })
+    }
+
+    pub(crate) fn bind_budget(&mut self, budget: Option<&Arc<crate::import_limits::ImportBudget>>) {
+        self.budget = budget.cloned();
+    }
+
+    pub(crate) fn cached_transform(profile: &Arc<Self>, intent: RenderingIntent) -> Arc<Transform> {
+        let mut cache = profile.transforms.lock().unwrap_or_else(|p| p.into_inner());
+        if let Some((_, value)) = cache.iter().find(|(key, _)| *key == intent) {
+            return value.clone();
+        }
+        let transform = Arc::new(Transform::new_srgb_target(profile.clone(), intent));
+        // There are exactly four rendering intents; cache owns no source-profile
+        // reference cycle. Each compiled transform retains its originating budget.
+        let _scope = crate::codec_resource::scope(profile.budget.as_ref());
+        let _ = rhwp_codec_resource::push(&mut cache, (intent, transform.clone()));
+        transform
     }
 
     /// Raw profile bytes, post-decompression. The CMM layer consumes
@@ -222,7 +252,8 @@ impl IccProfile {
 /// the API stays the same whether or not a CMM is linked in.
 pub struct Transform {
     /// The profile we compiled from (kept for diagnostics / re-use).
-    source_profile: Arc<IccProfile>,
+    source_profile_bytes: usize,
+    budget: Option<Arc<crate::import_limits::ImportBudget>>,
     intent: RenderingIntent,
     /// Cached source-component count, so the no-CMM fallback path
     /// doesn't dereference `source_profile.n_components()` on every
@@ -242,6 +273,7 @@ impl Transform {
     /// `crate::rendering::resolution::IccTransformCache`; this method
     /// is the underlying builder the cache calls into on a miss.
     pub fn new_srgb_target(profile: Arc<IccProfile>, intent: RenderingIntent) -> Self {
+        let _scope = crate::codec_resource::scope(profile.budget.as_ref());
         let n = profile.n_components();
         let inner = <ActiveIccBackend as IccBackend>::build_srgb_transform(
             &profile,
@@ -249,7 +281,8 @@ impl Transform {
             TransformFlags::press_default(),
         );
         Self {
-            source_profile: profile,
+            source_profile_bytes: profile.bytes.len(),
+            budget: profile.budget.clone(),
             intent,
             source_components: n,
             inner,
@@ -259,6 +292,7 @@ impl Transform {
     /// Convert one CMYK sample to RGB. With a real CMM transform
     /// available this runs the CMM; otherwise it falls back to §10.3.5.
     pub fn convert_cmyk_pixel(&self, c: u8, m: u8, y: u8, k: u8) -> [u8; 3] {
+        let _scope = crate::codec_resource::scope(self.budget.as_ref());
         if let Some(holder) = &self.inner {
             if self.source_components == 4 {
                 if let Some(rgb) =
@@ -271,10 +305,17 @@ impl Transform {
         crate::extractors::images::cmyk_pixel_to_rgb(c, m, y, k)
     }
 
+    pub(crate) fn convert_pixel(&self, input: &[u8]) -> Option<[u8; 3]> {
+        let _scope = crate::codec_resource::scope(self.budget.as_ref());
+        let holder = self.inner.as_ref()?;
+        <ActiveIccBackend as IccBackend>::convert_pixel(holder, input)
+    }
+
     /// Convert a packed CMYK byte slice to RGB. When the CMM is
     /// available this is a single batched call; otherwise it falls
     /// back to the per-pixel §10.3.5 formula.
     pub fn convert_cmyk_buffer(&self, cmyk: &[u8]) -> Vec<u8> {
+        let _scope = crate::codec_resource::scope(self.budget.as_ref());
         if let Some(holder) = &self.inner {
             if self.source_components == 4 {
                 if let Some(out) =
@@ -284,7 +325,19 @@ impl Transform {
                 }
             }
         }
-        let mut out = Vec::with_capacity((cmyk.len() / 4) * 3);
+        if self.budget.as_ref().is_some_and(|b| b.check().is_err()) {
+            return Vec::new();
+        }
+        let Some(count) = (cmyk.len() / 4).checked_mul(3) else {
+            rhwp_codec_resource::reject();
+            return Vec::new();
+        };
+        let Ok(mut out) = rhwp_codec_resource::capacity(count) else {
+            return Vec::new();
+        };
+        if rhwp_codec_resource::work(cmyk.len()).is_err() {
+            return Vec::new();
+        }
         for ch in cmyk.as_chunks::<4>().0 {
             let rgb = self.convert_cmyk_pixel(ch[0], ch[1], ch[2], ch[3]);
             out.extend_from_slice(&rgb);
@@ -298,6 +351,7 @@ impl Transform {
     /// the profile isn't RGB, returns the input unchanged (the input
     /// is already assumed to be sRGB-like).
     pub fn convert_rgb_buffer(&self, rgb: &[u8]) -> Vec<u8> {
+        let _scope = crate::codec_resource::scope(self.budget.as_ref());
         if let Some(holder) = &self.inner {
             if self.source_components == 3 {
                 if let Some(out) = <ActiveIccBackend as IccBackend>::convert_rgb_buffer(holder, rgb)
@@ -306,7 +360,10 @@ impl Transform {
                 }
             }
         }
-        rgb.to_vec()
+        if self.budget.as_ref().is_some_and(|b| b.check().is_err()) {
+            return Vec::new();
+        }
+        rhwp_codec_resource::copy(rgb).unwrap_or_default()
     }
 
     /// Convert a packed grayscale byte slice through the source profile
@@ -314,6 +371,7 @@ impl Transform {
     /// available or the profile isn't Gray, replicates the grayscale
     /// channel into RGB.
     pub fn convert_gray_buffer(&self, gray: &[u8]) -> Vec<u8> {
+        let _scope = crate::codec_resource::scope(self.budget.as_ref());
         if let Some(holder) = &self.inner {
             if self.source_components == 1 {
                 if let Some(out) =
@@ -323,7 +381,19 @@ impl Transform {
                 }
             }
         }
-        let mut out = Vec::with_capacity(gray.len() * 3);
+        if self.budget.as_ref().is_some_and(|b| b.check().is_err()) {
+            return Vec::new();
+        }
+        let Some(count) = gray.len().checked_mul(3) else {
+            rhwp_codec_resource::reject();
+            return Vec::new();
+        };
+        let Ok(mut out) = rhwp_codec_resource::capacity(count) else {
+            return Vec::new();
+        };
+        if rhwp_codec_resource::work(gray.len()).is_err() {
+            return Vec::new();
+        }
         for &g in gray {
             out.extend_from_slice(&[g, g, g]);
         }
@@ -347,7 +417,7 @@ impl std::fmt::Debug for Transform {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Transform")
             .field("intent", &self.intent)
-            .field("profile_bytes", &self.source_profile.bytes.len())
+            .field("profile_bytes", &self.source_profile_bytes)
             .field("n_components", &self.source_components)
             .field("cmm_live", &self.has_cmm())
             .field("backend", &backend::active_backend_name())

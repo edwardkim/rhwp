@@ -1,0 +1,23 @@
+{
+  "source": "9c9c272fe1670baf305800dfc906349fa7933d4a",
+  "consumer": "independent registry application",
+  "files": {
+    "rhwp_bg.wasm.d.ts": {
+      "bytes": 67917,
+      "sha256": "ad9b3276ff79f9de34448a4f9c737e4279433e9a480658141f0a7635e15c07fb"
+    },
+    "rhwp.js": {
+      "bytes": 491480,
+      "sha256": "f23e30f1cd142e377111d8163a0289dc7cfadc532ab9a3a965ae83a236a2e231"
+    },
+    "rhwp_bg.wasm": {
+      "bytes": 23498074,
+      "sha256": "96149fae4a3d974a3300f6c4f841b7f7a4dd1ea473196567c4379aad856bbe31"
+    },
+    "rhwp.d.ts": {
+      "bytes": 196990,
+      "sha256": "c02d3b40884d829dafd77526ada6b6edaa91c19a0ea072297e460eab8d2b4866"
+    }
+  },
+  "wasm_opt_completed": true
+}

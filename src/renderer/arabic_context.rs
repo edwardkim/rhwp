@@ -94,13 +94,23 @@ struct Glyph {
 }
 
 fn apply_lookup(glyphs: &mut Vec<Glyph>, rules: &[Rule]) {
+    match apply_lookup_with_storage(glyphs, rules, &crate::storage::Unbounded) {
+        Ok(()) => (),
+        Err(never) => match never {},
+    }
+}
+fn apply_lookup_with_storage<S: crate::storage::Storage>(
+    glyphs: &mut Vec<Glyph>,
+    rules: &[Rule],
+    storage: &S,
+) -> Result<(), S::Error> {
     let mut index = 0;
     while index < glyphs.len() {
         for &(_, inputs, output, width, ignore_marks, mark) in rules {
             if glyphs[index].id != inputs.first().copied() {
                 continue;
             }
-            let mut matched = vec![index];
+            let mut matched = storage.collect(std::iter::once(index))?;
             let mut at = index + 1;
             for input in &inputs[1..] {
                 while ignore_marks && glyphs.get(at).is_some_and(|glyph| glyph.mark) {
@@ -109,7 +119,7 @@ fn apply_lookup(glyphs: &mut Vec<Glyph>, rules: &[Rule]) {
                 if glyphs.get(at).and_then(|glyph| glyph.id) != Some(*input) {
                     break;
                 }
-                matched.push(at);
+                storage.push(&mut matched, at)?;
                 at += 1;
             }
             if matched.len() != inputs.len() {
@@ -117,7 +127,7 @@ fn apply_lookup(glyphs: &mut Vec<Glyph>, rules: &[Rule]) {
             }
             let mut owners = Vec::new();
             for &at in &matched {
-                owners.extend_from_slice(&glyphs[at].owners);
+                storage.extend(&mut owners, glyphs[at].owners.iter().copied())?;
             }
             glyphs[index] = Glyph {
                 id: Some(output),
@@ -132,65 +142,96 @@ fn apply_lookup(glyphs: &mut Vec<Glyph>, rules: &[Rule]) {
         }
         index += 1;
     }
+    Ok(())
 }
 
 /// 반환 단위는 em이다. None인 원문 글자는 기존 측정 계약을 유지한다.
 pub(crate) fn advances(chars: &[char], style: &TextStyle) -> Option<Vec<Option<f64>>> {
-    if !chars.iter().any(|ch| matches!(*ch as u32, 0x0600..=0x08ff)) {
-        return None;
+    match advances_with_storage(chars, style, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
-    let source = source(style)?;
-    let mut glyphs = Vec::new();
-    for (index, &ch) in chars.iter().enumerate() {
-        if ch == '\u{200d}' {
-            continue;
+}
+pub(crate) fn advances_with_storage<S: crate::storage::Storage>(
+    chars: &[char],
+    style: &TextStyle,
+    storage: &S,
+) -> Result<Option<Vec<Option<f64>>>, S::Error> {
+    crate::storage::with_optional(|failure| {
+        if !chars.iter().any(|ch| matches!(*ch as u32, 0x0600..=0x08ff)) {
+            return None;
         }
-        let Some(row) = source.row(ch) else {
-            glyphs.push(Glyph {
-                id: None,
-                width: 0.0,
-                mark: joining::kind(ch) == 4,
-                owners: Vec::new(),
-            });
-            continue;
-        };
-        let kind = joining::kind(ch);
-        let previous = kind & 1 != 0 && neighbor_kind(chars, index, false, &source) & 2 != 0;
-        let next = kind & 2 != 0 && neighbor_kind(chars, index, true, &source) & 1 != 0;
-        let form = match (previous, next) {
-            (false, false) => 0,
-            (false, true) => 1,
-            (true, true) => 2,
-            (true, false) => 3,
-        };
-        let width = f64::from(row.2[form]);
-        glyphs.push(Glyph {
-            id: Some(row.1[form]),
-            width,
-            mark: row.3 & (1 << form) != 0,
-            owners: vec![(index, width)],
-        });
-    }
-    // GSUB의 rlig → liga 순서. 같은 lookup의 규칙은 한 번의 순회로 적용한다.
-    let mut start = 0;
-    while start < source.rules.len() {
-        let end =
-            start + source.rules[start..].partition_point(|rule| rule.0 == source.rules[start].0);
-        apply_lookup(&mut glyphs, &source.rules[start..end]);
-        start = end;
-    }
-    let mut advances = vec![None; chars.len()];
-    for glyph in glyphs {
-        let sum: f64 = glyph.owners.iter().map(|(_, width)| *width).sum();
-        for &(owner, original_width) in &glyph.owners {
-            // 합자의 scalar 수와 순서는 보존하며 총 전진을 원래 기여 비율로 배분한다.
-            let share = if sum > 0.0 {
-                original_width / sum
-            } else {
-                1.0 / glyph.owners.len() as f64
+        let source = source(style)?;
+        let mut glyphs = Vec::new();
+        for (index, &ch) in chars.iter().enumerate() {
+            if ch == '\u{200d}' {
+                continue;
+            }
+            let Some(row) = source.row(ch) else {
+                crate::storage::optional(
+                    storage.push(
+                        &mut glyphs,
+                        Glyph {
+                            id: None,
+                            width: 0.0,
+                            mark: joining::kind(ch) == 4,
+                            owners: Vec::new(),
+                        },
+                    ),
+                    failure,
+                )?;
+                continue;
             };
-            advances[owner] = Some(glyph.width * share / 1000.0);
+            let kind = joining::kind(ch);
+            let previous = kind & 1 != 0 && neighbor_kind(chars, index, false, &source) & 2 != 0;
+            let next = kind & 2 != 0 && neighbor_kind(chars, index, true, &source) & 1 != 0;
+            let form = match (previous, next) {
+                (false, false) => 0,
+                (false, true) => 1,
+                (true, true) => 2,
+                (true, false) => 3,
+            };
+            let width = f64::from(row.2[form]);
+            crate::storage::optional(
+                storage.push(
+                    &mut glyphs,
+                    Glyph {
+                        id: Some(row.1[form]),
+                        width,
+                        mark: row.3 & (1 << form) != 0,
+                        owners: crate::storage::optional(
+                            storage.collect(std::iter::once((index, width))),
+                            failure,
+                        )?,
+                    },
+                ),
+                failure,
+            )?;
         }
-    }
-    Some(advances)
+        // GSUB의 rlig → liga 순서. 같은 lookup의 규칙은 한 번의 순회로 적용한다.
+        let mut start = 0;
+        while start < source.rules.len() {
+            let end = start
+                + source.rules[start..].partition_point(|rule| rule.0 == source.rules[start].0);
+            crate::storage::optional(
+                apply_lookup_with_storage(&mut glyphs, &source.rules[start..end], storage),
+                failure,
+            )?;
+            start = end;
+        }
+        let mut advances = crate::storage::optional(storage.filled(chars.len(), None), failure)?;
+        for glyph in glyphs {
+            let sum: f64 = glyph.owners.iter().map(|(_, width)| *width).sum();
+            for &(owner, original_width) in &glyph.owners {
+                // 합자의 scalar 수와 순서는 보존하며 총 전진을 원래 기여 비율로 배분한다.
+                let share = if sum > 0.0 {
+                    original_width / sum
+                } else {
+                    1.0 / glyph.owners.len() as f64
+                };
+                advances[owner] = Some(glyph.width * share / 1000.0);
+            }
+        }
+        Some(advances)
+    })
 }

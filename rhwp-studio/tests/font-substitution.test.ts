@@ -134,8 +134,8 @@ test('명시적으로 빈 local face 목록은 이전 OS 감지 결과를 사용
   detected.add('HY중고딕');
   detected.add('HYGothic-Medium');
   try {
-    // local() 로드를 확인한 프로그램이 이미 있으면 일반 fallback으로 버리지 않는다.
-    assert.match(fontFamilyChainForDisplay('HYGothic-Medium', 0, 0), /^"HYGothic-Medium"/u);
+    // 저장된 사용자 감지가 없으면 과거 OS 존재 관측을 승인으로 취급하지 않는다.
+    assert.doesNotMatch(fontFamilyChainForDisplay('HYGothic-Medium', 0, 0), /^"HYGothic-Medium"/u);
     const chain = fontFamilyChainForDisplay('한양중고딕', 0, 0, {
       confirmedLocalFonts: [],
     });

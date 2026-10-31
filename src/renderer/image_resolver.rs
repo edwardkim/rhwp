@@ -2,13 +2,24 @@ use std::cell::RefCell;
 use std::io::Cursor;
 
 mod print_alpha;
+mod print_alpha_2024;
 mod print_crop;
-mod print_jpeg;
+mod print_jpeg_encode;
+mod print_rgb555;
 mod print_tone;
 pub(crate) use print_alpha::print_alpha_payload;
 pub(crate) use print_crop::{publish_print_jpeg_crop, resolve_print_jpeg_window};
-pub(crate) use print_jpeg::{encode_print_jpeg, print_jpeg_payload};
+pub(crate) use print_jpeg_encode::{encode_print_jpeg, print_jpeg_payload};
+mod print_window;
+#[cfg(target_arch = "wasm32")]
+pub(crate) use print_tone::decode_print_jpeg_replay;
 pub(crate) use print_tone::print_bitmap_payload;
+mod print_bitmap_window;
+mod print_codec;
+mod print_fill_jpeg;
+mod print_picture_resample;
+mod print_prefilter;
+pub(crate) use print_codec::{print_area_sampling, print_device_image_payload};
 
 use crate::model::image::ImageEffect;
 use crate::paint::{ResolvedImageKind, ResolvedImagePayload};
@@ -30,6 +41,7 @@ pub(crate) use picture_adjustments::{
     adjusted_picture_bytes, picture_tone_parameters, resolve_page_background_tone,
 };
 mod wmf_picture;
+pub(crate) use wmf_picture::adjust_pixels as adjust_wmf_device_pixels;
 /// 명시된 crop 좌표 범위는 보존한다. 원본 WMF의 범위가 없으면 한컴의
 /// 메타파일 자르기 좌표계(축마다 15000)를 사용한다. SVG/PNG 변환 뒤의 픽셀
 /// 크기는 이 범위의 단위가 아니므로 원본 데이터에서 한 번 판정한다.
@@ -131,7 +143,9 @@ enum Conversion {
         contrast: i8,
         grayscale: bool,
     },
-    Hancom2024Bitmap,
+    Hancom2024Bitmap {
+        group: bool,
+    },
     PrintJpeg {
         quality: u8,
         expand: bool,
@@ -144,6 +158,30 @@ enum Conversion {
     },
     Hancom2024BitmapPalette {
         bounds: [u32; 4],
+    },
+    Hancom2024BitmapWindow {
+        bounds: [u32; 4],
+        group: bool,
+    },
+    Hancom2024PrintJpeg {
+        quality: u8,
+    },
+    Hancom2024PrintAlpha {
+        quality: u8,
+    },
+    Hancom2024PrintResampled {
+        width: u32,
+        height: u32,
+        quality: u8,
+    },
+    Hancom2024ResampledBitmapWindow {
+        bounds: [u32; 4],
+        width: u32,
+        height: u32,
+        quality: u8,
+    },
+    Hancom2024FillJpegRgb {
+        quality: u8,
     },
 }
 
@@ -300,7 +338,7 @@ pub(crate) fn emitted_source_image_bytes(
         }
     }
     if variant == crate::paint::SourceImageVariant::Hancom2024Bitmap {
-        if let Some(bytes) = print_tone::bitmap_bytes_to_png(data) {
+        if let Some(bytes) = print_tone::bitmap_bytes_to_png(data, false) {
             return ("image/png", std::borrow::Cow::Owned(bytes));
         }
     }
@@ -365,7 +403,15 @@ pub(crate) fn resolved_image_effects(
 }
 
 pub(crate) fn resolve_image_payload(image: &ImageNode) -> Option<ResolvedImagePayload> {
-    let base = resolve_unadjusted_image_payload(image);
+    resolve_image_payload_for_print(image, false)
+}
+
+/// 묶음 그림의 원본 JPEG 디코딩과 단독 그림의 디코딩을 같은 자원 경로에서 구분한다.
+pub(crate) fn resolve_image_payload_for_print(
+    image: &ImageNode,
+    in_shape_group: bool,
+) -> Option<ResolvedImagePayload> {
+    let base = resolve_unadjusted_image_payload(image, in_shape_group);
     let mut resolved = picture_adjustments::resolve_picture_tone(image, base);
     if let (Some(source), Some(payload)) = (image.data.as_deref(), resolved.as_mut()) {
         png_sampling::preserve(source, &mut payload.data);
@@ -373,8 +419,11 @@ pub(crate) fn resolve_image_payload(image: &ImageNode) -> Option<ResolvedImagePa
     resolved
 }
 
-fn resolve_unadjusted_image_payload(image: &ImageNode) -> Option<ResolvedImagePayload> {
-    if let Some(payload) = print_bitmap_payload(image) {
+fn resolve_unadjusted_image_payload(
+    image: &ImageNode,
+    in_shape_group: bool,
+) -> Option<ResolvedImagePayload> {
+    if let Some(payload) = print_bitmap_payload(image, in_shape_group) {
         return Some(payload);
     }
     let data = image.data.as_deref()?;
@@ -547,6 +596,7 @@ pub(crate) fn image_node_with_resolved_payload(
     let mut image = image.clone();
     image.original_size_hu = image_crop_reference(&image);
     if let Some(payload) = resolved {
+        normalize_resolved_image_window(&mut image, payload);
         image.data = Some(payload.data.clone());
         // payload는 이미 출력 색을 가진다. 내부 재생에서 다시 확장하지 않는다.
         image.hancom2024_print_bitmap = false;
@@ -557,6 +607,34 @@ pub(crate) fn image_node_with_resolved_payload(
         }
     }
     image
+}
+
+/// 이미 원본 창을 담은 바이트는 모든 painter에서 한 번만 자른다.
+pub(crate) fn normalize_resolved_image_window(
+    image: &mut ImageNode,
+    payload: &ResolvedImagePayload,
+) {
+    if payload.kind == ResolvedImageKind::OutputDeviceWindow {
+        image.crop = None;
+        image.original_size_hu = None;
+        image.original_size = None;
+    }
+}
+
+/// 직접 조립한 paint op의 지연 payload도 같은 창 정규화를 소비한다.
+pub(crate) fn image_for_resolved_window<'a>(
+    image: &'a ImageNode,
+    resolved: Option<&ResolvedImagePayload>,
+) -> std::borrow::Cow<'a, ImageNode> {
+    if let Some(payload) = resolved.filter(|p| p.kind == ResolvedImageKind::OutputDeviceWindow) {
+        if image.crop.is_some() || image.original_size.is_some() || image.original_size_hu.is_some()
+        {
+            let mut image = image.clone();
+            normalize_resolved_image_window(&mut image, payload);
+            return std::borrow::Cow::Owned(image);
+        }
+    }
+    std::borrow::Cow::Borrowed(image)
 }
 
 /// 공통 producer와 지연 로딩 키가 같은 WMF 실사 효과를 선택하는 단일 판정.

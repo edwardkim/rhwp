@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/publish_guide.md
-last_verified: 2026-09-05
+last_verified: 2026-10-28
 ---
 
 # 배포 가이드
@@ -29,6 +29,14 @@ GitHub repository·Actions의 공통 권한, 승인, 적용 후 관찰과 rollba
 | Firefox AMO | rhwp-firefox | 수동 업로드 | 확장 릴리즈 |
 
 ---
+
+## crates.io 준비와 수동 게시
+
+본체 0.9.0과 13개 내부·보정 의존 패키지의 준비·소비 계약·초회 수동 절차는
+[crates.io 가이드](crates_io_guide.md)를 따른다. 실제 게시 일정은 0.9.0 제품 릴리즈와
+별도로 결정한다. 현재 tag workflow의 네 채널에 crates.io를 자동 연결하지 않는다.
+게시·보안 업데이트·부분 실패 복구 책임자는 edwardkim이다. 토큰 준비 여부와 실제 업로드
+승인은 구분하며, 아래 기존 npm/확장 배포 절차로 Cargo 게시를 실행하지 않는다.
 
 ## CI/CD 워크플로우 (GitHub Actions)
 

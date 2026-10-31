@@ -72,6 +72,8 @@ runTest('#5769 혼합 세션 실효 깊이 — 무축출 계약', async ({ page 
     await typeText(page, `paragraph ${p} the quick brown fox jumps over the lazy dog`);
     if (p < 5) await page.keyboard.press('Enter');
   }
+  const seeded = await page.evaluate(() => window.__wasm.getParagraphCount(0));
+  assert(seeded === 6, `첫 입력과 문단 나누기로 6문단이 생성되어야 한다 — got ${seeded}`);
 
   for (let i = 0; i < ROUNDS; i++) {
     const para = i % 6;

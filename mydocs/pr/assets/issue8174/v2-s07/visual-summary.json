@@ -1,0 +1,492 @@
+{
+  "summary": {
+    "native": {
+      "pages": 54,
+      "documents": 43,
+      "minimum": {
+        "name": "cff-cid",
+        "page": 1,
+        "raw": "97.85462"
+      }
+    },
+    "wasm": {
+      "pages": 54,
+      "documents": 43,
+      "minimum": {
+        "name": "cff-cid",
+        "page": 1,
+        "raw": "98.09075"
+      }
+    }
+  },
+  "comparedPages": [
+    {
+      "baseline": "base",
+      "runtime": "native",
+      "name": "cff-cid",
+      "page": 1,
+      "baselineRaw": "97.85462",
+      "candidateRaw": "97.85462",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 1,
+      "baselineRaw": "99.17130",
+      "candidateRaw": "99.17130",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 2,
+      "baselineRaw": "99.99197",
+      "candidateRaw": "99.99197",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 3,
+      "baselineRaw": "99.40670",
+      "candidateRaw": "99.40670",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 4,
+      "baselineRaw": "99.98205",
+      "candidateRaw": "99.98205",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 5,
+      "baselineRaw": "99.94718",
+      "candidateRaw": "99.94718",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 6,
+      "baselineRaw": "99.78696",
+      "candidateRaw": "99.78696",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 7,
+      "baselineRaw": "99.73916",
+      "candidateRaw": "99.73916",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 8,
+      "baselineRaw": "99.57867",
+      "candidateRaw": "99.57867",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 9,
+      "baselineRaw": "99.99754",
+      "candidateRaw": "99.99754",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 10,
+      "baselineRaw": "99.99886",
+      "candidateRaw": "99.99886",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 11,
+      "baselineRaw": "98.87649",
+      "candidateRaw": "98.87649",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 12,
+      "baselineRaw": "100.00000",
+      "candidateRaw": "100.00000",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "native",
+      "name": "cff-cid",
+      "page": 1,
+      "baselineRaw": "97.85462",
+      "candidateRaw": "97.85462",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 1,
+      "baselineRaw": "99.17130",
+      "candidateRaw": "99.17130",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 2,
+      "baselineRaw": "99.99197",
+      "candidateRaw": "99.99197",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 3,
+      "baselineRaw": "99.40670",
+      "candidateRaw": "99.40670",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 4,
+      "baselineRaw": "99.98205",
+      "candidateRaw": "99.98205",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 5,
+      "baselineRaw": "99.94718",
+      "candidateRaw": "99.94718",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 6,
+      "baselineRaw": "99.78696",
+      "candidateRaw": "99.78696",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 7,
+      "baselineRaw": "99.73916",
+      "candidateRaw": "99.73916",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 8,
+      "baselineRaw": "99.57867",
+      "candidateRaw": "99.57867",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 9,
+      "baselineRaw": "99.99754",
+      "candidateRaw": "99.99754",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 10,
+      "baselineRaw": "99.99886",
+      "candidateRaw": "99.99886",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 11,
+      "baselineRaw": "98.87649",
+      "candidateRaw": "98.87649",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "native",
+      "name": "type3-twelve-pages",
+      "page": 12,
+      "baselineRaw": "100.00000",
+      "candidateRaw": "100.00000",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "wasm",
+      "name": "cff-cid",
+      "page": 1,
+      "baselineRaw": "98.09075",
+      "candidateRaw": "98.09075",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 1,
+      "baselineRaw": "99.19134",
+      "candidateRaw": "99.19134",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 2,
+      "baselineRaw": "99.95835",
+      "candidateRaw": "99.95835",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 3,
+      "baselineRaw": "98.79246",
+      "candidateRaw": "98.79246",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 4,
+      "baselineRaw": "99.95907",
+      "candidateRaw": "99.95907",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 5,
+      "baselineRaw": "99.95400",
+      "candidateRaw": "99.95400",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 6,
+      "baselineRaw": "99.59879",
+      "candidateRaw": "99.59879",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 7,
+      "baselineRaw": "99.31057",
+      "candidateRaw": "99.31057",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 8,
+      "baselineRaw": "98.93462",
+      "candidateRaw": "98.93462",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 9,
+      "baselineRaw": "99.96574",
+      "candidateRaw": "99.96574",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 10,
+      "baselineRaw": "99.96327",
+      "candidateRaw": "99.96327",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 11,
+      "baselineRaw": "98.93836",
+      "candidateRaw": "98.93836",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "base",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 12,
+      "baselineRaw": "100.00000",
+      "candidateRaw": "100.00000",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "wasm",
+      "name": "cff-cid",
+      "page": 1,
+      "baselineRaw": "98.09075",
+      "candidateRaw": "98.09075",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 1,
+      "baselineRaw": "99.19134",
+      "candidateRaw": "99.19134",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 2,
+      "baselineRaw": "99.95835",
+      "candidateRaw": "99.95835",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 3,
+      "baselineRaw": "98.79246",
+      "candidateRaw": "98.79246",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 4,
+      "baselineRaw": "99.95907",
+      "candidateRaw": "99.95907",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 5,
+      "baselineRaw": "99.95400",
+      "candidateRaw": "99.95400",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 6,
+      "baselineRaw": "99.59879",
+      "candidateRaw": "99.59879",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 7,
+      "baselineRaw": "99.31057",
+      "candidateRaw": "99.31057",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 8,
+      "baselineRaw": "98.93462",
+      "candidateRaw": "98.93462",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 9,
+      "baselineRaw": "99.96574",
+      "candidateRaw": "99.96574",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 10,
+      "baselineRaw": "99.96327",
+      "candidateRaw": "99.96327",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 11,
+      "baselineRaw": "98.93836",
+      "candidateRaw": "98.93836",
+      "dropPercentagePoints": "0.00000"
+    },
+    {
+      "baseline": "before",
+      "runtime": "wasm",
+      "name": "type3-twelve-pages",
+      "page": 12,
+      "baselineRaw": "100.00000",
+      "candidateRaw": "100.00000",
+      "dropPercentagePoints": "0.00000"
+    }
+  ]
+}

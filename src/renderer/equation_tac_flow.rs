@@ -40,17 +40,42 @@ pub(crate) fn compute_equation_only_tac_line_flow(
     available_width: f64,
     continuation_available_width: f64,
 ) -> Option<EquationTacLineFlow> {
-    let para = para?;
+    match compute_equation_only_tac_line_flow_with_storage(
+        para,
+        composed,
+        tac_offsets_px,
+        line_idx,
+        available_width,
+        continuation_available_width,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn compute_equation_only_tac_line_flow_with_storage<S: crate::storage::Storage>(
+    para: Option<&Paragraph>,
+    composed: &ComposedParagraph,
+    tac_offsets_px: &[(usize, f64, usize)],
+    line_idx: usize,
+    available_width: f64,
+    continuation_available_width: f64,
+    storage: &S,
+) -> Result<Option<EquationTacLineFlow>, S::Error> {
+    let Some(para) = para else {
+        return Ok(None);
+    };
     if tac_offsets_px.is_empty()
         || composed.lines.is_empty()
         || line_idx >= composed.lines.len()
         || available_width.is_nan()
         || available_width <= 0.0
     {
-        return None;
+        return Ok(None);
     }
     if !composed.lines.iter().all(|line| line.runs.is_empty()) {
-        return None;
+        return Ok(None);
     }
     if !tac_offsets_px.iter().all(|(_, _, control_index)| {
         matches!(
@@ -58,7 +83,7 @@ pub(crate) fn compute_equation_only_tac_line_flow(
             Some(Control::Equation(_))
         )
     }) {
-        return None;
+        return Ok(None);
     }
 
     let wrap_width = if available_width.is_finite() {
@@ -73,12 +98,14 @@ pub(crate) fn compute_equation_only_tac_line_flow(
             wrap_width
         };
 
-    let assignments = equation_only_tac_line_assignment(para, composed, tac_offsets_px);
-    let mut assigned_lines: Vec<usize> = assignments
-        .iter()
-        .copied()
-        .filter(|assigned_line| *assigned_line <= line_idx)
-        .collect();
+    let assignments =
+        equation_only_tac_line_assignment_with_storage(para, composed, tac_offsets_px, storage)?;
+    let mut assigned_lines: Vec<usize> = storage.collect(
+        assignments
+            .iter()
+            .copied()
+            .filter(|assigned_line| *assigned_line <= line_idx),
+    )?;
     assigned_lines.sort_unstable();
     assigned_lines.dedup();
 
@@ -88,71 +115,89 @@ pub(crate) fn compute_equation_only_tac_line_flow(
         .copied()
         .filter(|assigned_line| *assigned_line < line_idx)
     {
-        let tacs = tacs_for_assigned_line(&assignments, tac_offsets_px, assigned_line);
+        let tacs = tacs_for_assigned_line_with_storage(
+            &assignments,
+            tac_offsets_px,
+            assigned_line,
+            storage,
+        )?;
         let first_width = if visual_row_base == 0 {
             wrap_width
         } else {
             continuation_wrap_width
         };
-        let (_, visual_rows) = pack_equation_tac_rows(tacs, first_width, continuation_wrap_width);
+        let (_, visual_rows) = pack_equation_tac_rows_with_storage(
+            tacs,
+            first_width,
+            continuation_wrap_width,
+            storage,
+        )?;
         visual_row_base += visual_rows;
     }
 
-    let current_line_tacs = tacs_for_assigned_line(&assignments, tac_offsets_px, line_idx);
+    let current_line_tacs =
+        tacs_for_assigned_line_with_storage(&assignments, tac_offsets_px, line_idx, storage)?;
     let first_width = if visual_row_base == 0 {
         wrap_width
     } else {
         continuation_wrap_width
     };
-    let (tac_rows, visual_rows) =
-        pack_equation_tac_rows(current_line_tacs, first_width, continuation_wrap_width);
+    let (tac_rows, visual_rows) = pack_equation_tac_rows_with_storage(
+        current_line_tacs,
+        first_width,
+        continuation_wrap_width,
+        storage,
+    )?;
 
-    Some(EquationTacLineFlow {
+    Ok(Some(EquationTacLineFlow {
         tac_rows,
         extra_rows: visual_rows.saturating_sub(1),
         visual_row_base,
-    })
+    }))
 }
 
-fn tacs_for_assigned_line(
+fn tacs_for_assigned_line_with_storage<S: crate::storage::Storage>(
     assignments: &[usize],
     tac_offsets_px: &[(usize, f64, usize)],
     line_idx: usize,
-) -> Vec<(usize, f64)> {
-    assignments
-        .iter()
-        .enumerate()
-        .filter_map(|(tac_index, assigned_line)| {
-            (*assigned_line == line_idx)
-                .then_some((tac_index, tac_offsets_px[tac_index].1.max(0.0)))
-        })
-        .collect()
+    storage: &S,
+) -> Result<Vec<(usize, f64)>, S::Error> {
+    storage.collect(
+        assignments
+            .iter()
+            .enumerate()
+            .filter_map(|(tac_index, assigned_line)| {
+                (*assigned_line == line_idx)
+                    .then_some((tac_index, tac_offsets_px[tac_index].1.max(0.0)))
+            }),
+    )
 }
 
-fn pack_equation_tac_rows(
+fn pack_equation_tac_rows_with_storage<S: crate::storage::Storage>(
     tacs: Vec<(usize, f64)>,
     first_wrap_width: f64,
     continuation_wrap_width: f64,
-) -> (Vec<(usize, usize)>, usize) {
+    storage: &S,
+) -> Result<(Vec<(usize, usize)>, usize), S::Error> {
     if tacs.is_empty() {
-        return (Vec::new(), 0);
+        return Ok((Vec::new(), 0));
     }
 
     let mut row = 0usize;
     let mut row_width = 0.0f64;
     let mut current_wrap_width = first_wrap_width;
-    let mut tac_rows = Vec::with_capacity(tacs.len());
+    let mut tac_rows = storage.vec(tacs.len())?;
     for (tac_index, tac_width) in tacs {
         if row_width > 0.0 && row_width + tac_width > current_wrap_width + 0.5 {
             row += 1;
             row_width = 0.0;
             current_wrap_width = continuation_wrap_width;
         }
-        tac_rows.push((tac_index, row));
+        storage.push(&mut tac_rows, (tac_index, row))?;
         row_width += tac_width;
     }
 
-    (tac_rows, row + 1)
+    Ok((tac_rows, row + 1))
 }
 
 /// [#7816] 들여쓰기·내어쓰기를 적용한 뒤 남는 줄 폭의 하한(HWPUNIT). 이보다 적게 남으면
@@ -236,9 +281,26 @@ pub(crate) fn equation_only_tac_line_assignment(
     composed: &ComposedParagraph,
     tac_offsets_px: &[(usize, f64, usize)],
 ) -> Vec<usize> {
+    match equation_only_tac_line_assignment_with_storage(
+        para,
+        composed,
+        tac_offsets_px,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn equation_only_tac_line_assignment_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    composed: &ComposedParagraph,
+    tac_offsets_px: &[(usize, f64, usize)],
+    storage: &S,
+) -> Result<Vec<usize>, S::Error> {
     let n_lines = composed.lines.len();
     if n_lines == 0 {
-        return Vec::new();
+        return Ok(Vec::new());
     }
 
     let degenerate = n_lines > 1
@@ -248,21 +310,18 @@ pub(crate) fn equation_only_tac_line_assignment(
             .any(|window| window[1].char_start <= window[0].char_start);
 
     if !degenerate {
-        return tac_offsets_px
-            .iter()
-            .map(|(pos, _, _)| {
-                (0..n_lines)
-                    .find(|&line_idx| {
-                        let line_start = composed.lines[line_idx].char_start;
-                        let line_end = composed_line_char_end(composed, line_idx);
-                        char_pos_in_line(*pos, line_start, line_end)
-                    })
-                    .unwrap_or(n_lines - 1)
-            })
-            .collect();
+        return storage.collect(tac_offsets_px.iter().map(|(pos, _, _)| {
+            (0..n_lines)
+                .find(|&line_idx| {
+                    let line_start = composed.lines[line_idx].char_start;
+                    let line_end = composed_line_char_end(composed, line_idx);
+                    char_pos_in_line(*pos, line_start, line_end)
+                })
+                .unwrap_or(n_lines - 1)
+        }));
     }
 
-    let mut assignments = vec![0usize; tac_offsets_px.len()];
+    let mut assignments = storage.filled(tac_offsets_px.len(), 0usize)?;
     let mut tac_idx = 0usize;
     let mut line_start = 0usize;
     while tac_idx < tac_offsets_px.len() {
@@ -274,16 +333,12 @@ pub(crate) fn equation_only_tac_line_assignment(
         let group_end = tac_idx;
 
         let group_len = group_end - group_start;
-        let all_line_targets: Vec<usize> = (line_start..n_lines)
-            .filter(|&li| composed.lines[li].char_start == pos)
-            .collect();
-        let filtered_line_targets: Vec<usize> = all_line_targets
-            .iter()
-            .copied()
-            .filter(|&li| {
+        let all_line_targets: Vec<usize> = storage
+            .collect((line_start..n_lines).filter(|&li| composed.lines[li].char_start == pos))?;
+        let filtered_line_targets: Vec<usize> =
+            storage.collect(all_line_targets.iter().copied().filter(|&li| {
                 !line_is_leading_empty_equation_tac_guide(para, composed, tac_offsets_px, li)
-            })
-            .collect();
+            }))?;
         let mut line_targets = if group_len > 1 && all_line_targets.len() >= group_len {
             // 같은 char_start에 여러 TAC 수식이 있고 저장 LINE_SEG도 같은 수만큼 있으면
             // 선행 빈 guide 줄도 한컴의 물리 수식 줄로 보존한다.
@@ -300,7 +355,7 @@ pub(crate) fn equation_only_tac_line_assignment(
                     char_pos_in_line(pos, line_start_char, line_end_char)
                 })
                 .unwrap_or_else(|| line_start.min(n_lines - 1));
-            line_targets.push(fallback);
+            storage.push(&mut line_targets, fallback)?;
         }
 
         for (group_offset, idx) in (group_start..group_end).enumerate() {
@@ -314,7 +369,7 @@ pub(crate) fn equation_only_tac_line_assignment(
         line_start = line_targets.last().copied().unwrap_or(line_start) + 1;
     }
 
-    assignments
+    Ok(assignments)
 }
 
 fn composed_line_char_end(composed: &ComposedParagraph, line_idx: usize) -> usize {

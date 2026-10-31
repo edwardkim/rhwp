@@ -4,7 +4,7 @@ use super::super::font_lookup::{
 };
 use super::super::synthetic_typeface::{unemboldened_typeface, unobliqued_typeface};
 use crate::renderer::{internal_font_family_members, TextStyle};
-use skia_safe::{font, Font, FontMgr, Typeface};
+use skia_safe::{font, Canvas, Font, FontMgr, Paint, Typeface};
 use std::{cell::RefCell, collections::HashMap};
 
 pub(in crate::renderer::skia) fn compatibility_glyph(font: &Font, text: &str) -> Option<char> {
@@ -18,6 +18,7 @@ pub(in crate::renderer::skia) fn compatibility_glyph(font: &Font, text: &str) ->
 }
 
 thread_local! {
+    static OUTLINE_REPLAY_FACES: RefCell<HashMap<u32, bool>> = RefCell::new(HashMap::new());
     static OWN_HEAVY_FACES: RefCell<HashMap<(u32, String), bool>> = RefCell::new(HashMap::new());
 }
 
@@ -60,23 +61,55 @@ pub(super) fn for_text(
     size: f32,
     style: &TextStyle,
     font_mgr: &FontMgr,
+    geometric_text: bool,
 ) -> Option<Font> {
-    if let Some(ch) = sample.chars().find(|ch| !ch.is_whitespace()) {
-        return select_typeface_for_character(chain, ch)
-            .map(|candidate| finish(candidate.typeface.clone(), size, style, font_mgr));
+    if let Some(ch) = sample
+        .chars()
+        .find(|ch| !crate::renderer::text_glyph_visibility::is_nonprinting_character(*ch))
+    {
+        return select_typeface_for_character(chain, ch).map(|candidate| {
+            finish(
+                candidate.typeface.clone(),
+                size,
+                style,
+                font_mgr,
+                geometric_text,
+            )
+        });
     }
     if let Some(candidate) = chain.first() {
-        Some(finish(candidate.typeface.clone(), size, style, font_mgr))
+        Some(finish(
+            candidate.typeface.clone(),
+            size,
+            style,
+            font_mgr,
+            geometric_text,
+        ))
     } else {
         let mut font = Font::default();
         font.set_size(size);
         font.set_edging(font::Edging::AntiAlias);
         font.set_subpixel(true);
+        preserve_geometry(&mut font, geometric_text);
         Some(font)
     }
 }
 
-fn finish(tf: Typeface, size: f32, style: &TextStyle, font_mgr: &FontMgr) -> Font {
+pub(super) fn preserve_geometry(font: &mut Font, geometric_text: bool) {
+    if geometric_text {
+        font.set_subpixel(true);
+        font.set_hinting(skia_safe::FontHinting::None);
+        font.set_baseline_snap(false);
+    }
+}
+
+fn finish(
+    tf: Typeface,
+    size: f32,
+    style: &TextStyle,
+    font_mgr: &FontMgr,
+    geometric_text: bool,
+) -> Font {
     let tf = if style.italic {
         unobliqued_typeface(font_mgr, &tf).unwrap_or(tf)
     } else {
@@ -103,6 +136,7 @@ fn finish(tf: Typeface, size: f32, style: &TextStyle, font_mgr: &FontMgr) -> Fon
     if style.fixed_glyph_advances {
         font.set_baseline_snap(false);
     }
+    preserve_geometry(&mut font, geometric_text);
     if style.is_visually_bold() && !is_bold_face && !owns_heavy {
         font.set_embolden(true);
     }
@@ -112,4 +146,55 @@ fn finish(tf: Typeface, size: f32, style: &TextStyle, font_mgr: &FontMgr) -> Fon
         font.set_skew_x(crate::renderer::text_transform::SYNTHETIC_ITALIC_SKEW as f32);
     }
     font
+}
+
+/// bitmap·색상·가변 글꼴은 별도 재생 계약이다. 단색 SFNT 윤곽만 수용한다.
+fn has_monochrome_source_outline(font: &Font) -> bool {
+    let face = font.typeface();
+    OUTLINE_REPLAY_FACES.with(|cache| {
+        let id = face.unique_id();
+        if let Some(supported) = cache.borrow().get(&id) {
+            return *supported;
+        }
+        let supported = face.read_table_tags().is_some_and(|tags| {
+            let contains = |tag: &[u8; 4]| tags.contains(&u32::from_be_bytes(*tag));
+            [*b"glyf", *b"CFF "].iter().any(contains)
+                && ![
+                    *b"EBLC", *b"EBDT", *b"CBLC", *b"CBDT", *b"bloc", *b"bdat", *b"sbix", *b"COLR",
+                    *b"SVG ", *b"fvar",
+                ]
+                .iter()
+                .any(contains)
+        });
+        if cache.borrow().len() < 256 {
+            cache.borrow_mut().insert(id, supported);
+        }
+        supported
+    })
+}
+
+/// Print의 독립 glyph는 실제 선택한 Font의 윤곽을 기존 paint·원점에 재생한다.
+/// 여러 scalar의 shaping과 path가 없는 glyph는 원래 텍스트 재생에 맡긴다.
+pub(super) fn draw_positioned_cluster(
+    canvas: &Canvas,
+    text: &str,
+    origin: (f32, f32),
+    font: &Font,
+    paint: &Paint,
+    geometric_text: bool,
+) {
+    if geometric_text && has_monochrome_source_outline(font) {
+        let mut characters = text.chars();
+        if let Some(character) = characters.next().filter(|_| characters.next().is_none()) {
+            let glyph = font.unichar_to_glyph(character as i32);
+            if let Some(path) = font.get_path(glyph) {
+                canvas.save();
+                canvas.translate(origin);
+                canvas.draw_path(&path, paint);
+                canvas.restore();
+                return;
+            }
+        }
+    }
+    canvas.draw_str(text, origin, font, paint);
 }

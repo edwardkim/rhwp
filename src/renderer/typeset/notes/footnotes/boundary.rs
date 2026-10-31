@@ -676,6 +676,7 @@ pub(in crate::renderer::typeset) struct NativeHwp5FootnoteFragmentSplit {
     /// 첫 두 stored line이 모두 `vpos=0`인 명시적 다음 physical page 시작.
     pub(in crate::renderer::typeset) force_next_page: bool,
 }
+crate::storage::clone_copy!(NativeHwp5FootnoteFragmentSplit);
 
 /// 실제 각주 영역과 겹치는 native HWP5 본문 문단의 저장 reset을 찾는다.
 ///

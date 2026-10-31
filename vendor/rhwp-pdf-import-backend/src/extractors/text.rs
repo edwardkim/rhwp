@@ -12,7 +12,7 @@ use crate::content::graphics_state::{GraphicsStateStack, Matrix};
 use crate::content::operators::{Operator, TextElement};
 use crate::content::parse_and_execute_text_only;
 use crate::content::parse_content_stream;
-use crate::error::Result;
+use crate::error::{Error, Result};
 use crate::extract_log_debug;
 use crate::fonts::unicode_decode::{fallback_char_to_unicode, DecodePolicy, TextCharIter};
 use crate::fonts::FontInfo;
@@ -3357,22 +3357,89 @@ impl<'doc> TextExtractor<'doc> {
     }
 
     /// Add a pre-shared font (Arc-wrapped) to the extractor. Avoids deep cloning.
+    #[cfg(test)]
     pub(crate) fn add_font_shared(&mut self, name: String, font: Arc<FontInfo>) {
         self.fonts.insert(name, font);
     }
 
+    pub(crate) fn try_add_font_shared(&mut self, name: &str, font: Arc<FontInfo>) -> Result<()> {
+        let budget = font.import_budget.clone();
+        let a = crate::fonts::allocation::CollectionAllocation(budget.as_deref());
+        let name = a
+            .string(name)
+            .ok_or(Error::ImportResourceLimit("font resource name"))?;
+        a.insert(&mut self.fonts, name, font)
+            .ok_or(Error::ImportResourceLimit("extractor font index"))
+    }
+
     /// Return the current font set for caching purposes.
     pub fn get_font_set(&self) -> Vec<(String, Arc<FontInfo>)> {
-        self.fonts
-            .iter()
-            .map(|(k, v)| (k.clone(), Arc::clone(v)))
-            .collect()
+        self.try_font_set().unwrap_or_default()
+    }
+
+    pub(crate) fn try_font_set(&self) -> Result<Vec<(String, Arc<FontInfo>)>> {
+        let budget = self.document.and_then(|d| d.import_budget()).or_else(|| {
+            self.fonts
+                .values()
+                .find_map(|font| font.import_budget.as_ref())
+        });
+        let a = crate::fonts::allocation::CollectionAllocation(budget.map(AsRef::as_ref));
+        let mut result = a
+            .vec(self.fonts.len())
+            .ok_or(Error::ImportResourceLimit("font set allocation"))?;
+        for (name, font) in &self.fonts {
+            result.push((
+                a.string(name)
+                    .ok_or(Error::ImportResourceLimit("font set name"))?,
+                Arc::clone(font),
+            ));
+        }
+        Ok(result)
+    }
+
+    pub(crate) fn font_names(&self) -> impl Iterator<Item = &str> {
+        self.fonts.keys().map(String::as_str)
+    }
+
+    fn try_font_map(&self) -> Result<HashMap<String, Arc<FontInfo>>> {
+        let budget = self.document.and_then(|d| d.import_budget()).or_else(|| {
+            self.fonts
+                .values()
+                .find_map(|font| font.import_budget.as_ref())
+        });
+        let a = crate::fonts::allocation::CollectionAllocation(budget.map(AsRef::as_ref));
+        let mut result = a
+            .map(self.fonts.len())
+            .ok_or(Error::ImportResourceLimit("Form font index"))?;
+        for (name, font) in &self.fonts {
+            result.insert(
+                a.string(name)
+                    .ok_or(Error::ImportResourceLimit("Form font name"))?,
+                Arc::clone(font),
+            );
+        }
+        Ok(result)
     }
 
     /// Share TrueType cmap tables between fonts with matching base font names.
     /// When a CIDFontType2 Identity-H font has no truetype_cmap, borrow from
     /// another font on the same page with the same base font name (ignoring subset prefix).
     pub fn share_truetype_cmaps(&mut self) {
+        let _ = self.try_share_truetype_cmaps();
+    }
+
+    fn try_share_truetype_cmaps(&mut self) -> Option<()> {
+        let budget = self
+            .document
+            .and_then(|d| d.import_budget())
+            .cloned()
+            .or_else(|| {
+                self.fonts
+                    .values()
+                    .find_map(|font| font.import_budget.clone())
+            });
+        let a = crate::fonts::allocation::CollectionAllocation(budget.as_deref());
+        a.check()?;
         // Strip subset prefix (e.g., "QQPMQK+Impact" → "Impact")
         fn strip_subset(name: &str) -> &str {
             if name.len() > 7
@@ -3393,28 +3460,31 @@ impl<'doc> TextExtractor<'doc> {
         let mut best_cmaps: std::collections::HashMap<
             String,
             (crate::fonts::truetype_cmap::TrueTypeCMap, String),
-        > = std::collections::HashMap::new();
+        > = a.map(0)?;
         for font in self.fonts.values() {
             if let Some(cmap) = font.truetype_cmap() {
-                let stripped = strip_subset(&font.base_font).to_string();
-                let dominated =
-                    best_cmaps
-                        .get(&stripped)
-                        .is_none_or(|(existing, existing_name)| {
-                            match cmap.len().cmp(&existing.len()) {
-                                std::cmp::Ordering::Greater => true,
-                                std::cmp::Ordering::Equal => font.base_font < *existing_name,
-                                std::cmp::Ordering::Less => false,
-                            }
-                        });
+                let stripped = strip_subset(&font.base_font);
+                let dominated = best_cmaps
+                    .get(stripped)
+                    .is_none_or(|(existing, existing_name)| {
+                        match cmap.len().cmp(&existing.len()) {
+                            std::cmp::Ordering::Greater => true,
+                            std::cmp::Ordering::Equal => font.base_font < *existing_name,
+                            std::cmp::Ordering::Less => false,
+                        }
+                    });
                 if dominated {
-                    best_cmaps.insert(stripped, (cmap.clone(), font.base_font.clone()));
+                    a.insert(
+                        &mut best_cmaps,
+                        a.string(stripped)?,
+                        (cmap.clone(), a.string(&font.base_font)?),
+                    )?;
                 }
             }
         }
 
         if best_cmaps.is_empty() {
-            return;
+            return Some(());
         }
 
         // Second pass: find CIDFontType2 Identity-H fonts without truetype_cmap
@@ -3439,10 +3509,17 @@ impl<'doc> TextExtractor<'doc> {
                     donor_cmap.len(),
                     font_arc.base_font
                 );
-                // Use Arc::make_mut + set_truetype_cmap for copy-on-write sharing
+                // Keep donation local to this extractor. Shared program/CMap/memo
+                // stay shared, while owned FontInfo payload must be charged first.
+                if Arc::strong_count(font_arc) > 1 {
+                    font_arc.reserve_cow_copy()?;
+                } else if Arc::weak_count(font_arc) > 0 {
+                    a.bytes(std::mem::size_of::<FontInfo>() + 2 * std::mem::size_of::<usize>())?;
+                }
                 Arc::make_mut(font_arc).set_truetype_cmap(Some(donor_cmap.clone()));
             }
         }
+        Some(())
     }
 
     /// Extract text from a content stream.
@@ -7254,8 +7331,14 @@ impl<'doc> TextExtractor<'doc> {
                 let saved_xobj_cache;
 
                 if has_own_resources {
-                    saved_fonts = Some(self.fonts.clone());
-                    saved_resources = self.resources.clone();
+                    saved_fonts = Some(self.try_font_map()?);
+                    saved_resources = self
+                        .resources
+                        .as_ref()
+                        .map(|resources| {
+                            crate::object_copy::clone_object(resources, import_budget.as_deref())
+                        })
+                        .transpose()?;
                     saved_xobj_cache = Some(std::mem::take(&mut self.cached_xobject_refs));
 
                     // Safety: has_own_resources was set by contains_key("Resources")
@@ -7266,10 +7349,16 @@ impl<'doc> TextExtractor<'doc> {
                     let xobj_res = if let Some(res_ref) = xobj_resources.as_reference() {
                         match doc.load_object(res_ref) {
                             Ok(obj) => obj,
-                            Err(_) => xobj_resources.clone(),
+                            Err(_) => {
+                                doc.check_import_budget()?;
+                                crate::object_copy::clone_object(
+                                    xobj_resources,
+                                    import_budget.as_deref(),
+                                )?
+                            },
                         }
                     } else {
-                        xobj_resources.clone()
+                        crate::object_copy::clone_object(xobj_resources, import_budget.as_deref())?
                     };
 
                     if let Err(e) = doc.load_fonts(&xobj_res, self) {

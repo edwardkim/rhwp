@@ -10,8 +10,17 @@ pub(crate) struct ControlSourcePosition {
 
 impl Paragraph {
     pub(crate) fn control_source_positions(&self) -> Vec<ControlSourcePosition> {
-        let mut positions = self.control_text_positions();
-        let chars: Vec<_> = self.text.chars().collect();
+        match self.control_source_positions_with_storage(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+    pub(crate) fn control_source_positions_with_storage<S: crate::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<Vec<ControlSourcePosition>, S::Error> {
+        let mut positions = self.try_control_text_positions(storage)?;
+        let chars = storage.collect(self.text.chars())?;
         // 끝 자동 번호의 자리표에는 다음 글자 오프셋이 없다. 편집·저장도
         // 같은 판정으로 마지막 공백이 차지하는 8유닛을 보존한다.
         let trailing_number = self.trailing_auto_number(&positions);
@@ -34,7 +43,7 @@ impl Paragraph {
         let complete_empty_stream = chars.is_empty()
             && self.char_offsets.is_empty()
             && self.char_count >= (self.controls.len() as u32).saturating_mul(CTRL_CHAR_CODE_UNITS);
-        let mut result = Vec::with_capacity(positions.len());
+        let mut result = storage.vec(positions.len())?;
         let mut group_start = 0;
         while group_start < positions.len() {
             let at = positions[group_start];
@@ -72,14 +81,17 @@ impl Paragraph {
                 },
             );
             for index in group_start..group_end {
-                result.push(ControlSourcePosition {
-                    char_index: at,
-                    utf16: first + (index - group_start) as u32 * CTRL_CHAR_CODE_UNITS,
-                    owns_char: index + 1 == group_end && (owns_char || single_unit_marker),
-                });
+                storage.push(
+                    &mut result,
+                    ControlSourcePosition {
+                        char_index: at,
+                        utf16: first + (index - group_start) as u32 * CTRL_CHAR_CODE_UNITS,
+                        owns_char: index + 1 == group_end && (owns_char || single_unit_marker),
+                    },
+                )?;
             }
             group_start = group_end;
         }
-        result
+        Ok(result)
     }
 }

@@ -68,31 +68,40 @@ impl ComposedParagraph {
         &self,
         source: &'a Paragraph,
     ) -> Cow<'a, Paragraph> {
-        match &self.frame_geometry {
-            Some(frame) => {
-                let mut paragraph = source.clone();
-                if frame.stored_partition {
-                    paragraph.line_segs.clone_from(&frame.line_segs);
-                    paragraph
-                        .layout_space_metrics
-                        .clone_from(&frame.space_metrics);
-                    paragraph.source_line_seg_vertical_pos = None;
-                } else {
-                    paragraph.replace_line_segs_with_space_metrics(
-                        frame.line_segs.clone(),
-                        frame.space_metrics.clone(),
-                    );
-                }
-                for &(index, height) in &frame.inline_table_heights {
-                    if let Some(crate::model::control::Control::Table(table)) =
-                        paragraph.controls.get_mut(index)
-                    {
-                        table.common.height = height;
-                    }
-                }
-                Cow::Owned(paragraph)
-            }
-            None => Cow::Borrowed(source),
+        match self.paragraph_with_frame_geometry_with_storage(source, &crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
         }
+    }
+    pub(crate) fn paragraph_with_frame_geometry_with_storage<'a, S: crate::storage::Storage>(
+        &self,
+        source: &'a Paragraph,
+        storage: &S,
+    ) -> Result<Cow<'a, Paragraph>, S::Error> {
+        Ok({
+            match &self.frame_geometry {
+                Some(frame) => {
+                    let mut paragraph = storage.clone_paragraph(source)?;
+                    let lines = crate::storage::try_clone(&frame.line_segs, storage)?;
+                    let spaces = crate::storage::try_clone(&frame.space_metrics, storage)?;
+                    if frame.stored_partition {
+                        paragraph.line_segs = lines;
+                        paragraph.layout_space_metrics = spaces;
+                        paragraph.source_line_seg_vertical_pos = None;
+                    } else {
+                        paragraph.replace_line_segs_with_space_metrics(lines, spaces);
+                    }
+                    for &(index, height) in &frame.inline_table_heights {
+                        if let Some(crate::model::control::Control::Table(table)) =
+                            paragraph.controls.get_mut(index)
+                        {
+                            table.common.height = height;
+                        }
+                    }
+                    Cow::Owned(paragraph)
+                }
+                None => Cow::Borrowed(source),
+            }
+        })
     }
 }

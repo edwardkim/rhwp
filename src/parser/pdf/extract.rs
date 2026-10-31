@@ -1,9 +1,6 @@
-use super::{
-    recognition, table_detection, Budget, ExtractedPage, PdfImportError, MAX_DOCUMENT_IMAGE_PIXELS,
-    MAX_TEXT_BYTES,
-};
+use super::{recognition, table_detection, Budget, ExtractedPage, PdfImportError};
 use pdf_oxide::PdfDocument;
-use serde_json::json;
+use serde_json::Value;
 
 fn checked<T>(
     pdf: &PdfDocument,
@@ -22,7 +19,13 @@ pub(super) fn extract(
     pdf: &PdfDocument,
     page: usize,
     budget: &mut Budget,
+    include_table_inference: bool,
 ) -> Result<ExtractedPage, PdfImportError> {
+    let request = pdf
+        .import_budget()
+        .cloned()
+        .ok_or_else(|| PdfImportError::budget("missing backend request budget"))?;
+    let allocation = super::allocation::Allocation(&request);
     let media_box = checked(pdf, pdf.get_page_media_box(page), "media_box", page)?;
     let rotation = checked(pdf, pdf.get_page_rotation(page), "rotation", page)?;
     let visible_box = checked(pdf, pdf.get_page_visible_box(page), "visible_box", page)?;
@@ -50,9 +53,9 @@ pub(super) fn extract(
         "text",
         page,
     )?;
-    let mut spans = Vec::with_capacity(painted.len());
-    let mut span_orders = Vec::with_capacity(painted.len());
-    let mut span_fonts = Vec::with_capacity(painted.len());
+    let mut spans = allocation.vec(painted.len())?;
+    let mut span_orders = allocation.vec(painted.len())?;
+    let mut span_fonts = allocation.vec(painted.len())?;
     for painted in painted {
         let pdf_oxide::layout::text_block::PaintedTextSpan {
             span,
@@ -74,24 +77,25 @@ pub(super) fn extract(
     let (paths, clips) = checked(pdf, pdf.extract_paths_with_clips(page), "paths", page)?;
     let mut uses = std::collections::BTreeMap::new();
     for (order, clip) in &clips.text_uses {
-        if uses.insert(order, clip).is_some() {
+        if uses.contains_key(order) {
             return Err(PdfImportError::new(
                 "PDF_TEXT_UNSUPPORTED",
                 "ambiguous text-paint clip witness",
             ));
         }
+        allocation
+            .tree_entry::<&Vec<usize>, &Option<std::sync::Arc<pdf_oxide::elements::PathClip>>>()?;
+        uses.insert(order, clip);
     }
-    let span_clips = span_orders
-        .iter()
-        .map(|order| {
-            uses.get(order).map(|clip| (*clip).clone()).ok_or_else(|| {
-                PdfImportError::new(
-                    "PDF_TEXT_UNSUPPORTED",
-                    "text-paint clip witness missing or budget exceeded",
-                )
-            })
-        })
-        .collect::<Result<Vec<_>, _>>()?;
+    let mut span_clips = allocation.vec(span_orders.len())?;
+    for order in &span_orders {
+        span_clips.push(uses.get(order).map(|clip| (*clip).clone()).ok_or_else(|| {
+            PdfImportError::new(
+                "PDF_TEXT_UNSUPPORTED",
+                "text-paint clip witness missing or budget exceeded",
+            )
+        })?);
+    }
     for path in &paths {
         let next = budget
             .path_operations
@@ -131,9 +135,9 @@ pub(super) fn extract(
             .text_bytes
             .checked_add(span.text.len())
             .ok_or_else(|| PdfImportError::budget("text byte count overflow"))?;
-        if budget.text_bytes > MAX_TEXT_BYTES || span.font_name.len() > 512 {
+        if budget.text_bytes > budget.policy.max_text_bytes || span.font_name.len() > 512 {
             return Err(PdfImportError::budget(
-                "document extracted text exceeds 2 MiB",
+                "document extracted text exceeds request limit",
             ));
         }
         if ![
@@ -177,12 +181,19 @@ pub(super) fn extract(
     // A stencil texture may be emitted as thousands of tiny Do invocations.
     // Only an uninterrupted image-paint interval may become one raster picture;
     // text and paths remain separate editable IR and keep their original order.
-    let mut barriers: Vec<_> = span_orders
+    let mut barriers = allocation.vec(
+        span_orders
+            .len()
+            .checked_add(paths.len())
+            .ok_or_else(|| PdfImportError::budget("paint barrier count overflow"))?,
+    )?;
+    for order in span_orders
         .iter()
-        .cloned()
-        .chain(paths.iter().map(|path| path.paint.source_order.clone()))
-        .collect();
-    barriers.sort();
+        .chain(paths.iter().map(|path| &path.paint.source_order))
+    {
+        barriers.push(allocation.copy_slice(order)?);
+    }
+    barriers.sort_unstable();
     let mut images = Vec::new();
     let mut image_orders = Vec::new();
     let mut index = 0;
@@ -210,7 +221,8 @@ pub(super) fn extract(
                     total.checked_add(u64::from(h.width) * u64::from(h.height))
                 })
                 .ok_or_else(|| PdfImportError::budget("image pixel count overflow"))?;
-            let remaining = MAX_DOCUMENT_IMAGE_PIXELS.saturating_sub(budget.image_pixels);
+            let remaining = (budget.policy.max_document_image_pixels as u64)
+                .saturating_sub(budget.image_pixels);
             if source_pixels > remaining {
                 return Err(PdfImportError::budget(
                     "declared image pixel budget exceeded",
@@ -220,15 +232,18 @@ pub(super) fn extract(
                 pdf,
                 pdf_oxide::extractors::images::PdfImageHandle::decode_stencil_tiles(
                     &handles[index..end],
-                    remaining,
+                    remaining.min(budget.policy.max_image_pixels as u64),
                 ),
                 "image_decode",
                 page,
             )? {
                 let output_pixels = u64::from(image.width()) * u64::from(image.height());
                 budget.image_pixels += source_pixels.max(output_pixels);
+                allocation.reserve(&mut images, 1)?;
+                allocation.reserve(&mut image_orders, 1)?;
+                let order = allocation.copy_slice(&handle.source_order)?;
                 images.push(image);
-                image_orders.push(handle.source_order.clone());
+                image_orders.push(order);
                 index = end;
                 continue;
             }
@@ -253,7 +268,10 @@ pub(super) fn extract(
             .image_pixels
             .checked_add(pixels)
             .ok_or_else(|| PdfImportError::budget("image pixel count overflow"))?;
-        if pixels == 0 || pixels > 16_000_000 || budget.image_pixels > MAX_DOCUMENT_IMAGE_PIXELS {
+        if pixels == 0
+            || pixels > budget.policy.max_image_pixels as u64
+            || budget.image_pixels > budget.policy.max_document_image_pixels as u64
+        {
             return Err(PdfImportError::budget(
                 "declared image pixel budget exceeded",
             ));
@@ -276,7 +294,9 @@ pub(super) fn extract(
                 .image_pixels
                 .checked_add(decoded_pixels - pixels)
                 .ok_or_else(|| PdfImportError::budget("composited image pixel count overflow"))?;
-            if decoded_pixels > 16_000_000 || budget.image_pixels > MAX_DOCUMENT_IMAGE_PIXELS {
+            if decoded_pixels > budget.policy.max_image_pixels as u64
+                || budget.image_pixels > budget.policy.max_document_image_pixels as u64
+            {
                 return Err(PdfImportError::budget(
                     "composited image pixel budget exceeded",
                 ));
@@ -285,7 +305,10 @@ pub(super) fn extract(
         // Ownership inference and lowering consume the same visible bounds.
         // Keep the full bitmap and CTM so lowering can preserve an editable crop.
         image.set_bbox(visible);
-        image_orders.push(handle.source_order.clone());
+        allocation.reserve(&mut images, 1)?;
+        allocation.reserve(&mut image_orders, 1)?;
+        let order = allocation.copy_slice(&handle.source_order)?;
+        image_orders.push(order);
         images.push(image);
     }
     let mut table_inference = super::table_inference::Ledger::observe(
@@ -295,7 +318,9 @@ pub(super) fn extract(
         &image_orders,
         &clips,
         media_box,
-    );
+        std::sync::Arc::clone(&request),
+        include_table_inference,
+    )?;
     let detection = table_detection::detect_ruled_tables(
         &spans,
         &paths,
@@ -304,8 +329,11 @@ pub(super) fn extract(
         &table_inference.text,
         &span_orders,
         &clips,
-    )
-    .map_err(|_| PdfImportError::budget("table geometry inference budget or geometry rejected"))?;
+    );
+    request.check().map_err(PdfImportError::backend)?;
+    let detection = detection.map_err(|_| {
+        PdfImportError::budget("table geometry inference budget or geometry rejected")
+    })?;
     if let Some(tables) = detection["tables"].as_array() {
         for table in tables {
             budget.cells = budget
@@ -323,17 +351,20 @@ pub(super) fn extract(
             }
         }
     }
+    let recognition = recognition::recognize_page(
+        &table_inference.text,
+        &spans,
+        &span_clips,
+        &images,
+        &detection,
+        media_box,
+        recognition::Policy::default(),
+    );
+    // Optional inference can defer a semantic hypothesis, but a failed request
+    // reservation must stay fatal with its resource diagnostics intact.
+    request.check().map_err(PdfImportError::backend)?;
     let recognition =
-        recognition::recognize_page(
-            &table_inference.text,
-            &spans,
-            &span_clips,
-            &images,
-            &detection,
-            media_box,
-            recognition::Policy::default(),
-        )
-        .map_err(|reason| {
+        recognition.map_err(|reason| {
             let mut error =
                 PdfImportError::new("PDF_RECOGNITION_FAILED", "table ownership inference failed")
                     .at("recognition", Some(page), None);
@@ -341,16 +372,13 @@ pub(super) fn extract(
             error.diagnostics.as_mut().unwrap().backend_message = Some(reason);
             error
         })?;
-    table_inference.reconcile(&detection);
+    table_inference.reconcile(&detection)?;
     // Move detection into the internal snapshot; recognition already owns its
     // report and lowering reads it directly. Avoid copying both evidence trees.
-    let mut snapshot = json!({});
-    snapshot["tableDetection"] = detection;
+    let mut snapshot = Value::Object(allocation.object()?);
+    allocation.set(&mut snapshot, "tableDetection", detection)?;
     Ok(ExtractedPage {
-        import_budget: pdf
-            .import_budget()
-            .cloned()
-            .ok_or_else(|| PdfImportError::budget("missing backend request budget"))?,
+        import_budget: request,
         media_box,
         spans,
         span_orders,

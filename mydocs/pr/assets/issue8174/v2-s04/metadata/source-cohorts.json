@@ -1,0 +1,50 @@
+{
+  "allRustObjectsIdentical": true,
+  "sources": {
+    "nativeProducer": {
+      "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "gitObjects": {
+        "src": "d1da6e2cbd72722085497e2caffe49c27c8eef39",
+        "vendor": "e6c8726b71ba7b46503e9d9c5d4ebb1ccb0c4610",
+        "crates": "efdb9422a6c9838bfb221e3561c3c2e9b0fa9ef3",
+        "Cargo.toml": "f566ab63d2d2f957d26e6611313498638d453952",
+        "Cargo.lock": "cdac7775dbbead86b64b2ba7f8b8ed2a9f755207",
+        "tests/cases/issue_8174_form_actions.rs": "07e246de5bc949ee5b4f7d9cd6b9367ec488e994"
+      }
+    },
+    "wasmProducer": {
+      "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "gitObjects": {
+        "src": "d1da6e2cbd72722085497e2caffe49c27c8eef39",
+        "vendor": "e6c8726b71ba7b46503e9d9c5d4ebb1ccb0c4610",
+        "crates": "efdb9422a6c9838bfb221e3561c3c2e9b0fa9ef3",
+        "Cargo.toml": "f566ab63d2d2f957d26e6611313498638d453952",
+        "Cargo.lock": "cdac7775dbbead86b64b2ba7f8b8ed2a9f755207",
+        "tests/cases/issue_8174_form_actions.rs": "07e246de5bc949ee5b4f7d9cd6b9367ec488e994"
+      }
+    },
+    "fullRustGate": {
+      "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "gitObjects": {
+        "src": "d1da6e2cbd72722085497e2caffe49c27c8eef39",
+        "vendor": "e6c8726b71ba7b46503e9d9c5d4ebb1ccb0c4610",
+        "crates": "efdb9422a6c9838bfb221e3561c3c2e9b0fa9ef3",
+        "Cargo.toml": "f566ab63d2d2f957d26e6611313498638d453952",
+        "Cargo.lock": "cdac7775dbbead86b64b2ba7f8b8ed2a9f755207",
+        "tests/cases/issue_8174_form_actions.rs": "07e246de5bc949ee5b4f7d9cd6b9367ec488e994"
+      }
+    },
+    "finalFrontend": {
+      "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+      "gitObjects": {
+        "src": "d1da6e2cbd72722085497e2caffe49c27c8eef39",
+        "vendor": "e6c8726b71ba7b46503e9d9c5d4ebb1ccb0c4610",
+        "crates": "efdb9422a6c9838bfb221e3561c3c2e9b0fa9ef3",
+        "Cargo.toml": "f566ab63d2d2f957d26e6611313498638d453952",
+        "Cargo.lock": "cdac7775dbbead86b64b2ba7f8b8ed2a9f755207",
+        "tests/cases/issue_8174_form_actions.rs": "07e246de5bc949ee5b4f7d9cd6b9367ec488e994"
+      }
+    }
+  },
+  "generatedDeclarations": "Only version/init_panic_hook declaration order changed; tested generated files match fresh producer hashes. Runtime JS glue is byte-identical to the prior source."
+}

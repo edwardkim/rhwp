@@ -192,6 +192,7 @@ pub struct PageNumberPos {
     /// 대시 문자 (WCHAR, 항상 '-')
     pub dash_char: char,
 }
+crate::storage::clone_fields!(PageNumberPos, {format, position, user_symbol, prefix_char, suffix_char, dash_char});
 
 /// 책갈피 ('bokm' 컨트롤)
 #[derive(Debug, Clone, Default, serde::Serialize)]
@@ -325,6 +326,9 @@ pub struct CharOverlap {
     pub expansion: u8,
     /// 글자 속성(charshape) ID 배열
     pub char_shape_ids: Vec<u32>,
+    /// HWP 바이너리 레코드의 문자 배열 여부. 원문 배열은 그대로 보존한다.
+    #[serde(skip)]
+    pub hwp_wire_chars: bool,
 }
 
 /// 감추기 ('pghd' 컨트롤)
@@ -343,6 +347,7 @@ pub struct PageHide {
     /// 쪽 번호 감추기
     pub hide_page_num: bool,
 }
+crate::storage::clone_fields!(PageHide, {hide_header, hide_footer, hide_master_page, hide_border, hide_fill, hide_page_num});
 
 /// 숨은 설명 ('tcmt' 컨트롤)
 #[derive(Debug, Default, Clone, serde::Serialize)]

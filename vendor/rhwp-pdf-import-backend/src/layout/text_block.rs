@@ -323,7 +323,33 @@ impl TextSpan {
         Rect::new(min_x, min_y, max_x - min_x, max_y - min_y)
     }
 
-    /// Decompose the span into individual characters.
+    /// Reserve the result and per-character font-name copies in the originating
+    /// request before the legacy geometry iterator materializes them. A Vec
+    /// collected from UTF-8 Chars can grow; four times the flat record count
+    /// conservatively covers its geometric replacement buffers.
+    pub fn to_chars_with_budget(
+        &self,
+        budget: &crate::import_limits::ImportBudget,
+    ) -> crate::error::Result<Vec<TextChar>> {
+        budget.check()?;
+        if self.font_name.len() > budget.limits.string_bytes {
+            return Err(budget.reject("text character font name bytes"));
+        }
+        let per_character = std::mem::size_of::<TextChar>()
+            .checked_mul(4)
+            .and_then(|n| n.checked_add(self.font_name.len()))
+            .ok_or_else(|| budget.reject("text character storage overflow"))?;
+        let bytes = self
+            .text
+            .chars()
+            .count()
+            .checked_mul(per_character)
+            .ok_or_else(|| budget.reject("text character storage overflow"))?;
+        budget.charge_decoded(bytes)?;
+        Ok(self.to_chars())
+    }
+
+    /// Decompose the span into individual characters without a request budget.
     pub fn to_chars(&self) -> Vec<TextChar> {
         let char_count = self.text.chars().count();
         if char_count == 0 {

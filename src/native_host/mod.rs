@@ -126,6 +126,15 @@ pub struct NativeDocumentSession {
 impl NativeDocumentSession {
     pub fn from_core(core: DocumentCore) -> Self {
         let fonts = fonts::NativeFontState::from_environment(core.font_environment().cloned());
+        #[cfg(feature = "native-skia")]
+        let (core, renderer) = {
+            let mut core = core;
+            let renderer = crate::renderer::skia::SkiaLayerRenderer::new()
+                .with_cache_limits(MAX_RENDER_CACHE_ENTRIES, MAX_RENDER_CACHE_BYTES);
+            // 공급을 확인하지 못하면 원본 HFT 메트릭을 유지한다.
+            let _ = renderer.prepare_native_otf_fonts(&mut core);
+            (core, std::cell::OnceCell::from(renderer))
+        };
         Self {
             core,
             revision: 0,
@@ -134,7 +143,7 @@ impl NativeDocumentSession {
             saved_revision: None,
             pending_save: None,
             #[cfg(feature = "native-skia")]
-            renderer: std::cell::OnceCell::new(),
+            renderer,
             #[cfg(feature = "native-skia")]
             region_cache: std::cell::RefCell::new(region_cache::NativeRegionCache::default()),
             _thread_affinity: PhantomData,
@@ -278,6 +287,27 @@ impl NativeDocumentSession {
         #[cfg(feature = "native-skia")]
         {
             self.render_region_cached(page, region, scale)
+        }
+        #[cfg(not(feature = "native-skia"))]
+        {
+            let _ = region;
+            Err(NativeHostError::FeatureDisabled)
+        }
+    }
+
+    /// Opt-in fixed-grid rendering for large pages and high scales.
+    /// The full-page exact-crop API remains available through `render_region`.
+    pub fn render_tiled_region(
+        &self,
+        page: u32,
+        region: crate::renderer::raster_pixels::RasterRegion,
+        scale: f64,
+    ) -> Result<NativeFrame, NativeHostError> {
+        self.check_page(page)?;
+        Self::check_scale(scale)?;
+        #[cfg(feature = "native-skia")]
+        {
+            self.render_tiled_region_uncached(page, region, scale)
         }
         #[cfg(not(feature = "native-skia"))]
         {

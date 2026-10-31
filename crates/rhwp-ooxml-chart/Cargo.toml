@@ -1,4 +1,5 @@
 [package]
+rust-version = "1.93.1"
 include = [
     "/Cargo.toml",
     "/src/**",
@@ -10,7 +11,7 @@ version = "0.1.0"
 edition = "2021"
 description = "OOXML chart parsing and model support for rhwp"
 license = "MIT"
-publish = false
+publish = ["crates-io"]
 repository = "https://github.com/edwardkim/rhwp"
 readme = "README.md"
 

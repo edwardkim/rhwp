@@ -165,7 +165,20 @@ impl ContentLossReport {
     }
 
     pub fn record(&mut self, loss: ContentLoss) {
-        self.losses.push(loss);
+        match self.record_with_storage(loss, &crate::storage::Unbounded) {
+            Ok(()) => (),
+            Err(never) => match never {},
+        }
+    }
+
+    /// The caller creates owned paths with the same storage before recording.
+    /// A refused reservation leaves this report unchanged and fails the save.
+    pub(crate) fn record_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        loss: ContentLoss,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        storage.push(&mut self.losses, loss)
     }
 
     /// WASM/Studio 경계를 건너는 canonical JSON DTO.

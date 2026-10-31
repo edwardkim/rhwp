@@ -55,6 +55,16 @@ struct RemoveOptions {
 
 #[wasm_bindgen]
 impl HwpDocument {
+    /// Shared destination semantics for host routing; this never executes a link.
+    #[wasm_bindgen(js_name = classifyHyperlinkDestination)]
+    pub fn classify_hyperlink_destination(uri: &str) -> String {
+        serde_json::json!({
+            "uri": uri,
+            "kind": crate::model::hyperlink::classify_destination(uri),
+        })
+        .to_string()
+    }
+
     /// 표시 문자는 Unicode scalar 축이다. 대상 누락 시 본문으로 폴백하지 않는다.
     #[wasm_bindgen(js_name = getHyperlinkContext)]
     pub fn get_hyperlink_context(&self, target_json: &str) -> Result<String, JsValue> {

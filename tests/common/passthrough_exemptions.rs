@@ -3,6 +3,25 @@
 /// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. 병합 `devel` 기준 46건(2026-08-30 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     (
+        "host_font_environment.rs",
+        "prepare_declared_font_fallbacks_with",
+        Exempt::SessionState,
+        "실제 글꼴 공급 관측과 파생 조판 캐시만 갱신한다. issue_8153_scoped_host_font_selection에서 관측 적용 전후 원본 저장 바이트를 대조한다.",
+    ),
+    (
+        "host_font_environment.rs",
+        "set_observed_font_fallbacks_native",
+        Exempt::SessionState,
+        "공급 관측을 검증한 뒤 같은 세션 환경 갱신 경로에 전달한다. issue_8153_scoped_host_font_selection에서 공개 API 적용 전후 원본 저장 바이트를 대조한다.",
+    ),
+    (
+        "native_pua_fonts.rs",
+        "prepare_native_otf_fonts_with",
+        Exempt::SessionState,
+        "실제 OTF 프로그램과 파생 조판 캐시만 갱신한다. native_pua_host_font_protocol에서 공급·해제 전후 문서 IR과 HWP 저장 바이트 보존을 검사한다.",
+
+    ),
+    (
         "commands/border_paint_edit.rs",
         "discard_border_paint_undo_native",
         Exempt::SessionState,
@@ -46,6 +65,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     (
         "commands/document/hft_outline_fonts.rs",
+        "clear_text_font_family_native",
+        Exempt::SessionState,
+        "선택한 family의 paint 전용 글꼴 공급과 coverage만 해제한다. hft_outline_font_contract에서 해제 전후 원본 IR과 저장 HWP 바이트 보존을 검사한다.",
+    ),
+    (
+        "commands/document/hft_outline_fonts.rs",
         "register_text_font_glyph_coverage_native",
         Exempt::SessionState,
         "원문 IR·raw stream 대신 paint용 pua_coverage 세션만 등록한다. text_font_coverage_registration의 registered_upright_face_resolves_quoted_css_and_keeps_document_source가 공개 등록 전후 HWP/HWPX 바이트 보존을 검사한다.",
@@ -62,8 +87,8 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         Exempt::SessionState,
         "#6389: 명시적 폰트 환경과 파생 조판·측정 캐시만 교체한다. issue_6389_environment_changes_measurement_and_paint_without_editing_document에서 적용·해제 전후 저장 bytes와 원본 face 보존을 검사한다.",
     ),
-    // #7084 render-session APIs do not mutate serialized document state.
-    // issue_7084_canvas_metric_session checks original HWP/HWPX IR and portable SVG preservation.
+    // #7084 렌더 세션 API는 직렬화된 문서 상태를 변경하지 않는다.
+    // issue_7084_canvas_metric_session은 원본 HWP/HWPX IR과 이동 가능한 SVG 보존을 검사한다.
     (
         "canvas_metric_requests.rs",
         "collect_canvas_metric_requests",

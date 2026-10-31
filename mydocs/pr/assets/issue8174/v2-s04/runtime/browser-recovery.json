@@ -1,0 +1,26 @@
+{
+  "checked": [
+    "password DOM removed after successful open",
+    "actual protected autosave persists one authenticated envelope",
+    "IndexedDB contains ciphertext instead of HWP/HWPX or content",
+    "draft metadata contains no password",
+    "browser restart offers encrypted recovery",
+    "wrong recovery password does not publish a document",
+    "cancelled recovery preserves its draft",
+    "restarted recovery restores actual edited text",
+    "restored document is dirty and retains protected save intent",
+    "successful recovery deletes only the consumed draft",
+    "recovery revision advances with a fresh nonce after restart",
+    "tampered metadata is rejected before document publication",
+    "a draft deleted during the password prompt is not restored",
+    "stale recovery does not resurrect a deleted record"
+  ],
+  "timings": {
+    "protectedOpenMs": 376.6206589999997,
+    "recoveryUnlockOpenMs": 416.00481200000013
+  },
+  "source": "current checkout; record git rev-parse HEAD separately",
+  "notes": [
+    "Actual IndexedDB and browser process restart; public fixture password used only in memory. No host filesystem save was performed."
+  ]
+}

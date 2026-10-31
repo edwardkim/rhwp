@@ -23,6 +23,9 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `cell-target-issue8102.test.mjs` | 상시 | active | #8102 생성·클릭·키보드·undo 진입 선택 삭제, 다중 문단·중첩·인접 셀·invalid target | 편집 API 합성 | npm e2e:issue-8102 | fresh WASM·Studio 실제 입력 |
 | `automation-commands.test.mjs` | 상시 | active | studio 자동화 표면 — 커맨드 질의·실행·메뉴 모델·드리프트 가드·다이얼로그 정책·`insert:field` 매개변수 삽입 | — | npm e2e:automation |  |
 | `enter-caret-reveal-issue7486.test.mjs` | 상시 | active | #7486 본문 Enter 새 쪽의 DOM 캐럿·viewport 및 Undo/Redo, 100%/66% 배율·160/200/300% 줄간격 | 편집 API 합성 | npm e2e:enter-caret | 추가 입력 없이 layout 완료 경계 검사 |
+| `issue8174-modal-focus.test.mjs` | 상시 | active | #8174 암호 모달·중첩 모달의 입력 소유 보존 | 빈 문서 | 수동 | 늦은 편집기 focus가 암호 입력을 빼앗지 않음 |
+| `selection-layout-issue8103.test.mjs` | 상시 | active | #8103 Canvas2D/auto의 400문단 Undo/Redo 선택·focus 원점, smooth zoom·scroll·배치·지연 중 새 선택·문서 교체 보존 | plain-text paste 합성 | npm e2e:selection-layout | 첫/중간/마지막 쪽 관계 검사, 명시 CanvasKit·원본 font cache 옵션 |
+| `canvaskit-periodic-borders-issue7998.test.mjs` | 상시 | active | 기존 CanvasKit 주기 테두리의 실제 dash 소비와 잉크 검사 | pdf/issue7998/periodic-borders/native-dot-widths.hwpx | 수동 | 기준 devel의 목록 누락 보완, 테스트 구현 변경 없음 |
 | `autosave-recovery.test.mjs` | 상시 | active | Task #1448 — 미저장 문서 자동 백업 복구 E2E | — | 수동 |  |
 | `blogform.test.mjs` | 상시 | active | BlogForm_BookReview.hwp 누름틀 안내문 | BlogForm_BookReview.hwp | 수동 |  |
 | `body-outside-click-fallback.test.mjs` | 진단 | hold | 보류 ② 본문 외곽 클릭 fallback 결함 — 가설 (b) master page 글상자 hit 확정 e2e | hwpctl_Action_Table__v1.1.hwp | 수동 | legacy-name · 보류② 이슈 종속 |
@@ -128,6 +131,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `page-break-caret-reveal.test.mjs` | 상시 | active | Cmd+Enter 쪽 나누기 뒤 새 쪽 캐럿 DOM 재배치와 편집 영역 viewport 자동 스크롤 | — | npm e2e:page-break-caret | dev server 필요 — run-with-vite.mjs 경유 |
 | `page-key-scroll.test.mjs` | 상시 | active | PgUp/PgDn 쪽 단위 스크롤 — 건너뜀 없음·쪽 머리 착지·캐럿 추종·포커스 밖 동작 | biz_plan.hwp | npm e2e:page-key-scroll |  |
 | `page-setup-orientation-icon.test.mjs` | 상시 | active | 편집 용지 대화창의 용지 방향 아이콘 식별성 | — | 수동 |  |
+| `pdf-import-busy-issue8398.test.mjs` | 상시 | active | #8398 PDF 선택·재시도 커서, 파일/바이트/드롭 열기, Worker 취소와 기존 문서 보존 | pdf/pr8224/lseg-tab-insert-2020.pdf, para-001.hwp | 수동 | 실제 최적화 WASM, 조판 수치 검사가 아닌 UI 상태 계약 |
 | `pdf-render-diff-report.mjs` | 상시 | active | Report-only visual diff between browser Canvas output and SVG-deri | — | npm+CI | legacy-name |
 | `plugin-lifecycle.test.mjs` | 상시 | active | 플러그인 호스트 — allowlist·트랜잭션 1스냅샷·롤백·unload 회수 | — | npm e2e:plugin-lifecycle |  |
 | `print-pdf-issue3126.test.mjs` | 상시 | active | #3126 same-origin iframe 인쇄/PDF UX, 상태 불변, #2524/#2525 browser PDF 회귀 | render-p35-font-native-bitmap.hwpx, hwpx/hwpx-02.hwpx | 수동 | native dialog는 Chrome/Edge 수동 절차 병행 |
@@ -193,3 +197,4 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `issue-7593-dyad-display.test.mjs` | 상시 | active | dyad와 복합 수식의 실제 표시·CanvasKit 누락 방지 | `samples/issue7593/` 2개 | 수동 | `VITE_URL=… node e2e/issue-7593-dyad-display.test.mjs --mode=headless`; Native/fresh WASM 전쪽90% 선행 확인; 실제 WASM 바이트·내용·replay 진단 |
 
 | `ruler-resize-support.mjs` | 유틸 | active | 시험지 실행을 제외한 ruler 상태 조회 보조 함수 | — | — | 회귀 실행 진입점 없음 |
+| `supplementary-private-glyph-replay.test.mjs` | 상시 | active | #8389 보충 사설 문자 공급 글꼴의 실제 glyph replay | tests/fixtures/fonts/RHWPHostFixture-Regular.ttf | 수동 | 기존 c417310cab 도입 파일의 목록 누락 보완, 검사 내용 변경 없음 |

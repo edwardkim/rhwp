@@ -1,5 +1,7 @@
 //! 편집 화면의 공백·탭·문단 끝 표시를 본문 출력과 별도로 그린다.
-use super::super::font_lookup::{legacy_typeface_for_style, match_system_family_style};
+use super::super::font_lookup::{
+    legacy_typeface_for_style, match_supplied_family, match_system_family_style,
+};
 use super::SkiaTextReplay;
 use crate::renderer::{render_tree::BoundingBox, TextStyle};
 use skia_safe::{font, Color, Font, FontStyle, Paint};
@@ -30,6 +32,20 @@ pub(super) fn draw(
             FontStyle::normal(),
         )
         .or_else(|| legacy_typeface_for_style(replay.font_mgr, FontStyle::normal()))
+        .or_else(|| {
+            ["RHWP Public Batang", "Noto Sans KR"]
+                .into_iter()
+                .find_map(|family| {
+                    match_supplied_family(replay.custom_typefaces, family, FontStyle::normal())
+                        .or_else(|| {
+                            match_supplied_family(
+                                replay.bundled_typefaces,
+                                family,
+                                FontStyle::normal(),
+                            )
+                        })
+                })
+        })
         .map(|tf| Font::new(tf, size))
         .unwrap_or_else(|| {
             let mut font = Font::default();

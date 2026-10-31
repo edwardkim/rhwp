@@ -1,0 +1,320 @@
+{
+  "checked": [
+    "PDF magic detection is bounded and precedes full reading even with a non-PDF extension",
+    "cancel before import preserves document, draft, recents and file handle",
+    "custom input cap rejects before File.arrayBuffer",
+    "input-limit failure preserves the full active document connection",
+    "timeout retires the actual silent Worker",
+    "initialization timeout preserves the current document",
+    "cancel while waiting terminates the candidate Worker",
+    "in-flight cancel preserves document and draft",
+    "constrained actual Worker/import/export/reopen retains its effective policy",
+    "constrained successful handoff releases the Worker",
+    "standard actual Worker/import/export/reopen retains its effective policy",
+    "standard successful handoff releases the Worker",
+    "the imported PDF remains editable after Worker retirement",
+    "edited PDF content survives actual HWPX reparse"
+  ],
+  "timings": [
+    {
+      "profile": "constrained",
+      "milliseconds": 1139.103604,
+      "diagnostics": {
+        "pdfImportSupport": {
+          "enabled": true,
+          "jbig2": true,
+          "jpeg2000": true,
+          "icc": true,
+          "boundedXrefRecovery": true
+        },
+        "sourcePageCount": 1,
+        "pages": [
+          {
+            "sourcePage": 0,
+            "outputSection": 0,
+            "mediaBox": [
+              0,
+              0,
+              160,
+              160
+            ],
+            "sourceSpans": [],
+            "semanticTables": 0,
+            "nestedTables": 0,
+            "deferredTables": 0,
+            "unsupportedPaths": 0,
+            "tableInference": {
+              "bodyParagraphMapping": {
+                "frames": [],
+                "policy": "owner-local representable proposals; original scalars/joins; cumulative frame LineSegs; ambiguous metrics and interleaved paint retained",
+                "semanticParagraphs": 0
+              },
+              "boundaryPaintPolicy": "standard borders or source paint partitioned into cell-owned drawings; no page-level duplicate",
+              "candidateCount": 0,
+              "clipCount": 0,
+              "coordinateSystem": "page-local top-left points; source geometry in page user space",
+              "detectionDeferredReason": null,
+              "executionState": "EXPORTED",
+              "externalBoundaryPaint": {
+                "owner": "unchanged page source control outside logical table frame",
+                "sourcePathIndices": []
+              },
+              "glyphCount": 0,
+              "idScope": "source page and deterministic extraction order",
+              "imageCount": 1,
+              "incompleteReasons": [],
+              "initialBlockCount": 0,
+              "interpretation": "observations and competing hypotheses, not authored Excel/HWP objects",
+              "loweringDeferred": [],
+              "nativeBorderCells": 0,
+              "nativeBorderPaintFragments": 0,
+              "nativeCellBackgrounds": {
+                "policy": "single opaque rectangle behind all owned content becomes standard full-cell fill; source inset is normalized; ambiguous or partial highlights retain source paint",
+                "sources": []
+              },
+              "paintPathCount": 0,
+              "paragraphMappingPolicy": {
+                "bodyRegions": "confirmed owner-local paragraphs share the cell paragraph adapter; ambiguous source spans retained",
+                "confirmed": "one proposal becomes one Paragraph with multiple source LineSegs",
+                "deferred": "line frames retained; paragraph grouping unverified",
+                "lineJoins": "inferred wrap connections; original whitespace retained"
+              },
+              "policy": {
+                "axisTolerancePt": 0.5,
+                "inlineGapEm": 0.5,
+                "lineBaselineEm": 0.2,
+                "maxCandidates": 128,
+                "maxClipRegions": 512,
+                "maxGlyphs": 32768,
+                "maxTiles": 4096,
+                "maxWork": 1000000
+              },
+              "regionGeometry": "declared clip paths; effective visibility also depends on parent intersections",
+              "rejectedComponents": [],
+              "ruleVersion": "tsg-observations-v1",
+              "schemaVersion": 1,
+              "semanticTables": 0,
+              "status": "observed"
+            }
+          }
+        ],
+        "paragraphPolicy": "observed-lines; authored paragraph boundaries are not recovered",
+        "parserAllocationBoundsProven": false,
+        "warnings": [
+          "Experimental PDF frontend; upstream allocation bounds remain unproven",
+          "Clipping, transparency, embedded fonts and complex paint are not fully reconstructed",
+          "Deferred table families retain positional content; inspect page diagnostics"
+        ],
+        "resourcePolicy": {
+          "schemaVersion": 1,
+          "maxSourcePages": 100000,
+          "maxSelectedPages": 64,
+          "maxPathOperations": 20000,
+          "maxDocumentPathOperations": 80000,
+          "maxDocumentImagePlacements": 10000,
+          "maxImagePixels": 4000000,
+          "maxDocumentImagePixels": 16000000,
+          "maxTextBytes": 2097152,
+          "backend": {
+            "inputBytes": 8388608,
+            "streamBytes": 33554432,
+            "codecAllocationBytes": 33554432,
+            "codecWorkUnits": 1000000000,
+            "decodedBytes": 268435456,
+            "filters": 8,
+            "nesting": 16,
+            "objects": 50000,
+            "entries": 100000,
+            "operators": 250000,
+            "graphicsStack": 128,
+            "stringBytes": 65536,
+            "textBytes": 2097152,
+            "spans": 40000,
+            "cmapBytes": 1048576,
+            "cmapEntries": 100000,
+            "cmapScanBytes": 67108864,
+            "fontEntries": 100000,
+            "referenceDepth": 32,
+            "referenceVisits": 100000,
+            "formDepth": 16,
+            "xobjectVisits": 10000
+          }
+        },
+        "resourceUsage": {
+          "decodedBytes": 400065,
+          "codecAllocatedBytes": 392693,
+          "codecWorkUnits": 6388,
+          "parsedObjects": 38,
+          "collectionEntries": 46,
+          "operators": 4,
+          "textBytes": 0,
+          "spans": 0,
+          "referenceVisits": 16,
+          "xobjectVisits": 3,
+          "contentParseCalls": 1,
+          "pageOperatorCacheHits": 2,
+          "pageStreamCacheHits": 2,
+          "formStreamCacheHits": 0,
+          "failure": null
+        }
+      }
+    },
+    {
+      "profile": "standard",
+      "milliseconds": 1019.74604,
+      "diagnostics": {
+        "pdfImportSupport": {
+          "enabled": true,
+          "jbig2": true,
+          "jpeg2000": true,
+          "icc": true,
+          "boundedXrefRecovery": true
+        },
+        "sourcePageCount": 1,
+        "pages": [
+          {
+            "sourcePage": 0,
+            "outputSection": 0,
+            "mediaBox": [
+              0,
+              0,
+              160,
+              160
+            ],
+            "sourceSpans": [],
+            "semanticTables": 0,
+            "nestedTables": 0,
+            "deferredTables": 0,
+            "unsupportedPaths": 0,
+            "tableInference": {
+              "bodyParagraphMapping": {
+                "frames": [],
+                "policy": "owner-local representable proposals; original scalars/joins; cumulative frame LineSegs; ambiguous metrics and interleaved paint retained",
+                "semanticParagraphs": 0
+              },
+              "boundaryPaintPolicy": "standard borders or source paint partitioned into cell-owned drawings; no page-level duplicate",
+              "candidateCount": 0,
+              "clipCount": 0,
+              "coordinateSystem": "page-local top-left points; source geometry in page user space",
+              "detectionDeferredReason": null,
+              "executionState": "EXPORTED",
+              "externalBoundaryPaint": {
+                "owner": "unchanged page source control outside logical table frame",
+                "sourcePathIndices": []
+              },
+              "glyphCount": 0,
+              "idScope": "source page and deterministic extraction order",
+              "imageCount": 1,
+              "incompleteReasons": [],
+              "initialBlockCount": 0,
+              "interpretation": "observations and competing hypotheses, not authored Excel/HWP objects",
+              "loweringDeferred": [],
+              "nativeBorderCells": 0,
+              "nativeBorderPaintFragments": 0,
+              "nativeCellBackgrounds": {
+                "policy": "single opaque rectangle behind all owned content becomes standard full-cell fill; source inset is normalized; ambiguous or partial highlights retain source paint",
+                "sources": []
+              },
+              "paintPathCount": 0,
+              "paragraphMappingPolicy": {
+                "bodyRegions": "confirmed owner-local paragraphs share the cell paragraph adapter; ambiguous source spans retained",
+                "confirmed": "one proposal becomes one Paragraph with multiple source LineSegs",
+                "deferred": "line frames retained; paragraph grouping unverified",
+                "lineJoins": "inferred wrap connections; original whitespace retained"
+              },
+              "policy": {
+                "axisTolerancePt": 0.5,
+                "inlineGapEm": 0.5,
+                "lineBaselineEm": 0.2,
+                "maxCandidates": 128,
+                "maxClipRegions": 512,
+                "maxGlyphs": 32768,
+                "maxTiles": 4096,
+                "maxWork": 1000000
+              },
+              "regionGeometry": "declared clip paths; effective visibility also depends on parent intersections",
+              "rejectedComponents": [],
+              "ruleVersion": "tsg-observations-v1",
+              "schemaVersion": 1,
+              "semanticTables": 0,
+              "status": "observed"
+            }
+          }
+        ],
+        "paragraphPolicy": "observed-lines; authored paragraph boundaries are not recovered",
+        "parserAllocationBoundsProven": false,
+        "warnings": [
+          "Experimental PDF frontend; upstream allocation bounds remain unproven",
+          "Clipping, transparency, embedded fonts and complex paint are not fully reconstructed",
+          "Deferred table families retain positional content; inspect page diagnostics"
+        ],
+        "resourcePolicy": {
+          "schemaVersion": 1,
+          "maxSourcePages": 100000,
+          "maxSelectedPages": 1024,
+          "maxPathOperations": 20000,
+          "maxDocumentPathOperations": 80000,
+          "maxDocumentImagePlacements": 4000000,
+          "maxImagePixels": 16000000,
+          "maxDocumentImagePixels": 64000000,
+          "maxTextBytes": 2097152,
+          "backend": {
+            "inputBytes": 8388608,
+            "streamBytes": 33554432,
+            "codecAllocationBytes": 33554432,
+            "codecWorkUnits": 1000000000,
+            "decodedBytes": 268435456,
+            "filters": 8,
+            "nesting": 16,
+            "objects": 50000,
+            "entries": 400000,
+            "operators": 250000,
+            "graphicsStack": 128,
+            "stringBytes": 65536,
+            "textBytes": 2097152,
+            "spans": 40000,
+            "cmapBytes": 1048576,
+            "cmapEntries": 100000,
+            "cmapScanBytes": 67108864,
+            "fontEntries": 1000000,
+            "referenceDepth": 32,
+            "referenceVisits": 250000,
+            "formDepth": 16,
+            "xobjectVisits": 250000
+          }
+        },
+        "resourceUsage": {
+          "decodedBytes": 400065,
+          "codecAllocatedBytes": 392693,
+          "codecWorkUnits": 6388,
+          "parsedObjects": 38,
+          "collectionEntries": 46,
+          "operators": 4,
+          "textBytes": 0,
+          "spans": 0,
+          "referenceVisits": 16,
+          "xobjectVisits": 3,
+          "contentParseCalls": 1,
+          "pageOperatorCacheHits": 2,
+          "pageStreamCacheHits": 2,
+          "formStreamCacheHits": 0,
+          "failure": null
+        }
+      }
+    }
+  ],
+  "faultInjection": "Only timeout/cancel silence outgoing owner postMessage; normal cases use real PDF Workers and WASM.",
+  "before": {
+    "generation": 2,
+    "name": "hwp_table_test.hwp",
+    "pages": 3,
+    "draft": "d1e1ec2d-a263-41dd-b9b6-fa134f57aca4",
+    "stored": [
+      "d1e1ec2d-a263-41dd-b9b6-fa134f57aca4"
+    ],
+    "handle": null,
+    "recents": [
+      "hwp_table_test.hwp"
+    ]
+  }
+}

@@ -62,12 +62,14 @@ pub fn valid(paths: &[TextClipPath]) -> bool {
             !p.commands.is_empty()
                 && matches!(p.commands[0], ClipCommand::Move(..))
                 && p.commands.iter().all(|c| {
-                    let v = match c {
-                        ClipCommand::Move(x, y) | ClipCommand::Line(x, y) => vec![*x, *y],
-                        ClipCommand::Cubic(a, b, c, d, e, f) => vec![*a, *b, *c, *d, *e, *f],
-                        ClipCommand::Close => vec![],
-                    };
-                    v.iter().all(|v| v.is_finite() && v.abs() <= 1_000_000_000.)
+                    let valid = |v: f64| v.is_finite() && v.abs() <= 1_000_000_000.;
+                    match *c {
+                        ClipCommand::Move(x, y) | ClipCommand::Line(x, y) => valid(x) && valid(y),
+                        ClipCommand::Cubic(a, b, c, d, e, f) => {
+                            [a, b, c, d, e, f].into_iter().all(valid)
+                        }
+                        ClipCommand::Close => true,
+                    }
                 })
         })
 }
@@ -108,13 +110,13 @@ fn visit(paras: &mut [Paragraph], f: &mut impl FnMut(u32, &mut TextBox), depth: 
         }
     }
 }
-fn fingerprint(tb: &TextBox) -> Vec<u8> {
+fn fingerprint(tb: &TextBox) -> [u8; 32] {
     let mut h = Sha256::new();
     for p in &tb.paragraphs {
         h.update((p.text.len() as u64).to_le_bytes());
         h.update(p.text.as_bytes());
     }
-    h.finalize().to_vec()
+    h.finalize().into()
 }
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -129,99 +131,156 @@ struct Envelope {
     version: u8,
     records: Vec<Record>,
 }
-fn collect(
-    paras: &[Paragraph],
-    records: &mut Vec<Record>,
+#[derive(Serialize)]
+struct RecordRef<'a> {
+    id: u32,
+    fingerprint: [u8; 32],
+    paths: &'a [TextClipPath],
+}
+#[derive(Serialize)]
+struct EnvelopeRef<'a> {
+    version: u8,
+    records: &'a [RecordRef<'a>],
+}
+fn collect<'a, S: crate::storage::Storage>(
+    paras: &'a [Paragraph],
+    records: &mut Vec<RecordRef<'a>>,
     counts: &mut BTreeMap<u32, usize>,
     depth: usize,
-) {
+    storage: &S,
+) -> Result<(), String>
+where
+    S::Error: std::fmt::Display,
+{
     if depth > 64 {
-        return;
+        return Ok(());
     }
-    fn shape(
-        s: &ShapeObject,
-        records: &mut Vec<Record>,
+    fn shape<'a, S: crate::storage::Storage>(
+        s: &'a ShapeObject,
+        records: &mut Vec<RecordRef<'a>>,
         counts: &mut BTreeMap<u32, usize>,
         depth: usize,
-    ) {
+        storage: &S,
+    ) -> Result<(), String>
+    where
+        S::Error: std::fmt::Display,
+    {
         if depth > 64 {
-            return;
+            return Ok(());
         }
         if let Some(tb) = s.drawing().and_then(|d| d.text_box.as_ref()) {
-            *counts.entry(s.common().instance_id).or_default() += 1;
-            if let Some(paths) = &tb.paint_clip {
-                records.push(Record {
-                    id: s.common().instance_id,
-                    fingerprint: fingerprint(tb),
-                    paths: paths.clone(),
-                });
+            let id = s.common().instance_id;
+            if !counts.contains_key(&id) {
+                storage
+                    .tree_entry::<u32, usize>()
+                    .map_err(|e| e.to_string())?;
             }
-            collect(&tb.paragraphs, records, counts, depth + 1);
+            *counts.entry(id).or_default() += 1;
+            if let Some(paths) = &tb.paint_clip {
+                storage
+                    .push(
+                        records,
+                        RecordRef {
+                            id,
+                            fingerprint: fingerprint(tb),
+                            paths,
+                        },
+                    )
+                    .map_err(|e| e.to_string())?;
+            }
+            collect(&tb.paragraphs, records, counts, depth + 1, storage)?;
         }
         if let ShapeObject::Group(g) = s {
             for s in &g.children {
-                shape(s, records, counts, depth + 1);
+                shape(s, records, counts, depth + 1, storage)?;
             }
         }
+        Ok(())
     }
     for p in paras {
         for c in &p.controls {
             match c {
-                Control::Shape(s) => shape(s, records, counts, depth + 1),
+                Control::Shape(s) => shape(s, records, counts, depth + 1, storage)?,
                 Control::Table(t) => {
                     for c in &t.cells {
-                        collect(&c.paragraphs, records, counts, depth + 1)
+                        collect(&c.paragraphs, records, counts, depth + 1, storage)?;
                     }
                 }
-                Control::Header(h) => collect(&h.paragraphs, records, counts, depth + 1),
-                Control::Footer(h) => collect(&h.paragraphs, records, counts, depth + 1),
-                Control::Footnote(n) => collect(&n.paragraphs, records, counts, depth + 1),
-                Control::Endnote(n) => collect(&n.paragraphs, records, counts, depth + 1),
+                Control::Header(h) => collect(&h.paragraphs, records, counts, depth + 1, storage)?,
+                Control::Footer(h) => collect(&h.paragraphs, records, counts, depth + 1, storage)?,
+                Control::Footnote(n) => {
+                    collect(&n.paragraphs, records, counts, depth + 1, storage)?
+                }
+                Control::Endnote(n) => collect(&n.paragraphs, records, counts, depth + 1, storage)?,
                 _ => {}
             }
         }
     }
+    Ok(())
 }
 pub fn encode(doc: &Document) -> Result<Option<Vec<u8>>, String> {
+    encode_with_storage(doc, &crate::storage::Unbounded)
+}
+pub(crate) fn encode_with_storage<S: crate::storage::Storage>(
+    doc: &Document,
+    storage: &S,
+) -> Result<Option<Vec<u8>>, String>
+where
+    S::Error: std::fmt::Display,
+{
     let mut records = Vec::new();
     let mut counts = BTreeMap::new();
     for s in &doc.sections {
-        collect(&s.paragraphs, &mut records, &mut counts, 0);
+        collect(&s.paragraphs, &mut records, &mut counts, 0, storage)?;
         // SectionDef controls mirror this canonical list. Visiting both copies
         // would falsely report every master-page TextBox as a duplicate owner.
         for master in &s.section_def.master_pages {
-            collect(&master.paragraphs, &mut records, &mut counts, 0);
+            collect(&master.paragraphs, &mut records, &mut counts, 0, storage)?;
         }
     }
     let mut ids = BTreeSet::new();
-    if records.iter().any(|r| {
-        r.id == 0 || counts.get(&r.id) != Some(&1) || !ids.insert(r.id) || !valid(&r.paths)
-    }) || records.len() > 4096
-    {
+    for r in &records {
+        if r.id == 0 || counts.get(&r.id) != Some(&1) || ids.contains(&r.id) || !valid(r.paths) {
+            return Err("invalid editable text clip metadata".into());
+        }
+        storage
+            .insert_tree_set(&mut ids, r.id)
+            .map_err(|e| e.to_string())?;
+    }
+    if records.len() > 4096 {
         return Err("invalid editable text clip metadata".into());
     }
     if records.is_empty() {
         return Ok(None);
     }
-    let bytes = serde_json::to_vec(&Envelope {
-        version: 1,
-        records,
-    })
+    let mut writer = crate::serializer::budget_cursor::BudgetCursor::new(storage, MAX_BYTES);
+    serde_json::to_writer(
+        &mut writer,
+        &EnvelopeRef {
+            version: 1,
+            records: &records,
+        },
+    )
     .map_err(|e| e.to_string())?;
-    if bytes.len() > MAX_BYTES {
-        return Err("text clip metadata budget exceeded".into());
-    }
-    Ok(Some(bytes))
+    Ok(Some(writer.into_inner()))
 }
 pub fn native_visibility_loss() -> crate::serializer::content_loss::ContentLoss {
+    match native_visibility_loss_with_storage(&crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+pub(crate) fn native_visibility_loss_with_storage<S: crate::storage::Storage>(
+    storage: &S,
+) -> Result<crate::serializer::content_loss::ContentLoss, S::Error> {
     use crate::serializer::content_loss::*;
-    ContentLoss {
+    Ok(ContentLoss {
         code: ContentLossCode::MetadataReduced,
         subject: ContentLossSubject::Control,
-        path: "글상자 텍스트 클립: rhwp 왕복 보존, 한컴 기본 표현 미지원".into(),
+        path: storage.string("글상자 텍스트 클립: rhwp 왕복 보존, 한컴 기본 표현 미지원")?,
         reason: ContentLossReason::UnsupportedByOutputFormat,
         resource_id: None,
-    }
+    })
 }
 pub fn decode(doc: &mut Document, bytes: &[u8]) {
     if bytes.len() > MAX_BYTES {

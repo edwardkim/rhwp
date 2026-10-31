@@ -37,14 +37,23 @@ pub(crate) struct BoundedEntryCache<K: Eq + std::hash::Hash + Copy, V> {
     map: HashMap<K, V>,
     insertion_order: std::collections::VecDeque<K>,
     max_entries: usize,
+    budget: Option<std::sync::Arc<crate::import_limits::ImportBudget>>,
 }
 
 impl<K: Eq + std::hash::Hash + Copy, V> BoundedEntryCache<K, V> {
     pub(crate) fn new(max_entries: usize) -> Self {
+        Self::with_budget(max_entries, None)
+    }
+
+    pub(crate) fn with_budget(
+        max_entries: usize,
+        budget: Option<std::sync::Arc<crate::import_limits::ImportBudget>>,
+    ) -> Self {
         Self {
             map: HashMap::new(),
             insertion_order: std::collections::VecDeque::new(),
             max_entries,
+            budget,
         }
     }
 
@@ -59,6 +68,44 @@ impl<K: Eq + std::hash::Hash + Copy, V> BoundedEntryCache<K, V> {
     }
 
     pub(crate) fn insert(&mut self, key: K, value: V) {
+        // The originating request owns cache index work too. Keep the void
+        // legacy API; bounded callers observe the sticky failure before returning.
+        if let Some(budget) = &self.budget {
+            if budget.charge_entries(1).is_err() {
+                return;
+            }
+            let grow_map = self.map.len() == self.map.capacity() && !self.map.contains_key(&key);
+            let grow_order = self.insertion_order.len() == self.insertion_order.capacity()
+                && !self.map.contains_key(&key);
+            // Reserve the complete replacement storage, not just its delta.
+            let bytes = (if grow_map {
+                self.map
+                    .capacity()
+                    .saturating_add(1)
+                    .saturating_mul(2)
+                    .saturating_mul(std::mem::size_of::<(K, V)>())
+            } else {
+                0
+            })
+            .saturating_add(if grow_order {
+                self.insertion_order
+                    .capacity()
+                    .saturating_add(1)
+                    .saturating_mul(2)
+                    .saturating_mul(std::mem::size_of::<K>())
+            } else {
+                0
+            });
+            if budget.charge_decoded(bytes).is_err() {
+                return;
+            }
+            if (grow_map && self.map.try_reserve(1).is_err())
+                || (grow_order && self.insertion_order.try_reserve(1).is_err())
+            {
+                budget.reject("cache index allocation");
+                return;
+            }
+        }
         use std::collections::hash_map::Entry;
         // On re-insert: replace value and promote to most-recently-used position
         // so LRU eviction order stays accurate.

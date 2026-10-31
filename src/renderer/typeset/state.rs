@@ -366,10 +366,31 @@ impl TypesetState {
     }
 
     pub(super) fn emit_decoration_table(&mut self, para_idx: usize, ctrl_idx: usize) {
-        self.data.current_items.push(PageItem::Shape {
-            para_index: para_idx,
-            control_index: ctrl_idx,
-        });
+        match self.emit_decoration_table_with_storage(
+            para_idx,
+            ctrl_idx,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn emit_decoration_table_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        para_idx: usize,
+        ctrl_idx: usize,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        storage.push(
+            &mut self.data.current_items,
+            PageItem::Shape {
+                para_index: para_idx,
+                control_index: ctrl_idx,
+            },
+        )?;
+
+        Ok(())
     }
 
     pub(super) fn finish_decoration_table(
@@ -378,33 +399,58 @@ impl TypesetState {
         ctrl_idx: usize,
         continuation: Option<OverlayContinuation>,
     ) {
+        match self.finish_decoration_table_with_storage(
+            para_idx,
+            ctrl_idx,
+            continuation,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn finish_decoration_table_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        para_idx: usize,
+        ctrl_idx: usize,
+        continuation: Option<OverlayContinuation>,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         if let Some(continuation) = continuation {
             let fragment = continuation.row_fragment;
-            self.data.pending_overlay_continuations.push(
+            storage.push(
+                &mut self.data.pending_overlay_continuations,
                 crate::renderer::pagination::OverlayContinuation {
                     para_index: para_idx,
                     control_index: ctrl_idx,
                     start_row: continuation.first_unfit,
-                    start_cut: fragment
-                        .as_ref()
-                        .map_or_else(Vec::new, |f| f.end_cut.clone()),
+                    start_cut: match &fragment {
+                        Some(f) => storage.copy_slice(&f.end_cut)?,
+                        None => Vec::new(),
+                    },
                     start_row_height: fragment.as_ref().map(|f| f.remaining_height),
                     reserve_px: continuation.reserve_px,
                 },
-            );
-            self.data.current_column_overlay_cuts.push((
-                para_idx,
-                ctrl_idx,
-                crate::renderer::pagination::OverlayCut {
-                    end_row: continuation.first_unfit + usize::from(fragment.is_some()),
-                    end_row_height: fragment.as_ref().map(|f| f.opening_height),
-                    owns_stored_frame: fragment.as_ref().is_some_and(|f| f.owns_stored_frame),
-                    end_cut: fragment.map_or_else(Vec::new, |f| f.end_cut),
-                },
-            ));
+            )?;
+            storage.push(
+                &mut self.data.current_column_overlay_cuts,
+                (
+                    para_idx,
+                    ctrl_idx,
+                    crate::renderer::pagination::OverlayCut {
+                        end_row: continuation.first_unfit + usize::from(fragment.is_some()),
+                        end_row_height: fragment.as_ref().map(|f| f.opening_height),
+                        owns_stored_frame: fragment.as_ref().is_some_and(|f| f.owns_stored_frame),
+                        end_cut: fragment.map_or_else(Vec::new, |f| f.end_cut),
+                    },
+                ),
+            )?;
         }
         // [#4514] 흐름 소비 0 배치 — 이 앵커는 #1955 흡수 대상이 아니다.
         self.data.overlay_shape_shortcut_para = Some(para_idx);
+
+        Ok(())
     }
 
     pub(super) fn table_control_page(&self) -> TableControlPage {
@@ -416,8 +462,21 @@ impl TypesetState {
     }
 
     pub(super) fn commit_decoration_host_text(&mut self, fragment: ParagraphFragment) {
-        self.data.current_items.push(fragment.item);
+        match self.commit_decoration_host_text_with_storage(fragment, &crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn commit_decoration_host_text_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        fragment: ParagraphFragment,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        storage.push(&mut self.data.current_items, fragment.item)?;
         self.data.current_height += fragment.height;
+
+        Ok(())
     }
 
     pub(super) fn tac_height_page(&self) -> TacHeightPage<'_> {
@@ -465,20 +524,46 @@ impl TypesetState {
         flow: TableHostShapeFlow,
         accepted_frame: Option<crate::renderer::float_placement::ParagraphFloatPlacement>,
     ) {
-        self.data.current_items.push(PageItem::Shape {
-            para_index: para_idx,
-            control_index: ctrl_idx,
-        });
+        match self.commit_table_host_shape_with_storage(
+            para_idx,
+            ctrl_idx,
+            flow,
+            accepted_frame,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn commit_table_host_shape_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        para_idx: usize,
+        ctrl_idx: usize,
+        flow: TableHostShapeFlow,
+        accepted_frame: Option<crate::renderer::float_placement::ParagraphFloatPlacement>,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        storage.push(
+            &mut self.data.current_items,
+            PageItem::Shape {
+                para_index: para_idx,
+                control_index: ctrl_idx,
+            },
+        )?;
         if let Some(frame) = accepted_frame {
             self.data.current_height = frame.occupied_bottom;
-            self.data
-                .paragraph_float_placements
-                .insert((para_idx, ctrl_idx), frame);
+            storage.insert_map(
+                &mut self.data.paragraph_float_placements,
+                (para_idx, ctrl_idx),
+                frame,
+            )?;
         } else if let Some(line_h) = flow.tac_separate_line_h {
             self.data.current_height += line_h;
         } else if let Some(extra) = flow.non_tac_pushdown_h {
             self.data.current_height += extra;
         }
+        Ok(())
     }
 
     /// 현재 단을 비우지 않고 다음 단의 실제 개체 상자만 예약한다.
@@ -511,9 +596,22 @@ impl TypesetState {
 
     /// 구역 종료·강제 쪽 전환에서도 예약 개체를 기존 쪽의 다음 단에 남긴다.
     pub(in crate::renderer::typeset) fn finish_deferred_column_shapes(&mut self) {
-        if !self.data.deferred_column_shapes.is_empty() {
-            self.advance_column_or_new_page();
+        match self.finish_deferred_column_shapes_with_storage(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
         }
+    }
+
+    pub(in crate::renderer::typeset) fn finish_deferred_column_shapes_with_storage<
+        S: crate::storage::Storage,
+    >(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        if !self.data.deferred_column_shapes.is_empty() {
+            self.advance_column_or_new_page_with_storage(storage)?;
+        }
+        Ok(())
     }
 
     /// Lane 조회용 페이지 관측값. 예산은 별도 지연 조회로 제공한다.
@@ -660,24 +758,73 @@ impl TypesetState {
 
     /// guide와 앞선 빈 문단 drift 경로: 항목·높이·횟수는 변경하지 않는다.
     pub(super) fn hide_empty_paragraph(&mut self, para_idx: usize) {
-        self.data.hidden_empty_paras.insert(para_idx);
+        match self.hide_empty_paragraph_with_storage(para_idx, &crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn hide_empty_paragraph_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        para_idx: usize,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        storage.insert_set(&mut self.data.hidden_empty_paras, para_idx)?;
+
+        Ok(())
     }
 
     /// 옵션에 의해 감춘 빈 문단은 횟수 → 숨김 표시 → 항목 순으로 기록한다.
     pub(super) fn commit_counted_hidden_paragraph(&mut self, para_idx: usize) {
+        match self
+            .commit_counted_hidden_paragraph_with_storage(para_idx, &crate::storage::Unbounded)
+        {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn commit_counted_hidden_paragraph_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        para_idx: usize,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         self.data.hidden_empty_lines += 1;
-        self.data.hidden_empty_paras.insert(para_idx);
+        storage.insert_set(&mut self.data.hidden_empty_paras, para_idx)?;
         // height=0 으로 page 진행 — fit 분기에서 추가 처리하지 않음
-        self.data.current_items.push(PageItem::FullParagraph {
-            para_index: para_idx,
-        });
+        storage.push(
+            &mut self.data.current_items,
+            PageItem::FullParagraph {
+                para_index: para_idx,
+            },
+        )?;
+
+        Ok(())
     }
 
     /// 구역 끝 안전여백/각주 예산 흡수는 항목만 남기며 숨김 표시를 추가하지 않는다.
     pub(super) fn place_unadvanced_empty_paragraph(&mut self, para_idx: usize) {
-        self.data.current_items.push(PageItem::FullParagraph {
-            para_index: para_idx,
-        });
+        match self
+            .place_unadvanced_empty_paragraph_with_storage(para_idx, &crate::storage::Unbounded)
+        {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn place_unadvanced_empty_paragraph_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        para_idx: usize,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        storage.push(
+            &mut self.data.current_items,
+            PageItem::FullParagraph {
+                para_index: para_idx,
+            },
+        )?;
+
+        Ok(())
     }
 
     pub(super) fn paragraph_empty_tail_page(&self) -> super::paragraph::empty::EmptyTailPage<'_> {
@@ -710,9 +857,25 @@ impl TypesetState {
 
     /// 구성된 줄이 없더라도 원래 FullParagraph 항목을 보존한 뒤 높이를 계산한다.
     pub(super) fn begin_empty_line_paragraph(&mut self, para_idx: usize) {
-        self.data.current_items.push(PageItem::FullParagraph {
-            para_index: para_idx,
-        });
+        match self.begin_empty_line_paragraph_with_storage(para_idx, &crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn begin_empty_line_paragraph_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        para_idx: usize,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        storage.push(
+            &mut self.data.current_items,
+            PageItem::FullParagraph {
+                para_index: para_idx,
+            },
+        )?;
+
+        Ok(())
     }
 
     pub(super) fn paragraph_split_entry_page(&self) -> SplitEntryPage<'_> {
@@ -788,9 +951,27 @@ impl TypesetState {
 
     /// atomic 항목을 먼저 넣고 조정자가 기존 flow 메트릭을 계산하게 한다.
     pub(super) fn begin_atomic_overflow_paragraph(&mut self, para_idx: usize) {
-        self.data.current_items.push(PageItem::FullParagraph {
-            para_index: para_idx,
-        });
+        match self
+            .begin_atomic_overflow_paragraph_with_storage(para_idx, &crate::storage::Unbounded)
+        {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn begin_atomic_overflow_paragraph_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        para_idx: usize,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        storage.push(
+            &mut self.data.current_items,
+            PageItem::FullParagraph {
+                para_index: para_idx,
+            },
+        )?;
+
+        Ok(())
     }
 
     /// atomic 넘침은 기존 trimmed spacing을 덮지 않는다.
@@ -814,22 +995,62 @@ impl TypesetState {
         total_height: f64,
         body_bottom_vpos: Option<i32>,
     ) {
-        self.data.current_items.push(PageItem::FullParagraph {
-            para_index: para_idx,
-        });
+        match self.commit_tail_overflow_paragraph_with_storage(
+            para_idx,
+            total_height,
+            body_bottom_vpos,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn commit_tail_overflow_paragraph_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        para_idx: usize,
+        total_height: f64,
+        body_bottom_vpos: Option<i32>,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        storage.push(
+            &mut self.data.current_items,
+            PageItem::FullParagraph {
+                para_index: para_idx,
+            },
+        )?;
         self.data.vpos_prev_trimmed_sb_px = 0.0;
         self.data.current_height += total_height;
-        if let Some(v) = body_bottom_vpos {
+        let _: () = if let Some(v) = body_bottom_vpos {
             self.data.prev_body_bottom_vpos = Some(v);
-        }
+        };
+        Ok(())
     }
 
     /// 항목 순서만 확정한다. 높이 계산과 진단은 이 변경 뒤 조정자가 실행한다.
     pub(super) fn insert_fitted_paragraph(&mut self, para_idx: usize, defer_preceding_float: bool) {
+        match self.insert_fitted_paragraph_with_storage(
+            para_idx,
+            defer_preceding_float,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn insert_fitted_paragraph_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        para_idx: usize,
+        defer_preceding_float: bool,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        storage.reserve(&mut self.data.current_items, 1)?;
+
         let paragraph_item = PageItem::FullParagraph {
             para_index: para_idx,
         };
-        if defer_preceding_float {
+        let _: () = if defer_preceding_float {
             // 빈 host의 양수-offset 자리차지 표는 다음 계산 본문 문단이 표 위 빈칸을
             // 채운 뒤에 그려진다. 표를 먼저 놓으면 그 본문이 표 하단으로 밀린다.
             let table_item = self
@@ -837,11 +1058,12 @@ impl TypesetState {
                 .current_items
                 .pop()
                 .expect("checked trailing table item");
-            self.data.current_items.push(paragraph_item);
-            self.data.current_items.push(table_item);
+            storage.push(&mut self.data.current_items, paragraph_item)?;
+            storage.push(&mut self.data.current_items, table_item)?;
         } else {
-            self.data.current_items.push(paragraph_item);
-        }
+            storage.push(&mut self.data.current_items, paragraph_item)?;
+        };
+        Ok(())
     }
 
     /// 일반 전체/빈 구성 결과 경로에서 계산한 trim, 높이, underrun, 저장 하단을 순서대로 반영한다.
@@ -863,6 +1085,19 @@ impl TypesetState {
     /// 확정된 조각을 항목 추가 → trim 초기화 → 높이 전진 순서로 반영한다.
     /// 페이지 전환과 다음 컷 선택은 조정자의 책임이다.
     pub(super) fn commit_split_paragraph_fragment(&mut self, fragment: ParagraphFragment) {
+        match self
+            .commit_split_paragraph_fragment_with_storage(fragment, &crate::storage::Unbounded)
+        {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn commit_split_paragraph_fragment_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        fragment: ParagraphFragment,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         if let (
             PageItem::PartialParagraph {
                 para_index,
@@ -872,38 +1107,68 @@ impl TypesetState {
             Some(height),
         ) = (&fragment.item, fragment.content_height)
         {
-            self.record_paragraph_content_bottom(
+            self.record_paragraph_content_bottom_with_storage(
                 (*para_index, *end_line),
                 height,
                 fragment.height,
                 fragment.last_line_spacing,
-            );
+                storage,
+            )?;
         }
-        self.data.current_items.push(fragment.item);
+        storage.push(&mut self.data.current_items, fragment.item)?;
         self.data.vpos_prev_trimmed_sb_px = 0.0;
         self.data.current_height += fragment.height;
+
+        Ok(())
     }
 
     /// 저장 다단 조각은 일반 split과 달리 trim 복원값을 초기화하지 않는다.
     pub(super) fn commit_multicolumn_paragraph_fragment(&mut self, fragment: ParagraphFragment) {
-        self.data.current_items.push(fragment.item);
+        match self.commit_multicolumn_paragraph_fragment_with_storage(
+            fragment,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn commit_multicolumn_paragraph_fragment_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        fragment: ParagraphFragment,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        storage.push(&mut self.data.current_items, fragment.item)?;
         self.data.current_height += fragment.height;
+
+        Ok(())
     }
 
     /// [Task #2320] 마지막 단에서의 분할은 새 페이지 단 0으로 진행한다.
     /// 중간 단에서는 기존 flush → 단 증가 → 높이 초기화 순서를 유지한다.
     pub(super) fn advance_after_multicolumn_fragment(&mut self) {
-        if self.data.current_column + 1 < self.data.col_count
+        match self.advance_after_multicolumn_fragment_with_storage(&crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn advance_after_multicolumn_fragment_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        let _: () = if self.data.current_column + 1 < self.data.col_count
             && self.data.deferred_column_shapes.is_empty()
         {
-            self.flush_column();
+            self.flush_column_with_storage(storage)?;
             self.data.current_column += 1;
             self.data.current_height = 0.0;
-            self.activate_next_column_stored_frames();
+            self.activate_next_column_stored_frames_with_storage(storage)?;
         } else {
             // 예약 개체가 있으면 공통 전환이 같은 항목·상자를 새 단에 발행한다.
-            self.advance_column_or_new_page();
-        }
+            self.advance_column_or_new_page_with_storage(storage)?;
+        };
+        Ok(())
     }
 
     /// 줄 후보 계산에 필요한 값만 관측한다. 페이지 전환 뒤 다시 호출해야 한다.
@@ -997,42 +1262,85 @@ impl TypesetState {
         para: &crate::model::paragraph::Paragraph,
         plan: InlineFlowPlan,
     ) {
+        match self.commit_stored_body_wide_host_with_storage(
+            para_index,
+            para,
+            plan,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn commit_stored_body_wide_host_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        para_index: usize,
+        para: &crate::model::paragraph::Paragraph,
+        plan: InlineFlowPlan,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         if self.data.current_column != 0
             || !matches!(self.data.current_items.first(),
                 Some(PageItem::PartialParagraph { para_index: owner, start_line: 0, end_line })
                     if *owner == para_index && *end_line == para.line_segs.len())
             || plan.end > self.available_height()
         {
-            return;
+            return Ok(());
         }
         // PartialParagraph의 측정은 이미 앞 간격을 제외한 글줄 전진량이다.
         // 표 배치가 뒤 문단까지 수용했을 수 있으므로 그 소비 높이·좌표축을 되감지 않는다.
-        self.data.inline_flow_plans.insert(para_index, plan);
+        storage.insert_map(&mut self.data.inline_flow_plans, para_index, plan)?;
+
+        Ok(())
     }
 
     /// fit을 통과한 동일 plan을 배치 metadata와 높이에 함께 반영한다.
     pub(super) fn commit_inline_flow(&mut self, para_index: usize, plan: InlineFlowPlan) {
+        match self.commit_inline_flow_with_storage(para_index, plan, &crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn commit_inline_flow_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        para_index: usize,
+        plan: InlineFlowPlan,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         for item in &plan.floating_shapes {
             if let Some(exclusion) = &item.exclusion {
-                self.data
-                    .side_wrap_exclusions
-                    .insert((para_index, item.control), exclusion.clone());
+                let exclusion = crate::storage::try_clone(exclusion, storage)?;
+                storage.insert_tree_map(
+                    &mut self.data.side_wrap_exclusions,
+                    (para_index, item.control),
+                    exclusion,
+                )?;
             }
-            self.data
-                .paragraph_float_placements
-                .insert((para_index, item.control), item.placement);
-            self.data.current_items.push(PageItem::Shape {
-                para_index,
-                control_index: item.control,
-            });
+            storage.insert_map(
+                &mut self.data.paragraph_float_placements,
+                (para_index, item.control),
+                item.placement,
+            )?;
+            storage.push(
+                &mut self.data.current_items,
+                PageItem::Shape {
+                    para_index,
+                    control_index: item.control,
+                },
+            )?;
         }
-        self.data
-            .current_items
-            .push(PageItem::FullParagraph { para_index });
+        storage.push(
+            &mut self.data.current_items,
+            PageItem::FullParagraph { para_index },
+        )?;
         self.data.current_height = plan.end;
         self.data.inline_box_flow_bottom = self.data.inline_box_flow_bottom.max(plan.end);
-        self.data.inline_flow_plans.insert(para_index, plan);
+        storage.insert_map(&mut self.data.inline_flow_plans, para_index, plan)?;
         self.data.vpos_ladder_dirty = true;
+
+        Ok(())
     }
 
     /// Preserve host-only rows; the table item owns the object and flow advance.

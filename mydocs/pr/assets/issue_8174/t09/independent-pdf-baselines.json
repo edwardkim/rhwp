@@ -1,0 +1,70 @@
+{
+  "method": "PyMuPDF independent PDF text origins, scaled 96/72; geometry only",
+  "records": [
+    {
+      "input": "samples/21_언어_기출_편집가능본.pdf",
+      "inputSha256": "6bc54661a73af788d437463e000f76652b1325b44607e58443e7391d23e2db83",
+      "page": 3,
+      "prefix": "의할수밖에없다",
+      "sourceOriginPt": [
+        96.36000061035156,
+        165.5999755859375
+      ],
+      "expectedX96": 128.4800008138021,
+      "expectedBaseline96": 220.79996744791666,
+      "text": "의할 수밖에 없다. 이른바 ‘풍경 속의 불안’이 시작되는 것이다."
+    },
+    {
+      "input": "samples/21_언어_기출_편집가능본.pdf",
+      "inputSha256": "6bc54661a73af788d437463e000f76652b1325b44607e58443e7391d23e2db83",
+      "page": 3,
+      "prefix": "그렇다면만일선원근법",
+      "sourceOriginPt": [
+        106.31999969482422,
+        183.719970703125
+      ],
+      "expectedX96": 141.75999959309897,
+      "expectedBaseline96": 244.9599609375,
+      "text": "그렇다면 만일 선원근법에 의존하지 않는 풍경화, 예컨대 서양의 "
+    },
+    {
+      "input": "samples/21_언어_기출_편집가능본.pdf",
+      "inputSha256": "6bc54661a73af788d437463e000f76652b1325b44607e58443e7391d23e2db83",
+      "page": 3,
+      "prefix": "풍경화가아닌동양의산수화를",
+      "sourceOriginPt": [
+        96.36000061035156,
+        201.84002685546875
+      ],
+      "expectedX96": 128.4800008138021,
+      "expectedBaseline96": 269.1200358072917,
+      "text": "풍경화가 아닌 동양의 산수화를 고려한다면 고진의 풍경론은 달리 "
+    },
+    {
+      "input": "samples/21_언어_기출_편집가능본-2020.pdf",
+      "inputSha256": "a1a8b0ffd6ae9b23627f7b1bf58bbdfdc0714a369713cc057aa836c75b143f1e",
+      "page": 12,
+      "prefix": "아래그래프에서S자곡선은",
+      "sourceOriginPt": [
+        463.4135437011719,
+        206.19061279296875
+      ],
+      "expectedX96": 617.8847249348959,
+      "expectedBaseline96": 274.9208170572917,
+      "text": "아래그래프에서S자곡선은현재소득과미래소득의관계를"
+    },
+    {
+      "input": "samples/21_언어_기출_편집가능본-2010.pdf",
+      "inputSha256": "609d56421009ccab5a50cb2a8f4e78af4d0961de2e7ae85d811905e8434ac251",
+      "page": 13,
+      "prefix": "아래그래프에서S자곡선은",
+      "sourceOriginPt": [
+        116.5126724243164,
+        207.2701416015625
+      ],
+      "expectedX96": 155.35022989908853,
+      "expectedBaseline96": 276.3601888020833,
+      "text": "아래그래프에서S자곡선은현재소득과미래소득의관계를"
+    }
+  ]
+}

@@ -505,11 +505,15 @@ impl Default for ResolvedBorderStyle {
 /// 해소된 스타일 세트 (DocInfo에서 변환)
 #[derive(Debug, Default, Clone)]
 pub struct ResolvedStyleSet {
+    /// 원본 HWP3 또는 그 HWPX 변환의 글꼴 꾸밈 출처.
+    pub(crate) source_hwp3_native: bool,
     /// 문서 지정 대체가 있어도 현재 선택은 자기 메트릭을 가진 원본 TTF인 슬롯.
     /// 값은 문서가 선언한 대체 프로그램의 해소 결과다. 저장 줄 전체가 이 대체
     /// 프로그램의 채움과 일치하고 현재 원본 프로그램과 다른 경우에만 사용한다.
     pub(crate) source_program_projection_slots:
-        std::collections::HashMap<(u32, usize), ResolvedCharStyle>,
+        std::sync::Arc<std::collections::HashMap<(u32, usize), ResolvedCharStyle>>,
+    /// 측정과 paint에 함께 전파하는 세션의 첨자 계약이다.
+    pub script_metrics: crate::renderer::script_metrics::ScriptMetricsContract,
     pub(crate) native_pua_fonts: std::sync::Arc<crate::renderer::native_pua_fonts::NativePuaFonts>,
     /// HWP5 저장 겹침은 다시 열 때 -80%~+20% 범위로 해소된다.
     /// XML 입력의 원래 값과 구분하며 모델의 저장 바이트는 보존한다.
@@ -601,3 +605,13 @@ impl ResolvedStyleSet {
             .map_or(raw, |(min, max)| raw.clamp(min, max))
     }
 }
+
+crate::storage::clone_fields!(ResolvedCharStyle, {font_family, font_families, font_families_metric_trusted, font_families_glyph_fallback_advance_explicit, font_families_hft_hangul, font_families_source_hft, font_families_hft_print_frame, font_families_preserve_glyph_ink, font_families_hft_fullwidth_dot, ascii_punct_latin_slot, explicit_latin_slot, font_families_metric_face, font_families_original_glyph_metric_face, font_space_em, font_size, font_sizes, font_positions, bold, italic, text_color, underline, underline_color, strike_color, strikethrough, letter_spacing, letter_spacings, ratio, ratios, border_fill_id, outline_type, shadow_type, shadow_color, shadow_offset_x, shadow_offset_y, emboss, engrave, superscript, subscript, emphasis_dot, underline_shape, strike_shape, kerning, shade_color});
+
+crate::storage::clone_fields!(ResolvedParaStyle, {alignment, vertical_alignment, line_spacing, line_spacing_type, margin_left, margin_right, indent, spacing_before, spacing_after, head_type, para_level, numbering_id, border_fill_id, border_spacing, border_connect, border_ignore_margin, default_tab_width, tab_stops, auto_tab_left, auto_tab_right, condense_min_space, english_break_unit, korean_break_unit, widow_orphan, keep_with_next, keep_lines, page_break_before});
+
+crate::storage::clone_fields!(ResolvedBorderStyle, {borders, fill_color, pattern, gradient, image_fill, diagonal_attr, diagonal, center_line});
+
+crate::storage::clone_fields!(ResolvedStyleSet, {script_metrics, source_hwp3_native, source_program_projection_slots, native_pua_fonts, char_overlap_size_bounds, source_char_shapes, resolved_dpi, isolated_jamo_font, page_number_char_style_id, page_number_font_is_hft, supplemental_metrics, char_styles, para_styles, border_styles, numberings, bullets, hwp3_variant, hft_ascii_halfwidth, kerning_measurement_context, horizontal_shaping_context});
+
+crate::storage::clone_fields!(ResolvedImageFill, {bin_data_id, fill_mode, brightness, contrast, effect});

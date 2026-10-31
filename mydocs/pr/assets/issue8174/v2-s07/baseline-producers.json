@@ -1,0 +1,59 @@
+{
+  "sliceBeforeSource": "4e2149dc65bdbc15413bf09d710c85882260e2ae",
+  "beforeNative": {
+    "path": "output/pr-review/issue8174/v2-s05-20261025/candidate-native/rhwp",
+    "sha256": "406c7c9f85d6cb7f54f503eb80a73e7deb06258a9ee8b16c1a32d8e748cd9503",
+    "source": "9c9c272fe1670baf305800dfc906349fa7933d4a"
+  },
+  "beforeWasm": {
+    "path": "output/pr-review/issue8174/v2-s04-20261025/candidate-wasm/rhwp_bg.wasm",
+    "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915",
+    "role": "retained optimized product bundle; no fresh product build claimed",
+    "source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28"
+  },
+  "nativeProductTreeDifferences": [],
+  "wasmProductTreeDifferences": [
+    "vendor/rhwp-pdf-import-backend/Cargo.lock"
+  ],
+  "base": {
+    "source": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+    "native": {
+      "sha256": "5b5d20ded5f7c509e0cccc9af3008aae731ddfaecb5006654efba736730b69ae"
+    },
+    "wasm": {
+      "rhwp_bg.wasm.d.ts": {
+        "bytes": 66058,
+        "sha256": "45650b5952cf5c1dd7323379d74a0ab715b17aa6ef5067e8e49936463e9c0f4e"
+      },
+      ".gitignore": {
+        "bytes": 1,
+        "sha256": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1"
+      },
+      "package.json": {
+        "bytes": 429,
+        "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a"
+      },
+      "rhwp.js": {
+        "bytes": 485741,
+        "sha256": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9"
+      },
+      "rhwp_bg.wasm": {
+        "bytes": 22273224,
+        "sha256": "27f3b1248f11d6035e47e1069ebfbd0e7afbfee0937c4dfcc7a51aa419ff0686"
+      },
+      "README.md": {
+        "bytes": 6962,
+        "sha256": "4266d6f1ae0afda875ac7a5223cc250c33eafca8c213e70ff232be77d8ddce08"
+      },
+      "LICENSE": {
+        "bytes": 1072,
+        "sha256": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b"
+      },
+      "rhwp.d.ts": {
+        "bytes": 194231,
+        "sha256": "ed7bdb59ad45ad2ccede3b2e129b19dff6f829aaf1376a6d5ac09ef788bd2861"
+      }
+    }
+  },
+  "notes": "The standalone backend lock change is not consumed by the root product build. Before and candidate product binaries are distinct from the dedicated small font contract probes."
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "pr": 8279,
+    "head": "19f332edc9258467cb991f4196c53119f357aeb8",
+    "ancestorOfCandidate": true
+  },
+  {
+    "pr": 8276,
+    "head": "06bf9c11002879934831f5c2276fe2b267cc8be0",
+    "ancestorOfCandidate": true
+  },
+  {
+    "pr": 8275,
+    "head": "0d5940ac1bc7078dc69901d1fa985b0c3a83184a",
+    "ancestorOfCandidate": true
+  },
+  {
+    "pr": 8270,
+    "head": "70d66d8ac206a899072362a6322ceaa6ab51a547",
+    "ancestorOfCandidate": true
+  }
+]

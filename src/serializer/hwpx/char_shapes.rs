@@ -16,7 +16,7 @@ use super::char_shape_tables::{
     line_shape_str, outline_type_str, shadow_type_str, strike_shape_str, sym_mark_str,
     underline_type_str, LANG_ATTRS, SHADE_NONE,
 };
-use super::utils::empty_tag;
+use super::utils::{empty_tag_with_storage as empty_tag, xml_value};
 use super::SerializeError;
 
 /// `(start_pos, char_shape_id)` — 직렬화가 접지 않는 원본 시퀀스.
@@ -73,18 +73,27 @@ pub fn xml_preserves_same_id_runs(xml: &str, refs: &[(u32, u32)]) -> bool {
     char_pr_id_refs_in_xml(xml) == ids
 }
 
-fn color_hex(color: ColorRef) -> String {
+fn color_hex<S: crate::storage::Storage>(
+    color: ColorRef,
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     if color == SHADE_NONE {
-        return "none".to_string();
+        return xml_value(storage, "none");
     }
     let a = ((color >> 24) & 0xFF) as u8;
     let r = (color & 0xFF) as u8;
     let g = ((color >> 8) & 0xFF) as u8;
     let b = ((color >> 16) & 0xFF) as u8;
     if a == 0 {
-        format!("#{:02X}{:02X}{:02X}", r, g, b)
+        xml_value(storage, format_args!("#{:02X}{:02X}{:02X}", r, g, b))
     } else {
-        format!("#{:02X}{:02X}{:02X}{:02X}", a, r, g, b)
+        xml_value(
+            storage,
+            format_args!("#{:02X}{:02X}{:02X}{:02X}", a, r, g, b),
+        )
     }
 }
 
@@ -96,18 +105,22 @@ fn bool01(value: bool) -> &'static str {
     }
 }
 
-fn write_lang_attrs<W: Write>(
+fn write_lang_attrs<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     name: &str,
     vals: &[i32; 7],
-) -> Result<(), SerializeError> {
-    let s0 = vals[0].to_string();
-    let s1 = vals[1].to_string();
-    let s2 = vals[2].to_string();
-    let s3 = vals[3].to_string();
-    let s4 = vals[4].to_string();
-    let s5 = vals[5].to_string();
-    let s6 = vals[6].to_string();
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let s0 = xml_value(storage, vals[0])?;
+    let s1 = xml_value(storage, vals[1])?;
+    let s2 = xml_value(storage, vals[2])?;
+    let s3 = xml_value(storage, vals[3])?;
+    let s4 = xml_value(storage, vals[4])?;
+    let s5 = xml_value(storage, vals[5])?;
+    let s6 = xml_value(storage, vals[6])?;
     empty_tag(
         w,
         name,
@@ -120,6 +133,7 @@ fn write_lang_attrs<W: Write>(
             (LANG_ATTRS[5], &s5),
             (LANG_ATTRS[6], &s6),
         ],
+        storage,
     )
 }
 
@@ -129,33 +143,48 @@ pub fn write_char_pr<W: Write>(
     id: u32,
     cs: &CharShape,
 ) -> Result<(), SerializeError> {
-    use super::utils::{end_tag, start_tag_attrs};
+    write_char_pr_with_storage(w, id, cs, &crate::storage::Unbounded)
+}
 
-    let shade = color_hex(cs.shade_color);
+pub(crate) fn write_char_pr_with_storage<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    id: u32,
+    cs: &CharShape,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    use super::utils::{
+        end_tag_with_storage as end_tag, start_tag_attrs_with_storage as start_tag_attrs,
+    };
+
+    let shade = color_hex(cs.shade_color, storage)?;
     start_tag_attrs(
         w,
         "hh:charPr",
         &[
-            ("id", &id.to_string()),
-            ("height", &cs.base_size.to_string()),
-            ("textColor", &color_hex(cs.text_color)),
+            ("id", &xml_value(storage, id)?),
+            ("height", &xml_value(storage, cs.base_size)?),
+            ("textColor", &color_hex(cs.text_color, storage)?),
             ("shadeColor", &shade),
             ("useFontSpace", bool01(cs.use_font_space)),
             ("useKerning", bool01(cs.kerning)),
             ("symMark", sym_mark_str(cs.emphasis_dot)),
-            ("borderFillIDRef", &cs.border_fill_id.to_string()),
+            ("borderFillIDRef", &xml_value(storage, cs.border_fill_id)?),
         ],
+        storage,
     )?;
-    write_lang_attrs(w, "hh:fontRef", &cs.font_ids.map(|v| v as i32))?;
-    write_lang_attrs(w, "hh:ratio", &cs.ratios.map(|v| v as i32))?;
-    write_lang_attrs(w, "hh:spacing", &cs.spacings.map(|v| v as i32))?;
-    write_lang_attrs(w, "hh:relSz", &cs.relative_sizes.map(|v| v as i32))?;
-    write_lang_attrs(w, "hh:offset", &cs.char_offsets.map(|v| v as i32))?;
+    write_lang_attrs(w, "hh:fontRef", &cs.font_ids.map(|v| v as i32), storage)?;
+    write_lang_attrs(w, "hh:ratio", &cs.ratios.map(|v| v as i32), storage)?;
+    write_lang_attrs(w, "hh:spacing", &cs.spacings.map(|v| v as i32), storage)?;
+    write_lang_attrs(w, "hh:relSz", &cs.relative_sizes.map(|v| v as i32), storage)?;
+    write_lang_attrs(w, "hh:offset", &cs.char_offsets.map(|v| v as i32), storage)?;
     if cs.italic {
-        empty_tag(w, "hh:italic", &[])?;
+        empty_tag(w, "hh:italic", &[], storage)?;
     }
     if cs.bold {
-        empty_tag(w, "hh:bold", &[])?;
+        empty_tag(w, "hh:bold", &[], storage)?;
     }
     empty_tag(
         w,
@@ -163,45 +192,49 @@ pub fn write_char_pr<W: Write>(
         &[
             ("type", underline_type_str(cs.underline_type)),
             ("shape", line_shape_str(cs.underline_shape)),
-            ("color", &color_hex(cs.underline_color)),
+            ("color", &color_hex(cs.underline_color, storage)?),
         ],
+        storage,
     )?;
     empty_tag(
         w,
         "hh:strikeout",
         &[
             ("shape", strike_shape_str(cs.strikethrough, cs.strike_shape)),
-            ("color", &color_hex(cs.strike_color)),
+            ("color", &color_hex(cs.strike_color, storage)?),
         ],
+        storage,
     )?;
     empty_tag(
         w,
         "hh:outline",
         &[("type", outline_type_str(cs.outline_type))],
+        storage,
     )?;
     empty_tag(
         w,
         "hh:shadow",
         &[
             ("type", shadow_type_str(cs.shadow_type)),
-            ("color", &color_hex(cs.shadow_color)),
-            ("offsetX", &cs.shadow_offset_x.to_string()),
-            ("offsetY", &cs.shadow_offset_y.to_string()),
+            ("color", &color_hex(cs.shadow_color, storage)?),
+            ("offsetX", &xml_value(storage, cs.shadow_offset_x)?),
+            ("offsetY", &xml_value(storage, cs.shadow_offset_y)?),
         ],
+        storage,
     )?;
     if cs.emboss {
-        empty_tag(w, "hh:emboss", &[])?;
+        empty_tag(w, "hh:emboss", &[], storage)?;
     }
     if cs.engrave {
-        empty_tag(w, "hh:engrave", &[])?;
+        empty_tag(w, "hh:engrave", &[], storage)?;
     }
     if cs.superscript {
-        empty_tag(w, "hh:supscript", &[])?;
+        empty_tag(w, "hh:supscript", &[], storage)?;
     }
     if cs.subscript {
-        empty_tag(w, "hh:subscript", &[])?;
+        empty_tag(w, "hh:subscript", &[], storage)?;
     }
-    end_tag(w, "hh:charPr")?;
+    end_tag(w, "hh:charPr", storage)?;
     Ok(())
 }
 

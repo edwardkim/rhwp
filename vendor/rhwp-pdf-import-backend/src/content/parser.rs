@@ -223,11 +223,25 @@ pub fn parse_content_with_budget(
     data: &[u8],
     budget: &std::sync::Arc<crate::import_limits::ImportBudget>,
 ) -> Result<Vec<Operator>> {
-    let mut operators = Vec::new();
+    let mut operators: Vec<Operator> = Vec::new();
+    let slot_bytes = std::mem::size_of::<Operator>();
+    let max_slots = budget.limits.stream_bytes / slot_bytes;
     execute_content_with_budget(data, budget, |operator| {
-        operators
-            .try_reserve(1)
-            .map_err(|_| budget.reject("content operator allocation"))?;
+        if operators.len() == operators.capacity() {
+            if operators.len() >= max_slots {
+                return Err(budget.reject("content operator buffer"));
+            }
+            let capacity = operators.capacity().saturating_mul(2).max(1).min(max_slots);
+            // Bound the producer before collecting a stream, not only its
+            // later cache/interpreter copy. Exact reserve prevents deliberate
+            // geometric over-allocation beyond the single-buffer byte limit.
+            // Charge each requested replacement allocation before reserving it;
+            // this is cumulative work, not live heap or allocator overhead.
+            budget.charge_decoded(capacity * slot_bytes)?;
+            operators
+                .try_reserve_exact(capacity - operators.len())
+                .map_err(|_| budget.reject("content operator allocation"))?;
+        }
         operators.push(operator);
         Ok(())
     })?;

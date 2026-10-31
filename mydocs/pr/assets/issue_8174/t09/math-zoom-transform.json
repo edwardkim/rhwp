@@ -1,0 +1,12 @@
+{
+  "page": 1,
+  "crop96Dpi": [
+    93,
+    112,
+    251,
+    188
+  ],
+  "scale": 4,
+  "resampling": "nearest-neighbor identical for source and candidate",
+  "pixelOrGlyphGeometryEdited": false
+}

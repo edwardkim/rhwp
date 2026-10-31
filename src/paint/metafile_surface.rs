@@ -103,6 +103,14 @@ fn device_size(
             (w * natural_w / crop_w, h * natural_h / crop_h)
         }
     };
+    device_size_for_extent((w, h), natural, pixel)
+}
+
+fn device_size_for_extent(
+    (w, h): (f64, f64),
+    (natural_w, natural_h): (f64, f64),
+    pixel: f64,
+) -> Option<(u32, u32)> {
     if !w.is_finite()
         || !h.is_finite()
         || w <= 0.0
@@ -182,15 +190,71 @@ pub(super) fn payload(
     )
     .run()
     .ok()?;
+    render_payload(image, bbox, pixel, fonts, svg, false)
+}
+
+/// 단일 raster WMF를 같은 Print 장치에서 재생한 뒤 색을 보정한다.
+/// 비균일 원본의 독립 Print에서 확인한 축소→명암 순서를 유지한다.
+pub(super) fn picture_payload(
+    image: &ImageNode,
+    bbox: BoundingBox,
+    pixel: f64,
+    fonts: &MetafileFonts,
+) -> Option<ResolvedImagePayload> {
+    if !super::metafile_picture::eligible(image) {
+        return None;
+    }
+    let source = image.data.as_deref()?;
+    if crate::parser::ole_container::emf_from_wmf_comment_chunks(source).is_some() {
+        return None;
+    }
+    super::metafile_picture::geometry(image, bbox)?;
+    // 이 producer는 현재 변환기가 확인한 단일 bitmap만 받는다.
+    // 벡터·ROP 또는 효과를 굽지 않은 일반 SVG는 종전 경로를 유지한다.
+    let resolved = crate::renderer::image_resolver::resolve_image_payload(image)?;
+    if !resolved.suppress_effects || resolved.mime != "image/svg+xml" {
+        return None;
+    }
+    let svg = crate::renderer::svg::convert_wmf_to_svg(source)?;
+    render_payload(image, bbox, pixel, fonts, svg, true)
+}
+
+fn render_payload(
+    image: &ImageNode,
+    bbox: BoundingBox,
+    pixel: f64,
+    fonts: &MetafileFonts,
+    svg: Vec<u8>,
+    picture_transfer: bool,
+) -> Option<ResolvedImagePayload> {
+    let source = image.data.as_deref()?;
     if svg.len() > MAX_SVG_BYTES {
         return None;
     }
     let natural = crate::renderer::metafile_geometry::svg_viewport(&svg)?;
-    let (width, height) = device_size(image, bbox, natural, pixel)?;
+    let (width, height) = if picture_transfer {
+        let (full, _) = super::metafile_picture::geometry(image, bbox)?;
+        device_size_for_extent((full.width, full.height), natural, pixel)?
+    } else {
+        device_size(image, bbox, natural, pixel)?
+    };
+    // 색·mask 공통 표본기가 수용하는 한도를 게시 전에 확인한다.
+    if picture_transfer
+        && (width > 8192
+            || height > 8192
+            || u64::from(width) * u64::from(height) > 32 * 1024 * 1024)
+    {
+        return None;
+    }
     let font_requests = requests(&svg)?;
     let font_sources = fonts.coverage_fingerprint(&font_requests)?;
     let mut hash = blake3::Hasher::new();
     hash.update(source);
+    if picture_transfer {
+        hash.update(b"picture-tone-separate-mask");
+        hash.update(&svg);
+        hash.update(&[image.brightness as u8, image.contrast as u8]);
+    }
     hash.update(&width.to_le_bytes());
     hash.update(&height.to_le_bytes());
     hash.update(&fonts.fingerprint);
@@ -241,7 +305,11 @@ pub(super) fn payload(
             height as f32 / tree.size().height(),
         );
         resvg::render(&tree, scale, &mut pixmap.as_mut());
-        let data = transmission(pixmap)?;
+        let data = if picture_transfer {
+            picture_transmission(pixmap, image)?
+        } else {
+            transmission(pixmap)?
+        };
         fonts.surfaces.lock().ok()?.insert(key, &data);
         data
     };
@@ -249,6 +317,26 @@ pub(super) fn payload(
         data,
         mime: "image/png",
         kind: ResolvedImageKind::OutputDevice,
-        suppress_effects: false,
+        suppress_effects: picture_transfer,
     })
+}
+
+fn picture_transmission(pixmap: tiny_skia::Pixmap, source: &ImageNode) -> Option<Vec<u8>> {
+    let (width, height) = (pixmap.width(), pixmap.height());
+    let mut image = image::RgbaImage::from_raw(width, height, pixmap.take_demultiplied())?;
+    // 명암 clipping은 보간과 교환할 수 없다. 장치 재생이 끝난 색에만 적용한다.
+    // 비점유 부분의 흰색과 coverage도 같은 공통 함수가 분리해 보존한다.
+    crate::renderer::image_resolver::adjust_wmf_device_pixels(
+        &mut image,
+        source.brightness,
+        source.contrast,
+        false,
+    );
+    let mut encoded = std::io::Cursor::new(Vec::new());
+    image::DynamicImage::ImageRgba8(image)
+        .write_to(&mut encoded, image::ImageFormat::Png)
+        .ok()?;
+    let mut encoded = encoded.into_inner();
+    crate::renderer::image_resolver::png_sampling::mark_print_separate_alpha(&mut encoded);
+    Some(encoded)
 }

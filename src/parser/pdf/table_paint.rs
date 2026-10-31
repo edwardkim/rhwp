@@ -1,6 +1,10 @@
 //! Source paint has one physical owner: a real table cell or the remaining page.
 //! Nonstandard border patterns remain cell drawings; cell text is actual paragraph text.
-use super::lowering::component;
+use super::{
+    allocation::{message, Allocation, Failure},
+    lowering::component,
+    PdfImportError,
+};
 use crate::model::{
     control::Control,
     shape::{CommonObjAttr, ShapeObject},
@@ -215,52 +219,75 @@ fn subtract(
     cut: Frame,
     line: Option<bool>,
     work: &mut usize,
+    allocation: Allocation<'_>,
 ) -> Result<(), String> {
     let mut next = Vec::new();
     let mut covered = 0;
     for r in remaining.drain(..) {
         tick(work)?;
         let Some(c) = intersection(r, cut, line) else {
-            next.push(r);
+            allocation.push(&mut next, r).map_err(message)?;
             continue;
         };
         covered += measure(c, line);
         if line == Some(true) {
             if r.x < c.x {
-                next.push(Frame { right: c.x, ..r })
+                allocation
+                    .push(&mut next, Frame { right: c.x, ..r })
+                    .map_err(message)?
             }
             if c.right < r.right {
-                next.push(Frame { x: c.right, ..r })
+                allocation
+                    .push(&mut next, Frame { x: c.right, ..r })
+                    .map_err(message)?
             }
         } else if line == Some(false) {
             if r.y < c.y {
-                next.push(Frame { bottom: c.y, ..r })
+                allocation
+                    .push(&mut next, Frame { bottom: c.y, ..r })
+                    .map_err(message)?
             }
             if c.bottom < r.bottom {
-                next.push(Frame { y: c.bottom, ..r })
+                allocation
+                    .push(&mut next, Frame { y: c.bottom, ..r })
+                    .map_err(message)?
             }
         } else {
             if r.y < c.y {
-                next.push(Frame { bottom: c.y, ..r })
+                allocation
+                    .push(&mut next, Frame { bottom: c.y, ..r })
+                    .map_err(message)?
             }
             if c.bottom < r.bottom {
-                next.push(Frame { y: c.bottom, ..r })
+                allocation
+                    .push(&mut next, Frame { y: c.bottom, ..r })
+                    .map_err(message)?
             }
             if r.x < c.x {
-                next.push(Frame {
-                    y: c.y,
-                    bottom: c.bottom,
-                    right: c.x,
-                    ..r
-                })
+                allocation
+                    .push(
+                        &mut next,
+                        Frame {
+                            y: c.y,
+                            bottom: c.bottom,
+                            right: c.x,
+                            ..r
+                        },
+                    )
+                    .map_err(message)?
             }
             if c.right < r.right {
-                next.push(Frame {
-                    x: c.right,
-                    y: c.y,
-                    bottom: c.bottom,
-                    ..r
-                })
+                allocation
+                    .push(
+                        &mut next,
+                        Frame {
+                            x: c.right,
+                            y: c.y,
+                            bottom: c.bottom,
+                            ..r
+                        },
+                    )
+                    .map_err(message)?
             }
         }
     }
@@ -271,8 +298,13 @@ fn subtract(
     Ok(())
 }
 
-fn fragment(original: &Control, source: Frame, piece: Frame) -> Result<Control, String> {
-    let mut c = original.clone();
+fn fragment(
+    original: &Control,
+    source: Frame,
+    piece: Frame,
+    allocation: Allocation<'_>,
+) -> Result<Control, String> {
+    let mut c = allocation.clone_record(original).map_err(message)?;
     let (w, h) = (
         (piece.right - piece.x) as u32,
         (piece.bottom - piece.y) as u32,
@@ -372,6 +404,16 @@ pub(super) struct PartitionError {
     pub reason: String,
     pub unconsumed_targets: Vec<usize>,
 }
+impl From<PdfImportError> for PartitionError {
+    fn from(error: PdfImportError) -> Self {
+        error.to_string().into()
+    }
+}
+impl From<Failure> for PartitionError {
+    fn from(error: Failure) -> Self {
+        Self::from(PdfImportError::from(error))
+    }
+}
 impl From<String> for PartitionError {
     fn from(reason: String) -> Self {
         Self {
@@ -407,6 +449,7 @@ pub(super) fn partition(
     detection: &Value,
     paths: &[pdf_oxide::elements::PathContent],
     work: &mut usize,
+    allocation: Allocation<'_>,
 ) -> Result<PaintPlan, PartitionError> {
     let mut orientations = BTreeMap::<usize, Option<bool>>::new();
     let mut border_paths = BTreeSet::new();
@@ -417,7 +460,9 @@ pub(super) fn partition(
     for boundary in observations {
         let path = index(&boundary["path"])?;
         if boundary["paintKind"] == "stroke" {
-            border_paths.insert(path);
+            allocation
+                .insert_set(&mut border_paths, path)
+                .map_err(message)?;
         }
         let horizontal = boundary["horizontal"]
             .as_bool()
@@ -435,16 +480,21 @@ pub(super) fn partition(
                 && source.line_cap == LineCap::Butt
                 && (boundary["paintKind"] == "stroke" || boundary["paintKind"] == "dash_carrier")
             {
-                raster_strokes.insert(
-                    path,
-                    StrokeAxis {
-                        horizontal,
-                        at: coordinate(&boundary["at"])?,
-                        from: coordinate(&boundary["from"])?,
-                        to: coordinate(&boundary["to"])?,
-                    },
-                );
-                border_paths.insert(path);
+                allocation
+                    .insert(
+                        &mut raster_strokes,
+                        path,
+                        StrokeAxis {
+                            horizontal,
+                            at: coordinate(&boundary["at"])?,
+                            from: coordinate(&boundary["from"])?,
+                            to: coordinate(&boundary["to"])?,
+                        },
+                    )
+                    .map_err(message)?;
+                allocation
+                    .insert_set(&mut border_paths, path)
+                    .map_err(message)?;
             }
             // A real filled rule is not a stroke, but can be the sole source
             // of a selected separator. Do not grant this role to a thin fill
@@ -474,9 +524,16 @@ pub(super) fn partition(
                     }
                 }
                 if !competing {
-                    border_paths.insert(path);
+                    allocation
+                        .insert_set(&mut border_paths, path)
+                        .map_err(message)?;
                 }
             }
+        }
+        if !orientations.contains_key(&path) {
+            allocation
+                .tree_entry::<usize, Option<bool>>()
+                .map_err(message)?;
         }
         orientations
             .entry(path)
@@ -487,41 +544,43 @@ pub(super) fn partition(
             })
             .or_insert(Some(horizontal));
     }
-    let regions = targets
-        .iter()
-        .map(|t| bounds(t.grid))
-        .collect::<Result<Vec<_>, _>>()?;
-    let frames = targets
-        .iter()
-        .map(|t| {
+    let regions = allocation.try_collect(targets.iter().map(|t| bounds(t.grid)))?;
+    let frames = allocation.try_collect(targets.iter().map(|t| {
+        allocation.try_collect(
             t.grid["cells"]
                 .as_array()
                 .ok_or("cell grid missing")?
                 .iter()
-                .map(|c| cell_frame(t.grid, c))
-                .collect::<Result<Vec<_>, String>>()
-        })
-        .collect::<Result<Vec<_>, _>>()?;
-    let required = targets
-        .iter()
-        .map(|t| {
-            t.grid["sourcePathIndices"]
-                .as_array()
-                .ok_or("source paint refs missing")?
-                .iter()
-                .map(|v| {
-                    rule_controls
-                        .get(index(v)?)
-                        .copied()
-                        .flatten()
-                        .ok_or("source boundary has no editable paint".into())
-                })
-                .collect::<Result<BTreeSet<_>, String>>()
-        })
-        .collect::<Result<Vec<_>, _>>()?;
+                .map(|c| cell_frame(t.grid, c)),
+        )
+    }))?;
+    let mut required = allocation.vec(targets.len())?;
+    for target in targets {
+        let mut refs = BTreeSet::new();
+        for reference in target.grid["sourcePathIndices"]
+            .as_array()
+            .ok_or("source paint refs missing")?
+        {
+            let control = rule_controls
+                .get(index(reference)?)
+                .copied()
+                .flatten()
+                .ok_or("source boundary has no editable paint")?;
+            allocation.insert_set(&mut refs, control)?;
+        }
+        required.push(refs);
+    }
     let mut result = PaintPlan {
-        cells: frames.iter().map(|v| vec![Vec::new(); v.len()]).collect(),
-        cell_fills: frames.iter().map(|v| vec![None; v.len()]).collect(),
+        cells: allocation.try_collect(
+            frames
+                .iter()
+                .map(|v| allocation.collect((0..v.len()).map(|_| Vec::new()))),
+        )?,
+        cell_fills: allocation.try_collect(
+            frames
+                .iter()
+                .map(|v| allocation.collect((0..v.len()).map(|_| None))),
+        )?,
         cell_fill_sources: Vec::new(),
         removed: BTreeSet::new(),
         retained: Vec::new(),
@@ -531,11 +590,9 @@ pub(super) fn partition(
     };
     // A path bitmap is still source paint, not a separately placed content
     // image. Intersections between two such paths keep their original z-order.
-    let path_controls = rule_controls
-        .iter()
-        .flatten()
-        .copied()
-        .collect::<BTreeSet<_>>();
+    let path_controls = allocation
+        .set_from(rule_controls.iter().flatten().copied())
+        .map_err(message)?;
     // Ownership comes from the selected cells' source text/image references,
     // including the content of real descendant cells, not a colored bbox alone.
     let mut content = Vec::new();
@@ -546,7 +603,7 @@ pub(super) fn partition(
             for span in cell["spanIndices"].as_array().ok_or("cell spans missing")? {
                 tick(work)?;
                 if let Some(c) = content_controls.spans.get(index(span)?).copied().flatten() {
-                    refs.insert(c);
+                    allocation.insert_set(&mut refs, c).map_err(message)?;
                 }
             }
             for image in cell["imageIndices"]
@@ -554,16 +611,19 @@ pub(super) fn partition(
                 .ok_or("cell images missing")?
             {
                 tick(work)?;
-                refs.insert(
-                    *content_controls
-                        .images
-                        .get(index(image)?)
-                        .ok_or("cell image missing")?,
-                );
+                allocation
+                    .insert_set(
+                        &mut refs,
+                        *content_controls
+                            .images
+                            .get(index(image)?)
+                            .ok_or("cell image missing")?,
+                    )
+                    .map_err(message)?;
             }
-            cells.push(refs);
+            allocation.push(&mut cells, refs).map_err(message)?;
         }
-        content.push(cells);
+        allocation.push(&mut content, cells).map_err(message)?;
     }
     let mut backgrounds = BTreeMap::<(usize, usize), Vec<(usize, usize, Fill, bool)>>::new();
     for (path, control) in rule_controls.iter().enumerate() {
@@ -601,16 +661,14 @@ pub(super) fn partition(
             continue;
         }
         let source = source_frame(&controls[control]).ok_or("missing background frame")?;
-        let owners = frames
-            .iter()
-            .enumerate()
-            .flat_map(|(ti, cells)| {
+        let owners = allocation
+            .collect(frames.iter().enumerate().flat_map(|(ti, cells)| {
                 cells
                     .iter()
                     .enumerate()
                     .filter_map(move |(ci, cell)| cell.contains(source).then_some((ti, ci, *cell)))
-            })
-            .collect::<Vec<_>>();
+            }))
+            .map_err(message)?;
         // Select only a uniquely innermost logical cell. Incomparable roots or
         // a paint crossing cell boundaries retain positional paint ownership.
         let Some(&(ti, ci, cell)) = owners.iter().find(|(_, _, candidate)| {
@@ -633,7 +691,9 @@ pub(super) fn partition(
             for (i, frame) in cells.iter().enumerate() {
                 tick(work)?;
                 if cell.contains(*frame) {
-                    refs.extend(content[child][i].iter().copied());
+                    allocation
+                        .extend_set(&mut refs, content[child][i].iter().copied())
+                        .map_err(message)?;
                 }
             }
         }
@@ -677,12 +737,24 @@ pub(super) fn partition(
                 break;
             }
         }
-        backgrounds.entry((ti, ci)).or_default().push((
-            path,
-            control,
-            rect.drawing.fill.clone(),
-            background,
-        ));
+        if !backgrounds.contains_key(&(ti, ci)) {
+            allocation
+                .tree_entry::<(usize, usize), Vec<(usize, usize, Fill, bool)>>()
+                .map_err(message)?;
+        }
+        allocation
+            .push(
+                backgrounds.entry((ti, ci)).or_default(),
+                (
+                    path,
+                    control,
+                    allocation
+                        .clone_record(&rect.drawing.fill)
+                        .map_err(message)?,
+                    background,
+                ),
+            )
+            .map_err(message)?;
     }
     for ((ti, ci), candidates) in backgrounds {
         // Competing backgrounds need an independent layering interpretation.
@@ -694,8 +766,12 @@ pub(super) fn partition(
             continue;
         }
         result.cell_fills[ti][ci] = Some(fill);
-        result.cell_fill_sources.push((path, ti, ci));
-        result.removed.insert(control);
+        allocation
+            .push(&mut result.cell_fill_sources, (path, ti, ci))
+            .map_err(message)?;
+        allocation
+            .insert_set(&mut result.removed, control)
+            .map_err(message)?;
     }
     let mut count = 0;
     for (path, control) in rule_controls.iter().enumerate() {
@@ -757,8 +833,9 @@ pub(super) fn partition(
             &required,
             content_controls.resources,
             work,
+            allocation,
         )?;
-        let mut remaining = vec![source];
+        let mut remaining = allocation.collect([source]).map_err(message)?;
         let mut owned = 0;
         let mut closed = true;
         // A native shared border paints its whole pen, across both neighboring
@@ -796,12 +873,15 @@ pub(super) fn partition(
                     if cell.bottom == region.bottom {
                         clip.bottom = clip.bottom.max(source.bottom);
                     }
-                    let pieces = remaining
-                        .iter()
-                        .filter_map(|r| intersection(*r, clip, line))
-                        .collect::<Vec<_>>();
+                    let pieces = allocation
+                        .collect(
+                            remaining
+                                .iter()
+                                .filter_map(|r| intersection(*r, clip, line)),
+                        )
+                        .map_err(message)?;
                     for piece in pieces {
-                        subtract(&mut remaining, piece, line, work)?;
+                        subtract(&mut remaining, piece, line, work, allocation)?;
                         owned += measure(piece, line);
                         result.native_border_fragments += 1;
                         count += 1;
@@ -812,7 +892,9 @@ pub(super) fn partition(
                 }
             }
             if remaining.is_empty() && owned == measure(source, line) {
-                result.removed.insert(control);
+                allocation
+                    .insert_set(&mut result.removed, control)
+                    .map_err(message)?;
                 continue;
             }
         }
@@ -888,7 +970,7 @@ pub(super) fn partition(
                 for &unowned in &remaining {
                     tick(work)?;
                     if let Some(piece) = intersection(unowned, clip, line) {
-                        pieces.push(piece);
+                        allocation.push(&mut pieces, piece).map_err(message)?;
                     }
                 }
                 for piece in pieces {
@@ -915,7 +997,7 @@ pub(super) fn partition(
                             }
                         }
                     }
-                    subtract(&mut remaining, piece, line, work)?;
+                    subtract(&mut remaining, piece, line, work, allocation)?;
                     owned += measure(piece, line);
                     if native_border {
                         count += 1;
@@ -930,14 +1012,14 @@ pub(super) fn partition(
                         let pieces = if let Some(compound) = &compound {
                             compound.cell(ti, piece, *cell, work)?
                         } else {
-                            vec![(piece, None)]
+                            allocation.collect([(piece, None)]).map_err(message)?
                         };
                         for (part, tag) in pieces {
                             count += 1;
                             if count > MAX_FRAGMENTS {
                                 return Err("cell paint fragment budget exceeded".into());
                             }
-                            let mut fragment = fragment(original, source, part)?;
+                            let mut fragment = fragment(original, source, part, allocation)?;
                             common_mut(&mut fragment).unwrap().cell_border_paint = tag;
                             if compound.is_none()
                                 && required[ti].contains(&control)
@@ -957,7 +1039,9 @@ pub(super) fn partition(
                             }
                             closed &=
                                 common(&fragment).is_some_and(|a| a.cell_border_paint.is_some());
-                            result.cells[ti][ci].push(fragment);
+                            allocation
+                                .push(&mut result.cells[ti][ci], fragment)
+                                .map_err(message)?;
                         }
                     }
                 }
@@ -977,11 +1061,20 @@ pub(super) fn partition(
                     return Err("cell paint fragment budget exceeded".into());
                 }
                 if let Some(owner) = owner {
-                    result.outside_owners.insert(result.retained.len(), owner);
+                    allocation
+                        .insert(&mut result.outside_owners, result.retained.len(), owner)
+                        .map_err(message)?;
                 }
-                result.retained.push(fragment(original, source, piece)?);
+                allocation
+                    .push(
+                        &mut result.retained,
+                        fragment(original, source, piece, allocation)?,
+                    )
+                    .map_err(message)?;
             }
-            result.removed.insert(control);
+            allocation
+                .insert_set(&mut result.removed, control)
+                .map_err(message)?;
             continue;
         }
         // The remaining half of a proven axial rule keeps its PAGE owner.
@@ -1049,7 +1142,9 @@ pub(super) fn partition(
                     for &r in &remaining {
                         tick(work)?;
                         if let Some(piece) = intersection(r, clip, None) {
-                            candidates.push((piece, ti, ci, side));
+                            allocation
+                                .push(&mut candidates, (piece, ti, ci, side))
+                                .map_err(message)?;
                         }
                     }
                 }
@@ -1066,23 +1161,31 @@ pub(super) fn partition(
         }
         if closed {
             for (piece, ti, ci, side) in candidates {
-                subtract(&mut remaining, piece, None, work)?;
-                outside.push((
-                    piece,
-                    Some((
-                        ti,
-                        ci,
-                        crate::model::border_paint::CellBorderPaint {
-                            side,
-                            sides: 0,
-                            cell_pen: None,
-                            source_id: common(original).unwrap().instance_id,
-                        },
-                    )),
-                ));
+                subtract(&mut remaining, piece, None, work, allocation)?;
+                allocation
+                    .push(
+                        &mut outside,
+                        (
+                            piece,
+                            Some((
+                                ti,
+                                ci,
+                                crate::model::border_paint::CellBorderPaint {
+                                    side,
+                                    sides: 0,
+                                    cell_pen: None,
+                                    source_id: common(original).unwrap().instance_id,
+                                },
+                            )),
+                        ),
+                    )
+                    .map_err(message)?;
             }
         }
         closed &= remaining.is_empty();
+        allocation
+            .reserve(&mut outside, remaining.len())
+            .map_err(message)?;
         outside.extend(remaining.into_iter().map(|r| (r, None)));
         for (r, owner) in outside {
             count += 1;
@@ -1091,12 +1194,21 @@ pub(super) fn partition(
             }
             if closed {
                 if let Some(owner) = owner {
-                    result.outside_owners.insert(result.retained.len(), owner);
+                    allocation
+                        .insert(&mut result.outside_owners, result.retained.len(), owner)
+                        .map_err(message)?;
                 }
             }
-            result.retained.push(fragment(original, source, r)?)
+            allocation
+                .push(
+                    &mut result.retained,
+                    fragment(original, source, r, allocation)?,
+                )
+                .map_err(message)?
         }
-        result.removed.insert(control);
+        allocation
+            .insert_set(&mut result.removed, control)
+            .map_err(message)?;
     }
     let mut unconsumed_targets = Vec::new();
     for (ti, required) in required.iter().enumerate() {
@@ -1118,13 +1230,17 @@ pub(super) fn partition(
                 // control is still in the page's unremoved source list. A
                 // geometric contributor within the inference tolerance does
                 // not authorize changing its position or clipping its ink.
-                result.external_boundary_controls.insert(control);
+                allocation
+                    .insert_set(&mut result.external_boundary_controls, control)
+                    .map_err(message)?;
             } else {
                 unresolved = true;
             }
         }
         if unresolved {
-            unconsumed_targets.push(ti);
+            allocation
+                .push(&mut unconsumed_targets, ti)
+                .map_err(message)?;
         }
     }
     if !unconsumed_targets.is_empty() {

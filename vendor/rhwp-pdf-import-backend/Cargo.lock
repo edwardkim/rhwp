@@ -3091,12 +3091,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "qcms"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "edecfcd5d755a5e5d98e24cf43113e7cdaec5a070edd0f6b250c03a573da30fa"
-
-[[package]]
 name = "qoi"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3519,7 +3513,6 @@ dependencies = [
  "pkcs8",
  "pyo3",
  "pyo3-log",
- "qcms",
  "qrcode",
  "quick-xml 0.42.0",
  "rayon",
@@ -3528,6 +3521,7 @@ dependencies = [
  "rhwp-hayro-jbig2",
  "rhwp-hayro-jpeg2000",
  "rhwp-jpeg-decoder",
+ "rhwp-qcms",
  "rhwp-zune-jpeg",
  "rsa",
  "serde",
@@ -3558,6 +3552,13 @@ dependencies = [
  "x509-parser",
  "zlib-rs",
  "zune-core",
+]
+
+[[package]]
+name = "rhwp-qcms"
+version = "0.3.0-rhwp.1"
+dependencies = [
+ "rhwp-codec-resource",
 ]
 
 [[package]]

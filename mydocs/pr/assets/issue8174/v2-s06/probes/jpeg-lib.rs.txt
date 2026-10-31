@@ -1,0 +1,61 @@
+use serde_json::{json,Value};
+use std::cell::{Cell,RefCell};
+use zune_core::{bytestream::ZCursor,options::DecoderOptions};
+
+struct Budget { used:Cell<usize>, limit:usize, rejected:Cell<bool>, kinds:RefCell<Vec<(&'static str,usize)>>, deny_worker:bool }
+impl Budget {
+    fn new(limit:usize)->Self { Self {used:Cell::new(0),limit,rejected:Cell::new(false),kinds:RefCell::new(Vec::new()),deny_worker:false} }
+    fn reserve(&self,bytes:usize,kind:&'static str)->bool {
+        self.kinds.borrow_mut().push((kind,bytes));
+        if self.deny_worker && kind=="worker upsample destination" {self.rejected.set(true);return false}
+        match self.used.get().checked_add(bytes) { Some(n) if n<=self.limit=>{self.used.set(n);true},_=>{self.rejected.set(true);false} }
+    }
+}
+impl original::allocation::AllocationBudget for Budget {
+    fn reserve(&self,bytes:usize,kind:&'static str)->bool {self.reserve(bytes,kind)}
+    fn reject(&self){self.rejected.set(true)}
+}
+impl observed::allocation::AllocationBudget for Budget {
+    fn reserve(&self,bytes:usize,kind:&'static str)->bool {self.reserve(bytes,kind)}
+    fn reject(&self){self.rejected.set(true)}
+}
+fn options()->DecoderOptions {DecoderOptions::default().set_strict_mode(false)}
+fn decode(bytes:&[u8],observer:bool,limit:usize)->(Result<Vec<u8>,String>,Budget) {
+    let budget=Budget::new(limit);
+    let result=if observer {
+        let mut d=observed::JpegDecoder::new_with_options(ZCursor::new(bytes),options());
+        d.set_allocation_budget(&budget).unwrap();d.decode().map_err(|e|format!("{e:?}"))
+    }else{
+        let mut d=original::JpegDecoder::new_with_options(ZCursor::new(bytes),options());
+        d.set_allocation_budget(&budget).unwrap();d.decode().map_err(|e|format!("{e:?}"))
+    };
+    (result,budget)
+}
+pub fn audit(bytes:&[u8])->Value {
+    observed::audit_observer::reset();
+    let (plain,budget)=decode(bytes,false,usize::MAX);
+    let (watched,watched_budget)=decode(bytes,true,usize::MAX);
+    let branch=observed::audit_observer::snapshot();
+    let mut reject_worker=Budget::new(usize::MAX);reject_worker.deny_worker=true;
+    let mut rejected_decoder=observed::JpegDecoder::new_with_options(ZCursor::new(bytes),options());
+    rejected_decoder.set_allocation_budget(&reject_worker).unwrap();let worker_result=rejected_decoder.decode();
+    let worker_rejection=reject_worker.rejected.get();
+    if branch[2]>0 {assert!(worker_rejection&&worker_result.is_err())}
+    if let Err(error)=&plain {
+        assert_eq!(plain,watched);assert_eq!(budget.used.get(),watched_budget.used.get());
+        return json!({"original_decode_error":error,"observer_error_equal":true,"charged_bytes":budget.used.get(),"worker_h_calls":branch[0],"worker_h_len_growths":branch[1],"worker_h_capacity_growths":branch[2],"worker_growth_reservation_rejected":worker_rejection,"normal_reservations":budget.kinds.borrow().clone()});
+    }
+    let plain=plain.unwrap();let watched=watched.unwrap();
+    assert_eq!(plain,watched);assert_eq!(budget.used.get(),watched_budget.used.get());
+    let charged=budget.used.get();
+    let (limited,denied)=decode(bytes,true,charged-1);
+    assert!(limited.is_err()&&denied.rejected.get());
+    let (exact,_)=decode(bytes,true,charged);
+    assert_eq!(exact.unwrap(),plain);
+    let (retry,_)=decode(bytes,true,usize::MAX);
+    assert_eq!(retry.unwrap(),plain);
+    let fnv=plain.iter().fold(0xcbf29ce484222325u64,|hash,b| (hash^u64::from(*b)).wrapping_mul(0x100000001b3));
+    json!({"decoded_bytes":plain.len(),"pixel_prefix":&plain[..plain.len().min(12)],"pixel_fnv1a64":format!("{fnv:016x}"),"unmodified_pixels_equal":true,"charged_bytes":charged,"worker_h_calls":branch[0],"worker_h_len_growths":branch[1],"worker_h_capacity_growths":branch[2],"worker_growth_reservation_rejected":worker_rejection,"one_below_rejected":true,"exact_budget_passed":true,"healthy_followup_passed":true,"normal_reservations":budget.kinds.borrow().clone()})
+}
+#[wasm_bindgen::prelude::wasm_bindgen]
+pub fn audit_jpeg(bytes:&[u8])->String {audit(bytes).to_string()}

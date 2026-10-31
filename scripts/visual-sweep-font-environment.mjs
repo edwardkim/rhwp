@@ -14,10 +14,9 @@ export async function applySweepFontEnvironment(doc, environmentJson, preparePro
   }
   const plan = JSON.parse(doc.getDocumentFontSelectionPlan());
   if (plan.environmentId !== null) throw Error('새 문서에 예상하지 못한 글꼴 환경이 있습니다.');
-  // Native도 문서 지정·조건부 공개 대체 후보가 없으면 환경을 만들지 않는다. 문서 사전에만
-  // 남은 미사용 face를 환경 선택을 위해 모두 로드할 이유가 없다.
-  // 실제 paint의 글꼴 공급·로드 검증은 exporter가 요청된 run별로 계속 수행한다.
-  if (plan.requests.every(request => request.substitute.length === 0 && (request.publicFallback?.length ?? 0) === 0)) {
+  // 기본 HFT face도 실제 설치된 OTF/TTF 프로그램으로 선택할 수 있다.
+  // 후보가 없는 문서만 준비를 생략하고, 선택은 공통 Rust 계약에 맡긴다.
+  if (plan.requests.length === 0) {
     const environment = JSON.parse(doc.buildFontEnvironmentFromAvailablePrograms('[]'));
     if (environment !== null) throw Error('대체 후보가 없는 문서에서 예상하지 못한 환경이 생성됐습니다.');
     return {source: 'noDeclaredSubstitutions', environment: null, programs: [], loaded: []};
@@ -39,7 +38,8 @@ export function selectSweepProgramFaces(plan, fonts) {
     // 어느 것을 사용할지는 여기서 결정하지 않고 실제 준비된 후보만 반환한다.
     const candidates = fonts.filter(face => face.families.some(name => name.toLowerCase() === query.toLowerCase())
       && !face.families.some(name => embedded.has(name.toLowerCase())));
-    const face = candidates.toSorted((a, b) => rank(a) - rank(b))[0];
+    const face = candidates.toSorted((a, b) => rank(a) - rank(b)
+      || Number(Boolean(b.openTypeCff)) - Number(Boolean(a.openTypeCff)))[0];
     return face ? [{query, face}] : [];
   });
 }
@@ -48,6 +48,10 @@ export function hasTrueTypeSfntSignature(bytes) {
   if (bytes.byteLength < 4) return false;
   const signature = new DataView(bytes).getUint32(0);
   return signature === 0x00010000 || signature === 0x74727565;
+}
+
+export function hasOpenTypeCffSignature(bytes) {
+  return bytes.byteLength >= 4 && new DataView(bytes).getUint32(0) === 0x4f54544f;
 }
 
 // FontTools로 준비한 실제 SFNT bytes의 로드 성공·hash·형식을 증명한 뒤만
@@ -84,7 +88,8 @@ export async function loadSweepFontPrograms(plan, fonts, host = globalThis, sour
         repairs: record.repairs, sourceKind: record.sourceKind || 'external'});
     }
     programs.push({query, family, programId: `sweep-${resource.sha256}`,
-      trueType: hasTrueTypeSfntSignature(resource.bytes)});
+      trueType: hasTrueTypeSfntSignature(resource.bytes),
+      openTypeCff: hasOpenTypeCffSignature(resource.bytes)});
   }
   await host.document.fonts.ready;
   return {programs, loaded};

@@ -2,7 +2,7 @@
 
 jpeg-decoder 0.3.2 기반이다. 상류 소스 hash·crate checksum·revision은 UPSTREAM.json,
 원래 라이선스·manifest는 LICENSE-*와 Cargo.toml.orig에 보존한다. 비공개 local package
-0.3.2-rhwp.1이며 publish=false다. 제한 PDF import의 CMYK 경로만 사용하고, 일반
+0.3.2-rhwp.1이며 publish=["crates-io"]다. 제한 PDF import의 CMYK 경로만 사용하고, 일반
 registry decoder와 기존 image 소비자는 유지한다.
 
 - `new_with_allocation_budget`으로 생성자 table·header보다 먼저 빌린 Sync 요청 context를

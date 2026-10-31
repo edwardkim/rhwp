@@ -27,6 +27,7 @@ pub struct ImageSampling {
     mipmap_mode: MipmapMode,
     profile: crate::paint::RenderProfile,
     paper_grid: Option<crate::renderer::bitmap_raster::PrintPaperGrid>,
+    print_page: Option<[u64; 3]>,
 }
 
 impl ImageSampling {
@@ -36,6 +37,7 @@ impl ImageSampling {
             mipmap_mode: MipmapMode::None,
             profile: crate::paint::RenderProfile::Screen,
             paper_grid: None,
+            print_page: None,
         }
     }
 
@@ -45,6 +47,7 @@ impl ImageSampling {
             mipmap_mode: MipmapMode::Linear,
             profile: crate::paint::RenderProfile::Screen,
             paper_grid: None,
+            print_page: None,
         }
     }
 
@@ -54,6 +57,7 @@ impl ImageSampling {
             mipmap_mode: MipmapMode::None,
             profile: crate::paint::RenderProfile::Screen,
             paper_grid: None,
+            print_page: None,
         }
     }
 
@@ -79,6 +83,11 @@ impl ImageSampling {
 
     pub(super) fn options(self) -> SamplingOptions {
         SamplingOptions::new(self.filter_mode, self.mipmap_mode)
+    }
+
+    pub(super) fn with_print_page(mut self, page: Option<(f64, f64, f64)>) -> Self {
+        self.print_page = page.map(|(w, h, scale)| [w.to_bits(), h.to_bits(), scale.to_bits()]);
+        self
     }
 }
 
@@ -256,6 +265,19 @@ pub(super) fn draw_image_bytes(
         && super::metafile_print::draw(canvas, bytes)
     {
         return true;
+    }
+    if crate::renderer::image_resolver::png_sampling::print_separate_alpha(bytes) {
+        if let Some([w, h, scale]) = sampling.print_page {
+            if super::print_image_sampling::draw_masked(
+                canvas,
+                bytes,
+                Rect::from_xywh(x, y, width, height),
+                (f64::from_bits(w), f64::from_bits(h)),
+                f64::from_bits(scale),
+            ) {
+                return true;
+            }
+        }
     }
     // [#3460] HWPX BinData 는 SVG 를 그대로 담는다(`<hc:img>` → `Format="svg"`). skia 디코더는
     // SVG 를 읽지 못해 종전에는 회색 자리표시자만 남았다. 같은 모듈의 resvg 로 목적지 크기에
@@ -478,6 +500,20 @@ pub(super) fn draw_image_bytes(
         if sampling.mipmap_mode == MipmapMode::Linear && src.is_none() && !binary_preprocessed {
             if let Some(frame) = super::super::print_raster::PrintRasterFrame::read(bytes) {
                 if super::anisotropic_image::draw_print_frame(canvas, &image, frame, &paint) {
+                    return;
+                }
+            }
+        }
+        if src.is_none() && !binary_preprocessed && sampling.mipmap_mode == MipmapMode::Linear {
+            if let Some([w, h, scale]) = sampling.print_page {
+                if super::print_image_sampling::draw(
+                    canvas,
+                    &image,
+                    dst,
+                    &paint,
+                    (f64::from_bits(w), f64::from_bits(h)),
+                    f64::from_bits(scale),
+                ) {
                     return;
                 }
             }

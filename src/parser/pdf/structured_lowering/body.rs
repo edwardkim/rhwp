@@ -3,21 +3,6 @@ use super::*;
 use crate::model::shape::{DrawingObjAttr, RectangleShape, TextBox};
 use crate::parser::pdf::recognition::BodyRecognition;
 
-type Checkpoint = (usize, usize, usize, usize);
-fn checkpoint(doc: &Document, typography: &std::cell::RefCell<Vec<Value>>) -> Checkpoint {
-    (
-        doc.doc_info.para_shapes.len(),
-        doc.doc_info.char_shapes.len(),
-        doc.doc_info.tab_defs.len(),
-        typography.borrow().len(),
-    )
-}
-fn rollback(doc: &mut Document, typography: &std::cell::RefCell<Vec<Value>>, c: Checkpoint) {
-    doc.doc_info.para_shapes.truncate(c.0);
-    doc.doc_info.char_shapes.truncate(c.1);
-    doc.doc_info.tab_defs.truncate(c.2);
-    typography.borrow_mut().truncate(c.3);
-}
 fn intersects(a: &CommonObjAttr, b: &CommonObjAttr) -> bool {
     let (ax, ay) = (
         a.horizontal_offset as i32 as f32 / 100.,
@@ -37,15 +22,13 @@ fn paint_order(
     consumed: &BTreeSet<usize>,
     removed: &BTreeSet<usize>,
 ) -> Result<i32, String> {
-    let layers: Vec<_> = consumed
+    let mut layers = consumed
         .iter()
-        .filter_map(|&i| paint_frame(&controls[i]).map(|f| f.z_order))
-        .collect();
-    let first = *layers
-        .iter()
-        .min()
-        .ok_or("body frame has no source paint")?;
-    let last = *layers.iter().max().unwrap();
+        .filter_map(|&i| paint_frame(&controls[i]).map(|f| f.z_order));
+    let initial = layers.next().ok_or("body frame has no source paint")?;
+    let (first, last) = layers.fold((initial, initial), |(first, last), z| {
+        (first.min(z), last.max(z))
+    });
     for (i, c) in controls.iter().enumerate() {
         if consumed.contains(&i) || removed.contains(&i) {
             continue;
@@ -89,39 +72,26 @@ fn prepare<'a>(
     {
         return Err("source text clip requires positional editable owner".into());
     }
+    let allocation = Allocation(&page.import_budget);
     let mut owned = BTreeSet::new();
     for &source in &p.span_indices {
         let control = span_controls[source].ok_or("missing body source owner")?;
-        if removed.contains(&control) || !owned.insert(control) {
+        if removed.contains(&control)
+            || !allocation
+                .insert_set(&mut owned, control)
+                .map_err(message)?
+        {
             return Err("body source already owned".into());
         }
     }
-    let start = typography.borrow().len();
-    let mut item = paragraph(
-        page,
-        doc,
-        p,
-        &json!(region.bbox),
-        shape_ids,
-        true,
-        styles,
-        typography,
-    )?;
-    if let Some(reason) = typography.borrow()[start..]
-        .iter()
-        .find(|r| r["status"] == "unverified_legacy_line_frame")
-        .and_then(|r| r["reason"].as_str())
-    {
-        // A tab-only substitute is not a proven body paragraph layout. Retain
-        // the original source owners rather than broadening character metrics.
-        return Err(format!(
-            "body glyph metrics require positioned source: {reason}"
-        ));
-    }
-    let wrap = super::wrap_width::fit(page, doc, p, region.bbox, &mut item);
-    if let Some(first) = typography.borrow_mut().get_mut(start) {
-        first["paragraphReflow"] = wrap;
-    }
+    let item = match verified_paragraph(page, doc, p, region.bbox, shape_ids, styles, typography) {
+        Ok(item) => item,
+        Err(reason) => {
+            return Err(allocation
+                .display(&format_args!("body {reason}"))
+                .map_err(message)?)
+        }
+    };
     Ok(Prepared {
         proposal: p,
         item,
@@ -136,6 +106,7 @@ fn frame(
     controls: &[Control],
     removed: &BTreeSet<usize>,
     id: u32,
+    allocation: Allocation<'_>,
 ) -> Result<Control, String> {
     let z = paint_order(controls, consumed, removed)?;
     let top = flow.first().ok_or("empty body frame")?.top;
@@ -167,25 +138,29 @@ fn frame(
     )?;
     attrs.z_order = z;
     let (width, height) = (attrs.width, attrs.height);
-    Ok(Control::Shape(Box::new(ShapeObject::Rectangle(
-        RectangleShape {
-            common: attrs,
-            x_coords: [0, width as i32, width as i32, 0],
-            y_coords: [0, 0, height as i32, height as i32],
-            drawing: DrawingObjAttr {
-                shape_attr: super::super::lowering::component(width, height),
-                inst_id: id,
-                text_box: Some(TextBox {
-                    max_width: width,
-                    text_margin_explicit: true,
-                    paragraphs: flow.into_iter().map(|f| f.paragraph).collect(),
+    Ok(Control::Shape(
+        allocation
+            .boxed(ShapeObject::Rectangle(RectangleShape {
+                common: attrs,
+                x_coords: [0, width as i32, width as i32, 0],
+                y_coords: [0, 0, height as i32, height as i32],
+                drawing: DrawingObjAttr {
+                    shape_attr: super::super::lowering::component(width, height),
+                    inst_id: id,
+                    text_box: Some(TextBox {
+                        max_width: width,
+                        text_margin_explicit: true,
+                        paragraphs: allocation
+                            .collect(flow.into_iter().map(|f| f.paragraph))
+                            .map_err(message)?,
+                        ..Default::default()
+                    }),
                     ..Default::default()
-                }),
+                },
                 ..Default::default()
-            },
-            ..Default::default()
-        },
-    ))))
+            }))
+            .map_err(message)?,
+    ))
 }
 #[derive(Default)]
 struct Output {
@@ -199,21 +174,25 @@ impl Output {
         ri: usize,
         region: &BodyRecognition,
         batch: &mut Vec<Prepared<'_>>,
-        cp: Checkpoint,
+        cp: StyleCheckpoint,
         doc: &mut Document,
         typography: &std::cell::RefCell<Vec<Value>>,
         controls: &[Control],
         removed: &mut BTreeSet<usize>,
         next_id: &mut u32,
-    ) -> bool {
+        allocation: Allocation<'_>,
+    ) -> Result<bool, String> {
         if batch.is_empty() {
-            return true;
+            return Ok(true);
         }
         let count = batch.len();
-        let spans: Vec<_> = batch
-            .iter()
-            .flat_map(|p| p.proposal.span_indices.iter().copied())
-            .collect();
+        let spans: Vec<_> = allocation
+            .collect(
+                batch
+                    .iter()
+                    .flat_map(|p| p.proposal.span_indices.iter().copied()),
+            )
+            .map_err(message)?;
         // Observed text extent of the frame, in page points. Layout modes that
         // place these paragraphs outside the frame use it as their measure.
         let lines = || batch.iter().flat_map(|p| p.proposal.lines.iter());
@@ -226,30 +205,39 @@ impl Output {
         let mut owned = BTreeSet::new();
         let mut flow = Vec::new();
         for p in batch.drain(..) {
-            owned.extend(p.owned);
-            flow.push(p.item);
+            allocation
+                .extend_set(&mut owned, p.owned)
+                .map_err(message)?;
+            allocation.push(&mut flow, p.item).map_err(message)?;
         }
         let built = next_id
             .checked_add(1)
             .ok_or("body frame ID overflow".into())
             .and_then(|next| {
-                frame(doc, region, flow, &owned, controls, removed, *next_id).map(|c| (next, c))
+                frame(
+                    doc, region, flow, &owned, controls, removed, *next_id, allocation,
+                )
+                .map(|c| (next, c))
             });
-        match built {
+        allocation.0.check().map_err(|e| e.to_string())?;
+        let committed = match built {
             Ok((next, control)) => {
                 self.paragraphs += count;
-                self.reports.push(json!({"region":ri,"status":"paragraph_ir","instanceId":*next_id,"paragraphCount":count,"textBox":text_box,"spans":spans}));
-                self.frames.push(control);
-                removed.extend(owned);
+                allocation.push(&mut self.reports, request_json!(allocation, {"region":ri,"status":"paragraph_ir","instanceId":*next_id,"paragraphCount":count,"textBox":text_box,"spans":spans})?).map_err(message)?;
+                allocation
+                    .push(&mut self.frames, control)
+                    .map_err(message)?;
+                allocation.extend_set(removed, owned).map_err(message)?;
                 *next_id = next;
                 true
             }
             Err(reason) => {
                 rollback(doc, typography, cp);
-                self.reports.push(json!({"region":ri,"status":"retained_positioned_spans","reason":reason,"spans":spans}));
+                allocation.push(&mut self.reports, request_json!(allocation, {"region":ri,"status":"retained_positioned_spans","reason":reason,"spans":spans})?).map_err(message)?;
                 false
             }
-        }
+        };
+        Ok(committed)
     }
 }
 pub(super) fn lower(
@@ -262,7 +250,8 @@ pub(super) fn lower(
     typography: &std::cell::RefCell<Vec<Value>>,
     removed: &mut BTreeSet<usize>,
     next_id: &mut u32,
-) -> (Vec<Control>, Value) {
+) -> Result<(Vec<Control>, Value), String> {
+    let allocation = Allocation(&page.import_budget);
     let mut output = Output::default();
     for (ri, region) in page.recognition.body.iter().enumerate() {
         let mut batch = Vec::new();
@@ -273,19 +262,22 @@ pub(super) fn lower(
             // frame before a paragraph whose sources would interleave with
             // other paint, so the conflict retains only the paragraphs it
             // actually touches.
-            let owned: BTreeSet<usize> = p
-                .span_indices
-                .iter()
-                .filter_map(|&i| span_controls[i])
-                .collect();
+            let owned = allocation
+                .set_from(p.span_indices.iter().filter_map(|&i| span_controls[i]))
+                .map_err(message)?;
             let alone_conflicts = confirmed && paint_order(controls, &owned, removed).is_err();
             if confirmed && !alone_conflicts && !batch.is_empty() {
-                let mut joined = owned.clone();
-                joined.extend(
-                    batch
-                        .iter()
-                        .flat_map(|b: &Prepared<'_>| b.owned.iter().copied()),
-                );
+                let mut joined = allocation
+                    .set_from(owned.iter().copied())
+                    .map_err(message)?;
+                allocation
+                    .extend_set(
+                        &mut joined,
+                        batch
+                            .iter()
+                            .flat_map(|b: &Prepared<'_>| b.owned.iter().copied()),
+                    )
+                    .map_err(message)?;
                 if paint_order(controls, &joined, removed).is_err() {
                     output.commit(
                         ri,
@@ -297,7 +289,8 @@ pub(super) fn lower(
                         controls,
                         removed,
                         next_id,
-                    );
+                        allocation,
+                    )?;
                 }
             }
             let before = checkpoint(doc, typography);
@@ -316,8 +309,9 @@ pub(super) fn lower(
                     removed,
                 )
             } else {
-                Err(p.reason.clone())
+                Err(allocation.string(&p.reason).map_err(message)?)
             };
+            allocation.0.check().map_err(|e| e.to_string())?;
             match prepared {
                 Ok(prepared) => {
                     // Frames stack paragraphs top to bottom. A paragraph box
@@ -336,17 +330,18 @@ pub(super) fn lower(
                             controls,
                             removed,
                             next_id,
-                        );
+                            allocation,
+                        )?;
                         if !committed {
                             // The failed batch rolled back this paragraph's styles too.
-                            output.reports.push(json!({"region":ri,"paragraph":pi,"status":"retained_positioned_spans","reason":"previous body frame was not representable","spans":p.span_indices}));
+                            allocation.push(&mut output.reports, request_json!(allocation, {"region":ri,"paragraph":pi,"status":"retained_positioned_spans","reason":"previous body frame was not representable","spans":p.span_indices})?).map_err(message)?;
                             continue;
                         }
                     }
                     if batch.is_empty() {
                         batch_start = before;
                     }
-                    batch.push(prepared);
+                    allocation.push(&mut batch, prepared).map_err(message)?;
                     if p.reason == "intervening_object" {
                         output.commit(
                             ri,
@@ -358,7 +353,8 @@ pub(super) fn lower(
                             controls,
                             removed,
                             next_id,
-                        );
+                            allocation,
+                        )?;
                     }
                 }
                 Err(reason) => {
@@ -373,8 +369,9 @@ pub(super) fn lower(
                         controls,
                         removed,
                         next_id,
-                    );
-                    output.reports.push(json!({"region":ri,"paragraph":pi,"status":"retained_positioned_spans","reason":reason,"spans":p.span_indices}));
+                        allocation,
+                    )?;
+                    allocation.push(&mut output.reports, request_json!(allocation, {"region":ri,"paragraph":pi,"status":"retained_positioned_spans","reason":reason,"spans":p.span_indices})?).map_err(message)?;
                 }
             }
         }
@@ -388,10 +385,11 @@ pub(super) fn lower(
             controls,
             removed,
             next_id,
-        );
+            allocation,
+        )?;
     }
-    (
+    Ok((
         output.frames,
-        json!({"frames":output.reports,"semanticParagraphs":output.paragraphs,"policy":"owner-local representable proposals; original scalars/joins; cumulative frame LineSegs; ambiguous metrics and interleaved paint retained"}),
-    )
+        request_json!(allocation, {"frames":output.reports,"semanticParagraphs":output.paragraphs,"policy":"owner-local representable proposals; original scalars/joins; cumulative frame LineSegs; ambiguous metrics and interleaved paint retained"})?,
+    ))
 }

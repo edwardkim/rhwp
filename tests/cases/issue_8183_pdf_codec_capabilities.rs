@@ -16,6 +16,8 @@ fn codec_capabilities_match_selected_features_and_schema() {
         "enabled": support.enabled,
         "jbig2": support.jbig2,
         "jpeg2000": support.jpeg2000,
+        "icc": support.icc,
+        "boundedXrefRecovery": support.bounded_xref_recovery,
     });
     let binary =
         std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").into());

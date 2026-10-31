@@ -3,6 +3,11 @@
 use crate::{document_core::DocumentCore, error::HwpError};
 
 impl DocumentCore {
+    /// 호스트 글꼴 세대 교체 시 특정 family의 오래된 paint 공급을 폐기한다.
+    pub fn clear_text_font_family_native(&mut self, family: &str) {
+        self.hft_outline_fonts.clear_family(family);
+    }
+
     /// 실제 적재한 FontFace의 cmap만 paint용으로 등록한다. 저장·측정 정보는 바꾸지 않는다.
     pub fn register_text_font_glyph_coverage_native(
         &mut self,

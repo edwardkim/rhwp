@@ -1,0 +1,75 @@
+{
+  "passed": true,
+  "independentSource": {
+    "page": 15,
+    "pdf": "samples/21_언어_기출_편집가능본-2010.pdf",
+    "sourceGlyph": "]",
+    "sourceOrigin96Dpi": [
+      137.92926025390625,
+      1070.2560221354167
+    ],
+    "sourceBBox96Dpi": [
+      137.92926025390625,
+      1058.485107421875,
+      142.84625244140625,
+      1073.19873046875
+    ],
+    "pdfSha256": "609d56421009ccab5a50cb2a8f4e78af4d0961de2e7ae85d811905e8434ac251"
+  },
+  "records": [
+    {
+      "runtime": "native",
+      "key": "pdf-2010-fidelity",
+      "page": 15,
+      "characters": 2055,
+      "characterInventoryEqual": true,
+      "onlyOmittedGlyph": "]",
+      "omittedGlyphCountPerSide": 1,
+      "remainingTextOrderEqual": true,
+      "baseMarkerBBox": {
+        "x": 137.9,
+        "y": 1057.7,
+        "w": 4.9,
+        "h": 14.7
+      },
+      "candidateMarkerBBox": {
+        "x": 137.9,
+        "y": 1056.3,
+        "w": 4.7,
+        "h": 14.7
+      },
+      "maxBBoxDelta": 1.400000000000091
+    },
+    {
+      "runtime": "wasm",
+      "key": "pdf-2010-fidelity",
+      "page": 15,
+      "characters": 2055,
+      "characterInventoryEqual": true,
+      "onlyOmittedGlyph": "]",
+      "omittedGlyphCountPerSide": 1,
+      "remainingTextOrderEqual": true,
+      "baseMarkerBBox": {
+        "x": 137.9,
+        "y": 1057.7,
+        "w": 4.9,
+        "h": 14.7
+      },
+      "candidateMarkerBBox": {
+        "x": 137.9,
+        "y": 1056.3,
+        "w": 4.7,
+        "h": 14.7
+      },
+      "maxBBoxDelta": 1.400000000000091
+    }
+  ],
+  "directReview": {
+    "completed": true,
+    "image": "images/label-review/pdf-2010-p15-label-detail.png",
+    "imageSha256": "167a190c9fdca7417996e874b0a2c5ef259f5c4ac6516255551681a903259e8a",
+    "finding": "The same two-row margin label and body occupy the same source positions. The closing bracket is visited with its label instead of after unrelated body frames. No character is missing or duplicated and the complete remaining body order is unchanged."
+  },
+  "productionSourceSha": "fa254efdfe9e33c4dcaf54c0ac3e534819111a9e",
+  "assertionOrProductSourceChanged": false
+}

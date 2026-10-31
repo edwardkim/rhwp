@@ -29,40 +29,56 @@ use crate::serializer::control::pack_common_attr_bits;
 /// - description (HWP string: u16 length + UTF-16LE)
 /// - raw_extra (그대로 이어붙임 — 라운드트립 보존)
 pub fn serialize_common_obj_attr(common: &CommonObjAttr) -> Vec<u8> {
-    let mut w = ByteWriter::new();
-
-    // attr 비트 필드 재구성: HWPX 출처는 attr=0 이므로 enum 으로부터 비트 합성.
-    // HWP 출처는 attr 가 이미 채워져 있으므로 그대로 사용.
-    let attr = if common.attr != 0 {
-        common.attr
-    } else {
-        pack_common_attr_bits(common)
-    };
-    w.write_u32(attr).unwrap();
-
-    w.write_u32(common.vertical_offset).unwrap();
-    w.write_u32(common.horizontal_offset).unwrap();
-    w.write_u32(common.width).unwrap();
-    w.write_u32(common.height).unwrap();
-    w.write_i32(common.z_order).unwrap();
-
-    w.write_i16(common.margin.left).unwrap();
-    w.write_i16(common.margin.right).unwrap();
-    w.write_i16(common.margin.top).unwrap();
-    w.write_i16(common.margin.bottom).unwrap();
-
-    w.write_u32(common.instance_id).unwrap();
-    w.write_i32(common.prevent_page_break).unwrap();
-
-    // description (HWP string)
-    w.write_hwp_string(&common.description).unwrap();
-
-    // 라운드트립 보존: raw_extra 가 있으면 이어붙임
-    if !common.raw_extra.is_empty() {
-        w.write_bytes(&common.raw_extra).unwrap();
+    match try_serialize_common_obj_attr(common, &crate::storage::Unbounded) {
+        Ok(bytes) => bytes,
+        Err(never) => match never {},
     }
+}
 
-    w.into_bytes()
+pub(crate) fn try_serialize_common_obj_attr<S: crate::storage::Storage>(
+    common: &CommonObjAttr,
+    storage: &S,
+) -> Result<Vec<u8>, S::Error> {
+    storage.binary(&CommonPayload(common))
+}
+struct CommonPayload<'a>(&'a CommonObjAttr);
+impl crate::serializer::byte_writer::BinaryProducer for CommonPayload<'_> {
+    fn write<W: std::io::Write>(&self, w: &mut ByteWriter<W>) -> std::io::Result<()> {
+        let common = self.0;
+
+        // attr 비트 필드 재구성: HWPX 출처는 attr=0 이므로 enum 으로부터 비트 합성.
+        // HWP 출처는 attr 가 이미 채워져 있으므로 그대로 사용.
+        let attr = if common.attr != 0 {
+            common.attr
+        } else {
+            pack_common_attr_bits(common)
+        };
+        w.write_u32(attr)?;
+
+        w.write_u32(common.vertical_offset)?;
+        w.write_u32(common.horizontal_offset)?;
+        w.write_u32(common.width)?;
+        w.write_u32(common.height)?;
+        w.write_i32(common.z_order)?;
+
+        w.write_i16(common.margin.left)?;
+        w.write_i16(common.margin.right)?;
+        w.write_i16(common.margin.top)?;
+        w.write_i16(common.margin.bottom)?;
+
+        w.write_u32(common.instance_id)?;
+        w.write_i32(common.prevent_page_break)?;
+
+        // description (HWP string)
+        w.write_hwp_string(&common.description)?;
+
+        // 라운드트립 보존: raw_extra 가 있으면 이어붙임
+        if !common.raw_extra.is_empty() {
+            w.write_bytes(&common.raw_extra)?;
+        }
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]

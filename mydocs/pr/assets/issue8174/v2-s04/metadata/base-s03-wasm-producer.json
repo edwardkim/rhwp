@@ -1,0 +1,25 @@
+{
+  "source": "9a9329766ae8068a841795c9cb0f216c5f790c84",
+  "files": {
+    "rhwp.js": {
+      "sha256": "f5b8d7efac555686062dfaaeb59b21377e71dfcc43c53d81e1791302ecdc7b57",
+      "bytes": 489284
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "3af77ad489908d3b65172fd6d7ab8c780148f9d4c4fe1a3b7a86b39228ac44dd",
+      "bytes": 23340325
+    },
+    "rhwp.d.ts": {
+      "sha256": "51b163b458cf77000e903e3afd365038696396ccb308f3010d9c076488a03255",
+      "bytes": 196298
+    },
+    "rhwp_bg.wasm.d.ts": {
+      "sha256": "4169380dc4ccf62fbe301630538e78297fa6f5dc0a09095cd78d9f034efc40c1",
+      "bytes": 67499
+    },
+    "package.json": {
+      "sha256": "cd5f56d943bba55815bef3b033b1a24b2e0a659f334702b66ee2e84112ee9c8a",
+      "bytes": 429
+    }
+  }
+}

@@ -1,3 +1,11 @@
+//! 관계형·고정형: 그림 프레임과 줄 점유·테두리 소유 계약.
+//! 주석 갱신: 2026-10-30T14:47:29+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
+//! 과거 측정 raw(192dpi, PDFium; 측정일 확인 필요): 공개 그림 1쪽 Native 99.91% / fresh WASM 99.91%,
+//! 셀 그림 1쪽 각 100.00%; 각 전 1쪽 최저도 동일하다.
+//! issue_265.hwp 1쪽 Native 99.02% / fresh WASM 98.87%, 전 16쪽 최저도 동일하다.
+//! 근거: tests/fixtures/issue7445_picture_source_frame/README.md,
+//! mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/picture-source-frame/README.md.
+//! 위 수치는 당시 증거이며 현재 head의 재측정 결과가 아니다.
 //! 원본 그림 프레임·줄 점유·테두리 소유를 같은 출력 경로에서 보호한다.
 //! 독립 Hancom Print와 Native/fresh WASM 전쪽 결과는 fixture README에 기록한다.
 #![cfg(not(target_arch = "wasm32"))]
@@ -93,6 +101,11 @@ fn rotated_picture_keeps_its_unrotated_paint_frame_and_both_query_routes() {
 
 #[test]
 fn picture_outlines_preserve_the_bitmap_interior_and_source_pen_joins() {
+    use rhwp::{
+        paint::{LayerNode, LayerNodeKind, PaintOp, RenderProfile},
+        renderer::render_tree::BoundingBox,
+    };
+
     let core = fixture("public-picture-outlines.hwpx");
     let tree = core.build_page_render_tree(0).unwrap();
     let image = picture_on_paragraph(&tree.root, "wide");
@@ -115,6 +128,71 @@ fn picture_outlines_preserve_the_bitmap_interior_and_source_pen_joins() {
     // 독립 Print의 36pt 외곽선도 그림 안쪽은 약 0.72pt만 덮고 로고를 보존한다.
     assert!(outline.bbox.width - rect.style.stroke_width > image.bbox.width * 0.9);
     assert!(outline.bbox.height - rect.style.stroke_width > image.bbox.height * 0.9);
+
+    fn painted_frames(
+        node: &LayerNode,
+        image_id: u32,
+        outline_id: u32,
+        images: &mut Vec<BoundingBox>,
+        outlines: &mut Vec<(BoundingBox, f64)>,
+    ) {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => {
+                for child in children {
+                    painted_frames(child, image_id, outline_id, images, outlines);
+                }
+            }
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                painted_frames(child, image_id, outline_id, images, outlines);
+            }
+            LayerNodeKind::Leaf { ops } => {
+                for op in ops {
+                    match op {
+                        PaintOp::Image { bbox, image, .. }
+                            if node.source_node_id == Some(image_id) =>
+                        {
+                            images.push(image.paint_bbox(bbox));
+                        }
+                        PaintOp::Rectangle { bbox, rect }
+                            if node.source_node_id == Some(outline_id) =>
+                        {
+                            outlines.push((*bbox, rect.style.stroke_width));
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
+    }
+    for profile in [RenderProfile::Screen, RenderProfile::Print] {
+        let paint = core.build_page_layer_tree_with_profile(0, profile).unwrap();
+        let (mut images, mut outlines) = (Vec::new(), Vec::new());
+        painted_frames(
+            &paint.root,
+            image.id,
+            outline.id,
+            &mut images,
+            &mut outlines,
+        );
+        assert_eq!(images.len(), 1, "최종 {profile:?}의 같은 원본 그림 소유");
+        assert_eq!(
+            outlines.len(),
+            1,
+            "최종 {profile:?}의 같은 원본 테두리 소유"
+        );
+        let image = images[0];
+        let (border, pen) = outlines[0];
+        let visible_width = (border.x + border.width - pen / 2.0).min(image.x + image.width)
+            - (border.x + pen / 2.0).max(image.x);
+        let visible_height = (border.y + border.height - pen / 2.0).min(image.y + image.height)
+            - (border.y + pen / 2.0).max(image.y);
+        assert!(
+            visible_width > image.width * 0.9 && visible_height > image.height * 0.9,
+            "독립 Print의 로고 내부 보존은 최종 {profile:?}에서도 유지한다: \
+             image={image:?}, border={border:?}, pen={pen}, \
+             interior={visible_width}×{visible_height}"
+        );
+    }
 
     fn joins(value: &Value, counts: &mut [usize; 2]) {
         if value["type"].as_str() == Some("rectangle") {

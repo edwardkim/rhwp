@@ -1,0 +1,18 @@
+{
+  "source": "/home/edward/mygithub/rhwp/vendor/rhwp-zune-jpeg",
+  "original_tree_head": "695cea7b973fc54fc5ffc7f6d414f7ecf403b882",
+  "changes": [
+    {
+      "path": "src/lib.rs",
+      "original_sha256": "bee4ed9b86da534450d7ebcc0be620c396e74f5a65710ce684dcfb4ee6782180",
+      "observed_sha256": "827fd5143a76670bf73d052df1ffb7f8406c060b0dccaa2783eec205467834b7"
+    },
+    {
+      "path": "src/worker.rs",
+      "original_sha256": "29850ef9ddbf482b0bbec879bef92a4a1c69cb735900b560e565e61b3b24455e",
+      "observed_sha256": "30a905ef61d1a269df7c701afa505cbffdd0f60a45be9dd41c6d5419df0fed59"
+    }
+  ],
+  "manifest_change": "audit package/lib name only",
+  "scope": "diagnostic copy; records the real H branch before unchanged resize; pixel equality checked against unmodified source"
+}

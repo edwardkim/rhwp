@@ -26,19 +26,37 @@ use crate::parser::tags;
 
 use super::canonical_defaults::FONTFACE_LANG_NAMES;
 use super::context::SerializeContext;
-use super::utils::{empty_tag, end_tag, start_tag_attrs, text, write_xml_decl};
+use super::utils::{
+    empty_tag_with_storage as empty_tag, end_tag_with_storage as end_tag,
+    start_tag_attrs_with_storage as start_tag_attrs, start_tag_with_storage as start_tag,
+    text_with_storage as text, write_xml_decl_with_storage as write_xml_decl, xml_error, xml_value,
+};
 use super::SerializeError;
 
 /// `header.xml` 바이트 생성. Stage 1 진입점.
 pub fn write_header(doc: &Document, ctx: &SerializeContext) -> Result<Vec<u8>, SerializeError> {
-    let mut w: Writer<Vec<u8>> = Writer::new(Vec::new());
-    write_xml_decl(&mut w)?;
+    write_header_with_storage(doc, ctx, &crate::storage::Unbounded)
+}
+
+pub(crate) fn write_header_with_storage<S: crate::storage::Storage>(
+    doc: &Document,
+    ctx: &SerializeContext,
+    storage: &S,
+) -> Result<Vec<u8>, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let mut w = Writer::new(crate::serializer::budget_cursor::BudgetCursor::new(
+        storage,
+        usize::MAX,
+    ));
+    write_xml_decl(&mut w, storage)?;
 
     // <hh:head> 루트 + 전체 네임스페이스 (parser가 기대하는 접두어 모두 선언)
     // secCnt 는 실제 직렬화하는 섹션 파일 수(`doc.sections`)와 일치해야 한다 (#1557).
     // doc_properties.section_count 는 파서가 갱신하지 않아 stale(1)일 수 있어, 그대로
     // 쓰면 secCnt < 실제 섹션 수가 되어 한글이 뒤 구역을 로드하지 않고 페이지가 붕괴한다.
-    let sec_cnt = doc.sections.len().max(1).to_string();
+    let sec_cnt = xml_value(storage, doc.sections.len().max(1))?;
     // HWPML 스키마 버전: 원본 보존값(문서별 상이, 1.2~1.5). 없으면 "1.2" 폴백.
     let hwpml_version = doc.doc_info.hwpml_version.as_deref().unwrap_or("1.2");
     start_tag_attrs(
@@ -72,18 +90,19 @@ pub fn write_header(doc: &Document, ctx: &SerializeContext) -> Result<Vec<u8>, S
             ("version", hwpml_version),
             ("secCnt", &sec_cnt),
         ],
+        storage,
     )?;
 
-    write_begin_num(&mut w, &doc.doc_properties)?;
+    write_begin_num(&mut w, &doc.doc_properties, storage)?;
 
     // <hh:refList>: 모든 리소스 테이블을 감싸는 컨테이너
-    super::utils::start_tag(&mut w, "hh:refList")?;
-    write_fontfaces(&mut w, &doc.doc_info, ctx)?;
-    write_border_fills(&mut w, &doc.doc_info, ctx)?;
-    write_char_properties(&mut w, &doc.doc_info, ctx)?;
-    write_tab_properties(&mut w, &doc.doc_info)?;
-    write_numberings(&mut w, &doc.doc_info)?;
-    write_bullets(&mut w, &doc.doc_info)?;
+    start_tag(&mut w, "hh:refList", storage)?;
+    write_fontfaces(&mut w, &doc.doc_info, ctx, storage)?;
+    write_border_fills(&mut w, &doc.doc_info, ctx, storage)?;
+    write_char_properties(&mut w, &doc.doc_info, ctx, storage)?;
+    write_tab_properties(&mut w, &doc.doc_info, storage)?;
+    write_numberings(&mut w, &doc.doc_info, storage)?;
+    write_bullets(&mut w, &doc.doc_info, storage)?;
     write_para_properties(
         &mut w,
         &doc.doc_info,
@@ -91,8 +110,9 @@ pub fn write_header(doc: &Document, ctx: &SerializeContext) -> Result<Vec<u8>, S
         doc.hwpx_aux_entry("version.xml")
             .and_then(|bytes| std::str::from_utf8(bytes).ok())
             .is_none_or(crate::parser::hwpx::physical_para_margin_units_from_version),
+        storage,
     )?;
-    write_styles(&mut w, &doc.doc_info, ctx)?;
+    write_styles(&mut w, &doc.doc_info, ctx, storage)?;
     // memoProperties(메모 모양 정의: 테두리/색상)는 refList 마지막 자식으로,
     // parse_memo_shape가 만드는 extra_records(HWPTAG_MEMO_SHAPE, hwpx→hwp5
     // 변환 전용)는 여기서 쓰이지 않는다. 원본 verbatim splice로 hwpx→hwpx
@@ -102,7 +122,7 @@ pub fn write_header(doc: &Document, ctx: &SerializeContext) -> Result<Vec<u8>, S
             .write_all(memo_properties.as_bytes())
             .map_err(|e| SerializeError::XmlError(format!("memoProperties splice: {e}")))?;
     }
-    end_tag(&mut w, "hh:refList")?;
+    end_tag(&mut w, "hh:refList", storage)?;
 
     // 문서 설정 tail: 원본 HWPX 가 있으면 그대로 splice(compatibleDocument/
     // docOption/trackchageConfig 무손실 보존), 없으면 하드코딩 폴백.
@@ -113,50 +133,67 @@ pub fn write_header(doc: &Document, ctx: &SerializeContext) -> Result<Vec<u8>, S
                 .map_err(|e| SerializeError::XmlError(format!("head tail splice: {e}")))?;
         }
         None => {
-            write_compatible_document(&mut w)?;
-            write_doc_option(&mut w)?;
-            write_track_change_config(&mut w, track_change_flags(&doc.doc_info))?;
+            write_compatible_document(&mut w, storage)?;
+            write_doc_option(&mut w, storage)?;
+            write_track_change_config(&mut w, track_change_flags(&doc.doc_info), storage)?;
         }
     }
 
-    end_tag(&mut w, "hh:head")?;
-    Ok(w.into_inner())
+    end_tag(&mut w, "hh:head", storage)?;
+    Ok(w.into_inner().into_inner())
 }
 
 // =====================================================================
 // <hh:beginNum>
 // =====================================================================
-fn write_begin_num<W: Write>(
+fn write_begin_num<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     props: &DocProperties,
-) -> Result<(), SerializeError> {
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     empty_tag(
         w,
         "hh:beginNum",
         &[
-            ("page", &props.page_start_num.max(1).to_string()),
-            ("footnote", &props.footnote_start_num.max(1).to_string()),
-            ("endnote", &props.endnote_start_num.max(1).to_string()),
-            ("pic", &props.picture_start_num.max(1).to_string()),
-            ("tbl", &props.table_start_num.max(1).to_string()),
-            ("equation", &props.equation_start_num.max(1).to_string()),
+            ("page", &xml_value(storage, props.page_start_num.max(1))?),
+            (
+                "footnote",
+                &xml_value(storage, props.footnote_start_num.max(1))?,
+            ),
+            (
+                "endnote",
+                &xml_value(storage, props.endnote_start_num.max(1))?,
+            ),
+            ("pic", &xml_value(storage, props.picture_start_num.max(1))?),
+            ("tbl", &xml_value(storage, props.table_start_num.max(1))?),
+            (
+                "equation",
+                &xml_value(storage, props.equation_start_num.max(1))?,
+            ),
         ],
+        storage,
     )
 }
 
 // =====================================================================
 // <hh:fontfaces> — 7 언어 그룹
 // =====================================================================
-fn write_fontfaces<W: Write>(
+fn write_fontfaces<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     doc_info: &DocInfo,
     ctx: &SerializeContext,
-) -> Result<(), SerializeError> {
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // IR의 font_faces는 항상 7개 언어 그룹을 유지한다고 기대하나,
     // 비어있거나 크기가 다를 수 있으므로 안전하게 처리.
-    let groups: Vec<&Vec<Font>> = (0..7)
-        .map(|i| doc_info.font_faces.get(i).unwrap_or(&EMPTY_FONT_VEC))
-        .collect();
+    let groups: [&Vec<Font>; 7] =
+        std::array::from_fn(|i| doc_info.font_faces.get(i).unwrap_or(&EMPTY_FONT_VEC));
 
     let item_cnt = groups.iter().filter(|g| !g.is_empty()).count();
     if item_cnt == 0 {
@@ -168,8 +205,9 @@ fn write_fontfaces<W: Write>(
         "hh:fontfaces",
         &[(
             "itemCnt",
-            &groups.iter().filter(|g| !g.is_empty()).count().to_string(),
+            &xml_value(storage, groups.iter().filter(|g| !g.is_empty()).count())?,
         )],
+        storage,
     )?;
     for (lang_idx, fonts) in groups.iter().enumerate() {
         if fonts.is_empty() {
@@ -179,66 +217,72 @@ fn write_fontfaces<W: Write>(
         start_tag_attrs(
             w,
             "hh:fontface",
-            &[("lang", lang), ("fontCnt", &fonts.len().to_string())],
+            &[
+                ("lang", lang),
+                ("fontCnt", &xml_value(storage, fonts.len())?),
+            ],
+            storage,
         )?;
         for (id, font) in fonts.iter().enumerate() {
-            let id_str = id.to_string();
+            let id_str = xml_value(storage, id)?;
             let binary_item_id_ref = resolve_font_binary_item_id_ref(
                 ctx,
                 font.resolved_bin_data_id,
                 &font.bin_item_id_ref,
                 &font.name,
+                storage,
             )?;
-            let mut font_attrs = vec![
+            let font_attrs = [
                 ("id", id_str.as_str()),
                 ("face", font.name.as_str()),
                 ("type", font_type_str(font.alt_type)),
                 ("isEmbedded", if font.is_embedded { "1" } else { "0" }),
+                ("binaryItemIDRef", binary_item_id_ref.as_str()),
             ];
-            if !binary_item_id_ref.is_empty() {
-                font_attrs.push(("binaryItemIDRef", binary_item_id_ref.as_str()));
-            }
+            let font_attrs = &font_attrs[..if binary_item_id_ref.is_empty() { 4 } else { 5 }];
             // substFont(대체 글꼴)·typeInfo(파나포스 10바이트)가 IR에 있으면
             // 자식으로 복원한다. 원본 순서는 substFont → typeInfo. 둘 다 없으면
             // 종전대로 self-closing.
             if font.subst_font.is_some() || font.type_info.is_some() {
-                start_tag_attrs(w, "hh:font", font_attrs.as_slice())?;
+                start_tag_attrs(w, "hh:font", font_attrs, storage)?;
                 if let Some(sf) = &font.subst_font {
-                    write_subst_font(w, sf, ctx)?;
+                    write_subst_font(w, sf, ctx, storage)?;
                 }
                 if let Some(ti) = &font.type_info {
-                    write_font_type_info(w, ti)?;
+                    write_font_type_info(w, ti, storage)?;
                 }
-                end_tag(w, "hh:font")?;
+                end_tag(w, "hh:font", storage)?;
             } else {
-                empty_tag(w, "hh:font", font_attrs.as_slice())?;
+                empty_tag(w, "hh:font", font_attrs, storage)?;
             }
         }
-        end_tag(w, "hh:fontface")?;
+        end_tag(w, "hh:fontface", storage)?;
     }
-    end_tag(w, "hh:fontfaces")?;
+    end_tag(w, "hh:fontfaces", storage)?;
     Ok(())
 }
 
 static EMPTY_FONT_VEC: Vec<Font> = Vec::new();
 
-fn resolve_font_binary_item_id_ref(
+fn resolve_font_binary_item_id_ref<S: crate::storage::Storage>(
     ctx: &SerializeContext,
     resolved_bin_data_id: Option<u16>,
     original_ref: &str,
     font_name: &str,
-) -> Result<String, SerializeError> {
-    match resolved_bin_data_id {
-        Some(bin_data_id) => ctx
-            .resolve_bin_id(bin_data_id)
-            .map(str::to_string)
-            .ok_or_else(|| {
-                SerializeError::XmlError(format!(
-                    "embedded font `{font_name}` references missing BinData id {bin_data_id}"
-                ))
-            }),
-        None => Ok(original_ref.to_string()),
-    }
+    storage: &S,
+) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let value = match resolved_bin_data_id {
+        Some(id) => ctx.resolve_bin_id(id).ok_or_else(|| {
+            SerializeError::XmlError(format!(
+                "embedded font `{font_name}` references missing BinData id {id}"
+            ))
+        })?,
+        None => original_ref,
+    };
+    xml_value(storage, value)
 }
 
 fn font_type_str(alt_type: u8) -> &'static str {
@@ -257,15 +301,22 @@ fn font_type_str(alt_type: u8) -> &'static str {
 /// [6]=armStyle, [7]=letterform, [8]=midline, [9]=xHeight.
 /// `[1]` 은 파서가 글꼴 이름/유형에서 합성하므로 재파싱 시 동일하게 재생성된다 —
 /// 따라서 직렬화하지 않아도 라운드트립이 정확하다.
-fn write_font_type_info<W: Write>(w: &mut Writer<W>, ti: &[u8; 10]) -> Result<(), SerializeError> {
-    let weight = ti[2].to_string();
-    let proportion = ti[3].to_string();
-    let contrast = ti[4].to_string();
-    let stroke_variation = ti[5].to_string();
-    let arm_style = ti[6].to_string();
-    let letterform = ti[7].to_string();
-    let midline = ti[8].to_string();
-    let x_height = ti[9].to_string();
+fn write_font_type_info<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    ti: &[u8; 10],
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let weight = xml_value(storage, ti[2])?;
+    let proportion = xml_value(storage, ti[3])?;
+    let contrast = xml_value(storage, ti[4])?;
+    let stroke_variation = xml_value(storage, ti[5])?;
+    let arm_style = xml_value(storage, ti[6])?;
+    let letterform = xml_value(storage, ti[7])?;
+    let midline = xml_value(storage, ti[8])?;
+    let x_height = xml_value(storage, ti[9])?;
     empty_tag(
         w,
         "hh:typeInfo",
@@ -280,22 +331,28 @@ fn write_font_type_info<W: Write>(w: &mut Writer<W>, ti: &[u8; 10]) -> Result<()
             ("midline", &midline),
             ("xHeight", &x_height),
         ],
+        storage,
     )
 }
 
 /// `parse_subst_font` 의 역함수. 4개 속성을 원본 순서(face·type·isEmbedded·
 /// binaryItemIDRef)로 복원한다. `binaryItemIDRef` 는 비임베드 시에도 빈 문자열로
 /// 항상 출력한다(한컴 원본과 동일).
-fn write_subst_font<W: Write>(
+fn write_subst_font<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     sf: &SubstFont,
     ctx: &SerializeContext,
-) -> Result<(), SerializeError> {
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let binary_item_id_ref = resolve_font_binary_item_id_ref(
         ctx,
         sf.resolved_bin_data_id,
         &sf.bin_item_id_ref,
         &sf.face,
+        storage,
     )?;
     empty_tag(
         w,
@@ -306,6 +363,7 @@ fn write_subst_font<W: Write>(
             ("isEmbedded", if sf.is_embedded { "1" } else { "0" }),
             ("binaryItemIDRef", binary_item_id_ref.as_str()),
         ],
+        storage,
     )
 }
 
@@ -327,34 +385,43 @@ fn font_family_type_str(v: u8) -> &'static str {
 // =====================================================================
 // <hh:borderFills>
 // =====================================================================
-fn write_border_fills<W: Write>(
+fn write_border_fills<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     doc_info: &DocInfo,
     ctx: &SerializeContext,
-) -> Result<(), SerializeError> {
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     if doc_info.border_fills.is_empty() {
         return Ok(());
     }
     start_tag_attrs(
         w,
         "hh:borderFills",
-        &[("itemCnt", &doc_info.border_fills.len().to_string())],
+        &[("itemCnt", &xml_value(storage, doc_info.border_fills.len())?)],
+        storage,
     )?;
     // HWPX borderFill의 id는 1부터 시작 (관찰값: ref_empty.hwpx).
     // 그러나 rhwp parser는 인덱스 기반으로 저장하므로 id는 배열 인덱스 그대로 사용.
     for (idx, bf) in doc_info.border_fills.iter().enumerate() {
-        write_border_fill(w, idx as u16, bf, ctx)?;
+        write_border_fill(w, idx as u16, bf, ctx, storage)?;
     }
-    end_tag(w, "hh:borderFills")?;
+    end_tag(w, "hh:borderFills", storage)?;
     Ok(())
 }
 
-fn write_border_fill<W: Write>(
+fn write_border_fill<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     id: u16,
     bf: &BorderFill,
     ctx: &SerializeContext,
-) -> Result<(), SerializeError> {
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let attr = effective_border_fill_attr(bf);
     // [#2965] 표 24 bit0=3D 효과, bit1=그림자 효과 — 파서가 attr 에 보존하는
     // 실값을 read_border_fill 이 되돌리지 않고 상수로 방출하던 결함 수정.
@@ -366,12 +433,13 @@ fn write_border_fill<W: Write>(
         w,
         "hh:borderFill",
         &[
-            ("id", &(id + 1).to_string()), // HWPX 관찰: id는 1-based
+            ("id", &xml_value(storage, id + 1)?), // HWPX 관찰: id는 1-based
             ("threeD", three_d),
             ("shadow", shadow),
             ("centerLine", center_line_type(bf)),
             ("breakCellSeparateLine", "0"),
         ],
+        storage,
     )?;
 
     // 자식 순서 (BorderFillType.cpp:51-58):
@@ -382,6 +450,7 @@ fn write_border_fill<W: Write>(
         diagonal_shape_type(((attr >> 2) & 0x07) as u8),
         (attr >> 8) & 0x03,
         attr & (1 << 11) != 0,
+        storage,
     )?;
     write_diag_line(
         w,
@@ -389,30 +458,35 @@ fn write_border_fill<W: Write>(
         diagonal_shape_type(((attr >> 5) & 0x07) as u8),
         (attr >> 10) & 0x01,
         attr & (1 << 12) != 0,
+        storage,
     )?;
-    write_border_line(w, "hh:leftBorder", &bf.borders[0])?;
-    write_border_line(w, "hh:rightBorder", &bf.borders[1])?;
-    write_border_line(w, "hh:topBorder", &bf.borders[2])?;
-    write_border_line(w, "hh:bottomBorder", &bf.borders[3])?;
-    write_diagonal(w, &bf.diagonal)?;
+    write_border_line(w, "hh:leftBorder", &bf.borders[0], storage)?;
+    write_border_line(w, "hh:rightBorder", &bf.borders[1], storage)?;
+    write_border_line(w, "hh:topBorder", &bf.borders[2], storage)?;
+    write_border_line(w, "hh:bottomBorder", &bf.borders[3], storage)?;
+    write_diagonal(w, &bf.diagonal, storage)?;
 
     // fillBrush: 도형과 동일한 fillBrush 구조를 공유한다.
     // 종전 Stage 1 은 빈 래퍼만 출력해 winBrush(배경색)/gradation/imgBrush 를
     // 전부 잃었다. 파서가 채운 Fill 을 shape 의 검증된 역매핑으로 직렬화한다.
-    super::shape::write_fill_brush(w, &bf.fill, ctx)?;
+    super::shape::write_fill_brush_with_storage(w, &bf.fill, ctx, storage)?;
 
-    end_tag(w, "hh:borderFill")?;
+    end_tag(w, "hh:borderFill", storage)?;
     Ok(())
 }
 
-fn write_diag_line<W: Write>(
+fn write_diag_line<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     name: &str,
     type_str: &str,
     crooked: u16,
     is_counter: bool,
-) -> Result<(), SerializeError> {
-    let crooked = crooked.to_string();
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let crooked = xml_value(storage, crooked)?;
     let is_counter = if is_counter { "1" } else { "0" };
     empty_tag(
         w,
@@ -422,6 +496,7 @@ fn write_diag_line<W: Write>(
             ("Crooked", crooked.as_str()),
             ("isCounter", is_counter),
         ],
+        storage,
     )
 }
 
@@ -493,22 +568,34 @@ fn effective_border_fill_attr(bf: &BorderFill) -> u16 {
     attr | center_line.hwp_attr_bits()
 }
 
-fn write_border_line<W: Write>(
+fn write_border_line<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     name: &str,
     line: &BorderLine,
-) -> Result<(), SerializeError> {
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let type_str = border_line_type_str(line.line_type);
-    let width_mm = format!("{} mm", border_width_mm(line.width));
-    let color = color_hex(line.color);
+    let width_mm = xml_value(storage, format_args!("{} mm", border_width_mm(line.width)))?;
+    let color = color_hex(line.color, storage)?;
     empty_tag(
         w,
         name,
         &[("type", type_str), ("width", &width_mm), ("color", &color)],
+        storage,
     )
 }
 
-fn write_diagonal<W: Write>(w: &mut Writer<W>, d: &DiagonalLine) -> Result<(), SerializeError> {
+fn write_diagonal<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    d: &DiagonalLine,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // diagonal_type 코드 0 = 대각선 없음 → 엘리먼트 자체를 생략한다. 한컴 원본도
     // 대각선이 없으면 <hh:diagonal> 를 쓰지 않고, 렌더러도 diagonal_type==0 을
     // 미표시로 처리한다. 종전엔 width==0 으로 NONE 을 추론해 대각선 없는 borderFill
@@ -519,12 +606,13 @@ fn write_diagonal<W: Write>(w: &mut Writer<W>, d: &DiagonalLine) -> Result<(), S
         return Ok(());
     }
     let type_str = border_line_type_str(border_line_type_from_code(d.diagonal_type));
-    let width_mm = format!("{} mm", border_width_mm(d.width));
-    let color = color_hex(d.color);
+    let width_mm = xml_value(storage, format_args!("{} mm", border_width_mm(d.width)))?;
+    let color = color_hex(d.color, storage)?;
     empty_tag(
         w,
         "hh:diagonal",
         &[("type", type_str), ("width", &width_mm), ("color", &color)],
+        storage,
     )
 }
 
@@ -587,11 +675,14 @@ fn border_width_mm(w: u8) -> &'static str {
     border_width_mm_str(w)
 }
 
-fn color_hex(c: ColorRef) -> String {
+fn color_hex<S: crate::storage::Storage>(c: ColorRef, storage: &S) -> Result<String, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // ColorRef = u32. HWP 내부 저장: 상위 바이트가 비투명 플래그(0이면 유효 색상).
     // 0xFFFFFFFF = 투명/없음 센티넬 → "none"
     if c == 0xFFFFFFFF {
-        return "none".to_string();
+        return xml_value(storage, "none");
     }
     // HWPX는 "#RRGGBB" 또는 "#AARRGGBB".
     let a = ((c >> 24) & 0xFF) as u8;
@@ -599,20 +690,27 @@ fn color_hex(c: ColorRef) -> String {
     let g = ((c >> 8) & 0xFF) as u8;
     let b = ((c >> 16) & 0xFF) as u8;
     if a == 0 {
-        format!("#{:02X}{:02X}{:02X}", r, g, b)
+        xml_value(storage, format_args!("#{:02X}{:02X}{:02X}", r, g, b))
     } else {
-        format!("#{:02X}{:02X}{:02X}{:02X}", a, r, g, b)
+        xml_value(
+            storage,
+            format_args!("#{:02X}{:02X}{:02X}{:02X}", a, r, g, b),
+        )
     }
 }
 
 // =====================================================================
 // <hh:charProperties>
 // =====================================================================
-fn write_char_properties<W: Write>(
+fn write_char_properties<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     doc_info: &DocInfo,
     ctx: &SerializeContext,
-) -> Result<(), SerializeError> {
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let _ = ctx;
     if doc_info.char_shapes.is_empty() {
         return Ok(());
@@ -620,22 +718,27 @@ fn write_char_properties<W: Write>(
     start_tag_attrs(
         w,
         "hh:charProperties",
-        &[("itemCnt", &doc_info.char_shapes.len().to_string())],
+        &[("itemCnt", &xml_value(storage, doc_info.char_shapes.len())?)],
+        storage,
     )?;
     for (idx, cs) in doc_info.char_shapes.iter().enumerate() {
-        super::char_shapes::write_char_pr(w, idx as u32, cs)?;
+        super::char_shapes::write_char_pr_with_storage(w, idx as u32, cs, storage)?;
     }
-    end_tag(w, "hh:charProperties")?;
+    end_tag(w, "hh:charProperties", storage)?;
     Ok(())
 }
 
-fn write_char_pr<W: Write>(
+fn write_char_pr<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     id: u32,
     cs: &CharShape,
-) -> Result<(), SerializeError> {
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // #3500: hh:charPr 방출은 char_shapes 모듈이 단일 출처다.
-    super::char_shapes::write_char_pr(w, id, cs)
+    super::char_shapes::write_char_pr_with_storage(w, id, cs, storage)
 }
 
 fn bool01(b: bool) -> &'static str {
@@ -654,41 +757,57 @@ fn shadow_type_str(t: u8) -> &'static str {
 // =====================================================================
 // <hh:tabProperties>
 // =====================================================================
-fn write_tab_properties<W: Write>(
+fn write_tab_properties<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     doc_info: &DocInfo,
-) -> Result<(), SerializeError> {
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     if doc_info.tab_defs.is_empty() {
         return Ok(());
     }
     start_tag_attrs(
         w,
         "hh:tabProperties",
-        &[("itemCnt", &doc_info.tab_defs.len().to_string())],
+        &[("itemCnt", &xml_value(storage, doc_info.tab_defs.len())?)],
+        storage,
     )?;
     for (idx, td) in doc_info.tab_defs.iter().enumerate() {
-        write_tab_pr(w, idx as u16, td)?;
+        write_tab_pr(w, idx as u16, td, storage)?;
     }
-    end_tag(w, "hh:tabProperties")?;
+    end_tag(w, "hh:tabProperties", storage)?;
     Ok(())
 }
 
-fn write_tab_pr<W: Write>(w: &mut Writer<W>, id: u16, td: &TabDef) -> Result<(), SerializeError> {
+fn write_tab_pr<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    id: u16,
+    td: &TabDef,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let attrs = [
-        ("id", id.to_string()),
-        ("autoTabLeft", bool01(td.auto_tab_left).to_string()),
-        ("autoTabRight", bool01(td.auto_tab_right).to_string()),
+        ("id", xml_value(storage, id)?),
+        ("autoTabLeft", xml_value(storage, bool01(td.auto_tab_left))?),
+        (
+            "autoTabRight",
+            xml_value(storage, bool01(td.auto_tab_right))?,
+        ),
     ];
-    let attrs_ref: Vec<(&str, &str)> = attrs.iter().map(|(k, v)| (*k, v.as_str())).collect();
+    let attrs_ref = attrs.each_ref().map(|(k, v)| (*k, v.as_str()));
 
     if td.tabs.is_empty() {
-        empty_tag(w, "hh:tabPr", &attrs_ref)?;
+        empty_tag(w, "hh:tabPr", &attrs_ref, storage)?;
     } else {
-        start_tag_attrs(w, "hh:tabPr", &attrs_ref)?;
+        start_tag_attrs(w, "hh:tabPr", &attrs_ref, storage)?;
         for tab in &td.tabs {
-            write_tab_item_switch(w, tab)?;
+            write_tab_item_switch(w, tab, storage)?;
         }
-        end_tag(w, "hh:tabPr")?;
+        end_tag(w, "hh:tabPr", storage)?;
     }
     Ok(())
 }
@@ -707,11 +826,15 @@ fn write_tab_pr<W: Write>(w: &mut Writer<W>, id: u16, td: &TabDef) -> Result<(),
 /// 홀수 저장값은 `case` 로 정확히 표현할 수 없으므로(`101/2 = 50`), 파서가
 /// `default != case × 2` 일 때 `default` 원값을 채택해 되살린다 — #3368 이
 /// paraPr 여백에서 지적한 것과 같은 계약이다.
-fn write_tab_item_switch<W: Write>(
+fn write_tab_item_switch<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     tab: &crate::model::style::TabItem,
-) -> Result<(), SerializeError> {
-    super::utils::start_tag(w, "hp:switch")?;
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    start_tag(w, "hp:switch", storage)?;
 
     start_tag_attrs(
         w,
@@ -720,36 +843,40 @@ fn write_tab_item_switch<W: Write>(
             "hp:required-namespace",
             "http://www.hancom.co.kr/hwpml/2016/HwpUnitChar",
         )],
+        storage,
     )?;
-    write_tab_item(w, tab, true)?;
-    end_tag(w, "hp:case")?;
+    write_tab_item(w, tab, true, storage)?;
+    end_tag(w, "hp:case", storage)?;
 
-    super::utils::start_tag(w, "hp:default")?;
-    write_tab_item(w, tab, false)?;
-    end_tag(w, "hp:default")?;
+    start_tag(w, "hp:default", storage)?;
+    write_tab_item(w, tab, false, storage)?;
+    end_tag(w, "hp:default", storage)?;
 
-    end_tag(w, "hp:switch")?;
+    end_tag(w, "hp:switch", storage)?;
     Ok(())
 }
 
 /// `<hh:tabItem>` 한 개. `half=true` 면 HwpUnitChar case 용으로 저장값의 절반과
 /// `unit="HWPUNIT"` 를 쓴다.
-fn write_tab_item<W: Write>(
+fn write_tab_item<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     tab: &crate::model::style::TabItem,
     half: bool,
-) -> Result<(), SerializeError> {
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let pos = if half { tab.position / 2 } else { tab.position };
-    let pos = pos.to_string();
-    let mut attrs: Vec<(&str, &str)> = vec![
+    let pos = xml_value(storage, pos)?;
+    let attrs = [
         ("pos", pos.as_str()),
         ("type", tab_type_str(tab.tab_type)),
         ("leader", tab_leader_str(tab.fill_type)),
+        ("unit", "HWPUNIT"),
     ];
-    if half {
-        attrs.push(("unit", "HWPUNIT"));
-    }
-    empty_tag(w, "hh:tabItem", &attrs)?;
+    let attrs = &attrs[..if half { 4 } else { 3 }];
+    empty_tag(w, "hh:tabItem", attrs, storage)?;
     Ok(())
 }
 
@@ -789,34 +916,47 @@ fn tab_leader_str(f: u8) -> &'static str {
 // =====================================================================
 // <hh:numberings>
 // =====================================================================
-fn write_numberings<W: Write>(w: &mut Writer<W>, doc_info: &DocInfo) -> Result<(), SerializeError> {
+fn write_numberings<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    doc_info: &DocInfo,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     if doc_info.numberings.is_empty() {
         return Ok(());
     }
     start_tag_attrs(
         w,
         "hh:numberings",
-        &[("itemCnt", &doc_info.numberings.len().to_string())],
+        &[("itemCnt", &xml_value(storage, doc_info.numberings.len())?)],
+        storage,
     )?;
     for (idx, n) in doc_info.numberings.iter().enumerate() {
-        write_numbering(w, idx as u16, n)?;
+        write_numbering(w, idx as u16, n, storage)?;
     }
-    end_tag(w, "hh:numberings")?;
+    end_tag(w, "hh:numberings", storage)?;
     Ok(())
 }
 
-fn write_numbering<W: Write>(
+fn write_numbering<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     id: u16,
     n: &Numbering,
-) -> Result<(), SerializeError> {
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     start_tag_attrs(
         w,
         "hh:numbering",
         &[
-            ("id", &(id + 1).to_string()), // 관찰: 1-based
-            ("start", &n.start_number.to_string()),
+            ("id", &xml_value(storage, id + 1)?), // 관찰: 1-based
+            ("start", &xml_value(storage, n.start_number)?),
         ],
+        storage,
     )?;
     // 원본 HWPX paraHead 영역이 있으면 그대로 splice(10수준 + align/
     // useInstWidth/autoIndent/checkable/형식문자열 무손실 복원). 모델의 7수준
@@ -826,7 +966,7 @@ fn write_numbering<W: Write>(
         w.get_mut()
             .write_all(raw.as_bytes())
             .map_err(|e| SerializeError::XmlError(format!("numbering paraHead splice: {e}")))?;
-        end_tag(w, "hh:numbering")?;
+        end_tag(w, "hh:numbering", storage)?;
         return Ok(());
     }
     // Stage 1: 10 레벨 paraHead 뼈대 출력. 실제 값은 NumberingHead 참조해 생성.
@@ -834,14 +974,14 @@ fn write_numbering<W: Write>(
         let idx = level.min(6);
         let h = &n.heads[idx];
         let start = n.level_start_numbers.get(idx).copied().unwrap_or(1);
-        let level_s = (level + 1).to_string();
-        let start_s = start.to_string();
-        let wa = h.width_adjust.to_string();
+        let level_s = xml_value(storage, level + 1)?;
+        let start_s = xml_value(storage, start)?;
+        let wa = xml_value(storage, h.width_adjust)?;
         // [#2947] h.number_format 을 무시하고 "DIGIT" 로 고정 방출하면 HWP5 경유
         // 저장 시 로마자/한글/원문자 등 문단 번호 형식이 전부 아라비아 숫자로 뒤바뀐다.
         let num_format = numbering_format_str(h.number_format);
-        let text_offset_s = h.text_distance.to_string();
-        let char_pr_id_ref_s = h.char_shape_id.to_string();
+        let text_offset_s = xml_value(storage, h.text_distance)?;
+        let char_pr_id_ref_s = xml_value(storage, h.char_shape_id)?;
         // [#5309] '문단 머리 정보'(표 41) attr 저위 비트에서 정렬·번호너비·자동내어쓰기를
         // 유도한다. 종전엔 align="LEFT"/useInstWidth="1"/autoIndent="1" 상수만 방출해,
         // HWP5→HWPX 저장 때마다 문단 번호의 정렬·들여쓰기 설정이 기본값으로 리셋됐다.
@@ -869,14 +1009,14 @@ fn write_numbering<W: Write>(
         // 한컴 원본 실측: paraHead 232개 중 172개가 내용을 갖는다.
         let format_str = n.level_formats.get(idx).map(String::as_str).unwrap_or("");
         if format_str.is_empty() {
-            empty_tag(w, "hh:paraHead", &attrs)?;
+            empty_tag(w, "hh:paraHead", &attrs, storage)?;
         } else {
-            start_tag_attrs(w, "hh:paraHead", &attrs)?;
-            text(w, format_str)?;
-            end_tag(w, "hh:paraHead")?;
+            start_tag_attrs(w, "hh:paraHead", &attrs, storage)?;
+            text(w, format_str, storage)?;
+            end_tag(w, "hh:paraHead", storage)?;
         }
     }
-    end_tag(w, "hh:numbering")?;
+    end_tag(w, "hh:numbering", storage)?;
     Ok(())
 }
 
@@ -887,39 +1027,57 @@ fn write_numbering<W: Write>(
 // 소실되고, 글머리표 문단의 마커 글리프가 렌더에서 사라졌다. 파서(parse_bullet_hwpx)는
 // `char`/`useImage` 만 읽으므로 그 둘 + paraHead 뼈대를 방출하면 round-trip 무손실이다.
 // =====================================================================
-fn write_bullets<W: Write>(w: &mut Writer<W>, doc_info: &DocInfo) -> Result<(), SerializeError> {
+fn write_bullets<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    doc_info: &DocInfo,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     if doc_info.bullets.is_empty() {
         return Ok(());
     }
     start_tag_attrs(
         w,
         "hh:bullets",
-        &[("itemCnt", &doc_info.bullets.len().to_string())],
+        &[("itemCnt", &xml_value(storage, doc_info.bullets.len())?)],
+        storage,
     )?;
     for (idx, b) in doc_info.bullets.iter().enumerate() {
-        write_bullet(w, idx as u16, b)?;
+        write_bullet(w, idx as u16, b, storage)?;
     }
-    end_tag(w, "hh:bullets")?;
+    end_tag(w, "hh:bullets", storage)?;
     Ok(())
 }
 
-fn write_bullet<W: Write>(
+fn write_bullet<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     id: u16,
     b: &crate::model::style::Bullet,
-) -> Result<(), SerializeError> {
-    let id_s = (id + 1).to_string(); // 관찰: 1-based, ParaShape.numbering_id 참조와 정합
-    let char_s = b.bullet_char.to_string();
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let id_s = xml_value(storage, id + 1)?; // 관찰: 1-based, ParaShape.numbering_id 참조와 정합
+    let char_s = xml_value(storage, b.bullet_char)?;
     let use_image = if b.image_bullet > 0 { "1" } else { "0" };
     // [#3028] checkedChar(체크 글머리표 문자) — 값이 있을 때만 방출한다.
     let has_checked_char = b.check_bullet_char != '\0';
-    let checked_char_s = b.check_bullet_char.to_string();
-    let mut attrs: Vec<(&str, &str)> = vec![("id", &id_s), ("char", &char_s)];
-    if has_checked_char {
-        attrs.push(("checkedChar", &checked_char_s));
-    }
-    attrs.push(("useImage", use_image));
-    start_tag_attrs(w, "hh:bullet", &attrs)?;
+    let checked_char_s = xml_value(storage, b.check_bullet_char)?;
+    let attrs = [
+        ("id", id_s.as_str()),
+        ("char", char_s.as_str()),
+        if has_checked_char {
+            ("checkedChar", checked_char_s.as_str())
+        } else {
+            ("useImage", use_image)
+        },
+        ("useImage", use_image),
+    ];
+    let attrs = &attrs[..if has_checked_char { 4 } else { 3 }];
+    start_tag_attrs(w, "hh:bullet", attrs, storage)?;
     // 원본 HWPX paraHead 구간이 있으면(=이 파일에서 파싱된 bullet) 그대로 splice 해
     // align/useInstWidth/autoIndent/textOffsetType/checkable 등 Bullet 필드로 표현
     // 못하는 속성까지 무손실 복원(numbering.raw_para_heads 와 동일 패턴, #2790).
@@ -944,28 +1102,33 @@ fn write_bullet<W: Write>(
                     "autoIndent",
                     if (b.attr >> 3) & 0x01 != 0 { "1" } else { "0" },
                 ),
-                ("widthAdjust", &b.width_adjust.to_string()),
+                ("widthAdjust", &xml_value(storage, b.width_adjust)?),
                 ("textOffsetType", para_head_text_offset_type_str(b.attr)),
-                ("textOffset", &b.text_distance.to_string()),
+                ("textOffset", &xml_value(storage, b.text_distance)?),
                 ("numFormat", "DIGIT"),
-                ("charPrIDRef", &b.char_shape_id.to_string()),
+                ("charPrIDRef", &xml_value(storage, b.char_shape_id)?),
                 ("checkable", if has_checked_char { "1" } else { "0" }),
             ],
+            storage,
         )?;
     }
-    end_tag(w, "hh:bullet")?;
+    end_tag(w, "hh:bullet", storage)?;
     Ok(())
 }
 
 // =====================================================================
 // <hh:paraProperties>
 // =====================================================================
-fn write_para_properties<W: Write>(
+fn write_para_properties<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     doc_info: &DocInfo,
     ctx: &SerializeContext,
     physical_margin_units: bool,
-) -> Result<(), SerializeError> {
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let _ = ctx;
     if doc_info.para_shapes.is_empty() {
         return Ok(());
@@ -973,13 +1136,14 @@ fn write_para_properties<W: Write>(
     start_tag_attrs(
         w,
         "hh:paraProperties",
-        &[("itemCnt", &doc_info.para_shapes.len().to_string())],
+        &[("itemCnt", &xml_value(storage, doc_info.para_shapes.len())?)],
+        storage,
     )?;
     for (idx, ps) in doc_info.para_shapes.iter().enumerate() {
         if !physical_margin_units && !ps.hwpx_plain_para_margin {
             // 구판 case는 IR 값, default는 그 두 배다. 기존 switch 작성기의
             // 반감 규칙에 역단위를 전달해 읽기·재저장 결과를 보존한다.
-            let mut stored = ps.clone();
+            let mut stored = storage.clone_record(ps).map_err(xml_error)?;
             stored.margin_left = stored.margin_left.saturating_mul(2);
             stored.margin_right = stored.margin_right.saturating_mul(2);
             stored.indent = stored.indent.saturating_mul(2);
@@ -988,41 +1152,46 @@ fn write_para_properties<W: Write>(
             if stored.line_spacing_type != LineSpacingType::Percent {
                 stored.line_spacing = stored.line_spacing.saturating_mul(2);
             }
-            write_para_pr(w, idx as u16, &stored)?;
+            write_para_pr(w, idx as u16, &stored, storage)?;
         } else {
-            write_para_pr(w, idx as u16, ps)?;
+            write_para_pr(w, idx as u16, ps, storage)?;
         }
     }
-    end_tag(w, "hh:paraProperties")?;
+    end_tag(w, "hh:paraProperties", storage)?;
     Ok(())
 }
 
-fn write_para_pr<W: Write>(
+fn write_para_pr<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     id: u16,
     ps: &ParaShape,
-) -> Result<(), SerializeError> {
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     // 속성 순서 (ParaShapeType.cpp:62-68): id, tabPrIDRef, condense,
     // fontLineHeight, snapToGrid, suppressLineNumbers, checked
     //
     // condense/fontLineHeight/snapToGrid 는 attr1 비트로 보존된다(파서 역매핑):
     //   snapToGrid = bit8, condense = bits9..15, fontLineHeight = bit22.
     // 종전엔 상수("0"/"0"/"1")로 하드코딩해 condense(20 등)와 snapToGrid(0)을 잃었다.
-    let condense = ((ps.attr1 >> 9) & 0x7f).to_string();
-    let font_line_height = ((ps.attr1 >> 22) & 1).to_string();
-    let snap_to_grid = ((ps.attr1 >> 8) & 1).to_string();
+    let condense = xml_value(storage, (ps.attr1 >> 9) & 0x7f)?;
+    let font_line_height = xml_value(storage, (ps.attr1 >> 22) & 1)?;
+    let snap_to_grid = xml_value(storage, (ps.attr1 >> 8) & 1)?;
     start_tag_attrs(
         w,
         "hh:paraPr",
         &[
-            ("id", &id.to_string()),
-            ("tabPrIDRef", &ps.tab_def_id.to_string()),
+            ("id", &xml_value(storage, id)?),
+            ("tabPrIDRef", &xml_value(storage, ps.tab_def_id)?),
             ("condense", &condense),
             ("fontLineHeight", &font_line_height),
             ("snapToGrid", &snap_to_grid),
             ("suppressLineNumbers", "0"),
             ("checked", "0"),
         ],
+        storage,
     )?;
 
     // 자식 순서 (한컴 원본 관찰):
@@ -1050,12 +1219,12 @@ fn write_para_pr<W: Write>(
         .break_latin_word
         .as_deref()
         .unwrap_or_else(|| latin_break_from_attr1((ps.attr1 >> 5) & 0x03));
-    let widow_orphan = ((ps.attr1 >> 16) & 1).to_string();
-    let keep_with_next = ((ps.attr1 >> 17) & 1).to_string();
-    let keep_lines = ((ps.attr1 >> 18) & 1).to_string();
-    let page_break_before = ((ps.attr1 >> 19) & 1).to_string();
-    let auto_space_kr_en = ((ps.attr2 >> 4) & 1).to_string();
-    let auto_space_kr_num = ((ps.attr2 >> 5) & 1).to_string();
+    let widow_orphan = xml_value(storage, (ps.attr1 >> 16) & 1)?;
+    let keep_with_next = xml_value(storage, (ps.attr1 >> 17) & 1)?;
+    let keep_lines = xml_value(storage, (ps.attr1 >> 18) & 1)?;
+    let page_break_before = xml_value(storage, (ps.attr1 >> 19) & 1)?;
+    let auto_space_kr_en = xml_value(storage, (ps.attr2 >> 4) & 1)?;
+    let auto_space_kr_num = xml_value(storage, (ps.attr2 >> 5) & 1)?;
     empty_tag(
         w,
         "hh:align",
@@ -1063,15 +1232,17 @@ fn write_para_pr<W: Write>(
             ("horizontal", alignment_str(ps.alignment)),
             ("vertical", vertical),
         ],
+        storage,
     )?;
     empty_tag(
         w,
         "hh:heading",
         &[
             ("type", head_type_str(ps.head_type)),
-            ("idRef", &ps.numbering_id.to_string()),
-            ("level", &ps.para_level.to_string()),
+            ("idRef", &xml_value(storage, ps.numbering_id)?),
+            ("level", &xml_value(storage, ps.para_level)?),
         ],
+        storage,
     )?;
     empty_tag(
         w,
@@ -1087,6 +1258,7 @@ fn write_para_pr<W: Write>(
             // 한/글이 여러 줄로 다시 나눠 h2x 쪽수가 갈렸다.
             ("lineWrap", para_line_wrap_str(ps.attr2)),
         ],
+        storage,
     )?;
 
     empty_tag(
@@ -1096,6 +1268,7 @@ fn write_para_pr<W: Write>(
             ("eAsianEng", &auto_space_kr_en),
             ("eAsianNum", &auto_space_kr_num),
         ],
+        storage,
     )?;
 
     // margin + lineSpacing 은 한컴 원본과 동일하게 <hp:switch>(case/default)로 감싼다.
@@ -1104,10 +1277,10 @@ fn write_para_pr<W: Write>(
     // 패키지 xmlVersion 1.4 이상의 물리 여백만 공통 IR의 절반으로 되쓴다.
     // 고정 줄간격은 여백과 별도 계약이므로 기존 평문 저장값을 유지한다.
     if ps.hwpx_plain_para_margin {
-        write_para_margin(w, ps, ps.hwpx_plain_para_margin_physical)?;
-        write_para_line_spacing(w, ps, false)?;
+        write_para_margin(w, ps, ps.hwpx_plain_para_margin_physical, storage)?;
+        write_para_line_spacing(w, ps, false, storage)?;
     } else {
-        write_para_margin_switch(w, ps)?;
+        write_para_margin_switch(w, ps, storage)?;
     }
 
     let border_connect = if (ps.attr1 >> 28) & 1 != 0 { "1" } else { "0" };
@@ -1117,17 +1290,18 @@ fn write_para_pr<W: Write>(
         w,
         "hh:border",
         &[
-            ("borderFillIDRef", &ps.border_fill_id.to_string()),
-            ("offsetLeft", &ps.border_spacing[0].to_string()),
-            ("offsetRight", &ps.border_spacing[1].to_string()),
-            ("offsetTop", &ps.border_spacing[2].to_string()),
-            ("offsetBottom", &ps.border_spacing[3].to_string()),
+            ("borderFillIDRef", &xml_value(storage, ps.border_fill_id)?),
+            ("offsetLeft", &xml_value(storage, ps.border_spacing[0])?),
+            ("offsetRight", &xml_value(storage, ps.border_spacing[1])?),
+            ("offsetTop", &xml_value(storage, ps.border_spacing[2])?),
+            ("offsetBottom", &xml_value(storage, ps.border_spacing[3])?),
             ("connect", border_connect),
             ("ignoreMargin", border_ignore_margin),
         ],
+        storage,
     )?;
 
-    end_tag(w, "hh:paraPr")?;
+    end_tag(w, "hh:paraPr", storage)?;
     Ok(())
 }
 
@@ -1141,11 +1315,15 @@ fn write_para_pr<W: Write>(
 ///
 /// 파서는 `case` 를 우선 읽으므로 라운드트립 시 `case × 2 = 저장값` 으로 IR 이
 /// 정확히 복원된다(한컴 원본의 저장값은 항상 짝수).
-fn write_para_margin_switch<W: Write>(
+fn write_para_margin_switch<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     ps: &ParaShape,
-) -> Result<(), SerializeError> {
-    super::utils::start_tag(w, "hp:switch")?;
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    start_tag(w, "hp:switch", storage)?;
 
     start_tag_attrs(
         w,
@@ -1154,44 +1332,53 @@ fn write_para_margin_switch<W: Write>(
             "hp:required-namespace",
             "http://www.hancom.co.kr/hwpml/2016/HwpUnitChar",
         )],
+        storage,
     )?;
-    write_para_margin(w, ps, true)?;
-    write_para_line_spacing(w, ps, true)?;
-    end_tag(w, "hp:case")?;
+    write_para_margin(w, ps, true, storage)?;
+    write_para_line_spacing(w, ps, true, storage)?;
+    end_tag(w, "hp:case", storage)?;
 
-    super::utils::start_tag(w, "hp:default")?;
-    write_para_margin(w, ps, false)?;
-    write_para_line_spacing(w, ps, false)?;
-    end_tag(w, "hp:default")?;
+    start_tag(w, "hp:default", storage)?;
+    write_para_margin(w, ps, false, storage)?;
+    write_para_line_spacing(w, ps, false, storage)?;
+    end_tag(w, "hp:default", storage)?;
 
-    end_tag(w, "hp:switch")?;
+    end_tag(w, "hp:switch", storage)?;
     Ok(())
 }
 
 /// `<hh:margin>` (자식 5개: intent/left/right/prev/next). `half=true` 면 HwpUnitChar
 /// case 용으로 저장값의 절반을 쓴다.
-fn write_para_margin<W: Write>(
+fn write_para_margin<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     ps: &ParaShape,
     half: bool,
-) -> Result<(), SerializeError> {
-    super::utils::start_tag(w, "hh:margin")?;
-    write_margin_child(w, "hc:intent", ps.indent, half)?;
-    write_margin_child(w, "hc:left", ps.margin_left, half)?;
-    write_margin_child(w, "hc:right", ps.margin_right, half)?;
-    write_margin_child(w, "hc:prev", ps.spacing_before, half)?;
-    write_margin_child(w, "hc:next", ps.spacing_after, half)?;
-    end_tag(w, "hh:margin")?;
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    start_tag(w, "hh:margin", storage)?;
+    write_margin_child(w, "hc:intent", ps.indent, half, storage)?;
+    write_margin_child(w, "hc:left", ps.margin_left, half, storage)?;
+    write_margin_child(w, "hc:right", ps.margin_right, half, storage)?;
+    write_margin_child(w, "hc:prev", ps.spacing_before, half, storage)?;
+    write_margin_child(w, "hc:next", ps.spacing_after, half, storage)?;
+    end_tag(w, "hh:margin", storage)?;
     Ok(())
 }
 
 /// `<hh:lineSpacing>`. HwpUnitChar case(`case=true`)에서 PERCENT 는 저장값과 동일,
 /// 그 외 유형은 저장값의 절반을 쓴다(파서가 ×2 적재).
-fn write_para_line_spacing<W: Write>(
+fn write_para_line_spacing<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     ps: &ParaShape,
     case: bool,
-) -> Result<(), SerializeError> {
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let value = if case && !matches!(ps.line_spacing_type, LineSpacingType::Percent) {
         ps.line_spacing / 2
     } else {
@@ -1202,9 +1389,10 @@ fn write_para_line_spacing<W: Write>(
         "hh:lineSpacing",
         &[
             ("type", line_spacing_type_str(ps.line_spacing_type)),
-            ("value", &value.to_string()),
+            ("value", &xml_value(storage, value)?),
             ("unit", "HWPUNIT"),
         ],
+        storage,
     )
 }
 
@@ -1224,17 +1412,22 @@ fn write_para_line_spacing<W: Write>(
 /// 2,170개 전수에서 `저장값이 홀수 ⟺ case 단위가 CHAR` 가 위반 0 이다.
 ///
 /// 값은 `stored = case × 2 (+1 when CHAR)` 로 되돌릴 수 있게 적는다(파서의 정확한 역).
-fn write_margin_child<W: Write>(
+fn write_margin_child<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     name: &str,
     stored: i32,
     half: bool,
-) -> Result<(), SerializeError> {
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     if !half {
         return empty_tag(
             w,
             name,
-            &[("value", &stored.to_string()), ("unit", "HWPUNIT")],
+            &[("value", &xml_value(storage, stored)?), ("unit", "HWPUNIT")],
+            storage,
         );
     }
     let odd = stored % 2 != 0;
@@ -1243,9 +1436,10 @@ fn write_margin_child<W: Write>(
         w,
         name,
         &[
-            ("value", &value.to_string()),
+            ("value", &xml_value(storage, value)?),
             ("unit", if odd { "CHAR" } else { "HWPUNIT" }),
         ],
+        storage,
     )
 }
 
@@ -1306,11 +1500,15 @@ fn line_spacing_type_str(t: LineSpacingType) -> &'static str {
 // =====================================================================
 // <hh:styles>
 // =====================================================================
-fn write_styles<W: Write>(
+fn write_styles<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     doc_info: &DocInfo,
     ctx: &SerializeContext,
-) -> Result<(), SerializeError> {
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let _ = ctx;
     if doc_info.styles.is_empty() {
         return Ok(());
@@ -1318,59 +1516,87 @@ fn write_styles<W: Write>(
     start_tag_attrs(
         w,
         "hh:styles",
-        &[("itemCnt", &doc_info.styles.len().to_string())],
+        &[("itemCnt", &xml_value(storage, doc_info.styles.len())?)],
+        storage,
     )?;
     for (idx, st) in doc_info.styles.iter().enumerate() {
-        write_style(w, idx as u16, st)?;
+        write_style(w, idx as u16, st, storage)?;
     }
-    end_tag(w, "hh:styles")?;
+    end_tag(w, "hh:styles", storage)?;
     Ok(())
 }
 
-fn write_style<W: Write>(w: &mut Writer<W>, id: u16, st: &Style) -> Result<(), SerializeError> {
+fn write_style<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    id: u16,
+    st: &Style,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     let type_str = if st.style_type == 1 { "CHAR" } else { "PARA" };
     empty_tag(
         w,
         "hh:style",
         &[
-            ("id", &id.to_string()),
+            ("id", &xml_value(storage, id)?),
             ("type", type_str),
             ("name", &st.local_name),
             ("engName", &st.english_name),
-            ("paraPrIDRef", &st.para_shape_id.to_string()),
-            ("charPrIDRef", &st.char_shape_id.to_string()),
-            ("nextStyleIDRef", &st.next_style_id.to_string()),
+            ("paraPrIDRef", &xml_value(storage, st.para_shape_id)?),
+            ("charPrIDRef", &xml_value(storage, st.char_shape_id)?),
+            ("nextStyleIDRef", &xml_value(storage, st.next_style_id)?),
             // 파서가 Style.lang_id 로 읽는 값을 그대로 되돌린다. 종전 "1042"
             // 하드코딩은 비한국어 langID(예: 1033)를 왕복마다 1042 로 바꿨다.
-            ("langID", &st.lang_id.to_string()),
+            ("langID", &xml_value(storage, st.lang_id)?),
             ("lockForm", bool01(st.lock_form)),
         ],
+        storage,
     )
 }
 
 // =====================================================================
 // <hh:compatibleDocument>, <hh:docOption>, <hh:trackchageConfig>
 // =====================================================================
-fn write_compatible_document<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeError> {
-    start_tag_attrs(w, "hh:compatibleDocument", &[("targetProgram", "HWP201X")])?;
+fn write_compatible_document<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    start_tag_attrs(
+        w,
+        "hh:compatibleDocument",
+        &[("targetProgram", "HWP201X")],
+        storage,
+    )?;
     // 한컴 산출물(2014 저장 빈 문서 · samples/hwpx/ref/ref_empty.hwpx)과 같이 자기닫힘으로
     // 쓴다. 종전의 <hh:char/><hh:paragraph/><hh:section/><hh:object/><hh:field/> 다섯은
     // HWP5 LayoutCompatibility 레코드의 필드 묶음 이름이지 HWPX 요소가 아니며, 엄격한
     // 소비자(한글 2014)는 이 다섯이 있으면 열기에서 종료한다. 원본 꼬리를 splice 하는
     // 경로(`write_header_splices_doc_settings_tail_verbatim`)와 같은 꼴이 된다.
-    empty_tag(w, "hh:layoutCompatibility", &[])?;
-    end_tag(w, "hh:compatibleDocument")?;
+    empty_tag(w, "hh:layoutCompatibility", &[], storage)?;
+    end_tag(w, "hh:compatibleDocument", storage)?;
     Ok(())
 }
 
-fn write_doc_option<W: Write>(w: &mut Writer<W>) -> Result<(), SerializeError> {
-    super::utils::start_tag(w, "hh:docOption")?;
+fn write_doc_option<W: Write, S: crate::storage::Storage>(
+    w: &mut Writer<W>,
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    start_tag(w, "hh:docOption", storage)?;
     empty_tag(
         w,
         "hh:linkinfo",
         &[("path", ""), ("pageInherit", "0"), ("footnoteInherit", "0")],
+        storage,
     )?;
-    end_tag(w, "hh:docOption")?;
+    end_tag(w, "hh:docOption", storage)?;
     Ok(())
 }
 
@@ -1398,15 +1624,21 @@ fn track_change_flags(doc_info: &DocInfo) -> u32 {
 /// 한컴이 `HWPTAG_TRACKCHANGE` 없는 문서에 쓰는 값 (실측).
 const TRACK_CHANGE_FLAGS_DEFAULT: u32 = 56;
 
-fn write_track_change_config<W: Write>(
+fn write_track_change_config<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     flags: u32,
-) -> Result<(), SerializeError> {
-    empty_tag(w, "hh:trackchageConfig", &[("flags", &flags.to_string())])
+    storage: &S,
+) -> Result<(), SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    empty_tag(
+        w,
+        "hh:trackchageConfig",
+        &[("flags", &xml_value(storage, flags)?)],
+        storage,
+    )
 }
-
-// 내부에서 쓰는 start_tag 별명
-use super::utils::start_tag;
 
 #[cfg(test)]
 mod tests {
@@ -1461,7 +1693,7 @@ mod tests {
             ..Default::default()
         };
         let mut w: Writer<Vec<u8>> = Writer::new(Vec::new());
-        write_style(&mut w, 0, &st).expect("write_style");
+        write_style(&mut w, 0, &st, &crate::storage::Unbounded).expect("write_style");
         let xml = String::from_utf8(w.into_inner()).unwrap();
         assert!(
             xml.contains(r#"langID="1033""#),
@@ -1478,7 +1710,7 @@ mod tests {
             ..Default::default()
         };
         let mut w: Writer<Vec<u8>> = Writer::new(Vec::new());
-        write_style(&mut w, 0, &st).expect("write_style");
+        write_style(&mut w, 0, &st, &crate::storage::Unbounded).expect("write_style");
         let xml = String::from_utf8(w.into_inner()).unwrap();
         assert!(
             xml.contains(r#"lockForm="1""#),
@@ -1655,7 +1887,7 @@ mod tests {
         // FCAT_GOTHIC=2, [1]=serif(미노출), weight=6, 나머지=strokeVariation..xHeight=1.
         let ti = [2u8, 3, 6, 0, 0, 1, 1, 1, 1, 1];
         let mut writer = Writer::new(Vec::new());
-        write_font_type_info(&mut writer, &ti).expect("write typeInfo");
+        write_font_type_info(&mut writer, &ti, &crate::storage::Unbounded).expect("write typeInfo");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
         assert_eq!(
             xml,
@@ -1676,7 +1908,13 @@ mod tests {
             resolved_bin_data_id: None,
         };
         let mut writer = Writer::new(Vec::new());
-        write_subst_font(&mut writer, &sf, &SerializeContext::default()).expect("write substFont");
+        write_subst_font(
+            &mut writer,
+            &sf,
+            &SerializeContext::default(),
+            &crate::storage::Unbounded,
+        )
+        .expect("write substFont");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
         assert_eq!(
             xml,
@@ -1704,8 +1942,13 @@ mod tests {
             ..Default::default()
         });
         let mut writer = Writer::new(Vec::new());
-        write_fontfaces(&mut writer, &doc_info, &SerializeContext::default())
-            .expect("write fontfaces");
+        write_fontfaces(
+            &mut writer,
+            &doc_info,
+            &SerializeContext::default(),
+            &crate::storage::Unbounded,
+        )
+        .expect("write fontfaces");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
         let sub = xml.find("<hh:substFont ").expect("substFont present");
         let ti = xml.find("<hh:typeInfo ").expect("typeInfo present");
@@ -1735,8 +1978,13 @@ mod tests {
             ..Default::default()
         });
         let mut writer = Writer::new(Vec::new());
-        write_fontfaces(&mut writer, &doc_info, &SerializeContext::default())
-            .expect("write fontfaces");
+        write_fontfaces(
+            &mut writer,
+            &doc_info,
+            &SerializeContext::default(),
+            &crate::storage::Unbounded,
+        )
+        .expect("write fontfaces");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
         // typeInfo 없는 글꼴은 self-closing 유지.
         assert!(
@@ -1841,6 +2089,7 @@ mod tests {
             0,
             &bf,
             &SerializeContext::collect_from_document(&Default::default()),
+            &crate::storage::Unbounded,
         )
         .expect("write borderFill");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
@@ -1867,6 +2116,7 @@ mod tests {
             0,
             &bf,
             &SerializeContext::collect_from_document(&Default::default()),
+            &crate::storage::Unbounded,
         )
         .expect("write borderFill");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
@@ -1894,6 +2144,7 @@ mod tests {
             0,
             &bf,
             &SerializeContext::collect_from_document(&Default::default()),
+            &crate::storage::Unbounded,
         )
         .expect("write borderFill");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
@@ -1915,6 +2166,7 @@ mod tests {
             0,
             &bf,
             &SerializeContext::collect_from_document(&Default::default()),
+            &crate::storage::Unbounded,
         )
         .expect("write borderFill");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
@@ -1940,6 +2192,7 @@ mod tests {
             0,
             &bf,
             &SerializeContext::collect_from_document(&Default::default()),
+            &crate::storage::Unbounded,
         )
         .expect("write borderFill");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
@@ -1977,6 +2230,7 @@ mod tests {
             5,
             &bf,
             &SerializeContext::collect_from_document(&Default::default()),
+            &crate::storage::Unbounded,
         )
         .expect("write borderFill");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
@@ -1999,6 +2253,7 @@ mod tests {
             0,
             &bf,
             &SerializeContext::collect_from_document(&Default::default()),
+            &crate::storage::Unbounded,
         )
         .expect("write borderFill");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
@@ -2032,6 +2287,7 @@ mod tests {
             1,
             &bf,
             &SerializeContext::collect_from_document(&Default::default()),
+            &crate::storage::Unbounded,
         )
         .expect("write borderFill");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
@@ -2059,7 +2315,7 @@ mod tests {
         }];
 
         let mut writer = Writer::new(Vec::new());
-        write_tab_pr(&mut writer, 2, &td).expect("write tabPr");
+        write_tab_pr(&mut writer, 2, &td, &crate::storage::Unbounded).expect("write tabPr");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
 
         assert!(
@@ -2091,7 +2347,7 @@ mod tests {
         ps.line_spacing_type = LineSpacingType::Percent;
 
         let mut writer = Writer::new(Vec::new());
-        write_para_pr(&mut writer, 1, &ps).expect("write paraPr");
+        write_para_pr(&mut writer, 1, &ps, &crate::storage::Unbounded).expect("write paraPr");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
 
         // case: HwpUnitChar required-namespace + 절반 값 + hc: 네임스페이스
@@ -2142,7 +2398,7 @@ mod tests {
         ps.attr2 = 1 << 5; // eAsianNum = 1
 
         let mut writer = Writer::new(Vec::new());
-        write_para_pr(&mut writer, 1, &ps).expect("write paraPr");
+        write_para_pr(&mut writer, 1, &ps, &crate::storage::Unbounded).expect("write paraPr");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
 
         assert!(
@@ -2173,7 +2429,7 @@ mod tests {
         ps.attr2 = 1 << 5; // autoSpaceKrNum = 1
 
         let mut writer = Writer::new(Vec::new());
-        write_para_pr(&mut writer, 1, &ps).expect("write paraPr");
+        write_para_pr(&mut writer, 1, &ps, &crate::storage::Unbounded).expect("write paraPr");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
 
         assert!(
@@ -2193,7 +2449,7 @@ mod tests {
         // 신규 생성 기본 ParaShape 의 vertical 만 검증).
         let ps = ParaShape::default();
         let mut writer = Writer::new(Vec::new());
-        write_para_pr(&mut writer, 0, &ps).expect("write paraPr");
+        write_para_pr(&mut writer, 0, &ps, &crate::storage::Unbounded).expect("write paraPr");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
         assert!(
             xml.contains(r#"vertical="BASELINE""#),
@@ -2208,7 +2464,7 @@ mod tests {
         // 취소선이 켜지지 않는다.
         let cs = CharShape::default();
         let mut writer = Writer::new(Vec::new());
-        write_char_pr(&mut writer, 0, &cs).expect("write charPr");
+        write_char_pr(&mut writer, 0, &cs, &crate::storage::Unbounded).expect("write charPr");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
 
         assert!(
@@ -2270,7 +2526,7 @@ mod tests {
     /// [#2695] CharShape 를 charPr 로 직렬화한 XML 문자열.
     fn write_single_char_pr(cs: &CharShape) -> String {
         let mut writer = Writer::new(Vec::new());
-        write_char_pr(&mut writer, 0, cs).expect("write charPr");
+        write_char_pr(&mut writer, 0, cs, &crate::storage::Unbounded).expect("write charPr");
         String::from_utf8(writer.into_inner()).unwrap()
     }
 
@@ -2348,7 +2604,7 @@ mod tests {
         // condense=20 (bits9..15), fontLineHeight=1 (bit22), snapToGrid=0 (bit8 clear)
         ps.attr1 = (20 << 9) | (1 << 22);
         let mut writer = Writer::new(Vec::new());
-        write_para_pr(&mut writer, 0, &ps).expect("write paraPr");
+        write_para_pr(&mut writer, 0, &ps, &crate::storage::Unbounded).expect("write paraPr");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
         assert!(
             xml.contains(r#"condense="20""#),
@@ -2366,7 +2622,7 @@ mod tests {
         // snapToGrid=1 (bit8 set), condense=0
         ps.attr1 = 1 << 8;
         let mut writer = Writer::new(Vec::new());
-        write_para_pr(&mut writer, 0, &ps).expect("write paraPr");
+        write_para_pr(&mut writer, 0, &ps, &crate::storage::Unbounded).expect("write paraPr");
         let xml = String::from_utf8(writer.into_inner()).unwrap();
         assert!(
             xml.contains(r#"snapToGrid="1""#) && xml.contains(r#"condense="0""#),
@@ -2388,7 +2644,7 @@ mod tests {
         // diagonal_type 코드 0 = 대각선 없음 → 엘리먼트 자체를 출력하지 않는다.
         let none = DiagonalLine::default();
         let mut w = Writer::new(Vec::new());
-        write_diagonal(&mut w, &none).expect("write");
+        write_diagonal(&mut w, &none, &crate::storage::Unbounded).expect("write");
         assert_eq!(
             String::from_utf8(w.into_inner()).unwrap(),
             "",
@@ -2403,7 +2659,7 @@ mod tests {
             color: 0,
         };
         let mut w = Writer::new(Vec::new());
-        write_diagonal(&mut w, &solid).expect("write");
+        write_diagonal(&mut w, &solid, &crate::storage::Unbounded).expect("write");
         assert_eq!(
             String::from_utf8(w.into_inner()).unwrap(),
             r##"<hh:diagonal type="SOLID" width="0.1 mm" color="#000000"/>"##,
@@ -2455,7 +2711,7 @@ mod tests {
         };
 
         let mut writer = Writer::new(Vec::new());
-        write_numbering(&mut writer, 0, &n).unwrap();
+        write_numbering(&mut writer, 0, &n, &crate::storage::Unbounded).unwrap();
         let xml = String::from_utf8(writer.into_inner()).unwrap();
 
         assert_eq!(
@@ -2470,7 +2726,7 @@ mod tests {
         let n = Numbering::default();
 
         let mut writer = Writer::new(Vec::new());
-        write_numbering(&mut writer, 0, &n).unwrap();
+        write_numbering(&mut writer, 0, &n, &crate::storage::Unbounded).unwrap();
         let xml = String::from_utf8(writer.into_inner()).unwrap();
 
         assert_eq!(xml.matches("<hh:paraHead").count(), 10);
@@ -2489,7 +2745,7 @@ mod tests {
         n.level_formats[1] = "(^2)".to_string();
 
         let mut writer = Writer::new(Vec::new());
-        write_numbering(&mut writer, 0, &n).unwrap();
+        write_numbering(&mut writer, 0, &n, &crate::storage::Unbounded).unwrap();
         let xml = String::from_utf8(writer.into_inner()).unwrap();
 
         assert!(
@@ -2515,7 +2771,7 @@ mod tests {
         n.heads[0].number_format = 2; // ROMAN_CAPITAL
 
         let mut writer = Writer::new(Vec::new());
-        write_numbering(&mut writer, 0, &n).unwrap();
+        write_numbering(&mut writer, 0, &n, &crate::storage::Unbounded).unwrap();
         let xml = String::from_utf8(writer.into_inner()).unwrap();
 
         assert!(
@@ -2535,7 +2791,7 @@ mod tests {
         n.heads[0].char_shape_id = 7;
 
         let mut writer = Writer::new(Vec::new());
-        write_numbering(&mut writer, 0, &n).unwrap();
+        write_numbering(&mut writer, 0, &n, &crate::storage::Unbounded).unwrap();
         let xml = String::from_utf8(writer.into_inner()).unwrap();
 
         assert!(

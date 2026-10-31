@@ -1,4 +1,9 @@
-//! Issue #6520: production SVG consumes the canonical `PageLayerTree` paint contract.
+//! 관계형·고정형: 합성 트리와 실제 SVG API·글꼴 자원 계약.
+//! 주석 갱신: 2026-10-30T10:05:44+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
+//! 당시 공개 편집 저장본 2026-10-20 측정 raw(192dpi, PDFium): 전 1쪽 직접 PNG Native·fresh WASM 각 100.00%,
+//! SVG webfont 각 97.86%; 근거: mydocs/pr/assets/issue7445/completed-20261009/rebase-4a07d3ae-20261019/svg-unicode-subset/README.md.
+//! 다른 검사는 합성 트리와 기존 샘플의 SVG API 결과 관계이며 해당 시각 수치와 구분한다.
+//! #6520: 실제 SVG 출력이 정규 `PageLayerTree` 그리기 계약을 소비한다.
 
 use rhwp::model::shape::TextWrap;
 use rhwp::paint::{
@@ -293,9 +298,9 @@ fn subset_font_bytes_are_deterministic_for_multiple_codepoints() {
     use base64::Engine;
     use rhwp::document_core::DocumentCore;
 
-    // C435: public blank/insert/font/format/save operations, not a paragraph
-    // replacement retaining unrelated stored line widths. The same saved input
-    // has a Hancom2020 Print reference; Native/fresh WASM p1 both raw100%.
+    // C435: 관계없는 저장 줄 폭을 유지하는 문단 교체가 아니라 공개 빈 문서 생성·
+    // 삽입·글꼴·서식·저장 작업이다. 같은 저장본에 한컴 2020 Print 기준이 있으며
+    // Native와 fresh WASM의 1쪽 raw 일치율은 모두 100%다.
     let text = "가나다ABC123";
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native().expect("public blank");
@@ -336,8 +341,8 @@ fn subset_font_bytes_are_deterministic_for_multiple_codepoints() {
             .expect("valid base64")
     }
 
-    // A PDF-only subset can be deterministic yet unusable by browser <text>:
-    // glyph IDs alone do not preserve Unicode lookup, metrics or outlines.
+    // PDF 전용 부분 글꼴은 결정적으로 만들어져도 브라우저 <text>에서 쓸 수 없을
+    // 수 있다. glyph ID만으로는 Unicode 검색·메트릭·윤곽을 보존하지 못한다.
     let full_svg = document
         .render_page_svg_with_fonts(0, FontEmbedMode::Full, &[font_path])
         .expect("full-face control");
@@ -495,6 +500,7 @@ fn layer_builder_char_overlap_selects_only_the_explicit_visual() {
         border_type: 1,
         inner_char_size: 100,
         composition: None,
+        empty_ink: false,
     });
     tree.root.children.push(RenderNode::new(
         44,
@@ -592,12 +598,14 @@ fn same_bounds_visual_op_cannot_cover_a_different_text_run() {
         border_type: 1,
         inner_char_size: 100,
         composition: None,
+        empty_ink: false,
     });
     let mut different = fallback.clone();
     different.char_overlap = Some(rhwp::renderer::composer::CharOverlapInfo {
         border_type: 3,
         inner_char_size: 100,
         composition: None,
+        empty_ink: false,
     });
     let tree = PageLayerTree::new(
         80.0,
@@ -722,6 +730,7 @@ fn raw_svg_placeholder_and_explicit_text_visual_ops_are_serialized() {
         border_type: 1,
         inner_char_size: 100,
         composition: None,
+        empty_ink: false,
     });
     let mut control_mark = text_run(" ");
     control_mark.is_para_end = true;
@@ -1264,7 +1273,7 @@ fn direct_replay_preserves_plane_order_nested_clips_and_debug_projection() {
         ),
         rhwp::paint::ClipKind::Body,
     );
-    // Deliberately shuffled: the shared replay planes, not tree insertion order, own stacking.
+    // 의도적으로 순서를 섞는다. 트리 삽입 순서가 아니라 공통 재생 평면이 쌓임을 결정한다.
     let root = LayerNode::group(
         page,
         Some(1),

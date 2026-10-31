@@ -1,0 +1,44 @@
+[
+  {
+    "name": "cff",
+    "variant": "before",
+    "medianParentMs": 26.885019964538515,
+    "medianChildMs": 16,
+    "maximumObservedRssBytes": 26828800
+  },
+  {
+    "name": "cff",
+    "variant": "candidate",
+    "medianParentMs": 28.305102023296058,
+    "medianChildMs": 16,
+    "maximumObservedRssBytes": 26685440
+  },
+  {
+    "name": "type3",
+    "variant": "before",
+    "medianParentMs": 351.09098500106484,
+    "medianChildMs": 338,
+    "maximumObservedRssBytes": 46473216
+  },
+  {
+    "name": "type3",
+    "variant": "candidate",
+    "medianParentMs": 384.0932010207325,
+    "medianChildMs": 368,
+    "maximumObservedRssBytes": 47816704
+  },
+  {
+    "name": "maintainer-document",
+    "variant": "before",
+    "medianParentMs": 2157.054200069979,
+    "medianChildMs": 2133,
+    "maximumObservedRssBytes": 123420672
+  },
+  {
+    "name": "maintainer-document",
+    "variant": "candidate",
+    "medianParentMs": 2173.7926029600203,
+    "medianChildMs": 2150,
+    "maximumObservedRssBytes": 124657664
+  }
+]

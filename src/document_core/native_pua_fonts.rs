@@ -18,6 +18,67 @@ pub struct NativePuaFontRequest {
 }
 
 impl DocumentCore {
+    /// 원본 HFT 슬롯의 표시 face와 굵기별 실제 프로그램 요청이다.
+    pub fn native_otf_font_requests(&self) -> Vec<NativePuaFontRequest> {
+        let mut requests = BTreeMap::new();
+        for style in &self.styles.char_styles {
+            for lang in 0..crate::renderer::style_resolver::LANG_COUNT {
+                if !style.source_hft_for_lang(lang) {
+                    continue;
+                }
+                let family = style.font_family_for_lang(lang).to_owned();
+                requests
+                    .entry((family.clone(), style.bold, style.italic))
+                    .or_insert(NativePuaFontRequest {
+                        paint_families: crate::renderer::render_font_family_names_for_weight(
+                            &family, style.bold,
+                        ),
+                        family,
+                        bold: style.bold,
+                        italic: style.italic,
+                        literal_figure_space: false,
+                    });
+            }
+        }
+        requests.into_values().collect()
+    }
+
+    /// 원본 HFT 슬롯에서 paint가 실제 선택한 OTF만 세션에 등록한다.
+    pub fn prepare_native_otf_fonts_with(
+        &mut self,
+        mut provider: impl FnMut(&NativePuaFontRequest) -> Option<(Vec<u8>, u32)>,
+    ) -> Result<bool, HwpError> {
+        self.prepare_native_otf_fonts_multiple_with(|request| {
+            provider(request).into_iter().collect()
+        })
+    }
+
+    /// 같은 family의 분할 프로그램을 paint 후보 순서대로 공급한다.
+    pub(crate) fn prepare_native_otf_fonts_multiple_with(
+        &mut self,
+        mut provider: impl FnMut(&NativePuaFontRequest) -> Vec<(Vec<u8>, u32)>,
+    ) -> Result<bool, HwpError> {
+        let mut fonts = (*self.native_pua_fonts).clone();
+        fonts.clear_otf();
+        for request in self.native_otf_font_requests() {
+            for (bytes, index) in provider(&request) {
+                // 범위를 넘거나 읽을 수 없는 face는 원본 HFT 경로를 유지한다.
+                let _ = fonts.register_otf(
+                    &request.family,
+                    request.bold,
+                    request.italic,
+                    &bytes,
+                    index,
+                );
+            }
+        }
+        let changed = fonts != *self.native_pua_fonts;
+        if changed {
+            self.native_pua_fonts = std::sync::Arc::new(fonts);
+            self.refresh_native_pua_font_layout();
+        }
+        Ok(changed)
+    }
     /// 동기 공급자는 요청마다 준비한 한 프로그램만 빌려 주고, 배치는 한 번 재구성한다.
     pub fn prepare_native_pua_fonts_with(
         &mut self,

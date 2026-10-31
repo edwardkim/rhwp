@@ -459,14 +459,23 @@ impl TextPostProcessor {
     ///
     /// Zero-width space (U+200B) carries no width and is removed entirely.
     pub(crate) fn normalize_unicode_spaces(text: &str) -> std::borrow::Cow<'_, str> {
+        Self::try_normalize_unicode_spaces(text, crate::import_storage::ImportStorage(None))
+            .expect("Unicode space allocation")
+    }
+    pub(crate) fn try_normalize_unicode_spaces<'a>(
+        text: &'a str,
+        allocation: crate::import_storage::ImportStorage<'_>,
+    ) -> crate::error::Result<std::borrow::Cow<'a, str>> {
+        allocation.bytes(0)?;
+
         // Fast path: skip allocation when no typographic spaces are present.
         let needs_work = text
             .chars()
             .any(|c| matches!(c, '\u{2000}'..='\u{200B}' | '\u{202F}' | '\u{205F}'));
         if !needs_work {
-            return std::borrow::Cow::Borrowed(text);
+            return Ok(std::borrow::Cow::Borrowed(text));
         }
-        let mut result = String::with_capacity(text.len());
+        let mut result = allocation.string_capacity(text.len())?;
         for ch in text.chars() {
             match ch {
                 // EN QUAD … HAIR SPACE, NARROW NO-BREAK SPACE, MEDIUM MATH SPACE
@@ -476,7 +485,7 @@ impl TextPostProcessor {
                 _ => result.push(ch),
             }
         }
-        std::borrow::Cow::Owned(result)
+        Ok(std::borrow::Cow::Owned(result))
     }
 
     /// Apply full text post-processing pipeline.

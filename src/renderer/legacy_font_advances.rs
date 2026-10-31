@@ -35,6 +35,22 @@ pub(crate) fn select_native_programs(document: &Document, styles: &mut ResolvedS
                 .font_faces
                 .get(lang)
                 .and_then(|faces| faces.get(font_id as usize));
+            // HWP3 글꼴 목록에는 유형이 없다. 확인된 원본 HFT 이름만
+            // HFT의 굵기 전진 계약에 연결한다.
+            if source_format == SourceFormat::Hwp3
+                && face.is_some_and(|face| {
+                    face.alt_type == 0
+                        && !face.is_embedded
+                        && super::font_rule_layout_name_projection::find_font_rule_layout_name(
+                            "rust-style-resolution.hft",
+                            &face.name,
+                            lang,
+                        )
+                        .is_some()
+                })
+            {
+                style.font_families_source_hft[lang] = true;
+            }
             if let Some(face) = face.filter(|face| !face.is_embedded) {
                 let metric_face = match face.native_program {
                     Some(NativeFontProgram::HumanMyeongJo) => Some(HUMAN_HFT_METRIC_FACE),

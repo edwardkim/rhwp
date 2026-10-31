@@ -5,17 +5,26 @@ use super::{PdfImportError, MAX_POOL_ENTRIES};
 use crate::model::{control::Control, document::Document, paragraph::Paragraph};
 use std::collections::BTreeMap;
 
-pub(super) struct Pool(BTreeMap<Vec<u8>, u32>);
+pub(super) struct Pool(
+    BTreeMap<Vec<u8>, u32>,
+    std::sync::Arc<pdf_oxide::import_limits::ImportBudget>,
+);
 
 impl Pool {
-    pub fn new(doc: &Document) -> Result<Self, PdfImportError> {
-        let mut pool = Self(BTreeMap::new());
+    pub fn new(
+        doc: &Document,
+        budget: std::sync::Arc<pdf_oxide::import_limits::ImportBudget>,
+    ) -> Result<Self, PdfImportError> {
+        let mut pool = Self(BTreeMap::new(), budget);
         for (id, shape) in doc.doc_info.char_shapes.iter().enumerate() {
             // Include every field, including raw provenance: equality is not
             // inferred from a subset of font/size/spacing properties.
-            let key = serde_json::to_vec(shape)
-                .map_err(|_| PdfImportError::budget("character shape key failed"))?;
-            pool.0.entry(key).or_insert(id as u32);
+            let allocation = super::allocation::Allocation(&pool.1);
+            let key = allocation.json(shape, pool.1.limits.stream_bytes)?;
+            if let std::collections::btree_map::Entry::Vacant(entry) = pool.0.entry(key) {
+                allocation.tree_entry::<Vec<u8>, u32>()?;
+                entry.insert(id as u32);
+            }
         }
         Ok(pool)
     }
@@ -26,11 +35,20 @@ impl Pool {
         first: usize,
         section: usize,
     ) -> Result<(), PdfImportError> {
-        let added = doc.doc_info.char_shapes.split_off(first);
-        let mut remap = Vec::with_capacity(added.len());
+        let allocation = super::allocation::Allocation(&self.1);
+        let count = doc
+            .doc_info
+            .char_shapes
+            .len()
+            .checked_sub(first)
+            .ok_or_else(|| PdfImportError::budget("character shape split range invalid"))?;
+        // Move owned shapes into a fallibly reserved buffer. Their strings/
+        // arrays move too; no payload clone and no infallible split_off allocation.
+        let mut added = allocation.vec(count)?;
+        added.extend(doc.doc_info.char_shapes.drain(first..));
+        let mut remap = allocation.vec(added.len())?;
         for shape in added {
-            let key = serde_json::to_vec(&shape)
-                .map_err(|_| PdfImportError::budget("character shape key failed"))?;
+            let key = allocation.json(&shape, self.1.limits.stream_bytes)?;
             let id = if let Some(id) = self.0.get(&key) {
                 *id
             } else {
@@ -39,6 +57,7 @@ impl Pool {
                 }
                 let id = doc.doc_info.char_shapes.len() as u32;
                 doc.doc_info.char_shapes.push(shape);
+                allocation.tree_entry::<Vec<u8>, u32>()?;
                 self.0.insert(key, id);
                 id
             };

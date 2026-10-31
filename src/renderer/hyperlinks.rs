@@ -8,18 +8,10 @@ pub struct PdfLink {
     pub rect: BoundingBox,
 }
 
-/// 웹/메일 링크만 실행 URI로 내보낸다. 내부 목적지는 별도 GoTo 구현이 필요하다.
-/// PDF URI는 ASCII 문자열이므로 비ASCII UTF-8 바이트를 percent-encode한다.
+/// URI/SVG serialization only. Local PDF files and internal destinations use
+/// their own action writers; the model always retains the original spelling.
 pub fn export_uri(uri: &str) -> Option<String> {
-    let (scheme, rest) = uri.split_once(':')?;
-    if rest.is_empty()
-        || !["http", "https", "mailto"]
-            .iter()
-            .any(|s| scheme.eq_ignore_ascii_case(s))
-        || uri.chars().any(char::is_control)
-    {
-        return None;
-    }
+    crate::model::hyperlink::classify_destination(uri)?;
     let mut out = String::new();
     for byte in uri.bytes() {
         if byte.is_ascii() && byte != b' ' {
@@ -75,7 +67,10 @@ pub(crate) fn page_links(links: &[PdfLink], width: f64, height: f64) -> Vec<PdfL
         .iter()
         .filter_map(|link| {
             Some(PdfLink {
-                uri: export_uri(&link.uri)?,
+                uri: {
+                    crate::model::hyperlink::classify_destination(&link.uri)?;
+                    link.uri.clone()
+                },
                 rect: clipped_rect(link.rect, page)?,
             })
         })
@@ -107,4 +102,24 @@ pub(crate) fn append_svg_links(svg: &mut String, links: &[PdfLink]) {
     }
     overlay.push_str("</g>\n");
     svg.insert_str(end, &overlay);
+}
+
+/// Named destination in CSS px of its owning output page.
+#[derive(Clone, Debug)]
+pub struct PdfNamedDestination {
+    pub name: String,
+    pub x: f64,
+    pub y: f64,
+}
+
+/// Portable ASCII key for a PDF named destination. Unicode source names remain
+/// in the document model; PDF Name/Str decoding differs between reader APIs.
+#[cfg(not(target_arch = "wasm32"))]
+pub(crate) fn pdf_destination_key(name: &str) -> String {
+    use std::fmt::Write;
+    let mut output = String::from("rhwp-anchor-");
+    for byte in name.bytes() {
+        let _ = write!(output, "{byte:02x}");
+    }
+    output
 }

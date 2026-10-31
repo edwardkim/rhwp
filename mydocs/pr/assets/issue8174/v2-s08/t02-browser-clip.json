@@ -1,0 +1,53 @@
+{
+  "rows": [
+    {
+      "variant": "before",
+      "name": "consecutive-moves",
+      "error": "유효하지 않은 파일: PDF 오류: PDF_IMAGE_UNSUPPORTED: non-rectangular image clipping is not supported",
+      "ms": 99.60000002384186
+    },
+    {
+      "variant": "before",
+      "name": "maintainer-document",
+      "error": "유효하지 않은 파일: PDF 오류: PDF_IMAGE_UNSUPPORTED: non-rectangular image clipping is not supported",
+      "ms": 1933.8999999761581
+    },
+    {
+      "variant": "before",
+      "name": "compound-rejected",
+      "error": "유효하지 않은 파일: PDF 오류: PDF_IMAGE_UNSUPPORTED: non-rectangular image clipping is not supported",
+      "ms": 0.5
+    },
+    {
+      "variant": "before",
+      "name": "curve-rejected",
+      "error": "유효하지 않은 파일: PDF 오류: PDF_IMAGE_UNSUPPORTED: non-rectangular image clipping is not supported",
+      "ms": 0.6000000238418579
+    },
+    {
+      "variant": "candidate",
+      "name": "consecutive-moves",
+      "pages": 5,
+      "ms": 202
+    },
+    {
+      "variant": "candidate",
+      "name": "maintainer-document",
+      "pages": 15,
+      "ms": 2553.3000000715256
+    },
+    {
+      "variant": "candidate",
+      "name": "compound-rejected",
+      "error": "유효하지 않은 파일: PDF 오류: PDF_IMAGE_UNSUPPORTED: non-rectangular image clipping is not supported",
+      "ms": 0.6999999284744263
+    },
+    {
+      "variant": "candidate",
+      "name": "curve-rejected",
+      "error": "유효하지 않은 파일: PDF 오류: PDF_IMAGE_UNSUPPORTED: non-rectangular image clipping is not supported",
+      "ms": 0.5
+    }
+  ],
+  "errors": []
+}

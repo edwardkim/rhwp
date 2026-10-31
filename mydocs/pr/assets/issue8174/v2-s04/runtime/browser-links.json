@@ -1,0 +1,16 @@
+{
+  "checked": [
+    "inserting/opening a link does not call the host",
+    "actual pointer click delegates the original mail destination",
+    "registered application click reaches its host capability",
+    "internal link moves the real editor cursor to its bookmark",
+    "browser fallback displays the original ../linked.hwp destination",
+    "browser fallback displays the original C destination",
+    "browser fallback displays the original rhwp-app destination",
+    "blocked popup has an actionable browser failure message",
+    "actual web popup detaches its opener",
+    "file host opens the actual document and stale source-link formatting is not applied to it",
+    "host failure is visible and does not replace the document"
+  ],
+  "scope": "Actual editor mouse events, bookmark and popup; host callback really opens a local sample. Mail delivery and installed OS application launch are host responsibilities and were not claimed."
+}

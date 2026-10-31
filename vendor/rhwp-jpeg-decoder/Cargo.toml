@@ -10,10 +10,10 @@ include = [
 name = "rhwp-jpeg-decoder"
 version = "0.3.2-rhwp.1"
 edition = "2021"
-rust-version = "1.61"
+rust-version = "1.93.1"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/image-rs/jpeg-decoder"
-publish = false
+publish = ["crates-io"]
 [workspace]
 [lib]
 name = "jpeg_decoder_limited"

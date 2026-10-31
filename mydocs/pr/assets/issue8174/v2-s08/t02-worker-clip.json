@@ -1,0 +1,7 @@
+{
+  "initialPages": 5,
+  "retainedPages": 5,
+  "acceptedPages": 15,
+  "savedBytes": 1256710,
+  "error": "Error: PDF_IMAGE_UNSUPPORTED: 유효하지 않은 파일: PDF 오류: PDF_IMAGE_UNSUPPORTED: non-rectangular image clipping is not supported"
+}

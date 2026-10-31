@@ -351,9 +351,20 @@ fn codec_samples(
                     None,
                     false,
                     Some((width, height)),
+                    Some(1),
                 )?
             } else {
-                crate::decoders::jpx::decode_jpx_for_pdf(&bytes, None, true, Some((width, height)))?
+                crate::decoders::jpx::decode_jpx_for_pdf(
+                    &bytes,
+                    None,
+                    true,
+                    Some((width, height)),
+                    if bpc == 8 {
+                        u8::try_from(expected / (width as usize * height as usize)).ok()
+                    } else {
+                        None
+                    },
+                )?
             };
             if image.width != width || image.height != height {
                 return Err(Error::Image("JPX mask dimensions differ from PDF".into()));

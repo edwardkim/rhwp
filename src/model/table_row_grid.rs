@@ -36,6 +36,18 @@ struct Envelope {
 }
 
 fn fingerprint(t: &Table) -> [u8; 32] {
+    fingerprint_with_storage(t, &crate::storage::Unbounded).expect("unbounded fingerprint")
+}
+fn budget_error(error: impl std::fmt::Display) -> String {
+    format!("HWPX table grid: {error}")
+}
+fn fingerprint_with_storage<S: crate::storage::Storage>(
+    t: &Table,
+    storage: &S,
+) -> Result<[u8; 32], String>
+where
+    S::Error: std::fmt::Display,
+{
     let mut h = Sha256::new();
     for value in [t.common.instance_id, t.common.width, t.common.height] {
         h.update(value.to_le_bytes());
@@ -43,8 +55,10 @@ fn fingerprint(t: &Table) -> [u8; 32] {
     h.update(t.row_count.to_le_bytes());
     h.update(t.col_count.to_le_bytes());
     h.update((t.cells.len() as u64).to_le_bytes());
-    let mut cells: Vec<_> = t.cells.iter().collect();
-    cells.sort_by_key(|c| (c.row, c.col));
+    let mut cells: Vec<_> = storage.collect(t.cells.iter()).map_err(budget_error)?;
+    storage
+        .stable_sort_by(&mut cells, |a, b| (a.row, a.col).cmp(&(b.row, b.col)))
+        .map_err(budget_error)?;
     for c in cells {
         for value in [c.row, c.col, c.row_span, c.col_span] {
             h.update(value.to_le_bytes());
@@ -58,11 +72,22 @@ fn fingerprint(t: &Table) -> [u8; 32] {
             h.update(value.to_le_bytes());
         }
     }
-    h.finalize().into()
+    Ok(h.finalize().into())
 }
 
 fn projection(t: &Table) -> Result<Option<Vec<u16>>, String> {
-    let mut origins = vec![false; usize::from(t.row_count)];
+    projection_with_storage(t, &crate::storage::Unbounded)
+}
+fn projection_with_storage<S: crate::storage::Storage>(
+    t: &Table,
+    storage: &S,
+) -> Result<Option<Vec<u16>>, String>
+where
+    S::Error: std::fmt::Display,
+{
+    let mut origins = storage
+        .filled(usize::from(t.row_count), false)
+        .map_err(budget_error)?;
     for c in &t.cells {
         if let Some(row) = origins.get_mut(usize::from(c.row)) {
             *row = true;
@@ -78,15 +103,24 @@ fn projection(t: &Table) -> Result<Option<Vec<u16>>, String> {
     }
     // Prove complete, nonoverlapping ownership from actual cells, not a cached
     // grid or the absence of visible border ink. A physical gap is not removable.
-    let mut covered = vec![false; slots];
-    let mut boundaries = BTreeSet::from([0, t.row_count]);
+    let mut covered = storage.filled(slots, false).map_err(budget_error)?;
+    let mut boundaries = BTreeSet::new();
+    for value in [0, t.row_count] {
+        storage.tree_entry::<u16, ()>().map_err(budget_error)?;
+        boundaries.insert(value);
+    }
     for c in &t.cells {
         let end_row = c.row.checked_add(c.row_span).ok_or_else(error)?;
         let end_col = c.col.checked_add(c.col_span).ok_or_else(error)?;
         if c.row_span == 0 || c.col_span == 0 || end_row > t.row_count || end_col > t.col_count {
             return Err(error());
         }
-        boundaries.extend([c.row, end_row]);
+        for value in [c.row, end_row] {
+            if !boundaries.contains(&value) {
+                storage.tree_entry::<u16, ()>().map_err(budget_error)?;
+                boundaries.insert(value);
+            }
+        }
         for row in c.row..end_row {
             for col in c.col..end_col {
                 let index = usize::from(row) * usize::from(t.col_count) + usize::from(col);
@@ -105,9 +139,14 @@ fn projection(t: &Table) -> Result<Option<Vec<u16>>, String> {
         if z.start_row >= end || end > t.row_count {
             return Err(error());
         }
-        boundaries.extend([z.start_row, end]);
+        for value in [z.start_row, end] {
+            if !boundaries.contains(&value) {
+                storage.tree_entry::<u16, ()>().map_err(budget_error)?;
+                boundaries.insert(value);
+            }
+        }
     }
-    let boundaries: Vec<_> = boundaries.into_iter().collect();
+    let boundaries: Vec<_> = storage.collect(boundaries).map_err(budget_error)?;
     if boundaries[..boundaries.len() - 1]
         .iter()
         .any(|r| !origins[usize::from(*r)])
@@ -127,16 +166,41 @@ pub(crate) struct Writer {
 
 impl Writer {
     pub(crate) fn table<'a>(&mut self, t: &'a Table) -> Result<Cow<'a, Table>, String> {
-        let result = self.project(t);
+        self.table_with_storage(t, &crate::storage::Unbounded)
+    }
+    pub(crate) fn table_with_storage<'a, S: crate::storage::Storage>(
+        &mut self,
+        t: &'a Table,
+        storage: &S,
+    ) -> Result<Cow<'a, Table>, String>
+    where
+        S::Error: std::fmt::Display,
+    {
+        let result = self.project_with_storage(t, storage);
         if let Err(error) = &result {
-            self.failure.get_or_insert_with(|| error.clone());
+            if self.failure.is_none() {
+                self.failure = Some(storage.string(error).map_err(budget_error)?);
+            }
         }
         result
     }
 
     fn project<'a>(&mut self, t: &'a Table) -> Result<Cow<'a, Table>, String> {
+        self.project_with_storage(t, &crate::storage::Unbounded)
+    }
+    fn project_with_storage<'a, S: crate::storage::Storage>(
+        &mut self,
+        t: &'a Table,
+        storage: &S,
+    ) -> Result<Cow<'a, Table>, String>
+    where
+        S::Error: std::fmt::Display,
+    {
+        if !self.ids.contains_key(&t.common.instance_id) {
+            storage.tree_entry::<u32, usize>().map_err(budget_error)?;
+        }
         *self.ids.entry(t.common.instance_id).or_default() += 1;
-        let Some(boundaries) = projection(t)? else {
+        let Some(boundaries) = projection_with_storage(t, storage)? else {
             return Ok(Cow::Borrowed(t));
         };
         // Bound the record allocation before serializing JSON (each u16 takes
@@ -147,7 +211,7 @@ impl Writer {
             .filter(|bytes| *bytes <= MAX_BYTES)
             .ok_or("HWPX 표 격자 보존 정보가 크기 한도를 넘습니다")?;
         let index = |row| boundaries.binary_search(&row).expect("proven row boundary") as u16;
-        let mut projected = t.clone();
+        let mut projected = storage.clone_table(t).map_err(budget_error)?;
         projected.row_count = (boundaries.len() - 1) as u16;
         for c in &mut projected.cells {
             let end = index(c.row + c.row_span);
@@ -158,21 +222,39 @@ impl Writer {
             z.start_row = index(z.start_row);
             z.end_row = index(z.end_row + 1) - 1;
         }
-        projected.rebuild_row_sizes();
-        projected.rebuild_grid();
-        self.records.push(Record {
-            id: t.common.instance_id,
-            fingerprint: fingerprint(&projected),
-            boundaries,
-        });
+        projected
+            .rebuild_row_sizes_with_storage(storage)
+            .map_err(budget_error)?;
+        projected
+            .rebuild_grid_with_storage(storage)
+            .map_err(budget_error)?;
+        storage
+            .push(
+                &mut self.records,
+                Record {
+                    id: t.common.instance_id,
+                    fingerprint: fingerprint_with_storage(&projected, storage)?,
+                    boundaries,
+                },
+            )
+            .map_err(budget_error)?;
         Ok(Cow::Owned(projected))
     }
 
     pub(crate) fn encode(&self) -> Result<Option<Vec<u8>>, String> {
+        self.encode_with_storage(&crate::storage::Unbounded)
+    }
+    pub(crate) fn encode_with_storage<S: crate::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<Option<Vec<u8>>, String>
+    where
+        S::Error: std::fmt::Display,
+    {
         // The paragraph writer can catch an individual control's error. Do not
         // turn a failed table projection into a successful package missing it.
         if let Some(error) = &self.failure {
-            return Err(error.clone());
+            return Err(storage.string(error).map_err(budget_error)?);
         }
         if self.records.is_empty() {
             return Ok(None);
@@ -180,11 +262,16 @@ impl Writer {
         if self.records.iter().any(|r| self.ids.get(&r.id) != Some(&1)) {
             return Err("HWPX 표 격자 보존 대상의 개체 ID가 중복됩니다".into());
         }
-        let bytes = serde_json::to_vec(&EnvelopeRef {
-            version: 1,
-            records: &self.records,
-        })
-        .map_err(|e| e.to_string())?;
+        let mut writer = crate::serializer::budget_cursor::BudgetCursor::new(storage, MAX_BYTES);
+        serde_json::to_writer(
+            &mut writer,
+            &EnvelopeRef {
+                version: 1,
+                records: &self.records,
+            },
+        )
+        .map_err(budget_error)?;
+        let bytes = writer.into_inner();
         if bytes.len() > MAX_BYTES {
             return Err("HWPX 표 격자 보존 정보가 크기 한도를 넘습니다".into());
         }
@@ -336,13 +423,15 @@ pub(crate) fn decode(doc: &mut Document, bytes: &[u8]) {
     });
 }
 
-pub(crate) fn native_grid_loss() -> crate::serializer::content_loss::ContentLoss {
+pub(crate) fn native_grid_loss_with_storage<S: crate::storage::Storage>(
+    storage: &S,
+) -> Result<crate::serializer::content_loss::ContentLoss, S::Error> {
     use crate::serializer::content_loss::*;
-    ContentLoss {
+    Ok(ContentLoss {
         code: ContentLossCode::MetadataReduced,
         subject: ContentLossSubject::Control,
-        path: "표의 잠재 행 격자: rhwp 왕복 보존, 한컴에는 실제 셀 경계만 투영".into(),
+        path: storage.string("표의 잠재 행 격자: rhwp 왕복 보존, 한컴에는 실제 셀 경계만 투영")?,
         reason: ContentLossReason::UnsupportedByOutputFormat,
         resource_id: None,
-    }
+    })
 }

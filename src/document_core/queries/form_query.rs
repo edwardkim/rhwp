@@ -211,8 +211,17 @@ impl DocumentCore {
 
                 // ComboBox: 스크립트에서 InsertString 항목 추출
                 let items_json = if f.form_type == FormType::ComboBox {
-                    let items =
-                        extract_combobox_items_from_script(&self.document.extra_streams, &f.name);
+                    let items = f
+                        .properties
+                        .get("_rhwp_items")
+                        .filter(|value| value.len() <= 65536)
+                        .and_then(|value| serde_json::from_str::<Vec<String>>(value).ok())
+                        .unwrap_or_else(|| {
+                            extract_combobox_items_from_script(
+                                &self.document.extra_streams,
+                                &f.name,
+                            )
+                        });
                     if items.is_empty() {
                         "[]".to_string()
                     } else {
@@ -309,32 +318,9 @@ fn form_type_to_str(ft: FormType) -> &'static str {
 /// extra_streams에서 Scripts/DefaultJScript 스트림을 찾아 디코딩한다.
 /// HWP 스크립트는 zlib 압축 + UTF-16LE로 저장됨.
 fn decode_hwp_script(extra_streams: &[(String, Vec<u8>)]) -> Option<String> {
-    let data = extra_streams
-        .iter()
-        .find(|(path, _)| path == "/Scripts/DefaultJScript" || path == "Scripts/DefaultJScript")
-        .map(|(_, data)| data)?;
-
-    if data.is_empty() {
-        return None;
-    }
-
-    // zlib 해제 (raw deflate, no header)
-    use std::io::Read;
-    let mut decoder = flate2::read::DeflateDecoder::new(&data[..]);
-    let mut decompressed = Vec::new();
-    if decoder.read_to_end(&mut decompressed).is_err() {
-        return None;
-    }
-
-    // UTF-16LE 디코딩
-    if decompressed.len() < 2 {
-        return None;
-    }
-    let u16s: Vec<u16> = decompressed
-        .chunks_exact(2)
-        .map(|c| u16::from_le_bytes([c[0], c[1]]))
-        .collect();
-    Some(String::from_utf16_lossy(&u16s))
+    crate::model::form_script::script_sources_from_streams(extra_streams)
+        .ok()
+        .map(|(header, source)| format!("{header}\n{source}"))
 }
 
 /// 스크립트에서 ComboBox InsertString 패턴을 추출하여 항목 목록을 반환한다.

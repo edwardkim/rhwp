@@ -32,6 +32,8 @@
 //! built-in encoding — this module also provides [`parse_cff_encoding`]
 //! for that legacy lookup.
 
+use super::allocation::FontAllocation;
+use crate::import_limits::ImportBudget;
 use std::collections::HashMap;
 
 /// Standard CFF string IDs (SIDs) 0-390 per CFF specification Table A-2.
@@ -451,53 +453,46 @@ fn glyph_name_to_sid(name: &str) -> Option<u16> {
 }
 
 /// Parse a CFF INDEX structure, returning byte slices for each entry.
-fn parse_index(data: &[u8], offset: usize) -> Option<(Vec<&[u8]>, usize)> {
-    if offset + 2 > data.len() {
-        return None;
-    }
-    let count = u16::from_be_bytes([data[offset], data[offset + 1]]) as usize;
+fn parse_index_limited<'a>(
+    data: &'a [u8],
+    offset: usize,
+    allocation: FontAllocation<'_>,
+) -> Option<(Vec<&'a [u8]>, usize)> {
+    allocation.check()?;
+    let header = data.get(offset..offset.checked_add(2)?)?;
+    let count = u16::from_be_bytes([header[0], header[1]]) as usize;
     if count == 0 {
         return Some((Vec::new(), offset + 2));
     }
-
-    if offset + 3 > data.len() {
+    let off_size = *data.get(offset.checked_add(2)?)? as usize;
+    if !(1..=4).contains(&off_size) {
         return None;
     }
-    let off_size = data[offset + 2] as usize;
-    if off_size == 0 || off_size > 4 {
-        return None;
-    }
-
-    let offset_array_start = offset + 3;
-    let offset_array_len = (count + 1) * off_size;
-    if offset_array_start + offset_array_len > data.len() {
-        return None;
-    }
-
-    // Read offsets
-    let mut offsets = Vec::with_capacity(count + 1);
-    for i in 0..=count {
-        let pos = offset_array_start + i * off_size;
-        let mut val: u32 = 0;
-        for j in 0..off_size {
-            val = (val << 8) | data[pos + j] as u32;
+    let offsets = offset.checked_add(3)?;
+    let data_start = offsets.checked_add(count.checked_add(1)?.checked_mul(off_size)?)?;
+    data.get(..data_start)?;
+    let read_offset = |index: usize| -> Option<usize> {
+        let start = offsets.checked_add(index.checked_mul(off_size)?)?;
+        let mut value = 0usize;
+        for byte in data.get(start..start.checked_add(off_size)?)? {
+            value = value.checked_mul(256)?.checked_add(*byte as usize)?;
         }
-        offsets.push(val as usize);
+        Some(value)
+    };
+    // Adobe TN #5176 section 5: offsets are one-based, with first offset 1.
+    if read_offset(0)? != 1 {
+        return None;
     }
-
-    let data_start = offset_array_start + offset_array_len;
-    let mut entries = Vec::with_capacity(count);
-    for i in 0..count {
-        let start = data_start + offsets[i] - 1; // CFF offsets are 1-based
-        let end = data_start + offsets[i + 1] - 1;
-        if start > data.len() || end > data.len() || start > end {
-            return None;
-        }
-        entries.push(&data[start..end]);
+    let next = data_start.checked_add(read_offset(count)?.checked_sub(1)?)?;
+    data.get(..next)?;
+    let mut entries = allocation.vec(count)?;
+    let mut previous = data_start;
+    for index in 1..=count {
+        let end = data_start.checked_add(read_offset(index)?.checked_sub(1)?)?;
+        entries.push(data.get(previous..end)?);
+        previous = end;
     }
-
-    let next_offset = data_start + offsets[count] - 1;
-    Some((entries, next_offset))
+    Some((entries, next))
 }
 
 /// Parse a CFF DICT operand (integer or real).
@@ -568,11 +563,38 @@ fn parse_dict_operand(data: &[u8], pos: usize) -> Option<(i32, usize)> {
 /// matters.
 ///
 /// Returns `(value, bytes consumed including the 30 marker)`.
-fn parse_dict_real(data: &[u8], pos: usize) -> Option<(f64, usize)> {
+fn parse_dict_real_limited(
+    data: &[u8],
+    pos: usize,
+    allocation: FontAllocation<'_>,
+) -> Option<(f64, usize)> {
     if pos >= data.len() || data[pos] != 30 {
         return None;
     }
-    let mut text = String::new();
+    let mut text_len = 0usize;
+    let mut terminated = false;
+    for byte in &data[pos + 1..] {
+        for nib in [byte >> 4, byte & 15] {
+            if nib == 15 {
+                terminated = true;
+                break;
+            }
+            text_len = text_len.checked_add(if nib == 12 {
+                2
+            } else if nib == 13 {
+                0
+            } else {
+                1
+            })?;
+        }
+        if terminated {
+            break;
+        }
+    }
+    if !terminated {
+        return None;
+    }
+    let mut text = allocation.string_capacity(text_len)?;
     let mut i = pos + 1;
     while i < data.len() {
         for nib in [(data[i] >> 4) & 0x0F, data[i] & 0x0F] {
@@ -605,17 +627,29 @@ fn parse_dict_real(data: &[u8], pos: usize) -> Option<(f64, usize)> {
 ///
 /// Returns `None` for a skewed, rotated, non-uniform or absent matrix — the
 /// caller keeps its 1000-unit default, which is also the CFF default.
+#[cfg(test)]
 pub(crate) fn parse_cff_font_matrix_scale(font_data: &[u8]) -> Option<f64> {
+    parse_cff_font_matrix_scale_with_budget(font_data, None)
+}
+
+/// Budgeted variant retaining the originating font request.
+pub fn parse_cff_font_matrix_scale_with_budget(
+    font_data: &[u8],
+    budget: Option<&ImportBudget>,
+) -> Option<f64> {
+    let allocation = FontAllocation(budget);
+    allocation.check()?;
     let cff_data = extract_cff_from_opentype(font_data).unwrap_or(font_data);
     if cff_data.len() < 4 || cff_data[0] != 1 {
         return None;
     }
     let hdr_size = cff_data[2] as usize;
-    let (_, after_name) = parse_index(cff_data, hdr_size)?;
-    let (top_dicts, _) = parse_index(cff_data, after_name)?;
+    let (_, after_name) = parse_index_limited(cff_data, hdr_size, allocation)?;
+    let (top_dicts, _) = parse_index_limited(cff_data, after_name, allocation)?;
     let dict = top_dicts.first()?;
 
-    let mut operands: Vec<f64> = Vec::new();
+    let mut operands = [0.0f64; 48];
+    let mut operand_len = 0;
     let mut pos = 0usize;
     while pos < dict.len() {
         let b0 = dict[pos];
@@ -630,8 +664,8 @@ pub(crate) fn parse_cff_font_matrix_scale(font_data: &[u8]) -> Option<f64> {
                 b0 as u16
             };
             // 12 7 = FontMatrix, six operands [a b c d e f].
-            if op == 0x0C07 && operands.len() >= 6 {
-                let m = &operands[operands.len() - 6..];
+            if op == 0x0C07 && operand_len >= 6 {
+                let m = &operands[operand_len - 6..operand_len];
                 let (a, b, c, d) = (m[0], m[1], m[2], m[3]);
                 // Only a plain uniform scale is safe to fold into unitsPerEm.
                 if b.abs() < 1e-12 && c.abs() < 1e-12 && a > 0.0 && (a - d).abs() < 1e-12 {
@@ -639,15 +673,25 @@ pub(crate) fn parse_cff_font_matrix_scale(font_data: &[u8]) -> Option<f64> {
                 }
                 return None;
             }
-            operands.clear();
+            operand_len = 0;
             pos += 1;
         } else if b0 == 30 {
-            let (v, used) = parse_dict_real(dict, pos)?;
-            operands.push(v);
+            let (v, used) = parse_dict_real_limited(dict, pos, allocation)?;
+            if operand_len == operands.len() {
+                allocation.reject();
+                return None;
+            }
+            operands[operand_len] = v;
+            operand_len += 1;
             pos += used;
         } else {
             let (v, used) = parse_dict_operand(dict, pos)?;
-            operands.push(v as f64);
+            if operand_len == operands.len() {
+                allocation.reject();
+                return None;
+            }
+            operands[operand_len] = v as f64;
+            operand_len += 1;
             pos += used;
         }
     }
@@ -673,24 +717,35 @@ pub(crate) fn parse_cff_font_matrix_scale(font_data: &[u8]) -> Option<f64> {
 ///
 /// Returns `None` when the font is not CID-keyed — the caller then uses the CID
 /// as the GID, which is what the second branch of the clause requires.
+#[cfg(test)]
 pub(crate) fn parse_cff_cid_to_gid(font_data: &[u8]) -> Option<HashMap<u16, u16>> {
+    parse_cff_cid_to_gid_with_budget(font_data, None)
+}
+
+/// Budgeted variant retaining the originating font request.
+pub fn parse_cff_cid_to_gid_with_budget(
+    font_data: &[u8],
+    budget: Option<&ImportBudget>,
+) -> Option<HashMap<u16, u16>> {
+    let allocation = FontAllocation(budget);
+    allocation.check()?;
     let cff_data = extract_cff_from_opentype(font_data).unwrap_or(font_data);
     if cff_data.len() < 4 || cff_data[0] != 1 {
         return None;
     }
     let hdr_size = cff_data[2] as usize;
-    let (_, after_name) = parse_index(cff_data, hdr_size)?;
-    let (top_dicts, _) = parse_index(cff_data, after_name)?;
+    let (_, after_name) = parse_index_limited(cff_data, hdr_size, allocation)?;
+    let (top_dicts, _) = parse_index_limited(cff_data, after_name, allocation)?;
     let dict = top_dicts.first()?;
 
     // ROS (operator 12 30) is what makes a CFF CID-keyed.
-    if !top_dict_has_ros(dict) {
+    if !top_dict_has_ros(dict, allocation) {
         return None;
     }
 
     // Returns (charstrings, encoding, charset) — in that order.
     let (charstrings_offset, _encoding_offset, charset_offset) =
-        parse_top_dict_with_charstrings(dict);
+        parse_top_dict_with_charstrings_limited(dict, allocation)?;
     if charstrings_offset <= 0 {
         return None;
     }
@@ -701,9 +756,9 @@ pub(crate) fn parse_cff_cid_to_gid(font_data: &[u8]) -> Option<HashMap<u16, u16>
     if charset_offset <= 2 {
         return None;
     }
-    let cids = parse_charset(cff_data, charset_offset as usize, num_glyphs)?;
+    let cids = parse_charset_limited(cff_data, charset_offset as usize, num_glyphs, allocation)?;
 
-    let mut map = HashMap::with_capacity(cids.len());
+    let mut map = allocation.map(cids.len())?;
     for (gid, &cid) in cids.iter().enumerate() {
         // First writer wins: a well-formed charset lists each CID once, and
         // keeping the lowest GID on a malformed one is stable.
@@ -714,7 +769,7 @@ pub(crate) fn parse_cff_cid_to_gid(font_data: &[u8]) -> Option<HashMap<u16, u16>
 
 /// Whether a Top DICT carries the ROS operator (12 30), which marks the font
 /// CID-keyed per Adobe Technical Note #5176.
-fn top_dict_has_ros(dict: &[u8]) -> bool {
+fn top_dict_has_ros(dict: &[u8], allocation: FontAllocation<'_>) -> bool {
     let mut pos = 0usize;
     while pos < dict.len() {
         let b0 = dict[pos];
@@ -730,7 +785,7 @@ fn top_dict_has_ros(dict: &[u8]) -> bool {
             }
             pos += 1;
         } else if b0 == 30 {
-            match parse_dict_real(dict, pos) {
+            match parse_dict_real_limited(dict, pos, allocation) {
                 Some((_, used)) => pos += used,
                 None => return false,
             }
@@ -745,12 +800,13 @@ fn top_dict_has_ros(dict: &[u8]) -> bool {
 }
 
 /// Parse a CFF Top DICT to extract encoding and charset offsets.
-fn parse_top_dict(dict_data: &[u8]) -> (i32, i32) {
+fn parse_top_dict_limited(dict_data: &[u8], allocation: FontAllocation<'_>) -> Option<(i32, i32)> {
     let mut encoding_offset: i32 = 0; // Default: StandardEncoding
     let mut charset_offset: i32 = 0; // Default: ISOAdobe charset
 
     let mut pos = 0;
-    let mut operand_stack: Vec<i32> = Vec::new();
+    let mut operand_stack = [0i32; 48];
+    let mut operand_len = 0;
 
     while pos < dict_data.len() {
         let b0 = dict_data[pos];
@@ -769,30 +825,35 @@ fn parse_top_dict(dict_data: &[u8]) -> (i32, i32) {
             match op {
                 16 => {
                     // Encoding (operator 16)
-                    if let Some(&val) = operand_stack.last() {
+                    if let Some(&val) = operand_stack[..operand_len].last() {
                         encoding_offset = val;
                     }
                 },
                 15 => {
                     // charset (operator 15)
-                    if let Some(&val) = operand_stack.last() {
+                    if let Some(&val) = operand_stack[..operand_len].last() {
                         charset_offset = val;
                     }
                 },
                 _ => {},
             }
 
-            operand_stack.clear();
+            operand_len = 0;
             pos += 1;
         } else if let Some((val, consumed)) = parse_dict_operand(dict_data, pos) {
-            operand_stack.push(val);
+            if operand_len == operand_stack.len() {
+                allocation.reject();
+                return None;
+            }
+            operand_stack[operand_len] = val;
+            operand_len += 1;
             pos += consumed;
         } else {
             pos += 1;
         }
     }
 
-    (encoding_offset, charset_offset)
+    Some((encoding_offset, charset_offset))
 }
 
 /// Parse the CFF Top DICT and surface (CharStrings, Encoding, charset)
@@ -801,13 +862,17 @@ fn parse_top_dict(dict_data: &[u8]) -> (i32, i32) {
 /// Charset for subsets enumerating >256 glyphs.
 ///
 /// Returns `(charstrings_offset, encoding_offset, charset_offset)`.
-fn parse_top_dict_with_charstrings(dict_data: &[u8]) -> (i32, i32, i32) {
+fn parse_top_dict_with_charstrings_limited(
+    dict_data: &[u8],
+    allocation: FontAllocation<'_>,
+) -> Option<(i32, i32, i32)> {
     let mut charstrings_offset: i32 = 0;
     let mut encoding_offset: i32 = 0;
     let mut charset_offset: i32 = 0;
 
     let mut pos = 0;
-    let mut operand_stack: Vec<i32> = Vec::new();
+    let mut operand_stack = [0i32; 48];
+    let mut operand_len = 0;
 
     while pos < dict_data.len() {
         let b0 = dict_data[pos];
@@ -824,34 +889,39 @@ fn parse_top_dict_with_charstrings(dict_data: &[u8]) -> (i32, i32, i32) {
 
             match op {
                 15 => {
-                    if let Some(&val) = operand_stack.last() {
+                    if let Some(&val) = operand_stack[..operand_len].last() {
                         charset_offset = val;
                     }
                 },
                 16 => {
-                    if let Some(&val) = operand_stack.last() {
+                    if let Some(&val) = operand_stack[..operand_len].last() {
                         encoding_offset = val;
                     }
                 },
                 17 => {
-                    if let Some(&val) = operand_stack.last() {
+                    if let Some(&val) = operand_stack[..operand_len].last() {
                         charstrings_offset = val;
                     }
                 },
                 _ => {},
             }
 
-            operand_stack.clear();
+            operand_len = 0;
             pos += 1;
         } else if let Some((val, consumed)) = parse_dict_operand(dict_data, pos) {
-            operand_stack.push(val);
+            if operand_len == operand_stack.len() {
+                allocation.reject();
+                return None;
+            }
+            operand_stack[operand_len] = val;
+            operand_len += 1;
             pos += consumed;
         } else {
             pos += 1;
         }
     }
 
-    (charstrings_offset, encoding_offset, charset_offset)
+    Some((charstrings_offset, encoding_offset, charset_offset))
 }
 
 /// Read the 2-byte big-endian `count` field at the start of a CFF INDEX
@@ -867,12 +937,20 @@ fn read_index_count(data: &[u8], offset: usize) -> Option<u32> {
 
 /// Parse the CFF charset table.
 /// Returns GID → SID mapping (GID 0 is always .notdef).
-fn parse_charset(data: &[u8], offset: usize, num_glyphs: usize) -> Option<Vec<u16>> {
+fn parse_charset_limited(
+    data: &[u8],
+    offset: usize,
+    num_glyphs: usize,
+    allocation: FontAllocation<'_>,
+) -> Option<Vec<u16>> {
     if offset >= data.len() {
         return None;
     }
 
-    let mut sids = Vec::with_capacity(num_glyphs);
+    if num_glyphs == 0 || num_glyphs > 65536 {
+        return None;
+    }
+    let mut sids = allocation.vec(num_glyphs)?;
     sids.push(0); // GID 0 = .notdef (SID 0)
 
     let format = data[offset];
@@ -900,7 +978,7 @@ fn parse_charset(data: &[u8], offset: usize, num_glyphs: usize) -> Option<Vec<u1
                     if sids.len() >= num_glyphs {
                         break;
                     }
-                    sids.push(first_sid + i);
+                    sids.push(first_sid.checked_add(i)?);
                 }
             }
         },
@@ -914,7 +992,7 @@ fn parse_charset(data: &[u8], offset: usize, num_glyphs: usize) -> Option<Vec<u1
                     if sids.len() >= num_glyphs {
                         break;
                     }
-                    sids.push(first_sid + i);
+                    sids.push(first_sid.checked_add(i)?);
                 }
             }
         },
@@ -926,7 +1004,11 @@ fn parse_charset(data: &[u8], offset: usize, num_glyphs: usize) -> Option<Vec<u1
 
 /// Parse the CFF encoding table.
 /// Returns character code → GID mapping.
-fn parse_encoding_table(data: &[u8], offset: usize) -> Option<HashMap<u8, u16>> {
+fn parse_encoding_table_limited(
+    data: &[u8],
+    offset: usize,
+    allocation: FontAllocation<'_>,
+) -> Option<HashMap<u8, u16>> {
     if offset >= data.len() {
         return None;
     }
@@ -949,7 +1031,7 @@ fn parse_encoding_table(data: &[u8], offset: usize) -> Option<HashMap<u8, u16>> 
                     break;
                 }
                 let code = data[pos];
-                code_to_gid.insert(code, gid as u16);
+                allocation.insert(&mut code_to_gid, code, gid as u16)?;
                 pos += 1;
             }
         },
@@ -970,8 +1052,8 @@ fn parse_encoding_table(data: &[u8], offset: usize) -> Option<HashMap<u8, u16>> 
                 pos += 2;
                 for i in 0..=n_left {
                     let code = first.wrapping_add(i as u8);
-                    code_to_gid.insert(code, gid);
-                    gid += 1;
+                    allocation.insert(&mut code_to_gid, code, gid)?;
+                    gid = gid.checked_add(1)?;
                 }
             }
         },
@@ -991,7 +1073,7 @@ fn parse_encoding_table(data: &[u8], offset: usize) -> Option<HashMap<u8, u16>> 
             pos += 3;
             // For supplements, we use SID directly as a pseudo-GID
             // The caller will need to handle this via the charset
-            code_to_gid.insert(code, sid);
+            allocation.insert(&mut code_to_gid, code, sid)?;
         }
     }
 
@@ -1000,16 +1082,14 @@ fn parse_encoding_table(data: &[u8], offset: usize) -> Option<HashMap<u8, u16>> 
 
 /// Resolve a glyph name from a SID, using predefined strings and the
 /// String INDEX from the CFF font.
-fn resolve_glyph_name<'a>(sid: u16, string_index: &'a [&'a [u8]]) -> Option<String> {
+fn resolve_glyph_name_borrowed<'a>(sid: u16, string_index: &[&'a [u8]]) -> Option<&'a str> {
     if sid <= 390 {
-        sid_to_name(sid).map(|s| s.to_string())
+        sid_to_name(sid)
     } else {
         // Custom string from String INDEX
         let idx = (sid - 391) as usize;
         if idx < string_index.len() {
-            std::str::from_utf8(string_index[idx])
-                .ok()
-                .map(|s| s.to_string())
+            std::str::from_utf8(string_index[idx]).ok()
         } else {
             None
         }
@@ -1045,7 +1125,11 @@ fn extract_cff_from_opentype(data: &[u8]) -> Option<&[u8]> {
             data[pos + 15],
         ]) as usize;
         // CFF tag = 0x43464620 ("CFF ")
-        if tag == 0x43464620 && offset + length <= data.len() {
+        if tag == 0x43464620
+            && offset
+                .checked_add(length)
+                .is_some_and(|end| end <= data.len())
+        {
             return Some(&data[offset..offset + length]);
         }
         pos += 16;
@@ -1059,6 +1143,16 @@ fn extract_cff_from_opentype(data: &[u8]) -> Option<&[u8]> {
 /// This implements the CFF encoding → charset → glyph name → Unicode pipeline.
 /// Also handles OpenType-wrapped CFF data (FontFile3 with sfnt container).
 pub fn parse_cff_encoding(font_data: &[u8]) -> Option<HashMap<u8, char>> {
+    parse_cff_encoding_with_budget(font_data, None)
+}
+
+/// Budgeted variant retaining the originating font request.
+pub fn parse_cff_encoding_with_budget(
+    font_data: &[u8],
+    budget: Option<&ImportBudget>,
+) -> Option<HashMap<u8, char>> {
+    let allocation = FontAllocation(budget);
+    allocation.check()?;
     if font_data.len() < 4 {
         return None;
     }
@@ -1087,19 +1181,19 @@ pub fn parse_cff_encoding(font_data: &[u8]) -> Option<HashMap<u8, char>> {
     let hdr_size = cff_data[2] as usize;
 
     // Parse Name INDEX
-    let (_, after_name) = parse_index(cff_data, hdr_size)?;
+    let (_, after_name) = parse_index_limited(cff_data, hdr_size, allocation)?;
 
     // Parse Top DICT INDEX
-    let (top_dicts, after_top_dict) = parse_index(cff_data, after_name)?;
+    let (top_dicts, after_top_dict) = parse_index_limited(cff_data, after_name, allocation)?;
     if top_dicts.is_empty() {
         return None;
     }
 
     // Parse String INDEX
-    let (string_index, _after_string) = parse_index(cff_data, after_top_dict)?;
+    let (string_index, _after_string) = parse_index_limited(cff_data, after_top_dict, allocation)?;
 
     // Parse Top DICT to get encoding and charset offsets
-    let (encoding_offset, charset_offset) = parse_top_dict(top_dicts[0]);
+    let (encoding_offset, charset_offset) = parse_top_dict_limited(top_dicts[0], allocation)?;
 
     if encoding_offset == 1 {
         // ExpertEncoding — rarely used for text
@@ -1114,17 +1208,18 @@ pub fn parse_cff_encoding(font_data: &[u8]) -> Option<HashMap<u8, char>> {
         if charset_offset > 2 {
             log::debug!("CFF StandardEncoding + custom charset; building charset-based map");
             let num_glyphs = 256usize;
-            let charset_sids = parse_charset(cff_data, charset_offset as usize, num_glyphs)?;
+            let charset_sids =
+                parse_charset_limited(cff_data, charset_offset as usize, num_glyphs, allocation)?;
 
             let mut encoding_map = HashMap::new();
             for (gid, &sid) in charset_sids.iter().enumerate() {
                 if gid == 0 || gid > 255 {
                     continue;
                 }
-                if let Some(glyph_name) = resolve_glyph_name(sid, &string_index) {
-                    if let Some(unicode_char) = super::font_dict::glyph_name_to_unicode(&glyph_name)
+                if let Some(glyph_name) = resolve_glyph_name_borrowed(sid, &string_index) {
+                    if let Some(unicode_char) = super::font_dict::glyph_name_to_unicode(glyph_name)
                     {
-                        encoding_map.insert(gid as u8, unicode_char);
+                        allocation.insert(&mut encoding_map, gid as u8, unicode_char)?;
                     }
                 }
             }
@@ -1141,19 +1236,23 @@ pub fn parse_cff_encoding(font_data: &[u8]) -> Option<HashMap<u8, char>> {
     }
 
     // Custom encoding (encoding_offset > 1): parse it
-    let code_to_gid = parse_encoding_table(cff_data, encoding_offset as usize)?;
+    let code_to_gid = parse_encoding_table_limited(cff_data, encoding_offset as usize, allocation)?;
 
     let max_gid = code_to_gid.values().max().copied().unwrap_or(0) as usize;
     let num_glyphs = max_gid + 10;
 
     // Parse charset (GID → SID mapping)
     let charset_sids = if charset_offset == 0 {
-        (0..num_glyphs as u16).collect()
+        {
+            let mut sids = allocation.vec(num_glyphs)?;
+            sids.extend((0..num_glyphs).map(|n| n as u16));
+            sids
+        }
     } else if charset_offset == 1 || charset_offset == 2 {
         log::debug!("CFF uses predefined charset {}", charset_offset);
         return None;
     } else {
-        parse_charset(cff_data, charset_offset as usize, num_glyphs)?
+        parse_charset_limited(cff_data, charset_offset as usize, num_glyphs, allocation)?
     };
 
     // Build the final encoding map: code → Unicode
@@ -1166,9 +1265,9 @@ pub fn parse_cff_encoding(font_data: &[u8]) -> Option<HashMap<u8, char>> {
             continue;
         };
 
-        if let Some(glyph_name) = resolve_glyph_name(sid, &string_index) {
-            if let Some(unicode_char) = super::font_dict::glyph_name_to_unicode(&glyph_name) {
-                encoding_map.insert(code, unicode_char);
+        if let Some(glyph_name) = resolve_glyph_name_borrowed(sid, &string_index) {
+            if let Some(unicode_char) = super::font_dict::glyph_name_to_unicode(glyph_name) {
+                allocation.insert(&mut encoding_map, code, unicode_char)?;
             }
         }
     }
@@ -1185,6 +1284,16 @@ pub fn parse_cff_encoding(font_data: &[u8]) -> Option<HashMap<u8, char>> {
 /// This allows rendering CFF subset fonts by mapping PDF character codes
 /// directly to glyph indices without needing a Unicode cmap.
 pub fn parse_cff_gid_mapping(font_data: &[u8]) -> Option<HashMap<u8, u16>> {
+    parse_cff_gid_mapping_with_budget(font_data, None)
+}
+
+/// Budgeted variant retaining the originating font request.
+pub fn parse_cff_gid_mapping_with_budget(
+    font_data: &[u8],
+    budget: Option<&ImportBudget>,
+) -> Option<HashMap<u8, u16>> {
+    let allocation = FontAllocation(budget);
+    allocation.check()?;
     if font_data.len() < 4 {
         return None;
     }
@@ -1200,22 +1309,24 @@ pub fn parse_cff_gid_mapping(font_data: &[u8]) -> Option<HashMap<u8, u16>> {
     }
     let hdr_size = cff_data[2] as usize;
 
-    let (_, after_name) = parse_index(cff_data, hdr_size)?;
-    let (top_dicts, after_top_dict) = parse_index(cff_data, after_name)?;
+    let (_, after_name) = parse_index_limited(cff_data, hdr_size, allocation)?;
+    let (top_dicts, after_top_dict) = parse_index_limited(cff_data, after_name, allocation)?;
     if top_dicts.is_empty() {
         return None;
     }
 
-    let (_string_index, _after_string) = parse_index(cff_data, after_top_dict)?;
-    let (encoding_offset, charset_offset) = parse_top_dict(top_dicts[0]);
+    let (_string_index, _after_string) = parse_index_limited(cff_data, after_top_dict, allocation)?;
+    let (encoding_offset, charset_offset) = parse_top_dict_limited(top_dicts[0], allocation)?;
 
     if encoding_offset == 0 && charset_offset > 2 {
         // StandardEncoding + custom charset:
         // byte_code → SID (via CFF Standard Encoding) → GID (via charset)
         let num_glyphs = 256usize;
-        if let Some(charset_sids) = parse_charset(cff_data, charset_offset as usize, num_glyphs) {
+        if let Some(charset_sids) =
+            parse_charset_limited(cff_data, charset_offset as usize, num_glyphs, allocation)
+        {
             // Build SID → GID reverse map from charset
-            let mut sid_to_gid: HashMap<u16, u16> = HashMap::new();
+            let mut sid_to_gid: HashMap<u16, u16> = allocation.map(charset_sids.len())?;
             for (gid, &sid) in charset_sids.iter().enumerate() {
                 if gid > 0 {
                     sid_to_gid.entry(sid).or_insert(gid as u16);
@@ -1231,7 +1342,7 @@ pub fn parse_cff_gid_mapping(font_data: &[u8]) -> Option<HashMap<u8, u16>> {
                     // Find the SID for this glyph name
                     if let Some(sid) = glyph_name_to_sid(name) {
                         if let Some(&gid) = sid_to_gid.get(&sid) {
-                            map.insert(byte_code as u8, gid);
+                            allocation.insert(&mut map, byte_code as u8, gid)?;
                         }
                     }
                 }
@@ -1249,7 +1360,7 @@ pub fn parse_cff_gid_mapping(font_data: &[u8]) -> Option<HashMap<u8, u16>> {
     }
 
     // Custom encoding: parse byte_code → GID mapping directly
-    parse_encoding_table(cff_data, encoding_offset as usize)
+    parse_encoding_table_limited(cff_data, encoding_offset as usize, allocation)
 }
 
 /// Build the byte → GID map for a simple CFF font using the PDF font
@@ -1277,12 +1388,24 @@ pub fn parse_cff_gid_mapping_with_pdf_encoding(
     pdf_encoding: &crate::fonts::font_dict::Encoding,
     differences: &HashMap<u8, String>,
 ) -> Option<HashMap<u8, u16>> {
+    parse_cff_gid_mapping_with_pdf_encoding_with_budget(font_data, pdf_encoding, differences, None)
+}
+
+/// Budgeted variant retaining the originating font request.
+pub fn parse_cff_gid_mapping_with_pdf_encoding_with_budget(
+    font_data: &[u8],
+    pdf_encoding: &crate::fonts::font_dict::Encoding,
+    differences: &HashMap<u8, String>,
+    budget: Option<&ImportBudget>,
+) -> Option<HashMap<u8, u16>> {
+    let allocation = FontAllocation(budget);
+    allocation.check()?;
     use crate::fonts::font_dict::Encoding;
 
     if matches!(pdf_encoding, Encoding::Identity) {
         // Caller has no byte→name mapping to supply — fall through to the
         // CFF Encoding-driven legacy path.
-        return parse_cff_gid_mapping(font_data);
+        return parse_cff_gid_mapping_with_budget(font_data, allocation.0);
     }
 
     if font_data.len() < 4 {
@@ -1298,14 +1421,14 @@ pub fn parse_cff_gid_mapping_with_pdf_encoding(
     }
     let hdr_size = cff_data[2] as usize;
 
-    let (_, after_name) = parse_index(cff_data, hdr_size)?;
-    let (top_dicts, after_top_dict) = parse_index(cff_data, after_name)?;
+    let (_, after_name) = parse_index_limited(cff_data, hdr_size, allocation)?;
+    let (top_dicts, after_top_dict) = parse_index_limited(cff_data, after_name, allocation)?;
     if top_dicts.is_empty() {
         return None;
     }
-    let (string_index, _after_string) = parse_index(cff_data, after_top_dict)?;
+    let (string_index, _after_string) = parse_index_limited(cff_data, after_top_dict, allocation)?;
     let (charstrings_offset, _encoding_offset, charset_offset) =
-        parse_top_dict_with_charstrings(top_dicts[0]);
+        parse_top_dict_with_charstrings_limited(top_dicts[0], allocation)?;
 
     // §9.6.6 path: build name→GID from the Charset (which always enumerates
     // every subset glyph), then key bytes through the PDF /Encoding +
@@ -1325,21 +1448,26 @@ pub fn parse_cff_gid_mapping_with_pdf_encoding(
     };
 
     let charset_sids = if charset_offset > 2 {
-        parse_charset(cff_data, charset_offset as usize, num_glyphs)?
+        parse_charset_limited(cff_data, charset_offset as usize, num_glyphs, allocation)?
     } else {
         // charset_offset 0 or 1 = ISOAdobe / Expert / ExpertSubset
         // predefined charsets. The CFF Standard Encoding + charset path in
         // `parse_cff_gid_mapping` handles these; defer.
-        return parse_cff_gid_mapping(font_data);
+        return parse_cff_gid_mapping_with_budget(font_data, allocation.0);
     };
 
-    let resolved =
-        resolve_bytes_via_pdf_encoding(&charset_sids, &string_index, pdf_encoding, differences);
+    let resolved = resolve_bytes_via_pdf_encoding_limited(
+        &charset_sids,
+        &string_index,
+        pdf_encoding,
+        differences,
+        allocation,
+    )?;
 
     if resolved.is_empty() {
         // PDF /Encoding yielded zero hits against the Charset. Fall back to
         // the CFF Encoding-driven path so we never make a working font worse.
-        parse_cff_gid_mapping(font_data)
+        parse_cff_gid_mapping_with_budget(font_data, allocation.0)
     } else {
         Some(resolved)
     }
@@ -1350,22 +1478,23 @@ pub fn parse_cff_gid_mapping_with_pdf_encoding(
 /// `/Differences`. Split out of [`parse_cff_gid_mapping_with_pdf_encoding`]
 /// so the name-resolution logic can be tested without constructing a
 /// custom CFF binary.
-fn resolve_bytes_via_pdf_encoding(
+fn resolve_bytes_via_pdf_encoding_limited(
     charset_sids: &[u16],
     string_index: &[&[u8]],
     pdf_encoding: &crate::fonts::font_dict::Encoding,
     differences: &HashMap<u8, String>,
-) -> HashMap<u8, u16> {
+    allocation: FontAllocation<'_>,
+) -> Option<HashMap<u8, u16>> {
     use crate::fonts::font_dict::{Encoding, FontInfo};
 
     // Glyph name → GID (lowest GID wins on duplicate names — first occurrence
     // in the Charset reflects the subsetter's primary mapping).
-    let mut name_to_gid: HashMap<String, u16> = HashMap::new();
+    let mut name_to_gid: HashMap<&str, u16> = allocation.map(charset_sids.len())?;
     for (gid, &sid) in charset_sids.iter().enumerate() {
         if gid == 0 {
             continue; // .notdef is implicit and not addressable by name
         }
-        if let Some(name) = resolve_glyph_name(sid, string_index) {
+        if let Some(name) = resolve_glyph_name_borrowed(sid, string_index) {
             name_to_gid.entry(name).or_insert(gid as u16);
         }
     }
@@ -1402,19 +1531,19 @@ fn resolve_bytes_via_pdf_encoding(
 
         // §9.6.6: /Differences entries override the base predefined encoding.
         if let Some(diff_name) = differences.get(&byte) {
-            if let Some(&gid) = name_to_gid.get(diff_name) {
-                out.insert(byte, gid);
+            if let Some(&gid) = name_to_gid.get(diff_name.as_str()) {
+                allocation.insert(&mut out, byte, gid)?;
                 continue;
             }
         }
 
         if let Some(name) = resolve_base_byte(byte) {
             if let Some(&gid) = name_to_gid.get(name) {
-                out.insert(byte, gid);
+                allocation.insert(&mut out, byte, gid)?;
             }
         }
     }
-    out
+    Some(out)
 }
 
 /// Annex D Table D.2 (MacRomanEncoding) byte → glyph name.
@@ -1630,6 +1759,58 @@ fn standard_encoding_byte_to_name(byte: u8) -> Option<&'static str> {
         0xFB => Some("germandbls"),
         _ => None,
     }
+}
+
+#[cfg(test)]
+fn parse_index(data: &[u8], offset: usize) -> Option<(Vec<&[u8]>, usize)> {
+    parse_index_limited(data, offset, FontAllocation(None))
+}
+
+#[cfg(test)]
+fn parse_charset(data: &[u8], offset: usize, num_glyphs: usize) -> Option<Vec<u16>> {
+    parse_charset_limited(data, offset, num_glyphs, FontAllocation(None))
+}
+
+#[cfg(test)]
+fn parse_encoding_table(data: &[u8], offset: usize) -> Option<HashMap<u8, u16>> {
+    parse_encoding_table_limited(data, offset, FontAllocation(None))
+}
+
+#[cfg(test)]
+fn parse_dict_real(data: &[u8], pos: usize) -> Option<(f64, usize)> {
+    parse_dict_real_limited(data, pos, FontAllocation(None))
+}
+
+#[cfg(test)]
+fn parse_top_dict(dict_data: &[u8]) -> (i32, i32) {
+    parse_top_dict_limited(dict_data, FontAllocation(None)).unwrap_or((0, 0))
+}
+
+#[cfg(test)]
+fn parse_top_dict_with_charstrings(dict_data: &[u8]) -> (i32, i32, i32) {
+    parse_top_dict_with_charstrings_limited(dict_data, FontAllocation(None)).unwrap_or((0, 0, 0))
+}
+
+#[cfg(test)]
+fn resolve_glyph_name(sid: u16, string_index: &[&[u8]]) -> Option<String> {
+    resolve_glyph_name_borrowed(sid, string_index).map(str::to_owned)
+}
+
+#[cfg(test)]
+fn resolve_bytes_via_pdf_encoding(
+    charset_sids: &[u16],
+    string_index: &[&[u8]],
+    pdf_encoding: &crate::fonts::font_dict::Encoding,
+    differences: &HashMap<u8, String>,
+) -> HashMap<u8, u16> {
+    resolve_bytes_via_pdf_encoding_limited(
+        charset_sids,
+        string_index,
+        pdf_encoding,
+        differences,
+        FontAllocation(None),
+    )
+    .unwrap_or_default()
 }
 
 #[cfg(test)]

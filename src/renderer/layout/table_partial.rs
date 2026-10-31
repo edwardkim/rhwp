@@ -2230,7 +2230,7 @@ impl LayoutEngine {
                 });
                 if !owns_first_line
                     || !cut_units.is_none_or(|(start, _)| start == 0)
-                    || !crate::renderer::cell_paragraph_has_only_single_column_metadata(para)
+                    || !crate::renderer::cell_paragraph_has_only_text_metadata(para)
                     || para.stored_text_partition_is_dirty()
                     || self
                         .render_normalization
@@ -3767,6 +3767,10 @@ impl LayoutEngine {
                                     } else {
                                         para_y
                                     };
+                                    let anchor_y =
+                                        super::table_inline_picture_origin::rendered_overlay_picture_origin(
+                                            &cell_node, para, ctrl_idx, section_index, cp_idx, anchor_y,
+                                        ).unwrap_or(anchor_y);
                                     // 칸 문단 기준 어울림 개체의 음수 오프셋은 측정 프레임 위
                                     // 공간을 만들지 않는다 — 일반 표 경로와 같은 계약
                                     // (`cell_wrap_vertical_offset_hu`).
@@ -7156,6 +7160,8 @@ impl LayoutEngine {
             },
             BoundingBox::new(table_x, table_y, table_width, partial_table_height),
         );
+
+        Self::publish_table_paint_layer(table, &mut table_node);
 
         // ── 5-1. 표 배경 렌더링 (표 > 배경 > 색 > 면색) ──
         if parent_owned && table.border_fill_id > 0 {

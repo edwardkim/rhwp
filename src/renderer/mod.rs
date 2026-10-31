@@ -39,8 +39,10 @@ pub mod font_paths;
 pub(crate) mod font_rule_layout_metric_projection;
 #[path = "font_rule_projections/layout_name.rs"]
 pub(crate) mod font_rule_layout_name_projection;
+pub mod font_symbol_coverage;
 pub mod form_appearance;
 pub(crate) mod form_caption;
+pub(crate) mod glyph_fit;
 pub(crate) mod gradient_geometry;
 pub(crate) mod hancom_pua;
 pub mod height_cursor;
@@ -69,6 +71,7 @@ pub(crate) mod object_alignment;
 pub mod page_layout;
 pub mod page_number;
 pub mod pagination;
+pub(crate) mod paint_order;
 #[cfg(any(target_arch = "wasm32", test))]
 pub(crate) mod partial_replay;
 #[cfg(not(target_arch = "wasm32"))]
@@ -76,6 +79,7 @@ pub mod pdf;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod pdf_raster_fidelity;
 mod physical_units;
+pub(crate) mod print_picture_pen;
 pub(crate) mod pua_glyph;
 pub mod pua_oldhangul;
 pub mod raster_pixels;
@@ -85,6 +89,7 @@ pub(crate) mod reflow_spacing;
 pub mod render_normalization;
 pub mod render_tree;
 pub mod scheduler;
+pub mod script_metrics;
 pub(crate) mod shaping;
 pub(crate) mod shaping_composition;
 pub(crate) mod shaping_context;
@@ -98,6 +103,7 @@ mod stroke_pattern;
 pub(crate) mod table_row_frame;
 pub(crate) mod text_font_coverage;
 pub mod text_font_presentation;
+pub(crate) mod text_glyph_visibility;
 pub(crate) mod text_ink;
 pub(crate) mod text_italic;
 // Q4-D1 registers the exact-source-bound vertical owner while all product
@@ -107,12 +113,16 @@ pub(crate) mod contextual_text;
 pub(crate) mod cubic_sampling;
 pub mod native_pua_fonts;
 pub(crate) mod pdf_stroke;
+pub(crate) mod print_image_sampling;
 pub(crate) mod print_raster;
 #[allow(dead_code)]
 pub(crate) mod shaping_vertical;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 pub mod skia;
+pub mod space_compression;
 pub(crate) mod static_svg;
+#[cfg(any(feature = "native-skia", target_arch = "wasm32"))]
+pub(crate) mod static_svg_raster;
 pub(crate) mod stored_control_frame;
 pub(crate) mod stored_float_anchor;
 mod stored_line_ladder;
@@ -120,6 +130,7 @@ pub(crate) mod stored_page_origin;
 pub mod style_resolver;
 pub mod supplemental_metrics;
 pub mod svg;
+mod svg_buffer;
 pub mod svg_fragment;
 pub mod svg_layer;
 pub(crate) mod tab_leader;
@@ -166,6 +177,7 @@ pub struct TabStop {
     /// 채움 종류 (0=없음, 1=실선, 2=파선, 3=점선)
     pub fill_type: u8,
 }
+crate::storage::clone_fields!(TabStop, {position, tab_type, fill_type});
 
 /// 탭 리더(채움 기호) 렌더링 정보
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -177,6 +189,7 @@ pub struct TabLeaderInfo {
     /// 채움 종류 (1=실선, 2=파선, 3=점선)
     pub fill_type: u8,
 }
+crate::storage::clone_fields!(TabLeaderInfo, {start_x, end_x, fill_type});
 
 pub(crate) fn clamp_tab_leader_end_x(
     text: &str,
@@ -302,57 +315,7 @@ pub(crate) fn replay_positions_or_compute<'a>(
         })
 }
 
-/// 글리프 폭 맞춤(SVG `textLength`, Canvas `scaleX`)에 쓸 문자 경계를 돌려준다.
-///
-/// 커닝과 음수 배분 간격은 글자 사이만 좁힌다. 그 경계로 폭을 맞추면 글리프도
-/// 눌리므로, 폭 맞춤에는 해당 간격 전의 경계를 사용한다. 음수 간격의 최소 전진폭
-/// clamp를 역산하지 않고 같은 측정기로 다시 계산하며, 그리는 원점은 보존한다.
-pub(crate) fn glyph_fit_positions<'a>(
-    replay_text: &str,
-    style: &TextStyle,
-    layout_positions: Option<&[f64]>,
-    char_positions: &'a [f64],
-) -> std::borrow::Cow<'a, [f64]> {
-    if legacy_font_advances::has_fixed_ascii_bold_tracking(style) {
-        // 원점은 확정 layout positions를 그대로 쓴다. 윤곽 폭만 측정이 실제
-        // 적용한 tracking 기여를 제외하며, 다른 언어 슬롯·탭·음수 자간도
-        // 같은 CharWidthDecision 결과에서 소비한다.
-        let mut fit_style = style.clone();
-        fit_style.extra_char_spacing = fit_style.extra_char_spacing.max(0.0);
-        let decisions = layout::trace_char_width_decisions(replay_text, &fit_style);
-        let mut positions = Vec::with_capacity(decisions.len() + 1);
-        let mut x = 0.0;
-        positions.push(x);
-        for decision in decisions {
-            x += decision.final_width_px - decision.bold_tracking_px;
-            positions.push(x);
-        }
-        return std::borrow::Cow::Owned(positions);
-    }
-    if layout::has_hft_bold_tracking(style) {
-        // 원본 HFT의 굵기 간격은 글자 원점만 전진시키며 intrinsic 폭은 유지한다.
-        // backend는 원래 char_positions를 위치로, 이 경계를 glyph-fit 폭으로 쓴다.
-        {
-            let mut fit_style = style.clone();
-            fit_style.extra_char_spacing = fit_style.extra_char_spacing.max(0.0);
-            std::borrow::Cow::Owned(layout::compute_glyph_fit_positions(replay_text, &fit_style))
-        }
-    } else if (style.kerning && validated_replay_positions(replay_text, layout_positions).is_some())
-        || style.extra_char_spacing < 0.0
-        || legacy_font_advances::has_bold_tracking(style)
-    {
-        let mut fit_style = style.clone();
-        fit_style.extra_char_spacing = fit_style.extra_char_spacing.max(0.0);
-        if legacy_font_advances::has_bold_tracking(style) {
-            // 원점만 전진시키는 옛 프로그램의 굵은 자간을 글리프 확대에 쓰지 않는다.
-            // 표시 글꼴·굵기와 자연 메트릭은 유지한다.
-            fit_style.metric_font_family = None;
-        }
-        std::borrow::Cow::Owned(layout::compute_char_positions(replay_text, &fit_style))
-    } else {
-        std::borrow::Cow::Borrowed(char_positions)
-    }
-}
+pub(crate) use glyph_fit::glyph_fit_positions;
 
 fn has_no_unjustified_leading_spaces(count: &usize) -> bool {
     *count == 0
@@ -367,9 +330,21 @@ pub struct TextStyle {
     /// 리터럴 공백에 선택한 실제 슬롯 프로그램의 전진폭(em).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub literal_figure_space_em: Option<f64>,
+    /// 원본과 분리된 세션의 첨자 조판 계약이다.
+    #[serde(skip)]
+    pub script_metrics: script_metrics::ScriptMetricsContract,
+    /// 원본 표 33의 signed 그림자 간격. 세션 paint에서만 사용한다.
+    #[serde(skip)]
+    pub shadow_offset_percent: Option<[i8; 2]>,
+    /// 공통 paint가 실제 공급 글꼴로 해소한 연속 그림자다.
+    #[serde(skip)]
+    pub continuous_shadow: Option<crate::paint::text_shadow::ContinuousTextShadow>,
     /// 호스트가 실제 paint에 준비한 글꼴의 원 PUA 표시·전진 계약이다.
     #[serde(skip)]
     pub native_pua_metrics: Option<std::sync::Arc<native_pua_fonts::NativePuaMetrics>>,
+    /// Native paint가 실제 공급한 OTF의 세션 전진폭.
+    #[serde(skip)]
+    pub native_otf_metrics: Option<std::sync::Arc<native_pua_fonts::NativeOtfMetrics>>,
     /// 글줄 전체에서 계산한 표시 방향. 모델/저장 스타일과 논리 전진은 바꾸지 않는다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bidi_layout: Option<BidiLayout>,
@@ -388,6 +363,9 @@ pub struct TextStyle {
     /// 출력 세대가 독립 중성·종성에 선택한 무전진 프로그램. 세션 속성이다.
     #[serde(skip)]
     pub isolated_jamo_font: Option<IsolatedJamoFont>,
+    /// 같은 줄의 측정·배치가 공유하는 세션 한정 공백 결과다.
+    #[serde(skip)]
+    pub space_compression: Option<space_compression::SpaceCompression>,
     /// 글꼴 이름
     pub font_family: String,
     /// 글꼴 크기 (px)
@@ -400,6 +378,9 @@ pub struct TextStyle {
     /// 표시용 대체 face와 구분한 원본 언어 슬롯의 HFT 선언이다.
     #[serde(skip_serializing)]
     pub source_font_is_hft: bool,
+    /// HWP3 원본의 HFT 굵기 전진 계약을 적용한다.
+    #[serde(skip_serializing)]
+    pub source_hwp3_hft_bold: bool,
     /// 원본 글자 스타일에서 크기를 해소했는지. 명시적인 0과 미지정을 구별한다.
     #[serde(skip_serializing)]
     pub resolved_font_size: bool,
@@ -558,6 +539,9 @@ pub struct TextStyle {
     /// 측정 결정에만 쓴다 — 레이어 트리 직렬화 바이트를 보존하려고 직렬화에서 뺀다.
     #[serde(skip_serializing)]
     pub font_space_em: Option<f64>,
+    /// 공백 전진값이 글꼴 폭이 아니라 상속 언어의 반각 환산값인지 구분한다.
+    #[serde(skip_serializing)]
+    pub inherited_half_space_em: bool,
     /// 줄 구성에서 선택한 반각 공백 규칙. 원문의 useFontSpace와 구별한다.
     #[serde(skip_serializing)]
     pub layout_half_space: bool,
@@ -589,11 +573,14 @@ pub struct TextStyle {
     #[serde(skip_serializing)]
     pub ascii_punct_latin: Option<Box<LatinSlotMetrics>>,
 }
+crate::storage::clone_fields!(TextStyle, {continuous_shadow, inherited_half_space_em, script_metrics, shadow_offset_percent, space_compression, literal_figure_space, literal_figure_space_em, native_pua_metrics, native_otf_metrics, bidi_layout, emphasis_skip_first_cluster, top_underline_font_size, top_underline_phase, supplemental_metrics, isolated_jamo_font, font_family, font_size, fixed_glyph_advances, source_font_is_hft, source_hwp3_hft_bold, resolved_font_size, font_position, hft_print_frame, preserve_glyph_ink, color, bold, italic, underline, strikethrough, kerning, letter_spacing, ratio, default_tab_width, tab_stops, auto_tab_right, auto_left_tab_position, available_width, line_x_offset, text_start_offset, right_tab_block_width_override, tab_leaders, inline_tabs, extra_word_spacing, unjustified_leading_spaces, extra_char_spacing, extra_dash_advance, outline_type, shadow_type, shadow_color, shadow_offset_x, shadow_offset_y, emboss, engrave, superscript, subscript, emphasis_dot, underline_shape, strike_shape, underline_color, strike_color, shade_color, font_metric_trusted, glyph_fallback_advance_explicit, metric_font_family, original_glyph_metric_family, font_space_em, layout_half_space, regenerated_font_metrics, hft_hangul_face, hft_font_face, hft_fullwidth_dot, ascii_punct_latin});
 
 /// [#7418] 영문 슬롯의 기본 메트릭 — [`TextStyle::ascii_punct_latin`] 참조.
 #[derive(Debug, Clone, PartialEq)]
 pub struct LatinSlotMetrics {
     pub font_family: String,
+    /// 영문 슬롯이 실제 선택한 OTF의 글리프별 전진.
+    pub native_otf_metrics: Option<std::sync::Arc<native_pua_fonts::NativeOtfMetrics>>,
     pub metric_font_family: Option<String>,
     /// 확인된 원본 글리프만 사용하는 부분 메트릭. 미확인 글자는 표시 face에 남는다.
     /// 불변 이름을 공유하여 런 복제와 enum의 인라인 메모리를 줄인다.
@@ -602,6 +589,9 @@ pub struct LatinSlotMetrics {
     pub letter_spacing: f64,
     pub ratio: f64,
 }
+
+crate::storage::clone_fields!(LatinSlotMetrics, {font_family, native_otf_metrics, metric_font_family, original_glyph_metric_family, font_metric_trusted, letter_spacing, ratio});
+crate::storage::clone_copy!(crate::model::style::UnderlineType);
 
 /// 위첨자/아래첨자 글리프를 그릴 때 적용하는 본문 대비 글꼴 크기 배율.
 pub const SCRIPT_FONT_SCALE: f64 = 0.7;
@@ -648,8 +638,24 @@ impl TextStyle {
     /// 런을 각주·인라인 개체 경계에서 나눠도 같은 공백 구간을 이어받는다.
     pub(crate) fn for_text_fragment(&self, scalar_start: usize) -> Self {
         let mut style = self.clone();
+        style.space_compression = self
+            .space_compression
+            .as_ref()
+            .map(|plan| plan.for_fragment(scalar_start));
         style.unjustified_leading_spaces =
             self.unjustified_leading_spaces.saturating_sub(scalar_start);
+        style
+    }
+
+    /// 원문 앞 조각이 소비한 저장 탭을 건너뛰고 남은 조각의 스타일을 만든다.
+    pub(crate) fn for_source_text_fragment(&self, scalar_start: usize, source: &[char]) -> Self {
+        let mut style = self.for_text_fragment(scalar_start);
+        let prior_tabs = source
+            .iter()
+            .take(scalar_start)
+            .filter(|c| **c == '\t')
+            .count();
+        style.inline_tabs = self.inline_tabs.iter().skip(prior_tabs).copied().collect();
         style
     }
 
@@ -661,30 +667,20 @@ impl TextStyle {
     ///
     /// 원본의 글자 위치는 줄 기준선에 한 번만 적용한다.
     pub fn script_draw_metrics(&self, base_font_size: f64, baseline_y: f64) -> (f64, f64) {
-        // 줄 기준선과 글리프 위치는 별도 속성이다. 양수는 아래 방향이며
-        // 원본 글꼴 크기의 비율로 이동한다. 모든 paint backend가 같은 값을 쓴다.
-        let baseline_y =
-            baseline_y + base_font_size * f64::from(self.font_position.unwrap_or_default()) / 100.0;
-        if self.superscript {
-            (
-                base_font_size * SCRIPT_FONT_SCALE,
-                baseline_y - base_font_size * SUPERSCRIPT_RISE_EM,
-            )
-        } else if self.subscript {
-            (
-                base_font_size * SCRIPT_FONT_SCALE,
-                baseline_y + base_font_size * SUBSCRIPT_DROP_EM,
-            )
-        } else {
-            (base_font_size, baseline_y)
-        }
+        self.script_metrics.draw_metrics(
+            base_font_size,
+            baseline_y,
+            self.superscript,
+            self.subscript,
+            self.font_position,
+        )
     }
 
     /// 글자폭 맞춤(fit) 대상 advance 에 적용할 배율 (#2771, #5756).
     ///
     /// SVG `textLength` 와 Canvas `fit_scale` 은 "레이아웃 advance 에 글리프 폭을
     /// 맞춘다". [#5756] 이후 첨자 run 의 **레이아웃 advance 자체**가 그리기
-    /// 배율(0.7)로 측정되므로(`text_measurement::style_params`), 대상 advance 는
+    /// 배율로 측정되므로(`text_measurement::style_params`), 대상 advance 는
     /// 이미 축소 글리프의 자연 폭과 일치한다 — 여기서 또 줄이면 이중 축소로
     /// 글리프가 0.49 배까지 눌린다. 항상 1.0(항등)을 돌려준다.
     pub fn script_advance_scale(&self) -> f64 {
@@ -716,6 +712,12 @@ impl TextStyle {
     /// PDF 추출기가 행렬 행렬식의 제곱근으로 보고한 크기를 세로 크기로 쓰지 않는다.
     pub fn ratio_draw_params(&self, font_size: f64) -> (f64, f64) {
         condensed_ratio_draw_params(font_size, self.ratio)
+    }
+
+    /// 공식 장평은 정수 백분율이다. 99·101%도 항등 변환으로 생략하지 않는다.
+    /// 각 paint가 정밀도 변환 전에 같은 정규화 결과로 가로 변환을 선택한다.
+    pub fn has_horizontal_ratio(&self) -> bool {
+        self.ratio_draw_params(1.0).1 != 1.0
     }
 
     /// 시각적 bold 여부.
@@ -832,12 +834,17 @@ impl Default for TextStyle {
             emphasis_skip_first_cluster: false,
             top_underline_font_size: None,
             top_underline_phase: None,
+            script_metrics: Default::default(),
             supplemental_metrics: None,
             isolated_jamo_font: None,
+            shadow_offset_percent: None,
+            continuous_shadow: None,
+            space_compression: None,
             font_family: String::new(),
             font_size: 0.0,
             fixed_glyph_advances: false,
             source_font_is_hft: false,
+            source_hwp3_hft_bold: false,
             resolved_font_size: false,
             font_position: None,
             hft_print_frame: false,
@@ -881,10 +888,12 @@ impl Default for TextStyle {
             shade_color: 0x00FFFFFF,
             font_metric_trusted: false,
             native_pua_metrics: None,
+            native_otf_metrics: None,
             glyph_fallback_advance_explicit: false,
             metric_font_family: None,
             original_glyph_metric_family: None,
             font_space_em: None,
+            inherited_half_space_em: false,
             layout_half_space: false,
             regenerated_font_metrics: false,
             literal_figure_space: false,
@@ -932,7 +941,7 @@ pub struct ShapeStyle {
 /// 도형 그림자 스타일
 #[derive(Debug, Clone, Serialize)]
 pub struct ShadowStyle {
-    /// 그림자 종류 (1~8)
+    /// HWP 도형 그림자 종류 (1~14, HWPX SHADOWTYPE과 대응)
     pub shadow_type: u32,
     /// 그림자 색상
     pub color: ColorRef,
@@ -1042,9 +1051,28 @@ pub fn expand_gradient_steps(
     step: i16,
     step_center: u8,
 ) -> (Vec<ColorRef>, Vec<f64>) {
+    match try_expand_gradient_steps(
+        colors,
+        positions,
+        step,
+        step_center,
+        &style_resolver::storage::Unbounded,
+    ) {
+        Ok(stops) => stops,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn try_expand_gradient_steps<S: style_resolver::storage::Storage>(
+    colors: &[ColorRef],
+    positions: &[f64],
+    step: i16,
+    step_center: u8,
+    storage: &S,
+) -> Result<(Vec<ColorRef>, Vec<f64>), S::Error> {
     let bands = step.max(0) as usize;
     if bands <= 1 || colors.len() < 2 {
-        return (colors.to_vec(), positions.to_vec());
+        return Ok((storage.copy_slice(colors)?, storage.copy_slice(positions)?));
     }
 
     // 띠 경계는 균등 위치 `m` 을 두 구간 선형으로 옮겨 가운데(m=0.5)가 `c` 에 오게 한다.
@@ -1058,8 +1086,8 @@ pub fn expand_gradient_steps(
         }
     };
 
-    let mut out_colors = Vec::with_capacity(bands * 2);
-    let mut out_positions = Vec::with_capacity(bands * 2);
+    let mut out_colors = storage.vec(bands * 2)?;
+    let mut out_positions = storage.vec(bands * 2)?;
     for i in 0..bands {
         let color = sample_ramp(colors, positions, i as f64 / (bands - 1) as f64);
         let start = warp(i as f64 / bands as f64);
@@ -1069,7 +1097,7 @@ pub fn expand_gradient_steps(
         out_colors.push(color);
         out_positions.push(end.clamp(0.0, 1.0));
     }
-    (out_colors, out_positions)
+    Ok((out_colors, out_positions))
 }
 
 /// [#6845] HWP 그러데이션 각도를 **사용자 좌표계**의 축 양 끝점으로 옮긴다.
@@ -1463,12 +1491,7 @@ pub(crate) fn legacy_hft_bullet_geometry(
         ),
         _ => return None,
     };
-    let size = style.font_size
-        * if style.superscript || style.subscript {
-            SCRIPT_FONT_SCALE
-        } else {
-            1.0
-        };
+    let size = style.script_font_size(style.font_size);
     let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
     Some((size * ratio * cx, size * cy, size * ratio * rx, size * ry))
 }
@@ -1960,21 +1983,23 @@ pub(crate) fn cell_first_para_stored_lead(
 }
 
 /// 셀 안의 단일 단 정의는 글자·개체를 그리거나 세로 흐름을 전진하지 않는다.
-/// 원본 HWP는 텍스트 셀 문단에도 이 메타데이터를 보존할 수 있다.
-/// 여러 단 정의와 실제 개체 컨트롤은 일반 plain 글줄로 재분류하지 않는다.
-pub(crate) fn cell_control_is_single_column_metadata(
-    control: &crate::model::control::Control,
-) -> bool {
-    matches!(control, crate::model::control::Control::ColumnDef(columns)
-        if columns.column_count == 1)
+/// 원본 셀의 단 정의와 필드/링크 표식은 본문 글줄에 별도 상자를 추가하지 않는다.
+/// 필드 결과는 문단 텍스트가 소유하며, 원본 제어 주소는 그대로 보존한다.
+/// 여러 단 정의와 실제 개체 컨트롤은 일반 텍스트 글줄로 재분류하지 않는다.
+pub(crate) fn cell_control_is_text_metadata(control: &crate::model::control::Control) -> bool {
+    match control {
+        crate::model::control::Control::ColumnDef(columns) => columns.column_count == 1,
+        crate::model::control::Control::Field(_) | crate::model::control::Control::Hyperlink(_) => {
+            composer::control_is_width_neutral_marker(control)
+        }
+        _ => false,
+    }
 }
 
-pub(crate) fn cell_paragraph_has_only_single_column_metadata(
+pub(crate) fn cell_paragraph_has_only_text_metadata(
     para: &crate::model::paragraph::Paragraph,
 ) -> bool {
-    para.controls
-        .iter()
-        .all(cell_control_is_single_column_metadata)
+    para.controls.iter().all(cell_control_is_text_metadata)
 }
 
 /// Stored cell starts already express their lead in the saved frame. Reflow
@@ -2333,9 +2358,12 @@ pub(crate) fn first_seg_vpos_is_anchor(
     para: &crate::model::paragraph::Paragraph,
     cell_para_index: usize,
 ) -> bool {
-    para.line_segs
-        .first()
-        .is_some_and(|seg| cell_para_index == 0 || seg.vertical_pos > 0)
+    para.line_segs.first().is_some_and(|seg| {
+        // 재조판 줄의 vpos는 현재 문단 안의 로컬 원점이다. 저장된 셀 절대
+        // 앵커로 승격하면 첫 줄의 앞 간격을 선차감한 뒤 다시 잃게 된다.
+        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && (cell_para_index == 0 || seg.vertical_pos > 0)
+    })
 }
 
 /// 글자처럼 취급되는(`treat_as_char`) 그림·도형이 줄 흐름에서 차지하는 높이(px).
@@ -2612,26 +2640,43 @@ pub(crate) fn tac_object_stack_line_metrics(
     styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
 ) -> Option<Vec<(f64, f64)>> {
+    match tac_object_stack_line_metrics_with_storage(
+        para,
+        dpi,
+        available_width_px,
+        styles,
+        para_style,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn tac_object_stack_line_metrics_with_storage<S: crate::storage::Storage>(
+    para: &crate::model::paragraph::Paragraph,
+    dpi: f64,
+    available_width_px: Option<f64>,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
+    storage: &S,
+) -> Result<Option<Vec<(f64, f64)>>, S::Error> {
     use crate::model::control::Control;
     if !para_has_no_stored_line_segs(para) {
-        return None;
+        return Ok(None);
     }
-    let objs: Vec<(f64, f64)> = para
-        .controls
-        .iter()
-        .filter_map(|c| {
-            let common = match c {
-                Control::Picture(pic) if pic.common.treat_as_char => &pic.common,
-                Control::Shape(s) if s.common().treat_as_char => s.common(),
-                _ => return None,
-            };
-            let w = hwpunit_to_px(common.width as i32, dpi);
-            let h = hwpunit_to_px(common.height as i32, dpi);
-            (h > 0.5).then_some((w, h))
-        })
-        .collect();
+    let objs: Vec<(f64, f64)> = storage.collect(para.controls.iter().filter_map(|c| {
+        let common = match c {
+            Control::Picture(pic) if pic.common.treat_as_char => &pic.common,
+            Control::Shape(s) if s.common().treat_as_char => s.common(),
+            _ => return None,
+        };
+        let w = hwpunit_to_px(common.width as i32, dpi);
+        let h = hwpunit_to_px(common.height as i32, dpi);
+        (h > 0.5).then_some((w, h))
+    }))?;
     if objs.is_empty() {
-        return None;
+        return Ok(None);
     }
     let leading = tac_object_stack_line_leading_px(para, styles, para_style);
     let avail = available_width_px.unwrap_or(f64::INFINITY).max(1.0);
@@ -2640,7 +2685,7 @@ pub(crate) fn tac_object_stack_line_metrics(
     let mut line_h = 0.0f64;
     for (w, h) in objs {
         if line_w > 0.0 && line_w + w > avail + 0.5 {
-            lines.push((line_h, leading));
+            storage.push(&mut lines, (line_h, leading))?;
             line_w = 0.0;
             line_h = 0.0;
         }
@@ -2648,9 +2693,9 @@ pub(crate) fn tac_object_stack_line_metrics(
         line_h = line_h.max(h);
     }
     if line_h > 0.0 {
-        lines.push((line_h, leading));
+        storage.push(&mut lines, (line_h, leading))?;
     }
-    (!lines.is_empty()).then_some(lines)
+    Ok((!lines.is_empty()).then_some(lines))
 }
 
 /// [#7418] 저장 줄 없는 문단의 글자처럼 취급 **표** 줄 — `(표 높이, 줄 뒤 leading)`.
@@ -3501,7 +3546,7 @@ pub(crate) fn native_font_family_for_style(style: &TextStyle) -> std::borrow::Co
     )
 }
 
-fn internal_font_family_members(font_family: &str) -> Vec<&str> {
+pub(crate) fn internal_font_family_members(font_family: &str) -> Vec<&str> {
     font_family
         .split(',')
         .map(str::trim)
@@ -4981,3 +5026,6 @@ mod tests {
         assert_eq!(format_number(12, NumberFormat::HangulNumber), "십이");
     }
 }
+
+crate::storage::clone_fields!(PatternFillInfo, {pattern_type, tile_size, pattern_color, background_color});
+crate::storage::clone_fields!(GradientFillInfo, {gradient_type, angle, center_x, center_y, colors, positions});

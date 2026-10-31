@@ -1,0 +1,207 @@
+[
+  {
+    "name": "icc-cmyk-jpeg",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "icc-cmyk",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "icc-gray",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "icc-indexed",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "icc-indirect-filter",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "icc-jpeg",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "icc-path-cmyk",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "icc-path-rgb",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "icc-rgb",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "jpx-cmyk-alpha-boxed",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "jpx-cmyk-alpha",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "jpx-cmyk-premult-boxed",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "jpx-cmyk-premult",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "jpx-indexed-alpha-boxed",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "jpx-indexed-alpha",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "jpx-indexed-icc-premult-boxed",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "jpx-indexed-icc-premult",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "jpx-indexed-palette-premult-boxed",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "jpx-indexed-palette-premult",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "jpx-indexed-premult-boxed",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "jpx-indexed-premult",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "old-jbig2-generic_template0",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "old-jbig2-mask",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "old-jbig2-symbol_global",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "old-jbig2",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "old-jpx-alpha",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "old-jpx-indexed",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "old-jpx-mask",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "old-jpx-palette",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "old-jpx-premult",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "old-jpx-tiles",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "old-jpx",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "old-scan-jbig2-200",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "old-scan-jbig2",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "old-scan-jpeg-control-200",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "old-scan-jpeg-control",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "old-scan-jpx-200",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "old-scan-jpx",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "recovery-fake-header",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "recovery-incremental",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  },
+  {
+    "name": "recovery-missing-xref",
+    "matchesDirect": true,
+    "matchesBeforeDistributionCorrection": true
+  }
+]

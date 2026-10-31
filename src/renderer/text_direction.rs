@@ -257,3 +257,15 @@ pub(crate) fn resolve_page(root: &mut RenderNode) {
         run.style.bidi_layout = Some(layout);
     }
 }
+
+impl crate::storage::CloneWithStorage for BidiLayout {
+    fn clone_with_storage<S: crate::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<Self, S::Error> {
+        storage.bytes(self.source_text.len())?;
+        storage.bytes(std::mem::size_of_val(self.source_positions.as_ref()))?;
+        storage.bytes(std::mem::size_of_val(self.runs.as_ref()))?;
+        Ok(self.clone())
+    }
+}

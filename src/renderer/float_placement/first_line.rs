@@ -15,3 +15,5 @@ impl FloatPushedFirstLine {
         }
     }
 }
+
+crate::storage::clone_copy!(FloatPushedFirstLine);

@@ -1,0 +1,19 @@
+[package]
+name="rhwp-registry-wasm-consumer"
+version="0.0.0"
+edition="2021"
+[workspace]
+[lib]
+crate-type=["cdylib"]
+[dependencies]
+rhwp={version="=0.8.7",default-features=false,registry="rhwp-final"}
+wasm-bindgen="=0.2.127"
+[features]
+default=["facade"]
+facade=["rhwp/default"]
+[profile.release]
+lto=false
+codegen-units=16
+strip="debuginfo"
+[package.metadata.wasm-pack.profile.release]
+wasm-opt=["-O", "--enable-bulk-memory", "--enable-nontrapping-float-to-int"]

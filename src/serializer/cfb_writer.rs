@@ -67,8 +67,55 @@ fn serialize_hwp_inner(
     password: Option<&[u8]>,
     warning_mode: ContentLossWarningMode,
 ) -> Result<SerializedDocument, SerializeError> {
+    serialize_hwp_inner_with_storage(
+        doc,
+        password,
+        warning_mode,
+        &crate::storage::Unbounded,
+        usize::MAX,
+    )
+}
+
+#[cfg(feature = "pdf-import")]
+pub(crate) fn serialize_hwp_with_storage<S: crate::storage::Storage>(
+    doc: &Document,
+    storage: &S,
+    maximum: usize,
+) -> Result<Vec<u8>, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    Ok(serialize_hwp_inner_with_storage(
+        doc,
+        None,
+        ContentLossWarningMode::LegacyStderr,
+        storage,
+        maximum,
+    )?
+    .into_bytes())
+}
+
+fn serialize_hwp_inner_with_storage<S: crate::storage::Storage>(
+    doc: &Document,
+    password: Option<&[u8]>,
+    warning_mode: ContentLossWarningMode,
+    storage: &S,
+    maximum: usize,
+) -> Result<SerializedDocument, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     crate::model::section_tail::validate_preservation(doc)
         .map_err(SerializeError::UnsupportedInput)?;
+    let storage_error = |error| SerializeError::CfbError(format!("{error}"));
+    storage
+        .bytes(
+            doc.header
+                .raw_data
+                .as_ref()
+                .map_or(256, |raw| raw.len().max(256)),
+        )
+        .map_err(storage_error)?;
     // 1. FileHeader 직렬화
     // [Task #1768] 배포용/암호화 문서 강하: IR 은 이미 복호화된 평문이고 본 직렬화는
     // ViewText/DISTRIBUTE_DOC_DATA 를 생성하지 않으므로, 플래그를 유지하면 산출물
@@ -148,7 +195,12 @@ fn serialize_hwp_inner(
         if split_starts.is_empty() {
             let prepared =
                 super::form_identity::prepare_section(section, doc, &mut form_id_allocator)?;
-            let bytes = serialize_section_for_version(&prepared, output_version);
+            let bytes = super::body_text::try_serialize_section_for_version(
+                &prepared,
+                output_version,
+                storage,
+            )
+            .map_err(storage_error)?;
             if prepared.raw_provenance_permits_reuse() {
                 if let Some(visible) =
                     crate::parser::tracked_viewtext::project(&bytes, &doc.doc_info)
@@ -196,7 +248,14 @@ fn serialize_hwp_inner(
             };
             let prepared =
                 super::form_identity::prepare_section(&sub, doc, &mut form_id_allocator)?;
-            section_bytes_list.push(serialize_section_for_version(&prepared, output_version));
+            section_bytes_list.push(
+                super::body_text::try_serialize_section_for_version(
+                    &prepared,
+                    output_version,
+                    storage,
+                )
+                .map_err(storage_error)?,
+            );
         }
     }
 
@@ -214,7 +273,9 @@ fn serialize_hwp_inner(
     // HWP5 네이티브 왕복은 DOCUMENT_PROPERTIES 를 raw 로 통과시키므로 불일치가
     // 왕복해도 남는다 — 그래서 모델이 아니라 방출 바이트를 고친다.
     let emitted_sections = section_bytes_list.len().min(u16::MAX as usize) as u16;
-    let mut doc_info_bytes = serialize_doc_info(&doc.doc_info, &doc.doc_properties);
+    let mut doc_info_bytes =
+        super::doc_info::try_serialize_doc_info(&doc.doc_info, &doc.doc_properties, storage)
+            .map_err(storage_error)?;
     if doc.doc_properties.section_count != emitted_sections {
         // raw 통과(스트림·레코드) 경로에서도 다른 바이트를 건드리지 않도록 국소 패치.
         // 레코드가 없는 병리적 스트림에서만 모델 writer 로 재생성한다.
@@ -222,7 +283,9 @@ fn serialize_hwp_inner(
             let mut props = doc.doc_properties.clone();
             props.section_count = emitted_sections;
             props.raw_data = None;
-            doc_info_bytes = serialize_doc_info(&doc.doc_info, &props);
+            doc_info_bytes =
+                super::doc_info::try_serialize_doc_info(&doc.doc_info, &props, storage)
+                    .map_err(storage_error)?;
         }
     }
 
@@ -239,20 +302,54 @@ fn serialize_hwp_inner(
 
     // 6. CFB 컨테이너 조립
     let mut content_loss = ContentLossReport::new(SerializedFormat::Hwp);
-    let mut extra_streams = doc.extra_streams.clone();
+    let mut extra_streams = storage
+        .clone_record(&doc.extra_streams)
+        .map_err(storage_error)?;
     extra_streams.retain(|(path, _)| path != crate::model::border_paint::HWP_STREAM);
-    if let Some(bytes) =
-        crate::model::border_paint::encode(doc).map_err(SerializeError::UnsupportedInput)?
+    if let Some(bytes) = crate::model::border_paint::encode_with_storage(doc, storage)
+        .map_err(SerializeError::UnsupportedInput)?
     {
-        extra_streams.push((crate::model::border_paint::HWP_STREAM.into(), bytes));
-        content_loss.record(crate::model::border_paint::native_editing_loss());
+        storage
+            .push(
+                &mut extra_streams,
+                (
+                    storage
+                        .string(crate::model::border_paint::HWP_STREAM)
+                        .map_err(storage_error)?,
+                    bytes,
+                ),
+            )
+            .map_err(storage_error)?;
+        content_loss
+            .record_with_storage(
+                crate::model::border_paint::native_editing_loss_with_storage(storage)
+                    .map_err(storage_error)?,
+                storage,
+            )
+            .map_err(storage_error)?;
     }
     extra_streams.retain(|(path, _)| path != crate::model::text_clip::HWP_STREAM);
-    if let Some(bytes) =
-        crate::model::text_clip::encode(doc).map_err(SerializeError::UnsupportedInput)?
+    if let Some(bytes) = crate::model::text_clip::encode_with_storage(doc, storage)
+        .map_err(SerializeError::UnsupportedInput)?
     {
-        extra_streams.push((crate::model::text_clip::HWP_STREAM.into(), bytes));
-        content_loss.record(crate::model::text_clip::native_visibility_loss());
+        storage
+            .push(
+                &mut extra_streams,
+                (
+                    storage
+                        .string(crate::model::text_clip::HWP_STREAM)
+                        .map_err(storage_error)?,
+                    bytes,
+                ),
+            )
+            .map_err(storage_error)?;
+        content_loss
+            .record_with_storage(
+                crate::model::text_clip::native_visibility_loss_with_storage(storage)
+                    .map_err(storage_error)?,
+                storage,
+            )
+            .map_err(storage_error)?;
     }
     // HWPX에 보존한 재정렬 요청도 HWP 저장·재열기에서 같은 계약을 유지한다.
     if doc.layout_profile().hwp3_external_realign()
@@ -266,14 +363,42 @@ fn serialize_hwp_inner(
         ));
     }
     extra_streams.retain(|(path, _)| path != crate::model::native_font_program::HWP_STREAM);
-    if let Some(bytes) = crate::model::native_font_program::encode(&doc.doc_info, &doc_info_bytes) {
-        extra_streams.push((crate::model::native_font_program::HWP_STREAM.into(), bytes));
+    if let Some(bytes) = crate::model::native_font_program::encode_with_storage(
+        &doc.doc_info,
+        &doc_info_bytes,
+        storage,
+    )
+    .map_err(SerializeError::UnsupportedInput)?
+    {
+        storage
+            .push(
+                &mut extra_streams,
+                (
+                    storage
+                        .string(crate::model::native_font_program::HWP_STREAM)
+                        .map_err(storage_error)?,
+                    bytes,
+                ),
+            )
+            .map_err(storage_error)?;
     }
     extra_streams.retain(|(path, _)| path != crate::model::hyperlink_format::HWP_STREAM);
-    if let Some(bytes) = crate::model::hyperlink_format::encode(doc) {
-        extra_streams.push((crate::model::hyperlink_format::HWP_STREAM.into(), bytes));
+    if let Some(bytes) = crate::model::hyperlink_format::encode_with_storage(doc, storage)
+        .map_err(SerializeError::UnsupportedInput)?
+    {
+        storage
+            .push(
+                &mut extra_streams,
+                (
+                    storage
+                        .string(crate::model::hyperlink_format::HWP_STREAM)
+                        .map_err(storage_error)?,
+                    bytes,
+                ),
+            )
+            .map_err(storage_error)?;
     }
-    let bytes = write_hwp_cfb(
+    let bytes = write_hwp_cfb_with_storage(
         &header_bytes,
         &doc_info_bytes,
         &section_bytes_list,
@@ -285,6 +410,8 @@ fn serialize_hwp_inner(
         compressed,
         password,
         &mut content_loss,
+        storage,
+        maximum,
     )?;
     if matches!(warning_mode, ContentLossWarningMode::LegacyStderr) {
         content_loss.write_warnings_to_stderr();
@@ -344,15 +471,29 @@ fn build_preview_text(doc: &Document) -> String {
 
 /// raw deflate 압축 (wbits=-15)
 fn compress_stream(data: &[u8]) -> Result<Vec<u8>, SerializeError> {
+    compress_stream_with_storage(data, &crate::storage::Unbounded)
+}
+
+fn compress_stream_with_storage<S: crate::storage::Storage>(
+    data: &[u8],
+    storage: &S,
+) -> Result<Vec<u8>, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
     use flate2::write::DeflateEncoder;
     use flate2::Compression;
 
-    let mut encoder = DeflateEncoder::new(Vec::new(), Compression::default());
+    let mut encoder = DeflateEncoder::new(
+        super::budget_cursor::BudgetCursor::new(storage, usize::MAX),
+        Compression::default(),
+    );
     encoder
         .write_all(data)
         .map_err(|e| SerializeError::CompressError(e.to_string()))?;
     encoder
         .finish()
+        .map(|writer| writer.into_inner())
         .map_err(|e| SerializeError::CompressError(e.to_string()))
 }
 
@@ -370,43 +511,104 @@ fn write_hwp_cfb(
     password: Option<&[u8]>,
     content_loss: &mut ContentLossReport,
 ) -> Result<Vec<u8>, SerializeError> {
+    write_hwp_cfb_with_storage(
+        header_bytes,
+        doc_info_bytes,
+        section_bytes_list,
+        viewtext_history,
+        bin_data_list,
+        bin_data_content,
+        preview,
+        extra_streams,
+        compressed,
+        password,
+        content_loss,
+        &crate::storage::Unbounded,
+        usize::MAX,
+    )
+}
+
+fn write_hwp_cfb_with_storage<S: crate::storage::Storage>(
+    header_bytes: &[u8],
+    doc_info_bytes: &[u8],
+    section_bytes_list: &[Vec<u8>],
+    viewtext_history: &[(usize, Vec<u8>)],
+    bin_data_list: &[BinData],
+    bin_data_content: &[BinDataContent],
+    preview: &Option<Preview>,
+    extra_streams: &[(String, Vec<u8>)],
+    compressed: bool,
+    password: Option<&[u8]>,
+    content_loss: &mut ContentLossReport,
+    storage: &S,
+    maximum: usize,
+) -> Result<Vec<u8>, SerializeError>
+where
+    S::Error: std::fmt::Display,
+{
+    let storage_error = |error| SerializeError::CfbError(format!("{error}"));
+    storage.bytes(0).map_err(storage_error)?;
     // 스트림 목록 수집
     let mut streams: Vec<(String, Vec<u8>)> = Vec::new();
 
     // 1. /FileHeader (항상 비압축)
-    streams.push(("/FileHeader".to_string(), header_bytes.to_vec()));
+    storage
+        .push(
+            &mut streams,
+            (
+                storage.string("/FileHeader").map_err(storage_error)?,
+                storage.copy_slice(header_bytes).map_err(storage_error)?,
+            ),
+        )
+        .map_err(storage_error)?;
 
     // 2. /DocInfo (조건부 압축)
     let doc_info_data = if compressed {
-        compress_stream(doc_info_bytes)?
+        compress_stream_with_storage(doc_info_bytes, storage)?
     } else {
-        doc_info_bytes.to_vec()
+        storage.copy_slice(doc_info_bytes).map_err(storage_error)?
     };
-    streams.push((
-        "/DocInfo".to_string(),
-        encrypt_if_password(doc_info_data, password),
-    ));
+    storage
+        .push(
+            &mut streams,
+            (
+                storage.string("/DocInfo").map_err(storage_error)?,
+                encrypt_if_password(doc_info_data, password),
+            ),
+        )
+        .map_err(storage_error)?;
 
     // 3. /BodyText/Section{N} (조건부 압축)
     for (i, section_bytes) in section_bytes_list.iter().enumerate() {
-        let path = format!("/BodyText/Section{}", i);
+        let path = storage
+            .display(&format_args!("/BodyText/Section{}", i))
+            .map_err(storage_error)?;
         let data = if compressed {
-            compress_stream(section_bytes)?
+            compress_stream_with_storage(section_bytes, storage)?
         } else {
-            section_bytes.clone()
+            storage.copy_slice(section_bytes).map_err(storage_error)?
         };
-        streams.push((path, encrypt_if_password(data, password)));
+        storage
+            .push(&mut streams, (path, encrypt_if_password(data, password)))
+            .map_err(storage_error)?;
     }
     for (index, bytes) in viewtext_history {
         let data = if compressed {
-            compress_stream(bytes)?
+            compress_stream_with_storage(bytes, storage)?
         } else {
-            bytes.clone()
+            storage.copy_slice(bytes).map_err(storage_error)?
         };
-        streams.push((
-            format!("/ViewText/Section{index}"),
-            encrypt_if_password(data, password),
-        ));
+        storage
+            .push(
+                &mut streams,
+                (
+                    storage
+                        .display(&format_args!("/ViewText/Section{index}"))
+                        .map_err(storage_error)?,
+                    encrypt_if_password(data, password),
+                ),
+            )
+            .map_err(storage_error)?;
     }
 
     // 4. /BinData/BIN{XXXX}.{ext}
@@ -418,8 +620,12 @@ fn write_hwp_cfb(
         if password.is_some() {
             should_compress = compressed;
         }
-        let storage_name = format!("BIN{:04X}.{}", storage_id, ext);
-        let path = format!("/BinData/{}", storage_name);
+        let storage_name = storage
+            .display(&format_args!("BIN{:04X}.{}", storage_id, ext))
+            .map_err(storage_error)?;
+        let path = storage
+            .display(&format_args!("/BinData/{}", storage_name))
+            .map_err(storage_error)?;
 
         // 원본 HWP5 에서 바뀌지 않은 항목은 저장된 스트림을 그대로 쓴다. 압축을 풀었다가
         // 다시 압축하는 것과 내용이 같고(OLE 크기 prefix 도 원본 그대로다), 원본 바이트를
@@ -440,25 +646,43 @@ fn write_hwp_cfb(
         // 해제된 바이트에만 의미가 있고, 원본 스트림은 이미 그 처리가 끝난
         // 형태이므로 전부 건너뛴다. 정상 대용량 개체는 무손실, 폭탄은 애초에
         // 해제하지 않으므로 OOM 이 없다.
-        let bytes = match content.data.load_limited(MAX_BIN_DATA_BYTES) {
+        let bytes = match storage
+            .bin_data(&content.data, MAX_BIN_DATA_BYTES)
+            .map_err(storage_error)?
+        {
             Some(bytes) => bytes,
             None => match content.data.load_raw() {
                 // 저장 형태를 그대로 쓰려면 그 압축 상태가 이 문서에서 기대되는
                 // 상태와 같아야 한다. 다르면(암호 저장의 압축 강제 등) 읽는 쪽이
                 // 압축 바이트를 원본으로 오해해 조용히 깨지므로 통과시키지 않는다.
                 Some(stored) if stored.compressed == should_compress => {
-                    streams.push((path, encrypt_if_password(stored.bytes, password)));
+                    storage
+                        .push(
+                            &mut streams,
+                            (path, encrypt_if_password(stored.bytes, password)),
+                        )
+                        .map_err(storage_error)?;
                     continue;
                 }
                 Some(_) => {
                     // 상한 초과 + 압축 상태 불일치 — 해제(OOM 위험)도, 그대로 쓰기
                     // (오독)도 안 된다. 렌더·클립보드와 같은 placeholder 로 접는다.
-                    content_loss.record(ContentLoss::binary_content_emptied(
-                        storage_id,
-                        path.clone(),
-                        ContentLossReason::StoredCompressionMismatch,
-                    ));
-                    streams.push((path, encrypt_if_password(Vec::new(), password)));
+                    content_loss
+                        .record_with_storage(
+                            ContentLoss::binary_content_emptied(
+                                storage_id,
+                                storage.string(&path).map_err(storage_error)?,
+                                ContentLossReason::StoredCompressionMismatch,
+                            ),
+                            storage,
+                        )
+                        .map_err(storage_error)?;
+                    storage
+                        .push(
+                            &mut streams,
+                            (path, encrypt_if_password(Vec::new(), password)),
+                        )
+                        .map_err(storage_error)?;
                     continue;
                 }
                 // HWPX ZIP·인메모리 항목처럼 원본 HWP5 저장 형태가 없는 경우에는
@@ -467,12 +691,22 @@ fn write_hwp_cfb(
                 // 접는다. 이미 메모리에 있는 `Loaded` 값도 `load_limited()`에서
                 // 길이를 확인했으므로 같은 경로를 탄다.
                 None => {
-                    content_loss.record(ContentLoss::binary_content_emptied(
-                        storage_id,
-                        path.clone(),
-                        ContentLossReason::RawPassthroughUnavailable,
-                    ));
-                    streams.push((path, encrypt_if_password(Vec::new(), password)));
+                    content_loss
+                        .record_with_storage(
+                            ContentLoss::binary_content_emptied(
+                                storage_id,
+                                storage.string(&path).map_err(storage_error)?,
+                                ContentLossReason::RawPassthroughUnavailable,
+                            ),
+                            storage,
+                        )
+                        .map_err(storage_error)?;
+                    storage
+                        .push(
+                            &mut streams,
+                            (path, encrypt_if_password(Vec::new(), password)),
+                        )
+                        .map_err(storage_error)?;
                     continue;
                 }
             },
@@ -488,7 +722,9 @@ fn write_hwp_cfb(
                 .iter()
                 .any(|bd| bd.data_type == BinDataType::Storage && bd.storage_id == content.id);
         let payload: Vec<u8> = if is_ole_storage {
-            let mut v = Vec::with_capacity(bytes.len() + 4);
+            let mut v = storage
+                .vec(bytes.len().saturating_add(4))
+                .map_err(storage_error)?;
             v.extend_from_slice(&(bytes.len() as u32).to_le_bytes());
             v.extend_from_slice(&bytes);
             v
@@ -497,26 +733,49 @@ fn write_hwp_cfb(
         };
 
         let data = if should_compress {
-            compress_stream(&payload).unwrap_or_else(|_| payload.clone())
+            match compress_stream_with_storage(&payload, storage) {
+                Ok(bytes) => bytes,
+                Err(_) => {
+                    // A request failure must not become ordinary compression fallback.
+                    storage.bytes(0).map_err(storage_error)?;
+                    storage.copy_slice(&payload).map_err(storage_error)?
+                }
+            }
         } else {
             payload
         };
-        streams.push((path, encrypt_if_password(data, password)));
+        storage
+            .push(&mut streams, (path, encrypt_if_password(data, password)))
+            .map_err(storage_error)?;
     }
 
     // 5. 미리보기 데이터 (PrvImage, PrvText)
     if let Some(ref prv) = preview {
         if let Some(ref image) = prv.image {
-            streams.push(("/PrvImage".to_string(), image.data.clone()));
+            storage
+                .push(
+                    &mut streams,
+                    (
+                        storage.string("/PrvImage").map_err(storage_error)?,
+                        storage.copy_slice(&image.data).map_err(storage_error)?,
+                    ),
+                )
+                .map_err(storage_error)?;
         }
         if let Some(ref text) = prv.text {
             // UTF-16LE로 인코딩
-            let utf16: Vec<u16> = text.encode_utf16().collect();
-            let mut bytes = Vec::with_capacity(utf16.len() * 2);
-            for ch in &utf16 {
+            let utf16 = text.encode_utf16();
+            let count = text.encode_utf16().count().saturating_mul(2);
+            let mut bytes = storage.vec(count).map_err(storage_error)?;
+            for ch in utf16 {
                 bytes.extend_from_slice(&ch.to_le_bytes());
             }
-            streams.push(("/PrvText".to_string(), bytes));
+            storage
+                .push(
+                    &mut streams,
+                    (storage.string("/PrvText").map_err(storage_error)?, bytes),
+                )
+                .map_err(storage_error)?;
         }
     }
 
@@ -525,20 +784,28 @@ fn write_hwp_cfb(
         let payload = if password.is_some()
             && (path.starts_with("/Scripts/") || path.starts_with("/BinData/"))
         {
-            encrypt_if_password(data.clone(), password)
+            encrypt_if_password(storage.copy_slice(data).map_err(storage_error)?, password)
         } else {
-            data.clone()
+            storage.copy_slice(data).map_err(storage_error)?
         };
-        streams.push((path.clone(), payload));
+        storage
+            .push(
+                &mut streams,
+                (storage.string(path).map_err(storage_error)?, payload),
+            )
+            .map_err(storage_error)?;
     }
 
     // mini_cfb로 CFB 컨테이너 조립 (WASM 호환)
-    let named_streams: Vec<(&str, &[u8])> = streams
-        .iter()
-        .map(|(path, data)| (path.as_str(), data.as_slice()))
-        .collect();
-
-    mini_cfb::build_cfb(&named_streams).map_err(|e| SerializeError::CfbError(e))
+    let named_streams = storage
+        .collect(
+            streams
+                .iter()
+                .map(|(path, data)| (path.as_str(), data.as_slice())),
+        )
+        .map_err(storage_error)?;
+    mini_cfb::build_cfb_with_storage(&named_streams, [0; 16], storage, maximum)
+        .map_err(SerializeError::CfbError)
 }
 
 fn encrypt_if_password(data: Vec<u8>, password: Option<&[u8]>) -> Vec<u8> {

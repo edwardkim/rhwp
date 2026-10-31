@@ -7,7 +7,7 @@ Issue: [#8174](https://github.com/edwardkim/rhwp/issues/8174)
 - 제품 base: `def947c2149df5bc812d801e6e79be19a403b4d1`. 원격 `devel`과 일치함을 확인했다.
 - 근거: [구조 재조사 A01–A07](../tech/investigations/issue-8174/README.md),
   [결정 대장·범위 v1](../plans/task_m100_8174_maintainer_decisions.md).
-- 상태: **로컬 기술 보완 범위 v1과 PR 제출 전 로컬 게이트 완료. 실제 게시 준비 전체의 완료는 아니다.**
+- 상태: **로컬 기술 보완 범위 v1은 PR #8181로 병합됐다. 2026-10-24 재개 후 12개 source 후보 검사를 완료했으며, 현행 graph의 실제 registry 소비와 게시 준비 전체는 미완료다.**
 - 검증한 code head: `9df631769bd668d3e4b86f86d1359689a108759b` (`5cb42af13f`의 보완 구현과 Cargo include anchor 보정).
 
 ## 실행 순서와 완료 조건
@@ -233,3 +233,90 @@ Rust source·기존 회귀·root lock·실제 조판과 렌더링 로직은 변�
 
 수정 전후 명령·종료 코드·tool lock 대조·실제 Surface 결과는 ignored
 `output/pr-review/issue8174/pr-preparation/self-review/`에 보관했다.
+
+## 2026-10-24 재개 — 코덱 opt-in 이후의 게시 후보
+
+사용자가 보안 제한 문서 현행화 뒤 #8174로 전환하도록 지시했다. 현행화는 로컬 commit
+`9e86df8742e943a55124a776411c3aca097a459c`에 보존했고,
+`chore/issue8174-resume-20261024`에서 결정과 무관한 현재 source 점검을 재개했다.
+최신 기준 `upstream/devel`은 `3536e72819e165dbe959ee42cfd4e4cf8db33ce7`이다.
+
+- 이슈는 OPEN이며 assignee는 `edwardkim`이다. 새 이슈나 중복 착수 comment는 만들지 않았다.
+- v1은 [PR #8181](https://github.com/edwardkim/rhwp/pull/8181), commit
+  `d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867`로 병합됐다.
+- 코덱은 [PR #8190](https://github.com/edwardkim/rhwp/pull/8190), commit
+  `e7a0dec55c6c6c6365e4ff50babe7583e1cf1c70`으로 병합됐다. MD06 F01·F02의 구현·Native/WASM
+  검증은 완료 이력으로 반영하되 나머지 정책 선택이나 0.9.0 게시 승인을 추정하지 않았다.
+
+다음 검사를 실행했다. 제품 source·manifest·lock·게시 설정과 Cargo cache는 변경하지 않는다.
+
+```bash
+python3 scripts/crates_io_source_preflight.py --ref HEAD \
+  --output-dir output/pr-review/issue8174/resume-20261024/source-preflight
+```
+
+| 확인 항목 | 현재 결과 |
+| --- | --- |
+| 검사 source | `9e86df8742e943a55124a776411c3aca097a459c` |
+| 종료·source 검사 | exit 0 / `source_check=pass` |
+| 후보 graph | 12개. 기존 8개에 codec resource·CCITT·JBIG2·JPEG 2000 fork 추가 |
+| 포함·원본 검증 | 내장 참조 15개, font asset 5개, 전 archive 파일의 Git blob·해시·mode와 readback 확인 |
+| 본체/ PDF backend source tar | 8,335,803 / 6,820,226 bytes. Cargo 정규화 `.crate` 크기가 아님 |
+| 차단점 | `publish_false` 11건. path 버전 누락·root patch 차단점은 0건 |
+| 실제 게시 판정 | `publish_ready=false`, `cargo_normalized=false`, `cargo_verified=false`, `registry_consumption_verified=false` |
+
+새 source 후보 네 개의 버전·archive 크기는 각각 `rhwp-codec-resource 0.1.0` 4,675 bytes,
+`rhwp-hayro-ccitt 0.3.0-rhwp.1` 16,307 bytes, `rhwp-hayro-jbig2 0.3.0-rhwp.1` 69,313 bytes,
+`rhwp-hayro-jpeg2000 0.4.0-rhwp.1` 94,485 bytes다. 원본 source와 고지를 담은 검사 산출물이며
+이 이름의 crates.io 등록·소유권 확보나 실제 Cargo 소비 완료를 뜻하지 않는다.
+원문은 위 출력 경로의 `source-preflight.json`, `*.files.json`, `*.source.tar.gz`다.
+
+### 재개 후 다음 게이트
+
+1. [결정 대장](../plans/task_m100_8174_maintainer_decisions.md)의 MD05-B(비신뢰 PDF 지원 목표),
+   MD06의 F01–F08 기본 탑재, MD07의 CLI → WASM → Studio 전체 적용을
+   [범위 v2 계획](../plans/task_m100_8174_impl.md#범위-v2--기본-기능과-환경별-자원-정책)으로 구체화한다.
+2. MD02–MD04와 연결해 현재 12개 graph의 실제 Cargo package·독립 Native/WASM·CLI 소비,
+   오류·실패 후 복구와 지원 계약의 구현 범위를 확정한다. 과거 8개의 성공을 새 source 12개의
+   성공으로 대체하지 않는다.
+3. MD01·MD08·MD09와 게시 운영·제품 버전 전환·실제 registry 업로드는 후속 결정으로 유지한다.
+
+이번 재개 점검은 계획·결정·실행 기록과 source 검사 README만 수정했다. 변경 문서 5개의
+링크·결정 문서 메타데이터·diff 공백 검사와 source 보고서 수치 대조를 통과했다.
+제품 Rust/Cargo/WASM 빌드와 시각 검증을 새로 수행한 것으로 기록하지 않는다.
+
+### MD05–MD07 답변 반영과 독립 조사
+
+2026-10-24 사용자는 MD05=B·MD06=B·MD07=B를 선택했다. 결정 대장에 답변 원문과 함께
+MD05의 지원 목표 확정, MD06·MD07의 방향 확정과 아직 지정되지 않은 세부 범위를 기록했다.
+세부 F 항목·활성화 방식과 우선 적용 환경을 질의했으며, 답변을 기다리는 동안 기존 Rust policy,
+Core/CLI·WASM/Worker·동기 Studio, 검증 도구의 Native 감독 경로를 정적으로 조사했다.
+[경로별 현재 계약과 다음 확인 항목](../plans/task_m100_8174_impl.md#2026-10-24-정책-선택과-보안-경계-조사)을
+구현 계획에 연결했다. 이 조사를 제품 격리의 실행 성공이나 새 기능 구현으로 표시하지 않는다.
+
+### MD06·MD07 세부 범위 확정과 v2 구현 계획
+
+2026-10-24 추가 답변으로 사용자는 **F01–F08 전체를 기본 기능으로 탑재**하고 자원 정책을
+**CLI → WASM → Studio 순서로 모두 반영**하도록 지정했다. 기능별 미지원 때문에 첫인상에서
+사용을 포기하는 문제가 치명적이라는 판단을 결정 대장에 남겼다. 앞 절의 대상·환경 답변 대기는
+이 답변으로 해소됐다. 구체적인 한도 수치·API·격리 계약은 구현 설계·실측 대상으로 구분한다.
+
+다음 경로를 추가로 정적으로 확인해 v2의 절편별 변경과 검증에 연결했다.
+
+| 대상 | 현재 코드 관측 | 계획에 반영한 처리 |
+| --- | --- | --- |
+| ICC | backend의 `icc-qcms`·`icc-lcms2`, 이미지의 `build_icc_transform`이 존재한다 | feature 활성화뿐 아니라 예산 있는 실제 이미지 변환 경로·cache·색/alpha·시간·메모리를 검증한다. CMM 선택은 설계 대상이다. |
+| xref 복구 | `xref_reconstruction::reconstruct_xref`는 전체 입력을 `read_to_end`하고 regex로 객체를 찾는다 | legacy 경로의 단순 허용 대신 검색·객체·stream·할당 한도를 받는 공통 복구 결과를 구현한다. |
+| SVG 글리프 | 공통 정적 판정은 제한된 태그만 수용하며 `defs` subtree를 replay에서 무시한다 | Native/CanvasKit의 정상 gradient·clip·참조 표현을 확장한다. [OpenType 규격](https://learn.microsoft.com/en-us/typography/opentype/spec/svg#svg-capability-requirements-and-restrictions)의 필수 표현과 금지된 `script` 요소를 구분한다. 현재 실행 결함을 재현한 결과는 아니다. |
+| 링크 | 넓은 `command_uri` 읽기와 좁은 `web_command`·`export_uri`·Studio 클릭의 범위가 다르다 | 공통 목적지 분류·왕복·출력과 실제 클릭/host 처리를 연결한다. |
+| 명령 단추 | `FormObject.properties`는 원본 속성을 보존하지만 Studio `PushButton` 분기는 클릭을 무시한다 | 원본 action·script의 해석과 host 실행·결과까지 필수 범위에 포함한다. |
+| 보호 문서 복구 | `AutosaveManager`는 `isRecoveryBlocked`일 때 draft를 버리며 store는 바이트를 저장한다 | #5992 선행 분석 뒤 암호화된 draft·키 수명·재시작 해제·폐기 경합을 설계한다. |
+
+범위 v2는 CLI·공통 정책, 기본 기능·Native, WASM, Studio, 포장·독립 소비의 다섯 절편으로
+작성했다. 기능·환경 결정과 구현 계획의 승인·실행 결과를 구분한다. 이번 변경은 문서이며
+제품 feature·정책·프로세스·브라우저 동작은 아직 바꾸지 않았다.
+
+이번 문서 변경은 로컬 기준 `b22ae48006` 위에서 검사했다. 변경 문서 5개의 내부 Markdown
+링크, 메타데이터가 있는 변경 문서 2개의 front matter와 `git diff --check`는 통과했다.
+제품 코드·의존성·빌드 산출물을 바꾸지 않아 Cargo·WASM·Studio 실행 검증을 다시 돌리지 않았다.
+v2 계획 승인과 실제 제품 구현·실행 검증은 다음 진행 상태로 별도 기록한다.

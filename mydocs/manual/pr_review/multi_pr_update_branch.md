@@ -11,6 +11,12 @@ last_verified: 2026-08-12
 각 원 PR의 reviewer assign, review 문서, CI 판정은 [PR 접수와 리뷰 기록](intake_and_review.md)처럼
 PR 번호별로 분리한다.
 
+새 체리픽 통합 브랜치는 `review/integration-<대표 이슈번호>-<설명>`으로 명명한다.
+대표 이슈가 없으면 `review/integration-<YYYYMMDD>-<설명>`을 사용한다. 원 PR·고정한 head·
+적용 commit과 순서를 기록하며, 같은 통합 작업의 리베이스·추가 체리픽은 같은 브랜치에서 이어 간다.
+단독 검토와 새 head 분리까지 포함한 정본은
+[브랜치 명명 규칙](../codex/docs_and_git_workflow.md#외부-pr-검토와-체리픽-통합-브랜치-명명)이다.
+
 ## 2.0 대량 PR 유입 사전 분류
 
 한 contributor의 열린 PR이 많으면 개별 review 전에 통합 그룹과 변경 축을 사실로만 수집한다.
@@ -123,7 +129,7 @@ git fetch upstream devel
 git fetch upstream pull/N/head:refs/remotes/upstream/prN-head
 git switch devel
 git merge --ff-only upstream/devel
-git switch review/<contributor>-<YYYYMMDD>
+git switch review/pr-N-<description>
 git merge --ff-only upstream/prN-head
 git merge-base --is-ancestor upstream/devel HEAD
 git diff --stat upstream/devel...HEAD

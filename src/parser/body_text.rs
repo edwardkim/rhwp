@@ -50,6 +50,7 @@ struct ParaTextParts {
     /// `control_mask` 비트 30 을 그대로 믿으면 안 된다 — 한컴 원본에도 제어코드는 있는데
     /// 비트가 없는 문단이 있다(한글 2022 오라클 실측 9경로).
     nb_space_control: bool,
+    nb_space_control_indices: Vec<usize>,
 }
 
 /// BodyText 파싱 에러
@@ -308,6 +309,7 @@ pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
                     para.control_mask |= 1u32 << 0x001F;
                 }
                 para.char_offsets = parts.char_offsets;
+                para.nb_space_control_indices = Some(parts.nb_space_control_indices);
                 para.field_ranges = parts.field_ranges;
                 para.tab_extended = parts.tab_extended;
                 para.title_marks = parts.title_marks;
@@ -349,6 +351,15 @@ pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
                 let ctrl_data_record = if matches!(control, Control::SectionDef(_)) {
                     section_def_ctrl_data_index(&ctrl_records[1..], ctrl_records[0].level)
                         .map(|index| &ctrl_records[index + 1])
+                } else if matches!(control, Control::Shape(_)) {
+                    // [#8225] 그리기 개체는 CTRL_HEADER 바로 아래나 맨 위 SHAPE_COMPONENT 바로 아래의
+                    // CTRL_DATA 만 이 컨트롤의 것이다. 묶음 안 자식 도형의 CTRL_DATA 는 그 자식이
+                    // `ShapeComponentAttr.ctrl_data` 로 갖는다 — 여기서 가져가면 저장 때 두 번 쓰인다.
+                    let max_level = ctrl_records[0].level + 2;
+                    ctrl_records[1..]
+                        .iter()
+                        .take_while(|r| r.tag_id != tags::HWPTAG_CTRL_HEADER)
+                        .find(|r| r.tag_id == tags::HWPTAG_CTRL_DATA && r.level <= max_level)
                 } else {
                     ctrl_records[1..]
                         .iter()
@@ -454,6 +465,7 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
     let mut title_marks: Vec<TitleMark> = Vec::new();
     let mut orphan_field_ends: Vec<OrphanFieldEnd> = Vec::new();
     let mut nb_space_control = false;
+    let mut nb_space_control_indices = Vec::new();
     let mut pos = 0;
     // 확장 컨트롤(extended) 카운터 → controls[] 인덱스와 1:1 대응
     let mut ctrl_idx: usize = 0;
@@ -632,6 +644,7 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
                 }
                 0x001E => {
                     char_offsets.push(code_unit_pos);
+                    nb_space_control_indices.push(char_count);
                     text.push('\u{00A0}'); // 묶음 빈칸 (HWP 5.0 표 7: 코드 30, NO-BREAK SPACE)
                     char_count += 1;
                     // [#5174] 표기 출처를 남긴다 — 같은 U+00A0 이라도 리터럴 `a0 00` 이었던
@@ -699,6 +712,7 @@ fn parse_para_text(data: &[u8]) -> ParaTextParts {
         title_marks,
         orphan_field_ends,
         nb_space_control,
+        nb_space_control_indices,
     }
 }
 

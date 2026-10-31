@@ -606,6 +606,49 @@ fn test_merge_from_basic() {
     assert_eq!(para1.text, "안녕하세요");
     assert_eq!(para1.char_offsets, vec![0, 1, 2, 3, 4]);
 
+    #[cfg(feature = "pdf-import")]
+    {
+        use crate::parser::pdf::allocation::Allocation;
+        use pdf_oxide::import_limits::{ImportBudget, PdfImportLimits};
+
+        // Storage contract only: no renderer, saved line metadata, or system fonts.
+        // Padding 128 tab records needs more than the small request's entire budget.
+        for incoming in [false, true] {
+            for limit in [512, 65_536] {
+                let tabs = Paragraph {
+                    text: "\t".repeat(128),
+                    tab_extended: vec![[1200, 0, 0x0100, 0, 0, 0, 9]],
+                    ..Default::default()
+                };
+                let plain = Paragraph {
+                    text: "x".into(),
+                    ..Default::default()
+                };
+                let (mut left, right) = if incoming {
+                    (plain, tabs)
+                } else {
+                    (tabs, plain)
+                };
+                let budget = ImportBudget::new(PdfImportLimits {
+                    decoded_bytes: limit,
+                    ..Default::default()
+                })
+                .unwrap();
+                let result = left.merge_from_with_storage(&right, &Allocation(&budget));
+                if limit == 512 {
+                    assert!(result.is_err(), "tab growth must consume request storage");
+                } else {
+                    assert!(result.is_ok());
+                    assert_eq!(left.tab_extended.len(), 128);
+                    assert_eq!(left.tab_extended[0], [1200, 0, 0x0100, 0, 0, 0, 9]);
+                    assert!(left.tab_extended[1..]
+                        .iter()
+                        .all(|tab| *tab == TAB_EXT_PLACEHOLDER));
+                }
+            }
+        }
+    }
+
     merge_publishes_fresh_rows_without_old_suffix_or_source_positions();
 }
 

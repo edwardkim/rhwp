@@ -1,0 +1,8 @@
+{
+  "source": "9c9c272fe1670baf305800dfc906349fa7933d4a",
+  "installed_binary": "$REPO/output/pr-review/issue8174/v2-s05-20261025/installed-final/bin/rhwp",
+  "snapshot": "$REPO/output/pr-review/issue8174/v2-s05-20261025/candidate-native/rhwp",
+  "bytes": 74144584,
+  "sha256": "406c7c9f85d6cb7f54f503eb80a73e7deb06258a9ee8b16c1a32d8e748cd9503",
+  "snapshot_inode_differs": true
+}

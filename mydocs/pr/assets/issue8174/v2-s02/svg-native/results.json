@@ -1,0 +1,32 @@
+[
+  {
+    "case": "gradient",
+    "maxChannelDifference": 1,
+    "raw": "100.00000"
+  },
+  {
+    "case": "clip-opacity",
+    "maxChannelDifference": 28,
+    "raw": "100.00000"
+  },
+  {
+    "case": "internal-use",
+    "maxChannelDifference": 0,
+    "raw": "100.00000"
+  },
+  {
+    "case": "restricted-script",
+    "maxChannelDifference": 0,
+    "raw": "100.00000"
+  },
+  {
+    "case": "embedded-png",
+    "maxChannelDifference": 0,
+    "raw": "100.00000"
+  },
+  {
+    "case": "embedded-jpeg",
+    "maxChannelDifference": 0,
+    "raw": "100.00000"
+  }
+]

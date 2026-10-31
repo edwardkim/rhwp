@@ -1,10 +1,12 @@
-
 /// 문단의 텍스트를 줄별로 분할하고, 각 줄 내에서 CharShapeRef 경계에 따라 분할한다.
-fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
+fn try_compose_lines<S: crate::storage::Storage>(
+    para: &Paragraph,
+    storage: &S,
+) -> Result<Vec<ComposedLine>, S::Error> {
     if para.line_segs.is_empty() {
         // LineSeg가 없으면 텍스트를 ComposedLine 으로 분할
         if para.text.is_empty() {
-            return Vec::new();
+            return storage.vec(0);
         }
         let default_style_id = para
             .char_shapes
@@ -21,9 +23,9 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
         // 평균 43~46 chars/line. 기존 35 는 conservative — 매 paragraph +1 line
         // 발생 → 페이지 수 inflate (sample16-hwp5.hwp: 64 reference 대비 +3).
         // 45 로 조정하여 HWP3 정합 개선 (+1 까지 축소, 잔존 ParaShape 데이터 차이).
-        let chars: Vec<char> = para.text.chars().collect();
+        let chars: Vec<char> = storage.collect(para.text.chars())?;
         const CHARS_PER_LINE: usize = 45;
-        let mut lines = Vec::new();
+        let mut lines = storage.vec(0)?;
         let total = chars.len();
         let mut offset = 0;
         while offset < total {
@@ -57,7 +59,7 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
             {
                 end = total;
             }
-            let line_text: String = chars[offset..end].iter().collect();
+            let line_text = storage.chars(chars[offset..end].iter().copied())?;
             let is_last_line = end >= total;
             // 이 폴백(PARA_LINE_SEG 누락 문단)도 CharShapeRef 경계를 존중한다 —
             // 종전에는 문단 전체를 `char_shapes[0]` 단일 run 으로 만들어, 첫
@@ -66,53 +68,62 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
             // 10pt 검정으로 — run 경계 (0,cs_a)(24,cs_b)(26,cs_c) 에서 cs_a 적용).
             // char_offsets 가 있으면 본문 경로와 같은 splitter 로 토큰화하고,
             // 없으면 종전 단일 default_style run 을 유지한다.
-            let mut fallback_runs = if para.char_offsets.len() == total && !para.char_shapes.is_empty()
-            {
-                split_by_char_shapes(
-                    &line_text,
-                    offset,
-                    end,
-                    &para.char_offsets,
-                    &para.char_shapes,
-                )
-            } else {
-                split_runs_by_lang(vec![ComposedTextRun {
-                    text: line_text,
-                    char_style_id: default_style_id,
-                    lang_index: 0,
-                    neutral_space_origin: None,
-                    char_overlap: None,
-                    footnote_marker: None,
-                    display_text: None,
-                    supplemental_metrics_blocked: false,
-                    inserted_control_text: false,
-                    space_metric: crate::renderer::composer::SpaceMetric::Stored,
-                    regenerated_font_metrics: false,
-                    literal_figure_space: false,
-                }])
-            };
+            let mut fallback_runs =
+                if para.char_offsets.len() == total && !para.char_shapes.is_empty() {
+                    try_split_by_char_shapes(
+                        &line_text,
+                        offset,
+                        end,
+                        &para.char_offsets,
+                        &para.char_shapes,
+                        storage,
+                    )?
+                } else {
+                    let mut initial = storage.vec(1)?;
+                    storage.push(
+                        &mut initial,
+                        ComposedTextRun {
+                            text: line_text,
+                            char_style_id: default_style_id,
+                            lang_index: 0,
+                            neutral_space_origin: None,
+                            char_overlap: None,
+                            footnote_marker: None,
+                            display_text: None,
+                            supplemental_metrics_blocked: false,
+                            inserted_control_text: false,
+                            space_metric: crate::renderer::composer::SpaceMetric::Stored,
+                            regenerated_font_metrics: false,
+                            literal_figure_space: false,
+                        },
+                    )?;
+                    try_split_runs_by_lang(initial, storage)?
+                };
             for run in &mut fallback_runs {
                 run.regenerated_font_metrics = true;
             }
-            lines.push(ComposedLine {
-                runs: fallback_runs,
-                line_height: 400,
-                baseline_distance: 320,
-                segment_width: 0,
-                column_start: 0,
-                line_spacing: 0,
-                // [Task #994] non-last synth wrap line 은 has_line_break=true 로 marking —
-                // Justify 정렬 비활성화 (line 의 chars 가 column width 만큼 spread 되지 않음).
-                // 마지막 line 은 false (기존 paragraph 동작 유지).
-                has_line_break: !is_last_line,
-                char_start: offset,
-            });
+            storage.push(
+                &mut lines,
+                ComposedLine {
+                    runs: fallback_runs,
+                    line_height: 400,
+                    baseline_distance: 320,
+                    segment_width: 0,
+                    column_start: 0,
+                    line_spacing: 0,
+                    // [Task #994] non-last synth wrap line 은 has_line_break=true 로 marking —
+                    // Justify 정렬 비활성화 (line 의 chars 가 column width 만큼 spread 되지 않음).
+                    // 마지막 line 은 false (기존 paragraph 동작 유지).
+                    has_line_break: !is_last_line,
+                    char_start: offset,
+                },
+            )?;
             offset = end;
         }
-        return lines;
+        return Ok(lines);
     }
 
-    let mut lines: Vec<ComposedLine> = Vec::new();
+    let mut lines: Vec<ComposedLine> = storage.vec(0)?;
     let line_seg_count = para.line_segs.len();
 
     for line_idx in 0..line_seg_count {
@@ -120,12 +131,12 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
         let space_metric = para.line_space_metric(line_idx);
         let regenerated_font_metrics = text_metric_origin::regenerated_row(para, line_idx);
         let split_row_runs = |text: &str, start, end, offsets: &[u32], shapes: &[CharShapeRef]| {
-            let mut runs = split_by_char_shapes(text, start, end, offsets, shapes);
+            let mut runs = try_split_by_char_shapes(text, start, end, offsets, shapes, storage)?;
             for run in &mut runs {
                 run.space_metric = space_metric;
                 run.regenerated_font_metrics = regenerated_font_metrics;
             }
-            runs
+            Ok::<_, S::Error>(runs)
         };
 
         // UTF-16 위치 기반으로 이 줄의 텍스트 범위 계산.
@@ -156,12 +167,12 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
             text_end = text_start;
         }
         // 이 줄의 텍스트 추출
-        let line_text: String = para
-            .text
-            .chars()
-            .skip(text_start)
-            .take(text_end - text_start)
-            .collect();
+        let line_text = storage.chars(
+            para.text
+                .chars()
+                .skip(text_start)
+                .take(text_end - text_start),
+        )?;
 
         // TAC 표 문단 감지
         let has_tac = para.controls.iter().any(
@@ -173,18 +184,18 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
         // 한글 제목 뒤 개행이 줄 끝을 넘어 표 줄까지 제목에 합쳐진다.
         let newline_pos = line_text.chars().position(|ch| ch == '\n');
         if let (true, Some(nl_pos)) = (has_tac, newline_pos) {
-            let pre_text: String = line_text.chars().take(nl_pos).collect();
+            let pre_text = storage.chars(line_text.chars().take(nl_pos))?;
             let pre_end = text_start + nl_pos;
             let post_start = text_start + nl_pos + 1;
-            let post_text: String = line_text.chars().skip(nl_pos + 1).collect();
-            let post_text_clean = post_text.trim_end_matches('\n').to_string();
+            let post_text = storage.chars(line_text.chars().skip(nl_pos + 1))?;
+            let post_text_clean = storage.string(post_text.trim_end_matches('\n'))?;
             // [#6300] 강제 줄나눔이 이 저장 줄의 끝이고, 다음 LINE_SEG 가 인라인
             // 개체일 때만 경계를 유지한다. 같은 저장 줄 안의 `\n`+표(Task #20)는
             // 기존처럼 `\n` 앞 텍스트를 이전 줄에 합친다. 이 가드 밖의 `\n` 은
             // off-canvas·overflow-cell 래칫을 키우지 않는다.
             let keep_stored_boundary = post_text_clean.is_empty()
                 && line_idx + 1 < line_seg_count
-                && tac_inline_object_starts_at(para, text_end)
+                && try_tac_inline_object_starts_at(para, text_end, storage)?
                 // The first stored row also owns its terminating break.
                 // Requiring a previous row creates an extra empty row before
                 // the already stored next table row (#7165).
@@ -199,7 +210,8 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
                     pre_end,
                     &para.char_offsets,
                     &para.char_shapes,
-                );
+                )?;
+                storage.reserve(&mut prev.runs, extra_runs.len())?;
                 prev.runs.append(&mut extra_runs);
                 prev.has_line_break = true;
             } else if !pre_text.is_empty() || keep_stored_boundary {
@@ -212,7 +224,7 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
                     pre_end,
                     &para.char_offsets,
                     &para.char_shapes,
-                );
+                )?;
                 let pre_lh = if line_seg.text_height > 0
                     && line_seg.text_height < line_seg.line_height / 3
                 {
@@ -220,16 +232,19 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
                 } else {
                     line_seg.line_height
                 };
-                lines.push(ComposedLine {
-                    runs: pre_runs,
-                    line_height: pre_lh,
-                    baseline_distance: line_seg.baseline_distance,
-                    segment_width: line_seg.segment_width,
-                    column_start: line_seg.column_start,
-                    line_spacing: line_seg.line_spacing,
-                    has_line_break: true,
-                    char_start: text_start,
-                });
+                storage.push(
+                    &mut lines,
+                    ComposedLine {
+                        runs: pre_runs,
+                        line_height: pre_lh,
+                        baseline_distance: line_seg.baseline_distance,
+                        segment_width: line_seg.segment_width,
+                        column_start: line_seg.column_start,
+                        line_spacing: line_seg.line_spacing,
+                        has_line_break: true,
+                        char_start: text_start,
+                    },
+                )?;
             }
 
             // \n 이후: 표 줄 (빈 runs, 표는 layout에서 별도 처리)
@@ -241,23 +256,26 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
                     text_end,
                     &para.char_offsets,
                     &para.char_shapes,
-                );
-                lines.push(ComposedLine {
-                    runs: post_runs,
-                    line_height: line_seg.line_height,
-                    baseline_distance: line_seg.baseline_distance,
-                    segment_width: line_seg.segment_width,
-                    column_start: line_seg.column_start,
-                    line_spacing: line_seg.line_spacing,
-                    has_line_break: post_text.ends_with('\n'),
-                    char_start: post_start,
-                });
+                )?;
+                storage.push(
+                    &mut lines,
+                    ComposedLine {
+                        runs: post_runs,
+                        line_height: line_seg.line_height,
+                        baseline_distance: line_seg.baseline_distance,
+                        segment_width: line_seg.segment_width,
+                        column_start: line_seg.column_start,
+                        line_spacing: line_seg.line_spacing,
+                        has_line_break: post_text.ends_with('\n'),
+                        char_start: post_start,
+                    },
+                )?;
             }
         } else {
             // 일반 처리: LINE_SEG 범위 안에 강제 줄바꿈(\n)이 있으면 실제 줄로 분할한다.
             // Shift+Enter는 문단을 새로 만들지 않지만 렌더러/커서/들여쓰기 계산에서는
             // 다음 visual line 이 별도 ComposedLine 이어야 한다.
-            let line_chars: Vec<char> = line_text.chars().collect();
+            let line_chars: Vec<char> = storage.collect(line_text.chars())?;
             let mut segment_start = 0usize;
 
             let corrected_lh = if has_tac
@@ -273,7 +291,8 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
             };
 
             let mut push_segment = |segment_start: usize, segment_end: usize, has_break: bool| {
-                let segment_text: String = line_chars[segment_start..segment_end].iter().collect();
+                let segment_text =
+                    storage.chars(line_chars[segment_start..segment_end].iter().copied())?;
                 let segment_abs_start = text_start + segment_start;
                 let segment_abs_end = text_start + segment_end;
                 let runs = split_row_runs(
@@ -282,33 +301,37 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
                     segment_abs_end,
                     &para.char_offsets,
                     &para.char_shapes,
-                );
-                lines.push(ComposedLine {
-                    runs,
-                    line_height: corrected_lh,
-                    baseline_distance: line_seg.baseline_distance,
-                    segment_width: line_seg.segment_width,
-                    column_start: line_seg.column_start,
-                    line_spacing: line_seg.line_spacing,
-                    has_line_break: has_break,
-                    char_start: segment_abs_start,
-                });
+                )?;
+                storage.push(
+                    &mut lines,
+                    ComposedLine {
+                        runs,
+                        line_height: corrected_lh,
+                        baseline_distance: line_seg.baseline_distance,
+                        segment_width: line_seg.segment_width,
+                        column_start: line_seg.column_start,
+                        line_spacing: line_seg.line_spacing,
+                        has_line_break: has_break,
+                        char_start: segment_abs_start,
+                    },
+                )?;
+                Ok::<_, S::Error>(())
             };
 
             for (rel_idx, ch) in line_chars.iter().enumerate() {
                 if *ch == '\n' {
-                    push_segment(segment_start, rel_idx, true);
+                    push_segment(segment_start, rel_idx, true)?;
                     segment_start = rel_idx + 1;
                 }
             }
 
             if segment_start < line_chars.len() || !line_text.ends_with('\n') {
-                push_segment(segment_start, line_chars.len(), false);
+                push_segment(segment_start, line_chars.len(), false)?;
             }
         }
     }
 
-    lines
+    Ok(lines)
 }
 
 /// UTF-16 위치 범위를 텍스트 문자 인덱스 범위로 변환한다.
@@ -341,20 +364,22 @@ pub(crate) fn utf16_range_to_text_range(
 }
 
 /// 줄 내 텍스트를 CharShapeRef 경계에 따라 다중 TextRun으로 분할한다.
-fn split_by_char_shapes(
+fn try_split_by_char_shapes<S: crate::storage::Storage>(
     line_text: &str,
     text_start: usize,
     text_end: usize,
     char_offsets: &[u32],
     char_shapes: &[CharShapeRef],
-) -> Vec<ComposedTextRun> {
+    storage: &S,
+) -> Result<Vec<ComposedTextRun>, S::Error> {
     if line_text.is_empty() {
-        return Vec::new();
+        return storage.vec(0);
     }
 
     if char_shapes.is_empty() {
-        return split_runs_by_lang(vec![ComposedTextRun {
-            text: line_text.to_string(),
+        let mut initial = storage.vec(1)?;
+        initial.push(ComposedTextRun {
+            text: storage.string(line_text)?,
             char_style_id: 0,
             lang_index: 0,
             neutral_space_origin: None,
@@ -366,7 +391,8 @@ fn split_by_char_shapes(
             space_metric: crate::renderer::composer::SpaceMetric::Stored,
             regenerated_font_metrics: false,
             literal_figure_space: false,
-        }]);
+        });
+        return try_split_runs_by_lang(initial, storage);
     }
 
     // 이 줄 범위에 영향을 미치는 CharShapeRef 찾기
@@ -389,7 +415,7 @@ fn split_by_char_shapes(
         .get(text_start)
         .copied()
         .unwrap_or(text_start as u32);
-    let mut segments: Vec<(usize, u32)> = Vec::new();
+    let mut segments: Vec<(usize, u32)> = storage.vec(0)?;
 
     for cs in char_shapes {
         // start_pos(stream offset) 이상인 첫 가시문자가 char_shape 적용 시작점.
@@ -402,10 +428,15 @@ fn split_by_char_shapes(
             continue;
         }
         let text_idx = cs_visible_idx.saturating_sub(text_start);
-        segments.push((text_idx, cs.char_shape_id));
+        storage.push(&mut segments, (text_idx, cs.char_shape_id))?;
     }
 
     // 시작 인덱스로 정렬 (동일 인덱스 내에서는 원래 순서 유지)
+    storage.bytes(
+        segments
+            .len()
+            .saturating_mul(std::mem::size_of::<(usize, u32)>()),
+    )?;
     segments.sort_by_key(|&(idx, _)| idx);
 
     // 중복 시작 위치 제거: 동일 위치의 마지막 것(가장 최근 CharShapeRef)만 유지
@@ -418,8 +449,9 @@ fn split_by_char_shapes(
     if segments.is_empty() {
         // 줄 시작 위치 이전의 마지막 CharShapeRef 찾기
         let style_id = find_active_char_shape(char_shapes, line_stream_start);
-        return split_runs_by_lang(vec![ComposedTextRun {
-            text: line_text.to_string(),
+        let mut initial = storage.vec(1)?;
+        initial.push(ComposedTextRun {
+            text: storage.string(line_text)?,
             char_style_id: style_id,
             lang_index: 0,
             neutral_space_origin: None,
@@ -431,12 +463,13 @@ fn split_by_char_shapes(
             space_metric: crate::renderer::composer::SpaceMetric::Stored,
             regenerated_font_metrics: false,
             literal_figure_space: false,
-        }]);
+        });
+        return try_split_runs_by_lang(initial, storage);
     }
 
     // TextRun 생성
-    let chars: Vec<char> = line_text.chars().collect();
-    let mut runs = Vec::new();
+    let chars: Vec<char> = storage.collect(line_text.chars())?;
+    let mut runs = storage.vec(0)?;
 
     for i in 0..segments.len() {
         let (start_idx, style_id) = segments[i];
@@ -448,22 +481,25 @@ fn split_by_char_shapes(
 
         if start_idx < end_idx && start_idx < chars.len() {
             let actual_end = end_idx.min(chars.len());
-            let run_text: String = chars[start_idx..actual_end].iter().collect();
+            let run_text = storage.chars(chars[start_idx..actual_end].iter().copied())?;
             if !run_text.is_empty() {
-                runs.push(ComposedTextRun {
-                    text: run_text,
-                    char_style_id: style_id,
-                    lang_index: 0,
-                    neutral_space_origin: None,
-                    char_overlap: None,
-                    footnote_marker: None,
-                    display_text: None,
-                    supplemental_metrics_blocked: false,
-                    inserted_control_text: false,
-                    space_metric: crate::renderer::composer::SpaceMetric::Stored,
-                    regenerated_font_metrics: false,
-                    literal_figure_space: false,
-                });
+                storage.push(
+                    &mut runs,
+                    ComposedTextRun {
+                        text: run_text,
+                        char_style_id: style_id,
+                        lang_index: 0,
+                        neutral_space_origin: None,
+                        char_overlap: None,
+                        footnote_marker: None,
+                        display_text: None,
+                        supplemental_metrics_blocked: false,
+                        inserted_control_text: false,
+                        space_metric: crate::renderer::composer::SpaceMetric::Stored,
+                        regenerated_font_metrics: false,
+                        literal_figure_space: false,
+                    },
+                )?;
             }
         }
     }
@@ -472,8 +508,9 @@ fn split_by_char_shapes(
     if !segments.is_empty() && segments[0].0 > 0 {
         let style_id = find_active_char_shape(char_shapes, line_stream_start);
         let end_idx = segments[0].0.min(chars.len());
-        let prefix_text: String = chars[..end_idx].iter().collect();
+        let prefix_text = storage.chars(chars[..end_idx].iter().copied())?;
         if !prefix_text.is_empty() {
+            storage.reserve(&mut runs, 1)?;
             runs.insert(
                 0,
                 ComposedTextRun {
@@ -496,24 +533,27 @@ fn split_by_char_shapes(
 
     if runs.is_empty() {
         let style_id = find_active_char_shape(char_shapes, line_stream_start);
-        runs.push(ComposedTextRun {
-            text: line_text.to_string(),
-            char_style_id: style_id,
-            lang_index: 0,
-            neutral_space_origin: None,
-            char_overlap: None,
-            footnote_marker: None,
-            display_text: None,
-            supplemental_metrics_blocked: false,
-            inserted_control_text: false,
-            space_metric: crate::renderer::composer::SpaceMetric::Stored,
-            regenerated_font_metrics: false,
-            literal_figure_space: false,
-        });
+        storage.push(
+            &mut runs,
+            ComposedTextRun {
+                text: storage.string(line_text)?,
+                char_style_id: style_id,
+                lang_index: 0,
+                neutral_space_origin: None,
+                char_overlap: None,
+                footnote_marker: None,
+                display_text: None,
+                supplemental_metrics_blocked: false,
+                inserted_control_text: false,
+                space_metric: crate::renderer::composer::SpaceMetric::Stored,
+                regenerated_font_metrics: false,
+                literal_figure_space: false,
+            },
+        )?;
     }
 
     // 언어 카테고리별로 Run을 세분화
-    split_runs_by_lang(runs)
+    try_split_runs_by_lang(runs, storage)
 }
 
 /// 주어진 UTF-16 위치에서 활성화된 CharShapeRef의 char_shape_id를 찾는다.
@@ -550,20 +590,33 @@ pub(crate) fn find_active_char_shape_visible(
 ///
 /// 공백/구두점은 이전 문자의 언어를 따른다 (불필요한 Run 분할 방지).
 pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedTextRun> {
-    let mut result = Vec::new();
+    match try_split_runs_by_lang(runs, &crate::storage::Unbounded) {
+        Ok(runs) => runs,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn try_split_runs_by_lang<S: crate::storage::Storage>(
+    runs: Vec<ComposedTextRun>,
+    storage: &S,
+) -> Result<Vec<ComposedTextRun>, S::Error> {
+    let mut result = storage.vec(0)?;
 
     for run in runs {
-        let chars: Vec<char> = run.text.chars().collect();
+        let chars: Vec<char> = storage.collect(run.text.chars())?;
         if chars.is_empty() {
-            result.push(run);
+            storage.push(&mut result, run)?;
             continue;
         }
 
         // 첫 번째 비중립 문자의 언어를 찾아 초기 언어로 설정
+        // The predicate is pure. Evaluate the shared all-zero condition once,
+        // rather than scanning the whole run for every leading Korean scalar.
+        let all_default_lang = chars.iter().all(|&c| detect_lang_category(c) == 0);
         let initial_lang = chars
             .iter()
             .map(|&c| detect_lang_category(c))
-            .find(|&lang| lang != 0 || chars.iter().all(|&c| detect_lang_category(c) == 0))
+            .find(|&lang| lang != 0 || all_default_lang)
             .unwrap_or(0);
 
         let mut current_lang = initial_lang;
@@ -587,21 +640,24 @@ pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedText
             if char_lang != current_lang {
                 // 언어 전환: 이전 구간 확정
                 if i > current_start {
-                    let text: String = chars[current_start..i].iter().collect();
-                    result.push(ComposedTextRun {
-                        text,
-                        char_style_id: run.char_style_id,
-                        lang_index: current_lang,
-                        neutral_space_origin: None,
-                        char_overlap: run.char_overlap.clone(),
-                        footnote_marker: None,
-                        display_text: None,
-                        supplemental_metrics_blocked: run.supplemental_metrics_blocked,
-                        inserted_control_text: run.inserted_control_text,
-                        space_metric: run.space_metric,
-                        regenerated_font_metrics: run.regenerated_font_metrics,
-                        literal_figure_space: run.literal_figure_space,
-                    });
+                    let text = storage.chars(chars[current_start..i].iter().copied())?;
+                    storage.push(
+                        &mut result,
+                        ComposedTextRun {
+                            text,
+                            char_style_id: run.char_style_id,
+                            lang_index: current_lang,
+                            neutral_space_origin: None,
+                            char_overlap: run.char_overlap.clone(),
+                            footnote_marker: None,
+                            display_text: None,
+                            supplemental_metrics_blocked: run.supplemental_metrics_blocked,
+                            inserted_control_text: run.inserted_control_text,
+                            space_metric: run.space_metric,
+                            regenerated_font_metrics: run.regenerated_font_metrics,
+                            literal_figure_space: run.literal_figure_space,
+                        },
+                    )?;
                 }
                 current_lang = char_lang;
                 current_start = i;
@@ -609,26 +665,29 @@ pub(crate) fn split_runs_by_lang(runs: Vec<ComposedTextRun>) -> Vec<ComposedText
         }
 
         // 마지막 구간
-        let text: String = chars[current_start..].iter().collect();
+        let text = storage.chars(chars[current_start..].iter().copied())?;
         if !text.is_empty() {
-            result.push(ComposedTextRun {
-                text,
-                char_style_id: run.char_style_id,
-                lang_index: current_lang,
-                neutral_space_origin: None,
-                char_overlap: run.char_overlap.clone(),
-                footnote_marker: None,
-                display_text: None,
-                supplemental_metrics_blocked: run.supplemental_metrics_blocked,
-                inserted_control_text: run.inserted_control_text,
-                space_metric: run.space_metric,
-                regenerated_font_metrics: run.regenerated_font_metrics,
-                literal_figure_space: run.literal_figure_space,
-            });
+            storage.push(
+                &mut result,
+                ComposedTextRun {
+                    text,
+                    char_style_id: run.char_style_id,
+                    lang_index: current_lang,
+                    neutral_space_origin: None,
+                    char_overlap: run.char_overlap.clone(),
+                    footnote_marker: None,
+                    display_text: None,
+                    supplemental_metrics_blocked: run.supplemental_metrics_blocked,
+                    inserted_control_text: run.inserted_control_text,
+                    space_metric: run.space_metric,
+                    regenerated_font_metrics: run.regenerated_font_metrics,
+                    literal_figure_space: run.literal_figure_space,
+                },
+            )?;
         }
     }
 
-    result
+    Ok(result)
 }
 
 /// Legacy Latin 구두점인가 — [`crate::renderer::TextStyle::ascii_punct_latin`] 가
@@ -689,7 +748,21 @@ pub(crate) fn composed_tac_line_assignment(
     para: &Paragraph,
     comp: &ComposedParagraph,
 ) -> Option<Vec<(usize, usize)>> {
-    let computed_rows = para.line_segs.first()?.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0;
+    match composed_tac_line_assignment_with_storage(para, comp, &crate::storage::Unbounded) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(crate) fn composed_tac_line_assignment_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    comp: &ComposedParagraph,
+    storage: &S,
+) -> Result<Option<Vec<(usize, usize)>>, S::Error> {
+    let Some(first) = para.line_segs.first() else {
+        return Ok(None);
+    };
+    let computed_rows = first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0;
     // 보이는 글자 없이 제어 슬롯만 완전히 보존된 문단도 서로 다른 저장 줄이
     // 같은 논리 문자 위치를 갖는다. 완전한 원시 슬롯을 증명할 수 있을 때만
     // 해당 슬롯으로 소유 줄을 구한다.
@@ -722,16 +795,15 @@ pub(crate) fn composed_tac_line_assignment(
                             .partition_point(|&offset| offset < para.line_seg_text_start(i))
             })
     {
-        return None;
+        return Ok(None);
     }
-    let assignments: Vec<(usize, usize)> = comp
-        .tac_controls
-        .iter()
-        .map(|(_, _, ci)| {
-            let owner = control_slot_line_index(para, *ci)?;
-            Some((*ci, owner))
-        })
-        .collect::<Option<_>>()?;
+    let mut assignments = storage.vec(comp.tac_controls.len())?;
+    for (_, _, ci) in &comp.tac_controls {
+        let Some(owner) = control_slot_line_index_with_storage(para, *ci, storage)? else {
+            return Ok(None);
+        };
+        storage.push(&mut assignments, (*ci, owner))?;
+    }
     let collapsed_boundary =
         comp.tac_controls
             .iter()
@@ -741,12 +813,22 @@ pub(crate) fn composed_tac_line_assignment(
                     .get(owner + 1)
                     .is_some_and(|next| *pos >= next.char_start)
             });
-    (collapsed_boundary || empty_control_stream).then_some(assignments)
+    Ok((collapsed_boundary || empty_control_stream).then_some(assignments))
 }
 
 /// 보이는 다음 글자와 확장 제어 슬롯이 같은 논리 위치여도 원시 줄 소속은 다를 수 있다.
 /// 저장/현재 재조판 사다리의 UTF-16 경계로 조회하며 높이의 우연한 일치는 사용하지 않는다.
 pub(crate) fn control_slot_line_index(para: &Paragraph, control_index: usize) -> Option<usize> {
+    match control_slot_line_index_with_storage(para, control_index, &crate::storage::Unbounded) {
+        Ok(v) => v,
+        Err(never) => match never {},
+    }
+}
+pub(crate) fn control_slot_line_index_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    control_index: usize,
+    storage: &S,
+) -> Result<Option<usize>, S::Error> {
     if !para.stored_text_partition_is_dirty()
         && !para.cell_format_vpos_dirty
         && para.line_segs.first().is_some_and(|seg| {
@@ -754,15 +836,16 @@ pub(crate) fn control_slot_line_index(para: &Paragraph, control_index: usize) ->
         })
     {
         if let Some(slot) = para.empty_control_stream_position(control_index) {
-            return (0..para.line_segs.len())
+            return Ok((0..para.line_segs.len())
                 .rev()
-                .find(|&line| para.line_seg_text_start(line) <= slot);
+                .find(|&line| para.line_seg_text_start(line) <= slot));
         }
     }
-    control_slot_line_index_with_starts(
+    control_slot_line_index_with_starts_with_storage(
         para,
         control_index,
         (0..para.line_segs.len()).map(|line| para.line_seg_text_start(line)),
+        storage,
     )
 }
 
@@ -772,9 +855,28 @@ pub(super) fn control_slot_line_index_with_starts(
     control_index: usize,
     starts: impl Iterator<Item = u32>,
 ) -> Option<usize> {
-    let start = *para.control_utf16_positions().get(control_index)?;
-    starts
+    match control_slot_line_index_with_starts_with_storage(
+        para,
+        control_index,
+        starts,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(v) => v,
+        Err(never) => match never {},
+    }
+}
+pub(crate) fn control_slot_line_index_with_starts_with_storage<S: crate::storage::Storage>(
+    para: &Paragraph,
+    control_index: usize,
+    starts: impl Iterator<Item = u32>,
+    storage: &S,
+) -> Result<Option<usize>, S::Error> {
+    let positions = para.control_utf16_positions_with_storage(storage)?;
+    let Some(&start) = positions.get(control_index) else {
+        return Ok(None);
+    };
+    Ok(starts
         .enumerate()
         .filter_map(|(line, pos)| (pos <= start).then_some(line))
-        .last()
+        .last())
 }

@@ -1,0 +1,120 @@
+use pdf_oxide::{fonts::FontInfo, import_limits::PdfImportLimits, PdfDocument};
+use serde_json::{json, Value};
+use std::{alloc::{GlobalAlloc, Layout, System}, process::Command, sync::atomic::{AtomicUsize, Ordering}};
+
+struct Alloc;
+static ALLOCATED: AtomicUsize = AtomicUsize::new(0);
+unsafe impl GlobalAlloc for Alloc {
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+        ALLOCATED.fetch_add(layout.size(), Ordering::Relaxed);
+        unsafe { System.alloc(layout) }
+    }
+    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) { unsafe { System.dealloc(ptr, layout) } }
+    unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
+        ALLOCATED.fetch_add(layout.size(), Ordering::Relaxed);
+        unsafe { System.alloc_zeroed(layout) }
+    }
+    unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, size: usize) -> *mut u8 {
+        ALLOCATED.fetch_add(size, Ordering::Relaxed);
+        unsafe { System.realloc(ptr, layout, size) }
+    }
+}
+#[global_allocator]
+static ALLOCATOR: Alloc = Alloc;
+
+fn font(bytes: Vec<u8>, cap: usize) -> (PdfDocument, FontInfo) {
+    let doc = PdfDocument::from_bytes_with_limits(bytes, PdfImportLimits { font_entries: cap, ..Default::default() }).unwrap();
+    let (_, obj) = pdf_oxide::parser::parse_object(b"5 0 R").unwrap();
+    let dict = doc.load_object(obj.as_reference().unwrap()).unwrap();
+    let font = FontInfo::from_dict(&dict, &doc).unwrap();
+    (doc, font)
+}
+
+fn probe_font(path: &str) -> Value {
+    let bytes = std::fs::read(path).unwrap();
+    let (doc, font) = font(bytes.clone(), 1);
+    let map = json!({
+        "custom_encoding_entries": match &font.encoding { pdf_oxide::fonts::font_dict::Encoding::Custom(m) => m.len(), _ => 0 },
+        "cff_cid_to_gid_entries": font.cff_cid_to_gid.as_ref().map(|m|m.len()),
+        "cff_gid_entries": font.cff_gid_map.as_ref().map(|m|m.len()),
+    });
+    let before = doc.import_budget().unwrap().decoded_bytes();
+    let alloc_before = ALLOCATED.load(Ordering::Relaxed);
+    for code in 0..256 { std::hint::black_box(font.char_to_unicode(code)); }
+    let allocated = ALLOCATED.load(Ordering::Relaxed) - alloc_before;
+    let after = doc.import_budget().unwrap().decoded_bytes();
+    let memo_len = font.type0_unicode_memo.lock().unwrap().len();
+    let hit_alloc_before=ALLOCATED.load(Ordering::Relaxed);
+    let cached = font.char_to_unicode(65);
+    let hit_allocated=ALLOCATED.load(Ordering::Relaxed)-hit_alloc_before;
+    let clone_before = ALLOCATED.load(Ordering::Relaxed);
+    let cloned_font = std::hint::black_box(font.clone());
+    let cloned_allocations = ALLOCATED.load(Ordering::Relaxed) - clone_before;
+    let clone_budget_delta = doc.import_budget().unwrap().decoded_bytes() - after;
+    drop(cloned_font);
+    let budget_ok_before_sentinel = doc.check_import_budget().is_ok();
+    let _ = doc.import_budget().unwrap().reject("audit sticky sentinel");
+    let cached_after_failure = font.char_to_unicode(65);
+    let sticky_seen = doc.check_import_budget().is_err();
+    let fresh = font_after_failure(bytes);
+    json!({"path":path,"font_entries_limit":1,"mapping":map,"memo_entries":memo_len,"unicode_a":cached,
+        "memo_allocation_requests_bytes":allocated,"memo_decoded_charge_delta":after-before,
+        "single_ascii_memo_hit_clone_allocation_bytes":hit_allocated,
+        "font_clone_allocation_requests_bytes":cloned_allocations,"font_clone_decoded_charge_delta":clone_budget_delta,
+        "budget_ok_before_sentinel":budget_ok_before_sentinel,"cached_before_failure":cached,
+        "cached_after_sticky_failure":cached_after_failure,"sticky_seen_by_document":sticky_seen,"fresh_request_a":fresh})
+}
+fn font_after_failure(bytes: Vec<u8>) -> Option<String> { let (_, f) = font(bytes, 1); f.char_to_unicode(65) }
+
+fn cached_font(doc:&PdfDocument)->std::sync::Arc<FontInfo> {
+    let (_,resources)=pdf_oxide::parser::parse_object(b"<< /Font << /F1 5 0 R >> >>").unwrap();
+    let mut extractor=pdf_oxide::extractors::TextExtractor::new();
+    doc.load_fonts_public(&resources,&mut extractor).unwrap();
+    extractor.get_font_set().into_iter().find(|(n,_)|n=="F1").unwrap().1
+}
+fn isolation(path:&str)->Value {
+    let original=std::fs::read(path).unwrap();
+    let mut changed=original.clone();
+    let pos=changed.windows(b"dup 65 /A put".len()).position(|w|w==b"dup 65 /A put").unwrap();
+    changed[pos+8]=b'B';
+    let first=PdfDocument::from_bytes_with_limits(original,Default::default()).unwrap();
+    let second=PdfDocument::from_bytes_with_limits(changed,Default::default()).unwrap();
+    let a=cached_font(&first);let same=cached_font(&first);let b=cached_font(&second);
+    assert!(std::sync::Arc::ptr_eq(&a,&same));assert!(!std::sync::Arc::ptr_eq(&a,&b));
+    assert!(!std::sync::Arc::ptr_eq(&a.type0_unicode_memo,&b.type0_unicode_memo));
+    assert_eq!(a.char_to_unicode(65).as_deref(),Some("A"));assert_eq!(b.char_to_unicode(65).as_deref(),Some("B"));
+    json!({"same_document_font_shared":true,"different_requests_font_separate":true,"different_requests_memo_separate":true,"same_basefont_different_program_a":"A","same_basefont_different_program_b":"B"})
+}
+
+fn supervise(script: &str, limits: rhwp::resource_supervisor::ExecutionLimits) -> Value {
+    let mut command = Command::new("python3");
+    command.arg("-c").arg(script).env("RHWP_AUDIT_OWN_SENTINEL", "owned-audit-value");
+    match rhwp::resource_supervisor::run(&mut command, b"", limits) {
+        Ok(result) => json!({"success":result.status.success(),"stdout":String::from_utf8_lossy(&result.stdout),"metrics":result.metrics}),
+        Err(code) => json!({"error":code}),
+    }
+}
+
+fn main() {
+    let args: Vec<_> = std::env::args().skip(1).collect();
+    let mut records = Vec::new();
+    for path in &args { records.push(probe_font(path)); }
+    let isolation=isolation(&args[0]);
+    let limits = rhwp::resource_supervisor::ExecutionLimits::constrained();
+    let audit_dir = std::env::current_dir().unwrap();
+    let file = audit_dir.join("owned-readable-sentinel.txt");
+    std::fs::write(&file, "owned-readable-value").unwrap();
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = listener.local_addr().unwrap().port();
+    let access = supervise(&format!("import os,socket,json; s=socket.create_connection(('127.0.0.1',{port})); print(json.dumps({{'file':open({file:?}).read(),'env':os.environ.get('RHWP_AUDIT_OWN_SENTINEL'),'loopback':s.getpeername()[0]}}))"), limits);
+    drop(listener);
+    let timeout = supervise("import time; time.sleep(5)", rhwp::resource_supervisor::ExecutionLimits { wall_timeout_ms: 100, ..limits });
+    let memory = supervise("import json;\ntry: b=bytearray(200*1024*1024); print('unexpected allocated')\nexcept MemoryError: print(json.dumps({'memory_error':True}))", rhwp::resource_supervisor::ExecutionLimits { address_space_bytes: 64*1024*1024, ..limits });
+    let output = supervise("print('X'*4096)", rhwp::resource_supervisor::ExecutionLimits { output_bytes: 16, diagnostics_bytes: 16, ..limits });
+    let cpu=supervise("while True: pass",rhwp::resource_supervisor::ExecutionLimits {cpu_seconds:1,wall_timeout_ms:5000,..limits});
+    let healthy = supervise("print('healthy followup')", limits);
+    assert_eq!(timeout["error"],"PDF_PROCESS_TIMEOUT");assert_eq!(output["error"],"PDF_PROCESS_OUTPUT_LIMIT");
+    assert_eq!(cpu["success"],false);assert_eq!(healthy["success"],true);assert_eq!(memory["success"],true);
+    assert!(memory["stdout"].as_str().unwrap().contains("memory_error"));assert_eq!(access["success"],true);
+    println!("{}", serde_json::to_string_pretty(&json!({"font_probes":records,"request_isolation":isolation,"supervisor":{"own_file_env_loopback":access,"timeout":timeout,"address_space":memory,"output_limit":output,"cpu_limit":cpu,"healthy_followup":healthy},"allocation_metric":"sum of requested sizes for alloc/alloc_zeroed/realloc; not live heap or RSS"})).unwrap());
+}

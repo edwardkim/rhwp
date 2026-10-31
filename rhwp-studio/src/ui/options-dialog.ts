@@ -6,9 +6,12 @@
 import { ModalDialog } from './dialog';
 import { userSettings } from '@/core/user-settings';
 import { FontSetDialog } from './font-set-dialog';
+import { LocalFontListDialog } from './local-font-list-dialog';
 import {
   clearStoredLocalFonts,
+  changedLocalFontNames,
   detectLocalFonts,
+  getLocalFontRecords,
   getLocalFontState,
   isLocalFontAccessSupported,
   loadStoredLocalFonts,
@@ -28,7 +31,7 @@ export class OptionsDialog extends ModalDialog {
   private pdfPrintGuidanceCheck!: HTMLInputElement;
   private pdfImportEditableRadio!: HTMLInputElement;
 
-  constructor(private readonly eventBus?: EventBus) {
+  constructor(private readonly eventBus?: EventBus, private readonly documentFontCandidates?: () => string[]) {
     super(i18nText('dialog.options.title'), 480);
   }
 
@@ -171,6 +174,14 @@ export class OptionsDialog extends ModalDialog {
     localBtn.className = 'dialog-btn opt-fontset-btn';
     localBtn.textContent = i18nText('dialog.options.localBtn.text');
 
+    const listBtn = document.createElement('button');
+    listBtn.className = 'dialog-btn opt-fontset-btn';
+    listBtn.textContent = i18nText('dialog.localFontList.button');
+    listBtn.addEventListener('click', async () => {
+      try { await loadStoredLocalFonts(); } catch { /* 현재 메모리의 목록을 표시한다. */ }
+      new LocalFontListDialog().show();
+    });
+
     const resetBtn = document.createElement('button');
     resetBtn.className = 'dialog-btn opt-fontset-btn';
     resetBtn.textContent = i18nText('dialog.options.resetBtn.text');
@@ -202,9 +213,11 @@ export class OptionsDialog extends ModalDialog {
       resetBtn.disabled = true;
       localStatus.textContent = i18nText('dialog.options.localStatus.text.xfd877c');
       try {
-        const fonts = await detectLocalFonts({ force: true });
-        updateLocalStatus(i18nText('dialog.options.updateLocalStatus.label.x97c46b', { p1: fonts.length }));
-        this.eventBus?.emit('local-fonts-changed', { fonts, source: 'options-dialog' });
+        const before = getLocalFontRecords({ includeRegistered: true });
+        const fonts = await detectLocalFonts({ force: true, candidateFamilies: this.documentFontCandidates?.() });
+        updateLocalStatus();
+        const changedNames = changedLocalFontNames(before, getLocalFontRecords({ includeRegistered: true }));
+        this.eventBus?.emit('local-fonts-changed', { fonts, changedNames, source: 'options-dialog' });
       } catch (error) {
         updateLocalStatus(describeLocalFontDetectionError(error));
       }
@@ -216,9 +229,10 @@ export class OptionsDialog extends ModalDialog {
       resetBtn.disabled = true;
       localStatus.textContent = i18nText('dialog.options.localStatus.text.x4e6625');
       try {
+        const before = getLocalFontRecords({ includeRegistered: true });
         await clearStoredLocalFonts();
         updateLocalStatus(i18nText('dialog.options.updateLocalStatus.label.xcbeff3'));
-        this.eventBus?.emit('local-fonts-changed', { fonts: [], source: 'options-dialog-clear' });
+        this.eventBus?.emit('local-fonts-changed', { fonts: [], changedNames: changedLocalFontNames(before, []), source: 'options-dialog-clear' });
       } catch {
         updateLocalStatus(i18nText('dialog.options.updateLocalStatus.label.x1ca5cc'));
       }
@@ -226,6 +240,7 @@ export class OptionsDialog extends ModalDialog {
     });
 
     localRow.appendChild(localBtn);
+    localRow.appendChild(listBtn);
     localRow.appendChild(resetBtn);
     localSection.appendChild(localRow);
     localSection.appendChild(localStatus);
@@ -440,12 +455,12 @@ function formatLocalFontStatus(state: LocalFontState): string {
   const detectedAt = formatDetectedAt(state.detectedAt);
   const dateSuffix = detectedAt ? ` · ${detectedAt}` : '';
   if (state.source === 'font-presence-probe') {
-    return `문서별 확인 결과 저장됨: 사용 가능 ${state.count}개 / 확인한 글꼴 ${state.checkedFamilies.length}개${dateSuffix}`;
+    return `문서별 확인 결과 저장됨: 사용 가능 ${state.count}개 face / 확인한 글꼴 ${state.checkedFamilies.length}개${dateSuffix}`;
   }
   if (state.checkedFamilies.length > 0) {
-    return `로컬 글꼴 결과 저장됨: 사용 가능 ${state.count}개 / 문서 후보 ${state.checkedFamilies.length}개 / 열거 누락 확인 ${state.probedFamilies.length}개${dateSuffix}`;
+    return `로컬 글꼴 결과 저장됨: 사용 가능 ${state.count}개 face / 문서 후보 ${state.checkedFamilies.length}개 / 열거 누락 확인 ${state.probedFamilies.length}개${dateSuffix}`;
   }
-  return `로컬 글꼴 열거 결과 저장됨: ${state.count}개 · 문서별 누락 후보는 문서를 열 때 추가 확인${dateSuffix}`;
+  return `로컬 글꼴 열거 결과 저장됨: ${state.count}개 face · 문서별 누락 후보는 문서를 열 때 추가 확인${dateSuffix}`;
 }
 
 function formatDetectedAt(value: string | null): string {

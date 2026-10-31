@@ -188,19 +188,27 @@ pub(crate) fn parse_indirect_with_budget(
     budget: &Arc<ImportBudget>,
     resolve: impl Fn(ObjectRef) -> Result<Object>,
 ) -> Result<Object> {
+    parse_indirect_prefix_with_budget(input, budget, resolve).map(|(_, object)| object)
+}
+
+pub(crate) fn parse_indirect_prefix_with_budget<'a>(
+    input: &'a [u8],
+    budget: &Arc<ImportBudget>,
+    resolve: impl Fn(ObjectRef) -> Result<Object>,
+) -> Result<(&'a [u8], Object)> {
     let parse_error = || Error::Decode("invalid bounded indirect object".into());
     let (remaining, tok) = token(input).map_err(|_| parse_error())?;
     if !matches!(tok, Token::DictStart) {
         let parsed = parse_object_with_budget(input, Some(budget));
         budget.check()?;
-        return parsed.map(|(_, object)| object).map_err(|_| parse_error());
+        return parsed.map_err(|_| parse_error());
     }
     budget.charge_object()?;
     let parsed = parse_dictionary(remaining, 0, Some(budget), true);
     budget.check()?;
     let (remaining, object) = parsed.map_err(|_| parse_error())?;
     let Ok((stream_input, Token::StreamStart)) = token(remaining) else {
-        return Ok(object);
+        return Ok((remaining, object));
     };
     let Object::Dictionary(dict) = object else {
         unreachable!()
@@ -220,11 +228,14 @@ pub(crate) fn parse_indirect_with_budget(
     };
     let parsed = parse_stream_data(stream_input, &dict, Some(budget), length);
     budget.check()?;
-    let (_, data) = parsed.map_err(|_| parse_error())?;
-    Ok(Object::Stream {
-        dict,
-        data: crate::import_limits::StreamData::bounded(data, Some(budget)),
-    })
+    let (remaining, data) = parsed.map_err(|_| parse_error())?;
+    Ok((
+        remaining,
+        Object::Stream {
+            dict,
+            data: crate::import_limits::StreamData::bounded(data, Some(budget)),
+        },
+    ))
 }
 
 pub(crate) fn parse_content_operand<'a>(

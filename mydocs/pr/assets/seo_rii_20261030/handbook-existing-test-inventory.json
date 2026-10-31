@@ -1,0 +1,212 @@
+[
+  {
+    "file": "tests/cases/issue_8099_kopub_cjk_symbol_advance.rs",
+    "firstLine": "//! [#8099] KoPub 계열의 한자·전각 기호는 한글과 다른 전진폭(900/1000em, 낫표 450)이다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_opaque_mixed_axis_image_sampling.rs",
+    "firstLine": "//! 관계형·고정형: 독립 2024 Print의 그림 틀 모서리와 닫힘 선을 보호한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_ordinary_row_opening_frame.rs",
+    "firstLine": "//! 관계형·고정형: 여러 저장 프레임을 가진 일반 행의 첫 물리 상자와 내용 소유.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_hanja_source_advance.rs",
+    "firstLine": "//! 관계형·고정형: 한자 고유 전진과 뒤 글자모양의 원점·원문 순서를 보호한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_centered_inline_picture.rs",
+    "firstLine": "//! 관계형·고정형: 글자처럼 취급되는 그림 뒤 공백과 가운데 정렬을 보호한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_decorated_tac_pen.rs",
+    "firstLine": "//! 관계형·고정형: 동일한 저장 TAC 줄의 pen·본체와 비흐름 장식 소유를 보존한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_handbook_source_roundtrip.rs",
+    "firstLine": "//! 관계형: 두 원본의 본문·표 소유와 저장 후 바탕쪽 소속을 실제 왕복에서 보호한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_kopub_missing_dot_supplier.rs",
+    "firstLine": "//! 관계형·고정형: 결측 U+2024의 실제 공급자 메트릭과 원문·공백·기존 glyph hit를 보존한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_row_cell_frame_ownership.rs",
+    "firstLine": "//! 관계형·고정형: 독립 Print 날짜 원점과 셀 소유를 보호한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_textbox_saved_line_frame.rs",
+    "firstLine": "//! 관계형·고정형: 그림 글상자의 저장 줄 소유와 독립 Print 원점을 검사한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_justified_visible_last_line.rs",
+    "firstLine": "//! 관계형·고정형: 작성된 말미 공백 때문에 가용 폭 안의 마지막 줄을 압축하지 않는다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_print_jpeg_fill_color.rs",
+    "firstLine": "//! 관계형·고정형: 전체 JPEG 채움의 원본 RGB·출력 자원·프로필 경계를 보호한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_positive_word_slack.rs",
+    "firstLine": "//! 관계형·고정형: 낱말을 넓히는 줄과 독립 Print의 단어 원점을 보호한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_wmf_print_window.rs",
+    "firstLine": "//! 관계형·고정형: WMF Print의 전체 원본·물리 crop·소유와 독립 PDF ±2px 경계를 보호한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_centered_picture_fill.rs",
+    "firstLine": "//! 관계형·고정형: 가운데 그림 채움의 셀 영역과 독립 Print 프레임을 보존한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_reflowed_inline_shape_spacing.rs",
+    "firstLine": "//! 관계형·고정형: 재조판한 TAC 글상자 줄의 점유와 음수 간격을 보존한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_stored_row_boundary_ownership.rs",
+    "firstLine": "//! 관계형: 원본 완결 행이 소유한 실제 경계를 짧은 보조 폭으로 이동시키지 않는다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_centered_condense_fit.rs",
+    "firstLine": "//! 관계형·고정형: 가운데 정렬의 원래 글자·공백 fit을 공백 전용 압축으로 바꾸지 않는다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_handbook_print_boundaries.rs",
+    "firstLine": "//! 관계형·고정형: #8153 독립 한컴 2024 KoPub Print의 핵심 출력 경계.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_group_bitmap_clip.rs",
+    "firstLine": "//! 관계형·고정형: 묶음 안의 잘린 그림은 전체 원본과 물리 Print clip을 보존한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_7288_table_page_break_split_policy.rs",
+    "firstLine": "//! [#7288] 표 «쪽 경계에서» 값 0 «나누지 않음» 을 조판이 지키게 한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_ordinary_row_continuation_frame.rs",
+    "firstLine": "//! 관계형·고정형: 이어받은 일반 행도 독립 Print의 물리 종료선을 소유한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_inline_picture_row_frame.rs",
+    "firstLine": "//! 관계형·고정형: 원본 그림 줄의 상자와 셀 안 여백을 같은 행에서 소비한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_print_alpha_mask.rs",
+    "firstLine": "//! 관계형·고정형: 그림의 독립 Print 색·마스크, 원본 소유와 물리 경계를 보호한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_cell_bitmap_clip_ownership.rs",
+    "firstLine": "//! 관계형: Q 셀 배경의 물리 Print 창과 본문 clip의 소유를 구분한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_kopub_circled_symbol.rs",
+    "firstLine": "//! 관계형: 원문 기호의 공급 프로그램 전진폭과 뒤 글자 소유를 보존한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_empty_overlap_carrier.rs",
+    "firstLine": "//! 관계형: 빈 글자 겹침의 캐리어는 한 프레임을 차지하지만 문자를 그리지 않는다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_centered_tracking.rs",
+    "firstLine": "//! 관계형·고정형: 발신명의의 실제 glyph 원점과 셀 소유를 독립 Print로 보호한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_ordinary_row_physical_remainder.rs",
+    "firstLine": "//! 관계형·고정형: 내용 프레임 수와 분리해 일반 행의 물리 잔여·다음 컷을 보존한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_overlay_picture_line_owner.rs",
+    "firstLine": "//! 관계형·고정형: 셀 안 그림은 소유 줄의 위치를 유지하고 셀 안에 표시된다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_7288_cell_unit_row_is_atomic.rs",
+    "firstLine": "//! [#7288] 표 «쪽 경계에서» 값 1 «셀 단위로 나눔» — 행이 원자 단위다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_shared_border_owner.rs",
+    "firstLine": "//! 관계형: 다른 행의 가상 열로 좌표를 바꿔 공유 괘선에 구멍을 만들지 않는다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_ordinary_row_closing_body.rs",
+    "firstLine": "//! 관계형·고정형: 문단 사이의 로컬 좌표 재시작과 표 뒤 본문 위치를 보호한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_inline_cell_picture_origin.rs",
+    "firstLine": "//! 관계형·고정형: 셀의 글자처럼 취급한 그림은 표의 원본 단 참조 축을 보존한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_spaced_merged_frame.rs",
+    "firstLine": "//! 관계형·고정형: 병합 셀의 안쪽 열 간격과 걸침 셀의 동일한 물리 경계를 보존한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_cell_none_border.rs",
+    "firstLine": "//! 관계형: 표의 기본 테두리가 명시적 NONE인 칸에 선을 만들어서는 안 된다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_fragment_physical_band.rs",
+    "firstLine": "//! 관계형·고정형: 저장 쪽 재시작 앞의 조각은 빈 셀과 빈 물리 띠도 소유한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_justified_final_line_compression.rs",
+    "firstLine": "//! 관계형·고정형: Justify의 마지막 줄도 같은 공백 한계·잔여 글자 사이 압축을 소비한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_condense_keeps_glyph_advances.rs",
+    "firstLine": "//! 관계형·고정형: 공백 최소값으로 들어가는 저장 줄의 원 글자·들여쓰기 전진을 보호한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_intrarun_right_tab.rs",
+    "firstLine": "//! 관계형·고정형: 같은 런의 오른쪽 탭은 명시적 정지와 쪽번호 순서를 보존한다.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_picture_resource_resampling.rs",
+    "firstLine": "//! 관계형·고정형: 선언 크기의 두 축 재표본화·원본 소유·독립 Print 경계.",
+    "sourceUnchanged": true
+  },
+  {
+    "file": "tests/cases/issue_8153_positive_source_tracking.rs",
+    "firstLine": "//! 관계형·고정형: 원본 자간은 숫자 윤곽을 늘리지 않고 문단 끝 밑줄에 남지 않는다.",
+    "sourceUnchanged": true
+  }
+]

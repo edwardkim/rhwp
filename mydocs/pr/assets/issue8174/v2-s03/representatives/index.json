@@ -1,0 +1,52 @@
+[
+  {
+    "runtime": "native",
+    "case": "icc-indirect-filter",
+    "review": "representatives/native/icc-indirect-filter-review.png"
+  },
+  {
+    "runtime": "native",
+    "case": "jpx-indexed-icc-premult",
+    "review": "representatives/native/jpx-indexed-icc-premult-review.png"
+  },
+  {
+    "runtime": "native",
+    "case": "jpx-cmyk-alpha",
+    "review": "representatives/native/jpx-cmyk-alpha-review.png"
+  },
+  {
+    "runtime": "native",
+    "case": "recovery-fake-header",
+    "review": "representatives/native/recovery-fake-header-review.png"
+  },
+  {
+    "runtime": "native",
+    "case": "old-scan-jpx-200",
+    "review": "representatives/native/old-scan-jpx-200-review.png"
+  },
+  {
+    "runtime": "wasm",
+    "case": "icc-indirect-filter",
+    "review": "representatives/wasm/icc-indirect-filter-review.png"
+  },
+  {
+    "runtime": "wasm",
+    "case": "jpx-indexed-icc-premult",
+    "review": "representatives/wasm/jpx-indexed-icc-premult-review.png"
+  },
+  {
+    "runtime": "wasm",
+    "case": "jpx-cmyk-alpha",
+    "review": "representatives/wasm/jpx-cmyk-alpha-review.png"
+  },
+  {
+    "runtime": "wasm",
+    "case": "recovery-fake-header",
+    "review": "representatives/wasm/recovery-fake-header-review.png"
+  },
+  {
+    "runtime": "wasm",
+    "case": "old-scan-jpx-200",
+    "review": "representatives/wasm/old-scan-jpx-200-review.png"
+  }
+]

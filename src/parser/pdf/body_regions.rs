@@ -1,5 +1,6 @@
 //! Whitespace partitions establish owners before body lines are assembled.
 //! Geometry proposes reading regions; it does not recover authored PDF structure.
+use super::allocation::{message, Allocation};
 use pdf_oxide::{geometry::Rect, layout::TextSpan};
 
 const MAX_PARTITION_WORK: usize = 1_000_000;
@@ -17,55 +18,72 @@ struct Item {
     font: f32,
 }
 
-struct Work(usize);
-impl Work {
+struct Work<'a> {
+    spent: usize,
+    allocation: Allocation<'a>,
+}
+impl Work<'_> {
     fn charge(&mut self, n: usize) -> Result<(), String> {
-        self.0 = self
-            .0
+        self.spent = self
+            .spent
             .checked_add(n)
             .ok_or("body partition work overflow")?;
-        if self.0 > MAX_PARTITION_WORK {
+        if self.spent > MAX_PARTITION_WORK {
             return Err("body partition work limit; retain positioned content".into());
         }
-        Ok(())
+        self.allocation.0.check().map_err(|e| e.to_string())
     }
 }
 
-fn gaps(items: &[&Item], horizontal: bool, work: &mut Work) -> Result<Vec<(f32, f32)>, String> {
+fn gaps(items: &[&Item], horizontal: bool, work: &mut Work<'_>) -> Result<Vec<(f32, f32)>, String> {
     work.charge(items.len())?;
-    let mut intervals: Vec<_> = items
-        .iter()
-        .map(|i| {
+    let allocation = work.allocation;
+    let mut intervals = allocation
+        .collect(items.iter().map(|i| {
             if horizontal {
                 (i.bounds.y, i.bounds.y + i.bounds.height)
             } else {
                 (i.bounds.x, i.bounds.x + i.bounds.width)
             }
-        })
-        .collect();
+        }))
+        .map_err(message)?;
+    allocation
+        .bytes(intervals.len() * std::mem::size_of::<(f32, f32)>())
+        .map_err(message)?;
     intervals.sort_by(|a, b| a.0.total_cmp(&b.0));
     let mut result = Vec::new();
     let mut end = intervals.first().map_or(0., |i| i.1);
     for (start, next) in intervals.into_iter().skip(1) {
-        // Abutting boxes still separate cleanly: no item straddles the edge.
-        // A spanning heading often ends exactly where the columns begin.
+        // Abutting boxes separate spanning headings from columns.
         if start >= end {
-            result.push((end, start));
+            allocation
+                .push(&mut result, (end, start))
+                .map_err(message)?;
         }
         end = end.max(next);
     }
+    allocation
+        .bytes(result.len() * std::mem::size_of::<(f32, f32)>())
+        .map_err(message)?;
     result.sort_by(|a, b| (b.1 - b.0).total_cmp(&(a.1 - a.0)));
     Ok(result)
 }
 
-fn repeated_rows(a: &[&Item], b: &[&Item], tolerance: f32) -> bool {
-    let rows = |items: &[&Item]| {
-        let mut rows: Vec<_> = items.iter().map(|i| i.baseline).collect();
-        rows.sort_by(f32::total_cmp);
+fn repeated_rows(
+    allocation: Allocation<'_>,
+    a: &[&Item],
+    b: &[&Item],
+    tolerance: f32,
+) -> Result<bool, String> {
+    let rows = |items: &[&Item]| -> Result<Vec<f32>, String> {
+        let mut rows = allocation
+            .collect(items.iter().map(|i| i.baseline))
+            .map_err(message)?;
+        rows.sort_unstable_by(f32::total_cmp);
         rows.dedup_by(|a, b| (*a - *b).abs() <= tolerance);
-        rows
+        Ok(rows)
     };
-    let (a, b) = (rows(a), rows(b));
+    let (a, b) = (rows(a)?, rows(b)?);
     let (mut i, mut j, mut paired) = (0, 0, 0);
     while i < a.len() && j < b.len() {
         if (a[i] - b[j]).abs() <= tolerance {
@@ -79,22 +97,42 @@ fn repeated_rows(a: &[&Item], b: &[&Item], tolerance: f32) -> bool {
         }
     }
     if paired >= 2 {
-        return true;
+        return Ok(true);
     }
     if a.is_empty() || b.is_empty() {
-        return false;
+        return Ok(false);
     }
-    // Columns need not share baselines: a heading or a picture shifts one
-    // column's grid. Both sides still run several rows across the same band.
     let (top, bottom) = (a[0].max(b[0]), a[a.len() - 1].min(b[b.len() - 1]));
     let inside = |rows: &[f32]| rows.iter().filter(|r| **r >= top && **r <= bottom).count();
-    top < bottom && inside(&a) >= 3 && inside(&b) >= 3
+    Ok(top < bottom && inside(&a) >= 3 && inside(&b) >= 3)
 }
 
-fn vertical_cut(items: &[&Item], work: &mut Work) -> Result<Option<f32>, String> {
-    // Word spacing follows the running text size. One larger heading in the
-    // band must not raise the gutter threshold above the actual gutter.
-    let mut fonts: Vec<f32> = items.iter().map(|i| i.font).collect();
+fn split<'a>(
+    allocation: Allocation<'_>,
+    items: impl IntoIterator<Item = &'a Item>,
+    predicate: impl Fn(&Item) -> bool,
+) -> Result<(Vec<&'a Item>, Vec<&'a Item>), String> {
+    let (mut first, mut second) = (Vec::new(), Vec::new());
+    for item in items {
+        allocation
+            .push(
+                if predicate(item) {
+                    &mut first
+                } else {
+                    &mut second
+                },
+                item,
+            )
+            .map_err(message)?;
+    }
+    Ok((first, second))
+}
+
+fn vertical_cut(items: &[&Item], work: &mut Work<'_>) -> Result<Option<f32>, String> {
+    let mut fonts = work
+        .allocation
+        .collect(items.iter().map(|i| i.font))
+        .map_err(message)?;
     fonts.sort_by(f32::total_cmp);
     let font = fonts.get(fonts.len() / 2).copied().unwrap_or(0.);
     for (a, b) in gaps(items, false, work)? {
@@ -103,8 +141,8 @@ fn vertical_cut(items: &[&Item], work: &mut Work) -> Result<Option<f32>, String>
             continue;
         }
         work.charge(items.len())?;
-        let (left, right): (Vec<_>, Vec<_>) = items.iter().copied().partition(|i| i.bounds.x < b);
-        if repeated_rows(&left, &right, font * 0.2) {
+        let (left, right) = split(work.allocation, items.iter().copied(), |i| i.bounds.x < b)?;
+        if repeated_rows(work.allocation, &left, &right, font * 0.2)? {
             return Ok(Some((a + b) / 2.));
         }
     }
@@ -157,7 +195,7 @@ fn running_band_cut(items: &[&Item], work: &mut Work) -> Result<Option<f32>, Str
 fn divide(
     items: Vec<&Item>,
     owner: Rect,
-    work: &mut Work,
+    work: &mut Work<'_>,
     out: &mut Vec<Partition>,
     depth: usize,
 ) -> Result<(), String> {
@@ -187,7 +225,7 @@ fn divide(
         }
     }
     if let Some(cut) = vertical_cut(&items, work)? {
-        let (left, right) = items.into_iter().partition(|i| i.bounds.x < cut);
+        let (left, right) = split(work.allocation, items, |i| i.bounds.x < cut)?;
         divide(
             left,
             Rect::new(owner.x, owner.y, cut - owner.x, owner.height),
@@ -208,7 +246,7 @@ fn divide(
     // exposes repeated column evidence, rather than splitting every visual line.
     for (a, b) in gaps(&items, true, work)? {
         work.charge(items.len())?;
-        let (top, bottom): (Vec<_>, Vec<_>) = items.iter().copied().partition(|i| i.bounds.y < b);
+        let (top, bottom) = split(work.allocation, items.iter().copied(), |i| i.bounds.y < b)?;
         if vertical_cut(&top, work)?.is_some() || vertical_cut(&bottom, work)?.is_some() {
             let cut = (a + b) / 2.;
             divide(
@@ -228,16 +266,25 @@ fn divide(
             return Ok(());
         }
     }
-    out.push(Partition {
-        // Available owner width follows page/gutter partitions. An ink union
-        // cannot establish the alignment frame of a centered paragraph.
-        bounds: owner,
-        spans: items.iter().map(|i| i.index).collect(),
-    });
+    work.allocation
+        .push(
+            out,
+            Partition {
+                // Available owner width follows page/gutter partitions. An ink union
+                // cannot establish the alignment frame of a centered paragraph.
+                bounds: owner,
+                spans: work
+                    .allocation
+                    .collect(items.iter().map(|i| i.index))
+                    .map_err(message)?,
+            },
+        )
+        .map_err(message)?;
     Ok(())
 }
 
 pub(super) fn partition(
+    allocation: Allocation<'_>,
     spans: &[TextSpan],
     span_clips: &[Option<std::sync::Arc<pdf_oxide::elements::PathClip>>],
     indices: &[usize],
@@ -246,9 +293,8 @@ pub(super) fn partition(
     if indices.is_empty() {
         return Ok(Vec::new());
     }
-    let items: Vec<_> = indices
-        .iter()
-        .map(|&index| {
+    let items = allocation
+        .collect(indices.iter().map(|&index| {
             let s = &spans[index];
             Item {
                 index,
@@ -264,13 +310,16 @@ pub(super) fn partition(
                 baseline: media.3 - s.bbox.y,
                 font: s.font_size,
             }
-        })
-        .collect();
+        }))
+        .map_err(message)?;
     let mut out = Vec::new();
     divide(
-        items.iter().collect(),
+        allocation.collect(items.iter()).map_err(message)?,
         Rect::new(0., 0., media.2 - media.0, media.3 - media.1),
-        &mut Work(0),
+        &mut Work {
+            spent: 0,
+            allocation,
+        },
         &mut out,
         0,
     )?;

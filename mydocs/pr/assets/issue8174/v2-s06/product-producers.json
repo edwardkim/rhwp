@@ -1,0 +1,41 @@
+{
+  "audit_head": "695cea7b973fc54fc5ffc7f6d414f7ecf403b882",
+  "upstream_devel": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "s04_product_source": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+  "product_tree_differences_from_s04": [
+    "vendor/rhwp-pdf-import-backend/Cargo.lock"
+  ],
+  "rust_and_studio_product_sources_unchanged": true,
+  "studio_public_bundle_matches_retained_s04": true,
+  "native_backend_diagnostic": {
+    "source": "695cea7b973fc54fc5ffc7f6d414f7ecf403b882",
+    "root_features": [
+      "pdf-import"
+    ],
+    "default_features": false,
+    "manifest": "probes/native-Cargo.toml.txt",
+    "root_dependency_versions_unchanged": true,
+    "only_added_package": [
+      "issue8174-md05-audit",
+      "0.0.0"
+    ],
+    "source_sha256": "3fa9fc7181f2d240e3ad85667cebc48efcef23a37b8d290deae30ef0948cf280"
+  },
+  "wasm_product": {
+    "path": "output/pr-review/issue8174/v2-s04-20261025/candidate-wasm/rhwp_bg.wasm",
+    "sha256": "d4f9e4313ae35f762130f3a4a845d62d90bb4357582529f83d74c7e64397f915",
+    "role": "retained optimized product bundle; no fresh product build claimed"
+  },
+  "native_cli": {
+    "path": "output/pr-review/issue8174/v2-s05-20261025/candidate-native/rhwp",
+    "sha256": "406c7c9f85d6cb7f54f503eb80a73e7deb06258a9ee8b16c1a32d8e748cd9503",
+    "source": "9c9c272fe1670baf305800dfc906349fa7933d4a"
+  },
+  "fresh_diagnostic_jpeg_module": {
+    "wasm_sha256": "685ce655a58458102259f6e988ff510570c92fbff49550453f5ae8d19b4e5a6d",
+    "js_sha256": "f342a1cb18d27a46afc138be6d5cc087a9e1752ff6fd19112c994f8e9a8d3ee9",
+    "rust_source_sha256": "a1056776bdc1ea9123d19c15cf9f6619fa3dc08bfdf7c264bb04ccd56010d41b",
+    "optimized": true,
+    "role": "audit-only observer and unmodified JPEG decoder; not Studio product bundle"
+  }
+}

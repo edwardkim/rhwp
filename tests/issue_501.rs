@@ -1,116 +1,71 @@
-//! Issue #501: mel-001.hwp 2쪽 s0:pi=22 표 셀 높이 처리 회귀
+//! 관계형·고정형: 실물 표 첫 행의 원본 셀 소유와 높이를 검사한다.
+//! 주석 갱신: 2026-10-30T05:51:30+09:00; 직전 파일 커밋: 2026-07-26T19:44:24+09:00 (2e0cd528c5).
+//! 2026-10-30 측정 raw(96dpi, PDFium, 2px): 2쪽 Native 99.64% / fresh WASM 99.65%.
+//! 전 20쪽 최저 Native 96.43% / fresh WASM 96.42%; 리베이스 직후 렌더 소스의 측정값이다.
+//! 근거: mydocs/pr/assets/issue_501/rebase-20261030/README.md.
 //!
-//! TAC 표 (treat_as_char=true) 의 raw_table_height 가 IR common.height 보다
-//! 크게 계산되어 비례 축소 (height_measurer.rs:743-752) 가 적용되면서
-//! 모든 행 높이가 정상보다 작게 축소됨.
-//!
-//! 본 회귀 케이스: mel-001.hwp 2쪽 8x12 인원현황 표
-//! - IR common.height = 10960 HU = 146.13px
-//! - 행 0 (헤더) IR cell.height = 1980 HU = 26.4px
-//! - 회귀 SVG: 행 0 영역 ~12.36px (50% 축소)
-//!
-//! 정정 후: 행 0 영역이 IR cell.height 정합 (~26.4px)
+//! #501: 글자처럼 취급하는 표의 행 높이가 원본보다 비례 축소되지 않아야 한다.
+//! SVG 부동소수점 직렬화가 아니라 원본 셀과 실제 출력의 소유 관계를 검사한다.
 
-use std::fs;
+use rhwp::model::control::Control;
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+use rhwp::wasm_api::HwpDocument;
 use std::path::Path;
+
+fn find_table(node: &RenderNode) -> Option<&RenderNode> {
+    if matches!(&node.node_type, RenderNodeType::Table(table)
+        if table.section_index == Some(0) && table.para_index == Some(22) && table.control_index == Some(0))
+    {
+        return Some(node);
+    }
+    node.children.iter().find_map(find_table)
+}
 
 #[test]
 fn mel001_pi22_row0_height_matches_ir() {
-    let repo_root = env!("CARGO_MANIFEST_DIR");
-    let hwp_path = Path::new(repo_root).join("samples/mel-001.hwp");
-    let bytes =
-        fs::read(&hwp_path).unwrap_or_else(|e| panic!("read {}: {}", hwp_path.display(), e));
-
-    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse mel-001.hwp");
-
-    // 페이지 2 = index 1
-    let svg = doc
-        .render_page_svg_native(1)
-        .expect("render mel-001.hwp page 2");
-
-    // pi=22 디버그 라벨 위치 추출 (--debug-overlay 미사용 시 SVG 의 첫 cell-clip 추적)
-    // pi=22 표는 페이지 2 의 마지막 표 영역 — 표 시작 y ≈ 637px (debug overlay 측정값)
-    // 정정 후: 행 0 (헤더) cell-clip 의 y 영역 ≈ 26.4px (IR cell.height 정합)
-    // 회귀 시: ≈ 12.36px (50% 축소)
-    //
-    // SVG 의 cell-clip rect 중 y=637.4 (pi=22 시작) 의 행 0 영역 높이 측정
-    // 행 0 영역은 cell-clip-N 의 y=637.4 + height ≈ 26.4 가 되어야 함
-
-    // 행 0 의 첫 cell-clip 추출: y="637.4" 또는 y="637.40000..." 패턴
-    // 정상: height ≈ 26 ± 2 px (IR 26.4)
-    // 회귀: height ≈ 12 ± 2 px
-
-    // pi=22 표 시작 y 좌표는 페이지 레이아웃 변동 시 미세 변화 가능 — 동적 추출.
-    // dump-pages 정합으로 mel-001 p2 의 pi=22 는 다른 표 (pi=17/19/20) 다음의
-    // 마지막 8x12 표. 헤더 row (12개 균등 cs=1 셀들) 의 첫 번째 cell-clip 의 y 추출.
-    //
-    // 가용 정합 — pi=22 행 0 의 cs=1 셀들 (계, 정무직, 고공단, 3․4급, 4급, ...) 의
-    // x 좌표는 212.93, 267.93, 322.93, ... (55px 간격). 그 중 첫 셀 (계 → x=212.93)
-    // 의 y 가 pi=22 표 시작 y 와 정합.
-    // [Issue #3396] TAC 표 x = pen + outMargin.left(141HU=1.88px) 배선으로
-    // 종전 211.05 에서 +1.88px 이동 — 본 테스트의 관심사(행 높이)와 무관한
-    // 위치 앵커만 갱신.
-    let table_start_y = {
-        // x="212.9333333333333" 와 y=... 인 cell-clip rect 추출
-        let needle = "x=\"212.9333333333333\" y=\"";
-        let idx = svg
-            .find(needle)
-            .expect("pi=22 row 0 첫 cs=1 셀 (x=212.93) 을 찾지 못함");
-        let after = &svg[idx + needle.len()..];
-        let end = after.find('"').expect("y 종료 인용부호 없음");
-        let y: f64 = after[..end].parse().expect("y 값 파싱 실패");
-        // dump-pages 정합으로 pi=22 는 page 2 후반부 (y > 600)
-        assert!(
-            y > 600.0 && y < 800.0,
-            "pi=22 행 0 시작 y 가 예상 범위 (600~800) 밖: {}",
-            y
-        );
-        y
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/mel-001.hwp");
+    let document =
+        HwpDocument::from_bytes(&std::fs::read(path).expect("원본 HWP")).expect("원본 문서 해석");
+    assert_eq!(document.page_count(), 20, "독립 Print의 전체 쪽수");
+    let source = match &document.document().sections[0].paragraphs[22].controls[0] {
+        Control::Table(table) => table,
+        _ => panic!("원본 22번 문단의 표"),
     };
-
-    // y="<table_start_y>..." 인 cell-clip 의 height 추출
-    // SVG 는 부동소수 그대로 출력 (예: y="636.3866666666667") — 추출한 정확값 사용
-    let pattern_y = format!("y=\"{}", table_start_y);
-
-    // 본 회귀 검증의 핵심:
-    // - 회귀 (현재): 행 0 영역 높이 < 20px (50% 이하 축소)
-    // - 정정 후: 행 0 영역 높이 ≥ 22px (IR cell.height 26.4 정합 ± 4px tolerance)
-
-    let mut found_row0_heights: Vec<f64> = Vec::new();
-    for chunk in svg.split(&pattern_y) {
-        // chunk 의 시작은 행 0 영역의 cell-clip rect 의 y 직후 (예: " width=... height=...")
-        // height 속성 추출
-        if let Some(h_idx) = chunk.find("height=\"") {
-            let after = &chunk[h_idx + 8..];
-            if let Some(end_idx) = after.find('"') {
-                let h_str = &after[..end_idx];
-                if let Ok(h) = h_str.parse::<f64>() {
-                    if h > 5.0 && h < 100.0 {
-                        // 노이즈 제거: 5px 미만 또는 100px 초과는 패딩/라벨 등
-                        found_row0_heights.push(h);
-                    }
-                }
-            }
-        }
+    let source_cells: Vec<_> = source.cells.iter().filter(|cell| cell.row == 0).collect();
+    let page = document.build_page_render_tree(1).expect("실물 2쪽");
+    let table = find_table(&page.root).expect("2쪽의 원본 표 소유");
+    let actual_cells: Vec<_> = table
+        .children
+        .iter()
+        .filter_map(|node| match &node.node_type {
+            RenderNodeType::TableCell(cell) if cell.row == 0 => Some((cell, node)),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(
+        actual_cells.len(),
+        source_cells.len(),
+        "첫 행의 셀 누락·중복 없음"
+    );
+    let first_y = actual_cells.first().expect("첫 행 셀").1.bbox.y;
+    for source_cell in source_cells {
+        let matches: Vec<_> = actual_cells
+            .iter()
+            .filter(|(cell, _)| {
+                cell.col == source_cell.col && cell.col_span == source_cell.col_span
+            })
+            .collect();
+        assert_eq!(matches.len(), 1, "원본 열과 걸침의 유일한 소유");
+        let node = matches[0].1;
+        let source_height = f64::from(source_cell.height) * 96.0 / 7200.0;
+        assert!(
+            (node.bbox.y - first_y).abs() <= 1.0 / 75.0,
+            "같은 행의 위쪽 경계"
+        );
+        assert!(
+            (node.bbox.height - source_height).abs() <= 2.0,
+            "원본 셀 높이 {source_height}px, 실제 {}px: 행의 비례 축소 방지",
+            node.bbox.height
+        );
     }
-
-    assert!(
-        !found_row0_heights.is_empty(),
-        "pi=22 표의 행 0 영역 cell-clip 을 찾지 못함 (table_start_y={})",
-        table_start_y
-    );
-
-    // 행 0 영역의 cell-clip 들 중 가장 큰 height 가 IR cell.height (≈26.4px) 정합
-    let max_h = found_row0_heights.iter().cloned().fold(0.0f64, f64::max);
-    println!(
-        "pi=22 행 0 영역 cell-clip heights: {:?}, max={:.2}",
-        found_row0_heights, max_h
-    );
-
-    assert!(
-        max_h >= 22.0,
-        "pi=22 행 0 영역 최대 높이 {:.2}px < 22px (IR cell.height=26.4 ± 4 tolerance) — \
-         TAC 표 비례 축소 회귀 (raw_table_height 가 common_h 보다 잘못 큰 값)",
-        max_h
-    );
 }

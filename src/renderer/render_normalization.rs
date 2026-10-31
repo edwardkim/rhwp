@@ -40,6 +40,15 @@ pub enum RenderPathEntry {
     },
 }
 
+impl crate::storage::CloneWithStorage for RenderPathEntry {
+    fn clone_with_storage<S: crate::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<Self, S::Error> {
+        let _ = storage;
+        Ok(self.clone())
+    }
+}
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct RenderPath {
     pub section_index: usize,
@@ -47,6 +56,7 @@ pub struct RenderPath {
     pub entries: Vec<RenderPathEntry>,
     pub target_control_index: Option<usize>,
 }
+crate::storage::clone_fields!(RenderPath, {section_index, parent_paragraph_index, entries, target_control_index});
 
 /// 비-TAC 중첩 표는 저장 폭을 조판 폭으로 쓴다. 한컴 PDF는 부모 셀보다 근소하게
 /// 좁은 1×1 표도 자동 확장하지 않는다(76076 p34: 36,572HU 유지).
@@ -96,84 +106,120 @@ impl RenderNormalizationOverlay {
     }
 
     pub fn from_document_reusing(document: &Document, previous: &Self) -> Self {
-        let mut overlay = Self {
-            stored_nested_text_frames_by_pointer: stored_nested_text_frames::collect(document),
-            ..Self::default()
-        };
-        let hwp5_stored_pagination_layout =
-            document.layout_profile().hwp5_stored_pagination_layout();
-        for (section_index, section) in document.sections.iter().enumerate() {
-            for (parent_paragraph_index, paragraph) in section.paragraphs.iter().enumerate() {
-                for (control_index, control) in paragraph.controls.iter().enumerate() {
-                    let Control::Table(table) = control else {
-                        continue;
-                    };
-                    let path = RenderPath::top_level(section_index, parent_paragraph_index);
-                    // [#6590] 최상위 글자처럼(TAC) 표의 선언 폭이 본문 폭을 근소 초과하면
-                    // 한/글은 본문 폭으로 비례 축소해 그린다. 근거는 host 문단의 저장
-                    // lineseg 다 — `samples/basic/BlogForm_BookReview.hwp` 실측: 표 선언
-                    // 폭 35719HU > 본문 폭 35149HU 인데 host 줄의 저장 `segment_width`
-                    // 는 35148HU 로 본문 폭과 같다(한/글이 표를 본문 폭 줄박스에
-                    // 실었다는 직접 증거). 그대로 그리면 표 우단이 본문 우단을 넘는다
-                    // (같은 표본 7.6px).
-                    //
-                    // near-fit(축소율 0.9 이상)에만 적용한다 — 본문보다 훨씬 넓은 표는
-                    // 저작 의도가 다르고(가로 넘침 허용·다단 등) 기존 경로가 맡는다.
-                    //
-                    // [#7059] 위 근거(host 줄이 본문 폭)는 **축소의 증거가 아니다.** host 줄이
-                    // 본문 폭인 것은 "표가 그 줄을 오른쪽으로 넘친다"는 뜻이기도 하다. 실제로
-                    // 한/글은 이 형상에서 표를 **축소하지 않고 본문 우단을 넘겨 그린다** —
-                    // 위 표본의 정본 세 판본(`pdf/basic/BlogForm_BookReview-hwp-2020.pdf` ·
-                    // `-2022.pdf` · `pdf/BlogForm_BookReview-2020.pdf`)이 글자 단위로 같다.
-                    //
-                    //   본문 영역     22.68 .. 374.17 pt
-                    //   선언 표 폭    357.19 pt (35719 HU)
-                    //   정본 괘선     22.51 .. 379.37 pt (폭 356.86) — 본문 우단 +5.2 pt
-                    //
-                    // 갈림은 **표 첫 칸의 저장 `LINE_SEG`** 다. 표가 정말 축소됐다면 칸 안
-                    // 줄도 축소 폭이어야 한다. 위 표본은 34696 + 여백 1020 = 35716 으로 선언
-                    // 35719 에 수렴하고(축소 35149 와는 567 차이), `#7059` 가 신고한
-                    // 3194097 도 50440 + 282 = 50722 = 선언 폭이다. 둘 다 정본이 "축소 안 함"
-                    // 이다.
-                    //
-                    // 사다리가 축소 폭을 말하는 표는 종전대로 축소한다 — samples 373건 +
-                    // 행정규칙 855건에서 판정 가능한 표 30개 중 18개가 그쪽이다.
-                    if hwp5_stored_pagination_layout && table.common.treat_as_char {
-                        let page_def = &section.section_def.page_def;
-                        let body_width = page_def
-                            .width
-                            .saturating_sub(page_def.margin_left)
-                            .saturating_sub(page_def.margin_right);
-                        let source_width = table.common.width;
-                        if body_width > 0
-                            && source_width > body_width
-                            && f64::from(body_width) >= f64::from(source_width) * 0.9
-                            && stored_first_cell_line_says_shrunk(table, body_width, source_width)
-                        {
-                            let mut top_path = path.clone();
-                            top_path.target_control_index = Some(control_index);
-                            let table_pointer = table.as_ref() as *const Table as usize;
-                            let projection = Arc::new(NestedTableWidthProjection {
-                                path: top_path.clone(),
-                                source_width,
-                                effective_width: body_width,
-                                width_scale: f64::from(body_width) / f64::from(source_width),
-                                use_owner_content_box: false,
-                                table_pointer,
-                            });
-                            overlay
-                                .nested_table_widths_by_pointer
-                                .insert(table_pointer, Arc::clone(&projection));
-                            overlay
-                                .nested_table_widths_by_path
-                                .insert(top_path, projection);
+        match Self::from_document_reusing_with_storage(
+            document,
+            previous,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn from_document_reusing_with_storage<S: crate::storage::Storage>(
+        document: &Document,
+        previous: &Self,
+        storage: &S,
+    ) -> Result<Self, S::Error> {
+        Ok({
+            let mut overlay = Self {
+                stored_nested_text_frames_by_pointer:
+                    stored_nested_text_frames::collect_with_storage(document, storage)?,
+                ..Self::default()
+            };
+            let hwp5_stored_pagination_layout =
+                document.layout_profile().hwp5_stored_pagination_layout();
+            for (section_index, section) in document.sections.iter().enumerate() {
+                for (parent_paragraph_index, paragraph) in section.paragraphs.iter().enumerate() {
+                    for (control_index, control) in paragraph.controls.iter().enumerate() {
+                        let Control::Table(table) = control else {
+                            continue;
+                        };
+                        let path = RenderPath::top_level(section_index, parent_paragraph_index);
+                        // [#6590] 최상위 글자처럼(TAC) 표의 선언 폭이 본문 폭을 근소 초과하면
+                        // 한/글은 본문 폭으로 비례 축소해 그린다. 근거는 host 문단의 저장
+                        // lineseg 다 — `samples/basic/BlogForm_BookReview.hwp` 실측: 표 선언
+                        // 폭 35719HU > 본문 폭 35149HU 인데 host 줄의 저장 `segment_width`
+                        // 는 35148HU 로 본문 폭과 같다(한/글이 표를 본문 폭 줄박스에
+                        // 실었다는 직접 증거). 그대로 그리면 표 우단이 본문 우단을 넘는다
+                        // (같은 표본 7.6px).
+                        //
+                        // near-fit(축소율 0.9 이상)에만 적용한다 — 본문보다 훨씬 넓은 표는
+                        // 저작 의도가 다르고(가로 넘침 허용·다단 등) 기존 경로가 맡는다.
+                        //
+                        // [#7059] 위 근거(host 줄이 본문 폭)는 **축소의 증거가 아니다.** host 줄이
+                        // 본문 폭인 것은 "표가 그 줄을 오른쪽으로 넘친다"는 뜻이기도 하다. 실제로
+                        // 한/글은 이 형상에서 표를 **축소하지 않고 본문 우단을 넘겨 그린다** —
+                        // 위 표본의 정본 세 판본(`pdf/basic/BlogForm_BookReview-hwp-2020.pdf` ·
+                        // `-2022.pdf` · `pdf/BlogForm_BookReview-2020.pdf`)이 글자 단위로 같다.
+                        //
+                        //   본문 영역     22.68 .. 374.17 pt
+                        //   선언 표 폭    357.19 pt (35719 HU)
+                        //   정본 괘선     22.51 .. 379.37 pt (폭 356.86) — 본문 우단 +5.2 pt
+                        //
+                        // 갈림은 **표 첫 칸의 저장 `LINE_SEG`** 다. 표가 정말 축소됐다면 칸 안
+                        // 줄도 축소 폭이어야 한다. 위 표본은 34696 + 여백 1020 = 35716 으로 선언
+                        // 35719 에 수렴하고(축소 35149 와는 567 차이), `#7059` 가 신고한
+                        // 3194097 도 50440 + 282 = 50722 = 선언 폭이다. 둘 다 정본이 "축소 안 함"
+                        // 이다.
+                        //
+                        // 사다리가 축소 폭을 말하는 표는 종전대로 축소한다 — samples 373건 +
+                        // 행정규칙 855건에서 판정 가능한 표 30개 중 18개가 그쪽이다.
+                        if hwp5_stored_pagination_layout && table.common.treat_as_char {
+                            let page_def = &section.section_def.page_def;
+                            let body_width = page_def
+                                .width
+                                .saturating_sub(page_def.margin_left)
+                                .saturating_sub(page_def.margin_right);
+                            let source_width = table.common.width;
+                            if body_width > 0
+                                && source_width > body_width
+                                && f64::from(body_width) >= f64::from(source_width) * 0.9
+                                && stored_first_cell_line_says_shrunk(
+                                    table,
+                                    body_width,
+                                    source_width,
+                                )
+                            {
+                                let mut top_path = crate::storage::try_clone(&path, storage)?;
+                                top_path.target_control_index = Some(control_index);
+                                let table_pointer = table.as_ref() as *const Table as usize;
+                                let projection = {
+                                    storage
+                                        .bytes(std::mem::size_of::<NestedTableWidthProjection>())?;
+                                    Arc::new(NestedTableWidthProjection {
+                                        path: crate::storage::try_clone(&top_path, storage)?,
+                                        source_width,
+                                        effective_width: body_width,
+                                        width_scale: f64::from(body_width)
+                                            / f64::from(source_width),
+                                        use_owner_content_box: false,
+                                        table_pointer,
+                                    })
+                                };
+                                storage
+                                    .reserve_map(&mut overlay.nested_table_widths_by_pointer, 1)?;
+                                overlay
+                                    .nested_table_widths_by_pointer
+                                    .insert(table_pointer, Arc::clone(&projection));
+                                storage.reserve_map(&mut overlay.nested_table_widths_by_path, 1)?;
+                                overlay
+                                    .nested_table_widths_by_path
+                                    .insert(top_path, projection);
+                            }
                         }
+                        overlay.collect_nested_tables_with_storage(
+                            table,
+                            path,
+                            control_index,
+                            previous,
+                            storage,
+                        )?;
                     }
-                    overlay.collect_nested_tables(table, path, control_index, previous);
                 }
             }
-        }
-        overlay
+            overlay
+        })
     }
 
     pub(crate) fn stored_nested_text_frames(
@@ -195,6 +241,26 @@ impl RenderNormalizationOverlay {
         owner_control_index: usize,
         previous: &Self,
     ) {
+        match self.collect_nested_tables_with_storage(
+            owner_table,
+            path,
+            owner_control_index,
+            previous,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn collect_nested_tables_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        owner_table: &Table,
+        path: RenderPath,
+        owner_control_index: usize,
+        previous: &Self,
+        storage: &S,
+    ) -> Result<(), S::Error> {
         for (cell_index, cell) in owner_table.cells.iter().enumerate() {
             if cell.width >= 0x8000_0000 {
                 continue;
@@ -212,16 +278,20 @@ impl RenderNormalizationOverlay {
                         continue;
                     };
                     if host_reflowed {
+                        storage.reserve_set(&mut self.nested_tables_with_reflowed_hosts, 1)?;
                         self.nested_tables_with_reflowed_hosts
                             .insert(nested.as_ref() as *const Table as usize);
                     }
 
-                    let mut nested_path = path.clone();
-                    nested_path.entries.push(RenderPathEntry::TableCell {
-                        control_index: owner_control_index,
-                        cell_index,
-                        paragraph_index,
-                    });
+                    let mut nested_path = crate::storage::try_clone(&path, storage)?;
+                    storage.push(
+                        &mut nested_path.entries,
+                        RenderPathEntry::TableCell {
+                            control_index: owner_control_index,
+                            cell_index,
+                            paragraph_index,
+                        },
+                    )?;
                     nested_path.target_control_index = Some(control_index);
 
                     let source_width = nested.common.width;
@@ -235,7 +305,7 @@ impl RenderNormalizationOverlay {
                     if keeps_legacy_near_fit_projection {
                         let effective_width = cell.width;
                         let table_pointer = nested.as_ref() as *const Table as usize;
-                        let projection = previous
+                        let projection = if let Some(projection) = previous
                             .nested_table_widths_by_path
                             .get(&nested_path)
                             .filter(|projection| {
@@ -245,27 +315,41 @@ impl RenderNormalizationOverlay {
                                     && projection.table_pointer == table_pointer
                             })
                             .map(Arc::clone)
-                            .unwrap_or_else(|| {
-                                Arc::new(NestedTableWidthProjection {
-                                    path: nested_path.clone(),
-                                    source_width,
-                                    effective_width,
-                                    width_scale: f64::from(effective_width)
-                                        / f64::from(source_width),
-                                    use_owner_content_box: false,
-                                    table_pointer,
-                                })
-                            });
+                        {
+                            projection
+                        } else {
+                            storage.bytes(std::mem::size_of::<NestedTableWidthProjection>())?;
+                            Arc::new(NestedTableWidthProjection {
+                                path: crate::storage::try_clone(&nested_path, storage)?,
+                                source_width,
+                                effective_width,
+                                width_scale: f64::from(effective_width) / f64::from(source_width),
+                                use_owner_content_box: false,
+                                table_pointer,
+                            })
+                        };
+                        storage.reserve_map(&mut self.nested_table_widths_by_pointer, 1)?;
                         self.nested_table_widths_by_pointer
                             .insert(projection.table_pointer, Arc::clone(&projection));
-                        self.nested_table_widths_by_path
-                            .insert(nested_path.clone(), projection);
+                        storage.reserve_map(&mut self.nested_table_widths_by_path, 1)?;
+                        self.nested_table_widths_by_path.insert(
+                            crate::storage::try_clone(&nested_path, storage)?,
+                            projection,
+                        );
                     }
 
-                    self.collect_nested_tables(nested, nested_path, control_index, previous);
+                    self.collect_nested_tables_with_storage(
+                        nested,
+                        nested_path,
+                        control_index,
+                        previous,
+                        storage,
+                    )?;
                 }
             }
         }
+
+        Ok(())
     }
 
     #[inline]
@@ -302,12 +386,26 @@ impl RenderNormalizationOverlay {
     /// Logical-path validation happens in DocumentCore before this hot-path
     /// pointer is published.
     pub(crate) fn register_text_reflowed_table(&mut self, table: &Table) {
+        match self.register_text_reflowed_table_with_storage(table, &crate::storage::Unbounded) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn register_text_reflowed_table_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        table: &Table,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        storage.reserve_set(&mut self.text_reflowed_tables_by_pointer, 1)?;
         // 편집 명령이 표 전체를 다시 조판한 경우에는 셀별 render-only 범위로
         // 축소하지 않는다. 이 명시적 등록은 아래의 관측 결과보다 우선한다.
         self.rendered_cell_frame_changes
             .remove(&(table as *const Table as usize));
         self.text_reflowed_tables_by_pointer
             .insert(table as *const Table as usize);
+
+        Ok(())
     }
 
     /// render-only 재조판으로 문자 줄 소속이 달라진 표는 원본 물리 컷의
@@ -319,6 +417,23 @@ impl RenderNormalizationOverlay {
         rendered: &[crate::model::paragraph::Paragraph],
         styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     ) -> (bool, bool) {
+        match self.register_rendered_text_partitions_with_storage(
+            source,
+            rendered,
+            styles,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+    pub(crate) fn register_rendered_text_partitions_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        source: &[crate::model::paragraph::Paragraph],
+        rendered: &[crate::model::paragraph::Paragraph],
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+        storage: &S,
+    ) -> Result<(bool, bool), S::Error> {
         let mut changed = source.len() != rendered.len();
         let mut flow_changed = changed;
         let mut upstream_flow_changed = false;
@@ -375,44 +490,61 @@ impl RenderNormalizationOverlay {
                         if i64::from(before.line_height) < source_box_height
                             && after.line_height > before.line_height
                         {
-                            self.expanded_inline_host_tables_by_pointer
-                                .extend([old_pointer, new_pointer]);
+                            storage.insert_set(
+                                &mut self.expanded_inline_host_tables_by_pointer,
+                                old_pointer,
+                            )?;
+                            storage.insert_set(
+                                &mut self.expanded_inline_host_tables_by_pointer,
+                                new_pointer,
+                            )?;
                         }
                     }
+                }
+                if !self.rendered_cell_frame_changes.contains_key(&old_pointer) {
+                    storage.reserve_map(&mut self.rendered_cell_frame_changes, 1)?;
                 }
                 self.rendered_cell_frame_changes
                     .entry(old_pointer)
                     .or_default();
+                if !self.rendered_cell_frame_changes.contains_key(&new_pointer) {
+                    storage.reserve_map(&mut self.rendered_cell_frame_changes, 1)?;
+                }
                 self.rendered_cell_frame_changes
                     .entry(new_pointer)
                     .or_default();
                 let mut table_changed = old.cells.len() != new.cells.len();
                 let mut table_flow_changed = table_changed;
                 for (old_cell, new_cell) in old.cells.iter().zip(&new.cells) {
-                    let (text, flow) = self.register_rendered_text_partitions(
+                    let (text, flow) = self.register_rendered_text_partitions_with_storage(
                         &old_cell.paragraphs,
                         &new_cell.paragraphs,
                         styles,
-                    );
+                        storage,
+                    )?;
                     if text || flow {
-                        self.rendered_cell_frame_changes
-                            .entry(old_pointer)
-                            .or_default()
-                            .insert((old_cell.row, old_cell.col));
-                        self.rendered_cell_frame_changes
-                            .entry(new_pointer)
-                            .or_default()
-                            .insert((new_cell.row, new_cell.col));
+                        storage.insert_set(
+                            self.rendered_cell_frame_changes
+                                .get_mut(&old_pointer)
+                                .unwrap(),
+                            (old_cell.row, old_cell.col),
+                        )?;
+                        storage.insert_set(
+                            self.rendered_cell_frame_changes
+                                .get_mut(&new_pointer)
+                                .unwrap(),
+                            (new_cell.row, new_cell.col),
+                        )?;
                     }
                     table_changed |= text;
                     table_flow_changed |= flow;
                 }
                 if table_changed {
-                    self.text_reflowed_tables_by_pointer.insert(old_pointer);
-                    self.text_reflowed_tables_by_pointer.insert(new_pointer);
+                    storage.insert_set(&mut self.text_reflowed_tables_by_pointer, old_pointer)?;
+                    storage.insert_set(&mut self.text_reflowed_tables_by_pointer, new_pointer)?;
                 }
                 if upstream_flow_changed {
-                    self.register_rebased_source_frames(old, new);
+                    self.register_rebased_source_frames_with_storage(old, new, storage)?;
                 }
                 changed |= table_changed;
                 paragraph_flow_changed |= table_flow_changed;
@@ -420,18 +552,33 @@ impl RenderNormalizationOverlay {
             flow_changed |= paragraph_flow_changed;
             upstream_flow_changed |= paragraph_flow_changed;
         }
-        (changed, flow_changed)
+        Ok((changed, flow_changed))
     }
 
     /// 앞 문단의 점유가 바뀌면 후속 block 표의 저장 쪽 컷도 같은 흐름의
     /// 결과가 아니다. 명시적 쪽/단 경계까지 그 의존성을 전달한다.
     /// 인라인 표의 내부 상자와 쪽 컷이 없는 표의 독립 기하는 유지한다.
     fn register_rebased_source_frames(&mut self, source: &Table, rendered: &Table) -> bool {
+        match self.register_rebased_source_frames_with_storage(
+            source,
+            rendered,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+    fn register_rebased_source_frames_with_storage<S: crate::storage::Storage>(
+        &mut self,
+        source: &Table,
+        rendered: &Table,
+        storage: &S,
+    ) -> Result<bool, S::Error> {
         if source.common.treat_as_char
             || source.common.text_wrap != crate::model::shape::TextWrap::TopAndBottom
             || source.page_break != crate::model::table::TablePageBreak::RowBreak
         {
-            return false;
+            return Ok(false);
         }
         let mut frames = source.cells.iter().any(|cell| {
             let mut previous = None;
@@ -452,7 +599,8 @@ impl RenderNormalizationOverlay {
             for (old_para, new_para) in old_cell.paragraphs.iter().zip(&new_cell.paragraphs) {
                 for (old, new) in old_para.controls.iter().zip(&new_para.controls) {
                     if let (Control::Table(old), Control::Table(new)) = (old, new) {
-                        frames |= self.register_rebased_source_frames(old, new);
+                        frames |=
+                            self.register_rebased_source_frames_with_storage(old, new, storage)?;
                     }
                 }
             }
@@ -462,11 +610,11 @@ impl RenderNormalizationOverlay {
             // 셀의 집합은 유지하여 이웃 셀의 상대 줄 원점·정렬을 보존한다.
             for table in [source, rendered] {
                 let pointer = table as *const Table as usize;
-                self.text_reflowed_tables_by_pointer.insert(pointer);
-                self.rebased_table_frames_by_pointer.insert(pointer);
+                storage.insert_set(&mut self.text_reflowed_tables_by_pointer, pointer)?;
+                storage.insert_set(&mut self.rebased_table_frames_by_pointer, pointer)?;
             }
         }
-        frames
+        Ok(frames)
     }
 
     #[inline]

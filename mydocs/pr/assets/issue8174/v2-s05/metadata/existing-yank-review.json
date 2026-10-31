@@ -1,0 +1,22 @@
+{
+  "package": "chacha20",
+  "version": "0.10.1",
+  "features": [
+    "cipher",
+    "xchacha"
+  ],
+  "parent": "chacha20poly1305 0.11.0",
+  "known_at_v1": true,
+  "locked_install_passed_with_existing_warning": true,
+  "upstream_fix": "https://github.com/RustCrypto/stream-ciphers/pull/580",
+  "changelog": "https://raw.githubusercontent.com/RustCrypto/stream-ciphers/master/chacha20/CHANGELOG.md",
+  "upstream_fixed_version": "0.10.2",
+  "configured_legacy_or_rng": false,
+  "scope": "Static graph/source inspection only; no all-consumer or old-CPU runtime safety claim. Keep dependency update review in the remaining pre-publication audit.",
+  "sources": {
+    "src/lib.rs": "b539477230a58abfa2e2ab8dd62c017ffc84f3a7680971c5496973185c543c20",
+    "src/xchacha.rs": "86de92973ea8701003c97994fb95fe33099dc0fe0938c27d10f20e95d4b94000",
+    "src/variants.rs": "79bb423dd0ef0ac690334915baea48db17f055797175c22b1bcbed0714dd9f88",
+    "src/backends/sse2.rs": "04c4ff27778e6123a0669b8975376c7aed705b783a17525db9552962896eae39"
+  }
+}

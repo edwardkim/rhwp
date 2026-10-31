@@ -581,13 +581,48 @@ fn native_glyph_replay_uses_static_svg_viewbox_and_rejects_unsafe_resources() {
     let tree = svg_tree("<svg xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"#0000ff\" d=\"M10 20H40V50H10Z\"/></svg>");
     let image = assert_selected(&tree);
     assert_eq!(image.get_pixel(20, 20).0, [0, 0, 255, 255]);
-    for fragment in [
+    assert_selected(&svg_tree(
         "<svg><script>alert(1)</script><path d=\"M10 20H40V50Z\"/></svg>",
+    ));
+    // SVG currentColor inherits the run's foreground. Independent Chrome and
+    // fresh WASM artwork evidence: issue8174/v2-s03, all seven cases raw 100%.
+    let mut foreground = svg_tree(
+        "<svg><rect x=\"10\" y=\"20\" width=\"30\" height=\"30\" fill=\"currentColor\"/></svg>",
+    );
+    outline_mut(&mut foreground).paint_style.color = 0x008000;
+    assert!(assert_selected(&foreground)
+        .pixels()
+        .any(|pixel| pixel.0 == [0, 128, 0, 255]));
+    for fragment in [
         "<svg><image href=\"file:///private/missing.png\"/><path d=\"M10 20H40V50Z\"/></svg>",
         "<svg><path d=\"Mbroken\"/></svg>",
+        "<svg><defs><g id=\"a\"><use href=\"#b\"/></g><g id=\"b\"><use href=\"#a\"/></g></defs><use href=\"#a\"/></svg>",
     ] {
         assert_same_pixels(render(&svg_tree(fragment)), render(&fallback_tree()));
     }
+    // Same valid artwork after an XML declaration and ignored executable subtree.
+    // These are the two former static_svg source-unit contracts, through actual paint.
+    let declared = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg><script><g id=\"ignored\"/></script><path fill=\"#0000ff\" d=\"M10 20H40V50H10Z\"/></svg>";
+    assert_same_pixels(render(&svg_tree(declared)), render(&tree));
+    let gradient_artwork = "<defs><linearGradient id=\"g\"><stop stop-color=\"#ff0000\"/></linearGradient></defs><path d=\"M10 20H40V50H10Z\" fill=\"url(#g)\"/>";
+    let plain = svg_tree(&format!("<svg>{gradient_artwork}</svg>"));
+    let declared = svg_tree(&format!("<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg><script><g id=\"ignored\"/></script>{gradient_artwork}</svg>"));
+    assert_same_pixels(render(&declared), render(&plain));
+    assert!(assert_selected(&declared)
+        .pixels()
+        .any(|pixel| pixel.0 == [255, 0, 0, 255]));
+
+    let mut expansion = String::from("<svg><defs><path id=\"a0\" d=\"M10 20H40V50Z\"/>");
+    for i in 1..20 {
+        expansion.push_str(&format!(
+            "<g id=\"a{i}\"><use href=\"#a{}\"/><use href=\"#a{}\"/></g>",
+            i - 1,
+            i - 1
+        ));
+    }
+    expansion.push_str("</defs><use href=\"#a19\"/></svg>");
+    assert_same_pixels(render(&svg_tree(&expansion)), render(&fallback_tree()));
+    assert_selected(&tree);
 }
 
 #[test]

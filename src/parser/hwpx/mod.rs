@@ -388,8 +388,15 @@ fn parse_settings_print_method(xml: &str) -> Option<u32> {
 }
 
 pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
+    parse_hwpx_with_reservation(data, None)
+}
+
+pub(crate) fn parse_hwpx_with_reservation(
+    data: &[u8],
+    reservation: Option<std::sync::Arc<dyn crate::storage::Reservation>>,
+) -> Result<Document, HwpxError> {
     // 1. ZIP 컨테이너 열기
-    let mut reader = reader::HwpxReader::open(data)?;
+    let mut reader = reader::HwpxReader::open_with_reservation(data, reservation.clone())?;
 
     // [Issue #1946] 암호화 HWPX 조기 감지. META-INF/manifest.xml 은 암호화 문서에서도
     // 평문이며, 암호화된 엔트리마다 <odf:encryption-data> 블록을 갖는다. 감지하면
@@ -478,6 +485,8 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         .is_some_and(physical_para_margin_units_from_version);
     let (mut doc_info, doc_properties) =
         header::parse_hwpx_header_with_plain_margin_units(&header_xml, physical_plain_margin)?;
+    let default_para_shape_id = u16::try_from(doc_info.para_shapes.len()).ok();
+    let default_para_shape_scope = section::DefaultParaShapeScope::enter(default_para_shape_id);
     if let Ok(bytes) = reader.read_file_bytes_limited(
         crate::model::native_font_program::HWPX_ENTRY,
         crate::model::native_font_program::MAX_BYTES,
@@ -678,7 +687,10 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
         .collect();
     let bin_resolver: std::sync::Arc<dyn crate::model::bin_data::BinDataResolver> =
         std::sync::Arc::new(HwpxBinResolver {
-            reader: std::sync::Mutex::new(reader::HwpxReader::open(data)?),
+            reader: std::sync::Mutex::new(reader::HwpxReader::open_with_reservation(
+                data,
+                reservation.clone(),
+            )?),
             ole_hrefs,
         });
 
@@ -720,6 +732,17 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     }
 
     // Document 조립
+    if default_para_shape_scope.used() {
+        // 한컴 2020 저장 대조: 참조 생략은 명시적 0번이 아닌 160% 기본 모양이다.
+        // 명시 참조는 그대로 보존하며 중첩 문단도 같은 모델 모양을 사용한다.
+        doc_info.para_shapes.push(crate::model::style::ParaShape {
+            attr1: 0x180,
+            line_spacing: 160,
+            line_spacing_v2: 160,
+            border_fill_id: u16::from(!doc_info.border_fills.is_empty()),
+            ..Default::default()
+        });
+    }
     let model_header = FileHeader {
         version: HwpVersion {
             major: 5,

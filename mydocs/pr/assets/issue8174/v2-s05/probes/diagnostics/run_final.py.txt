@@ -1,0 +1,37 @@
+"""Consume final README revision through a second immutable local root registry."""
+import json,time,shutil,re,hashlib,tarfile
+from pathlib import Path
+import run_consumer as helper
+B,R,C=helper.BASE,helper.ROOT,helper.CONSUMER
+if __name__=='__main__':
+ while not (B/'final-root-registry-ready').exists():time.sleep(1)
+ helper.CONFIG+=['--config','registries.rhwp-final.index="sparse+http://127.0.0.1:48175/index/"']
+ p=C/'Cargo.toml'
+ if 'registry="rhwp-final"' not in p.read_text():p.write_text(p.read_text().replace('version="=0.8.7",default-features=false','version="=0.8.7",default-features=false,registry="rhwp-final"'))
+ readme=(R/'packaging/crates-io/README_PACKAGE.md').read_text();snips=re.findall(r'```rust\n(.*?)```',readme,re.S)
+ (C/'src/bin/guide.rs').write_text('\n'.join(snips)+'\nfn main()->Result<(),Box<dyn std::error::Error>> {let b=std::fs::read(std::env::args().nth(1).unwrap())?;read_and_save(&b)?;edit(&b)?;let p=std::fs::read(std::env::args().nth(2).unwrap())?;import_pdf(&p)?;println!("GUIDE PASS");Ok(())}\n')
+ helper.cargo('final-metadata',['metadata','--format-version','1','--features','native','--filter-platform','x86_64-unknown-linux-gnu'])
+ meta=json.loads((B/'final-metadata.stdout').read_text());pack=json.loads((B/'final-packages.json').read_text());archives={p['name']:p for p in pack['packages']};selected=[p for p in meta['packages'] if p['name'] in archives]
+ assert len(selected)==14 and len({p['name'] for p in selected})==14
+ for p in selected:
+  assert p['source'].startswith(('registry+','sparse+')) and not p['manifest_path'].startswith(str(R)),p['name']
+  src=Path(p['manifest_path']).parent;checksum=hashlib.sha256((src.parents[2]/'cache'/src.parent.name/(src.name+'.crate')).read_bytes()).hexdigest();assert checksum==archives[p['name']]['sha256'],p['name']
+ (B/'final-selected-sources.json').write_text(json.dumps([{'name':p['name'],'version':p['version'],'source':p['source'],'manifest_path':p['manifest_path'],'archive_sha256':archives[p['name']]['sha256']} for p in selected],indent=2)+'\n')
+ helper.cargo('final-consumer-default',['run','--locked','--profile','release-test','--features','native','--bin','rhwp-8174-s05-consumer','--',str(R/'samples/hwp_table_test.hwp'),str(R/'samples/hwpx/143E433F503322BD33.hwpx')])
+ helper.cargo('final-error-contract',['test','--locked','--profile','release-test','--features','native','--test','error_contract'])
+ helper.cargo('final-guide-examples',['run','--locked','--profile','release-test','--features','native','--bin','guide','--',str(R/'samples/hwpx/blank_hwpx.hwpx'),str(R/'pdf/issue8174/features/icc-rgb.pdf')])
+ helper.cargo('final-consumer-pdf',['run','--locked','--profile','release-test','--features','native','--bin','pdf','--',str(R),str(B/'final-consumer-pdf')])
+ helper.cargo('final-cli-install',['install','rhwp','--registry','rhwp-final','--version','=0.8.7','--bin','rhwp','--locked','--features','native-skia','--profile','release-test','--root',str(B/'installed-final'),'--target-dir',str(helper.TARGET)])
+ exe=B/'installed-final/bin/rhwp'
+ helper.cargo('final-registry-contracts',['test','--locked','--profile','release-test','--features','native','--test','issue_8174_pdf_resource_policy','--test','issue_7911_pdf_cli','--test','issue_8174_pdf_process_supervisor'],extra={'CARGO_BIN_EXE_rhwp':str(exe)})
+ helper.cargo('final-consumer-minimal',['run','--locked','--profile','release-test','--bin','rhwp-8174-s05-consumer','--',str(R/'samples/hwp_table_test.hwp'),str(R/'samples/hwpx/143E433F503322BD33.hwpx')])
+ helper.cargo('final-metadata-minimal',['metadata','--locked','--format-version','1','--filter-platform','x86_64-unknown-linux-gnu'])
+ helper.cargo('final-consumer-pdf-only',['run','--locked','--profile','release-test','--features','pdf-only','--bin','pdf'])
+ helper.cargo('final-cli-minimal-install',['install','rhwp','--registry','rhwp-final','--version','=0.8.7','--bin','rhwp','--locked','--no-default-features','--features','wasm-api','--profile','release-test','--root',str(B/'installed-minimal'),'--target-dir',str(helper.TARGET)])
+ helper.cargo('final-rustdoc',['doc','--locked','--package','rhwp','--lib','--no-deps'])
+ wasm=Path((B/'wasm-consumer-path.txt').read_text().strip());p=wasm/'Cargo.toml';p.write_text(p.read_text().replace('version="=0.8.7",default-features=false','version="=0.8.7",default-features=false,registry="rhwp-final"'))
+ with (wasm/'.cargo/config.toml').open('a') as f:f.write('\n[registries.rhwp-final]\nindex="sparse+http://127.0.0.1:48175/index/"\n')
+ helper.cargo('final-wasm-metadata',['metadata','--format-version','1','--filter-platform','wasm32-unknown-unknown'],cwd=wasm)
+ helper.run('final-wasm-facade-build',[str(R/'scripts/wasm-pack-locked.sh'),'--target','web','--out-dir',str(B/'wasm-on'),'--out-name','rhwp'],cwd=wasm,extra={'CARGO_PROFILE_RELEASE_CODEGEN_UNITS':'16'})
+ helper.run('final-wasm-core-build',[str(R/'scripts/wasm-pack-locked.sh'),'--target','web','--out-dir',str(B/'wasm-off'),'--out-name','rhwp','--no-default-features'],cwd=wasm,extra={'CARGO_PROFILE_RELEASE_CODEGEN_UNITS':'16'})
+ print('FINAL CONSUMPTION GATES PASS',flush=True)

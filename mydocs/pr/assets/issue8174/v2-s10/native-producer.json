@@ -1,0 +1,43 @@
+{
+  "source": "1611ec923e32a3c539750241c675fe84cebf1223",
+  "profile": "release-test",
+  "features": [
+    "native-skia"
+  ],
+  "productFiles": [
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/cache.rs",
+      "sha256": "470a551fc82918d113d69fe35152466b8ecc00f14c67aa897221478674410e60"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+      "sha256": "769459d4aa1db3290cba5c73a5d59de44533808aeeef403916d93733ecca7d83"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/extractors/text.rs",
+      "sha256": "a8b51e4c32d031fdf59ca130e792046f50e4c440af5e1874be0d2510dc81ee8f"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/fonts/allocation.rs",
+      "sha256": "791a0f3e65ecf2f601eb58bcb3f15c8001aefcfb60b605d1938096eeb978a0cd"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/fonts/font_dict.rs",
+      "sha256": "524c5f29a4a6562c0f260ecbdaf39202b05516c953fbb54c4e12dd0968b61640"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/fonts/font_copy.rs",
+      "sha256": "2b669d00f80f27f4ca5841a97f7abf454ab028e8c58c483d65e5be75e13435af"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/fonts/mod.rs",
+      "sha256": "86b097a8a5254d6a1b61f8a5740440e896cb22270af71bcbeb587dc89f25cb5c"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/import_limits.rs",
+      "sha256": "f86257a5f2fa77d48a36d23efa278ca9b793ce4132a12da68dee35c018d76b5b"
+    }
+  ],
+  "sha256": "37868c9fa79375cc06d5a412047b713f4e950009e4a4838dde614dba59b4e536",
+  "bytes": 74111640
+}

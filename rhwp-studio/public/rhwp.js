@@ -387,6 +387,17 @@ export class HwpDocument {
         }
     }
     /**
+     * @param {string} updates_json
+     */
+    applyFormActionUpdates(updates_json) {
+        const ptr0 = passStringToWasm0(updates_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_applyFormActionUpdates(this.__wbg_ptr, ptr0, len0);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
      * 머리말/꼬리말 마당(템플릿)을 적용한다.
      * @param {number} section_idx
      * @param {boolean} is_header
@@ -893,6 +904,25 @@ export class HwpDocument {
         }
     }
     /**
+     * Shared destination semantics for host routing; this never executes a link.
+     * @param {string} uri
+     * @returns {string}
+     */
+    static classifyHyperlinkDestination(uri) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ptr0 = passStringToWasm0(uri, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_classifyHyperlinkDestination(ptr0, len0);
+            deferred2_0 = ret[0];
+            deferred2_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
      * 활성 필드를 해제한다 (안내문 다시 표시).
      */
     clearActiveField() {
@@ -960,6 +990,15 @@ export class HwpDocument {
         } finally {
             wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
         }
+    }
+    /**
+     * 호스트가 실제 FontFace에 적재한 프로그램의 호환 글리프 지원을 등록한다.
+     * @param {string} family
+     */
+    clearTextFontFamily(family) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.hwpdocument_clearTextFontFamily(this.__wbg_ptr, ptr0, len0);
     }
     /**
      * 내부 클립보드에 컨트롤(표/그림/도형)이 포함되어 있는지 확인한다.
@@ -2734,6 +2773,41 @@ export class HwpDocument {
         }
     }
     /**
+     * 같은 cmap 판정으로 아직 공급되지 않은 글리프만 다음 후보에 전달한다.
+     * @param {Uint8Array} bytes
+     * @param {number} face_index
+     * @param {string} text
+     * @returns {string | undefined}
+     */
+    fontMissingText(bytes, face_index, text) {
+        const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_fontMissingText(this.__wbg_ptr, ptr0, len0, face_index, ptr1, len1);
+        let v3;
+        if (ret[0] !== 0) {
+            v3 = getStringFromWasm0(ret[0], ret[1]);
+            wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        }
+        return v3;
+    }
+    /**
+     * 공급 후보를 등록하기 전에 실제 cmap를 대조한다. CSS 이름 검사가 아니다.
+     * @param {Uint8Array} bytes
+     * @param {number} face_index
+     * @param {string} text
+     * @returns {boolean}
+     */
+    fontSupportsText(bytes, face_index, text) {
+        const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_fontSupportsText(this.__wbg_ptr, ptr0, len0, face_index, ptr1, len1);
+        return ret !== 0;
+    }
+    /**
      * [#4709] SVG 메트릭 face 주석 부착 여부를 반환한다.
      * @returns {boolean}
      */
@@ -3943,6 +4017,27 @@ export class HwpDocument {
         }
     }
     /**
+     * @returns {string}
+     */
+    getDeclaredFontFallbackRequests() {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_getDeclaredFontFallbackRequests(this.__wbg_ptr);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
      * 문서가 선언한 실제 프로그램 후보와 현재 환경을 호스트에 전달한다.
      * @returns {string}
      */
@@ -4291,6 +4386,26 @@ export class HwpDocument {
         }
     }
     /**
+     * FontFace와 Native fallback이 같은 실제 기호 공급 판정을 사용한다.
+     * @param {Uint8Array} bytes
+     * @param {number} face_index
+     * @returns {string}
+     */
+    getFontSymbolUnicodeRange(bytes, face_index) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_getFontSymbolUnicodeRange(this.__wbg_ptr, ptr0, len0, face_index);
+            deferred2_0 = ret[0];
+            deferred2_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
      * 본문 커서 위치의 각주 마커를 조회한다.
      *
      * direction: "backward" 또는 "forward"
@@ -4343,6 +4458,30 @@ export class HwpDocument {
             return getStringFromWasm0(ptr1, len1);
         } finally {
             wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * @param {string} address_json
+     * @returns {string}
+     */
+    getFormActionContext(address_json) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(address_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_getFormActionContext(this.__wbg_ptr, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
     }
     /**
@@ -4739,6 +4878,27 @@ export class HwpDocument {
         let deferred2_1;
         try {
             const ret = wasm.hwpdocument_getMetafileFontRequests(this.__wbg_ptr);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    getNativeOtfFontRequests() {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_getNativeOtfFontRequests(this.__wbg_ptr);
             var ptr1 = ret[0];
             var len1 = ret[1];
             if (ret[3]) {
@@ -5797,6 +5957,46 @@ export class HwpDocument {
         }
     }
     /**
+     * Resolve the same strict options used by importPdf before copying input.
+     * The zero-argument getPdfImportPolicy() remains the standard profile.
+     * @param {any} options
+     * @returns {string}
+     */
+    static getPdfImportPolicyWithOptions(options) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_getPdfImportPolicyWithOptions(options);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * Host execution requirements, distinct from parser request counters.
+     * @returns {string}
+     */
+    static getPdfImportRuntimeCapabilities() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.hwpdocument_getPdfImportRuntimeCapabilities();
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
      * Compile-time support of this artifact, queryable before opening a PDF.
      * @returns {string}
      */
@@ -6753,6 +6953,27 @@ export class HwpDocument {
         }
     }
     /**
+     * @returns {string}
+     */
+    getTextShadowFontRequests() {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_getTextShadowFontRequests(this.__wbg_ptr);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
      * HWPX 비표준 감지 경고를 JSON 문자열로 반환한다 (#177).
      *
      * ## 반환 형식
@@ -7097,9 +7318,7 @@ export class HwpDocument {
      * @returns {HwpDocument}
      */
     static importPdf(data, options) {
-        const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.hwpdocument_importPdf(ptr0, len0, options);
+        const ret = wasm.hwpdocument_importPdf(data, options);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -9049,6 +9268,18 @@ export class HwpDocument {
         }
     }
     /**
+     * 미리 준비한 실제 face만 동기 공급하고 모든 선택을 한 번에 조판한다.
+     * @param {Function} provider
+     * @returns {boolean}
+     */
+    prepareNativeOtfFonts(provider) {
+        const ret = wasm.hwpdocument_prepareNativeOtfFonts(this.__wbg_ptr, provider);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] !== 0;
+    }
+    /**
      * 한/글 5.x/97 OLE 수식을 편집 가능한 native equation으로 변환한다.
      * @param {number} section_idx
      * @param {number} para_idx
@@ -9206,7 +9437,6 @@ export class HwpDocument {
         return ret[0] !== 0;
     }
     /**
-     * 호스트가 실제 FontFace에 적재한 프로그램의 호환 글리프 지원을 등록한다.
      * @param {string} family
      * @param {Uint8Array} bytes
      * @param {number} face_index
@@ -11016,6 +11246,20 @@ export class HwpDocument {
         }
     }
     /**
+     * 호출자는 원 face 부재·실제 대체 프로그램·입력 대응을 확인한 관측만 전달한다.
+     * @param {string} json
+     * @returns {boolean}
+     */
+    setObservedFontFallbacks(json) {
+        const ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_setObservedFontFallbacks(this.__wbg_ptr, ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] !== 0;
+    }
+    /**
      * 구역의 쪽 테두리/배경 설정을 변경하고 재페이지네이션한다.
      * @param {number} section_idx
      * @param {string} json
@@ -12150,6 +12394,254 @@ export class HwpViewer {
 if (Symbol.dispose) HwpViewer.prototype[Symbol.dispose] = HwpViewer.prototype.free;
 
 /**
+ * A generated editor handoff has its own finite remaining-credit scope. Once
+ * taken, the ordinary document and lazy assets own an independent lifetime.
+ */
+export class PdfEditorReopen {
+    static __wrap(ptr) {
+        const obj = Object.create(PdfEditorReopen.prototype);
+        obj.__wbg_ptr = ptr;
+        PdfEditorReopenFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        PdfEditorReopenFinalization.unregister(this);
+        return ptr;
+    }
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_pdfeditorreopen_free(ptr, 0);
+    }
+    /**
+     * @param {any} data
+     * @param {any} options
+     * @param {number} maximum
+     * @param {number} remaining
+     * @param {number} timeout_ms
+     * @returns {PdfEditorReopen}
+     */
+    static open(data, options, maximum, remaining, timeout_ms) {
+        const ret = wasm.pdfeditorreopen_open(data, options, maximum, remaining, timeout_ms);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return PdfEditorReopen.__wrap(ret[0]);
+    }
+    /**
+     * @returns {string}
+     */
+    resourceUsage() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.pdfeditorreopen_resourceUsage(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {HwpDocument}
+     */
+    takeDocument() {
+        const ret = wasm.pdfeditorreopen_takeDocument(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return HwpDocument.__wrap(ret[0]);
+    }
+}
+if (Symbol.dispose) PdfEditorReopen.prototype[Symbol.dispose] = PdfEditorReopen.prototype.free;
+
+export class PdfImportRequest {
+    static __wrap(ptr) {
+        const obj = Object.create(PdfImportRequest.prototype);
+        obj.__wbg_ptr = ptr;
+        PdfImportRequestFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        PdfImportRequestFinalization.unregister(this);
+        return ptr;
+    }
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_pdfimportrequest_free(ptr, 0);
+    }
+    /**
+     * @param {string} format
+     * @param {number} maximum
+     * @returns {Uint8Array}
+     */
+    exportDocument(format, maximum) {
+        const ptr0 = passStringToWasm0(format, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.pdfimportrequest_exportDocument(this.__wbg_ptr, ptr0, len0, maximum);
+        if (ret[3]) {
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        var v2 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        return v2;
+    }
+    /**
+     * @returns {string}
+     */
+    getTransferLimits() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.pdfimportrequest_getTransferLimits(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @param {any} data
+     * @param {any} options
+     * @returns {PdfImportRequest}
+     */
+    static importPdf(data, options) {
+        const ret = wasm.pdfimportrequest_importPdf(data, options);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return PdfImportRequest.__wrap(ret[0]);
+    }
+    /**
+     * @returns {string}
+     */
+    inspect() {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.pdfimportrequest_inspect(this.__wbg_ptr);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * @param {any} data
+     */
+    open(data) {
+        const ret = wasm.pdfimportrequest_open(this.__wbg_ptr, data);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * @returns {number}
+     */
+    pageCount() {
+        const ret = wasm.pdfimportrequest_pageCount(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * Construct the request before its owner makes the private transfer copy.
+     * @param {any} options
+     * @returns {PdfImportRequest}
+     */
+    static prepare(options) {
+        const ret = wasm.pdfimportrequest_prepare(options);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return PdfImportRequest.__wrap(ret[0]);
+    }
+    /**
+     * @returns {number}
+     */
+    remainingDecodedBytes() {
+        const ret = wasm.pdfimportrequest_remainingDecodedBytes(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * @param {number} page
+     * @returns {string}
+     */
+    renderPageSvg(page) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.pdfimportrequest_renderPageSvg(this.__wbg_ptr, page);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * @param {number} page
+     * @param {number} maximum
+     * @returns {string}
+     */
+    renderPageSvgLimited(page, maximum) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.pdfimportrequest_renderPageSvgLimited(this.__wbg_ptr, page, maximum);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * @param {number} length
+     */
+    reserveInput(length) {
+        const ret = wasm.pdfimportrequest_reserveInput(this.__wbg_ptr, length);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * Count and reserve response backing before allocation, using the same
+     * cumulative request as parsing, Core construction and first serialization.
+     * @param {number} bytes
+     */
+    reserveResponseCopy(bytes) {
+        const ret = wasm.pdfimportrequest_reserveResponseCopy(this.__wbg_ptr, bytes);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+}
+if (Symbol.dispose) PdfImportRequest.prototype[Symbol.dispose] = PdfImportRequest.prototype.free;
+
+/**
  * HWP 파일에서 썸네일 이미지만 경량 추출 (전체 파싱 없이)
  *
  * 반환: JSON `{ "format": "png"|"gif", "base64": "...", "width": N, "height": N }`
@@ -12162,6 +12654,28 @@ export function extractThumbnail(data) {
     const len0 = WASM_VECTOR_LEN;
     const ret = wasm.extractThumbnail(ptr0, len0);
     return ret;
+}
+
+/**
+ * FontFace unicodeRange가 Native와 같은 빈 기호 제외 결과를 소비한다.
+ * 빈 문자열은 제한 없음이다. 원본 bytes/cmap/glyph/advance를 수정하지 않는다.
+ * @param {Uint8Array} data
+ * @param {number} face_index
+ * @returns {string}
+ */
+export function fontSymbolUnicodeRange(data, face_index) {
+    let deferred2_0;
+    let deferred2_1;
+    try {
+        const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.fontSymbolUnicodeRange(ptr0, len0, face_index);
+        deferred2_0 = ret[0];
+        deferred2_1 = ret[1];
+        return getStringFromWasm0(ret[0], ret[1]);
+    } finally {
+        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+    }
 }
 
 /**
@@ -12180,6 +12694,49 @@ export function isPrintMetafile(data) {
     const len0 = WASM_VECTOR_LEN;
     const ret = wasm.isPrintMetafile(ptr0, len0);
     return ret !== 0;
+}
+
+/**
+ * CanvasKit의 실제 장치 행렬도 Native/Canvas2D와 같은 clip 계산에 전달한다.
+ * @param {Float64Array} rectangle
+ * @param {Float64Array} transform
+ * @returns {any}
+ */
+export function mapPrintBitmapClip(rectangle, transform) {
+    const ptr0 = passArrayF64ToWasm0(rectangle, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(transform, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.mapPrintBitmapClip(ptr0, len0, ptr1, len1);
+    return ret;
+}
+
+/**
+ * @param {Float64Array} rectangle
+ * @param {Float64Array} transform
+ * @returns {any}
+ */
+export function mapPrintBitmapImage(rectangle, transform) {
+    const ptr0 = passArrayF64ToWasm0(rectangle, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(transform, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.mapPrintBitmapImage(ptr0, len0, ptr1, len1);
+    return ret;
+}
+
+/**
+ * @param {Float64Array} rectangle
+ * @param {Float64Array} transform
+ * @returns {any}
+ */
+export function mapPrintRectangleFill(rectangle, transform) {
+    const ptr0 = passArrayF64ToWasm0(rectangle, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(transform, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.mapPrintRectangleFill(ptr0, len0, ptr1, len1);
+    return ret;
 }
 
 /**
@@ -12203,6 +12760,80 @@ export function prepareBitmapRaster(bytes, destination, matrix, profile, paper_g
     var len4 = WASM_VECTOR_LEN;
     const ret = wasm.prepareBitmapRaster(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, ptr4, len4);
     return ret;
+}
+
+/**
+ * @param {string} options_json
+ * @param {string} fragment
+ * @returns {any}
+ */
+export function prepareStaticSvgRaster(options_json, fragment) {
+    const ptr0 = passStringToWasm0(options_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(fragment, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.prepareStaticSvgRaster(ptr0, len0, ptr1, len1);
+    return ret;
+}
+
+/**
+ * CanvasKit도 실제 출력 변환과 공통 Rust의 그림 외곽 pen 결과를 소비한다.
+ * @param {Float64Array} pen
+ * @param {Float64Array} transform
+ * @returns {number | undefined}
+ */
+export function printPicturePenWidth(pen, transform) {
+    const ptr0 = passArrayF64ToWasm0(pen, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(transform, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.printPicturePenWidth(ptr0, len0, ptr1, len1);
+    return ret[0] === 0 ? undefined : ret[1];
+}
+
+/**
+ * @param {Uint8Array} rgba
+ * @param {number} source_width
+ * @param {number} source_height
+ * @param {number} x
+ * @param {number} y
+ * @param {number} width
+ * @param {number} height
+ * @param {number} page_width
+ * @param {number} page_height
+ * @param {number} scale
+ * @returns {any}
+ */
+export function rasterizePrintImageRGBA(rgba, source_width, source_height, x, y, width, height, page_width, page_height, scale) {
+    const ptr0 = passArray8ToWasm0(rgba, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.rasterizePrintImageRGBA(ptr0, len0, source_width, source_height, x, y, width, height, page_width, page_height, scale);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * encoded straight RGB와 별도 이진 마스크를 공통 Rust에서 표본화한다.
+ * @param {Uint8Array} encoded
+ * @param {number} x
+ * @param {number} y
+ * @param {number} width
+ * @param {number} height
+ * @param {number} page_width
+ * @param {number} page_height
+ * @param {number} scale
+ * @returns {any}
+ */
+export function rasterizePrintMaskedImage(encoded, x, y, width, height, page_width, page_height, scale) {
+    const ptr0 = passArray8ToWasm0(encoded, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.rasterizePrintMaskedImage(ptr0, len0, x, y, width, height, page_width, page_height, scale);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
 }
 
 /**
@@ -12367,6 +12998,10 @@ function __wbg_get_imports() {
             const ret = arg0.c;
             return ret;
         },
+        __wbg_call_1c5886ab9c57d1c7: function() { return handleError(function (arg0, arg1) {
+            const ret = arg0.call(arg1);
+            return ret;
+        }, arguments); },
         __wbg_call_35dba3c747ad7521: function() { return handleError(function (arg0, arg1, arg2) {
             const ret = arg0.call(arg1, arg2);
             return ret;
@@ -12474,12 +13109,24 @@ function __wbg_get_imports() {
             getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
             getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
         },
+        __wbg_from_74f3d90e0ff11240: function(arg0) {
+            const ret = Array.from(arg0);
+            return ret;
+        },
         __wbg_getContext_71c33f14b63da593: function() { return handleError(function (arg0, arg1, arg2) {
             const ret = arg0.getContext(getStringFromWasm0(arg1, arg2));
             return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
         }, arguments); },
         __wbg_getImageData_8700a8b301ed5f06: function() { return handleError(function (arg0, arg1, arg2, arg3, arg4) {
             const ret = arg0.getImageData(arg1, arg2, arg3, arg4);
+            return ret;
+        }, arguments); },
+        __wbg_getPrototypeOf_28594fd8c494d87a: function(arg0) {
+            const ret = Object.getPrototypeOf(arg0);
+            return ret;
+        },
+        __wbg_getPrototypeOf_55a24d07487f0509: function() { return handleError(function (arg0) {
+            const ret = Reflect.getPrototypeOf(arg0);
             return ret;
         }, arguments); },
         __wbg_getRandomValues_436a51d0629d84e1: function() { return handleError(function (arg0, arg1) {
@@ -12497,6 +13144,10 @@ function __wbg_get_imports() {
             const ret = arg0[arg1 >>> 0];
             return ret;
         },
+        __wbg_has_b3a6e6d0d28295fa: function() { return handleError(function (arg0, arg1) {
+            const ret = Reflect.has(arg0, arg1);
+            return ret;
+        }, arguments); },
         __wbg_height_e56f6fb197710e09: function(arg0) {
             const ret = arg0.height;
             return ret;
@@ -12549,6 +13200,10 @@ function __wbg_get_imports() {
             const ret = Array.isArray(arg0);
             return ret;
         },
+        __wbg_is_86be747e88e872fb: function(arg0, arg1) {
+            const ret = Object.is(arg0, arg1);
+            return ret;
+        },
         __wbg_length_36bd29c6848c2144: function(arg0) {
             const ret = arg0.length;
             return ret;
@@ -12598,6 +13253,10 @@ function __wbg_get_imports() {
             const ret = new Image();
             return ret;
         }, arguments); },
+        __wbg_new_77cc4f4f472aeb81: function(arg0) {
+            const ret = new Uint8Array(arg0);
+            return ret;
+        },
         __wbg_new_ebe3e0f6837f0879: function() {
             const ret = new Object();
             return ret;
@@ -12822,6 +13481,12 @@ const HwpDocumentFinalization = (typeof FinalizationRegistry === 'undefined')
 const HwpViewerFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_hwpviewer_free(ptr, 1));
+const PdfEditorReopenFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_pdfeditorreopen_free(ptr, 1));
+const PdfImportRequestFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_pdfimportrequest_free(ptr, 1));
 
 function addToExternrefTable0(obj) {
     const idx = wasm.__externref_table_alloc();

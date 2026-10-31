@@ -1,3 +1,8 @@
+//! 관계형·고정형: HWPX 26쪽의 셀 소유와 독립 Print 기준선·가로 원점.
+//! 주석 갱신: 2026-10-30 04:26 KST; 직전 파일 변경: 260e403bae (2026-10-26 20:19:22 +09:00).
+//! 2026-10-30 측정 raw(96dpi, PDFium): 26쪽 Native 100.00% / fresh WASM 100.00%;
+//! 전 64쪽 최저 Native 99.99% / fresh WASM 99.99%.
+//! 근거: mydocs/pr/assets/issue_8160/rebase-ad4bf269-20261030/README.md.
 //! 동일 HWPX의 독립 2024 Print 26쪽에서 두 셀 문구의 기준선과 소유를 확인한다.
 //! 가시 글자 8pt와 종단 빈 run 10pt가 공존하는 정상 저장 줄이다.
 //! Native261/fresh WASM077 전쪽 검증과 26쪽 직접 판독 후 등록한다.
@@ -64,11 +69,11 @@ fn terminal_style_preserves_printed_cell_baselines_and_source_ownership() {
         let y = node.bbox.y + run.baseline;
         println!("{text}: actual baseline={y}, independent Print={expected_y}");
         assert!(
-            (y - expected_y).abs() <= 2.0,
-            "{text}: 독립 Print 기준선 ±2px, actual={y}, expected={expected_y}"
+            (y - expected_y).abs() <= 1.0,
+            "{text}: 독립 Print 기준선 ±1px, actual={y}, expected={expected_y}"
         );
         assert!(
-            (node.bbox.x - 633.1199951171875).abs() <= 2.0,
+            (node.bbox.x - 633.1199951171875).abs() <= 1.0,
             "독립 Print 가로 원점"
         );
         assert!(

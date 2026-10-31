@@ -51,8 +51,19 @@ struct DirEntry {
 
 impl DirEntry {
     fn new(name: &str, obj_type: u8, parent: usize) -> Self {
-        DirEntry {
-            name: name.to_string(),
+        match Self::try_new(name, obj_type, parent, &crate::storage::Unbounded) {
+            Ok(entry) => entry,
+            Err(never) => match never {},
+        }
+    }
+    fn try_new<S: crate::storage::Storage>(
+        name: &str,
+        obj_type: u8,
+        parent: usize,
+        storage: &S,
+    ) -> Result<Self, S::Error> {
+        Ok(DirEntry {
+            name: storage.string(name)?,
             obj_type,
             data: Vec::new(),
             parent,
@@ -66,7 +77,7 @@ impl DirEntry {
             start_sector: if obj_type == 1 { 0 } else { ENDOFCHAIN },
             is_mini: false,
             clsid: [0u8; 16],
-        }
+        })
     }
 }
 
@@ -104,12 +115,33 @@ pub fn build_cfb_with_root_clsid(
     named_streams: &[(&str, &[u8])],
     root_clsid: [u8; 16],
 ) -> Result<Vec<u8>, String> {
+    build_cfb_with_storage(
+        named_streams,
+        root_clsid,
+        &crate::storage::Unbounded,
+        usize::MAX,
+    )
+}
+
+pub(crate) fn build_cfb_with_storage<S: crate::storage::Storage>(
+    named_streams: &[(&str, &[u8])],
+    root_clsid: [u8; 16],
+    storage: &S,
+    maximum: usize,
+) -> Result<Vec<u8>, String>
+where
+    S::Error: std::fmt::Display,
+{
+    storage.bytes(0).map_err(|error| error.to_string())?;
+    if maximum < 512 {
+        return Err("SERIALIZE_RESOURCE_LIMIT: CFB output byte limit".into());
+    }
     // 1. 엔트리 목록 구축
-    let mut entries = build_entries(named_streams)?;
+    let mut entries = try_build_entries(named_streams, storage)?;
     entries[0].clsid = root_clsid;
 
     // 2. 디렉토리 트리 구축
-    build_tree(&mut entries, 0);
+    try_build_tree(&mut entries, storage)?;
 
     // 3. 미니 스트림 구축 (< 4096 바이트 스트림)
     let mut mini_stream = Vec::new();
@@ -122,6 +154,9 @@ pub fn build_cfb_with_root_clsid(
             entry.start_sector = start_mini as u32;
 
             let num_mini = (entry.data.len() + MINI_SECTOR_SIZE - 1) / MINI_SECTOR_SIZE;
+            storage
+                .reserve(&mut mini_fat, num_mini)
+                .map_err(|error| error.to_string())?;
             for i in 0..num_mini {
                 mini_fat.push(if i + 1 < num_mini {
                     (start_mini + i + 1) as u32
@@ -130,8 +165,11 @@ pub fn build_cfb_with_root_clsid(
                 });
             }
 
-            mini_stream.extend_from_slice(&entry.data);
             let pad = (MINI_SECTOR_SIZE - (entry.data.len() % MINI_SECTOR_SIZE)) % MINI_SECTOR_SIZE;
+            storage
+                .reserve(&mut mini_stream, entry.data.len().saturating_add(pad))
+                .map_err(|error| error.to_string())?;
+            mini_stream.extend_from_slice(&entry.data);
             mini_stream.resize(mini_stream.len() + pad, 0);
         }
     }
@@ -208,7 +246,20 @@ pub fn build_cfb_with_root_clsid(
     let total_sectors = non_meta_sectors + fat_count + difat_count;
 
     // 5. FAT 구축
-    let mut fat = vec![FREESECT; total_sectors as usize];
+    let file_size = 512usize
+        .checked_add(
+            (total_sectors as usize)
+                .checked_mul(SECTOR_SIZE)
+                .ok_or("SERIALIZE_RESOURCE_LIMIT: CFB sector size")?,
+        )
+        .ok_or("SERIALIZE_RESOURCE_LIMIT: CFB file size")?;
+    if file_size > maximum {
+        return Err("SERIALIZE_RESOURCE_LIMIT: CFB output byte limit".into());
+    }
+    let mut fat = storage
+        .vec(total_sectors as usize)
+        .map_err(|error| error.to_string())?;
+    fat.resize(total_sectors as usize, FREESECT);
 
     // 디렉토리 체인
     for i in 0..dir_sectors {
@@ -270,8 +321,8 @@ pub fn build_cfb_with_root_clsid(
     }
 
     // 6. 바이너리 조립
-    let file_size = 512 + total_sectors as usize * SECTOR_SIZE;
-    let mut output = vec![0u8; file_size];
+    let mut output = storage.vec(file_size).map_err(|error| error.to_string())?;
+    output.resize(file_size, 0);
 
     // 헤더 작성
     write_header(
@@ -389,16 +440,35 @@ pub fn build_cfb_with_root_clsid(
 /// 루트 스트림 하나로 뭉개진다 (#4097).
 /// MS-CFB §2.6.1 이 엔트리 이름에서 `/ \ : !` 를 금지하므로 이 치환은 무손실이다.
 fn build_entries(named_streams: &[(&str, &[u8])]) -> Result<Vec<DirEntry>, String> {
+    try_build_entries(named_streams, &crate::storage::Unbounded)
+}
+
+fn try_build_entries<S: crate::storage::Storage>(
+    named_streams: &[(&str, &[u8])],
+    storage: &S,
+) -> Result<Vec<DirEntry>, String>
+where
+    S::Error: std::fmt::Display,
+{
     let mut entries = Vec::new();
 
     // Root Entry
-    entries.push(DirEntry::new("Root Entry", 5, 0));
+    storage
+        .push(
+            &mut entries,
+            DirEntry::try_new("Root Entry", 5, 0, storage).map_err(|error| error.to_string())?,
+        )
+        .map_err(|error| error.to_string())?;
 
     for &(path, data) in named_streams {
-        let normalized = path.replace('\\', "/");
+        let normalized = storage
+            .chars(path.chars().map(|ch| if ch == '\\' { '/' } else { ch }))
+            .map_err(|error| error.to_string())?;
         // 빈 세그먼트를 버려 선행 `/`, 중복 `//`, 후행 `/` 를 한꺼번에 처리한다.
         // 종전 `trim_start_matches('/')` 는 선행만 처리해 `/A/` 가 **이름 없는 스트림**이 됐다.
-        let parts: Vec<&str> = normalized.split('/').filter(|s| !s.is_empty()).collect();
+        let parts = storage
+            .collect(normalized.split('/').filter(|s| !s.is_empty()))
+            .map_err(|error| error.to_string())?;
         if parts.is_empty() {
             return Err(format!("CFB 경로에 이름 세그먼트가 없다: {path:?}"));
         }
@@ -432,17 +502,26 @@ fn build_entries(named_streams: &[(&str, &[u8])]) -> Result<Vec<DirEntry>, Strin
                     ));
                 }
                 if is_last {
-                    entries[idx].data = data.to_vec();
+                    entries[idx].data = storage
+                        .copy_slice(data)
+                        .map_err(|error| error.to_string())?;
                 }
                 parent_idx = idx;
             } else {
                 let new_idx = entries.len();
-                let mut entry = DirEntry::new(part, want_type, parent_idx);
+                let mut entry = DirEntry::try_new(part, want_type, parent_idx, storage)
+                    .map_err(|error| error.to_string())?;
                 if is_last {
-                    entry.data = data.to_vec();
+                    entry.data = storage
+                        .copy_slice(data)
+                        .map_err(|error| error.to_string())?;
                 }
-                entries[parent_idx].children.push(new_idx);
-                entries.push(entry);
+                storage
+                    .push(&mut entries[parent_idx].children, new_idx)
+                    .map_err(|error| error.to_string())?;
+                storage
+                    .push(&mut entries, entry)
+                    .map_err(|error| error.to_string())?;
                 parent_idx = new_idx;
             }
         }
@@ -453,35 +532,77 @@ fn build_entries(named_streams: &[(&str, &[u8])]) -> Result<Vec<DirEntry>, Strin
 
 /// 각 스토리지의 자식을 정렬된 균형 이진 트리로 구축한다.
 fn build_tree(entries: &mut Vec<DirEntry>, idx: usize) {
-    let children = entries[idx].children.clone();
-    if children.is_empty() {
-        entries[idx].child = NOSTREAM;
-        return;
+    match try_build_tree_from(entries, idx, &crate::storage::Unbounded) {
+        Ok(()) => (),
+        Err(error) => unreachable!("{error}"),
     }
+}
 
-    // CFB 사양에 따라 이름 비교: 길이 우선, 같은 길이면 대소문자 무시
-    let mut sorted = children.clone();
-    sorted.sort_by(|&a, &b| {
-        let na = entries[a].name.to_uppercase();
-        let nb = entries[b].name.to_uppercase();
-        na.len().cmp(&nb.len()).then(na.cmp(&nb))
-    });
+fn try_build_tree<S: crate::storage::Storage>(
+    entries: &mut Vec<DirEntry>,
+    storage: &S,
+) -> Result<(), String>
+where
+    S::Error: std::fmt::Display,
+{
+    try_build_tree_from(entries, 0, storage)
+}
 
-    let root = build_balanced_tree(entries, &sorted);
-    entries[idx].child = root;
-
-    // Midpoint BST의 leaf 깊이는 최대 깊이 또는 그보다 1 작다. 최하단 노드만
-    // red, 나머지를 black으로 두면 모든 NIL 경로의 black-height가 같아지고
-    // red-red 인접도 생기지 않는다. 각 자식 트리의 root는 항상 black이다.
-    let max_depth = tree_max_depth(entries, root, 0);
-    color_deepest_nodes(entries, root, 0, max_depth);
-
-    // 하위 스토리지에 대해 재귀
-    for &child_idx in &children {
-        if entries[child_idx].obj_type == 1 {
-            build_tree(entries, child_idx);
+fn try_build_tree_from<S: crate::storage::Storage>(
+    entries: &mut Vec<DirEntry>,
+    first: usize,
+    storage: &S,
+) -> Result<(), String>
+where
+    S::Error: std::fmt::Display,
+{
+    let mut keys = storage
+        .vec(entries.len())
+        .map_err(|error| error.to_string())?;
+    for entry in entries.iter() {
+        keys.push(
+            storage
+                .chars(entry.name.chars().flat_map(char::to_uppercase))
+                .map_err(|error| error.to_string())?,
+        );
+    }
+    let mut pending = storage
+        .collect([first])
+        .map_err(|error| error.to_string())?;
+    while let Some(idx) = pending.pop() {
+        let children = storage
+            .copy_slice(&entries[idx].children)
+            .map_err(|error| error.to_string())?;
+        if children.is_empty() {
+            entries[idx].child = NOSTREAM;
+            continue;
+        }
+        let mut sorted = storage
+            .copy_slice(&children)
+            .map_err(|error| error.to_string())?;
+        storage
+            .bytes(sorted.len().saturating_mul(std::mem::size_of::<usize>()))
+            .map_err(|error| error.to_string())?;
+        sorted.sort_by(|&a, &b| {
+            keys[a]
+                .len()
+                .cmp(&keys[b].len())
+                .then(keys[a].cmp(&keys[b]))
+        });
+        let root = build_balanced_tree(entries, &sorted);
+        entries[idx].child = root;
+        let max_depth = tree_max_depth(entries, root, 0);
+        color_deepest_nodes(entries, root, 0, max_depth);
+        // Same depth-first ownership order, without storage-depth recursion.
+        for &child in children.iter().rev() {
+            if entries[child].obj_type == 1 {
+                storage
+                    .push(&mut pending, child)
+                    .map_err(|error| error.to_string())?;
+            }
         }
     }
+    Ok(())
 }
 
 fn tree_max_depth(entries: &[DirEntry], idx: u32, depth: usize) -> usize {
@@ -608,8 +729,12 @@ fn write_dir_entry(output: &mut [u8], offset: usize, entry: &DirEntry) {
     let buf = &mut output[offset..offset + DIR_ENTRY_SIZE];
 
     // 이름 (UTF-16LE, null 종료, 최대 32 UTF-16 코드 유닛)
-    let name_utf16: Vec<u16> = entry.name.encode_utf16().collect();
-    let name_len = name_utf16.len().min(31); // 최대 31자 + null
+    let mut name_utf16 = [0u16; 31];
+    let mut name_len = 0;
+    for unit in entry.name.encode_utf16().take(31) {
+        name_utf16[name_len] = unit;
+        name_len += 1;
+    }
     for i in 0..name_len {
         let pos = i * 2;
         buf[pos..pos + 2].copy_from_slice(&name_utf16[i].to_le_bytes());

@@ -39,6 +39,7 @@ pub(super) fn apply(
     span: &TextSpan,
     media_box: (f32, f32, f32, f32),
     clip: Option<&PathClip>,
+    allocation: super::allocation::Allocation<'_>,
 ) -> Result<(), String> {
     if span.rotation_degrees == 0.0 {
         return Ok(());
@@ -93,15 +94,19 @@ pub(super) fn apply(
     attr.render_sy = cos;
     attr.render_tx = tx;
     attr.render_ty = ty;
-    let paths: Option<Vec<TextClipPath>> =
-        super::text_clip::local_paths_mapped(clip, true, |x, y| {
+    let paths: Option<Vec<TextClipPath>> = super::text_clip::local_paths_mapped(
+        clip,
+        true,
+        |x, y| {
             let dx = f64::from(x - media_box.0) - center.0;
             let dy = f64::from(media_box.3 - y) - center.1;
             (
                 (cos * dx - sin * dy + width / 2.0) * 100.0,
                 (sin * dx + cos * dy + height / 2.0) * 100.0,
             )
-        })?;
+        },
+        allocation,
+    )?;
     rect.drawing.text_box.as_mut().unwrap().paint_clip = paths;
     Ok(())
 }

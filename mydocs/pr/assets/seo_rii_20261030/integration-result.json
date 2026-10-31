@@ -1,0 +1,66 @@
+{
+  "head": "d5a7d933f83550e89aabc3b08795724873051f34",
+  "pr": 8394,
+  "mode": "self-review",
+  "findings": [],
+  "scope": [
+    "LRU retained-byte accounting, entry bound, revision/font/page/scale keys and invalidation",
+    "Allocation before eviction, off-page output, tiled peak budget and feature-off behavior",
+    "Fixed tile origin, guard clipping, checked destination offset, full tree replay and pixel contract boundaries",
+    "Shared arrow geometry consumption, finite f32 scalar/outline, endpoint metadata and tangent refusal",
+    "CI native test union and unchanged trust policy"
+  ],
+  "evidence": "mydocs/pr/assets/seo_rii_20261030/README.md",
+  "ciStatus": "success",
+  "merge": "7d4741392bb2ffaf308f5ce1cf6ba7f4deeeb1c9",
+  "githubDefaultTests": {
+    "passed": 12004,
+    "failed": 0,
+    "skipped": 45
+  },
+  "runs": [
+    {
+      "conclusion": "success",
+      "databaseId": 41081854982,
+      "status": "completed",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41081854982",
+      "workflowName": "Adapter inter-diff"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 41081854953,
+      "status": "completed",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41081854953",
+      "workflowName": "Proptest roundtrip"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 41081854797,
+      "status": "completed",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41081854797",
+      "workflowName": "CodeQL"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 41081854673,
+      "status": "completed",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41081854673",
+      "workflowName": "Render Diff"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 41081855120,
+      "status": "completed",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41081855120",
+      "workflowName": "CI"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 41081854527,
+      "status": "completed",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/41081854527",
+      "workflowName": "CI Impact Policy Controller"
+    }
+  ],
+  "remoteAssetsVerified": 76
+}

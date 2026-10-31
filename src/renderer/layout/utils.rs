@@ -78,6 +78,28 @@ pub(crate) fn picture_data_is_unusable(data: Option<&[u8]>) -> bool {
 /// 되어(00493: 188.5×134.0mm 가 712×712px) 지면 밖으로 나간다. 프레임 값이 온전하면
 /// 회전 후 프레임(common)을 그대로 쓴다.
 pub(crate) fn picture_display_size_hu(picture: &Picture) -> (i32, i32) {
+    // 변환 행렬의 합성이 원래 그림을 저장된 개체 틀로 축소하는 경우 curSz는
+    // 중간 단계의 크기다. 이를 최종 틀과 축별 max하면 그림이 다시 커진다.
+    // 행렬과 HWPUNIT의 직렬화 반올림 차이만 허용하고, 서로 다른 크기를 나타내는
+    // 손상된 common/current 사례는 기존 폴백을 유지한다.
+    let attr = &picture.shape_attr;
+    if picture.common.width > 0
+        && picture.common.height > 0
+        && attr.original_width > 0
+        && attr.original_height > 0
+        && !attr.raw_rendering.is_empty()
+        && attr.render_b == 0.0
+        && attr.render_c == 0.0
+        && attr.rotation_angle.rem_euclid(360) == 0
+    {
+        let transformed_width = f64::from(attr.original_width) * attr.render_sx.abs();
+        let transformed_height = f64::from(attr.original_height) * attr.render_sy.abs();
+        if (transformed_width - f64::from(picture.common.width)).abs() <= 2.0
+            && (transformed_height - f64::from(picture.common.height)).abs() <= 2.0
+        {
+            return (picture.common.width as i32, picture.common.height as i32);
+        }
+    }
     if picture.shape_attr.rotation_angle.rem_euclid(360) != 0
         && picture.common.width > 0
         && picture.common.height > 0
@@ -108,7 +130,8 @@ pub(crate) fn picture_display_size_hu(picture: &Picture) -> (i32, i32) {
 /// 비-TAC + 텍스트가 옆으로 흐르는 wrap(Square/Tight/Through)에서는 파일
 /// LINE_SEG(sw)/레이아웃이 `common`(개체 틀) 크기로 자리를 예약하므로, 표시도
 /// 그 틀에 맞춰야 본문과 겹치지 않는다 (한컴 정합 — KICE EMF: common=198px 로
-/// 그림, current=367px 는 과대). 그 외(TAC 인라인, TopAndBottom 등)는 종전
+/// 그림, current=367px 는 과대). 저장 아핀 변환을 가진 비-TAC 그림도 변환 전
+/// 크기를 개체 틀로 다시 사용하지 않고 공통 개체 크기를 소비한다. 그 외는 종전
 /// `picture_display_size_hu`(max(common, current)) 유지 — #1122 문26(주머니
 /// 그림: TAC, common.width 가 손상되어 current 가 정답) 회귀 방지.
 /// 상대 크기 축의 common 값은 비율이므로 저장된 현재 HU 크기를 사용한다.
@@ -121,7 +144,13 @@ pub(crate) fn picture_flow_frame_size_hu(picture: &Picture) -> (i32, i32) {
                 | crate::model::shape::TextWrap::Tight
                 | crate::model::shape::TextWrap::Through
         );
-    if flows_beside && picture.common.width > 0 && picture.common.height > 0 {
+    let saved_float_transform = !picture.common.treat_as_char
+        && picture.shape_attr.group_level == 0
+        && picture.shape_attr.has_saved_affine_geometry();
+    if (flows_beside || saved_float_transform)
+        && picture.common.width > 0
+        && picture.common.height > 0
+    {
         crate::renderer::stored_picture_metrics::stored_picture_size_hu(picture)
     } else {
         picture_display_size_hu(picture)
@@ -612,6 +641,19 @@ mod tests {
         picture.shape_attr.current_height = 18956;
 
         assert_eq!(picture_flow_frame_size_hu(&picture), (14847, 10230));
+        // 저장 행렬이 있는 떠 있는 그림도 변환 전 크기로 틀을 확대하지 않는다.
+        let mut picture = Picture::default();
+        picture.common.treat_as_char = false;
+        picture.common.text_wrap = crate::model::shape::TextWrap::BehindText;
+        picture.common.width = 6000;
+        picture.common.height = 5000;
+        picture.shape_attr.current_width = 12000;
+        picture.shape_attr.current_height = 10000;
+        picture.shape_attr.raw_rendering = vec![1];
+        picture.shape_attr.render_sx = 0.5;
+        picture.shape_attr.render_sy = 0.5;
+
+        assert_eq!(picture_flow_frame_size_hu(&picture), (6000, 5000));
     }
 
     /// [Issue #1230/#1122] TAC 인라인은 종전 max 유지 (문26 주머니 그림 회귀 방지).

@@ -1,0 +1,25 @@
+{
+  "source": "1611ec923e32a3c539750241c675fe84cebf1223",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "c979ffe41ffafb8202d240fa9e094f403decf40f0cb95d1698c5cbecdd7ce46c",
+      "bytes": 1201
+    },
+    {
+      "path": "contracts.json",
+      "sha256": "1b890407c665ff0554eb1dd5ac7841b1148c67e4b8f5ad677c8dfe45969651b2",
+      "bytes": 982
+    },
+    {
+      "path": "native-producer.json",
+      "sha256": "018e1e4084796cd2eebb37090eee37d84a9c7af3caee4339e609d9dff094db2c",
+      "bytes": 1564
+    },
+    {
+      "path": "native-smoke.json",
+      "sha256": "17b6a79357c08aa82411078853ccffd5a23a2307cbdc03d17be1c18977d8f366",
+      "bytes": 3454
+    }
+  ]
+}

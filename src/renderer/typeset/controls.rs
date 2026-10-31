@@ -103,6 +103,41 @@ pub(super) fn place_decoration_table(
     engine: &super::TypesetEngine,
     styles: &ResolvedStyleSet,
 ) {
+    match place_decoration_table_with_storage(
+        st,
+        para_idx,
+        ctrl_idx,
+        para,
+        table,
+        next_para,
+        paragraphs,
+        dpi,
+        anchor_origin,
+        |top| Ok(format(top)),
+        engine,
+        styles,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(super) fn place_decoration_table_with_storage<S: crate::storage::Storage>(
+    st: &mut TypesetState,
+    para_idx: usize,
+    ctrl_idx: usize,
+    para: &Paragraph,
+    table: &Table,
+    next_para: Option<&Paragraph>,
+    paragraphs: &[Paragraph],
+    dpi: f64,
+    anchor_origin: Option<f64>,
+    format: impl FnOnce(bool) -> Result<FormattedTable, S::Error>,
+    engine: &super::TypesetEngine,
+    styles: &ResolvedStyleSet,
+    storage: &S,
+) -> Result<(), S::Error> {
     if anchor_origin.is_none()
         && !st.profile.session_edited()
         && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
@@ -133,14 +168,18 @@ pub(super) fn place_decoration_table(
                 line.vertical_pos - crate::renderer::px_to_hwpunit(placement.anchor_y, dpi)
             });
             st.record_vpos_lazy_origin(base);
-            st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
+            st.record_paragraph_float_placement_with_storage(
+                (para_idx, ctrl_idx),
+                placement,
+                storage,
+            )?;
         }
     }
-    st.emit_decoration_table(para_idx, ctrl_idx);
+    st.emit_decoration_table_with_storage(para_idx, ctrl_idx, storage)?;
     // [#4568] 현재 쪽을 넘는 잔여 행만 다음 쪽 대기열에 남긴다.
     // 포맷은 Shape 발행 뒤, 앵커/가용 영역 조회 전에 수행한다.
     let origin = anchor_origin.unwrap_or_else(|| st.decoration_table_flow_height());
-    let ft = format(origin < 1.0);
+    let ft = format(origin < 1.0)?;
     let continuation = decoration_table::continuation(
         para,
         table,
@@ -166,7 +205,9 @@ pub(super) fn place_decoration_table(
             );
         }
     }
-    st.finish_decoration_table(para_idx, ctrl_idx, continuation);
+    st.finish_decoration_table_with_storage(para_idx, ctrl_idx, continuation, storage)?;
+
+    Ok(())
 }
 
 /// 저장 줄 경계의 이월을 먼저 적용한 뒤, 갱신된 단 상태로 장식 표 경로를 선택한다.
@@ -185,6 +226,41 @@ pub(super) fn prepare_table_control(
     dpi: f64,
     original_hwpx: impl FnOnce() -> bool,
 ) -> bool {
+    match prepare_table_control_with_storage(
+        st,
+        para,
+        table,
+        para_idx,
+        ctrl_idx,
+        order_pos,
+        next_para,
+        measured_tables,
+        has_tac,
+        host_col_w,
+        dpi,
+        original_hwpx,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(super) fn prepare_table_control_with_storage<S: crate::storage::Storage>(
+    st: &mut TypesetState,
+    para: &Paragraph,
+    table: &Table,
+    para_idx: usize,
+    ctrl_idx: usize,
+    order_pos: usize,
+    next_para: Option<&Paragraph>,
+    measured_tables: &[MeasuredTable],
+    has_tac: bool,
+    host_col_w: f64,
+    dpi: f64,
+    original_hwpx: impl FnOnce() -> bool,
+    storage: &S,
+) -> Result<bool, S::Error> {
     let page = st.table_control_page();
     let follows_tac_frame = !page.profile.session_edited()
         && (page.profile.hwpx_stored_layout() || page.profile.hwp5_stored_pagination_layout())
@@ -205,7 +281,7 @@ pub(super) fn prepare_table_control(
         });
     // 앞 줄 개체가 현재 쪽에 남아 있을 때만 경계를 건넌다. 새 줄 형제는 다시 넘기지 않는다.
     if follows_tac_frame {
-        st.advance_column_or_new_page();
+        st.advance_column_or_new_page_with_storage(storage)?;
     }
     if table_entry::needs_stored_line_advance(
         para,
@@ -214,10 +290,10 @@ pub(super) fn prepare_table_control(
         st.table_control_page().has_items,
         dpi,
     ) {
-        st.advance_column_or_new_page();
+        st.advance_column_or_new_page_with_storage(storage)?;
     }
     let frame = st.inline_flow_input(0.0, false);
-    table_entry::uses_decoration_placement(
+    Ok(table_entry::uses_decoration_placement(
         para,
         table,
         para_idx,
@@ -232,7 +308,7 @@ pub(super) fn prepare_table_control(
         dpi,
         || st.base_available_height(),
         original_hwpx,
-    )
+    ))
 }
 
 /// 모든 컨트롤 앵커 확정 뒤, TAC 높이 정산 전에 host 텍스트를 한 번 반영한다.
@@ -249,7 +325,38 @@ pub(super) fn place_decoration_host_text(
     dpi: f64,
     stored_layout: impl FnOnce() -> bool,
 ) {
-    if let Some(fragment) = decoration_host::plan(
+    match place_decoration_host_text_with_storage(
+        st,
+        para_idx,
+        para,
+        next_para,
+        fmt,
+        decoration_host_text_pending,
+        flow_table_owns_host_text,
+        styles,
+        dpi,
+        stored_layout,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(super) fn place_decoration_host_text_with_storage<S: crate::storage::Storage>(
+    st: &mut TypesetState,
+    para_idx: usize,
+    para: &Paragraph,
+    next_para: Option<&Paragraph>,
+    fmt: &FormattedParagraph,
+    decoration_host_text_pending: bool,
+    flow_table_owns_host_text: bool,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    stored_layout: impl FnOnce() -> bool,
+    storage: &S,
+) -> Result<(), S::Error> {
+    let _: () = if let Some(fragment) = decoration_host::plan(
         para_idx,
         para,
         next_para,
@@ -260,8 +367,9 @@ pub(super) fn place_decoration_host_text(
         dpi,
         stored_layout,
     ) {
-        st.commit_decoration_host_text(fragment);
-    }
+        st.commit_decoration_host_text_with_storage(fragment, storage)?;
+    };
+    Ok(())
 }
 
 /// TAC 높이 조회 → 누락 표시/진단/무효화 → 앵커·상한 확정 순서를 보존한다.
@@ -384,14 +492,41 @@ pub(super) fn place_table_host_shape(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) {
+    match place_table_host_shape_with_storage(
+        st,
+        para_idx,
+        ctrl_idx,
+        ctrl,
+        para,
+        para_start_height,
+        styles,
+        dpi,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+
+pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
+    st: &mut TypesetState,
+    para_idx: usize,
+    ctrl_idx: usize,
+    ctrl: &Control,
+    para: &Paragraph,
+    para_start_height: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    storage: &S,
+) -> Result<(), S::Error> {
     // [#6146] 저장 리셋 경계에서 떠나는 쪽의 흐름 말미에 이미 흘려
     // 놓은 자리차지 밴드는 다시 배치하지 않는다.
     if st.has_spilled_page_tail_float(para_idx, ctrl_idx) {
-        return;
+        return Ok(());
     }
     let flow = shape_flow::prepare(ctrl, para, ctrl_idx, dpi);
     if st.defer_table_host_ole_to_next_column(para_idx, ctrl_idx, ctrl, dpi) {
-        return;
+        return Ok(());
     }
     while flow.needs_advance(st.table_host_shape_page(), || st.available_height()) {
         // 단 기준 개체가 다음 단에 들어가면 개체만 이월한다. 뒤 본문은 남은
@@ -406,13 +541,15 @@ pub(super) fn place_table_host_shape(
                 && common.width as f64 <= st.layout.column_width_hu() as f64
         });
         if column_frame && st.defer_table_host_shape_to_next_column(para_idx, ctrl_idx, flow) {
-            return;
+            return Ok(());
         }
-        st.advance_column_or_new_page();
+        st.advance_column_or_new_page_with_storage(storage)?;
     }
     let accepted_frame = flow.accepted_shape_frame(ctrl, st.current_height);
-    st.commit_table_host_shape(para_idx, ctrl_idx, flow, accepted_frame);
+    st.commit_table_host_shape_with_storage(para_idx, ctrl_idx, flow, accepted_frame, storage)?;
     st.register_side_wrap_picture(para_idx, ctrl_idx, para, Some(para_start_height), styles);
+
+    Ok(())
 }
 
 /// 조회가 후보를 수용한 경우에만 표 항목·lane·흐름 상태를 함께 반영한다.

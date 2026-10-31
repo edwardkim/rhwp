@@ -1,0 +1,24 @@
+[
+  {
+    "variant": "candidate",
+    "name": "8000000",
+    "pages": 40,
+    "savedBytes": 74082,
+    "ms": 1706.2999999523163,
+    "memoryBytes": 85262336
+  },
+  {
+    "variant": "candidate",
+    "name": "8000001",
+    "error": "유효하지 않은 파일: PDF 오류: PDF_RESOURCE_LIMIT: content operators",
+    "ms": 1564.3999999761581,
+    "memoryBytes": 85262336
+  },
+  {
+    "variant": "candidate",
+    "name": "dense",
+    "error": "유효하지 않은 파일: PDF 오류: PDF_RESOURCE_LIMIT: content operator buffer",
+    "ms": 63.39999997615814,
+    "memoryBytes": 85262336
+  }
+]

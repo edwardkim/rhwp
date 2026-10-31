@@ -56,32 +56,10 @@ pub(super) fn adjusted_wmf_picture_svg(
             }
             let mut pixels =
                 decode_image_with_format_limited(&png, image::ImageFormat::Png)?.to_rgba8();
-            let mut colors = HashSet::with_capacity(257);
-            for pixel in pixels.pixels_mut() {
-                if pixel[3] != 255 {
-                    return None;
-                }
-                if grayscale {
-                    let gray = (299 * u32::from(pixel[0])
-                        + 587 * u32::from(pixel[1])
-                        + 114 * u32::from(pixel[2]))
-                        / 1000;
-                    pixel.0[..3].fill(gray as u8);
-                }
-                for channel in &mut pixel.0[..3] {
-                    *channel = adjusted_wmf_channel(*channel, brightness, contrast);
-                }
-                if colors.len() <= 256 {
-                    colors.insert([pixel[0], pixel[1], pixel[2]]);
-                }
+            if pixels.pixels().any(|pixel| pixel[3] != 255) {
+                return None;
             }
-            if colors.len() > 256 {
-                for pixel in pixels.pixels_mut() {
-                    for channel in &mut pixel.0[..3] {
-                        *channel = rgb555_dither_mean(*channel);
-                    }
-                }
-            }
+            adjust_pixels(&mut pixels, brightness, contrast, grayscale);
             let mut adjusted = Vec::new();
             pixels
                 .write_to(&mut Cursor::new(&mut adjusted), image::ImageFormat::Png)
@@ -114,6 +92,44 @@ pub(super) fn adjusted_wmf_picture_svg(
             Some(adjusted.into_bytes())
         },
     )
+}
+
+/// 원본 SVG fallback과 Print 장치 자원이 같은 명암·색 전달을 소비한다.
+/// Print에서는 원본 WMF를 장치에 재생한 뒤 이 함수를 호출한다.
+pub(crate) fn adjust_pixels(
+    pixels: &mut image::RgbaImage,
+    brightness: i8,
+    contrast: i8,
+    grayscale: bool,
+) {
+    let brightness = brightness.clamp(-100, 100);
+    let contrast = contrast.clamp(-100, 100);
+    let mut colors = HashSet::with_capacity(257);
+    for pixel in pixels.pixels_mut() {
+        if pixel[3] == 0 {
+            pixel.0[..3].fill(255);
+            continue;
+        }
+        if grayscale {
+            let gray =
+                (299 * u32::from(pixel[0]) + 587 * u32::from(pixel[1]) + 114 * u32::from(pixel[2]))
+                    / 1000;
+            pixel.0[..3].fill(gray as u8);
+        }
+        for channel in &mut pixel.0[..3] {
+            *channel = adjusted_wmf_channel(*channel, brightness, contrast);
+        }
+        if colors.len() <= 256 {
+            colors.insert([pixel[0], pixel[1], pixel[2]]);
+        }
+    }
+    if colors.len() > 256 {
+        for pixel in pixels.pixels_mut().filter(|pixel| pixel[3] != 0) {
+            for channel in &mut pixel.0[..3] {
+                *channel = rgb555_dither_mean(*channel);
+            }
+        }
+    }
 }
 
 /// 독립256단계 Print에서 확인한 WMF의 정수 백분율 명암 LUT.

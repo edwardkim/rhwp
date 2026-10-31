@@ -5,6 +5,7 @@
 //! most accurate character-to-Unicode mapping.
 
 use super::adobe_glyph_list::ADOBE_GLYPH_LIST;
+use super::allocation::FontAllocation;
 use crate::document::PdfDocument;
 use crate::error::{Error, Result};
 use crate::fonts::cmap::LazyCMap;
@@ -496,6 +497,8 @@ impl FontInfo {
     ///
     /// Used by §9.10.2 Priority 3c in `decode_char_to_unicode`.
     pub(crate) fn embedded_glyph_name(&self, gid: u16) -> Option<&str> {
+        let allocation = FontAllocation(self.import_budget.as_deref());
+        allocation.check()?;
         let names = self
             .embedded_glyph_names
             .get_or_init(|| {
@@ -516,13 +519,14 @@ impl FontInfo {
                 };
                 let n = face.number_of_glyphs();
                 // `number_of_glyphs` returns u16; cap the vec at that size.
-                let mut out: Vec<Option<String>> = Vec::with_capacity(n as usize);
+                let mut out: Vec<Option<String>> = allocation.vec(n as usize)?;
                 let mut found_any = false;
                 for g in 0..n {
-                    let name = face
+                    let raw_name = face
                         .glyph_name(ttf_parser::GlyphId(g))
                         .filter(|s| !s.is_empty() && *s != ".notdef")
-                        .map(|s| s.to_string());
+                        ;
+                    let name = match raw_name { Some(name) => Some(allocation.string(name)?), None => None };
                     if name.is_some() {
                         found_any = true;
                     }
@@ -543,6 +547,7 @@ impl FontInfo {
                 Some(out)
             })
             .as_ref()?;
+        allocation.check()?;
         names.get(gid as usize).and_then(|n| n.as_deref())
     }
 
@@ -613,19 +618,27 @@ impl FontInfo {
             reason: "Font object is not a dictionary".to_string(),
         })?;
 
+        let allocation = FontAllocation(doc.import_budget().map(AsRef::as_ref));
+        let allocation_error = || Error::ImportResourceLimit("font metadata allocation");
         // Extract BaseFont (required)
-        let base_font = font_dict
-            .get("BaseFont")
-            .and_then(|obj| obj.as_name())
-            .unwrap_or("Unknown")
-            .to_string();
+        let base_font = allocation
+            .string(
+                font_dict
+                    .get("BaseFont")
+                    .and_then(|obj| obj.as_name())
+                    .unwrap_or("Unknown"),
+            )
+            .ok_or_else(allocation_error)?;
 
         // Extract Subtype (required)
-        let subtype = font_dict
-            .get("Subtype")
-            .and_then(|obj| obj.as_name())
-            .unwrap_or("Unknown")
-            .to_string();
+        let subtype = allocation
+            .string(
+                font_dict
+                    .get("Subtype")
+                    .and_then(|obj| obj.as_name())
+                    .unwrap_or("Unknown"),
+            )
+            .ok_or_else(allocation_error)?;
 
         // Log Type 3 fonts - may require special glyph name mapping
         if subtype == "Type3" {
@@ -815,7 +828,10 @@ impl FontInfo {
                                         base_font,
                                         data.len()
                                     );
-                                    wrap_cff_in_opentype(&data)
+                                    wrap_cff_in_opentype_with_budget(
+                                        &data,
+                                        doc.import_budget().map(AsRef::as_ref),
+                                    )
                                 } else {
                                     log::info!(
                                         "Font '{}' loaded embedded CFF/OpenType font ({} bytes)",
@@ -921,9 +937,15 @@ impl FontInfo {
         let font_program_enc_cache: Option<HashMap<u8, char>> =
             if let Some(font_data) = &embedded_font_data {
                 if subtype == "Type1" || subtype == "MMType1" {
-                    super::type1_encoding::parse_type1_encoding(font_data)
+                    super::type1_encoding::parse_type1_encoding_with_budget(
+                        font_data,
+                        doc.import_budget().map(AsRef::as_ref),
+                    )
                 } else {
-                    super::cff_encoding::parse_cff_encoding(font_data)
+                    super::cff_encoding::parse_cff_encoding_with_budget(
+                        font_data,
+                        doc.import_budget().map(AsRef::as_ref),
+                    )
                 }
             } else {
                 None
@@ -939,9 +961,9 @@ impl FontInfo {
             font_dict.get("Encoding")
         {
             let resolved_enc_obj = if let Some(obj_ref) = enc_obj.as_reference() {
-                doc.load_object(obj_ref)?
+                std::borrow::Cow::Owned(doc.load_object(obj_ref)?)
             } else {
-                enc_obj.clone()
+                std::borrow::Cow::Borrowed(enc_obj)
             };
 
             // Inspect for `-V` predefined name or embedded `/WMode 1 def`
@@ -969,8 +991,12 @@ impl FontInfo {
             if matches!(parsed_enc, Encoding::Standard(_)) {
                 if let Some(prog_enc) = &font_program_enc_cache {
                     let std_name = match &parsed_enc {
-                        Encoding::Standard(n) => n.clone(),
-                        _ => "StandardEncoding".to_string(),
+                        Encoding::Standard(n) => {
+                            allocation.string(n).ok_or_else(allocation_error)?
+                        },
+                        _ => allocation
+                            .string("StandardEncoding")
+                            .ok_or_else(allocation_error)?,
                     };
 
                     // Decide whether the embedded program's built-in encoding is a
@@ -982,7 +1008,9 @@ impl FontInfo {
                     // many program codes resolve to the SAME character the named base
                     // already gives. A real encoding agrees on most; a cipher on
                     // almost none.
-                    let looks_like_cipher = builtin_encoding_looks_like_cipher(prog_enc, &std_name);
+                    let looks_like_cipher = builtin_encoding_looks_like_cipher_with_budget(
+                        prog_enc, &std_name, allocation,
+                    );
 
                     if looks_like_cipher {
                         // Trust the producer-declared named encoding; the built-in
@@ -1000,19 +1028,30 @@ impl FontInfo {
                         );
                         // Build Custom map: start with the named encoding, overlay the
                         // (consistent) font program for its few non-standard slots.
-                        let mut custom_map: HashMap<u8, char> = HashMap::new();
+                        let mut custom_map: HashMap<u8, char> =
+                            allocation.map(0).ok_or_else(allocation_error)?;
                         for code in 0u8..=255 {
-                            if let Some(unicode_str) = standard_encoding_lookup(&std_name, code) {
+                            if let Some(unicode_str) =
+                                standard_encoding_lookup_with_budget(&std_name, code, allocation)
+                            {
                                 if let Some(ch) = unicode_str.chars().next() {
-                                    custom_map.insert(code, ch);
+                                    allocation
+                                        .insert(&mut custom_map, code, ch)
+                                        .ok_or_else(allocation_error)?;
                                 }
                             }
                         }
                         for (&code, &ch) in prog_enc {
-                            custom_map.insert(code, ch);
+                            allocation
+                                .insert(&mut custom_map, code, ch)
+                                .ok_or_else(allocation_error)?;
                             if is_ligature_char(ch) {
                                 if let Some(expanded) = expand_ligature_char(ch) {
-                                    multi_map.insert(code, expanded.to_string());
+                                    let text =
+                                        allocation.string(expanded).ok_or_else(allocation_error)?;
+                                    allocation
+                                        .insert(&mut multi_map, code, text)
+                                        .ok_or_else(allocation_error)?;
                                 }
                             }
                         }
@@ -1034,7 +1073,10 @@ impl FontInfo {
                 for (&code, &ch) in &prog_enc {
                     if is_ligature_char(ch) {
                         if let Some(expanded) = expand_ligature_char(ch) {
-                            multi_map.insert(code, expanded.to_string());
+                            let text = allocation.string(expanded).ok_or_else(allocation_error)?;
+                            allocation
+                                .insert(&mut multi_map, code, text)
+                                .ok_or_else(allocation_error)?;
                         }
                     }
                 }
@@ -1045,7 +1087,11 @@ impl FontInfo {
                     base_font
                 );
                 (
-                    Encoding::Standard("SymbolicBuiltIn".to_string()),
+                    Encoding::Standard(
+                        allocation
+                            .string("SymbolicBuiltIn")
+                            .ok_or_else(allocation_error)?,
+                    ),
                     HashMap::new(),
                     HashMap::new(),
                 )
@@ -1055,7 +1101,11 @@ impl FontInfo {
                     base_font
                 );
                 (
-                    Encoding::Standard("StandardEncoding".to_string()),
+                    Encoding::Standard(
+                        allocation
+                            .string("StandardEncoding")
+                            .ok_or_else(allocation_error)?,
+                    ),
                     HashMap::new(),
                     HashMap::new(),
                 )
@@ -1143,18 +1193,22 @@ impl FontInfo {
                 let resolved = if let Some(ref_obj) = widths_obj.as_reference() {
                     doc.load_object(ref_obj).ok()?
                 } else {
-                    widths_obj.clone()
+                    crate::object_copy::clone_object(
+                        widths_obj,
+                        doc.import_budget().map(AsRef::as_ref),
+                    )
+                    .ok()?
                 };
 
-                resolved.as_array().map(|arr| {
-                    arr.iter()
-                        .filter_map(|obj| {
-                            // Widths can be integers or reals
-                            obj.as_integer()
-                                .map(|i| i as f32)
-                                .or_else(|| obj.as_real().map(|r| r as f32))
-                        })
-                        .collect::<Vec<f32>>()
+                resolved.as_array().and_then(|arr| {
+                    let mut widths = allocation.vec(arr.len())?;
+                    widths.extend(arr.iter().filter_map(|obj| {
+                        // Widths can be integers or reals
+                        obj.as_integer()
+                            .map(|i| i as f32)
+                            .or_else(|| obj.as_real().map(|r| r as f32))
+                    }));
+                    Some(widths)
                 })
             });
 
@@ -1338,7 +1392,11 @@ impl FontInfo {
         // is the GID", which is the other half of the same clause.
         let cff_cid_to_gid = if subtype == "Type0" {
             embedded_font_data.as_ref().and_then(|data| {
-                super::cff_encoding::parse_cff_cid_to_gid(data).inspect(|map| {
+                super::cff_encoding::parse_cff_cid_to_gid_with_budget(
+                    data,
+                    doc.import_budget().map(AsRef::as_ref),
+                )
+                .inspect(|map| {
                     log::debug!(
                         "Font '{}': CID-keyed CFF, {} CID->GID entries from the charset",
                         base_font,
@@ -1352,10 +1410,11 @@ impl FontInfo {
 
         let cff_gid_map = if subtype != "Type0" {
             embedded_font_data.as_ref().and_then(|data| {
-                super::cff_encoding::parse_cff_gid_mapping_with_pdf_encoding(
+                super::cff_encoding::parse_cff_gid_mapping_with_pdf_encoding_with_budget(
                     data,
                     &encoding,
                     &diff_glyph_names,
+                    doc.import_budget().map(AsRef::as_ref),
                 )
                 .inspect(|map| {
                     log::debug!(
@@ -1577,9 +1636,9 @@ impl FontInfo {
 
         // Resolve reference if needed
         let resolved = if let Some(ref_obj) = sysinfo_obj.as_reference() {
-            doc.load_object(ref_obj)?
+            std::borrow::Cow::Owned(doc.load_object(ref_obj)?)
         } else {
-            sysinfo_obj.clone()
+            std::borrow::Cow::Borrowed(sysinfo_obj)
         };
 
         let sysinfo_dict = resolved.as_dict().ok_or_else(|| Error::ParseError {
@@ -1587,17 +1646,23 @@ impl FontInfo {
             reason: "CIDSystemInfo is not a dictionary".to_string(),
         })?;
 
-        let registry = sysinfo_dict
-            .get("Registry")
-            .and_then(|obj| obj.as_string())
-            .map(|s| String::from_utf8_lossy(s).to_string())
-            .unwrap_or_else(|| "Unknown".to_string());
-
-        let ordering = sysinfo_dict
-            .get("Ordering")
-            .and_then(|obj| obj.as_string())
-            .map(|s| String::from_utf8_lossy(s).to_string())
-            .unwrap_or_else(|| "Unknown".to_string());
+        let allocation = FontAllocation(doc.import_budget().map(AsRef::as_ref));
+        let name = |key: &str| -> Result<String> {
+            let bytes = sysinfo_dict
+                .get(key)
+                .and_then(Object::as_string)
+                .unwrap_or(b"Unknown");
+            // Lossy UTF-8 can allocate up to three bytes per source byte before
+            // the final owned name copy; reserve that temporary first.
+            allocation
+                .bytes(bytes.len().saturating_mul(3))
+                .ok_or(Error::ImportResourceLimit("CID name decoding"))?;
+            allocation
+                .string(&String::from_utf8_lossy(bytes))
+                .ok_or(Error::ImportResourceLimit("CID name copy"))
+        };
+        let registry = name("Registry")?;
+        let ordering = name("Ordering")?;
 
         let supplement = sysinfo_dict
             .get("Supplement")
@@ -1660,9 +1725,9 @@ impl FontInfo {
 
         // Resolve reference if needed
         let resolved = if let Some(ref_obj) = descendant_obj.as_reference() {
-            doc.load_object(ref_obj)?
+            std::borrow::Cow::Owned(doc.load_object(ref_obj)?)
         } else {
-            descendant_obj.clone()
+            std::borrow::Cow::Borrowed(descendant_obj)
         };
 
         let array = resolved.as_array().ok_or_else(|| Error::ParseError {
@@ -1738,8 +1803,7 @@ impl FontInfo {
             .ok_or_else(|| Error::ParseError {
                 offset: 0,
                 reason: format!("Type0 font '{}': CIDFont missing required /Subtype", base_font),
-            })?
-            .to_string();
+            })?;
 
         // Validate subtype
         if cid_font_type != "CIDFontType0" && cid_font_type != "CIDFontType2" {
@@ -1873,13 +1937,13 @@ impl FontInfo {
             let resolved = if let Some(r) = obj.as_reference() {
                 doc.load_object(r).ok()
             } else {
-                Some(obj.clone())
+                None
             };
-            resolved.and_then(|o| match &o {
+            match resolved.as_ref().unwrap_or(obj) {
                 Object::Integer(i) => Some(*i as f32),
                 Object::Real(r) => Some(*r as f32),
                 _ => None,
-            })
+            }
         });
         // F14/F15 fix: track whether /DW was explicitly present in the PDF.
         let has_explicit_dw = dw_value.is_some();
@@ -1891,7 +1955,10 @@ impl FontInfo {
             if let Some(r) = w_obj.as_reference() {
                 match doc.load_object(r) {
                     Ok(resolved) => {
-                        let mut dict_clone = cidfont_dict.clone();
+                        let mut dict_clone = crate::object_copy::clone_dictionary(
+                            cidfont_dict,
+                            doc.import_budget().map(AsRef::as_ref),
+                        )?;
                         dict_clone.insert("W".to_string(), resolved);
                         std::borrow::Cow::Owned(dict_clone)
                     },
@@ -1930,20 +1997,23 @@ impl FontInfo {
             if let Some(r) = w2_obj.as_reference() {
                 match doc.load_object(r) {
                     Ok(resolved) => {
-                        let mut dict_clone = resolved_cidfont_dict.clone().into_owned();
+                        let mut dict_clone = crate::object_copy::clone_dictionary(
+                            resolved_cidfont_dict.as_ref(),
+                            doc.import_budget().map(AsRef::as_ref),
+                        )?;
                         dict_clone.insert("W2".to_string(), resolved);
                         std::borrow::Cow::Owned(dict_clone)
                     },
                     Err(e) => {
                         log::warn!("Font '{}': Failed to resolve /W2 reference: {}", base_font, e);
-                        resolved_cidfont_dict.clone()
+                        std::borrow::Cow::Borrowed(resolved_cidfont_dict.as_ref())
                     },
                 }
             } else {
-                resolved_cidfont_dict.clone()
+                std::borrow::Cow::Borrowed(resolved_cidfont_dict.as_ref())
             }
         } else {
-            resolved_cidfont_dict.clone()
+            std::borrow::Cow::Borrowed(resolved_cidfont_dict.as_ref())
         };
         let cid_vertical_metrics = match doc.import_budget() {
             Some(budget) => Self::parse_cid_vertical_metrics_with_budget(
@@ -1989,7 +2059,11 @@ impl FontInfo {
         Ok((
             cid_to_gid_map,
             cid_system_info,
-            Some(cid_font_type),
+            Some(
+                FontAllocation(doc.import_budget().map(AsRef::as_ref))
+                    .string(cid_font_type)
+                    .ok_or(Error::ImportResourceLimit("CID subtype copy"))?,
+            ),
             cid_widths,
             cid_default_width,
             has_explicit_dw,
@@ -2026,9 +2100,9 @@ impl FontInfo {
     ) -> Option<TrueTypeCMap> {
         let desc_obj = font_dict.get("FontDescriptor")?;
         let desc = if let Some(r) = desc_obj.as_reference() {
-            doc.load_object(r).ok()?
+            std::borrow::Cow::Owned(doc.load_object(r).ok()?)
         } else {
-            desc_obj.clone()
+            std::borrow::Cow::Borrowed(desc_obj)
         };
         let desc_dict = desc.as_dict()?;
         let ff2_obj = desc_dict.get("FontFile2")?;
@@ -2089,11 +2163,11 @@ impl FontInfo {
         };
         let desc = if let Some(r) = desc_obj.as_reference() {
             match doc.load_object(r) {
-                Ok(obj) => obj,
+                Ok(obj) => std::borrow::Cow::Owned(obj),
                 Err(_) => return (None, None),
             }
         } else {
-            desc_obj.clone()
+            std::borrow::Cow::Borrowed(desc_obj)
         };
         let desc_dict = match desc.as_dict() {
             Some(d) => d,
@@ -2121,11 +2195,11 @@ impl FontInfo {
         };
         let desc = if let Some(r) = desc_obj.as_reference() {
             match doc.load_object(r) {
-                Ok(obj) => obj,
+                Ok(obj) => std::borrow::Cow::Owned(obj),
                 Err(_) => return (false, None),
             }
         } else {
-            desc_obj.clone()
+            std::borrow::Cow::Borrowed(desc_obj)
         };
         let Some(desc_dict) = desc.as_dict() else {
             return (false, None);
@@ -2146,7 +2220,7 @@ impl FontInfo {
                     None => continue,
                 };
                 let ff_stream = match doc.load_object(ff_ref) {
-                    Ok(obj) => obj,
+                    Ok(obj) => std::borrow::Cow::Owned(obj),
                     Err(e) => {
                         log::warn!(
                             "Font '{}': Failed to load {} {:?}: {}",
@@ -2177,7 +2251,10 @@ impl FontInfo {
                             base_font,
                             font_data.len()
                         );
-                        wrap_cff_in_opentype(&font_data)
+                        wrap_cff_in_opentype_with_budget(
+                            &font_data,
+                            doc.import_budget().map(AsRef::as_ref),
+                        )
                     } else {
                         font_data
                     };
@@ -2197,7 +2274,19 @@ impl FontInfo {
 
 /// Wrap raw CFF font data in a minimal OpenType container so ttf-parser can parse it.
 /// Creates an OpenType font with `head` and `CFF ` tables (both required by ttf-parser).
+#[cfg(test)]
 fn wrap_cff_in_opentype(cff_data: &[u8]) -> Vec<u8> {
+    wrap_cff_in_opentype_with_budget(cff_data, None)
+}
+
+fn wrap_cff_in_opentype_with_budget(
+    cff_data: &[u8],
+    budget: Option<&crate::import_limits::ImportBudget>,
+) -> Vec<u8> {
+    let allocation = FontAllocation(budget);
+    if allocation.check().is_none() {
+        return Vec::new();
+    }
     let num_tables: u16 = 4; // CFF + head + hhea + maxp
     let search_range: u16 = 32; // largest power of 2 <= numTables*16 = 64 → 32 (2 tables)
     let entry_selector: u16 = 2;
@@ -2221,11 +2310,12 @@ fn wrap_cff_in_opentype(cff_data: &[u8]) -> Vec<u8> {
     //
     // Only a plain uniform scale is folded in; anything skewed, rotated or
     // non-uniform keeps the 1000 default, which is also the CFF default.
-    let units_per_em: u16 = crate::fonts::cff_encoding::parse_cff_font_matrix_scale(cff_data)
-        .map(|sx| (1.0 / sx).round())
-        .filter(|u| (16.0..=16384.0).contains(u))
-        .map(|u| u as u16)
-        .unwrap_or(1000);
+    let units_per_em: u16 =
+        crate::fonts::cff_encoding::parse_cff_font_matrix_scale_with_budget(cff_data, budget)
+            .map(|sx| (1.0 / sx).round())
+            .filter(|u| (16.0..=16384.0).contains(u))
+            .map(|u| u as u16)
+            .unwrap_or(1000);
     let [upem_hi, upem_lo] = units_per_em.to_be_bytes();
 
     // Minimal head table (54 bytes) — OpenType spec required fields
@@ -2298,7 +2388,19 @@ fn wrap_cff_in_opentype(cff_data: &[u8]) -> Vec<u8> {
         sum
     }
 
-    let mut out = Vec::with_capacity((cff_offset + cff_len) as usize);
+    let capacity = (cff_offset as usize).checked_add(cff_len as usize);
+    let Some(capacity) = capacity else {
+        allocation.reject();
+        return Vec::new();
+    };
+    if allocation.bytes(capacity).is_none() {
+        return Vec::new();
+    }
+    let mut out = Vec::new();
+    if out.try_reserve_exact(capacity).is_err() {
+        allocation.reject();
+        return Vec::new();
+    }
 
     // Offset table (12 bytes)
     out.extend_from_slice(b"OTTO");
@@ -2392,10 +2494,11 @@ impl FontInfo {
     /// precedence rules from ISO 32000-1 §9.7.5.4: an embedded CMap stream's
     /// explicit `/WMode` overrides what the name might suggest.
     fn resolve_encoding_writing_mode(enc_obj: &Object, doc: &PdfDocument) -> (Option<String>, u8) {
+        let allocation = FontAllocation(doc.import_budget().map(AsRef::as_ref));
         // Case 1: /Encoding is a /Name atom — predefined CMap name.
         if let Some(name) = enc_obj.as_name() {
             let wmode = wmode_from_predefined_cmap_name(name);
-            return (Some(name.to_string()), wmode);
+            return (allocation.string(name), wmode);
         }
 
         // Case 2: /Encoding is a stream/dict — embedded CMap. The dict may
@@ -2404,7 +2507,7 @@ impl FontInfo {
         let name = dict
             .and_then(|d| d.get("CMapName"))
             .and_then(|n| n.as_name())
-            .map(|s| s.to_string());
+            .and_then(|s| allocation.string(s));
 
         // Try to decode the CMap stream and scan for /WMode. We swallow
         // decode errors here — if the stream cannot be decoded, the existing
@@ -2838,28 +2941,34 @@ impl FontInfo {
         doc: &PdfDocument,
         font_program_encoding: Option<&HashMap<u8, char>>,
     ) -> Result<(Encoding, HashMap<u8, String>, HashMap<u8, String>)> {
+        let a = FontAllocation(doc.import_budget().map(AsRef::as_ref));
+        let failure = || Error::ImportResourceLimit("font encoding allocation");
         let empty_map = HashMap::new();
         // Encoding can be either a name or a dictionary
         if let Some(name) = enc_obj.as_name() {
             // Standard encoding names (no /Differences ⇒ no glyph-name side map)
             match name {
                 "WinAnsiEncoding" => Ok((
-                    Encoding::Standard("WinAnsiEncoding".to_string()),
+                    Encoding::Standard(a.string("WinAnsiEncoding").ok_or_else(failure)?),
                     empty_map,
                     HashMap::new(),
                 )),
                 "MacRomanEncoding" => Ok((
-                    Encoding::Standard("MacRomanEncoding".to_string()),
+                    Encoding::Standard(a.string("MacRomanEncoding").ok_or_else(failure)?),
                     empty_map,
                     HashMap::new(),
                 )),
                 "MacExpertEncoding" => Ok((
-                    Encoding::Standard("MacExpertEncoding".to_string()),
+                    Encoding::Standard(a.string("MacExpertEncoding").ok_or_else(failure)?),
                     empty_map,
                     HashMap::new(),
                 )),
                 "Identity-H" | "Identity-V" => Ok((Encoding::Identity, empty_map, HashMap::new())),
-                _ => Ok((Encoding::Standard(name.to_string()), empty_map, HashMap::new())),
+                _ => Ok((
+                    Encoding::Standard(a.string(name).ok_or_else(failure)?),
+                    empty_map,
+                    HashMap::new(),
+                )),
             }
         } else if let Some(dict) = enc_obj.as_dict() {
             // Check if this is a CMap stream (Type0 font encoding reference)
@@ -2896,7 +3005,7 @@ impl FontInfo {
                     cmap_name
                 );
                 return Ok((
-                    Encoding::Standard(cmap_name.to_string()),
+                    Encoding::Standard(a.string(cmap_name).ok_or_else(failure)?),
                     HashMap::new(),
                     HashMap::new(),
                 ));
@@ -2908,49 +3017,54 @@ impl FontInfo {
             let mut diff_glyph_names: HashMap<u8, String> = HashMap::new();
 
             // Step 1: Get base encoding (if specified)
-            let mut encoding_map: HashMap<u8, char> = if let Some(base_enc_obj) =
-                dict.get("BaseEncoding")
-            {
-                // Resolve indirect reference for /BaseEncoding
-                let resolved_base = if let Some(obj_ref) = base_enc_obj.as_reference() {
-                    doc.load_object(obj_ref).ok()
-                } else {
-                    None
-                };
-                let base_obj = resolved_base.as_ref().unwrap_or(base_enc_obj);
+            let mut encoding_map: HashMap<u8, char> =
+                if let Some(base_enc_obj) = dict.get("BaseEncoding") {
+                    // Resolve indirect reference for /BaseEncoding
+                    let resolved_base = if let Some(obj_ref) = base_enc_obj.as_reference() {
+                        doc.load_object(obj_ref).ok()
+                    } else {
+                        None
+                    };
+                    let base_obj = resolved_base.as_ref().unwrap_or(base_enc_obj);
 
-                if let Some(base_name) = base_obj.as_name() {
-                    // Build initial encoding from base encoding
-                    let mut map = HashMap::new();
+                    if let Some(base_name) = base_obj.as_name() {
+                        // Build initial encoding from base encoding
+                        let mut map = a.map(0).ok_or_else(failure)?;
+                        for code in 0u8..=255 {
+                            if let Some(unicode_str) =
+                                standard_encoding_lookup_with_budget(base_name, code, a)
+                            {
+                                // Convert the first character of the unicode string
+                                if let Some(ch) = unicode_str.chars().next() {
+                                    a.insert(&mut map, code, ch).ok_or_else(failure)?;
+                                }
+                            }
+                        }
+                        map
+                    } else {
+                        HashMap::new()
+                    }
+                } else if let Some(prog_enc) = font_program_encoding {
+                    // PDF Spec ISO 32000-1:2008, Section 9.6.6.1:
+                    // "If BaseEncoding is absent and the font has a built-in encoding,
+                    // the built-in encoding shall be used as the base encoding."
+                    let mut map = a.map(prog_enc.len()).ok_or_else(failure)?;
+                    map.extend(prog_enc.iter().map(|(&code, &ch)| (code, ch)));
+                    map
+                } else {
+                    // No base encoding specified and no font program - use StandardEncoding as default
+                    let mut map = a.map(0).ok_or_else(failure)?;
                     for code in 0u8..=255 {
-                        if let Some(unicode_str) = standard_encoding_lookup(base_name, code) {
-                            // Convert the first character of the unicode string
+                        if let Some(unicode_str) =
+                            standard_encoding_lookup_with_budget("StandardEncoding", code, a)
+                        {
                             if let Some(ch) = unicode_str.chars().next() {
-                                map.insert(code, ch);
+                                a.insert(&mut map, code, ch).ok_or_else(failure)?;
                             }
                         }
                     }
                     map
-                } else {
-                    HashMap::new()
-                }
-            } else if let Some(prog_enc) = font_program_encoding {
-                // PDF Spec ISO 32000-1:2008, Section 9.6.6.1:
-                // "If BaseEncoding is absent and the font has a built-in encoding,
-                // the built-in encoding shall be used as the base encoding."
-                prog_enc.clone()
-            } else {
-                // No base encoding specified and no font program - use StandardEncoding as default
-                let mut map = HashMap::new();
-                for code in 0u8..=255 {
-                    if let Some(unicode_str) = standard_encoding_lookup("StandardEncoding", code) {
-                        if let Some(ch) = unicode_str.chars().next() {
-                            map.insert(code, ch);
-                        }
-                    }
-                }
-                map
-            };
+                };
 
             // Step 2: Apply /Differences array if present
             if let Some(differences_obj) = dict.get("Differences") {
@@ -2989,12 +3103,19 @@ impl FontInfo {
                                 // Unicode value, so the punctuation-recovery
                                 // interceptions in `char_to_unicode` can consult it.
                                 if current_code <= 255 {
-                                    diff_glyph_names.insert(current_code as u8, glyph_name.clone());
+                                    let name = a.string(glyph_name).ok_or_else(failure)?;
+                                    a.insert(&mut diff_glyph_names, current_code as u8, name)
+                                        .ok_or_else(failure)?;
                                 }
                                 // Map glyph name to Unicode character(s)
                                 if let Some(unicode_char) = glyph_name_to_unicode(glyph_name) {
                                     if current_code <= 255 {
-                                        encoding_map.insert(current_code as u8, unicode_char);
+                                        a.insert(
+                                            &mut encoding_map,
+                                            current_code as u8,
+                                            unicode_char,
+                                        )
+                                        .ok_or_else(failure)?;
                                         if is_ligature_char(unicode_char) {
                                             log::info!(
                                                 "/Differences: code {} → /{} → '{}' (U+{:04X})",
@@ -3006,12 +3127,14 @@ impl FontInfo {
                                         }
                                     }
                                 } else if let Some(unicode_string) =
-                                    glyph_name_to_unicode_string(glyph_name)
+                                    glyph_name_to_unicode_string_with_budget(glyph_name, a)
                                 {
                                     // Compound glyph name (e.g. f_f → "ff", f_f_i → "ffi")
                                     if current_code <= 255 {
-                                        multi_char_map
-                                            .insert(current_code as u8, unicode_string.clone());
+                                        let copied =
+                                            a.string(&unicode_string).ok_or_else(failure)?;
+                                        a.insert(&mut multi_char_map, current_code as u8, copied)
+                                            .ok_or_else(failure)?;
                                         log::info!(
                                             "/Differences: code {} → /{} → {:?} (compound)",
                                             current_code,
@@ -3051,14 +3174,14 @@ impl FontInfo {
                 Ok((Encoding::Custom(encoding_map), multi_char_map, diff_glyph_names))
             } else {
                 Ok((
-                    Encoding::Standard("StandardEncoding".to_string()),
+                    Encoding::Standard(a.string("StandardEncoding").ok_or_else(failure)?),
                     HashMap::new(),
                     diff_glyph_names,
                 ))
             }
         } else {
             Ok((
-                Encoding::Standard("StandardEncoding".to_string()),
+                Encoding::Standard(a.string("StandardEncoding").ok_or_else(failure)?),
                 HashMap::new(),
                 HashMap::new(),
             ))
@@ -4322,24 +4445,42 @@ impl FontInfo {
     /// inspects surrounding context (neighboring chars, word boundaries) to
     /// decide whether to split — keeping font_dict a pure encoding layer.
     pub fn char_to_unicode(&self, char_code: u32) -> Option<String> {
-        // Serve from the per-font memo. Read and write are separate lock scopes
-        // so the decode in between never holds the lock.
+        let allocation = FontAllocation(self.import_budget.as_deref());
+        allocation.check()?;
         if let Ok(memo) = self.type0_unicode_memo.lock() {
             if let Some(cached) = memo.get(&char_code) {
-                return cached.clone();
+                return match cached {
+                    Some(text) => allocation.string(text),
+                    None => None,
+                };
             }
         }
-        let result = self
-            .char_to_unicode_uncached(char_code)
-            .map(|s| normalize_cjk_radical_forms(&s));
+        // Misses, including absent mappings, create memo work. Hit copies consume
+        // decoded bytes but do not charge another memo entry.
+        allocation.entries(1)?;
+        let result = match self.char_to_unicode_uncached(char_code) {
+            Some(text) => Some(normalize_cjk_radical_forms_owned(text, allocation)?),
+            None => None,
+        };
+        allocation.check()?;
+        let cached = match &result {
+            Some(text) => Some(allocation.string(text)?),
+            None => None,
+        };
         if let Ok(mut memo) = self.type0_unicode_memo.lock() {
-            memo.insert(char_code, result.clone());
+            memo.try_reserve(1).map_err(|_| allocation.reject()).ok()?;
+            memo.insert(char_code, cached);
+        } else if allocation.0.is_some() {
+            allocation.reject();
+            return None;
         }
         result
     }
 
     /// Uncached decode cascade behind [`Self::char_to_unicode`].
     fn char_to_unicode_uncached(&self, char_code: u32) -> Option<String> {
+        let allocation = FontAllocation(self.import_budget.as_deref());
+        allocation.check()?;
         // char_code is now u32 to support 4-byte character codes (0x00000000-0xFFFFFFFF)
         // This is backward compatible - u16 values are automatically promoted to u32
 
@@ -4363,7 +4504,7 @@ impl FontInfo {
         // Fix B (control-character filter): applied on CMap hits.
         if let Some(lazy_cmap) = &self.to_unicode {
             if let Some(cmap) = lazy_cmap.get() {
-                let raw_unicode = cmap.get(&char_code);
+                let raw_unicode = cmap.get_with_budget(&char_code, allocation.0);
                 let had_hit = raw_unicode.is_some();
 
                 // For Identity-encoded fonts, a U+FFFD (notdefrange) or a BMP
@@ -4397,13 +4538,13 @@ impl FontInfo {
                             "ToUnicode CMap has U+FFFD for code 0x{:02X} in font '{}' - returning U+FFFD",
                             char_code, self.base_font
                         );
-                        return Some("\u{FFFD}".to_string());
+                        return allocation.string("\u{FFFD}");
                     } else if is_c0_control {
                         log::debug!(
                             "ToUnicode CMap maps code 0x{:04X} to C0 control char(s) in font '{}' - returning U+FFFD",
                             char_code, self.base_font
                         );
-                        return Some("\u{FFFD}".to_string());
+                        return allocation.string("\u{FFFD}");
                     } else {
                         // Interception A (Item 1): glyph-name-gated punctuation
                         // recovery. When a present ToUnicode CMap resolves a code to
@@ -4421,11 +4562,14 @@ impl FontInfo {
                                         "Interception A: code 0x{:04X} ToUnicode '{}' is a non-sensible symbol; glyph name '{}' → '{}' (font '{}')",
                                         char_code, unicode, glyph_name, punct, self.base_font
                                     );
-                                    return Some(punct.to_string());
+                                    return allocation.string(punct);
                                 }
                             }
                         }
-                        return Some(unicode.into_owned());
+                        return match unicode {
+                            std::borrow::Cow::Borrowed(text) => allocation.string(text),
+                            std::borrow::Cow::Owned(text) => Some(text),
+                        };
                     }
                 } else {
                     if had_hit {
@@ -4452,7 +4596,7 @@ impl FontInfo {
                             "Type0 font '{}': ToUnicode present but code 0x{:04X} not covered → U+FFFD (no Priority-3 fallback per §9.10.2)",
                             self.base_font, char_code
                         );
-                        return Some("\u{FFFD}".to_string());
+                        return allocation.string("\u{FFFD}");
                     }
                 }
             } else {
@@ -4524,7 +4668,7 @@ impl FontInfo {
                                     char_code as u16
                                 };
                                 if let Some(unicode_char) = tt_cmap.get_unicode(gid) {
-                                    return Some(unicode_char.to_string());
+                                    return allocation.character(unicode_char);
                                 }
                             }
                         }
@@ -4548,7 +4692,7 @@ impl FontInfo {
                                 char_code as u16,
                             ) {
                                 if let Some(unicode_char) = char::from_u32(unicode_codepoint) {
-                                    return Some(unicode_char.to_string());
+                                    return allocation.character(unicode_char);
                                 }
                             }
                             // CID lookup failed — fall through to Priority 2b and beyond
@@ -4556,7 +4700,7 @@ impl FontInfo {
                             // UCS2/UTF16 or Adobe-Identity: char code == Unicode
                             if let Some(unicode_char) = char::from_u32(char_code) {
                                 if !unicode_char.is_control() || unicode_char == ' ' {
-                                    return Some(unicode_char.to_string());
+                                    return allocation.character(unicode_char);
                                 }
                             }
                         }
@@ -4573,7 +4717,7 @@ impl FontInfo {
                                     unicode_char,
                                     unicode_char as u32
                                 );
-                                return Some(unicode_char.to_string());
+                                return allocation.character(unicode_char);
                             }
                         }
                         log::debug!(
@@ -4596,7 +4740,7 @@ impl FontInfo {
             if let Encoding::Standard(ref enc) = self.encoding {
                 if enc.contains("RKSJ") {
                     if let Some(unicode_char) = shift_jis_to_unicode(char_code as u16) {
-                        return Some(unicode_char.to_string());
+                        return allocation.character(unicode_char);
                     }
                 }
             }
@@ -4626,28 +4770,31 @@ impl FontInfo {
         // trying it first is safe: it is a no-op for Identity/UCS2 fonts.
         if self.subtype == "Type0" {
             let enc_name = match &self.encoding {
-                Encoding::Standard(name) => name.clone(),
-                Encoding::Identity => "Identity-H".to_string(),
-                Encoding::Custom(_) => String::new(),
+                Encoding::Standard(name) => name.as_str(),
+                Encoding::Identity => "Identity-H",
+                Encoding::Custom(_) => "",
             };
 
             // Step (a): try direct byte decode for legacy CJK byte-encoding CMaps.
             // This is the correct primary path for GBpc-EUC-H, GB-EUC-H, B5pc-H,
             // EUC-H, KSC-EUC-H, etc. Returns None for Identity/UCS2 CMaps, in
             // which case we fall through to the CID lookup below.
-            if let Some(result) =
-                decode_cjk_raw_charcode(char_code, &enc_name, &self.cid_system_info)
-            {
+            if let Some(result) = decode_cjk_raw_charcode_with_budget(
+                char_code,
+                enc_name,
+                &self.cid_system_info,
+                allocation,
+            ) {
                 return Some(result);
             }
 
             // Step (b): CID → Unicode lookup for identity / UCS2 CMaps where the
             // char code in the stream is already a CID (or very close to one).
             if let Some(unicode_codepoint) =
-                lookup_predefined_cmap(&enc_name, &self.cid_system_info, char_code as u16)
+                lookup_predefined_cmap(enc_name, &self.cid_system_info, char_code as u16)
             {
                 if let Some(unicode_char) = char::from_u32(unicode_codepoint) {
-                    return Some(unicode_char.to_string());
+                    return allocation.character(unicode_char);
                 }
             }
         }
@@ -4664,11 +4811,11 @@ impl FontInfo {
         //
         // Common symbolic fonts: Symbol (Greek/math), ZapfDingbats (decorative)
         if self.is_symbolic() {
-            let font_name_lower = self.base_font.to_lowercase();
+            let font_name_lower = &self.base_font;
 
             // Symbol font: Maps character codes to Greek letters and mathematical symbols
             // Standard encoding defined in PDF spec Annex D.4
-            if font_name_lower.contains("symbol") {
+            if contains_ignore_ascii_case(font_name_lower, "symbol") {
                 if let Some(unicode_char) = symbol_encoding_lookup(char_code as u8) {
                     log::debug!(
                         "Symbolic font '{}': code 0x{:02X} → '{}' (U+{:04X}) [using Symbol encoding]",
@@ -4677,12 +4824,14 @@ impl FontInfo {
                         unicode_char,
                         unicode_char as u32
                     );
-                    return Some(unicode_char.to_string());
+                    return allocation.character(unicode_char);
                 }
             }
             // ZapfDingbats font: Maps character codes to decorative symbols
             // Standard encoding defined in PDF spec Annex D.5
-            else if font_name_lower.contains("zapf") || font_name_lower.contains("dingbat") {
+            else if contains_ignore_ascii_case(font_name_lower, "zapf")
+                || contains_ignore_ascii_case(font_name_lower, "dingbat")
+            {
                 if let Some(unicode_char) = zapf_dingbats_encoding_lookup(char_code as u8) {
                     log::debug!(
                         "Symbolic font '{}': code 0x{:02X} → '{}' (U+{:04X}) [using ZapfDingbats encoding]",
@@ -4691,7 +4840,7 @@ impl FontInfo {
                         unicode_char,
                         unicode_char as u32
                     );
-                    return Some(unicode_char.to_string());
+                    return allocation.character(unicode_char);
                 }
             }
 
@@ -4727,14 +4876,14 @@ impl FontInfo {
                                     unicode_char,
                                     unicode_char as u32
                                 );
-                                return Some(unicode_char.to_string());
+                                return allocation.character(unicode_char);
                             }
                         }
-                        return Some("\u{FFFD}".to_string());
+                        return allocation.string("\u{FFFD}");
                     }
                     // For simple fonts, Identity encoding is valid
                     if let Some(ch) = char::from_u32(char_code) {
-                        return Some(ch.to_string());
+                        return allocation.character(ch);
                     }
                 }
 
@@ -4750,13 +4899,15 @@ impl FontInfo {
                             .code_to_gid(char_code as u16)
                             .unwrap_or(char_code as u16);
                         if let Some(unicode_char) = tt_cmap.get_unicode(gid) {
-                            return Some(unicode_char.to_string());
+                            return allocation.character(unicode_char);
                         }
                     }
                 }
 
                 // Predefined encodings: StandardEncoding, WinAnsiEncoding, MacRomanEncoding, etc.
-                if let Some(unicode) = standard_encoding_lookup(name, char_code as u8) {
+                if let Some(unicode) =
+                    standard_encoding_lookup_with_budget(name, char_code as u8, allocation)
+                {
                     log::debug!(
                         "Standard encoding '{}': code 0x{:02X} → '{}'",
                         name,
@@ -4783,14 +4934,14 @@ impl FontInfo {
                     // punctuation, the name is authoritative (ISO 32000-1 §9.6.6.1) —
                     // return the AGL punctuation so a `/period`-named code always wins
                     // as `.` regardless of how the resolved char came out.
-                    if is_non_sensible_symbol(&custom_char.to_string()) {
+                    if is_non_sensible_symbol(custom_char.encode_utf8(&mut [0; 4])) {
                         if let Some(glyph_name) = self.diff_glyph_names.get(&(char_code as u8)) {
                             if let Some(punct) = punctuation_unicode_for_glyph_name(glyph_name) {
                                 log::debug!(
                                     "Interception B: code 0x{:02X} resolved to non-sensible symbol '{}'; /Differences name '{}' → '{}' (font '{}')",
                                     char_code, custom_char, glyph_name, punct, self.base_font
                                 );
-                                return Some(punct.to_string());
+                                return allocation.string(punct);
                             }
                         }
                     }
@@ -4799,15 +4950,15 @@ impl FontInfo {
                     // This is NOT in the PDF spec but improves text extraction usability
                     if is_ligature_char(custom_char) {
                         if let Some(expanded) = expand_ligature_char(custom_char) {
-                            return Some(expanded.to_string());
+                            return allocation.string(expanded);
                         }
                     }
 
-                    return Some(custom_char.to_string());
+                    return allocation.character(custom_char);
                 }
                 // Check multi_char_map for compound glyph names (e.g., f_f → "ff")
                 if let Some(multi_str) = self.multi_char_map.get(&(char_code as u8)) {
-                    return Some(multi_str.clone());
+                    return allocation.string(multi_str);
                 }
             },
             Encoding::Identity => {
@@ -4854,7 +5005,7 @@ impl FontInfo {
                                 unicode_char,
                                 unicode_char as u32
                             );
-                            return Some(unicode_char.to_string());
+                            return allocation.character(unicode_char);
                         } else {
                             log::debug!(
                                 "TrueType cmap: GID {} not found in font '{}' (CID 0x{:04X} mapped via {})",
@@ -4882,7 +5033,7 @@ impl FontInfo {
                         // table is the font's own authoritative source.
                         if let Some(glyph_name) = self.embedded_glyph_name(gid) {
                             if let Some(unicode) =
-                                super::character_mapper::glyph_name_to_unicode(glyph_name)
+                                super::character_mapper::glyph_name_to_unicode_char(glyph_name)
                             {
                                 log::debug!(
                                     "Priority 3c (embedded post glyph name): font='{}' CID=0x{:04X} (GID={}) → '{}' → '{}'",
@@ -4892,7 +5043,7 @@ impl FontInfo {
                                     glyph_name,
                                     unicode,
                                 );
-                                return Some(unicode);
+                                return allocation.character(unicode);
                             } else {
                                 log::debug!(
                                     "Priority 3c: font='{}' GID={} → name='{}' but AGL/synth lookup failed",
@@ -4967,7 +5118,7 @@ impl FontInfo {
                                             unicode_char,
                                             unicode_char as u32
                                         );
-                                        return Some(unicode_char.to_string());
+                                        return allocation.character(unicode_char);
                                     }
                                 }
                             }
@@ -4992,7 +5143,7 @@ impl FontInfo {
                                     unicode_char,
                                     unicode_char as u32
                                 );
-                                return Some(unicode_char.to_string());
+                                return allocation.character(unicode_char);
                             }
                         }
                     }
@@ -5006,7 +5157,7 @@ impl FontInfo {
                             .map(|d| d.len())
                             .unwrap_or(0)
                     );
-                    return Some("\u{FFFD}".to_string());
+                    return allocation.string("\u{FFFD}");
                 }
 
                 // For simple fonts (Type1, TrueType), Identity encoding MAY be valid
@@ -5018,7 +5169,7 @@ impl FontInfo {
                         ch,
                         ch as u32
                     );
-                    return Some(ch.to_string());
+                    return allocation.character(ch);
                 }
             },
         }
@@ -5038,7 +5189,7 @@ impl FontInfo {
                     .code_to_gid(char_code as u16)
                     .unwrap_or(char_code as u16);
                 if let Some(unicode_char) = tt_cmap.get_unicode(gid) {
-                    return Some(unicode_char.to_string());
+                    return allocation.character(unicode_char);
                 }
             }
         }
@@ -5080,7 +5231,7 @@ impl FontInfo {
             _ => None,
         };
         if let Some(s) = ligature_components {
-            return Some(s.to_string());
+            return allocation.string(s);
         }
 
         None
@@ -5260,10 +5411,10 @@ impl FontInfo {
         }
 
         // Priority 2: Fallback to font name heuristic
-        let name_lower = self.base_font.to_lowercase();
-        name_lower.contains("symbol")
-            || name_lower.contains("zapf")
-            || name_lower.contains("dingbat")
+        let name_lower = &self.base_font;
+        contains_ignore_ascii_case(name_lower, "symbol")
+            || contains_ignore_ascii_case(name_lower, "zapf")
+            || contains_ignore_ascii_case(name_lower, "dingbat")
     }
 
     /// Get character from encoding (custom or standard).
@@ -5442,16 +5593,18 @@ static TEX_MATH_GLYPH_NAMES: phf::Map<&'static str, char> = phf::phf_map! {
 /// Convert a Shift-JIS encoded byte sequence (1 or 2 bytes) to a Unicode character.
 /// Uses the encoding_rs crate for correct, complete Shift-JIS decoding.
 fn shift_jis_to_unicode(code: u16) -> Option<char> {
-    let bytes = if code <= 0xFF {
-        vec![code as u8]
-    } else {
-        vec![(code >> 8) as u8, (code & 0xFF) as u8]
-    };
-    let (decoded, _, had_errors) = encoding_rs::SHIFT_JIS.decode(&bytes);
-    if had_errors {
+    let pair = [(code >> 8) as u8, code as u8];
+    let bytes = if code <= 0xFF { &pair[1..] } else { &pair[..] };
+    // Two source bytes produce at most two Unicode scalars. Keep temporary
+    // decoding on the stack; the caller reserves the returned Unicode string.
+    let mut output = [0u8; 8];
+    let mut decoder = encoding_rs::SHIFT_JIS.new_decoder_without_bom_handling();
+    let (status, read, written) =
+        decoder.decode_to_utf8_without_replacement(bytes, &mut output, true);
+    if !matches!(status, encoding_rs::DecoderResult::InputEmpty) || read != bytes.len() {
         return None;
     }
-    let mut chars = decoded.chars();
+    let mut chars = std::str::from_utf8(&output[..written]).ok()?.chars();
     let c = chars.next()?;
     // Ensure only one character was produced
     if chars.next().is_some() {
@@ -5469,26 +5622,38 @@ fn shift_jis_to_unicode(code: u16) -> Option<char> {
 /// NFKC carries each radical to its ideograph; only chars inside the two radical
 /// blocks are touched, so legitimate text (incl. fullwidth forms) is unchanged.
 /// Fast-path returns the input untouched when it contains no radical-block char.
+#[cfg(test)]
 fn normalize_cjk_radical_forms(s: &str) -> String {
+    normalize_cjk_radical_forms_owned(s.to_owned(), FontAllocation(None)).unwrap_or_default()
+}
+
+fn normalize_cjk_radical_forms_owned(
+    text: String,
+    allocation: FontAllocation<'_>,
+) -> Option<String> {
     use unicode_normalization::UnicodeNormalization;
-    fn is_radical(c: char) -> bool {
-        // CJK Radicals Supplement (U+2E80–2EFF) + Kangxi Radicals (U+2F00–2FDF),
-        // which are contiguous, so a single range covers both blocks.
-        matches!(c as u32, 0x2E80..=0x2FDF)
+    let is_radical = |c: char| matches!(c as u32, 0x2E80..=0x2FDF);
+    if !text.chars().any(is_radical) {
+        return Some(text);
     }
-    if !s.chars().any(is_radical) {
-        return s.to_string();
-    }
-    s.chars()
-        .flat_map(|c| {
-            if is_radical(c) {
-                // NFKC-decompose just this radical glyph to its ideograph.
-                Box::new(c.nfkc()) as Box<dyn Iterator<Item = char>>
-            } else {
-                Box::new(std::iter::once(c)) as Box<dyn Iterator<Item = char>>
-            }
+    let characters = || {
+        text.chars().flat_map(|c| {
+            let radical = is_radical(c);
+            c.nfkc()
+                .take(if radical { usize::MAX } else { 0 })
+                .chain(std::iter::once(c).take(if radical { 0 } else { 1 }))
         })
-        .collect()
+    };
+    let length = characters().try_fold(0usize, |size, c| size.checked_add(c.len_utf8()))?;
+    let mut output = allocation.string_capacity(length)?;
+    output.extend(characters());
+    Some(output)
+}
+
+fn contains_ignore_ascii_case(text: &str, needle: &str) -> bool {
+    text.as_bytes()
+        .windows(needle.len())
+        .any(|part| part.eq_ignore_ascii_case(needle.as_bytes()))
 }
 
 pub(crate) fn glyph_name_to_unicode(glyph_name: &str) -> Option<char> {
@@ -5529,9 +5694,8 @@ pub(crate) fn glyph_name_to_unicode(glyph_name: &str) -> Option<char> {
     // e.g. "f_f" → 'f'+'f', "f_i" → 'f'+'i', "T_h" → 'T'+'h'
     // Return the first component character for single-char return type
     if glyph_name.contains('_') {
-        let parts: Vec<&str> = glyph_name.split('_').collect();
-        if let Some(first) = parts.first() {
-            if let Some(&ch) = super::adobe_glyph_list::ADOBE_GLYPH_LIST.get(*first) {
+        if let Some(first) = glyph_name.split('_').next() {
+            if let Some(&ch) = super::adobe_glyph_list::ADOBE_GLYPH_LIST.get(first) {
                 return Some(ch);
             }
         }
@@ -5551,16 +5715,8 @@ pub(crate) fn glyph_name_to_unicode(glyph_name: &str) -> Option<char> {
     // codepath exists in this crate; inline images per spec carry only image
     // data, but any future inline-image font-resolution callsite will use this
     // unified chain by construction.
-    if let Some(unicode_str) = super::character_mapper::glyph_name_to_unicode(glyph_name) {
-        // The newer chain returns `String` (to allow multi-codepoint AGL
-        // entries like ligatures, though current AGL values are all single
-        // BMP codepoints). For the legacy `Option<char>` surface we only
-        // forward if the result is exactly one `char` — multi-codepoint
-        // results are handled by `glyph_name_to_unicode_string` below.
-        let mut chars = unicode_str.chars();
-        if let (Some(c), None) = (chars.next(), chars.next()) {
-            return Some(c);
-        }
+    if let Some(character) = super::character_mapper::glyph_name_to_unicode_char(glyph_name) {
+        return Some(character);
     }
 
     // Unknown glyph name - not in AGL and not a recognized format
@@ -5572,15 +5728,27 @@ pub(crate) fn glyph_name_to_unicode(glyph_name: &str) -> Option<char> {
 ///
 /// Like `glyph_name_to_unicode` but returns a full String for compound glyph names
 /// (underscore-delimited per AGL spec, e.g. "f_f" → "ff", "f_f_i" → "ffi").
+#[cfg(test)]
 pub(crate) fn glyph_name_to_unicode_string(glyph_name: &str) -> Option<String> {
+    glyph_name_to_unicode_string_with_budget(glyph_name, FontAllocation(None))
+}
+
+fn glyph_name_to_unicode_string_with_budget(
+    glyph_name: &str,
+    allocation: FontAllocation<'_>,
+) -> Option<String> {
+    allocation.check()?;
     // Try single char lookup first
     if let Some(ch) = glyph_name_to_unicode(glyph_name) {
-        return Some(ch.to_string());
+        return allocation.character(ch);
     }
 
     // Handle underscore-delimited compound names (AGL spec section 2)
     if glyph_name.contains('_') {
-        let mut result = String::new();
+        let length = glyph_name.split('_').try_fold(0usize, |size, part| {
+            size.checked_add(glyph_name_to_unicode(part)?.len_utf8())
+        })?;
+        let mut result = allocation.string_capacity(length)?;
         for part in glyph_name.split('_') {
             // If any component is unknown, fail entirely.
             let ch = glyph_name_to_unicode(part)?;
@@ -5594,7 +5762,8 @@ pub(crate) fn glyph_name_to_unicode_string(glyph_name: &str) -> Option<String> {
     // Final fallback (#535 follow-up): unified chain — variant-suffix
     // stripping + strict uniXXXX / uXXXXX synth. Returns the full `String` shape
     // (multi-codepoint AGL entries are forwarded unchanged).
-    super::character_mapper::glyph_name_to_unicode(glyph_name)
+    super::character_mapper::glyph_name_to_unicode_char(glyph_name)
+        .and_then(|c| allocation.character(c))
 }
 
 /// AGL Unicode for the closed set of punctuation glyph names that the Item 1
@@ -6152,10 +6321,19 @@ pub fn pdfdoc_encoding_lookup(code: u8) -> Option<char> {
 /// agreement: of the codes present in both, fewer than half resolving to the
 /// same character means cipher. Empty overlap is treated as NOT a cipher (no
 /// evidence either way; keep the prior overlay behaviour).
+#[cfg(test)]
 fn builtin_encoding_looks_like_cipher(prog_enc: &HashMap<u8, char>, std_name: &str) -> bool {
+    builtin_encoding_looks_like_cipher_with_budget(prog_enc, std_name, FontAllocation(None))
+}
+
+fn builtin_encoding_looks_like_cipher_with_budget(
+    prog_enc: &HashMap<u8, char>,
+    std_name: &str,
+    allocation: FontAllocation<'_>,
+) -> bool {
     let (mut agree, mut overlap) = (0u32, 0u32);
     for (&code, &ch) in prog_enc {
-        if let Some(us) = standard_encoding_lookup(std_name, code) {
+        if let Some(us) = standard_encoding_lookup_with_budget(std_name, code, allocation) {
             if let Some(sc) = us.chars().next() {
                 overlap += 1;
                 if sc == ch {
@@ -6168,16 +6346,26 @@ fn builtin_encoding_looks_like_cipher(prog_enc: &HashMap<u8, char>, std_name: &s
 }
 
 /// The Unicode string for this character, or None if not in the encoding.
+#[cfg(test)]
 fn standard_encoding_lookup(encoding: &str, code: u8) -> Option<String> {
+    standard_encoding_lookup_with_budget(encoding, code, FontAllocation(None))
+}
+
+fn standard_encoding_lookup_with_budget(
+    encoding: &str,
+    code: u8,
+    allocation: FontAllocation<'_>,
+) -> Option<String> {
+    allocation.check()?;
     match encoding {
         "PDFDocEncoding" => {
             // PDFDocEncoding: superset of ISO Latin-1 with special 128-159 range
-            pdfdoc_encoding_lookup(code).map(|c| c.to_string())
+            pdfdoc_encoding_lookup(code).and_then(|c| allocation.character(c))
         },
         "WinAnsiEncoding" => {
             // ASCII printable range (32-126)
             if (32..=126).contains(&code) {
-                return Some((code as char).to_string());
+                return allocation.character(code as char);
             }
 
             // WinAnsiEncoding extended range (128-255)
@@ -6214,7 +6402,7 @@ fn standard_encoding_lookup(encoding: &str, code: u8) -> Option<String> {
                 _ if code >= 0xA0 => char::from_u32(code as u32)?,
                 _ => return None,
             };
-            Some(unicode.to_string())
+            allocation.character(unicode)
         },
         "StandardEncoding" => {
             // PostScript StandardEncoding per PDF Spec ISO 32000-1:2008, Annex D, Table D.1
@@ -6229,7 +6417,7 @@ fn standard_encoding_lookup(encoding: &str, code: u8) -> Option<String> {
                     0x27 => '\u{2019}', // quoteright
                     _ => code as char,
                 };
-                Some(ch.to_string())
+                allocation.character(ch)
             } else {
                 let unicode = match code {
                     // 0xA0-0xAF
@@ -6294,13 +6482,13 @@ fn standard_encoding_lookup(encoding: &str, code: u8) -> Option<String> {
                     0xFB => '\u{00DF}', // germandbls (NOT u-circumflex)
                     _ => return None,
                 };
-                Some(unicode.to_string())
+                allocation.character(unicode)
             }
         },
         "MacRomanEncoding" => {
             // ASCII range is the same
             if (32..=126).contains(&code) {
-                Some((code as char).to_string())
+                allocation.character(code as char)
             } else {
                 // Complete Mac OS Roman encoding per PDF Spec ISO 32000-1:2008, Annex D, Table D.2
                 let unicode = match code {
@@ -6440,13 +6628,13 @@ fn standard_encoding_lookup(encoding: &str, code: u8) -> Option<String> {
                     0xFF => '\u{02C7}', // caron
                     _ => return None,
                 };
-                Some(unicode.to_string())
+                allocation.character(unicode)
             }
         },
         _ => {
             // Unknown encoding, try identity mapping for ASCII
             if code.is_ascii() && code >= 32 {
-                Some((code as char).to_string())
+                allocation.character(code as char)
             } else {
                 None
             }
@@ -6466,10 +6654,20 @@ fn standard_encoding_lookup(encoding: &str, code: u8) -> Option<String> {
 ///
 /// This function catches that case and decodes with encoding_rs so the correct
 /// CJK characters come out.
+#[cfg(test)]
 fn decode_cjk_raw_charcode(
     char_code: u32,
     enc_name: &str,
     cid_system_info: &Option<CIDSystemInfo>,
+) -> Option<String> {
+    decode_cjk_raw_charcode_with_budget(char_code, enc_name, cid_system_info, FontAllocation(None))
+}
+
+fn decode_cjk_raw_charcode_with_budget(
+    char_code: u32,
+    enc_name: &str,
+    cid_system_info: &Option<CIDSystemInfo>,
+    allocation: FontAllocation<'_>,
 ) -> Option<String> {
     let ordering = cid_system_info
         .as_ref()
@@ -6486,18 +6684,15 @@ fn decode_cjk_raw_charcode(
         let lo = char_code & 0xFF;
         if (0x21..=0x7E).contains(&hi) && (0x21..=0x7E).contains(&lo) {
             let euc = [(hi | 0x80) as u8, (lo | 0x80) as u8];
-            let (decoded, _, errors) = encoding_rs::EUC_JP.decode(&euc);
-            if !errors {
-                let r = decoded.replace('\u{FFFD}', "");
-                if !r.is_empty() {
-                    return Some(r);
-                }
+            if let Some(decoded) = decode_legacy_cjk(encoding_rs::EUC_JP, &euc, allocation) {
+                return Some(decoded);
             }
+            allocation.check()?;
         }
         // ASCII range (single-byte-ish codes 0x20–0x7E) pass through as-is.
         if char_code <= 0x7E {
             if let Some(c) = char::from_u32(char_code) {
-                return Some(c.to_string());
+                return allocation.character(c);
             }
         }
     }
@@ -6528,16 +6723,25 @@ fn decode_cjk_raw_charcode(
     // Reconstruct the raw bytes from the 2-byte char_code (big-endian)
     let bytes: [u8; 2] = [((char_code >> 8) & 0xFF) as u8, (char_code & 0xFF) as u8];
 
-    let (decoded, _, errors) = enc.decode(&bytes);
-    if errors {
+    decode_legacy_cjk(enc, &bytes, allocation)
+}
+fn decode_legacy_cjk(
+    encoding: &'static encoding_rs::Encoding,
+    bytes: &[u8],
+    allocation: FontAllocation<'_>,
+) -> Option<String> {
+    let mut decoder = encoding.new_decoder_without_bom_handling();
+    let capacity = decoder.max_utf8_buffer_length_without_replacement(bytes.len())?;
+    let mut output = allocation.string_capacity(capacity)?;
+    let (status, consumed) = decoder.decode_to_string_without_replacement(bytes, &mut output, true);
+    if !matches!(status, encoding_rs::DecoderResult::InputEmpty) || consumed != bytes.len() {
         return None;
     }
-    // Skip the replacement character U+FFFD (decoding failed)
-    let result = decoded.replace('\u{FFFD}', "");
-    if result.is_empty() {
+    output.retain(|c| c != '\u{FFFD}');
+    if output.is_empty() {
         None
     } else {
-        Some(result)
+        Some(output)
     }
 }
 

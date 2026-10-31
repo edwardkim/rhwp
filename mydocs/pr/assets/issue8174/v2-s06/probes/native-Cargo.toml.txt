@@ -1,0 +1,19 @@
+[package]
+name = "issue8174-md05-audit"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[dependencies]
+rhwp = { path = "/home/edward/mygithub/rhwp", default-features = false, features = ["pdf-import"] }
+pdf_oxide = { package = "rhwp-pdf-import-backend", path = "/home/edward/mygithub/rhwp/vendor/rhwp-pdf-import-backend", default-features = false }
+serde_json = "1"
+
+[profile.release-test]
+inherits = "release"
+opt-level = 1
+debug = 0
+lto = false
+codegen-units = 64

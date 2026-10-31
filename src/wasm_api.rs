@@ -45,19 +45,32 @@ use crate::renderer::DEFAULT_DPI;
 #[cfg(target_arch = "wasm32")]
 mod bitmap_raster;
 mod canvas_metrics;
+mod form_action;
+mod host_font_environment;
 mod hyperlink;
 mod layout_generation;
 #[cfg(all(feature = "pdf-import", target_arch = "wasm32"))]
 mod pdf_import;
+#[cfg(all(feature = "pdf-import", target_arch = "wasm32"))]
+mod pdf_request;
 #[cfg(target_arch = "wasm32")]
 mod print_image_sampling;
 /// 어떤 렌더 export가 교체 가능한 경계 뒤에 있는지 선언하는 곳 (#4577, #4642).
 mod render_patch_boundary;
+#[cfg(target_arch = "wasm32")]
+mod static_svg_raster;
 mod table_cell_bboxes;
 mod template_automation;
 
 #[cfg(target_arch = "wasm32")]
 mod layer_export;
+
+// Preserve the Native facade's existing slice signature while passing a JS
+// reference on WASM. No Native dependency on target-specific js-sys is added.
+#[cfg(target_arch = "wasm32")]
+type PdfImportInput = JsValue;
+#[cfg(not(target_arch = "wasm32"))]
+type PdfImportInput = [u8];
 
 impl From<HwpError> for JsValue {
     fn from(err: HwpError) -> Self {
@@ -633,15 +646,57 @@ impl HwpDocument {
         }
     }
 
+    /// Resolve the same strict options used by importPdf before copying input.
+    /// The zero-argument getPdfImportPolicy() remains the standard profile.
+    #[wasm_bindgen(js_name = getPdfImportPolicyWithOptions)]
+    pub fn get_pdf_import_policy_with_options(options: JsValue) -> Result<String, JsValue> {
+        #[cfg(all(feature = "pdf-import", target_arch = "wasm32"))]
+        {
+            let (_, policy, _) = pdf_import::options(options)?;
+            Ok(serde_json::to_string(&policy).expect("PDF policy is serializable"))
+        }
+        #[cfg(not(all(feature = "pdf-import", target_arch = "wasm32")))]
+        {
+            let _ = options;
+            Err(JsValue::from_str(
+                "PDF_IMPORT_DISABLED: a PDF-enabled WASM runtime is required",
+            ))
+        }
+    }
+
+    /// Host execution requirements, distinct from parser request counters.
+    #[wasm_bindgen(js_name = getPdfImportRuntimeCapabilities)]
+    pub fn get_pdf_import_runtime_capabilities() -> String {
+        serde_json::json!({
+            "schemaVersion": 1,
+            "executionModel": "synchronous",
+            "preCopyPolicyValidation": cfg!(all(feature = "pdf-import", target_arch = "wasm32")),
+            "interruption": "hostWorkerTermination",
+            "requestTransportReservations": cfg!(all(feature = "pdf-import", target_arch = "wasm32")),
+            "editorReopenRemainingCredit": cfg!(all(feature = "pdf-import", target_arch = "wasm32")),
+            "editorReopenInterruption": "cooperativeChecksAndPublicationYield",
+            "mainThreadPreemption": false,
+            "processMemoryLimitEnforced": false,
+            "filesystemNetworkSandbox": false,
+        })
+        .to_string()
+    }
+
     /// PDF 전체 또는 선택 쪽을 공통 IR로 가져온다 (기본 포함 `pdf-import`).
     /// options.sourcePages는 0-based 증가 배열이며 생략하면 전체 쪽이다.
     /// 동기 실행이므로 브라우저에서 취소/시간 제한이 필요하면 Worker에서 호출한다.
     #[wasm_bindgen(js_name = importPdf)]
-    pub fn import_pdf(data: &[u8], options: JsValue) -> Result<HwpDocument, JsValue> {
+    pub fn import_pdf(
+        #[wasm_bindgen(unchecked_param_type = "Uint8Array")] data: &PdfImportInput,
+        options: JsValue,
+    ) -> Result<HwpDocument, JsValue> {
         #[cfg(all(feature = "pdf-import", target_arch = "wasm32"))]
         {
-            let options = pdf_import::options(options)?;
-            DocumentCore::from_pdf_bytes(data, &options)
+            let (options, policy, _) = pdf_import::options(options)?;
+            let mut session = crate::PdfImportSession::new(policy)?;
+            let data = pdf_import::copy_input(data, &policy, &mut session)?;
+            session
+                .open(&data, &options)
                 .map(|core| HwpDocument { core })
                 .map_err(JsValue::from)
         }
@@ -747,6 +802,11 @@ impl HwpDocument {
     }
 
     /// 호스트가 실제 FontFace에 적재한 프로그램의 호환 글리프 지원을 등록한다.
+    #[wasm_bindgen(js_name = clearTextFontFamily)]
+    pub fn clear_text_font_family_wasm(&mut self, family: &str) {
+        self.clear_text_font_family_native(family);
+    }
+
     #[wasm_bindgen(js_name = registerTextFontGlyphCoverage)]
     pub fn register_text_font_glyph_coverage(
         &mut self,
@@ -787,10 +847,75 @@ impl HwpDocument {
             .map_err(JsValue::from)
     }
 
+    #[wasm_bindgen(js_name = getTextShadowFontRequests)]
+    pub fn get_text_shadow_font_requests(&self) -> Result<String, JsValue> {
+        self.get_text_shadow_font_requests_native()
+            .map_err(JsValue::from)
+    }
+
     #[wasm_bindgen(js_name = getNativePuaFontRequests)]
     pub fn get_native_pua_font_requests(&self) -> Result<String, JsValue> {
         serde_json::to_string(&self.native_pua_font_requests())
             .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+
+    #[wasm_bindgen(js_name = getNativeOtfFontRequests)]
+    pub fn get_native_otf_font_requests_wasm(&self) -> Result<String, JsValue> {
+        serde_json::to_string(&self.native_otf_font_requests())
+            .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+
+    /// 미리 준비한 실제 face만 동기 공급하고 모든 선택을 한 번에 조판한다.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = prepareNativeOtfFonts)]
+    pub fn prepare_native_otf_fonts_wasm(
+        &mut self,
+        provider: &js_sys::Function,
+    ) -> Result<bool, JsValue> {
+        use wasm_bindgen::JsCast;
+        let mut prepared = std::collections::BTreeMap::new();
+        for request in self.native_otf_font_requests() {
+            let key = serde_json::to_string(&request)
+                .map_err(|error| JsValue::from_str(&error.to_string()))?;
+            let value = provider.call1(&JsValue::NULL, &JsValue::from_str(&key))?;
+            if value.is_null() || value.is_undefined() {
+                continue;
+            }
+            let values: Vec<JsValue> = if js_sys::Array::is_array(&value) {
+                let array = js_sys::Array::from(&value);
+                if array.length() > 256 {
+                    return Err(JsValue::from_str(
+                        "OTF provider program count exceeds limit",
+                    ));
+                }
+                array.iter().collect()
+            } else {
+                vec![value]
+            };
+            let mut programs = Vec::with_capacity(values.len());
+            let mut total_bytes = 0usize;
+            for value in values {
+                if !value.is_instance_of::<js_sys::Uint8Array>() {
+                    return Err(JsValue::from_str(
+                        "OTF provider must return Uint8Array, an array of Uint8Array, or null",
+                    ));
+                }
+                let array = js_sys::Uint8Array::new(&value);
+                let length = array.length() as usize;
+                total_bytes = total_bytes.saturating_add(length);
+                if length > 32 * 1024 * 1024 || total_bytes > 64 * 1024 * 1024 {
+                    return Err(JsValue::from_str("OTF provider program exceeds limit"));
+                }
+                programs.push((array.to_vec(), 0));
+            }
+            prepared.insert((request.family, request.bold, request.italic), programs);
+        }
+        self.prepare_native_otf_fonts_multiple_with(|request| {
+            prepared
+                .remove(&(request.family.clone(), request.bold, request.italic))
+                .unwrap_or_default()
+        })
+        .map_err(JsValue::from)
     }
 
     #[wasm_bindgen(js_name = registerNativePuaFont)]

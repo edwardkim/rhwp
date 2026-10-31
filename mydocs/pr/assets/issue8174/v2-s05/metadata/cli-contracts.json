@@ -1,0 +1,211 @@
+{
+  "cases": [
+    {
+      "args": [
+        "info",
+        "samples/hwp_table_test.hwp",
+        "--json"
+      ],
+      "base_exit": 0,
+      "candidate_exit": 0,
+      "same_exit_stdout_stderr": true,
+      "stdout_sha256": "b275d20d2e74a7292a796917f097f4afefd18c09adbc1f4d29ece62cc3152005",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "export-text",
+        "samples/hwp_table_test.hwp",
+        "--output",
+        "$REPO/output/pr-review/issue8174/v2-s05-20261025/cli-plain"
+      ],
+      "base_exit": 0,
+      "candidate_exit": 0,
+      "same_exit_stdout_stderr": true,
+      "stdout_sha256": "80f811bc24b1a356c76e8969eee06e0179a4701941d2a751548986fe9c48b236",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "export-text",
+        "samples/hwp_table_test.hwp",
+        "--json"
+      ],
+      "base_exit": 0,
+      "candidate_exit": 0,
+      "same_exit_stdout_stderr": true,
+      "stdout_sha256": "cd67324053c0dc1d06987e4a96c46bedb4fb935609be290c28c81ca340f6a42e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "export-text",
+        "samples/hwp_table_test.hwp",
+        "--json",
+        "--max-chars",
+        "20"
+      ],
+      "base_exit": 0,
+      "candidate_exit": 0,
+      "same_exit_stdout_stderr": true,
+      "stdout_sha256": "8f76820e61b14c2521cfd276217523736aefe55be741028a0e1e38adc649c3cd",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "export-text",
+        "samples/hwp_table_test.hwp",
+        "--page",
+        "0",
+        "--json"
+      ],
+      "base_exit": 0,
+      "candidate_exit": 0,
+      "same_exit_stdout_stderr": true,
+      "stdout_sha256": "fc0b8b7d55873a9840d38ff957a5ed421ca28e8cab65b621a223cb559c076f5a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "info",
+        "samples/hwpx/143E433F503322BD33.hwpx",
+        "--json"
+      ],
+      "base_exit": 0,
+      "candidate_exit": 0,
+      "same_exit_stdout_stderr": true,
+      "stdout_sha256": "cc716ecb626d1e67f6d69527895ef7ccbab20f67970573d66bc342e82aac13f2",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "export-text",
+        "samples/hwpx/143E433F503322BD33.hwpx",
+        "--output",
+        "$REPO/output/pr-review/issue8174/v2-s05-20261025/cli-plain"
+      ],
+      "base_exit": 0,
+      "candidate_exit": 0,
+      "same_exit_stdout_stderr": true,
+      "stdout_sha256": "d6984dd3d40d2cefb002bdf9ac771fad8fb159e8951bd7aee62b90defde91fd4",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "export-text",
+        "samples/hwpx/143E433F503322BD33.hwpx",
+        "--json"
+      ],
+      "base_exit": 0,
+      "candidate_exit": 0,
+      "same_exit_stdout_stderr": true,
+      "stdout_sha256": "efeb0fe5b17554c9de8c51e6c7295f9d0ac009012d954af5058a80b68f232c3b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "export-text",
+        "samples/hwpx/143E433F503322BD33.hwpx",
+        "--json",
+        "--max-chars",
+        "20"
+      ],
+      "base_exit": 0,
+      "candidate_exit": 0,
+      "same_exit_stdout_stderr": true,
+      "stdout_sha256": "1f62a53b4d7a48341ccb0c9e2986b36ae67c2fbb3cc657f422c5f8602c6b2933",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "export-text",
+        "samples/hwpx/143E433F503322BD33.hwpx",
+        "--page",
+        "0",
+        "--json"
+      ],
+      "base_exit": 0,
+      "candidate_exit": 0,
+      "same_exit_stdout_stderr": true,
+      "stdout_sha256": "efeb0fe5b17554c9de8c51e6c7295f9d0ac009012d954af5058a80b68f232c3b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "info",
+        "pdf/issue8174/features/icc-rgb.pdf",
+        "--json"
+      ],
+      "base_exit": 0,
+      "candidate_exit": 0,
+      "same_exit_stdout_stderr": true,
+      "stdout_sha256": "9cc5ed073a49048818443b2902c3062477d220fb437ad9e77b348eea214de996",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "info",
+        "pdf/issue8183/scan-jbig2.pdf",
+        "--json"
+      ],
+      "base_exit": 0,
+      "candidate_exit": 0,
+      "same_exit_stdout_stderr": true,
+      "stdout_sha256": "54b201bfe8b353e6f89db8840b51103d61e0f8addc33ad24edb9e0131924f823",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "capabilities"
+      ],
+      "base_exit": 0,
+      "candidate_exit": 0,
+      "same_exit_stdout_stderr": true,
+      "stdout_sha256": "a217b9a63386e2e1cd5ebfe1cda25e42da9bba08028ac84f125f6776125017d0",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "export-text",
+        "missing-8174-input.hwp",
+        "--json"
+      ],
+      "base_exit": 1,
+      "candidate_exit": 1,
+      "same_exit_stdout_stderr": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "521d39b1e5b386e9e1d6391cbea257f64bf597a88e1abcbe4cd755ae444f9074"
+    },
+    {
+      "args": [
+        "export-text",
+        "samples/hwp_table_test.hwp",
+        "--max-chars",
+        "0",
+        "--json"
+      ],
+      "base_exit": 2,
+      "candidate_exit": 2,
+      "same_exit_stdout_stderr": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "2857f95830d28926169d0335ed8a9fc3151b3b2b42f24781b302c119ea6b0bac"
+    },
+    {
+      "args": [
+        "export-text",
+        "samples/hwp_table_test.hwp",
+        "--page",
+        "99999",
+        "--json"
+      ],
+      "base_exit": 2,
+      "candidate_exit": 2,
+      "same_exit_stdout_stderr": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "059ef5ebb72f74471fb774accb1dfbd7c2ee835f1280f3c3f6300d900fbab983"
+    }
+  ],
+  "guide_command_passed": true,
+  "minimal_hwp_matches_default": true,
+  "minimal_pdf_rejected_before_output": true
+}

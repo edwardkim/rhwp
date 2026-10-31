@@ -188,6 +188,15 @@ pub struct RenderNode {
     /// Keep its source address for paint ordering; the control query omits it.
     #[serde(skip)]
     pub(crate) cell_frame_paint: bool,
+    /// 표 배경의 축별 원본 참조가 본문 단인지 보존한다. 배치 좌표는 바꾸지 않는다.
+    #[serde(skip)]
+    pub(crate) print_table_column_axes: Option<[bool; 2]>,
+    /// 원본 Picture가 글자처럼 취급되는지 보존한다. wrap 값으로 추측하지 않는다.
+    #[serde(skip)]
+    pub(crate) source_inline_picture: bool,
+    /// 표/셀의 BorderFill이 직접 생성한 배경. 셀 본문의 독립 도형과 구분한다.
+    #[serde(skip)]
+    pub(crate) table_background_paint: bool,
     /// Source text clipping in absolute page pixels; not a layout height/cut.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub paint_clip: Option<Vec<crate::model::text_clip::TextClipPath>>,
@@ -211,6 +220,10 @@ pub struct RenderNode {
     /// 인쇄 레이어는 같은 줄 구성의 이 상자를 소비한다.
     #[serde(skip)]
     pub print_bbox: Option<BoundingBox>,
+    /// 내용 배치·편집용 bbox와 구분한 원본 도형의 인쇄 텍스트 경계.
+    /// 공통 paint builder가 TextBox clip에만 적용하며 글줄 원점은 바꾸지 않는다.
+    #[serde(skip)]
+    pub print_clip_bbox: Option<BoundingBox>,
     /// 원본 컨트롤의 식별 결과. 내부 레이아웃 노드 이름과 조판부호를 분리한다.
     #[serde(skip)]
     pub control_code: ControlCode,
@@ -231,6 +244,9 @@ impl RenderNode {
     pub fn new(id: NodeId, node_type: RenderNodeType, bbox: BoundingBox) -> Self {
         Self {
             cell_frame_paint: false,
+            print_table_column_axes: None,
+            source_inline_picture: false,
+            table_background_paint: false,
             id,
             node_type,
             bbox,
@@ -239,6 +255,7 @@ impl RenderNode {
             visible: true,
             editor_only: false,
             print_bbox: None,
+            print_clip_bbox: None,
             control_code: ControlCode::Automatic,
             header_footer_source: None,
             paint_clip: None,
@@ -437,6 +454,8 @@ fn json_escape(s: &str) -> String {
 }
 
 /// 렌더 노드 종류
+// 공개 렌더 트리의 텍스트 런마다 별도 할당을 추가하지 않고 기존 API를 유지한다.
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, Serialize)]
 pub enum RenderNodeType {
     /// 페이지 루트 노드
@@ -1102,25 +1121,32 @@ impl TextRunNode {
         let chars: Vec<char> = text.chars().collect();
         let mut positions = self.replay_positions_for(text).into_owned();
         super::validated_replay_positions(text, Some(&positions))?;
-        let visible_end = chars
-            .iter()
-            .rposition(|ch| !ch.is_whitespace())
-            .map_or(0, |index| index + 1);
-        // 실제 잉크가 다음 블록을 침범하면 그 겹침을 bbox 절단으로 숨기지 않는다.
-        let width = requested_width.max(positions[visible_end]);
-        for position in &mut positions[visible_end..] {
-            *position = position.min(width);
+        let tab = chars.iter().rposition(|character| *character == '\t')?;
+        let suffix = chars[tab + 1..].iter().collect::<String>();
+        let suffix_style = self.style.for_text_fragment(tab + 1);
+        let suffix_positions = super::layout::compute_char_positions(&suffix, &suffix_style);
+        let suffix_width = *suffix_positions.last()?;
+        // 앞의 공백과 뒤 공백도 자연 전진을 갖는다. 요청 폭이 이보다 작으면
+        // 음수 탭이나 공백 절단 대신 최소 점유 폭을 같은 배열·bbox에 보존한다.
+        let width = requested_width.max(positions[tab] + suffix_width);
+        let tab_end = width - suffix_width;
+        if !tab_end.is_finite() || tab_end < positions[tab] {
+            return None;
         }
-        *positions.last_mut()? = width;
+        // 탭 뒤 공백은 독립 전진이다. 확정된 끝에 맞추려고 공백 폭을 잘라 내지 않는다.
+        for (position, offset) in positions[tab + 1..].iter_mut().zip(&suffix_positions) {
+            *position = tab_end + offset;
+        }
         super::validated_replay_positions(text, Some(&positions))?;
+        let leaders = super::layout::extract_tab_leaders_with_extended(
+            text,
+            &positions,
+            &self.style,
+            &self.style.inline_tabs,
+        );
         self.layout_positions = Some(positions);
-        // 공백 carry-over의 논리 경계와 점선의 그리기 끝은 다르다.
-        // 기존 점선은 공백 구간을 지나갈 수 있지만 다음 가시 런을 침범하지 않는다.
-        // 저장된 점선 끝을 늘리지 않아 목차 번호 앞의 원래 간격도 보존한다.
-        for leader in &mut self.style.tab_leaders {
-            leader.start_x = leader.start_x.min(leader_limit_width);
-            leader.end_x = leader.end_x.min(leader_limit_width).max(leader.start_x);
-        }
+        // 장식도 같은 실제 위치 배열을 소비한다. 오래된 TabDef 기반 끝을 남기지 않는다.
+        self.style.tab_leaders = leaders;
         Some(width)
     }
 
@@ -1466,6 +1492,18 @@ pub struct RectangleNode {
     /// [Task #1138] 표 셀 내 도형인 경우: outer paragraph 의 표 control 인덱스
     #[serde(default)]
     pub outer_table_control_index: Option<usize>,
+    /// 그림 테두리가 공유하는 원본 이미지 노드. 인쇄 프레임은 paint에서 한 번 결정한다.
+    #[serde(skip)]
+    pub image_frame_owner: Option<NodeId>,
+    /// 그림 원본의 HU 선폭. 인쇄 장치 pen과 화면용 기본 선폭을 구분한다.
+    #[serde(skip)]
+    pub picture_border_width_hu: Option<i32>,
+    /// Print에서 확정한 채운 띠와 외곽 pen의 물리 폭. raster 최소 폭은 재생 시 결정한다.
+    #[serde(skip)]
+    pub print_picture_pen: Option<[f64; 2]>,
+    /// 일반 사각형의 NORMAL 테두리 원본 폭. 선 생략과 채움 중첩을 구분한다.
+    #[serde(skip)]
+    pub drawing_border_width_hu: Option<i32>,
 }
 
 impl RectangleNode {
@@ -1487,6 +1525,10 @@ impl RectangleNode {
             cell_index: None,
             cell_para_index: None,
             outer_table_control_index: None,
+            image_frame_owner: None,
+            picture_border_width_hu: None,
+            print_picture_pen: None,
+            drawing_border_width_hu: None,
         }
     }
 }
@@ -2123,6 +2165,20 @@ impl PageLayoutContext {
         self.inline_shape_positions
             .get(&(sec, para_for_key, ctrl, cell_path))
             .copied()
+    }
+
+    /// `keep` 이 고른 인라인 Shape 좌표를 `dy` 만큼 세로로 옮긴다. 배치 뒤에 노드를
+    /// 옮기는 정렬이 등록 좌표와 그려진 자리를 같게 유지할 때 쓴다.
+    pub fn translate_inline_shape_positions_y(
+        &mut self,
+        keep: impl Fn(&InlineShapeKey) -> bool,
+        dy: f64,
+    ) {
+        for (key, (_, y)) in self.inline_shape_positions.iter_mut() {
+            if keep(key) {
+                *y += dy;
+            }
+        }
     }
 
     /// 인라인 Shape 좌표 전체 참조 (hitTest용)

@@ -10,7 +10,8 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-publish = false
+rust-version = "1.93.1"
+publish = ["crates-io"]
 edition = "2024"
 name = "rhwp-hayro-ccitt"
 version = "0.3.0-rhwp.1"

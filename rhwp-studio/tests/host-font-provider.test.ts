@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { HostFontSource, type HostFontProvider, type HostFontSnapshot } from '../src/core/host-font-provider.ts';
-import { setHostFontProvider, prepareHostFontCatalog, resolveRendererLocalFont, resolveLocalFont,
+import { setHostFontProvider, prepareHostFontCatalog, resolveRendererLocalFont, resolveRendererLocalFontCandidates, resolveLocalFont,
   loadRendererLocalFont, getLocalFontState } from '../src/core/local-fonts.ts';
 import { fontFamilyChainForDisplay } from '../src/core/font-substitution.ts';
 import { collectHostFontRequests, collectDocumentCanvasKitFontUsage, resolveDocumentCanvasKitFontUsage, resolveDocumentCanvasKitFontFamilies } from '../src/core/host-font-requests.ts';
@@ -310,6 +310,8 @@ test('italic runs can select an unambiguous oblique face when no italic face exi
     f.provider.getSnapshot = async () => ({ revision: 'ambiguous', faces: [oblique, { ...oblique, id: 'duplicate' }] });
     f.change(); await prepareHostFontCatalog();
     assert.equal(resolveRendererLocalFont('Host Only', { weight: 400, slant: 'italic' }), null);
+    assert.deepEqual(resolveRendererLocalFontCandidates('Host Only', { weight: 400, slant: 'italic' }), [],
+      '같은 PostScript 식별자의 모호한 중복은 분할 face로 판단하지 않는다');
   } finally { await setHostFontProvider(null); }
 });
 

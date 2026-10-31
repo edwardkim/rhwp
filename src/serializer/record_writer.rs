@@ -14,22 +14,51 @@ use crate::parser::record::Record;
 ///
 /// 반환: 레코드 헤더 + 데이터 바이트
 pub fn write_record(tag_id: u16, level: u16, data: &[u8]) -> Vec<u8> {
+    match try_write_record(tag_id, level, data, &crate::storage::Unbounded) {
+        Ok(bytes) => bytes,
+        Err(never) => match never {},
+    }
+}
+
+fn append_record(bytes: &mut Vec<u8>, tag_id: u16, level: u16, data: &[u8]) {
     let size = data.len() as u32;
     let extended = size >= 0xFFF;
-
     let header_size = if extended { 0xFFF } else { size };
-    let header: u32 =
-        (tag_id as u32 & 0x3FF) | ((level as u32 & 0x3FF) << 10) | (header_size << 20);
-
-    let mut bytes = Vec::with_capacity(4 + if extended { 4 } else { 0 } + data.len());
+    let header = (tag_id as u32 & 0x3FF) | ((level as u32 & 0x3FF) << 10) | (header_size << 20);
     bytes.extend_from_slice(&header.to_le_bytes());
-
     if extended {
         bytes.extend_from_slice(&size.to_le_bytes());
     }
-
     bytes.extend_from_slice(data);
-    bytes
+}
+
+pub(crate) fn try_append_record<S: crate::storage::Storage>(
+    bytes: &mut Vec<u8>,
+    tag: u16,
+    level: u16,
+    data: &[u8],
+    storage: &S,
+) -> Result<(), S::Error> {
+    let count = data
+        .len()
+        .saturating_add(if data.len() as u32 >= 0xFFF { 8 } else { 4 });
+    storage.reserve(bytes, count)?;
+    append_record(bytes, tag, level, data);
+    Ok(())
+}
+
+pub(crate) fn try_write_record<S: crate::storage::Storage>(
+    tag_id: u16,
+    level: u16,
+    data: &[u8],
+    storage: &S,
+) -> Result<Vec<u8>, S::Error> {
+    let size = data
+        .len()
+        .saturating_add(if data.len() as u32 >= 0xFFF { 8 } else { 4 });
+    let mut bytes = storage.vec(size)?;
+    append_record(&mut bytes, tag_id, level, data);
+    Ok(bytes)
 }
 
 /// Record 구조체를 바이너리로 인코딩
@@ -39,16 +68,26 @@ pub fn write_record_from(record: &Record) -> Vec<u8> {
 
 /// 여러 레코드를 연결하여 바이너리 스트림 생성
 pub fn write_records(records: &[Record]) -> Vec<u8> {
-    let total_size: usize = records
-        .iter()
-        .map(|r| 4 + if r.data.len() >= 0xFFF { 4 } else { 0 } + r.data.len())
-        .sum();
-
-    let mut bytes = Vec::with_capacity(total_size);
-    for record in records {
-        bytes.extend(write_record_from(record));
+    match try_write_records(records, &crate::storage::Unbounded) {
+        Ok(bytes) => bytes,
+        Err(never) => match never {},
     }
-    bytes
+}
+
+pub(crate) fn try_write_records<S: crate::storage::Storage>(
+    records: &[Record],
+    storage: &S,
+) -> Result<Vec<u8>, S::Error> {
+    let total = records.iter().fold(0usize, |total, record| {
+        total
+            .saturating_add(record.data.len())
+            .saturating_add(if record.data.len() >= 0xFFF { 8 } else { 4 })
+    });
+    let mut bytes = storage.vec(total)?;
+    for record in records {
+        append_record(&mut bytes, record.tag_id, record.level, &record.data);
+    }
+    Ok(bytes)
 }
 
 #[cfg(test)]

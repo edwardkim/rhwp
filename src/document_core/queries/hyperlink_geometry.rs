@@ -7,7 +7,7 @@ use crate::model::{
 };
 use crate::paint::{GroupKind, LayerNode, LayerNodeKind, PageLayerTree, PaintOp, RenderProfile};
 use crate::renderer::{
-    hyperlinks::{clipped_rect, export_uri, PdfLink},
+    hyperlinks::{clipped_rect, PdfLink, PdfNamedDestination},
     render_tree::BoundingBox,
 };
 
@@ -56,6 +56,121 @@ impl DocumentCore {
         };
         self.collect_layer_hyperlinks(&tree.root, page, &mut links)?;
         Ok(links)
+    }
+
+    /// Bookmarks use the same actual text replay positions as link rectangles.
+    pub fn bookmarks_in_layer_tree(
+        &self,
+        tree: &PageLayerTree,
+    ) -> Result<Vec<PdfNamedDestination>, HwpError> {
+        fn walk(
+            core: &DocumentCore,
+            node: &LayerNode,
+            found: &mut std::collections::BTreeMap<String, PdfNamedDestination>,
+        ) -> Result<(), HwpError> {
+            match &node.kind {
+                LayerNodeKind::Group {
+                    children,
+                    group_kind,
+                    ..
+                } => {
+                    if matches!(
+                        group_kind,
+                        GroupKind::Header
+                            | GroupKind::Footer
+                            | GroupKind::MasterPage
+                            | GroupKind::FootnoteArea
+                    ) {
+                        return Ok(());
+                    }
+                    for child in children {
+                        walk(core, child, found)?;
+                    }
+                }
+                LayerNodeKind::ClipPath { child, .. } | LayerNodeKind::ClipRect { child, .. } => {
+                    walk(core, child, found)?
+                }
+                LayerNodeKind::Leaf { ops } => {
+                    for op in ops {
+                        let PaintOp::TextRun { bbox, run, .. } = op else {
+                            continue;
+                        };
+                        let (Some(section), Some(para), Some(start)) =
+                            (run.section_index, run.para_index, run.char_start)
+                        else {
+                            continue;
+                        };
+                        let target = if let Some(cell) = &run.cell_context {
+                            HyperlinkTarget {
+                                section,
+                                para: cell.parent_para_index,
+                                cell_path: cell
+                                    .path
+                                    .iter()
+                                    .map(|e| (e.control_index, e.cell_index, e.cell_para_index))
+                                    .collect(),
+                            }
+                        } else {
+                            HyperlinkTarget::body(section, para)
+                        };
+                        let Ok(paragraph) = core.hyperlink_paragraph(&target) else {
+                            continue;
+                        };
+                        if !paragraph
+                            .controls
+                            .iter()
+                            .any(|control| matches!(control, Control::Bookmark(_)))
+                        {
+                            continue;
+                        }
+                        let positions = paragraph.control_text_positions();
+                        let count = run.text.chars().count();
+                        let replay = run.replay_positions_for(run.display_or_text());
+                        for (index, control) in paragraph.controls.iter().enumerate() {
+                            let Control::Bookmark(bookmark) = control else {
+                                continue;
+                            };
+                            let Some(&position) = positions.get(index) else {
+                                continue;
+                            };
+                            if position < start
+                                || position > start + count
+                                || (position == start + count
+                                    && position != paragraph.text.chars().count())
+                            {
+                                continue;
+                            }
+                            let Some(&offset) = replay.get(position - start) else {
+                                continue;
+                            };
+                            // A PDF destination navigates to the owning line.
+                            // Complex runs use that line's actual paint bounds;
+                            // ordinary horizontal runs retain the exact advance.
+                            let x = if run.is_vertical
+                                || run.rotation != 0.0
+                                || run.char_overlap.is_some()
+                                || run.display_or_text().chars().count() != count
+                            {
+                                bbox.x
+                            } else {
+                                bbox.x + offset
+                            };
+                            found
+                                .entry(bookmark.name.clone())
+                                .or_insert(PdfNamedDestination {
+                                    name: bookmark.name.clone(),
+                                    x,
+                                    y: bbox.y,
+                                });
+                        }
+                    }
+                }
+            }
+            Ok(())
+        }
+        let mut found = std::collections::BTreeMap::new();
+        walk(self, &tree.root, &mut found)?;
+        Ok(found.into_values().collect())
     }
 
     fn collect_layer_hyperlinks(
@@ -142,9 +257,10 @@ impl DocumentCore {
                         if start >= end {
                             continue;
                         }
-                        let Some(uri) = export_uri(&command_uri(&field.command)) else {
+                        let uri = command_uri(&field.command);
+                        if crate::model::hyperlink::classify_destination(&uri).is_none() {
                             continue;
-                        };
+                        }
                         // 보이지 않는 반복 셀 조각에는 클릭 영역을 만들지 않는다.
                         if clipped_rect(*bbox, clip).is_none() {
                             continue;

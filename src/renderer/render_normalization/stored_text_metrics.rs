@@ -137,16 +137,37 @@ fn project(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<Paragraph> {
+    match project_with_storage(
+        paragraph,
+        cell,
+        hwpx_cells,
+        styles,
+        dpi,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+fn project_with_storage<S: crate::storage::Storage>(
+    paragraph: &Paragraph,
+    cell: bool,
+    hwpx_cells: bool,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    storage: &S,
+) -> Result<Option<Paragraph>, S::Error> {
     let eligible =
         floating_text_host(paragraph) || (cell && hwpx_cells && paragraph.controls.is_empty());
     let mut projected = eligible
         .then(|| projected_line(paragraph, styles, dpi))
         .flatten()
         .map(|line| {
-            let mut result = paragraph.clone();
+            let mut result = storage.clone_paragraph(paragraph)?;
             result.line_segs[0] = line;
-            result
-        });
+            Ok::<_, S::Error>(result)
+        })
+        .transpose()?;
     for (control_index, control) in paragraph.controls.iter().enumerate() {
         let Control::Table(table) = control else {
             continue;
@@ -156,8 +177,13 @@ fn project(
                 continue;
             }
             for (paragraph_index, child) in cell.paragraphs.iter().enumerate() {
-                if let Some(child) = project(child, true, hwpx_cells, styles, dpi) {
-                    let result = projected.get_or_insert_with(|| paragraph.clone());
+                if let Some(child) =
+                    project_with_storage(child, true, hwpx_cells, styles, dpi, storage)?
+                {
+                    if projected.is_none() {
+                        projected = Some(storage.clone_paragraph(paragraph)?);
+                    }
+                    let result = projected.as_mut().unwrap();
                     let Control::Table(table) = &mut result.controls[control_index] else {
                         unreachable!()
                     };
@@ -166,7 +192,7 @@ fn project(
             }
         }
     }
-    projected
+    Ok(projected)
 }
 
 pub(crate) fn normalize(
@@ -175,11 +201,36 @@ pub(crate) fn normalize(
     dpi: f64,
     hwpx_cells: bool,
 ) -> Option<Vec<Paragraph>> {
+    match normalize_with_storage(
+        paragraphs,
+        styles,
+        dpi,
+        hwpx_cells,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
+    }
+}
+pub(crate) fn normalize_with_storage<S: crate::storage::Storage>(
+    paragraphs: &[Paragraph],
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    hwpx_cells: bool,
+    storage: &S,
+) -> Result<Option<Vec<Paragraph>>, S::Error> {
     let mut result = None;
     for (index, paragraph) in paragraphs.iter().enumerate() {
-        if let Some(projected) = project(paragraph, false, hwpx_cells, styles, dpi) {
-            result.get_or_insert_with(|| paragraphs.to_vec())[index] = projected;
+        if let Some(projected) =
+            project_with_storage(paragraph, false, hwpx_cells, styles, dpi, storage)?
+        {
+            if result.is_none() {
+                result = Some(
+                    storage.try_collect(paragraphs.iter().map(|p| storage.clone_paragraph(p)))?,
+                );
+            }
+            result.as_mut().unwrap()[index] = projected;
         }
     }
-    result
+    Ok(result)
 }

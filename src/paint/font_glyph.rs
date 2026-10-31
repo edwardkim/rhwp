@@ -301,10 +301,22 @@ pub fn decode_font_svg_glyph_payload(
     let fragment = std::str::from_utf8(&svg_bytes)
         .map_err(|_| FontSvgGlyphDecodeError::InvalidUtf8)?
         .trim();
-    if !crate::renderer::static_svg::static_svg_fragment_has_path_layer(fragment) {
-        return Err(FontSvgGlyphDecodeError::UnsafeStaticSvg);
+    let mut syntax = Reader::from_str(fragment);
+    for count in 0..=100_000 {
+        if count == 100_000 {
+            return Err(FontSvgGlyphDecodeError::SvgPayloadTooLarge);
+        }
+        match syntax
+            .read_event()
+            .map_err(|_| FontSvgGlyphDecodeError::InvalidSvgXml)?
+        {
+            Event::Eof => break,
+            _ => {}
+        }
     }
-
+    let normalized = crate::renderer::static_svg::normalize_static_svg(fragment)
+        .ok_or(FontSvgGlyphDecodeError::UnsafeStaticSvg)?;
+    let fragment = normalized.as_str();
     let mut reader = Reader::from_str(fragment);
     reader.config_mut().trim_text(true);
     let mut view_box = None;
@@ -1307,7 +1319,7 @@ mod tests {
     }
 
     #[test]
-    fn svg_lowering_rejects_unsafe_font_document_without_interning_it() {
+    fn svg_lowering_ignores_restricted_script_and_preserves_valid_artwork() {
         let mut resources = ResourceArena::default();
         let result = decode_font_svg_glyph_payload(
             fixture_font(),
@@ -1320,11 +1332,11 @@ mod tests {
             &mut resources,
         );
 
-        assert!(matches!(
-            result,
-            Err(FontSvgGlyphDecodeError::UnsafeStaticSvg)
-        ));
-        assert_eq!(resources.svg_count(), 0);
+        let payload = result.expect("OpenType ignores restricted script subtrees");
+        let fragment = resources.svg_fragment(payload.svg_ref).unwrap();
+        assert!(!fragment.contains("script"));
+        assert!(fragment.contains("M0 0H16V16H0Z"));
+        assert_eq!(resources.svg_count(), 1);
     }
 
     #[test]

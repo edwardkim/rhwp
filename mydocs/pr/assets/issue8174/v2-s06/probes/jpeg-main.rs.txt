@@ -1,0 +1,8 @@
+fn main() {
+    let mut rows=Vec::new();
+    for name in std::env::args().skip(1) {
+        let bytes=std::fs::read(&name).unwrap();
+        rows.push(serde_json::json!({"name":name,"result":issue8174_jpeg_audit::audit(&bytes)}));
+    }
+    println!("{}",serde_json::to_string_pretty(&rows).unwrap());
+}

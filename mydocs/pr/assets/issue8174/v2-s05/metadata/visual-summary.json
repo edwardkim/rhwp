@@ -1,0 +1,1572 @@
+{
+  "source": "9c9c272fe1670baf305800dfc906349fa7933d4a",
+  "summary": [
+    {
+      "runtime": "native",
+      "group": "visual",
+      "tsv_files": 41,
+      "pages": 41,
+      "raw_min": 100.0,
+      "raw_max": 100.0,
+      "below_90": 0,
+      "same_tsv_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual-forms",
+      "tsv_files": 2,
+      "pages": 2,
+      "raw_min": 96.98675,
+      "raw_max": 97.42445,
+      "below_90": 0,
+      "same_tsv_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual-controls",
+      "tsv_files": 2,
+      "pages": 6,
+      "raw_min": 96.6158,
+      "raw_max": 100.0,
+      "below_90": 0,
+      "same_tsv_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "tsv_files": 41,
+      "pages": 41,
+      "raw_min": 100.0,
+      "raw_max": 100.0,
+      "below_90": 0,
+      "same_tsv_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual-forms",
+      "tsv_files": 2,
+      "pages": 2,
+      "raw_min": 96.9373,
+      "raw_max": 97.34453,
+      "below_90": 0,
+      "same_tsv_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual-controls",
+      "tsv_files": 2,
+      "pages": 6,
+      "raw_min": 96.117,
+      "raw_max": 100.0,
+      "below_90": 0,
+      "same_tsv_as_s04": true
+    }
+  ],
+  "page_count": 98,
+  "all_rgba_identical_to_s04": true,
+  "all_tsv_identical_to_s04": true,
+  "new_layout_or_golden_tests": false,
+  "pages": [
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "icc-cmyk",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "icc-cmyk-jpeg",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "icc-gray",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "icc-indexed",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "icc-indirect-filter",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "icc-jpeg",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "icc-path-cmyk",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "icc-path-rgb",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "icc-rgb",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-cmyk-alpha",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-cmyk-alpha-boxed",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-cmyk-premult",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-cmyk-premult-boxed",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-indexed-alpha",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-indexed-alpha-boxed",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-indexed-icc-premult",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-indexed-icc-premult-boxed",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-indexed-palette-premult",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-indexed-palette-premult-boxed",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-indexed-premult",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-indexed-premult-boxed",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jbig2",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jbig2-generic_template0",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jbig2-mask",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jbig2-symbol_global",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jpx",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jpx-alpha",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jpx-indexed",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jpx-mask",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jpx-palette",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jpx-premult",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jpx-tiles",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-scan-jbig2",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-scan-jbig2-200",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-scan-jpeg-control",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-scan-jpeg-control-200",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-scan-jpx",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-scan-jpx-200",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "recovery-fake-header",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "recovery-incremental",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "recovery-missing-xref",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual-forms",
+      "name": "after",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual-forms",
+      "name": "before",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual-controls",
+      "name": "table",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual-controls",
+      "name": "table",
+      "page": "rhwp_002.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual-controls",
+      "name": "table",
+      "page": "rhwp_003.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual-controls",
+      "name": "tac3",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual-controls",
+      "name": "tac3",
+      "page": "rhwp_002.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "native",
+      "group": "visual-controls",
+      "name": "tac3",
+      "page": "rhwp_003.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "icc-cmyk",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "icc-cmyk-jpeg",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "icc-gray",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "icc-indexed",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "icc-indirect-filter",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "icc-jpeg",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "icc-path-cmyk",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "icc-path-rgb",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "icc-rgb",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-cmyk-alpha",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-cmyk-alpha-boxed",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-cmyk-premult",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-cmyk-premult-boxed",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-indexed-alpha",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-indexed-alpha-boxed",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-indexed-icc-premult",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-indexed-icc-premult-boxed",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-indexed-palette-premult",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-indexed-palette-premult-boxed",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-indexed-premult",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-indexed-premult-boxed",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jbig2",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jbig2-generic_template0",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jbig2-mask",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jbig2-symbol_global",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jpx",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jpx-alpha",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jpx-indexed",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jpx-mask",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jpx-palette",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jpx-premult",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jpx-tiles",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-scan-jbig2",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-scan-jbig2-200",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-scan-jpeg-control",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-scan-jpeg-control-200",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-scan-jpx",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-scan-jpx-200",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "recovery-fake-header",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "recovery-incremental",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "recovery-missing-xref",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual-forms",
+      "name": "after",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual-forms",
+      "name": "before",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual-controls",
+      "name": "table",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual-controls",
+      "name": "table",
+      "page": "rhwp_002.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual-controls",
+      "name": "table",
+      "page": "rhwp_003.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual-controls",
+      "name": "tac3",
+      "page": "rhwp_001.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual-controls",
+      "name": "tac3",
+      "page": "rhwp_002.png",
+      "same_full_rgba_as_s04": true
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual-controls",
+      "name": "tac3",
+      "page": "rhwp_003.png",
+      "same_full_rgba_as_s04": true
+    }
+  ],
+  "document_page_counts": [
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "icc-cmyk",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "icc-cmyk-jpeg",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "icc-gray",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "icc-indexed",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "icc-indirect-filter",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "icc-jpeg",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "icc-path-cmyk",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "icc-path-rgb",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "icc-rgb",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-cmyk-alpha",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-cmyk-alpha-boxed",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-cmyk-premult",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-cmyk-premult-boxed",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-indexed-alpha",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-indexed-alpha-boxed",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-indexed-icc-premult",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-indexed-icc-premult-boxed",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-indexed-palette-premult",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-indexed-palette-premult-boxed",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-indexed-premult",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "jpx-indexed-premult-boxed",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jbig2",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jbig2-generic_template0",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jbig2-mask",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jbig2-symbol_global",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jpx",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jpx-alpha",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jpx-indexed",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jpx-mask",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jpx-palette",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jpx-premult",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-jpx-tiles",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-scan-jbig2",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-scan-jbig2-200",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-scan-jpeg-control",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-scan-jpeg-control-200",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-scan-jpx",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "old-scan-jpx-200",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "recovery-fake-header",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "recovery-incremental",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual",
+      "name": "recovery-missing-xref",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "icc-cmyk",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "icc-cmyk-jpeg",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "icc-gray",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "icc-indexed",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "icc-indirect-filter",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "icc-jpeg",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "icc-path-cmyk",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "icc-path-rgb",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "icc-rgb",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-cmyk-alpha",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-cmyk-alpha-boxed",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-cmyk-premult",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-cmyk-premult-boxed",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-indexed-alpha",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-indexed-alpha-boxed",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-indexed-icc-premult",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-indexed-icc-premult-boxed",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-indexed-palette-premult",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-indexed-palette-premult-boxed",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-indexed-premult",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "jpx-indexed-premult-boxed",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jbig2",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jbig2-generic_template0",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jbig2-mask",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jbig2-symbol_global",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jpx",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jpx-alpha",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jpx-indexed",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jpx-mask",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jpx-palette",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jpx-premult",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-jpx-tiles",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-scan-jbig2",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-scan-jbig2-200",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-scan-jpeg-control",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-scan-jpeg-control-200",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-scan-jpx",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "old-scan-jpx-200",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "recovery-fake-header",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "recovery-incremental",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual",
+      "name": "recovery-missing-xref",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual-forms",
+      "name": "after",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual-forms",
+      "name": "before",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual-forms",
+      "name": "after",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual-forms",
+      "name": "before",
+      "rhwp_pages": 1,
+      "pdf_pages": 1,
+      "measured_pages": 1,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual-controls",
+      "name": "table",
+      "rhwp_pages": 3,
+      "pdf_pages": 3,
+      "measured_pages": 3,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "native",
+      "group": "visual-controls",
+      "name": "tac3",
+      "rhwp_pages": 3,
+      "pdf_pages": 3,
+      "measured_pages": 3,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual-controls",
+      "name": "table",
+      "rhwp_pages": 3,
+      "pdf_pages": 3,
+      "measured_pages": 3,
+      "gate_status": "not_evaluated"
+    },
+    {
+      "runtime": "wasm",
+      "group": "visual-controls",
+      "name": "tac3",
+      "rhwp_pages": 3,
+      "pdf_pages": 3,
+      "measured_pages": 3,
+      "gate_status": "not_evaluated"
+    }
+  ],
+  "missing_pages": 0,
+  "page_count_mismatches": 0,
+  "tsv_gate_note": "not_evaluated is a measurement status; direct review is recorded separately."
+}

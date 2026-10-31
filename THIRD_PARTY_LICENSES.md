@@ -7,9 +7,18 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 Copyright © 2024 Unicode, Inc.이며 [Unicode License v3](assets/licenses/Unicode-3.0.txt)를 적용한다.
 원문 SHA-256은 `764f420cedfc8b43d9fec251c957a5d55fc45d40f6573f162990ed1dce7e36e0`이다.
 
+Print JPEG 인코더의 원래 라이선스·저작권 고지는 `vendor/rhwp-jpeg-encoder/LICENSE-*`에 있다.
+Print JPEG 디코더의 선택 변환은 공개 Intel MediaSDK 정수 IDCT(MIT)를 Rust로 번역하고,
+IJG 보간 규칙을 재표현한다. Intel 저작권·MIT 고지는
+`src/renderer/image_resolver/print_jpeg_idct.rs`, IJG 원문과 배포 조건은
+`vendor/rhwp-zune-jpeg/README.ijg`, 해당 구현은 `vendor/rhwp-zune-jpeg/src/ijg_upsampler.rs`와
+최종 JPEG 재생의 `vendor/rhwp-zune-jpeg/src/ijg_replay.rs`,
+변경 설명은 `vendor/rhwp-zune-jpeg/RHWP_PATCHES.md`에 있다.
+This software is based in part on the work of the Independent JPEG Group.
+
 기준 파일:
 
-- `Cargo.toml` / `Cargo.lock` (`rhwp` v0.8.7)
+- `Cargo.toml` / `Cargo.lock` (`rhwp` v0.9.0)
 - `rhwp-studio/package.json` / `rhwp-studio/package-lock.json`
 - `rhwp-chrome/package.json` / `rhwp-chrome/package-lock.json`
 - `rhwp-firefox/package.json` / `rhwp-firefox/package-lock.json`
@@ -42,6 +51,8 @@ Copyright © 2024 Unicode, Inc.이며 [Unicode License v3](assets/licenses/Unico
 | getrandom | 0.4.3 | MIT OR Apache-2.0 | rust-random/getrandom | 서명 키 난수 생성 |
 | hmac | 0.13.0 | MIT OR Apache-2.0 | RustCrypto/MACs | HWPX 무결성 |
 | image | 0.25.10 | MIT OR Apache-2.0 | image-rs/image | BMP/JPEG/PNG 디코딩 |
+| rhwp-zune-jpeg | 0.5.15-rhwp.1 | (MIT OR Apache-2.0 OR Zlib) AND IJG | etemesi254/zune-image, IJG | 요청별 할당 예산·인스턴스별 Print 변환; 기본 PDF import decoder는 원래 변환 유지 |
+| rhwp-jpeg-encoder | 0.7.1-rhwp.1 | (MIT OR Apache-2.0) AND IJG | vstroebel/jpeg-encoder | Print의 공통 스칼라 JPEG 인코딩; 원본·변경 내역은 `vendor/rhwp-jpeg-encoder/` |
 | js-sys | 0.3.102 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | WASM JS interop |
 | office_oxide | 0.1.9 | MIT OR Apache-2.0 | yfedoseev/office_oxide | `pdf-import` optional 호환성 제약; PDF 전이 의존성 |
 | paste | 1.0.15 | MIT OR Apache-2.0 | dtolnay/paste | 매크로 보조 |
@@ -76,9 +87,9 @@ Copyright © 2024 Unicode, Inc.이며 [Unicode License v3](assets/licenses/Unico
 | web-sys | 0.3.102 | MIT OR Apache-2.0 | rustwasm/wasm-bindgen | Web API binding |
 | zip | 8.6.0 | MIT | zip-rs/zip2 | HWPX ZIP 처리 |
 
-### PDF opt-in 코덱의 내부 보정판 (#8183)
+### PDF 코덱의 내부 보정판 (#8183·#8174)
 
-기본 빌드에는 다음 코덱을 포함하지 않는다. `pdf-jbig2`는 JBIG2와 내부 MMR 처리용
+현재 #8174 v2-S02의 기본 빌드는 다음 코덱을 포함한다. `pdf-jbig2`는 JBIG2와 내부 MMR 처리용
 CCITT를, `pdf-jpeg2000`은 JPEG 2000을 선택한다. backend의 전체 rendering은 켜지 않는다.
 
 | 내부 패키지 | 원본 버전 | 라이선스 | 보완 범위 |
@@ -122,7 +133,7 @@ CCITT를, `pdf-jpeg2000`은 JPEG 2000을 선택한다. backend의 전체 renderi
 
 ### PDF 입력 의존성의 고지
 
-`pdf-import`는 기본 비활성이며, 활성화할 때 `rhwp-pdf-import-backend =0.3.78-rhwp.1`과
+`pdf-import`는 기본 포함이며, 이를 통해 `rhwp-pdf-import-backend =0.3.78-rhwp.1`과
 `office_oxide =0.1.9`를 모두 `default-features = false`로 사용한다.
 `office_oxide` 직접 버전 제약은 `pdf_oxide 0.3.78`과의 컴파일 호환성을 위한 것이며,
 rhwp가 Office 입력 형식 지원을 추가했다는 뜻은 아니다.
@@ -442,6 +453,11 @@ GUST Font License를 유지하며 사설 글꼴의 윤곽·바이트는 포함�
 
 ## 직접 포팅한 알고리즘
 
+공통 Print 장치 면적 표본(`src/renderer/print_image_sampling.rs`)은 공개 PDFium
+`chromium/7999`의 CStretchEngine 고정소수점 산술 계약을 적용한다. 원래 PDFium Authors와
+Foxit Software의 저작권 고지 및 BSD-3-Clause 조건은 `licenses/pdfium/LICENSE`에 보존한다.
+이 항목은 Cargo 크레이트 의존성이 아니다. 출처는 `licenses/pdfium/README.md`에 있다.
+
 ### Volexity hwp-extract
 
 - 출처: [volexity/hwp-extract](https://github.com/volexity/hwp-extract), commit
@@ -513,3 +529,20 @@ rhwp는 **MIT 라이선스**로 배포된다.
 공개 테스트·Native 원본 18개를 [목록](assets/fonts/licenses/font-notices.json)에 등록하며,
 등록되지 않은 공개 폰트 또는 배포 고지 누락은 `scripts/frontend-font-assets.test.mjs`가 검출한다.
 상용 글꼴의 문서 요청 이름은 대체 설정에서 처리하고, 파생 폰트의 내부 이름으로 사용하지 않는다.
+
+### 기본 ICC CMM
+
+`pdf-icc`는 기본 feature이며 Native/WASM에서 같은 순수 Rust CMM인 `rhwp-qcms`를
+사용한다. qcms 0.3.0의 내부 보정판이며 Mozilla Foundation·Marti Maria 등의 원 저작권과
+MIT 전문은 [COPYING](vendor/rhwp-qcms/COPYING)에 보존한다. 원본 archive·VCS commit과
+요청별 CLUT 예약·작업량 변경은 [패치 기록](vendor/rhwp-qcms/RHWP_PATCHES.md)에 있다.
+공식 qcms 릴리스나 이미 게시된 crate로 표시하지 않는다. 실제 포장·독립 소비는 #8174 S05에서
+최종 dependency graph로 재검증한다.
+
+## Nimbus Roman 계량 자료
+
+`src/renderer/font_metric_nimbus_roman.rs`와 `data/font-metrics/nimbus-roman/`은
+URW Base35의 글꼴 프로그램에서 추출한 이름·Unicode 대응·전진폭 계량 자료다.
+원본 프로그램 SHA-256과 생성 방법은 해당 디렉터리의 `source.json`·`README.md`에 있다.
+글꼴 프로그램 바이트와 윤곽선은 이 자료에 포함하지 않는다. 원본의 고지는 패키지에 동봉한
+`data/font-metrics/nimbus-roman/URW-FONT-NOTICE.txt`에 보존한다.

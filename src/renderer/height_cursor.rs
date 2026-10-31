@@ -1017,7 +1017,35 @@ impl HeightCursor {
                 )
             })()
             .unwrap_or(false);
-            if !follows_stored_zero_origin {
+            // 명시적 새 쪽의 절대 위치 Square 앵커는 중간 문단의 로컬 0이
+            // 아니다. 쪽 원점이 이미 0으로 인증됐으면 옆 차선의 앵커 줄 뒤
+            // 저장 줄도 그 축을 소비한다. 측정과 paint가 같은 판정을 쓴다.
+            let follows_page_square_origin = self.vpos_page_base == Some(0)
+                && matches!(prev_para.column_type,
+                    crate::model::paragraph::ColumnBreakType::Page
+                        | crate::model::paragraph::ColumnBreakType::Column)
+                && !synthetic_prev_seg
+                && !prev_para.stored_text_partition_is_dirty()
+                && !prev_para.cell_format_vpos_dirty
+                && prev_para.controls.iter().any(|control| {
+                    matches!(control, Control::Table(table)
+                        if !table.common.treat_as_char
+                            && table.common.text_wrap == TextWrap::Square
+                            && matches!(table.common.vert_rel_to, VertRelTo::Page | VertRelTo::Paper))
+                })
+                && paragraphs.get(item_para).is_some_and(|current| {
+                    current.column_type == crate::model::paragraph::ColumnBreakType::None
+                        && !current.stored_text_partition_is_dirty()
+                        && !current.cell_format_vpos_dirty
+                        && current.line_segs.first().is_some_and(|first| {
+                            first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                                && first.line_height > 0
+                                && first.vertical_pos > 0
+                                && self.col_anchor_y + hwpunit_to_px(first.vertical_pos, self.dpi)
+                                    <= self.col_area_y + self.col_area_height
+                        })
+                });
+            if !follows_stored_zero_origin && !follows_page_square_origin {
                 return y_offset;
             }
         }

@@ -33,6 +33,26 @@ impl TypesetEngine {
         para: &Paragraph,
         paragraphs: &[Paragraph],
     ) {
+        match self.keep_heading_with_following_block_with_storage(
+            st,
+            para_idx,
+            para,
+            paragraphs,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(value) => value,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(super) fn keep_heading_with_following_block_with_storage<S: crate::storage::Storage>(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        para: &Paragraph,
+        paragraphs: &[Paragraph],
+        storage: &S,
+    ) -> Result<(), S::Error> {
         // [Task #404] heading-orphan 패턴 보정 (vpos 기반).
         // 현재 paragraph 가 누적 height 로는 fit 하지만 HWP vpos 기준 페이지 한계를
         // 넘고, 다음 substantial block(Table/Shape/큰 paragraph)이 잔여 영역에 들어
@@ -50,7 +70,7 @@ impl TypesetEngine {
         // Stage 1 진단 로그 분석으로 false positive 41건 → 1건(pi=83)으로 축소.
         // page_top_vpos 는 current_items 의 첫 item para_index 를 통해 즉시 계산
         // (TypesetState 필드 추적은 typeset_paragraph 내부 페이지 flush 와 동기 안 됨).
-        if !st.current_items.is_empty() && st.wrap_around_cs < 0 && st.col_count == 1 {
+        let _: () = if !st.current_items.is_empty() && st.wrap_around_cs < 0 && st.col_count == 1 {
             let page_first_para_idx = st.current_items.iter().find_map(|item| match item {
                 PageItem::FullParagraph { para_index } => Some(*para_index),
                 PageItem::PartialParagraph { para_index, .. } => Some(*para_index),
@@ -69,10 +89,10 @@ impl TypesetEngine {
                 .and_then(|paragraph| stored_row_position(paragraph, 0));
             if let Some(page_top_vpos) = page_top_vpos_opt {
                 let Some(last_index) = para.line_segs.len().checked_sub(1) else {
-                    return;
+                    return Ok(());
                 };
                 let Some(last_vpos) = stored_row_position(para, last_index) else {
-                    return;
+                    return Ok(());
                 };
                 let body_h_hu =
                     crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi);
@@ -117,9 +137,10 @@ impl TypesetEngine {
                 let next_doesnt_fit = st.current_height + para_h_px + next_h_px > avail;
 
                 if current_fits && vpos_overflow && next_substantial && next_doesnt_fit {
-                    st.advance_column_or_new_page();
+                    st.advance_column_or_new_page_with_storage(storage)?;
                 }
             }
-        }
+        };
+        Ok(())
     }
 }

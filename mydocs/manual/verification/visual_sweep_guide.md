@@ -93,6 +93,21 @@ web package를 빌드해야 한다. API가 없는 과거 bundle은 검증을 중
 `--resume`으로 섞을 수 없다. 자세한 세대 근거는
 [CLI 조판 세대](../cli_commands.md#조판-세대---compat)를 따른다.
 
+### PDF 래스터의 물리 DPI와 출력 버퍼
+
+PDF 기준 PNG는 용지의 point 좌표에 양 축 동일한 `dpi/72` 행렬을 적용한다.
+출력 버퍼만 `ceil(page_points*dpi/72)`로 할당하고, 올림한 정수 너비·높이에 맞춰
+용지 전체를 다시 늘리지 않는다. PDFium의 `FPDF_RenderPageBitmapWithMatrix`가
+원본 회전·CropBox의 display matrix 뒤에 이 물리 배율을 결합하며, 기존 RGB·흰 배경·
+annotation 표시·text/image/path antialias 계약은 유지한다.
+
+정책은 `pdfium_smooth_rgb_exact_dpi_v2`다. 이전 `pdfium_smooth_rgb_v1`의 PNG·TSV는
+소수 픽셀 크기의 용지를 축별로 늘렸을 수 있으므로 새 정책의 결과와 섞지 않는다.
+동일한 입력·독립 PDF·RHWP producer 신원을 확인한 기존 RHWP PNG를 재사용하더라도,
+base와 후보의 PDF PNG·TSV·overlay·review는 양쪽 모두 같은 새 정책에서 생성한다.
+이전 증거를 보존하고 정책·helper·실행 라이브러리 SHA를 기록한다. 래스터의 DPI 보정을
+RHWP 조판 개선으로 바꾸어 보고하지 않는다. 실루엣 임계값·2px·제출 gate는 유지한다.
+
 ## 페이지별 TSV와 PR 재검토 필수 조건
 
 조판·렌더링에 영향을 주는 변경은 **검증 대상 각 문서의 전체 페이지 TSV를 먼저 산출**한다.
@@ -145,6 +160,13 @@ python3 scripts/visual_sweep.py --silhouette-only \
 열어 `page`별 `silhouette_raw_match_percent`를 Native/WASM 간 대조하고, `below_90`과
 최저값을 확인한다. 이 값은 **실루엣 일치율 보조값**이며 전체 렌더링 정확도나 구조 일치율이 아니다.
 
+실행 로그의 JSON 요약은 대상 `key`, 비교 쪽수 `pages`, 소수 둘째 자리 표시 최저값
+`minimum`, raw 미대응 픽셀이 실제로 0인 쪽수 `exact100`을 보여 준다. 페이지별 정수
+미대응은 `silhouette_manifest.json`의 `silhouette_raw_unmatched_pixels`에서 확인한다.
+기존 PDF는 `--pdf`로 그대로 지정하며 PDF를 다시 변환하지 않는다. 검증용 시스템 글꼴이
+필요하면 `--font-path`를 디렉터리마다 지정하고, 동일한 매핑은 `--font-environment`로
+전달한다. 전체 로그는 예를 들어 `> output/<실행>.log 2>&1`로 보관한다.
+
 검증 대상 전체 문서에서 Native와 fresh WASM TSV를 각각 먼저 산출하고,
 비교 쪽수·최저 일치율·90% 미만/누락 쪽을 결과보고와 PR 본문에 기록한다.
 WASM은 같은 원문·PDF에 `--wasm-pkg pkg`와 검증한 `--rhwp-bin`을 명시한다.
@@ -165,6 +187,12 @@ TSV의 첫 세 열은 `page`, `tolerant_content_match_percent`, `below_90`이며
 `silhouette_raw_match_percent`, `silhouette_boundary_reconciled_pixels`를 뒤에 함께 기록한다.
 **90% gate·devel 대비 하락·98% px 회귀 판정은 모두 `silhouette_raw_match_percent`를 쓴다.**
 `below_90`도 raw 기준이다. 첫 번째 점수 열의 색상 경계 보정값은 진단용이며 판정을 대신하지 않는다.
+TSV의 일치율은 소수점 셋째 자리에서 반올림해 둘째 자리까지 표시한다. `100.00`은 실제 값이
+정확히 100%라는 뜻이 아니며, `90.00`으로 표시된 쪽도 원래 값이 90% 미만이면 `below_90=1`이다.
+overlay의 일치율도 동일한 입력의 `silhouette_raw_match_percent`를 소수점 둘째 자리까지 표시한다.
+색상 경계 보정값은 overlay에 함께 표시하지 않으며 진단 지표에서 확인한다.
+정확한 점수와 90%·98%·100% 및 기준 대비 하락 판정에는 같은 실행의
+`silhouette_manifest.json`에 기록된 페이지별 정밀값을 사용한다.
 raw도2px 이웃을 허용하며, RGB까지 동일해야 하는 엄격 픽셀 지표와는 다르다.
 232 이진화 경계가 유색 PDF 픽셀을 빈 영역으로 오판하는 경우를 구분하기 위해 원값을 보존한다.
 내용 마스크232·2px 반경은 유지하며, 원래 불일치 픽셀 중 같은 위치 양쪽 모두 흰 배경
@@ -206,6 +234,9 @@ Native/fresh WASM 최저 일치율이 90% 미만이거나 측정 불가이면 �
 확인 → 필요한 검사 변경** 순서를 따른다. 절대 px 좌표·고정 px 영역 대신 문단·줄·개체의 소유·순서·
 보존·포함·겹침 관계로 검사한다. 다만 **완료된 페이지**의 Native/fresh WASM `silhouette_raw_match_percent`가 각각98% 이상이고 독립 PDF와 직접 확대 판독을 마쳤으면 해당 쪽의 독립 기대 좌표를
 ±2px 허용 오차로 고정할 수 있다. 다른 페이지까지98% 이상일 필요는 없으며 관계 검사도 유지한다.
+양쪽 raw가 소수 둘째 자리에서 각각 100.00%로 표시되는 페이지는 같은 직접 판독·독립 좌표
+조건을 충족하면 ±1px도 선택할 수 있다. 100.00% 표시만으로 검사 추가나 전쪽 검사를
+의무화하지 않는다.
 [페이지별 px 회귀 조건](../pr_review/visual_fixture_evidence.md#완료-페이지의-98-이상-실루엣과-px-좌표-회귀)을 따른다. 상세 절차는
 [기존 기대값 재검토](../pr_review/visual_fixture_evidence.md#기존-회귀-테스트의-기대값-재검토)를 따른다.
 
@@ -363,6 +394,26 @@ legacy TTF는 종료 비문자만 `.notdef`로 고친 공급 사본을 사용하
 그려 캡처하고, 준비 실패·쪽 누락·중복이면 중단한다. 내장 글꼴은 WASM의 기존 Canvas API가
 소비한다. private 공급 글꼴과 `font_resources`는 공개 증적이나 Git에 포함하지 않는다.
 
+원본의 명시 대체 TTF를 실제 공급자가 선택한 경우, Native `export-png --json`은
+`observedFontFallbacks`에 요청·선택 family·원본 프로그램 SHA-256·collection face index를
+기록한다. 사용자 선언 환경은 `declaredFontEnvironment`, 입력 바이트는 `sourceSha256`으로
+별도 고정한다. WASM 직접 PNG에 같은 관측을 전달하려면 그 JSON을
+`--observed-font-receipt <Native JSON>`으로 지정한다. 입력·사용자 환경과 실제 공급
+프로그램/face가 같고, Canvas가 같은 프로그램을 선택할 때만 WASM의 공통 측정 환경에
+적용한다. 불일치는 실패로 처리하며 원 face를 공급할 수 있는 WASM 환경에는 부재 관측을
+적용하지 않는다. 메트릭 표·부분 글꼴 목록·`document.fonts.check`로 원 face 부재를 추정하지
+않는다. 관측 파일 SHA는 `run_manifest.json`, 작업자별 실제 공급 SHA와 face는
+`wasm-export-complete.json`의 `observedFonts`에 남긴다. 관측을 전달한 실행과 전달하지 않은
+실행은 조건을 구분하고 동일 조건으로 base/head를 비교한다. 이 옵션은 글꼴 예외나 시각
+gate 면제가 아니며, WASM의 쪽수·트리·PNG는 계속 같은 WASM 문서에서 산출한다.
+
+같은 family의 여러 버전이 설치돼 있으면 Native가 선택한 프로그램 SHA와 WASM 공급 목록을
+대조한다. 선택한 프로그램이 없거나 다른 버전이 우선하면, 해당 **기존 시스템 파일**을 첫 번째
+`--font-path <실제 파일>`로 지정해 같은 face를 공급한다. 직접 PNG 경로는 단일 TTF/OTF/TTC/
+WOFF/WOFF2 파일과 디렉터리를 모두 받으며, 원본 SHA와 컬렉션 face를 확인한다. 다른 버전의
+family 이름만 일치한다고 통과시키지 않는다. 이 조건을 바꾸면 base/head도 같은 실제 프로그램으로
+다시 대조하며, 이전 공급 조건의 TSV와 구분한다. 글꼴을 저장소에 복사해 해결하지 않는다.
+
 WASM PNG 작업자는 출력 폴더 아래 `chrome-worker-<번호>-*`에 전용 Chrome 프로필을
 만들고, 브라우저 종료를 확인한 뒤 제거한다. Snap Chromium도 host와 같은 경로를
 사용하도록 `/tmp` 대신 이 경로를 사용한다. 시작 실패 시에도 생성한 프로필을 정리하며,
@@ -390,6 +441,11 @@ render tree 중 한 쪽이 누락되면 성공으로 처리하지 않는다. 패
 제거하므로 SVG `<text>`용 검증 폰트로 사용할 수 없다. Native와 WASM에
 같은 `@font-face` 공급을 적용하며 WASM의 text·좌표·render tree는 Native 것으로 대체하지 않는다.
 mode와 해당 디렉터리의 폰트 파일 hash가 바뀌면 `--resume`은 이전 증적을 거부한다.
+
+본문과 수식의 face를 각각 확인한다. 수식에 `HYhwpEQ` 또는 `HancomEQN`을 사용하면 설치된
+`HYHWPEQ.TTF`·`HancomEQN.ttf` 중 해당 프로그램도 명시한 경로에 공급한다. 두 face의
+메트릭은 서로 다르므로 임의로 치환하지 않는다. base/후보와 Native/fresh WASM 모두 같은
+원본 프로그램·우선순위로 다시 출력하고, 글꼴 공급 전의 미달 결과와 구분해 기록한다.
 
 ```bash
 venv/bin/python scripts/visual_sweep.py \

@@ -5326,15 +5326,26 @@ fn stream_masks_share_bounded_lossless_filter_chains() {
             "filter budget failure stays sticky"
         );
         for codec in ["DCTDecode", "JPXDecode", "JBIG2Decode", "CCITTFaxDecode"] {
+            let result = pixels(
+                source(raw, &format!("/Filter /{codec}"), soft),
+                PdfImportLimits::default(),
+            );
+            // These bytes are uncompressed samples with a deliberately false
+            // filter label. Enabled codecs must reject the malformed stream;
+            // disabled codecs (and the other mask formats) reject support.
+            let enabled = match codec {
+                "JPXDecode" => cfg!(feature = "pdf-jpeg2000"),
+                "JBIG2Decode" => cfg!(feature = "pdf-jbig2"),
+                _ => false,
+            };
             assert!(
-                matches!(
-                    pixels(
-                        source(raw, &format!("/Filter /{codec}"), soft),
-                        PdfImportLimits::default()
-                    ),
-                    Err(Error::Unsupported(_))
-                ),
-                "compressed codec bytes cannot be interpreted as mask samples"
+                matches!(&result, Err(Error::Unsupported(_)))
+                    || (enabled
+                        && matches!(
+                            &result,
+                            Err(Error::Decode(_) | Error::Image(_) | Error::UnsupportedFilter(_))
+                        )),
+                "{codec}: compressed codec bytes cannot be interpreted as mask samples: {result:?}"
             );
         }
         assert!(pixels(

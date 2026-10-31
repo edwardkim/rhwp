@@ -1,0 +1,1022 @@
+[
+  {
+    "baseline": "base",
+    "runtime": "native",
+    "name": "cff-cid",
+    "page": "rhwp_001.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_001.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_002.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_003.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_004.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_005.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_006.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_007.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_008.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_009.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_010.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_011.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_012.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "native",
+    "name": "cff-cid",
+    "page": "rhwp_001.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_001.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_002.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_003.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_004.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_005.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_006.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_007.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_008.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_009.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_010.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_011.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "native",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_012.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "icc-cmyk",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "icc-cmyk-jpeg",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "icc-gray",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "icc-indexed",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "icc-indirect-filter",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "icc-jpeg",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "icc-path-cmyk",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "icc-path-rgb",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "icc-rgb",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "jpx-cmyk-alpha",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "jpx-cmyk-alpha-boxed",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "jpx-cmyk-premult",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "jpx-cmyk-premult-boxed",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "jpx-indexed-alpha",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "jpx-indexed-alpha-boxed",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "jpx-indexed-icc-premult",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "jpx-indexed-icc-premult-boxed",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "jpx-indexed-palette-premult",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "jpx-indexed-palette-premult-boxed",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "jpx-indexed-premult",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "jpx-indexed-premult-boxed",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "old-jbig2",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "old-jbig2-generic_template0",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "old-jbig2-mask",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "old-jbig2-symbol_global",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "old-jpx",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "old-jpx-alpha",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "old-jpx-indexed",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "old-jpx-mask",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "old-jpx-palette",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "old-jpx-premult",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "old-jpx-tiles",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "old-scan-jbig2",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "old-scan-jbig2-200",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "old-scan-jpeg-control",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "old-scan-jpeg-control-200",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "old-scan-jpx",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "old-scan-jpx-200",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "recovery-fake-header",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "recovery-incremental",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "native",
+    "name": "recovery-missing-xref",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "base",
+    "runtime": "wasm",
+    "name": "cff-cid",
+    "page": "rhwp_001.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_001.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_002.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_003.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_004.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_005.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_006.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_007.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_008.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_009.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_010.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_011.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "base",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_012.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "wasm",
+    "name": "cff-cid",
+    "page": "rhwp_001.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_001.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_002.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_003.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_004.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_005.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_006.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_007.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_008.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_009.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_010.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_011.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "before",
+    "runtime": "wasm",
+    "name": "type3-twelve-pages",
+    "page": "rhwp_012.png",
+    "rgbaEqual": true
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "icc-cmyk",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "icc-cmyk-jpeg",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "icc-gray",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "icc-indexed",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "icc-indirect-filter",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "icc-jpeg",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "icc-path-cmyk",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "icc-path-rgb",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "icc-rgb",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "jpx-cmyk-alpha",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "jpx-cmyk-alpha-boxed",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "jpx-cmyk-premult",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "jpx-cmyk-premult-boxed",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "jpx-indexed-alpha",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "jpx-indexed-alpha-boxed",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "jpx-indexed-icc-premult",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "jpx-indexed-icc-premult-boxed",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "jpx-indexed-palette-premult",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "jpx-indexed-palette-premult-boxed",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "jpx-indexed-premult",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "jpx-indexed-premult-boxed",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "old-jbig2",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "old-jbig2-generic_template0",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "old-jbig2-mask",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "old-jbig2-symbol_global",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "old-jpx",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "old-jpx-alpha",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "old-jpx-indexed",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "old-jpx-mask",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "old-jpx-palette",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "old-jpx-premult",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "old-jpx-tiles",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "old-scan-jbig2",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "old-scan-jbig2-200",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "old-scan-jpeg-control",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "old-scan-jpeg-control-200",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "old-scan-jpx",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "old-scan-jpx-200",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "recovery-fake-header",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "recovery-incremental",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  },
+  {
+    "baseline": "S05",
+    "runtime": "wasm",
+    "name": "recovery-missing-xref",
+    "page": 1,
+    "rgbaEqual": true,
+    "differenceBounds": null
+  }
+]

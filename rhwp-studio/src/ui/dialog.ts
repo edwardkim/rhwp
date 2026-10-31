@@ -93,14 +93,22 @@ export abstract class ModalDialog {
     // document capture 단계에서 키 이벤트를 가로채 편집 영역 도달 차단
     // input/textarea 내부의 일반 타이핑은 허용한다.
     this.captureHandler = (e: KeyboardEvent) => {
+      if (!this.isTopmostDialog()) return;
       const target = e.target as HTMLElement | null;
-      const isEditable = target instanceof HTMLInputElement
-        || target instanceof HTMLTextAreaElement;
+      const inside = target !== null && this.dialog.contains(target);
+      const isEditable = inside && (target instanceof HTMLInputElement
+        || target instanceof HTMLTextAreaElement);
 
       if (e.key === 'Escape') {
         e.stopPropagation();
         e.preventDefault();
         this.hide();
+        return;
+      }
+      // A late editor focus callback must not turn modal input into document text.
+      if (!inside) {
+        e.stopPropagation();
+        e.preventDefault();
         return;
       }
       // 버튼의 Enter/Space는 브라우저의 기본 활성화를 허용한다.
@@ -153,6 +161,11 @@ export abstract class ModalDialog {
   protected abstract createBody(): HTMLElement;
 
   protected onTabKey(_e: KeyboardEvent): boolean { return false; }
+
+  protected isTopmostDialog(): boolean {
+    const overlays = document.querySelectorAll('.modal-overlay');
+    return overlays.length > 0 && overlays[overlays.length - 1] === this.overlay;
+  }
 
   /** 서브클래스에서 확인 버튼 동작 구현. false 반환 시 대화상자 유지 */
   protected abstract onConfirm(): void | boolean;

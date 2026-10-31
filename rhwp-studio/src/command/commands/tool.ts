@@ -8,7 +8,10 @@ export const toolCommands: CommandDef[] = [
     opensDialog: true,
     label: t('command.tool.options.label'),
     execute(services) {
-      const dlg = new OptionsDialog(services.eventBus);
+      const dlg = new OptionsDialog(services.eventBus, () => {
+        if (!services.wasm.pageCount) return [];
+        return services.wasm.getDocumentFontCandidates();
+      });
       dlg.show();
     },
   },

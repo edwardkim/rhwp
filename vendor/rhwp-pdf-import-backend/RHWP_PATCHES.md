@@ -20,7 +20,7 @@ rhwp 내부 보안 패치 dependency이며, 원 저작권·라이선스·NOTICE�
 - `UPSTREAM_FILES.json`은 원본 archive의 파일별 SHA-256 목록이다.
   변경·추가 파일과 원문 보존을 이 목록으로 구별한다. upstream 갱신 시 보안 diff를 다시 감사한다.
 - MIT 선택지로 사용하며 `LICENSE-MIT`, `LICENSE-APACHE`, `NOTICE`, `TRADEMARKS.md`를 보존한다.
-- 외부 배포 승인이 없으므로 `publish = false`다. 별도 게시·배포는 수행하지 않았다.
+- 2026-10-28 확정된 14개 게시 구성에 따라 `publish = ["crates-io"]`다. 별도 게시·배포는 수행하지 않았다.
 
 ## 내장 폰트 고지 보완
 
@@ -33,6 +33,9 @@ rhwp 내부 보안 패치 dependency이며, 원 저작권·라이선스·NOTICE�
 
 ## 보안 패치 경계
 
+- #8174의 Native 작업자 정책 전달을 위해 `PdfImportLimits`에 `Deserialize`를 추가했다.
+  입력 복사 전의 frontend 검증과 `ImportBudget::new`의 유한·비영 한도 검증을 유지한다.
+  이 직렬화 지원을 전체 parser 할당 경계의 증명으로 확대하지 않는다.
 - `PdfDocument::from_bytes_with_limits`에서 요청별 `ImportBudget`을 생성한다.
   bytes 입력과 xref bootstrap부터 같은 context를 사용한다.
 - 파싱된 `StreamData`는 객체/캐시 clone을 지나도 원래 context를 공유한다.
@@ -398,3 +401,92 @@ and inline JPEGs consume this same decision. No default limit or bitmap geometry
 `image_codec_support()` exposes the actual compiled JBIG2/JPEG 2000 feature flags.
 The RHWP frontend uses this result so a consumer enabling a backend feature through
 another dependency is reflected after Cargo feature unification. This adds no decoding work.
+
+## #8174 v2-S02 로컬 보정
+
+- 기본 코덱·ICC 선택은 RHWP 본체 manifest에서 정하고 effective support를 조회한다.
+- ICC source profile의 요청 cache·네 intent별 CMM cache, 실제 materialize·palette·PNG 소비를
+  연결한다. qcms의 profile/CLUT 예약·반복은 `rhwp-qcms` 보정판에서 같은 요청을 소비한다.
+- JPX의 PDF 색 공간 선언을 실제 decoder 성분 해석에 전달하고 index/CMYK의 내장 alpha를
+  확장한다. palette 원본 index와 alpha를 분리하고 색상 변환 전 연관 alpha를 복원한다.
+- 손상 xref는 `xref_bounded_recovery`의 유한한 scan·객체·stream 검사로 복구한다.
+  무제한 legacy scan을 제한 constructor에서 호출하지 않는다. 모호한 recovery stream의
+  Length와 재구성할 수 없는 구조는 계속 오류다. 암호화를 제거하거나 metadata를 버리지 않는다.
+- 후속 제한 object load는 원문 slice에서 문법과 stream Length 뒤의 종료 token을 확인한다.
+  문자열/주석/stream의 `endobj` bytes로 객체를 자르지 않는다.
+- 고정 struct/gamma, font와 다른 legacy 경로의 전체 할당 감사 완료를 주장하지 않는다.
+  실제 실행·검증 상태는 `mydocs/working/task_m100_8174_v2_stage2.md`에 기록한다.
+
+### #8174 ICC profile stream 해소
+
+ICC profile cache·해소된 profile·OutputIntent는 document의 stream decoder를 소비한다.
+기존 `StreamData`도 요청 예산을 유지하므로 이전 경로를 무제한 압축 해제로 분류하지 않는다.
+실제 호환성 근거는 profile의 간접 `Filter` 해소다. 이전 경로는 정상 `/Filter 7 0 R`을
+해소하지 못해 CMM 대신 대체 색을 사용했다. document decoder는 같은 요청 예산으로
+Filter/DecodeParms 참조를 해소하고 sticky failure를 유지한다.
+
+### #8174 Indexed JPX의 preblend 순서
+
+PDF 32000-1:2008 §11.6.5.3은 Indexed의 인덱스가 아닌 팔레트 색을 preblend하도록 정한다.
+인덱스는 그대로 lookup하고 공통 Indexed expander가 base 색 성분을 alpha로 복원한 뒤
+ICC/CMYK 변환을 수행한다. Gray·RGB·CMYK·ICC base가 같은 결과를 소비한다. 추가 복원 작업은
+요청 작업 예산에 계상하며 CMM 한도 실패 뒤 반복을 계속하거나 대체 색의 성공을 반환하지 않는다.
+초기 합성 기준도 같은 인덱스 복원 가정을 갖고 있었음을 기록하고, 원본은 유지한 채 사양으로
+기준의 해석을 바로잡는다. 별도의 정상 preblended palette·ICC 대조군으로 순서를 검증한다.
+
+이미 Lab→RGB로 변환한 palette에는 원래 Lab 성분 범위가 남아 있지 않다. 이 표현에 RGB의
+역 preblend를 적용하지 않으며 Indexed Lab+SMaskInData=2는 명시적으로 거부한다.
+straight alpha 및 원 sample을 유지하는 Gray/RGB/CMYK/ICC base의 확대와 구분한다.
+이는 모든 JPX 색 공간·mask 조합을 지원한다는 선언이 아니다.
+
+## #8174 v2-S07 Type1/CFF·Unicode 예약 보정
+
+`fonts/allocation.rs`의 공통 요청 어댑터로 Type1 encoding 삽입·덮어쓰기, CFF INDEX·charset·
+encoding·simple/CID map, glyph-name OnceLock과 Unicode memo를 생성·복사 전에 계상한다.
+제한 요청은 fallible reserve와 sticky 오류를 공유한다. 기존 예산 없는 공개 API는 wrapper로
+유지하며 FontInfo의 제품 경로는 PdfDocument의 같은 예산을 전달한다.
+
+CFF INDEX는 1-based offset·범위·산술 overflow를 검사하고 중간 offset Vec를 만들지 않는다.
+DICT operand는 명세의 48개를 고정 stack 배열로 처리하며 실수 문자열·raw CFF의 OpenType
+포장도 요청 예산을 소비한다. Unicode memo의 양성·음성 miss와 hit의 반환 복사, CMap range·
+glyph-name·radical 정규화·CJK fallback을 포함한다. Shift-JIS의 작은 임시 버퍼도 stack으로
+대체했다. 카운터는 논리 예약·확장 작업량이며 allocator overhead·live heap·총 RSS가 아니다.
+
+Native/WASM의 작은 한도·정확한 복사 경계·오류 뒤 정상 요청과 실제 CLI·Worker·Studio
+연결을 검증했다. 나머지 FontInfo payload clone·index·frontend/Core의 할당과 실제 host
+confinement는 미완료다. 기존 PDF 문자 폭·줄바꿈의 직접 판독 결함도 남아 시각 완료·PR
+제출을 보류한다. source·명령·성능·증거와 보류 이유는
+`mydocs/working/task_m100_8174_v2_stage7.md`에 기록한다.
+
+## #8174 operator 수집 버퍼의 선행 제한
+
+bounded content 수집 Vec의 capacity 증가를 기존 `stream_bytes` 이하로 제한한다.
+요청한 새 capacity의 바이트를 같은 요청의 decoded 예산에 선계상하고 fallible exact reserve한다.
+후속 cache/interpreter 복사 전에 이미 큰 Vec를 만든 뒤 거절하던 경로를 보완한다. 어휘 파싱
+카운터·sticky 오류·새 요청 격리는 유지한다. raw backend 기본 operator 250,000은 바꾸지 않으며
+본체 standard 8,000,000과 선택 쪽 비례 정책을 혼동하지 않는다. 실제 실행과 비용은
+`mydocs/working/task_m100_8174_t01_operator_budget.md`에 기록한다.
+
+### #8174 글자 원점 후처리의 임시 저장소
+
+- baseline index와 정렬 scratch, glyph·후보·참조·anchor·offset 배열을 같은 요청의
+  decoded work로 먼저 예약한다. 기존 matching·anchor 문턱·interpolation 수식은 공통
+  helper에서 유지하며, 일반 검색과 bounded paint 추출이 함께 사용한다.
+- resource 오류는 일반적인 글자 원점 부재와 구분해 호출자에게 전파한다. painted char
+  Vec은 임시 Arc를 만들지 않고 빌려 쓴다. 전체 reading-order/Unicode 후처리 감사나
+  프로세스 메모리 상한의 완료를 뜻하지 않는다.
+- 단독 backend unit 실행을 위해 기존 cfg(test)의 StreamData·budget 인자·fallible
+  upsample 연결을 보완했다. DejaVu smoke는 기존 배포 폰트를 참조하며, 외부 CFF/JP2/
+  CMYK 자료에 의존한 컨테이너·해상도·writer 검사는 source에 동봉한 원본 합성 입력과
+  생성기 또는 기존 dev encoder를 사용한다. 기존 의미·기하·태그 기대는 유지한다.
+  합성 자료의 목적·라이선스·재생성은 각 `src/*/testdata/README.md`에 기록한다.
+
+### #8174 T05 — 재열기 owner의 협력 작업 검사
+
+`ImportBudget`에 선택적인 `ImportWorkGuard`를 연결한다. 기존 sticky 실패를 먼저 반환하고,
+owner가 작업 만료를 알리면 같은 요청을 실패로 전환한다. 기본 Native/PDF 예산에는 guard가
+없으며, WASM 편집 HWPX 재열기가 예약·압축 해제 읽기 경계에서 monotonic deadline을
+검사할 때 사용한다. 같은 스레드의 동기 작업을 선점하거나 XML/ZIP 내부의 모든 할당과
+브라우저 전체 heap을 제한하는 기능이 아니다. 실제 요청 수명·실패 후 복구와 독립 편집은
+`tests/cases/issue_8174_pdf_session_lifetime.rs`와
+`mydocs/working/task_m100_8174_t05_completion.md`에 기록한다.

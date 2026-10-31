@@ -71,6 +71,7 @@ export default defineConfig({
       allow: [
         configDir,
         resolve(configDir, '..', 'pkg'),
+        resolve(configDir, '..', 'rhwp-shared'),
         subsecondWasmDir,
         resolve(configDir, '..', 'samples'),
         resolve(configDir, '..', 'npm', 'editor'),

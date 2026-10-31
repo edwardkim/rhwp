@@ -92,7 +92,7 @@ function fixture(arrangement: PageArrangement, direction: 'vertical' | 'horizont
     cancelTextEditStaticLayerVerification: () => trace.push('cancel-verification'),
     cancelPendingPrefetch: () => trace.push('cancel-prefetch'),
     releaseAllRenderedPages: () => trace.push('release'),
-    pageRenderer: { cancelAll: () => trace.push('cancel-render') },
+    pageRenderer: { getBackend: () => 'canvas2d', cancelAll: () => trace.push('cancel-render') },
     updateVisiblePages: (reason: string) => trace.push(reason),
   });
   view.updateRenderedPageZoomPreview = () => {

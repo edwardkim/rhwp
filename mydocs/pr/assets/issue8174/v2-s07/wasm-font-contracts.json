@@ -1,0 +1,49 @@
+{
+  "contracts": [
+    {
+      "name": "memo_entries_hits_and_sticky_failure_share_the_request",
+      "passed": true
+    },
+    {
+      "name": "memo_hit_copy_has_an_exact_decoded_boundary",
+      "passed": true
+    },
+    {
+      "name": "memo_cmap_range_owned_value_is_charged_before_the_cache_copy",
+      "passed": true
+    },
+    {
+      "name": "negative_memo_entries_are_bounded_too",
+      "passed": true
+    },
+    {
+      "name": "type1_program_insertions_are_charged_even_for_replacements",
+      "passed": true
+    },
+    {
+      "name": "cff_declared_expansions_reject_low_caps_and_keep_normal_gid_mapping",
+      "passed": true
+    },
+    {
+      "name": "cff_index_and_dict_boundaries_do_not_wrap_or_expand_unchecked",
+      "passed": true
+    },
+    {
+      "name": "cff_font_matrix_real_text_obeys_the_string_cap",
+      "passed": true
+    },
+    {
+      "name": "tounicode_normalization_preserves_fullwidth_and_memo_copies",
+      "passed": true
+    },
+    {
+      "name": "legacy_cjk_fallbacks_keep_character_values_and_charge_cached_copies",
+      "passed": true
+    },
+    {
+      "name": "embedded_post_names_are_reserved_before_once_lock_expansion",
+      "passed": true
+    }
+  ],
+  "errors": []
+}

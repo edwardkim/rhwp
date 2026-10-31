@@ -1,0 +1,229 @@
+{
+  "sourceSha": "e6d7b774c1437ad502a1e702bf8f01f2b6541c28",
+  "gates": [
+    {
+      "case": "form-review/wasm/after",
+      "gate": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "case": "form-review/wasm/before",
+      "gate": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "case": "form-review/native/after",
+      "gate": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "case": "form-review/native/before",
+      "gate": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "case": "representatives/wasm/recovery-fake-header",
+      "gate": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "case": "representatives/wasm/icc-indirect-filter",
+      "gate": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "case": "representatives/wasm/jpx-cmyk-alpha",
+      "gate": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "case": "representatives/wasm/old-scan-jpx-200",
+      "gate": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "case": "representatives/wasm/jpx-indexed-icc-premult",
+      "gate": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "case": "representatives/native/recovery-fake-header",
+      "gate": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "case": "representatives/native/icc-indirect-filter",
+      "gate": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "case": "representatives/native/jpx-cmyk-alpha",
+      "gate": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "case": "representatives/native/old-scan-jpx-200",
+      "gate": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "case": "representatives/native/jpx-indexed-icc-premult",
+      "gate": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      }
+    }
+  ]
+}

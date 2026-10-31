@@ -1,0 +1,27 @@
+{
+  "current_root_lock_version": "0.10.1",
+  "candidate": "0.10.2",
+  "candidate_yanked": false,
+  "candidate_rust_version": "1.85",
+  "download_sha256_verified": "65c35e4b699c7e15ccbe7ee35c005e4fc0a278d22238a2857e6ce2dadeda1b06",
+  "old_source": "/home/edward/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/chacha20-0.10.1",
+  "changed_rust_and_normalized_manifest_files": [
+    {
+      "path": "Cargo.toml",
+      "before_sha256": "0d220dd1cd83df095dbc0bd7a6b738cc79f68c40d92a76f953f5a101a294844c",
+      "after_sha256": "b48970318446b5a41b06b1e27f2e691b6fc9245ee82beabde925f0a0889d58ba"
+    },
+    {
+      "path": "src/backends/sse2.rs",
+      "before_sha256": "04c4ff27778e6123a0669b8975376c7aed705b783a17525db9552962896eae39",
+      "after_sha256": "6e03915126187bf361567e39a0e0dc35366468b35b8f2bf87f11a62762e79d3f"
+    }
+  ],
+  "root_lock_changed": false,
+  "candidate_build_or_runtime_tested": false,
+  "upstream_fix_pr": "https://github.com/RustCrypto/stream-ciphers/pull/580",
+  "upstream_merge_commit": "075ccbd357ad7cbd9ec934a011b9a379966d42a2",
+  "current_version_yanked": true,
+  "registry_metadata_url": "https://crates.io/api/v1/crates/chacha20/0.10.2",
+  "current_metadata_url": "https://crates.io/api/v1/crates/chacha20/0.10.1"
+}

@@ -1,0 +1,44 @@
+[
+  {
+    "runtime": "native",
+    "name": "images",
+    "pages": 5,
+    "minRaw": 100.0,
+    "tsv": "tsv/native/images/silhouette.tsv"
+  },
+  {
+    "runtime": "native",
+    "name": "batch",
+    "pages": 2,
+    "minRaw": 100.0,
+    "tsv": "tsv/native/batch/silhouette.tsv"
+  },
+  {
+    "runtime": "native",
+    "name": "text",
+    "pages": 3,
+    "minRaw": 99.88074,
+    "tsv": "tsv/native/text/silhouette.tsv"
+  },
+  {
+    "runtime": "wasm",
+    "name": "images",
+    "pages": 5,
+    "minRaw": 100.0,
+    "tsv": "tsv/wasm/images/silhouette.tsv"
+  },
+  {
+    "runtime": "wasm",
+    "name": "batch",
+    "pages": 2,
+    "minRaw": 100.0,
+    "tsv": "tsv/wasm/batch/silhouette.tsv"
+  },
+  {
+    "runtime": "wasm",
+    "name": "text",
+    "pages": 3,
+    "minRaw": 100.0,
+    "tsv": "tsv/wasm/text/silhouette.tsv"
+  }
+]

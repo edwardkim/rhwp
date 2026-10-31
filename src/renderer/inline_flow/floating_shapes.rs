@@ -23,6 +23,8 @@ pub(crate) struct FloatingShapePlacement {
     pub exclusion: Option<FrameExclusion>,
 }
 
+crate::storage::clone_fields!(FloatingShapePlacement, {control, placement, exclusion});
+
 pub(super) fn supported(control: &Control) -> bool {
     let Control::Shape(shape) = control else {
         return false;
@@ -58,7 +60,7 @@ pub(super) fn supported(control: &Control) -> bool {
 /// 도형의 앵커는 배제 전 글줄의 원시 control 슬롯 소유다. 그 띠 때문에 뒤로 밀린
 /// 최종 글줄을 다시 앵커로 쓰면 도형과 글줄이 서로를 계속 밀어내므로 원래 앵커를 보존한다.
 pub(crate) fn resolve(
-    mut plan: InlineFlowPlan,
+    plan: InlineFlowPlan,
     para: &Paragraph,
     para_index: usize,
     styles: &ResolvedStyleSet,
@@ -66,70 +68,115 @@ pub(crate) fn resolve(
     frame: &ObjectPlacementFrame<'_>,
     preceding: &[FrameExclusion],
 ) -> Option<InlineFlowPlan> {
-    if !para.controls.iter().any(supported) {
-        return Some(plan);
+    match resolve_with_storage(
+        plan,
+        para,
+        para_index,
+        styles,
+        tables,
+        frame,
+        preceding,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(value) => value,
+        Err(never) => match never {},
     }
-    let mut placements = Vec::new();
-    let mut exclusions = preceding.to_vec();
-    for item in &plan.boxes {
-        let InlineFlowContent::FloatingShape { control } = item.content else {
-            continue;
-        };
-        let Control::Shape(shape) = &para.controls[control] else {
-            return None;
-        };
-        let c = shape.common();
-        let m = &c.margin;
-        let width = hwpunit_to_px(
-            i32::try_from(i64::from(c.width) + i64::from(m.left) + i64::from(m.right)).ok()?,
-            frame.dpi,
-        );
-        let height = hwpunit_to_px(
-            i32::try_from(i64::from(c.height) + i64::from(m.top) + i64::from(m.bottom)).ok()?,
-            frame.dpi,
-        );
-        let anchored = ObjectPlacementFrame {
-            paragraph_y: item.y,
-            ..*frame
-        };
-        let (left, top) = anchored.position(c, width, height);
-        if ![left, top, width, height].iter().all(|n| n.is_finite()) {
-            return None;
+}
+
+pub(crate) fn resolve_with_storage<S: crate::storage::Storage>(
+    mut plan: InlineFlowPlan,
+    para: &Paragraph,
+    para_index: usize,
+    styles: &ResolvedStyleSet,
+    tables: &[MeasuredTable],
+    frame: &ObjectPlacementFrame<'_>,
+    preceding: &[FrameExclusion],
+    storage: &S,
+) -> Result<Option<InlineFlowPlan>, S::Error> {
+    crate::storage::with_optional(|failure| {
+        if !para.controls.iter().any(supported) {
+            return Some(plan);
         }
-        let exclusion = (c.text_wrap == TextWrap::TopAndBottom
-            && left < frame.column.x + frame.column.width
-            && left + width > frame.column.x)
-            .then(|| FrameExclusion {
-                horizontal: px_to_hwpunit(frame.column.x, frame.dpi)
-                    ..px_to_hwpunit(frame.column.x + frame.column.width, frame.dpi),
-                vertical: px_to_hwpunit(top, frame.dpi)..px_to_hwpunit(top + height, frame.dpi),
-                policy: FrameExclusionPolicy::BothSides,
-            });
-        if let Some(band) = &exclusion {
-            exclusions.push(band.clone());
+        let mut placements = Vec::new();
+        let mut exclusions =
+            crate::storage::optional(storage.collect(preceding.iter().cloned()), failure)?;
+        for item in &plan.boxes {
+            let InlineFlowContent::FloatingShape { control } = item.content else {
+                continue;
+            };
+            let Control::Shape(shape) = &para.controls[control] else {
+                return None;
+            };
+            let c = shape.common();
+            let m = &c.margin;
+            let width = hwpunit_to_px(
+                i32::try_from(i64::from(c.width) + i64::from(m.left) + i64::from(m.right)).ok()?,
+                frame.dpi,
+            );
+            let height = hwpunit_to_px(
+                i32::try_from(i64::from(c.height) + i64::from(m.top) + i64::from(m.bottom)).ok()?,
+                frame.dpi,
+            );
+            let anchored = ObjectPlacementFrame {
+                paragraph_y: item.y,
+                ..*frame
+            };
+            let (left, top) = anchored.position(c, width, height);
+            if ![left, top, width, height].iter().all(|n| n.is_finite()) {
+                return None;
+            }
+            let exclusion = (c.text_wrap == TextWrap::TopAndBottom
+                && left < frame.column.x + frame.column.width
+                && left + width > frame.column.x)
+                .then(|| FrameExclusion {
+                    horizontal: px_to_hwpunit(frame.column.x, frame.dpi)
+                        ..px_to_hwpunit(frame.column.x + frame.column.width, frame.dpi),
+                    vertical: px_to_hwpunit(top, frame.dpi)..px_to_hwpunit(top + height, frame.dpi),
+                    policy: FrameExclusionPolicy::BothSides,
+                });
+            if let Some(band) = &exclusion {
+                crate::storage::optional(storage.push(&mut exclusions, band.clone()), failure)?;
+            }
+            crate::storage::optional(
+                storage.push(
+                    &mut placements,
+                    FloatingShapePlacement {
+                        control,
+                        placement: ParagraphFloatPlacement {
+                            flow: ParagraphFloatFlow::AbsolutePageFrame,
+                            anchor_y: item.y,
+                            table_left: Some(left + hwpunit_to_px(i32::from(m.left), frame.dpi)),
+                            table_top: top + hwpunit_to_px(i32::from(m.top), frame.dpi),
+                            occupied_bottom: top + height,
+                            stored_host_origin: None,
+                            stored_successor_line_origin: None,
+                        },
+                        exclusion,
+                    },
+                ),
+                failure,
+            )?;
         }
-        placements.push(FloatingShapePlacement {
-            control,
-            placement: ParagraphFloatPlacement {
-                flow: ParagraphFloatFlow::AbsolutePageFrame,
-                anchor_y: item.y,
-                table_left: Some(left + hwpunit_to_px(i32::from(m.left), frame.dpi)),
-                table_top: top + hwpunit_to_px(i32::from(m.top), frame.dpi),
-                occupied_bottom: top + height,
-                stored_host_origin: None,
-                stored_successor_line_origin: None,
-            },
-            exclusion,
-        });
-    }
-    if placements.is_empty() {
-        return Some(plan);
-    }
-    if exclusions.len() > preceding.len() {
-        plan = super::plan(para, para_index, styles, tables, frame, &exclusions)?;
-    }
-    plan.floating_shapes = placements;
-    Some(plan)
+        if placements.is_empty() {
+            return Some(plan);
+        }
+        if exclusions.len() > preceding.len() {
+            plan = crate::storage::optional(
+                super::plan_with_storage(
+                    para,
+                    para_index,
+                    styles,
+                    tables,
+                    frame,
+                    &exclusions,
+                    storage,
+                ),
+                failure,
+            )??;
+        }
+        plan.floating_shapes = placements;
+        Some(plan)
+    })
 }
 
 pub(super) fn anchor(control: usize) -> super::InlineFlowBox {

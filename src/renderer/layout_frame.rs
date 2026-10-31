@@ -1,5 +1,6 @@
 //! Physical-row geometry for paragraph layout.
 
+use crate::renderer::style_resolver::storage::{Storage, Unbounded};
 use std::ops::Range;
 
 use crate::model::paragraph::{LineSeg, SpaceMetric};
@@ -82,6 +83,7 @@ pub struct ParagraphBox {
     horizontal: Range<i32>,
     origin_is_derivable: bool,
 }
+crate::storage::clone_fields!(ParagraphBox, {horizontal, origin_is_derivable});
 
 impl ParagraphBox {
     /// A column-relative box: `[margin_left, column_width - margin_right]`, the
@@ -357,6 +359,7 @@ pub(crate) struct FrameRowMetrics {
     pub(crate) baseline_distance: i32,
     pub(crate) line_spacing: i32,
 }
+crate::storage::clone_copy!(FrameRowMetrics);
 
 /// One horizontal part of a physical row before it is flattened into a
 /// `LineSeg`.
@@ -370,6 +373,7 @@ pub(crate) struct RowSegment {
     /// Metric selected when this interval was filled; not a serialized tag.
     pub(crate) space_metric: SpaceMetric,
 }
+crate::storage::clone_fields!(RowSegment, {text_range, horizontal, source_tag, space_metric});
 
 impl RowSegment {
     pub(crate) fn new(text_range: Range<u32>, horizontal: Range<i32>, source_tag: u32) -> Self {
@@ -389,6 +393,7 @@ pub(crate) struct PhysicalRow {
     metrics: FrameRowMetrics,
     segments: Vec<RowSegment>,
 }
+crate::storage::clone_fields!(PhysicalRow, {metrics, segments});
 
 /// Whether a stored row is the row this frame expected.
 ///
@@ -437,6 +442,7 @@ pub(crate) enum FrameExclusionPolicy {
     LeftSide,
     RightSide,
 }
+crate::storage::clone_copy!(FrameExclusionPolicy);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct FrameExclusion {
@@ -444,6 +450,7 @@ pub(crate) struct FrameExclusion {
     pub(crate) vertical: Range<i32>,
     pub(crate) policy: FrameExclusionPolicy,
 }
+crate::storage::clone_fields!(FrameExclusion, {horizontal, vertical, policy});
 
 /// Mutable geometry of one layout flow.
 ///
@@ -470,6 +477,17 @@ pub(crate) struct LayoutFrame {
     /// [`ParagraphBox::content_width_px`]가 내용 폭을 4 HWPUNIT 격자로 내린다(#7412).
     rows: Vec<PhysicalRow>,
 }
+crate::storage::clone_fields!(LayoutFrame, {horizontal, top, exclusions, current_intervals, next_geometry_event, minimum_width, kopub_justified_space, origin_is_authoritative, rows});
+
+/// Snapshot for operations that only carve geometry and append physical rows.
+/// Previously committed rows and immutable frame geometry remain in the frame.
+/// Use only before the success-only whitespace absorption step.
+pub(crate) struct FrameAppendCheckpoint {
+    top: i32,
+    intervals: Vec<Range<i32>>,
+    next_geometry_event: Option<i32>,
+    row_count: usize,
+}
 
 impl LayoutFrame {
     /// Start a paragraph-local physical frame at a known horizontal extent.
@@ -487,13 +505,77 @@ impl LayoutFrame {
         }
     }
 
-    /// Discard an uncommitted row trial and restore its exact frame state.
-    pub(crate) fn restore_checkpoint(&mut self, checkpoint: Self) {
-        *self = checkpoint;
+    pub(crate) fn append_checkpoint(&self) -> FrameAppendCheckpoint {
+        match self.try_append_checkpoint(&crate::renderer::style_resolver::storage::Unbounded) {
+            Ok(checkpoint) => checkpoint,
+            Err(never) => match never {},
+        }
+    }
+    pub(crate) fn try_append_checkpoint<S: crate::renderer::style_resolver::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<FrameAppendCheckpoint, S::Error> {
+        let mut intervals: Vec<Range<i32>> = storage.vec(self.current_intervals.len())?;
+        intervals.extend(self.current_intervals.iter().cloned());
+        Ok(FrameAppendCheckpoint {
+            top: self.top,
+            intervals,
+            next_geometry_event: self.next_geometry_event,
+            row_count: self.rows.len(),
+        })
+    }
+    pub(crate) fn restore_append_checkpoint(&mut self, checkpoint: &FrameAppendCheckpoint) {
+        match self.try_restore_append_checkpoint(
+            checkpoint,
+            &crate::renderer::style_resolver::storage::Unbounded,
+        ) {
+            Ok(()) => (),
+            Err(never) => match never {},
+        }
+    }
+    pub(crate) fn try_restore_append_checkpoint<
+        S: crate::renderer::style_resolver::storage::Storage,
+    >(
+        &mut self,
+        checkpoint: &FrameAppendCheckpoint,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        // Reserve before mutating semantic state. A failed reservation leaves
+        // both the previous rows and the current trial available to the caller.
+        let additional = checkpoint
+            .intervals
+            .len()
+            .saturating_sub(self.current_intervals.len());
+        storage.reserve(&mut self.current_intervals, additional)?;
+        self.rows.truncate(checkpoint.row_count);
+        self.top = checkpoint.top;
+        self.current_intervals.clear();
+        self.current_intervals
+            .extend(checkpoint.intervals.iter().cloned());
+        self.next_geometry_event = checkpoint.next_geometry_event;
+        Ok(())
+    }
+
+    pub(crate) fn restore_owned_append_checkpoint(&mut self, checkpoint: FrameAppendCheckpoint) {
+        self.rows.truncate(checkpoint.row_count);
+        self.top = checkpoint.top;
+        self.current_intervals = checkpoint.intervals;
+        self.next_geometry_event = checkpoint.next_geometry_event;
     }
 
     /// Carve the current physical row into ordered horizontal intervals.
     pub(crate) fn carve(&mut self, band_height: i32) -> &[Range<i32>] {
+        match self.try_carve(band_height, &Unbounded) {
+            Ok(intervals) => intervals,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn try_carve<S: Storage>(
+        &mut self,
+        band_height: i32,
+        storage: &S,
+    ) -> Result<&[Range<i32>], S::Error> {
         let old_max = self.next_geometry_event.map(|_| {
             self.current_intervals
                 .iter()
@@ -506,7 +588,7 @@ impl LayoutFrame {
         loop {
             let bottom = candidate_top.saturating_add(band_height.max(0));
             let base = self.horizontal.clone();
-            let mut intervals = vec![base.clone()];
+            let mut intervals = storage.collect([base.clone()])?;
             let mut next_geometry_event = None;
             let minimum_width = self.minimum_width.max(0);
             let mut adequate = base.end - base.start >= minimum_width;
@@ -516,21 +598,20 @@ impl LayoutFrame {
                     continue;
                 }
 
-                let before = intervals.clone();
                 let left = exclusion.horizontal.start;
                 let right = exclusion.horizontal.end;
-                let mut carved = Vec::with_capacity(intervals.len() + 1);
+                let mut carved = storage.vec(intervals.len())?;
 
                 for interval in &intervals {
                     if interval.end <= left || right <= interval.start {
-                        carved.push(interval.clone());
+                        storage.push(&mut carved, interval.clone())?;
                     } else if interval.start < left && right < interval.end {
                         let left_interval = interval.start..left;
                         let right_interval = right..interval.end;
                         if exclusion.policy == FrameExclusionPolicy::LeftSide {
-                            carved.push(left_interval);
+                            storage.push(&mut carved, left_interval)?;
                         } else if exclusion.policy == FrameExclusionPolicy::RightSide {
-                            carved.push(right_interval);
+                            storage.push(&mut carved, right_interval)?;
                         } else if exclusion.policy == FrameExclusionPolicy::LargestSide {
                             let left_width = left_interval.end - left_interval.start;
                             let right_width = right_interval.end - right_interval.start;
@@ -540,28 +621,28 @@ impl LayoutFrame {
                             // chooses the right side even when it is shorter.
                             if left_width == MINIMUM_USABLE_INTERVAL_HWP || left_width < right_width
                             {
-                                carved.push(right_interval);
+                                storage.push(&mut carved, right_interval)?;
                             } else {
-                                carved.push(left_interval);
+                                storage.push(&mut carved, left_interval)?;
                             }
                         } else {
-                            carved.push(left_interval);
-                            carved.push(right_interval);
+                            storage.push(&mut carved, left_interval)?;
+                            storage.push(&mut carved, right_interval)?;
                         }
                     } else if interval.start < left
                         && exclusion.policy != FrameExclusionPolicy::RightSide
                     {
-                        carved.push(interval.start..left);
+                        storage.push(&mut carved, interval.start..left)?;
                     } else if right < interval.end
                         && exclusion.policy != FrameExclusionPolicy::LeftSide
                     {
-                        carved.push(right..interval.end);
+                        storage.push(&mut carved, right..interval.end)?;
                     } else {
-                        carved.push(interval.start..interval.start);
+                        storage.push(&mut carved, interval.start..interval.start)?;
                     }
                 }
 
-                let changed = before != carved;
+                let changed = intervals != carved;
                 intervals = carved;
                 if changed {
                     next_geometry_event = Some(
@@ -610,7 +691,7 @@ impl LayoutFrame {
             self.top = candidate_top;
             self.current_intervals = intervals;
             self.next_geometry_event = next_geometry_event;
-            return &self.current_intervals;
+            return Ok(&self.current_intervals);
         }
     }
 
@@ -691,22 +772,37 @@ impl LayoutFrame {
         line_segs: &[LineSeg],
         metrics_for: impl Fn(&[LineSeg]) -> Option<FrameRowMetrics>,
     ) -> bool {
-        let checkpoint = self.clone();
-        // The frame owns the column quantum. A stored width equal to the raw
-        // pre-quantized width is still a cache miss, not permission to widen
-        // the frame (#7168). Hancom's 43202-unit page stores a 36000-unit row.
-        let admitted = self.admit_stored_rows(line_segs, metrics_for).is_some();
-        if !admitted {
-            self.restore_checkpoint(checkpoint);
+        match self.try_admit_stored_rows_with_storage(line_segs, metrics_for, &Unbounded) {
+            Ok(admitted) => admitted,
+            Err(never) => match never {},
         }
-        admitted
     }
 
-    fn admit_stored_rows(
+    pub(crate) fn try_admit_stored_rows_with_storage<S: Storage>(
         &mut self,
         line_segs: &[LineSeg],
         metrics_for: impl Fn(&[LineSeg]) -> Option<FrameRowMetrics>,
-    ) -> Option<()> {
+        storage: &S,
+    ) -> Result<bool, S::Error> {
+        let checkpoint = self.try_append_checkpoint(storage)?;
+        // The frame owns the column quantum. A stored width equal to the raw
+        // pre-quantized width is still a cache miss, not permission to widen
+        // the frame (#7168). Hancom's 43202-unit page stores a 36000-unit row.
+        let admitted = self.admit_stored_rows(line_segs, metrics_for, storage);
+        if !matches!(admitted, Ok(Some(()))) {
+            // Consume the already-owned checkpoint: rollback must also work
+            // after a sticky request failure, without another allocation.
+            self.restore_owned_append_checkpoint(checkpoint);
+        }
+        admitted.map(|value| value.is_some())
+    }
+
+    fn admit_stored_rows<S: Storage>(
+        &mut self,
+        line_segs: &[LineSeg],
+        metrics_for: impl Fn(&[LineSeg]) -> Option<FrameRowMetrics>,
+        storage: &S,
+    ) -> Result<Option<()>, S::Error> {
         // Text order is a structural precondition: the rows are consumed in
         // sequence and a rewind means the records do not describe one flow.
         //
@@ -718,32 +814,41 @@ impl LayoutFrame {
                 .windows(2)
                 .any(|pair| pair[0].text_start > pair[1].text_start)
         {
-            return None;
+            return Ok(None);
         }
 
         let mut consumed = 0usize;
         while consumed < line_segs.len() {
             if !line_segs[consumed].is_first_segment() {
-                return None;
+                return Ok(None);
             }
             // One physical row is FIRST..LAST, however many slots that spans.
-            let count = line_segs[consumed..]
+            let Some(last) = line_segs[consumed..]
                 .iter()
-                .position(LineSeg::is_last_segment)?
-                + 1;
+                .position(LineSeg::is_last_segment)
+            else {
+                return Ok(None);
+            };
+            let count = last + 1;
             let stored_row = &line_segs[consumed..consumed + count];
 
-            let metrics = metrics_for(stored_row)?;
+            let Some(metrics) = metrics_for(stored_row) else {
+                return Ok(None);
+            };
             if metrics.line_height <= 0 {
-                return None;
+                return Ok(None);
             }
 
             let candidate_top = self.top;
-            let intervals = self.carve(metrics.line_height).to_vec();
+            let intervals = storage.collect(
+                self.try_carve(metrics.line_height, storage)?
+                    .iter()
+                    .cloned(),
+            )?;
             if self.top != candidate_top {
                 // The carve moved to a geometry event, so the frame does not
                 // expect a row here at all.
-                return None;
+                return Ok(None);
             }
 
             // §1.4.1's three quantities: interval COUNT, then horzpos and
@@ -767,26 +872,28 @@ impl LayoutFrame {
                     !stored_row_matches_frame_expectation(expected, stored, origin_shift)
                 })
             {
-                return None;
+                return Ok(None);
             }
 
             // The committed geometry is the frame's own carve, never the stored
             // extent — they are equal here, and equality is the point.
-            let segments = intervals
-                .iter()
-                .zip(stored_row)
-                .map(|(expected, stored)| {
+            let segments =
+                storage.collect(intervals.iter().zip(stored_row).map(|(expected, stored)| {
                     RowSegment::new(
                         stored.text_start..stored.text_start,
                         expected.clone(),
                         stored.tag,
                     )
-                })
-                .collect();
-            self.commit_carved_row(metrics, segments)?;
+                }))?;
+            if self
+                .try_commit_carved_row(metrics, segments, storage)?
+                .is_none()
+            {
+                return Ok(None);
+            }
             consumed += count;
         }
-        Some(())
+        Ok(Some(()))
     }
 
     /// Whether the intervals from the last `carve()` can carry a row.
@@ -823,9 +930,21 @@ impl LayoutFrame {
     /// them as one physical row, then advances exactly once.
     pub(crate) fn commit_carved_row(
         &mut self,
-        mut metrics: FrameRowMetrics,
+        metrics: FrameRowMetrics,
         segments: Vec<RowSegment>,
     ) -> Option<usize> {
+        match self.try_commit_carved_row(metrics, segments, &Unbounded) {
+            Ok(index) => index,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn try_commit_carved_row<S: Storage>(
+        &mut self,
+        mut metrics: FrameRowMetrics,
+        segments: Vec<RowSegment>,
+        storage: &S,
+    ) -> Result<Option<usize>, S::Error> {
         if !self.carved_row_is_usable()
             || segments.len() != self.current_intervals.len()
             || segments
@@ -833,12 +952,12 @@ impl LayoutFrame {
                 .zip(&self.current_intervals)
                 .any(|(segment, interval)| segment.horizontal != *interval)
         {
-            return None;
+            return Ok(None);
         }
 
         metrics.vertical_pos = self.top;
         let row_index = self.rows.len();
-        self.rows.push(PhysicalRow { metrics, segments });
+        storage.push(&mut self.rows, PhysicalRow { metrics, segments })?;
         self.top = self
             .top
             .saturating_add(metrics.line_height)
@@ -847,7 +966,7 @@ impl LayoutFrame {
         // a new carve prevents a caller from advancing this frame twice with
         // stale geometry.
         self.current_intervals.clear();
-        Some(row_index)
+        Ok(Some(row_index))
     }
 
     /// Whether this frame models any wrap geometry at all.
@@ -871,7 +990,19 @@ impl LayoutFrame {
     ///
     /// 강제 개행이 든 줄은 한/글도 줄을 끝내는 자리라 대상이 아니다.
     pub(crate) fn absorb_whitespace_only_rows(&mut self, text: &str, first_row: usize) -> usize {
-        let chars: Vec<char> = text.chars().collect();
+        match self.try_absorb_whitespace_only_rows(text, first_row, &Unbounded) {
+            Ok(count) => count,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn try_absorb_whitespace_only_rows<S: Storage>(
+        &mut self,
+        text: &str,
+        first_row: usize,
+        storage: &S,
+    ) -> Result<usize, S::Error> {
+        let chars = storage.collect(text.chars())?;
         let is_absorbable = |row: &PhysicalRow| -> bool {
             let mut saw_char = false;
             for segment in &row.segments {
@@ -919,7 +1050,7 @@ impl LayoutFrame {
             self.top = self.top.saturating_sub(shift);
             absorbed += 1;
         }
-        absorbed
+        Ok(absorbed)
     }
 
     pub(crate) fn row_count(&self) -> usize {
@@ -928,9 +1059,23 @@ impl LayoutFrame {
 
     /// Flatten retained physical rows at the document boundary.
     pub(crate) fn project_line_segs(&self) -> Vec<LineSeg> {
-        let mut projected = Vec::new();
+        self.project_line_segs_since(0)
+    }
 
-        for row in &self.rows {
+    pub(crate) fn try_project_line_segs_since<S: Storage>(
+        &self,
+        first_row: usize,
+        storage: &S,
+    ) -> Result<Vec<LineSeg>, S::Error> {
+        let count = self
+            .rows
+            .iter()
+            .skip(first_row)
+            .map(|row| row.segments.len())
+            .sum();
+        let mut projected = storage.vec(count)?;
+
+        for row in self.rows.iter().skip(first_row) {
             let last_segment = row.segments.len().saturating_sub(1);
             for (segment_index, segment) in row.segments.iter().enumerate() {
                 let mut tag = segment.source_tag & !SEGMENT_BOUNDARY_TAGS;
@@ -957,7 +1102,7 @@ impl LayoutFrame {
             }
         }
 
-        projected
+        Ok(projected)
     }
 
     /// Metric provenance follows exactly the same row/segment order as LineSeg.
@@ -966,27 +1111,30 @@ impl LayoutFrame {
     }
 
     pub(crate) fn project_space_metrics_since(&self, first_row: usize) -> Vec<(u32, SpaceMetric)> {
-        self.rows
-            .iter()
-            .skip(first_row)
-            .flat_map(|row| {
-                row.segments
-                    .iter()
-                    .map(|segment| (segment.text_range.start, segment.space_metric))
-            })
-            .collect()
+        match self.try_project_space_metrics_since(first_row, &Unbounded) {
+            Ok(metrics) => metrics,
+            Err(never) => match never {},
+        }
+    }
+
+    pub(crate) fn try_project_space_metrics_since<S: Storage>(
+        &self,
+        first_row: usize,
+        storage: &S,
+    ) -> Result<Vec<(u32, SpaceMetric)>, S::Error> {
+        storage.collect(self.rows.iter().skip(first_row).flat_map(|row| {
+            row.segments
+                .iter()
+                .map(|segment| (segment.text_range.start, segment.space_metric))
+        }))
     }
 
     /// Flatten only rows appended after a paragraph-local checkpoint.
     pub(crate) fn project_line_segs_since(&self, first_row: usize) -> Vec<LineSeg> {
-        let first_segment = self.rows[..first_row.min(self.rows.len())]
-            .iter()
-            .map(|row| row.segments.len())
-            .sum();
-        self.project_line_segs()
-            .into_iter()
-            .skip(first_segment)
-            .collect()
+        match self.try_project_line_segs_since(first_row, &Unbounded) {
+            Ok(lines) => lines,
+            Err(never) => match never {},
+        }
     }
 }
 

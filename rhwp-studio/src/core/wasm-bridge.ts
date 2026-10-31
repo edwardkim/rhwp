@@ -1,3 +1,5 @@
+import { publishPreparedPdf } from './pdf-open';
+import { RecoveryCipher } from '../recovery/recovery-crypto';
 import init, { HwpDocument, version } from '@wasm/rhwp.js';
 import { CanvasMetricSession, withPortableMetrics } from './canvas-metric-session';
 import { HostCanvasFontSession, scopedHostCanvasFont, withHostCanvasFonts } from './host-canvas-fonts';
@@ -5,13 +7,14 @@ import { ordinaryTextFontFaceData, type OrdinaryTextFontSource } from './ordinar
 import { NativePuaFontSession, type NativePuaFontDocument } from './native-pua-font-session';
 import { CanvasFontResolutionScope } from './canvas-font-resolution-scope';
 import { MetafileFontSession, type MetafileFontDocument } from './metafile-font-session';
-import { hasHostFontProvider, prepareHostFontCatalog, getHostFontState, localFontFaceKey, type LocalFontRecord } from './local-fonts';
+import { hasHostFontProvider, prepareHostFontCatalog, getHostFontState, getLocalFontState, localFontFaceKey, type LocalFontRecord } from './local-fonts';
 import { collectHostFontRequests } from './host-font-requests';
 import type { CanvasMetricDocument } from './canvas-metric-session';
 import { requireCharShapeRunsDocument, parseCharShapeRuns, validateCharShapeRuns } from './char-shape-runs';
 import type { CharShapeRun } from './types';
 import type { HyperlinkTarget, HyperlinkContext } from './hyperlink';
 import * as wasmExports from '@wasm/rhwp.js';
+import { inspectFontSymbols } from './wasm-font-symbol-coverage';
 import { hasPdfImportCapability } from './pdf-import-capability';
 import { createDocumentForBytes } from './pdf-import-layout';
 import { userSettings } from './user-settings';
@@ -226,7 +229,6 @@ import {
   documentSubstituteFamilies,
   formatCssFontFamilyList,
   parseCssFontFamilyList,
-  resolveFont,
 } from './font-substitution';
 import { rememberRawCanvasFontDescriptor } from './canvas-font-raw';
 import type { FileSystemFileHandleLike } from '@/command/file-system-access';
@@ -278,10 +280,14 @@ function substituteCssFontFamily(cssFont: string): string {
   // 표시 정책이 제외한 원 face를 엔진 체인에서 다시 넣지 않는다. 예를 들어
   // 휴먼명조 → HY신명조 치환 후 원 face가 남으면, HY신명조가 없는 macOS에서
   // legacy 휴먼명조를 선택해 한글이 .notdef로 그려지고 뒤의 fallback에 도달하지 않는다.
-  const primaryAllowed = resolveFont(primary, 0, 0) === primary
-    || studioChain.some(name => name.toLocaleLowerCase('en-US') === primary.toLocaleLowerCase('en-US'));
+  const primaryAllowed = studioChain.some(name =>
+    name.toLocaleLowerCase('en-US') === primary.toLocaleLowerCase('en-US'));
+  const localFontsEnabled = getLocalFontState().stored;
   for (const name of incoming) {
     if (name === primary && !primaryAllowed) continue;
+    // 감지 승인이 없으면 엔진의 설치 face 별칭으로 원본 로컬 글꼴이 우회되지 않게 한다.
+    if (!localFontsEnabled && !studioChain.some(candidate =>
+      candidate.toLocaleLowerCase('en-US') === name.toLocaleLowerCase('en-US'))) continue;
     push(name);
   }
   for (const name of studioChain.slice(1)) push(name);
@@ -320,7 +326,7 @@ function installCanvasFontSubstitution(): void {
   canvasFontSubstitutionInstalled = true;
 }
 
-import { prepareDeclaredFontPrograms, type DocumentFontSelectionPlan } from './declared-font-environment';
+import { declaredOpenTypeProgram, prepareDeclaredFontPrograms, type DocumentFontSelectionPlan } from './declared-font-environment';
 
 interface DocumentFontEnvironmentApi {
   getDocumentFontSelectionPlan(): string;
@@ -331,7 +337,7 @@ interface DocumentFontEnvironmentApi {
 export class WasmBridge {
   private doc: HwpDocument | null = null;
   private canvasMetrics = new CanvasMetricSession();
-  private readonly hostCanvasFonts = new HostCanvasFontSession();
+  private readonly hostCanvasFonts = new HostCanvasFontSession(inspectFontSymbols);
   private readonly nativePuaFonts = new NativePuaFontSession();
   private readonly metafileFonts = new MetafileFontSession();
   private canvasFontGeneration = 0;
@@ -388,6 +394,13 @@ export class WasmBridge {
     } else {
       this.hostCanvasFonts.reset();
       this.nativePuaFonts.clear(doc as unknown as NativePuaFontDocument | null);
+      if (backend === 'canvas2d') {
+        const otfDoc = doc as unknown as NativePuaFontDocument | null;
+        otfDoc?.prepareNativeOtfFonts?.(raw => {
+          const request = JSON.parse(raw) as {family: string};
+          return declaredOpenTypeProgram(request.family);
+        });
+      }
     }
     const metricDoc = this.canvasMetricDocument();
     if (!metricDoc || !current()) return false;
@@ -420,10 +433,16 @@ export class WasmBridge {
   private _fileName = 'document.hwp';
   private _currentFileHandle: FileSystemFileHandleLike | null = null;
   /** 현재 backing copy의 보호 의도만 보관한다. 암호 문자열은 보관하지 않는다. */
+  private _recoveryCipher: RecoveryCipher | null = null;
+  onRecoveryProtectionChanged?: () => void;
+  private _pdfImport: Record<string, unknown> | null = null;
   private _requiresPasswordForSave = false;
   private _documentDigest: string | null = null;
   /** 같은 바이트를 다시 열어도 구분되는 문서 인스턴스 세대. */
   private _documentGeneration = 0;
+  private automaticFontEnvironment: { generation: number; id: string } | null = null;
+  private automaticFontPrograms: { generation: number; fingerprint: string } | null = null;
+  private automaticFontRequest = 0;
   private readonly layerResourceStore = new LayerResourceStore();
   /** 개발 진단에서만 읽는 wasm 선형 메모리. 일반 wasm-glue에는 없을 수 있다. */
   private wasmLinearMemory: WebAssembly.Memory | null = null;
@@ -487,6 +506,7 @@ export class WasmBridge {
    * 비교 상세 창 등 보조 WasmBridge 인스턴스에서 반복 로드 시 메모리 누수를 줄이기 위해 사용한다.
    */
   releaseDocument(): void {
+    this._documentGeneration += 1;
     this.releaseCanvasFontResources();
     this.clearLayerResourceCache();
     if (this.doc) {
@@ -498,6 +518,8 @@ export class WasmBridge {
       this.doc = null;
     }
     this._currentFileHandle = null;
+    this.setRecoveryCipher(null);
+    this._pdfImport = null;
     this._requiresPasswordForSave = false;
     this._documentDigest = null;
   }
@@ -507,56 +529,48 @@ export class WasmBridge {
     fileName: string | undefined,
     requiresPasswordForSave: boolean,
     createDocument: () => HwpDocument,
+    validate?: (document: HwpDocument) => void,
+    prepared?: { digest: string },
   ): void {
     const nextFileName = fileName ?? 'document.hwp';
-    const nextDocumentDigest = `blake3:${bytesToHex(blake3(data))}`;
+    const nextDocumentDigest = prepared?.digest ?? `blake3:${bytesToHex(blake3(data))}`;
     let nextDoc: HwpDocument | null = null;
 
     try {
       nextDoc = createDocument();
-      nextDoc.convertToEditable();
-      this.ensureParagraphStableIdsFor(nextDoc);
+      if (!prepared) nextDoc.convertToEditable();
+      validate?.(nextDoc);
+      if (!prepared) this.ensureParagraphStableIdsFor(nextDoc);
       nextDoc.setFileName(nextFileName);
 
-      // 새 문서를 끝까지 준비한 뒤에만 기존 문서를 교체한다. 암호 필요·오답·손상
-      // 오류에서는 현재 문서와 최근 문서 연결을 그대로 유지해야 한다 (#3474).
-      const previousDoc = this.doc;
-      this.doc = nextDoc;
-      this._fileName = nextFileName;
-      this._currentFileHandle = null;
-      // 암호 문자열은 보관하지 않는다. 다음 저장에서 암호 재입력이 필요한지 여부만
-      // 문서 교체 성공과 같은 commit 구간에서 갱신한다 (#5986).
-      this._requiresPasswordForSave = requiresPasswordForSave;
-      this._documentDigest = nextDocumentDigest;
-      this._documentGeneration += 1;
-      this.releaseCanvasFontResources();
-      this.clearLayerResourceCache();
-      if (previousDoc) {
-        try {
-          previousDoc.free();
-        } catch {
-          /* noop */
-        }
-      }
-      console.log(`[WasmBridge] 문서 로드: ${this.pageCount}페이지`);
-
-      // [Task #741 후속] 외부 file path 그림 영역 영역 dev 환경 영역 영역 fetch (basename 영역
-      // 영역 영역 same dir 영역 image 영역 영역 영역 — 본 환경 dev 영역 영역 samples/ 영역
-      // Vite asset). 영역 영역 영역 영역 영역 부재 영역 영역 placeholder 표시.
-      void this.populateExternalImagesFromDevServer();
-
     } catch (error) {
-      if (nextDoc) {
-        try {
-          nextDoc.free();
-        } catch {
-          /* noop */
-        }
+      if (nextDoc && !prepared) {
+        try { nextDoc.free(); } catch { /* candidate cleanup */ }
       }
       throw error;
     }
-    // 알림은 문서 교체의 rollback 구간 밖에서 보낸다.
-    this.onFileNameChanged?.(this._fileName);
+    // Candidate preparation ends before this commit. Observers and cleanup may
+    // fail, but cannot return ownership of an already published document.
+    const previousDoc = this.doc;
+    this.doc = nextDoc;
+    this._fileName = nextFileName;
+    this._currentFileHandle = null;
+    const previousCipher = this._recoveryCipher;
+    this._recoveryCipher = null;
+    this._pdfImport = null;
+    this._requiresPasswordForSave = requiresPasswordForSave;
+    this._documentDigest = nextDocumentDigest;
+    this._documentGeneration += 1;
+    const notify = (work: () => void) => {
+      try { work(); } catch (error) { console.warn('[WasmBridge] 문서 교체 후 정리/알림 실패', error); }
+    };
+    notify(() => previousCipher?.dispose());
+    notify(() => this.releaseCanvasFontResources());
+    notify(() => this.clearLayerResourceCache());
+    if (previousDoc) notify(() => previousDoc.free());
+    if (previousCipher) notify(() => this.onRecoveryProtectionChanged?.());
+    notify(() => this.onFileNameChanged?.(this._fileName));
+    void this.populateExternalImagesFromDevServer();
   }
 
   loadDocument(data: Uint8Array, fileName?: string): DocumentInfo {
@@ -575,7 +589,44 @@ export class WasmBridge {
     return hasPdfImportCapability(HwpDocument);
   }
 
+  classifyHyperlinkDestination(uri: string): import('./link-navigation').LinkDestination | null {
+    const destination = JSON.parse(HwpDocument.classifyHyperlinkDestination(uri));
+    return destination.kind ? destination : null;
+  }
+
+  getPdfImportPolicy(options: object = {}): import('./pdf-open').PdfImportPolicy {
+    return JSON.parse(HwpDocument.getPdfImportPolicyWithOptions(options));
+  }
+
+  async loadImportedPdf(result: import('./pdf-open').PreparedPdfDocument, fileName: string,
+    signal = new AbortController().signal, generation = this.documentGeneration): Promise<DocumentInfo> {
+    await publishPreparedPdf(result, signal, () => generation === this.documentGeneration, {
+      create: timeout => {
+        const api = (wasmExports as unknown as { PdfEditorReopen: {
+          open(data: Uint8Array, options: object, maximum: number, remaining: number, timeout: number):
+            { takeDocument(): HwpDocument; free(): void } } }).PdfEditorReopen;
+        if (!api) throw new Error('PDF_IMPORT_DISABLED: 편집 문서 재열기 API가 없습니다.');
+        const owner = api.open(result.editable, JSON.parse(result.reopen.options),
+          result.reopen.inputBytes, result.reopen.decodedBytes, timeout);
+        try { return owner.takeDocument(); } finally { owner.free(); }
+      },
+      prepare: document => {
+        document.convertToEditable();
+        if (document.pageCount() !== result.pageCount) throw new Error('PDF_REOPEN_PAGE_COUNT: 편집 문서의 쪽수가 일치하지 않습니다.');
+        this.ensureParagraphStableIdsFor(document);
+        document.setFileName(fileName);
+      },
+      publish: (document, digest) => {
+        this.loadDocumentAtomically(result.input, fileName, false, () => document, undefined, { digest });
+        this._pdfImport = result.diagnostics;
+      },
+      destroy: document => document.free(),
+    });
+    return this.getDocumentInfo();
+  }
+
   getPdfImportDiagnostics(): Record<string, unknown> | null {
+    if (this._pdfImport) return this._pdfImport;
     const api = this.doc as unknown as { getPdfImportDiagnostics?: () => string } | null;
     return api?.getPdfImportDiagnostics ? JSON.parse(api.getPdfImportDiagnostics()) : null;
   }
@@ -646,6 +697,8 @@ export class WasmBridge {
     this.ensureParagraphStableIds();
     this._fileName = '새 문서.hwp';
     this._currentFileHandle = null;
+    this.setRecoveryCipher(null);
+    this._pdfImport = null;
     this._requiresPasswordForSave = false;
     this.doc.setFileName(this._fileName);
     try {
@@ -707,8 +760,20 @@ export class WasmBridge {
   }
 
   set requiresPasswordForSave(value: boolean) {
+    const changed = this._requiresPasswordForSave !== value;
     this._requiresPasswordForSave = value;
+    if (!value) this.setRecoveryCipher(null);
+    if (changed) this.onRecoveryProtectionChanged?.();
   }
+
+  get recoveryCipher(): RecoveryCipher | null { return this._recoveryCipher; }
+  setRecoveryCipher(cipher: RecoveryCipher | null): void {
+    if (this._recoveryCipher === cipher) return;
+    this._recoveryCipher?.dispose();
+    this._recoveryCipher = cipher;
+    this.onRecoveryProtectionChanged?.();
+  }
+
 
   get isNewDocument(): boolean {
     return this._fileName === '새 문서.hwp';
@@ -829,7 +894,7 @@ export class WasmBridge {
   }
 
   getSourceFormat(): string {
-    return this.doc?.getSourceFormat?.() ?? 'hwp';
+    return this._pdfImport ? 'pdf' : this.doc?.getSourceFormat?.() ?? 'hwp';
   }
 
   getHmlOpenMetadata(): HmlOpenMetadata | null {
@@ -990,17 +1055,33 @@ export class WasmBridge {
       || typeof api.buildFontEnvironmentFromAvailablePrograms !== 'function'
       || typeof api.setFontEnvironment !== 'function') return false;
     const generation = this._documentGeneration;
-    const current = () => this.doc === doc && this._documentGeneration === generation;
+    const request = ++this.automaticFontRequest;
+    const current = () => this.doc === doc && this._documentGeneration === generation
+      && this.automaticFontRequest === request;
     const plan = JSON.parse(api.getDocumentFontSelectionPlan()) as DocumentFontSelectionPlan;
     // 사용자 명시 환경을 자동 선택으로 덮어쓰지 않는다.
-    if (plan.environmentId !== null) return false;
-    const programs = await prepareDeclaredFontPrograms(plan, current);
+    const owned = this.automaticFontEnvironment?.generation === generation
+      ? this.automaticFontEnvironment.id : null;
+    if (plan.environmentId !== null && plan.environmentId !== owned) return false;
+    const programs = await prepareDeclaredFontPrograms(plan, current, inspectFontSymbols);
     if (!current()) return false;
     try {
+      const latest = JSON.parse(api.getDocumentFontSelectionPlan()) as DocumentFontSelectionPlan;
+      if (latest.environmentId !== plan.environmentId) return false;
+      // 같은 이름의 글꼴 파일이 바뀌어도 문서가 실제 조회하는 프로그램은 갱신한다.
+      const fingerprint = JSON.stringify(programs.programs.map(program => [program.query, program.programId])
+        .sort((left, right) => left[0].localeCompare(right[0])));
+      const programsChanged = this.automaticFontPrograms?.generation === generation
+        && this.automaticFontPrograms.fingerprint !== fingerprint;
       const environment = api.buildFontEnvironmentFromAvailablePrograms(JSON.stringify(programs));
-      const changed = environment !== 'null' && api.setFontEnvironment(environment);
-      this.invalidateCanvasMetricFonts();
-      return changed;
+      const parsed = environment === 'null' ? null : JSON.parse(environment) as { id: string };
+      const changed = parsed ? api.setFontEnvironment(environment)
+        : owned !== null ? api.setFontEnvironment(undefined) : false;
+      this.automaticFontEnvironment = parsed ? { generation, id: parsed.id } : null;
+      this.automaticFontPrograms = { generation, fingerprint };
+      if (!changed && programsChanged) this.refreshLayout();
+      if (changed || programsChanged) this.invalidateCanvasMetricFonts();
+      return changed || programsChanged;
     } catch (error) {
       // 유효하지 않은 공급 snapshot으로 문서 로드를 중단하거나 기존 환경을 바꾸지 않는다.
       console.warn('[WasmBridge] 선언 글꼴 환경을 적용하지 못했습니다', error);
@@ -1011,6 +1092,18 @@ export class WasmBridge {
   getDocumentInfo(): DocumentInfo {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getDocumentInfo());
+  }
+
+  /** 열거에서 빠진 문서 원본 글꼴도 재감지의 확인 후보에 포함한다. */
+  getDocumentFontCandidates(): string[] {
+    if (!this.doc) return [];
+    const api = this.doc as unknown as Partial<DocumentFontEnvironmentApi>;
+    const names = [...(this.getDocumentInfo().fontsUsed ?? [])];
+    if (typeof api.getDocumentFontSelectionPlan === 'function') {
+      const plan = JSON.parse(api.getDocumentFontSelectionPlan()) as DocumentFontSelectionPlan;
+      names.push(...plan.requests.flatMap(request => [request.source, ...request.primary, ...request.substitute]));
+    }
+    return [...new Set(names)];
   }
 
   getPageDef(sectionIdx: number): PageDef {
@@ -3879,6 +3972,15 @@ export class WasmBridge {
   setFormValueInCell(sec: number, tablePara: number, tableCi: number, cellIdx: number, cellPara: number, formCi: number, valueJson: string): { ok: boolean } {
     if (!this.doc || typeof (this.doc as any).setFormValueInCell !== 'function') return { ok: false };
     return JSON.parse((this.doc as any).setFormValueInCell(sec, tablePara, tableCi, cellIdx, cellPara, formCi, valueJson));
+  }
+
+  getFormActionContext(address: import('../../../rhwp-shared/forms/action-runtime').FormAddress): import('../../../rhwp-shared/forms/action-runtime').FormActionContext {
+    if (!this.doc) throw new Error('FORM_ACTION_NO_DOCUMENT');
+    return JSON.parse((this.doc as HwpDocument & { getFormActionContext(json: string): string }).getFormActionContext(JSON.stringify(address)));
+  }
+  applyFormActionUpdates(updates: import('../../../rhwp-shared/forms/action-runtime').FormActionPlan['updates']): void {
+    if (!this.doc) throw new Error('FORM_ACTION_NO_DOCUMENT');
+    (this.doc as HwpDocument & { applyFormActionUpdates(json: string): void }).applyFormActionUpdates(JSON.stringify(updates));
   }
 
   /** 양식 개체 상세 정보를 반환한다. */

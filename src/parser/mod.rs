@@ -1341,7 +1341,33 @@ pub fn parse_pdf_with_metadata(
     data: &[u8],
     options: &pdf::PdfImportOptions,
 ) -> Result<ParsedDocument, ParseError> {
-    parse_pdf_unsealed(data, options).map(seal_parsed_document)
+    parse_pdf_with_metadata_and_policy(data, options, pdf::PdfImportPolicy::default())
+}
+
+/// Explicit policy with the same provenance sealing as format auto-detection.
+#[cfg(feature = "pdf-import")]
+pub fn parse_pdf_with_metadata_and_policy(
+    data: &[u8],
+    options: &pdf::PdfImportOptions,
+    policy: pdf::PdfImportPolicy,
+) -> Result<ParsedDocument, ParseError> {
+    parse_pdf_unsealed_with_policy(data, options, policy).map(seal_parsed_document)
+}
+
+#[cfg(feature = "pdf-import")]
+pub(crate) fn parse_pdf_with_metadata_and_request(
+    data: &[u8],
+    options: &pdf::PdfImportOptions,
+    policy: pdf::PdfImportPolicy,
+    request: std::sync::Arc<pdf_oxide::import_limits::ImportBudget>,
+) -> Result<ParsedDocument, ParseError> {
+    let result = pdf::parse_pdf_with_request(data, options, policy, request)
+        .map_err(ParseError::PdfError)?;
+    Ok(seal_parsed_document(ParsedDocument {
+        document: result.document,
+        hml_metadata: None,
+        pdf_metadata: Some(result.metadata),
+    }))
 }
 
 #[cfg(feature = "pdf-import")]
@@ -1349,12 +1375,32 @@ fn parse_pdf_unsealed(
     data: &[u8],
     options: &pdf::PdfImportOptions,
 ) -> Result<ParsedDocument, ParseError> {
-    let result = pdf::parse_pdf_with_options(data, options).map_err(ParseError::PdfError)?;
+    parse_pdf_unsealed_with_policy(data, options, pdf::PdfImportPolicy::default())
+}
+
+#[cfg(feature = "pdf-import")]
+fn parse_pdf_unsealed_with_policy(
+    data: &[u8],
+    options: &pdf::PdfImportOptions,
+    policy: pdf::PdfImportPolicy,
+) -> Result<ParsedDocument, ParseError> {
+    let result = pdf::parse_pdf_with_policy(data, options, policy).map_err(ParseError::PdfError)?;
     Ok(ParsedDocument {
         document: result.document,
         hml_metadata: None,
         pdf_metadata: Some(result.metadata),
     })
+}
+
+#[cfg(feature = "pdf-import")]
+pub(crate) fn parse_pdf_editor_hwpx(
+    data: &[u8],
+    reservation: std::sync::Arc<dyn crate::storage::Reservation>,
+) -> Result<ParsedDocument, ParseError> {
+    hwpx::parse_hwpx_with_reservation(data, Some(reservation))
+        .map_err(ParseError::from)
+        .map(without_hml_metadata)
+        .map(seal_parsed_document)
 }
 
 /// 포맷 자동 감지 후 공통 IR과 입력 메타데이터를 파싱한다.
