@@ -732,6 +732,11 @@ fn parse_container_children(child_records: &[Record], depth: u32) -> Vec<ShapeOb
             text_box: None,
             caption: None,
         };
+        // [#8225] 자식 SHAPE_COMPONENT 바로 아래의 CTRL_DATA (개체 설명 등). 저장 때 같은 자리에 되쓴다
+        child_drawing.shape_attr.ctrl_data = child_slice[1..]
+            .iter()
+            .find(|r| r.level == child_slice[0].level + 1 && r.tag_id == tags::HWPTAG_CTRL_DATA)
+            .map(|r| r.data.clone());
         // tb_attr: SHAPE_COMPONENT 인라인 텍스트 속성 (미구현, 항상 None)
         let tb_attr: Option<(i16, i16, i16, i16, u32, u32)> = None;
 

@@ -1,0 +1,35 @@
+[RustTestSuite] render_p37_direct_pdf_export -> regression_suite_026::render_p37_direct_pdf_export
+[RustTestSuite] cargo nextest run --locked --test regression_suite_026 -E test(/(^|::)render_p37_direct_pdf_export::/) --cargo-profile release-test --features native-skia --test-threads 8
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp/output/pr-review/chrisryugj-20261031/candidate-source)
+    Finished `release-test` profile [optimized] target(s) in 11.13s
+────────────
+ Nextest run ID f4a02f62-bbc2-424e-8b49-01b699c6127b with nextest profile: default
+    Starting 22 tests across 1 binary (263 tests skipped)
+        PASS [   0.007s] ( 1/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::connector_arrow_regressions::direct_pdf_keeps_unproved_line_styles_and_connector_tangents_closed
+        PASS [   0.007s] ( 2/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::connector_arrow_regressions::direct_pdf_rejects_missing_degenerate_and_nonfinite_arrow_geometry
+        PASS [   0.009s] ( 3/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::connector_arrow_regressions::direct_pdf_requires_arrow_metadata_to_match_one_continuous_shaft
+        PASS [   0.010s] ( 4/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::document_core_direct_pdf_preserves_selection_errors
+        PASS [   0.022s] ( 5/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::export_pdf_cli_rejects_backend_specific_option_mismatches
+        PASS [   0.043s] ( 6/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::connector_arrow_regressions::direct_pdf_connector_heads_follow_curve_tangents_instead_of_the_chord
+        PASS [   0.054s] ( 7/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::connector_arrow_regressions::direct_pdf_records_both_triangle_heads_at_the_original_line_and_connector_tips
+        PASS [   0.045s] ( 8/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::image_adjustment_regressions::issue_4764_direct_pdf_applies_grayscale_before_hancom_encoded_contrast
+        PASS [   0.040s] ( 9/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::image_adjustment_regressions::issue_4764_direct_pdf_does_not_adjust_baked_watermark_pixels_twice
+        PASS [   0.012s] (10/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::image_adjustment_regressions::issue_4764_direct_pdf_preserves_discrete_blackwhite_or_fails_closed
+        PASS [   0.101s] (11/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::document_core_direct_pdf_exports_page_selection_and_document
+        PASS [   0.015s] (12/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::image_adjustment_regressions::issue_4764_direct_pdf_still_rejects_pattern8x8_images
+        PASS [   0.112s] (13/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::connector_arrow_regressions::direct_pdf_rejects_unproved_endpoint_controls_only_where_a_head_is_requested
+        PASS [   0.012s] (14/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::image_adjustment_regressions::issue_4764_direct_pdf_still_rejects_unbaked_background_watermark_tone
+        PASS [   0.011s] (15/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::image_adjustment_regressions::issue_4764_direct_pdf_still_rejects_unbaked_image_watermark_tone_or_opacity
+        PASS [   0.046s] (16/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::image_adjustment_regressions::issue_4764_direct_pdf_embeds_adjusted_page_background_pixels_in_display_order
+        PASS [   0.077s] (17/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::image_adjustment_regressions::issue_4764_direct_pdf_embeds_adjusted_normal_image_pixels
+        PASS [   0.117s] (18/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::export_pdf_cli_selects_direct_backend_explicitly
+        PASS [   0.023s] (19/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::image_adjustment_regressions::issue_4764_native_adjustments_preserve_alpha_and_object_opacity
+        PASS [   0.147s] (20/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::connector_arrow_regressions::direct_pdf_rejects_head_outlines_collapsed_before_a_parent_translation
+        PASS [   0.027s] (21/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::image_adjustment_regressions::issue_7751_native_contrast_endpoints_match_independent_print_pixels
+        PASS [   0.290s] (22/22) rhwp::regression_suite_026 render_p37_direct_pdf_export::connector_arrow_regressions::direct_pdf_accepts_supported_open_filled_and_asymmetric_head_sizes
+────────────
+     Summary [   0.291s] 22 tests run: 22 passed, 263 skipped
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+info: update nextest with cargo nextest self update, or bypass check with --override-version-check

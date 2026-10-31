@@ -286,6 +286,11 @@ pub struct ShapeComponentAttr {
     /// 아핀 행렬 비대각 요소 (회전/전단 성분)
     pub render_b: f64,
     pub render_c: f64,
+    /// [#8225] 묶음 안 자식 도형의 CTRL_DATA 원본 (자식 SHAPE_COMPONENT 바로 아래 레코드, 라운드트립 보존용).
+    /// 한컴은 여기에 개체 설명 글 같은 ParameterSet 을 둔다. 맨 위 개체의 CTRL_DATA 는
+    /// `Paragraph.ctrl_data_records` 가 갖는다.
+    #[serde(skip)]
+    pub ctrl_data: Option<Vec<u8>>,
 }
 
 impl ShapeComponentAttr {
@@ -341,6 +346,7 @@ impl Default for ShapeComponentAttr {
             render_sy: 1.0,
             render_b: 0.0,
             render_c: 0.0,
+            ctrl_data: None,
         }
     }
 }
