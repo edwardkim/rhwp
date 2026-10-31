@@ -81,6 +81,15 @@ export function paraFormatTargetsForCellBlock(
   for (const cellIdx of block.cellIndices) {
     const paraCount = paraCountAt(cellIdx);
     for (let cellParaIdx = 0; cellParaIdx < paraCount; cellParaIdx++) {
+      if (block.cellPath) {
+        targets.push({
+          kind: 'cellPath',
+          sec: block.sec,
+          parentPara: block.ppi,
+          path: withCellPathTarget(block.cellPath, cellIdx, cellParaIdx),
+        });
+        continue;
+      }
       targets.push({
         kind: 'cell',
         sec: block.sec,

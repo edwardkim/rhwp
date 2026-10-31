@@ -1,0 +1,282 @@
+{
+  "base": "db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc",
+  "product_source": "9bf6137e30a9a7153feb7a38cb506af413c754f2",
+  "guard_registration_head": "9bf6137e30a9a7153feb7a38cb506af413c754f2",
+  "source_relation": "Validation source is 9bf6137e30. The later submission commit adds only evidence under mydocs/pr/assets/nested-cell-paragraph-format; product code and tests are unchanged.",
+  "wasm": {
+    "sha256": "764d695a4afb95399ca1b2bb9ef57c99cf663452076d6aadf110add1478a091e",
+    "js_sha256": "12158ab63965d2f263d8e4e33648a49abb03b3034daae54451f1c3d9e5770bad",
+    "optimization": "wasm-opt completed",
+    "browser": "Codex in-app browser, Canvas2D Print profile",
+    "base_sha256": "dab8033b1002f1a32a3c7c88fd9e98533f435f8832819076076cd0f16319b03d"
+  },
+  "font": {
+    "family": "HCRBatang / 함초롬바탕",
+    "version": "1.980 Build 20140819",
+    "sha256": "d85550717552101699122adc5b948e8129881f39ffcf802cafe62aac3b1ced40",
+    "source": "https://raw.githubusercontent.com/dsolver-el/hwpx-template-engine/d3018c859da225ea8b0f71408ce30ac48de862f6/src/main/resources/fonts/hcr/HANBatang.ttf",
+    "comparison": "47 used PDF glyph outlines and advance/left-bearing metrics match; cvt/fpgm/prep match. The complete installed Hancom font file is not claimed identical."
+  },
+  "independent_print": {
+    "product": "Hancom Office 2024",
+    "version": "13.0.0.3901",
+    "print_method": 0,
+    "output_mode": "frame_print_to_pdf_ex_one_up",
+    "source_record": "mydocs/working/task_m100_7419_stage1.md",
+    "fresh_print_of_rhwp_saved_file": false,
+    "input_origin": "Manual XML HWPX counterexamples, independently printed in Hancom; not Hancom-saved input files."
+  },
+  "tests": {
+    "studio": {
+      "passed": 2600,
+      "failed": 0,
+      "skipped": 0,
+      "node": "22.23.4"
+    },
+    "native_full_summary": [
+      "Summary [1254.222s] 11840 tests run: 11840 passed (43 slow), 45 skipped"
+    ],
+    "native_skia_lib": {
+      "passed": 4040,
+      "failed": 0,
+      "ignored": 12
+    },
+    "native_skia_placeholder_summary": [
+      "Summary [   1.517s] 2 tests run: 2 passed, 271 skipped"
+    ],
+    "native_skia_direct_pdf_summary": [
+      "Summary [   0.927s] 14 tests run: 14 passed, 257 skipped"
+    ],
+    "spacing_edit_roundtrips": {
+      "passed": 6,
+      "inputs": 2,
+      "variants": [
+        "spacingBefore=600",
+        "lineSpacing=200",
+        "spacingBefore=600,lineSpacing=200"
+      ],
+      "assertions": [
+        "changed properties survive HWP/HWPX save and reopen",
+        "page counts survive save and reopen",
+        "Undo/Redo restore dynamic SVG renders and paragraph properties"
+      ],
+      "kind": "self consistency, not independent Hancom Print"
+    },
+    "successful_commands": [
+      {
+        "name": "base-native-build",
+        "exit": 0,
+        "seconds": 178.23
+      },
+      {
+        "name": "base-native-nested-same-line",
+        "exit": 0,
+        "seconds": 5.03
+      },
+      {
+        "name": "base-native-nested-width-wrap",
+        "exit": 0,
+        "seconds": 4.0
+      },
+      {
+        "name": "base-wasm",
+        "exit": 0,
+        "seconds": 392.33
+      },
+      {
+        "name": "prepare",
+        "exit": 0,
+        "seconds": 1.37
+      },
+      {
+        "name": "fmt",
+        "exit": 0,
+        "seconds": 14.77
+      },
+      {
+        "name": "clippy-native",
+        "exit": 0,
+        "seconds": 35.41
+      },
+      {
+        "name": "clippy-wasm",
+        "exit": 0,
+        "seconds": 33.46
+      },
+      {
+        "name": "workspace-build",
+        "exit": 0,
+        "seconds": 44.12
+      },
+      {
+        "name": "clippy-all",
+        "exit": 0,
+        "seconds": 47.78
+      },
+      {
+        "name": "manifest",
+        "exit": 0,
+        "seconds": 0.69
+      },
+      {
+        "name": "head-wasm",
+        "exit": 0,
+        "seconds": 386.36
+      },
+      {
+        "name": "node-bindings",
+        "exit": 0,
+        "seconds": 1.49
+      },
+      {
+        "name": "studio-tests",
+        "exit": 0,
+        "seconds": 11.98
+      },
+      {
+        "name": "studio-build",
+        "exit": 0,
+        "seconds": 3.18
+      },
+      {
+        "name": "nextest",
+        "exit": 0,
+        "seconds": 1697.34
+      },
+      {
+        "name": "native-skia-lib",
+        "exit": 0,
+        "seconds": 273.72
+      },
+      {
+        "name": "native-skia-placeholder",
+        "exit": 0,
+        "seconds": 194.41
+      },
+      {
+        "name": "native-skia-pdf",
+        "exit": 0,
+        "seconds": 12.26
+      },
+      {
+        "name": "native-skia-build",
+        "exit": 0,
+        "seconds": 173.93
+      },
+      {
+        "name": "head-native-nested-same-line",
+        "exit": 0,
+        "seconds": 5.04
+      },
+      {
+        "name": "head-native-nested-width-wrap",
+        "exit": 0,
+        "seconds": 4.01
+      }
+    ],
+    "base_preservation_cases": [
+      "PASS [   0.404s] ( 7363/11840) rhwp::regression_suite_012 verified_official_stored_frame_restart::complete_inline_frame_and_successor_tables_keep_their_print_pages",
+      "PASS [   0.349s] ( 9039/11840) rhwp::regression_suite_018 verified_official_page_boundary_flow::printed_top_caption_picture_and_following_lines_keep_their_page",
+      "PASS [   5.472s] ( 9145/11840) rhwp::regression_suite_018 verified_official_page_boundary_flow::printed_table_tail_stays_with_table_and_next_table_starts_on_next_page",
+      "PASS [   3.334s] ( 9795/11840) rhwp::regression_suite_021 verified_official_overlapping_object_line::stored_control_only_line_owns_banner_before_summary_table"
+    ]
+  },
+  "documents": [
+    {
+      "name": "nested-same-line",
+      "original": "tests/fixtures/issue7419-boundaries/nested-same-line.hwpx",
+      "original_sha256": "0340236f0d79a68a343bd771266544781f9313db63ded04168f62b8fb2770d7c",
+      "restored_input": "nested-same-line-restored.hwpx",
+      "restored_sha256": "00688a5c4afad7a75ad6f09507a85337d579ec9ae58f7d49add7612ca3eb4933",
+      "pdf": "pdf/issue7419/nested-same-line-print-2024.pdf",
+      "pdf_sha256": "86facc427943289a3854da58614813ca1d391210e8bb6092c6f7e0fa5a9db91c",
+      "pages": {
+        "source": 1,
+        "native": 1,
+        "wasm": 1,
+        "pdf": 1
+      },
+      "edited_nested_paragraphs": 4,
+      "native_source_head": "9bf6137e30a9a7153feb7a38cb506af413c754f2",
+      "native_binary_sha256": "77e8bdd279c8a024af80425ef2bb48367a4a8a27b9bfd3eea21217320990f5c2",
+      "native_raw_silhouette_percent": 100.0,
+      "wasm_raw_silhouette_percent": 100.0,
+      "native_gate": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      },
+      "native_png_sha256": "f2bcea264eb29f28777a7daa3414cddbe50715b3504f2b8183d2706ccadb8ec1",
+      "wasm_png_sha256": "975909bb5a343e311192185ffeb17797204caea1e90789315b681b57ccbd4f83",
+      "base_comparison": {
+        "source": "db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc",
+        "native_binary_sha256": "8f21bcf94a0733c5b22fdd58dd0b1eec474d778c487a07c6ca1914780ddb8b1a",
+        "native_png_sha256": "f2bcea264eb29f28777a7daa3414cddbe50715b3504f2b8183d2706ccadb8ec1",
+        "wasm_png_sha256": "975909bb5a343e311192185ffeb17797204caea1e90789315b681b57ccbd4f83",
+        "native_png_bytes_identical": true,
+        "wasm_png_bytes_identical": true
+      }
+    },
+    {
+      "name": "nested-width-wrap",
+      "original": "tests/fixtures/issue7419-boundaries/nested-width-wrap.hwpx",
+      "original_sha256": "8f102ecbd644d720f3766c794fa6b3ba55d7f93e8441f07d0004f519ec0d0f3c",
+      "restored_input": "nested-width-wrap-restored.hwpx",
+      "restored_sha256": "2e388422e9b25744678431da949e355e050c551f58bfbb76aaf148fb365562fc",
+      "pdf": "pdf/issue7419/nested-width-wrap-print-2024.pdf",
+      "pdf_sha256": "8e1164da675863c542c2d9873f104b6485e294bcbf6bcd9087d66c9fe5afb1d1",
+      "pages": {
+        "source": 1,
+        "native": 1,
+        "wasm": 1,
+        "pdf": 1
+      },
+      "edited_nested_paragraphs": 4,
+      "native_source_head": "9bf6137e30a9a7153feb7a38cb506af413c754f2",
+      "native_binary_sha256": "77e8bdd279c8a024af80425ef2bb48367a4a8a27b9bfd3eea21217320990f5c2",
+      "native_raw_silhouette_percent": 100.0,
+      "wasm_raw_silhouette_percent": 100.0,
+      "native_gate": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      },
+      "native_png_sha256": "e5f7dc8d4065d0e8098ecd4fa2b007bb91b6851d6b39c4df73ed52dff276f69b",
+      "wasm_png_sha256": "f8e51e61eebead82228a87f484977d3c71cae7a55db29ed59c2db280f4ebd992",
+      "base_comparison": {
+        "source": "db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc",
+        "native_binary_sha256": "8f21bcf94a0733c5b22fdd58dd0b1eec474d778c487a07c6ca1914780ddb8b1a",
+        "native_png_sha256": "e5f7dc8d4065d0e8098ecd4fa2b007bb91b6851d6b39c4df73ed52dff276f69b",
+        "wasm_png_sha256": "f8e51e61eebead82228a87f484977d3c71cae7a55db29ed59c2db280f4ebd992",
+        "native_png_bytes_identical": true,
+        "wasm_png_bytes_identical": true
+      }
+    }
+  ],
+  "limitations": [
+    "No Windows Hancom or conversion service was available. The edited HWP/HWPX save has not been freshly opened and printed in Hancom.",
+    "PDF comparisons below verify alignment changes followed by restoration to the original shape IDs and HWPX save/reopen, not the intermediate center/right layout in Hancom.",
+    "Raw silhouette agreement uses the repository 2-pixel metric and is not exact pixel equality."
+  ],
+  "environment": {
+    "os": "macOS 27.0.1",
+    "arch": "arm64",
+    "browser_user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36"
+  }
+}
