@@ -114,7 +114,11 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `issue-4272-nested-cell-text-selection.test.mjs` | 상시 | active | #4272 중첩 표 안쪽 셀의 전체 cellPath 선택 rect, 실제 마우스 드래그와 Ctrl+C/V | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-4272 | 물리 5쪽 `23,504`, `output/4272/nested-cell-*.{json,png}` |
 | `issue-536-boxed-pua-canvas2d.test.mjs` | 상시 | active | #536 실제 HWP의 사각 안 숫자 PUA를 기본 Canvas2D가 결정적으로 합성 | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-536 | #4122 17쪽 pagination stack 계약 포함 |
 | `layer-export-issue536.test.mjs` | 상시 | active | #536 JSON/value·v2 compat/strict export, font/image byte 생략 4조합, content-key 재조회·입력 변이 격리·편집 후 자원 계약 | test-image.hwpx, render-p35-font-native-bitmap.hwpx, para-001.hwp | npm e2e:layer-export-issue536 | fresh WASM 필수, Chromium·임시 Vite 자체 기동, 비시각 API 검사 |
+| `local-font-count-issue8371.test.mjs` | 상시 | active | 로컬 글꼴 재감지와 설정 재열기의 face 수 보존 | 합성 글꼴 목록 | 수동 | #8397 기존 파일의 원장 누락 보완 |
+| `local-font-list-issue8371.test.mjs` | 상시 | active | 로컬 글꼴 목록의 별칭 표시와 검색 | 합성 글꼴 목록 | 수동 | #8397 기존 파일의 원장 누락 보완 |
 | `local-font-partial-enumeration-issue4741.test.mjs` | 상시 | active | #4741 Local Font Access 부분 열거를 강제해 raw probe·exact Canvas2D face·폭·cache 계약 검증 | 합성 Canvas2D 글꼴 표본 | npm e2e:issue-4741 | KoPub바탕체 Light 설치 호스트 Chrome 전용 |
+| `local-font-prompt-issue8371.test.mjs` | 상시 | active | 빈 문서 입력과 문서 열기의 로컬 글꼴 선택 | samples/eq-002.hwp | 수동 | #8397 기존 파일의 원장 누락 보완 |
+| `local-font-refresh-issue8371.test.mjs` | 상시 | active | 문서에서 사용하는 글꼴이 변경될 때만 재조판 | samples/eq-002.hwp | 수동 | #8397 기존 파일의 원장 누락 보완 |
 | `middle-dot-canvas-paint.test.mjs` | 상시 | active | 실제 Canvas 가운뎃점 원형 경로와 앞뒤 본문 소유 보존 | k-water-rfp.hwp | npm e2e:middle-dot-canvas-paint | 독립 Print 근거와 기존 시각 증적은 테스트 주석 참조 |
 | `issue-595.test.mjs` | 진단 | hold | 시험지 회귀 실행 제거·파일 보존 | exam_math.hwp | — | legacy-name · 사용자 지시로 실행 진입점 제거 |
 | `issue-6099-probe.mjs` | 진단 | active | #6099 90° 회전 그림 DOM frame/img 실측과 스크린샷 생성 프로브 | samples 하위 지정 파일 | 수동 | legacy-name · 일회성 실측 프로브 |
@@ -132,6 +136,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `page-key-scroll.test.mjs` | 상시 | active | PgUp/PgDn 쪽 단위 스크롤 — 건너뜀 없음·쪽 머리 착지·캐럿 추종·포커스 밖 동작 | biz_plan.hwp | npm e2e:page-key-scroll |  |
 | `page-setup-orientation-icon.test.mjs` | 상시 | active | 편집 용지 대화창의 용지 방향 아이콘 식별성 | — | 수동 |  |
 | `pdf-import-busy-issue8398.test.mjs` | 상시 | active | #8398 PDF 선택·재시도 커서, 파일/바이트/드롭 열기, Worker 취소와 기존 문서 보존 | pdf/pr8224/lseg-tab-insert-2020.pdf, para-001.hwp | 수동 | 실제 최적화 WASM, 조판 수치 검사가 아닌 UI 상태 계약 |
+| `pdf-import-dialog-issue8411.test.mjs` | 상시 | active | #8411 PDF 가져오기 화면·키보드·한도·시간 초과·재시도 | pdf/issue8403/image-patterns.pdf | 수동 | 실제 최적화 WASM·Worker, 두 테마와 작은 화면의 UI 계약 |
 | `pdf-render-diff-report.mjs` | 상시 | active | Report-only visual diff between browser Canvas output and SVG-deri | — | npm+CI | legacy-name |
 | `plugin-lifecycle.test.mjs` | 상시 | active | 플러그인 호스트 — allowlist·트랜잭션 1스냅샷·롤백·unload 회수 | — | npm e2e:plugin-lifecycle |  |
 | `print-pdf-issue3126.test.mjs` | 상시 | active | #3126 same-origin iframe 인쇄/PDF UX, 상태 불변, #2524/#2525 browser PDF 회귀 | render-p35-font-native-bitmap.hwpx, hwpx/hwpx-02.hwpx | 수동 | native dialog는 Chrome/Edge 수동 절차 병행 |

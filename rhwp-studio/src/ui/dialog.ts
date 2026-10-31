@@ -118,7 +118,10 @@ export abstract class ModalDialog {
         e.stopPropagation();
         return;
       }
-      if (e.key === 'Enter' && !isEditable) {
+      // 선택·펼치기와 포커스 가능한 읽기 영역의 기본 키 동작을 유지한다.
+      const isNativeChoice = target instanceof HTMLSelectElement || !!target?.closest('summary')
+        || (target instanceof HTMLPreElement && target.tabIndex >= 0);
+      if (e.key === 'Enter' && !isEditable && !isNativeChoice) {
         e.stopPropagation();
         e.preventDefault();
         const btn = this.dialog.querySelector('.dialog-btn-primary') as HTMLButtonElement | null;
@@ -132,7 +135,7 @@ export abstract class ModalDialog {
       }
       // 편집 가능한 요소 내부 → 키 입력 허용, 외부 전파만 차단
       e.stopPropagation();
-      if (!isEditable) {
+      if (!isEditable && !isNativeChoice) {
         e.preventDefault();
       }
     };
