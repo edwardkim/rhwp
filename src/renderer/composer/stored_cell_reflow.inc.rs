@@ -72,6 +72,12 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band_with_storag
 ) -> Result<Option<ComposedParagraph>, S::Error> {
     Ok({
         let stored_geometry_policy = stored_geometry_policy.into();
+        // [#8399] 어울림 밴드 소유자(`layout_picture_band`)가 낸 줄은 이 프레임이 다시 만들 수 없다 —
+        // 이 프레임에는 개체 배제가 없어 전폭으로 채운다. 원문 분할이 그대로면 그 줄이 구성의 권위다.
+        // 편집은 밴드 소유자가 줄을 다시 낸다.
+        if para.layout_float_band && !para.stored_text_partition_is_dirty() {
+            return Ok(None);
+        }
         // loader가 만든 합성 줄은 원본 저장 캐시가 아니다. 독립 개체가 없는
         // 본문은 현재 프레임에서 다시 구성하며 원본 IR은 보존한다.
         let fresh_body = if !para.line_segs.is_empty()

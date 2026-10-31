@@ -15,7 +15,7 @@ use crate::model::paragraph::{normalize_text_newlines, LineSeg, ParaMeta, Paragr
 use crate::model::shape::{ShapeObject, TextWrap, VertRelTo};
 use crate::model::style::Alignment;
 use crate::renderer::composer::{
-    compose_paragraph, layout_picture_band, reflow_line_segs, ParagraphBox,
+    compose_paragraph, control_owns_body_band, layout_picture_band, reflow_line_segs, ParagraphBox,
 };
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::pagination::PageItem;
@@ -729,9 +729,10 @@ impl DocumentCore {
     ) -> Option<(usize, std::ops::Range<usize>, f64, (f64, f64))> {
         let section = self.document.sections.get(section_idx)?;
         let host_index = (0..=para_idx).rev().find(|&index| {
-            section.paragraphs[index].controls.iter().any(|control| {
-                matches!(control, Control::Picture(picture) if !picture.common.treat_as_char)
-            })
+            section.paragraphs[index]
+                .controls
+                .iter()
+                .any(control_owns_body_band)
         })?;
         let column_def = Self::find_column_def_for_paragraph(&section.paragraphs, host_index);
         let layout =
@@ -950,7 +951,7 @@ impl DocumentCore {
             .iter_mut()
             .zip(new_band.line_segs.into_iter().zip(new_band.space_metrics))
         {
-            paragraph.replace_line_segs_with_space_metrics(line_segs, space_metrics);
+            paragraph.publish_float_band_rows(line_segs, space_metrics);
         }
 
         // When an edited paragraph clears the exclusion earlier than before,

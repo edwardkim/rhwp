@@ -15,8 +15,9 @@ use crate::model::shape::{common_obj_offsets, ShapeObject};
 /// 밴드는 **위치·크기·기준·정렬·어울림 종류·바깥 여백**이 함께 정하므로 전부 넣는다.
 /// 글자처럼 취급(`treat_as_char`)은 밴드를 만들지 않지만, 그 토글 자체가 밴드의
 /// 유무를 바꾸므로 포함한다.
+/// [#8399] 어울림 도형도 같은 밴드를 만든다 — 도형 속성 편집이 같은 지문을 쓴다.
 #[derive(PartialEq, Eq)]
-struct PictureBandGeometry {
+pub(super) struct PictureBandGeometry {
     horizontal_offset: i32,
     vertical_offset: i32,
     width: u32,
@@ -30,7 +31,9 @@ struct PictureBandGeometry {
     margin: (i16, i16, i16, i16),
 }
 
-fn picture_band_geometry(common: &crate::model::shape::CommonObjAttr) -> PictureBandGeometry {
+pub(super) fn picture_band_geometry(
+    common: &crate::model::shape::CommonObjAttr,
+) -> PictureBandGeometry {
     PictureBandGeometry {
         horizontal_offset: common.horizontal_offset as i32,
         vertical_offset: common.vertical_offset as i32,

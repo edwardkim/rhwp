@@ -19,7 +19,12 @@ pub(super) fn supports_uncached_inline_host(para: &Paragraph) -> bool {
             // 줄 폭을 바꾸지 않는 부동 그림·도형은 자기 상자만 부동 개체 소유자가 배치한다.
             // 사양하면 같은 문단의 글자처럼 개체가 이 프레임의 줄 높이를 잃는다(#8271).
             float if line_breaking::control_is_line_width_neutral_float_object(float) => {}
-            shape if line_breaking::control_is_unbanded_float_shape(shape) => {}
+            // 어울림 도형은 줄이 아예 없을 때만 받는다. 구현 태그 줄이 있으면 밴드 소유자
+            // (`layout_picture_band`)가 깎은 줄이다 — 밴드 없는 이 프레임이 다시 채우면 전폭이
+            // 된다(#8399).
+            shape
+                if para.line_segs.is_empty()
+                    && line_breaking::control_is_float_shape_beside_text(shape) => {}
             // 표·폭을 바꾸는 부동 개체·중첩 흐름은 각각의 기존 소유권 계약을 따른다.
             _ => return false,
         }

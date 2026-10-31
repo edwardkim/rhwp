@@ -383,6 +383,8 @@ impl DocumentCore {
 
         let shape = self.resolve_shape_control_mut(section_idx, parent_para_idx, control_idx)?;
 
+        // [#8399] 어울림 배제 밴드 지문 — 그림 속성 편집(#6204)과 같은 재투영 판정.
+        let band_geometry_before = super::picture::picture_band_geometry(shape.common());
         // [#6740] 변환 파생 상태 무효화 판정용 — 어떤 대입보다 먼저 잰다.
         let transform_before =
             super::common::shape_transform_fingerprint(shape.common(), shape.shape_attr());
@@ -631,6 +633,15 @@ impl DocumentCore {
         self.recompose_section(section_idx);
         self.paginate_if_needed();
         self.invalidate_page_tree_cache();
+        // [#8399] 어울림 도형의 밴드 기하가 바뀌면 그 밴드에 되감긴 문단의 저장 줄을 새로
+        // 새긴다. 밴드를 만들 수 없는 형상이면 종전 경로가 그대로 남는다.
+        let band_geometry_after = self
+            .resolve_shape_control_mut(section_idx, parent_para_idx, control_idx)
+            .ok()
+            .map(|shape| super::picture::picture_band_geometry(shape.common()));
+        if band_geometry_after.as_ref() != Some(&band_geometry_before) {
+            let _ = self.apply_body_edit_through_picture_band(section_idx, parent_para_idx, |_| {});
+        }
 
         self.event_log.push(DocumentEvent::PictureResized {
             section: section_idx,
@@ -1482,6 +1493,11 @@ impl DocumentCore {
         // 리플로우 + 페이지네이션
         self.recompose_section(section_idx);
         self.paginate_if_needed();
+        // [#8399] 어울림 도형은 host 와 뒤 문단의 줄을 깎는다 — 그림 밴드와 같은 소유자가
+        // 저장 줄을 발행한다. 밴드를 만들 수 없으면 종전 전폭 줄이 남는다.
+        if !treat_as_char {
+            let _ = self.apply_body_edit_through_picture_band(section_idx, insert_para_idx, |_| {});
+        }
 
         self.event_log.push(DocumentEvent::PictureInserted {
             section: section_idx,
