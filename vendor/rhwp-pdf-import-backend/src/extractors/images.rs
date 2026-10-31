@@ -4745,6 +4745,10 @@ pub struct PdfImageHandle<'doc> {
     indexed_base: Option<ColorSpace>,
     /// Current nonstroking solid colour at this invocation; None is unsupported.
     pub(crate) stencil_colour: Option<(f32, f32, f32)>,
+    /// Same pattern-cell paint invocation across tiles: decode/mask once, then
+    /// apply each placement's opacity, clip and CTM to a budgeted pixel copy.
+    pub(crate) pattern_pixels:
+        Option<std::sync::Arc<std::sync::OnceLock<(PdfImage, Option<bool>)>>>,
 }
 
 impl<'doc> PdfImageHandle<'doc> {
@@ -4757,6 +4761,59 @@ impl<'doc> PdfImageHandle<'doc> {
     /// decode flow ([`raw_compressed_bytes`](Self::raw_compressed_bytes) then
     /// `decode`) without re-enumerating the page.
     pub fn decode(&self) -> Result<PdfImage> {
+        self.doc.check_import_budget()?;
+        let (mut image, interpolation) = if let Some(cache) = &self.pattern_pixels {
+            if cache.get().is_none() {
+                let decoded = self.decode_base()?;
+                let _ = cache.set(decoded);
+            }
+            let (image, interpolation) = cache.get().expect("initialized pattern pixels");
+            if let Some(budget) = self.doc.import_budget() {
+                let bytes = match &image.data {
+                    ImageData::Jpeg(data) => data.len(),
+                    ImageData::Raw { pixels, .. } => pixels.len(),
+                };
+                budget.charge_cache_copy(bytes)?;
+            }
+            (image.clone(), *interpolation)
+        } else {
+            self.decode_base()?
+        };
+        if self.opacity < 1.0 {
+            if let Some(budget) = self.doc.import_budget() {
+                image.apply_opacity(self.opacity, budget)?;
+            }
+        }
+        self.doc.check_import_budget()?;
+
+        // Use pre-computed bbox and rotation from Phase 1 — no need to call
+        // back into document.rs helpers here.
+        let needs_affine = matches!(self.clip, super::image_clip::ImageClip::Polygon(_))
+            || (self.pattern_pixels.is_some()
+                && (self.ctm.b != 0.0
+                    || self.ctm.c != 0.0
+                    || self.ctm.a <= 0.0
+                    || self.ctm.d <= 0.0));
+        if let (true, Some(budget)) = (needs_affine, self.doc.import_budget()) {
+            let frame = self
+                .clip
+                .visible_bounds(self.bbox)?
+                .ok_or_else(|| Error::Image("empty image clip".into()))?;
+            let interpolate = image.interpolate.or(interpolation).unwrap_or(false);
+            image.apply_affine_clip(self.ctm, &self.clip, frame, interpolate, budget)?;
+            self.doc.check_import_budget()?;
+            return Ok(image);
+        }
+        image.set_bbox(self.bbox);
+        image.set_matrix([
+            self.ctm.a, self.ctm.b, self.ctm.c, self.ctm.d, self.ctm.e, self.ctm.f,
+        ]);
+        image.set_rotation_degrees(self.rotation_degrees as i32);
+
+        Ok(image)
+    }
+
+    fn decode_base(&self) -> Result<(PdfImage, Option<bool>)> {
         use crate::extractors::extract_image_from_xobject;
 
         self.doc.check_import_budget()?;
@@ -4890,34 +4947,7 @@ impl<'doc> PdfImageHandle<'doc> {
                 }
             }
         }
-        if self.opacity < 1.0 {
-            if let Some(budget) = self.doc.import_budget() {
-                image.apply_opacity(self.opacity, budget)?;
-            }
-        }
-        self.doc.check_import_budget()?;
-
-        // Use pre-computed bbox and rotation from Phase 1 — no need to call
-        // back into document.rs helpers here.
-        if let (super::image_clip::ImageClip::Polygon(_), Some(budget)) =
-            (&self.clip, self.doc.import_budget())
-        {
-            let frame = self
-                .clip
-                .visible_bounds(self.bbox)?
-                .ok_or_else(|| Error::Image("empty image clip".into()))?;
-            let interpolate = image.interpolate.or(interpolation).unwrap_or(false);
-            image.apply_affine_clip(self.ctm, &self.clip, frame, interpolate, budget)?;
-            self.doc.check_import_budget()?;
-            return Ok(image);
-        }
-        image.set_bbox(self.bbox);
-        image.set_matrix([
-            self.ctm.a, self.ctm.b, self.ctm.c, self.ctm.d, self.ctm.e, self.ctm.f,
-        ]);
-        image.set_rotation_degrees(self.rotation_degrees as i32);
-
-        Ok(image)
+        Ok((image, interpolation))
     }
 
     /// Return the raw compressed bytes exactly as stored in the PDF stream,
@@ -5217,6 +5247,7 @@ pub(crate) fn image_handle_from_xobject<'doc>(
         .ok()?,
         indexed_base,
         stencil_colour: Some((0., 0., 0.)),
+        pattern_pixels: None,
     })
 }
 
@@ -5309,6 +5340,7 @@ pub(crate) fn image_handle_from_inline<'doc>(
         .ok()?,
         indexed_base,
         stencil_colour: Some((0., 0., 0.)),
+        pattern_pixels: None,
     })
 }
 

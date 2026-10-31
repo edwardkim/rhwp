@@ -117,6 +117,17 @@ impl ClipPolygon {
 }
 
 impl ImageClip {
+    /// Conservative finite bounds for limiting pattern tile enumeration.
+    pub(crate) fn bounds(&self) -> crate::error::Result<Option<Rect>> {
+        match self {
+            Self::Rectangle(r) => Ok(Some(*r)),
+            Self::Polygon(p) => Ok(Some(p.bounds())),
+            Self::Empty => Ok(None),
+            _ => Err(crate::error::Error::Unsupported(
+                "pattern requires a finite convex clip".into(),
+            )),
+        }
+    }
     pub(crate) fn intersect(self, other: Self) -> Self {
         match (self, other) {
             (Self::Empty, _) | (_, Self::Empty) => Self::Empty,
@@ -303,6 +314,15 @@ pub(crate) struct ImageClipTracker {
 }
 
 impl ImageClipTracker {
+    pub(crate) fn from_image_state(state: ImageGraphicsState) -> Self {
+        Self {
+            current: state,
+            saved: Vec::new(),
+            path: ClipPath::default(),
+            pending: false,
+            convex: true,
+        }
+    }
     pub fn new(ctm: Matrix, clip: ImageClip) -> Self {
         Self {
             current: ImageGraphicsState {
@@ -343,6 +363,15 @@ impl ImageClipTracker {
 
     pub fn current(&self) -> ImageGraphicsState {
         self.current.clone()
+    }
+
+    /// A fill uses the current path before a painting operator consumes it.
+    /// The pending W/W* clip takes effect only after painting (ISO 8.5.4).
+    pub(crate) fn fill_clip(&self) -> ImageClip {
+        self.current
+            .clip
+            .clone()
+            .intersect(self.path.region(self.convex))
     }
 
     pub fn apply(&mut self, op: &Operator) {

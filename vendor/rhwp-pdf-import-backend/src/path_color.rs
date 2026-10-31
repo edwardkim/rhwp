@@ -54,6 +54,8 @@ impl DeviceSpace {
 #[derive(Debug, Clone)]
 pub(crate) enum PathColorSpace {
     Device(DeviceSpace),
+    /// Coloured tiling paint is resolved by the image walker, never as stale RGB.
+    Pattern(Option<std::sync::Arc<str>>),
     IccAlternate {
         device: DeviceSpace,
         ranges: [[f32; 2]; 4],
@@ -73,7 +75,7 @@ impl PathColorSpace {
                 ranges,
                 transform,
             } => (*device, *ranges, transform.as_ref()),
-            Self::Unsupported => return None,
+            Self::Unsupported | Self::Pattern(_) => return None,
         };
         if components.len() != device.components() || !components.iter().all(|c| c.is_finite()) {
             return None;
@@ -104,7 +106,7 @@ impl PathColorSpace {
             Self::Device(device) | Self::IccAlternate { device, .. } => {
                 self.rgb(&[0.0; 4][..device.components()])
             },
-            Self::Unsupported => None,
+            Self::Unsupported | Self::Pattern(_) => None,
         }
     }
 }
@@ -226,7 +228,7 @@ fn resolve_name(
         return Ok(PathColorSpace::Device(device));
     }
     if name == "Pattern" {
-        return Ok(PathColorSpace::Unsupported);
+        return Ok(PathColorSpace::Pattern(None));
     }
     if let Some(resources) = resources {
         let res = shallow(doc, resources, depth + 1)?;
@@ -276,6 +278,27 @@ impl PdfDocument {
                 let space = if stroke { stroke_space } else { fill_space };
                 (stroke, None, space.rgb(components))
             },
+            SetStrokeColorN {
+                name: Some(name),
+                components,
+            }
+            | SetFillColorN {
+                name: Some(name),
+                components,
+            } => {
+                let stroke = matches!(op, SetStrokeColorN { .. });
+                let space = if stroke { stroke_space } else { fill_space };
+                if !components.is_empty() || !matches!(space, PathColorSpace::Pattern(_)) {
+                    return Err(Error::UnsupportedPattern(
+                        "uncoloured or invalid pattern paint".into(),
+                    ));
+                }
+                if let Some(budget) = self.import_budget() {
+                    budget.charge_cache_copy(name.len())?;
+                    budget.charge_entries(1)?;
+                }
+                (stroke, Some(PathColorSpace::Pattern(Some(name.as_str().into()))), None)
+            },
             SetStrokeGray { gray } | SetFillGray { gray } => (
                 matches!(op, SetStrokeGray { .. }),
                 Some(PathColorSpace::GRAY),
@@ -315,10 +338,6 @@ impl PdfDocument {
         ) {
             return Ok(());
         }
-        if matches!(op, SetFillColorN { name: Some(_), .. }) {
-            graphics.set_fill_colour(PathColorSpace::Unsupported, None);
-            return Ok(());
-        }
         let state = graphics.current();
         if let Some(update) =
             self.colour_operator(op, resources, &PathColorSpace::GRAY, &state.fill_space)?
@@ -335,6 +354,34 @@ impl PdfDocument {
         extractor: &mut PathExtractor,
         state: &mut PathGraphicsState,
     ) -> Result<bool> {
+        if matches!(state.stroke_color_space, PathColorSpace::Pattern(_))
+            && matches!(
+                op,
+                Operator::Stroke
+                    | Operator::CloseAndStroke
+                    | Operator::FillStroke
+                    | Operator::FillStrokeEvenOdd
+                    | Operator::CloseFillStroke
+                    | Operator::CloseFillStrokeEvenOdd
+            )
+        {
+            return Err(Error::UnsupportedPattern(
+                "pattern stroke is not supported by editable import".into(),
+            ));
+        }
+        if matches!(state.fill_color_space, PathColorSpace::Pattern(_))
+            && matches!(
+                op,
+                Operator::FillStroke
+                    | Operator::FillStrokeEvenOdd
+                    | Operator::CloseFillStroke
+                    | Operator::CloseFillStrokeEvenOdd
+            )
+        {
+            // PDF B/b paints the fill before the solid outline. Pattern images
+            // receive [operator, tile, ...]; the retained outline follows them.
+            extractor.paint.source_order.push(usize::MAX);
+        }
         let Some(ColourUpdate { stroke, space, rgb }) = self.colour_operator(
             op,
             extractor.current_resources(),
@@ -361,6 +408,9 @@ impl PdfDocument {
                 extractor.set_fill_color(color);
             }
         }
+        // Pattern selection and q/Q restoration must not leave the previous
+        // solid fill attached to the extracted path.
+        extractor.update_from_path_state(state);
         Ok(true)
     }
 }

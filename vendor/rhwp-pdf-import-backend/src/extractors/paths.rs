@@ -451,9 +451,13 @@ impl PathExtractor {
             _ => LineJoin::Miter,
         };
         let (r, g, b) = state.stroke_color_rgb;
-        self.current_stroke_color = Some(Color::new(r, g, b));
+        self.current_stroke_color =
+            (!matches!(state.stroke_color_space, crate::path_color::PathColorSpace::Pattern(_)))
+                .then_some(Color::new(r, g, b));
         let (r, g, b) = state.fill_color_rgb;
-        self.current_fill_color = Some(Color::new(r, g, b));
+        self.current_fill_color =
+            (!matches!(state.fill_color_space, crate::path_color::PathColorSpace::Pattern(_)))
+                .then_some(Color::new(r, g, b));
     }
 
     /// Set stroke color.

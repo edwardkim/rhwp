@@ -101,7 +101,7 @@ impl PdfImportError {
         let kind = match &error {
             Error::ImportResourceLimit(_) => "resource_limit",
             Error::EncryptedPdf => "encrypted",
-            Error::Unsupported(_) => "unsupported",
+            Error::Unsupported(_) | Error::UnsupportedPattern(_) => "unsupported",
             Error::UnsupportedFilter(_) => "unsupported_filter",
             Error::Image(_) => "image",
             Error::Font(_) => "font",
@@ -116,6 +116,10 @@ impl PdfImportError {
         };
         let detail = error.to_string();
         let mut result = match error {
+            pdf_oxide::error::Error::UnsupportedPattern(_) => Self::new(
+                "PDF_PATTERN_UNSUPPORTED",
+                "PDF pattern paint is unsupported or invalid",
+            ),
             pdf_oxide::error::Error::ImportResourceLimit(reason) => Self::budget(reason),
             pdf_oxide::error::Error::EncryptedPdf => Self::new(
                 "PDF_ENCRYPTION_UNSUPPORTED",
