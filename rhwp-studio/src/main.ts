@@ -1701,19 +1701,20 @@ async function loadFile(
 ): Promise<boolean> {
   try {
     if (!await canReplaceCurrentDocument(options.skipUnsavedGuard)) return false;
-    // 대기 커서는 저장 여부 확인(모달) 다음부터 — 사용자가 답해야 하는 동안은 평소 커서다.
-    return await withBusyCursor(document.documentElement, async () => {
-      const startTime = performance.now();
+    const startTime = performance.now();
+    // 파일 읽기만 감싼다. loadBytes가 여는 PDF 선택 대화창까지 busy를 소유하지 않는다.
+    const { pdf, data } = await withBusyCursor(document.documentElement, async () => {
       await updateLoadProgress(0, '파일 읽는 중...');
       const pdf = /\.pdf$/i.test(file.name)
         || isPdfInput(new Uint8Array(await file.slice(0, 1024).arrayBuffer()), file.name);
       const data = pdf ? new Uint8Array() : new Uint8Array(await file.arrayBuffer());
       if (!pdf) await updateLoadProgress(15, '파일 읽기 완료');
-      await loadBytes(data, file.name, options.fileHandle ?? null, startTime, { dataReadProgressShown: true,
-        ...(pdf ? { pdfSource: { byteLength: file.size, read: async () => new Uint8Array(await file.arrayBuffer()) } } : {}),
-      });
-      return true;
+      return { pdf, data };
     });
+    await loadBytes(data, file.name, options.fileHandle ?? null, startTime, { dataReadProgressShown: true,
+      ...(pdf ? { pdfSource: { byteLength: file.size, read: async () => new Uint8Array(await file.arrayBuffer()) } } : {}),
+    });
+    return true;
   } catch (error) {
     showLoadErrorUnlessCancelled(error);
     return false;
@@ -1732,19 +1733,29 @@ async function loadBytes(
   options: { dataReadProgressShown?: boolean; skipRecent?: boolean; suppressDialogs?: boolean; pdfSource?: PdfInputSource; recoveryCipher?: RecoveryCipher; validateBeforeOpen?: () => Promise<void> } = {},
 ): Promise<void> {
   // 바이트로 여는 모든 경로(파일 열기 · ?url= · 자동저장 복구 · 호스트 API)의 공통 깔때기다.
-  // 파싱·쪽 계산 동안 빈 화면만 보이므로 여기서 대기 커서를 든다.
+  const pdf = Boolean(options.pdfSource) || isPdfInput(data, fileName);
+  cancelPdfImport();
+  let imported: DocumentInfo | undefined;
+  if (pdf) {
+    // 선택·재시도 대기는 처리 중이 아니다. 변환 진행은 취소 가능한 PDF 대화창이
+    // 표시하며, 성공 뒤의 뷰 초기화부터 아래 busy 범위가 소유한다 (#8398).
+    sbMessage().textContent = 'PDF 가져오기';
+    await options.validateBeforeOpen?.();
+    imported = await loadDocumentForOpen(data, fileName, options.pdfSource);
+  }
+  // 일반 문서의 파싱·쪽 계산과 성공한 PDF의 뷰 초기화 동안 대기 커서를 든다.
   await withBusyCursor(document.documentElement, async () => {
     // 파싱 전에 먼저 빈 쪽 상태로 만든다 — 이전 문서를 붙잡고 있다가 한 번에 갈아치우면
     // 화면이 튀어 보인다. 파싱이 실패하면 아래 catch가 이전 문서 뷰를 되살린다.
-    const pdf = Boolean(options.pdfSource) || isPdfInput(data, fileName);
-    cancelPdfImport();
     if (!pdf) canvasView?.showBlankPage();
-    if (!options.dataReadProgressShown) {
-      await updateLoadProgress(0, '문서 데이터 준비 중...');
+    if (!pdf) {
+      if (!options.dataReadProgressShown) {
+        await updateLoadProgress(0, '문서 데이터 준비 중...');
+      }
+      await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...');
+      await options.validateBeforeOpen?.();
     }
-    await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...');
-    await options.validateBeforeOpen?.();
-    const docInfo = await loadDocumentForOpen(data, fileName, options.pdfSource);
+    const docInfo = imported ?? await loadDocumentForOpen(data, fileName);
     if (options.recoveryCipher) {
       wasm.requiresPasswordForSave = true;
       wasm.setRecoveryCipher(options.recoveryCipher);
