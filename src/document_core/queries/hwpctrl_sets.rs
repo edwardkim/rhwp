@@ -374,18 +374,31 @@ fn scan_paragraph(
         //
         // 개체 앞까지의 글은 **비어 있어도 낸다**(글 없는 문단에 표만 있어도 빈 항목이 하나
         // 난다). 줄 끝은 아직 안 붙인다 — 문단이 안 끝났다.
-        let here = control_positions
+        let original = control_positions
             .get(ci)
             .copied()
-            .map(|orig| orig + shift_for(orig))
-            .unwrap_or(chars.len())
-            .min(chars.len());
+            .unwrap_or(raw.len())
+            .min(raw.len());
+        let here = (original + shift_for(original)).min(chars.len());
         let run: String = chars[cut.min(here)..here].iter().collect();
         // 리스트를 여는 개체(표·글상자) 앞 조각은 줄이 되고, 인라인 개체(수식) 앞 조각은
         // 안 된다 — `GetTextFile` 이 그 둘을 다르게 잇는다(실측).
         items.push((state, run, if nested.is_empty() { 2 } else { 0 }));
         state = 2;
-        cut = here;
+        // 개체가 소유한 8유닛 자리표만 소비하고 일반 U+FFFC 문자는 보존한다.
+        let owns_marker = matches!(
+            ctrl,
+            Control::Table(_) | Control::Shape(_) | Control::Picture(_) | Control::Equation(_)
+        ) && raw.get(original) == Some(&'\u{FFFC}')
+            && para.char_offsets.get(original).is_some_and(|start| {
+                para.char_offsets
+                    .get(original + 1)
+                    .copied()
+                    .or_else(|| para.char_count.checked_sub(1))
+                    .and_then(|end| end.checked_sub(*start))
+                    .is_some_and(|span| span >= 8 && span.is_multiple_of(8))
+            });
+        cut = cut.max(here + usize::from(owns_marker));
         // 개체 속으로 — 첫 항목이 4, 나온 뒤 첫 항목이 5 다. 속이 없으면 여기서 끝이다.
         if nested.is_empty() {
             continue;
