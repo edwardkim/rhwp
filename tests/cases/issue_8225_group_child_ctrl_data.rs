@@ -49,7 +49,7 @@ fn group_child_ctrl_data(hwp: &[u8]) -> Vec<Vec<u8>> {
     let mut paths: Vec<String> = cfb
         .walk()
         .filter(|e| e.is_stream())
-        .map(|e| e.path().to_string_lossy().into_owned())
+        .map(|e| e.path().to_string_lossy().replace('\\', "/"))
         .filter(|p| p.contains("BodyText/Section"))
         .collect();
     paths.sort_by_key(|p| {
@@ -110,7 +110,7 @@ fn ctrl_data_count(hwp: &[u8]) -> usize {
     let paths: Vec<String> = cfb
         .walk()
         .filter(|e| e.is_stream())
-        .map(|e| e.path().to_string_lossy().into_owned())
+        .map(|e| e.path().to_string_lossy().replace('\\', "/"))
         .filter(|p| p.contains("BodyText/Section"))
         .collect();
     paths
