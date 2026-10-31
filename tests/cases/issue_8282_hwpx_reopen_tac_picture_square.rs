@@ -9,7 +9,7 @@
 //!
 //! 독립 기준:
 //! - 같은 문서의 저장 전 배치와 HWP 저장본을 다시 연 배치가 HWPX 재열기와 같다.
-//! - 커밋한 합성 HWPX 의 한/글 2020 Print PDF(`pdf/issue8282/*-2020.pdf`)에서 읽은 줄 나눔과
+//! - 커밋한 합성 HWPX 의 한/글 2020 Print PDF(`pdf/issue8282/*-2020.pdf`, #8399 변형 D 포함)에서 읽은 줄 나눔과
 //!   개체 회피 관계: 어울림 개체와 겹치는 줄은 개체 바깥 여백 상자 왼쪽에서 끝나고, 개체 아래
 //!   줄은 전폭이며, 개체 옆의 뒤 문단은 개체 오른쪽에서 시작한다. 글상자 윗변은 오프셋에 위
 //!   바깥여백을 더한 자리다.
@@ -68,6 +68,16 @@ fn json_usize(json: &str, key: &str) -> usize {
 
 const SHORT: &str = "앞 글 뒤 글";
 const LONG: &str = "앞 글 뒤에 이어지는 이 문단은 어울림 글상자 옆으로 여러 줄에 걸쳐 흐르도록 길게 쓴 문장입니다. 글상자가 줄과 겹치는 세로 범위에서는 줄 폭이 줄어듭니다. 끝.";
+
+/// [#8399] 변형 D 의 180자 host 문단(`make_inputs.mjs` 의 `LEFT`).
+fn left_overlap_body() -> String {
+    "어울림 글상자가 본문 왼쪽에서 여러 줄과 겹치면 한글은 글상자 오른쪽 남은 폭으로 줄을 다시 나눈다. "
+        .repeat(4)
+        .chars()
+        .take(179)
+        .chain(['끝'])
+        .collect()
+}
 
 fn edited(body: &str, horz: u32, vert: u32, picture_float: bool) -> DocumentCore {
     let jpg = std::fs::read(
@@ -289,6 +299,7 @@ fn committed_fixtures_match_the_in_memory_reopen() {
         .section_def
         .page_def
         .margin_left;
+    let left = left_overlap_body();
     for (path, body, horz, vert, picture_float) in [
         (
             "samples/issue8282/tac_picture_square_textbox.hwpx",
@@ -310,6 +321,13 @@ fn committed_fixtures_match_the_in_memory_reopen() {
             34016,
             9000,
             true,
+        ),
+        (
+            "samples/issue8282/tac_picture_square_textbox_left_overlap.hwpx",
+            left.as_str(),
+            8504,
+            13000,
+            false,
         ),
     ] {
         let fixture = DocumentCore::from_bytes(
@@ -454,5 +472,55 @@ fn square_picture_carves_only_the_lines_it_overlaps() {
     assert!(
         texts.len() == 4 && texts[0].ends_with("어울") && texts[1].ends_with("겹치는 세로"),
         "{path}: 한/글 Print 와 같은 줄 나눔 — {texts:?}"
+    );
+}
+
+/// [#8399] 변형 D — 한/글 2020 Print: 본문 왼쪽 어울림 글상자와 겹치는 host 줄 0–3 은 글상자 오른쪽
+/// 남은 폭에서 시작하고(「…여」「…줄」「…여러」「…줄을」), 글상자 아래 줄 4–5 는 본문 왼쪽부터 전폭이다
+/// (「…남은」「…끝」). 같은 관계를 편집 직후·HWP·HWPX 가 모두 낸다.
+#[test]
+fn square_textbox_at_body_left_shifts_overlapped_host_lines_right() {
+    let path = "samples/issue8282/tac_picture_square_textbox_left_overlap.hwpx";
+    let core = fixture(path);
+    let ink = textbox(&core);
+    // 용지 기준 오프셋(8504, 13000 HU) + 바깥여백.
+    assert!(
+        (ink.x - (8504.0 * HU_PX + BOX_MARGIN_PX)).abs() <= 0.5
+            && (ink.y - (13000.0 * HU_PX + BOX_MARGIN_PX)).abs() <= 0.5,
+        "{path}: 글상자 잉크({:.1},{:.1})는 오프셋+바깥여백에 놓인다",
+        ink.x,
+        ink.y
+    );
+    let outer_right = ink.x + BOX_WIDTH_PX + BOX_MARGIN_PX;
+    let outer_bottom = ink.y + BOX_HEIGHT_PX + BOX_MARGIN_PX;
+    let lines = placement(&core).lines;
+    let texts: Vec<_> = lines
+        .iter()
+        .map(|(_, t)| t.trim_end().to_string())
+        .collect();
+    let ends = ["여", "줄", "여러", "줄을", "남은", "끝", "다음 문단"];
+    assert!(
+        texts.len() == ends.len() && texts.iter().zip(ends).all(|(t, e)| t.ends_with(e)),
+        "{path}: 한/글 Print 와 같은 줄 나눔 — {texts:?}"
+    );
+    for (bbox, text) in &lines[..4] {
+        assert!(
+            bbox.y < outer_bottom && bbox.x >= outer_right - 0.5,
+            "{path}: 「{text}」 줄({:.1})은 글상자 바깥 오른쪽({outer_right:.1}) 뒤에서 시작한다",
+            bbox.x
+        );
+    }
+    for (bbox, text) in &lines[4..] {
+        assert!(
+            bbox.y >= outer_bottom - 0.5 && bbox.x < ink.x,
+            "{path}: 「{text}」 줄은 글상자 아래에서 본문 왼쪽부터 시작한다"
+        );
+    }
+    let edited = edited(&left_overlap_body(), 8504, 13000, false);
+    assert_same_placement("편집 직후", &placement(&core), &placement(&edited));
+    assert_same_placement(
+        "HWP 저장본",
+        &placement(&core),
+        &placement(&reopen_hwp(&edited)),
     );
 }

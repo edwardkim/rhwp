@@ -11,6 +11,8 @@
 // 2. tac_picture_square_textbox_overlap: 세 줄로 나뉘는 긴 host 문단, 어울림 글상자를 종이 기준
 //    가로 34016HU·세로 9000HU 에 두어 그림 줄(첫 줄)과 둘째 줄의 오른쪽을 덮는다.
 // 3. tac_picture_square_picture_overlap: 2 와 같고 부동 개체만 어울림 그림(같은 크기·위치) — 비교용.
+// 4. tac_picture_square_textbox_left_overlap (#8399 변형 D): 180자 host 문단, 어울림 글상자를 종이 기준
+//    가로 8504HU(본문 왼쪽)·세로 13000HU 에 두어 host 줄 0–3 의 왼쪽을 덮는다.
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -29,6 +31,8 @@ mkdirSync(outDir, { recursive: true });
 const SHORT = '앞 글 뒤 글';
 const LONG = '앞 글 뒤에 이어지는 이 문단은 어울림 글상자 옆으로 여러 줄에 걸쳐 흐르도록 길게 쓴 문장입니다. '
   + '글상자가 줄과 겹치는 세로 범위에서는 줄 폭이 줄어듭니다. 끝.';
+const UNIT = '어울림 글상자가 본문 왼쪽에서 여러 줄과 겹치면 한글은 글상자 오른쪽 남은 폭으로 줄을 다시 나눈다. ';
+const LEFT = [...UNIT.repeat(4)].slice(0, 179).join('') + '끝';
 
 function build(text, float, horzOffset, vertOffset) {
   const d = mod.HwpDocument.createEmpty();
@@ -64,3 +68,4 @@ const pd = JSON.parse(build(SHORT, 'textbox', 0, 0).getPageDef(0));
 save(build(SHORT, 'textbox', pd.marginLeft, 15000), 'tac_picture_square_textbox.hwpx');
 save(build(LONG, 'textbox', 34016, 9000), 'tac_picture_square_textbox_overlap.hwpx');
 save(build(LONG, 'picture', 34016, 9000), 'tac_picture_square_picture_overlap.hwpx');
+save(build(LEFT, 'textbox', 8504, 13000), 'tac_picture_square_textbox_left_overlap.hwpx');
