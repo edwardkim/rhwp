@@ -6,7 +6,7 @@
 - 기준 devel: `1cfa5726cdd8c500df612ec5708103b4a1c4d147`
 - 계획: [수행 계획](../plans/task_m100_8411.md), 계획 커밋 `0f78e95c62`
 - 구현·검증·사용자 안내 커밋: `c288c9e4db`
-- 판정: 승인된 로컬 구현·검증 완료. PR 생성·push·merge·이슈 close는 미실행.
+- 판정: 승인된 로컬 구현·검증 완료. [PR #8412](https://github.com/edwardkim/rhwp/pull/8412) 생성·code head CI 성공·self-review 완료. merge·이슈 close는 미실행.
 
 ## 변경과 사용자 안내
 
