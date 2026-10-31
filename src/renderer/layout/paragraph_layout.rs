@@ -6743,6 +6743,22 @@ impl LayoutEngine {
             let stored_geometry_source = para
                 .map(|p| !crate::renderer::para_has_no_stored_line_segs(p))
                 .unwrap_or(false);
+            // [#8399] 어울림 밴드 소유자가 낸 줄(합성 줄이라도) 중 문단 상자보다 깎인 줄은 개체 바깥
+            // 상자로 확정한 줄 기하다 — 그 줄의 cs/sw 가 줄 상자다. 버리면 글이 개체 밑에 깔린다.
+            // 출처는 줄 모양이 아니라 표지로 가린다 — 미주·목록 상자의 합성 줄도 본문 상자보다 좁다.
+            let synthetic_band_carved_row = cell_ctx.is_none()
+                && wrap_anchor.is_none()
+                && para.is_some_and(|p| p.layout_float_band)
+                && crate::renderer::composer::row_is_carved_from_box(
+                    comp_line.column_start,
+                    comp_line.segment_width,
+                    &crate::renderer::composer::ParagraphBox::body_for_style(
+                        col_area.width,
+                        para_style,
+                        self.dpi,
+                    )
+                    .effective(),
+                );
             let stored_textbox_line = cell_ctx.as_ref().is_some_and(|ctx| ctx.in_textbox)
                 && wrap_anchor.is_none()
                 && !inline_tac_segment_is_paragraph_width
@@ -6753,6 +6769,7 @@ impl LayoutEngine {
                 && stored_textbox_frame::owns_frame(para, composed, line_idx);
             let uses_stored_segment_geometry = physical_frame_rows
                 || stored_textbox_line
+                || synthetic_band_carved_row
                 || (stored_geometry_source
                     && (has_picture_shape_square_wrap
                         || (line_has_inline_tac_table && !inline_tac_segment_is_paragraph_width)

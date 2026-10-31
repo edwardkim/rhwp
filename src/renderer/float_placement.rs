@@ -1426,6 +1426,39 @@ pub(crate) fn topbottom_shape_top_margin_hu(common: &CommonObjAttr) -> i32 {
     }
 }
 
+/// [#8399] 본문 줄 옆에 흐르는(어울림·Tight·Through) 비-TAC 도형.
+///
+/// 한/글은 이 도형의 위치 오프셋을 **바깥 여백 상자의 원점**으로 읽는다. 잉크는 여백만큼
+/// 안쪽에서 시작하고(가로 #5808), 본문 줄은 바깥 상자 전체로 깎인다. 한/글 2024 실측
+/// (60×20mm 글상자, 바깥 여백 283):
+///
+/// ```text
+///   오프셋(용지)     잉크 왼쪽·위        깎인 줄
+///   8504 · 13000    8787 · 13283       cs=17574 (= 0 + 283+17008+283)
+///   36000 · 9922    36283 · 10205      sw=27496 (= 36000 − 본문 왼쪽 8504)
+/// ```
+///
+/// Tight·Through 글상자도 한/글은 Square 로 저장하고 같은 자리에 그린다. 그림은 오프셋이
+/// 잉크 원점이다(#3821) — 이 규칙은 도형에만 적용한다.
+pub(crate) fn shape_wraps_beside_text(common: &CommonObjAttr) -> bool {
+    !common.treat_as_char
+        && matches!(
+            common.text_wrap,
+            TextWrap::Square | TextWrap::Tight | TextWrap::Through
+        )
+}
+
+/// [#8399] 위쪽 정렬 어울림 도형의 잉크는 바깥 상자의 위 여백 안쪽에서 시작한다.
+pub(crate) fn beside_shape_top_margin_hu(common: &CommonObjAttr) -> i32 {
+    if shape_wraps_beside_text(common)
+        && matches!(common.vert_align, VertAlign::Top | VertAlign::Inside)
+    {
+        i32::from(common.margin.top)
+    } else {
+        0
+    }
+}
+
 /// 원본 HWPX noAdjust 셀의 완전한 저장 줄 프레임이 점유하는 끝점.
 /// 여백을 이미 계상하는 중첩/TAC의 relaxed-pad 경로에서 줄 사이 저장 공간을
 /// 재사용한다. noAdjust 자체는 본문 표의 안 여백을 지울 근거가 아니다.
@@ -7730,7 +7763,54 @@ pub(crate) fn resolve_picture_exclusion(
     paragraph_top: i32,
     paper: PaperOrigin,
 ) -> Option<FrameExclusion> {
-    let common = &picture.common;
+    resolve_float_exclusion(
+        &picture.common,
+        picture_flow_frame_size_hu(picture),
+        false,
+        column_horizontal,
+        paragraph_horizontal,
+        paragraph_top,
+        paper,
+    )
+}
+
+/// [#8399] 어울림 비-TAC 도형의 배제 밴드. 오프셋이 바깥 여백 상자의 원점이다
+/// ([`shape_wraps_beside_text`]) — 밴드는 그 상자 전체, 잉크는 여백만큼 안쪽이다.
+pub(crate) fn resolve_shape_exclusion(
+    common: &CommonObjAttr,
+    column_horizontal: Range<i32>,
+    paragraph_horizontal: Range<i32>,
+    paragraph_top: i32,
+    paper: PaperOrigin,
+) -> Option<FrameExclusion> {
+    if !shape_wraps_beside_text(common) {
+        return None;
+    }
+    resolve_float_exclusion(
+        common,
+        (
+            i32::try_from(common.width).ok()?,
+            i32::try_from(common.height).ok()?,
+        ),
+        true,
+        column_horizontal,
+        paragraph_horizontal,
+        paragraph_top,
+        paper,
+    )
+}
+
+/// `size` 는 개체 잉크 크기(HWPUNIT). `offset_is_outer_origin` 이면 위치 오프셋이 바깥 여백
+/// 상자를 가리키므로 잉크를 왼쪽·위 여백만큼 안쪽으로 옮긴 뒤 같은 공식으로 밴드를 잰다.
+fn resolve_float_exclusion(
+    common: &CommonObjAttr,
+    (width, height): (i32, i32),
+    offset_is_outer_origin: bool,
+    column_horizontal: Range<i32>,
+    paragraph_horizontal: Range<i32>,
+    paragraph_top: i32,
+    paper: PaperOrigin,
+) -> Option<FrameExclusion> {
     // [#6202] 용지 기준 개체도 잰다. 코퍼스 1,997건 표본에서 Square float 개체를
     // 막는 관문은 사실상 `horz_rel`/`vert_rel` 의 `Paper|Page` 뿐이었다(각 57건).
     //
@@ -7748,7 +7828,7 @@ pub(crate) fn resolve_picture_exclusion(
     if common.treat_as_char
         // [#6202] 캡션이 붙은 개체도 잰다 — 156483689 실측에서 밴드 높이는 캡션을 뺀
         // 그림 높이(9366 HU) 그대로이고, 저장 사다리의 깎임 끝(40540 HU)과 일치한다.
-        || common.text_wrap != TextWrap::Square
+        || (common.text_wrap != TextWrap::Square && !offset_is_outer_origin)
         || !matches!(
             common.horz_rel_to,
             HorzRelTo::Column | HorzRelTo::Para | HorzRelTo::Paper | HorzRelTo::Page
@@ -7767,7 +7847,6 @@ pub(crate) fn resolve_picture_exclusion(
         TextFlow::LeftOnly | TextFlow::RightOnly => return None,
     };
 
-    let (width, height) = picture_flow_frame_size_hu(picture);
     if column_horizontal.is_empty() || paragraph_horizontal.is_empty() || width <= 0 || height <= 0
     {
         return None;
@@ -7809,6 +7888,19 @@ pub(crate) fn resolve_picture_exclusion(
         paragraph_top.saturating_add(signed_hwpunit(common.vertical_offset))
     };
     let _ = paper_relative_horz;
+    let (visible_left, visible_top) = if offset_is_outer_origin {
+        (
+            // 도형 렌더(#5808)와 같이 왼쪽 정렬만 여백만큼 안쪽으로 옮긴다.
+            if matches!(common.horz_align, HorzAlign::Left | HorzAlign::Inside) {
+                visible_left.saturating_add(i32::from(common.margin.left))
+            } else {
+                visible_left
+            },
+            visible_top.saturating_add(beside_shape_top_margin_hu(common)),
+        )
+    } else {
+        (visible_left, visible_top)
+    };
     let horizontal = visible_left.saturating_sub(i32::from(common.margin.left))
         ..visible_left
             .saturating_add(width)

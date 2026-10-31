@@ -1063,7 +1063,8 @@ impl LayoutEngine {
                 alignment,
             );
             y += hwpunit_to_px(
-                crate::renderer::float_placement::topbottom_shape_top_margin_hu(common),
+                crate::renderer::float_placement::topbottom_shape_top_margin_hu(common)
+                    + crate::renderer::float_placement::beside_shape_top_margin_hu(common),
                 self.dpi,
             );
             // [#5808] 어울림(Square) **도형**의 왼쪽 바깥여백은 한글이 가로 위치에
@@ -1072,8 +1073,8 @@ impl LayoutEngine {
             // 핀돼 있다(#3821: 그림의 om_left 는 wrap 간격이지 위치 이동이 아님) —
             // 그림 경로가 함께 쓰는 compute_object_position 이 아니라 도형 호출부
             // 에서만 가산한다. 실측이 Left 정렬뿐이라 Center/Right 는 종전 유지.
-            if !common.treat_as_char
-                && matches!(common.text_wrap, crate::model::shape::TextWrap::Square)
+            // 위 여백(#8399)과 Tight·Through 도 같은 바깥 상자 규칙이다.
+            if crate::renderer::float_placement::shape_wraps_beside_text(common)
                 && matches!(
                     common.horz_align,
                     crate::model::shape::HorzAlign::Left | crate::model::shape::HorzAlign::Inside

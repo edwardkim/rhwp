@@ -3585,6 +3585,46 @@ pub(crate) fn control_is_line_width_neutral_float_object(control: &Control) -> b
         )
 }
 
+/// [#8399] 본문 줄에 배제 밴드를 거는 개체 — 비-TAC 그림(어울림이 아니면 밴드 계산이 사양한다)과
+/// 어울림·Tight·Through 비-TAC 도형. [`layout_picture_band`] 가 이 밴드의 유일한 소유자다.
+pub(crate) fn control_owns_body_band(control: &Control) -> bool {
+    match control {
+        Control::Picture(picture) => !picture.common.treat_as_char,
+        Control::Shape(shape) => {
+            crate::renderer::float_placement::shape_wraps_beside_text(shape.common())
+        }
+        _ => false,
+    }
+}
+
+/// [#8399] 줄 조각 `(column_start, segment_width)` 가 문단 상자보다 깎였는가(HWPUNIT).
+///
+/// 밴드 소유자가 낸 줄([`Paragraph::layout_float_band`])도 개체와 겹치지 않는 줄은 문단 상자
+/// 그대로다 — 그 줄은 평범한 줄 배치를 따르고, 깎인 줄만 저장 줄 상자로 그린다. 허용 오차는
+/// 격자 스냅(4HU)보다 넉넉하고 글자 한 칸보다 작다.
+pub(crate) fn row_is_carved_from_box(
+    column_start: i32,
+    segment_width: i32,
+    paragraph_box: &Range<i32>,
+) -> bool {
+    const BOX_TOLERANCE_HU: u32 = 200;
+    segment_width > 0
+        && (column_start.abs_diff(paragraph_box.start) > BOX_TOLERANCE_HU
+            || column_start
+                .saturating_add(segment_width)
+                .abs_diff(paragraph_box.end)
+                > BOX_TOLERANCE_HU)
+}
+
+/// 어울림(Square)·Tight·Through 비-TAC 도형. 이 배제 밴드는 [`layout_picture_band`] 가 편집과
+/// XML 로드에서 줄로 발행한다(#8399). 줄이 하나도 없는 host(밴드가 본문 줄과 겹치지 않아 발행할 것이
+/// 없던 경우)는 렌더 프레임이 전폭으로 채운다 — 이 도형 때문에 사양하면 같은 문단의 글자처럼 개체가
+/// 줄 높이를 잃어 편집 직후·HWP 저장본과 HWPX 저장본의 배치가 갈린다(#8282).
+pub(crate) fn control_is_float_shape_beside_text(control: &Control) -> bool {
+    matches!(control, Control::Shape(shape)
+        if crate::renderer::float_placement::shape_wraps_beside_text(shape.common()))
+}
+
 /// 대체 메트릭으로 폭이 바뀐 수식의 첫 소유 줄만 저장 캐시 경계로 삼는다.
 /// 앞쪽의 정상 줄과 각주 앵커까지 함께 재조판하면 무관한 문단 배치가 바뀐다.
 pub(super) fn remeasured_equation_start_row(para: &Paragraph) -> Option<usize> {
@@ -3754,6 +3794,7 @@ fn supports_inline_picture_frame_controls(para: &Paragraph) -> bool {
         && para.controls.iter().all(|control| match control {
             Control::Picture(picture) if picture.common.treat_as_char => picture.caption.is_none(),
             float if control_is_line_width_neutral_float_object(float) => true,
+            shape if control_is_float_shape_beside_text(shape) => true,
             Control::Picture(_) => false,
             other => control_is_width_neutral_marker(other),
         })
@@ -5347,18 +5388,20 @@ pub(crate) fn layout_picture_band(
     let host_paragraph_horizontal =
         picture_band_paragraph_reference(&column_horizontal, host_margin_left)?;
 
-    let mut host_pictures = host
+    // 그림은 한 장만 받는다. [#8399] 어울림 도형은 개수와 관계없이 각자 밴드를 더한다.
+    let band_objects: Vec<(usize, &Control)> = host
         .controls
         .iter()
         .enumerate()
-        .filter_map(|(index, control)| match control {
-            Control::Picture(picture) if !picture.common.treat_as_char => {
-                Some((index, picture.as_ref()))
-            }
-            _ => None,
-        });
-    let (picture_control_index, picture) = host_pictures.next()?;
-    if host_pictures.next().is_some() {
+        .filter(|(_, control)| control_owns_body_band(control))
+        .collect();
+    if band_objects.is_empty()
+        || band_objects
+            .iter()
+            .filter(|(_, control)| matches!(control, Control::Picture(_)))
+            .count()
+            > 1
+    {
         return None;
     }
 
@@ -5366,38 +5409,55 @@ pub(crate) fn layout_picture_band(
     // position, not necessarily at the first visible character. Lay out a
     // clean, full-width host first so the anchor row has no stored-LineSeg
     // dependency.
-    let picture_raw_start = host
-        .control_utf16_positions()
-        .get(picture_control_index)
-        .copied()?;
     let mut anchor_input = host.clone();
     anchor_input.line_segs.clear();
     let mut anchor_frame = host_box.frame(0);
     let anchor_rows = layout_paragraph_in_frame(&anchor_input, &mut anchor_frame, styles, dpi)?;
-    let anchor_top = anchor_rows
+    let raw_positions = host.control_utf16_positions();
+    let paper = crate::renderer::float_placement::PaperOrigin {
+        body_left: px_to_hwpunit(paper_origin_px.0, dpi),
+        body_top: px_to_hwpunit(paper_origin_px.1, dpi),
+        // 밴드는 host 문단에서 시작한다 — 그 문단의 저장 절대 위치가 로컬 원점이다.
+        band_abs_top: host
+            .line_segs
+            .iter()
+            .find(|seg| seg.tag & 0x8000_0000 == 0)
+            .map(|seg| seg.vertical_pos)
+            .unwrap_or(0),
+    };
+    let mut exclusions = Vec::with_capacity(band_objects.len());
+    for (control_index, control) in band_objects {
+        let raw_start = raw_positions.get(control_index).copied()?;
+        let anchor_top = anchor_rows
+            .iter()
+            .rfind(|row| row.text_start <= raw_start)
+            .map(|row| row.vertical_pos)?;
+        let exclusion = match control {
+            Control::Picture(picture) => {
+                crate::renderer::float_placement::resolve_picture_exclusion(
+                    picture,
+                    column_horizontal.clone(),
+                    host_paragraph_horizontal.clone(),
+                    anchor_top,
+                    paper,
+                )
+            }
+            Control::Shape(shape) => crate::renderer::float_placement::resolve_shape_exclusion(
+                shape.common(),
+                column_horizontal.clone(),
+                host_paragraph_horizontal.clone(),
+                anchor_top,
+                paper,
+            ),
+            _ => None,
+        }?;
+        exclusions.push(exclusion);
+    }
+    let exclusion_end = exclusions
         .iter()
-        .rfind(|row| row.text_start <= picture_raw_start)
-        .map(|row| row.vertical_pos)?;
-
-    let exclusion = crate::renderer::float_placement::resolve_picture_exclusion(
-        picture,
-        column_horizontal.clone(),
-        host_paragraph_horizontal,
-        anchor_top,
-        crate::renderer::float_placement::PaperOrigin {
-            body_left: px_to_hwpunit(paper_origin_px.0, dpi),
-            body_top: px_to_hwpunit(paper_origin_px.1, dpi),
-            // 밴드는 host 문단에서 시작한다 — 그 문단의 저장 절대 위치가 로컬 원점이다.
-            band_abs_top: host
-                .line_segs
-                .iter()
-                .find(|seg| seg.tag & 0x8000_0000 == 0)
-                .map(|seg| seg.vertical_pos)
-                .unwrap_or(0),
-        },
-    )?;
-    let exclusion_end = exclusion.vertical.end;
-    let mut frame = host_box.frame_with(0, vec![exclusion]);
+        .map(|exclusion| exclusion.vertical.end)
+        .max()?;
+    let mut frame = host_box.frame_with(0, exclusions);
     let mut line_segs = Vec::new();
     let mut space_metrics = Vec::new();
 
@@ -5407,17 +5467,17 @@ pub(crate) fn layout_picture_band(
         }
 
         let paragraph_style = styles.para_styles.get(paragraph.para_shape_id as usize);
-        if paragraph.column_type != ColumnBreakType::None
+        // [#8399] host 앞의 나눔(구역 첫 문단의 구역 나눔 등)은 밴드가 시작하기 전의 경계다.
+        // 밴드 안에서 새 단·쪽을 여는 것은 뒤 문단의 나눔뿐이다.
+        let successor = paragraph_index != host_index;
+        if (successor && paragraph.column_type != ColumnBreakType::None)
             || paragraph_style.is_some_and(|style| {
                 style.spacing_before.abs() > f64::EPSILON
                     || style.spacing_after.abs() > f64::EPSILON
-                    || style.page_break_before
+                    || (successor && style.page_break_before)
             })
             || box_for(paragraph)?.effective() != host_horizontal
-            || (paragraph_index != host_index
-                && paragraph.controls.iter().any(|control| {
-                    matches!(control, Control::Picture(picture) if !picture.common.treat_as_char)
-                }))
+            || (successor && paragraph.controls.iter().any(control_owns_body_band))
         {
             return None;
         }
@@ -5434,7 +5494,25 @@ pub(crate) fn layout_picture_band(
         line_segs.push(paragraph_lines);
     }
 
-    (!line_segs.is_empty() && frame.top >= exclusion_end).then_some(PictureBandLayout {
+    // 구역의 마지막 문단에서 끝난 밴드는 더 깎을 줄이 없다 — 남은 배제 높이는 흐름에 영향이
+    // 없다(#8399: 한/글도 마지막 문단만 깎고 끝낸다). 다만 글이 있는 줄을 하나도 깎지 않았으면 밴드가
+    // 흐름을 바꾸지 않는다 — 그 문단들의 줄은 평범한 소유자(빈 그림 문단은 #1151)가 낸다.
+    let band_closed = frame.top >= exclusion_end
+        || (host_index + line_segs.len() == paragraphs.len()
+            && paragraphs[host_index..]
+                .iter()
+                .zip(&line_segs)
+                .any(|(paragraph, rows)| {
+                    paragraph.text.chars().any(|ch| !ch.is_whitespace())
+                        && rows.iter().any(|row| {
+                            row_is_carved_from_box(
+                                row.column_start,
+                                row.segment_width,
+                                &host_horizontal,
+                            )
+                        })
+                }));
+    (!line_segs.is_empty() && band_closed).then_some(PictureBandLayout {
         paragraph_range: host_index..host_index + line_segs.len(),
         line_segs,
         space_metrics,

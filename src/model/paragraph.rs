@@ -72,6 +72,11 @@ pub struct Paragraph {
     /// 재조판 입력을 무효화하거나 줄을 교체하면 지우며, 직렬화하지 않는다.
     #[serde(skip_serializing)]
     pub layout_object_projection: bool,
+    /// [#8399] 어울림 밴드 소유자(`layout_picture_band`)가 개체 바깥 상자로 확정한 줄 기하.
+    /// 합성 줄(구현 태그)이라도 이 줄의 cs/sw 가 줄 상자다 — 밴드 없는 프레임이 다시 채우지 않는다.
+    /// 줄을 교체하거나 재조판 입력을 무효화하면 지우며, 직렬화하지 않는다.
+    #[serde(skip_serializing)]
+    pub layout_float_band: bool,
     /// 본문 동적 필드의 확정 표시값. 모델 문자 위치는 유지하며 측정과 paint가 함께 읽는다.
     /// 직렬화하지 않고, 재페이지네이션이 실제 쪽 소속에서 다시 결정한다.
     #[serde(skip_serializing)]
@@ -952,6 +957,7 @@ impl Paragraph {
         self.stored_text_partition_dirty = true;
         self.hwp3_saved_space_corrections.clear();
         self.layout_object_projection = false;
+        self.layout_float_band = false;
         self.layout_field_values.clear();
     }
 
@@ -965,6 +971,7 @@ impl Paragraph {
         self.line_segs = line_segs;
         self.hwp3_saved_space_corrections.clear();
         self.layout_object_projection = false;
+        self.layout_float_band = false;
         self.layout_space_metrics.clear();
         // A fresh vector has no renderer-appended suffix and cannot reuse a
         // source-position snapshot owned by the replaced rows.
@@ -984,6 +991,16 @@ impl Paragraph {
     ) {
         self.replace_line_segs(line_segs);
         self.layout_space_metrics = metrics;
+    }
+
+    /// [#8399] 어울림 밴드 소유자의 생산 경계에서만 밴드 줄과 그 출처를 함께 발행한다.
+    pub(crate) fn publish_float_band_rows(
+        &mut self,
+        line_segs: Vec<LineSeg>,
+        metrics: Vec<(u32, SpaceMetric)>,
+    ) {
+        self.replace_line_segs_with_space_metrics(line_segs, metrics);
+        self.layout_float_band = true;
     }
 
     /// 개체 흐름 투영의 생산 경계에서만 확정 줄과 그 출처를 함께 발행한다.
@@ -1881,6 +1898,7 @@ impl Paragraph {
     /// 문단의 원래 값을 되돌려야 한다 (Task #2342).
     pub fn split_at(&mut self, char_offset: usize) -> Paragraph {
         self.layout_object_projection = false;
+        self.layout_float_band = false;
         let control_positions = self.split_logical_control_positions();
         let split_pos = self.split_text_pos_for_logical_offset(char_offset, &control_positions);
         let nb_spaces = self.materialized_nb_space_controls();
@@ -2247,6 +2265,7 @@ impl Paragraph {
             layout_space_metrics: Vec::new(),
             hwp3_saved_space_corrections: Vec::new(),
             layout_object_projection: false,
+            layout_float_band: false,
             layout_field_values: Vec::new(),
             // 분리된 문단의 줄은 새로 계산된 것이라 조판 전용 보강 줄이 없다 (#4677).
             layout_only_fill_lines: 0,
