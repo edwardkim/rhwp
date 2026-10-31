@@ -891,10 +891,42 @@ pub(super) fn reflow(
                             _ => None,
                         });
                     if let Some(paragraph) = last {
+                        let blank_row = paragraph.line_segs.len() == 1
+                            && !paragraph.text.is_empty()
+                            && paragraph.text.chars().all(char::is_whitespace);
                         let Some(last) = paragraph.line_segs.last_mut() else {
                             continue;
                         };
                         let content_end = i64::from(*bottom) - i64::from(last.line_spacing);
+                        let row_top = content_end - i64::from(last.line_height);
+                        // [#8381] 공백만 있는 줄은 잉크가 없어 글자 상자가 점유한 내용이 아니다.
+                        // 그 줄은 다음 관측 줄까지의 띠만 차지한다. 저장 줄 높이를 그 띠로 줄이고,
+                        // 한/글이 마지막 줄을 다시 짜는 고정 피치도 같은 띠로 둔다(무표기본 13쪽
+                        // 지문 상자 맨 위 « » 줄: 글자 11.04pt, 다음 줄까지 6.6pt — 두 엔진이 본문을
+                        // 4.4pt 아래에 그렸다).
+                        if blank_row
+                            && i64::from(next_top) < content_end
+                            && i64::from(next_top) > row_top
+                        {
+                            let band = (i64::from(next_top) - row_top) as i32;
+                            let before = last.line_height + last.line_spacing;
+                            last.line_height = band;
+                            last.text_height = last.text_height.min(band);
+                            last.line_spacing = 0;
+                            if let Some(shape) = doc
+                                .doc_info
+                                .para_shapes
+                                .get_mut(paragraph.para_shape_id as usize)
+                            {
+                                if shape.line_spacing_type == LineSpacingType::Fixed {
+                                    // Paragraph measures are stored as twice HWPUNIT.
+                                    shape.line_spacing = 2 * band;
+                                }
+                            }
+                            *bottom = next_top;
+                            allocation.push(&mut tail_bands, request_json!(allocation, {"sourceSection":page.section,"instanceId":page.frames[index].inst_id,"contentEndHu":content_end,"sourceBandEndHu":next_top,"inferredTailHu":before,"acceptedTailHu":band})?)?;
+                            continue;
+                        }
                         // A paragraph's inferred interline tail is not
                         // observed occupied content. Grant only the available
                         // source band, without cutting any accepted line box.
