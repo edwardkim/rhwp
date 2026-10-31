@@ -259,3 +259,22 @@ fmt·lint·manifest·unit tier·문서 링크까지 통과했다. 기존 기대�
 Canvas2D에 fallback되어 실제 backend를 그대로 기록했다. 비공개 원본·로컬 글꼴 바이트는
 게시하지 않는다. 승인된 Open PR → 동일 head CI → self-review 문서 trailing → CI 확인 →
 머지 순서로 원격 처리를 진행한다. 상세 결과는 [완료 보고서](../report/task_m100_8403_report.md)를 따른다.
+
+
+### PR #8410 Render Diff 디스크 부족과 수동 재실행 — 2026-10-31
+
+제출 head `2e37e8f15025832c94dbc157061dd2ad1ddb261d`의
+[Render Diff](https://github.com/edwardkim/rhwp/actions/runs/41194300572)는 최초 실행과
+승인받은 1회 재실행 모두 checkout 중 `No space left on device`로 종료됐다.
+캐시 복원·제품 빌드·렌더 검사는 시작되지 않았다. 서로 다른 runner에서 발생했으며
+유실된 로그 때문에 공간을 소비한 디렉터리와 초기 여유 용량은 확정하지 못했다.
+제출 head의 workflow 변경은 없었고 추적 파일 순증가는 2,909,837 bytes였다.
+
+checkout 전 미사용 도구 정리안을 로컬에서 준비해 관련 계약 80건을 통과시켰지만,
+원격에 적용하지 않았다. 사용자가 직접 시작한 동일 head의
+[3차 실행](https://github.com/edwardkim/rhwp/actions/runs/41194300572/attempts/3)은
+checkout·캐시 복원·WASM/Native 빌드·Canvas 비교·CanvasKit 검사를 모두 통과했다.
+디스크 보정의 효과로 성공한 것이 아니며, 최초 두 실패의 근본 원인은 미확정이다.
+불필요해진 CI 보정안은 이번 PR에서 제외했다. CI·CodeQL·Adapter·Proptest와
+CI Impact Policy까지 성공했고 대기 중인 검사는 없었다. 이 code head 위에 self-review와
+오늘할일만 추가하고 trailing head의 실제 CI를 확인한다.
