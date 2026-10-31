@@ -794,6 +794,13 @@ impl PathExtractor {
                     .try_reserve(1)
                     .map_err(|_| budget.reject("text clip observation allocation"))?;
             }
+            if matches!(state.text_render_mode, 0 | 2 | 4 | 6)
+                && matches!(state.fill_color_space, crate::path_color::PathColorSpace::Pattern(_))
+            {
+                return Err(crate::error::Error::UnsupportedTextPaint(
+                    "unsupported text pattern fill".into(),
+                ));
+            }
             if matches!(state.text_render_mode, 1 | 2 | 5 | 6) {
                 let m = state.ctm;
                 let scale2 = m.a * m.a + m.b * m.b;

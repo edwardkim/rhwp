@@ -1,0 +1,62 @@
+[
+  {
+    "name": "dashed-text",
+    "exit": 1,
+    "stdout": "",
+    "stderr": "오류: 유효하지 않은 파일: PDF 오류: PDF_TEXT_UNSUPPORTED: PDF text paint is unsupported or invalid\n"
+  },
+  {
+    "name": "anisotropic-text",
+    "exit": 1,
+    "stdout": "",
+    "stderr": "오류: 유효하지 않은 파일: PDF 오류: PDF_TEXT_UNSUPPORTED: PDF text paint is unsupported or invalid\n"
+  },
+  {
+    "name": "clipped-text-stroke",
+    "exit": 1,
+    "stdout": "",
+    "stderr": "오류: 유효하지 않은 파일: PDF 오류: PDF_TEXT_UNSUPPORTED: PDF text paint is unsupported or invalid\n"
+  },
+  {
+    "name": "zero-step",
+    "exit": 1,
+    "stdout": "",
+    "stderr": "오류: 유효하지 않은 파일: PDF 오류: PDF_PATTERN_UNSUPPORTED: PDF pattern paint is unsupported or invalid\n"
+  },
+  {
+    "name": "huge-tiles",
+    "exit": 1,
+    "stdout": "",
+    "stderr": "오류: 유효하지 않은 파일: PDF 오류: PDF_RESOURCE_LIMIT: pattern tile count limit\n"
+  },
+  {
+    "name": "unsupported-paint",
+    "exit": 1,
+    "stdout": "",
+    "stderr": "오류: 유효하지 않은 파일: PDF 오류: PDF_PATTERN_UNSUPPORTED: PDF pattern paint is unsupported or invalid\n"
+  },
+  {
+    "name": "cyclic-pattern",
+    "exit": 1,
+    "stdout": "",
+    "stderr": "오류: 유효하지 않은 파일: PDF 오류: PDF_PATTERN_UNSUPPORTED: PDF pattern paint is unsupported or invalid\n"
+  },
+  {
+    "name": "uncoloured-pattern",
+    "exit": 1,
+    "stdout": "",
+    "stderr": "오류: 유효하지 않은 파일: PDF 오류: PDF_PATTERN_UNSUPPORTED: PDF pattern paint is unsupported or invalid\n"
+  },
+  {
+    "name": "shading-pattern",
+    "exit": 1,
+    "stdout": "",
+    "stderr": "오류: 유효하지 않은 파일: PDF 오류: PDF_PATTERN_UNSUPPORTED: PDF pattern paint is unsupported or invalid\n"
+  },
+  {
+    "name": "singular-pattern",
+    "exit": 1,
+    "stdout": "",
+    "stderr": "오류: 유효하지 않은 파일: PDF 오류: PDF_PATTERN_UNSUPPORTED: PDF pattern paint is unsupported or invalid\n"
+  }
+]

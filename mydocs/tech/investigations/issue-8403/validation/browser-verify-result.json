@@ -1,0 +1,664 @@
+[
+  {
+    "name": "original",
+    "pages": [
+      {
+        "page": 1,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "4901b1acbe6442adf394ddaa5ae0b4a70a117de724f296056d263d3e5f78c446"
+      },
+      {
+        "page": 2,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "eb10e882e860d5e627f833e98cb21fbcd8485a559716651dc4a7538e353c51b1"
+      },
+      {
+        "page": 3,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "9af381f52ee11acb6a6e11d7e3ccbdca998b696e605b79101c172f00270aa83e"
+      },
+      {
+        "page": 4,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "3f3d5f92d08187989ef5f7e0d1481b79afdd5a8bbb1ecb3083ac255bfe0597db"
+      },
+      {
+        "page": 5,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "e9108080f7b0d4cc42b19bdc2b94b7beae75f5aaeb829f7903a1974c6f7a9f9c"
+      },
+      {
+        "page": 6,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "37a9b6f112ff9a5c6ad7c3d57bfde49db34511fbe171f9b2f8ef7780999712ab"
+      },
+      {
+        "page": 7,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "06370da80b3c4ad584609010b3ad0b661e09509bc0e1390331ea1ac309f1f35b"
+      },
+      {
+        "page": 8,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "10cdc9929bd4bf3ee7e0769c834bfa05334e04fd6c48c482ad635763ad59c57a"
+      }
+    ]
+  },
+  {
+    "name": "original-hwp",
+    "pages": [
+      {
+        "page": 1,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "4901b1acbe6442adf394ddaa5ae0b4a70a117de724f296056d263d3e5f78c446"
+      },
+      {
+        "page": 2,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "eb10e882e860d5e627f833e98cb21fbcd8485a559716651dc4a7538e353c51b1"
+      },
+      {
+        "page": 3,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "7738632f59ce9eca1f9eab81d285e7c16a50770a432994e2c2a0ebbd9b124a7e"
+      },
+      {
+        "page": 4,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "3f3d5f92d08187989ef5f7e0d1481b79afdd5a8bbb1ecb3083ac255bfe0597db"
+      },
+      {
+        "page": 5,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "e9108080f7b0d4cc42b19bdc2b94b7beae75f5aaeb829f7903a1974c6f7a9f9c"
+      },
+      {
+        "page": 6,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "debbd39e422e251aafd2c9104209a1be557fb321bc83610eef2096ed93c75263"
+      },
+      {
+        "page": 7,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "de7d532a32fff47fc40867a955e67cbc5a7ba9f304b99194e0c947e8e565cd1b"
+      },
+      {
+        "page": 8,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "5add0ecdd13e5b532b156068d06bb3009cdeb9309871a7aca6932bf843bbc9ba"
+      }
+    ]
+  },
+  {
+    "name": "original-hwpx",
+    "pages": [
+      {
+        "page": 1,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "4901b1acbe6442adf394ddaa5ae0b4a70a117de724f296056d263d3e5f78c446"
+      },
+      {
+        "page": 2,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "eb10e882e860d5e627f833e98cb21fbcd8485a559716651dc4a7538e353c51b1"
+      },
+      {
+        "page": 3,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "9af381f52ee11acb6a6e11d7e3ccbdca998b696e605b79101c172f00270aa83e"
+      },
+      {
+        "page": 4,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "3f3d5f92d08187989ef5f7e0d1481b79afdd5a8bbb1ecb3083ac255bfe0597db"
+      },
+      {
+        "page": 5,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "e9108080f7b0d4cc42b19bdc2b94b7beae75f5aaeb829f7903a1974c6f7a9f9c"
+      },
+      {
+        "page": 6,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "37a9b6f112ff9a5c6ad7c3d57bfde49db34511fbe171f9b2f8ef7780999712ab"
+      },
+      {
+        "page": 7,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "06370da80b3c4ad584609010b3ad0b661e09509bc0e1390331ea1ac309f1f35b"
+      },
+      {
+        "page": 8,
+        "width": 1280,
+        "height": 720,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "10cdc9929bd4bf3ee7e0769c834bfa05334e04fd6c48c482ad635763ad59c57a"
+      }
+    ]
+  },
+  {
+    "name": "controls",
+    "pages": [
+      {
+        "page": 1,
+        "width": 267,
+        "height": 187,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "783ac4fe0fa704efb0c0af0094d2644a84867c0e7cab4a634c287787bae5ef66"
+      },
+      {
+        "page": 2,
+        "width": 267,
+        "height": 187,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "58301861c917a1812022a98ecc5945ff2190a65b7afc6d42a0a19d54806642c4"
+      },
+      {
+        "page": 3,
+        "width": 267,
+        "height": 187,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "822f5798b66da7e28f230fc6b95cad12fab98778c80a1f10ca65385e0c316a2c"
+      },
+      {
+        "page": 4,
+        "width": 267,
+        "height": 187,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "3b5f4e41a03275f495bd3726bac9b12bfd3404886a84060bf35df8793cebb174"
+      },
+      {
+        "page": 5,
+        "width": 267,
+        "height": 187,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "4a2d09edbb73f6fe94919f5854ec7f0c18d2b370f6108ce8a24b518c15704e5e"
+      }
+    ]
+  },
+  {
+    "name": "controls-hwp",
+    "pages": [
+      {
+        "page": 1,
+        "width": 267,
+        "height": 187,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "841fd42bcbdc872ecbb441fdfc6f114a41c52b984b46c30db24b8223c582e0d0"
+      },
+      {
+        "page": 2,
+        "width": 267,
+        "height": 187,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "58301861c917a1812022a98ecc5945ff2190a65b7afc6d42a0a19d54806642c4"
+      },
+      {
+        "page": 3,
+        "width": 267,
+        "height": 187,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "348bfd6c8c10f54924c185a58415530358d73d48312695443fcb80571ab519bb"
+      },
+      {
+        "page": 4,
+        "width": 267,
+        "height": 187,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "3b5f4e41a03275f495bd3726bac9b12bfd3404886a84060bf35df8793cebb174"
+      },
+      {
+        "page": 5,
+        "width": 267,
+        "height": 187,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "d510df986519089fde50e8c25d00478ef82eaf0e8f1b58b6ed66dbb4f75893be"
+      }
+    ]
+  },
+  {
+    "name": "controls-hwpx",
+    "pages": [
+      {
+        "page": 1,
+        "width": 267,
+        "height": 187,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "783ac4fe0fa704efb0c0af0094d2644a84867c0e7cab4a634c287787bae5ef66"
+      },
+      {
+        "page": 2,
+        "width": 267,
+        "height": 187,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "58301861c917a1812022a98ecc5945ff2190a65b7afc6d42a0a19d54806642c4"
+      },
+      {
+        "page": 3,
+        "width": 267,
+        "height": 187,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "822f5798b66da7e28f230fc6b95cad12fab98778c80a1f10ca65385e0c316a2c"
+      },
+      {
+        "page": 4,
+        "width": 267,
+        "height": 187,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "3b5f4e41a03275f495bd3726bac9b12bfd3404886a84060bf35df8793cebb174"
+      },
+      {
+        "page": 5,
+        "width": 267,
+        "height": 187,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "4a2d09edbb73f6fe94919f5854ec7f0c18d2b370f6108ce8a24b518c15704e5e"
+      }
+    ]
+  },
+  {
+    "name": "stroke",
+    "pages": [
+      {
+        "page": 1,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "5093543a126c11adca9c24acf477f55cf58e2708396857a4196f73fe0f427432"
+      },
+      {
+        "page": 2,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "0f3d689a38402a02cd30e3307b3aa355b46d5f3c412736c152065587907ec3fe"
+      },
+      {
+        "page": 3,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "897a1837121a0c172161a8f03c9eb585eddc06d52922c9acd22135fb9d0af6c3"
+      },
+      {
+        "page": 4,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "ac5e2a0e56c84586cd757ae27afe0fbd64a55d9e0537ad824cd57a4b858c8efe"
+      },
+      {
+        "page": 5,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "90f12795f0646bb7ccd7c2b59349bd5fd283d50efe155d407fdf895873ed1acd"
+      },
+      {
+        "page": 6,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "cdf0e77dba337a3c42be8d83277d25ebf4f75086e94812a083cd9f968a9a6973"
+      },
+      {
+        "page": 7,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "bf5453131de06816f56850095fc641652a375f2d244d9081d5b61bcb1965aa2a"
+      }
+    ]
+  },
+  {
+    "name": "stroke-hwp",
+    "pages": [
+      {
+        "page": 1,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "5093543a126c11adca9c24acf477f55cf58e2708396857a4196f73fe0f427432"
+      },
+      {
+        "page": 2,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "0f3d689a38402a02cd30e3307b3aa355b46d5f3c412736c152065587907ec3fe"
+      },
+      {
+        "page": 3,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "897a1837121a0c172161a8f03c9eb585eddc06d52922c9acd22135fb9d0af6c3"
+      },
+      {
+        "page": 4,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "ac5e2a0e56c84586cd757ae27afe0fbd64a55d9e0537ad824cd57a4b858c8efe"
+      },
+      {
+        "page": 5,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "90f12795f0646bb7ccd7c2b59349bd5fd283d50efe155d407fdf895873ed1acd"
+      },
+      {
+        "page": 6,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "cdf0e77dba337a3c42be8d83277d25ebf4f75086e94812a083cd9f968a9a6973"
+      },
+      {
+        "page": 7,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "bf5453131de06816f56850095fc641652a375f2d244d9081d5b61bcb1965aa2a"
+      }
+    ]
+  },
+  {
+    "name": "stroke-hwpx",
+    "pages": [
+      {
+        "page": 1,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "5093543a126c11adca9c24acf477f55cf58e2708396857a4196f73fe0f427432"
+      },
+      {
+        "page": 2,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "0f3d689a38402a02cd30e3307b3aa355b46d5f3c412736c152065587907ec3fe"
+      },
+      {
+        "page": 3,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "897a1837121a0c172161a8f03c9eb585eddc06d52922c9acd22135fb9d0af6c3"
+      },
+      {
+        "page": 4,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "ac5e2a0e56c84586cd757ae27afe0fbd64a55d9e0537ad824cd57a4b858c8efe"
+      },
+      {
+        "page": 5,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "90f12795f0646bb7ccd7c2b59349bd5fd283d50efe155d407fdf895873ed1acd"
+      },
+      {
+        "page": 6,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "cdf0e77dba337a3c42be8d83277d25ebf4f75086e94812a083cd9f968a9a6973"
+      },
+      {
+        "page": 7,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "bf5453131de06816f56850095fc641652a375f2d244d9081d5b61bcb1965aa2a"
+      }
+    ]
+  },
+  {
+    "name": "stroke-edited",
+    "pages": [
+      {
+        "page": 1,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "83ad4c9022da809f0247ae68caa384a8c3cf3a65e2b1f040c77c052b7fd946aa"
+      },
+      {
+        "page": 2,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "aadc14c9c38b0531d837f6e764119ee1be5ab99cde1cac2271e75f9d6340224a"
+      },
+      {
+        "page": 3,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "974affa96069507a00b8639f1f0309d88f4c3d65a2f4442fdfffaf4264ad7240"
+      },
+      {
+        "page": 4,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "5fb1eb69d2e05d5a99651468fe9e4fe1958fd5dba86cc641be90b98d6ff934d6"
+      },
+      {
+        "page": 5,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "1287a6f4928163b62c6e57739ea5892d9882f210c3cf4ff9053c1a6bb62fa590"
+      },
+      {
+        "page": 6,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "9cd071a1546c050004c9bc95cfd120f186a944c4b03daa0083e0ba9a23a368a1"
+      },
+      {
+        "page": 7,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "ce6851d6028fc721a06c718647401fe7f862ec557779fcda8d603f4e9e49ee3b"
+      }
+    ]
+  },
+  {
+    "name": "stroke-edited-hwp",
+    "pages": [
+      {
+        "page": 1,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "83ad4c9022da809f0247ae68caa384a8c3cf3a65e2b1f040c77c052b7fd946aa"
+      },
+      {
+        "page": 2,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "aadc14c9c38b0531d837f6e764119ee1be5ab99cde1cac2271e75f9d6340224a"
+      },
+      {
+        "page": 3,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "974affa96069507a00b8639f1f0309d88f4c3d65a2f4442fdfffaf4264ad7240"
+      },
+      {
+        "page": 4,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "5fb1eb69d2e05d5a99651468fe9e4fe1958fd5dba86cc641be90b98d6ff934d6"
+      },
+      {
+        "page": 5,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "1287a6f4928163b62c6e57739ea5892d9882f210c3cf4ff9053c1a6bb62fa590"
+      },
+      {
+        "page": 6,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "9cd071a1546c050004c9bc95cfd120f186a944c4b03daa0083e0ba9a23a368a1"
+      },
+      {
+        "page": 7,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "ce6851d6028fc721a06c718647401fe7f862ec557779fcda8d603f4e9e49ee3b"
+      }
+    ]
+  },
+  {
+    "name": "stroke-edited-hwpx",
+    "pages": [
+      {
+        "page": 1,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "83ad4c9022da809f0247ae68caa384a8c3cf3a65e2b1f040c77c052b7fd946aa"
+      },
+      {
+        "page": 2,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "aadc14c9c38b0531d837f6e764119ee1be5ab99cde1cac2271e75f9d6340224a"
+      },
+      {
+        "page": 3,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "974affa96069507a00b8639f1f0309d88f4c3d65a2f4442fdfffaf4264ad7240"
+      },
+      {
+        "page": 4,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "5fb1eb69d2e05d5a99651468fe9e4fe1958fd5dba86cc641be90b98d6ff934d6"
+      },
+      {
+        "page": 5,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "1287a6f4928163b62c6e57739ea5892d9882f210c3cf4ff9053c1a6bb62fa590"
+      },
+      {
+        "page": 6,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "9cd071a1546c050004c9bc95cfd120f186a944c4b03daa0083e0ba9a23a368a1"
+      },
+      {
+        "page": 7,
+        "width": 560,
+        "height": 320,
+        "textHash": "645e13cf9b57d854c950a571c2fb9e25a0aea0d8cf2c4b020a8faa4dad6e16c5",
+        "pngHash": "ce6851d6028fc721a06c718647401fe7f862ec557779fcda8d603f4e9e49ee3b"
+      }
+    ]
+  },
+  {
+    "name": "zero-step",
+    "rejected": true,
+    "recovered": true
+  },
+  {
+    "name": "huge-tiles",
+    "rejected": true,
+    "recovered": true
+  },
+  {
+    "name": "unsupported-paint",
+    "rejected": true,
+    "recovered": true
+  },
+  {
+    "name": "cyclic-pattern",
+    "rejected": true,
+    "recovered": true
+  },
+  {
+    "name": "dashed-text",
+    "rejected": true,
+    "recovered": true
+  },
+  {
+    "name": "anisotropic-text",
+    "rejected": true,
+    "recovered": true
+  },
+  {
+    "name": "clipped-text-stroke",
+    "rejected": true,
+    "recovered": true
+  }
+]
