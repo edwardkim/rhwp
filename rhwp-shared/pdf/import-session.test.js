@@ -380,3 +380,34 @@ test('diagnostic decoding cannot fulfill a request after its deadline', async ()
     assert.equal(f.workers[0].terminated, true);
   } finally { JSON.parse = original; f.session.dispose(); }
 });
+
+test('opening password is snapshotted, sent to worker and omitted from retained reopen options', async () => {
+  const f = fixture();
+  const options = { password: 'synthetic opening password' };
+  const imported = f.session.importPdf(bytes, options);
+  options.password = 'changed by caller';
+  await ready();
+  assert.equal(f.workers[0].messages.at(-1).options.password, 'synthetic opening password');
+  f.workers[0].reply({ pageCount: 1 }); await imported;
+  assert.equal(f.session._active.options.password, undefined);
+  assert.equal(JSON.stringify(f.session.getEditorReopenLimits()).includes('synthetic opening password'), false);
+  f.session.dispose();
+});
+
+test('password errors allow retry and invalid credential metadata fails before worker creation', async () => {
+  for (const password of [null, 17, 'x'.repeat(1025), '가'.repeat(342)]) {
+    const f = fixture();
+    await assert.rejects(f.session.importPdf(bytes, { password }), rejected('PDF_IMPORT_OPTIONS'));
+    assert.equal(f.workers.length, 0); f.session.dispose();
+  }
+  const f = fixture();
+  const first = f.session.importPdf(bytes); await ready();
+  f.workers[0].reply(null, { code: 'PDF_PASSWORD_REQUIRED', message: 'opening password required' });
+  await assert.rejects(first, rejected('PDF_PASSWORD_REQUIRED'));
+  const second = f.session.importPdf(bytes, { password: 'wrong' }); await ready();
+  f.workers[0].reply(null, { code: 'PDF_PASSWORD_INVALID', message: 'incorrect opening password' });
+  await assert.rejects(second, rejected('PDF_PASSWORD_INVALID'));
+  const third = f.session.importPdf(bytes, { password: 'correct' }); await ready();
+  f.workers[0].reply({ pageCount: 1 }); await third;
+  assert.equal(f.session._active.options.password, undefined); f.session.dispose();
+});

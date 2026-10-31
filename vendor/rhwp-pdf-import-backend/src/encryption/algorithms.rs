@@ -240,11 +240,18 @@ fn authenticate_user_password_r5_r6(
         let iv = [0u8; 16];
         super::aes::aes256_decrypt_no_padding(&intermediate_key[..32], &iv, &ue[..32]).ok()
     } else {
-        // R5: Simple SHA-256(password || key_salt)
+        // R5 uses the SHA-256 result as an intermediate key, just as R6
+        // uses Algorithm 2.B. Unwrap UE to recover the actual file key
+        // (PDF 1.7 Extension Level 3, Algorithm 3.2a).
+        let ue = user_encryption?;
+        if ue.len() < 32 {
+            return None;
+        }
         let mut hasher = Sha256::new();
         hasher.update(&password);
         hasher.update(key_salt);
-        Some(hasher.finalize().to_vec())
+        let intermediate_key = hasher.finalize();
+        super::aes::aes256_decrypt_no_padding(&intermediate_key, &[0; 16], &ue[..32]).ok()
     }
 }
 
@@ -697,16 +704,10 @@ fn generate_random_bytes(len: usize) -> crate::Result<Vec<u8>> {
 /// PDF 2.0 Spec: For R>=5, passwords are UTF-8 encoded and
 /// limited to 127 bytes.
 fn truncate_password_utf8(password: &[u8]) -> Vec<u8> {
-    let mut result = password.to_vec();
-    if result.len() > 127 {
-        // Find UTF-8 boundary for truncation
-        let mut end = 127;
-        while end > 0 && (result[end] & 0xC0) == 0x80 {
-            end -= 1;
-        }
-        result.truncate(end);
-    }
-    result
+    // ISO 32000-2 7.6.4.3.3 / Algorithm 2.A: the first 127 bytes of
+    // the UTF-8 representation enter the hash, even across a codepoint.
+    // Keeping only whole characters would change the authentication key.
+    password[..password.len().min(127)].to_vec()
 }
 
 /// Authenticate the owner password (Algorithm 7 for R≤4, Algorithm 12 for R≥5).
@@ -846,12 +847,17 @@ fn authenticate_owner_password_r5_r6(
         let iv = [0u8; 16];
         super::aes::aes256_decrypt_no_padding(&intermediate_key[..32], &iv, &oe[..32]).ok()
     } else {
-        // R5: SHA-256(password || owner_key_salt || U[0..48])
+        // R5 also unwraps OE; the password hash is not the file key.
+        let oe = owner_encryption?;
+        if oe.len() < 32 {
+            return None;
+        }
         let mut hasher = Sha256::new();
         hasher.update(&password);
         hasher.update(owner_key_salt);
         hasher.update(u_value);
-        Some(hasher.finalize().to_vec())
+        let intermediate_key = hasher.finalize();
+        super::aes::aes256_decrypt_no_padding(&intermediate_key, &[0; 16], &oe[..32]).ok()
     }
 }
 
@@ -1160,18 +1166,27 @@ mod tests {
         user_key.extend_from_slice(&key_salt);
         assert_eq!(user_key.len(), 48);
 
+        // Independent Python cryptography AES-CBC (zero IV, no padding),
+        // PDF 1.7 Extension Level 3 Algorithm 3.2a: UE/OE wraps the file key.
+        let wrapped_file_key = [
+            0x9d, 0xc6, 0xfb, 0x06, 0x46, 0x94, 0x48, 0x0c, 0xb3, 0xca, 0xc8, 0x0d, 0xc1, 0xf0,
+            0x03, 0x6d, 0x99, 0x58, 0x68, 0x22, 0x32, 0x6e, 0x16, 0x0c, 0xef, 0xbd, 0xa5, 0x82,
+            0xc4, 0x65, 0x3d, 0xa8,
+        ];
         let result = authenticate_user_password(
-            password, &user_key, &[0u8; 48], // owner_key unused for R>=5
-            -1, b"", 5, 32, true, None,
+            password,
+            &user_key,
+            &[0u8; 48], // owner_key unused for R>=5
+            -1,
+            b"",
+            5,
+            32,
+            true,
+            Some(&wrapped_file_key),
         );
         assert!(result.is_some());
 
-        // Verify the returned key is SHA-256("test" || key_salt)
-        let mut hasher = Sha256::new();
-        hasher.update(password);
-        hasher.update(key_salt);
-        let expected_key = hasher.finalize().to_vec();
-        assert_eq!(result.unwrap(), expected_key);
+        assert_eq!(result.unwrap(), vec![0x5a; 32]);
     }
 
     #[test]
@@ -1346,19 +1361,28 @@ mod tests {
         owner_key.extend_from_slice(&owner_validation_salt);
         owner_key.extend_from_slice(&owner_key_salt);
 
+        // Independent Python cryptography AES-CBC (zero IV, no padding),
+        // PDF 1.7 Extension Level 3 Algorithm 3.2a: UE/OE wraps the file key.
+        let wrapped_file_key = [
+            0x67, 0x4b, 0x6e, 0xd4, 0x08, 0x4b, 0xee, 0xd9, 0x6d, 0x08, 0xce, 0x5d, 0xfc, 0xeb,
+            0x7a, 0x6c, 0xdb, 0x7c, 0x25, 0xe0, 0xd8, 0x8f, 0x01, 0xaa, 0x6c, 0xce, 0xdc, 0x13,
+            0x26, 0x71, 0xc5, 0x29,
+        ];
         let result = authenticate_owner_password(
-            password, &user_key, &owner_key, -1, b"", 5, 32, true, None,
+            password,
+            &user_key,
+            &owner_key,
+            -1,
+            b"",
+            5,
+            32,
+            true,
+            Some(&wrapped_file_key),
         )
         .unwrap();
         assert!(result.is_some());
 
-        // Verify the returned key is SHA-256(password || owner_key_salt || U[0..48])
-        let mut hasher = Sha256::new();
-        hasher.update(password.as_slice());
-        hasher.update(owner_key_salt);
-        hasher.update(&user_key[..48]);
-        let expected_key = hasher.finalize().to_vec();
-        assert_eq!(result.unwrap(), expected_key);
+        assert_eq!(result.unwrap(), vec![0x5a; 32]);
     }
 
     #[test]

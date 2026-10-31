@@ -64,9 +64,10 @@ impl LoadError {
 /// ParseError::EncryptedDocument → "...비밀번호가 필요한 암호 문서..." 가
 /// HwpError::InvalidFile 로 래핑돼 전해지므로 부분문자열로 판별한다.
 pub(crate) fn classify_hwp_error(msg: &str) -> LoadError {
-    if msg.contains("비밀번호가 일치하지 않") {
+    if msg.contains("비밀번호가 일치하지 않") || msg.contains("PDF_PASSWORD_INVALID") {
         LoadError::WrongPassword
-    } else if msg.contains("비밀번호가 필요한 암호 문서") {
+    } else if msg.contains("비밀번호가 필요한 암호 문서") || msg.contains("PDF_PASSWORD_REQUIRED")
+    {
         LoadError::NeedPassword
     } else {
         LoadError::Other(msg.to_string())

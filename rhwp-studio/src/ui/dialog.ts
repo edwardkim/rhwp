@@ -121,7 +121,8 @@ export abstract class ModalDialog {
       // 선택·펼치기와 포커스 가능한 읽기 영역의 기본 키 동작을 유지한다.
       const isNativeChoice = target instanceof HTMLSelectElement || !!target?.closest('summary')
         || (target instanceof HTMLPreElement && target.tabIndex >= 0);
-      if (e.key === 'Enter' && !isEditable && !isNativeChoice) {
+      if (e.key === 'Enter' && !e.isComposing && !isNativeChoice
+        && (!isEditable || this.shouldConfirmOnEnter(target!))) {
         e.stopPropagation();
         e.preventDefault();
         const btn = this.dialog.querySelector('.dialog-btn-primary') as HTMLButtonElement | null;
@@ -164,6 +165,9 @@ export abstract class ModalDialog {
   protected abstract createBody(): HTMLElement;
 
   protected onTabKey(_e: KeyboardEvent): boolean { return false; }
+
+  /** 특정 한 줄 입력만 확인 동작에 연결한다. 일반 입력과 textarea는 기존 동작을 유지한다. */
+  protected shouldConfirmOnEnter(_target: HTMLElement): boolean { return false; }
 
   protected isTopmostDialog(): boolean {
     const overlays = document.querySelectorAll('.modal-overlay');

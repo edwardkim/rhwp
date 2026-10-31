@@ -2,7 +2,7 @@
 kind: reference
 status: active
 canonical: mydocs/manual/security_feature_limits.md
-last_verified: 2026-10-28
+last_verified: 2026-11-01
 ---
 
 # 보안 제한과 기능 사용 범위
@@ -15,6 +15,8 @@ last_verified: 2026-10-28
 0.9.0의 [crates.io 준비 #8174](../plans/crates_io_preparation_20261023.md)에서도 참조한다.
 로컬 게시 후보 버전은 0.9.0이다. 실제 registry 게시·제품 릴리즈와 전체 통합 검증은 별도이며,
 아래 목록만으로 이를 완료한 것으로 해석하지 않는다.
+#8415의 PDF 열기 암호 지원은 현재 작업 브랜치의 로컬 구현·검증 상태다.
+기존 배포본의 지원 여부와 공통 계획의 원본 127쪽 검증 완료를 의미하지 않는다.
 공식 소비 계약과 환경별 지원표는 [crates.io 가이드](crates_io_guide.md)를 따른다.
 
 ## 현재 기본값
@@ -177,7 +179,7 @@ CLI·공통 자원 정책은 [v2-S01](../working/task_m100_8174_v2_stage1.md), �
 
 | 항목 | 현재 분류 |
 | --- | --- |
-| 암호화 PDF 가져오기 | 제한된 constructor에서 명시적으로 거부하는 지원 경계다. `PDF_ENCRYPTION_UNSUPPORTED`이며 PDF 암호 입력·복호화 여정을 제공하지 않는다. HWP/HWPX 암호 지원 여부와 별개다. |
+| 암호화 PDF 가져오기 | #8415에서 Standard Security R2–R6의 빈 암호·사용자·소유자 인증을 요청 예산 안에 연결했다. CLI 입력 암호와 Studio 재입력·취소를 지원하며 인증 후 복사·편집 플래그로 추가 차단하지 않는다. 공개키 방식과 혼합/Identity crypt filter 조합 등 미지원은 `PDF_ENCRYPTION_UNSUPPORTED`, 암호 누락/오입력은 `PDF_PASSWORD_REQUIRED`/`PDF_PASSWORD_INVALID`다. [입력 방법](studio_document_features.md#pdf-열기-암호). |
 | Fasoo·SoftCamp 등 DRM 컨테이너 | 보호 컨테이너 감지는 하지만 복호화는 미지원이다. `DRM_PROTECTED` 안내에 따라 권한 있는 원본 프로그램에서 처리한다. 일반 배포용 HWP나 비밀번호 HWP 전체가 미지원이라는 뜻은 아니다. |
 | PDF의 일부 mask·복잡한 clip·paint, 원 저작 문단 복원 | 표현·복원 지원의 경계다. 관련 미지원을 모두 보안 취약점 또는 보안 때문에 꺼진 기능으로 부르지 않는다. 일부 Mask·SMask·stencil은 이미 지원하므로 전부 미지원이라고 안내하지 않는다. |
 | 확대 후에도 남은 JPX 조합 | PDF Indexed+내장 mask·CMYK+alpha는 S02에서 지원을 확대했다. JP2의 모든 cdef 유형, 임의 bit depth·subsampling을 보장하지 않는다. 원 Lab 성분 범위를 잃은 Indexed Lab+preblended alpha는 명시적으로 거부하며 straight alpha와 구분한다. 기존 chroma 복원은 8-bit의 명확한 2×2(4:2:0) 조합으로 제한한다. 실제 지원 조합과 모든 JPEG 2000 표현 지원을 구분한다. |

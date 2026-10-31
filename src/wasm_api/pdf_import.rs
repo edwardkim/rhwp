@@ -6,7 +6,7 @@ pub(super) fn options(
     value: JsValue,
 ) -> Result<(PdfImportOptions, PdfImportPolicy, PdfImportProfile), JsValue> {
     let invalid = || {
-        JsValue::from_str("PDF_IMPORT_OPTIONS: expected { sourcePages?, includeTableInference?, layout?, resourceProfile?, resourceLimits? }")
+        JsValue::from_str("PDF_IMPORT_OPTIONS: expected { sourcePages?, includeTableInference?, layout?, password?, resourceProfile?, resourceLimits? }")
     };
     if value.is_undefined() {
         return Ok((
@@ -25,6 +25,7 @@ pub(super) fn options(
             key.as_string().as_deref(),
             Some(
                 "sourcePages"
+                    | "password"
                     | "includeTableInference"
                     | "layout"
                     | "resourceProfile"
@@ -74,11 +75,25 @@ pub(super) fn options(
             .and_then(PdfImportLayout::parse)
             .ok_or_else(invalid)?
     };
+    let password = js_sys::Reflect::get(&value, &"password".into()).map_err(|_| invalid())?;
+    let password = if password.is_undefined() {
+        None
+    } else {
+        if !password.is_string() || password.unchecked_ref::<js_sys::JsString>().length() > 1024 {
+            return Err(invalid());
+        }
+        let password = password.as_string().ok_or_else(invalid)?;
+        if password.len() > 1024 {
+            return Err(invalid());
+        }
+        Some(password)
+    };
     let pages =
         js_sys::Reflect::get(&value, &JsValue::from_str("sourcePages")).map_err(|_| invalid())?;
     if pages.is_undefined() {
         return Ok((
             PdfImportOptions {
+                password,
                 include_table_inference,
                 layout,
                 ..PdfImportOptions::default()
@@ -115,6 +130,7 @@ pub(super) fn options(
     }
     Ok((
         PdfImportOptions {
+            password,
             source_pages: Some(result),
             include_table_inference,
             layout,

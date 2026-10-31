@@ -80,7 +80,7 @@ await runTest('PDF 선택·변환·재시도의 커서 수명 (#8398)', async ({
   assert.equal(await page.evaluate(() => window.__pdfWorkers), 0);
   await page.select(`${dialog} select`, 'constrained');
   await page.click(`${dialog} summary`);
-  await page.$eval(`${dialog} input`, el => {el.value = '60';});
+  await page.$eval('#pdf-import-timeout', el => {el.value = '60';});
   assert.deepEqual(await snapshot(page), original, '선택 대기에서 문서·복구본·최근·핸들 보존');
   await page.keyboard.press('Escape');
   assert.equal((await waitDone(page)).ok, false);

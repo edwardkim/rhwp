@@ -10,6 +10,27 @@ rhwp 내부 보안 패치 dependency이며, 원 저작권·라이선스·NOTICE�
 
 ## 원본과 추적
 
+### #8415 요청 예산 내 PDF 암호 인증
+
+`document/import_encryption.rs`에서 bounded constructor의 Standard Security R2–R6
+사전·키 길이·crypt filter 조합을 검사한다. 인증 KDF는 유한한 최악 작업량·예약을 먼저
+계상하고, 문자열·stream 복호화는 단일 할당 및 누적 요청 한도를 유지한다. 메모리/reader
+객체 로더가 `decrypt_loaded_object`를 공유하며, 복호화된 `StreamData`에도 원래 예산을
+보존한다. XRef·Encrypt 사전과 EncryptMetadata=false를 구분하고 ObjStm 내부 문자열을
+다시 복호화하지 않는다. 인증 실패를 부분 추출 성공으로 바꾸지 않는다.
+V5 키 필드의 추가 바이트는 QPDF와 같이 수용하되 필수 접두부만 handler에 복사한다.
+V5 이전에 의미 없는 OE/UE/Perms 필드는 handler 생성 전에 제거해 불필요한 복사를 막는다.
+원본의 파싱·사전 복사는 여전히 요청 예산을 사용하며 짧은 키 필드를 늘려 복구하지 않는다.
+
+R5 인증의 기존 중간 키 반환 오류를 UE/OE 복호화로 보정했고, R5/R6의 127바이트 암호
+절단은 UTF-8 문자 경계가 아니라 규정된 바이트 경계로 적용한다. 독립 pikepdf/QPDF 입력과
+Python cryptography AES-CBC 값을 대조한다. 입력 제어군은 `pdf/issue8415/authentication`,
+실행 결과는 본체의 `mydocs/working/task_m100_8413_implementation.md`에 기록한다.
+본체 `pdf-import`는 R2–R4 읽기에 필요한 `legacy-crypto`를 포함한다. 혼합/Identity crypt
+filter와 공개키 보안 handler는 지원한다고 선언하지 않는다. 인증 뒤 복사·편집 플래그를
+추가 차단으로 사용하지 않는 것은 본체 메인터너 정책이다. 프로세스 전체 heap/시간 상한과
+parser 모든 할당 경계의 보장은 이 변경으로 주장하지 않는다.
+
 ### #8403 문자 획 관측
 
 `extract_paths_with_clips`의 실제 text-show 장부에 `Tr=1/2`의 획 두께·색·채움 여부·

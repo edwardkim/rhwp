@@ -356,7 +356,7 @@ subsecond = { version = "=0.7.10", optional = true }
 
 [features]
 default = ["console_error_panic_hook", "pdf-import", "pdf-jbig2", "pdf-jpeg2000", "pdf-icc", "wasm-api"]
-pdf-import = ["dep:pdf_oxide", "dep:office_oxide", "dep:tiny-skia"]
+pdf-import = ["dep:pdf_oxide", "pdf_oxide/legacy-crypto", "dep:office_oxide", "dep:tiny-skia"]
 pdf-icc = ["pdf-import", "pdf_oxide/icc-qcms"]
 pdf-jbig2 = ["pdf-import", "pdf_oxide/jbig2"]
 pdf-jpeg2000 = ["pdf-import", "pdf_oxide/jpeg2000"]

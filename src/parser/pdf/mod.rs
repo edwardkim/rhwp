@@ -39,8 +39,10 @@ pub const MAX_INPUT_BYTES: usize = pdf_oxide::import_limits::DEFAULT_INPUT_BYTES
 pub const MAX_PAGES: usize = 1024;
 const MAX_POOL_ENTRIES: usize = u16::MAX as usize;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct PdfImportOptions {
+    /// Opening password. Never included in diagnostics or Debug output.
+    pub password: Option<String>,
     /// Zero-based, strictly increasing source pages. None imports every page.
     pub source_pages: Option<Vec<usize>>,
     /// Include page-scoped observations and competing table hypotheses in metadata.
@@ -48,6 +50,39 @@ pub struct PdfImportOptions {
     pub include_table_inference: bool,
     /// Where recognized body paragraphs are placed.
     pub layout: PdfImportLayout,
+}
+
+impl PdfImportOptions {
+    pub(crate) fn with_password(value: Option<&[u8]>) -> Result<Self, PdfImportError> {
+        let password = value
+            .map(|bytes| {
+                if bytes.len() > 1024 {
+                    return Err(PdfImportError::new(
+                        "PDF_IMPORT_OPTIONS",
+                        "PDF password is too long",
+                    ));
+                }
+                std::str::from_utf8(bytes).map(str::to_owned).map_err(|_| {
+                    PdfImportError::new("PDF_IMPORT_OPTIONS", "PDF password must be UTF-8")
+                })
+            })
+            .transpose()?;
+        Ok(Self {
+            password,
+            ..Default::default()
+        })
+    }
+}
+
+impl std::fmt::Debug for PdfImportOptions {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PdfImportOptions")
+            .field("password", &self.password.as_ref().map(|_| "[redacted]"))
+            .field("source_pages", &self.source_pages)
+            .field("include_table_inference", &self.include_table_inference)
+            .field("layout", &self.layout)
+            .finish()
+    }
 }
 
 /// Placement of recognized body paragraphs.
@@ -129,7 +164,7 @@ impl PdfImportError {
             pdf_oxide::error::Error::ImportResourceLimit(reason) => Self::budget(reason),
             pdf_oxide::error::Error::EncryptedPdf => Self::new(
                 "PDF_ENCRYPTION_UNSUPPORTED",
-                "encrypted PDF import is not supported",
+                "PDF encryption method or crypt filter combination is not supported",
             ),
             _ => Self::new(
                 "PDF_PARSE_FAILED",
@@ -146,7 +181,7 @@ impl PdfImportError {
         }));
         result
     }
-    fn new(code: &'static str, message: &'static str) -> Self {
+    pub(super) fn new(code: &'static str, message: &'static str) -> Self {
         Self {
             code,
             message,
@@ -362,10 +397,24 @@ pub(crate) fn parse_pdf_with_request(
     let pdf = PdfDocument::from_bytes_with_budget(input, Arc::clone(&request))
         .map_err(|error| PdfImportError::backend(error).at("container", None, Some(&request)))?;
     if pdf.is_encrypted() {
-        return Err(PdfImportError::new(
-            "PDF_ENCRYPTION_UNSUPPORTED",
-            "encrypted PDF import is not supported",
-        ));
+        let password = options.password.as_deref().unwrap_or("");
+        if password.len() > 1024 {
+            return Err(PdfImportError::new(
+                "PDF_IMPORT_OPTIONS",
+                "PDF password is too long",
+            ));
+        }
+        if !pdf.authenticate(password.as_bytes()).map_err(|error| {
+            PdfImportError::backend(error).at("authentication", None, Some(&request))
+        })? {
+            return Err(if options.password.is_some() {
+                PdfImportError::new("PDF_PASSWORD_INVALID", "PDF opening password is incorrect")
+            } else {
+                PdfImportError::new("PDF_PASSWORD_REQUIRED", "PDF opening password is required")
+            });
+        }
+        // Maintainer policy (#8415): successful user/owner authentication allows
+        // editable import; advisory copy/modify flags do not add another gate.
     }
     let count = pdf.page_count();
     pdf.check_import_budget()

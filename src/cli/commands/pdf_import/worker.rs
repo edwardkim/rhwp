@@ -9,6 +9,8 @@ pub(super) struct Request {
     pub nonce: String,
     pub input: String,
     pub hwpx: bool,
+    #[serde(default)]
+    pub password: Option<String>,
     pub source_pages: Option<Vec<usize>>,
     pub table_inference: bool,
     pub layout: String,
@@ -99,16 +101,18 @@ fn execute() -> Result<(), (i32, String)> {
         .open(
             &bytes,
             &PdfImportOptions {
+                password: request.password,
                 source_pages: request.source_pages,
                 include_table_inference: request.table_inference,
                 layout,
             },
         )
         .map_err(|error| {
-            let selection = matches!(&error, rhwp::error::HwpError::InvalidFile(message)
-            if message.starts_with("PDF 오류: PDF_PAGE_SELECTION:"));
+            let usage = matches!(&error, rhwp::error::HwpError::InvalidFile(message)
+            if message.starts_with("PDF 오류: PDF_PAGE_SELECTION:")
+                || message.starts_with("PDF 오류: PDF_PASSWORD_REQUIRED:"));
             (
-                if selection {
+                if usage {
                     crate::EXIT_USAGE
                 } else {
                     crate::EXIT_RUNTIME

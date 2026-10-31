@@ -1,0 +1,57 @@
+[
+  {
+    "file": "password-control.pdf",
+    "sha256": "5f9356ae1ef7f84ad39fa233b9223e5af5380230789b34fdb0b8472041d7c12a",
+    "bytes": 956
+  },
+  {
+    "file": "password-empty.pdf",
+    "sha256": "66bceb3afcf0cc778731350f198a0f983fde66dc4906e50215aca3d78b8864e1",
+    "bytes": 1657
+  },
+  {
+    "file": "password-unicode.pdf",
+    "sha256": "f18aee9499b8cd56fac4f32cf7bc3797eb85da55fca2b61ebac89d301ac2a1b9",
+    "bytes": 1657
+  },
+  {
+    "file": "password-metadata-clear.pdf",
+    "sha256": "0050e01e9e71af9148f9dda979092bdd06f6687bc6a3ca60a44ebb586ccc1906",
+    "bytes": 1693
+  },
+  {
+    "file": "password-r2.pdf",
+    "sha256": "a57f251a77b3c54ae2886f1aa25d32e28d3835caba345be35b63d4b0efc3d64a",
+    "bytes": 1198
+  },
+  {
+    "file": "password-r3.pdf",
+    "sha256": "0aef0e8b0fefb332ea785a1490caf6ba30ecab3660080238a7287db86a5ebfa9",
+    "bytes": 1201
+  },
+  {
+    "file": "password-r4.pdf",
+    "sha256": "35a2aa8376596d7ce8044ba06cda523c5ed96045f9a37a09f44adb62a1d6cba0",
+    "bytes": 1355
+  },
+  {
+    "file": "password-r5.pdf",
+    "sha256": "45b3967cf9e3620b29543805b09769e938dedeb1e12f17f220de3493ceb9837e",
+    "bytes": 1670
+  },
+  {
+    "file": "password-r6.pdf",
+    "sha256": "67a22514d8b84f4dbfc9882db99564d5ec44af6f092d8281eebc92233bb87765",
+    "bytes": 1670
+  },
+  {
+    "file": "password-long-unicode.pdf",
+    "sha256": "cc91e73de0967706d2d1097cca1fd299a3bbefaf297991faf13899ef2e46ad68",
+    "bytes": 1657
+  },
+  {
+    "file": "password-padded-fields.pdf",
+    "sha256": "4416f1c789e0797aca90f9a007efa13ac4b99cb52d7e612ca7b3af761854e2a8",
+    "bytes": 3200
+  }
+]

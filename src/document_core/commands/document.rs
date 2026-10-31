@@ -207,8 +207,10 @@ impl DocumentCore {
     fn from_bytes_inner(data: &[u8], password: Option<&[u8]>) -> Result<DocumentCore, HwpError> {
         let source_format = crate::parser::detect_format(data);
         #[cfg(feature = "pdf-import")]
-        if source_format == crate::parser::FileFormat::Pdf && password.is_none() {
-            return Self::from_pdf_bytes(data, &crate::parser::pdf::PdfImportOptions::default());
+        if source_format == crate::parser::FileFormat::Pdf {
+            let options = crate::parser::pdf::PdfImportOptions::with_password(password)
+                .map_err(|e| HwpError::InvalidFile(format!("PDF 오류: {e}")))?;
+            return Self::from_pdf_bytes(data, &options);
         }
         let parsed = crate::parser::parse_document_for_core(data, password)
             .map_err(|e| HwpError::InvalidFile(e.to_string()))?;

@@ -71,6 +71,8 @@ export class PdfImportSession {
       if (error?.code === 'PDF_WORKER_PROTOCOL') this._candidate?.close(error);
       throw error;
     } finally {
+      // Do not retain an opening credential in editor reopen options or sessions.
+      delete snapshot.password;
       if (this._candidate?.closed) this._candidate = null;
       this._importing = false;
     }
@@ -148,11 +150,15 @@ function snapshotOptions(options) {
     }
     return result;
   };
-  const result = record(options, 'PDF_IMPORT_OPTIONS', 5);
+  const result = record(options, 'PDF_IMPORT_OPTIONS', 6);
   for (const key of Object.keys(result)) {
-    if (!['sourcePages', 'includeTableInference', 'layout', 'resourceProfile', 'resourceLimits'].includes(key)) {
+    if (!['sourcePages', 'includeTableInference', 'layout', 'resourceProfile', 'resourceLimits', 'password'].includes(key)) {
       throw failure('PDF_IMPORT_OPTIONS', 'unknown option field');
     }
+  }
+  if (result.password !== undefined && (typeof result.password !== 'string'
+      || result.password.length > 1024 || new TextEncoder().encode(result.password).length > 1024)) {
+    throw failure('PDF_IMPORT_OPTIONS', 'password must be a string of at most 1024 UTF-8 bytes');
   }
   if (result.resourceProfile !== undefined && !['standard', 'constrained'].includes(result.resourceProfile)) {
     throw failure('PDF_RESOURCE_POLICY', 'unknown resource profile');

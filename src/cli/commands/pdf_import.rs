@@ -116,8 +116,8 @@ fn parse_args(args: &[String]) -> Result<ImportArgs<'_>, &'static str> {
     if crate::paths_refer_to_same_file(Path::new(input), Path::new(output)) {
         return Err("입력과 출력이 같은 파일입니다. 원본을 덮어쓰지 않습니다.");
     }
-    if crate::cli_password().is_some() || crate::cli_output_password().is_some() {
-        return Err("import-pdf는 암호 옵션을 지원하지 않습니다. 암호화 PDF는 가져올 수 없으며, 출력 암호는 변환 후 convert/export-hwpx에서 지정하세요.");
+    if crate::cli_output_password().is_some() {
+        return Err("import-pdf의 출력 암호는 변환 후 convert/export-hwpx에서 지정하세요.");
     }
     Ok(ImportArgs {
         input,
@@ -202,6 +202,7 @@ fn execute(options: ImportArgs<'_>) -> Result<(), (i32, String)> {
         input: options.input.to_owned(),
         hwpx,
         source_pages,
+        password: crate::cli_password(),
         table_inference: options.table_inference,
         layout: options.layout.unwrap_or("fidelity").to_owned(),
         policy,

@@ -1,4 +1,10 @@
-//! #7911 F2: 실제 프로세스의 선택·저장·JSON·실패 원자성 계약 (시각 golden 아님).
+//! 관계형·고정형 합성 Parser/IR·CLI 계약: 내용 보존·오류·선택 쪽수. 시각 좌표 golden이 아니다.
+//! 주석 갱신: 2026-11-01T00:29:10+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 4662c069e557e928ed7968d061121fde90b1f027 / 2026-10-16T15:17:54+09:00.
+//! #8415 인증 제어군: 독립 평문 PDF 1쪽, 2026-11-01 96dpi 보정 전 2px 실루엣.
+//! Native/fresh WASM 각 100.00%, 전쪽 최저 각 100.00%; 본문·이미지 직접 판독 완료.
+//! 근거: mydocs/working/assets/issue8415/password-authentication/ 및 task_m100_8413_implementation.md.
+//! 이 수치는 #8415 새 암호 제어군에 한정하며 기존 합성 계약을 실제 문서 시각 검증으로 승격하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use serde_json::{json, Value};
@@ -210,10 +216,54 @@ fn pdf_cli_rejects_invalid_arguments_without_touching_output() {
             "secret",
         ]),
         2,
-        "암호 옵션",
+        "출력 암호",
     );
     assert_eq!(std::fs::read(&output).unwrap(), b"keep original output");
     assert_eq!(std::fs::read_dir(&dir.0).unwrap().count(), 1);
+}
+
+#[cfg(feature = "pdf-import")]
+#[test]
+fn pdf_cli_password_stdin_retries_without_replacing_output_on_authentication_failure() {
+    use std::io::Write;
+    use std::process::Stdio;
+    let dir = Scratch::new();
+    let input =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("pdf/issue8415/authentication/password-r6.pdf");
+    let output = dir.path("authenticated.hwpx");
+    std::fs::write(&output, b"keep destination").unwrap();
+    failure(
+        run(&["import-pdf", path(&input), path(&output), "--json"]),
+        2,
+        "PDF_PASSWORD_REQUIRED",
+    );
+    assert_eq!(std::fs::read(&output).unwrap(), b"keep destination");
+    let with_password = |password: &str| {
+        let binary = std::env::var("CARGO_BIN_EXE_rhwp")
+            .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").into());
+        let mut child = Command::new(binary)
+            .args([
+                "import-pdf",
+                path(&input),
+                path(&output),
+                "--json",
+                "--password-stdin",
+            ])
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .unwrap();
+        writeln!(child.stdin.take().unwrap(), "{password}").unwrap();
+        child.wait_with_output().unwrap()
+    };
+    failure(with_password("wrong"), 1, "PDF_PASSWORD_INVALID");
+    assert_eq!(std::fs::read(&output).unwrap(), b"keep destination");
+    let envelope = success(with_password("synthetic-open"));
+    assert!(!envelope.to_string().contains("synthetic-open"));
+    let saved = std::fs::read(&output).unwrap();
+    assert_eq!(envelope["bytes"], saved.len());
+    assert!(rhwp::document_core::DocumentCore::from_bytes(&saved).is_ok());
 }
 
 #[cfg(not(feature = "pdf-import"))]

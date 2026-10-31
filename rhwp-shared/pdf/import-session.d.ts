@@ -4,6 +4,7 @@ export interface PdfRequestOptions {
   onProgress?: (phase: 'initializing' | 'importing' | 'ready') => void;
 }
 export interface PdfImportOptions {
+  password?: string;
   layout?: 'fidelity' | 'editable';
   resourceProfile?: 'standard' | 'constrained';
   resourceLimits?: Record<string, unknown>;

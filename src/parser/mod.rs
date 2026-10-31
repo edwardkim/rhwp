@@ -1514,7 +1514,10 @@ fn parse_document_inner_unsealed(
             })
         }
         #[cfg(feature = "pdf-import")]
-        FileFormat::Pdf => parse_pdf_unsealed(data, &pdf::PdfImportOptions::default()),
+        FileFormat::Pdf => parse_pdf_unsealed(
+            data,
+            &pdf::PdfImportOptions::with_password(password).map_err(ParseError::PdfError)?,
+        ),
         #[cfg(not(feature = "pdf-import"))]
         FileFormat::Pdf => Err(ParseError::UnsupportedFormat {
             code: "PDF_IMPORT_DISABLED",

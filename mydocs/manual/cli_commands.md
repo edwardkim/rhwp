@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/cli_commands.md
-last_verified: 2026-10-24
+last_verified: 2026-11-01
 ---
 
 # rhwp CLI 명령어 매뉴얼
@@ -114,7 +114,8 @@ devel에서 함께 구현하는 기능이며, parser 전체 할당 경계는 아
 기본 요청 정책은 입력 64 MiB, 가져올 쪽 최대 1,024개다. 원본 쪽 인덱스는 선택 쪽수와
 분리하며, page tree의 유한한 참조 방문 예산 안에서 검증한다. 128쪽 이후를 선택할 수도 있다.
 선택하지 않으면 전체 쪽을 가져오므로 1,024쪽을 초과하는 원본에는 선택 범위를 지정한다.
-실제 operator·decoded·그림·자원 ID 등 다른 요청 한도도 적용하며 암호화 PDF는 지원하지 않는다.
+실제 operator·decoded·그림·자원 ID 등 다른 요청 한도도 적용한다. Standard Security R2–R6
+암호화 PDF는 열기 암호로 인증한 뒤 가져온다. 빈 열기 암호로 인증되는 문서는 입력 없이 열린다.
 JBIG2·JPEG 2000·ICC CMM과 손상 파일 복구의 제한은
 [보안 제한과 기능 사용 범위](security_feature_limits.md)에 정리했다.
 
@@ -124,6 +125,9 @@ cargo build --locked --profile release-test --bin rhwp \
 
 # 전체 쪽
 rhwp import-pdf input.pdf output.hwpx --json
+
+# 열기 암호가 있는 PDF: stdin 첫 줄로 암호 전달
+rhwp import-pdf protected.pdf output.hwpx --password-stdin < password.txt
 
 # 원본 1·7·8쪽을 순서대로 가져오기: 0-based, 범위 양 끝 포함
 rhwp import-pdf input.pdf selected.hwp --source-pages 0,6-7 --json
@@ -139,6 +143,11 @@ rhwp import-pdf input.pdf selected.hwpx --resource-profile constrained --json
 rhwp import-pdf input.pdf result.hwpx --resource-limits limits.json --json
 ```
 
+- 입력 암호는 기존 `--password` 또는 `--password-stdin`을 사용한다. 암호 미입력은
+  `PDF_PASSWORD_REQUIRED`, 오입력은 `PDF_PASSWORD_INVALID`다. 실패 시 기존 출력 파일을 유지한다.
+  인증된 사용자·소유자 암호 모두 허용하며 PDF의 복사·편집 권한 플래그로 추가 차단하지 않는다.
+  결과는 새 편집 문서이며 PDF 암호를 결과 파일의 저장 암호로 자동 설정하지 않는다.
+  공개키 방식과 혼합/Identity crypt filter 조합 등 미지원 방식은 `PDF_ENCRYPTION_UNSUPPORTED`다.
 - 입력·출력 위치 인자 두 개가 필수이며 출력 확장자는 `.hwpx` 또는 `.hwp`다.
   `--source-pages`·`--json`은 위치 인자 앞뒤에 둘 수 있다.
 - `--resource-profile standard|constrained`와 `--resource-limits <JSON 파일>`로 요청·실행 한도를
@@ -200,6 +209,8 @@ HWP5 FileHeader의 `encrypted` 플래그와 `EncryptVersion=4`가 설정된 문�
 | 암호화되지 않은 HWPX | 지원 | 기존 HWPX 파서 사용, 비밀번호 옵션 불필요 |
 | 암호화 HWPX(ODF `encryption-data`, AES-256-CBC/PBKDF2) | 읽기 지원 | `--password` 또는 `--password-stdin` 필요 |
 | 암호화 HWPX(그 외 ODF 암호화 계약) | 미지원 | 지원하지 않는 암호화 방식으로 종료 코드 1 |
+| PDF Standard Security R2–R6 | 읽기·가져오기 지원 | 빈 열기 암호는 자동 인증, 그 외에는 `--password` 또는 `--password-stdin` |
+| PDF 공개키 암호화·혼합/Identity crypt filter 조합 | 미지원 | `PDF_ENCRYPTION_UNSUPPORTED`로 종료 코드 1 |
 | DRM(Fasoo/SoftCamp 등) | 미지원 | 비밀번호 암호화와 다른 보호 방식 |
 
 ```bash
