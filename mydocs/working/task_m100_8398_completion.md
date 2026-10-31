@@ -5,7 +5,7 @@
 - base: `8fbed1a9c89798f925279e42fed6cbeba26b9c71`.
 - 브랜치: `task/8398-pdf-import-busy-cursor`.
 - 계획 커밋: `366d638253`. 구현·회귀·매뉴얼 커밋: `3f57e95074`.
-- 결과: 승인한 구현·로컬 검증 완료. PR 생성·원격 push·머지·이슈 종료는 수행하지 않았다.
+- 결과: 승인한 구현·로컬 검증 완료. 이후 사용자의 테스트 통과 판정과 PR Open·self-review 승인에 따라 [PR #8401](https://github.com/edwardkim/rhwp/pull/8401)을 생성했다. 코드 head CI·검토 결과와 남은 원격 절차는 [self-review 기록](../pr/archives/pr_8401_review.md)에 정리했다. 머지·이슈 종료는 수행하지 않았다.
 
 ## 수정 결과
 
