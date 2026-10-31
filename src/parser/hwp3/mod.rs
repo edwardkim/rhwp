@@ -899,8 +899,12 @@ fn hwp3_para_line_box(
 /// 추가한 좌표를 사용한다.
 const HWP3_SQUARE_WRAP_TEXT_GAP_HU: i32 = 640;
 
-fn hwp3_square_wrap_occupied_width(width: i32, right: i32, password: bool) -> i32 {
-    if password {
+fn hwp3_square_wrap_occupied_width(
+    width: i32,
+    right: i32,
+    use_decrypted_layout_contract: bool,
+) -> i32 {
+    if use_decrypted_layout_contract {
         width
     } else {
         // 배치 단계가 그림 왼쪽 바깥 여백을 원점에 반영한다. 여기서는
