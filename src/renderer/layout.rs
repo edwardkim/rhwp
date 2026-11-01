@@ -1364,9 +1364,22 @@ pub(crate) fn tac_sibling_float_anchor_offset_px(
     if !has_line_taking_tac_sibling_before(para, control_index) {
         return 0.0;
     }
-    let offset = stored_float_anchor_offset_px(para, table, control_index, dpi);
-    if offset > 0.0 || table.caption.is_some() {
-        return offset;
+    stored_float_anchor_offset_px(para, table, control_index, dpi)
+}
+
+/// [#8435] 앵커 줄을 밀어낸 자리차지 표의 바깥 상자 안 표 상단(문단 첫 줄 기준 px).
+///
+/// 저장 밴드가 `바깥 위 여백 + 높이 + 바깥 아래 여백` 을 소유하므로 표 상단은 앵커 줄
+/// 자리 + 바깥 위 여백이다(세로 오프셋은 호출부가 더한다). 조판 예약과 layout 이 같은
+/// 값을 소비한다. 형상이 아니면 `None`.
+pub(crate) fn pushed_anchor_line_table_top_px(
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    control_index: usize,
+    dpi: f64,
+) -> Option<f64> {
+    if table.caption.is_some() || !has_line_taking_tac_sibling_before(para, control_index) {
+        return None;
     }
     stored_pushed_anchor_line_offset_hu(
         para,
@@ -1374,7 +1387,7 @@ pub(crate) fn tac_sibling_float_anchor_offset_px(
         i64::from(table.outer_margin_top) + i64::from(table.outer_margin_bottom),
         control_index,
     )
-    .map_or(0.0, |hu| hwpunit_to_px(hu, dpi))
+    .map(|hu| hwpunit_to_px(hu + i32::from(table.outer_margin_top), dpi))
 }
 
 /// [#8435] 앞 TAC 줄 **뒤** 줄에 앵커된 자리차지 개체가 그 앵커 줄을 자기 아래로
@@ -14905,8 +14918,13 @@ impl LayoutEngine {
             {
                 para_y_for_table = col_area.y + placement.anchor_y;
             } else if let Some(Control::Table(t)) = para.controls.get(control_index) {
+                // [#8435] 앵커 줄을 밀어낸 표는 그 줄 자리 + 바깥 위 여백에서 시작한다.
+                // 문단 기준 자리차지 표의 y 계산은 바깥 위 여백을 더하지 않으므로 여기서 함께 옮긴다.
                 let anchor_offset =
-                    tac_sibling_float_anchor_offset_px(para, t, control_index, self.dpi);
+                    pushed_anchor_line_table_top_px(para, t, control_index, self.dpi)
+                        .unwrap_or_else(|| {
+                            tac_sibling_float_anchor_offset_px(para, t, control_index, self.dpi)
+                        });
                 if anchor_offset > 0.0 {
                     para_y_for_table += anchor_offset;
                 }

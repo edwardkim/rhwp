@@ -545,7 +545,26 @@ pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
         }
         st.advance_column_or_new_page_with_storage(storage)?;
     }
-    let accepted_frame = flow.accepted_shape_frame(ctrl, st.current_height);
+    // [#8435] 앞 TAC 줄 뒤 줄을 밀어낸 개체의 원점은 저장 사다리의 앵커 줄 자리다.
+    // TAC 줄의 흐름 전진은 마지막 줄 간격을 쓸 수 있어 그 자리와 다를 수 있다.
+    let pushed_anchor_origin = match ctrl {
+        Control::Shape(shape) => {
+            let common = shape.common();
+            crate::renderer::layout::stored_pushed_anchor_line_offset_hu(
+                para,
+                common,
+                i64::from(common.margin.top) + i64::from(common.margin.bottom),
+                ctrl_idx,
+            )
+            .filter(|_| crate::renderer::layout::has_line_taking_tac_sibling_before(para, ctrl_idx))
+            .map(|hu| para_start_height + crate::renderer::hwpunit_to_px(hu, dpi))
+        }
+        _ => None,
+    };
+    let accepted_frame = match pushed_anchor_origin {
+        Some(origin) => flow.pushed_anchor_shape_frame(ctrl, origin, dpi),
+        None => flow.accepted_shape_frame(ctrl, st.current_height),
+    };
     st.commit_table_host_shape_with_storage(para_idx, ctrl_idx, flow, accepted_frame, storage)?;
     st.register_side_wrap_picture(para_idx, ctrl_idx, para, Some(para_start_height), styles);
 

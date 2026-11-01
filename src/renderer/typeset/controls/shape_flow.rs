@@ -101,6 +101,35 @@ pub(super) fn prepare(
 }
 
 impl TableHostShapeFlow {
+    /// [#8435] 앵커 줄을 밀어낸 개체는 저장 사다리가 앵커 줄 자리(`origin`)를 이미
+    /// 확정했다. 세로 오프셋도 그 자리 기준이므로 별도 앵커 해석 없이 상자를 만든다.
+    pub(super) fn pushed_anchor_shape_frame(
+        &self,
+        control: &Control,
+        origin: f64,
+        dpi: f64,
+    ) -> Option<crate::renderer::float_placement::ParagraphFloatPlacement> {
+        use crate::renderer::float_placement::{ParagraphFloatFlow, ParagraphFloatPlacement};
+        let Control::Shape(shape) = control else {
+            return None;
+        };
+        let height = self.non_tac_pushdown_h?;
+        let top = origin
+            + hwpunit_to_px(
+                crate::renderer::float_placement::signed_hwpunit(shape.common().vertical_offset),
+                dpi,
+            );
+        Some(ParagraphFloatPlacement {
+            flow: ParagraphFloatFlow::NextLine,
+            anchor_y: origin,
+            stored_host_origin: None,
+            stored_successor_line_origin: None,
+            table_left: None,
+            table_top: top,
+            occupied_bottom: top + height,
+        })
+    }
+
     /// A sequential paragraph-relative shape owns the frame accepted before
     /// its height advances the cursor. A later saved host line can already
     /// include this exclusion band; it is not another object origin.
