@@ -234,3 +234,92 @@ Native Clippy와 rustfmt도 통과했다. [8K 전쪽 TSV와 PNG](assets/issue841
 
 이 기록은 자원 정책 절편의 로컬 검증이며 전체 회귀·최종 PR 게이트 완료가 아니다.
 원본의 반복 이미지 처리와 기능 미지원은 승인된 공통 계획에서 계속 처리한다.
+
+### 반복 이미지의 실제 작업량 보정
+
+원본 37쪽에서 8K XObject 하나가 36쪽, 3999×442 XObject 하나가 35쪽의 Resources에
+재사용된다. 객체 번호와 문서 수명으로 같은 source를 식별할 수 있으며 문서 이름·쪽 번호에
+따라 분기할 이유가 없다. 같은 PDF 요청의 bounded LRU에 self-contained image source를
+보관하고, 불변 픽셀을 Arc로 공유한다. 마스크·ICC 변환 결과까지 공유하되 named ColorSpace,
+Indexed base와 현재색 stencil은 scope 의존성을 피하기 위해 캐시 대상에서 제외한다.
+배치별 opacity·CTM·clip은 캐시 이후 항상 적용하고, 픽셀 변경 시 budgeted copy-on-write를
+사용한다. PNG 인코딩 결과도 같은 불변 source에서 공유하되 반환하는 압축 바이트 복사는
+실제 요청 예산을 소비한다. 픽셀/색상 변환은 PNG 캐시를 무효화한다.
+
+선언 픽셀·배치 누적 계수는 캐시와 별개로 매번 검사한다. 누적 decoded 2 GiB·codec work
+1,000,000,000·OS/Worker 제한을 올려 반복 처리 비용을 숨기지 않는다. 아래는 구현 당시의 중간 진단과 최종 자원 절편 검증 결과를 구분한 기록이다.
+
+첫 회귀 실행에서 기존 #7974의 서로 다른 현재색 stencil 재사용 검사가 실패했다.
+BitsPerComponent를 생략한 ImageMask도 있으므로 비트 수를 stencil 판정으로 쓴 가정을
+제거하고 실제 ImageMask 선언으로 공유 대상에서 제외했다. 빨강·초록의 독립 원본 기대값은
+바꾸지 않았다. 직접 ColorSpace 배열은 decoder가 페이지의 색상 이름 사전을 조회하지
+않으므로 불필요한 사전 복사를 없애며, 이름/간접 참조의 scope 해석은 유지한다.
+
+#8190의 원 통합 커밋 `e7a0dec55c`와 #8183 stage 3 기록을 확인했다. 기존
+`valid_repeated_jpx_paints_exhaust_work_and_next_request_recovers`는 같은 1655×2339 JPX를
+세 번 디코딩하여 1,000,000,000 작업 단위를 초과한다는 전제였다. 공유 후에는 이 입력이
+성공하므로, 소스의 실제 픽셀·저장 결과와 Native/fresh WASM을 먼저 확인한 뒤 반복 배치 보존과
+명시적으로 낮은 codec cap 거부·복구를 검사하는 계약으로 갱신했다. 변경 전 양쪽 raw 100.00%와 직접 판독을 완료했다.
+37쪽 원본은 ColorSpace 배열을 간접 객체로 참조한다. 실제 decoder와 동일하게 참조를 먼저
+해석한 다음 배열/이름을 구분하도록 보정했다. 해석 실패를 가져오기 성공으로 숨기지 않는다.
+
+공유 보정 후 Native에서 원본 37쪽의 가져오기·HWPX 저장·재열기가 성공했다.
+감독 관측 wall 21,493ms, peak RSS 419,172,352바이트, 저장 46,292,946바이트이며
+최종 누적 decoded 1,478,483,157바이트·codec work 491,881,360으로 기존 상한 이내다.
+이번 관측은 별도 성능 벤치마크의 전후 비율이 아니다.
+
+96dpi Native 전쪽 raw 최저는 기본 글꼴 공급에서 99.69%였으나 직접 판독에서 Gibson 글꼴의
+대체 굵기 차이를 확인했다. 원본 CFF subset의 윤곽·advance를 로컬 검증용 OpenType으로
+모으고 Windows 글꼴과 함께 공급한 결과 제목·본문 굵기가 복원됐으며 전쪽 최저 99.70%다.
+추출 글꼴은 ignored output에만 두며 배포·fixture에 포함하지 않는다. 임베딩된 TTF subset은
+name/cmap이 없어 그대로 host 글꼴로 사용할 수 없었고 Windows Arial/Consolas를 공급했다.
+37쪽 모두를 비교했으며 9쪽과 최저 32쪽의 이미지·제목·본문·강조 문구를 직접 대조했다.
+새로운 원본 문서 회귀를 등록하거나 전체 공통 작업의 완료로 승격하지 않는다.
+
+별도의 #8190 JPX 반복 배치 제어군은 Native 1쪽 raw 100.00%다. source의 글자가 bitmap에
+포함되어 host 글꼴에 의존하지 않는다. fresh WASM도 raw 100.00%이며 직접 판독 후 기존 작업량 검사를 갱신했다.
+
+직접 판독의 제한: 글꼴 공급 후에도 32쪽 `enter KeX` 등의 단어 간격과 빨간 강조 문구의
+미세 배치가 원본과 완전히 같지는 않다. 이를 raw 99.70%로 면제하거나 전쪽 시각 완료로
+판정하지 않는다. 이번 자원 실패 해소와 공통 작업의 문자 배치·최종 시각 gate를 구분한다.
+
+캐시 적용 전 정책-only 최적화 WASM `048d8d735cd47c7df3d89a1ab3606085bbee19ada6a2e76b205aa13f176a033f`로
+9쪽만 가져와 같은 Native/글꼴 조건으로 출력한 PNG와, 공유 후 37쪽 중 9쪽 PNG의 SHA-256은
+모두 `35f3ffeec1d3d9d04c4f055241fde0b1a5136f54eef9847b7dd7849849edffb3`였다.
+이 페이지의 출력 보존 근거이며 다른 페이지·전체 글꼴 fidelity의 증명으로 확대하지 않는다.
+
+픽셀 한도 확대에 따라 한쪽으로 매우 긴 이미지의 HWP 1/7200 inch 크기와 signed crop
+좌표 변환도 checked arithmetic으로 검사한다. 정상 픽셀 수 이내여도 저장 형식의 좌표
+범위를 넘으면 PNG 인코딩·BinData 추가 전에 거부한다. 좌표를 wrap/clamp하여 저장하지 않는다.
+
+
+### 자원 절편 최종 검증 — 2026-11-01
+
+정책 확대 커밋: `62720ae4052693605e6e3e70e53fbc451c04f6ff`.
+최종 공유 구현의 제품 diff SHA-256:
+`13488c6d73fc0526a13c530eada0ce50e2d78e44fc21485b2f4dc8c79218473a`.
+최적화 WASM SHA-256:
+`1e6b3794e268a1ea09f47af4e2848c6eef404523e21d5674f39ad0c99a0fb35a`.
+
+- 관련 Native 검사 169건 통과(마스크·패턴·affine clip·이미지 배치·정책·operator·새 좌표 범위 검사).
+- 갱신한 JPX 반복 배치 검사를 포함한 코덱 모듈 6건 통과. 중복 5건을 제외하면 최종 계약 170건을 확인했다.
+  새 검사의 JSON 키를 camelCase `codecWorkUnits`로 바로잡았으며 제품 예외를 추가하지 않았다.
+- 원본 37쪽 최종 Native 가져오기·HWPX 저장·재열기 성공. wall 24,012ms, peak RSS 418,750,464바이트.
+  누적 decoded 1,478,483,157바이트·codec work 491,881,360으로 유지한 상한 안에 들어왔다.
+  직전 성공 실행과 HWPX SHA-256이 동일하다.
+- fresh WASM 원본 37쪽 가져오기·저장·재열기 성공. 세 작업 합계 28,107ms,
+  linear memory capacity 554,827,776바이트(프로세스 RSS가 아님). 직접 WASM 제어군 14건도 통과했다.
+- 실제 Studio에서 기본 30초는 `PDF_IMPORT_TIMEOUT`; 고급 설정을 60초로 늘린 실행은 27,299ms에 37쪽 열기 성공.
+  시간은 부하에 따라 달라지며 기본 30초에서 항상 성공한다고 주장하지 않는다.
+- 동일 최적화 WASM의 암호 입력·오입력·Enter 재시도·Escape 취소, 대화창 테마·작은 화면·키보드,
+  실제 1초 timeout·재시도 E2E 통과. 네트워크로 받은 WASM 해시도 일치했다.
+- 원본 FontDescriptor의 ascent/descent를 적용한 최종 글꼴 환경에서 Native 37쪽 최저 99.70%,
+  fresh WASM 37쪽 최저 99.75%. JPX 1쪽은 양쪽 100.00%다.
+  [전체 TSV·대표 PNG·직접 판독과 실행 근거](assets/issue8413/image-sharing/README.md)를 보존했다.
+
+`img_bug_01.pdf`의 자원 부족은 이번 한도 확대와 반복 디코딩 공유로 해소했다.
+다른 원본의 곡선 clip, 회전·비균등 텍스트, image mask DecodeParms와 위 문자 간격 차이는 남아 있다.
+따라서 이번 자원 절편의 성공을 #8413–#8416 전체 완료나 PR 제출 가능 판정으로 확대하지 않는다.
+
+최종 Native Clippy(`--lib --bin rhwp --features native-skia -D warnings`), rustfmt,
+변경 문서 링크 검사와 `git diff --check`도 통과했다. 원격 push·PR 생성은 하지 않았다.

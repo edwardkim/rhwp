@@ -1,4 +1,9 @@
 //! #8183 PDF source-image contracts; see the stage 3 independent PDF/Native/WASM evidence.
+//! Repeated JPX: relational source-pixel/resource contract updated 2026-11-01T09:02:34+09:00 (KST).
+//! Previous file: e7a0dec55c6c6c6365e4ff50babe7583e1cf1c70, 2026-10-24T10:32:27+09:00.
+//! work-limit-jpx.pdf: 1/1 page, independent source PDF, 96 dpi raw 2px silhouette:
+//! Native/fresh optimized WASM both 100.00% (whole-document minima), directly inspected.
+//! Evidence: mydocs/working/assets/issue8413/image-sharing/README.md (2026-11-01).
 #![cfg(all(feature = "pdf-import", not(target_arch = "wasm32")))]
 
 use rhwp::parser::pdf::{parse_pdf_with_options, parse_pdf_with_policy, PdfImportPolicy};
@@ -205,10 +210,46 @@ fn lossless_scans_preserve_the_complete_independent_source_bitmap() {
 
 #[test]
 #[cfg(feature = "pdf-jpeg2000")]
-fn valid_repeated_jpx_paints_exhaust_work_and_next_request_recovers() {
-    let error = parse_pdf_with_options(&input("work-limit-jpx"), &Default::default())
+fn shared_jpx_paints_preserve_pixels_and_explicit_work_limit_recovery() {
+    let source = input("work-limit-jpx");
+    let core = DocumentCore::from_bytes(&source).unwrap();
+    let svg = core.render_page_svg_native(0).unwrap();
+    assert_eq!(svg.matches("<image").count(), 3, "all source paints remain");
+    let resources = &core.document().bin_data_content;
+    assert!(!resources.is_empty());
+    let original = resources[0].data.load();
+    for resource in resources {
+        assert_eq!(resource.data.load(), original);
+    }
+    let saved = DocumentCore::from_bytes(&core.export_hwpx_native().unwrap()).unwrap();
+    assert_eq!(
+        saved
+            .render_page_svg_native(0)
+            .unwrap()
+            .matches("<image")
+            .count(),
+        3
+    );
+    for resource in &saved.document().bin_data_content {
+        assert_eq!(resource.data.load(), original);
+    }
+    let policy = PdfImportPolicy::default()
+        .with_limits_json(r#"{"backend":{"codecWorkUnits":1000}}"#)
+        .unwrap();
+    let error = parse_pdf_with_policy(&source, &Default::default(), policy)
         .err()
         .unwrap();
     assert_eq!(error.code, "PDF_RESOURCE_LIMIT");
+    assert_eq!(
+        error
+            .diagnostics
+            .unwrap()
+            .resource_usage
+            .unwrap()
+            .failure
+            .unwrap()
+            .reason,
+        "codec work units"
+    );
     assert!(parse_pdf_with_options(&input("jpx"), &Default::default()).is_ok());
 }

@@ -759,6 +759,16 @@ pub(super) fn lower_picture(
     let allocation = Allocation(budget);
     let b = image.bbox().ok_or("image has no placement geometry")?;
     let matrix = image.matrix();
+    // HWP image dimensions use 1/7200 inch at the 96 dpi import scale; crop
+    // coordinates are signed i32. A pixel-area cap alone does not bound a
+    // single long dimension. Reject before PNG encoding or resource insertion.
+    let dimension = |pixels: u32| {
+        pixels
+            .checked_mul(75)
+            .filter(|&value| value <= i32::MAX as u32)
+            .ok_or("image dimension exceeds HWP crop coordinate range")
+    };
+    let img_dim = (dimension(image.width())?, dimension(image.height())?);
     let data = image
         .to_png_bytes_with_budget(budget)
         .map_err(|e| e.to_string())?;
@@ -793,7 +803,6 @@ pub(super) fn lower_picture(
     // of the full bitmap. The visible frame and the selected pixels have the
     // same proportions, preserving scale instead of fitting all pixels into
     // a smaller cell. PDF y points up, image crop y points down.
-    let img_dim = (image.width() * 75, image.height() * 75);
     let crop_x = |x: f32| {
         ((f64::from(x) - f64::from(matrix[4])) / f64::from(matrix[0]) * f64::from(img_dim.0))
             .round() as i32
@@ -829,4 +838,33 @@ pub(super) fn lower_picture(
         ..Default::default()
     };
     Ok(Control::Picture(allocation.boxed(pic).map_err(message)?))
+}
+
+#[cfg(test)]
+mod resource_boundary_tests {
+    use super::*;
+    #[test]
+    fn unrepresentable_image_dimensions_fail_before_encoding_or_resource_insertion() {
+        use pdf_oxide::extractors::images::{ColorSpace, ImageData, PdfImage, PixelFormat};
+        let mut document = new_document().unwrap();
+        let budget = pdf_oxide::import_limits::ImportBudget::new(Default::default()).unwrap();
+        for (width, height) in [(i32::MAX as u32 / 75 + 1, 1), (u32::MAX, 1), (1, u32::MAX)] {
+            let image = PdfImage::with_bbox(
+                width,
+                height,
+                ColorSpace::DeviceRGB,
+                8,
+                ImageData::Raw {
+                    pixels: Vec::new(),
+                    format: PixelFormat::RGB,
+                },
+                pdf_oxide::geometry::Rect::new(0., 0., 10., 10.),
+            );
+            let count = document.bin_data_content.len();
+            let error = lower_picture(&image, &mut document, 0., 10., 1, &budget).unwrap_err();
+            assert_eq!(error, "image dimension exceeds HWP crop coordinate range");
+            assert_eq!(document.bin_data_content.len(), count);
+            assert_eq!(budget.snapshot().decoded_bytes, 0);
+        }
+    }
 }

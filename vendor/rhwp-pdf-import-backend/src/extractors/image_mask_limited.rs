@@ -342,11 +342,11 @@ impl StreamMask {
         let size = count
             .checked_mul(4)
             .ok_or_else(|| budget.reject("masked RGBA size"))?;
-        let jpeg = matches!(image.data, ImageData::Jpeg(_));
+        let jpeg = matches!(image.data.as_ref(), ImageData::Jpeg(_));
         if jpeg && self.other_source_decode {
             return Err(Error::Unsupported("limited masked JPEG Decode colour space".into()));
         }
-        let rgb: Cow<'_, [u8]> = match &image.data {
+        let rgb: Cow<'_, [u8]> = match image.data.as_ref() {
             ImageData::Raw {
                 pixels,
                 format: PixelFormat::RGB,
@@ -438,10 +438,10 @@ impl StreamMask {
                 rgba.push((alpha * 255.0).round() as u8);
             }
         }
-        image.data = ImageData::Raw {
+        image.data = std::sync::Arc::new(ImageData::Raw {
             pixels: rgba,
             format: PixelFormat::RGBA,
-        };
+        });
         image.width = width;
         image.height = height;
         image.color_space = ColorSpace::DeviceRGB;

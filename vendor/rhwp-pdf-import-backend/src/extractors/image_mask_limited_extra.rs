@@ -199,7 +199,7 @@ impl ColourKey {
         let ImageData::Raw {
             pixels,
             format: PixelFormat::RGBA,
-        } = &mut image.data
+        } = image.samples_mut(budget)?
         else {
             unreachable!("opacity produces RGBA")
         };

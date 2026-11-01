@@ -66,6 +66,12 @@ rhwp import-pdf input.pdf result.hwpx --resource-limits limits.json --json
 새 WASM을 적용해야 한다. 표준에서도 다른 한도가 소진되면 원본 쪽 선택과 실제 사용량을
 확인한다. `*_UNSUPPORTED`는 자원 부족과 다른 기능 오류이므로 한도를 올려 해결하지 않는다.
 
+Studio에서 `PDF_IMPORT_TIMEOUT`이 발생하면 「고급 설정 → 제한 시간 (초)」를 기본 30초에서
+60초로 늘려 다시 시도할 수 있다(허용 범위 1~300초). 이미지가 반복되는 37쪽 검증 PDF는
+확대 정책과 공유 디코딩을 적용한 WASM에서 60초 설정으로 열렸다. 한 실행은 약 27초였지만
+다른 실행은 30초를 초과했으므로 모든 환경에서 30초 이내 완료를 보장하지 않는다.
+이 UI 시간 제한은 아래 CLI supervisor의 기본 120초와 별개다.
+
 이 옵션은 `import-pdf` 전용이다. HWP5 압축 stream·HWPX ZIP/XML의 기존 읽기 한도를
 조정하지 않으며, 해당 형식의 한도는 [보안 현황](security_feature_limits.md#자원-한도로-거부하는-입력)을
 따른다.
@@ -78,7 +84,7 @@ rhwp import-pdf input.pdf result.hwpx --resource-limits limits.json --json
 | 파싱 객체 값 | 200,000 | 50,000 | 간접 객체뿐 아니라 사전·배열 안의 scalar도 포함 |
 | 단일 stream 버퍼 | 256 MiB | 32 MiB | 압축 해제·operator 수집 등의 개별 출력 backing |
 | 그림 한 개 | 64,000,000 px | 4,000,000 px | 선언·합성된 이미지 면적 검사 |
-| 문서 누적 그림 | 2,000,000,000 px | 16,000,000 px | 선택한 쪽의 실제 처리 누적량 |
+| 문서 누적 그림 | 2,000,000,000 px | 16,000,000 px | 선택한 쪽의 그림 배치별 픽셀 합계 |
 | decoded 작업 | 최대 2 GiB | 256 MiB | 누적 예약 카운터이며 live heap이 아님 |
 | collection entries | 400,000 | 100,000 | xref·객체 컬렉션 등의 누적 항목 |
 | font entries | 1,000,000 | 100,000 | Type1/CFF/TrueType의 map·glyph name·Unicode memo 등 누적 확장 작업 |
@@ -100,6 +106,9 @@ operator 수집 Vec도 capacity를 늘리기 전에 단일 `streamBytes` 한도�
 확인한다. 표준의 큰 이미지/버퍼 한도는 원본 해상도를 유지하기 위한 유한한 상한이다.
 이미지 재배치도 픽셀 작업량에 누적하며, 개별 값이 남아 있어도 decoded 작업·코덱 작업량·
 OS/Worker 제한에서 실패할 수 있다. 자동 축소하거나 한도 초과를 성공으로 처리하지 않는다.
+같은 요청에서 재사용하는 self-contained XObject는 최대 8개 원본의 픽셀·PNG 결과를
+공유한다. 캐시는 요청 종료와 함께 해제되며 다른 PDF와 공유하지 않는다. 배치별 픽셀 합계는
+계속 검사하고, 투명도·clip 등으로 픽셀을 바꿀 때의 복사와 압축 바이트 반환도 예산에 포함한다.
 decoded 작업은 공유 폰트·paint와 Core 초기화·첫 저장·진단 인코딩까지 같은 요청에서
 누적하므로 선택 쪽수로 축소하지 않는다. 한 쪽도 standard의 최대 2 GiB 또는 더 낮게 지정한
 host cap을 사용한다. constrained의 256 MiB 상한도 유지된다. 이는 누적 예약 작업량이며

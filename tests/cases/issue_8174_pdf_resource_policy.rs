@@ -143,6 +143,75 @@ fn standard_accepts_8k_samples_but_keeps_explicit_pixel_and_buffer_caps() {
 }
 
 #[test]
+fn shared_image_source_keeps_placement_mutations_and_requests_independent() {
+    use pdf_oxide::{extractors::images::ImageData, PdfDocument};
+    let source = image_pdf();
+    let pdf =
+        PdfDocument::from_bytes_with_limits(source.clone(), PdfImportPolicy::default().backend)
+            .unwrap();
+    let budget = pdf.import_budget().unwrap();
+    let mut handles = pdf.page_image_handles(0).unwrap();
+    let first = handles[0].decode().unwrap();
+    let png = first.to_png_bytes_with_budget(budget).unwrap();
+    let work = budget.snapshot().codec_work_units;
+    let second = handles[0].decode().unwrap();
+    let (ImageData::Raw { pixels: a, .. }, ImageData::Raw { pixels: b, .. }) =
+        (first.data(), second.data())
+    else {
+        panic!("raw RGB source")
+    };
+    assert_eq!(
+        a.as_ptr(),
+        b.as_ptr(),
+        "immutable pixels should share storage"
+    );
+    assert_eq!(second.to_png_bytes_with_budget(budget).unwrap(), png);
+    assert_eq!(
+        budget.snapshot().codec_work_units,
+        work,
+        "cached PNG must not decode/encode pixels again"
+    );
+
+    handles[0].opacity = 0.5;
+    let translucent = handles[0].decode().unwrap();
+    let alpha_png = translucent.to_png_bytes_with_budget(budget).unwrap();
+    let rgba = image::load_from_memory(&alpha_png).unwrap().to_rgba8();
+    assert!(rgba.pixels().all(|p| p.0 == [255, 0, 0, 128]));
+    handles[0].opacity = 1.0;
+    assert_eq!(
+        handles[0]
+            .decode()
+            .unwrap()
+            .to_png_bytes_with_budget(budget)
+            .unwrap(),
+        png
+    );
+    assert_eq!(first.to_png_bytes_with_budget(budget).unwrap(), png);
+
+    // An identical object number in another request must not reuse this cache.
+    let mut other_source = source;
+    let raw = [255, 0, 0].repeat(8);
+    let start = other_source
+        .windows(raw.len())
+        .position(|bytes| bytes == raw)
+        .unwrap();
+    other_source[start..start + raw.len()].copy_from_slice(&[0, 0, 255].repeat(8));
+    let other =
+        PdfDocument::from_bytes_with_limits(other_source, PdfImportPolicy::default().backend)
+            .unwrap();
+    let blue = other.page_image_handles(0).unwrap()[0]
+        .decode()
+        .unwrap()
+        .to_png_bytes_with_budget(other.import_budget().unwrap())
+        .unwrap();
+    assert!(image::load_from_memory(&blue)
+        .unwrap()
+        .to_rgb8()
+        .pixels()
+        .all(|p| p.0 == [0, 0, 255]));
+}
+
+#[test]
 fn profiles_preserve_standard_and_reject_ambiguous_limit_documents() {
     assert_eq!(
         serde_json::to_value(PdfImportPolicy::for_profile(PdfImportProfile::Standard)).unwrap(),

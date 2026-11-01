@@ -529,6 +529,9 @@ pub struct PdfDocument {
     /// Bounded at [`DEFAULT_XOBJECT_CACHE_MAX_ENTRIES`] entries with FIFO eviction.
     pub(crate) form_xobject_images_cache:
         Mutex<BoundedEntryCache<ObjectRef, Vec<crate::extractors::PdfImage>>>,
+    /// Bounded import source pixels and encoded PNGs, owned by this request.
+    pub(crate) import_image_cache:
+        Mutex<BoundedEntryCache<ObjectRef, (crate::extractors::PdfImage, Option<bool>)>>,
     /// Regions marked for erasure per page. Mutex for `&self` write-path methods (#398).
     pub(crate) erase_regions: Mutex<HashMap<usize, Vec<crate::geometry::Rect>>>,
     /// LRU cache of decompressed page content streams, keyed by page index.
@@ -1443,6 +1446,10 @@ impl PdfDocument {
             )),
             form_xobject_images_cache: Mutex::new(BoundedEntryCache::with_budget(
                 DEFAULT_XOBJECT_CACHE_MAX_ENTRIES,
+                import_budget.clone(),
+            )),
+            import_image_cache: Mutex::new(BoundedEntryCache::with_budget(
+                8,
                 import_budget.clone(),
             )),
             erase_regions: Mutex::new(HashMap::new()),
