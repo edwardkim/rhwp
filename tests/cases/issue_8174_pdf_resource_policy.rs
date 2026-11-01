@@ -1,4 +1,7 @@
-//! Synthetic request/CLI contracts, not layout coordinates or render goldens.
+//! 관계형: 합성 요청/CLI·누적 예산 계약. 조판 좌표·렌더 golden 검사가 아니다.
+//! 주석 갱신: 2026-11-01 10:01 +09:00. 시각 측정은 예산 산술 계약에 비해당.
+//! 직전 파일 변경: db4f50b4529ad3f11dc611444d1fec20827bc468, 2026-11-01T09:31:33+09:00.
+//! #8413은 wasm32 주소 범위를 넘는 누적 작업량과 실패 시 카운터/요청 분리를 검증한다.
 #![cfg(feature = "pdf-import")]
 use rhwp::parser::pdf::{parse_pdf_with_policy, PdfImportPolicy, PdfImportProfile};
 use serde_json::json;
@@ -85,7 +88,7 @@ fn standard_accepts_object_rich_catalog_and_keeps_constrained_and_host_limits() 
             .failure
             .unwrap();
         assert_eq!(failure.reason, "parsed object count");
-        assert_eq!(failure.limit, Some(policy.backend.objects));
+        assert_eq!(failure.limit, Some(policy.backend.objects as u64));
     }
     let exact = standard
         .with_limits_json(&json!({"backend":{"objects":used}}).to_string())
@@ -534,4 +537,50 @@ fn page_progress_tracks_selected_sources_and_failure_never_reports_completion() 
         .unwrap()
         .open(&source, &options)
         .is_ok());
+}
+
+#[test]
+fn cumulative_work_crosses_wasm32_address_range_without_wrapping_or_raising_a_cap() {
+    use pdf_oxide::import_limits::{ImportBudget, PdfImportLimits};
+    let standard = PdfImportPolicy::default();
+    assert_eq!(standard.backend.decoded_bytes, 8_u64 << 30);
+    assert_eq!(
+        standard
+            .with_limits_json(r#"{"backend":{"decodedBytes":5368709120}}"#)
+            .unwrap()
+            .backend
+            .decoded_bytes,
+        5_u64 << 30
+    );
+    assert!(standard
+        .with_limits_json(r#"{"backend":{"decodedBytes":8589934593}}"#)
+        .is_err());
+    let cap = (1_u64 << 32) + 3;
+    let request = ImportBudget::new(PdfImportLimits {
+        decoded_bytes: cap,
+        ..Default::default()
+    })
+    .unwrap();
+    // Accounting reservations only: no multi-gigabyte allocation is made.
+    // Each individual reservation is representable on wasm32.
+    request.charge_decoded(1_usize << 31).unwrap();
+    request.charge_decoded(1_usize << 31).unwrap();
+    request.charge_decoded(3).unwrap();
+    assert_eq!(request.snapshot().decoded_bytes, cap);
+    assert!(request.charge_decoded(1).is_err());
+    let failure = request.snapshot().failure.unwrap();
+    assert_eq!(
+        (failure.used, failure.requested, failure.limit),
+        (Some(cap), Some(1), Some(cap))
+    );
+    assert_eq!(request.snapshot().decoded_bytes, cap);
+    assert!(request.charge_decoded(0).is_err());
+    let healthy = ImportBudget::new(PdfImportLimits {
+        decoded_bytes: cap,
+        ..Default::default()
+    })
+    .unwrap();
+    healthy.charge_decoded(7).unwrap();
+    healthy.restrict_work_limits(7, 10).unwrap();
+    assert!(healthy.charge_decoded(1).is_err());
 }

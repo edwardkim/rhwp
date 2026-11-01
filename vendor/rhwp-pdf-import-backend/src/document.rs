@@ -12818,11 +12818,29 @@ impl PdfDocument {
         // five-degree quadrant snap. Glyph positions must use the same frame.
         for span in &mut spans {
             if let Some(crate::extractors::text::SpanPaintOrder {
-                basis: [a, b, _, _],
+                basis: [a, b, c, d],
                 ..
             }) = orders.get(&span.sequence)
             {
                 span.rotation_degrees = b.atan2(*a).to_degrees();
+                // The generic reading-order extractor uses matrix row norms.
+                // Editable rotated text needs the lengths of the transformed
+                // writing and glyph-height axes (ISO 32000-1 9.4.4).
+                if span.rotation_degrees != 0.0 {
+                    let sx = a.hypot(*b);
+                    let sy = c.hypot(*d);
+                    let old_x = a.hypot(*c);
+                    let old_y = b.hypot(*d);
+                    if sx > 0.0 && sy > 0.0 && old_x > 0.0 && old_y > 0.0 {
+                        span.font_size *= sy / old_y;
+                        span.bbox.height = span.font_size;
+                        span.bbox.width *= sx / old_x;
+                        for width in &mut span.char_widths {
+                            *width *= sx / old_x;
+                        }
+                        span.horizontal_scaling *= sx / sy;
+                    }
+                }
             }
         }
         let spans = self.postprocess_spans_for_import(page_index, spans)?;
@@ -18783,7 +18801,7 @@ impl PdfDocument {
         for (ordinal, op) in operators.into_iter().enumerate() {
             extractor.paint.source_order = vec![ordinal];
             extractor.paint.clip = clips.current().clip;
-            clips.apply(&op);
+            clips.apply(&op)?;
             if matches!(
                 &op,
                 Operator::Tj { .. }
@@ -19470,7 +19488,7 @@ impl PdfDocument {
             extractor.paint.source_order = parent_paint.source_order.clone();
             extractor.paint.source_order.push(ordinal);
             extractor.paint.clip = clips.current().clip;
-            clips.apply(&op);
+            clips.apply(&op)?;
             if matches!(
                 &op,
                 Operator::Tj { .. }

@@ -367,3 +367,191 @@ Native 선택 쪽 순서·중간 callback 실패·다음 요청 복구와 실제
 
 이 절편은 요청한 진행 표시의 로컬 구현·실사용 검증이다. 공통 PDF 기능의 미해결 항목이나
 최종 PR 사전 검증을 완료했다고 표시하지 않는다. 원격 push·PR 생성은 하지 않았다.
+
+## 곡선 clip·회전 텍스트·마스크 보정 — 2026-11-01
+
+사용자가 쪽별 진행 표시를 확인하고 남은 세 오류의 해결을 지시했다. 기존 공통 계획의
+구현·검증 범위로 진행하며 원격 게시 승인은 포함하지 않는다.
+
+독립 근거는 [ISO 32000-1](https://developer.adobe.com/document-services/docs/assets/35e4369068f86065372c18787171a17e/PDF_ISO_32000-1.pdf)
+8.5.2–8.5.4의 경로/채움/clip, 9.4.4의 텍스트 변환과 7.4·8.9의 필터/마스크 계약이다.
+원본 PDF의 객체·행렬을 pikepdf로 읽고 backend의 실제 span basis와 대조했다.
+
+- `img_clipping_01.pdf`의 둥근 사각형·원형 clip은 정상적인 cubic 경로다.
+  `ImageClipTracker.apply`가 이를 Unsupported로 바꾸면서 `visible_bounds`에서 실패했다.
+  tracker의 정확한 경로 → page-space clip 교집합 → `PdfImage.apply_affine_clip`의
+  alpha mask로 연결한다. bounds는 래스터 할당 영역에만 쓰며 투명도는 원래 곡선과
+  nonzero/even-odd 채움으로 계산한다. q/Q와 Form CTM, 경로 종료 시 W 적용을 유지한다.
+- 암호화 원본 10쪽의 90도 텍스트 basis는 `[0, 8.415, -8.5, 0]`이다. 반사나 전단이
+  아니라 두 축 배율이 다른 정상 행렬이다. import 전용 span 경로에서 축의 길이를
+  기준으로 높이·advance·장평을 보존하고, 공통 editable text-box의 회전과 글자 장평으로
+  연결한다. 읽기 순서 추출 API 전체나 일반 조판의 배치 규칙은 수정하지 않는다.
+- `f87pro.pdf`의 SMask 2122·2123은 Flate이며 DecodeParms에 Predictor가 없어 기본 1이다.
+  기존 코드는 매개변수가 있다는 이유만으로 거부했다. bounded filter decoder가 매개변수를
+  해석하게 하고 packed row 길이를 검증한다. SMask 2123의 5309×3379 픽셀은 16M을 넘으나
+  승인한 64M 상한 안이다. 마스크도 유한 픽셀·stream·누적 메모리 한도를 적용한다.
+  암호화 원본 SMask 80은 회색조 DCT이므로 요청 예산을 받는 JPEG decoder로 실제 샘플을
+  읽고 선언 크기·8-bit·성분 수를 확인한다.
+
+구현과 실제 실행 검증 중이다. 컴파일·원본 열기 성공을 시각 검증 완료로 간주하지 않으며,
+전체 Native/fresh WASM 출력과 저장 재열기는 결과를 확보한 뒤 이어 기록한다.
+
+### 첫 Native 실행에서 확인한 후속 경계
+
+첫 빌드는 성공했고 8쪽 합성 원본 PDF의 Native 전쪽 raw 최저 98.97%를 확인했다.
+원·evenodd 구멍·반대 winding 구멍·v/y 경로와 q/Q 복원·Flate 기본/PNG predictor·회색조 JPEG
+마스크·비등방 90도 텍스트를 구분한 대조군이다. 90도 글자와 원형/복합 경계를 직접 판독했다.
+이 결과는 아직 fresh WASM 증거나 정식 회귀 등록의 완료를 뜻하지 않는다.
+
+실제 원본의 다음 실패도 함께 처리한다.
+
+- 32쪽: 11쪽 image_decode에서 2 GiB 누적 예산 초과. 별도 trusted-host 진단 예산으로
+  원본 전체를 끝까지 실행했을 때 32쪽 변환은 성공했고, `decoded_bytes=6,302,049,999`,
+  `codec_allocated_bytes=3,609,279,018`, `codec_work_units=1,338,764,346`이었다.
+  문서 전체 선언 원본 픽셀은 224,528,384개다. 작은 예산을 무시하거나 카운터를 초기화하지
+  않고 표준 누적 decoded 8 GiB·작업량 20억으로 조정한다. 누적 decoded/codec allocation
+  카운터는 `u64`로 계상해 WASM32에서 4 GiB 이후 wrap/포화되지 않게 한다.
+  JS 전달은 안전한 정수 Number로 유지하며 재열기에 넘기는 남은 예산도 같은 값이다.
+  단일 stream/codec 할당 256 MiB·원본/합성 이미지 64M·문서 2B 픽셀·호스트 시간/메모리
+  제한은 유지한다. 절약 프로필의 기존 한도도 유지한다.
+- 암호화 57쪽: 기존 회전 텍스트 오류 다음, 21쪽에서 일반 이미지의 affine CTM을 positional
+  lowering이 거부했다. 패턴/비사각 clip에 사용하던 공통 bounded affine compositor를
+  일반 회전·반사·전단 이미지에도 연결한다. 이미지 CTM → 공통 샘플링 → 축 정렬 저장
+  프레임으로 연결하며 문서별 보정을 넣지 않는다.
+- f87pro: DecodeParms는 통과했으나 mask 합성의 별도 16M 검사가 남아 있었다.
+  읽기/합성 양쪽을 승인한 64M 기준으로 맞추며 RGBA 할당은 같은 요청 예산으로 예약한다.
+- 37쪽 정상 대조군은 재열기까지 성공했다. 저장 바이트 크기는 기존과 같은 46,292,946이다.
+
+기존 거절 회귀의 선행 근거도 확인했다. `issue_8174_pdf_consecutive_moves.rs`의
+compound/curve 거절은 #8174 → 통합 #8360(`f125c735c7`, 2026-10-29 15:34:34 +09:00)의
+이전 지원 범위이며, [stage8](task_m100_8174_v2_stage8.md)의 5건 검증 기록과 연결된다.
+기존 원본 두 PDF도 새 Native/fresh WASM에서 직접 비교한 뒤, 거절 기대값만 새 지원 계약에
+맞게 바꾸고 정상 사각 crop·alpha·요청 예산 검사는 유지한다.
+
+
+### 전쪽 시각 대조에서 드러난 signed rectangle 경계
+
+57쪽 원본의 첫 Native 전쪽 비교에서 7쪽이 raw 90% 미만(최저 79.65%)이었다.
+43쪽 직접 판독에서 표처럼 보이는 배경 일부가 사라졌으나, 진단의 semanticTables=0이므로
+표 승격이나 셀 분할의 결함으로 판정하지 않았다. 원본의 여러 `re`는 높이가 음수이며
+compound fill로 함께 그린다. `PathExtractor::compute_bbox`가 시작점을 최솟값, 반대점을
+최댓값으로만 처리하여 래스터 프레임을 잘랐다. 배경 뒤의 흰 글자는 그 때문에 보이지 않았다.
+
+생산 `PathExtractor::compute_bbox` → `PathContent.bbox` → `path_paint::lower`의
+래스터 프레임·transform → PNG 그림의 공통 위치 순서다. 원본 re 방향은 그대로 유지하고
+경계만 두 끝점의 min/max로 계산한다. 문서·페이지·셀별 분기는 추가하지 않는다.
+원 로직은 vendoring 커밋 `4662c069e55`에서 왔으며 #8120(`80968497c2`)의 path paint,
+#8174/#8360(`f125c735c7`)의 bounded 처리, #8403/#8410(`1cfa5726cd`)의 text paint 이후에도
+유지되던 계산이다. 독립 근거는 ISO 32000-1 8.5.2의 signed re와 원본 PDF 경로다.
+양/음수 너비·높이의 compound fill, Form 안의 곡선 clip, 일반 affine image 대조군을
+임시 PDF에 추가했다. 보정 후 Native/fresh WASM 재측정 전이며 완료 수치를 추정하지 않는다.
+
+
+### Type3 검색 문자열의 실제 paint 보존
+
+32쪽 원본의 첫 Native 비교는 1·2·12쪽이 90% 미만이었다(전쪽 최저 82.72%). 2쪽을 직접
+대조하니 원본의 도형 글자 위로 대체 글꼴이 겹쳤다. `/F1`은 Type3이며 실제 CharProcs 전부가
+폭·bbox를 선언하는 `d1` 한 개뿐이다. 본문 윤곽은 별도 path paint이고 검색 문자열 자체는
+아무것도 그리지 않는다. 이를 이름이 Unknown이라는 이유로 함초롬바탕의 가시 글자로 바꾼
+것이 원인이다. 글꼴 설치로 해결할 차이가 아니며 전체 Type3를 숨겨서도 안 된다.
+
+실제 scoped FontInfo 생성에서 CharProcs를 요청 예산 안에서 해석한다. 모든 glyph가
+유효한 d0/d1 하나만 가지는 경우에만 non-painting 근거를 표시한다. 누락·빈 사전·그리기
+명령·혼합 glyph는 이 판정을 받지 않는다. lowering은 문자열과 advance를 그대로 두고
+기존 TextPaint의 fill=false·alpha=0 계약을 소비한다. 별도 renderer 분기나 문서별 조건은
+없으며 저장 후 재열기도 기존 text-paint 확장을 사용한다. 원본 paint와 검색 문자열을
+둘 다 보존하는 계약이다. 독립 근거는 ISO 32000-1 9.6.5의 Type3 glyph procedure다.
+기존 #8174/#8360의 Type3 문단/줄 계약과 #8403/#8410의 명시적 TextPaint를 재사용한다.
+
+### 곡선·마스크 후속: PDF 이미지의 색 전달
+
+32쪽 원본의 12쪽에서 PNG 원본과 저장 BinData의 RGB는 239/239/239인데,
+2024 Print 렌더에서는 247/247/247이 되었다. 같은 HWPX를 2022 호환으로
+진단 출력하면 239/239/239로 복원된다. JPEG·ICC·SMask 이후의 저장 픽셀은
+정상이므로 이 차이를 디코더 오류로 판정하지 않는다.
+
+원인은 `paint/builder.rs`가 PDF에서 변환한 PNG에도 한컴 Print bitmap 플래그를
+설정하여 `image_resolver/print_tone.rs`의 RGB555 전달을 다시 적용하는 경로다.
+원 구현은 #7642의 [팔레트 경계 독립 Print](task_m100_7642_stage2101.md),
+#8160의 [그림 전달 검증](task_m100_8160_stage2.md), 통합 #8389
+`c417310cab`에서 확인했다. 이 규칙은 일반 HWP 그림의 한컴 출력 계약으로 유지한다.
+PDF의 색 공간과 마스크를 이미 처리한 그림은 별도 출처 계약으로 식별하고,
+공통 paint 생성에서 해당 Print 변환을 적용하지 않아야 한다. BinData의 기존 private
+PNG 선언을 확장해 저장·재열기와 Native/WASM 모두 같은 판단을 소비하게 한다.
+명시적 이미지 보간과 변환 후 기본 보간도 구별해 유지한다.
+
+진단 증적은 `p12-direct/`, `p12-no-hancom-transfer/`, `p12-tree/`다.
+이 진단은 수정 완료 판정이 아니며 32쪽 전체와 정상 HWP 대조군을 다시 검증한다.
+
+### 곡선·회전·마스크의 최종 제품 검증 — 2026-11-01
+
+최종 제품 소스에서 Native CLI와 최적화 WASM으로 네 원본을 모두 가져오고,
+HWPX·HWP 저장 후 재열기를 확인했다. 암호화 원본도 복호화한 PDF를 우회 입력으로 쓰지 않고
+원본 바이트를 인증해 처리했다. 실제 Studio의 가져오기 대화창 → Worker → 편집 문서 열기에서도
+32·37·57·1쪽을 확인했다. 테스트에서는 큰 입력을 위해 대화창 제한 시간을 300초로 명시했다.
+기본 30초가 모든 호스트와 입력에서 충분하다는 의미는 아니다.
+
+| 원본 | 전체 쪽수 | Native 전쪽 최저 raw | fresh WASM 전쪽 최저 raw |
+| --- | ---: | ---: | ---: |
+| img_clipping_01.pdf | 32 | 99.89% | 99.89% |
+| img_bug_01.pdf | 37 | 99.76% | 99.83% |
+| PDF_ENCRYPTION_UNSUPPORTED.pdf | 57 | 91.72% | 91.64% |
+| f87pro.pdf | 1 | 99.82% | 99.82% |
+| 공개 합성 대조군 | 13 | 98.88% | 98.97% |
+| 일반 HWP 팔레트 대조군 | 1 | 100.00% | 100.00% |
+
+127쪽 원본의 누락·쪽수 불일치·90% 미만은 없다. 원본 PDF의 독립 PDFium 96dpi 출력과
+색상 경계 보정 전 2px 실루엣으로 측정했다. 일반 HWP 대조군은 기존 독립 한컴 2024 Print와
+비교했고 Native 출력 PNG의 수정 전후 SHA-256도 같았다
+(`f1db64b6cad8c4101789e738df0debc0d5bec7f8dcf99e008d4435fad89ee7c9`).
+[전쪽 TSV·공개 합성 PNG·입력/소스/산출물 신원](../pr/assets/issue8413/curve-mask-validation-20261101/README.md)을 보존한다.
+사용자 원본·원본 화면·추출한 글꼴은 공개 fixture나 배포 자원에 포함하지 않았다.
+
+직접 판독은 원형·복합 구멍·Form 안의 곡선·q/Q 복원·affine 이미지, 회전 글자의 방향과 폭,
+32쪽 원본의 1·2쪽 Type3 중복 제거 및 12쪽 회색/투명도, 암호화 원본 10쪽의 회전 글자와
+21쪽 이미지·43쪽 signed rectangle 배경, f87pro의 연속 alpha를 대조했다.
+합성 Helvetica는 정확한 Arial 프로그램을 명시했다. 처음의 넓은 Windows 글꼴 목록이
+Arial Narrow를 `Arial`로 먼저 선택한 진단은 최종 증거에서 제외하고 표준 Arial 네 face만
+지정해 재측정했다. 37쪽의 같은 글꼴 선택도 수정했다. 이 보정은 제품 글꼴 선택 코드 변경이
+아니라 검증 환경 지정이다. 37·57쪽은 원본 프로그램을 로컬에서 복원한 글꼴 환경을 기록했다.
+
+raw 통과를 완전한 픽셀 동일성으로 해석하지 않는다. 암호화 문서 일부 본문의 글꼴 굵기·영문
+간격에는 기존 표현 차이가 남는다. f87pro 키보드의 0.135pt 세선은 PDFium 96dpi 직접 출력과
+216dpi 객체별 래스터를 축소하는 현재 출력에서 농도가 다르다. 원본을 독립 PDFium 216dpi로
+확대해 같은 선들의 존재와 형상을 추가 확인했다. 마스크를 버리거나 굵기를 샘플별로 맞추지
+않았으며, 이 차이를 모든 PDF paint·원 저작 문단 복원이 완료됐다는 주장으로 덮지 않는다.
+
+| 원본 | Native 가져오기 wall / peak RSS | WASM 가져오기·양쪽 형식 저장/재열기 | WASM linear memory capacity | 실제 Studio 열기 |
+| --- | --- | ---: | ---: | ---: |
+| img_clipping_01.pdf | 49.27초 / 688.45 MiB | 67.92초 | 769 MiB | 83.11초 |
+| img_bug_01.pdf | 24.40초 / 399.60 MiB | 24.52초 | 529.25 MiB | 26.46초 |
+| PDF_ENCRYPTION_UNSUPPORTED.pdf | 9.54초 / 309.42 MiB | 23.41초 | 581.94 MiB | 17.68초 |
+| f87pro.pdf | 10.19초 / 471.80 MiB | 53.56초 | 711.13 MiB | 139.95초 |
+
+측정은 각 1회이며 다른 빌드와 일부 겹쳤다. Native CLI wall은 가져오기·HWPX 저장,
+WASM 시간은 HWPX 저장과 편집기 재열기·HWP 저장/재열기를 포함하므로 서로 속도 비교값이 아니다.
+WASM linear memory capacity는 현재 실제 사용량이나 프로세스 peak RSS가 아니다. 누적 decoded
+8 GiB는 재사용·해제한 버퍼의 작업량 계상이며 8 GiB를 동시에 할당한다는 뜻이 아니다.
+Native peak RSS는 `/usr/bin/time`으로 별도 측정했다.
+
+f87pro의 첫 Studio 자동화는 화면이 표시된 뒤 CDP 완료 대기에서 실패했다. 제품의 Worker
+시간 한도를 우회한 것이 아니라 검증 도구의 통신 대기를 600초로 늘려 다시 실행했고,
+`open-document-bytes:done.ok=true`, 1쪽 및 페이지 변환 100%를 확인했다. 실제 열기 139.95초는
+많은 도형을 준비하는 초기 표시 지연이 남음을 보여 준다. 오류 해소를 초기 로딩 성능 개선으로
+보고하지 않는다. 첫 실패와 재실행 로그·화면은 로컬 증거에 함께 남겼다.
+
+기존 마스크 실패 검사는 #7974의 색 키 지원 → #8174/#8360(`f125c735c7`)의 bounded 거부
+계약을 추적했다. 정상 DCT SMask가 새로 지원되므로, DCT라고 표시한 단 한 바이트 `0x80`는
+`Unsupported`가 아니라 malformed image다. 해당 두 검사만 `Image` / `PDF_PARSE_FAILED`
+진단으로 교정하며, 손상된 두 번째 쪽 때문에 전체 요청이 실패하는 원자성과 정상 첫 쪽만
+선택했을 때 성공하는 계약을 유지한다. raw 표본에 DCT/JPX/JBIG2 등의 이름만 붙인 입력이
+그대로 이미지로 채택되지 않는 검사도 유지한다. 정상 JPEG의 alpha는 별도 실제 대조군으로
+확인했다.
+
+새 관계 검사는 정식 suite 자동 수집 경로에서 곡선 내부/외부·구멍·q/Q·Form·affine alpha,
+동일한 Flate/predictor/JPEG mask 표본, 회전 char ratio와 양쪽 저장, Type3의 검색 문자열 보존,
+PDF 이미지 색 출처 및 signed rectangle의 양 끝점 포함을 검사한다. Type3 전체 glyph가
+metrics-only라는 증거가 있어야 하며, 하나라도 paint/unknown/빈 procedure이면 숨김 판정을
+하지 않는 반례도 포함했다. 개인 설치 글꼴 없이 실행한다.
+
+최종 전체 회귀·Native 3종·lint 결과는 아래에서 실행 완료 후 확정한다.

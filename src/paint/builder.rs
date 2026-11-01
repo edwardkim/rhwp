@@ -495,12 +495,18 @@ impl LayerBuilder {
                         },
                     );
                 }
+                // PDF samples already carry display-space colour and continuous alpha.
+                // Ordinary HWP pictures retain the Hancom Print contract.
+                let pdf_samples = image
+                    .data
+                    .as_deref()
+                    .is_some_and(crate::renderer::image_resolver::png_sampling::pdf_source);
                 let mut ops = if let Some(path) = crate::renderer::pdf_stroke::project(image, frame)
                 {
                     vec![PaintOp::path(frame, path)]
                 } else {
                     let mut image = image.clone();
-                    image.hancom2024_print_bitmap = self.hancom2024_print_bitmap;
+                    image.hancom2024_print_bitmap = self.hancom2024_print_bitmap && !pdf_samples;
                     if centered_fill_frame {
                         // 원본의 가운데 채움 속성은 유지하고, 공통 프레임으로
                         // 투영한 paint 연산만 그 프레임 전체에 그림을 재생한다.

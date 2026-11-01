@@ -487,6 +487,7 @@ mod tests {
         FontInfo {
             base_font: "TestUtf8CMap".to_string(),
             subtype: "Type0".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("UniFull-UTF8-H".to_string()),
             to_unicode: None,
             font_weight: None,

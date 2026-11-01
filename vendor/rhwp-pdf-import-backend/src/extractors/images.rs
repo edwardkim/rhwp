@@ -299,11 +299,17 @@ impl PdfImage {
             || height < 1.0
             || width > 16_384.0
             || height > 16_384.0
-            || width * height > 16_000_000.0
+            || width * height > 64_000_000.0
         {
             return Err(budget.reject("clipped image raster dimensions"));
         }
         let (width, height) = (width as usize, height as usize);
+        let mask = match clip {
+            super::image_clip::ImageClip::Complex(c) => {
+                Some(c.raster(frame, width, height, budget)?)
+            },
+            _ => None,
+        };
         let mut output = sample_buffer(width * height * 4, Some(budget))?;
         // Use the existing bounded codec/colour conversion; existing alpha is
         // retained. Both this conversion and the destination are charged.
@@ -368,6 +374,11 @@ impl PdfImage {
                         }
                     }
                     output.extend_from_slice(&rgba);
+                }
+                if let Some(mask) = &mask {
+                    let alpha = output.last_mut().expect("RGBA pixel was emitted");
+                    *alpha = ((u16::from(*alpha) * u16::from(mask.data()[y * width + x]) + 127)
+                        / 255) as u8;
                 }
             }
         }
@@ -4875,12 +4886,13 @@ impl<'doc> PdfImageHandle<'doc> {
 
         // Use pre-computed bbox and rotation from Phase 1 — no need to call
         // back into document.rs helpers here.
-        let needs_affine = matches!(self.clip, super::image_clip::ImageClip::Polygon(_))
-            || (self.pattern_pixels.is_some()
-                && (self.ctm.b != 0.0
-                    || self.ctm.c != 0.0
-                    || self.ctm.a <= 0.0
-                    || self.ctm.d <= 0.0));
+        let needs_affine = matches!(
+            self.clip,
+            super::image_clip::ImageClip::Polygon(_) | super::image_clip::ImageClip::Complex(_)
+        ) || self.ctm.b != 0.0
+            || self.ctm.c != 0.0
+            || self.ctm.a <= 0.0
+            || self.ctm.d <= 0.0;
         if let (true, Some(budget)) = (needs_affine, self.doc.import_budget()) {
             let frame = self
                 .clip

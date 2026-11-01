@@ -40,6 +40,8 @@ pub struct FontInfo {
     pub base_font: String,
     /// Font subtype (e.g., "Type1", "TrueType", "Type0")
     pub subtype: String,
+    /// Every CharProc is proven to contain metrics only; searchable text paints no glyph.
+    pub type3_metrics_only: bool,
     /// Encoding information
     pub encoding: Encoding,
     /// ToUnicode CMap (character code to Unicode mapping)
@@ -1572,9 +1574,11 @@ impl FontInfo {
             None
         };
 
+        let type3_metrics_only = subtype == "Type3" && super::type3_empty::proven_empty(dict, doc)?;
         Ok(FontInfo {
             base_font,
             subtype,
+            type3_metrics_only,
             encoding,
             to_unicode,
             font_weight,
@@ -6939,6 +6943,7 @@ mod tests {
         let font = FontInfo {
             base_font: "Times-Bold".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: Some(700),
@@ -6985,6 +6990,7 @@ mod tests {
         let font2 = FontInfo {
             base_font: "Helvetica".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: Some(400),
@@ -7034,6 +7040,7 @@ mod tests {
         let font = FontInfo {
             base_font: "Times-Italic".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -7080,6 +7087,7 @@ mod tests {
         let font2 = FontInfo {
             base_font: "Courier-Oblique".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -7132,6 +7140,7 @@ mod tests {
         let font = FontInfo {
             base_font: "CustomFont".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: Some(LazyCMap::new(cmap_data.to_vec())),
             font_weight: None,
@@ -7185,6 +7194,7 @@ mod tests {
         let font = FontInfo {
             base_font: "Times-Roman".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -7237,6 +7247,7 @@ mod tests {
         let font_type0 = FontInfo {
             base_font: "CIDFont".to_string(),
             subtype: "Type0".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Identity,
             to_unicode: None,
             font_weight: None,
@@ -7287,6 +7298,7 @@ mod tests {
         let font_type1 = FontInfo {
             base_font: "TimesRoman".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Identity,
             to_unicode: None,
             font_weight: None,
@@ -7435,6 +7447,7 @@ mod tests {
         let font = FontInfo {
             base_font: "Test".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -7573,6 +7586,7 @@ mod tests {
         let font = FontInfo {
             base_font: "CustomFont".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Custom(custom_map),
             to_unicode: None,
             font_weight: None,
@@ -7629,6 +7643,7 @@ mod tests {
         let font_with_force_bold = FontInfo {
             base_font: "Helvetica".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,    // No explicit weight
@@ -7678,6 +7693,7 @@ mod tests {
         let font_without_force_bold = FontInfo {
             base_font: "Helvetica".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -7731,6 +7747,7 @@ mod tests {
         let font_heavy_stem = FontInfo {
             base_font: "UnknownFont".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -7780,6 +7797,7 @@ mod tests {
         let font_medium_stem = FontInfo {
             base_font: "UnknownFont".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -7829,6 +7847,7 @@ mod tests {
         let font_light_stem = FontInfo {
             base_font: "UnknownFont".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -7882,6 +7901,7 @@ mod tests {
         let font_explicit = FontInfo {
             base_font: "Helvetica-Bold".to_string(), // Name says Bold
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: Some(300), // But explicit weight is Light
@@ -7931,6 +7951,7 @@ mod tests {
         let font_force_bold = FontInfo {
             base_font: "Helvetica".to_string(), // Name says Normal
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,    // No explicit weight
@@ -7980,6 +8001,7 @@ mod tests {
         let font_name = FontInfo {
             base_font: "Helvetica-Bold".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -8033,6 +8055,7 @@ mod tests {
         let font_black = FontInfo {
             base_font: "Helvetica-Black".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -8081,6 +8104,7 @@ mod tests {
         let font_extrabold = FontInfo {
             base_font: "Arial-ExtraBold".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -8129,6 +8153,7 @@ mod tests {
         let font_bold = FontInfo {
             base_font: "TimesNewRoman-Bold".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -8177,6 +8202,7 @@ mod tests {
         let font_semibold = FontInfo {
             base_font: "Arial-SemiBold".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -8225,6 +8251,7 @@ mod tests {
         let font_medium = FontInfo {
             base_font: "Roboto-Medium".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -8273,6 +8300,7 @@ mod tests {
         let font_light = FontInfo {
             base_font: "Helvetica-Light".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -8321,6 +8349,7 @@ mod tests {
         let font_extralight = FontInfo {
             base_font: "Roboto-ExtraLight".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -8369,6 +8398,7 @@ mod tests {
         let font_thin = FontInfo {
             base_font: "HelveticaNeue-Thin".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -8417,6 +8447,7 @@ mod tests {
         let font_normal = FontInfo {
             base_font: "Helvetica".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -8713,6 +8744,7 @@ mod tests {
         let font = FontInfo {
             base_font: "CIDFont".to_string(),
             subtype: "Type0".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Identity,
             to_unicode: None,
             font_weight: None,
@@ -8773,6 +8805,7 @@ mod tests {
         let font = FontInfo {
             base_font: "CIDFont".to_string(),
             subtype: "Type0".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Identity,
             to_unicode: None,
             font_weight: None,
@@ -8829,6 +8862,7 @@ mod tests {
         let font = FontInfo {
             base_font: "SimpleFont".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -8891,6 +8925,7 @@ mod tests {
         let font = FontInfo {
             base_font: "CJKFont".to_string(),
             subtype: "Type0".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Identity,
             to_unicode: None,
             font_weight: None,
@@ -8958,6 +8993,7 @@ mod tests {
         let mut f = FontInfo {
             base_font: "TestFont".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -11141,6 +11177,7 @@ mod tests {
         let font = FontInfo {
             base_font: "Times-Roman".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -11198,6 +11235,7 @@ mod tests {
         let font = FontInfo {
             base_font: "Courier".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -11251,6 +11289,7 @@ mod tests {
         let font = FontInfo {
             base_font: "Times-Roman".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -11302,6 +11341,7 @@ mod tests {
         let font = FontInfo {
             base_font: "MyCustomFont".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,
@@ -11359,6 +11399,7 @@ mod tests {
         let font = FontInfo {
             base_font: "Helvetica".to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: Some(400),
@@ -11506,6 +11547,7 @@ mod tests {
         FontInfo {
             base_font: "TestType0Font".to_string(),
             subtype: "Type0".to_string(),
+            type3_metrics_only: false,
             // Mirror the real parser (`parse_encoding`): a `/Identity-H` or
             // `/Identity-V` encoding name resolves to `Encoding::Identity`, not
             // `Encoding::Standard("Identity-H")` — production never produces the

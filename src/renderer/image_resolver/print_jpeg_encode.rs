@@ -33,7 +33,7 @@ pub(crate) fn print_jpeg_payload(
         return None;
     }
     let data = image.data.as_deref()?;
-    if super::png_sampling::interpolation(data).is_some() {
+    if super::png_sampling::pdf_source(data) {
         return None;
     }
     match detect_image_mime_type(data) {

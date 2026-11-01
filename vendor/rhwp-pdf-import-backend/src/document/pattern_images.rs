@@ -113,6 +113,7 @@ impl PdfDocument {
         let xobjects = self.image_resource_dictionary(resources, "XObject")?;
         let cs_map = self.build_color_space_map(resources)?;
         let mut graphics = ImageClipTracker::from_image_state(initial.clone());
+        graphics.set_budget(self.import_budget.clone());
         let mut handles = Vec::new();
         for (ordinal, op) in operators.iter().enumerate() {
             self.check_import_budget()?;
@@ -141,7 +142,12 @@ impl PdfDocument {
                     resources,
                     &initial,
                     before.alpha,
-                    graphics.fill_clip(),
+                    graphics.fill_clip(matches!(
+                        op,
+                        Operator::FillEvenOdd
+                            | Operator::FillStrokeEvenOdd
+                            | Operator::CloseFillStrokeEvenOdd
+                    ))?,
                     paint_order,
                     stack,
                 )?
@@ -170,7 +176,7 @@ impl PdfDocument {
             {
                 return Err(unsupported("non-image painting in image tiling pattern"));
             }
-            graphics.apply(op);
+            graphics.apply(op)?;
             let state = graphics.current();
             match op {
                 Operator::Do { name } => {

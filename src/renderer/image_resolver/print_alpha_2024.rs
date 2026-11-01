@@ -31,8 +31,7 @@ pub(super) fn eligible(image: &ImageNode) -> bool {
             })
         })
         && image.data.as_deref().is_some_and(|data| {
-            data.starts_with(b"\x89PNG\r\n\x1a\n")
-                && super::png_sampling::interpolation(data).is_none()
+            data.starts_with(b"\x89PNG\r\n\x1a\n") && !super::png_sampling::pdf_source(data)
         })
 }
 

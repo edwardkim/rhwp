@@ -25,7 +25,7 @@ pub(super) fn payload(image: &ImageNode, width_points: f64) -> Option<ResolvedIm
         return None;
     }
     let source = image.data.as_deref()?;
-    if super::png_sampling::interpolation(source).is_some() {
+    if super::png_sampling::pdf_source(source) {
         return None;
     }
     let format = match detect_image_mime_type(source) {

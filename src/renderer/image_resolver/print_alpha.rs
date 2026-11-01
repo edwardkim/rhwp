@@ -36,8 +36,7 @@ pub(crate) fn print_alpha_payload(
         return None;
     }
     let data = image.data.as_deref()?;
-    if !data.starts_with(b"\x89PNG\r\n\x1a\n") || super::png_sampling::interpolation(data).is_some()
-    {
+    if !data.starts_with(b"\x89PNG\r\n\x1a\n") || super::png_sampling::pdf_source(data) {
         return None;
     }
     let header = crate::renderer::image_header::canvaskit_encoded_image_header(data)

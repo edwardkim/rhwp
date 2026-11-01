@@ -436,3 +436,24 @@ test('invalid or regressing page progress retires the worker', async () => {
     await rejectedResult; assert.equal(worker.terminated, true); f.session.dispose();
   }
 });
+
+test('remaining work above 4 GiB reaches editor reopen without 32-bit truncation', async () => {
+  const f = fixture({ ...policy, backend: { ...policy.backend, decodedBytes: 8 * 2 ** 30 } });
+  const pending = f.session.importPdf(bytes); await ready();
+  const worker = f.workers[0];
+  worker.onmessage({ data: {
+    id: worker.messages.at(-1).id, encoding: 'json',
+    result: JSON.stringify({ pageCount: 1, diagnostics: {} }),
+    remainingDecodedBytes: 5 * 2 ** 30 + 17,
+  } });
+  await pending;
+  assert.equal(f.session.getEditorReopenLimits().decodedBytes, 5 * 2 ** 30 + 17);
+  const inspect = f.session.inspect();
+  worker.onmessage({ data: {
+    id: worker.messages.at(-1).id, encoding: 'json',
+    result: JSON.stringify({ pageCount: 1, diagnostics: {} }),
+    remainingDecodedBytes: 8 * 2 ** 30 + 1,
+  } });
+  await assert.rejects(inspect, rejected('PDF_WORKER_PROTOCOL'));
+  f.session.dispose();
+});

@@ -13,7 +13,7 @@ pub(super) fn payload(image: &ImageNode, width_points: f64) -> Option<ResolvedIm
     }
     let source = image.data.as_deref()?;
     if super::detect_image_mime_type(source) != "image/jpeg"
-        || super::png_sampling::interpolation(source).is_some()
+        || super::png_sampling::pdf_source(source)
     {
         return None;
     }

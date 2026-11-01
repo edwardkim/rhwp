@@ -286,11 +286,18 @@ pub(super) fn extract(
         if handle.opacity == 0.0 {
             continue;
         }
-        let Some(visible) = handle.clip.visible_bounds(handle.bbox).map_err(|_| {
-            PdfImportError::new(
-                "PDF_IMAGE_UNSUPPORTED",
-                "non-rectangular image clipping is not supported",
-            )
+        let Some(visible) = checked(
+            pdf,
+            handle.clip.visible_bounds(handle.bbox),
+            "image_clip",
+            page,
+        )
+        .map_err(|mut error| {
+            if error.diagnostics.as_ref().and_then(|d| d.backend_kind) == Some("unsupported") {
+                error.code = "PDF_IMAGE_UNSUPPORTED";
+                error.message = "image clipping path is not supported";
+            }
+            error
         })?
         else {
             // This paint operation has an empty intersection with the active clip.

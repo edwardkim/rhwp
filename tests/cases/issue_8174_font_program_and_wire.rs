@@ -118,7 +118,7 @@ fn public_first_save_refuses_final_cfb_backing_before_allocation_and_recovers() 
     assert!(request.export_hwp(&mut core, 1024 * 1024).is_err());
     let usage = request.resource_usage();
     let failure = usage.failure.unwrap();
-    assert_eq!(failure.requested, Some(expected.len()));
+    assert_eq!(failure.requested, Some(expected.len() as u64));
     assert!(usage.decoded_bytes <= limited.backend.decoded_bytes);
     assert!(request.export_hwp(&mut core, 1024 * 1024).is_err());
     assert_eq!(core.export_hwp_native().unwrap(), expected);

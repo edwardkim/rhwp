@@ -122,7 +122,8 @@ impl Allocation<'_> {
                 .0
                 .limits
                 .decoded_bytes
-                .saturating_sub(self.0.snapshot().decoded_bytes),
+                .saturating_sub(self.0.snapshot().decoded_bytes)
+                .min(usize::MAX as u64) as usize,
         };
         producer
             .write(&mut crate::serializer::byte_writer::ByteWriter::with_writer(&mut count))
@@ -341,8 +342,12 @@ impl Allocation<'_> {
             hwpx_head_tail,
             hwpml_version,
         );
-        let work = crate::model::owned_work::measure(&payload, self.0.limits.decoded_bytes, 0)
-            .map_err(|_| PdfImportError::backend(self.0.reject("DocInfo copy work")))?;
+        let work = crate::model::owned_work::measure(
+            &payload,
+            self.0.limits.decoded_bytes.min(usize::MAX as u64) as usize,
+            0,
+        )
+        .map_err(|_| PdfImportError::backend(self.0.reject("DocInfo copy work")))?;
         self.bytes(work)?;
         // Provenance is a separate owned digest graph, not a serialized field.
         if let Some(seal) = raw_provenance {
@@ -388,8 +393,12 @@ impl Allocation<'_> {
 
     fn record_work<T: ?Sized + Serialize>(self, value: &T) -> Result<(), PdfImportError> {
         self.0.check().map_err(PdfImportError::backend)?;
-        let work = crate::model::owned_work::measure(value, self.0.limits.decoded_bytes, 0)
-            .map_err(|_| PdfImportError::backend(self.0.reject("document copy work")))?;
+        let work = crate::model::owned_work::measure(
+            value,
+            self.0.limits.decoded_bytes.min(usize::MAX as u64) as usize,
+            0,
+        )
+        .map_err(|_| PdfImportError::backend(self.0.reject("document copy work")))?;
         self.bytes(work)
     }
 
@@ -501,8 +510,12 @@ impl Allocation<'_> {
 
     pub fn clone_record<T: Clone + Serialize>(self, value: &T) -> Result<T, PdfImportError> {
         self.0.check().map_err(PdfImportError::backend)?;
-        let work = crate::model::owned_work::measure(value, self.0.limits.decoded_bytes, 0)
-            .map_err(|_| PdfImportError::backend(self.0.reject("frontend owned record work")))?;
+        let work = crate::model::owned_work::measure(
+            value,
+            self.0.limits.decoded_bytes.min(usize::MAX as u64) as usize,
+            0,
+        )
+        .map_err(|_| PdfImportError::backend(self.0.reject("frontend owned record work")))?;
         self.bytes(work)?;
         Ok(value.clone())
     }
@@ -709,7 +722,7 @@ impl Allocation<'_> {
         let mut writer = JsonWriter {
             allocation: self,
             bytes: Vec::new(),
-            maximum: self.0.limits.decoded_bytes,
+            maximum: self.0.limits.decoded_bytes.min(usize::MAX as u64) as usize,
         };
         let result = writer.write_fmt(format_args!("{value}"));
         self.0.check().map_err(PdfImportError::backend)?;

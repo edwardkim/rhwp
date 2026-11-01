@@ -85,11 +85,11 @@ Studio에서 `PDF_IMPORT_TIMEOUT`이 발생하면 「고급 설정 → 제한 �
 | 단일 stream 버퍼 | 256 MiB | 32 MiB | 압축 해제·operator 수집 등의 개별 출력 backing |
 | 그림 한 개 | 64,000,000 px | 4,000,000 px | 선언·합성된 이미지 면적 검사 |
 | 문서 누적 그림 | 2,000,000,000 px | 16,000,000 px | 선택한 쪽의 그림 배치별 픽셀 합계 |
-| decoded 작업 | 최대 2 GiB | 256 MiB | 누적 예약 카운터이며 live heap이 아님 |
+| decoded 작업 | 최대 8 GiB | 256 MiB | 누적 예약 카운터이며 live heap이 아님 |
 | collection entries | 400,000 | 100,000 | xref·객체 컬렉션 등의 누적 항목 |
 | font entries | 1,000,000 | 100,000 | Type1/CFF/TrueType의 map·glyph name·Unicode memo 등 누적 확장 작업 |
 | codec 단일 예약 | 256 MiB | 32 MiB | decoder 예약과 누적 decoded 예산에 함께 적용 |
-| codec 작업량 | 1,000,000,000 | 1,000,000,000 | 논리 작업 단위이며 실행 시간이 아님 |
+| codec 작업량 | 2,000,000,000 | 1,000,000,000 | 논리 작업 단위이며 실행 시간이 아님 |
 | wall timeout | 120초 | 30초 | 부모가 감시하는 작업 수명 |
 | CPU 시간 | 90초 | 20초 | Linux 작업자 프로세스 CPU 제한 |
 | 주소 공간 | 4 GiB | 1 GiB | Linux 작업자 가상 주소 공간 제한 |
@@ -110,8 +110,11 @@ OS/Worker 제한에서 실패할 수 있다. 자동 축소하거나 한도 초�
 공유한다. 캐시는 요청 종료와 함께 해제되며 다른 PDF와 공유하지 않는다. 배치별 픽셀 합계는
 계속 검사하고, 투명도·clip 등으로 픽셀을 바꿀 때의 복사와 압축 바이트 반환도 예산에 포함한다.
 decoded 작업은 공유 폰트·paint와 Core 초기화·첫 저장·진단 인코딩까지 같은 요청에서
-누적하므로 선택 쪽수로 축소하지 않는다. 한 쪽도 standard의 최대 2 GiB 또는 더 낮게 지정한
-host cap을 사용한다. constrained의 256 MiB 상한도 유지된다. 이는 누적 예약 작업량이며
+누적하므로 선택 쪽수로 축소하지 않는다. 한 쪽도 standard의 최대 8 GiB 또는 더 낮게 지정한
+host cap을 사용한다. constrained의 256 MiB 상한도 유지된다. Rust의 누적 decoded/codec
+예약 카운터는 `u64`이며, 실제 단일 버퍼의 길이는 해당 target의 `usize`로 검사한다.
+WASM32에서도 누적 카운터는 64-bit 정수를 유지하고 JS에는 안전한 정수 `Number`로
+재열기에 남은 예산을 전달한다. 이는 누적 예약 작업량이며
 실제 메모리 사용량을 허용하는 보장이 아니다. 한 값이 남아 있어도 독립된 다른 한도가 먼저
 소진되면 요청 전체가 실패한다. 원본 쪽수·경로/문자 수집 한도 등
 전체 필드 이름은 [`PdfImportPolicy`](../../src/parser/pdf/policy.rs)와

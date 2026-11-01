@@ -209,6 +209,7 @@ mod tests {
         FontInfo {
             base_font: name.to_string(),
             subtype: "Type1".to_string(),
+            type3_metrics_only: false,
             encoding: Encoding::Standard("WinAnsiEncoding".to_string()),
             to_unicode: None,
             font_weight: None,

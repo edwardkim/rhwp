@@ -62,7 +62,10 @@ impl Default for PdfImportPolicy {
             reference_visits: 4_000_000,
             spans: 120_000,
             entries: 400_000,
-            decoded_bytes: 2 * 1024 * 1024 * 1024,
+            // Cumulative allocations/copies, not simultaneously resident memory.
+            // Large image documents exceed 4 GiB of work on wasm32 as well.
+            decoded_bytes: 8 * 1024 * 1024 * 1024,
+            codec_work_units: 2_000_000_000,
             // Full CJK faces commonly carry tens of thousands of CID widths
             // and TrueType mappings each, even on a single page. Allow several
             // such faces while retaining a finite request-wide expansion cap.
@@ -199,16 +202,24 @@ impl PdfImportPolicy {
 // duplicate keys, including inside backend, before any input document is read.
 #[derive(Debug, Deserialize)]
 #[serde(transparent)]
-struct Limit(usize);
+struct Limit(u64);
 
-fn lower_cap(target: &mut usize, value: Limit) -> Result<(), super::PdfImportError> {
-    if value.0 == 0 || value.0 > *target {
+fn lower_cap<T: Copy + TryFrom<u64> + TryInto<u64>>(
+    target: &mut T,
+    value: Limit,
+) -> Result<(), super::PdfImportError> {
+    if value.0 == 0 || value.0 > (*target).try_into().unwrap_or(0) {
         return Err(super::PdfImportError::new(
             "PDF_RESOURCE_POLICY",
             "resource limits must be positive and not exceed the selected profile",
         ));
     }
-    *target = value.0;
+    *target = T::try_from(value.0).map_err(|_| {
+        super::PdfImportError::new(
+            "PDF_RESOURCE_POLICY",
+            "resource limit is not representable on this target",
+        )
+    })?;
     Ok(())
 }
 

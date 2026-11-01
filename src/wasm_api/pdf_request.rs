@@ -117,12 +117,12 @@ impl PdfImportRequest {
     }
 
     #[wasm_bindgen(js_name = remainingDecodedBytes)]
-    pub fn remaining_decoded_bytes(&self) -> u32 {
+    pub fn remaining_decoded_bytes(&self) -> f64 {
         self.policy
             .backend
             .decoded_bytes
             .saturating_sub(self.session.resource_usage().decoded_bytes)
-            .min(u32::MAX as usize) as u32
+            .min(9_007_199_254_740_991) as f64
     }
 
     /// Count and reserve response backing before allocation, using the same
@@ -220,7 +220,7 @@ impl PdfEditorReopen {
         data: &PdfImportInput,
         options: JsValue,
         maximum: u32,
-        remaining: u32,
+        remaining: f64,
         timeout_ms: f64,
     ) -> Result<PdfEditorReopen, JsValue> {
         let (_, mut policy, profile) = pdf_import::options(options)?;
@@ -230,8 +230,11 @@ impl PdfEditorReopen {
         };
         if maximum == 0
             || maximum as usize > limit.output_bytes
-            || remaining == 0
-            || remaining as usize > policy.backend.decoded_bytes
+            || !remaining.is_finite()
+            || remaining.fract() != 0.0
+            || remaining <= 0.0
+            || remaining > 9_007_199_254_740_991.0
+            || remaining as u64 > policy.backend.decoded_bytes
         {
             return Err(JsValue::from_str(
                 "PDF_RESOURCE_POLICY: invalid editor reopen allowance",
@@ -242,7 +245,7 @@ impl PdfEditorReopen {
                 "PDF_IMPORT_TIMEOUT: editor reopen deadline expired",
             ));
         }
-        policy.backend.decoded_bytes = remaining as usize;
+        policy.backend.decoded_bytes = remaining as u64;
         let performance =
             js_sys::Reflect::get(&js_sys::global(), &JsValue::from_str("performance"))?;
         let now: js_sys::Function =

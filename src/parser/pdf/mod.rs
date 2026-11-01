@@ -225,9 +225,9 @@ impl PdfImportError {
             .expect("frontend context")
             .frontend_limit = Some(ImportLimitFailure {
             reason,
-            used: Some(used),
-            requested: Some(requested),
-            limit: Some(limit),
+            used: Some(used as u64),
+            requested: Some(requested as u64),
+            limit: Some(limit as u64),
         });
         self
     }

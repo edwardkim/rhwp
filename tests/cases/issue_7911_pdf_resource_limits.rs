@@ -68,7 +68,7 @@ fn product_collection_budget_is_shared_by_operand_arrays_not_page_count() {
                 .failure
                 .unwrap();
             assert_eq!(failure.reason, "collection entries");
-            assert_eq!(failure.limit, Some(cap));
+            assert_eq!(failure.limit, Some(cap as u64));
         }
     }
 }
@@ -210,10 +210,13 @@ use pdf_oxide::PdfDocument;
 use std::io::Write;
 use std::sync::Arc;
 
-fn budget(stream: usize, total: usize) -> ImportBudget {
+fn budget<T: TryInto<u64>>(stream: usize, total: T) -> ImportBudget
+where
+    T::Error: std::fmt::Debug,
+{
     ImportBudget::new(PdfImportLimits {
         stream_bytes: stream,
-        decoded_bytes: total,
+        decoded_bytes: total.try_into().unwrap(),
         ..PdfImportLimits::default()
     })
     .unwrap()
@@ -327,7 +330,7 @@ fn individual_output_boundaries_are_exact_for_supported_filters() {
                 assert_eq!(result.unwrap(), expected, "{filter}");
                 assert_eq!(
                     budget.decoded_bytes(),
-                    budget.codec_allocated_bytes() + expected.len()
+                    budget.codec_allocated_bytes() + expected.len() as u64
                 );
             }
         }
@@ -1034,7 +1037,7 @@ fn product_font_budget_accepts_multiple_cid_faces_and_preserves_explicit_limits(
             assert_eq!(failure.reason, "font metric entries");
             assert_eq!(
                 (failure.used, failure.requested, failure.limit),
-                (Some(80_000), Some(40_000), Some(cap))
+                (Some(80_000), Some(40_000), Some(cap as u64))
             );
         }
     }
@@ -1100,7 +1103,7 @@ fn repeated_stencils_keep_actual_work_and_explicit_request_caps() {
         .expect("original paints, not one projected picture, consume placements");
     assert_eq!(
         error.diagnostics.unwrap().frontend_limit.unwrap().limit,
-        Some(count - 1)
+        Some((count - 1) as u64)
     );
     // Raw decoder defaults and smaller trusted-host reference limits remain.
     assert_eq!(PdfImportLimits::default().xobject_visits, 10_000);
@@ -1227,7 +1230,12 @@ fn narrowed_traversal_caps_preserve_consumption_and_sticky_failure() {
             failure.requested,
             failure.limit
         ),
-        ("reference visits", Some(used), Some(0), Some(used - 1))
+        (
+            "reference visits",
+            Some(used as u64),
+            Some(0),
+            Some((used - 1) as u64)
+        )
     );
 }
 
@@ -1645,9 +1653,16 @@ fn cached_span_copies_charge_flat_and_owned_payload_before_return() {
         copied.iter().map(|s| &s.text).collect::<Vec<_>>(),
         spans.iter().map(|s| &s.text).collect::<Vec<_>>()
     );
-    assert_eq!(doc.import_budget().unwrap().decoded_bytes() - used, payload);
+    assert_eq!(
+        doc.import_budget().unwrap().decoded_bytes() - used,
+        payload as u64
+    );
 
-    for cap in [used + payload - 1, used + payload, used + payload + 1] {
+    for cap in [
+        used + payload as u64 - 1,
+        used + payload as u64,
+        used + payload as u64 + 1,
+    ] {
         let limited = PdfDocument::from_bytes_with_limits(
             cached_text_file(),
             PdfImportLimits {
@@ -1658,7 +1673,7 @@ fn cached_span_copies_charge_flat_and_owned_payload_before_return() {
         .unwrap();
         limited.extract_spans(0).unwrap();
         let result = limited.extract_spans(0);
-        if cap < used + payload {
+        if cap < used + payload as u64 {
             assert!(matches!(
                 result,
                 Err(Error::ImportResourceLimit("document decoded bytes"))
@@ -1690,8 +1705,15 @@ fn cached_character_copies_charge_owned_font_names_before_return() {
             .collect::<String>(),
         "CACHE"
     );
-    assert_eq!(doc.import_budget().unwrap().decoded_bytes() - used, payload);
-    for cap in [used + payload - 1, used + payload, used + payload + 1] {
+    assert_eq!(
+        doc.import_budget().unwrap().decoded_bytes() - used,
+        payload as u64
+    );
+    for cap in [
+        used + payload as u64 - 1,
+        used + payload as u64,
+        used + payload as u64 + 1,
+    ] {
         let limited = PdfDocument::from_bytes_with_limits(
             cached_text_file(),
             PdfImportLimits {
@@ -1702,7 +1724,7 @@ fn cached_character_copies_charge_owned_font_names_before_return() {
         .unwrap();
         limited.extract_chars(0).unwrap();
         let result = limited.extract_chars(0);
-        if cap < used + payload {
+        if cap < used + payload as u64 {
             assert!(matches!(
                 result,
                 Err(Error::ImportResourceLimit("document decoded bytes"))
@@ -1935,11 +1957,11 @@ fn brotli_scratch_allocation_and_cumulative_boundaries_are_preallocation_checks(
             ));
             assert_eq!(
                 shared.codec_allocated_bytes(),
-                if cap < initial { 0 } else { initial }
+                if cap < initial { 0 } else { initial as u64 }
             );
         } else {
             assert!(result.unwrap().is_empty());
-            assert_eq!(shared.codec_allocated_bytes(), total);
+            assert_eq!(shared.codec_allocated_bytes(), total as u64);
         }
     }
     for cap in [total - 1, total, total + 1] {
@@ -1950,10 +1972,10 @@ fn brotli_scratch_allocation_and_cumulative_boundaries_are_preallocation_checks(
                 result,
                 Err(Error::ImportResourceLimit("document decoded bytes"))
             ));
-            assert_eq!(shared.codec_allocated_bytes(), initial * 4);
+            assert_eq!(shared.codec_allocated_bytes(), (initial * 4) as u64);
         } else {
             assert!(result.unwrap().is_empty());
-            assert_eq!(shared.codec_allocated_bytes(), total);
+            assert_eq!(shared.codec_allocated_bytes(), total as u64);
         }
     }
     assert!(ImportBudget::new(PdfImportLimits {
@@ -2273,7 +2295,7 @@ fn ccitt_packed_and_private_allocation_boundaries_are_checked_before_reserve() {
             assert!(shared.check().is_err());
         } else {
             assert_eq!(result.unwrap().data, [255, 255, 231]);
-            assert_eq!(shared.decoded_bytes(), total);
+            assert_eq!(shared.decoded_bytes(), total as u64);
         }
     }
     for cap in [15, 16, 17] {
@@ -2921,7 +2943,7 @@ fn limited_sample_geometry_and_decode_do_not_silently_fabricate_pixels() {
 }
 
 #[test]
-fn limited_import_preserves_supported_masks_and_rejects_unsupported_masks() {
+fn limited_import_preserves_supported_masks_and_rejects_malformed_masks() {
     use rhwp::parser::pdf::{parse_pdf_with_options, PdfImportOptions};
     // #7974 supports colour keys: the black source sample matches all three
     // original component ranges and is transparent; the red control remains
@@ -2950,14 +2972,18 @@ fn limited_import_preserves_supported_masks_and_rejects_unsupported_masks() {
         assert!(
             matches!(
                 doc.page_image_handles(0).unwrap()[0].decode(),
-                Err(Error::Unsupported(_))
+                Err(Error::Image(_))
             ),
-            "{extra}"
+            "{extra}: DCT is supported, but a single 0x80 byte is not a JPEG"
         );
         let err = parse_pdf_with_options(&source, &PdfImportOptions::default())
             .err()
             .expect("mask cannot be silently discarded");
-        assert_eq!(err.code, "PDF_IMAGE_UNSUPPORTED");
+        assert_eq!(err.code, "PDF_PARSE_FAILED");
+        assert_eq!(
+            err.diagnostics.as_ref().unwrap().backend_kind,
+            Some("image")
+        );
         // Legacy image extraction still serves callers that apply masks
         // themselves; this restriction belongs to bounded handle import.
         assert!(PdfDocument::from_bytes(source)
@@ -3294,9 +3320,9 @@ fn limited_import_preserves_supported_masks_and_rejects_unsupported_masks() {
         [10, 20, 30]
     );
 
-    // A later unsupported mask codec must fail the whole import, while
-    // selecting just the ordinary first page remains valid. Keep the atomicity
-    // contract with DCT SMask, rather than a now-supported colour-key array.
+    // A later malformed JPEG mask must fail the whole import, while
+    // selecting just the ordinary first page remains valid. #8413 adds valid
+    // DCT masks; it must not accept these raw bytes under a false codec label.
     let mut pages = objects(b"/Im Do", "", "");
     pages[1] = b"<< /Type /Pages /Count 2 /Kids [3 0 R 7 0 R] >>".to_vec();
     pages[2] = b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Resources << /XObject << /Im 6 0 R >> >> /Contents 4 0 R >>".to_vec();
@@ -3315,7 +3341,11 @@ fn limited_import_preserves_supported_masks_and_rejects_unsupported_masks() {
         )
         .err()
         .expect("whole selected import must fail");
-        assert_eq!(error.code, "PDF_IMAGE_UNSUPPORTED");
+        assert_eq!(error.code, "PDF_PARSE_FAILED");
+        assert_eq!(
+            error.diagnostics.as_ref().unwrap().backend_kind,
+            Some("image")
+        );
     }
     let normal = parse_pdf_with_options(
         &source,
@@ -3392,7 +3422,7 @@ fn png_encoder_scratch_is_reserved_before_the_output_writer() {
     );
     let normal = ImportBudget::new(PdfImportLimits::default()).unwrap();
     image.to_png_bytes_with_budget(&normal).unwrap();
-    let scratch = normal.codec_allocated_bytes();
+    let scratch = usize::try_from(normal.codec_allocated_bytes()).unwrap();
     // The audited compressor owns a 32KiB window and a hash table, not merely
     // the seven-byte scanline. Its actual allocation is charged before init.
     assert!(scratch >= 65536);
@@ -3415,7 +3445,7 @@ fn png_encoder_scratch_is_reserved_before_the_output_writer() {
                     .as_raw(),
                 &[1, 2, 3, 4, 5, 6]
             );
-            assert_eq!(budget.codec_allocated_bytes(), scratch);
+            assert_eq!(budget.codec_allocated_bytes(), scratch as u64);
         }
     }
 }
@@ -3451,13 +3481,13 @@ fn jpeg_input_copy_is_charged_before_the_image_decoder_is_created() {
         } else if cap < 1024 * 1024 {
             // Input fits; a private JPEG or subsequent PNG reservation must fail.
             assert!(matches!(result, Err(Error::ImportResourceLimit(_))));
-            assert!(budget.codec_allocated_bytes() >= input_bytes);
+            assert!(budget.codec_allocated_bytes() >= input_bytes as u64);
         } else {
             assert_eq!(
                 image::load_from_memory(&result.unwrap()).unwrap().to_rgb8(),
                 expected
             );
-            assert!(budget.codec_allocated_bytes() >= input_bytes + 6);
+            assert!(budget.codec_allocated_bytes() >= input_bytes as u64 + 6);
         }
     }
 }
@@ -3481,13 +3511,13 @@ fn png_output_and_cumulative_limits_include_container_and_repeated_work() {
     let image = png_rgb_pair();
     let normal = ImportBudget::new(PdfImportLimits::default()).unwrap();
     let encoded_bytes = image.to_png_bytes_with_budget(&normal).unwrap().len();
-    let scratch = normal.codec_allocated_bytes();
+    let scratch = usize::try_from(normal.codec_allocated_bytes()).unwrap();
     for cap in [encoded_bytes - 1, encoded_bytes, encoded_bytes + 1] {
         let budget = budget(cap, 2 * 1024 * 1024);
         let result = image.to_png_bytes_with_budget(&budget);
         if cap < encoded_bytes {
             assert!(matches!(result, Err(Error::ImportResourceLimit(_))));
-            assert_eq!(budget.codec_allocated_bytes(), scratch);
+            assert_eq!(budget.codec_allocated_bytes(), scratch as u64);
             assert!(budget.check().is_err());
         } else {
             let png = result.unwrap();
@@ -3502,7 +3532,7 @@ fn png_output_and_cumulative_limits_include_container_and_repeated_work() {
     // actual compressor reservations and PNG output consume this request;
     // reuse the returned compressor block and charge each new encoded output.
     let one_request = scratch + encoded_bytes;
-    assert_eq!(normal.decoded_bytes(), one_request);
+    assert_eq!(normal.decoded_bytes(), one_request as u64);
     for count in [1, 2] {
         for cap in [
             scratch + count * encoded_bytes - 1,
@@ -3519,7 +3549,10 @@ fn png_output_and_cumulative_limits_include_container_and_repeated_work() {
                 assert!(image.to_png_bytes_with_budget(&budget).is_err());
             } else {
                 result.unwrap();
-                assert_eq!(budget.decoded_bytes(), scratch + count * encoded_bytes);
+                assert_eq!(
+                    budget.decoded_bytes(),
+                    (scratch + count * encoded_bytes) as u64
+                );
             }
         }
     }
@@ -3598,7 +3631,7 @@ fn png_large_custom_limits_do_not_overflow_geometry_or_accept_short_pixels() {
         );
         let limits = ImportBudget::new(PdfImportLimits {
             stream_bytes: usize::MAX,
-            decoded_bytes: usize::MAX,
+            decoded_bytes: usize::MAX as u64,
             codec_allocation_bytes: usize::MAX,
             ..Default::default()
         })
@@ -3695,11 +3728,11 @@ fn flate_scratch_and_output_have_independent_exact_limits() {
     let bytes = flate(b"AB");
     let normal = budget(2, 1024 * 1024);
     assert_eq!(decode(&bytes, &["FlateDecode"], &normal).unwrap(), b"AB");
-    let scratch = normal.codec_allocated_bytes();
+    let scratch = usize::try_from(normal.codec_allocated_bytes()).unwrap();
     // The pinned decoder requests the 32 KiB Deflate window plus state and
     // alignment. Exact size is ABI-dependent; do not pin a native struct size.
     assert!(scratch > 32768);
-    assert_eq!(normal.decoded_bytes(), scratch + 2);
+    assert_eq!(normal.decoded_bytes(), (scratch + 2) as u64);
     for cap in [scratch - 1, scratch, scratch + 1] {
         let shared = ImportBudget::new(PdfImportLimits {
             stream_bytes: 2,
@@ -3731,8 +3764,8 @@ fn flate_scratch_and_output_have_independent_exact_limits() {
                 assert!(decode(&bytes, &["FlateDecode"], &shared).is_err());
             } else {
                 assert_eq!(result.unwrap(), b"AB");
-                assert_eq!(shared.codec_allocated_bytes(), scratch);
-                assert_eq!(shared.decoded_bytes(), required);
+                assert_eq!(shared.codec_allocated_bytes(), scratch as u64);
+                assert_eq!(shared.decoded_bytes(), required as u64);
             }
         }
     }
@@ -3747,7 +3780,7 @@ fn flate_raw_fallback_charges_both_attempts_and_never_retries_resource_failure()
         decode(&flate(b"AB"), &["FlateDecode"], &normal).unwrap(),
         b"AB"
     );
-    let scratch = normal.codec_allocated_bytes();
+    let scratch = usize::try_from(normal.codec_allocated_bytes()).unwrap();
     let total = scratch + 2;
     for cap in [scratch - 1, scratch, total - 1, total, total + 1] {
         let shared = budget(2, cap);
@@ -3759,12 +3792,12 @@ fn flate_raw_fallback_charges_both_attempts_and_never_retries_resource_failure()
                 assert_eq!(shared.codec_allocated_bytes(), 0);
             }
             if cap == scratch {
-                assert_eq!(shared.codec_allocated_bytes(), scratch);
+                assert_eq!(shared.codec_allocated_bytes(), scratch as u64);
             }
         } else {
             assert_eq!(result.unwrap(), b"AB");
-            assert_eq!(shared.codec_allocated_bytes(), scratch);
-            assert_eq!(shared.decoded_bytes(), total);
+            assert_eq!(shared.codec_allocated_bytes(), scratch as u64);
+            assert_eq!(shared.decoded_bytes(), total as u64);
         }
     }
     assert!(decode(
@@ -3795,7 +3828,7 @@ fn flate_multichunk_and_filter_chain_preserve_bytes_and_account_scratch() {
             assert_eq!(result.unwrap(), pixels);
             assert_eq!(
                 shared.decoded_bytes(),
-                shared.codec_allocated_bytes() + pixels.len()
+                shared.codec_allocated_bytes() + pixels.len() as u64
             );
         }
     }
@@ -3917,7 +3950,9 @@ fn replaced_jpeg_metadata_reservations_remain_in_the_request_budget() {
     assert_eq!(plain_png, tagged_png);
     // Four replaced APP1 EXIF payloads each allocate 32KiB. This lower bound
     // comes from the encoded marker lengths, independent of decoder internals.
-    assert!(b.codec_allocated_bytes() - a.codec_allocated_bytes() >= extra_input + 4 * 32768);
+    assert!(
+        b.codec_allocated_bytes() - a.codec_allocated_bytes() >= extra_input as u64 + 4 * 32768
+    );
 }
 
 #[test]
@@ -3926,7 +3961,7 @@ fn jpeg_metadata_cumulative_failure_is_sticky_and_request_local() {
     let normal = ImportBudget::new(PdfImportLimits::default()).unwrap();
     let expected = plain.to_png_bytes_with_budget(&normal).unwrap();
     let limited = ImportBudget::new(PdfImportLimits {
-        decoded_bytes: normal.decoded_bytes() + extra_input + 4096,
+        decoded_bytes: normal.decoded_bytes() + extra_input as u64 + 4096,
         ..Default::default()
     })
     .unwrap();
@@ -4571,7 +4606,7 @@ fn truetype_maps_consume_cumulative_allocation_budget_before_expansion() {
     let before = doc.import_budget().unwrap().decoded_bytes();
     assert!(font.truetype_cmap().is_some());
     let after = doc.import_budget().unwrap().decoded_bytes();
-    assert!(after >= before + 3 * std::mem::size_of::<(u16, char)>());
+    assert!(after >= before + 3 * std::mem::size_of::<(u16, char)>() as u64);
     for cap in [after - 1, after, after + 1] {
         let (doc, font) = limited_truetype_font(
             data.clone(),
@@ -4830,7 +4865,7 @@ fn truetype_format4_scratch_and_maps_obey_cumulative_byte_boundary() {
     assert!(font.truetype_cmap().is_some());
     let after = doc.import_budget().unwrap().decoded_bytes();
     // Four 2-entry u16/i16 arrays precede the three map-entry reservations.
-    assert!(after >= before + 16 + 3 * std::mem::size_of::<(u16, char)>());
+    assert!(after >= before + 16 + 3 * std::mem::size_of::<(u16, char)>() as u64);
     for cap in [after - 1, after, after + 1] {
         let (doc, font) = limited_truetype_font(
             data.clone(),
@@ -5334,6 +5369,7 @@ fn stream_masks_share_bounded_lossless_filter_chains() {
             // filter label. Enabled codecs must reject the malformed stream;
             // disabled codecs (and the other mask formats) reject support.
             let enabled = match codec {
+                "DCTDecode" => true,
                 "JPXDecode" => cfg!(feature = "pdf-jpeg2000"),
                 "JBIG2Decode" => cfg!(feature = "pdf-jbig2"),
                 _ => false,

@@ -119,7 +119,10 @@ fn actual_diagnostics_keep_value_numeric_semantics_and_exact_reserved_backing() 
         serde_json::from_slice::<serde_json::Value>(&bytes).unwrap(),
         expected
     );
-    assert_eq!(request.resource_usage().decoded_bytes, before + bytes.len());
+    assert_eq!(
+        request.resource_usage().decoded_bytes,
+        before + bytes.len() as u64
+    );
     let mut low = PdfImportSession::new(PdfImportPolicy::default()).unwrap();
     let core = low
         .open(

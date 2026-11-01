@@ -18,8 +18,8 @@ fn declaration(data: &[u8]) -> Option<(u8, u8)> {
         || &data[..8] != b"\x89PNG\r\n\x1a\n"
         || data[8..16] != [0, 0, 0, 13, b'I', b'H', b'D', b'R']
         || data[33..41] != [0, 0, 0, 2, b'r', b'h', b'W', b'P']
-        || !matches!(data[41], 1 | 2 | 4 | 5)
-        || data[42] > 1
+        || !matches!(data[41], 1 | 2 | 4 | 5 | 6)
+        || data[42] > if data[41] == 6 { 2 } else { 1 }
     {
         return None;
     }
@@ -28,7 +28,14 @@ fn declaration(data: &[u8]) -> Option<(u8, u8)> {
 }
 
 pub(crate) fn interpolation(data: &[u8]) -> Option<bool> {
-    declaration(data).and_then(|(version, value)| (version == 1).then_some(value != 0))
+    declaration(data)
+        .and_then(|(version, value)| (matches!(version, 1 | 6) && value <= 1).then_some(value != 0))
+}
+
+/// PDF에서 색 공간·마스크 합성을 마친 표본이다. 선택적 보간 여부와 무관하다.
+/// 이전 v1 PDF 자원도 같은 출처이며 일반 PNG·한컴 Print 표식은 포함하지 않는다.
+pub(crate) fn pdf_source(data: &[u8]) -> bool {
+    matches!(declaration(data), Some((1 | 6, _)))
 }
 
 /// 두 번째 버전은 한컴 2024의 실제 색 확장 payload만 표시한다.
@@ -93,8 +100,8 @@ pub(super) fn mark_print_jpeg(data: &mut Vec<u8>, expanded: bool) {
 }
 
 pub(crate) fn preserve(source: &[u8], output: &mut Vec<u8>) {
-    if interpolation(source).is_some()
-        && interpolation(output).is_none()
+    if pdf_source(source)
+        && !pdf_source(output)
         && output.len() >= 33
         && output[..16] == source[..16]
     {

@@ -2339,6 +2339,7 @@ dependencies = [
  "subsetter",
  "taffy",
  "thiserror",
+ "tiny-skia 0.12.0",
  "ttf-parser",
  "unicode-bidi",
  "unicode-linebreak",

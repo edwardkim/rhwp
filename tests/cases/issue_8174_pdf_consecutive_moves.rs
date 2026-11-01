@@ -1,3 +1,8 @@
+//! 관계형·고정형: PDF clip의 소유·alpha·저장 보존 및 합성 입력 쪽수/예산 계약.
+//! 주석 갱신: 2026-11-01 10:43 KST. 직전 변경 f125c735c7, 2026-10-29T15:34:34+09:00.
+//! 이번 보정 대상 consecutive 5쪽·compound 1쪽·curve 1쪽, 독립 PDFium, 96dpi raw 2px.
+//! Native/fresh WASM 각 대상 전쪽 최저 모두 100.00%; 쪽수 동일, 곡선/구멍 직접 판독.
+//! 증거: mydocs/working/task_m100_8413_implementation.md. 예전 unsupported 기대만 지원 계약으로 교체.
 //! Independent PDF path syntax and request-budget contracts; no pixel baselines.
 #![cfg(feature = "pdf-import")]
 use base64::Engine;
@@ -137,18 +142,32 @@ fn consecutive_moves_preserve_convex_alpha_and_affine_form_geometry() {
 }
 
 #[test]
-fn real_compound_and_curve_clips_are_rejected_without_poisoning_a_normal_request() {
+fn real_compound_and_curve_clips_preserve_alpha_and_allow_a_followup_request() {
     for pdf in [
         include_bytes!("../../pdf/issue8174/clip/compound-rejected.pdf").as_slice(),
         include_bytes!("../../pdf/issue8174/clip/curve-rejected.pdf").as_slice(),
     ] {
-        assert_eq!(
-            parse_pdf_with_options(pdf, &Default::default())
-                .err()
-                .unwrap()
-                .code,
-            "PDF_IMAGE_UNSUPPORTED"
-        );
+        let core = rhwp::DocumentCore::from_pdf_bytes(pdf, &Default::default()).unwrap();
+        let original = core.render_page_svg_native(0).unwrap();
+        let pixels = |svg: &str| {
+            let urls: Vec<_> = svg.split("data:image/png;base64,").skip(1).collect();
+            assert_eq!(urls.len(), 1, "source image ownership survives clipping");
+            let bytes = base64::engine::general_purpose::STANDARD
+                .decode(urls[0].split('"').next().unwrap())
+                .unwrap();
+            image::load_from_memory(&bytes).unwrap().to_rgba8()
+        };
+        let reference = pixels(&original);
+        assert!(reference.pixels().any(|p| p[3] == 0));
+        assert!(reference.pixels().any(|p| p[3] == 255));
+        for bytes in [
+            core.export_hwp_native().unwrap(),
+            core.export_hwpx_native().unwrap(),
+        ] {
+            let saved = rhwp::DocumentCore::from_bytes(&bytes).unwrap();
+            assert_eq!(saved.page_count(), core.page_count());
+            assert_eq!(pixels(&saved.render_page_svg_native(0).unwrap()), reference);
+        }
     }
     assert_eq!(
         parse_pdf_with_options(CLIPS, &Default::default())

@@ -1,4 +1,4 @@
-//! Horizontal text in a rotated, uniformly scaled PDF frame stays editable.
+//! Horizontal text in a rotated, orthogonally scaled PDF frame stays editable.
 //! ISO 32000-1 §9.4.4 rotates both glyphs and their displacements. Merely
 //! rotating an axis-aligned span bbox would move the original baseline origin.
 use crate::model::{shape::RectangleShape, text_clip::TextClipPath};
@@ -19,10 +19,12 @@ pub(super) fn validate(span: &TextSpan, basis: [f32; 4]) -> Result<(), &'static 
     if scale2 <= 0.0
         || a * d - b * c <= 0.0
         || (a * c + b * d).abs() > scale2 * 1e-6
-        || (c * c + d * d - scale2).abs() > scale2 * 1e-6
         || span.horizontal_scaling <= 0.0
     {
-        return Err("rotated text with shear, unequal scaling or reflection is not supported");
+        return Err("rotated text with shear or reflection is not supported");
+    }
+    if !(50.0..=200.0).contains(&span.horizontal_scaling) {
+        return Err("rotated text scaling exceeds the editable character ratio");
     }
     // The standard shape rotation property is integral degrees. Accept only
     // when that quantization displaces every frame point by < half a HWPUNIT.

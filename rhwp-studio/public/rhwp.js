@@ -12582,7 +12582,7 @@ export class PdfImportRequest {
      */
     remainingDecodedBytes() {
         const ret = wasm.pdfimportrequest_remainingDecodedBytes(this.__wbg_ptr);
-        return ret >>> 0;
+        return ret;
     }
     /**
      * @param {number} page

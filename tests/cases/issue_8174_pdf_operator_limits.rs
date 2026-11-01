@@ -11,7 +11,7 @@ fn budget(stream_bytes: usize, decoded_bytes: usize) -> Arc<ImportBudget> {
     Arc::new(
         ImportBudget::new(PdfImportLimits {
             stream_bytes,
-            decoded_bytes,
+            decoded_bytes: decoded_bytes as u64,
             ..Default::default()
         })
         .unwrap(),
@@ -30,7 +30,7 @@ fn operator_collection_respects_single_buffer_capacity_before_growth() {
         let parsed = parse_content_with_budget(&source, &request).unwrap();
         assert_eq!(parsed.len(), count);
         assert!(parsed.capacity() * slot <= cap);
-        assert!(request.snapshot().decoded_bytes >= parsed.capacity() * slot);
+        assert!(request.snapshot().decoded_bytes >= (parsed.capacity() * slot) as u64);
         assert!(parse_content_with_budget(&b"n\n".repeat(count + 1), &request).is_err());
         assert!(request.check().is_err());
         assert!(parse_content_with_budget(b"n", &request).is_err());
@@ -52,14 +52,14 @@ fn operator_collection_charges_the_request_before_allocating_storage() {
     let exact = budget(slot, slot);
     let parsed = parse_content_with_budget(b"n", &exact).unwrap();
     assert_eq!(parsed.capacity(), 1);
-    assert_eq!(exact.snapshot().decoded_bytes, slot);
+    assert_eq!(exact.snapshot().decoded_bytes, slot as u64);
     let short = budget(slot, slot - 1);
     assert!(parse_content_with_budget(b"n", &short).is_err());
     let failure = short.snapshot().failure.unwrap();
     assert_eq!(failure.reason, "document decoded bytes");
     assert_eq!(failure.used, Some(0));
-    assert_eq!(failure.requested, Some(slot));
-    assert_eq!(failure.limit, Some(slot - 1));
+    assert_eq!(failure.requested, Some(slot as u64));
+    assert_eq!(failure.limit, Some((slot - 1) as u64));
     assert!(parse_content_with_budget(b"n", &short).is_err());
     assert!(parse_content_with_budget(b"n", &budget(slot, slot)).is_ok());
 }
@@ -201,7 +201,7 @@ fn dense_single_page_uses_request_ceiling_and_preserves_explicit_lower_caps() {
             .failure
             .unwrap();
         assert_eq!(failure.reason, "content operators");
-        assert_eq!(failure.limit, Some(policy.backend.operators));
+        assert_eq!(failure.limit, Some(policy.backend.operators as u64));
     }
     let exact = standard
         .with_limits_json(r#"{"backend":{"operators":640000}}"#)

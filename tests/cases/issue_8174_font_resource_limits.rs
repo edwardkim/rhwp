@@ -367,7 +367,7 @@ fn tounicode_normalization_preserves_fullwidth_and_memo_copies() {
     assert_eq!(font.char_to_unicode(65).as_deref(), Some("欠０"));
     assert_eq!(
         doc.import_budget().unwrap().decoded_bytes() - charged,
-        "欠０".len()
+        "欠０".len() as u64
     );
 }
 
@@ -395,7 +395,7 @@ fn legacy_cjk_fallbacks_keep_character_values_and_charge_cached_copies() {
         assert_eq!(font.char_to_unicode(code).as_deref(), Some(expected));
         assert_eq!(
             budget.decoded_bytes() - charged,
-            expected.len(),
+            expected.len() as u64,
             "{encoding}"
         );
         budget.reject("legacy fallback sticky sentinel");
@@ -560,7 +560,9 @@ fn extractor_font_set_copy_reserves_names_and_slots_with_exact_boundary() {
         font.import_budget = Some(Arc::clone(&budget));
         let mut extractor = TextExtractor::new();
         extractor.add_font("F1".into(), font);
-        budget.restrict_work_limits(remaining, usize::MAX).unwrap();
+        budget
+            .restrict_work_limits(remaining as u64, usize::MAX)
+            .unwrap();
         let copy = extractor.get_font_set();
         assert_eq!(copy.len(), usize::from(remaining == required));
         assert_eq!(budget.check().is_ok(), remaining == required);
@@ -646,7 +648,7 @@ fn input_source_copy_is_reserved_before_container_parsing() {
     let bytes = plain();
     let request = std::sync::Arc::new(
         ImportBudget::new(PdfImportLimits {
-            decoded_bytes: bytes.len() - 1,
+            decoded_bytes: (bytes.len() - 1) as u64,
             ..Default::default()
         })
         .unwrap(),

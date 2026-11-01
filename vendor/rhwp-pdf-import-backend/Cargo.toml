@@ -113,7 +113,7 @@ python = [
     "barcodes",
 ]
 rendering = [
-    "dep:tiny-skia",
+    "tiny-skia/png-format",
     "dep:fast_image_resize",
     "system-fonts",
     "jbig2",
@@ -567,7 +567,8 @@ version = "2.0"
 
 [dependencies.tiny-skia]
 version = "0.12"
-optional = true
+default-features = false
+features = ["std", "simd"]
 
 [dependencies.tract-onnx]
 version = "0.22"

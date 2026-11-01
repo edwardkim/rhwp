@@ -1,7 +1,9 @@
-//! Bounded convex image clipping for the editable import path (ISO 32000-1 §8.5.4).
+//! Bounded image clipping for the editable import path (ISO 32000-1 §8.5.4).
 //! Unsupported paths are explicit: their bounding box is not an equivalent clip.
 
+use super::image_clip_path::{ComplexClip, ExactPath};
 use crate::content::{Matrix, Operator};
+use crate::error::Result;
 use crate::geometry::{Point, Rect};
 
 /// Active page-space clip understood by the editable image importer.
@@ -13,6 +15,10 @@ pub enum ImageClip {
     Rectangle(Rect),
     /// Straight, convex page-space boundary, including an affine Form BBox.
     Polygon(std::sync::Arc<ClipPolygon>),
+    /// Exact curves/compound paths, intersected as alpha masks at decode time.
+    Complex(std::sync::Arc<ComplexClip>),
+    /// A finite clip allocation or complexity budget was exhausted.
+    LimitExceeded,
     /// The clip has no visible area.
     Empty,
     /// A curved, compound or non-convex boundary outside this bounded path.
@@ -24,8 +30,8 @@ const MAX_VERTICES: usize = 32;
 #[derive(Clone, Copy, Debug)]
 /// A finite convex boundary; vertices are validated before construction.
 pub struct ClipPolygon {
-    points: [Point; MAX_VERTICES],
-    len: usize,
+    pub(super) points: [Point; MAX_VERTICES],
+    pub(super) len: usize,
 }
 
 fn cross(a: Point, b: Point, p: Point) -> f64 {
@@ -122,25 +128,29 @@ impl ImageClip {
         match self {
             Self::Rectangle(r) => Ok(Some(*r)),
             Self::Polygon(p) => Ok(Some(p.bounds())),
+            Self::Complex(p) => Ok(Some(p.bounds)),
+            Self::LimitExceeded => {
+                Err(crate::error::Error::ImportResourceLimit("image clip complexity"))
+            },
             Self::Empty => Ok(None),
-            _ => Err(crate::error::Error::Unsupported(
-                "pattern requires a finite convex clip".into(),
-            )),
+            _ => Err(crate::error::Error::Unsupported("pattern requires a finite clip".into())),
         }
     }
     pub(crate) fn intersect(self, other: Self) -> Self {
         match (self, other) {
+            (Self::LimitExceeded, _) | (_, Self::LimitExceeded) => Self::LimitExceeded,
             (Self::Empty, _) | (_, Self::Empty) => Self::Empty,
             (Self::Unsupported, _) | (_, Self::Unsupported) => Self::Unsupported,
             (Self::Unbounded, clip) | (clip, Self::Unbounded) => clip,
             (Self::Rectangle(a), Self::Rectangle(b)) => {
                 a.intersection(&b).map_or(Self::Empty, Self::Rectangle)
             },
+            (a @ Self::Complex(_), b) | (a, b @ Self::Complex(_)) => ComplexClip::intersect(a, b),
             (a, b) => a.polygon().intersect(b.polygon()),
         }
     }
 
-    fn polygon(self) -> ClipPolygon {
+    pub(super) fn polygon(self) -> ClipPolygon {
         if let Self::Polygon(p) = self {
             return *p;
         }
@@ -165,7 +175,9 @@ impl ImageClip {
     pub(crate) fn contains(&self, point: Point) -> bool {
         match self {
             Self::Unbounded => true,
-            Self::Empty | Self::Unsupported => false,
+            // Complex clips are sampled from their antialiased raster mask.
+            Self::Complex(_) => true,
+            Self::Empty | Self::Unsupported | Self::LimitExceeded => false,
             Self::Rectangle(r) => {
                 point.x >= r.x
                     && point.x <= r.x + r.width
@@ -186,6 +198,10 @@ impl ImageClip {
         match self.clone().intersect(Self::Rectangle(image)) {
             Self::Rectangle(rect) => Ok(Some(rect)),
             Self::Polygon(p) => Ok(Some(p.bounds())),
+            Self::Complex(p) => Ok(Some(p.bounds)),
+            Self::LimitExceeded => {
+                Err(crate::error::Error::ImportResourceLimit("image clip complexity"))
+            },
             Self::Empty => Ok(None),
             _ => Err(crate::error::Error::Unsupported("non-rectangular image clipping".into())),
         }
@@ -311,6 +327,8 @@ pub(crate) struct ImageClipTracker {
     path: ClipPath,
     pending: bool,
     convex: bool,
+    exact: ExactPath,
+    even_odd: bool,
 }
 
 impl ImageClipTracker {
@@ -321,6 +339,8 @@ impl ImageClipTracker {
             path: ClipPath::default(),
             pending: false,
             convex: true,
+            exact: ExactPath::default(),
+            even_odd: false,
         }
     }
     pub fn new(ctm: Matrix, clip: ImageClip) -> Self {
@@ -336,6 +356,8 @@ impl ImageClipTracker {
             path: ClipPath::default(),
             pending: false,
             convex: false,
+            exact: ExactPath::default(),
+            even_odd: false,
         }
     }
 
@@ -345,6 +367,22 @@ impl ImageClipTracker {
         Self {
             convex: true,
             ..Self::new(ctm, clip)
+        }
+    }
+
+    pub(crate) fn set_budget(
+        &mut self,
+        budget: Option<std::sync::Arc<crate::import_limits::ImportBudget>>,
+    ) {
+        self.exact.budget = budget;
+    }
+
+    fn region(&self, even_odd: bool) -> Result<ImageClip> {
+        let fast = self.path.region(self.convex);
+        if self.convex && matches!(fast, ImageClip::Unsupported) {
+            self.exact.region(even_odd)
+        } else {
+            Ok(fast)
         }
     }
 
@@ -367,14 +405,14 @@ impl ImageClipTracker {
 
     /// A fill uses the current path before a painting operator consumes it.
     /// The pending W/W* clip takes effect only after painting (ISO 8.5.4).
-    pub(crate) fn fill_clip(&self) -> ImageClip {
-        self.current
-            .clip
-            .clone()
-            .intersect(self.path.region(self.convex))
+    pub(crate) fn fill_clip(&self, even_odd: bool) -> Result<ImageClip> {
+        Ok(self.current.clip.clone().intersect(self.region(even_odd)?))
     }
 
-    pub fn apply(&mut self, op: &Operator) {
+    pub fn apply(&mut self, op: &Operator) -> Result<()> {
+        if self.convex {
+            self.exact.apply(op, self.current.ctm)?;
+        }
         use Operator::*;
         match *op {
             SaveState => self.saved.push(self.current.clone()),
@@ -408,7 +446,10 @@ impl ImageClipTracker {
                 }
             },
             CurveTo { .. } | CurveToV { .. } | CurveToY { .. } => self.path.unsupported = true,
-            ClipNonZero | ClipEvenOdd => self.pending = true,
+            ClipNonZero | ClipEvenOdd => {
+                self.pending = true;
+                self.even_odd = matches!(op, ClipEvenOdd);
+            },
             EndPath
             | Stroke
             | Fill
@@ -423,12 +464,14 @@ impl ImageClipTracker {
                         .current
                         .clip
                         .clone()
-                        .intersect(self.path.region(self.convex));
+                        .intersect(self.region(self.even_odd)?);
                 }
                 self.path = ClipPath::default();
+                self.exact.clear();
                 self.pending = false;
             },
             _ => {},
         }
+        Ok(())
     }
 }

@@ -29,6 +29,10 @@ pub(super) fn decode_jpeg_fill_rgb(data: &[u8]) -> Option<image::RgbImage> {
 
 fn is_print_bitmap_candidate(image: &ImageNode) -> bool {
     image.hancom2024_print_bitmap
+        && !image
+            .data
+            .as_deref()
+            .is_some_and(super::png_sampling::pdf_source)
         && image.effect == ImageEffect::RealPic
         && image.brightness == 0
         && image.contrast == 0

@@ -747,10 +747,14 @@ impl PathExtractor {
                     }
                 },
                 PathOperation::Rectangle(x, y, w, h) => {
-                    min_x = min_x.min(*x);
-                    min_y = min_y.min(*y);
-                    max_x = max_x.max(*x + *w);
-                    max_y = max_y.max(*y + *h);
+                    // ISO 32000-1 §8.5.2: re is an oriented closed subpath;
+                    // either dimension may be negative. Preserve its winding
+                    // in the operations, but include both ends in the raster
+                    // bounds. Assuming positive sizes crops compound fills.
+                    min_x = min_x.min(*x).min(*x + *w);
+                    min_y = min_y.min(*y).min(*y + *h);
+                    max_x = max_x.max(*x).max(*x + *w);
+                    max_y = max_y.max(*y).max(*y + *h);
                 },
                 PathOperation::ClosePath => {},
             }

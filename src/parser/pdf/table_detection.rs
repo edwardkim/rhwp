@@ -136,7 +136,11 @@ fn edges(
                 (a.0 - left, top - a.1.max(b.1), top - a.1.min(b.1))
             };
             match path.paint.clip {
-                ImageClip::Empty | ImageClip::Unsupported | ImageClip::Polygon(_) => return Ok(()),
+                ImageClip::Empty
+                | ImageClip::Unsupported
+                | ImageClip::Polygon(_)
+                | ImageClip::Complex(_)
+                | ImageClip::LimitExceeded => return Ok(()),
                 ImageClip::Rectangle(clip) => {
                     let clip = super::table_inference::page_rect(clip, (left, 0., 0., top));
                     let (lo, hi, start, end) = if horizontal {

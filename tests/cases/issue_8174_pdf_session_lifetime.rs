@@ -62,7 +62,7 @@ fn hwp_save_and_exact_diagnostics_share_budget_preserve_live_document_and_recove
     let metadata = request.diagnostics_json(&core, 1024 * 1024).unwrap();
     assert_eq!(
         request.resource_usage().decoded_bytes,
-        before + metadata.len()
+        before + metadata.len() as u64
     );
     let metadata: serde_json::Value = serde_json::from_slice(&metadata).unwrap();
     assert_eq!(metadata["pageCount"], 1);
@@ -599,7 +599,7 @@ fn exercise_measurement_request_limit(source: &[u8], decoded_limit: usize) {
     let expected_pages = normal.page_count();
     let expected = normal.export_hwpx_native().unwrap();
     let mut policy = PdfImportPolicy::default();
-    policy.backend.decoded_bytes = decoded_limit;
+    policy.backend.decoded_bytes = decoded_limit as u64;
     let mut limited = PdfImportSession::new(policy).unwrap();
     let error = match limited.open(source, &Default::default()) {
         Err(error) => error,
@@ -756,7 +756,7 @@ fn exercise_metadata_save_limit(hwp: bool, decoded_limit: usize) {
     let mut policy = PdfImportPolicy::default();
     // S54's measured Native64 complete-save work plus 64 bytes. This remains
     // an input-policy boundary; it does not pin today's exact counter value.
-    policy.backend.decoded_bytes = decoded_limit;
+    policy.backend.decoded_bytes = decoded_limit as u64;
     let mut limited = PdfImportSession::new(policy).unwrap();
     let mut core = limited.open(PDF, &Default::default()).unwrap();
     attach_text_clip(&mut core);
@@ -1053,7 +1053,7 @@ fn editor_reopen_reserves_archive_reads_core_and_detaches_editing_lifetime() {
     request.reserve_transfer(handoff.len()).unwrap();
     let mut editor = request.reopen_hwpx_export(&handoff, 1024 * 1024).unwrap();
     let used = request.resource_usage().decoded_bytes;
-    assert!(used > handoff.len() * 2);
+    assert!(used > (handoff.len() * 2) as u64);
     assert_eq!(editor.page_count(), original.page_count());
     live.store(false, Ordering::Relaxed);
     let image = original
@@ -1073,7 +1073,7 @@ fn editor_reopen_refuses_remaining_budget_owner_expiry_and_recovers() {
     let mut original = import.open(PDF, &Default::default()).unwrap();
     let handoff = import.export_hwpx(&mut original, 1024 * 1024).unwrap();
     let mut policy = PdfImportPolicy::default();
-    policy.backend.decoded_bytes = handoff.len();
+    policy.backend.decoded_bytes = handoff.len() as u64;
     let mut low = PdfImportSession::new(policy).unwrap();
     assert!(low.reopen_hwpx_export(&handoff, 1024 * 1024).is_err());
     assert!(low.resource_usage().failure.is_some());

@@ -368,7 +368,11 @@ fn input_policy_accepts_exact_limit_and_rejects_before_parsing_over_limit() {
     let limit = failure.frontend_limit.unwrap();
     assert_eq!(
         (limit.used, limit.requested, limit.limit),
-        (Some(0), Some(source.len()), Some(source.len() - 1))
+        (
+            Some(0),
+            Some(source.len() as u64),
+            Some((source.len() - 1) as u64)
+        )
     );
     for invalid in [0, u16::MAX as usize + 1] {
         policy.max_selected_pages = invalid;

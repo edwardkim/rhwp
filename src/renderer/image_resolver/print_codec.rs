@@ -52,7 +52,7 @@ pub(crate) fn print_area_sampling(
         && !image
             .data
             .as_deref()
-            .is_some_and(|data| super::png_sampling::interpolation(data).is_some())
+            .is_some_and(|data| super::png_sampling::pdf_source(data))
         && image.crop.is_none_or(|(left, top, right, bottom)| {
             super::image_crop_reference(image).is_some_and(|(width, height)| {
                 left == 0
@@ -119,7 +119,7 @@ pub(crate) fn print_device_image_payload(
     if !matches!(
         detect_image_mime_type(source),
         "image/bmp" | "image/png" | "image/jpeg"
-    ) || super::png_sampling::interpolation(source).is_some()
+    ) || super::png_sampling::pdf_source(source)
     {
         return None;
     }

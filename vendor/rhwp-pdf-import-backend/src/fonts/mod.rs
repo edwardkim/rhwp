@@ -41,6 +41,7 @@ pub mod truetype_cmap;
 pub mod truetype_parser;
 /// Type 1 font encoding parser for extracting built-in encoding from FontFile data.
 pub mod type1_encoding;
+mod type3_empty;
 /// The one glyph decoder shared by extraction and rendering.
 pub(crate) mod unicode_decode;
 /// System Unicode font fallback for office round-trip.
