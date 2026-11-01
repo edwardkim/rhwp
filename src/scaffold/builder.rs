@@ -250,6 +250,19 @@ fn utf16_offsets(text: &str) -> (Vec<u32>, u32) {
     (offsets, acc)
 }
 
+/// [#8424] scaffold 가 만드는 글 문단의 저장 줄 정보(LineSeg).
+///
+/// scaffold 는 글꼴 측정·줄 나눔을 하지 않으므로 실제 줄 구성을 알 수 없다. 종전처럼
+/// 1줄짜리 LineSeg(높이 1000, 폭 50000 또는 셀 폭)를 꾸며 넣으면, 저장 줄을 신뢰하는
+/// 소비자(rhwp 셀 배치)는 긴 셀 텍스트를 한 줄로 잘라 그린다. 한컴은 저장 줄과 무관하게
+/// 다시 조판한다(linesegarray 유무와 관계없이 한컴 2024 Print 출력이 픽셀 단위로 동일 —
+/// #8424 실측).
+///
+/// 그래서 저장 줄을 비워 "아직 조판하지 않은 문단"으로 둔다. HWPX 직렬화는 이때
+/// `<hp:linesegarray>` 를 쓰지 않고, rhwp 는 HWPX 로드 시 빈 줄 정보를 재조판 대상으로
+/// 본다(`DocumentCore::needs_line_seg_reflow`, #1380).
+const UNCOMPOSED_LINE_SEGS: Vec<LineSeg> = Vec::new();
+
 /// 평문 텍스트 문단을 만든다(제목/제목/본문 공용).
 fn make_text_para(text: &str, para_shape_id: u16, char_shape_id: u32) -> Paragraph {
     let (char_offsets, utf16_len) = utf16_offsets(text);
@@ -261,16 +274,8 @@ fn make_text_para(text: &str, para_shape_id: u16, char_shape_id: u32) -> Paragra
             start_pos: 0,
             char_shape_id,
         }],
-        line_segs: vec![LineSeg {
-            text_start: 0,
-            line_height: 1000,
-            text_height: 1000,
-            baseline_distance: 850,
-            line_spacing: 600,
-            segment_width: 50000,
-            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-            ..Default::default()
-        }],
+        // [#8424] 저장 줄 정보를 만들지 않는다 — `UNCOMPOSED_LINE_SEGS` 참고.
+        line_segs: UNCOMPOSED_LINE_SEGS,
         para_shape_id,
         style_id: 0,
         has_para_text: true,
@@ -279,13 +284,12 @@ fn make_text_para(text: &str, para_shape_id: u16, char_shape_id: u32) -> Paragra
 }
 
 /// 셀 내부 문단을 만든다. `create_table_native` 의 셀 문단 보정과 정합
-/// (char_count_msb=true, raw_header_extra 10바이트, seg_width=셀폭-좌우패딩).
-fn make_cell_para(text: &str, col_width: u32, para_shape_id: u16) -> Paragraph {
+/// (char_count_msb=true, raw_header_extra 10바이트). 저장 줄 정보는 만들지 않는다(#8424).
+fn make_cell_para(text: &str, para_shape_id: u16) -> Paragraph {
     let (char_offsets, utf16_len) = utf16_offsets(text);
-    let seg_w = (col_width as i32) - 141 - 141; // 셀 폭 - 좌우 패딩
     let mut raw_header_extra = vec![0u8; 10];
     raw_header_extra[0..2].copy_from_slice(&1u16.to_le_bytes()); // n_char_shapes=1
-    raw_header_extra[4..6].copy_from_slice(&1u16.to_le_bytes()); // n_line_segs=1
+    // n_line_segs=0: 저장 줄 정보 없음 (#8424, `UNCOMPOSED_LINE_SEGS`)
     Paragraph {
         text: text.to_string(),
         char_count: utf16_len + 1,
@@ -295,16 +299,9 @@ fn make_cell_para(text: &str, col_width: u32, para_shape_id: u16) -> Paragraph {
             start_pos: 0,
             char_shape_id: CS_NORMAL,
         }],
-        line_segs: vec![LineSeg {
-            text_start: 0,
-            line_height: 1000,
-            text_height: 1000,
-            baseline_distance: 850,
-            line_spacing: 600,
-            segment_width: seg_w,
-            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-            ..Default::default()
-        }],
+        // [#8424] 셀 폭과 글자 폭으로 줄을 나눈 결과를 여기서 알 수 없다. 1줄로 꾸며 쓰면
+        // 저장 줄을 신뢰하는 소비자는 긴 셀 텍스트를 한 줄로 잘라 그린다.
+        line_segs: UNCOMPOSED_LINE_SEGS,
         para_shape_id,
         style_id: 0,
         has_para_text: !text.is_empty(),
@@ -362,7 +359,7 @@ fn build_table_paragraph(
                 .get(c as usize)
                 .copied()
                 .unwrap_or(PS_NORMAL);
-            cell.paragraphs = vec![make_cell_para(text, col_width, para_shape_id)];
+            cell.paragraphs = vec![make_cell_para(text, para_shape_id)];
             cell.raw_list_extra = Vec::new();
             cells.push(cell);
         }
