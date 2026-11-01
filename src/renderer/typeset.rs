@@ -5480,8 +5480,15 @@ impl TypesetEngine {
                 .copied();
             let v_off_px = hwpunit_to_px(signed_vertical_offset, self.dpi);
             let outer_top_px = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
+            let pushed_anchor_top = crate::renderer::layout::pushed_anchor_line_table_top_px(
+                para, table, ctrl_idx, self.dpi,
+            );
             let table_top = if let Some(placement) = resolved {
                 placement.table_top
+            } else if let Some(top) = pushed_anchor_top {
+                // [#8435] 앞 TAC 줄 뒤에 앵커돼 그 줄을 밀어낸 표는 앵커 줄 자리(앞 줄 끝)
+                // + 바깥 위 여백이 상단이다 — layout 과 같은 helper 를 소비한다.
+                para_start_height + top + v_off_px
             } else if signed_vertical_offset > 0 {
                 // [#6879] 세로 기준점은 앵커 줄이다 — layout 이 같은 값을 더하므로
                 // 흐름 예약도 함께 내려야 배치와 어긋나지 않는다. layout 과 **같은**
@@ -5521,14 +5528,7 @@ impl TypesetEngine {
                     }
                     + v_off_px.max(0.0)
             } else {
-                // [#8435] 앞 TAC 줄 뒤에 앵커돼 그 줄을 밀어낸 개체는 앵커 줄 자리
-                // (앞 줄 끝)가 기준점이다 — layout 과 같은 helper 를 소비한다.
-                para_start_height
-                    + crate::renderer::layout::tac_sibling_float_anchor_offset_px(
-                        para, table, ctrl_idx, self.dpi,
-                    )
-                    + outer_top_px
-                    + v_off_px
+                para_start_height + outer_top_px + v_off_px
             };
             // 저장 줄을 재사용하지 못한 visible host도 현재 측정 상자의 원점을
             // 한 번 확정한다. 같은 occupied-band 제약을 통째 배치 경로와 공유하고,
