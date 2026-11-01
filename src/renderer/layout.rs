@@ -15744,11 +15744,44 @@ impl LayoutEngine {
                                 _ => true,
                             })
                     });
+                // [#8418] 앞 가시 개체가 모두 표보다 앞 저장 줄에 있으면 표 줄을 공유하지
+                // 않는다. test_521 의 이중 가산 방지는 같은 줄의 개체가 다음 문단 위치를
+                // 이미 확정할 때의 계약이다 — 앞 줄의 도형 때문에 이 표 줄의 줄간격을
+                // 버리면 뒤 본문이 그만큼 당겨진다(30269 p12: 도형 두 개는 줄 0, 소제목
+                // 표는 줄 1 → ls 1352HU 누락, 조판은 이미 같은 간격을 수용).
+                // 음수 줄간격 표 줄은 아래 '문단 advance 리셋' 분기가 별도 계약을 가지므로
+                // 이 사영의 대상이 아니다(aaaaaa p21: 글앞 도형 + ls -1100 표 줄 반례).
+                // 앞 개체는 글자처럼 취급되어 자기 저장 줄 안에서만 흐름을 소비해야 한다.
+                // 비-TAC 개체는 스스로 흐름을 밀 수 있어 test_521 계약을 그대로 따른다
+                // (젠더폭력 보고서 p111: 자리차지 그림 + 2줄 뒤 TAC 표 반례).
+                let visible_before_tac_on_earlier_lines =
+                    control_line_seg_index(para, control_index).is_some_and(|owner| {
+                        owner > 0
+                            && para
+                                .line_segs
+                                .get(owner)
+                                .is_some_and(|seg| seg.line_spacing > 0)
+                            && para.controls[..control_index.min(para.controls.len())]
+                                .iter()
+                                .enumerate()
+                                .all(|(index, control)| {
+                                    let treat_as_char = match control {
+                                        Control::Table(table) => table.common.treat_as_char,
+                                        Control::Picture(picture) => picture.common.treat_as_char,
+                                        Control::Shape(shape) => shape.common().treat_as_char,
+                                        _ => return true,
+                                    };
+                                    treat_as_char
+                                        && control_line_seg_index(para, index)
+                                            .is_some_and(|line| line < owner)
+                                })
+                    });
                 let projected_seg = if (self.profile.get().hwp5_stored_pagination_layout()
                     || (self.profile.get().hwpx_stored_layout() && all_segs_stored))
                     && (only_invisible_before_tac
                         || continuous_stored_table_line
-                        || shared_row_float_before_tac)
+                        || shared_row_float_before_tac
+                        || visible_before_tac_on_earlier_lines)
                 {
                     let table_h = para.controls.get(control_index).and_then(|c| match c {
                         Control::Table(t) if t.common.height < 0x8000_0000 => {

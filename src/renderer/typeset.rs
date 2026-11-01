@@ -6196,11 +6196,18 @@ impl TypesetEngine {
             let occupied_end = st.current_height;
             st.advance_flow_by(fmt.total_height - fmt.height_for_fit);
             // 같은 줄의 확정 끝에도 복원한 간격을 반영해 뒤 상한이 되감지 않게 한다.
+            // [#8418] 저장 pen이 소유한 끝은 1HU 이내의 환산 잡음까지 같은 끝으로 본다.
             if let Some(mut placement) = st
                 .inline_placements
                 .get(&(para_idx, ctrl_idx))
                 .copied()
-                .filter(|placement| placement.advance_end == Some(occupied_end))
+                .filter(|placement| {
+                    placement.advance_end == Some(occupied_end)
+                        || (placement.stored_horizontal_pen.is_some()
+                            && placement.advance_end.is_some_and(|end| {
+                                (end - occupied_end).abs() <= self.dpi / 7200.0
+                            }))
+                })
             {
                 placement.advance_end = Some(st.current_height);
                 st.record_inline_placement((para_idx, ctrl_idx), placement);
