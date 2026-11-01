@@ -287,9 +287,9 @@ fn make_text_para(text: &str, para_shape_id: u16, char_shape_id: u32) -> Paragra
 /// (char_count_msb=true, raw_header_extra 10바이트). 저장 줄 정보는 만들지 않는다(#8424).
 fn make_cell_para(text: &str, para_shape_id: u16) -> Paragraph {
     let (char_offsets, utf16_len) = utf16_offsets(text);
+    // n_char_shapes=1, n_line_segs=0(저장 줄 정보 없음 — #8424, `UNCOMPOSED_LINE_SEGS`)
     let mut raw_header_extra = vec![0u8; 10];
-    raw_header_extra[0..2].copy_from_slice(&1u16.to_le_bytes()); // n_char_shapes=1
-    // n_line_segs=0: 저장 줄 정보 없음 (#8424, `UNCOMPOSED_LINE_SEGS`)
+    raw_header_extra[0..2].copy_from_slice(&1u16.to_le_bytes());
     Paragraph {
         text: text.to_string(),
         char_count: utf16_len + 1,
