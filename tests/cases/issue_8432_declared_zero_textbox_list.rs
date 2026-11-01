@@ -1,0 +1,59 @@
+//! 관계형·고정형(쪽수): 선언 0·실제 1문단인 사각형 글상자 목록을 손상으로 거부하지 않고 읽는다.
+//! 주석 갱신: 2026-11-01T20:35:46+09:00 (새 파일).
+//! 2026-11-01 측정 raw(96dpi, PDFium, 색상 경계 보정 전 2px 실루엣, `visual_sweep.py --silhouette-only`),
+//! 기준은 각 원본의 독립 한컴 2022 12.0.0.4547 Print(3쪽):
+//! - 156761223: 글상자 3쪽 Native 99.98% / fresh WASM 100.00%, 전 3쪽 최저 Native 97.78% / WASM 98.87%.
+//! - 156690773: 글상자 2쪽 Native 99.99% / fresh WASM 100.00%, 전 3쪽 최저 Native 99.34% / WASM 99.87%.
+//!   수정 전에는 두 문서 모두 열리지 않았다.
+//!
+//! 증거: mydocs/pr/assets/issue_8432/{native,wasm}/*_silhouette.tsv.
+#![cfg(not(target_arch = "wasm32"))]
+
+use rhwp::model::control::Control;
+use rhwp::model::shape::ShapeObject;
+use rhwp::DocumentCore;
+
+fn verify(sample: &str, host: usize, text_box_controls: usize) {
+    let bytes = std::fs::read(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(sample))
+        .expect("한/글이 정상으로 여는 원본");
+    let core = DocumentCore::from_bytes(&bytes)
+        .unwrap_or_else(|error| panic!("{sample}: 문서를 열어야 한다: {error}"));
+    assert_eq!(
+        core.page_count(),
+        3,
+        "{sample}: 독립 한/글 2022 Print 전체 쪽수"
+    );
+    let paragraph = &core.document().sections[0].paragraphs[host];
+    let Some(Control::Shape(shape)) = paragraph.controls.first() else {
+        panic!("{sample}: 문단 {host} 의 사각형");
+    };
+    let ShapeObject::Rectangle(rectangle) = shape.as_ref() else {
+        panic!("{sample}: 사각형 개체");
+    };
+    let text_box = rectangle
+        .drawing
+        .text_box
+        .as_ref()
+        .expect("소유 글상자 문단 보존");
+    // 선언 문단 수는 0 이지만 실제 소유 문단 하나와 그 안의 개체를 그대로 읽는다.
+    assert_eq!(text_box.paragraphs.len(), 1, "{sample}: 실제 소유 문단");
+    assert_eq!(
+        text_box.paragraphs[0].controls.len(),
+        text_box_controls,
+        "{sample}: 글상자 문단의 개체 보존"
+    );
+}
+
+#[test]
+fn declared_zero_rectangle_list_with_owned_paragraph_opens() {
+    verify(
+        "samples/issue8432/156761223-declared-zero-textbox.hwp",
+        25,
+        2,
+    );
+    verify(
+        "samples/issue8432/156690773-declared-zero-textbox.hwp",
+        30,
+        1,
+    );
+}
