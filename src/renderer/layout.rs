@@ -1364,7 +1364,70 @@ pub(crate) fn tac_sibling_float_anchor_offset_px(
     if !has_line_taking_tac_sibling_before(para, control_index) {
         return 0.0;
     }
-    stored_float_anchor_offset_px(para, table, control_index, dpi)
+    let offset = stored_float_anchor_offset_px(para, table, control_index, dpi);
+    if offset > 0.0 || table.caption.is_some() {
+        return offset;
+    }
+    stored_pushed_anchor_line_offset_hu(
+        para,
+        &table.common,
+        i64::from(table.outer_margin_top) + i64::from(table.outer_margin_bottom),
+        control_index,
+    )
+    .map_or(0.0, |hu| hwpunit_to_px(hu, dpi))
+}
+
+/// [#8435] 앞 TAC 줄 **뒤** 줄에 앵커된 자리차지 개체가 그 앵커 줄을 자기 아래로
+/// 밀어낸 저장 사다리의 개체 원점(문단 첫 줄 기준 HWPUNIT).
+///
+/// 한/글은 개체의 세로 기준을 앵커 줄이 놓일 자리, 곧 앞 줄의 끝
+/// (`vpos + line_height + line_spacing`)으로 잡고 앵커 줄은 개체 아래로 보낸다.
+/// 보도자료 끝머리의 담당 부서 TAC 표(줄0) 뒤 로고 표·글상자(줄1, `vertOffset` 0)가
+/// 그 형상이다 — 156770078 문단 29: 줄0 끝 3448+780 = 4228, 줄1 vpos 8558,
+/// 차이 4330 = 로고 표 바깥 여백 283 + 높이 3764 + 283. 156638890 문단 29: 줄0 끝
+/// 6210+452 = 6662, 줄1 vpos 10895, 차이 4233 = 사각형 높이 4233(여백 0).
+/// 한컴 2022 Print 도 두 개체를 줄0 끝 바로 아래에 그린다.
+///
+/// 저장 간격이 개체 상자(오프셋 + 바깥 여백 + 높이)와 **정확히** 같을 때만 그 밀림의
+/// 증거로 받아들인다. 앵커가 첫 줄이거나 앞 줄이 개체 위에서 끝나는 #6860 형상
+/// (앵커 줄이 밀리지 않음)은 `None` 이라 종전 기준점이 그대로다.
+pub(crate) fn stored_pushed_anchor_line_offset_hu(
+    para: &Paragraph,
+    common: &crate::model::shape::CommonObjAttr,
+    outer_margin_hu: i64,
+    control_index: usize,
+) -> Option<i32> {
+    use crate::model::paragraph::LineSeg;
+    use crate::model::shape::{TextWrap, VertAlign, VertRelTo};
+    let v_off = i64::from(signed_hwpunit(common.vertical_offset));
+    if common.treat_as_char
+        || common.text_wrap != TextWrap::TopAndBottom
+        || common.vert_rel_to != VertRelTo::Para
+        || common.vert_align != VertAlign::Top
+        || v_off < 0
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || para
+            .line_segs
+            .iter()
+            .any(|ls| ls.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+    {
+        return None;
+    }
+    let line = control_line_seg_index(para, control_index)?;
+    let previous = para.line_segs.get(line.checked_sub(1)?)?;
+    let anchor = para.line_segs.get(line)?;
+    if previous.line_spacing < 0 {
+        return None;
+    }
+    let previous_end = i64::from(previous.vertical_pos)
+        + i64::from(previous.line_height)
+        + i64::from(previous.line_spacing);
+    let frame = v_off + outer_margin_hu + i64::from(common.height);
+    if frame <= 0 || i64::from(anchor.vertical_pos) - previous_end != frame {
+        return None;
+    }
+    i32::try_from(previous_end - i64::from(para.line_segs[0].vertical_pos)).ok()
 }
 
 /// [#4610 · #4599 ④] 결재문서 템플릿의 공백-전용 TAC 캐리어 문단 페인트 변위.

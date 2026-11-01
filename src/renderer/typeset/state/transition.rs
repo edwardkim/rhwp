@@ -780,6 +780,25 @@ impl TypesetState {
             if !matches!(common.vert_rel_to, VertRelTo::Para) {
                 continue;
             }
+            // [#8435] 앞 TAC 줄 뒤 줄에 앵커돼 그 줄을 자기 아래로 민 개체는 이 문단의
+            // 저장 사다리 안(새 쪽)에 자기 밴드를 이미 갖는다. 리셋된 첫 줄과 함께 다음
+            // 쪽에 놓이며 떠나는 쪽 말미로 흘리지 않는다 (156638890 3쪽: 담당 부서 표
+            // 아래 로고 글상자, 한컴 2022 Print 도 3쪽).
+            let caption_free = match ctrl {
+                Control::Picture(picture) => picture.caption.is_none(),
+                _ => true,
+            };
+            if caption_free
+                && crate::renderer::layout::stored_pushed_anchor_line_offset_hu(
+                    para,
+                    common,
+                    i64::from(common.margin.top) + i64::from(common.margin.bottom),
+                    ctrl_idx,
+                )
+                .is_some()
+            {
+                continue;
+            }
             let height = hwpunit_to_px(common.height as i32, dpi)
                 + hwpunit_to_px(i32::from(common.margin.bottom), dpi);
             if height <= 0.0
