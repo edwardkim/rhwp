@@ -47,14 +47,19 @@ Native는 `--features native-skia` release 바이너리, fresh WASM은 같은 �
 
 ## 직접 판독
 
-- `png/cellwrap_before_review_p1.png`: 수정 전 rhwp는 "세부 과업 1: 요구사항"까지 한 줄로 그리고
-  나머지를 셀 경계에서 자른다. 행 높이도 1줄이라 표 뒤 문단이 한컴보다 위에 온다.
-- `png/cellwrap_after_review_p1.png`, `png/cellwrap_after_overlay_p1.png`: 수정 후
-  "세부 과업 1: 요구사 / 항 정의, 설계, 구현 / 및 시험" 3줄, 행 높이·표 뒤 문단 위치가 한컴과 일치한다.
-- `png/business_plan_after_review_p2.png`, `png/business_plan_after_overlay_p2.png`: 6행 표 전체의
-  줄 나눔·행 높이·표 아래 본문이 한컴과 겹친다.
-- 남은 차이: 개요 제목 번호 뒤 간격(rhwp "3.Ⅲ." / 한컴 "3. Ⅲ.")은 이 수정과 무관한
-  기존 차이이며 #8425로 분리했다.
+| 파일 | 내용 |
+|---|---|
+| `png/cellwrap-p001-base-native-review.png`, `-overlay.png` | 수정 전: rhwp가 "세부 과업 1: 요구사항"까지 한 줄로 그리고 나머지를 셀 경계에서 자른다. 행 높이도 1줄이라 표 뒤 문단이 한컴보다 위에 온다 (56.73%) |
+| `png/cellwrap-p001-{native,wasm}-{review,overlay}.png` | 수정 후: "세부 과업 1: 요구사 / 항 정의, 설계, 구현 / 및 시험" 3줄, 행 높이·표 뒤 문단 위치가 한컴과 일치 |
+| `png/business_plan-p002-{native,wasm}-{review,overlay}.png` | 수정 후: 6행 표 전체의 줄 나눔·행 높이·표 아래 본문이 한컴과 겹친다 |
+
+같은 배율(96dpi)로 표 영역을 확대 대조했다. 남은 차이는 개요 제목 번호 뒤 간격(rhwp "3.Ⅲ." /
+한컴 "3. Ⅲ.")뿐이며, 이 수정과 무관한 기존 차이로 #8425에 분리했다.
+
+## 입력 파일
+
+- 수정 후: `inputs/after/cellwrap.hwpx`, `inputs/after/business_plan.hwpx` (위 표의 수정 후 SHA-256)
+- 수정 전: `inputs/before/cellwrap.hwpx`, `inputs/before/business_plan.hwpx` (위 표의 수정 전 SHA-256, base `20c9678b0` 빌드의 `rhwp scaffold`)
 
 ## 회귀 테스트 수정 전·후
 
@@ -65,3 +70,28 @@ Native는 `--features native-skia` release 바이너리, fresh WASM은 같은 �
 | `scaffold_does_not_fabricate_line_segs_for_text_paragraphs` | FAIL: "셀 줄바꿈 재현": 저장 줄 1개 | PASS |
 | `long_cell_text_is_kept_inside_its_cell_on_several_lines` | FAIL: 글 조각 x+w=402.5px > 칸 오른쪽 396.8px | PASS |
 | `page_counts_match_hancom_print` | FAIL: business_plan 2쪽 ≠ 3쪽 | PASS |
+
+## 최종 head 재측정과 로컬 검증
+
+`4d0183ff5` 이후의 변경은 `builder.rs` 주석 위치와 이 문서·증거 파일뿐이다. 최종 소스에서 다시 빌드한
+Native(`--features native-skia` release)와 fresh WASM(`pkg/rhwp_bg.wasm` SHA-256
+`fca226f70a931059208f632a24b2b9cec8e4b05e0be22cff6aa0fd067065fe2c`)으로 재측정한 TSV 4개는 위 수치와
+바이트 단위로 같고, 재생성한 HWPX도 위 수정 후 SHA-256과 같다. Native·fresh WASM 전체 모드
+`pr_review_gate`는 두 문서 모두 `passed`(쪽수 1/1, 3/3)다.
+
+최소 글꼴 환경: macOS, 사용자 글꼴 0개, `/Library/Fonts`는 OS 동봉 `Arial Unicode.ttf`뿐,
+`system_profiler SPFontsDataType` 294개 전부 `/System/Library`, `RHWP_FONT_PATH` 해제.
+
+| 검증 | 명령 | 결과 |
+|---|---|---|
+| 집중 회귀 | `cargo nextest run --locked --cargo-profile release-test --tests -E 'test(/issue_8424\|scaffold/)'` | 24 passed |
+| 전체 회귀 | `cargo nextest run --locked --cargo-profile release-test --tests --test-threads 6 --no-fail-fast` | 12243 passed, 45 skipped, 0 failed |
+| 포맷 | `cargo fmt --all -- --check` | 통과 |
+| Clippy native | `cargo clippy --locked -- -D warnings` | 통과 |
+| Clippy WASM32 | `cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings` | 통과 |
+| workspace build | `cargo build --locked --workspace` | 통과 |
+| Clippy workspace | `cargo clippy --locked --workspace --all-targets -- -D warnings` | 통과 |
+| suite manifest | `node scripts/rust-test-suite-manifest.mjs --check --base-ref 20c9678b0` | 통과 |
+
+`src/**`의 `#[cfg(test)]`는 바꾸지 않아 `rust-unit-test-tiers` 검사는 비해당이다. `samples/`에 파일을
+추가하지 않아 코퍼스 래칫(4.3.1)도 비해당이다.
