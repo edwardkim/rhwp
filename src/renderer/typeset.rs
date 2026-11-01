@@ -6153,7 +6153,26 @@ impl TypesetEngine {
         }
         let restore_terminal_tac_spacing = is_tac && !has_post_text && !has_following_tac_table;
         if restore_terminal_tac_spacing {
+            let row_end = st.current_height;
             st.advance_flow_by(fmt.total_height - fmt.height_for_fit);
+            // [#8418] 원본 개체 줄(owned row)이 세로 끝을 먼저 발행했으면 그 끝은
+            // 표 줄 상자까지만 담는다. 실제 흐름은 같은 줄의 후행 간격까지 수용했으므로
+            // paint 도 같은 끝을 소비해야 한다 — 그렇지 않으면 쪽을 넘어온 마지막 표
+            // 줄의 줄간격만큼 뒤 본문이 위로 당겨진다(30026 p3: 1080HU = 14.4px).
+            if let Some(mut placement) = st
+                .inline_placements
+                .get(&(para_idx, ctrl_idx))
+                .copied()
+                .filter(|placement| {
+                    placement.stored_horizontal_pen.is_some()
+                        && placement
+                            .advance_end
+                            .is_some_and(|end| (end - row_end).abs() <= self.dpi / 7200.0)
+                })
+            {
+                placement.advance_end = Some(st.current_height);
+                st.record_inline_placement((para_idx, ctrl_idx), placement);
+            }
         }
         let accepted_single_row_origin = stored_single_row_source.and_then(
             |(source_vpos, source_base, column_started_at_zero)| {
