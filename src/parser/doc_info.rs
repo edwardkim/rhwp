@@ -550,6 +550,37 @@ fn is_real_strike_shape_id(shape: u8) -> bool {
     shape <= 12
 }
 
+/// [#8423] 파일 버전 5.0.2.4의 글자 모양 취소선 비트 값 1은 취소선이 아니다.
+///
+/// 같은 70바이트 레코드·같은 `attr`(bit 18-20 = 1, bit 26-29 = 0)를 한/글 2020
+/// (11.0.0.9136)이 HWPX로 변환한 결과가 파일 버전에 따라 갈린다.
+/// - 5.0.2.4(7.5.12.629·631 저장) 2건: `strikeout shape="NONE"`. 30396 권고문의 독립
+///   Print에도 표 숫자 위 선이 없다.
+/// - 5.0.2.2(7.0.1.215)·5.0.2.5(7.5.12.674·754) 3건, 5.1.1.0(2024) 1건: `shape="SOLID"`,
+///   5.0.2.5 문서의 Print에는 실제 취소선이 있다.
+///
+/// 확인한 5.0.2.4 경계만 해제하고 원본 `attr`·`raw_data`는 보존한다. 다른 버전과
+/// 2 이상의 비트 값은 근거가 없어 기존 판정을 유지한다.
+pub(crate) fn apply_v5024_strike_bits(
+    char_shapes: &mut [CharShape],
+    version: &crate::parser::header::HwpVersion,
+) {
+    let hangul_2007_5024 = (
+        version.major,
+        version.minor,
+        version.build,
+        version.revision,
+    ) == (5, 0, 2, 4);
+    if !hangul_2007_5024 {
+        return;
+    }
+    for cs in char_shapes {
+        if (cs.attr >> 18) & 0x07 == 1 {
+            cs.strikethrough = false;
+        }
+    }
+}
+
 fn parse_char_shape(data: &[u8]) -> Result<CharShape, DocInfoError> {
     let mut r = ByteReader::new(data);
 
@@ -1244,6 +1275,36 @@ mod tests {
 
         // 비트가 0이면 모양과 무관하게 취소선이 아니다
         assert!(!parse_char_shape(&make_data(0, 1)).unwrap().strikethrough);
+    }
+
+    /// [#8423] 5.0.2.4 파일의 비트 값 1만 해제하고 원본 attr 와 다른 버전·비트 값은 보존한다.
+    #[test]
+    fn test_v5024_strike_bit_one_is_not_strikethrough() {
+        use crate::parser::header::HwpVersion;
+        let shape = |bits: u32| CharShape {
+            attr: bits << 18,
+            strikethrough: true,
+            ..CharShape::default()
+        };
+        let version = |build: u8, revision: u8| HwpVersion {
+            major: 5,
+            minor: 0,
+            build,
+            revision,
+        };
+        let mut shapes = vec![shape(1), shape(2)];
+        apply_v5024_strike_bits(&mut shapes, &version(2, 4));
+        assert!(!shapes[0].strikethrough, "5.0.2.4 의 비트 값 1");
+        assert_eq!(shapes[0].attr, 1 << 18, "원본 attr 보존");
+        assert!(shapes[1].strikethrough, "근거 없는 비트 값 2는 유지");
+        for (build, revision) in [(2, 2), (2, 5), (3, 0)] {
+            let mut shapes = vec![shape(1)];
+            apply_v5024_strike_bits(&mut shapes, &version(build, revision));
+            assert!(
+                shapes[0].strikethrough,
+                "5.0.{build}.{revision} 은 실제 취소선"
+            );
+        }
     }
 
     #[test]
