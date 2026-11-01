@@ -1,6 +1,6 @@
 //! 관계형: 합성 요청/CLI·누적 예산 계약. 조판 좌표·렌더 golden 검사가 아니다.
-//! 주석 갱신: 2026-11-01 10:01 +09:00. 시각 측정은 예산 산술 계약에 비해당.
-//! 직전 파일 변경: db4f50b4529ad3f11dc611444d1fec20827bc468, 2026-11-01T09:31:33+09:00.
+//! 주석 갱신: 2026-11-01 12:17 +09:00. 시각 측정은 예산 산술 계약에 비해당.
+//! 직전 파일 변경: 5ef817b434d44bb827a7bd92d5514560c3538a3f, 2026-11-01T12:10:31+09:00.
 //! #8413은 wasm32 주소 범위를 넘는 누적 작업량과 실패 시 카운터/요청 분리를 검증한다.
 #![cfg(feature = "pdf-import")]
 use rhwp::parser::pdf::{parse_pdf_with_policy, PdfImportPolicy, PdfImportProfile};
@@ -583,4 +583,52 @@ fn cumulative_work_crosses_wasm32_address_range_without_wrapping_or_raising_a_ca
     healthy.charge_decoded(7).unwrap();
     healthy.restrict_work_limits(7, 10).unwrap();
     assert!(healthy.charge_decoded(1).is_err());
+}
+
+#[test]
+fn unrepresentable_image_dimensions_fail_in_public_import_and_next_request_recovers() {
+    use std::io::Write;
+    // HWP crop coordinates are signed 32-bit HWPUNIT (1/7200 inch).
+    // The import uses 96 dpi: one source pixel occupies 7200/96 = 75 units.
+    // These finite, valid Gray streams fit the pixel budget but not that axis.
+    let long = i32::MAX as u32 / 75 + 1;
+    let mut encoder = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::fast());
+    let block = [137; 8192];
+    let mut remaining = long as usize;
+    while remaining > 0 {
+        let take = remaining.min(block.len());
+        encoder.write_all(&block[..take]).unwrap();
+        remaining -= take;
+    }
+    let pixels = encoder.finish().unwrap();
+    for (width, height) in [(long, 1), (1, long)] {
+        let content = b"q 40 0 0 20 10 10 cm /Im Do Q";
+        let mut stream = format!("<< /Length {} >>\nstream\n", content.len()).into_bytes();
+        stream.extend(content);
+        stream.extend(b"\nendstream");
+        let mut image = format!("<< /Type /XObject /Subtype /Image /Width {width} /Height {height} /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /FlateDecode /Length {} >>\nstream\n", pixels.len()).into_bytes();
+        image.extend(&pixels);
+        image.extend(b"\nendstream");
+        let source = pdf_objects(&[
+            b"<< /Type /Catalog /Pages 2 0 R >>".to_vec(),
+            b"<< /Type /Pages /Count 1 /Kids [3 0 R] >>".to_vec(),
+            b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 100] /Resources << /XObject << /Im 5 0 R >> >> /Contents 4 0 R >>".to_vec(),
+            stream, image,
+        ]);
+        let error = parse_pdf_with_policy(&source, &Default::default(), PdfImportPolicy::default())
+            .err()
+            .expect("unrepresentable crop axis must not produce a partial document");
+        assert_eq!(error.code, "PDF_LOWERING_FAILED");
+        assert_eq!(
+            error.diagnostics.unwrap().backend_message.as_deref(),
+            Some("image dimension exceeds HWP crop coordinate range")
+        );
+        let healthy = parse_pdf_with_policy(
+            &image_pdf(),
+            &Default::default(),
+            PdfImportPolicy::default(),
+        )
+        .unwrap();
+        assert_eq!(healthy.document.bin_data_content.len(), 1);
+    }
 }

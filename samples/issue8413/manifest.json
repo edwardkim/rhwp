@@ -1,0 +1,41 @@
+{
+  "publicationApproval": "2026-11-01: maintainer explicitly approved public commits of all four originals",
+  "sources": [
+    {
+      "path": "samples/issue8413/img_clipping_01.pdf",
+      "bytes": 16697228,
+      "sha256": "75324afbe62535a6b4f2bc980269310ca14d90eb385f828fc6857a44bea542b4",
+      "role": "User-provided original PDF; also the independent PDFium visual reference"
+    },
+    {
+      "path": "samples/issue8413/img_bug_01.pdf",
+      "bytes": 12783971,
+      "sha256": "3fc955a5ceec37d0c5d83c28d09fce54a5fa2654884e82b5ecabe090f20e810b",
+      "role": "User-provided original PDF; also the independent PDFium visual reference"
+    },
+    {
+      "path": "samples/issue8413/PDF_ENCRYPTION_UNSUPPORTED.pdf",
+      "bytes": 18705307,
+      "sha256": "51eecae552f21e3ddb196ea8ff59f3a84cf9ab8cc431a9cab1425e7f01babe71",
+      "role": "User-provided original PDF; also the independent PDFium visual reference"
+    },
+    {
+      "path": "samples/issue8413/f87pro.pdf",
+      "bytes": 15520189,
+      "sha256": "6454edae50bd2f93e56ecbe71bf7c3b959dbbf241abf2906753f20dd22a15a57",
+      "role": "User-provided original PDF; also the independent PDFium visual reference"
+    },
+    {
+      "path": "tests/fixtures/issue8413/curve-mask-controls.hwpx",
+      "bytes": 48981,
+      "sha256": "7181be697ef1737845fb7dc719a95fdf7418afd37f11f923c709e1c23c3b6df4",
+      "role": "Generated editable output from the public 13-page PDF; re-opened in validation"
+    },
+    {
+      "path": "tests/fixtures/issue8413/curve-mask-controls.hwp",
+      "bytes": 28672,
+      "sha256": "51111eb22eb77bfca376082dfb552b79225691bce07da1a80dbba125e9aef27c",
+      "role": "Generated editable output from the public 13-page PDF; re-opened in validation"
+    }
+  ]
+}

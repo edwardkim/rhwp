@@ -53,22 +53,26 @@
     {
       "name": "img_clipping_01.pdf",
       "sha256": "75324afbe62535a6b4f2bc980269310ca14d90eb385f828fc6857a44bea542b4",
-      "bytes": 16697228
+      "bytes": 16697228,
+      "repositoryPath": "samples/issue8413/img_clipping_01.pdf"
     },
     {
       "name": "img_bug_01.pdf",
       "sha256": "3fc955a5ceec37d0c5d83c28d09fce54a5fa2654884e82b5ecabe090f20e810b",
-      "bytes": 12783971
+      "bytes": 12783971,
+      "repositoryPath": "samples/issue8413/img_bug_01.pdf"
     },
     {
       "name": "PDF_ENCRYPTION_UNSUPPORTED.pdf",
       "sha256": "51eecae552f21e3ddb196ea8ff59f3a84cf9ab8cc431a9cab1425e7f01babe71",
-      "bytes": 18705307
+      "bytes": 18705307,
+      "repositoryPath": "samples/issue8413/PDF_ENCRYPTION_UNSUPPORTED.pdf"
     },
     {
       "name": "f87pro.pdf",
       "sha256": "6454edae50bd2f93e56ecbe71bf7c3b959dbbf241abf2906753f20dd22a15a57",
-      "bytes": 15520189
+      "bytes": 15520189,
+      "repositoryPath": "samples/issue8413/f87pro.pdf"
     }
   ],
   "scores": [
@@ -450,5 +454,19 @@
   "limits": "Current runs with concurrent build activity; not a before/after speed benchmark. WASM linear memory capacity is not process RSS. Studio uses 300 second import timeout. f87pro completed after CDP protocol timeout was raised; first attempt is retained in local evidence.",
   "implementationCommit": "f17ca45e14a016e747f2a3aa399bbc50bb805df9",
   "validationWorktree": "/tmp/rhwp-issue8413-validation",
-  "normalControl": "Native Hancom palette PNG unchanged before/after; both Native and WASM raw 100%. Final SVG export preserves RGB239 and continuous alpha."
+  "normalControl": "Native Hancom palette PNG unchanged before/after; both Native and WASM raw 100%. Final SVG export preserves RGB239 and continuous alpha.",
+  "submissionChanges": {
+    "rebasedHead": "25dc243a46cdf26de5c228b62c82c6b02504cd92",
+    "base": "da39c536613a4bd543dc72b63a556183efc0383f",
+    "sourceDifferences": [
+      {
+        "path": "src/parser/pdf/lowering.rs",
+        "measuredSha256": "caa48f3459e597774082d0d2af574648b1b9c474b74fd9bf2b4a9814b4441972",
+        "submissionSha256": "0829b47a96dd09aaef8586b7ad2f5b9d878e46bb6d41007d8d2894e1cd3478f9"
+      }
+    ],
+    "nonTestProductionCodeIdentical": true,
+    "reason": "Remove only the source cfg(test) module and replace its boundary coverage via the public PDF API in tests/cases/issue_8174_pdf_resource_policy.rs; product/visual evidence is reused, not relabelled as a new run."
+  },
+  "publicationApproval": "2026-11-01 maintainer explicitly approved public commits of the four original PDFs."
 }

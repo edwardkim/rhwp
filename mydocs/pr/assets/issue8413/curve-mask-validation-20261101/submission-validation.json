@@ -1,0 +1,239 @@
+{
+  "base": "da39c536613a4bd543dc72b63a556183efc0383f",
+  "rebasedHeadBeforeTestMigration": "25dc243a46cdf26de5c228b62c82c6b02504cd92",
+  "testMigration": "Remove only lowering.rs cfg(test) module and validate real PDF dimension boundary plus recovery via public API; non-test product source unchanged.",
+  "localChecks": [
+    {
+      "check": "suite-prepare",
+      "exit": 0,
+      "seconds": 1.31,
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "logSha256": "14338f49333f58c255335b0ba05ccc6ad17210470fd3340400640f3ac58ee65e",
+      "summary": []
+    },
+    {
+      "check": "moved-boundary",
+      "exit": 0,
+      "seconds": 9.85,
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8174_pdf_resource_policy",
+        "--",
+        "--features",
+        "pdf-import",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review"
+      ],
+      "logSha256": "bdeb3a868950d5fbdfeac6533179465ba92323f2dfd7ef9215b9a37a9d8435f9",
+      "summary": [
+        "Finished `release-test` profile [optimized] target(s) in 8.96s",
+        "Summary [   0.157s] 12 tests run: 12 passed, 249 skipped"
+      ]
+    },
+    {
+      "check": "fmt",
+      "exit": 0,
+      "seconds": 22.08,
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": []
+    },
+    {
+      "check": "clippy-native",
+      "exit": 0,
+      "seconds": 100.54,
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "logSha256": "024370ea0158c22e373ea22855fb13b8e767579107969b26e4adb41991c47998",
+      "summary": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 1m 40s"
+      ]
+    },
+    {
+      "check": "clippy-wasm",
+      "exit": 0,
+      "seconds": 100.34,
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "logSha256": "7c287079b3c07fc535d005dfdee769f7788baa1e56704c45c07b18fbff005bcd",
+      "summary": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 1m 40s"
+      ]
+    },
+    {
+      "check": "workspace-build",
+      "exit": 0,
+      "seconds": 135.87,
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "logSha256": "1a6d720402930e588aabac1d7d368b087e40927772bee6569024a19209254be8",
+      "summary": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 15s"
+      ]
+    },
+    {
+      "check": "clippy-workspace",
+      "exit": 0,
+      "seconds": 127.28,
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "logSha256": "0a2a6a73b1aa2276114d04e915aa81a56cc4c1110e07cebbf051070e8c05aa9a",
+      "summary": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 06s"
+      ]
+    }
+  ],
+  "rebaseChecks": [
+    {
+      "check": "rebase-suite-prepare",
+      "exit": 0,
+      "seconds": 1.35,
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "logSha256": "9f96b6f2d783f2d26849f1ec59887d2456ad96396feed0b6d5d722cc89421fa3",
+      "summary": []
+    },
+    {
+      "check": "rebase-suite-check",
+      "exit": 0,
+      "seconds": 0.73,
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "da39c536613a4bd543dc72b63a556183efc0383f"
+      ],
+      "logSha256": "b4dc2df33acaab83d4e9f4146d99885cc8382fead7370baafa5581bfe73a6cc3",
+      "summary": []
+    },
+    {
+      "check": "rebase-cfb",
+      "exit": 0,
+      "seconds": 299.7,
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8225_group_child_ctrl_data",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review"
+      ],
+      "logSha256": "aa3e1721ae07d31e7f3d27ca19a5e68a94d3fb71215cefc00ee05a51fa9c4fcf",
+      "summary": [
+        "Finished `release-test` profile [optimized] target(s) in 4m 58s",
+        "Summary [   0.076s] 3 tests run: 3 passed, 275 skipped"
+      ]
+    },
+    {
+      "check": "rebase-test-clippy",
+      "exit": 0,
+      "seconds": 98.73,
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--test",
+        "regression_suite_025",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "logSha256": "8f3fd66d3ec8cd5affc44204e2024dc295f0ba3c01629b8615245cc17091be1c",
+      "summary": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 1m 38s"
+      ]
+    }
+  ],
+  "unitTier": {
+    "logSha256": "2c6dbaab2093a94c2fa3ec11190f384180b922a10025e3466a44f53c6611685c",
+    "result": "[RustUnitTier] 확인 완료: 4099 tests / 296 modules / ready 0 / support 85 / white-box 4010 / cfg support items 28"
+  },
+  "fixtureInspection": [
+    {
+      "file": "tests/fixtures/issue8413/curve-mask-controls.hwp",
+      "axis": "hidden-text",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "file": "tests/fixtures/issue8413/curve-mask-controls.hwp",
+      "axis": "injection",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "file": "tests/fixtures/issue8413/curve-mask-controls.hwp",
+      "axis": "unicode",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "file": "tests/fixtures/issue8413/curve-mask-controls.hwpx",
+      "axis": "hidden-text",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "file": "tests/fixtures/issue8413/curve-mask-controls.hwpx",
+      "axis": "injection",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "file": "tests/fixtures/issue8413/curve-mask-controls.hwpx",
+      "axis": "unicode",
+      "exit": 0,
+      "stderr": ""
+    }
+  ],
+  "excludedAttempt": "First migrated test run used stale generated harness; 0 tests / exit 4, excluded. Regenerated harness and verified 12 executed tests.",
+  "reuse": "Full Rust/Native/Studio/visual runs in validation.json and manifest.json keep their original measured source identity. These submission checks supplement that evidence."
+}

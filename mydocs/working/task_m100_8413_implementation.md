@@ -1,6 +1,6 @@
 # #8413–#8416 공통 구현·검증 기록
 
-상태: 곡선 clip·회전 텍스트·마스크 수정과 원본 4개 127쪽의 Native/fresh WASM·Studio 검증 완료. 최소 글꼴 환경 전체 회귀·Native 3종·집중 검사·lint까지 통과. PR·push·merge는 수행하지 않았다.
+상태: 곡선 clip·회전 텍스트·마스크 수정과 원본 4개 127쪽의 Native/fresh WASM·Studio 검증 완료. 최소 글꼴 환경 전체 회귀·Native 3종·집중 검사·lint까지 통과. PR·push·self-review 승인 후 준비 중이며 머지는 수행하지 않았다.
 기준과 범위: [수행 계획](../plans/task_m100_8413.md),
 [원인 조사](../tech/investigations/issue-8413/README.md).
 공통 계획 승인 기록은 `f1c08f7112`다. 메인테이너의 추가 요구인 PDF 열기 암호 입력을
@@ -602,3 +602,51 @@ nextest 0.9.137은 요구 최소 버전을 충족하지만 권고 0.9.140보다 
 증적과 중복된 이전 PNG 정리만 담는다. 이번 요청의 곡선 clipping·회전 텍스트·마스크 오류는
 수정·실제 재검증까지 완료했으며, 위에 적은 기존 글꼴/세선 표현 차이와 f87pro 초기 표시 지연을
 완전한 피델리티·성능 개선으로 보고하지 않는다. PR·push·merge는 수행하지 않았다.
+
+
+### PR 준비와 최신 devel 정합 — 2026-11-01
+
+메인테이너가 남은 큰 문제의 백로그 기록과 PR Open·self-review를 승인했다.
+[후속 백로그](../plans/task_m100_8413_backlog.md)에 초기 표시 지연, 본문 글꼴 굵기·간격,
+가는 벡터 선 농도 차이를 재현·진입점·완료 조건과 함께 기록했다. 이번 제출의 지원 범위를
+포괄적인 PDF 피델리티·성능 완료로 확대하지 않는다.
+
+원본 PDF 4개도 공개 커밋을 명시적으로 승인받아 [재현 자료](../../samples/issue8413/README.md)에
+원래 바이트로 추가했다. 기존 로컬 검증 입력과 SHA-256이 같으며 모든 파일이 50 MiB 미만이다.
+앞선 기록의 원본 비공개 보존은 이 승인 전 상태다. 검증용 글꼴 추출물은 추가하지 않는다.
+공개 합성 PDF에서 생성해 실제 검증한 HWP/HWPX도 동일 바이트로 포함했다.
+
+새 devel `da39c536613a4bd543dc72b63a556183efc0383f`는 #8417의 CFB 시험 도우미 두 줄과
+검토·오늘할일 문서만 추가한다. 원 문제 #8225 → #8233 → 통합 #8395의 선행 근거와
+[독립 #8417 검토](../pr/archives/pr_8417_review.md)를 확인했다. 충돌 없이 리베이스했으며
+이전 최종 head `c17f15f73e` → `25dc243a46`, 구현 `f17ca45e14` → `5ef817b434`다.
+제품 소스·Cargo graph·WASM과 시각 입력의 해시가 같아 완료한 전쪽·전체 검사를 재사용한다.
+새 base의 helper는 같은 CFB 입력을 여는 검증 코드이며 PDF paint 소비 경로를 바꾸지 않는다.
+추가된 helper의 실제 그룹 payload 보존·중복 방지 검사와 해당 suite Clippy는 현재 후보에서
+별도로 재실행해 3건과 해당 suite Clippy가 통과했다. 원 base의 결과는 #8417 독립 검토의 같은 소스·입력 실행과 대조한다.
+
+
+제출 전 unit-tier 검사에서 초기 자원 정책 절편의 `lowering.rs::resource_boundary_tests`가
+신규 source-side test 금지에 걸렸다. 허용 기준을 올리지 않고 기존 통합 자원 검사로 이관했다.
+종전 검사는 빈 pixel payload의 내부 `PdfImage`를 helper에 직접 전달했다. 대체 검사는
+실제 유효한 Gray/Flate PDF의 한 축이 HWP signed crop 좌표 범위를 넘도록 구성해 공개
+`parse_pdf_with_policy`에서 `PDF_LOWERING_FAILED`와 정확한 경계 진단을 확인하고,
+실패 후 정상 문서가 열리는지도 검사한다. 정상 출력·PNG 인코더·제품 한도는 변경하지 않는다.
+
+이관 후 자원 정책 검사 12건이 통과했다. 첫 실행은 자동 생성 suite가 이관 전 배정이라
+검사 0건으로 실패했으며 통과 근거에서 제외했다. suite를 다시 생성한 뒤 실제 12건 실행을
+확인했다. 제품 코드의 `cfg(test)` 밖 바이트는 기존 시각 검증 구현과 같음을 직접 대조했다.
+
+제출 전 코드 점검은 암호 인증·진단 redaction·재열기 설정의 암호 미보존, 요청별 자원 예산과
+명시적 낮은 host cap, Worker의 실제 쪽 시작/완료 전달, clip의 q/Q·Form·좌표 변환과
+mask 표본 검증, 회전 텍스트의 공통 IR 전달, PDF 이미지 색 출처를 대상으로 했다.
+수치 맞춤·샘플 ID 분기·CI 허용치 변경은 추가하지 않았다. GitHub CI가 성공한 뒤 확정하는
+정식 self-review와 구분하며, 별도 에이전트에 의한 독립 리뷰로 표기하지 않는다.
+
+제출 후보의 추가 검증도 완료했다. 자원 정책 12건, #8417 CFB 보존 3건, source-side
+unit-tier, fmt·Native/WASM Clippy·workspace build/all-target Clippy가 통과했다.
+[제출 검증 기록](../pr/assets/issue8413/curve-mask-validation-20261101/submission-validation.json)에
+명령·종료 코드·로그 해시와 이전 측정의 재사용 범위를 기록했다. 추가 HWP/HWPX 계약 fixture는
+`tests/fixtures/issue8413/`에 두었고 두 파일의 hidden-text·injection·unicode 읽기 전용 검사
+6건이 모두 clean이었다. 보안 검사 6건을 전체 보안 검증으로 확대 해석하지 않는다.
+변경 문서 6개의 상대 링크와 `git diff --check`, 모든 공개 재현 자료의 크기·해시도 확인했다.
