@@ -1,10 +1,11 @@
 # #8413–#8416 공통 구현·검증 기록
 
-상태: 진행 중. 전체 구현·시각 검증·PR 준비 완료가 아니다.
+상태: 곡선 clip·회전 텍스트·마스크 수정과 원본 4개 127쪽의 Native/fresh WASM·Studio 검증 완료. 최소 글꼴 환경 전체 회귀·Native 3종·집중 검사·lint까지 통과. PR·push·merge는 수행하지 않았다.
 기준과 범위: [수행 계획](../plans/task_m100_8413.md),
 [원인 조사](../tech/investigations/issue-8413/README.md).
 공통 계획 승인 기록은 `f1c08f7112`다. 메인테이너의 추가 요구인 PDF 열기 암호 입력을
-#8415에서 먼저 연결하고, 나머지 공통 clip·이미지·명령 수 처리를 계속한다.
+#8415에서 먼저 연결했으며, 뒤에서 공통 clip·이미지·명령 수와 쪽별 진행 표시의 구현·검증을 이어 기록한다.
+최신 결과는 [곡선·회전·마스크의 최종 제품 검증](#곡선회전마스크의-최종-제품-검증--2026-11-01)에 있다.
 
 ## #8415 생산·소비 경로와 변경 중인 계약
 
@@ -532,7 +533,7 @@ raw 통과를 완전한 픽셀 동일성으로 해석하지 않는다. 암호화
 WASM 시간은 HWPX 저장과 편집기 재열기·HWP 저장/재열기를 포함하므로 서로 속도 비교값이 아니다.
 WASM linear memory capacity는 현재 실제 사용량이나 프로세스 peak RSS가 아니다. 누적 decoded
 8 GiB는 재사용·해제한 버퍼의 작업량 계상이며 8 GiB를 동시에 할당한다는 뜻이 아니다.
-Native peak RSS는 `/usr/bin/time`으로 별도 측정했다.
+Native peak RSS는 `/usr/bin/time`으로 별도 측정했으며 부모와 자식 프로세스의 동시 RSS 합계가 아니다.
 
 f87pro의 첫 Studio 자동화는 화면이 표시된 뒤 CDP 완료 대기에서 실패했다. 제품의 Worker
 시간 한도를 우회한 것이 아니라 검증 도구의 통신 대기를 600초로 늘려 다시 실행했고,
@@ -554,4 +555,50 @@ PDF 이미지 색 출처 및 signed rectangle의 양 끝점 포함을 검사한�
 metrics-only라는 증거가 있어야 하며, 하나라도 paint/unknown/빈 procedure이면 숨김 판정을
 하지 않는 반례도 포함했다. 개인 설치 글꼴 없이 실행한다.
 
-최종 전체 회귀·Native 3종·lint 결과는 아래에서 실행 완료 후 확정한다.
+### 자동 검사 환경과 최종 게이트
+
+제품 구현은 `f17ca45e14`에 고정했다. 전체 회귀는 해당 커밋의 전용 검증 worktree에서
+suite `--prepare` 후 base `bc9dfdd057258de59afebeb5121c4bee7398e07f`를 명시한
+manifest 검사로 수집을 확인했다. 파생 suite는 제품 커밋에 포함하지 않는다.
+
+첫 전체 실행은 개인 글꼴 경로가 노출된 환경임을 최종 조건 점검에서 발견해 중단했다.
+그 결과를 정식 회귀 통과로 사용하지 않고, 동일 제품 코드·공용 target으로 `bwrap` 파일 시스템
+격리 후 다시 실행해 통과했다. 시스템 글꼴 두 디렉터리를 빈 mount로 덮고 사용자 글꼴·외부 TTFS·Windows
+드라이브·진단용 추출 글꼴 경로를 숨겼다. `RHWP_FONT_PATH`도 제거한다. Fontconfig뿐 아니라
+파일 경로 존재 여부를 검사했고, 실제 목록은
+[최소 글꼴 환경](../pr/assets/issue8413/curve-mask-validation-20261101/minimal-font-environment.json)에 보존한다.
+전체·Native 집중 검사는 같은 격리를 사용한다. 독립 PDF 비교에 글꼴을 명시한 시각 검증과
+개인 설치 글꼴 없는 회귀 검증을 구분한다.
+
+SVG Print 경로도 공개 합성 13쪽을 실제 출력했다. 곡선·마스크 페이지의 내장 PNG에 투명·불투명·
+중간 alpha가 남고, 색상 대조군의 회색 RGB 239가 보존됨을 확인했다. SVG는 Native Canvas·fresh
+WASM 시각 검증을 대체하지 않는 추가 소비 경로 검사다.
+
+최종 제품 커밋 `f17ca45e14`의 필수 로컬 검증을 모두 완료했다.
+[명령·종료 코드·검사 수·로그 해시](../pr/assets/issue8413/curve-mask-validation-20261101/validation.json)를 보존한다.
+
+| 검사 | 최종 결과 |
+| --- | --- |
+| 최소 글꼴 환경 release-test 전체 | 12,249 PASS / 0 FAIL / 45 skipped |
+| Native Skia lib | 4,041 PASS / 0 FAIL / 12 ignored |
+| Native 그림 누락 대조군 | 2 PASS |
+| Native 직접 PDF 출력 | 22 PASS |
+| Native PDF 자원 제한 | 134 PASS |
+| Native 신규 곡선·회전·마스크 관계 검사 | 5 PASS |
+| fmt, Native/WASM Clippy, workspace build/all-target Clippy | 모두 PASS |
+| backend 선택적 rendering feature 빌드 | PASS |
+| Studio 전체 단위·TypeScript | 2,705 PASS / 0 FAIL / 2 기존 skipped, TypeScript PASS |
+| 공통 Worker 집중 검사 | 30 PASS |
+| fresh Studio E2E | 암호·페이지 진행률·가져오기 대화창·busy 상태 4개 모듈 PASS |
+| 실제 WASM 자원 잔량 경계 | 유효한 8 GiB 잔량 재열기 성공, 무효 값 7개 거부 |
+
+Native lib 수는 rhwp 3,859건과 같은 명령의 라이브러리 15·165·2건을 합산한 값이다.
+집중 nextest의 skipped는 선택하지 않은 같은 suite의 검사이며 전체 실행 결과와 구분한다.
+nextest 0.9.137은 요구 최소 버전을 충족하지만 권고 0.9.140보다 낮아 버전 안내와 CI 전용
+`report-skipped` 설정 무시 경고가 출력됐다. 기본 profile의 검사 실행·실패 판정에는 영향이 없었고
+검사를 건너뛰는 옵션이나 허용치 변경은 사용하지 않았다.
+
+제품 코드·테스트와 최적화 WASM은 검증 후 변경하지 않았다. 후속 커밋은 최종 결과·글꼴 격리
+증적과 중복된 이전 PNG 정리만 담는다. 이번 요청의 곡선 clipping·회전 텍스트·마스크 오류는
+수정·실제 재검증까지 완료했으며, 위에 적은 기존 글꼴/세선 표현 차이와 f87pro 초기 표시 지연을
+완전한 피델리티·성능 개선으로 보고하지 않는다. PR·push·merge는 수행하지 않았다.

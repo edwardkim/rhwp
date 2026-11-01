@@ -18,3 +18,6 @@ TSV는 색상 경계 보정 전 2px `silhouette_raw_match_percent`를 전쪽 기
 원본 글꼴을 포함하지 않은 Helvetica 합성 입력은 명시적 Arial 글꼴 환경으로 비교한다.
 37·57쪽 원본은 원본에서 복원한 로컬 글꼴 프로그램을 명시한다. Helvetica의 대체 글꼴은 Arial Narrow와 혼동하지 않도록 표준 Arial을 별도 지정한다.
 폰트 프로그램 자체를 검사하는 회귀가 아니므로 자동화 검사는 설치 글꼴에 의존하지 않는다.
+
+회귀 검증의 파일 시스템 격리·실제 노출 글꼴은 [최소 글꼴 환경](minimal-font-environment.json)에 기록했다.
+[최종 자동 검증 결과](validation.json)는 제품 커밋과 실행 명령·검사 수·종료 코드·로그 해시를 연결한다.

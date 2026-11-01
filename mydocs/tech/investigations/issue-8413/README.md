@@ -2,7 +2,7 @@
 kind: investigation
 status: active
 canonical: mydocs/manual/codex/docs_and_git_workflow.md
-last_verified: 2026-10-31
+last_verified: 2026-11-01
 ---
 
 # PDF 가져오기 샘플 네 건의 원인 조사
@@ -12,6 +12,8 @@ last_verified: 2026-10-31
 [#8415](https://github.com/edwardkim/rhwp/issues/8415),
 [#8416](https://github.com/edwardkim/rhwp/issues/8416). 담당 edwardkim.
 [공통 수행 계획](../../../plans/task_m100_8413.md).
+아래는 수정 전 재현 근거이며, 2026-11-01의 곡선·회전·마스크 수정과 원본 전쪽 검증은
+[공통 구현 기록](../../../working/task_m100_8413_implementation.md)에 있다.
 
 ## 기준과 재현 범위
 

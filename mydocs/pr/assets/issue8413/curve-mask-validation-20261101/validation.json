@@ -1,0 +1,211 @@
+{
+  "implementationCommit": "f17ca45e14a016e747f2a3aa399bbc50bb805df9",
+  "minimalFontEnvironment": "minimal-font-environment.json",
+  "rustChecks": [
+    {
+      "check": "release-test-all",
+      "exit": 0,
+      "seconds": 531.41,
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "summary": [
+        "Summary [ 530.290s] 12249 tests run: 12249 passed (1 slow), 45 skipped"
+      ],
+      "logSha256": "b9b7767c790ec5b7c0f48f5e0b9fc1a6690e79bae85ef90a0276130e453cbe2e"
+    },
+    {
+      "check": "native-lib",
+      "exit": 0,
+      "seconds": 298.04,
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads=8"
+      ],
+      "summary": [
+        "test result: ok. 3859 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 16.81s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ],
+      "logSha256": "f54a0391f4b6d0f3837fe68ce1ee373ac7294326e920514103daf31f233f80be"
+    },
+    {
+      "check": "resource-corrected",
+      "exit": 0,
+      "seconds": 253.69,
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_7911_pdf_resource_limits",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "summary": [
+        "Summary [   0.508s] 134 tests run: 134 passed, 159 skipped"
+      ],
+      "logSha256": "982c38ef2c0146c2d1c2807f46935933d9cd6bb3492098dfbb0f182d31f27f2f"
+    },
+    {
+      "check": "new-curve-contracts",
+      "exit": 0,
+      "seconds": 11.31,
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8413_pdf_curve_mask_rotation",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "summary": [
+        "Summary [   0.040s] 5 tests run: 5 passed, 304 skipped"
+      ],
+      "logSha256": "a6cc94238984086ce4b86524cbf716cf286f45a9af33bb0169b0e9bac605d7f6"
+    },
+    {
+      "check": "native-placeholder",
+      "exit": 0,
+      "seconds": 11.13,
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "summary": [
+        "Summary [   0.132s] 2 tests run: 2 passed, 285 skipped"
+      ],
+      "logSha256": "6d5d0cae5fb9e09eccb7988f34bf6eba54c65aeb81d88e2516babfa15299b9c9"
+    },
+    {
+      "check": "native-direct-pdf",
+      "exit": 0,
+      "seconds": 13.01,
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "summary": [
+        "Summary [   0.303s] 22 tests run: 22 passed, 252 skipped"
+      ],
+      "logSha256": "d58fe495ab02cbbefa08cb1076e3648f5bb4b2cc249861bfc8c40bbb15ec8d8f"
+    }
+  ],
+  "manifestChecks": [
+    {
+      "check": "suite-prepare",
+      "exit": 0,
+      "seconds": 1.31
+    },
+    {
+      "check": "suite-check",
+      "exit": 0,
+      "seconds": 0.73
+    }
+  ],
+  "rustLint": [
+    {
+      "check": "optional-rendering",
+      "exit": 0,
+      "seconds": 109.57
+    },
+    {
+      "check": "clippy-native",
+      "exit": 0,
+      "seconds": 101.1
+    },
+    {
+      "check": "clippy-wasm",
+      "exit": 0,
+      "seconds": 144.66
+    },
+    {
+      "check": "workspace-build",
+      "exit": 0,
+      "seconds": 166.89
+    },
+    {
+      "check": "clippy-workspace",
+      "exit": 0,
+      "seconds": 6.31,
+      "initialAttemptExit": 101,
+      "correction": "test-only resource lookup uses the base API, not optional rendering"
+    }
+  ],
+  "studioUnit": {
+    "passed": 2705,
+    "skipped": 2,
+    "failed": 0
+  },
+  "workerUnit": {
+    "passed": 30,
+    "failed": 0
+  },
+  "studioTypecheck": "passed",
+  "formatCheck": "passed",
+  "freshStudioE2E": [
+    {
+      "module": "pdf-password-issue8415",
+      "exit": 0,
+      "seconds": 4.98
+    },
+    {
+      "module": "pdf-page-progress-issue8413",
+      "exit": 0,
+      "seconds": 5.48
+    },
+    {
+      "module": "pdf-import-dialog-issue8411",
+      "exit": 0,
+      "seconds": 6.68
+    },
+    {
+      "module": "pdf-import-busy-issue8398",
+      "exit": 0,
+      "seconds": 6.03
+    }
+  ],
+  "visualManifest": "manifest.json",
+  "earlierUnisolatedRun": "Stopped; not used as formal regression evidence."
+}

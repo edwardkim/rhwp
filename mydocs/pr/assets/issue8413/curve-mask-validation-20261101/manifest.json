@@ -38,7 +38,9 @@
     "vendor/rhwp-pdf-import-backend/src/import_limits.rs": "2c7e746108cd16a1849d3396811f962b8cd7c3161688389606743ca76f7dda9d",
     "vendor/rhwp-pdf-import-backend/src/rendering/text_rasterizer.rs": "8f511e4d5e4346aba2fc91e141463681db95db6b48ac751285a68cd812be43a4",
     "vendor/rhwp-pdf-import-backend/src/extractors/image_clip_path.rs": "8c1f0414785ea7d9dba8428e575d6c280a9fba3b6cc085e929209ea2287e3541",
-    "vendor/rhwp-pdf-import-backend/src/fonts/type3_empty.rs": "cfa7ce6d7fd64bc9f69efabe63d8b6c7cd7fda277d78c103da02f9dbb3cbb5cb"
+    "vendor/rhwp-pdf-import-backend/src/fonts/type3_empty.rs": "cfa7ce6d7fd64bc9f69efabe63d8b6c7cd7fda277d78c103da02f9dbb3cbb5cb",
+    "Cargo.toml": "debb771aa5b059c4a7cf8ed9dd9c3c51f02f3d32c23cc1818b013e059520c8c0",
+    "Cargo.lock": "5e63cc3b313f7b8ce1f86fdfa8a4acb97e80275d52538f6dc5602725cca1e2fc"
   },
   "binarySha256": {
     "native": "6594f2b12172e268243b0b2dc4555667ad49106f4fcd3324336afda6b68b8809",
@@ -445,5 +447,8 @@
     }
   ],
   "fontPolicy": "Controls: explicit standard Arial, not Arial Narrow. 37/57 pages: original embedded outlines restored locally; no private font bytes distributed.",
-  "limits": "Current runs with concurrent build activity; not a before/after speed benchmark. WASM linear memory capacity is not process RSS. Studio uses 300 second import timeout. f87pro completed after CDP protocol timeout was raised; first attempt is retained in local evidence."
+  "limits": "Current runs with concurrent build activity; not a before/after speed benchmark. WASM linear memory capacity is not process RSS. Studio uses 300 second import timeout. f87pro completed after CDP protocol timeout was raised; first attempt is retained in local evidence.",
+  "implementationCommit": "f17ca45e14a016e747f2a3aa399bbc50bb805df9",
+  "validationWorktree": "/tmp/rhwp-issue8413-validation",
+  "normalControl": "Native Hancom palette PNG unchanged before/after; both Native and WASM raw 100%. Final SVG export preserves RGB239 and continuous alpha."
 }
