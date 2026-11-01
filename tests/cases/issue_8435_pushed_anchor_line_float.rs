@@ -1,6 +1,16 @@
 //! 관계형·고정형(쪽수): TAC 표 다음 줄에 앵커돼 그 줄을 밀어낸 자리차지 로고 개체를 표 아래 같은 쪽에 둔다.
-//! 주석 갱신: MEASURED_AT (새 파일).
-//! MEASUREMENTS
+//! 주석 갱신: 2026-11-01T23:18:07+09:00 (새 파일).
+//! 2026-11-01 측정 raw(96dpi, PDFium, 색상 경계 보정 전 2px 실루엣, `visual_sweep.py --silhouette-only`),
+//! 기준은 각 원본의 독립 한컴 2022 12.0.0.4547 Print(pdf/issue8435/*-2022.pdf):
+//! - 156638890(3쪽): 3쪽 Native 99.95% / fresh WASM 99.95%(수정 전 Native 44.02%), 2쪽 Native 99.99%
+//!   (수정 전 90.39%). 전 3쪽 최저 Native 99.95% / WASM 99.95%.
+//! - 156770078(3쪽): 3쪽 Native 99.95% / fresh WASM 99.98%(수정 전 Native 42.20%).
+//!   전 3쪽 최저 Native 99.47% / WASM 99.98%.
+//! - 156618114(2쪽): 2쪽 Native 99.95% / fresh WASM 99.95%(수정 전 Native 51.40%), 1쪽 Native 99.11%
+//!   (수정 전 92.81%). 전 2쪽 최저 Native 99.11% / WASM 99.12%.
+//!
+//! 증거: mydocs/pr/assets/issue_8435/{native,wasm}/*_silhouette.tsv.
+//! 기대 간격은 구현이 아닌 저장 줄 사다리(줄0 끝과 줄1 vpos 의 차이 = 개체 상자)와 독립 Print 로 정한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
