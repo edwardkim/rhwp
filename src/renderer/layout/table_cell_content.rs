@@ -1228,7 +1228,23 @@ impl LayoutEngine {
                             // 위로 올라간다(#7333 p40~47). 본문 TAC와 같은 사영으로 실제
                             // control 소유 줄을 고른다.
                             let picture_line = super::control_line_seg_index(para, ctrl_idx);
-                            let pic_y = if let Some(line) =
+                            // [#8427] 문단 기준(vert=문단, 위 정렬) 비-TAC 그림은 줄이 아니라 문단
+                            // 원점(앞 간격 전)에서 세로 오프셋만큼 놓는다 — 같은 셀의 도형 경로
+                            // (`para_y_before_compose`)와 같은 기준이다.
+                            let para_relative_float = !pic.common.treat_as_char
+                                && matches!(
+                                    pic.common.vert_rel_to,
+                                    crate::model::shape::VertRelTo::Para
+                                )
+                                && matches!(
+                                    pic.common.vert_align,
+                                    crate::model::shape::VertAlign::Top
+                                        | crate::model::shape::VertAlign::Inside
+                                );
+                            let pic_y = if para_relative_float {
+                                para_y_before_compose
+                                    + hwpunit_to_px(pic.common.vertical_offset as i32, self.dpi)
+                            } else if let Some(line) =
                                 picture_line.and_then(|line| para.line_segs.get(line))
                             {
                                 cell_y + pad_top + hwpunit_to_px(line.vertical_pos, self.dpi)

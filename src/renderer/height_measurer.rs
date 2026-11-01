@@ -4509,10 +4509,40 @@ let body_height=match nested_body_heights
                             if crate::renderer::para_has_no_stored_line_segs(pp) {
                                 return hwpunit_to_px(400, self.dpi);
                             }
-                            pp.line_segs
-                                .iter()
-                                .map(|seg| hwpunit_to_px(seg.line_height.max(0), self.dpi))
-                                .sum::<f64>()
+                            // [#8427] 개체가 이 문단 기준(vert=문단)이면 한/글은 개체를 문단
+                            // 앞 간격 **전** 원점에 놓는다(30396 18쪽: 문단 앞 간격 500HU 인
+                            // 빈 셀 문단의 그림이 셀 내용 상단에 놓이고 행은 그림 흐름 높이만
+                            // 차지). 그 간격도 개체 자리에 흡수되므로 줄과 함께 뺀다.
+                            let para_relative_object = pp.controls.iter().any(|c| match c {
+                                Control::Picture(pic) => {
+                                    !pic.common.treat_as_char
+                                        && matches!(
+                                            pic.common.vert_rel_to,
+                                            crate::model::shape::VertRelTo::Para
+                                        )
+                                }
+                                Control::Shape(sh) => {
+                                    !sh.common().treat_as_char
+                                        && matches!(
+                                            sh.common().vert_rel_to,
+                                            crate::model::shape::VertRelTo::Para
+                                        )
+                                }
+                                _ => false,
+                            });
+                            let absorbed_spacing_before = if para_relative_object {
+                                styles
+                                    .para_styles
+                                    .get(pp.para_shape_id as usize)
+                                    .map_or(0.0, |style| style.spacing_before.max(0.0))
+                            } else {
+                                0.0
+                            };
+                            absorbed_spacing_before
+                                + pp.line_segs
+                                    .iter()
+                                    .map(|seg| hwpunit_to_px(seg.line_height.max(0), self.dpi))
+                                    .sum::<f64>()
                         })
                         .sum();
                     let additive = (text_height - empty_para_line_height).max(0.0) + non_inline_h;
