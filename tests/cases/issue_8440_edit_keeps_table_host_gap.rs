@@ -1,5 +1,5 @@
-//! 관계형 (편집 문단 높이 변화 ↔ 뒤 문단 이동량, 자리차지 표 점유 ↔ 보존, 표끼리 겹침 없음)
-//! 주석 갱신: (측정 후 기입)
+//! 관계형 (편집 문단 높이 변화 ↔ 뒤 문단 이동량, 자리차지 표 점유 ↔ 보존, 표끼리 겹침 없음) + 고정형 (전체 쪽수 14)
+//! 주석 갱신: 2026-11-02T07:20:00+09:00
 //!
 //! [#8440] 자리차지(비-TAC, 위아래) 표를 가진 문단 바로 앞 문단의 글자를 고치면, 뒤 문단의
 //! vpos 가 그 표의 점유 높이만큼 당겨져 다음 표가 앞 표와 겹쳤다.
@@ -9,7 +9,13 @@
 //! 원본: samples/issue6123/3112461_railway_emc_criteria.hwpx 구역 0
 //!   pi=114 "2) 신호 및 통신, …" (개체 없음) → pi=115 자리차지 표(4×6) 호스트 →
 //!   pi=116 빈 문단 → pi=117 " 3) 함체 포트" → pi=118 자리차지 표 호스트.
-//! 시각 측정: (측정 후 기입)
+//!
+//! 시각 측정 (2026-11-02, `visual_sweep.py --silhouette-only --compat 2024 --dpi 96`, pdftoppm,
+//! raw = silhouette_raw_match_percent, RHWP_FONT_PATH=ttfs/opensource):
+//!   기준 PDF `pdf/issue-8440/emc_edit-2024.pdf` = 위 편집본(문단 114 첫 글자 1자 삭제)의
+//!   한컴 2024 Print 출력, 14쪽. 대상 쪽 7: Native 99.25%, fresh WASM 99.08% (수정 전 편집본 60.76%).
+//!   전체 쪽수 한컴 14 = rhwp 14. 전쪽 최저 Native 98.86%(11쪽), fresh WASM 98.43%(10쪽).
+//!   증거: mydocs/pr/assets/issue_8440/ (tsv/native·wasm·base_native, png/emc_edit-p007-*).
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::{Path, PathBuf};
