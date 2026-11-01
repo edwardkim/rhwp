@@ -6,6 +6,17 @@
 pub(crate) mod helpers;
 pub(crate) use helpers::*;
 
+/// 문단 서식 JSON(`--props` 등)이 바꿀 속성을 하나라도 담는지 (#8439). 어댑터가 아무 키도
+/// 읽지 못한 입력을 성공으로 처리하지 않도록 미리 확인할 때 쓴다.
+pub fn para_format_props_have_effect(props_json: &str) -> bool {
+    helpers::para_format_props_have_effect(props_json)
+}
+
+/// 글자 서식 JSON 이 바꿀 속성을 하나라도 담는지 (#8439).
+pub fn char_format_props_have_effect(props_json: &str) -> bool {
+    helpers::char_format_props_have_effect(props_json)
+}
+
 #[cfg(feature = "pdf-import")]
 mod pdf_import_session;
 #[cfg(feature = "pdf-import")]

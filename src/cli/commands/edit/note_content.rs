@@ -647,6 +647,12 @@ pub(super) fn edit_apply_para_format_in_footnote(args: &[String]) -> i32 {
         eprintln!("오류: --props 는 JSON 객체여야 합니다: {props}");
         return EXIT_USAGE;
     }
+    if !rhwp::document_core::para_format_props_have_effect(props) {
+        eprintln!(
+            "오류: --props 에서 적용할 문단 서식 키를 찾지 못했습니다 (키 이름 확인): {props}"
+        );
+        return EXIT_USAGE;
+    }
     let bytes = match fs::read(file_path) {
         Ok(d) => d,
         Err(e) => {
