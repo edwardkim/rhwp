@@ -121,6 +121,10 @@ pub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Optio
             // H2HDRM.TTF e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831:
             // 원 프로그램 cmap의 확인된 결측이다. 폭 표의 미수집을 뜻하지 않는다.
             ("HYHeadLine-Medium", 1024, false, false) if ch == '\u{2024}' => return Some(false),
+            // [#8419] batang.ttc 51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8:
+            // Batang regular cmap에 U+2024·U+2027이 모두 없지만 공급자는 U+2024만
+            // 독립 Print로 확인했다. U+2027의 기존 처리는 바꾸지 않는다.
+            ("Batang", 1024, false, false) if ch == '\u{2024}' => return Some(false),
             // H2MJSM.TTF/gulim.TTC의 실제 cmap 결측. 서로 다른 기호
             // 슬롯을 교차한 Print에서 각각 HBATANG/HDOTUM 공급도 확인했다.
             ("HYSinMyeongJo-Medium" | "Gulim", 1024, false, false) => return Some(false),
