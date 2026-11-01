@@ -323,3 +323,47 @@ name/cmap이 없어 그대로 host 글꼴로 사용할 수 없었고 Windows Ari
 
 최종 Native Clippy(`--lib --bin rhwp --features native-skia -D warnings`), rustfmt,
 변경 문서 링크 검사와 `git diff --check`도 통과했다. 원격 push·PR 생성은 하지 않았다.
+
+## 쪽별 진행 표시 추가 — 2026-11-01
+
+사용자 지시에 따라 무한 좌우 이동 진행바를 실제 페이지 완료 비율로 바꾼다.
+원인은 기존 `PdfImportRequest.open`이 동기 함수이며 Worker가 initializing/importing/ready
+단계만 전달하던 구조다. 생산·소비 연결은 다음과 같다.
+
+- `parser/pdf/mod.rs`: 선택 쪽의 extract/lowering 직전과 메타데이터 수록 직후에
+  원본 현재 쪽(1-based)·원본 전체 쪽·선택 쪽 완료 수·선택 전체 수를 알린다.
+- `PdfImportSession.open_with_progress` → `PdfImportRequest.openWithProgress` → Worker의
+  request ID가 붙은 progress message → 공통 Channel 검증 → Studio 대화창.
+- 알림은 선택 쪽당 최대 2건이며 픽셀/연산마다 호출하지 않는다. 기본 open API는 같은 구현의
+  no-op observer를 사용한다. callback 오류는 요청 실패로 처리한다.
+- Channel은 유한 정수·범위·전체 수 일관성·역행 여부를 검사하며 취소/기한 만료/오래된
+  request ID 알림으로 후보 문서를 게시하지 않는다. 기존 phase-only observer도 유지한다.
+- 페이지 수 확인 전에는 정지된 0%와 준비 상태를 표시한다. 확인 후에는 현재 쪽/전체 쪽과
+  `floor(완료 쪽 / 선택 전체 쪽 × 100)`을 표시한다. 일부 선택 시 원본 번호와 선택 완료 수를
+  구분한다. 페이지 변환 100%와 이후 조판·편집 문서 직렬화/확인 단계를 구분하며 남은 시간의
+  추정 비율로 설명하지 않는다. 취소·실패 후 재시도는 값을 초기화한다.
+
+변경은 진행 관찰 경로이며 조판·paint·저장 규칙을 바꾸지 않는다. 출력 보존은 실제 37쪽
+입력의 새 WASM 저장 바이트와 직전 성공 HWPX를 대조하며, 새 시각 golden을 등록하지 않는다.
+Native 선택 쪽 순서·중간 callback 실패·다음 요청 복구와 실제 Studio의 중간 진행률·취소를 검증한다.
+초기 연결 시 잘못된 함수 위치에 삽입한 코드를 WASM 컴파일에서 검출하여 수정했으며,
+해당 실패 빌드는 적용·검증 산출물로 사용하지 않는다. 최종 빌드와 실행 결과를 아래에 이어 기록한다.
+
+
+### 쪽별 진행 표시 실행 결과
+
+- Native 정책/진행 계약 10건 통과. 선택 원본 쪽 1·3의 시작/완료 순서와 완료 수 0·1·1·2,
+  callback 실패 시 최종 완료 알림 없음·세션 재사용 거부·새 요청 복구를 확인했다.
+  observer 유무에 따른 HWPX 바이트도 동일했다.
+- Studio 전체 Node 검사 2,704건 통과, 기존 skip 2건. 공통 Worker 29건 포함.
+  TypeScript, Node 구문 검사, rustfmt, Native/WASM32 Clippy, suite manifest 및 E2E manifest 검사 통과.
+- 새 최적화 WASM에서 실제 37쪽 시작·완료 74건, 일부 쪽 선택 번호, callback 오류·복구 확인.
+  37쪽 전체 저장 바이트는 직전 성공 HWPX와 같았고 재열기도 37쪽이었다.
+- 실제 Studio E2E: 37쪽과 기본 2쪽 대조군 모두 현재/전체 쪽·완료 비율·중간 취소 후
+  기존 문서 보존 통과. 암호 입력·오입력·재시도·취소, 기존 대화창 테마·작은 화면·키보드·
+  1초 timeout·재시도 E2E도 같은 새 WASM에서 통과했다.
+- [실제 화면과 빌드·입력·저장 결과 근거](assets/issue8413/page-progress/README.md).
+  화면에서 `17 / 37쪽 처리 중 · 43% (16쪽 완료)`를 직접 확인했다.
+
+이 절편은 요청한 진행 표시의 로컬 구현·실사용 검증이다. 공통 PDF 기능의 미해결 항목이나
+최종 PR 사전 검증을 완료했다고 표시하지 않는다. 원격 push·PR 생성은 하지 않았다.

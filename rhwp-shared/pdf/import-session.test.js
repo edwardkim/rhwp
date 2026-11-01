@@ -411,3 +411,28 @@ test('password errors allow retry and invalid credential metadata fails before w
   f.workers[0].reply({ pageCount: 1 }); await third;
   assert.equal(f.session._active.options.password, undefined); f.session.dispose();
 });
+
+test('actual page progress reaches observers without completing the request', async () => {
+  const f = fixture(), updates = [];
+  const pending = f.session.importPdf(bytes, {}, {onProgress: (phase, p) => updates.push([phase, p])});
+  await ready(); const worker = f.workers[0], id = worker.messages.at(-1).id;
+  for (const [sourcePage, completedPages] of [[2, 0], [2, 1], [5, 1], [5, 2]]) {
+    worker.onmessage({data: {id, phase: 'importing', progress: {sourcePage, sourcePageCount: 5, completedPages, totalPages: 2}}});
+  }
+  assert.deepEqual(updates.map(([, p]) => p.completedPages), [0, 1, 1, 2]);
+  assert.equal(f.session._active, null);
+  worker.reply({pageCount: 2}); await pending;
+  f.session.dispose();
+});
+
+test('invalid or regressing page progress retires the worker', async () => {
+  for (const change of [{completedPages: 3}, {totalPages: 0}, {sourcePage: 6}, {completedPages: NaN}, {completedPages: 0}]) {
+    const f = fixture(); const pending = f.session.importPdf(bytes);
+    const rejectedResult = assert.rejects(pending, rejected('PDF_WORKER_PROTOCOL'));
+    await ready(); const worker = f.workers[0], id = worker.messages.at(-1).id;
+    const progress = {sourcePage: 2, sourcePageCount: 5, completedPages: 1, totalPages: 2};
+    worker.onmessage({data: {id, phase: 'importing', progress}});
+    worker.onmessage({data: {id, phase: 'importing', progress: {...progress, ...change}}});
+    await rejectedResult; assert.equal(worker.terminated, true); f.session.dispose();
+  }
+});

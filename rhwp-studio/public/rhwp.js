@@ -12548,6 +12548,17 @@ export class PdfImportRequest {
         }
     }
     /**
+     * Notify the Worker synchronously at actual page boundaries, without polling.
+     * @param {any} data
+     * @param {Function | null} [progress]
+     */
+    openWithProgress(data, progress) {
+        const ret = wasm.pdfimportrequest_openWithProgress(this.__wbg_ptr, data, isLikeNone(progress) ? 0 : addToExternrefTable0(progress));
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
      * @returns {number}
      */
     pageCount() {
@@ -13004,6 +13015,10 @@ function __wbg_get_imports() {
         }, arguments); },
         __wbg_call_35dba3c747ad7521: function() { return handleError(function (arg0, arg1, arg2) {
             const ret = arg0.call(arg1, arg2);
+            return ret;
+        }, arguments); },
+        __wbg_call_85c2616c93afb65b: function() { return handleError(function (arg0, arg1, arg2, arg3, arg4, arg5) {
+            const ret = arg0.call(arg1, arg2, arg3, arg4, arg5);
             return ret;
         }, arguments); },
         __wbg_clearRect_81c3c80fbe793b63: function(arg0, arg1, arg2, arg3, arg4) {

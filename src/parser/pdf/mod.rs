@@ -367,11 +367,32 @@ pub fn parse_pdf_with_policy(
     parse_pdf_with_request(bytes, options, policy, request)
 }
 
+/// Page conversion progress, independent of final layout/serialization time.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct PdfImportProgress {
+    /// One-based original PDF page currently being converted.
+    pub source_page: usize,
+    pub source_page_count: usize,
+    /// Number of selected pages whose conversion has completed.
+    pub completed_pages: usize,
+    pub total_pages: usize,
+}
+
 pub(crate) fn parse_pdf_with_request(
     bytes: &[u8],
     options: &PdfImportOptions,
     policy: PdfImportPolicy,
     request: Arc<ImportBudget>,
+) -> Result<PdfImportResult, PdfImportError> {
+    parse_pdf_with_request_and_progress(bytes, options, policy, request, &mut |_| Ok(()))
+}
+
+pub(crate) fn parse_pdf_with_request_and_progress(
+    bytes: &[u8],
+    options: &PdfImportOptions,
+    policy: PdfImportPolicy,
+    request: Arc<ImportBudget>,
+    progress: &mut dyn FnMut(PdfImportProgress) -> Result<(), PdfImportError>,
 ) -> Result<PdfImportResult, PdfImportError> {
     policy.validate()?;
     if bytes.len() > policy.max_input_bytes() {
@@ -466,7 +487,15 @@ pub(crate) fn parse_pdf_with_request(
     };
     let mut pages = allocation::Allocation(&request).vec(selected.len())?;
     let mut body_frames = Vec::new();
-    for source_page in selected {
+    let total_pages = selected.len();
+    for (index, source_page) in selected.into_iter().enumerate() {
+        let update = PdfImportProgress {
+            source_page: source_page + 1,
+            source_page_count: count,
+            completed_pages: index,
+            total_pages,
+        };
+        progress(update)?;
         let page = extract::extract(
             &pdf,
             source_page,
@@ -567,6 +596,10 @@ pub(crate) fn parse_pdf_with_request(
                 options.include_table_inference,
             )?,
         });
+        progress(PdfImportProgress {
+            completed_pages: index + 1,
+            ..update
+        })?;
     }
     let editable_layout = if options.layout == PdfImportLayout::Editable {
         let report = editable::reflow(&mut document, &body_frames, allocation)?;

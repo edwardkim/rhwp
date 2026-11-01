@@ -1,7 +1,7 @@
 import { ModalDialog } from './dialog';
 import type { PdfImportLayout } from '../core/pdf-import-layout';
 import { preparePdfForEditor, type PdfInputSource, type PreparedPdfDocument, type PdfImportPolicy } from '../core/pdf-open';
-import type { PdfImportOptions } from '../../../rhwp-shared/pdf/import-session.js';
+import type { PdfImportOptions, PdfPageProgress } from '../../../rhwp-shared/pdf/import-session.js';
 
 /** Read options before File.arrayBuffer; cancellation never publishes a candidate. */
 class PdfImportDialog extends ModalDialog {
@@ -108,6 +108,7 @@ class PdfImportDialog extends ModalDialog {
 
     this.status = document.createElement('p'); this.status.setAttribute('role', 'status'); this.status.hidden = true;
     this.progress = document.createElement('progress'); this.progress.hidden = true;
+    this.progress.max = 100; this.progress.value = 0;
     this.progress.setAttribute('aria-label', 'PDF 가져오기 진행 중');
     this.error = document.createElement('p'); this.error.id = 'pdf-import-error';
     this.error.setAttribute('role', 'alert'); this.error.hidden = true;
@@ -214,13 +215,34 @@ class PdfImportDialog extends ModalDialog {
     button.disabled = true;
     const phases: Record<string, string> = { initializing: '변환기 준비 중…', importing: 'PDF 변환 중…',
       ready: '변환 확인 중…', serializing: '편집 문서 준비 중…' };
-    this.progress.hidden = false;
-    this.showStatus('파일 읽는 중…');
+    this.progress.hidden = false; this.progress.value = 0;
+    this.progress.removeAttribute('aria-valuetext');
+    let pageProgress: PdfPageProgress | undefined;
+    this.showStatus('파일 읽는 중… · 0%');
     void preparePdfForEditor(this.source, options, policy, { signal: this.controller.signal,
-      timeoutMs: seconds * 1000, onProgress: phase => { this.showStatus(phases[phase] ?? phase); },
+      timeoutMs: seconds * 1000, onProgress: (phase, update) => {
+        if (this.settled || this.controller?.signal.aborted) return;
+        if (update) pageProgress = update;
+        if (pageProgress) {
+          const p = pageProgress;
+          const percent = Math.floor(p.completedPages * 100 / p.totalPages);
+          this.progress.value = percent;
+          const selection = p.totalPages !== p.sourcePageCount
+            ? ` (선택 ${p.completedPages}/${p.totalPages}쪽 완료)` : ` (${p.completedPages}쪽 완료)`;
+          const message = phase === 'importing'
+            ? `${p.sourcePage} / ${p.sourcePageCount}쪽 ${p.completedPages === p.totalPages ? '변환 완료' : '처리 중'} · ${percent}%${selection}`
+            : `페이지 변환 ${p.totalPages}/${p.totalPages}쪽 완료 · 100% — ${phases[phase] ?? phase}`;
+          this.progress.setAttribute('aria-valuetext', message);
+          this.showStatus(message);
+        } else {
+          this.showStatus(`${phases[phase] ?? phase} · 페이지 수 확인 중 · 0%`);
+        }
+      },
     }).then(async result => {
       if (this.settled) return;
-      this.showStatus('편집 문서 확인 중…');
+      this.progress.value = 100;
+      const message = `페이지 변환 완료 · ${result.pageCount}쪽 · 100% — 편집 문서 확인 중…`;
+      this.progress.setAttribute('aria-valuetext', message); this.showStatus(message);
       await this.onPrepared?.(result, this.controller!.signal);
       return result;
     }).then(result => {

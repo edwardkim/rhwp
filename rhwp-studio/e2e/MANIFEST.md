@@ -137,6 +137,8 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `page-setup-orientation-icon.test.mjs` | 상시 | active | 편집 용지 대화창의 용지 방향 아이콘 식별성 | — | 수동 |  |
 | `pdf-import-busy-issue8398.test.mjs` | 상시 | active | #8398 PDF 선택·재시도 커서, 파일/바이트/드롭 열기, Worker 취소와 기존 문서 보존 | pdf/pr8224/lseg-tab-insert-2020.pdf, para-001.hwp | 수동 | 실제 최적화 WASM, 조판 수치 검사가 아닌 UI 상태 계약 |
 | `pdf-import-dialog-issue8411.test.mjs` | 상시 | active | #8411 PDF 가져오기 화면·키보드·한도·시간 초과·재시도 | pdf/issue8403/image-patterns.pdf | 수동 | 실제 최적화 WASM·Worker, 두 테마와 작은 화면의 UI 계약 |
+| `pdf-page-progress-issue8413.test.mjs` | 상시 | active | #8413 실제 PDF 쪽 진행률·취소·기존 문서 보존 | pdf/issue8413/resource-policy/resource-8k.pdf | 수동 | RHWP_PDF_PROGRESS_INPUT/PAGES로 37쪽 실물 검증도 수행 |
+| `pdf-password-issue8415.test.mjs` | 상시 | active | #8415 암호 입력·재시도·취소 | pdf/issue8415/authentication/password-r6.pdf | 수동 | 실제 Worker 인증·기존 문서 보존 |
 | `pdf-render-diff-report.mjs` | 상시 | active | Report-only visual diff between browser Canvas output and SVG-deri | — | npm+CI | legacy-name |
 | `plugin-lifecycle.test.mjs` | 상시 | active | 플러그인 호스트 — allowlist·트랜잭션 1스냅샷·롤백·unload 회수 | — | npm e2e:plugin-lifecycle |  |
 | `print-pdf-issue3126.test.mjs` | 상시 | active | #3126 same-origin iframe 인쇄/PDF UX, 상태 불변, #2524/#2525 browser PDF 회귀 | render-p35-font-native-bitmap.hwpx, hwpx/hwpx-02.hwpx | 수동 | native dialog는 Chrome/Edge 수동 절차 병행 |

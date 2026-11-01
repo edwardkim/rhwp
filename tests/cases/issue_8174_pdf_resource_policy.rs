@@ -469,3 +469,69 @@ fn cli_supervised_limits_atomic_output_and_healthy_followup() {
     assert_eq!(std::fs::read(&input).unwrap(), source);
     assert_eq!(std::fs::read_dir(&dir.0).unwrap().count(), 3);
 }
+
+#[test]
+fn page_progress_tracks_selected_sources_and_failure_never_reports_completion() {
+    use rhwp::parser::pdf::{PdfImportError, PdfImportOptions};
+    let source = pdf_objects(&[
+        b"<< /Type /Catalog /Pages 2 0 R >>".to_vec(),
+        b"<< /Type /Pages /Count 3 /Kids [3 0 R 4 0 R 5 0 R] >>".to_vec(),
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 100] >>".to_vec(),
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 100] >>".to_vec(),
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 100] >>".to_vec(),
+    ]);
+    let options = PdfImportOptions {
+        source_pages: Some(vec![0, 2]),
+        ..Default::default()
+    };
+    let mut session = rhwp::PdfImportSession::new(PdfImportPolicy::default()).unwrap();
+    let mut events = Vec::new();
+    let core = session
+        .open_with_progress(&source, &options, &mut |p| {
+            events.push(p);
+            Ok(())
+        })
+        .unwrap();
+    assert_eq!(
+        events
+            .iter()
+            .map(|p| (p.source_page, p.completed_pages))
+            .collect::<Vec<_>>(),
+        [(1, 0), (1, 1), (3, 1), (3, 2)]
+    );
+    assert!(events
+        .iter()
+        .all(|p| p.total_pages == 2 && p.source_page_count == 3));
+    let plain = rhwp::PdfImportSession::new(PdfImportPolicy::default())
+        .unwrap()
+        .open(&source, &options)
+        .unwrap();
+    assert_eq!(
+        core.export_hwpx_native().unwrap(),
+        plain.export_hwpx_native().unwrap(),
+        "observation cannot alter the document"
+    );
+
+    let mut failed = rhwp::PdfImportSession::new(PdfImportPolicy::default()).unwrap();
+    let mut events = Vec::new();
+    assert!(failed
+        .open_with_progress(&source, &options, &mut |p| {
+            events.push(p);
+            if p.source_page == 3 {
+                Err(PdfImportError {
+                    code: "PDF_PROGRESS_FAILED",
+                    message: "test observer stopped",
+                    diagnostics: None,
+                })
+            } else {
+                Ok(())
+            }
+        })
+        .is_err());
+    assert_eq!(events.last().unwrap().completed_pages, 1);
+    assert!(failed.open(&source, &options).is_err());
+    assert!(rhwp::PdfImportSession::new(PdfImportPolicy::default())
+        .unwrap()
+        .open(&source, &options)
+        .is_ok());
+}

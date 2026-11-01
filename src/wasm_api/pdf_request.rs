@@ -61,6 +61,16 @@ impl PdfImportRequest {
 
     #[wasm_bindgen(js_name = open)]
     pub fn open(&mut self, data: &PdfImportInput) -> Result<(), JsValue> {
+        self.open_with_progress(data, None)
+    }
+
+    /// Notify the Worker synchronously at actual page boundaries, without polling.
+    #[wasm_bindgen(js_name = openWithProgress)]
+    pub fn open_with_progress(
+        &mut self,
+        data: &PdfImportInput,
+        progress: Option<js_sys::Function>,
+    ) -> Result<(), JsValue> {
         let options = self
             .options
             .take()
@@ -77,7 +87,26 @@ impl PdfImportRequest {
             }
         }
         let data = pdf_import::copy_input(data, &self.policy, &mut self.session)?;
-        let core = self.session.open(&data, &options)?;
+        let core = self
+            .session
+            .open_with_progress(&data, &options, &mut |update| {
+                if let Some(callback) = &progress {
+                    callback
+                        .call4(
+                            &JsValue::NULL,
+                            &JsValue::from_f64(update.source_page as f64),
+                            &JsValue::from_f64(update.source_page_count as f64),
+                            &JsValue::from_f64(update.completed_pages as f64),
+                            &JsValue::from_f64(update.total_pages as f64),
+                        )
+                        .map_err(|_| crate::parser::pdf::PdfImportError {
+                            code: "PDF_PROGRESS_FAILED",
+                            message: "page progress callback failed",
+                            diagnostics: None,
+                        })?;
+                }
+                Ok(())
+            })?;
         self.document = Some(HwpDocument { core });
         Ok(())
     }

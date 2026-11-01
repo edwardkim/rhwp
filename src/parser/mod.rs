@@ -1368,8 +1368,9 @@ pub(crate) fn parse_pdf_with_metadata_and_request(
     options: &pdf::PdfImportOptions,
     policy: pdf::PdfImportPolicy,
     request: std::sync::Arc<pdf_oxide::import_limits::ImportBudget>,
+    progress: &mut dyn FnMut(pdf::PdfImportProgress) -> Result<(), pdf::PdfImportError>,
 ) -> Result<ParsedDocument, ParseError> {
-    let result = pdf::parse_pdf_with_request(data, options, policy, request)
+    let result = pdf::parse_pdf_with_request_and_progress(data, options, policy, request, progress)
         .map_err(ParseError::PdfError)?;
     Ok(seal_parsed_document(ParsedDocument {
         document: result.document,

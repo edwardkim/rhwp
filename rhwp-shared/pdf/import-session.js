@@ -231,8 +231,26 @@ class Channel {
           this.close(failure('PDF_WORKER_PROTOCOL', 'unknown import progress phase'));
           return;
         }
-        try { request.onProgress?.(data.phase); }
-        catch { this.close(failure('PDF_WORKER_PROTOCOL', 'progress callback failed')); }
+        try {
+          let progress;
+          if (data.progress !== undefined) {
+            const p = data.progress, previous = request.progress;
+            if (request.method !== 'importPdf' || data.phase !== 'importing' || !p
+                || ![p.sourcePage, p.sourcePageCount, p.completedPages, p.totalPages].every(Number.isSafeInteger)
+                || p.sourcePage < 1 || p.sourcePage > p.sourcePageCount
+                || p.totalPages < 1 || p.totalPages > p.sourcePageCount
+                || p.completedPages < 0 || p.completedPages > p.totalPages
+                || (previous && (p.totalPages !== previous.totalPages
+                  || p.sourcePageCount !== previous.sourcePageCount
+                  || p.completedPages < previous.completedPages || p.sourcePage < previous.sourcePage))) {
+              throw failure('PDF_WORKER_PROTOCOL', 'invalid page progress');
+            }
+            progress = Object.freeze({ sourcePage: p.sourcePage, sourcePageCount: p.sourcePageCount,
+              completedPages: p.completedPages, totalPages: p.totalPages });
+            request.progress = progress;
+          }
+          request.onProgress?.(data.phase, progress);
+        } catch { this.close(failure('PDF_WORKER_PROTOCOL', 'invalid page progress or callback failure')); }
         return;
       }
       try {

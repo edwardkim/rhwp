@@ -41,7 +41,15 @@ self.onmessage = ({ data }) => {
           if (!prepared || !(data.bytes instanceof Uint8Array) || data.bytes.byteLength !== reservedInputLength) throw new Error('PDF_WORKER_PROTOCOL: reserve the input before import');
           candidate = prepared;
           prepared = undefined;
-          candidate.open(data.bytes);
+          if (typeof candidate.openWithProgress === 'function') {
+            candidate.openWithProgress(data.bytes, (sourcePage, sourcePageCount, completedPages, totalPages) => {
+              self.postMessage({ id: data.id, phase: 'importing',
+                progress: { sourcePage, sourcePageCount, completedPages, totalPages } });
+            });
+          } else {
+            // Older bundles still open, without inventing page progress.
+            candidate.open(data.bytes);
+          }
           result = candidate.inspect();
           encoding = 'json';
           self.postMessage({ id: data.id, phase: 'ready' });

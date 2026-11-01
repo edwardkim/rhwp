@@ -32,7 +32,10 @@ try {
   }, {
     signal: abort.signal,
     timeoutMs: 30_000,
-    onProgress: phase => console.log(phase),
+    onProgress: (phase, page) => {
+      if (page) console.log(`${page.sourcePage}/${page.sourcePageCount}`, `${Math.floor(100 * page.completedPages / page.totalPages)}%`);
+      else console.log(phase);
+    },
   });
   console.log(result.pageCount, result.diagnostics);
   const svg = await session.renderPageSvg(0);
@@ -70,6 +73,10 @@ try {
 - 취소·deadline은 **호출자 스레드에서 Worker를 종료**한다. 동기 WASM 도중 cancel 메시지를
   처리한다고 가정하지 않는다. 후보 종료는 현재 문서에 영향을 주지 않으며 다음 요청에서
   새 Worker를 만든다. 로드 실패·WASM trap·`PDF_WORKER_MEMORY`도 후보를 폐기한다.
+- `onProgress(phase, page?)`의 `importing` 단계는 실제 쪽 처리 시작/완료 시
+  `{ sourcePage, sourcePageCount, completedPages, totalPages }`도 전달한다. sourcePage는 1-based 원본 쪽,
+  totalPages는 선택한 쪽 수다. 완료 쪽 비율은 남은 시간의 추정치가 아니며 100% 뒤에도
+  Core 생성과 저장이 남는다. 기존 phase-only callback은 그대로 사용할 수 있다.
 - `onProgress`의 `initializing`·`importing`·`ready`는 후보의 단계 통지다. 통지 자체로 문서를
   교체하지 않으며 백분율이나 parser 내부의 중단 지점을 뜻하지 않는다.
 - 현재 문서 자체의 렌더/저장 요청에 timeout 또는 abort를 적용하면 그 Worker를 종료하므로

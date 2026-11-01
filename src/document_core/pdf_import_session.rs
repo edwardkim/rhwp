@@ -1,7 +1,7 @@
 //! Request ownership is separate from the editable document's lifetime.
 use super::DocumentCore;
 use crate::error::HwpError;
-use crate::parser::pdf::{PdfImportOptions, PdfImportPolicy};
+use crate::parser::pdf::{PdfImportError, PdfImportOptions, PdfImportPolicy, PdfImportProgress};
 use pdf_oxide::import_limits::{ImportBudget, ImportBudgetSnapshot};
 use std::sync::Arc;
 
@@ -207,12 +207,24 @@ impl PdfImportSession {
         bytes: &[u8],
         options: &PdfImportOptions,
     ) -> Result<DocumentCore, HwpError> {
+        self.open_with_progress(bytes, options, &mut |_| Ok(()))
+    }
+
+    /// Reports actual selected-page conversion boundaries. Final Core creation
+    /// and serialization follow the last page; these are not elapsed-time estimates.
+    /// A callback error aborts and invalidates this request like a parser error.
+    pub fn open_with_progress(
+        &mut self,
+        bytes: &[u8],
+        options: &PdfImportOptions,
+        progress: &mut dyn FnMut(PdfImportProgress) -> Result<(), PdfImportError>,
+    ) -> Result<DocumentCore, HwpError> {
         if self.failed || std::mem::replace(&mut self.started, true) {
             return Err(HwpError::InvalidFile(
                 "PDF_IMPORT_SESSION: request already started; create a fresh session".into(),
             ));
         }
-        let result = self.open_inner(bytes, options);
+        let result = self.open_inner(bytes, options, progress);
         if result.is_err() {
             self.failed = true;
         }
@@ -223,12 +235,14 @@ impl PdfImportSession {
         &self,
         bytes: &[u8],
         options: &PdfImportOptions,
+        progress: &mut dyn FnMut(PdfImportProgress) -> Result<(), PdfImportError>,
     ) -> Result<DocumentCore, HwpError> {
         let parsed = crate::parser::parse_pdf_with_metadata_and_request(
             bytes,
             options,
             self.policy,
             Arc::clone(&self.request),
+            progress,
         )
         .map_err(|error| HwpError::InvalidFile(error.to_string()))?;
         let mut core = DocumentCore::from_parsed_document_with_storage(

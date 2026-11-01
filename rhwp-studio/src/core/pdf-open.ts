@@ -1,6 +1,6 @@
 import { blake3 } from '@noble/hashes/blake3.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
-import { PdfImportSession, type PdfImportOptions } from '../../../rhwp-shared/pdf/import-session.js';
+import { PdfImportSession, type PdfImportOptions, type PdfPageProgress } from '../../../rhwp-shared/pdf/import-session.js';
 
 export interface PdfImportPolicy { backend: { inputBytes: number }; [key: string]: unknown }
 
@@ -28,7 +28,7 @@ export async function preparePdfForEditor(
   source: PdfInputSource,
   options: PdfImportOptions,
   policy: { backend: { inputBytes: number } },
-  request: { signal: AbortSignal; timeoutMs: number; onProgress?: (phase: string) => void },
+  request: { signal: AbortSignal; timeoutMs: number; onProgress?: (phase: string, progress?: PdfPageProgress) => void },
   session = new PdfImportSession(),
 ): Promise<PreparedPdfDocument> {
   const deadline = performance.now() + request.timeoutMs;
