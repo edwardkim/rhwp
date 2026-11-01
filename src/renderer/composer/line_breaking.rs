@@ -6266,6 +6266,12 @@ fn try_reflow_line_segs_impl<S: Storage>(
 ///   스타일에서 재유도한다. gap 없는 abutment 는 문단 간격을 압축해 near-top
 ///   리셋(#1086/#1921)의 `prev_vpos_end > 60000` 임계를 무너뜨렸다
 ///   (SO-SUEOP.hwpx 46→44).
+///   단, 편집 문단(`start_para`)에서 이어진 변조 구간 **바로 뒤의 원본 문단**은
+///   저장 gap 이 살아 있다 — 그 문단의 저장 first 와 편집 전 저장 end
+///   (`start_stored_end`)의 차가 스타일 gap 보다 크면, 초과분은 문단 사이에 놓인
+///   자리차지 개체(비-TAC 표·그림)의 점유 높이다. 글자 편집은 이 점유를 바꾸지
+///   않으므로 초과분을 보존해 잇는다(#8440 — 버리면 다음 표가 앞 표와 겹친다).
+///   초과분이 없거나 음수면 종전대로 스타일 gap 만 쓴다.
 /// - **미변조 연속 경계**: 직전 문단의 delta 를 그대로 캐리해 저장(또는 로드 합성
 ///   #927) 문단 간격을 정확히 보존한다. 스타일 gap 재유도는 저장 gap 과의
 ///   오차(px 왕복 절삭 ±1HU, 스타일-저장 불일치)를 밴드 전체에 누적시키고 로드
@@ -6362,6 +6368,8 @@ pub(crate) fn recalculate_section_vpos(
     // 직전 문단이 이번 편집의 변조 대상이었는가 + 직전 문단에 적용된 delta.
     let mut prev_modified = false;
     let mut prev_delta: i32 = 0;
+    // start_para 에서 이어지는 변조 구간 안인가 — 구간 뒤 첫 원본 문단에서 false 가 된다.
+    let mut in_start_run = true;
 
     for pi in start_para..paragraphs.len() {
         if paragraphs[pi].line_segs.is_empty() {
@@ -6399,7 +6407,24 @@ pub(crate) fn recalculate_section_vpos(
             let gap = prev_idx
                 .map(|pp| boundary_gap(&paragraphs[pp], &paragraphs[pi]))
                 .unwrap_or(0);
-            next_vpos.saturating_add(gap) - current_start
+            // [#8440] 변조 구간 바로 뒤 원본 문단: 편집 전 저장 경계에서 스타일 gap 을
+            // 넘는 점유(자리차지 개체 높이)를 보존한다.
+            let occupied = match start_stored_end {
+                Some(stored_end)
+                    if !para_modified
+                        && in_start_run
+                        && is_original_lineseg
+                        && !is_ignored(start_para) =>
+                {
+                    let stored_gap = boundary_gap(&paragraphs[start_para], &paragraphs[pi]);
+                    current_start
+                        .saturating_sub(stored_end)
+                        .saturating_sub(stored_gap)
+                        .max(0)
+                }
+                _ => 0,
+            };
+            next_vpos.saturating_add(gap).saturating_add(occupied) - current_start
         } else {
             // 미변조 연속 경계 — 직전 delta 캐리로 기존 간격을 정확히 보존.
             prev_delta
@@ -6425,6 +6450,9 @@ pub(crate) fn recalculate_section_vpos(
         prev_modified = para_modified;
         prev_delta = delta;
         prev_idx = Some(pi);
+        if !para_modified {
+            in_start_run = false;
+        }
     }
 }
 
