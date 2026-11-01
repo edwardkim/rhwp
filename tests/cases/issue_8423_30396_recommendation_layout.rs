@@ -50,6 +50,23 @@ fn v5024_strike_bit_one_does_not_draw_strikethrough() {
     }
 }
 
+/// 반례: 같은 비트·모양 조합이라도 5.1.1.0 파일(한/글 HWPX 변환 `SOLID`)은 실제 취소선이다.
+#[test]
+fn later_version_strike_bit_one_keeps_strikethrough() {
+    let bytes = std::fs::read(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("samples/issue1949_giant_cell_nested_tables_perf.hwp"),
+    )
+    .expect("5.1.1.0 원본");
+    let core = DocumentCore::from_bytes(&bytes).expect("원본 파싱");
+    let shapes = &core.document().doc_info.char_shapes;
+    for id in [33usize, 36] {
+        assert_eq!((shapes[id].attr >> 18) & 0x07, 1);
+        assert_eq!((shapes[id].attr >> 26) & 0x0F, 0);
+        assert!(shapes[id].strikethrough, "5.1.1.0 의 실선 취소선: {id}");
+    }
+}
+
 #[test]
 fn host_line_below_non_tac_table_advances_once() {
     let (bytes, core) = load();

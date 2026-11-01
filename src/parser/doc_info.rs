@@ -1277,36 +1277,6 @@ mod tests {
         assert!(!parse_char_shape(&make_data(0, 1)).unwrap().strikethrough);
     }
 
-    /// [#8423] 5.0.2.4 파일의 비트 값 1만 해제하고 원본 attr 와 다른 버전·비트 값은 보존한다.
-    #[test]
-    fn test_v5024_strike_bit_one_is_not_strikethrough() {
-        use crate::parser::header::HwpVersion;
-        let shape = |bits: u32| CharShape {
-            attr: bits << 18,
-            strikethrough: true,
-            ..CharShape::default()
-        };
-        let version = |build: u8, revision: u8| HwpVersion {
-            major: 5,
-            minor: 0,
-            build,
-            revision,
-        };
-        let mut shapes = vec![shape(1), shape(2)];
-        apply_v5024_strike_bits(&mut shapes, &version(2, 4));
-        assert!(!shapes[0].strikethrough, "5.0.2.4 의 비트 값 1");
-        assert_eq!(shapes[0].attr, 1 << 18, "원본 attr 보존");
-        assert!(shapes[1].strikethrough, "근거 없는 비트 값 2는 유지");
-        for (build, revision) in [(2, 2), (2, 5), (3, 0)] {
-            let mut shapes = vec![shape(1)];
-            apply_v5024_strike_bits(&mut shapes, &version(build, revision));
-            assert!(
-                shapes[0].strikethrough,
-                "5.0.{build}.{revision} 은 실제 취소선"
-            );
-        }
-    }
-
     #[test]
     fn test_parse_para_shape_basic() {
         let mut data = Vec::new();
