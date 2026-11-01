@@ -6383,8 +6383,10 @@ fn try_reflow_line_segs_impl<S: Storage>(
 ///   (SO-SUEOP.hwpx 46→44).
 ///   단, 편집 문단(`start_para`)에서 이어진 변조 구간 **바로 뒤의 원본 문단**은
 ///   저장 gap 이 살아 있다 — 그 문단의 저장 first 와 편집 전 저장 end
-///   (`start_stored_end`)의 차가 스타일 gap 보다 크면, 초과분은 문단 사이에 놓인
-///   자리차지 개체(비-TAC 표·그림)의 점유 높이다. 글자 편집은 이 점유를 바꾸지
+///   (`start_stored_end`)의 차가 스타일 gap 보다 크고 그 문단이 문단 기준 자리차지
+///   개체(비-TAC, 위아래 배치 표·그림·도형)를 소유하면, 초과분은 그 개체가 첫 글줄을
+///   민 점유 높이다. 그런 개체가 없는 문단의 초과분(TAC 호스트 th 관례, 편집 합성 줄
+///   따위)은 점유가 아니므로 종전대로 버린다. 글자 편집은 이 점유를 바꾸지
 ///   않으므로 초과분을 보존해 잇는다(#8440 — 버리면 다음 표가 앞 표와 겹친다).
 ///   초과분이 없거나 음수면 종전대로 스타일 gap 만 쓴다.
 /// - **미변조 연속 경계**: 직전 문단의 delta 를 그대로 캐리해 저장(또는 로드 합성
@@ -6487,6 +6489,21 @@ pub(crate) fn recalculate_section_vpos(
     let mut skipped_unlined = false;
     // start_para 에서 이어지는 변조 구간 안인가 — 구간 뒤 첫 원본 문단에서 false 가 된다.
     let mut in_start_run = true;
+    // 저장 first 가 앞 문단 end + 스타일 gap 을 넘는 정당한 출처: 그 문단이 소유한
+    // 문단 기준 자리차지 개체(비-TAC, 위아래)가 첫 글줄을 개체 아래로 민 경우다.
+    // 다른 문단의 초과분(TAC 호스트 th 관례, 편집 합성 줄 따위)은 점유가 아니다.
+    let hosts_para_topbottom_object = |p: &Paragraph| {
+        p.controls.iter().any(|control| {
+            let common = match control {
+                Control::Table(table) => &table.common,
+                Control::Picture(picture) => &picture.common,
+                Control::Shape(shape) => shape.common(),
+                Control::Equation(equation) => &equation.common,
+                _ => return false,
+            };
+            crate::renderer::float_placement::is_para_topbottom_float(common)
+        })
+    };
 
     for pi in start_para..paragraphs.len() {
         if paragraphs[pi].line_segs.is_empty() {
@@ -6541,7 +6558,8 @@ pub(crate) fn recalculate_section_vpos(
                     if !para_modified
                         && in_start_run
                         && is_original_lineseg
-                        && !is_ignored(start_para) =>
+                        && !is_ignored(start_para)
+                        && hosts_para_topbottom_object(&paragraphs[pi]) =>
                 {
                     let stored_gap = boundary_gap(&paragraphs[start_para], &paragraphs[pi]);
                     current_start
