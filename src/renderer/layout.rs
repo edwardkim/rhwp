@@ -948,6 +948,61 @@ fn is_deferred_blank_para_float_stack_anchor(
     coanchored_float_count >= 2
 }
 
+/// [#8426] 같은 단에서 비-TAC 표 항목 **뒤에** 같은 host 문단의 글줄 항목이 놓였는지.
+///
+/// typeset 은 host 줄이 표 아래에 있으면 `Table → PartialParagraph` 순서로 남긴다.
+/// 그 조각이 줄 높이·간격을 소비하므로 표 경로는 그 줄 상자를 대체 간격으로 더하지 않는다.
+/// 저장 사다리가 host 줄을 표 **아래**에 두었을 때만 해당한다 — 앞 문단 끝에서 host 줄
+/// 원점까지가 표 높이 이상이어야 한다. 줄이 표 상단과 같은 자리(결재 양식 첫 문단, vpos 0)
+/// 이면 조각이 줄을 다시 쌓지 않으므로 기존 간격 계약을 유지한다.
+fn host_line_item_follows_table(
+    page_content: &PageContent,
+    paragraphs: &[Paragraph],
+    para_index: usize,
+    control_index: usize,
+) -> bool {
+    let Some(para) = paragraphs.get(para_index) else {
+        return false;
+    };
+    let Some(Control::Table(table)) = para.controls.get(control_index) else {
+        return false;
+    };
+    let [host_line] = para.line_segs.as_slice() else {
+        return false;
+    };
+    let previous_end = para_index
+        .checked_sub(1)
+        .and_then(|index| paragraphs.get(index))
+        .and_then(|previous| previous.line_segs.last())
+        .map_or(0, |last| {
+            last.vertical_pos
+                .saturating_add(last.line_height)
+                .saturating_add(last.line_spacing)
+        });
+    let host_below_table =
+        host_line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && i64::from(host_line.vertical_pos) - i64::from(previous_end)
+                >= i64::from(table.common.height);
+    host_below_table
+        && page_content.column_contents.iter().any(|column| {
+            column
+                .items
+                .iter()
+                .position(|item| {
+                    matches!(item, PageItem::Table { para_index: p, control_index: c }
+                    if *p == para_index && *c == control_index)
+                })
+                .is_some_and(|table_at| {
+                    column.items[table_at + 1..].iter().any(|item| {
+                        matches!(item,
+                        PageItem::PartialParagraph { para_index: p, .. }
+                        | PageItem::FullParagraph { para_index: p }
+                            if *p == para_index)
+                    })
+                })
+        })
+}
+
 /// 표 경로의 단일 레벨 (표 → 셀 → 문단)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 pub struct CellPathEntry {
@@ -15246,6 +15301,17 @@ impl LayoutEngine {
                         para, table, comp, styles, self.dpi,
                     )
                 });
+                // [#8426] 비-TAC 표 뒤의 host 저장 줄을 typeset 이 별도 문단 조각으로 남겼으면 그 조각이
+                // 자기 줄 높이·간격을 소비한다. 아래 '줄간격 ≤ 0 이면 줄 높이' 대체 간격은 그 줄
+                // 상자 자체이므로 같은 줄을 한 번 더 세게 된다(30396 9쪽: 공백 host 줄 lh 1300·
+                // ls -132 → 표 뒤 17.3px + 조각 15.6px). 양수 줄간격은 기존 계약대로 둔다.
+                let host_line_item_follows = !is_tac
+                    && host_line_item_follows_table(
+                        page_content,
+                        paragraphs,
+                        para_index,
+                        control_index,
+                    );
                 if let Some(seg) = para
                     .line_segs
                     .last()
@@ -15326,6 +15392,8 @@ impl LayoutEngine {
                         seg.line_spacing.max(0)
                     } else if seg.line_spacing > 0 {
                         seg.line_spacing
+                    } else if host_line_item_follows {
+                        0
                     } else {
                         seg.line_height
                     };
