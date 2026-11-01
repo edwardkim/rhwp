@@ -26,9 +26,17 @@ rhwp edit delete-text samples/issue6123/3112461_railway_emc_criteria.hwpx \
 `scripts/visual_sweep.py --silhouette-only --compat 2024 --dpi 96` (pdftoppm), raw = `silhouette_raw_match_percent`,
 실루엣 방법 `threshold_boundary_color_support_v1`.
 rhwp 글꼴은 `RHWP_FONT_PATH=ttfs/opensource`(문서 글꼴 굴림·바탕·바탕체·한양신명조 미설치, 대체).
-Native는 `--features native-skia` release 바이너리(head `bef747b59`), fresh WASM은 같은 소스에서
-`scripts/wasm-pack-locked.sh --target web --out-dir pkg`로 새로 만든 package다
-(`pkg/rhwp_bg.wasm` SHA-256 `bf0f9ad6edc318c518906931408cd151234a16da57db44cc3681458e7bc92f2a`).
+Native는 `--features native-skia` release 바이너리, fresh WASM은 같은 소스에서
+`scripts/wasm-pack-locked.sh --target web --out-dir pkg`로 새로 만든 package다.
+
+| 측정 | 소스 (base) | `pkg/rhwp_bg.wasm` SHA-256 |
+|---|---|---|
+| 최초 | `bef747b59` (`1a7ae8f5b`) | `bf0f9ad6edc318c518906931408cd151234a16da57db44cc3681458e7bc92f2a` |
+| rebase 뒤 재측정 | `62de2294a` (`c88657d9c`) | `c542999ec3b80e028be67bb36f9dc5628e6accc81fd02f05667e626f0573cedf` |
+
+rebase 뒤 새로 빌드한 Native 바이너리로 편집본을 다시 만들면 SHA-256 이 같고(`8009a8f1…`),
+전쪽 Native·fresh WASM TSV 는 최초 측정과 바이트 단위로 같으며, 7쪽 review·overlay PNG 도
+바이트 단위로 같다. 아래 수치와 `tsv/`·`png/` 는 두 측정에 공통이다.
 
 수정 전 열은 수정 전 편집본(`emc_edit_base.hwpx`)을 같은 기준 PDF 에 대 측정했다. 이번 수정은 편집 경로의
 vpos 재계산만 바꾸고 읽기·렌더 경로는 바꾸지 않으므로, 저장된 수정 전 편집본은 어느 빌드로 그려도 같다.
