@@ -533,6 +533,14 @@ pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
     {
         flow.tac_separate_line_h = None;
     }
+    // [#8462] 문단 위끝에서 용지 밖에 놓인 비-TAC 개체는 이 쪽 본문 흐름을 밀지 않는다.
+    let offpage_top = (matches!(ctrl, Control::Shape(_)) && flow.non_tac_pushdown_h.is_some())
+        .then(|| shape_flow::para_offset_top_px(ctrl, dpi))
+        .flatten()
+        .filter(|top| para_start_height + top >= st.available_height());
+    if offpage_top.is_some() {
+        flow.non_tac_pushdown_h = None;
+    }
     if st.defer_table_host_ole_to_next_column(para_idx, ctrl_idx, ctrl, dpi) {
         return Ok(());
     }
@@ -585,9 +593,17 @@ pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
         }
         _ => None,
     };
-    let accepted_frame = match pushed_anchor_origin {
-        Some(origin) => flow.pushed_anchor_shape_frame(ctrl, origin, dpi),
-        None => flow.accepted_shape_frame(ctrl, st.current_height),
+    let accepted_frame = if let Some(top) = offpage_top {
+        Some(shape_flow::offpage_shape_frame(
+            para_start_height,
+            top,
+            st.current_height,
+        ))
+    } else {
+        match pushed_anchor_origin {
+            Some(origin) => flow.pushed_anchor_shape_frame(ctrl, origin, dpi),
+            None => flow.accepted_shape_frame(ctrl, st.current_height),
+        }
     };
     st.commit_table_host_shape_with_storage(para_idx, ctrl_idx, flow, accepted_frame, storage)?;
     st.register_side_wrap_picture(para_idx, ctrl_idx, para, Some(para_start_height), styles);
