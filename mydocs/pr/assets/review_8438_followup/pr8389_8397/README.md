@@ -26,4 +26,10 @@ WASM 대조 TSV SHA-256은 `a1968c0ae8c3920d8c816beb70be5d566a292841b5646de6dfdf
 전부 다시 측정했다. [Native 최종 표시값 대조](native-final-comparison.tsv)의
 2,153행 모두 기준 이상이며 하락·미완료는 각각 0행이다. 대조 TSV SHA-256은
 `1551697a713dfae8c508449bebec076270f165b3b9d881439c8f3735f42ce744`다.
-fresh WASM의 같은 범위는 별도 실행 중이며 이 Native 결과로 대체하지 않는다.
+같은 제품 코드에서 새로 빌드한 fresh WASM 바이너리의 SHA-256은
+`eda26e7ad93a87c7e9aed712e83ae0cddce993aa9939d25cfaf427c8cbe685c1`이다.
+같은 입력·독립 Print PDF·기존 대체 글꼴 설정으로 두 PR의 기준 2,153행을
+전부 다시 측정했다. [fresh WASM 최종 표시값 대조](wasm-final-comparison.tsv)의
+2,153행 모두 기준 이상이며 하락·미완료는 각각 0행이다. 대조 TSV SHA-256은
+`a1968c0ae8c3920d8c816beb70be5d566a292841b5646de6dfdf7c64098a72b0`이다.
+이 대조는 원 PR 입력의 최신 `upstream/devel` 대비 2%p 하락 게이트와 별도로 수행했다.
