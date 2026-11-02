@@ -48,4 +48,3 @@ failures:
     invalidation_density_ledger_is_ratcheted
 
 test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.67s
-

@@ -1,3 +1,10 @@
+---
+kind: investigation
+status: active
+canonical: mydocs/manual/cli_commands.md
+last_verified: 2026-11-03
+---
+
 # #665 — ingest 이미지 삽입 검증
 
 ## 범위와 선행 분석
@@ -134,3 +141,14 @@ std 전용 원 검사 5개가 base에서 통과하고, 보완한 5개도 통과�
 직접 읽지 않으며 호스트가 전달한 검증 바이트를 사용한다. 공개 enum `StemBlock`에는
 `Paragraph { runs }`가 추가됐다. 이 enum을 빠짐없이 match하는 Rust 소비자는 새 variant의
 처리를 추가해야 한다. CLI의 새 `paragraph.runs`를 구형 binary에서 읽는 호환성은 주장하지 않는다.
+
+## PR 제출 전 동일 입력의 devel 비교 — 2026-11-03
+
+원격 devel이 `ea86816b5316dfeeb47ecf20df97abfd4b02da73`로 유지된 것을 확인했다.
+생성 문서·저장 왕복·추가 형식·생성본 자체 Print를 포함한 15개 시나리오를 각 backend에서
+같은 입력/PDF SHA·96 DPI·Print profile·compat 2024·Arial 파일로 비교했다.
+기존 동일 입력 증적 3개는 재사용하고 빠진 27개만 base producer로 실제 출력했다.
+Native/fresh WASM 30개 전쪽 비교의 최대 하락폭은 0.00%p이며 2%p 초과·누락·쪽수 차이는 없다.
+원본 TSV는 `base-current-input-native/`, `base-current-input-wasm/`에 있고,
+`devel-comparison.tsv`와 `devel-comparison.json`에 입력/PDF·producer·조건·결과를 연결했다.
+서로 다른 reference 입력의 점수를 같은 입력의 무회귀 근거로 대신하지 않았다.

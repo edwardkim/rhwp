@@ -1,5 +1,7 @@
 # #665 — 시험지 ingest 이미지 삽입 결과
 
+Issue: #665
+
 ## 결과와 범위
 
 기존 [#665](https://github.com/edwardkim/rhwp/issues/665)를 재개해 이미지 placeholder 대신
@@ -80,3 +82,7 @@ ZIP 내부 내용이 같다. 측정 범위에서 속도 저하는 관측되지 �
 
 기준 PDF·입력 이미지·JSON·HWPX/HWP·전쪽 TSV·대표 확대 PNG·producer hash·보안 검사·
 성능 원자료는 [정식 검증 자료](../tech/investigations/issue-665/README.md)에 보존한다.
+
+PR 준비 때 동일 입력 15개 시나리오의 Native/fresh WASM 30개 전쪽 비교를 완성했다.
+고정한 devel 대비 최대 하락폭은 0.00%p다. 제품·테스트 source는 바꾸지 않았으며
+완료한 전체 회귀와 lint를 반복하지 않았다.

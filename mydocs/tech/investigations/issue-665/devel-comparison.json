@@ -1,0 +1,580 @@
+{
+  "base": "ea86816b5316dfeeb47ecf20df97abfd4b02da73",
+  "candidate_product_source": "d78048a6f0e5f71aa3bdb7d32e703bd5971e3019",
+  "candidate_before_pr_preparation": "5dddc5d315113b2c56f0acb190cd277b2e4aea73",
+  "rows": 30,
+  "maximum_drop_pp": "0.00",
+  "over_2pp": 0,
+  "runs": [
+    {
+      "case": "above",
+      "backend": "native",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/above.hwpx",
+      "input_sha256": "9e6d2e66c380f9c22259a67c1c28743e5ced9887f988352c82603f8e70a92516",
+      "pdf": "pdf/issue665/above-2024.pdf",
+      "pdf_sha256": "f4a2ead3117d7ee22b9d8a39da90a15dc56935b4a9de32f9c8722054c84f7601",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "native-skia"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-native/above/silhouette.tsv",
+      "base_png_sha256": "78061dbeabafaa887f5b27e59d2a7b681355dc3046ddc787fc3a75af2cac561f",
+      "head_png_sha256": "78061dbeabafaa887f5b27e59d2a7b681355dc3046ddc787fc3a75af2cac561f"
+    },
+    {
+      "case": "above",
+      "backend": "wasm",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/above.hwpx",
+      "input_sha256": "9e6d2e66c380f9c22259a67c1c28743e5ced9887f988352c82603f8e70a92516",
+      "pdf": "pdf/issue665/above-2024.pdf",
+      "pdf_sha256": "f4a2ead3117d7ee22b9d8a39da90a15dc56935b4a9de32f9c8722054c84f7601",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "wasm-canvas2d"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-wasm/above/silhouette.tsv",
+      "base_png_sha256": "a3acbdb474410e33954889ee701809eacd617905822fe4a51b38cfe8f5f6924d",
+      "head_png_sha256": "a3acbdb474410e33954889ee701809eacd617905822fe4a51b38cfe8f5f6924d"
+    },
+    {
+      "case": "below",
+      "backend": "native",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/below.hwpx",
+      "input_sha256": "8ce905a532198ee59893b952f1360e13a173e4267777a1d32a87a25d62c0c589",
+      "pdf": "pdf/issue665/below-2024.pdf",
+      "pdf_sha256": "b0189ce03a8960b8686fcedc994e2cd766d0f44e4662ee27c8b752b861ef3664",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "native-skia"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-native/below/silhouette.tsv",
+      "base_png_sha256": "327e44c0542e4a12d33237aee8859e3df6284dcc5a84152e1ce2dce61111eb63",
+      "head_png_sha256": "327e44c0542e4a12d33237aee8859e3df6284dcc5a84152e1ce2dce61111eb63"
+    },
+    {
+      "case": "below",
+      "backend": "wasm",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/below.hwpx",
+      "input_sha256": "8ce905a532198ee59893b952f1360e13a173e4267777a1d32a87a25d62c0c589",
+      "pdf": "pdf/issue665/below-2024.pdf",
+      "pdf_sha256": "b0189ce03a8960b8686fcedc994e2cd766d0f44e4662ee27c8b752b861ef3664",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "wasm-canvas2d"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-wasm/below/silhouette.tsv",
+      "base_png_sha256": "26eb08f5352959a111b54f7e6d4e96b0576fdb55d5ef52e64320564da13cea94",
+      "head_png_sha256": "26eb08f5352959a111b54f7e6d4e96b0576fdb55d5ef52e64320564da13cea94"
+    },
+    {
+      "case": "between",
+      "backend": "native",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/between.hwpx",
+      "input_sha256": "d8abaf2fddbd0e3105c6ed87dc8e2b94a17603fae51ba039c998d16301d2aaeb",
+      "pdf": "pdf/issue665/between-2024.pdf",
+      "pdf_sha256": "e35cbc4d9085b0d728afbde0bc4a1c2f3706cfd885543537cd341b00d8f2c9ac",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "native-skia"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-native/between/silhouette.tsv",
+      "base_png_sha256": "3fc51f3092aa89851399a8f1dc613fac829abe48ca1383da1f1de33216315f0a",
+      "head_png_sha256": "3fc51f3092aa89851399a8f1dc613fac829abe48ca1383da1f1de33216315f0a"
+    },
+    {
+      "case": "between",
+      "backend": "wasm",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/between.hwpx",
+      "input_sha256": "d8abaf2fddbd0e3105c6ed87dc8e2b94a17603fae51ba039c998d16301d2aaeb",
+      "pdf": "pdf/issue665/between-2024.pdf",
+      "pdf_sha256": "e35cbc4d9085b0d728afbde0bc4a1c2f3706cfd885543537cd341b00d8f2c9ac",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "wasm-canvas2d"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-wasm/between/silhouette.tsv",
+      "base_png_sha256": "6b6619ad0bd63eba97603b8ac5cc7f4098c3cf30640150287d80d9db1566f263",
+      "head_png_sha256": "6b6619ad0bd63eba97603b8ac5cc7f4098c3cf30640150287d80d9db1566f263"
+    },
+    {
+      "case": "format-bmp",
+      "backend": "native",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/format-bmp.hwpx",
+      "input_sha256": "b9ee9649b2935618451abbda1b19306eb81ea7b7b74a1899f5efe4567a69d500",
+      "pdf": "pdf/issue665/format-bmp-2024.pdf",
+      "pdf_sha256": "c8b55c2d83b7c0cedfe14acd640d912b0ce2e1d17108acf9a758fa415b4991db",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "native-skia"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-native/format-bmp/silhouette.tsv",
+      "base_png_sha256": "78061dbeabafaa887f5b27e59d2a7b681355dc3046ddc787fc3a75af2cac561f",
+      "head_png_sha256": "78061dbeabafaa887f5b27e59d2a7b681355dc3046ddc787fc3a75af2cac561f"
+    },
+    {
+      "case": "format-bmp",
+      "backend": "wasm",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/format-bmp.hwpx",
+      "input_sha256": "b9ee9649b2935618451abbda1b19306eb81ea7b7b74a1899f5efe4567a69d500",
+      "pdf": "pdf/issue665/format-bmp-2024.pdf",
+      "pdf_sha256": "c8b55c2d83b7c0cedfe14acd640d912b0ce2e1d17108acf9a758fa415b4991db",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "wasm-canvas2d"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-wasm/format-bmp/silhouette.tsv",
+      "base_png_sha256": "a3acbdb474410e33954889ee701809eacd617905822fe4a51b38cfe8f5f6924d",
+      "head_png_sha256": "a3acbdb474410e33954889ee701809eacd617905822fe4a51b38cfe8f5f6924d"
+    },
+    {
+      "case": "format-gif",
+      "backend": "native",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/format-gif.hwpx",
+      "input_sha256": "04e7b11fd2f561c0463faba63f7d9d8aa2d82877aebe627ae2497104e0e06f30",
+      "pdf": "pdf/issue665/format-gif-2024.pdf",
+      "pdf_sha256": "ecc057eb6143b106b64746e1f94a854fd95236b4d35cd1e1dbd67d16c15c5b87",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "native-skia"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-native/format-gif/silhouette.tsv",
+      "base_png_sha256": "78061dbeabafaa887f5b27e59d2a7b681355dc3046ddc787fc3a75af2cac561f",
+      "head_png_sha256": "78061dbeabafaa887f5b27e59d2a7b681355dc3046ddc787fc3a75af2cac561f"
+    },
+    {
+      "case": "format-gif",
+      "backend": "wasm",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/format-gif.hwpx",
+      "input_sha256": "04e7b11fd2f561c0463faba63f7d9d8aa2d82877aebe627ae2497104e0e06f30",
+      "pdf": "pdf/issue665/format-gif-2024.pdf",
+      "pdf_sha256": "ecc057eb6143b106b64746e1f94a854fd95236b4d35cd1e1dbd67d16c15c5b87",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "wasm-canvas2d"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-wasm/format-gif/silhouette.tsv",
+      "base_png_sha256": "a3acbdb474410e33954889ee701809eacd617905822fe4a51b38cfe8f5f6924d",
+      "head_png_sha256": "a3acbdb474410e33954889ee701809eacd617905822fe4a51b38cfe8f5f6924d"
+    },
+    {
+      "case": "format-jpg",
+      "backend": "native",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/format-jpg.hwpx",
+      "input_sha256": "a7e7d6c838f3b14ac8bf164acf64faed6c57b95652fdfc1cb2c1159f2aae0e48",
+      "pdf": "pdf/issue665/format-jpg-2024.pdf",
+      "pdf_sha256": "2389e0bc0de8b333adea5eedcea6e93cf18114d5370a7500b5b0d833f1f31537",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "native-skia"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-native/format-jpg/silhouette.tsv",
+      "base_png_sha256": "fec697e20df4bf59215714f2d724da805b6172df6086cdf5d9c12d4d2ea38b28",
+      "head_png_sha256": "fec697e20df4bf59215714f2d724da805b6172df6086cdf5d9c12d4d2ea38b28"
+    },
+    {
+      "case": "format-jpg",
+      "backend": "wasm",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/format-jpg.hwpx",
+      "input_sha256": "a7e7d6c838f3b14ac8bf164acf64faed6c57b95652fdfc1cb2c1159f2aae0e48",
+      "pdf": "pdf/issue665/format-jpg-2024.pdf",
+      "pdf_sha256": "2389e0bc0de8b333adea5eedcea6e93cf18114d5370a7500b5b0d833f1f31537",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "wasm-canvas2d"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-wasm/format-jpg/silhouette.tsv",
+      "base_png_sha256": "4461d7fcb626e6fc9412b4703bd486ef09ea7ab04fcec425edaac52091d5302e",
+      "head_png_sha256": "4461d7fcb626e6fc9412b4703bd486ef09ea7ab04fcec425edaac52091d5302e"
+    },
+    {
+      "case": "format-tif",
+      "backend": "native",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/format-tif.hwpx",
+      "input_sha256": "44167cf9475dd7869196daee175c29e7127c766d68e53c2ef4bacb98e2234db5",
+      "pdf": "pdf/issue665/format-tif-2024.pdf",
+      "pdf_sha256": "7e153d4da131de0ae65091e4a020247e345d9e9bd63472a926d30f905bf9b4b2",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "native-skia"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-native/format-tif/silhouette.tsv",
+      "base_png_sha256": "78061dbeabafaa887f5b27e59d2a7b681355dc3046ddc787fc3a75af2cac561f",
+      "head_png_sha256": "78061dbeabafaa887f5b27e59d2a7b681355dc3046ddc787fc3a75af2cac561f"
+    },
+    {
+      "case": "format-tif",
+      "backend": "wasm",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/format-tif.hwpx",
+      "input_sha256": "44167cf9475dd7869196daee175c29e7127c766d68e53c2ef4bacb98e2234db5",
+      "pdf": "pdf/issue665/format-tif-2024.pdf",
+      "pdf_sha256": "7e153d4da131de0ae65091e4a020247e345d9e9bd63472a926d30f905bf9b4b2",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "wasm-canvas2d"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-wasm/format-tif/silhouette.tsv",
+      "base_png_sha256": "a3acbdb474410e33954889ee701809eacd617905822fe4a51b38cfe8f5f6924d",
+      "head_png_sha256": "a3acbdb474410e33954889ee701809eacd617905822fe4a51b38cfe8f5f6924d"
+    },
+    {
+      "case": "image-first",
+      "backend": "native",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/above.hwpx",
+      "input_sha256": "9e6d2e66c380f9c22259a67c1c28743e5ced9887f988352c82603f8e70a92516",
+      "pdf": "pdf/issue665/above-2024.pdf",
+      "pdf_sha256": "f4a2ead3117d7ee22b9d8a39da90a15dc56935b4a9de32f9c8722054c84f7601",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "native-skia"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-native/image-first/silhouette.tsv",
+      "base_png_sha256": "78061dbeabafaa887f5b27e59d2a7b681355dc3046ddc787fc3a75af2cac561f",
+      "head_png_sha256": "78061dbeabafaa887f5b27e59d2a7b681355dc3046ddc787fc3a75af2cac561f"
+    },
+    {
+      "case": "image-first",
+      "backend": "wasm",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/above.hwpx",
+      "input_sha256": "9e6d2e66c380f9c22259a67c1c28743e5ced9887f988352c82603f8e70a92516",
+      "pdf": "pdf/issue665/above-2024.pdf",
+      "pdf_sha256": "f4a2ead3117d7ee22b9d8a39da90a15dc56935b4a9de32f9c8722054c84f7601",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "wasm-canvas2d"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-wasm/image-first/silhouette.tsv",
+      "base_png_sha256": "a3acbdb474410e33954889ee701809eacd617905822fe4a51b38cfe8f5f6924d",
+      "head_png_sha256": "a3acbdb474410e33954889ee701809eacd617905822fe4a51b38cfe8f5f6924d"
+    },
+    {
+      "case": "inline",
+      "backend": "native",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/inline.hwpx",
+      "input_sha256": "115a33c6aff2a6231b27124f076fef1f38766f5f12a91450bdf4049c07593f19",
+      "pdf": "pdf/issue665/inline-2024.pdf",
+      "pdf_sha256": "880a2accd53fe12463e1384f73ec2336e6c5e90bea1165549bd00b5e4f0d8678",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "native-skia"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-native/inline/silhouette.tsv",
+      "base_png_sha256": "e831beb1e7dfe182bc6d5a63432901ab73fe36daacb111180c821f24f2f71298",
+      "head_png_sha256": "e831beb1e7dfe182bc6d5a63432901ab73fe36daacb111180c821f24f2f71298"
+    },
+    {
+      "case": "inline",
+      "backend": "wasm",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/inline.hwpx",
+      "input_sha256": "115a33c6aff2a6231b27124f076fef1f38766f5f12a91450bdf4049c07593f19",
+      "pdf": "pdf/issue665/inline-2024.pdf",
+      "pdf_sha256": "880a2accd53fe12463e1384f73ec2336e6c5e90bea1165549bd00b5e4f0d8678",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "wasm-canvas2d"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-wasm/inline/silhouette.tsv",
+      "base_png_sha256": "7d770b8f62fb6769d75e8f80bc8a4ae987b8844036b5892cfa821b122219cf94",
+      "head_png_sha256": "7d770b8f62fb6769d75e8f80bc8a4ae987b8844036b5892cfa821b122219cf94"
+    },
+    {
+      "case": "mixed",
+      "backend": "native",
+      "reused_existing": true,
+      "input": "tests/fixtures/issue665/generated/mixed.hwpx",
+      "input_sha256": "c30e5fa62e60c0cb879a33b7a416e7b33c0c39e57948e77c14ebd5712291c870",
+      "pdf": "pdf/issue665/mixed-2024.pdf",
+      "pdf_sha256": "2da0a20945d72d49adc9f18113386959eff9a9e4989be5414831536afdc4e076",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "native-skia"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-native/mixed/silhouette.tsv",
+      "base_png_sha256": "ea096636a71217ba7ebd6b8775397987b2d48defb428520b2dd10be902eadf08",
+      "head_png_sha256": "ea096636a71217ba7ebd6b8775397987b2d48defb428520b2dd10be902eadf08"
+    },
+    {
+      "case": "mixed",
+      "backend": "wasm",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/mixed.hwpx",
+      "input_sha256": "c30e5fa62e60c0cb879a33b7a416e7b33c0c39e57948e77c14ebd5712291c870",
+      "pdf": "pdf/issue665/mixed-2024.pdf",
+      "pdf_sha256": "2da0a20945d72d49adc9f18113386959eff9a9e4989be5414831536afdc4e076",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "wasm-canvas2d"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-wasm/mixed/silhouette.tsv",
+      "base_png_sha256": "1292a60486b256f0d548f773afb058e00be7f487fb1b295a32f82ffcac0e2734",
+      "head_png_sha256": "1292a60486b256f0d548f773afb058e00be7f487fb1b295a32f82ffcac0e2734"
+    },
+    {
+      "case": "runs",
+      "backend": "native",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/runs.hwpx",
+      "input_sha256": "43d3a78e0d9853350bb886d292de0b3fbf20fc9426a699c3c8ee10625083cd9a",
+      "pdf": "pdf/issue665/runs-2024.pdf",
+      "pdf_sha256": "c3ffee0191f02f1a897768245a278976ae299c169626065cd2d4bdd45eca5ca9",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "native-skia"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-native/runs/silhouette.tsv",
+      "base_png_sha256": "c3edecc9b3a93227445c54ddc64566f8ca47141c1ad4231cf13af9fa53cb47f9",
+      "head_png_sha256": "c3edecc9b3a93227445c54ddc64566f8ca47141c1ad4231cf13af9fa53cb47f9"
+    },
+    {
+      "case": "runs",
+      "backend": "wasm",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/runs.hwpx",
+      "input_sha256": "43d3a78e0d9853350bb886d292de0b3fbf20fc9426a699c3c8ee10625083cd9a",
+      "pdf": "pdf/issue665/runs-2024.pdf",
+      "pdf_sha256": "c3ffee0191f02f1a897768245a278976ae299c169626065cd2d4bdd45eca5ca9",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "wasm-canvas2d"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-wasm/runs/silhouette.tsv",
+      "base_png_sha256": "c5bdab67feb47cfb37a29766fcee9d0333a6ba293167850a103ba500213b41a8",
+      "head_png_sha256": "c5bdab67feb47cfb37a29766fcee9d0333a6ba293167850a103ba500213b41a8"
+    },
+    {
+      "case": "runs-roundtrip-hwp",
+      "backend": "native",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/runs-roundtrip.hwp",
+      "input_sha256": "7ce5bd6c46df17194e6d9249a3cf21ee0b67398eaa21f75176233288738c2c45",
+      "pdf": "pdf/issue665/runs-2024.pdf",
+      "pdf_sha256": "c3ffee0191f02f1a897768245a278976ae299c169626065cd2d4bdd45eca5ca9",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "native-skia"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-native/runs-roundtrip-hwp/silhouette.tsv",
+      "base_png_sha256": "c3edecc9b3a93227445c54ddc64566f8ca47141c1ad4231cf13af9fa53cb47f9",
+      "head_png_sha256": "c3edecc9b3a93227445c54ddc64566f8ca47141c1ad4231cf13af9fa53cb47f9"
+    },
+    {
+      "case": "runs-roundtrip-hwp",
+      "backend": "wasm",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/runs-roundtrip.hwp",
+      "input_sha256": "7ce5bd6c46df17194e6d9249a3cf21ee0b67398eaa21f75176233288738c2c45",
+      "pdf": "pdf/issue665/runs-2024.pdf",
+      "pdf_sha256": "c3ffee0191f02f1a897768245a278976ae299c169626065cd2d4bdd45eca5ca9",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "wasm-canvas2d"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-wasm/runs-roundtrip-hwp/silhouette.tsv",
+      "base_png_sha256": "c5bdab67feb47cfb37a29766fcee9d0333a6ba293167850a103ba500213b41a8",
+      "head_png_sha256": "c5bdab67feb47cfb37a29766fcee9d0333a6ba293167850a103ba500213b41a8"
+    },
+    {
+      "case": "runs-roundtrip-hwpx",
+      "backend": "native",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/runs-roundtrip.hwpx",
+      "input_sha256": "8f473e623d01a881578474d5db893d3b7b4365816afb562d887053bb2f83af3e",
+      "pdf": "pdf/issue665/runs-2024.pdf",
+      "pdf_sha256": "c3ffee0191f02f1a897768245a278976ae299c169626065cd2d4bdd45eca5ca9",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "native-skia"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-native/runs-roundtrip-hwpx/silhouette.tsv",
+      "base_png_sha256": "c3edecc9b3a93227445c54ddc64566f8ca47141c1ad4231cf13af9fa53cb47f9",
+      "head_png_sha256": "c3edecc9b3a93227445c54ddc64566f8ca47141c1ad4231cf13af9fa53cb47f9"
+    },
+    {
+      "case": "runs-roundtrip-hwpx",
+      "backend": "wasm",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/runs-roundtrip.hwpx",
+      "input_sha256": "8f473e623d01a881578474d5db893d3b7b4365816afb562d887053bb2f83af3e",
+      "pdf": "pdf/issue665/runs-2024.pdf",
+      "pdf_sha256": "c3ffee0191f02f1a897768245a278976ae299c169626065cd2d4bdd45eca5ca9",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "wasm-canvas2d"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-wasm/runs-roundtrip-hwpx/silhouette.tsv",
+      "base_png_sha256": "c5bdab67feb47cfb37a29766fcee9d0333a6ba293167850a103ba500213b41a8",
+      "head_png_sha256": "c5bdab67feb47cfb37a29766fcee9d0333a6ba293167850a103ba500213b41a8"
+    },
+    {
+      "case": "shared-boxed",
+      "backend": "native",
+      "reused_existing": true,
+      "input": "tests/fixtures/issue665/generated/shared-boxed.hwpx",
+      "input_sha256": "01e6f22c9543213e400e4db454f9c6a145a28748b983d02e2ffea6203e7717c4",
+      "pdf": "pdf/issue665/shared-boxed-2024.pdf",
+      "pdf_sha256": "3cd193ac97ae98ccb61ad1e5041a12998d6cf2a4f5e9819eb6698a25ba7465bf",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "native-skia"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-native/shared-boxed/silhouette.tsv",
+      "base_png_sha256": "b18eb77575398bfa57ce82bb6a6153a418ab01c877b19d807c0ce8fcf80dc833",
+      "head_png_sha256": "b18eb77575398bfa57ce82bb6a6153a418ab01c877b19d807c0ce8fcf80dc833"
+    },
+    {
+      "case": "shared-boxed",
+      "backend": "wasm",
+      "reused_existing": true,
+      "input": "tests/fixtures/issue665/generated/shared-boxed.hwpx",
+      "input_sha256": "01e6f22c9543213e400e4db454f9c6a145a28748b983d02e2ffea6203e7717c4",
+      "pdf": "pdf/issue665/shared-boxed-2024.pdf",
+      "pdf_sha256": "3cd193ac97ae98ccb61ad1e5041a12998d6cf2a4f5e9819eb6698a25ba7465bf",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "wasm-canvas2d"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-wasm/shared-boxed/silhouette.tsv",
+      "base_png_sha256": "8cb1f04827382b08c52dc036944f42b7b5f13dd038eaf351d3c82c196e5bbc7b",
+      "head_png_sha256": "8cb1f04827382b08c52dc036944f42b7b5f13dd038eaf351d3c82c196e5bbc7b"
+    },
+    {
+      "case": "shared-boxed-generated",
+      "backend": "native",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/shared-boxed.hwpx",
+      "input_sha256": "01e6f22c9543213e400e4db454f9c6a145a28748b983d02e2ffea6203e7717c4",
+      "pdf": "pdf/issue665/shared-boxed-generated-2024.pdf",
+      "pdf_sha256": "d5ad1845efa76cdb3db8a9dfb90a99c93e383cea9b66926294fc2021fd0ac07b",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "native-skia"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-native/shared-boxed-generated/silhouette.tsv",
+      "base_png_sha256": "b18eb77575398bfa57ce82bb6a6153a418ab01c877b19d807c0ce8fcf80dc833",
+      "head_png_sha256": "b18eb77575398bfa57ce82bb6a6153a418ab01c877b19d807c0ce8fcf80dc833"
+    },
+    {
+      "case": "shared-boxed-generated",
+      "backend": "wasm",
+      "reused_existing": false,
+      "input": "tests/fixtures/issue665/generated/shared-boxed.hwpx",
+      "input_sha256": "01e6f22c9543213e400e4db454f9c6a145a28748b983d02e2ffea6203e7717c4",
+      "pdf": "pdf/issue665/shared-boxed-generated-2024.pdf",
+      "pdf_sha256": "d5ad1845efa76cdb3db8a9dfb90a99c93e383cea9b66926294fc2021fd0ac07b",
+      "conditions": [
+        96,
+        "print",
+        "2024",
+        "{\"files\": [{\"path\": \"/mnt/c/Windows/Fonts/arial.ttf\", \"sha256\": \"b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a\"}], \"mode\": \"direct-font-programs\", \"source\": \"explicit\"}",
+        "wasm-canvas2d"
+      ],
+      "base_tsv": "mydocs/tech/investigations/issue-665/base-current-input-wasm/shared-boxed-generated/silhouette.tsv",
+      "base_png_sha256": "8cb1f04827382b08c52dc036944f42b7b5f13dd038eaf351d3c82c196e5bbc7b",
+      "head_png_sha256": "8cb1f04827382b08c52dc036944f42b7b5f13dd038eaf351d3c82c196e5bbc7b"
+    }
+  ]
+}
