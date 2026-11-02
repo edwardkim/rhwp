@@ -12,6 +12,9 @@ pub(in crate::renderer::typeset) struct TableHostShapePage {
 #[derive(Clone, Copy)]
 pub(in crate::renderer::typeset) struct TableHostShapeFlow {
     pub tac_separate_line_h: Option<f64>,
+    /// 쪽 수용 판정용 자기 줄 높이. 줄 뒤 간격은 다음 줄까지의 거리라서 쪽 끝 줄의
+    /// 수용 판정에 넣지 않는다(일반 문단 `height_for_fit` 과 같은 계약, Task #359).
+    pub tac_separate_line_fit_h: Option<f64>,
     pub non_tac_pushdown_h: Option<f64>,
 }
 
@@ -24,7 +27,7 @@ pub(super) fn prepare(
     // Task #402: 같은 paragraph의 선행 TAC 컨트롤이 있는 TAC 그림은
     // 자기 line_seg에 위치하므로 그 line의 높이를 페이지 누적에 반영해야 함.
     // 누락 시 후속 항목이 페이지 끝을 넘어 그려져 겹침/오버플로 발생 (#402).
-    let tac_separate_line_h: Option<f64> = match ctrl {
+    let tac_separate_line: Option<(f64, f64)> = match ctrl {
         Control::Picture(p) if p.common.treat_as_char => Some(()),
         Control::Shape(s) if s.common().treat_as_char => Some(()),
         _ => None,
@@ -51,9 +54,11 @@ pub(super) fn prepare(
             } else {
                 0.0
             };
-            lh + ls_extra
+            (lh + ls_extra, lh)
         })
     });
+    let tac_separate_line_h = tac_separate_line.map(|(advance, _)| advance);
+    let tac_separate_line_fit_h = tac_separate_line.map(|(_, fit)| fit);
     // [Issue #1156] 비-TAC 자리차지(TopAndBottom) 객체(차트 OLE 등):
     // 표와 같은 문단에 있으면 종전에는 높이/단 이동 없이 push 만 되어,
     // 한컴처럼 단 끝을 넘는 객체가 다음 단으로 이동하지 못했다.
@@ -96,6 +101,7 @@ pub(super) fn prepare(
 
     TableHostShapeFlow {
         tac_separate_line_h,
+        tac_separate_line_fit_h,
         non_tac_pushdown_h,
     }
 }
@@ -169,8 +175,10 @@ impl TableHostShapeFlow {
         page: TableHostShapePage,
         available_height: impl FnOnce() -> f64,
     ) -> bool {
-        if let Some(line_h) = self.tac_separate_line_h {
-            // 자기 line이 현재 페이지에 들어가지 않으면 다음 페이지로 분할
+        if let Some(line_h) = self.tac_separate_line_fit_h {
+            // 자기 line이 현재 페이지에 들어가지 않으면 다음 페이지로 분할.
+            // 쪽 끝 줄은 줄 높이까지만 들어가면 된다 — 저장 vpos+lh 가 본문 높이 이하인
+            // 줄을 한컴은 같은 쪽에 둔다(156578788 줄1 66269+3736=70005 ≤ 70020).
             page.has_items && page.current_height + line_h > available_height() + 0.5
         } else if let Some(extra) = self.non_tac_pushdown_h {
             // 비-TAC 자리차지 객체: 현재 단 잔여 부족 + 단 상단 아니면 다음 단/페이지 이동

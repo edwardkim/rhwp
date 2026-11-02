@@ -72,6 +72,18 @@ impl LayoutEngine {
                 Control::Shape(shape) => shape.common().treat_as_char,
                 _ => false,
             });
+        // [#8441] 앞 TAC 항목이 이 쪽에 남긴 문단 원점과 자기 저장 줄 사다리로 그림 줄 위치를
+        // 정한다. 아래 원점 갱신 뒤에는 그 원점이 이미 앞 줄을 지나 있어 쓸 수 없다.
+        let stored_tac_picture_line_y = paragraphs
+            .get(para_index)
+            .filter(|para| {
+                has_prior_non_picture_tac
+                    && matches!(para.controls.get(control_index),
+                        Some(Control::Picture(picture)) if picture.common.treat_as_char)
+            })
+            .and_then(|para| stored_tac_picture_line_offset_hu(para, control_index))
+            .zip(para_start_y.get(&para_index).copied())
+            .map(|(offset, origin)| origin + hwpunit_to_px(offset, self.dpi));
         if has_prior_non_picture_tac && current_is_tac {
             // 현재 개체와 선행 Table/Shape가 모두 TAC인 경우에만 진행된 흐름을 쓴다.
             // 떠 있는 후속 개체는 이 흐름을 소비하지 않는다. 문단 원점을 뒤 줄 끝으로
@@ -118,6 +130,7 @@ impl LayoutEngine {
                             control_index,
                             ctx,
                             y_offset,
+                            stored_tac_picture_line_y,
                         );
                     } else {
                         let is_paper_based = (pic.common.vert_rel_to == VertRelTo::Paper

@@ -1385,6 +1385,37 @@ pub(crate) fn stored_float_anchor_offset_hu(
     (anchor_top - base).max(0)
 }
 
+/// [#8441] 앞 TAC 형제가 줄을 차지한 문단에서 자기 저장 줄에 실린 글자처럼 취급한 그림의
+/// 줄 위치(문단 첫 줄 기준, HU). 같은 쪽에서 앞 줄 뒤로 이어지는 저장 줄 사다리일 때만 쓴다.
+///
+/// 앞 TAC 항목이 문단 원점을 진행된 흐름 y 로 갱신한 뒤 줄 높이 대조로 앞 줄 높이를 다시
+/// 더하면 그림이 앞 줄만큼 두 번 내려간다(156715172 pi=47: 저장 줄1 vpos 4480 → 한컴 그림
+/// 위끝 153.9px, rhwp 220.6px). 저장 사다리가 원점을 정하므로 그 이중 계상이 없다.
+pub(crate) fn stored_tac_picture_line_offset_hu(
+    para: &Paragraph,
+    control_index: usize,
+) -> Option<i32> {
+    if para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || para_has_visible_text(para)
+        || !has_line_taking_tac_sibling_before(para, control_index)
+    {
+        return None;
+    }
+    let line = control_line_seg_index(para, control_index).filter(|&line| line > 0)?;
+    let segs = para.line_segs.get(..=line)?;
+    if segs
+        .iter()
+        .any(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+    {
+        return None;
+    }
+    let (prev, own) = (&segs[line - 1], &segs[line]);
+    // 쪽 되감김(vpos 리셋)이면 같은 쪽 사다리가 아니다.
+    (own.vertical_pos >= prev.vertical_pos + prev.line_height)
+        .then(|| own.vertical_pos - segs[0].vertical_pos)
+}
+
 /// [#6879] 이 float 보다 **앞에** 줄을 차지하는 TAC 형제가 있는가.
 ///
 /// `#6879` 가 앵커 줄 기준점을 조각 경로 밖(일반 배치·흐름 예약)까지 넓힌 형상은
