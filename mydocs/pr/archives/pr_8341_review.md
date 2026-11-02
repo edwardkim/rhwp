@@ -228,3 +228,25 @@ Lanczos로 96 DPI 크기에 축소해 동일 PDF와 비교했다. 전쪽 raw는 
 첫 실행의 중단과 나머지 307건의 재실행, 정확한 목록 대조는
 [공통 실행 근거](../assets/review_8438_followup/rebase-de2295-rust.md)에 기록했다.
 이는 이 PR의 시각 검증이나 최종 판정을 대신하지 않는다.
+
+### 2026-11-03 최종 제품 코드의 2024 Print 차트 확인
+
+제품 코드 `d56930dda7`의 Native와 같은 코드로 새로 빌드한 fresh WASM에서
+[재저장 HWPX](../assets/issue_8305/followup8438/policy-resave.hwpx) 64쪽 전체를
+독립 한컴 2024 [Print PDF](../../../pdf/issue8305/batch-8341-policy-resave-2024.pdf)와
+96 DPI로 대조했다. 입력 SHA-256은
+`14ef498440ef15c3fe0a667a072c2141b1761eb5f0e0e970f6da44495be466c9`,
+PDF SHA-256은 `43e2768472d834033d55ecb181b432dc62bb2b20e08ebe569db129738c4ea94f`다.
+[Native 전체 TSV](../assets/issue_8305/followup8438/native-literal-final-2024-all.tsv)는
+최저 42쪽 90.69%, [fresh WASM 전체 TSV](../assets/issue_8305/followup8438/wasm-literal-final-2024-all.tsv)는
+같은 쪽 90.68%이며, 두 경로 모두 90% 미만·누락은 0쪽이다.
+원 PR이 지목한 차트 35쪽은 Native 92.57%, WASM 92.60%다.
+[Native 35쪽 비교](../assets/issue_8305/followup8438/native-literal-final-review-035.png)·
+[오버레이](../assets/issue_8305/followup8438/native-literal-final-overlay-035.png),
+[WASM 35쪽 비교](../assets/issue_8305/followup8438/wasm-literal-final-review-035.png)·
+[오버레이](../assets/issue_8305/followup8438/wasm-literal-final-overlay-035.png)에서
+차트 전체가 잘리지 않고 두 계열·연도별 점·범례가 남는지 직접 판독했다.
+42쪽 최저값도 [Native 비교](../assets/issue_8305/followup8438/native-literal-final-review-042.png)·
+[오버레이](../assets/issue_8305/followup8438/native-literal-final-overlay-042.png)와
+[WASM 비교](../assets/issue_8305/followup8438/wasm-literal-final-review-042.png)·
+[오버레이](../assets/issue_8305/followup8438/wasm-literal-final-overlay-042.png)로 확인했다.
