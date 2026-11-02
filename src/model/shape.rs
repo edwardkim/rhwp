@@ -168,6 +168,45 @@ pub enum DropCapStyle {
     Margin,
 }
 
+impl DropCapStyle {
+    /// 한/글 12.30(Mac)이 첫 글자 장식 글상자에 싣는 HWP5 CTRL_DATA 앞 20바이트.
+    ///
+    /// 파라미터 셋 539(0x021b) 안 목록 12291(0x3003)의 부호 없는 정수 28673(0x7001)이
+    /// 장식 방식이다(2줄 1·3줄 2·여백 3). HWPX `hp:parameterset name="539"`와 같은 값이다.
+    const HWP5_CTRL_DATA_PREFIX: [u8; 20] = [
+        0x1b, 0x02, 0x01, 0x00, 0x00, 0x00, 0x03, 0x30, 0x00, 0x80, 0x03, 0x30, 0x01, 0x00, 0x00,
+        0x00, 0x01, 0x70, 0x09, 0x00,
+    ];
+
+    /// HWP5 CTRL_DATA가 첫 글자 장식 파라미터 셋이면 그 방식을 돌려준다.
+    pub fn from_hwp5_ctrl_data(data: &[u8]) -> Option<Self> {
+        let (prefix, value) = data.split_at_checked(Self::HWP5_CTRL_DATA_PREFIX.len())?;
+        if prefix != Self::HWP5_CTRL_DATA_PREFIX {
+            return None;
+        }
+        match u32::from_le_bytes(value.try_into().ok()?) {
+            1 => Some(Self::DoubleLine),
+            2 => Some(Self::TripleLine),
+            3 => Some(Self::Margin),
+            _ => None,
+        }
+    }
+
+    /// 장식 방식을 HWP5 CTRL_DATA로 만든다. 장식이 없으면 한/글처럼 싣지 않는다.
+    pub fn hwp5_ctrl_data(self) -> Option<[u8; 24]> {
+        let value: u32 = match self {
+            Self::None => return None,
+            Self::DoubleLine => 1,
+            Self::TripleLine => 2,
+            Self::Margin => 3,
+        };
+        let mut data = [0; 24];
+        data[..20].copy_from_slice(&Self::HWP5_CTRL_DATA_PREFIX);
+        data[20..].copy_from_slice(&value.to_le_bytes());
+        Some(data)
+    }
+}
+
 /// 세로 위치 기준
 #[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum VertRelTo {

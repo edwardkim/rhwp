@@ -338,7 +338,7 @@ impl DocumentCore {
              \"zOrder\":{},\"instanceId\":{},\
              \"outerMarginLeft\":{},\"outerMarginTop\":{},\
              \"outerMarginRight\":{},\"outerMarginBottom\":{},\
-             \"description\":\"{}\"",
+             \"description\":\"{}\",\"dropCapStyle\":\"{}\"",
             c.width,
             c.height,
             c.treat_as_char,
@@ -359,6 +359,7 @@ impl DocumentCore {
             c.margin.right,
             c.margin.bottom,
             desc_escaped,
+            crate::serializer::hwpx::shape::drop_cap_style_str(c.drop_cap_style),
         )
     }
     /// JSON → CommonObjAttr 필드 업데이트 (Shape/Picture 공용)
@@ -415,6 +416,16 @@ impl DocumentCore {
                 "Center" => crate::model::shape::HorzAlign::Center,
                 "Right" => crate::model::shape::HorzAlign::Right,
                 _ => c.horz_align,
+            };
+        }
+        // 문단 첫 글자 장식 방식(한/글이 장식 글자를 담는 글상자에 둔다).
+        if let Some(v) = json_str(props_json, "dropCapStyle") {
+            c.drop_cap_style = match v.as_str() {
+                "None" => crate::model::shape::DropCapStyle::None,
+                "DoubleLine" => crate::model::shape::DropCapStyle::DoubleLine,
+                "TripleLine" => crate::model::shape::DropCapStyle::TripleLine,
+                "Margin" => crate::model::shape::DropCapStyle::Margin,
+                _ => c.drop_cap_style,
             };
         }
         if let Some(v) = json_str(props_json, "textWrap") {

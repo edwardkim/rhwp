@@ -15,9 +15,9 @@ use crate::model::image::{ImageEffect, Picture};
 use crate::model::page::{ColumnDef, ColumnDirection, ColumnType, PageBorderFill, PageDef};
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{
-    Caption, CaptionDirection, CaptionVertAlign, CommonObjAttr, DrawingObjAttr, HorzAlign,
-    HorzRelTo, OleShape, ShapeComponentAttr, ShapeObject, SizeCriterion, TextFlow, TextWrap,
-    VertAlign, VertRelTo,
+    Caption, CaptionDirection, CaptionVertAlign, CommonObjAttr, DrawingObjAttr, DropCapStyle,
+    HorzAlign, HorzRelTo, OleShape, ShapeComponentAttr, ShapeObject, SizeCriterion, TextFlow,
+    TextWrap, VertAlign, VertRelTo,
 };
 use crate::model::style::{Fill, FillType};
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
@@ -1666,27 +1666,18 @@ fn write_picture_extra<W: std::io::Write>(
 // 도형 ('gso ' + Shape)
 // ============================================================
 
-fn synthesize_hwpx_shape_ctrl_data(shape: &ShapeObject) -> Option<&'static [u8]> {
-    let ShapeObject::Rectangle(rect) = shape else {
-        return None;
-    };
-    rect.drawing.text_box.as_ref()?;
-    let common = &rect.common;
-    if !(common.size_protect
-        && common.flow_with_text
-        && common.allow_overlap
-        && common.vert_rel_to == VertRelTo::Para
-        && common.horz_rel_to == HorzRelTo::Para
-        && common.text_wrap == TextWrap::Square
-        && common.text_flow == TextFlow::RightOnly)
-    {
-        return None;
+/// 그리기 개체의 CTRL_DATA를 (CTRL_HEADER 아래, SHAPE_COMPONENT 아래) 차례로 고른다.
+///
+/// 첫 글자 장식은 모델(`drop_cap_style`)에서 다시 만들어 한/글 12.30처럼 두 곳에 같은
+/// 파라미터 셋을 싣는다. 장식이 아닌 다른 원본 CTRL_DATA는 종전대로 SHAPE_COMPONENT 아래에만 둔다.
+fn shape_ctrl_data<'a>(
+    record: Option<&'a [u8]>,
+    drop_cap: Option<&'a [u8]>,
+) -> (Option<&'a [u8]>, Option<&'a [u8]>) {
+    match record {
+        Some(data) if DropCapStyle::from_hwp5_ctrl_data(data).is_none() => (None, Some(data)),
+        _ => (drop_cap, drop_cap),
     }
-
-    Some(&[
-        0x1b, 0x02, 0x01, 0x00, 0x00, 0x00, 0x03, 0x30, 0x00, 0x80, 0x03, 0x30, 0x01, 0x00, 0x00,
-        0x00, 0x01, 0x70, 0x09, 0x00, 0x01, 0x00, 0x00, 0x00,
-    ])
 }
 
 fn serialize_shape_control(
@@ -1710,12 +1701,9 @@ fn serialize_shape_control(
         }
         return;
     }
-    let synthesized_ctrl_data = if ctrl_data_record.is_none() {
-        synthesize_hwpx_shape_ctrl_data(shape)
-    } else {
-        None
-    };
-    let ctrl_data_record = ctrl_data_record.or(synthesized_ctrl_data);
+    let drop_cap = shape.common().drop_cap_style.hwp5_ctrl_data();
+    let (synthesized_ctrl_data, ctrl_data_record) =
+        shape_ctrl_data(ctrl_data_record, drop_cap.as_ref().map(|d| d.as_slice()));
 
     let emit_top_level_synthesized_ctrl_data = |records: &mut Vec<Record>| {
         if let Some(data) = synthesized_ctrl_data {
@@ -1910,12 +1898,9 @@ fn try_serialize_shape_control<S: crate::storage::Storage>(
             return storage.bytes(0);
         }
     };
-    let synthesized = if ctrl_data_record.is_none() {
-        synthesize_hwpx_shape_ctrl_data(shape)
-    } else {
-        None
-    };
-    let data = ctrl_data_record.or(synthesized);
+    let drop_cap = common.drop_cap_style.hwp5_ctrl_data();
+    let (synthesized, data) =
+        shape_ctrl_data(ctrl_data_record, drop_cap.as_ref().map(|d| d.as_slice()));
     let mut header = storage.binary(&ControlPayload::Common(common))?;
     set_caption_attr_bit(&mut header, caption.is_some());
     let record = try_make_ctrl_record(tags::CTRL_GEN_SHAPE, level, &header, storage)?;
