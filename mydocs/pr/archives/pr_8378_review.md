@@ -62,3 +62,11 @@ Native 최저 95.86%, fresh WASM 최저 95.78%로 90% 미만은 없었다.
 [19쪽 Native review](../assets/issue_8373/followup8438/native-review-019.png) · [19쪽 Native overlay](../assets/issue_8373/followup8438/native-overlay-019.png) ·
 [20쪽 Native review](../assets/issue_8373/followup8438/native-review-020.png) · [20쪽 Native overlay](../assets/issue_8373/followup8438/native-overlay-020.png) ·
 [19쪽 WASM review](../assets/issue_8373/followup8438/wasm-review-019.png) · [20쪽 WASM review](../assets/issue_8373/followup8438/wasm-review-020.png).
+
+### 새 base 재저장 동일성
+
+[PR #8309](https://github.com/edwardkim/rhwp/pull/8309)가 반영된 base
+`d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d`의 Native 실행 파일로 다시 저장한
+1세대 HWPX의 SHA-256은 `c5149ebea0e34d78103e8b81def04e4a3cdc72aa9f9bb97dab222cad84dba9ca`로 기존 비교 입력과 바이트 단위로 같다.
+같은 입력의 이전 Print와 시각 결과를 재사용할 수 있다는 뜻이며, 별도 미달이나
+기능 판정을 면제하지 않는다.

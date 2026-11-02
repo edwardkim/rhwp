@@ -49,3 +49,11 @@ UTF-16 축의 표시 소유와 뒤 글자 모양을 저장 왕복에서 확인�
 2026-11-01 고정 후보의 #8389·#8397 전쪽 정밀 대조에서 2,153행 중 Native 12행, WASM 8행이 공개 기준보다 낮았다. 이 수치는 이후 GIF·Canvas 보정 전 결과이며 최종 후보의 재검증 결과가 아니다. #7905 3쪽은 GIF 오른쪽 경계 누락, sample16 35쪽 WASM은 메타파일 내부의 미대응 3픽셀이 확인됐다. #8040 두 원본은 Native·WASM 전쪽이 90% 이상이나 Native 정밀 기준 하락이 남는다. 진행과 근거는 [작업 기록](../../working/task_m100_planet6897_system_fonts_20261031.md)을 따른다. 하락 보정과 전쪽 대조, 각 PR의 독립 Print·Native/fresh WASM 및 직접 판독을 완료해야 한다. #8410·#8412의 새 base 기능도 별도로 보존 검증한다.
 
 원 PR의 최신 head·required check와 통합 후보의 새 검증 결과를 확인하기 전에는 승인이나 merge를 진행하지 않는다.
+
+### 새 base 재저장 동일성
+
+[PR #8309](https://github.com/edwardkim/rhwp/pull/8309)가 반영된 base
+`d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d`의 Native 실행 파일로 다시 저장한
+사양 대상 재저장 HWPX의 SHA-256은 `14ef498440ef15c3fe0a667a072c2141b1761eb5f0e0e970f6da44495be466c9`로 기존 비교 입력과 바이트 단위로 같다.
+같은 입력의 이전 Print와 시각 결과를 재사용할 수 있다는 뜻이며, 별도 미달이나
+기능 판정을 면제하지 않는다.
