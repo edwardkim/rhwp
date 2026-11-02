@@ -48,3 +48,17 @@ HWP5 출처 HWPX의 1행 표가 HWP 원본처럼 쪽 경계에서 분할되도�
 2026-11-01 고정 후보의 #8389·#8397 전쪽 정밀 대조에서 2,153행 중 Native 12행, WASM 8행이 공개 기준보다 낮았다. 이 수치는 이후 GIF·Canvas 보정 전 결과이며 최종 후보의 재검증 결과가 아니다. #7905 3쪽은 GIF 오른쪽 경계 누락, sample16 35쪽 WASM은 메타파일 내부의 미대응 3픽셀이 확인됐다. #8040 두 원본은 Native·WASM 전쪽이 90% 이상이나 Native 정밀 기준 하락이 남는다. 진행과 근거는 [작업 기록](../../working/task_m100_planet6897_system_fonts_20261031.md)을 따른다. 하락 보정과 전쪽 대조, 각 PR의 독립 Print·Native/fresh WASM 및 직접 판독을 완료해야 한다. #8410·#8412의 새 base 기능도 별도로 보존 검증한다.
 
 원 PR의 최신 head·required check와 통합 후보의 새 검증 결과를 확인하기 전에는 승인이나 merge를 진행하지 않는다.
+
+## 2026-11-02 일괄 대조 추가 증거
+
+[sample2 원본의 1세대 HWPX 저장본](../assets/issue_8373/followup8438/sample2-saved.hwpx)과
+[그 파일의 한컴 2024 Print](../../../pdf/issue8373/batch-8378-sample2-2024.pdf)를
+96dpi에서 29쪽 전체 비교했다. 파일 해시와 MCP 작업은 [기준 기록](../assets/issue_8373/followup8438/print-sources.md)에 있다.
+Native 최저 95.86%, fresh WASM 최저 95.78%로 90% 미만은 없었다.
+[Native 전체 TSV](../assets/issue_8373/followup8438/native-all.tsv) ·
+[WASM 전체 TSV](../assets/issue_8373/followup8438/wasm-all.tsv).
+19쪽은 셀의 「받아서 제출」로 끝나고 20쪽은 「⑧ 선착순」으로 이어지는 것을
+양쪽 출력에서 직접 확인했다. 두 경로의 19쪽 raw는 99.94%, 20쪽은 100.00%다.
+[19쪽 Native review](../assets/issue_8373/followup8438/native-review-019.png) · [19쪽 Native overlay](../assets/issue_8373/followup8438/native-overlay-019.png) ·
+[20쪽 Native review](../assets/issue_8373/followup8438/native-review-020.png) · [20쪽 Native overlay](../assets/issue_8373/followup8438/native-overlay-020.png) ·
+[19쪽 WASM review](../assets/issue_8373/followup8438/wasm-review-019.png) · [20쪽 WASM review](../assets/issue_8373/followup8438/wasm-review-020.png).

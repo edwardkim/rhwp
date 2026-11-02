@@ -55,3 +55,15 @@ PDF 편집 우선 가져오기의 고정 줄간격 문단에서 마지막 줄도
 2026-11-01 고정 후보의 #8389·#8397 전쪽 정밀 대조에서 2,153행 중 Native 12행, WASM 8행이 공개 기준보다 낮았다. 이 수치는 이후 GIF·Canvas 보정 전 결과이며 최종 후보의 재검증 결과가 아니다. #7905 3쪽은 GIF 오른쪽 경계 누락, sample16 35쪽 WASM은 메타파일 내부의 미대응 3픽셀이 확인됐다. #8040 두 원본은 Native·WASM 전쪽이 90% 이상이나 Native 정밀 기준 하락이 남는다. 진행과 근거는 [작업 기록](../../working/task_m100_planet6897_system_fonts_20261031.md)을 따른다. 하락 보정과 전쪽 대조, 각 PR의 독립 Print·Native/fresh WASM 및 직접 판독을 완료해야 한다. #8410·#8412의 새 base 기능도 별도로 보존 검증한다.
 
 원 PR의 최신 head·required check와 통합 후보의 새 검증 결과를 확인하기 전에는 승인이나 merge를 진행하지 않는다.
+
+## 2026-11-02 일괄 대조 추가 증거
+
+현재 통합 코드로 `samples/21_언어_기출_편집가능본-2010.pdf`를 편집 우선
+가져오기 해 저장한 [HWP](../assets/issue_8381/followup8438/editable-saved.hwp)와
+그 파일의 [한컴 2024 Print PDF](../../../pdf/issue8361/batch-editable-saved-2024.pdf)를
+96dpi에서 같은 16쪽으로 대조했다. MCP 작업과 파일 해시는 [기준 기록](../assets/issue_8373/followup8438/print-sources.md)에 있다.
+Native 최저 98.79%, fresh WASM 최저 98.72%이며 양쪽 모두 90% 미만은 없다.
+[Native 전체 TSV](../assets/issue_8381/followup8438/native-all.tsv) ·
+[WASM 전체 TSV](../assets/issue_8381/followup8438/wasm-all.tsv).
+12쪽의 글상자 끝과 뒤 문항을 직접 대조했고 고정 줄간격 문단과 다음 내용 관계는 기존 회귀에서도 검사했다.
+[12쪽 Native review](../assets/issue_8381/followup8438/native-review-012.png) · [12쪽 Native overlay](../assets/issue_8381/followup8438/native-overlay-012.png).
