@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**통합 PR에 반영됨 — 원 PR별 최종 검토 진행 중.** [통합 PR #8438](https://github.com/edwardkim/rhwp/pull/8438)은 머지됐다. 이 원 PR의 주장·변경 범위와 독립 증거를 대조한 뒤 원 PR 종료 여부를 판정한다.
+**메인터너 검토 완료 — HWPX 출처 개체의 bit 28 저장 계약 확인.** [통합 PR #8438](https://github.com/edwardkim/rhwp/pull/8438)에 반영됐고 원 PR head가 검토한 head와 일치한다. 원 PR이 범위 밖으로 밝힌 양식과 HWP3·PDF 출처 변환은 이 결과로 해결했다고 주장하지 않는다.
 
 ## 2026-11-02 통합 머지 사실과 적용 SHA 재확인
 
@@ -14,7 +14,11 @@
 
 ### 리베이스 차이 대조
 
-원본 `26d70e72be`와 통합 `11f21bbc7e`의 range-diff에서 OLE 초기값의 이전 비트 설정이 새 base 문맥에서 제외된 차이를 확인했다. 변경 추적에 따른 bit 28 결정과 해당 회귀는 보존된다. 전체 최종 기능과 시각 판정은 별도로 확인한다.
+원본 `26d70e72be`와 통합 `11f21bbc7e`의 range-diff에서 OLE 초기값의 이전 비트 설정이 새 base 문맥에서 제외된 차이를 확인했다. 변경 추적에 따른 bit 28 결정은 보존되며, 차이가 있는 OLE 경로는 아래에서 별도로 실행했다.
+
+제품 코드 `d536455b4e`의 최소 글꼴 전체 회귀에서 flags 56·0·16·48·8·24, 본문·바탕쪽, 수식과 원래 flags 0 문서를 검증한 해당 모듈 5건이 통과했다. `materialize_object_attr_bit28`은 도형 공통 속성에 접근해 OLE도 같은 규칙으로 처리하며, 렌더러는 이 개체 bit를 소비하지 않는다. 저장 속성 검증으로서 Visual Sweep 대상이 아니다.
+
+리베이스로 달라진 OLE 경로는 별도로 실행했다. 기존 [OLE HWPX](../../../tests/fixtures/inline-control-move/chart-before.hwpx)의 본문 OLE를 HWP로 저장하고, 같은 입력에서 `trackchageConfig`만 56→0으로 바꾼 [합성 대조군](../assets/issue_8339/followup8438/ole-flags-zero.hwpx)도 저장했다. CFB의 `BodyText/Section0` 원시 CTRL_HEADER를 직접 읽은 결과 flags 56 [저장본](../assets/issue_8339/followup8438/ole-flags-56.hwp)은 `0x140a2211`로 bit 28이 켜졌고, flags 0 [저장본](../assets/issue_8339/followup8438/ole-flags-zero.hwp)은 `0x040a2211`로 꺼졌다. [원시 레코드 확인 스크립트](../assets/issue_8339/followup8438/read-ole-attr.py.txt)로 재현할 수 있다. 두 입력의 기대 방향은 원 PR에 기록된 한컴 2024 flags·문맥 규칙이며, 합성 대조군을 한컴이 저장한 원본으로 취급하지 않는다.
 
 ## 접수와 적용
 
