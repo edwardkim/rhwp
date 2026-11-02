@@ -1,5 +1,10 @@
 //! 검사 유형: 관계형·고정형.
-//! MEASUREMENT_HEADER
+//! 주석 갱신: 2026-11-02 19:16 KST (신규 파일).
+//! 2026-11-02 측정 raw(`silhouette_raw_match_percent`, 96dpi, PDFium, `--compat 2022`, 한/글 2020 엔진 Print 정본):
+//! pushed_none.hwpx: 3쪽(N1 표) Native 99.97% / fresh WASM 100.00%; 5쪽(N2 표) Native 99.96% / fresh WASM 100.00%;
+//! 전8쪽(독립 PDF 8쪽과 일치) 최저 99.96% / 100.00%.
+//! 근거: mydocs/pr/assets/issue_8471/{native,wasm}/pushed_none_silhouette.tsv,
+//! mydocs/pr/assets/issue_8471/png/pushed_none_p{3,5}_{review,overlay}_{native,wasm}.png.
 //!
 //! #8471 다음 쪽으로 통째로 넘긴 「나누지 않음」 표 뒤의 쪽 나누기 문단은 그 표 쪽 다음에서 시작한다.
 //!
