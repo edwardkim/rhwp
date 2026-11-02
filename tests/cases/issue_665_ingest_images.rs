@@ -1,5 +1,5 @@
 //! 관계형 및 고정형(독립 Print 전쪽 쪽수): ingest 그림·본문 소유·자원·저장 계약.
-//! 주석 갱신: 2026-11-02T22:42:16+09:00; 신규 파일이므로 직전 파일 변경 커밋 없음.
+//! 주석 갱신: 2026-11-02T22:58:12+09:00; 직전 파일 커밋: 2026-11-02T22:46:40+09:00 (cba7849e30a7f3a60df7050e4e228be60f880a5e).
 //! 측정: 2026-11-02, 96 DPI, 색상 경계 보정 전 2px silhouette_raw_match_percent.
 //! above/between/below/inline/runs/mixed/image-first: 각 1쪽 Native/fresh WASM 100.00%.
 //! shared-boxed: 1쪽 Native 91.04%, fresh WASM 91.00%; 두 경로 전쪽 최저도 각각 이 값.
@@ -18,6 +18,30 @@ use rhwp::document_core::builders::exam_paper::{
 };
 use rhwp::model::{control::Control, document::Document, image::Picture};
 use rhwp::parser::ingest::{parse_ingest_str, IngestDocument};
+
+struct TempDir(std::path::PathBuf);
+impl TempDir {
+    fn new() -> Self {
+        let path = std::env::temp_dir().join(format!(
+            "rhwp-665-images-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir(&path).unwrap();
+        Self(path)
+    }
+    fn path(&self) -> &Path {
+        &self.0
+    }
+}
+impl Drop for TempDir {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_dir_all(&self.0);
+    }
+}
 
 const PNG: &[u8] = include_bytes!("../fixtures/issue665/img/diagram.png");
 fn input(name: &str) -> IngestDocument {
@@ -285,7 +309,7 @@ fn issue665_run_fields_are_strict() {
 }
 #[test]
 fn issue665_cli_resolves_relative_files_and_rejects_escape() {
-    let dir = tempfile::tempdir().unwrap();
+    let dir = TempDir::new();
     std::fs::create_dir(dir.path().join("img")).unwrap();
     std::fs::write(dir.path().join("img/diagram.png"), PNG).unwrap();
     let json = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/issue665/runs.json");
