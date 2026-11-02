@@ -57,7 +57,7 @@ pub(crate) fn mark_metafile_surface(data: &mut Vec<u8>, intermediate: bool) {
     if data.len() < 33 || &data[..8] != b"\x89PNG\r\n\x1a\n" {
         return;
     }
-    // 값 0은 최종 출력 장치에 아직 축소되지 않은 내장 EMF 표면이다.
+    // 값 0은 최종 출력 장치에 아직 축소되지 않은 WMFC 메타파일 표면이다.
     let mut chunk = [
         0,
         0,

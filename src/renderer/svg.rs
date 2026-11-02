@@ -4393,11 +4393,6 @@ fn escape_xml(s: &str) -> String {
 
 /// WMF 바이트를 SVG로 변환한다. 실패 시 None 반환.
 pub(crate) fn convert_wmf_to_svg(data: &[u8]) -> Option<Vec<u8>> {
-    convert_wmf_to_svg_with_origin(data).map(|(svg, _)| svg)
-}
-
-/// 원본 WMF 폴백과 실제 채택된 내장 EMF+를 구별한다.
-pub(crate) fn convert_wmf_to_svg_with_origin(data: &[u8]) -> Option<(Vec<u8>, bool)> {
     use crate::wmf::converter::{SVGPlayer, WMFConverter};
     let player = SVGPlayer::new();
     let converter = WMFConverter::new(data, player);
@@ -4406,11 +4401,11 @@ pub(crate) fn convert_wmf_to_svg_with_origin(data: &[u8]) -> Option<(Vec<u8>, bo
     if let Some(emf) = crate::parser::ole_container::emf_from_wmf_comment_chunks(data) {
         if let Some(viewport) = super::metafile_geometry::svg_viewport(&fallback) {
             if let Some(svg) = crate::emf::emfplus::convert_supported(&emf, viewport) {
-                return Some((svg, true));
+                return Some(svg);
             }
         }
     }
-    Some((fallback, false))
+    Some(fallback)
 }
 
 /// A source-pixel difference is real content, even when it is only one pixel.

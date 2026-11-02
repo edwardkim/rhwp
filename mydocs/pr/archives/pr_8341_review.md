@@ -123,6 +123,13 @@ WASM 89.19%로 90%를 넘지 못했다. 글꼴 공급만으로 해결됐다고 �
 아니며, 그 코드의 Native·fresh WASM 전체 비교와 종료 결과를 대신하지 않는다. 동일한
 기준 후보의 fresh WASM 비교와 현재 수정본의 집중 검사는 실행 중이다.
 
+2026-11-03 내장 EMF+가 실제로 채택된 경우에만 중간 표면을 만드는 후보는
+최소 글꼴 집중 검사 7건이 통과했지만, 2024 Print 35쪽 Native raw가 89.11%여서
+시각 검증에 실패했다. [35쪽 review](../../output/pr-review/planet6897-ordered-20261031/book-validation/pr8341-selected-emf-native-2024-p35/policy/review/review_035.png)·
+[overlay](../../output/pr-review/planet6897-ordered-20261031/book-validation/pr8341-selected-emf-native-2024-p35/policy/overlay/overlay_035.png)를
+확인했다. 변환기가 내장 EMF+를 지원하지 않아 WMF 폴백을 선택하는 경로도 중간
+장치 축소가 필요한지 보정해 재검증한다. 이전 후보의 92.57%를 이 결과로 재사용하지 않는다.
+
 회귀 대조군 sample16 HWPX의 메타파일 세 개(`image3.WMF`, `image5.WMF`, `image7.wmf`)에서는 WMFC 서명이 발견되지 않았다. 반면 이 차트의 `image7.wmf`는 앞서 확인한 유효한 WMFC 내장 EMF를 가진다. 이 바이트 차이는 일반 WMF의 기존 장치 계약과 내장 EMF를 선택한 새 경로를 구분할 수 있는 근거이며, 파일명이나 문서 번호로 동작을 갈라야 한다는 뜻은 아니다.
 
 출력 경로 구분을 위해 HWPX 복사본의 `image7.wmf`에서 WMFC 레코드 9개만 제거하고 WMF 길이를 갱신한 임시 진단본을 만들었다. 기존 제품 코드로 같은 35쪽을 출력하면 원본 출력과 다른 33,178픽셀이 모두 차트 사각형 안에 나타났다. 내장 EMF 내용과 일반 WMF 폴백이 이 입력에서 같은 출력을 만든다고 가정할 수 없으며, 이 조작본은 한컴 기준이나 정식 fixture가 아니다.

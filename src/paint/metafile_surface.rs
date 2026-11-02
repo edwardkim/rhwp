@@ -181,15 +181,11 @@ pub(super) fn payload(
     }
     let source = image.data.as_deref()?;
     // WMFC는 기존 공통 변환기의 EMF+ 우선 및 미지원 시 WMF 폴백을 그대로 사용한다.
-    // 선택된 내용을 인쇄 장치에 합성하며, 일반 WMF의 원본 표본 계약은 유지한다.
+    // 어느 쪽이 선택돼도 내장 메타파일은 중간 장치에서 합성한 뒤 축소한다.
+    // 일반 WMF의 원본 표본 계약은 유지한다.
     let (svg, intermediate) =
         if crate::parser::ole_container::emf_from_wmf_comment_chunks(source).is_some() {
-            let (svg, enhanced) = crate::renderer::svg::convert_wmf_to_svg_with_origin(source)?;
-            if !enhanced {
-                // 미지원 EMF+는 종전 WMF 폴백 경로가 소유한다.
-                return None;
-            }
-            (svg, true)
+            (crate::renderer::svg::convert_wmf_to_svg(source)?, true)
         } else {
             (
                 crate::wmf::converter::WMFConverter::new(
