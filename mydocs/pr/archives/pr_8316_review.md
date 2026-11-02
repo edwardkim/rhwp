@@ -284,6 +284,14 @@ UPM이 일치했다. 이 비교는 Native backend의 실제 글꼴 선택이나 
 반영하고, HWP→HWPX에서는 표시가 켜진 원본에 한해 기본 `settings.xml`에
 `PrintInfo`를 추가한다. 원래 HWPX 설정 XML은 보존한다. 양방향 저장·재개방과
 표시가 꺼진 대조군을 실제 실행해 확인하기 전에는 저장 보존 완료가 아니다.
+후속 Native 빌드 SHA-256
+`1c8d1dc0b5d9e7aeb5563740ba5f6d2973f467776c5ee3ab033c3b0a65942e0b`의 공개
+CLI로 세 경로를 실행했다. 표시가 켜진 원본 HWP→HWPX의 `PrintCropMark`는 1,
+한컴 생성 HWPX→HWP의 `DOC_DATA` 대응 값도 1이며 표시가 꺼진 대조 원본의
+HWPX 저장본에는 항목이 없다. 실행 로그 SHA-256은
+`64ce87cf4c18dbb9bc297b23a7abd128d0d56d48b7d4cbcc2a4ee6723a9c9ef2`다.
+이는 저장된 설정값의 대조이며, 최종 head의 fresh WASM·회귀와 저장본 인쇄
+동작 검증은 별도로 필요하다.
 
 추가 후보 실행에서 6쪽의 다음 문단 진입 원점은 29.39→22.03px, 표의 원점은
 51.41→44.05px가 됐다. 기존 한컴 PDF와 Native 96 DPI 직접 대조 결과 4·5·6·9쪽은
