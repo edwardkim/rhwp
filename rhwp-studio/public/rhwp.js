@@ -2862,6 +2862,26 @@ export class HwpDocument {
         return v3;
     }
     /**
+     * WMF 공백 글리프도 실제 cmap으로 대조한다.
+     * @param {Uint8Array} bytes
+     * @param {number} face_index
+     * @param {string} text
+     * @returns {string | undefined}
+     */
+    fontMissingTextWithSpaces(bytes, face_index, text) {
+        const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_fontMissingTextWithSpaces(this.__wbg_ptr, ptr0, len0, face_index, ptr1, len1);
+        let v3;
+        if (ret[0] !== 0) {
+            v3 = getStringFromWasm0(ret[0], ret[1]);
+            wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        }
+        return v3;
+    }
+    /**
      * 공급 후보를 등록하기 전에 실제 cmap를 대조한다. CSS 이름 검사가 아니다.
      * @param {Uint8Array} bytes
      * @param {number} face_index
@@ -9495,6 +9515,26 @@ export class HwpDocument {
         return ret[0] !== 0;
     }
     /**
+     * @param {string} family
+     * @param {boolean} bold
+     * @param {boolean} italic
+     * @param {boolean} source_ttf
+     * @param {Uint8Array} bytes
+     * @param {number} face_index
+     * @returns {boolean}
+     */
+    registerLiteralFigureSpaceFontForSource(family, bold, italic, source_ttf, bytes, face_index) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_registerLiteralFigureSpaceFontForSource(this.__wbg_ptr, ptr0, len0, bold, italic, source_ttf, ptr1, len1, face_index);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] !== 0;
+    }
+    /**
      * 문서 측정 slot과 별도로 SVG/WMF paint에 실제 선택한 font face를 공급한다.
      * @param {string} family
      * @param {Uint8Array} bytes
@@ -9526,6 +9566,26 @@ export class HwpDocument {
         const ptr1 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
         const len1 = WASM_VECTOR_LEN;
         const ret = wasm.hwpdocument_registerNativePuaFont(this.__wbg_ptr, ptr0, len0, bold, italic, ptr1, len1, face_index);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] !== 0;
+    }
+    /**
+     * @param {string} family
+     * @param {boolean} bold
+     * @param {boolean} italic
+     * @param {boolean} source_ttf
+     * @param {Uint8Array} bytes
+     * @param {number} face_index
+     * @returns {boolean}
+     */
+    registerNativePuaFontForSource(family, bold, italic, source_ttf, bytes, face_index) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_registerNativePuaFontForSource(this.__wbg_ptr, ptr0, len0, bold, italic, source_ttf, ptr1, len1, face_index);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
