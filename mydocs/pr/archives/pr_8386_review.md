@@ -57,14 +57,14 @@ HWPX에서 HWP로 변환할 때 개체 공통 속성 bit 28을 변경 추적 설
 
 ### 2026-11-02 새 base 최소 글꼴 집중 회귀
 
-[PR #8309](https://github.com/edwardkim/rhwp/pull/8309)가 포함된 base
+검증 기준 base
 `d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d`에서 `issue_8339_hwpx_object_attr_bit28` 5건을 실행해 모두 통과했다.
 전체 선택 범위는 28건 통과이며 전체 회귀 실행 결과가 아니다. 시스템 글꼴을 격리하고
 저장소의 재배포 가능한 최소 글꼴만 노출했다. 기존 Print 시각 증거와는 별도로 판정한다.
 
 ### 새 base OLE 저장 경로 재실행
 
-[PR #8309](https://github.com/edwardkim/rhwp/pull/8309)가 반영된 base
+검증 기준 base
 `d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d`의 실행 파일로 두 HWPX를 HWP로 다시
 저장하고 `--verify`로 재파싱을 확인했다. 설정 56 저장본의 SHA-256은
 `c1f22903b149a137fb9e85a8c6f383c6e601c326dc189762579fbf71c10a9a46`, 설정 0 저장본은

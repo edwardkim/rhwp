@@ -58,7 +58,7 @@ UTF-16 축의 표시 소유와 뒤 글자 모양을 저장 왕복에서 확인�
 
 ### 새 base 재저장 동일성
 
-[PR #8309](https://github.com/edwardkim/rhwp/pull/8309)가 반영된 base
+검증 기준 base
 `d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d`의 Native 실행 파일로 다시 저장한
 사양 대상 재저장 HWPX의 SHA-256은 `14ef498440ef15c3fe0a667a072c2141b1761eb5f0e0e970f6da44495be466c9`로 기존 비교 입력과 바이트 단위로 같다.
 같은 입력의 이전 Print와 시각 결과를 재사용할 수 있다는 뜻이며, 별도 미달이나
@@ -81,7 +81,7 @@ WASM 89.19%로 90%를 넘지 못했다. 글꼴 공급만으로 해결됐다고 �
 
 ### 2026-11-02 새 base 최소 글꼴 집중 회귀
 
-[PR #8309](https://github.com/edwardkim/rhwp/pull/8309)가 포함된 base
+검증 기준 base
 `d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d`에서 `issue_8305_titlemark_boundary_runs` 5건을 실행해 모두 통과했다.
 전체 선택 범위는 28건 통과이며 전체 회귀 실행 결과가 아니다. 시스템 글꼴을 격리하고
 저장소의 재배포 가능한 최소 글꼴만 노출했다. 기존 Print 시각 증거와는 별도로 판정한다.

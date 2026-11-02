@@ -65,7 +65,7 @@ Native 최저 95.86%, fresh WASM 최저 95.78%로 90% 미만은 없었다.
 
 ### 새 base 재저장 동일성
 
-[PR #8309](https://github.com/edwardkim/rhwp/pull/8309)가 반영된 base
+검증 기준 base
 `d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d`의 Native 실행 파일로 다시 저장한
 1세대 HWPX의 SHA-256은 `c5149ebea0e34d78103e8b81def04e4a3cdc72aa9f9bb97dab222cad84dba9ca`로 기존 비교 입력과 바이트 단위로 같다.
 같은 입력의 이전 Print와 시각 결과를 재사용할 수 있다는 뜻이며, 별도 미달이나
@@ -81,7 +81,7 @@ Native 최저 95.86%, fresh WASM 최저 95.78%로 90% 미만은 없었다.
 
 ### 2026-11-02 새 base 최소 글꼴 집중 회귀
 
-[PR #8309](https://github.com/edwardkim/rhwp/pull/8309)가 포함된 base
+검증 기준 base
 `d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d`에서 `hwp5_origin_hwpx_single_row_table_split` 1건을 실행해 모두 통과했다.
 전체 선택 범위는 28건 통과이며 전체 회귀 실행 결과가 아니다. 시스템 글꼴을 격리하고
 저장소의 재배포 가능한 최소 글꼴만 노출했다. 기존 Print 시각 증거와는 별도로 판정한다.

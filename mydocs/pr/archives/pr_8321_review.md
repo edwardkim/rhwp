@@ -62,7 +62,7 @@
 
 ### 2026-11-02 새 base 최소 글꼴 집중 회귀
 
-[PR #8309](https://github.com/edwardkim/rhwp/pull/8309)가 반영된 base
+검증 기준 base
 `d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d`의 실행 파일에서 `issue_8315_symbol_slot_advance`
 3건이 최소 글꼴 환경에서 모두 통과했다. 이 검사는 위에서 확인한 문서의 전체
 페이지 시각 검증을 대체하지 않는다.

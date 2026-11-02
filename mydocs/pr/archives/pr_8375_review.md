@@ -64,7 +64,7 @@ Native 최저 98.79%, fresh WASM 최저 98.72%이며 양쪽 모두 90% 미만은
 
 ### 새 base의 저장본 확인
 
-[PR #8309](https://github.com/edwardkim/rhwp/pull/8309) 반영 base
+검증 기준 base
 `d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d`에서 `target/pr-review` Native
 실행 파일(SHA-256 `34dfddd062947e91c33cb3c2b2c16a10f9903d2d1184fcdb646683e6a0dc2f1f`)로
 같은 PDF를 다시 편집 우선 가져오기 했다. 결과 HWP는 16쪽이며 SHA-256
@@ -75,7 +75,7 @@ Print 입력과 바이트 단위로 일치한다. 새 base와 이전 검증 코�
 
 ### 2026-11-02 새 base 최소 글꼴 집중 회귀
 
-[PR #8309](https://github.com/edwardkim/rhwp/pull/8309)가 포함된 base
+검증 기준 base
 `d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d`에서 `issue_8362_pdf_editable_hancom_rows` 2건을 실행해 모두 통과했다.
 전체 선택 범위는 28건 통과이며 전체 회귀 실행 결과가 아니다. 시스템 글꼴을 격리하고
 저장소의 재배포 가능한 최소 글꼴만 노출했다. 기존 Print 시각 증거와는 별도로 판정한다.

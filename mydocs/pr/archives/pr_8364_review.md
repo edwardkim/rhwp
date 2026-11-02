@@ -74,14 +74,14 @@ HWP3 계보 HWPX의 줄 시작을 한컴의 문단 축에 맞게 저장한다.
 
 ### 새 base 재저장 동일성
 
-[PR #8309](https://github.com/edwardkim/rhwp/pull/8309)가 반영된 base의 Native
+검증 기준 base `d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d`의 Native
 실행 파일로 원본 HWP3를 다시 HWPX로 저장했다. `--verify-pages`가 통과했고
 저장본의 SHA-256은 기존 Print 입력과 같은
 `468516ece6d6f5ba5fe3c4f692ba3aa12bd89d8747e5b85efb9b9c99ff2ca854`다.
 
 ### 2026-11-02 새 base 최소 글꼴 집중 회귀
 
-[PR #8309](https://github.com/edwardkim/rhwp/pull/8309)가 포함된 base
+검증 기준 base
 `d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d`의 `regression_suite_009` 실행 파일을
 최소 글꼴 환경에서 실행했다. `issue_8303_hwp3_hwpx_textpos_idempotent`의 캡션 줄 시작,
 기존 축 마커, 반복 저장 불변 검사 3건이 모두 통과했다. 전체 회귀 결과와 구분한다.
