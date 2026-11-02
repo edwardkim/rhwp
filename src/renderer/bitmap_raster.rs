@@ -94,8 +94,8 @@ pub(crate) fn prepare_bitmap(
     profile: RenderProfile,
     paper_grid: Option<PrintPaperGrid>,
 ) -> Option<PreparedBitmap> {
-    // SVG와 마찬가지로 메타파일 표본은 최종 장치에서 이미 합성했다.
-    // 원본 비트맵용 경계 확장/저역 통과를 다시 적용하지 않는다.
+    // 이미 최종 격자에 합성된 WMF는 재표본화하지 않는다. 중간 장치 표면은
+    // 일반 출력 장치 축소 경로에서 처리한다.
     if super::image_resolver::png_sampling::metafile_surface(bytes) {
         return None;
     }
