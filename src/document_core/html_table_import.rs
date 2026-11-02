@@ -645,6 +645,7 @@ impl DocumentCore {
             raw_ctrl_seal: None,
             raw_table_record_attr: tbl_rec_attr,
             raw_table_record_extra: vec![0u8; 2], // 표준 추가 2바이트
+            layout_page_break_cache: Default::default(),
         };
         table.rebuild_grid();
         // 재조판의 공통 행 측정을 저장 크기로 확정한다. 중첩 표의 직접 paint와

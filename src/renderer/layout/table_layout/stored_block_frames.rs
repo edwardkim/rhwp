@@ -23,7 +23,7 @@ impl LayoutEngine {
             || profile.session_edited()
             || table.common.treat_as_char
             || table.cell_spacing != 0
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
             || self
                 .render_normalization
                 .borrow()
@@ -203,7 +203,7 @@ impl LayoutEngine {
         let (first, end) = range;
         if end <= first + 1
             || table.cell_spacing != 0
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
         {
             return None;
         }

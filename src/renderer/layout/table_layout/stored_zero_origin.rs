@@ -175,7 +175,7 @@ impl LayoutEngine {
                 .table_text_reflowed(table)
             || table.common.treat_as_char
             || table.common.text_wrap != TextWrap::TopAndBottom
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
             || cell.row_span != 1
             || cell.dirty_flag
             || table.common.height == 0

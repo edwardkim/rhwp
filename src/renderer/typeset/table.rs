@@ -357,7 +357,7 @@ pub(crate) fn fit_measured_for_host_with_storage<S: crate::storage::Storage>(
                 && (profile().hwp5_stored_pagination_layout()
                     || profile().hwpx_stored_layout())
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                         | crate::model::table::TablePageBreak::CellBreak
                 )
@@ -380,7 +380,7 @@ pub(crate) fn fit_measured_for_host_with_storage<S: crate::storage::Storage>(
                 let native_empty_rowbreak_nested_tail = profile().hwp5_stored_pagination_layout()
                     && !table.common.treat_as_char
                     && matches!(
-                        table.page_break,
+                        table.layout_page_break(),
                         crate::model::table::TablePageBreak::RowBreak
                     )
                     && table.row_count > 1

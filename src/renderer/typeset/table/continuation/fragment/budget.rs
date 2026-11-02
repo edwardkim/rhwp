@@ -237,7 +237,7 @@ impl TypesetEngine {
                     // (`table_partial`)도 같은 조각에서 연다.
                     || (!table.common.treat_as_char
                         && matches!(
-                            table.page_break,
+                            table.layout_page_break(),
                             crate::model::table::TablePageBreak::RowBreak
                         )
                         && start_cut.iter().all(|&unit| unit == 0)
@@ -1203,7 +1203,7 @@ impl TypesetEngine {
             && crate::renderer::typeset::is_para_topbottom_float(&table.common)
             && table.common.height <= i32::MAX as u32
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && row_count > 1
@@ -1335,7 +1335,7 @@ impl TypesetEngine {
             && std::ptr::eq(row_geometry_table, table)
             && table.cells.iter().all(|cell| cell.row_span == 1)
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             ))
         .then(|| {
@@ -1871,7 +1871,7 @@ impl TypesetEngine {
         // 원점 덮어쓰기와 캡션·반복 머리 행 예약 이후의 좌표를 소비한다.
         let reflow_frame_raw = (!table.common.treat_as_char
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             ))
         .then(|| {

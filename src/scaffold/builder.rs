@@ -426,6 +426,7 @@ fn build_table_paragraph(
         raw_ctrl_seal: None,
         raw_table_record_attr: 0x0000_0006, // bits 0-1 = 2(나눔, 행 단위 = HWPX CELL), bit2 = repeat_header
         raw_table_record_extra: Vec::new(),
+        layout_page_break_cache: Default::default(),
     };
     table.rebuild_grid();
 

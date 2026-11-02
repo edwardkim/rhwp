@@ -50,7 +50,7 @@ fn unaccounted_topbottom_band_hu(para: &Paragraph) -> Option<i64> {
         || common.height == 0
         || common.height > i32::MAX as u32
         || table.caption.is_some()
-        || table.page_break != TablePageBreak::None
+        || table.layout_page_break() != TablePageBreak::None
     {
         return None;
     }

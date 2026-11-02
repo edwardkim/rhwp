@@ -56,7 +56,7 @@ impl LayoutEngine {
         row: usize,
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
-        if table.page_break != crate::model::table::TablePageBreak::CellBreak {
+        if table.layout_page_break() != crate::model::table::TablePageBreak::CellBreak {
             return None;
         }
         let cells = self.indexed_row_cut_cell_order(table, row);

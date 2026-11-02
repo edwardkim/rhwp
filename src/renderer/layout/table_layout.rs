@@ -208,7 +208,7 @@ fn cell_is_page_split_candidate(
     table: &crate::model::table::Table,
     dpi: f64,
 ) -> bool {
-    !matches!(table.page_break, TablePageBreak::None)
+    !matches!(table.layout_page_break(), TablePageBreak::None)
         && hwpunit_to_px(cell.height.min(i32::MAX as u32) as i32, dpi) >= PAGE_SCALE_CELL_HEIGHT_PX
 }
 
@@ -288,7 +288,7 @@ fn stored_layout_relocated_empty_rowbreak_picture_resets_offset(
     };
     if !stored_layout
         || host_vpos <= 0
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || table.common.treat_as_char
         || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
         || !matches!(table.common.vert_rel_to, VertRelTo::Para)
@@ -2091,7 +2091,7 @@ pub(crate) fn native_terminal_child_host_line_spacing(
         || table.common.treat_as_char
         || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
         || !matches!(table.common.vert_rel_to, VertRelTo::Para)
-        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
         || table.row_count <= 1
     {
         return 0.0;
@@ -2581,7 +2581,7 @@ impl LayoutEngine {
     ) -> Option<(usize, usize)> {
         use crate::model::paragraph::LineSeg;
         if table.common.treat_as_char
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
             || self
                 .render_normalization
                 .borrow()
@@ -2700,7 +2700,7 @@ impl LayoutEngine {
             || self.profile.get().hwpx_stored_layout())
             && !self.profile.get().session_edited()
             && !table.common.treat_as_char
-            && table.page_break == TablePageBreak::RowBreak
+            && table.layout_page_break() == TablePageBreak::RowBreak
             && !self
                 .render_normalization
                 .borrow()
@@ -2747,7 +2747,7 @@ impl LayoutEngine {
             || self.profile.get().hwpx_stored_layout())
             || self.profile.get().session_edited()
             || table.common.treat_as_char
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
             || self
                 .render_normalization
                 .borrow()
@@ -5211,7 +5211,7 @@ impl LayoutEngine {
             || table.common.treat_as_char
             || table.common.height == 0
             || !matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
         {
@@ -5582,7 +5582,7 @@ impl LayoutEngine {
                 && !table.common.treat_as_char
                 && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
                 && matches!(table.common.vert_rel_to, VertRelTo::Para)
-                && matches!(table.page_break, TablePageBreak::RowBreak)
+                && matches!(table.layout_page_break(), TablePageBreak::RowBreak)
                 && table.row_count > 1
                 && table.cells.iter().all(|cell| cell.row_span == 1);
             // [#5906] 마지막 행이 저장 선언으로만 잡힌 표의 초과분 회수도 같은
@@ -5603,7 +5603,7 @@ impl LayoutEngine {
                 && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
                 && matches!(table.common.vert_rel_to, VertRelTo::Para)
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     TablePageBreak::RowBreak | TablePageBreak::CellBreak
                 )
                 && table.row_count > 1;
@@ -5954,7 +5954,7 @@ impl LayoutEngine {
             && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
             && matches!(table.common.vert_rel_to, VertRelTo::Para)
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 TablePageBreak::RowBreak | TablePageBreak::CellBreak
             )
         {
@@ -6463,7 +6463,7 @@ impl LayoutEngine {
             || stored_nested_row
             || (self.profile.get().hwp5_stored_pagination_layout()
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 )
                 && self.cells_starting_on_row(table, row).any(|cell| {
@@ -7068,7 +7068,7 @@ impl LayoutEngine {
                 let body_bottom = col_area.y + col_area.height - table_height;
                 let declared_height = hwpunit_to_px(table.common.height as i32, self.dpi).max(0.0);
                 let allow_rowbreak_object_bottom_bleed =
-                    matches!(table.page_break, TablePageBreak::RowBreak)
+                    matches!(table.layout_page_break(), TablePageBreak::RowBreak)
                         && !table.common.treat_as_char
                         && table.row_count == 1
                         && table.col_count == 1
@@ -7141,7 +7141,7 @@ impl LayoutEngine {
                     crate::model::shape::TextWrap::InFrontOfText
                         | crate::model::shape::TextWrap::BehindText
                 ) && table.row_count > 1
-                    && matches!(table.page_break, TablePageBreak::RowBreak);
+                    && matches!(table.layout_page_break(), TablePageBreak::RowBreak);
                 // [#6267] 관문 ①의 예외 — 호스트 문단이 **이미 그린 글**을 가진
                 // 자리차지 표. #1658/#1858 의 "하단 고정 틀"(결재·발신명의)은 빈
                 // 문단이 host 라 클램프가 흐름을 거슬러 올라가도 겹칠 텍스트가 없고,
@@ -7383,7 +7383,7 @@ impl LayoutEngine {
         let collapse_stored_wrap_spacers = self.profile.get().hwp5_stored_pagination_layout()
             && !table.common.treat_as_char
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && cell.paragraphs.iter().enumerate().any(|(pi, p)| {
@@ -7801,7 +7801,7 @@ impl LayoutEngine {
                     .set(previous_keep_spacing);
                 if self.profile.get().hwp5_stored_pagination_layout()
                     && !table.common.treat_as_char
-                    && matches!(table.page_break, TablePageBreak::RowBreak)
+                    && matches!(table.layout_page_break(), TablePageBreak::RowBreak)
                     && start_line == 0
                     && end_line > start_line
                 {
@@ -10899,7 +10899,7 @@ impl LayoutEngine {
             let hwpx_noninline_tac_nested_stored_flow = self.profile.get().hwpx_stored_layout()
                 && table.common.treat_as_char
                 && !table.common.flow_with_text
-                && matches!(table.page_break, TablePageBreak::None)
+                && matches!(table.layout_page_break(), TablePageBreak::None)
                 && has_nested_table;
             let first_line_vpos = cell
                 .paragraphs
@@ -12219,7 +12219,7 @@ impl LayoutEngine {
             || cell.col_span != 1
             || cell.dirty_flag
             || table.common.treat_as_char
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
             || table.common.text_wrap != TextWrap::TopAndBottom
             || table.cell_spacing != 0
             || table.common.height == 0
@@ -12359,7 +12359,7 @@ impl LayoutEngine {
             || table.row_count != 1
             || table.col_count != 1
             || cell.dirty_flag
-            || table.page_break == TablePageBreak::None
+            || table.layout_page_break() == TablePageBreak::None
         {
             return None;
         }
@@ -12436,7 +12436,7 @@ impl LayoutEngine {
             || table.col_count != 1
             || table.cell_spacing != 0
             || table.common.treat_as_char
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
             || cell.dirty_flag
             || cell.paragraphs.is_empty()
         {
@@ -14008,7 +14008,7 @@ impl LayoutEngine {
                 .table_text_reflowed(table)
             || table.common.treat_as_char
             || !crate::renderer::float_placement::is_para_topbottom_float(&table.common)
-            || table.page_break != crate::model::table::TablePageBreak::RowBreak
+            || table.layout_page_break() != crate::model::table::TablePageBreak::RowBreak
             || table.caption.is_some()
             || !host.text.is_empty()
             || !matches!(host.controls.as_slice(), [Control::Table(_)])
@@ -14336,7 +14336,7 @@ impl LayoutEngine {
             && !table.common.treat_as_char
             && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
             && matches!(table.common.vert_rel_to, VertRelTo::Para)
-            && matches!(table.page_break, TablePageBreak::RowBreak)
+            && matches!(table.layout_page_break(), TablePageBreak::RowBreak)
             && table.row_count > 1
             && cell.row_span == 1
             && cell.row as usize + 1 == table.row_count as usize
@@ -14379,7 +14379,7 @@ impl LayoutEngine {
                 parent_declared_height,
                 table.common.text_wrap,
                 table.common.vert_rel_to,
-                table.page_break,
+                table.layout_page_break(),
                 cell.row,
                 cell.row_span,
                 cell.paragraphs.len(),
@@ -14411,7 +14411,7 @@ impl LayoutEngine {
             && !table.common.treat_as_char
             && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
             && matches!(table.common.vert_rel_to, VertRelTo::Para)
-            && matches!(table.page_break, TablePageBreak::RowBreak)
+            && matches!(table.layout_page_break(), TablePageBreak::RowBreak)
             && table.row_count > 1
             && cell.row_span == 1
             && cell.row as usize + 1 == table.row_count as usize
@@ -14448,7 +14448,7 @@ impl LayoutEngine {
         };
         !child.common.treat_as_char
             && child.common.text_wrap == TextWrap::TopAndBottom
-            && child.page_break == TablePageBreak::RowBreak
+            && child.layout_page_break() == TablePageBreak::RowBreak
             && child.row_count == 1
             && child.col_count == 1
             && cell.row == 0
@@ -14655,7 +14655,7 @@ impl LayoutEngine {
                 .table_text_reflowed(table)
             || cell.dirty_flag
             || table.common.treat_as_char
-            || table.page_break != crate::model::table::TablePageBreak::RowBreak
+            || table.layout_page_break() != crate::model::table::TablePageBreak::RowBreak
             || cell.row_span != 1
             || cell.col_span != table.col_count
         {
@@ -14924,7 +14924,7 @@ impl LayoutEngine {
             seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         };
         let is_block_rowbreak_table = matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         ) && !table.common.treat_as_char;
         let text_reflowed = self
@@ -15567,7 +15567,7 @@ impl LayoutEngine {
             // 표 꼬리(`총편익`·`연간균등순비용` 59자)가 살아난다.
             let host_is_cell_last_para = pi + 1 == cell.paragraphs.len();
             let is_block_rowbreak = matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             ) && !table.common.treat_as_char;
             let (para_top_and_bottom_h, summed_para_other_non_inline_h) =
@@ -16164,7 +16164,7 @@ impl LayoutEngine {
                                 ps.line_spacing,
                                 crate::renderer::para_has_no_stored_line_segs(p)
                                     && (!p.text.is_empty() || source_controls.is_empty())
-                                    && (matches!(table.page_break, TablePageBreak::CellBreak)
+                                    && (matches!(table.layout_page_break(), TablePageBreak::CellBreak)
                                     // [#2070 실험] 셀 마지막 줄 = em (5축 전면).
                                     || cell_last_line_idx == Some(li)),
                             ),
@@ -16302,7 +16302,7 @@ impl LayoutEngine {
                     && !nested_tables[0].common.treat_as_char
                     && nested_tables[0].row_count >= 2
                     && !matches!(
-                        nested_tables[0].page_break,
+                        nested_tables[0].layout_page_break(),
                         crate::model::table::TablePageBreak::None
                     )
                 {
@@ -16442,7 +16442,7 @@ impl LayoutEngine {
                         // 경계를 공통 높이 축으로 삼고, 각 경계에서 모든 셀의 누적
                         // cursor를 기록한다. 따라서 첫 조각과 continuation 모두 같은
                         // 자식 RowCut을 렌더러에 전달할 수 있다.
-                        if matches!(nt.page_break, TablePageBreak::RowBreak) {
+                        if matches!(nt.layout_page_break(), TablePageBreak::RowBreak) {
                             let mut row_cells: Vec<&crate::model::table::Cell> = nt
                                 .cells
                                 .iter()
@@ -16876,7 +16876,7 @@ impl LayoutEngine {
                                     // 조각 경계가 한 줄 밀린다(로컬 게이트 실측).
                                     let wrapper_shape = !table.common.treat_as_char
                                         && matches!(
-                                            table.page_break,
+                                            table.layout_page_break(),
                                             crate::model::table::TablePageBreak::RowBreak
                                         )
                                         && table.row_count == 1
@@ -18684,7 +18684,7 @@ impl LayoutEngine {
             || table.row_count <= 1
             || table.common.treat_as_char
             || !matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             || end_cut == 0
@@ -19050,7 +19050,7 @@ impl LayoutEngine {
                 .borrow()
                 .table_text_reflowed(table)
             || table.common.treat_as_char
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
             || table.common.text_wrap != TextWrap::TopAndBottom
             || table.common.height == 0
             || table.common.height > i32::MAX as u32
@@ -19169,7 +19169,7 @@ impl LayoutEngine {
         if !(self.profile.get().hwp5_stored_pagination_layout()
             || self.profile.get().hwpx_stored_layout())
             || table.common.treat_as_char
-            || !matches!(table.page_break, TablePageBreak::RowBreak)
+            || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
             // 셀 안 표의 되감김은 바깥 쪽 프레임이 아니라 그 칸 안의 위치다 — 바깥 표 조각
             // 상자가 그 줄간격을 그대로 싣는다(17544911 1쪽 중첩 표 칸 (4,1), 정본 상자 포함).
             || self
@@ -19343,7 +19343,7 @@ impl LayoutEngine {
             || cell.row_span <= 1
             || cell.dirty_flag
             || table.common.treat_as_char
-            || !matches!(table.page_break, TablePageBreak::RowBreak)
+            || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
             || self
                 .render_normalization
                 .borrow()
@@ -19427,7 +19427,7 @@ impl LayoutEngine {
             || profile.session_edited()
             || cell.dirty_flag
             || table.common.treat_as_char
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
             || !self.indexed_stored_row_boxes_exceed_object_frame(table)
             || self
                 .render_normalization
@@ -19517,7 +19517,7 @@ impl LayoutEngine {
         if !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
             || profile.session_edited()
             || table.common.treat_as_char
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
             || self
                 .render_normalization
                 .borrow()
@@ -19804,7 +19804,7 @@ impl LayoutEngine {
             && !self.profile.get().session_edited()
             && !table.common.treat_as_char
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && table.row_count == 1
@@ -19870,7 +19870,7 @@ impl LayoutEngine {
             && !self.profile.get().session_edited()
             && !table.common.treat_as_char
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && start_cut == 0
@@ -20008,7 +20008,7 @@ impl LayoutEngine {
                 .borrow()
                 .contains(&(table as *const crate::model::table::Table as usize))
             || !matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             || end_cut == 0
@@ -20150,7 +20150,7 @@ impl LayoutEngine {
         if !stored_ladder
             || table.common.treat_as_char
             || !matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             || end_cut == 0
@@ -20530,7 +20530,7 @@ impl LayoutEngine {
         h: &mut f64,
     ) -> bool {
         if !matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         ) || table.common.treat_as_char
             || *j >= units.len()
@@ -20596,7 +20596,7 @@ impl LayoutEngine {
         h: &mut f64,
     ) -> bool {
         if !matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         ) || table.common.treat_as_char
             // 이 rewind는 outer RowBreak 표가 아니라, 한 셀짜리 mixed nested
@@ -20675,7 +20675,7 @@ impl LayoutEngine {
         // 근거해 구분한다.
         allow_midpage_reset_absorb
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && !unit.empty_spacer
@@ -20996,7 +20996,7 @@ impl LayoutEngine {
             || table.common.vert_rel_to != VertRelTo::Para
             || !matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
             || table.common.horz_rel_to != HorzRelTo::Column
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
             || table.row_count != 2
             || table.col_count != 1
             || table.cells.len() != 2
@@ -21106,7 +21106,7 @@ impl LayoutEngine {
                 crate::model::shape::TextWrap::TopAndBottom
             )
             || !matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             || start_row != 0
@@ -21192,7 +21192,7 @@ impl LayoutEngine {
             || table.common.height > i32::MAX as u32
             || table.cell_spacing != 0
             || !matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             || table.common.text_wrap != crate::model::shape::TextWrap::TopAndBottom
@@ -21332,7 +21332,7 @@ impl LayoutEngine {
             || !start_cut.is_empty()
             || end_cut.len() != 1
             || !matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             || !self.row_cut_ends_at_plain_text_saved_reset(table, 0, start_cut, end_cut, styles)
@@ -21413,7 +21413,7 @@ impl LayoutEngine {
                     .table_text_reflowed(table)
                 && !table.common.treat_as_char
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 )
                 && table.cells.iter().any(|cell| {
@@ -21449,12 +21449,12 @@ impl LayoutEngine {
         }
         let native_row_source = self.profile.get().hwp5_stored_pagination_layout()
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             );
         let hwpx_row_source = self.profile.get().hwpx_stored_layout()
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             );
         if !(native_row_source || hwpx_row_source)
@@ -21561,7 +21561,7 @@ impl LayoutEngine {
                 .table_text_reflowed(table)
             || table.common.treat_as_char
             || !matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             || row != 0
@@ -21856,7 +21856,7 @@ impl LayoutEngine {
             || profile.hwp5_origin_hwpx()
             || table.common.treat_as_char
             || !matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             || cell.height >= 0x8000_0000
@@ -22214,7 +22214,7 @@ impl LayoutEngine {
         if !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
             || cell.dirty_flag
             || table.common.treat_as_char
-            || !matches!(table.page_break, TablePageBreak::RowBreak)
+            || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
             || self
                 .render_normalization
                 .borrow()
@@ -22344,7 +22344,7 @@ impl LayoutEngine {
         if !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
             || cell.dirty_flag
             || table.common.treat_as_char
-            || !matches!(table.page_break, TablePageBreak::RowBreak)
+            || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
             || self
                 .render_normalization
                 .borrow()
@@ -22912,7 +22912,7 @@ impl LayoutEngine {
             .hwp5_stored_pagination_layout()
             && !table.common.treat_as_char
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && matches!(
@@ -22938,7 +22938,7 @@ impl LayoutEngine {
                 }
             });
         let relaxed_hard_break = matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         ) && (table.col_count <= 2 || table.row_count > 5)
             && !row_has_top_and_bottom_flow
@@ -22947,7 +22947,7 @@ impl LayoutEngine {
             self.profile.get().hwpx_stored_layout() || row_has_top_and_bottom_flow;
         let rewind_internal_hard_break_orphan = Self::row_has_prior_rowspan_cover(table, row);
         let rowbreak_atomic_non_inline_entry = matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         ) && !table.common.treat_as_char;
         let source_frames_are_current = !self
@@ -23064,7 +23064,7 @@ impl LayoutEngine {
                 let hwpx_local_reset_stream = self.profile.get().hwpx_stored_layout()
                     && !table.common.treat_as_char
                     && matches!(
-                        table.page_break,
+                        table.layout_page_break(),
                         crate::model::table::TablePageBreak::RowBreak
                     )
                     && table.row_count == 1
@@ -23147,7 +23147,7 @@ impl LayoutEngine {
                 let hwpx_page_scale_cross_para_reset = current_frame_cut && self.profile.get().hwpx_stored_layout()
                     && !table.common.treat_as_char
                     && matches!(
-                        table.page_break,
+                        table.layout_page_break(),
                         crate::model::table::TablePageBreak::RowBreak
                     )
                     && row_cells.len() == 1
@@ -23184,7 +23184,7 @@ impl LayoutEngine {
                     .hwp5_stored_pagination_layout()
                     && !table.common.treat_as_char
                     && matches!(
-                        table.page_break,
+                        table.layout_page_break(),
                         crate::model::table::TablePageBreak::RowBreak
                     )
                     // 최소 선언 상자 또는 실제 저장 프레임의 일치하는 전진 끝이
@@ -23549,7 +23549,7 @@ impl LayoutEngine {
             .iter()
             .any(|cell| self.cell_has_top_and_bottom_non_inline_flow(cell));
         let relaxed_hard_break = matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         ) && (table.col_count <= 2 || table.row_count > 5)
             && !block_has_top_and_bottom_flow;
@@ -23790,7 +23790,7 @@ impl LayoutEngine {
                 .borrow()
                 .table_text_reflowed(table)
             || table.common.treat_as_char
-            || !matches!(table.page_break, TablePageBreak::RowBreak)
+            || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
             || table.caption.is_some()
             || range.start == 0
             || range.end <= range.start
@@ -23895,7 +23895,7 @@ impl LayoutEngine {
                 .table_text_reflowed(table)
             || table.common.treat_as_char
             || table.caption.is_some()
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
         {
             return None;
         }
@@ -24198,7 +24198,7 @@ impl LayoutEngine {
             && table.outer_margin_top > 0
             && table.common.vert_rel_to == crate::model::shape::VertRelTo::Para
             && table.common.text_wrap == crate::model::shape::TextWrap::TopAndBottom
-            && table.page_break == crate::model::table::TablePageBreak::RowBreak
+            && table.layout_page_break() == crate::model::table::TablePageBreak::RowBreak
             && crate::renderer::float_placement::stored_rowbreak_outer_frame_host(host, table)
             && !host.stored_text_partition_is_dirty()
             && host.line_segs.first().is_some_and(|line| {
@@ -24286,7 +24286,7 @@ impl LayoutEngine {
         h: &mut f64,
     ) {
         if !matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         ) || *j <= start + 1
         {
@@ -24363,7 +24363,7 @@ impl LayoutEngine {
         h: &mut f64,
     ) -> bool {
         if !matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         ) || table.common.treat_as_char
             || *j >= units.len()
@@ -24485,7 +24485,7 @@ impl LayoutEngine {
         h: &mut f64,
     ) -> bool {
         if !matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         ) || table.common.treat_as_char
             || *j <= start + 1
@@ -27355,7 +27355,7 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> Vec<crate::renderer::pagination::StraddleCellCarry> {
         if !matches!(
-            table.page_break,
+            table.layout_page_break(),
             TablePageBreak::RowBreak | TablePageBreak::CellBreak
         ) {
             return carried.to_vec();
@@ -27861,7 +27861,7 @@ impl LayoutEngine {
         if !start_cut.is_empty()
             || !self.profile.get().hwp5_stored_pagination_layout()
             || table.common.treat_as_char
-            || !matches!(table.page_break, TablePageBreak::RowBreak)
+            || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
         {
             return false;
         }
@@ -28015,7 +28015,7 @@ impl LayoutEngine {
         if !start_cut.is_empty()
             || !self.profile.get().hwp5_stored_pagination_layout()
             || table.common.treat_as_char
-            || !matches!(table.page_break, TablePageBreak::RowBreak)
+            || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
         {
             return None;
         }

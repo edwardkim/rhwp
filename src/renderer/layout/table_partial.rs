@@ -1251,7 +1251,7 @@ impl LayoutEngine {
                 && cell.row_span > 1
                 && !is_repeated_header_cell
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                         | crate::model::table::TablePageBreak::CellBreak
                 )
@@ -2559,7 +2559,7 @@ impl LayoutEngine {
             let collapse_stored_wrap_spacers = self.profile.get().hwp5_stored_pagination_layout()
                 && !table.common.treat_as_char
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 )
                 && cell.paragraphs.iter().enumerate().any(|(pi, p)| {
@@ -2625,7 +2625,7 @@ impl LayoutEngine {
                 }
             }
             let linear_single_cell = matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             ) && !table.common.treat_as_char
                 && table.row_count == 1
@@ -2633,7 +2633,7 @@ impl LayoutEngine {
             let certified_before_origin_resumption = cut_units.is_some_and(|(su, _)| {
                 su > 0
                     && !table.common.treat_as_char
-                    && table.page_break == crate::model::table::TablePageBreak::RowBreak
+                    && table.layout_page_break() == crate::model::table::TablePageBreak::RowBreak
                     && self.stored_cut_has_zero_before_origin(cell, table, styles, su)
             });
             let certified_body_frame_resumption = cut_units
@@ -5742,7 +5742,7 @@ impl LayoutEngine {
         ) || crate::renderer::float_placement::stored_rowbreak_owns_fragment_outer_frame(
                 para, outer_table,
         ) || matches!(
-            outer_table.page_break,
+            outer_table.layout_page_break(),
             crate::model::table::TablePageBreak::CellBreak
         )
             && crate::renderer::float_placement::empty_host_cellbreak_fragment_repeats_outer_margin(
@@ -6056,7 +6056,7 @@ impl LayoutEngine {
             && start_cut.is_empty()
             && is_para_flow_table
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && effective_vertical_offset > 0.0
@@ -6261,7 +6261,7 @@ impl LayoutEngine {
         let native_repeated_header_reopens_outer_top = self.profile.get().hwp5_stored_pagination_layout()
                 && !table.common.treat_as_char
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 )
                 && table.row_count > 1
@@ -6298,7 +6298,7 @@ impl LayoutEngine {
             && start_cut.iter().all(|&unit| unit == 0)
             && !table.common.treat_as_char
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && enclosing_cell_ctx.is_none()
@@ -6726,7 +6726,7 @@ impl LayoutEngine {
             && table.repeat_header
             && header_count > 0
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && matches!(
@@ -7674,7 +7674,7 @@ impl LayoutEngine {
             // 다음 조각이 원래의 닫는 경계를 유지한다.
             if !is_last_part
                 && !end_cut.is_empty()
-                && table.page_break == crate::model::table::TablePageBreak::RowBreak
+                && table.layout_page_break() == crate::model::table::TablePageBreak::RowBreak
                 && table.common.text_wrap == crate::model::shape::TextWrap::Square
             {
                 if let Some(last_edge) = h_edges.last_mut() {
@@ -7691,7 +7691,7 @@ impl LayoutEngine {
                 && end_row >= row_count
                 && !table.common.treat_as_char
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 )
             {

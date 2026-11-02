@@ -26,7 +26,7 @@ pub(crate) fn stored_plain_opening_row_frame(table: &Table) -> Option<StoredOpen
     if count < 2
         || table.common.treat_as_char
         || table.common.size_protect
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || !is_para_topbottom_float(&table.common)
         || table.common.height == 0
         || table.common.height > i32::MAX as u32

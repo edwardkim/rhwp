@@ -219,7 +219,7 @@ impl LayoutEngine {
             .iter()
             .any(|cell| self.cell_has_top_and_bottom_non_inline_flow(cell));
         let relaxed_hard_break = matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         ) && (table.col_count <= 2 || table.row_count > 5)
             && !block_has_top_and_bottom_flow;

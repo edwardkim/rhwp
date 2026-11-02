@@ -168,7 +168,7 @@ pub(super) fn uses_decoration_placement(
             table.common.text_wrap,
             crate::model::shape::TextWrap::Through
         )
-        && table.page_break == crate::model::table::TablePageBreak::None;
+        && table.layout_page_break() == crate::model::table::TablePageBreak::None;
     paper_outside_body
         || paper_through
         || (matches!(

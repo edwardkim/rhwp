@@ -1047,7 +1047,7 @@ fn viewtext_table_suffix_label_right(
         || !line_text.trim_start().starts_with('(')
         || !table.common.treat_as_char
         || !matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         )
         || table.padding.left <= 0

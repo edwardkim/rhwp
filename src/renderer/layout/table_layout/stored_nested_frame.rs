@@ -17,7 +17,7 @@ impl LayoutEngine {
         let profile = self.profile.get();
         if !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
             || profile.session_edited()
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
             || cell.row_span != 1
             || cell.dirty_flag
             || self

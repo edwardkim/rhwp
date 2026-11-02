@@ -47,7 +47,7 @@ fn is_whole_flow_table(table: &crate::model::table::Table) -> bool {
     is_para_topbottom_float(&table.common)
         && table.common.flow_with_text
         && !table.common.allow_overlap
-        && table.page_break == crate::model::table::TablePageBreak::None
+        && table.layout_page_break() == crate::model::table::TablePageBreak::None
         && table.common.vert_align == crate::model::shape::VertAlign::Top
         && table.caption.is_none()
         && table.common.height > 0
@@ -190,7 +190,7 @@ pub(in crate::renderer::typeset) fn for_paragraph_with_storage<S: crate::storage
                 if is_para_topbottom_float(&table.common)
                     && table.common.flow_with_text
                     && !table.common.allow_overlap
-                    && table.page_break == crate::model::table::TablePageBreak::None
+                    && table.layout_page_break() == crate::model::table::TablePageBreak::None
                     && table.common.height > 0
                     && table.common.height < 0x8000_0000
                     && crate::renderer::hwpunit_to_px(

@@ -422,7 +422,7 @@ impl LayoutEngine {
                 .borrow()
                 .cell_frame_reflowed(table, cell)
             && !table.common.treat_as_char
-            && table.page_break == TablePageBreak::RowBreak
+            && table.layout_page_break() == TablePageBreak::RowBreak
             && !cell.dirty_flag
             && !cell.paragraphs.is_empty()
             && cell.paragraphs.iter().all(|para| {

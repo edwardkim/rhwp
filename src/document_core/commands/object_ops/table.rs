@@ -694,6 +694,7 @@ impl DocumentCore {
             }),
             // [#3570] 한컴은 TABLE 레코드를 zone 개수까지만 쓴다 — 여분 2바이트 없음.
             raw_table_record_extra: Vec::new(),
+            layout_page_break_cache: Default::default(),
         };
         table.rebuild_grid();
 
@@ -1066,6 +1067,7 @@ impl DocumentCore {
             raw_table_record_attr: 0x04000006,
             // [#3570] 한컴은 TABLE 레코드를 zone 개수까지만 쓴다 — 여분 2바이트 없음.
             raw_table_record_extra: Vec::new(),
+            layout_page_break_cache: Default::default(),
         };
         table.rebuild_grid();
         let added_border_fill = self.document.doc_info.border_fills.len() != border_fills_before;

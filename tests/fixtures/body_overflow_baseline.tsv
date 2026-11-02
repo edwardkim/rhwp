@@ -199,3 +199,7 @@ issue6465/press_release_footer_logos.hwpx	1
 # 저장값(20000 = 133.3px)으로 만들면 똑같이 37.8px 넘친다 — 홀수 값이 이제 실제 간격으로 읽혀 드러났을 뿐이다. 별도 이슈 #7824.
 issue7816/odd_spacing_prev.hwpx	2
 issue6031/3249937_asset_management_rules.hwpx	0
+# #8470 fixture — **의도된 넘침**이다. 세로쓰기 칸이 있는 표는 한/글이 나누지 않고 통째로 그려
+# 본문보다 긴 표가 본문 바닥 아래로 나간다. 한/글 2020 Print 정본 pdf/issue8470/vertical_oversize-2020.pdf
+# 5쪽 V3 표도 본문 바닥(1009.1px) 아래 1021px 까지 그린다. 쪽 소속은 issue_8470_vertical_cell_table_no_split.rs 가 잠근다.
+issue8470/vertical_oversize.hwpx	1

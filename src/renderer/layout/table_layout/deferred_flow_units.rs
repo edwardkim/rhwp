@@ -13,7 +13,7 @@ impl LayoutEngine {
         table: &crate::model::table::Table,
     ) -> Vec<CellUnit> {
         if !matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         ) || table.common.treat_as_char
         {

@@ -17,7 +17,7 @@ pub(crate) fn stored_continuous_span_prefixes_hu(
         || table_reflowed
         || table.common.treat_as_char
         || table.common.text_wrap != TextWrap::TopAndBottom
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || cell.row_span <= 1
         || cell.height == 0
         || cell.height > i32::MAX as u32

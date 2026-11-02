@@ -137,7 +137,7 @@ impl TypesetEngine {
         let layout = &input.prepared.layout_engine;
         if band <= 0.5
             || table.common.treat_as_char
-            || table.page_break != crate::model::table::TablePageBreak::RowBreak
+            || table.layout_page_break() != crate::model::table::TablePageBreak::RowBreak
             || !(self.stored_header_physical_rows(st, source)
                 || layout.has_stored_continuous_spans(table))
         {

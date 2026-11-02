@@ -284,7 +284,7 @@ pub(crate) fn stored_table_terminal_suffix_start(
         || !is_para_topbottom_float(&table.common)
         || table.common.vert_rel_to != VertRelTo::Para
         || !matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || !table.repeat_header
         || !stored_complete_column_frame(table)
     {
@@ -496,7 +496,7 @@ pub(crate) fn stored_plain_object_row_frame_heights(table: &Table) -> Option<Vec
     let row_count = usize::from(table.row_count);
     if row_count < 2
         || table.common.treat_as_char
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || !is_para_topbottom_float(&table.common)
         || table.common.height > i32::MAX as u32
         || table.cells.iter().any(|cell| cell.row_span != 1)
@@ -688,7 +688,7 @@ pub(crate) fn stored_relocated_measured_table_successor_origin(
         || !table.common.flow_with_text
         || table.common.allow_overlap
         || table.caption.is_some()
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || !measured_height.is_finite()
         || measured_height <= 0.0
         || !dpi.is_finite()
@@ -726,7 +726,7 @@ pub(crate) fn stored_relocated_picture_successor_origin(
         || table.row_count != 1
         || table.col_count != 1
         || table.cells.len() != 1
-        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
         || !is_para_topbottom_float(&table.common)
         || !matches!(table.common.vert_rel_to, VertRelTo::Para)
     {
@@ -1172,7 +1172,7 @@ pub(crate) fn partial_table_defers_visible_host(
 ) -> bool {
     !table.common.treat_as_char
         && is_para_topbottom_float(&table.common)
-        && table.page_break == TablePageBreak::RowBreak
+        && table.layout_page_break() == TablePageBreak::RowBreak
         && para_has_non_whitespace_text(para)
         && !super::layout::stored_host_lines_precede_float(para, table, control_index)
 }
@@ -1274,7 +1274,7 @@ pub(crate) fn stored_partitioned_picture_cell_flow(
 ) -> Option<StoredPartitionedPictureCellFlow> {
     use crate::model::paragraph::LineSeg;
     if table.common.treat_as_char
-        || table.page_break == TablePageBreak::None
+        || table.layout_page_break() == TablePageBreak::None
         || table.cell_spacing != 0
         || table.col_count != 1
         || cell.row_span != 1
@@ -2155,7 +2155,7 @@ pub(crate) fn stored_body_filling_rowbreak_frame(
         || session_edited
         || table.common.treat_as_char
         || !is_para_topbottom_float(&table.common)
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || table.common.vert_rel_to != VertRelTo::Para
         || table.common.vert_align != VertAlign::Top
         || signed_hwpunit(table.common.vertical_offset) != 0
@@ -2307,7 +2307,7 @@ pub(crate) fn column_rowbreak_fragment_opens_outer_top(
                 && (native_host.is_some_and(|host| object_only_saved_table_anchor(host, table))
                     || para_anchor_below_text_line
                     || ((hwpx_stored || is_continuation) && para_anchor_below_first_line))))
-        && table.page_break == TablePageBreak::RowBreak
+        && table.layout_page_break() == TablePageBreak::RowBreak
         && table.outer_margin_top > 0
         && ((!is_continuation && start_row == 0 && start_cut.is_empty())
             || (is_continuation
@@ -2329,7 +2329,7 @@ pub(crate) fn paragraph_following_overlay_rowbreak_frame(table: &Table) -> bool 
         && table.common.flow_with_text
         && table.common.vert_rel_to == VertRelTo::Para
         && table.common.text_wrap == TextWrap::InFrontOfText
-        && table.page_break == TablePageBreak::RowBreak
+        && table.layout_page_break() == TablePageBreak::RowBreak
 }
 
 /// A grid fragment closes its border frame before the column bottom. A text
@@ -2481,7 +2481,7 @@ pub(crate) fn stored_table_frame_with_guides(
         || !matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
         || table.common.vert_rel_to != VertRelTo::Para
         || table.common.horz_rel_to != HorzRelTo::Column
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || signed_hwpunit(table.common.vertical_offset) <= 0
         || table.common.height == 0
         || table.common.height > i32::MAX as u32
@@ -2583,7 +2583,7 @@ pub(crate) fn stored_interior_control_table_frame(
         || table.common.horz_rel_to != HorzRelTo::Column
         || !matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
         || signed_hwpunit(table.common.vertical_offset) <= 0
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || table.caption.is_some()
         || table.common.height == 0
         || table.common.height > i32::MAX as u32
@@ -2890,7 +2890,7 @@ pub(crate) fn stored_text_cell_padding_height_hu(
 ) -> Option<i32> {
     use crate::model::paragraph::LineSeg;
     if table.common.treat_as_char
-        || table.page_break != crate::model::table::TablePageBreak::RowBreak
+        || table.layout_page_break() != crate::model::table::TablePageBreak::RowBreak
         || cell.dirty_flag
         || cell.text_direction != 0
         || cell.height == 0
@@ -3007,7 +3007,7 @@ pub(crate) fn stored_nested_row_frames_with_storage<S: crate::storage::Storage>(
             || usize::from(cell.row) != last_row
             || cell.row_span != 1
             || cell.dirty_flag
-            || parent.page_break != crate::model::table::TablePageBreak::RowBreak
+            || parent.layout_page_break() != crate::model::table::TablePageBreak::RowBreak
             || !is_para_topbottom_float(&parent.common)
             || !is_para_topbottom_float(&child.common)
             || !child.common.flow_with_text
@@ -3275,7 +3275,7 @@ pub(crate) fn stored_adjacent_line_table_frame(
         // 위 여백과 점유 끝은 가로 기준에 따라 달라지지 않는다.
         || !matches!(table.common.horz_rel_to, HorzRelTo::Column | HorzRelTo::Para)
         || !matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || table.caption.is_some()
         || signed_hwpunit(table.common.vertical_offset) < 0
         || table.common.height == 0
@@ -3342,7 +3342,7 @@ pub(crate) fn stored_rowbreak_closing_frame_height(
         || before.vertical_pos <= after.vertical_pos
         || table.common.treat_as_char
         || !is_para_topbottom_float(&table.common)
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || table.row_count <= 1
         || table.common.height == 0
         || table.caption.is_some()
@@ -3388,7 +3388,7 @@ pub(crate) fn stored_single_cell_closing_frame_bottom(
         || cell.col_span != 1
         || table.common.treat_as_char
         || !is_para_topbottom_float(&table.common)
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || table.caption.is_some()
         || table.common.height == 0
         || table.common.height >= cell.height
@@ -3445,7 +3445,7 @@ pub(crate) fn stored_single_cell_closing_frame_height(
         || cell.col_span != 1
         || table.common.treat_as_char
         || !is_para_topbottom_float(&table.common)
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || table.caption.is_some()
         || table.common.height == 0
         || table.common.height >= cell.height
@@ -3506,7 +3506,7 @@ pub(crate) fn stored_cumulative_rowbreak_opening_frame_height(
         || !successor.controls.is_empty()
         || table.common.treat_as_char
         || !is_para_topbottom_float(&table.common)
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || table.row_count <= 1
         || table.common.height == 0
         || table.common.height > i32::MAX as u32
@@ -3579,7 +3579,7 @@ pub(crate) fn stored_terminal_rowbreak_outer_margin_with_consumed_host_px(
         || line.vertical_pos <= 0
         || table.common.treat_as_char
         || !is_para_topbottom_float(&table.common)
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || table.outer_margin_bottom == 0
     {
         return None;
@@ -3611,7 +3611,7 @@ pub(crate) fn stored_terminal_rowbreak_outer_margin_after_prefix_px(
         || line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         || line.vertical_pos <= 0
         || line.vertical_pos >= previous.vertical_pos
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || table.outer_margin_bottom == 0
     {
         return None;
@@ -5510,7 +5510,7 @@ pub(crate) fn stored_table_next_page_placement(
                     + i64::from(lines[0].line_height)
                     + i64::from(lines[0].line_spacing)
         })
-        || table.page_break != TablePageBreak::None
+        || table.layout_page_break() != TablePageBreak::None
         || table.common.treat_as_char
         || !is_para_topbottom_float(&table.common)
         || !table.common.flow_with_text
@@ -5659,7 +5659,7 @@ pub fn stored_cellbreak_fragment_row_end(
         return None;
     };
     let next = successor.line_segs.first()?;
-    if table.page_break != TablePageBreak::CellBreak
+    if table.layout_page_break() != TablePageBreak::CellBreak
         || table.common.treat_as_char
         || table.common.text_wrap != TextWrap::TopAndBottom
         || table.common.vert_rel_to != VertRelTo::Para
@@ -8134,7 +8134,7 @@ pub(crate) fn computed_rowbreak_owns_outer_frame(
     table: &Table,
     start_cut: &[usize],
 ) -> bool {
-    table.page_break == TablePageBreak::RowBreak
+    table.layout_page_break() == TablePageBreak::RowBreak
         && start_cut.iter().all(|&cut| cut == 0)
         && computed_empty_table_host(para, table)
 }
@@ -8152,7 +8152,7 @@ pub(crate) fn stored_rowbreak_owns_fragment_outer_frame(para: &Paragraph, table:
 /// 치환하지 않는다. 일반 저장 글줄·음수 오프셋·절대 좌표도 기존 계약을 유지한다.
 pub(crate) fn empty_table_host_uses_formatted_box(para: &Paragraph, table: &Table) -> bool {
     reflow_empty_table_host(para, table)
-        || (table.page_break == TablePageBreak::None
+        || (table.layout_page_break() == TablePageBreak::None
             && matches!(
                 para.column_type,
                 crate::model::paragraph::ColumnBreakType::Page
@@ -8170,7 +8170,7 @@ pub(crate) fn empty_table_host_uses_formatted_box(para: &Paragraph, table: &Tabl
 
 /// 저장 원점이 별도로 입증되어야 하는 통째 빈 개체 앵커의 속성 계약.
 fn saved_whole_empty_table_anchor(para: &Paragraph, table: &Table) -> bool {
-    table.page_break == TablePageBreak::None && saved_empty_table_anchor_props(para, table)
+    table.layout_page_break() == TablePageBreak::None && saved_empty_table_anchor_props(para, table)
 }
 
 /// [#7620] 쪽 나눔 속성을 뺀 빈 개체 앵커의 저장 계약. 쪽 경계 나눔은 분할을 허용할 뿐
@@ -8220,7 +8220,7 @@ pub(crate) fn empty_table_anchor_ladder_lacks_outer_box(
     only_table
         && para.text.is_empty()
         && para.line_segs.len() == 1
-        && table.page_break == TablePageBreak::None
+        && table.layout_page_break() == TablePageBreak::None
         && is_para_topbottom_float(&table.common)
         && table.common.vert_align == VertAlign::Top
         && signed_hwpunit(table.common.vertical_offset) >= 0
@@ -8373,7 +8373,7 @@ pub(crate) fn native_empty_host_rowbreak_line_advance_hu(
         || !is_para_topbottom_float(&table.common)
         || has_non_whitespace_text(para)
         || !matches!(table.common.vert_rel_to, VertRelTo::Para)
-        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
         || signed_hwpunit(table.common.vertical_offset) <= 0
         || para
             .controls
@@ -8659,7 +8659,7 @@ pub(crate) fn stored_empty_offset_rowbreak_fragment_repeats_outer_margin(
             _ => false,
         };
     stored_layout
-        && table.page_break == TablePageBreak::RowBreak
+        && table.layout_page_break() == TablePageBreak::RowBreak
         && !para_has_non_whitespace_text(para)
         && float_then_inline_tables
         && !para.cell_format_vpos_dirty
@@ -8692,7 +8692,7 @@ pub(crate) fn empty_host_cellbreak_fragment_repeats_outer_margin(
     stored_layout
         && !table.common.treat_as_char
         && is_para_topbottom_float(&table.common)
-        && matches!(table.page_break, TablePageBreak::CellBreak)
+        && matches!(table.layout_page_break(), TablePageBreak::CellBreak)
         && !has_non_whitespace_text(para)
 }
 
@@ -8741,7 +8741,7 @@ pub(crate) fn native_single_cell_rowbreak_page_fragment(
         && table.row_count == 1
         && table.col_count == 1
         && !table.common.treat_as_char
-        && matches!(table.page_break, TablePageBreak::RowBreak)
+        && matches!(table.layout_page_break(), TablePageBreak::RowBreak)
 }
 
 /// 저장된 native RowBreak 표는 새 쪽에서 잘린 셀을 마칠 수 있다. 호스트의 양수
@@ -8773,7 +8773,7 @@ pub(crate) fn native_multirow_rowbreak_reopens_outer_top(
         && !start_cut.is_empty()
         && table.outer_margin_top > 0
         && is_para_topbottom_float(&table.common)
-        && matches!(table.page_break, TablePageBreak::RowBreak)
+        && matches!(table.layout_page_break(), TablePageBreak::RowBreak)
 }
 
 /// Physical bottom of a nonterminal single-cell page fragment. Callers use
@@ -8914,7 +8914,7 @@ pub(crate) fn original_hwpx_column_rowbreak_equal_outer_margin_hu(
         || !matches!(table.common.horz_align, HorzAlign::Left | HorzAlign::Inside)
         || signed_hwpunit(table.common.horizontal_offset) != 0
         || signed_hwpunit(table.common.vertical_offset) != 0
-        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
         || table.row_count == 0
         || table.col_count != 1
         || table.cells.len() != usize::from(table.row_count)
@@ -8957,7 +8957,7 @@ pub(crate) fn empty_host_physical_ladder_extras_hu(
     host_vpos: i32,
     next_vpos: i32,
 ) -> Option<i64> {
-    if matches!(table.page_break, TablePageBreak::RowBreak) {
+    if matches!(table.layout_page_break(), TablePageBreak::RowBreak) {
         return None;
     }
     let extras = i64::from(signed_hwpunit(table.common.vertical_offset).max(0))
@@ -8993,7 +8993,7 @@ pub(crate) fn native_multirow_internal_reset_rowbreak_anchor_advance_hu(
         || table.row_count <= 1
         || table.common.treat_as_char
         || !is_para_topbottom_float(&table.common)
-        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
         || has_non_whitespace_text(para)
         || para
             .controls
@@ -9070,7 +9070,7 @@ pub(crate) fn native_empty_host_physical_outer_box_paint_inset(
         || !matches!(table.common.horz_align, HorzAlign::Left)
         || signed_hwpunit(table.common.horizontal_offset) != 0
         || signed_hwpunit(table.common.vertical_offset) != 0
-        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
         || table.row_count <= 1
         || table.col_count != 1
         || table.cells.len() != usize::from(table.row_count)
@@ -9167,7 +9167,7 @@ pub(crate) fn native_hwp5_stored_reset_fragment_paint_geometry(
         || !matches!(table.common.horz_align, HorzAlign::Left)
         || signed_hwpunit(table.common.horizontal_offset) != 0
         || signed_hwpunit(table.common.vertical_offset) != 0
-        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
         || table.row_count != 1
         || table.col_count != 1
         || table.cells.len() != 1

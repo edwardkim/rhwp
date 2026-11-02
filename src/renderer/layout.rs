@@ -1141,7 +1141,7 @@ fn viewtext_first_rowbreak_table_left_inset(
         && control_index == 0
         && table.common.treat_as_char
         && matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         )
         && table.padding.left > 0
@@ -1755,7 +1755,7 @@ fn is_single_noninline_picture_table(table: &crate::model::table::Table) -> bool
         || table.row_count != 1
         || table.col_count != 1
         || table.cells.len() != 1
-        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
     {
         return false;
     }
@@ -1812,7 +1812,7 @@ fn is_two_row_picture_caption_rowbreak_table(table: &crate::model::table::Table)
 /// 신뢰할 수 있는 그림 표 구조만 통과시킨다.
 fn is_stored_anchor_picture_table(table: &crate::model::table::Table) -> bool {
     !table.common.treat_as_char
-        && matches!(table.page_break, TablePageBreak::RowBreak)
+        && matches!(table.layout_page_break(), TablePageBreak::RowBreak)
         && (is_single_noninline_picture_table(table)
             || is_two_row_picture_caption_rowbreak_table(table))
 }
@@ -1829,7 +1829,7 @@ fn is_single_rowbreak_table_with_trustworthy_declared_height(
         || table.row_count != 1
         || table.col_count != 1
         || table.cells.len() != 1
-        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
     {
         return false;
     }
@@ -1911,7 +1911,7 @@ pub(crate) fn native_hwp5_internal_reset_rowbreak_first_fragment_saved_top(
         || table.row_count != 1
         || table.col_count != 1
         || table.cells.len() != 1
-        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
         || para
             .controls
             .iter()
@@ -13236,7 +13236,7 @@ impl LayoutEngine {
                         if self.profile.get().hwp5_origin_hwpx()
                             && !is_current_empty_square_sibling_float
                             && is_para_topbottom_float(&t.common)
-                            && matches!(t.page_break, TablePageBreak::None)
+                            && matches!(t.layout_page_break(), TablePageBreak::None)
                         {
                             return hwpunit_to_px(t.outer_margin_top as i32, self.dpi);
                         }
@@ -13963,7 +13963,7 @@ impl LayoutEngine {
                     && is_current_empty_para_float
                     && !is_current_empty_square_sibling_float
                     && is_para_topbottom_float(&t.common)
-                    && matches!(t.page_break, TablePageBreak::RowBreak)
+                    && matches!(t.layout_page_break(), TablePageBreak::RowBreak)
                     && t.row_count == 1
                     && t.col_count == 1
                     && t.cells.len() == 1

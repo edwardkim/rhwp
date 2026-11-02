@@ -415,10 +415,14 @@ fn try_compose_paragraph_scoped<S: crate::storage::Storage>(
 
     if let Some(styles) = metric_styles {
         equation_line_metrics::try_refresh_equation_rows(&mut composed, para, styles, storage)?;
-    empty_line_metrics::refresh_with_storage(&mut composed, para, styles, storage)?;
+        empty_line_metrics::refresh_with_storage(&mut composed, para, styles, storage)?;
     }
 
-    supplemental_clusters::preserve_literal_spaces_with_storage(&mut composed, &para.literal_figure_spaces, storage)?;
+    supplemental_clusters::preserve_literal_spaces_with_storage(
+        &mut composed,
+        &para.literal_figure_spaces,
+        storage,
+    )?;
 
     // CharOverlap 글자를 조합된 텍스트에 삽입
     try_inject_char_overlap_text(&mut composed, para, metric_styles, storage)?;
@@ -503,7 +507,7 @@ pub(crate) fn owned_rowbreak_tac_height(para: &Paragraph, control_index: usize) 
     };
     if !table.common.treat_as_char
         || !matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         )
     {
@@ -571,8 +575,7 @@ pub(crate) fn tac_host_trailing_spacing(
 /// 다음 문단을 현재 프레임에서 재조판하면 저장 vpos가 간격의 나머지를
 /// 복원하지 않는다. 마지막 저장 TAC 줄은 후행 간격 전량을 흐름에 남긴다.
 fn successor_lacks_stored_text_axis(para: &Paragraph) -> bool {
-    para.stored_text_partition_is_dirty()
-        || crate::renderer::para_has_no_stored_line_segs(para)
+    para.stored_text_partition_is_dirty() || crate::renderer::para_has_no_stored_line_segs(para)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -623,9 +626,8 @@ pub(crate) fn tac_successor_uses_reflow_spacing(
             .line_segs
             .last()
             .is_some_and(|last| std::ptr::eq(last, seg))
-        && next_para.is_some_and(|next| {
-            next.controls.is_empty() && successor_lacks_stored_text_axis(next)
-        })
+        && next_para
+            .is_some_and(|next| next.controls.is_empty() && successor_lacks_stored_text_axis(next))
 }
 
 /// 재구성한 표 줄의 옛 vpos와 독립 후속 줄의 새 로컬 축을 구분한다.
