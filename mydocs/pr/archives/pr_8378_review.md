@@ -61,7 +61,10 @@ Native 최저 95.86%, fresh WASM 최저 95.78%로 90% 미만은 없었다.
 양쪽 출력에서 직접 확인했다. 두 경로의 19쪽 raw는 99.94%, 20쪽은 100.00%다.
 [19쪽 Native review](../assets/issue_8373/followup8438/native-review-019.png) · [19쪽 Native overlay](../assets/issue_8373/followup8438/native-overlay-019.png) ·
 [20쪽 Native review](../assets/issue_8373/followup8438/native-review-020.png) · [20쪽 Native overlay](../assets/issue_8373/followup8438/native-overlay-020.png) ·
-[19쪽 WASM review](../assets/issue_8373/followup8438/wasm-review-019.png) · [20쪽 WASM review](../assets/issue_8373/followup8438/wasm-review-020.png).
+[19쪽 WASM review](../assets/issue_8373/followup8438/wasm-review-019.png) ·
+[19쪽 WASM overlay](../assets/issue_8373/followup8438/wasm-overlay-019.png) ·
+[20쪽 WASM review](../assets/issue_8373/followup8438/wasm-review-020.png) ·
+[20쪽 WASM overlay](../assets/issue_8373/followup8438/wasm-overlay-020.png).
 
 ### 새 base 재저장 동일성
 
