@@ -1,0 +1,15 @@
+{
+  "base": "0b697f90c3637558196b9e3b81c4eb59049432af",
+  "source": "d8c2fc3e1a04a006e971219dd3fb0b175ee96987",
+  "local_validation_commit": "4ed28af8b4da98004eb1daf64ed65ab77df05be2",
+  "candidate": "fe915543091ea964e5c691b391e890cd028e5a91",
+  "candidate_tree": "cd828a83c26c7a84c6257f49d51bdddcbddf6e40",
+  "merge_tree": "b0293e561f681f124511c6e6693c85fe7c219f97",
+  "validated_tree_without_operating_plan": "b0293e561f681f124511c6e6693c85fe7c219f97",
+  "correction_files": 44,
+  "original_commits_preserved": 9,
+  "first_candidate": "fe77fdea95809559746ac937ce66cae2eedd5fb0",
+  "maintainer_correction_commits": 2,
+  "github_test_merge": "465660fc6c4e99a546813f2344b7eeee23f37599",
+  "github_test_merge_tree": "b0293e561f681f124511c6e6693c85fe7c219f97"
+}

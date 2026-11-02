@@ -1,0 +1,15 @@
+{
+  "pr": 8421,
+  "state": "closed",
+  "merged": true,
+  "merge_commit": "f6681b19b78b34963b0b50208a33fe281af872df",
+  "merged_at": "2026-11-02T11:16:58Z",
+  "parents": [
+    "0b697f90c3637558196b9e3b81c4eb59049432af",
+    "fe915543091ea964e5c691b391e890cd028e5a91"
+  ],
+  "tree": "b0293e561f681f124511c6e6693c85fe7c219f97",
+  "original_commits_preserved": 9,
+  "maintainer_correction_commits": 2,
+  "post_merge_record_route": "maintainer direct operating record"
+}
