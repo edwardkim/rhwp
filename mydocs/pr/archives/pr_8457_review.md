@@ -2,9 +2,9 @@
 
 ## 최종 판정
 
-**승인 — 변경 범위와 current-base 결합 호환성 검토 완료.**
+**승인 — 원 PR 정상 merge 완료.**
 
-이는 로컬 review 판정이며 GitHub approve·push·comment·merge 승인을 대신하지 않는다. 다음 조건은 작업지시자의 원격 처리 승인, merge 직전 최신 head·CI·mergeability 재확인이다.
+작업지시자의 9건 원격 처리 승인 뒤 정확한 최종 head CI와 최신 devel의 merge-tree를 재확인하고 정상 merge했다. 아래 원 head의 진단·작성 시점 상태는 이력으로 보존하며, 확정된 원격 결과는 마지막 절에 기록한다.
 
 ## 접수 정보
 
@@ -20,7 +20,7 @@ O3 action 의존성 변경이다. build-nextest-archives.yml과 run-nextest-arch
 
 nextest archive workflow 계약 18건, 원 head의 실제 GitHub archive build/test 성공. Archive A 로그에서 새 action SHA와 cargo-nextest 0.9.150 다운로드·checksum 검증·실행을 확인했다. 로컬 nextest 0.9.137을 새 버전 실행 증거로 쓰지 않는다.
 
-공유 검증은 원 PR별 결과와 구분했다. 녹색 원 head의 broad default/Native 회귀는 4.3.0 조건을 충족하는 적용 범위에서 재사용하고, 모든 변경을 합친 후보의 필수 검증은 Skia 보정 때문에 한 번 별도로 수행했다. 같은 전체 검사를 9번 반복한 결과로 표시하지 않는다. [실제 명령·종료 코드·로그 요약](assets/dependabot-20261102/README.md).
+공유 검증은 원 PR별 결과와 구분했다. 녹색 원 head의 broad default/Native 회귀는 4.3.0 조건을 충족하는 적용 범위에서 재사용하고, 모든 변경을 합친 후보의 필수 검증은 Skia 보정 때문에 한 번 별도로 수행했다. 같은 전체 검사를 9번 반복한 결과로 표시하지 않는다. [실제 명령·종료 코드·로그 요약](../assets/dependabot-20261102/README.md).
 
 현재 base로 반영한 #8309의 저장 후 Bottom 정렬은 정식 focused와 독립 Print 전쪽 Native/fresh WASM에서 보존됨을 확인했다. 제품 source·test·golden·baseline·자원 한도 변경은 없다.
 
@@ -41,3 +41,20 @@ nextest archive workflow 계약 18건, 원 head의 실제 GitHub archive build/t
 ## 원격 처리·후속 계획
 
 승인 뒤 원 PR을 개별 처리한다. source SHA를 재확인하고 최신 devel merge-tree와 해당 head의 실제 required checks를 대조한 뒤 `--match-head-commit`으로 merge한다. 승인되지 않은 workflow 재실행·취소나 보안 metadata 변경은 하지 않는다. merge SHA·CI를 기록하고, 허용된 후속 댓글·archive 기록·기본 devel 동기화와 소유한 worktree/output/debug 정리를 수행한다. 사용자 기존 Vite·Studio 배포 WASM·다른 작업은 보존한다.
+
+## 원격 통합과 후속 처리
+
+- 최종 head `cd0ccf51995d9e985f8137d211db6077d7003a8b`, merge `fe0ecca2f58274832ec46a46c056e344fb20e6e9`, 실제 merge 시각 `2026-11-02T06:06:57Z`.
+- 최신 대상 head의 [Build & Test](https://github.com/edwardkim/rhwp/actions/runs/41379931125/job/125082364715)와 [CI Impact Policy](https://github.com/edwardkim/rhwp/actions/runs/41384556475) 성공을 확인했다. 적용 범위의 원 CI·skip/NEUTRAL은 [원격 증적](../assets/dependabot-20261102/remote-integration.json)에 구분한다.
+- merge 직전 실제 base `d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d`에서 clean merge-tree를 확인했고 실제 merge의 부모·tree도 대조했다. source head를 고정한 normal merge이며 원 bot commit을 보존했다.
+- 관련 closing issue는 없다. 검증 CI는 PR에서 완료했고 merge 뒤에는 duration metadata만 관찰했다. 자료 부족·이전 pending의 자동 대체는 검증 CI 재실행으로 우회하지 않았다.
+- 유지보수 기록은 archive review·asset·오늘할일의 직접 반영으로 결정했다. 기본 devel 동기화·댓글·종료 정리는 승인 범위이며 실제 완료 상태와 permalink는 `/home/edward/.local/state/rhwp/dependabot-cleanup-20261102.json`에 기록한다.
+
+## Merge 후 contributor PR comment 계획
+
+[이 PR의 정식 초안](../assets/dependabot-20261102/comment-drafts/pr-8457-merge-comment-draft.md)을 사용한다.
+원 PR의 merge SHA와 source head CI를 실제 값으로 채우고 증적은 후속 Skia merge `feb092532a03f7ebba4e7a9517d25c2b1b5714b5`를 사용한다.
+4문서 전쪽 5쪽의 Native/fresh WASM 기준·후보 픽셀 동일성과 raw 최저 94.40%/98.77%,
+직접 2배 판독·기존 face/획 차이를 구분한다. 이 raw 값은 2px 내용 실루엣 자동 일치율이며
+사람 판정 정확도가 아니다. 시각 소비 PR에는 Visual Sweep 정본과 해당 merge의 실제 비교 PNG를
+이미지로 표시한다. `--body-file` 게시 뒤 API로 한글·치환 완료·본문 일치를 확인하고 중복 게시하지 않는다.
