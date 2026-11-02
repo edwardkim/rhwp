@@ -256,6 +256,9 @@ UPM이 일치했다. 이 비교는 Native backend의 실제 글꼴 선택이나 
 없어 실제 paint 선택을 확정할 수 없으며, 표시 차이의 원인은 계속 확인한다.
 부분 outline 대조 로그 SHA-256은
 `d041cfa19a4452867bb0870a9a1cbd48da894dc9a64ee72e304662d90d82c4c3`다.
+같은 위치를 확대한 [Native·PDF·overlay 비교](../assets/issue_8136/followup8438-crop/native-text-zoom-011.png)와
+[전체 쪽 overlay](../assets/issue_8136/followup8438-crop/native-overlay-011.png)에서는
+본문 획이 PDF보다 옅어 보인다. 점수와 별개로 이 차이의 원인을 확인한다.
 
 저장 보존도 별도로 확인했다. 재단 표시가 켜진 원본 HWP를 RHWP의
 `export-hwpx`로 저장한 결과, 생성된 `settings.xml`에 `PrintCropMark`가 없다.
