@@ -134,3 +134,43 @@ pub(crate) fn stored_line_ladder_is_uniform_filler(
 
     contradicting * CONTRADICTION_RATIO_DIVISOR >= paragraphs.len()
 }
+
+/// [#8474] 단 맨 위 문단의 저장 첫 줄이 증언하는 쪽 위 간격(px).
+///
+/// 한/글은 문단 위 간격을 쪽 맨 위에서도 적용한다 — 구역 첫 쪽·쪽 나누기·자연 쪽 넘김
+/// 모두 첫 줄 vpos 가 위 간격과 같다(합성 실측, `samples/issue8474/`). 저장 사다리를 믿는
+/// 경로에서 첫 줄이 원본 줄이고 그 vpos 가 0 보다 크고 위 간격 이하이면 그 vpos 를 쪽 위
+/// 간격으로 쓴다. 그 밖(합성 줄·편집·구역 누적 좌표)은 0 이다. 글자처럼 취급 표 host 의
+/// 단일 저장 줄 TAC 계획(`physical_tac`)이 이 값을 원점에 두고 paint 가 그 원점을 그대로 쓴다.
+pub(crate) fn stored_column_top_spacing(
+    para: &Paragraph,
+    spacing_before: f64,
+    stored_profile: bool,
+    dpi: f64,
+) -> f64 {
+    if !stored_profile
+        || spacing_before <= 0.0
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+    {
+        return 0.0;
+    }
+    let Some(first) = para.line_segs.first() else {
+        return 0.0;
+    };
+    if first.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 {
+        return 0.0;
+    }
+    let vpos = para
+        .source_line_seg_vertical_pos
+        .as_ref()
+        .and_then(|positions| positions.first())
+        .copied()
+        .unwrap_or(first.vertical_pos);
+    let saved_top = hwpunit_to_px(vpos, dpi);
+    if saved_top > 0.0 && saved_top <= spacing_before + 0.5 {
+        saved_top
+    } else {
+        0.0
+    }
+}
