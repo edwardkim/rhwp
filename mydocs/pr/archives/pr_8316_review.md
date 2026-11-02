@@ -146,6 +146,11 @@ TTF 선언을 글꼴 선택에 전달한 새 Native 후보 SHA-256 `91d4e37673a8
 후보는 새 단에서 앞 간격을 원점에 반영하며, 그 원점을 개체 fit과
 `InlineBoxPlacement`의 실제 위치·흐름 끝에 함께 사용한다. 다만 로드 중 재구성된
 좌표가 저장 좌표로 오인되지 않는지와 적용 조건의 일반성은 재검토 중이다.
+선행 [PR #8184](https://github.com/edwardkim/rhwp/pull/8184)의
+[이슈 #8149](https://github.com/edwardkim/rhwp/issues/8149)는 빈 호스트의
+문단 기준 자리차지 표가 쪽 아래에서 분할·이월되는 사례다. 이 원본의 11쪽
+표는 글자처럼 취급되는 표이므로 두 경우의 단 상단 간격을 같은 규칙으로
+가정하지 않고 실제 배치와 독립 출력을 함께 대조한다.
 
 본문 축 재구성의 선행 근거인 [이슈 #5871](https://github.com/edwardkim/rhwp/issues/5871)은
 기존 한컴 2020 Print PDF로 다시 대조했다. 후보 전과 후보 3의 Native 전 3쪽 TSV는
