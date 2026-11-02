@@ -393,6 +393,17 @@ pub(super) fn place_split_paragraph_with_storage<S: crate::storage::Storage>(
                 fragment.item,
             );
         }
+        if matches!(fragment.item, PageItem::FullParagraph { .. }) {
+            if let Some(content_height) = fragment.content_height {
+                st.record_paragraph_content_bottom_with_storage(
+                    (para_idx, end_line),
+                    content_height,
+                    fragment.height,
+                    fragment.last_line_spacing,
+                    storage,
+                )?;
+            }
+        }
         st.commit_split_paragraph_fragment_with_storage(fragment, storage)?;
         if continuation_reset_line == Some(end_line) {
             st.record_stored_reset_note_fragment_with_storage(para_idx, cursor_line, storage)?;
