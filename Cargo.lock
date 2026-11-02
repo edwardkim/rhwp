@@ -2189,7 +2189,7 @@ dependencies = [
  "rhwp-pdf-import-backend",
  "rhwp-svg2pdf",
  "rhwp-zune-jpeg",
- "roxmltree 0.21.1",
+ "roxmltree 0.21.2",
  "rustybuzz",
  "serde",
  "serde_json",
@@ -2290,7 +2290,7 @@ dependencies = [
  "hmac",
  "pbkdf2",
  "quick-xml 0.42.0",
- "roxmltree 0.21.1",
+ "roxmltree 0.21.2",
  "sha1",
  "sha2",
  "zip 9.0.5",
@@ -2397,9 +2397,9 @@ checksum = "6c20b6793b5c2fa6553b250154b78d6d0db37e72700ae35fad9387a46f487c97"
 
 [[package]]
 name = "roxmltree"
-version = "0.21.1"
+version = "0.21.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1964b10c76125c36f8afe190065a4bf9a87bf324842c05701330bba9f1cacbb"
+checksum = "9da7f59328b09405b181fee1018925fad50f157afb43c0c0f5c522c256dd5907"
 dependencies = [
  "memchr",
 ]
@@ -3263,7 +3263,7 @@ dependencies = [
  "kurbo 0.13.1",
  "log",
  "pico-args",
- "roxmltree 0.21.1",
+ "roxmltree 0.21.2",
  "rustybuzz",
  "simplecss",
  "siphasher",
