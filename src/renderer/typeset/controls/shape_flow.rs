@@ -165,3 +165,67 @@ fn topbottom_pushdown_height(common: &crate::model::shape::CommonObjAttr, dpi: f
     }
     Some(hwpunit_to_px(common.height as i32, dpi) + hwpunit_to_px(common.margin.bottom as i32, dpi))
 }
+
+/// [#8491] 문단 기준·위 정렬·양수 세로 오프셋 비-TAC 개체가 그 문단 **자기 저장 줄들 아래**에서
+/// 시작하면, 문단 위끝에서 개체 위끝까지의 거리(px)를 돌려준다.
+///
+/// 자리차지 개체는 자기 띠와 겹치는 줄만 그 아래로 민다. 저장 사다리의 모든 줄이 개체 띠보다
+/// 위에서 끝나면 한/글은 그 줄들을 밀지 않는다(156602236 문단 14: 표 줄 0..3564 HU, 로고 상자
+/// 오프셋 4138 HU → 표와 로고 모두 1쪽). 편집·합성 줄이나 쪽 되감김이 있는 사다리는 판정하지 않는다.
+pub(super) fn below_own_lines_top_px(ctrl: &Control, para: &Paragraph, dpi: f64) -> Option<f64> {
+    use crate::model::shape::{VertAlign, VertRelTo};
+    let common = match ctrl {
+        Control::Shape(shape) => shape.common(),
+        Control::Picture(picture) => &picture.common,
+        _ => return None,
+    };
+    if common.treat_as_char
+        || !matches!(common.vert_rel_to, VertRelTo::Para)
+        || !matches!(common.vert_align, VertAlign::Top)
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+    {
+        return None;
+    }
+    let offset = i64::from(crate::renderer::float_placement::signed_hwpunit(
+        common.vertical_offset,
+    ));
+    if offset <= 0 {
+        return None;
+    }
+    let first = para.line_segs.first()?;
+    let mut prev_vpos = first.vertical_pos;
+    let mut lines_bottom = 0i64;
+    for seg in &para.line_segs {
+        if crate::renderer::typeset::is_synthetic_line_seg(seg)
+            || seg.line_height <= 0
+            || seg.vertical_pos < prev_vpos
+        {
+            return None;
+        }
+        prev_vpos = seg.vertical_pos;
+        lines_bottom = lines_bottom.max(
+            i64::from(seg.vertical_pos) - i64::from(first.vertical_pos)
+                + i64::from(seg.line_height),
+        );
+    }
+    (offset >= lines_bottom).then(|| hwpunit_to_px(offset as i32, dpi))
+}
+
+/// [#8491] 자기 줄들 아래 개체의 배치: 원점은 문단 위끝 + 오프셋, 흐름은 현재 위치에서 더 소비하지 않는다.
+pub(super) fn below_own_lines_frame(
+    para_top: f64,
+    shape_top: f64,
+    flow_bottom: f64,
+) -> crate::renderer::float_placement::ParagraphFloatPlacement {
+    use crate::renderer::float_placement::{ParagraphFloatFlow, ParagraphFloatPlacement};
+    ParagraphFloatPlacement {
+        flow: ParagraphFloatFlow::NextLine,
+        anchor_y: para_top,
+        stored_host_origin: None,
+        stored_successor_line_origin: None,
+        table_left: None,
+        table_top: shape_top,
+        occupied_bottom: flow_bottom,
+    }
+}

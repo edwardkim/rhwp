@@ -524,7 +524,18 @@ pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
     if st.has_spilled_page_tail_float(para_idx, ctrl_idx) {
         return Ok(());
     }
-    let flow = shape_flow::prepare(ctrl, para, ctrl_idx, dpi);
+    let mut flow = shape_flow::prepare(ctrl, para, ctrl_idx, dpi);
+    // [#8491] 문단 자기 저장 줄들 아래에서 시작하는 개체는 그 줄들을 밀지 않는다. 문단 머리에서
+    // 높이를 더하지 않고, 개체 띠는 뒤 문단 줄의 배제 띠로만 남긴다(156602236 문단 14 로고 상자).
+    let below_own_lines = flow
+        .non_tac_pushdown_h
+        .and_then(|height| {
+            shape_flow::below_own_lines_top_px(ctrl, para, dpi).map(|top| (top, height))
+        })
+        .map(|(top, height)| (para_start_height + top, height));
+    if below_own_lines.is_some() {
+        flow.non_tac_pushdown_h = None;
+    }
     if st.defer_table_host_ole_to_next_column(para_idx, ctrl_idx, ctrl, dpi) {
         return Ok(());
     }
@@ -545,8 +556,22 @@ pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
         }
         st.advance_column_or_new_page_with_storage(storage)?;
     }
-    let accepted_frame = flow.accepted_shape_frame(ctrl, st.current_height);
+    let accepted_frame = match below_own_lines {
+        Some((top, _)) => Some(shape_flow::below_own_lines_frame(
+            para_start_height,
+            top,
+            st.current_height,
+        )),
+        None => flow.accepted_shape_frame(ctrl, st.current_height),
+    };
     st.commit_table_host_shape_with_storage(para_idx, ctrl_idx, flow, accepted_frame, storage)?;
+    if let Some((top, height)) = below_own_lines {
+        st.add_visible_float_exclusion(super::VisibleFloatExclusion {
+            para_index: para_idx,
+            top,
+            bottom: top + height,
+        });
+    }
     st.register_side_wrap_picture(para_idx, ctrl_idx, para, Some(para_start_height), styles);
 
     Ok(())
