@@ -222,6 +222,8 @@ impl DocumentCore {
         self.mark_section_dirty(section_idx);
         self.recompose_section(section_idx);
         self.paginate_if_needed();
+        // 각주 번호는 구역의 각주 모양(시작 번호·이어 세기·쪽마다 새로 시작)을 따른다.
+        self.refresh_footnote_numbers(section_idx);
         self.invalidate_page_tree_cache();
 
         self.event_log.push(DocumentEvent::FootnoteDeleted {

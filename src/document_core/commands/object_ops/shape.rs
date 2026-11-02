@@ -2425,7 +2425,7 @@ impl DocumentCore {
     ) -> crate::model::footnote::NumberFormat {
         crate::model::footnote::FootnoteShape::number_format_from_name(value, fallback)
     }
-    fn footnote_shape_number_format_name(
+    pub(crate) fn footnote_shape_number_format_name(
         format: crate::model::footnote::NumberFormat,
     ) -> &'static str {
         use crate::model::footnote::NumberFormat;
@@ -2538,7 +2538,7 @@ impl DocumentCore {
         }
     }
     /// HWP 직렬화가 읽는 문단 control stream의 구역 정의를 section 메타와 맞춘다.
-    fn sync_section_def_controls_from_section(&mut self, section_idx: usize) {
+    pub(crate) fn sync_section_def_controls_from_section(&mut self, section_idx: usize) {
         let Some(section) = self.document.sections.get_mut(section_idx) else {
             return;
         };
