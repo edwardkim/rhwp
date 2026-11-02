@@ -2495,7 +2495,14 @@ fn write_text_box_header<W: std::io::Write>(
     // LIST_HEADER
     // para_count: 스펙은 INT16이지만 실제 HWP 파일에서는 UINT32로 저장됨
     w.write_u32(text_box.paragraphs.len() as u32)?;
-    w.write_u32(text_box.list_attr)?;
+    // TextBox의 세로 정렬은 semantic 값이 정본이다. 그 밖의 raw 비트는 보존한다.
+    // 같은 payload writer를 써서 Storage 한도와 I/O 오류 전달도 유지한다.
+    let v_align_code: u32 = match text_box.vertical_align {
+        VerticalAlign::Top => 0,
+        VerticalAlign::Center => 1,
+        VerticalAlign::Bottom => 2,
+    };
+    w.write_u32((text_box.list_attr & !(0b11 << 5)) | (v_align_code << 5))?;
     // 여백 + 최대 폭 (글상자 고유 데이터)
     w.write_i16(text_box.margin_left)?;
     w.write_i16(text_box.margin_right)?;

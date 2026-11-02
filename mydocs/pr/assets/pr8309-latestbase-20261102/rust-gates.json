@@ -1,0 +1,370 @@
+{
+  "source": "c4686b913cb13ed7a161f941b8e6eadb2be37171",
+  "minimum_font_isolation": true,
+  "profile_overrides": [
+    "--config",
+    "profile.release-test.package.rhwp.opt-level=1",
+    "--config",
+    "profile.release-test.package.rhwp.codegen-units=64"
+  ],
+  "results": [
+    {
+      "gate": "manifest-prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.43,
+      "completed_at": "2026-11-02T01:34:16.480766+00:00"
+    },
+    {
+      "gate": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 39.9,
+      "completed_at": "2026-11-02T01:34:56.380928+00:00"
+    },
+    {
+      "gate": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 89.53,
+      "completed_at": "2026-11-02T01:36:25.896993+00:00"
+    },
+    {
+      "gate": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 84.91,
+      "completed_at": "2026-11-02T01:37:50.791003+00:00"
+    },
+    {
+      "gate": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 121.84,
+      "completed_at": "2026-11-02T01:39:52.624680+00:00"
+    },
+    {
+      "gate": "clippy-workspace",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 115.05,
+      "completed_at": "2026-11-02T01:41:47.648763+00:00"
+    },
+    {
+      "gate": "manifest-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "0c1e5a6fc20f4ac3e950b7377f831928ad52f5e0"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.92,
+      "completed_at": "2026-11-02T01:41:48.571700+00:00"
+    },
+    {
+      "gate": "full-nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--tests",
+        "--no-fail-fast",
+        "--config",
+        "profile.release-test.package.rhwp.opt-level=1",
+        "--config",
+        "profile.release-test.package.rhwp.codegen-units=64"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 975.37,
+      "completed_at": "2026-11-02T01:58:03.642048+00:00"
+    },
+    {
+      "gate": "native-skia-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--config",
+        "profile.release-test.package.rhwp.opt-level=1",
+        "--config",
+        "profile.release-test.package.rhwp.codegen-units=64"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 165.31,
+      "completed_at": "2026-11-02T02:00:48.905461+00:00"
+    },
+    {
+      "gate": "issue_2225_missing_picture_placeholder",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--config",
+        "profile.release-test.package.rhwp.opt-level=1",
+        "--config",
+        "profile.release-test.package.rhwp.codegen-units=64"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 154.98,
+      "completed_at": "2026-11-02T02:03:23.852601+00:00"
+    },
+    {
+      "gate": "render_p37_direct_pdf_export",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--config",
+        "profile.release-test.package.rhwp.opt-level=1",
+        "--config",
+        "profile.release-test.package.rhwp.codegen-units=64"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 8.57,
+      "completed_at": "2026-11-02T02:03:32.423858+00:00"
+    },
+    {
+      "gate": "textbox_vertical_align_hwp",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "textbox_vertical_align_hwp",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--config",
+        "profile.release-test.package.rhwp.opt-level=1",
+        "--config",
+        "profile.release-test.package.rhwp.codegen-units=64"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 8.89,
+      "completed_at": "2026-11-02T02:03:41.309236+00:00"
+    },
+    {
+      "gate": "issue_8172_textbox_shape_storage_bit",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8172_textbox_shape_storage_bit",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--config",
+        "profile.release-test.package.rhwp.opt-level=1",
+        "--config",
+        "profile.release-test.package.rhwp.codegen-units=64"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 8.49,
+      "completed_at": "2026-11-02T02:03:49.804981+00:00"
+    },
+    {
+      "gate": "issue_8225_group_child_ctrl_data",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8225_group_child_ctrl_data",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--config",
+        "profile.release-test.package.rhwp.opt-level=1",
+        "--config",
+        "profile.release-test.package.rhwp.codegen-units=64"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.12,
+      "completed_at": "2026-11-02T02:03:50.926106+00:00"
+    },
+    {
+      "gate": "issue_8122_textbox_valign_no_lineseg",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8122_textbox_valign_no_lineseg",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--config",
+        "profile.release-test.package.rhwp.opt-level=1",
+        "--config",
+        "profile.release-test.package.rhwp.codegen-units=64"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 7.95,
+      "completed_at": "2026-11-02T02:03:58.879328+00:00"
+    },
+    {
+      "gate": "issue_8174_docinfo_request_storage",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8174_docinfo_request_storage",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--config",
+        "profile.release-test.package.rhwp.opt-level=1",
+        "--config",
+        "profile.release-test.package.rhwp.codegen-units=64"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 8.82,
+      "completed_at": "2026-11-02T02:04:07.704154+00:00"
+    },
+    {
+      "gate": "issue_8174_public_storage_boundaries",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8174_public_storage_boundaries",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--config",
+        "profile.release-test.package.rhwp.opt-level=1",
+        "--config",
+        "profile.release-test.package.rhwp.codegen-units=64"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 8.71,
+      "completed_at": "2026-11-02T02:04:16.414926+00:00"
+    },
+    {
+      "gate": "issue_8335_caption_category_roundtrip",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8335_caption_category_roundtrip",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--config",
+        "profile.release-test.package.rhwp.opt-level=1",
+        "--config",
+        "profile.release-test.package.rhwp.codegen-units=64"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 10.92,
+      "completed_at": "2026-11-02T02:04:27.340002+00:00"
+    },
+    {
+      "gate": "issue_8399_square_shape_band",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8399_square_shape_band",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--config",
+        "profile.release-test.package.rhwp.opt-level=1",
+        "--config",
+        "profile.release-test.package.rhwp.codegen-units=64"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 9.53,
+      "completed_at": "2026-11-02T02:04:36.870293+00:00"
+    },
+    {
+      "gate": "issue_8302_roundtrip_lineage",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8302_roundtrip_lineage",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--config",
+        "profile.release-test.package.rhwp.opt-level=1",
+        "--config",
+        "profile.release-test.package.rhwp.codegen-units=64"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.13,
+      "completed_at": "2026-11-02T02:04:38.007136+00:00"
+    }
+  ]
+}

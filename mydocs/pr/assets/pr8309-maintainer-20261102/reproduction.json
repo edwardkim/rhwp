@@ -1,0 +1,42 @@
+[
+  {
+    "input": "tests/fixtures/pr8309/textbox-saved-bottom.hwp",
+    "reproduced_sha256": "ba89b94fbefd06841b666d3b94e95a59110397f4ccfe879fb4a34644f056c3af",
+    "identical": true
+  },
+  {
+    "input": "tests/fixtures/pr8309/textbox-saved-bottom.hwpx",
+    "reproduced_sha256": "5e21c5c7c4c137d25c068426b1d9c47c4b09ed84253ad3660cc1729a7287545d",
+    "identical": true
+  },
+  {
+    "input": "tests/fixtures/pr8309/textbox-saved-center.hwp",
+    "reproduced_sha256": "d2763e39c4da953c1429ff9af314397723b7ed35ce305ccb14fafc20dac1f457",
+    "identical": true
+  },
+  {
+    "input": "tests/fixtures/pr8309/textbox-saved-center.hwpx",
+    "reproduced_sha256": "d7e851d41bcb81073c30eb5bfce57fcd25fffefc477f3e294c00c4f0fa12d1f5",
+    "identical": true
+  },
+  {
+    "input": "tests/fixtures/pr8309/textbox-saved-default.hwp",
+    "reproduced_sha256": "6035f5e84b8f189c90c91767a011405035e9ff72100d84e1016a51d4bfa4b957",
+    "identical": true
+  },
+  {
+    "input": "tests/fixtures/pr8309/textbox-saved-default.hwpx",
+    "reproduced_sha256": "1aa9243888fec3cfcffb9212e601957487f1fdcb648310be819b8ed932b87d8d",
+    "identical": true
+  },
+  {
+    "input": "tests/fixtures/pr8309/textbox-saved-top.hwp",
+    "reproduced_sha256": "6035f5e84b8f189c90c91767a011405035e9ff72100d84e1016a51d4bfa4b957",
+    "identical": true
+  },
+  {
+    "input": "tests/fixtures/pr8309/textbox-saved-top.hwpx",
+    "reproduced_sha256": "1aa9243888fec3cfcffb9212e601957487f1fdcb648310be819b8ed932b87d8d",
+    "identical": true
+  }
+]

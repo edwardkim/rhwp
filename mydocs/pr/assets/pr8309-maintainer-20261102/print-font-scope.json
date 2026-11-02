@@ -1,0 +1,26 @@
+[
+  {
+    "execution": "print-status-top",
+    "font_scope_status": "verified"
+  },
+  {
+    "execution": "print-status-center",
+    "font_scope_status": "verified"
+  },
+  {
+    "execution": "print-status-bottom",
+    "font_scope_status": "verified"
+  },
+  {
+    "execution": "saved-print-status-default",
+    "font_scope_status": "verified"
+  },
+  {
+    "execution": "saved-print-status-center",
+    "font_scope_status": "verified"
+  },
+  {
+    "execution": "saved-print-status-bottom",
+    "font_scope_status": "verified"
+  }
+]

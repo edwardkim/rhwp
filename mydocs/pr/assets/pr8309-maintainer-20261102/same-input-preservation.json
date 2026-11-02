@@ -1,0 +1,86 @@
+[
+  {
+    "case": "textbox_top",
+    "backend": "native",
+    "identical": true,
+    "sha256": "eb2d3d0879a47143ab67e8dddfc17416a3c200356f14f4d50c8376edb7babbc5"
+  },
+  {
+    "case": "textbox_top",
+    "backend": "wasm",
+    "identical": true,
+    "sha256": "f2cc62c5cf66b9e97aee1230a6419f6b34d157cc4dd321270c0721f9014dae8b"
+  },
+  {
+    "case": "textbox_center",
+    "backend": "native",
+    "identical": true,
+    "sha256": "0f753170c2de50f9d8c18f3778da920e16e44dffa6c5f53f0a53c6e705caa368"
+  },
+  {
+    "case": "textbox_center",
+    "backend": "wasm",
+    "identical": true,
+    "sha256": "804cc9956357b76bc44a45b8329d5c94c2b31666e2b93b8004f0a2ebfaef8088"
+  },
+  {
+    "case": "textbox_bottom",
+    "backend": "native",
+    "identical": true,
+    "sha256": "d40e6d1dca7f3d93e88cea196853328da99e641b1eb5cf0eaf883cb6ba7892e8"
+  },
+  {
+    "case": "textbox_bottom",
+    "backend": "wasm",
+    "identical": true,
+    "sha256": "32fdfece27cecd5b2c2d4164f5d95fd5d97341f5417c991b68a42e74645e7b58"
+  },
+  {
+    "case": "saved_default",
+    "backend": "native",
+    "identical": true,
+    "sha256": "eb2d3d0879a47143ab67e8dddfc17416a3c200356f14f4d50c8376edb7babbc5"
+  },
+  {
+    "case": "saved_default",
+    "backend": "wasm",
+    "identical": true,
+    "sha256": "f2cc62c5cf66b9e97aee1230a6419f6b34d157cc4dd321270c0721f9014dae8b"
+  },
+  {
+    "case": "saved_center",
+    "backend": "native",
+    "identical": true,
+    "sha256": "0f753170c2de50f9d8c18f3778da920e16e44dffa6c5f53f0a53c6e705caa368"
+  },
+  {
+    "case": "saved_center",
+    "backend": "wasm",
+    "identical": true,
+    "sha256": "804cc9956357b76bc44a45b8329d5c94c2b31666e2b93b8004f0a2ebfaef8088"
+  },
+  {
+    "case": "saved_bottom",
+    "backend": "native",
+    "identical": true,
+    "sha256": "d40e6d1dca7f3d93e88cea196853328da99e641b1eb5cf0eaf883cb6ba7892e8"
+  },
+  {
+    "case": "saved_bottom",
+    "backend": "wasm",
+    "identical": true,
+    "sha256": "32fdfece27cecd5b2c2d4164f5d95fd5d97341f5417c991b68a42e74645e7b58"
+  },
+  {
+    "case": "issue8122",
+    "backend": "native",
+    "identical": true,
+    "sha256": "17735ca87e7b047199288943032cdc1a58092ecd5b1a5ee873b4e293a47e3e2a"
+  },
+  {
+    "case": "issue8122",
+    "backend": "wasm",
+    "identical": true,
+    "sha256": "f108a62935acd9323fc7f3045add2b81763263a431fa08fc5f3eaaebd0f246f1"
+  }
+]

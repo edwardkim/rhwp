@@ -1,0 +1,44 @@
+[
+  {
+    "case": "top",
+    "job_id": "7c00383b-bbda-475e-9e2e-9c397f860fa3",
+    "input": "tests/fixtures/pr8309/textbox-reference-top.hwpx",
+    "input_sha256": "1aa9243888fec3cfcffb9212e601957487f1fdcb648310be819b8ed932b87d8d",
+    "status": "succeeded",
+    "engine": "2024",
+    "hancom_version": "13.0.0.3901",
+    "pdf_print_method": 0,
+    "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+    "terminal": true,
+    "pdf": "pdf/pr8309/textbox-reference-top-2024.pdf",
+    "pdf_sha256": "752db14817204b90b7caca688e6e29da13676130b27cdec373fce6248c3fcf33"
+  },
+  {
+    "case": "center",
+    "job_id": "d5621eb9-72ec-403b-a5e6-3f81a6d20420",
+    "input": "tests/fixtures/pr8309/textbox-reference-center.hwpx",
+    "input_sha256": "d7e851d41bcb81073c30eb5bfce57fcd25fffefc477f3e294c00c4f0fa12d1f5",
+    "status": "succeeded",
+    "engine": "2024",
+    "hancom_version": "13.0.0.3901",
+    "pdf_print_method": 0,
+    "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+    "terminal": true,
+    "pdf": "pdf/pr8309/textbox-reference-center-2024.pdf",
+    "pdf_sha256": "3da851e606ebd990e9e6bd0a2975e8d362b74c62f81db9f06bc860f3a4303c92"
+  },
+  {
+    "case": "bottom",
+    "job_id": "217dea1a-b514-4732-b207-c3725231eb3f",
+    "input": "tests/fixtures/pr8309/textbox-reference-bottom.hwpx",
+    "input_sha256": "5e21c5c7c4c137d25c068426b1d9c47c4b09ed84253ad3660cc1729a7287545d",
+    "status": "succeeded",
+    "engine": "2024",
+    "hancom_version": "13.0.0.3901",
+    "pdf_print_method": 0,
+    "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+    "terminal": true,
+    "pdf": "pdf/pr8309/textbox-reference-bottom-2024.pdf",
+    "pdf_sha256": "e11fdf106eed6da340c15ffb31a991c71831cb67c497f6143b9672afb4872d2e"
+  }
+]

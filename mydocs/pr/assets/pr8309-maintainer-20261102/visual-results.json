@@ -1,0 +1,331 @@
+[
+  {
+    "document": "textbox_top",
+    "kind": "reference",
+    "pages": 1,
+    "base_native": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/base-native-textbox_top.tsv",
+      "manifest": "manifests/base-native-textbox_top.json",
+      "png_sha256": "eb2d3d0879a47143ab67e8dddfc17416a3c200356f14f4d50c8376edb7babbc5",
+      "png_pages": 1,
+      "pdf_pages": 1
+    },
+    "base_wasm": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/base-wasm-textbox_top.tsv",
+      "manifest": "manifests/base-wasm-textbox_top.json",
+      "png_sha256": "f2cc62c5cf66b9e97aee1230a6419f6b34d157cc4dd321270c0721f9014dae8b",
+      "png_pages": 1,
+      "pdf_pages": 1
+    },
+    "candidate_native": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/candidate-native-textbox_top.tsv",
+      "manifest": "manifests/candidate-native-textbox_top.json",
+      "png_sha256": "eb2d3d0879a47143ab67e8dddfc17416a3c200356f14f4d50c8376edb7babbc5",
+      "png_pages": 1,
+      "pdf_pages": 1,
+      "png": "png/native-textbox_top.png",
+      "pixel_match_percent": 99.901,
+      "visual_accuracy_proxy_percent": 64.42114,
+      "silhouette_raw_match_percent": 100.0,
+      "normal_metrics": "metrics/native-textbox_top.json"
+    },
+    "candidate_wasm": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/candidate-wasm-textbox_top.tsv",
+      "manifest": "manifests/candidate-wasm-textbox_top.json",
+      "png_sha256": "f2cc62c5cf66b9e97aee1230a6419f6b34d157cc4dd321270c0721f9014dae8b",
+      "png_pages": 1,
+      "pdf_pages": 1,
+      "png": "png/wasm-textbox_top.png",
+      "pixel_match_percent": 99.91458,
+      "visual_accuracy_proxy_percent": 68.37074,
+      "silhouette_raw_match_percent": 100.0,
+      "normal_metrics": "metrics/wasm-textbox_top.json"
+    }
+  },
+  {
+    "document": "textbox_center",
+    "kind": "reference",
+    "pages": 1,
+    "base_native": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/base-native-textbox_center.tsv",
+      "manifest": "manifests/base-native-textbox_center.json",
+      "png_sha256": "0f753170c2de50f9d8c18f3778da920e16e44dffa6c5f53f0a53c6e705caa368",
+      "png_pages": 1,
+      "pdf_pages": 1
+    },
+    "base_wasm": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/base-wasm-textbox_center.tsv",
+      "manifest": "manifests/base-wasm-textbox_center.json",
+      "png_sha256": "804cc9956357b76bc44a45b8329d5c94c2b31666e2b93b8004f0a2ebfaef8088",
+      "png_pages": 1,
+      "pdf_pages": 1
+    },
+    "candidate_native": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/candidate-native-textbox_center.tsv",
+      "manifest": "manifests/candidate-native-textbox_center.json",
+      "png_sha256": "0f753170c2de50f9d8c18f3778da920e16e44dffa6c5f53f0a53c6e705caa368",
+      "png_pages": 1,
+      "pdf_pages": 1,
+      "png": "png/native-textbox_center.png",
+      "pixel_match_percent": 99.90223,
+      "visual_accuracy_proxy_percent": 63.93375,
+      "silhouette_raw_match_percent": 100.0,
+      "normal_metrics": "metrics/native-textbox_center.json"
+    },
+    "candidate_wasm": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/candidate-wasm-textbox_center.tsv",
+      "manifest": "manifests/candidate-wasm-textbox_center.json",
+      "png_sha256": "804cc9956357b76bc44a45b8329d5c94c2b31666e2b93b8004f0a2ebfaef8088",
+      "png_pages": 1,
+      "pdf_pages": 1,
+      "png": "png/wasm-textbox_center.png",
+      "pixel_match_percent": 99.91458,
+      "visual_accuracy_proxy_percent": 68.37074,
+      "silhouette_raw_match_percent": 100.0,
+      "normal_metrics": "metrics/wasm-textbox_center.json"
+    }
+  },
+  {
+    "document": "textbox_bottom",
+    "kind": "reference",
+    "pages": 1,
+    "base_native": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/base-native-textbox_bottom.tsv",
+      "manifest": "manifests/base-native-textbox_bottom.json",
+      "png_sha256": "d40e6d1dca7f3d93e88cea196853328da99e641b1eb5cf0eaf883cb6ba7892e8",
+      "png_pages": 1,
+      "pdf_pages": 1
+    },
+    "base_wasm": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/base-wasm-textbox_bottom.tsv",
+      "manifest": "manifests/base-wasm-textbox_bottom.json",
+      "png_sha256": "32fdfece27cecd5b2c2d4164f5d95fd5d97341f5417c991b68a42e74645e7b58",
+      "png_pages": 1,
+      "pdf_pages": 1
+    },
+    "candidate_native": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/candidate-native-textbox_bottom.tsv",
+      "manifest": "manifests/candidate-native-textbox_bottom.json",
+      "png_sha256": "d40e6d1dca7f3d93e88cea196853328da99e641b1eb5cf0eaf883cb6ba7892e8",
+      "png_pages": 1,
+      "pdf_pages": 1,
+      "png": "png/native-textbox_bottom.png",
+      "pixel_match_percent": 99.88517,
+      "visual_accuracy_proxy_percent": 59.35638,
+      "silhouette_raw_match_percent": 100.0,
+      "normal_metrics": "metrics/native-textbox_bottom.json"
+    },
+    "candidate_wasm": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/candidate-wasm-textbox_bottom.tsv",
+      "manifest": "manifests/candidate-wasm-textbox_bottom.json",
+      "png_sha256": "32fdfece27cecd5b2c2d4164f5d95fd5d97341f5417c991b68a42e74645e7b58",
+      "png_pages": 1,
+      "pdf_pages": 1,
+      "png": "png/wasm-textbox_bottom.png",
+      "pixel_match_percent": 99.91458,
+      "visual_accuracy_proxy_percent": 68.37074,
+      "silhouette_raw_match_percent": 100.0,
+      "normal_metrics": "metrics/wasm-textbox_bottom.json"
+    }
+  },
+  {
+    "document": "saved_default",
+    "kind": "saved",
+    "pages": 1,
+    "base_native": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/base-native-saved_default.tsv",
+      "manifest": "manifests/base-native-saved_default.json",
+      "png_sha256": "eb2d3d0879a47143ab67e8dddfc17416a3c200356f14f4d50c8376edb7babbc5",
+      "png_pages": 1,
+      "pdf_pages": 1
+    },
+    "base_wasm": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/base-wasm-saved_default.tsv",
+      "manifest": "manifests/base-wasm-saved_default.json",
+      "png_sha256": "f2cc62c5cf66b9e97aee1230a6419f6b34d157cc4dd321270c0721f9014dae8b",
+      "png_pages": 1,
+      "pdf_pages": 1
+    },
+    "candidate_native": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/candidate-native-saved_default.tsv",
+      "manifest": "manifests/candidate-native-saved_default.json",
+      "png_sha256": "eb2d3d0879a47143ab67e8dddfc17416a3c200356f14f4d50c8376edb7babbc5",
+      "png_pages": 1,
+      "pdf_pages": 1,
+      "png": "png/native-saved_default.png",
+      "pixel_match_percent": 99.901,
+      "visual_accuracy_proxy_percent": 64.42114,
+      "silhouette_raw_match_percent": 100.0,
+      "normal_metrics": "metrics/native-saved_default.json"
+    },
+    "candidate_wasm": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/candidate-wasm-saved_default.tsv",
+      "manifest": "manifests/candidate-wasm-saved_default.json",
+      "png_sha256": "f2cc62c5cf66b9e97aee1230a6419f6b34d157cc4dd321270c0721f9014dae8b",
+      "png_pages": 1,
+      "pdf_pages": 1,
+      "png": "png/wasm-saved_default.png",
+      "pixel_match_percent": 99.91458,
+      "visual_accuracy_proxy_percent": 68.37074,
+      "silhouette_raw_match_percent": 100.0,
+      "normal_metrics": "metrics/wasm-saved_default.json"
+    }
+  },
+  {
+    "document": "saved_center",
+    "kind": "saved",
+    "pages": 1,
+    "base_native": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/base-native-saved_center.tsv",
+      "manifest": "manifests/base-native-saved_center.json",
+      "png_sha256": "0f753170c2de50f9d8c18f3778da920e16e44dffa6c5f53f0a53c6e705caa368",
+      "png_pages": 1,
+      "pdf_pages": 1
+    },
+    "base_wasm": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/base-wasm-saved_center.tsv",
+      "manifest": "manifests/base-wasm-saved_center.json",
+      "png_sha256": "804cc9956357b76bc44a45b8329d5c94c2b31666e2b93b8004f0a2ebfaef8088",
+      "png_pages": 1,
+      "pdf_pages": 1
+    },
+    "candidate_native": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/candidate-native-saved_center.tsv",
+      "manifest": "manifests/candidate-native-saved_center.json",
+      "png_sha256": "0f753170c2de50f9d8c18f3778da920e16e44dffa6c5f53f0a53c6e705caa368",
+      "png_pages": 1,
+      "pdf_pages": 1,
+      "png": "png/native-saved_center.png",
+      "pixel_match_percent": 99.90223,
+      "visual_accuracy_proxy_percent": 63.93375,
+      "silhouette_raw_match_percent": 100.0,
+      "normal_metrics": "metrics/native-saved_center.json"
+    },
+    "candidate_wasm": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/candidate-wasm-saved_center.tsv",
+      "manifest": "manifests/candidate-wasm-saved_center.json",
+      "png_sha256": "804cc9956357b76bc44a45b8329d5c94c2b31666e2b93b8004f0a2ebfaef8088",
+      "png_pages": 1,
+      "pdf_pages": 1,
+      "png": "png/wasm-saved_center.png",
+      "pixel_match_percent": 99.91458,
+      "visual_accuracy_proxy_percent": 68.37074,
+      "silhouette_raw_match_percent": 100.0,
+      "normal_metrics": "metrics/wasm-saved_center.json"
+    }
+  },
+  {
+    "document": "saved_bottom",
+    "kind": "saved",
+    "pages": 1,
+    "base_native": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/base-native-saved_bottom.tsv",
+      "manifest": "manifests/base-native-saved_bottom.json",
+      "png_sha256": "d40e6d1dca7f3d93e88cea196853328da99e641b1eb5cf0eaf883cb6ba7892e8",
+      "png_pages": 1,
+      "pdf_pages": 1
+    },
+    "base_wasm": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/base-wasm-saved_bottom.tsv",
+      "manifest": "manifests/base-wasm-saved_bottom.json",
+      "png_sha256": "32fdfece27cecd5b2c2d4164f5d95fd5d97341f5417c991b68a42e74645e7b58",
+      "png_pages": 1,
+      "pdf_pages": 1
+    },
+    "candidate_native": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/candidate-native-saved_bottom.tsv",
+      "manifest": "manifests/candidate-native-saved_bottom.json",
+      "png_sha256": "d40e6d1dca7f3d93e88cea196853328da99e641b1eb5cf0eaf883cb6ba7892e8",
+      "png_pages": 1,
+      "pdf_pages": 1,
+      "png": "png/native-saved_bottom.png",
+      "pixel_match_percent": 99.88517,
+      "visual_accuracy_proxy_percent": 59.35638,
+      "silhouette_raw_match_percent": 100.0,
+      "normal_metrics": "metrics/native-saved_bottom.json"
+    },
+    "candidate_wasm": {
+      "raw_percent": 100.0,
+      "tsv": "tsv/candidate-wasm-saved_bottom.tsv",
+      "manifest": "manifests/candidate-wasm-saved_bottom.json",
+      "png_sha256": "32fdfece27cecd5b2c2d4164f5d95fd5d97341f5417c991b68a42e74645e7b58",
+      "png_pages": 1,
+      "pdf_pages": 1,
+      "png": "png/wasm-saved_bottom.png",
+      "pixel_match_percent": 99.91458,
+      "visual_accuracy_proxy_percent": 68.37074,
+      "silhouette_raw_match_percent": 100.0,
+      "normal_metrics": "metrics/wasm-saved_bottom.json"
+    }
+  },
+  {
+    "document": "issue8122",
+    "kind": "control",
+    "pages": 1,
+    "base_native": {
+      "raw_percent": 99.55,
+      "tsv": "tsv/base-native-issue8122.tsv",
+      "manifest": "manifests/base-native-issue8122.json",
+      "png_sha256": "17735ca87e7b047199288943032cdc1a58092ecd5b1a5ee873b4e293a47e3e2a",
+      "png_pages": 1,
+      "pdf_pages": 1
+    },
+    "base_wasm": {
+      "raw_percent": 99.42,
+      "tsv": "tsv/base-wasm-issue8122.tsv",
+      "manifest": "manifests/base-wasm-issue8122.json",
+      "png_sha256": "f108a62935acd9323fc7f3045add2b81763263a431fa08fc5f3eaaebd0f246f1",
+      "png_pages": 1,
+      "pdf_pages": 1
+    },
+    "candidate_native": {
+      "raw_percent": 99.55,
+      "tsv": "tsv/candidate-native-issue8122.tsv",
+      "manifest": "manifests/candidate-native-issue8122.json",
+      "png_sha256": "17735ca87e7b047199288943032cdc1a58092ecd5b1a5ee873b4e293a47e3e2a",
+      "png_pages": 1,
+      "pdf_pages": 1,
+      "png": "png/native-issue8122.png",
+      "pixel_match_percent": 98.21311,
+      "visual_accuracy_proxy_percent": 69.44423,
+      "silhouette_raw_match_percent": 99.55124,
+      "normal_metrics": "metrics/native-issue8122.json"
+    },
+    "candidate_wasm": {
+      "raw_percent": 99.42,
+      "tsv": "tsv/candidate-wasm-issue8122.tsv",
+      "manifest": "manifests/candidate-wasm-issue8122.json",
+      "png_sha256": "f108a62935acd9323fc7f3045add2b81763263a431fa08fc5f3eaaebd0f246f1",
+      "png_pages": 1,
+      "pdf_pages": 1,
+      "png": "png/wasm-issue8122.png",
+      "pixel_match_percent": 98.22276,
+      "visual_accuracy_proxy_percent": 69.19323,
+      "silhouette_raw_match_percent": 99.42457,
+      "normal_metrics": "metrics/wasm-issue8122.json"
+    }
+  }
+]

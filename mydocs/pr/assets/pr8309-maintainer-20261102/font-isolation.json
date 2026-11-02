@@ -1,0 +1,26 @@
+{
+  "isolation": "bubblewrap: project and required tools only; system and personal font directories hidden; separate fidelity font directory hidden",
+  "font_programs": [
+    {
+      "path": "ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+      "sha256": "67b4003e2be99ea44a7c957e4b35acde1b5e6e82a54fe195c5598c3c617bc2e3"
+    },
+    {
+      "path": "ttfs/opensource/NotoSansKR-Regular.ttf",
+      "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74"
+    },
+    {
+      "path": "ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+      "sha256": "7e3aee5ee1d8f44cc37d35dbd07e5f66414fee5ce552ebda6b4347643d9d0b78"
+    },
+    {
+      "path": "ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+      "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688"
+    },
+    {
+      "path": "ttfs/opensource/RHWPOldHangul-Regular.otf",
+      "sha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4"
+    }
+  ],
+  "commercial_font_exposed_to_regression": false
+}
