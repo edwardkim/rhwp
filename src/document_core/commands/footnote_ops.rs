@@ -4,7 +4,7 @@ use super::super::helpers::{
     build_tab_def_from_json, json_has_border_keys, json_has_tab_keys, parse_json_i16_array,
     parse_para_shape_mods,
 };
-use super::formatting::restore_para_meta;
+use super::formatting::{para_shape_mods_affect_text_flow, restore_para_meta};
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
@@ -446,12 +446,7 @@ impl DocumentCore {
             restamp_indentation(&mut fn_para.line_segs, old_indent, new_indent);
         }
 
-        if mods.line_spacing.is_some()
-            || mods.line_spacing_type.is_some()
-            || mods.margin_left.is_some()
-            || mods.margin_right.is_some()
-            || mods.indent.is_some()
-        {
+        if para_shape_mods_affect_text_flow(&mods) {
             self.reflow_footnote_paragraph(section_idx, para_idx, control_idx, fn_para_idx);
         }
 

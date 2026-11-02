@@ -4113,6 +4113,31 @@ fn mark_indented_lines(
         first_line_index,
         reflow_indentation_pattern(para_style, stored, line_width_hwp),
     );
+    stamp_paragraph_head(lines, first_line_index, para_style);
+}
+
+/// 새로 조판한 줄에 한글처럼 `TAG_PARAGRAPH_HEAD`(bit 21)를 단다.
+///
+/// 한/글(12.30 Mac)은 문단 머리(글머리표·그림 글머리표·번호·개요)가 있는 문단의 첫 줄에만
+/// 이 비트를 켜고, 둘째 줄 이후와 머리를 끈 문단에서는 끈다(HWP `PARA_LINE_SEG`·HWPX
+/// `flags` 모두). 비트가 꺼진 글머리표 문단은 한/글이 글머리표를 그리지 않는다.
+fn stamp_paragraph_head(
+    lines: &mut [LineSeg],
+    first_line_index: usize,
+    para_style: Option<&ResolvedParaStyle>,
+) {
+    let head = paragraph_has_head(para_style);
+    for (line_index, line) in (first_line_index..).zip(lines.iter_mut()) {
+        if head && line_index == 0 {
+            line.tag |= LineSeg::TAG_PARAGRAPH_HEAD;
+        } else {
+            line.tag &= !LineSeg::TAG_PARAGRAPH_HEAD;
+        }
+    }
+}
+
+fn paragraph_has_head(para_style: Option<&ResolvedParaStyle>) -> bool {
+    para_style.is_some_and(|style| style.head_type != HeadType::None)
 }
 
 /// 재조판이 발행할 줄별 들여쓰기 기록. 개체의 줄 폭 판정도 같은 기록을 소비한다.
@@ -4863,11 +4888,17 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
                 } else {
                     indentation_pattern.1
                 };
+                let head = start_char == 0
+                    && frame.row_count() == first_row
+                    && paragraph_has_head(para_style);
                 for (index, segment) in segments.iter_mut().enumerate() {
                     if indented && index == 0 {
                         segment.source_tag |= LineSeg::TAG_INDENTATION;
                     } else {
                         segment.source_tag &= !LineSeg::TAG_INDENTATION;
+                    }
+                    if head && index == 0 {
+                        segment.source_tag |= LineSeg::TAG_PARAGRAPH_HEAD;
                     }
                 }
                 if frame
