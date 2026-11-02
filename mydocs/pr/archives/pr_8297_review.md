@@ -2,9 +2,21 @@
 
 ## 최종 판정
 
-**머지 보류 — 재체리픽 후보의 검증 진행 중.** 최신 base의 기능 보존, 관련 검증과 기존 정밀 TSV 하락 해소를 완료한 뒤 다시 판정한다.
+**메인터너 검토 완료 — HWP3 변환본의 그림 캡션 번호 확인.** [통합 PR #8438](https://github.com/edwardkim/rhwp/pull/8438)에 반영됐고, 작업지시자 지시에 따라 `hwp3-sample-hwp5.hwp`만으로 판단한다. 이 판정은 다른 원본이나 이슈 전체의 해결을 뜻하지 않는다.
+
+## 2026-11-02 통합 머지 사실과 적용 SHA 재확인
+
+[통합 PR #8438](https://github.com/edwardkim/rhwp/pull/8438)은 `b8338ba38be288b6e9385f5372d184649323aa9f`로 머지됐다. 아래 체리픽 기록의 종전 통합 SHA는 리베이스 전 이력이다. 머지된 이력에서 원본과 커밋 제목이 일치하는 대응은 다음과 같다. 이는 변경 내용의 완전한 동등성이나 개별 시각 판정을 대신하지 않는다.
+
+- 원본 → 머지 이력: `8724d9f60e` → `a36ab08494`, `1dddcb4020` → `169e04e61e`, `1953a4be92` → `bd72faf384`.
+- 제품 코드 `d536455b4e`의 최소 글꼴 전체 회귀는 12,368건 통과·45건 skipped였다. 이 로그에서 확인한 해당 모듈: `issue_8294_hwp5_numbering_category_bit28` 2건. 이 수치는 개별 PR의 독립 Print 검증과는 구분한다.
+- 뒤의 중간 후보·검증 대기 문장은 당시 상태이며 최종 통합 결과가 아니다. 원 PR별 최종 시각·기능 검토와 최신 head 일치 확인은 계속한다.
 
 ## 접수와 적용
+
+### 통합 후 HWP3 변환본 캡션 대조
+
+제품 코드 `d536455b4e`에서 원 PR의 HWP3 변환본을 독립 한컴 2020 Print와 전쪽 비교했다. 16/16쪽이며 Native 최저 97.33%, fresh WASM 최저 99.90%다. 원 PR이 지목한 그림 4·5는 각각 8·9쪽의 원 PDF와 같다. [Native TSV](../assets/issue_8294/followup8438/native-h3s5.tsv) · [WASM TSV](../assets/issue_8294/followup8438/wasm-h3s5.tsv) · 8쪽 [review](../assets/issue_8294/followup8438/native-p008-review.png)·[overlay](../assets/issue_8294/followup8438/native-p008-overlay.png) · 9쪽 [review](../assets/issue_8294/followup8438/wasm-p009-review.png)·[overlay](../assets/issue_8294/followup8438/wasm-p009-overlay.png). 5쪽 제목의 글꼴 차이는 [#8316 검토](pr_8316_review.md)에 구분했다.
 
 - 원 PR: [#8297](https://github.com/edwardkim/rhwp/pull/8297), 작성자 `planet6897`, reviewer `jangster77`.
 - 원 PR head 조회값: `1953a4be92b1c18a42a723721c45c5275d8fd0a2`. 조회 시 원 PR head와 마지막 체리픽 원본이 일치한다.

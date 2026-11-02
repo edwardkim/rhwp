@@ -2,7 +2,15 @@
 
 ## 최종 판정
 
-**머지 보류 — 재체리픽 후보의 검증 진행 중.** 최신 base의 기능 보존, 관련 검증과 기존 정밀 TSV 하락 해소를 완료한 뒤 다시 판정한다.
+**메인터너 검토 완료 — 위 첨자의 편집 줄 소속 확인.** [통합 PR #8438](https://github.com/edwardkim/rhwp/pull/8438)에 반영됐고 원 PR head가 검토한 head와 일치한다. #8381의 나머지 범위는 이 PR로 해결했다고 판정하지 않는다.
+
+## 2026-11-02 통합 머지 사실과 적용 SHA 재확인
+
+[통합 PR #8438](https://github.com/edwardkim/rhwp/pull/8438)은 `b8338ba38be288b6e9385f5372d184649323aa9f`로 머지됐다. 아래 체리픽 기록의 종전 통합 SHA는 리베이스 전 이력이다. 머지된 이력에서 원본과 커밋 제목이 일치하는 대응은 다음과 같다. 이는 변경 내용의 완전한 동등성이나 개별 시각 판정을 대신하지 않는다.
+
+- 원본 → 머지 이력: `4d0dff6404` → `baf51260b3`, `f22136ca82` → `2a4155f0e0`.
+- 제품 코드 `d536455b4e`의 최소 글꼴 전체 회귀는 12,368건 통과·45건 skipped였다. 이 로그에서 확인한 해당 모듈: `issue_8381_pdf_superscript_raise` 1건. 이 수치는 개별 PR의 독립 Print 검증과는 구분한다.
+- 뒤의 중간 후보·검증 대기 문장은 당시 상태이며 최종 통합 결과가 아니다. 원 PR별 최종 시각·기능 검토와 최신 head 일치 확인은 계속한다.
 
 ## 접수와 적용
 
@@ -18,6 +26,19 @@
 
 PDF 가져오기에서 0.5em 위 첨자를 부동소수 오차로 별도 줄에 분리하지 않는다.
 동일 줄 소속과 인접 줄을 잘못 합치지 않는 경계를 확인한다. #8381 전체 해결은 아니다.
+
+### 14쪽 위 첨자와 전쪽 대조
+
+제품 코드 `d536455b4e`의 최소 글꼴 전체 회귀에서 `raised_superscript_stays_in_its_editable_row`가 통과했다. 이 검사는 원 PR의 원본 PDF 14쪽을 **직접 편집 가능 모드로 가져온 직후** `NAD+는 줄어든다.`의 줄 소속·출현 횟수와 26번의 `NAD+와` 대조군을 확인한다. 원 PR에서 지적한 효과는 편집 본문의 줄 소속이며 화면 실루엣만으로는 증명하지 않는다.
+
+보조 시각 검증은 동일 PDF를 각각 editable·fidelity로 가져와 HWP로 저장하고 다시 연 결과다. 이는 직접 가져온 직후 화면의 대체 증거가 아닌 별도 저장본 비교다. 기준은 HWP의 한컴 Print가 아니라 **가져오기의 원본 PDF**다. Native와 fresh WASM 모두 96 DPI·2024 호환, 16/16쪽이며 90% 미만은 없다.
+
+| 저장본 | 입력 | Native 전쪽 | WASM 전쪽 |
+| --- | --- | --- | --- |
+| editable | [HWP](../assets/issue_8381/followup8438/editable-saved.hwp) | [TSV](../assets/issue_8381/followup8438/native-editable.tsv), 최저 97.80% | [TSV](../assets/issue_8381/followup8438/wasm-editable.tsv), 최저 98.08% |
+| fidelity | [HWP](../assets/issue_8381/followup8438/fidelity-saved.hwp) | [TSV](../assets/issue_8381/followup8438/native-fidelity.tsv), 최저 98.90% | [TSV](../assets/issue_8381/followup8438/wasm-fidelity.tsv), 최저 98.85% |
+
+원 PR이 지목한 14쪽 [Native review](../assets/issue_8381/followup8438/native-editable-p014-review.png)·[overlay](../assets/issue_8381/followup8438/native-editable-p014-overlay.png)와 [WASM review](../assets/issue_8381/followup8438/wasm-editable-p014-review.png)·[overlay](../assets/issue_8381/followup8438/wasm-editable-p014-overlay.png)에서 대상 문항과 주변 문단을 확인했다. 저장본과 원 PDF의 14쪽 raw는 Native 98.93%, WASM 98.91%다.
 
 ## 체리픽과 보정
 
