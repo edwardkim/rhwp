@@ -265,6 +265,39 @@ fn footnote_composed_with_number(
     Some(numbered)
 }
 
+/// 각주 내용 번호 "작게": 일반 문단 경로가 그린 번호 run을 본문 각주 표시와 같은 크기(3/4)·
+/// 기준선으로 줄이고, 같은 줄 뒤의 글자 run을 줄어든 폭만큼 당긴다(한/글 12.30 Mac 인쇄).
+fn shrink_footnote_number(nodes: &mut [RenderNode], number: &str) {
+    for line in nodes
+        .iter_mut()
+        .filter(|node| matches!(node.node_type, RenderNodeType::TextLine(_)))
+    {
+        let Some(index) = line.children.iter().position(|child| {
+            matches!(&child.node_type, RenderNodeType::TextRun(run)
+                if run.display_or_text().trim_end() == number)
+        }) else {
+            continue;
+        };
+        let node = &mut line.children[index];
+        let RenderNodeType::TextRun(run) = &mut node.node_type else {
+            return;
+        };
+        let base = run.style.font_size;
+        run.style.font_size = FootnoteMarkerNode::font_size(base);
+        run.baseline = FootnoteMarkerNode::reference_baseline(base, run.baseline);
+        run.layout_positions = None;
+        let width = estimate_text_width(run.display_or_text(), &run.style);
+        let dx = node.bbox.width - width;
+        node.bbox.width = width;
+        for next in &mut line.children[index + 1..] {
+            if matches!(next.node_type, RenderNodeType::TextRun(_)) {
+                next.bbox.x -= dx;
+            }
+        }
+        return;
+    }
+}
+
 fn footnote_composed_line_count(
     paragraphs: &[Paragraph],
     content_width_px: f64,
@@ -1569,6 +1602,9 @@ impl LayoutEngine {
 
             if crate::renderer::note_separator::has_ink(shape.separator_color) {
                 let sep_id = tree.next_id();
+                // 미주 구분선과 같은 HWP 선 종류 표로 그린다(점선 3, 이중선 8 …).
+                let (dash, line_type) =
+                    crate::renderer::line_style::hwp_line_type(shape.separator_line_type);
                 let sep_line = LineNode::new(
                     fn_area.x,
                     y,
@@ -1577,7 +1613,8 @@ impl LayoutEngine {
                     LineStyle {
                         color: shape.separator_color,
                         width: line_width,
-                        dash: StrokeDash::Solid,
+                        dash,
+                        line_type,
                         ..Default::default()
                     },
                 );
@@ -1678,6 +1715,7 @@ impl LayoutEngine {
                             selected_start,
                             selected_end,
                             true,
+                            shape.number_code_superscript,
                         );
                         number_drawn = true;
                     }
@@ -1798,9 +1836,11 @@ impl LayoutEngine {
                         selected_start,
                         selected_end,
                         is_last_selected_line,
-                    );
+                            shape.number_code_superscript,
+                        );
                 } else {
                     let composed = numbered.as_ref().unwrap_or(&composed);
+                    let first_new_child = fn_node.children.len();
                     // 각주 줄도 원본 인라인 개체와 문서의 BinData를 소비한다.
                     // 텍스트 줄만 전달하면 높이는 예약하면서 TAC 표·그림을
                     // 출력하지 못한다. 이어받기에도 같은 글줄 소유를 사용한다.
@@ -1828,6 +1868,12 @@ impl LayoutEngine {
                         Some(placement.spacing),
                         None,
                     );
+                    if shape.number_code_superscript && numbered.is_some() {
+                        shrink_footnote_number(
+                            &mut fn_node.children[first_new_child..],
+                            paragraph_number.trim_end(),
+                        );
+                    }
                     if is_last_selected_line {
                         // fragment의 마지막 줄은 trailing line-spacing을 쓰지 않는다.
                         let trail_ls = composed
@@ -1870,6 +1916,8 @@ impl LayoutEngine {
         line_end: usize,
         // fragment의 마지막 선택 줄은 trailing line_spacing을 누적하지 않는다.
         is_last_selected_line: bool,
+        // 각주 모양 "각주 내용 번호 속성: 작게"
+        small_number: bool,
     ) -> f64 {
         let mut y = y_start;
         let stored_prefix = (self.profile.get().hwpx_stored_layout()
@@ -1935,10 +1983,20 @@ impl LayoutEngine {
                 // 빈/비빈 문단 모두 동일한 base_cs_id 사용 → 리렌더링 시 폰트·폭 변동 방지
                 let base_style = {
                     let mut ts = resolved_to_text_style(styles, base_cs_id, 0);
-                    if stored_prefix.is_none() {
+                    if small_number {
+                        ts.font_size = FootnoteMarkerNode::font_size(ts.font_size);
+                    } else if stored_prefix.is_none() {
                         ts.font_size = (ts.font_size * 0.9).max(8.0);
                     }
                     ts
+                };
+                let number_baseline = if small_number {
+                    FootnoteMarkerNode::reference_baseline(
+                        resolved_to_text_style(styles, base_cs_id, 0).font_size,
+                        baseline,
+                    )
+                } else {
+                    baseline
                 };
 
                 let num_width = estimate_text_width(number_text, &base_style);
@@ -1960,7 +2018,7 @@ impl LayoutEngine {
                         is_vertical: false,
                         char_overlap: None,
                         border_fill_id: 0,
-                        baseline,
+                        baseline: number_baseline,
                         field_marker: FieldMarkerType::None,
                         layout_positions: None,
                         display_text: None,
