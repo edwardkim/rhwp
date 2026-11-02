@@ -458,6 +458,9 @@ SHA-256은 `4608d38c18af19e584da154015ee3b3e495b392684e9831d255c39ce5690e497`이
 전쪽 100.00%다. 12쪽 [비교](../assets/issue_8136/followup8438-crop/diagnostic-without-table-row-native-review-012.png)와
 [overlay](../assets/issue_8136/followup8438-crop/diagnostic-without-table-row-native-overlay-012.png)도
 직접 확인했다. 이는 수동으로 만든 진단 입력의 결과이며 실제 저장 코드의 검증과 구분한다.
+같은 쪽의 [WASM 비교](../assets/issue_8136/followup8438-crop/diagnostic-without-table-row-wasm-review-012.png)와
+[WASM overlay](../assets/issue_8136/followup8438-crop/diagnostic-without-table-row-wasm-overlay-012.png)에서도
+표와 다음 문단의 위치를 확인했다.
 
 재구성 출처 조건을 없애고 같은 높이의 단일 표 저장 줄을 모두 공통 계획에
 넣는 후보도 검토했다. 저장소 HWPX의 최상위 문단에서 저장 줄 하나, TAC 표 하나,
