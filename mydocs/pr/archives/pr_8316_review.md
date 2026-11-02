@@ -506,6 +506,8 @@ Print method 0, one-up이다. 후보 Native의 [전쪽 TSV](../assets/issue_8136
 직접 확인했다. 이는 Native 후보 결과이며 fresh WASM과 대조군·최종 회귀 완료를
 뜻하지 않는다.
 
+같은 후보의 fresh WASM(SHA-256 `cfe1e98fc6c4d7b2a4ac2fa23c6565fc3b32afe2d4ecf2ce71880d22318e86d8`)과 위 저장본 Print도 96 DPI로 전쪽 대조했다. [전쪽 TSV](../assets/issue_8136/followup8438-crop/line-cache-candidate-wasm.tsv)는 12쪽 모두 100.00%다. 12쪽 [비교](../assets/issue_8136/followup8438-crop/line-cache-candidate-wasm-review-012.png)와 [overlay](../assets/issue_8136/followup8438-crop/line-cache-candidate-wasm-overlay-012.png)를 보존한다. 새 회귀 검사와 전체 검증은 별도다.
+
 보정 전 저장본과 후보 저장본을 각각 자신의 한컴 Print와 대조한 Native 전쪽
 표시값 비교에서는 12쪽이 35.07%에서 100.00%로 상승했고 다른 11쪽은 동일했다.
 두 저장본은 서로 다른 입력이므로 이는 각각의 독립 Print에 대한 비교다.
@@ -516,7 +518,7 @@ Print method 0, one-up이다. 후보 Native의 [전쪽 TSV](../assets/issue_8136
 필터에서 제외된 816건을 통과로 세지 않으며 전체 회귀 결과도 아니다. 실행 로그의
 SHA-256은 `3bf213f4a7405bff663945bcf59e6ae3a82d1aec07f5fa167bd120c1f2e10a3f`다.
 격리 환경의 `fc-list`는 Noto Sans KR Regular·ExtraLight, Noto Sans Symbols2,
-RHWP Public Batang만 표시했다. 최종 fresh WASM 전쪽 검증은 별도로 완료해야 한다.
+RHWP Public Batang만 표시했다. 위 fresh WASM 전쪽 비교와는 별도의 회귀 실행이다.
 
 단 정의 부재 대조군 7개와 기존 [이슈 #8149](https://github.com/edwardkim/rhwp/issues/8149)
 표 분할 원본 1개를 이전 및 후보 실행 파일로 각각 HWPX에 저장했다. 16회 모두
