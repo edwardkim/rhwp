@@ -111,6 +111,8 @@ WASM 89.19%로 90%를 넘지 못했다. 글꼴 공급만으로 해결됐다고 �
 
 공통 변환기가 이미 선택한 EMF+/WMF 내용을 2024 장치 표면으로 합성하는 후보를 Native에서 실행했다. 기존 한컴 2024 Print 35쪽 raw는 89.11%에서 89.50%로 상승했지만 90% 미만이다. 차이의 픽셀 영역은 차트 사각형 안에 한정됐다. 한 격자선 픽셀은 이전 RGB 235, 후보 229, PDF 225였다. 따라서 기존 SVG 경로를 보존하면서 장치 표면을 적용하는 것만으로는 완료되지 않는다. 현재 메타파일 표면 PNG에는 최종 합성 표식이 붙고 `bitmap_raster::prepare_bitmap`은 이를 저역 통과 대상에서 제외하므로, 고해상도 인쇄 표면을 최종 raster에 축소하는 단계의 실제 표본 처리와 다른 WMF·EMF 대조군을 추가 확인한다. 후보는 아직 채택·완료하지 않았다.
 
+후속 후보에서 메타파일 장치 표면도 최종 raster로 축소할 때 공통 면적 표본기를 사용하도록 시험했다. 같은 2024 Print의 35쪽 Native raw는 92.57%로 상승했다. [35쪽 비교](../assets/issue_8305/followup8438/native-resample-review-035.png)·[overlay](../assets/issue_8305/followup8438/native-resample-overlay-035.png)를 보존한다. 이 수치는 35쪽 Native만의 결과이고 fresh WASM, 전쪽, 기존 메타파일의 기능 보존과 [PR #8389](https://github.com/edwardkim/rhwp/pull/8389)·[PR #8397](https://github.com/edwardkim/rhwp/pull/8397) 기준 하락 여부를 확인하기 전이므로 최종 판정이 아니다.
+
 표본화 진단으로 같은 현재 Native 엔진의 전체 35쪽을 600 DPI로 출력한 뒤
 Lanczos로 96 DPI 크기에 축소해 동일 PDF와 비교했다. 전쪽 raw는 89.11%에서
 93.17%, 차트 영역 raw는 71.45%에서 83.13%로 달라졌다. 이 변환 이미지는
