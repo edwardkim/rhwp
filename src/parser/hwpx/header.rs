@@ -2141,6 +2141,26 @@ fn parse_bullet_hwpx(
                 Ok(Event::Start(ref ce)) | Ok(Event::Empty(ref ce))
                     if local_name(ce.name().as_ref()) == b"img" =>
                 {
+                    for attr in ce.attributes().flatten() {
+                        let value = attr.value.as_ref();
+                        match attr.key.as_ref().as_bytes() {
+                            b"contrast" => {
+                                bullet.image_data[0] = value.parse::<i8>().unwrap_or(0) as u8
+                            }
+                            b"bright" => {
+                                bullet.image_data[1] = value.parse::<i8>().unwrap_or(0) as u8
+                            }
+                            b"effect" => {
+                                bullet.image_data[2] = match value {
+                                    "GRAY_SCALE" => 1,
+                                    "BLACK_WHITE" => 2,
+                                    "PATTERN_8_8" => 3,
+                                    _ => 0,
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
                     if let Some(attr) = ce
                         .attributes()
                         .flatten()

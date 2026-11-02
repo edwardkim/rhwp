@@ -507,6 +507,20 @@ pub struct Bullet {
     pub raw_para_head: Option<String>,
 }
 
+impl Bullet {
+    /// HWP의 그림 사용 값과 그림 데이터에 저장된 BinData 순번은 서로 다르다.
+    /// HWPX에서 읽은 `image_bullet`은 매니페스트를 정규화한 BinData 순번이다.
+    pub fn image_reference(&self) -> Option<u16> {
+        if self.image_bullet <= 0 {
+            return None;
+        }
+        if self.raw_para_head.is_none() {
+            return (self.image_data[3] != 0).then_some(u16::from(self.image_data[3]));
+        }
+        u16::try_from(self.image_bullet).ok().filter(|id| *id > 0)
+    }
+}
+
 /// 텍스트 정렬 방식
 #[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum Alignment {

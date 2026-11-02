@@ -102,7 +102,7 @@ where
     write_char_properties(&mut w, &doc.doc_info, ctx, storage)?;
     write_tab_properties(&mut w, &doc.doc_info, storage)?;
     write_numberings(&mut w, &doc.doc_info, storage)?;
-    write_bullets(&mut w, &doc.doc_info, storage)?;
+    write_bullets(&mut w, &doc.doc_info, ctx, storage)?;
     write_para_properties(
         &mut w,
         &doc.doc_info,
@@ -1030,6 +1030,7 @@ where
 fn write_bullets<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     doc_info: &DocInfo,
+    ctx: &SerializeContext,
     storage: &S,
 ) -> Result<(), SerializeError>
 where
@@ -1045,7 +1046,7 @@ where
         storage,
     )?;
     for (idx, b) in doc_info.bullets.iter().enumerate() {
-        write_bullet(w, idx as u16, b, storage)?;
+        write_bullet(w, idx as u16, b, ctx, storage)?;
     }
     end_tag(w, "hh:bullets", storage)?;
     Ok(())
@@ -1055,6 +1056,7 @@ fn write_bullet<W: Write, S: crate::storage::Storage>(
     w: &mut Writer<W>,
     id: u16,
     b: &crate::model::style::Bullet,
+    ctx: &SerializeContext,
     storage: &S,
 ) -> Result<(), SerializeError>
 where
@@ -1092,6 +1094,36 @@ where
             .write_all(raw.as_bytes())
             .map_err(|e| SerializeError::XmlError(format!("bullet paraHead splice: {e}")))?;
     } else {
+        if let Some(id) = b.image_reference() {
+            let manifest_id = ctx.resolve_bin_id(id).ok_or_else(|| {
+                SerializeError::XmlError(format!(
+                    "그림 글머리표 BinData 참조 {id}를 찾을 수 없습니다"
+                ))
+            })?;
+            let contrast = xml_value(storage, b.image_data[0] as i8)?;
+            let bright = xml_value(storage, b.image_data[1] as i8)?;
+            let effect = match b.image_data[2] {
+                1 => "GRAY_SCALE",
+                2 => "BLACK_WHITE",
+                3 => {
+                    return Err(SerializeError::XmlError(
+                        "그림 글머리표의 8×8 패턴 효과는 HWPX 이미지 사양에서 지원하지 않습니다".into(),
+                    ));
+                }
+                _ => "REAL_PIC",
+            };
+            empty_tag(
+                w,
+                "hh:img",
+                &[
+                    ("binaryItemIDRef", manifest_id),
+                    ("bright", &bright),
+                    ("contrast", &contrast),
+                    ("effect", effect),
+                ],
+                storage,
+            )?;
+        }
         empty_tag(
             w,
             "hh:paraHead",

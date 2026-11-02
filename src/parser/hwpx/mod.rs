@@ -342,6 +342,44 @@ fn canonicalize_bin_item_refs(xml: &str, bin_data_items: &[content::PackageItem]
     out
 }
 
+/// 그림 글머리표의 manifest 참조도 본문 그림과 같은 BinData 순번으로 정규화한다.
+/// 글꼴 등의 다른 header 참조는 원본 ID로 별도 해석하므로 글머리표 구간만 바꾼다.
+fn canonicalize_bullet_image_refs(xml: &str, items: &[content::PackageItem]) -> String {
+    use quick_xml::events::Event;
+    let mut reader = quick_xml::Reader::from_str(xml);
+    let mut ranges = Vec::new();
+    let mut start = None;
+    loop {
+        let before = reader.buffer_position() as usize;
+        match reader.read_event() {
+            Ok(Event::Start(e)) if e.local_name().as_ref() == "bullet" => start = Some(before),
+            Ok(Event::End(e)) if e.local_name().as_ref() == "bullet" => {
+                if let Some(begin) = start.take() {
+                    ranges.push((begin, reader.buffer_position() as usize));
+                }
+            }
+            Ok(Event::Eof) | Err(_) => break,
+            _ => {}
+        }
+    }
+    let mut out = String::with_capacity(xml.len());
+    let mut last = 0;
+    for (begin, end) in ranges {
+        if begin < last
+            || end > xml.len()
+            || !xml.is_char_boundary(begin)
+            || !xml.is_char_boundary(end)
+        {
+            return xml.to_string();
+        }
+        out.push_str(&xml[last..begin]);
+        out.push_str(&canonicalize_bin_item_refs(&xml[begin..end], items));
+        last = end;
+    }
+    out.push_str(&xml[last..]);
+    out
+}
+
 fn attach_hwpx_master_page(
     reader: &mut reader::HwpxReader,
     section: &mut Section,
@@ -477,6 +515,7 @@ pub(crate) fn parse_hwpx_with_reservation(
 
     // 3. header.xml → DocInfo, DocProperties
     let header_xml = reader.read_file("Contents/header.xml")?;
+    let header_xml = canonicalize_bullet_image_refs(&header_xml, &package_info.bin_data_items);
     let tracking_visibility = tracked_changes::Visibility::from_header(&header_xml)?;
     // 평문 여백의 단위 전환은 header.xml이 아닌 패키지 xmlVersion에 따른다.
     let physical_plain_margin = hwpx_aux_entries

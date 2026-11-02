@@ -150,8 +150,9 @@ SHA-256은 모두 `23ba4556f4ea2d254f96e23d0038febce2496103b9b464a88ffa27f65db81
 
 `0b3cbeb360` 제품 코드에서 기존 한컴 2024 Print PDF와 같은 178쪽을 다시 비교했다.
 Native 최저 96.47%, fresh WASM 최저 96.45%이며 두 경로 모두 90% 미만은 없다.
-문제가 지적된 94쪽은 두 경로 모두 100.00%로, 원본 글머리표와 표 뒤 본문 위치를
-직접 확인했다. 수치는 96 DPI의 색상 경계 보정 전 2px 내용 실루엣이다.
+문제가 지적된 94쪽은 두 경로 모두 100.00%로, 기존 HWPX 저장본의 글머리표와 표 뒤
+본문 위치를 직접 확인했다. 이 저장본은 원본의 책 그림을 누락한 별도 입력이므로
+원본 그림 보존의 증거는 아니다. 수치는 96 DPI의 색상 경계 보정 전 2px 내용 실루엣이다.
 
 - 전쪽 결과: [Native TSV](../assets/review_8438_followup/pr8336-hwpspec-0b3cbeb360/native.tsv), [WASM TSV](../assets/review_8438_followup/pr8336-hwpspec-0b3cbeb360/wasm.tsv)
 - 94쪽: [Native 비교](../assets/review_8438_followup/pr8336-hwpspec-0b3cbeb360/native-p094-review.png), [Native 오버레이](../assets/review_8438_followup/pr8336-hwpspec-0b3cbeb360/native-p094-overlay.png), [WASM 비교](../assets/review_8438_followup/pr8336-hwpspec-0b3cbeb360/wasm-p094-review.png), [WASM 오버레이](../assets/review_8438_followup/pr8336-hwpspec-0b3cbeb360/wasm-p094-overlay.png)
@@ -175,3 +176,21 @@ Native 최저 96.47%, fresh WASM 최저 96.45%이며 두 경로 모두 90% 미�
 원본 HWP에서 HWPX로 변환할 때 책 그림이 보존된다는 증거가 아니다. 원본 BinData
 순번과 HWPX manifest ID를 공통 매핑하고 렌더·저장·다시 열기 및 독립 원본 Print를
 대조한 뒤 다시 판정한다. 기존 쪽별 본문 회귀를 완화하는 것으로 대신하지 않는다.
+
+94쪽 본문 굵기 추가 조사: 원본 HWP의 구역 3 문단 240은 함초롬바탕 글자 모양
+14를 사용하며 굵게 속성은 꺼져 있다. 반면 기존 원본 Print
+`pdf/hwpspec-2024.pdf`에서 같은 본문에 사용된 내장 글꼴은 함초롬바탕 Bold다.
+기존 HWPX 저장본의 별도 한컴 Print에는 함초롬바탕 Regular가 포함되어 있다.
+원본 속성과 기존 Print의 굵기가 다르므로 2px 실루엣이 100.00%여도 굵기 일치로
+판정하지 않는다. 두 Print의 글꼴 선택 환경과 실제 표기 차이를 확인하며 문서별
+굵기 강제나 독립 근거 없는 회귀 기대값 변경은 하지 않는다.
+
+원본 레코드의 그림 사용 여부와 4바이트 그림 정보의 ID를 분리하고 HWPX manifest의
+실제 항목에 연결하는 보정 후보를 확인했다. 원본 HWP와 새 HWPX 저장본의 94쪽
+Native raw는 기존 원본 한컴 Print 대비 각각 100.00%이며, 둘 다 파란 책을 표시했다.
+이 선택 쪽 측정 바이너리는 패턴 효과의 HWPX 사양 확인 전 빌드이며 해당 원본의
+그림 효과는 원본 그대로(`REAL_PIC`)다. 최종 코드에서는 새로 빌드해 전쪽을 재검증한다.
+HWP→HWPX→HWP→HWPX 왕복에서도 참조된 PNG 바이트가 원본과 같다. 독립 Print의
+본문 굵기 차이는 위와 같이 별도로 남아 있다. 최소 글꼴 집중 회귀 13건은 모두
+통과했고 앞서 실패한 원본 쪽별 본문 비교도 기존 기대값을 유지한 채 통과했다.
+이는 선택한 94쪽 Native 및 집중 검사 결과이며 전쪽·fresh WASM 검증은 아니다.
