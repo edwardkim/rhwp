@@ -69,3 +69,14 @@ Native 최저 98.79%, fresh WASM 최저 98.72%이며 양쪽 모두 90% 미만은
 [WASM 전체 TSV](../assets/issue_8381/followup8438/wasm-all.tsv).
 9·15쪽의 글상자와 흐름 본문, 13쪽 제목 줄바꿈을 직접 대조했다.
 [9쪽 review](../assets/issue_8381/followup8438/native-review-009.png) · [9쪽 overlay](../assets/issue_8381/followup8438/native-overlay-009.png) · [13쪽 review](../assets/issue_8381/followup8438/native-review-013.png) · [13쪽 overlay](../assets/issue_8381/followup8438/native-overlay-013.png) · [15쪽 review](../assets/issue_8381/followup8438/native-review-015.png) · [15쪽 overlay](../assets/issue_8381/followup8438/native-overlay-015.png).
+
+### 새 base의 저장본 확인
+
+[PR #8309](https://github.com/edwardkim/rhwp/pull/8309) 반영 base
+`d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d`에서 `target/pr-review` Native
+실행 파일(SHA-256 `34dfddd062947e91c33cb3c2b2c16a10f9903d2d1184fcdb646683e6a0dc2f1f`)로
+같은 PDF를 다시 편집 우선 가져오기 했다. 결과 HWP는 16쪽이며 SHA-256
+`edaf8172427572450503f3265fca95b1c1d2c9673c1e5b25528f5b55294a043f`로 위 기존
+Print 입력과 바이트 단위로 일치한다. 새 base와 이전 검증 코드 사이의 렌더러·
+파서·HWPX 저장기는 변경되지 않았고 후속 브랜치에도 제품 코드 차이가 없어
+위 기존 TSV와 Print 이미지를 재사용한다.
