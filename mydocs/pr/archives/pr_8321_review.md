@@ -111,3 +111,12 @@ WMFC 폴백과 리터럴 소프트 하이픈을 함께 보정한 후보로 동�
 하이픈으로 보인다. [2쪽 review](../assets/issue_8315/followup8438/native-hyphen-review-002.png)와
 [overlay](../assets/issue_8315/followup8438/native-hyphen-overlay-002.png)를 직접 확인했다.
 전체 Native TSV와 fresh WASM은 별도로 산출 중이다.
+
+같은 보정이 [PR #8026](https://github.com/edwardkim/rhwp/pull/8026)의 별도 HWP
+리터럴 대조에도 적용되는지 확인했더니 마지막 줄의 하이픈 뒤 간격이 벌어진다.
+독립 Print에서 `와`의 시작은 174.505425pt(96 DPI에서 약 232.67px)인데,
+보정 전 렌더 트리는 232.7px, 현재 후보는 238.7px이다. `K­MOOC ` 런의 폭이
+61.7px에서 67.8px로 바뀌었고, 표시 문자열 `-`가 공통 폭 측정에도 사용되는
+것을 확인했다. 문자 모양만 바꾸고 원문 메트릭을 유지해야 하는 리터럴과 실제
+줄 끝 하이픈의 전진을 구분하는 공통 계약이 필요하다. 현재 후보는 이 차이의
+보정과 재검증을 완료하기 전이므로 최종 통과로 판정하지 않는다.
