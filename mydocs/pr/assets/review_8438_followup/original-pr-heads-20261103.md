@@ -6,6 +6,8 @@
 2026-11-03 01:02 KST에 통합 PR 본문의 번호와 GitHub 열린 PR 목록을 다시
 대조했다. 열린 원 PR은 아래 11개이며 목록과 head 모두 이전 조회와 같았다.
 
+2026-11-03 01:40경 KST GitHub GraphQL에서 아래 11개 PR을 다시 조회했으며 모두 OPEN이고 head는 표와 일치했다. 통합 PR 목록 전체를 새로 검색한 결과는 아니므로 새로 열린 다른 PR의 유무까지 뜻하지 않는다.
+
 | 원 PR | 상태 | head SHA |
 | --- | --- | --- |
 | [PR #8316](https://github.com/edwardkim/rhwp/pull/8316) | OPEN | `8f53775fa506fc35e820dfe5d8632d0c6b8aafb6` |
