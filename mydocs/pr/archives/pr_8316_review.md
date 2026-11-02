@@ -23,6 +23,17 @@
 
 이 결과는 두 입력에 관한 것이며 원 PR에 제시된 나머지 문서의 최종 후보 검증을 대신하지 않는다.
 
+## 속기록·HWP3 변환본 전쪽 재확인
+
+최종 제품 코드의 기존 Native 실행 파일과 fresh WASM으로 원 PR에 제시된 속기록 36쪽, `hwp3-sample-hwp5.hwp` 16쪽을 같은 독립 한컴 2020 Print와 96 DPI, 호환 모드 2022로 다시 비교했다. 속기록 전쪽 최저는 Native 95.49%, WASM 95.59%, HWP3 변환본 전쪽 최저는 각각 97.33%, 99.90%다. 양쪽 전체 쪽수는 PDF와 같고 90% 미만은 없다.
+
+| 원본 | Native TSV | WASM TSV | 대표 확인 쪽 |
+| --- | --- | --- | --- |
+| 속기록 | [36쪽](../assets/issue_8136/final-integration-8438/native-briefing.tsv) | [36쪽](../assets/issue_8136/final-integration-8438/wasm-briefing.tsv) | [36쪽 review](../assets/issue_8136/final-integration-8438/native-briefing-p036-review.png) · [overlay](../assets/issue_8136/final-integration-8438/native-briefing-p036-overlay.png) |
+| HWP3 변환본 | [16쪽](../assets/issue_8136/final-integration-8438/native-h3s5.tsv) | [16쪽](../assets/issue_8136/final-integration-8438/wasm-h3s5.tsv) | [5쪽 review](../assets/issue_8136/final-integration-8438/native-h3s5-p005-review.png) · [overlay](../assets/issue_8136/final-integration-8438/native-h3s5-p005-overlay.png) |
+
+원 PR 당시 head TSV와 비교하면 속기록 Native 36쪽은 97.32%에서 95.49%, HWP3 변환본 Native 5쪽은 99.47%에서 97.33%다. 원 PR은 별도의 글꼴 디렉터리를 명시했으나 이번에는 시스템 글꼴을 사용했다. HWP3 5쪽 제목에서 Native와 PDF의 글자 폭 차이를 직접 확인했으므로 글꼴 선택·기준 조건을 조사한다. 이 수치만으로 동일 글꼴 조건의 회귀 여부를 단정하지 않는다.
+
 ## 접수와 적용
 
 - 원 PR: [#8316](https://github.com/edwardkim/rhwp/pull/8316), 작성자 `planet6897`, reviewer `jangster77`.
