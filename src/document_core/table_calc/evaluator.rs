@@ -223,15 +223,19 @@ fn eval_function(
         "ABS" => unary_fn(args, ctx, get_cell, f64::abs),
         "SQRT" => unary_fn(args, ctx, get_cell, f64::sqrt),
         "EXP" => unary_fn(args, ctx, get_cell, f64::exp),
-        "LOG" => unary_fn(args, ctx, get_cell, f64::ln),
-        "LOG10" => unary_fn(args, ctx, get_cell, f64::log10),
+        // 한컴 도움말·한/글 12.30: LOG는 상용로그(LOG(100)=2), LN이 자연로그다.
+        "LOG" | "LOG10" => unary_fn(args, ctx, get_cell, f64::log10),
+        "LN" => unary_fn(args, ctx, get_cell, f64::ln),
         "SIN" => unary_fn(args, ctx, get_cell, f64::sin),
         "COS" => unary_fn(args, ctx, get_cell, f64::cos),
         "TAN" => unary_fn(args, ctx, get_cell, f64::tan),
         "ASIN" => unary_fn(args, ctx, get_cell, f64::asin),
         "ACOS" => unary_fn(args, ctx, get_cell, f64::acos),
         "ATAN" => unary_fn(args, ctx, get_cell, f64::atan),
-        "RADIAN" => unary_fn(args, ctx, get_cell, |d| d * std::f64::consts::PI / 180.0),
+        "DEGTORAD" | "RADIAN" => {
+            unary_fn(args, ctx, get_cell, |d| d * std::f64::consts::PI / 180.0)
+        }
+        "RADTODEG" => unary_fn(args, ctx, get_cell, |r| r * 180.0 / std::f64::consts::PI),
         "SIGN" => unary_fn(args, ctx, get_cell, |v| {
             if v > 0.0 {
                 1.0
@@ -244,7 +248,18 @@ fn eval_function(
         "INT" => unary_fn(args, ctx, get_cell, |v| v.trunc()),
         "CEILING" => unary_fn(args, ctx, get_cell, f64::ceil),
         "FLOOR" => unary_fn(args, ctx, get_cell, f64::floor),
-        "ROUND" => unary_fn(args, ctx, get_cell, f64::round),
+        "ROUND" => {
+            // 한/글은 ROUND(x, 자릿수)만 받는다. 자릿수를 뺀 ROUND(x)는 rhwp가 받아 온 형태라 0자리로 둔다.
+            if args.is_empty() || args.len() > 2 {
+                return Err("ROUND는 1~2개 인수 필요 (값, 자릿수)".into());
+            }
+            let value = eval_node(&args[0], ctx, get_cell)?;
+            let digits = match args.get(1) {
+                Some(arg) => eval_node(arg, ctx, get_cell)?,
+                None => 0.0,
+            };
+            Ok(round_to_digits(value, digits))
+        }
         "TRUNC" => unary_fn(args, ctx, get_cell, f64::trunc),
         "MOD" => {
             if args.len() < 2 {
@@ -270,6 +285,31 @@ fn eval_function(
             }
         }
         _ => Err(format!("지원하지 않는 함수: {}", name)),
+    }
+}
+
+/// 소수점 아래 `digits` 자리에서 반올림한다(음수면 소수점 위, 소수 부분은 버린다). 한/글 12.30처럼
+/// 0.5는 0에서 먼 쪽으로 올리고, 이진 표현 오차를 15자리 유효 숫자에서 걷어 ROUND(2.675,2)를
+/// 2.68로 낸다.
+fn round_to_digits(value: f64, digits: f64) -> f64 {
+    let digits = digits.trunc().clamp(-308.0, 308.0) as i32;
+    let scale = 10f64.powi(digits.abs());
+    let scaled = if digits >= 0 {
+        value * scale
+    } else {
+        value / scale
+    };
+    if !scaled.is_finite() || !scale.is_finite() {
+        return value;
+    }
+    let rounded = format!("{scaled:.14e}")
+        .parse::<f64>()
+        .unwrap_or(scaled)
+        .round();
+    if digits >= 0 {
+        rounded / scale
+    } else {
+        rounded * scale
     }
 }
 
