@@ -143,7 +143,9 @@ WASM 89.19%로 90%를 넘지 못했다. 글꼴 공급만으로 해결됐다고 �
 기준 전쪽과 fresh WASM은 계속 확인 중이다.
 
 같은 후보의 한컴 2024 Print 기준 [Native 전쪽 TSV](../assets/issue_8305/followup8438/native-wmfc-2024-all.tsv)는
-64쪽 중 최저 42쪽 90.69%이며 90% 미만과 누락은 없다. 최저 쪽의 직접 판독과
+64쪽 중 최저 42쪽 90.69%이며 90% 미만과 누락은 없다. [최저 쪽 review](../assets/issue_8305/followup8438/native-wmfc-review-042.png)·
+[overlay](../assets/issue_8305/followup8438/native-wmfc-overlay-042.png)를 직접 대조해
+차트 선·점·값과 표의 내용·배치를 확인했다. 차트 값 글꼴의 굵기 차이는 남아 있으며,
 fresh WASM 전쪽 대조는 별도로 진행한다.
 
 회귀 대조군 sample16 HWPX의 메타파일 세 개(`image3.WMF`, `image5.WMF`, `image7.wmf`)에서는 WMFC 서명이 발견되지 않았다. 반면 이 차트의 `image7.wmf`는 앞서 확인한 유효한 WMFC 내장 EMF를 가진다. 이 바이트 차이는 일반 WMF의 기존 장치 계약과 내장 EMF를 선택한 새 경로를 구분할 수 있는 근거이며, 파일명이나 문서 번호로 동작을 갈라야 한다는 뜻은 아니다.
