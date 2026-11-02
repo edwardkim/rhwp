@@ -1,7 +1,7 @@
 //! 검사 유형: 관계형.
-//! 주석 갱신: 2026-11-03T02:15:53+09:00; 직전 파일 커밋: 2026-10-22T01:37:42+09:00 (7346a928eed0d7ce7460aa4c415cf3c81002f1e8).
-//! 2026-10-22, 96 DPI, 한컴 2024 Print와 2px raw 실루엣 비교: HWP 1쪽 Native 99.97226%·fresh WASM 99.97821%, HWPX 1쪽 Native 99.33618%·fresh WASM 99.33179%.
-//! 근거: mydocs/pr/archives/pr_8026_review.md; 두 입력 모두 전 1쪽, 표시 변경 이후 재검증 필요.
+//! 주석 갱신: 2026-11-03T04:02:37+09:00; 직전 파일 커밋: 2026-11-03T02:38:34+09:00 (159a0df0465db71c25f653016286b3dc2da074d6).
+//! 2026-11-03, 96 DPI, 2px raw 실루엣, 독립 한컴 2024 Print: HWP 1쪽 Native 99.99638%·fresh WASM 100.00000%, HWPX 1쪽 Native 99.40819%·fresh WASM 99.40478%. 두 입력 모두 전체 1쪽이며 최저값은 해당 1쪽 수치다.
+//! 근거: pdf/issue7993/soft-hyphen-2024.pdf 및 mydocs/pr/assets/issue_8315/followup8438/의 native-control-7993-{hwp,hwpx}.tsv·wasm-control-7993-{hwp,hwpx}.tsv와 양 경로 review·overlay PNG.
 //! [#7993] 소프트 하이픈 제어 표기 — 한/글의 HWPX 요소 이름은 `<hp:hypen/>` 이다.
 //!
 //! 한/글은 소프트 하이픈 제어 문자를 `<hp:hypen/>` 으로 적고 `<hp:hyphen/>` 은 모르는 요소로
@@ -18,12 +18,32 @@
 use std::io::{Cursor, Read};
 
 use rhwp::document_core::DocumentCore;
+use rhwp::renderer::composer::{effective_text_for_metrics, ComposedTextRun};
 use rhwp::wasm_api::HwpDocument;
 use serde_json::Value;
 
 const HWPX: &str = "samples/issue7993/soft-hyphen.hwpx";
 const HWP: &str = "samples/issue7993/soft-hyphen-2024.hwp";
 const SOFT_HYPHEN_CONTROL_BIT: u32 = 1 << 0x18;
+
+#[test]
+fn literal_soft_hyphen_keeps_source_advance_while_control_uses_its_display() {
+    let source = "K\u{00AD}MOOC";
+    let display = "K-MOOC";
+    let literal = ComposedTextRun {
+        text: source.into(),
+        display_text: Some(display.into()),
+        literal_soft_hyphen: true,
+        ..Default::default()
+    };
+    assert_eq!(effective_text_for_metrics(&literal), source);
+
+    let control = ComposedTextRun {
+        literal_soft_hyphen: false,
+        ..literal
+    };
+    assert_eq!(effective_text_for_metrics(&control), display);
+}
 
 fn read(path: &str) -> Vec<u8> {
     std::fs::read(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(path)).expect("read")

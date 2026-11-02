@@ -135,10 +135,21 @@ WMFC 폴백과 리터럴 소프트 하이픈을 함께 보정한 후보로 동�
 같은 독립 Print PDF를 96 DPI로 다시 대조한 결과 #7993 HWP 1쪽 99.99638%,
 HWPX 1쪽 99.40819%, #8136 HWPX 1·2쪽 99.90447%·98.95550%다.
 HWP의 마지막 줄 `와` 시작은 현재 렌더 트리 x=232.7px로, 독립 Print의
-174.505425pt(약 232.67px)와 일치한다. [#7993 review](../../../output/pr-review/planet6897-ordered-20261031/book-validation/literal-hyphen-final-native/issue7993-hwp/review/review_001.png)·
-[overlay](../../../output/pr-review/planet6897-ordered-20261031/book-validation/literal-hyphen-final-native/issue7993-hwp/overlay/overlay_001.png),
-[#8136 2쪽 review](../../../output/pr-review/planet6897-ordered-20261031/book-validation/literal-hyphen-final-native/issue8136-hwpx/review/review_002.png)·
-[overlay](../../../output/pr-review/planet6897-ordered-20261031/book-validation/literal-hyphen-final-native/issue8136-hwpx/overlay/overlay_002.png)를 직접 확인했다.
-페이지별 표시값 TSV는 `output/pr-review/planet6897-ordered-20261031/book-validation/literal-hyphen-final-native-tsv/`에 있다.
-이 단계의 수치는 Native 결과이며 fresh WASM과 #8389·#8397 최종 전쪽 대조를
-완료한 뒤 최종 판정을 갱신한다.
+174.505425pt(약 232.67px)와 일치한다. [#7993 review](../assets/issue_8315/followup8438/native-control-7993-hwp-review-001.png)·
+[overlay](../assets/issue_8315/followup8438/native-control-7993-hwp-overlay-001.png),
+[#8136 2쪽 review](../assets/issue_8315/followup8438/native-literal-review-002.png)·
+[overlay](../assets/issue_8315/followup8438/native-literal-overlay-002.png)를 직접 확인했다.
+페이지별 Native TSV는 [#8136 HWPX](../assets/issue_8315/followup8438/native-literal-final.tsv)와
+[#7993 HWP](../assets/issue_8315/followup8438/native-control-7993-hwp.tsv)·
+[#7993 HWPX](../assets/issue_8315/followup8438/native-control-7993-hwpx.tsv)에 보존했다.
+같은 소스로 빌드한 fresh WASM(`rhwp_bg.wasm` SHA-256
+`eda26e7ad93a87c7e9aed712e83ae0cddce993aa9939d25cfaf427c8cbe685c1`)은
+#7993 HWP 1쪽 100.00000%, HWPX 1쪽 99.40478%, #8136 HWPX 1·2쪽
+99.85919%·98.63884%다. [#7993 WASM review](../assets/issue_8315/followup8438/wasm-control-7993-hwp-review-001.png)·
+[overlay](../assets/issue_8315/followup8438/wasm-control-7993-hwp-overlay-001.png)와
+[#8136 WASM 2쪽 review](../assets/issue_8315/followup8438/wasm-literal-review-002.png)·
+[overlay](../assets/issue_8315/followup8438/wasm-literal-overlay-002.png)를 직접 확인했다.
+페이지별 fresh WASM TSV는 [#8136 HWPX](../assets/issue_8315/followup8438/wasm-literal-final.tsv),
+[#7993 HWP](../assets/issue_8315/followup8438/wasm-control-7993-hwp.tsv),
+[#7993 HWPX](../assets/issue_8315/followup8438/wasm-control-7993-hwpx.tsv)에 보존했다.
+#8389·#8397 최종 전쪽 대조를 완료한 뒤 최종 판정을 갱신한다.
