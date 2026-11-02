@@ -4641,8 +4641,10 @@ let body_height=match nested_body_heights
                             hwpunit_to_px(seg.line_height, self.dpi) + 0.5 >= obj_h
                         })
                     });
-                    let trust_stored = (depth > 0 || table.common.treat_as_char)
-                        && non_inline_h > 0.0
+                    // [#8472] 본문 직속 비-TAC 표도 같다 — 배치가 이미 저장 vpos 를 쓰므로 측정이
+                    // 줄 합 + 개체 높이를 따로 쌓으면 그림 앵커 줄이 두 번 들어간다(종합보고서 32쪽
+                    // 차트 칸: 저장 205.7px, 쌓은 값 224.9px).
+                    let trust_stored = non_inline_h > 0.0
                         && (ladder_absorbed_objects
                             || ladder_pushed_following_line
                             || ladder_line_covers_object)

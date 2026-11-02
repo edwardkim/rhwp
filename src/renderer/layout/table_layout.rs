@@ -20582,6 +20582,41 @@ impl LayoutEngine {
             && unit.height <= page_body_h + 0.5
     }
 
+    /// 컷 끝 `j` 가 자리차지 그림 몫(`non_inline_control_range` 를 가진 유닛) 바로 앞이고 그 앞에
+    /// 같은 문단의 글줄 유닛이 있으면, 그 문단의 첫 유닛까지 되감는다.
+    fn rewind_topandbottom_anchor_lines(
+        units: &[CellUnit],
+        start: usize,
+        j: &mut usize,
+        h: &mut f64,
+    ) {
+        let cut = *j;
+        if cut <= start
+            || cut >= units.len()
+            || !units[cut].top_and_bottom_flow
+            || units[cut].non_inline_control_range.is_none()
+        {
+            return;
+        }
+        let para_idx = units[cut].para_idx;
+        let mut first = cut;
+        while first > start
+            && units[first - 1].para_idx == para_idx
+            && units[first - 1].non_inline_control_range.is_none()
+        {
+            first -= 1;
+        }
+        if first == cut {
+            return;
+        }
+        *h -= units[first..cut]
+            .iter()
+            .map(|unit| unit.height)
+            .sum::<f64>();
+        *h = h.max(0.0);
+        *j = first;
+    }
+
     fn rewind_rowbreak_fragment_tail_before_topandbottom_flow(
         table: &crate::model::table::Table,
         units: &[CellUnit],
@@ -23531,6 +23566,12 @@ impl LayoutEngine {
                 // 뒤 TopAndBottom 개체 앞의 텍스트박스 꼬리 fragment 를 다음 조각에
                 // 남겨 continuation 에서 선행 설명 박스가 사라지지 않게 한다.
             }
+            if j < units.len() {
+                // [#8472] 자리차지 그림의 몫은 그 그림을 단 문단의 글줄과 한 덩어리다.
+                // 문단 글줄만 이 조각에 두고 그림 몫을 다음 조각으로 넘기면 그림이 앵커 문단과
+                // 떨어져 다음 쪽 첫머리로 흐른다. 한/글은 그 문단부터 다음 조각에서 시작한다.
+                Self::rewind_topandbottom_anchor_lines(&units, start, &mut j, &mut h);
+            }
             if j < units.len()
                 && units[j..].iter().enumerate().any(|(offset, unit)| {
                     unit.hard_break_before && frame_cut_is_current(j + offset)
@@ -23767,6 +23808,9 @@ impl LayoutEngine {
                 )
             {
                 // `advance_row_cut` 과 같은 후처리다.
+            }
+            if j < units.len() {
+                Self::rewind_topandbottom_anchor_lines(&units, start, &mut j, &mut h);
             }
             if j < units.len()
                 && units[j..].iter().any(|unit| unit.hard_break_before)
