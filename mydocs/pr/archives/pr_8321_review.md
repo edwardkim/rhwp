@@ -27,6 +27,15 @@
 [2쪽 overlay](../assets/issue_8136/integration-planet6897/native-overlay-002.png).
 이 자료는 위에 적은 통합 제품 코드의 결과이며 현재 보정 후보의 재측정 결과는 아니다.
 
+2026-11-03 현재 제품 코드 `dd284b5cda`의 Native 실행 파일
+(SHA-256 `b5c8835e5e3da6b55d5ef4e403ec66819f6a38224dbd91509ee5b732715dd006`)로
+동일 입력과 한컴 2024 Print를 다시 대조했다. [전쪽 TSV](../assets/issue_8315/followup8438/native-current.tsv)의
+1·2쪽은 각각 99.90%·98.96%로 위 통합 제품 코드의 표시값과 같다. 2쪽의
+[비교](../assets/issue_8315/followup8438/native-review-002.png)와
+[overlay](../assets/issue_8315/followup8438/native-overlay-002.png)에서 기호와
+앞뒤 글자의 위치를 확인했다. 이는 Native 결과이며 현재 코드의 fresh WASM
+재측정과 이 PR 전체의 최종 판정을 대신하지 않는다.
+
 2026-11-03 00시경 KST에도 원 PR head와 열린 상태를 재확인했다. [일괄 조회 결과](../assets/review_8438_followup/original-pr-heads-20261103.md)는 기능·시각 최종 판정을 대신하지 않는다.
 
 ## 접수와 적용
