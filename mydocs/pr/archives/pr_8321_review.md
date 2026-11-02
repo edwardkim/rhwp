@@ -12,6 +12,10 @@
 - 제품 코드 `d536455b4e`의 최소 글꼴 전체 회귀는 12,368건 통과·45건 skipped였다. 이 로그에서 확인한 해당 모듈: `issue_4962_font_metric_coverage` 8건, `issue_8315_symbol_slot_advance` 3건. 이 수치는 개별 PR의 독립 Print 검증과는 구분한다.
 - 뒤의 중간 후보·검증 대기 문장은 당시 상태이며 최종 통합 결과가 아니다. 원 PR별 최종 시각·기능 검토와 최신 head 일치 확인은 계속한다.
 
+### 리베이스 차이 대조
+
+원본 `fa80cd8e7f`와 통합 `a9febd969c`의 range-diff는 주변 글꼴 모듈 배치와 체리픽 메타데이터 차이를 표시한다. 기호 슬롯 폭 측정 변경과 회귀 본문은 대응한다. 전체 최종 기능과 시각 판정은 별도로 확인한다.
+
 ## 접수와 적용
 
 - 원 PR: [#8321](https://github.com/edwardkim/rhwp/pull/8321), 작성자 `planet6897`, reviewer `jangster77`.
