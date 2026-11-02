@@ -102,3 +102,12 @@ HWP3 계보 HWPX의 줄 시작을 한컴의 문단 축에 맞게 저장한다.
 첫 실행의 중단과 나머지 307건의 재실행, 정확한 목록 대조는
 [공통 실행 근거](../assets/review_8438_followup/rebase-de2295-rust.md)에 기록했다.
 이는 이 PR의 시각 검증이나 최종 판정을 대신하지 않는다.
+
+### 2026-11-03 최종 코드의 원 PR 입력 전쪽 재검증
+
+제품 코드 `d56930dda7`의 Native와 같은 코드로 새로 빌드한 fresh WASM으로
+이 PR과 관련된 원본 HWP와 현재 저장 HWPX 각 1쪽을 각 독립 한컴 Print PDF와 다시 대조했다.
+전쪽 최저는 Native 98.95%, fresh WASM 98.97%이며, 모든 입력에서 쪽수 일치·누락 0쪽·90% 미만 0쪽이다.
+[입력별 SHA-256·전체 Native/fresh WASM TSV](../assets/review_8438_followup/final-original-inputs/README.md)에
+정확한 원본·PDF·페이지 수와 전쪽 결과를 연결했다. 이 검사는 기존 본문의
+주장 영역 review/overlay 직접 판독과 함께 판단한다.
