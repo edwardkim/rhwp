@@ -2793,10 +2793,14 @@ impl Paragraph {
                         .then(|| order(Slot::Control(r.control_idx)))
                         .flatten();
                     let end = order(Slot::End(ri));
+                    // 계산식 결과 뒤에 친 글자도 한/글처럼 필드 밖에 둔다.
                     let outside = matches!(
                         self.controls.get(r.control_idx),
                         Some(Control::Field(field))
-                            if matches!(field.field_type, FieldType::ClickHere | FieldType::Hyperlink)
+                            if matches!(
+                                field.field_type,
+                                FieldType::ClickHere | FieldType::Hyperlink | FieldType::Formula
+                            )
                     );
                     match () {
                         _ if begin.is_none() && end.is_none() => None,

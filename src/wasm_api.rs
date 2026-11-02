@@ -8437,6 +8437,74 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 셀에 계산식 필드를 넣거나 그 셀 계산식을 바꾼다(한/글 표 > 계산식·쉬운 계산식·블록 계산식).
+    ///
+    /// result_format: `%g`(기본)·`%.Nf`(소수 N자리), 세 자리 쉼표면 끝에 `,`.
+    /// 결과: `{"ok":true,"result":number|null,"text":"…","formula":"…","cells":[{row,col}…]}`.
+    #[wasm_bindgen(js_name = setTableCellFormula)]
+    pub fn set_table_cell_formula(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        control_idx: u32,
+        cell_idx: u32,
+        formula: &str,
+        result_format: &str,
+    ) -> Result<String, JsValue> {
+        self.core
+            .set_table_cell_formula(
+                section_idx as usize,
+                parent_para_idx as usize,
+                control_idx as usize,
+                cell_idx as usize,
+                formula,
+                result_format,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 셀의 계산식 필드를 지우고 결과 글은 일반 글로 남긴다(한/글 계산식 지우기).
+    #[wasm_bindgen(js_name = removeTableCellFormulas)]
+    pub fn remove_table_cell_formulas(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        control_idx: u32,
+        cell_idx: u32,
+    ) -> Result<String, JsValue> {
+        self.core
+            .remove_table_cell_formulas(
+                section_idx as usize,
+                parent_para_idx as usize,
+                control_idx as usize,
+                cell_idx as usize,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 표의 계산식 필드를 다시 계산한다. `edited_cell`은 고친 셀이고 음수면 모두 다시 계산한다
+    /// (손으로 고친 결과는 그 식이 고친 셀을 쓸 때만 다시 계산한다). `paginate`가 거짓이면 셀 쪽
+    /// 나눔을 미룬다. 결과: `{"ok":true,"changed":[셀 번호…],"cellFlowChanged":bool}`.
+    #[wasm_bindgen(js_name = recalculateTableFormulas)]
+    pub fn recalculate_table_formulas(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        control_idx: u32,
+        edited_cell: i32,
+        paginate: bool,
+    ) -> Result<String, JsValue> {
+        self.core
+            .recalculate_table_formulas(
+                section_idx as usize,
+                parent_para_idx as usize,
+                control_idx as usize,
+                usize::try_from(edited_cell).ok(),
+                paginate,
+            )
+            .map_err(|e| e.into())
+    }
+
     /// 글꼴 이름으로 font_id를 조회하거나 새로 생성한다.
     ///
     /// 한글(0번) 카테고리에서 이름 검색 → 없으면 7개 전체 카테고리에 신규 등록.

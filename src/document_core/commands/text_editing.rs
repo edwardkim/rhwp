@@ -1259,11 +1259,14 @@ fn empty_paragraph_after_square_wrap_anchor(anchor: &Paragraph) -> Paragraph {
     para
 }
 
+/// 경계에 친 글자를 필드 밖에 두어야 하는 필드(누름틀·계산식)가 있는 문단인가.
+/// 한/글 12.30은 계산식 결과 3 뒤에 친 9를 필드 밖에 두어, 다시 계산하면 129가 되었다.
 fn has_clickhere_field_range(para: &Paragraph) -> bool {
     para.field_ranges.iter().any(|fr| {
         matches!(
             para.controls.get(fr.control_idx),
-            Some(Control::Field(field)) if field.field_type == FieldType::ClickHere
+            Some(Control::Field(field))
+                if matches!(field.field_type, FieldType::ClickHere | FieldType::Formula)
         )
     })
 }
@@ -1986,6 +1989,34 @@ impl DocumentCore {
         text: &str,
         paginate_immediately: bool,
     ) -> Result<String, HwpError> {
+        self.replace_text_in_cell_field_impl(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+            char_offset,
+            delete_count,
+            text,
+            paginate_immediately,
+            None,
+        )
+    }
+
+    /// 셀 글 교체. `field_control`을 주면 넣는 글을 그 필드가 품는다(계산식 결과).
+    pub(crate) fn replace_text_in_cell_field_impl(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_idx: usize,
+        cell_para_idx: usize,
+        char_offset: usize,
+        delete_count: usize,
+        text: &str,
+        paginate_immediately: bool,
+        field_control: Option<usize>,
+    ) -> Result<String, HwpError> {
         let normalized = normalize_text_newlines(text);
         let text = normalized.as_ref();
         let new_chars_count = text.chars().count();
@@ -2042,8 +2073,18 @@ impl DocumentCore {
             );
         let units_fp_before =
             crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(cell_para);
-        let deleted_count =
-            replace_paragraph_text(cell_para, char_offset, delete_count, text, active, false);
+        let deleted_count = match field_control {
+            Some(control) => cell_para.replace_text_keeping_slots(
+                char_offset,
+                delete_count,
+                text,
+                Some(control),
+                false,
+            ),
+            None => {
+                replace_paragraph_text(cell_para, char_offset, delete_count, text, active, false)
+            }
+        };
         debug_assert_eq!(deleted_count, delete_count);
 
         // 부모 컨트롤 dirty 마킹 (표 또는 글상자)
