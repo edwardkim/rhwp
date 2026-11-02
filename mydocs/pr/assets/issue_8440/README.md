@@ -33,10 +33,11 @@ Native는 `--features native-skia` release 바이너리, fresh WASM은 같은 �
 |---|---|---|
 | 최초 | `bef747b59` (`1a7ae8f5b`) | `bf0f9ad6edc318c518906931408cd151234a16da57db44cc3681458e7bc92f2a` |
 | rebase 뒤 재측정 | `62de2294a` (`c88657d9c`) | `c542999ec3b80e028be67bb36f9dc5628e6accc81fd02f05667e626f0573cedf` |
+| 점유 보존 한정 뒤 재측정 | `85dbf88c5` (`c88657d9c`) | `a998acb1b9115611a818f352b90ec319b90933bd15fae21584978c6935e33591` |
 
-rebase 뒤 새로 빌드한 Native 바이너리로 편집본을 다시 만들면 SHA-256 이 같고(`8009a8f1…`),
+rebase 뒤와 점유 보존 한정(`85dbf88c5`) 뒤에 새로 빌드한 Native 바이너리로 편집본을 다시 만들면 SHA-256 이 같고(`8009a8f1…`),
 전쪽 Native·fresh WASM TSV 는 최초 측정과 바이트 단위로 같으며, 7쪽 review·overlay PNG 도
-바이트 단위로 같다. 아래 수치와 `tsv/`·`png/` 는 두 측정에 공통이다.
+바이트 단위로 같다. 세 측정 모두 같으며, 아래 수치와 `tsv/`·`png/` 는 세 측정에 공통이다.
 
 수정 전 열은 수정 전 편집본(`emc_edit_base.hwpx`)을 같은 기준 PDF 에 대 측정했다. 이번 수정은 편집 경로의
 vpos 재계산만 바꾸고 읽기·렌더 경로는 바꾸지 않으므로, 저장된 수정 전 편집본은 어느 빌드로 그려도 같다.
