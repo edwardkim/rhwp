@@ -1,0 +1,27 @@
+{
+  "version": "1",
+  "default_font": "Arial",
+  "header_text": "Exam images",
+  "footer_text": "1/1",
+  "form_label": "Type A",
+  "questions": [
+    {
+      "number": 1,
+      "stem": "Mixed resources.",
+      "stem_blocks": [
+        {
+          "type": "text",
+          "text": "1. Color A  then B  and repeat ."
+        }
+      ],
+      "choices": [
+        {
+          "label": "A.",
+          "text": "Keep both colors."
+        }
+      ],
+      "media": [],
+      "auto_number": false
+    }
+  ]
+}

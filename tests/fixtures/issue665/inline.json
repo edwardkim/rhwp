@@ -1,0 +1,40 @@
+{
+  "version": "1",
+  "default_font": "Arial",
+  "questions": [
+    {
+      "number": 1,
+      "stem": "Image placement test.",
+      "stem_blocks": [
+        {
+          "type": "text",
+          "text": "Image placement test."
+        },
+        {
+          "type": "image",
+          "ref": "img/diagram.png",
+          "placement": "inline"
+        }
+      ],
+      "choices": [
+        {
+          "label": "A.",
+          "text": "First option."
+        },
+        {
+          "label": "B.",
+          "text": "Second option."
+        }
+      ],
+      "media": [
+        {
+          "id": "img/diagram.png",
+          "natural_w": 640,
+          "natural_h": 160,
+          "target_w_mm": 20,
+          "placement": "inline"
+        }
+      ]
+    }
+  ]
+}

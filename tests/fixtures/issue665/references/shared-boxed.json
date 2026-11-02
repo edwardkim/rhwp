@@ -1,0 +1,85 @@
+{
+  "version": "1",
+  "default_font": "Arial",
+  "passages": [
+    {
+      "id": "shared",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Shared passage."
+        },
+        {
+          "type": "text",
+          "text": ""
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "auto_number": false,
+      "stem": "",
+      "passage_ref": "shared",
+      "stem_blocks": [
+        {
+          "type": "text",
+          "text": "1. Question 1."
+        },
+        {
+          "type": "boxed",
+          "title": "Box",
+          "blocks": [
+            {
+              "type": "text",
+              "text": "Inside  box."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": ""
+        }
+      ],
+      "choices": [
+        {
+          "label": "A.",
+          "text": "Answer."
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "auto_number": false,
+      "stem": "",
+      "passage_ref": "shared",
+      "stem_blocks": [
+        {
+          "type": "text",
+          "text": "2. Question 2."
+        },
+        {
+          "type": "boxed",
+          "title": "Box",
+          "blocks": [
+            {
+              "type": "text",
+              "text": "Inside  box."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": ""
+        }
+      ],
+      "choices": [
+        {
+          "label": "A.",
+          "text": "Answer."
+        }
+      ]
+    }
+  ]
+}

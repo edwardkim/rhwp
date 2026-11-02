@@ -1,0 +1,22 @@
+{
+  "above": {
+    "pictures": 0,
+    "placeholder": 1,
+    "resources": 0
+  },
+  "between": {
+    "pictures": 0,
+    "placeholder": 1,
+    "resources": 0
+  },
+  "below": {
+    "pictures": 0,
+    "placeholder": 1,
+    "resources": 0
+  },
+  "inline": {
+    "pictures": 0,
+    "placeholder": 1,
+    "resources": 0
+  }
+}

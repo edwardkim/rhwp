@@ -29,3 +29,13 @@ Issue: #665
 - 기준 문서는 새 빌더에서 복사하지 않고 base의 텍스트 빌더와 기존 `edit insert-picture`/`set-picture`로 따로 작성했다. 6종의 한컴 2024 Print job이 성공했다. 실제 제품 `13.0.0.3901`, `pdf_print_method: 0`, `frame_print_to_pdf_ex_one_up`을 확인했다.
 - 같은 기준 문서의 base Native 전쪽 TSV는 배치 4종·runs에서 각 100.00%, shared-boxed에서 93.01%였다. shared-boxed의 이미지·문자 순서와 보기 소유를 직접 확대 확인했다. 이 값은 새 빌더 후보의 검증 결과가 아니다.
 - 다음 실행: 후보 Native/fresh WASM producer → 실제 CLI/저장 재열기 → 동일 독립 Print의 전쪽 TSV·직접 판독 → 조건 충족 뒤 정식 회귀와 필수 lint/전체 회귀.
+
+## 후보 실행 검증 중
+
+- 구현·가이드 로컬 커밋: `d78048a6f0e5f71aa3bdb7d32e703bd5971e3019`.
+- 해당 source의 Native release 빌드는 16분에 완료했다. 실제 CLI 6종·mixed·image-first·JPEG/GIF/BMP/TIFF에서 Picture/BinData 생성을 확인했다. 기본 6종은 encoded PNG 원본 byte 동일성과 파서 재열기를 확인했다.
+- Native 전쪽 TSV: above/between/below/inline/runs/mixed/image-first 각 100.00%, shared-boxed 91.04%(각 1쪽). HWP 저장 및 HWPX 재저장 runs도 각각 100.00%, 두 CLI `--verify` 모두 IR 차이 없음이다.
+- shared-boxed를 같은 생성 HWPX로 base와 head에서 출력한 결과가 동일(91.04%)이다. 기존 편집 API로 따로 만든 reference의 93.01%와 다른 입력 간 수치 차이를 engine 회귀로 해석하지 않는다. 생성 HWPX 자체도 한컴 2024 Print를 추가 산출해 동일한 기준 표시임을 확인했다. 기존 보기 border의 중복 선 차이는 base에도 있고 이미지·문자 소유/순서·누락에 새 결함은 보이지 않았다.
+- 공유 target의 mtime 때문에 최초 head WASM build가 base 산출물을 0.17초에 재사용했다. 해당 산출물은 검증에서 제외하고 작업 소유 최적화만 종료했다. `src/lib.rs` 내용 변경 없이 mtime을 갱신한 뒤 수정 패키지의 실제 재컴파일을 확인했다(`head-wasm-rebuild.log`). 최적화·브라우저 검증은 아직 진행 중이다.
+- 최소 글꼴 환경은 bwrap 파일 시스템 격리로 준비했다. 개인 HFT와 Windows 글꼴을 숨기고 저장소 open-source 글꼴 5개만 Fontconfig에 노출했다. 시각 비교에 별도 공급한 로컬 Arial과 일반 회귀 환경을 구분한다.
+- 변경 Markdown 40개 상대 링크, 스킬 계약 48개, 생성기 103개 파일의 byte 단위 재생성 동일성, 스킬 라우팅 CI gate 3회·부속 검사가 통과했다. 스킬 gate의 rhwp binary probe는 root 실행 파일 부재로 skip했으며 실제 CLI 검증으로 대체했다고 허위 집계하지 않는다.
