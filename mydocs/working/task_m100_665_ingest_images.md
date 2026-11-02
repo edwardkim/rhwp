@@ -39,3 +39,11 @@ Issue: #665
 - 공유 target의 mtime 때문에 최초 head WASM build가 base 산출물을 0.17초에 재사용했다. 해당 산출물은 검증에서 제외하고 작업 소유 최적화만 종료했다. `src/lib.rs` 내용 변경 없이 mtime을 갱신한 뒤 수정 패키지의 실제 재컴파일을 확인했다(`head-wasm-rebuild.log`). 최적화·브라우저 검증은 아직 진행 중이다.
 - 최소 글꼴 환경은 bwrap 파일 시스템 격리로 준비했다. 개인 HFT와 Windows 글꼴을 숨기고 저장소 open-source 글꼴 5개만 Fontconfig에 노출했다. 시각 비교에 별도 공급한 로컬 Arial과 일반 회귀 환경을 구분한다.
 - 변경 Markdown 40개 상대 링크, 스킬 계약 48개, 생성기 103개 파일의 byte 단위 재생성 동일성, 스킬 라우팅 CI gate 3회·부속 검사가 통과했다. 스킬 gate의 rhwp binary probe는 root 실행 파일 부재로 skip했으며 실제 CLI 검증으로 대체했다고 허위 집계하지 않는다.
+
+## 정식 회귀와 남은 게이트
+
+- 실제 재컴파일·wasm-opt를 마친 fresh WASM 전쪽 검증과 확대 판독을 완료했다. 기본 8종과 두 저장 왕복은 각 1쪽이며 전쪽 최저 Native 91.04% / WASM 91.00%다. shared-boxed 이외에는 양쪽 100.00%다.
+- 같은 생성 HWPX의 base/head WASM도 91.00%로 동일했다. 실제 SVG byte와 이미지 payload도 두 빌드에서 동일했다.
+- 이 선행 조건 뒤에만 정식 테스트·입력·독립 Print·TSV·대표 PNG를 커밋 `cba7849e30`으로 등록했다. 검사에서 저장소에 없는 tempfile helper 의존성을 사용한 오류는 기존 std 임시 디렉터리 패턴으로 보정했다. 테스트 source 변경 뒤 자동 suite를 재생성해 실제 9개 검사가 실행되는 것도 확인했다.
+- 최소 글꼴 환경의 focused 결과: 신규 9/9, 기존 ingest 내용 계약 14/14, 기존 HTML 그림 8/8 통과.
+- 이제 전체 release-test, Native Skia 3종, workspace all-target Clippy, 실제 새 문서 보안 검사, 성능 확인과 최종 기록을 완료한다. PR·push·merge·이슈 재종결은 승인 범위에 포함하지 않는다.

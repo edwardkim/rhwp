@@ -37,3 +37,4 @@ base-reference-wasm	below	1	100.00	0	100.00	0
 base-reference-wasm	inline	1	100.00	0	100.00	0
 base-same-input-native	mixed	1	100.00	0	100.00	0
 base-same-input-native	shared-boxed	1	91.04	0	91.04	0
+base-same-input-wasm	shared-boxed	1	91.00	0	91.00	0

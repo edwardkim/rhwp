@@ -17,7 +17,8 @@
 `tests/fixtures/issue665/*.json`과 `img/`는 문항·그림·치수·배치의 원본이다.
 체커보드와 단색 PNG는 직접 생성한 테스트 패턴이며 외부 이미지나 글꼴 프로그램을 포함하지 않는다.
 생성 HWPX/HWP와 별도 기준 HWPX를 목적별 `generated/`, `references/`에 보존했다.
-`inputs.sha256`은 실제 검증한 파일의 동일성 확인용이다.
+`inputs.sha256`은 실제 검증한 파일의 동일성 확인용이다. image-first의 생성 HWPX는 above와
+바이트가 같아 `generated/above.hwpx` 하나를 재사용하며 두 JSON 입력은 각각 보존한다.
 
 독립 기준 HWPX는 새 builder 출력에서 복사하지 않고 **base의 텍스트 빌더와 기존
 `edit insert-picture` → `edit set-picture`**로 따로 작성했다. 명시적 텍스트·문단 순서와
@@ -84,3 +85,7 @@ shared-boxed에는 base에도 있는 보기 border의 중복 선과 작은 세�
 기존 출력 보존, PNG/JPEG/GIF/BMP/TIFF의 실제 CLI 삽입·저장 확인.
 전체 release-test·Native Skia·workspace all-target lint·새 정식 회귀의 최종 결과는
 진행 기록과 최종 보고서에 추가한다. 이 문서만으로 미실행 검사를 완료 판정하지 않는다.
+
+집중 회귀는 최소 글꼴 격리에서 새 검사 9개·기존 시험지 계약 14개·HTML 이미지 8개가 통과했다.
+동일 생성 HWPX의 base WASM도 91.00%였다. SVG 실제 산출물은 base/head byte가 같고 두 원본
+PNG를 모두 보존한다(`svg-consumption.json`).
