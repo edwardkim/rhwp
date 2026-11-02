@@ -165,3 +165,39 @@ fn topbottom_pushdown_height(common: &crate::model::shape::CommonObjAttr, dpi: f
     }
     Some(hwpunit_to_px(common.height as i32, dpi) + hwpunit_to_px(common.margin.bottom as i32, dpi))
 }
+
+/// 문단 기준(세로=문단) 비-TAC 개체의 위끝: 문단 위끝에서 세로 오프셋만큼(px). 위 정렬만 다룬다.
+pub(super) fn para_offset_top_px(ctrl: &Control, dpi: f64) -> Option<f64> {
+    use crate::model::shape::{VertAlign, VertRelTo};
+    let common = match ctrl {
+        Control::Shape(shape) => shape.common(),
+        Control::Picture(picture) => &picture.common,
+        _ => return None,
+    };
+    if common.treat_as_char
+        || !matches!(common.vert_rel_to, VertRelTo::Para)
+        || !matches!(common.vert_align, VertAlign::Top)
+    {
+        return None;
+    }
+    let offset = crate::renderer::float_placement::signed_hwpunit(common.vertical_offset);
+    (offset > 0).then(|| hwpunit_to_px(offset, dpi))
+}
+
+/// 이 쪽 본문 아래로 오프셋된 개체의 배치: 원점은 문단 위끝, 흐름은 현재 위치에서 더 소비하지 않는다.
+pub(super) fn offpage_shape_frame(
+    para_top: f64,
+    offset_top: f64,
+    flow_bottom: f64,
+) -> crate::renderer::float_placement::ParagraphFloatPlacement {
+    use crate::renderer::float_placement::{ParagraphFloatFlow, ParagraphFloatPlacement};
+    ParagraphFloatPlacement {
+        flow: ParagraphFloatFlow::NextLine,
+        anchor_y: para_top,
+        stored_host_origin: None,
+        stored_successor_line_origin: None,
+        table_left: None,
+        table_top: para_top + offset_top,
+        occupied_bottom: flow_bottom,
+    }
+}

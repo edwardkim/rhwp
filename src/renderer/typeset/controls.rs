@@ -524,7 +524,18 @@ pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
     if st.has_spilled_page_tail_float(para_idx, ctrl_idx) {
         return Ok(());
     }
-    let flow = shape_flow::prepare(ctrl, para, ctrl_idx, dpi);
+    let mut flow = shape_flow::prepare(ctrl, para, ctrl_idx, dpi);
+    // [#8462] 문단 기준 세로 오프셋으로 개체 위끝이 이 단 본문 아래끝보다 아래에 놓이면 그
+    // 개체는 이 쪽 흐름의 어느 줄과도 겹치지 않는다. 앵커 지점에서 높이를 밀어 넣지 않고,
+    // 레이아웃도 같은 결과(흐름을 소비하지 않는 배치)를 쓴다(156633674 문단 13 로고: 오프셋
+    // 42163 HU 로 용지 밖, 저장 줄1 vpos = 줄0 끝 63821 로 밀림 없음, 한컴 1쪽).
+    let offpage_top = (matches!(ctrl, Control::Shape(_)) && flow.non_tac_pushdown_h.is_some())
+        .then(|| shape_flow::para_offset_top_px(ctrl, dpi))
+        .flatten()
+        .filter(|top| para_start_height + top >= st.available_height());
+    if offpage_top.is_some() {
+        flow.non_tac_pushdown_h = None;
+    }
     if st.defer_table_host_ole_to_next_column(para_idx, ctrl_idx, ctrl, dpi) {
         return Ok(());
     }
@@ -545,7 +556,14 @@ pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
         }
         st.advance_column_or_new_page_with_storage(storage)?;
     }
-    let accepted_frame = flow.accepted_shape_frame(ctrl, st.current_height);
+    let accepted_frame = match offpage_top {
+        Some(top) => Some(shape_flow::offpage_shape_frame(
+            para_start_height,
+            top,
+            st.current_height,
+        )),
+        None => flow.accepted_shape_frame(ctrl, st.current_height),
+    };
     st.commit_table_host_shape_with_storage(para_idx, ctrl_idx, flow, accepted_frame, storage)?;
     st.register_side_wrap_picture(para_idx, ctrl_idx, para, Some(para_start_height), styles);
 
