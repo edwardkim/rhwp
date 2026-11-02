@@ -76,6 +76,8 @@ Native 최저 95.86%, fresh WASM 최저 95.78%로 90% 미만은 없었다.
 같은 입력의 이전 Print와 시각 결과를 재사용할 수 있다는 뜻이며, 별도 미달이나
 기능 판정을 면제하지 않는다.
 
+이후 제품 코드 `dd284b5cda`의 Native 실행 파일로도 원본을 다시 저장했다. `--verify --verify-pages`는 IR 차이 없음과 전후 29쪽을 확인했고 저장 바이트의 SHA-256은 위 `c5149ebea0e34d78103e8b81def04e4a3cdc72aa9f9bb97dab222cad84dba9ca`와 같았다. 이는 입력 보존 근거이며 현재 진행 중인 WMFC 변경을 포함한 출력의 신규 시각 검증은 아니다.
+
 원 [PR #8378](https://github.com/edwardkim/rhwp/pull/8378)이 통합
 [PR #8438](https://github.com/edwardkim/rhwp/pull/8438)에 제출한
 [기존 한컴 Print](../../../pdf/hwpx_sample2-rhwp-hwpx-2024.pdf)의 입력은
