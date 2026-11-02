@@ -147,3 +147,31 @@ SHA-256은 모두 `23ba4556f4ea2d254f96e23d0038febce2496103b9b464a88ffa27f65db81
 수정 전 관계형 회귀는 실제 `0.83899`, 원본 `0.83078`로 실패했고 수정 후 관련
 최소 글꼴 검사 10건은 통과했다. 현재 단계의 독립 Print 직접 비교와 정상 분할 표
 대조군은 계속 확인한다.
+
+`0b3cbeb360` 제품 코드에서 기존 한컴 2024 Print PDF와 같은 178쪽을 다시 비교했다.
+Native 최저 96.47%, fresh WASM 최저 96.45%이며 두 경로 모두 90% 미만은 없다.
+문제가 지적된 94쪽은 두 경로 모두 100.00%로, 원본 글머리표와 표 뒤 본문 위치를
+직접 확인했다. 수치는 96 DPI의 색상 경계 보정 전 2px 내용 실루엣이다.
+
+- 전쪽 결과: [Native TSV](../assets/review_8438_followup/pr8336-hwpspec-0b3cbeb360/native.tsv), [WASM TSV](../assets/review_8438_followup/pr8336-hwpspec-0b3cbeb360/wasm.tsv)
+- 94쪽: [Native 비교](../assets/review_8438_followup/pr8336-hwpspec-0b3cbeb360/native-p094-review.png), [Native 오버레이](../assets/review_8438_followup/pr8336-hwpspec-0b3cbeb360/native-p094-overlay.png), [WASM 비교](../assets/review_8438_followup/pr8336-hwpspec-0b3cbeb360/wasm-p094-review.png), [WASM 오버레이](../assets/review_8438_followup/pr8336-hwpspec-0b3cbeb360/wasm-p094-overlay.png)
+- 입력 SHA-256: `a57f69af3faacda68af7c424b0b645e00a8adec55854c10b92b02defd807c48a`.
+  독립 Print PDF SHA-256: `206ff1ecc19e4af3812ec88cc73be93afbdbab0a247b97cf837c83b62e2dc8cd`.
+- 최저점 175쪽에서는 원 PR의 쪽 번호·셀 방향 주장과 별개인 제목 시작 위치 차이가
+  보인다. 원본의 빈 개요 머리 형식과 50% 머리 간격을 확인했다. 이 현상은 기존
+  출력에도 있었으며 94쪽 표 원점 보정에 따른 후퇴는 아니다.
+
+이 자료는 해당 문서의 보정 결과이며, 다른 입력의 전쪽 대조·전체 회귀 및 CI를
+대신하지 않는다.
+
+#### 원본 그림 글머리표 보존 추가 확인
+
+위의 검은 원은 **기존 RHWP HWPX 저장본**을 한컴에서 Print했을 때의 결과다.
+원본 `samples/hwpspec.hwp`의 한컴 Print는 검은 원이 아니라 파란 책 그림이다.
+원본 DocInfo의 다섯 번째 글머리표는 그림 사용 값 `1`과 그림 데이터 ID `13`을
+별도로 저장하며, BinData 레코드 순번 13은 저장소 ID 43의 파란 책 PNG를 가리킨다.
+기존 렌더러는 그림 사용 값 `1`을 참조 ID로 오인하고, HWPX 저장은 그림 참조를
+누락한다. 따라서 위 저장본 기준 100%는 기존 잘못 저장된 파일에 대한 일치이며
+원본 HWP에서 HWPX로 변환할 때 책 그림이 보존된다는 증거가 아니다. 원본 BinData
+순번과 HWPX manifest ID를 공통 매핑하고 렌더·저장·다시 열기 및 독립 원본 Print를
+대조한 뒤 다시 판정한다. 기존 쪽별 본문 회귀를 완화하는 것으로 대신하지 않는다.

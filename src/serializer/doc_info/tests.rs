@@ -802,6 +802,7 @@ fn test_serialize_bullet_layout_and_roundtrip() {
         char_shape_id: 2,
         bullet_char: '-',
         image_bullet: 0,
+        hwpx_image_without_ref: false,
         image_data: [0; 4],
         check_bullet_char: '\0',
         raw_para_head: None,
