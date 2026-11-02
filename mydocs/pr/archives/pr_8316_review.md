@@ -48,6 +48,26 @@ Native 기본 조건에서 글머리 `•`의 줄 상자 폭은 8.1 CSSpx, 같�
 
 2026-11-03 00시경 KST에도 원 PR head와 열린 상태를 재확인했다. [일괄 조회 결과](../assets/review_8438_followup/original-pr-heads-20261103.md)는 기능·시각 최종 판정을 대신하지 않는다.
 
+## 2026-11-03 표 저장본의 최종 후보 직접 대조
+
+표와 뒤 문단의 12쪽 원점 오류를 보정한
+[`line-cache-candidate.hwpx`](../assets/issue_8136/followup8438-crop/line-cache-candidate.hwpx)를
+동일 입력의 [한컴 2020 Print PDF](../../../pdf/issue8136/pr8316-line-cache-candidate-2020.pdf)와
+96 DPI에서 전쪽 대조했다. 최종 Native 실행 파일 SHA-256은
+`7d35357fe91cf213bb4143675a7c148bf3f6a9e4facbf93fea765081661b25c5`,
+fresh WASM SHA-256은
+`eda26e7ad93a87c7e9aed712e83ae0cddce993aa9939d25cfaf427c8cbe685c1`이다.
+[Native 전쪽 TSV](../assets/issue_8136/followup8438-crop/native-line-cache-final.tsv)는
+12쪽 최저 99.99%, [WASM 전쪽 TSV](../assets/issue_8136/followup8438-crop/wasm-line-cache-final.tsv)는
+12쪽 전부 100.00%이며 쪽수·누락·90% 미만은 없다.
+문제가 있던 12쪽의 Native [review](../assets/issue_8136/followup8438-crop/native-line-cache-final-review-012.png)·
+[overlay](../assets/issue_8136/followup8438-crop/native-line-cache-final-overlay-012.png)와
+WASM [review](../assets/issue_8136/followup8438-crop/wasm-line-cache-final-review-012.png)·
+[overlay](../assets/issue_8136/followup8438-crop/wasm-line-cache-final-overlay-012.png)를
+직접 판독했다. 표 시작·끝, 내부 항목, 뒤 문단의 순서와 원점이 Print와 일치한다.
+이 입력의 시각 대조는 완료했으며 다른 원 PR 입력·전체 회귀·공개 기준 전쪽
+대조는 계속 진행 중이다.
+
 ## 접수와 적용
 
 - 원 PR: [PR #8316](https://github.com/edwardkim/rhwp/pull/8316), 작성자 `planet6897`, reviewer `jangster77`.
