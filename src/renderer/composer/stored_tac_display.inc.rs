@@ -378,7 +378,7 @@ fn try_convert_pua_display_text<S: crate::storage::Storage>(
                 pua_plain_text_display(*ch).is_some()
                     || map_pua_old_hangul(*ch).is_some()
                     || map_pua_bullet_char(*ch) != *ch
-                    || (soft_hyphen_control && *ch == '\u{00AD}')
+                    || *ch == '\u{00AD}'
             });
             let line_end_char = if Some(run_index) == line_last_run {
                 chars.len().checked_sub(1)
@@ -403,8 +403,10 @@ fn try_convert_pua_display_text<S: crate::storage::Storage>(
                     // `ᄒᆞᆫ` 세 자모가 style/line 경계를 넘더라도 첫 위치에만
                     // `한`을 투영한다. 뒤 두 model char는 offset 공간에만 남긴다.
                     changed = true;
-                } else if soft_hyphen_control && ch == '\u{00AD}' {
-                    if line_end_char == Some(index) {
+                } else if ch == '\u{00AD}' {
+                    // 제어 표기는 줄 끝에서만, 리터럴은 본문에서도 하이픈으로 보인다.
+                    // 모델 문자와 offset은 그대로 유지한다.
+                    if !soft_hyphen_control || line_end_char == Some(index) {
                         storage.push_char(&mut display, '-')?;
                     }
                     changed = true;

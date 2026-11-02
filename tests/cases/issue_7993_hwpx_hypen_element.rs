@@ -1,3 +1,7 @@
+//! 검사 유형: 관계형.
+//! 주석 갱신: 2026-11-03T02:15:53+09:00; 직전 파일 커밋: 2026-10-22T01:37:42+09:00 (7346a928eed0d7ce7460aa4c415cf3c81002f1e8).
+//! 2026-10-22, 96 DPI, 한컴 2024 Print와 2px raw 실루엣 비교: HWP 1쪽 Native 99.97226%·fresh WASM 99.97821%, HWPX 1쪽 Native 99.33618%·fresh WASM 99.33179%.
+//! 근거: mydocs/pr/archives/pr_8026_review.md; 두 입력 모두 전 1쪽, 표시 변경 이후 재검증 필요.
 //! [#7993] 소프트 하이픈 제어 표기 — 한/글의 HWPX 요소 이름은 `<hp:hypen/>` 이다.
 //!
 //! 한/글은 소프트 하이픈 제어 문자를 `<hp:hypen/>` 으로 적고 `<hp:hyphen/>` 은 모르는 요소로
@@ -109,9 +113,10 @@ fn soft_hyphen_control_is_drawn_only_at_line_end() {
     let mut line_end_breaks = 0;
     for (model, drawn) in &lines {
         if model.contains("대조군") {
+            assert!(model.contains('\u{00AD}'), "원문 리터럴 보존: {model:?}");
             assert!(
-                drawn.contains('\u{00AD}'),
-                "리터럴 U+00AD 는 보통 글자로 그린다: {drawn:?}"
+                drawn.contains("K-MOOC") && drawn.contains("Bundes-verfassungs-gericht"),
+                "리터럴 U+00AD 는 인쇄처럼 하이픈으로 표시한다: {drawn:?}"
             );
             continue;
         }
