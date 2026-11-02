@@ -36,7 +36,7 @@
 앞뒤 글자의 위치를 확인했다. 이는 Native 결과이며 현재 코드의 fresh WASM
 재측정과 이 PR 전체의 최종 판정을 대신하지 않는다.
 
-같은 제품 코드로 새로 빌드한 WASM(SHA-256 `cfe1e98fc6c4d7b2a4ac2fa23c6565fc3b32afe2d4ecf2ce71880d22318e86d8`)에서도 같은 두 쪽을 독립 Print와 비교했다. [fresh WASM 전쪽 TSV](../assets/issue_8315/followup8438/wasm-current.tsv)의 1·2쪽은 각각 99.86%·98.37%이며, 기존 통합 결과의 표시값과 같다. [2쪽 비교](../assets/issue_8315/followup8438/wasm-review-002.png)와 [overlay](../assets/issue_8315/followup8438/wasm-overlay-002.png)를 함께 보존한다. 이 입력의 전쪽 측정 결과이며 PR 전체의 최종 판정은 별도로 진행한다.
+같은 제품 코드로 새로 빌드한 WASM(SHA-256 `cfe1e98fc6c4d7b2a4ac2fa23c6565fc3b32afe2d4ecf2ce71880d22318e86d8`)에서도 같은 두 쪽을 독립 Print와 비교했다. [fresh WASM 전쪽 TSV](../assets/issue_8315/followup8438/wasm-current.tsv)의 1·2쪽은 각각 99.86%·98.37%이며, 기존 통합 결과의 표시값과 같다. [2쪽 비교](../assets/issue_8315/followup8438/wasm-review-002.png)와 [overlay](../assets/issue_8315/followup8438/wasm-overlay-002.png)를 함께 보존한다. 2쪽 `00AD` 행은 한컴 Print에 하이픈이 보이지만 RHWP에는 보이지 않는 차이가 있어 원본과 원 PR의 범위를 추가 대조한다. 이 입력의 전쪽 측정 결과이며 PR 전체의 최종 판정은 별도로 진행한다.
 
 2026-11-03 00시경 KST에도 원 PR head와 열린 상태를 재확인했다. [일괄 조회 결과](../assets/review_8438_followup/original-pr-heads-20261103.md)는 기능·시각 최종 판정을 대신하지 않는다.
 
