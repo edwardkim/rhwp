@@ -212,8 +212,8 @@ pub(super) fn anchor_line_rewinds_to_next_page(para: &Paragraph, ctrl_idx: usize
     if para.stored_text_partition_is_dirty() || para.cell_format_vpos_dirty {
         return false;
     }
-    let Some(line) = crate::renderer::layout::control_line_seg_index(para, ctrl_idx)
-        .filter(|&line| line > 0)
+    let Some(line) =
+        crate::renderer::layout::control_line_seg_index(para, ctrl_idx).filter(|&line| line > 0)
     else {
         return false;
     };
