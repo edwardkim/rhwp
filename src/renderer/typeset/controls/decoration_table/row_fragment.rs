@@ -17,7 +17,7 @@ pub(super) fn query(
     row: usize,
     available: f64,
 ) -> Option<OverlayRowFragment> {
-    if !matches!(table.page_break, TablePageBreak::RowBreak)
+    if !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
         || table.cells.iter().any(|cell| {
             usize::from(cell.row) <= row
                 && row < usize::from(cell.row) + usize::from(cell.row_span)

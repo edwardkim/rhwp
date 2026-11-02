@@ -84,7 +84,7 @@ impl<'a> CoanchoredTableQuery<'a> {
             && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
             && matches!(table.common.vert_rel_to, VertRelTo::Para)
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && signed_hwpunit(table.common.vertical_offset) > 0
@@ -104,7 +104,7 @@ impl<'a> CoanchoredTableQuery<'a> {
             && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
             && matches!(table.common.vert_rel_to, VertRelTo::Para)
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
     }

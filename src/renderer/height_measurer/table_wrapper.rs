@@ -54,7 +54,7 @@ pub(crate) fn wrapper_owns_paint_or_horizontal_frame(
 /// 통째로 배치하는 글자 취급 래퍼의 외곽선은 기존 래퍼 배치가 직접 그리므로
 /// 그 외곽선만으로 자식 행 측정과 빈 호스트 줄을 다시 합산하지 않는다.
 pub(super) fn wrapper_owns_row_fragment_frame(table: &Table, styles: &ResolvedStyleSet) -> bool {
-    if table.common.treat_as_char || table.page_break != TablePageBreak::RowBreak {
+    if table.common.treat_as_char || table.layout_page_break() != TablePageBreak::RowBreak {
         return false;
     }
     let has_border = |id: u16| {
@@ -131,8 +131,8 @@ pub(crate) fn unrestricted_wrapper_frame(table: &Table, nested: &Table, dpi: f64
     let common = &nested.common;
     if table.row_count != 1
         || table.col_count != 1
-        || table.page_break != TablePageBreak::None
-        || nested.page_break != TablePageBreak::None
+        || table.layout_page_break() != TablePageBreak::None
+        || nested.layout_page_break() != TablePageBreak::None
         || common.treat_as_char
         || common.flow_with_text
         || common.text_wrap != TextWrap::TopAndBottom

@@ -91,7 +91,7 @@ pub(crate) fn stored_text_page_frame(
     first_paragraph: usize,
 ) -> Option<StoredTextPageFrame> {
     if table.common.treat_as_char
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || cell.row_span <= 1
     {
         return None;

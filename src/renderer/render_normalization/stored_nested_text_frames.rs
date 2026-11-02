@@ -85,7 +85,7 @@ pub(crate) fn prove_with_storage<S: crate::storage::Storage>(
     crate::storage::with_optional(|failure| {
         let host = parent.paragraphs.get(host_index)?;
         let successor = parent.paragraphs.get(host_index + 1)?;
-        if owner.page_break != TablePageBreak::RowBreak
+        if owner.layout_page_break() != TablePageBreak::RowBreak
         || owner.common.treat_as_char
         || parent.dirty_flag
         || host.stored_text_partition_is_dirty()
@@ -99,7 +99,7 @@ pub(crate) fn prove_with_storage<S: crate::storage::Storage>(
         || host.line_segs[0].tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         || successor.line_segs[0].tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         // HWPX의 CELL은 내부 RowBreak다. serializer의 문자열과 내부 enum을 혼동하지 않는다.
-        || child.page_break != TablePageBreak::RowBreak
+        || child.layout_page_break() != TablePageBreak::RowBreak
         || child.common.treat_as_char
         || !child.common.flow_with_text
         || child.common.text_wrap != TextWrap::TopAndBottom

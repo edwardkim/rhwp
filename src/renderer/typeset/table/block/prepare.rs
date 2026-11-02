@@ -103,7 +103,7 @@ impl TypesetEngine {
         let row_has_stored_square_picture_flow = |row: usize| {
             if !st.profile.hwp5_stored_pagination_layout()
                 || !matches!(
-                    row_geometry_table.page_break,
+                    row_geometry_table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 )
             {
@@ -211,7 +211,7 @@ impl TypesetEngine {
                 .render_normalization
                 .table_text_reflowed(row_geometry_table)
             && std::ptr::eq(row_geometry_table, table)
-            && table.page_break == crate::model::table::TablePageBreak::CellBreak
+            && table.layout_page_break() == crate::model::table::TablePageBreak::CellBreak
             && !table.common.treat_as_char
             && is_para_topbottom_float(&table.common)
             && table.common.height > 0
@@ -434,7 +434,7 @@ impl TypesetEngine {
                 && st.profile.hwp5_stored_pagination_layout()
                 && is_para_topbottom_float(&table.common)
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 )
                 && !para_has_visible_text(para)
@@ -469,7 +469,7 @@ impl TypesetEngine {
         let queue_table_footnotes = !table.common.treat_as_char
             && (st.profile.hwp5_stored_pagination_layout() || hwpx_stored_table_footnote_queue)
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && !ft.table_footnotes.is_empty()
@@ -652,7 +652,7 @@ impl TypesetEngine {
                     ) || ((st.profile.hwp5_stored_pagination_layout()
                         || st.profile.hwpx_stored_layout())
                         && !st.profile.session_edited()
-                        && matches!(table.page_break, crate::model::table::TablePageBreak::RowBreak)
+                        && matches!(table.layout_page_break(), crate::model::table::TablePageBreak::RowBreak)
                         && crate::renderer::float_placement::ParagraphFloatPlacement::stored_host_lines_are_valid(
                             para, table, ctrl_idx,
                         )) || (para_has_non_whitespace_text(para)
@@ -1014,7 +1014,7 @@ impl TypesetEngine {
                 && !table.common.treat_as_char
                 && is_para_topbottom_float(&table.common)
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 )
                 && ft.table_footnotes.is_empty()
@@ -1074,7 +1074,7 @@ impl TypesetEngine {
                     && !table.common.treat_as_char
                     && is_para_topbottom_float(&table.common)
                     && matches!(
-                        table.page_break,
+                        table.layout_page_break(),
                         crate::model::table::TablePageBreak::RowBreak
                     )
                     && !para_has_visible_text(para)
@@ -1368,7 +1368,7 @@ impl TypesetEngine {
                 && !table.common.treat_as_char
                 && is_para_topbottom_float(&table.common)
                 && matches!(
-                    table.page_break,
+                    table.layout_page_break(),
                     crate::model::table::TablePageBreak::RowBreak
                 ))
                 || native_hwp5_host_precedes_first_fragment)
@@ -1666,7 +1666,7 @@ impl TypesetEngine {
                             )
                             || table.common.vertical_offset != 0
                             || !matches!(
-                                table.page_break,
+                                table.layout_page_break(),
                                 crate::model::table::TablePageBreak::RowBreak
                             )
                             || table.row_count <= 1

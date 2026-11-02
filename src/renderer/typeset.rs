@@ -626,7 +626,7 @@ fn partial_rowbreak_fragment_spacing_px(
 ) -> (f64, f64) {
     let repeats_outer_margin = !table.common.treat_as_char
         && is_para_topbottom_float(&table.common)
-        && match table.page_break {
+        && match table.layout_page_break() {
             crate::model::table::TablePageBreak::RowBreak => repeat_outer_margin,
             crate::model::table::TablePageBreak::CellBreak => repeat_cellbreak_outer_margin,
             crate::model::table::TablePageBreak::None => false,
@@ -855,7 +855,7 @@ fn native_hwp5_figure_table_overlay_guide_empty(
                         if !table.common.treat_as_char
                             && is_para_topbottom_float(&table.common)
                             && matches!(
-                                table.page_break,
+                                table.layout_page_break(),
                                 crate::model::table::TablePageBreak::RowBreak
                             )
                             && table.row_count == 2
@@ -1889,7 +1889,7 @@ fn is_single_noninline_picture_table(table: &crate::model::table::Table) -> bool
         || table.col_count != 1
         || table.cells.len() != 1
         || !matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         )
     {
@@ -1930,7 +1930,7 @@ use crate::renderer::stored_float_anchor::{
 fn is_stored_anchor_picture_table(table: &crate::model::table::Table) -> bool {
     !table.common.treat_as_char
         && matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         )
         && (is_single_noninline_picture_table(table)
@@ -1952,7 +1952,7 @@ fn is_single_rowbreak_table_with_trustworthy_declared_height(
         || table.col_count != 1
         || table.cells.len() != 1
         || !matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         )
     {
@@ -2026,10 +2026,12 @@ fn cell_has_internal_saved_vpos_reset(cell: &crate::model::table::Cell) -> bool 
 /// 표가 그려진다 — 1490000 149쪽 실측 겹침 134 -> 156. 오프셋 0 float 과 `treat_as_char`
 /// 표는 흐름이 밴드를 실제로 소비하므로 해당 없다.
 pub(in crate::renderer) fn none_table_is_atomic_here(table: &crate::model::table::Table) -> bool {
-    matches!(table.page_break, crate::model::table::TablePageBreak::None)
-        && !(!table.common.treat_as_char
-            && is_para_topbottom_float(&table.common)
-            && signed_hwpunit(table.common.vertical_offset) > 0)
+    matches!(
+        table.layout_page_break(),
+        crate::model::table::TablePageBreak::None
+    ) && !(!table.common.treat_as_char
+        && is_para_topbottom_float(&table.common)
+        && signed_hwpunit(table.common.vertical_offset) > 0)
 }
 
 /// [#7288] «쪽 경계에서» 값 1 «셀 단위로 나눔» 의 **행 원자 규칙**을 이 표에 걸 수 있는가.
@@ -2053,7 +2055,7 @@ pub(in crate::renderer) fn cell_unit_row_is_atomic_here(
     table: &crate::model::table::Table,
 ) -> bool {
     matches!(
-        table.page_break,
+        table.layout_page_break(),
         crate::model::table::TablePageBreak::CellBreak
     )
 }
@@ -2437,7 +2439,7 @@ fn native_hwp5_rowbreak_host_precedes_first_fragment(
         || !visible_host_is_numbered_table_caption(para)
         || !is_para_topbottom_float(&table.common)
         || !matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         )
         || para
@@ -3203,7 +3205,7 @@ fn para_near_rowbreak_table(paragraphs: &[Paragraph], para_idx: usize) -> bool {
                 control,
                 Control::Table(table)
                     if matches!(
-                        table.page_break,
+                        table.layout_page_break(),
                         crate::model::table::TablePageBreak::RowBreak
                     )
             )
@@ -3220,7 +3222,7 @@ fn section_has_zero_high_attr_rowbreak_table(paragraphs: &[Paragraph]) -> bool {
                 control,
                 Control::Table(table)
                     if matches!(
-                        table.page_break,
+                        table.layout_page_break(),
                         crate::model::table::TablePageBreak::RowBreak
                     ) && (table.raw_table_record_attr & 0xff00_0000) == 0
             )
@@ -4318,7 +4320,7 @@ impl TypesetEngine {
             && table.common.treat_as_char
             && table.common.flow_with_text
             && matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             && tac_count == 1
@@ -6535,7 +6537,7 @@ impl TypesetEngine {
         if !para_has_visible_text(para)
             || !crate::renderer::float_placement::is_para_topbottom_float(&table.common)
             || !matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
         {

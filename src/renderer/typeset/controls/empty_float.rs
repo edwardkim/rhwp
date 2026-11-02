@@ -401,7 +401,7 @@ pub(super) fn prepare(
         || table.col_count != 1
         || table.cells.len() != 1
         || !matches!(
-            table.page_break,
+            table.layout_page_break(),
             crate::model::table::TablePageBreak::RowBreak
         )
         || single_rowbreak_declared_height_is_trustworthy;

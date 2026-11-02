@@ -45,7 +45,7 @@ impl LayoutEngine {
             || table.row_count != 1
             || table.col_count != 1
             || table.common.treat_as_char
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
             || cell.dirty_flag
             || !para.text.trim().is_empty()
             || para.stored_text_partition_is_dirty()

@@ -264,7 +264,7 @@ impl super::LayoutEngine {
         accepted: &[crate::renderer::pagination::StraddleCellCarry],
         styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     ) -> bool {
-        if table.page_break != crate::model::table::TablePageBreak::RowBreak
+        if table.layout_page_break() != crate::model::table::TablePageBreak::RowBreak
             || !self.indexed_row_cut_cell_order(table, row).is_empty()
         {
             return false;

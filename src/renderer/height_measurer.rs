@@ -1143,14 +1143,15 @@ pub(crate) fn trim_stored_hwpx_inline_row_trailing_spacing_with_storage<
         // 완결된 HWPX 1×1 CELL 프레임(모델 RowBreak)은 작은 초기 셀 높이를 저장할 수 있다.
         // 저장된 마지막 글자 끝과 안 여백의 합이 바깥 상자를 정확히 닫을 때만
         // 그 상자가 안 여백을 소유한다. 이어지는 셀의 중간 컷과는 다른 계약이다.
-        let single_cell_frame = matches!(table.page_break, TablePageBreak::RowBreak)
+        let single_cell_frame = matches!(table.layout_page_break(), TablePageBreak::RowBreak)
             && table.row_count == 1
             && table.col_count == 1
             && table.cells.len() == 1
             && table.cells[0].vertical_padding_guard_height_hu(table) == table.common.height;
         if !table.common.treat_as_char
             || !(single_cell_frame
-                || (matches!(table.page_break, TablePageBreak::RowBreak) && table.row_count >= 2))
+                || (matches!(table.layout_page_break(), TablePageBreak::RowBreak)
+                    && table.row_count >= 2))
             || measured.row_heights.len() != table.row_count as usize
             || table.common.height == 0
             || table.cells.iter().any(|cell| cell.row_span != 1)
@@ -3994,7 +3995,7 @@ let body_height=match nested_body_heights
                             if stored_square_picture_anchor {
                                 let row_advance = if self.is_native_hwp5
                                     && !table.common.treat_as_char
-                                    && matches!(table.page_break, TablePageBreak::RowBreak)
+                                    && matches!(table.layout_page_break(), TablePageBreak::RowBreak)
                                 {
                                     stored_square_picture_empty_anchor_advance(cell, pidx, styles, self.dpi)
                                         .map_or(0.0, |step| hwpunit_to_px(step, self.dpi))
@@ -4103,7 +4104,7 @@ let body_height=match nested_body_heights
                                 // em 으로 렌더 → synthetic 시 em(max_fs). hwp3 synthetic 선례 확장.
                                 let synthetic_line = p.line_segs.is_empty()
                                     && !p.text.is_empty()
-                                    && matches!(table.page_break, TablePageBreak::CellBreak);
+                                    && matches!(table.layout_page_break(), TablePageBreak::CellBreak);
                                 let line_count = comp.lines.len();
                                 // [#2070 stage10] 저장 LINE_SEG vpos 리셋 줄(원저작
                                 // 분할 흔적)도 전량 계상 — 한글 원본 오라클(개정안{{0}}
@@ -4399,7 +4400,7 @@ let body_height=match nested_body_heights
                     // 일반 표·텍스트 셀·나란히 놓인 단일 그림은 기존 max 규칙을
                     // 유지한다.
                     let stacked_stored_picture_h = if table.common.treat_as_char
-                        && matches!(table.page_break, TablePageBreak::RowBreak)
+                        && matches!(table.layout_page_break(), TablePageBreak::RowBreak)
                         && cell.paragraphs.len() == 1
                         && cell.paragraphs[0].text.trim().is_empty()
                     {
@@ -5089,7 +5090,7 @@ let body_height=match nested_body_heights
                                 // em 으로 렌더 → synthetic 시 em(max_fs). hwp3 synthetic 선례 확장.
                                 let synthetic_line = p.line_segs.is_empty()
                                     && !p.text.is_empty()
-                                    && matches!(table.page_break, TablePageBreak::CellBreak);
+                                    && matches!(table.layout_page_break(), TablePageBreak::CellBreak);
                                 let line_count = comp.lines.len();
                                 // [#2070 stage10] 저장 LINE_SEG vpos 리셋 줄(원저작
                                 // 분할 흔적)도 전량 계상 — 한글 원본 오라클(개정안{{0}}
@@ -5594,7 +5595,7 @@ let body_height=match nested_body_heights
                 if fire && std::env::var("RHWP_DIAG_5757").is_ok() {
                     eprintln!(
                         "DIAG5757 fire rows={row_count} common={common_h:.1} declared={declared_rows_sum:.1} raw={raw_table_height:.1} wrap={:?} pb={:?}",
-                        table.common.text_wrap, table.page_break,
+                        table.common.text_wrap, table.layout_page_break(),
                     );
                 }
                 fire
@@ -5792,7 +5793,7 @@ let body_height=match nested_body_heights
                             // [Issue #1842] 부재 LINE_SEG 셀 → em(max_fs), max_fs*ls% 팽창 방지.
                             let synthetic_line = p.line_segs.is_empty()
                                 && !p.text.is_empty()
-                                && matches!(table.page_break, TablePageBreak::CellBreak);
+                                && matches!(table.layout_page_break(), TablePageBreak::CellBreak);
                             let line_count = comp.lines.len();
                             for (li, line) in comp.lines.iter().enumerate() {
                                 if skip_same_vertpos_composed_fragment(&p.line_segs, line_count, li)
@@ -6060,7 +6061,7 @@ let mut tables=p.controls.iter().filter_map(|c| match c{Control::Table(t)=>Some(
                 .filter(|c| c.row == 0)
                 .any(|c| c.is_header),
             cells: measured_cells,
-            page_break: table.page_break,
+            page_break: table.layout_page_break(),
             row_block_start,
             row_block_end,
         })

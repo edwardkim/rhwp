@@ -22,7 +22,7 @@ pub(crate) fn stored_editor_tail_frame(
     if cell.dirty_flag
         || cell.text_direction != 0
         || table.common.treat_as_char
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || table.cell_spacing != 0
         || cell.height == 0
         || cell.height > i32::MAX as u32

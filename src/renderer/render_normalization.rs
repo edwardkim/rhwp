@@ -576,7 +576,7 @@ impl RenderNormalizationOverlay {
     ) -> Result<bool, S::Error> {
         if source.common.treat_as_char
             || source.common.text_wrap != crate::model::shape::TextWrap::TopAndBottom
-            || source.page_break != crate::model::table::TablePageBreak::RowBreak
+            || source.layout_page_break() != crate::model::table::TablePageBreak::RowBreak
         {
             return Ok(false);
         }

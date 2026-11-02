@@ -25,7 +25,7 @@ impl LayoutEngine {
                 .borrow()
                 .table_text_reflowed(table)
             || table.common.treat_as_char
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
             || !self.stored_row_boxes_exceed_first_frame(table)
             || table.cells.iter().any(|cell| {
                 cell.row_span > 1

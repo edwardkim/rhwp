@@ -49,7 +49,7 @@ impl TypesetState {
         else {
             return false;
         };
-        table.page_break == TablePageBreak::None
+        table.layout_page_break() == TablePageBreak::None
             && !table.common.flow_with_text
             && is_para_topbottom_float(&table.common)
             && column

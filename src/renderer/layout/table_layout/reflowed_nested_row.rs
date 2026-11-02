@@ -26,7 +26,7 @@ impl LayoutEngine {
             || table.common.treat_as_char
             || table.common.text_wrap != TextWrap::TopAndBottom
             || table.common.vert_rel_to != VertRelTo::Para
-            || table.page_break != TablePageBreak::RowBreak
+            || table.layout_page_break() != TablePageBreak::RowBreak
             || self
                 .render_normalization
                 .borrow()

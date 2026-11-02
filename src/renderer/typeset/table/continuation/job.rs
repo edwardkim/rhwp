@@ -43,7 +43,7 @@ impl TypesetEngine {
         };
         if table.common.treat_as_char
             || !matches!(
-                table.page_break,
+                table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
             )
             || table.row_count <= 1

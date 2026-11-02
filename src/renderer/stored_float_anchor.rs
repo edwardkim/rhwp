@@ -272,7 +272,7 @@ pub(crate) fn stored_single_cell_first_frame_height_hu(
         || table.row_count != 1
         || table.col_count != 1
         || table.cells.len() != 1
-        || table.page_break != TablePageBreak::RowBreak
+        || table.layout_page_break() != TablePageBreak::RowBreak
         || table.common.height == 0
         || table.common.height > i32::MAX as u32
     {

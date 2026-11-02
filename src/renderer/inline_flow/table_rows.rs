@@ -29,7 +29,7 @@ pub(crate) fn standalone_table_fragment_owner_with_storage<S: crate::storage::St
             matches!(control, Control::Table(table)
                 if table.common.treat_as_char
                 && table.row_count > 1
-                && table.page_break == crate::model::table::TablePageBreak::RowBreak)
+                && table.layout_page_break() == crate::model::table::TablePageBreak::RowBreak)
         }))
 }
 
