@@ -18,6 +18,8 @@
 
 원 PR에 제시됐으나 당시 Print 비교가 없던 `samples/issue5701/1530000-200800002_slice_p139_tac_reset_tail.hwp`를 기존 한컴 2020 Print PDF와 96 DPI Native로 대조했다. #8340 머지 전 `1a7ae8f5bd`, 직후 `c88657d9c3`, #8438 제품 코드 `d536455b4e` 순서의 전쪽 결과는 각각 [TSV](../assets/issue_8136/final-integration-8438/native-slice-before-8340.tsv), [TSV](../assets/issue_8136/final-integration-8438/native-slice-after-8340.tsv), [TSV](../assets/issue_8136/final-integration-8438/native-slice-after-8438.tsv)다. 12쪽 모두 #8340 전후 Native PNG의 SHA-256이 같으며, 4쪽 raw 표시값은 25.01%, 25.01%, 25.07%다. 이 문서의 큰 위치 차이는 #8340 이전에도 존재했다. #8438 이후에는 1·4·5쪽의 PNG가 달라져 세부 차이와 원인 확인이 필요하다. #8340 기능 자체의 머지 후 보존 여부는 이 비교만으로 판정하지 않는다.
 
+4쪽의 표 윗선은 RHWP 135–136px, Print 148–149px다. 원본의 직전 표 호스트 저장 줄은 `vpos=72484`, `lineHeight=62183`, `lineSpacing=552`이고 다음 표 호스트는 `vpos=136219`다. 따라서 저장 줄 끝과 다음 줄 사이 `136219-(72484+62183+552)=1000 HWPUNIT`이 남으며, 다음 표 문단의 앞 간격에 해당하는 13.33px와 Print의 이동량이 맞는다. 현재 공통 `typeset/table/host_spacing.rs`는 단 상단의 문단 앞 간격을 제외하고, `table/block/entry.rs`도 표가 새 단 상단에서 열릴 때 `column_top_before`로 제한한다. 이는 원인 후보이며, 다른 저장 사다리와 #8149 대조군을 함께 확인하기 전 전역 완화로 결론 내리지 않는다. 5·6·9쪽은 단순 13px 이동과 달라 별도 경로도 조사한다.
+
 제품 코드 `d536455b4e`의 Native와 fresh WASM으로 기호 슬롯 2쪽과 독립 한컴 2024 Print, 곡선 따옴표 7쪽과 한컴 2020 Print를 96 DPI로 전쪽 대조했다. 기호 슬롯은 Native 최저 98.96%, WASM 98.37%, 곡선 따옴표는 각각 96.96%, 97.73%이며 쪽수가 일치한다. 기호 슬롯 1·2쪽과 곡선 따옴표 3·4쪽의 RHWP·PDF PNG는 앞서 직접 판독한 자료와 SHA-256이 같아 해당 review·overlay를 재사용했다.
 
 | 입력 | Native | WASM | 대표 페이지 |
