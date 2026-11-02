@@ -6,8 +6,11 @@
 //! - 입력: `samples/issue8464/*.hwpx` — `samples/issue8464/gen_row_content_fit.py` 로 생성(저장 줄 없음).
 //! - 독립 기준: 한/글 2022(12.0.0.4547) 파일 → 인쇄 → Hancom PDF(한 쪽씩)
 //!   `pdf/issue8464_rowbreak_content_fit_*-2020.pdf`. 2쪽 첫 행 라벨로 수용 여부를 읽었다.
-//! - 측정(Native / fresh WASM `silhouette_raw_match_percent`, 쪽별·최저): 아래 `EVIDENCE` 참고.
-//!   증거 경로 `mydocs/pr/assets/issue_8464/{native,wasm}/`.
+//! - 측정(code a8efadfc8c, `silhouette_raw_match_percent` 1/2/3쪽, Native | fresh WASM):
+//!   h2505 99.96/100/100 | 99.97/100/100 · h2570 100/100/100 | 100/100/100 ·
+//!   h3180 100/100/100 | 100/100/100 · d14 100/100/100 | 100/99.94/100 ·
+//!   d16 100/100/100 | 100/99.96/100 — 최저 Native 99.96 · WASM 99.94.
+//!   증거 경로 `mydocs/pr/assets/issue_8464/{native,wasm}/synth_*.tsv`.
 //!
 //! 한/글 실측(12pt 한 줄 행, 내용 1200 + 칸 여백 282 = 1482HU): 남은 공간이 내용보다 2HU 크면
 //! 행을 두고, 같으면(0HU) 넘긴다. 10pt(1282HU)에서도 남은 16.5px 넘김 · 17.6px 둠으로 같은 경계다.
