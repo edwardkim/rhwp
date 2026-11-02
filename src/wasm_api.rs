@@ -8204,6 +8204,8 @@ impl HwpDocument {
             ..Default::default()
         }; // a,b,c
         self.core.document.doc_info.numberings.push(n);
+        // 새 번호 정의는 DocInfo 원본 스트림에 없어 HWP 저장이 모델에서 다시 쓰게 한다.
+        self.core.document.doc_info.raw_stream_dirty = true;
         1
     }
 
@@ -8266,6 +8268,8 @@ impl HwpDocument {
         n.start_number = json_i32(json, "startNumber").unwrap_or(1) as u16;
         n.level_start_numbers = [n.start_number as u32; 7];
         self.core.document.doc_info.numberings.push(n);
+        // 새 번호 정의는 DocInfo 원본 스트림에 없어 HWP 저장이 모델에서 다시 쓰게 한다.
+        self.core.document.doc_info.raw_stream_dirty = true;
         self.core.document.doc_info.numberings.len() as u16
     }
 

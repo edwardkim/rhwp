@@ -3390,12 +3390,13 @@ impl DocumentCore {
             "{{\"pageNum\":{},\"pageNumType\":{},\"pictureNum\":{},\"tableNum\":{},\"equationNum\":{},\
             \"columnSpacing\":{},\"defaultTabSpacing\":{},\
             \"hideHeader\":{},\"hideFooter\":{},\"hideMasterPage\":{},\
-            \"hideBorder\":{},\"hideFill\":{},\"hideEmptyLine\":{}}}",
+            \"hideBorder\":{},\"hideFill\":{},\"hideEmptyLine\":{},\"outlineNumberingId\":{}}}",
             sd.page_num, sd.page_num_type,
             sd.picture_num, sd.table_num, sd.equation_num,
             sd.column_spacing, sd.default_tab_spacing,
             sd.hide_header, sd.hide_footer, sd.hide_master_page,
             sd.hide_border, sd.hide_fill, sd.hide_empty_line,
+            sd.outline_numbering_id,
         ))
     }
 
@@ -3403,12 +3404,22 @@ impl DocumentCore {
     fn apply_section_def_json(&mut self, section_idx: usize, json: &str) -> Result<(), HwpError> {
         use super::super::helpers::{json_bool, json_u16, json_u32};
 
+        // 개요 번호 모양은 문서의 번호 정의(1부터)를 가리킨다. 0은 정의 없이 개요 수준만 쓴다.
+        let outline_numbering_id = json_u16(json, "outlineNumberingId");
+        if let Some(id) = outline_numbering_id {
+            if usize::from(id) > self.document.doc_info.numberings.len() {
+                return Err(HwpError::RenderError(format!("개요 번호 정의 {} 없음", id)));
+            }
+        }
         let section = self
             .document
             .sections
             .get_mut(section_idx)
             .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", section_idx)))?;
         let sd = &mut section.section_def;
+        if let Some(id) = outline_numbering_id {
+            sd.outline_numbering_id = id;
+        }
 
         if let Some(v) = json_u16(json, "pageNum") {
             sd.page_num = v;
@@ -3487,6 +3498,7 @@ impl DocumentCore {
                     s.hide_border = updated_sd.hide_border;
                     s.hide_fill = updated_sd.hide_fill;
                     s.hide_empty_line = updated_sd.hide_empty_line;
+                    s.outline_numbering_id = updated_sd.outline_numbering_id;
                     s.flags = updated_sd.flags;
                     break;
                 }
