@@ -80,6 +80,8 @@ Native 최저 95.86%, fresh WASM 최저 95.78%로 90% 미만은 없었다.
 
 같은 제품 코드의 Native로 저장 HWPX 전 29쪽을 위 한컴 2024 Print와 다시 비교했다. 최저 95.86%, 90% 미만 0쪽이며 산출 TSV SHA-256 `4b252487b9f9a6a2591edfc1ec87c1159d7e5ddb47aa1d501faf500e00a87ca0`은 위 기존 Native TSV와 바이트 단위로 같아 재사용한다. 같은 제품 코드의 fresh WASM 및 이후 시험 중인 WMFC 변경은 별도로 확인한다.
 
+동일 제품 코드의 fresh WASM도 같은 저장본 29쪽을 한컴 Print와 비교했다. 최저 95.78%, 90% 미만 0쪽이며 산출 TSV SHA-256 `30c55c60bb8864ef9f80a869e36ea7a0630985996b7103816377768fd082f94a`가 위 기존 WASM TSV와 같아 재사용한다. 이는 WMFC 인쇄 장치 변경 전 패키지의 결과다.
+
 원 [PR #8378](https://github.com/edwardkim/rhwp/pull/8378)이 통합
 [PR #8438](https://github.com/edwardkim/rhwp/pull/8438)에 제출한
 [기존 한컴 Print](../../../pdf/hwpx_sample2-rhwp-hwpx-2024.pdf)의 입력은
