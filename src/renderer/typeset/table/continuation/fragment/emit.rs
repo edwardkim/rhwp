@@ -916,13 +916,37 @@ impl TypesetEngine {
             partial_height = whole_height;
         }
 
+        // 다른 호스트 표가 이전 쪽에서 실제로 끝났을 때만 종료 줄 원점을 공유한다.
+        let siblings_emitted = is_continuation
+            && st.sibling_tables_emitted_on_previous_pages(
+                para_idx,
+                ctrl_idx,
+                input.source.paragraph,
+            );
+
         // `terminal_successor_gap`: 끝 조각 뒤 문단이 증언한 공통 간격이 있으면
         // paint와 같은 흐름 끝을 사용하고 호스트 아래 간격으로 다시 덮어쓰지 않는다.
         let commit_fragment = |st: &mut TypesetState,
                                owner_height: f64,
                                terminal: bool,
                                terminal_successor_gap: Option<f64>| {
-            if let Some(mut placement) = fragment_placement {
+            let accepted_sibling_frame = (terminal && siblings_emitted)
+                .then_some(terminal_successor_gap)
+                .flatten()
+                .map(|gap| {
+                    let top =
+                        st.current_height - gap - terminal_outer_bottom_overhead - owner_height;
+                    crate::renderer::float_placement::ParagraphFloatPlacement {
+                        flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+                        anchor_y: top,
+                        stored_host_origin: None,
+                        stored_successor_line_origin: None,
+                        table_left: None,
+                        table_top: top,
+                        occupied_bottom: top,
+                    }
+                });
+            if let Some(mut placement) = fragment_placement.or(accepted_sibling_frame) {
                 // 끝 조각이 아닌 컷은 후속 문단을 소유할 수 없다. 끝 조각의 원본 원점은
                 // 유지하되, 간격을 소비하는 경로에서는 최종 수용한 물리 하단과 일치해야 한다.
                 if !terminal {
@@ -1198,19 +1222,35 @@ impl TypesetEngine {
                     + partial_height
                     + bottom_caption_extra
                     + terminal_outer_bottom_overhead;
-                terminal_successor_gap = is_continuation
+                let sibling_gap = siblings_emitted
                     .then(|| st.table_flow_successor(para_idx, input.source.paragraphs_all))
                     .flatten()
                     .and_then(|(_, next)| {
-                        layout_engine.native_text_frame_terminal_successor_gap(
+                        layout_engine.text_host_terminal_successor_gap_with_emitted_siblings(
                             input.source.paragraph,
                             next,
                             table,
                             &st.inline_flow_column(),
                             st.inline_flow_column().y + st.current_height + occupied,
                             styles,
+                            true,
                         )
                     });
+                terminal_successor_gap = sibling_gap.or_else(|| {
+                    is_continuation
+                        .then(|| st.table_flow_successor(para_idx, input.source.paragraphs_all))
+                        .flatten()
+                        .and_then(|(_, next)| {
+                            layout_engine.native_text_frame_terminal_successor_gap(
+                                input.source.paragraph,
+                                next,
+                                table,
+                                &st.inline_flow_column(),
+                                st.inline_flow_column().y + st.current_height + occupied,
+                                styles,
+                            )
+                        })
+                });
                 let terminal_spacing = terminal_successor_gap
                     .unwrap_or(host_spacing_after_only + terminal_host_spacing);
                 if std::env::var_os("RHWP_DIAG_SCAN").is_some() {

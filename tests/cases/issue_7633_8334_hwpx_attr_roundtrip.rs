@@ -1,5 +1,5 @@
 //! 관계형·고정형: 왕복 내용·속성 관계와 독립 저장본의 줄표·방향 값을 확인한다.
-//! 주석 갱신: 2026-11-02T20:06:12+09:00; 직전 파일 커밋: 2026-11-01T19:38:13+09:00 (a2541933cb).
+//! 주석 갱신: 2026-11-02T20:27:59+09:00; 직전 파일 커밋: 2026-11-01T19:38:13+09:00 (a2541933cb).
 //! 줄표 문자와 셀 방향은 한컴 저장본·Print에서 정한 값(`'\0'`, `'-'`, 2, 1)으로 확인한다.
 //! WMF 공백 요청과 글꼴 cmap 검사는 원본과 라이선스 확인 fixture의 비조판 계약이다.
 //! 2026-11-02 보정 전 독립 Print 대비 HWPX 저장본 178쪽: 94쪽 및 전쪽 최저 Native 92.66%,
@@ -339,4 +339,62 @@ fn hwpx_bullet_explicit_image_and_plain_character_remain_distinct() {
     assert_eq!(info.bullets[1].bullet_char, '■');
     assert_eq!(info.bullets[1].image_bullet, 0);
     assert!(!info.bullets[1].hwpx_image_without_ref);
+}
+
+/// 이어진 표 뒤 두 문단의 페이지 안 상대 위치는 원본 저장 사다리를 따른다.
+#[test]
+fn continued_table_successor_lines_preserve_source_origin_relationship() {
+    let core = load("mydocs/pr/assets/issue_7633_8334/followup8438/hwpspec-saved.hwpx");
+    let paragraphs = &core.document().sections[3].paragraphs;
+    let (first_index, first) = paragraphs
+        .iter()
+        .enumerate()
+        .find(|(_, p)| p.text.starts_with("하이퍼텍스트의 경우에는"))
+        .expect("표 다음 본문");
+    let blank_index = first_index.checked_sub(1).expect("앞 빈 문단");
+    let blank = &paragraphs[blank_index];
+    assert!(blank.text.is_empty());
+    let blank_source = f64::from(blank.line_segs[0].vertical_pos);
+    let first_source = f64::from(first.line_segs[0].vertical_pos);
+    assert!(blank_source > 0.0 && first_source > blank_source);
+    let tree: serde_json::Value = serde_json::from_str(
+        &core
+            .build_page_render_tree(93)
+            .expect("94쪽 조판")
+            .root
+            .to_json(),
+    )
+    .unwrap();
+    fn walk<'a>(v: &'a serde_json::Value, out: &mut Vec<&'a serde_json::Value>) {
+        out.push(v);
+        if let Some(children) = v.get("children").and_then(|x| x.as_array()) {
+            for child in children {
+                walk(child, out);
+            }
+        }
+    }
+    let mut nodes = Vec::new();
+    walk(&tree, &mut nodes);
+    let body = nodes
+        .iter()
+        .find(|n| n["type"] == "Body")
+        .expect("본문 영역");
+    let body_top = body["bbox"]["y"].as_f64().unwrap();
+    let line_top = |index| {
+        nodes
+            .iter()
+            .find(|n| n["type"] == "TextLine" && n["pi"].as_u64() == Some(index as u64))
+            .expect("문단 첫 줄")["bbox"]["y"]
+            .as_f64()
+            .unwrap()
+    };
+    let blank_offset = line_top(blank_index) - body_top;
+    let first_offset = line_top(first_index) - body_top;
+    assert!(blank_offset > 0.0 && first_offset > blank_offset);
+    let observed = blank_offset / first_offset;
+    let expected = blank_source / first_source;
+    assert!(
+        (observed - expected).abs() < 0.002,
+        "표 종료 뒤 빈 문단과 본문의 본문 영역 대비 위치 관계: 실제={observed}, 원본={expected}"
+    );
 }
