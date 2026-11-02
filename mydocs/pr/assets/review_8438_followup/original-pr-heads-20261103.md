@@ -3,6 +3,9 @@
 2026-11-03 00시경 KST GitHub GraphQL에서 원 PR 상태와 head를 조회했다.
 모두 이전에 검토한 head와 같다. 이는 기능·시각 검증 완료나 종료 판단을 대신하지 않는다.
 
+2026-11-03 01:02 KST에 통합 PR 본문의 번호와 GitHub 열린 PR 목록을 다시
+대조했다. 열린 원 PR은 아래 11개이며 목록과 head 모두 이전 조회와 같았다.
+
 | 원 PR | 상태 | head SHA |
 | --- | --- | --- |
 | [PR #8316](https://github.com/edwardkim/rhwp/pull/8316) | OPEN | `8f53775fa506fc35e820dfe5d8632d0c6b8aafb6` |
