@@ -231,8 +231,14 @@ SHA-256 `f153a78b5d90efed744a81bb1d744d45a24747f16a88aaf36bb56e3611115dec`를
 64.80%에서 개선됐고 인쇄 표시와 본문을 review·overlay로 직접 확인했다.
 표시가 꺼진 `samples/hwpspec.hwp` 94쪽 Native PNG는 보정 전후 SHA-256
 `c01b60724f8c791bf53119f6c3dd08216ecd1ae169de0b7c95c5945f322a5525`로 동일하다.
-이는 선택 쪽 Native 확인이다. 전 12쪽·fresh WASM·화면 출력과 HWPX 설정의
-동일 동작은 별도로 검증한다.
+이후 같은 바이너리로 전 12쪽을 확인해 Native 최저 raw 99.99%, 90% 미만
+0쪽이었다. 임시 전체 TSV SHA-256은
+`b3e39b1c77a06b2e27c47df6b43f17bac0a5d57fbbcd4e303cde9c6ac480b77b`다.
+원본 HWP와 한컴이 진단용으로 생성한 HWPX의 2쪽에서 `screen`에는 표시가 없고
+`print`에는 표시가 있음을 Native PNG로 각각 확인했다. 이 HWPX 검사는
+설정 소비만 확인한 것이며 별도 독립 Print와의 전쪽 대조는 아니다. 프로필 실행
+로그 SHA-256은 `6ab58c115fc29f5d19444d0b4926b88494b2f8c04d4c71bb762b024f60bfd2ec`다.
+fresh WASM의 전쪽 검증은 별도로 진행한다.
 
 추가 후보 실행에서 6쪽의 다음 문단 진입 원점은 29.39→22.03px, 표의 원점은
 51.41→44.05px가 됐다. 기존 한컴 PDF와 Native 96 DPI 직접 대조 결과 4·5·6·9쪽은
