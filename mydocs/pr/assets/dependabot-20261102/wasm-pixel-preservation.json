@@ -1,0 +1,47 @@
+[
+  {
+    "key": "saved_bottom",
+    "page": 1,
+    "base_candidate_rgba_equal": true,
+    "size": [
+      794,
+      1122
+    ]
+  },
+  {
+    "key": "wrapping_A",
+    "page": 1,
+    "base_candidate_rgba_equal": true,
+    "size": [
+      794,
+      1122
+    ]
+  },
+  {
+    "key": "legacy_textbox",
+    "page": 1,
+    "base_candidate_rgba_equal": true,
+    "size": [
+      794,
+      1122
+    ]
+  },
+  {
+    "key": "wmf_fixed_face",
+    "page": 1,
+    "base_candidate_rgba_equal": true,
+    "size": [
+      794,
+      1122
+    ]
+  },
+  {
+    "key": "wmf_fixed_face",
+    "page": 2,
+    "base_candidate_rgba_equal": true,
+    "size": [
+      794,
+      1122
+    ]
+  }
+]

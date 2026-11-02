@@ -1,0 +1,177 @@
+{
+  "rust": [
+    {
+      "gate": "prepare",
+      "exit_code": 0,
+      "summaries": [],
+      "elapsed_seconds": 1.89
+    },
+    {
+      "gate": "fmt",
+      "exit_code": 0,
+      "summaries": [],
+      "elapsed_seconds": 24.45
+    },
+    {
+      "gate": "native-clippy",
+      "exit_code": 0,
+      "summaries": [],
+      "elapsed_seconds": 98.96
+    },
+    {
+      "gate": "wasm-clippy",
+      "exit_code": 0,
+      "summaries": [],
+      "elapsed_seconds": 122.08
+    },
+    {
+      "gate": "workspace-build",
+      "exit_code": 0,
+      "summaries": [],
+      "elapsed_seconds": 175.44
+    },
+    {
+      "gate": "workspace-clippy",
+      "exit_code": 0,
+      "summaries": [],
+      "elapsed_seconds": 147.23
+    },
+    {
+      "gate": "manifest",
+      "exit_code": 0,
+      "summaries": [],
+      "elapsed_seconds": 0.75
+    },
+    {
+      "gate": "hwpx_zip_determinism",
+      "exit_code": 0,
+      "summaries": [
+        "     Summary [   0.027s] 3 tests run: 3 passed, 265 skipped"
+      ],
+      "elapsed_seconds": 219.06
+    },
+    {
+      "gate": "security_linked_images_and_xml_budget",
+      "exit_code": 0,
+      "summaries": [
+        "     Summary [   0.519s] 4 tests run: 4 passed, 262 skipped"
+      ],
+      "elapsed_seconds": 8.43
+    },
+    {
+      "gate": "security_hwpx_password_xml_budget",
+      "exit_code": 0,
+      "summaries": [
+        "     Summary [   1.213s] 3 tests run: 3 passed, 290 skipped"
+      ],
+      "elapsed_seconds": 8.99
+    },
+    {
+      "gate": "issue_8174_hwpx_xml_wire",
+      "exit_code": 0,
+      "summaries": [
+        "     Summary [   0.006s] 2 tests run: 2 passed, 280 skipped"
+      ],
+      "elapsed_seconds": 8.24
+    },
+    {
+      "gate": "textbox_vertical_align_hwp",
+      "exit_code": 0,
+      "summaries": [
+        "     Summary [   0.018s] 3 tests run: 3 passed, 264 skipped"
+      ],
+      "elapsed_seconds": 8.63
+    },
+    {
+      "gate": "issue_8335_caption_category_roundtrip",
+      "exit_code": 0,
+      "summaries": [
+        "     Summary [   2.240s] 4 tests run: 4 passed, 262 skipped"
+      ],
+      "elapsed_seconds": 3.18
+    },
+    {
+      "gate": "issue_8302_roundtrip_lineage",
+      "exit_code": 0,
+      "summaries": [
+        "     Summary [   0.128s] 3 tests run: 3 passed, 268 skipped"
+      ],
+      "elapsed_seconds": 8.29
+    },
+    {
+      "gate": "issue_8399_square_shape_band",
+      "exit_code": 0,
+      "summaries": [
+        "     Summary [   0.036s] 8 tests run: 8 passed, 277 skipped"
+      ],
+      "elapsed_seconds": 9.38
+    },
+    {
+      "gate": "issue_8160_wmf_mask_ownership",
+      "exit_code": 0,
+      "summaries": [
+        "     Summary [   0.192s] 1 test run: 1 passed, 303 skipped"
+      ],
+      "elapsed_seconds": 8.57
+    },
+    {
+      "gate": "native-skia-lib",
+      "exit_code": 0,
+      "summaries": [
+        "test result: ok. 3858 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 21.98s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ],
+      "elapsed_seconds": 174.09
+    },
+    {
+      "gate": "native-issue_2225_missing_picture_placeholder",
+      "exit_code": 0,
+      "summaries": [
+        "     Summary [   0.152s] 2 tests run: 2 passed, 319 skipped"
+      ],
+      "elapsed_seconds": 156.24
+    },
+    {
+      "gate": "native-render_p37_direct_pdf_export",
+      "exit_code": 0,
+      "summaries": [
+        "     Summary [   0.319s] 22 tests run: 22 passed, 271 skipped"
+      ],
+      "elapsed_seconds": 8.51
+    },
+    {
+      "gate": "full-nextest",
+      "exit_code": 0,
+      "summaries": [
+        "     Summary [ 610.832s] 12369 tests run: 12369 passed (6 slow), 45 skipped"
+      ],
+      "elapsed_seconds": 938.68
+    }
+  ],
+  "native_lib_total_passed": 4040,
+  "native_lib_ignored_existing": 12,
+  "native_focused_passed": 24,
+  "focused_default_passed": 31,
+  "full_nextest_passed": 12369,
+  "full_nextest_skipped_existing": 45,
+  "studio_passed": 2716,
+  "studio_skipped_existing": 2,
+  "studio_skipped_reason": "Two optional pkg-node round-trip tests require a separate nodejs package; actual fresh web WASM and real browser paths were verified.",
+  "native_ignored": [
+    "test document_core::commands::header_footer_ops::tests::test_p222_header_structure ... ignored",
+    "test document_core::queries::cursor_rect::tests::issue4128_dump_cell_cursor_rects_for_diff ... ignored, 차분 덤프 — 수동 실행",
+    "test document_core::queries::cursor_rect::tests::issue4128_dump_partial_table_metadata ... ignored, 진단 덤프 — 수동 실행",
+    "test document_core::queries::cursor_rect::tests::issue4149_diag_fast_path_gates ... ignored, 게이트 진단 — 수동 실행",
+    "test document_core::queries::cursor_rect::tests::probe_2021_cursor_rect_by_path_cold_cost ... ignored, 계측 프로브 — 수동 실행",
+    "test renderer::pagination::tests::test_table_cell_break_intra_row_split ... ignored, Task #993: 레거시 Paginator(engine.rs)는 분할 표 컷을 생산하지 않음 — TypesetEngine 컷 모델로 대체. advance_row_cut 단위 테스트(table_layout.rs row_cut_tests)가 인트라-로우 분할을 검증.",
+    "test renderer::pagination::tests::test_table_cell_break_multi_page_row ... ignored, Task #993: 레거시 Paginator(engine.rs)는 분할 표 컷을 생산하지 않음 — TypesetEngine 컷 모델로 대체. advance_row_cut 단위 테스트(table_layout.rs row_cut_tests)가 인트라-로우 분할을 검증.",
+    "test renderer::pagination::tests::test_table_none_also_intra_row_split ... ignored, Task #993: 레거시 Paginator(engine.rs)는 분할 표 컷을 생산하지 않음 — TypesetEngine 컷 모델로 대체. advance_row_cut 단위 테스트(table_layout.rs row_cut_tests)가 인트라-로우 분할을 검증.",
+    "test wasm_api::tests::corpus_split_join_sweep_all_samples ... ignored",
+    "test wasm_api::tests::issue4149_adjacent_cursor_rect_profile_loop ... ignored",
+    "test wasm_api::tests::issue4149_deferred_units_rebuild_profile_loop ... ignored",
+    "test wasm_api::tests::test_task77_image_cell_no_intra_row_split ... ignored, Task #993: 컷 모델 행 높이 측정 차이로 행 경계 이동 — PDF 대조 후 재확정"
+  ],
+  "local_nextest": "0.9.137; repository recommendation0.9.140; the unknown junit.report-skipped key belongs only to a CI duration reporting profile; local default test execution completed. Action PR8457 separately ran0.9.150 in actual green GitHub archive jobs."
+}

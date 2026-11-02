@@ -1,0 +1,92 @@
+[
+  {
+    "number": 8449,
+    "head": "2fa686d569a078ce9e44e05ca493e65d704784c7",
+    "base_at_intake": "04338dc242ff1bd9fab01290b0d90bafcddc5aab",
+    "head_branch": "dependabot/npm_and_yarn/rhwp-studio/devel/types/chrome-0.3.7",
+    "repo": "edwardkim/rhwp",
+    "maintainer_can_modify": false,
+    "author": "dependabot[bot]",
+    "url": "https://github.com/edwardkim/rhwp/pull/8449"
+  },
+  {
+    "number": 8450,
+    "head": "94fdf6fea2a7b56865e41ef3e8c8923033211c07",
+    "base_at_intake": "04338dc242ff1bd9fab01290b0d90bafcddc5aab",
+    "head_branch": "dependabot/cargo/devel/zip-9.1.3",
+    "repo": "edwardkim/rhwp",
+    "maintainer_can_modify": false,
+    "author": "dependabot[bot]",
+    "url": "https://github.com/edwardkim/rhwp/pull/8450"
+  },
+  {
+    "number": 8451,
+    "head": "b4b31c7fc834c2ed502ef1983e9fc36b341ab41f",
+    "base_at_intake": "04338dc242ff1bd9fab01290b0d90bafcddc5aab",
+    "head_branch": "dependabot/npm_and_yarn/rhwp-studio/devel/anthropic-ai/sdk-1.3.0",
+    "repo": "edwardkim/rhwp",
+    "maintainer_can_modify": false,
+    "author": "dependabot[bot]",
+    "url": "https://github.com/edwardkim/rhwp/pull/8451"
+  },
+  {
+    "number": 8452,
+    "head": "5829d65eb6fd368a2557c016df4747d7b12362ca",
+    "base_at_intake": "04338dc242ff1bd9fab01290b0d90bafcddc5aab",
+    "head_branch": "dependabot/cargo/devel/unicode-width-0.2.3",
+    "repo": "edwardkim/rhwp",
+    "maintainer_can_modify": false,
+    "author": "dependabot[bot]",
+    "url": "https://github.com/edwardkim/rhwp/pull/8452"
+  },
+  {
+    "number": 8453,
+    "head": "dc8b52ad418594a42b52560c7b706ca0fe4f1783",
+    "base_at_intake": "04338dc242ff1bd9fab01290b0d90bafcddc5aab",
+    "head_branch": "dependabot/npm_and_yarn/rhwp-vscode/devel/webpack-5.112.2",
+    "repo": "edwardkim/rhwp",
+    "maintainer_can_modify": false,
+    "author": "dependabot[bot]",
+    "url": "https://github.com/edwardkim/rhwp/pull/8453"
+  },
+  {
+    "number": 8454,
+    "head": "4dd0e7eb196a1bfede636c4314fbe8fcc7bec8eb",
+    "base_at_intake": "04338dc242ff1bd9fab01290b0d90bafcddc5aab",
+    "head_branch": "dependabot/cargo/devel/libc-0.2.191",
+    "repo": "edwardkim/rhwp",
+    "maintainer_can_modify": false,
+    "author": "dependabot[bot]",
+    "url": "https://github.com/edwardkim/rhwp/pull/8454"
+  },
+  {
+    "number": 8455,
+    "head": "db38e6af4d65e5a8bdc7ba2697d3658a9839e505",
+    "base_at_intake": "04338dc242ff1bd9fab01290b0d90bafcddc5aab",
+    "head_branch": "dependabot/cargo/devel/roxmltree-0.21.2",
+    "repo": "edwardkim/rhwp",
+    "maintainer_can_modify": false,
+    "author": "dependabot[bot]",
+    "url": "https://github.com/edwardkim/rhwp/pull/8455"
+  },
+  {
+    "number": 8456,
+    "head": "54d0255c594241d1593adff0367a236a9b6f3ebc",
+    "base_at_intake": "04338dc242ff1bd9fab01290b0d90bafcddc5aab",
+    "head_branch": "dependabot/cargo/devel/skia-safe-0.156.0",
+    "repo": "edwardkim/rhwp",
+    "maintainer_can_modify": false,
+    "author": "dependabot[bot]",
+    "url": "https://github.com/edwardkim/rhwp/pull/8456"
+  },
+  {
+    "number": 8457,
+    "head": "cd0ccf51995d9e985f8137d211db6077d7003a8b",
+    "base_at_intake": "04338dc242ff1bd9fab01290b0d90bafcddc5aab",
+    "head_branch": "dependabot/github_actions/devel/taiki-e/install-action-2.88.1",
+    "repo": "edwardkim/rhwp",
+    "maintainer_can_modify": false,
+    "author": "dependabot[bot]",
+    "url": "https://github.com/edwardkim/rhwp/pull/8457"
+  }
+]

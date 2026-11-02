@@ -1,0 +1,9 @@
+{
+  "base": "d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d",
+  "native": "/home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/base-rhwp",
+  "native_sha256": "30b73a64c52be1a01ed8b2da12f92f3046d51c7e64b74e014be21470a6e91e7d",
+  "runtime_source": "c4686b913cb13ed7a161f941b8e6eadb2be37171",
+  "same_runtime_as_base": true,
+  "source_proof": "git diff c4686b913c d3f7209bbb -- src crates Cargo.toml Cargo.lock build.rs scripts rhwp-studio is empty",
+  "previous_producer": "mydocs/pr/assets/pr8309-latestbase-20261102/producer.json"
+}

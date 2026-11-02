@@ -1,0 +1,7 @@
+{
+  "source": "fc77674ff1574e30ef514af2b8fde04fb266eff0",
+  "validated_source": "e58024b15e11438a0e1162a25d836d3c3c4ff7a9",
+  "full_tree_equal": true,
+  "method": "Clean normal merge after clean merge-tree simulation; no rebase or force reset",
+  "remote_push_authorized": false
+}

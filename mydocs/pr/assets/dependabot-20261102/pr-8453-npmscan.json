@@ -1,0 +1,43 @@
+{
+  "summary": "Compared npm-lock snapshots: 0 added, 0 removed, 1 changed.",
+  "beforeFormat": "npm-lock",
+  "afterFormat": "npm-lock",
+  "comparisonNote": "parse warnings: \"@noble/hashes\" is listed as a direct dependency but has no resolved entry in the lockfile (likely an optional/platform-specific package that wasn't installed); \"canvaskit-wasm\" is listed as a direct dependency but has no resolved entry in the lockfile (likely an optional/platform-specific package that wasn't installed); \"@types/node\" is listed as a direct dependency but has no resolved entry in the lockfile (likely an optional/platform-specific package that wasn't installed); \"@types/vscode\" is listed as a direct dependency but has no resolved entry in the lockfile (likely an optional/platform-specific package that wasn't installed); \"@typescript/native\" is listed as a direct dependency but has no resolved entry in the lockfile (likely an optional/platform-specific package that wasn't installed); and 17 more",
+  "added": [],
+  "removed": [],
+  "changed": [
+    {
+      "name": "webpack",
+      "actualName": null,
+      "npmscanUrl": "https://npmscan.com/package/webpack",
+      "beforeVersion": "5.112.1",
+      "afterVersion": "5.112.2",
+      "coexistingVersions": null,
+      "changeType": "upgrade",
+      "hasInstallScript": false,
+      "installScriptIntroduced": false,
+      "installScriptKeys": null,
+      "installScriptKeysIntroduced": null,
+      "sourceIntegrityChanged": false,
+      "identityMismatch": false,
+      "tarballName": null,
+      "tarballVersion": null,
+      "resolvedUrl": "https://registry.npmjs.org/webpack/-/webpack-5.112.2.tgz",
+      "integrity": "sha512-B2tp1LI9D8GVpPDqprdt12ukTkXXahj9MzqSWJq4faSPgOUM7CdZaGAB6HrL/8E6UwbBpdj4vzWDbKoFnVoU6g==",
+      "isVulnerable": false,
+      "highestSeverity": null,
+      "vulnerabilities": [],
+      "vulnerabilityDelta": "still-clean",
+      "resolutionNote": null
+    }
+  ],
+  "totalAdded": 0,
+  "totalRemoved": 0,
+  "totalChanged": 1,
+  "flaggedCount": 0,
+  "truncated": false,
+  "truncationNote": null,
+  "enrichmentNote": null,
+  "projectLifecycleChanges": null,
+  "overridesChanges": null
+}

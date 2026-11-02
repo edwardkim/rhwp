@@ -1,0 +1,98 @@
+[
+  {
+    "case": "saved_bottom",
+    "compat": "2024",
+    "input": "tests/fixtures/pr8309-latest/textbox-saved-bottom.hwp",
+    "pdf": "pdf/pr8309-latest/textbox-saved-bottom-2024.pdf",
+    "files": [
+      {
+        "role": "input",
+        "path": "tests/fixtures/pr8309-latest/textbox-saved-bottom.hwp",
+        "bytes": 13312,
+        "sha256": "ba89b94fbefd06841b666d3b94e95a59110397f4ccfe879fb4a34644f056c3af",
+        "blob": "094b2ce9092fdccd5b3d3cc95428086d680fadc8",
+        "already_in_base": true
+      },
+      {
+        "role": "pdf",
+        "path": "pdf/pr8309-latest/textbox-saved-bottom-2024.pdf",
+        "bytes": 10761,
+        "sha256": "11f741a95f301df1a561c26954fbb0016e4f07a5cdf83c2af6f211c2044a4b13",
+        "blob": "f62129f198bce96e51261169f0c1ddebbb09f6f1",
+        "already_in_base": true
+      }
+    ]
+  },
+  {
+    "case": "wrapping_A",
+    "compat": "2024",
+    "input": "samples/issue8399/A.hwpx",
+    "pdf": "pdf/issue8399/A-hwpx-2024.pdf",
+    "files": [
+      {
+        "role": "input",
+        "path": "samples/issue8399/A.hwpx",
+        "bytes": 89128,
+        "sha256": "fddd90eed7c4f8818e723bb526c50cad8269c7b1a02eddd64d5a0cda2a5773c7",
+        "blob": "fe781942a29cd930d1f7c26a5d2cacf8b92b9b69",
+        "already_in_base": true
+      },
+      {
+        "role": "pdf",
+        "path": "pdf/issue8399/A-hwpx-2024.pdf",
+        "bytes": 26608,
+        "sha256": "0450bebb11625b1acbcc1ce06ff36a12474a76b3a52b6ac143b10b000226633a",
+        "blob": "1ac9bb8e1b60907085e519879264692df28d7164",
+        "already_in_base": true
+      }
+    ]
+  },
+  {
+    "case": "legacy_textbox",
+    "compat": "2022",
+    "input": "samples/issue8122/textbox_valign_no_lineseg.hwp",
+    "pdf": "pdf/issue8122/textbox_valign_no_lineseg-webhwp-print.pdf",
+    "files": [
+      {
+        "role": "input",
+        "path": "samples/issue8122/textbox_valign_no_lineseg.hwp",
+        "bytes": 9728,
+        "sha256": "de374075cfc2c1ef945d3795bba194b90dc42d759caf8b478c603d4777cfb8ff",
+        "blob": "b2d4d5a889a7207b3cf5c18052a8c5cb6bcf1fb7",
+        "already_in_base": true
+      },
+      {
+        "role": "pdf",
+        "path": "pdf/issue8122/textbox_valign_no_lineseg-webhwp-print.pdf",
+        "bytes": 47497,
+        "sha256": "0cfca5740c6fc9aaadf9db814e6e0503850d1f56013eb4bdda895bbc80dd0023",
+        "blob": "5e05a872771591f2b3c36de0950130edcd0ba968",
+        "already_in_base": true
+      }
+    ]
+  },
+  {
+    "case": "wmf_fixed_face",
+    "compat": "2022",
+    "input": "samples/issue8160/wmf-fixed-face-dx-independent.hwpx",
+    "pdf": "pdf/issue8160/wmf-fixed-face-dx-independent-2020.pdf",
+    "files": [
+      {
+        "role": "input",
+        "path": "samples/issue8160/wmf-fixed-face-dx-independent.hwpx",
+        "bytes": 13147,
+        "sha256": "5ca98aa53a60467113d8a1e5a1103a72fd377a6d5dcf5a061cbbaa7f04159919",
+        "blob": "0b1018d2efa0009553277a5225db4b326faa1942",
+        "already_in_base": true
+      },
+      {
+        "role": "pdf",
+        "path": "pdf/issue8160/wmf-fixed-face-dx-independent-2020.pdf",
+        "bytes": 14914,
+        "sha256": "8aec7d494b2fa1a0372e2b402119fa864c243ede29271c014ca0f78748984a08",
+        "blob": "15abb3d8ddd2ebce038ae8d914303f2768e7f0f2",
+        "already_in_base": true
+      }
+    ]
+  }
+]
