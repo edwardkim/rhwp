@@ -78,6 +78,8 @@ Native 최저 95.86%, fresh WASM 최저 95.78%로 90% 미만은 없었다.
 
 이후 제품 코드 `dd284b5cda`의 Native 실행 파일로도 원본을 다시 저장했다. `--verify --verify-pages`는 IR 차이 없음과 전후 29쪽을 확인했고 저장 바이트의 SHA-256은 위 `c5149ebea0e34d78103e8b81def04e4a3cdc72aa9f9bb97dab222cad84dba9ca`와 같았다. 이는 입력 보존 근거이며 현재 진행 중인 WMFC 변경을 포함한 출력의 신규 시각 검증은 아니다.
 
+같은 제품 코드의 Native로 저장 HWPX 전 29쪽을 위 한컴 2024 Print와 다시 비교했다. 최저 95.86%, 90% 미만 0쪽이며 산출 TSV SHA-256 `4b252487b9f9a6a2591edfc1ec87c1159d7e5ddb47aa1d501faf500e00a87ca0`은 위 기존 Native TSV와 바이트 단위로 같아 재사용한다. 같은 제품 코드의 fresh WASM 및 이후 시험 중인 WMFC 변경은 별도로 확인한다.
+
 원 [PR #8378](https://github.com/edwardkim/rhwp/pull/8378)이 통합
 [PR #8438](https://github.com/edwardkim/rhwp/pull/8438)에 제출한
 [기존 한컴 Print](../../../pdf/hwpx_sample2-rhwp-hwpx-2024.pdf)의 입력은
