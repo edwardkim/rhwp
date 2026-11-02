@@ -129,4 +129,61 @@ runTest('연속 형광펜 모드', async ({ page }) => {
   await pickSwatch(page);
   assert(await shadeAt(page, 8) === GREEN, '선택한 블록이 즉시 칠해진다');
   assert(!(await penState(page)).mode, '블록이 있을 때는 모드에 진입하지 않는다');
+
+  setTestCase('빈 길이로 축소한 텍스트 선택은 연속 모드로 진입한다');
+  await createNewDocument(page);
+  await clickEditArea(page);
+  await typeText(page, 'alpha beta');
+  await page.keyboard.press('Home');
+  await page.keyboard.down('Shift');
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.up('Shift');
+  const collapsed = await page.evaluate(() => window.__inputHandler.cursor.getSelectionOrdered());
+  assert(collapsed?.start.charOffset === 0 && collapsed?.end.charOffset === 0,
+    '실키로 선택 anchor가 남은 빈 길이 range를 만들었다');
+  const depthCollapsed = await undoDepth(page);
+  await pickSwatch(page);
+  assert((await penState(page)).mode, '선택한 글자가 없으면 연속 형광펜 모드가 된다');
+  assert(await undoDepth(page) === depthCollapsed, '빈 선택에서 모드 진입은 undo 기록을 만들지 않는다');
+  await page.keyboard.press('Escape');
+
+  setTestCase('F5 셀 블록에는 즉시 칠하고 한 단계로 복원한다');
+  await createNewDocument(page);
+  await clickEditArea(page);
+  await page.evaluate(async () => {
+    const { tableCommands } = await import('/src/command/commands/table.ts');
+    tableCommands.find(command => command.id === 'table:create').execute({
+      getInputHandler: () => window.__inputHandler,
+    });
+  });
+  const grid = await page.waitForSelector('[data-row="1"][data-col="1"]', { visible: true });
+  await grid.hover();
+  await grid.click();
+  await typeText(page, 'CELL');
+  const cellPos = await page.evaluate(() => window.__inputHandler.cursor.getPosition());
+  const cellShade = () => page.evaluate(pos => window.__wasm.getCellCharPropertiesAt(
+    0, pos.parentParaIndex, pos.controlIndex, pos.cellIndex, 0, 0,
+  ).shadeColor, cellPos);
+  const originalShade = await cellShade();
+  await page.keyboard.press('F5');
+  const cellBlock = await page.evaluate(() => window.__inputHandler.getSelectedCellBlock());
+  assert(cellBlock?.cellIndices.length === 1 && !await hasSelection(page),
+    '실키 F5로 텍스트 선택과 별개인 셀 블록을 만들었다');
+  const depthCell = await undoDepth(page);
+  await pickSwatch(page);
+  const highlighted = await cellShade();
+  assert(highlighted === GREEN, '선택한 셀의 글자에 형광펜 색이 즉시 적용된다');
+  assert(!(await penState(page)).mode, '셀 블록 서식 지정은 연속 모드로 들어가지 않는다');
+  assert(await undoDepth(page) === depthCell + 1, '셀 블록 칠은 undo 한 단계로 기록된다');
+  if (highlighted === GREEN) {
+    await page.evaluate(() => window.__inputHandler.performUndo());
+    assert(await cellShade() === originalShade, 'undo로 셀 글자의 원래 형광펜 색이 복원된다');
+    await page.evaluate(() => window.__inputHandler.performRedo());
+    assert(await cellShade() === GREEN, 'redo로 셀 글자의 형광펜 색이 복원된다');
+    const text = await page.evaluate(pos => window.__wasm.getTextInCell(
+      0, pos.parentParaIndex, pos.controlIndex, pos.cellIndex, 0, 0, 4,
+    ), cellPos);
+    assert(text === 'CELL', 'undo·redo 뒤 셀 본문이 보존된다');
+  }
 });

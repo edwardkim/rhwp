@@ -770,7 +770,12 @@ export class InputHandler {
     eventBus.on('highlight-pick', (color) => {
       if (!this.active) return;
       if (this.editMode === 'form') return;
-      if (this.cursor.hasSelection()) {
+      // 셀 블록은 텍스트 anchor와 별개이며, 빈 길이 anchor는 선택한 글자가 아니다.
+      // 각주의 기존 서식 지원 경계는 유지하고 지원하는 범위의 공통 판정을 재사용한다.
+      const hasSelectedText = this.cursor.isInFootnote()
+        ? this.cursor.hasSelection()
+        : this.getNonEmptySelection() !== null || this.getNonEmptyHeaderFooterSelection() !== null;
+      if (hasSelectedText || this.getSelectedCellBlock()) {
         this.applyCharFormat({ shadeColor: color as string });
       } else {
         this.setHighlightPen(color as string);
