@@ -227,7 +227,16 @@ pub(super) fn inspect(
             .current_items
             .iter()
             .any(|it| page_item_para_index(it) == Some(para_idx))
-        && stored_vpos_rewinds(preceding_stored_vpos(paragraphs, para_idx), para);
+        && stored_vpos_rewinds(
+            if preceding_stored_line_left_on_earlier_page(paragraphs, para_idx, page.current_items)
+            {
+                // 앞 줄의 저장 vpos 는 앞 쪽 좌표다 — 이 쪽의 흐름 위치와 비교한다.
+                Some(crate::renderer::px_to_hwpunit(page.current_height, dpi))
+            } else {
+                preceding_stored_vpos(paragraphs, para_idx)
+            },
+            para,
+        );
     // [#6761] 채움률 관문만으로는 "덜 찼는데 한글이 끊은 쪽"을 놓친다. 되감김이
     // **쪽 위쪽 띠에서 다시 시작**하고 되감김 직전 자리가 지금 흐름 위치와 같으면,
     // 사다리가 적은 그 쪽 경계가 지금 이 자리다 — 채움률과 무관하게 인정한다.
@@ -298,4 +307,41 @@ pub(super) fn inspect(
         stored_vpos_rewind_overflow_break,
         hangul2024_rewind_override,
     }
+}
+
+/// 되감김 비교의 앞 값(`preceding_stored_vpos`)을 낸 문단의 줄이 이 쪽에 없는가.
+///
+/// 앞 문단이 이 쪽에 표 이어지는 조각으로만 있으면 그 줄(표 host 줄)의 저장 vpos 는 표가
+/// 시작한 앞 쪽의 좌표다. 표가 끝난 이 쪽에서 이어지는 문단의 저장 vpos 는 이 쪽의 좌표라
+/// 둘을 비교하면 같은 쪽에서 이어지는 문단도 «되감김» 으로 읽힌다. 그때는 이 쪽의 흐름
+/// 위치를 앞 값으로 쓴다.
+fn preceding_stored_line_left_on_earlier_page(
+    paragraphs: &[Paragraph],
+    para_idx: usize,
+    current_items: &[PageItem],
+) -> bool {
+    let Some(owner) = paragraphs[..para_idx.min(paragraphs.len())]
+        .iter()
+        .rposition(|para| {
+            para.line_segs
+                .iter()
+                .any(|line| !super::super::is_synthetic_line_seg(line))
+        })
+    else {
+        return false;
+    };
+    let mut owner_items = current_items
+        .iter()
+        .filter(|item| page_item_para_index(item) == Some(owner))
+        .peekable();
+    owner_items.peek().is_some()
+        && owner_items.all(|item| {
+            matches!(
+                item,
+                PageItem::PartialTable {
+                    is_continuation: true,
+                    ..
+                }
+            )
+        })
 }
