@@ -44,3 +44,22 @@ HWP5 출처 HWPX 표 분할 측정이 실제 배치와 같은 저장 조판 프�
 2026-11-01 고정 후보의 #8389·#8397 전쪽 정밀 대조에서 2,153행 중 Native 12행, WASM 8행이 공개 기준보다 낮았다. 이 수치는 이후 GIF·Canvas 보정 전 결과이며 최종 후보의 재검증 결과가 아니다. #7905 3쪽은 GIF 오른쪽 경계 누락, sample16 35쪽 WASM은 메타파일 내부의 미대응 3픽셀이 확인됐다. #8040 두 원본은 Native·WASM 전쪽이 90% 이상이나 Native 정밀 기준 하락이 남는다. 진행과 근거는 [작업 기록](../../working/task_m100_planet6897_system_fonts_20261031.md)을 따른다. 하락 보정과 전쪽 대조, 각 PR의 독립 Print·Native/fresh WASM 및 직접 판독을 완료해야 한다. #8410·#8412의 새 base 기능도 별도로 보존 검증한다.
 
 원 PR의 최신 head·required check와 통합 후보의 새 검증 결과를 확인하기 전에는 승인이나 merge를 진행하지 않는다.
+
+## 2026-11-02 일괄 대조 추가 증거
+
+원 PR의 네 원본 HWP를 검토 엔진으로 HWPX로 저장하고 같은 원본의 한컴 Print와
+96dpi로 전쪽 대조했다. 네 저장본은 `export-hwpx --verify-pages`에서 원본과
+쪽수가 같았다. 2020 Print는 호환 세대 2022, 2024 Print는 2024로 측정했다.
+이전 기여자 측정과 글꼴 환경이 같다고 단정하지 않는다.
+
+| 입력 / 독립 기준 | 쪽 | Native 최저 | WASM 최저 | TSV |
+| --- | ---: | ---: | ---: | --- |
+| [headerrow HWPX](../assets/issue_8382/followup8438/headerrow.hwpx) / [2020 PDF](../../../pdf/issue8149/headerrow-2020.pdf) | 31 | 100.00% | 100.00% | [Native](../assets/issue_8382/followup8438/headerrow-native.tsv) · [WASM](../assets/issue_8382/followup8438/headerrow-wasm.tsv) |
+| [reservefit HWPX](../assets/issue_8382/followup8438/reservefit.hwpx) / [2020 PDF](../../../pdf/issue8149/reservefit-2020.pdf) | 65 | 100.00% | 100.00% | [Native](../assets/issue_8382/followup8438/reservefit-native.tsv) · [WASM](../assets/issue_8382/followup8438/reservefit-wasm.tsv) |
+| [rowfit HWPX](../assets/issue_8382/followup8438/rowfit.hwpx) / [2020 PDF](../../../pdf/issue8149/rowfit-2020.pdf) | 33 | 100.00% | 100.00% | [Native](../assets/issue_8382/followup8438/rowfit-native.tsv) · [WASM](../assets/issue_8382/followup8438/rowfit-wasm.tsv) |
+| [71352 HWPX](../assets/issue_8382/followup8438/71352.hwpx) / [2024 PDF](../../../pdf/issue8060/71352_lpg_regulatory_impact-2024.pdf) | 48 | 96.84% | 96.86% | [Native](../assets/issue_8382/followup8438/71352-native.tsv) · [WASM](../assets/issue_8382/followup8438/71352-wasm.tsv) |
+
+원 PR이 지목한 24쪽은 H12 행 4~10이 표에서 빠짐없이 이어지고, 71352의
+37쪽 마지막 표 조각도 한컴 PDF의 쪽과 같은 내용을 보인다.
+[24쪽 Native review](../assets/issue_8382/followup8438/headerrow-native-review-024.png) · [24쪽 overlay](../assets/issue_8382/followup8438/headerrow-native-overlay-024.png) ·
+[37쪽 Native review](../assets/issue_8382/followup8438/71352-native-review-037.png) · [37쪽 overlay](../assets/issue_8382/followup8438/71352-native-overlay-037.png).
