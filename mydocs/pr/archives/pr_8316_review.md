@@ -34,6 +34,12 @@
 
 원 PR 당시 head TSV와 비교하면 속기록 Native 36쪽은 97.32%에서 95.49%, HWP3 변환본 Native 5쪽은 99.47%에서 97.33%다. 원 PR은 별도의 글꼴 디렉터리를 명시했으나 이번에는 시스템 글꼴을 사용했다. HWP3 5쪽 제목에서 Native와 PDF의 글자 폭 차이를 직접 확인했으므로 글꼴 선택·기준 조건을 조사한다. 이 수치만으로 동일 글꼴 조건의 회귀 여부를 단정하지 않는다.
 
+### HWP3 변환본 5쪽의 제목 차이 원인 대조
+
+동일 시스템 글꼴 조건에서 #8438 이전 이력 `99a176b7cb`(#8397)의 Native 실행 파일로 5쪽을 다시 출력했다. 현재 제품 코드와 해당 이전 출력 PNG의 SHA-256은 모두 `a52876c78f720d9e6838a6d92ed9ca1c70e6eeffd4f91aec29cd8f5a94c5def9`로 일치한다. 이 기준에서는 #8438로 새로 생긴 시각 하락이 아니다. 원 PR 당시 별도 글꼴 디렉터리의 TSV와는 다른 환경이다.
+
+Native 기본 조건에서 글머리 `•`의 줄 상자 폭은 8.1 CSSpx, 같은 시스템에 설치된 한양신명조의 별도 완성 글리프 공급 폰트를 명시한 실험에서는 15.4 CSSpx였고 PDF의 제목 원점과 맞아 해당 쪽 raw가 100.00%였다. 실제 renderer snapshot 추적에서 기본 조건의 제목 한글은 `HY Sinmyeongjo`, 글머리는 `한양신명조`로 선택됐다. 시스템에는 동일 family에 여러 프로그램이 있으므로 단순 이름만으로 파일을 단정하지 않는다. 글꼴 파일은 증적이나 배포물에 포함하지 않았다. 기본 Native의 눈에 보이는 차이는 후속 검토 대상으로 남기며, WASM 동일 쪽은 99.95%다. [WASM review](../assets/issue_8136/final-integration-8438/wasm-h3s5-p005-review.png) · [WASM overlay](../assets/issue_8136/final-integration-8438/wasm-h3s5-p005-overlay.png).
+
 ## 접수와 적용
 
 - 원 PR: [#8316](https://github.com/edwardkim/rhwp/pull/8316), 작성자 `planet6897`, reviewer `jangster77`.
