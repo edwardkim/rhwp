@@ -82,7 +82,7 @@ Native 기본 조건에서 글머리 `•`의 줄 상자 폭은 8.1 CSSpx, 같�
 
 기여자가 제출한 기준 자료: [`ab_changed_pages_native.tsv`](../../../mydocs/pr/assets/issue_8136/ab_changed_pages_native.tsv). 해당 자료만으로 새 통합 후보의 시각 검증을 통과 처리하지 않는다.
 
-2026-11-01 중간 Native 후보 실행 파일 SHA-256 `f29ec78b0d2a1f8b18a172ea4e481436f85d75873ba530f4427debe078ec93b3`로 같은 HWPX와 독립 2024 Print PDF를 96 DPI에서 다시 비교했다. 전 2쪽 raw는 각각 `99.48%`, `98.95%`다. [TSV](../../../output/pr-review/planet6897-ordered-20261031/stored-guard-issue8136-native/issue8136/silhouette.tsv), 변경 기호가 있는 [1쪽 review](../../../output/pr-review/planet6897-ordered-20261031/stored-guard-issue8136-p001-review/issue8136/review/review_001.png)와 [overlay](../../../output/pr-review/planet6897-ordered-20261031/stored-guard-issue8136-p001-review/issue8136/overlay/overlay_001.png)를 대조했다. 이후 저장 줄 출처 판정이 변경돼 최종 후보 Native·fresh WASM 재검증을 진행한다. `output/` 자료는 임시이며 PR 제출 증적은 별도 정식 경로에 고정해야 한다.
+2026-11-01 중간 Native 후보 실행 파일 SHA-256 `f29ec78b0d2a1f8b18a172ea4e481436f85d75873ba530f4427debe078ec93b3`로 같은 HWPX와 독립 2024 Print PDF를 96 DPI에서 다시 비교했다. 전 2쪽 raw는 각각 `99.48%`, `98.95%`였고 TSV SHA-256은 `0e4cd58da243c08f5b3d8e7b9b64a3b8c58954787d55e056fefcb93b159596f4`다. 변경 기호가 있는 1쪽을 당시 review·overlay로 대조했다. 이후 저장 줄 출처 판정이 변경됐으며 정식 증거는 위의 최종 코드 대조에 연결했다.
 
 확대 판독에서 `™` 등 기호의 윤곽 차이가 보인다. Print의 내장 `Gungsuh` 프로그램을 설치 글꼴의 같은 코드포인트 윤곽과 대조하면 `™`는 설치 `궁서`가 아닌 `궁서체`와 같고, `€`는 반대로 `궁서`와 같다. `㉠`은 둘 다와 같다. 글꼴 명칭 또는 총점만으로 시각적 일치를 선언하지 않는다. 시스템에서 UPM 1024 글꼴 137개를 대조한 `™` 결과는 임시 `issue8136-print-trademark-fonts.log`에 있다. 글꼴 버전과 실제 Native/WASM 공급자의 원인 확인이 남는다.
 
@@ -92,13 +92,13 @@ Windows 검증 호스트의 `C:\Windows\Fonts\batang.ttc`를 임시 검증 경�
 
 같은 helper에 2024 프로필을 명시해 재실행하자 추적 PNG와 임시 Fontconfig Native 측정 PNG의 SHA-256이 모두 `b3f9e10e69cde4fadbd553287dcbb19490190167f99fb25e7b0a256d0ea92724`로 일치했다. `™`·`€`는 `Gungseo`, `㉠`은 `Gungsuh`로 관측됐다(`issue8136-font-trace-auto-2024.json`). 원본 TTF 선언에도 CFF 후보가 먼저 사용되는 조건을 공통 경로에서 분석한다.
 
-TTF 선언을 글꼴 선택에 전달한 새 Native 후보 SHA-256 `91d4e37673a8c796c1e499c76a30d4a7924ca9084c107490e8b0141d94f3e5f5`의 전 2쪽 raw는 각각 `99.90447%`, `98.95550%`다. 시스템 글꼴 전체와 같은 독립 Print PDF를 사용했으며 [TSV](../../../output/pr-review/planet6897-ordered-20261031/font-source-native-sweep/issue8136/issue8136/silhouette.tsv), [1쪽 review](../../../output/pr-review/planet6897-ordered-20261031/font-source-issue8136-review/issue8136/review/review_001.png) 및 [overlay](../../../output/pr-review/planet6897-ordered-20261031/font-source-issue8136-review/issue8136/overlay/overlay_001.png)를 남겼다. 이는 Native 중간 결과로, 최종 fresh WASM 및 다른 원본의 무하락 검증은 남아 있다.
+TTF 선언을 글꼴 선택에 전달한 새 Native 후보 SHA-256 `91d4e37673a8c796c1e499c76a30d4a7924ca9084c107490e8b0141d94f3e5f5`의 전 2쪽 raw는 각각 `99.90447%`, `98.95550%`다. 시스템 글꼴 전체와 같은 독립 Print PDF를 사용했으며 당시 TSV SHA-256은 `76f1a15255f99f863ebb33e50a180a8f0708e3ce20cdda1c2130c7504e81b98e`다. 이는 Native 중간 결과로, 최종 fresh WASM 및 다른 원본의 무하락 검증을 대신하지 않는다.
 
-이후 HWP5의 미확정 글꼴 속성 비트를 TTF 선언으로 확정하지 않도록 변경한 후보 `b38728ae6740b44deb2a6b5c574110d07c5b44535db34b593284a45276b2a3c7`에서 원 HWPX는 같은 두 수치를 유지했다. 그러나 그 HWPX를 rhwp로 HWP에 저장하고 다시 연 1쪽은 `99.48%`로 낮아졌다([임시 TSV](../../../output/pr-review/planet6897-ordered-20261031/issue8136-roundtrip-current-native/issue8136-roundtrip/silhouette.tsv)). 저장본에는 `RhwpHwpxOrigin` 출처가 있으며 rhwp의 직렬화기는 HWPX의 명시적 글꼴 유형을 HWP 속성에 보존한다. 이 확정 출처까지 일반 HWP5의 미확정 비트로 취급하면 안 되므로 출처를 구분해 보정하고 같은 두 경로를 다시 검증한다.
+이후 HWP5의 미확정 글꼴 속성 비트를 TTF 선언으로 확정하지 않도록 변경한 후보 `b38728ae6740b44deb2a6b5c574110d07c5b44535db34b593284a45276b2a3c7`에서 원 HWPX는 같은 두 수치를 유지했다. 그러나 그 HWPX를 rhwp로 HWP에 저장하고 다시 연 1쪽은 `99.48%`로 낮아졌다. 당시 TSV SHA-256은 `0e4cd58da243c08f5b3d8e7b9b64a3b8c58954787d55e056fefcb93b159596f4`다. 저장본에는 `RhwpHwpxOrigin` 출처가 있으며 rhwp의 직렬화기는 HWPX의 명시적 글꼴 유형을 HWP 속성에 보존한다. 이 확정 출처까지 일반 HWP5의 미확정 비트로 취급하면 안 되므로 출처를 구분해 보정하고 같은 두 경로를 다시 검증한다.
 
-출처 구분을 보완한 Native 후보 `e27de3655ca5806043ba63110f2823c6f17db663e80ea55d93477c208cef2200`에서는 원 HWPX와 위 HWP 저장본의 raw가 각각 1쪽 `99.904468740049%`, 2쪽 `98.955495004541%`로 정확히 일치한다([정밀 비교](../../../output/pr-review/planet6897-ordered-20261031/hwp5-hwpx-lineage-focus-compare.log)). 두 경로의 fresh WASM과 최종 직접 판독은 별도로 확인해야 한다.
+출처 구분을 보완한 Native 후보 `e27de3655ca5806043ba63110f2823c6f17db663e80ea55d93477c208cef2200`에서는 원 HWPX와 위 HWP 저장본의 raw가 각각 1쪽 `99.904468740049%`, 2쪽 `98.955495004541%`로 정확히 일치한다. 정밀 비교 로그 SHA-256은 `cedb021359fb28e06f721f3f3acbe5a30c2afb0a6f403384163e7f0e86afeb8b`다. 두 경로의 fresh WASM과 최종 직접 판독은 별도로 확인해야 한다.
 
-현재 코드에서 [이슈 #8136](https://github.com/edwardkim/rhwp/issues/8136)의 슬롯 분류 3건을 최소 글꼴 환경으로 다시 실행해 모두 통과했다. [이슈 #8079](https://github.com/edwardkim/rhwp/issues/8079)의 4건과 [이슈 #8315](https://github.com/edwardkim/rhwp/issues/8315)의 3건도 같은 실행에서 통과했다([집중 검사 로그](../../../output/pr-review/planet6897-ordered-20261031/font-slot-focused-minfont-after-commit.log)). 이는 해당 검사 10건의 결과이며 전체 회귀나 시각 검증을 대신하지 않는다.
+당시 코드에서 [이슈 #8136](https://github.com/edwardkim/rhwp/issues/8136)의 슬롯 분류 3건을 최소 글꼴 환경으로 다시 실행해 모두 통과했다. [이슈 #8079](https://github.com/edwardkim/rhwp/issues/8079)의 4건과 [이슈 #8315](https://github.com/edwardkim/rhwp/issues/8315)의 3건도 같은 실행에서 통과했다. 실행 로그 SHA-256은 `91abb68a1a9efb4e796fd1bc12b5bd073a2c5759d4624128ea629bdf8447fc85`다. 이는 해당 검사 10건의 결과이며 전체 회귀나 시각 검증을 대신하지 않는다.
 
 기존 생성 목록으로 최소 글꼴 회귀 12,320건 통과·45건 건너뜀을 확인했다. 생성 목록에서 누락된 [PR #8410](https://github.com/edwardkim/rhwp/pull/8410) 두 모듈의 6건을 목록 재작성 후 같은 환경에서 별도로 실행해 모두 통과했다. 두 실행을 구분하며 한 번의 전체 실행으로 기록하지 않는다.
 
