@@ -1,5 +1,10 @@
 //! 검사 유형: 관계형.
-//! MEASUREMENT_HEADER
+//! 주석 갱신: 2026-11-02 19:16 KST (신규 파일).
+//! 2026-11-02 측정 raw(`silhouette_raw_match_percent`, 96dpi, PDFium, `--compat 2022`, 한/글 2020 엔진 Print 정본):
+//! vertical_oversize.hwpx: 3쪽(H3 둘째 조각) Native 100.00% / fresh WASM 100.00%; 5쪽(V3 통째) Native 98.94% / fresh WASM 98.92%; 전5쪽 최저 98.94% / 98.92%.
+//! vertical_fit.hwpx: 2쪽(H6 첫 조각) Native 100.00% / fresh WASM 100.00%; 5쪽(V6 통째) Native 98.75% / fresh WASM 98.72%; 전5쪽 최저 98.75% / 98.72%.
+//! 근거: mydocs/pr/assets/issue_8470/{native,wasm}/vertical_{oversize,fit}_silhouette.tsv,
+//! mydocs/pr/assets/issue_8470/png/vertical_{oversize,fit}_p5_{review,overlay}_{native,wasm}.png.
 //!
 //! #8470 세로쓰기 칸이 있는 표는 쪽 경계에서 나누지 않는다.
 //!
