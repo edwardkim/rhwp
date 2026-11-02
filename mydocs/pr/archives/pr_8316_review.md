@@ -147,6 +147,13 @@ TTF 선언을 글꼴 선택에 전달한 새 Native 후보 SHA-256 `91d4e37673a8
 `InlineBoxPlacement`의 실제 위치·흐름 끝에 함께 사용한다. 다만 로드 중 재구성된
 좌표가 저장 좌표로 오인되지 않는지와 적용 조건의 일반성은 재검토 중이다.
 
+본문 축 재구성의 선행 근거인 [이슈 #5871](https://github.com/edwardkim/rhwp/issues/5871)은
+기존 한컴 2020 Print PDF로 다시 대조했다. 후보 전과 후보 3의 Native 전 3쪽 TSV는
+각각 [보정 전](../assets/issue_8136/final-integration-8438/native-issue5871-before-spacing.tsv),
+[후보 3](../assets/issue_8136/final-integration-8438/native-issue5871-candidate3.tsv)이며
+표시값이 모두 99.98·99.96·99.98%로 같다. 이는 해당 대조군의 Native 결과이고
+후보의 일반성이나 fresh WASM 검증 전체를 대신하지 않는다.
+
 9쪽 표 앞 공백 글줄은 문단 51의 첫 줄이다. `403295 + 52868 + 552 = 456715`는
 로드 후 재구성 좌표의 관계다. 원본 문단 51의 두 줄 좌표는 62332와 0으로, 둘째
 줄에서 원본 쪽 좌표가 다시 시작한다. 한컴 Print는 이 표를
