@@ -63,3 +63,10 @@ HWP5 출처 HWPX 표 분할 측정이 실제 배치와 같은 저장 조판 프�
 37쪽 마지막 표 조각도 한컴 PDF의 쪽과 같은 내용을 보인다.
 [24쪽 Native review](../assets/issue_8382/followup8438/headerrow-native-review-024.png) · [24쪽 overlay](../assets/issue_8382/followup8438/headerrow-native-overlay-024.png) ·
 [37쪽 Native review](../assets/issue_8382/followup8438/71352-native-review-037.png) · [37쪽 overlay](../assets/issue_8382/followup8438/71352-native-overlay-037.png).
+
+### 새 base 재저장 동일성
+
+[PR #8309](https://github.com/edwardkim/rhwp/pull/8309)를 포함한 base
+`d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d`의 Native 실행 파일로 네 HWP를
+다시 HWPX로 저장했다. `--verify-pages`는 네 문서 모두 통과했고, 각각의 저장본은
+위 TSV에 사용한 HWPX와 SHA-256이 같다. 위 한컴 Print와 시각 결과를 재사용한다.
