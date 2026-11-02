@@ -1132,10 +1132,72 @@ impl TypesetEngine {
             // 1×1 단일 셀(row_count==1, 행 경계 없어 셀 내부 컷 필요, #874)은 제외 —
             // fits_fresh_page/row_count 조건으로 기존 force-split(렌더러 경계 컷) 유지.
             let fits_fresh_page = unit_fits_fresh_page;
+            // 셀 단위로 나누는 표의 첫 행은 선언 높이가 아니라 내용으로 수용한다. 내용과 안
+            // 여백이 남은 공간에 들면 한/글은 행을 이 쪽에 두고 쪽 바닥에서 닫는다(행 스캐너의
+            // 같은 규칙과 한 계약). 넘치는 선언 몫은 다음 조각이 행 자신의 칸 선언으로 다시
+            // 재며 1282HU 이하이면 쪽 경계에서 버린다.
+            // 머리 행은 본문 행 없이 쪽 끝에 홀로 남지 않는다 — 다음 조각이 같은 머리 행을 다시
+            // 그리므로 그 조각은 머리만 두 번 나오는 빈 조각이다(한/글 2020: 1740000 중간보고서
+            // 59쪽 31×6 표, 첫 행 머리 행이 남은 30.9px 에 내용이 들어도 표 전체가 60쪽에서 시작).
+            let first_row_is_repeated_header = row_geometry_table.repeat_header
+                && row_geometry_table
+                    .cells
+                    .iter()
+                    .any(|cell| cell.row == 0 && cell.is_header);
+            // 저장 줄이 앞 문단보다 위로 되감기면 한/글은 이 호스트를 다음 쪽에서 시작했다 — 그
+            // 기록이 쪽 경계다(경찰대학 발전방안 57→58쪽 <표 19> 4×3 표: 호스트 vpos 6198 <
+            // 앞 문단 49523, 남은 25.3px 에 첫 행 내용이 들어도 표는 58쪽에서 시작).
+            let host_starts_new_stored_page = (st.profile.hwp5_stored_pagination_layout()
+                || st.profile.hwpx_stored_layout())
+                && !st.profile.session_edited()
+                && para
+                    .line_segs
+                    .iter()
+                    .find(|seg| !is_synthetic_line_seg(seg))
+                    .zip(
+                        para_idx
+                            .checked_sub(1)
+                            .and_then(|previous| paragraphs_all.get(previous))
+                            .and_then(|previous| {
+                                previous
+                                    .line_segs
+                                    .iter()
+                                    .rev()
+                                    .find(|seg| !is_synthetic_line_seg(seg))
+                            }),
+                    )
+                    .is_some_and(|(current, previous)| {
+                        current.vertical_pos < previous.vertical_pos
+                    });
+            let first_row_content_fits_here = mt.allows_row_break_split()
+                && matches!(
+                    table.common.text_wrap,
+                    crate::model::shape::TextWrap::TopAndBottom
+                )
+                && first_block_is_single_row
+                && !first_row_is_repeated_header
+                && !host_starts_new_stored_page
+                && !st.current_items.is_empty()
+                && {
+                    let (res, _) = layout_engine.advance_row_cut_for_physical_band(
+                        row_geometry_table,
+                        0,
+                        &[],
+                        remaining_on_page_for_first_unit,
+                        styles,
+                    );
+                    res.fully_consumed
+                        && !res.end_cut.is_empty()
+                        && layout_engine.row_content_fits_page_rest(
+                            res.consumed_height + mt.max_padding_for_row(0),
+                            remaining_on_page_for_first_unit,
+                        )
+                };
             let multirow_clean_defer = !first_row_splittable
                 && row_count > 1
                 && first_block_end < row_count
-                && fits_fresh_page;
+                && fits_fresh_page
+                && !first_row_content_fits_here;
             // A native HWP5 host whose stored anchor overlaps the current flow,
             // whose declared bottom crosses this body frame, and whose following
             // paragraph rewinds owns a physical first fragment here.  The generic
