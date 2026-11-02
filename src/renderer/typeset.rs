@@ -4847,8 +4847,16 @@ impl TypesetEngine {
             }
         }
 
+        // [#8474] 단 맨 위에서는 저장 첫 줄이 증언하는 쪽 위 간격을 원점에 둔다.
+        // paint 는 이 계획의 원점을 그대로 쓴다(`layout_table_control_block`).
         let leading_spacing = if st.current_height < 1.0 {
-            0.0
+            crate::renderer::stored_line_ladder::stored_column_top_spacing(
+                para,
+                fmt.spacing_before,
+                (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+                    && !st.profile.session_edited(),
+                self.dpi,
+            )
         } else {
             fmt.spacing_before
         };
