@@ -259,8 +259,9 @@ bash .claude/skills/rhwp-exam-ingest/helpers/crop_image.sh \
     --json --dry-run "$TMP/page_001.png" 120 400 640 360 "$MEDIA_DIR/img/q1.png"
 ```
 
-`-o`는 필수다. `--media-dir`을 지정해도 이미지 삽입은 구현되지 않았다.
-위 명령은 텍스트 조립 또는 제한 재현용이며, 그림 필수 입력은 F18로 중단한다.
+`-o`는 필수다. `--media-dir`을 지정하면 그 디렉터리 안의 이미지 파일을 검증해 삽입한다.
+생략하면 JSON 디렉터리를 기준으로 읽는다. `INGEST_IMAGE_*` 오류가 발생하면 F18에 따라
+입력을 보정하고 다시 실행한다. 그림이 필수인 입력을 텍스트만으로 완료 처리하지 않는다.
 상세: [11_crop_bbox.md](references/11_crop_bbox.md) ·
 [12_build_from_ingest.md](references/12_build_from_ingest.md)
 
