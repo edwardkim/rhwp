@@ -448,6 +448,17 @@ Print했을 때도 12쪽 표 제목의 y 좌표는 116.999816pt로 유지됐다.
 선택 영역 확인이므로 저장 줄을 일반적으로 삭제해도 된다는 근거는 아니다. 유효한
 저장 줄의 다른 사례와 분할·측정·배치 소비 경로를 보존하는 공통 해결이 필요하다.
 
+이 [진단 HWPX](../assets/issue_8136/followup8438-crop/diagnostic-without-table-row.hwpx)는
+위 저장본과 ZIP 구성은 같고 본문 XML에서 해당 저장 줄 하나만 제거했다. SHA-256은
+`583f5c2163fe0e335c36a3f14b085a80ffdbd89adb64dc6c8ad4ce97eb5698c1`이다.
+같은 진단 입력을 전처리 없이 한컴 2020 Print한 [PDF](../../../pdf/issue8136/pr8316-diagnostic-without-table-row-2020.pdf)의
+SHA-256은 `4608d38c18af19e584da154015ee3b3e495b392684e9831d255c39ce5690e497`이다.
+전 12쪽의 [Native TSV](../assets/issue_8136/followup8438-crop/diagnostic-without-table-row-native.tsv)는
+최저 99.99%, [WASM TSV](../assets/issue_8136/followup8438-crop/diagnostic-without-table-row-wasm.tsv)는
+전쪽 100.00%다. 12쪽 [비교](../assets/issue_8136/followup8438-crop/diagnostic-without-table-row-native-review-012.png)와
+[overlay](../assets/issue_8136/followup8438-crop/diagnostic-without-table-row-native-overlay-012.png)도
+직접 확인했다. 이는 수동으로 만든 진단 입력의 결과이며 실제 저장 코드의 검증과 구분한다.
+
 재구성 출처 조건을 없애고 같은 높이의 단일 표 저장 줄을 모두 공통 계획에
 넣는 후보도 검토했다. 저장소 HWPX의 최상위 문단에서 저장 줄 하나, TAC 표 하나,
 표 높이와 바깥 여백의 합이 줄 높이와 같은 형태를 찾아보니 239개 파일에서
