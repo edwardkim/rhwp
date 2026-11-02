@@ -1,0 +1,51 @@
+
+running 5 tests
+test invalidation_density_ledger_is_ratcheted ... FAILED
+test classification_drift_is_blocked ... ok
+test delegation_targets_actually_invalidate ... ok
+test guard_scanner_self_check ... ok
+test stale_exemptions_are_reclaimed ... ok
+
+failures:
+
+---- invalidation_density_ledger_is_ratcheted stdout ----
+
+thread 'invalidation_density_ledger_is_ratcheted' (7507) panicked at /home/edward/mygithub/rhwp/tests/issue_2724_passthrough_invalidation_guard.rs:767:5:
+무효화 밀도가 원장 아래로 내려갔다 1건 (#2724):
+  ↓ src/document_core/../model/bin_data.rs: 1 → 0 (무효화 사이트 감소)
+
+한 함수 안에 무효화 갈래가 여럿일 때 일부만 지우면 함수 단위 검사는 통과한다.
+PR #2704 의 커넥터 곡선 갈래 누락이 실제로 그 형태였다(3갈래 중 1갈래만 방어).
+무효화를 의도적으로 이관·통합했다면 INVALIDATION_LEDGER 를 갱신하라.
+
+참고(증가 — 실패 아님):
+  + src/document_core/commands/border_paint_structure.rs: 0 → 1 (신규)
+  + src/document_core/commands/document.rs: 0 → 1 (신규)
+  + src/document_core/commands/formatting_runs.rs: 0 → 2 (신규)
+  ↑ src/document_core/commands/header_footer_ops.rs: 9 → 11
+  ↑ src/document_core/commands/object_ops/equation.rs: 3 → 4
+  ↑ src/document_core/commands/object_ops/shape.rs: 7 → 8
+  ↑ src/document_core/commands/object_ops/table.rs: 7 → 8
+  + src/document_core/commands/paragraph_block/import/resources.rs: 0 → 1 (신규)
+  + src/document_core/commands/paragraph_block/repeat.rs: 0 → 1 (신규)
+  + src/document_core/commands/paragraph_block/template_form.rs: 0 → 1 (신규)
+  + src/document_core/commands/paragraph_block/template_rows.rs: 0 → 1 (신규)
+  + src/document_core/commands/paragraph_format_path.rs: 0 → 1 (신규)
+  + src/document_core/commands/picture_transform_journal.rs: 0 → 1 (신규)
+  ↑ src/document_core/commands/table_ops.rs: 19 → 24
+  ↑ src/document_core/commands/text_editing.rs: 21 → 24
+  ↑ src/document_core/converters/hwpx_to_hwp.rs: 3 → 4
+  + src/document_core/hyperlink.rs: 0 → 1 (신규)
+  + src/document_core/inline_control.rs: 0 → 1 (신규)
+  + src/document_core/loaded_frame_restore.rs: 0 → 2 (신규)
+  ↑ src/document_core/queries/field_query.rs: 7 → 9
+  + src/document_core/queries/form_action.rs: 0 → 1 (신규)
+  + src/document_core/queries/hwpctrl_sets.rs: 0 → 13 (신규)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    invalidation_density_ledger_is_ratcheted
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.67s
+

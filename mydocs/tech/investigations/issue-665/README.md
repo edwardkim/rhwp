@@ -60,6 +60,7 @@ Chrome은 로컬 Chromium build 1660786(152.0.7946.0)을 사용했다.
 | shared-boxed | 91.04% | 91.00% |
 | runs HWP 저장 / HWPX 재저장 | 각각 100.00% | 각각 100.00% |
 | shared-boxed 생성본 자체의 추가 Print | 91.04% | 91.00% |
+| JPEG / GIF / BMP / TIFF | 각각 100.00% | 각각 100.00% |
 
 전쪽 TSV 원본은 각 producer 하위 폴더와 `all-pages.tsv`에 있다. 누락·90% 미만 쪽은 없다.
 `placement-review.png`, `detail-review.png`를 직접 확대해 이미지 색·종횡비·내용,
@@ -89,3 +90,43 @@ shared-boxed에는 base에도 있는 보기 border의 중복 선과 작은 세�
 집중 회귀는 최소 글꼴 격리에서 새 검사 9개·기존 시험지 계약 14개·HTML 이미지 8개가 통과했다.
 동일 생성 HWPX의 base WASM도 91.00%였다. SVG 실제 산출물은 base/head byte가 같고 두 원본
 PNG를 모두 보존한다(`svg-consumption.json`).
+
+## 추가 형식·보안·성능 확인
+
+JPEG/GIF/BMP/TIFF는 직접 만든 PNG 패턴을 해당 형식으로 인코딩한 공개 자원이다.
+각 독립 기준은 기존 base의 above reference HWPX에서 이미지 payload·확장자와 OPF의
+MIME/href만 바꾸었다. 새 이미지 builder 출력에서 기준 배치를 복사하지 않았다.
+한컴 2024 Print 네 건과 Native/fresh WASM 전쪽 raw는 모두 100.00%다.
+`codec-review.png`에서 3열의 그림 색·크기·종횡비와 문항 번호·본문·선택지 간격을 직접 판독했다.
+모든 fixture·독립 PDF 해시는 `inputs.sha256`, 각 Print의 실제 실행 정보는
+`print-provenance.json`에 보존한다.
+
+`samples/`에는 추가·수정 문서가 없다. `tests/fixtures/issue665`의 HWP/HWPX 24개는 실제
+CLI hidden-text·injection(`--include-fields --min-confidence low`)·unicode를 각각 실행했다.
+72회 모두 exit 0 / clean이며 입력별 SHA는 `security-fixtures.json`에 있다.
+`samples/` 전용 환경변수로 이 결과를 대신하거나 입력 없는 검사 성공을 24개 검사로 집계하지 않는다.
+일반 회귀의 파일 시스템·글꼴 격리 결과는 `minimal-font-receipt.json`에 있다.
+
+`benchmark-results.json`은 동일 호스트 Native CLI 생성 시간이다. 텍스트 100문항을 3회
+예열한 뒤 base/head를 번갈아 21회씩 실행했다. 중앙값은 base 5.38ms / head 5.25ms이며
+ZIP 안의 모든 비압축 entry가 같다. 이 짧은 측정으로 속도 개선을 주장하지 않는다.
+같은 그림 100개는 7.05ms / peak RSS 15,256KiB, 1,000개는 25.67ms / 24,732KiB였다.
+각각 7회 중앙값이며 RSS는 별도 `/usr/bin/time` 실행값이다. 자원은 두 경우 모두 1개다.
+이 수치는 ingest 생성 성능이며 다페이지 편집·브라우저 로딩 성능 측정이 아니다.
+
+## 공유 무효화 이동의 검사 보존
+
+#2724 원 PR #2741 → 실제 통합 #2797(`f2c02b6669`) → 원 보고서의 독립 삭제 실증을
+대조했다. 기존 Picture의 DocInfo 무효화 1곳을 model helper로 이동했으므로 밀도 원장은
+Picture 7곳 + model 1곳을 각각 검사한다. 공통 helper 삭제를 허용하도록 하한만 내리지 않는다.
+std 전용 원 검사 5개가 base에서 통과하고, 보완한 5개도 통과한다. 공통 helper의 무효화만
+지운 ignored 복사본은 1 → 0으로 실패한다(`guard-proof.json`, `guard-*.txt`).
+실제 기존 HWP를 연 뒤 다른 그림을 삽입하고 저장·재열기한 `--verify`도 IR 차이 0건이다
+(`loaded-docinfo-verify.json`). 원 보고서는 `mydocs/report/archives/task_m100_2724_report.md`다.
+
+## Rust API 호환 범위
+
+기존 JSON과 `build_exam_paper`의 텍스트 projection은 유지된다. 새 이미지 API는 파일을
+직접 읽지 않으며 호스트가 전달한 검증 바이트를 사용한다. 공개 enum `StemBlock`에는
+`Paragraph { runs }`가 추가됐다. 이 enum을 빠짐없이 match하는 Rust 소비자는 새 variant의
+처리를 추가해야 한다. CLI의 새 `paragraph.runs`를 구형 binary에서 읽는 호환성은 주장하지 않는다.

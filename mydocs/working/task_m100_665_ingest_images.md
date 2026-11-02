@@ -54,3 +54,11 @@ Issue: #665
 - #2724 원 PR #2741 → 실제 통합 #2797(`f2c02b6669`) → 원 보고서의 독립 삭제 실증을 확인했다. 기존 Picture 등록의 DocInfo 무효화 1곳은 `src/model/bin_data.rs`로 이동했으며 삭제되지 않았다. 밀도 검사의 범위를 그 파일까지 넓히고 기존 Picture 7곳 + 공통 helper 1곳을 각각 보호한다. 단순히 하한을 낮추지 않았다.
 - std 전용 원 검사 5개는 base에서 통과했다. 보완한 검사 5개도 통과했고, ignored 복사본에서 공통 helper 무효화만 삭제하면 밀도 검사가 1 → 0으로 실패한다. 실제 기존 HWP를 연 뒤 다른 그림을 삽입·HWP 저장·재열기한 CLI `--verify`도 IR 차이 0건이었다.
 - 두 번째 실패는 `samples/` 전용 `RHWP_SECURITY_SWEEP_SAMPLES_JSON`에 `tests/fixtures/` 경로를 넣은 실행 설정 오류였다. 이 작업은 `samples/`를 변경하지 않는다. 전체 검사는 해당 잘못된 입력 없이 다시 실행하고, 새 목적별 fixture는 실제 CLI의 hidden-text·injection·unicode 탐지를 각각 실행해 별도로 기록한다. 기존 보안 검사와 탐지 규칙은 변경하지 않는다.
+
+## 추가 검증 결과
+
+- JPEG/GIF/BMP/TIFF는 각각 독립 한컴 2024 Print를 새로 확보했다. Native/fresh WASM 전쪽 raw는 모두 100.00%이고, 확대 비교에서 그림·문항 번호·본문·선택지를 확인했다. 실제 검증한 이미지/JSON/HWPX/PDF와 TSV를 정식 경로에 추가했다.
+- 최종 fixture HWP/HWPX 24개 × 보안 탐지 3종 = 실제 CLI 72회가 모두 exit 0 / clean이었다. 기존 `samples/` 전용 검사는 수정하지 않았다.
+- 유휴 상태에서 100문항 텍스트 생성을 base/head 교대 21회씩 측정했다. 중앙값 5.38ms → 5.25ms, ZIP의 모든 비압축 entry가 같았다. 이 측정에서 성능 저하는 관측되지 않았으나 개선으로 단정하지 않는다. 같은 그림 100개/1,000개 생성 중앙값은 7.05ms/25.67ms이고 두 경우 자원은 1개다.
+- 원본 입력 해시와 `src`/Cargo 계약을 재확인했다. producer 생성 뒤 제품 소스는 변하지 않았다. 기존 Studio 배포 WASM의 SHA-256은 `19e4729f…`로 유지됐고 별도 #8296 worktree의 HEAD도 유지됐다.
+- 보정한 최종 검사의 workspace all-target Clippy, 자동 suite manifest 및 unit-tier 검사가 통과했다. 전체 release-test와 Native Skia는 계속 실행 중이다.

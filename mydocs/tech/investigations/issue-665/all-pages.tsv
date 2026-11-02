@@ -38,3 +38,11 @@ base-reference-wasm	inline	1	100.00	0	100.00	0
 base-same-input-native	mixed	1	100.00	0	100.00	0
 base-same-input-native	shared-boxed	1	91.04	0	91.04	0
 base-same-input-wasm	shared-boxed	1	91.00	0	91.00	0
+head-native	format-jpg	1	100.00	0	100.00	0
+head-wasm	format-jpg	1	100.00	0	100.00	0
+head-native	format-gif	1	100.00	0	100.00	0
+head-wasm	format-gif	1	100.00	0	100.00	0
+head-native	format-bmp	1	100.00	0	100.00	0
+head-wasm	format-bmp	1	100.00	0	100.00	0
+head-native	format-tif	1	100.00	0	100.00	0
+head-wasm	format-tif	1	100.00	0	100.00	0

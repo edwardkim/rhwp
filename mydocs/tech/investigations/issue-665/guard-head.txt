@@ -1,0 +1,10 @@
+
+running 5 tests
+test invalidation_density_ledger_is_ratcheted ... ok
+test classification_drift_is_blocked ... ok
+test delegation_targets_actually_invalidate ... ok
+test guard_scanner_self_check ... ok
+test stale_exemptions_are_reclaimed ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.63s
+

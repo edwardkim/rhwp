@@ -1,0 +1,20 @@
+[
+  {
+    "case": "base",
+    "exit": 0,
+    "expected": 0,
+    "source": "output/issue665/base-source"
+  },
+  {
+    "case": "head",
+    "exit": 0,
+    "expected": 0,
+    "source": "."
+  },
+  {
+    "case": "negative",
+    "exit": 101,
+    "expected": 101,
+    "source": "output/issue665/guard-negative-source"
+  }
+]

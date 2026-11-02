@@ -126,5 +126,69 @@
       "sha256": null,
       "output_bytes": null
     }
+  },
+  "format-jpg": {
+    "job_id": "9288fffd-6330-417e-afeb-0865bf5abc7d",
+    "status": "succeeded",
+    "engine": "2024",
+    "created_at": "2026-11-02T14:32:01.378Z",
+    "completed_at": "2026-11-02T14:32:14.430Z",
+    "result": {
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+      "page_count": null,
+      "sha256": null,
+      "output_bytes": null
+    }
+  },
+  "format-gif": {
+    "job_id": "85e2b0b6-d4f4-4129-a1c7-cb08368170b7",
+    "status": "succeeded",
+    "engine": "2024",
+    "created_at": "2026-11-02T14:32:01.593Z",
+    "completed_at": "2026-11-02T14:32:30.836Z",
+    "result": {
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+      "page_count": null,
+      "sha256": null,
+      "output_bytes": null
+    }
+  },
+  "format-bmp": {
+    "job_id": "ebfe74a6-8226-454f-8d6f-5becf7a4dbf5",
+    "status": "succeeded",
+    "engine": "2024",
+    "created_at": "2026-11-02T14:32:01.784Z",
+    "completed_at": "2026-11-02T14:32:47.625Z",
+    "result": {
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+      "page_count": null,
+      "sha256": null,
+      "output_bytes": null
+    }
+  },
+  "format-tif": {
+    "job_id": "911c688c-52aa-421f-b636-f44859dd697b",
+    "status": "succeeded",
+    "engine": "2024",
+    "created_at": "2026-11-02T14:32:01.965Z",
+    "completed_at": "2026-11-02T14:33:01.854Z",
+    "result": {
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+      "page_count": null,
+      "sha256": null,
+      "output_bytes": null
+    }
   }
 }
