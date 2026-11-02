@@ -71,6 +71,16 @@ UTF-16 축의 표시 소유와 뒤 글자 모양을 저장 왕복에서 확인�
 SHA-256은 위 기존 비교 입력과 동일하다. 원 PR의 기존 2020 Print에 대한 현재
 Native·fresh WASM 전쪽 대조와 제목 차례 영역의 직접 판독을 별도로 진행한다.
 
+현재 코드의 Native는 같은 2020 Print와 전 64쪽을 대조해 최저 92.61%,
+90% 미만 0쪽이다. 새 TSV는 기존 [Native TSV](../assets/issue_8305/followup8438/native-saved-original2020-all.tsv)와
+SHA-256 `12052dcb751417f113f0f7c4a7d91d06d63517aa5ceca1cefe52881c7e6a0dc2fdd`로
+바이트가 같아 기존 파일을 재사용한다. 현재 실행에서 제목 차례를 포함하는
+[20쪽 비교](../assets/issue_8305/followup8438/native-current-review-020.png)·
+[overlay](../assets/issue_8305/followup8438/native-current-overlay-020.png)와
+[59쪽 비교](../assets/issue_8305/followup8438/native-current-review-059.png)·
+[overlay](../assets/issue_8305/followup8438/native-current-overlay-059.png)를
+확인했다. 2024 Print 35쪽 미달과 현재 fresh WASM은 별도 확인 대상이다.
+
 ### 한컴 버전별 차트 출력과 전쪽 검증
 
 동일 원본과 재저장본의 한컴 2020 Print는 둘 다 29쪽 WMF 차트를 확대·잘라
