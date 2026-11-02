@@ -1,5 +1,9 @@
 //! 검사 유형: 관계형.
-//! MEASUREMENT_HEADER
+//! 주석 갱신: 2026-11-03 04:55 KST (신규 파일).
+//! 2026-11-03 측정 raw(`silhouette_raw_match_percent`, 96dpi, PDFium, `--compat 2022`, 한/글 2020 엔진 Print 정본, head `6e9bcbb5ab`):
+//! span_page_bottom-2020.hwp: 3쪽(Q) Native 100.00% / fresh WASM 100.00%; 9쪽(U) 100.00% / 100.00%; 전12쪽 최저 99.77% / 100.00%.
+//! 근거: mydocs/pr/assets/issue_8478/{native,wasm}/span_page_bottom_silhouette.tsv,
+//! mydocs/pr/assets/issue_8478/png/span_page_bottom_p{3,9}_{review,overlay}_{native,wasm}.png.
 //!
 //! #8478 병합 칸이 키운 표의 끝 행이 쪽 바닥에 걸리면 한/글은 그 행을 남은 높이까지 그리고 닫는다.
 //!
