@@ -320,7 +320,11 @@ async function main() {
           const {installCanvasFont, selectSweepPaintFontFaces} = await import('/font-registration.mjs');
           const doc = globalThis.sweepDocument, canvas = document.getElementById('page');
           for (const page of pages) doc.renderPageToCanvasFilteredWithProfile(page - 1, canvas, scale, 'all', 'print');
-          const metafileRequests = typeof doc.getMetafileFontRequests === 'function' ? JSON.parse(doc.getMetafileFontRequests()) : [];
+          // 이전 devel의 요청에는 실제 글자가 없는 SVG text 그룹도 있다.
+          // 글리프가 없으면 공급할 face도 없으므로 장치 글꼴 바이트를 소모하지 않는다.
+          const metafileRequests = typeof doc.getMetafileFontRequests === 'function'
+            ? JSON.parse(doc.getMetafileFontRequests()).filter(request => typeof request.text === 'string' && request.text.length > 0)
+            : [];
           const loadRequestedFont = async record => {
             const response = await fetch(record.url);
             if (!response.ok) throw Error('요청한 글꼴의 실제 프로그램을 읽을 수 없습니다.');
