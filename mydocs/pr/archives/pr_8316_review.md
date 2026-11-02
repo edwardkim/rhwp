@@ -426,3 +426,18 @@ RHWP 내부 진단이며, 한컴에서 해당 저장본이 동일하게 표시�
 특히 [기존 편집 저장 검증](../../../tests/fixtures/pr7491_edited_indent/README.md)은
 단 정의를 명시해야 한컴에서 활성 용지가 보존되는 사례를 기록한다. 따라서 기본
 단 정의를 무조건 제거하는 수정은 이 근거와 충돌하며 채택하지 않는다.
+
+같은 [RHWP 저장 HWPX](../assets/issue_8136/followup8438-crop/pr8316-crop-roundtrip.hwpx)
+(SHA-256 `9d2ddcfc3af4ed2b9ad5c7411177ae1dbf9f77a5b5f773b15b56c911d1ad8ba2`)를
+한컴 2020 MCP에서 전처리 없이 Print로 출력한 [독립 PDF](../../../pdf/issue8136/pr8316-crop-roundtrip-2020.pdf)
+(SHA-256 `d6e9d40fbe59bbd33458e012dab8eb3770f45cd83b70a53daf67d571976e317c`)는
+12쪽이다. MCP는 제품 `11.0.0.9136`, `pdf_print_method=0`,
+`pdf_output_mode=hancom2020_pdf_driver_one_up`을 보고했다. 12쪽 표 제목
+`Product specification`의 PDF 문자 상자는 원본 Print와 저장본 Print에서 같다
+(각각 y=116.999816pt). 따라서 한컴은 저장본의 표를 원본과 같은 위치에 출력하며,
+RHWP의 저장본 재개방 시 나타나는 원점 이동을 계속 보정해야 한다. 추출 경고가 있어
+PDF 문자 상자만으로 페이지 전체가 동일하다고 판정하지 않는다.
+같은 저장본과 저장본 Print를 직접 대조한 Native 12쪽 raw는 35.03969%로,
+[비교 이미지](../assets/issue_8136/followup8438-crop/saved-print-before-review-012.png)와
+[overlay](../assets/issue_8136/followup8438-crop/saved-print-before-overlay-012.png)에서도
+표와 후속 문단 전체의 위치 차이를 확인했다. 이는 보정 전 실패 증거다.
