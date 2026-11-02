@@ -1265,7 +1265,7 @@ INTENTS_RAW = [
     ("I022", "OCR 엔진 깔아줘", "거절, Vision 사용", "16_pitfalls.md", "F19"),
     ("I023", "exam-from-pdf 명령 있어?", "없다. 발명 금지", "00_tree.md", "F19"),
     ("I024", "-o 빼도 돼?", "안 됨. -o 필수", "12_build_from_ingest.md", "F15"),
-    ("I025", "media-dir 없이 그림 넣기", "불가. --media-dir", "12_build_from_ingest.md", "F15"),
+    ("I025", "media-dir 없이 그림 넣기", "--media-dir을 주어도 삽입 미구현. 그림 필수이면 중단", "12_build_from_ingest.md", "F18"),
     ("I026", "정답도 JSON 에 넣어", "answer 키 금지 deny_unknown", "06_ingest_schema_v1.md", "F11"),
     ("I027", "흐린 스캔인데", "DPI 400 또는 원본 재요청", "02_pdf_to_pngs.md", "F10"),
     ("I028", "한 페이지에 문제 40개", "사분면 분할 Vision", "00_tree.md", "F09"),

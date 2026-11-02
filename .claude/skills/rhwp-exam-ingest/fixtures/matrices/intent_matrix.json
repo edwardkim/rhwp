@@ -198,9 +198,9 @@
     {
       "id": "I025",
       "utterance": "media-dir 없이 그림 넣기",
-      "command": "불가. --media-dir",
+      "command": "--media-dir을 주어도 삽입 미구현. 그림 필수이면 중단",
       "reference": "12_build_from_ingest.md",
-      "stop": "F15",
+      "stop": "F18",
       "notGym": true
     },
     {

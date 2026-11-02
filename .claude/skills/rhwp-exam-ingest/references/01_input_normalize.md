@@ -24,7 +24,9 @@ $MEDIA_DIR/
   img/q4_table.png
 ```
 
-`build-from-ingest --media-dir "$MEDIA_DIR"` 가 `media[].id` 를 이 루트에서 찾는다.
+위 구조는 crop 자료와 ingest 참조를 정리하기 위한 규칙이다.
+현재 `build-from-ingest --media-dir "$MEDIA_DIR"`은 디렉터리 존재만 확인하며
+이미지 바이트를 읽지 않는다. 그림 필수 입력은 F18로 중단한다.
 
 ## 형식별 정규화
 

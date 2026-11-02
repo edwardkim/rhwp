@@ -89,7 +89,8 @@ ingest.json 준비됨
   ├─ media[] 비어 있음 ──▶ build-from-ingest -o  ( --media-dir 생략 가능 )
   └─ media[] 있음
        ├─ crop 아직 안 함 ──▶ crop_image.sh (F14)
-       └─ 파일 존재 ──▶ build-from-ingest --media-dir -o (F15)
+       └─ 그림 필수 ──▶ F18 중단. 파일이 있어도 이미지 삽입 미구현
+            제한 재현 또는 텍스트 입력에서만 build-from-ingest -o (F15)
             ├─ unknown field ──▶ JSON 수정 (F11)
             ├─ boxed.text ──▶ blocks 로 (F12)
             └─ 성공 ──▶ dump / export-text / unzip -l
