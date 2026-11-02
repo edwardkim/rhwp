@@ -17,3 +17,13 @@ WASM 바이너리 SHA-256은 `c7e6eb6f43570abcbdda1920f8baea208858cc883e1fb4f87f
 WASM 대조 TSV SHA-256은 `a1968c0ae8c3920d8c816beb70be5d566a292841b5646de6dfdf7c64098a72b0`이다.
 17개 문서의 각 실행 종료 코드 0과 완료 manifest를 확인했다.
 이 기록은 이후 재단 표시 및 저장 보정의 최종 후보 대조를 대신하지 않는다.
+
+## 2026-11-03 현재 코드 대조
+
+제품 코드 `d56930dda723fff1c4e45675979b44604997f0e2`로 빌드한 Native
+실행 파일의 SHA-256은 `7d35357fe91cf213bb4143675a7c148bf3f6a9e4facbf93fea765081661b25c5`다.
+같은 입력·독립 Print PDF·기존 대체 글꼴 설정으로 두 PR의 기준 2,153행을
+전부 다시 측정했다. [Native 최종 표시값 대조](native-final-comparison.tsv)의
+2,153행 모두 기준 이상이며 하락·미완료는 각각 0행이다. 대조 TSV SHA-256은
+`1551697a713dfae8c508449bebec076270f165b3b9d881439c8f3735f42ce744`다.
+fresh WASM의 같은 범위는 별도 실행 중이며 이 Native 결과로 대체하지 않는다.
