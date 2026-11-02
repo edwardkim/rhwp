@@ -78,3 +78,10 @@ Native 최저 95.86%, fresh WASM 최저 95.78%로 90% 미만은 없었다.
 `c5149eb...`과 바이트가 다르므로 두 Print의 입력을 같은 바이트로 단정하지 않는다.
 기존 Print와 원 PR의 Native·WASM TSV 및 쪽 19·20의 이미지는 원 PR이 주장한
 동작을 확인하는 기존 증거로 재사용한다.
+
+### 2026-11-02 새 base 최소 글꼴 집중 회귀
+
+[PR #8309](https://github.com/edwardkim/rhwp/pull/8309)가 포함된 base
+`d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d`에서 `hwp5_origin_hwpx_single_row_table_split` 1건을 실행해 모두 통과했다.
+전체 선택 범위는 28건 통과이며 전체 회귀 실행 결과가 아니다. 시스템 글꼴을 격리하고
+저장소의 재배포 가능한 최소 글꼴만 노출했다. 기존 Print 시각 증거와는 별도로 판정한다.

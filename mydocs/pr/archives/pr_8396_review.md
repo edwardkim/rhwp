@@ -70,3 +70,10 @@ HWP5 출처 HWPX 표 분할 측정이 실제 배치와 같은 저장 조판 프�
 `d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d`의 Native 실행 파일로 네 HWP를
 다시 HWPX로 저장했다. `--verify-pages`는 네 문서 모두 통과했고, 각각의 저장본은
 위 TSV에 사용한 HWPX와 SHA-256이 같다. 위 한컴 Print와 시각 결과를 재사용한다.
+
+### 2026-11-02 새 base 최소 글꼴 집중 회귀
+
+[PR #8309](https://github.com/edwardkim/rhwp/pull/8309)가 포함된 base
+`d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d`에서 `issue_8382_hwp5_origin_hwpx_split_budget` 1건을 실행해 모두 통과했다.
+전체 선택 범위는 28건 통과이며 전체 회귀 실행 결과가 아니다. 시스템 글꼴을 격리하고
+저장소의 재배포 가능한 최소 글꼴만 노출했다. 기존 Print 시각 증거와는 별도로 판정한다.
