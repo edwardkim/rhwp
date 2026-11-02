@@ -517,3 +517,9 @@ Print method 0, one-up이다. 후보 Native의 [전쪽 TSV](../assets/issue_8136
 SHA-256은 `3bf213f4a7405bff663945bcf59e6ae3a82d1aec07f5fa167bd120c1f2e10a3f`다.
 격리 환경의 `fc-list`는 Noto Sans KR Regular·ExtraLight, Noto Sans Symbols2,
 RHWP Public Batang만 표시했다. 최종 fresh WASM 전쪽 검증은 별도로 완료해야 한다.
+
+단 정의 부재 대조군 7개와 기존 [이슈 #8149](https://github.com/edwardkim/rhwp/issues/8149)
+표 분할 원본 1개를 이전 및 후보 실행 파일로 각각 HWPX에 저장했다. 16회 모두
+저장 전후 쪽수가 같고, 같은 입력의 이전·후보 저장본 SHA-256도 일치했다.
+[대조 결과](../assets/issue_8136/followup8438-crop/line-cache-counterexamples.tsv)는
+저장 바이트와 쪽수의 비교이며 독립 Print 시각 대조를 대신하지 않는다.
