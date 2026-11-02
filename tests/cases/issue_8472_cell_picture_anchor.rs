@@ -11,8 +11,11 @@
 //!   다시 저장(저장 줄은 한/글이 조판).
 //! - 독립 기준: 한/글 2022(12.0.0.4547) Print `pdf/issue8472_cell_picture_row_split-2020.pdf` —
 //!   1쪽 끝에 둘째 표 라벨 «[ 남성 ]»·«[ 여성 ]» 각 3줄, 2쪽 첫머리에 그 두 그림.
-//! - 측정(code 측정 시점 head, `silhouette_raw_match_percent` 1/2쪽, Native | fresh WASM):
-//!   아래 PR 증적 `mydocs/pr/assets/issue_8472/{native,wasm}/fixture.tsv` 참고.
+//! - 측정(code 06cbf26801, `silhouette_raw_match_percent` 1/2쪽): Native 90.21/100 · fresh WASM
+//!   90.55/100 — 최저 90.21(1쪽). 1쪽 남은 차이: 한/글은 뒤 표 첫 조각 상자를 쪽 바닥까지 닫고
+//!   라벨을 그 안에서 세로 가운데 정렬하는데, rhwp 는 라벨 높이로만 닫는다(미해결, #8472 비범위).
+//!   수정 전 Native 92.00/70.61(2쪽 그림이 조각 밖).
+//!   증거 `mydocs/pr/assets/issue_8472/{native,wasm}/fixture.tsv`.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
