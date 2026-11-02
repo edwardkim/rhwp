@@ -1238,7 +1238,12 @@ impl TypesetEngine {
                 let terminal_spacing = terminal_successor_gap
                     .unwrap_or(host_spacing_after_only + terminal_host_spacing);
                 st.advance_flow_by(occupied + terminal_spacing);
-                terminal_host_push = terminal_spacing;
+                // [#8468] host 글줄은 조각 하단 + 바깥 아래 여백에 놓인다. 다음 문단과의
+                // 종료 간격은 그 글줄 뒤의 흐름이라 첫 줄의 앞 간격에 넣지 않는다(전진량은 같다).
+                terminal_host_push = input
+                    .prepared
+                    .terminal_outer_bottom_flow
+                    .clamp(0.0, terminal_spacing.max(0.0));
                 flow_after_terminal_advance = st.current_height;
                 self.consume_stored_terminal_empty_line_gap(st, &input, is_continuation);
             }

@@ -26,7 +26,6 @@ pub(in crate::renderer::typeset) struct LineScanPage {
     /// 첫 항목에서 임시 유추한 원점과 구분되는 확정 저장 프레임의 축.
     pub stored_vpos_base: Option<i32>,
     pub current_footnote_height: f64,
-    pub footnote_safety_margin: f64,
     /// 이 쪽 첫 각주가 함께 예약하는 구분선 몫.
     pub footnote_separator_overhead: f64,
     /// 각주 사이 간격.
@@ -259,7 +258,6 @@ pub(in crate::renderer::typeset) fn scan_lines(
                 page.current_footnote_height,
                 page.col_count == 1,
                 overflow,
-                page.footnote_safety_margin,
                 para.line_segs.get(li).and_then(|seg| {
                     line_seg_visible_bounds_px(seg, current_page_vpos_base.unwrap_or(0), dpi)
                 }),

@@ -223,6 +223,24 @@ struct TableCellFootnote {
 }
 crate::storage::clone_fields!(TableCellFootnote, {number, cell_path, row, content_height, fragment_split});
 
+/// 배치 중인 본문 문단의 각주 한 개. `line` 은 참조 표시가 든 저장 줄이다.
+///
+/// 한/글은 각주를 참조 줄과 같은 쪽 아래에 두며, 참조 줄 뒤의 본문 줄은 그 각주
+/// 영역 위에서 끝난다. 분할 판정은 이미 받은 줄의 각주를 다음 줄보다 먼저 예약한다.
+#[derive(Debug, Clone)]
+pub(in crate::renderer::typeset) struct OwnLineNote {
+    pub para_index: usize,
+    pub line: usize,
+    pub control_index: usize,
+    pub number: u16,
+    pub content_height: f64,
+    /// 각주 전체를 펼친 줄의 (줄 높이, 줄간격). 넘친 각주를 줄 단위로 나눌 때 쓴다.
+    /// 구성 줄이 저장 줄과 일대일이 아니면 비워 둔다(통째로만 옮긴다).
+    pub lines: Vec<(f64, f64)>,
+    /// 저장 각주 줄 사다리가 가리키는 한/글의 쪽 나눔.
+    pub stored_split: Option<NativeHwp5FootnoteFragmentSplit>,
+}
+
 // ========================================================
 // FormattedTable — 표의 format() 결과
 // ========================================================
@@ -2918,7 +2936,6 @@ fn saved_line_clears_footnote_area(
     current_footnote_height: f64,
     is_single_column: bool,
     overflow: f64,
-    footnote_safety_margin: f64,
     saved_bounds: Option<(f64, f64)>,
     base_available_height: f64,
     fragment_flow_top: f64,
@@ -2926,7 +2943,7 @@ fn saved_line_clears_footnote_area(
 ) -> bool {
     current_footnote_height > 0.0
         && is_single_column
-        && overflow <= footnote_safety_margin
+        && overflow <= 0.0
         && saved_bounds.is_some_and(|(top, bottom)| {
             let text_limit = base_available_height - current_footnote_height;
             top >= 0.0
@@ -7250,7 +7267,6 @@ mod tests {
                 footnote_height,
                 is_single_column,
                 overflow,
-                40.0,
                 bounds,
                 1_000.0,
                 current_height,
@@ -7262,8 +7278,7 @@ mod tests {
             saved_line_clears_footnote_area(
                 300.0,
                 true,
-                40.0,
-                40.0,
+                0.0,
                 bounds,
                 1_000.0,
                 fragment_top,
@@ -7284,35 +7299,35 @@ mod tests {
         );
 
         assert!(
-            allows(300.0, true, 40.0, Some((200.0, 700.0)), 216.0),
-            "각주 위 저장 좌표, 안전마진 이하 초과, 16px 흐름 허용오차의 경계값은 허용한다"
+            allows(300.0, true, 0.0, Some((200.0, 700.0)), 216.0),
+            "각주 위 저장 좌표, 넘침 없음, 16px 흐름 허용오차의 경계값은 허용한다"
         );
         assert!(
-            !allows(0.0, true, 40.0, Some((200.0, 700.0)), 216.0),
+            !allows(0.0, true, 0.0, Some((200.0, 700.0)), 216.0),
             "각주가 없으면 예외를 적용하지 않는다"
         );
         assert!(
-            !allows(300.0, false, 40.0, Some((200.0, 700.0)), 216.0),
+            !allows(300.0, false, 0.0, Some((200.0, 700.0)), 216.0),
             "다단에는 적용하지 않는다"
         );
         assert!(
-            !allows(300.0, true, 40.1, Some((200.0, 700.0)), 216.0),
-            "안전마진보다 큰 초과는 허용하지 않는다"
+            !allows(300.0, true, 0.1, Some((200.0, 700.0)), 216.0),
+            "각주 위 저장 좌표라도 본문 끝을 넘는 줄은 허용하지 않는다"
         );
         assert!(
-            !allows(300.0, true, 40.0, Some((200.0, 700.1)), 216.0),
+            !allows(300.0, true, 0.0, Some((200.0, 700.1)), 216.0),
             "저장 줄 하단이 각주 영역에 닿으면 허용하지 않는다"
         );
         assert!(
-            !allows(300.0, true, 40.0, Some((-0.1, 700.0)), 0.0),
+            !allows(300.0, true, 0.0, Some((-0.1, 700.0)), 0.0),
             "쪽 밖 음수 저장 좌표는 허용하지 않는다"
         );
         assert!(
-            !allows(300.0, true, 40.0, Some((1_000.1, 700.0)), 0.0),
+            !allows(300.0, true, 0.0, Some((1_000.1, 700.0)), 0.0),
             "본문 높이를 넘는 저장 좌표는 허용하지 않는다"
         );
         assert!(
-            !allows(300.0, true, 40.0, Some((200.0, 700.0)), 216.1),
+            !allows(300.0, true, 0.0, Some((200.0, 700.0)), 216.1),
             "흐름 커서가 저장 좌표보다 낮으면 허용하지 않는다"
         );
     }
@@ -7898,7 +7913,6 @@ mod tests {
             total_footnote_height: 0.0,
             queue_table_footnotes: false,
             table_footnotes: Vec::new(),
-            footnote_margin: 0.0,
             host_spacing_total: 0.0,
             host_spacing_before: 0.0,
             host_spacing_after_only: 0.0,
@@ -7915,7 +7929,7 @@ mod tests {
         };
         let flow_layout =
             PageLayoutInfo::from_page_def(&a4_page_def(), &ColumnDef::default(), DEFAULT_DPI);
-        let flow_state = TypesetState::new(flow_layout, 1, 0, 0.0, 0.0, 0.0, Default::default());
+        let flow_state = TypesetState::new(flow_layout, 1, 0, 0.0, 0.0, Default::default());
         let mut context = BlockTableContinuationContext::new(0, prepared, flow_state);
         assert_eq!(context.fragment_budget, 1, "zero budget clamps to one");
         assert_eq!(context.steps_completed, 0);

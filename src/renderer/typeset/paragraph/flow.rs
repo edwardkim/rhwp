@@ -43,6 +43,7 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
         styles,
         is_last_in_section,
     } = input;
+    collect_own_line_notes(st, engine, para_idx, para, fmt, styles);
     let stored_frame_shared_spacing =
         crate::renderer::float_placement::stored_frame_successor_shared_spacing_px(
             &st.paragraph_float_placements,
@@ -111,7 +112,6 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
         split_safety,
         prev_is_partial_table,
         mut available,
-        footnote_margin_addback,
     } = paragraph::prepare_fit_budget_with_storage(
         st,
         para_idx,
@@ -260,11 +260,8 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
                     if prefix_bottom <= physical_bottom {
                         let previous = st.available_height();
                         st.reserve_painted_footnote_area(height);
-                        // 진입에서 소비한 1회 각주 여백 환급도 함께 정산한다.
                         // float·본문 여유 등 다른 예약은 기존 예산에 그대로 남는다.
-                        available = (available - footnote_margin_addback + st.available_height()
-                            - previous)
-                            .max(0.0);
+                        available = (available + st.available_height() - previous).max(0.0);
                     }
                 }
             }
@@ -308,6 +305,38 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
         dpi,
     );
 
+    // 마지막 줄 앞의 줄이 참조한 각주는 그 뒤 본문 줄보다 먼저 쪽 아래를 차지한다.
+    // 마지막 줄의 각주는 들어가지 않으면 다음 쪽으로 이어지므로 통째 fit 에서 빼지 않는다.
+    let last_line = fmt.line_count().saturating_sub(1);
+    let mut earlier_notes: Vec<_> = st
+        .own_line_notes
+        .iter()
+        .filter(|note| note.para_index == para_idx && note.line < last_line)
+        .cloned()
+        .collect();
+    earlier_notes.sort_by_key(|note| (note.line, note.number));
+    let note_levels = st.own_line_note_levels(&earlier_notes, |line| {
+        available
+            - st.current_height
+            - fmt.spacing_before
+            - fmt.line_advances_sum(0..line)
+            - fmt.line_heights.get(line).copied().unwrap_or(0.0)
+    });
+    let own_note_cost = note_levels.last().map_or(0.0, |level| {
+        if note_levels.iter().any(|level| level.blocks_later_lines) {
+            // 앞부분만 들어가는 각주 뒤 줄은 이 쪽에 들어가지 않는다 — 분할로 넘긴다.
+            f64::INFINITY
+        } else {
+            level.cost
+        }
+    });
+    let whole_available = (available - own_note_cost).max(0.0);
+    if std::env::var_os("RHWP_DIAG_OWN_NOTES").is_some() && own_note_cost > 0.0 {
+        eprintln!(
+            "DIAG_OWN_WHOLE pi={para_idx} cost={own_note_cost:.1} available={whole_available:.1} current={:.1} fit_h={:.1} total={:.1}",
+            st.current_height, fmt.height_for_fit, fmt.total_height
+        );
+    }
     let paragraph::WholeFitDecision {
         fits,
         stored_vpos_rewind_break,
@@ -322,7 +351,7 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
         strict_after_empty_host_float,
         forced_page_break_line,
         current_page_vpos_base,
-        available,
+        whole_available,
         dpi,
     );
     if fits {
@@ -337,6 +366,12 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
             trimmed_sb_gate,
             body_bottom_vpos,
             dpi,
+            storage,
+        )?;
+        st.register_own_line_notes_with_storage(
+            para_idx,
+            0..fmt.line_count(),
+            (fmt.total_height - fmt.height_for_fit).max(0.0),
             storage,
         )?;
         return Ok(());
@@ -385,4 +420,72 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
     )?;
 
     Ok(())
+}
+
+/// 문단의 본문 각주와 참조 줄을 모은다. 줄 대응은 저장 줄 상자가 측정 줄과
+/// 일대일일 때만 쓴다(재조판 줄은 저장 text_start 와 다른 컷을 가진다).
+fn collect_own_line_notes(
+    st: &mut TypesetState,
+    engine: &TypesetEngine,
+    para_idx: usize,
+    para: &Paragraph,
+    fmt: &FormattedParagraph,
+    styles: &ResolvedStyleSet,
+) {
+    let mut notes = Vec::new();
+    if fmt.line_count() == 0 || fmt.line_count() != para.line_segs.len() {
+        st.replace_own_line_notes(notes);
+        return;
+    }
+    let stored_profile =
+        st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout();
+    let measure =
+        crate::renderer::typeset::notes::footnotes::measure::BodyFootnoteMeasure { engine, styles };
+    for (control_index, control) in para.controls.iter().enumerate() {
+        let crate::model::control::Control::Footnote(footnote) = control else {
+            continue;
+        };
+        if stored_profile
+            && !st.profile.session_edited()
+            && crate::renderer::stored_footnote_is_bodyless(footnote)
+        {
+            continue;
+        }
+        let Some(line) = crate::renderer::layout::control_line_seg_index(para, control_index)
+        else {
+            continue;
+        };
+        let content_height = measure
+            .block_content_height(st, footnote, None)
+            .unwrap_or_else(|| measure.content_height(st, footnote));
+        let mut lines = Vec::new();
+        for note_para in &footnote.paragraphs {
+            let composed = crate::renderer::composer::compose_paragraph(note_para);
+            if composed.lines.is_empty() || composed.lines.len() != note_para.line_segs.len() {
+                lines.clear();
+                break;
+            }
+            lines.extend(composed.lines.iter().map(|line| {
+                (
+                    crate::renderer::hwpunit_to_px(line.line_height, engine.dpi),
+                    crate::renderer::hwpunit_to_px(line.line_spacing, engine.dpi),
+                )
+            }));
+        }
+        let stored_split =
+            crate::renderer::typeset::notes::footnotes::boundary::native_hwp5_footnote_reset_fragments(
+                footnote, engine.dpi,
+            )
+            .filter(|split| !split.force_next_page);
+        notes.push(crate::renderer::typeset::OwnLineNote {
+            para_index: para_idx,
+            line,
+            control_index,
+            number: footnote.number,
+            content_height,
+            lines,
+            stored_split,
+        });
+    }
+    st.replace_own_line_notes(notes);
 }

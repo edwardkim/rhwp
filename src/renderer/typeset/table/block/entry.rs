@@ -244,13 +244,8 @@ impl TypesetEngine {
         // 표 내 각주를 고려한 가용 높이 계산 (Paginator engine.rs:583-586 동일)
         let mut total_footnote =
             st.projected_footnote_height(ft.table_footnote_height, ft.table_footnote_count);
-        // [#1921 d=+1 / Task #1725 동형] tail-before-vpos-reset 표는 각주 안전마진
-        // (보수 버퍼 40px)을 완화한다. 한글은 stored vpos 상 쪽 하단에 표+각주를
-        // 여유 수 px 로 타이트하게 배치하는데(75828 pi134: 표 하단 912.2 + 각주
-        // 46.1 = 958.3 ≤ 971.3), rhwp 의 보수 버퍼가 표를 다음 쪽으로 밀어
-        // 이후 stored vpos=0 신호 연쇄로 문서 끝까지 +1쪽이 된다. 다음 문단의
-        // stored LINE_SEG 가 새 쪽 시작(vpos≤500)을 명시할 때만 완화하므로
-        // 겹침 위험은 stored 배치가 보증하는 범위로 한정된다.
+        // [#1921 d=+1] 다음 문단의 stored LINE_SEG 가 새 쪽 시작(vpos≤500)을 명시하는
+        // tail-before-vpos-reset 표를 구분한다.
         let table_anchor_vpos = para
             .line_segs
             .iter()
@@ -380,22 +375,8 @@ impl TypesetEngine {
         // 소비한다. 고정 안전 여유를 다시 빼서 마지막 행을 이월하지 않는다.
         let uses_reserved_footnote_boundary =
             ft.table_footnote_count == 0 && st.current_footnote_height > 0.0;
-        let mut fn_margin = if total_footnote > 0.0 {
-            if uses_reserved_footnote_boundary
-                || next_starts_new_page
-                || internal_reset_tail_uses_actual_footnote_boundary
-                || native_single_rowbreak_full_table_fits_actual_footnote_boundary
-            {
-                0.0
-            } else {
-                st.footnote_safety_margin
-            }
-        } else {
-            0.0
-        };
         let mut available =
-            (st.base_available_height() - total_footnote - fn_margin - st.current_zone_y_offset)
-                .max(0.0);
+            (st.base_available_height() - total_footnote - st.current_zone_y_offset).max(0.0);
 
         let declared_object_total = raw_table_ctrl_height_px(table, self.dpi)
             .unwrap_or_else(|| hwpunit_to_px(table.common.height as i32, self.dpi).max(0.0))
@@ -1662,13 +1643,6 @@ impl TypesetEngine {
         // 안전 여유 때문에 원점을 버리고 표를 위로 당기는 폴백으로 바꾸지 않는다.
         let actual_footnote_boundary =
             (st.base_available_height() - total_footnote - st.current_zone_y_offset).max(0.0);
-        if fn_margin > 0.0
-            && original_control_frame
-                .is_some_and(|placement| placement.occupied_bottom <= actual_footnote_boundary)
-        {
-            fn_margin = 0.0;
-            available = actual_footnote_boundary;
-        }
         let closed_source_frame_key = (
             st.pages.len(),
             st.current_column,
@@ -2594,7 +2568,7 @@ impl TypesetEngine {
         let mut computed_host_tail = None;
         let mut split_host_fragment = None;
         if let Some(handoff) = resolved_host_placement.and_then(|placement| {
-            self.place_computed_split_host(st, input, placement, whole_frame_budget, fn_margin)
+            self.place_computed_split_host(st, input, placement, whole_frame_budget)
         }) {
             match handoff {
                 super::split_host::SplitHostHandoff::Placed => return None,
@@ -2841,7 +2815,6 @@ impl TypesetEngine {
             host_spacing_total,
             table_total,
             stored_ordinary_rowbreak_rewind_uses_actual_footnote_boundary,
-            fn_margin,
             available,
             declared_object_total,
             native_hwp5_internal_reset_rewind_needs_anchor_resync,

@@ -302,10 +302,8 @@ pub(in crate::renderer::typeset) fn native_hwp5_first_footnote_overlap_break_lin
     }
 
     let footnote_top = st.layout.body_area.height - footnote_height;
-    let projected_reclaim = st.footer_band_reclaim_for_height(footnote_height);
     let projected_available = (st.base_available_height()
-        - (footnote_height - projected_reclaim).max(0.0)
-        - st.footnote_safety_margin
+        - footnote_height.max(0.0)
         - st.current_zone_y_offset
         - st.current_bottom_fixed_exclusion)
         .max(0.0);
@@ -447,15 +445,8 @@ pub(in crate::renderer::typeset) fn native_hwp5_final_marker_footnote_uses_next_
     // page-top reset과 projected footnote collision을 둘 다 요구하므로, 일반 multi-note
     // owner를 이동시키지는 않는다.
     let projected_footnote_height = st.projected_footnote_height(footnote_height, 1);
-    let projected_reclaim = st.footer_band_reclaim_for_height(projected_footnote_height);
-    let projected_margin = if st.current_footnote_body_bottom_reserved {
-        0.0
-    } else {
-        st.footnote_safety_margin
-    };
     let projected_available = (st.base_available_height()
-        - (projected_footnote_height - projected_reclaim).max(0.0)
-        - projected_margin
+        - projected_footnote_height.max(0.0)
         - st.current_zone_y_offset
         - st.current_bottom_fixed_exclusion)
         .max(0.0);

@@ -81,7 +81,6 @@ impl TypesetEngine {
             section_index,
             footnote_separator_overhead_px(footnote_shape, self.dpi),
             footnote_between_notes_margin_px(footnote_shape, self.dpi),
-            hwpunit_to_px(3000, self.dpi),
             column_def.column_type,
         );
         state.initialize_source(

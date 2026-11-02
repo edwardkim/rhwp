@@ -67,7 +67,6 @@ impl TypesetEngine {
         let footnote_separator_overhead = footnote_separator_overhead_px(footnote_shape, self.dpi);
         let footnote_between_notes_margin =
             footnote_between_notes_margin_px(footnote_shape, self.dpi);
-        let footnote_safety_margin = hwpunit_to_px(3000, self.dpi);
         // [Task #1007] variant cross-paragraph vpos reset THRESHOLD 계산용 body height (HU)
         let body_height_hu_for_variant: i32 = if profile.hwp3_layout() {
             page_def.height.saturating_sub(
@@ -89,7 +88,6 @@ impl TypesetEngine {
             section_index,
             footnote_separator_overhead,
             footnote_between_notes_margin,
-            footnote_safety_margin,
             column_def.column_type,
         );
         st.initialize_source(
@@ -144,23 +142,6 @@ impl TypesetEngine {
                 section_index,
                 storage,
             )?;
-        // [#2559] 조건부(Even/Odd)까지 포함해 어떤 꼬리말이라도 정의돼 있으면
-        // 밴드가 점유될 수 있다. 완전히 비어 있는 구역에서만 각주 회수를 허용한다.
-        st.record_footer_presence(!hf_entries.iter().any(|(_, _, is_header, _)| !is_header));
-        // [#2668 진단] 밴드 회수 판정 관측 — 동작 불변.
-        // "꼬리말 위치 쪽 번호(PageNumberPos)가 밴드를 점유하므로 회수 대상에서 빼야 한다"는
-        // 판별자 가설을 이 출력으로 반증했다(회귀군·개선군 양쪽에 고루 존재).
-        // 경위와 실측은 mydocs/report/task_2668_footnote_band_measurement.md 참조.
-        if std::env::var("RHWP_DIAG_FBAND").is_ok() {
-            eprintln!(
-                "DIAG_FBAND sec={} footer_ctrl={} pnum_pos={:?} reclaim={}",
-                section_index,
-                hf_entries.iter().any(|(_, _, is_header, _)| !is_header),
-                page_number_pos.as_ref().map(|p| p.position),
-                st.section_has_no_footer
-            );
-        }
-
         // 가시 콘텐츠(텍스트 또는 컨트롤 보유)를 가진 마지막 문단 인덱스. 이 뒤의 빈 문단들은
         // 문서 말미의 trailing 빈 문단이라, co-anchored 자리차지 표가 페이지를 채운 경우에 한해
         // 현재 page 잔여를 초과하면 새 page 를 만들지 않고 흡수한다(아래 trailing-empty 가드).
