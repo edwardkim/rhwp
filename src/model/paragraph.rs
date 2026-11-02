@@ -556,6 +556,22 @@ pub fn tab_ext_is_placeholder(ext: &[u16; 7]) -> bool {
 pub const TAB_EXT_PLACEHOLDER: [u16; 7] = [0, 0, 0, 0, 0, 0, 0x0009];
 
 impl Paragraph {
+    /// 재구성된 본문 축에서 단일 표가 저장 줄의 물리 상자 전체를 소유한다.
+    pub(crate) fn rebased_single_table_row(&self) -> bool {
+        self.layout_rebased_body_axis
+            && self.text.is_empty()
+            && matches!(
+                (self.line_segs.as_slice(), self.controls.as_slice()),
+                ([line], [Control::Table(table)])
+                    if table.common.treat_as_char
+                        && line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                        && i64::from(line.line_height)
+                            == i64::from(table.common.height)
+                                + i64::from(table.outer_margin_top)
+                                + i64::from(table.outer_margin_bottom)
+            )
+    }
+
     /// 묶음 빈칸의 원본 표기를 확인한다. 개별 출처가 없는 기존 입력은 종전의
     /// 문단 단위 신호를 유지한다.
     pub fn nb_space_is_control_at(&self, char_idx: usize) -> bool {

@@ -489,3 +489,31 @@ SHA-256은 `4608d38c18af19e584da154015ee3b3e495b392684e9831d255c39ce5690e497`이
 HWPX의 해당 줄에만 되돌린 진단에서도 RHWP 표 원점은 136.1px로 변하지 않았다.
 따라서 이 사례의 차이를 세로 좌표 숫자 하나를 복원하는 것만으로 해결할 수는
 없으며, 저장 줄을 소비하는 표 경로와 공통 줄 계획의 앞 간격 처리를 대조한다.
+
+현재 후보는 본문 축을 재구성했고 텍스트 없이 단일 TAC 표가 저장 줄 전체를
+소유한 경우에만 HWPX의 해당 캐시를 생략한다. 같은 소유 판정을 기존 공통 줄
+계획과 저장기가 공유하며, 문자 분할이 있는 문단과 정상 축의 저장 줄은 이
+조건으로 제외하지 않는다. [실제 저장본](../assets/issue_8136/followup8438-crop/line-cache-candidate.hwpx)의
+SHA-256은 `ae5f2411f80bedfad9ae750fc9d61bbddf2adf8a8b7c1367e14d4ec759ad2fdd`다.
+`export-hwpx --verify --verify-pages`는 IR 차이 0건과 전후 12쪽을 보고했다.
+
+저장본 자체를 한컴 2020 `11.0.0.9136`에서 전처리 없이 Print한
+[PDF](../../../pdf/issue8136/pr8316-line-cache-candidate-2020.pdf)의 SHA-256은
+`cd3f182e551327ad99e0c3a2ef7ba309df9e7cfccaa2a4554d1b64e2c6406826`이며,
+Print method 0, one-up이다. 후보 Native의 [전쪽 TSV](../assets/issue_8136/followup8438-crop/line-cache-candidate-native.tsv)는
+최저 99.99%, 90% 미만 0쪽이다. 12쪽의 [비교](../assets/issue_8136/followup8438-crop/line-cache-candidate-native-review-012.png)와
+[overlay](../assets/issue_8136/followup8438-crop/line-cache-candidate-native-overlay-012.png)를
+직접 확인했다. 이는 Native 후보 결과이며 fresh WASM과 대조군·최종 회귀 완료를
+뜻하지 않는다.
+
+보정 전 저장본과 후보 저장본을 각각 자신의 한컴 Print와 대조한 Native 전쪽
+표시값 비교에서는 12쪽이 35.07%에서 100.00%로 상승했고 다른 11쪽은 동일했다.
+두 저장본은 서로 다른 입력이므로 이는 각각의 독립 Print에 대한 비교다.
+
+후보에서 시스템 글꼴을 격리한 최소 글꼴 환경으로 기존
+`issue_8149_empty_host_float_page_bottom`, `issue_7490_default_column_rebuild`,
+`issue_7633_8334_hwpx_attr_roundtrip`을 선택 실행해 23건 통과, 0건 실패했다.
+필터에서 제외된 816건을 통과로 세지 않으며 전체 회귀 결과도 아니다. 실행 로그의
+SHA-256은 `3bf213f4a7405bff663945bcf59e6ae3a82d1aec07f5fa167bd120c1f2e10a3f`다.
+격리 환경의 `fc-list`는 Noto Sans KR Regular·ExtraLight, Noto Sans Symbols2,
+RHWP Public Batang만 표시했다. 최종 fresh WASM 전쪽 검증은 별도로 완료해야 한다.
