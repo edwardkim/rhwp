@@ -1,0 +1,26 @@
+[
+  {
+    "family": "HCRBatang / \ud568\ucd08\ub86c\ubc14\ud0d5",
+    "path": "/home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/fonts/HANBatang.ttf",
+    "sha256": "d85550717552101699122adc5b948e8129881f39ffcf802cafe62aac3b1ced40",
+    "source": "https://raw.githubusercontent.com/dsolver-el/hwpx-template-engine/d3018c859da225ea8b0f71408ce30ac48de862f6/src/main/resources/fonts/hcr/HANBatang.ttf"
+  },
+  {
+    "family": "HCRDotum / \ud568\ucd08\ub86c\ub3cb\uc6c0",
+    "path": "/home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/fonts/HANDotum.ttf",
+    "sha256": "0dfe708556a36379ed1aaa37d4a9ec62b860939e84dd3ccdbeb0c0ad5314cd14",
+    "source": "https://raw.githubusercontent.com/dsolver-el/hwpx-template-engine/d3018c859da225ea8b0f71408ce30ac48de862f6/src/main/resources/fonts/hcr/HANDotum.ttf"
+  },
+  {
+    "family": "\ubc14\ud0d5",
+    "path": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+    "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+    "source": null
+  },
+  {
+    "family": "\uad74\ub9bc",
+    "path": "/home/edward/mygithub/ttfs/windows/gulim.ttc",
+    "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
+    "source": null
+  }
+]

@@ -1,0 +1,40 @@
+{
+  "reviewed_at": "2026-11-02T05:24:57.048824+00:00",
+  "base": "d3f7209bbb0fdb1711c5f40a70ad22f0ca0be66d",
+  "candidate": "e58024b15e11438a0e1162a25d836d3c3c4ff7a9",
+  "method": "Original full-page comparison PNGs and same 96-DPI region at 2x display; base/candidate Native and fresh WASM checked against the existing independent Print raster. RGBA equality is a separate machine check, not substituted for reading.",
+  "scope": "Dependency compatibility and preservation. No document fidelity fix, new layout rule, fixture/golden, or new rendering assertion.",
+  "observations": [
+    {
+      "case": "saved_bottom",
+      "pages": [
+        1
+      ],
+      "reading": "Bottom text stays inside the box; ABC/123 spacing and bottom padding preserved; no clipping or overlap."
+    },
+    {
+      "case": "wrapping_A",
+      "pages": [
+        1
+      ],
+      "reading": "Text before and after the inline image remains in order; next paragraph is beside the outer rectangle; no image/text overlap or duplication; Korean spacing preserved."
+    },
+    {
+      "case": "legacy_textbox",
+      "pages": [
+        1
+      ],
+      "reading": "Green title, quote marks, blue emphasis, gray and blue rectangles, text-to-box order and line spacing preserved. Native/WASM-versus-Print stroke-weight and slight vertical differences exist in the unchanged base too; not claimed resolved by this dependency update."
+    },
+    {
+      "case": "wmf_fixed_face",
+      "pages": [
+        1,
+        2
+      ],
+      "reading": "All repeated 가나다라 lines retain order, small/large sizes, advances and emphasis; no lost lines. Native has a pre-existing face/weight difference versus Print; the thin triangle on p1 is faint in both unchanged base and candidate. WASM face weight is closer to Print. Exact base/candidate RGBA equality on both backends proves these are not introduced by this update; no new fidelity-completion claim."
+    }
+  ],
+  "equations": "None in the selected documents; formula shape and subscript checks are not applicable.",
+  "no_new_change_detected": true
+}

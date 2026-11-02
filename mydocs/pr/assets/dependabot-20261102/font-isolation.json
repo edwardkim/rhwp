@@ -1,0 +1,89 @@
+{
+  "prefix": [
+    "bwrap",
+    "--ro-bind",
+    "/mnt/wsl/resolv.conf",
+    "/mnt/wsl/resolv.conf",
+    "--ro-bind",
+    "/usr",
+    "/usr",
+    "--symlink",
+    "usr/bin",
+    "/bin",
+    "--symlink",
+    "usr/lib",
+    "/lib",
+    "--symlink",
+    "usr/lib64",
+    "/lib64",
+    "--ro-bind",
+    "/etc",
+    "/etc",
+    "--proc",
+    "/proc",
+    "--dev",
+    "/dev",
+    "--ro-bind",
+    "/sys",
+    "/sys",
+    "--bind",
+    "/tmp",
+    "/tmp",
+    "--dir",
+    "/home/edward",
+    "--bind",
+    "/home/edward/mygithub/rhwp",
+    "/home/edward/mygithub/rhwp",
+    "--bind",
+    "/home/edward/mygithub/rhwp-worktrees/dependabot-20261102",
+    "/home/edward/mygithub/rhwp-worktrees/dependabot-20261102",
+    "--bind",
+    "/home/edward/.cargo",
+    "/home/edward/.cargo",
+    "--ro-bind",
+    "/home/edward/.rustup",
+    "/home/edward/.rustup",
+    "--ro-bind",
+    "/home/edward/.nvm/versions/node/v24.15.0",
+    "/home/edward/.nvm/versions/node/v24.15.0",
+    "--tmpfs",
+    "/usr/share/fonts",
+    "--tmpfs",
+    "/usr/local/share/fonts",
+    "--tmpfs",
+    "/home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/fonts",
+    "--setenv",
+    "HOME",
+    "/home/edward",
+    "--setenv",
+    "FONTCONFIG_FILE",
+    "/home/edward/mygithub/rhwp/output/pr-review/dependabot-20261102/minimal-font/fonts.conf",
+    "--unsetenv",
+    "RHWP_FONT_PATH",
+    "--chdir",
+    "/home/edward/mygithub/rhwp-worktrees/dependabot-20261102"
+  ],
+  "programs": [
+    {
+      "path": "/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+      "sha256": "67b4003e2be99ea44a7c957e4b35acde1b5e6e82a54fe195c5598c3c617bc2e3"
+    },
+    {
+      "path": "/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/ttfs/opensource/NotoSansKR-Regular.ttf",
+      "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74"
+    },
+    {
+      "path": "/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+      "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688"
+    },
+    {
+      "path": "/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/ttfs/opensource/RHWPOldHangul-Regular.otf",
+      "sha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4"
+    },
+    {
+      "path": "/home/edward/mygithub/rhwp-worktrees/dependabot-20261102/ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+      "sha256": "7e3aee5ee1d8f44cc37d35dbd07e5f66414fee5ce552ebda6b4347643d9d0b78"
+    }
+  ],
+  "personal_and_fidelity_fonts_exposed": false
+}

@@ -1,0 +1,91 @@
+{
+  "id": 125070447953,
+  "name": "CodeQL",
+  "node_id": "CR_kwDORyECHM8AAAAdHseVUQ",
+  "head_sha": "dc8b52ad418594a42b52560c7b706ca0fe4f1783",
+  "external_id": "",
+  "url": "https://api.github.com/repos/edwardkim/rhwp/check-runs/125070447953",
+  "html_url": "https://github.com/edwardkim/rhwp/runs/125070447953",
+  "details_url": "https://github.com/edwardkim/rhwp/runs/125070447953",
+  "status": "completed",
+  "conclusion": "neutral",
+  "started_at": "2026-11-02T02:59:49Z",
+  "completed_at": "2026-11-02T02:59:52Z",
+  "output": {
+    "title": "2 configurations not found",
+    "summary": "**Warning**: Code scanning cannot determine the alerts introduced by this pull request, because 2 configurations present on `refs/heads/devel` were not found:\n\n### Actions workflow (`codeql.yml`)\n\n* :question:&nbsp;&nbsp;`.github/workflows/codeql.yml:analyze/language:python`\n* :question:&nbsp;&nbsp;`.github/workflows/codeql.yml:analyze/language:rust`\n\n\n[View all branch alerts](/edwardkim/rhwp/security/code-scanning?query=pr%3A8453+tool%3ACodeQL+is%3Aopen).",
+    "text": null,
+    "annotations_count": 0,
+    "annotations_url": "https://api.github.com/repos/edwardkim/rhwp/check-runs/125070447953/annotations"
+  },
+  "check_suite": {
+    "id": 112142760446
+  },
+  "app": {
+    "id": 57789,
+    "client_id": "Iv1.4643383dd86f00de",
+    "slug": "github-advanced-security",
+    "node_id": "MDM6QXBwNTc3ODk=",
+    "owner": {
+      "login": "github",
+      "id": 9919,
+      "node_id": "MDEyOk9yZ2FuaXphdGlvbjk5MTk=",
+      "avatar_url": "https://avatars.githubusercontent.com/u/9919?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/github",
+      "html_url": "https://github.com/github",
+      "followers_url": "https://api.github.com/users/github/followers",
+      "following_url": "https://api.github.com/users/github/following{/other_user}",
+      "gists_url": "https://api.github.com/users/github/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/github/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/github/subscriptions",
+      "organizations_url": "https://api.github.com/users/github/orgs",
+      "repos_url": "https://api.github.com/users/github/repos",
+      "events_url": "https://api.github.com/users/github/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/github/received_events",
+      "type": "Organization",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "name": "GitHub Advanced Security",
+    "description": "",
+    "external_url": "https://github.com/features/security",
+    "html_url": "https://github.com/apps/github-advanced-security",
+    "created_at": "2020-03-17T21:25:09Z",
+    "updated_at": "2026-09-14T08:13:48Z",
+    "permissions": {
+      "actions": "read",
+      "checks": "write",
+      "contents": "read",
+      "copilot_requests": "write",
+      "metadata": "read",
+      "pull_requests": "read"
+    },
+    "events": []
+  },
+  "pull_requests": [
+    {
+      "url": "https://api.github.com/repos/edwardkim/rhwp/pulls/8453",
+      "id": 5114174878,
+      "number": 8453,
+      "head": {
+        "ref": "dependabot/npm_and_yarn/rhwp-vscode/devel/webpack-5.112.2",
+        "sha": "dc8b52ad418594a42b52560c7b706ca0fe4f1783",
+        "repo": {
+          "id": 1193345564,
+          "url": "https://api.github.com/repos/edwardkim/rhwp",
+          "name": "rhwp"
+        }
+      },
+      "base": {
+        "ref": "devel",
+        "sha": "04338dc242ff1bd9fab01290b0d90bafcddc5aab",
+        "repo": {
+          "id": 1193345564,
+          "url": "https://api.github.com/repos/edwardkim/rhwp",
+          "name": "rhwp"
+        }
+      }
+    }
+  ]
+}

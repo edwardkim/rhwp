@@ -1,0 +1,132 @@
+{
+  "checked_at": "2026-11-02T05:17:56.226757+00:00",
+  "endpoint": "https://api.osv.dev/v1/querybatch",
+  "query": {
+    "queries": [
+      {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "zip"
+        },
+        "version": "9.0.5"
+      },
+      {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "zip"
+        },
+        "version": "9.1.3"
+      },
+      {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "typed-path"
+        },
+        "version": "0.13.0"
+      },
+      {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "unicode-width"
+        },
+        "version": "0.2.2"
+      },
+      {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "unicode-width"
+        },
+        "version": "0.2.3"
+      },
+      {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "libc"
+        },
+        "version": "0.2.189"
+      },
+      {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "libc"
+        },
+        "version": "0.2.191"
+      },
+      {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "roxmltree"
+        },
+        "version": "0.21.1"
+      },
+      {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "roxmltree"
+        },
+        "version": "0.21.2"
+      },
+      {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "skia-safe"
+        },
+        "version": "0.153.3"
+      },
+      {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "skia-safe"
+        },
+        "version": "0.156.0"
+      },
+      {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "skia-bindings"
+        },
+        "version": "0.156.0"
+      },
+      {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "bindgen"
+        },
+        "version": "0.73.2"
+      },
+      {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "prettyplease"
+        },
+        "version": "0.3.0"
+      },
+      {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "syn"
+        },
+        "version": "3.0.3"
+      }
+    ]
+  },
+  "response": {
+    "results": [
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {}
+    ]
+  }
+}

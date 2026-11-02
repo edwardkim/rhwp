@@ -1,0 +1,11 @@
+document	backend	page	base_raw	candidate_raw	delta_pp
+saved_bottom	native	1	100.0	100.0	0.0
+saved_bottom	wasm	1	100.0	100.0	0.0
+wrapping_A	native	1	100.0	100.0	0.0
+wrapping_A	wasm	1	100.0	100.0	0.0
+legacy_textbox	native	1	99.55	99.55	0.0
+legacy_textbox	wasm	1	99.42	99.42	0.0
+wmf_fixed_face	native	1	94.4	94.4	0.0
+wmf_fixed_face	native	2	94.59	94.59	0.0
+wmf_fixed_face	wasm	1	98.77	98.77	0.0
+wmf_fixed_face	wasm	2	98.77	98.77	0.0
