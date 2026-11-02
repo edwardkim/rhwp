@@ -3,10 +3,10 @@
 생성만으로 끝내지 않는다. 기존 CLI 로 텍스트가 들어갔는지 본다.
 시각 픽셀 일치는 이 스킬의 통과 조건이 아니다.
 
-현재 `build-from-ingest`는 이미지 파일을 읽어 Picture/BinData로 연결하지 않고
-`[이미지: …]` placeholder 텍스트를 만든다. `--media-dir`은 디렉터리 존재만 확인한다.
-**그림이 필수이면 F18로 중단한다.** 경로·크기·배치 변경만으로 해결되지 않으며,
-placeholder 결과를 이미지 포함 시험지로 제공하지 않는다.
+`build-from-ingest`는 로컬 PNG·JPEG·GIF·BMP·TIFF를 검증해 Picture/BinData로 삽입한다.
+기준 경로는 JSON 디렉터리이며 `--media-dir`로 바꿀 수 있다. 경로 이탈·누락·손상·한도 초과는
+`INGEST_IMAGE_*`로 실패한다. placeholder로 대체하지 않으며 실제 이미지 표시도 확인한다.
+문장 중간의 위치는 `paragraph.runs`의 text/image 순서로 지정한다.
 
 ## 명령
 
@@ -44,11 +44,11 @@ dump 포맷을 이 스킬이 파싱하는 새 도구를 만들지 않는다.
 ```
 [Content_Types].xml
 Contents/section0.xml
-BinData/   # 실제 이미지 삽입이라면 필요. 현재 ingest 빌더는 생성하지 않음
+BinData/   # 이미지 바이트. 반복 Picture가 같은 자원을 공유할 수 있음
 ```
 
-현재 빌더에서 media를 넣어도 BinData가 없는 것은 이미지 삽입 미구현 때문이다.
-텍스트 검사가 통과해도 그림 필수 입력은 실패다. 경로·배치 변경으로 반복하지 않는다.
+이미지를 요청했으면 BinData와 manifest·Picture의 참조 관계를 확인한다.
+누락·깨진 참조·원하지 않은 중복이 있으면 실패다. 실제 이미지 표시도 확인한다.
 
 ## 통과 선언
 
@@ -58,7 +58,7 @@ BinData/   # 실제 이미지 삽입이라면 필요. 현재 ingest 빌더는 �
 - 문항 수 (`questions.length`)
 - 공유 지문 수
 - media 수 / crop 수
-- 그림이 필수인지와 F18 중단 여부. placeholder를 완성된 이미지로 보고하지 않음
+- Picture 개수·고유 이미지 자원 수·실제 표시 결과와 INGEST_IMAGE_* 오류 여부
 - 게이트: export-text 대조 결과
 
 "한컴에서 열어 보니 예쁘다" 는 통과 조건이 아니다. 열어 보라고 권할 수는 있다.

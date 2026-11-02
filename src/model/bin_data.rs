@@ -366,6 +366,39 @@ pub(crate) fn content_index(contents: &[BinDataContent], id: u16) -> Option<usiz
     }
 }
 
+/// Register embedded bytes using the shared content-position/storage-id contract.
+/// Callers that accept external batches must validate counts before registration.
+pub(crate) fn register_embedded_bin_data(
+    document: &mut super::document::Document,
+    image_data: impl Into<std::sync::Arc<[u8]>>,
+    extension: &str,
+) -> u16 {
+    let position_id = document.bin_data_content.len() as u16 + 1;
+    let storage_id = document.next_bin_data_storage_id();
+    document.bin_data_content.push(BinDataContent {
+        id: storage_id,
+        data: BinDataBytes::from_shared(image_data),
+        extension: extension.to_string(),
+    });
+    // attr: bits 0-3=1(Embedding), bits 4-5=0(Default), bits 8-9=1(Success)
+    let bin_attr: u16 = 0x0101;
+    document.doc_info.bin_data_list.push(BinData {
+        raw_data: None,
+        attr: bin_attr,
+        data_type: BinDataType::Embedding,
+        compression: BinDataCompression::Default,
+        status: BinDataStatus::Success,
+        abs_path: None,
+        rel_path: None,
+        storage_id,
+        extension: Some(extension.to_string()),
+    });
+    document.doc_info.raw_stream = None; // DocInfo 재직렬화
+                                         // [#3315] 여기서 bin_data_epoch 를 올리지 않는다 — 새 id 를 덧붙일 뿐 기존
+                                         // id→바이트는 그대로다. 올리면 무관한 그림의 소비자 캐시까지 함께 버려진다.
+    position_id
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

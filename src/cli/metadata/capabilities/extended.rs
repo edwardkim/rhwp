@@ -426,8 +426,8 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
         ),
         cmd_json(
             "build-from-ingest",
-            "ingest JSON에서 HWPX 생성 (--json 봉투)",
-            &["-o", "--media-dir", "--json"],
+            "ingest JSON과 로컬 이미지에서 HWPX 생성 (--json 봉투)",
+            &["-o", "--output", "--media-dir", "--json", "--max-image-bytes", "--max-total-image-bytes", "--max-image-pixels", "--max-total-image-pixels", "--max-image-instances"],
             &[
                 "schemaVersion",
                 "source",

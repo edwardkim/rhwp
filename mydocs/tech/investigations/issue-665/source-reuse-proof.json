@@ -1,0 +1,12 @@
+{
+  "product_source": "d78048a6f0e5f71aa3bdb7d32e703bd5971e3019",
+  "verified_at_head": "c972d83cd16828cb54444d049e1d361bd189cec3",
+  "tracked_product_paths": [
+    "src",
+    "Cargo.toml",
+    "Cargo.lock"
+  ],
+  "product_source_unchanged_since_producer_build": true,
+  "deployed_studio_wasm_sha256": "19e4729f73daa5a183d37b29eb09500cdd217c112383f0d643b786fce59bb3c1",
+  "all_formal_input_hashes_verified": true
+}

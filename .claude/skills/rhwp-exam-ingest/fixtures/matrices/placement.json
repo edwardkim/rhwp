@@ -48,7 +48,7 @@
         "text+image"
       ],
       "common": false,
-      "limit": "inline도 placeholder. 그림 필수이면 F18 중단"
+      "limit": "문장 중간은 paragraph.runs의 text/image 순서로 지정"
     }
   ]
 }

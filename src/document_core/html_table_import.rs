@@ -1062,31 +1062,10 @@ impl DocumentCore {
         pic.common.vert_rel_to = crate::model::shape::VertRelTo::Para;
         pic.common.horz_rel_to = crate::model::shape::HorzRelTo::Para;
         pic.common.flow_with_text = true;
-        pic.shape_attr = crate::model::shape::ShapeComponentAttr {
-            original_width: w_hu,
-            original_height: h_hu,
-            current_width: w_hu,
-            current_height: h_hu,
-            local_file_version: 1,
-            render_sx: 1.0,
-            render_sy: 1.0,
-            ..Default::default()
-        };
-        pic.border_x = [0i32, 0, w_hu as i32, 0];
-        pic.border_y = [w_hu as i32, h_hu as i32, 0, h_hu as i32];
-        // crop 은 **원본 픽셀 좌표계**(px × 75)다. 종전에는 표시 크기(HWPUNIT)를
-        // 넣어 큰 그림이 왼쪽 위 일부만 남고 잘렸다("그림이 반쪽" 신고). insert_picture_native 와 같은 규약.
         let (nat_w, nat_h) =
             image_pixel_size(&decoded).unwrap_or((width.max(1.0) as u32, height.max(1.0) as u32));
-        pic.crop = crate::model::image::CropInfo {
-            left: 0,
-            top: 0,
-            right: (nat_w * 75) as i32,
-            bottom: (nat_h * 75) as i32,
-        };
-        // img_dim 은 crop 과 같은 좌표계(px × 75)다 — 픽셀값을 그대로 넣으면 HWPX 직렬화기가
-        // imgClip 보다 작은 imgDim 을 보고 그림을 버린다(실측: <hp:pic> 자체가 사라졌다).
-        pic.img_dim = (nat_w * 75, nat_h * 75);
+        let pic =
+            crate::model::image::Picture::from_embedded_image(pic.common, new_bin_id, nat_w, nat_h);
         Some(pic)
     }
 }

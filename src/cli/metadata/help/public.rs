@@ -473,7 +473,14 @@ pub(super) fn print() {
     println!("      --verify-pages        저장 전/후 렌더 페이지 수를 비교 (불일치 시 exit 4)");
     println!();
     println!("  build-from-ingest <ingest.json> [--media-dir <dir>] -o <out.hwpx>");
-    println!("      ingest JSON(시험문제 등)을 HWPX로 생성 (rhwp-exam-ingest 파이프라인)");
+    println!(
+        "      ingest JSON과 로컬 이미지를 HWPX로 생성 (이미지 기준 경로 기본값: JSON 디렉터리)"
+    );
+    println!(
+        "      --max-image-bytes/--max-total-image-bytes <N>     개별/전체 이미지 바이트 상한"
+    );
+    println!("      --max-image-pixels/--max-total-image-pixels <N>   개별/전체 이미지 픽셀 상한");
+    println!("      --max-image-instances <N>                       그림 삽입 개수 상한");
     println!();
     println!("  scaffold <spec.json> [--format hwpx] -o <out.hwpx> [--json]");
     println!("      구조화된 명세(제목·개요 제목·문단·표)에서 유효한 HWPX 문서를 생성");

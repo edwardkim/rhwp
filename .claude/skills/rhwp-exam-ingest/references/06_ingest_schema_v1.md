@@ -33,11 +33,11 @@ Rust 모델: `src/parser/ingest/schema.rs`. 둘 다 `version: "1"` 만 허용하
 | 경로 | 기본 | 용도 |
 | --- | --- | --- |
 | `passage_ref` | 없음 | `passages[].id` |
-| `stem_blocks` | `[]` | text / image / boxed |
+| `stem_blocks` | `[]` | text / image / boxed / paragraph |
 | `media` | `[]` | `--media-dir` 상대 경로 |
 | `auto_number` | `true` | 첫 stem 앞에 `{n}. ` |
 
-## StemBlock 세 종류
+## StemBlock 네 종류
 
 `type` 이 태그다. 종류마다 허용 필드가 다르다. 섞으면 힌트와 함께 실패.
 
@@ -72,7 +72,22 @@ Rust 모델: `src/parser/ingest/schema.rs`. 둘 다 `version: "1"` 만 허용하
 **사고 형태** (#3358): `{"type":"boxed","text":"소속: 성명:"}` →
 `boxed 블록에 허용되지 않는 필드 'text'`. 본문은 반드시 `blocks[]`.
 
-알 수 없는 type: `알 수 없는 블록 type 'X' (지원: text|image|boxed)`.
+알 수 없는 type: `알 수 없는 블록 type 'X' (지원: text|image|boxed|paragraph)`.
+
+### paragraph
+
+문장 중간 이미지는 순서 있는 runs로 표현한다.
+
+```json
+{"type":"paragraph","runs":[
+  {"type":"text","text":"앞 "},
+  {"type":"image","ref":"img/q1.png"},
+  {"type":"text","text":" 뒤"}
+]}
+```
+
+paragraph에는 type과 runs만, 각 run에는 type과 text 또는 ref만 허용한다.
+image run의 placement는 허용하지 않는다. 글자와 이미지 순서가 곧 문장 내 위치다.
 
 ## Media
 

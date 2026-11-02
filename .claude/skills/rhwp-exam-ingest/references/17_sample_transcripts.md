@@ -24,8 +24,8 @@
 2. 문항 1, 발문, 그래프 bbox 240,410,980,620, 선택지 5
 3. `crop_image.sh desk.jpg 240 410 980 620 $MEDIA/img/q1.png`
 4. ingest: placement between, auto_number true
-5. 그래프가 필수이므로 F18로 중단. 현재 빌더는 placeholder만 생성한다.
-6. crop 준비를 이미지 삽입 완료로 보고하거나 경로·배치를 바꾸어 반복하지 않는다.
+5. `rhwp build-from-ingest $TMP/ingest.json --media-dir $MEDIA -o output/exam/graph.hwpx`
+6. export-text·Picture/BinData·실제 그래프 표시를 확인한다.
 
 ## T03 MD + 이미지 ref
 
@@ -34,8 +34,8 @@
 1. MD 읽기. `![plot](figures/pm10.png)` 존재 확인
 2. 복사 `figures/pm10.png` → `$MEDIA/img/pm10.png`
 3. `## 2.` → auto_number false
-4. 이미지가 필수인지 확인하고 필수이면 F18로 중단한다.
-5. `--media-dir`을 주어도 Picture/BinData는 생성되지 않는다.
+4. `build-from-ingest --media-dir $MEDIA -o output/exam/quiz.hwpx`
+5. Picture/BinData·텍스트·실제 이미지 표시를 확인한다.
 
 ## T04 DOCX fallback
 
@@ -88,6 +88,7 @@ export-text 에 `3. 3. 밑줄 친`
 
 1. 각 수식 crop → image
 2. 사용자에게 Equation IR 없음 (F16) 고지
-3. 수식 이미지가 필수이므로 F18로 중단. 텍스트만으로 성공 처리하지 않는다.
+3. 사용자가 이미지에 동의하면 build-from-ingest로 삽입한 뒤 실제 수식 이미지를 확인한다.
+   편집 가능한 수식이 필수이면 F16으로 중단한다.
 
 기계 가독 본문: `fixtures/transcripts/*.json`.

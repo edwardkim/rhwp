@@ -9,10 +9,10 @@ description: 'PDF·이미지·Markdown·DOCX 시험문제 자료를 HWPX 시험�
 이 스킬은 **실 에이전트 경로**다. gym 이 아니고, 새 CLI 를 발명하지 않으며,
 `DocumentCore` 의 `exam_paper` 빌더 로직을 이 작업에서 바꾸지 않는다.
 
-현재 `build-from-ingest`는 이미지 파일을 읽어 Picture/BinData로 연결하지 않고
-`[이미지: …]` placeholder 텍스트를 만든다. `--media-dir`은 디렉터리 존재만 확인한다.
-**그림이 필수이면 F18로 중단한다.** 경로·크기·배치 변경만으로 해결되지 않으며,
-placeholder 결과를 이미지 포함 시험지로 제공하지 않는다.
+`build-from-ingest`는 로컬 PNG·JPEG·GIF·BMP·TIFF를 검증해 Picture/BinData로 삽입한다.
+기준 경로는 JSON 디렉터리이며 `--media-dir`로 바꿀 수 있다. 경로 이탈·누락·손상·한도 초과는
+`INGEST_IMAGE_*`로 실패한다. placeholder로 대체하지 않으며 실제 이미지 표시도 확인한다.
+문장 중간의 위치는 `paragraph.runs`의 text/image 순서로 지정한다.
 
 텍스트 시험지 조립과 입력 자료 준비에 사용할 구성은 다음과 같다.
 
@@ -129,9 +129,9 @@ check_deps.sh [--json]
 | F13 | stem 첫 텍스트가 `"2. …"` 로 시작 | `auto_number: false`. 아니면 `"2. 2. …"` |
 | F14 | bbox 가 소수·음수·0 | `CROP_BBOX_*` exit 4. 다시 추정 |
 | F15 | `-o` 누락 | CLI 가 사용법 오류. `-o` 는 필수 |
-| F16 | 편집 가능한 수식 요청 | ingest에 수식 필드 없음. 수식 이미지가 필수여도 F18로 중단 |
-| F17 | 편집 가능한 표 요청 | ingest에 표 필드 없음. 표 이미지가 필수여도 F18로 중단 |
-| F18 | 그림이 필수인 입력 | 현재 빌더는 placeholder만 생성. 중단하고 이미지 포함 시험지로 제공하지 않음 |
+| F16 | 편집 가능한 수식 요청 | ingest에 수식 필드 없음. 동의하면 수식 crop을 이미지로 삽입 |
+| F17 | 편집 가능한 표 요청 | ingest에 표 필드 없음. 동의하면 표 crop을 이미지로 삽입 |
+| F18 | `INGEST_IMAGE_*` 입력 오류 | 경로·형식·실제 치수·자원 한도를 확인. 누락된 그림을 성공으로 보고하지 않음 |
 | F19 | 사용자 질문이 이미 답변 가능 | 다음 단으로 내려가지 않는다 |
 
 **금지 기본값**
@@ -259,8 +259,9 @@ bash .claude/skills/rhwp-exam-ingest/helpers/crop_image.sh \
     --json --dry-run "$TMP/page_001.png" 120 400 640 360 "$MEDIA_DIR/img/q1.png"
 ```
 
-`-o`는 필수다. `--media-dir`을 지정해도 이미지 삽입은 구현되지 않았다.
-위 명령은 텍스트 조립 또는 제한 재현용이며, 그림 필수 입력은 F18로 중단한다.
+`-o`는 필수다. `--media-dir`을 지정하면 그 디렉터리 안의 이미지 파일을 검증해 삽입한다.
+생략하면 JSON 디렉터리를 기준으로 읽는다. `INGEST_IMAGE_*` 오류가 발생하면 F18에 따라
+입력을 보정하고 다시 실행한다. 그림이 필수인 입력을 텍스트만으로 완료 처리하지 않는다.
 상세: [11_crop_bbox.md](references/11_crop_bbox.md) ·
 [12_build_from_ingest.md](references/12_build_from_ingest.md)
 
@@ -277,14 +278,13 @@ unzip -l <out.hwpx>           # BinData/ 이미지 포함 여부
 
 ## 알려진 한계
 
-- **이미지 삽입 미구현**: HWPX writer의 Picture 직렬화는 구현돼 있지만,
-  이 스킬이 호출하는 ingest 빌더에는 이미지 파일을 Picture/BinData로 연결하는 경로가 없다.
-  `between`·`above`·`below`·`inline`, 공유 지문·보기 내부 이미지도 placeholder 텍스트다.
-  그림 필수 입력은 F18로 중단한다. CLI 종료 코드 0이나 텍스트 대조 통과로 완료 처리하지 않는다.
+- **이미지 입력**: PNG·JPEG·GIF·BMP·TIFF를 실제 삽입한다. 파일 경로·치수·한도를
+  검증하며 INGEST_IMAGE_* 오류를 placeholder로 대체하지 않는다. CLI 종료 코드 0이나
+  텍스트 대조만으로 완료 처리하지 않고 Picture/BinData와 실제 표시를 확인한다.
 - **수식**: 이 ingest 스키마에는 편집 가능한 수식 필드가 없다.
-  이미지로 캡처해도 현재 빌더로 삽입할 수 없으므로 수식 이미지가 필수이면 F18로 중단한다.
+  동의하면 수식 crop을 이미지로 삽입한다. 편집 가능한 수식으로 보고하지 않는다.
 - **표/정밀 박스**: 이 ingest 스키마에는 편집 가능한 표·프레임 필드가 없다.
-  표 이미지가 필수이면 F18로 중단한다. 캡처 자료 준비와 완성 문서 생성을 구분한다.
+  동의하면 표 crop을 이미지로 삽입한다. 편집 가능한 표로 보고하지 않는다.
 
 상세: [15_known_limits.md](references/15_known_limits.md)
 

@@ -1772,15 +1772,56 @@ ingest JSON(시험문제 등) → HWPX 생성. (rhwp-exam-ingest 파이프라인
   `ingest.json` 중간 표현을 rhwp HWPX 문서로 조립한다.
 - `-o`, `--output <out.hwpx>` 는 필수다.
 - `--media-dir <dir>` 는 `ingest.json` 의 `media[].id` 와 이미지 `stem_blocks[].ref` 를
-  해석할 기준 디렉터리다. 이미지가 없으면 생략한다.
+  해석할 기준 디렉터리다. 생략하면 JSON 파일이 있는 디렉터리를 사용한다.
+  참조는 기준 디렉터리 안의 상대 파일 경로여야 한다. 절대 경로·`..`·외부로 향하는
+  심볼릭 링크·누락된 파일은 `INGEST_IMAGE_PATH` 오류로 거부한다.
+  PNG·JPEG·GIF·BMP·TIFF를 실제 디코딩해 검증하고 Picture/BinData로 저장한다.
+  GIF·TIFF는 첫 프레임/페이지를 사용한다. SVG·WebP 등은 PNG로 변환해 공급한다.
 - 최소 입력 필드: `version`, `page_size`, `default_font`, `questions[]`.
   각 문제는 `number`, `stem`, `passage_ref`, `stem_blocks`, `choices`, `media`, `auto_number` 를 사용할 수 있다.
   top-level optional 필드로 `passages`, `header_text`, `footer_text`, `form_label` 을 사용할 수 있다.
-  `stem_blocks` 는 `text`, `image`, `boxed` 블록을 지원한다.
+  `stem_blocks` 는 `text`, `image`, `boxed`, `paragraph` 블록을 지원한다.
   자세한 스키마 모델은 `src/parser/ingest/schema.rs`, 예시는
   `tools/rhwp-ingest/schema/sample_minimal.json` 과
   `tools/rhwp-ingest/schema/sample_structured.json` 을 기준으로 확인한다.
 - 시험지 e2e 검증은 생성만으로 끝내지 않고, 산출 HWPX를 다시 CLI로 확인한다.
+
+이미지 블록의 `placement`가 `media[].placement`보다 우선한다. `above`는 발문 앞,
+`between`은 발문과 선택지 사이, `below`는 선택지 뒤에 놓는다. `inline` 이미지 블록은
+같은 컨테이너의 앞 문단 끝에 붙고, 앞 문단이 없으면 자체 문단을 사용한다.
+보기 뒤 이미지를 보기 내부에 붙이지 않는다. 공유 지문은 한 번만 출력하며, 그 안의
+`between`·`below`는 그 지문의 마지막에 놓는다. 참조되지 않은 `media[]`는 문항의
+해당 배치에 한 번 삽입하고, 블록에서 이미 참조한 이미지는 다시 자동 삽입하지 않는다.
+
+문장 중간의 정확한 위치는 순서 있는 `paragraph.runs`로 지정한다.
+
+```json
+{"type":"paragraph","runs":[
+  {"type":"text","text":"다음 그림 "},
+  {"type":"image","ref":"img/q1.png"},
+  {"type":"text","text":"을 보고 답하시오."}
+]}
+```
+
+`media[].natural_w`·`natural_h`는 실제 픽셀 치수와 일치해야 한다.
+`target_w_mm`는 양의 출력 폭이며 종횡비를 유지한다. 생략하면 본문 폭의 70%를 쓴다.
+본문 폭이나 한 쪽의 본문 높이를 넘는 요청은 `INGEST_IMAGE_SIZE`로 거부한다. 같은 바이트의 이미지는
+하나의 BinData를 재사용하며 배치마다 독립 Picture를 만든다.
+
+| 한도 옵션 | 기본값 | 단위 |
+| --- | --- | --- |
+| `--max-image-bytes` | 33554432 | 이미지 하나의 인코딩 바이트 |
+| `--max-total-image-bytes` | 268435456 | 읽는 고유 파일의 인코딩 바이트 합 |
+| `--max-image-pixels` | 64000000 | 이미지 하나의 가로×세로 |
+| `--max-total-image-pixels` | 256000000 | 읽는 고유 파일의 픽셀 합 |
+| `--max-image-instances` | 16384 | 출력 Picture 개수 |
+
+모든 옵션은 양의 정수다. 한도 초과는 `INGEST_IMAGE_LIMIT`, 손상 이미지는
+`INGEST_IMAGE_DECODE`, 미지원 형식은 `INGEST_IMAGE_FORMAT`, 참조 오류는
+`INGEST_IMAGE_REFERENCE`로 실패하며 placeholder로 대체하지 않는다. 코어의
+이미지당 256 MiB 저장 상한은 옵션으로 넘을 수 없다. Rust 라이브러리는 파일을 읽지 않는
+`IngestImage::from_bytes`와 `build_exam_paper_with_images`를 사용한다.
+기존 `build_exam_paper`는 호환성을 위해 텍스트/placeholder projection을 유지한다.
 
 ```bash
 rhwp build-from-ingest tools/rhwp-ingest/schema/sample_minimal.json \

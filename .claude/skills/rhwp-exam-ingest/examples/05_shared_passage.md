@@ -1,7 +1,7 @@
 # 예제 05_shared_passage — 공유 지문 passages
 
 이 워크스루는 gym 과제가 아니다. 기존 helper 와 `rhwp build-from-ingest` 만 쓴다.
-교차: `T01`. 동작: passage_ref. 그림이 필수이면 F18로 먼저 중단한다. 아래 명령은 텍스트 입력 또는 제한 재현용이다.
+교차: `T01`. 동작: passage_ref. 이미지 입력은 경로·실제 치수·한도를 검증하고 산출 Picture/BinData와 실제 표시를 확인한다.
 
 ## 입력
 
@@ -28,4 +28,4 @@ rhwp dump "$OUT" > "$TMP/dump.txt"
 
 ## 한계
 
-현재 build-from-ingest는 이미지 파일을 읽지 않고 placeholder만 생성한다. 그림·수식·표 이미지가 필수이면 F18로 중단하며 아래 빌드 명령을 실행해도 완성 문서로 제공하지 않는다. 경로·배치 재시도로 해결되지 않는다. 빌더 구현은 변경하지 않는다.
+build-from-ingest는 로컬 PNG/JPEG/GIF/BMP/TIFF를 Picture/BinData로 삽입한다. 이미지 오류는 INGEST_IMAGE_*로 진단하며 placeholder로 대체하지 않는다. 파일·자원·텍스트 보존과 실제 표시를 확인한다. 수식과 표 이미지는 편집 가능한 수식·표 구조가 아니다.
