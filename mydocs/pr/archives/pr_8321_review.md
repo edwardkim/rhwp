@@ -104,3 +104,10 @@
 통과했다. 같은 실행의 총 7건도 통과했으며 로그 SHA-256은
 `edf38a412efb58baa537cfcc40f5036c87c4951faf065f2b83998db8826d927e`다.
 이는 수정 중인 후보의 집중 검사이며 최종 Native·fresh WASM 시각 검증은 진행 중이다.
+
+WMFC 폴백과 리터럴 소프트 하이픈을 함께 보정한 후보로 동일한 원본과 한컴
+2024 Print를 96 DPI에서 비교했다. Native는 전 2쪽 중 1쪽 99.90447%, 2쪽
+98.94495%이며 누락 쪽과 90% 미만 쪽은 없다. 2쪽의 U+00AD 리터럴은 한컴처럼
+하이픈으로 보인다. [2쪽 review](../assets/issue_8315/followup8438/native-hyphen-review-002.png)와
+[overlay](../assets/issue_8315/followup8438/native-hyphen-overlay-002.png)를 직접 확인했다.
+전체 Native TSV와 fresh WASM은 별도로 산출 중이다.
