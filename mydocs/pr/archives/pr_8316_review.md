@@ -1,4 +1,4 @@
-# PR #8316 리뷰 — fix(text): 한/글이 기호·영문 슬롯으로 그리는 글자를 그 슬롯으로 분류한다 — 그리스·키릴·…·※·₩·€·℃·№·Latin-1 기호 (#8136)
+# [PR #8316](https://github.com/edwardkim/rhwp/pull/8316) 리뷰 — fix(text): 한/글이 기호·영문 슬롯으로 그리는 글자를 그 슬롯으로 분류한다 — 그리스·키릴·…·※·₩·€·℃·№·Latin-1 기호 ([이슈 #8136](https://github.com/edwardkim/rhwp/issues/8136))
 
 ## 최종 판정
 
@@ -14,11 +14,11 @@
 
 ## 최종 코드의 기호 슬롯·곡선 따옴표 대조
 
-### #8340 머지 전후의 추가 원본 비교
+### [PR #8340](https://github.com/edwardkim/rhwp/pull/8340) 머지 전후의 추가 원본 비교
 
-원 PR에 제시됐으나 당시 Print 비교가 없던 `samples/issue5701/1530000-200800002_slice_p139_tac_reset_tail.hwp`를 기존 한컴 2020 Print PDF와 96 DPI Native로 대조했다. #8340 머지 전 `1a7ae8f5bd`, 직후 `c88657d9c3`, #8438 제품 코드 `d536455b4e` 순서의 전쪽 결과는 각각 [TSV](../assets/issue_8136/final-integration-8438/native-slice-before-8340.tsv), [TSV](../assets/issue_8136/final-integration-8438/native-slice-after-8340.tsv), [TSV](../assets/issue_8136/final-integration-8438/native-slice-after-8438.tsv)다. 12쪽 모두 #8340 전후 Native PNG의 SHA-256이 같으며, 4쪽 raw 표시값은 25.01%, 25.01%, 25.07%다. 이 문서의 큰 위치 차이는 #8340 이전에도 존재했다. #8438 이후에는 1·4·5쪽의 PNG가 달라져 세부 차이와 원인 확인이 필요하다. #8340 기능 자체의 머지 후 보존 여부는 이 비교만으로 판정하지 않는다.
+원 PR에 제시됐으나 당시 Print 비교가 없던 `samples/issue5701/1530000-200800002_slice_p139_tac_reset_tail.hwp`를 기존 한컴 2020 Print PDF와 96 DPI Native로 대조했다. [PR #8340](https://github.com/edwardkim/rhwp/pull/8340) 머지 전 `1a7ae8f5bd`, 직후 `c88657d9c3`, [PR #8438](https://github.com/edwardkim/rhwp/pull/8438) 제품 코드 `d536455b4e` 순서의 전쪽 결과는 각각 [TSV](../assets/issue_8136/final-integration-8438/native-slice-before-8340.tsv), [TSV](../assets/issue_8136/final-integration-8438/native-slice-after-8340.tsv), [TSV](../assets/issue_8136/final-integration-8438/native-slice-after-8438.tsv)다. 12쪽 모두 [PR #8340](https://github.com/edwardkim/rhwp/pull/8340) 전후 Native PNG의 SHA-256이 같으며, 4쪽 raw 표시값은 25.01%, 25.01%, 25.07%다. 이 문서의 큰 위치 차이는 [PR #8340](https://github.com/edwardkim/rhwp/pull/8340) 이전에도 존재했다. [PR #8438](https://github.com/edwardkim/rhwp/pull/8438) 이후에는 1·4·5쪽의 PNG가 달라져 세부 차이와 원인 확인이 필요하다. [PR #8340](https://github.com/edwardkim/rhwp/pull/8340) 기능 자체의 머지 후 보존 여부는 이 비교만으로 판정하지 않는다.
 
-4쪽의 표 윗선은 RHWP 135–136px, Print 148–149px다. 원본의 직전 표 호스트 저장 줄은 `vpos=72484`, `lineHeight=62183`, `lineSpacing=552`이고 다음 표 호스트는 `vpos=136219`다. 따라서 저장 줄 끝과 다음 줄 사이 `136219-(72484+62183+552)=1000 HWPUNIT`이 남으며, 다음 표 문단의 앞 간격에 해당하는 13.33px와 Print의 이동량이 맞는다. 현재 공통 `typeset/table/host_spacing.rs`는 단 상단의 문단 앞 간격을 제외하고, `table/block/entry.rs`도 표가 새 단 상단에서 열릴 때 `column_top_before`로 제한한다. 이는 원인 후보이며, 다른 저장 사다리와 #8149 대조군을 함께 확인하기 전 전역 완화로 결론 내리지 않는다. 5·6·9쪽은 단순 13px 이동과 달라 별도 경로도 조사한다.
+4쪽의 표 윗선은 RHWP 135–136px, Print 148–149px다. 원본의 직전 표 호스트 저장 줄은 `vpos=72484`, `lineHeight=62183`, `lineSpacing=552`이고 다음 표 호스트는 `vpos=136219`다. 따라서 저장 줄 끝과 다음 줄 사이 `136219-(72484+62183+552)=1000 HWPUNIT`이 남으며, 다음 표 문단의 앞 간격에 해당하는 13.33px와 Print의 이동량이 맞는다. 현재 공통 `typeset/table/host_spacing.rs`는 단 상단의 문단 앞 간격을 제외하고, `table/block/entry.rs`도 표가 새 단 상단에서 열릴 때 `column_top_before`로 제한한다. 이는 원인 후보이며, 다른 저장 사다리와 [이슈 #8149](https://github.com/edwardkim/rhwp/issues/8149) 대조군을 함께 확인하기 전 전역 완화로 결론 내리지 않는다. 5·6·9쪽은 단순 13px 이동과 달라 별도 경로도 조사한다.
 
 제품 코드 `d536455b4e`의 Native와 fresh WASM으로 기호 슬롯 2쪽과 독립 한컴 2024 Print, 곡선 따옴표 7쪽과 한컴 2020 Print를 96 DPI로 전쪽 대조했다. 기호 슬롯은 Native 최저 98.96%, WASM 98.37%, 곡선 따옴표는 각각 96.96%, 97.73%이며 쪽수가 일치한다. 기호 슬롯 1·2쪽과 곡선 따옴표 3·4쪽의 RHWP·PDF PNG는 앞서 직접 판독한 자료와 SHA-256이 같아 해당 review·overlay를 재사용했다.
 
@@ -42,24 +42,24 @@
 
 ### HWP3 변환본 5쪽의 제목 차이 원인 대조
 
-동일 시스템 글꼴 조건에서 #8438 이전 이력 `99a176b7cb`(#8397)의 Native 실행 파일로 5쪽을 다시 출력했다. 현재 제품 코드와 해당 이전 출력 PNG의 SHA-256은 모두 `a52876c78f720d9e6838a6d92ed9ca1c70e6eeffd4f91aec29cd8f5a94c5def9`로 일치한다. 이 기준에서는 #8438로 새로 생긴 시각 하락이 아니다. 원 PR 당시 별도 글꼴 디렉터리의 TSV와는 다른 환경이다.
+동일 시스템 글꼴 조건에서 [PR #8438](https://github.com/edwardkim/rhwp/pull/8438) 이전 이력 `99a176b7cb`([PR #8397](https://github.com/edwardkim/rhwp/pull/8397))의 Native 실행 파일로 5쪽을 다시 출력했다. 현재 제품 코드와 해당 이전 출력 PNG의 SHA-256은 모두 `a52876c78f720d9e6838a6d92ed9ca1c70e6eeffd4f91aec29cd8f5a94c5def9`로 일치한다. 이 기준에서는 [PR #8438](https://github.com/edwardkim/rhwp/pull/8438)로 새로 생긴 시각 하락이 아니다. 원 PR 당시 별도 글꼴 디렉터리의 TSV와는 다른 환경이다.
 
 Native 기본 조건에서 글머리 `•`의 줄 상자 폭은 8.1 CSSpx, 같은 시스템에 설치된 한양신명조의 별도 완성 글리프 공급 폰트를 명시한 실험에서는 15.4 CSSpx였고 PDF의 제목 원점과 맞아 해당 쪽 raw가 100.00%였다. 실제 renderer snapshot 추적에서 기본 조건의 제목 한글은 `HY Sinmyeongjo`, 글머리는 `한양신명조`로 선택됐다. 시스템에는 동일 family에 여러 프로그램이 있으므로 단순 이름만으로 파일을 단정하지 않는다. 글꼴 파일은 증적이나 배포물에 포함하지 않았다. 기본 Native의 눈에 보이는 차이는 후속 검토 대상으로 남기며, WASM 동일 쪽은 99.95%다. [WASM review](../assets/issue_8136/final-integration-8438/wasm-h3s5-p005-review.png) · [WASM overlay](../assets/issue_8136/final-integration-8438/wasm-h3s5-p005-overlay.png).
 
 ## 접수와 적용
 
-- 원 PR: [#8316](https://github.com/edwardkim/rhwp/pull/8316), 작성자 `planet6897`, reviewer `jangster77`.
+- 원 PR: [PR #8316](https://github.com/edwardkim/rhwp/pull/8316), 작성자 `planet6897`, reviewer `jangster77`.
 - 원 PR head 조회값: `8f53775fa506fc35e820dfe5d8632d0c6b8aafb6`. 조회 시 원 PR head와 마지막 체리픽 원본이 일치한다.
 - 마지막 적용 원본: `8f53775fa506fc35e820dfe5d8632d0c6b8aafb6`. 검증 시작 당시 코드 후보: `abea5b028f8f135bdf000ca700e1993ebf0b1973`, 기준 `upstream/devel`: `bc9dfdd057258de59afebeb5121c4bee7398e07f`.
-- 관련 이슈: [#8136](https://github.com/edwardkim/rhwp/issues/8136).
+- 관련 이슈: [이슈 #8136](https://github.com/edwardkim/rhwp/issues/8136).
 - 선행 PR: 별도 누적 선행 PR이 명시되지 않았다.
 
-후속 `e1f03ffbb3`은 Python 테스트 준비, `af175315e7`과 `e920cba6b0`은 회귀 검사 주석, `a63bb719de`는 검증 경과를 기록했다. `5d1294811b`은 전체 그림의 잘림 오판을 보정했다. `e1b8ab0f54`, `d6fe30c3ad`, `0897582f6c`, `8c4eca265e`에 Native 진단, #8410 집중 6건 통과와 글꼴 대조를 기록했으며 새 코드의 전쪽 출력 검증이 필요하다.
+후속 `e1f03ffbb3`은 Python 테스트 준비, `af175315e7`과 `e920cba6b0`은 회귀 검사 주석, `a63bb719de`는 검증 경과를 기록했다. `5d1294811b`은 전체 그림의 잘림 오판을 보정했다. `e1b8ab0f54`, `d6fe30c3ad`, `0897582f6c`, `8c4eca265e`에 Native 진단, [PR #8410](https://github.com/edwardkim/rhwp/pull/8410) 집중 6건 통과와 글꼴 대조를 기록했으며 새 코드의 전쪽 출력 검증이 필요하다.
 
 ## 변경 주장과 검토 관점
 
 독립 Print에서 구분된 기호와 Latin-1 문자를 해당 언어 슬롯으로 분류한다.
-기호가 없는 글꼴의 fallback과 기존 #8397 정밀 기준을 함께 확인한다.
+기호가 없는 글꼴의 fallback과 기존 [PR #8397](https://github.com/edwardkim/rhwp/pull/8397) 정밀 기준을 함께 확인한다.
 
 ## 체리픽과 보정
 
@@ -98,11 +98,11 @@ TTF 선언을 글꼴 선택에 전달한 새 Native 후보 SHA-256 `91d4e37673a8
 
 출처 구분을 보완한 Native 후보 `e27de3655ca5806043ba63110f2823c6f17db663e80ea55d93477c208cef2200`에서는 원 HWPX와 위 HWP 저장본의 raw가 각각 1쪽 `99.904468740049%`, 2쪽 `98.955495004541%`로 정확히 일치한다([정밀 비교](../../../output/pr-review/planet6897-ordered-20261031/hwp5-hwpx-lineage-focus-compare.log)). 두 경로의 fresh WASM과 최종 직접 판독은 별도로 확인해야 한다.
 
-현재 코드에서 #8136의 슬롯 분류 3건을 최소 글꼴 환경으로 다시 실행해 모두 통과했다. #8079의 4건과 #8315의 3건도 같은 실행에서 통과했다([집중 검사 로그](../../../output/pr-review/planet6897-ordered-20261031/font-slot-focused-minfont-after-commit.log)). 이는 해당 검사 10건의 결과이며 전체 회귀나 시각 검증을 대신하지 않는다.
+현재 코드에서 [이슈 #8136](https://github.com/edwardkim/rhwp/issues/8136)의 슬롯 분류 3건을 최소 글꼴 환경으로 다시 실행해 모두 통과했다. [이슈 #8079](https://github.com/edwardkim/rhwp/issues/8079)의 4건과 [이슈 #8315](https://github.com/edwardkim/rhwp/issues/8315)의 3건도 같은 실행에서 통과했다([집중 검사 로그](../../../output/pr-review/planet6897-ordered-20261031/font-slot-focused-minfont-after-commit.log)). 이는 해당 검사 10건의 결과이며 전체 회귀나 시각 검증을 대신하지 않는다.
 
-기존 생성 목록으로 최소 글꼴 회귀 12,320건 통과·45건 건너뜀을 확인했다. 생성 목록에서 누락된 #8410 두 모듈의 6건을 목록 재작성 후 같은 환경에서 별도로 실행해 모두 통과했다. 두 실행을 구분하며 한 번의 전체 실행으로 기록하지 않는다.
+기존 생성 목록으로 최소 글꼴 회귀 12,320건 통과·45건 건너뜀을 확인했다. 생성 목록에서 누락된 [PR #8410](https://github.com/edwardkim/rhwp/pull/8410) 두 모듈의 6건을 목록 재작성 후 같은 환경에서 별도로 실행해 모두 통과했다. 두 실행을 구분하며 한 번의 전체 실행으로 기록하지 않는다.
 
-2026-11-01 고정 후보의 #8389·#8397 전쪽 정밀 대조에서 2,153행 중 Native 12행, WASM 8행이 공개 기준보다 낮았다. 이 수치는 이후 GIF·Canvas 보정 전 결과이며 최종 후보의 재검증 결과가 아니다. #7905 3쪽은 GIF 오른쪽 경계 누락, sample16 35쪽 WASM은 메타파일 내부의 미대응 3픽셀이 확인됐다. #8040 두 원본은 Native·WASM 전쪽이 90% 이상이나 Native 정밀 기준 하락이 남는다. 진행과 근거는 [작업 기록](../../working/task_m100_planet6897_system_fonts_20261031.md)을 따른다. 하락 보정과 전쪽 대조, 각 PR의 독립 Print·Native/fresh WASM 및 직접 판독을 완료해야 한다. #8410·#8412의 새 base 기능도 별도로 보존 검증한다.
+2026-11-01 고정 후보의 [PR #8389](https://github.com/edwardkim/rhwp/pull/8389)·[PR #8397](https://github.com/edwardkim/rhwp/pull/8397) 전쪽 정밀 대조에서 2,153행 중 Native 12행, WASM 8행이 공개 기준보다 낮았다. 이 수치는 이후 GIF·Canvas 보정 전 결과이며 최종 후보의 재검증 결과가 아니다. [PR #7905](https://github.com/edwardkim/rhwp/pull/7905) 3쪽은 GIF 오른쪽 경계 누락, sample16 35쪽 WASM은 메타파일 내부의 미대응 3픽셀이 확인됐다. [PR #8040](https://github.com/edwardkim/rhwp/pull/8040) 두 원본은 Native·WASM 전쪽이 90% 이상이나 Native 정밀 기준 하락이 남는다. 진행과 근거는 [작업 기록](../../working/task_m100_planet6897_system_fonts_20261031.md)을 따른다. 하락 보정과 전쪽 대조, 각 PR의 독립 Print·Native/fresh WASM 및 직접 판독을 완료해야 한다. [PR #8410](https://github.com/edwardkim/rhwp/pull/8410)·[PR #8412](https://github.com/edwardkim/rhwp/pull/8412)의 새 base 기능도 별도로 보존 검증한다.
 
 원 PR의 최신 head·required check와 통합 후보의 새 검증 결과를 확인하기 전에는 승인이나 merge를 진행하지 않는다.
 
@@ -178,3 +178,10 @@ TTF 선언을 글꼴 선택에 전달한 새 Native 후보 SHA-256 `91d4e37673a8
 8쪽, 표는 9쪽에 속한다. [PR #8396](https://github.com/edwardkim/rhwp/pull/8396)의
 4개 표 분할 대조군은 전쪽 문단·표 소속과 총 쪽수가 유지됐다. 이는 Native 후보의
 중간 확인이며 전체 시각·회귀 검증 완료가 아니다. 2·11·12쪽은 여전히 미달이다.
+
+11쪽의 문단 54는 표 다음에 글줄이 이어지고, 12쪽 문단 55는 표 줄의 후행
+간격이 음수다. 둘 다 직전 쪽에서 끝난 저장 줄 다음에 문단 앞 간격 1000
+HWPUNIT이 정확히 이어진다. 단일 저장 줄 계획이 수용하지 않는 일반 경로에도
+동일한 저장 사다리 확인을 적용하는 후보를 마련했다. 표 첫 줄의 소유·외곽
+높이와 실측 높이가 일치하는 경우에만 대상이 되며, 실제 배치와 대조군은
+후보 실행 뒤 확인한다.

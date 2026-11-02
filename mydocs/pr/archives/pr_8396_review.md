@@ -1,4 +1,4 @@
-# PR #8396 리뷰 — fix(typeset): HWP5 출신 HWPX 분할 측정기에 저장 조판 프로필 적용 (#8382 부분)
+# [PR #8396](https://github.com/edwardkim/rhwp/pull/8396) 리뷰 — fix(typeset): HWP5 출신 HWPX 분할 측정기에 저장 조판 프로필 적용 ([이슈 #8382](https://github.com/edwardkim/rhwp/issues/8382) 부분)
 
 ## 최종 판정
 
@@ -14,18 +14,18 @@
 
 ## 접수와 적용
 
-- 원 PR: [#8396](https://github.com/edwardkim/rhwp/pull/8396), 작성자 `planet6897`, reviewer `jangster77`.
+- 원 PR: [PR #8396](https://github.com/edwardkim/rhwp/pull/8396), 작성자 `planet6897`, reviewer `jangster77`.
 - 원 PR head 조회값: `d6eb7f93457b6e63a1060f7460b3663e2c989c08`. 조회 시 원 PR head와 마지막 체리픽 원본이 일치한다.
 - 마지막 적용 원본: `d6eb7f93457b6e63a1060f7460b3663e2c989c08`. 검증 시작 당시 코드 후보: `abea5b028f8f135bdf000ca700e1993ebf0b1973`, 기준 `upstream/devel`: `bc9dfdd057258de59afebeb5121c4bee7398e07f`.
-- 관련 이슈: [#8382](https://github.com/edwardkim/rhwp/issues/8382).
+- 관련 이슈: [이슈 #8382](https://github.com/edwardkim/rhwp/issues/8382).
 - 선행 PR: 별도 누적 선행 PR이 명시되지 않았다.
 
-후속 `e1f03ffbb3`은 Python 테스트 준비, `af175315e7`과 `e920cba6b0`은 회귀 검사 주석, `a63bb719de`는 검증 경과를 기록했다. `5d1294811b`은 전체 그림의 잘림 오판을 보정했다. `e1b8ab0f54`, `d6fe30c3ad`, `0897582f6c`, `8c4eca265e`에 Native 진단, #8410 집중 6건 통과와 글꼴 대조를 기록했으며 새 코드의 전쪽 출력 검증이 필요하다.
+후속 `e1f03ffbb3`은 Python 테스트 준비, `af175315e7`과 `e920cba6b0`은 회귀 검사 주석, `a63bb719de`는 검증 경과를 기록했다. `5d1294811b`은 전체 그림의 잘림 오판을 보정했다. `e1b8ab0f54`, `d6fe30c3ad`, `0897582f6c`, `8c4eca265e`에 Native 진단, [PR #8410](https://github.com/edwardkim/rhwp/pull/8410) 집중 6건 통과와 글꼴 대조를 기록했으며 새 코드의 전쪽 출력 검증이 필요하다.
 
 ## 변경 주장과 검토 관점
 
 HWP5 출처 HWPX 표 분할 측정이 실제 배치와 같은 저장 조판 프로필을 소비하게 한다.
-첫 조각 예산과 행 소유를 확인한다. #8382 전체 해결로 확대하지 않는다.
+첫 조각 예산과 행 소유를 확인한다. [이슈 #8382](https://github.com/edwardkim/rhwp/issues/8382) 전체 해결로 확대하지 않는다.
 
 ## 체리픽과 보정
 
@@ -39,9 +39,9 @@ HWP5 출처 HWPX 표 분할 측정이 실제 배치와 같은 저장 조판 프�
 이전 통합 후보의 최소 글꼴 전체 회귀 로그에서 이 PR 관련 다음 모듈의 실행을 확인했다. 새 base 후보의 재실행 결과는 이 값으로 대신하지 않는다.
 - [`issue_8382_hwp5_origin_hwpx_split_budget.rs`](../../../tests/cases/issue_8382_hwp5_origin_hwpx_split_budget.rs): 이전 실행 1건 통과, 0건 실패, 0건 건너뜀.
 
-기존 생성 목록으로 최소 글꼴 회귀 12,320건 통과·45건 건너뜀을 확인했다. 생성 목록에서 누락된 #8410 두 모듈의 6건을 목록 재작성 후 같은 환경에서 별도로 실행해 모두 통과했다. 두 실행을 구분하며 한 번의 전체 실행으로 기록하지 않는다.
+기존 생성 목록으로 최소 글꼴 회귀 12,320건 통과·45건 건너뜀을 확인했다. 생성 목록에서 누락된 [PR #8410](https://github.com/edwardkim/rhwp/pull/8410) 두 모듈의 6건을 목록 재작성 후 같은 환경에서 별도로 실행해 모두 통과했다. 두 실행을 구분하며 한 번의 전체 실행으로 기록하지 않는다.
 
-2026-11-01 고정 후보의 #8389·#8397 전쪽 정밀 대조에서 2,153행 중 Native 12행, WASM 8행이 공개 기준보다 낮았다. 이 수치는 이후 GIF·Canvas 보정 전 결과이며 최종 후보의 재검증 결과가 아니다. #7905 3쪽은 GIF 오른쪽 경계 누락, sample16 35쪽 WASM은 메타파일 내부의 미대응 3픽셀이 확인됐다. #8040 두 원본은 Native·WASM 전쪽이 90% 이상이나 Native 정밀 기준 하락이 남는다. 진행과 근거는 [작업 기록](../../working/task_m100_planet6897_system_fonts_20261031.md)을 따른다. 하락 보정과 전쪽 대조, 각 PR의 독립 Print·Native/fresh WASM 및 직접 판독을 완료해야 한다. #8410·#8412의 새 base 기능도 별도로 보존 검증한다.
+2026-11-01 고정 후보의 [PR #8389](https://github.com/edwardkim/rhwp/pull/8389)·[PR #8397](https://github.com/edwardkim/rhwp/pull/8397) 전쪽 정밀 대조에서 2,153행 중 Native 12행, WASM 8행이 공개 기준보다 낮았다. 이 수치는 이후 GIF·Canvas 보정 전 결과이며 최종 후보의 재검증 결과가 아니다. [PR #7905](https://github.com/edwardkim/rhwp/pull/7905) 3쪽은 GIF 오른쪽 경계 누락, sample16 35쪽 WASM은 메타파일 내부의 미대응 3픽셀이 확인됐다. [PR #8040](https://github.com/edwardkim/rhwp/pull/8040) 두 원본은 Native·WASM 전쪽이 90% 이상이나 Native 정밀 기준 하락이 남는다. 진행과 근거는 [작업 기록](../../working/task_m100_planet6897_system_fonts_20261031.md)을 따른다. 하락 보정과 전쪽 대조, 각 PR의 독립 Print·Native/fresh WASM 및 직접 판독을 완료해야 한다. [PR #8410](https://github.com/edwardkim/rhwp/pull/8410)·[PR #8412](https://github.com/edwardkim/rhwp/pull/8412)의 새 base 기능도 별도로 보존 검증한다.
 
 원 PR의 최신 head·required check와 통합 후보의 새 검증 결과를 확인하기 전에는 승인이나 merge를 진행하지 않는다.
 
