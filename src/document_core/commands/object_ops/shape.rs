@@ -2718,6 +2718,9 @@ impl DocumentCore {
             }
             if let Some(v) = crate::document_core::helpers::json_u16(props_json, "startNumber") {
                 shape.start_number = v.max(1);
+                // 한/글은 시작 번호를 "현재 구역부터 새로 시작"에서만 쓴다. 번호 매기기 없이 시작
+                // 번호만 주면 그 선택으로 본다(아래 numbering이 있으면 그것을 따른다).
+                shape.numbering = crate::model::footnote::FootnoteNumbering::RestartSection;
             }
             if let Some(v) = Self::hwpunit16_from_json(props_json, "separatorLength") {
                 shape.separator_length = i32::from(v.max(0));
