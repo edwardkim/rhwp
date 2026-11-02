@@ -205,6 +205,8 @@ MediaBox와 CropBox는 모두 595×841pt이고, 콘텐츠 스트림의 0.12pt �
 이 HWPX는 인쇄 설정을 확인하기 위한 임시 산출물로, PDF 기준이나 원본의
 바이트 동일한 대체물로 취급하지 않는다. HWP 원본 `DOC_DATA`에는
 `0x0006401a=1`이 있고 경계선이 없는 `hwpspec.hwp`에는 같은 키가 0이다.
+한컴의 [자동화 매개변수 설명](https://raw.githubusercontent.com/hancom-io/devcenter-archive/main/hwp-automation/ParameterSetObject.pdf)은
+`PrintCropMark`를 인쇄의 편집 용지 표시 항목으로 설명한다.
 두 사실은 해당 키가 재단 표시와 관련될 가능성을 보여 주지만, 키의 정확한
 매핑과 값별 동작은 다른 설정·입력의 대조로 확인해야 한다. 사용자 문서의
 인쇄 설정을 무시하거나 시각 비교에서 선을 삭제하지 않고 공통 출력 경로를
