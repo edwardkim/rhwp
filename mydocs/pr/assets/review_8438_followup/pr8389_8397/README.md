@@ -8,9 +8,12 @@
 | 경로 | 대상 | 하락 | 완료 여부 |
 | --- | ---: | ---: | --- |
 | [Native 표시값 대조](native-before-crop-comparison.tsv) | 2,153행 | 0행 | 재단 표시 보정 전 코드에서 17개 문서 산출 완료 |
-| fresh WASM | 2,153행 | 확인 중 | 대조 진행 중 |
+| [fresh WASM 표시값 대조](wasm-before-crop-comparison.tsv) | 2,153행 | 0행 | 재단 표시 보정 전 코드에서 17개 문서 산출 완료 |
 
 Native 실행 파일 SHA-256은 `5c2c5c23f0d9f30d5dacab78069a6ec689ba3bbb999c1a200e90475f42683990`,
 비교 대상 코드의 제품 변경은 `6896862b1cfb638304dc1106915fcbc7bbbb9d03`과 같다.
 기준 표 SHA-256은 `21e3ca2a3035927bfbf5c17710657ea2b2b8691025c6fb55571fdc781690384e`다.
+WASM 바이너리 SHA-256은 `c7e6eb6f43570abcbdda1920f8baea208858cc883e1fb4f87f9876922d7f1ede`이고,
+WASM 대조 TSV SHA-256은 `a1968c0ae8c3920d8c816beb70be5d566a292841b5646de6dfdf7c64098a72b0`이다.
+17개 문서의 각 실행 종료 코드 0과 완료 manifest를 확인했다.
 이 기록은 이후 재단 표시 및 저장 보정의 최종 후보 대조를 대신하지 않는다.
