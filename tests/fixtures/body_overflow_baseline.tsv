@@ -199,3 +199,7 @@ issue6465/press_release_footer_logos.hwpx	1
 # 저장값(20000 = 133.3px)으로 만들면 똑같이 37.8px 넘친다 — 홀수 값이 이제 실제 간격으로 읽혀 드러났을 뿐이다. 별도 이슈 #7824.
 issue7816/odd_spacing_prev.hwpx	2
 issue6031/3249937_asset_management_rules.hwpx	0
+# #8446 새 시험 고정본 1행 — 의도한 배치다. 저장 리셋으로 다음 쪽에 가는 문단 줄1 의 자리차지 로고를
+# 한/글 2022 Print 는 떠나는 1쪽 본문 아래 여백에 그린다(로고 그림 아래끝 1030.1px > 본문 아래끝 1028.0px).
+# rhwp 도 같은 자리(로고 상자 985.3..1035.2px)에 두어 over_bottom 1 이 된다. #6146(156583583) 행과 같은 규칙이다.
+issue8446/156569782-reset-line-logo-empty.hwp	1
