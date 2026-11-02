@@ -40,3 +40,10 @@ PR 본문과 실행 명령은 ignored `output/issue665/pr-body.md`,
 생성한다. 생성 직전 본인 열린 PR·base/head·충돌 여부를 다시 확인한다.
 PR 채번 뒤 정확한 code head CI가 성공하면 번호 기반 self-review와 필요한 기록을 작성한다.
 remote push·Open PR 생성·후속 self-review 기록 push는 별도 승인 대기다.
+
+## 원격 제출과 code CI 완료
+
+- 사용자에게 원격 push·Open PR·CI 확인·self-review 기록까지 승인받아 #8499를 생성했다. code head는 `1f65acd967ca6793997ba8a1e8665550be09574c`다.
+- 최초 E는 checkout git fetch에서 30분 한도를 초과해 취소됐다. 다른 제품 검사는 모두 성공했다. 추가 승인받은 E·종속 테스트/집계 1회 재실행(attempt 2)으로 Main CI까지 성공했고 기존 성공 job의 시각은 유지됐다.
+- code head CI 성공 뒤에만 [self-review](../pr/archives/pr_8499_review.md)와 오늘할일을 작성한다. 대표 PNG는 동일 바이트의 정식 PR assets로 연결하고 원시 로그 발췌는 최종 구조화 결과로 정리한다.
+- 이 기록의 trailing head는 별도로 CI를 확인한다. merge는 현재 승인 범위가 아니다.

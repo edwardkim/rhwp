@@ -7,7 +7,8 @@ Issue: #665
 기존 [#665](https://github.com/edwardkim/rhwp/issues/665)를 재개해 이미지 placeholder 대신
 실제 Picture/BinData를 만드는 CLI와 byte-only Rust API를 구현했다. 신규 중복 이슈는 만들지 않았다.
 2026-11-03 최종 전체 회귀와 Native Skia 검증을 마쳐 로컬 구현·검증을 완료했다.
-코드 push·PR 생성·merge·이슈 재종결은 이번 승인 범위에 포함하지 않는다.
+후속 승인에 따라 [PR #8499](https://github.com/edwardkim/rhwp/pull/8499)를 열고 code head CI와
+[self-review](../pr/archives/pr_8499_review.md)를 완료했다. merge·이슈 재종결은 별도 승인 대기다.
 
 - branch: `task/665-ingest-images`
 - base: `ea86816b5316dfeeb47ecf20df97abfd4b02da73`

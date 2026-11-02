@@ -131,7 +131,7 @@ ZIP 안의 모든 비압축 entry가 같다. 이 짧은 측정으로 속도 개�
 대조했다. 기존 Picture의 DocInfo 무효화 1곳을 model helper로 이동했으므로 밀도 원장은
 Picture 7곳 + model 1곳을 각각 검사한다. 공통 helper 삭제를 허용하도록 하한만 내리지 않는다.
 std 전용 원 검사 5개가 base에서 통과하고, 보완한 5개도 통과한다. 공통 helper의 무효화만
-지운 ignored 복사본은 1 → 0으로 실패한다(`guard-proof.json`, `guard-*.txt`).
+지운 ignored 복사본은 1 → 0으로 실패한다(`guard-proof.json`).
 실제 기존 HWP를 연 뒤 다른 그림을 삽입하고 저장·재열기한 `--verify`도 IR 차이 0건이다
 (`loaded-docinfo-verify.json`). 원 보고서는 `mydocs/report/archives/task_m100_2724_report.md`다.
 
@@ -152,3 +152,7 @@ Native/fresh WASM 30개 전쪽 비교의 최대 하락폭은 0.00%p이며 2%p �
 원본 TSV는 `base-current-input-native/`, `base-current-input-wasm/`에 있고,
 `devel-comparison.tsv`와 `devel-comparison.json`에 입력/PDF·producer·조건·결과를 연결했다.
 서로 다른 reference 입력의 점수를 같은 입력의 무회귀 근거로 대신하지 않았다.
+
+PR self-review에서는 원시 실행 로그 발췌를 제외하고 `guard-proof.json`·`build-verification.json`의
+최종 결과로 정리했다. 대표 PNG의 동일 바이트를 `mydocs/pr/assets/issue_665_ingest_images/`에도
+연결했으며 제품·테스트·입력·기준 PDF·측정값은 바꾸지 않았다.

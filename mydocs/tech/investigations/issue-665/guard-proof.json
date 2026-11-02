@@ -1,20 +1,43 @@
-[
-  {
-    "case": "base",
-    "exit": 0,
-    "expected": 0,
-    "source": "output/issue665/base-source"
+{
+  "cases": [
+    {
+      "case": "base",
+      "exit": 0,
+      "expected": 0,
+      "source": "output/issue665/base-source"
+    },
+    {
+      "case": "head",
+      "exit": 0,
+      "expected": 0,
+      "source": "."
+    },
+    {
+      "case": "negative",
+      "exit": 101,
+      "expected": 101,
+      "source": "output/issue665/guard-negative-source"
+    }
+  ],
+  "test_counts": {
+    "base": {
+      "passed": 5,
+      "failed": 0
+    },
+    "head": {
+      "passed": 5,
+      "failed": 0
+    },
+    "negative": {
+      "passed": 4,
+      "failed": 1
+    }
   },
-  {
-    "case": "head",
-    "exit": 0,
-    "expected": 0,
-    "source": "."
+  "negative_mutation": {
+    "file": "src/model/bin_data.rs",
+    "removed_once": "document.doc_info.raw_stream = None;",
+    "detected_by": "invalidation_density_ledger_is_ratcheted",
+    "diagnostic": "src/document_core/../model/bin_data.rs: 1 -> 0"
   },
-  {
-    "case": "negative",
-    "exit": 101,
-    "expected": 101,
-    "source": "output/issue665/guard-negative-source"
-  }
-]
+  "source_unchanged": "Only an ignored diagnostic copy was mutated. Existing HWP insert/save/reopen --verify had diffCount 0."
+}
