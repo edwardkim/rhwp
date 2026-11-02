@@ -81,6 +81,10 @@ HWP3 계보 HWPX의 줄 시작을 한컴의 문단 축에 맞게 저장한다.
 저장본의 SHA-256은 기존 Print 입력과 같은
 `468516ece6d6f5ba5fe3c4f692ba3aa12bd89d8747e5b85efb9b9c99ff2ca854`다.
 
+### 현재 저장 후보 재확인
+
+제품 코드 `dd284b5cda`의 Native 실행 파일(SHA-256 `b5c8835e5e3da6b55d5ef4e403ec66819f6a38224dbd91509ee5b732715dd006`)로 같은 HWP3를 HWPX로 저장하고 재개방했다. `--verify --verify-pages`는 IR 차이 없음과 전후 1쪽을 확인했으며, 저장 바이트 SHA-256은 기존 한컴 Print 입력과 같은 `468516ece6d6f5ba5fe3c4f692ba3aa12bd89d8747e5b85efb9b9c99ff2ca854`다. 위 기존 Print와 입력 바이트는 재사용할 수 있지만, 이 저장 검사만으로 현재 후보의 Native·fresh WASM 출력과 다른 조판 변경의 기능 보존을 판정하지 않는다.
+
 ### 2026-11-02 새 base 최소 글꼴 집중 회귀
 
 검증 기준 base
