@@ -19,15 +19,29 @@ pub fn effective_text_for_metrics(run: &ComposedTextRun) -> &str {
     if run.text.contains('\u{F081C}') {
         return &run.text;
     }
-    display_projection_metric_text(&run.text, run.display_text.as_deref().unwrap_or(&run.text))
+    display_projection_metric_text(
+        &run.text,
+        run.display_text.as_deref().unwrap_or(&run.text),
+        run.literal_soft_hyphen,
+    )
 }
 
 /// 일대일 표시 투영은 source 프로그램의 메트릭을 유지한다. 필드 값·옛한글
 /// 확장처럼 별도 표시 문자열인 경우는 표시 문자열 자체의 폭을 사용한다.
-pub(crate) fn display_projection_metric_text<'a>(source: &'a str, display: &'a str) -> &'a str {
+pub(crate) fn display_projection_metric_text<'a>(
+    source: &'a str,
+    display: &'a str,
+    literal_soft_hyphen: bool,
+) -> &'a str {
     if source
         .chars()
-        .map(single_scalar_display_char)
+        .map(|ch| {
+            if literal_soft_hyphen && ch == '\u{00AD}' {
+                '-'
+            } else {
+                single_scalar_display_char(ch)
+            }
+        })
         .eq(display.chars())
     {
         source
@@ -107,7 +121,10 @@ pub fn char_overlap_advance_units(_chars: &[char]) -> usize {
 
 /// 빈 구성의 물리 프레임을 파생 run에 남긴다. 문서의 원문 배열은 바꾸지 않는다.
 /// 한컴 저장본의 전각 공백과 같은 캐리어를 기존 겹침 배치·paint 경로가 소비한다.
-pub(crate) fn char_overlap_flow_text<S: crate::storage::Storage>(chars: &[char], storage: &S) -> Result<String, S::Error> {
+pub(crate) fn char_overlap_flow_text<S: crate::storage::Storage>(
+    chars: &[char],
+    storage: &S,
+) -> Result<String, S::Error> {
     if chars.is_empty() {
         storage.string("\u{3000}")
     } else {
@@ -296,7 +313,12 @@ pub(crate) fn expand_pua_display_text_with_storage<S: crate::storage::Storage>(
 }
 
 pub fn expand_pua_render_text_in_style(text: &str, style: &TextStyle) -> String {
-    expand_pua_surface(text, style.native_pua_metrics.as_deref(), false)
+    if style.literal_soft_hyphen && text.contains('\u{00AD}') {
+        let visible = text.replace('\u{00AD}', "-");
+        expand_pua_surface(&visible, style.native_pua_metrics.as_deref(), false)
+    } else {
+        expand_pua_surface(text, style.native_pua_metrics.as_deref(), false)
+    }
 }
 
 fn expand_pua_surface(
@@ -499,6 +521,7 @@ fn try_convert_pua_enclosed_numbers<S: crate::storage::Storage>(
                                 space_metric: run.space_metric,
                                 regenerated_font_metrics: run.regenerated_font_metrics,
                                 literal_figure_space: run.literal_figure_space,
+                                literal_soft_hyphen: run.literal_soft_hyphen,
                             },
                         )?;
                         buf.clear();
@@ -523,7 +546,8 @@ fn try_convert_pua_enclosed_numbers<S: crate::storage::Storage>(
                             inserted_control_text: run.inserted_control_text,
                             space_metric: run.space_metric,
                             regenerated_font_metrics: run.regenerated_font_metrics,
-                                literal_figure_space: run.literal_figure_space,
+                            literal_figure_space: run.literal_figure_space,
+                            literal_soft_hyphen: run.literal_soft_hyphen,
                         },
                     )?;
                 } else {
@@ -547,7 +571,8 @@ fn try_convert_pua_enclosed_numbers<S: crate::storage::Storage>(
                         inserted_control_text: run.inserted_control_text,
                         space_metric: run.space_metric,
                         regenerated_font_metrics: run.regenerated_font_metrics,
-                                literal_figure_space: run.literal_figure_space,
+                        literal_figure_space: run.literal_figure_space,
+                        literal_soft_hyphen: run.literal_soft_hyphen,
                     },
                 )?;
             }

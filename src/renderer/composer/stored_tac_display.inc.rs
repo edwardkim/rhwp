@@ -370,6 +370,7 @@ fn try_convert_pua_display_text<S: crate::storage::Storage>(
                 None => None,
             };
             let chars: Vec<char> = storage.collect(run.text.chars())?;
+            run.literal_soft_hyphen = !soft_hyphen_control && chars.contains(&'\u{00AD}');
             let run_char_end = run_char_start + chars.len();
             let has_product_projection = product_prefix_starts
                 .iter()
@@ -553,6 +554,7 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                     space_metric: crate::renderer::composer::SpaceMetric::Stored,
                     regenerated_font_metrics: line.runs[ri].regenerated_font_metrics,
                     literal_figure_space: line.runs[ri].literal_figure_space,
+                    literal_soft_hyphen: line.runs[ri].literal_soft_hyphen,
                 };
 
                 let mut new_runs = Vec::new();
@@ -573,6 +575,7 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                                 space_metric: run.space_metric,
                                 regenerated_font_metrics: run.regenerated_font_metrics,
                                 literal_figure_space: run.literal_figure_space,
+                                literal_soft_hyphen: run.literal_soft_hyphen,
                             });
                         }
                         new_runs.push(marker_run.clone());
@@ -590,6 +593,7 @@ fn inject_footnote_markers(lines: &mut [ComposedLine], positions: &[(usize, u16)
                                 space_metric: run.space_metric,
                                 regenerated_font_metrics: run.regenerated_font_metrics,
                                 literal_figure_space: run.literal_figure_space,
+                                literal_soft_hyphen: run.literal_soft_hyphen,
                             });
                         }
                     } else {

@@ -126,3 +126,19 @@ WMFC 폴백과 리터럴 소프트 하이픈을 함께 보정한 후보로 동�
 잉크는 x=136.383–138.922pt이고 다음 `M`은 x=139.882pt부터 시작한다.
 따라서 리터럴은 보이는 글자이면서 독립 PDF의 전진 관계를 유지해야 한다.
 단순히 글자를 감추거나 `-`의 기본 전진을 더하는 방식은 이 근거와 다르다.
+
+리터럴의 원문 메트릭과 표시 글리프를 공통 런·스타일 경로에서 분리했다.
+최소 글꼴 집중 회귀 8건은 모두 통과했다
+(`output/pr-review/planet6897-ordered-20261031/logs/book-validation/literal-hyphen-metrics-focused-rerun.log`).
+새 Native 실행 파일 SHA-256은
+`7d35357fe91cf213bb4143675a7c148bf3f6a9e4facbf93fea765081661b25c5`다.
+같은 독립 Print PDF를 96 DPI로 다시 대조한 결과 #7993 HWP 1쪽 99.99638%,
+HWPX 1쪽 99.40819%, #8136 HWPX 1·2쪽 99.90447%·98.95550%다.
+HWP의 마지막 줄 `와` 시작은 현재 렌더 트리 x=232.7px로, 독립 Print의
+174.505425pt(약 232.67px)와 일치한다. [#7993 review](../../../output/pr-review/planet6897-ordered-20261031/book-validation/literal-hyphen-final-native/issue7993-hwp/review/review_001.png)·
+[overlay](../../../output/pr-review/planet6897-ordered-20261031/book-validation/literal-hyphen-final-native/issue7993-hwp/overlay/overlay_001.png),
+[#8136 2쪽 review](../../../output/pr-review/planet6897-ordered-20261031/book-validation/literal-hyphen-final-native/issue8136-hwpx/review/review_002.png)·
+[overlay](../../../output/pr-review/planet6897-ordered-20261031/book-validation/literal-hyphen-final-native/issue8136-hwpx/overlay/overlay_002.png)를 직접 확인했다.
+페이지별 표시값 TSV는 `output/pr-review/planet6897-ordered-20261031/book-validation/literal-hyphen-final-native-tsv/`에 있다.
+이 단계의 수치는 Native 결과이며 fresh WASM과 #8389·#8397 최종 전쪽 대조를
+완료한 뒤 최종 판정을 갱신한다.

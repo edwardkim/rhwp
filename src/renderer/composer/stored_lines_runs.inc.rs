@@ -95,6 +95,7 @@ fn try_compose_lines<S: crate::storage::Storage>(
                             space_metric: crate::renderer::composer::SpaceMetric::Stored,
                             regenerated_font_metrics: false,
                             literal_figure_space: false,
+                            literal_soft_hyphen: false,
                         },
                     )?;
                     try_split_runs_by_lang(initial, storage)?
@@ -391,6 +392,7 @@ fn try_split_by_char_shapes<S: crate::storage::Storage>(
             space_metric: crate::renderer::composer::SpaceMetric::Stored,
             regenerated_font_metrics: false,
             literal_figure_space: false,
+            literal_soft_hyphen: false,
         });
         return try_split_runs_by_lang(initial, storage);
     }
@@ -463,6 +465,7 @@ fn try_split_by_char_shapes<S: crate::storage::Storage>(
             space_metric: crate::renderer::composer::SpaceMetric::Stored,
             regenerated_font_metrics: false,
             literal_figure_space: false,
+            literal_soft_hyphen: false,
         });
         return try_split_runs_by_lang(initial, storage);
     }
@@ -498,6 +501,7 @@ fn try_split_by_char_shapes<S: crate::storage::Storage>(
                         space_metric: crate::renderer::composer::SpaceMetric::Stored,
                         regenerated_font_metrics: false,
                         literal_figure_space: false,
+                        literal_soft_hyphen: false,
                     },
                 )?;
             }
@@ -526,6 +530,7 @@ fn try_split_by_char_shapes<S: crate::storage::Storage>(
                     space_metric: crate::renderer::composer::SpaceMetric::Stored,
                     regenerated_font_metrics: false,
                     literal_figure_space: false,
+                    literal_soft_hyphen: false,
                 },
             );
         }
@@ -548,6 +553,7 @@ fn try_split_by_char_shapes<S: crate::storage::Storage>(
                 space_metric: crate::renderer::composer::SpaceMetric::Stored,
                 regenerated_font_metrics: false,
                 literal_figure_space: false,
+                literal_soft_hyphen: false,
             },
         )?;
     }
@@ -656,6 +662,7 @@ pub(crate) fn try_split_runs_by_lang<S: crate::storage::Storage>(
                             space_metric: run.space_metric,
                             regenerated_font_metrics: run.regenerated_font_metrics,
                             literal_figure_space: run.literal_figure_space,
+                            literal_soft_hyphen: run.literal_soft_hyphen,
                         },
                     )?;
                 }
@@ -682,6 +689,7 @@ pub(crate) fn try_split_runs_by_lang<S: crate::storage::Storage>(
                     space_metric: run.space_metric,
                     regenerated_font_metrics: run.regenerated_font_metrics,
                     literal_figure_space: run.literal_figure_space,
+                    literal_soft_hyphen: run.literal_soft_hyphen,
                 },
             )?;
         }
@@ -832,9 +840,10 @@ pub(crate) fn control_slot_line_index_with_storage<S: crate::storage::Storage>(
 ) -> Result<Option<usize>, S::Error> {
     if !para.stored_text_partition_is_dirty()
         && !para.cell_format_vpos_dirty
-        && para.line_segs.first().is_some_and(|seg| {
-            seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-        })
+        && para
+            .line_segs
+            .first()
+            .is_some_and(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
     {
         if let Some(slot) = para.empty_control_stream_position(control_index) {
             return Ok((0..para.line_segs.len())

@@ -149,32 +149,37 @@ fn try_inject_char_overlap_text<S: crate::storage::Storage>(
         } else {
             stored_char_style_id
         };
-        storage.push(&mut insertions, (
-            text_pos,
-            ComposedTextRun {
-                text,
-                char_style_id,
-                lang_index: 0,
-                neutral_space_origin: None,
-                char_overlap: Some(CharOverlapInfo {
-                    border_type: co.border_type,
-                    inner_char_size: styles
-                        .map_or(co.inner_char_size, |s| s.char_overlap_inner_size(co.inner_char_size)),
-                    composition,
-                    // HWP의 프레임 문자와 HWPX의 명시적 전각 공백은 다르다.
-                    empty_ink: co.border_type == 0
-                        && (co.chars.is_empty()
-                            || (co.hwp_wire_chars && co.chars.as_slice() == ['\u{3000}'])),
-                }),
-                footnote_marker: None,
-                display_text: None,
-                supplemental_metrics_blocked: false,
-                inserted_control_text: true,
-                space_metric: crate::renderer::composer::SpaceMetric::Stored,
-                regenerated_font_metrics: text_metric_origin::regenerated_row(para, 0),
-                literal_figure_space: false,
-            },
-        ))?;
+        storage.push(
+            &mut insertions,
+            (
+                text_pos,
+                ComposedTextRun {
+                    text,
+                    char_style_id,
+                    lang_index: 0,
+                    neutral_space_origin: None,
+                    char_overlap: Some(CharOverlapInfo {
+                        border_type: co.border_type,
+                        inner_char_size: styles.map_or(co.inner_char_size, |s| {
+                            s.char_overlap_inner_size(co.inner_char_size)
+                        }),
+                        composition,
+                        // HWP의 프레임 문자와 HWPX의 명시적 전각 공백은 다르다.
+                        empty_ink: co.border_type == 0
+                            && (co.chars.is_empty()
+                                || (co.hwp_wire_chars && co.chars.as_slice() == ['\u{3000}'])),
+                    }),
+                    footnote_marker: None,
+                    display_text: None,
+                    supplemental_metrics_blocked: false,
+                    inserted_control_text: true,
+                    space_metric: crate::renderer::composer::SpaceMetric::Stored,
+                    regenerated_font_metrics: text_metric_origin::regenerated_row(para, 0),
+                    literal_figure_space: false,
+                    literal_soft_hyphen: false,
+                },
+            ),
+        )?;
     }
 
     if insertions.is_empty() {
@@ -295,6 +300,7 @@ fn try_insert_control_text_run<S: crate::storage::Storage>(
                         space_metric: line.runs[run_idx].space_metric,
                         regenerated_font_metrics: line.runs[run_idx].regenerated_font_metrics,
                         literal_figure_space: line.runs[run_idx].literal_figure_space,
+                        literal_soft_hyphen: line.runs[run_idx].literal_soft_hyphen,
                     };
 
                     // overlap_run과 after_run을 삽입

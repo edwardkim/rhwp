@@ -346,8 +346,11 @@ impl SkiaTextReplay<'_> {
                 let metric_source = text;
                 let text = expand_pua_render_text_in_style(text, style);
                 let text = text.as_str();
-                let metric_text =
-                    crate::renderer::composer::display_projection_metric_text(metric_source, text);
+                let metric_text = crate::renderer::composer::display_projection_metric_text(
+                    metric_source,
+                    text,
+                    style.literal_soft_hyphen,
+                );
                 let char_positions = crate::renderer::replay_positions_or_compute(
                     metric_text,
                     style,
