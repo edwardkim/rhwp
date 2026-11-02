@@ -1,5 +1,10 @@
 //! 검사 유형: 관계형.
-//! MEASUREMENT_HEADER
+//! 주석 갱신: 2026-11-03 02:20 KST (신규 파일).
+//! 2026-11-02 측정 raw(`silhouette_raw_match_percent`, 96dpi, PDFium, `--compat 2022`, 한/글 2020 엔진 Print 정본, head `cf8947160d`):
+//! section_top_spacing-2020.hwp: 8쪽(S4 표) Native 100.00% / fresh WASM 100.00%; 전8쪽 최저 100.00% / 100.00%.
+//! top_tac_cases-2020.hwp: 3쪽(T 표) Native 100.00% / fresh WASM 100.00%; 4쪽(U 표) 100.00% / 100.00%; 전4쪽 최저 100.00% / 100.00%.
+//! 근거: mydocs/pr/assets/issue_8474/{native,wasm}/{section_top_spacing,top_tac_cases}_silhouette.tsv,
+//! mydocs/pr/assets/issue_8474/png/{section_top_spacing_p8,top_tac_cases_p3}_{review,overlay}_{native,wasm}.png.
 //!
 //! #8474 쪽 맨 위의 글자처럼 취급 표 host 도 저장 첫 줄이 증언하는 문단 위 간격을 받는다.
 //!
