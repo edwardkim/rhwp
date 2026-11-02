@@ -1458,21 +1458,12 @@ fn parse_note_pr_children(
                                     if let Ok(s) =
                                         std::str::from_utf8(attr.value.as_ref().as_bytes())
                                     {
-                                        shape.separator_line_type = match s {
-                                            "SOLID" => 1,
-                                            "DASH" => 2,
-                                            "DOT" => 3,
-                                            "DASH_DOT" => 4,
-                                            "DASH_DOT_DOT" => 5,
-                                            "LONG_DASH" => 6,
-                                            "CIRCLE" => 7,
-                                            "DOUBLE_SLIM" => 8,
-                                            "SLIM_THICK" => 9,
-                                            "THICK_SLIM" => 10,
-                                            "SLIM_THICK_SLIM" => 11,
-                                            "NONE" => 0,
-                                            _ => 1, // default SOLID
-                                        };
+                                        // 한/글은 같은 구분선을 HWP 선 코드와 HWPX 이름으로
+                                        // 테두리와 같은 표에 따라 쓴다(점선 3 = `DASH`).
+                                        shape.separator_line_type =
+                                            super::header::border_line_type_code(
+                                                super::header::border_line_type_from_name(s),
+                                            );
                                     }
                                 }
                                 b"width" => {

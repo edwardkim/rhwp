@@ -2430,7 +2430,12 @@ fn parse_vertical_alignment_bits(attr: &quick_xml::events::attributes::Attribute
 }
 
 fn parse_border_line_type(attr: &quick_xml::events::attributes::Attribute) -> BorderLineType {
-    match attr_str(attr).as_str() {
+    border_line_type_from_name(&attr_str(attr))
+}
+
+/// HWPX LineType2 이름 → 선 종류. 테두리·주석 구분선이 같은 표를 쓴다.
+pub(crate) fn border_line_type_from_name(name: &str) -> BorderLineType {
+    match name {
         "NONE" => BorderLineType::None,
         "SOLID" => BorderLineType::Solid,
         // HWPX LineType2의 DASH/DOT 이름은 HWP5 BORDER_FILL 선 코드와 반대다.
@@ -2459,7 +2464,12 @@ fn parse_border_line_type(attr: &quick_xml::events::attributes::Attribute) -> Bo
 }
 
 fn parse_border_line_type_code(attr: &quick_xml::events::attributes::Attribute) -> u8 {
-    match parse_border_line_type(attr) {
+    border_line_type_code(parse_border_line_type(attr))
+}
+
+/// 선 종류 → HWP5 선 코드(테두리 표 27·주석 구분선).
+pub(crate) fn border_line_type_code(line_type: BorderLineType) -> u8 {
+    match line_type {
         BorderLineType::None => 0,
         BorderLineType::Solid => 1,
         BorderLineType::Dash => 2,

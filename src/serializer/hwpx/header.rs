@@ -618,7 +618,7 @@ where
 
 /// `parser::hwpx::header::parse_border_line_type_code` 의 역함수. 대각선 선 종류
 /// 코드(u8)를 [`BorderLineType`] 으로 되돌려 `border_line_type_str` 로 문자열화한다.
-fn border_line_type_from_code(code: u8) -> BorderLineType {
+pub(crate) fn border_line_type_from_code(code: u8) -> BorderLineType {
     use BorderLineType::*;
     match code {
         0 => None,
@@ -643,7 +643,7 @@ fn border_line_type_from_code(code: u8) -> BorderLineType {
     }
 }
 
-fn border_line_type_str(t: BorderLineType) -> &'static str {
+pub(crate) fn border_line_type_str(t: BorderLineType) -> &'static str {
     use BorderLineType::*;
     match t {
         None => "NONE",
