@@ -1,0 +1,129 @@
+//! 검사 유형: 관계형·고정형.
+//! MEASUREMENT_HEADER
+//!
+//! #8471 다음 쪽으로 통째로 넘긴 「나누지 않음」 표 뒤의 쪽 나누기 문단은 그 표 쪽 다음에서 시작한다.
+//!
+//! 독립 기준은 같은 HWPX 의 한/글 2020 엔진 Print PDF(`pdf/issue8471/pushed_none-2020.pdf`)다. 생성기는
+//! `samples/issue8471/gen_pushed_none_table.py` 이며, 아래 쪽 소속은 PDF 본문 글자에서 읽었다.
+//! 한/글 8쪽: 2 `N1 끝` · 3 N1 표 · 4 `N2 끝` · 5 N2 표 · 6 N3 채움·머리·끝 · 7 N3 표 · 8 N4.
+//! - N1·N2: 쪽 나누기 빈 문단 안 본문보다 긴 표. 앞 표가 넘어간 쪽에 다음 쪽 나누기 문단과 그 표가
+//!   함께 놓이면 안 된다(수정 전 rhwp 는 3쪽에 두 표를 겹쳐 6쪽).
+//! - N3·N4: 본문보다 짧은 표도 넘어간 쪽을 혼자 차지하고, 뒤 쪽 나누기 문단은 그다음 쪽에서 시작한다.
+//!
+//! 검사는 쪽 소속(어느 행·문단이 어느 쪽에 있나)·누락·중복과 독립 PDF 전체 쪽수다. 좌표는 고정하지 않는다.
+
+use rhwp::document_core::DocumentCore;
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+
+fn open(path: &str) -> DocumentCore {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(path);
+    DocumentCore::from_bytes(&std::fs::read(path).expect("기준 입력")).expect("기준 문서 열기")
+}
+
+fn line_texts(node: &RenderNode, out: &mut Vec<String>) {
+    if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+        let mut text = String::new();
+        let mut stack = vec![node];
+        while let Some(n) = stack.pop() {
+            if let RenderNodeType::TextRun(run) = &n.node_type {
+                text.push_str(&run.text);
+            }
+            stack.extend(n.children.iter().rev());
+        }
+        out.push(text.trim().to_string());
+        return;
+    }
+    for child in &node.children {
+        line_texts(child, out);
+    }
+}
+
+fn page_lines(core: &DocumentCore) -> Vec<Vec<String>> {
+    (0..core.page_count())
+        .map(|page| {
+            let tree = core.build_page_render_tree(page).expect("쪽 배치");
+            let mut lines = Vec::new();
+            line_texts(&tree.root, &mut lines);
+            lines
+        })
+        .collect()
+}
+
+/// 표 `label` 의 행 번호를 쪽마다 모은다: `(쪽 번호, 행 번호들)`.
+fn rows_by_page(pages: &[Vec<String>], label: &str) -> Vec<(usize, Vec<u32>)> {
+    let prefix = format!("{label} 행");
+    pages
+        .iter()
+        .enumerate()
+        .filter_map(|(page, lines)| {
+            let mut rows: Vec<u32> = lines
+                .iter()
+                .filter_map(|line| line.strip_prefix(&prefix)?.trim().parse().ok())
+                .collect();
+            rows.sort_unstable();
+            (!rows.is_empty()).then_some((page, rows))
+        })
+        .collect()
+}
+
+fn page_of(pages: &[Vec<String>], text: &str) -> usize {
+    let found: Vec<usize> = (0..pages.len())
+        .filter(|&page| pages[page].iter().any(|line| line == text))
+        .collect();
+    assert_eq!(
+        found.len(),
+        1,
+        "`{text}` 는 한 쪽에 한 번 나와야 한다: {found:?}"
+    );
+    found[0]
+}
+
+/// 표 `label` 이 나뉘지 않고 한 쪽에 모두 있으면 그 쪽을 돌려준다.
+fn whole_table_page(pages: &[Vec<String>], label: &str, rows: u32) -> usize {
+    let found = rows_by_page(pages, label);
+    assert_eq!(found.len(), 1, "{label} 은 나뉘지 않는다: {found:?}");
+    assert_eq!(
+        found[0].1,
+        (1..=rows).collect::<Vec<_>>(),
+        "{label} 행 누락·중복 없음"
+    );
+    found[0].0
+}
+
+#[test]
+fn page_break_after_pushed_none_table_starts_after_that_table_page() {
+    let core = open("samples/issue8471/pushed_none.hwpx");
+    let pages = page_lines(&core);
+
+    let n1_end = page_of(&pages, "N1 끝");
+    let n1 = whole_table_page(&pages, "N1", 40);
+    let n2_end = page_of(&pages, "N2 끝");
+    let n2 = whole_table_page(&pages, "N2", 40);
+    let n3_head = page_of(&pages, "N3 머리");
+    let n3 = whole_table_page(&pages, "N3", 30);
+    let n4_head = page_of(&pages, "N4 머리");
+
+    // 넘긴 표는 앵커 문단 다음 쪽을 혼자 차지한다.
+    assert_eq!(n1, n1_end + 1, "N1 표는 N1 끝 다음 쪽");
+    assert_eq!(n2_end, n1 + 1, "N2 쪽 나누기는 N1 표 쪽 다음에서 시작");
+    assert_eq!(n2, n2_end + 1, "N2 표는 N2 끝 다음 쪽");
+    assert_eq!(n3_head, n2 + 1, "N3 쪽 나누기는 N2 표 쪽 다음에서 시작");
+    assert_eq!(
+        page_of(&pages, "N3 끝"),
+        n3_head,
+        "N3 끝은 채움 쪽에 남는다"
+    );
+    assert_eq!(n3, n3_head + 1, "짧은 N3 표도 다음 쪽으로 통째로 넘어간다");
+    assert_eq!(n4_head, n3 + 1, "N4 쪽 나누기는 N3 표 쪽 다음에서 시작");
+    for (label, page) in [("N1", n1), ("N2", n2), ("N3", n3)] {
+        assert!(
+            pages[page].iter().all(|line| !line.ends_with(" 끝")
+                && !line.ends_with(" 머리")
+                && !line.contains(" 채움 ")),
+            "{label} 표 쪽에는 다른 문단이 없다: {:?}",
+            pages[page]
+        );
+    }
+    // 독립 PDF 전체 쪽수(한/글 8쪽).
+    assert_eq!(core.page_count(), 8u32);
+}

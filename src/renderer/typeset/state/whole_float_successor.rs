@@ -65,3 +65,22 @@ impl TypesetState {
                 })
     }
 }
+
+impl TypesetState {
+    /// 앞 문단이 다음 쪽 첫머리로 넘긴 나누지 않는 표가 방금 연 쪽을 차지했는가.
+    ///
+    /// 그 표는 쪽 나누기 앞의 흐름이다. 한/글은 넘긴 표를 다음 쪽에 혼자 두고, 쪽 나누기
+    /// 문단은 그 뒤 쪽에서 시작한다 — 표가 본문보다 길든 짧든 같다(#8471 합성 실측,
+    /// 한/글 2020 엔진 `samples/issue8471/`).
+    pub(in crate::renderer::typeset) fn page_start_owns_deferred_table_before(
+        &self,
+        para_index: usize,
+    ) -> bool {
+        self.data.page_start_stored_frames.iter().any(|frame| {
+            matches!(
+                frame.kind,
+                crate::renderer::typeset::DeferredStoredFrameKind::Table
+            ) && frame.para_index < para_index
+        })
+    }
+}

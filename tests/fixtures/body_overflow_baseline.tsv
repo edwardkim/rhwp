@@ -199,3 +199,7 @@ issue6465/press_release_footer_logos.hwpx	1
 # 저장값(20000 = 133.3px)으로 만들면 똑같이 37.8px 넘친다 — 홀수 값이 이제 실제 간격으로 읽혀 드러났을 뿐이다. 별도 이슈 #7824.
 issue7816/odd_spacing_prev.hwpx	2
 issue6031/3249937_asset_management_rules.hwpx	0
+# #8471 fixture — **의도된 넘침**이다. 본문보다 긴 「나누지 않음」 표 N1·N2(40행)는 한/글도 나누지 않고
+# 본문 바닥(1009.1px) 아래 약 1119px 까지 그린다(정본 pdf/issue8471/pushed_none-2020.pdf 3·5쪽). 각 1건.
+# 쪽 소속은 issue_8471_pushed_none_table_page_break.rs 가 잠근다.
+issue8471/pushed_none.hwpx	2
