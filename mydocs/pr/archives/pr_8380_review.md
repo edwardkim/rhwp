@@ -12,6 +12,8 @@
 - 제품 코드 `d536455b4e`의 최소 글꼴 전체 회귀는 12,368건 통과·45건 skipped였다. 이 로그에서 확인한 해당 모듈: `issue_8362_pdf_editable_hancom_rows` 2건, `issue_8362_pdf_editable_paint_order` 2건. 이 수치는 개별 PR의 독립 Print 검증과는 구분한다.
 - 뒤의 중간 후보·검증 대기 문장은 당시 상태이며 최종 통합 결과가 아니다. 원 PR별 최종 시각·기능 검토와 최신 head 일치 확인은 계속한다.
 
+2026-11-03 00시경 KST에도 원 PR head와 열린 상태를 재확인했다. [일괄 조회 결과](../assets/review_8438_followup/original-pr-heads-20261103.md)는 기능·시각 최종 판정을 대신하지 않는다.
+
 ## 접수와 적용
 
 - 원 PR: [PR #8380](https://github.com/edwardkim/rhwp/pull/8380), 작성자 `planet6897`, reviewer `jangster77`.

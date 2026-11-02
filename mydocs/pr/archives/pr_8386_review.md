@@ -20,6 +20,8 @@
 
 리베이스로 달라진 OLE 경로는 별도로 실행했다. 기존 [OLE HWPX](../../../tests/fixtures/inline-control-move/chart-before.hwpx)의 본문 OLE를 HWP로 저장하고, 같은 입력에서 `trackchageConfig`만 56→0으로 바꾼 [합성 대조군](../assets/issue_8339/followup8438/ole-flags-zero.hwpx)도 저장했다. CFB의 `BodyText/Section0` 원시 CTRL_HEADER를 직접 읽은 결과 flags 56 [저장본](../assets/issue_8339/followup8438/ole-flags-56.hwp)은 `0x140a2211`로 bit 28이 켜졌고, flags 0 [저장본](../assets/issue_8339/followup8438/ole-flags-zero.hwp)은 `0x040a2211`로 꺼졌다. [원시 레코드 확인 스크립트](../assets/issue_8339/followup8438/read-ole-attr.py.txt)로 재현할 수 있다. 두 입력의 기대 방향은 원 PR에 기록된 한컴 2024 flags·문맥 규칙이며, 합성 대조군을 한컴이 저장한 원본으로 취급하지 않는다.
 
+2026-11-03 00시경 KST에도 원 PR head와 열린 상태를 재확인했다. [일괄 조회 결과](../assets/review_8438_followup/original-pr-heads-20261103.md)는 기능·시각 최종 판정을 대신하지 않는다.
+
 ## 접수와 적용
 
 - 원 PR: [PR #8386](https://github.com/edwardkim/rhwp/pull/8386), 작성자 `planet6897`, reviewer `jangster77`.

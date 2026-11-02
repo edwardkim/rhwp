@@ -27,6 +27,8 @@
 [2쪽 overlay](../assets/issue_8136/integration-planet6897/native-overlay-002.png).
 이 자료는 위에 적은 통합 제품 코드의 결과이며 현재 보정 후보의 재측정 결과는 아니다.
 
+2026-11-03 00시경 KST에도 원 PR head와 열린 상태를 재확인했다. [일괄 조회 결과](../assets/review_8438_followup/original-pr-heads-20261103.md)는 기능·시각 최종 판정을 대신하지 않는다.
+
 ## 접수와 적용
 
 - 원 PR: [PR #8321](https://github.com/edwardkim/rhwp/pull/8321), 작성자 `planet6897`, reviewer `jangster77`.
