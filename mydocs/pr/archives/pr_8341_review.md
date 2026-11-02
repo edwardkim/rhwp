@@ -44,6 +44,12 @@ UTF-16 축의 표시 소유와 뒤 글자 모양을 저장 왕복에서 확인�
 
 기여자가 제출한 기준 자료: [`pp_hwpx_base_silhouette.tsv`](../../../mydocs/pr/assets/issue_8305/native/pp_hwpx_base_silhouette.tsv). 해당 자료만으로 새 통합 후보의 시각 검증을 통과 처리하지 않는다.
 
+원 [PR #8341](https://github.com/edwardkim/rhwp/pull/8341)의 기준 PDF와
+수정 후 전체 TSV는 통합 [PR #8438](https://github.com/edwardkim/rhwp/pull/8438)에
+이미 포함됐다. 기존 [Native TSV](../assets/issue_8305/native/pp_hwpx_silhouette.tsv)와
+[WASM TSV](../assets/issue_8305/wasm/pp_hwpx_silhouette.tsv)는 작성자가 제출한
+당시 입력·head의 결과로 사용한다. 별도 재출력 결과를 이 기록과 혼동하지 않는다.
+
 기존 생성 목록으로 최소 글꼴 회귀 12,320건 통과·45건 건너뜀을 확인했다. 생성 목록에서 누락된 #8410 두 모듈의 6건을 목록 재작성 후 같은 환경에서 별도로 실행해 모두 통과했다. 두 실행을 구분하며 한 번의 전체 실행으로 기록하지 않는다.
 
 2026-11-01 고정 후보의 #8389·#8397 전쪽 정밀 대조에서 2,153행 중 Native 12행, WASM 8행이 공개 기준보다 낮았다. 이 수치는 이후 GIF·Canvas 보정 전 결과이며 최종 후보의 재검증 결과가 아니다. #7905 3쪽은 GIF 오른쪽 경계 누락, sample16 35쪽 WASM은 메타파일 내부의 미대응 3픽셀이 확인됐다. #8040 두 원본은 Native·WASM 전쪽이 90% 이상이나 Native 정밀 기준 하락이 남는다. 진행과 근거는 [작업 기록](../../working/task_m100_planet6897_system_fonts_20261031.md)을 따른다. 하락 보정과 전쪽 대조, 각 PR의 독립 Print·Native/fresh WASM 및 직접 판독을 완료해야 한다. #8410·#8412의 새 base 기능도 별도로 보존 검증한다.

@@ -70,3 +70,11 @@ Native 최저 95.86%, fresh WASM 최저 95.78%로 90% 미만은 없었다.
 1세대 HWPX의 SHA-256은 `c5149ebea0e34d78103e8b81def04e4a3cdc72aa9f9bb97dab222cad84dba9ca`로 기존 비교 입력과 바이트 단위로 같다.
 같은 입력의 이전 Print와 시각 결과를 재사용할 수 있다는 뜻이며, 별도 미달이나
 기능 판정을 면제하지 않는다.
+
+원 [PR #8378](https://github.com/edwardkim/rhwp/pull/8378)이 통합
+[PR #8438](https://github.com/edwardkim/rhwp/pull/8438)에 제출한
+[기존 한컴 Print](../../../pdf/hwpx_sample2-rhwp-hwpx-2024.pdf)의 입력은
+원 PR 본문에서 SHA-256 접두어 `23d94c2e`로 기록했다. 위 재저장본
+`c5149eb...`과 바이트가 다르므로 두 Print의 입력을 같은 바이트로 단정하지 않는다.
+기존 Print와 원 PR의 Native·WASM TSV 및 쪽 19·20의 이미지는 원 PR이 주장한
+동작을 확인하는 기존 증거로 재사용한다.
