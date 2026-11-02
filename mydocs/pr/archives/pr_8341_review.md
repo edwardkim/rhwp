@@ -111,7 +111,7 @@ WASM 89.19%로 90%를 넘지 못했다. 글꼴 공급만으로 해결됐다고 �
 
 공통 변환기가 이미 선택한 EMF+/WMF 내용을 2024 장치 표면으로 합성하는 후보를 Native에서 실행했다. 기존 한컴 2024 Print 35쪽 raw는 89.11%에서 89.50%로 상승했지만 90% 미만이다. 차이의 픽셀 영역은 차트 사각형 안에 한정됐다. 한 격자선 픽셀은 이전 RGB 235, 후보 229, PDF 225였다. 따라서 기존 SVG 경로를 보존하면서 장치 표면을 적용하는 것만으로는 완료되지 않는다. 현재 메타파일 표면 PNG에는 최종 합성 표식이 붙고 `bitmap_raster::prepare_bitmap`은 이를 저역 통과 대상에서 제외하므로, 고해상도 인쇄 표면을 최종 raster에 축소하는 단계의 실제 표본 처리와 다른 WMF·EMF 대조군을 추가 확인한다. 후보는 아직 채택·완료하지 않았다.
 
-후속 후보에서 메타파일 장치 표면도 최종 raster로 축소할 때 공통 면적 표본기를 사용하도록 시험했다. 같은 2024 Print의 35쪽 Native raw는 92.57%로 상승했다. [35쪽 비교](../assets/issue_8305/followup8438/native-resample-review-035.png)·[overlay](../assets/issue_8305/followup8438/native-resample-overlay-035.png)를 보존한다. 이 수치는 35쪽 Native만의 결과이고 fresh WASM, 전쪽, 기존 메타파일의 기능 보존과 [PR #8389](https://github.com/edwardkim/rhwp/pull/8389)·[PR #8397](https://github.com/edwardkim/rhwp/pull/8397) 기준 하락 여부를 확인하기 전이므로 최종 판정이 아니다.
+후속 후보에서 메타파일 장치 표면도 최종 raster로 축소할 때 공통 면적 표본기를 사용하도록 시험했다. 같은 2024 Print의 35쪽 Native raw는 92.57%, fresh WASM은 92.60%로 상승했다. [35쪽 비교](../assets/issue_8305/followup8438/native-resample-review-035.png)·[overlay](../assets/issue_8305/followup8438/native-resample-overlay-035.png)를 보존한다. 이 수치는 해당 후보의 35쪽만의 결과이고 전쪽, 기존 메타파일의 기능 보존과 [PR #8389](https://github.com/edwardkim/rhwp/pull/8389)·[PR #8397](https://github.com/edwardkim/rhwp/pull/8397) 기준 하락 여부를 확인하기 전이므로 최종 판정이 아니다.
 
 확대 판독에서 기본 시스템 글꼴로 그린 차트의 값 글자가 한컴 PDF보다 가늘었다. 검증용으로 확보한 Calibri Bold를 `output/`에서 한 실행에만 공급하자 같은 후보의 Native 출력 PNG가 바뀌고 값 글자 굵기가 한컴과 가까워졌다. 전체 raw는 92.57351%에서 92.57265%로 거의 같아 페이지 점수만으로 이 차이를 판단할 수 없다. 동일 실행에서 `--font-path`만 전달한 경우 출력 PNG는 기본 실행과 같았고, 메타파일 글꼴 DB가 읽는 환경 경로로 공급한 경우에만 바뀌었다. 이는 추가 글꼴을 갖춘 진단이며 기본 시스템 환경의 TSV를 대체하지 않는다. 글꼴 파일은 저장소와 배포물에 포함하지 않는다.
 
