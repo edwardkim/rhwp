@@ -265,6 +265,10 @@ UPM이 일치했다. 이 비교는 Native backend의 실제 글꼴 선택이나 
 같은 위치를 확대한 [Native·PDF·overlay 비교](../assets/issue_8136/followup8438-crop/native-text-zoom-011.png)와
 [전체 쪽 overlay](../assets/issue_8136/followup8438-crop/native-overlay-011.png)에서는
 본문 획이 PDF보다 옅어 보인다. 점수와 별개로 이 차이의 원인을 확인한다.
+96 DPI의 같은 본문 영역(가로 120–699, 세로 180–234)에서 밝기 반전값의
+합은 Native 564,304, PDF 629,452다. 이 수치는 위치·글꼴·래스터화 차이를
+함께 포함하므로 어떤 원인 하나의 증거로 해석하지 않는다. 측정 로그 SHA-256은
+`d96803cc9a49aa7fdd758adc01f352eef5e8037d48db318ebcb82bc5aeb19414`다.
 
 저장 보존도 별도로 확인했다. 재단 표시가 켜진 원본 HWP를 RHWP의
 `export-hwpx`로 저장한 결과, 생성된 `settings.xml`에 `PrintCropMark`가 없다.
