@@ -66,7 +66,10 @@ pub(crate) fn supports_table_text_rows_with_storage<S: crate::storage::Storage>(
         && para.controls.iter().enumerate().any(|(control, _)| {
             super::super::composer::owned_rowbreak_tac_height(para, control).is_some()
         });
-    Ok(super::super::para_has_no_stored_line_segs(para)
+    // 저장 글줄이 남아 있어도 문자 분할이 무효화됐으면 원래 줄 소속을
+    // 재사용할 수 없다. 표와 텍스트를 같은 물리 줄 계획에서 다시 구성한다.
+    Ok((super::super::para_has_no_stored_line_segs(para)
+        || para.stored_text_partition_is_dirty())
         && !has_composed_object_row
         && !para.text.contains('\t')
         && para
