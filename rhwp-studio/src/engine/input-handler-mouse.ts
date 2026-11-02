@@ -2087,6 +2087,9 @@ function finishMouseUp(this: any, _e: MouseEvent): void {
     if (samePos) this.cursor.clearSelection();
   }
 
+  // 연속 형광펜 모드: 드래그로 잡은 블록에 바로 칠한다
+  this.applyHighlightPenToSelection();
+
   // [Task #779] mouseup 영역 의 updateCaret 은 scrollCaretIntoView skip.
   // 본질: cursor 변경 trigger 영역 (mousedown / drag selection move 등) 에서 이미 cursor 위치
   // 갱신 + scroll 호출 영역 동반. mouseup 영역 의 updateCaret 은 selection 종료 영역 의

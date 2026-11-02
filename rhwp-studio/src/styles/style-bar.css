@@ -550,6 +550,13 @@
 }
 
 /* 형광펜 */
+/* 연속 형광펜 모드: 본문 위 커서를 선택한 색의 형광펜 모양으로 (input-handler 가 변수 설정) */
+.highlight-pen-mode,
+.highlight-pen-mode * {
+  /* 변수가 없을 때(스크립트 미적용 등)도 일반 커서로 떨어지지 않게 기본 노란 펜을 둔다 */
+  cursor: var(--highlight-pen-cursor, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M13 2l5 5-9 9H4v-5z' fill='%23ffe14d' stroke='%23333' stroke-width='1.2'/%3E%3Cpath d='M2 18h7' stroke='%23ffe14d' stroke-width='2.5'/%3E%3C/svg%3E") 2 18, text);
+}
+
 .sb-highlight-icon {
   font-size: var(--font-size-lg);
   color: #d7a44a;
