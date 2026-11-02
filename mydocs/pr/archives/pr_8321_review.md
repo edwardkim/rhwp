@@ -16,6 +16,10 @@
 
 원본 `fa80cd8e7f`와 통합 `a9febd969c`의 range-diff는 주변 글꼴 모듈 배치와 체리픽 메타데이터 차이를 표시한다. 기호 슬롯 폭 측정 변경과 회귀 본문은 대응한다. 전체 최종 기능과 시각 판정은 별도로 확인한다.
 
+## 최종 코드의 공통 기호 슬롯 입력
+
+같은 `lang-slot-ranges.hwpx` 두 쪽을 최종 제품 코드 `d536455b4e`의 Native·fresh WASM과 독립 한컴 2024 Print로 비교했다. 전쪽 최저는 각각 98.96%, 98.37%이고 전쪽 쪽수가 일치한다. 상세 실행·확대 판독 근거와 [Native/WASM 전쪽 TSV](pr_8316_review.md#최종-코드의-기호-슬롯곡선-따옴표-대조)를 참고한다. 이 결과와 원 PR의 다른 영향 범위 확인은 구분한다.
+
 ## 접수와 적용
 
 - 원 PR: [#8321](https://github.com/edwardkim/rhwp/pull/8321), 작성자 `planet6897`, reviewer `jangster77`.

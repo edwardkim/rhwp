@@ -12,6 +12,17 @@
 - 제품 코드 `d536455b4e`의 최소 글꼴 전체 회귀는 12,368건 통과·45건 skipped였다. 이 로그에서 확인한 해당 모듈: `issue_7092_curly_quote_latin_slot` 3건, `issue_8136_lang_slot_ranges` 3건. 이 수치는 개별 PR의 독립 Print 검증과는 구분한다.
 - 뒤의 중간 후보·검증 대기 문장은 당시 상태이며 최종 통합 결과가 아니다. 원 PR별 최종 시각·기능 검토와 최신 head 일치 확인은 계속한다.
 
+## 최종 코드의 기호 슬롯·곡선 따옴표 대조
+
+제품 코드 `d536455b4e`의 Native와 fresh WASM으로 기호 슬롯 2쪽과 독립 한컴 2024 Print, 곡선 따옴표 7쪽과 한컴 2020 Print를 96 DPI로 전쪽 대조했다. 기호 슬롯은 Native 최저 98.96%, WASM 98.37%, 곡선 따옴표는 각각 96.96%, 97.73%이며 쪽수가 일치한다. 기호 슬롯 1·2쪽과 곡선 따옴표 3·4쪽의 RHWP·PDF PNG는 앞서 직접 판독한 자료와 SHA-256이 같아 해당 review·overlay를 재사용했다.
+
+| 입력 | Native | WASM | 대표 페이지 |
+| --- | --- | --- | --- |
+| 기호 슬롯 | [전쪽 TSV](../assets/issue_8136/final-integration-8438/native-lang-slot.tsv) | [전쪽 TSV](../assets/issue_8136/final-integration-8438/wasm-lang-slot.tsv) | [2쪽 review](../assets/issue_8136/integration-planet6897/native-review-002.png) · [overlay](../assets/issue_8136/integration-planet6897/native-overlay-002.png) |
+| 곡선 따옴표 | [전쪽 TSV](../assets/issue_8136/final-integration-8438/native-treatise.tsv) | [전쪽 TSV](../assets/issue_8136/final-integration-8438/wasm-treatise.tsv) | [3쪽 review](../assets/issue_7092/integration-planet6897/native-review-003.png) · [overlay](../assets/issue_7092/integration-planet6897/native-overlay-003.png) |
+
+이 결과는 두 입력에 관한 것이며 원 PR에 제시된 나머지 문서의 최종 후보 검증을 대신하지 않는다.
+
 ## 접수와 적용
 
 - 원 PR: [#8316](https://github.com/edwardkim/rhwp/pull/8316), 작성자 `planet6897`, reviewer `jangster77`.
