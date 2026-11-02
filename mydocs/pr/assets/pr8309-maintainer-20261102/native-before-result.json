@@ -1,0 +1,28 @@
+{
+  "runtime_source": "c88657d9c30b57d8481de40f74fd76fd3e2a0af7",
+  "test_source": "a9836a959015e9f4709d1b659994b7316f812289:tests/cases/textbox_vertical_align_hwp.rs",
+  "git_head": "dda384eadc4148ff4c939efdf1a184aacd0e59fa",
+  "native_sha256": "7327469b4f28bf11144dd4f857ed6535f016c6c870094e43bb4173e89e74e4d2",
+  "test_exit": 101,
+  "font_program_count": 5,
+  "command": [
+    "python3",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8309/run-minfont.py",
+    "/home/edward/mygithub/rhwp-worktrees/pr-8309-textbox-vertical-align",
+    "node",
+    "scripts/run-rust-test.mjs",
+    "--cargo-test",
+    "textbox_vertical_align_hwp",
+    "--",
+    "--profile",
+    "release-test",
+    "--target-dir",
+    "/home/edward/mygithub/rhwp/target/pr-review",
+    "--features",
+    "native-skia",
+    "--config",
+    "profile.release-test.package.rhwp.opt-level=1",
+    "--config",
+    "profile.release-test.package.rhwp.codegen-units=64"
+  ]
+}

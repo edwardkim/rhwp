@@ -1,0 +1,99 @@
+[
+  {
+    "path": "tests/fixtures/pr8309/textbox-reference-bottom.hwpx",
+    "bytes": 8063,
+    "sha256": "5e21c5c7c4c137d25c068426b1d9c47c4b09ed84253ad3660cc1729a7287545d"
+  },
+  {
+    "path": "tests/fixtures/pr8309/textbox-reference-center.hwpx",
+    "bytes": 8065,
+    "sha256": "d7e851d41bcb81073c30eb5bfce57fcd25fffefc477f3e294c00c4f0fa12d1f5"
+  },
+  {
+    "path": "tests/fixtures/pr8309/textbox-reference-top.hwpx",
+    "bytes": 8060,
+    "sha256": "1aa9243888fec3cfcffb9212e601957487f1fdcb648310be819b8ed932b87d8d"
+  },
+  {
+    "path": "tests/fixtures/pr8309/textbox-saved-bottom.hwp",
+    "bytes": 13312,
+    "sha256": "ba89b94fbefd06841b666d3b94e95a59110397f4ccfe879fb4a34644f056c3af"
+  },
+  {
+    "path": "tests/fixtures/pr8309/textbox-saved-bottom.hwpx",
+    "bytes": 8063,
+    "sha256": "5e21c5c7c4c137d25c068426b1d9c47c4b09ed84253ad3660cc1729a7287545d"
+  },
+  {
+    "path": "tests/fixtures/pr8309/textbox-saved-center.hwp",
+    "bytes": 13312,
+    "sha256": "d2763e39c4da953c1429ff9af314397723b7ed35ce305ccb14fafc20dac1f457"
+  },
+  {
+    "path": "tests/fixtures/pr8309/textbox-saved-center.hwpx",
+    "bytes": 8065,
+    "sha256": "d7e851d41bcb81073c30eb5bfce57fcd25fffefc477f3e294c00c4f0fa12d1f5"
+  },
+  {
+    "path": "tests/fixtures/pr8309/textbox-saved-default.hwp",
+    "bytes": 13312,
+    "sha256": "6035f5e84b8f189c90c91767a011405035e9ff72100d84e1016a51d4bfa4b957"
+  },
+  {
+    "path": "tests/fixtures/pr8309/textbox-saved-default.hwpx",
+    "bytes": 8060,
+    "sha256": "1aa9243888fec3cfcffb9212e601957487f1fdcb648310be819b8ed932b87d8d"
+  },
+  {
+    "path": "tests/fixtures/pr8309/textbox-saved-top.hwp",
+    "bytes": 13312,
+    "sha256": "6035f5e84b8f189c90c91767a011405035e9ff72100d84e1016a51d4bfa4b957"
+  },
+  {
+    "path": "tests/fixtures/pr8309/textbox-saved-top.hwpx",
+    "bytes": 8060,
+    "sha256": "1aa9243888fec3cfcffb9212e601957487f1fdcb648310be819b8ed932b87d8d"
+  },
+  {
+    "path": "pdf/pr8309/textbox-reference-bottom-2024.pdf",
+    "bytes": 10762,
+    "sha256": "e11fdf106eed6da340c15ffb31a991c71831cb67c497f6143b9672afb4872d2e"
+  },
+  {
+    "path": "pdf/pr8309/textbox-reference-center-2024.pdf",
+    "bytes": 10761,
+    "sha256": "3da851e606ebd990e9e6bd0a2975e8d362b74c62f81db9f06bc860f3a4303c92"
+  },
+  {
+    "path": "pdf/pr8309/textbox-reference-top-2024.pdf",
+    "bytes": 10759,
+    "sha256": "752db14817204b90b7caca688e6e29da13676130b27cdec373fce6248c3fcf33"
+  },
+  {
+    "path": "pdf/pr8309/textbox-saved-bottom-2024.pdf",
+    "bytes": 10761,
+    "sha256": "11f741a95f301df1a561c26954fbb0016e4f07a5cdf83c2af6f211c2044a4b13"
+  },
+  {
+    "path": "pdf/pr8309/textbox-saved-center-2024.pdf",
+    "bytes": 10761,
+    "sha256": "82f2ca78e300f294f38dd62777bf96fdaaae0447be96b9977a973fe86944f051"
+  },
+  {
+    "path": "pdf/pr8309/textbox-saved-default-2024.pdf",
+    "bytes": 10761,
+    "sha256": "05d9183669f0acf5369f4ccd78c12a3e76ec3f5bae3c9f6558c7fbbb061ce02a"
+  },
+  {
+    "path": "samples/issue8122/textbox_valign_no_lineseg.hwp",
+    "bytes": 9728,
+    "sha256": "de374075cfc2c1ef945d3795bba194b90dc42d759caf8b478c603d4777cfb8ff",
+    "origin": "pre-existing public #8134/#8393 control at c88657d9c30b57d8481de40f74fd76fd3e2a0af7"
+  },
+  {
+    "path": "pdf/issue8122/textbox_valign_no_lineseg-webhwp-print.pdf",
+    "bytes": 47497,
+    "sha256": "0cfca5740c6fc9aaadf9db814e6e0503850d1f56013eb4bdda895bbc80dd0023",
+    "origin": "pre-existing public #8134/#8393 control at c88657d9c30b57d8481de40f74fd76fd3e2a0af7"
+  }
+]

@@ -1,0 +1,77 @@
+{
+  "completed_at": "2026-11-02T02:07:44.997811+00:00",
+  "full_nextest_summary": "Summary [ 644.119s] 12369 tests run: 12369 passed (8 slow), 45 skipped",
+  "full_nextest_passed": 12369,
+  "full_nextest_skipped": 45,
+  "native_lib_summary": "4040 passed (3858 + 15 + 165 + 2)",
+  "native_lib_raw_summaries": [
+    "test result: ok. 3858 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 23.20s",
+    "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+    "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+    "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+  ],
+  "native_lib_passed": 4040,
+  "focused": [
+    {
+      "gate": "issue_2225_missing_picture_placeholder",
+      "summary": "Summary [   0.152s] 2 tests run: 2 passed, 319 skipped",
+      "passed": 2
+    },
+    {
+      "gate": "render_p37_direct_pdf_export",
+      "summary": "Summary [   0.328s] 22 tests run: 22 passed, 271 skipped",
+      "passed": 22
+    },
+    {
+      "gate": "textbox_vertical_align_hwp",
+      "summary": "Summary [   0.018s] 3 tests run: 3 passed, 268 skipped",
+      "passed": 3
+    },
+    {
+      "gate": "issue_8172_textbox_shape_storage_bit",
+      "summary": "Summary [   0.013s] 3 tests run: 3 passed, 279 skipped",
+      "passed": 3
+    },
+    {
+      "gate": "issue_8225_group_child_ctrl_data",
+      "summary": "Summary [   0.119s] 3 tests run: 3 passed, 279 skipped",
+      "passed": 3
+    },
+    {
+      "gate": "issue_8122_textbox_valign_no_lineseg",
+      "summary": "Summary [   0.029s] 4 tests run: 4 passed, 297 skipped",
+      "passed": 4
+    },
+    {
+      "gate": "issue_8174_docinfo_request_storage",
+      "summary": "Summary [   0.268s] 3 tests run: 3 passed, 285 skipped",
+      "passed": 3
+    },
+    {
+      "gate": "issue_8174_public_storage_boundaries",
+      "summary": "Summary [   0.374s] 2 tests run: 2 passed, 305 skipped",
+      "passed": 2
+    },
+    {
+      "gate": "issue_8335_caption_category_roundtrip",
+      "summary": "Summary [   2.248s] 4 tests run: 4 passed, 291 skipped",
+      "passed": 4
+    },
+    {
+      "gate": "issue_8399_square_shape_band",
+      "summary": "Summary [   0.035s] 8 tests run: 8 passed, 277 skipped",
+      "passed": 8
+    },
+    {
+      "gate": "issue_8302_roundtrip_lineage",
+      "summary": "Summary [   0.133s] 3 tests run: 3 passed, 290 skipped",
+      "passed": 3
+    }
+  ],
+  "focused_passed": 57,
+  "rust_gate_commands": 20,
+  "rust_gates_all_passed": true,
+  "studio_npm_passed": 2716,
+  "studio_npm_skipped": 2,
+  "studio_actual_roundtrips": 8
+}
