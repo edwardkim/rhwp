@@ -767,7 +767,43 @@ impl TypesetEngine {
                         st.vpos_compacted_stored_delta,
                     );
                 }
-                if sync_h + uncertain_anchor_margin <= avail_after {
+                // [#8467] 결재란 앵커 문단 자신의 글줄(높이 + 줄 간격)도 배타 영역 위에 들어가야
+                // 한다. 한/글 2020·2022·2024 Print 는 이 줄이 띠를 침범하면 결재란을 다음 쪽으로
+                // 넘긴다 — 10k 결재문서 1482건 중 흡수 54건을 실제 레이아웃 본문 끝 기준으로 재면
+                // 분할 47건은 모두 `본문 끝 + 앞 줄 간격 + 앵커 줄(lh+ls)` 가 띠 위끝을 넘고(최대 -0.9px),
+                // 흡수 4건은 모두 들어간다(0.0~10.1px). 앞 줄 간격은 cur_h 가 이미 담고 있다.
+                // 한/글 2020·2024(MCP)와 2022(오라클) Print 의 쪽수가 판정 문서 12건에서 모두 같다.
+                // 같은 문단의 둘째 결재란은 그 줄을 첫 결재란과 공유하므로 다시 세지 않는다
+                // (36373027 ci0·ci2, 한/글 1쪽).
+                let first_footer_of_host = !para.controls[..ctrl_idx].iter().any(|control| {
+                    matches!(control, Control::Table(t) if is_page_bottom_fixed_float(&t.common))
+                });
+                // 이 쪽에 저장 줄 없이 rhwp 가 줄을 합성한 문단이 있으면 흐름은 낡은 저장 사다리를
+                // 따른다. 한/글은 인쇄 때 그 문단부터 다시 흘리므로(36348992: 합성 표 줄 뒤 저장
+                // vpos 가 선언 높이 기준, 한/글은 그린 높이로 17px 위) 이 흐름 좌표로는 판정하지 않는다.
+                // 이 제한으로 결재문서 1482건 A/B 는 고침 36·회귀 0 이다(제한 없이 46·1). 합성 줄
+                // 쪽의 분할 10건은 사다리 재계산 정책(#1920/#2279)과 함께 다룬다.
+                let page_flow_follows_stored_ladder = !st
+                    .current_items
+                    .iter()
+                    .filter_map(crate::renderer::typeset::page_item_para_index)
+                    .filter_map(|index| paragraphs_all.get(index))
+                    .any(|paragraph| {
+                        paragraph
+                            .line_segs
+                            .iter()
+                            .any(crate::renderer::typeset::is_synthetic_line_seg)
+                    });
+                let host_line_advance = (first_footer_of_host && page_flow_follows_stored_ladder)
+                    .then(|| crate::renderer::layout::control_line_seg_index(para, ctrl_idx))
+                    .flatten()
+                    .and_then(|line| para.line_segs.get(line))
+                    .filter(|seg| !crate::renderer::typeset::is_synthetic_line_seg(seg))
+                    .map(|seg| {
+                        hwpunit_to_px(seg.line_height.max(0) + seg.line_spacing.max(0), self.dpi)
+                    })
+                    .unwrap_or(0.0);
+                if sync_h + host_line_advance + uncertain_anchor_margin <= avail_after {
                     // 현재 쪽 하단에 배치 — 본문 흐름은 vpos 동기 위치까지만 전진.
                     st.align_flow_to(sync_h);
                 } else if !st.current_items.is_empty() {
