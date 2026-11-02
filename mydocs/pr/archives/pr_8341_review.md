@@ -113,6 +113,8 @@ WASM 89.19%로 90%를 넘지 못했다. 글꼴 공급만으로 해결됐다고 �
 
 후속 후보에서 메타파일 장치 표면도 최종 raster로 축소할 때 공통 면적 표본기를 사용하도록 시험했다. 같은 2024 Print의 35쪽 Native raw는 92.57%로 상승했다. [35쪽 비교](../assets/issue_8305/followup8438/native-resample-review-035.png)·[overlay](../assets/issue_8305/followup8438/native-resample-overlay-035.png)를 보존한다. 이 수치는 35쪽 Native만의 결과이고 fresh WASM, 전쪽, 기존 메타파일의 기능 보존과 [PR #8389](https://github.com/edwardkim/rhwp/pull/8389)·[PR #8397](https://github.com/edwardkim/rhwp/pull/8397) 기준 하락 여부를 확인하기 전이므로 최종 판정이 아니다.
 
+확대 판독에서 기본 시스템 글꼴로 그린 차트의 값 글자가 한컴 PDF보다 가늘었다. 검증용으로 확보한 Calibri Bold를 `output/`에서 한 실행에만 공급하자 같은 후보의 Native 출력 PNG가 바뀌고 값 글자 굵기가 한컴과 가까워졌다. 전체 raw는 92.57351%에서 92.57265%로 거의 같아 페이지 점수만으로 이 차이를 판단할 수 없다. 동일 실행에서 `--font-path`만 전달한 경우 출력 PNG는 기본 실행과 같았고, 메타파일 글꼴 DB가 읽는 환경 경로로 공급한 경우에만 바뀌었다. 이는 추가 글꼴을 갖춘 진단이며 기본 시스템 환경의 TSV를 대체하지 않는다. 글꼴 파일은 저장소와 배포물에 포함하지 않는다.
+
 표본화 진단으로 같은 현재 Native 엔진의 전체 35쪽을 600 DPI로 출력한 뒤
 Lanczos로 96 DPI 크기에 축소해 동일 PDF와 비교했다. 전쪽 raw는 89.11%에서
 93.17%, 차트 영역 raw는 71.45%에서 83.13%로 달라졌다. 이 변환 이미지는
