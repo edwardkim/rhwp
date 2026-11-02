@@ -52,3 +52,22 @@ HWP3 계보 HWPX의 줄 시작을 한컴의 문단 축에 맞게 저장한다.
 2026-11-01 고정 후보의 #8389·#8397 전쪽 정밀 대조에서 2,153행 중 Native 12행, WASM 8행이 공개 기준보다 낮았다. 이 수치는 이후 GIF·Canvas 보정 전 결과이며 최종 후보의 재검증 결과가 아니다. #7905 3쪽은 GIF 오른쪽 경계 누락, sample16 35쪽 WASM은 메타파일 내부의 미대응 3픽셀이 확인됐다. #8040 두 원본은 Native·WASM 전쪽이 90% 이상이나 Native 정밀 기준 하락이 남는다. 진행과 근거는 [작업 기록](../../working/task_m100_planet6897_system_fonts_20261031.md)을 따른다. 하락 보정과 전쪽 대조, 각 PR의 독립 Print·Native/fresh WASM 및 직접 판독을 완료해야 한다. #8410·#8412의 새 base 기능도 별도로 보존 검증한다.
 
 원 PR의 최신 head·required check와 통합 후보의 새 검증 결과를 확인하기 전에는 승인이나 merge를 진행하지 않는다.
+
+## 2026-11-02 일괄 대조 추가 증거
+
+[원본 HWP3](../../../samples/hwp3-table-caption.hwp)와 그 [한컴 2020 Print](../../../pdf/hwp3-table-caption-2020.pdf),
+[1세대 HWPX 저장본](../assets/issue_8303/followup8438/hwp3-caption-saved.hwpx)과
+그 [한컴 2020 Print](../../../pdf/hwp3-table-caption-hwpx-2020.pdf)를 96dpi에서
+각 1쪽으로 대조했다. HWPX의 SHA-256 `468516ece6d6f5ba5fe3c4f692ba3aa12bd89d8747e5b85efb9b9c99ff2ca854`는 원 PR에 기록된 Print 입력과 일치한다.
+
+| 입력 | Native raw | WASM raw | TSV |
+| --- | ---: | ---: | --- |
+| 원본 HWP3 | 99.02% | 99.03% | [Native](../assets/issue_8303/followup8438/hwp3-caption-native.tsv) · [WASM](../assets/issue_8303/followup8438/hwp3-caption-wasm.tsv) |
+| 1세대 HWPX | 98.95% | 98.97% | [Native](../assets/issue_8303/followup8438/hwp3-caption-hwpx-native.tsv) · [WASM](../assets/issue_8303/followup8438/hwp3-caption-hwpx-wasm.tsv) |
+
+표와 셀 경계·뒤 문구는 한컴 Print와 대조했다. 기여자가 밝혔듯 도장 기호의
+글리프와 제목 글꼴 폭은 여전히 차이가 있어 점수만으로 차이가 없다고 판정하지 않는다.
+[HWPX Native review](../assets/issue_8303/followup8438/hwp3-caption-hwpx-native-review.png) ·
+[Native overlay](../assets/issue_8303/followup8438/hwp3-caption-hwpx-native-overlay.png) ·
+[WASM review](../assets/issue_8303/followup8438/hwp3-caption-hwpx-wasm-review.png) ·
+[WASM overlay](../assets/issue_8303/followup8438/hwp3-caption-hwpx-wasm-overlay.png).
