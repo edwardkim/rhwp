@@ -3,55 +3,34 @@
 이 스킬은 한계를 숨기지 않는다. 세 가지는 사용자에게 먼저 말한다.
 `exam_paper` 빌더/writer 를 이 PR 에서 고쳐서 없애지 않는다.
 
-## 1. Picture 직렬화 (#182)
+## 1. Picture writer와 ingest 이미지 빌더의 차이
 
-rhwp HWPX writer 의 Picture inline 분기는 이슈 #182 계열에서 다룬다.
-완료 전에는:
+`src/serializer/hwpx/picture.rs`의 Picture 직렬화는 구현돼 있다.
+하지만 `build-from-ingest`는 `--media-dir`의 존재만 확인하고 이미지 바이트를 읽지 않는다.
+`src/document_core/builders/exam_paper.rs`는 image 블록을 `[이미지: …]` placeholder 텍스트로 만든다.
+공유 지문·boxed 내부 이미지와 모든 placement에도 같은 제한이 적용된다.
+따라서 올바른 경로·크기·배치를 주어도 이 경로에서는 Picture/BinData가 생성되지 않는다.
+과거 #182의 writer 결함으로 오인하거나 경로·배치 변경만으로 재시도하지 않는다.
 
-- `media[]` 가 ingest 에 있고 BinData 가 zip 에 들어 있어도
-- 한컴오피스가 그림을 안 그릴 수 있다.
+- **그림이 필수인 입력은 F18로 중단한다.** 텍스트만 있는 결과를 완성된 시험지로 제공하지 않는다.
+- CLI 종료 코드 0, export-text 통과, crop 파일 생성은 이미지 삽입 성공을 뜻하지 않는다.
+- 제한 재현 산출물을 검사할 때는 `unzip -l`과 section·manifest에서 이미지 파일·Picture 참조의 부재를 확인한다.
+- 실제 한컴 표시는 별도 검증이다. 소스 확인이나 ZIP 검사로 표시 검증을 대체하지 않는다.
+- 이 문서 정정 작업에서 빌더나 writer 구현을 함께 변경하지 않는다.
 
-에이전트 행동:
+## 2. 수식과 수식 이미지
 
-- 텍스트(지문·선택지·보기)를 우선 옮긴다. 그게 시험지의 본체다.
-- 그림을 넣었으면 "이미지 표시는 writer 한계로 한컴에서 비어 보일 수 있다" 고 고지.
-- writer 를 이 스킬 작업에서 수정하지 않는다.
+이 ingest 스키마에는 편집 가능한 수식 필드가 없다. `latex`, `omml`, `equation` 키를
+발명하지 않는다. crop으로 수식 이미지를 준비할 수 있지만 현재 빌더에는 넣을 수 없다.
+수식 이미지가 필수이면 F16을 설명하고 F18로 중단한다.
+한 줄짜리 `E=mc^2` 수준의 평문으로 요청을 충족하는 경우만 text로 표현할 수 있다.
 
-검증: `unzip -l out.hwpx` 로 바이트가 들어갔는지만 확인한다.
-한컴 스크린샷이 비어 있다고 해서 ingest 를 되돌리지 않는다.
-별도 writer 이슈로 넘긴다.
+## 3. 표와 표 이미지
 
-## 2. 수식은 이미지
-
-복잡 수식(분수, 적분, 행렬, 화학 식)은 HWP Equation IR 로 매핑하지 않는다.
-그 마일스톤은 후속이다.
-
-에이전트 행동:
-
-- 수식 bbox 를 crop 해 `type: image` 로 넣는다.
-- ingest 에 `latex`, `omml`, `equation` 키를 만들지 않는다 (deny_unknown).
-- 한 줄짜리 `E=mc^2` 수준의 평문은 text 로 남겨도 된다.
-- F16.
-
-사용자가 "수식을 한컴 수식 편집기로 넣어 줘" 라고 하면
-이 스킬의 한계를 말하고, 이미지로 넣을지 물어본다.
-
-## 3. 표는 그림
-
-단순 2×2 도 지금은 Table IR 로 재조립하지 않는다. 표 전체를 Picture 로
-캡처한다. 병합·테두리·셀 배경은 후속.
-
-에이전트 행동:
-
-- 표 bbox 를 crop.
-- `rows`/`cells` 필드를 ingest 에 추가하지 않는다.
-- 표 안의 선택지를 텍스트로 살릴 수 있으면 `choices[]` 가 우선.
-  표가 자료(통계 표)이면 그림.
-- F17.
-
-표 칸을 나중에 고치고 싶으면 산출 HWPX 를 `rhwp-table-exchange` 로
-넘기는 것이 아니라, **원본이 이미 HWP 표일 때** 그 스킬을 쓴다.
-이 스킬이 만든 Picture 표는 CSV 왕복 대상이 아니다.
+이 ingest 스키마에는 편집 가능한 표 구조 필드가 없다. `rows`/`cells`를 추가하지 않는다.
+표 전체를 crop해도 현재 빌더로 Picture를 삽입할 수 없으므로 표 이미지가 필수이면
+F17을 설명하고 F18로 중단한다. 텍스트 선택지만으로 요청을 충족하는 경우에는 `choices[]`를 쓴다.
+원본에 이미 편집 가능한 HWP 표가 있을 때만 `rhwp-table-exchange`의 CSV 왕복 대상이다.
 
 ## 그 밖의 한계
 
@@ -67,9 +46,9 @@ rhwp HWPX writer 의 Picture inline 분기는 이슈 #182 계열에서 다룬다
 
 ## 사용자에게 쓰는 한 줄
 
-> 지문과 선택지는 HWPX 로 옮겼습니다. 그래프/수식/표는 그림으로 넣었습니다.
-> 한컴에서 그림이 비어 있으면 rhwp Picture 직렬화 한계(#182)입니다.
-> 수식 편집기·표 IR 은 이 경로에 없습니다.
+> 현재 시험지 ingest 빌더는 그림 대신 placeholder 텍스트를 만듭니다.
+> 이 입력에는 그래프·수식·표 이미지가 필요하므로 완성된 시험지로 제공할 수 없습니다.
+> 경로·크기·배치를 바꾸어도 해결되지 않아 여기서 중단합니다.
 
 픽스처: `fixtures/matrices/known_limits.json`.
 예제: `examples/17_picture_serialization_limit.md`,

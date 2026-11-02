@@ -1,6 +1,6 @@
 ---
 name: rhwp-exam-ingest
-description: PDF/이미지/MD/DOCX 형태의 시험문제 자료를 HWPX 시험지 파일로 변환합니다. Claude가 시험지를 직접 읽어(Vision) 문제 구조(지문/선택지/이미지)를 인식하고, 이미지를 정확한 bbox로 잘라 "지문과 선택지 사이" 또는 "지문 아래"에 배치한 HWPX를 생성합니다. 트리거: 사용자가 시험지 파일을 주며 "HWPX로 만들어줘", "한글 시험지로 변환", "exam ingest", "/rhwp-exam-ingest", "시험문제 변환".
+description: 'PDF·이미지·Markdown·DOCX 시험문제 자료를 HWPX 시험지로 변환한다. 문제·지문·선택지와 이미지 위치를 읽고, 제공된 helper와 ingest 스키마로 파일을 조립할 때 사용한다. "HWPX로 만들어줘", "한글 시험지로 변환", "exam ingest", "/rhwp-exam-ingest", "시험문제 변환" 요청에 적용한다.'
 ---
 
 # rhwp-exam-ingest — 시험지 → HWPX 변환 Skill
@@ -9,7 +9,12 @@ description: PDF/이미지/MD/DOCX 형태의 시험문제 자료를 HWPX 시험�
 이 스킬은 **실 에이전트 경로**다. gym 이 아니고, 새 CLI 를 발명하지 않으며,
 `DocumentCore` 의 `exam_paper` 빌더 로직을 이 작업에서 바꾸지 않는다.
 
-코어는 이미 있다.
+현재 `build-from-ingest`는 이미지 파일을 읽어 Picture/BinData로 연결하지 않고
+`[이미지: …]` placeholder 텍스트를 만든다. `--media-dir`은 디렉터리 존재만 확인한다.
+**그림이 필수이면 F18로 중단한다.** 경로·크기·배치 변경만으로 해결되지 않으며,
+placeholder 결과를 이미지 포함 시험지로 제공하지 않는다.
+
+텍스트 시험지 조립과 입력 자료 준비에 사용할 구성은 다음과 같다.
 
 - 입력 정규화: `helpers/pdf_to_pngs.sh` · `helpers/extract_docx.py` · 이미지 패스스루 · MD `![alt](path)`
 - 중간 표현: `tools/rhwp-ingest/schema/ingest_schema_v1.json` (`version: "1"`)
@@ -17,8 +22,8 @@ description: PDF/이미지/MD/DOCX 형태의 시험문제 자료를 HWPX 시험�
 - 조립: `rhwp build-from-ingest <ingest.json> --media-dir <dir> -o <out.hwpx>`
 - 의존성: `helpers/check_deps.sh [--json]`
 
-에이전트가 필요한 것은 새 구현이 아니라 **언제 어느 helper 를 치고,
-어느 스키마 필드를 채우고, 어느 실패 봉투에서 멈추는가** 이다.
+입력 종류에 맞는 helper를 실행하고 스키마 필드를 채운다.
+실패 응답에 따라 고칠 입력과 더 진행할 수 없는 범위를 구분한다.
 
 상세는 `references/` 를 단계별로 연다. SKILL.md 는 인덱스와 정지 규칙만 담는다.
 
@@ -44,12 +49,14 @@ description: PDF/이미지/MD/DOCX 형태의 시험문제 자료를 HWPX 시험�
         ▼ [출력: out.hwpx]
 ```
 
-**중요**: Claude 가 직접 시험지 이미지를 본다. 외부 OCR(PaddleOCR, Tesseract) 을
-호출하지 않는다. Anthropic API 별도 호출도 하지 않는다.
+현재 세션의 이미지 읽기 기능으로 시험지를 확인한다. 이 기능이 없으면 그 한계를
+알리고 이미지 내용을 추측하지 않는다. 외부 OCR(PaddleOCR, Tesseract)이나
+별도 Anthropic API 호출은 이 절차에 포함하지 않는다.
 
 - 한국어 시험지 layout 을 자연어로 이해 (지문 vs 선택지)
 - 이미지 의미 배치 (`between` / `above` / `below` / `inline`)
-- 별도 API 키·네트워크 불필요
+- helper 실행에는 별도 모델 API 키나 OCR 서비스가 필요하지 않다.
+  현재 에이전트의 이미지 분석에 필요한 네트워크는 실행 환경에 따라 다르다.
 - 사용자 환경에 OCR 모델 설치 불필요
 
 ## 사다리 (강제 순회 아님)
@@ -122,9 +129,9 @@ check_deps.sh [--json]
 | F13 | stem 첫 텍스트가 `"2. …"` 로 시작 | `auto_number: false`. 아니면 `"2. 2. …"` |
 | F14 | bbox 가 소수·음수·0 | `CROP_BBOX_*` exit 4. 다시 추정 |
 | F15 | `-o` 누락 | CLI 가 사용법 오류. `-o` 는 필수 |
-| F16 | 수식을 LaTeX 로 ingest 에 넣으려 함 | 이미지로 crop. Equation IR 은 후속 |
-| F17 | 복잡한 표를 table IR 로 만들려 함 | 그림으로 crop. Table IR 은 후속 |
-| F18 | Picture 직렬화 한계 (#182) | 텍스트 위주가 안전. 사용자에게 고지 |
+| F16 | 편집 가능한 수식 요청 | ingest에 수식 필드 없음. 수식 이미지가 필수여도 F18로 중단 |
+| F17 | 편집 가능한 표 요청 | ingest에 표 필드 없음. 표 이미지가 필수여도 F18로 중단 |
+| F18 | 그림이 필수인 입력 | 현재 빌더는 placeholder만 생성. 중단하고 이미지 포함 시험지로 제공하지 않음 |
 | F19 | 사용자 질문이 이미 답변 가능 | 다음 단으로 내려가지 않는다 |
 
 **금지 기본값**
@@ -252,7 +259,8 @@ bash .claude/skills/rhwp-exam-ingest/helpers/crop_image.sh \
     --json --dry-run "$TMP/page_001.png" 120 400 640 360 "$MEDIA_DIR/img/q1.png"
 ```
 
-`-o` 는 필수. `--media-dir` 은 이미지가 있으면 필수에 가깝다.
+`-o`는 필수다. `--media-dir`을 지정해도 이미지 삽입은 구현되지 않았다.
+위 명령은 텍스트 조립 또는 제한 재현용이며, 그림 필수 입력은 F18로 중단한다.
 상세: [11_crop_bbox.md](references/11_crop_bbox.md) ·
 [12_build_from_ingest.md](references/12_build_from_ingest.md)
 
@@ -269,10 +277,14 @@ unzip -l <out.hwpx>           # BinData/ 이미지 포함 여부
 
 ## 알려진 한계
 
-- **이미지 직렬화**: Picture inline 직렬화는 #182 계열. 완료 전에는 이미지가
-  HWPX 에 들어 있어도 한컴이 표시하지 못할 수 있다. 텍스트 위주가 안전.
-- **수식**: 복잡 수식은 이미지로 캡처. HWP Equation IR 은 후속.
-- **표/정밀 박스**: 단순 표는 Picture 로 캡처. Table/Frame IR 은 후속.
+- **이미지 삽입 미구현**: HWPX writer의 Picture 직렬화는 구현돼 있지만,
+  이 스킬이 호출하는 ingest 빌더에는 이미지 파일을 Picture/BinData로 연결하는 경로가 없다.
+  `between`·`above`·`below`·`inline`, 공유 지문·보기 내부 이미지도 placeholder 텍스트다.
+  그림 필수 입력은 F18로 중단한다. CLI 종료 코드 0이나 텍스트 대조 통과로 완료 처리하지 않는다.
+- **수식**: 이 ingest 스키마에는 편집 가능한 수식 필드가 없다.
+  이미지로 캡처해도 현재 빌더로 삽입할 수 없으므로 수식 이미지가 필수이면 F18로 중단한다.
+- **표/정밀 박스**: 이 ingest 스키마에는 편집 가능한 표·프레임 필드가 없다.
+  표 이미지가 필수이면 F18로 중단한다. 캡처 자료 준비와 완성 문서 생성을 구분한다.
 
 상세: [15_known_limits.md](references/15_known_limits.md)
 
@@ -336,4 +348,9 @@ bash .claude/skills/rhwp-exam-ingest/helpers/check_deps.sh --json
 - 처리 결과: [`mydocs/working/agent_exam_ingest.md`](../../../mydocs/working/archives/agent_exam_ingest.md)
 
 관련 이슈: #5319 (본 스킬 고도화), #660 (스키마+빌더), #667 (passages/boxed),
-#3358 (deny_unknown_fields), #182 (Picture 직렬화).
+#3358 (deny_unknown_fields), #182 (Picture 직렬화 구현의 과거 작업).
+
+[근거] `src/serializer/hwpx/picture.rs`, `src/parser/ingest/schema.rs`,
+`src/cli/commands/generation.rs`, `src/document_core/builders/exam_paper.rs` ·
+2026-11-02, upstream/devel `0b697f90c3637558196b9e3b81c4eb59049432af` 확인 · High.
+소스 확인은 실제 한컴 표시 검증을 대신하지 않는다.

@@ -14,8 +14,8 @@
       "expect": "exists"
     },
     {
-      "cmd": "build-from-ingest --media-dir",
-      "expect": "2. 한 번"
+      "cmd": "그림 필수 여부 확인",
+      "expect": "F18 중단. placeholder를 완성 문서로 제공하지 않음"
     }
   ]
 }

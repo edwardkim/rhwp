@@ -1,6 +1,9 @@
 # 09 — media placement
 
 이미지가 **어디에 놓이는지** 는 픽셀이 아니라 의미다.
+현재 빌더는 모든 배치를 placeholder 텍스트로 처리한다. 아래는 스키마의 배치 의미이며
+실제 이미지 삽입 지원을 뜻하지 않는다. 그림 필수 입력은 F18로 중단한다.
+
 스키마 enum: `between` | `above` | `below` | `inline`. 기본 `between`.
 
 `stem_blocks` 의 image 블록과 `media[]` 항목 **둘 다** placement 를 가질 수 있다.
@@ -45,7 +48,7 @@
 
 > 다음 중 ㉠에 해당하는 것은? [작은 도형] 을 고르시오.
 
-한컴 Picture inline 직렬화가 약하면 (#182) inline 은 깨질 수 있다.
+inline 배치는 출력의 Picture 참조와 실제 한컴 표시를 확인한다.
 중요한 자료는 `between` 으로 내려 독립 문단처럼 넣는 편이 안전하다.
 inline 을 썼으면 한계를 사용자에게 한 줄로 고지한다.
 

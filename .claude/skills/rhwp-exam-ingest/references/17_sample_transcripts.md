@@ -24,8 +24,8 @@
 2. 문항 1, 발문, 그래프 bbox 240,410,980,620, 선택지 5
 3. `crop_image.sh desk.jpg 240 410 980 620 $MEDIA/img/q1.png`
 4. ingest: placement between, auto_number true
-5. `build-from-ingest --media-dir $MEDIA -o output/exam/graph.hwpx`
-6. 고지: #182 로 한컴에서 그래프가 비어 보일 수 있음
+5. 그래프가 필수이므로 F18로 중단. 현재 빌더는 placeholder만 생성한다.
+6. crop 준비를 이미지 삽입 완료로 보고하거나 경로·배치를 바꾸어 반복하지 않는다.
 
 ## T03 MD + 이미지 ref
 
@@ -34,8 +34,8 @@
 1. MD 읽기. `![plot](figures/pm10.png)` 존재 확인
 2. 복사 `figures/pm10.png` → `$MEDIA/img/pm10.png`
 3. `## 2.` → auto_number false
-4. build --media-dir
-5. export-text 에 `"2. "` 한 번
+4. 이미지가 필수인지 확인하고 필수이면 F18로 중단한다.
+5. `--media-dir`을 주어도 Picture/BinData는 생성되지 않는다.
 
 ## T04 DOCX fallback
 
@@ -88,6 +88,6 @@ export-text 에 `3. 3. 밑줄 친`
 
 1. 각 수식 crop → image
 2. 사용자에게 Equation IR 없음 (F16) 고지
-3. 텍스트 발문·선택지는 살림
+3. 수식 이미지가 필수이므로 F18로 중단. 텍스트만으로 성공 처리하지 않는다.
 
 기계 가독 본문: `fixtures/transcripts/*.json`.

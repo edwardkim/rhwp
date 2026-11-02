@@ -1,7 +1,7 @@
 # 예제 20_build_from_ingest — build-from-ingest -o
 
 이 워크스루는 gym 과제가 아니다. 기존 helper 와 `rhwp build-from-ingest` 만 쓴다.
-교차: `F15`. 동작: --media-dir -o.
+교차: `F15`. 동작: --media-dir -o. 그림이 필수이면 F18로 먼저 중단한다. 아래 명령은 텍스트 입력 또는 제한 재현용이다.
 
 ## 입력
 
@@ -28,4 +28,4 @@ rhwp dump "$OUT" > "$TMP/dump.txt"
 
 ## 한계
 
-Picture #182, 수식 이미지, 표 Picture. 새 CLI / exam_paper 수정 없음.
+현재 build-from-ingest는 이미지 파일을 읽지 않고 placeholder만 생성한다. 그림·수식·표 이미지가 필수이면 F18로 중단하며 아래 빌드 명령을 실행해도 완성 문서로 제공하지 않는다. 경로·배치 재시도로 해결되지 않는다. 빌더 구현은 변경하지 않는다.

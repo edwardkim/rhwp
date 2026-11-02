@@ -5,7 +5,7 @@
     "vision-bbox",
     "crop --dry-run",
     "crop",
-    "build --media-dir"
+    "그림 필수이면 F18 중단. build --media-dir로 삽입되지 않음"
   ],
   "stopOn": [
     "CROP_BBOX_NOT_UINT",

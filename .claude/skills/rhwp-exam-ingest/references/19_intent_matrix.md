@@ -12,7 +12,7 @@
 | I003 | /rhwp-exam-ingest exam.pdf | 같은 사다리 | 00_tree.md | F01 |
 | I004 | 이 스캔 사진 한 장 변환 | image passthrough | 04_image_passthrough.md | F06 |
 | I005 | JPG 여러 장 페이지 순서대로 | numeric sort + confirm | 04_image_passthrough.md | F06 |
-| I006 | quiz.md 를 시험지로 | MD + ![alt](path) | 05_md_image_refs.md | F07 |
+| I006 | quiz.md 를 시험지로 | MD + `![alt](path)` | 05_md_image_refs.md | F07 |
 | I007 | 학원.docx 변환 | extract_docx.py | 03_extract_docx.md | F08 |
 | I008 | 의존성 있니 | check_deps.sh --json | 13_check_deps.md | F01 |
 | I009 | poppler 없이 PDF 가능하냐 | magick fallback | 02_pdf_to_pngs.md | F03 |
@@ -20,7 +20,7 @@
 | I011 | 그래프를 지문과 선택지 사이에 | placement between | 09_media_placement.md | F14 |
 | I012 | 그림이 발문보다 위 | placement above + 블록 순서 | 09_media_placement.md | F14 |
 | I013 | 그림이 선택지 다음 | placement below | 09_media_placement.md | F14 |
-| I014 | 문장 가운데 작은 도형 | placement inline, #182 고지 | 09_media_placement.md | F18 |
+| I014 | 문장 가운데 작은 도형 | placement inline도 placeholder. 그림 필수이면 F18 중단 | 09_media_placement.md | F18 |
 | I015 | 공유 지문 1~3 | passages + passage_ref | 07_passages_questions.md | F19 |
 | I016 | <보기> 상자 살려줘 | stem_blocks boxed | 08_stem_blocks_boxed.md | F12 |
 | I017 | 번호가 이미 지문에 있어 | auto_number false | 10_auto_number.md | F13 |
@@ -31,12 +31,12 @@
 | I022 | OCR 엔진 깔아줘 | 거절, Vision 사용 | 16_pitfalls.md | F19 |
 | I023 | exam-from-pdf 명령 있어? | 없다. 발명 금지 | 00_tree.md | F19 |
 | I024 | -o 빼도 돼? | 안 됨. -o 필수 | 12_build_from_ingest.md | F15 |
-| I025 | media-dir 없이 그림 넣기 | 불가. --media-dir | 12_build_from_ingest.md | F15 |
+| I025 | media-dir 없이 그림 넣기 | --media-dir을 주어도 삽입 미구현. 그림 필수이면 중단 | 12_build_from_ingest.md | F18 |
 | I026 | 정답도 JSON 에 넣어 | answer 키 금지 deny_unknown | 06_ingest_schema_v1.md | F11 |
 | I027 | 흐린 스캔인데 | DPI 400 또는 원본 재요청 | 02_pdf_to_pngs.md | F10 |
 | I028 | 한 페이지에 문제 40개 | 사분면 분할 Vision | 00_tree.md | F09 |
 | I029 | 산출 확인은? | export-text / dump / unzip -l | 18_verify_gate.md | F19 |
-| I030 | 한컴에서 그림이 안 보여 | #182 한계 고지. writer 수정 금지 | 15_known_limits.md | F18 |
+| I030 | 한컴에서 그림이 안 보여 | ingest 이미지 삽입 미구현 확인. 그림 필수이면 F18 중단 | 15_known_limits.md | F18 |
 | I031 | 국어 지문 HWPX로 | 사다리 동일, 과목은 Vision 힌트일 뿐 | 07_passages_questions.md | F19 |
 | I032 | 국어 지문 한글 시험지로 | 사다리 동일, 과목은 Vision 힌트일 뿐 | 07_passages_questions.md | F19 |
 | I033 | 국어 지문 ingest 해줘 | 사다리 동일, 과목은 Vision 힌트일 뿐 | 07_passages_questions.md | F19 |
