@@ -245,6 +245,18 @@ SHA-256 `f153a78b5d90efed744a81bb1d744d45a24747f16a88aaf36bb56e3611115dec`를
 로그 SHA-256은 `6ab58c115fc29f5d19444d0b4926b88494b2f8c04d4c71bb762b024f60bfd2ec`다.
 fresh WASM의 전쪽 검증은 별도로 진행한다.
 
+11쪽 영문 본문은 raw 100.00%여도 확대 화면에서 글자 윤곽 차이가 보여
+별도로 조사했다. 원본 글꼴 이름은 `-윤명조120`, 문서에 기록된 대체 이름은
+`한컴바탕`이며 독립 PDF의 해당 쪽 내장 글꼴은 `Haansoft Batang`이다.
+설치된 한컴바탕을 명시한 Native 진단 PNG와 기본 선택 PNG는 SHA-256
+`9a491ac506d8096ff007798137c4ca5d0d21dea670eaf9321da6aee61884dc0c`로 동일했다.
+PDF 내장 부분 글꼴과 설치된 한컴바탕은 확인한 영문 8개 글자의 outline과
+UPM이 일치했다. 이 비교는 Native backend의 실제 글꼴 선택이나 모든 글자의
+동일성까지 입증하지 않는다. 레이아웃 글꼴 추적에는 Native renderer snapshot이
+없어 실제 paint 선택을 확정할 수 없으며, 표시 차이의 원인은 계속 확인한다.
+부분 outline 대조 로그 SHA-256은
+`d041cfa19a4452867bb0870a9a1cbd48da894dc9a64ee72e304662d90d82c4c3`다.
+
 저장 보존도 별도로 확인했다. 재단 표시가 켜진 원본 HWP를 RHWP의
 `export-hwpx`로 저장한 결과, 생성된 `settings.xml`에 `PrintCropMark`가 없다.
 따라서 저장 후 다시 열면 같은 인쇄 설정을 소비할 수 없다. 이는 원본 HWP와
