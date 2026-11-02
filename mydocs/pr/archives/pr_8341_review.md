@@ -94,3 +94,20 @@ WASM 89.19%로 90%를 넘지 못했다. 글꼴 공급만으로 해결됐다고 �
 쪽별 체크포인트부터 이어서 완료했다. 이 결과는 이전 통합 후보의 WASM 패키지로 산출한 값이며
 새 base에서 빌드한 WASM의 실행 결과가 아니다. 새 base는 이후 HWP 저장 경로가 바뀌었고,
 그 외 렌더러는 이전 후보와 같음을 별도로 확인했다. 2024 Print 비교 결과와 혼동하지 않는다.
+
+같은 저장본과 기준 PDF의 [Native 전체 TSV](../assets/issue_8305/followup8438/native-saved-original2020-all.tsv)는
+64쪽 최저 92.61%(30쪽), 90% 미만 0쪽이다. 기존 Native 실행 파일 SHA-256은
+`34dfddd062947e91c33cb3c2b2c16a10f9903d2d1184fcdb646683e6a0dc2f1f`이다.
+중단 전에 완성된 PNG와 같은 실행 파일로 나머지 쪽을 다시 내보낸 PNG를 원본
+해시와 함께 대조했다. 이 결과는 표 원점 후보 수정 전의 측정이다.
+
+원 PR이 지목한 제목 차례 영역을 같은 입력의 기존 PNG로 다시 구성했다.
+[20쪽 Native review](../assets/issue_8305/followup8438/native-original2020-review-020.png) ·
+[20쪽 Native overlay](../assets/issue_8305/followup8438/native-original2020-overlay-020.png) ·
+[59쪽 Native review](../assets/issue_8305/followup8438/native-original2020-review-059.png) ·
+[59쪽 Native overlay](../assets/issue_8305/followup8438/native-original2020-overlay-059.png) ·
+[20쪽 WASM review](../assets/issue_8305/followup8438/wasm-original2020-review-020.png) ·
+[20쪽 WASM overlay](../assets/issue_8305/followup8438/wasm-original2020-overlay-020.png) ·
+[59쪽 WASM review](../assets/issue_8305/followup8438/wasm-original2020-review-059.png) ·
+[59쪽 WASM overlay](../assets/issue_8305/followup8438/wasm-original2020-overlay-059.png).
+제목과 주변 본문의 순서·표시는 유지되며, 세부 글자 모양과 점선 차이도 함께 보인다.
