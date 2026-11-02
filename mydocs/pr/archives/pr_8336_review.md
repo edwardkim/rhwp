@@ -228,6 +228,17 @@ Bold 선택은 이 2020 기준과 혼용하지 않으며 원인을 확정하지 
 책 그림 참조 검출에 실패했고, 보정 후 저장본은 manifest를 통해 원본 PNG와 같은
 바이트를 가리킨다. 원본 PNG SHA-256은
 `7ea93ebbb90fb9df4ef75b16b393a4aa393fe129408e7d373c5c76a09820130a`다.
+
+2026-11-03 현재 제품 코드 `dd284b5cda`로 원본 HWP를 다시 HWPX 저장했다.
+`--verify --verify-pages`에서 IR 차이 0건, 전후 178쪽을 확인했으며 저장본의
+SHA-256은 기존 검증본과 같은 `31c0dbbbf71bb0561d2be517e979b348f90b8ec49d195f0f98a0f960cefd2104`다.
+같은 2020 Print·96 DPI·compat 2022에서 94쪽 원본과 저장본의 현재 Native PNG도
+각각 이전 실행의 같은 입력 PNG와 SHA-256
+`c01b60724f8c791bf53119f6c3dd08216ecd1ae169de0b7c95c5945f322a5525`로 일치했다.
+기존 94쪽 [비교](../assets/issue_7633_8334/followup8438/book-reference/native-saved-p094-review.png)와
+[overlay](../assets/issue_7633_8334/followup8438/book-reference/native-saved-p094-overlay.png)의
+책 그림과 본문을 재확인했다. 이는 94쪽의 현재 Native 확인과 저장 바이트 비교이며,
+현재 코드의 전쪽 Native·fresh WASM을 새로 산출했다는 뜻은 아니다.
 원본·HWPX·HWP 왕복에서 그림 소유와 내용을 비교하는 관계형 검사를
 추가했다. 전쪽 비교는 제품 코드 `6896862b1c`와 그 코드로 빌드한 fresh WASM을 사용했다.
 최소 글꼴 집중 실행은 기존 검사 13건 통과와 신규 검사 1건 실패로 끝났다.
