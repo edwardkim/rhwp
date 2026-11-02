@@ -524,7 +524,15 @@ pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
     if st.has_spilled_page_tail_float(para_idx, ctrl_idx) {
         return Ok(());
     }
-    let flow = shape_flow::prepare(ctrl, para, ctrl_idx, dpi);
+    let mut flow = shape_flow::prepare(ctrl, para, ctrl_idx, dpi);
+    // [#8458] 자기 줄이 이미 글줄 항목으로 이 쪽에 놓였으면 그 줄 높이는 소비됐다.
+    // 글자처럼 취급한 개체는 그 줄 안에 있으므로 줄 높이를 다시 판정·누적하지 않는다
+    // (156759019 pi=29 줄1: 공백 글자 + TAC 로고, 글줄 53.1px 를 두 번 세어 로고만 다음 쪽).
+    if flow.tac_separate_line_h.is_some()
+        && shape_flow::own_line_already_placed(para_idx, para, ctrl_idx, &st.current_items)
+    {
+        flow.tac_separate_line_h = None;
+    }
     if st.defer_table_host_ole_to_next_column(para_idx, ctrl_idx, ctrl, dpi) {
         return Ok(());
     }

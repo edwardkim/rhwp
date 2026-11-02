@@ -264,3 +264,26 @@ pub(super) fn page_still_holds_lines_before_anchor(
     }
     before
 }
+
+/// 개체의 제어 문자가 실린 저장 줄이 이미 이 쪽의 글줄 항목(전체·부분 문단)으로 놓였는가.
+/// 그 줄의 높이는 글줄 항목이 소비했다.
+pub(super) fn own_line_already_placed(
+    para_idx: usize,
+    para: &Paragraph,
+    ctrl_idx: usize,
+    items: &[crate::renderer::pagination::PageItem],
+) -> bool {
+    use crate::renderer::pagination::PageItem;
+    let Some(line) = crate::renderer::layout::control_line_seg_index(para, ctrl_idx) else {
+        return false;
+    };
+    items.iter().any(|item| match item {
+        PageItem::PartialParagraph {
+            para_index,
+            start_line,
+            end_line,
+        } => *para_index == para_idx && (*start_line..*end_line).contains(&line),
+        PageItem::FullParagraph { para_index } => *para_index == para_idx,
+        _ => false,
+    })
+}
