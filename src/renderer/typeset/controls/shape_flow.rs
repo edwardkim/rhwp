@@ -205,3 +205,62 @@ fn topbottom_pushdown_height(common: &crate::model::shape::CommonObjAttr, dpi: f
     }
     Some(hwpunit_to_px(common.height as i32, dpi) + hwpunit_to_px(common.margin.bottom as i32, dpi))
 }
+
+/// 개체의 제어 문자가 실린 저장 줄이 앞 줄보다 위(쪽 되감김)에서 시작하는가.
+/// 저장 사다리가 그 줄을 다음 쪽 첫머리에 둔다는 뜻이다. 편집·합성 줄은 판정하지 않는다.
+pub(super) fn anchor_line_rewinds_to_next_page(para: &Paragraph, ctrl_idx: usize) -> bool {
+    if para.stored_text_partition_is_dirty() || para.cell_format_vpos_dirty {
+        return false;
+    }
+    let Some(line) = crate::renderer::layout::control_line_seg_index(para, ctrl_idx)
+        .filter(|&line| line > 0)
+    else {
+        return false;
+    };
+    let (Some(prev), Some(own)) = (para.line_segs.get(line - 1), para.line_segs.get(line)) else {
+        return false;
+    };
+    let stored = |seg: &crate::model::paragraph::LineSeg| {
+        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+    };
+    stored(prev) && stored(own) && own.vertical_pos < prev.vertical_pos
+}
+
+/// 현재 쪽이 아직 앵커 줄 **앞** 줄의 쪽인가 — 이 문단의 앞 줄 개체가 있고 앵커 줄
+/// 이후의 개체는 아직 없다. 같은 줄의 다른 개체가 먼저 다음 쪽을 열었으면 그 쪽은
+/// 떠나는 쪽이 아니다(156719599: 같은 줄 TAC 표가 먼저 2쪽에 놓인다).
+pub(super) fn page_still_holds_lines_before_anchor(
+    para_idx: usize,
+    para: &Paragraph,
+    ctrl_idx: usize,
+    items: &[crate::renderer::pagination::PageItem],
+) -> bool {
+    use crate::renderer::pagination::PageItem;
+    let Some(anchor_line) = crate::renderer::layout::control_line_seg_index(para, ctrl_idx) else {
+        return false;
+    };
+    let mut before = false;
+    for item in items {
+        let control = match item {
+            PageItem::Table {
+                para_index,
+                control_index,
+            }
+            | PageItem::PartialTable {
+                para_index,
+                control_index,
+                ..
+            }
+            | PageItem::Shape {
+                para_index,
+                control_index,
+            } if *para_index == para_idx => *control_index,
+            _ => continue,
+        };
+        match crate::renderer::layout::control_line_seg_index(para, control) {
+            Some(line) if line < anchor_line => before = true,
+            _ => return false,
+        }
+    }
+    before
+}

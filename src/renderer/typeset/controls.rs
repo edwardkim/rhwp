@@ -528,7 +528,23 @@ pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
     if st.defer_table_host_ole_to_next_column(para_idx, ctrl_idx, ctrl, dpi) {
         return Ok(());
     }
-    while flow.needs_advance(st.table_host_shape_page(), || st.available_height()) {
+    // [#8446] 앵커 줄이 저장 사다리에서 다음 쪽으로 되감긴(vpos 리셋) 비-TAC 자리차지 개체는
+    // 그 줄을 따라 넘기지 않고 떠나는 쪽의 흐름 말미에 남긴다. 줄 머리 리셋의 #6146 과 같은
+    // 규칙을 문단 중간 줄 리셋에 적용한다(156571452 로고: 한컴 1쪽 y 1030.7, 본문 아래끝 1028.1).
+    // 개체 아래끝이 용지 안에 남을 때만이다. 같은 줄의 뒤 내용은 리셋대로 다음 쪽에 놓인다.
+    let spills_to_leaving_page = flow.non_tac_pushdown_h.is_some_and(|extra| {
+        shape_flow::anchor_line_rewinds_to_next_page(para, ctrl_idx)
+            && shape_flow::page_still_holds_lines_before_anchor(
+                para_idx,
+                para,
+                ctrl_idx,
+                &st.current_items,
+            )
+            && st.layout.body_area.y + st.current_height + extra <= st.layout.page_height + 0.5
+    });
+    while !spills_to_leaving_page
+        && flow.needs_advance(st.table_host_shape_page(), || st.available_height())
+    {
         // 단 기준 개체가 다음 단에 들어가면 개체만 이월한다. 뒤 본문은 남은
         // 현재 단을 채우며, 저장 줄의 단 경계에서 예약 개체 뒤로 이어진다.
         let common = match ctrl {
@@ -567,6 +583,11 @@ pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
     };
     st.commit_table_host_shape_with_storage(para_idx, ctrl_idx, flow, accepted_frame, storage)?;
     st.register_side_wrap_picture(para_idx, ctrl_idx, para, Some(para_start_height), styles);
+    if spills_to_leaving_page {
+        // 개체만 남기고 그 줄은 저장 리셋대로 다음 쪽에서 시작한다. 줄에 다른 내용이 없어도
+        // 쪽은 열린다(156569782: 한컴 2쪽은 빈 줄 하나뿐인 쪽).
+        st.advance_column_or_new_page_with_storage(storage)?;
+    }
 
     Ok(())
 }
