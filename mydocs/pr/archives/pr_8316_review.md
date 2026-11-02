@@ -232,8 +232,11 @@ SHA-256 `f153a78b5d90efed744a81bb1d744d45a24747f16a88aaf36bb56e3611115dec`를
 표시가 꺼진 `samples/hwpspec.hwp` 94쪽 Native PNG는 보정 전후 SHA-256
 `c01b60724f8c791bf53119f6c3dd08216ecd1ae169de0b7c95c5945f322a5525`로 동일하다.
 이후 같은 바이너리로 전 12쪽을 확인해 Native 최저 raw 99.99%, 90% 미만
-0쪽이었다. 임시 전체 TSV SHA-256은
+0쪽이었다. [Native 전체 TSV](../assets/issue_8136/followup8438-crop/native-all.tsv)의 SHA-256은
 `b3e39b1c77a06b2e27c47df6b43f17bac0a5d57fbbcd4e303cde9c6ac480b77b`다.
+[2쪽 Native review](../assets/issue_8136/followup8438-crop/native-review-002.png)와
+[overlay](../assets/issue_8136/followup8438-crop/native-overlay-002.png)는 같은 입력·PDF의
+보정 후 결과다.
 원본 HWP와 한컴이 진단용으로 생성한 HWPX의 2쪽에서 `screen`에는 표시가 없고
 `print`에는 표시가 있음을 Native PNG로 각각 확인했다. 이 HWPX 검사는
 설정 소비만 확인한 것이며 별도 독립 Print와의 전쪽 대조는 아니다. 프로필 실행
