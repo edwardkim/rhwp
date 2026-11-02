@@ -83,6 +83,10 @@ Print 입력과 바이트 단위로 일치한다. 새 base와 이전 검증 코�
 파서·HWPX 저장기는 변경되지 않았고 후속 브랜치에도 제품 코드 차이가 없어
 위 기존 TSV와 Print 이미지를 재사용한다.
 
+### 현재 저장 후보의 공통 입력 재확인
+
+제품 코드 `dd284b5cda`로 위 PDF를 편집 우선 가져오기 해 HWP로 저장했다. 16쪽이며 결과 SHA-256 `edaf8172427572450503f3265fca95b1c1d2c9673c1e5b25528f5b55294a043f`는 위 한컴 Print에 사용한 저장 HWP와 일치한다. [PR #8365](https://github.com/edwardkim/rhwp/pull/8365)·[PR #8375](https://github.com/edwardkim/rhwp/pull/8375)·[PR #8380](https://github.com/edwardkim/rhwp/pull/8380)이 같은 입력을 사용해 한 번 실행한 결과다. 이는 입력 바이트의 재확인이며 현재 시험 중인 WMFC 변경 이후의 화면 검증은 아니다.
+
 ### 2026-11-02 새 base 최소 글꼴 집중 회귀
 
 검증 기준 base
