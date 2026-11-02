@@ -257,7 +257,7 @@ pub(crate) fn expand_numbering_format(
             start
         };
         let fmt_code = numbering.heads[idx].number_format;
-        let num_fmt = numbering_format_to_number_format(fmt_code);
+        let num_fmt = NumFmt::from_hwp_format(fmt_code);
         format_number(num as u16, num_fmt)
     };
 
@@ -294,23 +294,6 @@ pub(crate) fn expand_numbering_format(
         result.push(ch);
     }
     result
-}
-
-/// HWP 표 41 번호 형식 코드 → NumberFormat 변환
-pub(crate) fn numbering_format_to_number_format(code: u8) -> NumFmt {
-    match code {
-        0 => NumFmt::Digit,         // 1, 2, 3
-        1 => NumFmt::CircledDigit,  // ①, ②, ③
-        2 => NumFmt::RomanUpper,    // I, II, III
-        3 => NumFmt::RomanLower,    // i, ii, iii
-        4 => NumFmt::LatinUpper,    // A, B, C
-        5 => NumFmt::LatinLower,    // a, b, c
-        8 => NumFmt::HangulGaNaDa,  // 가, 나, 다
-        10 => NumFmt::HangulJamo,   // ㄱ, ㄴ, ㄷ
-        12 => NumFmt::HangulNumber, // 일, 이, 삼
-        13 => NumFmt::HanjaNumber,  // 一, 二, 三
-        _ => NumFmt::Digit,
-    }
 }
 
 /// 쪽 번호를 형식에 맞게 문자열로 변환 (mod.rs의 format_number 재사용)

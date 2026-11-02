@@ -916,7 +916,8 @@ fn read_numbering_level(r: &mut ByteReader, numbering: &mut Numbering, level: us
     let text_distance = r.read_i16().unwrap_or(0);
     let char_shape_id = r.read_u32().unwrap_or(0);
 
-    let number_format = ((attr >> 5) & 0x0F) as u8;
+    // 1~10수준 모두 번호 형식의 다섯 비트(甲 = 16 포함)를 보존한다.
+    let number_format = ((attr >> 5) & 0x1F) as u8;
     numbering.heads[level] = NumberingHead {
         attr,
         width_adjust,

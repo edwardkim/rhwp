@@ -2158,7 +2158,7 @@ fn read_text_content(reader: &mut Reader<&[u8]>) -> Result<String, HwpxError> {
         .collect())
 }
 
-fn decode_xml_general_ref(r: &BytesRef<'_>) -> String {
+pub(crate) fn decode_xml_general_ref(r: &BytesRef<'_>) -> String {
     if let Ok(Some(ch)) = r.resolve_char_ref() {
         return ch.to_string();
     }
@@ -5447,6 +5447,16 @@ fn cell_text_direction_from_hwpx(value: &str) -> u8 {
     }
 }
 
+/// 쪽 번호·자동 번호의 번호 모양 이름 → 표 134 코드. 문단 번호(표 41)와 같은 코드·이름을
+/// 쓴다. `HANGUL`·`HANJA`는 이전 rhwp가 가나다·一二三에 쓰던 이름이라 그 뜻으로 읽는다.
+fn number_type_code(value: &str) -> u8 {
+    match value {
+        "HANGUL" => 8,
+        "HANJA" => 13,
+        _ => super::header::parse_numbering_format_code(value),
+    }
+}
+
 fn parse_page_num_attrs(e: &quick_xml::events::BytesStart) -> PageNumberPos {
     let mut pn = PageNumberPos::default();
     for attr in e.attributes().flatten() {
@@ -5468,19 +5478,7 @@ fn parse_page_num_attrs(e: &quick_xml::events::BytesStart) -> PageNumberPos {
                 };
             }
             b"formatType" => {
-                pn.format = match attr_str(&attr).as_str() {
-                    "DIGIT" => 0,
-                    // [#XXXX] 스펙 표기는 "CIRCLED_DIGIT"(NumberType1). 과거 오탈자
-                    // "CIRCLE_DIGIT"로 저장된 한컴 실물 파일과의 호환을 위해 둘 다 인식한다.
-                    "CIRCLED_DIGIT" | "CIRCLE_DIGIT" => 1,
-                    "ROMAN_CAPITAL" => 2,
-                    "ROMAN_SMALL" => 3,
-                    "LATIN_CAPITAL" => 4,
-                    "LATIN_SMALL" => 5,
-                    "HANGUL" => 6,
-                    "HANJA" => 7,
-                    _ => 0,
-                };
+                pn.format = number_type_code(&attr_str(&attr));
             }
             // [#7633] 줄표(측면) 문자. 한/글은 `""`·공백·속성 없음을 줄표 없는 쪽 번호로,
             // `"-"` 만 `- 1 -` 로 그린다. 빈 값을 `'-'` 로 채우면 줄표가 새로 생긴다.
@@ -6090,23 +6088,13 @@ fn parse_ctrl_autonum(
                             // pageNum formatType 과 동일한 문자열→코드 매핑을 사용한다.
                             b"type" => {
                                 an.format = match attr_str(&attr).as_str() {
-                                    "DIGIT" => 0,
-                                    // [#2957] 실제 한컴 스펙 표기는 "CIRCLED_DIGIT" (pageNum
-                                    // formatType 의 "CIRCLE_DIGIT" 와 다름). 구값도 겸용 인식.
-                                    "CIRCLE_DIGIT" | "CIRCLED_DIGIT" => 1,
-                                    "ROMAN_CAPITAL" => 2,
-                                    "ROMAN_SMALL" => 3,
-                                    "LATIN_CAPITAL" => 4,
-                                    "LATIN_SMALL" => 5,
-                                    "HANGUL" => 6,
-                                    "HANJA" => 7,
                                     // [#6872] 사용자 기호. 종전에는 `_ => 0` 에 걸려
                                     // DIGIT 으로 떨어졌고, 왕복 저장본의 각주 번호
                                     // 모양이 사용자 기호에서 숫자로 바뀌었다.
                                     // 코드는 `NumberFormat::UserChar` 의 서수(18)를
-                                    // 그대로 쓴다 — pageNum 이 쓰는 0..7 과 겹치지 않는다.
+                                    // 그대로 쓴다 — 표 134 의 0~16 과 겹치지 않는다.
                                     "USER_CHAR" => 18,
-                                    _ => 0,
+                                    other => number_type_code(other),
                                 };
                             }
                             b"userChar" => {

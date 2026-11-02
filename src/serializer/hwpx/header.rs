@@ -519,17 +519,28 @@ fn para_head_text_offset_type_str(attr: u32) -> &'static str {
     }
 }
 
-// [#2947] parser 측 parse_numbering_format_code() (표 43) 의 역매핑.
-fn numbering_format_str(code: u8) -> &'static str {
+// [#2947] parser 측 parse_numbering_format_code() 의 역매핑. 문단 번호(표 41)와
+// 각주·미주·쪽 번호·자동 번호(표 134)가 같은 코드와 OWPML 이름을 쓴다.
+pub(crate) fn numbering_format_str(code: u8) -> &'static str {
     match code {
         1 => "CIRCLED_DIGIT",
         2 => "ROMAN_CAPITAL",
         3 => "ROMAN_SMALL",
         4 => "LATIN_CAPITAL",
         5 => "LATIN_SMALL",
+        6 => "CIRCLED_LATIN_CAPITAL",
+        7 => "CIRCLED_LATIN_SMALL",
         8 => "HANGUL_SYLLABLE",
-        12 => "HANGUL_NUMBER",
-        13 => "HANJA_NUMBER",
+        9 => "CIRCLED_HANGUL_SYLLABLE",
+        10 => "HANGUL_JAMO",
+        11 => "CIRCLED_HANGUL_JAMO",
+        12 => "HANGUL_PHONETIC",
+        13 => "IDEOGRAPH",
+        14 => "CIRCLED_IDEOGRAPH",
+        15 => "DECAGON_CIRCLE",
+        16 => "DECAGON_CIRCLE_HANJA",
+        0x80 => "SYMBOL",
+        0x81 => "USER_CHAR",
         _ => "DIGIT",
     }
 }

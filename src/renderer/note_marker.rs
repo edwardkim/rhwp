@@ -18,7 +18,7 @@ pub(crate) fn leading(
             .zip(paragraph.control_text_positions())
             .find_map(|((index, control), position)| match control {
                 Control::AutoNumber(auto)
-                    if position == 0 && auto.number_type == kind && auto.format <= 8 =>
+                    if position == 0 && auto.number_type == kind && auto.format <= 16 =>
                 {
                     Some((index, auto))
                 }
@@ -42,17 +42,7 @@ pub(crate) fn text(
             auto.suffix_char,
         )
     } else {
-        let format = match number_shape as u8 {
-            1 => NumberFormat::CircledDigit,
-            2 => NumberFormat::RomanUpper,
-            3 => NumberFormat::RomanLower,
-            4 => NumberFormat::LatinUpper,
-            5 => NumberFormat::LatinLower,
-            8 => NumberFormat::HangulGaNaDa,
-            12 => NumberFormat::HangulNumber,
-            13 => NumberFormat::HanjaNumber,
-            _ => NumberFormat::Digit,
-        };
+        let format = NumberFormat::from_hwp_format(number_shape as u8);
         (
             format,
             char::from_u32(u32::from(before)).unwrap_or('\0'),

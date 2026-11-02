@@ -459,28 +459,9 @@ where
 /// HanjaDigit=IDEOGRAPH, HanjaGapEul=DECAGON_CIRCLE, FourSymbol=SYMBOL)은 파서 표기를
 /// 그대로 따른다.
 fn note_number_format_str(format: crate::model::footnote::NumberFormat) -> &'static str {
-    use crate::model::footnote::NumberFormat::*;
-    match format {
-        Digit => "DIGIT",
-        CircledDigit => "CIRCLED_DIGIT",
-        UpperRoman => "ROMAN_CAPITAL",
-        LowerRoman => "ROMAN_SMALL",
-        UpperAlpha => "LATIN_CAPITAL",
-        LowerAlpha => "LATIN_SMALL",
-        CircledUpperAlpha => "CIRCLED_LATIN_CAPITAL",
-        CircledLowerAlpha => "CIRCLED_LATIN_SMALL",
-        HangulSyllable => "HANGUL_SYLLABLE",
-        CircledHangulSyllable => "CIRCLED_HANGUL_SYLLABLE",
-        HangulJamo => "HANGUL_JAMO",
-        CircledHangulJamo => "CIRCLED_HANGUL_JAMO",
-        HangulDigit => "HANGUL_PHONETIC",
-        HanjaDigit => "IDEOGRAPH",
-        CircledHanjaDigit => "CIRCLED_IDEOGRAPH",
-        HanjaGapEul => "DECAGON_CIRCLE",
-        HanjaGapEulHanja => "DECAGON_CIRCLE_HANJA",
-        FourSymbol => "SYMBOL",
-        UserChar => "USER_CHAR",
-    }
+    super::header::numbering_format_str(
+        crate::model::footnote::FootnoteShape::number_format_attr_code(format) as u8,
+    )
 }
 
 /// [#2742] 주석 장식 문자(IR `char`) → HWPX 속성값.
@@ -3940,13 +3921,8 @@ where
             ),
             num = an.number,
             nt = auto_number_type_to_str(an.number_type),
-            // [#2957] <hp:autoNumFormat type> 은 <hp:pageNum formatType> 과 달리 원 문자
-            // 형식을 "CIRCLED_DIGIT"로 표기한다(각주/미주 경로에서 실측 검증됨, #2742).
-            ty = if an.format == 1 {
-                "CIRCLED_DIGIT"
-            } else if an.format == 18 {
-                // [#6872] 사용자 기호(`NumberFormat::UserChar` 서수). `page_num_format_to_str`
-                // 는 쪽 번호용 0..7 만 알아서 이 값을 DIGIT 으로 떨궜다.
+            ty = if an.format == 18 {
+                // [#6872] 사용자 기호(`NumberFormat::UserChar` 서수).
                 "USER_CHAR"
             } else {
                 page_num_format_to_str(an.format)
@@ -4169,20 +4145,9 @@ fn page_num_pos_to_str(pos: u8) -> &'static str {
 }
 
 /// 번호 형식 코드(표 134) → HWPX `formatType` 문자열. `parse_page_num_attrs`의 역매핑.
+/// 문단 번호와 같은 OWPML 이름을 쓴다(원 문자는 스펙 철자 "CIRCLED_DIGIT").
 fn page_num_format_to_str(fmt: u8) -> &'static str {
-    match fmt {
-        0 => "DIGIT",
-        // [#XXXX] OWPML Core 스키마 NumberType1(<hp:pageNum formatType>)의 실제 값은
-        // "CIRCLED_DIGIT"이다 (Core XML schema.xml 12행). "CIRCLE_DIGIT"은 오탈자.
-        1 => "CIRCLED_DIGIT",
-        2 => "ROMAN_CAPITAL",
-        3 => "ROMAN_SMALL",
-        4 => "LATIN_CAPITAL",
-        5 => "LATIN_SMALL",
-        6 => "HANGUL",
-        7 => "HANJA",
-        _ => "DIGIT",
-    }
+    super::header::numbering_format_str(fmt)
 }
 
 /// `<hp:ctrl><hp:pageNum .../></hp:ctrl>` — 쪽 번호 위치(PageNumberPos) 컨트롤.

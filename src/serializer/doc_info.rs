@@ -879,11 +879,11 @@ fn write_numbering_level<W: std::io::Write>(
     w: &mut ByteWriter<W>,
 ) -> std::io::Result<()> {
     let head = &numbering.heads[level];
-    // number_format(문단 번호 형식)을 attr 비트 5~8 로 재인코딩한다. 파서는 number_format
-    // 을 (attr>>5)&0xF 로만 복원하므로(parser/doc_info.rs), IR 로 생성된 번호(WASM
+    // number_format(문단 번호 형식)을 attr 비트 5~9 로 재인코딩한다. 파서는 number_format
+    // 을 (attr>>5)&0x1F 로만 복원하므로(parser/doc_info.rs), IR 로 생성된 번호(WASM
     // create_numbering)처럼 attr=0 이고 number_format 만 세팅된 경우 이를 반영하지 않으면
     // 저장·재로드 시 모든 수준이 DIGIT(0)로 유실된다. serialize_para_shape 의 attr1 재인코딩과 동형.
-    let attr = (head.attr & !(0x0f << 5)) | ((head.number_format as u32 & 0x0f) << 5);
+    let attr = (head.attr & !(0x1f << 5)) | ((head.number_format as u32 & 0x1f) << 5);
     w.write_u32(attr)?;
     w.write_i16(head.width_adjust)?;
     w.write_i16(head.text_distance)?;
