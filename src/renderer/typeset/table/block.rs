@@ -43,7 +43,6 @@ struct SplitTableEntry<'a> {
     host_spacing_total: f64,
     table_total: f64,
     stored_ordinary_rowbreak_rewind_uses_actual_footnote_boundary: bool,
-    fn_margin: f64,
     available: f64,
     declared_object_total: f64,
     native_hwp5_internal_reset_rewind_needs_anchor_resync: bool,

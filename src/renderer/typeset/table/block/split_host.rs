@@ -22,7 +22,6 @@ impl TypesetEngine {
         input: BlockTableInput<'_>,
         mut placement: ParagraphFloatPlacement,
         available: f64,
-        footnote_margin: f64,
     ) -> Option<SplitHostHandoff> {
         let prefix = placement.split_host_prefix()?;
         let fmt = input.fmt;
@@ -101,14 +100,7 @@ impl TypesetEngine {
                 input.ft.table_footnote_height,
                 input.ft.table_footnote_count,
             );
-            current_available = (st.base_available_height()
-                - footnotes
-                - if footnotes > 0.0 {
-                    footnote_margin
-                } else {
-                    0.0
-                }
-                - st.current_zone_y_offset)
+            current_available = (st.base_available_height() - footnotes - st.current_zone_y_offset)
                 .max(0.0)
                 .min(st.available_height());
             placement.anchor_y = st.current_height;

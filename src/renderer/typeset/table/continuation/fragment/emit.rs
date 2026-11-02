@@ -1217,7 +1217,12 @@ impl TypesetEngine {
                     eprintln!("DIAG_SCAN FLOW_END pi={para_idx} row={cursor_row} cont={is_continuation} current={:.3} occupied={occupied:.3} terminal_spacing={terminal_spacing:.3} outer={} terminal_flow={:.3} reserved={terminal_outer_bottom_overhead:.3} host_tags={:?} next_line={:?}", st.current_height, table.outer_margin_bottom, input.prepared.terminal_outer_bottom_flow, input.source.paragraph.line_segs.iter().map(|line| line.tag).collect::<Vec<_>>(), input.source.paragraphs_all.get(para_idx + 1).and_then(|para| para.line_segs.first()).map(|line| (line.vertical_pos, line.tag)));
                 }
                 st.advance_flow_by(occupied + terminal_spacing);
-                terminal_host_push = terminal_spacing;
+                // [#8468] host 글줄은 조각 하단 + 바깥 아래 여백에 놓인다. 다음 문단과의
+                // 종료 간격은 그 글줄 뒤의 흐름이라 첫 줄의 앞 간격에 넣지 않는다(전진량은 같다).
+                terminal_host_push = input
+                    .prepared
+                    .terminal_outer_bottom_flow
+                    .clamp(0.0, terminal_spacing.max(0.0));
                 flow_after_terminal_advance = st.current_height;
                 self.consume_stored_terminal_empty_line_gap(st, &input, is_continuation);
             }

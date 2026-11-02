@@ -220,15 +220,9 @@ pub(super) fn place_split_paragraph_with_storage<S: crate::storage::Storage>(
             {
                 (st.available_height() - reserve - st.current_height).max(0.0)
             } else {
-                let fn_margin = if st.current_footnote_height > 0.0 {
-                    st.footnote_safety_margin
-                } else {
-                    0.0
-                };
                 (base_available
                     - reserve
                     - st.current_footnote_height
-                    - fn_margin
                     - st.current_height
                     - st.current_zone_y_offset)
                     .max(0.0)
@@ -308,44 +302,115 @@ pub(super) fn place_split_paragraph_with_storage<S: crate::storage::Storage>(
             .filter(|&line| line > cursor_line)
             .or(continuation_reset_line);
 
-        let scan::LineScanResult {
-            end_line,
-            cumulative,
-            used_saved_tail_vpos_fit,
-        } = scan::scan_lines(
-            para,
-            fmt,
-            paragraphs,
-            para_idx,
-            cursor_line,
-            line_count,
-            avail_for_lines,
-            fragment_forced_break_line,
-            native_hwp5_existing_footnote_boundary,
-            fragment_page_vpos_base,
-            is_tac_picture_stack,
-            &line_scan_page,
-            dpi,
-        );
-
+        let base_available_height = st.base_available_height();
+        let hwp5_stored_pagination = st.profile.hwp5_stored_pagination_layout();
+        let scan_with = |avail: f64, cap: Option<usize>| {
+            let forced = match (fragment_forced_break_line, cap) {
+                (Some(line), Some(cap)) => Some(line.min(cap)),
+                (line, cap) => line.or(cap),
+            };
+            let scan::LineScanResult {
+                end_line,
+                cumulative,
+                used_saved_tail_vpos_fit,
+            } = scan::scan_lines(
+                para,
+                fmt,
+                paragraphs,
+                para_idx,
+                cursor_line,
+                line_count,
+                avail,
+                forced,
+                native_hwp5_existing_footnote_boundary,
+                fragment_page_vpos_base,
+                is_tac_picture_stack,
+                &line_scan_page,
+                dpi,
+            );
+            let boundary = split::refine_split_boundary(
+                para,
+                fmt,
+                paragraphs.get(para_idx + 1),
+                cursor_line,
+                line_count,
+                avail,
+                base_available_height,
+                hwp5_stored_pagination,
+                dpi,
+                split::SplitBoundary {
+                    end_line,
+                    cumulative,
+                },
+            );
+            (boundary, used_saved_tail_vpos_fit)
+        };
+        // 이 조각의 앞 줄이 참조한 각주는 뒤 줄보다 먼저 쪽 아래를 차지한다.
+        // 비용은 각주 참조 줄에서만 바뀌므로, 앞 k개 참조 줄의 각주를 넣은 예산마다
+        // 끝 줄을 다음 참조 줄 바로 뒤까지로 제한해 훑고 가장 긴 유효 조각을 고른다.
+        let mut pending_notes: Vec<_> = st
+            .own_line_notes
+            .iter()
+            .filter(|note| {
+                note.para_index == para_idx
+                    && note.line >= cursor_line
+                    && note.line < line_count
+                    && !st
+                        .line_registered_notes
+                        .contains(&(para_idx, note.control_index))
+            })
+            .cloned()
+            .collect();
+        pending_notes.sort_by_key(|note| (note.line, note.number));
+        let note_levels = st.own_line_note_levels(&pending_notes, |line| {
+            avail_for_lines
+                - fmt.line_advances_sum(cursor_line..line)
+                - fmt.line_heights.get(line).copied().unwrap_or(0.0)
+        });
+        let mut fragment_avail = avail_for_lines;
+        let (mut boundary, mut used_saved_tail_vpos_fit) = scan_with(fragment_avail, None);
+        if !note_levels.is_empty() {
+            let mut best: Option<(f64, split::SplitBoundary, bool)> = None;
+            for level in 0..=note_levels.len() {
+                let previous = level.checked_sub(1).map(|index| note_levels[index]);
+                if previous.is_some_and(|previous| previous.blocks_later_lines) {
+                    // 앞부분만 들어간 각주가 쪽 나머지를 차지한다.
+                    break;
+                }
+                let cap = note_levels.get(level).map(|next| next.line + 1);
+                let level_avail =
+                    (avail_for_lines - previous.map_or(0.0, |previous| previous.cost)).max(0.0);
+                let (candidate, used) = scan_with(level_avail, cap);
+                let valid = previous.is_none_or(|previous| candidate.end_line >= previous.line + 2);
+                if std::env::var_os("RHWP_DIAG_OWN_NOTES").is_some() {
+                    eprintln!(
+                        "DIAG_OWN_NOTES pi={para_idx} cursor={cursor_line} level={level} cap={cap:?} avail={level_avail:.1} end={} valid={valid}",
+                        candidate.end_line
+                    );
+                }
+                let reached_cap = cap.is_some_and(|cap| candidate.end_line >= cap);
+                if valid
+                    && best
+                        .as_ref()
+                        .is_none_or(|(_, kept, _)| candidate.end_line > kept.end_line)
+                {
+                    best = Some((level_avail, candidate, used));
+                }
+                if !reached_cap {
+                    break;
+                }
+            }
+            if let Some((level_avail, chosen, used)) = best {
+                fragment_avail = level_avail;
+                boundary = chosen;
+                used_saved_tail_vpos_fit = used;
+            }
+        }
+        let avail_for_lines = fragment_avail;
         let split::SplitBoundary {
             end_line,
             cumulative,
-        } = split::refine_split_boundary(
-            para,
-            fmt,
-            paragraphs.get(para_idx + 1),
-            cursor_line,
-            line_count,
-            avail_for_lines,
-            st.base_available_height(),
-            st.profile.hwp5_stored_pagination_layout(),
-            dpi,
-            split::SplitBoundary {
-                end_line,
-                cumulative,
-            },
-        );
+        } = boundary;
 
         let Some(fragment) = placement::plan_fragment(
             fmt,
@@ -393,7 +458,16 @@ pub(super) fn place_split_paragraph_with_storage<S: crate::storage::Storage>(
                 fragment.item,
             );
         }
+        let fragment_slack = fragment
+            .content_height
+            .map_or(0.0, |content| (fragment.height - content).max(0.0));
         st.commit_split_paragraph_fragment_with_storage(fragment, storage)?;
+        st.register_own_line_notes_with_storage(
+            para_idx,
+            cursor_line..end_line,
+            fragment_slack,
+            storage,
+        )?;
         if continuation_reset_line == Some(end_line) {
             st.record_stored_reset_note_fragment_with_storage(para_idx, cursor_line, storage)?;
         }
@@ -1033,7 +1107,6 @@ pub(super) struct FitBudget {
     pub split_safety: SplitSafety,
     pub prev_is_partial_table: bool,
     pub available: f64,
-    pub footnote_margin_addback: f64,
 }
 
 /// 저장 꼬리 → 진단 → 편집 그림 이월 → 보정 소비 → float 배제 → 예산 순서를 보존한다.
@@ -1170,12 +1243,9 @@ pub(super) fn prepare_fit_budget_with_storage<S: crate::storage::Storage>(
     );
     st.reclaim_flow_by(shared.min(st.current_height));
     st.resolve_computed_float_first_line(para_idx, fmt);
-    let footnote_margin_addback =
-        st.take_paragraph_footnote_margin_addback(strict_after_empty_host_float);
     let tail_overflow =
         st.take_paragraph_tail_overflow(strict_after_empty_host_float, fmt.height_for_fit);
-    let available =
-        (st.available_height() - safety + footnote_margin_addback + tail_overflow).max(0.0);
+    let available = (st.available_height() - safety + tail_overflow).max(0.0);
 
     Ok(FitBudget {
         strict_after_empty_host_float,
@@ -1186,7 +1256,6 @@ pub(super) fn prepare_fit_budget_with_storage<S: crate::storage::Storage>(
         },
         prev_is_partial_table,
         available,
-        footnote_margin_addback,
     })
 }
 

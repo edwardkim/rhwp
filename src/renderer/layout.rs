@@ -16458,7 +16458,25 @@ impl LayoutEngine {
             } else {
                 None
             };
-            if let Some(para_style) = styles.para_styles.get(para_style_id) {
+            // [#8468] 끝 조각 뒤 host 글줄을 typeset 이 이 쪽 `PartialParagraph` 로 예약하고
+            // 조각 하단 아래 흐름(`host_push`)을 그 첫 줄의 확정 앞 간격으로 기록했으면,
+            // 배치는 조각 하단에서 다시 시작해 그 앞 간격만 한 번 더한다. 여기서 문단 뒤 간격·
+            // 종료 간격·바깥 아래 여백을 또 더하면 같은 흐름을 두 번 센다(경찰대학 중간보고서
+            // 97쪽: 정본 조각 하단 +1.2px, 이중 가산 +25.6px — 본문이 각주 영역과 겹쳤다).
+            let host_line_owns_trailing_flow = is_continuation
+                && !is_tac
+                && host_item_emitted
+                && ctx.float_pushed_line_spacings.contains_key(&para_index)
+                && end_cut.is_empty()
+                && para
+                    .controls
+                    .get(control_index)
+                    .is_some_and(|control| matches!(control, Control::Table(table) if end_row >= table.row_count as usize));
+            if let Some(para_style) = styles
+                .para_styles
+                .get(para_style_id)
+                .filter(|_| !host_line_owns_trailing_flow)
+            {
                 if is_tac {
                     if para_style.spacing_after > 0.0 {
                         y_offset += para_style.spacing_after;
@@ -16483,7 +16501,11 @@ impl LayoutEngine {
             // #2439: typeset reserves this margin for every proven native-HWP RowBreak
             // fragment.  Keep it outside `last_item_content_bottom`: it is trailing flow, not
             // painted content, and therefore must not trigger an overflow report.
-            if !is_tac && repeat_fragment_outer_margin && !computed_fragment_flow_end_consumed {
+            if !is_tac
+                && !host_line_owns_trailing_flow
+                && repeat_fragment_outer_margin
+                && !computed_fragment_flow_end_consumed
+            {
                 if let Some(Control::Table(table)) = para.controls.get(control_index) {
                     y_offset += hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
                 }
@@ -16491,7 +16513,7 @@ impl LayoutEngine {
 
             // 저장 호스트 줄은 표 외곽이 아닌 마지막 조각 뒤의 흐름 공간이다.
             // 분할 조판이 예약한 같은 전진량을 실제 다음 문단 원점에 소비한다.
-            if end_cut.is_empty() {
+            if end_cut.is_empty() && !host_line_owns_trailing_flow {
                 if let Some(Control::Table(table)) = para.controls.get(control_index) {
                     if end_row >= table.row_count as usize {
                         if let Some(advance) = stored_unconsumed_rowbreak_host_advance_hu(

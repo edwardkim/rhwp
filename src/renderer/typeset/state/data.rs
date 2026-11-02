@@ -89,6 +89,12 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 저장 각주 reset 뒤 조각과 그 뒤 번호는 다음 물리 쪽을 소유한다.
     /// 현재 본문을 먼저 이월하지 않고 실제 쪽 전환 때 같은 순서로 예약한다.
     pub(in crate::renderer::typeset) deferred_body_footnotes: Vec<(FootnoteRef, f64)>,
+    /// 지금 배치 중인 문단의 본문 각주와 그 참조가 든 줄. 분할 판정이 앞 줄의
+    /// 각주 높이를 뒤 줄보다 먼저 예약하고, 조각 확정 때 그 쪽에 등록한다.
+    pub(in crate::renderer::typeset) own_line_notes: Vec<crate::renderer::typeset::OwnLineNote>,
+    /// 분할 조각 확정 때 이미 등록한 (문단, 컨트롤) 각주. 컨트롤 순회는 건너뛴다.
+    pub(in crate::renderer::typeset) line_registered_notes:
+        std::collections::HashSet<(usize, usize)>,
     /// 현재 큐 예약은 실제 배치와 같은 본문 하단 앵커를 사용한다.
     pub(in crate::renderer::typeset) current_footnote_body_bottom_reserved: bool,
     /// 현재 쪽은 그림 표시가 있는 앞쪽에서 이월된 HWPX 각주 본문을 소유한다.
@@ -122,11 +128,6 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) footnote_separator_overhead: f64,
     /// 각주 사이 간격
     pub(in crate::renderer::typeset) footnote_between_notes_margin: f64,
-    /// 각주 안전 여백
-    pub(in crate::renderer::typeset) footnote_safety_margin: f64,
-    /// [#2559] 현재 구역에 꼬리말 정의가 없는가. 빈 꼬리말 밴드는 각주가 먼저
-    /// 사용하므로, 이 경우에만 각주 높이의 일부를 본문 가용 높이에서 회수한다.
-    pub(in crate::renderer::typeset) section_has_no_footer: bool,
     /// 존(zone) y 오프셋 (다단 나누기 시 누적)
     pub(in crate::renderer::typeset) current_zone_y_offset: f64,
     /// 현재 존의 레이아웃 오버라이드
@@ -242,10 +243,6 @@ pub(in crate::renderer::typeset) struct StateView {
     /// [Task #359] 다음 pi 가 vpos-reset 가드를 발동할 예정 → 현재 pi 의 fit 안전마진 비활성화.
     /// 단독 항목 페이지 발생 차단용.
     pub(in crate::renderer::typeset) skip_safety_margin_once: bool,
-    /// [Task #1725] tail-before-vpos-reset 문단 1회 각주 안전마진(40px) 비활성화.
-    /// 각주 있는 페이지에서 한글 LINESEG 는 tail 문단을 본문에 배치(각주는 아래)하는데,
-    /// rhwp 각주 예약(+40px 버퍼)이 tail 을 수 px 초과로 밀어 near-empty 페이지 over-pagination.
-    pub(in crate::renderer::typeset) skip_footnote_margin_once: bool,
     /// 다음 저장 vpos-reset 직전 tail의 실제 저장 line bounds. 현재 flow와 저장 bottom의
     /// 차이만 다음 문단의 fit allowance로 쓴다.
     pub(in crate::renderer::typeset) tail_saved_bounds_once: Option<(f64, f64)>,

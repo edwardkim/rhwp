@@ -416,9 +416,6 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn allow_tail_safety_margin_once(&mut self) {
         self.data.skip_safety_margin_once = true;
     }
-    pub(in crate::renderer::typeset) fn allow_tail_footnote_margin_once(&mut self) {
-        self.data.skip_footnote_margin_once = true;
-    }
     pub(in crate::renderer::typeset) fn mark_page_absolute_top_table(&mut self) {
         self.data.page_has_page_abs_top_table = true;
     }
@@ -865,9 +862,6 @@ impl TypesetState {
     }
     pub(in crate::renderer::typeset) fn initialize_zone_spacing(&mut self, spacing: f64) {
         self.data.current_zone_design_spacing_px = spacing;
-    }
-    pub(in crate::renderer::typeset) fn record_footer_presence(&mut self, no_footer: bool) {
-        self.data.section_has_no_footer = no_footer;
     }
     pub(in crate::renderer::typeset) fn observe_following_paragraph(
         &mut self,

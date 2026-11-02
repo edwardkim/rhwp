@@ -46,7 +46,6 @@ impl TypesetEngine {
             host_spacing_total,
             mut table_total,
             stored_ordinary_rowbreak_rewind_uses_actual_footnote_boundary,
-            mut fn_margin,
             mut available,
             declared_object_total,
             native_hwp5_internal_reset_rewind_needs_anchor_resync,
@@ -406,14 +405,8 @@ impl TypesetEngine {
         // 유지한다.
         let no_table_note_available = {
             let projected = st.projected_footnote_height(0.0, 0);
-            let margin = if projected > 0.0 {
-                st.footnote_safety_margin
-            } else {
-                0.0
-            };
             (st.base_available_height()
                 - projected
-                - margin
                 - st.current_zone_y_offset
                 - st.layout.pagination_tolerance_px)
                 .max(0.0)
@@ -510,20 +503,8 @@ impl TypesetEngine {
                 st.reserve_painted_footnote_area(height);
             }
             total_footnote = st.projected_footnote_height(0.0, 0);
-            fn_margin = if total_footnote > 0.0 {
-                if next_starts_new_page || current_painted_note_height.is_some() {
-                    0.0
-                } else {
-                    st.footnote_safety_margin
-                }
-            } else {
-                0.0
-            };
-            available = (st.base_available_height()
-                - total_footnote
-                - fn_margin
-                - st.current_zone_y_offset)
-                .max(0.0);
+            available =
+                (st.base_available_height() - total_footnote - st.current_zone_y_offset).max(0.0);
             // row cut과 문서 저장 높이의 sub-pixel 변환 차이로, 기준 PDF에서
             // 정확히 바닥에 닿는 마지막 행을 불필요하게 다음 fragment로 보내지
             // 않도록 이 작은 queue 경로에만 round-off 여유를 준다. 위의 대형
@@ -972,7 +953,7 @@ impl TypesetEngine {
         // [#7732] 이 쪽에 표가 다 들어가지 않으면 표 각주는 첫 조각 쪽에 오지 않는다 — 한/글은
         // 행을 칸 각주 때문에 줄이지 않고, 칸 각주는 조각 뒤 남는 공간이나 표가 끝나는 쪽에
         // 놓는다(합성 `samples/issue1937/gen_cell_notes_multipage.py`, 한/글 2020·2024).
-        let table_fn_reserved = (total_footnote - st.current_footnote_height).max(0.0) + fn_margin;
+        let table_fn_reserved = (total_footnote - st.current_footnote_height).max(0.0);
         let table_continues_past_page = all_rows_h > remaining_with(table_fn_reserved) + 0.5;
         let first_unit_note_release = if table_fn_reserved > 0.5
             && !ft.table_footnotes.is_empty()
@@ -1521,7 +1502,6 @@ impl TypesetEngine {
             total_footnote_height: total_footnote,
             queue_table_footnotes,
             table_footnotes: ft.table_footnotes.clone(),
-            footnote_margin: fn_margin,
             host_spacing_total: host_spacing_total - deferred_column_top_released_before,
             host_spacing_before: ft.host_spacing.before - deferred_column_top_released_before,
             host_spacing_after_only: ft.host_spacing.spacing_after_only,
