@@ -53,7 +53,26 @@ SHA-256은 `c6ae1c49859ada19115f7e07c1af5a4e4ea84a2ff57470af0c13554ece058eaa`다
 [독립 PDF](../../../pdf/issue7633/hwpml-final-resave-2020.pdf)는 122쪽이며,
 SHA-256은 `c508a1510a28a5e5631adc8a83d8125b25b04a79765ba1379d8bf804c632d868`이다.
 MCP 작업 ID는 `21652151-d025-4b86-872d-b81f42b4587f`이고 변환 상태는 성공이다.
-페이지별 Native·fresh WASM 시각 측정과 직접 판독 결과는 검증 완료 후 아래에 기록한다.
+페이지별 Native·fresh WASM 시각 측정과 직접 판독 결과는 다음과 같다.
+
+96 DPI, compat 2022의 색상 경계 보정 전 raw 실루엣을 122쪽 전체에서 측정했다.
+Native 최저는 119쪽 96.72%, fresh WASM 최저는 같은 쪽 96.55%이며,
+양쪽 모두 독립 Print와 쪽수가 같고 90% 미만은 0쪽이다.
+줄표 없음이 드러나는 56쪽은 두 경로 모두 100.00%다.
+56쪽의 [Native 비교](../assets/issue_7633_8334/followup8438/hwpml-final2020/native-p056-review.png)·
+[오버레이](../assets/issue_7633_8334/followup8438/hwpml-final2020/native-p056-overlay.png),
+[WASM 비교](../assets/issue_7633_8334/followup8438/hwpml-final2020/wasm-p056-review.png)·
+[오버레이](../assets/issue_7633_8334/followup8438/hwpml-final2020/wasm-p056-overlay.png)에서
+줄표가 없는 쪽 번호 `48`의 모양·위치를 직접 확인했다.
+전쪽 원본 TSV는 [Native](../assets/issue_7633_8334/followup8438/hwpml-final2020/native.tsv)와
+[fresh WASM](../assets/issue_7633_8334/followup8438/hwpml-final2020/wasm.tsv)에 보존했다.
+최저 119쪽의 [Native 비교](../assets/issue_7633_8334/followup8438/hwpml-final2020/native-p119-review.png)·
+[오버레이](../assets/issue_7633_8334/followup8438/hwpml-final2020/native-p119-overlay.png),
+[WASM 비교](../assets/issue_7633_8334/followup8438/hwpml-final2020/wasm-p119-review.png)·
+[오버레이](../assets/issue_7633_8334/followup8438/hwpml-final2020/wasm-p119-overlay.png)를
+직접 판독했다. 본문 내용·순서·쪽 번호는 같고 제목의 글꼴 굵기에는 차이가 있다.
+이 차이는 쪽 번호 줄표 보존이나 셀 방향 주장에 해당하지 않으며, 수치만으로
+글꼴 자체의 완전 일치를 주장하지 않는다.
 
 이전 통합 후보의 최소 글꼴 전체 회귀 로그에서 이 PR 관련 다음 모듈의 실행을 확인했다. 새 base 후보의 재실행 결과는 이 값으로 대신하지 않는다.
 - [`issue_7633_8334_hwpx_attr_roundtrip.rs`](../../../tests/cases/issue_7633_8334_hwpx_attr_roundtrip.rs): 이전 실행 5건 통과, 0건 실패, 0건 건너뜀.
