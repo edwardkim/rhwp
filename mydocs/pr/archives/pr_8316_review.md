@@ -521,7 +521,7 @@ SHA-256은 `1eb700593a011078d4a9ecf8996a9b04893a5598bb6ea2f5d17795921d491400`이
 격리 환경의 `fc-list`는 Noto Sans KR Regular·ExtraLight, Noto Sans Symbols2,
 RHWP Public Batang만 표시했다. 전체 회귀나 위 fresh WASM 전쪽 비교를 대신하지 않는다.
 
-현재 후보에 [`issue_8316_rebased_table_hwpx_roundtrip`](../../../tests/cases/issue_8316_rebased_table_hwpx_roundtrip.rs)을 추가했다. 같은 원본을 HWPX로 저장해 다시 열고 12쪽 표와 후속 본문의 소속·순서·상대 간격 및 저장 전후 표 원점을 검사한다. 최소 글꼴 환경에서 1건 통과했으며 로그 SHA-256은 `b624bf137f4808efffe5a54c69ce65bf976429afb7ce67298be321780b7bdcea`다. 기존 집중 회귀 로그는 후속 스크립트가 같은 경로를 덮어써 원본을 재확인할 수 없게 됐다. 위에 기록한 별도 재실행으로 복구했다.
+현재 후보에 [`issue_8316_rebased_table_hwpx_roundtrip`](../../../tests/cases/issue_8316_rebased_table_hwpx_roundtrip.rs)을 추가했다. 같은 원본을 HWPX로 저장해 다시 열고 12쪽 표와 후속 본문의 소속·순서·상대 간격 및 저장 전후 표 원점을 검사한다. 수정 전 저장본의 12쪽 표 원점은 렌더 트리에서 136.1px, 원본은 149.4px로 13.3px 차이가 있어 이 검사의 2px 관계 조건을 어긴다. 이는 기존 렌더 트리 대조이며 수정 전 테스트 바이너리 실행 결과는 아니다. 최소 글꼴 환경에서 1건 통과했으며 로그 SHA-256은 `b624bf137f4808efffe5a54c69ce65bf976429afb7ce67298be321780b7bdcea`다. 기존 집중 회귀 로그는 후속 스크립트가 같은 경로를 덮어써 원본을 재확인할 수 없게 됐다. 위에 기록한 별도 재실행으로 복구했다.
 
 단 정의 부재 대조군 7개와 기존 [이슈 #8149](https://github.com/edwardkim/rhwp/issues/8149)
 표 분할 원본 1개를 이전 및 후보 실행 파일로 각각 HWPX에 저장했다. 16회 모두
