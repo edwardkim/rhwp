@@ -4,7 +4,7 @@ mod column_width_contract_tests;
 use super::super::page_layout::PageLayoutInfo;
 use super::super::pagination::{ColumnContent, PageContent, PageItem};
 use super::text_measurement::estimate_text_width;
-use super::utils::{expand_numbering_format, numbering_format_to_number_format};
+use super::utils::expand_numbering_format;
 use super::*;
 use crate::model::image::Picture;
 use crate::model::page::{ColumnDef, PageDef};
@@ -1863,27 +1863,12 @@ fn test_expand_numbering_format_level_path_mixed_format() {
 
 #[test]
 fn test_numbering_format_to_number_format() {
-    assert_eq!(numbering_format_to_number_format(10), NumFmt::HangulJamo);
-    assert!(matches!(
-        numbering_format_to_number_format(0),
-        NumFmt::Digit
-    ));
-    assert!(matches!(
-        numbering_format_to_number_format(1),
-        NumFmt::CircledDigit
-    ));
-    assert!(matches!(
-        numbering_format_to_number_format(2),
-        NumFmt::RomanUpper
-    ));
-    assert!(matches!(
-        numbering_format_to_number_format(8),
-        NumFmt::HangulGaNaDa
-    ));
-    assert!(matches!(
-        numbering_format_to_number_format(255),
-        NumFmt::Digit
-    ));
+    assert_eq!(NumFmt::from_hwp_format(10), NumFmt::HangulJamo);
+    assert!(matches!(NumFmt::from_hwp_format(0), NumFmt::Digit));
+    assert!(matches!(NumFmt::from_hwp_format(1), NumFmt::CircledDigit));
+    assert!(matches!(NumFmt::from_hwp_format(2), NumFmt::RomanUpper));
+    assert!(matches!(NumFmt::from_hwp_format(8), NumFmt::HangulGaNaDa));
+    assert!(matches!(NumFmt::from_hwp_format(255), NumFmt::Digit));
 }
 
 // =====================================================================

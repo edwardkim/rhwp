@@ -3927,7 +3927,7 @@ impl AutoNumberCounter {
     }
 }
 
-/// 번호 형식
+/// 번호 형식. 문단 번호(표 41)와 각주·미주·쪽 번호·자동 번호(표 134)가 같은 0~16 코드를 쓴다.
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub enum NumberFormat {
     /// 아라비아 숫자: 1, 2, 3
@@ -3943,69 +3943,130 @@ pub enum NumberFormat {
     LatinUpper,
     /// 영문 소문자: a, b, c
     LatinLower,
+    /// 원 영문 대문자: Ⓐ, Ⓑ, Ⓒ
+    CircledLatinUpper,
+    /// 원 영문 소문자: ⓐ, ⓑ, ⓒ
+    CircledLatinLower,
     /// 한글 가나다: 가, 나, 다
     HangulGaNaDa,
+    /// 원 한글 가나다: ㉮, ㉯, ㉰
+    CircledHangulGaNaDa,
     /// 한글 자모: ㄱ, ㄴ, ㄷ
     HangulJamo,
+    /// 원 한글 자모: ㉠, ㉡, ㉢
+    CircledHangulJamo,
     /// 한글 일이삼: 일, 이, 삼
     HangulNumber,
     /// 한자 一二三: 一, 二, 三
     HanjaNumber,
+    /// 원 한자: ㊀, ㊁, ㊂
+    CircledHanjaNumber,
+    /// 천간 한글: 갑, 을, 병
+    HangulGapEul,
+    /// 천간 한자: 甲, 乙, 丙
+    HanjaGapEul,
+    /// 4가지 기호(*, †, ‡, §)를 차례로 쓰고, 한 바퀴 돌 때마다 하나씩 더 겹친다.
+    FourSymbol,
 }
 
 impl NumberFormat {
-    /// HWP 형식 코드에서 변환
+    /// HWP 번호 모양 코드(표 41·표 134)에서 변환한다. 사용자 문자(0x81)는 그 문자를 아는
+    /// 호출하는 쪽이 따로 다루고 여기서는 숫자로 둔다.
     pub fn from_hwp_format(format: u8) -> Self {
         match format {
-            0 => NumberFormat::Digit,
             1 => NumberFormat::CircledDigit,
             2 => NumberFormat::RomanUpper,
             3 => NumberFormat::RomanLower,
             4 => NumberFormat::LatinUpper,
             5 => NumberFormat::LatinLower,
-            6 => NumberFormat::HangulGaNaDa,
-            7 => NumberFormat::HangulNumber,
-            8 => NumberFormat::HanjaNumber,
+            6 => NumberFormat::CircledLatinUpper,
+            7 => NumberFormat::CircledLatinLower,
+            8 => NumberFormat::HangulGaNaDa,
+            9 => NumberFormat::CircledHangulGaNaDa,
+            10 => NumberFormat::HangulJamo,
+            11 => NumberFormat::CircledHangulJamo,
+            12 => NumberFormat::HangulNumber,
+            13 => NumberFormat::HanjaNumber,
+            14 => NumberFormat::CircledHanjaNumber,
+            15 => NumberFormat::HangulGapEul,
+            16 => NumberFormat::HanjaGapEul,
+            0x80 => NumberFormat::FourSymbol,
             _ => NumberFormat::Digit,
         }
     }
 }
 
-/// 번호를 문자열로 변환
+/// 번호를 문자열로 변환한다. 글자 차례가 있는 모양은 한/글처럼 차례를 넘으면 처음으로
+/// 돌아간다(한/글 12.30 Mac: ⑳ 다음 ①, Z 다음 A, ㅎ 다음 ㄱ, 癸 다음 甲).
 pub fn format_number(number: u16, format: NumberFormat) -> String {
     match format {
         NumberFormat::Digit => number.to_string(),
-        NumberFormat::CircledDigit => format_circled_digit(number),
+        NumberFormat::CircledDigit => format_cycle(number, &CIRCLED_DIGITS),
         NumberFormat::RomanUpper => format_roman(number, true),
         NumberFormat::RomanLower => format_roman(number, false),
-        NumberFormat::LatinUpper => format_latin(number, true),
-        NumberFormat::LatinLower => format_latin(number, false),
+        NumberFormat::LatinUpper => format_cycle(number, &LATIN_UPPER),
+        NumberFormat::LatinLower => format_cycle(number, &LATIN_LOWER),
+        NumberFormat::CircledLatinUpper => format_cycle(number, &CIRCLED_LATIN_UPPER),
+        NumberFormat::CircledLatinLower => format_cycle(number, &CIRCLED_LATIN_LOWER),
         NumberFormat::HangulGaNaDa => format_hangul_ganada(number),
-        NumberFormat::HangulJamo => {
-            const JAMO: [char; 14] = [
-                'ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ',
-            ];
-            number
-                .checked_sub(1)
-                .and_then(|index| JAMO.get(index as usize))
-                .map(char::to_string)
-                .unwrap_or_else(|| number.to_string())
-        }
+        NumberFormat::CircledHangulGaNaDa => format_cycle(number, &CIRCLED_GANADA),
+        NumberFormat::HangulJamo => format_cycle(number, &JAMO),
+        NumberFormat::CircledHangulJamo => format_cycle(number, &CIRCLED_JAMO),
         NumberFormat::HangulNumber => format_hangul_number(number),
         NumberFormat::HanjaNumber => format_hanja_number(number),
+        NumberFormat::CircledHanjaNumber => format_cycle(number, &CIRCLED_HANJA),
+        NumberFormat::HangulGapEul => format_cycle(number, &GAPEUL_HANGUL),
+        NumberFormat::HanjaGapEul => format_cycle(number, &GAPEUL_HANJA),
+        NumberFormat::FourSymbol => match number.checked_sub(1) {
+            // 한/글 12.30 Mac: 1 *, 2 †, 3 ‡, 4 §, 5 **, … 18 †††††.
+            Some(index) => FOUR_SYMBOLS[usize::from(index % 4)]
+                .to_string()
+                .repeat(usize::from(index / 4) + 1),
+            None => number.to_string(),
+        },
     }
 }
 
-/// 원 문자 변환 (① ~ ⑳, 이후 숫자)
-fn format_circled_digit(n: u16) -> String {
-    const CIRCLED: [char; 20] = [
-        '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩', '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱',
-        '⑲', '⑳',
-    ];
-    n.checked_sub(1)
-        .and_then(|idx| CIRCLED.get(idx as usize))
-        .map(|c| c.to_string())
-        .unwrap_or_else(|| n.to_string())
+const CIRCLED_DIGITS: [char; 20] = [
+    '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩', '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲',
+    '⑳',
+];
+const LATIN_UPPER: [char; 26] = [
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
+    'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+];
+const LATIN_LOWER: [char; 26] = [
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
+    't', 'u', 'v', 'w', 'x', 'y', 'z',
+];
+const JAMO: [char; 14] = [
+    'ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ',
+];
+const CIRCLED_JAMO: [char; 14] = [
+    '㉠', '㉡', '㉢', '㉣', '㉤', '㉥', '㉦', '㉧', '㉨', '㉩', '㉪', '㉫', '㉬', '㉭',
+];
+const CIRCLED_GANADA: [char; 14] = [
+    '㉮', '㉯', '㉰', '㉱', '㉲', '㉳', '㉴', '㉵', '㉶', '㉷', '㉸', '㉹', '㉺', '㉻',
+];
+const CIRCLED_HANJA: [char; 10] = ['㊀', '㊁', '㊂', '㊃', '㊄', '㊅', '㊆', '㊇', '㊈', '㊉'];
+const GAPEUL_HANGUL: [char; 10] = ['갑', '을', '병', '정', '무', '기', '경', '신', '임', '계'];
+const GAPEUL_HANJA: [char; 10] = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+const CIRCLED_LATIN_UPPER: [char; 26] = [
+    'Ⓐ', 'Ⓑ', 'Ⓒ', 'Ⓓ', 'Ⓔ', 'Ⓕ', 'Ⓖ', 'Ⓗ', 'Ⓘ', 'Ⓙ', 'Ⓚ', 'Ⓛ', 'Ⓜ', 'Ⓝ', 'Ⓞ', 'Ⓟ', 'Ⓠ', 'Ⓡ', 'Ⓢ',
+    'Ⓣ', 'Ⓤ', 'Ⓥ', 'Ⓦ', 'Ⓧ', 'Ⓨ', 'Ⓩ',
+];
+const CIRCLED_LATIN_LOWER: [char; 26] = [
+    'ⓐ', 'ⓑ', 'ⓒ', 'ⓓ', 'ⓔ', 'ⓕ', 'ⓖ', 'ⓗ', 'ⓘ', 'ⓙ', 'ⓚ', 'ⓛ', 'ⓜ', 'ⓝ', 'ⓞ', 'ⓟ', 'ⓠ', 'ⓡ', 'ⓢ',
+    'ⓣ', 'ⓤ', 'ⓥ', 'ⓦ', 'ⓧ', 'ⓨ', 'ⓩ',
+];
+const FOUR_SYMBOLS: [char; 4] = ['*', '†', '‡', '§'];
+
+/// 글자 차례에서 번호 자리의 글자를 고르고, 차례를 넘으면 처음으로 돌아간다. 0은 숫자로 쓴다.
+fn format_cycle(n: u16, table: &[char]) -> String {
+    match n.checked_sub(1) {
+        Some(index) => table[usize::from(index) % table.len()].to_string(),
+        None => n.to_string(),
+    }
 }
 
 /// 로마 숫자 변환
@@ -4039,36 +4100,19 @@ fn format_roman(n: u16, upper: bool) -> String {
     result
 }
 
-/// 영문자 변환 (A-Z, AA-AZ, ...)
-fn format_latin(n: u16, upper: bool) -> String {
-    if n == 0 {
-        return String::new();
-    }
-
-    let mut result = String::new();
-    let mut num = n;
-
-    while num > 0 {
-        num -= 1;
-        let c = if upper {
-            (b'A' + (num % 26) as u8) as char
-        } else {
-            (b'a' + (num % 26) as u8) as char
-        };
-        result.insert(0, c);
-        num /= 26;
-    }
-    result
-}
-
-/// 한글 가나다 변환
+/// 한글 가나다 변환. 가~하 14자를 ㅏ·ㅓ·ㅗ·ㅜ·ㅡ·ㅣ 차례로 돌린다(한/글 12.30 Mac:
+/// 15 거, 29 고, 43 구, 57 그, 71 기, 84 히, 85 가).
 fn format_hangul_ganada(n: u16) -> String {
-    const GANADA: [char; 14] = [
-        '가', '나', '다', '라', '마', '바', '사', '아', '자', '차', '카', '타', '파', '하',
-    ];
-    n.checked_sub(1)
-        .and_then(|idx| GANADA.get(idx as usize))
-        .map(|c| c.to_string())
+    // 가나다라마바사아자차카타파하의 초성 순번과 ㅏㅓㅗㅜㅡㅣ의 중성 순번
+    const CHOSEONG: [u32; 14] = [0, 2, 3, 5, 6, 7, 9, 11, 12, 14, 15, 16, 17, 18];
+    const JUNGSEONG: [u32; 6] = [0, 4, 8, 13, 18, 20];
+    let Some(index) = n.checked_sub(1).map(usize::from) else {
+        return n.to_string();
+    };
+    let cho = CHOSEONG[index % 14];
+    let jung = JUNGSEONG[index / 14 % 6];
+    char::from_u32(0xAC00 + (cho * 21 + jung) * 28)
+        .map(String::from)
         .unwrap_or_else(|| n.to_string())
 }
 
@@ -4861,7 +4905,8 @@ mod tests {
         assert_eq!(format_number(1, NumberFormat::CircledDigit), "①");
         assert_eq!(format_number(10, NumberFormat::CircledDigit), "⑩");
         assert_eq!(format_number(20, NumberFormat::CircledDigit), "⑳");
-        assert_eq!(format_number(21, NumberFormat::CircledDigit), "21");
+        // 한/글 12.30 Mac은 ⑳ 다음을 ①로 돌린다.
+        assert_eq!(format_number(21, NumberFormat::CircledDigit), "①");
     }
 
     #[test]
@@ -4877,7 +4922,8 @@ mod tests {
     fn test_format_number_latin() {
         assert_eq!(format_number(1, NumberFormat::LatinUpper), "A");
         assert_eq!(format_number(26, NumberFormat::LatinUpper), "Z");
-        assert_eq!(format_number(27, NumberFormat::LatinUpper), "AA");
+        // 한/글 12.30 Mac은 Z 다음을 A로 돌린다.
+        assert_eq!(format_number(27, NumberFormat::LatinUpper), "A");
         assert_eq!(format_number(1, NumberFormat::LatinLower), "a");
     }
 

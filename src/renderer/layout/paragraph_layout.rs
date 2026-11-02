@@ -23,7 +23,7 @@ use super::text_measurement::{
 };
 use super::utils::{
     expand_numbering_format, extract_picture_transform, find_bin_data_bytes,
-    numbering_format_to_number_format, picture_display_size_hu, resolve_numbering_id,
+    picture_display_size_hu, resolve_numbering_id,
 };
 use super::{
     fill_background::ParagraphFillBand, CellContext, LayoutEngine, ParagraphVerticalSpacing,

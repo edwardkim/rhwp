@@ -858,7 +858,8 @@ fn parse_numbering(data: &[u8]) -> Result<Numbering, DocInfoError> {
         let text_distance = r.read_i16().unwrap_or(0);
         let char_shape_id = r.read_u32().unwrap_or(0);
 
-        let number_format = ((attr >> 5) & 0x0F) as u8;
+        // 한/글은 번호 형식(표 41 0~16)을 비트 5부터 다섯 비트에 쓴다(甲 = 16 → 0x200).
+        let number_format = ((attr >> 5) & 0x1F) as u8;
         numbering.heads[level] = NumberingHead {
             attr,
             width_adjust,
