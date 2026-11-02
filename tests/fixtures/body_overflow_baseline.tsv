@@ -214,3 +214,6 @@ issue8470/vertical_oversize.hwpx	1
 # 본문 바닥(1009.1px) 아래 약 1119px 까지 그린다(정본 pdf/issue8471/pushed_none-2020.pdf 3·5쪽). 각 1건.
 # 쪽 소속은 issue_8471_pushed_none_table_page_break.rs 가 잠근다.
 issue8471/pushed_none.hwpx	2
+# #8491 새 시험 고정본 2행 — 보도자료 끝 로고 상자(문단 기준 세로 오프셋 4138·6280 HU)가 같은 문단 표 줄 아래에 놓여 아래끝이 본문 바닥을 넘는다. 한/글 2022 Print 도 같은 쪽 본문 바닥 아래(아래 여백)에 그린다(156602236 1쪽 로고 상자 y≈1010–1045px, 본문 바닥 1028.1px). 수정 전에는 표가 다음 쪽으로 넘어가 쪽이 하나 늘었다.
+issue8491/156602236-press-logo.hwpx	1
+issue8491/156736331-press-logo.hwpx	1
