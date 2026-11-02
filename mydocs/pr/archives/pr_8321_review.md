@@ -38,6 +38,8 @@
 
 같은 제품 코드로 새로 빌드한 WASM(SHA-256 `cfe1e98fc6c4d7b2a4ac2fa23c6565fc3b32afe2d4ecf2ce71880d22318e86d8`)에서도 같은 두 쪽을 독립 Print와 비교했다. [fresh WASM 전쪽 TSV](../assets/issue_8315/followup8438/wasm-current.tsv)의 1·2쪽은 각각 99.86%·98.37%이며, 기존 통합 결과의 표시값과 같다. [2쪽 비교](../assets/issue_8315/followup8438/wasm-review-002.png)와 [overlay](../assets/issue_8315/followup8438/wasm-overlay-002.png)를 함께 보존한다. 2쪽 `00AD` 행은 한컴 Print에 하이픈이 보이지만 RHWP에는 보이지 않는다. HWPX에는 리터럴 U+00AD가 있고 Print의 텍스트 추출은 하이픈이다. 이전 [통합 후보의 같은 WASM 2쪽](../assets/issue_8136/integration-planet6897/wasm-review-002.png)과 현재 후보의 왼쪽 출력 영역을 픽셀 대조한 결과 같아 이번 저장 줄 보정에서 새로 생긴 차이는 아니다. 원 PR은 Latin-1 문자를 기존대로 유지한다고 명시한다. 따라서 이 관측을 기호 슬롯 개선의 증거로 쓰지 않으며, 문자 표시의 독립 원인과 수정 여부는 계속 확인한다. 이 입력의 전쪽 측정 결과이며 PR 전체의 최종 판정은 별도로 진행한다.
 
+소프트 하이픈의 선행 [이슈 #7993](https://github.com/edwardkim/rhwp/issues/7993)과 [PR #8026](https://github.com/edwardkim/rhwp/pull/8026)을 대조했다. 한컴은 제어 표기는 줄 끝에서만 표시하고 리터럴 U+00AD는 일반 글자로 표시한다. 기존 `issue_7993_hwpx_hypen_element`의 리터럴 검사는 display 문자열에 U+00AD가 남는지만 확인하므로, 실제 Native·WASM 출력에서 글리프가 보인다는 증거는 아니다. 제어 표기의 동작과 원문 보존을 유지하면서 표시·폭을 검증해야 한다.
+
 2026-11-03 00시경 KST에도 원 PR head와 열린 상태를 재확인했다. [일괄 조회 결과](../assets/review_8438_followup/original-pr-heads-20261103.md)는 기능·시각 최종 판정을 대신하지 않는다.
 
 ## 접수와 적용
