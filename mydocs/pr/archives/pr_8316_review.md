@@ -243,7 +243,13 @@ SHA-256 `f153a78b5d90efed744a81bb1d744d45a24747f16a88aaf36bb56e3611115dec`를
 `print`에는 표시가 있음을 Native PNG로 각각 확인했다. 이 HWPX 검사는
 설정 소비만 확인한 것이며 별도 독립 Print와의 전쪽 대조는 아니다. 프로필 실행
 로그 SHA-256은 `6ab58c115fc29f5d19444d0b4926b88494b2f8c04d4c71bb762b024f60bfd2ec`다.
-fresh WASM의 전쪽 검증은 별도로 진행한다.
+이후 저장 보정 전 제품 코드 `6448dabe6a`의 fresh WASM으로 같은 원본·Print를
+비교한 [전 12쪽 TSV](../assets/issue_8136/followup8438-crop/wasm-before-save-all.tsv)는
+모든 쪽 raw 100.00%다. 패키지 SHA-256은
+`c27d9eda8119c26cc34aaf2da4e7ace4d41fe112fe9ca4e8afc89f81c74f5fcf`다.
+[2쪽 WASM review](../assets/issue_8136/followup8438-crop/wasm-before-save-review-002.png)와
+[overlay](../assets/issue_8136/followup8438-crop/wasm-before-save-overlay-002.png)를 확인했다.
+이 수치는 이후 저장 보정이 반영된 최종 head의 fresh WASM 검증을 대신하지 않는다.
 
 11쪽 영문 본문은 raw 100.00%여도 확대 화면에서 글자 윤곽 차이가 보여
 별도로 조사했다. 원본 글꼴 이름은 `-윤명조120`, 문서에 기록된 대체 이름은
