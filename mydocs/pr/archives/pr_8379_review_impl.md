@@ -5,7 +5,7 @@
 원 기여 `34b51b70098230bfc568a7c566ab73057ad6a140`의 연속 형광펜 모드를 보존한다.
 최신 base `de2295d430b588f0741021f66fae086eb4ff4009`와 충돌 없이 병합한 로컬 후보는
 `503e53e9463d242ee26b5aedf4bda251538cbe49`다. 검토 branch는
-`review/pr-8379-continuous-highlighter`다. 원격 head는 변경하지 않았다.
+`review/pr-8379-continuous-highlighter`다. 계획 작성 당시에는 원격 head를 변경하지 않았다.
 
 기본 경로는 `maintainer_general`, 보조 경로는 `intake_and_review`, `local_validation`,
 `first_time_contributor`다. 기존 #4162 → #4271 → merge `d4834d7375`의 셀 블록 즉시
@@ -34,3 +34,9 @@
 push·PR 본문 변경·GitHub review·merge·댓글은 승인된 원격 범위에서만 수행한다.
 원 PR을 정상 merge해 첫 기여 이력을 보존하는 경로를 우선 검토하며 contributor fork는
 삭제하지 않는다. 검증된 후보와 최신 devel의 tree·CI를 merge 전에 다시 확인한다.
+
+## 완료 결과
+
+최소 보정 source `e6439bd3ca7e90bd3894ac7f8524df41c6553c93`를 원 기여 branch에 push했다. 새 head의 CI·정책·self-review를
+통과한 뒤 원 PR을 `ba9a3c5f222a151736a4a21f9743bf8d9ddfbd8a`로 정상 merge했다. source·test의 추가 변경은 없으며
+[최종 검토](pr_8379_review.md)에 실제 검증·원격 수행과 후속 정리 경로를 기록했다.

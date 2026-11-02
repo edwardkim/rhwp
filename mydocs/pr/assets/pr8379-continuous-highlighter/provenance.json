@@ -1,0 +1,23 @@
+{
+  "pr": 8379,
+  "author": "greenoceanplanet",
+  "base": "de2295d430b588f0741021f66fae086eb4ff4009",
+  "source_head": "34b51b70098230bfc568a7c566ab73057ad6a140",
+  "merge_base": "1cb3a6dae1094f6ed552a8fdbffea8b89868d555",
+  "merge_tree": "71666ecb6f2317c61629bce5359ecb032dde795c",
+  "reviewer": "edwardkim",
+  "route": "maintainer_general",
+  "modifiers": [
+    "intake_and_review",
+    "local_validation",
+    "first_time_contributor"
+  ],
+  "captured_at": "2026-11-02T15:59:16.919725+09:00",
+  "candidate_head": "503e53e9463d242ee26b5aedf4bda251538cbe49",
+  "local_correction_commit": "8eb7b8aab92551e173578e8c3c7effcef07cf725",
+  "prepared_source_code_head": "e6439bd3ca7e90bd3894ac7f8524df41c6553c93",
+  "prepared_source_ref": "refs/review/pr-8379/source-code",
+  "source_correction_parent": "34b51b70098230bfc568a7c566ab73057ad6a140",
+  "verified_latest_base_merge_tree": "c93a15af1757a7568f839a57c6c92ac183d83c53",
+  "local_and_prepared_merge_tree_equal": true
+}
