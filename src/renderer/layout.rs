@@ -6507,6 +6507,24 @@ impl LayoutEngine {
         footer_node
     }
 
+    /// 본문 단에 놓인 글줄·표의 가장 낮은 하단. 글줄은 줄간격을 뺀 줄 높이까지다.
+    fn body_flow_bottom(root: &RenderNode) -> Option<f64> {
+        root.children
+            .iter()
+            .filter(|node| matches!(node.node_type, RenderNodeType::Body { .. }))
+            .flat_map(|body| &body.children)
+            .filter(|column| matches!(column.node_type, RenderNodeType::Column(_)))
+            .flat_map(|column| &column.children)
+            .filter(|item| {
+                matches!(
+                    item.node_type,
+                    RenderNodeType::TextLine(_) | RenderNodeType::Table(_)
+                )
+            })
+            .map(|item| item.bbox.y + item.bbox.height)
+            .reduce(f64::max)
+    }
+
     /// 각주 영역 노드를 생성하여 tree에 추가한다.
     #[allow(clippy::too_many_arguments)]
     fn build_footnote_area(
