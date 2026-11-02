@@ -38,6 +38,23 @@ UTF-16 축의 표시 소유와 뒤 글자 모양을 저장 왕복에서 확인�
 
 ## 검증과 증거
 
+### 2026-11-03 최종 후보의 한컴 2024 Print 재대조
+
+리터럴 소프트 하이픈 수정까지 포함한 현재 Native 실행 파일
+(SHA-256 `7d35357fe91cf213bb4143675a7c148bf3f6a9e4facbf93fea765081661b25c5`)로
+같은 재저장 HWPX와 독립 한컴 2024 Print PDF를 96 DPI에서 전 64쪽 비교했다.
+[Native 전쪽 TSV](../assets/issue_8305/followup8438/native-literal-final-2024-all.tsv)의
+최저는 42쪽 90.69%이며, 차트가 있는 35쪽은 92.57%다. 90% 미만과 누락은 없다.
+35쪽의 [review](../assets/issue_8305/followup8438/native-literal-final-review-035.png)·
+[overlay](../assets/issue_8305/followup8438/native-literal-final-overlay-035.png)에서
+차트 선·범례·값을 직접 대조했다. 최저 42쪽도
+[review](../assets/issue_8305/followup8438/native-literal-final-review-042.png)·
+[overlay](../assets/issue_8305/followup8438/native-literal-final-overlay-042.png)를
+대조했다. 기존 Native TSV와 비교하면 55쪽 표시값만 96.76%에서 96.72%로
+달라졌으며, 해당 쪽의 본문·상자·쪽번호가 Print와 같은 순서와 위치에 있음을
+확인했다. fresh WASM 전쪽 대조는 별도 실행 중이며, 이 Native 결과만으로
+최종 판정하지 않는다.
+
 이전 통합 후보의 최소 글꼴 전체 회귀 로그에서 이 PR 관련 다음 모듈의 실행을 확인했다. 새 base 후보의 재실행 결과는 이 값으로 대신하지 않는다.
 - [`issue_8305_titlemark_boundary_runs.rs`](../../../tests/cases/issue_8305_titlemark_boundary_runs.rs): 이전 실행 5건 통과, 0건 실패, 0건 건너뜀.
 
