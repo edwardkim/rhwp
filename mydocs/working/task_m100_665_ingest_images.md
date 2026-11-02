@@ -47,3 +47,10 @@ Issue: #665
 - 이 선행 조건 뒤에만 정식 테스트·입력·독립 Print·TSV·대표 PNG를 커밋 `cba7849e30`으로 등록했다. 검사에서 저장소에 없는 tempfile helper 의존성을 사용한 오류는 기존 std 임시 디렉터리 패턴으로 보정했다. 테스트 source 변경 뒤 자동 suite를 재생성해 실제 9개 검사가 실행되는 것도 확인했다.
 - 최소 글꼴 환경의 focused 결과: 신규 9/9, 기존 ingest 내용 계약 14/14, 기존 HTML 그림 8/8 통과.
 - 이제 전체 release-test, Native Skia 3종, workspace all-target Clippy, 실제 새 문서 보안 검사, 성능 확인과 최종 기록을 완료한다. PR·push·merge·이슈 재종결은 승인 범위에 포함하지 않는다.
+
+## 전체 검사에서 발견한 검증 경로 보완
+
+- workspace all-target Clippy가 통과했다. 첫 전체 release-test는 12,378건 중 12,376건 통과, 2건 실패였다. 실패를 완료로 집계하지 않는다.
+- #2724 원 PR #2741 → 실제 통합 #2797(`f2c02b6669`) → 원 보고서의 독립 삭제 실증을 확인했다. 기존 Picture 등록의 DocInfo 무효화 1곳은 `src/model/bin_data.rs`로 이동했으며 삭제되지 않았다. 밀도 검사의 범위를 그 파일까지 넓히고 기존 Picture 7곳 + 공통 helper 1곳을 각각 보호한다. 단순히 하한을 낮추지 않았다.
+- std 전용 원 검사 5개는 base에서 통과했다. 보완한 검사 5개도 통과했고, ignored 복사본에서 공통 helper 무효화만 삭제하면 밀도 검사가 1 → 0으로 실패한다. 실제 기존 HWP를 연 뒤 다른 그림을 삽입·HWP 저장·재열기한 CLI `--verify`도 IR 차이 0건이었다.
+- 두 번째 실패는 `samples/` 전용 `RHWP_SECURITY_SWEEP_SAMPLES_JSON`에 `tests/fixtures/` 경로를 넣은 실행 설정 오류였다. 이 작업은 `samples/`를 변경하지 않는다. 전체 검사는 해당 잘못된 입력 없이 다시 실행하고, 새 목적별 fixture는 실제 CLI의 hidden-text·injection·unicode 탐지를 각각 실행해 별도로 기록한다. 기존 보안 검사와 탐지 규칙은 변경하지 않는다.
