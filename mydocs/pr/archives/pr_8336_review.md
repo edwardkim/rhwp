@@ -239,6 +239,13 @@ SHA-256은 기존 검증본과 같은 `31c0dbbbf71bb0561d2be517e979b348f90b8ec49
 [overlay](../assets/issue_7633_8334/followup8438/book-reference/native-saved-p094-overlay.png)의
 책 그림과 본문을 재확인했다. 이는 94쪽의 현재 Native 확인과 저장 바이트 비교이며,
 현재 코드의 전쪽 Native·fresh WASM을 새로 산출했다는 뜻은 아니다.
+
+이후 같은 코드의 Native로 원본 HWP 전 178쪽을 기존 한컴 2020 Print와 다시
+대조했다. 최저 96.51%, 90% 미만 0쪽이며 새 TSV의 SHA-256
+`83f22291a8dac6ee773e38a18a3635d17f888022b05e7b9812949729b9da58d3`은
+위 [기존 원본 Native TSV](../assets/issue_7633_8334/followup8438/book-reference/native-source-hwp.tsv)와
+바이트 단위로 같아 기존 파일을 재사용한다. 현재 코드의 저장본 전쪽 Native와
+두 입력의 fresh WASM 결과는 별도로 확인한다.
 원본·HWPX·HWP 왕복에서 그림 소유와 내용을 비교하는 관계형 검사를
 추가했다. 전쪽 비교는 제품 코드 `6896862b1c`와 그 코드로 빌드한 fresh WASM을 사용했다.
 최소 글꼴 집중 실행은 기존 검사 13건 통과와 신규 검사 1건 실패로 끝났다.
