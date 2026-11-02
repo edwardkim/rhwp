@@ -4643,14 +4643,30 @@ let body_height=match nested_body_heights
                     });
                     // [#8472] 본문 직속 비-TAC 표도 같다 — 배치가 이미 저장 vpos 를 쓰므로 측정이
                     // 줄 합 + 개체 높이를 따로 쌓으면 그림 앵커 줄이 두 번 들어간다(종합보고서 32쪽
-                    // 차트 칸: 저장 205.7px, 쌓은 값 224.9px).
-                    let trust_stored = non_inline_h > 0.0
-                        && (ladder_absorbed_objects
-                            || ladder_pushed_following_line
-                            || ladder_line_covers_object)
-                        && stored_extent > 0.0
-                        && stored_extent + 0.5 < additive
-                        && wrap_bottom <= stored_extent + 0.5;
+                    // 차트 칸: 저장 205.7px, 쌓은 값 224.9px). 다만 그런 표의 칸은 쪽을 넘길 수 있다.
+                    // 사다리가 칸 안에서 되감기면 한/글이 칸을 여러 쪽에 나눠 기록한 것이라 최댓값은
+                    // 칸 높이가 아니다(도덕과 교육과정 시안 138쪽 2×1 표: 그림 617·686px 칸의 사다리가
+                    // 55938→51436 으로 되감김, 최댓값 759px). 그 경우는 종전 합산을 쓴다.
+                    let stored_ladder_single_frame = {
+                        let mut previous = i32::MIN;
+                        cell.paragraphs
+                            .iter()
+                            .flat_map(|pp| pp.line_segs.iter())
+                            .all(|seg| {
+                                let ok = seg.vertical_pos >= previous;
+                                previous = seg.vertical_pos;
+                                ok
+                            })
+                    };
+                    let trust_stored =
+                        (depth > 0 || table.common.treat_as_char || stored_ladder_single_frame)
+                            && non_inline_h > 0.0
+                            && (ladder_absorbed_objects
+                                || ladder_pushed_following_line
+                                || ladder_line_covers_object)
+                            && stored_extent > 0.0
+                            && stored_extent + 0.5 < additive
+                            && wrap_bottom <= stored_extent + 0.5;
                     // [#6135] 반대 방향 — 저장 ladder 가 additive 보다 **큰** 경우.
                     // 순수 텍스트 셀의 첫 줄 `vertical_pos > 0` 은 한글이 그 줄 위에
                     // 자리를 잡아 뒀다는 뜻이고, layout 은 그 vpos 를 그대로 존중해
