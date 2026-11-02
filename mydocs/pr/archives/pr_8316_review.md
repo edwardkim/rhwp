@@ -269,6 +269,15 @@ UPM이 일치했다. 이 비교는 Native backend의 실제 글꼴 선택이나 
 합은 Native 564,304, PDF 629,452다. 이 수치는 위치·글꼴·래스터화 차이를
 함께 포함하므로 어떤 원인 하나의 증거로 해석하지 않는다. 측정 로그 SHA-256은
 `d96803cc9a49aa7fdd758adc01f352eef5e8037d48db318ebcb82bc5aeb19414`다.
+이후 실제 Native Skia renderer의 글꼴 관측을 실행했다. 관측 실행의 11쪽 PNG가
+위 측정 PNG와 동일한 SHA-256이며, 추적된 1,874개 글자의 Native 선택은 모두
+시스템 `Haansoft Batang`이었다. 글꼴 관측 JSON의 SHA-256은
+`4354ad603a2362a43cbc58c85cb5147193cf3491d3c3b51a6e4257aab3b880cd`다.
+같은 독립 PDF를 96 DPI에서 PDFium과 Poppler로 각각 래스터화하면 위 본문 영역의
+밝기 반전 합은 각각 629,452와 568,351이며 Native는 564,304다. [같은 영역 비교](../assets/issue_8136/followup8438-crop/native-pdf-rasterizers-011.png) ·
+[기존 PDFium overlay](../assets/issue_8136/followup8438-crop/native-overlay-011.png).
+이는 같은 PDF도 래스터러에 따라 획 농도가 달라짐을 보여 주지만 남은 차이 전체가
+래스터화만의 문제임을 증명하지 않는다. 공식 TSV 판정과 기준 PDF는 바꾸지 않았다.
 
 저장 보존도 별도로 확인했다. 재단 표시가 켜진 원본 HWP를 RHWP의
 `export-hwpx`로 저장한 결과, 생성된 `settings.xml`에 `PrintCropMark`가 없다.
