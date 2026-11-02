@@ -193,6 +193,11 @@ MediaBox와 CropBox는 모두 595×841pt이고, 콘텐츠 스트림의 0.12pt �
 90% 미달을 통과로 처리하지 않는다.
 기존 PDF는 [2020](../../../pdf/semanticist21-20261019/null-metadata-print-1379/engine-2020/1530000-200800002_slice_p139_tac_reset_tail-hwp/1530000-200800002_slice_p139_tac_reset_tail-hwp-2020.pdf),
 [2024](../../../pdf/semanticist21-20261019/null-metadata-print-1379/engine-2024/1530000-200800002_slice_p139_tac_reset_tail-hwp/1530000-200800002_slice_p139_tac_reset_tail-hwp-2024.pdf)다.
+원본 `Section0`의 첫 `PAGE_BORDER_FILL`은 종이 기준, 간격 0, 테두리 ID 28이다.
+`DocInfo`의 해당 `BORDER_FILL` 원본 네 변 종류는 모두 0(없음)이므로 일반 쪽
+테두리 네 변을 그대로 그려서 이 선을 재현할 근거도 없다. 별도 한컴 Print인
+`hwpspec` 2020·2024 PDF의 2쪽에는 같은 용지 경계 선이 없다. 이것만으로
+인쇄 설정의 구체적인 키나 선의 생성 계층을 확정하지는 않는다.
 
 추가 후보 실행에서 6쪽의 다음 문단 진입 원점은 29.39→22.03px, 표의 원점은
 51.41→44.05px가 됐다. 기존 한컴 PDF와 Native 96 DPI 직접 대조 결과 4·5·6·9쪽은
