@@ -48,7 +48,7 @@
         "text+image"
       ],
       "common": false,
-      "limit": "inline 이미지 표시 확인"
+      "limit": "inline도 placeholder. 그림 필수이면 F18 중단"
     }
   ]
 }

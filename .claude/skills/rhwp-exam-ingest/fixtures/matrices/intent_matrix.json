@@ -46,7 +46,7 @@
     {
       "id": "I006",
       "utterance": "quiz.md 를 시험지로",
-      "command": "MD + ![alt](path)",
+      "command": "MD + `![alt](path)`",
       "reference": "05_md_image_refs.md",
       "stop": "F07",
       "notGym": true
@@ -110,7 +110,7 @@
     {
       "id": "I014",
       "utterance": "문장 가운데 작은 도형",
-      "command": "placement inline, 이미지 표시 확인",
+      "command": "placement inline도 placeholder. 그림 필수이면 F18 중단",
       "reference": "09_media_placement.md",
       "stop": "F18",
       "notGym": true
@@ -238,7 +238,7 @@
     {
       "id": "I030",
       "utterance": "한컴에서 그림이 안 보여",
-      "command": "이미지 포함·참조·표시를 대조하고 원인을 확인",
+      "command": "ingest 이미지 삽입 미구현 확인. 그림 필수이면 F18 중단",
       "reference": "15_known_limits.md",
       "stop": "F18",
       "notGym": true

@@ -9,7 +9,12 @@ description: 'PDF·이미지·Markdown·DOCX 시험문제 자료를 HWPX 시험�
 이 스킬은 **실 에이전트 경로**다. gym 이 아니고, 새 CLI 를 발명하지 않으며,
 `DocumentCore` 의 `exam_paper` 빌더 로직을 이 작업에서 바꾸지 않는다.
 
-코어는 이미 있다.
+현재 `build-from-ingest`는 이미지 파일을 읽어 Picture/BinData로 연결하지 않고
+`[이미지: …]` placeholder 텍스트를 만든다. `--media-dir`은 디렉터리 존재만 확인한다.
+**그림이 필수이면 F18로 중단한다.** 경로·크기·배치 변경만으로 해결되지 않으며,
+placeholder 결과를 이미지 포함 시험지로 제공하지 않는다.
+
+텍스트 시험지 조립과 입력 자료 준비에 사용할 구성은 다음과 같다.
 
 - 입력 정규화: `helpers/pdf_to_pngs.sh` · `helpers/extract_docx.py` · 이미지 패스스루 · MD `![alt](path)`
 - 중간 표현: `tools/rhwp-ingest/schema/ingest_schema_v1.json` (`version: "1"`)
@@ -124,9 +129,9 @@ check_deps.sh [--json]
 | F13 | stem 첫 텍스트가 `"2. …"` 로 시작 | `auto_number: false`. 아니면 `"2. 2. …"` |
 | F14 | bbox 가 소수·음수·0 | `CROP_BBOX_*` exit 4. 다시 추정 |
 | F15 | `-o` 누락 | CLI 가 사용법 오류. `-o` 는 필수 |
-| F16 | 수식을 LaTeX 로 ingest 에 넣으려 함 | 이미지로 crop. Equation IR 은 후속 |
-| F17 | 복잡한 표를 table IR 로 만들려 함 | 그림으로 crop. Table IR 은 후속 |
-| F18 | 그림 누락 또는 표시 미검증 | 입력·출력 참조를 대조하고 실제 확인 범위를 보고 |
+| F16 | 편집 가능한 수식 요청 | ingest에 수식 필드 없음. 수식 이미지가 필수여도 F18로 중단 |
+| F17 | 편집 가능한 표 요청 | ingest에 표 필드 없음. 표 이미지가 필수여도 F18로 중단 |
+| F18 | 그림이 필수인 입력 | 현재 빌더는 placeholder만 생성. 중단하고 이미지 포함 시험지로 제공하지 않음 |
 | F19 | 사용자 질문이 이미 답변 가능 | 다음 단으로 내려가지 않는다 |
 
 **금지 기본값**
@@ -254,7 +259,8 @@ bash .claude/skills/rhwp-exam-ingest/helpers/crop_image.sh \
     --json --dry-run "$TMP/page_001.png" 120 400 640 360 "$MEDIA_DIR/img/q1.png"
 ```
 
-`-o` 는 필수. `--media-dir` 은 이미지가 있으면 필수에 가깝다.
+`-o`는 필수다. `--media-dir`을 지정해도 이미지 삽입은 구현되지 않았다.
+위 명령은 텍스트 조립 또는 제한 재현용이며, 그림 필수 입력은 F18로 중단한다.
 상세: [11_crop_bbox.md](references/11_crop_bbox.md) ·
 [12_build_from_ingest.md](references/12_build_from_ingest.md)
 
@@ -271,11 +277,14 @@ unzip -l <out.hwpx>           # BinData/ 이미지 포함 여부
 
 ## 알려진 한계
 
-- **이미지 확인**: HWPX writer에는 Picture 직렬화가 구현돼 있다.
-  이미지 파일 포함, 문서의 이미지 참조, 실제 한컴 표시는 각각 확인한다.
-  누락된 그림을 과거 이슈의 한계로 단정하거나 텍스트만으로 성공 처리하지 않는다.
-- **수식**: 복잡 수식은 이미지로 캡처. 이 ingest 스키마에는 편집 가능한 수식 필드가 없다.
-- **표/정밀 박스**: 단순 표는 Picture 로 캡처. 이 ingest 스키마에는 편집 가능한 표·프레임 필드가 없다.
+- **이미지 삽입 미구현**: HWPX writer의 Picture 직렬화는 구현돼 있지만,
+  이 스킬이 호출하는 ingest 빌더에는 이미지 파일을 Picture/BinData로 연결하는 경로가 없다.
+  `between`·`above`·`below`·`inline`, 공유 지문·보기 내부 이미지도 placeholder 텍스트다.
+  그림 필수 입력은 F18로 중단한다. CLI 종료 코드 0이나 텍스트 대조 통과로 완료 처리하지 않는다.
+- **수식**: 이 ingest 스키마에는 편집 가능한 수식 필드가 없다.
+  이미지로 캡처해도 현재 빌더로 삽입할 수 없으므로 수식 이미지가 필수이면 F18로 중단한다.
+- **표/정밀 박스**: 이 ingest 스키마에는 편집 가능한 표·프레임 필드가 없다.
+  표 이미지가 필수이면 F18로 중단한다. 캡처 자료 준비와 완성 문서 생성을 구분한다.
 
 상세: [15_known_limits.md](references/15_known_limits.md)
 
@@ -341,6 +350,7 @@ bash .claude/skills/rhwp-exam-ingest/helpers/check_deps.sh --json
 관련 이슈: #5319 (본 스킬 고도화), #660 (스키마+빌더), #667 (passages/boxed),
 #3358 (deny_unknown_fields), #182 (Picture 직렬화 구현의 과거 작업).
 
-[근거] `src/serializer/hwpx/picture.rs`와 `src/parser/ingest/schema.rs` ·
-2026-11-01, upstream/devel `da39c536613a4bd543dc72b63a556183efc0383f` 확인 · High.
+[근거] `src/serializer/hwpx/picture.rs`, `src/parser/ingest/schema.rs`,
+`src/cli/commands/generation.rs`, `src/document_core/builders/exam_paper.rs` ·
+2026-11-02, upstream/devel `0b697f90c3637558196b9e3b81c4eb59049432af` 확인 · High.
 소스 확인은 실제 한컴 표시 검증을 대신하지 않는다.

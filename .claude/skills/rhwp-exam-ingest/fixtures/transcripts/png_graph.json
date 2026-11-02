@@ -13,8 +13,8 @@
       "expect": "CROP_OK"
     },
     {
-      "cmd": "rhwp build-from-ingest ingest.json --media-dir $MEDIA -o out.hwpx",
-      "expect": "exit 0"
+      "cmd": "그림 필수 여부 확인",
+      "expect": "F18 중단. 이미지 삽입 미구현"
     }
   ],
   "limit": "L-picture"
