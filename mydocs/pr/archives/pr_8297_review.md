@@ -32,7 +32,8 @@ PDF는 `1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782`다.
 [Native 전체 TSV](../assets/issue_8294/followup8438/official-spec-native.tsv) ·
 [43쪽 review](../assets/issue_8294/followup8438/official-spec-native-review-043.png) ·
 [43쪽 overlay](../assets/issue_8294/followup8438/official-spec-native-overlay-043.png).
-43쪽에서 `표 70`, `표 71`, `표 72`의 번호와 위치를 정본과 직접 대조했다.
+이슈가 지목한 19쪽의 `표 10`, `표 11`, `표 12`와 43쪽의 `표 70`, `표 71`, `표 72`의 번호와 위치를 정본과 직접 대조했다. 19쪽은 양 경로 raw 100.00%다.
+[19쪽 Native review](../assets/issue_8294/followup8438/official-spec-native-review-019.png) · [19쪽 Native overlay](../assets/issue_8294/followup8438/official-spec-native-overlay-019.png) · [19쪽 WASM review](../assets/issue_8294/followup8438/official-spec-wasm-review-019.png) · [19쪽 WASM overlay](../assets/issue_8294/followup8438/official-spec-wasm-overlay-019.png).
 fresh WASM도 71쪽 모두 90% 이상이며 최저 95.41%다.
 [WASM 전체 TSV](../assets/issue_8294/followup8438/official-spec-wasm.tsv) ·
 [43쪽 WASM review](../assets/issue_8294/followup8438/official-spec-wasm-review-043.png) ·
