@@ -125,9 +125,8 @@ WASM 89.19%로 90%를 넘지 못했다. 글꼴 공급만으로 해결됐다고 �
 
 2026-11-03 내장 EMF+가 실제로 채택된 경우에만 중간 표면을 만드는 후보는
 최소 글꼴 집중 검사 7건이 통과했지만, 2024 Print 35쪽 Native raw가 89.11%여서
-시각 검증에 실패했다. [35쪽 review](../../output/pr-review/planet6897-ordered-20261031/book-validation/pr8341-selected-emf-native-2024-p35/policy/review/review_035.png)·
-[overlay](../../output/pr-review/planet6897-ordered-20261031/book-validation/pr8341-selected-emf-native-2024-p35/policy/overlay/overlay_035.png)를
-확인했다. 변환기가 내장 EMF+를 지원하지 않아 WMF 폴백을 선택하는 경로도 중간
+시각 검증에 실패했고 35쪽 review와 overlay를 직접 확인했다. 변환기가 내장 EMF+를
+지원하지 않아 WMF 폴백을 선택하는 경우에도 중간
 장치 축소가 필요한지 보정해 재검증한다. 이전 후보의 92.57%를 이 결과로 재사용하지 않는다.
 
 회귀 대조군 sample16 HWPX의 메타파일 세 개(`image3.WMF`, `image5.WMF`, `image7.wmf`)에서는 WMFC 서명이 발견되지 않았다. 반면 이 차트의 `image7.wmf`는 앞서 확인한 유효한 WMFC 내장 EMF를 가진다. 이 바이트 차이는 일반 WMF의 기존 장치 계약과 내장 EMF를 선택한 새 경로를 구분할 수 있는 근거이며, 파일명이나 문서 번호로 동작을 갈라야 한다는 뜻은 아니다.
