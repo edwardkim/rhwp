@@ -306,3 +306,25 @@ base `73f8a9443b500ff684b972db0947f8dfbe28402cc05d7a0abfc42bd9001345ff`, 후보
 [PR #8421](https://github.com/edwardkim/rhwp/pull/8421)의 시험지 ingest 지침과 생성기,
 그림 직렬화·ingest 구현은 후보와 base의 해당 경로에 차이가 없다. 이번 변경은 기존 그림
 삽입 지원 범위를 바꾸지 않고 글머리표 그림 참조의 읽기·저장과 렌더링을 보정한다.
+
+### 2026-11-03 현재 저장본의 셀 세로쓰기 검증
+
+`samples/k-water-rfp.hwp`를 현재 제품 코드 `d56930dda7`로 HWPX 저장한
+[입력](../assets/issue_7633_8334/followup8438/kwater-final-resave.hwpx)의 SHA-256은
+`9f02906bca2968fba8bf39149af9178de3a225f49a281f55682ac23f43956190`이다.
+`export-hwpx --verify --verify-pages`에서 IR 차이 0건, 저장 전후 27쪽,
+XML의 `VERTICALALL` 셀 3건을 확인했다. 원본 HWP의 독립 한컴 2022
+[Print PDF](../../../pdf/k-water-rfp-2022.pdf)는 27쪽이며 SHA-256은
+`fe135ed3f457092303fa4997a02a4f64f8f93d39fc49381dd753c8ad51bca36b`다.
+
+현재 저장본과 이 PDF를 96 DPI·compat 2022로 전쪽 비교한
+[Native TSV](../assets/issue_7633_8334/followup8438/kwater-final/native.tsv)는
+최저 26쪽 97.24%, [fresh WASM TSV](../assets/issue_7633_8334/followup8438/kwater-final/wasm.tsv)는
+최저 같은 쪽 97.30%다. 누락·90% 미만은 모두 0쪽이다.
+셀 세로쓰기 3건이 보이는 13쪽은 Native 99.69%, fresh WASM 99.67%다.
+[Native 비교](../assets/issue_7633_8334/followup8438/kwater-final/native-p013-review.png)·
+[오버레이](../assets/issue_7633_8334/followup8438/kwater-final/native-p013-overlay.png),
+[WASM 비교](../assets/issue_7633_8334/followup8438/kwater-final/wasm-p013-review.png)·
+[오버레이](../assets/issue_7633_8334/followup8438/kwater-final/wasm-p013-overlay.png)에서
+세로 방향 글자·셀 원점·본문 순서를 직접 대조했다. 원본과 같은 셀 방향을
+유지하며 13쪽의 내용 누락이나 겹침은 보이지 않는다.
