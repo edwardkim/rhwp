@@ -295,7 +295,7 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
         para.try_control_text_positions(storage)?
     };
     let chars: Vec<_> = storage.collect(para.text.chars())?;
-    let mut controls: Vec<_> = storage.collect(positions.into_iter().enumerate())?;
+    let mut controls: Vec<_> = storage.collect(positions.iter().copied().enumerate())?;
     storage.stable_sort_by(&mut controls, |a, b| (a.1, a.0).cmp(&(b.1, b.0)))?;
     let mut controls = controls.into_iter().peekable();
     let mut atoms = Vec::new();
@@ -591,6 +591,38 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                     && separator_spaces::has_flow_content(&row, &chars)
                     && row_metrics.width <= row_width + 0.01
                     && row_metrics.width + item.width > row_width + 0.01;
+                // 줄보다 넓은 첫 개체와 같은 위치의 공백은 개체와 함께
+                // 소유한다. 다음 공백의 cut은 기존 재조판과 같은 계약으로 정한다.
+                let oversized_cut = match (&item.content, row.first()) {
+                    (InlineFlowContent::Text { range, .. }, Some(first))
+                        if spaces.wrap.contains(&range.start) && first.width > row_width =>
+                    {
+                        let control = match &first.content {
+                            InlineFlowContent::Table { control, .. }
+                            | InlineFlowContent::Picture { control, .. } => Some(*control),
+                            _ => None,
+                        };
+                        control.and_then(|control| {
+                            positions.get(control).map(|&start| {
+                                let object_end = (range.start == start)
+                                    .then(|| (px_to_hwpunit(first.width, frame.dpi), 0));
+                                super::composer::overflowing_space_cut(
+                                    start,
+                                    range.start,
+                                    px_to_hwpunit(row_metrics.width + item.width, frame.dpi),
+                                    0,
+                                    px_to_hwpunit(row_width, frame.dpi),
+                                    object_end,
+                                )
+                            })
+                        })
+                    }
+                    _ => None,
+                };
+                let keep_oversized_space = matches!(oversized_cut, Some(None));
+                let absorb_oversized_space = matches!(oversized_cut,
+                    Some(Some(cut)) if matches!(&item.content,
+                        InlineFlowContent::Text { range, .. } if cut == range.end));
                 // A separator consumed by a soft wrap remains in the source
                 // row. It must not create a whitespace-only row before the
                 // next word/table. Space-only paragraphs and authored breaks
@@ -599,13 +631,14 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                     if spaces.wrap.contains(&range.start))
                     && row_metrics.width + item.width > row_width + 0.01
                     && !first_overhang_space
+                    && !keep_oversized_space
                     && separator_spaces::has_flow_content(&row, &chars)
                 {
                     item.width = 0.0;
                     // 개체 앞의 넘친 공백은 앞 줄에서 소비하고 그 줄을 끝낸다.
                     // 이후 작성된 공백은 다음 물리 줄에 남아 개체의 전진량과
                     // 함께 fit한다. 모두 폭 0으로 흡수하면 표 소유 줄을 잃는다.
-                    if object_separator {
+                    if object_separator || absorb_oversized_space {
                         storage.push(&mut row, item)?;
                         let Some(()) = finish_row_with_storage(
                             &mut result,
@@ -668,8 +701,9 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                 };
                 if !row.is_empty()
                     && ((row_metrics.width + lookahead.width > row_width + 0.01
-                        && !first_overhang_space)
-                        || moves_existing_row)
+                        && !first_overhang_space
+                        && !keep_oversized_space)
+                        || (moves_existing_row && !keep_oversized_space))
                 {
                     let Some(()) = finish_row_with_storage(
                         &mut result,

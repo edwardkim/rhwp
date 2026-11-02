@@ -929,6 +929,7 @@ fn parse_bullet(data: &[u8]) -> Result<Bullet, DocInfoError> {
         char_shape_id,
         bullet_char,
         image_bullet,
+        hwpx_image_without_ref: false,
         image_data,
         check_bullet_char,
         raw_para_head: None,

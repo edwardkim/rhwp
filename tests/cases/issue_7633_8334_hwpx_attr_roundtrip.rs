@@ -1,6 +1,9 @@
-//! 관계형·고정형: 왕복 전후의 줄표·셀 방향·쪽별 본문 비교(관계)와, 원본의 줄표 문자·셀 방향
-//! 값을 한컴 저장본·Print 에서 정한 값(`'\0'`, `'-'`, 2, 1)으로 직접 확인(고정)한다.
-//! 주석 갱신: 2026-10-31T06:25:00+09:00; 직전 파일 커밋: 2026-10-31T05:08:14+09:00 (2d17f0045).
+//! 관계형·고정형: 왕복 내용·속성 관계와 독립 저장본의 줄표·방향 값을 확인한다.
+//! 주석 갱신: 2026-11-02T20:06:12+09:00; 직전 파일 커밋: 2026-11-01T19:38:13+09:00 (a2541933cb).
+//! 줄표 문자와 셀 방향은 한컴 저장본·Print에서 정한 값(`'\0'`, `'-'`, 2, 1)으로 확인한다.
+//! WMF 공백 요청과 글꼴 cmap 검사는 원본과 라이선스 확인 fixture의 비조판 계약이다.
+//! 2026-11-02 보정 전 독립 Print 대비 HWPX 저장본 178쪽: 94쪽 및 전쪽 최저 Native 92.66%,
+//! fresh WASM 92.56% (96dpi raw). 글머리표 문자와 문단 소유는 관계로 검사한다.
 //! 2026-10-31 devel 55f40ecd9 위 head 측정 raw(96dpi, pdftoppm, `scripts/visual_sweep.py
 //! --compat 2022`, head 의 HWPX 저장본은 `rhwp export-hwpx` 로 생성), 핵심 쪽 Native / fresh
 //! WASM, 전체 쪽 최저 Native / fresh WASM:
@@ -201,4 +204,139 @@ fn vertical_cell_keeps_value_one() {
     let original = load("samples/issue6029/3200477_icao_procedure.hwpx");
     assert_eq!(directions(&original), [1, 1, 1]);
     assert_eq!(directions(&reopen_as_hwpx(&original)), [1, 1, 1]);
+}
+
+/// WMF 글꼴 요청은 렌더링이 아닌 원본의 text/cmap 공급 계약이다.
+#[test]
+fn wmf_space_requests_remain_visible_to_font_selection() {
+    let document = load("mydocs/pr/assets/issue_7633_8334/followup8438/hwpspec-saved.hwpx");
+    let json = document
+        .get_metafile_font_requests_native()
+        .expect("WMF 요청");
+    let requests: Vec<serde_json::Value> = serde_json::from_str(&json).expect("WMF 요청 JSON");
+    assert!(!requests.is_empty(), "원본 WMF의 요청이 있어야 한다");
+    assert!(
+        requests
+            .iter()
+            .all(|item| item["text"].as_str().is_some_and(|text| !text.is_empty())),
+        "내용이 없는 텍스트는 전체 대체 글꼴 요청을 만들지 않는다"
+    );
+    assert!(
+        requests.iter().any(
+            |item| item["families"].as_array().is_some_and(|families| families
+                .first()
+                .and_then(|family| family.as_str())
+                == Some("Times New Roman"))
+                && item["text"].as_str() == Some(" ")
+        ),
+        "원본 WMF의 독립 공백은 글꼴 선택에 전달한다"
+    );
+    assert!(
+        requests.iter().any(|item| item["text"]
+            .as_str()
+            .is_some_and(|text| text.contains(' ')
+                && text.chars().any(|character| !character.is_whitespace()))),
+        "문자와 공백이 같은 글꼴 요청에 함께 남는다"
+    );
+}
+
+/// 설치 글꼴 없이 저장소의 라이선스 확인 fixture로 공백 cmap을 판별한다.
+#[test]
+fn wmf_space_coverage_uses_the_supplied_program() {
+    use rhwp::renderer::font_symbol_coverage::{font_missing_text, font_missing_text_with_spaces};
+    let no_space = include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf");
+    let has_space = include_bytes!("../fixtures/fonts/RHWPEquationLatinOnly.ttf");
+    assert_eq!(font_missing_text(no_space, 0, " A").as_deref(), Some(""));
+    assert_eq!(
+        font_missing_text_with_spaces(no_space, 0, " A").as_deref(),
+        Some(" ")
+    );
+    assert_eq!(
+        font_missing_text_with_spaces(has_space, 0, " A").as_deref(),
+        Some("")
+    );
+}
+
+/// 참조 없는 그림 글머리표는 한컴 Print처럼 문자를 사용하고 원본 속성은 보존한다.
+#[test]
+fn hwpx_bullet_without_image_reference_uses_character_and_roundtrips() {
+    let core = load("mydocs/pr/assets/issue_7633_8334/followup8438/hwpspec-saved.hwpx");
+    let (paragraph_index, paragraph) = core.document().sections[3]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .find(|(_, p)| p.text.starts_with("대각선 merge cell은"))
+        .expect("독립 Print에 대응하는 문단");
+    let style = &core.document().doc_info.para_shapes[paragraph.para_shape_id as usize];
+    let bullet = &core.document().doc_info.bullets[usize::from(style.numbering_id) - 1];
+    assert_eq!(bullet.bullet_char, '●');
+    assert_eq!(
+        bullet.image_bullet, 0,
+        "참조가 없는데 다른 그림을 선택하면 안 된다"
+    );
+    assert!(
+        bullet.hwpx_image_without_ref,
+        "원래 useImage 속성은 보존해야 한다"
+    );
+
+    let tree: serde_json::Value = serde_json::from_str(
+        &core
+            .build_page_render_tree(93)
+            .expect("94쪽 조판")
+            .root
+            .to_json(),
+    )
+    .unwrap();
+    fn walk<'a>(value: &'a serde_json::Value, out: &mut Vec<&'a serde_json::Value>) {
+        out.push(value);
+        if let Some(children) = value.get("children").and_then(|v| v.as_array()) {
+            for child in children {
+                walk(child, out);
+            }
+        }
+    }
+    let mut nodes = Vec::new();
+    walk(&tree, &mut nodes);
+    let owned: Vec<_> = nodes
+        .into_iter()
+        .filter(|v| v["pi"].as_u64() == Some(paragraph_index as u64))
+        .collect();
+    assert!(
+        owned
+            .iter()
+            .any(|v| v["type"] == "TextRun" && v["text"] == "●"),
+        "해당 문단의 문자 마커"
+    );
+    assert!(
+        !owned.iter().any(|v| v["type"] == "Image"),
+        "참조 없는 그림은 출력하지 않는다"
+    );
+    assert!(
+        owned
+            .iter()
+            .any(|v| v["type"] == "TextRun"
+                && v["text"].as_str().is_some_and(|t| t.contains("대각선"))),
+        "본문 보존"
+    );
+
+    let reopened = reopen_as_hwpx(&core);
+    let same = &reopened.document().doc_info.bullets[usize::from(style.numbering_id) - 1];
+    assert_eq!(same.bullet_char, '●');
+    assert_eq!(same.image_bullet, 0);
+    assert!(
+        same.hwpx_image_without_ref,
+        "useImage=1이 왕복에서도 유지된다"
+    );
+}
+
+/// 명시한 그림 참조와 일반 문자 글머리표는 각각 기존 계약대로 보존한다.
+#[test]
+fn hwpx_bullet_explicit_image_and_plain_character_remain_distinct() {
+    let xml = r#"<?xml version="1.0" encoding="UTF-8"?><hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head"><hh:refList><hh:bullets itemCnt="2"><hh:bullet id="1" char="●" useImage="1"><hh:img binaryItemIDRef="image3"/><hh:paraHead level="0"/></hh:bullet><hh:bullet id="2" char="■" useImage="0"><hh:paraHead level="0"/></hh:bullet></hh:bullets></hh:refList></hh:head>"#;
+    let (info, _) = rhwp::parser::hwpx::header::parse_hwpx_header(xml).expect("HWPX 머리글");
+    assert_eq!(info.bullets[0].image_bullet, 3);
+    assert!(!info.bullets[0].hwpx_image_without_ref);
+    assert_eq!(info.bullets[1].bullet_char, '■');
+    assert_eq!(info.bullets[1].image_bullet, 0);
+    assert!(!info.bullets[1].hwpx_image_without_ref);
 }

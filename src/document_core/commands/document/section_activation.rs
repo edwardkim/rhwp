@@ -73,6 +73,7 @@ pub(super) fn rebase_body_frames(
             // 원본 바이트는 raw provenance가 보존한다. 무효한 옛 쪽 좌표를
             // paint가 별도 source 축으로 다시 가져오지 않도록 같은 결과를 발행한다.
             paragraph.source_line_seg_vertical_pos = None;
+            paragraph.layout_rebased_body_axis = true;
             for line in &mut paragraph.line_segs {
                 line.vertical_pos = next;
                 next = next

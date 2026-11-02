@@ -1589,7 +1589,7 @@ fn condensed_line_width_hwp(width_hwp: i32, space_savings_hwp: i32) -> i32 {
 /// continues the remaining blanks on the next row (#7168). A visible inline
 /// object at that offset must instead move with its space. Both fill paths use
 /// this cut so ownership is not guessed separately during projection.
-fn overflowing_space_cut(
+pub(crate) fn overflowing_space_cut(
     line_start: usize,
     space_idx: usize,
     width_hwp: i32,

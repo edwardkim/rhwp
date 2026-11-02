@@ -494,6 +494,9 @@ pub struct Bullet {
     pub bullet_char: char,
     /// 이미지 글머리표 여부 (0=문자, ID=이미지)
     pub image_bullet: i32,
+    /// HWPX에서 그림 사용을 표시했지만 실제 그림 참조가 없는 원본 속성이다.
+    #[serde(skip_serializing)]
+    pub hwpx_image_without_ref: bool,
     /// 이미지 글머리 데이터 (대비, 밝기, 효과, ID)
     pub image_data: [u8; 4],
     /// 체크 글머리표 문자

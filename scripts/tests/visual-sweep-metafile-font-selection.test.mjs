@@ -140,3 +140,21 @@ test('글꼴 파싱 실패를 모든 글리프 공급으로 간주하지 않는�
     [font(400)], [{...request(400), text: 'A·'}], async () => Uint8Array.of(1));
   assert.deepEqual([...selected], []);
 });
+
+// 공백 cmap을 모의해 공급 순서만 확인한다. 실제 글꼴이나 시각 검증이 아니다.
+test('WMF 공백은 실제 cmap을 검사하고 없으면 다음 공급자를 선택한다', async () => {
+  const fonts = [font(400, 'normal', 'First'), font(400, 'normal', 'Second'), font(400, 'normal', 'Unused')];
+  const selected = await selectSweepPaintFontFaces({fontMissingTextWithSpaces(bytes, index, text) {
+    assert.equal(index, 0);
+    return bytes[0] === 2 ? '' : text;
+  }}, fonts, [{...request(400, false, ['First', 'Second', 'Unused']), text: ' '}], [], async record =>
+    Uint8Array.of({First: 1, Second: 2, Unused: 3}[record.families[0]]));
+  assert.deepEqual([...selected], ['second|400|normal']);
+});
+
+test('공백 cmap 검사 API가 없으면 전체 fallback을 보존한다', async () => {
+  const fonts = [font(400, 'normal', 'First'), font(400, 'normal', 'Second')];
+  const selected = await selectSweepPaintFontFaces({fontMissingText: () => ''}, fonts,
+    [{...request(400, false, ['First', 'Second']), text: ' '}], [], async () => Uint8Array.of(1));
+  assert.deepEqual([...selected], ['first|400|normal', 'second|400|normal']);
+});

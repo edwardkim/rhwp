@@ -123,6 +123,10 @@ pub struct Paragraph {
     /// (`serde(skip)` — IR dump/ir-sweep 축의 필드 집합을 바꾸지 않는다.)
     #[serde(skip_serializing)]
     pub source_line_seg_vertical_pos: Option<Vec<i32>>,
+    /// 단 정의 부재로 본문 세로 축을 재구성했는지 나타내는 조판 전용 출처다.
+    /// 문자 분할의 유효성과 별개이며 원본 파일이나 IR로 직렬화하지 않는다.
+    #[serde(skip_serializing)]
+    pub layout_rebased_body_axis: bool,
     /// 영역 태그 정보
     pub range_tags: Vec<RangeTag>,
     /// 필드 텍스트 범위 (0x03~0x04 사이 텍스트 인덱스 + 컨트롤 인덱스)
@@ -977,6 +981,7 @@ impl Paragraph {
         // source-position snapshot owned by the replaced rows.
         self.layout_only_fill_lines = 0;
         self.source_line_seg_vertical_pos = None;
+        self.layout_rebased_body_axis = false;
         // [#5961] 새로 계산한 줄은 `char_offsets` 와 같은 HWP5 축에서 나온다. 파일에서
         // 읽은 줄에만 붙던 보정폭을 그대로 두면 다음 투영에서 이중으로 더해진다.
         self.hwpx_axis_shift = 0;
@@ -2291,6 +2296,8 @@ impl Paragraph {
             layout_only_fill_lines: 0,
             // 편집으로 갈라진 문단의 원본 vertpos 스냅샷은 무효다 (#5847).
             source_line_seg_vertical_pos: None,
+            // 새 줄은 본문 축을 이어 붙인 저장 줄이 아니다.
+            layout_rebased_body_axis: false,
             // 새로 계산된 줄은 `char_offsets` 와 같은 HWP5 축에서 나오므로 보정이 없다 (#5961).
             hwpx_axis_shift: 0,
             range_tags: new_range_tags,

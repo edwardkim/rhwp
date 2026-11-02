@@ -1062,7 +1062,11 @@ where
 {
     let id_s = xml_value(storage, id + 1)?; // 관찰: 1-based, ParaShape.numbering_id 참조와 정합
     let char_s = xml_value(storage, b.bullet_char)?;
-    let use_image = if b.image_bullet > 0 { "1" } else { "0" };
+    let use_image = if b.image_bullet > 0 || b.hwpx_image_without_ref {
+        "1"
+    } else {
+        "0"
+    };
     // [#3028] checkedChar(체크 글머리표 문자) — 값이 있을 때만 방출한다.
     let has_checked_char = b.check_bullet_char != '\0';
     let checked_char_s = xml_value(storage, b.check_bullet_char)?;
