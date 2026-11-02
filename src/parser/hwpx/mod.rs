@@ -554,6 +554,43 @@ pub(crate) fn parse_hwpx_with_reservation(
         .and_then(|(_, bytes)| std::str::from_utf8(bytes).ok())
         .and_then(parse_settings_print_method);
 
+    // HWP 저장에 사용하는 DOC_DATA 기본값을 실제 HWPX 인쇄 설정과 맞춘다.
+    // 원문 settings.xml은 그대로 보존하고 다른 인쇄 키도 변경하지 않는다.
+    let crop_mark = hwpx_aux_entries
+        .iter()
+        .find(|(path, _)| path == "settings.xml")
+        .and_then(|(_, bytes)| Document::hwpx_print_crop_mark(bytes));
+    if let Some(enabled) = crop_mark {
+        let mut found = false;
+        for record in &mut doc_info.extra_records {
+            if record.tag_id != crate::parser::tags::HWPTAG_DOC_DATA {
+                continue;
+            }
+            for pair in record.data.chunks_exact_mut(8) {
+                if u32::from_le_bytes(pair[..4].try_into().unwrap()) == 0x0006_401a {
+                    pair[4..].copy_from_slice(&u32::from(enabled).to_le_bytes());
+                    found = true;
+                }
+            }
+        }
+        if !found {
+            // linkInfo가 없는 HWPX도 유효한 DOC_DATA 매개변수 집합을 만든다.
+            let mut data = Vec::with_capacity(24);
+            for word in [0x021c_u16, 1, 0, 0x0207, 0x8000, 0x0207, 1, 0] {
+                data.extend_from_slice(&word.to_le_bytes());
+            }
+            data.extend_from_slice(&0x0006_401a_u32.to_le_bytes());
+            data.extend_from_slice(&u32::from(enabled).to_le_bytes());
+            doc_info
+                .extra_records
+                .push(crate::model::document::RawRecord {
+                    tag_id: crate::parser::tags::HWPTAG_DOC_DATA,
+                    level: 0,
+                    data,
+                });
+        }
+    }
+
     // BinData 목록을 DocInfo에 등록
     // [Task #873] isEmbeded="0" 인 외부 file 참조 (예: HWP3 → HWPX 변환본 의 절대 경로)
     // 는 BinDataType::Link + abs_path 로 등록. 이후 populate_link_image_paths (parser/mod.rs)

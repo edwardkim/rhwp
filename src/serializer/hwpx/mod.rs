@@ -215,10 +215,22 @@ where
 
     // 6. settings.xml — 원본 보존 우선.
     //    하드코딩 상수는 PrintInfo(확대/인쇄 설정) 등을 빠뜨린다.
+    const CROP_SETTINGS_XML: &str = concat!(
+        r#"<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>"#,
+        r#"<ha:HWPApplicationSetting xmlns:ha="http://www.hancom.co.kr/hwpml/2011/app" xmlns:config="urn:oasis:names:tc:opendocument:xmlns:config:1.0">"#,
+        r#"<ha:CaretPosition listIDRef="0" paraIDRef="0" pos="16"/>"#,
+        r#"<config:config-item-set name="PrintInfo"><config:config-item name="PrintCropMark" type="short">1</config:config-item></config:config-item-set>"#,
+        "</ha:HWPApplicationSetting>",
+    );
     z.write_deflated(
         "settings.xml",
-        doc.hwpx_aux_entry("settings.xml")
-            .unwrap_or_else(|| SETTINGS_XML.as_bytes()),
+        doc.hwpx_aux_entry("settings.xml").unwrap_or_else(|| {
+            if doc.print_crop_marks() {
+                CROP_SETTINGS_XML.as_bytes()
+            } else {
+                SETTINGS_XML.as_bytes()
+            }
+        }),
     )?;
 
     // 6-1. [#3557] Scripts/* — IR 밖 패키지 스크립트 원본 통과. 파서가 aux 로

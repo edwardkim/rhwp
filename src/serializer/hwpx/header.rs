@@ -1107,7 +1107,8 @@ where
                 2 => "BLACK_WHITE",
                 3 => {
                     return Err(SerializeError::XmlError(
-                        "그림 글머리표의 8×8 패턴 효과는 HWPX 이미지 사양에서 지원하지 않습니다".into(),
+                        "그림 글머리표의 8×8 패턴 효과는 HWPX 이미지 사양에서 지원하지 않습니다"
+                            .into(),
                     ));
                 }
                 _ => "REAL_PIC",

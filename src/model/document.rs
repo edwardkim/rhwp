@@ -407,22 +407,23 @@ pub struct SectionDef {
 }
 
 impl Document {
-    /// 한컴 Print의 재단 표시 설정. 미기재와 지원하지 않는 값은 출력하지 않는다.
+    /// HWPX 인쇄 설정의 편집 용지 표시 값. 미기재와 미지원 값은 구분한다.
+    pub(crate) fn hwpx_print_crop_mark(settings: &[u8]) -> Option<bool> {
+        let xml = std::str::from_utf8(settings).ok()?;
+        let start = xml.find(r#"name="PrintCropMark""#)?;
+        let value_start = start + xml[start..].find('>')? + 1;
+        let value_end = value_start + xml[value_start..].find('<')?;
+        match xml[value_start..value_end].trim() {
+            "0" => Some(false),
+            "1" => Some(true),
+            _ => None,
+        }
+    }
+
+    /// 한컴 Print의 편집 용지 표시. 미기재와 지원하지 않는 값은 출력하지 않는다.
     pub(crate) fn print_crop_marks(&self) -> bool {
         if let Some(settings) = self.hwpx_aux_entry("settings.xml") {
-            let Some(xml) = std::str::from_utf8(settings).ok() else {
-                return false;
-            };
-            let Some(start) = xml.find(r#"name="PrintCropMark""#) else {
-                return false;
-            };
-            let Some(value_start) = xml[start..].find('>').map(|n| start + n + 1) else {
-                return false;
-            };
-            let Some(value_end) = xml[value_start..].find('<').map(|n| value_start + n) else {
-                return false;
-            };
-            return xml[value_start..value_end].trim() == "1";
+            return Self::hwpx_print_crop_mark(settings).unwrap_or(false);
         }
         self.doc_info.extra_records.iter().any(|record| {
             record.tag_id == 27
