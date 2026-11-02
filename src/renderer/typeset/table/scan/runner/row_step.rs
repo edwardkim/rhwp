@@ -1044,15 +1044,28 @@ impl TypesetEngine {
                 // 그린다(한/글 2020: 1613000 188쪽 행 26 «6. 모니터링» 선언 2614HU 34.9px, 남은 29.9px —
                 // 아래 괘선 1040.6 = 닫는 선, 189쪽은 행 27 부터). 남는 선언 몫은 다음 조각이 행 자신의
                 // 칸 선언으로 다시 재고, 1280HU 이하이면 쪽 경계에서 버린다.
+                // [#8464] 수용 판정의 «내용»은 글줄 상자와 칸 안 여백 전체다 — 보이는 글자가 없는
+                // 빈 줄도 줄 상자와 여백을 차지한다(한/글 2020: 새터민 보고서 111쪽 빈 간격 행
+                // 줄 100 + 여백 282HU 가 남은 3.9px 에 안 들어 112쪽 첫머리로 간다). 남은 공간에
+                // 25px 같은 하한은 없다(합성 `samples/issue8464`, 남은 17~20px 에서도 수용).
+                // 이 근거는 자리차지 표의 것이다. 어울림 표는 같은 형상에서 한/글이 행을 넘긴
+                // 사례가 있어(수산업법 시행령 별표 6, 남은 25.2px · 내용 19.8px) 종전 하한을 둔다.
                 let declared_overflow_rest = (avail_for_rows - consumed - cs_before).max(0.0);
+                let page_rest_admits_content_row = matches!(
+                    table.common.text_wrap,
+                    crate::model::shape::TextWrap::TopAndBottom
+                ) || declared_overflow_rest >= MIN_TOP_KEEP_PX;
                 if mt.allows_row_break_split()
+                    && page_rest_admits_content_row
                     && r > cursor_row
                     && !rowspan_touched[r]
                     && row_start_cut.is_empty()
                     && !res.end_cut.is_empty()
-                    && row_total > declared_overflow_rest + 0.5
-                    && res.consumed_height + padding <= declared_overflow_rest + 0.5
-                    && declared_overflow_rest >= MIN_TOP_KEEP_PX
+                    && row_total > declared_overflow_rest
+                    && layout_engine.row_content_fits_page_rest(
+                        res.consumed_height + mt.max_padding_for_row(r),
+                        declared_overflow_rest,
+                    )
                 {
                     if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                         eprintln!(
