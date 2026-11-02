@@ -77,7 +77,7 @@ HWP5 출처 HWPX 표 분할 측정이 실제 배치와 같은 저장 조판 프�
 
 제품 코드 `dd284b5cda`로 같은 네 HWP를 다시 HWPX로 저장했다. `--verify --verify-pages`는 네 입력 모두 IR 차이 없이 각각 31·65·33·48쪽을 유지했고, 저장본 네 개의 SHA-256도 위 독립 Print에 사용한 각 HWPX와 일치했다. 이는 입력·왕복 검증이며 이후 시험 중인 WMFC 변경의 화면 출력 검증을 대신하지 않는다.
 
-같은 제품 코드 `dd284b5cda`의 전쪽 재측정에서 `headerrow` 31쪽은 Native·fresh WASM 모두 100.00%, `reservefit` 65쪽은 Native 모두 100.00%였다. 세 TSV의 SHA-256이 위 기존 자료와 각각 일치해 재사용한다. `reservefit` WASM과 나머지 입력은 계속 측정 중이며 이후 WMFC 후보는 이 결과에 포함되지 않는다.
+같은 제품 코드 `dd284b5cda`의 전쪽 재측정에서 `headerrow` 31쪽과 `reservefit` 65쪽은 Native·fresh WASM 모두 100.00%, `rowfit` 33쪽은 Native 모두 100.00%였다. 다섯 TSV의 SHA-256이 위 기존 자료와 각각 일치해 재사용한다. `rowfit` WASM과 `71352`는 계속 측정 중이며 이후 WMFC 후보는 이 결과에 포함되지 않는다.
 
 ### 2026-11-02 새 base 최소 글꼴 집중 회귀
 
