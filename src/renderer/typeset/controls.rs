@@ -538,7 +538,18 @@ pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
         .then(|| shape_flow::para_offset_top_px(ctrl, dpi))
         .flatten()
         .filter(|top| para_start_height + top >= st.available_height());
-    if offpage_top.is_some() {
+    // [#8491] 자기 저장 줄들 아래에서 시작하는 개체는 자기 줄을 밀지 않고
+    // 개체 띠를 뒤 문단의 배제 영역으로 남긴다.
+    let below_own_lines = if offpage_top.is_none() {
+        flow.non_tac_pushdown_h
+            .and_then(|height| {
+                shape_flow::below_own_lines_top_px(ctrl, para, dpi).map(|top| (top, height))
+            })
+            .map(|(top, height)| (para_start_height + top, height))
+    } else {
+        None
+    };
+    if offpage_top.is_some() || below_own_lines.is_some() {
         flow.non_tac_pushdown_h = None;
     }
     if st.defer_table_host_ole_to_next_column(para_idx, ctrl_idx, ctrl, dpi) {
@@ -599,6 +610,12 @@ pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
             top,
             st.current_height,
         ))
+    } else if let Some((top, _)) = below_own_lines {
+        Some(shape_flow::below_own_lines_frame(
+            para_start_height,
+            top,
+            st.current_height,
+        ))
     } else {
         match pushed_anchor_origin {
             Some(origin) => flow.pushed_anchor_shape_frame(ctrl, origin, dpi),
@@ -606,6 +623,13 @@ pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
         }
     };
     st.commit_table_host_shape_with_storage(para_idx, ctrl_idx, flow, accepted_frame, storage)?;
+    if let Some((top, height)) = below_own_lines {
+        st.add_visible_float_exclusion(super::VisibleFloatExclusion {
+            para_index: para_idx,
+            top,
+            bottom: top + height,
+        });
+    }
     st.register_side_wrap_picture(para_idx, ctrl_idx, para, Some(para_start_height), styles);
     if spills_to_leaving_page {
         // 개체만 남기고 그 줄은 저장 리셋대로 다음 쪽에서 시작한다. 줄에 다른 내용이 없어도
