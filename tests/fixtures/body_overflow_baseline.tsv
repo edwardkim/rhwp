@@ -199,3 +199,6 @@ issue6465/press_release_footer_logos.hwpx	1
 # 저장값(20000 = 133.3px)으로 만들면 똑같이 37.8px 넘친다 — 홀수 값이 이제 실제 간격으로 읽혀 드러났을 뿐이다. 별도 이슈 #7824.
 issue7816/odd_spacing_prev.hwpx	2
 issue6031/3249937_asset_management_rules.hwpx	0
+# #8491 새 시험 고정본 2행 — 보도자료 끝 로고 상자(문단 기준 세로 오프셋 4138·6280 HU)가 같은 문단 표 줄 아래에 놓여 아래끝이 본문 바닥을 넘는다. 한/글 2022 Print 도 같은 쪽 본문 바닥 아래(아래 여백)에 그린다(156602236 1쪽 로고 상자 y≈1010–1045px, 본문 바닥 1028.1px). 수정 전에는 표가 다음 쪽으로 넘어가 쪽이 하나 늘었다.
+issue8491/156602236-press-logo.hwpx	1
+issue8491/156736331-press-logo.hwpx	1
