@@ -52,8 +52,17 @@ UTF-16 축의 표시 소유와 뒤 글자 모양을 저장 왕복에서 확인�
 [overlay](../assets/issue_8305/followup8438/native-literal-final-overlay-042.png)를
 대조했다. 기존 Native TSV와 비교하면 55쪽 표시값만 96.76%에서 96.72%로
 달라졌으며, 해당 쪽의 본문·상자·쪽번호가 Print와 같은 순서와 위치에 있음을
-확인했다. fresh WASM 전쪽 대조는 별도 실행 중이며, 이 Native 결과만으로
-최종 판정하지 않는다.
+확인했다. 같은 입력과 Print PDF를 최종 fresh WASM(SHA-256
+`eda26e7ad93a87c7e9aed712e83ae0cddce993aa9939d25cfaf427c8cbe685c1`)으로
+전 64쪽 비교한 [WASM TSV](../assets/issue_8305/followup8438/wasm-literal-final-2024-all.tsv)의
+최저는 42쪽 90.68%, 차트 35쪽은 92.60%이며 미달·누락은 없다.
+WASM 35쪽 [review](../assets/issue_8305/followup8438/wasm-literal-final-review-035.png)·
+[overlay](../assets/issue_8305/followup8438/wasm-literal-final-overlay-035.png)와
+42쪽 [review](../assets/issue_8305/followup8438/wasm-literal-final-review-042.png)·
+[overlay](../assets/issue_8305/followup8438/wasm-literal-final-overlay-042.png)도
+직접 대조했다. 차트 선·범례·값과 앞뒤 본문·표의 내용 순서가 보존된다.
+이 입력의 양쪽 시각 검증은 완료했으며, 전체 회귀·기타 원 PR 검증과
+공개 기준 전쪽 대조는 별도로 진행 중이다.
 
 이전 통합 후보의 최소 글꼴 전체 회귀 로그에서 이 PR 관련 다음 모듈의 실행을 확인했다. 새 base 후보의 재실행 결과는 이 값으로 대신하지 않는다.
 - [`issue_8305_titlemark_boundary_runs.rs`](../../../tests/cases/issue_8305_titlemark_boundary_runs.rs): 이전 실행 5건 통과, 0건 실패, 0건 건너뜀.
