@@ -441,3 +441,9 @@ PDF 문자 상자만으로 페이지 전체가 동일하다고 판정하지 않�
 [비교 이미지](../assets/issue_8136/followup8438-crop/saved-print-before-review-012.png)와
 [overlay](../assets/issue_8136/followup8438-crop/saved-print-before-overlay-012.png)에서도
 표와 후속 문단 전체의 위치 차이를 확인했다. 이는 보정 전 실패 증거다.
+
+별도 진단 복사본에서 12쪽 표 호스트의 `linesegarray`만 제거하면 RHWP의 표와
+다음 문단 원점이 원본과 같아진다. 이 진단 입력을 한컴 2020 MCP로 전처리 없이
+Print했을 때도 12쪽 표 제목의 y 좌표는 116.999816pt로 유지됐다. 다만 한 사례의
+선택 영역 확인이므로 저장 줄을 일반적으로 삭제해도 된다는 근거는 아니다. 유효한
+저장 줄의 다른 사례와 분할·측정·배치 소비 경로를 보존하는 공통 해결이 필요하다.
