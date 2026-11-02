@@ -13,6 +13,12 @@
       "page_count": null,
       "sha256": null,
       "output_bytes": null
+    },
+    "local_pdf": {
+      "path": "pdf/issue665/above-2024.pdf",
+      "pages": 1,
+      "bytes": 22677,
+      "sha256": "f4a2ead3117d7ee22b9d8a39da90a15dc56935b4a9de32f9c8722054c84f7601"
     }
   },
   "between": {
@@ -29,6 +35,12 @@
       "page_count": null,
       "sha256": null,
       "output_bytes": null
+    },
+    "local_pdf": {
+      "path": "pdf/issue665/between-2024.pdf",
+      "pages": 1,
+      "bytes": 22693,
+      "sha256": "e35cbc4d9085b0d728afbde0bc4a1c2f3706cfd885543537cd341b00d8f2c9ac"
     }
   },
   "below": {
@@ -45,6 +57,12 @@
       "page_count": null,
       "sha256": null,
       "output_bytes": null
+    },
+    "local_pdf": {
+      "path": "pdf/issue665/below-2024.pdf",
+      "pages": 1,
+      "bytes": 22690,
+      "sha256": "b0189ce03a8960b8686fcedc994e2cd766d0f44e4662ee27c8b752b861ef3664"
     }
   },
   "inline": {
@@ -61,6 +79,12 @@
       "page_count": null,
       "sha256": null,
       "output_bytes": null
+    },
+    "local_pdf": {
+      "path": "pdf/issue665/inline-2024.pdf",
+      "pages": 1,
+      "bytes": 24400,
+      "sha256": "880a2accd53fe12463e1384f73ec2336e6c5e90bea1165549bd00b5e4f0d8678"
     }
   },
   "runs": {
@@ -77,6 +101,12 @@
       "page_count": null,
       "sha256": null,
       "output_bytes": null
+    },
+    "local_pdf": {
+      "path": "pdf/issue665/runs-2024.pdf",
+      "pages": 1,
+      "bytes": 23327,
+      "sha256": "c3ffee0191f02f1a897768245a278976ae299c169626065cd2d4bdd45eca5ca9"
     }
   },
   "shared-boxed": {
@@ -93,6 +123,12 @@
       "page_count": null,
       "sha256": null,
       "output_bytes": null
+    },
+    "local_pdf": {
+      "path": "pdf/issue665/shared-boxed-2024.pdf",
+      "pages": 1,
+      "bytes": 28077,
+      "sha256": "3cd193ac97ae98ccb61ad1e5041a12998d6cf2a4f5e9819eb6698a25ba7465bf"
     }
   },
   "mixed": {
@@ -109,6 +145,12 @@
       "page_count": null,
       "sha256": null,
       "output_bytes": null
+    },
+    "local_pdf": {
+      "path": "pdf/issue665/mixed-2024.pdf",
+      "pages": 1,
+      "bytes": 27116,
+      "sha256": "2da0a20945d72d49adc9f18113386959eff9a9e4989be5414831536afdc4e076"
     }
   },
   "shared-boxed-generated": {
@@ -125,6 +167,12 @@
       "page_count": null,
       "sha256": null,
       "output_bytes": null
+    },
+    "local_pdf": {
+      "path": "pdf/issue665/shared-boxed-generated-2024.pdf",
+      "pages": 1,
+      "bytes": 28075,
+      "sha256": "d5ad1845efa76cdb3db8a9dfb90a99c93e383cea9b66926294fc2021fd0ac07b"
     }
   },
   "format-jpg": {
@@ -141,6 +189,12 @@
       "page_count": null,
       "sha256": null,
       "output_bytes": null
+    },
+    "local_pdf": {
+      "path": "pdf/issue665/format-jpg-2024.pdf",
+      "pages": 1,
+      "bytes": 22872,
+      "sha256": "2389e0bc0de8b333adea5eedcea6e93cf18114d5370a7500b5b0d833f1f31537"
     }
   },
   "format-gif": {
@@ -157,6 +211,12 @@
       "page_count": null,
       "sha256": null,
       "output_bytes": null
+    },
+    "local_pdf": {
+      "path": "pdf/issue665/format-gif-2024.pdf",
+      "pages": 1,
+      "bytes": 22678,
+      "sha256": "ecc057eb6143b106b64746e1f94a854fd95236b4d35cd1e1dbd67d16c15c5b87"
     }
   },
   "format-bmp": {
@@ -173,6 +233,12 @@
       "page_count": null,
       "sha256": null,
       "output_bytes": null
+    },
+    "local_pdf": {
+      "path": "pdf/issue665/format-bmp-2024.pdf",
+      "pages": 1,
+      "bytes": 22676,
+      "sha256": "c8b55c2d83b7c0cedfe14acd640d912b0ce2e1d17108acf9a758fa415b4991db"
     }
   },
   "format-tif": {
@@ -189,6 +255,12 @@
       "page_count": null,
       "sha256": null,
       "output_bytes": null
+    },
+    "local_pdf": {
+      "path": "pdf/issue665/format-tif-2024.pdf",
+      "pages": 1,
+      "bytes": 22678,
+      "sha256": "7e153d4da131de0ae65091e4a020247e345d9e9bd63472a926d30f905bf9b4b2"
     }
   }
 }

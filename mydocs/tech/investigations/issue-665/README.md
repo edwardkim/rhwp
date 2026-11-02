@@ -81,11 +81,15 @@ shared-boxed에는 base에도 있는 보기 border의 중복 선과 작은 세�
 확인한 뒤 wasm-opt·패키징을 완료한 `1a55a703…` 산출물만 fresh WASM 측정에 사용했다.
 기존 Studio의 배포 JS/WASM은 갱신하지 않았다.
 
-현재 확인: Native/WASM Clippy, workspace build, 문서·스킬 계약 48개, 스킬 CI gate 3회,
+확인 완료: Native/WASM Clippy, workspace build, 문서·스킬 계약 48개, 스킬 CI gate 3회,
 103개 생성물 재생성 동일성, 변경 Markdown 40개 링크, 실제 CLI 오류 14개와 실패 시
 기존 출력 보존, PNG/JPEG/GIF/BMP/TIFF의 실제 CLI 삽입·저장 확인.
-전체 release-test·Native Skia·workspace all-target lint·새 정식 회귀의 최종 결과는
-진행 기록과 최종 보고서에 추가한다. 이 문서만으로 미실행 검사를 완료 판정하지 않는다.
+최종 전체 release-test 12,378개와 Native Skia 공식 3종 4,064개가 통과했다.
+기존 설정의 전체 skip 45개와 Native lib ignore 12개를 실행 개수에 더하지 않았다.
+workspace all-target Clippy, guard 보완 뒤 최종 `cargo fmt --all -- --check`,
+고정 base를 전달한 suite manifest·unit-tier 검사도 통과했다(`rust-validation.json`).
+최종 스킬 본문 변경 뒤 기존 계약 36개를 재확인했고, 변경 문서 43개의 본문 상대 링크
+103개도 확인했다. 처음 전체 검사에서 발견한 두 실패와 보완은 아래 및 최종 보고서에 기록했다.
 
 집중 회귀는 최소 글꼴 격리에서 새 검사 9개·기존 시험지 계약 14개·HTML 이미지 8개가 통과했다.
 동일 생성 HWPX의 base WASM도 91.00%였다. SVG 실제 산출물은 base/head byte가 같고 두 원본

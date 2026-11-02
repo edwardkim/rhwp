@@ -62,3 +62,12 @@ Issue: #665
 - 유휴 상태에서 100문항 텍스트 생성을 base/head 교대 21회씩 측정했다. 중앙값 5.38ms → 5.25ms, ZIP의 모든 비압축 entry가 같았다. 이 측정에서 성능 저하는 관측되지 않았으나 개선으로 단정하지 않는다. 같은 그림 100개/1,000개 생성 중앙값은 7.05ms/25.67ms이고 두 경우 자원은 1개다.
 - 원본 입력 해시와 `src`/Cargo 계약을 재확인했다. producer 생성 뒤 제품 소스는 변하지 않았다. 기존 Studio 배포 WASM의 SHA-256은 `19e4729f…`로 유지됐고 별도 #8296 worktree의 HEAD도 유지됐다.
 - 보정한 최종 검사의 workspace all-target Clippy, 자동 suite manifest 및 unit-tier 검사가 통과했다. 전체 release-test와 Native Skia는 계속 실행 중이다.
+
+## 로컬 구현·검증 완료 — 2026-11-03
+
+- 최종 전체 release-test: 12,378/12,378 통과, 기존 설정에 따른 skip 45개. 첫 실행의 두 실패도 이 전체 재실행에서 통과했다.
+- Native Skia 공식 3종: lib 4,040개 + missing picture 2개 + direct PDF 22개 = 4,064개 통과. lib의 기존 ignore 12개와 focused filter로 실행하지 않은 다른 검사는 실행 개수에 넣지 않았다.
+- guard 보완 뒤 최종 fmt도 통과했다. 검증 worktree와 주 branch의 Rust/Cargo source가 같고, 측정 producer 뒤 제품 source가 바뀌지 않은 것을 다시 확인했다. 문서·fixture만 보완한 커밋 때문에 제품 검사를 재실행하지 않는다.
+- 새 이미지와 텍스트/공유 지문/보기/머리말·꼬리말·저장·경로/자원 오류의 승인된 로컬 범위를 완료했다. [최종 보고서](../report/task_m100_665_report.md)와 정식 시각·보안·성능·Rust 검증 자료에 결과를 보존한다.
+- 원격 코드 push·PR 생성·merge·이슈 재종결은 수행하지 않았다. #665는 open 상태로 유지한다.
+- 최종 문서 43개의 본문 상대 링크 103개와 입력 해시를 확인했다. 작업 소유의 base/validation 임시 worktree 2개는 clean 상태를 확인한 뒤 제거했다. 별도 #8296 worktree와 기존 Studio 배포 JS/WASM은 보존했다.
