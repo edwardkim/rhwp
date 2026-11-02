@@ -119,6 +119,10 @@ Lanczos로 96 DPI 크기에 축소해 동일 PDF와 비교했다. 전쪽 raw는 
 전체 선택 범위는 28건 통과이며 전체 회귀 실행 결과가 아니다. 시스템 글꼴을 격리하고
 저장소의 재배포 가능한 최소 글꼴만 노출했다. 기존 Print 시각 증거와는 별도로 판정한다.
 
+### 현재 후보의 한컴 2020 Print 재대조
+
+제품 코드 `dd284b5cda`의 fresh WASM(SHA-256 `cfe1e98fc6c4d7b2a4ac2fa23c6565fc3b32afe2d4ecf2ce71880d22318e86d8`)으로 같은 저장 HWPX와 기존 한컴 2020 Print를 96 DPI에서 비교했다. 전 64쪽 최저는 92.41%, 90% 미만은 0쪽이다. 산출 TSV의 SHA-256 `1d60128ddabaf52e276f010954cc8419da833ad8b000bbe8fd15096c791a55a0`은 [기존 TSV](../assets/issue_8305/followup8438/wasm-saved-original2020-all.tsv)와 같아 재사용한다. 현재 출력의 [20쪽 비교](../assets/issue_8305/followup8438/wasm-current-review-020.png)·[overlay](../assets/issue_8305/followup8438/wasm-current-overlay-020.png), [59쪽 비교](../assets/issue_8305/followup8438/wasm-current-review-059.png)·[overlay](../assets/issue_8305/followup8438/wasm-current-overlay-059.png)를 보존한다. 이 결과는 별도 한컴 2024 Print 35쪽의 미달을 해결한 근거가 아니다.
+
 ### 기존 한컴 2020 기준의 저장본 WASM 대조
 
 원 PR이 사용한 [한컴 2020 Print](../../../pdf/issue4599/1790387_policy_progress-hwpx-2020.pdf)와

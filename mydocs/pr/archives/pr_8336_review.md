@@ -248,6 +248,8 @@ SHA-256은 기존 검증본과 같은 `31c0dbbbf71bb0561d2be517e979b348f90b8ec49
 두 입력의 fresh WASM 결과는 별도로 확인한다.
 현재 코드의 저장 HWPX도 같은 Print와 전 178쪽을 Native로 비교했다. 최저 96.51%, 90% 미만 0쪽이며 결과 SHA-256은 `83f22291a8dac6ee773e38a18a3635d17f888022b05e7b9812949729b9da58d3`으로 [기존 저장본 Native TSV](../assets/issue_7633_8334/followup8438/book-reference/native-saved-hwpx.tsv)와 바이트 단위로 일치해 재사용한다. 원본과 저장본의 현재 fresh WASM은 별도로 실행 중이다.
 
+현재 제품 코드의 fresh WASM으로 원본 HWP 전 178쪽을 같은 한컴 2020 Print와 다시 비교했다. 최저 96.36%, 90% 미만 0쪽이며 TSV SHA-256 `8a796c7307b5e05e0b5ca6cbeb688fa2c14bcf176f4631a8935001e02c62bd36`은 [기존 원본 WASM TSV](../assets/issue_7633_8334/followup8438/book-reference/wasm-source-hwp.tsv)와 일치해 재사용한다. 저장 HWPX의 현재 fresh WASM은 계속 실행 중이다.
+
 원본·HWPX·HWP 왕복에서 그림 소유와 내용을 비교하는 관계형 검사를
 추가했다. 전쪽 비교는 제품 코드 `6896862b1c`와 그 코드로 빌드한 fresh WASM을 사용했다.
 최소 글꼴 집중 실행은 기존 검사 13건 통과와 신규 검사 1건 실패로 끝났다.
