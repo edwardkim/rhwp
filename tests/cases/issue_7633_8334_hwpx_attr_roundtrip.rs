@@ -1,5 +1,8 @@
 //! 관계형·고정형: 왕복 내용·속성 관계와 독립 저장본의 줄표·방향 값을 확인한다.
-//! 주석 갱신: 2026-11-02T20:27:59+09:00; 직전 파일 커밋: 2026-11-01T19:38:13+09:00 (a2541933cb).
+//! 주석 갱신: 2026-11-02T23:14:07+09:00; 직전 파일 커밋: 2026-11-02T22:28:40+09:00 (0a67b8fb4eac64af2ea1577dd1df278da567cae2).
+//! 원본 `samples/hwpspec.hwp`와 새 HWPX 저장본: 2020 Print, 96 DPI raw, 94쪽
+//! Native/WASM 각각 100.00%; 전 178쪽 최저 Native 96.51%, fresh WASM 96.36%.
+//! TSV와 94쪽 확대·overlay: `mydocs/pr/assets/issue_7633_8334/followup8438/book-reference/`.
 //! 줄표 문자와 셀 방향은 한컴 저장본·Print에서 정한 값(`'\0'`, `'-'`, 2, 1)으로 확인한다.
 //! WMF 공백 요청과 글꼴 cmap 검사는 원본과 라이선스 확인 fixture의 비조판 계약이다.
 //! 2026-11-02 보정 전 독립 Print 대비 HWPX 저장본 178쪽: 94쪽 및 전쪽 최저 Native 92.66%,
@@ -396,5 +399,67 @@ fn continued_table_successor_lines_preserve_source_origin_relationship() {
     assert!(
         (observed - expected).abs() < 0.002,
         "표 종료 뒤 빈 문단과 본문의 본문 영역 대비 위치 관계: 실제={observed}, 원본={expected}"
+    );
+}
+
+/// 한컴 원본의 그림 글머리표가 원본과 왕복 저장본에서 같은 BinData를 소유한다.
+#[test]
+fn image_bullet_keeps_source_picture_across_hwp_and_hwpx_saves() {
+    fn picture(core: &DocumentCore, stage: &str) -> Vec<u8> {
+        let doc = core.document();
+        let paragraph = doc.sections[3]
+            .paragraphs
+            .iter()
+            .find(|p| p.text.starts_with("대각선 merge cell은"))
+            .expect("그림 글머리표가 속한 문단");
+        let style = &doc.doc_info.para_shapes[paragraph.para_shape_id as usize];
+        let bullet = &doc.doc_info.bullets[usize::from(style.numbering_id) - 1];
+        let id = bullet.image_reference().expect("실제 그림 참조");
+        doc.bin_data_content
+            .get(usize::from(id) - 1)
+            .unwrap_or_else(|| {
+                panic!(
+                    "{stage}: 그림 참조 {id}, BinData 개수 {}",
+                    doc.bin_data_content.len()
+                )
+            })
+            .data
+            .load()
+    }
+    let source = load("samples/hwpspec.hwp");
+    let original = &source.document().doc_info.bullets[4];
+    assert_ne!(
+        original.image_bullet as u16,
+        u16::from(original.image_data[3]),
+        "사용 여부와 원본 그림 순번은 다르다"
+    );
+    assert_eq!(
+        original.image_reference(),
+        Some(u16::from(original.image_data[3])),
+        "원본 그림 정보의 순번을 사용한다"
+    );
+    let reference = picture(&source, "원본 HWP");
+    assert!(
+        reference.starts_with(b"\x89PNG\r\n\x1a\n"),
+        "원본은 PNG 그림이다"
+    );
+    let saved = reopen_as_hwpx(&source);
+    assert_eq!(
+        picture(&saved, "첫 HWPX 저장본"),
+        reference,
+        "HWPX manifest가 같은 그림을 가리킨다"
+    );
+    let hwp = DocumentCore::from_bytes(&saved.export_hwp_with_adapter().expect("HWP 저장"))
+        .expect("HWP 다시 열기");
+    assert_eq!(
+        picture(&hwp, "HWP 왕복본"),
+        reference,
+        "HWP 왕복도 같은 그림을 가리킨다"
+    );
+    let saved_again = reopen_as_hwpx(&hwp);
+    assert_eq!(
+        picture(&saved_again, "두 번째 HWPX 저장본"),
+        reference,
+        "재저장 후에도 같은 그림이다"
     );
 }

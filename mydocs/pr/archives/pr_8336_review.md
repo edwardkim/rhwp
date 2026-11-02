@@ -194,3 +194,58 @@ HWP→HWPX→HWP→HWPX 왕복에서도 참조된 PNG 바이트가 원본과 같
 본문 굵기 차이는 위와 같이 별도로 남아 있다. 최소 글꼴 집중 회귀 13건은 모두
 통과했고 앞서 실패한 원본 쪽별 본문 비교도 기존 기대값을 유지한 채 통과했다.
 이는 선택한 94쪽 Native 및 집중 검사 결과이며 전쪽·fresh WASM 검증은 아니다.
+
+#### 책 그림 보정의 버전별 최종 시각 대조
+
+원본 `samples/hwpspec.hwp`는 한컴 2010 저장본이고 새 HWPX의 버전 정보는 한컴 2020이다.
+따라서 저장 버전에 맞는 기준은 동일 원본의 기존 [한컴 2020 Print](../../../pdf/review-integration-20261026/hwpspec-2020.pdf)이며,
+원본 입력 SHA와 Print method 0은 [출력 기록](../../working/assets/review_integration_20261026/hancom_print_inputs.json)에 있다.
+원본 SHA-256은 `64df877f3c4accda0111ecf39d837da889741bb821b220cf61b6c126dc88364d`,
+PDF SHA-256은 `257f02c14ce843f38398c6702274434ec129c73b9da8ed41f9f61dc107a6bbc4`다.
+새 [HWPX 저장본](../assets/issue_7633_8334/followup8438/book-reference/hwpspec-book-saved.hwpx)의
+SHA-256은 `31c0dbbbf71bb0561d2be517e979b348f90b8ec49d195f0f98a0f960cefd2104`다.
+
+96 DPI, compat 2022, 색상 경계 보정 전 raw 기준으로 원본과 저장본은 각각 178쪽이며
+Native 최저 96.51%, fresh WASM 최저 96.36%다. 90% 미만은 없고 94쪽은 두 경로와
+두 입력 모두 100.00%다. 책 그림과 뒤 문단, 굵기와 줄 간격을 직접 대조했다.
+
+| 입력 | Native 전쪽 | fresh WASM 전쪽 |
+| --- | --- | --- |
+| 원본 HWP | [TSV](../assets/issue_7633_8334/followup8438/book-reference/native-source-hwp.tsv) | [TSV](../assets/issue_7633_8334/followup8438/book-reference/wasm-source-hwp.tsv) |
+| 저장 HWPX | [TSV](../assets/issue_7633_8334/followup8438/book-reference/native-saved-hwpx.tsv) | [TSV](../assets/issue_7633_8334/followup8438/book-reference/wasm-saved-hwpx.tsv) |
+
+94쪽 저장본: [Native review](../assets/issue_7633_8334/followup8438/book-reference/native-saved-p094-review.png) ·
+[Native overlay](../assets/issue_7633_8334/followup8438/book-reference/native-saved-p094-overlay.png) ·
+[WASM review](../assets/issue_7633_8334/followup8438/book-reference/wasm-saved-p094-review.png) ·
+[WASM overlay](../assets/issue_7633_8334/followup8438/book-reference/wasm-saved-p094-overlay.png).
+
+동일 원본의 별도 2020 Print에서도 해당 본문은 보통체다. 앞서 확인한 2024 HWP Print의
+Bold 선택은 이 2020 기준과 혼용하지 않으며 원인을 확정하지 않는다.
+[본문 네 출력 확대 비교](../assets/issue_7633_8334/followup8438/book-reference/font-four-way.png)는
+위에서부터 RHWP 원본, 2024 HWP Print, 2020 HWP Print, 2024 HWPX Print다. 보정 전 저장본은
+책 그림 참조 검출에 실패했고, 보정 후 저장본은 manifest를 통해 원본 PNG와 같은
+바이트를 가리킨다. 원본 PNG SHA-256은
+`7ea93ebbb90fb9df4ef75b16b393a4aa393fe129408e7d373c5c76a09820130a`다.
+원본·HWPX·HWP 왕복에서 그림 소유와 내용을 비교하는 관계형 검사를
+추가했다. 전쪽 비교는 제품 코드 `6896862b1c`와 그 코드로 빌드한 fresh WASM을 사용했다.
+최소 글꼴 집중 실행은 기존 검사 13건 통과와 신규 검사 1건 실패로 끝났다.
+실패는 테스트가 HWPX→HWP 변환 어댑터를 거치지 않은 원시 직렬화 API를 호출한
+것이었다. 실제 CLI와 같은 `export_hwp_with_adapter` 경로로 수정한 후 신규 검사만
+다시 실행해 통과했다. 두 실행을 하나의 전체 통과 실행으로 합산하지 않는다.
+첫 로그 SHA-256은 `8d0026b08539537168032b5f6d14a695030fdefc5b9f97d9c0bddbc73840b46a`,
+재실행 로그는 `fa07491503d17f43c4de2979e07eed6ad3790aac7624cbd215659f0cfa9c97eb`다.
+
+#### 최신 devel 리베이스 기능 보존
+
+기준 `ea86816b5316dfeeb47ecf20df97abfd4b02da73`, 후보 `6896862b1cfb638304dc1106915fcbc7bbbb9d03`.
+[PR #8379](https://github.com/edwardkim/rhwp/pull/8379)의 연속 형광펜과 기존
+[이슈 #6635](https://github.com/edwardkim/rhwp/issues/6635) 형광펜 색상·선택 보존을
+각 기준에서 별도 fresh WASM과 동일한 headless Chrome으로 실행했다. 연속 형광펜은
+base·후보 각각 34개, 기존 기능은 각각 64개가 통과했다. 브라우저가 받은 WASM SHA-256은
+base `73f8a9443b500ff684b972db0947f8dfbe28402cc05d7a0abfc42bd9001345ff`, 후보
+`c7e6eb6f43570abcbdda1920f8baea208858cc883e1fb4f87f9876922d7f1ede`로 각 빌드와 일치했다.
+셀 블록 즉시 적용, 빈 선택, undo·redo를 포함한다. 두 실행의 선택적 플러그인 조건은 같았다.
+
+[PR #8421](https://github.com/edwardkim/rhwp/pull/8421)의 시험지 ingest 지침과 생성기,
+그림 직렬화·ingest 구현은 후보와 base의 해당 경로에 차이가 없다. 이번 변경은 기존 그림
+삽입 지원 범위를 바꾸지 않고 글머리표 그림 참조의 읽기·저장과 렌더링을 보정한다.
