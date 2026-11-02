@@ -20583,8 +20583,9 @@ impl LayoutEngine {
     }
 
     /// 컷 끝 `j` 가 자리차지 그림 몫(`non_inline_control_range` 를 가진 유닛) 바로 앞이고 그 앞에
-    /// 같은 문단의 글줄 유닛이 있으면, 그 문단의 첫 유닛까지 되감는다.
+    /// 같은 빈 앵커 문단의 줄 유닛이 있으면, 그 문단의 첫 유닛까지 되감는다.
     fn rewind_topandbottom_anchor_lines(
+        cell: &crate::model::table::Cell,
         units: &[CellUnit],
         start: usize,
         j: &mut usize,
@@ -20599,6 +20600,15 @@ impl LayoutEngine {
             return;
         }
         let para_idx = units[cut].para_idx;
+        // 근거는 글자 없는 앵커 문단(그림만 단 줄)이다. 글자가 있는 앵커 문단의 분할은 확인하지
+        // 않았으므로 종전 컷을 둔다.
+        if !cell
+            .paragraphs
+            .get(para_idx)
+            .is_some_and(|para| para.text.trim().is_empty())
+        {
+            return;
+        }
         let mut first = cut;
         while first > start
             && units[first - 1].para_idx == para_idx
@@ -23570,7 +23580,7 @@ impl LayoutEngine {
                 // [#8472] 자리차지 그림의 몫은 그 그림을 단 문단의 글줄과 한 덩어리다.
                 // 문단 글줄만 이 조각에 두고 그림 몫을 다음 조각으로 넘기면 그림이 앵커 문단과
                 // 떨어져 다음 쪽 첫머리로 흐른다. 한/글은 그 문단부터 다음 조각에서 시작한다.
-                Self::rewind_topandbottom_anchor_lines(&units, start, &mut j, &mut h);
+                Self::rewind_topandbottom_anchor_lines(cell, &units, start, &mut j, &mut h);
             }
             if j < units.len()
                 && units[j..].iter().enumerate().any(|(offset, unit)| {
@@ -23810,7 +23820,7 @@ impl LayoutEngine {
                 // `advance_row_cut` 과 같은 후처리다.
             }
             if j < units.len() {
-                Self::rewind_topandbottom_anchor_lines(&units, start, &mut j, &mut h);
+                Self::rewind_topandbottom_anchor_lines(cell, &units, start, &mut j, &mut h);
             }
             if j < units.len()
                 && units[j..].iter().any(|unit| unit.hard_break_before)
