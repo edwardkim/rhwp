@@ -57,7 +57,7 @@
 - [`issue_4962_font_metric_coverage.rs`](../../../tests/cases/issue_4962_font_metric_coverage.rs): 이전 실행 8건 통과, 0건 실패, 0건 건너뜀.
 - [`issue_8315_symbol_slot_advance.rs`](../../../tests/cases/issue_8315_symbol_slot_advance.rs): 이전 실행 3건 통과, 0건 실패, 0건 건너뜀.
 
-현재 코드에서 `issue_8315_symbol_slot_advance` 3건을 최소 글꼴 환경으로 다시 실행해 모두 통과했다([집중 검사 로그](../../../output/pr-review/planet6897-ordered-20261031/font-slot-focused-minfont-after-commit.log)). 같은 실행은 [이슈 #8079](https://github.com/edwardkim/rhwp/issues/8079)·[이슈 #8136](https://github.com/edwardkim/rhwp/issues/8136)을 포함한 10건이며, [PR #8321](https://github.com/edwardkim/rhwp/pull/8321)의 나머지 시각·회귀 검증 전체를 대신하지 않는다.
+당시 코드에서 `issue_8315_symbol_slot_advance` 3건을 최소 글꼴 환경으로 다시 실행해 모두 통과했다. 같은 실행은 [이슈 #8079](https://github.com/edwardkim/rhwp/issues/8079)·[이슈 #8136](https://github.com/edwardkim/rhwp/issues/8136)을 포함한 10건이며, 실행 로그 SHA-256은 `91abb68a1a9efb4e796fd1bc12b5bd073a2c5759d4624128ea629bdf8447fc85`다. [PR #8321](https://github.com/edwardkim/rhwp/pull/8321)의 나머지 시각·회귀 검증 전체를 대신하지 않는다.
 
 기여자가 제출한 기준 자료: [`ab_changed_pages_native.tsv`](../../../mydocs/pr/assets/issue_8315/ab_changed_pages_native.tsv). 해당 자료만으로 새 통합 후보의 시각 검증을 통과 처리하지 않는다.
 

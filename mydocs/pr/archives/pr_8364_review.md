@@ -47,7 +47,7 @@ HWP3 계보 HWPX의 줄 시작을 한컴의 문단 축에 맞게 저장한다.
 
 기존 생성 목록으로 최소 글꼴 회귀 12,320건 통과·45건 건너뜀을 확인했다. 생성 목록에서 누락된 [PR #8410](https://github.com/edwardkim/rhwp/pull/8410) 두 모듈의 6건을 목록 재작성 후 같은 환경에서 별도로 실행해 모두 통과했다. 두 실행을 구분하며 한 번의 전체 실행으로 기록하지 않는다.
 
-제외 입력 정리 후 최소 글꼴 환경에서 [이슈 #8303](https://github.com/edwardkim/rhwp/issues/8303)의 남은 3개 검사가 모두 통과했다. [이슈 #8304](https://github.com/edwardkim/rhwp/issues/8304)의 6개 검사와 한 번에 실행한 [집중 검사 로그](../../../output/pr-review/planet6897-ordered-20261031/excluded-fixture-focused-minfont.log)에서 두 모듈 합계 9건 통과를 확인했다. 전체 검사의 대체 결과는 아니다.
+제외 입력 정리 후 최소 글꼴 환경에서 [이슈 #8303](https://github.com/edwardkim/rhwp/issues/8303)의 남은 3개 검사가 모두 통과했다. [이슈 #8304](https://github.com/edwardkim/rhwp/issues/8304)의 6개 검사와 한 번에 실행해 두 모듈 합계 9건 통과를 확인했다. 실행 로그 SHA-256은 `2a963d2ce82224bb9565cabf9005c60cd607b319103c5f73d0665b02d7e249dc`이며 전체 검사의 대체 결과는 아니다.
 
 2026-11-01 고정 후보의 [PR #8389](https://github.com/edwardkim/rhwp/pull/8389)·[PR #8397](https://github.com/edwardkim/rhwp/pull/8397) 전쪽 정밀 대조에서 2,153행 중 Native 12행, WASM 8행이 공개 기준보다 낮았다. 이 수치는 이후 GIF·Canvas 보정 전 결과이며 최종 후보의 재검증 결과가 아니다. [PR #7905](https://github.com/edwardkim/rhwp/pull/7905) 3쪽은 GIF 오른쪽 경계 누락, sample16 35쪽 WASM은 메타파일 내부의 미대응 3픽셀이 확인됐다. [PR #8040](https://github.com/edwardkim/rhwp/pull/8040) 두 원본은 Native·WASM 전쪽이 90% 이상이나 Native 정밀 기준 하락이 남는다. 진행과 근거는 [작업 기록](../../working/task_m100_planet6897_system_fonts_20261031.md)을 따른다. 하락 보정과 전쪽 대조, 각 PR의 독립 Print·Native/fresh WASM 및 직접 판독을 완료해야 한다. [PR #8410](https://github.com/edwardkim/rhwp/pull/8410)·[PR #8412](https://github.com/edwardkim/rhwp/pull/8412)의 새 base 기능도 별도로 보존 검증한다.
 
