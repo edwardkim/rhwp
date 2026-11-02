@@ -111,3 +111,10 @@ WASM 89.19%로 90%를 넘지 못했다. 글꼴 공급만으로 해결됐다고 �
 [59쪽 WASM review](../assets/issue_8305/followup8438/wasm-original2020-review-059.png) ·
 [59쪽 WASM overlay](../assets/issue_8305/followup8438/wasm-original2020-overlay-059.png).
 제목과 주변 본문의 순서·표시는 유지되며, 세부 글자 모양과 점선 차이도 함께 보인다.
+
+### 2026-11-02 의존성 리베이스 후 전체 Rust 회귀
+
+최소 글꼴 환경에서 전체 선택 12,369건을 두 실행으로 완료해 모두 통과했다.
+첫 실행의 중단과 나머지 307건의 재실행, 정확한 목록 대조는
+[공통 실행 근거](../assets/review_8438_followup/rebase-de2295-rust.md)에 기록했다.
+이는 이 PR의 시각 검증이나 최종 판정을 대신하지 않는다.
