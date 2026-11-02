@@ -68,7 +68,8 @@ Native 최저 98.79%, fresh WASM 최저 98.72%이며 양쪽 모두 90% 미만은
 [Native 전체 TSV](../assets/issue_8381/followup8438/native-all.tsv) ·
 [WASM 전체 TSV](../assets/issue_8381/followup8438/wasm-all.tsv).
 12쪽의 글상자 끝과 뒤 문항을 직접 대조했고 고정 줄간격 문단과 다음 내용 관계는 기존 회귀에서도 검사했다.
-[12쪽 Native review](../assets/issue_8381/followup8438/native-review-012.png) · [12쪽 Native overlay](../assets/issue_8381/followup8438/native-overlay-012.png).
+[12쪽 Native review](../assets/issue_8381/followup8438/native-review-012.png) · [12쪽 Native overlay](../assets/issue_8381/followup8438/native-overlay-012.png) ·
+[12쪽 fresh WASM review](../assets/issue_8381/followup8438/wasm-review-012.png) · [12쪽 fresh WASM overlay](../assets/issue_8381/followup8438/wasm-overlay-012.png).
 
 ### 새 base의 저장본 확인
 
@@ -107,3 +108,5 @@ Print 입력과 바이트 단위로 일치한다. 새 base와 이전 검증 코�
 [입력별 SHA-256·전체 Native/fresh WASM TSV](../assets/review_8438_followup/final-original-inputs/README.md)에
 정확한 원본·PDF·페이지 수와 전쪽 결과를 연결했다. 이 검사는 기존 본문의
 주장 영역 review/overlay 직접 판독과 함께 판단한다.
+
+2026-11-03 현재 코드의 주장 페이지 그림 재산출: 제품 코드 `d56930dda7`의 Native와 fresh WASM으로 같은 입력·Print PDF의 12쪽을 다시 그렸다. 위 review/overlay 이미지가 최신 산출물이며, 전체 16쪽 TSV는 기존 정식 TSV와 SHA-256이 각각 `26c24d0363511691cb07e63ef0c353c8517eefc0013140bc508509d61cd7a0c3`·`85fe94720b9471cdb0340b31bb754499e3de298672ef820241bebb6f75841cb0`으로 바이트 단위 일치했다.

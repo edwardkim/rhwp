@@ -64,7 +64,9 @@ HWP5 출처 HWPX 표 분할 측정이 실제 배치와 같은 저장 조판 프�
 원 PR이 지목한 24쪽은 H12 행 4~10이 표에서 빠짐없이 이어지고, 71352의
 37쪽 마지막 표 조각도 한컴 PDF의 쪽과 같은 내용을 보인다.
 [24쪽 Native review](../assets/issue_8382/followup8438/headerrow-native-review-024.png) · [24쪽 overlay](../assets/issue_8382/followup8438/headerrow-native-overlay-024.png) ·
-[37쪽 Native review](../assets/issue_8382/followup8438/71352-native-review-037.png) · [37쪽 overlay](../assets/issue_8382/followup8438/71352-native-overlay-037.png).
+[24쪽 WASM review](../assets/issue_8382/followup8438/headerrow-wasm-review-024.png) · [24쪽 WASM overlay](../assets/issue_8382/followup8438/headerrow-wasm-overlay-024.png) ·
+[37쪽 Native review](../assets/issue_8382/followup8438/71352-native-review-037.png) · [37쪽 Native overlay](../assets/issue_8382/followup8438/71352-native-overlay-037.png) ·
+[37쪽 WASM review](../assets/issue_8382/followup8438/71352-wasm-review-037.png) · [37쪽 WASM overlay](../assets/issue_8382/followup8438/71352-wasm-overlay-037.png).
 
 ### 새 base 재저장 동일성
 
