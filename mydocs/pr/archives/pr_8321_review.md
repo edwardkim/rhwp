@@ -110,7 +110,8 @@ WMFC 폴백과 리터럴 소프트 하이픈을 함께 보정한 후보로 동�
 98.94495%이며 누락 쪽과 90% 미만 쪽은 없다. 2쪽의 U+00AD 리터럴은 한컴처럼
 하이픈으로 보인다. [2쪽 review](../assets/issue_8315/followup8438/native-hyphen-review-002.png)와
 [overlay](../assets/issue_8315/followup8438/native-hyphen-overlay-002.png)를 직접 확인했다.
-전체 Native TSV와 fresh WASM은 별도로 산출 중이다.
+[후보 Native 전체 TSV](../assets/issue_8315/followup8438/native-hyphen-candidate.tsv)를
+산출했으며 fresh WASM은 별도로 진행 중이다.
 
 같은 보정이 [PR #8026](https://github.com/edwardkim/rhwp/pull/8026)의 별도 HWP
 리터럴 대조에도 적용되는지 확인했더니 마지막 줄의 하이픈 뒤 간격이 벌어진다.
