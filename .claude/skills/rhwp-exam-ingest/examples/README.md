@@ -20,7 +20,7 @@
 | [14_missing_poppler.md](14_missing_poppler.md) | poppler 없음 (`T05`) |
 | [15_missing_imagemagick.md](15_missing_imagemagick.md) | ImageMagick 없음 (`F02`) |
 | [16_missing_python_docx.md](16_missing_python_docx.md) | python-docx 없음 (`T07`) |
-| [17_picture_serialization_limit.md](17_picture_serialization_limit.md) | ingest 이미지 삽입 미구현 (`L-picture`) |
+| [17_picture_serialization_limit.md](17_picture_serialization_limit.md) | 이미지 입력 검증과 저장 확인 (`L-picture`) |
 | [18_equation_as_image.md](18_equation_as_image.md) | 수식은 이미지 (`L-equation`) |
 | [19_table_as_picture.md](19_table_as_picture.md) | 표는 그림 (`L-table`) |
 | [20_build_from_ingest.md](20_build_from_ingest.md) | build-from-ingest -o (`F15`) |

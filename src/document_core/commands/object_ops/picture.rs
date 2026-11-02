@@ -1327,33 +1327,11 @@ impl DocumentCore {
     /// 기존 이미지와 스트림 이름이 충돌해 저장 시 이미지가 뒤바뀌거나
     /// 소실된다. (insert_picture_native 와 그림 지정이 규칙 공유.)
     pub(crate) fn register_embedded_bin_data(&mut self, image_data: &[u8], extension: &str) -> u16 {
-        use crate::model::bin_data::{
-            BinData, BinDataCompression, BinDataContent, BinDataStatus, BinDataType,
-        };
-        let position_id = self.document.bin_data_content.len() as u16 + 1;
-        let storage_id = self.document.next_bin_data_storage_id();
-        self.document.bin_data_content.push(BinDataContent {
-            id: storage_id,
-            data: crate::model::bin_data::BinDataBytes::from_shared(image_data.to_vec()),
-            extension: extension.to_string(),
-        });
-        // attr: bits 0-3=1(Embedding), bits 4-5=0(Default), bits 8-9=1(Success)
-        let bin_attr: u16 = 0x0101;
-        self.document.doc_info.bin_data_list.push(BinData {
-            raw_data: None,
-            attr: bin_attr,
-            data_type: BinDataType::Embedding,
-            compression: BinDataCompression::Default,
-            status: BinDataStatus::Success,
-            abs_path: None,
-            rel_path: None,
-            storage_id,
-            extension: Some(extension.to_string()),
-        });
-        self.document.doc_info.raw_stream = None; // DocInfo 재직렬화
-                                                  // [#3315] 여기서 bin_data_epoch 를 올리지 않는다 — 새 id 를 덧붙일 뿐 기존
-                                                  // id→바이트는 그대로다. 올리면 무관한 그림의 소비자 캐시까지 함께 버려진다.
-        position_id
+        crate::model::bin_data::register_embedded_bin_data(
+            &mut self.document,
+            image_data,
+            extension,
+        )
     }
 
     /// [Task #2230] 기존 Picture 컨트롤에 이미지를 지정한다 — 그림 미지정
@@ -1501,9 +1479,9 @@ impl DocumentCore {
         paper_offset_x_hu: Option<i32>,
         paper_offset_y_hu: Option<i32>,
     ) -> Result<String, HwpError> {
-        use crate::model::image::{CropInfo, ImageAttr, ImageEffect, Picture};
+        use crate::model::image::Picture;
         use crate::model::paragraph::{CharShapeRef, LineSeg};
-        use crate::model::shape::{CommonObjAttr, HorzRelTo, ShapeComponentAttr, VertRelTo};
+        use crate::model::shape::{CommonObjAttr, HorzRelTo, VertRelTo};
         // 유효성 검사
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
@@ -1545,48 +1523,6 @@ impl DocumentCore {
         // register_embedded_bin_data 로 추출.
         let position_id = self.register_embedded_bin_data(image_data, extension);
 
-        // --- 공통 자원 ---
-        let shape_attr = ShapeComponentAttr {
-            original_width: width,
-            original_height: height,
-            current_width: width,
-            current_height: height,
-            local_file_version: 1,
-            render_sx: 1.0,
-            render_sy: 1.0,
-            ..Default::default()
-        };
-        let bx = [0i32, 0, width as i32, 0];
-        let by = [width as i32, height as i32, 0, height as i32];
-        let crop = CropInfo {
-            left: 0,
-            top: 0,
-            right: (natural_width_px * 75) as i32,
-            bottom: (natural_height_px * 75) as i32,
-        };
-        // [#3719 §6-5] crop 이 기준으로 삼는 전체 좌표 범위를 IR 에도 남긴다.
-        //
-        // 종전에는 `img_dim` 을 기본값 (0,0) 으로 두었는데, HWP5 직렬화기는 그 경우
-        // `crop.right/bottom` 을 원본 크기 자리에 기록하고(control.rs 의 #1929 폴백)
-        // HWP5 파서는 그 값을 다시 `img_dim` 으로 적재한다. 그래서 **삽입 직후 IR 과
-        // 저장본 재파싱 IR 이 항상 이 한 필드만큼 어긋났다** — `edit insert-image
-        // --verify` 가 정상 삽입에도 exit 3 을 내는 형태였다(실측 diffCount=1,
-        // `imgDim: expected=(0,0) actual=(3000,1500)`).
-        //
-        // 값은 직렬화기가 이미 쓰던 것과 같고, 렌더러의 폴백(`compute_image_crop_src`
-        // 는 imgDim 이 없으면 crop.right/bottom 을 같은 자리에 쓴다)과도 같은 배율이라
-        // 그림이 놓이는 결과는 바뀌지 않는다. HWPX 산출은 종전 `imgDim 0/0` 대신 실제
-        // 좌표 범위를 얻는다(HWP5 산출과의 비대칭 해소).
-        let img_dim = ((natural_width_px * 75), (natural_height_px * 75));
-        let image_attr = ImageAttr {
-            bin_data_id: position_id,
-            brightness: 0,
-            contrast: 0,
-            effect: ImageEffect::RealPic,
-            transparency: 0,
-            external_path: None,
-        };
-
         if !cell_path.is_empty() {
             if cell_path_is_textbox {
                 // === 글상자 내부 picture 분기 (#1322 maintainer fix) ===
@@ -1621,16 +1557,12 @@ impl DocumentCore {
                     description: description.to_string(),
                     ..Default::default()
                 };
-                let pic = Picture {
+                let pic = Picture::from_embedded_image(
                     common,
-                    shape_attr,
-                    border_x: bx,
-                    border_y: by,
-                    crop,
-                    img_dim,
-                    image_attr,
-                    ..Default::default()
-                };
+                    position_id,
+                    natural_width_px,
+                    natural_height_px,
+                );
 
                 let (new_ctrl_idx, logical_after) = {
                     let section = &mut self.document.sections[section_idx];
@@ -1707,16 +1639,12 @@ impl DocumentCore {
                 description: description.to_string(),
                 ..Default::default()
             };
-            let pic = Picture {
+            let pic = Picture::from_embedded_image(
                 common,
-                shape_attr,
-                border_x: bx,
-                border_y: by,
-                crop,
-                img_dim,
-                image_attr,
-                ..Default::default()
-            };
+                position_id,
+                natural_width_px,
+                natural_height_px,
+            );
 
             // table 같은 paragraph 의 sibling control 로 append.
             //
@@ -1789,16 +1717,8 @@ impl DocumentCore {
             ..Default::default()
         };
 
-        let pic = Picture {
-            common,
-            shape_attr,
-            border_x: bx,
-            border_y: by,
-            crop,
-            img_dim,
-            image_attr,
-            ..Default::default()
-        };
+        let pic =
+            Picture::from_embedded_image(common, position_id, natural_width_px, natural_height_px);
 
         // 현재 paragraph 의 sibling control 로 끼운다 (새 paragraph 생성 X).
         self.document.sections[section_idx].raw_stream = None;

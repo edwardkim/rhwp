@@ -69,6 +69,50 @@ pub struct Picture {
 }
 
 impl Picture {
+    /// Construct an embedded picture with the existing insertion geometry contract.
+    /// `common` owns placement; the source crop and imgDim both use pixels × 75.
+    pub(crate) fn from_embedded_image(
+        common: CommonObjAttr,
+        bin_data_id: u16,
+        natural_width_px: u32,
+        natural_height_px: u32,
+    ) -> Self {
+        let width = common.width;
+        let height = common.height;
+        let img_dim = (natural_width_px * 75, natural_height_px * 75);
+        Self {
+            common,
+            shape_attr: ShapeComponentAttr {
+                original_width: width,
+                original_height: height,
+                current_width: width,
+                current_height: height,
+                local_file_version: 1,
+                render_sx: 1.0,
+                render_sy: 1.0,
+                ..Default::default()
+            },
+            border_x: [0, 0, width as i32, 0],
+            border_y: [width as i32, height as i32, 0, height as i32],
+            crop: CropInfo {
+                left: 0,
+                top: 0,
+                right: img_dim.0 as i32,
+                bottom: img_dim.1 as i32,
+            },
+            img_dim,
+            image_attr: ImageAttr {
+                bin_data_id,
+                brightness: 0,
+                contrast: 0,
+                effect: ImageEffect::RealPic,
+                transparency: 0,
+                external_path: None,
+            },
+            ..Default::default()
+        }
+    }
+
     /// 저장된 자르기 폭이 있으면 높이가 비어 있어도 그 선택을 보존한다.
     /// 빈 선택을 자르기 없음으로 바꾸면 한컴이 그리지 않는 원본 전체가 나타난다.
     pub fn render_crop_rect(&self) -> Option<(i32, i32, i32, i32)> {

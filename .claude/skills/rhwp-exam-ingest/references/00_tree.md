@@ -1,9 +1,9 @@
 # 00 — 판단 트리
 
-현재 `build-from-ingest`는 이미지 파일을 읽어 Picture/BinData로 연결하지 않고
-`[이미지: …]` placeholder 텍스트를 만든다. `--media-dir`은 디렉터리 존재만 확인한다.
-**그림이 필수이면 F18로 중단한다.** 경로·크기·배치 변경만으로 해결되지 않으며,
-placeholder 결과를 이미지 포함 시험지로 제공하지 않는다.
+`build-from-ingest`는 로컬 PNG·JPEG·GIF·BMP·TIFF를 검증해 Picture/BinData로 삽입한다.
+기준 경로는 JSON 디렉터리이며 `--media-dir`로 바꿀 수 있다. 경로 이탈·누락·손상·한도 초과는
+`INGEST_IMAGE_*`로 실패한다. placeholder로 대체하지 않으며 실제 이미지 표시도 확인한다.
+문장 중간의 위치는 `paragraph.runs`의 text/image 순서로 지정한다.
 
 이 장은 에이전트가 시험지 입력을 받고 **첫 30초**에 어느 helper·어느 필드를
 고르는지 고정한다. 새 CLI 를 만들지 않는다. `exam_paper` 빌더를 고치지 않는다.
@@ -89,7 +89,7 @@ ingest.json 준비됨
   ├─ media[] 비어 있음 ──▶ build-from-ingest -o  ( --media-dir 생략 가능 )
   └─ media[] 있음
        ├─ crop 아직 안 함 ──▶ crop_image.sh (F14)
-       └─ 그림 필수 ──▶ F18 중단. 파일이 있어도 이미지 삽입 미구현
+       └─ INGEST_IMAGE_* ──▶ F18. 경로·치수·형식·한도 확인
             제한 재현 또는 텍스트 입력에서만 build-from-ingest -o (F15)
             ├─ unknown field ──▶ JSON 수정 (F11)
             ├─ boxed.text ──▶ blocks 로 (F12)

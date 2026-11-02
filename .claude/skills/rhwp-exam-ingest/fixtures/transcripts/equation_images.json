@@ -10,8 +10,8 @@
       "expect": "image 블록"
     },
     {
-      "cmd": "고지 Equation IR·이미지 삽입 미구현",
-      "expect": "F16 설명 후 F18 중단"
+      "cmd": "수식 편집 불가 고지 후 build-from-ingest",
+      "expect": "수식 이미지 삽입·표시 확인"
     }
   ]
 }

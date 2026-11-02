@@ -4,21 +4,21 @@
   "limits": [
     {
       "id": "L-picture",
-      "title": "ingest 이미지 삽입 미구현",
+      "title": "이미지 입력 검증과 저장 확인",
       "issue": 182,
-      "action": "그림 필수이면 F18 중단. placeholder를 완성 문서로 제공하지 않음",
+      "action": "INGEST_IMAGE_* 오류를 해결하고 Picture/BinData와 실제 출력을 확인",
       "not": "writer 수정"
     },
     {
       "id": "L-equation",
       "title": "수식은 이미지",
-      "action": "수식 이미지 준비 가능. 삽입 미구현이므로 필수이면 F18 중단",
+      "action": "수식 crop을 이미지로 삽입. 편집 가능한 Equation IR은 지원하지 않음",
       "not": "latex 필드 발명"
     },
     {
       "id": "L-table",
       "title": "표는 그림",
-      "action": "표 bbox crop 가능. 삽입 미구현이므로 필수이면 F18 중단",
+      "action": "표 bbox crop을 이미지로 삽입. 편집 가능한 표 구조는 지원하지 않음",
       "not": "Table IR 발명"
     }
   ]
