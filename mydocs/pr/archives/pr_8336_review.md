@@ -43,6 +43,18 @@
 
 ## 검증과 증거
 
+### 2026-11-03 현재 저장본의 독립 한컴 2020 Print
+
+현재 코드에서 `samples/hwp-3.0-HWPML.hwp`를 HWPX로 다시 저장하고
+`--verify --verify-pages`로 IR 차이 0건과 122쪽을 확인했다.
+[현재 저장본](../assets/issue_7633_8334/followup8438/hwpml-final-resave.hwpx)의
+SHA-256은 `c6ae1c49859ada19115f7e07c1af5a4e4ea84a2ff57470af0c13554ece058eaa`다.
+이 저장본을 한컴 2020 MCP의 Print method 0으로 출력한
+[독립 PDF](../../../pdf/issue7633/hwpml-final-resave-2020.pdf)는 122쪽이며,
+SHA-256은 `c508a1510a28a5e5631adc8a83d8125b25b04a79765ba1379d8bf804c632d868`이다.
+MCP 작업 ID는 `21652151-d025-4b86-872d-b81f42b4587f`이고 변환 상태는 성공이다.
+페이지별 Native·fresh WASM 시각 측정과 직접 판독 결과는 검증 완료 후 아래에 기록한다.
+
 이전 통합 후보의 최소 글꼴 전체 회귀 로그에서 이 PR 관련 다음 모듈의 실행을 확인했다. 새 base 후보의 재실행 결과는 이 값으로 대신하지 않는다.
 - [`issue_7633_8334_hwpx_attr_roundtrip.rs`](../../../tests/cases/issue_7633_8334_hwpx_attr_roundtrip.rs): 이전 실행 5건 통과, 0건 실패, 0건 건너뜀.
 - [`issue_7633_hwpx_page_number_side_char.rs`](../../../tests/cases/issue_7633_hwpx_page_number_side_char.rs): 이전 실행 2건 통과, 0건 실패, 0건 건너뜀.
