@@ -146,10 +146,13 @@ impl TableHostShapeFlow {
         page: TableHostShapePage,
         available_height: impl FnOnce() -> f64,
     ) -> bool {
-        if let Some(line_h) = self.tac_separate_line_fit_h {
+        if let Some(advance_h) = self.tac_separate_line_h {
             // 자기 line이 현재 페이지에 들어가지 않으면 다음 페이지로 분할.
             // 쪽 끝 줄은 줄 높이까지만 들어가면 된다 — 저장 vpos+lh 가 본문 높이 이하인
             // 줄을 한컴은 같은 쪽에 둔다(156578788 줄1 66269+3736=70005 ≤ 70020).
+            // 자기 줄 판정은 `tac_separate_line_h` 하나가 켜고 끈다(호출자가 이를 비우면
+            // 수용 판정도 함께 꺼진다).
+            let line_h = self.tac_separate_line_fit_h.unwrap_or(advance_h);
             page.has_items && page.current_height + line_h > available_height() + 0.5
         } else if let Some(extra) = self.non_tac_pushdown_h {
             // 비-TAC 자리차지 객체: 현재 단 잔여 부족 + 단 상단 아니면 다음 단/페이지 이동
