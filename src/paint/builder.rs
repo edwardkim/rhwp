@@ -53,6 +53,7 @@ pub struct LayerBuilder {
     print_2024_raster: Option<bool>,
     metafile_catalogue: Option<std::sync::Arc<super::metafile_print::Catalogue>>,
     shape_group_depth: usize,
+    print_crop_marks: bool,
 }
 
 impl LayerBuilder {
@@ -74,6 +75,7 @@ impl LayerBuilder {
             print_2024_raster: None,
             metafile_catalogue: None,
             shape_group_depth: 0,
+            print_crop_marks: false,
         }
     }
 
@@ -123,6 +125,11 @@ impl LayerBuilder {
     pub(crate) fn with_hangul2024_print(mut self, enabled: bool) -> Self {
         self.hangul2024_print = enabled;
         self.print_2024_raster = Some(enabled);
+        self
+    }
+
+    pub(crate) fn with_print_crop_marks(mut self, enabled: bool) -> Self {
+        self.print_crop_marks = enabled && self.profile == RenderProfile::Print;
         self
     }
 
@@ -185,10 +192,38 @@ impl LayerBuilder {
         self.page_context = Some(context);
         self.image_frames.clear();
 
+        let mut children = self.build_children(&tree.root);
+        if self.print_crop_marks {
+            // 한컴 Print의 재단선은 종이 네 모서리를 중심으로 10mm씩 뻗는다.
+            // 종이 바깥 부분은 출력 장치가 자르며 화면 조판에는 참여하지 않는다.
+            let length = self.layout_dpi * 10.0 / 25.4;
+            let style = crate::renderer::LineStyle {
+                width: self.layout_dpi * 0.12 / 72.0,
+                color: 0,
+                ..Default::default()
+            };
+            let mut ops = Vec::with_capacity(8);
+            for (x, y) in [
+                (0.0, 0.0),
+                (page_width, 0.0),
+                (0.0, page_height),
+                (page_width, page_height),
+            ] {
+                for (x1, y1, x2, y2) in [
+                    (x - length, y, x + length, y),
+                    (x, y - length, x, y + length),
+                ] {
+                    let line =
+                        crate::renderer::render_tree::LineNode::new(x1, y1, x2, y2, style.clone());
+                    ops.push(PaintOp::line(line.ink_bbox(), line));
+                }
+            }
+            children.push(LayerNode::leaf(tree.root.bbox, None, ops));
+        }
         let root = LayerNode::group(
             tree.root.bbox,
             Some(tree.root.id),
-            self.build_children(&tree.root),
+            children,
             self.cache_hint_for(&tree.root.node_type),
             GroupKind::Generic,
         )

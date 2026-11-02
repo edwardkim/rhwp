@@ -1765,7 +1765,8 @@ impl DocumentCore {
                 .with_output_options(output_options)
                 .with_bin_data_epoch(self.bin_data_epoch)
                 .with_prior_print_solid_fill(prior_print_solid_fill)
-                .with_hangul2024_print(hangul2024_print);
+                .with_hangul2024_print(hangul2024_print)
+                .with_print_crop_marks(self.document.print_crop_marks());
             Ok(builder.build_with_embedded_fonts(tree, &embedded_fonts))
         })?;
         {
