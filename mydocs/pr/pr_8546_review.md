@@ -3,7 +3,7 @@
 ## 최종 판정
 
 **머지 보류 — 메인터너 보정으로 2024 Print 대조 2쪽이 53.45%에서 93.44%로
-개선됐으나, 최종 head의 fresh WASM·회귀·기준 devel 대조가 진행 중입니다.**
+개선됐고 fresh WASM도 93.09%로 통과했습니다. 최종 회귀·기준 devel 대조가 남았습니다.**
 2020 경로의 93.14%는 유지됐습니다. 완료 판정은 남은 검증을 마친 뒤 갱신합니다.
 
 ## 접수 정보
@@ -50,6 +50,23 @@
 [overlay](assets/planet6897_20261103/pr_8546/leading-shape-2024-native-overlay-p002.png)을
 같은 배율로 판독했습니다.
 
+## 통합 코드의 전쪽 fresh WASM 검증
+
+동일 제품 코드 `dc87f4fa2e`의 fresh WASM SHA-256은
+`c7e166e1b087641e727d326dd5ff504653f96134808242f9d1fd83228bbae903`입니다.
+2026-11-04, 같은 입력·PDF·96 DPI에서 두 Print 기준 모두 전체 2쪽이 일치하고
+90% 미만은 0쪽입니다.
+
+| 독립 Print 기준 | 1쪽 raw | 2쪽 raw | 전쪽 TSV와 주장 쪽 PNG |
+| --- | ---: | ---: | --- |
+| 2020 | 100.00% | 92.99% | [TSV](assets/planet6897_20261103/pr_8546/leading-shape-2020-wasm.tsv) · [review](assets/planet6897_20261103/pr_8546/leading-shape-2020-wasm-review-p002.png) · [overlay](assets/planet6897_20261103/pr_8546/leading-shape-2020-wasm-overlay-p002.png) |
+| 2024 | 100.00% | 93.09% | [TSV](assets/planet6897_20261103/pr_8546/leading-shape-2024-wasm.tsv) · [review](assets/planet6897_20261103/pr_8546/leading-shape-2024-wasm-review-p002.png) · [overlay](assets/planet6897_20261103/pr_8546/leading-shape-2024-wasm-overlay-p002.png) |
+
+2024의 선행 도형 줄, 표 A·B의 순서와 겹침 해소를 같은 쪽에서 직접 대조했습니다.
+표 B와 뒤 글줄에는 원 PR이 별도 이슈로 설명한 작은 세로 간격 차이가 남아 있으며,
+완전한 픽셀 일치로 판정하지 않습니다. 회귀는 실제 절대 좌표 대신 두 호환 모드의
+표 소속·앞뒤 순서·겹침과 원본 바깥 여백 관계를 검사합니다.
+
 ## 원인과 메인터너 보정 범위
 
 2024 모드의 `typeset_tac_table`은 표 앞 저장 줄을 빈 앵커로 보고 흐름에서
@@ -60,5 +77,5 @@
 `ad0d4b1277`에서 도형·그림이 실제로 소유한 저장 줄은 회수하지 않도록
 공통 조건을 바로잡았습니다. 빈 앵커를 회수하는 기존 #5524 경로는 대조군으로 유지합니다.
 
-새 head에서 2020·2024 Print 전쪽 fresh WASM, 관계형 표 순서 회귀,
-최소 글꼴 집중·전체 Rust와 기준 devel 대비 페이지별 raw를 재검증한 뒤 판정을 갱신합니다.
+두 호환 모드를 검사하도록 보완한 관계형 표 순서 회귀, 최소 글꼴 전체 Rust와
+기준 devel 대비 페이지별 raw 대조를 완료한 뒤 최종 판정을 갱신합니다.

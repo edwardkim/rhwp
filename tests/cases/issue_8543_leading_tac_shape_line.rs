@@ -1,20 +1,21 @@
-//! 관계형·고정형(쪽수): 맨 앞 글자처럼 취급 도형이 자기 줄을 소유하면 TAC 표 문단 높이 상한이 그 줄을 센다.
-//! 주석 갱신: 2026-11-03 21:50 KST (새 파일)
+//! 관계형·고정형(쪽수): 맨 앞 TAC 도형이 소유한 줄을 문단 높이 상한에서 보존한다.
+//! 주석 갱신: 2026-11-04 01:06:53 KST
 //!
-//! 측정 근거(측정일 2026-11-03, `scripts/visual_sweep.py --silhouette-only --dpi 96`, 판정값
-//! `silhouette_raw_match_percent` — 색상 경계 보정 전 2px 내용 실루엣, 이진화는 스크립트 기본값, 색상 경계
-//! 대조 픽셀 0). 후보 source 는 `task/8543-leading-tac-shape-line-cap`(#8531 head `2f14656a35` 위,
-//! `upstream/devel` `7d06d5c706` 대비 측정 src diff sha256 `4d82a00ba4040d22` — 커밋본 `f1f8330951e3707e` 와는
-//! 코드 주석의 이슈 번호만 다르다), Native = native-skia release
-//! (sha256 `524a2ed2f9eab54f`), fresh WASM = 같은 source 의 `scripts/wasm-pack-locked.sh --target web`
-//! (`rhwp_bg.wasm` sha256 `da39e0252d2d4ce9`). 글꼴 `RHWP_FONT_PATH` = 한컴 `ttfs/hwp`·`ttfs/windows`.
-//! `leading_shape_line-2020.hwp` → `pdf/issue8543/leading_shape_line-2020.pdf`(2쪽 = rhwp 2쪽):
-//! Native 1쪽 100.00 / 2쪽 93.14, fresh WASM 1쪽 100.00 / 2쪽 92.99(전쪽 최저 Native 93.14, WASM 92.99).
-//! 수정 전(#8531 head) Native 2쪽 56.44. 2쪽 남은 차이는 표 B 와 뒤 글줄이 2.2px 위(표 줄 뒤 간격 절반
-//! 상한, #8544) — 확대 판독으로 확인. `--compat 2024` 경로(한/글 2024 Print 대조 Native 53.45 / WASM 53.20,
-//! 수정 전 56.36)는 #5524 앞 앵커 줄 회수가 도형 줄을 거두는 기존 결함이라 #8544 로 분리했다.
-//! 정식 증거: `mydocs/pr/assets/issue_8543/{native,wasm}/*_silhouette.tsv`, 대표 review·overlay
-//! `mydocs/pr/assets/issue_8543/png/`.
+//! 측정일 2026-11-04, 제품 코드 `dc87f4fa2e`, 96 DPI,
+//! `scripts/visual_sweep.py --silhouette-only`의 `silhouette_raw_match_percent`
+//! (색상 경계 보정 전 2px 내용 실루엣). 입력은 `samples/issue8543/leading_shape_line-2020.hwp`.
+//! 독립 한컴 Print PDF와 Native/fresh WASM 모두 전체 2쪽으로 일치한다.
+//! - 2020 Print: Native 1쪽 100.00%, 2쪽 93.14%(전쪽 최저 93.14%);
+//!   fresh WASM 1쪽 100.00%, 2쪽 92.99%(전쪽 최저 92.99%).
+//! - 2024 Print: Native 1쪽 100.00%, 2쪽 93.44%(전쪽 최저 93.44%);
+//!   fresh WASM 1쪽 100.00%, 2쪽 93.09%(전쪽 최저 93.09%).
+//! 2024 경로의 보정 전 Native 2쪽 53.45%는 도형 소유 줄까지 앵커 회수하던 결함이다.
+//! `ad0d4b1277`에서 공통 회수 조건을 보정했으며 이 검사는 두 호환 모드의 순서·겹침을 보호한다.
+//! 핵심 쪽의 양쪽 raw가 98% 미만이므로 실제 절대 px 좌표는 고정하지 않는다.
+//! Native 실행 파일 SHA-256 `24c7e929b04c14adc46fbcc80b384e74fffd5524bdd2484068ebe6e974952337`,
+//! fresh WASM SHA-256 `c7e166e1b087641e727d326dd5ff504653f96134808242f9d1fd83228bbae903`.
+//! 현재 측정의 전쪽 TSV·review·overlay: `mydocs/pr/assets/planet6897_20261103/pr_8546/`.
+//! 입력 생성·원본 저장값·독립 Print 절차: `mydocs/pr/pr_8546_review.md`.
 //!
 //! #8543 저장 HWP5 의 TAC 표 host 문단에서 표 앞 줄을 맨 앞 TAC 그림/도형(앞에 다른 TAC 개체 없음)이
 //! 소유하면, 조판의 문단 높이 상한(`tac_reconcile`)이 그 줄을 세지 않아 흐름을 되감았다. 글줄은 저장 vpos 로
@@ -79,37 +80,43 @@ fn flow(node: &RenderNode, out: &mut Vec<(&'static str, String, f64, f64)>) {
 fn leading_tac_shape_line_counts_in_tac_paragraph_cap() {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("samples/issue8543/leading_shape_line-2020.hwp");
-    let core =
-        DocumentCore::from_bytes(&std::fs::read(path).expect("기준 입력")).expect("문서 열기");
-    assert_eq!(core.page_count(), 2, "한/글 Print 쪽수");
+    let bytes = std::fs::read(path).expect("기준 입력");
+    for compat_2024 in [false, true] {
+        let mut core = DocumentCore::from_bytes(&bytes).expect("문서 열기");
+        core.set_hangul2024_compat(compat_2024);
+        assert_eq!(core.page_count(), 2, "한/글 Print 쪽수; 2024={compat_2024}");
 
-    let tree = core.build_page_render_tree(1).expect("2쪽 배치");
-    let mut items = Vec::new();
-    flow(&tree.root, &mut items);
-    let find = |kind: &str, text: &str| {
-        items
-            .iter()
-            .find(|(k, t, _, _)| *k == kind && t.contains(text))
-            .unwrap_or_else(|| panic!("{kind} {text:?} 없음: {items:?}"))
-            .clone()
-    };
-    let a = find("table", "A0가");
-    let b = find("table", "B0가");
-    let after = find("line", "B 뒤 첫 줄");
+        let tree = core.build_page_render_tree(1).expect("2쪽 배치");
+        let mut items = Vec::new();
+        flow(&tree.root, &mut items);
+        let find = |kind: &str, text: &str| {
+            items
+                .iter()
+                .find(|(k, t, _, _)| *k == kind && t.contains(text))
+                .unwrap_or_else(|| panic!("{kind} {text:?} 없음; 2024={compat_2024}: {items:?}"))
+                .clone()
+        };
+        let a = find("table", "A0가");
+        let b = find("table", "B0가");
+        let after = find("line", "B 뒤 첫 줄");
 
-    // 순서·겹침: 표 A → 표 B → 「B 뒤 첫 줄」.
-    assert!(
-        a.3 <= b.2,
-        "표 B 위끝 {} 가 표 A 바닥 {} 보다 위(겹침)",
-        b.2,
-        a.3
-    );
-    assert!(b.3 <= after.2, "「B 뒤 첫 줄」이 표 B 와 겹침: {items:?}");
-    // 표 A 바닥 → 표 B 위끝은 적어도 두 바깥 여백(141HU 씩)이다.
-    let margins = rhwp::renderer::hwpunit_to_px(141 * 2, 96.0);
-    assert!(
-        b.2 - a.3 >= margins - 0.5,
-        "표 A→B 간격 {} < 바깥 여백 합 {margins}",
-        b.2 - a.3
-    );
+        // 순서·겹침: 표 A → 표 B → 「B 뒤 첫 줄」.
+        assert!(
+            a.3 <= b.2,
+            "표 B 위끝 {} 가 표 A 바닥 {} 보다 위; 2024={compat_2024}",
+            b.2,
+            a.3
+        );
+        assert!(
+            b.3 <= after.2,
+            "「B 뒤 첫 줄」이 표 B 와 겹침; 2024={compat_2024}: {items:?}"
+        );
+        // 표 A 바닥 → 표 B 위끝은 적어도 두 바깥 여백(141HU 씩)이다.
+        let margins = rhwp::renderer::hwpunit_to_px(141 * 2, 96.0);
+        assert!(
+            b.2 - a.3 >= margins - 0.5,
+            "표 A→B 간격 {} < 바깥 여백 합 {margins}; 2024={compat_2024}",
+            b.2 - a.3
+        );
+    }
 }

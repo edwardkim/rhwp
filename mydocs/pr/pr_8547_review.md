@@ -2,8 +2,8 @@
 
 ## 최종 판정
 
-**머지 보류 — 통합 head의 Native 전쪽 측정은 통과했고, fresh WASM 전쪽 측정과
-전체 회귀 검증이 진행 중입니다.**
+**머지 보류 — 통합 head의 Native/fresh WASM 전쪽 측정은 통과했고,
+최종 전체 회귀와 기준 devel 대조가 남았습니다.**
 원 PR의 검증 결과와 통합 브랜치의 최종 검증 결과를 구분합니다.
 
 ## 접수 및 적용
@@ -50,10 +50,22 @@ raw 값은 1~6쪽 순서로 99.85%, 99.99%, **97.95%**, 100.00%, 100.00%, 100.00
 [overlay](assets/planet6897_20261103/pr_8547/gangseo-native-overlay-p004.png)에서
 앞 조각·이어받는 조각과 뒤 행의 소속을 직접 대조했습니다.
 
+## 통합 코드의 fresh WASM 전쪽 측정
+
+같은 제품 코드 `dc87f4fa2e`의 fresh WASM
+(`c7e166e1b087641e727d326dd5ff504653f96134808242f9d1fd83228bbae903`)을
+2026-11-04에 같은 입력·독립 Print PDF, 96 DPI로 측정했습니다.
+[전쪽 TSV](assets/planet6897_20261103/pr_8547/gangseo-wasm.tsv)는 6/6쪽,
+90% 미만 0쪽이며 1~6쪽 raw는 99.87%, 99.99%, **97.98%**, 100.00%, 100.00%,
+100.00%입니다.
+[3쪽 review](assets/planet6897_20261103/pr_8547/gangseo-wasm-review-p003.png)·
+[overlay](assets/planet6897_20261103/pr_8547/gangseo-wasm-overlay-p003.png)와
+[4쪽 review](assets/planet6897_20261103/pr_8547/gangseo-wasm-review-p004.png)·
+[overlay](assets/planet6897_20261103/pr_8547/gangseo-wasm-overlay-p004.png)를 같은 입력의
+같은 쪽에 연결했습니다.
+
 ## 남은 검증
 
-- 최신 통합 head에서 같은 HWP·Print PDF의 전쪽 fresh WASM TSV와
-  3·4쪽 review/overlay를 재산출하고, 90% 미만 쪽·누락·쪽수 차이를 검사합니다.
 - 최소 글꼴 환경에서 `issue_8532_rowspan_hard_break`와 관련 대조군, 전체 회귀를 실행합니다.
 - 기준 devel과 같은 입력·Print·글꼴 조건에서 페이지별 하락을 대조하고,
   다른 문서에 대한 #8547의 영향도 분리해 판정합니다.
