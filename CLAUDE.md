@@ -291,6 +291,9 @@ SHA-256·이전/보존 경로·활성 유지/제거 목록·복원 조건을 기
   reviewer가 실제 결과를 열어 볼 수 있게 대표 review·overlay PNG를 PR 본문에 Markdown 이미지로
   표시한다. 경로·임시 output·review 문서 링크만으로 대신하지 않고, PR head repository와 정확한
   head SHA로 고정한 raw URL을 사용한다. code head가 바뀌면 캡처와 본문 URL도 갱신한다.
+  원 PR의 시각 review·comment는 첫 게시부터 그 PR이 주장한 문서·페이지별 review·overlay 이미지를
+  정확한 commit SHA의 raw URL로 표시한다. 게시 전 입력·페이지·이미지 응답·해시를 대조하고 게시 후
+  본문과 표시를 재확인한다. 증적이 없으면 준비할 때까지 게시를 보류한다. [comment 정본](mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 따른다.
   코드 변경 뒤에는 영향 페이지를 다시 캡처하며, CI 녹색·자동 픽셀 점수만으로 대체하지 않는다.
   `scripts/visual_sweep.py`의 색상 경계 보정 전2px 내용 실루엣 일치율이 대표 review PNG 중 하나라도
   90% 미만이거나 측정 불가이면 새 PR을 만들지 않고 이미 열린 PR은 승인·통합하지 않는다. 기여자가 자기 branch에서

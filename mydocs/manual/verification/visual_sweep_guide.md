@@ -1073,6 +1073,18 @@ PR 본문 URL은 해당 제출 head를 고정하고, [merge 후 GitHub comment](
 
 ## GitHub merge comment
 
+시각 결과를 근거로 원 PR에 review·일반 comment를 남길 때는 **첫 comment부터** 그 PR이 주장한
+문서와 페이지의 실제 review·overlay PNG를 각각 `![설명](raw URL)`로 표시한다. 원 PR의 본문·첨부·
+쪽 번호와 검증 입력·기준 PDF·출력 경로를 대조해 이미지가 같은 주장에 대응하는지 직접 확인한다.
+여러 입력이나 페이지를 주장하면 각 주장에 대응하는 증적을 넣고, 다른 PR·다른 문서의 대표 그림으로
+대신하지 않는다. 첫 comment에 충분한 이미지가 없으면 게시하지 않고 증적을 먼저 준비한다.
+
+게시할 자산은 실제 접근 가능한 저장소의 정확한 commit SHA를 고정한 `raw.githubusercontent.com` URL로
+연결한다. merge 전에는 해당 자산을 포함한 head SHA, merge 후에는 자산을 포함한 merge SHA를 쓴다.
+게시 전에 raw 응답의 성공·이미지 형식·바이트 해시와 원본을 확인하고, 게시 후 API 본문과 화면의
+이미지 표시를 재확인한다. 증적을 아직 게시할 수 없으면 코멘트를 보류하며, 임시 output 경로나
+나중에 정정할 계획으로 대체하지 않는다. GitHub 게시에는 기존 사용자 승인 규칙을 따른다.
+
 renderer, layout, paint처럼 **문서 비교 결과를 merge 판단 근거로 쓴 PR**의 공식 비교 절차는 이
 Visual Sweep 가이드다. merge 후 GitHub comment는 이미지 하나 또는 raw URL만으로 판정하지 않고, 이 절의
 절차와 review 문서에 기록한 실제 결과를 함께 가리킨다.

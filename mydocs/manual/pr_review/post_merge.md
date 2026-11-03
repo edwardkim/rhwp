@@ -178,6 +178,11 @@ close 체크리스트: ① sub-issue close ② 가드 테스트 PR merge ③ 판
 direct link로 남기고, merge commit에 포함된 실제 asset을 보이게 포함한다. raw URL은 이미지 표시용 증적이며,
 문서 비교 방법의 정본은 Visual Sweep 가이드다.
 
+첫 comment부터 해당 원 PR이 주장한 각 문서·페이지와 일치하는 review·overlay를 넣는다. 원 PR
+본문·첨부와 이미지의 입력·페이지·출력 경로를 대조하고, 다른 PR의 대표 이미지로 대체하지 않는다.
+게시 전에 merge SHA로 고정한 raw 응답의 이미지 형식·해시를 원본과 비교하고, 게시 후 API 본문과
+화면 표시를 확인한다. 대응 증적이 준비되지 않았으면 먼저 보완하고 comment는 보류한다.
+
 게시 전에 해당 개별 review 문서의 `Merge 후 contributor PR comment 계획`을 읽고, 실제 merge SHA, devel에
 존재하는 asset, 확인한 페이지·후보 수·수치·사람의 결론이 계획과 일치하는지 대조한다. 계획이 없거나 불완전하면
 임시 output이나 기억에 의존해 comment를 작성하지 않는다. review 기록을 먼저 보완하고, 필요한 asset을 devel에

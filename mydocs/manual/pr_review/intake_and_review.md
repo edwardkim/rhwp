@@ -327,6 +327,13 @@ review 문서에는 최소한 다음을 포함한다.
 API 재조회 조건을 적는다. 이는 게시 승인이나 사전 comment를 뜻하지 않는다. asset이 devel에 반영되고 merge
 SHA가 확정된 뒤에만 [merge 후속 처리](post_merge.md)의 실제 게시 단계로 진행한다.
 
+시각 결과를 원 PR의 review 또는 일반 comment에 제시할 때는 첫 게시 전에 원 PR의 각 주장과
+실제 문서·페이지·출력 경로를 대응시킨다. 각 주장에 맞는 review·overlay PNG를 직접 판독하고
+정확한 commit SHA로 고정한 raw 이미지 URL을 첫 comment에 표시한다. 다른 PR이나 다른 페이지의
+대표 그림으로 대체하지 않는다. URL 응답·이미지·원본 해시를 확인하고 게시 후 API와 화면도
+재확인한다. 증적이 미비하면 먼저 준비하며 게시 승인은 별도로 따른다. 상세는
+[시각 comment 정본](../verification/visual_sweep_guide.md#github-merge-comment)을 따른다.
+
 또한 reviewer는 merge 전 PR 본문에서 실제 Visual Sweep 증적이 보이는지 확인한다. 최종 PR head의
 repository·SHA로 고정한 Native/fresh WASM review·overlay 이미지가 실행한 출력 경로별로 표시되어야 하며,
 asset 경로·임시 output·review 문서 링크만 있으면 증적 부족으로 기록한다. 이 확인은 merge 뒤 contributor
