@@ -33,7 +33,7 @@ use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{Caption, CommonObjAttr, DrawingObjAttr, ShapeObject, TextBox};
-use crate::model::shape::{HorzAlign, HorzRelTo, VertAlign, VertRelTo};
+use crate::model::shape::{HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo};
 use crate::model::style::{Alignment, FillType};
 
 /// 묶음 자식의 AABB에서 부호 있는 점 좌표 원점과 배율을 복원한다.
@@ -117,6 +117,32 @@ fn textbox_vpos_px(vertical_pos: i32, origin_hu: Option<i32>, dpi: f64) -> f64 {
 /// #1681 편람 글상자에 도입된 경험적 보정을 텍스트가 있는 글상자에만 유지한다.
 /// 글상자 포함 여부와 비인쇄 여부는 별개이며 이 조건은 포맷의 일반 비인쇄 규칙이 아니다.
 /// #6852: 일반 도형의 흰색 채우기를 마스크로 추정하면 명시된 실선까지 소실된다.
+/// 글상자 안 글앞으로/글뒤로 표의 (가로, 세로) 오프셋(px). 오프셋에 표 바깥 여백(왼쪽·위)을 더한다.
+/// 가로 단·문단 기준 왼쪽 정렬, 세로 문단 기준만 다룬다. 그 밖의 배치는 None 이며 기존처럼 문단 정렬로 놓는다.
+fn textbox_floating_table_offset_px(
+    common: &CommonObjAttr,
+    outer_margin_left: i16,
+    outer_margin_top: i16,
+    dpi: f64,
+) -> Option<(f64, f64)> {
+    let floating = matches!(
+        common.text_wrap,
+        TextWrap::InFrontOfText | TextWrap::BehindText
+    );
+    let horz = matches!(common.horz_rel_to, HorzRelTo::Column | HorzRelTo::Para)
+        && common.horz_align == HorzAlign::Left;
+    let vert = common.vert_rel_to == VertRelTo::Para && common.vert_align == VertAlign::Top;
+    (!common.treat_as_char && floating && horz && vert).then(|| {
+        (
+            hwpunit_to_px(
+                common.horizontal_offset as i32 + outer_margin_left as i32,
+                dpi,
+            ),
+            hwpunit_to_px(common.vertical_offset as i32 + outer_margin_top as i32, dpi),
+        )
+    })
+}
+
 fn should_suppress_group_textbox_construction_stroke(drawing: &DrawingObjAttr) -> bool {
     let Some(text_box) = drawing.text_box.as_ref() else {
         return false;
@@ -4293,6 +4319,14 @@ impl LayoutEngine {
                             .get(para.para_shape_id as usize)
                             .map(|ps| ps.alignment)
                             .unwrap_or(Alignment::Left);
+                        // 글상자 안에서 글앞으로/글뒤로 떠 있는 표는 자기 가로·세로 오프셋 자리에 놓는다.
+                        // 글상자 안의 단·문단 기준은 글상자 글 영역이다.
+                        let floating_offset = textbox_floating_table_offset_px(
+                            &table.common,
+                            table.outer_margin_left,
+                            table.outer_margin_top,
+                            self.dpi,
+                        );
                         let table_inline_x = if table.common.treat_as_char {
                             advance_to_control(&mut inline_x);
                             let x =
@@ -4302,15 +4336,16 @@ impl LayoutEngine {
                                 + hwpunit_to_px(table.outer_margin_right as i32, self.dpi);
                             Some(x)
                         } else {
-                            None
+                            floating_offset.map(|(dx, _)| inner_area.x + dx)
                         };
+                        let dy = floating_offset.map_or(0.0, |(_, dy)| dy);
                         inline_y = self.layout_embedded_table(
                             tree,
                             &mut textbox_node,
                             table,
                             styles,
                             &inner_area,
-                            para_start_y,
+                            para_start_y + dy,
                             Some((
                                 section_index,
                                 para_index,
