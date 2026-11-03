@@ -62,6 +62,7 @@ fn boundary_controls_to_delete(
                         | Control::Equation(_)
                         | Control::Footnote(_)
                         | Control::Endnote(_)
+                        | Control::Form(_)
                 ) || para.controls.iter().enumerate().any(|(other, control)| {
                     other != index
                         && Paragraph::is_split_movable_control(control)
@@ -77,6 +78,33 @@ fn boundary_controls_to_delete(
 }
 
 pub(crate) type CellReflowMetrics = (i32, i16, i16);
+
+fn validate_form_boundary_metadata(
+    paragraph: &Paragraph,
+    from: usize,
+    to: usize,
+) -> Result<(), HwpError> {
+    if paragraph.range_tags.is_empty() && paragraph.markpen_marks.is_empty() {
+        return Ok(());
+    }
+    let mut prefix = paragraph.clone();
+    let suffix = prefix.split_at(to);
+    let selected = prefix.split_at(from);
+    let fragments = [&prefix, &selected, &suffix];
+    // 기존 분할기가 경계에 걸친 범위 표지를 버리므로 원문 변경 전에 막는다.
+    if fragments.iter().map(|p| p.range_tags.len()).sum::<usize>() != paragraph.range_tags.len()
+        || fragments
+            .iter()
+            .map(|p| p.effective_markpen_range_tags().len())
+            .sum::<usize>()
+            != paragraph.effective_markpen_range_tags().len()
+    {
+        return Err(HwpError::RenderError(
+            "양식 선택 경계에 걸친 범위 태그나 형광펜은 아직 지원하지 않습니다".into(),
+        ));
+    }
+    Ok(())
+}
 
 /// 복사와 같은 글자 경계에 든 표·그림만 지울 수 있는지 변경 전에 확인한다.
 fn cell_boundary_has_objects(
@@ -3523,6 +3551,7 @@ impl DocumentCore {
             end_offset,
             cell_ctx,
             None,
+            None,
         )
     }
 
@@ -3535,7 +3564,7 @@ impl DocumentCore {
         end_para: usize,
         end_logical: usize,
     ) -> Result<String, HwpError> {
-        if start_para == end_para && start_logical > end_logical {
+        if start_para > end_para || (start_para == end_para && start_logical > end_logical) {
             return Err(HwpError::RenderError(
                 "시작 위치가 끝 위치보다 뒤에 있음".into(),
             ));
@@ -3560,6 +3589,9 @@ impl DocumentCore {
                     "\"paraIdx\":{},\"charOffset\":{}",
                     start_para, start_logical
                 )));
+            }
+            if super::clipboard::has_only_inline_forms(p) {
+                continue;
             }
             {
                 let positions = p.control_text_positions();
@@ -3596,6 +3628,7 @@ impl DocumentCore {
             end.0,
             None,
             Some((start.1, end.1)),
+            Some((start_logical, end_logical)),
         )?;
         Ok(super::super::helpers::json_ok_with(&format!(
             "\"paraIdx\":{},\"charOffset\":{}",
@@ -3611,7 +3644,15 @@ impl DocumentCore {
         end: (usize, bool),
         selected: &[usize],
         logical_boundaries: bool,
+        form_logical_range: Option<(usize, usize)>,
     ) -> Result<(), HwpError> {
+        if let Some((from, to)) = form_logical_range {
+            let paragraph = &mut self.document.sections[section_idx].paragraphs[para_idx];
+            let suffix = paragraph.split_at(to);
+            paragraph.split_at(from);
+            paragraph.merge_from(&suffix);
+            return Ok(());
+        }
         if !logical_boundaries {
             delete_paragraph_boundary(
                 &mut self.document.sections[section_idx].paragraphs[para_idx],
@@ -3654,6 +3695,7 @@ impl DocumentCore {
         end_offset: usize,
         cell_ctx: Option<(usize, usize, usize)>,
         boundaries: Option<(bool, bool)>,
+        form_logical_offsets: Option<(usize, usize)>,
     ) -> Result<String, HwpError> {
         // 인덱스/범위 검증 — section_idx 범위, start/end para 범위, 뒤집힌 오프셋(start > end)
         if section_idx >= self.document.sections.len() {
@@ -3688,6 +3730,29 @@ impl DocumentCore {
         let (start_after, end_after) = boundaries.unwrap_or((false, false));
         let mut first_controls = Vec::new();
         let mut last_controls = Vec::new();
+        let mut first_form_range = None;
+        let mut last_form_range = None;
+        if cell_ctx.is_none() {
+            if let Some((from, to)) = form_logical_offsets {
+                let paragraphs = &self.document.sections[section_idx].paragraphs;
+                if super::clipboard::has_only_inline_forms(&paragraphs[start_para]) {
+                    let end = if start_para == end_para {
+                        to
+                    } else {
+                        logical_paragraph_length(&paragraphs[start_para])
+                    };
+                    validate_form_boundary_metadata(&paragraphs[start_para], from, end)?;
+                    first_form_range = Some((from, end));
+                }
+                if start_para != end_para
+                    && super::clipboard::has_only_inline_forms(&paragraphs[end_para])
+                {
+                    validate_form_boundary_metadata(&paragraphs[end_para], 0, to)?;
+                    last_form_range = Some((0, to));
+                }
+            }
+        }
+
         // 글자 축 API도 지원하지 않는 필드·개체 경계를 바꾸기 전에 거절한다.
         if boundaries.is_none() && cell_ctx.is_none() {
             let paragraphs = &self.document.sections[section_idx].paragraphs;
@@ -3718,12 +3783,14 @@ impl DocumentCore {
             } else {
                 (paragraphs[start_para].text.chars().count(), true)
             };
-            first_controls = boundary_controls_to_delete(
-                &paragraphs[start_para],
-                (start_offset, start_after),
-                first_end,
-            )?;
-            if start_para != end_para {
+            if first_form_range.is_none() {
+                first_controls = boundary_controls_to_delete(
+                    &paragraphs[start_para],
+                    (start_offset, start_after),
+                    first_end,
+                )?;
+            }
+            if start_para != end_para && last_form_range.is_none() {
                 last_controls = boundary_controls_to_delete(
                     &paragraphs[end_para],
                     (0, false),
@@ -3778,7 +3845,10 @@ impl DocumentCore {
             if start_para == end_para {
                 // 같은 문단 내 삭제
                 let count = end_offset - start_offset;
-                if count > 0 || !first_controls.is_empty() {
+                if count > 0
+                    || !first_controls.is_empty()
+                    || first_form_range.is_some_and(|(from, to)| from < to)
+                {
                     self.delete_body_paragraph_range(
                         section_idx,
                         start_para,
@@ -3786,6 +3856,7 @@ impl DocumentCore {
                         (end_offset, end_after),
                         &first_controls,
                         boundaries.is_some(),
+                        first_form_range,
                     )?;
                     // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
                     let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
@@ -3814,6 +3885,7 @@ impl DocumentCore {
                     (end_offset, end_after),
                     &last_controls,
                     boundaries.is_some(),
+                    last_form_range,
                 )?;
                 // 2) 중간 문단 역순 제거 (composed도 동기)
                 for mid_para in (start_para + 1..end_para).rev() {
@@ -3836,6 +3908,7 @@ impl DocumentCore {
                         (para_len, true),
                         &first_controls,
                         boundaries.is_some(),
+                        first_form_range,
                     )?;
                 }
                 // 4) 첫-마지막 문단 병합 (마지막 문단이 이제 start_para+1에 위치)

@@ -8165,7 +8165,7 @@ impl LayoutEngine {
                 comp_line,
                 para,
                 styles,
-                tac_offsets_px,
+                &line_tac_offsets,
                 cell_ctx.as_ref(),
                 x,
                 y,
