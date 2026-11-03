@@ -16,7 +16,9 @@ use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use crate::model::shape::{common_obj_offsets, CommonObjAttr};
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 use crate::model::Padding;
-use crate::scaffold::schema::{Block, CellAlignSpec, PageSize, ScaffoldSpec};
+use crate::scaffold::schema::{
+    Block, CellAlignSpec, OutlineLevel, PageSize, ScaffoldSpec, OUTLINE_DEFAULTS,
+};
 
 // 글자 모양 ID (doc_info.char_shapes 인덱스).
 const CS_NORMAL: u32 = 0;
@@ -33,6 +35,13 @@ const PS_HEADING_BASE: u16 = 2;
 const BF_NONE: u16 = 1; // border_fills[0] — 무테두리 (글자/문단 참조)
 const BF_SOLID: u16 = 2; // border_fills[1] — 실선 (표/셀 참조)
 
+/// 개요 번호 문단 머리 속성(표 41): 왼쪽 정렬, 번호 너비를 실제 문자열 너비에 따름(bit 2),
+/// 자동 내어쓰기(bit 3), 본문과의 거리는 글자 크기 비율(bit 4 = 0). 한/글 새 문서의
+/// 개요 번호 `paraHead`(align=LEFT useInstWidth=1 autoIndent=1 textOffsetType=PERCENT)와 같다.
+const OUTLINE_HEAD_ATTR: u32 = (1 << 2) | (1 << 3);
+/// 본문과의 거리 50%(글자 크기 비율) — 한/글 새 문서 개요 번호 기본값.
+const OUTLINE_TEXT_OFFSET: i16 = 50;
+
 /// [`ScaffoldSpec`] → [`Document`] IR 변환.
 pub fn build_scaffold(spec: &ScaffoldSpec) -> Document {
     let mut doc = Document::default();
@@ -45,6 +54,12 @@ pub fn build_scaffold(spec: &ScaffoldSpec) -> Document {
     section.section_def.page_border_fill.spacing_right = 1417;
     section.section_def.page_border_fill.spacing_top = 1417;
     section.section_def.page_border_fill.spacing_bottom = 1417;
+    if let Some(levels) = &spec.outline_numbering {
+        // 번호 정의 하나를 만들고 구역 개요 번호가 그것(1-based id 1)을 가리킨다.
+        // 개요 문단 모양은 numbering_id 0 그대로 — 조판·직렬화가 구역 개요 번호로 해석한다.
+        doc.doc_info.numberings = vec![outline_numbering(levels)];
+        section.section_def.outline_numbering_id = 1;
+    }
     doc.sections.push(section);
 
     let content_width = content_width_of(&doc.sections[0].section_def.page_def);
@@ -215,6 +230,34 @@ fn init_doc_info(doc: &mut Document, font_name: &str) {
         char_shape_id: 0,
         ..Default::default()
     }];
+}
+
+/// `outline_numbering` → 문단 번호 정의. 지정하지 않은 수준은 [`OUTLINE_DEFAULTS`].
+fn outline_numbering(levels: &[OutlineLevel]) -> crate::model::style::Numbering {
+    use crate::model::style::{Numbering, NumberingHead};
+    let mut n = Numbering {
+        start_number: 1,
+        level_start_numbers: [1; 7],
+        ..Default::default()
+    };
+    for (i, (default_text, default_format)) in OUTLINE_DEFAULTS.iter().enumerate() {
+        let (text, format) = match levels.get(i) {
+            Some(lv) => (lv.text.as_str(), lv.num_format),
+            None => (*default_text, *default_format),
+        };
+        let code = format.code();
+        n.level_formats[i] = text.to_string();
+        n.heads[i] = NumberingHead {
+            // 번호 형식 코드는 속성 bit 5~8 에도 둔다(HWPX 파서와 같은 표현).
+            attr: OUTLINE_HEAD_ATTR | (u32::from(code) << 5),
+            width_adjust: 0,
+            text_distance: OUTLINE_TEXT_OFFSET,
+            // 글자 모양 참조 없음 — 번호는 문단의 글자 모양을 따른다.
+            char_shape_id: u32::MAX,
+            number_format: code,
+        };
+    }
+    n
 }
 
 fn page_def_from_spec(page_size: PageSize) -> PageDef {
