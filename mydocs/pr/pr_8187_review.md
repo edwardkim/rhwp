@@ -9,7 +9,7 @@ last_verified: 2026-11-03
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능 — 승인된 필수 로컬 검증 완료, 원격 제출·새 head CI 대기.**
+**메인터너 보정 후 수용 가능 — 필수 로컬 검증 완료, CI 환경 의존 테스트 보정 후 새 head CI 대기.**
 원 기여 13커밋을 보존해 11개 충돌을 해결했고 논리 편집·다단 기능과 KPS 65·66쪽을 보정했다.
 전체 회귀 **12,415 PASS**, Native Skia 공식 3종 **4,064 PASS**, 집중 회귀 **72 PASS**와 모든
 Rust lint를 확인했다. 독립 Print 대비 Native/fresh WASM 각각 **14문서·516쪽**이 전쪽 raw 90% 이상이며
@@ -18,7 +18,7 @@ Rust lint를 확인했다. 독립 Print 대비 Native/fresh WASM 각각 **14문�
 2026-11-03 작업지시자는 [통합 계획](pr_8187_review_impl.md)의 **메인터너 보정과 필수 로컬 검증**을
 승인했고, 로컬 완료 뒤 **원 기여 branch push → 본문 보충 → 새 head CI·self-review → 원 PR merge →
 감사 댓글·기록·정리**도 승인했다. [원격 처리안](assets/pr8187/remote-action-plan.md)에 따라 진행한다.
-현재 로컬 후보를 원 PR의 GitHub head나 녹색 CI로 표현하지 않으며, 새 head의 결과를 따로 확인한다.
+원 contributor branch에 후보를 push하고 본문을 보충했다. 최신 head의 CI와 충돌 상태를 따로 확인하며, 실패한 검사를 우회하지 않는다.
 
 ## source와 접수 정보
 
@@ -194,9 +194,8 @@ root pkg/Studio public WASM SHA-256 `19e4729f73daa5a183d37b29eb09500cdd217c11238
 ## 후속 원격 처리 조건
 
 필수 로컬 gate는 모두 완료했다. [원격 처리안](assets/pr8187/remote-action-plan.md)과 본문 보충·감사 댓글 초안을 준비했다. 원 contributor branch에
-원 이력을 보존한 후보를 push할 수 있는지 최신 head/권한을 확인하며, 원격 승인 뒤에만 새 head CI를
-실행·확인하고 self-review·merge·후속 댓글을 진행한다. 마지막 원격 읽기에서도 원 PR head와 devel은 고정한 SHA와 같았다.
-[조회 결과](assets/pr8187/remote-read-snapshot.json). 현재 원격 변경은 수행하지 않았다.
+원 이력을 보존한 후보를 push할 수 있는지 최신 head/권한을 확인하며, 승인 범위에서 새 head CI·self-review·merge·후속 댓글을 진행한다.
+[접수 시 원격 조회](assets/pr8187/remote-read-snapshot.json)와 실제 원격 처리 결과를 구분한다.
 
 ## Merge 후 contributor PR comment 계획
 
@@ -207,3 +206,28 @@ root pkg/Studio public WASM SHA-256 `19e4729f73daa5a183d37b29eb09500cdd217c11238
 숫자를 사람의 판정 정확도나 픽셀 완전 동일로 설명하지 않는다. #7444 전체를 닫지 않는다.
 merge에 포함된 Native·WASM KPS 66쪽 review PNG를 이미지로 표시하고
 [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 연결한다.
+
+
+## 원격 CI와 #6612 환경 의존 검사 보정 — 2026-11-03
+
+- 원 contributor head를 보존한 `5ce743cbc7`을 fast-forward push했다. 실제 변경 범위에 LFS
+  객체가 없음을 확인한 뒤 정본의 `GIT_LFS_SKIP_PUSH=1` 경로를 사용했으며 hook 설정은 바꾸지 않았다.
+- 첫 실행은 옛 base SHA `60972534`가 고정된 이벤트로 lint의 대량 diff/ENOBUFS가 발생했다.
+  실제 base `4e2cc6bb`로 metadata를 갱신하고, 작업지시자가 승인한 임시 close/reopen으로 새 이벤트를
+  생성했다. 커밋·workflow·검증 기준은 바꾸지 않았다. 새 lint는 통과했다.
+- 작업지시자가 이전 CI `41572395775`·Render `41572395710` 취소를 승인했으나 이미 자동 취소된
+  상태였다. 수동 취소·재실행 API를 실행하지 않았다.
+- 새 [CI 41574106733](https://github.com/edwardkim/rhwp/actions/runs/41574106733)의 Archive D에서
+  기존 #6612의 WMF 이미지 개수 검사가 **101 != 21**로 실패했다. A/B/C/E·Native·lint·Frontend는
+  통과했으며 CodeQL·Render Diff·Adapter·Proptest도 통과했다. 전체 성공으로 판정하지 않는다.
+- 원 해결 #6618 → 메인터너 보정 `7946a457d9` → 통합 조상 `9088bd705c`와 독립 검토 기록을 먼저
+  추적했다. 현재 base/head의 PDF 내보내기 구현과 원본은 같았다. Color Emoji를 먼저 노출한 격리
+  환경에서 같은 실패를 재현했으며 **base/head PDF SHA-256도 동일**했다. 추가 80개는 136×128
+  글자 비트맵 40개와 그 soft mask 40개다. WMF 21개가 누락된 실패가 아니다.
+- generic fallback 옵션만 명시하면 원본의 미설치 family 선택이 남아 실패가 지속됐다. 해당 이미지
+  자원 검사에서만 문서의 글꼴을 저장소의 공개 Noto Sans KR로 명시하고 `set_document`로 파생 상태를
+  갱신했다. 제품 글꼴 정책·배치·workflow는 그대로이며 원본 파일과 **정확히 21개** assertion도 유지한다.
+- Color Emoji 환경 수정 전 FAIL → 수정 후 **2 PASS**, 최소 글꼴 **2 PASS**, Color Emoji 반복
+  **2 PASS**를 확인했다. Rust lint 묶음과 manifest 검사도 모두 PASS다. 테스트 전용 변경으로
+  snapshot/baseline·쪽수·좌표를 바꾸지 않았고 기존 제품의 Native/fresh WASM 증거를 유지했다.
+  [진단·원인 이력·실제 명령과 로그 지문](assets/pr8187/issue6612-font-diagnostic.json).

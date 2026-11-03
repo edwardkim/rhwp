@@ -1,0 +1,476 @@
+{
+  "status": "PASS",
+  "verified_at": "2026-11-03T13:47:20.193831+09:00",
+  "scope": "PDF image-resource contract only; no production, page geometry, threshold, workflow or font policy changes",
+  "failed_ci": {
+    "head": "5ce743cbc70c809ce395fd14f79d5b7d6bff73b6",
+    "run": 41574106733,
+    "job": 125723120890,
+    "test": "issue_6612_sample14_wmf_pictures_reach_pdf",
+    "actual": 101,
+    "expected": 21
+  },
+  "lineage": {
+    "issue": 6612,
+    "original_pr": 6618,
+    "original_head": "7351fe3e21b61fcb581dfd8db9dc27f1c9cf2e5b",
+    "maintainer_commit": "7946a457d924f7bb0f36aabd93f163449bd03d30",
+    "integration_ancestor": "9088bd705cafd004d703fcf4fa1a40002e9e3bee",
+    "review": "mydocs/pr/archives/pr_6618_review.md"
+  },
+  "input": {
+    "path": "samples/hwp3-sample14-hwp5.hwp",
+    "sha256": "a6611ff44bbf3eee9bb2e6ffce5d6b636328a381e41c7c71bd03afef6423e6c0",
+    "wmf_pictures": 13,
+    "bitmap_tiles": 21,
+    "expectation": "existing source bitmap count and historical independent PyMuPDF placement accounting; not all glyph image resources"
+  },
+  "adversarial_font": {
+    "package": "fonts-noto-color-emoji_2.047-0ubuntu0.24.04.1_all.deb",
+    "package_sha256": "b102b62ce6a7313315223cff5e052bdf8fc0ad162c9e961ce0dc2202bc139ce2",
+    "source": "Ubuntu noble-updates, apt-get download; local extract only",
+    "font_sha256": "93cdc4ee9aa40e2afceecc63da0ca05ec7aab4bec991ece51a6b52389f48a477",
+    "license": "SIL Open Font License 1.1; package copyright inspected",
+    "committed": false,
+    "system_installed": false
+  },
+  "before": {
+    "focused": {
+      "sha256": "bba06bd1daf0e8b4fd74d49c1ac7b1e4fcbb13bd6aefa516fad1162a6a1fd96a",
+      "result_lines": [
+        "        FAIL [   3.119s] (1/2) rhwp::regression_suite_009 issue_6612_pdf_keeps_sub_svg_images::issue_6612_sample14_wmf_pictures_reach_pdf",
+        "      left: 101",
+        "     right: 21",
+        "     Summary [   3.120s] 1/2 tests run: 0 passed, 1 failed, 302 skipped",
+        "        FAIL [   3.119s] (1/2) rhwp::regression_suite_009 issue_6612_pdf_keeps_sub_svg_images::issue_6612_sample14_wmf_pictures_reach_pdf"
+      ]
+    },
+    "base_head_same_environment": [
+      {
+        "producer": "base",
+        "binary_sha256": "6d2cf962975ff04f6e965e8596e579ea99f1a47d201c9c6132d89fa4237d0d24",
+        "image_dictionary_markers": 101,
+        "pdf_sha256": "44bf6ca933adff781e5bd264a7c60256ea3d19f9b48080d90df0b8e960ec22be"
+      },
+      {
+        "producer": "head",
+        "binary_sha256": "7ab652beab60cfcc36c16f5d9d53f0ab6e87887b7e4fa1f88a95f6c9d65f1b18",
+        "image_dictionary_markers": 101,
+        "pdf_sha256": "44bf6ca933adff781e5bd264a7c60256ea3d19f9b48080d90df0b8e960ec22be"
+      }
+    ],
+    "base_head_pdf_byte_identical": true,
+    "image_resource_inventory": [
+      {
+        "type": "image",
+        "width": 136,
+        "height": 128,
+        "count": 40
+      },
+      {
+        "type": "smask",
+        "width": 136,
+        "height": 128,
+        "count": 40
+      },
+      {
+        "type": "image",
+        "width": 328,
+        "height": 128,
+        "count": 1
+      },
+      {
+        "type": "image",
+        "width": 339,
+        "height": 128,
+        "count": 1
+      },
+      {
+        "type": "image",
+        "width": 336,
+        "height": 128,
+        "count": 3
+      },
+      {
+        "type": "image",
+        "width": 327,
+        "height": 127,
+        "count": 1
+      },
+      {
+        "type": "image",
+        "width": 353,
+        "height": 128,
+        "count": 1
+      },
+      {
+        "type": "image",
+        "width": 344,
+        "height": 128,
+        "count": 1
+      },
+      {
+        "type": "image",
+        "width": 333,
+        "height": 136,
+        "count": 1
+      },
+      {
+        "type": "image",
+        "width": 336,
+        "height": 111,
+        "count": 2
+      },
+      {
+        "type": "image",
+        "width": 325,
+        "height": 111,
+        "count": 1
+      },
+      {
+        "type": "image",
+        "width": 324,
+        "height": 112,
+        "count": 1
+      },
+      {
+        "type": "image",
+        "width": 384,
+        "height": 127,
+        "count": 1
+      },
+      {
+        "type": "image",
+        "width": 288,
+        "height": 104,
+        "count": 1
+      },
+      {
+        "type": "image",
+        "width": 297,
+        "height": 104,
+        "count": 1
+      },
+      {
+        "type": "image",
+        "width": 464,
+        "height": 168,
+        "count": 1
+      },
+      {
+        "type": "image",
+        "width": 288,
+        "height": 256,
+        "count": 1
+      },
+      {
+        "type": "image",
+        "width": 311,
+        "height": 252,
+        "count": 1
+      },
+      {
+        "type": "image",
+        "width": 522,
+        "height": 284,
+        "count": 1
+      },
+      {
+        "type": "image",
+        "width": 327,
+        "height": 131,
+        "count": 1
+      }
+    ]
+  },
+  "generic_fallback_only": {
+    "result": "still 101: changing generic fallback does not replace an unavailable explicit document family",
+    "base_head": [
+      {
+        "producer": "base",
+        "command": [
+          "bash",
+          "/home/edward/mygithub/rhwp/output/pr-review/pr8187/issue6612-font-diagnostic/minfont-emoji.sh",
+          "/home/edward/mygithub/rhwp/output/pr-review/pr8187/base-native/rhwp",
+          "export-pdf",
+          "samples/hwp3-sample14-hwp5.hwp",
+          "--backend",
+          "svg",
+          "--profile",
+          "print",
+          "--fallback-serif",
+          "Noto Sans KR",
+          "--fallback-sans",
+          "Noto Sans KR",
+          "--fallback-mono",
+          "Noto Sans KR",
+          "--font-path",
+          "ttfs/opensource/NotoSansKR-Regular.ttf",
+          "-o",
+          "/home/edward/mygithub/rhwp/output/pr-review/pr8187/issue6612-font-diagnostic/base-explicit.pdf"
+        ],
+        "image_dictionary_markers": 101,
+        "pdf_sha256": "4e892567de2981d6911343efae5500053ae1093cae761885386aaa3ed76c789b"
+      },
+      {
+        "producer": "head",
+        "command": [
+          "bash",
+          "/home/edward/mygithub/rhwp/output/pr-review/pr8187/issue6612-font-diagnostic/minfont-emoji.sh",
+          "/home/edward/mygithub/rhwp/target/pr-review/release-test/rhwp",
+          "export-pdf",
+          "samples/hwp3-sample14-hwp5.hwp",
+          "--backend",
+          "svg",
+          "--profile",
+          "print",
+          "--fallback-serif",
+          "Noto Sans KR",
+          "--fallback-sans",
+          "Noto Sans KR",
+          "--fallback-mono",
+          "Noto Sans KR",
+          "--font-path",
+          "ttfs/opensource/NotoSansKR-Regular.ttf",
+          "-o",
+          "/home/edward/mygithub/rhwp/output/pr-review/pr8187/issue6612-font-diagnostic/head-explicit.pdf"
+        ],
+        "image_dictionary_markers": 101,
+        "pdf_sha256": "4e892567de2981d6911343efae5500053ae1093cae761885386aaa3ed76c789b"
+      }
+    ]
+  },
+  "fix": {
+    "test": "tests/cases/issue_6612_pdf_keeps_sub_svg_images.rs",
+    "test_source_sha256": "338551f0163707b5ee7c0624fd3be5be7e74373b8172c19207ffa6eadbc9de32",
+    "font": "Noto Sans KR; existing ttfs/opensource",
+    "font_sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+    "method": "clone parsed document, assign its font faces to the licensed bundled family, rebuild derived state via set_document, pass explicit PDF font paths/fallbacks",
+    "assertions": "unchanged: synthetic one image, real WMF 21 images; exact equality retained"
+  },
+  "after": {
+    "adversarial": {
+      "sha256": "4b3057b6c73fca881fc1fd8a71414ab5d77c57e8bff77822a9a9ac5ed197bb10",
+      "result_lines": [
+        "        PASS [   2.009s] (1/2) rhwp::regression_suite_023 issue_6612_pdf_keeps_sub_svg_images::issue_6612_sample14_wmf_pictures_reach_pdf",
+        "        PASS [   0.007s] (2/2) rhwp::regression_suite_023 issue_6612_pdf_keeps_sub_svg_images::issue_6612_sub_svg_bitmap_reaches_pdf",
+        "     Summary [   2.017s] 2 tests run: 2 passed, 289 skipped"
+      ]
+    },
+    "minimal": {
+      "sha256": "81becb6d35c26320ecabe426f889be5e803194e9b2b973ce70c63d5fa8f6fea6",
+      "result_lines": [
+        "        PASS [   1.901s] (1/2) rhwp::regression_suite_010 issue_6612_pdf_keeps_sub_svg_images::issue_6612_sample14_wmf_pictures_reach_pdf",
+        "        PASS [   0.007s] (2/2) rhwp::regression_suite_010 issue_6612_pdf_keeps_sub_svg_images::issue_6612_sub_svg_bitmap_reaches_pdf",
+        "     Summary [   1.909s] 2 tests run: 2 passed, 274 skipped"
+      ]
+    },
+    "adversarial_repeat": {
+      "sha256": "d37cdb8f3c6974a5e81be87cc45323fa7ae266c65ea7aa5a1dbe5b756c9755b0",
+      "result_lines": [
+        "        PASS [   1.927s] (1/2) rhwp::regression_suite_010 issue_6612_pdf_keeps_sub_svg_images::issue_6612_sample14_wmf_pictures_reach_pdf",
+        "        PASS [   0.006s] (2/2) rhwp::regression_suite_010 issue_6612_pdf_keeps_sub_svg_images::issue_6612_sub_svg_bitmap_reaches_pdf",
+        "     Summary [   1.934s] 2 tests run: 2 passed, 274 skipped"
+      ]
+    },
+    "determinism": "both tests pass on repeated runs and both isolated font inventories; no snapshot/baseline changed"
+  },
+  "validation": [
+    {
+      "name": "format",
+      "command": [
+        "bash",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8187/minfont.sh",
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 22.91,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tail": []
+    },
+    {
+      "name": "clippy-native",
+      "command": [
+        "bash",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8187/minfont.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 0.32,
+      "log_sha256": "d7dae192715495fa89ccbe279af3efb9792c1dae1768228e369035e68a1df673",
+      "tail": [
+        "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s"
+      ]
+    },
+    {
+      "name": "clippy-wasm",
+      "command": [
+        "bash",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8187/minfont.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 0.29,
+      "log_sha256": "4f27ac380b22e1d975eee20ce727fa8cbc09061177f6253af0777fd4de7b7506",
+      "tail": [
+        "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.17s"
+      ]
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "bash",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8187/minfont.sh",
+        "cargo",
+        "build",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--workspace"
+      ],
+      "exit": 0,
+      "seconds": 0.29,
+      "log_sha256": "d7dae192715495fa89ccbe279af3efb9792c1dae1768228e369035e68a1df673",
+      "tail": [
+        "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s"
+      ]
+    },
+    {
+      "name": "clippy-workspace",
+      "command": [
+        "bash",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8187/minfont.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 12.28,
+      "log_sha256": "5cbe7f7f22df1969ae629ae612f9605ad40cf9d809a78aa38e54eb71a0f59250",
+      "tail": [
+        "    Checking rhwp v0.9.0 (/home/edward/mygithub/rhwp)",
+        "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 11.89s"
+      ]
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "bash",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8187/minfont.sh",
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "4e2cc6bb36576b95d58d4c76cd833281ea652554"
+      ],
+      "exit": 0,
+      "seconds": 0.8,
+      "log_sha256": "c0960c7e20d7c91a45d7eb755b04de7575a41e9e7df95a17523ab0ae6c2e76cd",
+      "tail": [
+        "[RustTestSuite] 확인 완료: 1987 sources / 8517 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6288 cases / weight 1776512..1781495"
+      ]
+    },
+    {
+      "name": "minimal-focused",
+      "command": [
+        "bash",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8187/minfont.sh",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_6612_pdf_keeps_sub_svg_images",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test-threads",
+        "1"
+      ],
+      "exit": 0,
+      "seconds": 17.55,
+      "log_sha256": "81becb6d35c26320ecabe426f889be5e803194e9b2b973ce70c63d5fa8f6fea6",
+      "tail": [
+        "warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped",
+        "   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp)",
+        "    Finished `release-test` profile [optimized] target(s) in 14.66s",
+        "────────────",
+        " Nextest run ID 870585b0-c8af-469c-822f-22517e5b3c87 with nextest profile: default",
+        "    Starting 2 tests across 1 binary (274 tests skipped)",
+        "        PASS [   1.901s] (1/2) rhwp::regression_suite_010 issue_6612_pdf_keeps_sub_svg_images::issue_6612_sample14_wmf_pictures_reach_pdf",
+        "        PASS [   0.007s] (2/2) rhwp::regression_suite_010 issue_6612_pdf_keeps_sub_svg_images::issue_6612_sub_svg_bitmap_reaches_pdf",
+        "────────────",
+        "     Summary [   1.909s] 2 tests run: 2 passed, 274 skipped",
+        "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+        "info: update nextest with cargo nextest self update, or bypass check with --override-version-check"
+      ]
+    },
+    {
+      "name": "emoji-focused-repeat",
+      "command": [
+        "bash",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8187/issue6612-font-diagnostic/minfont-emoji.sh",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_6612_pdf_keeps_sub_svg_images",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test-threads",
+        "1"
+      ],
+      "exit": 0,
+      "seconds": 2.92,
+      "log_sha256": "d37cdb8f3c6974a5e81be87cc45323fa7ae266c65ea7aa5a1dbe5b756c9755b0",
+      "tail": [
+        "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+        "warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped",
+        "    Finished `release-test` profile [optimized] target(s) in 0.18s",
+        "────────────",
+        " Nextest run ID cad2e785-b685-45f2-9410-eaf5152e1004 with nextest profile: default",
+        "    Starting 2 tests across 1 binary (274 tests skipped)",
+        "        PASS [   1.927s] (1/2) rhwp::regression_suite_010 issue_6612_pdf_keeps_sub_svg_images::issue_6612_sample14_wmf_pictures_reach_pdf",
+        "        PASS [   0.006s] (2/2) rhwp::regression_suite_010 issue_6612_pdf_keeps_sub_svg_images::issue_6612_sub_svg_bitmap_reaches_pdf",
+        "────────────",
+        "     Summary [   1.934s] 2 tests run: 2 passed, 274 skipped",
+        "warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137",
+        "info: update nextest with cargo nextest self update, or bypass check with --override-version-check"
+      ]
+    }
+  ],
+  "visual_gate": {
+    "applicable": false,
+    "reason": "only test input font environment for image-dictionary accounting; no rendering or coordinate expectation added/changed; production source unchanged and existing 14-document Native/fresh WASM evidence retained"
+  }
+}

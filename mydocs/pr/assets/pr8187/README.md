@@ -15,6 +15,7 @@
 - `local-validation.json`, `frontend-validation.json`: 필수 명령·모듈별 결과·환경·로그 지문.
 - `evidence-check.json`: 28개 원본 TSV의 해시·전쪽 누락/미달·439쪽/base 비교 무결성.
 - `native-postgate-smoke.json`: 마지막 Native CLI에서 주요 5쪽 PNG의 바이트 보존.
+- `issue6612-font-diagnostic.json`: CI의 Color Emoji 이미지 자원 과집계 원인·base/head 동일성·기대값을 유지한 테스트 보정과 재검증.
 - `minimal-font-used.sh`: 실제 로컬 회귀에 사용한 파일 시스템 격리 recipe.
 - `browser-api.mjs`, `browser-api-results.json`: fresh optimized WASM을 실제 Chromium에서 호출한 36개 API·왕복·Canvas 검사.
 - `check-boundary-output.py`: 전쪽 비교의 RenderTree에서 경계 관계를 재확인하는 진단 도구. 정식 Rust 회귀를 대체하지 않는다.
