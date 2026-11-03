@@ -163,3 +163,12 @@ PNG 표식 계약 검사 4건은 최소 글꼴 환경에서 통과했다.
 모두 통과했다. 같은 환경의 전체 Rust 회귀와 정확한 새 head의 fresh WASM·시각
 검증은 진행 중이다. 앞 절의 64쪽 TSV는 리베이스 전 이 후보 코드에서 산출했으므로
 새 head의 최종 증적으로 표시하지 않는다.
+
+처음 작성한 소스 내부 `cfg(test)` 검사는 새 base의 테스트 계층 정책에서
+신규 모듈·총량 증가로 거부됐다. 해당 모듈을 제거하고 기존
+`tests/cases/verified_png_sampling_contracts.rs`에 실제 `policy-resave.hwpx` 28쪽의
+Print paint 결과를 검사하는 관계형 회귀를 넣었다. 최종 표면의 단일 발행,
+중간 표면 미노출, 출력 프레임과 PNG 크기의 일치를 확인한다. 최소 글꼴 환경의
+[집중 검사](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-integration-minfont-final.log)는
+5건 모두 통과했고, [테스트 계층 검사](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-rebased-unit-tier-check-v2.log)는
+소스 내부 검사 4,099건·신규 모듈 0건으로 통과했다.
