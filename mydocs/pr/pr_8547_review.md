@@ -2,7 +2,8 @@
 
 ## 최종 판정
 
-**머지 보류 — 통합 head의 Native/fresh WASM 전쪽 측정과 전체 회귀 검증이 진행 중입니다.**
+**머지 보류 — 통합 head의 Native 전쪽 측정은 통과했고, fresh WASM 전쪽 측정과
+전체 회귀 검증이 진행 중입니다.**
 원 PR의 검증 결과와 통합 브랜치의 최종 검증 결과를 구분합니다.
 
 ## 접수 및 적용
@@ -37,9 +38,21 @@ PDF SHA-256은 `30429a79cd935c983ca5ad66642e3b189c91d0c5485c31ab2d153026f17e88b7
 [overlay](assets/issue_8532/review/fx_native_overlay_p4.png)로 직접 확인했습니다.
 3쪽 끝 행과 4쪽 첫 행의 소속, 표 선과 글 내용이 Print와 대응합니다.
 
+`dc87f4fa2e`의 Native Skia 실행 파일 SHA-256
+`24c7e929b04c14adc46fbcc80b384e74fffd5524bdd2484068ebe6e974952337`에서
+같은 입력·Print와 96 DPI로 다시 측정했습니다.
+[통합 head 전쪽 TSV](assets/planet6897_20261103/pr_8547/gangseo-native.tsv)의
+raw 값은 1~6쪽 순서로 99.85%, 99.99%, **97.95%**, 100.00%, 100.00%, 100.00%입니다.
+쪽수 6/6, 90% 미만 0쪽입니다. 새 head의 주장 쪽도
+[3쪽 review](assets/planet6897_20261103/pr_8547/gangseo-native-review-p003.png)·
+[overlay](assets/planet6897_20261103/pr_8547/gangseo-native-overlay-p003.png),
+[4쪽 review](assets/planet6897_20261103/pr_8547/gangseo-native-review-p004.png)·
+[overlay](assets/planet6897_20261103/pr_8547/gangseo-native-overlay-p004.png)에서
+앞 조각·이어받는 조각과 뒤 행의 소속을 직접 대조했습니다.
+
 ## 남은 검증
 
-- 최신 통합 head에서 같은 HWP·Print PDF의 전쪽 Native/fresh WASM TSV와
+- 최신 통합 head에서 같은 HWP·Print PDF의 전쪽 fresh WASM TSV와
   3·4쪽 review/overlay를 재산출하고, 90% 미만 쪽·누락·쪽수 차이를 검사합니다.
 - 최소 글꼴 환경에서 `issue_8532_rowspan_hard_break`와 관련 대조군, 전체 회귀를 실행합니다.
 - 기준 devel과 같은 입력·Print·글꼴 조건에서 페이지별 하락을 대조하고,

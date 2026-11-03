@@ -2,9 +2,9 @@
 
 ## 최종 판정
 
-**머지 보류 — 한컴 2024 Print 대조 2쪽이 53.45%로 미달합니다.** 원 PR의
-2020 경로 개선은 확인했으며, 통합 head에서 2024 조판 경로를 메인터너 보정한 뒤
-Native/fresh WASM 전쪽과 기존 #5524 대조군을 다시 검사합니다.
+**머지 보류 — 메인터너 보정으로 2024 Print 대조 2쪽이 53.45%에서 93.44%로
+개선됐으나, 최종 head의 fresh WASM·회귀·기준 devel 대조가 진행 중입니다.**
+2020 경로의 93.14%는 유지됐습니다. 완료 판정은 남은 검증을 마친 뒤 갱신합니다.
 
 ## 접수 정보
 
@@ -27,25 +27,27 @@ Native/fresh WASM 전쪽과 기존 #5524 대조군을 다시 검사합니다.
 2020 PDF는 `44c7430ef2acc229fc287d23473f41a64b0a6f1db86c490c3a10ce415d326671`,
 2024 PDF는 `c18f02ec19ff26b9c30e6e13180ebc0e7c96eb88596ffc40ddbabe8e3254183c`입니다.
 
-## 현재 통합 코드의 전쪽 검증
+## 통합 코드의 전쪽 Native 검증
 
-`e8bc925845`의 Native Skia 실행 파일 SHA-256
-`be6d76635717b47b109fec1ccfe6c66ab7a261752334cf4c1ea7dd741f34088d`에서
-96 DPI, 2px raw 실루엣으로 측정했습니다. fresh WASM과 기준 devel 대조는 보정 뒤
-새 head에서 확인합니다.
+보정 전 `e8bc925845`의 Native Skia 실행 파일 SHA-256은
+`be6d76635717b47b109fec1ccfe6c66ab7a261752334cf4c1ea7dd741f34088d`입니다.
+보정과 #8547 체리픽을 포함한 `dc87f4fa2e`의 실행 파일 SHA-256은
+`24c7e929b04c14adc46fbcc80b384e74fffd5524bdd2484068ebe6e974952337`입니다.
+두 출력을 같은 입력·Print PDF, 96 DPI, 색상 경계 보정 전 2px raw 실루엣으로 측정했습니다.
 
 | 출력 | 1쪽 | 2쪽 | 주장 쪽의 직접 판독 |
 | --- | ---: | ---: | --- |
-| 한컴 2020 Print, `--compat 2022` | 100.00% | 93.14% | 표 A·B와 뒤 글줄 순서가 보존되고 겹치지 않습니다. 표 B가 약 2px 위인 차이는 #8544와 연결됩니다. |
-| 한컴 2024 Print, `--compat 2024` | 100.00% | **53.45%** | 표 A 아래쪽과 표 B 위쪽이 겹치며 Print와 다릅니다. |
+| 보정 전 한컴 2020 Print, `--compat 2022` | 100.00% | 93.14% | 표 A·B와 뒤 글줄 순서가 보존됩니다. |
+| 보정 전 한컴 2024 Print, `--compat 2024` | 100.00% | **53.45%** | 표 A 아래쪽과 표 B 위쪽이 겹쳤습니다. |
+| 현재 한컴 2020 Print, `--compat 2022` | 100.00% | **93.14%** | 표 A·B와 뒤 글줄 순서가 보존되고 겹치지 않습니다. |
+| 현재 한컴 2024 Print, `--compat 2024` | 100.00% | **93.44%** | 표 A·B가 겹치지 않고 Print의 내용·순서와 대응합니다. 표 선과 글자에 작은 위치 차이가 남습니다. |
 
-[2020 전쪽 TSV](../../output/pr-review/planet6897-20261103/visual/e8bc925845/native/pr8546-leading_shape_line-2020-ae054dc3/silhouette.tsv)와
-[2024 전쪽 TSV](../../output/pr-review/planet6897-20261103/visual/e8bc925845/native/pr8546-2024-diagnostic/silhouette.tsv)는
-현재 로컬 진단 경로입니다. PR 제출 전에 정식 자산 경로로 옮기고 최종 head의 TSV로 교체합니다.
-[2020 2쪽 review](../../output/pr-review/planet6897-20261103/claim-pages/native/pr8546-final-2020/review/review_002.png)·
-[overlay](../../output/pr-review/planet6897-20261103/claim-pages/native/pr8546-final-2020/overlay/overlay_002.png),
-[2024 2쪽 review](../../output/pr-review/planet6897-20261103/claim-pages/native/pr8546-final-2024/review/review_002.png)·
-[overlay](../../output/pr-review/planet6897-20261103/claim-pages/native/pr8546-final-2024/overlay/overlay_002.png)을
+[2020 전쪽 TSV](assets/planet6897_20261103/pr_8546/leading-shape-2020-native.tsv)와
+[2024 전쪽 TSV](assets/planet6897_20261103/pr_8546/leading-shape-2024-native.tsv),
+[2020 2쪽 review](assets/planet6897_20261103/pr_8546/leading-shape-2020-native-review-p002.png)·
+[overlay](assets/planet6897_20261103/pr_8546/leading-shape-2020-native-overlay-p002.png),
+[2024 2쪽 review](assets/planet6897_20261103/pr_8546/leading-shape-2024-native-review-p002.png)·
+[overlay](assets/planet6897_20261103/pr_8546/leading-shape-2024-native-overlay-p002.png)을
 같은 배율로 판독했습니다.
 
 ## 원인과 메인터너 보정 범위
@@ -55,9 +57,8 @@ Native/fresh WASM 전쪽과 기존 #5524 대조군을 다시 검사합니다.
 진단 실행에서 문단 1의 표 앞줄 `anchor_reclaim=49.4px`, `tac_seg_idx=1`이
 관측됐고, 이는 겹침 높이와 대응합니다. 흐름의 해당 분기는
 `src/renderer/typeset.rs`의 `hangul2024_layout()` 단일 TAC 표 처리입니다.
-도형·그림이 실제로 소유한 저장 줄은 회수하지 않도록 공통 조건을 바로잡고,
-빈 앵커를 회수하는 기존 #5524 경로는 대조군으로 유지합니다.
+`ad0d4b1277`에서 도형·그림이 실제로 소유한 저장 줄은 회수하지 않도록
+공통 조건을 바로잡았습니다. 빈 앵커를 회수하는 기존 #5524 경로는 대조군으로 유지합니다.
 
-새 head에서 2020·2024 Print 전쪽 Native/fresh WASM, 관계형 표 순서 회귀,
-최소 글꼴 집중·전체 Rust와 기준 devel 대비 페이지별 raw를 재검증한 뒤
-판정 문구를 갱신합니다.
+새 head에서 2020·2024 Print 전쪽 fresh WASM, 관계형 표 순서 회귀,
+최소 글꼴 집중·전체 Rust와 기준 devel 대비 페이지별 raw를 재검증한 뒤 판정을 갱신합니다.
