@@ -440,12 +440,6 @@ impl TypesetEngine {
             let whole_row_content_fits = whole_row_fits
                 || layout_engine.row_complete_cut_content_height(table, r, styles)
                     <= avail_for_rows - consumed - cs_before + 0.5;
-            if std::env::var("RHWP_DIAG_SCAN").is_ok() {
-                eprintln!(
-                    "DIAG_SCAN WHOLE_ROW r={} row_total={:.3} rest_after={:.3} whole_fits={} content_fits={}",
-                    r, row_total, rest_after_whole_row, whole_row_fits, whole_row_content_fits
-                );
-            }
             let stored_restart_page_cut = (whole_row_content_fits
                 && r > cursor_row
                 && row_start_cut.is_empty()
