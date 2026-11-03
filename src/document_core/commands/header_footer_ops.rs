@@ -829,6 +829,7 @@ impl DocumentCore {
         }
 
         let mut mods = parse_char_shape_mods(props_json);
+        self.resolve_font_name_mods(&mut mods)?;
         if json_has_border_keys(props_json) {
             mods.border_fill_id = Some(self.create_border_fill_from_json(props_json));
         }

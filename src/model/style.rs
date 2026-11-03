@@ -949,6 +949,9 @@ pub struct CharShapeMods {
     pub engrave: Option<bool>,
     /// 언어별 개별 글꼴 ID (7개: 한글/영문/한자/일어/기타/기호/사용자)
     pub font_ids: Option<[u16; 7]>,
+    /// 글꼴 이름 (`fontName`). 모양에 직접 적용하지 않고, `DocumentCore::resolve_font_name_mods` 가
+    /// 적용 전에 문서 글꼴 목록에서 찾거나 등록해 `font_ids` 로 바꾼다.
+    pub font_name: Option<String>,
     /// 글자 테두리/배경 ID (1-based, 0=없음)
     pub border_fill_id: Option<u16>,
     /// 강조점 종류 (0~6)

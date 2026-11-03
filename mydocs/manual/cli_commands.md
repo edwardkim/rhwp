@@ -1478,6 +1478,9 @@ MCP `hwp_insert_table`은 `atField`, `widths`, `alignments`, `repeatHeader`로 �
 
 ### `edit apply-char-format <파일> --props <JSON> [--section N] [--para N] [--offset N] [--count N] [-o <출력>] [--dry-run] [--verify] [--json]`
 본문 문단 글자 범위에 글자 서식을 적용한다. 코어 `apply_char_format_native`. `--props` 필수(예: `{"bold":true}`). `--count` 생략 시 문단 끝까지.
+글꼴은 ID(`fontId`·`fontIds`) 대신 이름 `fontName`(예: `{"fontName":"HY헤드라인M"}`)으로도 줄 수 있다. 문서 글꼴 목록에
+없으면 언어 슬롯마다 새로 등록하고 일곱 슬롯 모두 그 이름을 가리킨다. `fontId`·`fontIds` 와 함께 주면 거부한다.
+`apply-char-format-in-cell`·머리말/꼬리말 글자 서식도 같은 키를 받는다.
 
 ### `edit apply-para-format <파일> --props <JSON> [--section N] [--para N] [-o <출력>] [--dry-run] [--verify] [--json]`
 본문 문단에 문단 서식을 적용한다. 코어 `apply_para_format_native`. `--props` 필수(예: `{"alignment":"center"}`).
