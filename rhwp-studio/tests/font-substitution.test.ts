@@ -1,3 +1,5 @@
+// 관계형: 승인된 로컬 face·공개 공급·문서 대체의 선택 순서와 중복 제거를 검사한다.
+// 주석 갱신: 2026-11-04 01:26:43 KST. 실물 페이지의 px 위치나 시각 일치율을 고정하지 않는다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -77,7 +79,10 @@ test('KoPub바탕체 weight face는 고정폭이 아니라 비례폭 serif로 �
   }
 });
 
-test('정부상징 legacy face는 exact, ROKG successor, 문서 대체 face 순서를 따른다', () => {
+test('정부상징은 확인된 원본, 확인된 successor, 문서 대체 face 순서를 따른다', () => {
+  // 관계형 공급 계약: 실물 페이지의 px 고정 검사가 아니다.
+  // #4800의 원본 우선은 유지한다. 무관한 Government_16040911 웹 공급을
+  // 제거했으므로, 설치되지 않은 원본 이름을 등록 웹폰트처럼 선두에 두지 않는다.
   const legacy = '정부상징 부처명_16040911';
   const documentFallbackFamilies = ['한컴바탕'];
 
@@ -91,13 +96,15 @@ test('정부상징 legacy face는 exact, ROKG successor, 문서 대체 face 순�
     confirmedLocalFonts: ['대한민국정부상징체 R'],
     documentFallbackFamilies,
   });
-  assert.match(successor, /^"정부상징 부처명_16040911", "대한민국정부상징체 R", "한컴바탕"/u);
+  assert.match(successor, /^"대한민국정부상징체 R", "한컴바탕"/u);
+  assert.doesNotMatch(successor, /"정부상징 부처명_16040911"/u);
 
   const documentSubstitute = fontFamilyChainForDisplay(legacy, 1, 0, {
     confirmedLocalFonts: [],
     documentFallbackFamilies,
   });
-  assert.match(documentSubstitute, /^"정부상징 부처명_16040911", "한컴바탕"/u);
+  assert.match(documentSubstitute, /^"한컴바탕"/u);
+  assert.doesNotMatch(documentSubstitute, /"정부상징 부처명_16040911"|Government_16040911/u);
 });
 
 test('ROKG successor는 정부상징 legacy 이름에만 적용한다', () => {
