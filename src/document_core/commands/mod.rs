@@ -19,6 +19,7 @@ mod formatting;
 mod formatting_runs;
 mod header_footer_ops;
 mod html_import;
+mod numbering_char_shape;
 mod object_ops;
 pub(crate) mod paragraph_block;
 mod paragraph_format_path;
