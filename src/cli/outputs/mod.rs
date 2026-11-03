@@ -82,6 +82,14 @@ pub(crate) fn apply_font_environment(
                     for (source, target) in &supply.mappings {
                         mappings.insert(source.clone(), target.clone().into());
                     }
+                    if let Some(programs) = object
+                        .get_mut("selectedPrograms")
+                        .and_then(|v| v.as_object_mut())
+                    {
+                        for source in supply.mappings.keys() {
+                            programs.remove(source);
+                        }
+                    }
                     if let Some(entries) = object
                         .get_mut("documentSubstitutions")
                         .and_then(|v| v.as_array_mut())

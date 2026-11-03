@@ -1,5 +1,5 @@
 //! 관계형: 공개 웹폰트 변환과 Native 로컬 우선 공급 계약을 검사한다.
-//! 주석 갱신: 2026-11-04 04:10:19 KST; 표시 치환 전 원본 폭 표·언어 슬롯 보존 대조 보완.
+//! 주석 갱신: 2026-11-04 05:18:38 KST; 원본 전진과 실제 HFT 프로그램 선택의 출처를 구분.
 //! 합성 글꼴 입력 검사이며 실물 페이지의 일치율이나 고정 px를 주장하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -304,4 +304,58 @@ fn display_replacement_preserves_existing_tables_and_latin_slot_metrics() {
             "표시 family가 원본 폭 표·영문 슬롯 전진을 바꿈: {source}"
         );
     }
+}
+
+#[test]
+fn declared_hft_substitute_keeps_its_own_punctuation_contract() {
+    use rhwp::model::style::SubstFont;
+    use rhwp::renderer::font_environment::FontEnvironment;
+    let make = |name: &str, substitute: bool| {
+        let mut core = document_with_face(name);
+        let mut doc = core.document().clone();
+        doc.provenance.format = rhwp::model::provenance::SourceFormat::Hwpx;
+        for face in doc.doc_info.font_faces.iter_mut().flatten() {
+            face.alt_type = 2;
+            face.subst_font = substitute.then(|| SubstFont {
+                face: "명조".into(),
+                font_type: 2,
+                is_embedded: false,
+                bin_item_id_ref: String::new(),
+                resolved_bin_data_id: None,
+            });
+        }
+        core.set_document(doc);
+        core.insert_text_native(0, 0, 0, "가A1․·").unwrap();
+        let environment = FontEnvironment::from_available_programs(&core.document().doc_info,
+            r#"[{"query":"명조","family":"Myeongjo","programId":"synthetic-myeongjo-8533","openTypeCff":true}]"#
+        ).unwrap();
+        let proof = serde_json::to_value(environment.as_ref().unwrap()).unwrap();
+        assert_eq!(
+            proof["selectedPrograms"][name]["query"], "명조",
+            "실제 조회 이름이 생산자에서 전달됨"
+        );
+        core.set_font_environment(environment).unwrap();
+        let trace: serde_json::Value = serde_json::from_str(
+            &core
+                .get_font_decision_trace_native(0, r#"{"maxCharacters":16}"#)
+                .unwrap(),
+        )
+        .unwrap();
+        trace["records"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|r| {
+                (
+                    r["source"]["character"].clone(),
+                    r["layoutMetric"]["finalAdvanceHwpunit"].clone(),
+                )
+            })
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(
+        make("#신명조", true),
+        make("명조", false),
+        "문서가 선언한 실제 HFT 대체는 임의 표시 치환과 구별해 같은 글리프 전진을 사용"
+    );
 }

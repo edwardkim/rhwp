@@ -17,6 +17,9 @@ use crate::error::HwpError;
 pub struct FontEnvironment {
     id: String,
     substitutions: BTreeMap<String, String>,
+    /// 실제 공급자가 조회한 이름·최종 프로그램 신원. 임의 표시 치환과 구별한다.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    selected_programs: BTreeMap<String, AvailableFontProgram>,
     /// 실제 공급 snapshot에서 조건을 충족한 canonical 선택의 출처다.
     /// 글꼴 설치·바이트 공급의 증명과 구분하며 명시적 환경에는 생략할 수 있다.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
@@ -60,6 +63,8 @@ struct DocumentFontSubstitution {
     target: String,
     program_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    query: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     selection_rule: Option<String>,
 }
 
@@ -77,7 +82,7 @@ pub struct DocumentFontSelectionRequest {
 }
 
 /// 출력 호스트가 실제로 로드한 프로그램. 형식 미확인 시 HFT 메트릭을 유지한다.
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct AvailableFontProgram {
     pub query: String,
@@ -159,6 +164,7 @@ impl FontEnvironment {
         let mut result = base.cloned().unwrap_or(Self {
             id: "observed-host-fonts".to_owned(),
             substitutions: BTreeMap::new(),
+            selected_programs: BTreeMap::new(),
             selection_rules: BTreeMap::new(),
             true_type_faces: Vec::new(),
             preserve_source_metrics: false,
@@ -355,6 +361,7 @@ impl FontEnvironment {
                         Some((left, right))
                             if left.0.family == right.0.family
                                 && left.0.program_id == right.0.program_id
+                                && left.0.query == right.0.query
                                 && left.0.true_type == right.0.true_type
                                 && left.0.open_type_cff == right.0.open_type_cff =>
                         {
@@ -396,6 +403,7 @@ impl FontEnvironment {
             }
         }
         let mut substitutions = BTreeMap::new();
+        let mut selected_programs = BTreeMap::new();
         let mut selection_rules = BTreeMap::new();
         let mut true_type_faces = std::collections::BTreeSet::new();
         let mut digest = Sha256::new();
@@ -407,7 +415,12 @@ impl FontEnvironment {
             if !Self::valid_name(&selected.family) {
                 continue;
             }
-            for value in [&source, &selected.family, &selected.program_id] {
+            for value in [
+                &source,
+                &selected.family,
+                &selected.program_id,
+                &selected.query,
+            ] {
                 digest.update(value.as_bytes());
                 digest.update([0]);
             }
@@ -421,7 +434,8 @@ impl FontEnvironment {
                 digest.update([0]);
                 selection_rules.insert(source.clone(), rule_id.to_owned());
             }
-            substitutions.insert(source, selected.family);
+            substitutions.insert(source.clone(), selected.family.clone());
+            selected_programs.insert(source, selected);
         }
         let mut document_substitutions = Vec::new();
         for (language_slot, font_id, source, candidate) in slot_candidates {
@@ -437,7 +451,12 @@ impl FontEnvironment {
             digest.update(b"document-font-slot\0");
             digest.update((language_slot as u64).to_le_bytes());
             digest.update(font_id.to_le_bytes());
-            for value in [&source, &program.family, &program.program_id] {
+            for value in [
+                &source,
+                &program.family,
+                &program.program_id,
+                &program.query,
+            ] {
                 digest.update(value.as_bytes());
                 digest.update([0]);
             }
@@ -456,6 +475,7 @@ impl FontEnvironment {
                 source,
                 target: program.family,
                 program_id: program.program_id,
+                query: Some(program.query),
                 selection_rule: rule.map(str::to_owned),
             });
         }
@@ -475,6 +495,7 @@ impl FontEnvironment {
                     .collect::<String>()
             ),
             substitutions,
+            selected_programs,
             selection_rules,
             true_type_faces: true_type_faces.into_iter().collect(),
             preserve_source_metrics: true,
@@ -672,12 +693,23 @@ impl FontEnvironment {
                 self.canonical_selection_rule(source) != Some(rule_id.as_str())
             })
             || self.substitutions.len() > 256
+            || self.selected_programs.len() > 256
+            || self.selected_programs.iter().any(|(source, program)| {
+                !Self::valid_name(source)
+                    || !Self::valid_name(&program.query)
+                    || !Self::valid_name(&program.family)
+                    || !Self::valid_name(&program.program_id)
+            })
             || self.document_substitutions.len() > 256
             || self.document_substitutions.iter().any(|selection| {
                 selection.language_slot >= super::style_resolver::LANG_COUNT
                     || !Self::valid_name(&selection.source)
                     || !Self::valid_name(&selection.target)
                     || !Self::valid_name(&selection.program_id)
+                    || selection
+                        .query
+                        .as_deref()
+                        .is_some_and(|query| !Self::valid_name(query))
                     || self.substitutions.contains_key(&selection.source)
                     || selection.selection_rule.as_deref().is_some_and(|rule| {
                         Self::canonical_rule(&selection.source, &selection.target, rule).is_none()
@@ -804,6 +836,21 @@ impl FontEnvironment {
         self.document_substitution(face, language_slot, font_id)
             .map(|selection| selection.target.as_str())
             .or_else(|| self.replacement(face))
+    }
+
+    /// 선택 대상이 그대로일 때 실제 조회한 원본·문서 지정 이름을 반환한다.
+    pub(crate) fn selected_program_query_for(
+        &self,
+        source: &str,
+        language_slot: usize,
+        font_id: u16,
+    ) -> Option<&str> {
+        if let Some(selection) = self.document_substitution(source, language_slot, font_id) {
+            return selection.query.as_deref();
+        }
+        let selected = self.selected_programs.get(source)?;
+        (self.replacement_for(source, language_slot, font_id) == Some(selected.family.as_str()))
+            .then_some(selected.query.as_str())
     }
 
     pub(crate) fn canonical_selection_rule_for(

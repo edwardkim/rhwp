@@ -161,24 +161,43 @@ pub(crate) fn resolve_styles_with_environment(
     }
     if environment.is_some() {
         let lookup = missing_fonts::lookup_context(document);
+        let font_requests = super::font_environment::FontEnvironment::document_requests_with_slots(
+            &document.doc_info,
+        );
         // 원본 전진 보존 시 표시용 치환을 원본 TTF 프로그램으로 승격하지 않는다.
         // 원본의 별칭과 명시적으로 선택한 TrueType 프로그램은 자연 전진을 소유한다.
         let display_only_fonts: std::collections::HashSet<_> = environment
             .filter(|env| env.preserves_source_metrics())
             .map(|env| {
-                super::font_environment::FontEnvironment::document_requests_with_slots(
-                    &document.doc_info,
-                )
-                .into_iter()
-                .filter_map(|(lang, id, request)| {
-                    let target = env.replacement_for(&request.source, lang, id)?;
-                    let original = request
-                        .primary
-                        .iter()
-                        .any(|name| name.trim().eq_ignore_ascii_case(target.trim()));
-                    (!original && !env.selects_true_type(target)).then_some((lang, id))
-                })
-                .collect()
+                font_requests
+                    .iter()
+                    .filter_map(|(lang, id, request)| {
+                        let target = env.replacement_for(&request.source, *lang, *id)?;
+                        let original = request
+                            .primary
+                            .iter()
+                            .any(|name| name.trim().eq_ignore_ascii_case(target.trim()));
+                        (!original && !env.selects_true_type(target)).then_some((*lang, *id))
+                    })
+                    .collect()
+            })
+            .unwrap_or_default();
+        // 문서에 저장된 대체 글꼴은 실제 선택한 HFT 프로그램의 문장부호 계약을
+        // 소유한다. 미지정 글꼴에 임의로 공급한 표시용 웹폰트와 구분한다.
+        let selected_source_programs: std::collections::HashSet<_> = environment
+            .map(|env| {
+                font_requests
+                    .iter()
+                    .filter_map(|(lang, id, request)| {
+                        let query = env.selected_program_query_for(&request.source, *lang, *id)?;
+                        request
+                            .primary
+                            .iter()
+                            .chain(request.substitute.iter())
+                            .any(|name| name == query)
+                            .then_some((*lang, *id))
+                    })
+                    .collect()
             })
             .unwrap_or_default();
         let mut display_only_slots = std::collections::HashSet::new();
@@ -225,7 +244,9 @@ pub(crate) fn resolve_styles_with_environment(
                                 })
                                 .is_some()
                         });
-                    if display_only_fonts.contains(&(lang, shape.font_ids[lang])) {
+                    if display_only_fonts.contains(&(lang, shape.font_ids[lang]))
+                        && !selected_source_programs.contains(&(lang, shape.font_ids[lang]))
+                    {
                         // 표시용 치환은 원본 TTF/HFT의 폭 표와 추정 규칙을 바꾸지 않는다.
                         // family를 먼저 바꾸면 숫자·영문 슬롯까지 대체 face의 반각
                         // 추정으로 떨어지므로, 치환 전 실제 측정 face와 신뢰·프레임을
