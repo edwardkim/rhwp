@@ -1,7 +1,7 @@
 //! 관계형·고정형: hancom_table_grow_saves_table_height의 공개 입력·편집·저장 계약.
-//! 주석 갱신: 2026-11-03T21:22:49+09:00; 직전 파일 변경 커밋: 2026-10-27T01:31:22+09:00 1573cf7f1bcc0cda291c2a461bc43f3562818ed4.
+//! 주석 갱신: 2026-11-04T00:23:31+09:00; 직전 파일 변경 커밋: 2026-11-03T21:45:03+09:00 39b4f81f6aab4cc08c6145ed6911db2a8fe5125e.
 //! 측정: 2026-11-03, 96 DPI·색상 경계 보정 전 2px raw 실루엣. grow3-before/after 및 grow-nested 무편집/편집 각 1쪽 Native/fresh WASM 최저 100.00%. 저장 높이 HU는 독립 한컴 AFTER 원본에서 읽으며 live/재열기 내용과 셀 높이 관계를 검사한다.
-//! 정식 증거: mydocs/pr/assets/semanticist21-20261103/visual-results.json 및 전쪽 TSV·확대 PNG.
+//! 정식 증거: mydocs/pr/assets/semanticist21-20261103/validation.md 및 전쪽 TSV·확대 PNG.
 //! 셀 내용이 넘친 표는 한컴처럼 칸 높이는 두고 표 높이(sz)만 키워 저장한다.
 //! 기준 파일은 한컴에서 만든 3행 표(행 높이 10mm)와, 가운데 행에 긴 글을 넣어 저장한 결과다.
 #![cfg(not(target_arch = "wasm32"))]

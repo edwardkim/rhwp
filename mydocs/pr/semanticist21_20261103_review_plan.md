@@ -9,9 +9,11 @@ last_verified: 2026-11-03
 
 ## 현재 단계
 
-접수·최소 사전 분류·reviewer 지정·source/CI 조회·실제 merge-tree 시뮬레이션을 완료했다.
-다섯 PR의 충돌 보정 방침을 승인받아 10건을 누적 적용했다. 이 계획은 현재 base의 실행·시각 검증 완료를 뜻하지 않는다.
-원 head의 기존 녹색 CI와 앞으로 검증할 누적 후보를 구분하며 원 PR별 판정을 유지한다.
+10건의 메인터너 보정·필수 로컬 검증을 한 단위로 완료했다. 모든 원 head를 보존한 누적 후보를
+검증했으며 열 건 모두 **메인터너 보정 후 수용 가능**이다. 원격 원 head의 이전 CI와 보정된 후보의
+실제 검증을 구분한다. [최종 명세](assets/semanticist21-20261103/validation.md),
+[원 PR별 기록과 원격 처리안](assets/semanticist21-20261103/remote-action-plan.md)을 확인한다.
+push·공개 댓글·Open PR·merge는 아직 수행하지 않았고 별도 승인이 필요하다.
 
 ## 대상과 기준
 
@@ -91,7 +93,7 @@ last_verified: 2026-11-03
 - 로컬 충돌 보정 승인을 받았고 열 원 head를 보존한 merge 후보를 구성했다. 원격 변경은 아직 수행하지 않았다.
 - 이번 계획 승인은 10건의 로컬 보정·필수 검증을 한 단위로 완료하는 범위다. 원격 제출·merge 승인과 구분한다.
 
-[선정·reviewer·원 head CI·충돌 원본 증거](assets/semanticist21-20261103/intake.json).
+[선정·reviewer·원 head CI·충돌 원본 증거](assets/semanticist21-20261103/intake.md).
 
 
 ## 작업지시자 승인과 현재 적용
@@ -142,3 +144,10 @@ GitHub CI에 로컬 미실행 항목을 넘기지 않는다. 원격 push·공개
 추가 변경은 테스트·증적에 한정되고 `src`와 제품 Cargo 설정은 `39b4f81f6a`와 같다. 해당 head의
 release build/lib 및 제품 lint를 구분해 재사용하며, 새 테스트의 workspace lint와 전체 nextest는 새 head에서 다시 실행한다.
 기존의 실패 실행은 attempt1 기록으로 보존한다.
+
+## 최종 완료 확인
+
+전체 nextest 12,465 PASS/45 skip, 관련 78건과 Native Skia 필수 3종·최적화 WASM·실제 browser API를 완료했다.
+31입력·71쪽을 두 backend 각각 전쪽 비교해 최저 92.88%와 독립 PDF 쪽수 일치를 확인했다.
+실제 편집·양쪽 저장·교차 재열기와 중첩 저장 common height도 확인했다. 아래 이전 단계 기록의 진행 중/미검증 표기는 당시 이력이다.
+최종 판단은 위 링크의 완료 명세와 원 PR별 최종 판정을 따른다.

@@ -1,7 +1,7 @@
 //! 관계형·고정형: form_inline_editing의 공개 입력·편집·저장 계약.
-//! 주석 갱신: 2026-11-03T21:22:49+09:00; 직전 파일 변경 커밋: 2026-10-27T03:24:49+09:00 bbf3c0c833703a5fa047aa656ca4f2e25109a662.
+//! 주석 갱신: 2026-11-04T00:23:31+09:00; 직전 파일 변경 커밋: 2026-11-03T21:45:03+09:00 39b4f81f6aab4cc08c6145ed6911db2a8fe5125e.
 //! 측정: 2026-11-03, 96 DPI·색상 경계 보정 전 2px raw 실루엣. form-01 1쪽: Native 99.60%, fresh WASM 99.58%; form-slot HWP/HWPX 각 1쪽 양쪽 100.00%; forms-before/edited 각 1쪽 양쪽 100.00%. 양식 수·논리 주소·메타데이터 계약과 관계를 검사하며 절대 px를 고정하지 않는다.
-//! 정식 증거: mydocs/pr/assets/semanticist21-20261103/visual-results.json 및 전쪽 TSV·확대 PNG.
+//! 정식 증거: mydocs/pr/assets/semanticist21-20261103/validation.md 및 전쪽 TSV·확대 PNG.
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::{Control, FormObject, FormType};
 use rhwp::model::paragraph::{MarkpenMark, Paragraph, RangeTag};

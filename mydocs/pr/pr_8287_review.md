@@ -2,95 +2,85 @@
 kind: report
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-11-03
+last_verified: 2026-11-04
 ---
 
-# PR #8287 검토 — 다각형 회전·대칭 왕복
+# PR #8287 검토 — 다각형 회전·대칭·크기 왕복
 
 ## 최종 판정
 
-**로컬 보정과 집중·시각 검증 진행 — 최종 전체 검증이 끝나기 전까지 머지 보류.**
-원 head를 보존한 누적 후보에 보정과 실제 API·시각 대조를 적용했다. [현재 검증 명세](assets/semanticist21-20261103/validation.md)의 중간 제품 head와 최종 정규 검증을 구분한다. 모든 필수 검증이 끝난 뒤 최종 판정을 갱신한다.
+**메인터너 보정 후 수용 가능 — 검증한 누적 후보에 한정.**
+검증 head `c6ad3eea59d1b7701efdc4fb582e2d9a44b4f775`, 제품 source `39b4f81f6a`, 원 기여 적용 merge `5b2aa67c02`다. 원격 원 head의 충돌이나 이전 API를 그대로 승인한 것이 아니다. 10건의 로컬 보정·필수 검증 승인은 완료했고 push·공개 댓글·새 PR·merge는 별도 승인 범위다.
 
-## 접수 정보
+## 원본과 적용
 
-| 항목 | 고정값 |
+| 항목 | 확인값 |
 | --- | --- |
-| 원 PR / 작성자 | [#8287](https://github.com/edwardkim/rhwp/pull/8287) / semanticist21 |
-| 원 repository·branch | `semanticist21/rhwp:fix/polygon-transform-roundtrip` |
+| 원 PR | [#8287](https://github.com/edwardkim/rhwp/pull/8287) / semanticist21 |
 | 원 head | `92d19ea0e3690446106a126b747e0e5f611a0837` |
-| 현재 기준 devel | `7d06d5c706f1d89f1662e739abf2b1b25d2a98e4` |
-| Reviewer | edwardkim, 2026-11-03T19:19:34.155490+09:00 API 확인 |
-| 원 head CI | commit status success; skipped 5, success 34 |
-| 실제 merge-tree | clean |
-| 로컬 branch | `review/integration-20261103-semanticist21` |
-| 경로 | maintainer_general + intake_and_review, local_validation, multi_pr_update_branch, visual_fixture_evidence, post_merge |
+| 원 branch | `semanticist21/rhwp:fix/polygon-transform-roundtrip` |
+| 고정 devel | `7d06d5c706f1d89f1662e739abf2b1b25d2a98e4` |
+| 원 head CI | success 34, skipped 5; skip·neutral은 실행 성공으로 세지 않음 |
+| 단독 merge-tree | 0파일 충돌 |
+| Reviewer 확인 | edwardkim / 2026-11-03T19:19:34.155490+09:00 |
+| 누적 branch | `review/integration-20261103-semanticist21` |
 
-## 주장·현재 devel 대조와 보정 방침
+원 head는 누적 merge history에 보존했다. [선정·충돌·기여 보존](assets/semanticist21-20261103/intake.md)에서 열 건의 실제 적용 순서와 제외한 다섯 reviewer 대상 head를 확인한다. 원 PR의 과거 devel merge 자체는 기여 기능으로 세지 않았다.
 
-저장 행렬이 없는 다각형도 첫 편집부터 중심 기준 합성 행렬을 쓴다.
+## 최신 devel에서 남은 문제와 기여 효과
 
-현재 공통 변환 helper에는 저장 affine이 없는 경우의 기존 분기가 남아 있다. 실제 왕복 동작 판정은 아직 실행하지 않았다.
+한컴 30도 저장본과 새 90/270도·양방향 대칭·30도+너비 변경이 저장 재열기에서 같은 꼭짓점·열린 변·중심 관계를 유지한다. 반복 no-op과 역회전·대칭, 크기 변경의 snapshot undo를 구분해 검증했다.
 
-자동 적용 후보에서 기존 affine 참조·회전 전 bbox·각도 소비를 추적한다. 회전·대칭·크기 변경·역연산을 같은 행렬에서 검증한다.
+## 메인터너 보정과 실제 소비 경로
 
-이 절의 현재 관측은 코드·이력 대조이며 현재 base/head의 실제 재현 결과는 검증 단계에서 추가한다.
+선행 d55209cc17 → #8319 af6bb05b26의 회전 외곽 common 폭과 회전 전 current 폭 계약을 보존한다. group_geometry의 같은 배치 frame과 원본 잔여 affine을 합성하고 실제 변환 점의 bbox를 발행한다. 회전 외곽 폭을 local 폭으로 다시 적용하는 잘못된 테스트 전제를 수정했다.
 
-## 검증 범위
+get/setShapeProperties → group_geometry placement/frame_matrix → PolygonAffineEditReference의 원본 잔여 변환 → polygon paint와 실제 path bounds → SVG/Canvas/Native 및 hit-test.
 
-polygon_transform_roundtrip; 한컴 rotated HWP/HWPX·90도/대칭/크기 변경·역연산·저장 재열기
+정상 대조·경계: 한컴 HWP/HWPX 30도, 새 90/270도·좌우/상하 대칭·resize, getter property bag 되먹임 no-op, rotation/flip 역속성, resize snapshot undo.
 
-제품 경로:
-- `src/document_core/commands/object_ops/common.rs`
-- `src/renderer/layout/shape_layout.rs`
+## 실제 검증
 
-정식 focused 대상:
-- `tests/cases/polygon_transform_roundtrip.rs`
+| 시각 대조 입력 | 경로 | 전쪽 수 | 최저 raw |
+| --- | --- | ---: | ---: |
+| rotated-hwp | native | 1 | 100.00% |
+| rotated-hwpx | native | 1 | 100.00% |
+| polygon-90 | native | 1 | 100.00% |
+| polygon-270 | native | 1 | 100.00% |
+| polygon-hflip | native | 1 | 100.00% |
+| polygon-vflip | native | 1 | 100.00% |
+| polygon-resize | native | 1 | 100.00% |
+| rotated-hwp | wasm | 1 | 100.00% |
+| rotated-hwpx | wasm | 1 | 100.00% |
+| polygon-90 | wasm | 1 | 100.00% |
+| polygon-270 | wasm | 1 | 100.00% |
+| polygon-hflip | wasm | 1 | 100.00% |
+| polygon-vflip | wasm | 1 | 100.00% |
+| polygon-resize | wasm | 1 | 100.00% |
 
-원본·독립 Print·편집 상태의 대응을 확인하고 현재 base/후보의 Native/fresh WASM 전쪽 TSV와 확대 판독을
-확보한다. 입력이 합성 계약인 범위와 실물 한컴 출력은 구분한다. 현재 단계에 새 측정 수치를 적지 않는다.
+전체 31입력·71쪽 Native/fresh WASM, 실제 notice 53호출·양식·다각형·간격·clip·끝 캐럿·중첩 저장의 browser API, 실제 두 backend 저장본의 교차 재열기를 [최종 명세](assets/semanticist21-20261103/validation.md)에서 구분한다. 전체 nextest 12,465 PASS / 45 skip, 관련 19개 모듈 78 PASS, Native Skia 필수 3종, 세 Clippy·workspace build·release build/lib·최적화 WASM·Studio가 통과했다. 검증한 누적 후보의 새 GitHub CI는 원격 승인 뒤 실행해야 한다.
+
+기준 devel의 같은 공개 계약 검사 36건은 13 PASS/23 FAIL이었다. 이후 추가한 wrap의 고유 경계 1건도 base FAIL/후보 PASS였다. #8281의 기존 두 성공, #8290 뒤 간격, #8308의 기존 분할 가시 배치는 이미 해결된 부분으로 분리했다. 구현 source 문자열이나 이전 CI를 현재 실행 증거로 세지 않았다.
 
 ## 조판 원칙 준수 검토
 
-| 항목 | 접수 판정과 후속 근거 |
+| 항목 | 근거와 판정 |
 | --- | --- |
-| 제출 전 로컬 검증과 PR 상태 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 기존 이슈·해결 PR의 선행 분석 | 미검증 — 위 현재 devel 관측과 #8093/#8187/#8517의 선행 연결을 시작했으며 적용 경계의 실행을 남긴다. |
-| 구현 근거와 일반성 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 측정·배치 일관성 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 리베이스 반영 PR의 기능 보존 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 최종 출력 소비 계약 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 분할·이어받기 계약 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 줄 소속과 점유 높이 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 사례와 증거의 독립성 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 기준값 변경 | 비해당 — 접수 단계에서 코드·기대값·baseline·golden을 변경하지 않았다. 이후 검사 변경은 독립 출력 gate 뒤에 수행한다. |
-| 회귀 추가·변경의 선행 조건 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 90% 통과 후 확대 판독 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 주장과 검증 범위 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
+| 사양·원본·기존 해결 이력 | 위 원인·원본 저장값과 독립 Print/기존 해결 commit을 대조했다. 기존 API·Storage·schema 35·#8517을 되돌리지 않았다. |
+| 공통 생산과 실제 소비 | 위 실제 경로에서 동일 줄/프레임/메타데이터 결과를 소비한다. 문서 ID·수치 조합이나 출력 clamp로 맞추지 않았다. |
+| 저장 정보의 유효성 | 실물 원본과 모델로 만든 작은 대조군을 구분했다. 수동 메타데이터를 정상 저장본으로 가장하지 않았다. |
+| 줄 소속·점유·보존 | 해당 실제 API와 기존 관계 검사의 내용 순서·한 번 표시·앞뒤 본문·거부 후 원자성을 보호했다. |
+| 분할·이어받기 | 줄 컷/예약 알고리즘을 새로 만들지 않았다. 위 변경의 소유·저장·clip 소비와 정상 분할/후속 내용 회귀를 실제 실행했다. |
+| 회귀 선행 조건·기준값 | 관련 Native/fresh WASM 전쪽 90% 이상과 직접 판독 뒤 필요한 관계 검사를 추가/보정했다. 독립 기준과 맞는 기존 기대값을 유지했다. |
+| px 좌표 | 양쪽 98% 이상·직접 판독을 마친 완료 쪽만 독립 좌표 오차를 유지했다. 그 외는 소유·순서·포함·겹침·내용 보존 관계로 검사한다. |
+| 실제 backend·글꼴 | Native Skia와 새 최적화 WASM Canvas를 직접 실행했다. 최소 글꼴 회귀와 독립 Print용 명시 공급은 별도다. 글꼴은 배포하지 않는다. |
+| 전체 페이지와 확대 판독 | 모든 대상 전쪽 90% 이상·쪽수 일치. 작은 글자·문장부호·표 경계·간격과 각 PR의 변경 영역을 직접 대조했다. |
+| 현재 원격 상태 | 원 head는 변경하지 않았다. 통합 후보의 push·Open PR·새 head CI·merge는 아직 미수행이며 승인 뒤 확인한다. |
 
 ## Merge 후 contributor PR comment 계획
 
-현재는 maintainer 시각 검증 미실행이다. 검증 완료 뒤 이 원 PR의 실제 결론·source/merge SHA·CI URL,
-[Visual Sweep 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment)과 실제 측정한 전쪽 최저값·직접 판독을
-연결한다. 수용 시 원 기여와 메인터너 보정 이유를 존댓말로 구분하고 정식 대표 PNG가 devel에 반영된 뒤
-승인된 원격 범위에서 게시·API 재확인한다. 아직 없는 수치나 이미지 URL은 만들지 않는다.
+원 기여의 다각형 회전·대칭·크기 왕복를 수용한 사실과 위 보정 이유를 존댓말로 안내한다. 실제 통합 PR·merge SHA·새 head CI URL과 [Visual Sweep 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment)을 연결한다. 원 PR별 원 head의 포함과 API 상태를 재확인한다.
 
-[누적 검토 계획](semanticist21_20261103_review_plan.md) · [원 head·CI·충돌 증거](assets/semanticist21-20261103/intake.json).
+직접 표시할 최종 패널은 [대표 비교](assets/semanticist21-20261103/zoom/polygon-90.png)다. asset이 실제 devel에 포함된 것을 확인한 뒤 raw URL로 표시한다.
 
-## 현행 프레임 계약과의 동작 충돌 보정
-
-첫 집중 실행에서 한컴 30도 저장본 왕복은 통과했지만 새 90도 다각형이 변형됐다.
-선행 보정 `d55209cc17d2dbd7e58d0d35639abf59098c46d7` → #8319 merge
-`af6bb05b26887135fb9da0fa4e54ca7205564fca`의 현재 계약은 회전 후 common 외곽 크기와
-회전 전 current 크기를 구분한다. 원 PR의 common 크기 비율을 그대로 쓰면 회전만 한
-120×60px 다각형에 0.5×2 배율이 추가된다. 기대 좌표를 바꾸지 않고 이 생산 경로를 보정한다.
-
-`group_geometry`의 동일 배치 프레임에서 현재 affine 행렬을 만들고, 원본 저장 행렬과
-이상적인 원본 프레임 사이의 잔여 변환을 보존해 합성한다. 위치만 바뀌면 원본 행렬을 유지하고,
-역연산은 최초 잔여 변환에서 계산해 누적 오차를 피한다. 보정 후 focused·독립 Print·fresh
-WASM의 실제 검증을 진행 중이며 이 설명만으로 완료 판정하지 않는다.
-
-보정 뒤 새 90도·270도·양방향 대칭·30도+크기 변경 및 한컴 30도 저장본의 두 테스트가
-빠른 진단 profile에서 통과했다. 최종 Path bbox도 변환된 실제 꼭짓점 경계를 발행해
-paint와 hit-test 상자가 다른 회전 프레임을 쓰지 않게 했다. 정규 lint·최적화 빌드·전체
-회귀와 새 편집 상태의 독립 Print 검증은 진행 중이다.
+[원격 처리안과 댓글 초안](assets/semanticist21-20261103/remote-action-plan.md) · [누적 검토 계획](semanticist21_20261103_review_plan.md).

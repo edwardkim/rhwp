@@ -1,7 +1,7 @@
 //! 관계형: split_row_clip_hit의 공개 입력·편집·저장 계약.
-//! 주석 갱신: 2026-11-03T21:22:49+09:00; 직전 파일 변경 커밋: 2026-10-27T17:10:05+09:00 b3cd705556a997bd1126925d804048e30115aad5.
+//! 주석 갱신: 2026-11-04T00:23:31+09:00; 직전 파일 변경 커밋: 2026-11-03T21:45:03+09:00 39b4f81f6aab4cc08c6145ed6911db2a8fe5125e.
 //! 측정: 2026-11-03, 96 DPI·색상 경계 보정 전 2px raw 실루엣. rowbreak-problem-pages.hwpx 전 18쪽: Native/fresh WASM 각각 최저 92.88%; 16쪽 98.37%/98.49%. 독립 Print 확대 판독 완료. 절대 좌표 핀 없이 실제 clip과 셀 경로·마지막 내용 보존을 검사한다.
-//! 정식 증거: mydocs/pr/assets/semanticist21-20261103/visual-results.json 및 전쪽 TSV·확대 PNG.
+//! 정식 증거: mydocs/pr/assets/semanticist21-20261103/validation.md 및 전쪽 TSV·확대 PNG.
 use rhwp::renderer::layout::CellContext;
 use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 use rhwp::wasm_api::HwpDocument;

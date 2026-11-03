@@ -1,7 +1,7 @@
 //! 관계형: paragraph_spacing_moves_stored_lines의 공개 입력·편집·저장 계약.
-//! 주석 갱신: 2026-11-03T21:22:49+09:00; 직전 파일 변경 커밋: 2026-10-26T22:50:13+09:00 7e5b3f40d2f83ebba6c01b02be4327c564a28902.
+//! 주석 갱신: 2026-11-04T00:23:31+09:00; 직전 파일 변경 커밋: 2026-11-03T21:45:03+09:00 39b4f81f6aab4cc08c6145ed6911db2a8fe5125e.
 //! 측정: 2026-11-03, 96 DPI·색상 경계 보정 전 2px raw 실루엣. spacing-before/spacing/spacing-after 각 1쪽 Native/fresh WASM 최저 100.00%; 독립 Print 확대 판독 완료. 뒤 간격은 앞 문단·자기 줄 보존과 후속 문단 이동, snapshot undo/redo 관계로 검사한다.
-//! 정식 증거: mydocs/pr/assets/semanticist21-20261103/visual-results.json 및 전쪽 TSV·확대 PNG.
+//! 정식 증거: mydocs/pr/assets/semanticist21-20261103/validation.md 및 전쪽 TSV·확대 PNG.
 //! 문단 간격을 바꾸면 그 문단과 뒤 문단의 저장 세로 위치가 바로 옮겨지고 저장 뒤에도 같다.
 #![cfg(not(target_arch = "wasm32"))]
 

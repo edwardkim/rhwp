@@ -2,100 +2,77 @@
 kind: report
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-11-03
+last_verified: 2026-11-04
 ---
 
-# PR #8281 검토 — 저장 줄 없는 개체 뒤 캐럿
+# PR #8281 검토 — 개체만 있는 마지막 줄의 끝 캐럿
 
 ## 최종 판정
 
-**로컬 보정과 집중·시각 검증 진행 — 최종 전체 검증이 끝나기 전까지 머지 보류.**
-원 head를 보존한 누적 후보에 보정과 실제 API·시각 대조를 적용했다. [현재 검증 명세](assets/semanticist21-20261103/validation.md)의 중간 제품 head와 최종 정규 검증을 구분한다. 모든 필수 검증이 끝난 뒤 최종 판정을 갱신한다.
+**메인터너 보정 후 수용 가능 — 검증한 누적 후보에 한정.**
+검증 head `c6ad3eea59d1b7701efdc4fb582e2d9a44b4f775`, 제품 source `39b4f81f6a`, 원 기여 적용 merge `28dad1c94b`다. 원격 원 head의 충돌이나 이전 API를 그대로 승인한 것이 아니다. 10건의 로컬 보정·필수 검증 승인은 완료했고 push·공개 댓글·새 PR·merge는 별도 승인 범위다.
 
-## 접수 정보
+## 원본과 적용
 
-| 항목 | 고정값 |
+| 항목 | 확인값 |
 | --- | --- |
-| 원 PR / 작성자 | [#8281](https://github.com/edwardkim/rhwp/pull/8281) / semanticist21 |
-| 원 repository·branch | `semanticist21/rhwp:fix/no-lineseg-inline-object-caret` |
+| 원 PR | [#8281](https://github.com/edwardkim/rhwp/pull/8281) / semanticist21 |
 | 원 head | `fa6c4b7203408b36d405ba165348731ecb44001d` |
-| 현재 기준 devel | `7d06d5c706f1d89f1662e739abf2b1b25d2a98e4` |
-| Reviewer | edwardkim, 2026-11-03T19:19:30.031075+09:00 API 확인 |
-| 원 head CI | commit status success; neutral 1, skipped 6, success 32 |
-| 실제 merge-tree | 충돌 1파일 |
-| 로컬 branch | `review/integration-20261103-semanticist21` |
-| 경로 | maintainer_general + intake_and_review, local_validation, multi_pr_update_branch, visual_fixture_evidence, post_merge |
+| 원 branch | `semanticist21/rhwp:fix/no-lineseg-inline-object-caret` |
+| 고정 devel | `7d06d5c706f1d89f1662e739abf2b1b25d2a98e4` |
+| 원 head CI | success 32, neutral 1, skipped 6; skip·neutral은 실행 성공으로 세지 않음 |
+| 단독 merge-tree | 1파일 충돌 |
+| Reviewer 확인 | edwardkim / 2026-11-03T19:19:30.031075+09:00 |
+| 누적 branch | `review/integration-20261103-semanticist21` |
 
-## 주장·현재 devel 대조와 보정 방침
+원 head는 누적 merge history에 보존했다. [선정·충돌·기여 보존](assets/semanticist21-20261103/intake.md)에서 열 건의 실제 적용 순서와 제외한 다섯 reviewer 대상 head를 확인한다. 원 PR의 과거 devel merge 자체는 기여 기능으로 세지 않았다.
 
-문자 논리 주소와 그림으로 끝나는 문단의 끝 캐럿 상자를 보정한다.
+## 최신 devel에서 남은 문제와 기여 효과
 
-문자 논리 주소는 실제 devel 조상 3a71190ec382ee94c991ae4a25f0794e2727f6e4의 text_logical_starts로 반영됐다. 끝 런·끝 글꼴 높이는 별도 실행 검증 대상이다.
+원본 두 검사는 devel에서도 통과했다. 실제 남은 경계인 여섯 글자 뒤 넓은 그림이 단독 마지막 줄로 넘어가면 devel은 끝 TextRun이 없어 캐럿 높이가 12px로 바뀐다. 후보는 논리 끝 7의 빈 런과 본문의 13.3px을 유지한다. 새 관계 검사는 base FAIL/후보 PASS다.
 
-text_logical_starts를 유지하고 남은 문단 끝 런·높이만 공통 inline flow 계획과 실제 배치에서 함께 소비한다. 기존 Storage push 경로와 표로 끝나는 정상 대조군을 보존한다.
+## 메인터너 보정과 실제 소비 경로
 
-이 절의 현재 관측은 코드·이력 대조이며 현재 base/head의 실제 재현 결과는 검증 단계에서 추가한다.
+이미 반영된 text_logical_starts와 #8517 빈 그림 host 메트릭을 유지하고, 그림으로 끝나는 물리 줄의 끝 글자 상자를 공통 inline flow 계획에서 생산한다. 표로 끝나는 문단의 issue_6776 계약에는 적용하지 않는다.
 
-충돌 파일:
-- `src/renderer/layout/paragraph_layout.rs`
+inline_flow의 줄 나눔·paragraph-end style → paragraph_layout의 Storage TextRun push → getPageTextLayout/getCursorRect와 Canvas/Native. 동일 줄 결과가 마지막 이미지와 끝 앵커를 소유한다.
 
-## 검증 범위
+정상 대조·경계: 빈 그림 문단·그림 뒤 텍스트는 이미 정상인 대조군이다. 줄바꿈 뒤 그림 단독 줄을 새 음성 대조로 사용하고 live/HWPX 재열기를 확인했다.
 
-no_lineseg_inline_object_caret_anchor; 그림 앞뒤·그림만 있는 문단·끝 글자 모양·HWPX 저장 재열기·표 끝 대조
+## 실제 검증
 
-제품 경로:
-- `src/renderer/inline_flow.rs`
-- `src/renderer/layout/paragraph_layout.rs`
+| 시각 대조 입력 | 경로 | 전쪽 수 | 최저 raw |
+| --- | --- | ---: | ---: |
+| no-lineseg-empty | native | 1 | 100.00% |
+| no-lineseg-text | native | 1 | 100.00% |
+| no-lineseg-wrap | native | 1 | 92.90% |
+| no-lineseg-empty | wasm | 1 | 100.00% |
+| no-lineseg-text | wasm | 1 | 100.00% |
+| no-lineseg-wrap | wasm | 1 | 96.56% |
 
-정식 focused 대상:
-- `tests/cases/no_lineseg_inline_object_caret_anchor.rs`
+전체 31입력·71쪽 Native/fresh WASM, 실제 notice 53호출·양식·다각형·간격·clip·끝 캐럿·중첩 저장의 browser API, 실제 두 backend 저장본의 교차 재열기를 [최종 명세](assets/semanticist21-20261103/validation.md)에서 구분한다. 전체 nextest 12,465 PASS / 45 skip, 관련 19개 모듈 78 PASS, Native Skia 필수 3종, 세 Clippy·workspace build·release build/lib·최적화 WASM·Studio가 통과했다. 검증한 누적 후보의 새 GitHub CI는 원격 승인 뒤 실행해야 한다.
 
-원본·독립 Print·편집 상태의 대응을 확인하고 현재 base/후보의 Native/fresh WASM 전쪽 TSV와 확대 판독을
-확보한다. 입력이 합성 계약인 범위와 실물 한컴 출력은 구분한다. 현재 단계에 새 측정 수치를 적지 않는다.
+기준 devel의 같은 공개 계약 검사 36건은 13 PASS/23 FAIL이었다. 이후 추가한 wrap의 고유 경계 1건도 base FAIL/후보 PASS였다. #8281의 기존 두 성공, #8290 뒤 간격, #8308의 기존 분할 가시 배치는 이미 해결된 부분으로 분리했다. 구현 source 문자열이나 이전 CI를 현재 실행 증거로 세지 않았다.
 
 ## 조판 원칙 준수 검토
 
-| 항목 | 접수 판정과 후속 근거 |
+| 항목 | 근거와 판정 |
 | --- | --- |
-| 제출 전 로컬 검증과 PR 상태 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 기존 이슈·해결 PR의 선행 분석 | 미검증 — 위 현재 devel 관측과 #8093/#8187/#8517의 선행 연결을 시작했으며 적용 경계의 실행을 남긴다. |
-| 구현 근거와 일반성 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 측정·배치 일관성 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 리베이스 반영 PR의 기능 보존 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 최종 출력 소비 계약 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 분할·이어받기 계약 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 줄 소속과 점유 높이 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 사례와 증거의 독립성 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 기준값 변경 | 비해당 — 접수 단계에서 코드·기대값·baseline·golden을 변경하지 않았다. 이후 검사 변경은 독립 출력 gate 뒤에 수행한다. |
-| 회귀 추가·변경의 선행 조건 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 90% 통과 후 확대 판독 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
-| 주장과 검증 범위 | 미검증 — [누적 검토 계획](semanticist21_20261103_review_plan.md)의 해당 실제 경로·입력·독립 근거를 검증한다. |
+| 사양·원본·기존 해결 이력 | 위 원인·원본 저장값과 독립 Print/기존 해결 commit을 대조했다. 기존 API·Storage·schema 35·#8517을 되돌리지 않았다. |
+| 공통 생산과 실제 소비 | 위 실제 경로에서 동일 줄/프레임/메타데이터 결과를 소비한다. 문서 ID·수치 조합이나 출력 clamp로 맞추지 않았다. |
+| 저장 정보의 유효성 | 실물 원본과 모델로 만든 작은 대조군을 구분했다. 수동 메타데이터를 정상 저장본으로 가장하지 않았다. |
+| 줄 소속·점유·보존 | 해당 실제 API와 기존 관계 검사의 내용 순서·한 번 표시·앞뒤 본문·거부 후 원자성을 보호했다. |
+| 분할·이어받기 | 줄 컷/예약 알고리즘을 새로 만들지 않았다. 위 변경의 소유·저장·clip 소비와 정상 분할/후속 내용 회귀를 실제 실행했다. |
+| 회귀 선행 조건·기준값 | 관련 Native/fresh WASM 전쪽 90% 이상과 직접 판독 뒤 필요한 관계 검사를 추가/보정했다. 독립 기준과 맞는 기존 기대값을 유지했다. |
+| px 좌표 | 양쪽 98% 이상·직접 판독을 마친 완료 쪽만 독립 좌표 오차를 유지했다. 그 외는 소유·순서·포함·겹침·내용 보존 관계로 검사한다. |
+| 실제 backend·글꼴 | Native Skia와 새 최적화 WASM Canvas를 직접 실행했다. 최소 글꼴 회귀와 독립 Print용 명시 공급은 별도다. 글꼴은 배포하지 않는다. |
+| 전체 페이지와 확대 판독 | 모든 대상 전쪽 90% 이상·쪽수 일치. 작은 글자·문장부호·표 경계·간격과 각 PR의 변경 영역을 직접 대조했다. |
+| 현재 원격 상태 | 원 head는 변경하지 않았다. 통합 후보의 push·Open PR·새 head CI·merge는 아직 미수행이며 승인 뒤 확인한다. |
 
 ## Merge 후 contributor PR comment 계획
 
-현재는 maintainer 시각 검증 미실행이다. 검증 완료 뒤 이 원 PR의 실제 결론·source/merge SHA·CI URL,
-[Visual Sweep 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment)과 실제 측정한 전쪽 최저값·직접 판독을
-연결한다. 수용 시 원 기여와 메인터너 보정 이유를 존댓말로 구분하고 정식 대표 PNG가 devel에 반영된 뒤
-승인된 원격 범위에서 게시·API 재확인한다. 아직 없는 수치나 이미지 URL은 만들지 않는다.
+원 기여의 개체만 있는 마지막 줄의 끝 캐럿를 수용한 사실과 위 보정 이유를 존댓말로 안내한다. 실제 통합 PR·merge SHA·새 head CI URL과 [Visual Sweep 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment)을 연결한다. 원 PR별 원 head의 포함과 API 상태를 재확인한다.
 
-[누적 검토 계획](semanticist21_20261103_review_plan.md) · [원 head·CI·충돌 증거](assets/semanticist21-20261103/intake.json).
+직접 표시할 최종 패널은 [대표 비교](assets/semanticist21-20261103/zoom/no-lineseg-wrap.png)다. asset이 실제 devel에 포함된 것을 확인한 뒤 raw URL로 표시한다.
 
-## 로컬 충돌 보정
-
-현행 text_logical_starts를 유지했다. 끝 캐럿도 같은 주소 결과의 마지막 값을 소비한다.
-#8517의 빈 그림 호스트 메트릭을 유지하고 남은 끝 글자 상자는 Storage push로 연결했다.
-원 PR 회귀의 `나` 시작 주소 1은 이미 해결된 원문 축 기대값이므로, 그림 슬롯을 포함한
-현행 논리 주소 2로 대조한다. 실행·독립 출력 검증은 누적 후보에서 이어 간다.
-
-## 실제 미해결 경계의 추가 확인
-
-원본 두 검사는 고정 devel에서도 모두 통과했다. 그림뿐인 문단은 기존 empty-host text box가 있고,
-그림 뒤에 글자가 있는 문단은 그 글자가 끝 앵커를 제공하므로, 두 성공을 미해결의 증거로 쓰지 않는다.
-실제 남은 경계는 본문 뒤의 넓은 그림이 마지막 물리 줄을 단독 소유하는 경우다.
-
-공개 WASM API에서 여섯 글자 뒤에 40000×400 HU 그림을 넣었다. devel은 끝 TextRun이 없고 캐럿이
-기본 12px로 바뀌었다. 후보는 논리 끝 7의 빈 TextRun과 본문과 같은 13.3px을 보존했다.
-수정 전 Native 2 PASS/1 FAIL, 수정 후 Native 3 PASS를 최소 글꼴 환경에서 확인했다.
-독립 한컴 2024 Print와 Native/fresh WASM은 같은 그림의 160..164px 밴드를 보이며 raw는
-92.90%/96.56%다. 인쇄의 계단형 이미지와 두 backend의 부드러운 보간을 구분해 위치와 글자 순서를 확대 판독했다.
-이 시각 gate 이후 같은 상태의 관계형 회귀를 기존 파일에 추가했다. 표로 끝나는 문단은 그림의 끝 글자 상자 대상에서 제외하며 기존 issue_6776 계약을 유지한다.
+[원격 처리안과 댓글 초안](assets/semanticist21-20261103/remote-action-plan.md) · [누적 검토 계획](semanticist21_20261103_review_plan.md).

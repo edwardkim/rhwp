@@ -1,7 +1,7 @@
 //! 관계형·고정형: polygon_transform_roundtrip의 공개 입력·편집·저장 계약.
-//! 주석 갱신: 2026-11-03T21:22:49+09:00; 직전 파일 변경 커밋: 2026-10-26T23:40:05+09:00 92d19ea0e3690446106a126b747e0e5f611a0837.
+//! 주석 갱신: 2026-11-04T00:23:31+09:00; 직전 파일 변경 커밋: 2026-11-03T21:45:03+09:00 39b4f81f6aab4cc08c6145ed6911db2a8fe5125e.
 //! 측정: 2026-11-03, 96 DPI·색상 경계 보정 전 2px raw 실루엣. 한컴 rotated HWP/HWPX 각 1쪽 및 공개 API 5개 변환 상태 각 1쪽, Native/fresh WASM 각각 전쪽 최저 100.00%. 독립 Print 확대 판독 후 90도 쪽의 절대 꼭짓점만 ±1px, 저장 전후 관계는 별도로 비교한다.
-//! 정식 증거: mydocs/pr/assets/semanticist21-20261103/visual-results.json 및 전쪽 TSV·확대 PNG.
+//! 정식 증거: mydocs/pr/assets/semanticist21-20261103/validation.md 및 전쪽 TSV·확대 PNG.
 //! 회전·대칭한 다각형은 편집 중 그림과 HWP/HWPX 저장 뒤 다시 연 그림의 위치가 같다.
 #![cfg(not(target_arch = "wasm32"))]
 

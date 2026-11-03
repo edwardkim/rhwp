@@ -1,7 +1,7 @@
 //! 관계형·고정형: nested_wide_table_clip의 공개 입력·편집·저장 계약.
-//! 주석 갱신: 2026-11-03T21:22:49+09:00; 직전 파일 변경 커밋: 2026-10-27T15:52:04+09:00 fc43cd46109c8891cc169f8dca8d655b274a8d89.
+//! 주석 갱신: 2026-11-04T00:23:31+09:00; 직전 파일 변경 커밋: 2026-11-03T21:45:03+09:00 39b4f81f6aab4cc08c6145ed6911db2a8fe5125e.
 //! 측정: 2026-11-03, 96 DPI·색상 경계 보정 전 2px raw 실루엣. nested-wide-hancom 1쪽 Native/fresh WASM 최저 100.00%; 독립 Print 확대 판독 완료. 선언 HU 치수는 원본 계약이고 클릭은 조상 clip 교집합과 소유 경로로 검사한다.
-//! 정식 증거: mydocs/pr/assets/semanticist21-20261103/visual-results.json 및 전쪽 TSV·확대 PNG.
+//! 정식 증거: mydocs/pr/assets/semanticist21-20261103/validation.md 및 전쪽 TSV·확대 PNG.
 //! 부모 칸보다 넓은 중첩 표는 한컴처럼 선언 폭을 지키고, 보이는 범위는 부모 칸에서
 //! 잘리며, 잘린 칸은 클릭으로 고를 수 없다.
 //!

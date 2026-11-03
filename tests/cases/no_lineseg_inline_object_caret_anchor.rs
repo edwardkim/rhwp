@@ -1,7 +1,7 @@
 //! 관계형·고정형: no_lineseg_inline_object_caret_anchor의 공개 입력·편집·저장 계약.
-//! 주석 갱신: 2026-11-03T23:12:53+09:00; 직전 파일 변경 커밋: 2026-11-03T21:45:03+09:00 39b4f81f6aab4cc08c6145ed6911db2a8fe5125e.
+//! 주석 갱신: 2026-11-04T00:23:31+09:00; 직전 파일 변경 커밋: 2026-11-03T23:22:54+09:00 c6ad3eea59d1b7701efdc4fb582e2d9a44b4f775.
 //! 측정: 2026-11-03, 96 DPI·색상 경계 보정 전 2px raw 실루엣. form-slot HWP/HWPX 각 1쪽 양쪽 100.00%는 정상 개체 경계 대조다. no-lineseg-empty/text 각 1쪽은 Native/fresh WASM 최저 100.00%; no-lineseg-wrap 1쪽은 92.90%/96.56%다. 독립 Print 확대 판독에서 그림의 같은 160..164px 밴드와 본문 순서를 확인했다. 절대 px는 고정하지 않는다. 논리 주소와 원본 글자 크기는 입력 계약, 캐럿은 live/재열기 관계다.
-//! 정식 증거: mydocs/pr/assets/semanticist21-20261103/visual-results.json 및 전쪽 TSV·확대 PNG.
+//! 정식 증거: mydocs/pr/assets/semanticist21-20261103/validation.md 및 전쪽 TSV·확대 PNG.
 //! 저장 줄 없이 다시 연 문단도 개체 뒤 캐럿과 글자 위치를 저장 줄 경로와 같게 둔다.
 #![cfg(not(target_arch = "wasm32"))]
 
