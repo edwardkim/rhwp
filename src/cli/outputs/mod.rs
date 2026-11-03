@@ -19,21 +19,108 @@ pub(crate) fn allows_implicit_sibling_resources(format: rhwp::parser::FileFormat
 
 /// 사용자 환경을 우선하며, 없으면 실제 Native 공급에서 문서의 명시 대체를 고른다.
 /// 쪽수·측정·paint를 읽기 전에 동일한 환경 세대를 확정한다.
+#[derive(Default)]
+pub(crate) struct OutputFontSupply {
+    pub svg_style: String,
+    pub report: Option<serde_json::Value>,
+}
+
 pub(crate) fn apply_font_environment(
     document: &mut rhwp::DocumentCore,
     environment: Option<rhwp::renderer::font_environment::FontEnvironment>,
-    font_paths: &[std::path::PathBuf],
-) -> Result<bool, rhwp::error::HwpError> {
+    font_paths: &mut Vec<std::path::PathBuf>,
+) -> Result<OutputFontSupply, rhwp::error::HwpError> {
+    let mut output_supply = OutputFontSupply::default();
     let environment = match environment {
         Some(environment) => Some(environment),
         None => {
-            rhwp::renderer::font_environment::FontEnvironment::from_native_document_substitutions(
+            #[cfg(not(target_arch = "wasm32"))]
+            let supply =
+                rhwp::renderer::native_webfonts::prepare(&document.document().doc_info, font_paths)
+                    .map_err(rhwp::error::HwpError::RenderError)?;
+            #[cfg(not(target_arch = "wasm32"))]
+            {
+                output_supply.svg_style = supply.svg_style();
+                output_supply.report = Some(
+                    serde_json::to_value(&supply)
+                        .map_err(|e| rhwp::error::HwpError::RenderError(e.to_string()))?,
+                );
+                font_paths.extend(supply.paths.iter().cloned());
+                if !supply.unavailable.is_empty() {
+                    eprintln!(
+                        "웹폰트를 준비하지 못한 글꼴: {}",
+                        supply.unavailable.join(", ")
+                    );
+                }
+            }
+            let native = rhwp::renderer::font_environment::FontEnvironment::from_native_document_substitutions(
                 &document.document().doc_info,
                 font_paths,
-            )?
+            )?;
+            #[cfg(not(target_arch = "wasm32"))]
+            {
+                if supply.mappings.is_empty() && supply.glyph_fallbacks.is_empty() {
+                    native
+                } else {
+                    let mut value = serde_json::to_value(native)
+                        .map_err(|e| rhwp::error::HwpError::RenderError(e.to_string()))?;
+                    if value.is_null() {
+                        value = serde_json::json!({"id":"native-webfont-supply", "substitutions":{}, "preserveSourceMetrics":true});
+                    }
+                    let object = value.as_object_mut().ok_or_else(|| {
+                        rhwp::error::HwpError::RenderError("글꼴 환경이 올바르지 않습니다".into())
+                    })?;
+                    let mappings = object
+                        .entry("substitutions")
+                        .or_insert_with(|| serde_json::json!({}))
+                        .as_object_mut()
+                        .ok_or_else(|| {
+                            rhwp::error::HwpError::RenderError(
+                                "글꼴 치환이 올바르지 않습니다".into(),
+                            )
+                        })?;
+                    for (source, target) in &supply.mappings {
+                        mappings.insert(source.clone(), target.clone().into());
+                    }
+                    if let Some(entries) = object
+                        .get_mut("documentSubstitutions")
+                        .and_then(|v| v.as_array_mut())
+                    {
+                        entries.retain(|entry| {
+                            !entry["source"]
+                                .as_str()
+                                .is_some_and(|source| supply.mappings.contains_key(source))
+                        });
+                    }
+                    if !supply.glyph_fallbacks.is_empty() {
+                        object.insert(
+                            "documentGlyphFallbacks".into(),
+                            supply.glyph_fallbacks.into(),
+                        );
+                    }
+                    use sha2::{Digest, Sha256};
+                    let identity = serde_json::to_vec(&(&value, &supply.resources))
+                        .map_err(|e| rhwp::error::HwpError::RenderError(e.to_string()))?;
+                    let digest: String = Sha256::digest(identity)
+                        .iter()
+                        .map(|byte| format!("{byte:02x}"))
+                        .collect();
+                    value["id"] = format!("native-webfont-{}", &digest[..24]).into();
+                    Some(
+                        rhwp::renderer::font_environment::FontEnvironment::from_json(
+                            &value.to_string(),
+                        )?,
+                    )
+                }
+            }
+            #[cfg(target_arch = "wasm32")]
+            {
+                native
+            }
         }
     };
-    document.set_font_environment(environment)
+    document.set_font_environment(environment)?;
+    Ok(output_supply)
 }
 
 /// Remove and validate the optional environment before command-specific parsing.

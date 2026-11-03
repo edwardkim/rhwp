@@ -335,10 +335,19 @@ HWP/HWPX → PDF (svg2pdf + pdf-writer).
     `--font-path` 를 붙이는 대신 한 번만 설정하면 된다.
   - 조달 순서: `--font-path` → `RHWP_FONT_PATH` → 시스템 설치 폰트 →
     저장소 번들 `ttfs/opensource`(최후 폴백, 한국어 드롭 방지).
-  - **폰트를 지정하지 않으면 산출물이 달라진다.** 문서가 쓰는 폰트(한컴 바탕/돋움,
-    Windows 폰트 등)가 시스템에 없으면 번들 대체 폰트(Noto Sans/Serif KR)로 떨어져
-    글꼴이 바뀐다. 서버·컨테이너에서 대량 변환할 때는 **필요한 폰트를 설치하고
-    `--font-path` 또는 `RHWP_FONT_PATH` 로 명시**해야 정본과 같은 결과를 얻는다.
+  - 명시적인 `--font-environment`가 없으면 Native `export-png`·`export-svg`·`export-pdf`는
+    설치된 글꼴과 지정 경로를 먼저 확인하고, 없는 글꼴 중 공급 원장에 등록된 공개 웹폰트를
+    사용자 캐시에 준비한다. 원장이 없는 글꼴이나 다운로드 실패는 stderr와 JSON의
+    `nativeFontSupply.unavailable`에 기록하며, 모든 글꼴의 동일 출력을 보장하지 않는다.
+    수동 공급이 필요한 글꼴은 설치하거나 `--font-path`로 지정한다.
+  - 웹폰트 캐시는 `RHWP_WEBFONT_CACHE`로 지정할 수 있다. 미지정이면 `XDG_CACHE_HOME`,
+    `LOCALAPPDATA`, `~/.cache` 순으로 선택한 경로 아래 `rhwp/webfonts`를 사용한다.
+    `RHWP_WEBFONT_OFFLINE=1`은 해시를 확인한 기존 캐시만 사용하며 네트워크 요청을 하지 않는다.
+    JSON `nativeFontSupply.resources`는 공급 URL·원본 SHA-256·Native 변환본 SHA-256·크기를
+    구분한다. 이는 공급 준비 기록이며 개별 글리프의 최종 선택 증거는 아니다.
+  - SVG의 비임베딩·style 출력은 준비한 웹폰트의 `local()` 우선 CSS 참조를 함께 기록한다.
+    외부에서 SVG를 열 때는 해당 호스트의 글꼴이나 CDN 접근이 필요하다. subset·full 임베딩은
+    기존 임베딩 정책을 유지한다. 캐시의 글꼴 파일을 시스템에 설치하거나 출력에 자동 첨부하지 않는다.
 - `--backend <svg|direct>` — PDF backend(기본값: svg). `svg`는 기존 SVG-derived 경로,
   `direct`는 `PageLayerTree → PDF` direct/vector 경로. `direct`는 `native-skia` feature로
   빌드한 native CLI가 필요하며, 해당 feature 없이 빌드된 CLI에서 `--backend direct`를 쓰면

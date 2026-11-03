@@ -303,6 +303,8 @@ pub(super) fn print() {
     println!();
     println!("      --json                  문서 정보를 JSON으로 stdout에 출력");
     println!("      --font-plan             내장 폰트와 원본·대체 글꼴 후보를 JSON으로 출력");
+    println!("      Native SVG/PNG/PDF 출력은 설치 글꼴 우선, 누락 시 원장에 등록된 웹폰트 공급");
+    println!("      RHWP_WEBFONT_CACHE: 캐시 경로, RHWP_WEBFONT_OFFLINE=1: 검증된 캐시만 사용");
     println!();
     println!("  word-count <파일.hwp|파일.hwpx|파일.hml> [--json]");
     println!("      구역·문단·글자·어절·쪽 수를 IR 본문에서 센다");

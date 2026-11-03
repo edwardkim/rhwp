@@ -66,6 +66,8 @@ pub(crate) mod legacy_font_advances;
 pub(crate) mod line_style;
 mod measured_glyph_supplier;
 pub(crate) mod metafile_geometry;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod native_webfonts;
 pub(crate) mod note_marker;
 pub(crate) mod note_separator;
 pub(crate) mod object_alignment;
