@@ -34,6 +34,10 @@
 //! - line_reserve A40(2쪽): Native·WASM 각 100.00/100.00%.
 //! - line_reserve A46(2쪽, 대조군): Native·WASM 각 100.00/100.00%.
 //! - 수정 전(base de2295d430) Native: P4G 9쪽(6쪽 4.05%), A30 2쪽 43.37%, A40 2쪽 59.27%.
+//! 2026-11-04 측정(head 각주 앞 조각 수정 후, base 7d06d5c706, Native skia 00:30+09:00 / fresh WASM WASMTIME):
+//! - line_reserve A10 T20(2쪽, 각주에 나눌 수 없는 표): Native 100.00/100.00%, WASM WASMVALS;
+//!   수정 전 Native — base 7d06d5c706 2쪽 86.47%, 앞부분만 들어간 각주가 쪽을 막던 head 1쪽 40.80%.
+//! - 위 네 입력도 같은 시점 head 로 다시 쟀다: REMEASURE.
 //!
 //! 근거: mydocs/pr/assets/issue_8468/{native,wasm}/*_silhouette.tsv.
 //!
@@ -55,6 +59,10 @@
 //!   23줄을 두고 각주를 다음 쪽으로 밀었다. 한/글은 참조 줄 뒤 줄이 각주 위에 들어가지 않으면
 //!   그 줄부터 다음 쪽에 둔다(A30: 18줄, A40: 20줄). A46 은 참조 줄이 첫 쪽 끝 줄이고 각주가
 //!   들어갈 자리가 없어 통째로 다음 쪽에 가는 대조군이다(수정 전후 같다).
+//! - `line_reserve_F20_L30_A10_R1_T20`(같은 생성기 `TABLE_ROWS=20`): 각주가 글 한 줄 + 글자처럼
+//!   취급한 20행 표. 참조 줄 뒤에 글 줄만 들어가고 표 줄은 들어가지 않는다. 한/글은 글 줄만 1쪽에
+//!   두고 뒤 본문 줄로 그 위를 채운다(쪽 reset 줄 21, 표는 2쪽 각주). 앞부분만 들어간 각주가 쪽
+//!   나머지를 막는다고 보면 뒤 줄이 모두 2쪽으로 밀린다(실문서 i838 90쪽 각주 273 의 형상).
 //!
 //! 기대값은 같은 원본의 독립 한컴 Print PDF(`pdf/issue8468/*-2022.pdf`, `*-2020.pdf`)와
 //! 한/글이 저장한 쪽 reset 줄에서 정했다(쪽수, 쪽마다 줄 머리 `N)` 으로 시작하는 각주 번호,
@@ -206,4 +214,43 @@ fn earlier_line_note_reserves_space_before_later_lines() {
             "{sample}: 각주 1 이 한컴 Print 와 같은 쪽에서 시작한다"
         );
     }
+}
+
+/// 각주 영역에 표(각주 본문 안의 표)가 있는가.
+fn has_note_table(node: &RenderNode) -> bool {
+    matches!(node.node_type, RenderNodeType::Table(_))
+        || node.children.iter().any(has_note_table)
+}
+
+#[test]
+fn partial_note_with_unsplittable_table_keeps_later_lines_above_its_prefix() {
+    // 참조 줄(5번째 줄쯤) 뒤에 각주 글 한 줄은 들어가지만 나눌 수 없는 표 줄은 들어가지 않는다.
+    // 한/글은 각주 글 줄만 1쪽에 두고 표는 2쪽 각주로 넘기며, 참조 줄 뒤 본문 줄은 그 글 줄 위
+    // 남는 공간을 계속 채운다(쪽 reset 줄 21). 각주가 앞부분만 들어가면 쪽 나머지를 막는다고
+    // 보면 뒤 줄이 모두 2쪽으로 밀린다(i838 90쪽 각주 273 과 같은 형상).
+    let sample = "samples/issue8468/line_reserve_F20_L30_A10_R1_T20.hwp";
+    let core = core(sample);
+    assert_eq!(core.page_count(), 2, "{sample}: 한컴 Print 2쪽");
+    assert_eq!(
+        fragments(&core),
+        vec![(1, 0, 21), (2, 21, 29)],
+        "{sample}: 긴 문단은 한/글 저장 쪽 reset 줄 21 에서 나뉜다"
+    );
+    assert_eq!(
+        note_starts_without_overlap(sample, &core),
+        expected(&[(1, &[1])]),
+        "{sample}: 각주 1 은 참조 줄이 있는 1쪽에서 시작한다"
+    );
+    let table_pages: Vec<u32> = (0..core.page_count())
+        .filter(|&page| {
+            let tree = core.build_page_render_tree(page).expect("page render tree");
+            footnote_area(&tree.root).is_some_and(has_note_table)
+        })
+        .map(|page| page + 1)
+        .collect();
+    assert_eq!(
+        table_pages,
+        vec![2],
+        "{sample}: 각주 1 의 표 줄은 1쪽에 들어가지 않아 2쪽 각주 영역에 이어진다"
+    );
 }
