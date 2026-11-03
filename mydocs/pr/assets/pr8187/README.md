@@ -1,6 +1,6 @@
 # #8187 메인터너 검증 증거
 
-최종 판정과 원인·제한은 [검토 기록](../../pr_8187_review.md)을 따른다.
+최종 판정과 원인·제한은 [검토 기록](../../archives/pr_8187_review.md)을 따른다.
 `platy-native-editing/`은 원 기여자가 제출한 과거 증거이며, 이 디렉터리는 최신 devel 통합 후보의
 독립 실행 결과다. 같은 파일명의 예전 점수를 현재 측정값으로 재사용하지 않았다.
 
@@ -12,6 +12,7 @@
 - `final/svg-{native,wasm}/`: KPS 65·66쪽의 별도 SVG 소비 경계. Native PNG/Canvas 전쪽 TSV를 대체하지 않는다.
 - `boundary-execution.json`: 원본 저장 프레임·테두리·뒤 내용 관계의 실제 base FAIL / 후보 PASS.
 - `base-producers.json`, `final-producers.json`: source/producer·글꼴 지문·명령·환경.
+- `remote-merge.json`: exact head CI·self-review·merge와 GitHub archive의 실제 실행 집계.
 - `local-validation.json`, `frontend-validation.json`: 필수 명령·모듈별 결과·환경·로그 지문.
 - `evidence-check.json`: 28개 원본 TSV의 해시·전쪽 누락/미달·439쪽/base 비교 무결성.
 - `native-postgate-smoke.json`: 마지막 Native CLI에서 주요 5쪽 PNG의 바이트 보존.

@@ -1,6 +1,6 @@
 ---
 kind: guide
-status: active
+status: archived
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-11-03
 ---
@@ -9,7 +9,7 @@ last_verified: 2026-11-03
 
 관련 [검토 기록](pr_8187_review.md). **2026-11-03 작업지시자가 메인터너 보정·필수 로컬 검증을 승인했다.**
 아래 로컬 통합·검증을 완료했고, 뒤이어 작업지시자가 새 head CI·self-review 성공 후 원 PR 머지와
-댓글·기록·정리까지 승인했다. 실행 순서는 [원격 처리 계획](assets/pr8187/remote-action-plan.md)을 따른다.
+댓글·기록·정리까지 승인했다. 실행 순서는 [원격 처리 계획](../assets/pr8187/remote-action-plan.md)을 따른다.
 
 ## 고정 범위와 목표
 
@@ -85,7 +85,9 @@ last_verified: 2026-11-03
 | 저장 왕복·실제 브라우저/Studio | 완료, Chromium 36 PASS, Studio 2716 PASS·Node pkg 전용 2 skip, TypeScript PASS |
 | 필수 lint·workspace·정책 | 완료, fmt·Native/WASM/전체 workspace Clippy·build·manifest/unit-tier PASS |
 | release-test 전체·Native 공식 3종 | 완료, 12,415 PASS / 4,064 PASS |
-| 최종 기록·원격 처리안 | 로컬 작성 완료. 원격 작업은 별도 승인 전 실행하지 않음 |
+| 최종 원격 처리 | 완료. head `8c97771760`, CI·self-review 성공, merge `3724ab9dc4` |
 
 전체 결과·source·PNG·TSV·제한은 [검토 기록](pr_8187_review.md)과
-[증거 안내](assets/pr8187/README.md)에 연결한다. 새 절편 승인 없이 승인된 로컬 범위를 마무리한다.
+[증거 안내](../assets/pr8187/README.md)에 연결한다. 새 절편 승인 없이 승인된 로컬 범위를 마무리한다.
+
+최종 원격 결과와 #6612 환경 의존 검사의 보정은 [archive 검토 기록](pr_8187_review.md)과 [원격 증거](../assets/pr8187/remote-merge.json)를 따른다.
