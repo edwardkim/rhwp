@@ -555,6 +555,14 @@ pub fn tab_ext_is_placeholder(ext: &[u16; 7]) -> bool {
 /// 위 자리표의 정본 표기 — HWP5 이진 서식기가 내는 "데이터 없음" 마커와 같다.
 pub const TAB_EXT_PLACEHOLDER: [u16; 7] = [0, 0, 0, 0, 0, 0, 0x0009];
 
+/// 경계(시작·끝)에 친 글자를 품지 않는 필드: 웹 링크와 날짜·파일 경로 코드.
+/// 한/글은 날짜·파일 경로 코드의 글을 문서를 열 때와 다른 이름으로 저장할 때 다시 쓴다.
+/// 코드 경계에서 친 글이 코드 안에 들어가면 그때 사라진다.
+fn keeps_boundary_text_outside(control: Option<&Control>) -> bool {
+    matches!(control, Some(Control::Field(field))
+        if matches!(field.field_type, FieldType::Hyperlink | FieldType::Date | FieldType::Path))
+}
+
 impl Paragraph {
     /// 재구성된 본문 축에서 단일 표가 저장 줄의 물리 상자 전체를 소유한다.
     pub(crate) fn rebased_single_table_row(&self) -> bool {
@@ -1595,17 +1603,23 @@ impl Paragraph {
         let char_offset = effective_char_offset;
         // 링크 경계에 삽입하는 글자는 링크 밖에 둔다. 시작 경계에서는 링크의
         // 서식 run을 뒤로 밀고, 끝 경계에서는 복원된 일반 서식 run을 유지한다.
-        let hyperlink_starts = self
+        // 날짜·파일 경로 코드의 글은 한/글이 문서를 열거나 다른 이름으로 저장할 때
+        // 다시 쓰므로 경계에 친 글자를 품지 않는다(서식은 일반 글처럼 앞 글자를 잇는다).
+        let outside_starts = self
             .field_ranges
             .iter()
             .filter(|range| {
                 range.start_char_idx < range.end_char_idx
                     && range.start_char_idx == char_offset
-                    && matches!(self.controls.get(range.control_idx),
-                    Some(Control::Field(field)) if field.field_type == FieldType::Hyperlink)
+                    && keeps_boundary_text_outside(self.controls.get(range.control_idx))
             })
             .count() as u32;
-        let at_hyperlink_start = hyperlink_starts > 0;
+        let at_hyperlink_start = self.field_ranges.iter().any(|range| {
+            range.start_char_idx < range.end_char_idx
+                && range.start_char_idx == char_offset
+                && matches!(self.controls.get(range.control_idx),
+                    Some(Control::Field(field)) if field.field_type == FieldType::Hyperlink)
+        });
         let at_hyperlink_end = self.field_ranges.iter().any(|range| {
             range.start_char_idx < range.end_char_idx
                 && range.end_char_idx == char_offset
@@ -1621,9 +1635,9 @@ impl Paragraph {
         } else {
             self.char_offsets[char_offset - 1] + Self::char_stream_len(text_chars[char_offset - 1])
         };
-        let begin_units = hyperlink_starts * 8;
+        let begin_units = outside_starts * 8;
         let utf16_insert_pos =
-            if at_hyperlink_start && utf16_insert_pos >= preceding_text_end + begin_units {
+            if outside_starts > 0 && utf16_insert_pos >= preceding_text_end + begin_units {
                 utf16_insert_pos - begin_units
             } else {
                 utf16_insert_pos
@@ -1731,16 +1745,19 @@ impl Paragraph {
         // 5-1. field_ranges: 삽입 지점 이후의 char 인덱스 시프트
         let inserted_len = new_chars.len();
         for fr in &mut self.field_ranges {
-            let is_hyperlink = matches!(self.controls.get(fr.control_idx),
-                Some(Control::Field(field)) if field.field_type == FieldType::Hyperlink);
+            // 글을 모두 지운 코드는 누름틀 문단의 첫 빈 필드 규칙처럼 친 글자를 품는다.
+            let outside = keeps_boundary_text_outside(self.controls.get(fr.control_idx))
+                && (fr.start_char_idx < fr.end_char_idx
+                    || matches!(self.controls.get(fr.control_idx),
+                        Some(Control::Field(field)) if field.field_type == FieldType::Hyperlink));
             if fr.start_char_idx > char_offset
-                || (is_hyperlink
+                || (outside
                     && fr.start_char_idx == char_offset
                     && fr.start_char_idx < fr.end_char_idx)
             {
                 fr.start_char_idx += inserted_len;
             }
-            if fr.end_char_idx > char_offset || (fr.end_char_idx == char_offset && !is_hyperlink) {
+            if fr.end_char_idx > char_offset || (fr.end_char_idx == char_offset && !outside) {
                 fr.end_char_idx += inserted_len;
             }
         }
@@ -2825,10 +2842,17 @@ impl Paragraph {
                         .then(|| order(Slot::Control(r.control_idx)))
                         .flatten();
                     let end = order(Slot::End(ri));
+                    // 날짜·파일 경로 코드 경계에 친 글자도 한/글처럼 필드 밖에 둔다.
                     let outside = matches!(
                         self.controls.get(r.control_idx),
                         Some(Control::Field(field))
-                            if matches!(field.field_type, FieldType::ClickHere | FieldType::Hyperlink)
+                            if matches!(
+                                field.field_type,
+                                FieldType::ClickHere
+                                    | FieldType::Hyperlink
+                                    | FieldType::Date
+                                    | FieldType::Path
+                            )
                     );
                     match () {
                         _ if begin.is_none() && end.is_none() => None,
