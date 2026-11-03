@@ -85,6 +85,7 @@ mod tests {
             isolated_jamo_font: None,
             script_metrics: Default::default(),
             native_pua_fonts: Default::default(),
+            display_only_otf_slots: Default::default(),
             char_overlap_size_bounds: None,
             source_char_shapes: Default::default(),
             resolved_dpi: None,
