@@ -11,8 +11,8 @@
 아래의 주장 페이지 review·overlay를 함께 판독했다. 최소 글꼴 전체 Rust 회귀
 12,387건 통과·45건 skipped, 선행 [PR #8389](https://github.com/edwardkim/rhwp/pull/8389)·
 [PR #8397](https://github.com/edwardkim/rhwp/pull/8397) 2,153쪽 Native/fresh WASM
-표시값 하락 0쪽이다. 후속 보정 PR의 최신 head CI와 병합을 확인한 뒤 원 PR을
-중복 반영 사유로 종료한다.
+표시값 하락 0쪽이다. 후속 보정 [PR #8517](https://github.com/edwardkim/rhwp/pull/8517)의 최신 head CI와
+병합을 확인했다. 원 PR은 증적 댓글 게시 뒤 중복 반영 사유로 종료한다.
 
 ## 2026-11-02 통합 머지 사실과 적용 SHA 재확인
 
@@ -120,3 +120,29 @@ Print 입력과 바이트 단위로 일치한다. 새 base와 이전 검증 코�
 주장 영역 review/overlay 직접 판독과 함께 판단한다.
 
 2026-11-03 현재 코드의 주장 페이지 그림 재산출: 제품 코드 `d56930dda7`의 Native와 fresh WASM으로 같은 입력·Print PDF의 12쪽을 다시 그렸다. 위 review/overlay 이미지가 최신 산출물이며, 전체 16쪽 TSV는 기존 정식 TSV와 SHA-256이 각각 `26c24d0363511691cb07e63ef0c353c8517eefc0013140bc508509d61cd7a0c3`·`85fe94720b9471cdb0340b31bb754499e3de298672ef820241bebb6f75841cb0`으로 바이트 단위 일치했다.
+
+## 2026-11-03 후속 보정 PR의 원격 완료 확인
+
+후속 보정 [PR #8517](https://github.com/edwardkim/rhwp/pull/8517)은 code head
+`ba0557118ad896f1c410e80da5100fedf10139d8`의
+[Build & Test](https://github.com/edwardkim/rhwp/actions/runs/41592450512),
+[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/41592450498),
+[Render Diff](https://github.com/edwardkim/rhwp/actions/runs/41592450511),
+Adapter·Proptest와 CI Impact Policy 통과 뒤
+`c97709b59742372a817b3886f442144728fca646`로 `devel`에 병합됐다.
+이 원격 완료는 위의 개별 원본·Print PDF·전체 페이지 TSV·대표 비교 판정과 함께
+확인한다. 사용자 지정 옵션 2로 이 리뷰와 오늘할일을 문서 전용 후속 PR에 반영하고,
+원 PR에는 해당 증적을 게시한 뒤 중복 병합 없이 종료한다.
+
+## Merge 후 contributor PR comment 계획
+
+- 원 PR의 편집 입력 고정 줄간격 기여가 [PR #8438](https://github.com/edwardkim/rhwp/pull/8438)에
+  통합된 사실과 [PR #8517](https://github.com/edwardkim/rhwp/pull/8517)의
+  메인터너 보정·최종 병합 SHA를 구분해 한국어로 안내한다.
+- 같은 편집 가능 입력의 한컴 Print 12쪽과 비교한 raw 일치율은 Native
+  **99.70%**, fresh WASM **99.69%**다.
+  [review](../assets/issue_8381/followup8438/native-review-012.png)·[overlay](../assets/issue_8381/followup8438/native-overlay-012.png) 및
+  [Native 전쪽 TSV](../assets/review_8438_followup/final-original-inputs/pr8365-8375-8380-editable-native.tsv)·[fresh WASM 전쪽 TSV](../assets/review_8438_followup/final-original-inputs/pr8365-8375-8380-editable-wasm.tsv)를
+  댓글에 연결한다. 대표 이미지는 병합 SHA에 고정한 raw URL로 직접 표시한다.
+- 옵션 2 문서 PR에 이 기록이 반영된 뒤 원 PR head·상태를 다시 확인하고,
+  기여자에게 증적 댓글을 게시한 다음 중복 병합 없이 종료한다.
