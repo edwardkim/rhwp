@@ -153,6 +153,7 @@ fn cell_node(bbox: BoundingBox) -> RenderNode {
             closed_reflow_frame: false,
             page_fragment: false,
             model_cell_index: None,
+            model_para_range: None,
         }),
         bbox,
     )

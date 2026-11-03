@@ -5494,6 +5494,18 @@ let body_height=match nested_body_heights
             }
         }
 
+        // 원본 HWP5의 첫 쪽 프레임은 측정·행 유닛·paint가 같은 행 원장으로 소비한다.
+        if stored && (self.is_native_hwp5 || self.hwp5_origin_hwpx) {
+            storage.bytes(0)?;
+            crate::renderer::table_row_frame::project_first_rowspan_frame(
+                table,
+                &mut row_heights,
+                &content_row_floor,
+                &span_content_requirements,
+                self.dpi,
+            );
+        }
+
         // 셀 간격 포함한 표 높이
         let cell_spacing = hwpunit_to_px(table.cell_spacing as i32, self.dpi);
         let raw_table_height: f64 =

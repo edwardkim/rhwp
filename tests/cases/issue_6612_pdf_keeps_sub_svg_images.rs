@@ -1,4 +1,10 @@
-//! #6612: `data:image/svg+xml` 로 심긴 그림(WMF·EMF·AI 변환 결과) 안의 비트맵이 PDF 에 남아야 한다.
+//! 고정형(원본 비트맵 개수) 계약: 하위 SVG 그림의 PDF 이미지 자원 보존.
+//! 주석 갱신: 2026-11-03T13:46:00+09:00. 직전 파일 변경: 2026-09-02T20:07:32+09:00,
+//! 7946a457d924f7bb0f36aabd93f163449bd03d30 (#6612 → #6618).
+//! Native/fresh WASM raw 측정: 비해당. PDF 이미지 사전 개수를 검사하며 쪽수·배치를 고정하지 않는다.
+//! 원본 WMF 13장의 비트맵 21개를 보호한다. 문자용 Color Emoji 비트맵은 이 계약의 대상이 아니다.
+//! 시스템 글꼴과 무관하게 저장소의 공개 Noto Sans KR을 명시한다. 원본 파일·이미지는 변경하지 않는다.
+//! 진단·수정 전후 실행: mydocs/pr/assets/pr8187/issue6612-font-diagnostic.json.
 //!
 //! usvg 의 기본 하위 SVG 로더는 SVG 규격대로 참조된 SVG 안의 `<image>` 를 전부 버린다.
 //! rhwp 의 WMF 변환은 비트맵을 `<svg viewBox><image href="data:image/png"/></svg>` 로 감싸므로
@@ -57,11 +63,25 @@ fn issue_6612_sub_svg_bitmap_reaches_pdf() {
 fn issue_6612_sample14_wmf_pictures_reach_pdf() {
     // hwp3-sample14-hwp5: 그림 13장이 전부 비트맵 WMF 이고, 몇 장은 비트맵 타일을 여러 개 품어
     // 이미지 XObject 는 21개다(PyMuPDF `get_image_info` 배치 수와 같다). 수정 전에는 0개였다.
-    let core = DocumentCore::from_bytes(include_bytes!("../../samples/hwp3-sample14-hwp5.hwp"))
+    let mut core = DocumentCore::from_bytes(include_bytes!("../../samples/hwp3-sample14-hwp5.hwp"))
         .expect("샘플 문서를 열지 못했다");
+    // 이미지 보존 검사에 글자용 비트맵이 섞이지 않도록 문서의 글꼴을 명시한다.
+    // PdfExportOptions의 generic fallback만 바꾸면 원본의 미설치 family 선택이 남는다.
+    let mut source = core.document().clone();
+    for font in source.doc_info.font_faces.iter_mut().flatten() {
+        font.name = "Noto Sans KR".into();
+    }
+    core.set_document(source);
+    let options = PdfExportOptions {
+        fallback_serif: "Noto Sans KR".into(),
+        fallback_sans: "Noto Sans KR".into(),
+        fallback_mono: "Noto Sans KR".into(),
+        font_paths: vec![std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("ttfs/opensource")],
+        ..PdfExportOptions::default()
+    };
     let pages: Vec<u32> = (0..core.page_count()).collect();
     let pdf = core
-        .render_pages_pdf_native_with_options(&pages, &PdfExportOptions::default())
+        .render_pages_pdf_native_with_options(&pages, &options)
         .expect("PDF 변환이 실패했다");
     assert_eq!(
         count_image_xobjects(&pdf),

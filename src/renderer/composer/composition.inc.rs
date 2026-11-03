@@ -416,6 +416,7 @@ fn try_compose_paragraph_scoped<S: crate::storage::Storage>(
     if let Some(styles) = metric_styles {
         equation_line_metrics::try_refresh_equation_rows(&mut composed, para, styles, storage)?;
     empty_line_metrics::refresh_with_storage(&mut composed, para, styles, storage)?;
+        inline_picture_metrics::refresh_picture_rows_with_storage(&mut composed, para, styles, storage)?;
     }
 
     supplemental_clusters::preserve_literal_spaces_with_storage(&mut composed, &para.literal_figure_spaces, storage)?;

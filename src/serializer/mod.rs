@@ -8,6 +8,7 @@ pub(crate) mod budget_cursor;
 pub mod byte_writer;
 pub mod cfb_writer;
 pub(crate) mod char_shape;
+mod column_sizes;
 pub mod content_loss;
 pub mod control;
 pub mod doc_info;

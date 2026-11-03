@@ -1,0 +1,164 @@
+[
+  {
+    "backend": "native",
+    "document": "midrange-three-columns-hwpx",
+    "pages": 2,
+    "minimum_display_raw": 93.3,
+    "below_90_pages": [],
+    "tsv_sha256": "3094dbfd21fa7a97e38cd75d0840cad29c9fb5aa3350c63aa925af3c4b8c9da6"
+  },
+  {
+    "backend": "native",
+    "document": "continued-one-to-three-columns-hwpx",
+    "pages": 3,
+    "minimum_display_raw": 93.28,
+    "below_90_pages": [],
+    "tsv_sha256": "ef2c34b4b4a9d329911e18b54d3eab14f5ff50ecddf389a70ab07e4c5b420997"
+  },
+  {
+    "backend": "native",
+    "document": "zone-preserve-paragraph-after-hwpx",
+    "pages": 2,
+    "minimum_display_raw": 93.3,
+    "below_90_pages": [],
+    "tsv_sha256": "3094dbfd21fa7a97e38cd75d0840cad29c9fb5aa3350c63aa925af3c4b8c9da6"
+  },
+  {
+    "backend": "native",
+    "document": "paragraph-after-1800-hwpx",
+    "pages": 2,
+    "minimum_display_raw": 93.3,
+    "below_90_pages": [],
+    "tsv_sha256": "3094dbfd21fa7a97e38cd75d0840cad29c9fb5aa3350c63aa925af3c4b8c9da6"
+  },
+  {
+    "backend": "native",
+    "document": "paragraph-after-5000-hwpx",
+    "pages": 2,
+    "minimum_display_raw": 93.3,
+    "below_90_pages": [],
+    "tsv_sha256": "3094dbfd21fa7a97e38cd75d0840cad29c9fb5aa3350c63aa925af3c4b8c9da6"
+  },
+  {
+    "backend": "native",
+    "document": "shortcut-hwp",
+    "pages": 7,
+    "minimum_display_raw": 97.19,
+    "below_90_pages": [],
+    "tsv_sha256": "9f8cb7c77443a2e5f8a0b6816065049398839d6fb1497276404177382d9966b0"
+  },
+  {
+    "backend": "native",
+    "document": "kps-ai",
+    "pages": 77,
+    "minimum_display_raw": 90.01,
+    "below_90_pages": [],
+    "tsv_sha256": "898fd6abe7da97b12578da435ca6ef7b934c59bc4b161d1f759533fafe24a13a"
+  },
+  {
+    "backend": "native",
+    "document": "rowbreak18-hwp",
+    "pages": 18,
+    "minimum_display_raw": 97.65,
+    "below_90_pages": [],
+    "tsv_sha256": "e2aef0b50c171ac91ec1fc8f9a9bfb25b022f94b2d85bd9559fba71d8e5ee7bd"
+  },
+  {
+    "backend": "native",
+    "document": "giant4138-original-hwp",
+    "pages": 115,
+    "minimum_display_raw": 93.12,
+    "below_90_pages": [],
+    "tsv_sha256": "cd80929832abf201137854dbe23c6d30e2588ff5a0642d0f9c27303bbd66857f"
+  },
+  {
+    "backend": "native",
+    "document": "giant4138-tab-period-hwp",
+    "pages": 197,
+    "minimum_display_raw": 94.44,
+    "below_90_pages": [],
+    "tsv_sha256": "864d064290f5330a5277886487a41fc0fd46b1a0fc119b07a4dbae19b30c2eef"
+  },
+  {
+    "backend": "wasm",
+    "document": "midrange-three-columns-hwpx",
+    "pages": 2,
+    "minimum_display_raw": 93.05,
+    "below_90_pages": [],
+    "tsv_sha256": "fe9ababc253500533a6e8cac7964f01e71c5078e4a9a05a349c925ff64b74222"
+  },
+  {
+    "backend": "wasm",
+    "document": "continued-one-to-three-columns-hwpx",
+    "pages": 3,
+    "minimum_display_raw": 93.04,
+    "below_90_pages": [],
+    "tsv_sha256": "7b03b3c205319c8705883b83b1b4fad3ec717b4a4d3f706e89c716ba7a8c0375"
+  },
+  {
+    "backend": "wasm",
+    "document": "zone-preserve-paragraph-after-hwpx",
+    "pages": 2,
+    "minimum_display_raw": 93.05,
+    "below_90_pages": [],
+    "tsv_sha256": "fe9ababc253500533a6e8cac7964f01e71c5078e4a9a05a349c925ff64b74222"
+  },
+  {
+    "backend": "wasm",
+    "document": "paragraph-after-1800-hwpx",
+    "pages": 2,
+    "minimum_display_raw": 93.05,
+    "below_90_pages": [],
+    "tsv_sha256": "fe9ababc253500533a6e8cac7964f01e71c5078e4a9a05a349c925ff64b74222"
+  },
+  {
+    "backend": "wasm",
+    "document": "paragraph-after-5000-hwpx",
+    "pages": 2,
+    "minimum_display_raw": 93.05,
+    "below_90_pages": [],
+    "tsv_sha256": "fe9ababc253500533a6e8cac7964f01e71c5078e4a9a05a349c925ff64b74222"
+  },
+  {
+    "backend": "wasm",
+    "document": "shortcut-hwp",
+    "pages": 7,
+    "minimum_display_raw": 97.21,
+    "below_90_pages": [],
+    "tsv_sha256": "a1202e78ca13f344243aa6b3db9f5ee4f80b77c1def6980251b6b963312eae0d"
+  },
+  {
+    "backend": "wasm",
+    "document": "kps-ai",
+    "pages": 77,
+    "minimum_display_raw": 89.98,
+    "below_90_pages": [
+      66
+    ],
+    "tsv_sha256": "59efd35dcf659c3531899eef140e91c2e3d37045effe4395900b8d6e2656d42c"
+  },
+  {
+    "backend": "wasm",
+    "document": "rowbreak18-hwp",
+    "pages": 18,
+    "minimum_display_raw": 97.81,
+    "below_90_pages": [],
+    "tsv_sha256": "647c725b071304486bb01f44eaff0fb37ded67e93ad20ca932f8ac1e2912eb8e"
+  },
+  {
+    "backend": "wasm",
+    "document": "giant4138-original-hwp",
+    "pages": 115,
+    "minimum_display_raw": 97.33,
+    "below_90_pages": [],
+    "tsv_sha256": "55ae55de2f49b53a7f6ac48546afd4a278b62d885700636e3401e7be1482214a"
+  },
+  {
+    "backend": "wasm",
+    "document": "giant4138-tab-period-hwp",
+    "pages": 197,
+    "minimum_display_raw": 94.62,
+    "below_90_pages": [],
+    "tsv_sha256": "209958cb833c57442f45cdbf79b6cfcec0b92b68bbef3fd723d700748b27c68a"
+  }
+]

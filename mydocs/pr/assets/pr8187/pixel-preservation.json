@@ -1,0 +1,158 @@
+[
+  {
+    "backend": "native",
+    "document": "midrange-three-columns-hwpx",
+    "pixels_changed_pages": [
+      "rhwp_001",
+      "rhwp_002"
+    ],
+    "pages": 2
+  },
+  {
+    "backend": "native",
+    "document": "continued-one-to-three-columns-hwpx",
+    "pixels_changed_pages": [
+      "rhwp_002",
+      "rhwp_003"
+    ],
+    "pages": 3
+  },
+  {
+    "backend": "native",
+    "document": "zone-preserve-paragraph-after-hwpx",
+    "pixels_changed_pages": [
+      "rhwp_001",
+      "rhwp_002"
+    ],
+    "pages": 2
+  },
+  {
+    "backend": "native",
+    "document": "paragraph-after-1800-hwpx",
+    "pixels_changed_pages": [
+      "rhwp_001",
+      "rhwp_002"
+    ],
+    "pages": 2
+  },
+  {
+    "backend": "native",
+    "document": "paragraph-after-5000-hwpx",
+    "pixels_changed_pages": [
+      "rhwp_001",
+      "rhwp_002"
+    ],
+    "pages": 2
+  },
+  {
+    "backend": "native",
+    "document": "shortcut-hwp",
+    "pixels_changed_pages": [],
+    "pages": 7
+  },
+  {
+    "backend": "native",
+    "document": "kps-ai",
+    "pixels_changed_pages": [
+      "rhwp_065",
+      "rhwp_066"
+    ],
+    "pages": 77
+  },
+  {
+    "backend": "native",
+    "document": "rowbreak18-hwp",
+    "pixels_changed_pages": [],
+    "pages": 18
+  },
+  {
+    "backend": "native",
+    "document": "giant4138-original-hwp",
+    "pixels_changed_pages": [],
+    "pages": 115
+  },
+  {
+    "backend": "native",
+    "document": "giant4138-tab-period-hwp",
+    "pixels_changed_pages": [],
+    "pages": 197
+  },
+  {
+    "backend": "wasm",
+    "document": "midrange-three-columns-hwpx",
+    "pixels_changed_pages": [
+      "rhwp_001",
+      "rhwp_002"
+    ],
+    "pages": 2
+  },
+  {
+    "backend": "wasm",
+    "document": "continued-one-to-three-columns-hwpx",
+    "pixels_changed_pages": [
+      "rhwp_002",
+      "rhwp_003"
+    ],
+    "pages": 3
+  },
+  {
+    "backend": "wasm",
+    "document": "zone-preserve-paragraph-after-hwpx",
+    "pixels_changed_pages": [
+      "rhwp_001",
+      "rhwp_002"
+    ],
+    "pages": 2
+  },
+  {
+    "backend": "wasm",
+    "document": "paragraph-after-1800-hwpx",
+    "pixels_changed_pages": [
+      "rhwp_001",
+      "rhwp_002"
+    ],
+    "pages": 2
+  },
+  {
+    "backend": "wasm",
+    "document": "paragraph-after-5000-hwpx",
+    "pixels_changed_pages": [
+      "rhwp_001",
+      "rhwp_002"
+    ],
+    "pages": 2
+  },
+  {
+    "backend": "wasm",
+    "document": "shortcut-hwp",
+    "pixels_changed_pages": [],
+    "pages": 7
+  },
+  {
+    "backend": "wasm",
+    "document": "kps-ai",
+    "pixels_changed_pages": [
+      "rhwp_065",
+      "rhwp_066"
+    ],
+    "pages": 77
+  },
+  {
+    "backend": "wasm",
+    "document": "rowbreak18-hwp",
+    "pixels_changed_pages": [],
+    "pages": 18
+  },
+  {
+    "backend": "wasm",
+    "document": "giant4138-original-hwp",
+    "pixels_changed_pages": [],
+    "pages": 115
+  },
+  {
+    "backend": "wasm",
+    "document": "giant4138-tab-period-hwp",
+    "pixels_changed_pages": [],
+    "pages": 197
+  }
+]

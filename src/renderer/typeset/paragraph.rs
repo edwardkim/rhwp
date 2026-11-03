@@ -997,7 +997,18 @@ pub(super) fn place_after_failed_fit_with_storage<S: crate::storage::Storage>(
         &st.paragraph_split_entry_page(),
         dpi,
     ) {
-        st.advance_column_or_new_page_with_storage(storage)?;
+        if entry_fit.empty_zone_first_line_overflows {
+            // 부분 쪽의 어느 단에도 첫 줄이 들어가지 않으면 다음 쪽에서 시작한다.
+            let opening_zone = st.current_column == 0;
+            let opening_spacing = st.current_zone_design_spacing_px / 2.0;
+            st.force_new_page_with_storage(storage)?;
+            if opening_zone {
+                st.align_zone_origin(opening_spacing);
+                st.restart_zone_columns();
+            }
+        } else {
+            st.advance_column_or_new_page_with_storage(storage)?;
+        }
         if try_absorb_empty_page_start_with_storage(st, para_idx, para, storage)? {
             return Ok(());
         }

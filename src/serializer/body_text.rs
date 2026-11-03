@@ -97,6 +97,9 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
         }
     }
 
+    let section = super::column_sizes::for_export_with_storage(section, storage)?;
+    let section = section.as_ref();
+
     // [Task #852 Stage 2.4] Form 컨트롤의 z-order/TabOrder 카운터 reset.
     // 한 섹션 내 Form 등장순으로 0..N-1 부여 → 정답지 패턴 재현.
     super::control::reset_form_order_counter();
