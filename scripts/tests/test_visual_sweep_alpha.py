@@ -123,11 +123,9 @@ class WhitePaperAlphaTests(unittest.TestCase):
                 ImageDraw.Draw(source).rectangle((0, 32, 31, 32), fill=(0, 0, 0, 0))
                 source.save(left / f"rhwp_{page:03d}.png")
                 Image.new("RGB", (32, 32), "white").save(right / f"pdf_{page:03d}.png")
-            # 이 검사는 PNG worker만 격리하며, 필수 편람 연결은 별도 통합 검사에서 확인한다.
             result = subprocess.run(
                 [sys.executable, "-c",
-                 "from scripts import visual_sweep as s; "
-                 "s.enforce_required_handbook = lambda *args: None; s.main()",
+                 "from scripts import visual_sweep as s; s.main()",
                  "--png-pair", str(left), str(right),
                  "--silhouette-only", "--key", "alpha", "--out", str(output), "--page-workers", "2"],
                 cwd=MODULE_PATH.parents[1], capture_output=True, text=True, timeout=45,

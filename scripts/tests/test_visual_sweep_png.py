@@ -258,6 +258,22 @@ class SystemFontDiscoveryTests(unittest.TestCase):
 
 
 class RasterDispatchTests(unittest.TestCase):
+    def test_webfont_preflight_failure_invalidates_old_passed_summary(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            for name in ['source.hwp', 'oracle.pdf']:
+                (root / name).write_bytes(b'input')
+            out = root / 'out'
+            sweep.update_root_summary(out, {'key': 'case', 'pr_review_gate': {'status': 'passed'}})
+            with patch('scripts.visual_sweep_native_webfonts.prepare', side_effect=ValueError('unavailable')):
+                with self.assertRaisesRegex(SystemExit, 'Native 웹폰트 준비 실패'):
+                    sweep.render_target(root, sweep.Target('case', Path('source.hwp'), Path('oracle.pdf')),
+                                        out, 'rhwp', 96, 32, [1], resume=False,
+                                        svg_rasterizer='webfont', rasterizer='png')
+            summary = json.loads((out / 'summary.json').read_text())
+            self.assertEqual(summary[0]['pr_review_gate']['status'], 're_review_required')
+            self.assertEqual(summary[0]['pr_review_gate']['reason'], 'native_webfont_preparation_failed')
+
     def test_png_inventory_records_explicit_program_file_and_rejects_missing_source(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
@@ -287,6 +303,8 @@ class RasterDispatchTests(unittest.TestCase):
                   patch.object(sweep, 'run_manifest_for_target', return_value={}),
                   patch.object(sweep, 'load_note_shape', return_value={}),
                   patch.object(sweep, 'default_sweep_font_paths', return_value=[]),
+                  patch('scripts.visual_sweep_native_webfonts.prepare',
+                        return_value={'font_paths': [], 'font_environment': None, 'evidence': {}}),
                   patch.object(png, 'export_native_png', side_effect=SystemExit('PNG 부분 출력')),
                   self.assertRaisesRegex(SystemExit, '부분 출력')):
                 sweep.render_target(root, sweep.Target('case', Path('source.hwp'), Path('oracle.pdf')),

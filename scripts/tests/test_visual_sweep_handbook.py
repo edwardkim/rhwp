@@ -141,11 +141,19 @@ class HandbookGateTests(unittest.TestCase):
     def test_unrelated_government_font_is_not_in_handbook_supply(self):
         self.assertFalse(any('Government_16040911' in name for name, _ in handbook.WEBFONTS.values()))
 
-    def test_png_pair_cli_also_requires_the_handbook(self):
+    def test_png_pair_only_runs_handbook_when_requested(self):
+        for enabled in (False, True):
+            with self.subTest(enabled=enabled), tempfile.TemporaryDirectory() as temp, \
+                    patch.object(sys, 'argv', ['visual_sweep.py', '--silhouette-only', '--png-pair', 'a', 'b', '--out', temp] + (['--handbook-gate'] if enabled else [])), \
+                    patch.object(SWEEP, 'silhouette_png_pairs', return_value=[(1, Path('a'), Path('b'))]), \
+                    patch.object(SWEEP, 'write_silhouette_tsv', return_value={'pr_review_gate': {'status': 'not_evaluated'}}), \
+                    patch.object(SWEEP, 'enforce_required_handbook') as enforce:
+                SWEEP.main()
+                self.assertEqual(enforce.call_count, int(enabled))
+
+    def test_handbook_can_run_alone(self):
         with tempfile.TemporaryDirectory() as temp, \
-                patch.object(sys, 'argv', ['visual_sweep.py', '--silhouette-only', '--png-pair', 'a', 'b', '--out', temp]), \
-                patch.object(SWEEP, 'silhouette_png_pairs', return_value=[(1, Path('a'), Path('b'))]), \
-                patch.object(SWEEP, 'write_silhouette_tsv', return_value={'pr_review_gate': {'status': 'not_evaluated'}}), \
+                patch.object(sys, 'argv', ['visual_sweep.py', '--handbook-gate', '--out', temp]), \
                 patch.object(SWEEP, 'enforce_required_handbook') as enforce:
             SWEEP.main()
             enforce.assert_called_once()

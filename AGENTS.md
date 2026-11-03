@@ -66,6 +66,9 @@
   항목을 PR CI에 넘기거나 Draft로 우회하지 않는다. 일반 제출은 검증을 완료한 Open PR이다.
   Draft는 조기 설계 논의·WIP 공유 등 특별한 목적과 작업지시자의 명시적 Draft 지시가 있는 경우만
   허용하며 목적·미완료 항목·완료 계획을 기록한다. 번호 확보·CI 대기는 예외 사유가 아니다.
+- 조판에 영향을 주는 변경이 포함된 PR은 제출 전 최종 head에서 행정업무운영 편람 HWPX Native
+  383쪽 `--handbook-gate`를 실행해 통과한다. 일반 Visual Sweep에서는 자동 실행하지 않으며,
+  실행과 판정은 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)을 따른다.
 - Docker 설치는 로컬 검증의 필수 조건이 아니다. 사용 가능 환경과 불가 환경의
   [fresh WASM 실행 경로](mydocs/manual/pr_review/local_validation.md#환경에-따른-fresh-wasm-검증)를
   구분하고, 호스트 경로도 최적화·브라우저·시각 검증까지 동일하게 완료한다.

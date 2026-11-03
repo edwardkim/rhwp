@@ -59,6 +59,10 @@ PR CI나 Draft로 우회하지 않는다. Draft는 특별한 조기 논의·WIP 
 Docker는 필수 설치 조건이 아니며 [환경별 fresh WASM 경로](mydocs/manual/pr_review/local_validation.md#환경에-따른-fresh-wasm-검증)의
 Docker 또는 호스트 빌드를 선택해 동일한 필수 검증을 완료한다.
 
+조판에 영향을 주는 변경이 포함된 PR은 제출 전 최종 head에서 행정업무운영 편람 HWPX Native
+383쪽 `--handbook-gate`를 실행해 통과한다. 일반 Visual Sweep에서는 자동 실행하지 않으며,
+실행과 판정은 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)을 따른다.
+
 ## 리뷰어 지정 후 추가 커밋 제한
 
 리뷰어 지정 후 기여자와 그 대행 자동화는 해당 PR에 임의로 추가 커밋을 push하지 않는다.

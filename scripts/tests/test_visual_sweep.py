@@ -566,6 +566,18 @@ class EmbeddedFontPreflightTests(unittest.TestCase):
             ):
                 SWEEP.main()
             self.assertEqual(render.call_args.kwargs['embed_fonts'], 'full')
+            handbook.assert_not_called()
+
+    def test_normal_target_runs_handbook_when_requested(self):
+        with tempfile.TemporaryDirectory() as temp:
+            with (
+                patch.object(sys, 'argv', ['visual_sweep.py', '--file-target', 'fixture', 'a.hwp', 'a.pdf', '--out', temp, '--handbook-gate']),
+                patch.object(SWEEP, 'ensure_tools'),
+                patch.object(SWEEP, 'ensure_default_rhwp_binary_is_current'),
+                patch.object(SWEEP, 'render_target', return_value={}),
+                patch.object(SWEEP, 'enforce_required_handbook') as handbook,
+            ):
+                SWEEP.main()
             handbook.assert_called_once()
 
     def test_font_failure_invalidates_old_passed_summary_before_raster_or_resume(self):

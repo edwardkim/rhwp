@@ -1575,6 +1575,32 @@ def render_target(
         raise SystemExit(f"PDF 파일이 없습니다: {pdf}")
     font_mismatch_record = font_mismatch_evidence_record(root, font_mismatch_evidence, hwp=hwp, pdf=pdf)
 
+    automatic_font_paths = not font_paths
+    native_webfonts = None
+    if rasterizer == "png" and wasm_pkg is None:
+        try:
+            from scripts import visual_sweep_native_webfonts
+        except ModuleNotFoundError:
+            import visual_sweep_native_webfonts
+        try:
+            if font_environment is not None:
+                font_environment = resolve_input_path(root, font_environment)
+            prepared = visual_sweep_native_webfonts.prepare(
+                root, hwp, rhwp_bin, font_paths or default_sweep_font_paths(),
+                font_environment, compat, dpi,
+            )
+        except (Exception, SystemExit) as error:
+            failure = {"key": target.key, "run_state": "failed",
+                       "pr_review_gate": {"status": "re_review_required",
+                                          "reason": "native_webfont_preparation_failed"},
+                       "error": str(error)}
+            write_json_atomic(out_root / safe_target_key(target.key) / "manifest.json", failure)
+            update_root_summary(out_root, failure)
+            raise SystemExit(f"Native 웹폰트 준비 실패: {error}") from error
+        font_paths = prepared["font_paths"]
+        font_environment = prepared["font_environment"]
+        native_webfonts = prepared["evidence"]
+
     base = out_root / safe_target_key(target.key)
     svg_dir = base / "svg"
     rhwp_png_dir = base / "rhwp_png"
@@ -1602,6 +1628,8 @@ def render_target(
         font_environment = resolve_input_path(root, font_environment)
         environment_args.extend(["--font-environment", str(font_environment)])
     provenance = sweep_provenance(root, hwp, pdf, rhwp_bin, svg_rasterizer)
+    if native_webfonts is not None:
+        provenance["native_webfont_fallback"] = native_webfonts
     png_module = None
     if rasterizer == "png":
         try:
@@ -1645,6 +1673,8 @@ def render_target(
     )
     if png_module is not None:
         font_supply["mode"] = "direct-font-programs"
+        if automatic_font_paths and font_paths:
+            font_supply["source"] = "RHWP_FONT_PATH" if os.environ.get("RHWP_FONT_PATH") else "automatic_local_and_web"
         if system_font_supply:
             font_supply["source"] = "system_fontconfig"
     provenance["font_supply"] = font_supply
@@ -5759,7 +5789,7 @@ def dedupe_target_keys(targets: list[Target]) -> list[Target]:
 
 def required_handbook_gate(root: Path, out_root: Path, rhwp_bin: str, workers: int,
                            font_paths: list[Path]) -> dict[str, object]:
-    """모든 sweep에서 편람을 별도로 Native 전쪽 출력해 #8389와 비교한다."""
+    """요청 시 편람을 별도로 Native 전쪽 출력해 #8389와 비교한다."""
     try:
         from scripts import visual_sweep_handbook as handbook
         from scripts.visual_sweep_resume import render_silhouette_resumable
@@ -5833,6 +5863,10 @@ def main() -> None:
     parser.add_argument(
         "--silhouette-only", action="store_true",
         help="overlay·compare·review PNG 및 상세 분석을 생략하고 같은2px 실루엣 보조값만 TSV로 저장합니다.",
+    )
+    parser.add_argument(
+        "--handbook-gate", action="store_true",
+        help="행정업무운영 편람 HWPX를 Native 383쪽 전수 검사하고 #8389 기준과 비교합니다.",
     )
     parser.add_argument(
         "--png-pair", nargs=2, type=Path, metavar=("RHWP_PNG_DIR", "PDF_PNG_DIR"),
@@ -5951,6 +5985,12 @@ def main() -> None:
                                         resume=args.resume)
         if manifest["pr_review_gate"]["status"] == "re_review_required":
             raise SystemExit("실루엣 보조값 90% 미만: TSV를 확인하고 직접 검토하세요.")
+        if args.handbook_gate:
+            enforce_required_handbook(Path.cwd(), Path(args.out), args.rhwp_bin,
+                                      args.page_workers, args.font_path)
+        return
+
+    if args.handbook_gate and not (args.target or args.hwp or args.pdf or args.file_target):
         enforce_required_handbook(Path.cwd(), Path(args.out), args.rhwp_bin,
                                   args.page_workers, args.font_path)
         return
@@ -6056,7 +6096,8 @@ def main() -> None:
             "PR 검토 보류. "
             "작성자 branch에서 PDF/overlay 원인을 수정하고 Native/fresh WASM TSV·review PNG를 재산출하세요: " + "; ".join(re_review_targets)
         )
-    enforce_required_handbook(root, out_root, args.rhwp_bin, args.page_workers, args.font_path)
+    if args.handbook_gate:
+        enforce_required_handbook(root, out_root, args.rhwp_bin, args.page_workers, args.font_path)
 
 
 if __name__ == "__main__":
