@@ -689,6 +689,7 @@ pub(super) fn prepare(
                     seg,
                     page.profile.hwpx_stored_layout(),
                     page.profile.hwp5_stored_pagination_layout(),
+                    !page.profile.hangul2024_layout(),
                     dpi,
                 )
             };

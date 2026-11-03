@@ -596,6 +596,23 @@ fn successor_lacks_stored_text_axis(para: &Paragraph) -> bool {
         || crate::renderer::para_has_no_stored_line_segs(para)
 }
 
+/// [#8544] 다음 문단의 첫 저장 줄이 이 TAC 줄의 `vpos + lh + ls` 에서 정확히 시작하면, 한/글은 표 줄
+/// 간격 전량을 흐름에 남긴 것이다(같은 문단 뒤 줄의 `stored_successor_owns_full_gap` 과 같은 증거를
+/// 문단 경계에서도 쓴다). #8543 합성 leading_shape_line(한/글 2020·2024 Print): 표 A 줄 3705+7812+600 = 표 B
+/// 문단 12117, 표 B 위끝 = 저장 vpos + 바깥 위 여백.
+fn stored_successor_closes_full_gap(seg: &LineSeg, next: &Paragraph) -> bool {
+    seg.line_spacing > 0
+        && !next.stored_text_partition_is_dirty()
+        && next.line_segs.first().is_some_and(|first| {
+            first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && seg
+                    .vertical_pos
+                    .checked_add(seg.line_height)
+                    .and_then(|end| end.checked_add(seg.line_spacing))
+                    == Some(first.vertical_pos)
+        })
+}
+
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn tac_host_trailing_spacing_at_boundary(
     para: &Paragraph,
@@ -604,6 +621,10 @@ pub(crate) fn tac_host_trailing_spacing_at_boundary(
     seg: &LineSeg,
     hwpx_stored_layout: bool,
     native_stored_layout: bool,
+    // [#8544] 다음 문단 저장 vpos 가 간격 전량을 닫을 때 전량을 남기는 규칙. 한/글 2020·2024
+    // (13.0.0.3901) Print 로 확인한 기본(2022 계열) 경로에서만 켠다. `--compat 2024` 는 #5524 Δ1
+    // 리비전(앞 앵커 줄 회수)을 모델링하며 그 리비전의 이 경계 동작은 아직 확인하지 못했다.
+    stored_successor_full_gap: bool,
     dpi: f64,
 ) -> f64 {
     if native_stored_layout
@@ -613,7 +634,10 @@ pub(crate) fn tac_host_trailing_spacing_at_boundary(
             .line_segs
             .last()
             .is_some_and(|last| std::ptr::eq(last, seg))
-        && next_para.is_some_and(successor_lacks_stored_text_axis)
+        && next_para.is_some_and(|next| {
+            successor_lacks_stored_text_axis(next)
+                || (stored_successor_full_gap && stored_successor_closes_full_gap(seg, next))
+        })
     {
         crate::renderer::hwpunit_to_px(seg.line_spacing, dpi)
     } else {
