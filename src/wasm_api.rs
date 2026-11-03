@@ -8039,13 +8039,30 @@ impl HwpDocument {
 
     /// 새 스타일을 생성한다.
     ///
-    /// json: {"name":"...", "englishName":"...", "type":0, "nextStyleId":0}
-    /// 반환값: 새 스타일 ID (0-based)
+    /// json: {"name":"...", "englishName":"...", "type":0, "nextStyleId":0, "index":3}
+    /// `index`를 주면 그 자리에 끼워 넣고, 그 자리부터 뒤 스타일을 가리키던 모든 참조(문단·덧말·
+    /// 바탕쪽·메모·다른 스타일의 다음 스타일)를 한 칸씩 민다. 한컴은 고른 스타일 바로 뒤에 새 스타일을 둔다.
+    /// `nextStyleId`는 끼워 넣은 뒤의 번호다. 없으면 목록 끝에 붙인다.
+    /// 반환값: 새 스타일 ID (0-based). `index`가 목록 길이보다 크거나, 문단이 스타일 번호를 1바이트로
+    /// 저장하므로 256개를 채운 목록 가운데에 끼우면 -1이다.
     #[wasm_bindgen(js_name = createStyle)]
     pub fn create_style(&mut self, json: &str) -> i32 {
         use crate::document_core::helpers::{json_i32, json_str};
         use crate::model::style::Style;
 
+        let count = self.core.document.doc_info.styles.len();
+        let index = match json_i32(json, "index") {
+            None => count,
+            Some(index) => match usize::try_from(index) {
+                Ok(index) if index <= count => index,
+                _ => return -1,
+            },
+        };
+        // 문단은 스타일 번호를 1바이트로 저장한다. 256개를 채운 목록 가운데에 끼우면 마지막 스타일이
+        // 가리킬 수 없는 256번으로 밀리므로 끼우지 않는다. 끝에 붙이기는 예전처럼 막지 않는다.
+        if index < count && count > usize::from(u8::MAX) {
+            return -1;
+        }
         let name = json_str(json, "name").unwrap_or_default();
         let english_name = json_str(json, "englishName").unwrap_or_default();
         let style_type = json_i32(json, "type").unwrap_or(0) as u8;
@@ -8080,12 +8097,14 @@ impl HwpDocument {
             char_shape_id,
             lock_form: false,
         };
-        self.core.document.doc_info.styles.push(new_style);
+        if index < count {
+            self.remap_style_ids(|id| if id >= index as u16 { id + 1 } else { id });
+        }
+        self.core.document.doc_info.styles.insert(index, new_style);
         self.core.document.doc_info.raw_stream_dirty = true;
-        let new_id = (self.core.document.doc_info.styles.len() - 1) as i32;
         // 스타일 캐시 갱신
         self.core.rebuild_resolved_styles();
-        new_id
+        index as i32
     }
 
     /// 스타일을 삭제한다.
@@ -8094,9 +8113,6 @@ impl HwpDocument {
     /// 삭제된 스타일을 사용 중인 문단은 바탕글(ID 0)로 변경된다.
     #[wasm_bindgen(js_name = deleteStyle)]
     pub fn delete_style(&mut self, style_id: u32) -> bool {
-        use crate::model::document::RawRecord;
-        use crate::model::identity::walk::{walk, Node};
-
         if style_id == 0 {
             return false; // 바탕글은 삭제 불가
         }
@@ -8104,63 +8120,95 @@ impl HwpDocument {
         if style_id as usize >= styles.len() {
             return false;
         }
-        let sid = style_id as u8;
-        // 스타일 표는 인덱스 기반이다. 지운 스타일을 가리키던 번호는 바탕글(0)로, 그 뒤 번호는
-        // 한 칸씩 당긴다.
-        let remap = |id: u8| match id.cmp(&sid) {
-            std::cmp::Ordering::Less => id,
-            std::cmp::Ordering::Equal => 0,
-            std::cmp::Ordering::Greater => id - 1,
-        };
-        // HWP 원본 바탕쪽은 구역 정의의 원시 레코드로 그대로 저장된다. 그 안 문단 머리의
-        // 스타일 번호(PARA_HEADER 10번째 바이트)도 옮겨야 저장본이 모델과 같다.
-        let remap_raw = |records: &mut [RawRecord]| {
+        let sid = style_id as u16;
+        self.remap_style_ids(|id| {
+            if id == sid {
+                0
+            } else if id > sid {
+                id - 1
+            } else {
+                id
+            }
+        });
+        // 스타일 삭제 (인덱스 기반이므로 뒤의 ID가 변경됨에 주의)
+        self.core.document.doc_info.styles.remove(style_id as usize);
+        // 스타일 캐시 갱신
+        self.core.rebuild_resolved_styles();
+        true
+    }
+
+    /// 스타일 번호를 가리키는 모든 참조를 `remap`으로 바꾼다. 스타일 목록 자체는 바꾸지 않는다.
+    ///
+    /// 문단(본문·표·글상자·머리말·주석·메모·바탕쪽·복사해 둔 문단), 덧말, 다른 스타일의 다음 스타일,
+    /// 그리고 원본 레코드로 다시 쓰는 바탕쪽·구역 끝 목록(확장 바탕쪽·메모)의 문단 머리를 함께 고친다.
+    fn remap_style_ids(&mut self, remap: impl Fn(u16) -> u16) {
+        use crate::model::identity::walk::{walk, Node};
+
+        let remap_records = |records: &mut [crate::model::document::RawRecord]| {
+            // 저장된 바탕쪽은 원본 레코드를 다시 쓴다. 문단 머리의 스타일 번호(PARA_HEADER 10번째
+            // 바이트)도 옮겨야 저장본이 모델과 같다.
             for record in records {
                 if record.tag_id == crate::parser::tags::HWPTAG_PARA_HEADER {
                     if let Some(id) = record.data.get_mut(10) {
-                        *id = remap(*id);
+                        *id = remap(u16::from(*id)) as u8;
                     }
                 }
             }
         };
-        self.core.document.doc_info.styles.remove(style_id as usize);
-        // 본문뿐 아니라 표 셀·글상자·머리말/꼬리말·각주/미주·캡션·메모·바탕쪽 문단과 덧말도
-        // 같은 스타일 표를 가리킨다. 하나라도 빠지면 그 문단이 다른 스타일을 가리킨 채 저장된다.
-        let mut visit = |node: &mut Node<'_>| -> Result<(), HwpError> {
-            match node {
-                Node::Paragraph(para) => para.style_id = remap(para.style_id),
-                Node::Control(Control::Ruby(ruby)) => {
-                    if let Ok(id) = u8::try_from(ruby.style_id_ref) {
-                        ruby.style_id_ref = remap(id).into();
+        let remap_paragraphs = |paragraphs: &mut [Paragraph]| {
+            walk(paragraphs, |node| {
+                match node {
+                    Node::Paragraph(para) => para.style_id = remap(u16::from(para.style_id)) as u8,
+                    Node::Control(Control::Ruby(ruby)) => {
+                        ruby.style_id_ref = remap(ruby.style_id_ref);
                     }
+                    Node::Control(Control::SectionDef(section_def)) => {
+                        remap_records(&mut section_def.extra_child_records);
+                    }
+                    _ => {}
                 }
-                Node::Control(Control::SectionDef(def)) => remap_raw(&mut def.extra_child_records),
-                _ => {}
-            }
-            Ok(())
+                Ok(())
+            })
+            .expect("style reference traversal is infallible");
         };
+        // 구역 끝 목록은 원본 레코드와 모델 투영이 같을 때만 저장한다. 둘을 함께 고쳤으면 다시 봉인한다.
+        let tail_sealed =
+            crate::model::section_tail::validate_preservation(&self.core.document).is_ok();
+        // 표·글상자·머리말·주석도 같은 스타일 풀을 참조한다. 모양과 원문은 바꾸지 않는다.
         for section in &mut self.core.document.sections {
-            walk(&mut section.paragraphs, &mut visit).expect("스타일 번호 순회는 실패하지 않는다");
-            // 렌더와 HWPX 저장은 구역의 구역 정의 사본에서 바탕쪽을 읽는다.
+            remap_paragraphs(&mut section.paragraphs);
+            remap_records(&mut section.section_def.extra_child_records);
             for master in &mut section.section_def.master_pages {
-                walk(&mut master.paragraphs, &mut visit)
-                    .expect("스타일 번호 순회는 실패하지 않는다");
+                remap_paragraphs(&mut master.paragraphs);
             }
-            remap_raw(&mut section.section_def.extra_child_records);
-        }
-        for s in &mut self.core.document.doc_info.styles {
-            s.next_style_id = remap(s.next_style_id);
-        }
-        // 스타일 캐시 갱신
-        self.core.rebuild_resolved_styles();
-        // DocInfo(styles 목록)와 문단 style_id 가 함께 바뀌었으므로 저장 스트림을 무효화한다.
-        // raw_stream_dirty 미설정 시 DocInfo 가, 섹션 raw_stream 잔존 시 본문이 각각 원본
-        // 바이트로 재방출돼 스타일 삭제·문단 재배정이 .hwp 저장에서 유실된다.
-        self.core.document.doc_info.raw_stream_dirty = true;
-        for section in &mut self.core.document.sections {
+            if let Some(tail) = &mut section.trailing_lists {
+                remap_records(&mut tail.records);
+            }
+            // 본문 원본 스트림을 다시 쓰지 않게 해 문단 스타일 번호 변경이 HWP 저장에 남게 한다.
             section.raw_stream = None;
         }
-        true
+        if tail_sealed {
+            self.core.document.seal_section_tail_provenance();
+        }
+        // 복사해 둔 문단도 같은 스타일 표를 가리킨다. 붙이면 옮기지 않은 번호의 다른 스타일이 된다.
+        if let Some(clipboard) = &mut self.core.clipboard {
+            remap_paragraphs(&mut clipboard.paragraphs);
+        }
+        if let Some(transpose) = &mut self.core.table_transpose_clipboard {
+            for paragraphs in transpose.data.cells.iter_mut().flatten() {
+                remap_paragraphs(paragraphs);
+            }
+        }
+        for s in &mut self.core.document.doc_info.styles {
+            let next = remap(u16::from(s.next_style_id)) as u8;
+            if next != s.next_style_id {
+                s.next_style_id = next;
+                // 원본 레코드 봉인이 없는 기본 문서에서도 이전 연결을 다시 쓰지 않는다.
+                s.raw_data = None;
+            }
+        }
+        // 스타일 목록과 문단 스타일 번호가 함께 바뀌므로 DocInfo 원본 스트림도 다시 쓴다.
+        self.core.document.doc_info.raw_stream_dirty = true;
     }
 
     /// 문서에 정의된 문단 번호(Numbering) 목록을 조회한다.
