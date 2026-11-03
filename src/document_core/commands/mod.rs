@@ -28,6 +28,8 @@ pub(crate) mod picture_transform_journal;
 // [#3565] 대형 문서 결함을 이분법으로 좁히기 위한 쪽 범위 추출.
 pub mod page_extract;
 mod table_formula;
+// 구역 나누기·합치기 — 한/글 [쪽-구역 나누기]와 구역 경계 지우기.
+mod section_ops;
 mod table_ops;
 mod text_editing;
 // [#5769] Stage 4 — 구역 raw 저널. SectionRawCapture 타입이 DocumentCore 필드로
