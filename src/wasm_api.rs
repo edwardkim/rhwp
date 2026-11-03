@@ -4188,7 +4188,8 @@ impl HwpDocument {
     ///
     /// options JSON: `{ rowCount, colCount, colWidths?: [u32, ...], rowHeights?: [u32, ...],
     ///                 treatAsChar?: bool }` — `treatAsChar` 기본값은 참(글자처럼 취급)이다.
-    /// 거짓이면 한/글 12.30처럼 자리 차지 표를 만든다.
+    /// 거짓이면 한/글 12.30처럼 자리 차지 표를 만든다. 경로의 첫 마디가 머리말·꼬리말
+    /// (`{controlIndex: 머리말 컨트롤, cellIndex: 0, cellParaIndex: 머리말 문단}`)이면 그 문단에 만든다.
     ///
     /// 반환: `{"ok":true,"cellParaIdx":N,"controlIdx":0,"cellPath":[..안쪽 표 첫 칸까지]}`
     #[wasm_bindgen(js_name = createTableInCellByPath)]
