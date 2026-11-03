@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-23
+last_verified: 2026-11-04
 ---
 
 # PR 접수와 리뷰 기록
@@ -289,6 +289,9 @@ maintainer 일반 경로는 처리 중 active 경로에 작성하고, 완료 후
 collaborator self-merge와 collaborator 매개 외부 PR은 해당 기본 경로 문서가 정한 archive 경로를 처음부터 쓴다.
 PR 번호는 PR 생성 시점에 확정하며 생성 전에 예측하지 않는다. collaborator self-merge는 PR을 생성해
 번호를 받은 뒤 self-review 기록을 번호 기반 review 문서로 작성하고 같은 PR의 후속 commit으로 추가한다.
+
+단, CI 실행 정의·판정 정책 변경 PR의 기록은 [옵션 2](post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)로
+병합 후 별도 기록 PR에 반영한다. 실제 검토와 원 PR의 최신 code head CI·merge 승인 조건은 생략하지 않는다.
 
 ~~~text
 mydocs/pr/pr_N_review.md

@@ -45,6 +45,10 @@
 
 ## PR 제출 전 검증과 Draft 제한
 
+CI workflow·action·CI 실행/재사용 판정 정책 변경 PR의 후속 기록은 **옵션 2**로 처리한다.
+원 PR의 Full CI·검토·승인·병합 뒤 review·오늘할일을 별도 기록 PR로 반영하며, 원 PR에 문서-only
+trailing commit을 추가해 전체 CI를 반복하지 않는다. [정본 절차](mydocs/manual/pr_review/post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)를 따른다.
+
 새 PR 준비·생성 전에는 본인 계정의 열린 PR을 조회한다. **이미 리뷰어가 지정된 PR은 우선
 처리 대상에서 제외**하고 임의로 갱신하지 않는다. 나머지 기존 PR의 lint를 포함한 모든
 CI 실패·오류부터 해결한다.
