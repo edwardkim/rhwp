@@ -244,13 +244,6 @@ impl TypesetEngine {
                 partial_height += height - current_content;
             }
         }
-        if std::env::var("RHWP_DIAG_SCAN").is_ok() {
-            eprintln!(
-                "DIAG_SCAN FRAGMENT rows={}..{} continuation={} block={:?} cut={:?} consumed={:.3} frame={:?} override={:?}",
-                cursor_row, end_row, is_continuation, split_block_start, split_end_cut,
-                consumed, stored_row_frame, end_row_height_override
-            );
-        }
         // 원본 셀의 저장 쪽 0에서 재개하는 새 단은 실제 좌표축을 가진다.
         // 후속 TAC가 이 증거를 잃고 누적 좌표를 임의의 0 기준으로 읽지 않게 한다.
         let resumed_stored_page_frame = is_continuation
@@ -1030,15 +1023,6 @@ impl TypesetEngine {
             }
         };
 
-        // [작업 #1046 2단계 진단] 순회 결과 — 조각 경계/소비 높이. 동작 불변.
-        if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
-            eprintln!(
-                "TABLE_SPLIT_RESULT: pi={} sec={} cursor_row={} end_row={} consumed={:.1} partial_h={:.1} split_end_limit={:.1} avail_for_rows={:.1} fits={}",
-                para_idx, st.section_index, cursor_row, end_row, consumed, partial_height,
-                split_end_limit, avail_for_rows, consumed <= avail_for_rows + 0.1,
-            );
-        }
-
         if end_row >= row_count && split_end_limit == 0.0 {
             let skip_terminal_empty_sliver = is_continuation
                 // 재조판한 선언 잔여는 마지막 내용 유닛 뒤에도 실제 물리 공간을 차지한다.
@@ -1253,9 +1237,6 @@ impl TypesetEngine {
                 });
                 let terminal_spacing = terminal_successor_gap
                     .unwrap_or(host_spacing_after_only + terminal_host_spacing);
-                if std::env::var_os("RHWP_DIAG_SCAN").is_some() {
-                    eprintln!("DIAG_SCAN FLOW_END pi={para_idx} row={cursor_row} cont={is_continuation} current={:.3} occupied={occupied:.3} terminal_spacing={terminal_spacing:.3} outer={} terminal_flow={:.3} reserved={terminal_outer_bottom_overhead:.3} host_tags={:?} next_line={:?}", st.current_height, table.outer_margin_bottom, input.prepared.terminal_outer_bottom_flow, input.source.paragraph.line_segs.iter().map(|line| line.tag).collect::<Vec<_>>(), input.source.paragraphs_all.get(para_idx + 1).and_then(|para| para.line_segs.first()).map(|line| (line.vertical_pos, line.tag)));
-                }
                 st.advance_flow_by(occupied + terminal_spacing);
                 terminal_host_push = terminal_spacing;
                 flow_after_terminal_advance = st.current_height;

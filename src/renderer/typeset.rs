@@ -3354,12 +3354,6 @@ fn ladder_spacing_omitted_signature(
         }
         if (step - bare).abs() < 2.0 && step + 1.0 < bare + spacing_around {
             hits += 1;
-            if std::env::var("RHWP_DIAG_OMITSIG").is_ok() {
-                eprintln!(
-                    "DIAG_OMITSIG hit step={:.1} bare={:.1} sa={:.1} sb={:.1} cur_v={} next_v={}",
-                    step, bare, sa, sb, cur_last.vertical_pos, next_first.vertical_pos
-                );
-            }
             if hits >= 2 {
                 spacing_omitted = true;
                 if has_page_reset {
