@@ -170,6 +170,17 @@ pub(crate) fn stored_table_before_host_frame(
     })
 }
 
+/// [#8560] 뒤 문단이 글자 없는 문단 기준 자리차지 표 하나의 host 여도 그 저장 줄은 뒤 문단의
+/// 시작이다 — 아래 등식(`host 줄 끝 = 뒤 저장 줄`)이 이 host 줄의 종료 진행량을 증명한다. 뒤
+/// host 줄이 자기 표 띠 아래로 밀려 저장됐으면 그 vpos 는 뒤 문단 원점 + 띠라 등식이 깨지므로
+/// 따로 거를 필요가 없다. 안건표지 별지(21138757) 1쪽: 문단 0.8 줄 35780 + 1100 + 660 = 문단
+/// 0.9 줄 37540, 한/글 Print 의 0.9 표 윗변 = 37540 + 오프셋 1685 + 바깥 위 284 HU.
+fn next_textless_para_float_host(next: &Paragraph, next_table: &Table) -> bool {
+    !next_table.common.treat_as_char
+        && is_para_topbottom_float(&next_table.common)
+        && next.text.trim().is_empty()
+}
+
 fn stored_table_between_host_frames(
     paragraphs: &[Paragraph],
     para_index: usize,
@@ -201,8 +212,13 @@ fn stored_table_between_host_frames(
         || !previous.controls.is_empty()
         || !(next.controls.is_empty()
             || (next.line_segs.len() == 1
-                && matches!(next.controls.as_slice(), [Control::Table(_)])
-                && crate::renderer::composer::stored_first_tac_line(next).is_some()))
+                && match next.controls.as_slice() {
+                    [Control::Table(next_table)] => {
+                        crate::renderer::composer::stored_first_tac_line(next).is_some()
+                            || next_textless_para_float_host(next, next_table)
+                    }
+                    _ => false,
+                }))
         || !original_lines(para)
         || !original_lines(previous)
         || !original_lines(next)
