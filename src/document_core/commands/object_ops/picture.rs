@@ -1479,6 +1479,88 @@ impl DocumentCore {
         paper_offset_x_hu: Option<i32>,
         paper_offset_y_hu: Option<i32>,
     ) -> Result<String, HwpError> {
+        self.insert_picture_native_anchored(
+            section_idx,
+            para_idx,
+            char_offset,
+            cell_path,
+            image_data,
+            width,
+            height,
+            natural_width_px,
+            natural_height_px,
+            extension,
+            description,
+            paper_offset_x_hu,
+            paper_offset_y_hu,
+            false,
+        )
+    }
+
+    /// 표 셀 경로의 그림을 **그 셀 문단 안**에 넣는다 (`cell_path` 필수).
+    ///
+    /// [`Self::insert_picture_native`] 의 셀 분기는 그림을 표를 가진 본문 문단에 띄운다(#1151).
+    /// 한컴에서 셀 안 커서로 서명·도장을 넣고 저장한 문서는 그림을 셀 문단의 컨트롤로 담는다
+    /// (가로 기준 단, 세로 기준 문단). 그렇게 넣어야 행 높이·표 이동·쪽 나눔에서 그림이 셀과
+    /// 함께 움직인다. 오프셋은 단·문단 기준(HWPUNIT, 음수 허용)이며 `None` 이면 0 이다.
+    #[allow(clippy::too_many_arguments)]
+    pub fn insert_picture_in_cell_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        cell_path: &[(usize, usize, usize)],
+        image_data: &[u8],
+        width: u32,
+        height: u32,
+        natural_width_px: u32,
+        natural_height_px: u32,
+        extension: &str,
+        description: &str,
+        offset_x_hu: Option<i32>,
+        offset_y_hu: Option<i32>,
+    ) -> Result<String, HwpError> {
+        if cell_path.is_empty() {
+            return Err(HwpError::RenderError(
+                "셀 안 그림 넣기에는 셀 경로가 필요합니다".to_string(),
+            ));
+        }
+        self.insert_picture_native_anchored(
+            section_idx,
+            para_idx,
+            char_offset,
+            cell_path,
+            image_data,
+            width,
+            height,
+            natural_width_px,
+            natural_height_px,
+            extension,
+            description,
+            offset_x_hu,
+            offset_y_hu,
+            true,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn insert_picture_native_anchored(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        char_offset: usize,
+        cell_path: &[(usize, usize, usize)],
+        image_data: &[u8],
+        width: u32,
+        height: u32,
+        natural_width_px: u32,
+        natural_height_px: u32,
+        extension: &str,
+        description: &str,
+        paper_offset_x_hu: Option<i32>,
+        paper_offset_y_hu: Option<i32>,
+        anchor_in_cell: bool,
+    ) -> Result<String, HwpError> {
         use crate::model::image::Picture;
         use crate::model::paragraph::{CharShapeRef, LineSeg};
         use crate::model::shape::{CommonObjAttr, HorzRelTo, VertRelTo};
@@ -1524,8 +1606,9 @@ impl DocumentCore {
         let position_id = self.register_embedded_bin_data(image_data, extension);
 
         if !cell_path.is_empty() {
-            if cell_path_is_textbox {
+            if cell_path_is_textbox || anchor_in_cell {
                 // === 글상자 내부 picture 분기 (#1322 maintainer fix) ===
+                // (`insert_picture_in_cell_native` 의 표 셀 문단 삽입도 이 분기를 쓴다.)
                 // hitTest 의 글상자 sentinel path (`cellIdx=0`) 가 넘어온 경우에는
                 // Picture 를 body paragraph 의 sibling 으로 띄우지 않고, 실제 text_box
                 // paragraph 안에 삽입한다. 글상자 내부 좌표계는 text_box content box
@@ -1534,23 +1617,38 @@ impl DocumentCore {
                     (Some(x), Some(y)) => (x, y),
                     _ => (0, 0),
                 };
+                // 표 셀 문단 안 그림은 한컴 저장본처럼 가로 기준을 단(셀 내용 영역)으로 둔다.
+                let (horz_rel_to, horz_rel_bits) = if cell_path_is_textbox {
+                    (HorzRelTo::Para, 3u32)
+                } else {
+                    (HorzRelTo::Column, 2u32)
+                };
 
                 // CommonObjAttr (text_box 내부 floating):
                 //   bits 3-4=vert_rel_to(2=Para), bits 8-10=horz_rel_to(3=Para),
                 //   bits 15-17=width_criterion(4=Absolute),
                 //   bits 18-20=height_criterion(2=Absolute),
                 //   bits 21-23=text_wrap(0=Square)
-                let common_attr: u32 = (2 << 3) | (3 << 8) | (4 << 15) | (2 << 18) | (1 << 26);
+                let common_attr: u32 =
+                    (2 << 3) | (horz_rel_bits << 8) | (4 << 15) | (2 << 18) | (1 << 26);
                 let common = CommonObjAttr {
                     ctrl_id: 0x67736F20,
                     attr: common_attr,
                     numbering_type: crate::model::shape::ObjectNumberingType::Picture,
                     treat_as_char: false,
                     vert_rel_to: VertRelTo::Para,
-                    horz_rel_to: HorzRelTo::Para,
+                    horz_rel_to,
                     text_wrap: crate::model::shape::TextWrap::Square,
-                    horizontal_offset: offset_x_hu.max(0) as u32,
-                    vertical_offset: offset_y_hu.max(0) as u32,
+                    horizontal_offset: if cell_path_is_textbox {
+                        offset_x_hu.max(0)
+                    } else {
+                        offset_x_hu
+                    } as u32,
+                    vertical_offset: if cell_path_is_textbox {
+                        offset_y_hu.max(0)
+                    } else {
+                        offset_y_hu
+                    } as u32,
                     width,
                     height,
                     z_order: 1,
@@ -1591,6 +1689,10 @@ impl DocumentCore {
                     (new_ctrl_idx, logical_after)
                 };
 
+                if !cell_path_is_textbox {
+                    // 셀 문단이 바뀌었으므로 최외곽 표 host 문단의 측정 revision도 무효화한다.
+                    self.mark_cell_control_dirty(section_idx, para_idx, cell_path[0].0);
+                }
                 self.mark_section_dirty(section_idx);
                 self.recompose_section(section_idx);
                 self.paginate_if_needed();
