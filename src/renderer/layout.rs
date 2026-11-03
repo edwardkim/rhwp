@@ -15369,10 +15369,41 @@ impl LayoutEngine {
                         self.dpi,
                         para_index,
                     );
+                    // [#8554] 쪽·용지 기준 자리차지 표는 host 줄과 따로 놓인다. 빈 host 줄이
+                    // 저장 자리에서 그 표 띠에 걸려 띠 아래로 밀렸으면 그 줄은
+                    // 표가 대신한 줄이 아니라 띠 아래의 독립 줄이다 — 줄높이와 줄간격을 모두
+                    // 전진한다(조판 `pre_lines_h` 와 같은 값). 2913671 별지 1쪽: 표 띠 아래끝
+                    // 298.0 + 34.7 = 한컴 「2.」 332.7, 종전 줄간격만 315.3.
+                    let host_line_below_absolute_band = !is_tac
+                        && !para_has_visible_text(para)
+                        && para.line_segs.len() == 1
+                        && match para.controls.get(control_index) {
+                            Some(Control::Table(table)) => {
+                                crate::renderer::float_placement::absolute_topbottom_table_band_bottom_px(
+                                    table,
+                                    layout.body_area.y,
+                                    layout.body_area.height,
+                                    self.current_page_height.get(),
+                                    self.dpi,
+                                )
+                                .is_some_and(|band_bottom| {
+                                    // 저장 host 줄 위끝이 띠 아래끝 위(띠에 걸림)이고, 이 항목이
+                                    // 띠 아래끝에서 시작해야 「밀린 줄」이다. 저장 위치부터 띠 아래인
+                                    // 줄은 사다리 자리 그대로라 이 규칙의 대상이 아니다.
+                                    let stored_top = col_area.y
+                                        + hwpunit_to_px(seg.vertical_pos, self.dpi);
+                                    stored_top + 0.5 < band_bottom
+                                        && tac_table_y_before + 0.5 >= band_bottom
+                                })
+                            }
+                            _ => false,
+                        };
                     let gap = if square_reserved_above {
                         // [#4533 ⑥] 위-예약 Square: 앵커·후속 문단 vpos 가 동일
                         // (붕괴 사다리) — 후행 간격도 사다리가 0 으로 증언한다.
                         0
+                    } else if host_line_below_absolute_band {
+                        seg.line_height.max(0) + seg.line_spacing.max(0)
                     } else if let Some(ladder_gap) = stored_anchor_stack_gap {
                         ladder_gap
                     } else if suppress_empty_anchor_spacing {
