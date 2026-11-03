@@ -194,6 +194,27 @@ impl TypesetEngine {
                     )
                     && !para_is_page_bottom_fixed_table_anchor(para)
                     && !para_hosts_page_anchored_block(para);
+                // 글자 없는 표 host 문단(글자처럼 취급하지 않는 문단 기준 자리차지 표만)도
+                // 새 쪽 첫 줄의 저장 vpos 를 문단 위 간격으로 적는다. 표 자체는 host 줄 뒤에
+                // 놓이므로 host 줄의 원점이 곧 표가 놓인 쪽이다 — 앞 쪽 하단에서 되감긴
+                // 이 원점은 쪽 경계다(#1086 의 표 host 는 HWP3 원점 허용 경로).
+                let near_top_table_host = has_table_control
+                    && !para_has_visible_text(para)
+                    && !profile.session_edited()
+                    && para.controls.iter().all(|control| match control {
+                        Control::Table(table) => {
+                            !table.common.treat_as_char
+                                && matches!(
+                                    table.common.text_wrap,
+                                    crate::model::shape::TextWrap::TopAndBottom
+                                )
+                                && matches!(
+                                    table.common.vert_rel_to,
+                                    crate::model::shape::VertRelTo::Para
+                                )
+                        }
+                        _ => false,
+                    });
                 // [#1921 d=-1] 네이티브 HWP5/HWPX 의 비영 near-top reset:
                 // 한글은 새 쪽 첫 줄의 stored vpos 를 0 이 아니라 해당 문단의
                 // spacing_before 로 기록하기도 한다 (조문별/규제영향분석서 클래스,
@@ -212,8 +233,8 @@ impl TypesetEngine {
                         && para_sb_hu_for_reset > 0
                         && (cv - para_sb_hu_for_reset).abs() <= 150
                         && !shape_only_para
-                        && !has_table_control
-                        && para_has_visible_text(para)
+                        && ((!has_table_control && para_has_visible_text(para))
+                            || near_top_table_host)
                         && prev_vpos_end > 60_000
                         // [#5941 축 B] `#5921` 의 완화("이번 쪽 잔여에 들어가면 저장
                         // near-top 리셋을 버린다")를 **네이티브 HWP5 저장 조판 프로파일의
