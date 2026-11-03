@@ -242,11 +242,22 @@ pub(super) fn measure(
                 _ => false,
             })
             .count();
-        if prior_tac_count == 0 {
+        // 개체가 소유한 줄. 저장 HWP5 는 원시 제어 위치로, 그 밖은 앞 TAC 개체 수로 정한다.
+        let owned_line = if profile.hwp5_stored_pagination_layout() && !profile.session_edited() {
+            crate::renderer::layout::control_line_seg_index(para, ci).unwrap_or(prior_tac_count)
+        } else {
+            prior_tac_count
+        };
+        // [#8543] 맨 앞 TAC 그림/도형도 자기 줄을 소유하면 그 줄을 센다. 종전에는 앞 TAC 개체가
+        // 없으면 건너뛰어, 쪽 머리 글뒤로 묶음 도형 줄(i270 문단 44 줄 0, 53.4px)을 상한이 되감고
+        // 뒤 표가 그만큼 위에 놓였다. 이미 센 줄(같은 줄의 표 등)은 다시 세지 않는다.
+        if (prior_tac_count == 0 && owned_line == 0 && para.line_segs.len() <= 1)
+            || tac_owned_lines.contains(&owned_line)
+        {
             continue;
         }
-        tac_owned_lines.push(prior_tac_count);
-        if let Some(seg) = para.line_segs.get(prior_tac_count) {
+        tac_owned_lines.push(owned_line);
+        if let Some(seg) = para.line_segs.get(owned_line) {
             let lh = hwpunit_to_px(seg.line_height, dpi);
             let ls_extra = if seg.line_spacing > 0 {
                 hwpunit_to_px(seg.line_spacing, dpi)
