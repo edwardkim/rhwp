@@ -155,15 +155,7 @@ fn stored_frame_prefix(
                 }) && crate::renderer::height_cursor::paragraph_origin_rewinds(before, after)
             })
     });
-    if accepted_source_restart
-        && super::super::stored_rewind_boundary_matches_current_flow(
-            paragraphs,
-            para_idx,
-            &st.current_items,
-            st.current_height,
-            st.layout.dpi,
-        )
-    {
+    if accepted_source_restart {
         return None;
     }
     // 완전한 TAC 줄이 새 단의 원점에서 수용되고 뒤 저장 줄까지 같은
