@@ -11,8 +11,8 @@
 아래의 주장 페이지 review·overlay를 함께 판독했다. 최소 글꼴 전체 Rust 회귀
 12,387건 통과·45건 skipped, 선행 [PR #8389](https://github.com/edwardkim/rhwp/pull/8389)·
 [PR #8397](https://github.com/edwardkim/rhwp/pull/8397) 2,153쪽 Native/fresh WASM
-표시값 하락 0쪽이다. 후속 보정 PR의 최신 head CI와 병합을 확인한 뒤 원 PR을
-중복 반영 사유로 종료한다.
+표시값 하락 0쪽이다. 후속 보정 [PR #8517](https://github.com/edwardkim/rhwp/pull/8517)의 최신 head CI와
+병합을 확인했다. 원 PR은 증적 댓글 게시 뒤 중복 반영 사유로 종료한다.
 
 제목 차례 run 경계는 같은 재저장 HWPX의
 [20쪽 Native 비교](../assets/issue_8305/followup8438/native-current-review-020.png)·
@@ -275,3 +275,29 @@ PDF SHA-256은 `43e2768472d834033d55ecb181b432dc62bb2b20e08ebe569db129738c4ea94f
 [오버레이](../assets/issue_8305/followup8438/native-literal-final-overlay-042.png)와
 [WASM 비교](../assets/issue_8305/followup8438/wasm-literal-final-review-042.png)·
 [오버레이](../assets/issue_8305/followup8438/wasm-literal-final-overlay-042.png)로 확인했다.
+
+## 2026-11-03 후속 보정 PR의 원격 완료 확인
+
+후속 보정 [PR #8517](https://github.com/edwardkim/rhwp/pull/8517)은 code head
+`ba0557118ad896f1c410e80da5100fedf10139d8`의
+[Build & Test](https://github.com/edwardkim/rhwp/actions/runs/41592450512),
+[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/41592450498),
+[Render Diff](https://github.com/edwardkim/rhwp/actions/runs/41592450511),
+Adapter·Proptest와 CI Impact Policy 통과 뒤
+`c97709b59742372a817b3886f442144728fca646`로 `devel`에 병합됐다.
+이 원격 완료는 위의 개별 원본·Print PDF·전체 페이지 TSV·대표 비교 판정과 함께
+확인한다. 사용자 지정 옵션 2로 이 리뷰와 오늘할일을 문서 전용 후속 PR에 반영하고,
+원 PR에는 해당 증적을 게시한 뒤 중복 병합 없이 종료한다.
+
+## Merge 후 contributor PR comment 계획
+
+- 원 PR의 제목 차례 run·WMFC 차트 기여가 [PR #8438](https://github.com/edwardkim/rhwp/pull/8438)에
+  통합된 사실과 [PR #8517](https://github.com/edwardkim/rhwp/pull/8517)의
+  메인터너 보정·최종 병합 SHA를 구분해 한국어로 안내한다.
+- 같은 한컴 2024 재저장 정책 문서의 한컴 Print 35쪽과 비교한 raw 일치율은 Native
+  **95.52%**, fresh WASM **95.56%**다.
+  [review](../assets/issue_8305/followup8438/native-wmfc-rebased-review-035.png)·[overlay](../assets/issue_8305/followup8438/native-wmfc-rebased-overlay-035.png) 및
+  [Native 전쪽 TSV](../assets/issue_8305/followup8438/native-wmfc-rebased-2024-all.tsv)·[fresh WASM 전쪽 TSV](../assets/issue_8305/followup8438/wasm-wmfc-rebased-2024-all.tsv)를
+  댓글에 연결한다. 대표 이미지는 병합 SHA에 고정한 raw URL로 직접 표시한다.
+- 옵션 2 문서 PR에 이 기록이 반영된 뒤 원 PR head·상태를 다시 확인하고,
+  기여자에게 증적 댓글을 게시한 다음 중복 병합 없이 종료한다.

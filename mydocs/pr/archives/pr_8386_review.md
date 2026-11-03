@@ -7,8 +7,8 @@
 `b8338ba38be288b6e9385f5372d184649323aa9f`에 원 PR의 적용 내용이 반영됐고
 원 PR head가 검토한 head와 일치한다. 후속 제품 코드 `5aa6ee08dd`의 최소 글꼴
 전체 Rust 회귀 12,387건 통과·45건 skipped 및 아래의 원시 OLE bit·저장 바이트
-검사를 확인했다. 원 PR은 중복 병합하지 않고 후속 보정 PR의 최신 head CI·병합
-확인 뒤 종료한다. 원 PR이 범위 밖으로 밝힌 양식과 HWP3·PDF 출처 변환은 이
+검사를 확인했다. 원 PR은 중복 병합하지 않는다. 후속 보정 [PR #8517](https://github.com/edwardkim/rhwp/pull/8517)의
+최신 head CI·병합을 확인했으며, 증적 댓글 게시 뒤 종료한다. 원 PR이 범위 밖으로 밝힌 양식과 HWP3·PDF 출처 변환은 이
 결과로 해결했다고 주장하지 않는다.
 
 ## 2026-11-02 통합 머지 사실과 적용 SHA 재확인
@@ -93,3 +93,26 @@ HWPX에서 HWP로 변환할 때 개체 공통 속성 bit 28을 변경 추적 설
 `e132a72ae5d275ccce356479c64ea3e28a66567f6cac7b979b3571ac2fcfb0e9`다.
 원시 OLE 속성도 각각 `0x140a2211`과 `0x040a2211`로 재확인했다.
 이 저장 계약 확인은 최신 코드의 전체 최소 글꼴 회귀 실행 결과와 구분한다.
+
+## 2026-11-03 후속 보정 PR의 원격 완료 확인
+
+후속 보정 [PR #8517](https://github.com/edwardkim/rhwp/pull/8517)은 code head
+`ba0557118ad896f1c410e80da5100fedf10139d8`의
+[Build & Test](https://github.com/edwardkim/rhwp/actions/runs/41592450512),
+[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/41592450498),
+[Render Diff](https://github.com/edwardkim/rhwp/actions/runs/41592450511),
+Adapter·Proptest와 CI Impact Policy 통과 뒤
+`c97709b59742372a817b3886f442144728fca646`로 `devel`에 병합됐다.
+이 원격 완료는 위의 원시 OLE bit·HWPX 저장 바이트·관련 회귀 판정과 함께
+확인한다. 이 PR은 조판 변경이 없어 시각 TSV를 요구하지 않는다. 사용자 지정 옵션 2로 이 리뷰와 오늘할일을 문서 전용 후속 PR에 반영하고,
+원 PR에는 해당 증적을 게시한 뒤 중복 병합 없이 종료한다.
+
+## Merge 후 contributor PR comment 계획
+
+- 원 PR의 HWPX 개체 attr bit 28 계약이 [PR #8438](https://github.com/edwardkim/rhwp/pull/8438)에
+  통합되고 [PR #8517](https://github.com/edwardkim/rhwp/pull/8517)에서 원시 OLE bit·
+  저장 바이트 및 회귀를 다시 확인한 사실을 구분해 한국어로 안내한다.
+- 조판 변경이 없는 저장 계약이므로 시각 PNG·TSV를 이 PR의 검증으로 오인해 첨부하지 않는다.
+  위의 원시 bit·저장 왕복 근거, code head CI와 병합 SHA를 댓글에 연결한다.
+- 옵션 2 문서 PR 병합 뒤 원 PR head·상태를 다시 확인하고, 증적 댓글을 게시한 다음
+  중복 병합 없이 종료한다. 원 PR의 범위 밖 HWP3·PDF 출처 변환은 해결로 표시하지 않는다.
