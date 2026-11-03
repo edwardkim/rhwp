@@ -2046,6 +2046,16 @@ pub(crate) fn para_has_no_stored_line_segs(p: &crate::model::paragraph::Paragrap
     p.line_segs.is_empty() || p.line_segs.iter().all(|s| s.tag & 0x8000_0000 != 0)
 }
 
+/// [#8507] 글자 없는 host(텍스트 스트림이 비어 있는 문단)의 개체 줄을 rhwp 가 여러 줄로 재조판했는지.
+///
+/// 줄 재조판은 필드 시작 뒤 줄 폭에 들지 않는 글자처럼 취급 개체를 다음 줄로 넘기고 필드
+/// 줄을 빈 줄로 남긴다(한/글 2020 합성 field_over19). 이 줄들은 저장 사다리가 아니라 한 번
+/// 정한 줄 구성이라, 조판과 배치가 개체를 자기 줄(`control_line_seg_index`)에 두고 앞 줄을
+/// 문단 높이에 센다. 저장 줄은 각자의 저장 계약을 따른다.
+pub(crate) fn para_has_composed_object_rows(p: &crate::model::paragraph::Paragraph) -> bool {
+    p.text.is_empty() && p.line_segs.len() >= 2 && para_has_no_stored_line_segs(p)
+}
+
 /// 본문 글자가 없는 표 host 문단에서 표 줄(`table_line`) 뒤의 저장 줄들이 차지하는 높이(HU).
 ///
 /// 쪽 번호 감추기 같은 컨트롤만 남은 줄도 한/글은 줄 상자(높이+간격)를 쌓는다.

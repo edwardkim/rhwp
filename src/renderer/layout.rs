@@ -252,6 +252,25 @@ fn stored_empty_full_band_tac_table_top(
         .then(|| col_area.y + stored_y + hwpunit_to_px(table.outer_margin_top as i32, dpi))
 }
 
+/// [#8507] 글자 없는 host 의 개체 줄을 rhwp 가 재조판했을 때, 표가 첫 줄이 아닌 자기 줄에
+/// 놓인 만큼의 세로 오프셋. 줄 재조판은 필드 시작 뒤 줄 폭에 들지 않는 표를 다음 줄로
+/// 넘기고(한/글 2020 합성 field_over19: 빈 필드 줄 1600HU 아래), 저장본이라면
+/// [`stored_empty_full_band_tac_table_top`] 이 같은 줄을 저장 vpos 로 찾는다. 재조판 줄은
+/// 절대 vpos 대신 같은 문단 첫 줄과의 차이만 쓴다.
+fn composed_empty_host_tac_line_offset(
+    para: &Paragraph,
+    control_index: usize,
+    dpi: f64,
+) -> Option<f64> {
+    if !crate::renderer::para_has_composed_object_rows(para) {
+        return None;
+    }
+    let line = control_line_seg_index(para, control_index).filter(|line| *line > 0)?;
+    let (first, owner) = (para.line_segs.first()?, para.line_segs.get(line)?);
+    (owner.vertical_pos > first.vertical_pos)
+        .then(|| hwpunit_to_px(owner.vertical_pos - first.vertical_pos, dpi))
+}
+
 /// 빈 host의 full-band TAC 표가 표 paint frame과 다음 문단의 시작을 같은 저장
 /// `LINE_SEG`에 기록한 경우, 표 뒤 흐름의 하한을 복원한다.
 ///
@@ -3135,9 +3154,20 @@ pub(crate) fn control_line_seg_index_with_storage<S: crate::storage::Storage>(
             crate::storage::optional(para.try_control_text_positions(storage), failure)?;
         let p = *positions.get(control_index)?;
         if para.text.is_empty() && para.char_offsets.is_empty() {
+            // [#8507] 완전 대응을 증명하지 못한 스트림(필드 범위 등)은 줄 재조판이 줄 시작을
+            // 매기는 것과 같은 축 — 앞 컨트롤의 제어 슬롯 수 — 으로 센다. 글자 없는 문단의
+            // 논리 위치 `p` 는 모든 컨트롤에서 0 이라, 필드 뒤 다음 줄로 넘긴 표도 첫 줄에 붙었다.
             let stream_pos = para
                 .empty_control_stream_position(control_index)
-                .map_or_else(|| p.saturating_mul(8), |pos| pos as usize);
+                .map(|pos| pos as usize)
+                .unwrap_or_else(|| {
+                    para.controls[..control_index.min(para.controls.len())]
+                        .iter()
+                        .filter(|control| control.occupies_ctrl_char_slot())
+                        .count()
+                        .saturating_mul(crate::model::control::CTRL_CHAR_CODE_UNITS as usize)
+                        .max(p.saturating_mul(8))
+                });
             // [#5961] `stream_pos` 는 컨트롤당 8유닛인 HWP5 축이므로 `text_start` 도 올린다.
             return para
                 .line_segs
@@ -13821,6 +13851,10 @@ impl LayoutEngine {
                     };
                 let table_y_start = if is_tac && inline_pos.is_none() {
                     stored_empty_full_band_tac_table_top(para, control_index, t, col_area, self.dpi)
+                        .or_else(|| {
+                            composed_empty_host_tac_line_offset(para, control_index, self.dpi)
+                                .map(|offset| table_y_start + offset)
+                        })
                         .unwrap_or(table_y_start)
                 } else {
                     table_y_start
