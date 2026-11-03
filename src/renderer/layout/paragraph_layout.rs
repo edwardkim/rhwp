@@ -51,7 +51,8 @@ mod list_marker_geometry;
 mod picture_bullet;
 pub(crate) use list_marker_geometry::ListMarkerGeometry;
 use list_marker_geometry::{
-    list_marker_geometry_for, marker_text_style, marker_text_width, nominal_marker_size,
+    head_marker_text_style, list_marker_geometry_for, marker_text_style, marker_text_width,
+    nominal_marker_size,
 };
 mod cross_run_tab;
 pub(crate) use cross_run_tab::{resolve_last_tab_pending, PendingTab};
@@ -836,13 +837,14 @@ pub(crate) fn list_marker_geometry(
         .char_shape_id_at(0)
         .or_else(|| para.char_shapes.first().map(|cs| cs.char_shape_id))
         .unwrap_or(0);
-    let style = marker_char_style(styles, head, &text)
+    let end_id = paragraph_end_char_shape_id(para).unwrap_or(char_shape_id);
+    let style = marker_char_style(styles, head, &text, end_id)
         .unwrap_or_else(|| marker_text_style(styles, char_shape_id, &text));
     Some(list_marker_geometry_for(
         &text,
         head,
         &style,
-        nominal_marker_size(styles, head, char_shape_id, style.font_size),
+        nominal_marker_size(styles, head, char_shape_id, end_id, style.font_size),
         para_style.indent,
         para_style.head_type == HeadType::Bullet,
     ))
@@ -855,12 +857,25 @@ pub(crate) fn list_marker_geometry(
 /// (= 1000 + 30% × 1000)이다 — 본문 글자 모양으로 재면 1820 이 되어 한 줄 문단이 두 줄로 넘친다.
 /// `u32::MAX` 는 참조 없음이다. 0 도 참조 없음으로 본다 — 편집기·HWP3 가 만드는 기본 머리 모양이
 /// 글자 모양 필드를 0 으로 두며, 문서의 0번 글자 모양은 본문 기본 모양이라 첫 글자 모양과 같은 자리다.
-fn marker_char_style(styles: &ResolvedStyleSet, head: MarkerHead, text: &str) -> Option<TextStyle> {
+/// 참조한 글자 모양의 기준 크기가 0 이면(한/글 '본문 글자 크기 따름') 문단 끝 글자 모양 `end_id` 의
+/// 크기로 그린다([`paragraph_end_char_shape_id`]).
+fn marker_char_style(
+    styles: &ResolvedStyleSet,
+    head: MarkerHead,
+    text: &str,
+    end_id: u32,
+) -> Option<TextStyle> {
     let id = head.char_shape_id;
     if id == u32::MAX || id == 0 || (id as usize) >= styles.char_styles.len() {
         return None;
     }
-    Some(marker_text_style(styles, id, text))
+    Some(head_marker_text_style(styles, id, end_id, text))
+}
+
+/// 문단 끝(문단 나눔 표시) 자리의 글자 모양. 한/글 12.30은 '본문 글자 크기 따름' 번호를 이 크기로
+/// 그린다 — 첫 글자 20pt·끝 10pt 문단의 번호는 10pt, 첫 글자 10pt·끝 20pt 문단은 20pt 다.
+fn paragraph_end_char_shape_id(para: &Paragraph) -> Option<u32> {
+    para.char_shapes.last().map(|shape| shape.char_shape_id)
 }
 
 pub(super) fn paragraph_active_text_style(
@@ -955,14 +970,27 @@ fn numbering_marker_text_style(
     first_run: Option<&ComposedTextRun>,
     marker_text: &str,
 ) -> TextStyle {
-    let id = para
-        .and_then(|p| {
-            p.char_shape_id_at(0)
-                .or_else(|| p.char_shapes.first().map(|shape| shape.char_shape_id))
-        })
-        .or_else(|| first_run.map(|run| run.char_style_id))
-        .unwrap_or(0);
-    marker_text_style(styles, id, marker_text)
+    marker_text_style(
+        styles,
+        marker_body_char_shape_id(para, first_run),
+        marker_text,
+    )
+}
+
+/// 마커가 상속하는 본문 글자 모양: 문단 첫 글자, 없으면 첫 run.
+fn marker_body_char_shape_id(para: Option<&Paragraph>, first_run: Option<&ComposedTextRun>) -> u32 {
+    para.and_then(|p| {
+        p.char_shape_id_at(0)
+            .or_else(|| p.char_shapes.first().map(|shape| shape.char_shape_id))
+    })
+    .or_else(|| first_run.map(|run| run.char_style_id))
+    .unwrap_or(0)
+}
+
+/// '본문 글자 크기 따름' 번호가 크기를 따르는 글자 모양: 문단 끝, 문단이 없으면 첫 run.
+fn marker_end_char_shape_id(para: Option<&Paragraph>, first_run: Option<&ComposedTextRun>) -> u32 {
+    para.and_then(paragraph_end_char_shape_id)
+        .unwrap_or_else(|| marker_body_char_shape_id(para, first_run))
 }
 
 fn para_float_horz_intersects_column(
@@ -5936,14 +5964,11 @@ impl LayoutEngine {
         let marker_geometry = composed.numbering_text.as_ref().map(|(num_text, head)| {
             para.and_then(|p| list_marker_geometry(p, styles))
                 .unwrap_or_else(|| {
-                    let num_style =
-                        marker_char_style(styles, *head, num_text).unwrap_or_else(|| {
-                            numbering_marker_text_style(
-                                styles,
-                                para,
-                                composed.lines.first().and_then(|l| l.runs.first()),
-                                num_text,
-                            )
+                    let first_run = composed.lines.first().and_then(|l| l.runs.first());
+                    let end_id = marker_end_char_shape_id(para, first_run);
+                    let num_style = marker_char_style(styles, *head, num_text, end_id)
+                        .unwrap_or_else(|| {
+                            numbering_marker_text_style(styles, para, first_run, num_text)
                         });
                     let bullet = styles
                         .para_styles
@@ -5957,6 +5982,7 @@ impl LayoutEngine {
                             .first()
                             .and_then(|line| line.runs.first())
                             .map_or(0, |run| run.char_style_id),
+                        end_id,
                         num_style.font_size,
                     );
                     list_marker_geometry_for(
@@ -7906,15 +7932,15 @@ impl LayoutEngine {
                     composed.numbering_text.as_ref(),
                     marker_geometry.filter(|g| g.marker_visible),
                 ) {
-                    let num_style =
-                        marker_char_style(styles, *head, num_text).unwrap_or_else(|| {
-                            numbering_marker_text_style(
-                                styles,
-                                para,
-                                comp_line.runs.first(),
-                                num_text,
-                            )
-                        });
+                    let num_style = marker_char_style(
+                        styles,
+                        *head,
+                        num_text,
+                        marker_end_char_shape_id(para, comp_line.runs.first()),
+                    )
+                    .unwrap_or_else(|| {
+                        numbering_marker_text_style(styles, para, comp_line.runs.first(), num_text)
+                    });
                     let num_width = marker_text_width(num_text, &num_style);
                     let num_id = tree.next_id();
                     let num_node = if let Some(image) = picture_bullet::image(

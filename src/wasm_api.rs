@@ -8269,6 +8269,23 @@ impl HwpDocument {
         self.core.document.doc_info.numberings.len() as u16
     }
 
+    /// 문단 번호 정의의 한 수준에 번호 글자 모양을 단다(한/글 '문단 번호 사용자 정의 모양'의 글자 모양 지정).
+    ///
+    /// numberingId는 1부터, level은 0부터다. json은 applyCharFormat의 글자 속성과 바탕 글자 모양
+    /// `baseCharShapeId`이고, `fontSize` 0은 '본문 글자 크기 따름'이다. null이면 글자 모양을 뗀다.
+    /// 반환값: 단 글자 모양 ID(뗐으면 4294967295)
+    #[wasm_bindgen(js_name = setNumberingCharShape)]
+    pub fn set_numbering_char_shape(
+        &mut self,
+        numbering_id: u16,
+        level: u32,
+        json: Option<String>,
+    ) -> Result<u32, JsValue> {
+        self.core
+            .set_numbering_char_shape_native(numbering_id, level as usize, json.as_deref())
+            .map_err(|e| e.into())
+    }
+
     /// 특정 문자의 글머리표 정의가 없으면 생성한다.
     ///
     /// 반환값: Bullet ID (1-based)

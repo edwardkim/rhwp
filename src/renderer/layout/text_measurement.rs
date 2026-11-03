@@ -2,7 +2,7 @@
 
 use super::super::font_metrics_data;
 use super::super::kerning::{ExactFontSourceHandle, KerningRunMeasurement, KerningSourceSession};
-use super::super::style_resolver::ResolvedStyleSet;
+use super::super::style_resolver::{ResolvedCharStyle, ResolvedStyleSet};
 use super::super::{TabLeaderInfo, TabStop, TextStyle};
 
 mod inline_right_tab;
@@ -921,7 +921,43 @@ pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::sto
     lang_index: usize,
     storage: &S,
 ) -> Result<TextStyle, S::Error> {
-    if let Some(cs) = styles.char_styles.get(char_style_id as usize) {
+    try_char_style_to_text_style(
+        styles,
+        styles.char_styles.get(char_style_id as usize),
+        char_style_id,
+        lang_index,
+        storage,
+    )
+}
+
+/// `char_style_id` 자리의 글자 모양을 `char_style` 로 바꿔 [`resolved_to_text_style`] 처럼 해소한다.
+/// 기준 크기 0 인 번호 글자 모양을 본문 크기로 다시 해소한 값처럼, 문서 목록에 없는 해소 값에 쓴다.
+pub(crate) fn char_style_to_text_style(
+    styles: &ResolvedStyleSet,
+    char_style: &ResolvedCharStyle,
+    char_style_id: u32,
+    lang_index: usize,
+) -> TextStyle {
+    match try_char_style_to_text_style(
+        styles,
+        Some(char_style),
+        char_style_id,
+        lang_index,
+        &crate::renderer::style_resolver::storage::Unbounded,
+    ) {
+        Ok(style) => style,
+        Err(never) => match never {},
+    }
+}
+
+fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Storage>(
+    styles: &ResolvedStyleSet,
+    char_style: Option<&ResolvedCharStyle>,
+    char_style_id: u32,
+    lang_index: usize,
+    storage: &S,
+) -> Result<TextStyle, S::Error> {
+    if let Some(cs) = char_style {
         Ok(TextStyle {
             script_metrics: styles.script_metrics,
             native_pua_metrics: (!styles.has_exact_font_source(char_style_id, lang_index))
@@ -1005,10 +1041,10 @@ pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::sto
             underline: cs.underline,
             strikethrough: cs.strikethrough,
             kerning: cs.kerning,
-            // 단일 출처: 줄 나눔 고속 경로(resolved_letter_spacing)와 같은 식을 쓴다.
-            // 두 경로 동등성 시험(구 letter_spacing_matches_full_style_resolution)을
-            // 이 호출이 구조적으로 대체한다.
-            letter_spacing: resolved_letter_spacing(styles, char_style_id, lang_index),
+            // 단일 출처: 줄 나눔 고속 경로(resolved_letter_spacing)도 같은 글자 모양의
+            // `letter_spacing_for_lang` 을 읽는다. 두 경로 동등성 시험(구
+            // letter_spacing_matches_full_style_resolution)을 이 공유가 구조적으로 대체한다.
+            letter_spacing: cs.letter_spacing_for_lang(lang_index),
             ratio: cs.ratio_for_lang(lang_index),
             default_tab_width: 0.0,
             tab_stops: Vec::new(),
@@ -1071,7 +1107,7 @@ pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::sto
                         source_font_is_ttf: cs.source_ttf_for_lang(1),
                         source_verified_hft_bold_tracking: cs
                             .verified_hft_bold_tracking_for_lang(1),
-                        letter_spacing: resolved_letter_spacing(styles, char_style_id, 1),
+                        letter_spacing: cs.letter_spacing_for_lang(1),
                         ratio: cs.ratio_for_lang(1),
                     }))
                 })
