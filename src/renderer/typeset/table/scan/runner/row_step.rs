@@ -1714,12 +1714,19 @@ impl TypesetEngine {
                 // CellUnit cut omits.  Preserve that measured difference; a
                 // document-independent pixel tolerance would otherwise let
                 // unrelated rows consume a physical page tail.
+                // The cut was chosen by `advance_row_cut_for_physical_band`,
+                // which treats HU→px rounding noise up to
+                // `ROW_CUT_CAPACITY_FP_EPSILON_PX` as an exact fit. The same
+                // comparison rule applies here; otherwise a cut that fills the
+                // band exactly is rejected for float noise and loses a line
+                // (#8529).
                 let hwpx_stored_rowbreak_cut = st.profile.hwpx_stored_layout()
                     && !table.common.treat_as_char
                     && mt.allows_row_break_split()
                     && !mixed_nested_owner_guard;
-                let measured_rowbreak_paint_tail =
-                    (split_total - res.consumed_height - padding).max(0.0);
+                let measured_rowbreak_paint_tail = (split_total - res.consumed_height - padding)
+                    .max(0.0)
+                    + crate::renderer::layout::table_layout::ROW_CUT_CAPACITY_FP_EPSILON_PX;
                 let stored_frame_tail_overflow = if uses_source_frame_tail {
                     // `split_total` is the painted row footprint, whereas
                     // the source frame is selected in CellUnit content
@@ -1845,6 +1852,7 @@ impl TypesetEngine {
                             source_first_fragment_overflow_allowance
                         } else if hwpx_stored_rowbreak_cut {
                             (split_total2 - res2.consumed_height - padding).max(0.0)
+                                + crate::renderer::layout::table_layout::ROW_CUT_CAPACITY_FP_EPSILON_PX
                         } else if native_split_continuation_row_tail || mixed_nested_owner_guard {
                             0.1
                         } else {
