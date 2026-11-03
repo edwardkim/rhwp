@@ -1959,6 +1959,15 @@ pub(super) struct CellUnit {
 }
 
 impl CellUnit {
+    /// 자식 행 내부의 글줄 컷과 새 자식 행의 시작 경계를 구분한다.
+    pub(super) fn starts_nested_row(&self) -> bool {
+        self.nested_row.is_some()
+            && self
+                .nested_table_fragment
+                .as_ref()
+                .is_none_or(|child| child.start_cut.iter().all(|&unit| unit == 0))
+    }
+
     /// 가시 줄을 닫고 바로 다음 문단의 첫 줄로 넘어가는 실제 유닛 경계.
     pub(super) fn closes_before_next_paragraph(&self, following: &Self) -> bool {
         self.vis_start < self.vis_end
@@ -5974,6 +5983,15 @@ impl LayoutEngine {
         }
         if let Some(frame) = &stored_opening_frame {
             frame.apply_to(&mut row_heights, self.dpi);
+        }
+        if stored && (profile.hwp5_stored_pagination_layout() || profile.hwp5_origin_hwpx()) {
+            crate::renderer::table_row_frame::project_first_rowspan_frame(
+                table,
+                &mut row_heights,
+                &content_row_floor,
+                &span_content_requirements,
+                self.dpi,
+            );
         }
         row_heights
     }
@@ -10426,6 +10444,12 @@ impl LayoutEngine {
                     continue;
                 }
             }
+            // 셀 내용과 테두리는 같은 조각의 행 범위를 소유한다. 저장 rowspan의
+            // 원래 시작 행을 그대로 쓰면 이어받은 셀의 윗변은 앞 쪽 좌표에 남는다.
+            // 반복 제목행은 위에서 필터를 해제했으므로 원래 행 범위를 유지한다.
+            let (frame_start_row, frame_end_row) = row_filter
+                .map(|(start, end)| (r.max(start), cell_end_row.min(end)))
+                .unwrap_or((r, cell_end_row));
 
             let cell_x = table_x + row_col_x[r][c];
             let cell_col_y = independent_col_row_y.and_then(|col_y| col_y.get(c));
@@ -11278,14 +11302,28 @@ impl LayoutEngine {
                         tree, bs, cell_x, cell_y, cell_w, cell_h,
                     ));
                 } else {
+                    let mut frame_borders = bs.borders;
+                    if let Some(table_bs) = usize::from(table.border_fill_id)
+                        .checked_sub(1)
+                        .and_then(|index| styles.border_styles.get(index))
+                    {
+                        // 새 쪽에서 잘린 변은 원래 셀의 내부 경계가 아니라 표 조각의
+                        // 바깥 변이다. 원래 시작 행의 이중선을 새 윗변에 복제하지 않는다.
+                        if frame_start_row != r {
+                            frame_borders[2] = table_bs.borders[2];
+                        }
+                        if frame_end_row != cell_end_row {
+                            frame_borders[3] = table_bs.borders[3];
+                        }
+                    }
                     collect_cell_borders(
                         h_edges,
                         v_edges,
                         c,
-                        r,
+                        frame_start_row,
                         cell.col_span as usize,
-                        cell.row_span as usize,
-                        &bs.borders,
+                        frame_end_row - frame_start_row,
+                        &frame_borders,
                     );
                 }
             }
@@ -11294,9 +11332,9 @@ impl LayoutEngine {
                     h_span_covered,
                     v_span_covered,
                     c,
-                    r,
+                    frame_start_row,
                     cell.col_span as usize,
-                    cell.row_span as usize,
+                    frame_end_row - frame_start_row,
                 );
             }
 

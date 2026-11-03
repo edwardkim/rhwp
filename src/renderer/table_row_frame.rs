@@ -9,6 +9,102 @@ use crate::model::{
 use crate::renderer::float_placement::ParagraphFloatPlacement;
 use crate::renderer::hwpunit_to_px;
 
+/// 저장 rowspan의 쪽 되감김으로 입증한 첫 물리 프레임을 행 원장에 투영한다.
+///
+/// 표의 선언 높이는 이 경우 전체 행 합이 아니라 첫 조각의 끝이다. 끝 행의
+/// 저장 여유만 첫 프레임에 맞추고, 걸침 셀의 남은 높이는 실제 종료 행에서
+/// 이어받는다. 내용 하한과 전체 걸침 높이는 줄이지 않는다.
+/// HWPX 문단 지역 vpos를 쪽 되감김으로 읽지 않도록 호출자가 HWP5 출처를 확인한다.
+pub(crate) fn project_first_rowspan_frame(
+    table: &Table,
+    rows: &mut [f64],
+    content_floors: &[f64],
+    span_content_floors: &[(usize, f64)],
+    dpi: f64,
+) -> bool {
+    if table.common.treat_as_char
+        || table.page_break != crate::model::table::TablePageBreak::RowBreak
+        || table.common.height == 0
+        || table.common.height > i32::MAX as u32
+        || rows.len() < 2
+        || rows.len() != usize::from(table.row_count)
+        || rows.len() != content_floors.len()
+        || !dpi.is_finite()
+        || dpi <= 0.0
+        || !table.cells.iter().any(|cell| cell.row_span > 1)
+    {
+        return false;
+    }
+    let declared = hwpunit_to_px(table.common.height as i32, dpi);
+    let spacing = hwpunit_to_px(i32::from(table.cell_spacing), dpi);
+    let mut origin = spacing;
+    let Some((closing_row, remaining)) = rows.iter().enumerate().find_map(|(row, &height)| {
+        let end = origin + height + spacing;
+        let result =
+            (origin < declared && declared < end).then_some((row, declared - origin - spacing));
+        origin = end;
+        result
+    }) else {
+        return false;
+    };
+    if remaining < content_floors[closing_row] || remaining <= 0.0 || remaining >= rows[closing_row]
+    {
+        return false;
+    }
+    let mut witnessed_rewind = false;
+    let mut carry_row = rows.len();
+    for cell in &table.cells {
+        let start = usize::from(cell.row);
+        let end = start + usize::from(cell.row_span);
+        if start > closing_row || end <= closing_row + 1 || end > rows.len() {
+            continue;
+        }
+        // 같은 물리 행이 여러 rowspan을 지지해도 높이는 한 번만 예약한다.
+        carry_row = carry_row.min(end - 1);
+        let mut previous = None;
+        for segment in cell
+            .paragraphs
+            .iter()
+            .flat_map(|paragraph| &paragraph.line_segs)
+        {
+            if segment.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                || segment.vertical_pos < 0
+                || segment.line_height <= 0
+            {
+                return false;
+            }
+            witnessed_rewind |= previous.is_some_and(|position| segment.vertical_pos < position);
+            previous = Some(segment.vertical_pos);
+        }
+    }
+    if !witnessed_rewind || carry_row >= rows.len() {
+        return false;
+    }
+    let carried = rows[closing_row] - remaining;
+    // 이 경계에서 끝나는 다른 병합 셀의 실제 내용도 같은 높이 제약이다.
+    // 이어받지 않는 셀은 뒤 행의 보충 높이를 사용할 수 없다.
+    if span_content_floors.iter().any(|&(index, floor)| {
+        let Some(cell) = table.cells.get(index) else {
+            return true;
+        };
+        let start = usize::from(cell.row);
+        let end = start + usize::from(cell.row_span);
+        start <= closing_row
+            && end == closing_row + 1
+            && rows[start..end].iter().sum::<f64>() - carried < floor
+    }) || table.cells.iter().any(|cell| {
+        cell.dirty_flag
+            || cell.paragraphs.iter().any(|paragraph| {
+                paragraph.stored_text_partition_is_dirty() || paragraph.cell_format_vpos_dirty
+            })
+    }) {
+        return false;
+    }
+    rows[closing_row] = remaining;
+    rows[carry_row] += carried;
+    true
+}
+
 /// 모든 저장 행이 실제 측정 결과와 같으면 더 큰 개체 캐시로 다시 늘리지 않는다.
 /// 보호 크기, 병합 행, 실제 행 성장 및 저장 줄 없는 재조판은 기존 계약을 유지한다.
 pub(crate) fn stored_rows_own_body(table: &Table, rows: &[f64], dpi: f64) -> bool {

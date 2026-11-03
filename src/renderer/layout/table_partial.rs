@@ -732,6 +732,39 @@ fn expand_fragment_cell_clip_for_owned_bottom_lines(
 }
 
 impl LayoutEngine {
+    /// 부모 내용 컷이 새 자식 행의 물리 경계를 가리키는 열을 반환한다.
+    fn nested_row_cut_frame_columns(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        cut: &[usize],
+        block_cut: bool,
+        styles: &ResolvedStyleSet,
+    ) -> Vec<bool> {
+        let columns = usize::from(table.col_count);
+        let mut result = vec![false; columns];
+        if block_cut {
+            return result;
+        }
+        for (slot, index) in self
+            .indexed_row_cut_cell_order(table, row)
+            .into_iter()
+            .enumerate()
+        {
+            let cell = &table.cells[index];
+            let units = self.cell_units(cell, table, styles);
+            if units
+                .get(cut.get(slot).copied().unwrap_or(0))
+                .is_some_and(|unit| unit.starts_nested_row())
+            {
+                let start = usize::from(cell.col).min(columns);
+                let end = (start + usize::from(cell.col_span)).min(columns);
+                result[start..end].fill(true);
+            }
+        }
+        result
+    }
+
     /// [#4128] 이 PartialTable 페이지 조각에 `cell` 의 대상 위치가 실제로 렌더되는가.
     /// pagination 메타데이터(행 범위 + 유닛 컷)와 memoize 된 `cell_units` 만 사용하며
     /// render tree 를 짓지 않는다. 분할 게이트 판정은 `layout_partial_table_cells`
@@ -7644,7 +7677,21 @@ impl LayoutEngine {
                 )
             {
                 if let Some(first_edge) = h_edges.first_mut() {
-                    first_edge.fill(None);
+                    // 부모의 내용 컷이 자식의 온전한 행 경계를 선택한 경우에는
+                    // 새 물리 프레임의 윗변을 보존한다. 측정이 만든 같은
+                    // CellUnit/자식 컷으로 글줄 안의 컷과 구분한다.
+                    let nested_row_boundary = self.nested_row_cut_frame_columns(
+                        table,
+                        start_row,
+                        start_cut,
+                        start_cut_is_block,
+                        styles,
+                    );
+                    for (edge, keep) in first_edge.iter_mut().zip(nested_row_boundary) {
+                        if !keep {
+                            *edge = None;
+                        }
+                    }
                 }
                 // 블록 커서에서 이미 소비한 행의 물리 높이는 0이다.
                 // 내부 격자 경계도 조각 원점과 겹칠 수 있다. 새로 시작하는 원본 셀은 실제 경계를 유지하지만,
@@ -7679,7 +7726,18 @@ impl LayoutEngine {
                 && table.common.text_wrap == crate::model::shape::TextWrap::Square
             {
                 if let Some(last_edge) = h_edges.last_mut() {
-                    last_edge.fill(None);
+                    let nested_row_boundary = self.nested_row_cut_frame_columns(
+                        table,
+                        end_row.saturating_sub(1),
+                        end_cut,
+                        is_block_split,
+                        styles,
+                    );
+                    for (edge, keep) in last_edge.iter_mut().zip(nested_row_boundary) {
+                        if !keep {
+                            *edge = None;
+                        }
+                    }
                 }
             }
 
