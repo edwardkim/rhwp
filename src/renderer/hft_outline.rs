@@ -106,6 +106,24 @@ pub(crate) fn contour(
     (!builder.invalid && !builder.commands.is_empty()).then_some(builder.commands)
 }
 
+/// 공급된 SFNT 프로그램(glyf·CFF·CFF2)의 기본 인스턴스 윤곽을 em 단위로 돌려준다.
+/// y축은 Canvas 기준선 좌표(아래가 +)로 뒤집는다. 빈 글리프와 비정상 윤곽은 None이다.
+#[cfg(target_arch = "wasm32")]
+pub(crate) fn face_contour(face: &Face<'_>, glyph: GlyphId) -> Option<Vec<PathCommand>> {
+    let units_per_em = face.units_per_em();
+    if glyph.0 == 0 || units_per_em == 0 {
+        return None;
+    }
+    let mut builder = ContourBuilder {
+        scale: 1.0 / f64::from(units_per_em),
+        current: (0.0, 0.0),
+        commands: Vec::new(),
+        invalid: false,
+    };
+    face.outline_glyph(glyph, &mut builder)?;
+    (!builder.invalid && !builder.commands.is_empty()).then_some(builder.commands)
+}
+
 struct ContourBuilder {
     scale: f64,
     current: (f32, f32),
@@ -307,14 +325,38 @@ impl HftOutlineFonts {
             .lock()
             .ok()?
             .get_or_build((source.digest, source.face_index, glyph.0), || {
-                let mut builder = ContourBuilder {
-                    scale: 1.0 / f64::from(face.units_per_em()),
-                    current: (0.0, 0.0),
-                    commands: Vec::new(),
-                    invalid: false,
-                };
-                face.outline_glyph(glyph, &mut builder)?;
-                (!builder.invalid && !builder.commands.is_empty()).then_some(builder.commands)
+                face_contour(&face, glyph)
+            })
+    }
+
+    /// 굵은 face가 없는 합성 굵기 글자의 윤곽이다(#8430). Canvas가 그 글자에 고른 것과 같은
+    /// 실제 적재 face(공급 목록의 보통 굵기 선택)를 [`Self::print_fallback_glyph`]와 같은 Print TTF
+    /// 보관소에서 찾는다. 선택이 기울임 face이거나 보관하지 않은 face면 None이다.
+    #[cfg(target_arch = "wasm32")]
+    pub(crate) fn faux_bold_glyph(
+        &self,
+        style: &TextStyle,
+        character: char,
+    ) -> Option<Arc<[PathCommand]>> {
+        let families = super::canvas_text_font::family_chain(style);
+        let selected = self.pua_coverage.text_faces.select(
+            &families,
+            &character.to_string(),
+            false,
+            style.italic,
+        )?;
+        // 실제 기울임 face는 보관하지 않는다. 같은 family·굵기의 정체 윤곽으로 대신하지 않는다.
+        if selected.slanted {
+            return None;
+        }
+        let source = self.print_faces.get(&(selected.family, selected.weight))?;
+        let face = Face::parse(&source.bytes, source.face_index).ok()?;
+        let glyph = face.glyph_index(character)?;
+        self.cache
+            .lock()
+            .ok()?
+            .get_or_build((source.digest, source.face_index, glyph.0), || {
+                face_contour(&face, glyph)
             })
     }
 
