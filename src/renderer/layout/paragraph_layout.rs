@@ -724,7 +724,7 @@ pub(crate) fn numbering_head_text(
     let counters = state.advance(numbering_id, level, para.numbering_restart);
     let start_numbers = numbering.level_start_numbers;
 
-    let level_idx = (level as usize).min(6);
+    let level_idx = (level as usize).min(crate::model::style::NUMBERING_LEVELS - 1);
     let format_str = &numbering.level_formats[level_idx];
     if format_str.is_empty() {
         return None;

@@ -5421,19 +5421,15 @@ fn ensure_hwp3_default_outline_numbering(
     }
 
     let mut numbering = Numbering {
-        level_formats: [
-            "^1.".to_string(),
-            "^2)".to_string(),
-            "(^3)".to_string(),
-            "^4.".to_string(),
-            "^5)".to_string(),
-            "(^6)".to_string(),
-            "^7".to_string(),
-        ],
         start_number: 0,
-        level_start_numbers: [1; 7],
+        level_start_numbers: [1; crate::model::style::NUMBERING_LEVELS],
         ..Default::default()
     };
+    // HWP3 개요는 7수준이다. 8~10수준은 비워 둔다.
+    let texts = ["^1.", "^2)", "(^3)", "^4.", "^5)", "(^6)", "^7"];
+    for (format, text) in numbering.level_formats.iter_mut().zip(texts) {
+        *format = text.to_string();
+    }
 
     let formats = [2, 0, 0, 8, 8, 8, 1];
     for (head, number_format) in numbering.heads.iter_mut().zip(formats) {

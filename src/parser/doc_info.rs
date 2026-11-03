@@ -16,7 +16,7 @@ use crate::model::document::{DocInfo, DocProperties, RawRecord};
 use crate::model::style::{
     Alignment, BorderFill, BorderLine, BorderLineType, Bullet, CenterLine, CharShape, DiagonalLine,
     Fill, FillType, Font, GradientFill, ImageFill, ImageFillMode, LineSpacingType, Numbering,
-    NumberingHead, ParaShape, SolidFill, Style, TabDef, TabItem, UnderlineType,
+    NumberingHead, ParaShape, SolidFill, Style, TabDef, TabItem, UnderlineType, NUMBERING_LEVELS,
 };
 
 /// DocInfo 파싱 에러
@@ -849,38 +849,11 @@ fn parse_para_shape(data: &[u8]) -> Result<ParaShape, DocInfoError> {
 fn parse_numbering(data: &[u8]) -> Result<Numbering, DocInfoError> {
     let mut r = ByteReader::new(data);
     let mut numbering = Numbering::default();
+    numbering.level_start_numbers = [1; NUMBERING_LEVELS];
 
     // 수준별(1~7) 문단 머리 정보 + 번호 형식 문자열
     for level in 0..7 {
-        // 문단 머리 정보 (표 41: 12바이트)
-        let attr = r.read_u32().unwrap_or(0);
-        let width_adjust = r.read_i16().unwrap_or(0);
-        let text_distance = r.read_i16().unwrap_or(0);
-        let char_shape_id = r.read_u32().unwrap_or(0);
-
-        let number_format = ((attr >> 5) & 0x0F) as u8;
-        numbering.heads[level] = NumberingHead {
-            attr,
-            width_adjust,
-            text_distance,
-            char_shape_id,
-            number_format,
-        };
-
-        // 번호 형식 문자열 (가변 길이)
-        let format_len = r.read_u16().unwrap_or(0) as usize;
-        if format_len > 0 {
-            let mut format_str = String::new();
-            for _ in 0..format_len {
-                let ch = r.read_u16().unwrap_or(0);
-                if ch > 0 {
-                    if let Some(c) = char::from_u32(ch as u32) {
-                        format_str.push(c);
-                    }
-                }
-            }
-            numbering.level_formats[level] = format_str;
-        }
+        read_numbering_level(&mut r, &mut numbering, level);
     }
 
     // 시작 번호
@@ -891,7 +864,50 @@ fn parse_numbering(data: &[u8]) -> Result<Numbering, DocInfoError> {
         numbering.level_start_numbers[level] = r.read_u32().unwrap_or(1);
     }
 
+    // 한/글 5.1 이상은 8~10수준을 같은 꼴(머리 정보·형식 문자열 3회, 시작 번호 3회)로 덧붙인다.
+    // 없는 레코드(5.0.x)의 8~10수준은 형식 없는 빈 수준이다.
+    if !r.is_empty() {
+        for level in 7..NUMBERING_LEVELS {
+            read_numbering_level(&mut r, &mut numbering, level);
+        }
+        for level in 7..NUMBERING_LEVELS {
+            numbering.level_start_numbers[level] = r.read_u32().unwrap_or(1);
+        }
+    }
+
     Ok(numbering)
+}
+
+/// 번호 정의 한 수준의 문단 머리 정보(표 41: 12바이트)와 번호 형식 문자열.
+fn read_numbering_level(r: &mut ByteReader, numbering: &mut Numbering, level: usize) {
+    let attr = r.read_u32().unwrap_or(0);
+    let width_adjust = r.read_i16().unwrap_or(0);
+    let text_distance = r.read_i16().unwrap_or(0);
+    let char_shape_id = r.read_u32().unwrap_or(0);
+
+    let number_format = ((attr >> 5) & 0x0F) as u8;
+    numbering.heads[level] = NumberingHead {
+        attr,
+        width_adjust,
+        text_distance,
+        char_shape_id,
+        number_format,
+    };
+
+    // 번호 형식 문자열 (가변 길이)
+    let format_len = r.read_u16().unwrap_or(0) as usize;
+    if format_len > 0 {
+        let mut format_str = String::new();
+        for _ in 0..format_len {
+            let ch = r.read_u16().unwrap_or(0);
+            if ch > 0 {
+                if let Some(c) = char::from_u32(ch as u32) {
+                    format_str.push(c);
+                }
+            }
+        }
+        numbering.level_formats[level] = format_str;
+    }
 }
 
 /// HWPTAG_BULLET 파싱 (표 44: 글머리표)

@@ -16,7 +16,7 @@ use crate::model::document::{DocInfo, DocProperties};
 use crate::model::raw_provenance;
 use crate::model::style::{
     BorderFill, BorderLineType, Bullet, CenterLine, FillType, Font, ImageFillMode, Numbering,
-    ParaShape, Style, TabDef,
+    ParaShape, Style, TabDef, NUMBERING_LEVELS,
 };
 use crate::parser::tags;
 use std::borrow::Cow;
@@ -851,23 +851,7 @@ fn write_serialize_numbering<W: std::io::Write>(
 ) -> std::io::Result<()> {
     // 수준별(1~7) 문단 머리 정보 + 번호 형식 문자열
     for level in 0..7 {
-        let head = &numbering.heads[level];
-        // number_format(문단 번호 형식)을 attr 비트 5~8 로 재인코딩한다. 파서는 number_format
-        // 을 (attr>>5)&0xF 로만 복원하므로(parser/doc_info.rs), IR 로 생성된 번호(WASM
-        // create_numbering)처럼 attr=0 이고 number_format 만 세팅된 경우 이를 반영하지 않으면
-        // 저장·재로드 시 모든 수준이 DIGIT(0)로 유실된다. serialize_para_shape 의 attr1 재인코딩과 동형.
-        let attr = (head.attr & !(0x0f << 5)) | ((head.number_format as u32 & 0x0f) << 5);
-        w.write_u32(attr)?;
-        w.write_i16(head.width_adjust)?;
-        w.write_i16(head.text_distance)?;
-        w.write_u32(head.char_shape_id)?;
-
-        // 번호 형식 문자열
-        let fmt_str = &numbering.level_formats[level];
-        w.write_u16(fmt_str.encode_utf16().count() as u16)?;
-        for ch in fmt_str.encode_utf16() {
-            w.write_u16(ch)?;
-        }
+        write_numbering_level(numbering, level, w)?;
     }
 
     // 시작 번호
@@ -878,6 +862,39 @@ fn write_serialize_numbering<W: std::io::Write>(
         w.write_u32(numbering.level_start_numbers[level])?;
     }
 
+    // 8~10수준: 한/글 5.1 이상처럼 머리 정보·형식 문자열 3회, 시작 번호 3회를 덧붙인다.
+    for level in 7..NUMBERING_LEVELS {
+        write_numbering_level(numbering, level, w)?;
+    }
+    for level in 7..NUMBERING_LEVELS {
+        w.write_u32(numbering.level_start_numbers[level])?;
+    }
+
+    Ok(())
+}
+
+fn write_numbering_level<W: std::io::Write>(
+    numbering: &Numbering,
+    level: usize,
+    w: &mut ByteWriter<W>,
+) -> std::io::Result<()> {
+    let head = &numbering.heads[level];
+    // number_format(문단 번호 형식)을 attr 비트 5~8 로 재인코딩한다. 파서는 number_format
+    // 을 (attr>>5)&0xF 로만 복원하므로(parser/doc_info.rs), IR 로 생성된 번호(WASM
+    // create_numbering)처럼 attr=0 이고 number_format 만 세팅된 경우 이를 반영하지 않으면
+    // 저장·재로드 시 모든 수준이 DIGIT(0)로 유실된다. serialize_para_shape 의 attr1 재인코딩과 동형.
+    let attr = (head.attr & !(0x0f << 5)) | ((head.number_format as u32 & 0x0f) << 5);
+    w.write_u32(attr)?;
+    w.write_i16(head.width_adjust)?;
+    w.write_i16(head.text_distance)?;
+    w.write_u32(head.char_shape_id)?;
+
+    // 번호 형식 문자열
+    let fmt_str = &numbering.level_formats[level];
+    w.write_u16(fmt_str.encode_utf16().count() as u16)?;
+    for ch in fmt_str.encode_utf16() {
+        w.write_u16(ch)?;
+    }
     Ok(())
 }
 
