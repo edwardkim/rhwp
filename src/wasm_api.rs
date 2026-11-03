@@ -4187,8 +4187,8 @@ impl HwpDocument {
     /// 마지막 마디의 `cellParaIndex` 가 캐럿이 있는 칸 문단, `char_offset` 은 그 문단의 캐럿 offset.
     ///
     /// options JSON: `{ rowCount, colCount, colWidths?: [u32, ...], rowHeights?: [u32, ...],
-    ///                 treatAsChar?: bool }` — 칸 안 표는 **글자처럼 취급만** 만든다(한/글 기본값).
-    /// `treatAsChar:false` 는 조용히 무시하지 않고 오류로 돌려준다.
+    ///                 treatAsChar?: bool }` — `treatAsChar` 기본값은 참(글자처럼 취급)이다.
+    /// 거짓이면 한/글 12.30처럼 자리 차지 표를 만든다.
     ///
     /// 반환: `{"ok":true,"cellParaIdx":N,"controlIdx":0,"cellPath":[..안쪽 표 첫 칸까지]}`
     #[wasm_bindgen(js_name = createTableInCellByPath)]
@@ -4202,11 +4202,10 @@ impl HwpDocument {
     ) -> Result<String, JsValue> {
         let options: serde_json::Value = serde_json::from_str(options_json)
             .map_err(|e| JsValue::from_str(&format!("options JSON 파싱 실패: {}", e)))?;
-        if options.get("treatAsChar").and_then(|v| v.as_bool()) == Some(false) {
-            return Err(JsValue::from_str(
-                "칸 안 표는 글자처럼 취급만 지원한다 (treatAsChar:false 는 받지 않는다)",
-            ));
-        }
+        let treat_as_char = options
+            .get("treatAsChar")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(true);
         let count = |key: &str, default: u64| -> u16 {
             options.get(key).and_then(|v| v.as_u64()).unwrap_or(default) as u16
         };
@@ -4233,6 +4232,7 @@ impl HwpDocument {
             count("colCount", 2),
             col_widths.as_deref(),
             row_heights.as_deref(),
+            treat_as_char,
         )
         .map_err(|e| e.into())
     }
