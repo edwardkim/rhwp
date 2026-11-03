@@ -1,5 +1,5 @@
 //! 관계형: 글꼴 소유자 등록과 해제의 세션 프로토콜 계약.
-//! 주석 갱신: 2026-11-01T21:43:34+09:00; 직전 파일 커밋: 2026-11-01T19:39:45+09:00 (caf4102da7).
+//! 주석 갱신: 2026-11-03T19:15:40+09:00; 직전 파일 커밋: 2026-11-01T22:36:27+09:00 (9b0a86aabd).
 //! 근거: tests/fixtures/fonts/RHWPHostFixture.LICENSE.md, tests/fixtures/fonts/RHWPEquationFonts.LICENSE.md.
 //! 글꼴 등록·해제 전후의 세션 소유 관계 검사이며 페이지별 raw 측정은 대상이 아니다.
 //! 실제 글꼴 요청 이름과 명시 exact 소유자의 세션 프로토콜 계약.
@@ -7,6 +7,176 @@
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn exact_postscript_source_owns_its_true_type_metrics() {
+    use rhwp::model::style::Font;
+    use rhwp::renderer::skia::SkiaLayerRenderer;
+
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    let mut document = core.document().clone();
+    document.provenance.format = rhwp::model::provenance::SourceFormat::Hwpx;
+    for fonts in &mut document.doc_info.font_faces {
+        fonts[0] = Font {
+            name: "RHWPEquationContract-LatinOnly".into(),
+            alt_type: 1,
+            ..Default::default()
+        };
+    }
+    for shape in &mut document.doc_info.char_shapes {
+        shape.font_ids = [0; 7];
+    }
+    core.set_document(document);
+    core.insert_text_native(0, 0, 0, "A").unwrap();
+    let source = include_bytes!("../fixtures/fonts/RHWPEquationLatinOnly.ttf").to_vec();
+    let renderer = SkiaLayerRenderer::new()
+        .try_with_font_data(&[source])
+        .unwrap();
+    renderer.prepare_native_otf_fonts(&mut core).unwrap();
+    let raw = core
+        .get_font_decision_trace_native(0, r#"{"maxCharacters":16}"#)
+        .unwrap();
+    let trace: serde_json::Value = serde_json::from_str(&raw).unwrap();
+    let record = trace["records"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|record| record["source"]["character"] == "A")
+        .unwrap();
+    assert_eq!(record["layoutMetric"]["widthSource"], "nativeTrueType");
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn explicit_glyph_fallback_owns_advance_when_source_program_lacks_glyph() {
+    use rhwp::model::style::Font;
+    use rhwp::renderer::font_environment::FontEnvironment;
+    use rhwp::renderer::skia::SkiaLayerRenderer;
+
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    let mut document = core.document().clone();
+    document.provenance.format = rhwp::model::provenance::SourceFormat::Hwpx;
+    for fonts in &mut document.doc_info.font_faces {
+        fonts[0] = Font {
+            name: "RHWPEquationContract-LatinOnly".into(),
+            alt_type: 1,
+            ..Default::default()
+        };
+    }
+    for shape in &mut document.doc_info.char_shapes {
+        shape.font_ids = [0; 7];
+    }
+    core.set_document(document);
+    core.insert_text_native(0, 0, 0, "A〇‧").unwrap();
+    core.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"explicit-glyph-provider","substitutions":{},"glyphFallbacks":{"RHWPEquationContract-LatinOnly":["HCR Batang"]}}"#,
+    ).unwrap())).unwrap();
+    let source = include_bytes!("../fixtures/fonts/RHWPEquationLatinOnly.ttf").to_vec();
+    assert!(ttf_parser::Face::parse(&source, 0)
+        .unwrap()
+        .glyph_index('〇')
+        .is_none());
+    let renderer = SkiaLayerRenderer::new()
+        .try_with_font_data(&[source])
+        .unwrap();
+    renderer.prepare_native_otf_fonts(&mut core).unwrap();
+    let raw = core
+        .get_font_decision_trace_native(0, r#"{"maxCharacters":16}"#)
+        .unwrap();
+    let trace: serde_json::Value = serde_json::from_str(&raw).unwrap();
+    let records = trace["records"].as_array().unwrap();
+    let record = records
+        .iter()
+        .find(|r| r["source"]["character"] == "〇")
+        .unwrap();
+    assert_eq!(
+        record["layoutMetric"]["widthSource"],
+        "declaredGlyphFallbackMetric"
+    );
+    let source_record = records
+        .iter()
+        .find(|r| r["source"]["character"] == "A")
+        .unwrap();
+    assert_eq!(
+        source_record["layoutMetric"]["widthSource"],
+        "nativeTrueType"
+    );
+    let punctuation = records
+        .iter()
+        .find(|r| r["source"]["character"] == "‧")
+        .unwrap();
+    assert_ne!(
+        punctuation["layoutMetric"]["widthSource"],
+        "declaredGlyphFallbackMetric"
+    );
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn missing_source_glyph_does_not_inherit_the_paint_fallback_advance() {
+    use rhwp::model::style::{Font, SubstFont};
+    use rhwp::renderer::skia::SkiaLayerRenderer;
+
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    let mut document = core.document().clone();
+    document.provenance.format = rhwp::model::provenance::SourceFormat::Hwpx;
+    for fonts in &mut document.doc_info.font_faces {
+        fonts[0] = Font {
+            name: "RHWP Equation Contract".into(),
+            alt_type: 1,
+            subst_font: Some(SubstFont {
+                face: "Noto Sans KR".into(),
+                font_type: 1,
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+    }
+    for shape in &mut document.doc_info.char_shapes {
+        shape.font_ids = [0; 7];
+    }
+    core.set_document(document);
+    core.insert_text_native(0, 0, 0, "A€").unwrap();
+    let source = include_bytes!("../fixtures/fonts/RHWPEquationLatinOnly.ttf").to_vec();
+    let fallback = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf").to_vec();
+    let primary = ttf_parser::Face::parse(&source, 0).unwrap();
+    let alternate = ttf_parser::Face::parse(&fallback, 0).unwrap();
+    assert!(primary.glyph_index('€').is_none());
+    assert!(alternate.glyph_index('€').is_some());
+    let trace = |core: &DocumentCore, ch: &str| -> serde_json::Value {
+        let raw = core
+            .get_font_decision_trace_native(0, r#"{"maxCharacters":16}"#)
+            .unwrap();
+        let trace: serde_json::Value = serde_json::from_str(&raw).unwrap();
+        trace["records"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|record| record["source"]["character"] == ch)
+            .unwrap()
+            .clone()
+    };
+    let before = trace(&core, "€");
+    SkiaLayerRenderer::new()
+        .try_with_font_data(&[source, fallback])
+        .unwrap()
+        .prepare_native_otf_fonts(&mut core)
+        .unwrap();
+    let after = trace(&core, "€");
+    assert_eq!(
+        after["layoutMetric"]["finalAdvanceHwpunit"],
+        before["layoutMetric"]["finalAdvanceHwpunit"]
+    );
+    assert_ne!(after["layoutMetric"]["widthSource"], "nativeTrueType");
+    assert_eq!(
+        trace(&core, "A")["layoutMetric"]["widthSource"],
+        "nativeTrueType"
+    );
+}
 
 #[test]
 fn same_family_hft_and_truetype_requests_keep_distinct_source_programs() {

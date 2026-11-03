@@ -2234,6 +2234,18 @@ fn char_width_decision_with_hft_tracking<'a>(
             ) == Some(false);
         let verified_primary_missing = verified_primary_missing
             || verified_named_primary_missing
+            // 실제 선택한 원본 프로그램의 cmap이 결측을 확인하고 호출자가
+            // glyph 대체 공급자를 명시한 경우에도 같은 체인으로 전진을 구한다.
+            // 표시용 OS 폴백이나 프로그램 미준비만으로 원본 결측을 추정하지 않는다.
+            || (latin.is_none()
+                && style.source_font_is_ttf
+                && style.glyph_fallback_advance_explicit
+                // 기존 문장부호의 Print 전진 계약은 glyph 공급과 별개다.
+                && !is_narrow_punctuation(c)
+                && style
+                    .native_otf_metrics
+                    .as_ref()
+                    .is_some_and(|font| !font.has_glyph(c)))
             || (!style.source_font_is_hft
                 && measured_family == display_family
                 && KoPubFamily::from_primary(measured_family).is_some_and(|family| {
