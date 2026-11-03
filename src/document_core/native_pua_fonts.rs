@@ -2,7 +2,7 @@
 
 use crate::{error::HwpError, renderer::kerning::ExactFontSlot};
 use serde::Serialize;
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 
 use super::DocumentCore;
 
@@ -24,9 +24,44 @@ impl DocumentCore {
     /// HFT 표시 프로그램과 폭 표가 없는 원본 TrueType 프로그램을 구분해 요청한다.
     pub fn native_otf_font_requests(&self) -> Vec<NativePuaFontRequest> {
         let mut requests = BTreeMap::new();
-        for style in &self.styles.char_styles {
+        // 표시용 전역 치환은 원본 TrueType 프로그램을 확보했다는 뜻이 아니다.
+        // 원본 전진 보존을 요청한 세션에서는 같은 원본의 별칭 또는 별도로
+        // 선택한 TrueType 프로그램만 자연 전진을 공급할 수 있다.
+        let display_only_slots: BTreeSet<_> = self
+            .font_environment
+            .as_ref()
+            .filter(|env| env.preserves_source_metrics())
+            .map(|env| {
+                crate::renderer::font_environment::FontEnvironment::document_requests_with_slots(
+                    &self.document.doc_info,
+                )
+                .into_iter()
+                .filter_map(|(lang, id, request)| {
+                    let target = env.replacement_for(&request.source, lang, id)?;
+                    let original = request
+                        .primary
+                        .iter()
+                        .any(|name| name.trim().eq_ignore_ascii_case(target.trim()));
+                    (!original && !env.selects_true_type(target)).then_some((lang, id))
+                })
+                .collect()
+            })
+            .unwrap_or_default();
+        for (style_id, style) in self.styles.char_styles.iter().enumerate() {
             for lang in 0..crate::renderer::style_resolver::LANG_COUNT {
                 let source_ttf = style.source_ttf_for_lang(lang);
+                if source_ttf
+                    && self
+                        .document
+                        .doc_info
+                        .char_shapes
+                        .get(style_id)
+                        .is_some_and(|shape| {
+                            display_only_slots.contains(&(lang, shape.font_ids[lang]))
+                        })
+                {
+                    continue;
+                }
                 let family = style.font_family_for_lang(lang).to_owned();
                 let primary = family.split(',').next().unwrap_or(&family).trim();
                 let needs_ttf = source_ttf

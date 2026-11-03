@@ -118,3 +118,60 @@ fn svg_font_reference_preserves_local_priority_and_escapes_markup() {
     );
     assert!(NativeWebfontSupply::default().svg_style().is_empty());
 }
+
+#[test]
+fn display_substitute_preserves_source_advance_while_selected_program_can_own_it() {
+    use rhwp::renderer::font_environment::FontEnvironment;
+    let font = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
+    let advance =
+        |original: &str, preserve: bool, select_program: bool| {
+            let mut core = document_with_face(original);
+            core.insert_text_native(0, 0, 0, "가나다").unwrap();
+            let mut doc = core.document().clone();
+            doc.provenance.format = rhwp::model::provenance::SourceFormat::Hwpx;
+            for face in doc.doc_info.font_faces.iter_mut().flatten() {
+                face.alt_type = 1;
+            }
+            core.set_document(doc);
+            core.set_font_environment(Some(FontEnvironment::from_json(&serde_json::json!({
+            "id":"display-program-owner-8533", "preserveSourceMetrics":preserve,
+                "substitutions":{(original):"NotoSansKR-Regular"},
+            "trueTypeFaces":if select_program {vec!["NotoSansKR-Regular"]} else {vec![]},
+        }).to_string()).unwrap())).unwrap();
+            let trace = |core: &DocumentCore| {
+                let value: serde_json::Value = serde_json::from_str(
+                    &core
+                        .get_font_decision_trace_native(0, r#"{"maxCharacters":16}"#)
+                        .unwrap(),
+                )
+                .unwrap();
+                value["records"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|r| r["source"]["character"] == "가")
+                    .unwrap()["layoutMetric"]["finalAdvanceHwpunit"]
+                    .as_f64()
+                    .unwrap()
+            };
+            let before = trace(&core);
+            core.prepare_native_otf_fonts_with(|_| Some((font.to_vec(), 0)))
+                .unwrap();
+            (before, trace(&core))
+        };
+    // 독립 #8438 Print의 원본 ExpoM-HM은 전각이다. 표시 Noto의 0.92em을
+    // 원본 전진으로 등록하면 가운데 문구가 수축한다. 합성 계약도 같은 경계를 지킨다.
+    let (before, after) = advance("RHWP missing original 8533", true, false);
+    assert!(
+        (before - after).abs() < 1e-6,
+        "표시용 공급이 원본 전진을 바꿈: {before} -> {after}"
+    );
+    for (source, preserve, selected) in [
+        ("RHWP missing original 8533", false, false),
+        ("RHWP missing original 8533", true, true),
+        ("NotoSansKR-Regular", true, false),
+    ] {
+        let (before, after) = advance(source, preserve, selected);
+        assert!(after<before, "선택한 실제 프로그램의 자연 전진은 유지: {source} / {preserve} / {selected}: {before} -> {after}");
+    }
+}
