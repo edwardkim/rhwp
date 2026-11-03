@@ -108,6 +108,27 @@ devel 대비 2%p를 넘게 하락하므로, 원점 기반 크기만으로는 완
 두 시험의 제품 코드 변경은 모두 되돌렸다. 장치 크기·여분만 맞춰서는
 독립 PDF의 알파 합성 및 축소 표본까지 재현되지 않는다.
 
+## 공통 Print 프레임 적용과 64쪽 Native 검증
+
+WMFC 중간 표면을 일반 그림처럼 SVG/PNG 출력 단계에서 다시 축소하면, 원본
+Print의 페이지 기준 그림 원점과 clip 경계가 별도 경로로 계산된다. 기존
+`PrintRasterFrame`은 같은 좌표의 JPEG·알파 그림에 이미 사용된다. 따라서
+WMFC 중간 PNG `(rhWP 4,0)`도 paint의 공통 Print 프레임에서 한 번만
+`rasterize`하고, 결과를 최종 장치 PNG `(rhWP 4,1)`로 넘긴다. 이 경로는
+Print 프로필·축 변환 없는 WMFC 중간 표면에 한정한다. 원본 모델 좌표와
+일반 PNG의 표본 정책은 바꾸지 않는다.
+
+첫 집중 측정의 28·30·34·35·42쪽 Native raw는 각각 `97.85803`,
+`96.52280`, `95.70915`, `95.52018`, `94.89937`%다. 같은 고정 devel의
+`97.38278`, `97.92240`, `96.03240`, `89.11000`, `93.54898`%와
+비교하면 최대 하락은 30쪽의 1.40%p이고, 35쪽은 90%를 넘는다.
+
+같은 입력의 [64쪽 전체 Native 로그](../../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-all-native.log)와
+[전체 TSV](../../../output/pr-review/planet6897-ordered-20261031/book-validation/chart-print-frame-all-native/chart-print-frame-all/silhouette.tsv)에서
+누락 0쪽, 최저 94.90%, 고정 devel 대비 2%p 초과 하락 0쪽을 확인했다.
+30쪽은 1.40%p, 34쪽은 0.32%p 하락했다. fresh WASM과 다른 원 PR
+입력의 전쪽 대조, #8389·#8397 기준 TSV 대조는 이후 최종 코드로 수행한다.
+
 ## 검증 도구 보정
 
 이전 devel WASM의 메타파일 요청에는 `text`가 빈 SVG 그룹이 포함됐다. 빈 요청까지

@@ -53,6 +53,10 @@ pub(crate) fn metafile_surface(data: &[u8]) -> bool {
     declaration(data) == Some((4, 1))
 }
 
+pub(crate) fn intermediate_metafile_surface(data: &[u8]) -> bool {
+    declaration(data) == Some((4, 0))
+}
+
 pub(crate) fn mark_metafile_surface(data: &mut Vec<u8>, intermediate: bool) {
     if data.len() < 33 || &data[..8] != b"\x89PNG\r\n\x1a\n" {
         return;

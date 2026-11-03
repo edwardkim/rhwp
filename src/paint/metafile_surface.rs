@@ -226,6 +226,41 @@ pub(super) fn picture_payload(
     render_payload(image, bbox, pixel, fonts, svg, true, false)
 }
 
+pub(super) fn print_frame_payload(
+    payload: &ResolvedImagePayload,
+    frame: crate::renderer::print_raster::PrintRasterFrame,
+) -> Option<(BoundingBox, ResolvedImagePayload)> {
+    if !crate::renderer::image_resolver::png_sampling::intermediate_metafile_surface(&payload.data)
+    {
+        return None;
+    }
+    let source = image::load_from_memory_with_format(&payload.data, image::ImageFormat::Png)
+        .ok()?
+        .to_rgba8();
+    let raster = frame.rasterize(source.as_raw(), source.dimensions(), [1.0, 1.0, 0.0, 0.0])?;
+    let image = image::RgbaImage::from_raw(raster.width, raster.height, raster.rgba)?;
+    let mut encoded = std::io::Cursor::new(Vec::new());
+    image::DynamicImage::ImageRgba8(image)
+        .write_to(&mut encoded, image::ImageFormat::Png)
+        .ok()?;
+    let mut data = encoded.into_inner();
+    crate::renderer::image_resolver::png_sampling::mark_metafile_surface(&mut data, false);
+    Some((
+        BoundingBox::new(
+            f64::from(raster.left),
+            f64::from(raster.top),
+            f64::from(raster.width),
+            f64::from(raster.height),
+        ),
+        ResolvedImagePayload {
+            data,
+            mime: "image/png",
+            kind: ResolvedImageKind::OutputDevice,
+            suppress_effects: false,
+        },
+    ))
+}
+
 fn render_payload(
     image: &ImageNode,
     bbox: BoundingBox,

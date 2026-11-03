@@ -660,6 +660,30 @@ impl LayerBuilder {
                                 resolved = Some(payload);
                             }
                         }
+                        if self.profile == RenderProfile::Print
+                            && !image.transform.has_transform()
+                            && image.content_inset.is_none()
+                            && image.source_rect.is_none()
+                        {
+                            // WMFC의 중간 표면도 JPEG·알파 그림과 같은 Print 장치
+                            // 원점/clip을 사용한다. 최종 표식은 다시 축소하지 않는다.
+                            if let Some((surface_frame, payload)) =
+                                resolved.as_ref().and_then(|p| {
+                                    crate::renderer::print_raster::PrintRasterFrame::new(
+                                        self.image_page_size,
+                                        self.image_reference_origin,
+                                        node.bbox,
+                                        self.layout_dpi,
+                                    )
+                                    .and_then(|source| {
+                                        super::metafile_surface::print_frame_payload(p, source)
+                                    })
+                                })
+                            {
+                                frame = surface_frame;
+                                resolved = Some(payload);
+                            }
+                        }
                         vec![PaintOp::image(frame, image, resolved)]
                     }
                 };
