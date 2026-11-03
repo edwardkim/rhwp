@@ -25,10 +25,10 @@ export type GeneratedFontRuleProjection = Readonly<{
 export const FONT_RULE_CANVAS2D_WEBFONT_META = Object.freeze({
   "schemaVersion": "1.0",
   "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
-  "inputSha256": "067d9fa89a5c9316aa372193ace695f6f105edaff1e78b27aedb25038f212b64",
+  "inputSha256": "86c89fb5d8e95586abe3db49bc15baecc02e77e7a507901d3aa79781251f9101",
   "projectionId": "canvas2d-webfont",
-  "projectionSha256": "1fe89c01aa989f9449c736e0f73c4d448a0176c863edcb9bb66cb849b306beee",
-  "ruleCount": 155
+  "projectionSha256": "b651cbac2c5296b7f6ce3d83d1b94a1711da0b6fa2493c2ab981869a58e24736",
+  "ruleCount": 157
 });
 
 export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProjection[] = Object.freeze([
@@ -1353,46 +1353,46 @@ export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProject
     }
   },
   {
-    "ruleId": "rule.studio-supply.9226454d982d47a1557d.canvas2d",
+    "ruleId": "rule.issue-8533.rokg-webfont-rokg",
     "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
-    "sourceFace": "Government_16040911",
-    "targetFaceOrPolicy": "CDN_GOVERNMENT_SYMBOL_REGULAR",
+    "sourceFace": "ROKG",
+    "targetFaceOrPolicy": "CDN_ROKG_R",
     "conditions": {
-      "profile": "canvas2d-css-truetype"
+      "profile": "canvas2d-css-woff2"
     },
     "order": null,
     "mode": "direct",
     "metricEntryIds": [],
     "supply": {
       "external": true,
-      "fontFamily": "Government_16040911",
-      "format": "truetype",
+      "fontFamily": "ROKG",
+      "format": "woff2",
       "kind": "canvas2d-webfont",
-      "sourceUrl": "https://cdn.jsdelivr.net/gh/jangster77/korea-government-symbol-font@v1.0.0/fonts/Government_16040911.ttf",
+      "sourceUrl": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff2",
       "unicodeRange": null
     }
   },
   {
-    "ruleId": "rule.studio-supply.521afff37dd1f6357469.canvas2d",
+    "ruleId": "rule.issue-8533.rokg-webfont-rokg-r",
     "sourceBoundaryId": "studio-supply.font-list",
     "relationType": "supply-source",
     "decisionPlane": "supply",
-    "sourceFace": "정부상징 부처명_16040911",
-    "targetFaceOrPolicy": "CDN_GOVERNMENT_SYMBOL_REGULAR",
+    "sourceFace": "ROKG R",
+    "targetFaceOrPolicy": "CDN_ROKG_R",
     "conditions": {
-      "profile": "canvas2d-css-truetype"
+      "profile": "canvas2d-css-woff2"
     },
     "order": null,
     "mode": "direct",
     "metricEntryIds": [],
     "supply": {
       "external": true,
-      "fontFamily": "정부상징 부처명_16040911",
-      "format": "truetype",
+      "fontFamily": "ROKG R",
+      "format": "woff2",
       "kind": "canvas2d-webfont",
-      "sourceUrl": "https://cdn.jsdelivr.net/gh/jangster77/korea-government-symbol-font@v1.0.0/fonts/Government_16040911.ttf",
+      "sourceUrl": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff2",
       "unicodeRange": null
     }
   },
@@ -3439,6 +3439,50 @@ export const FONT_RULE_CANVAS2D_WEBFONT_RULES: readonly GeneratedFontRuleProject
       "format": "woff2",
       "kind": "canvas2d-webfont",
       "sourceUrl": "fonts/RHWPPublicBatang-Regular.woff2",
+      "unicodeRange": null
+    }
+  },
+  {
+    "ruleId": "rule.issue-8533.rokg-webfont-rokgr",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "ROKGR",
+    "targetFaceOrPolicy": "CDN_ROKG_R",
+    "conditions": {
+      "profile": "canvas2d-css-woff2"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "external": true,
+      "fontFamily": "ROKGR",
+      "format": "woff2",
+      "kind": "canvas2d-webfont",
+      "sourceUrl": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff2",
+      "unicodeRange": null
+    }
+  },
+  {
+    "ruleId": "rule.issue-8533.rokg-webfont-korean-name",
+    "sourceBoundaryId": "studio-supply.font-list",
+    "relationType": "supply-source",
+    "decisionPlane": "supply",
+    "sourceFace": "대한민국정부상징체 R",
+    "targetFaceOrPolicy": "CDN_ROKG_R",
+    "conditions": {
+      "profile": "canvas2d-css-woff2"
+    },
+    "order": null,
+    "mode": "direct",
+    "metricEntryIds": [],
+    "supply": {
+      "external": true,
+      "fontFamily": "대한민국정부상징체 R",
+      "format": "woff2",
+      "kind": "canvas2d-webfont",
+      "sourceUrl": "https://cdn.jsdelivr.net/gh/Alex4386/gov-symbol@eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2/src/assets/fonts/ROKG_R.woff2",
       "unicodeRange": null
     }
   }
