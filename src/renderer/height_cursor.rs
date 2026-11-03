@@ -1299,8 +1299,7 @@ impl HeightCursor {
             // 실제 직전 점유 끝과 순차 커서가 저장 줄간격만큼 떨어져 있으면
             // 그 간격은 이미 소비됐다. 빈 글줄도 공간을 소유하므로 텍스트 유무로
             // 이 소비를 부정하지 않는다. 비연속·합성·편집 경로는 기존 bridge를 쓴다.
-            let rendered_spent_trailing = self.suppress_hwpx_stale_forward
-                && !self.session_edited
+            let rendered_spent_trailing = !self.session_edited
                 && !synthetic_prev_seg
                 && curr_first_vpos == Some(prev_vpos_end)
                 && paragraphs

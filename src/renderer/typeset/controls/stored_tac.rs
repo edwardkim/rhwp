@@ -815,10 +815,16 @@ pub(super) fn prepare(
                                 == Some(para.line_segs[0].vertical_pos)
                     })
                 });
-            if restarted_column_line || continued_column_line {
+            if restarted_column_line {
                 // 원본에 남은 옛 host vpos는 새 쪽 개체의 출력 원점이 아니다.
                 // 뒤 저장 줄이 새 개체 줄의 전체 전진과 일치하는 0축을 소유한다.
                 saved_origin = flow_origin;
+            }
+            if continued_column_line {
+                // 앞 쪽에서 완전히 소비한 줄과 이어지는 저장 사다리가 이 문단의
+                // 앞 간격을 인증한다. 새 단으로 넘길 때도 아직 소비하지 않은
+                // 간격을 fit과 실제 배치가 같은 원점에서 한 번만 사용한다.
+                saved_origin = flow_origin + (fmt.spacing_before - shared_spacing_before).max(0.0);
             }
             // 직전 쪽이 완전한 저장 문단을 소비하고 현재 저장 줄이 그보다
             // 작은 양수로 되감겼으며 다음 문단이 명시적으로 새 쪽을 열면,

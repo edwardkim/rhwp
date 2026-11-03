@@ -138,7 +138,7 @@ fn device_size_for_extent(
     (u64::from(w).checked_mul(u64::from(h))? <= MAX_SURFACE_PIXELS).then_some((w, h))
 }
 
-fn transmission(pixmap: tiny_skia::Pixmap) -> Option<Vec<u8>> {
+fn transmission(pixmap: tiny_skia::Pixmap, intermediate: bool) -> Option<Vec<u8>> {
     // tiny-skia는 premultiplied RGBA다. 원본 alpha를 바꾸거나 색에 두 번 곱하지 않는다.
     let (width, height) = (pixmap.width(), pixmap.height());
     let mut pixels = pixmap.take_demultiplied();
@@ -166,7 +166,7 @@ fn transmission(pixmap: tiny_skia::Pixmap) -> Option<Vec<u8>> {
         .write_to(&mut png, image::ImageFormat::Png)
         .ok()?;
     let mut png = png.into_inner();
-    crate::renderer::image_resolver::png_sampling::mark_metafile_surface(&mut png);
+    crate::renderer::image_resolver::png_sampling::mark_metafile_surface(&mut png, intermediate);
     Some(png)
 }
 
@@ -180,17 +180,24 @@ pub(super) fn payload(
         return None;
     }
     let source = image.data.as_deref()?;
-    // 표준 WMFC의 enhanced content는 기존 EMF/EMF+ 경로가 소유한다.
-    if crate::parser::ole_container::emf_from_wmf_comment_chunks(source).is_some() {
-        return None;
-    }
-    let svg = crate::wmf::converter::WMFConverter::new(
-        source,
-        crate::wmf::converter::SVGPlayer::new().with_source_contract(),
-    )
-    .run()
-    .ok()?;
-    render_payload(image, bbox, pixel, fonts, svg, false)
+    // WMFC는 기존 공통 변환기의 EMF+ 우선 및 미지원 시 WMF 폴백을 그대로 사용한다.
+    // 어느 쪽이 선택돼도 내장 메타파일은 중간 장치에서 합성한 뒤 축소한다.
+    // 일반 WMF의 원본 표본 계약은 유지한다.
+    let (svg, intermediate) =
+        if crate::parser::ole_container::emf_from_wmf_comment_chunks(source).is_some() {
+            (crate::renderer::svg::convert_wmf_to_svg(source)?, true)
+        } else {
+            (
+                crate::wmf::converter::WMFConverter::new(
+                    source,
+                    crate::wmf::converter::SVGPlayer::new().with_source_contract(),
+                )
+                .run()
+                .ok()?,
+                false,
+            )
+        };
+    render_payload(image, bbox, pixel, fonts, svg, false, intermediate)
 }
 
 /// 단일 raster WMF를 같은 Print 장치에서 재생한 뒤 색을 보정한다.
@@ -216,7 +223,42 @@ pub(super) fn picture_payload(
         return None;
     }
     let svg = crate::renderer::svg::convert_wmf_to_svg(source)?;
-    render_payload(image, bbox, pixel, fonts, svg, true)
+    render_payload(image, bbox, pixel, fonts, svg, true, false)
+}
+
+pub(super) fn print_frame_payload(
+    payload: &ResolvedImagePayload,
+    frame: crate::renderer::print_raster::PrintRasterFrame,
+) -> Option<(BoundingBox, ResolvedImagePayload)> {
+    if !crate::renderer::image_resolver::png_sampling::intermediate_metafile_surface(&payload.data)
+    {
+        return None;
+    }
+    let source = image::load_from_memory_with_format(&payload.data, image::ImageFormat::Png)
+        .ok()?
+        .to_rgba8();
+    let raster = frame.rasterize(source.as_raw(), source.dimensions(), [1.0, 1.0, 0.0, 0.0])?;
+    let image = image::RgbaImage::from_raw(raster.width, raster.height, raster.rgba)?;
+    let mut encoded = std::io::Cursor::new(Vec::new());
+    image::DynamicImage::ImageRgba8(image)
+        .write_to(&mut encoded, image::ImageFormat::Png)
+        .ok()?;
+    let mut data = encoded.into_inner();
+    crate::renderer::image_resolver::png_sampling::mark_metafile_surface(&mut data, false);
+    Some((
+        BoundingBox::new(
+            f64::from(raster.left),
+            f64::from(raster.top),
+            f64::from(raster.width),
+            f64::from(raster.height),
+        ),
+        ResolvedImagePayload {
+            data,
+            mime: "image/png",
+            kind: ResolvedImageKind::OutputDevice,
+            suppress_effects: false,
+        },
+    ))
 }
 
 fn render_payload(
@@ -226,6 +268,7 @@ fn render_payload(
     fonts: &MetafileFonts,
     svg: Vec<u8>,
     picture_transfer: bool,
+    intermediate: bool,
 ) -> Option<ResolvedImagePayload> {
     let source = image.data.as_deref()?;
     if svg.len() > MAX_SVG_BYTES {
@@ -308,7 +351,7 @@ fn render_payload(
         let data = if picture_transfer {
             picture_transmission(pixmap, image)?
         } else {
-            transmission(pixmap)?
+            transmission(pixmap, intermediate)?
         };
         fonts.surfaces.lock().ok()?.insert(key, &data);
         data

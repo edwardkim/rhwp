@@ -72,6 +72,8 @@ crate::storage::clone_fields!(CharOverlapInfo, {border_type, inner_char_size, co
 /// 구성된 텍스트 런 (줄 내 동일 스타일 + 동일 언어 구간)
 #[derive(Debug, Clone, Default)]
 pub struct ComposedTextRun {
+    /// 리터럴 소프트 하이픈의 표시 투영은 원문 글자 메트릭을 유지한다.
+    pub literal_soft_hyphen: bool,
     /// 원문 U+2007 리터럴의 숫자 폭 공백 계약이다.
     pub literal_figure_space: bool,
     /// 텍스트 조각
@@ -99,7 +101,7 @@ pub struct ComposedTextRun {
     /// 새 줄 구성의 글자 메트릭 출처. 저장 줄의 원래 전진과 구분한다.
     pub regenerated_font_metrics: bool,
 }
-crate::storage::clone_fields!(ComposedTextRun, {literal_figure_space, text, char_style_id, lang_index, neutral_space_origin, char_overlap, footnote_marker, display_text, supplemental_metrics_blocked, inserted_control_text, space_metric, regenerated_font_metrics});
+crate::storage::clone_fields!(ComposedTextRun, {literal_soft_hyphen, literal_figure_space, text, char_style_id, lang_index, neutral_space_origin, char_overlap, footnote_marker, display_text, supplemental_metrics_blocked, inserted_control_text, space_metric, regenerated_font_metrics});
 
 impl ComposedTextRun {
     /// Copy owned text through the caller's storage policy; metadata is scalar.
@@ -149,6 +151,7 @@ impl ComposedTextRun {
         self.space_metric.apply_to_style(&mut style);
         style.regenerated_font_metrics = self.regenerated_font_metrics;
         style.literal_figure_space = self.literal_figure_space;
+        style.literal_soft_hyphen = self.literal_soft_hyphen;
         if self.literal_figure_space {
             style.literal_figure_space_em =
                 styles.literal_figure_space_em(self.char_style_id, self.lang_index);
@@ -328,8 +331,8 @@ include!("composer/pua_surface.inc.rs");
 mod empty_line_metrics;
 pub(crate) mod inline_box_rows;
 mod line_breaking;
-pub(crate) use line_breaking::condense_space_savings_px;
 pub(crate) use line_breaking::try_reflow_line_segs;
+pub(crate) use line_breaking::{condense_space_savings_px, overflowing_space_cut};
 
 mod picture_anchor_projection;
 pub(crate) use line_breaking::{

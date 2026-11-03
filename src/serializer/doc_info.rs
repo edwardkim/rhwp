@@ -906,10 +906,28 @@ fn write_serialize_bullet<W: std::io::Write>(
     w.write_u16(char_to_wchar(bullet.bullet_char))?;
 
     // 이미지 글머리표 여부 (INT32)
-    w.write_i32(bullet.image_bullet)?;
+    let hwpx_image = bullet
+        .raw_para_head
+        .is_some()
+        .then(|| bullet.image_reference())
+        .flatten();
+    w.write_i32(if hwpx_image.is_some() {
+        1
+    } else {
+        bullet.image_bullet
+    })?;
 
     // 이미지 글머리 데이터 (4바이트)
-    for &byte in &bullet.image_data {
+    let mut image_data = bullet.image_data;
+    if let Some(id) = hwpx_image {
+        image_data[3] = u8::try_from(id).map_err(|_| {
+            std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "그림 글머리표 BinData 순번이 HWP 범위를 초과합니다",
+            )
+        })?;
+    }
+    for &byte in &image_data {
         w.write_u8(byte)?;
     }
 

@@ -2095,6 +2095,7 @@ fn parse_bullet_hwpx(
     xml: &str,
 ) -> Result<Bullet, HwpxError> {
     let mut bullet = Bullet::default();
+    let mut has_image_ref = false;
 
     for attr in e.attributes().flatten() {
         match attr.key.as_ref().as_bytes() {
@@ -2129,7 +2130,7 @@ fn parse_bullet_hwpx(
     // numbering.raw_para_heads(#2695 계열)와 같은 방식으로 원본 구간을 통째로 보존해
     // 직렬화 시 splice 한다(무손실 라운드트립).
     // <hh:img binaryItemIDRef="imageN"> 는 이미지 글머리표의 실제 BinData 참조 ID —
-    // useImage="1" 만으로는 어떤 이미지인지 알 수 없어 누락 시 항상 ID 1 로 고정된다.
+    // useImage="1" 만으로는 이미지 ID를 알 수 없으므로 참조 누락 시 문자를 사용한다.
     if !is_empty_event(e) {
         let inner_start = reader.buffer_position() as usize;
         let mut inner_end = inner_start;
@@ -2140,6 +2141,26 @@ fn parse_bullet_hwpx(
                 Ok(Event::Start(ref ce)) | Ok(Event::Empty(ref ce))
                     if local_name(ce.name().as_ref()) == b"img" =>
                 {
+                    for attr in ce.attributes().flatten() {
+                        let value = attr.value.as_ref();
+                        match attr.key.as_ref().as_bytes() {
+                            b"contrast" => {
+                                bullet.image_data[0] = value.parse::<i8>().unwrap_or(0) as u8
+                            }
+                            b"bright" => {
+                                bullet.image_data[1] = value.parse::<i8>().unwrap_or(0) as u8
+                            }
+                            b"effect" => {
+                                bullet.image_data[2] = match value {
+                                    "GRAY_SCALE" => 1,
+                                    "BLACK_WHITE" => 2,
+                                    "PATTERN_8_8" => 3,
+                                    _ => 0,
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
                     if let Some(attr) = ce
                         .attributes()
                         .flatten()
@@ -2148,7 +2169,10 @@ fn parse_bullet_hwpx(
                         let s = attr.value.as_ref().to_owned();
                         let num: String = s.chars().filter(|c| c.is_ascii_digit()).collect();
                         if let Ok(id) = num.parse::<i32>() {
-                            bullet.image_bullet = id;
+                            if id > 0 {
+                                bullet.image_bullet = id;
+                                has_image_ref = true;
+                            }
                         }
                     }
                 }
@@ -2183,6 +2207,12 @@ fn parse_bullet_hwpx(
         }
     }
 
+    // 실제 참조가 없는 이미지 사용 표시는 다른 BinData를 가리키지 않는다.
+    // 한컴은 이 경우 원본 글머리표 문자를 사용한다. 원래 속성은 저장 시 보존한다.
+    if bullet.image_bullet > 0 && !has_image_ref {
+        bullet.image_bullet = 0;
+        bullet.hwpx_image_without_ref = true;
+    }
     Ok(bullet)
 }
 

@@ -1,5 +1,5 @@
 //! 관계형·고정형: 독립 Print 용지 관측과 공개 표본 계산을 실제 제품 함수에서 검사한다.
-//! 주석 갱신: 2026-10-30T06:54:13+09:00; 직전 파일 커밋: 2026-10-30T02:17:47+09:00 (55d447871d).
+//! 주석 갱신: 2026-11-03T14:58:53+09:00; 직전 파일 커밋: 2026-10-30T19:50:11+09:00 (c417310cab).
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
 //! 이 검사는 합성 입력을 사용하며 아래 수치는 관련 편람의 별도 시각 검증이다.
 //! HWP 163쪽 Native 100.00% / fresh WASM 100.00%.
@@ -14,6 +14,8 @@ mod print_paper;
 #[path = "../../src/renderer/print_picture_pen.rs"]
 mod print_picture_pen;
 #[allow(dead_code)]
+// 제품 모듈은 동일 파일을 별도 범위에 싣는다. 여기서는 비공개 계산만 직접 검증한다.
+#[allow(clippy::duplicate_mod)]
 #[path = "../../src/renderer/print_image_sampling_core.rs"]
 mod print_sampling;
 

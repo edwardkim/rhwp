@@ -16,6 +16,20 @@ pub fn font_supports_text(data: &[u8], face_index: u32, text: &str) -> bool {
 
 /// 다음 실제 공급자가 맡아야 할 글리프다. 해석 실패는 빈 집합(완전 공급)이 아니다.
 pub fn font_missing_text(data: &[u8], face_index: u32, text: &str) -> Option<String> {
+    font_missing_text_impl(data, face_index, text, false)
+}
+
+/// 메타파일의 실제 공백 글리프도 확인한다. 기존 일반 문자 계약은 유지한다.
+pub fn font_missing_text_with_spaces(data: &[u8], face_index: u32, text: &str) -> Option<String> {
+    font_missing_text_impl(data, face_index, text, true)
+}
+
+fn font_missing_text_impl(
+    data: &[u8],
+    face_index: u32,
+    text: &str,
+    include_spaces: bool,
+) -> Option<String> {
     if data.len() > crate::paint::MAX_PORTABLE_FONT_BLOB_BYTES
         || text.chars().count() > crate::paint::MAX_PORTABLE_GLYPHS_PER_RUN
     {
@@ -25,10 +39,13 @@ pub fn font_missing_text(data: &[u8], face_index: u32, text: &str) -> Option<Str
     Some(
         text.chars()
             .filter(|character| {
-                !character.is_whitespace()
-                    && !face
-                        .glyph_index(*character)
-                        .is_some_and(|glyph| glyph.0 != 0)
+                (if include_spaces {
+                    !character.is_control()
+                } else {
+                    !character.is_whitespace()
+                }) && !face
+                    .glyph_index(*character)
+                    .is_some_and(|glyph| glyph.0 != 0)
             })
             .collect(),
     )

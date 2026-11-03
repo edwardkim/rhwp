@@ -494,6 +494,9 @@ pub struct Bullet {
     pub bullet_char: char,
     /// 이미지 글머리표 여부 (0=문자, ID=이미지)
     pub image_bullet: i32,
+    /// HWPX에서 그림 사용을 표시했지만 실제 그림 참조가 없는 원본 속성이다.
+    #[serde(skip_serializing)]
+    pub hwpx_image_without_ref: bool,
     /// 이미지 글머리 데이터 (대비, 밝기, 효과, ID)
     pub image_data: [u8; 4],
     /// 체크 글머리표 문자
@@ -502,6 +505,20 @@ pub struct Bullet {
     /// align/useInstWidth/autoIndent/textOffsetType/checkable 등 7수준 필드로 표현
     /// 못하는 HWPX 전용 속성 보존. [#2790]
     pub raw_para_head: Option<String>,
+}
+
+impl Bullet {
+    /// HWP의 그림 사용 값과 그림 데이터에 저장된 BinData 순번은 서로 다르다.
+    /// HWPX에서 읽은 `image_bullet`은 매니페스트를 정규화한 BinData 순번이다.
+    pub fn image_reference(&self) -> Option<u16> {
+        if self.image_bullet <= 0 {
+            return None;
+        }
+        if self.raw_para_head.is_none() {
+            return (self.image_data[3] != 0).then_some(u16::from(self.image_data[3]));
+        }
+        u16::try_from(self.image_bullet).ok().filter(|id| *id > 0)
+    }
 }
 
 /// 텍스트 정렬 방식

@@ -66,7 +66,15 @@ pub(crate) fn supports_table_text_rows_with_storage<S: crate::storage::Storage>(
         && para.controls.iter().enumerate().any(|(control, _)| {
             super::super::composer::owned_rowbreak_tac_height(para, control).is_some()
         });
-    Ok(super::super::para_has_no_stored_line_segs(para)
+    // 본문 축만 새로 만든 경우 텍스트가 없는 문단의 저장 줄은 여전히
+    // 유효한 개체 높이를 소유한다. 줄 하나가 단일 TAC 표의 외곽 상자를
+    // 정확히 담을 때만 재구성된 축에서 같은 물리 줄 계획을 사용한다.
+    let rebased_single_table_row = para.rebased_single_table_row();
+    // 저장 글줄이 남아 있어도 문자 분할이 무효화됐으면 원래 줄 소속을
+    // 재사용할 수 없다. 표와 텍스트를 같은 물리 줄 계획에서 다시 구성한다.
+    Ok((super::super::para_has_no_stored_line_segs(para)
+        || para.stored_text_partition_is_dirty()
+        || rebased_single_table_row)
         && !has_composed_object_row
         && !para.text.contains('\t')
         && para

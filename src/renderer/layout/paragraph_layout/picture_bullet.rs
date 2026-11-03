@@ -22,9 +22,7 @@ pub(super) fn image(
     let bullet = styles
         .bullets
         .get(usize::from(style.numbering_id.checked_sub(1)?))?;
-    let id = u16::try_from(bullet.image_bullet)
-        .ok()
-        .filter(|id| *id > 0)?;
+    let id = bullet.image_reference()?;
     let bytes = find_bin_data_bytes(data?, id)?;
     let mut image = ImageNode::new(id, Some(bytes));
     image.section_index = Some(section_index);

@@ -407,6 +407,33 @@ pub struct SectionDef {
 }
 
 impl Document {
+    /// HWPX 인쇄 설정의 편집 용지 표시 값. 미기재와 미지원 값은 구분한다.
+    pub(crate) fn hwpx_print_crop_mark(settings: &[u8]) -> Option<bool> {
+        let xml = std::str::from_utf8(settings).ok()?;
+        let start = xml.find(r#"name="PrintCropMark""#)?;
+        let value_start = start + xml[start..].find('>')? + 1;
+        let value_end = value_start + xml[value_start..].find('<')?;
+        match xml[value_start..value_end].trim() {
+            "0" => Some(false),
+            "1" => Some(true),
+            _ => None,
+        }
+    }
+
+    /// 한컴 Print의 편집 용지 표시. 미기재와 지원하지 않는 값은 출력하지 않는다.
+    pub(crate) fn print_crop_marks(&self) -> bool {
+        if let Some(settings) = self.hwpx_aux_entry("settings.xml") {
+            return Self::hwpx_print_crop_mark(settings).unwrap_or(false);
+        }
+        self.doc_info.extra_records.iter().any(|record| {
+            record.tag_id == 27
+                && record.data.chunks_exact(8).any(|pair| {
+                    u32::from_le_bytes(pair[..4].try_into().unwrap()) == 0x0006_401a
+                        && u32::from_le_bytes(pair[4..].try_into().unwrap()) == 1
+                })
+        })
+    }
+
     /// HWPX 원본 보조 엔트리를 경로로 조회한다.
     ///
     /// 직렬화기가 하드코딩 상수 대신 원본 바이트를 출력할지 결정할 때 사용한다.

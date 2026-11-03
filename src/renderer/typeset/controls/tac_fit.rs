@@ -213,7 +213,7 @@ pub(super) fn prepare(
         flow.tac_table_line_index(para, table, fmt)
             .filter(|&owner| crate::renderer::composer::ordinary_tac_prefix_rows(para, owner))
             .is_some_and(|owner| {
-                page.current_height + fmt.line_advances_sum(0..owner) <= available_height()
+                page.current_height + fmt.line_content_height(0..owner, 0.0) <= available_height()
             })
     });
     let advance_before_place = page.current_height + height_for_fit > available_height()

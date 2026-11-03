@@ -3551,7 +3551,11 @@ impl Renderer for SvgRenderer {
         };
 
         // 클러스터 단위 렌더링: 옛한글 자모 조합 시퀀스를 하나의 <text>로 묶음
-        let metric_text = super::composer::display_projection_metric_text(&metric_source, text);
+        let metric_text = super::composer::display_projection_metric_text(
+            &metric_source,
+            text,
+            style.literal_soft_hyphen,
+        );
         let char_positions =
             super::replay_positions_or_compute(metric_text, style, layout_positions);
         let visual_positions =

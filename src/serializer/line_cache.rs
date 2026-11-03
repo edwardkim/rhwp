@@ -31,3 +31,9 @@ pub(super) fn can_serialize_line_partition(para: &Paragraph) -> bool {
                 .is_none_or(tab_ext_is_placeholder)
         })
 }
+
+/// 재구성된 축의 단독 표 줄은 문자 분할이 없고 원본 쪽 좌표도 아니다.
+/// HWPX 소비자가 표의 물리 상자로 줄을 다시 구성하도록 해당 캐시만 생략한다.
+pub(super) fn can_serialize_hwpx_line_partition(para: &Paragraph) -> bool {
+    can_serialize_line_partition(para) && !para.rebased_single_table_row()
+}

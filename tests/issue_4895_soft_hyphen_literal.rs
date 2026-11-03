@@ -1,3 +1,6 @@
+//! 관계형: 원본 U+00AD와 HWP/HWPX 저장·재열기 뒤의 문자 수를 대조한다.
+//! 주석 갱신: 2026-11-03T05:22:26+09:00; 직전 파일 커밋: 2026-10-22T01:37:42+09:00 (7346a928eed0d7ce7460aa4c415cf3c81002f1e8).
+//! 기존 저장 왕복 검사의 자료 선택을 보정한 것으로 새 조판·시각 회귀를 등록하지 않는다.
 //! Issue #4895: 소프트 하이픈(U+00AD)을 제어 표현으로 저장해 한글이 글자를 버리는 회귀.
 //!
 //! #4776 은 소프트 하이픈을 HWPX `<hp:hyphen/>` 요소와 HWP5 코드 24(0x18)로 되돌렸다.
@@ -21,6 +24,7 @@ use std::io::Read;
 use std::path::Path;
 
 use rhwp::document_core::DocumentCore;
+use rhwp::model::{control::Control, paragraph::Paragraph};
 
 fn load(rel: &str) -> DocumentCore {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(rel);
@@ -44,11 +48,35 @@ fn section_xml(bytes: &[u8]) -> String {
     out
 }
 
-/// `export-text` 와 같은 축(쪽별 본문)에서 소프트 하이픈을 센다.
+/// 저장 원본 IR의 본문과 중첩 표 셀에서 소프트 하이픈을 센다.
+/// `export-text`는 렌더링된 표시 문자열을 사용하므로 화면의 하이픈
+/// 대체 표기를 원본 문자로 세지 않는다.
 fn soft_hyphen_count(core: &DocumentCore) -> usize {
-    (0..core.page_count())
-        .filter_map(|p| core.extract_page_text_native(p).ok())
-        .map(|t| t.matches('\u{00AD}').count())
+    fn in_paragraph(paragraph: &Paragraph) -> usize {
+        let own = paragraph.text.matches('\u{00AD}').count();
+        let nested = paragraph
+            .controls
+            .iter()
+            .filter_map(|control| match control {
+                Control::Table(table) => Some(
+                    table
+                        .cells
+                        .iter()
+                        .flat_map(|cell| &cell.paragraphs)
+                        .map(in_paragraph)
+                        .sum::<usize>(),
+                ),
+                _ => None,
+            })
+            .sum::<usize>();
+        own + nested
+    }
+
+    core.document()
+        .sections
+        .iter()
+        .flat_map(|section| &section.paragraphs)
+        .map(in_paragraph)
         .sum()
 }
 

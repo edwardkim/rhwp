@@ -42,7 +42,7 @@ pub fn diff_exported_hwp_documents(expected: &Document, actual: &Document) -> Ir
 pub(crate) fn project_paragraphs(paragraphs: &mut [Paragraph]) {
     for para in paragraphs {
         // #5847: 임시 재조판 줄은 파일에 싣지 않는다. 정상 원본 줄은 유지한다.
-        if !crate::serializer::line_cache::can_serialize_line_partition(para)
+        if !crate::serializer::line_cache::can_serialize_hwpx_line_partition(para)
             || para
                 .line_segs
                 .iter()

@@ -1164,7 +1164,11 @@ impl TextRunNode {
 
     /// 표시 모양은 display_or_text로, 일대일 투영의 물리 폭은 원문으로 전달한다.
     pub(crate) fn metric_or_display_text(&self) -> &str {
-        super::composer::display_projection_metric_text(&self.text, self.display_or_text())
+        super::composer::display_projection_metric_text(
+            &self.text,
+            self.display_or_text(),
+            self.style.literal_soft_hyphen,
+        )
     }
 
     /// Replay 대상 문자열에 대해 layout positions가 안전한 경우에만 빌려준다.
@@ -1181,7 +1185,12 @@ impl TextRunNode {
         &'a self,
         replay_text: &str,
     ) -> std::borrow::Cow<'a, [f64]> {
-        let replay_text = super::composer::one_to_one_pua_replay_text(replay_text);
+        let metric_text = super::composer::display_projection_metric_text(
+            &self.text,
+            replay_text,
+            self.style.literal_soft_hyphen,
+        );
+        let replay_text = super::composer::one_to_one_pua_replay_text(metric_text);
         super::replay_positions_or_compute(
             &replay_text,
             &self.style,

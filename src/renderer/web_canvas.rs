@@ -2707,7 +2707,11 @@ impl Renderer for WebCanvasRenderer {
         let clusters = contextual_text::coalesce(split_into_clusters(text));
 
         // 레이아웃 메트릭 기준으로 글자 위치 계산 (줄바꿈 결정과 동일한 메트릭 사용)
-        let metric_text = super::composer::display_projection_metric_text(&metric_source, text);
+        let metric_text = super::composer::display_projection_metric_text(
+            &metric_source,
+            text,
+            style.literal_soft_hyphen,
+        );
         let char_positions =
             super::replay_positions_or_compute(metric_text, style, layout_positions);
         let visual_positions =

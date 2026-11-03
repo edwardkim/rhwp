@@ -8689,12 +8689,17 @@ impl LayoutEngine {
                 .checked_sub(1)
                 .and_then(|previous| col_content.items.get(previous))
                 .and_then(|previous| {
-                    let PageItem::Table {
-                        para_index: owner,
-                        control_index,
-                    } = previous
-                    else {
-                        return None;
+                    let (owner, control_index) = match previous {
+                        PageItem::Table {
+                            para_index,
+                            control_index,
+                        }
+                        | PageItem::PartialTable {
+                            para_index,
+                            control_index,
+                            ..
+                        } => (para_index, control_index),
+                        _ => return None,
                     };
                     let starts_paragraph = matches!(
                         item,
@@ -16476,14 +16481,27 @@ impl LayoutEngine {
                             } else {
                                 0.0
                             };
-                            self.native_text_frame_terminal_successor_gap(
-                                para,
-                                next,
-                                table,
-                                col_area,
-                                y_offset + outer_bottom,
-                                styles,
-                            )
+                            let accepted = ctx
+                                .paragraph_float_placements
+                                .get(&(para_index, control_index))
+                                .and_then(|placement| placement.stored_successor_line_origin)
+                                .and_then(|line| {
+                                    let before = styles
+                                        .para_styles
+                                        .get(next.para_shape_id as usize)?
+                                        .spacing_before;
+                                    Some(col_area.y + line - before - y_offset - outer_bottom)
+                                });
+                            accepted.or_else(|| {
+                                self.native_text_frame_terminal_successor_gap(
+                                    para,
+                                    next,
+                                    table,
+                                    col_area,
+                                    y_offset + outer_bottom,
+                                    styles,
+                                )
+                            })
                         }
                         _ => None,
                     })

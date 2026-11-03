@@ -1,0 +1,25 @@
+# HWP의 원시 CTRL_HEADER에서 개체 공통 속성을 읽는다.
+import struct, sys, zlib
+import olefile
+
+for path in sys.argv[1:]:
+    f = olefile.OleFileIO(path)
+    compressed = bool(struct.unpack_from("<I", f.openstream("FileHeader").read(), 36)[0] & 1)
+    body = f.openstream("BodyText/Section0").read()
+    if compressed:
+        body = zlib.decompress(body, -15)
+    pos = 0
+    found = []
+    while pos + 4 <= len(body):
+        header = struct.unpack_from("<I", body, pos)[0]
+        pos += 4
+        tag, size = header & 0x3ff, (header >> 20) & 0xfff
+        if size == 0xfff:
+            size = struct.unpack_from("<I", body, pos)[0]
+            pos += 4
+        data = body[pos:pos + size]
+        pos += size
+        if tag == 71 and len(data) >= 8 and data[:4] == b" osg":
+            attr = struct.unpack_from("<I", data, 4)[0]
+            found.append((hex(attr), bool(attr & (1 << 28))))
+    print(path, found)

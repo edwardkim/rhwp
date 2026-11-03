@@ -1906,3 +1906,21 @@ WASM 측정과 Print 증거를 연결했다. 검사 함수나 제품 코드는 �
 [46쪽 review](../../output/pr-review/planet6897-ordered-20261031/k113-shared-origin-review/k113-shared-origin/review/review_046.png),
 [overlay](../../output/pr-review/planet6897-ordered-20261031/k113-shared-origin-review/k113-shared-origin/overlay/overlay_046.png).
 이 결과는 선택 쪽 Native이며 전쪽·fresh WASM과 회귀 검증은 이후에 수행한다.
+
+### 2026-11-03 #4895 저장 왕복 검사 전제 보정
+
+현재 제품 코드 `d56930dda7`의 최소 글꼴 전체 회귀에서 12,377건 중
+12,375건이 통과하고 `issue_4895_soft_hyphen_literal` 2건만 실패했다.
+검사 원형은 [통합 PR #4936](https://github.com/edwardkim/rhwp/pull/4936)의
+`82f28ae864`에서 들어왔고, [PR #8026](https://github.com/edwardkim/rhwp/pull/8026)의
+`7346a928ee`는 제어 표기와 리터럴 표기를 분리했다. 실패한 검사는 저장 원본
+U+00AD의 존재를 화면 표시용 `extract_page_text_native`로 세고 있었다.
+현재 `export-text`는 표시 문자열을 사용하므로 두 `hcar-001` 입력에서 0개로
+나오지만, 파서 덤프에서 각 입력의 표 셀 문단에 원본 U+00AD가 4개씩 있다.
+
+기존 저장 왕복 검사의 자료 선택만 원본 IR의 중첩 표 문단까지 순회하도록
+보정했다. 최상위 문단만 세는 첫 후보는 같은 2건이 다시 실패했고, 중첩 표까지
+포함한 최종 후보는 동일한 최소 글꼴 환경에서 2건 모두 통과했다.
+전체 실패 로그는 `output/pr-review/planet6897-ordered-20261031/logs/book-validation/final-full-minfont-nextest.log`,
+최종 집중 재실행 로그는 같은 위치의 `final-soft-hyphen-minfont-nextest-v2.log`다.
+제품 코드와 저장 기대값은 바꾸지 않았다.

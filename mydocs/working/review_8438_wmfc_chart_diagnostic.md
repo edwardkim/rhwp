@@ -1,0 +1,252 @@
+# #8438 후속 검토: WMFC 차트 격자선 진단
+
+2026-11-03 재검증 기준 `upstream/devel`은
+`4e2cc6bb36576b95d58d4c76cd833281ea652554`이고, 아래 최초 원인 분석의 고정
+비교 기준은 `ea86816b5316dfeeb47ecf20df97abfd4b02da73`이다. 현재 제품 코드의
+마지막 변경은 `5aa6ee08dd`다. 이 문서는 최종 승인 기록이 아니다.
+
+## 이번 처리 범위
+
+[통합 PR #8438](https://github.com/edwardkim/rhwp/pull/8438)에서 체리픽한 원 PR 중
+2026-11-03 현재 열린 #8316·#8321·#8336·#8341·#8364·#8365·#8375·#8378·
+#8380·#8386·#8396의 검증, 필요한 메인터너 보정, 개별 리뷰와 종료를 처리한다.
+이미 닫힌 원 PR의 재검토나 다른 이슈의 새 개선은 이 범위에 넣지 않는다.
+#8389·#8397은 이번 보정의 기능 보존 기준으로만 대조한다. 두 PR의 전체 2,153쪽
+Native·fresh WASM 비교에서 소수 둘째 자리 표시값 하락은 각각 0쪽이며, 재산출한
+비교 TSV는 이미 제출한 [Native 정식 TSV](../pr/assets/review_8438_followup/pr8389_8397/native-final-comparison.tsv)·
+[WASM 정식 TSV](../pr/assets/review_8438_followup/pr8389_8397/wasm-final-comparison.tsv)와
+각각 바이트 단위로 같다. 각 실행의 17개 문서 산출도 완료했다.
+
+## 최신 head의 #8341 Native·fresh WASM 재검증
+
+`5aa6ee08dd` 제품 코드에서 `native-skia`로 빌드한 실행 파일
+SHA-256 `5a2f08110d954d8cd3d433a86f4a20cbc4a99080aff7446edc650c694b5e224b`를
+사용했다. 같은 재저장 HWPX와 독립 한컴 2024 Print PDF의 96 DPI 전 64쪽
+[Native TSV](../pr/assets/issue_8305/followup8438/native-wmfc-rebased-2024-all.tsv)는
+최저 42쪽 94.90%이며 미달·누락은 0쪽이다. 차트가 있는 35쪽은 95.52%다.
+고정 devel 대비 최대 하락은 30쪽 1.40%p로 허용폭 2%p 이내다.
+28·30·35·42쪽의 review와 overlay를 직접 대조했다. 차트·범례·값·뒤 문단의
+소속과 순서는 보존되며 일부 값 글자 가장자리의 미세 차이는 남는다.
+
+같은 제품 코드에서 새로 빌드한 WASM 패키지의 `rhwp_bg.wasm` SHA-256은
+`1b777936544642619c6da1d53770c928c176d199751ff3fda566dc5f698f3a65`다.
+같은 입력과 Print PDF의 전 64쪽
+[fresh WASM TSV](../pr/assets/issue_8305/followup8438/wasm-wmfc-rebased-2024-all.tsv)는
+최저 42쪽 94.92%, 90% 미만·누락 0쪽이다. 차트 35쪽은 95.56%이고 고정 devel
+대비 최대 하락은 30쪽 1.40%p다. Native와 WASM의 새 64쪽 표시값은 모두 기존
+고정 devel 비교표의 후보 값과 같다.
+
+| 쪽·확인 대상 | Native | fresh WASM | 직접 비교 |
+| --- | ---: | ---: | --- |
+| 28쪽 차트 시작 | 97.86% | 97.89% | [Native review](../pr/assets/issue_8305/followup8438/native-wmfc-rebased-review-028.png)·[overlay](../pr/assets/issue_8305/followup8438/native-wmfc-rebased-overlay-028.png), [WASM review](../pr/assets/issue_8305/followup8438/wasm-wmfc-rebased-review-028.png)·[overlay](../pr/assets/issue_8305/followup8438/wasm-wmfc-rebased-overlay-028.png) |
+| 30쪽 최대 하락 | 96.52% | 96.55% | [Native review](../pr/assets/issue_8305/followup8438/native-wmfc-rebased-review-030.png)·[overlay](../pr/assets/issue_8305/followup8438/native-wmfc-rebased-overlay-030.png), [WASM review](../pr/assets/issue_8305/followup8438/wasm-wmfc-rebased-review-030.png)·[overlay](../pr/assets/issue_8305/followup8438/wasm-wmfc-rebased-overlay-030.png) |
+| 35쪽 차트 보정 | 95.52% | 95.56% | [Native review](../pr/assets/issue_8305/followup8438/native-wmfc-rebased-review-035.png)·[overlay](../pr/assets/issue_8305/followup8438/native-wmfc-rebased-overlay-035.png), [WASM review](../pr/assets/issue_8305/followup8438/wasm-wmfc-rebased-review-035.png)·[overlay](../pr/assets/issue_8305/followup8438/wasm-wmfc-rebased-overlay-035.png) |
+| 42쪽 최저값 | 94.90% | 94.92% | [Native review](../pr/assets/issue_8305/followup8438/native-wmfc-rebased-review-042.png)·[overlay](../pr/assets/issue_8305/followup8438/native-wmfc-rebased-overlay-042.png), [WASM review](../pr/assets/issue_8305/followup8438/wasm-wmfc-rebased-review-042.png)·[overlay](../pr/assets/issue_8305/followup8438/wasm-wmfc-rebased-overlay-042.png) |
+
+## 초기 후보의 독립 대조와 당시 문제
+
+원 PR의 실제 입력 23개, #8341 차트 입력, #8321 대조 입력 2개를 같은 독립 한컴 Print
+PDF로 Native와 fresh WASM에서 전쪽 측정했다. 각 경로에 26개 입력, 1,123쪽이다.
+당시 후보의 페이지별 90% 미만은 없었지만, 고정 devel보다 2%p 넘게 낮은 쪽이
+`pr8341-chart-2024`에 있었다. 위 최신 head에서는 해소했다.
+
+| 쪽 | devel Native | 후보 Native | devel WASM | 후보 WASM |
+| ---: | ---: | ---: | ---: | ---: |
+| 28 | 97.38% | 93.82% | 97.42% | 93.82% |
+| 30 | 97.92% | 94.86% | 97.95% | 94.88% |
+| 42 | 93.55% | 90.69% | 93.79% | 90.68% |
+
+대조 입력은 `mydocs/pr/assets/issue_8305/followup8438/policy-resave.hwpx`, 기준은
+`pdf/issue8305/batch-8341-policy-resave-2024.pdf`다. 96 DPI, compat 2024, 시스템
+글꼴로 측정했다. 기존 후보의 35쪽은 devel 89.11%에서 92.57%로 개선됐다.
+
+## 격자선 실험과 판정
+
+WMFC의 중간 표면에서 밝은 회색 한 단위 선을 확대·좌표 이동·선명 그리기로
+조합했다. 아래는 Native raw 값이며, 모든 조합은 동일 입력·PDF에서 실행했다.
+실험용 코드와 진단 환경 변수는 최종 제품 코드에 남기지 않았다.
+
+| 실험 | 28쪽 | 30쪽 | 34쪽 | 35쪽 | 42쪽 | 미달 사유 |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| 현행 후보 | 93.82 | 94.86 | 94.47 | 92.57 | 90.69 | 28·30·42쪽 2%p 초과 하락 |
+| 기하 정밀도, 좌표 무변경 | 92.90 | 97.64 | 97.10 | 93.14 | 91.65 | 28쪽 2%p 초과 하락 |
+| 회색 선 정렬, 선명 그리기 | 95.51 | 95.94 | 93.54 | 92.53 | 94.82 | 34쪽 2%p 초과 하락 |
+| 장치 중심 0.5픽셀 이동 | 98.77 | 95.02 | 93.49 | 95.42 | 97.25 | 30·34쪽 2%p 초과 하락 |
+| 논리 좌표 한 단위 이동 | 93.77 | 93.11 | 96.21 | 95.06 | 92.41 | 28·30쪽 2%p 초과 하락 |
+| 장치 중심 0.25픽셀 이동 | 96.06 | 99.75 | 94.43 | 89.68 | 93.25 | 35쪽 90% 미만 |
+
+조합의 점수만 보고 특정 색이나 쪽을 선택하는 분기는 채택하지 않는다.
+28쪽에서는 Print 격자선 RGB 228에 비해 무변경 기하 출력이 243으로 옅고,
+34쪽에서는 Print RGB 236에 비해 선명 그리기가 RGB 224로 진해진다.
+따라서 단순 선 굵기·좌표의 일괄 보정이 서로 반대인 차이를 만든다.
+원 WMF 펜·좌표 변환과 최종 이미지 배치/축소의 소비 지점을 더 추적한다.
+Microsoft의 [WMF PenStyle](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wmf/2af5f7e4-9abb-4fb4-b428-d739c8b23829)과
+[GDI 선 규칙](https://learn.microsoft.com/en-us/windows/win32/gdi/lines)은 출발 근거이며,
+이 실험만으로 일괄 이동량을 정당화하지 않는다.
+
+## PDF 내장 그림과 최종 표본 단계 재확인
+
+독립 Print PDF의 28·30·34·35·42쪽 XObject는 각각 RGB JPEG와 1비트 마스크이며,
+모두 `Interpolate=no`다. `pdfimages -list`의 원본 크기는 차례대로
+`3509×1928`, `3520×1934`, `3740×2055`, `3729×2049`, `3687×2026`이다.
+JPEG 양자화 표는 품질 35의 표와 일치한다. RHWP가 재생한 28·35쪽의 중간 PNG는
+각각 `3508×1930`, `3727×2050`으로, 특히 세로축을 원본 비율로 다시 계산해
+독립 자원과 다른 장치 격자를 만들었다. 그러나 원본 창의 `629×346` 격자보다
+이미 큰 600dpi 표면을 쓰므로 원본 창 크기 하한을 추가해도 출력은 전혀 바뀌지
+않았다.
+
+두 축의 표본 수를 독립적으로 반올림한 Native 시험은
+28·30·34·35·42쪽 순서로 `92.89478`, `95.78129`, `94.46493`, `93.73031`,
+`90.69168`%였다. 28·30·42쪽의 2%p 하락을 해결하지 못해 제품 코드에서
+되돌렸다. 중간 PNG의 최근접 축소 시험은 `98.03597`, `92.17711`,
+`93.36116`, `92.25351`, `92.92068`%였고, 선형 축소 시험은 `92.85583`,
+`94.86050`, `95.82580`, `93.05812`, `95.43088`%였다. 어느 것도 다섯 쪽
+전체의 기존 devel 대비 최대 2%p 조건을 만족하지 않아 되돌렸다.
+
+28쪽 최종 출력에서 독립 PDF의 회색 격자선은 468·502·536·569·603행에
+남지만, 기존 후보의 600dpi 표면을 면적 축소한 출력은 603행만 뚜렷하고
+다른 행은 내용 임계값보다 옅어졌다. 35쪽에서는 반대로 후보가 PDF보다
+진한 행도 있다. 따라서 색을 일괄 진하게 하거나 필터 하나를 고르는 방식은
+원인 보정이 아니다. PDF의 그림 배치 원점은 RHWP SVG 원점보다 가로 약
+0.10~0.20 CSSpx, 세로 약 0.20~0.37 CSSpx 앞선다. 자원 크기·원점·축소의
+소비 지점을 같은 Print 장치 좌표에서 추적해야 한다.
+
+내장 EMF를 일반 EMF 변환기로 우선 재생하는 시험도 다섯 쪽에서 실행했다.
+Native raw는 28·30·34·35·42쪽 순서로 `97.38278`, `97.92240`,
+`96.03240`, `89.11000`, `93.54898`%였다. 이 출력의 35쪽 PNG SHA-256은
+고정 devel의 PNG와 동일하다. 내장 EMF의 일반 변환기는 `SetPixelV`·`GdiComment`·
+`BitBlt`·`PolyPolyline16` 등의 레코드를 아직 재생하지 않으므로 완전한 출력
+근거가 될 수 없고, 35쪽도 90%에 미달한다. 시험 변경은 되돌렸다.
+
+35쪽의 독립 PDF에 들어 있는 차트 JPEG는 `3729×2049`, 해당 RHWP의
+중간 PNG는 `3727×2050`이다. 두 이미지 모두 같은 경남 의령군·함안군
+꺾은선 차트와 수치·범례를 포함한다. 소스 이미지를 직접 대조한 결과,
+단일 좌표 이동이나 필터 변경만으로 다른 쪽의 격자선과 글자까지 함께
+맞는다는 근거는 아직 없다.
+
+PDF의 배치 사각형을 600dpi로 환산한 크기와 XObject 원본 크기는 다음과 같다.
+다섯 그림 모두 `round(배치 크기 × 600/72) + 2`가 XObject의 양쪽 축과
+일치한다. 이는 Print가 배치 그림 바깥쪽의 장치 표본까지 포함한다는
+관측값이며, 이 공식만으로 알파·선·글자 재생 규칙까지 입증되지는 않는다.
+
+| PDF 쪽 | XObject 픽셀 | 배치 사각형의 600dpi 크기 | 반올림 후 축별 +2 |
+| ---: | ---: | ---: | ---: |
+| 28 | 3509×1928 | 3507.117×1925.892 | 3509×1928 |
+| 30 | 3520×1934 | 3518.108×1931.883 | 3520×1934 |
+| 34 | 3740×2055 | 3737.991×2052.758 | 3740×2055 |
+| 35 | 3729×2049 | 3726.992×2046.758 | 3729×2049 |
+| 42 | 3687×2026 | 3685.017×2023.783 | 3687×2026 |
+
+원점 좌우를 각각 장치 격자로 내림·올림해 중간 표면 크기를 정한 첫 Native
+시험은 28·30·34·35·42쪽 순서로 `95.24931`, `95.82155`,
+`94.46463`, `92.57208`, `90.69480`%였다. 28·30·42쪽에서 여전히
+devel 대비 2%p를 넘게 하락하므로, 원점 기반 크기만으로는 완료할 수 없다.
+같은 크기의 표면 안에 축별 1픽셀 투명 여분을 두고 내용을 축소·이동한 다음
+시험은 `96.20453`, `95.08069`, `93.56708`, `95.10716`, `89.87333`%였다.
+42쪽이 90% 미만으로 내려가고 30·34쪽도 devel 대비 허용폭을 넘는다.
+두 시험의 제품 코드 변경은 모두 되돌렸다. 장치 크기·여분만 맞춰서는
+독립 PDF의 알파 합성 및 축소 표본까지 재현되지 않는다.
+
+## 공통 Print 프레임 적용과 64쪽 Native 검증
+
+WMFC 중간 표면을 일반 그림처럼 SVG/PNG 출력 단계에서 다시 축소하면, 원본
+Print의 페이지 기준 그림 원점과 clip 경계가 별도 경로로 계산된다. 기존
+`PrintRasterFrame`은 같은 좌표의 JPEG·알파 그림에 이미 사용된다. 따라서
+WMFC 중간 PNG `(rhWP 4,0)`도 paint의 공통 Print 프레임에서 한 번만
+`rasterize`하고, 결과를 최종 장치 PNG `(rhWP 4,1)`로 넘긴다. 이 경로는
+Print 프로필·축 변환 없는 WMFC 중간 표면에 한정한다. 원본 모델 좌표와
+일반 PNG의 표본 정책은 바꾸지 않는다.
+
+첫 집중 측정의 28·30·34·35·42쪽 Native raw는 각각 `97.85803`,
+`96.52280`, `95.70915`, `95.52018`, `94.89937`%다. 같은 고정 devel의
+`97.38278`, `97.92240`, `96.03240`, `89.11000`, `93.54898`%와
+비교하면 최대 하락은 30쪽의 1.40%p이고, 35쪽은 90%를 넘는다.
+
+같은 입력의 [64쪽 전체 Native 로그](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-all-native.log)와
+[전체 TSV](../../output/pr-review/planet6897-ordered-20261031/book-validation/chart-print-frame-all-native/chart-print-frame-all/silhouette.tsv)에서
+누락 0쪽, 최저 94.90%, 고정 devel 대비 2%p 초과 하락 0쪽을 확인했다.
+30쪽은 1.40%p, 34쪽은 0.32%p 하락했다. 같은 입력의
+[64쪽 fresh WASM 로그](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-all-wasm.log)와
+[전체 TSV](../../output/pr-review/planet6897-ordered-20261031/book-validation/chart-print-frame-all-wasm/chart-print-frame-all/silhouette.tsv)는
+누락 0쪽, 최저 94.92%, 고정 devel 대비 2%p 초과 하락 0쪽이다. 두 경로
+모두 30·34쪽만 각각 1.40·0.32%p 낮다. 30·35쪽의 review와 overlay를
+확대하면 차트 수치·범례·후속 표의 순서는 맞고 얇은 격자선·테두리에 색
+차이가 남는다. 메타파일 중간 표면의 단일 Print 프레임 전환 검사 1건과
+PNG 표식 계약 검사 4건은 최소 글꼴 환경에서 통과했다.
+
+다른 원 PR 입력의 전쪽 대조와 #8389·#8397 기준 TSV 대조는 현재 진행 중이다.
+
+## 검증 도구 보정
+
+이전 devel WASM의 메타파일 요청에는 `text`가 빈 SVG 그룹이 포함됐다. 빈 요청까지
+글꼴 바이트를 공급하면 178쪽 `pr8336-hwpspec-saved2024` 측정에서 64 MB 제한을
+넘는다. `scripts/export-wasm-png-for-sweep.mjs`는 실제 글자가 있는 요청만 글꼴을
+공급한다. 관련 Node 검사 15개가 통과했고, 새 출력 폴더에서 이 178쪽을 완료했으며
+최저 raw는 92.56%였다. 이 도구 보정은 제품 출력의 판정 기준을 변경하지 않는다.
+
+다음 단계는 원 PR 26개 입력 및 #8389·#8397의 2,153행을 최종 코드에서
+끝까지 비교하고, 새 devel의 #8499를 반영해 기능 보존과 로컬 전체 회귀를
+확인하는 것이다.
+
+## #8499 반영 뒤의 검증 진행
+
+2026-11-03에 `upstream/devel`의 `4e2cc6bb36576b95d58d4c76cd833281ea652554`
+(시험지 이미지 생성, [PR #8499](https://github.com/edwardkim/rhwp/pull/8499)) 위로
+작업 브랜치를 충돌 없이 리베이스했다. [리베이스 로그](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-rebase-8499.log)를
+보존한다. 새 이력의 제품 보정은 `5aa6ee08dd`, 표면 계약 검사는 `3739843004`다.
+새 base의 변경 파일과 이 브랜치의 순변경 파일은 겹치지 않지만, 이 사실만으로
+출력 유지가 입증되지는 않는다.
+
+최소 글꼴 환경에서 #8499의 `issue_665_ingest_images` 집중 검사 9건을
+[새 base 로그](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-rebased-8499-minfont.log)로
+모두 통과했다. 같은 환경의 전체 Rust 회귀와 정확한 새 head의 fresh WASM·시각
+검증은 진행 중이다. 앞 절의 64쪽 TSV는 리베이스 전 이 후보 코드에서 산출했으므로
+새 head의 최종 증적으로 표시하지 않는다.
+
+처음 작성한 소스 내부 `cfg(test)` 검사는 새 base의 테스트 계층 정책에서
+신규 모듈·총량 증가로 거부됐다. 해당 모듈을 제거하고 기존
+`tests/cases/verified_png_sampling_contracts.rs`에 실제 `policy-resave.hwpx` 28쪽의
+Print paint 결과를 검사하는 관계형 회귀를 넣었다. 최종 표면의 단일 발행,
+중간 표면 미노출, 출력 프레임과 PNG 크기의 일치를 확인한다. 최소 글꼴 환경의
+[집중 검사](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-integration-minfont-final.log)는
+5건 모두 통과했고, [테스트 계층 검사](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-rebased-unit-tier-check-v2.log)는
+소스 내부 검사 4,099건·신규 모듈 0건으로 통과했다.
+
+리베이스 전 동일 제품 코드로 이어서 측정한 원 PR 입력 23개, #8321 대조 입력
+2개와 #8341 차트 입력 1개의 Native 전쪽은 모두 완료됐다. 합계 26개 입력·
+1,123쪽에서 90% 미만은 0쪽, 고정 devel보다 2%p 넘게 낮은 쪽은 0쪽이다.
+최대 하락은 차트 30쪽의 97.92% → 96.52%(1.40%p)이고, 나머지 25개 입력은
+대응 devel TSV와 페이지별 raw 값이 같다. 누락됐던 `pr8336-book-hwpx` 원본의
+SHA-256 `31c0dbbbf71bb0561d2be517e979b348f90b8ec49d195f0f98a0f960cefd2104`를
+기존 인덱스와 대조한 뒤 그 입력만 재개했다. [재개 로그](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-originals-native-remaining.log)를
+보존한다. WASM 전쪽과 새 base의 정확한 제품 바이너리 측정은 계속 진행 중이다.
+
+리베이스 전 동일 제품 코드의 #8389·#8397 Native 기준 TSV도 전 17개 입력,
+2,153쪽을 완료했다. 공개 기준과 표시값(소수 둘째 자리)을 비교한
+[대조표](../../output/pr-review/planet6897-ordered-20261031/book-validation/chart-print-frame-pr-native-comparison.tsv)는
+유지·개선 2,153행, 하락·미완료·90% 미만 각각 0행이다. 이 결과는 같은
+제품 코드의 리베이스 전 실행이며, 새 base의 정확한 head에서 실행할 집중
+시각 검증과 구분한다. 해당 WASM 기준 TSV 대조와 전체 Rust 회귀는 진행 중이다.
+
+리베이스 뒤 최종 회귀 후보 `c8e4f0ffac`에서 최소 글꼴 환경의
+[`cargo nextest --tests` 전체 로그](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-rebased-full-minfont-nextest-final.log)는
+12,387건 통과·0건 실패·45건 건너뜀, exit code 0이다. 오래 걸린
+`issue_2063` 대형 표 검사도 455.027초에 통과했다. 같은 head의
+[`cargo clippy --workspace --all-targets` 로그](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-rebased-clippy-native.log)도
+`-D warnings`로 종료 코드 0을 확인했다. 이후 문서 전용 커밋은 제품 코드와
+회귀 assertion을 바꾸지 않았다.
+
+WASM32 `rhwp --lib` Clippy도
+[`-D warnings` 로그](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-rebased-clippy-wasm.log)에서
+종료 코드 0을 확인했다. 원 PR 입력 23개, #8321 대조 입력 2개와 #8341 차트
+입력 1개의 리베이스 전 동일 제품 코드 Native/fresh WASM 전쪽 대조도 완료했다.
+고정 devel `ea86816b5316dfeeb47ecf20df97abfd4b02da73`과 같은 원본·Print
+PDF·글꼴 환경을 사용한 [2,246행 대조표](../../output/pr-review/planet6897-ordered-20261031/book-validation/chart-print-frame-ea86816-page-comparison.tsv)는
+각 경로 1,123쪽, 90% 미만 0쪽, 2%p 초과 하락 0쪽이다. 양쪽 최대 하락은
+차트 30쪽 1.40%p이며, 최저는 차트 42쪽 Native 94.90%, WASM 94.92%다.
+처음 누락됐던 `pr8336-hwpspec-saved2024` devel WASM은 동일 기준 패키지로
+[전 178쪽 재산출](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-originals-base-missing-wasm.log)했고
+최저 92.56%, 누락 0쪽이다. 후보의 기존 원 PR 입력 23개 TSV와 #8321 대조
+입력 2개 TSV는 이미 커밋된 최종 증적과 바이트 단위로 같다. 이 전쪽 대조는
+리베이스 전 제품 코드를 측정한 것이므로, 새 base의 정확한 head에서는
+#8499 집중 검사와 #8341 차트 출력의 재측정을 이어 간다.

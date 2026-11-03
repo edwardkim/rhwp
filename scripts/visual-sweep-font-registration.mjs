@@ -49,8 +49,11 @@ function missingAfterUnicodeRange(owner, bytes, text, missing) {
 export async function selectTextEffectFontFaces(owner, fonts, requests, loadBytes) {
   const selected = new Set();
   for (const request of requests) {
-    if (!request.text || (typeof owner?.fontMissingText !== 'function'
-        && typeof owner?.fontSupportsText !== 'function')) {
+    const needsSpaceCoverage = typeof request.text === 'string' && /\s/u.test(request.text);
+    const hasSpaceCoverage = typeof owner?.fontMissingTextWithSpaces === 'function';
+    if (!request.text || (needsSpaceCoverage && !hasSpaceCoverage)
+        || (!needsSpaceCoverage && typeof owner?.fontMissingText !== 'function'
+          && typeof owner?.fontSupportsText !== 'function')) {
       for (const key of selectMetafileFontFaces(fonts, [request])) selected.add(key);
       continue;
     }
@@ -67,9 +70,11 @@ export async function selectTextEffectFontFaces(owner, fonts, requests, loadByte
           const bytes = await loadBytes(record);
           if (!bytes) continue;
           // 원 TTC의 faceIndex가 아니라 공급한 개별 SFNT의 0번 face다.
-          let missing = typeof owner.fontMissingText === 'function'
-            ? owner.fontMissingText(new Uint8Array(bytes), 0, remaining)
-            : owner.fontSupportsText(new Uint8Array(bytes), 0, remaining) ? '' : remaining;
+          let missing = needsSpaceCoverage
+            ? owner.fontMissingTextWithSpaces(new Uint8Array(bytes), 0, remaining)
+            : typeof owner.fontMissingText === 'function'
+              ? owner.fontMissingText(new Uint8Array(bytes), 0, remaining)
+              : owner.fontSupportsText(new Uint8Array(bytes), 0, remaining) ? '' : remaining;
           missing = missingAfterUnicodeRange(owner, bytes, remaining, missing);
           if (typeof missing !== 'string' || missing === remaining) continue;
           selected.add(key);

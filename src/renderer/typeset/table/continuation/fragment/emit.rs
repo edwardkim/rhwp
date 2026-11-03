@@ -244,13 +244,6 @@ impl TypesetEngine {
                 partial_height += height - current_content;
             }
         }
-        if std::env::var("RHWP_DIAG_SCAN").is_ok() {
-            eprintln!(
-                "DIAG_SCAN FRAGMENT rows={}..{} continuation={} block={:?} cut={:?} consumed={:.3} frame={:?} override={:?}",
-                cursor_row, end_row, is_continuation, split_block_start, split_end_cut,
-                consumed, stored_row_frame, end_row_height_override
-            );
-        }
         // 원본 셀의 저장 쪽 0에서 재개하는 새 단은 실제 좌표축을 가진다.
         // 후속 TAC가 이 증거를 잃고 누적 좌표를 임의의 0 기준으로 읽지 않게 한다.
         let resumed_stored_page_frame = is_continuation
@@ -916,13 +909,37 @@ impl TypesetEngine {
             partial_height = whole_height;
         }
 
+        // 다른 호스트 표가 이전 쪽에서 실제로 끝났을 때만 종료 줄 원점을 공유한다.
+        let siblings_emitted = is_continuation
+            && st.sibling_tables_emitted_on_previous_pages(
+                para_idx,
+                ctrl_idx,
+                input.source.paragraph,
+            );
+
         // `terminal_successor_gap`: 끝 조각 뒤 문단이 증언한 공통 간격이 있으면
         // paint와 같은 흐름 끝을 사용하고 호스트 아래 간격으로 다시 덮어쓰지 않는다.
         let commit_fragment = |st: &mut TypesetState,
                                owner_height: f64,
                                terminal: bool,
                                terminal_successor_gap: Option<f64>| {
-            if let Some(mut placement) = fragment_placement {
+            let accepted_sibling_frame = (terminal && siblings_emitted)
+                .then_some(terminal_successor_gap)
+                .flatten()
+                .map(|gap| {
+                    let top =
+                        st.current_height - gap - terminal_outer_bottom_overhead - owner_height;
+                    crate::renderer::float_placement::ParagraphFloatPlacement {
+                        flow: crate::renderer::float_placement::ParagraphFloatFlow::NextLine,
+                        anchor_y: top,
+                        stored_host_origin: None,
+                        stored_successor_line_origin: None,
+                        table_left: None,
+                        table_top: top,
+                        occupied_bottom: top,
+                    }
+                });
+            if let Some(mut placement) = fragment_placement.or(accepted_sibling_frame) {
                 // 끝 조각이 아닌 컷은 후속 문단을 소유할 수 없다. 끝 조각의 원본 원점은
                 // 유지하되, 간격을 소비하는 경로에서는 최종 수용한 물리 하단과 일치해야 한다.
                 if !terminal {
@@ -1005,15 +1022,6 @@ impl TypesetEngine {
                 st.record_stored_paragraph_flow_end(para_idx, st.current_height);
             }
         };
-
-        // [작업 #1046 2단계 진단] 순회 결과 — 조각 경계/소비 높이. 동작 불변.
-        if std::env::var("RHWP_TABLE_DRIFT").is_ok() {
-            eprintln!(
-                "TABLE_SPLIT_RESULT: pi={} sec={} cursor_row={} end_row={} consumed={:.1} partial_h={:.1} split_end_limit={:.1} avail_for_rows={:.1} fits={}",
-                para_idx, st.section_index, cursor_row, end_row, consumed, partial_height,
-                split_end_limit, avail_for_rows, consumed <= avail_for_rows + 0.1,
-            );
-        }
 
         if end_row >= row_count && split_end_limit == 0.0 {
             let skip_terminal_empty_sliver = is_continuation
@@ -1198,24 +1206,37 @@ impl TypesetEngine {
                     + partial_height
                     + bottom_caption_extra
                     + terminal_outer_bottom_overhead;
-                terminal_successor_gap = is_continuation
+                let sibling_gap = siblings_emitted
                     .then(|| st.table_flow_successor(para_idx, input.source.paragraphs_all))
                     .flatten()
                     .and_then(|(_, next)| {
-                        layout_engine.native_text_frame_terminal_successor_gap(
+                        layout_engine.text_host_terminal_successor_gap_with_emitted_siblings(
                             input.source.paragraph,
                             next,
                             table,
                             &st.inline_flow_column(),
                             st.inline_flow_column().y + st.current_height + occupied,
                             styles,
+                            true,
                         )
                     });
+                terminal_successor_gap = sibling_gap.or_else(|| {
+                    is_continuation
+                        .then(|| st.table_flow_successor(para_idx, input.source.paragraphs_all))
+                        .flatten()
+                        .and_then(|(_, next)| {
+                            layout_engine.native_text_frame_terminal_successor_gap(
+                                input.source.paragraph,
+                                next,
+                                table,
+                                &st.inline_flow_column(),
+                                st.inline_flow_column().y + st.current_height + occupied,
+                                styles,
+                            )
+                        })
+                });
                 let terminal_spacing = terminal_successor_gap
                     .unwrap_or(host_spacing_after_only + terminal_host_spacing);
-                if std::env::var_os("RHWP_DIAG_SCAN").is_some() {
-                    eprintln!("DIAG_SCAN FLOW_END pi={para_idx} row={cursor_row} cont={is_continuation} current={:.3} occupied={occupied:.3} terminal_spacing={terminal_spacing:.3} outer={} terminal_flow={:.3} reserved={terminal_outer_bottom_overhead:.3} host_tags={:?} next_line={:?}", st.current_height, table.outer_margin_bottom, input.prepared.terminal_outer_bottom_flow, input.source.paragraph.line_segs.iter().map(|line| line.tag).collect::<Vec<_>>(), input.source.paragraphs_all.get(para_idx + 1).and_then(|para| para.line_segs.first()).map(|line| (line.vertical_pos, line.tag)));
-                }
                 st.advance_flow_by(occupied + terminal_spacing);
                 terminal_host_push = terminal_spacing;
                 flow_after_terminal_advance = st.current_height;

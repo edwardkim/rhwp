@@ -64,15 +64,19 @@ pub(crate) fn requests(svg: &[u8]) -> Option<Vec<FontRequest>> {
             .descendants()
             .filter_map(|n| n.is_text().then(|| n.text()).flatten())
         {
-            chars.extend(
-                text.chars()
-                    .filter(|c| !c.is_whitespace() && !c.is_control()),
-            );
+            // XML 공백은 SVG에서 공백 문자로 처리될 수 있다. 공백만 있는
+            // 장식 텍스트도 실제 공급 글꼴의 cmap을 확인하도록 보존한다.
+            chars.extend(text.chars().filter_map(|c| match c {
+                '\t' | '\n' | '\r' => Some(' '),
+                c if !c.is_control() => Some(c),
+                _ => None,
+            }));
         }
     }
     Some(
         groups
             .into_iter()
+            .filter(|(_, chars)| !chars.is_empty())
             .map(|((families, weight, italic), chars)| {
                 let mut chars = chars.into_iter().collect::<Vec<_>>();
                 chars.sort_unstable();

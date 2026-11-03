@@ -53,11 +53,31 @@ pub(crate) fn metafile_surface(data: &[u8]) -> bool {
     declaration(data) == Some((4, 1))
 }
 
-pub(crate) fn mark_metafile_surface(data: &mut Vec<u8>) {
+pub(crate) fn intermediate_metafile_surface(data: &[u8]) -> bool {
+    declaration(data) == Some((4, 0))
+}
+
+pub(crate) fn mark_metafile_surface(data: &mut Vec<u8>, intermediate: bool) {
     if data.len() < 33 || &data[..8] != b"\x89PNG\r\n\x1a\n" {
         return;
     }
-    let mut chunk = [0, 0, 0, 2, b'r', b'h', b'W', b'P', 4, 1, 0, 0, 0, 0];
+    // 값 0은 최종 출력 장치에 아직 축소되지 않은 WMFC 메타파일 표면이다.
+    let mut chunk = [
+        0,
+        0,
+        0,
+        2,
+        b'r',
+        b'h',
+        b'W',
+        b'P',
+        4,
+        u8::from(!intermediate),
+        0,
+        0,
+        0,
+        0,
+    ];
     let crc = crc32fast::hash(&chunk[4..10]);
     chunk[10..14].copy_from_slice(&crc.to_be_bytes());
     data.splice(33..33, chunk);

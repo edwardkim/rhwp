@@ -3110,6 +3110,28 @@ impl LayoutEngine {
         fragment_bottom: f64,
         styles: &ResolvedStyleSet,
     ) -> Option<f64> {
+        self.text_host_terminal_successor_gap_with_emitted_siblings(
+            host,
+            next,
+            table,
+            column,
+            fragment_bottom,
+            styles,
+            false,
+        )
+    }
+
+    /// 선행 쪽에서 다른 호스트 표가 모두 완료된 사실은 페이지네이터만 전달한다.
+    pub(crate) fn text_host_terminal_successor_gap_with_emitted_siblings(
+        &self,
+        host: &Paragraph,
+        next: &Paragraph,
+        table: &crate::model::table::Table,
+        column: &LayoutRect,
+        fragment_bottom: f64,
+        styles: &ResolvedStyleSet,
+        siblings_emitted: bool,
+    ) -> Option<f64> {
         let profile = self.profile.get();
         if !fragment_bottom.is_finite()
             || !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
@@ -3118,7 +3140,7 @@ impl LayoutEngine {
                 .render_normalization
                 .borrow()
                 .table_text_reflowed(table)
-            || !matches!(host.controls.as_slice(), [Control::Table(_)])
+            || (!siblings_emitted && !matches!(host.controls.as_slice(), [Control::Table(_)]))
             || table.common.treat_as_char
             || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
             || !matches!(table.common.vert_rel_to, VertRelTo::Para)

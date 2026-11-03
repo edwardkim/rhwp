@@ -222,6 +222,7 @@ pub(super) fn preserve_literal_spaces_with_storage<S: crate::storage::Storage>(
                         ComposedTextRun {
                             text: storage.string(&run.text[boundaries[start]..boundaries[end]])?,
                             literal_figure_space: flags[start],
+                            literal_soft_hyphen: run.literal_soft_hyphen,
                             ..crate::storage::try_clone(&run, storage)?
                         },
                     )?;
