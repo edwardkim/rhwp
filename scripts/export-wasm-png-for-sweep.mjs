@@ -317,21 +317,19 @@ async function main() {
         }
         // 같은 문서의 필요한 face를 한 번만 공급한다. 데이터는 SVG/base64로 복제하지 않는다.
         const fontInfo = await page.evaluate(async ({pages, fonts, scale}) => {
-          const {installCanvasFont, selectSweepPaintFontFaces} = await import('/font-registration.mjs');
+          const {installCanvasFont, selectSweepPaintFontFaces, collectSweepPaintFontRequests} = await import('/font-registration.mjs');
           const doc = globalThis.sweepDocument, canvas = document.getElementById('page');
           for (const page of pages) doc.renderPageToCanvasFilteredWithProfile(page - 1, canvas, scale, 'all', 'print');
           // 이전 devel의 요청에는 실제 글자가 없는 SVG text 그룹도 있다.
           // 글리프가 없으면 공급할 face도 없으므로 장치 글꼴 바이트를 소모하지 않는다.
-          const metafileRequests = typeof doc.getMetafileFontRequests === 'function'
-            ? JSON.parse(doc.getMetafileFontRequests()).filter(request => typeof request.text === 'string' && request.text.length > 0)
-            : [];
+          const paintRequests = collectSweepPaintFontRequests(doc, pages);
+          const metafileRequests = paintRequests.metafile.filter(request => typeof request.text === 'string' && request.text.length > 0);
           const loadRequestedFont = async record => {
             const response = await fetch(record.url);
             if (!response.ok) throw Error('요청한 글꼴의 실제 프로그램을 읽을 수 없습니다.');
             return response.arrayBuffer();
           };
-          const effectRequests = typeof doc.getTextShadowFontRequests === 'function'
-            ? JSON.parse(doc.getTextShadowFontRequests()) : [];
+          const effectRequests = paintRequests.effects;
           // 사용하지 않는 fallback 글꼴이 메타파일 바이트 상한을 소진하지 않게 한다.
           const metafileFaces = await selectSweepPaintFontFaces(
             doc, fonts, metafileRequests, effectRequests, loadRequestedFont);
