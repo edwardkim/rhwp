@@ -466,7 +466,7 @@ impl DocumentCore {
     /// 🔴 언어 슬롯마다 **글꼴 목록이 다르다**(실측한 문서: HANGUL·LATIN 8개, OTHER·USER 7개.
     /// 같은 index 가 슬롯마다 다른 글꼴을 가리킨다).
     /// 그래서 하나의 ID 를 7칸에 복사하면 안 되고, **슬롯마다 찾거나 넣어서 각자의 index** 를 쓴다.
-    fn find_or_register_font_ids(&mut self, name: &str) -> Option<[u16; 7]> {
+    pub(crate) fn find_or_register_font_ids(&mut self, name: &str) -> Option<[u16; 7]> {
         let trimmed = name.trim();
         // 총칭 글꼴은 등록하지 않는다 — 이름이 아니라 분류다.
         const GENERIC: [&str; 8] = [

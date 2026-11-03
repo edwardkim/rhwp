@@ -362,6 +362,9 @@ pub(crate) fn parse_char_shape_mods(json: &str) -> crate::model::style::CharShap
     if let Some(v) = json_u16(json, "fontId") {
         mods.font_id = Some(v);
     }
+    if let Some(v) = json_str(json, "fontName") {
+        mods.font_name = Some(v);
+    }
     if let Some(v) = json_color(json, "textColor") {
         mods.text_color = Some(v);
     }
