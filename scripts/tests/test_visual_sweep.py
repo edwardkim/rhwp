@@ -562,9 +562,11 @@ class EmbeddedFontPreflightTests(unittest.TestCase):
                 patch.object(SWEEP, 'ensure_tools'),
                 patch.object(SWEEP, 'ensure_default_rhwp_binary_is_current'),
                 patch.object(SWEEP, 'render_target', return_value={}) as render,
+                patch.object(SWEEP, 'enforce_required_handbook') as handbook,
             ):
                 SWEEP.main()
             self.assertEqual(render.call_args.kwargs['embed_fonts'], 'full')
+            handbook.assert_called_once()
 
     def test_font_failure_invalidates_old_passed_summary_before_raster_or_resume(self):
         with tempfile.TemporaryDirectory() as temp:
