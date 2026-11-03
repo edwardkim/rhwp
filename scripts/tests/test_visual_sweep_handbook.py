@@ -72,6 +72,21 @@ class HandbookGateTests(unittest.TestCase):
             self.assertEqual(handbook.supply_webfonts(ROOT, temp, lambda *_: True), [])
             fetch.assert_not_called()
 
+    def test_inaccessible_font_directory_does_not_hide_other_fonts(self):
+        blocked = Path('/unavailable-test-font-directory')
+        fixture = ROOT / 'tests/fixtures/fonts/RHWPExactKerningSmoke.ttf'
+        original_is_file, original_is_dir, original_iterdir = Path.is_file, Path.is_dir, Path.iterdir
+        handbook._file_font_inventory.cache_clear()
+        try:
+            with patch.object(Path, 'is_file', lambda path: False if path == blocked else original_is_file(path)), \
+                    patch.object(Path, 'is_dir', lambda path: True if path == blocked else original_is_dir(path)), \
+                    patch.object(Path, 'iterdir', lambda path: (_ for _ in ()).throw(PermissionError())
+                                 if path == blocked else original_iterdir(path)):
+                inventory = handbook._file_font_inventory((str(blocked), str(fixture)))
+            self.assertTrue(inventory)
+        finally:
+            handbook._file_font_inventory.cache_clear()
+
     def test_wrong_webfont_hash_fails_closed(self):
         from io import BytesIO
         with tempfile.TemporaryDirectory() as temp, patch.object(
@@ -79,6 +94,21 @@ class HandbookGateTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(ValueError, '해시'):
                 handbook.supply_webfonts(ROOT, temp, lambda *_: False)
+
+    def test_kopub_original_ttf_is_supplied_without_modification(self):
+        from io import BytesIO
+        original = (ROOT / 'tests/fixtures/fonts/RHWPExactKerningSmoke.ttf').read_bytes()
+        expected = hashlib.sha256(original).hexdigest()
+        with tempfile.TemporaryDirectory() as temp, \
+                patch.object(handbook, 'WEBFONTS', {('KoPubDotum', 'Light'): ('KoPubDotum-Light.ttf', expected)}), \
+                patch.object(handbook.urllib.request, 'urlopen', return_value=BytesIO(original)) as fetch:
+            records = handbook.supply_webfonts(ROOT, temp, lambda *_: False)
+            fetch.assert_called_once_with(
+                'https://cdn.jsdelivr.net/gh/fonts-archive/KoPubDotum@295e0fc83931fda749f129b6690c0fa93f798007/KoPubDotum-Light.ttf',
+                timeout=60,
+            )
+            self.assertEqual(Path(records[0]['native_path']).read_bytes(), original)
+            self.assertEqual(records[0]['native_sha256'], expected)
 
     def test_missing_face_is_converted_from_verified_webfont(self):
         from fontTools.ttLib import TTFont
@@ -108,36 +138,8 @@ class HandbookGateTests(unittest.TestCase):
                 converted.close()
                 comparison.close()
 
-    def test_government_ttf_is_supplied_without_modification(self):
-        with tempfile.TemporaryDirectory() as temp:
-            source = Path(temp) / 'Government_16040911.ttf'
-            source.write_bytes(b'original font bytes')
-            expected = hashlib.sha256(source.read_bytes()).hexdigest()
-            (Path(temp) / expected).mkdir()
-            source = source.replace(Path(temp) / expected / source.name)
-            with patch.object(handbook, 'WEBFONTS',
-                              {('Government_16040911', 'Regular'): (source.name, expected)}), \
-                    patch.object(handbook.urllib.request, 'urlopen') as fetch:
-                records = handbook.supply_webfonts(ROOT, temp, lambda *_: False)
-            fetch.assert_not_called()
-            self.assertEqual(records[0]['native_path'], str(source))
-            self.assertEqual(records[0]['native_sha256'], expected)
-            self.assertEqual(source.read_bytes(), b'original font bytes')
-
-    def test_missing_government_font_downloads_the_exact_user_url(self):
-        from io import BytesIO
-        data = b'original font bytes'
-        expected = hashlib.sha256(data).hexdigest()
-        with tempfile.TemporaryDirectory() as temp, \
-                patch.object(handbook, 'WEBFONTS',
-                             {('Government_16040911', 'Regular'): ('Government_16040911.ttf', expected)}), \
-                patch.object(handbook.urllib.request, 'urlopen', return_value=BytesIO(data)) as fetch:
-            records = handbook.supply_webfonts(ROOT, temp, lambda *_: False)
-            fetch.assert_called_once_with(
-                'https://cdn.jsdelivr.net/gh/jangster77/korea-government-symbol-font@v1.0.0/fonts/Government_16040911.ttf',
-                timeout=60,
-            )
-            self.assertEqual(Path(records[0]['native_path']).read_bytes(), data)
+    def test_unrelated_government_font_is_not_in_handbook_supply(self):
+        self.assertFalse(any('Government_16040911' in name for name, _ in handbook.WEBFONTS.values()))
 
     def test_png_pair_cli_also_requires_the_handbook(self):
         with tempfile.TemporaryDirectory() as temp, \

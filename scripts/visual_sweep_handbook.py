@@ -22,17 +22,16 @@ METRIC = 'silhouette_raw_match_percent'
 POLICY = 'pdfium_smooth_rgb_exact_dpi_v2'
 METHOD = 'threshold_boundary_color_support_v1'
 
-# Studio의 기존 webfont projection에 있는 고정 버전이다. 글꼴은 저장소가 아니라
-# output에만 다운로드하며, 원본 WOFF 해시 확인 후 Native용 SFNT로 읽는다.
+# KoPub TTF는 설치본과 SHA가 같은 공개 배포본을 고정해 사용한다. 글꼴은
+# 저장소가 아닌 output에만 다운로드하며 원본 바이트와 굵기를 바꾸지 않는다.
 WEBFONTS = {
-    ('KoPubBatang', 'Light'): ('KoPubBatang-Light.woff', '2e8500e2fca3501397620a8d3459bf927502989a2e1f5967d38c3f4e97c965b1'),
-    ('KoPubBatang', 'Medium'): ('KoPubBatang-Medium.woff', 'd88dc4aa42af7ff0f468ff4a33b64d8d21ad69a6cc7d505775edb928a3644466'),
-    ('KoPubBatang', 'Bold'): ('KoPubBatang-Bold.woff', 'aca3dbb68fa1f09e9ea34753596a8dc7aec29cd15b9559d4ed1ece442fbc8542'),
-    ('KoPubDotum', 'Light'): ('KoPubDotum-Light.woff', '697dd52dcdf4d294924fc0dd58ed82ec568bfa64f1a785ff5e3a35b67f5313fd'),
-    ('KoPubDotum', 'Medium'): ('KoPubDotum-Medium.woff', '16b8b274949c3382a0f68f85ed6b4143be19c5c3ddd003568d26f22cfc3ef9d8'),
-    ('KoPubDotum', 'Bold'): ('KoPubDotum-Bold.woff', '8935b31c9b49aac2cb81eaa1de931ae84645d92b72e905bb722f84857f0a9fc9'),
+    ('KoPubBatang', 'Light'): ('KoPubBatang-Light.ttf', 'b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f'),
+    ('KoPubBatang', 'Medium'): ('KoPubBatang-Medium.ttf', '7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4'),
+    ('KoPubBatang', 'Bold'): ('KoPubBatang-Bold.ttf', '94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b'),
+    ('KoPubDotum', 'Light'): ('KoPubDotum-Light.ttf', '018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d'),
+    ('KoPubDotum', 'Medium'): ('KoPubDotum-Medium.ttf', 'd0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7'),
+    ('KoPubDotum', 'Bold'): ('KoPubDotum-Bold.ttf', '967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275'),
     ('HCR Batang', 'Regular'): ('HANBatang.woff', 'b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c'),
-    ('Government_16040911', 'Regular'): ('Government_16040911.ttf', '9ff914274d89c97abe3c22934c1f5f049d5c82de3cf0a3bc6053ac139b8a111a'),
 }
 
 
@@ -52,7 +51,11 @@ def _file_font_inventory(paths):
     for value in paths:
         root = Path(value).expanduser()
         # Native의 명시 font-path는 디렉터리의 직계 파일만 읽는다.
-        files = [root] if root.is_file() else root.iterdir() if root.is_dir() else []
+        try:
+            files = [root] if root.is_file() else list(root.iterdir()) if root.is_dir() else []
+        except OSError:
+            # 격리된 환경의 접근 불가 디렉터리는 설치 근거가 아니다.
+            continue
         for path in files:
             if not path.is_file() or path.suffix.lower() not in {'.ttf', '.otf', '.ttc'}:
                 continue
@@ -116,8 +119,10 @@ def supply_webfonts(root, cache, has_face=None, *, font_paths=()):
             continue
         if name == 'HANBatang.woff':
             url = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff'
-        elif name == 'Government_16040911.ttf':
-            url = 'https://cdn.jsdelivr.net/gh/jangster77/korea-government-symbol-font@v1.0.0/fonts/' + name
+        elif family in {'KoPubBatang', 'KoPubDotum'}:
+            revision = ('7ef37ed4015cf0f638952e3d9937e4192f7cea97' if family == 'KoPubBatang'
+                        else '295e0fc83931fda749f129b6690c0fa93f798007')
+            url = f'https://cdn.jsdelivr.net/gh/fonts-archive/{family}@{revision}/{name}'
         else:
             url = 'https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/' + name
         # Native fontdb는 파일 경로가 아닌 디렉터리를 스캔한다. face별 폴더를
@@ -138,13 +143,10 @@ def supply_webfonts(root, cache, has_face=None, *, font_paths=()):
             finally:
                 temp.unlink(missing_ok=True)
         if name.endswith('.ttf'):
-            # 정부상징 원본은 공공누리 제4유형으로 변환하지 않고 그대로 사용한다.
+            # TTF 원본을 변환하지 않고 해시가 일치하는 파일 그대로 사용한다.
             records.append({'family': family, 'style': style, 'url': url,
                             'source_sha256': expected, 'native_path': str(source),
-                            'native_sha256': expected,
-                            'attribution': '문화체육관광부 대한민국정부상징서체',
-                            'license': '공공누리 제4유형: 출처 표시, 비상업, 변경 금지',
-                            'license_url': 'https://github.com/jangster77/korea-government-symbol-font/blob/v1.0.0/LICENSE.md'})
+                            'native_sha256': expected})
             continue
         from fontTools.ttLib import TTFont
         target = face_cache / (name + '.ttf')
