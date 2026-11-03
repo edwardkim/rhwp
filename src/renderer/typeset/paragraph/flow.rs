@@ -322,14 +322,7 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
             - fmt.line_advances_sum(0..line)
             - fmt.line_heights.get(line).copied().unwrap_or(0.0)
     });
-    let own_note_cost = note_levels.last().map_or(0.0, |level| {
-        if note_levels.iter().any(|level| level.blocks_later_lines) {
-            // 앞부분만 들어가는 각주 뒤 줄은 이 쪽에 들어가지 않는다 — 분할로 넘긴다.
-            f64::INFINITY
-        } else {
-            level.cost
-        }
-    });
+    let own_note_cost = note_levels.last().map_or(0.0, |level| level.cost);
     let whole_available = (available - own_note_cost).max(0.0);
     if std::env::var_os("RHWP_DIAG_OWN_NOTES").is_some() && own_note_cost > 0.0 {
         eprintln!(
