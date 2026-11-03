@@ -116,3 +116,14 @@ Adapter·Proptest와 CI Impact Policy 통과 뒤
   위의 원시 bit·저장 왕복 근거, code head CI와 병합 SHA를 댓글에 연결한다.
 - 옵션 2 문서 PR 병합 뒤 원 PR head·상태를 다시 확인하고, 증적 댓글을 게시한 다음
   중복 병합 없이 종료한다. 원 PR의 범위 밖 HWP3·PDF 출처 변환은 해결로 표시하지 않는다.
+
+## 2026-11-03 원 PR 댓글·종료 확인
+
+원 PR [#8386](https://github.com/edwardkim/rhwp/pull/8386)에 주장 입력·페이지와 일치하는
+[검토 댓글](https://github.com/edwardkim/rhwp/pull/8386#issuecomment-6598202918)을 게시하고
+중복 병합 없이 닫았습니다. 게시 본문은 GitHub API로 다시 읽어 확인했습니다.
+관련 [이슈 #8339](https://github.com/edwardkim/rhwp/issues/8339): 종료.
+코드 [PR #8517](https://github.com/edwardkim/rhwp/pull/8517)의 병합 SHA는
+`c97709b59742372a817b3886f442144728fca646`, 검토 문서
+[PR #8523](https://github.com/edwardkim/rhwp/pull/8523)의 병합 SHA는
+`014be1516bfd4e4c91b0b5f50678fecaa6a1de1f`입니다.
