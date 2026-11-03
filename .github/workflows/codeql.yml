@@ -810,7 +810,9 @@ jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # 대형 Rust PR은 추출과 보안 쿼리 평가가 45분을 넘을 수 있다.
+    # 분석 범위를 줄이지 않고 실제 완료까지 허용한다.
+    timeout-minutes: 90
     needs: preflight
     if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' }}
     # preflight가 cancel·runner 장애로 job output을 발행하지 못해도 빈 선택이
