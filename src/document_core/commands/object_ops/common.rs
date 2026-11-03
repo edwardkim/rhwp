@@ -33,6 +33,17 @@ pub(crate) fn shape_transform_fingerprint(
 
 /// 다각형의 실제 편집 변환을 저장 행렬에 합성한다.
 /// 위치만 옮기거나 같은 속성을 재적용할 때는 원본 행렬을 보존한다.
+fn compose_affine(a: [f64; 6], b: [f64; 6]) -> [f64; 6] {
+    [
+        a[0] * b[0] + a[1] * b[3],
+        a[0] * b[1] + a[1] * b[4],
+        a[0] * b[2] + a[1] * b[5] + a[2],
+        a[3] * b[0] + a[4] * b[3],
+        a[3] * b[1] + a[4] * b[4],
+        a[3] * b[2] + a[4] * b[5] + a[5],
+    ]
+}
+
 pub(crate) fn update_changed_polygon_geometry(
     shape: &mut ShapeObject,
     before: (u32, u32, u32, u32, u32, u32, i16, bool, bool),
@@ -43,15 +54,43 @@ pub(crate) fn update_changed_polygon_geometry(
     if geometry(before) == geometry(after) {
         return;
     }
+    let current_frame =
+        super::shape::group_geometry::frame_matrix(shape.common(), shape.shape_attr());
+    let old_frame = super::shape::group_geometry::frame_matrix(
+        &crate::model::shape::CommonObjAttr {
+            width: before.0,
+            height: before.1,
+            ..Default::default()
+        },
+        &crate::model::shape::ShapeComponentAttr {
+            original_width: shape.shape_attr().original_width,
+            original_height: shape.shape_attr().original_height,
+            current_width: before.4,
+            current_height: before.5,
+            rotation_angle: before.6,
+            horz_flip: before.7,
+            vert_flip: before.8,
+            ..Default::default()
+        },
+    );
     let ShapeObject::Polygon(poly) = shape else {
         return;
     };
     let sa = &mut poly.drawing.shape_attr;
-    if before.0 == 0 || before.1 == 0 || poly.points.is_empty() {
+    let determinant = old_frame[0] * old_frame[4] - old_frame[1] * old_frame[3];
+    if determinant == 0.0 || !determinant.is_finite() || poly.points.is_empty() {
         sa.raw_rendering.clear();
         return;
     }
-    let source_matrix = if sa.has_saved_affine_geometry() || poly.affine_edit_reference.is_some() {
+    let inverse = [
+        old_frame[4] / determinant,
+        -old_frame[1] / determinant,
+        (old_frame[1] * old_frame[5] - old_frame[4] * old_frame[2]) / determinant,
+        -old_frame[3] / determinant,
+        old_frame[0] / determinant,
+        (old_frame[3] * old_frame[2] - old_frame[0] * old_frame[5]) / determinant,
+    ];
+    let source = if sa.has_saved_affine_geometry() {
         [
             sa.render_sx,
             sa.render_b,
@@ -61,88 +100,28 @@ pub(crate) fn update_changed_polygon_geometry(
             sa.render_ty,
         ]
     } else {
-        // 저장 행렬이 없는 다각형도 첫 변환부터 같은 합성 행렬을 쓴다. 편집 중 그림과
-        // 저장·재열기 그림이 같은 중심 기준 행렬을 소비해 개체가 옮겨지지 않는다.
-        let scale = |size: u32, original: u32| {
-            if original > 0 {
-                f64::from(size) / f64::from(original)
-            } else {
-                1.0
-            }
-        };
-        [
-            scale(before.0, sa.original_width),
-            0.0,
-            0.0,
-            0.0,
-            scale(before.1, sa.original_height),
-            0.0,
-        ]
+        old_frame
     };
-    // 변경을 현재 행렬에 누적하면 크기·회전·대칭의 역연산 순서가 달라진다.
-    // 처음 편집한 기준에서 매번 합성해 전체 속성 봉지의 되돌리기도 보존한다.
+    // 원본 저장 행렬과 이상적인 배치 프레임 사이의 잔여 변환을 한 번 보존한다.
+    // 매번 현재 frame에 합성하므로 회전 외곽 크기를 로컬 배율로 다시 쓰지 않고,
+    // 여러 편집과 역연산도 직전 계산의 오차를 누적하지 않는다.
     let reference =
         poly.affine_edit_reference
             .get_or_insert(crate::model::shape::PolygonAffineEditReference {
-                width: before.0,
-                height: before.1,
+                width: before.4,
+                height: before.5,
                 rotation: before.6,
                 horz_flip: before.7,
                 vert_flip: before.8,
-                matrix: source_matrix,
+                matrix: compose_affine(inverse, source),
             });
-    let sx = f64::from(after.0) / f64::from(reference.width);
-    let sy = f64::from(after.1) / f64::from(reference.height);
-    let base = reference.matrix;
-    let mut m = [
-        base[0] * sx,
-        base[1] * sx,
-        base[2] * sx,
-        base[3] * sy,
-        base[4] * sy,
-        base[5] * sy,
-    ];
-    let mut bounds = (
-        f64::INFINITY,
-        f64::INFINITY,
-        f64::NEG_INFINITY,
-        f64::NEG_INFINITY,
-    );
-    for p in &poly.points {
-        let x = m[0] * f64::from(p.x) + m[1] * f64::from(p.y) + m[2];
-        let y = m[3] * f64::from(p.x) + m[4] * f64::from(p.y) + m[5];
-        bounds.0 = bounds.0.min(x);
-        bounds.1 = bounds.1.min(y);
-        bounds.2 = bounds.2.max(x);
-        bounds.3 = bounds.3.max(y);
-    }
-    let cx = (bounds.0 + bounds.2) / 2.0;
-    let cy = (bounds.1 + bounds.3) / 2.0;
-    if reference.horz_flip != after.7 {
-        m[0] = -m[0];
-        m[1] = -m[1];
-        m[2] = 2.0 * cx - m[2];
-    }
-    if reference.vert_flip != after.8 {
-        m[3] = -m[3];
-        m[4] = -m[4];
-        m[5] = 2.0 * cy - m[5];
-    }
-    let angle = (f64::from(after.6) - f64::from(reference.rotation)).to_radians();
-    let (sin, cos) = angle.sin_cos();
-    let a = cos * m[0] - sin * m[3];
-    let b = cos * m[1] - sin * m[4];
-    let c = sin * m[0] + cos * m[3];
-    let d = sin * m[1] + cos * m[4];
-    let tx = cx + cos * (m[2] - cx) - sin * (m[5] - cy);
-    let ty = cy + sin * (m[2] - cx) + cos * (m[5] - cy);
-    sa.render_sx = a;
-    sa.render_b = b;
-    sa.render_tx = tx;
-    sa.render_c = c;
-    sa.render_sy = d;
-    sa.render_ty = ty;
-    // 저장·재로드도 출력과 같은 합성 행렬을 소비한다.
+    let m = compose_affine(current_frame, reference.matrix);
+    sa.render_sx = m[0];
+    sa.render_b = m[1];
+    sa.render_tx = m[2];
+    sa.render_c = m[3];
+    sa.render_sy = m[4];
+    sa.render_ty = m[5];
     sa.raw_rendering = crate::serializer::control::serialize_affine_rendering(sa);
 }
 

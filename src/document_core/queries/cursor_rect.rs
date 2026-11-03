@@ -223,13 +223,19 @@ fn find_cursor_in_cell_node(
                 let font_size = text_run.style.font_size;
                 let ascent = font_size * 0.8;
                 let caret_y = node.bbox.y + text_run.baseline - ascent;
-                return Some(CellCursorHit {
+                let hit = CellCursorHit {
                     page_index,
                     x: node.bbox.x + x_in_run,
                     y: caret_y,
                     height: font_size,
-                    at_form_end: false,
-                });
+                    at_form_end: paragraph.is_some() && offset == char_start + char_count,
+                };
+                // 앞줄의 빈 끝 앵커보다 다음 실제 양식 줄의 leading 경계를 먼저 찾는다.
+                if hit.at_form_end {
+                    end_fallback = Some(hit);
+                } else {
+                    return Some(hit);
+                }
             }
         }
     }

@@ -43,6 +43,11 @@ pub(super) fn finish_top_level_edit(
     if shape.shape_attr().rotation_angle != before.6 {
         refresh_top_level_frame(shape);
     }
+    // 다각형은 공통 affine 편집기가 원본 행렬의 잔여 변환을 보존한다.
+    // 먼저 행렬을 초기화하면 원본의 skew·이동을 복구할 수 없다.
+    if matches!(shape, ShapeObject::Polygon(_)) {
+        return;
+    }
     if super::super::common::shape_transform_fingerprint(shape.common(), shape.shape_attr())
         != before
     {
@@ -93,8 +98,15 @@ impl Placement {
 
 /// 최상위 프레임 중심을 유지하며 원본 좌표에 크기·대칭·회전을 차례로 적용한다.
 pub(super) fn placement(child: &ShapeObject, x: f64, y: f64) -> Placement {
-    let common = child.common();
-    let sa = child.shape_attr();
+    placement_from_attributes(child.common(), child.shape_attr(), x, y)
+}
+
+fn placement_from_attributes(
+    common: &crate::model::shape::CommonObjAttr,
+    sa: &crate::model::shape::ShapeComponentAttr,
+    x: f64,
+    y: f64,
+) -> Placement {
     let (frame_w, frame_h) = (common.width as f64, common.height as f64);
     let positive = |value: u32, fallback: f64| if value > 0 { value as f64 } else { fallback };
     let cur_w = positive(sa.current_width, frame_w);
@@ -125,4 +137,22 @@ pub(super) fn placement(child: &ShapeObject, x: f64, y: f64) -> Placement {
         rotation: [cos, -sin, 0.0, sin, cos, 0.0],
         original_size: (original_w, original_h),
     }
+}
+
+/// 배치 프레임과 저장 행렬이 같은 변환을 소비한다.
+pub(in crate::document_core::commands::object_ops) fn frame_matrix(
+    common: &crate::model::shape::CommonObjAttr,
+    attr: &crate::model::shape::ShapeComponentAttr,
+) -> [f64; 6] {
+    let placement = placement_from_attributes(common, attr, 0.0, 0.0);
+    let [sx, _, _, _, sy, _] = placement.scale;
+    let [a, b, _, c, d, _] = placement.rotation;
+    [
+        a * sx,
+        b * sy,
+        placement.translation.0,
+        c * sx,
+        d * sy,
+        placement.translation.1,
+    ]
 }
