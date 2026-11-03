@@ -181,3 +181,10 @@ Print paint 결과를 검사하는 관계형 회귀를 넣었다. 최종 표면�
 SHA-256 `31c0dbbbf71bb0561d2be517e979b348f90b8ec49d195f0f98a0f960cefd2104`를
 기존 인덱스와 대조한 뒤 그 입력만 재개했다. [재개 로그](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-originals-native-remaining.log)를
 보존한다. WASM 전쪽과 새 base의 정확한 제품 바이너리 측정은 계속 진행 중이다.
+
+리베이스 전 동일 제품 코드의 #8389·#8397 Native 기준 TSV도 전 17개 입력,
+2,153쪽을 완료했다. 공개 기준과 표시값(소수 둘째 자리)을 비교한
+[대조표](../../output/pr-review/planet6897-ordered-20261031/book-validation/chart-print-frame-pr-native-comparison.tsv)는
+유지·개선 2,153행, 하락·미완료·90% 미만 각각 0행이다. 이 결과는 같은
+제품 코드의 리베이스 전 실행이며, 새 base의 정확한 head에서 실행할 집중
+시각 검증과 구분한다. 해당 WASM 기준 TSV 대조와 전체 Rust 회귀는 진행 중이다.
