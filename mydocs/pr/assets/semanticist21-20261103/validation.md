@@ -1,5 +1,7 @@
 # 누적 검토의 최종 로컬 검증
 
+GitHub 제출 뒤 추가한 [진단 출력 보안 보정](ci-security-followup.md)은 아래 조판 측정과 구분한다. 아래 결과는 측정·검증 당시 head의 기록이며, 후속 보정 검증은 별도 절에 기록한다.
+
 검증 head는 `c6ad3eea59d1b7701efdc4fb582e2d9a44b4f775`이며 제품 source는 `39b4f81f6aab4cc08c6145ed6911db2a8fe5125e`다. 기준 devel은 `7d06d5c706f1d89f1662e739abf2b1b25d2a98e4`다. 이후 문서·증적 정리는 제품 구현과 테스트 실행문을 바꾸지 않는다.
 
 ## 판정

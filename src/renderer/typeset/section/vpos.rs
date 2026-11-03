@@ -302,33 +302,6 @@ impl TypesetEngine {
         {
             y = st.current_height;
         }
-        // [#2243 진단] snap 입출력 — 동작 불변.
-        if std::env::var("RHWP_DIAG_SNAPALL").is_ok() {
-            eprintln!(
-                "DIAG_SNAPALL sec={} page={} pi={} y_in={:.1} y_out={:.1} base={:?} lazy={:?} anchor={:.1} dirty={} source={:?}",
-                st.section_index,
-                st.pages.len(),
-                para_idx,
-                st.current_height,
-                y,
-                st.vpos_page_base,
-                hc.vpos_lazy_base,
-                st.vpos_col_anchor,
-                st.vpos_ladder_dirty,
-                hc.stored_column_origin,
-            );
-        }
-        if std::env::var("RHWP_DIAG_TAC").is_ok() && (y - st.current_height).abs() > 0.05 {
-            eprintln!(
-                "DIAG_SNAP pi={} y_in={:.1} y_out={:.1} page_base={:?} lazy={:?} anchor={:.1}",
-                para_idx,
-                st.current_height,
-                y,
-                st.vpos_page_base,
-                hc.vpos_lazy_base,
-                st.vpos_col_anchor,
-            );
-        }
         // 페이지 배분이 확정한 단 상대 흐름 경계는 배치도 그대로 소비한다.
         // 앞 문단을 완전히 수용한 같은 단에서 다음 시작으로 이동했으면 그
         // 위치가 앞 문단의 흐름 끝이다. 글자 유무·TAC·개체 조합으로 저장 줄을

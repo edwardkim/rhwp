@@ -9441,24 +9441,6 @@ impl LayoutEngine {
                 .collect();
             emitted_tac_controls.extend(run_tacs.iter().map(|(_, _, ci)| *ci));
 
-            // [Task #960] env-gated TAC line-mapping 추적
-            if std::env::var("RHWP_DEBUG_PARA_TAC").is_ok() && !tac_offsets_px.is_empty() {
-                eprintln!(
-                    "  TAC_LINE pi={} line_idx={} run_idx={} run_char_pos={} run_char_end={} y={:.1} lh={:.1} ls={:.1} raw_lh={:.1} baseline={:.1} run_tacs={:?}",
-                    para_index,
-                    line_idx,
-                    run_idx,
-                    run_char_pos,
-                    run_char_end,
-                    y,
-                    line_height,
-                    line_spacing_px,
-                    raw_lh,
-                    baseline,
-                    run_tacs
-                );
-            }
-
             // run 내 각주 위치 수집 (run 내 상대 위치, 각주 번호, fn_positions 인덱스, control 인덱스)
             // 마지막 run에서는 run_char_end 위치의 각주도 포함 (문단 끝 각주)
             let is_last = is_last_run_of_line(run_idx);
