@@ -291,13 +291,27 @@ Adapter·Proptest와 CI Impact Policy 통과 뒤
 
 ## Merge 후 contributor PR comment 계획
 
-- 원 PR의 제목 차례 run·WMFC 차트 기여가 [PR #8438](https://github.com/edwardkim/rhwp/pull/8438)에
+- 원 PR의 제목 차례 표시 `titleMark`의 run 소유·경계 기여가 [PR #8438](https://github.com/edwardkim/rhwp/pull/8438)에
   통합된 사실과 [PR #8517](https://github.com/edwardkim/rhwp/pull/8517)의
   메인터너 보정·최종 병합 SHA를 구분해 한국어로 안내한다.
-- 같은 한컴 2024 재저장 정책 문서의 한컴 Print 35쪽과 비교한 raw 일치율은 Native
-  **95.52%**, fresh WASM **95.56%**다.
-  [review](../assets/issue_8305/followup8438/native-wmfc-rebased-review-035.png)·[overlay](../assets/issue_8305/followup8438/native-wmfc-rebased-overlay-035.png) 및
-  [Native 전쪽 TSV](../assets/issue_8305/followup8438/native-wmfc-rebased-2024-all.tsv)·[fresh WASM 전쪽 TSV](../assets/issue_8305/followup8438/wasm-wmfc-rebased-2024-all.tsv)를
+- 원 PR이 차례 표시를 주장한 `1790387_policy_progress` 재저장 HWPX와 한컴 2020
+  Print의 20쪽 raw 일치율은 Native **99.47%**, fresh WASM **99.51%**다.
+  59쪽은 각각 **98.72%**, **98.98%**다.
+  [20쪽 review](../assets/issue_8305/followup8438/native-current-review-020.png)·[overlay](../assets/issue_8305/followup8438/native-current-overlay-020.png)·
+  [59쪽 review](../assets/issue_8305/followup8438/native-current-review-059.png)·[overlay](../assets/issue_8305/followup8438/native-current-overlay-059.png) 및
+  [Native 전쪽 TSV](../assets/issue_8305/followup8438/native-saved-original2020-all.tsv)·[fresh WASM 전쪽 TSV](../assets/issue_8305/followup8438/wasm-saved-original2020-all.tsv)를
   댓글에 연결한다. 대표 이미지는 병합 SHA에 고정한 raw URL로 직접 표시한다.
 - 옵션 2 문서 PR에 이 기록이 반영된 뒤 원 PR head·상태를 다시 확인하고,
   기여자에게 증적 댓글을 게시한 다음 중복 병합 없이 종료한다.
+
+## 2026-11-03 원 PR 댓글·종료 확인
+
+원 PR [#8341](https://github.com/edwardkim/rhwp/pull/8341)에 주장 입력·페이지와 일치하는
+[검토 댓글](https://github.com/edwardkim/rhwp/pull/8341#issuecomment-6598197232)을 게시하고
+중복 병합 없이 닫았습니다. 최초 댓글의 대표 페이지가 원 PR 주장과 달라 같은 댓글을 수정했습니다.
+게시 본문은 GitHub API로 다시 읽어 확인했습니다.
+관련 [이슈 #8305](https://github.com/edwardkim/rhwp/issues/8305): 종료.
+코드 [PR #8517](https://github.com/edwardkim/rhwp/pull/8517)의 병합 SHA는
+`c97709b59742372a817b3886f442144728fca646`, 검토 문서
+[PR #8523](https://github.com/edwardkim/rhwp/pull/8523)의 병합 SHA는
+`014be1516bfd4e4c91b0b5f50678fecaa6a1de1f`입니다.

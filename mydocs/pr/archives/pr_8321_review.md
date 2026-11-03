@@ -197,13 +197,25 @@ Adapter·Proptest와 CI Impact Policy 통과 뒤
 
 ## Merge 후 contributor PR comment 계획
 
-- 원 PR의 기호 폭·리터럴 소프트 하이픈 기여가 [PR #8438](https://github.com/edwardkim/rhwp/pull/8438)에
+- 원 PR의 기호 슬롯 글꼴 전진폭 기여가 [PR #8438](https://github.com/edwardkim/rhwp/pull/8438)에
   통합된 사실과 [PR #8517](https://github.com/edwardkim/rhwp/pull/8517)의
   메인터너 보정·최종 병합 SHA를 구분해 한국어로 안내한다.
-- 같은 리터럴 소프트 하이픈 입력의 한컴 Print 2쪽과 비교한 raw 일치율은 Native
-  **98.96%**, fresh WASM **98.64%**다.
-  [review](../assets/issue_8315/followup8438/native-literal-review-002.png)·[overlay](../assets/issue_8315/followup8438/native-literal-overlay-002.png) 및
-  [Native 전쪽 TSV](../assets/issue_8315/followup8438/native-literal-final.tsv)·[fresh WASM 전쪽 TSV](../assets/issue_8315/followup8438/wasm-literal-final.tsv)를
+- 원 PR이 전진폭 보정을 주장한 `lang-slot-ranges.hwpx`의 한컴 2024 Print
+  1쪽 raw 일치율은 Native **99.90%**, fresh WASM **99.86%**다.
+  [review](../assets/issue_8136/integration-planet6897/native-review-001.png)·[overlay](../assets/issue_8136/integration-planet6897/native-overlay-001.png) 및
+  [Native 전쪽 TSV](../assets/issue_8136/final-integration-8438/native-lang-slot.tsv)·[fresh WASM 전쪽 TSV](../assets/issue_8136/final-integration-8438/wasm-lang-slot.tsv)를
   댓글에 연결한다. 대표 이미지는 병합 SHA에 고정한 raw URL로 직접 표시한다.
 - 옵션 2 문서 PR에 이 기록이 반영된 뒤 원 PR head·상태를 다시 확인하고,
   기여자에게 증적 댓글을 게시한 다음 중복 병합 없이 종료한다.
+
+## 2026-11-03 원 PR 댓글·종료 확인
+
+원 PR [#8321](https://github.com/edwardkim/rhwp/pull/8321)에 주장 입력·페이지와 일치하는
+[검토 댓글](https://github.com/edwardkim/rhwp/pull/8321#issuecomment-6598195048)을 게시하고
+중복 병합 없이 닫았습니다. 최초 댓글의 대표 페이지가 원 PR 주장과 달라 같은 댓글을 수정했습니다.
+게시 본문은 GitHub API로 다시 읽어 확인했습니다.
+관련 [이슈 #8315](https://github.com/edwardkim/rhwp/issues/8315): 열림 — 한컴 2020 Print 교차 확인.
+코드 [PR #8517](https://github.com/edwardkim/rhwp/pull/8517)의 병합 SHA는
+`c97709b59742372a817b3886f442144728fca646`, 검토 문서
+[PR #8523](https://github.com/edwardkim/rhwp/pull/8523)의 병합 SHA는
+`014be1516bfd4e4c91b0b5f50678fecaa6a1de1f`입니다.

@@ -371,5 +371,21 @@ Adapter·Proptest와 CI Impact Policy 통과 뒤
   [review](../assets/issue_7633_8334/followup8438/kwater-final/native-p013-review.png)·[overlay](../assets/issue_7633_8334/followup8438/kwater-final/native-p013-overlay.png) 및
   [Native 전쪽 TSV](../assets/issue_7633_8334/followup8438/kwater-final/native.tsv)·[fresh WASM 전쪽 TSV](../assets/issue_7633_8334/followup8438/kwater-final/wasm.tsv)를
   댓글에 연결한다. 대표 이미지는 병합 SHA에 고정한 raw URL로 직접 표시한다.
+- 또 다른 원 PR 주장인 `sideChar=""`의 쪽 번호는 HWPML 저장본과 한컴 2020 Print
+  **56쪽**에서 Native/fresh WASM 모두 **100.00%**다.
+  [review](../assets/issue_7633_8334/followup8438/hwpml-final2020/native-p056-review.png)·[overlay](../assets/issue_7633_8334/followup8438/hwpml-final2020/native-p056-overlay.png) 및
+  [Native 전쪽 TSV](../assets/issue_7633_8334/followup8438/hwpml-final2020/native.tsv)·[fresh WASM 전쪽 TSV](../assets/issue_7633_8334/followup8438/hwpml-final2020/wasm.tsv)를 함께 연결한다.
 - 옵션 2 문서 PR에 이 기록이 반영된 뒤 원 PR head·상태를 다시 확인하고,
   기여자에게 증적 댓글을 게시한 다음 중복 병합 없이 종료한다.
+
+## 2026-11-03 원 PR 댓글·종료 확인
+
+원 PR [#8336](https://github.com/edwardkim/rhwp/pull/8336)에 주장 입력·페이지와 일치하는
+[검토 댓글](https://github.com/edwardkim/rhwp/pull/8336#issuecomment-6598196077)을 게시하고
+중복 병합 없이 닫았습니다. 최초 댓글의 대표 페이지가 원 PR 주장과 달라 같은 댓글을 수정했습니다.
+게시 본문은 GitHub API로 다시 읽어 확인했습니다.
+관련 [이슈 #7633](https://github.com/edwardkim/rhwp/issues/7633) · [이슈 #8334](https://github.com/edwardkim/rhwp/issues/8334): 종료.
+코드 [PR #8517](https://github.com/edwardkim/rhwp/pull/8517)의 병합 SHA는
+`c97709b59742372a817b3886f442144728fca646`, 검토 문서
+[PR #8523](https://github.com/edwardkim/rhwp/pull/8523)의 병합 SHA는
+`014be1516bfd4e4c91b0b5f50678fecaa6a1de1f`입니다.
