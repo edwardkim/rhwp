@@ -172,3 +172,12 @@ Print paint 결과를 검사하는 관계형 회귀를 넣었다. 최종 표면�
 [집중 검사](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-integration-minfont-final.log)는
 5건 모두 통과했고, [테스트 계층 검사](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-rebased-unit-tier-check-v2.log)는
 소스 내부 검사 4,099건·신규 모듈 0건으로 통과했다.
+
+리베이스 전 동일 제품 코드로 이어서 측정한 원 PR 입력 23개, #8321 대조 입력
+2개와 #8341 차트 입력 1개의 Native 전쪽은 모두 완료됐다. 합계 26개 입력·
+1,123쪽에서 90% 미만은 0쪽, 고정 devel보다 2%p 넘게 낮은 쪽은 0쪽이다.
+최대 하락은 차트 30쪽의 97.92% → 96.52%(1.40%p)이고, 나머지 25개 입력은
+대응 devel TSV와 페이지별 raw 값이 같다. 누락됐던 `pr8336-book-hwpx` 원본의
+SHA-256 `31c0dbbbf71bb0561d2be517e979b348f90b8ec49d195f0f98a0f960cefd2104`를
+기존 인덱스와 대조한 뒤 그 입력만 재개했다. [재개 로그](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-originals-native-remaining.log)를
+보존한다. WASM 전쪽과 새 base의 정확한 제품 바이너리 측정은 계속 진행 중이다.
