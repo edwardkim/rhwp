@@ -235,15 +235,22 @@ impl TypesetEngine {
         let scan_vars = BlockRowScanVars {
             // 이전 쪽에서 이어진 문단 뒤의 저장 줄은 원래 쪽 좌표계일 수 있다.
             // 첫 표 프레임을 현재 흐름 원점에서 인증하지 못했다면 그 내부 컷도
-            // 현재 쪽의 경계로 승격하지 않는다. 이어받은 표 조각은 별도로 판정한다.
-            source_frame_origin_unverified: !is_continuation
-                && saved_first_fragment_source_frame.is_none()
-                && para_idx.checked_sub(1).is_some_and(|previous| {
-                    matches!(st.current_items.last(),
-                        Some(crate::renderer::pagination::PageItem::PartialParagraph {
-                            para_index, start_line, ..
-                        }) if *para_index == previous && *start_line > 0)
-                }),
+            // 현재 쪽의 경계로 승격하지 않는다.
+            // [#8539] 이어받은 조각도 같다. 앞 조각이 저장 프레임 중간에서 용량으로
+            // 잘렸으면 이 조각은 저장본의 쪽 체인과 다른 자리에서 시작하므로, 뒤 행의
+            // 저장 프레임 끝도 이 쪽의 끝으로 인증하지 않는다(시작 행은 원래도 같은
+            // `row_start_owns_stored_frame` 판정을 쓴다).
+            source_frame_origin_unverified: if is_continuation {
+                !layout_engine.row_start_owns_stored_frame(table, cursor_row, start_cut, styles)
+            } else {
+                saved_first_fragment_source_frame.is_none()
+                    && para_idx.checked_sub(1).is_some_and(|previous| {
+                        matches!(st.current_items.last(),
+                            Some(crate::renderer::pagination::PageItem::PartialParagraph {
+                                para_index, start_line, ..
+                            }) if *para_index == previous && *start_line > 0)
+                    })
+            },
             cursor_row,
             row_count: scan_row_count,
             cs,
