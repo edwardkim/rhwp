@@ -337,8 +337,10 @@ HWP/HWPX → PDF (svg2pdf + pdf-writer).
     저장소 번들 `ttfs/opensource`(최후 폴백, 한국어 드롭 방지).
   - 명시적인 `--font-environment`가 없으면 Native `export-png`·`export-svg`·`export-pdf`는
     설치된 글꼴과 지정 경로를 먼저 확인하고, 없는 글꼴 중 공급 원장에 등록된 공개 웹폰트를
-    사용자 캐시에 준비한다. 원장이 없는 글꼴이나 다운로드 실패는 stderr와 JSON의
-    `nativeFontSupply.unavailable`에 기록하며, 모든 글꼴의 동일 출력을 보장하지 않는다.
+    사용자 캐시에 준비한다. 원장이 없는 글꼴에 설치된 문서 선언 대체도 없으면 로컬 Noto를
+    우선하고, 그것도 없으면 공개 Noto Sans KR을 공급한다. 일반 대체를 쓴 원본 이름은
+    `nativeFontSupply.genericFallbacks`에 기록한다. 미확보 원본 글꼴과 다운로드 실패는 stderr와
+    JSON의 `nativeFontSupply.unavailable`에 기록하며, 모든 글꼴의 동일 출력을 보장하지 않는다.
     수동 공급이 필요한 글꼴은 설치하거나 `--font-path`로 지정한다.
   - 웹폰트 캐시는 `RHWP_WEBFONT_CACHE`로 지정할 수 있다. 미지정이면 `XDG_CACHE_HOME`,
     `LOCALAPPDATA`, `~/.cache` 순으로 선택한 경로 아래 `rhwp/webfonts`를 사용한다.

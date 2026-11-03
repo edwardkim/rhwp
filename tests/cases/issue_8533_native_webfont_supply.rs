@@ -41,7 +41,7 @@ fn woff2_decodes_to_a_readable_program_without_losing_korean_glyph_advance() {
 }
 
 #[test]
-fn local_document_face_wins_and_unknown_face_is_reported() {
+fn local_face_wins_and_generic_fallback_does_not_claim_to_supply_the_unknown_original() {
     let local = document_with_face("Noto Sans KR ExtraLight");
     let supplied_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("ttfs/opensource/NotoSansKR-ExtraLight.ttf");
@@ -52,12 +52,41 @@ fn local_document_face_wins_and_unknown_face_is_reported() {
         "로컬 원본이 있으면 다운로드하지 않음"
     );
     let unknown = document_with_face("RHWP Missing Font 8533");
-    let supply = prepare(&unknown.document().doc_info, &[]).unwrap();
-    assert!(supply.mappings.is_empty());
+    let generic = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("ttfs/opensource/NotoSansKR-Regular.ttf");
+    let supply = prepare(&unknown.document().doc_info, &[generic]).unwrap();
+    assert_eq!(
+        supply
+            .mappings
+            .get("RHWP Missing Font 8533")
+            .map(String::as_str),
+        Some("NotoSansKR-Regular")
+    );
+    assert_eq!(supply.generic_fallbacks, ["RHWP Missing Font 8533"]);
+    assert!(
+        supply.paths.is_empty(),
+        "확인된 로컬 Noto를 다시 다운로드하지 않음"
+    );
     assert!(supply
         .unavailable
         .iter()
         .any(|name| name == "RHWP Missing Font 8533"));
+
+    let mut declared = unknown.document().doc_info.clone();
+    for face in declared.font_faces.iter_mut().flatten() {
+        face.subst_font = Some(rhwp::model::style::SubstFont {
+            face: "NotoSansKR-Regular".into(),
+            font_type: 1,
+            ..Default::default()
+        });
+    }
+    let generic = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("ttfs/opensource/NotoSansKR-Regular.ttf");
+    let supplied = prepare(&declared, &[generic]).unwrap();
+    assert!(
+        supplied.mappings.is_empty() && supplied.generic_fallbacks.is_empty(),
+        "설치된 문서 선언 대체는 일반 웹 대체로 덮어쓰지 않음"
+    );
 }
 
 #[test]

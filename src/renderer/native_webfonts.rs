@@ -13,6 +13,7 @@ use sha2::{Digest, Sha256};
 
 const REGISTRY: &str = include_str!("../../assets/font-rules/font_rule_registry_v2.json");
 const MAX_FONT_BYTES: usize = 32 * 1024 * 1024;
+const GENERIC_WEBFONT: &str = "fonts/NotoSansKR-Regular.woff2";
 const PROJECT_FONT_COMMIT: &str = "7d06d5c706f1d89f1662e739abf2b1b25d2a98e4";
 const NOTO_SERIF: &str = "https://cdn.jsdelivr.net/gh/google/fonts@2fe1e8c6b137fb13041a7cfca6fdcd8a910ea4dc/ofl/notoserif/NotoSerif%5Bwdth,wght%5D.ttf";
 const HANCOM_BATANG: &str =
@@ -24,6 +25,7 @@ const HANCOM_BATANG: &str =
 pub struct NativeWebfontSupply {
     pub paths: Vec<PathBuf>,
     pub mappings: BTreeMap<String, String>,
+    pub generic_fallbacks: Vec<String>,
     pub glyph_fallbacks: Vec<serde_json::Value>,
     pub unavailable: Vec<String>,
     pub web_fonts: BTreeMap<String, String>,
@@ -375,11 +377,23 @@ pub fn prepare(doc_info: &DocInfo, paths: &[PathBuf]) -> Result<NativeWebfontSup
                             .is_some_and(|face| normalized(face) == normalized(name))
                 })
             });
-        let Some(url) = rule.and_then(|r| r["supply"]["sourceUrl"].as_str()) else {
-            if !substitute.iter().any(|face| present(face)) {
-                result.unavailable.push(source);
+        let generic = rule.is_none();
+        let url = if generic {
+            // 원 프로그램의 공급과 일반 문자 대체는 구분한다. 문서가 선언한
+            // 설치 대체 글꼴은 유지하고, 그것도 없을 때 공개 Noto를 사용한다.
+            result.unavailable.push(source.clone());
+            if substitute.iter().any(|face| present(face)) {
+                continue;
             }
-            continue;
+            if present("NotoSansKR-Regular") {
+                result.generic_fallbacks.push(source.clone());
+                result.mappings.insert(source, "NotoSansKR-Regular".into());
+                continue;
+            }
+            GENERIC_WEBFONT
+        } else {
+            rule.and_then(|rule| rule["supply"]["sourceUrl"].as_str())
+                .ok_or("등록된 공개 글꼴의 공급 주소가 없습니다")?
         };
         let supplied = cache
             .as_deref()
@@ -404,6 +418,9 @@ pub fn prepare(doc_info: &DocInfo, paths: &[PathBuf]) -> Result<NativeWebfontSup
                     original_programs.insert(source);
                 } else {
                     result.paths.push(folder);
+                    if generic {
+                        result.generic_fallbacks.push(source.clone());
+                    }
                     result.mappings.insert(source, face);
                 }
             }
@@ -606,6 +623,9 @@ pub fn prepare(doc_info: &DocInfo, paths: &[PathBuf]) -> Result<NativeWebfontSup
                 .is_none_or(|path| retained.contains(path))
     };
     result.mappings.retain(|_, face| available_face(face));
+    result
+        .generic_fallbacks
+        .retain(|source| result.mappings.contains_key(source));
     result.web_fonts.retain(|face, _| available_face(face));
     for (face_name, path) in &face_paths {
         if !result.web_fonts.contains_key(face_name) {
