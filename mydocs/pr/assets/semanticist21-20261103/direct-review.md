@@ -31,3 +31,7 @@
 | [grow-nested-edited.hwpx](saved/grow-nested-edited.hwpx) | `4eb9db7414cd35336ec1a965e62b45783af477bcb150fae05fe7ce86b0e5717c` | grow-nested-2024.pdf, 1쪽 |
 
 중첩 대조군의 원래 편집 입력은 잘못된 child 선언 높이 8502 HU를 가진 상태로 보존했다. 독립 한컴 Print는 그 내용의 실제 성장 배치를 보여 준다. 최종 저장본은 같은 내용·배치를 유지하면서 부모·자식 common height를 각각 11748 HU로 기록한다. source cellSz와 무편집 8502 HU는 유지한다. 실제 저장본을 양쪽 backend로 교차 재열기해 같은 독립 Print와 전쪽 비교했다.
+
+## 수치의 범위
+
+이 검토는 silhouette-only TSV의 전쪽 raw와 쪽수·직접 확대 판독을 사용했다. 표준 이미지 전체 비교의 `pixel_match`, `visual_accuracy_proxy_percent`, 일반 `flagged` 분류는 이 실행에서 산출하지 않았다. raw 90% 미만은 양쪽 모두 0쪽이며, 일반 flagged 0으로 바꾸어 보고하지 않는다.

@@ -2,11 +2,11 @@
 
 GitHub 제출 뒤 추가한 [진단 출력 보안 보정](ci-security-followup.md)은 아래 조판 측정과 구분한다. 아래 결과는 측정·검증 당시 head의 기록이며, 후속 보정 검증은 별도 절에 기록한다.
 
-검증 head는 `c6ad3eea59d1b7701efdc4fb582e2d9a44b4f775`이며 제품 source는 `39b4f81f6aab4cc08c6145ed6911db2a8fe5125e`다. 기준 devel은 `7d06d5c706f1d89f1662e739abf2b1b25d2a98e4`다. 이후 문서·증적 정리는 제품 구현과 테스트 실행문을 바꾸지 않는다.
+검증 head는 `c6ad3eea59d1b7701efdc4fb582e2d9a44b4f775`이며 제품 source는 `39b4f81f6aab4cc08c6145ed6911db2a8fe5125e`다. 기준 devel은 `7d06d5c706f1d89f1662e739abf2b1b25d2a98e4`다. 최초 제출 `e68f0e1236`까지의 문서·증적 정리는 제품 구현과 테스트 실행문을 바꾸지 않았다. 이후 보안 보정은 별도 절에서 구분한다.
 
 ## 판정
 
-10건 모두 **메인터너 보정 후 수용 가능**이다. 이 판정은 보정한 누적 후보에 한정되며 충돌이 남아 있는 원격 원 head를 그대로 승인한 것이 아니다. 원격 push·공개 댓글·Open PR·merge는 아직 수행하지 않았다.
+10건 모두 **메인터너 보정 후 수용 가능**이다. 이 판정은 보정한 누적 후보에 한정되며 충돌이 남아 있는 원격 원 head를 그대로 승인한 것이 아니다. 원격 처리 승인을 받아 최초 head를 push하고 통합 PR #8548을 열었다. 보안 후속 보정의 새 head CI·self-review·merge와 원 PR별 후속 댓글은 아직 완료하지 않았다.
 
 31개 입력·71쪽을 Native Skia와 fresh optimized WASM Canvas 각각 전쪽 비교했다. 모든 페이지가 raw 90% 이상이고 독립 PDF와 쪽수가 같다. 아래 최저값과 별도로 변경 경계·작은 글자·간격을 확대 판독했다.
 
@@ -108,6 +108,12 @@ notice의 53개 API 호출과 Native/WASM이 실제 저장한 파일을 양쪽 b
 
 특정 문서 ID·우연한 수치·장치 글꼴로 맞추는 분기는 추가하지 않았다. source-unit·Storage 예산·schema 35는 유지했다. 전체 검증과 실제 최적화 browser 실행의 근거를 원 기여의 옛 녹색 CI로 대신하지 않았다.
 
-최종 근거 링크 갱신은 [제품·테스트 실행문 동일성](source-equivalence.md)으로 구분했다. 검증 후 구현을 변경하지 않았다.
+최초 제출까지의 근거 링크 갱신은 [제품·테스트 실행문 동일성](source-equivalence.md)으로 구분했다. 이후 진단 출력 보안 변경과 그 검증은 별도로 기록한다.
 
 최종 근거 주석·문서 정리 뒤 fmt, generated harness prepare/check, unit-tier policy와 workspace all-target Clippy를 다시 실행해 exit 0을 확인했다(Clippy 18.65초). generated harness·manifest는 stage하지 않았다. 문서 상대 링크 132개와 UTF-8 without BOM 32문서를 확인했고, 새 HWPX 17개에 글꼴 프로그램이 없음을 확인했다.
+
+## CodeQL 진단 출력 보정의 추가 검증
+
+보정 head `3af2224e4ef0db65e5e75ed7040ca1c06f6b2045`에서 stock 전체 nextest **12,466 PASS / 45 skip / 0 FAIL**과 새 암호 문서 CLI 회귀를 완료했다. fmt·manifest prepare/check·unit tiers·root/WASM/workspace Clippy·workspace build도 모두 exit 0이다. 전체 nextest의 컴파일+실행 시간은 1342.40초다.
+
+[세 로그의 실제 flow·기존 #8517 해결 이력·보정 전 FAIL과 보정 후 PASS](ci-security-followup.md)를 따른다. 위 Native/fresh WASM 71쪽은 조판 계산을 바꾸기 전의 실제 측정이며, 이번 로그 제거 head에서 다시 측정한 결과로 바꾸지 않는다.

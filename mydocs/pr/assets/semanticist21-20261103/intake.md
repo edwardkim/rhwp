@@ -33,7 +33,7 @@
 
 로컬 branch는 `review/integration-20261103-semanticist21`이다. 선정한 열 head는 누적 merge history의 조상이며 제외한 다섯 head는 포함되지 않는다. 원 PR의 과거 devel merge를 새 기능으로 세지 않는다. 원 head·credit을 보존하기 위해 최종 통합은 squash가 아닌 merge commit을 제안한다.
 
-원격에서 실제 수행한 작업은 승인된 reviewer 요청뿐이다. source branch push·공개 review/comment·PR 생성·merge·CI 재실행은 수행하지 않았다. 보정된 누적 후보의 원격 처리는 별도 승인이 필요하다.
+접수 시점에는 승인된 reviewer 요청만 수행했다. 이후 작업지시자의 원격 처리 승인을 받아 메인터너 통합 branch에 최초 head `e68f0e1236`을 push하고 PR #8548을 열었다. 원 기여 source branch는 변경하지 않았다. 최초 CI의 보안 후속 보정과 다음 exact-head 검증은 별도 기록을 따른다.
 
 ## 제출 준비 종료 시 재확인
 

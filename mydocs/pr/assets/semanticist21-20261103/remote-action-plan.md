@@ -1,8 +1,8 @@
-# 원격 처리안 — 승인 전
+# 원격 처리안 — 승인 후 진행 중
 
-로컬 보정과 필수 검증은 완료했다. 이 문서는 원격 단계의 제안이며 원격 push·PR·공개 댓글·merge를 실행하지 않았다.
+작업지시자가 원격 push·Open PR·새 head CI·self-review·merge commit·원 PR 10건 완료·감사 댓글·기록·동기화·정리를 승인했다. 통합 branch를 push해 [PR #8548](https://github.com/edwardkim/rhwp/pull/8548)을 열었다. 원 기여 branch는 변경하지 않았다. 최초 CI에서 확인한 [진단 출력 보안 보정](ci-security-followup.md) 후 같은 PR에 새 head를 제출하며, CI 성공 전에는 merge하지 않는다.
 
-## 제안 범위
+## 승인된 범위
 
 1. 최신 devel과 원 열 head·기존 본인 열린 PR 상태를 다시 조회한다. 현 검증 기준과 다르면 영향 검증을 먼저 보완한다.
 2. `review/integration-20261103-semanticist21`을 메인터너 repository에 push하고 devel 대상 Open 통합 PR을 생성한다. 보정 없는 원격 원 head에 approve를 게시하지 않는다.
@@ -13,7 +13,7 @@
 
 ## 승인 근거
 
-AGENTS.md의 “GitHub comment, remote push, PR 생성은 사용자 승인을 받은 뒤 수행한다”와 `maintainer_general.md` 5–6에 따라 이번 로컬 승인과 원격 승인을 구분한다. 한 번의 승인으로 위 범위를 연속 수행하는 안이다. workflow 취소·재실행·설정 변경이 필요한 장애는 실제 원인과 대상을 별도로 제시한다.
+AGENTS.md의 “GitHub comment, remote push, PR 생성은 사용자 승인을 받은 뒤 수행한다”와 `maintainer_general.md` 5–6에 따라 이번 로컬 승인과 원격 승인을 구분한다. 한 번의 승인으로 위 범위를 연속 수행한다. workflow 취소·재실행·설정 변경이 필요한 장애는 실제 원인과 대상을 별도로 제시한다.
 
 ## 검토 가능한 제출물
 

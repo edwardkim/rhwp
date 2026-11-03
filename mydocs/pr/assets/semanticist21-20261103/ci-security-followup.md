@@ -28,7 +28,21 @@
 최소 글꼴 격리에서 보존한 이전 binary로 그 새 검사를 실행해 `DIAG_SNAPALL` 채널 때문에 FAIL(exit 101)하는 것을 확인했다.
 정상 SVG 내보내기는 유지하면서 해당 세 진단 채널이 stderr에 나타나지 않아야 한다.
 
-보정 후 Rust lint 묶음·workspace build·전체 stock nextest와 새 CLI 회귀를 실행한 뒤 새 head를 제출한다. 이 문서 시점에는 보정 후 검증이 진행 중이다.
+보정 head `3af2224e4ef0db65e5e75ed7040ca1c06f6b2045`에서 `2026-11-04T02:06:24+09:00`까지 아래 검증을 완료했다. 새 회귀의 보정 전 FAIL / 보정 후 PASS와 정상 SVG 생성을 확인했다. 최소 글꼴 격리를 유지했으며 기존 테스트·query·분류를 완화하지 않았다.
+
+| 검사 | 종료 | 실행 시간 |
+| --- | --- | --- |
+| fmt | exit 0 | 25.51초 |
+| manifest-prepare | exit 0 | 1.48초 |
+| manifest-check | exit 0 | 0.83초 |
+| unit-tiers | exit 0 | 9.95초 |
+| clippy-root | exit 0 | 46.75초 |
+| clippy-wasm | exit 0 | 43.99초 |
+| workspace-build | exit 0 | 46.12초 |
+| clippy-workspace | exit 0 | 72.24초 |
+| full-nextest | exit 0 | 1342.40초 |
+
+전체 결과: `Summary [ 562.537s] 12466 tests run: 12466 passed (1 slow), 45 skipped`. 새 실제 CLI 회귀도 전체 실행 안에서 PASS했다. 새 제출 head가 추가 문서만 포함하는지는 Git diff로 별도 확인한다.
 
 ## CI 상태의 구분
 
