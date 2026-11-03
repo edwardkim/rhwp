@@ -605,7 +605,13 @@ impl TypesetEngine {
                 // (footer 351.4px 선언 vs 302.3px 측정) fit 이 과소된다 → 선언 높이로 판정·예약.
                 let declared_px =
                     crate::renderer::hwpunit_to_px(table.common.height as i32, self.dpi);
-                let block_height = table_total.max(declared_px);
+                // [#8525] 띠(하단 배타 영역)는 쪽 아래에 절대 배치되는 표 상자 자체다. host
+                // 문단 간격(`host_spacing`)은 host 글줄의 흐름 몫이라 띠에 넣지 않는다 — 한/글
+                // Print 의 틀 높이는 그린 표 높이와 같다(36443518: 101.27px ≈ 선언 101.24px. host
+                // 간격 100HU 를 더한 102.57px 띠가 마지막 글줄을 다음 쪽으로 밀었다). 저장 사다리
+                // 롤백(`consumed`)은 저장 vpos 가 누적한 몫이라 종전 값(`ladder_block_height`)을 둔다.
+                let block_height = ft.effective_height.max(declared_px);
+                let ladder_block_height = table_total.max(declared_px);
                 // [Task #1658 v3] 한글 실측(stage1): 하단 고정 틀은 본문 하단에
                 // 절대배치(다수 시 서로 겹침 허용)되고 본문 텍스트는 하단 배타 영역
                 // (= 최대 블록 높이) 위까지만 흐른다 — flow 소비 모델이 아니다
@@ -820,7 +826,7 @@ impl TypesetEngine {
                 );
                 // 저장 사다리에서 뺄 몫도 절대배치 본체만이다. 호스트 글줄의
                 // 전진은 위에서 발행한 PartialParagraph의 같은 메트릭을 유지한다.
-                let consumed = block_height.max(0.0);
+                let consumed = ladder_block_height.max(0.0);
                 st.reserve_bottom_fixed_flow(
                     consumed,
                     st.current_bottom_fixed_exclusion.max(block_height + v_off),
