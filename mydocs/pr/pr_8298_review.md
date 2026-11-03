@@ -9,9 +9,8 @@ last_verified: 2026-11-03
 
 ## 최종 판정
 
-**머지 보류 — 접수 완료, 현재 devel에서의 실행·시각 검증 진행 전.**
-현재 단계는 원 head·기존 CI·코드와 실제 merge-tree의 접수 결과다. 원 head의 과거 통과를
-최신 devel 통합 후보의 실행 완료로 보고하지 않는다. 아래 보정과 검증이 끝나면 판정을 갱신한다.
+**로컬 보정과 집중·시각 검증 진행 — 최종 전체 검증이 끝나기 전까지 머지 보류.**
+원 head를 보존한 누적 후보에 보정과 실제 API·시각 대조를 적용했다. [현재 검증 명세](assets/semanticist21-20261103/validation.md)의 중간 제품 head와 최종 정규 검증을 구분한다. 모든 필수 검증이 끝난 뒤 최종 판정을 갱신한다.
 
 ## 접수 정보
 
@@ -88,3 +87,17 @@ hancom_table_grow_saves_table_height; grow3 전후·본문/중첩 표·무편집
 사용한다. 편집하지 않은 중첩 표는 원본 높이를 보존한다. 임의의 10 HU 문턱은 제거하고
 공통 정수 단위 변환 결과의 실제 증가를 사용한다. 이 결정의 무편집·중첩·한도·시각 검증은
 누적 후보에서 진행하며, 실행 전 완료로 판정하지 않는다.
+
+## 중첩 편집의 저장 높이 발행 출처
+
+원본 child 높이 8502 HU가 편집 뒤에도 저장된 것을 XML과 정규 집중 검사로 확인했다. 부모는
+11748 HU로 자랐고 자식의 실제 paint·독립 Print는 이미 맞아, 이미지 점수만으로 이 파일 속성 누락을 발견할 수 없었다.
+
+실제 경로는 `reflow_cell_paragraph_by_path → reflow_line_segs → replace_line_segs_with_space_metrics →
+has_reflowed_cell_text → measure_table_with_storage → apply_grown_table_heights → serializer`다.
+재조판은 정상 저장 태그를 보존하기도 하므로 구현 태그만 보는 판정이 부족했다. 기존에 발행한
+현재 LineSeg의 text_start와 결합한 공백 규칙을 소비한다. 별도의 포인터 소유 대장이나 문서별 조건은 추가하지 않았다.
+무편집 자식은 발행 정보가 없어 원본 높이를 보존한다. 셀 높이·live IR은 바꾸지 않고 저장 사본의 표 높이를 키운다.
+
+중첩 무편집/편집·두 저장 형식, 저장 예산 거부·취소·새 요청 복구를 포함한 마지막 작은 경계 8건은 통과했다.
+최종 정규 전체 검사와 새 제품 head의 fresh WASM/Native 저장 재검증은 진행 중이다.

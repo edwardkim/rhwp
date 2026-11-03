@@ -1,3 +1,7 @@
+//! 관계형·고정형: table_insert_body_flow의 공개 입력·편집·저장 계약.
+//! 주석 갱신: 2026-11-03T21:22:49+09:00; 직전 파일 변경 커밋: 2026-10-25T08:58:44+09:00 d8180194c2d6491f8583d1673f47e3b87b921581.
+//! 측정: 2026-11-03, 96 DPI·색상 경계 보정 전 2px raw 실루엣. notice 편집 상태 전 24쪽 Native 최저 97.74%, fresh WASM 97.46%; 실제 53회 호출의 live 24쪽 97.71%/97.46%, 실제 저장본 교차 재열기 각 24쪽 97.74%/97.46%. 쪽수와 내용 대응·순서·누락·소유·배치 관계를 함께 검사한다.
+//! 정식 증거: mydocs/pr/assets/semanticist21-20261103/visual-results.json 및 전쪽 TSV·확대 PNG.
 //! 실제 요약표 삽입 요청 뒤에도 기존 본문의 소유·내용·정렬을 유지한다.
 //! 시각 근거: mydocs/pr/assets/table-insertion-flow/manifest.json
 #![cfg(not(target_arch = "wasm32"))]

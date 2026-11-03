@@ -1,3 +1,7 @@
+//! 관계형·고정형: polygon_transform_roundtrip의 공개 입력·편집·저장 계약.
+//! 주석 갱신: 2026-11-03T21:22:49+09:00; 직전 파일 변경 커밋: 2026-10-26T23:40:05+09:00 92d19ea0e3690446106a126b747e0e5f611a0837.
+//! 측정: 2026-11-03, 96 DPI·색상 경계 보정 전 2px raw 실루엣. 한컴 rotated HWP/HWPX 각 1쪽 및 공개 API 5개 변환 상태 각 1쪽, Native/fresh WASM 각각 전쪽 최저 100.00%. 독립 Print 확대 판독 후 90도 쪽의 절대 꼭짓점만 ±1px, 저장 전후 관계는 별도로 비교한다.
+//! 정식 증거: mydocs/pr/assets/semanticist21-20261103/visual-results.json 및 전쪽 TSV·확대 PNG.
 //! 회전·대칭한 다각형은 편집 중 그림과 HWP/HWPX 저장 뒤 다시 연 그림의 위치가 같다.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -67,12 +71,43 @@ fn transformed_polygon_keeps_live_position_after_save_and_reopen() {
         )
         .unwrap();
         let control = made["controlIdx"].as_u64().unwrap() as usize;
+        let original_snapshot = core.save_snapshot_native();
         core.set_shape_properties_native(0, 0, control, props)
             .unwrap();
         let live = polygon(&core);
+        // Getter는 회전 외곽 폭을 내보낸다. 실제 속성 봉지의 되먹임은 no-op이다.
+        let applied = core.get_shape_properties_native(0, 0, control).unwrap();
+        core.set_shape_properties_native(0, 0, control, &applied)
+            .unwrap();
+        assert_close(&polygon(&core), &live);
+        // 회전·대칭은 대응 속성으로 역연산한다. 크기와 회전을 함께 바꾼 경우는
+        // Studio의 실제 undo처럼 위치·로컬 크기·행렬까지 snapshot으로 복원한다.
+        if props.contains("width") {
+            core.restore_snapshot_native(original_snapshot).unwrap();
+        } else {
+            let inverse = if props.contains("rotationAngle") {
+                r#"{"rotationAngle":0}"#
+            } else if props.contains("horzFlip") {
+                r#"{"horzFlip":false}"#
+            } else {
+                r#"{"vertFlip":false}"#
+            };
+            core.set_shape_properties_native(0, 0, control, inverse)
+                .unwrap();
+        }
+        core.set_shape_properties_native(0, 0, control, props)
+            .unwrap();
+        assert_close(&polygon(&core), &live);
         if props == r#"{"rotationAngle":90}"# {
             // 120×60px 상자(200,200)를 가운데(260,230) 기준으로 90도 돌린 자리다.
-            assert_close(&live, &[(290.0, 170.0), (290.0, 290.0), (230.0, 170.0)]);
+            for (actual, expected) in
+                live.iter()
+                    .zip([(290.0, 170.0), (290.0, 290.0), (230.0, 170.0)])
+            {
+                assert!(
+                    (actual.0 - expected.0).abs() <= 1.0 && (actual.1 - expected.1).abs() <= 1.0
+                );
+            }
         }
         for bytes in [
             core.export_hwp_native().unwrap(),

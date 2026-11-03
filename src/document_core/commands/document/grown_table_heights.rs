@@ -27,7 +27,14 @@ fn has_reflowed_cell_text(table: &Table) -> bool {
         .iter()
         .flat_map(|cell| &cell.paragraphs)
         .any(|paragraph| {
-            paragraph.line_segs.is_empty()
+            // 재조판은 저장 태그를 보존하면서 새 줄·공백 규칙을 함께 발행할 수도 있다.
+            // 그 발행 출처를 소비해야 중첩 셀의 정상 저장 태그를 미편집으로 오인하지 않는다.
+            paragraph
+                .layout_space_metrics
+                .iter()
+                .zip(&paragraph.line_segs)
+                .any(|((start, _), line)| *start == line.text_start)
+                || paragraph.line_segs.is_empty()
                 || paragraph
                     .line_segs
                     .iter()

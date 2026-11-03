@@ -1,3 +1,7 @@
+//! 관계형·고정형: table_insert_measurement_ownership의 공개 입력·편집·저장 계약.
+//! 주석 갱신: 2026-11-03T21:22:49+09:00; 직전 파일 변경 커밋: 2026-10-25T00:14:49+09:00 ac6534470739f8708e479be8de5bbcad990e08ae.
+//! 측정: 2026-11-03, 96 DPI·색상 경계 보정 전 2px raw 실루엣. ownership fresh-reference/loaded-before/empty-host-after/after-table-after 각 1쪽, Native/fresh WASM 전쪽 최저 100.00%. 선언된 서로 다른 표의 높이와 삽입 후 소유 이동·빈 후속 문단을 관계로 검사한다.
+//! 정식 증거: mydocs/pr/assets/semanticist21-20261103/visual-results.json 및 전쪽 TSV·확대 PNG.
 //! 새 표를 삽입할 때 기존 표의 측정 하한은 원래 표를 따라 이동한다.
 #![cfg(not(target_arch = "wasm32"))]
 use rhwp::wasm_api::HwpDocument;

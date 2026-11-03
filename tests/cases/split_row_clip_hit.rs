@@ -1,22 +1,23 @@
-//! 쪽에서 나뉜 행의 칸은 위아래가 잘려 그려진다. 잘려 보이지 않는 줄은 클릭으로
-//! 고를 수 없고, 그 자리를 누르면 같은 칸의 보이는 줄로 간다.
-//!
-//! `rowbreak-problem-pages.hwpx` 16쪽(0부터 15)의 나뉜 칸은 문단 5의 두 줄을 칸 clip
-//! 아래에 둔다. 그림에서는 보이지 않는데, 그 자리를 누르면 보이지 않는 글자에 캐럿이 갔다.
-
+//! 관계형: split_row_clip_hit의 공개 입력·편집·저장 계약.
+//! 주석 갱신: 2026-11-03T21:22:49+09:00; 직전 파일 변경 커밋: 2026-10-27T17:10:05+09:00 b3cd705556a997bd1126925d804048e30115aad5.
+//! 측정: 2026-11-03, 96 DPI·색상 경계 보정 전 2px raw 실루엣. rowbreak-problem-pages.hwpx 전 18쪽: Native/fresh WASM 각각 최저 92.88%; 16쪽 98.37%/98.49%. 독립 Print 확대 판독 완료. 절대 좌표 핀 없이 실제 clip과 셀 경로·마지막 내용 보존을 검사한다.
+//! 정식 증거: mydocs/pr/assets/semanticist21-20261103/visual-results.json 및 전쪽 TSV·확대 PNG.
+use rhwp::renderer::layout::CellContext;
 use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 use rhwp::wasm_api::HwpDocument;
-use serde_json::Value;
+use serde_json::{json, Value};
 
 const SAMPLE: &str = "samples/rowbreak-problem-pages.hwpx";
 const PAGE: u32 = 15;
 
-/// 쪽 조각 칸의 clip(위, 아래) 안팎으로 나눈 글자 런 bbox.
-fn clipped_runs(
-    node: &RenderNode,
-    clip: Option<(f64, f64)>,
-    out: &mut Vec<(BoundingBox, f64, f64)>,
-) {
+struct ClippedRun {
+    bbox: BoundingBox,
+    top: f64,
+    bottom: f64,
+    context: CellContext,
+    text: String,
+}
+fn clipped_runs(node: &RenderNode, clip: Option<(f64, f64)>, out: &mut Vec<ClippedRun>) {
     let clip = match &node.node_type {
         RenderNodeType::TableCell(cell) if cell.clip => {
             let (top, bottom) = (node.bbox.y, node.bbox.y + node.bbox.height);
@@ -27,36 +28,65 @@ fn clipped_runs(
         _ => clip,
     };
     if let (RenderNodeType::TextRun(run), Some((top, bottom))) = (&node.node_type, clip) {
-        let b = &node.bbox;
-        if !run.text.trim().is_empty() && (b.y > bottom || b.y + b.height < top) {
-            out.push((b.clone(), top, bottom));
+        if !run.text.trim().is_empty() {
+            if let Some(context) = &run.cell_context {
+                out.push(ClippedRun {
+                    bbox: node.bbox,
+                    top,
+                    bottom,
+                    context: context.clone(),
+                    text: run.text.clone(),
+                });
+            }
         }
     }
     for child in &node.children {
         clipped_runs(child, clip, out);
     }
 }
-
 #[test]
-fn clicking_a_line_clipped_off_a_split_row_lands_on_a_visible_line() {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
-    let doc = HwpDocument::from_bytes(&std::fs::read(path).unwrap()).unwrap();
+fn split_row_visible_lines_keep_content_and_hit_ownership() {
+    let doc = HwpDocument::from_bytes(&std::fs::read(SAMPLE).unwrap()).unwrap();
     let tree = doc.build_page_render_tree(PAGE).unwrap();
-    let mut hidden = Vec::new();
-    clipped_runs(&tree.root, None, &mut hidden);
+    let mut runs = Vec::new();
+    clipped_runs(&tree.root, None, &mut runs);
+    let visible: Vec<_> = runs
+        .iter()
+        .filter(|r| r.bbox.y < r.bottom && r.bbox.y + r.bbox.height > r.top)
+        .collect();
     assert!(
-        !hidden.is_empty(),
-        "재현 문서가 더는 칸 clip 밖에 줄을 두지 않는다"
+        !visible.is_empty(),
+        "분할 셀의 보이는 내용은 반드시 검사한다"
     );
-    for (bbox, top, bottom) in hidden {
-        let (x, y) = (bbox.x + bbox.width / 2.0, bbox.y + bbox.height / 2.0);
+    let text: String = visible.iter().map(|r| r.text.as_str()).collect();
+    assert!(text.contains("공공데이터"), "마지막 문단 보존: {text}");
+    assert!(text.contains("고려하여 추진"), "마지막 문단 보존: {text}");
+    for run in &runs {
+        let b = &run.bbox;
+        if b.width <= 0.0 {
+            continue;
+        }
+        let top = b.y.max(run.top);
+        let bottom = (b.y + b.height).min(run.bottom);
+        let visible = top < bottom;
+        let x = b.x + b.width / 2.0;
+        let y = if visible {
+            (top + bottom) / 2.0
+        } else {
+            b.y + b.height / 2.0
+        };
         let hit: Value = serde_json::from_str(&doc.hit_test_native(PAGE, x, y).unwrap()).unwrap();
         let rect = &hit["cursorRect"];
         assert_eq!(rect["pageIndex"], PAGE, "{hit}");
-        let caret_mid = rect["y"].as_f64().unwrap() + rect["height"].as_f64().unwrap() / 2.0;
-        assert!(
-            (top..=bottom).contains(&caret_mid),
-            "({x:.1}, {y:.1}) 클릭이 clip {top:.1}..{bottom:.1} 밖 캐럿으로 갔다: {hit}"
-        );
+        let mid = rect["y"].as_f64().unwrap() + rect["height"].as_f64().unwrap() / 2.0;
+        assert!((run.top..=run.bottom).contains(&mid), "clip 밖 캐럿: {hit}");
+        if visible {
+            let expected: Vec<_> = run.context.path.iter().map(|p| json!({"controlIndex":p.control_index,"cellIndex":p.cell_index,"cellParaIndex":p.cell_para_index})).collect();
+            assert_eq!(
+                hit["parentParaIndex"], run.context.parent_para_index,
+                "{hit}"
+            );
+            assert_eq!(hit["cellPath"], json!(expected), "{hit}");
+        }
     }
 }

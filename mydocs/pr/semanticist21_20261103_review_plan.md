@@ -110,3 +110,18 @@ last_verified: 2026-11-03
 초기 0%는 제품 판정에 사용하지 않고, 기존 #7578의 동일 입력·사용자 확인 2024 Print 계약으로
 다시 측정한다. notice 24쪽의 기존 12·13쪽 차이는 기준 devel에서도 관측되므로 새 후보에서
 같은 입력·PDF·글꼴로 직접 대조한다. 기준 자체의 미달을 후보의 면제 근거로 삼지 않는다.
+
+## 중간 증적 보존과 최종 검증 시작
+
+`25607fc28d` 제품의 30개 입력·70쪽 Native/fresh WASM 및 실제 notice 편집·교차 저장 재열기를 완료했다.
+[검증 명세](assets/semanticist21-20261103/validation.md)와 독립 Print·원본을 `ccfd49ba6c`에 보존했다.
+같은 공개 계약의 고정 base 음성 대조는 36건 중 13건 통과·23건 실패였다. 이미 해결된 기반과 남은 기여를 구분한다.
+
+정규 집중 77건 중 세 실패를 대조한 결과, 중첩 표 저장만 제품 보정이 필요했다. 기존 재조판의
+줄·공백 규칙 발행 정보를 저장 높이 판정에 연결했다. 머리말 검사는 실제 반환 키를 사용하고,
+다각형 no-op은 getter의 회전 외곽 폭 봉지, 역연산은 회전/대칭의 대응 속성과 resize snapshot을 사용한다.
+마지막 작은 경계 8건은 모두 통과했다. opt-level=0 진단은 최종 정규 release-test 결과와 구분한다.
+
+현재 단계는 최종 source의 root/WASM/workspace lint, release build/lib, 전체 release-test,
+Native Skia 3종과 fresh optimized WASM·전쪽 재검증이다. 제품 head를 고정한 뒤 공용 target에서 순차 실행한다.
+GitHub CI에 로컬 미실행 항목을 넘기지 않는다. 원격 push·공개 댓글·merge는 수행하지 않았다.

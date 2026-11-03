@@ -1,3 +1,7 @@
+//! 고정형: blank_nested_table_html의 공개 입력·편집·저장 계약.
+//! 주석 갱신: 2026-11-03T21:22:49+09:00; 직전 파일 변경 커밋: 2026-10-26T00:03:49+09:00 d5505a2690a0db46c9e20a1f6236b702e1796fa3.
+//! 측정: 2026-11-03, 96 DPI·색상 경계 보정 전 2px raw 실루엣. 시각 측정 비해당: HTML pt 입력에서 모델 HU·빈 중첩 표 보존과 제한 깊이를 검사한다. 페이지 배치·절대 px를 고정하지 않는다.
+//! 정식 증거: mydocs/pr/assets/semanticist21-20261103/visual-results.json 및 전쪽 TSV·확대 PNG.
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
 use rhwp::model::paragraph::Paragraph;
