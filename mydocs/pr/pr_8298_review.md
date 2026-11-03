@@ -80,3 +80,11 @@ hancom_table_grow_saves_table_height; grow3 전후·본문/중첩 표·무편집
 승인된 원격 범위에서 게시·API 재확인한다. 아직 없는 수치나 이미지 URL은 만들지 않는다.
 
 [누적 검토 계획](semanticist21_20261103_review_plan.md) · [원 head·CI·충돌 증거](assets/semanticist21-20261103/intake.json).
+
+## 로컬 충돌 보정
+
+성장 높이를 현행 Storage 기반 HWP snapshot 경로에 전달하고 HWPX lineage 분기를 보존했다.
+본문 표는 기존 측정 결과를 소비하며, 중첩 표는 동일한 LayoutProfile·정규화 정책의 측정기를
+사용한다. 편집하지 않은 중첩 표는 원본 높이를 보존한다. 임의의 10 HU 문턱은 제거하고
+공통 정수 단위 변환 결과의 실제 증가를 사용한다. 이 결정의 무편집·중첩·한도·시각 검증은
+누적 후보에서 진행하며, 실행 전 완료로 판정하지 않는다.
