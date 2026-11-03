@@ -2,7 +2,14 @@
 
 ## 최종 판정
 
-**메인터너 검토 완료 — HWPX 출처 개체의 bit 28 저장 계약 확인.** [통합 PR #8438](https://github.com/edwardkim/rhwp/pull/8438)에 반영됐고 원 PR head가 검토한 head와 일치한다. 원 PR이 범위 밖으로 밝힌 양식과 HWP3·PDF 출처 변환은 이 결과로 해결했다고 주장하지 않는다.
+**승인** — HWPX 출처 개체의 bit 28 저장 계약을 확인했다.
+[통합 PR #8438](https://github.com/edwardkim/rhwp/pull/8438)의 머지 SHA
+`b8338ba38be288b6e9385f5372d184649323aa9f`에 원 PR의 적용 내용이 반영됐고
+원 PR head가 검토한 head와 일치한다. 후속 제품 코드 `5aa6ee08dd`의 최소 글꼴
+전체 Rust 회귀 12,387건 통과·45건 skipped 및 아래의 원시 OLE bit·저장 바이트
+검사를 확인했다. 원 PR은 중복 병합하지 않고 후속 보정 PR의 최신 head CI·병합
+확인 뒤 종료한다. 원 PR이 범위 밖으로 밝힌 양식과 HWP3·PDF 출처 변환은 이
+결과로 해결했다고 주장하지 않는다.
 
 ## 2026-11-02 통합 머지 사실과 적용 SHA 재확인
 

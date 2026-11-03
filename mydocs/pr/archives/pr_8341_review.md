@@ -2,7 +2,32 @@
 
 ## 최종 판정
 
-**통합 PR에 반영됨 — 원 PR별 최종 검토 진행 중.** [통합 PR #8438](https://github.com/edwardkim/rhwp/pull/8438)은 머지됐다. 이 원 PR의 주장·변경 범위와 독립 증거를 대조한 뒤 원 PR 종료 여부를 판정한다.
+**메인터너 보정 후 수용 가능** — 원 PR의 적용 내용은
+[통합 PR #8438](https://github.com/edwardkim/rhwp/pull/8438)의 머지 SHA
+`b8338ba38be288b6e9385f5372d184649323aa9f`에 반영됐다. 원 head를 중복 병합하지
+않는다. 후속 제품 보정 `5aa6ee08dd`와 회귀 보강 `c8e4f0ffac` 기준으로 이 PR의
+입력과 독립 한컴 Print PDF를 대조한 전쪽 Native/fresh WASM 검증에서 90% 미만과
+고정 devel 대비 2%p 초과 하락은 없다. [원 PR 입력별 전쪽 TSV](../assets/review_8438_followup/final-original-inputs/README.md)와
+아래의 주장 페이지 review·overlay를 함께 판독했다. 최소 글꼴 전체 Rust 회귀
+12,387건 통과·45건 skipped, 선행 [PR #8389](https://github.com/edwardkim/rhwp/pull/8389)·
+[PR #8397](https://github.com/edwardkim/rhwp/pull/8397) 2,153쪽 Native/fresh WASM
+표시값 하락 0쪽이다. 후속 보정 PR의 최신 head CI와 병합을 확인한 뒤 원 PR을
+중복 반영 사유로 종료한다.
+
+제목 차례 run 경계는 같은 재저장 HWPX의
+[20쪽 Native 비교](../assets/issue_8305/followup8438/native-current-review-020.png)·
+[overlay](../assets/issue_8305/followup8438/native-current-overlay-020.png)와
+[59쪽 WASM 비교](../assets/issue_8305/followup8438/wasm-current-review-059.png)·
+[overlay](../assets/issue_8305/followup8438/wasm-current-overlay-059.png)로 확인했다.
+같은 원본의 한컴 2024 Print와 최신 head를 대조한 전 64쪽
+[Native TSV](../assets/issue_8305/followup8438/native-wmfc-rebased-2024-all.tsv)·
+[fresh WASM TSV](../assets/issue_8305/followup8438/wasm-wmfc-rebased-2024-all.tsv)의
+최저는 42쪽 94.90%·94.92%이며, 차트 35쪽은 95.52%·95.56%다.
+차트의 [Native review](../assets/issue_8305/followup8438/native-wmfc-rebased-review-035.png)·
+[overlay](../assets/issue_8305/followup8438/native-wmfc-rebased-overlay-035.png),
+[WASM review](../assets/issue_8305/followup8438/wasm-wmfc-rebased-review-035.png)·
+[overlay](../assets/issue_8305/followup8438/wasm-wmfc-rebased-overlay-035.png)를
+직접 대조했다. 고정 devel 대비 최대 하락은 두 경로 모두 30쪽 1.40%p다.
 
 ## 2026-11-02 통합 머지 사실과 적용 SHA 재확인
 

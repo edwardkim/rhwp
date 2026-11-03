@@ -2,7 +2,17 @@
 
 ## 최종 판정
 
-**통합 PR에 반영됨 — 원 PR별 최종 검토 진행 중.** [통합 PR #8438](https://github.com/edwardkim/rhwp/pull/8438)은 머지됐다. 이 원 PR의 주장·변경 범위와 독립 증거를 대조한 뒤 원 PR 종료 여부를 판정한다.
+**메인터너 보정 후 수용 가능** — 원 PR의 적용 내용은
+[통합 PR #8438](https://github.com/edwardkim/rhwp/pull/8438)의 머지 SHA
+`b8338ba38be288b6e9385f5372d184649323aa9f`에 반영됐다. 원 head를 중복 병합하지
+않는다. 후속 제품 보정 `5aa6ee08dd`와 회귀 보강 `c8e4f0ffac` 기준으로 이 PR의
+입력과 독립 한컴 Print PDF를 대조한 전쪽 Native/fresh WASM 검증에서 90% 미만과
+고정 devel 대비 2%p 초과 하락은 없다. [원 PR 입력별 전쪽 TSV](../assets/review_8438_followup/final-original-inputs/README.md)와
+아래의 주장 페이지 review·overlay를 함께 판독했다. 최소 글꼴 전체 Rust 회귀
+12,387건 통과·45건 skipped, 선행 [PR #8389](https://github.com/edwardkim/rhwp/pull/8389)·
+[PR #8397](https://github.com/edwardkim/rhwp/pull/8397) 2,153쪽 Native/fresh WASM
+표시값 하락 0쪽이다. 후속 보정 PR의 최신 head CI와 병합을 확인한 뒤 원 PR을
+중복 반영 사유로 종료한다.
 
 ## 2026-11-02 통합 머지 사실과 적용 SHA 재확인
 

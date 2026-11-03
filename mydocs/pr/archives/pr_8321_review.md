@@ -2,7 +2,25 @@
 
 ## 최종 판정
 
-**통합 PR에 반영됨 — 원 PR별 최종 검토 진행 중.** [통합 PR #8438](https://github.com/edwardkim/rhwp/pull/8438)은 머지됐다. 이 원 PR의 주장·변경 범위와 독립 증거를 대조한 뒤 원 PR 종료 여부를 판정한다.
+**메인터너 보정 후 수용 가능** — 원 PR의 적용 내용은
+[통합 PR #8438](https://github.com/edwardkim/rhwp/pull/8438)의 머지 SHA
+`b8338ba38be288b6e9385f5372d184649323aa9f`에 반영됐다. 원 head를 중복 병합하지
+않는다. 후속 제품 보정 `5aa6ee08dd`와 회귀 보강 `c8e4f0ffac` 기준으로 이 PR의
+입력과 독립 한컴 Print PDF를 대조한 전쪽 Native/fresh WASM 검증에서 90% 미만과
+고정 devel 대비 2%p 초과 하락은 없다. [원 PR 입력별 전쪽 TSV](../assets/review_8438_followup/final-original-inputs/README.md)와
+아래의 주장 페이지 review·overlay를 함께 판독했다. 최소 글꼴 전체 Rust 회귀
+12,387건 통과·45건 skipped, 선행 [PR #8389](https://github.com/edwardkim/rhwp/pull/8389)·
+[PR #8397](https://github.com/edwardkim/rhwp/pull/8397) 2,153쪽 Native/fresh WASM
+표시값 하락 0쪽이다. 후속 보정 PR의 최신 head CI와 병합을 확인한 뒤 원 PR을
+중복 반영 사유로 종료한다.
+
+이 PR의 기호 슬롯 폭과 리터럴 U+00AD는 [같은 입력 Native 전쪽 TSV](../assets/issue_8315/followup8438/native-literal-final.tsv)·
+[WASM 전쪽 TSV](../assets/issue_8315/followup8438/wasm-literal-final.tsv),
+[#7993 HWP 대조군 Native](../assets/issue_8315/followup8438/native-control-7993-hwp.tsv)·
+[WASM](../assets/issue_8315/followup8438/wasm-control-7993-hwp.tsv),
+[#7993 HWPX 대조군 Native](../assets/issue_8315/followup8438/native-control-7993-hwpx.tsv)·
+[WASM](../assets/issue_8315/followup8438/wasm-control-7993-hwpx.tsv)으로 구분해
+검증했다. 아래의 수정 전 U+00AD 누락 관측은 최종 보정 전 상태다.
 
 ## 2026-11-02 통합 머지 사실과 적용 SHA 재확인
 
@@ -152,7 +170,8 @@ HWP의 마지막 줄 `와` 시작은 현재 렌더 트리 x=232.7px로, 독립 P
 페이지별 fresh WASM TSV는 [#8136 HWPX](../assets/issue_8315/followup8438/wasm-literal-final.tsv),
 [#7993 HWP](../assets/issue_8315/followup8438/wasm-control-7993-hwp.tsv),
 [#7993 HWPX](../assets/issue_8315/followup8438/wasm-control-7993-hwpx.tsv)에 보존했다.
-#8389·#8397 최종 전쪽 대조를 완료한 뒤 최종 판정을 갱신한다.
+#8389·#8397 최종 전쪽 대조는 현재 head에서 완료했고 Native/fresh WASM 모두
+2,153쪽의 소수 둘째 자리 표시값 하락이 0쪽이다. 위 최종 판정에 반영했다.
 
 2026-11-03 전체 최소 글꼴 회귀에서 별도 이슈 #4895의 기존 저장 왕복 검사
 2건이 실패했다. 원본 HWP/HWPX의 중첩 표 셀에는 U+00AD가 각각 4개

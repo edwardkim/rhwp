@@ -13,9 +13,11 @@
 이미 닫힌 원 PR의 재검토나 다른 이슈의 새 개선은 이 범위에 넣지 않는다.
 #8389·#8397은 이번 보정의 기능 보존 기준으로만 대조한다. 두 PR의 전체 2,153쪽
 Native·fresh WASM 비교에서 소수 둘째 자리 표시값 하락은 각각 0쪽이며, 재산출한
-비교 TSV는 이미 제출한 정식 TSV와 각각 바이트 단위로 같다.
+비교 TSV는 이미 제출한 [Native 정식 TSV](../pr/assets/review_8438_followup/pr8389_8397/native-final-comparison.tsv)·
+[WASM 정식 TSV](../pr/assets/review_8438_followup/pr8389_8397/wasm-final-comparison.tsv)와
+각각 바이트 단위로 같다. 각 실행의 17개 문서 산출도 완료했다.
 
-## 최신 head의 #8341 Native 재검증
+## 최신 head의 #8341 Native·fresh WASM 재검증
 
 `5aa6ee08dd` 제품 코드에서 `native-skia`로 빌드한 실행 파일
 SHA-256 `5a2f08110d954d8cd3d433a86f4a20cbc4a99080aff7446edc650c694b5e224b`를
@@ -24,8 +26,22 @@ SHA-256 `5a2f08110d954d8cd3d433a86f4a20cbc4a99080aff7446edc650c694b5e224b`를
 최저 42쪽 94.90%이며 미달·누락은 0쪽이다. 차트가 있는 35쪽은 95.52%다.
 고정 devel 대비 최대 하락은 30쪽 1.40%p로 허용폭 2%p 이내다.
 28·30·35·42쪽의 review와 overlay를 직접 대조했다. 차트·범례·값·뒤 문단의
-소속과 순서는 보존되며 일부 값 글자 가장자리의 미세 차이는 남는다. 이번 Native
-수치는 fresh WASM의 새 head 출력을 대신하지 않는다.
+소속과 순서는 보존되며 일부 값 글자 가장자리의 미세 차이는 남는다.
+
+같은 제품 코드에서 새로 빌드한 WASM 패키지의 `rhwp_bg.wasm` SHA-256은
+`1b777936544642619c6da1d53770c928c176d199751ff3fda566dc5f698f3a65`다.
+같은 입력과 Print PDF의 전 64쪽
+[fresh WASM TSV](../pr/assets/issue_8305/followup8438/wasm-wmfc-rebased-2024-all.tsv)는
+최저 42쪽 94.92%, 90% 미만·누락 0쪽이다. 차트 35쪽은 95.56%이고 고정 devel
+대비 최대 하락은 30쪽 1.40%p다. Native와 WASM의 새 64쪽 표시값은 모두 기존
+고정 devel 비교표의 후보 값과 같다.
+
+| 쪽·확인 대상 | Native | fresh WASM | 직접 비교 |
+| --- | ---: | ---: | --- |
+| 28쪽 차트 시작 | 97.86% | 97.89% | [Native review](../pr/assets/issue_8305/followup8438/native-wmfc-rebased-review-028.png)·[overlay](../pr/assets/issue_8305/followup8438/native-wmfc-rebased-overlay-028.png), [WASM review](../pr/assets/issue_8305/followup8438/wasm-wmfc-rebased-review-028.png)·[overlay](../pr/assets/issue_8305/followup8438/wasm-wmfc-rebased-overlay-028.png) |
+| 30쪽 최대 하락 | 96.52% | 96.55% | [Native review](../pr/assets/issue_8305/followup8438/native-wmfc-rebased-review-030.png)·[overlay](../pr/assets/issue_8305/followup8438/native-wmfc-rebased-overlay-030.png), [WASM review](../pr/assets/issue_8305/followup8438/wasm-wmfc-rebased-review-030.png)·[overlay](../pr/assets/issue_8305/followup8438/wasm-wmfc-rebased-overlay-030.png) |
+| 35쪽 차트 보정 | 95.52% | 95.56% | [Native review](../pr/assets/issue_8305/followup8438/native-wmfc-rebased-review-035.png)·[overlay](../pr/assets/issue_8305/followup8438/native-wmfc-rebased-overlay-035.png), [WASM review](../pr/assets/issue_8305/followup8438/wasm-wmfc-rebased-review-035.png)·[overlay](../pr/assets/issue_8305/followup8438/wasm-wmfc-rebased-overlay-035.png) |
+| 42쪽 최저값 | 94.90% | 94.92% | [Native review](../pr/assets/issue_8305/followup8438/native-wmfc-rebased-review-042.png)·[overlay](../pr/assets/issue_8305/followup8438/native-wmfc-rebased-overlay-042.png), [WASM review](../pr/assets/issue_8305/followup8438/wasm-wmfc-rebased-review-042.png)·[overlay](../pr/assets/issue_8305/followup8438/wasm-wmfc-rebased-overlay-042.png) |
 
 ## 초기 후보의 독립 대조와 당시 문제
 
