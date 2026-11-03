@@ -196,3 +196,18 @@ SHA-256 `31c0dbbbf71bb0561d2be517e979b348f90b8ec49d195f0f98a0f960cefd2104`를
 [`cargo clippy --workspace --all-targets` 로그](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-rebased-clippy-native.log)도
 `-D warnings`로 종료 코드 0을 확인했다. 이후 문서 전용 커밋은 제품 코드와
 회귀 assertion을 바꾸지 않았다.
+
+WASM32 `rhwp --lib` Clippy도
+[`-D warnings` 로그](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-rebased-clippy-wasm.log)에서
+종료 코드 0을 확인했다. 원 PR 입력 23개, #8321 대조 입력 2개와 #8341 차트
+입력 1개의 리베이스 전 동일 제품 코드 Native/fresh WASM 전쪽 대조도 완료했다.
+고정 devel `ea86816b5316dfeeb47ecf20df97abfd4b02da73`과 같은 원본·Print
+PDF·글꼴 환경을 사용한 [2,246행 대조표](../../output/pr-review/planet6897-ordered-20261031/book-validation/chart-print-frame-ea86816-page-comparison.tsv)는
+각 경로 1,123쪽, 90% 미만 0쪽, 2%p 초과 하락 0쪽이다. 양쪽 최대 하락은
+차트 30쪽 1.40%p이며, 최저는 차트 42쪽 Native 94.90%, WASM 94.92%다.
+처음 누락됐던 `pr8336-hwpspec-saved2024` devel WASM은 동일 기준 패키지로
+[전 178쪽 재산출](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-originals-base-missing-wasm.log)했고
+최저 92.56%, 누락 0쪽이다. 후보의 기존 원 PR 입력 23개 TSV와 #8321 대조
+입력 2개 TSV는 이미 커밋된 최종 증적과 바이트 단위로 같다. 이 전쪽 대조는
+리베이스 전 제품 코드를 측정한 것이므로, 새 base의 정확한 head에서는
+#8499 집중 검사와 #8341 차트 출력의 재측정을 이어 간다.
