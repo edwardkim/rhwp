@@ -138,3 +138,84 @@ fn verify(data: &str) {
         match &page.anchor {
             Anchor::Text { text, x, baseline } => {
                 let runs = text_anchor_runs(&nodes, text);
+                if runs.len() != 1 {
+                    errors.push(format!(
+                        "{}쪽 원문 누락·중복({}): {text}",
+                        page.page,
+                        runs.len()
+                    ));
+                    continue;
+                }
+                let (node, run) = runs[0];
+                if (node.bbox.x - *x).abs() > tolerance
+                    || (node.bbox.y + run.baseline - *baseline).abs() > tolerance
+                {
+                    errors.push(format!("{}쪽 {text} 원점 {:.2}/{x:.2}, 기준선 {:.2}/{baseline:.2}, 허용 ±{tolerance}px", page.page, node.bbox.x, node.bbox.y + run.baseline));
+                }
+            }
+            Anchor::Image {
+                x,
+                y,
+                right,
+                bottom,
+            } => {
+                let images: Vec<_> = nodes
+                    .iter()
+                    .filter(|n| matches!(n.node_type, RenderNodeType::Image(_)))
+                    .collect();
+                if images.len() != 1 {
+                    errors.push(format!(
+                        "{}쪽 표지 그림 누락·중복({})",
+                        page.page,
+                        images.len()
+                    ));
+                    continue;
+                }
+                let b = images[0].bbox;
+                for (actual, expected) in [
+                    (b.x, *x),
+                    (b.y, *y),
+                    (b.x + b.width, *right),
+                    (b.y + b.height, *bottom),
+                ] {
+                    if (actual - expected).abs() > tolerance {
+                        errors.push(format!(
+                            "{}쪽 그림 경계 {actual:.2}/{expected:.2}",
+                            page.page
+                        ));
+                    }
+                }
+            }
+            Anchor::Blank => {
+                let blank = nodes.iter().all(|n| match &n.node_type {
+                    RenderNodeType::TextRun(run) => run.text.trim().is_empty(),
+                    RenderNodeType::Image(_)
+                    | RenderNodeType::Line(_)
+                    | RenderNodeType::Rectangle(_)
+                    | RenderNodeType::Ellipse(_)
+                    | RenderNodeType::Path(_)
+                    | RenderNodeType::Equation(_) => false,
+                    _ => true,
+                });
+                if !blank {
+                    errors.push(format!("{}쪽 빈 쪽에 내용이 생겼다", page.page));
+                }
+            }
+        }
+    }
+    assert!(
+        errors.is_empty(),
+        "전쪽 독립 Print 경계 실패:\n{}",
+        errors.join("\n")
+    );
+}
+
+#[test]
+fn hwp_all_pages_keep_independent_print_anchors() {
+    verify(include_str!("../fixtures/issue8153/all-pages-hwp.json"));
+}
+
+#[test]
+fn hwpx_all_pages_keep_independent_print_anchors() {
+    verify(include_str!("../fixtures/issue8153/all-pages-hwpx.json"));
+}
