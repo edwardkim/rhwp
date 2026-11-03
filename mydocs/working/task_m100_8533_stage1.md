@@ -50,6 +50,7 @@ PDFium·96 DPI·2024 호환·Print·2px 실루엣 조건을 유지한다. Mac WA
 | 범위 | 확인 결과 |
 | --- | --- |
 | 전체 release-test nextest | 12,424 PASS, 0 FAIL, 45 skip; 실제 테스트 실행 581.283초 |
+| release build·lib | build PASS; root 3,801 PASS·12 ignored, 다른 workspace lib 182 PASS |
 | Native Skia workspace lib | root 3,857 PASS·12 ignored, 다른 workspace lib 합계 248 PASS |
 | 정본 그림 placeholder | 2 PASS |
 | 직접 PDF 출력 | 22 PASS |
@@ -62,6 +63,7 @@ PDFium·96 DPI·2024 호환·Print·2px 실루엣 조건을 유지한다. Mac WA
 | #8438 입력의 최신 devel Native 추가 대조 | 10문서·78쪽, devel 동등 producer와 후보 PNG hash 동일 |
 | 최신 devel 동등 순수 base WASM 전쪽 대조 | 완료한 35문서·1,023쪽 모두 후보와 실제 PNG hash 동일; 사양서 178쪽은 자원 상한으로 별도 확인 중 |
 | 추가 글꼴 파일 접근을 차단한 Native 편람 | 383쪽 완료, raw 최저 99.96465%·130쪽, 기존 표시 하한 대비 하락 0쪽 |
+| 같은 현재 환경의 base·후보 Native 편람 | 설치 환경 최저 94.26497→99.96463%, 차단 환경 93.13408→99.96465%; 각 383쪽, 0.1%p 초과 하락 0쪽 |
 | fresh WASM 편람 | 383쪽 완료, raw 최저 99.68453%·198쪽; Native와 동일한 결과라고 주장하지 않음 |
 | 실제 일반 Native CLI | 전383쪽 단일 export, 온라인·오프라인 집중4쪽 PNG hash 동일 |
 | Native SVG·PDF 실제 소비 | 272쪽 SVG의 Chrome 출력 99.77168%, 두 PDF backend 각각 100% |
@@ -70,6 +72,10 @@ PDFium·96 DPI·2024 호환·Print·2px 실루엣 조건을 유지한다. Mac WA
 좌표 허용치를 완화하여 실패를 없애지 않았다. 생성 harness 5개의 shard 배정 drift는 별도로
 정정했다. 정정 전후 28개 생성 harness의 case source 집합 1,970개가 동일하고 중복이 없음을 확인했으며,
 manifest·fmt·unit tier를 다시 통과했다. 원래 실패 로그는 통과 결과로 덮어쓰지 않는다.
+
+완료한 TSV 원본·정밀 raw 값·PNG 해시와 선별한 실제 raw·review·overlay는
+[제출 증적 묶음](../pr/assets/issue8533/final-native-webfonts/README.md)에 보존한다.
+이 묶음의 완료 범위와 아직 실행 중인 검사를 구분하며, 임시 driver·로그·글꼴 프로그램을 포함하지 않는다.
 
 글꼴 lifecycle 감사는 과거 고정 개수를 현재 개수로 바꾸는 대신, 봉인된 v1과 기록된 change set의
 추가·퇴역·교체를 재생하여 기대 집합을 도출한다. 현재 v2에 기록된 18개 change set의 재생과
