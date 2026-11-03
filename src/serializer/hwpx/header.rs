@@ -1113,14 +1113,17 @@ where
                 }
                 _ => "REAL_PIC",
             };
+            // 한/글은 그림 글머리표의 그림을 core 이름공간 `<hc:img>`로 쓰고 읽는다. head 이름공간
+            // `<hh:img>`는 무시하고 글머리표 문자를 그린다(12.30 Mac에서 확인).
             empty_tag(
                 w,
-                "hh:img",
+                "hc:img",
                 &[
                     ("binaryItemIDRef", manifest_id),
                     ("bright", &bright),
                     ("contrast", &contrast),
                     ("effect", effect),
+                    ("alpha", "0"),
                 ],
                 storage,
             )?;

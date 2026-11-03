@@ -3,7 +3,8 @@
 //! 한/글 '글머리표 사용자 정의 모양'은 문자·글자 모양·너비 조정·정렬·본문과의 간격·자동 내어쓰기를,
 //! '그림 글머리표 사용자 정의 모양'은 그림 파일과 같은 머리 값을 고른다. 한/글 저장본(❏·가운데·
 //! 10pt·70%·자동 내어쓰기 끔)은 HWP 글머리표 속성 1, 너비 1000, 간격 70이고, 그림 글머리표는
-//! 여부 1과 이미지 글머리 데이터 넷째 바이트에 그림 번호를, HWPX는 `useImage="1"`과 `<hh:img>`를 쓴다.
+//! 여부 1과 이미지 글머리 데이터 넷째 바이트에 그림 번호를, HWPX는 `useImage="1"`과 core 이름공간
+//! `<hc:img>`를 쓴다. 한/글은 head 이름공간 `<hh:img>`를 무시하고 글머리표 문자(●)를 그린다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::wasm_api::HwpDocument;
@@ -45,6 +46,17 @@ fn reopen(doc: &HwpDocument, hwpx: bool) -> HwpDocument {
         doc.export_hwp_native().unwrap()
     };
     HwpDocument::from_bytes(&bytes).unwrap()
+}
+
+fn header_xml(hwpx: &[u8]) -> String {
+    use std::io::Read;
+    let mut zip = zip::ZipArchive::new(std::io::Cursor::new(hwpx)).unwrap();
+    let mut out = String::new();
+    zip.by_name("Contents/header.xml")
+        .unwrap()
+        .read_to_string(&mut out)
+        .unwrap();
+    out
 }
 
 /// 글머리표 마커 run(원문 자리 없는 ❏)의 (크기, 기울임).
@@ -129,6 +141,11 @@ fn picture_bullet_embeds_its_image_draws_it_and_survives_save() {
     apply(&mut doc, id);
     let svg = doc.render_page_svg_native(0).unwrap();
     assert!(svg.contains("<image"), "그림 글머리표를 그림으로 그린다");
+    let header = header_xml(&doc.export_hwpx_native().unwrap());
+    assert!(
+        header.contains(r#"<hc:img binaryItemIDRef="#) && !header.contains("<hh:img"),
+        "한/글이 읽는 core 이름공간의 그림 참조"
+    );
     for (saved, hwpx) in [(reopen(&doc, false), false), (reopen(&doc, true), true)] {
         let info = &saved.document().doc_info;
         let bullet = &info.bullets[usize::from(id) - 1];
