@@ -16056,6 +16056,7 @@ impl LayoutEngine {
                                 seg,
                                 self.profile.get().hwpx_stored_layout(),
                                 native_stored_layout,
+                                !self.profile.get().hangul2024_layout(),
                                 self.dpi,
                             )
                         };

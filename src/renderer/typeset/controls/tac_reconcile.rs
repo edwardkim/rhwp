@@ -190,6 +190,7 @@ pub(super) fn measure(
                             seg,
                             profile.hwpx_stored_layout(),
                             profile.hwp5_stored_pagination_layout() && !profile.session_edited(),
+                            !profile.hangul2024_layout(),
                             dpi,
                         )
                     } else {
