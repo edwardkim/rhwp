@@ -114,6 +114,8 @@ use super::composer::{
 use super::layout::split_into_clusters;
 
 #[cfg(target_arch = "wasm32")]
+mod faux_bold_outline;
+#[cfg(target_arch = "wasm32")]
 mod hft_outline;
 #[cfg(target_arch = "wasm32")]
 mod middle_dot;
@@ -3003,18 +3005,24 @@ impl Renderer for WebCanvasRenderer {
                             .measure_text(cluster_str)
                             .map_or(0.0, |metrics| metrics.width());
                         let scale = super::halfwidth_punct_paint_scale(advance, glyph_width);
+                        let stroke_space = self.ctx.get_transform().ok();
                         self.ctx.save();
                         self.ctx.translate(char_x, y).unwrap_or(());
                         self.ctx.scale(scale, 1.0).unwrap_or(());
                         self.apply_synthetic_italic(synthetic_italic);
-                        Self::fill_positioned_text(
-                            &self.ctx,
-                            cluster_str,
-                            0.0,
-                            0.0,
-                            style,
-                            font_size,
-                        );
+                        let painted = stroke_space.as_ref().is_some_and(|space| {
+                            self.draw_faux_bold_outline(cluster_str, style, font_size, space)
+                        });
+                        if !painted {
+                            Self::fill_positioned_text(
+                                &self.ctx,
+                                cluster_str,
+                                0.0,
+                                0.0,
+                                style,
+                                font_size,
+                            );
+                        }
                         self.ctx.restore();
                     } else {
                         let cluster_advance = {
@@ -3054,11 +3062,17 @@ impl Renderer for WebCanvasRenderer {
                         };
                         let (fit_scale, fit_dx) = fit.unwrap_or((1.0, 0.0));
 
+                        // 합성 굵기의 stroke는 장평·맞춤·기울임 전 공간의 등방 선 굵기다.
+                        let stroke_space = self.ctx.get_transform().ok();
                         self.ctx.save();
                         self.ctx.translate(char_x + fit_dx, y).unwrap_or(());
                         self.ctx.scale(ratio * fit_scale, 1.0).unwrap_or(());
                         self.apply_synthetic_italic(synthetic_italic);
-                        if !self.draw_hft_outline(glyph_text, style, font_size) {
+                        let painted = self.draw_hft_outline(glyph_text, style, font_size)
+                            || stroke_space.as_ref().is_some_and(|space| {
+                                self.draw_faux_bold_outline(glyph_text, style, font_size, space)
+                            });
+                        if !painted {
                             Self::fill_positioned_text(
                                 &self.ctx, glyph_text, 0.0, 0.0, style, font_size,
                             );
@@ -3777,22 +3791,28 @@ impl WebCanvasRenderer {
                     continue;
                 }
 
+                // 외곽선 pass가 아닌 합성 굵기는 본문과 같은 윤곽 fill+stroke로 그린다(#8430).
+                let stroke_space = (!stroke && faux_width.is_some())
+                    .then(|| ctx.get_transform().ok())
+                    .flatten();
+                ctx.save();
+                ctx.translate(char_x, char_y).unwrap_or(());
                 if has_ratio || synthetic_italic {
-                    ctx.save();
-                    ctx.translate(char_x, char_y).unwrap_or(());
                     ctx.scale(ratio, 1.0).unwrap_or(());
                     self.apply_synthetic_italic(synthetic_italic);
+                }
+                let outlined = stroke_space.as_ref().is_some_and(|space| {
+                    self.draw_faux_bold_outline_with_color(
+                        glyph_text, style, font_size, space, fill_color,
+                    )
+                });
+                if !outlined {
                     let _ = ctx.fill_text(glyph_text, 0.0, 0.0);
                     if paint_stroke {
                         let _ = ctx.stroke_text(glyph_text, 0.0, 0.0);
                     }
-                    ctx.restore();
-                } else {
-                    let _ = ctx.fill_text(glyph_text, char_x, char_y);
-                    if paint_stroke {
-                        let _ = ctx.stroke_text(glyph_text, char_x, char_y);
-                    }
                 }
+                ctx.restore();
             }
         };
 
