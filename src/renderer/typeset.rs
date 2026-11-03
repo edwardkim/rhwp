@@ -984,6 +984,20 @@ fn para_has_treat_as_char_picture_or_shape(para: &Paragraph) -> bool {
     })
 }
 
+/// 저장 HWP5 표 앞줄이 빈 앵커가 아니라 TAC 그림·도형이 소유한 줄인지 확인한다.
+fn hwp5_tac_prefix_has_owned_object_line(para: &Paragraph, table_line: usize) -> bool {
+    para.controls.iter().enumerate().any(|(index, control)| {
+        let is_tac_object = match control {
+            Control::Picture(picture) => picture.common.treat_as_char,
+            Control::Shape(shape) => shape.common().treat_as_char,
+            _ => false,
+        };
+        is_tac_object
+            && crate::renderer::layout::control_line_seg_index(para, index)
+                .is_some_and(|line| line < table_line)
+    })
+}
+
 fn non_tac_picture_or_shape_common(ctrl: &Control) -> Option<&crate::model::shape::CommonObjAttr> {
     match ctrl {
         Control::Picture(pic) if !pic.common.treat_as_char => Some(&pic.common),
@@ -4454,6 +4468,10 @@ impl TypesetEngine {
             // field_over19·field_over1414 의 2020·2024 Print 래스터 동일). 줄 재조판이 정한
             // 개체 줄은 저장 재저장본의 앞 앵커 줄 회수 대상이 아니다.
             && !crate::renderer::para_has_composed_object_rows(para)
+            // [#8543] 앞 저장 줄이 TAC 도형·그림의 실제 줄이면 빈 앵커로 회수할 수 없다.
+            // 한컴 2024 Print도 이 줄을 남긴다. #5524의 빈 앵커 회수는 유지한다.
+            && !(st.profile.hwp5_stored_pagination_layout()
+                && hwp5_tac_prefix_has_owned_object_line(para, tac_seg_idx))
         {
             // [compat 2024] 한글 2024 는 자리차지 표 앵커 문단의 선행 앵커 줄
             // 세그먼트를 흐름에 계상하지 않는다 — 2022 재저장본은 앵커 문단
