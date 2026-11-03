@@ -1,5 +1,5 @@
 //! 관계형: 공개 웹폰트 변환과 Native 로컬 우선 공급 계약을 검사한다.
-//! 주석 갱신: 2026-11-04 02:54:03 KST; 원본/표시 슬롯 혼합 대조 보완.
+//! 주석 갱신: 2026-11-04 04:10:19 KST; 표시 치환 전 원본 폭 표·언어 슬롯 보존 대조 보완.
 //! 합성 글꼴 입력 검사이며 실물 페이지의 일치율이나 고정 px를 주장하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -246,4 +246,62 @@ fn display_substitute_preserves_source_advance_while_selected_program_can_own_it
         after[1] < before[1],
         "실제 원본 슬롯의 자연 전진은 유지: {before:?} -> {after:?}"
     );
+}
+
+#[test]
+fn display_replacement_preserves_existing_tables_and_latin_slot_metrics() {
+    use rhwp::renderer::font_environment::FontEnvironment;
+    let trace = |core: &DocumentCore| {
+        let value: serde_json::Value = serde_json::from_str(
+            &core
+                .get_font_decision_trace_native(0, r#"{"maxCharacters":32}"#)
+                .unwrap(),
+        )
+        .unwrap();
+        value["records"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|r| "가1.·A\u{2007}".contains(r["source"]["character"].as_str().unwrap()))
+            .map(|r| {
+                (
+                    r["source"]["character"].as_str().unwrap().to_owned(),
+                    r["layoutMetric"]["finalAdvanceHwpunit"].as_f64().unwrap(),
+                )
+            })
+            .collect::<Vec<_>>()
+    };
+    for (source, kind) in [
+        ("Haansoft Batang", 1),
+        ("Gulim", 1),
+        ("한컴 윤고딕 720", 2),
+        ("RHWP unknown source 8533", 1),
+    ] {
+        let mut core = document_with_face(source);
+        core.insert_text_native(0, 0, 0, "가1.·A\u{2007}").unwrap();
+        let mut doc = core.document().clone();
+        doc.provenance.format = rhwp::model::provenance::SourceFormat::Hwpx;
+        for face in doc.doc_info.font_faces.iter_mut().flatten() {
+            face.alt_type = kind;
+        }
+        core.set_document(doc);
+        let before = trace(&core);
+        assert!(!before.is_empty());
+        core.set_font_environment(Some(
+            FontEnvironment::from_json(
+                &serde_json::json!({
+                    "id":"preserved-table-8533", "preserveSourceMetrics":true,
+                    "substitutions":{(source):"NotoSansKR-Regular"},
+                })
+                .to_string(),
+            )
+            .unwrap(),
+        ))
+        .unwrap();
+        assert_eq!(
+            before,
+            trace(&core),
+            "표시 family가 원본 폭 표·영문 슬롯 전진을 바꿈: {source}"
+        );
+    }
 }

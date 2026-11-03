@@ -202,6 +202,10 @@ pub(crate) fn resolve_styles_with_environment(
                     environment,
                 );
                 if decision.environment_profile_id.is_some() {
+                    let source_metric_face = style.font_families_metric_face[lang]
+                        .as_deref()
+                        .unwrap_or_else(|| primary_font_name(&style.font_families[lang]))
+                        .to_owned();
                     style.font_families[lang] = decision.css_family_chain.join(",");
                     style.font_families_glyph_fallback_advance_explicit[lang] = decision.embedded
                         != Some(true)
@@ -221,6 +225,14 @@ pub(crate) fn resolve_styles_with_environment(
                                 })
                                 .is_some()
                         });
+                    if display_only_fonts.contains(&(lang, shape.font_ids[lang])) {
+                        // 표시용 치환은 원본 TTF/HFT의 폭 표와 추정 규칙을 바꾸지 않는다.
+                        // family를 먼저 바꾸면 숫자·영문 슬롯까지 대체 face의 반각
+                        // 추정으로 떨어지므로, 치환 전 실제 측정 face와 신뢰·프레임을
+                        // 함께 보존한다. 명시적으로 선택한 프로그램은 아래에서 처리한다.
+                        style.font_families_metric_face[lang] = Some(source_metric_face);
+                        continue;
+                    }
                     // 명시적 프로그램 선택과 독립적으로 검증한 글리프 표가 모두 있어야
                     // TrueType 폭을 사용한다. 선언만으로 임의 face의 표를 신뢰하지 않는다.
                     let target = primary_font_name(&style.font_families[lang]);
