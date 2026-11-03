@@ -3374,14 +3374,19 @@ pub(crate) fn inline_control_occupied_size_hwp_with_storage<S: crate::storage::S
             return Ok(None);
         };
         if let Control::Table(table) = control {
-            // 편집으로 셀 내용이 선언 높이를 넘으면 실제 표 배치도 행 높이를 키운다.
-            // 같은 측정기를 소비하여 작은 선언값으로 본문 줄 높이를 과소 발행하지 않는다.
+            // 줄은 실제로 그리는 표를 담는다. 편집으로 셀 내용이 선언 높이를 넘으면 행이
+            // 자라고, 행 합이 선언보다 작으면 한/글은 그 행 높이로 그리고 다음 줄을 잇는다
+            // (선언 8160HU·행 합 7536HU 결재문서 표, 한/글 2020 Print). 선언값으로 줄을
+            // 발행하면 뒤 내용이 그 차이만큼 내려간다.
             let measured = crate::renderer::height_measurer::HeightMeasurer::new(dpi)
                 .with_session_edited(true)
                 .measure_table_with_storage(table, 0, 0, styles, storage)?;
             // 위/아래 캡션도 인라인 개체가 소유하는 물리 상자다. 표 본체만
             // 발행하면 캡션 글줄에 다음 개체가 놓이고 저장 줄도 그 높이로 굳는다.
-            height = height.max(px_to_hwpunit(measured.total_height, dpi));
+            let measured_hu = (measured.total_height * 7200.0 / dpi).round() as i32;
+            if measured_hu > 0 {
+                height = measured_hu;
+            }
             width = width
                 .saturating_add(i32::from(table.outer_margin_left))
                 .saturating_add(i32::from(table.outer_margin_right));
@@ -5808,22 +5813,33 @@ fn try_reflow_line_segs_impl<S: Storage>(
                 })
                 .filter_map(|(start, ctrl)| {
                     inline_control_occupied_size_hwp(ctrl, styles, dpi)
-                        .map(|occupied| (start, occupied))
+                        .map(|occupied| (start, Some(occupied)))
+                        .or_else(|| matches!(ctrl, Control::Field(_)).then_some((start, None)))
                 }),
         )?;
-        if !inline_sizes.is_empty() {
+        if inline_sizes.iter().any(|(_, occupied)| occupied.is_some()) {
             let max_line_width = seg_width_hwp.max(1);
             let mut line_specs: Vec<(u32, i32, i32)> = Vec::new();
             let mut line_start = 0u32;
             let mut line_width = 0i32;
             let mut line_height = 0i32;
+            // [#8507] 필드 시작(누름틀 등)은 폭이 없어도 줄의 내용이다. 한/글 2020 은 그 뒤
+            // 글자처럼 취급 개체가 남은 폭에 들지 않으면 개체를 다음 줄로 넘기고 필드 줄을
+            // 글자 높이의 빈 줄로 남긴다(합성 field_over19: 표 바깥 폭이 줄보다 19HU 넓으면
+            // 표가 160%·10pt 빈 줄 1600HU 만큼 아래). 줄 맨 앞 개체는 넘쳐도 그 줄에 둔다.
+            let mut line_has_field = false;
 
-            for (utf16_start, (ctrl_width, ctrl_height)) in inline_sizes.iter().copied() {
-                if line_width > 0 && line_width + ctrl_width > max_line_width {
+            for (utf16_start, occupied) in inline_sizes.iter().copied() {
+                let Some((ctrl_width, ctrl_height)) = occupied else {
+                    line_has_field = true;
+                    continue;
+                };
+                if (line_width > 0 || line_has_field) && line_width + ctrl_width > max_line_width {
                     storage.push(&mut line_specs, (line_start, line_width, line_height))?;
                     line_start = utf16_start;
                     line_width = 0;
                     line_height = 0;
+                    line_has_field = false;
                 }
                 line_width += ctrl_width;
                 line_height = line_height.max(ctrl_height);

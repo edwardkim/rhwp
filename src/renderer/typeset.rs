@@ -4450,6 +4450,10 @@ impl TypesetEngine {
         } else if st.profile.hangul2024_layout()
             && tac_seg_idx > 0
             && tac_seg_idx < fmt.line_heights.len()
+            // [#8507] 필드 시작 뒤로 넘긴 표의 빈 필드 줄은 한/글 2024 도 쌓는다(합성
+            // field_over19·field_over1414 의 2020·2024 Print 래스터 동일). 줄 재조판이 정한
+            // 개체 줄은 저장 재저장본의 앞 앵커 줄 회수 대상이 아니다.
+            && !crate::renderer::para_has_composed_object_rows(para)
         {
             // [compat 2024] 한글 2024 는 자리차지 표 앵커 문단의 선행 앵커 줄
             // 세그먼트를 흐름에 계상하지 않는다 — 2022 재저장본은 앵커 문단

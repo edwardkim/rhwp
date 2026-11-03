@@ -759,23 +759,9 @@ impl TypesetEngine {
                 let first_footer_of_host = !para.controls[..ctrl_idx].iter().any(|control| {
                     matches!(control, Control::Table(t) if is_page_bottom_fixed_float(&t.common))
                 });
-                // 이 쪽에 저장 줄 없이 rhwp 가 줄을 합성한 문단이 있으면 흐름은 낡은 저장 사다리를
-                // 따른다. 한/글은 인쇄 때 그 문단부터 다시 흘리므로(36348992: 합성 표 줄 뒤 저장
-                // vpos 가 선언 높이 기준, 한/글은 그린 높이로 17px 위) 이 흐름 좌표로는 판정하지 않는다.
-                // 이 제한으로 결재문서 1482건 A/B 는 고침 36·회귀 0 이다(제한 없이 46·1). 합성 줄
-                // 쪽의 분할 10건은 사다리 재계산 정책(#1920/#2279)과 함께 다룬다.
-                let page_flow_follows_stored_ladder = !st
-                    .current_items
-                    .iter()
-                    .filter_map(crate::renderer::typeset::page_item_para_index)
-                    .filter_map(|index| paragraphs_all.get(index))
-                    .any(|paragraph| {
-                        paragraph
-                            .line_segs
-                            .iter()
-                            .any(crate::renderer::typeset::is_synthetic_line_seg)
-                    });
-                let host_line_advance = (first_footer_of_host && page_flow_follows_stored_ladder)
+                // 저장 줄 없이 합성한 줄도 그리는 표 높이를 담는다(#8507). 그 문단이 있는 쪽도
+                // 같은 흐름 좌표로 판정한다.
+                let host_line_advance = first_footer_of_host
                     .then(|| crate::renderer::layout::control_line_seg_index(para, ctrl_idx))
                     .flatten()
                     .and_then(|line| para.line_segs.get(line))
