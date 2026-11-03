@@ -1,5 +1,5 @@
 //! 관계형·고정형: 두 편람 전쪽의 내용과 독립 Print 원점·그림 경계를 검사한다.
-//! 주석 갱신: 2026-10-31T18:41:48+09:00; 직전 파일 커밋: 2026-10-30T19:50:11+09:00 (c417310ca).
+//! 주석 갱신: 2026-11-03T20:20:24+09:00; 직전 파일 커밋: 2026-11-03T19:46:04+09:00 (8e4f05c63a).
 //! 원문 기준점은 run 경계와 무관하게 같은 기준선에서 맞닿은 연속 run 의 글로 대조한다.
 //! 2026-10-30 측정 raw(96dpi, PDFium, 2px): HWP·HWPX 1–129·131–383쪽 Native·fresh WASM 각 100.00%,
 //! 130쪽 각 99.96%; 두 원본 전 383쪽 최저 Native·fresh WASM 각 99.96%.
@@ -58,12 +58,15 @@ fn walk<'a>(node: &'a RenderNode, nodes: &mut Vec<&'a RenderNode>) {
 /// 같은 기준선에서 앞 run 의 끝과 뒤 run 의 시작이 맞닿으면 한 글줄 조각이다. run 경계는
 /// 글자 슬롯 분류처럼 출력과 무관한 구현 세부로 바뀔 수 있으므로(`※ 표의…` 가 `※ ` 와
 /// `표의…` 로 나뉘어도 위치는 같다) 조각 안의 연속 run 을 이어 원문과 대조한다.
-/// run 하나가 원문과 같으면 종전 기준 그대로이고, 여러 run 을 이을 때는 원문이 조각의 끝
-/// (뒤에 공백만 남음)까지 이어져야 한다 — 낱말마다 run 이 나뉜 다른 줄의 앞부분이 원문과
-/// 같은 경우를 같은 글로 세지 않는다(241쪽). 공백뿐인 run 은 시작·끝으로 세지 않는다.
+/// 원문 뒤에 구두점이 같은 줄의 다음 run 으로 이어져도 원문 시작점은 변하지 않는다.
+/// 독립 Print 원점·기준선에 있는 조각만 후보로 받아, 앞부분이 같은 다른 줄(241쪽)을
+/// 중복으로 세지 않는다. 공백뿐인 run 은 시작·끝으로 세지 않는다.
 fn text_anchor_runs<'a>(
     nodes: &[&'a RenderNode],
     text: &str,
+    expected_x: f64,
+    expected_baseline: f64,
+    tolerance: f64,
 ) -> Vec<(&'a RenderNode, &'a TextRunNode)> {
     let mut segments: Vec<Vec<(&RenderNode, &TextRunNode)>> = Vec::new();
     for node in nodes {
@@ -89,16 +92,16 @@ fn text_anchor_runs<'a>(
             if segment[start].1.text.trim().is_empty() {
                 continue;
             }
+            let (first_node, first_run) = segment[start];
+            if (first_node.bbox.x - expected_x).abs() > tolerance
+                || (first_node.bbox.y + first_run.baseline - expected_baseline).abs() > tolerance
+            {
+                continue;
+            }
             let mut joined = String::new();
-            for (end, (_, run)) in segment.iter().enumerate().skip(start) {
+            for (_, run) in segment.iter().skip(start) {
                 joined.push_str(&run.text);
-                let rest_blank = segment[end + 1..]
-                    .iter()
-                    .all(|(_, rest)| rest.text.trim().is_empty());
-                if !run.text.trim().is_empty()
-                    && joined.trim() == text
-                    && (end == start || rest_blank)
-                {
+                if !run.text.trim().is_empty() && joined.trim() == text {
                     found.push(segment[start]);
                     break;
                 }
@@ -137,7 +140,7 @@ fn verify(data: &str) {
         let tolerance = if page.page == 130 { 2.0 } else { 1.0 };
         match &page.anchor {
             Anchor::Text { text, x, baseline } => {
-                let runs = text_anchor_runs(&nodes, text);
+                let runs = text_anchor_runs(&nodes, text, *x, *baseline, tolerance);
                 if runs.len() != 1 {
                     errors.push(format!(
                         "{}쪽 원문 누락·중복({}): {text}",
