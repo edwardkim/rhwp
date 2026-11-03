@@ -40,7 +40,7 @@ export const MUTATING_METHODS: readonly string[] = [
   'pasteTableCellsTransposed', 'transposeTableCellsInPlace', 'pasteTableCellsTransposedAsTable',
   'evaluateTableFormula',
   // 그림/도형/수식 개체
-  'insertPicture', 'assignPictureImage', 'setPictureProperties',
+  'insertPicture', 'relocateFloatingPicture', 'assignPictureImage', 'setPictureProperties',
   'setHeaderFooterPictureProperties', 'setCellPicturePropertiesByPath',
   'setCellShapePropertiesByPath', 'deletePictureControl', 'deleteCellPictureControlByPath',
   'createShapeControl', 'setShapeProperties', 'deleteShapeControl', 'changeShapeZOrder',

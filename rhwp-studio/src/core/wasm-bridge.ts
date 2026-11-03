@@ -2479,6 +2479,16 @@ export class WasmBridge {
     ));
   }
 
+  /** 띄운 그림을 다른 문단·셀 문단으로 옮겨 붙인다 (다른 쪽으로 끌어 놓기). 셀 경로 `[]` 는 본문. */
+  relocateFloatingPicture(srcSec: number, srcPara: number, srcCellPathJson: string, srcControl: number,
+                          dstSec: number, dstPara: number, dstCharOffset: number, dstCellPathJson: string,
+                          horzOffset: number, vertOffset: number): { ok: boolean; sec: number; paraIdx: number; controlIdx: number } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).relocateFloatingPicture(
+      srcSec, srcPara, srcCellPathJson, srcControl, dstSec, dstPara, dstCharOffset, dstCellPathJson,
+      horzOffset, vertOffset));
+  }
+
   /**
    * [Task #2230] 기존 Picture 컨트롤에 이미지를 지정한다 — 그림 미지정
    * placeholder(missing image 컨트롤)의 편집 뷰 그림 삽입.
