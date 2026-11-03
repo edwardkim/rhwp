@@ -371,7 +371,10 @@ fn build_table_paragraph(
     let row_sizes: Vec<i16> = (0..row_count_u16).map(|_| col_count_u16 as i16).collect();
 
     // raw_ctrl_data: CommonObjAttr 바이너리 (파서 호환, 38바이트).
-    let flags: u32 = (2 << 3) | (3 << 8) | (4 << 15) | (2 << 18) | (1 << 21);
+    // bit 13: 세로 기준이 문단일 때 개체를 본문 영역 안으로 제한(HWPX `flowWithText="1"`).
+    // 한글 새 표의 기본값이며 `table.attr`(0x082A_2210)에도 켜져 있다. 빠지면 한글이 쪽 끝 표를
+    // 나누지 않고 각주 영역 위에 겹쳐 그린다.
+    let flags: u32 = (2 << 3) | (3 << 8) | (1 << 13) | (4 << 15) | (2 << 18) | (1 << 21);
     let outer_margin: i16 = 283; // ~1mm
     let mut raw_ctrl_data = vec![0u8; 38];
     raw_ctrl_data[common_obj_offsets::FLAGS].copy_from_slice(&flags.to_le_bytes());
@@ -413,6 +416,7 @@ fn build_table_paragraph(
             horz_rel_to: crate::model::shape::HorzRelTo::Para,
             vert_align: crate::model::shape::VertAlign::Top,
             horz_align: crate::model::shape::HorzAlign::Left,
+            flow_with_text: true,
             width: total_width,
             height: total_height,
             instance_id,
