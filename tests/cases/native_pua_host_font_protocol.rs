@@ -8,6 +8,53 @@
 
 use rhwp::document_core::DocumentCore;
 
+#[test]
+fn document_glyph_fallback_remains_bound_to_its_language_slot() {
+    use rhwp::model::style::Font;
+    use rhwp::renderer::font_environment::FontEnvironment;
+
+    assert!(FontEnvironment::from_json(
+        r#"{"id":"bad-slot","substitutions":{},"documentGlyphFallbacks":[{"languageSlot":7,"fontId":0,"source":"Scoped Fixture","faces":["HCR Batang"]}]}"#,
+    ).is_err());
+
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    let mut document = core.document().clone();
+    for fonts in &mut document.doc_info.font_faces {
+        fonts[0] = Font {
+            name: "Scoped Fixture".into(),
+            alt_type: 1,
+            ..Default::default()
+        };
+    }
+    for shape in &mut document.doc_info.char_shapes {
+        shape.font_ids = [0; 7];
+    }
+    core.set_document(document);
+    core.insert_text_native(0, 0, 0, "가A").unwrap();
+    let environment = FontEnvironment::from_json(
+        r#"{"id":"slot-test","substitutions":{},"documentGlyphFallbacks":[{"languageSlot":0,"fontId":0,"source":"Scoped Fixture","faces":["HCR Batang"]}]}"#,
+    ).unwrap();
+    core.set_font_environment(Some(environment)).unwrap();
+    let trace: serde_json::Value = serde_json::from_str(
+        &core
+            .get_font_decision_trace_native(0, r#"{"maxCharacters":16}"#)
+            .unwrap(),
+    )
+    .unwrap();
+    let records = trace["records"].as_array().unwrap();
+    let names = |character: &str| {
+        records
+            .iter()
+            .find(|item| item["source"]["character"] == character)
+            .unwrap()["layoutName"]["cssFamilyChain"]
+            .as_array()
+            .unwrap()
+    };
+    assert!(names("가").iter().any(|name| name == "HCR Batang"));
+    assert!(!names("A").iter().any(|name| name == "HCR Batang"));
+}
+
 #[cfg(feature = "native-skia")]
 #[test]
 fn exact_postscript_source_owns_its_true_type_metrics() {

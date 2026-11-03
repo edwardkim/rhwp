@@ -33,10 +33,22 @@ pub struct FontEnvironment {
     /// 기본 face가 없는 글자만 이 순서로 측정·출력한다. IR에는 저장하지 않는다.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     glyph_fallbacks: BTreeMap<String, Vec<String>>,
+    /// 같은 이름이라도 문서 언어 슬롯이 지정한 보조 글꼴은 다를 수 있다.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    document_glyph_fallbacks: Vec<DocumentGlyphFallback>,
     /// 같은 원본 이름이라도 언어 슬롯/글꼴 레코드가 지정한 프로그램은 다를 수 있다.
     /// 전역 치환으로 합칠 수 없는 선택만 원본 주소와 함께 보존한다.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     document_substitutions: Vec<DocumentFontSubstitution>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct DocumentGlyphFallback {
+    language_slot: usize,
+    font_id: u16,
+    source: String,
+    faces: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -152,6 +164,7 @@ impl FontEnvironment {
             preserve_source_metrics: false,
             document_substitutions: Vec::new(),
             glyph_fallbacks: BTreeMap::new(),
+            document_glyph_fallbacks: Vec::new(),
         });
         for (family, target) in replacements {
             if result.has_source_selection(&family) {
@@ -206,7 +219,7 @@ impl FontEnvironment {
             .collect()
     }
 
-    fn document_requests_with_slots(
+    pub(crate) fn document_requests_with_slots(
         doc_info: &crate::model::document::DocInfo,
     ) -> Vec<(usize, u16, DocumentFontSelectionRequest)> {
         let mut requests = Vec::new();
@@ -466,6 +479,7 @@ impl FontEnvironment {
             true_type_faces: true_type_faces.into_iter().collect(),
             preserve_source_metrics: true,
             glyph_fallbacks: BTreeMap::new(),
+            document_glyph_fallbacks: Vec::new(),
             document_substitutions,
         };
         environment.validate()?;
@@ -677,6 +691,30 @@ impl FontEnvironment {
                 .len()
                 != self.document_substitutions.len()
             || self.glyph_fallbacks.len() > 256
+            || self.document_glyph_fallbacks.len() > 1024
+            || self.document_glyph_fallbacks.iter().any(|item| {
+                item.language_slot >= super::style_resolver::LANG_COUNT
+                    || !Self::valid_name(&item.source)
+                    || item.faces.is_empty()
+                    || item.faces.len() > 16
+                    || item
+                        .faces
+                        .iter()
+                        .any(|face| !Self::valid_name(face) || face == &item.source)
+                    || item
+                        .faces
+                        .iter()
+                        .collect::<std::collections::BTreeSet<_>>()
+                        .len()
+                        != item.faces.len()
+            })
+            || self
+                .document_glyph_fallbacks
+                .iter()
+                .map(|item| (item.language_slot, item.font_id))
+                .collect::<std::collections::BTreeSet<_>>()
+                .len()
+                != self.document_glyph_fallbacks.len()
             || self.glyph_fallbacks.iter().any(|(from, faces)| {
                 !Self::valid_name(from)
                     || faces.is_empty()
@@ -786,5 +824,23 @@ impl FontEnvironment {
 
     pub(crate) fn glyph_fallbacks(&self, face: &str) -> Option<&[String]> {
         self.glyph_fallbacks.get(face).map(Vec::as_slice)
+    }
+
+    pub(crate) fn glyph_fallbacks_for_slot(
+        &self,
+        source: &str,
+        face: &str,
+        language_slot: usize,
+        font_id: u16,
+    ) -> Option<&[String]> {
+        self.document_glyph_fallbacks
+            .iter()
+            .find(|item| {
+                item.language_slot == language_slot
+                    && item.font_id == font_id
+                    && item.source == source
+            })
+            .map(|item| item.faces.as_slice())
+            .or_else(|| self.glyph_fallbacks(face))
     }
 }

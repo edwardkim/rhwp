@@ -182,7 +182,16 @@ pub(crate) fn resolve_styles_with_environment(
                             decision
                                 .normalized_face
                                 .as_deref()
-                                .and_then(|face| env.glyph_fallbacks(face))
+                                .and_then(|face| {
+                                    decision.requested_face.as_deref().and_then(|source| {
+                                        env.glyph_fallbacks_for_slot(
+                                            source,
+                                            face,
+                                            lang,
+                                            shape.font_ids[lang],
+                                        )
+                                    })
+                                })
                                 .is_some()
                         });
                     // 명시적 프로그램 선택과 독립적으로 검증한 글리프 표가 모두 있어야
@@ -1310,7 +1319,11 @@ pub(crate) fn lookup_font_name_in_environment(
             decision
                 .normalized_face
                 .as_deref()
-                .and_then(|face| env.glyph_fallbacks(face))
+                .and_then(|face| {
+                    decision.requested_face.as_deref().and_then(|source| {
+                        env.glyph_fallbacks_for_slot(source, face, lang_index, font_id)
+                    })
+                })
                 .map(|fallbacks| (env, fallbacks))
         }) {
             // 호출자가 검증한 체인은 일반 OS 폴백보다 먼저 사용한다.
