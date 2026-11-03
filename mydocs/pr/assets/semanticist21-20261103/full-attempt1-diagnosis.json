@@ -1,0 +1,11 @@
+{
+  "head": "39b4f81f6aab4cc08c6145ed6911db2a8fe5125e",
+  "runTests": 12464,
+  "passed": 12463,
+  "failed": 1,
+  "ignored": 45,
+  "reason": "samples 전용 환경변수에 tests/fixtures 21개를 전달한 실행 설정 오류",
+  "correction": "신규 samples 없음으로 해당 환경변수를 제거한다. 새 fixture 22개는 같은 세 탐지 정책으로 별도 Native 실제 실행하여 전부 clean이었다.",
+  "classifierSourceChanged": false,
+  "fixtureDetectors": 66
+}

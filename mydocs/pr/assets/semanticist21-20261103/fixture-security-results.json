@@ -1,0 +1,156 @@
+[
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/hancom_rotated/rotated.hwp",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/hancom_rotated/rotated.hwpx",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/hancom_table_grow/grow3-after.hwpx",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/hancom_table_grow/grow3-before.hwpx",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/header_overflow/header-overflow.hwp",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/header_overflow/header-overflow.hwpx",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/nested_wide_clip/nested-wide-hancom.hwpx",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/semanticist21-20261103/forms-before.hwpx",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/semanticist21-20261103/forms-edited.hwpx",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/semanticist21-20261103/grow-nested-unchanged.hwpx",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/semanticist21-20261103/grow-nested.hwpx",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/semanticist21-20261103/no-lineseg-empty.hwpx",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/semanticist21-20261103/no-lineseg-text.hwpx",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/semanticist21-20261103/polygon-270.hwpx",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/semanticist21-20261103/polygon-90.hwpx",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/semanticist21-20261103/polygon-hflip.hwpx",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/semanticist21-20261103/polygon-resize.hwpx",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/semanticist21-20261103/polygon-vflip.hwpx",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/semanticist21-20261103/spacing-after.hwpx",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/semanticist21-20261103/spacing-before.hwpx",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/semanticist21-20261103/spacing.hwpx",
+    "unicodeCount": 0
+  },
+  {
+    "hiddenClean": true,
+    "hiddenCount": 0,
+    "injectionCount": 0,
+    "input": "tests/fixtures/semanticist21-20261103/no-lineseg-wrap.hwpx",
+    "unicodeCount": 0
+  }
+]

@@ -125,3 +125,20 @@ last_verified: 2026-11-03
 현재 단계는 최종 source의 root/WASM/workspace lint, release build/lib, 전체 release-test,
 Native Skia 3종과 fresh optimized WASM·전쪽 재검증이다. 제품 head를 고정한 뒤 공용 target에서 순차 실행한다.
 GitHub CI에 로컬 미실행 항목을 넘기지 않는다. 원격 push·공개 댓글·merge는 수행하지 않았다.
+
+## 전체 검증의 입력 보정과 추가 실제 경계
+
+`39b4f81f6a`에서 세 lint·release build·release lib가 통과했다. 첫 전체 nextest는 12,464건 중
+12,463 PASS와 sample 경로 전제 검사 1건 실패였다. `samples/` 전용 환경변수에 `tests/fixtures/`
+21개를 전달한 실행 설정 오류다. 신규 samples는 없고 탐지기·분류 기준은 바꾸지 않는다.
+같은 세 정책(default hidden text, Low injection/전체 164 MCP 이름·fields, 동일 Unicode 검사)으로
+22개 fixture를 별도 Native 실행해 66회 모두 clean임을 확인했다. 설정을 바로잡은 전체 회귀를 재실행한다.
+
+#8281은 기존 두 검사가 이미 devel에서 통과한 것과, 마지막 그림 단독 줄의 남은 오류를 분리했다.
+공개 API·독립 Print·Native/fresh WASM을 먼저 대조한 뒤 회귀 1건을 추가했다. 대상은 31개 입력·71쪽이며
+새 원본과 Print는 공식 경로에 있다. 독립 Print 22건의 실제 페이지 수와 Native info를 확인해 기존
+쪽수 원장의 samples 밖 명시 등록 방식으로 22행을 추가했다. 기존 행과 기준값은 바꾸지 않았다.
+
+추가 변경은 테스트·증적에 한정되고 `src`와 제품 Cargo 설정은 `39b4f81f6a`와 같다. 해당 head의
+release build/lib 및 제품 lint를 구분해 재사용하며, 새 테스트의 workspace lint와 전체 nextest는 새 head에서 다시 실행한다.
+기존의 실패 실행은 attempt1 기록으로 보존한다.

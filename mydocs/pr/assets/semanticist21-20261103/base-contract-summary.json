@@ -1,0 +1,192 @@
+{
+  "base": "7d06d5c706f1d89f1662e739abf2b1b25d2a98e4",
+  "source": "base-contract-result-3.json + binary --list + complete failure footer",
+  "total": 36,
+  "failed": 23,
+  "counts": {
+    "form_inline_editing": {
+      "failed": 9,
+      "passed": 4
+    },
+    "hancom_table_grow_saves_table_height": {
+      "passed": 3,
+      "failed": 2
+    },
+    "header_overflow_paragraphs_render": {
+      "failed": 1
+    },
+    "hwpx_table_grid_duplicate_ids": {
+      "failed": 5
+    },
+    "nested_wide_table_clip": {
+      "failed": 1,
+      "passed": 1
+    },
+    "no_lineseg_inline_object_caret_anchor": {
+      "passed": 2
+    },
+    "paragraph_spacing_moves_stored_lines": {
+      "passed": 1,
+      "failed": 1
+    },
+    "polygon_transform_roundtrip": {
+      "passed": 1,
+      "failed": 1
+    },
+    "split_row_clip_hit": {
+      "passed": 1
+    },
+    "table_insert_body_flow": {
+      "failed": 1
+    },
+    "table_insert_measurement_ownership": {
+      "failed": 2
+    }
+  },
+  "tests": [
+    {
+      "test": "form_inline_editing::copied_eight_forms_wrap_once_in_body_and_cell_and_reopen_both_formats",
+      "result": "failed"
+    },
+    {
+      "test": "form_inline_editing::copying_a_form_between_unicode_text_keeps_the_neighbouring_text",
+      "result": "passed"
+    },
+    {
+      "test": "form_inline_editing::cross_paragraph_form_invalid_and_empty_ranges_preserve_state_and_clipboard",
+      "result": "failed"
+    },
+    {
+      "test": "form_inline_editing::cross_paragraph_form_metadata_and_mixed_object_guards_run_before_mutation",
+      "result": "passed"
+    },
+    {
+      "test": "form_inline_editing::cross_paragraph_shared_form_boundaries_copy_cut_and_restore_exact_siblings",
+      "result": "failed"
+    },
+    {
+      "test": "form_inline_editing::deleting_form_between_unicode_text_keeps_text_and_reopened_carets",
+      "result": "failed"
+    },
+    {
+      "test": "form_inline_editing::deleting_one_of_shared_position_forms_preserves_others_and_round_trips",
+      "result": "failed"
+    },
+    {
+      "test": "form_inline_editing::floating_forms_do_not_take_an_inline_slot",
+      "result": "passed"
+    },
+    {
+      "test": "form_inline_editing::inline_forms_have_distinct_carets_and_copy_the_selected_control",
+      "result": "failed"
+    },
+    {
+      "test": "form_inline_editing::invalid_form_copy_keeps_the_previous_clipboard",
+      "result": "failed"
+    },
+    {
+      "test": "form_inline_editing::invalid_form_deletion_keeps_model_events_and_clipboard",
+      "result": "passed"
+    },
+    {
+      "test": "form_inline_editing::radio_outer_bottom_right_edge_remains_visible_on_white_paper",
+      "result": "failed"
+    },
+    {
+      "test": "form_inline_editing::same_position_forms_copy_only_the_selected_logical_slot",
+      "result": "failed"
+    },
+    {
+      "test": "hancom_table_grow_saves_table_height::grown_snapshot_budget_and_cancellation_preserve_live_content_and_fresh_requests_recover",
+      "result": "passed"
+    },
+    {
+      "test": "hancom_table_grow_saves_table_height::grown_table_reopens_with_only_the_overflowing_row_taller",
+      "result": "passed"
+    },
+    {
+      "test": "hancom_table_grow_saves_table_height::nested_save_keeps_unedited_height_and_only_grows_edited_content",
+      "result": "failed"
+    },
+    {
+      "test": "hancom_table_grow_saves_table_height::overflowing_cell_text_saves_the_grown_table_height_and_keeps_cell_heights",
+      "result": "failed"
+    },
+    {
+      "test": "hancom_table_grow_saves_table_height::unchanged_table_keeps_its_saved_height",
+      "result": "passed"
+    },
+    {
+      "test": "header_overflow_paragraphs_render::header_paragraph_past_the_header_area_is_drawn_over_the_body",
+      "result": "failed"
+    },
+    {
+      "test": "hwpx_table_grid_duplicate_ids::cancelled_grid_save_keeps_live_model_and_a_new_request_recovers",
+      "result": "failed"
+    },
+    {
+      "test": "hwpx_table_grid_duplicate_ids::duplicate_grid_export_obeys_request_budget_preserves_live_ir_and_recovers",
+      "result": "failed"
+    },
+    {
+      "test": "hwpx_table_grid_duplicate_ids::duplicate_table_ids_keep_empty_logical_rows_in_hwpx",
+      "result": "failed"
+    },
+    {
+      "test": "hwpx_table_grid_duplicate_ids::reassignment_preserves_later_original_ids_and_nested_grids",
+      "result": "failed"
+    },
+    {
+      "test": "hwpx_table_grid_duplicate_ids::zero_ids_are_separated_only_where_row_metadata_needs_identity",
+      "result": "failed"
+    },
+    {
+      "test": "nested_wide_table_clip::nested_wide_table_is_clipped_at_its_host_and_clipped_cells_are_not_clickable",
+      "result": "failed"
+    },
+    {
+      "test": "nested_wide_table_clip::nested_wide_tables_keep_declared_widths_through_save",
+      "result": "passed"
+    },
+    {
+      "test": "no_lineseg_inline_object_caret_anchor::empty_inline_picture_paragraph_keeps_end_anchor_after_hwpx_without_line_cache",
+      "result": "passed"
+    },
+    {
+      "test": "no_lineseg_inline_object_caret_anchor::text_after_inline_picture_keeps_stored_line_char_start_without_line_cache",
+      "result": "passed"
+    },
+    {
+      "test": "paragraph_spacing_moves_stored_lines::spacing_after_moves_only_successors_and_snapshot_undo_redo_restores_both",
+      "result": "passed"
+    },
+    {
+      "test": "paragraph_spacing_moves_stored_lines::spacing_before_moves_the_paragraph_and_its_successor",
+      "result": "failed"
+    },
+    {
+      "test": "polygon_transform_roundtrip::hancom_rotated_shapes_keep_their_centre_after_save_and_reopen",
+      "result": "passed"
+    },
+    {
+      "test": "polygon_transform_roundtrip::transformed_polygon_keeps_live_position_after_save_and_reopen",
+      "result": "failed"
+    },
+    {
+      "test": "split_row_clip_hit::split_row_visible_lines_keep_content_and_hit_ownership",
+      "result": "passed"
+    },
+    {
+      "test": "table_insert_body_flow::inserted_summary_keeps_existing_body_flow_live_and_after_reopen",
+      "result": "failed"
+    },
+    {
+      "test": "table_insert_measurement_ownership::a_new_table_after_a_table_does_not_inherit_the_next_tables_height",
+      "result": "failed"
+    },
+    {
+      "test": "table_insert_measurement_ownership::inserting_into_an_empty_host_keeps_each_existing_tables_own_height",
+      "result": "failed"
+    }
+  ]
+}

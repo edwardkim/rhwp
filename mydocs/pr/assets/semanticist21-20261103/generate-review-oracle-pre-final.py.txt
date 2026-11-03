@@ -1,0 +1,17 @@
+from pathlib import Path
+import subprocess,json,time,hashlib,os
+import pypdfium2
+root=Path('/home/edward/mygithub/rhwp');out=root/'output/pr-review/semanticist21-20261103'
+stage={'head':'39b4f81f6aab4cc08c6145ed6911db2a8fe5125e'}
+binary=root/'target/pr-review/release/rhwp'
+records=json.loads((root/'pdf/semanticist21-20261103/print-provenance.json').read_text())['records'];rows={};evidence=[]
+for rec in records:
+ src=root/rec['input'];pdf=root/rec['pdfPath']
+ assert hashlib.sha256(src.read_bytes()).hexdigest()==rec['inputSha256']
+ assert hashlib.sha256(pdf.read_bytes()).hexdigest()==rec['pdfSha256']
+ with pypdfium2.PdfDocument(str(pdf)) as d:expected=len(d)
+ assert expected==rec['pages']
+ cmd=[str(binary),'info',str(src),'--json'];d=json.loads(subprocess.check_output(cmd,cwd=root,text=True));assert not d['printMethodImpliesNup'];got=d['pageCount'];assert got==expected,(src,got,expected)
+ rows[rec['input']]=(expected,got);evidence.append(dict(input=rec['input'],inputSha256=rec['inputSha256'],pdf=rec['pdfPath'],pdfSha256=rec['pdfSha256'],independentPages=expected,actualPages=got,info=d,command=cmd,sourceProductHead=stage['head']))
+(out/'review-oracle-rows-pre-final.tsv').write_text('\n'.join(f'{p}\t{v[0]}\t{v[1]}' for p,v in sorted(rows.items()))+'\n')
+(out/'review-oracle-evidence-pre-final.json').write_text(json.dumps(evidence,ensure_ascii=False,indent=2));print('verified mapped oracle rows',len(rows),flush=True)

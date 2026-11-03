@@ -32,7 +32,17 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "scripts_disabled"
+      "preprocess": "scripts_disabled",
+      "observedSourceMetadata": {
+        "lastSavedWith": {
+          "confidence": "metadata",
+          "product": "hancom-office-2020",
+          "version": "11.0.0.2129"
+        },
+        "formatVersion": "5.1.0.1",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      }
     },
     {
       "input": "tests/fixtures/header_overflow/header-overflow.hwpx",
@@ -64,7 +74,17 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "none"
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": {
+          "confidence": "metadata",
+          "product": "hancom-office-2020",
+          "version": "11.0.0.3524"
+        },
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      }
     },
     {
       "input": "tests/fixtures/hancom_rotated/rotated.hwp",
@@ -92,7 +112,13 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "scripts_disabled"
+      "preprocess": "scripts_disabled",
+      "observedSourceMetadata": {
+        "lastSavedWith": null,
+        "formatVersion": "5.1.1.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      }
     },
     {
       "input": "tests/fixtures/hancom_rotated/rotated.hwpx",
@@ -120,7 +146,13 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "none"
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": null,
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      }
     },
     {
       "input": "tests/fixtures/hancom_table_grow/grow3-before.hwpx",
@@ -148,7 +180,13 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "none"
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": null,
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      }
     },
     {
       "input": "tests/fixtures/hancom_table_grow/grow3-after.hwpx",
@@ -176,7 +214,13 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "none"
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": null,
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      }
     },
     {
       "input": "tests/fixtures/nested_wide_clip/nested-wide-hancom.hwpx",
@@ -204,7 +248,13 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "none"
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": null,
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      }
     },
     {
       "input": "tests/fixtures/semanticist21-20261103/polygon-90.hwpx",
@@ -232,7 +282,19 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "none"
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": {
+          "confidence": "metadata",
+          "product": "hancom-office-2020",
+          "version": "11.0.0.3524"
+        },
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      },
+      "generator": "RHWP 공개 편집 API",
+      "sourceMetadataNote": "모델 생성자의 기본 저장 제품 metadata와 실제 작성기를 구분한다. 생성 상태의 검증 엔진 2024를 명시 선택했다."
     },
     {
       "input": "tests/fixtures/semanticist21-20261103/polygon-270.hwpx",
@@ -260,7 +322,19 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "none"
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": {
+          "confidence": "metadata",
+          "product": "hancom-office-2020",
+          "version": "11.0.0.3524"
+        },
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      },
+      "generator": "RHWP 공개 편집 API",
+      "sourceMetadataNote": "모델 생성자의 기본 저장 제품 metadata와 실제 작성기를 구분한다. 생성 상태의 검증 엔진 2024를 명시 선택했다."
     },
     {
       "input": "tests/fixtures/semanticist21-20261103/polygon-hflip.hwpx",
@@ -288,7 +362,19 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "none"
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": {
+          "confidence": "metadata",
+          "product": "hancom-office-2020",
+          "version": "11.0.0.3524"
+        },
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      },
+      "generator": "RHWP 공개 편집 API",
+      "sourceMetadataNote": "모델 생성자의 기본 저장 제품 metadata와 실제 작성기를 구분한다. 생성 상태의 검증 엔진 2024를 명시 선택했다."
     },
     {
       "input": "tests/fixtures/semanticist21-20261103/polygon-vflip.hwpx",
@@ -316,7 +402,19 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "none"
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": {
+          "confidence": "metadata",
+          "product": "hancom-office-2020",
+          "version": "11.0.0.3524"
+        },
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      },
+      "generator": "RHWP 공개 편집 API",
+      "sourceMetadataNote": "모델 생성자의 기본 저장 제품 metadata와 실제 작성기를 구분한다. 생성 상태의 검증 엔진 2024를 명시 선택했다."
     },
     {
       "input": "tests/fixtures/semanticist21-20261103/polygon-resize.hwpx",
@@ -344,7 +442,19 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "none"
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": {
+          "confidence": "metadata",
+          "product": "hancom-office-2020",
+          "version": "11.0.0.3524"
+        },
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      },
+      "generator": "RHWP 공개 편집 API",
+      "sourceMetadataNote": "모델 생성자의 기본 저장 제품 metadata와 실제 작성기를 구분한다. 생성 상태의 검증 엔진 2024를 명시 선택했다."
     },
     {
       "input": "tests/fixtures/semanticist21-20261103/spacing.hwpx",
@@ -372,7 +482,19 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "none"
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": {
+          "confidence": "metadata",
+          "product": "hancom-office-2020",
+          "version": "11.0.0.3524"
+        },
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      },
+      "generator": "RHWP 공개 편집 API",
+      "sourceMetadataNote": "모델 생성자의 기본 저장 제품 metadata와 실제 작성기를 구분한다. 생성 상태의 검증 엔진 2024를 명시 선택했다."
     },
     {
       "input": "tests/fixtures/semanticist21-20261103/grow-nested.hwpx",
@@ -400,7 +522,15 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "none"
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": null,
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      },
+      "generator": "RHWP 공개 편집 API",
+      "sourceMetadataNote": "모델 생성자의 기본 저장 제품 metadata와 실제 작성기를 구분한다. 생성 상태의 검증 엔진 2024를 명시 선택했다."
     },
     {
       "input": "tests/fixtures/semanticist21-20261103/grow-nested-unchanged.hwpx",
@@ -428,7 +558,15 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "none"
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": null,
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      },
+      "generator": "RHWP 공개 편집 API",
+      "sourceMetadataNote": "모델 생성자의 기본 저장 제품 metadata와 실제 작성기를 구분한다. 생성 상태의 검증 엔진 2024를 명시 선택했다."
     },
     {
       "input": "tests/fixtures/semanticist21-20261103/spacing-before.hwpx",
@@ -456,7 +594,19 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "none"
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": {
+          "confidence": "metadata",
+          "product": "hancom-office-2020",
+          "version": "11.0.0.3524"
+        },
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      },
+      "generator": "RHWP 공개 편집 API",
+      "sourceMetadataNote": "모델 생성자의 기본 저장 제품 metadata와 실제 작성기를 구분한다. 생성 상태의 검증 엔진 2024를 명시 선택했다."
     },
     {
       "input": "tests/fixtures/semanticist21-20261103/forms-before.hwpx",
@@ -484,7 +634,19 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "none"
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": {
+          "confidence": "metadata",
+          "product": "hancom-office-2020",
+          "version": "11.0.0.3524"
+        },
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      },
+      "generator": "RHWP 공개 편집 API",
+      "sourceMetadataNote": "모델 생성자의 기본 저장 제품 metadata와 실제 작성기를 구분한다. 생성 상태의 검증 엔진 2024를 명시 선택했다."
     },
     {
       "input": "tests/fixtures/semanticist21-20261103/forms-edited.hwpx",
@@ -512,7 +674,19 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "none"
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": {
+          "confidence": "metadata",
+          "product": "hancom-office-2020",
+          "version": "11.0.0.3524"
+        },
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      },
+      "generator": "RHWP 공개 편집 API",
+      "sourceMetadataNote": "모델 생성자의 기본 저장 제품 metadata와 실제 작성기를 구분한다. 생성 상태의 검증 엔진 2024를 명시 선택했다."
     },
     {
       "input": "tests/fixtures/semanticist21-20261103/no-lineseg-empty.hwpx",
@@ -540,7 +714,19 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "none"
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": {
+          "confidence": "metadata",
+          "product": "hancom-office-2020",
+          "version": "11.0.0.3524"
+        },
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      },
+      "generator": "RHWP 공개 편집 API",
+      "sourceMetadataNote": "모델 생성자의 기본 저장 제품 metadata와 실제 작성기를 구분한다. 생성 상태의 검증 엔진 2024를 명시 선택했다."
     },
     {
       "input": "tests/fixtures/semanticist21-20261103/no-lineseg-text.hwpx",
@@ -568,7 +754,19 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "none"
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": {
+          "confidence": "metadata",
+          "product": "hancom-office-2020",
+          "version": "11.0.0.3524"
+        },
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      },
+      "generator": "RHWP 공개 편집 API",
+      "sourceMetadataNote": "모델 생성자의 기본 저장 제품 metadata와 실제 작성기를 구분한다. 생성 상태의 검증 엔진 2024를 명시 선택했다."
     },
     {
       "input": "tests/fixtures/semanticist21-20261103/spacing-after.hwpx",
@@ -596,7 +794,59 @@
         "parent_visibility": "verified",
         "child_visibility": "verified"
       },
-      "preprocess": "none"
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": {
+          "confidence": "metadata",
+          "product": "hancom-office-2020",
+          "version": "11.0.0.3524"
+        },
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      },
+      "generator": "RHWP 공개 편집 API",
+      "sourceMetadataNote": "모델 생성자의 기본 저장 제품 metadata와 실제 작성기를 구분한다. 생성 상태의 검증 엔진 2024를 명시 선택했다."
+    },
+    {
+      "input": "tests/fixtures/semanticist21-20261103/no-lineseg-wrap.hwpx",
+      "inputSha256": "e17ce3b14c21242843db591bd6d728a4869e4480186ce8642b77aea52314ce32",
+      "inputBytes": 8836,
+      "lastSavedWith": null,
+      "engine": "2024",
+      "engineSelectionEvidence": "RHWP 공개 API로 만든 마지막 그림 단독 줄 상태를 명시한 한컴 2024 환경에서 비교",
+      "jobId": "aadb671f-5d48-4cd0-8141-56cd3a9c8b1e",
+      "hancomVersion": "13.0.0.3901",
+      "pdfPrintMethod": 0,
+      "pdfOutputMode": "frame_print_to_pdf_ex_one_up",
+      "pdfPath": "pdf/semanticist21-20261103/no-lineseg-wrap-2024.pdf",
+      "pdfSha256": "54916301ba810ae25bb51d5141235269ce98f77bf5e6d8bac696aaebad1b5fb6",
+      "pdfBytes": 9194,
+      "pages": 1,
+      "fontScope": {
+        "mode": "session0",
+        "status": "verified",
+        "profile_source": "protected_config",
+        "session_id": 0,
+        "mapped_font_count": 2,
+        "registered_font_count": 2,
+        "failed_font_count": 0,
+        "parent_visibility": "verified",
+        "child_visibility": "verified"
+      },
+      "preprocess": "none",
+      "observedSourceMetadata": {
+        "lastSavedWith": {
+          "confidence": "metadata",
+          "product": "hancom-office-2020",
+          "version": "11.0.0.3524"
+        },
+        "formatVersion": "5.1.0.0",
+        "printMethod": null,
+        "printMethodImpliesNup": false
+      },
+      "generator": "RHWP 공개 편집 API",
+      "sourceMetadataNote": "모델 생성자의 기본 저장 제품 metadata와 실제 작성기를 구분한다. 생성 상태의 검증 엔진 2024를 명시 선택했다."
     }
   ]
 }

@@ -1,0 +1,8 @@
+
+running 3 tests
+test cases::empty_inline_picture_paragraph_keeps_end_anchor_after_hwpx_without_line_cache ... ok
+test cases::text_after_inline_picture_keeps_stored_line_char_start_without_line_cache ... ok
+test cases::wrapped_object_only_last_row_keeps_the_paragraph_end_style_and_anchor ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
