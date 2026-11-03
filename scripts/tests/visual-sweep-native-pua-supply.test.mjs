@@ -80,6 +80,19 @@ test('같은 family의 분할 CFF는 표시 후보 순서로 모두 전달한다
   assert.deepEqual(received.map(bytes => bytes[4]), [0, 1]);
   assert.deepEqual(proofs.map(proof => proof.sha256), ['first', 'second']);
 });
+test('같은 family의 CFF 합계가 WASM 한도를 넘으면 공급 가능한 앞 face만 전달한다', async () => {
+  const request = {family: 'Large split', bold: false, italic: false};
+  let received;
+  const owner = {getNativeOtfFontRequests: () => JSON.stringify([request]),
+    prepareNativeOtfFonts(provider) { received = provider(JSON.stringify(request)); }};
+  const fonts = ['first', 'second', 'third'].map(sha256 => ({families: ['Large split'],
+    weight: 400, style: 'normal', sha256, openTypeCff: true}));
+  const bytes = new ArrayBuffer(24 * 1024 * 1024);
+  new DataView(bytes).setUint32(0, 0x4f54544f);
+  const proofs = await prepareHftOtfFonts(owner, fonts, async () => bytes);
+  assert.equal(received.length, 2);
+  assert.deepEqual(proofs.map(proof => proof.sha256), ['first', 'second']);
+});
 test('실제 적재한 face 순서로 PUA 공급을 판단하고 지원하지 않은 주 face 뒤의 fallback을 사용한다',async()=>{
  const oldDoc=globalThis.document,oldFont=globalThis.FontFace;
  const loaded=[];globalThis.document={fonts:new Set()};globalThis.FontFace=class{constructor(family,bytes){this.family=family;loaded.push([family,new Uint8Array(bytes)[0]])}async load(){return this}};
