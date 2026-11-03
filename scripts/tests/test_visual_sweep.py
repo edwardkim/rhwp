@@ -548,6 +548,15 @@ class EmbeddedFontPreflightTests(unittest.TestCase):
             self.assertEqual(args, ['--embed-fonts=full', '--font-path', str(fonts)])
             self.assertEqual(supply['source'], 'macOS_user_fonts')
 
+    def test_inaccessible_macos_user_font_directory_is_not_an_installed_source(self):
+        with (
+            patch.dict(os.environ, {'RHWP_FONT_PATH': ''}),
+            patch.object(SWEEP.platform, 'system', return_value='Darwin'),
+            patch.object(Path, 'home', return_value=Path('/isolated-user')),
+            patch.object(Path, 'is_dir', side_effect=PermissionError('격리된 사용자 글꼴')),
+        ):
+            self.assertEqual(SWEEP.default_sweep_font_paths(), [])
+
     def test_missing_configured_font_directory_fails_before_capture(self):
         with tempfile.TemporaryDirectory() as temp:
             missing = Path(temp) / 'missing-fonts'

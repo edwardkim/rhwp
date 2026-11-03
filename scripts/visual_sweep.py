@@ -641,8 +641,12 @@ def default_sweep_font_paths() -> list[Path]:
         return [Path(value) for value in configured.split(os.pathsep) if value]
     if platform.system() == "Darwin":
         user_fonts = Path.home() / "Library/Fonts"
-        if user_fonts.is_dir():
-            return [user_fonts]
+        try:
+            if user_fonts.is_dir():
+                return [user_fonts]
+        except OSError:
+            # 최소 글꼴 격리에서 읽을 수 없는 경로는 설치 근거가 아니다.
+            pass
     return []
 
 
