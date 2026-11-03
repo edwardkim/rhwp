@@ -3,6 +3,8 @@ pub(crate) mod bin_data_prune;
 mod border_paint_bands;
 pub(crate) mod border_paint_edit;
 mod border_paint_structure;
+// 한/글 글머리표·그림 글머리표 사용자 정의 모양.
+mod bullet_create;
 mod clipboard;
 mod clone_identity;
 // [#5769] 삭제의 참 역연산 — 조각 저장소. DeleteFragment 타입이 DocumentCore

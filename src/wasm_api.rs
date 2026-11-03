@@ -8289,6 +8289,30 @@ impl HwpDocument {
         self.core.document.doc_info.numberings.len() as u16
     }
 
+    /// 글머리표 정의를 새로 만든다(한/글 '글머리표/그림 글머리표 사용자 정의 모양').
+    ///
+    /// json: {"char":"❏","align":1,"useInstWidth":false,"autoIndent":false,"widthAdjust":1000,
+    /// "textOffset":70,"charShape":{"fontSize":0,"bold":true,"baseCharShapeId":0}}. 빠진 값은 한/글
+    /// 기본 머리 모양(왼쪽·자동 내어쓰기·본문과의 간격 50%)이고, charShape가 없으면 본문 글자 모양을
+    /// 따른다. imageData(와 extension, 예: "png")를 주면 그 그림을 넣어 그림 글머리표로 만든다.
+    /// 반환값: Bullet ID (1-based)
+    #[wasm_bindgen(js_name = createBullet)]
+    pub fn create_bullet(
+        &mut self,
+        json: &str,
+        image_data: Option<Vec<u8>>,
+        extension: Option<String>,
+    ) -> Result<u16, JsValue> {
+        let image = match (&image_data, &extension) {
+            (Some(bytes), Some(extension)) => Some((bytes.as_slice(), extension.as_str())),
+            (None, None) => None,
+            _ => return Err(JsValue::from_str("그림과 확장자를 함께 주어야 함")),
+        };
+        self.core
+            .create_bullet_native(json, image)
+            .map_err(|e| e.into())
+    }
+
     /// 특정 문자의 글머리표 정의가 없으면 생성한다.
     ///
     /// 반환값: Bullet ID (1-based)
