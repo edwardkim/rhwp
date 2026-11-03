@@ -844,8 +844,8 @@ rhwp 를 **실제 MCP 서버**로 실행한다. 전송은 MCP 표준 stdio(줄 �
 - 의존성 추가 없음 — 프로토콜 표면이 좁아 serde_json 만으로 구현했고, WASM 대상에는
   포함되지 않는다.
 
-### `info <파일> [--json]`
-HWP 파일 정보 표시(버전/구역 수/암호화 등).
+### `info <파일> [--json|--font-plan]`
+HWP/HWPX/HML 파일 정보 표시(버전/구역 수/암호화 등).
 - `--json` (#3237): stdout 에 순수 JSON 하나 —
   `{"schemaVersion":"1.0","source","format":"hwp5|hwpx|hwp3|hml","sizeBytes","version","sections","pageCount","paraCount","fonts","title","lastSavedWith","warnings"}`.
   `version` 은 HML 이면 null. `lastSavedWith`는 HWP5 `HwpSummaryInformation.revisionNumber` 또는
@@ -855,6 +855,17 @@ HWP 파일 정보 표시(버전/구역 수/암호화 등).
   HWP3, 메타데이터 없음·손상은 `lastSavedWith:null`이다. 원 작성 제품의 증명이 아니며,
   재저장·삭제·변조될 수 있다. 스키마 계약은
   `export-text --json` 항목과 동일 규칙.
+- `--font-plan`: 문서에 선언된 글꼴 선택 후보를 stdout에 JSON으로 출력한다.
+  `requests`는 원본 이름(`source`)과 주 글꼴(`primary`), 문서 지정 대체 글꼴
+  (`substitute`) 후보이며, `scopedRequests`는 같은 후보에 언어 슬롯(`languageSlot`)과
+  글꼴 레코드 번호(`fontId`)를 함께 기록한다. `embeddedFamilies`는 문서 내장 글꼴
+  이름, `environmentId`는 명시한 글꼴 환경의 식별자 또는 null이다.
+  후보 목록은 실제 설치·다운로드·렌더링에 선택된 글꼴을 보증하지 않는다.
+  `--json`과 함께 지정하면 `--font-plan` 출력이 우선한다.
+
+```bash
+rhwp info input.hwpx --font-plan | jq '.scopedRequests'
+```
 
 ### `word-count <파일> [--json]` (#4999)
 IR 본문에서 구역·문단·글자·어절·쪽 수를 센다. 새 파서는 없다.

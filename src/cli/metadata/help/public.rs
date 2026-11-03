@@ -298,10 +298,11 @@ pub(super) fn print() {
     println!("                              (생략 시 base64 data URI로 XML에 인라인)");
     println!("      --json                  산출 봉투를 stdout 에 JSON 으로 출력");
     println!();
-    println!("  info <파일.hwp|파일.hwpx|파일.hml> [--json]");
+    println!("  info <파일.hwp|파일.hwpx|파일.hml> [--json|--font-plan]");
     println!("      HWP/HWPX/HML 문서 정보 표시");
     println!();
     println!("      --json                  문서 정보를 JSON으로 stdout에 출력");
+    println!("      --font-plan             내장 폰트와 원본·대체 글꼴 후보를 JSON으로 출력");
     println!();
     println!("  word-count <파일.hwp|파일.hwpx|파일.hml> [--json]");
     println!("      구역·문단·글자·어절·쪽 수를 IR 본문에서 센다");
