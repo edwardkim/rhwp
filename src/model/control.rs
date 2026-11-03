@@ -81,6 +81,26 @@ pub enum Control {
 }
 
 impl Control {
+    /// 머리말·꼬리말의 문단 목록. 셀 경로는 이 컨트롤을 글상자처럼 셀 0 하나로 지나간다.
+    pub fn header_footer_paragraphs(&self) -> Option<&Vec<crate::model::paragraph::Paragraph>> {
+        match self {
+            Control::Header(header) => Some(&header.paragraphs),
+            Control::Footer(footer) => Some(&footer.paragraphs),
+            _ => None,
+        }
+    }
+
+    /// [`Control::header_footer_paragraphs`]의 가변 짝.
+    pub fn header_footer_paragraphs_mut(
+        &mut self,
+    ) -> Option<&mut Vec<crate::model::paragraph::Paragraph>> {
+        match self {
+            Control::Header(header) => Some(&mut header.paragraphs),
+            Control::Footer(footer) => Some(&mut footer.paragraphs),
+            _ => None,
+        }
+    }
+
     /// 개체가 글자처럼 취급(treat_as_char)되는가.
     ///
     /// 텍스트 흐름 안에서 한 글자 폭을 차지하는 개체 판정의 기반이다.
