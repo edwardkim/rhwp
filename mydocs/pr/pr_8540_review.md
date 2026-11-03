@@ -42,6 +42,14 @@ GitHub 원 PR의 승인·닫기를 뜻하지 않습니다.
 `0884eafc7b2c34fae20a765109ff314514175e4b`에서 빌드했습니다. #8540 체리픽 뒤
 최종 source 전체 재검증 결과를 별도로 연결한 뒤 판정을 갱신합니다.
 
+2026-11-04에 최종 제품 코드 `dc87f4fa2e`의 Native Skia 실행 파일
+(`24c7e929b04c14adc46fbcc80b384e74fffd5524bdd2484068ebe6e974952337`)로
+A/B를 같은 Print PDF·96 DPI에서 다시 출력했습니다. 두 문서 모두 1/1쪽, raw 100.00%입니다.
+기존 `0884eafc7b2c` 실행의 Native PNG와 PDF PNG가 각각 바이트 단위로 일치해
+위 Native review/overlay를 재사용합니다.
+[출력별 SHA 대조](assets/issue_8540/current-native-output-sha.tsv)에 재출력과 재사용 근거를 남겼습니다.
+최종 제품의 fresh WASM 전쪽 대조와 전체 회귀 결과는 완료 후 추가합니다.
+
 ## 시각 증적과 직접 판독
 
 | 문서 | Native review / overlay | fresh WASM review / overlay | 직접 판독 |

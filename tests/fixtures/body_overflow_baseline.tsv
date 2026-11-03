@@ -209,6 +209,7 @@ issue8462/156633674-offpage-logo.hwpx	1
 # #8470 fixture — **의도된 넘침**이다. 세로쓰기 칸이 있는 표는 한/글이 나누지 않고 통째로 그려
 # 본문보다 긴 표가 본문 바닥 아래로 나간다. 한/글 2020 Print 정본 pdf/issue8470/vertical_oversize-2020.pdf
 # 5쪽 V3 표도 본문 바닥(1009.1px) 아래 1021px 까지 그린다. 쪽 소속은 issue_8470_vertical_cell_table_no_split.rs 가 잠근다.
+issue8470/42565_입법예고문.hwp	5
 issue8470/vertical_oversize.hwpx	1
 # #8471 fixture — **의도된 넘침**이다. 본문보다 긴 「나누지 않음」 표 N1·N2(40행)는 한/글도 나누지 않고
 # 본문 바닥(1009.1px) 아래 약 1119px 까지 그린다(정본 pdf/issue8471/pushed_none-2020.pdf 3·5쪽). 각 1건.
