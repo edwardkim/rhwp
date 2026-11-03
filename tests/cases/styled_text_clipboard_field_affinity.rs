@@ -1,4 +1,8 @@
-//! 순수 서식 글 조각은 일반 입력의 누름틀 소속과 논리 주석 슬롯을 따른다.
+//! 관계형: 합성 서식 글의 필드·주석·원본 서식과 저장 왕복 보존.
+//! 주석 갱신: 2026-11-03T10:41:33+09:00. 직전 파일 변경: 2026-10-24T00:09:19+09:00, e386f9b7a4ec1729f4f3e8fe9437902da5748810.
+//! 입력은 메모리에서 생성한 API/저장 계약이며 독립 Print의 실물 px 좌표나 golden을 고정하지 않는다.
+//! 시각 raw 측정은 이 합성 API 검사에 비해당이다. 실제 조판 변경의 별도 전쪽 검증은
+//! mydocs/pr/pr_8187_review.md 및 assets/pr8187/의 Native/fresh WASM 증거를 따른다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;

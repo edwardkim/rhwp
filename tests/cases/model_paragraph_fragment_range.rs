@@ -1,4 +1,11 @@
-//! 저장 rowspan 조각이 원본 문단 범위를 RenderTree와 LayerTree에 그대로 전달한다.
+//! 관계형: 저장 rowspan 조각의 문단 소유·닫힌 경계·첫 프레임과 이어받는 높이 보존.
+//! 주석 갱신: 2026-11-03T10:52:42+09:00. 직전 파일 변경: 2026-10-24T00:09:19+09:00, e386f9b7a4ec1729f4f3e8fe9437902da5748810.
+//! 측정일 2026-11-03, silhouette_raw_match_percent, 96dpi·2px, 독립 Print·compat 2022.
+//! kps-ai.hwp 전77쪽: Native 최저 96.38238%, fresh WASM 최저 96.51991%, 미달/누락0.
+//! 65쪽 Native 99.35691% / WASM 99.33451%; 66쪽 Native 99.99427% / WASM 99.99510%.
+//! 증거: mydocs/pr/assets/pr8187/final/{native,wasm}/kps-ai/silhouette.tsv,
+//! mydocs/pr/assets/pr8187/final-visual-summary.json 및 mydocs/pr/pr_8187_review.md.
+//! 실제 셀·테두리의 포함 관계와 원본 HWPUNIT 높이를 검사하며 절대 화면 좌표를 고정하지 않는다.
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -160,5 +167,100 @@ fn stored_rowspan_fragments_preserve_source_paragraph_ranges_and_contents() {
         serde_json::to_value(&source_cell(&doc).paragraphs).expect("조판 후 문단 직렬화"),
         before,
         "읽기 전용 조판과 layer 변환은 원본 Paragraph의 서식·컨트롤·저장 줄 정보를 변경하지 않는다"
+    );
+}
+
+fn table_containing_label(node: &RenderNode) -> Option<&RenderNode> {
+    if matches!(node.node_type, RenderNodeType::Table(_))
+        && node.children.iter().any(|child| {
+            matches!(&child.node_type, RenderNodeType::TableCell(cell) if target_cell(cell))
+        })
+    {
+        return Some(node);
+    }
+    node.children.iter().find_map(table_containing_label)
+}
+
+fn frame_ruling(table: &RenderNode, cell: &RenderNode, top: bool) -> bool {
+    let edge_y = cell.bbox.y + if top { 0.0 } else { cell.bbox.height };
+    table.children.iter().any(|child| {
+        let RenderNodeType::Line(line) = &child.node_type else {
+            return false;
+        };
+        (line.y1 - line.y2).abs() < f64::EPSILON
+            && (line.y1 - edge_y).abs() <= 2.0
+            && line.x1.min(line.x2) <= cell.bbox.x + 2.0
+            && line.x1.max(line.x2) >= cell.bbox.x + cell.bbox.width - 2.0
+    })
+}
+
+fn outer_fragment(node: &RenderNode) -> Option<&RenderNode> {
+    if matches!(&node.node_type, RenderNodeType::Table(table)
+        if table.para_index == Some(674) && table.control_index == Some(0))
+    {
+        return Some(node);
+    }
+    node.children.iter().find_map(outer_fragment)
+}
+
+#[test]
+fn first_frame_and_continuation_share_stored_height_and_closed_cell_boundaries() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("rhwp-studio/public/samples/kps-ai.hwp");
+    let doc = DocumentCore::from_bytes(&fs::read(path).unwrap()).unwrap();
+    let Control::Table(outer) = &doc.document().sections[0].paragraphs[674].controls[0] else {
+        unreachable!();
+    };
+    let Control::Table(inner) = &outer.cells[2].paragraphs[0].controls[1] else {
+        unreachable!();
+    };
+    let first = doc.build_page_render_tree(64).unwrap();
+    let next = doc.build_page_render_tree(65).unwrap();
+    let first_table = table_containing_label(&first.root).unwrap();
+    let next_table = table_containing_label(&next.root).unwrap();
+    let mut first_cells = Vec::new();
+    let mut next_cells = Vec::new();
+    render_cells(first_table, &mut first_cells);
+    render_cells(next_table, &mut next_cells);
+    let first_label = first_cells[0];
+    let next_label = next_cells[0];
+    let unit = rhwp::renderer::DEFAULT_DPI / 7200.0;
+    assert!(
+        (first_table.bbox.height - f64::from(inner.common.height) * unit).abs() <= unit,
+        "첫 물리 조각은 원본에 저장된 첫 프레임 높이를 소비한다"
+    );
+    assert!(
+        (first_label.bbox.height + next_label.bbox.height
+            - f64::from(source_cell(&doc).height) * unit)
+            .abs()
+            <= unit,
+        "앞 조각의 실제 점유를 뺀 나머지를 뒤 조각이 받아 rowspan 높이를 보존한다"
+    );
+    for (table, label) in [(first_table, first_label), (next_table, next_label)] {
+        assert!(
+            frame_ruling(table, label, true),
+            "선택 문단을 담은 셀 조각의 위 테두리"
+        );
+        assert!(frame_ruling(table, label, false), "셀 조각의 아래 테두리");
+    }
+    for root in [&first.root, &next.root] {
+        let table = outer_fragment(root).unwrap();
+        let cell = table.children.iter().find(|child| {
+            matches!(&child.node_type, RenderNodeType::TableCell(cell) if cell.row == 2 && cell.col == 0)
+        }).unwrap();
+        assert!(
+            frame_ruling(table, cell, true),
+            "온전한 자식 행 경계는 부모의 위 프레임을 닫는다"
+        );
+        assert!(
+            frame_ruling(table, cell, false),
+            "온전한 자식 행 경계는 부모의 아래 프레임을 닫는다"
+        );
+    }
+    let following = next_table.children.iter().find(|child| {
+        matches!(&child.node_type, RenderNodeType::TableCell(cell) if cell.row == 24 && cell.col == 0)
+    }).unwrap();
+    assert!(
+        (next_label.bbox.y + next_label.bbox.height - following.bbox.y).abs() <= unit,
+        "이어받은 라벨의 실제 점유 끝에서 다음 내용이 시작한다"
     );
 }

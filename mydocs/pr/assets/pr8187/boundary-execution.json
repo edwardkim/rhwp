@@ -1,0 +1,96 @@
+{
+  "input": "rhwp-studio/public/samples/kps-ai.hwp",
+  "source_first_height_hu": 63299,
+  "source_label_height_hu": 19259,
+  "tree_rounding_tolerance_px": 0.2,
+  "results": [
+    {
+      "producer": "base",
+      "backend": "native",
+      "checks": {
+        "p65_label_top_frame": true,
+        "p65_label_bottom_frame": true,
+        "p65_parent_top_frame": true,
+        "p65_parent_bottom_frame": false,
+        "source_first_frame_height": false,
+        "p66_label_top_frame": false,
+        "p66_label_bottom_frame": true,
+        "p66_parent_top_frame": false,
+        "p66_parent_bottom_frame": true,
+        "next_content_starts_at_label_end": true,
+        "source_rowspan_height_preserved": true
+      },
+      "all_pass": false,
+      "render_tree_sha256": {
+        "output/pr-review/pr8187/base-native-final/2022/kps-ai/render_tree/render_tree_065.json": "792430a2e0d7c7b381d107132b320e58c23125941a075b7f0e2b01520cdc1492",
+        "output/pr-review/pr8187/base-native-final/2022/kps-ai/render_tree/render_tree_066.json": "0aa10693e2a8afed11d25c5829efde6edd03acdc1a1f9412cef1120471445b94"
+      }
+    },
+    {
+      "producer": "base",
+      "backend": "wasm",
+      "checks": {
+        "p65_label_top_frame": true,
+        "p65_label_bottom_frame": true,
+        "p65_parent_top_frame": true,
+        "p65_parent_bottom_frame": false,
+        "source_first_frame_height": false,
+        "p66_label_top_frame": false,
+        "p66_label_bottom_frame": true,
+        "p66_parent_top_frame": false,
+        "p66_parent_bottom_frame": true,
+        "next_content_starts_at_label_end": true,
+        "source_rowspan_height_preserved": true
+      },
+      "all_pass": false,
+      "render_tree_sha256": {
+        "output/pr-review/pr8187/base-wasm-final/2022/kps-ai/render_tree/render_tree_065.json": "738f1076c4011afb8fbbcbbf30feea5c77a5ff8e3f3e254052d88a57e96bb7d1",
+        "output/pr-review/pr8187/base-wasm-final/2022/kps-ai/render_tree/render_tree_066.json": "a4cf8983e3cc0a0d5fe79748cec8caa7c2aa24d6dc3174412163f5801a6cea3d"
+      }
+    },
+    {
+      "producer": "head",
+      "backend": "native",
+      "checks": {
+        "p65_label_top_frame": true,
+        "p65_label_bottom_frame": true,
+        "p65_parent_top_frame": true,
+        "p65_parent_bottom_frame": true,
+        "source_first_frame_height": true,
+        "p66_label_top_frame": true,
+        "p66_label_bottom_frame": true,
+        "p66_parent_top_frame": true,
+        "p66_parent_bottom_frame": true,
+        "next_content_starts_at_label_end": true,
+        "source_rowspan_height_preserved": true
+      },
+      "all_pass": true,
+      "render_tree_sha256": {
+        "output/pr-review/pr8187/head-native-final/2022/kps-ai/render_tree/render_tree_065.json": "be9861af5522ab6890d51a14f2fa3a586cbe9ac585f572fee5c4661f2acd6e93",
+        "output/pr-review/pr8187/head-native-final/2022/kps-ai/render_tree/render_tree_066.json": "5858e7674a9e4b2951258a89cce75bd436fd8eb9cb1f736b5d639cf9dcef0de5"
+      }
+    },
+    {
+      "producer": "head",
+      "backend": "wasm",
+      "checks": {
+        "p65_label_top_frame": true,
+        "p65_label_bottom_frame": true,
+        "p65_parent_top_frame": true,
+        "p65_parent_bottom_frame": true,
+        "source_first_frame_height": true,
+        "p66_label_top_frame": true,
+        "p66_label_bottom_frame": true,
+        "p66_parent_top_frame": true,
+        "p66_parent_bottom_frame": true,
+        "next_content_starts_at_label_end": true,
+        "source_rowspan_height_preserved": true
+      },
+      "all_pass": true,
+      "render_tree_sha256": {
+        "output/pr-review/pr8187/head-wasm-final/2022/kps-ai/render_tree/render_tree_065.json": "156a9d4f9b6948519fe059c57fccc4256e6fbfe406cebd56c682ee8dfbc8f008",
+        "output/pr-review/pr8187/head-wasm-final/2022/kps-ai/render_tree/render_tree_066.json": "f9772f739fd0e8913f14977edaca122599c5cf1503668ec2c98bcec699564992"
+      }
+    }
+  ]
+}
