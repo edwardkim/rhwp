@@ -12,6 +12,10 @@
 - `final/svg-{native,wasm}/`: KPS 65·66쪽의 별도 SVG 소비 경계. Native PNG/Canvas 전쪽 TSV를 대체하지 않는다.
 - `boundary-execution.json`: 원본 저장 프레임·테두리·뒤 내용 관계의 실제 base FAIL / 후보 PASS.
 - `base-producers.json`, `final-producers.json`: source/producer·글꼴 지문·명령·환경.
+- `local-validation.json`, `frontend-validation.json`: 필수 명령·모듈별 결과·환경·로그 지문.
+- `evidence-check.json`: 28개 원본 TSV의 해시·전쪽 누락/미달·439쪽/base 비교 무결성.
+- `native-postgate-smoke.json`: 마지막 Native CLI에서 주요 5쪽 PNG의 바이트 보존.
+- `minimal-font-used.sh`: 실제 로컬 회귀에 사용한 파일 시스템 격리 recipe.
 - `browser-api.mjs`, `browser-api-results.json`: fresh optimized WASM을 실제 Chromium에서 호출한 36개 API·왕복·Canvas 검사.
 - `check-boundary-output.py`: 전쪽 비교의 RenderTree에서 경계 관계를 재확인하는 진단 도구. 정식 Rust 회귀를 대체하지 않는다.
 

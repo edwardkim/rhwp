@@ -1,0 +1,332 @@
+{
+  "status": "PASS",
+  "verified_at": "2026-11-03T11:50:36.956192+09:00",
+  "code_and_tests_head": "d69ab19b5e93c1923549af616ae7dbe0e0f92f95",
+  "base": "4e2cc6bb36576b95d58d4c76cd833281ea652554",
+  "cargo_build_jobs": 4,
+  "test_threads": 8,
+  "minimal_font_recipe": "minimal-font-used.sh",
+  "commands": [
+    {
+      "name": "format",
+      "command": [
+        "bash",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8187/minfont.sh",
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 23.2,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result_lines": []
+    },
+    {
+      "name": "clippy-native",
+      "command": [
+        "bash",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8187/minfont.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 134.92,
+      "log_sha256": "791605080e050992fa1988f8a0a993fbc807f22f007a35fb3a18630769a0b994",
+      "result_lines": []
+    },
+    {
+      "name": "clippy-wasm",
+      "command": [
+        "bash",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8187/minfont.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 79.81,
+      "log_sha256": "dc044ddfcc0fb1905fa992d7cf8c193fbe0a406249e04d2c884388fefc3ad3cc",
+      "result_lines": []
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "bash",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8187/minfont.sh",
+        "cargo",
+        "build",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--workspace"
+      ],
+      "exit": 0,
+      "seconds": 186.23,
+      "log_sha256": "b204c97440665e205bcf997da88c6cee9085cd6a350ef9115f5bd03ec84eed8a",
+      "result_lines": []
+    },
+    {
+      "name": "clippy-workspace",
+      "command": [
+        "bash",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8187/minfont.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 155.38,
+      "log_sha256": "c89cb66d3fea8773de3be420ddafcac5663b2edbe8ca0600432d99bf88c18392",
+      "result_lines": []
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "bash",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8187/minfont.sh",
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "4e2cc6bb36576b95d58d4c76cd833281ea652554"
+      ],
+      "exit": 0,
+      "seconds": 0.93,
+      "log_sha256": "611653fbedde8b2b9c01017e3c26b015ff540402da19b64ae716a5da991934ba",
+      "result_lines": [
+        "[RustTestSuite] 확인 완료: 1987 sources / 8517 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6288 cases / weight 1776464..1781448"
+      ]
+    },
+    {
+      "name": "unit-tiers",
+      "command": [
+        "bash",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8187/minfont.sh",
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "4e2cc6bb36576b95d58d4c76cd833281ea652554"
+      ],
+      "exit": 0,
+      "seconds": 10.38,
+      "log_sha256": "2c6dbaab2093a94c2fa3ec11190f384180b922a10025e3466a44f53c6611685c",
+      "result_lines": [
+        "[RustUnitTier] 확인 완료: 4099 tests / 296 modules / ready 0 / support 85 / white-box 4010 / cfg support items 28"
+      ]
+    },
+    {
+      "name": "regression",
+      "command": [
+        "bash",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8187/minfont.sh",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--tests",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 551.88,
+      "log_sha256": "949ec4cad3f9b0a005c411077fd80ad8a3172e48646060c1e9d8b914fe703ef0",
+      "result_lines": [
+        "     Summary [ 550.485s] 12415 tests run: 12415 passed (1 slow), 45 skipped"
+      ]
+    },
+    {
+      "name": "native-lib",
+      "command": [
+        "bash",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8187/minfont.sh",
+        "cargo",
+        "test",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 363.15,
+      "log_sha256": "bad4a77399a3a3f4d8750968c85aaf18e08878e9091009ffba32bcefeafe0341",
+      "result_lines": [
+        "test result: ok. 3858 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 17.34s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "name": "native-placeholder",
+      "command": [
+        "bash",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8187/minfont.sh",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 312.49,
+      "log_sha256": "4385db09ea65461d31e4d9de4d236e925a4e12b5e240842251f1f6e9d9dbc9b7",
+      "result_lines": [
+        "     Summary [   0.141s] 2 tests run: 2 passed, 298 skipped"
+      ]
+    },
+    {
+      "name": "native-direct-pdf",
+      "command": [
+        "bash",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr8187/minfont.sh",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 19.0,
+      "log_sha256": "53ff2fadd7d26c94ec8e6a67d9522f76f6d1c5d2fab2f0e22bfd921455f20a58",
+      "result_lines": [
+        "     Summary [   0.305s] 22 tests run: 22 passed, 270 skipped"
+      ]
+    }
+  ],
+  "focused": {
+    "exit": 0,
+    "seconds": 613.71,
+    "command": [
+      "bash",
+      "output/pr-review/pr8187/minfont.sh",
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--tests",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(/(^|::)(stored_rowspan_first_frame_budget|model_paragraph_fragment_range|logical_body_boundary_delete|reflow_body_paragraph_range|styled_text_clipboard_field_affinity|styled_text_html_field_affinity|issue_7444_caret_axis_after_inline_control|issue_2724_passthrough_invalidation_guard|issue_8153_nbspace_origin|issue_4698_split_cell_fragment_ownership|issue_3592_row_filter_valign|issue_1073_nested_table_split|issue_1156_rowbreak_fragment_fit|rowspan_declared_overflow_shrink|kps_heading_page_ownership|issue_6549_square_rowbreak_extension_bound|issue_6756_rowbreak_cut_index_in_rowspan_block|issue_5885_continuation_body_frame|issue_8174_public_storage_boundaries)::/)"
+    ],
+    "planned_modules": [
+      "stored_rowspan_first_frame_budget",
+      "model_paragraph_fragment_range",
+      "logical_body_boundary_delete",
+      "reflow_body_paragraph_range",
+      "styled_text_clipboard_field_affinity",
+      "styled_text_html_field_affinity",
+      "issue_7444_caret_axis_after_inline_control",
+      "issue_2724_passthrough_invalidation_guard",
+      "issue_8153_nbspace_origin",
+      "issue_4698_split_cell_fragment_ownership",
+      "issue_3592_row_filter_valign",
+      "issue_1073_nested_table_split",
+      "issue_1156_rowbreak_fragment_fit",
+      "rowspan_declared_overflow_shrink",
+      "kps_heading_page_ownership",
+      "issue_6549_square_rowbreak_extension_bound",
+      "issue_6756_rowbreak_cut_index_in_rowspan_block",
+      "issue_5885_continuation_body_frame",
+      "issue_8174_public_storage_boundaries"
+    ],
+    "passed_by_module": {
+      "issue_7444_caret_axis_after_inline_control": 3,
+      "issue_8153_nbspace_origin": 6,
+      "issue_6756_rowbreak_cut_index_in_rowspan_block": 2,
+      "issue_2724_passthrough_invalidation_guard": 5,
+      "reflow_body_paragraph_range": 9,
+      "rowspan_declared_overflow_shrink": 4,
+      "issue_6549_square_rowbreak_extension_bound": 1,
+      "stored_rowspan_first_frame_budget": 2,
+      "styled_text_clipboard_field_affinity": 8,
+      "issue_5885_continuation_body_frame": 1,
+      "issue_1156_rowbreak_fragment_fit": 2,
+      "styled_text_html_field_affinity": 9,
+      "model_paragraph_fragment_range": 2,
+      "logical_body_boundary_delete": 7,
+      "issue_3592_row_filter_valign": 2,
+      "issue_8174_public_storage_boundaries": 2,
+      "issue_1073_nested_table_split": 3,
+      "issue_4698_split_cell_fragment_ownership": 2,
+      "kps_heading_page_ownership": 2
+    },
+    "passed": 72,
+    "all_planned_modules_executed": true
+  },
+  "full_regression": {
+    "passed": 12415,
+    "ignored": 45,
+    "slow": [
+      {
+        "test": "issue_2063::huge_cellbreak_table_paginates_without_quadratic_blowup",
+        "seconds": 228.091,
+        "status": "PASS"
+      }
+    ]
+  },
+  "native": {
+    "libraries_passed": 4040,
+    "libraries_ignored": 12,
+    "placeholder_passed": 2,
+    "direct_pdf_passed": 22,
+    "total_passed": 4064
+  }
+}

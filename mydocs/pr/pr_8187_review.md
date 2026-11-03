@@ -7,177 +7,192 @@ last_verified: 2026-11-03
 
 # PR #8187 검토 — 논리 편집·범위 재조판과 다단 경계
 
-## 최종 판정
+## 판정과 승인 범위
 
-**머지 보류 — 승인된 메인터너 통합 보정과 필수 로컬 검증을 진행 중이다.**
-새 논리 편집·재조판 API는 최신 devel에도 없어 수용할 기능이 남아 있다. 기능의 기각이나
-PR 종료 판정이 아니다. 원 기여 13커밋을 보존한 통합 초안 `29b0bb1184`에서 11개 충돌을 보정했다.
-최소 글꼴 환경의 새 집중 검사 34건과 기존 캐럿·저장 무효화 8건이 통과했다. 최종 통합 후보의
-fresh WASM·전쪽 시각 검증과 필수 전체 회귀는 아직 완료하지 않았다.
+**메인터너 보정 후 수용 가능 — 승인된 필수 로컬 검증 완료, 원격 제출·새 head CI 대기.**
+원 기여 13커밋을 보존해 11개 충돌을 해결했고 논리 편집·다단 기능과 KPS 65·66쪽을 보정했다.
+전체 회귀 **12,415 PASS**, Native Skia 공식 3종 **4,064 PASS**, 집중 회귀 **72 PASS**와 모든
+Rust lint를 확인했다. 독립 Print 대비 Native/fresh WASM 각각 **14문서·516쪽**이 전쪽 raw 90% 이상이며
+같은 원본의 기준 devel 대비 하락은 0쪽이다. 실제 브라우저 API·Studio·TypeScript도 통과했다.
 
-후속 로컬 작업은 [통합·검증 계획](pr_8187_review_impl.md)에 정리했다. 2026-11-03 작업지시자가
-메인터너 보정·필수 검증을 한 단위로 승인했다. 원격 push·댓글·GitHub approve·merge는 수행하지 않았다.
-아래 접수 단계의 관측과 통합 후보에서 수행할 검증을 구분한다.
+2026-11-03 작업지시자는 [통합 계획](pr_8187_review_impl.md)의 **메인터너 보정과 필수 로컬 검증**을
+한 단위로 승인했다. 원격 push·본문 갱신·댓글·GitHub approve·merge는 이번 승인에 포함하지 않는다.
+현재 로컬 후보를 원 PR의 GitHub head나 녹색 CI로 표현하지 않는다.
 
-## 접수 정보
+## source와 접수 정보
 
-| 항목 | 확인값 |
+| 항목 | 고정값 |
 | --- | --- |
 | PR / 작성자 / base | [#8187](https://github.com/edwardkim/rhwp/pull/8187) / semanticist21 / devel |
 | 원 head | `32df7b71a6e731f767e4945e3e1d79ca0cac3e58` |
-| 작성자가 검증한 제품 source | `d166697310779a8cc02a3091b6e1481d0d4ab182` |
-| PR의 실행 base / 현재 공통 조상 | `60972534680a0c5e51e54ec189b92e252e81a867` |
-| 이번 최신 devel | `4e2cc6bb36576b95d58d4c76cd833281ea652554` |
-| 로컬 검토 branch / 위치 | `review/pr-8187-logical-editing` / `/home/edward/mygithub/rhwp` |
+| 작성자 제품 source | `d166697310779a8cc02a3091b6e1481d0d4ab182` |
+| 작성자 base / 공통 조상 | `60972534680a0c5e51e54ec189b92e252e81a867` |
+| 이번 기준 devel | `4e2cc6bb36576b95d58d4c76cd833281ea652554` |
+| 로컬 branch / 위치 | `review/pr-8187-logical-editing` / `/home/edward/mygithub/rhwp` |
 | 원 head 보존 ref | `refs/remotes/upstream/pr8187-head` |
-| Reviewer | `edwardkim` 지정 후 requested-reviewers API로 확인 |
-| 접수 시 원격 상태 | OPEN / non-draft / CONFLICTING / DIRTY |
-| 규모 | 128개 파일, +5,650 / −235줄. source·test는 52개 파일, +4,063 / −235줄 |
-| 선택 경로 | maintainer_general + intake_and_review, local_validation, visual_fixture_evidence, rework_and_exceptions, post_merge |
-| 관련 이슈 | [#7444](https://github.com/edwardkim/rhwp/issues/7444)의 논리 선택 삭제·붙여넣기 잔여 범위. PR 본문과 closing-issue 연결은 없음 |
+| 통합 commit | `29b0bb11849edf92d7e2fe9592c51788dc54675d` — 원 기여 13커밋을 두 번째 parent로 보존 |
+| 표 프레임 보정 | `c33037bf2ff187ab1d80dd6b73537f55b61335d8` |
+| Native 기준선 보존 | `054ef1cd2dcd6060e1cf4a98ea9c65a72fb40ee1` |
+| 접수 상태 / reviewer | OPEN, non-draft, CONFLICTING / edwardkim requested |
+| 원 PR 규모 | 128파일 +5,650/−235줄, source·test 52파일 +4,063/−235줄 |
+| 선택 절차 | maintainer_general + intake_and_review, local_validation, visual_fixture_evidence, rework_and_exceptions, post_merge |
 
-기본 작업공간에서 최신 devel을 기준으로 검토 branch만 만들었다. contributor source를 checkout해
-덮어쓰거나, 충돌 난 merge를 작업트리에 적용하지 않았다. 다른 작업의 워크트리와 배포된 WASM을 보존했다.
+접수·계획 commit은 `ea0346b14520a4e6d1cd5dd5450ae9d5b6cd8862`다.
+접수 당시 `merge-tree`의 11개 충돌, 원 head 파일 지문과 원 CI의 source 일치는
+[접수 증거](assets/pr8187/intake-evidence.json)에 남겼다. 원 head의
+[CI 40092729836](https://github.com/edwardkim/rhwp/actions/runs/40092729836)는 성공했으나 이번 보정 후보의 CI가 아니다.
+다른 작업 워크트리와 기본 pkg/Studio 배포 파일은 보존했다.
 
-## 기능 주장과 최신 devel 대조
+## 최신 devel에서 해결됐는지와 선행 해결 이력
 
-| 범위 | 현재 확인 | 통합 방침 |
-| --- | --- | --- |
-| `deleteRangeLogical`, `clipboardIsSingleText`, `pasteInternalTextLogical`, `pasteHtmlTextLogical` | 최신 source에 해당 공개 API가 없음 | 원 기여의 논리 좌표·필드 소속·변경 전 거부 계약을 공통 삭제·삽입 경로에 통합 |
-| `reflow_body_paragraph_range_native`, `refresh_section_native` | 최신 source에 해당 API가 없음 | 범위 밖 저장 줄 보존, 배치 중 지연, 실패 시 부분 변경 방지를 확인해 수용 |
-| 분할 셀 `model_para_range` | 최신 RenderTree에는 `model_cell_index`가 있으나 새 범위 필드는 없음 | 최신 분할 셀의 물리 프레임·clip 소유와 함께 전달 |
-| Skia TextBlob 기준선 | 최신 `text_shaping.rs`에 실제 선택 face의 ascent를 쓰는 `baseline_offset` 보정이 이미 있음 | 동일 목적의 옛 구현을 덮어쓰지 않고 기존 개선을 유지 |
-| 문단 앞 간격을 포함한 첫 줄 fit | 최신 `split_entry.rs`에 #8149의 일반 첫 줄 앞 간격 차감이 이미 있음 | PR의 부분 쪽 Normal 단 수용과 최신 일반 fit 계약을 함께 보존 |
-| KPS 66쪽 위 테두리·내부 행 위치 | 최신 devel의 Native 1쪽 진단에서도 남음 | 글꼴 차이를 분리하고 공통 표 조각/괘선 경로를 조사. 현재 PR이 만든 새 회귀라고 단정하지 않음 |
+최신 source에는 `deleteRangeLogical`, `clipboardIsSingleText`, `pasteInternalTextLogical`,
+`pasteHtmlTextLogical`, 범위 재조판·구역 갱신 API와 분할 셀의 `model_para_range`가 없었다.
+따라서 수용할 기능이 남아 있다. 기존 API 전체가 동작하지 않는다는 뜻은 아니다.
+KPS 66쪽의 빠진 테두리와 행 위치 차이도 같은 입력·글꼴의 기준 Native/WASM에 남아 있었다.
 
-API 부재는 source 대조 결과다. 이를 Studio의 모든 기존 편집 동작이 실패한다는 실행 판정으로
-확대하지 않는다. 같은 이름의 API가 없다는 사실과 기존 API로 가능한 동작도 구분한다.
-
-## 기존 해결 이력과 보존할 계약
-
-- #7444의 본문과 전체 댓글을 확인했다. [원 PR #7509](https://github.com/edwardkim/rhwp/pull/7509)
-  → 실제 merge `fc36d71452a1aedae5f1f2b05737efe60a00f37f`
-  → [독립 검토 기록](archives/pr_7509_review.md)에서 개체 뒤 삽입·논리 범위 복사만 수용한 것을 확인했다.
-  선택 삭제·음영·서식·Studio 연결층까지 해결된 것으로 간주하지 않는다. #8187은 이 중 삭제와
-  서식 글 붙여넣기 등을 보완한다. 이 PR만으로 #7444 전체를 닫지 않는다.
-- 최신 `ca5ed2a48e8f3213df5f914b2c49842676eb7452`는 실제 face 경계와 SkShaper 기준선을
-  보정했다. 현재 `src/renderer/skia/text_shaping.rs`의 `baseline_offset` 소비를 확인했다.
-- 최신 `f9acf61ec9`는 #8149의 첫 줄 fit에서 앞 간격을 차감한다. PR의 `empty_text_zone`
-  조건만 선택해 일반 문단의 앞 간격 차감을 되돌리지 않는다.
-- 최신 `c417310cab6`의 `insert_text_from_paragraph`는 원본 문단 메타데이터를 함께 옮긴다.
-  논리 붙여넣기의 필드 소속 보정을 추가하면서 이 경로를 단순 텍스트 삽입으로 되돌리지 않는다.
-- #8174 이후의 `Storage` 기반 자원 예산과 실패 전달, 공통 측정·배치 프레임은 통합 시 유지한다.
-  개별 선행 PR의 실제 fixture와 검증 근거는 보정 단계에서 해당 변경마다 연결해 재검증한다.
-
-## 실제 수행한 검증
-
-| 검사 | 실행 결과와 한계 |
+| 선행 해결 | 통합에서 보존한 계약과 재검증 |
 | --- | --- |
-| 최신 base와 원 head 고정 | upstream fetch 후 위 SHA를 확인했다 |
-| 통합 simulation | `git merge-tree --write-tree <현재 devel> <원 head>` exit 1. 11개 파일의 content conflict를 확인했다. 작업트리에는 충돌을 적용하지 않았다 |
-| 원 head CI | [CI 40092729836](https://github.com/edwardkim/rhwp/actions/runs/40092729836)의 head가 `32df7b71…`이며 completed/success인 것을 확인했다. 최신 devel 통합 후보의 CI는 아니다 |
-| 원 PR 증적 무결성 | manifest의 파일별 SHA-256을 원 head blob과 대조했다. 검증한 수와 전체 목록은 [접수 증거](assets/pr8187/intake-evidence.json)에 기록했다 |
-| 원 PR 전쪽 TSV | KPS 77쪽의 base/후보 × Native/WASM 원본을 직접 읽었다. 각 경로의 90% 미만은 66쪽 하나다 |
-| 원 PR PNG 직접 판독 | Native·WASM KPS 66쪽과 Normal 다단 전환 2쪽 review PNG를 열었다. 작성자 측 KPS 위 테두리 누락과 행/하단 위치 차이, 전환 사례의 본문 순서를 확인했다. 직접 재출력한 후보의 결과가 아니다 |
-| 현재 devel Native 진단 | 같은 KPS 원본·PR의 독립 Print PDF, print/96dpi/compat 2022로 66쪽을 실제 재출력했다. raw **89.98789%**, 실제 문서 쪽수 77/77. 위 테두리 누락과 행/날짜/서명 위치 차이를 직접 판독했다 |
+| #7444 → #7509 → merge `fc36d71452a1aedae5f1f2b05737efe60a00f37f` → [독립 검토](archives/pr_7509_review.md) | 개체 뒤 삽입·논리 복사 유지. 논리 삭제·서식 글 붙여넣기를 추가하며 필드·개체 소속/거부 원자성·왕복 검사 |
+| #4698 → #4707 → 선택 보정 `c7cfaefb9` → #4712 merge `3c7b89356eef4f69cc2101d8e07507ba2ecf2425` | 분할 셀의 원본 문단 소유 유지. 기존 #4698/#1073 및 KPS의 실제 문단 내용·Layer JSON 검사 |
+| `27f55e5b399e26820f8cece6ae8d7e185c750f84` → #8319 merge `af6bb05b26887135fb9da0fa4e54ca7205564fca` | Square의 글줄 컷은 열린 경계를 유지하고 온전한 자식 행 경계만 프레임을 닫음. #6549/#6756 실제 출력 대조 |
+| `ca5ed2a48e8f3213df5f914b2c49842676eb7452` | 실제 선택 face 기준선 유지. 최종 Skia 두 파일은 기준 devel과 동일하며 KPS 53쪽 PNG도 바이트 동일 |
+| `f9acf61ec9` / #8149 | 일반 첫 줄 fit의 문단 앞 간격 차감 유지. Normal 부분 쪽 단 전환과 기존 fit 회귀 검사 |
+| `c417310cab6` / #8389 | 붙여넣기의 NBSP 원본 메타데이터 유지. 기존 #8153과 논리/서식 글 붙여넣기 검사 |
+| #8174의 공통 Storage 경로 | 인라인 그림 행·단 너비 저장도 예산/취소와 실패 전달을 소비. 기존 공개 Storage 경계 검사 |
 
-### 현재 devel 진단의 source·입력·글꼴
+이 PR은 #7444의 잔여 API 일부를 보완한다. Studio의 모든 선택·음영·서식 연결을 해결했다고
+주장하지 않으며 #7444 전체를 자동으로 닫지 않는다.
 
-기존 Native producer SHA-256 `6d2cf962975ff04f6e965e8596e579ea99f1a47d201c9c6132d89fa4237d0d24`를
-다시 확인했다. 빌드 source `d78048a6f0e5f71aa3bdb7d32e703bd5971e3019`와 현재 devel의
-`src/`·`crates/`·Cargo manifest/lock diff는 없다. source가 같은 바이너리를 재사용했으며 새 빌드는 하지 않았다.
+## 보정 내용과 실제 소비 경로
 
-- 원본: `rhwp-studio/public/samples/kps-ai.hwp`, SHA-256
-  `9b0fceb3d96956f27c893e15a72a1ad94f7ee005bd581381a1aadfcb1f57a7b9`.
-- 기준: 원 PR head의 `mydocs/pr/assets/platy-native-editing/inputs/kps-ai.hwp.hancom.pdf`, SHA-256
-  `6d95c2f18c275f77f5294bacec5ec15ead1b7dbbfe4a39d1df586bcaf54a4824`.
-  기존 `pdf/kps-ai-2022.pdf`와 바이트가 다르므로 임의로 바꾸지 않았다.
-- 글꼴 공급: `/home/edward/mygithub/ttfs/hwp`, `/home/edward/mygithub/ttfs/windows`,
-  `/mnt/c/Windows/Fonts`. 원 작성자의 15개 subset 환경과 동일하다고 주장하지 않는다.
-  따라서 이전 점수와의 차이를 코드 개선량으로 계산하지 않는다. 글꼴 프로그램은 추가하지 않았다.
-- 명령: `venv/bin/python scripts/visual_sweep.py --hwp rhwp-studio/public/samples/kps-ai.hwp
-  --pdf output/pr-review/pr8187/inputs/kps-ai.hwp.hancom.pdf --key kps-ai-current
-  --rhwp-bin target/pr-review/release/rhwp --compat 2022 --dpi 96 --pages 66 --embed-fonts full
-  --font-path /home/edward/mygithub/ttfs/hwp --font-path /home/edward/mygithub/ttfs/windows
-  --font-path /mnt/c/Windows/Fonts --out output/pr-review/pr8187/current-devel-native`.
-  exit 1은 실행 장애가 아니라 raw 90% 미달 gate 판정이다.
-
-[현재 devel Native review](assets/pr8187/current-devel-kps-p066-review.png)와
-[overlay](assets/pr8187/current-devel-kps-p066-overlay.png)를 보존했다. 이것은 **66쪽 진단**이며
-현재 문서 전체의 최저값이나 fresh WASM 통과를 뜻하지 않는다.
-
-작성자 증적의 KPS 최저값은 Native **89.27622%**, WASM **88.90567%**이며 base와 후보가 같다.
-두 giant 문서는 115/197쪽 중 각각 4쪽만 제출되어 있다. 이 수치를 현재 devel 또는 통합 후보의
-전쪽 검증으로 재사용하지 않는다. 실제 전쪽 Native/fresh WASM·focused·필수 lint/회귀는 보정 후보에서 남아 있다.
-
-## 조판 원칙 준수 검토
-
-| 항목 | 접수 단계 판정과 근거 |
+| 경계 | 생산·측정·배치·저장의 연결과 반례 |
 | --- | --- |
-| 선행 분석 | #7444 → #7509 → 실제 merge와 독립 검토 기록 확인. 최신 겹치는 보정은 위에 구분했다. 통합 때 각 해당 반례 재실행 필요 |
-| 구현 근거·일반성 | 논리/글자/UTF-16 제어 슬롯과 명시적 Normal 단 계약을 구분한 접근은 유효한 검토 대상. 원 head 전체 규칙 준수 확정은 아직 하지 않음 |
-| 측정·배치 및 줄 점유 | 적용 대상. PR의 내용 하단·뒤 간격 계산과 최신 공통 프레임의 최종 소비를 보정 후 대조해야 함 |
-| 분할·이어받기 및 소유 | 적용 대상. 새 `model_para_range`와 현재 컷/clip/예약 높이의 결합이 미검증 |
-| 최종 backend 소비·rebase 기능 보존 | 미검증. 충돌 없는 통합 후보가 아직 없음 |
-| 회귀 추가·기준값 | 새 회귀 5파일/34함수. 첫머리의 측정·유형·시각 근거를 현행 규약에 맞춰 보완해야 함. 미달 문서로 임의 기대값을 새로 고정하지 않음 |
-| 시각 gate·직접 판독 | 원 PR KPS 미달과 현재 Native 66쪽 미달을 확인. 현재 전쪽/fresh WASM 미실행. 승인 근거로 승격하지 않음 |
-| 주장과 검증 범위 | source 대조, merge simulation, 원 증적 감사와 현재 Native 1쪽 진단까지만 수행. 통합 성공·전체 API 회귀 통과는 주장하지 않음 |
+| 논리 삭제·붙여넣기 | 공통 clipboard/text_editing 경로와 `Paragraph::inherit_inserted_text_controls`가 원본 문단 메타데이터·필드 소속을 함께 소비한다. UTF-16 보충 문자·각주 슬롯·개체 앞뒤·같은 위치의 여러 개체·거부 시 불변·snapshot/왕복을 실행했다 |
+| 재조판·다단 | 범위 밖 저장 줄을 보존하고 batch 중 쪽 갱신을 미룬다. Normal 단 전환은 실제 내용 하단과 뒤 간격을 한 번 계상하고 새 빈 단에서 첫 줄 예산을 검사한다. Distribute/Parallel은 기존 경로로 처리한다 |
+| 인라인 그림 행 | `composer/inline_picture_metrics.rs::refresh_picture_rows_with_storage` → composition의 실제 행 갱신. Storage의 collect·실패 전달을 유지한다 |
+| 단 너비 저장 | `serializer/column_sizes.rs::for_export_with_storage` → `body_text.rs`와 `hwpx/section.rs`의 공통 writer. 본문 폭 전체를 차지하는 유효 절대 너비만 32768 비례값으로 변환하며 잘못된 용지·부분 폭은 원본을 유지한다. 사본도 Storage를 통해 만든다 |
+| 셀 내용/괘선 소유 | `table_layout.rs`의 row filter가 내용과 괘선을 같은 선택 행 범위에 투영한다. 잘린 변에는 표의 선언 프레임을 적용하며 원래 셀 내부선·반복 제목행 스타일은 유지한다 |
+| 부모 컷과 물리 프레임 | `CellUnit::starts_nested_row` → `table_partial.rs::nested_row_cut_frame_columns` → Square 상·하단 괘선의 실제 소비. 자식의 온전한 행 시작과 글줄 중간 컷을 구별하고 두 방향에서 같은 결과를 쓴다 |
+| 첫 조각/이어받기 높이 | HWP5 저장 줄의 쪽 되감김·RowBreak·원본 유효성을 확인한 `table_row_frame::project_first_rowspan_frame` → `height_measurer.rs`의 행 원장 → `table_layout.rs` fallback/실제 셀 배치. HWPX의 문단 지역 0 원점·편집본은 해당 증거로 사용하지 않는다 |
+| 예산/내용 하한 | 닫는 행의 저장 여유만 첫 프레임으로 옮기고, 그 경계를 지나는 rowspan의 가장 이른 종료 행에서 물리 높이를 한 번 이어받는다. 단일 셀/같은 경계에서 끝나는 병합 셀의 실제 내용 하한을 먼저 검사한다. 여러 걸침의 총높이와 다음 본문을 유지한다 |
 
-## 다음 조건
+KPS 안쪽 표의 첫 프레임 원본은 63299 HWPUNIT = 843.98667px(96dpi)이다. 종전 첫 조각 행 합은
+63510 HWPUNIT으로 211 HWPUNIT를 더 점유했다. 공통 행 원장에서 이 저장 여유를 이어받게 해
+65쪽 끝과 66쪽 내부 행·날짜·서명 위치를 복원했다. 문서 ID나 211이라는 상수로 분기하지 않는다.
+[실행 증거](assets/pr8187/boundary-execution.json)는 같은 실제 base/head 출력의 프레임·다음 내용 관계를
+검사한다. base의 양 backend에서 실패하고 후보의 양 backend에서 통과했다.
 
-11개 충돌에 대해 [통합 계획](pr_8187_review_impl.md)의 최신 공통 로직 보존 방침을 결정한다.
-승인 뒤 같은 검토 branch에서 원 contributor 커밋 이력을 보존해 통합하고, API·저장 왕복·분할·
-전쪽 Native/fresh WASM과 필요한 직접 판독·필수 lint/회귀를 한 단위로 완료한다.
-미달을 이유로 기여 기능을 자동 기각하거나, 기존 결함이라는 이유만으로 시각 기준을 자동 면제하지 않는다.
+통합 중 원 PR의 자동 적용 부분이 Native `baseline_offset`을 canvas translate와 draw origin에
+중복 적용해 KPS 53쪽 결합 문자가 위로 잘렸다. raw가 98.84%→97.95%로 여전히 90%를 넘었지만
+직접 판독으로 수용하지 않았다. Native Skia 두 파일을 최신 devel과 동일하게 복원한 뒤 Native 전쪽을
+다시 출력했다. 수정 후 53쪽 PNG는 기준과 바이트가 같다.
 
-## Merge 후 contributor PR comment 계획
+## 독립 Print 전쪽 시각 검증
 
-아직 수용 판정과 원격 처리를 승인받지 않았다. 향후 보정·검증이 완료되면 원 기여가 추가한 API,
-메인터너의 최신 devel 통합 보정, #7444의 남은 Studio 범위를 구분한 존댓말 문안을 작성한다.
-실제 전쪽 수치·source/merge SHA·CI·대표 PNG와
-[Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 연결한다.
-새 head에 해당하는 증적과 사용자 승인 전에는 댓글·approve·push·merge를 수행하지 않는다.
+최종 원본 TSV는 [final/native](assets/pr8187/final/native/)와 [final/wasm](assets/pr8187/final/wasm/),
+정확한 쪽별 값·입력/PDF/TSV 해시는 [전쪽 요약](assets/pr8187/final-visual-summary.json)에 있다.
+print, 96dpi, 색상 경계 보정 전 2px 실루엣 raw를 사용했다. compatibility는 원본 Print 출처에 맞췄다.
 
-## 승인 후 통합·원인 보정 진행
+| 문서 | 쪽수 | Native 최저 % | fresh WASM 최저 % |
+| --- | ---: | ---: | ---: |
+| midrange-three-columns | 2 | 100.00000 | 100.00000 |
+| continued-one-to-three-columns | 3 | 100.00000 | 100.00000 |
+| zone-preserve-paragraph-after | 2 | 100.00000 | 100.00000 |
+| paragraph-after-1800 | 2 | 100.00000 | 100.00000 |
+| paragraph-after-5000 | 2 | 100.00000 | 100.00000 |
+| shortcut | 7 | 97.19106 | 97.20982 |
+| KPS 원본 HWP | 77 | 96.38238 | 96.51991 |
+| rowbreak18 | 18 | 97.64506 | 97.80701 |
+| giant4138-original | 115 | 93.12289 | 97.33354 |
+| giant4138-tab-period | 197 | 94.43562 | 94.61644 |
+| #6549 Square 정상 대조군 | 2 | 100.00000 | 100.00000 |
+| #6756 rowspan 컷 정상 대조군 | 5 | 98.00828 | 98.51080 |
+| #5885 body frame 정상 대조군 | 7 | 99.96441 | 99.96386 |
+| fresh WASM에서 저장·재열기한 KPS HWPX | 77 | 96.38238 | 96.51991 |
+| 합계 | **516** | 미달·누락 0 | 미달·누락 0 |
 
-- 기준 devel `4e2cc6bb36576b95d58d4c76cd833281ea652554`은 2026-11-03 원격 API 재조회에서도
-  동일했다. 원 contributor head와 원 커밋 이력은 로컬 merge `29b0bb1184`로 보존했다.
-- [기준 전쪽 요약](assets/pr8187/base-visual-summary.json)과 `assets/pr8187/base/{native,wasm}/`의
-  원본 TSV는 10개 문서 각 425쪽을 대조한다. Native 최저는 KPS 66쪽 90.01%, fresh WASM은
-  같은 쪽 89.98%다. 다른 미달·누락은 없다. giant는 115/197쪽 전체를 포함했다.
-- 글꼴 원본 전체는 Native 64MiB catalog 한도를 넘었다. 원본의 글리프 ID·윤곽·advance·수직
-  메트릭·family를 대조한 로컬 서브셋과, 대조가 달라진 두 글꼴의 원본 단독 face를 함께 공급했다.
-  합계 35,166,544바이트이며 [producer·글꼴 지문](assets/pr8187/base-producers.json)에 기록했다.
-  글꼴 바이트를 Git에 넣지 않았다. 최종 후보도 같은 공급을 사용한다.
-- #4698 → 원 PR #4707 → 선택 보정 `c7cfaefb9` → 통합 #4712의 기존 문단 소유 보정은 보존한다.
-  별도로 #8319에 통합된 `27f55e5b399`의 Square 컷 괘선 생략을 추적했다. #6756·#6549의
-  글줄 컷과 달리 KPS의 부모 컷은 자식의 온전한 행 경계다. 같은 CellUnit의 자식 컷을 사용해
-  물리 프레임 열을 구분하고, 상단과 하단이 같은 판정을 소비하게 했다.
-- `table_layout`의 row filter는 내용 셀을 현재 조각으로 잘랐지만 괘선은 원래 rowspan 행에 남겼다.
-  내용과 괘선을 같은 선택 행 범위에 배치하고, 잘린 변은 원래 내부 이중선 대신 선언한 표 프레임을
-  사용한다. 원래 셀 경계와 반복 제목행의 스타일은 유지한다.
-- KPS 안쪽 표의 저장 `common.height=63299HU`는 독립 Print 첫 조각 843.99px와 일치한다.
-  기존 행 합은 63510HU로 첫 조각에 211HU를 더 배정하고 다음 조각의 rowspan 끝 행을 그만큼
-  줄였다. HWP5 출처·원본 저장 줄의 쪽 되감김·내용 하한을 확인해 첫 물리 프레임의 남는 높이를
-  같은 행 원장에 투영하고, 걸침의 실제 종료 행에서 높이를 이어받는다. 측정과 배치가 공통 함수를
-  소비하며 전체 걸침 높이는 보존한다. HWPX의 문단 지역 0 원점은 이 증거로 사용하지 않는다.
-- 이 보정 중간 Native 실행에서 KPS 65·66쪽 최저 99.36%와 테두리·내부 행·날짜/서명의 복원을
-  확인했다. 최종 내용 하한 가드 추가 전 실행이므로 최종 후보의 전쪽 통과 증거로 대체하지 않는다.
-  정상 대조군 #6549 2쪽, #6756 5쪽, #5885 7쪽의 기준 Native도 각각 100.00/98.01/99.96% 이상이다.
+독립 PDF와 전쪽 쪽수가 일치한다. 같은 글꼴의 base 원본 13문서·439쪽/backend와 대조해 하락 0쪽이다.
+Normal 다단 원본 5개에서 10쪽, KPS 65·66쪽이 개선됐다. shortcut·rowbreak18·두 giant와 정상
+대조군은 각각 같은 backend의 base PNG와 전쪽 바이트가 같다. 저장 KPS HWPX도 원본 HWP와
+양 backend 각각 77쪽 PNG가 모두 같다. [페이지별 보존 증거](assets/pr8187/pixel-preservation.json).
 
-현재 단계는 최종 source의 Native/fresh WASM, 경계·왕복·전체 회귀와 필수 lint를 진행하는 단계다.
-원격 push·GitHub comment·approve·merge는 수행하지 않았다.
+KPS **65쪽 Native 99.35691% / WASM 99.33451%**, **66쪽 Native 99.99427% / WASM 99.99510%**다.
+66쪽 WASM이 소수 둘째 자리에서 100.00%로 표시되는 것은 픽셀 바이트 동일을 의미하지 않는다.
+기준 devel 66쪽은 같은 공급에서 Native 90.01%, WASM 89.98%였으며 최종 후보에서는 둘 다 해소됐다.
 
-### Native 기준선 통합의 재검토
+### 직접 판독과 글꼴 경계
 
-최종 대조 도중 KPS 53쪽의 원형 결합 문자가 위로 잘리는 새 차이를 발견했다. 중간 후보의
-raw는 기준 98.84%에서 97.95%로 낮아졌지만 90% gate 안이었다. 직접 판독으로 이를 수용하지
-않았다. `text_replay`는 이미 canvas translate에 `baseline_offset`을 넣었는데 원 PR의 자동 적용
-부분이 draw origin에 같은 값을 다시 더했다. `text_shaping`에도 최신 face-ascent 계산 앞에
-옛 중복 계산이 남았다. 두 파일을 현재 devel `4e2cc6bb`와 정확히 같은 source로 복원했고, 새
-Native 재출력의 53쪽 PNG는 기준 devel PNG와 바이트가 같다. 표·논리 편집의 새 기능은 유지했다.
+- KPS 65·66쪽의 독립 PDF/Native/WASM을 같은 영역·배율에서 비교했다. 위·아래 괘선, 이어받는
+  라벨의 문단 소유, 본문 순서, 다음 셀 시작과 날짜·서명을 확인했다.
+  [Native 66쪽](assets/pr8187/final/native/kps-ai/review_066.png),
+  [WASM 66쪽](assets/pr8187/final/wasm/kps-ai/review_066.png).
+- [같은 영역 확대 PNG](assets/pr8187/final/crops/manifest.json)의 OpenAPI·괄호·확인란·날짜/서명과
+  65쪽 컷을 직접 열어 확인했다. 빠진 글자·반복·clip·새 기준선 오류는 없었다. 획 두께 등
+  글꼴/래스터 차이는 남아 있으며 raw 통과를 완전한 픽셀 동일로 설명하지 않는다.
+- Normal 단 전환 1·2쪽 및 다음 3쪽, 뒤 간격 대조군을 직접 비교했다. 41–43/82–84 문단이
+  같은 줄의 세 단에 배치되고 44/85 문단으로 이어지는 순서·간격·누락 여부를 확인했다.
+- 최종 base/head는 **동일한 15개 글꼴 프로그램, 35,166,544바이트**를 공급했다. Native 64MiB
+  catalog 한도를 넘지 않게 원본과 글리프 ID·윤곽·advance·수직 메트릭·family가 같은 subset을
+  검증했다. subset의 동등성 검사가 실패한 두 프로그램은 원본 단독 face를 사용했다.
+  [글꼴 지문](assets/pr8187/base-producers.json). 원 작성자와 완전히 같은 글꼴 버전이라고 주장하지 않는다.
+- KPS 입력 SHA-256 `9b0fceb3d96956f27c893e15a72a1ad94f7ee005bd581381a1aadfcb1f57a7b9`,
+  PR의 독립 Print SHA-256 `6d95c2f18c275f77f5294bacec5ec15ead1b7dbbfe4a39d1df586bcaf54a4824`.
+  `pdf/kps-ai-2022.pdf`는 바이트가 달라 임의로 바꾸지 않았다. 원본/Print는 원 PR의 정식 경로에 있다.
+- 별도 SVG 소비 경계도 KPS 65·66쪽에서 실행·직접 판독했다. 두 쪽 최저 raw는 Native SVG
+  99.00291%, WASM SVG 98.75594%이며, 프레임과 본문 순서를 보존했다. 이것을 PNG/Canvas 전쪽
+  gate의 대체 증거로 사용하지 않았다.
+- 접수의 1쪽 진단과 작성자의 giant 대표 4쪽 결과는 최종 전쪽 증거에 포함하지 않았다.
+  글꼴 프로그램 자체는 저장소·배포물에 추가하지 않았다.
 
-이 두 파일은 `#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]`의 Native 전용
-모듈이다. 이후 변경은 이 복원과 테스트/증거 보강뿐이므로 source `c33037bf2f`의 최적화 WASM
-`f92b4c31ae7fdd323ef15eb859e0168211db0e286d40c74b569d5a41903bc83a`를 재사용한다.
-별도 출력 경로의 Native는 재빌드하고 전쪽을 다시 비교했다. 설치된 root pkg/public WASM은 보존했다.
+## 실행 검증 대장
+
+| 검사 | 결과 |
+| --- | --- |
+| 논리 편집·서식 글·필드·range reflow 집중 회귀 | **72 PASS / 19모듈**, 계획한 모듈 모두 실행 |
+| KPS 프레임·문단 범위 / rowspan 하한·다중 종료·무효 원본 | 집중 회귀에 포함, 모두 PASS |
+| fresh WASM 실제 Chromium API·HWP/HWPX 왕복·Canvas | **36건 PASS**, [결과](assets/pr8187/browser-api-results.json) |
+| Studio 전체 테스트 | **2,716 PASS, 2 skip, 실패 0**; fresh web pkg를 namespace 안에서 연결. 기존 Node pkg 전용 2건은 해당 빌드 부재로 skip되며 실제 optimized WASM 브라우저 검증은 별도로 완료 |
+| Studio TypeScript | PASS |
+| public WASM 선언 gate | fresh pkg에서 PASS. 기존 배포 pkg의 선언 부재를 새 후보 실패로 세지 않음 |
+| release-test 전체 회귀 | **12,415 PASS**, 기존 ignore 45, 실패 0 |
+| Native Skia 공식 3종 | **4,064 PASS** = 라이브러리 4,040 + placeholder 2 + 직접 PDF 22. lib의 기존 ignore 12 |
+| Rust 전체 lint / workspace build / suite·source-unit 정책 | **전부 PASS**. source-unit 4,099로 기준 대비 증가 없음 |
+
+[필수 로컬 실행 대장](assets/pr8187/local-validation.json)에 11개 명령의 exit 0·시간·로그 지문과
+집중 모듈별 실행 수를 보존했다. 전체 회귀의 #2063 대형 CellBreak 검사는 228.091초에 완주했다.
+다른 장비·과거 실행과 조건이 달라 이를 성능 개선 또는 악화의 측정값으로 해석하지 않는다.
+[Frontend 실행 대장](assets/pr8187/frontend-validation.json)과
+[TSV·쪽별 값 무결성 확인](assets/pr8187/evidence-check.json)도 보존했다.
+
+회귀는 bwrap 파일 시스템 격리로 상용·개인 글꼴, Windows mount와 시스템 글꼴 경로를 숨긴
+최소 글꼴 환경에서 실행한다. 실제 공개 fallback 5개와 명시 fixture만 보였다. 독립 Print 비교용
+글꼴 공급과 혼동하지 않는다. Cargo는 공용 `target/pr-review`, jobs 4, tests 8로 순차 실행한다.
+
+새 KPS 검사는 전체 문단 내용·소유·테두리와 원본 HWPUNIT 높이·다음 내용 관계를 보호한다.
+65·66쪽 양쪽 raw 98% 이상과 확대 판독을 확인했으며 실제 절대 화면 px 핀은 추가하지 않았다.
+기존 KPS 검사들의 문단 소유·포함·원본 크기 관계는 유지했다. 독립 출력과 맞는 기존 기대값은
+바꾸거나 제거하지 않았다. API·보안·합성 행 원장 검사의 첫머리는 시각 비해당 이유를 기록했고,
+다른 원본의 raw를 해당 합성 입력의 측정값으로 쓰지 않았다. 새 source-unit은 추가하지 않는다.
+
+### 실행 producer
+
+| 산출물 | source / SHA-256 |
+| --- | --- |
+| 기준 Native | 제품 source가 기준 devel과 동일한 `d78048a6f0…` 빌드 / `6d2cf962975ff04f6e965e8596e579ea99f1a47d201c9c6132d89fa4237d0d24` |
+| 기준 optimized WASM | 기준 devel에서 새 빌드 / `c49ee93133bdb0856dcb29af71832e186f1cb1dd18d98a98121f33792344cccf` |
+| 최종 Native | `054ef1cd2d`와 동일한 제품 source / `90cfc746f2082b303e29684992d3ca72d2bf5d018e62f86a450ca98fd41bb808` |
+| 최종 optimized WASM | `c33037bf2f` / `f92b4c31ae7fdd323ef15eb859e0168211db0e286d40c74b569d5a41903bc83a` |
+
+`054ef1cd2d`의 제품 변경은 `cfg(all(not(target_arch="wasm32"), feature="native-skia"))` 전용 두 파일뿐이다.
+WASM에 영향이 없어 위 optimized producer를 재사용했다. 뒤의 테스트·증거 변경도 제품에 영향을 주지 않는다.
+전체 gate가 만든 Native CLI는 fingerprint `83153458…`로 달랐으나 제품 source는 같았다.
+그 CLI로 KPS 53·65·66쪽과 Normal 다단 1·2쪽을 다시 출력해 전쪽 producer의 같은 쪽 PNG와
+바이트가 모두 같음을 확인했다. [최종 CLI 경계 확인](assets/pr8187/native-postgate-smoke.json).
+root pkg/Studio public WASM SHA-256 `19e4729f73daa5a183d37b29eb09500cdd217c112383f0d643b786fce59bb3c1`는 보존했다.
+
+## 후속 원격 처리 조건
+
+필수 로컬 gate는 모두 완료했다. [원격 처리안](assets/pr8187/remote-action-plan.md)과 본문 보충·감사 댓글 초안을 준비했다. 원 contributor branch에
+원 이력을 보존한 후보를 push할 수 있는지 최신 head/권한을 확인하며, 원격 승인 뒤에만 새 head CI를
+실행·확인하고 self-review·merge·후속 댓글을 진행한다. 마지막 원격 읽기에서도 원 PR head와 devel은 고정한 SHA와 같았다.
+[조회 결과](assets/pr8187/remote-read-snapshot.json). 현재 원격 변경은 수행하지 않았다.

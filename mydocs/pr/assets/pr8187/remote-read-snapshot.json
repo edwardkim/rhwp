@@ -1,0 +1,21 @@
+{
+  "queried_at": "2026-11-03T11:52:25.657989+09:00",
+  "pull_request": {
+    "draft": false,
+    "head": "32df7b71a6e731f767e4945e3e1d79ca0cac3e58",
+    "maintainer_can_modify": true,
+    "mergeable": false,
+    "mergeable_state": "dirty",
+    "ref": "codex/platy-official-engine-contracts",
+    "repo": "semanticist21/rhwp",
+    "requested_reviewers": [
+      "edwardkim"
+    ],
+    "state": "open"
+  },
+  "devel": {
+    "ref": "refs/heads/devel",
+    "sha": "4e2cc6bb36576b95d58d4c76cd833281ea652554"
+  },
+  "writes_performed": false
+}
