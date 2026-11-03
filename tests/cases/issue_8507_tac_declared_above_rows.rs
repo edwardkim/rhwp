@@ -4,9 +4,10 @@
 //! 측정 근거(측정일 2026-11-03, `scripts/visual_sweep.py --silhouette-only --dpi 96`, 판정값
 //! `silhouette_raw_match_percent` — 색상 경계 보정 전 2px 내용 실루엣, 이진화는 스크립트 기본값,
 //! 색상 경계 대조 픽셀 `silhouette_boundary_reconciled_pixels` 는 전부 0). 후보 source 는
-//! `task/8507-tac-declared-above-rows` 의 작업 트리(src diff sha256 `cd294db40d67d9b5`),
-//! Native = native-skia release(sha256 `2bbd342df64d31d3`), fresh WASM = 같은 source 의
-//! `scripts/wasm-pack-locked.sh --target web`(`rhwp_bg.wasm` sha256 `7332ae31e59643db`).
+//! `task/8507-tac-declared-above-rows` head(`upstream/devel` `7d06d5c706` 위 리베이스, devel 대비 src diff
+//! sha256 `aef9dcec61d3d593`), Native = native-skia release(sha256 `d8f46a2973c720f0`), fresh WASM = 같은
+//! source 의 `scripts/wasm-pack-locked.sh --target web`(`rhwp_bg.wasm` sha256 `165d20fcd8870227`).
+//! 리베이스 전(source `cd294db40d67d9b5`, Native `2bbd342df64d31d3`, WASM `7332ae31e59643db`)과 TSV 가 바이트 동일.
 //! 글꼴 `RHWP_FONT_PATH` = 한컴 `ttfs/hwp`·`ttfs/windows`. 각 원본은 1쪽, 기준 PDF 도 1쪽이다.
 //!
 //! | 원본 → 기준 Print | Native p1 | fresh WASM p1 |
