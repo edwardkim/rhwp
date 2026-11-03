@@ -519,7 +519,11 @@ fn para_head_text_offset_type_str(attr: u32) -> &'static str {
     }
 }
 
-// [#2947] parser 측 parse_numbering_format_code() (표 43) 의 역매핑.
+// [#2947] parser 측 parse_numbering_format_code() (표 41) 의 역매핑.
+// [#8534] 코드 0~14 를 모두 OWPML `NumberType1` 스펙 리터럴로 쓴다. 종전엔 12·13 을
+// 비스펙 별칭(HANGUL_NUMBER·HANJA_NUMBER)으로, 6·7·9·10·11·14 를 DIGIT 으로 써서
+// 한/글이 그 번호를 아라비아 숫자로 그렸다(rhwp 파서는 별칭도 받아 왕복으로는 안 드러남).
+// 각주·미주 번호의 `note_number_format_str`(section.rs)과 같은 표기다.
 fn numbering_format_str(code: u8) -> &'static str {
     match code {
         1 => "CIRCLED_DIGIT",
@@ -527,9 +531,15 @@ fn numbering_format_str(code: u8) -> &'static str {
         3 => "ROMAN_SMALL",
         4 => "LATIN_CAPITAL",
         5 => "LATIN_SMALL",
+        6 => "CIRCLED_LATIN_CAPITAL",
+        7 => "CIRCLED_LATIN_SMALL",
         8 => "HANGUL_SYLLABLE",
-        12 => "HANGUL_NUMBER",
-        13 => "HANJA_NUMBER",
+        9 => "CIRCLED_HANGUL_SYLLABLE",
+        10 => "HANGUL_JAMO",
+        11 => "CIRCLED_HANGUL_JAMO",
+        12 => "HANGUL_PHONETIC",
+        13 => "IDEOGRAPH",
+        14 => "CIRCLED_IDEOGRAPH",
         _ => "DIGIT",
     }
 }
