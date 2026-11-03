@@ -10,7 +10,7 @@ last_verified: 2026-11-03
 ## 현재 단계
 
 접수·최소 사전 분류·reviewer 지정·source/CI 조회·실제 merge-tree 시뮬레이션을 완료했다.
-다섯 PR의 충돌 보정 방침은 아래에 구체화했다. 이 계획은 현재 base의 실행·시각 검증 완료를 뜻하지 않는다.
+다섯 PR의 충돌 보정 방침을 승인받아 10건을 누적 적용했다. 이 계획은 현재 base의 실행·시각 검증 완료를 뜻하지 않는다.
 원 head의 기존 녹색 CI와 앞으로 검증할 누적 후보를 구분하며 원 PR별 판정을 유지한다.
 
 ## 대상과 기준
@@ -88,7 +88,7 @@ last_verified: 2026-11-03
 
 - 완료: 대상 선정, 10건 reviewer 지정/확인, 최신 devel 동기화, 원 head 보존 fetch, 원 CI/코드·입력 목록 조사, 10건 merge-tree.
 - 기존 원 head 체크에 failure/timed_out/cancelled는 없다. neutral/skip은 실행 성공으로 세지 않았다. 현재 기준에서의 재현·누적 후보의 실행·시각 검증은 아직 수행하지 않았다.
-- 로컬 코드 보정은 [local_validation.md 4.2](../manual/pr_review/local_validation.md#42-merge-simulation)의 “conflict 해결 방침은 작업지시자 결정이 필요하다”에 따라 위 다섯 PR의 통합 방침 승인을 기다린다.
+- 로컬 충돌 보정 승인을 받았고 열 원 head를 보존한 merge 후보를 구성했다. 원격 변경은 아직 수행하지 않았다.
 - 이번 계획 승인은 10건의 로컬 보정·필수 검증을 한 단위로 완료하는 범위다. 원격 제출·merge 승인과 구분한다.
 
 [선정·reviewer·원 head CI·충돌 원본 증거](assets/semanticist21-20261103/intake.json).
@@ -97,3 +97,16 @@ last_verified: 2026-11-03
 ## 작업지시자 승인과 현재 적용
 
 2026-11-03T19:44:01.643835+09:00에 “메인터너 보정·10건 필수 로컬 검증 진행”을 승인받았다. 같은 계약의 누적 충돌까지 포함한 로컬 보정·검증을 이어 간다. 원격 push·공개 댓글·merge는 별도 범위다.
+
+## 누적 후보의 초기 실행 검사
+
+10건의 원 기여 commit을 보존한 merge 후보 `97f2d5c8ec`에서 source-unit·suite manifest
+검사가 통과했다. 최초 Native Clippy가 #8235 자동 병합의 중복 API 2개·HTML 호출/가시성
+2개·hit-test 호출/튜플 2개를 검출했다. 현행 API를 유지하고 새 호출 계약을 연결해 보정했으며
+재실행한 Native root Clippy는 통과했다. 집중 회귀를 최소 글꼴 파일 시스템 격리에서 진행한다.
+
+독립 Print 7건은 원본별 지정한 한컴 engine의 비동기 start/status/download로 새로 확보했다.
+일반 form-01의 오래된 2022 PDF가 빈 인쇄본인 것을 직접 확인했다. 이 출력으로 계산한
+초기 0%는 제품 판정에 사용하지 않고, 기존 #7578의 동일 입력·사용자 확인 2024 Print 계약으로
+다시 측정한다. notice 24쪽의 기존 12·13쪽 차이는 기준 devel에서도 관측되므로 새 후보에서
+같은 입력·PDF·글꼴로 직접 대조한다. 기준 자체의 미달을 후보의 면제 근거로 삼지 않는다.

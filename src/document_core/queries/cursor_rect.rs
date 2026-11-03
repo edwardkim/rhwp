@@ -2173,6 +2173,7 @@ impl DocumentCore {
                                 node.bbox.y,
                                 node.bbox.width,
                                 node.bbox.height,
+                                line_id,
                             ));
                         }
                     }
@@ -2247,6 +2248,7 @@ impl DocumentCore {
             &mut guide_runs,
             &mut cell_bboxes,
             &mut textbox_bboxes,
+            None,
             None,
             None,
             None,
