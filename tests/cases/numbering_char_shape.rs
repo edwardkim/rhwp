@@ -158,3 +158,31 @@ fn number_char_shape_reaches_hwpx_numbering_kept_from_source() {
     );
     assert_sizes(&markers(&saved), &[PT20_PX]);
 }
+
+fn fixture(name: &str) -> HwpDocument {
+    let path = format!(
+        "{}/tests/fixtures/numbering_char_shape/{name}",
+        env!("CARGO_MANIFEST_DIR")
+    );
+    HwpDocument::from_bytes(&std::fs::read(path).unwrap()).unwrap()
+}
+
+/// 한/글 12.30 Mac 저장본(저장자 이름만 바꿈). 번호 글자 모양은 기준 크기 0(본문 글자 크기 따름)이다.
+///
+/// - `follow-two-sizes`: 20pt 문단과 10pt 문단에 기울임 번호. 한/글은 20pt·10pt 번호로 그린다.
+/// - `follow-end-20pt.hwp`: 글자는 10pt, 문단 끝만 20pt인 문단에 진하게 번호. 한/글은 20pt 번호로 그린다.
+#[test]
+fn hancom_follow_body_size_numbers_draw_at_the_paragraph_end_size() {
+    for (name, sizes) in [
+        ("follow-two-sizes.hwp", vec![PT20_PX, PT10_PX]),
+        ("follow-two-sizes.hwpx", vec![PT20_PX, PT10_PX]),
+        ("follow-end-20pt.hwp", vec![PT20_PX]),
+    ] {
+        let doc = fixture(name);
+        let got = markers(&doc);
+        assert_eq!(got.len(), sizes.len(), "{name}: {got:?}");
+        for ((size, _), want) in got.iter().zip(&sizes) {
+            assert!((size - want).abs() < 0.06, "{name}: {got:?}");
+        }
+    }
+}
