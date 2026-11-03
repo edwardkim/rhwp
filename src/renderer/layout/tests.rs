@@ -1634,7 +1634,7 @@ fn test_expand_numbering_format_digit() {
         heads: [NumberingHead {
             number_format: 0,
             ..Default::default()
-        }; 7],
+        }; 10],
         level_formats: [
             "^1.".to_string(),
             "^2.".to_string(),
@@ -1643,12 +1643,15 @@ fn test_expand_numbering_format_digit() {
             String::new(),
             String::new(),
             String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
         ],
         start_number: 0,
-        level_start_numbers: [1, 1, 1, 1, 1, 1, 1],
+        level_start_numbers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         raw_para_heads: None,
     };
-    let counters = [3, 2, 1, 0, 0, 0, 0];
+    let counters = [3, 2, 1, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^1.",
         &counters,
@@ -1679,7 +1682,7 @@ fn test_expand_numbering_format_digit() {
 
 #[test]
 fn test_expand_numbering_format_hangul() {
-    let mut heads = [NumberingHead::default(); 7];
+    let mut heads = [NumberingHead::default(); 10];
     heads[1].number_format = 8; // HangulGaNaDa
     let numbering = Numbering {
         raw_data: None,
@@ -1692,12 +1695,15 @@ fn test_expand_numbering_format_hangul() {
             String::new(),
             String::new(),
             String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
         ],
         start_number: 0,
-        level_start_numbers: [1, 1, 1, 1, 1, 1, 1],
+        level_start_numbers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         raw_para_heads: None,
     };
-    let counters = [1, 3, 0, 0, 0, 0, 0];
+    let counters = [1, 3, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^2.",
         &counters,
@@ -1715,7 +1721,7 @@ fn test_expand_numbering_format_zero_start_number_does_not_underflow() {
         heads: [NumberingHead {
             number_format: 0,
             ..Default::default()
-        }; 7],
+        }; 10],
         level_formats: [
             "^1.".to_string(),
             String::new(),
@@ -1724,12 +1730,15 @@ fn test_expand_numbering_format_zero_start_number_does_not_underflow() {
             String::new(),
             String::new(),
             String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
         ],
         start_number: 0,
-        level_start_numbers: [0, 1, 1, 1, 1, 1, 1],
+        level_start_numbers: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         raw_para_heads: None,
     };
-    let counters = [1, 0, 0, 0, 0, 0, 0];
+    let counters = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
     let result = expand_numbering_format(
         "^1.",
@@ -1750,7 +1759,7 @@ fn test_expand_numbering_format_level_path() {
         heads: [NumberingHead {
             number_format: 0,
             ..Default::default()
-        }; 7],
+        }; 10],
         level_formats: [
             "^N".to_string(),
             "^N".to_string(),
@@ -1759,14 +1768,17 @@ fn test_expand_numbering_format_level_path() {
             String::new(),
             String::new(),
             String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
         ],
         start_number: 0,
-        level_start_numbers: [1, 1, 1, 1, 1, 1, 1],
+        level_start_numbers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         raw_para_heads: None,
     };
 
     // level 0: "1.", 카운터 전진 후 "2."
-    let counters = [1, 0, 0, 0, 0, 0, 0];
+    let counters = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^N",
         &counters,
@@ -1775,7 +1787,7 @@ fn test_expand_numbering_format_level_path() {
         0,
     );
     assert_eq!(result, "1.");
-    let counters = [2, 0, 0, 0, 0, 0, 0];
+    let counters = [2, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^N",
         &counters,
@@ -1786,7 +1798,7 @@ fn test_expand_numbering_format_level_path() {
     assert_eq!(result, "2.");
 
     // level 1: "1.1." → "1.4."
-    let counters = [1, 1, 0, 0, 0, 0, 0];
+    let counters = [1, 1, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^N",
         &counters,
@@ -1795,7 +1807,7 @@ fn test_expand_numbering_format_level_path() {
         1,
     );
     assert_eq!(result, "1.1.");
-    let counters = [1, 4, 0, 0, 0, 0, 0];
+    let counters = [1, 4, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^N",
         &counters,
@@ -1806,7 +1818,7 @@ fn test_expand_numbering_format_level_path() {
     assert_eq!(result, "1.4.");
 
     // ^n: 후행 마침표 없음
-    let counters = [2, 3, 0, 0, 0, 0, 0];
+    let counters = [2, 3, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^n",
         &counters,
@@ -1827,7 +1839,7 @@ fn test_expand_numbering_format_level_path() {
     assert_eq!(result, "[2.3]");
 
     // 상위 수준 카운터 0이면 시작번호로 폴백
-    let counters = [0, 2, 0, 0, 0, 0, 0];
+    let counters = [0, 2, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^N",
         &counters,
@@ -1841,7 +1853,7 @@ fn test_expand_numbering_format_level_path() {
 #[test]
 fn test_expand_numbering_format_level_path_mixed_format() {
     // 수준별 number_format 혼합: L1=Digit, L2=HangulGaNaDa → "1.가."
-    let mut heads = [NumberingHead::default(); 7];
+    let mut heads = [NumberingHead::default(); 10];
     heads[1].number_format = 8; // HangulGaNaDa
     let numbering = Numbering {
         raw_data: None,
@@ -1854,12 +1866,15 @@ fn test_expand_numbering_format_level_path_mixed_format() {
             String::new(),
             String::new(),
             String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
         ],
         start_number: 0,
-        level_start_numbers: [1, 1, 1, 1, 1, 1, 1],
+        level_start_numbers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         raw_para_heads: None,
     };
-    let counters = [1, 1, 0, 0, 0, 0, 0];
+    let counters = [1, 1, 0, 0, 0, 0, 0, 0, 0, 0];
     let result = expand_numbering_format(
         "^N",
         &counters,

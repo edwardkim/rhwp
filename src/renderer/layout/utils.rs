@@ -5,7 +5,7 @@ use super::super::render_tree::*;
 use super::super::{format_number, ArrowStyle, LineStyle, NumberFormat as NumFmt, ShapeStyle};
 use crate::model::bin_data::BinDataContent;
 use crate::model::image::Picture;
-use crate::model::style::{HeadType, Numbering};
+use crate::model::style::{HeadType, Numbering, NUMBERING_LEVELS};
 
 /// bin_data_id(1-indexed 순번)로 BinDataContent를 찾는다.
 /// bin_data_id는 doc_info의 BinData 레코드 순번(1부터 시작)이며,
@@ -225,7 +225,7 @@ pub(crate) fn default_outline_numbering() -> Numbering {
         head.char_shape_id = u32::MAX;
     }
     n.start_number = 1;
-    n.level_start_numbers = [1; 7];
+    n.level_start_numbers = [1; NUMBERING_LEVELS];
     n
 }
 
@@ -236,16 +236,16 @@ const DEFAULT_OUTLINE_HEAD_TEXT_DISTANCE_PERCENT: i16 = 50;
 
 /// 번호 형식 문자열의 `^` 제어코드를 실제 번호로 치환.
 ///
-/// - `^1`~`^7`: 해당 수준의 번호
+/// - `^1`~`^9`, `^:`: 해당 수준(1~10)의 번호. 한/글은 10수준을 `^:`(숫자 9 다음 글자)로 쓴다
 /// - `^n`: 수준 1~현재 수준의 레벨 경로 (예: `1.1.1`)
 /// - `^N`: 레벨 경로 + 후행 마침표 (예: `1.1.1.`)
 ///
 /// `current_level`은 0-based 수준 인덱스(`para_level`).
 pub(crate) fn expand_numbering_format(
     format_str: &str,
-    counters: &[u32; 7],
+    counters: &[u32; NUMBERING_LEVELS],
     numbering: &Numbering,
-    start_numbers: &[u32; 7],
+    start_numbers: &[u32; NUMBERING_LEVELS],
     current_level: usize,
 ) -> String {
     let format_level = |idx: usize| -> String {
@@ -267,17 +267,17 @@ pub(crate) fn expand_numbering_format(
     while let Some(ch) = chars.next() {
         if ch == '^' {
             match chars.peek() {
-                Some(&digit) if digit.is_ascii_digit() => {
+                Some(&digit @ '0'..=':') => {
                     chars.next();
                     let level_ref = (digit as u8 - b'0') as usize;
-                    if level_ref >= 1 && level_ref <= 7 {
+                    if (1..=NUMBERING_LEVELS).contains(&level_ref) {
                         result.push_str(&format_level(level_ref - 1));
                     }
                     continue;
                 }
                 Some(&code @ ('n' | 'N')) => {
                     chars.next();
-                    for idx in 0..=current_level.min(6) {
+                    for idx in 0..=current_level.min(NUMBERING_LEVELS - 1) {
                         if idx > 0 {
                             result.push('.');
                         }

@@ -2921,17 +2921,17 @@ fn is_tolerated_endnote_column_bottom_bleed_with_limit(
 pub(crate) struct NumberingState {
     /// 현재 활성 numbering_id
     current_id: Option<u16>,
-    /// 수준별 카운터 (0~6 → 1~7수준)
-    counters: [u32; 7],
+    /// 수준별 카운터 (0~9 → 1~10수준)
+    counters: [u32; crate::model::style::NUMBERING_LEVELS],
     /// numbering_id별 카운터 히스토리 ("이전 번호 목록에 이어" 지원)
-    history: std::collections::HashMap<u16, [u32; 7]>,
+    history: std::collections::HashMap<u16, [u32; crate::model::style::NUMBERING_LEVELS]>,
 }
 
 impl NumberingState {
     /// 카운터를 초기 상태로 리셋
     fn reset(&mut self) {
         self.current_id = None;
-        self.counters = [0; 7];
+        self.counters = [0; crate::model::style::NUMBERING_LEVELS];
         self.history.clear();
     }
 
@@ -2941,9 +2941,9 @@ impl NumberingState {
         numbering_id: u16,
         level: u8,
         restart: Option<crate::model::paragraph::NumberingRestart>,
-    ) -> [u32; 7] {
+    ) -> [u32; crate::model::style::NUMBERING_LEVELS] {
         use crate::model::paragraph::NumberingRestart;
-        let level = (level as usize).min(6);
+        let level = (level as usize).min(crate::model::style::NUMBERING_LEVELS - 1);
 
         // numbering_id가 변경되면 현재 카운터를 히스토리에 저장하고
         // 새 numbering_id의 히스토리에서 복원 (없으면 리셋)
@@ -2961,7 +2961,7 @@ impl NumberingState {
             } else {
                 // 처음 등장하는 id → 상위 레벨 카운터 상속, 현재 레벨 이하 리셋
                 let prev = self.counters;
-                self.counters = [0; 7];
+                self.counters = [0; crate::model::style::NUMBERING_LEVELS];
                 self.counters[..level].copy_from_slice(&prev[..level]);
             }
             self.current_id = Some(numbering_id);
@@ -2976,9 +2976,7 @@ impl NumberingState {
                 // 해당 수준의 카운터를 지정 값 - 1로 설정 (advance에서 +1 하므로)
                 self.counters[level] = start.saturating_sub(1);
                 // 하위 수준 리셋
-                for i in (level + 1)..7 {
-                    self.counters[i] = 0;
-                }
+                self.counters[level + 1..].fill(0);
             }
             None => {
                 // 기본: 앞 번호 목록에 이어
@@ -2989,9 +2987,7 @@ impl NumberingState {
         self.counters[level] += 1;
 
         // 하위 수준 리셋
-        for i in (level + 1)..7 {
-            self.counters[i] = 0;
-        }
+        self.counters[level + 1..].fill(0);
 
         self.counters
     }

@@ -8268,17 +8268,13 @@ impl HwpDocument {
         // 기본 7수준 번호 형식 생성 (한컴 기본 패턴)
         use crate::model::style::{Numbering, NumberingHead};
         let mut n = Numbering::default();
-        n.level_formats = [
-            "^1.".to_string(), // 1.
-            "^2)".to_string(), // 가)
-            "^3)".to_string(), // (1)
-            "^4)".to_string(), // (가)
-            "^5)".to_string(), // ①
-            "^6)".to_string(), // ㄱ)
-            "^7)".to_string(), // a)
-        ];
+        // 1. 가) (1) (가) ① ㄱ) a) — 8~10수준은 비워 둔다.
+        let texts = ["^1.", "^2)", "^3)", "^4)", "^5)", "^6)", "^7)"];
+        for (format, text) in n.level_formats.iter_mut().zip(texts) {
+            *format = text.to_string();
+        }
         n.start_number = 1;
-        n.level_start_numbers = [1; 7];
+        n.level_start_numbers = [1; crate::model::style::NUMBERING_LEVELS];
         // 수준별 번호 형식 코드 설정
         // [#7418] 한/글 기본 머리 모양은 자동 내어쓰기(속성 bit3)다 — 둘째 줄부터 본문 시작에 맞춘다.
         n.heads[0] = NumberingHead {
@@ -8341,7 +8337,7 @@ impl HwpDocument {
                     let arr_str = &rest[bracket_start + 1..bracket_start + bracket_end];
                     let mut level = 0;
                     for part in arr_str.split(',') {
-                        if level >= 7 {
+                        if level >= crate::model::style::NUMBERING_LEVELS {
                             break;
                         }
                         let trimmed = part.trim().trim_matches('"');
@@ -8362,7 +8358,7 @@ impl HwpDocument {
                     let arr_str = &rest[bracket_start + 1..bracket_start + bracket_end];
                     let mut level = 0;
                     for part in arr_str.split(',') {
-                        if level >= 7 {
+                        if level >= crate::model::style::NUMBERING_LEVELS {
                             break;
                         }
                         if let Ok(code) = part.trim().parse::<u8>() {
@@ -8379,7 +8375,7 @@ impl HwpDocument {
         }
 
         n.start_number = json_i32(json, "startNumber").unwrap_or(1) as u16;
-        n.level_start_numbers = [n.start_number as u32; 7];
+        n.level_start_numbers = [n.start_number as u32; crate::model::style::NUMBERING_LEVELS];
         self.core.document.doc_info.numberings.push(n);
         // 새 번호 정의는 DocInfo 원본 스트림에 없어 HWP 저장이 모델에서 다시 쓰게 한다.
         self.core.document.doc_info.raw_stream_dirty = true;
