@@ -1,3 +1,16 @@
+//! 관계형·고정형 회귀: scaffold 개요 번호의 모델 왕복과 독립 Print 문자열을 보호한다.
+//! 주석 갱신: 2026-11-03 22:10 KST. 직전 파일 변경: 2026-11-03 22:00:54 KST,
+//! `dfac7066081763b5a7a9a15660aa019786d13a48`.
+//! 시각 측정: 2026-11-03 22:03~22:07 KST, 96 DPI, Native/fresh WASM,
+//! 판정값은 `silhouette_raw_match_percent`(색상 경계 보정 전 2px 실루엣)이다.
+//! A와 B의 전체 1쪽은 두 출력 경로에서 각각 100.00%이며, 미달 쪽은 없다.
+//! 근거: `mydocs/pr/assets/issue_8540/{a,b}-{native,wasm}.tsv`와 같은 경로의
+//! `*-review.png`·`*-overlay.png`; 원본은
+//! `mydocs/pr/assets/scaffold_outline_numbering/scaffold_outline_{a,b}.hwpx`,
+//! 독립 Print는 `pdf/issue8540/scaffold_outline_{a,b}-2024.pdf`이다.
+//! 측정한 통합 renderer 코드 SHA는 `0884eafc7b2c34fae20a765109ff314514175e4b`;
+//! 본 파일의 scaffold 모델 변경은 실제 HWPX 출력과 아래 번호 문자열 검사로 보호한다.
+//!
 //! scaffold 명세의 `outline_numbering` 으로 개요 번호 모양을 지정한다.
 //!
 //! ## 무엇이 부족했나
@@ -15,7 +28,7 @@
 //!    계약을 왕복한다.
 //! 2. **한/글 새 문서의 개요 기본값**: `1.` `가.` `1)` `가)` `(1)` `(가)` `①` — 명세가 앞쪽 수준만
 //!    주면 나머지는 이 값으로 채운다.
-//! 3. **한/글 출력 대조**: 이 형식으로 만든 HWPX 를 한/글 `FileSaveAsPdf` 로 내보내면 `I.` `1.`
+//! 3. **한/글 출력 대조**: 이 형식으로 만든 HWPX 를 한/글 2024 Print 경로로 인쇄하면 `I.` `1.`
 //!    `가.` `가)` `(1)` `(가)` `①` 과 `i)` `A.` `(a)` 가 그대로 나온다. 일이삼·一二三(코드 12·13)은
 //!    HWPX 직렬화 낱말을 한/글이 숫자로 그리므로 열지 않는다.
 //!
