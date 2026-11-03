@@ -2936,6 +2936,35 @@ impl HwpDocument {
 
     // ─── Phase 1: 기본 편집 보조 API ───────────────────────────
 
+    /// 본문 캐럿 자리(`charOffset`은 논리 오프셋)에서 구역을 나눈다 — 한/글 [쪽-구역 나누기].
+    /// 새 구역은 앞 구역의 구역 정의와 캐럿 자리의 단 정의를 잇고 새 쪽에서 시작한다.
+    ///
+    /// 반환: `{"ok":true,"section":<새 구역>,"para":0,"charOffset":0}`
+    #[wasm_bindgen(js_name = splitSection)]
+    pub fn split_section(
+        &mut self,
+        section_idx: u32,
+        para_idx: u32,
+        char_offset: u32,
+    ) -> Result<String, JsValue> {
+        self.split_section_native(
+            section_idx as usize,
+            para_idx as usize,
+            char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// `sectionIdx` 구역을 앞 구역에 합친다 — 한/글에서 구역 경계를 지울 때와 같다.
+    /// 합친 문단은 앞 구역의 모양을 따른다. 두 문단을 잇는 일은 `mergeParagraph`가 한다.
+    ///
+    /// 반환: `{"ok":true,"section":<앞 구역>,"para":<옮겨 온 첫 문단>}`
+    #[wasm_bindgen(js_name = mergeSection)]
+    pub fn merge_section(&mut self, section_idx: u32) -> Result<String, JsValue> {
+        self.merge_section_native(section_idx as usize)
+            .map_err(|e| e.into())
+    }
+
     /// 구역(Section) 수를 반환한다.
     #[wasm_bindgen(js_name = getSectionCount)]
     pub fn get_section_count(&self) -> u32 {
