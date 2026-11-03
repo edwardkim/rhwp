@@ -148,3 +148,18 @@ PNG 표식 계약 검사 4건은 최소 글꼴 환경에서 통과했다.
 다음 단계는 원 PR 26개 입력 및 #8389·#8397의 2,153행을 최종 코드에서
 끝까지 비교하고, 새 devel의 #8499를 반영해 기능 보존과 로컬 전체 회귀를
 확인하는 것이다.
+
+## #8499 반영 뒤의 검증 진행
+
+2026-11-03에 `upstream/devel`의 `4e2cc6bb36576b95d58d4c76cd833281ea652554`
+(시험지 이미지 생성, [PR #8499](https://github.com/edwardkim/rhwp/pull/8499)) 위로
+작업 브랜치를 충돌 없이 리베이스했다. [리베이스 로그](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-rebase-8499.log)를
+보존한다. 새 이력의 제품 보정은 `5aa6ee08dd`, 표면 계약 검사는 `3739843004`다.
+새 base의 변경 파일과 이 브랜치의 순변경 파일은 겹치지 않지만, 이 사실만으로
+출력 유지가 입증되지는 않는다.
+
+최소 글꼴 환경에서 #8499의 `issue_665_ingest_images` 집중 검사 9건을
+[새 base 로그](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-rebased-8499-minfont.log)로
+모두 통과했다. 같은 환경의 전체 Rust 회귀와 정확한 새 head의 fresh WASM·시각
+검증은 진행 중이다. 앞 절의 64쪽 TSV는 리베이스 전 이 후보 코드에서 산출했으므로
+새 head의 최종 증적으로 표시하지 않는다.
