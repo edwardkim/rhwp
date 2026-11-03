@@ -80,3 +80,10 @@ hwpx_table_grid_duplicate_ids; 빈 논리 행·0/같은 ID·중첩·비중복 ID
 승인된 원격 범위에서 게시·API 재확인한다. 아직 없는 수치나 이미지 URL은 만들지 않는다.
 
 [누적 검토 계획](semanticist21_20261103_review_plan.md) · [원 head·CI·충돌 증거](assets/semanticist21-20261103/intake.json).
+
+## 로컬 보정 기록
+
+개체 ID 재할당을 기존 Storage projection에 연결했다. 표 clone·격자 재구성·fingerprint·기록
+할당과 실패 전달은 유지한다. 문서 사전 순회의 실제 ID를 예산이 연결된 ID 풀에 보관해
+뒤에 직렬화할 원본 ID와도 충돌하지 않는 ID를 발급한다. 격자 메타데이터와 무관한 중복은
+원본대로 보존한다. 실제 실행 검증은 누적 후보에서 이어 간다.
