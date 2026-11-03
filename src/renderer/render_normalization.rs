@@ -752,7 +752,10 @@ fn stored_first_cell_line_says_shrunk(table: &Table, body_width: u32, source_wid
     let declared_inner = i64::from(cell.width) - padding_h;
     let scale = f64::from(body_width) / f64::from(source_width);
     let shrunk_inner = (f64::from(cell.width) * scale) as i64 - padding_h;
-    let stored = i64::from(seg.segment_width);
+    // 저장 줄은 칸 안쪽 왼끝에서 `column_start` 만큼 들어가 시작한다(문단 왼쪽 여백·들여쓰기).
+    // 칸 폭과 비교할 값은 줄의 오른끝(`column_start + segment_width`)이다. 줄 폭만 쓰면 왼쪽
+    // 여백만큼 좁게 읽어 축소로 오판한다(docs#658 첫 칸: 252 + 11572 = 11824 = 선언 안쪽 11823).
+    let stored = i64::from(seg.column_start.max(0)) + i64::from(seg.segment_width);
     (stored - shrunk_inner).abs() < (stored - declared_inner).abs()
 }
 
