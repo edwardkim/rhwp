@@ -2,7 +2,7 @@
 
 2026-11-03 기준 `upstream/devel`의 고정 SHA는
 `ea86816b5316dfeeb47ecf20df97abfd4b02da73`이다. 후보 제품 코드의 마지막 변경은
-`d56930dda723fff1c4e45675979b44604997f0e2`이며, 이 문서는 아직 최종 승인 기록이 아니다.
+`59b4a42e292c63f797ee5a4d28e72cd35d739725`이며, 이 문서는 아직 최종 승인 기록이 아니다.
 
 ## 독립 대조와 남은 문제
 
@@ -123,11 +123,19 @@ Print 프로필·축 변환 없는 WMFC 중간 표면에 한정한다. 원본 �
 `97.38278`, `97.92240`, `96.03240`, `89.11000`, `93.54898`%와
 비교하면 최대 하락은 30쪽의 1.40%p이고, 35쪽은 90%를 넘는다.
 
-같은 입력의 [64쪽 전체 Native 로그](../../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-all-native.log)와
-[전체 TSV](../../../output/pr-review/planet6897-ordered-20261031/book-validation/chart-print-frame-all-native/chart-print-frame-all/silhouette.tsv)에서
+같은 입력의 [64쪽 전체 Native 로그](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-all-native.log)와
+[전체 TSV](../../output/pr-review/planet6897-ordered-20261031/book-validation/chart-print-frame-all-native/chart-print-frame-all/silhouette.tsv)에서
 누락 0쪽, 최저 94.90%, 고정 devel 대비 2%p 초과 하락 0쪽을 확인했다.
-30쪽은 1.40%p, 34쪽은 0.32%p 하락했다. fresh WASM과 다른 원 PR
-입력의 전쪽 대조, #8389·#8397 기준 TSV 대조는 이후 최종 코드로 수행한다.
+30쪽은 1.40%p, 34쪽은 0.32%p 하락했다. 같은 입력의
+[64쪽 fresh WASM 로그](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-all-wasm.log)와
+[전체 TSV](../../output/pr-review/planet6897-ordered-20261031/book-validation/chart-print-frame-all-wasm/chart-print-frame-all/silhouette.tsv)는
+누락 0쪽, 최저 94.92%, 고정 devel 대비 2%p 초과 하락 0쪽이다. 두 경로
+모두 30·34쪽만 각각 1.40·0.32%p 낮다. 30·35쪽의 review와 overlay를
+확대하면 차트 수치·범례·후속 표의 순서는 맞고 얇은 격자선·테두리에 색
+차이가 남는다. 메타파일 중간 표면의 단일 Print 프레임 전환 검사 1건과
+PNG 표식 계약 검사 4건은 최소 글꼴 환경에서 통과했다.
+
+다른 원 PR 입력의 전쪽 대조와 #8389·#8397 기준 TSV 대조는 현재 진행 중이다.
 
 ## 검증 도구 보정
 
@@ -137,5 +145,6 @@ Print 프로필·축 변환 없는 WMFC 중간 표면에 한정한다. 원본 �
 공급한다. 관련 Node 검사 15개가 통과했고, 새 출력 폴더에서 이 178쪽을 완료했으며
 최저 raw는 92.56%였다. 이 도구 보정은 제품 출력의 판정 기준을 변경하지 않는다.
 
-다음 단계는 #8341 차트 64쪽 전체를 원인 보정한 뒤 Native/fresh WASM으로 재산출하고,
-원 PR 26개 입력 및 #8389·#8397의 2,153행을 최종 코드에서 다시 비교하는 것이다.
+다음 단계는 원 PR 26개 입력 및 #8389·#8397의 2,153행을 최종 코드에서
+끝까지 비교하고, 새 devel의 #8499를 반영해 기능 보존과 로컬 전체 회귀를
+확인하는 것이다.

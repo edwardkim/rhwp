@@ -1,5 +1,5 @@
 //! 관계형: PNG 출처·CRC·보간·픽셀 보존의 합성 프로토콜 검사. 페이지 px 핀 없음.
-//! 주석 갱신: 2026-11-03T02:30:01+09:00. 직전 변경 20c9678b01, 2026-11-01T13:14:23+09:00.
+//! 주석 갱신: 2026-11-03T10:49:55+09:00. 직전 변경 2c19aa6129, 2026-11-03T02:38:42+09:00.
 //! PNG 계약의 실제 제품 소스를 통합 suite에서 검사한다.
 //! private 함수를 테스트용 공개 API로 늘리지 않고 같은 원본 모듈을 사용한다.
 #[allow(dead_code)]
@@ -31,11 +31,13 @@ fn print_transfer_marker_keeps_source_color_alpha_and_dimensions() {
     let mut surface = source.clone();
     mark_metafile_surface(&mut surface, false);
     assert!(metafile_surface(&surface));
+    assert!(!intermediate_metafile_surface(&surface));
     assert!(!print_bitmap_reconstruction(&surface));
     assert!(!metafile_surface(&printed));
     assert_eq!(interpolation(&surface), None);
     let mut intermediate = source.clone();
     mark_metafile_surface(&mut intermediate, true);
+    assert!(intermediate_metafile_surface(&intermediate));
     assert!(
         !metafile_surface(&intermediate),
         "중간 표면은 최종 장치 표면이 아니다"
