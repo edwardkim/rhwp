@@ -22437,7 +22437,10 @@ impl LayoutEngine {
                 if after_start && index <= start {
                     return false;
                 }
-                if after_start && unit.vis_start == 0 && unit.para_idx > 0 {
+                // 시작 컷이 없는 행도 셀 좌표로 이어진 앞 문단 뒤에서 문단 첫 줄이
+                // 새 원점(0)으로 다시 시작하면 같은 저장 쪽 경계다. 줄 단위 재시작
+                // 판정은 문단 첫 줄을 다루지 않으므로 문단 재시작 판정을 함께 쓴다.
+                if (after_start || !source_owned) && unit.vis_start == 0 && unit.para_idx > 0 {
                     return self.stored_plain_paragraph_restart(
                         cell,
                         table,
