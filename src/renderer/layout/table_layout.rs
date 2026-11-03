@@ -18887,41 +18887,6 @@ impl LayoutEngine {
         Some(trim)
     }
 
-    /// 선택한 블록의 모든 소비 셀이 같은 저장 첫 프레임 경계에서 끝나는지 확인한다.
-    /// 소비하지 않은 다음 행은 제외하되, 다른 곳에서 끝난 셀이 있으면 인정하지 않는다.
-    pub(crate) fn row_block_cut_ends_at_saved_first_line_restart(
-        &self,
-        table: &crate::model::table::Table,
-        block: (usize, usize),
-        start_cut: &[usize],
-        end_cut: &[usize],
-        styles: &ResolvedStyleSet,
-    ) -> bool {
-        let mut cells = Self::row_block_cells(table, block.0, block.1);
-        cells.sort_by_key(|cell| (cell.row, cell.col));
-        let mut consumed = false;
-        for (i, cell) in cells.iter().enumerate() {
-            let units = self.cell_units(cell, table, styles);
-            let start = start_cut.get(i).copied().unwrap_or(0).min(units.len());
-            let end = end_cut
-                .get(i)
-                .copied()
-                .unwrap_or(start)
-                .clamp(start, units.len());
-            if end == start {
-                continue;
-            }
-            // A blank source line can own the boundary without contributing
-            // a trailing advance. Boundary proof and the amount trimmed are
-            // distinct; do not infer source ownership from a positive height.
-            if !self.native_first_line_restart_cut_closes_frame(table, cell, &units, start, end) {
-                return false;
-            }
-            consumed = true;
-        }
-        consumed
-    }
-
     /// [#7203] 저장 사다리가 **같은 문단 안에서** 되감기는 조각 경계의 트림.
     ///
     /// 위 `native_multirow_saved_reset_trailing_trim` 은 **문단 경계** reset 만 본다.
