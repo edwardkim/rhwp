@@ -1,0 +1,34 @@
+[
+  {
+    "name": "base-native",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "cwd": "/home/edward/mygithub/rhwp-worktrees/semanticist21-20261103-base",
+    "exit": 0,
+    "seconds": 382.69,
+    "sha256": "7493512e622092356803f91a8699527df3bc532ff541e107cce56ad24123231e"
+  },
+  {
+    "name": "base-wasm",
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261103/base-wasm"
+    ],
+    "cwd": "/home/edward/mygithub/rhwp-worktrees/semanticist21-20261103-base",
+    "exit": 0,
+    "seconds": 766.55,
+    "sha256": "2e04ea4215214af1e5cc808c978bbeeb97e64513193cc79103c85fb8d8ba1e00"
+  }
+]

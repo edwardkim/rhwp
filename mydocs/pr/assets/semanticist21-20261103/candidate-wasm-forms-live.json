@@ -1,0 +1,115 @@
+{
+  "live": {
+    "formCount": 16,
+    "bodyRects": [
+      {
+        "pageIndex": 0,
+        "x": 113.4,
+        "y": 132.3,
+        "width": 566.9,
+        "height": 26.5
+      },
+      {
+        "pageIndex": 0,
+        "x": 113.4,
+        "y": 166.7,
+        "width": 340.2,
+        "height": 26.5
+      }
+    ],
+    "cellRects": [
+      {
+        "pageIndex": 0,
+        "x": 124,
+        "y": 206.8,
+        "width": 453.5,
+        "height": 26.5
+      },
+      {
+        "pageIndex": 0,
+        "x": 124,
+        "y": 241.3,
+        "width": 453.5,
+        "height": 26.5
+      }
+    ]
+  },
+  "reopened": [
+    {
+      "format": "Hwp",
+      "formCount": 16,
+      "bodyRects": [
+        {
+          "pageIndex": 0,
+          "x": 113.4,
+          "y": 132.3,
+          "width": 566.9,
+          "height": 26.5
+        },
+        {
+          "pageIndex": 0,
+          "x": 113.4,
+          "y": 166.7,
+          "width": 340.2,
+          "height": 26.5
+        }
+      ],
+      "cellRects": [
+        {
+          "pageIndex": 0,
+          "x": 124,
+          "y": 206.8,
+          "width": 453.5,
+          "height": 26.5
+        },
+        {
+          "pageIndex": 0,
+          "x": 124,
+          "y": 241.3,
+          "width": 453.5,
+          "height": 26.5
+        }
+      ]
+    },
+    {
+      "format": "Hwpx",
+      "formCount": 16,
+      "bodyRects": [
+        {
+          "pageIndex": 0,
+          "x": 113.4,
+          "y": 132.3,
+          "width": 566.9,
+          "height": 26.5
+        },
+        {
+          "pageIndex": 0,
+          "x": 113.4,
+          "y": 166.7,
+          "width": 340.2,
+          "height": 26.5
+        }
+      ],
+      "cellRects": [
+        {
+          "pageIndex": 0,
+          "x": 124,
+          "y": 206.8,
+          "width": 453.5,
+          "height": 26.5
+        },
+        {
+          "pageIndex": 0,
+          "x": 124,
+          "y": 241.3,
+          "width": 453.5,
+          "height": 26.5
+        }
+      ]
+    }
+  ],
+  "tableOwner": {
+    "pp": 1,
+    "ci": 0
+  }
+}

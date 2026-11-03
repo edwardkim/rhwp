@@ -1,0 +1,61 @@
+{
+  "sourceProductHead": "25607fc28d0555caf0ef9b053e181c7236569c18",
+  "dpi": 96,
+  "zoom": 2,
+  "reviewed": [
+    {
+      "image": "form-qualified.png",
+      "conclusion": "명령·선택 상자·계절 선택·라디오 단추의 바탕 글꼴, 배치와 경계를 같은 프로그램으로 확인했다. 작은 AA/획 두께 차이는 별도 raw 측정에 남긴다."
+    },
+    {
+      "image": "forms-edited.png",
+      "conclusion": "본문 5+3개, 셀 4+4개 라디오 단추가 네 물리 행에 한 번씩 보인다. 부모 테두리·각 줄 순서·양식 내부의 원을 독립 Print와 대조했다."
+    },
+    {
+      "image": "polygon-90.png",
+      "conclusion": "열린 3점 다각선의 방향·꼭짓점·중심과 열린 변을 독립 Print와 대조했다."
+    },
+    {
+      "image": "polygon-resize.png",
+      "conclusion": "30도·너비 변경의 긴 두 선과 만나는 꼭짓점, 본문과의 상대 위치를 확인했다."
+    },
+    {
+      "image": "spacing.png",
+      "conclusion": "중간 빈 문단과 후속 문단의 세로 간격·앞뒤 문단 순서를 확인했다."
+    },
+    {
+      "image": "header.png",
+      "conclusion": "70자 두 줄과 빈 문단 뒤의 마지막 머리말이 본문 첫 줄 위에 겹치는 원본 의도와 내용 보존을 확인했다."
+    },
+    {
+      "image": "split-row-p16.png",
+      "conclusion": "분할 칸 끝의 공공데이터 포털 관련 두 줄과 칸 경계, 다음 내용의 순서·누락·중복을 확인했다."
+    },
+    {
+      "image": "notice-p12.png",
+      "conclusion": "공통 적용사항 제목·본문 줄바꿈·작은 괄호 글자와 별표 간격, 다음 동시수행과제 제한 제목을 확인했다."
+    },
+    {
+      "image": "notice-p13.png",
+      "conclusion": "공통 사항과 지원 기준 사이의 본문 줄바꿈·번호·문단 간격·내용 순서를 확인했다."
+    },
+    {
+      "image": "notice-tail-p21.png",
+      "conclusion": "가점 사항 표의 산·학·연 본문과 작은 별표 행·다음 본문의 순서·셀 안 표시를 대조했다."
+    },
+    {
+      "image": "grow-after.png",
+      "conclusion": "가운데 행만 성장하고 위·아래 행과 표 외곽이 독립 Print와 같은 관계를 유지한다."
+    },
+    {
+      "image": "grow-nested.png",
+      "conclusion": "중첩 표의 늘어난 행·다음 아래 행과 부모 clip 경계를 독립 Print와 대조했다."
+    },
+    {
+      "image": "nested-wide.png",
+      "conclusion": "선언 폭을 줄이지 않은 여러 겹 표의 가로 경계와 조상 셀에 의한 clipping을 확인했다."
+    }
+  ],
+  "equations": "해당 확대 영역에 수식은 없다. 문장부호·괄호·별표·숫자와 작은 글자 간격을 판독했다.",
+  "interpretation": "100% raw도 동일 픽셀을 뜻하지 않는다. AA/얇은 선 차이와 구조·내용·간격의 판독을 구분한다."
+}

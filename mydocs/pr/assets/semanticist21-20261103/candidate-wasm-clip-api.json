@@ -1,0 +1,101 @@
+{
+  "hidden": {
+    "node": {
+      "type": "TextRun",
+      "bbox": {
+        "x": 704.5,
+        "y": 208.1,
+        "w": 13,
+        "h": 13.3
+      },
+      "text": "셋",
+      "pi": 0
+    },
+    "cells": [
+      {
+        "x": 396.9,
+        "y": 177.8,
+        "w": 279.7,
+        "h": 100.6
+      },
+      {
+        "x": 407.4,
+        "y": 200.5,
+        "w": 269.1,
+        "h": 58.8
+      },
+      {
+        "x": 697.7,
+        "y": 206.2,
+        "w": 0,
+        "h": 17.1
+      }
+    ]
+  },
+  "hits": [
+    {
+      "sectionIndex": 0,
+      "paragraphIndex": 0,
+      "charOffset": 0,
+      "parentParaIndex": 1,
+      "controlIndex": 0,
+      "cellIndex": 1,
+      "cellParaIndex": 0,
+      "cellPath": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 1,
+          "cellParaIndex": 0
+        },
+        {
+          "controlIndex": 1,
+          "cellIndex": 2,
+          "cellParaIndex": 0
+        },
+        {
+          "controlIndex": 1,
+          "cellIndex": 0,
+          "cellParaIndex": 0
+        }
+      ],
+      "cursorRect": {
+        "pageIndex": 0,
+        "x": 424.8,
+        "y": 208.7,
+        "height": 13.3
+      }
+    },
+    {
+      "sectionIndex": 0,
+      "paragraphIndex": 0,
+      "charOffset": 0,
+      "parentParaIndex": 1,
+      "controlIndex": 0,
+      "cellIndex": 1,
+      "cellParaIndex": 0,
+      "cellPath": [
+        {
+          "controlIndex": 0,
+          "cellIndex": 1,
+          "cellParaIndex": 0
+        },
+        {
+          "controlIndex": 1,
+          "cellIndex": 2,
+          "cellParaIndex": 0
+        },
+        {
+          "controlIndex": 1,
+          "cellIndex": 0,
+          "cellParaIndex": 0
+        }
+      ],
+      "cursorRect": {
+        "pageIndex": 0,
+        "x": 424.8,
+        "y": 208.7,
+        "height": 13.3
+      }
+    }
+  ]
+}
