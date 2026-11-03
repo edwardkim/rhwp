@@ -94,3 +94,12 @@ table_insert_measurement_ownership, table_insert_body_flow; 공개 53개 호출�
 승인된 원격 범위에서 게시·API 재확인한다. 아직 없는 수치나 이미지 URL은 만들지 않는다.
 
 [누적 검토 계획](semanticist21_20261103_review_plan.md) · [원 head·CI·충돌 증거](assets/semanticist21-20261103/intake.json).
+
+
+## 첫 통합의 보정 — 실행 검증 전
+
+- 원 head를 merge parent로 보존한다. 삽입 경로의 측정 주소 이동을 적용했다.
+- 원본 셀 인증과 행별 reflow 소유를 함께 유지했다. 기존 제어 전용 TAC 꼬리와 마지막 표 줄 인증은 서로의 줄 소유 조건을 보존한다.
+- 첫 문단 원점의 생산을 `initialize_first_paragraph_origin`에 모아 일반·분할 진입과 vpos 스냅이 같은 hidden-line/Square/합성 사다리 계약을 소비한다. 반환된 원점 하한은 기존 vpos 소비에 전달한다.
+- 공백/표 원시 stream의 완전성 검사는 Storage의 슬롯 조회·배열·정렬·push 경로에 연결했다.
+- None 표/혼합 host는 최신 `unrestricted_float`와 split host handoff를 보존했다. 실제 53개 호출의 잔여 차이를 원본 Print·반례와 대조하기 전에는 완전 해결로 판정하지 않는다.

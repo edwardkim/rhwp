@@ -1,0 +1,215 @@
+{
+  "source": "ac6534470739f8708e479be8de5bbcad990e08ae",
+  "rendererOverrides": {
+    "src/renderer/typeset/table/block/entry.rs": {
+      "input": "notice-source-host-frame-v11.rs",
+      "sha256": "738e5a0c8b7597a884bceefb38639e0fecc2f523bb4115c10e090deb9b004707"
+    },
+    "src/renderer/typeset/section/vpos.rs": {
+      "input": "notice-first-origin-vpos.rs",
+      "sha256": "327bb760fc45c2e6e28731d7a8e5c7696c40a33d6cfcdb458fe87e9864c6df1b"
+    },
+    "src/renderer/typeset/paragraph.rs": {
+      "input": "notice-first-origin-paragraph.rs",
+      "sha256": "6c9e42b2c19bccaf03b4f87d66f878d498c26b7aa285ba9a4f9396310ea5336e"
+    },
+    "src/renderer/typeset/paragraph/content.rs": {
+      "input": "notice-first-origin-content.rs",
+      "sha256": "2fb1294834744b662a8585a8d6dc20236345813809bb887bb54364145c76c7b6"
+    },
+    "src/renderer/typeset/controls/order.rs": {
+      "input": "notice-order-owned-stream-v2.rs",
+      "sha256": "7f45ae4ff68707946234300d4b7b3883d7c500cdefe52a8613e2665302874466"
+    },
+    "src/renderer/typeset.rs": {
+      "input": "notice-terminal-tac-flow-v2.rs",
+      "sha256": "3fa6c324f1d92cef609022aa4bc185596aef2e9e86266b2a961453caf363003e"
+    },
+    "src/renderer/typeset/controls/stored_tac.rs": {
+      "input": "notice-tac-notes-visibility.rs",
+      "sha256": "5912767eca87d468dfd5c003e1024a5ce7a81d468851bfe14cdc444c6b3d40ae"
+    },
+    "src/renderer/layout/table_layout.rs": {
+      "input": "notice-source-row-frame-v3.rs",
+      "sha256": "0133ca1574f7c64c1da324d6b9fbc3ffff0e73b42d8c72b882d126753ae77780"
+    },
+    "src/renderer/float_placement.rs": {
+      "input": "notice-table-source-qualification-v4.rs",
+      "sha256": "bdf9d673b0594deeaf4f5082015b73ddf428f5b2bf9f400d0164376926151cd2"
+    },
+    "src/renderer/layout/table_partial.rs": {
+      "input": "notice-source-tail-alignment-v7.rs",
+      "sha256": "e55b5021b24cd8c0e2d359bb2e1ba489fda88302bfe745ce5bb461f3bcd5804b"
+    }
+  },
+  "nativeBinarySha256": "e83366be0d8bf267be1098fd53e5e3f8e5445b6b3dbfbd44d9355a87ad4140e1",
+  "existingTestSourceSha256": "7de72185e4bba4dcaa4dfa590b56e0814b322e850e72ea50ec1db2a4e2c32770",
+  "captureExampleSha256": "ec295778b4e31df9768c48ef353082eb23c7a0568d35ee16bb5b3db0aed478fd",
+  "states": [
+    {
+      "addresses": [
+        [
+          0,
+          2
+        ]
+      ],
+      "afterCaptureHeights": [
+        34.2
+      ],
+      "beforeCaptureHeights": [
+        34.2
+      ],
+      "case": "fresh-reference",
+      "dpi": 96,
+      "fontPreparationChanged": false,
+      "layoutGeneration": "2022",
+      "liveBeforeExport": true,
+      "pageCount": 1,
+      "profile": "print"
+    },
+    {
+      "addresses": [
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "afterCaptureHeights": [
+        133.3,
+        240.0
+      ],
+      "beforeCaptureHeights": [
+        133.3,
+        240.0
+      ],
+      "case": "loaded-before",
+      "dpi": 96,
+      "fontPreparationChanged": false,
+      "layoutGeneration": "2022",
+      "liveBeforeExport": true,
+      "pageCount": 1,
+      "profile": "print"
+    },
+    {
+      "addresses": [
+        [
+          1,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "afterCaptureHeights": [
+        34.2,
+        133.3,
+        240.0
+      ],
+      "beforeCaptureHeights": [
+        34.2,
+        133.3,
+        240.0
+      ],
+      "case": "empty-host-after",
+      "dpi": 96,
+      "fontPreparationChanged": false,
+      "layoutGeneration": "2022",
+      "liveBeforeExport": true,
+      "pageCount": 1,
+      "profile": "print"
+    },
+    {
+      "addresses": [
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          5,
+          0
+        ]
+      ],
+      "afterCaptureHeights": [
+        133.3,
+        34.2,
+        240.0
+      ],
+      "beforeCaptureHeights": [
+        133.3,
+        34.2,
+        240.0
+      ],
+      "case": "after-table-after",
+      "dpi": 96,
+      "fontPreparationChanged": false,
+      "layoutGeneration": "2022",
+      "liveBeforeExport": true,
+      "pageCount": 1,
+      "profile": "print"
+    }
+  ],
+  "loadedInputSha256": "a297f9b33b07ea89d8ca05e4ce9cad4844c6496f4b70a7e9da26f817ff68d417",
+  "freshInputSha256": "170529f775ea480ff61bc7715e2a15dd3e21f0765912e7ad2b1b567de778c450",
+  "files": {
+    "run.log": "79e8a74626ef30ec313aeb5d24bfe6bc2da8afc56229569a3e9ce38931b96036",
+    "loaded-input.hwp": "a297f9b33b07ea89d8ca05e4ce9cad4844c6496f4b70a7e9da26f817ff68d417",
+    "fresh-input.hwp": "170529f775ea480ff61bc7715e2a15dd3e21f0765912e7ad2b1b567de778c450",
+    "states.json": "9e063dda3ab897ba3348c03ee3918bd760a7a1227edd79a38ebf90db857df2aa",
+    "native-probe": "e83366be0d8bf267be1098fd53e5e3f8e5445b6b3dbfbd44d9355a87ad4140e1",
+    "fresh-reference/page-001.png": "0a6faaecac29b8a3e4ec5b329f113bc37e66edf394ab0a80fd5111ee1e62271f",
+    "fresh-reference/tree-001.json": "9ad84c77762ab9f6a15dcdcf3ee8e4b1cdadb8f5a768943bce9f750651cac376",
+    "fresh-reference/document.hwpx": "c99160b2d024dedc467268ffc45f21a0dee5f0f377173d6ef2771bc7caf7b043",
+    "loaded-before/page-001.png": "b5c47ec753e635d09b0d6b6313da3c9c021f8b69227026866ac670b8ac86588a",
+    "loaded-before/tree-001.json": "6683e88b8f19bdad45c6884875ec92ce86df9c510a78cf09f7736fe6d4a0d38a",
+    "loaded-before/document.hwpx": "ca03160be4ec78a600b29e53a8790a0c40337774233a534a2ddc23adc0d71939",
+    "empty-host-after/page-001.png": "dd866c1bd9f4c99613a59ad909479b283dd57fb57da98fa2a3c4861a297d3a00",
+    "empty-host-after/tree-001.json": "8003eea0ad84b6f06f469d1e6ea226377fc65e52248255cdf56b6f6207a9b6cf",
+    "empty-host-after/document.hwpx": "f451e9919ed3f5f077b0434918762449092cfdecfab217fdbdb21c269fef18e6",
+    "after-table-after/page-001.png": "bd062085614035553e7415605b86471dceacb6fae4ab85544ad1212e066a6e03",
+    "after-table-after/tree-001.json": "65ac5492000d37a610e402296a07d73e8eeb41f06904109147531543d3475434",
+    "after-table-after/document.hwpx": "236c0e7c375d793bf5ab6c94377ee038fb3a21a941515d7b49ad298e3f265c35"
+  },
+  "scope": "Existing two synthetic ownership checks, unchanged. Four live Native states use exact bytes printed by independent Hancom; no freshWASM visual claim yet.",
+  "job": "69b9805c-389b-46a6-bb7e-4ce0be437a09",
+  "verifiedResultFiles": 18,
+  "rows": [
+    {
+      "case": "fresh-reference",
+      "raw": 100.0,
+      "nativeModelSha256": "c99160b2d024dedc467268ffc45f21a0dee5f0f377173d6ef2771bc7caf7b043",
+      "pdfSha256": "5325efb934e2b2e4a121e7060a12e7abe03284db033dbe6a0f544cbffd0ead48"
+    },
+    {
+      "case": "loaded-before",
+      "raw": 100.0,
+      "nativeModelSha256": "ca03160be4ec78a600b29e53a8790a0c40337774233a534a2ddc23adc0d71939",
+      "pdfSha256": "1041e76f06fae6dcc0890ed08cc1d14f02933a3d8f51bf5b9e3612c8e70afa57"
+    },
+    {
+      "case": "empty-host-after",
+      "raw": 100.0,
+      "nativeModelSha256": "f451e9919ed3f5f077b0434918762449092cfdecfab217fdbdb21c269fef18e6",
+      "pdfSha256": "eb2007bba04fcce0f90f27015bfd0739616881c20ee03ab71b640369d1aea452"
+    },
+    {
+      "case": "after-table-after",
+      "raw": 100.0,
+      "nativeModelSha256": "236c0e7c375d793bf5ab6c94377ee038fb3a21a941515d7b49ad298e3f265c35",
+      "pdfSha256": "9ccd60e8eb3d447ff64891b2ac46ae0bf84f1e1de55d3e219c8a81725515f728"
+    }
+  ],
+  "raw90GatePass": true
+}

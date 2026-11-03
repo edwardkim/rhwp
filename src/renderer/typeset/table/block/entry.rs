@@ -1715,7 +1715,7 @@ impl TypesetEngine {
                     matches!(item, PageItem::FullParagraph { para_index }
                         if st.stored_column_top_spacings.contains_key(para_index))
                 }))
-            && !st.profile.session_edited())
+            && (!st.profile.session_edited() || fmt.computed_host_lines.is_none()))
         .then(|| {
             let first = match st.current_items.first()? {
                 PageItem::FullParagraph { para_index } => *para_index,
@@ -1787,6 +1787,19 @@ impl TypesetEngine {
             let mut previous = None;
             for (host_index, host) in chain.iter().enumerate() {
                 if host.stored_text_partition_is_dirty() || host.line_segs.is_empty() {
+                    return None;
+                }
+                // 다른 문단의 편집은 이 단의 유효한 원본 프레임을 폐기하지 않는다.
+                if st.profile.session_edited()
+                    && (host.cell_format_vpos_dirty
+                        || host.source_line_seg_vertical_pos.as_ref().is_some_and(|source| {
+                            !source.iter().copied().eq(host.line_segs.iter().map(|line| line.vertical_pos))
+                        })
+                        || host.controls.iter().any(|control| matches!(control,
+                            Control::Table(source_table)
+                            if self.render_normalization.table_text_reflowed(source_table)
+                                || !crate::renderer::float_placement::stored_plain_table_source_is_current(source_table))))
+                {
                     return None;
                 }
                 for line in &host.line_segs {
@@ -2090,7 +2103,21 @@ impl TypesetEngine {
                 // 저장 사다리가 빈 host 의 앞·뒤 간격과 줄 상자를 싣지 않았다고 증언하면
                 // 그 상자로 수용·전진하고, 렌더도 같은 원점을 소비한다.
                 ((st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
-                    && !st.profile.session_edited()
+                    && (!st.profile.session_edited()
+                        || (fmt.computed_host_lines.is_none()
+                            && crate::renderer::float_placement::stored_plain_table_source_is_current(table)
+                            && paragraphs_all.get(para_idx + 1).is_some_and(|next| {
+                                next.controls.is_empty()
+                                    && [para, next].iter().all(|host| {
+                                        host.line_segs.len() == 1
+                                            && host.line_segs[0].vertical_pos >= 0
+                                            && host.line_segs[0].line_height > 0
+                                            && host.line_segs[0].line_spacing >= 0
+                                            && host.source_line_seg_vertical_pos.as_ref().is_none_or(|source| {
+                                                source.as_slice() == [host.line_segs[0].vertical_pos]
+                                            })
+                                    })
+                            })))
                     && !st.vpos_ladder_dirty
                     && st.col_count == 1
                     && !self.render_normalization.table_text_reflowed(table))
