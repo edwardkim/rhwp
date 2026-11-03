@@ -21,6 +21,7 @@ MAX_BYTES = 32 * 1024 * 1024
 _PREPARED = {}
 PUBLIC_SOURCE_SHA256 = {
     'ROKG_R.woff2': '2c79a998f6b730afe2e311b6098055e9b6b29c1f2ba75f2871fd5dd8f4787426',
+    'NotoSerif%5Bwdth,wght%5D.ttf': '4d8e6761424656867019081a1a01336f3cb086982682698714054fc33f782713',
     'MunhwaGothicStd-Regular.woff2': '0dca5496b7fa2ddf453fdb4f249b99bc9032dd3bfac4affef146622a4829ec04',
     'MunhwaGothicStd-Bold.woff2': 'b98cea218075a5f7fb23e5ab62c8d33e523c65cc2bd0540305430da15807f599',
     'MunhwaMyungjoStd-Regular.woff2': '2c4ae1f41288e30a32b0f71db5db8eeda2bd6d89e202fa9d9cabbb99565bdb97',
@@ -31,6 +32,10 @@ PUBLIC_SOURCE_SHA256 = {
     'MunhwaScriptFreestyleStd-Light.woff2': '3f6ce804a614348ea6a854140513fb1bf619a1714b5910e01969e952be29c7b7',
     'MunhwaScriptFreestyleStd-Bold.woff2': '4ba3802099a14561d804c1b5cf898c3fd03d7236295cd6e1b59a2197c5f51aac',
 }
+PUBLIC_NOTO_SERIF = ('https://cdn.jsdelivr.net/gh/google/fonts@'
+                     '2fe1e8c6b137fb13041a7cfca6fdcd8a910ea4dc/'
+                     'ofl/notoserif/NotoSerif%5Bwdth,wght%5D.ttf')
+HANCOM_BATANG_WEB = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff'
 MUNHWA_CDN_PATHS = {
     f'/korean-webfonts/1/orgs/govs/mcst/{family}/{name}'
     for family, names in {
@@ -348,9 +353,34 @@ def prepare(root, hwp, binary, paths, explicit_environment, compat, dpi):
                         resource['native_sha256'] = _sha(candidate.read_bytes())
                         break
             target = resource['native_face']
+            fallback_faces = [target]
+            # 문서가 한컴바탕을 요청했지만 원본 프로그램이 없는 경우에만
+            # 검증한 공개 face를 앞에 둔다. 원 glyph hit와 설치된 문서
+            # 대체 글꼴은 위에서 우선하며, 문서 이름·쪽 번호로 분기하지 않는다.
+            source_key = _normal(source)
+            if url == HANCOM_BATANG_WEB and slot == 5 and source_key in {
+                    _normal('KoPub바탕체 Light'), _normal('KoPubBatangLight')}:
+                if _normal('Noto Serif') not in installed:
+                    if PUBLIC_NOTO_SERIF not in resources:
+                        resources[PUBLIC_NOTO_SERIF] = _resource(root, cache, PUBLIC_NOTO_SERIF)
+                fallback_faces.insert(0, 'Noto Serif')
+            elif url == HANCOM_BATANG_WEB and slot == 0 and source_key in {
+                    _normal('KoPub돋움체 Light'), _normal('KoPubDotumLight')}:
+                candidate = 'Noto Sans KR ExtraLight'
+                if _normal(candidate) not in installed:
+                    extra_rule = rules.get(_normal(candidate))
+                    if extra_rule is not None:
+                        extra_url = extra_rule['supply']['sourceUrl']
+                        if extra_url not in resources:
+                            resources[extra_url] = _resource(root, cache, extra_url)
+                        candidate = resources[extra_url]['native_face']
+                    else:
+                        candidate = None
+                if candidate:
+                    fallback_faces.insert(0, candidate)
             if _normal(target) != _normal(source):
                 scoped_fallbacks.append({'languageSlot': slot, 'fontId': font_id,
-                                         'source': source, 'faces': [target]})
+                                         'source': source, 'faces': list(dict.fromkeys(fallback_faces))})
     directories = list(dict.fromkeys(str(Path(x['native_path']).parent) for x in resources.values()))
     environment_path = explicit_environment
     if mappings or scoped_fallbacks:
@@ -415,7 +445,11 @@ def prepare(root, hwp, binary, paths, explicit_environment, compat, dpi):
                 finally:
                     temporary.unlink(missing_ok=True)
             environment_path = dest
-    result = {'font_paths': list(dict.fromkeys([*paths, *(Path(x) for x in directories)])),
+    # 문자 대체 전용 공개 face가 일반 대체 글꼴보다 뒤에서 등록되면
+    # 같은 glyph를 제공하는 일반 face가 먼저 선택될 수 있다.
+    priority = ([Path(resources[PUBLIC_NOTO_SERIF]['native_path']).parent]
+                if PUBLIC_NOTO_SERIF in resources else [])
+    result = {'font_paths': list(dict.fromkeys([*priority, *paths, *(Path(x) for x in directories)])),
               'font_environment': environment_path,
               'evidence': {'registry_sha256': registry_sha, 'mappings': mappings,
                            'document_glyph_fallbacks': scoped_fallbacks,

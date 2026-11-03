@@ -137,6 +137,40 @@ class NativeWebfontTests(unittest.TestCase):
         ])
         self.assertEqual(env['substitutions'], {})
 
+    def test_kopub_public_fallback_is_scoped_and_installed_substitute_wins(self):
+        self.registry.write_text(json.dumps({'rules': [{
+            'status': 'active', 'sourceFace': '한컴바탕', 'supply': {
+                'kind': 'canvas2d-webfont', 'sourceUrl': web.HANCOM_BATANG_WEB,
+                'unicodeRange': None}}]}))
+        plan = {'embeddedFamilies': [], 'requests': [
+            {'source': 'KoPub바탕체 Light', 'primary': ['KoPubBatangLight'],
+             'substitute': ['한컴바탕']}], 'scopedRequests': [
+            {'languageSlot': 5, 'fontId': 13, 'source': 'KoPub바탕체 Light',
+             'primary': ['KoPubBatangLight'], 'substitute': ['한컴바탕']},
+            {'languageSlot': 2, 'fontId': 13, 'source': 'KoPub바탕체 Light',
+             'primary': ['KoPubBatangLight'], 'substitute': ['한컴바탕']}]}
+        def resource(root, cache, url):
+            face = 'Noto Serif' if url == web.PUBLIC_NOTO_SERIF else 'HCRBatang'
+            return {'url': url, 'native_path': str(cache / face / 'font.ttf'),
+                    'native_face': face, 'source_sha256': 'source', 'native_sha256': 'native'}
+        with patch.object(web, '_installed_names', return_value={'kopubbatanglight'}), \
+                patch.object(web, '_postscript_aliases', return_value={}), \
+                patch.object(web, '_resource', side_effect=resource), \
+                patch.object(web, '_run', side_effect=[plan, {'fontEnvironment': None}]):
+            result = web.prepare(self.root, self.hwp, 'rhwp', [], None, '2024', 96)
+        env = json.loads(result['font_environment'].read_text())
+        self.assertEqual([entry['faces'] for entry in env['documentGlyphFallbacks']],
+                         [['Noto Serif', 'HCRBatang'], ['HCRBatang']])
+        self.assertEqual(result['font_paths'][0].name, 'Noto Serif')
+        web._PREPARED.clear()
+        with patch.object(web, '_installed_names', return_value={'kopubbatanglight', '한컴바탕'}), \
+                patch.object(web, '_postscript_aliases', return_value={}), \
+                patch.object(web, '_resource') as resource_mock, \
+                patch.object(web, '_run', return_value=plan):
+            result = web.prepare(self.root, self.hwp, 'rhwp', [], None, '2024', 96)
+        resource_mock.assert_not_called()
+        self.assertIsNone(result['font_environment'])
+
     def test_ambiguous_postscript_names_are_not_used_as_aliases(self):
         from fontTools.ttLib import TTFont
         fixture = Path(__file__).resolve().parents[2] / 'tests/fixtures/fonts/RHWPExactKerningSmoke.ttf'
