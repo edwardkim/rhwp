@@ -161,13 +161,40 @@ pub(crate) fn resolve_styles_with_environment(
     }
     if environment.is_some() {
         let lookup = missing_fonts::lookup_context(document);
-        for (style, shape) in styles
+        // 원본 전진 보존 시 표시용 치환을 원본 TTF 프로그램으로 승격하지 않는다.
+        // 원본의 별칭과 명시적으로 선택한 TrueType 프로그램은 자연 전진을 소유한다.
+        let display_only_fonts: std::collections::HashSet<_> = environment
+            .filter(|env| env.preserves_source_metrics())
+            .map(|env| {
+                super::font_environment::FontEnvironment::document_requests_with_slots(
+                    &document.doc_info,
+                )
+                .into_iter()
+                .filter_map(|(lang, id, request)| {
+                    let target = env.replacement_for(&request.source, lang, id)?;
+                    let original = request
+                        .primary
+                        .iter()
+                        .any(|name| name.trim().eq_ignore_ascii_case(target.trim()));
+                    (!original && !env.selects_true_type(target)).then_some((lang, id))
+                })
+                .collect()
+            })
+            .unwrap_or_default();
+        let mut display_only_slots = std::collections::HashSet::new();
+        for (style_id, (style, shape)) in styles
             .char_styles
             .iter_mut()
             .zip(&document.doc_info.char_shapes)
+            .enumerate()
         {
             let mut latin_program_changed = false;
             for lang in 0..LANG_COUNT {
+                if style.source_ttf_for_lang(lang)
+                    && display_only_fonts.contains(&(lang, shape.font_ids[lang]))
+                {
+                    display_only_slots.insert((style_id as u32, lang));
+                }
                 let decision = lookup_font_name_in_environment(
                     &lookup,
                     lang,
@@ -303,6 +330,7 @@ pub(crate) fn resolve_styles_with_environment(
                 );
             }
         }
+        styles.display_only_otf_slots = std::sync::Arc::new(display_only_slots);
     }
     match refresh_source_program_projection_slots_with_storage(
         &document.doc_info,
@@ -382,6 +410,7 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
         source_program_projection_slots: Default::default(),
         script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
+        display_only_otf_slots: Default::default(),
         char_overlap_size_bounds: None,
         source_char_shapes: {
             storage.bytes(

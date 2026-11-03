@@ -1,5 +1,5 @@
 //! 관계형: 공개 웹폰트 변환과 Native 로컬 우선 공급 계약을 검사한다.
-//! 주석 갱신: 2026-11-04 00:44:24 KST; 신규 파일.
+//! 주석 갱신: 2026-11-04 02:54:03 KST; 원본/표시 슬롯 혼합 대조 보완.
 //! 합성 글꼴 입력 검사이며 실물 페이지의 일치율이나 고정 px를 주장하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -174,4 +174,76 @@ fn display_substitute_preserves_source_advance_while_selected_program_can_own_it
         let (before, after) = advance(source, preserve, selected);
         assert!(after<before, "선택한 실제 프로그램의 자연 전진은 유지: {source} / {preserve} / {selected}: {before} -> {after}");
     }
+
+    // 같은 표시 family를 공유해도 원본 슬롯과 표시 대체 슬롯의 폭 소유는 다르다.
+    // 다른 슬롯이 등록한 프로그램을 family 캐시에서 빌려 원본 전진을 바꾸지 않는다.
+    let mut core = document_with_face("RHWP missing original 8533");
+    core.insert_text_native(0, 0, 0, "가나").unwrap();
+    let mut doc = core.document().clone();
+    doc.provenance.format = rhwp::model::provenance::SourceFormat::Hwpx;
+    let mut real_ids = [0; 7];
+    for (lang, faces) in doc.doc_info.font_faces.iter_mut().enumerate() {
+        for face in faces.iter_mut() {
+            face.alt_type = 1;
+        }
+        real_ids[lang] = faces.len() as u16;
+        let mut real = faces[0].clone();
+        real.name = "NotoSansKR-Regular".into();
+        faces.push(real);
+    }
+    for shape in &mut doc.doc_info.char_shapes {
+        shape.font_ids = [0; 7];
+    }
+    let real_id = doc.doc_info.char_shapes.len() as u32;
+    let mut real = doc.doc_info.char_shapes[0].clone();
+    real.font_ids = real_ids;
+    doc.doc_info.char_shapes.push(real);
+    doc.sections[0].paragraphs[0].char_shapes = vec![rhwp::model::paragraph::CharShapeRef {
+        start_pos: 0,
+        char_shape_id: 0,
+    }];
+    let paragraph = &mut doc.sections[0].paragraphs[0];
+    let real_char = paragraph.text.chars().position(|c| c == '나').unwrap();
+    // 문단의 숨은 제어가 차지한 UTF-16 위치를 공용 편집 경로로 환산한다.
+    paragraph.apply_char_shape_range(real_char, real_char + 1, real_id);
+    core.set_document(doc);
+    core.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"shared-display-owner-8533","preserveSourceMetrics":true,"substitutions":{"RHWP missing original 8533":"NotoSansKR-Regular","NotoSansKR-Regular":"NotoSansKR-Regular"}}"#,
+    ).unwrap())).unwrap();
+    let traces = |core: &DocumentCore| {
+        let value: serde_json::Value = serde_json::from_str(
+            &core
+                .get_font_decision_trace_native(0, r#"{"maxCharacters":16}"#)
+                .unwrap(),
+        )
+        .unwrap();
+        ["가", "나"].map(|c| {
+            let record = value["records"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|r| r["source"]["character"] == c)
+                .unwrap();
+            assert_eq!(
+                record["source"]["charShapeId"],
+                if c == "가" { 0 } else { real_id },
+                "검사할 문자의 원본 슬롯 소속: {record}"
+            );
+            record["layoutMetric"]["finalAdvanceHwpunit"]
+                .as_f64()
+                .unwrap()
+        })
+    };
+    let before = traces(&core);
+    core.prepare_native_otf_fonts_with(|_| Some((font.to_vec(), 0)))
+        .unwrap();
+    let after = traces(&core);
+    assert!(
+        (before[0] - after[0]).abs() < 1e-6,
+        "다른 원본 슬롯의 프로그램이 표시 대체 슬롯 전진에 침투: {before:?} -> {after:?}"
+    );
+    assert!(
+        after[1] < before[1],
+        "실제 원본 슬롯의 자연 전진은 유지: {before:?} -> {after:?}"
+    );
 }

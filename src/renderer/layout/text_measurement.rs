@@ -934,16 +934,17 @@ pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::sto
                     )
                 })
                 .flatten(),
-            native_otf_metrics: (!styles.has_exact_font_source(char_style_id, lang_index))
-                .then(|| {
-                    styles.native_pua_fonts.get_otf_for_source(
-                        cs.font_family_for_lang(lang_index),
-                        cs.bold,
-                        cs.italic,
-                        cs.source_ttf_for_lang(lang_index),
-                    )
-                })
-                .flatten(),
+            native_otf_metrics: (!styles.has_exact_font_source(char_style_id, lang_index)
+                && styles.allows_native_otf_metrics(char_style_id, lang_index))
+            .then(|| {
+                styles.native_pua_fonts.get_otf_for_source(
+                    cs.font_family_for_lang(lang_index),
+                    cs.bold,
+                    cs.italic,
+                    cs.source_ttf_for_lang(lang_index),
+                )
+            })
+            .flatten(),
             bidi_layout: None,
             emphasis_skip_first_cluster: false,
             top_underline_font_size: None,
@@ -1049,16 +1050,17 @@ pub(crate) fn try_resolved_to_text_style<S: crate::renderer::style_resolver::sto
                     storage.bytes(std::mem::size_of::<crate::renderer::LatinSlotMetrics>())?;
                     Ok(Box::new(crate::renderer::LatinSlotMetrics {
                         font_family: storage.string(cs.font_family_for_lang(1))?,
-                        native_otf_metrics: (!styles.has_exact_font_source(char_style_id, 1))
-                            .then(|| {
-                                styles.native_pua_fonts.get_otf_for_source(
-                                    cs.font_family_for_lang(1),
-                                    cs.bold,
-                                    cs.italic,
-                                    cs.source_ttf_for_lang(1),
-                                )
-                            })
-                            .flatten(),
+                        native_otf_metrics: (!styles.has_exact_font_source(char_style_id, 1)
+                            && styles.allows_native_otf_metrics(char_style_id, 1))
+                        .then(|| {
+                            styles.native_pua_fonts.get_otf_for_source(
+                                cs.font_family_for_lang(1),
+                                cs.bold,
+                                cs.italic,
+                                cs.source_ttf_for_lang(1),
+                            )
+                        })
+                        .flatten(),
                         metric_font_family: cs
                             .metric_face_for_lang(1)
                             .map(|face| storage.string(face))

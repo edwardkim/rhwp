@@ -553,6 +553,9 @@ pub struct ResolvedStyleSet {
     /// 측정과 paint에 함께 전파하는 세션의 첨자 계약이다.
     pub script_metrics: crate::renderer::script_metrics::ScriptMetricsContract,
     pub(crate) native_pua_fonts: std::sync::Arc<crate::renderer::native_pua_fonts::NativePuaFonts>,
+    /// 표시용 대체는 같은 family의 다른 원본 슬롯이 등록한 폭도 소비하지 않는다.
+    /// 공급 요청과 실제 측정이 같은 스타일·언어별 소유 판정을 읽는다.
+    pub(crate) display_only_otf_slots: std::sync::Arc<std::collections::HashSet<(u32, usize)>>,
     /// HWP5 저장 겹침은 다시 열 때 -80%~+20% 범위로 해소된다.
     /// XML 입력의 원래 값과 구분하며 모델의 저장 바이트는 보존한다.
     pub(crate) char_overlap_size_bounds: Option<(i8, i8)>,
@@ -602,6 +605,10 @@ pub struct ResolvedStyleSet {
 }
 
 impl ResolvedStyleSet {
+    pub(crate) fn allows_native_otf_metrics(&self, char_style_id: u32, lang: usize) -> bool {
+        !self.display_only_otf_slots.contains(&(char_style_id, lang))
+    }
+
     pub(crate) fn literal_figure_space_em(
         &self,
         char_style_id: u32,
@@ -651,6 +658,6 @@ crate::storage::clone_fields!(ResolvedParaStyle, {alignment, vertical_alignment,
 
 crate::storage::clone_fields!(ResolvedBorderStyle, {borders, fill_color, pattern, gradient, image_fill, diagonal_attr, diagonal, center_line});
 
-crate::storage::clone_fields!(ResolvedStyleSet, {script_metrics, source_hwp3_native, source_program_projection_slots, native_pua_fonts, char_overlap_size_bounds, source_char_shapes, resolved_dpi, isolated_jamo_font, page_number_char_style_id, page_number_font_is_hft, supplemental_metrics, char_styles, para_styles, border_styles, numberings, bullets, hwp3_variant, hft_ascii_halfwidth, kerning_measurement_context, horizontal_shaping_context});
+crate::storage::clone_fields!(ResolvedStyleSet, {script_metrics, source_hwp3_native, source_program_projection_slots, native_pua_fonts, display_only_otf_slots, char_overlap_size_bounds, source_char_shapes, resolved_dpi, isolated_jamo_font, page_number_char_style_id, page_number_font_is_hft, supplemental_metrics, char_styles, para_styles, border_styles, numberings, bullets, hwp3_variant, hft_ascii_halfwidth, kerning_measurement_context, horizontal_shaping_context});
 
 crate::storage::clone_fields!(ResolvedImageFill, {bin_data_id, fill_mode, brightness, contrast, effect});
