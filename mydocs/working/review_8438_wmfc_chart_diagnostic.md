@@ -188,3 +188,11 @@ SHA-256 `31c0dbbbf71bb0561d2be517e979b348f90b8ec49d195f0f98a0f960cefd2104`를
 유지·개선 2,153행, 하락·미완료·90% 미만 각각 0행이다. 이 결과는 같은
 제품 코드의 리베이스 전 실행이며, 새 base의 정확한 head에서 실행할 집중
 시각 검증과 구분한다. 해당 WASM 기준 TSV 대조와 전체 Rust 회귀는 진행 중이다.
+
+리베이스 뒤 최종 회귀 후보 `c8e4f0ffac`에서 최소 글꼴 환경의
+[`cargo nextest --tests` 전체 로그](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-rebased-full-minfont-nextest-final.log)는
+12,387건 통과·0건 실패·45건 건너뜀, exit code 0이다. 오래 걸린
+`issue_2063` 대형 표 검사도 455.027초에 통과했다. 같은 head의
+[`cargo clippy --workspace --all-targets` 로그](../../output/pr-review/planet6897-ordered-20261031/logs/book-validation/chart-print-frame-rebased-clippy-native.log)도
+`-D warnings`로 종료 코드 0을 확인했다. 이후 문서 전용 커밋은 제품 코드와
+회귀 assertion을 바꾸지 않았다.
