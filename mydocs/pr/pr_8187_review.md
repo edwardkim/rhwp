@@ -7,7 +7,7 @@ last_verified: 2026-11-03
 
 # PR #8187 검토 — 논리 편집·범위 재조판과 다단 경계
 
-## 판정과 승인 범위
+## 최종 판정
 
 **메인터너 보정 후 수용 가능 — 승인된 필수 로컬 검증 완료, 원격 제출·새 head CI 대기.**
 원 기여 13커밋을 보존해 11개 충돌을 해결했고 논리 편집·다단 기능과 KPS 65·66쪽을 보정했다.
@@ -16,8 +16,9 @@ Rust lint를 확인했다. 독립 Print 대비 Native/fresh WASM 각각 **14문�
 같은 원본의 기준 devel 대비 하락은 0쪽이다. 실제 브라우저 API·Studio·TypeScript도 통과했다.
 
 2026-11-03 작업지시자는 [통합 계획](pr_8187_review_impl.md)의 **메인터너 보정과 필수 로컬 검증**을
-한 단위로 승인했다. 원격 push·본문 갱신·댓글·GitHub approve·merge는 이번 승인에 포함하지 않는다.
-현재 로컬 후보를 원 PR의 GitHub head나 녹색 CI로 표현하지 않는다.
+승인했고, 로컬 완료 뒤 **원 기여 branch push → 본문 보충 → 새 head CI·self-review → 원 PR merge →
+감사 댓글·기록·정리**도 승인했다. [원격 처리안](assets/pr8187/remote-action-plan.md)에 따라 진행한다.
+현재 로컬 후보를 원 PR의 GitHub head나 녹색 CI로 표현하지 않으며, 새 head의 결과를 따로 확인한다.
 
 ## source와 접수 정보
 
@@ -196,3 +197,13 @@ root pkg/Studio public WASM SHA-256 `19e4729f73daa5a183d37b29eb09500cdd217c11238
 원 이력을 보존한 후보를 push할 수 있는지 최신 head/권한을 확인하며, 원격 승인 뒤에만 새 head CI를
 실행·확인하고 self-review·merge·후속 댓글을 진행한다. 마지막 원격 읽기에서도 원 PR head와 devel은 고정한 SHA와 같았다.
 [조회 결과](assets/pr8187/remote-read-snapshot.json). 현재 원격 변경은 수행하지 않았다.
+
+## Merge 후 contributor PR comment 계획
+
+[감사 댓글 초안](assets/pr8187/merge-comment-draft.md)을 기준으로 원 기여의 논리 편집·범위 재조판·
+다단 기능을 먼저 설명하고, 최신 devel 통합과 KPS 표 프레임의 메인터너 보정을 구분한다.
+실제 merge SHA·새 head CI URL·archive 검토 URL을 확정한 뒤 게시한다. Native/fresh WASM 각각
+14문서·516쪽, KPS 66쪽 99.99427%/99.99510%, 집중 72건·전체 12,415건·Native 4,064건을 사용한다.
+숫자를 사람의 판정 정확도나 픽셀 완전 동일로 설명하지 않는다. #7444 전체를 닫지 않는다.
+merge에 포함된 Native·WASM KPS 66쪽 review PNG를 이미지로 표시하고
+[Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)을 연결한다.
