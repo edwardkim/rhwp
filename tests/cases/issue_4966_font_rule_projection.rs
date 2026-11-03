@@ -148,8 +148,8 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
     let v2_rules = v2["rules"].as_array().expect("current v2 rules");
 
     assert_eq!(v1_rules.len(), 830);
-    assert_eq!(v2["summary"]["activeRuleCount"], 846);
-    assert_eq!(v2["summary"]["retiredRuleCount"], 4);
+    assert_eq!(v2["summary"]["activeRuleCount"], 850);
+    assert_eq!(v2["summary"]["retiredRuleCount"], 8);
 
     let mut expected_semantics: BTreeMap<_, _> = v1_rules
         .iter()
@@ -304,6 +304,59 @@ fn sealed_v1_semantics_change_only_by_recorded_replacement() {
                 .or_default()
                 .push(added_id);
         }
+    }
+    // 정부상징 공급 교체는 각 투영에서 기존 두 규칙을 교체하고 두 별칭을 추가한다.
+    // 변경 기록과 활성·폐기 원장의 의미를 모두 비교하며 봉인 원본은 유지한다.
+    for payload in [
+        include_str!("../../assets/font-rules/changes/issue-8533-rokg-webfont.json"),
+        include_str!("../../assets/font-rules/changes/issue-8533-rokg-canvaskit.json"),
+    ] {
+        let change: serde_json::Value = serde_json::from_str(payload).unwrap();
+        let projection = change["expectedDelta"]["projectionId"].as_str().unwrap();
+        let operations = change["operations"].as_array().unwrap();
+        let mut additions = 0;
+        for operation in operations {
+            let kind = operation["type"].as_str().unwrap();
+            let mut rule = match kind {
+                "retire-and-replace" => {
+                    let old_id = operation["retiredRuleId"].as_str().unwrap();
+                    let retired = v2_rules
+                        .iter()
+                        .find(|rule| rule["ruleId"] == old_id)
+                        .unwrap();
+                    assert_eq!(retired["status"], "retired");
+                    let mut historical = semantic_rule(retired, source_boundary(retired));
+                    historical["status"] = "active".into();
+                    assert_eq!(expected_semantics.remove(old_id), Some(historical));
+                    let replacement = operation["replacementRule"].clone();
+                    assert!(replacements
+                        .insert(
+                            old_id.to_owned(),
+                            replacement["ruleId"].as_str().unwrap().to_owned()
+                        )
+                        .is_none());
+                    replacement
+                }
+                "add-rule" => {
+                    additions += 1;
+                    operation["rule"].clone()
+                }
+                other => panic!("지원하지 않는 공급 변경: {other}"),
+            };
+            rule["status"] = "active".into();
+            rule["projections"] = serde_json::json!([rule["projection"]]);
+            let id = rule["ruleId"].as_str().unwrap().to_owned();
+            assert!(expected_semantics
+                .insert(id.clone(), semantic_rule(&rule, source_boundary(&rule)))
+                .is_none());
+            if kind == "add-rule" {
+                added_by_projection
+                    .entry(projection.to_owned())
+                    .or_default()
+                    .push(id);
+            }
+        }
+        assert_eq!(change["expectedDelta"]["activeRuleDelta"], additions);
     }
     let v2_semantics: BTreeMap<_, _> = v2_rules
         .iter()

@@ -18,12 +18,20 @@ pub(crate) fn family(style: &TextStyle, text: &str) -> Option<&'static str> {
     }
     // 측정에 쓰인 호환 폭 이름이 실제 설치 프로그램을 보증하지는 않는다.
     // 명시적인 glyph 공급 체인이 있으면 paint는 그 체인에서 선택한다.
+    let metric = decision.metric?.metric.name;
     if decision.width_source == "declaredGlyphFallbackMetric"
         && style.glyph_fallback_advance_explicit
     {
-        return None;
+        let declared = style
+            .font_family
+            .split(',')
+            .nth(1)
+            .map(|name| name.trim().trim_matches(['\'', '"']));
+        if !declared.is_some_and(|name| name.eq_ignore_ascii_case(metric)) {
+            return None;
+        }
     }
-    decision.metric.map(|selected| selected.metric.name)
+    Some(metric)
 }
 
 /// Canvas의 크기·장평·첨자·굵기 계약은 기존 공통 descriptor를 재사용한다.
@@ -36,23 +44,4 @@ pub(crate) fn canvas_descriptor(style: &TextStyle, text: &str) -> Option<String>
             .descriptor()
             .to_owned(),
     )
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn explicit_glyph_chain_is_not_replaced_by_metric_family_for_paint() {
-        let style = TextStyle {
-            font_family: "휴먼명조,Haansoft Batang".into(),
-            glyph_fallback_advance_explicit: true,
-            source_font_is_ttf: true,
-            ..Default::default()
-        };
-        let decision = super::super::layout::char_width_decision(&['․'], &[1], 0, &style, true);
-        assert_eq!(decision.width_source, "declaredGlyphFallbackMetric");
-        assert!(decision.metric.is_some());
-        assert_eq!(family(&style, "․"), None);
-    }
 }

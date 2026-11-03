@@ -4404,10 +4404,7 @@ mod tests {
             None
         );
         assert_eq!(canvas_cluster_fit(&style, "a", 7.5, 15.0, None, true), None);
-    }
 
-    #[test]
-    fn missing_source_math_dot_centers_fallback_without_compressing_ink() {
         let mut fonts = native_pua_fonts::NativePuaFonts::default();
         fonts
             .register_otf_for_source(
@@ -4449,6 +4446,22 @@ mod tests {
             canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some(9.0), false),
             None
         );
+
+        let declared = TextStyle {
+            font_family: "휴먼명조,Haansoft Batang".into(),
+            glyph_fallback_advance_explicit: true,
+            source_font_is_ttf: true,
+            ..Default::default()
+        };
+        assert_eq!(
+            measured_glyph_supplier::family(&declared, "․"),
+            Some("Haansoft Batang")
+        );
+        let other = TextStyle {
+            font_family: "휴먼명조,Noto Serif".into(),
+            ..declared
+        };
+        assert_eq!(measured_glyph_supplier::family(&other, "․"), None);
     }
 
     #[test]
