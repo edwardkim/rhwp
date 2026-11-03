@@ -3,10 +3,11 @@
 //!
 //! 측정 근거(측정일 2026-11-03, `scripts/visual_sweep.py --silhouette-only --dpi 96`, 판정값
 //! `silhouette_raw_match_percent` — 색상 경계 보정 전 2px 내용 실루엣, 이진화는 스크립트 기본값,
-//! 색상 경계 대조 픽셀은 전부 0). 후보 source 는 `task/8525-page-bottom-band-host-spacing` 작업 트리
-//! (#8522 head `ed1ab24e35` 위, `upstream/devel` 대비 src 는 #8473 head `7383b5f1a0` 기준 diff sha256
-//! `0ca8786542c28192`), Native = native-skia release(sha256 `356945ebcf43b62b`), fresh WASM =
-//! 같은 source 의 `scripts/wasm-pack-locked.sh --target web`(`rhwp_bg.wasm` sha256 `53eb524276c7eb57`).
+//! 색상 경계 대조 픽셀은 전부 0). 후보 source 는 `task/8525-page-bottom-band-host-spacing` head
+//! (#8522 head `98e69aed17` 위, `upstream/devel` `7d06d5c706` 대비 src diff sha256 `8c8b0b7a449fae1c`),
+//! Native = native-skia release(sha256 `5321f7bdd3ce3611`), fresh WASM = 같은 source 의
+//! `scripts/wasm-pack-locked.sh --target web`(`rhwp_bg.wasm` sha256 `116378d0b9c478c8`).
+//! 리베이스 전(Native `356945ebcf43b62b`, WASM `53eb524276c7eb57`)도 같은 점수.
 //! 글꼴 `RHWP_FONT_PATH` = 한컴 `ttfs/hwp`·`ttfs/windows`. rhwp 쪽수 = 기준 PDF 쪽수.
 //!
 //! | 원본 → 기준 Print | 쪽 | Native | fresh WASM |
