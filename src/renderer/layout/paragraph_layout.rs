@@ -1574,57 +1574,22 @@ fn repeated_empty_tac_line_offset(
     }
 }
 
-fn note_number_format_from_hwp_code(code: u8) -> NumFmt {
-    match code {
-        0 => NumFmt::Digit,
-        1 => NumFmt::CircledDigit,
-        2 => NumFmt::RomanUpper,
-        3 => NumFmt::RomanLower,
-        4 => NumFmt::LatinUpper,
-        5 => NumFmt::LatinLower,
-        8 => NumFmt::HangulGaNaDa,
-        12 => NumFmt::HangulNumber,
-        13 => NumFmt::HanjaNumber,
-        _ => NumFmt::Digit,
-    }
-}
-
-fn note_decoration_char(value: u16) -> Option<char> {
-    if value == 0 {
-        None
-    } else {
-        char::from_u32(value as u32).filter(|ch| *ch != '\0')
-    }
-}
-
-fn format_note_marker_text(
-    number: u16,
-    number_shape: u32,
-    before_decoration_letter: u16,
-    after_decoration_letter: u16,
-) -> String {
-    let number = format_number(number, note_number_format_from_hwp_code(number_shape as u8));
-    let prefix = note_decoration_char(before_decoration_letter)
-        .map(|ch| ch.to_string())
-        .unwrap_or_default();
-    let suffix = note_decoration_char(after_decoration_letter)
-        .unwrap_or(')')
-        .to_string();
-    format!("{}{}{}", prefix, number, suffix)
-}
-
 pub(super) fn note_marker_text_from_control(
     ctrl: Option<&Control>,
     fallback_number: u16,
 ) -> String {
     match ctrl {
-        Some(Control::Footnote(footnote)) => format_note_marker_text(
+        Some(Control::Footnote(footnote)) => crate::renderer::note_marker::text(
+            &footnote.paragraphs,
+            crate::model::control::AutoNumberType::Footnote,
             fallback_number,
             footnote.number_shape,
             footnote.before_decoration_letter,
             footnote.after_decoration_letter,
         ),
-        Some(Control::Endnote(endnote)) => format_note_marker_text(
+        Some(Control::Endnote(endnote)) => crate::renderer::note_marker::text(
+            &endnote.paragraphs,
+            crate::model::control::AutoNumberType::Endnote,
             fallback_number,
             endnote.number_shape,
             endnote.before_decoration_letter,
@@ -9398,7 +9363,7 @@ impl LayoutEngine {
             let allow_end_tac = (is_last_run
                 || (comp_line.has_line_break && is_last_run_of_line(run_idx)))
                 && !next_line_starts_at_run_end;
-            let run_tacs: Vec<(usize, f64, usize)> = tac_offsets_px
+            let mut run_tacs: Vec<(usize, f64, usize)> = tac_offsets_px
                 .iter()
                 .filter(|(pos, _, ci)| {
                     !emitted_tac_controls.contains(ci)

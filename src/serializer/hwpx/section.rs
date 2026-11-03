@@ -741,6 +741,9 @@ pub(super) fn write_section_with_storage<S: crate::storage::Storage>(
 where
     S::Error: std::fmt::Display,
 {
+    let section =
+        super::super::column_sizes::for_export_with_storage(section, storage).map_err(xml_error)?;
+    let section = section.as_ref();
     let mut vert_cursor: u32 = 0;
 
     let first_para = section.paragraphs.first();

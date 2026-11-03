@@ -92,7 +92,7 @@ impl TypesetEngine {
                 .any(|line| !is_synthetic_line_seg(line)),
             skip_spacing_before_prededuct,
         );
-        state.initialize_zone_spacing(column_def_design_spacing_px(column_def, self.dpi));
+        state.initialize_zone_spacing(column_def_design_spacing_px(column_def, self.dpi), false);
         state.record_footer_presence(true);
         state.ensure_page();
 

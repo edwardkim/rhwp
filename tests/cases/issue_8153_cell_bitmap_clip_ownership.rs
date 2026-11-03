@@ -170,6 +170,7 @@ mod cell_clip_contract {
             closed_reflow_frame: false,
             page_fragment: fragment,
             model_cell_index: None,
+            model_para_range: None,
         };
         let node = RenderNode::new(
             1,

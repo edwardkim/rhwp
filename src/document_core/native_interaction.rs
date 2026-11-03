@@ -141,9 +141,7 @@ impl DocumentCore {
         position: &NativeTextPosition,
     ) -> Result<(), NativeInteractionError> {
         let paragraph = self.native_text_paragraph(position)?;
-        if paragraph.controls.iter().any(|control| {
-            control.is_logical_inline() || matches!(control, Control::CharOverlap(_))
-        }) {
+        if paragraph.controls.iter().any(Control::is_logical_inline) {
             return Err(NativeInteractionError::Unsupported(
                 "inline-object affinity is not supported by scalar interaction positions",
             ));

@@ -785,12 +785,12 @@ impl Paragraph {
 
     /// 문단 나누기 offset(캐럿 축)에서 한 칸을 차지하는 컨트롤인가.
     ///
-    /// 캐럿은 글자처럼 취급하는 개체와 각주·미주([`Control::is_logical_inline`]), 그리고
-    /// 조판에서 한 글자 칸인 글자겹침을 한 칸씩 지난다. 떠 있는 개체는 칸이 없고, 자동 번호는
+    /// 캐럿은 [`Control::is_logical_inline`]과 같은 개체·각주·미주·글자겹침을 센다.
+    /// 떠 있는 개체는 칸이 없고, 자동 번호는
     /// 자리표 글자가 이미 한 칸이다. 이들까지 세면 그 뒤에서 한 글자씩 앞에서 나눈다.
     /// 어느 문단으로 옮길지는 [`Self::is_split_movable_control`] 이 따로 정한다.
     pub(crate) fn occupies_split_slot(ctrl: &Control) -> bool {
-        ctrl.is_logical_inline() || matches!(ctrl, Control::CharOverlap(_))
+        ctrl.is_logical_inline()
     }
 
     fn control_mask_bit(ctrl: &Control) -> u32 {
@@ -1439,6 +1439,16 @@ impl Paragraph {
         source: &Paragraph,
     ) -> usize {
         let inserted_at = self.insert_text_at(char_offset, &source.text);
+        self.inherit_inserted_text_controls(source, inserted_at);
+        inserted_at
+    }
+
+    /// 삽입 방식과 무관하게 복사한 묶음 빈칸의 원본 제어 슬롯을 함께 옮긴다.
+    pub(crate) fn inherit_inserted_text_controls(
+        &mut self,
+        source: &Paragraph,
+        inserted_at: usize,
+    ) {
         if let Some(indices) = &mut self.nb_space_control_indices {
             indices.extend(
                 source
@@ -1449,7 +1459,6 @@ impl Paragraph {
             indices.sort_unstable();
         }
         self.refresh_nb_space_control_mask();
-        inserted_at
     }
 
     /// `tab_extended` 는 문단의 탭 글자와 차례로 짝이 맞는다(직렬화가 `tab_idx` 로 하나씩 꺼낸다).

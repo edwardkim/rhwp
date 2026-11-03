@@ -136,10 +136,19 @@ pub(super) fn prepare_shaped_spans(
         ) else {
             continue;
         };
+        let mut baseline_offset = 0.0_f32;
         let glyph_count = skia_safe::TextBlobIter::new(&blob)
-            .map(|run| run.glyph_indices.len())
+            .map(|run| {
+                let mut run_font = font.clone();
+                if let Some(typeface) = run.typeface() {
+                    run_font.set_typeface(typeface.clone());
+                }
+                // SkShaper가 줄 위쪽을 기준선으로 옮긴 양을 실제 fallback 글꼴까지 되돌린다.
+                baseline_offset = baseline_offset.min(run_font.metrics().1.ascent);
+                run.glyph_indices.len()
+            })
             .sum::<usize>();
-        if !blob.bounds().is_finite() || glyph_count > MAX_CHARS {
+        if !blob.bounds().is_finite() || !baseline_offset.is_finite() || glyph_count > MAX_CHARS {
             continue;
         }
         // SkTextBlobBuilderRunHandler는 commitRunInfo에서 -max(ascent)를 더한다.

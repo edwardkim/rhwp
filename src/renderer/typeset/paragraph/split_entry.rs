@@ -12,6 +12,8 @@ pub(in crate::renderer::typeset) struct SplitEntryPage<'a> {
     pub col_count: u16,
     pub current_height: f64,
     pub current_items: &'a [PageItem],
+    pub zone_y_offset: f64,
+    pub plain_text_zone: bool,
     pub body_height: f64,
     pub stored_ladder_spacing_omitted: bool,
     pub hangul2024_reclaimed: f64,
@@ -23,6 +25,7 @@ pub(in crate::renderer::typeset) struct SplitEntryFit {
     pub hwp_first_line_before_reset_fits: bool,
     pub stored_whole_para_reset: bool,
     pub hangul2024_split_refit: bool,
+    pub empty_zone_first_line_overflows: bool,
 }
 
 /// 저장 첫 줄이 현재 흐름의 같은 쪽에서 본문 하단을 넘는지 조회한다.
@@ -77,6 +80,8 @@ pub(in crate::renderer::typeset) fn inspect_entry(
     // 넘어도 이 쪽에 남는다(한글문서파일형식 13쪽 pi=53: 남은 16.43 − 앞 간격 6.67 = 9.76 <
     // 첫 줄 13.33, 한/글은 다음 쪽). drift 안전 여백은 여기서 빼지 않는다(#6568 주석).
     let remaining = (available - page.current_height - fmt.spacing_before.max(0.0)).max(0.0);
+    let empty_text_zone =
+        page.plain_text_zone && page.current_items.is_empty() && page.zone_y_offset > 0.0;
     // [Task #1086] 단일 단에서도 HWP가 paragraph 내부 page reset 을
     // LINE_SEG(vpos=0) 로 인코딩하는 케이스가 있다(k-water-rfp pi=66).
     // 첫 줄의 HWP 좌표가 본문 안에 있고 다음 줄이 reset 이면, 보수적
@@ -164,6 +169,7 @@ pub(in crate::renderer::typeset) fn inspect_entry(
         hwp_first_line_before_reset_fits,
         stored_whole_para_reset,
         hangul2024_split_refit,
+        empty_zone_first_line_overflows: empty_text_zone && remaining < first_line_h,
     }
 }
 
@@ -183,7 +189,11 @@ pub(in crate::renderer::typeset) fn should_advance(
         hwp_first_line_before_reset_fits,
         stored_whole_para_reset,
         hangul2024_split_refit,
+        empty_zone_first_line_overflows,
     } = *fit;
+    if empty_zone_first_line_overflows {
+        return true;
+    }
     // [#6568] 줄 분할 루프의 넘침 판정에는 `li > cursor_line` 면제가 걸려 있어
     // **조각의 첫 줄은 검사조차 되지 않는다.** 그래서 예산을 넘는 줄이 무조건 그
     // 쪽에 놓인다. 156678235 pi=59 실측:

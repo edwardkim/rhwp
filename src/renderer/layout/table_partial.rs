@@ -1274,6 +1274,7 @@ impl LayoutEngine {
                             || is_rowbreak_straddle
                             || height_override_clip,
                         model_cell_index: Some(cell_idx as u32),
+                        model_para_range: None,
                     })
                 } else {
                     RenderNodeType::Group(GroupNode {
@@ -8229,6 +8230,7 @@ mod tests {
                 closed_reflow_frame: false,
                 page_fragment: false,
                 model_cell_index: Some(0),
+                model_para_range: None,
             }),
             BoundingBox::new(10.0, 20.0, 100.0, 80.0),
         );
