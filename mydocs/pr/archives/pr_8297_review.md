@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**메인터너 검토 — HWP3 변환본과 공식 사양 문서의 캡션 번호 확인.** [통합 PR #8438](https://github.com/edwardkim/rhwp/pull/8438)에 반영됐다. 기존에 배포용 HWP의 새 Print가 불가능하다는 이유로 HWP3 변환본만 확인했으나, 원 PR이 이미 사용한 공식 사양 PDF를 놓친 것이므로 아래와 같이 추가 대조한다. 공식 원본에서 이슈의 표 1~161 증상이 해소된 것을 확인해 [#8294](https://github.com/edwardkim/rhwp/issues/8294)를 완료로 종료했다.
+**메인터너 검토 완료 — HWP3 변환본의 그림 캡션 번호 확인.** [통합 PR #8438](https://github.com/edwardkim/rhwp/pull/8438)에 반영됐고, 작업지시자 지시에 따라 `hwp3-sample-hwp5.hwp`만으로 판단한다. 이 판정은 다른 원본이나 이슈 전체의 해결을 뜻하지 않는다.
 
 ## 2026-11-02 통합 머지 사실과 적용 SHA 재확인
 
@@ -11,33 +11,6 @@
 - 원본 → 머지 이력: `8724d9f60e` → `a36ab08494`, `1dddcb4020` → `169e04e61e`, `1953a4be92` → `bd72faf384`.
 - 제품 코드 `d536455b4e`의 최소 글꼴 전체 회귀는 12,368건 통과·45건 skipped였다. 이 로그에서 확인한 해당 모듈: `issue_8294_hwp5_numbering_category_bit28` 2건. 이 수치는 개별 PR의 독립 Print 검증과는 구분한다.
 - 뒤의 중간 후보·검증 대기 문장은 당시 상태이며 최종 통합 결과가 아니다. 원 PR별 최종 시각·기능 검토와 최신 head 일치 확인은 계속한다.
-
-## 2026-11-02 공식 사양 문서 추가 대조
-
-원 PR이 명시한 [공식 한컴 PDF](../../../pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf)는
-한컴 2018 `10.0.0.7282`의 기존 정본이며 새 MCP Print가 아니다. 원본
-[`samples/한글문서파일형식_5.0_revision1.3.hwp`](../../../samples/한글문서파일형식_5.0_revision1.3.hwp)의
-SHA-256은 `f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d`,
-PDF는 `1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782`다.
-기존 정본의 출처와 저장 버전은 [공식 기준 이력](../../working/assets/review_integration_20261026/validation/official-spec-reference-reuse.json)에서 확인했다.
-
-현재 Native 출력과 공식 PDF는 모두 71쪽이다. `export-text --json`과
-`pdftotext -layout`에서 줄 시작의 `표 번호 제목`을 추출해 NFC와 공백을 정규화하고
-참조 문구를 제외해 다중집합으로 비교한 결과, **표 1~161의 번호와 제목 161개가
-모두 일치하고 각 쪽도 같다**. 원 PR의 165개 주장 전체를 새로 재현한 것으로
-과장하지 않는다. [161개 대조표](../assets/issue_8294/followup8438/official-caption-comparison.tsv).
-
-96dpi·2px raw Native 전쪽 최저는 95.39%이고 90% 미만은 없다.
-공식 PDF는 2018 출력이며 도구의 호환 선택지는 2022를 사용했다.
-[Native 전체 TSV](../assets/issue_8294/followup8438/official-spec-native.tsv) ·
-[43쪽 review](../assets/issue_8294/followup8438/official-spec-native-review-043.png) ·
-[43쪽 overlay](../assets/issue_8294/followup8438/official-spec-native-overlay-043.png).
-이슈가 지목한 19쪽의 `표 10`, `표 11`, `표 12`와 43쪽의 `표 70`, `표 71`, `표 72`의 번호와 위치를 정본과 직접 대조했다. 19쪽은 양 경로 raw 100.00%다.
-[19쪽 Native review](../assets/issue_8294/followup8438/official-spec-native-review-019.png) · [19쪽 Native overlay](../assets/issue_8294/followup8438/official-spec-native-overlay-019.png) · [19쪽 WASM review](../assets/issue_8294/followup8438/official-spec-wasm-review-019.png) · [19쪽 WASM overlay](../assets/issue_8294/followup8438/official-spec-wasm-overlay-019.png).
-fresh WASM도 71쪽 모두 90% 이상이며 최저 95.41%다.
-[WASM 전체 TSV](../assets/issue_8294/followup8438/official-spec-wasm.tsv) ·
-[43쪽 WASM review](../assets/issue_8294/followup8438/official-spec-wasm-review-043.png) ·
-[43쪽 WASM overlay](../assets/issue_8294/followup8438/official-spec-wasm-overlay-043.png).
 
 ## 접수와 적용
 
