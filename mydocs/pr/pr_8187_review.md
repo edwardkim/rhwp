@@ -167,3 +167,17 @@ API 부재는 source 대조 결과다. 이를 Studio의 모든 기존 편집 동
 
 현재 단계는 최종 source의 Native/fresh WASM, 경계·왕복·전체 회귀와 필수 lint를 진행하는 단계다.
 원격 push·GitHub comment·approve·merge는 수행하지 않았다.
+
+### Native 기준선 통합의 재검토
+
+최종 대조 도중 KPS 53쪽의 원형 결합 문자가 위로 잘리는 새 차이를 발견했다. 중간 후보의
+raw는 기준 98.84%에서 97.95%로 낮아졌지만 90% gate 안이었다. 직접 판독으로 이를 수용하지
+않았다. `text_replay`는 이미 canvas translate에 `baseline_offset`을 넣었는데 원 PR의 자동 적용
+부분이 draw origin에 같은 값을 다시 더했다. `text_shaping`에도 최신 face-ascent 계산 앞에
+옛 중복 계산이 남았다. 두 파일을 현재 devel `4e2cc6bb`와 정확히 같은 source로 복원했고, 새
+Native 재출력의 53쪽 PNG는 기준 devel PNG와 바이트가 같다. 표·논리 편집의 새 기능은 유지했다.
+
+이 두 파일은 `#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]`의 Native 전용
+모듈이다. 이후 변경은 이 복원과 테스트/증거 보강뿐이므로 source `c33037bf2f`의 최적화 WASM
+`f92b4c31ae7fdd323ef15eb859e0168211db0e286d40c74b569d5a41903bc83a`를 재사용한다.
+별도 출력 경로의 Native는 재빌드하고 전쪽을 다시 비교했다. 설치된 root pkg/public WASM은 보존했다.
