@@ -80,3 +80,10 @@ no_lineseg_inline_object_caret_anchor; 그림 앞뒤·그림만 있는 문단·�
 승인된 원격 범위에서 게시·API 재확인한다. 아직 없는 수치나 이미지 URL은 만들지 않는다.
 
 [누적 검토 계획](semanticist21_20261103_review_plan.md) · [원 head·CI·충돌 증거](assets/semanticist21-20261103/intake.json).
+
+## 로컬 충돌 보정
+
+현행 text_logical_starts를 유지했다. 끝 캐럿도 같은 주소 결과의 마지막 값을 소비한다.
+#8517의 빈 그림 호스트 메트릭을 유지하고 남은 끝 글자 상자는 Storage push로 연결했다.
+원 PR 회귀의 `나` 시작 주소 1은 이미 해결된 원문 축 기대값이므로, 그림 슬롯을 포함한
+현행 논리 주소 2로 대조한다. 실행·독립 출력 검증은 누적 후보에서 이어 간다.
