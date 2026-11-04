@@ -69,7 +69,7 @@ after(() => {
   }
 });
 
-test('five backend projections are deterministic and close all 854 active registry rules', () => {
+test('five backend projections are deterministic and close all 855 active registry rules', () => {
   const registry = readRegistry();
   const first = buildProjectionBundle(registry);
   const second = buildProjectionBundle(registry);
@@ -81,13 +81,13 @@ test('five backend projections are deterministic and close all 854 active regist
     registry,
   ), []);
   assert.equal(first.manifest.summary.outputCount, 5);
-  assert.equal(first.manifest.summary.activeRuleCount, 854);
+  assert.equal(first.manifest.summary.activeRuleCount, 855);
   assert.equal(first.manifest.summary.retiredRuleCount, registry.rules.filter(rule => rule.status === 'retired').length);
   assert.deepEqual(first.manifest.summary.countsByProjection, {
     'canvas2d-paint': 281,
     'canvas2d-webfont': 159,
     'canvaskit-sfnt': 164,
-    'rust-layout-metric': 71,
+    'rust-layout-metric': 72,
     'rust-layout-name': 179,
   });
   assert.deepEqual(
@@ -101,7 +101,8 @@ test('five backend projections are deterministic and close all 854 active regist
       'canvas2d-webfont': '3a4759c7b701be8ee9552cf89ab7660abd6812df8990445a4548aa60bc87ad1c',
       'canvaskit-sfnt': '4fafd58b3790c95660cf4100816854aa19d6260d9c35eb8d7a9c583290d9a15e',
       // #7196 / #7966 / #7445: add only the verified public Batang metric identity.
-      'rust-layout-metric': 'fdca67b63b5f10b2f89fcf991e9d4d633461c1f1052dcc397884408af0e736ba',
+      // #8575 adds the Haan YGodic 250 name for its existing metric entry.
+      'rust-layout-metric': 'ccd5fcfb855a659a7b9ff373c884352b900233067e7f3aaa736a8d17a478cea3',
       // #7958 / #7959 / #7966 preserve PostScript name and full-face identities.
       // #7445 adds a document-substitute field rule without changing primary aliases.
       'rust-layout-name': '749f9cefc71c00116a80b475324d8abbf2a0d43ad3709a5a45f813f50a642c1f',
@@ -222,7 +223,7 @@ test('retired rules remain in the registry but never reach runtime projections',
   const paint = bundle.outputs.find(output => output.projectionId === 'canvas2d-paint');
   assert.equal(paint.ruleCount, 280);
   assert.equal(paint.rows.some(row => row.ruleId === retired.ruleId), false);
-  assert.equal(bundle.manifest.summary.activeRuleCount, 853);
+  assert.equal(bundle.manifest.summary.activeRuleCount, 854);
   assert.equal(bundle.manifest.summary.retiredRuleCount, previousRetiredCount + 1);
 });
 
