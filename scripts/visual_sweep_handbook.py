@@ -39,6 +39,15 @@ def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def readable_font_file(path):
+    """설치 캐시의 존재 정보와 실제 프로그램 읽기 가능 여부를 구분한다."""
+    try:
+        with Path(path).open('rb') as stream:
+            return bool(stream.read(1))
+    except OSError:
+        return False
+
+
 def _normal_name(value):
     return ''.join(value.lower().split())
 
@@ -88,7 +97,7 @@ def installed_face(family, style, font_paths=()):
         names, styles, path = p.stdout.strip().split('|', 2)
         if (_normal_name(family) in {_normal_name(x) for x in names.split(',')}
                 and _normal_name(style) in {_normal_name(x) for x in styles.split(',')}
-                and Path(path).is_file()):
+                and readable_font_file(path)):
             return True
     except (OSError, ValueError, subprocess.SubprocessError):
         pass
