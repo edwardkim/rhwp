@@ -1209,13 +1209,18 @@ fn parse_master_pages_from_raw(raw_records: &[RawRecord], section_flags: u32) ->
             continue;
         }
 
-        // 확장 플래그 (byte 18-19, 표 139 이후)
+        // 확장 플래그 (byte 18-19, 표 139 이후). 한컴 12.30 저장본에서 기본 바탕쪽은 0, 구역 마지막 쪽은 3,
+        // 구역 안 n째 쪽은 n + 3이다.
         let ext_flags = r.read_u16().unwrap_or(0);
+        // 바탕쪽 속성 (byte 22-25). 한컴 12.30 저장본에서 bit 0은 기존 바탕쪽과 겹치게 하기,
+        // bit 1은 인쇄할 때 바탕쪽 맨 위로 보내기다.
+        let _ = r.read_u16();
+        let master_attr = r.read_u32().unwrap_or(0);
 
         // Task #347: ext_flags 비트로 확장 여부 판별 (bit 1) — 휴리스틱(같은 apply_to 중복)
         // 단독으로는 ext_flags=0x03 같은 케이스(첫 등록 + 확장 표시)를 놓침.
         // 비트 + 휴리스틱 OR 조합으로 보강.
-        let overlap = ext_flags & 0x01 != 0;
+        let overlap = master_attr & 0x01 != 0;
         let is_extension = (ext_flags & 0x02 != 0)
             || master_pages
                 .iter()
@@ -1244,13 +1249,16 @@ fn parse_master_pages_from_raw(raw_records: &[RawRecord], section_flags: u32) ->
         // 한컴 정답지가 대체임을 보인다 — `pdf/exam_science-2022.pdf` 4쪽의 바탕쪽 글자는
         // `32 32`·`* 확인 사항` 뿐이고 기본 짝수 바탕쪽의 `31` 이 없다. 종전 rhwp 는 두 겹을
         // 그려 `['31','32']` 와 `['32','32', …]` 가 18.0 x 15.3px 겹쳤다.
+        //
+        // 그 overlap 비트로 본 것은 종류 값(구역 마지막 쪽 3)의 bit 0이었다. 겹치게 하기는 byte 22의
+        // bit 0에 있다(한컴 12.30 저장본: 겹치게 하기를 고른 마지막 쪽 바탕쪽만 1).
         master_pages.push(MasterPage {
             apply_to,
             is_extension,
             overlap,
-            replace_base: is_extension,
+            replace_base: is_extension && !overlap,
             ext_flags,
-            page_front: false, // HWP5 바이너리 바탕쪽엔 pageFront 개념 없음
+            page_front: master_attr & 0x02 != 0,
             text_direction: 0, // HWP5 바이너리 바탕쪽엔 textDirection 개념 없음
             paragraphs,
             text_width,
@@ -1271,13 +1279,22 @@ fn master_page_apply_to(
     list_header_count: usize,
     master_page_index: usize,
 ) -> Option<HeaderFooterApply> {
-    const MASTER_PAGE_FLAGS_MASK: u32 = 0xe000_0000;
-    const HANCOM_SINGLE_ODD_MASTER_PAGE_FLAGS: u32 = 0x8000_0000;
-
-    (list_header_count == 1
-        && master_page_index == 0
-        && section_flags & MASTER_PAGE_FLAGS_MASK == HANCOM_SINGLE_ODD_MASTER_PAGE_FLAGS)
-        .then_some(HeaderFooterApply::Odd)
+    // 한컴은 구역 정의 속성 bit 29·30·31에 양 쪽·짝수 쪽·홀수 쪽 바탕쪽이 있는지 적고, 기본 바탕쪽
+    // 목록을 그 차례로 저장한다(한컴 12.30 저장본: 양 쪽 0x20000000, 양 쪽+홀수 쪽 0xa0000000,
+    // 짝수 쪽+홀수 쪽 0xc0000000, 셋 0xe0000000, 짝수 쪽 0x40000000). 한컴 2020이 HWPX의 희소 홀수 쪽
+    // 바탕쪽을 HWP5로 저장한 0x80000000 목록 하나도 같은 규칙이다. 비트 수와 목록 수가 다르면 차례로 정한다.
+    let kinds: Vec<HeaderFooterApply> = [
+        (29, HeaderFooterApply::Both),
+        (30, HeaderFooterApply::Even),
+        (31, HeaderFooterApply::Odd),
+    ]
+    .into_iter()
+    .filter(|(bit, _)| section_flags & (1 << bit) != 0)
+    .map(|(_, kind)| kind)
+    .collect();
+    (kinds.len() == list_header_count)
+        .then(|| kinds.get(master_page_index).copied())
+        .flatten()
 }
 
 /// 단 정의 파싱 ('cold' 컨트롤)

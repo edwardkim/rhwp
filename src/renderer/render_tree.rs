@@ -161,6 +161,9 @@ pub struct RenderLayerInfo {
     /// 분류는 이 플래그로 BehindText 상한을 적용한다 (#2318, SVG node_z_plane 계약).
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub master_page: bool,
+    /// 한컴 "인쇄할 때 바탕쪽 맨 위로 보내기"(HWPX pageFront) 바탕쪽 유래. 본문 위에 그린다.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub master_front: bool,
 }
 
 impl RenderLayerInfo {
@@ -171,6 +174,7 @@ impl RenderLayerInfo {
             z_order,
             stable_index,
             master_page: false,
+            master_front: false,
         }
     }
 

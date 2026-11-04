@@ -11,7 +11,8 @@ use crate::document_core::helpers::{
     parse_json_i16_array, parse_para_shape_mods,
 };
 use crate::document_core::{
-    header_footer_apply_from_u8, header_footer_apply_to_u8, ClipboardData, DocumentCore,
+    header_footer_apply_from_u8, header_footer_apply_to_u8, master_page_slot, ClipboardData,
+    DocumentCore,
 };
 use crate::error::HwpError;
 use crate::model::control::Control;
@@ -61,6 +62,24 @@ impl DocumentCore {
                 self.document.sections.len()
             )));
         }
+        if let Some(slot) = master_page_slot(apply_to) {
+            let section = &self.document.sections[section_idx];
+            let Some(master) = section.section_def.master_pages.get(slot) else {
+                return Ok("{\"ok\":true,\"exists\":false}".to_string());
+            };
+            let text = master
+                .paragraphs
+                .iter()
+                .map(|p| p.text.as_str())
+                .collect::<Vec<_>>()
+                .join("\n");
+            return Ok(format!(
+                "{{\"ok\":true,\"exists\":true,\"kind\":\"master\",\"applyTo\":{},\"paraCount\":{},\"text\":\"{}\"}}",
+                apply_to,
+                master.paragraphs.len(),
+                super::super::helpers::json_escape(&text)
+            ));
+        }
         let apply = header_footer_apply_from_u8(apply_to);
         if let Some((pi, ci)) = self.find_header_footer_control(section_idx, is_header, apply) {
             let section = &self.document.sections[section_idx];
@@ -97,6 +116,11 @@ impl DocumentCore {
         is_header: bool,
         apply_to: u8,
     ) -> Result<String, HwpError> {
+        if master_page_slot(apply_to).is_some() {
+            return Err(HwpError::RenderError(
+                "바탕쪽은 바탕쪽 API로 만들고 지웁니다".to_string(),
+            ));
+        }
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
                 "구역 인덱스 {} 범위 초과 (총 {}개)",
@@ -171,6 +195,13 @@ impl DocumentCore {
         ))
     }
 
+    /// 바탕쪽을 고쳤으면 HWP 저장이 읽는 문단의 구역 정의에도 옮긴다.
+    fn sync_master_page_edit(&mut self, section_idx: usize, apply_to: u8) {
+        if master_page_slot(apply_to).is_some() {
+            self.sync_section_def_controls_from_section(section_idx);
+        }
+    }
+
     /// 머리말/꼬리말 내부 문단에 대한 가변 참조를 얻는다.
     fn get_hf_paragraph_mut(
         &mut self,
@@ -179,6 +210,16 @@ impl DocumentCore {
         apply_to: u8,
         hf_para_idx: usize,
     ) -> Result<&mut Paragraph, HwpError> {
+        if master_page_slot(apply_to).is_some() {
+            let paragraphs = self.get_hf_paragraphs_mut(section_idx, is_header, apply_to)?;
+            let count = paragraphs.len();
+            return paragraphs.get_mut(hf_para_idx).ok_or_else(|| {
+                HwpError::RenderError(format!(
+                    "바탕쪽 문단 인덱스 {} 범위 초과 (총 {}개)",
+                    hf_para_idx, count
+                ))
+            });
+        }
         let apply = header_footer_apply_from_u8(apply_to);
         let (pi, ci) = self
             .find_header_footer_control(section_idx, is_header, apply)
@@ -227,6 +268,12 @@ impl DocumentCore {
         apply_to: u8,
         hf_para_idx: usize,
     ) -> Option<&Paragraph> {
+        if master_page_slot(apply_to).is_some() {
+            return self
+                .get_hf_paragraphs_ref(section_idx, is_header, apply_to)
+                .ok()?
+                .get(hf_para_idx);
+        }
         let apply = header_footer_apply_from_u8(apply_to);
         let (pi, ci) = self.find_header_footer_control(section_idx, is_header, apply)?;
         let ctrl = &self.document.sections[section_idx].paragraphs[pi].controls[ci];
@@ -244,6 +291,9 @@ impl DocumentCore {
         is_header: bool,
         apply_to: u8,
     ) -> Result<&[Paragraph], HwpError> {
+        if let Some(slot) = master_page_slot(apply_to) {
+            return Ok(&self.master_page_ref(section_idx, slot)?.paragraphs);
+        }
         let apply = header_footer_apply_from_u8(apply_to);
         let (pi, ci) = self
             .find_header_footer_control(section_idx, is_header, apply)
@@ -266,6 +316,9 @@ impl DocumentCore {
         is_header: bool,
         apply_to: u8,
     ) -> Result<&mut Vec<Paragraph>, HwpError> {
+        if let Some(slot) = master_page_slot(apply_to) {
+            return Ok(&mut self.master_page_mut(section_idx, slot)?.paragraphs);
+        }
         let apply = header_footer_apply_from_u8(apply_to);
         let (pi, ci) = self
             .find_header_footer_control(section_idx, is_header, apply)
@@ -307,6 +360,7 @@ impl DocumentCore {
         self.reflow_hf_paragraph(section_idx, is_header, apply_to, hf_para_idx);
 
         // raw 스트림 무효화, 재페이지네이션
+        self.sync_master_page_edit(section_idx, apply_to);
         self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
@@ -365,6 +419,7 @@ impl DocumentCore {
         self.reflow_hf_paragraph(section_idx, is_header, apply_to, hf_para_idx);
 
         // raw 스트림 무효화, 재페이지네이션
+        self.sync_master_page_edit(section_idx, apply_to);
         self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
@@ -406,22 +461,14 @@ impl DocumentCore {
             )));
         }
 
-        let apply = header_footer_apply_from_u8(apply_to);
-        let (pi, ci) = self
-            .find_header_footer_control(section_idx, is_header, apply)
-            .ok_or_else(|| {
-                let kind = if is_header { "머리말" } else { "꼬리말" };
-                HwpError::RenderError(format!("{}이 존재하지 않습니다", kind))
-            })?;
-
-        // 문단 분할
-        let new_para = {
-            let ctrl = &mut self.document.sections[section_idx].paragraphs[pi].controls[ci];
-            let paragraphs = match ctrl {
-                Control::Header(h) => &mut h.paragraphs,
-                Control::Footer(f) => &mut f.paragraphs,
-                _ => return Err(HwpError::RenderError("컨트롤 타입 불일치".to_string())),
-            };
+        // 문단 분할 (바탕쪽도 같은 문단 목록 접근자를 쓴다)
+        // 되살릴 문단 정보가 있을 때만 문단 모양 표를 빌린다(아래 가변 대여와 겹치지 않게 복사).
+        let para_shapes = restore_meta
+            .as_ref()
+            .map(|_| self.document.doc_info.para_shapes.clone())
+            .unwrap_or_default();
+        {
+            let paragraphs = self.get_hf_paragraphs_mut(section_idx, is_header, apply_to)?;
             if hf_para_idx >= paragraphs.len() {
                 return Err(HwpError::RenderError(format!(
                     "문단 인덱스 {} 범위 초과",
@@ -430,27 +477,17 @@ impl DocumentCore {
             }
             let mut new_para = paragraphs[hf_para_idx].split_at(char_offset);
             if let Some(meta) = restore_meta {
-                restore_para_meta(&mut new_para, meta, &self.document.doc_info.para_shapes);
+                restore_para_meta(&mut new_para, meta, &para_shapes);
             }
-            new_para
-        };
-
-        // 새 문단 삽입
-        let new_para_idx = hf_para_idx + 1;
-        {
-            let ctrl = &mut self.document.sections[section_idx].paragraphs[pi].controls[ci];
-            let paragraphs = match ctrl {
-                Control::Header(h) => &mut h.paragraphs,
-                Control::Footer(f) => &mut f.paragraphs,
-                _ => unreachable!(),
-            };
-            paragraphs.insert(new_para_idx, new_para);
+            paragraphs.insert(hf_para_idx + 1, new_para);
         }
+        let new_para_idx = hf_para_idx + 1;
 
         // 리플로우
         self.reflow_hf_paragraph(section_idx, is_header, apply_to, hf_para_idx);
         self.reflow_hf_paragraph(section_idx, is_header, apply_to, new_para_idx);
 
+        self.sync_master_page_edit(section_idx, apply_to);
         self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
@@ -486,24 +523,11 @@ impl DocumentCore {
             ));
         }
 
-        let apply = header_footer_apply_from_u8(apply_to);
-        let (pi, ci) = self
-            .find_header_footer_control(section_idx, is_header, apply)
-            .ok_or_else(|| {
-                let kind = if is_header { "머리말" } else { "꼬리말" };
-                HwpError::RenderError(format!("{}이 존재하지 않습니다", kind))
-            })?;
-
-        // 병합
+        // 병합 (바탕쪽도 같은 문단 목록 접근자를 쓴다)
         let merge_offset;
         let removed_meta;
         {
-            let ctrl = &mut self.document.sections[section_idx].paragraphs[pi].controls[ci];
-            let paragraphs = match ctrl {
-                Control::Header(h) => &mut h.paragraphs,
-                Control::Footer(f) => &mut f.paragraphs,
-                _ => return Err(HwpError::RenderError("컨트롤 타입 불일치".to_string())),
-            };
+            let paragraphs = self.get_hf_paragraphs_mut(section_idx, is_header, apply_to)?;
             if hf_para_idx >= paragraphs.len() {
                 return Err(HwpError::RenderError(format!(
                     "문단 인덱스 {} 범위 초과",
@@ -519,6 +543,7 @@ impl DocumentCore {
         let prev_idx = hf_para_idx - 1;
         self.reflow_hf_paragraph(section_idx, is_header, apply_to, prev_idx);
 
+        self.sync_master_page_edit(section_idx, apply_to);
         self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
@@ -547,21 +572,7 @@ impl DocumentCore {
                 section_idx
             )));
         }
-        let apply = header_footer_apply_from_u8(apply_to);
-        let (pi, ci) = self
-            .find_header_footer_control(section_idx, is_header, apply)
-            .ok_or_else(|| {
-                let kind = if is_header { "머리말" } else { "꼬리말" };
-                HwpError::RenderError(format!("{}이 존재하지 않습니다", kind))
-            })?;
-
-        let ctrl = &self.document.sections[section_idx].paragraphs[pi].controls[ci];
-        let paragraphs = match ctrl {
-            Control::Header(h) => &h.paragraphs,
-            Control::Footer(f) => &f.paragraphs,
-            _ => return Err(HwpError::RenderError("컨트롤 타입 불일치".to_string())),
-        };
-
+        let paragraphs = self.get_hf_paragraphs_ref(section_idx, is_header, apply_to)?;
         let para_count = paragraphs.len();
         let (char_count, text) = if let Some(paragraph) = paragraphs.get(hf_para_idx) {
             (paragraph.text.chars().count(), paragraph.text.as_str())
@@ -668,6 +679,7 @@ impl DocumentCore {
         for hf_para_idx in 0..para_count {
             self.reflow_hf_paragraph(section_idx, is_header, apply_to, hf_para_idx);
         }
+        self.sync_master_page_edit(section_idx, apply_to);
         self.document.sections[section_idx].raw_stream = None;
         self.rebuild_section(section_idx);
         self.event_log
@@ -875,6 +887,7 @@ impl DocumentCore {
                 self.reflow_hf_paragraph(section_idx, is_header, apply_to, *hf_para_idx);
             }
         }
+        self.sync_master_page_edit(section_idx, apply_to);
         self.document.sections[section_idx].raw_stream = None;
         self.rebuild_section(section_idx);
         for (hf_para_idx, range_start, range_end) in changed_paragraphs {
@@ -895,6 +908,11 @@ impl DocumentCore {
         is_header: bool,
         apply_to: u8,
     ) -> Result<String, HwpError> {
+        if master_page_slot(apply_to).is_some() {
+            return Err(HwpError::RenderError(
+                "바탕쪽은 바탕쪽 API로 만들고 지웁니다".to_string(),
+            ));
+        }
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
                 "구역 인덱스 {} 범위 초과 (총 {}개)",
@@ -1130,21 +1148,15 @@ impl DocumentCore {
         let final_width = (available_width - margin_left - margin_right).max(0.0);
 
         // 가변 참조로 리플로우 실행
-        let apply = header_footer_apply_from_u8(apply_to);
-        if let Some((pi, ci)) = self.find_header_footer_control(section_idx, is_header, apply) {
-            let ctrl = &mut self.document.sections[section_idx].paragraphs[pi].controls[ci];
-            let paragraphs = match ctrl {
-                Control::Header(h) => &mut h.paragraphs,
-                Control::Footer(f) => &mut f.paragraphs,
-                _ => return,
-            };
+        let dpi = self.dpi;
+        if let Ok(paragraphs) = self.get_hf_paragraphs_mut(section_idx, is_header, apply_to) {
             if let Some(para) = paragraphs.get_mut(hf_para_idx) {
                 // 머리말/꼬리말 본문 상자 — 본문 열과 별개 흐름이므로 미스냅.
                 reflow_line_segs(
                     para,
-                    ParagraphBox::content_width_px(final_width, self.dpi),
+                    ParagraphBox::content_width_px(final_width, dpi),
                     &styles,
-                    self.dpi,
+                    dpi,
                 );
             }
         }
@@ -1233,6 +1245,7 @@ impl DocumentCore {
             self.reflow_hf_paragraph(section_idx, is_header, apply_to, hf_para_idx);
         }
 
+        self.sync_master_page_edit(section_idx, apply_to);
         self.document.sections[section_idx].raw_stream = None;
         self.rebuild_section(section_idx);
         self.event_log.push(DocumentEvent::ParaFormatChanged {
@@ -1271,6 +1284,7 @@ impl DocumentCore {
 
         self.reflow_hf_paragraph(section_idx, is_header, apply_to, hf_para_idx);
 
+        self.sync_master_page_edit(section_idx, apply_to);
         self.document.sections[section_idx].raw_stream = None;
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
@@ -1311,6 +1325,11 @@ impl DocumentCore {
         apply_to: u8,
         template_id: u8,
     ) -> Result<String, HwpError> {
+        if master_page_slot(apply_to).is_some() {
+            return Err(HwpError::RenderError(
+                "바탕쪽은 바탕쪽 API로 만들고 지웁니다".to_string(),
+            ));
+        }
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
                 "구역 인덱스 {} 범위 초과",

@@ -164,7 +164,7 @@ mod tests {
 
     #[test]
     fn master_page_page_front_round_trips() {
-        // pageFront(표지 전용 바탕쪽)이 render→parse 왕복에서 보존돼야 한다.
+        // pageFront(인쇄할 때 바탕쪽 맨 위로 보내기)가 render→parse 왕복에서 보존돼야 한다.
         // 종전엔 serializer 가 pageFront="0" 고정, 파서 미독으로 유실됐다.
         let mp = MasterPage {
             page_front: true,
