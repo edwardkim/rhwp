@@ -74,7 +74,8 @@
       "0"
     ]
   ],
-  "remote_operations": "Approved; preparing submission. Exact remote state is recorded separately after execution.",
+  "remote_operations": "PR #8609 opened at ab1015668e; Actions product gates and policy succeeded; separate GHAS CodeQL failed on two existing layout diagnostics. Bounded maintainer correction and revalidation in progress; merge held.",
   "all_required_local_gates": "passed",
-  "final_metadata_checks": "final-metadata-check-runs.json"
+  "final_metadata_checks": "final-metadata-check-runs.json",
+  "security_followup": "ci-security-followup.md"
 }

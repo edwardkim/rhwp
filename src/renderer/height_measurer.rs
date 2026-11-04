@@ -4648,23 +4648,6 @@ let body_height=match nested_body_heights
                             })
                         && stored_extent + pad_top + pad_bottom
                             > hwpunit_to_px(cell.height as i32, self.dpi) + 0.5;
-                    // [#6194 진단] 이 갈래의 성분과 게이트를 그대로 찍는다 — 동작 불변.
-                    if std::env::var("RHWP_DIAG_ROWH").is_ok() && depth == 0 {
-                        eprintln!(
-                            "DIAG_TRUST r={} c={} text={:.1} nonInline={:.1} wrapBottom={:.1} additive={:.1} stored={:.1} tac={} absorbed={} pushed={} trust={}",
-                            cell.row,
-                            cell.col,
-                            text_height,
-                            non_inline_h,
-                            wrap_bottom,
-                            additive,
-                            stored_extent,
-                            table.common.treat_as_char,
-                            ladder_absorbed_objects,
-                            ladder_pushed_following_line,
-                            trust_stored,
-                        );
-                    }
                     if trust_stored {
                         stored_extent
                     } else if ladder_exceeds_declared_text_cell {
@@ -4824,136 +4807,6 @@ let body_height=match nested_body_heights
                 } else {
                     required_height
                 };
-                // [#2097 진단] 셀별 선언·측정·여백 분해 — 동작 불변.
-                if std::env::var("RHWP_DIAG_ROWH").is_ok() && depth == 0 {
-                    let all_stored = !cell.paragraphs.is_empty()
-                        && cell
-                            .paragraphs
-                            .iter()
-                            .all(|p| !crate::renderer::para_has_no_stored_line_segs(p));
-                    eprintln!(
-                        "DIAG_ROWH pi={} ci={} depth={} r={} c={} decl={:.1} req={:.1} content={:.1} pad={:.1} stored={} nested={}",
-                        para_index,
-                        control_index,
-                        depth,
-                        cell.row,
-                        cell.col,
-                        cell_h_px,
-                        required_height,
-                        content_height,
-                        total_pad,
-                        all_stored,
-                        has_nested_table_in_cell,
-                    );
-                    // #3931 Stage 1: 저장 LINE_SEG가 선언 셀높이보다 크게 팽창한
-                    // 셀의 줄별 성분을 선택적으로 분해한다. 모든 셀을 무조건 덤프하면
-                    // 대형 문서 로그가 폭발하므로 별도 환경변수와 큰 초과 형상으로
-                    // 한정한다. 진단 전용 재구성이며 측정값에는 관여하지 않는다.
-                    if std::env::var("RHWP_DIAG_ROWH_LINES").is_ok()
-                        && cell_h_px > 0.0
-                        && required_height > cell_h_px + 64.0
-                        && required_height > cell_h_px * 1.5
-                    {
-                        for (cell_para_index, cell_para) in cell.paragraphs.iter().enumerate() {
-                            let mut comp = crate::renderer::composer::compose_paragraph_in_context_with_storage(
-                                cell_para, styles, storage)?;
-                            crate::renderer::composer::recompose_cell_lines_with_nested_tables_with_storage(
-                                &mut comp,
-                                cell_para,
-                                cell_inner_width,
-                                styles,
-                                self.dpi,
-                                self.stored_geometry_policy,
-                                self.is_native_hwp5,
-                                &self.single_line_overflow_cache,
-                                |nested| -> Result<_,S::Error> {
-
-                                    let stretch =
-                                        self.render_normalization.nested_table_width_scale(nested);
-                                    let measured = self.measure_table_impl_with_storage(
-                                        nested,
-                                        0,
-                                        0,
-                                        styles,
-                                        depth + 1,
-                                        stretch, storage)?;
-    Ok(measured.total_height - measured.caption_height)
-}, storage)?;
-                            let para_style =
-                                styles.para_styles.get(cell_para.para_shape_id as usize);
-                            let line_spacing_type = para_style
-                                .map(|style| style.line_spacing_type)
-                                .unwrap_or(crate::model::style::LineSpacingType::Percent);
-                            let line_spacing_value =
-                                para_style.map(|style| style.line_spacing).unwrap_or(160.0);
-                            eprintln!(
-                                "DIAG_ROWH_PARA pi={} ci={} depth={} r={} c={} cp={} lines={} first_vpos={:?} last_end={:?} before={:.2} after={:.2} para_ls={:?}/{:.1}",
-                                para_index,
-                                control_index,
-                                depth,
-                                cell.row,
-                                cell.col,
-                                cell_para_index,
-                                comp.lines.len(),
-                                cell_para.line_segs.first().map(|segment| {
-                                    hwpunit_to_px(segment.vertical_pos, self.dpi)
-                                }),
-                                cell_para.line_segs.last().map(|segment| {
-                                    hwpunit_to_px(
-                                        segment.vertical_pos.saturating_add(segment.line_height),
-                                        self.dpi,
-                                    )
-                                }),
-                                para_style.map(|style| style.spacing_before).unwrap_or(0.0),
-                                para_style.map(|style| style.spacing_after).unwrap_or(0.0),
-                                line_spacing_type,
-                                line_spacing_value,
-                            );
-                            for (line_index, line) in comp.lines.iter().enumerate() {
-                                let max_font_size = line
-                                    .runs
-                                    .iter()
-                                    .map(|run| {
-                                        styles
-                                            .char_styles
-                                            .get(run.char_style_id as usize)
-                                            .map(|style| style.font_size)
-                                            .unwrap_or(0.0)
-                                    })
-                                    .fold(0.0f64, f64::max);
-                                eprintln!(
-                                    "DIAG_ROWH_LINE pi={} ci={} depth={} r={} c={} cp={} li={} stored_vpos={:?} raw_lh={:.2} raw_th={:?} raw_bl={:?} raw_ls={:.2} raw_pitch={:.2} max_fs={:.2} para_ls={:?}/{:.1}",
-                                    para_index,
-                                    control_index,
-                                    depth,
-                                    cell.row,
-                                    cell.col,
-                                    cell_para_index,
-                                    line_index,
-                                    cell_para
-                                        .line_segs
-                                        .get(line_index)
-                                        .map(|segment| hwpunit_to_px(segment.vertical_pos, self.dpi)),
-                                    hwpunit_to_px(line.line_height, self.dpi),
-                                    cell_para.line_segs.get(line_index).map(|segment| {
-                                        hwpunit_to_px(segment.text_height, self.dpi)
-                                    }),
-                                    cell_para.line_segs.get(line_index).map(|segment| {
-                                        hwpunit_to_px(segment.baseline_distance, self.dpi)
-                                    }),
-                                    hwpunit_to_px(line.line_spacing, self.dpi),
-                                    hwpunit_to_px(
-                                        line.line_height.saturating_add(line.line_spacing),
-                                        self.dpi,
-                                    ),
-                                    max_font_size,
-                                    line_spacing_type,
-                                    line_spacing_value,
-                                );
-                            }
-                        }
-                    }
-                }
                 let required_height = coincident_source_height(cell).unwrap_or(required_height);
                 if required_height > content_row_floor[r] {
                     content_row_floor[r] = required_height;
@@ -5431,14 +5284,6 @@ let body_height=match nested_body_heights
                 )?;
                 let combined: f64 = (r..r + span).map(|i| row_heights[i]).sum::<f64>()
                     + hwpunit_to_px(1, self.dpi) * table.inner_cell_spacing_hu(span) as f64;
-                #[cfg(not(target_arch = "wasm32"))]
-                if std::env::var_os("RHWP_DIAG_ROWH").is_some() && depth == 0 {
-                    eprintln!(
-                        "DIAG_SPANH measure id={} r={r} c={} span={span} declared={:.6} text={text_height:.6} nested={nested_bottom:.6} non_inline={non_inline_h:.6} wrap={wrap_bottom:.6} required={required_height:.6} combined={combined:.6} closed={closed_plain_frame:?}",
-                        table.common.instance_id, cell.col,
-                        hwpunit_to_px(cell.height as i32, self.dpi)
-                    );
-                }
                 if required_height > combined {
                     let deficit = required_height - combined;
                     row_heights[r + span - 1] += deficit;

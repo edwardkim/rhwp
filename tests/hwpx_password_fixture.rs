@@ -1,5 +1,5 @@
 //! 관계형: 실제 암호 HWPX의 인증·복호화·CLI 진단 출력 경계.
-//! 주석 갱신: 2026-11-04T01:27:57+09:00; 직전 파일 변경 커밋: 2026-10-01T17:09:59+09:00 8603c88e0de10dd434952d18b629513a71860c23.
+//! 주석 갱신: 2026-11-05T08:02:40+09:00; 직전 파일 변경 커밋: 2026-11-04T17:56:25+09:00 5e374d01f641745d20bc9424ce233021a327ed16.
 //! 입력: samples/HWP5-password-123456.hwpx와 평문 대응 문서. 실제 암호 fixture를 재사용한다.
 //! 시각 측정 비해당: 암호·직렬화·출력 채널 계약이며 배치의 절대 좌표를 고정하지 않는다.
 //!
@@ -78,6 +78,8 @@ fn protected_document_layout_diagnostics_do_not_write_coordinates_to_stderr() {
         .env("RHWP_DIAG_TAC", "1")
         .env("RHWP_DEBUG_PARA_TAC", "1")
         .env("RHWP_LAYOUT_DEBUG", "1")
+        .env("RHWP_DIAG_ROWH", "1")
+        .env("RHWP_DIAG_ROWH_LINES", "1")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -95,6 +97,9 @@ fn protected_document_layout_diagnostics_do_not_write_coordinates_to_stderr() {
     assert!(output.status.success(), "protected SVG export failed");
     let stderr = String::from_utf8_lossy(&output.stderr);
     for marker in [
+        "DIAG_TRUST",
+        "DIAG_ROWH",
+        "DIAG_SPANH",
         "DIAG_SNAPALL",
         "DIAG_SNAP ",
         "TAC_LINE ",

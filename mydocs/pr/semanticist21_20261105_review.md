@@ -66,3 +66,7 @@
 ## 원격 처리 승인
 
 2026-11-05 작업지시자가 #8331·#8332의 변경 전부터 있던 동일 출력 차이에 한정한 수용 예외와 10건의 통합 push·Open PR·해당 head CI·self-review·merge·원 PR 완료/감사 댓글·동기화·정리를 승인했다. 새 회귀·검사 실패·쪽수 차이·누락·90% 미만의 새 렌더링 회귀 추가는 예외 대상이 아니다. [원문 답변과 한정 범위](assets/semanticist21-20261105/maintainer-approval.json). 원격 실행 결과와 CI는 실제 완료 후 별도로 기록한다.
+
+## 제출 후 보안 진단 보정
+
+[통합 PR #8609](https://github.com/edwardkim/rhwp/pull/8609)의 첫 head Actions 검사들은 성공했지만 별도 GHAS CodeQL에서 기존 조판 진단 sink 두 개가 High로 판정됐다. 앞선 #8548의 정책을 따라 진단 채널만 제거하고 실제 암호 fixture의 stderr 계약을 보강한다. 계산·렌더 출력의 검증 증거는 같은 producer로 구분해 재사용한다. [정확한 flow·수정 전 실제 실패·검증 범위](assets/semanticist21-20261105/ci-security-followup.md). 새 head의 필수 로컬 검사·독립 CodeQL 성공 전에는 merge를 보류한다.

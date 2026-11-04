@@ -1,0 +1,20 @@
+{
+  "source_before": "ab1015668ec888bfbb96ec4679f7c648d0ab576d",
+  "removed_blocks": [
+    {
+      "sha256": "45400dbd87256f63575075899bc98a6cb2e319cc55d2ffd43e8d86af4a0a338b",
+      "lines": 17
+    },
+    {
+      "sha256": "d8a87197e9199ff9234fa8e28512a66514c46d1943daacaee1e4e71a4aa29093",
+      "lines": 130
+    },
+    {
+      "sha256": "94f2e445d87738caf0abea2fb0a4b5368f99e513afd2041645f2d641414cec83",
+      "lines": 8
+    }
+  ],
+  "unchanged_normal_rendering": "Only opt-in diagnostic blocks and diagnostic-only recomposition removed. All actual row heights, solver, continuation, placements, source properties and combined comparison retained.",
+  "diagnostic_only_recomposition_removed": true,
+  "test_count_unchanged": true
+}
