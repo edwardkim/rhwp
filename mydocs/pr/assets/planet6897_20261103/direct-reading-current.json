@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-11-04T19:01:59.031515+00:00",
+  "recorded_at": "2026-11-04T19:16:06.519984+00:00",
   "records": [
     {
       "pr": 8422,
@@ -590,9 +590,101 @@
       },
       "observation": "HWPX 입력의 같은 표 안 로고 두 개를 별도로 대조했다. 그림 포함·제목과 세 부제·후속 본문의 줄바꿈과 비겹침이 독립 Print와 대응한다.",
       "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+    },
+    {
+      "pr": 8540,
+      "input": "mydocs/pr/assets/scaffold_outline_numbering/scaffold_outline_a.hwpx",
+      "page": 1,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:16:06.519984+00:00",
+      "method": "실제 review와 별도 overlay 직접 판독; 기존 PNG 합성, 엔진·PDF 재출력 없음",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_a-649191af-p001-native-review.png",
+          "sha256": "3197cd7bf025997a0c6eedea271c207c2aa3a225fa519936927b092fd9e5a770",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8540-scaffold_outline_a-649191af/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_a-649191af-p001-native-overlay.png",
+          "sha256": "dada8fad95f65be9bccbc664e93f17ebf224a76d4555b1a667a1b0645a2f43e6",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8540-scaffold_outline_a-649191af/overlay/overlay_001.png"
+        }
+      },
+      "observation": "A/B의 제목과 수준별 개요 번호, 본문 뒤 이어지는 번호 순서·간격·줄바꿈을 독립 Print와 대조했다. 두 backend raw 100%와 획 단위의 완전한 일치를 구분한다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8540,
+      "input": "mydocs/pr/assets/scaffold_outline_numbering/scaffold_outline_a.hwpx",
+      "page": 1,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:16:06.519984+00:00",
+      "method": "실제 review와 별도 overlay 직접 판독; 기존 PNG 합성, 엔진·PDF 재출력 없음",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_a-649191af-p001-wasm-review.png",
+          "sha256": "90b415bf1466b63e12fed7abe8aedc33e7887bb8f3989e3d453092006d94117f",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8540-scaffold_outline_a-649191af/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_a-649191af-p001-wasm-overlay.png",
+          "sha256": "22496dd35b5841063c55a2b97ee8621f222e183c86c6257d4c3fd99fd7b625d8",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8540-scaffold_outline_a-649191af/overlay/overlay_001.png"
+        }
+      },
+      "observation": "A/B의 제목과 수준별 개요 번호, 본문 뒤 이어지는 번호 순서·간격·줄바꿈을 독립 Print와 대조했다. 두 backend raw 100%와 획 단위의 완전한 일치를 구분한다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8540,
+      "input": "mydocs/pr/assets/scaffold_outline_numbering/scaffold_outline_b.hwpx",
+      "page": 1,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:16:06.519984+00:00",
+      "method": "실제 review와 별도 overlay 직접 판독; 기존 PNG 합성, 엔진·PDF 재출력 없음",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_b-82b08f33-p001-native-review.png",
+          "sha256": "21a4d7603800ac73fd1c27dc23a4767f26ae49d2028906dbf50955a503844baa",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8540-scaffold_outline_b-82b08f33/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_b-82b08f33-p001-native-overlay.png",
+          "sha256": "6334e0a427a89dc96df827ac5d3b9076a16183013d93c638e4c9183c6b7ec807",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8540-scaffold_outline_b-82b08f33/overlay/overlay_001.png"
+        }
+      },
+      "observation": "A/B의 제목과 수준별 개요 번호, 본문 뒤 이어지는 번호 순서·간격·줄바꿈을 독립 Print와 대조했다. 두 backend raw 100%와 획 단위의 완전한 일치를 구분한다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8540,
+      "input": "mydocs/pr/assets/scaffold_outline_numbering/scaffold_outline_b.hwpx",
+      "page": 1,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:16:06.519984+00:00",
+      "method": "실제 review와 별도 overlay 직접 판독; 기존 PNG 합성, 엔진·PDF 재출력 없음",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_b-82b08f33-p001-wasm-review.png",
+          "sha256": "3f18da7976c79d847a79e7bd35665a4b14ca718c8165421d4045db2674945ea8",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8540-scaffold_outline_b-82b08f33/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_b-82b08f33-p001-wasm-overlay.png",
+          "sha256": "0650cf3a008c18556364accadc6a4ad61a4d36341c2359309f5ec8dec3048d10",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8540-scaffold_outline_b-82b08f33/overlay/overlay_001.png"
+        }
+      },
+      "observation": "A/B의 제목과 수준별 개요 번호, 본문 뒤 이어지는 번호 순서·간격·줄바꿈을 독립 Print와 대조했다. 두 backend raw 100%와 획 단위의 완전한 일치를 구분한다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
     }
   ],
-  "record_count": 26,
+  "record_count": 30,
   "final_approval": false,
   "note": "직접 본 PNG의 해시와 관측만 기록한다. 기록되지 않은 쪽이나 최종 공통 검증의 완료를 주장하지 않는다."
 }

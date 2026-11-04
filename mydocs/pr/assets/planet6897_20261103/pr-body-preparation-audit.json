@@ -1,0 +1,15 @@
+{
+  "asset_commit": "3d7e67978235b34d1e37353d580fdc33e796ec5d",
+  "input_rows": 80,
+  "protected_document_rows": 17,
+  "body_characters": 61821,
+  "github_body_limit": 65536,
+  "all_linked_assets_exist_in_commit": true,
+  "posted": false,
+  "audit_time": "2026-11-04T19:16:43.176776+00:00",
+  "body_sha256": "2de56ad845b773512270afc1292a638b424f75e20a4d44a52f08a9de743b318c",
+  "unique_pinned_link_targets": 237,
+  "pinned_blob_target_errors": 0,
+  "posting_approval": "pending",
+  "final_validation": "old-base WASM full comparison and final evidence review pending"
+}
