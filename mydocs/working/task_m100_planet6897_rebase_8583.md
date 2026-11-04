@@ -134,3 +134,29 @@ base worktree는 `782ab3e2d06380d7d36660f07d76ef4c8c7c0c0a`로 맞췄다.
 기존 package가 남아 있는 사실은 최신 빌드 완료로 취급하지 않는다.
 후보 fresh WASM은 공용 `target/pr-review`·빌드 잡 8개로 최적화를 포함해 실행하며,
 다른 Cargo 명령은 해당 빌드가 종료된 뒤 순차 실행한다.
+
+## 새 base 후보의 최적화 WASM·Studio 확인
+
+코드 `dd0ac546e3389f1703e67cb86f1c5bdf615ff0c9`의 WASM 빌드는 컴파일 13분 6초,
+최적화·패키지 생성 포함 14분 15초에 exit 0으로 완료됐다. Rust 1.93.1,
+wasm-pack 0.15.1, wasm-bindgen 0.2.127, wasm-opt version 130을 사용했다.
+검증용 package를 ignored `producer-packages/rebase-dd0ac546e3/`에 고정하고,
+루트 `pkg/`와 Studio public의 JS·WASM 해시 일치도 확인했다.
+
+- JS SHA-256: `bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393`.
+- WASM SHA-256: `ee4043521f602cf7df7815851d4067fc7825e6db82a0c8c6a6b5cfc8363b0e7d`.
+- 실제 WASM PDF 가져오기 2010·2020·무표기판의 저장 HWPX가 제출본과 각각 바이트 단위로 같다.
+  PR #8443의 실제 편집·저장 사례도 제출본과 같다. 단순 텍스트나 쪽수 비교로 대신하지 않았다.
+- 실제 브라우저에서 271개 assertion, 실제 Worker 17개(정상 11·메모리 실패 3·엔진 trap 3),
+  12쪽 렌더링·저장과 실패 후 복구를 확인했다. exit 0이며 시각 일치율의 증거와 구분한다.
+- Studio 전체 Node 2,720건과 TypeScript 검사 통과, 각각 exit 0.
+- 최종 목록의 입력·PDF·글꼴 환경 188개를 현재 Git과 대조해 누락·바이트 불일치 0건을 확인했다.
+
+원시 증거는 ignored output의 `logs/rebase-782ab3e2d0-fresh-wasm-product.json`,
+`logs/rebase-782ab3e2d0-wasm-producer-parity.log`,
+`logs/rebase-782ab3e2d0-fresh-wasm-runtime.log`,
+`logs/rebase-782ab3e2d0-studio-node.log`, `logs/rebase-782ab3e2d0-studio-typescript.log`,
+`logs/rebase-782ab3e2d0-input-audit.json`이다.
+
+Native 제품은 같은 코드에서 최소 글꼴 5개만 노출해 별도로 빌드한다. 위 결과만으로
+최종 전체 Rust·Skia·lint·전쪽 시각 보존 검증이나 39개 리뷰의 최종 완료를 선언하지 않는다.

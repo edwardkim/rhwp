@@ -79,3 +79,13 @@ Native/fresh WASM 측정이 같은 확인된 글꼴 메트릭을 소비하는지
 전쪽 TSV와 원 주장 5·13쪽의 실제 Native review·overlay 및 신원은
 `mydocs/pr/assets/issue_8381/integration_20261103/native-postscript-family.md`에 연결했다.
 fresh WASM·최종 통합 제품 검증과 개별 리뷰 전체 갱신은 아직 완료하지 않았다.
+
+## 최적화 fresh WASM의 실제 가져오기·저장 확인
+
+제품 `dd0ac546e3389f1703e67cb86f1c5bdf615ff0c9`의 최적화 package에서
+`HwpDocument.importPdf(..., {layout: 'editable'})`와 `exportHwpx()`를 실제 실행했다.
+세 판본의 저장 HWPX SHA-256이 위 Native 제출본과 각각 같았다. 무표기판도
+`5a13ddd9b7fe2a51c95009e34c8e0a27337d35f145c637a3193025e9c455b1c6`으로 같다.
+이는 새 family 보정이 실제 WASM API에서도 같은 저장본을 만드는 증거다.
+같은 저장본의 전쪽 fresh WASM 렌더링·독립 PDF 확대 판독은 아직 별도로 완료해야 한다.
+원시 결과는 ignored `logs/rebase-782ab3e2d0-wasm-producer-parity.log`에 있다.
