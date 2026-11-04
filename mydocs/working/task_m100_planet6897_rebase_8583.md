@@ -201,3 +201,28 @@ WASM 12개 입력·124쪽, historical WASM 6개 입력·146쪽과 미완료 chec
 충돌 해소 구문의 포맷 차이 한 곳을 수정한 뒤 `cargo fmt --all -- --check`와
 `git diff --check`를 통과했다. 포맷 재검사 로그는
 `logs/rebase-7fdd5441ff-fmt-corrected.log`이며 exit 0이다.
+
+### 새 base의 출처 컨테이너 선언과 반례 검사
+
+포맷 보정 head `4b149b6cdfc514b9858ed644be2cf8120c731cd4`에서 최소 글꼴 5개를
+노출한 Native Skia 집중 검사 58건 중 57건이 통과했다. TAC 간격·편집 뒤 개체 점유,
+첫 프레임과 새 base의 조판·선택·저장 기능 검사는 통과했다. 원시 로그는
+`logs/rebase-4b149b6cdf-focused-minfont.log`이며 exit 100이다.
+
+한 건은 `provenance_contract::static_path_metadata_does_not_hide_document_values_or_forged_paths`의
+설정 검증에서 실패했다. 새 base `63532b1ee5`는 `nativeFontSupply` 컨테이너 전체를
+선언한다. 기존 반례가 정적 선언 경로에 반드시 `unavailable`이 있다고 가정했으므로
+문서 값 탐색에 도달하기 전 설정 assertion이 실패했다. 실제 CLI 출처 검사는 모두 통과했다.
+
+반례의 겹침 토큰을 고정된 계약 이름 `nativeFontSupply`로 바꾸고, 선언 배열의 첫 위치가
+아닌 배열 내 실제 겹침을 확인한다. 문서 값의 위치 `nativeFontSupply.unavailable[]`,
+위조한 최상위 경로와 중첩된 `untrustedFields`를 각각 검출하는 assertion은 유지했다.
+출처 선언·제품 코드·탐색기의 허용 조건은 바꾸지 않았다. 관련 검사만 다시 실행해 확인한다.
+
+보정 후 같은 최소 글꼴·Native Skia 환경에서 해당 출처 검사 12건을 모두 통과했다.
+`logs/rebase-4b149b6cdf-provenance-corrected.log`, exit 0. 앞서 통과한 57건의 제품 코드는
+변경하지 않았으며 이번 보정으로 렌더링 결과를 다시 생성하지 않았다. 집중 검사를 통과한
+Native CLI 산출물을 `rhwp-candidate-rebase-4b149b6cdf`로 고정해 후속 시각 비교에 재사용한다.
+SHA-256은 `71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f`다.
+
+전체 회귀·최종 전쪽 Native/fresh WASM 비교가 아직 남아 있으므로 PR 준비 완료로 판정하지 않는다.

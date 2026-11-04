@@ -1,6 +1,6 @@
 //! 관계형(보안 출처): 실제 문서 값과 도구의 정적 경로 메타데이터를 구분한다.
-//! 주석 갱신: 2026-11-04T18:55:03+09:00; 직전 파일 변경: 2026-10-16T15:17:54+09:00
-//! (`4662c069e557e928ed7968d061121fde90b1f027`). 실제 문서의 래스터 배치를 검사하지
+//! 주석 갱신: 2026-11-04T21:47:31+09:00; 직전 파일 변경: 2026-11-04T21:22:50+09:00
+//! (`990bb2fccf49803c0d6b3fdeb0225069133d7170`). 실제 문서의 래스터 배치를 검사하지
 //! 않으므로 raw·DPI는 비해당이다. 원본 응답의 출처 계약과 실제 CLI를 검사한다.
 //! 근거: mydocs/working/task_m100_planet6897_native_output_provenance.md.
 //! [#3787 S1] 봉투 출처 표지 드리프트 가드.
@@ -361,7 +361,7 @@ fn scan(v: &Value, path: &str, or: &DocOracle, recipe: &Recipe, out: &mut BTreeS
 #[test]
 fn static_path_metadata_does_not_hide_document_values_or_forged_paths() {
     let oracle = DocOracle {
-        tokens: vec!["unavailable".into()],
+        tokens: vec!["nativeFontSupply".into()],
         exact: BTreeSet::new(),
     };
     let recipe = Recipe {
@@ -373,10 +373,14 @@ fn static_path_metadata_does_not_hide_document_values_or_forged_paths() {
         ndjson: false,
     };
     let mut envelope = rhwp::provenance::marked(
-        serde_json::json!({"nativeFontSupply": {"unavailable": ["unavailable-document-font"]}}),
+        serde_json::json!({"nativeFontSupply": {"unavailable": ["nativeFontSupply-document-font"]}}),
         recipe.command,
     );
-    assert!(oracle.hits(envelope["untrustedFields"][0].as_str().unwrap()));
+    assert!(envelope["untrustedFields"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|value| value.as_str().is_some_and(|path| oracle.hits(path))));
     let mut found = BTreeSet::new();
     scan(&envelope, "", &oracle, &recipe, &mut found);
     assert_eq!(
@@ -384,9 +388,9 @@ fn static_path_metadata_does_not_hide_document_values_or_forged_paths() {
         BTreeSet::from(["nativeFontSupply.unavailable[]".into()])
     );
 
-    envelope["untrustedFields"] = serde_json::json!(["unavailable-document-font"]);
+    envelope["untrustedFields"] = serde_json::json!(["nativeFontSupply-document-font"]);
     envelope["fontEnvironment"] =
-        serde_json::json!({"untrustedFields": ["unavailable-document-font"]});
+        serde_json::json!({"untrustedFields": ["nativeFontSupply-document-font"]});
     let mut found = BTreeSet::new();
     scan(&envelope, "", &oracle, &recipe, &mut found);
     assert!(found.contains("nativeFontSupply.unavailable[]"));
