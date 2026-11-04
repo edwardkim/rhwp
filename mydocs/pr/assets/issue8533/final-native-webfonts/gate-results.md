@@ -1,6 +1,6 @@
 # 검증 실행과 소스 동일성
 
-실제 실행한 Rust/Native/WASM 제품 소스는 `c031a38a41670f5e4f6ab0268ef46c62ab1445f5`다. 이후 Rust 소스·검사·프로그램 자원·Studio 제품 경로는 Git object 단위로 동일함을 확인했다. 검증 호스트는 별도 `3ededa625581f4a4a052ef912dc30c0317fec0ed`이며, 이 변경 뒤 WASM 출력은 별도로 다시 산출한다.
+실제 실행한 Rust/Native/WASM 제품 소스는 `c031a38a41670f5e4f6ab0268ef46c62ab1445f5`다. 이후 Rust 소스·검사·프로그램 자원·Studio 제품 경로는 Git object 단위로 동일함을 확인했다. 검증 호스트는 별도 `3ededa625581f4a4a052ef912dc30c0317fec0ed`이며, 이 변경 뒤 WASM 출력은 별도로 다시 산출했다.
 
 | 검증 | 실제 결과 |
 | --- | --- |

@@ -40,7 +40,7 @@ Mac 추가 글꼴 경로를 파일 접근 정책으로 차단했다. 시스템 �
 | pdf-direct | 272 | 100.00000 | [raw](png/consumers/pdf-direct-handbook-p272.png) | `68bd9d8ff4751acb2de8a8e166c7f86f0f54c24ea2924b4fff23369d65246a85` |
 | pdf-svg | 272 | 100.00000 | [raw](png/consumers/pdf-svg-handbook-p272.png) | `e8e8adbc00d17c88687a542a45224bc1b56c42e0dfc648dd63d3074e93f35f65` |
 
-PDF의 선택 출력은 파일 내부에서는 1쪽이지만 원본 내용은 편람 physical 272쪽이다. Native SVG의 Chrome 래스터를 Native Skia PNG라고 부르지 않는다.
+PDF의 선택 출력은 파일 내부에서는 1쪽이지만 원본 내용은 편람 물리 272쪽이다. Native SVG의 Chrome 래스터를 Native Skia PNG라고 부르지 않는다.
 
 ## 실제 Studio
 
@@ -79,3 +79,14 @@ Vite가 WASM 상대 URL 한 곳을 /@fs 절대 URL로 치환한다. 실제 받�
 | canvaskit-language-control | `58f80d95f069efd487914e0a33ba6af3dfc61b04ac821bd86f7e98728b8f13e8` | `bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393` | `41f27298cf2b025bf5cebba6ea4cd96f539ceb3a97846368ca37df47d3ab9424` |
 
 Vite 수신 JS와 root JS가 그대로 같다고 주장하지 않는다. 실제 수신 응답의 sourcemap 원문에서 WASM 상대 URL 한 곳의 변환을 되돌린 결과를 비교했다. WASM은 root pkg·Studio public·실제 초기화 응답이 같은 해시다. 재요청 응답으로 대신하지 않았다.
+
+## 공개 Native 프로그램을 명시한 추가 WASM
+
+Native 전쪽 영수증의 공개 프로그램 9개와 저장소 공개 번들을 전달하고 개인·추가 시스템 글꼴
+파일 접근을 차단했다. 이는 일반 WASM 자동 다운로드 기능 또는 깨끗한 최소 설치 VM의 증거가 아니다.
+383쪽 모두 90% 이상이며 최저는 220쪽 94.37243%, 272쪽은 100%다. 글리프 누락은 해소했지만
+220쪽은 Canvas 보충 측정의 전진 차이가 남는다. Native 383쪽의 최저 99.96465%와 혼합하지 않는다.
+
+[추가 220쪽 raw](png/wasm-native-public-programs/handbook-hwpx/p220-rhwp.png) ·
+[review](png/wasm-native-public-programs/handbook-hwpx/p220-review.png) ·
+[overlay](png/wasm-native-public-programs/handbook-hwpx/p220-overlay.png).

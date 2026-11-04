@@ -1,0 +1,371 @@
+{
+  "documents": 36,
+  "pages": 1201,
+  "handbookPages": 383,
+  "comparisons": [
+    {
+      "key": "pr8316-lang-slot",
+      "pages": 2,
+      "minimumBase": 98.63698,
+      "minimumCandidate": 98.63698,
+      "identicalPngPages": 2,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8316-treatise",
+      "pages": 7,
+      "minimumBase": 97.82449,
+      "minimumCandidate": 97.82449,
+      "identicalPngPages": 7,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8316-slice",
+      "pages": 12,
+      "minimumBase": 100.0,
+      "minimumCandidate": 100.0,
+      "identicalPngPages": 12,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8316-line-cache",
+      "pages": 12,
+      "minimumBase": 100.0,
+      "minimumCandidate": 100.0,
+      "identicalPngPages": 12,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8316-h3s5",
+      "pages": 16,
+      "minimumBase": 97.54444,
+      "minimumCandidate": 97.54444,
+      "identicalPngPages": 16,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8316-briefing",
+      "pages": 36,
+      "minimumBase": 95.66487,
+      "minimumCandidate": 95.66487,
+      "identicalPngPages": 36,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8336-book-hwp",
+      "pages": 178,
+      "minimumBase": 96.33968,
+      "minimumCandidate": 96.33968,
+      "identicalPngPages": 178,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8336-book-hwpx",
+      "pages": 178,
+      "minimumBase": 96.33968,
+      "minimumCandidate": 96.33968,
+      "identicalPngPages": 178,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8336-hwpspec-saved2024",
+      "pages": 178,
+      "minimumBase": 96.45717,
+      "minimumCandidate": 96.45717,
+      "identicalPngPages": 178,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8336-hwpml-saved2024",
+      "pages": 122,
+      "minimumBase": 96.67411,
+      "minimumCandidate": 96.67411,
+      "identicalPngPages": 122,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8336-brief-saved2024",
+      "pages": 6,
+      "minimumBase": 95.89491,
+      "minimumCandidate": 95.89491,
+      "identicalPngPages": 6,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8336-kwater-hwp",
+      "pages": 27,
+      "minimumBase": 97.23791,
+      "minimumCandidate": 97.23791,
+      "identicalPngPages": 27,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8336-kwater-hwpx",
+      "pages": 27,
+      "minimumBase": 97.23791,
+      "minimumCandidate": 97.23791,
+      "identicalPngPages": 27,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8336-kwater-resave",
+      "pages": 27,
+      "minimumBase": 97.23791,
+      "minimumCandidate": 97.23791,
+      "identicalPngPages": 27,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8336-table-vpos",
+      "pages": 5,
+      "minimumBase": 99.7552,
+      "minimumCandidate": 99.7552,
+      "identicalPngPages": 5,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8364-caption-hwp",
+      "pages": 1,
+      "minimumBase": 99.06794,
+      "minimumCandidate": 99.06794,
+      "identicalPngPages": 1,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8364-caption-hwpx",
+      "pages": 1,
+      "minimumBase": 99.00416,
+      "minimumCandidate": 99.00416,
+      "identicalPngPages": 1,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8365-8375-8380-editable",
+      "pages": 16,
+      "minimumBase": 98.71957,
+      "minimumCandidate": 98.71957,
+      "identicalPngPages": 16,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8378-sample2",
+      "pages": 29,
+      "minimumBase": 95.79505,
+      "minimumCandidate": 95.79505,
+      "identicalPngPages": 29,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8396-headerrow",
+      "pages": 31,
+      "minimumBase": 100.0,
+      "minimumCandidate": 100.0,
+      "identicalPngPages": 31,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8396-reservefit",
+      "pages": 65,
+      "minimumBase": 100.0,
+      "minimumCandidate": 100.0,
+      "identicalPngPages": 65,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8396-rowfit",
+      "pages": 33,
+      "minimumBase": 100.0,
+      "minimumCandidate": 100.0,
+      "identicalPngPages": 33,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8396-71352",
+      "pages": 48,
+      "minimumBase": 96.82838,
+      "minimumCandidate": 96.82838,
+      "identicalPngPages": 48,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8321-control-hwp",
+      "pages": 1,
+      "minimumBase": 100.0,
+      "minimumCandidate": 100.0,
+      "identicalPngPages": 1,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8321-control-hwpx",
+      "pages": 1,
+      "minimumBase": 99.40247,
+      "minimumCandidate": 99.40247,
+      "identicalPngPages": 1,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8341-chart-2024",
+      "pages": 64,
+      "minimumBase": 94.91471,
+      "minimumCandidate": 94.91471,
+      "identicalPngPages": 64,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8438-113424_evaluation_guideline",
+      "pages": 46,
+      "minimumBase": 91.74074,
+      "minimumCandidate": 91.74074,
+      "identicalPngPages": 46,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8438-HWP3-password-123456",
+      "pages": 24,
+      "minimumBase": 98.3982,
+      "minimumCandidate": 98.3982,
+      "identicalPngPages": 24,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8438-A-hwp",
+      "pages": 1,
+      "minimumBase": 100.0,
+      "minimumCandidate": 100.0,
+      "identicalPngPages": 1,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8438-A-hwpx",
+      "pages": 1,
+      "minimumBase": 100.0,
+      "minimumCandidate": 100.0,
+      "identicalPngPages": 1,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8438-D-hwp",
+      "pages": 1,
+      "minimumBase": 100.0,
+      "minimumCandidate": 100.0,
+      "identicalPngPages": 1,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8438-D-hwpx",
+      "pages": 1,
+      "minimumBase": 100.0,
+      "minimumCandidate": 100.0,
+      "identicalPngPages": 1,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8438-E-hwp",
+      "pages": 1,
+      "minimumBase": 100.0,
+      "minimumCandidate": 100.0,
+      "identicalPngPages": 1,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8438-E-hwpx",
+      "pages": 1,
+      "minimumBase": 100.0,
+      "minimumCandidate": 100.0,
+      "identicalPngPages": 1,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8438-P-hwp",
+      "pages": 1,
+      "minimumBase": 99.97896,
+      "minimumCandidate": 99.97896,
+      "identicalPngPages": 1,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "pr8438-P-hwpx",
+      "pages": 1,
+      "minimumBase": 99.97896,
+      "minimumCandidate": 99.97896,
+      "identicalPngPages": 1,
+      "declinesAbovePointOne": [],
+      "below90": []
+    },
+    {
+      "key": "handbook-hwpx",
+      "pages": 383,
+      "minimumBase": 99.68453,
+      "minimumCandidate": 99.68453,
+      "identicalPngPages": 383,
+      "declinesAbovePointOne": [],
+      "below90": []
+    }
+  ],
+  "minimumFontSupplement": {
+    "status": "complete-pending-direct-review",
+    "scope": "실제 Native 공개9개와 번들 프로그램의 명시 환경, 자동 WASM 다운로드 또는 Studio 최소 설치 환경과 다름",
+    "manifestSha256": "8b2ab1b215a3cb8e741b579997944fa89b72806446c022fae6611d9bed7915ca",
+    "pages": 383,
+    "minimumPage": 220,
+    "minimumPercent": 94.37243,
+    "below90": 0,
+    "remaining": "Canvas 보충 측정에서 글머리표 뒤 간격 차이. Native 자동 공급 전쪽 결과와 구분."
+  },
+  "harnessSha256": {
+    "scripts/visual_sweep.py": "bce4cdf30f6e51176494893b26ef668a4d4349d008724dcad38c3d5d3d434670",
+    "scripts/visual_sweep_png.py": "ede4ab19e6374603d4cbd736da6dfb246b1cc1d5174904b5995339a9ed4f62b1",
+    "scripts/export-wasm-png-for-sweep.mjs": "1c55cfe330c68a9f3d5f5bf43d519cfaf5b6f10c110d234235fce9863cd3f022",
+    "scripts/visual-sweep-font-environment.mjs": "996875aeda043b75fd16e5c44207e0672050806f2695fb986c2c595678fc6199",
+    "scripts/visual-sweep-font-registration.mjs": "d45e8a83632d62cf5a1f6b905cea228414c10ae72d3d0ecc84512f77ced8357f"
+  },
+  "packages": {
+    "candidatePackage": {
+      "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+      "rhwp_bg.wasm": "41f27298cf2b025bf5cebba6ea4cd96f539ceb3a97846368ca37df47d3ab9424"
+    },
+    "pureBasePackage": {
+      "rhwp.js": "219cdf77a61e995569350fc81c8258f104bd177301a80bfe3a59670ff3804a06",
+      "rhwp_bg.wasm": "eb4dcafcad09a23606a1e11e2026464f6a994b3af63c1768f87ac38b25e117f6"
+    },
+    "observationalBasePackage": {
+      "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+      "rhwp_bg.wasm": "1315ee06881a7c8b2430f98082073142f105e9fb564319d835ca4dd38ffd66f8"
+    }
+  }
+}
