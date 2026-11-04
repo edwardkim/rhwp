@@ -38,6 +38,12 @@
 | leading_shape_line-2020.hwp 2쪽 · 맨 앞 TAC 도형 줄 뒤 표 A·B 순서와 간격 | [review](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-claim-p002-p002-native-review.png) / [overlay](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-claim-p002-p002-native-overlay.png) | [review](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-claim-p002-p002-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-claim-p002-p002-wasm-overlay.png) |
 | leading_shape_line-2020.hwp 2쪽 · 2024 Print의 TAC 도형 줄 뒤 표 A·B 순서와 간격 | [review](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-2024-p002-p002-native-review.png) / [overlay](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-2024-p002-p002-native-overlay.png) | [review](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-2024-p002-p002-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-2024-p002-p002-wasm-overlay.png) |
 
+## 현재 경계의 직접 판독
+
+2024 기준 2쪽의 선행 TAC 도형 → 표 A → 표 B → 뒤 본문 순서를 Native/WASM에서 다시 직접 대조했습니다. 표끼리 겹치지 않지만 표 B와 뒤 본문의 세로 위치·표 선에는 작은 차이가 남습니다. 선행 작성자가 별도 이슈 #8544로 구분한 범위와 현재 원 PR의 줄 소유 계약을 구분해 판단합니다.
+
+[직접 판독 기록과 PNG 해시](assets/planet6897_20261103/direct-reading-current.json)에 실제 관측을 보존했습니다.
+
 ## 남은 통합 검증과 원격 조건
 
 동일 환경의 당시 base 대비 WASM 80개 입력·406쪽 0.1%p 하락 게이트와 주장별 증적 최종 감사가 남았습니다.

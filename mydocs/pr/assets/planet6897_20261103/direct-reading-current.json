@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-11-04T19:16:06.519984+00:00",
+  "recorded_at": "2026-11-04T19:19:19.952739+00:00",
   "records": [
     {
       "pr": 8422,
@@ -682,9 +682,153 @@
       },
       "observation": "A/B의 제목과 수준별 개요 번호, 본문 뒤 이어지는 번호 순서·간격·줄바꿈을 독립 Print와 대조했다. 두 backend raw 100%와 획 단위의 완전한 일치를 구분한다.",
       "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8546,
+      "input": "samples/issue8543/leading_shape_line-2020.hwp",
+      "pdf": "pdf/issue8543/leading_shape_line-2024.pdf",
+      "page": 2,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:19:19.952739+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-2024-p002-p002-native-review.png",
+          "sha256": "2badfe893362ff57b1d3ea34cba3ca6afac360d87b4871cc30d94632d8566d88",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8546-leading-shape-2024-p002/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-2024-p002-p002-native-overlay.png",
+          "sha256": "34ca2c581019c687e09b6dd181f1d4b49c493f8a8f4567b0b8b635eaad7004a4",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8546-leading-shape-2024-p002/overlay/overlay_002.png"
+        }
+      },
+      "observation": "선행 TAC 도형 뒤 표 A·B의 세 행씩과 뒤 본문 두 줄이 순서대로 보존되고 서로 겹치지 않는다. 표 B와 뒤 본문의 세로 위치·표 선에는 독립 2024 Print와 작은 차이가 남아 완전 일치로 판정하지 않는다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8547,
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "page": 3,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:19:19.952739+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p003-p003-native-review.png",
+          "sha256": "8c478b62c6e5f29c3e500df78ed1288b9e2aa851f75700e7c3eb0d52060ba744",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8547-gangseo-p003/review/review_003.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p003-p003-native-overlay.png",
+          "sha256": "78afeed241e8d4a628ccc86ecae5a86a88a12e4d57479f869e54de5bde1f9b5d",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8547-gangseo-p003/overlay/overlay_003.png"
+        }
+      },
+      "observation": "3쪽의 마지막 위생 행과 앞 해양수산·보건 묶음을 확인했다. 위생 행의 내용과 앞 조각 소유는 Print와 대응하지만 마지막 행 아래 외곽 높이에는 차이가 남는다. 이 쪽의 절대 좌표 핀 근거로 사용하지 않는다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8547,
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "page": 4,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:19:19.952739+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p004-p004-native-review.png",
+          "sha256": "f9c0754d512716a235da5737b18a08b3481dfd8298cc43ca20638ea8c3511cb1",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8547-gangseo-p004/review/review_004.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p004-p004-native-overlay.png",
+          "sha256": "7f3dc8737ecf721592656e787c39d319a689854c3ded91acc6fe2960e9e45a00",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8547-gangseo-p004/overlay/overlay_004.png"
+        }
+      },
+      "observation": "4쪽 첫 조각의 위생·사역 행부터 의료기술·환경·항공·정비까지 내용 순서와 셀 소속·표 외곽을 확인했다. 앞 쪽 말미에서 보존한 위생 내용이 이어지며 글줄·행의 누락·겹침은 보이지 않는다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8546,
+      "input": "samples/issue8543/leading_shape_line-2020.hwp",
+      "pdf": "pdf/issue8543/leading_shape_line-2024.pdf",
+      "page": 2,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:19:19.952739+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-2024-p002-p002-wasm-review.png",
+          "sha256": "dc1572ef88dabadab2fec33dfb392d518330b14a0eadf96817963143b3261f09",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8546-leading-shape-2024-p002/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-2024-p002-p002-wasm-overlay.png",
+          "sha256": "a3db5261c0ce8b7b9032203c40f00fcc4fa96b8b7b70e3261e48cb44cdf5d221",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8546-leading-shape-2024-p002/overlay/overlay_002.png"
+        }
+      },
+      "observation": "선행 TAC 도형 뒤 표 A·B의 세 행씩과 뒤 본문 두 줄이 순서대로 보존되고 서로 겹치지 않는다. 표 B와 뒤 본문의 세로 위치·표 선에는 독립 2024 Print와 작은 차이가 남아 완전 일치로 판정하지 않는다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8547,
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "page": 3,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:19:19.952739+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p003-p003-wasm-review.png",
+          "sha256": "70730d1a60a3359b3e6147cfbdec0feb5d9e0c7c7ced13e13d127c211c077de0",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8547-gangseo-p003/review/review_003.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p003-p003-wasm-overlay.png",
+          "sha256": "2d4463d6c419b49211dd3c20c6aac579ec9aec0edfd88615253a7b752905f089",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8547-gangseo-p003/overlay/overlay_003.png"
+        }
+      },
+      "observation": "3쪽의 마지막 위생 행과 앞 해양수산·보건 묶음을 확인했다. 위생 행의 내용과 앞 조각 소유는 Print와 대응하지만 마지막 행 아래 외곽 높이에는 차이가 남는다. 이 쪽의 절대 좌표 핀 근거로 사용하지 않는다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8547,
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "page": 4,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:19:19.952739+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p004-p004-wasm-review.png",
+          "sha256": "8cb416ac8e74661bc0f441059eb47b4a56adc17d6fe77927f6198dcc171f61e9",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8547-gangseo-p004/review/review_004.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p004-p004-wasm-overlay.png",
+          "sha256": "c9c7d2e22e3094c3aed669b9c25c7f3052933f3795d9b73725bc31ef7e9abb9c",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8547-gangseo-p004/overlay/overlay_004.png"
+        }
+      },
+      "observation": "4쪽 첫 조각의 위생·사역 행부터 의료기술·환경·항공·정비까지 내용 순서와 셀 소속·표 외곽을 확인했다. 앞 쪽 말미에서 보존한 위생 내용이 이어지며 글줄·행의 누락·겹침은 보이지 않는다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
     }
   ],
-  "record_count": 30,
+  "record_count": 36,
   "final_approval": false,
   "note": "직접 본 PNG의 해시와 관측만 기록한다. 기록되지 않은 쪽이나 최종 공통 검증의 완료를 주장하지 않는다."
 }

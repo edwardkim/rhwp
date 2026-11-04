@@ -37,6 +37,12 @@
 | gangseo_exempt_certificates.hwp 3쪽 · 위생 걸침 묶음의 앞 조각과 저장 쪽 경계 | [review](assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p003-p003-native-review.png) / [overlay](assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p003-p003-native-overlay.png) | [review](assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p003-p003-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p003-p003-wasm-overlay.png) |
 | gangseo_exempt_certificates.hwp 4쪽 · 위생 걸침 묶음 이어받기와 뒤 행 | [review](assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p004-p004-native-review.png) / [overlay](assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p004-p004-native-overlay.png) | [review](assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p004-p004-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p004-p004-wasm-overlay.png) |
 
+## 현재 경계의 직접 판독
+
+Native/fresh WASM의 3·4쪽을 각각 직접 대조했습니다. 위생 묶음의 앞 조각은 3쪽, 이어받는 내용은 4쪽에 보존됩니다. 다만 3쪽 마지막 행 아래 외곽 높이는 독립 Print와 다릅니다. 원본 저장값·원 해결 PR과 현재 조각의 요구/예약/실제 높이를 대조하기 전에는 이 차이를 정상이나 해결 완료로 판정하지 않습니다. 4쪽의 행·내용 순서와 외곽은 대응합니다.
+
+[직접 판독 기록과 PNG 해시](assets/planet6897_20261103/direct-reading-current.json)에 실제 관측을 보존했습니다.
+
 ## 남은 통합 검증과 원격 조건
 
 동일 환경의 당시 base 대비 WASM 80개 입력·406쪽 0.1%p 하락 게이트와 주장별 증적 최종 감사가 남았습니다.

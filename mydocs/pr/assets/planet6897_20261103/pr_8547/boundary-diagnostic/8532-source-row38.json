@@ -1,0 +1,204 @@
+{
+  "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+  "sha256": "797268d10fc7605ae5e0e299e9fb386ea6c204f35ef4c4879bb611e66ef4545a",
+  "method": "CFB decompression and HWP5 record payload reads; raw HU; no engine model or export",
+  "row38_cells": [
+    {
+      "section": "Section0",
+      "offset": 45803,
+      "level": 2,
+      "col": 0,
+      "row": 38,
+      "col_span": 1,
+      "row_span": 2,
+      "width": 4212,
+      "height": 6126,
+      "padding": [
+        141,
+        141,
+        141,
+        141
+      ],
+      "width_ref": 1024,
+      "list_attr": 0,
+      "lines": [
+        {
+          "text_start": 0,
+          "vpos": 0,
+          "line_height": 1000,
+          "text_height": 1000,
+          "baseline": 850,
+          "line_spacing": 600,
+          "column_start": 0,
+          "segment_width": 3932,
+          "tag": 393216
+        }
+      ],
+      "text": [
+        "위    생\r"
+      ]
+    },
+    {
+      "section": "Section0",
+      "offset": 45952,
+      "level": 2,
+      "col": 1,
+      "row": 38,
+      "col_span": 1,
+      "row_span": 1,
+      "width": 4208,
+      "height": 3063,
+      "padding": [
+        141,
+        141,
+        141,
+        141
+      ],
+      "width_ref": 1024,
+      "list_attr": 0,
+      "lines": [
+        {
+          "text_start": 0,
+          "vpos": 0,
+          "line_height": 1000,
+          "text_height": 1000,
+          "baseline": 850,
+          "line_spacing": 400,
+          "column_start": 0,
+          "segment_width": 3928,
+          "tag": 393216
+        }
+      ],
+      "text": [
+        "위    생\r"
+      ]
+    },
+    {
+      "section": "Section0",
+      "offset": 46101,
+      "level": 2,
+      "col": 2,
+      "row": 38,
+      "col_span": 1,
+      "row_span": 1,
+      "width": 13062,
+      "height": 3063,
+      "padding": [
+        141,
+        141,
+        141,
+        141
+      ],
+      "width_ref": 1024,
+      "list_attr": 0,
+      "lines": [
+        {
+          "text_start": 0,
+          "vpos": 0,
+          "line_height": 1000,
+          "text_height": 1000,
+          "baseline": 850,
+          "line_spacing": 500,
+          "column_start": 0,
+          "segment_width": 12780,
+          "tag": 393216
+        }
+      ],
+      "text": []
+    },
+    {
+      "section": "Section0",
+      "offset": 46232,
+      "level": 2,
+      "col": 3,
+      "row": 38,
+      "col_span": 1,
+      "row_span": 1,
+      "width": 13266,
+      "height": 3063,
+      "padding": [
+        141,
+        141,
+        141,
+        141
+      ],
+      "width_ref": 1024,
+      "list_attr": 0,
+      "lines": [
+        {
+          "text_start": 0,
+          "vpos": 0,
+          "line_height": 1000,
+          "text_height": 1000,
+          "baseline": 850,
+          "line_spacing": 500,
+          "column_start": 0,
+          "segment_width": 12984,
+          "tag": 393216
+        },
+        {
+          "text_start": 0,
+          "vpos": 0,
+          "line_height": 1000,
+          "text_height": 1000,
+          "baseline": 850,
+          "line_spacing": 500,
+          "column_start": 0,
+          "segment_width": 12984,
+          "tag": 393216
+        }
+      ],
+      "text": [
+        "위생사\r",
+        "영양사\r"
+      ]
+    },
+    {
+      "section": "Section0",
+      "offset": 46467,
+      "level": 2,
+      "col": 4,
+      "row": 38,
+      "col_span": 1,
+      "row_span": 1,
+      "width": 13172,
+      "height": 3063,
+      "padding": [
+        141,
+        141,
+        141,
+        141
+      ],
+      "width_ref": 1024,
+      "list_attr": 0,
+      "lines": [
+        {
+          "text_start": 0,
+          "vpos": 0,
+          "line_height": 1000,
+          "text_height": 1000,
+          "baseline": 850,
+          "line_spacing": 500,
+          "column_start": 0,
+          "segment_width": 12892,
+          "tag": 393216
+        },
+        {
+          "text_start": 0,
+          "vpos": 0,
+          "line_height": 1000,
+          "text_height": 1000,
+          "baseline": 850,
+          "line_spacing": 500,
+          "column_start": 0,
+          "segment_width": 12892,
+          "tag": 393216
+        }
+      ],
+      "text": [
+        "위생사\r",
+        "영양사\r"
+      ]
+    }
+  ]
+}
