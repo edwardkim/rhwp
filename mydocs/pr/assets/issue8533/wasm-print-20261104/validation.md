@@ -3,7 +3,9 @@
 2026-11-04 KST. 제품·검사 후보 `6aa617c207`, 정책 base
 `1924d371d6757392d063b8dc2e9bbe9a298be817`.
 최종 fetch에서도 upstream/devel은 이 base와 같았다. 본인 계정의 열린 PR은 없었다.
-원격 push·PR 생성·CI·merge는 아직 수행하지 않았다.
+이 항목은 최초 로컬 검증 완료 시점의 기록이며, 당시 원격 push·PR 생성·CI·merge는
+수행 전이었다. 이후 #8583 CI에서 확인한 시험 글꼴 고지 누락과 보완은
+`task_m100_8533_stage11.md`에 따로 기록했고 아래에 추가 패키징 결과를 반영했다.
 
 ## 실행 결과
 
@@ -25,6 +27,7 @@
 | 실제 WASM browser | 원본 프로그램·Print 기하·JPEG 프레임·문맥 경계 묶음 13 PASS / 0 FAIL |
 | Print bridge | `node --test --experimental-transform-types rhwp-studio/tests/issue-8533-print-metric-context.test.ts`: 1 PASS. 실제 전환·오류 후 복원 검사 |
 | Visual Sweep Python | `PYTHONPATH=scripts:scripts/tests venv/bin/python -m unittest discover -s scripts/tests -p 'test_visual_sweep*.py'`: 245 PASS |
+| 시험 글꼴 고지·패키징 | `repositoryOnlyFonts` 등록 뒤 Studio·Chrome·Firefox build와 VS Code compile exit 0, `node --test scripts/frontend-font-assets.test.mjs`: 8 PASS / 0 FAIL |
 
 Cargo는 `CARGO_TARGET_DIR=target/pr-review`, jobs8·threads8로 순차 실행했다. 전체 nextest는
 현재 Native Rust 소스를 실제 컴파일한 결과다. 이후 보완한 Rust 파일은 WASM 전용

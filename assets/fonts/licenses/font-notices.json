@@ -992,6 +992,19 @@
       "copyrightNotices": [
         "Original synthetic fixture generated for rhwp; no external glyph data."
       ]
+    },
+    {
+      "repositoryPath": "tests/fixtures/issue8533/RHWPPrintFallbackContext.ttf",
+      "sha256": "0a91dfd51949cd4bff8eece75aa4ed49c26f976d25d5d07f11be5e0016f694d2",
+      "license": "MIT",
+      "licenseFiles": [
+        "LICENSE",
+        "tests/fixtures/fonts/RHWPHostFixture.LICENSE.md"
+      ],
+      "copyrightNotices": [
+        "Copyright (c) 2025-2026 Edward Kim"
+      ],
+      "provenance": "tests/fixtures/issue8533/README.md"
     }
   ]
 }
