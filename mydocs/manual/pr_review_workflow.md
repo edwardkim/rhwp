@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-23
+last_verified: 2026-11-04
 ---
 
 # PR 리뷰 · 통합 워크플로우 매뉴얼
@@ -108,6 +108,10 @@ merge 전 조건을 먼저 보여주고, 접수 정보·검증·증적은 아래
 
 PR 번호는 PR을 생성할 때 채번된다. 따라서 collaborator self PR의 번호 기반 review 기록은
 다음 순서로 같은 PR에 포함한다.
+
+단, 원 PR에 CI workflow·action·CI 실행/재사용 판정 정책 변경이 포함되면 아래 trailing 경로 대신
+[옵션 2: 원 PR 병합 후 별도 후속 기록 PR](pr_review/post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)을
+적용한다. 원 코드의 Full CI와 실제 검토·merge 승인 조건은 그대로 충족한다.
 
 1. 구현과 [로컬 사전 검증](pr_review/local_validation.md) 4.3 및 해당 보조 절차의 필수 검증을
    빠짐없이 완료한 후보 commit을 원격 작업 branch에 push한다. 실패·미실행은 PR CI에 넘기지 않는다.

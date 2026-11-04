@@ -490,17 +490,18 @@ function knownGovernmentSymbolCdn(font) {
     .toLocaleLowerCase('en-US')
     .replace(/\.(?:ttf|otf|woff2?)$/u, '')
     .replace(/[\s_.-]+/gu, '');
-  if (!new Set(['government16040911', '정부상징부처명16040911']).has(normalized)) return null;
+  const rokg = new Set(['rokg', 'rokgr', '대한민국정부상징체r']).has(normalized);
+  if (!rokg) return null;
 
   return {
     packageType: 'github',
-    owner: 'jangster77',
-    repo: 'korea-government-symbol-font',
-    ref: 'v1.0.0',
-    file: 'fonts/Government_16040911.ttf',
+    owner: 'Alex4386',
+    repo: 'gov-symbol',
+    ref: 'eee1e7d37a5ff02ab8bf6c6eb77272d71f1829a2',
+    file: 'src/assets/fonts/ROKG_R.woff2',
     license: '공공누리 제4유형 (출처표시+상업적 이용금지+변경금지)',
     delivery: 'jsDelivr GitHub',
-    note: '문화체육관광부 대한민국정부상징서체 원본 TTF의 고정 태그 CDN 확인',
+    note: '대한민국정부상징체 R의 고정 커밋 CDN 확인',
   };
 }
 

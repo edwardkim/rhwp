@@ -9,7 +9,7 @@ use super::font_lookup::supplied_family_names;
 
 const MAX_FONT_FILES: usize = 256;
 const MAX_FONT_FILE_BYTES: u64 = 32 * 1024 * 1024;
-const MAX_FONT_TOTAL_BYTES: u64 = 64 * 1024 * 1024;
+use crate::renderer::font_paths::MAX_NATIVE_CUSTOM_FONT_BYTES as MAX_FONT_TOTAL_BYTES;
 const MAX_COLLECTION_FACES: u32 = 64;
 
 /// CoreText-backed Skia may reject a valid nonzero TTC index. Repack only that

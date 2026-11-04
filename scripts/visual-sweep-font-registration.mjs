@@ -1,5 +1,24 @@
 import {installIntrinsicCanvasFont} from '../rhwp-studio/src/core/canvas-intrinsic-font.mjs';
 
+// 페이지별 실제 paint 요구를 우선한다. 빈 쪽에 문서 전체 글꼴을 다시 적재하지 않는다.
+export function collectSweepPaintFontRequests(owner, pages) {
+  if (typeof owner?.getPagePaintFontRequests === 'function') {
+    const metafile = [], effects = [];
+    for (const page of pages) {
+      const requests = JSON.parse(owner.getPagePaintFontRequests(page - 1));
+      if (!Array.isArray(requests.metafile) || !Array.isArray(requests.textEffects)) {
+        throw Error('페이지 paint 글꼴 요청 형식이 올바르지 않습니다.');
+      }
+      metafile.push(...requests.metafile);
+      effects.push(...requests.textEffects);
+    }
+    return {metafile, effects};
+  }
+  // 이전 WASM producer의 비교 실행은 기존 문서 단위 계약을 보존한다.
+  return {metafile: JSON.parse(owner.getMetafileFontRequests?.() ?? '[]'),
+    effects: JSON.parse(owner.getTextShadowFontRequests?.() ?? '[]')};
+}
+
 // fontdb 0.23의 style/weight 우선순위로 실제 요청한 메타파일 face만 고른다.
 export function selectMetafileFontFaces(fonts, requests) {
   const selected = new Set();

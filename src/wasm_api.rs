@@ -847,6 +847,12 @@ impl HwpDocument {
             .map_err(JsValue::from)
     }
 
+    #[wasm_bindgen(js_name = getPagePaintFontRequests)]
+    pub fn get_page_paint_font_requests(&self, page: u32) -> Result<String, JsValue> {
+        self.get_page_paint_font_requests_native(page)
+            .map_err(JsValue::from)
+    }
+
     #[wasm_bindgen(js_name = getTextShadowFontRequests)]
     pub fn get_text_shadow_font_requests(&self) -> Result<String, JsValue> {
         self.get_text_shadow_font_requests_native()

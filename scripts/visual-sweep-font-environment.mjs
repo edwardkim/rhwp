@@ -2,10 +2,28 @@
 export async function applySweepFontEnvironment(doc, environmentJson, preparePrograms) {
   if (environmentJson !== null) {
     const environment = JSON.parse(environmentJson);
+    // 환경 선택은 사용자가 소유하지만 실제 FontFace 준비까지 생략하는 뜻은 아니다.
+    // Canvas 폭 측정 전에 원본·명시 대체·글리프 대체 프로그램을 모두 준비한다.
+    const plan = typeof doc.getDocumentFontSelectionPlan === 'function'
+      ? JSON.parse(doc.getDocumentFontSelectionPlan()) : {requests: [], embeddedFamilies: []};
+    const requested = new Set(plan.requests.flatMap(request =>
+      [...request.primary, ...request.substitute, ...(request.publicFallback ?? [])]));
+    const targets = new Set([
+      ...Object.values(environment?.substitutions ?? {}),
+      ...(environment?.documentSubstitutions ?? []).map(entry => entry.target),
+      ...Object.values(environment?.glyphFallbacks ?? {}).flat(),
+      ...(environment?.documentGlyphFallbacks ?? []).flatMap(entry => entry.faces),
+      ...(environment?.trueTypeFaces ?? []),
+    ].filter(name => typeof name === 'string' && name.length > 0));
+    const supplyPlan = {...plan, requests: [...plan.requests,
+      ...[...targets].filter(name => !requested.has(name)).map(name =>
+        ({source: name, primary: [name], substitute: []}))]};
+    const prepared = supplyPlan.requests.length ? await preparePrograms(supplyPlan) : null;
     // setter의 Option<String> 해제는 문자열 null이 아니라 JS null이다.
     // 자동 선택이 없는 과거 빌드도 검증자가 명시한 동일 None을 적용할 수 있다.
     doc.setFontEnvironment(environment === null ? null : environmentJson);
-    return {source: 'explicit', environment};
+    return {source: 'explicit', environment,
+      ...(prepared ? {programs: prepared.programs, loaded: prepared.loaded || []} : {})};
   }
   if (typeof doc.getDocumentFontSelectionPlan !== 'function'
       || typeof doc.buildFontEnvironmentFromAvailablePrograms !== 'function'
@@ -69,7 +87,7 @@ export async function loadSweepFontPrograms(plan, fonts, host = globalThis, sour
       if (sha256 !== record.sha256) throw Error('선택한 글꼴 프로그램의 공급 hash가 다릅니다.');
       resource = {bytes, sha256}; resources.set(record.url, resource);
     }
-    const family = record.families[0];
+    const family = record.primaryFamily || record.families[0];
     for (const alias of new Set([query, family])) {
       const key = `${alias.toLowerCase()}|${record.weight}|${record.style}`;
       if (supplied.has(key)) continue;

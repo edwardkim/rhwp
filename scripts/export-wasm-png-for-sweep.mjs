@@ -18,6 +18,15 @@ const option = name => {
 };
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 
+// 암호는 stdin으로만 받는다. 원본 바이트와 실제 WASM 암호 문서 경로를 유지한다.
+export function openSweepDocument(module, bytes, password = null) {
+  if (password === null) return new module.HwpDocument(bytes);
+  if (typeof module.HwpDocument.openWithPassword !== 'function') {
+    throw Error('암호 문서 열기 API가 없는 WASM입니다.');
+  }
+  return module.HwpDocument.openWithPassword(bytes, password);
+}
+
 // 부재 관측은 Native 공급자가 수행한다. 다른 입력/사용자 환경의 관측은 재사용하지 않는다.
 export function validateObservedFontReceipt(receipt, inputBytes, environmentJson) {
   if (receipt.sourceSha256 !== sha(inputBytes)
@@ -121,6 +130,9 @@ export async function createPrintCaptureCanvas(page) {
 async function main() {
   const pkg = option('--pkg'), input = option('--input'), output = option('--out');
   const settings = JSON.parse(readFileSync(option('--options'), 'utf8'));
+  // 옵션 JSON·명령 인자·증적에는 비밀번호를 저장하지 않는다. 공백은 암호의 일부다.
+  const sourcePassword = process.argv.includes('--password-stdin')
+    ? readFileSync(0, 'utf8').split(/\r?\n/u, 1)[0] : null;
   const catalogue = JSON.parse(readFileSync(option('--fonts'), 'utf8'));
   if (!['2022', '2024'].includes(settings.compat) || !(settings.scale > 0)
       || !Number.isInteger(settings.workers) || settings.workers < 1) throw Error('PNG 출력 조건이 올바르지 않습니다.');
@@ -143,7 +155,8 @@ async function main() {
     ? validateObservedFontReceipt(JSON.parse(readFileSync(settings.observedFontReceipt, 'utf8')),
       sourceBytes, environmentJson) : [];
   const files = new Map([
-    ['/font-supply.js', ['application/javascript', 'export ' + registerCanvasFont.toString()]],
+    ['/font-supply.js', ['application/javascript', 'export ' + registerCanvasFont.toString()
+      + '\nexport ' + openSweepDocument.toString()]],
     ['/rhwp.js', ['application/javascript', readFileSync(join(pkg, 'rhwp.js'))]],
     ['/rhwp_bg.wasm', ['application/wasm', readFileSync(join(pkg, 'rhwp_bg.wasm'))]],
     ['/source', ['application/octet-stream', sourceBytes]],
@@ -192,10 +205,11 @@ async function main() {
         const page = await browser.newPage();
         await page.goto(`http://127.0.0.1:${server.address().port}`);
         const canvasContext = await page.$eval('#page', preparePrintReadbackCanvas);
-        const info = await page.evaluate(async ({compat, environmentJson, fonts, observedFontFallbacks, linkedImages}) => {
+        const info = await page.evaluate(async ({compat, environmentJson, fonts, observedFontFallbacks, linkedImages, sourcePassword}) => {
           const module = await import('/rhwp.js');
           await module.default({module_or_path: '/rhwp_bg.wasm'});
-          const doc = new module.HwpDocument(new Uint8Array(await (await fetch('/source')).arrayBuffer()));
+          const {openSweepDocument} = await import('/font-supply.js');
+          const doc = openSweepDocument(module, new Uint8Array(await (await fetch('/source')).arrayBuffer()), sourcePassword);
           if (typeof doc.renderPageToCanvasFilteredWithProfile !== 'function') throw Error('Print Canvas API가 없는 이전 WASM입니다.');
           doc.setHangul2024Compat(compat === '2024');
           if (linkedImages.length) {
@@ -257,7 +271,7 @@ async function main() {
           if (metricSession.lastError) throw Error(`Canvas 글꼴 폭 준비 실패: ${metricSession.lastError}`);
           const canvasMetricsActive = doc.canvasMetricsActive();
           return {pageCount: doc.pageCount(), version: module.version(), nativePuaFonts, hftOtfFonts, observedFonts, fontEnvironment, canvasMetricsActive};
-        }, {compat: settings.compat, environmentJson, fonts, observedFontFallbacks, linkedImages});
+        }, {compat: settings.compat, environmentJson, fonts, observedFontFallbacks, linkedImages, sourcePassword});
         const signature = JSON.stringify(info.fontEnvironment);
         if (environmentSignature !== undefined && environmentSignature !== signature) throw Error('WASM 작업자의 실제 글꼴 환경이 다릅니다.');
         environmentSignature = signature;
@@ -317,21 +331,19 @@ async function main() {
         }
         // 같은 문서의 필요한 face를 한 번만 공급한다. 데이터는 SVG/base64로 복제하지 않는다.
         const fontInfo = await page.evaluate(async ({pages, fonts, scale}) => {
-          const {installCanvasFont, selectSweepPaintFontFaces} = await import('/font-registration.mjs');
+          const {installCanvasFont, selectSweepPaintFontFaces, collectSweepPaintFontRequests} = await import('/font-registration.mjs');
           const doc = globalThis.sweepDocument, canvas = document.getElementById('page');
           for (const page of pages) doc.renderPageToCanvasFilteredWithProfile(page - 1, canvas, scale, 'all', 'print');
           // 이전 devel의 요청에는 실제 글자가 없는 SVG text 그룹도 있다.
           // 글리프가 없으면 공급할 face도 없으므로 장치 글꼴 바이트를 소모하지 않는다.
-          const metafileRequests = typeof doc.getMetafileFontRequests === 'function'
-            ? JSON.parse(doc.getMetafileFontRequests()).filter(request => typeof request.text === 'string' && request.text.length > 0)
-            : [];
+          const paintRequests = collectSweepPaintFontRequests(doc, pages);
+          const metafileRequests = paintRequests.metafile.filter(request => typeof request.text === 'string' && request.text.length > 0);
           const loadRequestedFont = async record => {
             const response = await fetch(record.url);
             if (!response.ok) throw Error('요청한 글꼴의 실제 프로그램을 읽을 수 없습니다.');
             return response.arrayBuffer();
           };
-          const effectRequests = typeof doc.getTextShadowFontRequests === 'function'
-            ? JSON.parse(doc.getTextShadowFontRequests()) : [];
+          const effectRequests = paintRequests.effects;
           // 사용하지 않는 fallback 글꼴이 메타파일 바이트 상한을 소진하지 않게 한다.
           const metafileFaces = await selectSweepPaintFontFaces(
             doc, fonts, metafileRequests, effectRequests, loadRequestedFont);

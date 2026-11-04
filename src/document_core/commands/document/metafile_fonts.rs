@@ -3,6 +3,16 @@
 use crate::{document_core::DocumentCore, error::HwpError};
 
 impl DocumentCore {
+    /// 현재 쪽의 인쇄 트리에서 실제 사용하는 paint 글꼴 자원만 조회한다.
+    /// 문서 전체의 사전 적재 목록과 분리하며 원본·줄 구성·쪽 소유를 바꾸지 않는다.
+    pub fn get_page_paint_font_requests_native(&self, page: u32) -> Result<String, HwpError> {
+        let tree = self.build_page_tree(page)?;
+        let requests =
+            crate::paint::metafile_fonts::page_requests(&tree.root, self.hangul2024_compat)
+                .map_err(|e| HwpError::RenderError(e.into()))?;
+        serde_json::to_string(&requests).map_err(|e| HwpError::RenderError(e.to_string()))
+    }
+
     /// 공통 텍스트 효과의 실제 SFNT 공급이다. 기존 API 이름은 호환성을 위해 유지한다.
     /// 연속 그림자와 실제 탭의 점 리더를 포함하며 원본·조판 폭은 바꾸지 않는다.
     pub fn get_text_shadow_font_requests_native(&self) -> Result<String, HwpError> {

@@ -6,7 +6,7 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
         cmd_json(
             "info",
             "문서 메타(포맷·버전·마지막 저장 제품·페이지/문단 수·폰트·제목) 표시",
-            &["--json"],
+            &["--json", "--font-plan"],
             &[
                 "schemaVersion",
                 "source",

@@ -131,6 +131,12 @@ RHWP 조판 개선으로 바꾸어 보고하지 않는다. 실루엣 임계값·
 저장한다. compare·overlay·review PNG와 상세 구조 분석은 생성하지 않는다.
 기본 경로는 비교용 Native/WASM PNG와 PDF raster를 생성하며, 이미 있는 PNG는
 `--png-pair`로 재사용해 원문 export·raster 작업도 생략할 수 있다.
+행정업무운영 편람 HWPX의 Native 383쪽 기준 비교는 일반 실행에 자동 포함되지 않는다.
+**조판에 영향을 주는 변경이 포함된 PR은 제출 전에 최종 head에서 `--handbook-gate`를
+반드시 실행해 통과해야 한다.**
+다른 대상 실행에 옵션을 추가하거나 해당 옵션만 지정해 별도로 실행할 수 있다.
+383쪽 전체의 90% 및 #8389 페이지별 기준 하락 검사를 적용하며 미실행·실패·누락·쪽수
+불일치이면 PR 제출을 보류한다. 실행 head·명령·결과와 TSV를 검증 기록에 남긴다.
 실행이 중단되면 같은 명령에 `--resume`을 추가해 이어간다. Native와 fresh WASM은
 완료한 쪽 묶음의 입력·실행 환경과 산출물 해시를 검사한 뒤 재사용하며, 완료되지 않은
 묶음만 다시 출력한다. `--png-pair`는 완료한 쪽의 PNG 해시와 계산 환경을 검사해
@@ -1066,6 +1072,18 @@ PR 본문 URL은 해당 제출 head를 고정하고, [merge 후 GitHub comment](
 `edwardkim/rhwp`를 고정한다. 두 시점을 섞지 않는다.
 
 ## GitHub merge comment
+
+시각 결과를 근거로 원 PR에 review·일반 comment를 남길 때는 **첫 comment부터** 그 PR이 주장한
+문서와 페이지의 실제 review·overlay PNG를 각각 `![설명](raw URL)`로 표시한다. 원 PR의 본문·첨부·
+쪽 번호와 검증 입력·기준 PDF·출력 경로를 대조해 이미지가 같은 주장에 대응하는지 직접 확인한다.
+여러 입력이나 페이지를 주장하면 각 주장에 대응하는 증적을 넣고, 다른 PR·다른 문서의 대표 그림으로
+대신하지 않는다. 첫 comment에 충분한 이미지가 없으면 게시하지 않고 증적을 먼저 준비한다.
+
+게시할 자산은 실제 접근 가능한 저장소의 정확한 commit SHA를 고정한 `raw.githubusercontent.com` URL로
+연결한다. merge 전에는 해당 자산을 포함한 head SHA, merge 후에는 자산을 포함한 merge SHA를 쓴다.
+게시 전에 raw 응답의 성공·이미지 형식·바이트 해시와 원본을 확인하고, 게시 후 API 본문과 화면의
+이미지 표시를 재확인한다. 증적을 아직 게시할 수 없으면 코멘트를 보류하며, 임시 output 경로나
+나중에 정정할 계획으로 대체하지 않는다. GitHub 게시에는 기존 사용자 승인 규칙을 따른다.
 
 renderer, layout, paint처럼 **문서 비교 결과를 merge 판단 근거로 쓴 PR**의 공식 비교 절차는 이
 Visual Sweep 가이드다. merge 후 GitHub comment는 이미지 하나 또는 raw URL만으로 판정하지 않고, 이 절의

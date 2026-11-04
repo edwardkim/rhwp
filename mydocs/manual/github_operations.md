@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/github_operations.md
-last_verified: 2026-09-14
+last_verified: 2026-11-04
 ---
 
 # GitHub 저장소 운영 매뉴얼
@@ -370,6 +370,10 @@ CI 영향 분류와 trigger mirror는 다음 파일에 있다.
 필터 변경에는 적어도 classifier·policy의 Node test와 해당 CI·CodeQL workflow Python test를 포함한다.
 
 ### 7.5 workflow PR의 후행 review 기록
+
+후속 기록은 [옵션 2: 원 PR 병합 후 별도 기록 PR](pr_review/post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)로
+처리한다. workflow·action·CI 판정 정책을 수정한 원 PR에 문서-only trailing commit을 추가해
+전체 CI를 반복하지 않는다. 아래 trusted 재사용 기능의 존재는 이 운영 경로를 바꾸지 않는다.
 
 CI Impact Policy Controller의 감사 대상은 **base가 devel인 PR**이며 advisory로 유지한다.
 devel → main을 포함한 main 대상 PR, branch push, tag와 manual 실행은 감사·policy 게시 대상이

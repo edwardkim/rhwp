@@ -124,7 +124,9 @@ class WhitePaperAlphaTests(unittest.TestCase):
                 source.save(left / f"rhwp_{page:03d}.png")
                 Image.new("RGB", (32, 32), "white").save(right / f"pdf_{page:03d}.png")
             result = subprocess.run(
-                [sys.executable, str(MODULE_PATH), "--png-pair", str(left), str(right),
+                [sys.executable, "-c",
+                 "from scripts import visual_sweep as s; s.main()",
+                 "--png-pair", str(left), str(right),
                  "--silhouette-only", "--key", "alpha", "--out", str(output), "--page-workers", "2"],
                 cwd=MODULE_PATH.parents[1], capture_output=True, text=True, timeout=45,
             )

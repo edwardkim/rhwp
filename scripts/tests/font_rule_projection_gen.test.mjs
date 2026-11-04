@@ -69,7 +69,7 @@ after(() => {
   }
 });
 
-test('five backend projections are deterministic and close all 846 active registry rules', () => {
+test('five backend projections are deterministic and close all 850 active registry rules', () => {
   const registry = readRegistry();
   const first = buildProjectionBundle(registry);
   const second = buildProjectionBundle(registry);
@@ -81,12 +81,12 @@ test('five backend projections are deterministic and close all 846 active regist
     registry,
   ), []);
   assert.equal(first.manifest.summary.outputCount, 5);
-  assert.equal(first.manifest.summary.activeRuleCount, 846);
+  assert.equal(first.manifest.summary.activeRuleCount, 850);
   assert.equal(first.manifest.summary.retiredRuleCount, registry.rules.filter(rule => rule.status === 'retired').length);
   assert.deepEqual(first.manifest.summary.countsByProjection, {
     'canvas2d-paint': 281,
-    'canvas2d-webfont': 155,
-    'canvaskit-sfnt': 160,
+    'canvas2d-webfont': 157,
+    'canvaskit-sfnt': 162,
     'rust-layout-metric': 71,
     'rust-layout-name': 179,
   });
@@ -98,8 +98,8 @@ test('five backend projections are deterministic and close all 846 active regist
     { ...SEALED_PROJECTION_SHA256,
       // Issue-scoped replacements preserve the sealed historical hashes above.
       // Existing #4969 supply rules were already active before #7958.
-      'canvas2d-webfont': '1fe89c01aa989f9449c736e0f73c4d448a0176c863edcb9bb66cb849b306beee',
-      'canvaskit-sfnt': '1a5cff1a44450170dafa2ad157b8938cec3024df8bf3e2037c005c6cdb838bc5',
+      'canvas2d-webfont': 'b651cbac2c5296b7f6ce3d83d1b94a1711da0b6fa2493c2ab981869a58e24736',
+      'canvaskit-sfnt': '89991250f693dd53d55443ef82e2ceaf548523e6327efbf5a3a423526852f3cc',
       // #7196 / #7966 / #7445: add only the verified public Batang metric identity.
       'rust-layout-metric': 'fdca67b63b5f10b2f89fcf991e9d4d633461c1f1052dcc397884408af0e736ba',
       // #7958 / #7959 / #7966 preserve PostScript name and full-face identities.
@@ -222,7 +222,7 @@ test('retired rules remain in the registry but never reach runtime projections',
   const paint = bundle.outputs.find(output => output.projectionId === 'canvas2d-paint');
   assert.equal(paint.ruleCount, 280);
   assert.equal(paint.rows.some(row => row.ruleId === retired.ruleId), false);
-  assert.equal(bundle.manifest.summary.activeRuleCount, 845);
+  assert.equal(bundle.manifest.summary.activeRuleCount, 849);
   assert.equal(bundle.manifest.summary.retiredRuleCount, previousRetiredCount + 1);
 });
 

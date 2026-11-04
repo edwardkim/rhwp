@@ -16,7 +16,22 @@ pub(crate) fn family(style: &TextStyle, text: &str) -> Option<&'static str> {
     ) {
         return None;
     }
-    decision.metric.map(|selected| selected.metric.name)
+    // 측정에 쓰인 호환 폭 이름이 실제 설치 프로그램을 보증하지는 않는다.
+    // 명시적인 glyph 공급 체인이 있으면 paint는 그 체인에서 선택한다.
+    let metric = decision.metric?.metric.name;
+    if decision.width_source == "declaredGlyphFallbackMetric"
+        && style.glyph_fallback_advance_explicit
+    {
+        let declared = style
+            .font_family
+            .split(',')
+            .nth(1)
+            .map(|name| name.trim().trim_matches(['\'', '"']));
+        if !declared.is_some_and(|name| name.eq_ignore_ascii_case(metric)) {
+            return None;
+        }
+    }
+    Some(metric)
 }
 
 /// Canvas의 크기·장평·첨자·굵기 계약은 기존 공통 descriptor를 재사용한다.
