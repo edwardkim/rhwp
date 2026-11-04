@@ -5,7 +5,7 @@
 
 use super::composer::{
     char_overlap_display_text, char_overlap_size_ratio, decode_pua_overlap_number,
-    expand_pua_render_text_in_style, CharOverlapInfo,
+    expand_pua_render_text_in_style, pua_overlap_number_border, CharOverlapInfo,
 };
 pub(crate) use super::image_resolver::{
     bmp_bytes_to_png_bytes, detect_image_mime_type, pcx_bytes_to_png_bytes,
@@ -2622,9 +2622,13 @@ impl SvgRenderer {
 
         // PUA 다자리 숫자 디코딩 시도
         if let Some(number_str) = decode_pua_overlap_number(&chars) {
+            let mut overlap = overlap.clone();
+            if overlap.border_type == 0 {
+                overlap.border_type = pua_overlap_number_border(&chars);
+            }
             self.draw_char_overlap_combined(
                 style,
-                overlap,
+                &overlap,
                 &number_str,
                 bbox_x,
                 bbox_y,

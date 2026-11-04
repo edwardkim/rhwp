@@ -4,7 +4,7 @@ use crate::model::style::UnderlineType;
 use crate::paint::LayerOutputOptions;
 use crate::renderer::composer::{
     char_overlap_display_text, char_overlap_size_ratio, decode_pua_overlap_number,
-    expand_pua_render_text_in_style, CharOverlapInfo,
+    expand_pua_render_text_in_style, pua_overlap_number_border, CharOverlapInfo,
 };
 use crate::renderer::layout::split_into_clusters;
 use crate::renderer::render_tree::BoundingBox;
@@ -219,7 +219,7 @@ impl SkiaTextReplay<'_> {
                         .map(|(_, border_type)| border_type)
                         .unwrap_or_else(|| {
                             if overlap.border_type == 0 && is_combined.is_some() {
-                                1
+                                pua_overlap_number_border(&chars)
                             } else {
                                 overlap.border_type
                             }

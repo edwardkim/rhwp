@@ -800,6 +800,7 @@ impl Paragraph {
                 | Control::Endnote(_)
                 | Control::AutoNumber(_)
                 | Control::CharOverlap(_)
+                | Control::Ruby(_)
         )
     }
 
@@ -1525,6 +1526,7 @@ impl Paragraph {
                         | Control::Footnote(_)
                         | Control::Endnote(_)
                         | Control::CharOverlap(_)
+                        | Control::Ruby(_)
                         | Control::AutoNumber(_)
                 )
         };

@@ -1629,7 +1629,7 @@ impl CanvasKitReplayPlanBuilder {
                 } else if run
                     .char_overlap
                     .as_ref()
-                    .is_none_or(|overlap| overlap.border_type > 4)
+                    .is_none_or(|overlap| overlap.border_type > 13)
                 {
                     Some("invalidCharOverlap")
                 } else {
@@ -3226,7 +3226,7 @@ mod tests {
     fn malformed_and_vertical_special_visuals_fail_closed_while_rotation_is_direct() {
         let mut invalid_overlap = text_run("A");
         invalid_overlap.char_overlap = Some(CharOverlapInfo {
-            border_type: 9,
+            border_type: 14,
             inner_char_size: 100,
             composition: None,
             empty_ink: false,

@@ -90,6 +90,7 @@ mod tests {
             source_char_shapes: Default::default(),
             resolved_dpi: None,
             page_number_char_style_id: None,
+            style_char_shapes: Vec::new(),
             page_number_font_is_hft: false,
             hwp3_variant: false,
             hft_ascii_halfwidth: false,

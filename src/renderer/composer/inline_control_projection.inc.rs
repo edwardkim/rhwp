@@ -103,14 +103,10 @@ fn try_inject_char_overlap_text<S: crate::storage::Storage>(
     styles: Option<&ResolvedStyleSet>,
     storage: &S,
 ) -> Result<(), S::Error> {
-    // CharOverlap 컨트롤과 인덱스 수집
-    let char_overlap_indices: Vec<(usize, &crate::model::control::CharOverlap)> =
-        storage.collect(para.controls.iter().enumerate().filter_map(|(i, c)| {
-            if let Control::CharOverlap(co) = c {
-                Some((i, co))
-            } else {
-                None
-            }
+    // CharOverlap·Ruby 컨트롤과 인덱스 수집. 덧말도 제어 문자 한 칸에 본말을 그린다.
+    let char_overlap_indices: Vec<(usize, &Control)> =
+        storage.collect(para.controls.iter().enumerate().filter(|(_, c)| {
+            matches!(c, Control::CharOverlap(_) | Control::Ruby(_))
         }))?;
 
     if char_overlap_indices.is_empty() {
@@ -123,7 +119,54 @@ fn try_inject_char_overlap_text<S: crate::storage::Storage>(
 
     // CharOverlap별 (텍스트위치, 런) 수집
     let mut insertions: Vec<(usize, ComposedTextRun)> = storage.vec(0)?;
-    for (ctrl_idx, co) in &char_overlap_indices {
+    for (ctrl_idx, control) in &char_overlap_indices {
+        if let Control::Ruby(ruby) = control {
+            let stream_pos = stream_positions.get(*ctrl_idx).copied().unwrap_or(0);
+            let host_style_id = para
+                .char_shapes
+                .iter()
+                .filter(|r| r.start_pos <= stream_pos)
+                .max_by_key(|r| r.start_pos)
+                .or_else(|| para.char_shapes.first())
+                .map_or(0, |r| r.char_shape_id);
+            let text_pos = control_positions.get(*ctrl_idx).copied().unwrap_or(0);
+            storage.push(
+                &mut insertions,
+                (
+                    text_pos,
+                    ComposedTextRun {
+                        text: storage.string(&ruby.main_text)?,
+                        char_style_id: host_style_id,
+                        lang_index: 0,
+                        neutral_space_origin: None,
+                        char_overlap: Some(CharOverlapInfo {
+                            border_type: 0,
+                            inner_char_size: 0,
+                            composition: styles.and_then(|styles| {
+                                super::char_overlap::Composition::from_ruby(
+                                    ruby,
+                                    styles,
+                                    host_style_id,
+                                )
+                            }),
+                            empty_ink: ruby.main_text.is_empty(),
+                        }),
+                        footnote_marker: None,
+                        display_text: None,
+                        supplemental_metrics_blocked: false,
+                        inserted_control_text: true,
+                        space_metric: crate::renderer::composer::SpaceMetric::Stored,
+                        regenerated_font_metrics: text_metric_origin::regenerated_row(para, 0),
+                        literal_figure_space: false,
+                        literal_soft_hyphen: false,
+                    },
+                ),
+            )?;
+            continue;
+        }
+        let Control::CharOverlap(co) = control else {
+            continue;
+        };
         let text = char_overlap_flow_text(&co.chars, storage)?;
         let stored_char_style_id = co
             .char_shape_ids

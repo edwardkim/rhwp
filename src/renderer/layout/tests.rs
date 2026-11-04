@@ -727,6 +727,7 @@ fn test_layout_with_composed_styles() {
         source_char_shapes: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
@@ -888,6 +889,7 @@ fn test_layout_multi_run_x_position() {
         source_char_shapes: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
@@ -999,6 +1001,7 @@ fn test_resolved_to_text_style() {
         source_char_shapes: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
@@ -1047,6 +1050,7 @@ fn test_resolved_to_text_style_with_ratio() {
         source_char_shapes: Default::default(),
         resolved_dpi: None,
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         page_number_font_is_hft: false,
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
@@ -1323,6 +1327,7 @@ fn test_layout_table_basic() {
     // border_fill_id=1은 styles.border_styles[0]을 참조 (1-indexed)
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         border_styles: vec![ResolvedBorderStyle::default()],
@@ -2078,6 +2083,7 @@ fn test_tac_leading_width_block_table_full_line() {
     };
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
@@ -2177,6 +2183,7 @@ fn test_tac_leading_width_inline_table_partial() {
     };
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         char_styles: vec![ResolvedCharStyle {
@@ -2987,6 +2994,7 @@ fn page_bg_color_and_image_present(
 
     let styles = ResolvedStyleSet {
         page_number_char_style_id: None,
+        style_char_shapes: Vec::new(),
         hwp3_variant: false,
         hft_ascii_halfwidth: false,
         border_styles: vec![ResolvedBorderStyle {

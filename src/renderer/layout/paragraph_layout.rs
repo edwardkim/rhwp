@@ -8917,7 +8917,7 @@ impl LayoutEngine {
         let mut overlap_controls = para
             .into_iter()
             .flat_map(|p| p.controls.iter().enumerate())
-            .filter(|(_, control)| matches!(control, Control::CharOverlap(_)))
+            .filter(|(_, control)| matches!(control, Control::CharOverlap(_) | Control::Ruby(_)))
             .skip(prior_overlaps);
         for (run_idx, run) in comp_line.runs.iter().enumerate() {
             // 같은 원문 자리의 주석/겹침 순서는 모델 control 순서로 판별한다.
@@ -11062,7 +11062,7 @@ impl LayoutEngine {
         let mut overlap_controls = para
             .into_iter()
             .flat_map(|p| p.controls.iter().enumerate())
-            .filter(|(_, control)| matches!(control, Control::CharOverlap(_)))
+            .filter(|(_, control)| matches!(control, Control::CharOverlap(_) | Control::Ruby(_)))
             .skip(prior_overlaps);
         for (run_idx_est, run) in comp_line.runs.iter().enumerate() {
             let overlap_control_index = if run.inserted_control_text && run.char_overlap.is_some() {

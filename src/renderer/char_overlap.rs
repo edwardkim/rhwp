@@ -1,11 +1,12 @@
 //! 원문 겹침의 글자모양과 펼침을 해소하고 모든 출력 경로에 같은 배치를 전달한다.
+//! 덧말도 같은 제어 문자(0x17) 한 칸에 본말과 덧말을 함께 그리므로 이 배치를 쓴다.
 
 use super::composer::char_overlap_size_ratio;
 use super::layout::{resolved_to_text_style, EmbeddedTextMeasurer, TextMeasurer};
 use super::render_tree::{BoundingBox, TextRunNode};
 use super::style_resolver::{detect_lang_category, ResolvedStyleSet};
 use super::TextStyle;
-use crate::model::control::CharOverlap;
+use crate::model::control::{CharOverlap, Ruby};
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct Composition {
@@ -14,9 +15,19 @@ pub struct Composition {
     characters: Vec<(char, TextStyle)>,
     spread: bool,
     size_ratio: f64,
+    /// 덧말이면 `characters`는 본말이고, 이 글자들을 본말 위나 아래에 작게 쓴다.
+    ruby: Option<Box<RubyText>>,
 }
 
-crate::storage::clone_fields!(Composition, {border, owner_style, characters, spread, size_ratio});
+crate::storage::clone_fields!(Composition, {border, owner_style, characters, spread, size_ratio, ruby});
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+pub struct RubyText {
+    characters: Vec<(char, TextStyle)>,
+    below: bool,
+}
+
+crate::storage::clone_fields!(RubyText, { characters, below });
 
 pub(crate) struct Glyph {
     pub bbox: BoundingBox,
@@ -30,13 +41,18 @@ pub(crate) struct Projection {
     pub bounds: BoundingBox,
 }
 
-fn border_character(kind: u8) -> Option<char> {
+/// 채운 모양은 안쪽 글자를 테두리에서 비워 낸다.
+fn reversed_border(kind: u8) -> bool {
+    matches!(kind, 2 | 4 | 6 | 9 | 13)
+}
+
+/// 안쪽 글자 기준선을 줄이는 비율의 em 정렬점. 한컴 12.30 Print에서
+/// 원·재활용 모양은 0.4, 삼각형은 0.3, 나머지는 1/3이다.
+fn inner_alignment(kind: u8) -> f64 {
     match kind {
-        1 => Some('◯'),
-        2 => Some('●'),
-        3 => Some('□'),
-        4 => Some('■'),
-        _ => None,
+        1 | 11 | 12 | 13 => 0.4,
+        5 | 6 => 0.3,
+        _ => 1.0 / 3.0,
     }
 }
 
@@ -46,7 +62,7 @@ impl Composition {
         styles: &ResolvedStyleSet,
         host_id: u32,
     ) -> Option<Box<Self>> {
-        if co.chars.len() > 10 || co.border_type > 4 {
+        if co.chars.len() > 10 || co.border_type > 13 {
             return None;
         }
         // 폰트 인코딩의 PUA 조합 숫자는 기존의 별도 해독 계약을 사용한다.
@@ -57,7 +73,7 @@ impl Composition {
         {
             return None;
         }
-        let border = border_character(co.border_type);
+        let border = CharOverlap::border_glyph(co.border_type);
         let has_prefix = co.chars.first().is_some_and(|c| {
             Some(*c) == border
                 || *c == '\0'
@@ -121,10 +137,93 @@ impl Composition {
                 co.border_type,
                 styles.char_overlap_inner_size(co.inner_char_size),
             ),
+            ruby: None,
         }))
     }
 
+    /// 본말은 놓인 자리의 글자 모양으로, 덧말은 고른 스타일(없으면 본말)의 글꼴로 쓴다.
+    /// 한컴 도움말처럼 덧말 크기는 스타일과 상관없이 본말의 `szRatio`%(0이면 절반)다.
+    pub(crate) fn from_ruby(
+        ruby: &Ruby,
+        styles: &ResolvedStyleSet,
+        host_id: u32,
+    ) -> Option<Box<Self>> {
+        if ruby.main_text.is_empty() {
+            return None;
+        }
+        let owner_style = resolved_to_text_style(styles, host_id, 0);
+        let characters: Vec<_> = ruby
+            .main_text
+            .chars()
+            .filter(|c| !c.is_control())
+            .map(|c| {
+                (
+                    c,
+                    resolved_to_text_style(styles, host_id, detect_lang_category(c)),
+                )
+            })
+            .collect();
+        // option 셋째 비트(4)는 한컴 12.30이 덧말 스타일을 고를 때 켠다.
+        let ruby_shape = (ruby.option & 4 != 0)
+            .then(|| {
+                styles
+                    .style_char_shapes
+                    .get(usize::from(ruby.style_id_ref))
+                    .copied()
+            })
+            .flatten()
+            .filter(|&id| (id as usize) < styles.char_styles.len())
+            .unwrap_or(host_id);
+        let ratio = if ruby.sz_ratio == 0 {
+            0.5
+        } else {
+            f64::from(ruby.sz_ratio) / 100.0
+        };
+        let ruby_size = owner_style.font_size * ratio;
+        let ruby_characters = ruby
+            .ruby_text
+            .chars()
+            .filter(|c| !c.is_control())
+            .map(|c| {
+                let mut style = resolved_to_text_style(styles, ruby_shape, detect_lang_category(c));
+                style.font_size = ruby_size;
+                (c, style)
+            })
+            .collect();
+        Some(Box::new(Self {
+            border: None,
+            owner_style,
+            characters,
+            spread: false,
+            size_ratio: 1.0,
+            ruby: Some(Box::new(RubyText {
+                characters: ruby_characters,
+                below: ruby.pos_type == 1,
+            })),
+        }))
+    }
+
+    /// 덧말 본말의 글자별 전진. 본말 글자 모양의 자간을 함께 둔다.
+    fn ruby_main_advances(&self) -> Vec<f64> {
+        self.characters
+            .iter()
+            .map(|(c, style)| {
+                let positions = EmbeddedTextMeasurer.compute_char_positions(&c.to_string(), style);
+                positions.last().copied().unwrap_or(0.0)
+            })
+            .collect()
+    }
+
+    /// 줄 나눔이 재는 한 칸의 전진(px).
+    pub(crate) fn advance_px(&self) -> f64 {
+        self.advance()
+    }
+
     fn advance(&self) -> f64 {
+        if self.ruby.is_some() {
+            // 한컴은 덧말이 길어도 본말 폭만 차지하고 덧말을 줄여 쓴다.
+            return self.ruby_main_advances().iter().sum();
+        }
         let character = self
             .border
             .or_else(|| self.characters.first().map(|v| v.0))
@@ -178,12 +277,86 @@ fn glyph(
     Glyph { bbox, run }
 }
 
+/// 한컴 12.30 Print: 덧말은 본말 글자 상자(기준선 위 0.85em, 아래 0.15em)에 맞붙어 가운데
+/// 정렬된다. 본말보다 길면 장평을 절반까지 줄이고, 그래도 넘치면 본말 왼쪽에서 시작한다.
+fn project_ruby(
+    owner: &TextRunNode,
+    bbox: BoundingBox,
+    composition: &Composition,
+    ruby: &RubyText,
+) -> Projection {
+    let baseline = bbox.y + owner.baseline;
+    let main_size = composition.owner_style.effective_font_size();
+    let mut interior = Vec::with_capacity(composition.characters.len() + ruby.characters.len());
+    let mut cursor = bbox.x;
+    for ((character, style), advance) in composition
+        .characters
+        .iter()
+        .zip(composition.ruby_main_advances())
+    {
+        let mut drawn = glyph(owner, *character, style.clone(), 0.0, baseline);
+        drawn.bbox.x = cursor;
+        interior.push(drawn);
+        cursor += advance;
+    }
+    let main_width = cursor - bbox.x;
+    let ruby_size = ruby
+        .characters
+        .first()
+        .map_or(0.0, |(_, style)| style.effective_font_size());
+    let ruby_baseline = if ruby.below {
+        baseline + main_size * 0.15 + ruby_size * 0.85
+    } else {
+        baseline - main_size * 0.85 - ruby_size * 0.15
+    };
+    let natural: Vec<_> = ruby
+        .characters
+        .iter()
+        .map(|(c, style)| {
+            glyph(owner, *c, style.clone(), 0.0, ruby_baseline)
+                .bbox
+                .width
+        })
+        .collect();
+    let natural_width: f64 = natural.iter().sum();
+    let scale = if natural_width > main_width && natural_width > 0.0 {
+        (main_width / natural_width).max(0.5)
+    } else {
+        1.0
+    };
+    let mut cursor = bbox.x + ((main_width - natural_width * scale) / 2.0).max(0.0);
+    for ((character, original), width) in ruby.characters.iter().zip(natural) {
+        let mut style = original.clone();
+        style.ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 } * scale;
+        let mut drawn = glyph(owner, *character, style, 0.0, ruby_baseline);
+        drawn.bbox.x = cursor;
+        interior.push(drawn);
+        cursor += width * scale;
+    }
+    let bounds = interior.iter().fold(bbox, |bounds, g| {
+        let left = bounds.x.min(g.bbox.x);
+        let top = bounds.y.min(g.bbox.y);
+        let right = (bounds.x + bounds.width).max(g.bbox.x + g.bbox.width);
+        let bottom = (bounds.y + bounds.height).max(g.bbox.y + g.bbox.height);
+        BoundingBox::new(left, top, right - left, bottom - top)
+    });
+    Projection {
+        border: None,
+        interior,
+        reversed: false,
+        bounds,
+    }
+}
+
 pub(crate) fn project(owner: &TextRunNode, bbox: BoundingBox) -> Option<Projection> {
     if owner.is_vertical {
         return None;
     }
     let overlap = owner.char_overlap.as_ref()?;
     let composition = overlap.composition.as_ref()?;
+    if let Some(ruby) = &composition.ruby {
+        return Some(project_ruby(owner, bbox, composition, ruby));
+    }
     let base_size = composition.owner_style.effective_font_size();
     let baseline = bbox.y + owner.baseline;
     let width = composition.advance();
@@ -196,17 +369,13 @@ pub(crate) fn project(owner: &TextRunNode, bbox: BoundingBox) -> Option<Projecti
             baseline,
         )
     });
-    let reversed = matches!(overlap.border_type, 2 | 4);
+    let reversed = reversed_border(overlap.border_type);
     let ratio = composition.size_ratio;
     if ratio <= 0.0 {
         return None;
     }
-    // 한컴 Print의 원/사각 테두리는 내부 기준선을 서로 다른 em 정렬점으로 공유한다.
-    let alignment = if matches!(overlap.border_type, 1 | 2) {
-        0.4
-    } else {
-        1.0 / 3.0
-    };
+    // 한컴 Print의 테두리 모양은 내부 기준선을 서로 다른 em 정렬점으로 공유한다.
+    let alignment = inner_alignment(overlap.border_type);
     let inner_baseline = baseline + base_size * (ratio - 1.0) * alignment;
     let count = composition.characters.len();
     let mut interior = Vec::with_capacity(count);

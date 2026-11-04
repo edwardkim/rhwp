@@ -112,7 +112,12 @@ fn mixed_overlap_note_uses_one_axis_in_public_getters_and_both_formats() {
         let Control::CharOverlap(overlap) = &p.controls[0] else {
             panic!("겹침 원문 누락: {format}");
         };
-        assert_eq!(overlap.chars, ['가', '나'], "두 glyph도 한 슬롯: {format}");
+        // HWP 원문 배열은 한컴처럼 테두리 글자(◯)를 앞에 둔다. 친 글은 같다.
+        assert_eq!(
+            rhwp::renderer::composer::char_overlap_plain_text(overlap),
+            "가나",
+            "두 glyph도 한 슬롯: {format}"
+        );
         assert_eq!(overlap.border_type, 1, "{format}");
         assert!(!p.controls[0].is_treat_as_char_object(), "{format}");
     }
