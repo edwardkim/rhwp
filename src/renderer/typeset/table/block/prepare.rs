@@ -321,6 +321,9 @@ impl TypesetEngine {
                 }
             })
             .collect();
+        // 첫 저장 프레임의 잔여도 스캔이 수용하는 앞 행의 물리 원점으로 계산한다.
+        // 중간 paint 높이 해소가 캐시에 남으면 같은 컷을 받은 뒤 끝 행을 다시 늘린다.
+        layout_engine.remember_stored_frame_rows(row_geometry_table, &whole_row_fit_h);
         // p106은 paint footprint 기준 row 0–3이 body bottom보다 3.9px 앞에서
         // 끝나지만, 한컴은 다음 행을 이어받기 조각으로 소유한다. 이 4px은 저장
         // 되감김 첫 조각의 꼬리말 경계에 있는 기존 여유이며 전역 안전
