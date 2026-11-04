@@ -38,8 +38,9 @@ pub(super) fn rgb(c: Color) -> u32 {
 }
 
 /// PDF BaseFont may be a PostScript face name, whereas HWP stores a family.
-/// This exact pair is independently present in Arial's OpenType name records
-/// (nameID 6 / nameID 1). Do not guess a family by deleting arbitrary suffixes.
+/// 아래 대응은 원 프로그램의 OpenType name ID 6 / ID 1로 확인했다.
+/// PDF subset에 ID 6만 남아도 같은 family 메트릭으로 가져오기와 출력을 맞춘다.
+/// 임의의 접미사를 삭제해 family나 굵기를 추정하지 않는다.
 fn imported_font_family(name: &str) -> &str {
     let base = name
         .split_once('+')
@@ -47,6 +48,9 @@ fn imported_font_family(name: &str) -> &str {
         .map_or(name, |(_, family)| family);
     match base {
         "ArialMT" => "Arial",
+        "HCRBatang" | "HCRBatang-Bold" => "HCR Batang",
+        "HCRDotum" | "HCRDotum-Bold" => "HCR Dotum",
+        "Haansoft-Dotum" => "Haansoft Dotum",
         _ => base,
     }
 }
