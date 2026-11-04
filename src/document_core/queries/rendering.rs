@@ -1539,6 +1539,11 @@ impl DocumentCore {
         page_num: u32,
         profile: RenderProfile,
     ) -> Result<PageLayerTree, HwpError> {
+        // Canvas 화면의 보충 폭은 인쇄 조판의 정본이 아니다. SVG·Native와
+        // 마찬가지로 호출자가 전체 인쇄 쪽수 조회 전에 portable로 전환해야 한다.
+        if profile == RenderProfile::Print {
+            self.require_portable_metrics()?;
+        }
         // 앞쪽 Print 이력을 읽기 전에 요청한 쪽 자체의 범위를 확인한다.
         // 잘못된 요청의 오류를 중간 페이지 번호로 바꾸지 않는다.
         self.find_page(page_num)?;

@@ -1186,6 +1186,10 @@ export class WasmBridge {
       ) => void;
     };
     if (typeof d.renderPageToCanvasFilteredWithProfile === 'function') {
+      if (profile === 'print') {
+        this.withPortableMetrics(() => d.renderPageToCanvasFilteredWithProfile!(pageNum, canvas, scale, layerKind, profile));
+        return;
+      }
       withCanvasFontResolution(this.hostCanvasFonts, () => d.renderPageToCanvasFilteredWithProfile!(pageNum, canvas, scale, layerKind, profile));
       return;
     }
