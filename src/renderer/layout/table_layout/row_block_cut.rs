@@ -60,7 +60,8 @@ impl<'a> CellCutFrame<'a> {
         }
     }
 
-    fn content_height(&self, end: usize, content_advance: f64) -> f64 {
+    /// 안여백을 제외한 내용 점유. 정렬은 물리 상자 높이를 다시 소비하지 않는다.
+    pub(super) fn content_height(&self, end: usize, content_advance: f64) -> f64 {
         let trim = self.engine.physical_cut_trailing_trim(
             self.table,
             self.cell,

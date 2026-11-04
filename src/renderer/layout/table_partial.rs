@@ -1800,9 +1800,31 @@ impl LayoutEngine {
                 .is_some_and(|height| {
                     (height + pad_top + pad_bottom - cell_h).abs() <= hwpunit_to_px(2, self.dpi)
                 });
+            // 실제 그림 앵커 컷을 예약한 첫 행 상자만 선택한 앞 내용의 정렬을 소유한다.
+            // 뒤 그림까지 포함한 전체 셀 높이 또는 Top 강제로 다시 해석하지 않는다.
+            let atomic_opening_alignment_height = (!is_block_split
+                && !start_cut_is_block
+                && !(is_continuation && cell_row == start_row)
+                && cell_row + 1 == end_row
+                && cut_units.is_some_and(|(start, end)| start == 0 && end > 0)
+                && end_row_height_override.is_some())
+            .then(|| {
+                self.row_declared_first_frame(
+                    table,
+                    cell_row,
+                    resolved_row_heights[cell_row],
+                    end_cut,
+                    styles,
+                )
+                .filter(|frame| cell_h <= frame.height + 0.5)
+                .and_then(|frame| frame.cell_alignment_height(cell_idx))
+            })
+            .flatten();
+            let atomic_opening_frame_owns_alignment = atomic_opening_alignment_height.is_some();
             let composition_window = if saved_frame_needs_alignment
                 || mixed_opening_frame.is_some()
                 || declared_opening_frame_owns_alignment
+                || atomic_opening_frame_owns_alignment
             {
                 None
             } else if let Some(p) = probe.filter(|p| p.windowed) {
@@ -2221,6 +2243,7 @@ impl LayoutEngine {
             } else if frame_owns_alignment
                 || mixed_opening_frame.is_some()
                 || declared_opening_frame_owns_alignment
+                || atomic_opening_frame_owns_alignment
             {
                 // 앞 조각의 빈 공간을 보존한 물리 상자는 이 조각 내용으로 정렬한다.
                 cell.vertical_align
@@ -2309,7 +2332,9 @@ impl LayoutEngine {
             let stored_page_content_height = cut_units.and_then(|(start, end)| {
                 self.stored_cell_cut_alignment_height(cell, table, styles, start, end)
             });
-            let centered_content_height = if let Some(frame) = &stored_picture_cut_frame {
+            let centered_content_height = if let Some(height) = atomic_opening_alignment_height {
+                height
+            } else if let Some(frame) = &stored_picture_cut_frame {
                 frame.content_height
             } else if let Some(frame) = mixed_opening_frame {
                 // 예약한 상자와 같은 source host/child의 닫힌 점유 끝을 정렬한다.
@@ -2478,6 +2503,7 @@ impl LayoutEngine {
                 &[
                     ("mixed_declared", mixed_opening_frame.is_some()),
                     ("declared_opening", declared_opening_frame_owns_alignment),
+                    ("atomic_opening", atomic_opening_frame_owns_alignment),
                     ("frame", frame_owns_alignment),
                     ("ordinary", ordinary_source_frame_owns_alignment),
                     ("opening", align_saved_opening_frame),
@@ -7326,8 +7352,8 @@ impl LayoutEngine {
                         && self.row_has_plain_reflow_line_units(table, row, styles))
                     // [#7870] scan 이 재조판 행 첫 조각에 예약한 선언 행 높이도 같은 소유다.
                     || (!(is_continuation && row == start_row)
-                        && self.reflow_row_declared_first_frame(table, row, resolved_row_heights[row], styles).is_some_and(
-                            |declared| end_row_height_override.is_some_and(|height| height <= declared + 0.5),
+                        && self.row_declared_first_frame(table, row, resolved_row_heights[row], end_cut, styles).is_some_and(
+                            |declared| end_row_height_override.is_some_and(|height| height <= declared.height + 0.5),
                         ))
                     || (self.profile.get().hwpx_stored_layout()
                         && self

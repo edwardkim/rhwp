@@ -2022,13 +2022,14 @@ impl TypesetEngine {
         {
             let accepted_height = consumed - consumed_before_row - cs_before;
             let available = (avail_for_rows - consumed_before_row - cs_before).max(0.0);
-            if let Some(declared) = layout_engine.reflow_row_declared_first_frame(
+            if let Some(declared) = layout_engine.row_declared_first_frame(
                 table,
                 scan_start_row,
                 mt.row_heights[scan_start_row],
+                &split_end_cut,
                 styles,
             ) {
-                let frame_height = declared.min(available);
+                let frame_height = declared.height.min(available);
                 if accepted_height > 0.0 && frame_height > accepted_height + 0.5 {
                     consumed += frame_height - accepted_height;
                     end_row_height_override = Some(frame_height);
