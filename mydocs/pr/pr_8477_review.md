@@ -53,7 +53,12 @@
 
 [정식 회귀 파일](../../tests/cases/issue_8472_cell_picture_anchor.rs)은 원본 선언과 남은 본문, 라벨 중심·내용 보존, 셀별 저장 앵커와 내용 높이의 상대 차이, 그림·앵커의 같은 조각 소유와 셀 내부 포함을 검사합니다.
 
-양쪽 raw가 100.00%인 2쪽만 독립 PDF 이미지 사각형의 네 경계를 ±1 CSSpx로 추가 보호합니다. 관계 검사는 유지하며 특정 설치 글꼴·OTF를 요구하지 않습니다. 실제 최소 글꼴 노출 목록과 같은 좌표를 확인했습니다. [독립 PDF·최소 글꼴 경계 기록](assets/planet6897_20261103/pr_8477/pr8477-p2-independent-image-bounds.json)을 근거로 사용합니다.
+양쪽 raw가 100.00%인 2쪽만 독립 PDF 이미지 사각형의 네 경계를 ±1 CSSpx로 추가 보호합니다. 관계 검사는 유지하며 특정 설치 글꼴·OTF를 요구하지 않습니다. 실제 최소 글꼴 노출 목록과 같은 좌표를 확인했습니다. 독립 PDF 좌표는 PDF point에 96/72를 곱한 CSS px이며, 아래처럼 제품 출력과 별도로 추출했습니다.
+
+| 2쪽 그림 | 독립 PDF 경계 `(left, top, right, bottom)` | 최소 글꼴 출력 `(x, y, width, height)` |
+| --- | --- | --- |
+| 왼쪽 | `(84.11466471354167, 91.58003743489583, 387.7919921875, 245.970703125)` | `(84.3, 91.7, 303.9, 154.6)` |
+| 오른쪽 | `(401.5439860026042, 90.46134440104167, 705.2213541666666, 247.40934244791666)` | `(401.8, 90.4, 303.9, 157.1)` |
 
 수정 전 새 관계 검사는 실제 첫 프레임 60.26667px / 원본 선언 198.62667px와 이어받기 그림 상대차 0 / 원본 상대차 −1.27333px로 실패했습니다. 제품 보정 후 최소 글꼴 집중 40건이 모두 통과했습니다. 최종 좌표 검사를 포함한 이 파일 6건도 최소 글꼴 환경에서 모두 통과했습니다. 이는 최종 전체 회귀의 대체가 아닙니다.
 
@@ -61,11 +66,11 @@
 
 Native 바이너리 SHA-256은 `6d556ea3b231bd1976303978848045d05141b4d3d4404c689764ea72fcc69b7d`, fresh WASM은 `09c68917e431c2baf5ab7cf9612a6802d4557cb6229f23911e74aff0c1f9f6da`입니다. JS는 `bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393`입니다.
 
-Native는 보정 소스를 미커밋 상태로 빌드한 뒤 같은 내용으로 커밋했습니다. 실행 당시 호출 worktree의 Git SHA와 제품 소스를 혼동하지 않도록 [제품 소유 확인](assets/planet6897_20261103/pr_8477/owned-frame-build-primary-ownership.json)에 1,727개 Rust 파일의 동일성을 기록했습니다. 기존 manifest의 실행 SHA는 정정하지 않고 보존합니다. 실제 WASM의 새 base paint-font API와 글상자 입력의 열기 성공도 확인했습니다.
+Native는 보정 소스를 미커밋 상태로 빌드한 뒤 같은 내용으로 커밋했습니다. 빌드 때 기록한 1,727개 Rust 파일을 제품 커밋 `40778b67d6f69ccd3ee86cde84818dc2deea2cff`와 대조해 다른 파일이 0개임을 확인했습니다. Native 측정 manifest가 기록한 호출 worktree SHA는 `9c5720da819ef01deaa69e3e9d43b6728c7d1d80`이며, 이를 제품 소스 SHA로 취급하지 않습니다. WASM 측정은 제품 커밋 SHA를 기록했습니다. 실제 WASM의 새 base paint-font API와 글상자 입력의 열기 성공도 확인했습니다.
 
-[Native manifest](assets/planet6897_20261103/pr_8477/owned-frame-native-manifest.json) · [WASM manifest](assets/planet6897_20261103/pr_8477/owned-frame-wasm-manifest.json) · [증적 SHA-256](assets/planet6897_20261103/pr_8477/owned-frame-asset-hashes.json). 설치 글꼴은 측정에만 사용하고 글꼴 파일은 커밋하지 않습니다.
+PDF 래스터는 pypdfium2 5.13.0 / PDFium 153.0.7999.0의 `pdfium_smooth_rgb_exact_dpi_v2` 정책을 사용했습니다. Native는 Skia, WASM은 Canvas2D입니다. 설치된 시스템 글꼴 전체를 시각 측정에 제공했고, 이 입력의 Native 자동 웹폰트 추가 공급 목록은 비어 있습니다. 설치 글꼴은 측정에만 사용하고 글꼴 파일은 커밋하지 않습니다. 원시 manifest·분석 JSON·로그는 ignored `output/pr-review/planet6897-20261103/`에만 보관하고, 최종 입력·PDF·PNG·TSV와 이 문서의 출처·해시 기록을 영구 증거로 남깁니다.
 
-재현은 저장소 루트에서 `venv/bin/python scripts/visual_sweep.py --silhouette-only --hwp samples/issue8472/cell_picture_row_split.hwp --pdf pdf/issue8472_cell_picture_row_split-2020.pdf --key pr8477-owned-frame --rhwp-bin <검증한 Native 바이너리> --compat 2022 --dpi 96 --page-workers 1 --out <검증 폴더>`로 수행합니다. WASM은 같은 명령에 `--wasm-pkg <검증한 fresh pkg>`를 추가합니다. 정확한 원 명령·입력·환경·해시는 위 manifest와 분석 기록에 연결합니다.
+재현은 저장소 루트에서 `venv/bin/python scripts/visual_sweep.py --silhouette-only --resume --hwp samples/issue8472/cell_picture_row_split.hwp --pdf pdf/issue8472_cell_picture_row_split-2020.pdf --key pr8477-owned-frame --rhwp-bin <검증한 Native 바이너리> --compat 2022 --dpi 96 --page-workers 1 --out <검증 폴더>`로 수행합니다. WASM은 같은 명령에 `--wasm-pkg <검증한 fresh pkg>`를 추가합니다. 입력·producer·환경·산출물 해시가 같고 완료된 쪽만 재사용합니다.
 
 ## 통합 전 남은 조건
 
@@ -74,3 +79,18 @@ Native는 보정 소스를 미커밋 상태로 빌드한 뒤 같은 내용으로
 ## Merge 후 contributor PR comment 계획
 
 통합 완료가 승인되고 실제 merge SHA가 확정되면 위 동일 입력의 1·2쪽 Native/fresh WASM review·overlay와 전체 TSV를 첫 comment부터 그 merge SHA의 raw URL로 표시합니다. 다른 PR의 대표 이미지로 대체하지 않습니다. 게시 전에 이미지 응답·형식·해시를 위 자산과 대조하고 게시 후 API 본문과 화면을 확인합니다. 원 PR 닫기는 통합 SHA의 devel 포함과 모든 후속 조건을 확인한 뒤 승인 범위에 따라 처리합니다.
+
+## 최종 TSV·대표 PNG의 신원
+
+| 파일 | 바이트 수 | SHA-256 |
+| --- | ---: | --- |
+| [pr8477-cell_picture_row_split-f5c3c377-native.tsv](assets/planet6897_20261103/pr_8477/pr8477-cell_picture_row_split-f5c3c377-native.tsv) | 152 | `75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690` |
+| [pr8477-cell_picture_row_split-f5c3c377-wasm.tsv](assets/planet6897_20261103/pr_8477/pr8477-cell_picture_row_split-f5c3c377-wasm.tsv) | 150 | `2d96a69585f096e23614ca2a655493c63d9587b4bc0daa604409a6609f8ddfa7` |
+| [pr8477-claim-p001-cell_picture_row_s-native-overlay.png](assets/planet6897_20261103/pr_8477/pr8477-claim-p001-cell_picture_row_s-native-overlay.png) | 204369 | `34076dab5632db68bde0ee390ecfc93379a99f453379d1418931ee5729820431` |
+| [pr8477-claim-p001-cell_picture_row_s-native-review.png](assets/planet6897_20261103/pr_8477/pr8477-claim-p001-cell_picture_row_s-native-review.png) | 631692 | `63056ae17360cb61ea705e883141f0f9a7562594728ebb206b2900ab85a76234` |
+| [pr8477-claim-p001-cell_picture_row_s-wasm-overlay.png](assets/planet6897_20261103/pr_8477/pr8477-claim-p001-cell_picture_row_s-wasm-overlay.png) | 207785 | `4cc7eef2a1774f808e7a0d080121c2aa40c92c9256d768a2f6735e56b41b0a57` |
+| [pr8477-claim-p001-cell_picture_row_s-wasm-review.png](assets/planet6897_20261103/pr_8477/pr8477-claim-p001-cell_picture_row_s-wasm-review.png) | 626596 | `c0219573819d291de02d333e60f90888654aedf985600b36d10fabdd6793299a` |
+| [pr8477-claim-p002-cell_picture_row_s-native-overlay.png](assets/planet6897_20261103/pr_8477/pr8477-claim-p002-cell_picture_row_s-native-overlay.png) | 66583 | `54ecb3e611a826217f3bf562d2060e80630ca2c9c6ee60b29b7365696dd992af` |
+| [pr8477-claim-p002-cell_picture_row_s-native-review.png](assets/planet6897_20261103/pr_8477/pr8477-claim-p002-cell_picture_row_s-native-review.png) | 135971 | `e965a30515fd3847da56a1e5f72c062b69b967b70ae1420971b2b2846076a587` |
+| [pr8477-claim-p002-cell_picture_row_s-wasm-overlay.png](assets/planet6897_20261103/pr_8477/pr8477-claim-p002-cell_picture_row_s-wasm-overlay.png) | 66397 | `de9012e9f89100d7212888398345a70a24dbd508a0bae8fda16403d3e6073fca` |
+| [pr8477-claim-p002-cell_picture_row_s-wasm-review.png](assets/planet6897_20261103/pr_8477/pr8477-claim-p002-cell_picture_row_s-wasm-review.png) | 135800 | `e360e513114134fdeeec585b8e4926b227924eb5413a78a92eb6565f11cebd97` |
