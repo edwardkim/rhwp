@@ -11,3 +11,13 @@
 - 실제 검증 base: `22947f6a90c998e95fa51238d5b907a0ebd37162`. 충돌 simulation: clean.
 - [공통 수행 계획](semanticist21_20261105_review_plan.md). CI 참고값: 동일 원 head의 제출된 check에 failure/cancelled 없음.
 - 원 contributor의 주장과 독립 측정·메인터너 보정 결과는 별도로 기록한다. 조판 원칙·입력 commit·전쪽 Native/fresh WASM·실행/반례·필수 로컬 gate는 현재 검토 중이며 아직 완료로 판정하지 않는다.
+
+## 선행 해결과 중복 보정
+
+원 PR의 핵심 메트릭 캐시는 이미 [#8348](https://github.com/edwardkim/rhwp/pull/8348)의
+`15ff366244`에서 flow/paint 공통 `equation/cache.rs`로 구현됐고 `c28d998091`에 편집 뒤 새 스레드 대조가 있다.
+현재 base는 값 키·source frame seal·16,384개 flow/4,096개 paint의 유한 캐시를 유지한다.
+원 head를 그대로 누적하면 기존 flow 캐시 안에 다른 flow 캐시가 생긴다. 메인터너는 기존 공통 캐시·source frame
+판정을 유지하고 중첩 캐시와 불필요한 pass 초기화를 제거했다. 기여의 키워드 탐색 할당 제거·값 조건 뒤 토큰화와
+공개 편집 계약 검사는 보존한다. 원 캐시 주장의 과거 15초→2.7초 수치를 최신 base의 개선으로 재인용하지 않는다.
+현재 base/후보의 실제 성능과 출력 보존은 후속 측정에서 판정한다.
