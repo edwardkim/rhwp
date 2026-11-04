@@ -337,7 +337,11 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         refresh = (REPO_ROOT / ".github/workflows/refresh-nextest-duration.yml").read_text()
         self.assertNotIn("refresh-nextest-target-duration-data:", self.ci)
         self.assertIn("refresh-nextest-target-duration-data:", refresh)
-        self.assertIn("ci-metrics/nextest-target-durations", refresh)
+        # 게시 대상은 workflow가 호출하는 API publisher에서 고정한다.
+        publisher = (REPO_ROOT / "scripts/publish-nextest-duration-data.mjs").read_text()
+        self.assertIn("scripts/publish-nextest-duration-data.mjs", refresh)
+        self.assertIn("heads/ci-metrics/nextest-target-durations", publisher)
+        self.assertIn("force: false", publisher)
         self.assertIn("github.ref == 'refs/heads/devel'", refresh)
         self.assertIn("duration_policy_sha:", self.builder)
         self.assertIn(

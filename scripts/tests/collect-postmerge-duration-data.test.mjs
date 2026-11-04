@@ -69,10 +69,15 @@ test('review tail requires a complete linear comparison of allowed files', () =>
 function client(f, options = {}) {
   let reads = 0;
   const get = data => async () => ({ data });
+  const tail = options.reviewTail || options.codeTail ? { ...f.run, id: 124, head_sha: f.pr.head.sha,
+    created_at: '2026-09-06T11:28:00Z', run_started_at: '2026-09-06T11:28:00Z' } : null;
   const actions = {
-    listWorkflowRuns: async () => [f.run], listJobsForWorkflowRun: async () => f.jobs,
-    listWorkflowRunArtifacts: async () => f.artifacts,
-    getWorkflowRun: async () => ({ data: options.changed && ++reads > 1 ? { ...f.run, run_attempt: 3 } : f.run }),
+    listWorkflowRuns: async () => tail ? [tail, f.run] : [f.run],
+    listJobsForWorkflowRun: async ({ run_id }) => run_id === tail?.id
+      ? f.jobs.map(job => ({ ...job, run_id, head_sha: tail.head_sha, conclusion: 'skipped' })) : f.jobs,
+    listWorkflowRunArtifacts: async ({ run_id }) => run_id === tail?.id ? [] : f.artifacts,
+    getWorkflowRun: async ({ run_id }) => ({ data: options.changed && ++reads > 1
+      ? { ...f.run, run_attempt: 3 } : run_id === tail?.id ? tail : f.run }),
     downloadArtifact: async ({ artifact_id }) => ({ data: reportZip(f.reports[f.artifacts.findIndex(a => a.id === artifact_id)]) }),
   };
   return { rest: { actions, pulls: { get: get(f.pr) }, repos: { get: get({ id: f.repositoryId }),
@@ -142,3 +147,86 @@ test('#8267 historical B/C/D reports require an explicit layout; new E omission 
   current.artifacts.pop();
   assert.throws(() => selectMeasuredDurationArtifacts(current), /measurement:e/);
 });
+
+test('문서 trailing의 생략 worker와 실제 code CI 측정을 구분해 다음 후보를 선택한다', async () => {
+  const f = fixture(); const trailing = { ...f.run, id: 124, head_sha: '5'.repeat(40),
+    created_at: '2026-09-06T11:28:00Z', run_started_at: '2026-09-06T11:28:00Z' };
+  f.pr.head.sha = trailing.head_sha;
+  const github = client(f), actions = github.rest.actions;
+  actions.listWorkflowRuns = async () => [trailing, f.run];
+  actions.getWorkflowRun = async ({ run_id }) => ({ data: run_id === trailing.id ? trailing : f.run });
+  actions.listJobsForWorkflowRun = async ({ run_id }) => run_id === trailing.id
+    ? f.jobs.map(job => ({ ...job, run_id, head_sha: trailing.head_sha, conclusion: 'skipped' })) : f.jobs;
+  actions.listWorkflowRunArtifacts = async ({ run_id }) => run_id === trailing.id ? [] : f.artifacts;
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhwp-duration-tail-'));
+  const notices = [];
+  try {
+    const result = await collectPostmergeDurations({ github, owner: 'edwardkim', repo: 'rhwp',
+      mergeSha: f.pr.merge_commit_sha, outputDir: dir, notice: message => notices.push(message) });
+    assert.equal(result.ready, true); assert.equal(result.sourceRunId, f.run.id);
+    assert.equal(result.finalHeadRunId, trailing.id); assert.equal(result.finalHeadSha, trailing.head_sha);
+    assert.equal(result.finalHeadRunAttempt, trailing.run_attempt); assert.equal(result.reviewOnlyTail, true);
+    assert.deepEqual(result.measurementAttempts, { b: 1, c: 1, d: 1, e: 1 });
+    assert.ok(notices.some(message => message.includes('workers skipped; no measurements')));
+    assert.ok(notices.every(message => !message.includes('unsuccessful latest worker')));
+  } finally { fs.rmSync(dir, { recursive: true }); }
+});
+
+for (const finalState of ['missing', 'failure', 'in_progress', 'rerun', 'wrong-fork']) {
+  test(`최종 trailing CI 승인 근거가 ${finalState}이면 과거 녹색 측정값을 게시하지 않는다`, async () => {
+    const f = fixture(); f.pr.head.sha = '5'.repeat(40);
+    const github = client(f, { reviewTail: true });
+    const original = github.rest.actions.getWorkflowRun;
+    if (finalState === 'missing') github.rest.actions.listWorkflowRuns = async () => [f.run];
+    else github.rest.actions.getWorkflowRun = async args => {
+      const response = await original(args);
+      if (args.run_id === 124) response.data = { ...response.data,
+        ...(finalState === 'failure' ? { conclusion: 'failure' } : {}),
+        ...(finalState === 'in_progress' ? { status: 'in_progress' } : {}),
+        ...(finalState === 'rerun' ? { run_attempt: 3 } : {}),
+        ...(finalState === 'wrong-fork' ? { head_repository: { id: 999 } } : {}),
+      };
+      return response;
+    };
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhwp-duration-final-'));
+    try {
+      const result = await collectPostmergeDurations({ github, owner: 'edwardkim', repo: 'rhwp',
+        mergeSha: f.pr.merge_commit_sha, outputDir: dir });
+      assert.equal(result.ready, false); assert.deepEqual(fs.readdirSync(dir), []);
+    } finally { fs.rmSync(dir, { recursive: true }); }
+  });
+}
+
+test('측정 자료 수집 도중 최종 trailing CI가 재실행되면 게시를 보류한다', async () => {
+  const f = fixture(); f.pr.head.sha = '5'.repeat(40);
+  const github = client(f, { reviewTail: true }), get = github.rest.actions.getWorkflowRun;
+  let finalReads = 0;
+  github.rest.actions.getWorkflowRun = async args => {
+    const result = await get(args);
+    if (args.run_id === 124 && ++finalReads >= 3) result.data = { ...result.data, run_attempt: 3 };
+    return result;
+  };
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhwp-duration-final-race-'));
+  try {
+    const result = await collectPostmergeDurations({ github, owner: 'edwardkim', repo: 'rhwp',
+      mergeSha: f.pr.merge_commit_sha, outputDir: dir });
+    assert.equal(result.ready, false); assert.deepEqual(fs.readdirSync(dir), []);
+  } finally { fs.rmSync(dir, { recursive: true }); }
+});
+
+for (const conclusion of ['failure', null]) {
+  test(`최종 head 최신 CI가 ${conclusion ?? 'in_progress'}이면 이전 녹색으로 대체하지 않는다`, async () => {
+    const f = fixture(), github = client(f);
+    const latest = { ...f.run, id: 125, created_at: '2026-09-06T11:28:00Z',
+      run_started_at: '2026-09-06T11:28:00Z', conclusion,
+      status: conclusion ? 'completed' : 'in_progress' };
+    github.rest.actions.listWorkflowRuns = async () => [latest, f.run];
+    github.rest.actions.getWorkflowRun = async ({ run_id }) => ({ data: run_id === latest.id ? latest : f.run });
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhwp-duration-latest-'));
+    try {
+      const result = await collectPostmergeDurations({ github, owner: 'edwardkim', repo: 'rhwp',
+        mergeSha: f.pr.merge_commit_sha, outputDir: dir });
+      assert.equal(result.ready, false); assert.deepEqual(fs.readdirSync(dir), []);
+    } finally { fs.rmSync(dir, { recursive: true }); }
+  });
+}
