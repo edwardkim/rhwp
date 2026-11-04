@@ -41,3 +41,5 @@
 | pr8438-P-hwp | [원본](<../../../../../samples/issue8399/P.hwp>) | 2024 | `b305d6d267ef5e23a42321e9ddbfd6388cfd576a9381cb49ae9fc6500f928907` | [PDF](<../../../../../pdf/issue8399/P-hwp-2024.pdf>) | `bf586386e33796adee12082a3173d995e3614cf745973ae5a715a4e12506a889` |
 | pr8438-P-hwpx | [원본](<../../../../../samples/issue8399/P.hwpx>) | 2024 | `72016c8b292cd8325e910e165e6a5a0a7b82a05ca6f1f27ad20316a98018464f` | [PDF](<../../../../../pdf/issue8399/P-hwpx-2024.pdf>) | `5d53dc4942b5639f16b306f5d29be6b1a80cecafd3bfae31391ee194215cffb1` |
 | handbook-hwpx | [원본](<../../../../../samples/2025 행정업무운영 편람(최종).hwpx>) | 2024 | `c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6` | [PDF](<../../../../../pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf>) | `299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e` |
+
+현재 commit과 실제 입력의 일치는 [감사 요약](input-commit-audit.json)과 [원본·PDF별 Git blob/SHA-256](input-commit-audit.tsv)에서 확인한다. 37문서의 74개 역할 참조가 70개 실제 파일을 사용하며, 모두 추적된 Git blob과 바이트가 일치했다.
