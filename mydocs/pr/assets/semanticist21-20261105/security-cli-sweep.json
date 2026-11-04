@@ -1,0 +1,2181 @@
+{
+  "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "documents": 31,
+  "scans": 93,
+  "minimum_fonts": true,
+  "all_clean": true,
+  "results": [
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/body-emphasis-36pt.hwp",
+      "input_sha256": "a386956956b17c7b288ae2f637450fd7ffec248cb4f5960c20717fa8e76eeb85",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/body-emphasis-36pt.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.341457+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "1cb10de2ce754944d9f48d3724917b577b102924eb25a27d95c04bed12dd2166",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/body-emphasis-36pt.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "00-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/body-emphasis-36pt.hwp",
+      "input_sha256": "a386956956b17c7b288ae2f637450fd7ffec248cb4f5960c20717fa8e76eeb85",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/body-emphasis-36pt.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.342006+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "e563cbf73255bcccf773bd6f19322fb8a9c9ba38332470379df364111152ebd8",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/body-emphasis-36pt.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "00-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/body-emphasis-36pt.hwp",
+      "input_sha256": "a386956956b17c7b288ae2f637450fd7ffec248cb4f5960c20717fa8e76eeb85",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/body-emphasis-36pt.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.357460+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 10
+      },
+      "result_sha256": "a15b44cb035cea9fe629099f2843c34702c872f382017975d90e349f14601e9a",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":10,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/body-emphasis-36pt.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "00-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/body-top-36pt.hwp",
+      "input_sha256": "2964eacbf6143a7ef9767225f9b334e7d8372786d598f9b9de77c7c84cc5b248",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/body-top-36pt.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.361286+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "fc857a331ea125a6b3a95f7dd798bd81c4ebc7b091e8044b4b5ac109f114a14d",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/body-top-36pt.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "01-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/body-top-36pt.hwp",
+      "input_sha256": "2964eacbf6143a7ef9767225f9b334e7d8372786d598f9b9de77c7c84cc5b248",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/body-top-36pt.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.371081+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "17bb4910d9d248a600035f59bd091351763eb3d4e22a14994a6fc95d561e94c6",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/body-top-36pt.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "01-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/body-top-36pt.hwp",
+      "input_sha256": "2964eacbf6143a7ef9767225f9b334e7d8372786d598f9b9de77c7c84cc5b248",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/body-top-36pt.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.373392+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 10
+      },
+      "result_sha256": "d529f4877b9d5a4c424ea852b5c075ff1484c9bdcf76cce7a1013f26798074c4",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":10,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/body-top-36pt.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "01-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/cell-top-10-36pt.hwp",
+      "input_sha256": "c5e77e2d42a30b5b06c5d351f9be051d4f24624d8af174d7e780bb156431448e",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/cell-top-10-36pt.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.386480+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "da56e37fd51838e89653deb0d47cae98b6284c5f10d05e723de1ec475786e008",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/cell-top-10-36pt.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "02-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/cell-top-10-36pt.hwp",
+      "input_sha256": "c5e77e2d42a30b5b06c5d351f9be051d4f24624d8af174d7e780bb156431448e",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/cell-top-10-36pt.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.387740+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "21d46ab9fa91eafa5d1bfd43762ef772b3573feb25e42c9c35790cfc43c90c36",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/cell-top-10-36pt.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "02-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/cell-top-10-36pt.hwp",
+      "input_sha256": "c5e77e2d42a30b5b06c5d351f9be051d4f24624d8af174d7e780bb156431448e",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/cell-top-10-36pt.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.401567+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 36
+      },
+      "result_sha256": "189a80aff9f09cbb7c55e8be66cb68b5acd35ccb9fdb9e9b00ed1a255ff0780c",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":36,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/cell-top-10-36pt.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "02-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-1.hwp",
+      "input_sha256": "99685bf70ae34c540cc2c225d3b0086f34754143bcaf0edf8b98e9f43eeb5378",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-1.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.405217+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "d1d5301d1b8b820e01ed98cc111a8aa82e821b7342a5943393b02d413408d510",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-1.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "03-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-1.hwp",
+      "input_sha256": "99685bf70ae34c540cc2c225d3b0086f34754143bcaf0edf8b98e9f43eeb5378",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-1.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.414962+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "ba8aaf555c855f653673ac287ea9b59b14415634ea79525ff8e4c0b5accc7fc5",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-1.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "03-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-1.hwp",
+      "input_sha256": "99685bf70ae34c540cc2c225d3b0086f34754143bcaf0edf8b98e9f43eeb5378",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-1.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.417876+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 108
+      },
+      "result_sha256": "c58455bbed70a3b6228e8980a26c84b182650347c25234db8430d300b819b163",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":108,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-1.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "03-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-2.hwp",
+      "input_sha256": "725958e63073d9faf3d3c60d72eced19d489e869007a4a18e982e249ed2383dc",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-2.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.432354+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "0a531d3eb0cf76b957da7c166912ab875522b5fa84654ac944e52c63b5c52533",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-2.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "04-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-2.hwp",
+      "input_sha256": "725958e63073d9faf3d3c60d72eced19d489e869007a4a18e982e249ed2383dc",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-2.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.433037+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "0c7791a35f448310c8cc769cb361ee745c73b5503a7b9c0482054710fed2a629",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-2.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "04-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-2.hwp",
+      "input_sha256": "725958e63073d9faf3d3c60d72eced19d489e869007a4a18e982e249ed2383dc",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-2.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.447823+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 108
+      },
+      "result_sha256": "c633225c0fb8bd329016a629a7b2da083d739f732018a9e44ffc4d1897297c31",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":108,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-2.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "04-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-3.hwp",
+      "input_sha256": "682ac2c7e45c45c608b392f9956835098537b5fbb3e19a5a5fafe2edfa757690",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-3.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.450995+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "d624c7ed6c74cb44c042bc31ac0abe1a4441983825e20eae0d2b613b375b48d1",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-3.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "05-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-3.hwp",
+      "input_sha256": "682ac2c7e45c45c608b392f9956835098537b5fbb3e19a5a5fafe2edfa757690",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-3.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.462400+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "e0806687917c36729eaf4cfd70187ee3d8ab891ae5678507d3500d50d91d0710",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-3.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "05-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-3.hwp",
+      "input_sha256": "682ac2c7e45c45c608b392f9956835098537b5fbb3e19a5a5fafe2edfa757690",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-3.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.464363+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 108
+      },
+      "result_sha256": "5f136564579f109378500fa2174329c89a6203417c1b9395aa11bbd1f80096db",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":108,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-3.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "05-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-4.hwp",
+      "input_sha256": "00e8a986d8c2a3349c629343a47fa81d5b869ac019b71cd9cb81d8e74ea0aa6d",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-4.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.481092+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "1912cfa7d01cdda40fb7ba23aca5f1dfb1a034f794018bc4ebcecc2e58a88644",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-4.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "06-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-4.hwp",
+      "input_sha256": "00e8a986d8c2a3349c629343a47fa81d5b869ac019b71cd9cb81d8e74ea0aa6d",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-4.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.485221+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "82667e3196a7a15e38e8cd710e773716c5032e479423ccec55a2144c9c6448c8",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-4.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "06-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-4.hwp",
+      "input_sha256": "00e8a986d8c2a3349c629343a47fa81d5b869ac019b71cd9cb81d8e74ea0aa6d",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-4.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.497192+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 108
+      },
+      "result_sha256": "400a88133282a18a26571d92c6c39355eb6783115a683ec8ba4f4880c340f54a",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":108,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-4.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "06-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-5.hwp",
+      "input_sha256": "43329ca0ab4ea7e09fbbaa43805a130f07958c802dd399b53d78bcf09a4ae1c1",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-5.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.505540+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "cf5c41440c09699bf35bc58b8b5c2b1dc58bdd58978d2d6ec420b4cca0f8f6f3",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-5.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "07-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-5.hwp",
+      "input_sha256": "43329ca0ab4ea7e09fbbaa43805a130f07958c802dd399b53d78bcf09a4ae1c1",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-5.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.511569+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "0384714e49310a99538b011f0ca63ea9069a69bd7adc9f72ba7c63441aa5cb99",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-5.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "07-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-5.hwp",
+      "input_sha256": "43329ca0ab4ea7e09fbbaa43805a130f07958c802dd399b53d78bcf09a4ae1c1",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-5.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.519375+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 108
+      },
+      "result_sha256": "cb4c939be81a517b9354e991884cabbce23ef41c3b80195bf95a8fc3d88e8799",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":108,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-5.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "07-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-6.hwp",
+      "input_sha256": "de70385adaac4ec5aefe3eed25dd9f6fc914be799844698748cd79914c4d6be4",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-6.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.528161+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "7bb2dd723739dc1e68e86c3c00eb69f82a92a147b553ca1fa65e07731741f6e6",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-6.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "08-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-6.hwp",
+      "input_sha256": "de70385adaac4ec5aefe3eed25dd9f6fc914be799844698748cd79914c4d6be4",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-6.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.532342+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "01dacf3a2357b14a8270151c4f1f9e77284fa3e25f665f852fc12a964aedd435",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-6.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "08-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-6.hwp",
+      "input_sha256": "de70385adaac4ec5aefe3eed25dd9f6fc914be799844698748cd79914c4d6be4",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-6.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.541855+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 108
+      },
+      "result_sha256": "b8d5b3cf6ec9d7d687d9d66d9afdbf055290bdf8e2814500fd2dea14d5ede72f",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":108,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/emphasis-probe-6.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "08-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-0.hwp",
+      "input_sha256": "63b12b22e5057f636d86440de2f11d3476ae7c2ef1de0ec58a8bd796152ca7a5",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-0.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.549866+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "cbfc4d222b4ceea712131c920378858b83a591e137e0f2331aff6a9b134d6dc8",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-0.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "09-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-0.hwp",
+      "input_sha256": "63b12b22e5057f636d86440de2f11d3476ae7c2ef1de0ec58a8bd796152ca7a5",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-0.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.557409+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "9caa8bb3728f49b0bc1970beaf125a6f75d512ef7899e373ec0a3ffb597bbf17",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-0.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "09-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-0.hwp",
+      "input_sha256": "63b12b22e5057f636d86440de2f11d3476ae7c2ef1de0ec58a8bd796152ca7a5",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-0.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.563461+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 94
+      },
+      "result_sha256": "685839e3c5b94bf9b233a78b1eb90da09b5676c42eec3898064c8ebc8ac30cc5",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":94,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-0.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "09-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-1.hwp",
+      "input_sha256": "b55cec7fb6974a2ee2592baf681e8be6b33ff6162809d373a3e3fde0934eb5c3",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-1.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.578754+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "5c82e6adba5328a70197a7edb9a9689cfd9c91987e60368b056deed0ed4aa711",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-1.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "10-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-1.hwp",
+      "input_sha256": "b55cec7fb6974a2ee2592baf681e8be6b33ff6162809d373a3e3fde0934eb5c3",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-1.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.581253+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "34c890f1b7c6d17cb77e42b43cce0c777e731b62041942b499e37f3549c129d1",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-1.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "10-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-1.hwp",
+      "input_sha256": "b55cec7fb6974a2ee2592baf681e8be6b33ff6162809d373a3e3fde0934eb5c3",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-1.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.597940+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 94
+      },
+      "result_sha256": "e7cf46f55ca21d6d07f748f74a05cd895a3473a3bb65939d1561ac1ae39ac61b",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":94,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-1.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "10-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-10.hwp",
+      "input_sha256": "7de89153c2a9dc90acf8eae2767f0cd9fde6445fef63c42a655efb764a88d06c",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-10.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.607055+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "9df52a79c6303679010b7fc87d39b1ec2d18670e4c3e901e9e4049fe4ecb296f",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-10.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "11-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-10.hwp",
+      "input_sha256": "7de89153c2a9dc90acf8eae2767f0cd9fde6445fef63c42a655efb764a88d06c",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-10.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.613359+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "7b6f0c01d61be7b92a11f57f93e39e1f395373eaa434d7246039a6ede4dce8e7",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-10.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "11-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-10.hwp",
+      "input_sha256": "7de89153c2a9dc90acf8eae2767f0cd9fde6445fef63c42a655efb764a88d06c",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-10.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.623873+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 94
+      },
+      "result_sha256": "e06c8bc5c5ed6d5104ec802742aff2723c39a1f2511d810d67c18f12b5cd2af4",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":94,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-10.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "11-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-2.hwp",
+      "input_sha256": "b9c4583a8325367624d8ebd8818dc2ad9efc6d278feee5e35fc751ad94021223",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-2.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.636024+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "0bfa41dd3f2a421dbebae37bc296707c729e9ddec6afc0563df2c966ecd3a490",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-2.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "12-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-2.hwp",
+      "input_sha256": "b9c4583a8325367624d8ebd8818dc2ad9efc6d278feee5e35fc751ad94021223",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-2.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.641201+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "3059b3d83d9302a7536cdab836e2cfc66c63b1a669bf982106593eba78d29f07",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-2.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "12-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-2.hwp",
+      "input_sha256": "b9c4583a8325367624d8ebd8818dc2ad9efc6d278feee5e35fc751ad94021223",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-2.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.652043+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 94
+      },
+      "result_sha256": "f40c79ff56492300f9fa63c14da52c44934282f1bbe435c8bc4615cf67ad53b6",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":94,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-2.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "12-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-3.hwp",
+      "input_sha256": "966c229e3a1e0686bff63bcf5f6699450f168eba0229c98802235bf93371b5d5",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-3.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.663850+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "55ab92616f08c81f767b89789b1f653884d77280489dcd9c9752e777d74b5c5b",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-3.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "13-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-3.hwp",
+      "input_sha256": "966c229e3a1e0686bff63bcf5f6699450f168eba0229c98802235bf93371b5d5",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-3.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.668657+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "60cd69957b74e113bf425093e37e6d11dc6c88ee75090f4a2d7f71b38dae8e9e",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-3.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "13-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-3.hwp",
+      "input_sha256": "966c229e3a1e0686bff63bcf5f6699450f168eba0229c98802235bf93371b5d5",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-3.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.676875+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 94
+      },
+      "result_sha256": "d38222e90d245212322aaad9949f4d2ad5ad1236952361479e6133290fa5f4fc",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":94,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-3.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "13-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-4.hwp",
+      "input_sha256": "d29b4ef3d8f5210258e20a45639115bd7d82c66bc45a13e1189010bfb654d7ef",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-4.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.685378+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "333070b48d2226ec24bd66fd97d0f59de1dc139e160eee75f22fa91dcd95b3b6",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-4.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "14-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-4.hwp",
+      "input_sha256": "d29b4ef3d8f5210258e20a45639115bd7d82c66bc45a13e1189010bfb654d7ef",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-4.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.689719+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "ad98be6e5f07cf40ba40b1cc6636ca6e659302e9f3bafdd82f066a07855406dc",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-4.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "14-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-4.hwp",
+      "input_sha256": "d29b4ef3d8f5210258e20a45639115bd7d82c66bc45a13e1189010bfb654d7ef",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-4.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.698670+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 94
+      },
+      "result_sha256": "236510d3ff5d6e5e9845bbd3cd739c69bcd1d8aa7ce740c72c338b559da907d3",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":94,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-4.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "14-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-5.hwp",
+      "input_sha256": "deade69da52406b917d05a766744df63c49dcd187e783963d64afbfdc926325e",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-5.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.706490+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "588e7c2a2a6378b9f5638404d7ab054fe6d7a597297dcbf8dd665110b85fc497",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-5.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "15-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-5.hwp",
+      "input_sha256": "deade69da52406b917d05a766744df63c49dcd187e783963d64afbfdc926325e",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-5.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.711541+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "771d9b1f38813c3eeeb0f65048592e2a48143455f7a96a52bcbfe5936aa95b0d",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-5.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "15-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-5.hwp",
+      "input_sha256": "deade69da52406b917d05a766744df63c49dcd187e783963d64afbfdc926325e",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-5.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.718991+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 94
+      },
+      "result_sha256": "694a0b86bff74d0e21d4c46f33f299f827da25d7d2827ceee29ed73abe360e90",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":94,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-5.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "15-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-6.hwp",
+      "input_sha256": "647f25a29d8650a939dbd78534c393570cef915ab3df219311f82c5b6f00750c",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-6.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.727136+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "18934100747cce599b65f5ea09c7bfbd7a96f644c3685d060a7368fdec17ec73",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-6.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "16-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-6.hwp",
+      "input_sha256": "647f25a29d8650a939dbd78534c393570cef915ab3df219311f82c5b6f00750c",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-6.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.731795+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "46cf5d6bbfe3c49c753c59ce477dea19cda21450d209dafef5b5193272b1d8d6",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-6.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "16-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-6.hwp",
+      "input_sha256": "647f25a29d8650a939dbd78534c393570cef915ab3df219311f82c5b6f00750c",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-6.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.740131+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 94
+      },
+      "result_sha256": "b7b2d31897f52bad96336951ef55cb50f95e9195cf871b3d4eb02037042c3b42",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":94,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-6.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "16-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-7.hwp",
+      "input_sha256": "95dadeb501d80d158d4514c6990a9d17a25b5841e328cb42ba022f735883e27b",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-7.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.747675+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "ab0a008550d141bfe042a5ec690e22b4a253c7d936295017b000741914df2729",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-7.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "17-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-7.hwp",
+      "input_sha256": "95dadeb501d80d158d4514c6990a9d17a25b5841e328cb42ba022f735883e27b",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-7.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.752815+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "7937b58315e7e7a0b1f66b2cfdeedf8152f68e841c5fc1805d5a43d2d59fdff8",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-7.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "17-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-7.hwp",
+      "input_sha256": "95dadeb501d80d158d4514c6990a9d17a25b5841e328cb42ba022f735883e27b",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-7.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.760686+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 94
+      },
+      "result_sha256": "fc78430e5e89a4bac58f23999ce50458d1144671726283d2f1e97c68d4eb8a82",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":94,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-7.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "17-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-8.hwp",
+      "input_sha256": "1dfcb9ca9d581800a1618b2a389321151a1aa96cc0ea46fe24358c96b5fbd544",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-8.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.768605+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "102bcda07fe80249f0e2d4dfea2cec78361239bd33e4b681870d1c8852cd166e",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-8.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "18-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-8.hwp",
+      "input_sha256": "1dfcb9ca9d581800a1618b2a389321151a1aa96cc0ea46fe24358c96b5fbd544",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-8.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.773162+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "dabb636763fcdcb749d8ccb1364236b53e6f3b31b707a670bffad1dc7c90cbfc",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-8.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "18-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-8.hwp",
+      "input_sha256": "1dfcb9ca9d581800a1618b2a389321151a1aa96cc0ea46fe24358c96b5fbd544",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-8.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.781256+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 94
+      },
+      "result_sha256": "15d4ddf4784ded1b784c0e0c6cbaeaed22f800a8555833f256c57924ebff5b11",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":94,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-8.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "18-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-9.hwp",
+      "input_sha256": "12dbe1066237eec3b9cf33d539c0ed7bf70729602196509b5730f904005c6051",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-9.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.788767+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "767059102842c2fc1af65d96322060e0599bb5525237cc370eb06d8d2246bf62",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-9.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "19-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-9.hwp",
+      "input_sha256": "12dbe1066237eec3b9cf33d539c0ed7bf70729602196509b5730f904005c6051",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-9.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.793753+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "3a98c3bf36f9204901d354c059cbe13f423a590f119c7fad191bb75eb831aca2",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-9.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "19-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-9.hwp",
+      "input_sha256": "12dbe1066237eec3b9cf33d539c0ed7bf70729602196509b5730f904005c6051",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-9.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.801434+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 94
+      },
+      "result_sha256": "b495440c678c3864a7266004f28c1b4d76d422be4cff538f0364db4189570a6c",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":94,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/raised-decoration-hancom/top-probe-shape-9.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "19-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/semanticist21-20261105/roundtrip/base-header-image-refs.hwpx",
+      "input_sha256": "5e1dcc865f147e7fe60b74bcbddbe48b5fc1055d8c371c2c2305823a6374d48a",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/semanticist21-20261105/roundtrip/base-header-image-refs.hwpx",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.809334+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "1e2806866b3d6fe8d8a7b104f1ae75d9b0e0464d5e85fcb712d9d815329155b4",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/semanticist21-20261105/roundtrip/base-header-image-refs.hwpx\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "20-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/semanticist21-20261105/roundtrip/base-header-image-refs.hwpx",
+      "input_sha256": "5e1dcc865f147e7fe60b74bcbddbe48b5fc1055d8c371c2c2305823a6374d48a",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/semanticist21-20261105/roundtrip/base-header-image-refs.hwpx",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.813454+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "84db7f30ef849073af8d42ae610041091b06fc3b3ad37bd7b862167350dbc494",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/semanticist21-20261105/roundtrip/base-header-image-refs.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "20-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/semanticist21-20261105/roundtrip/base-header-image-refs.hwpx",
+      "input_sha256": "5e1dcc865f147e7fe60b74bcbddbe48b5fc1055d8c371c2c2305823a6374d48a",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/semanticist21-20261105/roundtrip/base-header-image-refs.hwpx",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.858463+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 12879
+      },
+      "result_sha256": "8f3686b91ee2b76479ec911fcf8a59eac5bc94e727815fd3d1f87d0800845e5a",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":12879,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/semanticist21-20261105/roundtrip/base-header-image-refs.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "20-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/semanticist21-20261105/roundtrip/base-image-bullet-newyear.hwpx",
+      "input_sha256": "8e13dc6fdd47d018add40ac8dd0ad70bdbe68bf13a2fb5b3fe3498b347a26475",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/semanticist21-20261105/roundtrip/base-image-bullet-newyear.hwpx",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.877898+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "62542e36d6efebbb17deb6a21fe6f30611060b399b691edd72377009a5ee8e1e",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/semanticist21-20261105/roundtrip/base-image-bullet-newyear.hwpx\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "21-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/semanticist21-20261105/roundtrip/base-image-bullet-newyear.hwpx",
+      "input_sha256": "8e13dc6fdd47d018add40ac8dd0ad70bdbe68bf13a2fb5b3fe3498b347a26475",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/semanticist21-20261105/roundtrip/base-image-bullet-newyear.hwpx",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.894161+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "26d288d86df02b433c746f061e2cf6ce16659e9df8430a26e0b183f1d3e8f5d0",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/semanticist21-20261105/roundtrip/base-image-bullet-newyear.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "21-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/semanticist21-20261105/roundtrip/base-image-bullet-newyear.hwpx",
+      "input_sha256": "8e13dc6fdd47d018add40ac8dd0ad70bdbe68bf13a2fb5b3fe3498b347a26475",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/semanticist21-20261105/roundtrip/base-image-bullet-newyear.hwpx",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.907239+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 2651
+      },
+      "result_sha256": "634d5c7589d00c86cb95e50d35543286023b10244fe767472e43f34d7839be40",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":2651,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/semanticist21-20261105/roundtrip/base-image-bullet-newyear.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "21-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-header-image-refs.hwpx",
+      "input_sha256": "5e1dcc865f147e7fe60b74bcbddbe48b5fc1055d8c371c2c2305823a6374d48a",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-header-image-refs.hwpx",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.916262+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "75f1dc9dd5a07f81f32d8f89bad079385058c198f3b76ca27ab1d883854865a6",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-header-image-refs.hwpx\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "22-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-header-image-refs.hwpx",
+      "input_sha256": "5e1dcc865f147e7fe60b74bcbddbe48b5fc1055d8c371c2c2305823a6374d48a",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-header-image-refs.hwpx",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:00.923637+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "e89124536ab2c488bbee0b4bd00dd13a7307f660ad8542fd795e3fbff88896f0",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-header-image-refs.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "22-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-header-image-refs.hwpx",
+      "input_sha256": "5e1dcc865f147e7fe60b74bcbddbe48b5fc1055d8c371c2c2305823a6374d48a",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-header-image-refs.hwpx",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.967207+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 12879
+      },
+      "result_sha256": "372bea33686ffed2a8a443c7e8b226ad29fcfc4c62ad46807159156d79bf281f",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":12879,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-header-image-refs.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "22-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-image-bullet-newyear.hwpx",
+      "input_sha256": "8e13dc6fdd47d018add40ac8dd0ad70bdbe68bf13a2fb5b3fe3498b347a26475",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-image-bullet-newyear.hwpx",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:00.993174+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "19c0ec2cd23f00f42019ebe2fc96eb1863df5be5193bde54669274bd4d06720a",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-image-bullet-newyear.hwpx\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "23-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-image-bullet-newyear.hwpx",
+      "input_sha256": "8e13dc6fdd47d018add40ac8dd0ad70bdbe68bf13a2fb5b3fe3498b347a26475",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-image-bullet-newyear.hwpx",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:01.010147+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "d67eacfafa18e4b5f70950cc1abaef9b31701217c8ff746ed29b425a0f5d6369",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-image-bullet-newyear.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "23-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-image-bullet-newyear.hwpx",
+      "input_sha256": "8e13dc6fdd47d018add40ac8dd0ad70bdbe68bf13a2fb5b3fe3498b347a26475",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-image-bullet-newyear.hwpx",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:01.019410+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 2651
+      },
+      "result_sha256": "3da6f63d23633f473ea2220d3e653e7a837f9cc57deb26ba68f64d108415d6af",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":2651,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/semanticist21-20261105/roundtrip/candidate-image-bullet-newyear.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "23-unicode.json"
+    },
+    {
+      "input": "mydocs/pr/assets/semanticist21-20261105/roundtrip/section-tabs-two-sections.hwpx",
+      "input_sha256": "8212c848e98c05ea2c797f83048f9c97960f87d1143ded10c849d6bb77d1be75",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/semanticist21-20261105/roundtrip/section-tabs-two-sections.hwpx",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:01.033267+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "7dfb47b51f947625b8cfd92cee590a96958e78dd5f909dc211096e3c9302ea5f",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"mydocs/pr/assets/semanticist21-20261105/roundtrip/section-tabs-two-sections.hwpx\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "24-hidden-text.json"
+    },
+    {
+      "input": "mydocs/pr/assets/semanticist21-20261105/roundtrip/section-tabs-two-sections.hwpx",
+      "input_sha256": "8212c848e98c05ea2c797f83048f9c97960f87d1143ded10c849d6bb77d1be75",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/semanticist21-20261105/roundtrip/section-tabs-two-sections.hwpx",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:01.037560+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "a16e6d683e67f3dae55dea5d574fdf2408bce8301774e76bf4d804dbf4af34af",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"mydocs/pr/assets/semanticist21-20261105/roundtrip/section-tabs-two-sections.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "24-injection.json"
+    },
+    {
+      "input": "mydocs/pr/assets/semanticist21-20261105/roundtrip/section-tabs-two-sections.hwpx",
+      "input_sha256": "8212c848e98c05ea2c797f83048f9c97960f87d1143ded10c849d6bb77d1be75",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/semanticist21-20261105/roundtrip/section-tabs-two-sections.hwpx",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:01.047835+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 124
+      },
+      "result_sha256": "80be80818a01d061599b5f38cec01f40bebc3c43ca540ed2a8b2837b3b9185b3",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":124,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"mydocs/pr/assets/semanticist21-20261105/roundtrip/section-tabs-two-sections.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "24-unicode.json"
+    },
+    {
+      "input": "tests/fixtures/border_line_types/borders.hwp",
+      "input_sha256": "49566c073210994953b02a0d1e178636ba038c3e7e432f436266f9762407052f",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "tests/fixtures/border_line_types/borders.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:01.054121+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "cd935ba37f4ea5ee0ded8b176e2ebb1ce84b7a60abd48e7f82c699d636e100f0",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"tests/fixtures/border_line_types/borders.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "25-hidden-text.json"
+    },
+    {
+      "input": "tests/fixtures/border_line_types/borders.hwp",
+      "input_sha256": "49566c073210994953b02a0d1e178636ba038c3e7e432f436266f9762407052f",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "tests/fixtures/border_line_types/borders.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:01.060947+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "aebf536a0dcd063d6b547636e439952f314474c0d7d3e33f96034d390eb33861",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"tests/fixtures/border_line_types/borders.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "25-injection.json"
+    },
+    {
+      "input": "tests/fixtures/border_line_types/borders.hwp",
+      "input_sha256": "49566c073210994953b02a0d1e178636ba038c3e7e432f436266f9762407052f",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "tests/fixtures/border_line_types/borders.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:01.067517+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 849
+      },
+      "result_sha256": "a8751bd89bd901c9261d17be4d06e37190144e73185e60af5fd21c78efd7679c",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":849,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"tests/fixtures/border_line_types/borders.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "25-unicode.json"
+    },
+    {
+      "input": "tests/fixtures/cell_diagonal_shapes/diagonal-shape-codes.hwp",
+      "input_sha256": "cbe355d679ca96ee7d68306393fdce54342a73e3b75707a827c5dcab78be813e",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "tests/fixtures/cell_diagonal_shapes/diagonal-shape-codes.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:01.077999+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "14a9c7c95e4657ccb131eaedca8e0b4cd24e72e25f0096c7f83ec4f8e7549623",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"tests/fixtures/cell_diagonal_shapes/diagonal-shape-codes.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "26-hidden-text.json"
+    },
+    {
+      "input": "tests/fixtures/cell_diagonal_shapes/diagonal-shape-codes.hwp",
+      "input_sha256": "cbe355d679ca96ee7d68306393fdce54342a73e3b75707a827c5dcab78be813e",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "tests/fixtures/cell_diagonal_shapes/diagonal-shape-codes.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:01.080805+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "92b77853f203ce12ed4b44182261f3c7cf6faf04de3cbac89ad65d786b2f9749",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"tests/fixtures/cell_diagonal_shapes/diagonal-shape-codes.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "26-injection.json"
+    },
+    {
+      "input": "tests/fixtures/cell_diagonal_shapes/diagonal-shape-codes.hwp",
+      "input_sha256": "cbe355d679ca96ee7d68306393fdce54342a73e3b75707a827c5dcab78be813e",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "tests/fixtures/cell_diagonal_shapes/diagonal-shape-codes.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:01.093540+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 335
+      },
+      "result_sha256": "1c1d9e90f19d498c4707cb5615f6fbdd95ebce05da6854b61f2b626ee19e43d0",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":335,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"tests/fixtures/cell_diagonal_shapes/diagonal-shape-codes.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "26-unicode.json"
+    },
+    {
+      "input": "tests/fixtures/header_footer_numbering/header-numbering.hwp",
+      "input_sha256": "88f02207f746bf1888d965afd32ca1123e04e3d6e12becb877bbf50e1a79816b",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "tests/fixtures/header_footer_numbering/header-numbering.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:01.098450+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "b911541eb80b48e21de2e1bd4c15d2306a509328a009f15b60e22cf1ac8ed180",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"tests/fixtures/header_footer_numbering/header-numbering.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "27-hidden-text.json"
+    },
+    {
+      "input": "tests/fixtures/header_footer_numbering/header-numbering.hwp",
+      "input_sha256": "88f02207f746bf1888d965afd32ca1123e04e3d6e12becb877bbf50e1a79816b",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "tests/fixtures/header_footer_numbering/header-numbering.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:01.106435+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "5e715dff911b52e24c82505da94141626821cac7dfb26de08da8a2eb51cd35d8",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"tests/fixtures/header_footer_numbering/header-numbering.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "27-injection.json"
+    },
+    {
+      "input": "tests/fixtures/header_footer_numbering/header-numbering.hwp",
+      "input_sha256": "88f02207f746bf1888d965afd32ca1123e04e3d6e12becb877bbf50e1a79816b",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "tests/fixtures/header_footer_numbering/header-numbering.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:01.109829+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 92
+      },
+      "result_sha256": "15d13388cd84612bcf9da5efda9d34c63621ad282394b6a3bde0a380b847917e",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":92,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"tests/fixtures/header_footer_numbering/header-numbering.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "27-unicode.json"
+    },
+    {
+      "input": "tests/fixtures/rowspan_staggered_heights/equal-height-partial-block.hwp",
+      "input_sha256": "a0b4e465ba880cd0be611f84a3db69fa38b64b31cfc9a807f9a2fc86a998228d",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "tests/fixtures/rowspan_staggered_heights/equal-height-partial-block.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:01.121812+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "604d337594fb46656c6eac9b3e18e54e67f330d3eb9b0917e4456c1fb0aa84d9",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"tests/fixtures/rowspan_staggered_heights/equal-height-partial-block.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "28-hidden-text.json"
+    },
+    {
+      "input": "tests/fixtures/rowspan_staggered_heights/equal-height-partial-block.hwp",
+      "input_sha256": "a0b4e465ba880cd0be611f84a3db69fa38b64b31cfc9a807f9a2fc86a998228d",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "tests/fixtures/rowspan_staggered_heights/equal-height-partial-block.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:01.122406+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "2766565e0a8c327f72b7b0cbb43c43b3d5f63621cdf18f392fa34ad1b2d6c7e0",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"tests/fixtures/rowspan_staggered_heights/equal-height-partial-block.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "28-injection.json"
+    },
+    {
+      "input": "tests/fixtures/rowspan_staggered_heights/equal-height-partial-block.hwp",
+      "input_sha256": "a0b4e465ba880cd0be611f84a3db69fa38b64b31cfc9a807f9a2fc86a998228d",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "tests/fixtures/rowspan_staggered_heights/equal-height-partial-block.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:01.149891+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 5823
+      },
+      "result_sha256": "28828968d30e944a5bc1e37df71ac18d7c408fa1af787913a07a5bbc9503eb56",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":5823,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"tests/fixtures/rowspan_staggered_heights/equal-height-partial-block.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "28-unicode.json"
+    },
+    {
+      "input": "tests/fixtures/section_default_tab_spacing/tab-spacing-16000.hwp",
+      "input_sha256": "d93a381f2b55796700a569f4e344742ee57e573a0daa431252e7c89473a8d2c4",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "tests/fixtures/section_default_tab_spacing/tab-spacing-16000.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:01.159158+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "d87cee57ab4387369272261fa6ad0d4c640be9b6420653a16a6b67f5b2b85f7f",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"tests/fixtures/section_default_tab_spacing/tab-spacing-16000.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "29-hidden-text.json"
+    },
+    {
+      "input": "tests/fixtures/section_default_tab_spacing/tab-spacing-16000.hwp",
+      "input_sha256": "d93a381f2b55796700a569f4e344742ee57e573a0daa431252e7c89473a8d2c4",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "tests/fixtures/section_default_tab_spacing/tab-spacing-16000.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:01.170801+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "95b63585250ca65cdb80d28df085eb32a4796ccfe53e483798237434c2dec16e",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"tests/fixtures/section_default_tab_spacing/tab-spacing-16000.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "29-injection.json"
+    },
+    {
+      "input": "tests/fixtures/section_default_tab_spacing/tab-spacing-16000.hwp",
+      "input_sha256": "d93a381f2b55796700a569f4e344742ee57e573a0daa431252e7c89473a8d2c4",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "tests/fixtures/section_default_tab_spacing/tab-spacing-16000.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:01.174811+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 62
+      },
+      "result_sha256": "d25ce6c1417d5588300b42ea2f738612a27fb1a66764eb2b62c360736b834d0b",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":62,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"tests/fixtures/section_default_tab_spacing/tab-spacing-16000.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "29-unicode.json"
+    },
+    {
+      "input": "tests/fixtures/section_start_page_number/start-number-10.hwp",
+      "input_sha256": "905fc3d65af8c4a8fbb7b3fbb4262ce9384adfd7ac94da6a56f77c4abd1a61cc",
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "hidden-text",
+        "tests/fixtures/section_start_page_number/start-number-10.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:01.185960+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "hiddenCharCount": 0
+      },
+      "result_sha256": "fe80b9639cbb7032d8426de6f5769d230b87d320df17799702d7bc4c2bc80e97",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"hiddenCharCount\":0,\"hiddenText\":[],\"includeOffPage\":false,\"schemaVersion\":\"1.0\",\"source\":\"tests/fixtures/section_start_page_number/start-number-10.hwp\",\"thresholdPt\":1.0,\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "30-hidden-text.json"
+    },
+    {
+      "input": "tests/fixtures/section_start_page_number/start-number-10.hwp",
+      "input_sha256": "905fc3d65af8c4a8fbb7b3fbb4262ce9384adfd7ac94da6a56f77c4abd1a61cc",
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "injection",
+        "tests/fixtures/section_start_page_number/start-number-10.hwp",
+        "--json",
+        "--include-fields",
+        "--min-confidence",
+        "low"
+      ],
+      "start": "2026-11-04T18:34:01.186770+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "signalCount": 0
+      },
+      "result_sha256": "ba8e0c9f01cf33cf5136ff55903a116cefd5e7b423f6c8f6c0b836c225523e9a",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"highestConfidence\":null,\"includeFields\":true,\"injectionSignals\":[],\"minConfidence\":\"low\",\"scanScopes\":[\"body\",\"tableCell\",\"textBox\",\"equation\",\"footnote\",\"endnote\",\"header\",\"footer\",\"caption\",\"fieldName\",\"fieldGuide\",\"fieldCommand\",\"hiddenComment\",\"fieldMemo\"],\"schemaVersion\":\"1.0\",\"signalCount\":0,\"source\":\"tests/fixtures/section_start_page_number/start-number-10.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "30-injection.json"
+    },
+    {
+      "input": "tests/fixtures/section_start_page_number/start-number-10.hwp",
+      "input_sha256": "905fc3d65af8c4a8fbb7b3fbb4262ce9384adfd7ac94da6a56f77c4abd1a61cc",
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/final-native/rhwp",
+        "inspect",
+        "unicode",
+        "tests/fixtures/section_start_page_number/start-number-10.hwp",
+        "--json"
+      ],
+      "start": "2026-11-04T18:34:01.201499+00:00",
+      "exit": 0,
+      "clean": true,
+      "counts": {
+        "findingCount": 0,
+        "scannedChars": 300
+      },
+      "result_sha256": "c1921fee82bfae4470cce24335f2421027d2ac77c8f90f60d51fd19310520799",
+      "stderr": "",
+      "raw_stdout": "{\"clean\":true,\"findingCount\":0,\"findings\":[],\"kindCounts\":{\"bidi_override\":0,\"confusable\":0,\"tag_char\":0,\"zero_width\":0},\"kindFilter\":\"all\",\"scannedChars\":300,\"schemaVersion\":\"1.0\",\"severityCounts\":{\"high\":0,\"low\":0,\"medium\":0},\"source\":\"tests/fixtures/section_start_page_number/start-number-10.hwp\",\"untrustedContent\":false,\"untrustedFields\":[]}\n",
+      "temporary_result_file": "30-unicode.json"
+    }
+  ],
+  "new_or_changed_samples_paths": [],
+  "scope": "31 new fixtures/roundtrip documents outside samples/, all three production CLI detectors; no filtering or exceptions"
+}

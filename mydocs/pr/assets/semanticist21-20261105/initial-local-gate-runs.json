@@ -1,0 +1,22 @@
+[
+  {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--tests",
+      "--test-threads",
+      "4",
+      "--no-fail-fast"
+    ],
+    "start": "2026-11-04T18:10:56.206070+00:00",
+    "end": "2026-11-04T18:41:31.899706+00:00",
+    "exit": 100,
+    "head": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+    "font_environment": "minimal-font-prefix.json",
+    "security_inputs": 31
+  }
+]

@@ -1,0 +1,185 @@
+[
+  {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--tests",
+      "--test-threads",
+      "6",
+      "--no-fail-fast"
+    ],
+    "start": "2026-11-04T18:42:30.690744+00:00",
+    "end": "2026-11-04T18:54:45.375130+00:00",
+    "exit": 0,
+    "head": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+    "font_environment": "minimal-font-prefix.json",
+    "security_samples_control": 1,
+    "additional_cli_scan_documents": 31
+  },
+  {
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--lib"
+    ],
+    "start": "2026-11-04T18:54:45.375378+00:00",
+    "end": "2026-11-04T19:00:12.061653+00:00",
+    "exit": 0,
+    "head": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+    "font_environment": "minimal-font-prefix.json",
+    "security_samples_control": 1,
+    "additional_cli_scan_documents": 31
+  },
+  {
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_2225_missing_picture_placeholder",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--features",
+      "native-skia"
+    ],
+    "start": "2026-11-04T19:00:12.061949+00:00",
+    "end": "2026-11-04T19:04:47.619528+00:00",
+    "exit": 0,
+    "head": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+    "font_environment": "minimal-font-prefix.json",
+    "security_samples_control": 1,
+    "additional_cli_scan_documents": 31
+  },
+  {
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "render_p37_direct_pdf_export",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--features",
+      "native-skia"
+    ],
+    "start": "2026-11-04T19:04:47.619830+00:00",
+    "end": "2026-11-04T19:05:03.226242+00:00",
+    "exit": 0,
+    "head": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+    "font_environment": "minimal-font-prefix.json",
+    "security_samples_control": 1,
+    "additional_cli_scan_documents": 31
+  },
+  {
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "start": "2026-11-04T19:05:03.226548+00:00",
+    "end": "2026-11-04T19:05:27.656746+00:00",
+    "exit": 0,
+    "head": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+    "font_environment": "minimal-font-prefix.json",
+    "security_samples_control": 1,
+    "additional_cli_scan_documents": 31
+  },
+  {
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "start": "2026-11-04T19:05:27.657057+00:00",
+    "end": "2026-11-04T19:06:14.263262+00:00",
+    "exit": 0,
+    "head": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+    "font_environment": "minimal-font-prefix.json",
+    "security_samples_control": 1,
+    "additional_cli_scan_documents": 31
+  },
+  {
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "rhwp",
+      "--lib",
+      "--target",
+      "wasm32-unknown-unknown",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "start": "2026-11-04T19:06:14.263578+00:00",
+    "end": "2026-11-04T19:06:58.201442+00:00",
+    "exit": 0,
+    "head": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+    "font_environment": "minimal-font-prefix.json",
+    "security_samples_control": 1,
+    "additional_cli_scan_documents": 31
+  },
+  {
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace"
+    ],
+    "start": "2026-11-04T19:06:58.201776+00:00",
+    "end": "2026-11-04T19:07:31.246662+00:00",
+    "exit": 0,
+    "head": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+    "font_environment": "minimal-font-prefix.json",
+    "security_samples_control": 1,
+    "additional_cli_scan_documents": 31
+  },
+  {
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "start": "2026-11-04T19:07:31.247068+00:00",
+    "end": "2026-11-04T19:08:36.628840+00:00",
+    "exit": 0,
+    "head": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+    "font_environment": "minimal-font-prefix.json",
+    "security_samples_control": 1,
+    "additional_cli_scan_documents": 31
+  },
+  {
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "e96b500e3ea259c821f05440f0388355916a9e9b"
+    ],
+    "start": "2026-11-04T19:08:36.629298+00:00",
+    "end": "2026-11-04T19:08:37.422403+00:00",
+    "exit": 1,
+    "head": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+    "font_environment": "minimal-font-prefix.json",
+    "security_samples_control": 1,
+    "additional_cli_scan_documents": 31
+  }
+]

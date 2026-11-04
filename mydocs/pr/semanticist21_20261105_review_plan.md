@@ -30,9 +30,9 @@
 
 각 job의 실제 annotation·step·시각·로그를 확인했다. 해당 실패 로그에서 assertion·컴파일 오류는 발견하지 않았다. 실패를 PASS로 바꾸지 않으며 미실행 검사는 미실행이다. 최신 base는 이미 Lint 45분·archive builder 60분 정책을 가진다. 기여자 코드 재작업 댓글 대신 현재 정책과 통합 후보에서 필수 검증을 수행하는 메인터너 경로를 선택한다. 60분 checkout 정체는 단순 예산 연장으로 해결됐다고 주장하지 않는다. 제품·검사 명령·상한은 이번 조사만으로 바꾸지 않는다.
 
-## 충돌 보정 방침 초안
+## 승인된 충돌 보정 방침
 
-로컬 사전 검증 4.2의 작업지시자 결정 대상이다. 아직 충돌을 해소하지 않았다.
+작업지시자는 2026-11-05에 “기존 계약 보존·메인터너 보정”을 승인했다. 아래 방침의 통합과 실제 보정은 완료했으며 원 기여 merge와 메인터너 수정 commit을 구분했다. 최종 검증·판정은 [검토 결과](semanticist21_20261105_review.md)에서 갱신한다.
 
 1. #8326 네 파일: 최신 `Bullet::image_reference`, `hwpx_image_without_ref`, 그림 효과와 오류 처리, streaming writer·Storage 예산, HWPX 기본 문단 모양 scope를 유지한다. HWP 그림 글머리표는 #8438→#8517의 기존 해결 범위와 원 입력을 먼저 대조한다. 남은 header 그림 ID 정규화와 참조 바이트 보존을 통합하며 오래된 모델 가정을 복원하지 않는다. 기존에 해결된 범위와 새 보정을 구분한다.
 2. #8359 한 파일: 최신 fallible style resolution·Storage·HWP3 native 출처·TTF/HFT 선택을 유지하며 구역 기본 탭 처리를 통합한다. 첫 구역 값을 모든 구역에 쓰는 원 PR의 제한은 실제 두 구역 경계와 사양으로 검토하고, 새 결함을 만들면 보정하거나 원 PR별로 보류/해제 조건을 기록한다.
@@ -47,3 +47,5 @@
 5. #8347의 행 높이 측정/배치·분할/후속 내용, #8349의 Native/SVG/Canvas2D/CanvasKit 기하·run 위상, 구역/번호/대각선/테두리의 정상 대조군을 실제 실행한다. 관련 없는 대형 재작성으로 범위를 늘리지 않는다.
 6. 필수 최종 Rust lint 묶음·suite/unit 정책·최소 글꼴 focused/전체 release-test·Native 공식 3종·최적화 fresh WASM·해당 Studio 검사와 실제 브라우저·입력 commit/보안 확인을 완료한다. 조판 영향이 있으므로 최종 head에서 Native 편람 383쪽 `--handbook-gate`를 통과한다.
 7. 원 PR별 최종 review·검증 증적·CI 처리 판단·필요한 댓글을 준비한다. 통합 후보가 준비되면 exact SHA·증거와 함께 원격 push/Open PR/CI/self-review/merge 실행안을 구체화한다. 필수 증거·회귀 실패는 완료로 대신하지 않는다.
+
+로컬 통합의 원 head·merge commit·추가 보정 ancestry는 [원 기여 보존 기록](assets/semanticist21-20261105/contribution-ancestry.json)에 있다. 원격 실행은 본 계획의 별도 승인 범위를 유지한다.

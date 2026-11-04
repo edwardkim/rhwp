@@ -1,0 +1,454 @@
+{
+  "comparisons": [
+    {
+      "key": "rowspan_staggered_heights",
+      "backend": "native",
+      "pages": 7,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "rowspan_staggered_heights",
+      "backend": "wasm",
+      "pages": 7,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "section_start_page_number",
+      "backend": "native",
+      "pages": 4,
+      "max_drop_pp": -0.47,
+      "over2pp_drop": []
+    },
+    {
+      "key": "section_start_page_number",
+      "backend": "wasm",
+      "pages": 4,
+      "max_drop_pp": -0.49,
+      "over2pp_drop": []
+    },
+    {
+      "key": "section_default_tab_spacing",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": -9.28,
+      "over2pp_drop": []
+    },
+    {
+      "key": "section_default_tab_spacing",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": -9.16,
+      "over2pp_drop": []
+    },
+    {
+      "key": "cell_diagonal_shapes",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": -2.43,
+      "over2pp_drop": []
+    },
+    {
+      "key": "cell_diagonal_shapes",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": -2.45,
+      "over2pp_drop": []
+    },
+    {
+      "key": "border_line_types",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": -24.14,
+      "over2pp_drop": []
+    },
+    {
+      "key": "border_line_types",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": -24.5,
+      "over2pp_drop": []
+    },
+    {
+      "key": "header_footer_numbering",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": -8.54,
+      "over2pp_drop": []
+    },
+    {
+      "key": "header_footer_numbering",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": -8.52,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-body-emphasis-36pt",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-body-emphasis-36pt",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-body-top-36pt",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-body-top-36pt",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-cell-top-10-36pt",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-cell-top-10-36pt",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-emphasis-probe-1",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-emphasis-probe-1",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-emphasis-probe-2",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-emphasis-probe-2",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-emphasis-probe-3",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-emphasis-probe-3",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-emphasis-probe-4",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-emphasis-probe-4",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-emphasis-probe-5",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-emphasis-probe-5",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-emphasis-probe-6",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-emphasis-probe-6",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-0",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-0",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-1",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-1",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-10",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-10",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-2",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-2",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-3",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": -0.54,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-3",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": -0.53,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-4",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-4",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-5",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-5",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-6",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-6",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-7",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-7",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-8",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-8",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-9",
+      "backend": "native",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "decoration-top-probe-shape-9",
+      "backend": "wasm",
+      "pages": 1,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "header-image-refs",
+      "backend": "native",
+      "pages": 17,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "header-image-refs",
+      "backend": "wasm",
+      "pages": 17,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "image-bullet-newyear",
+      "backend": "native",
+      "pages": 3,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "image-bullet-newyear",
+      "backend": "wasm",
+      "pages": 3,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "jpeg-sandbox",
+      "backend": "native",
+      "pages": 17,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "jpeg-sandbox",
+      "backend": "wasm",
+      "pages": 17,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "equation-flow",
+      "backend": "native",
+      "pages": 22,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "equation-flow",
+      "backend": "wasm",
+      "pages": 22,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "roundtrip-header-image-refs",
+      "backend": "native",
+      "pages": 17,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "roundtrip-header-image-refs",
+      "backend": "wasm",
+      "pages": 17,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "roundtrip-image-bullet-newyear",
+      "backend": "native",
+      "pages": 3,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    },
+    {
+      "key": "roundtrip-image-bullet-newyear",
+      "backend": "wasm",
+      "pages": 3,
+      "max_drop_pp": 0.0,
+      "over2pp_drop": []
+    }
+  ],
+  "pages_per_backend": 114,
+  "over2pp_drops": 0
+}

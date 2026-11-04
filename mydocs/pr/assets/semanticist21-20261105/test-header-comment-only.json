@@ -1,0 +1,19 @@
+{
+  "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "files": [
+    {
+      "path": "tests/cases/renderer_public_contracts.rs",
+      "changes": "module documentation comments only",
+      "non_doc_comment_bytes_identical_to_runtime_source": true,
+      "previous_blob": "fa243054f7825be9ea11870e0a766d45a4dbdd8f",
+      "current_sha256": "7f321deb49b38fe9ef1bdd3f4e54f35529b22ce0c4da2048df96763fa5c8eb92"
+    },
+    {
+      "path": "tests/cases/equation_flow_metrics_cache.rs",
+      "changes": "module documentation comments only",
+      "non_doc_comment_bytes_identical_to_runtime_source": true,
+      "previous_blob": "b017d9d6763f173ad35dad4680bfa4a0033771ce",
+      "current_sha256": "c33e14cb4c071cd2f14e7350fbe58188dd54e2b8237638a974d0711483e9ece3"
+    }
+  ]
+}

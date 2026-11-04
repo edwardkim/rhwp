@@ -1,3 +1,9 @@
+//! 검사 유형: 고정형 API 단위·첨자 계산 계약; 실물 페이지의 절대 좌표 핀 없음.
+//! 주석 갱신: 2026-11-05T04:27:53+09:00; Git 직전 파일 변경: 5b36dbd078acd5add18592511682ce268dd66e82 2026-10-28T22:00:33+09:00.
+//! src/renderer/mod.rs의 기존 공개 API 검사 5개를 기대값 변경 없이 자동 수집 integration suite로 옮겼다.
+//! backend 이름·7200 HWPUNIT/inch·A4 원본 단위·기존 공유 첨자 계산을 검사하며 시각 fixture는 없다.
+//! 실물 Native/fresh WASM raw는 이 산술 API 검사의 측정값이 아니다. 실물 출력 검증은 PR별 TSV와 분리한다.
+//!
 //! 공개 렌더링 API의 백엔드 선택·좌표 변환·첨자 계약.
 
 use rhwp::renderer::{hwpunit_to_px, px_to_hwpunit, RenderBackend, TextStyle};

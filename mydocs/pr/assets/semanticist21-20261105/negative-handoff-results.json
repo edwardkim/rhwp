@@ -1,0 +1,46 @@
+[
+  {
+    "case": "old",
+    "exit": 101,
+    "source_sha256": "923812d4172ac44ce5bb055ed978a745548869085289f64a57346c2d068e526c",
+    "command": [
+      "rustc",
+      "--edition=2021",
+      "--test",
+      "-O",
+      "-C",
+      "overflow-checks=off",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/negative-handoff-old.rs",
+      "-L",
+      "dependency=/home/edward/mygithub/rhwp/target/pr-review/release-test/deps",
+      "-o",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/negative-handoff-old",
+      "--extern",
+      "quick_xml=/home/edward/mygithub/rhwp/target/pr-review/release-test/deps/libquick_xml-c421b5236f18f2ca.rlib",
+      "--extern",
+      "image=/home/edward/mygithub/rhwp/target/pr-review/release-test/deps/libimage-b9e2ddf248f54b11.rlib"
+    ]
+  },
+  {
+    "case": "fixed",
+    "exit": 0,
+    "source_sha256": "9809fcb40c76b39611bcfe23fdccd2d4dd5f992c7d3c68af320f7b5706d3a57e",
+    "command": [
+      "rustc",
+      "--edition=2021",
+      "--test",
+      "-O",
+      "-C",
+      "overflow-checks=off",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/negative-handoff-fixed.rs",
+      "-L",
+      "dependency=/home/edward/mygithub/rhwp/target/pr-review/release-test/deps",
+      "-o",
+      "/home/edward/mygithub/rhwp/output/pr-review/semanticist21-20261105/negative-handoff-fixed",
+      "--extern",
+      "quick_xml=/home/edward/mygithub/rhwp/target/pr-review/release-test/deps/libquick_xml-c421b5236f18f2ca.rlib",
+      "--extern",
+      "image=/home/edward/mygithub/rhwp/target/pr-review/release-test/deps/libimage-b9e2ddf248f54b11.rlib"
+    ]
+  }
+]

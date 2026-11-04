@@ -1,0 +1,80 @@
+[
+  {
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--prepare"
+    ],
+    "start": "2026-11-04T17:25:54.772243+00:00",
+    "end": "2026-11-04T17:25:56.184733+00:00",
+    "exit": 0,
+    "head": "2f44d7d0ab",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "22947f6a90c998e95fa51238d5b907a0ebd37162"
+    ],
+    "start": "2026-11-04T17:25:56.185145+00:00",
+    "end": "2026-11-04T17:25:57.040206+00:00",
+    "exit": 0,
+    "head": "2f44d7d0ab",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "command": [
+      "node",
+      "scripts/rust-unit-test-tiers.mjs",
+      "--check",
+      "--base-ref",
+      "22947f6a90c998e95fa51238d5b907a0ebd37162"
+    ],
+    "start": "2026-11-04T17:25:57.040502+00:00",
+    "end": "2026-11-04T17:26:07.475828+00:00",
+    "exit": 0,
+    "head": "2f44d7d0ab",
+    "font_environment": "minimal-font-prefix.json"
+  },
+  {
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--test-threads",
+      "4",
+      "--no-fail-fast",
+      "--test",
+      "regression_suite_002",
+      "--test",
+      "regression_suite_006",
+      "--test",
+      "regression_suite_007",
+      "--test",
+      "regression_suite_013",
+      "--test",
+      "regression_suite_018",
+      "--test",
+      "regression_suite_019",
+      "--test",
+      "regression_suite_026",
+      "--test",
+      "regression_suite_027",
+      "--test",
+      "regression_suite_028",
+      "-E",
+      "test(/(^|::)section_default_tab_spacing::/) | test(/(^|::)rowspan_staggered_content_heights::/) | test(/(^|::)hwpx_export_header_image_refs::/) | test(/(^|::)equation_flow_metrics_cache::/) | test(/(^|::)equation_render_cache_contract::/) | test(/(^|::)bottom_dash_dot_hancom::/) | test(/(^|::)section_start_page_number::/) | test(/(^|::)cell_diagonal_shape_codes::/) | test(/(^|::)text_border_3d_line_types::/) | test(/(^|::)header_paragraph_numbering::/) | test(/(^|::)renderer_public_contracts::/)"
+    ],
+    "start": "2026-11-04T17:26:07.476143+00:00",
+    "end": "2026-11-04T17:34:12.022715+00:00",
+    "exit": 0,
+    "head": "2f44d7d0ab",
+    "font_environment": "minimal-font-prefix.json"
+  }
+]
