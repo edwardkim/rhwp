@@ -344,3 +344,33 @@ Clippy는 `issue_8543_leading_tac_shape_line.rs`의 문서 목록 뒤 빈 문단
 PR #8585/통합 PR #8601의 글상자 TAC 그림별 소유 줄·말미 공백 정렬이 추가됐다.
 기존 측정은 고정 제품의 과거 실행으로 보존하고, 새 base로 리베이스한 뒤 실제 소비 경로의
 적용·비적용과 기존 39 PR의 개선 유지 여부를 대조한다. 본인 열린 PR은 0건이다.
+
+
+## 새 base 22947f6a90 리베이스와 개별 판정 현황 — 2026-11-05
+
+이전 head `9ed985e958`의 로컬 144개 커밋을 `22947f6a90` 위로 리베이스했다.
+새 코드 head는 `a7e5ce7112`이며 충돌은 없었다. `git range-diff --abbrev=40`의
+144개 항목이 모두 `=`이므로 기존 패치를 삭제·변경하지 않았다. 원 PR/SHA 대응표도
+새 매핑으로 합성해 과거 source SHA와 실제 적용 SHA를 구분한다.
+
+새 base의 실제 제품 변경은 `model/paragraph.rs`, `layout/paragraph_layout.rs`,
+`layout/shape_layout.rs`다. PR #8285의 이동한 번호 자리표 중복 계상 방지와
+PR #8585/통합 PR #8601의 글상자 다중 그림 소유 줄·공통 말미 공백 정렬을 보존한다.
+본문 가운데 정렬은 기존 조건을 helper로 추출한 것이며, `last_inline_object_pos.is_some()`은
+호출자가 비어 있지 않은 TAC 위치 목록의 최댓값을 전달하는 조건과 대응한다.
+새 그림 배치 계획은 글상자 안 TAC 개체가 여러 composed line에 속한 경우에 적용된다.
+번호 자리표 변경은 문단 나누기·저장·재열기 경로에서 검증한다.
+
+충돌이 없으면 전체 비교를 다시 하지 않는 작업지시자의 범위를 적용한다. 기존 전체 측정의
+고정 제품·입력·PDF 출처를 유지하고, 새 base의 적용·비적용 경로와 영향 사례를 새 제품에서
+집중 확인한다. 기존 TSV를 새 head에서 다시 출력한 값으로 바꿔 기록하지 않는다.
+Rust는 새 공통 제품 코드와 추가 검사를 포함해 필수 게이트를 순차 실행하며, 동일 Cargo target을
+중복 사용하지 않는다. `a7e5ce7112`의 fmt·suite prepare/check·unit tier check는 exit 0이며
+번호 자리표 집중 검사를 실행 중이다. 같은 제품의 Native/fresh WASM 고정 작업도 후속 대기한다.
+
+진행 현황은 체리픽 39/39 PR, 개별 리뷰 문서 39개다. 문서의 수용 가능 판정은 37개,
+‘수용 가능 — 최종 공통 검증 대기’를 명시한 것은 PR #8408·#8530의 2개다.
+개별 보정 사유의 보류는 없지만 최신 base 이후 최종 승인은 아직 0개다. 기존 판정문을
+새 head의 최종 승인으로 집계하지 않는다. 원격 PR 생성·push·approve·close는 실행하지 않았다.
+진행 감사와 원시 검증 기록은 ignored output의 `logs/pr39-progress-20261105.json`,
+`logs/rebase-22947f6a90-result.json`, `logs/rebase-a7e5ce7112-rust-worker.json`에 있다.
