@@ -1,4 +1,22 @@
-//! [#8493] 관계형 회귀 — 여러 쪽에 걸친 표가 쪽 중간에서 끝나면, 뒤 문단의 저장 vpos 는 표
+//! 관계형·고정형(쪽수·내용 소속 또는 원본 속성 계약): PR #8496 · PR #8505의 정식 회귀.
+//! 주석 갱신: 2026-11-04T13:59:19+09:00; 직전 파일 변경: 2026-11-03T19:41:06+09:00 (`5a091f479c46629e6991607ecac5c6d05fd0f9c5`).
+//! 현재 통합 측정 근거 시작
+//! 측정일 2026-11-04, 제품 코드 `dc87f4fa2e`(리베이스 전 통합 후보).
+//! 96 DPI, Native Skia/fresh WASM Canvas, `visual_sweep.py --silhouette-only`의
+//! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣).
+//! 입력 `samples/issue8493/table_tail.hwp`; 독립 Print `pdf/issue8493_table_tail-2020.pdf`.
+//! 전체 3쪽, 전쪽 최저 Native 100.00% / fresh WASM 100.00%.
+//! 주장 2쪽 raw: Native 100.00% / fresh WASM 100.00%.
+//! 원본·TSV·대응 쪽 review/overlay: `mydocs/pr/pr_8496_review.md`.
+//! 입력 `samples/issue8501/child_product_safety_rule.hwp`; 독립 Print `pdf/issue8501_child_product_safety_rule-2020.pdf`.
+//! 전체 19쪽, 전쪽 최저 Native 99.78% / fresh WASM 99.80%.
+//! 주장 6쪽 raw: Native 99.86% / fresh WASM 99.82%.
+//! 원본·TSV·대응 쪽 review/overlay: `mydocs/pr/pr_8505_review.md`.
+//! 전쪽 통과와 실제 절대 px 좌표 고정은 다른 조건이다. 본문 assertion의 원본 단위·상대 관계를 구분한다.
+//! 현재 통합 측정 근거 끝
+//!
+//! 아래는 선행 작성자의 구현 설명과 당시 관측 기록이며 현재 측정은 위를 따른다.
+//!
 //! 꼬리 쪽의 좌표다. 그 값을 표 host 줄(표가 시작한 앞 쪽의 좌표)과 비교한 «되감김» 으로
 //! 문단을 통째로 넘기지 않는다. 이 쪽의 흐름 위치와 비교한다.
 //!

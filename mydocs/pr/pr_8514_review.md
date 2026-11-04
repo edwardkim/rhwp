@@ -28,7 +28,7 @@
 
 | 입력 · 독립 Print PDF | Native 전쪽 TSV · 최저 raw | fresh WASM 전쪽 TSV · 최저 raw |
 | --- | --- | --- |
-| [wanju_goods_forms.hwp](../../samples/issue8511/wanju_goods_forms.hwp) · [issue8511_wanju_goods_forms-2020.pdf](../../pdf/issue8511_wanju_goods_forms-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8514/pr8514-wanju_goods_forms-ef1440bb-native.tsv) · 100.0% (26쪽) | 산출 중 · 미측정 (?쪽) |
+| [wanju_goods_forms.hwp](../../samples/issue8511/wanju_goods_forms.hwp) · [issue8511_wanju_goods_forms-2020.pdf](../../pdf/issue8511_wanju_goods_forms-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8514/pr8514-wanju_goods_forms-ef1440bb-native.tsv) · 100.0% (26쪽) | [TSV](assets/planet6897_20261103/pr_8514/pr8514-wanju_goods_forms-ef1440bb-wasm.tsv) · 100.0% (26쪽) |
 
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
@@ -57,7 +57,7 @@ typeset의 저장 프레임 전환 상태와 다음 문단의 쪽 경계 수용�
 
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
-| `wanju_goods_forms.hwp` 6쪽 · 새 저장 프레임 경계 | 100.00% · [review](assets/planet6897_20261103/pr_8514/pr8514-claim-p006-wanju_goods_forms-native-review.png) / [overlay](assets/planet6897_20261103/pr_8514/pr8514-claim-p006-wanju_goods_forms-native-overlay.png) | 미측정 · 산출 중 / 산출 중 |
+| `wanju_goods_forms.hwp` 6쪽 · 새 저장 프레임 경계 | 100.00% · [review](assets/planet6897_20261103/pr_8514/pr8514-claim-p006-wanju_goods_forms-native-review.png) / [overlay](assets/planet6897_20261103/pr_8514/pr8514-claim-p006-wanju_goods_forms-native-overlay.png) | 100.00% · [review](assets/planet6897_20261103/pr_8514/pr8514-claim-p006-wanju_goods_forms-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8514/pr8514-claim-p006-wanju_goods_forms-wasm-overlay.png) |
 
 ## 남은 검증
 

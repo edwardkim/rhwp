@@ -28,7 +28,7 @@
 
 | 입력 · 독립 Print PDF | Native 전쪽 TSV · 최저 raw | fresh WASM 전쪽 TSV · 최저 raw |
 | --- | --- | --- |
-| [child_product_safety_rule.hwp](../../samples/issue8501/child_product_safety_rule.hwp) · [issue8501_child_product_safety_rule-2020.pdf](../../pdf/issue8501_child_product_safety_rule-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8505/pr8505-child_product_safety_rule-5645416e-native.tsv) · 99.78% (19쪽) | 산출 중 · 미측정 (?쪽) |
+| [child_product_safety_rule.hwp](../../samples/issue8501/child_product_safety_rule.hwp) · [issue8501_child_product_safety_rule-2020.pdf](../../pdf/issue8501_child_product_safety_rule-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8505/pr8505-child_product_safety_rule-5645416e-native.tsv) · 99.78% (19쪽) | [TSV](assets/planet6897_20261103/pr_8505/pr8505-child_product_safety_rule-5645416e-wasm.tsv) · 99.8% (19쪽) |
 
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
@@ -57,7 +57,7 @@ typeset/table의 저장 재시작 경계·요구 높이·예산과 실제 이어
 
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
-| `child_product_safety_rule.hwp` 6쪽 · 셀 단위 나눔 저장 재시작 | 99.86% · [review](assets/planet6897_20261103/pr_8505/pr8505-claim-p006-child_product_safe-native-review.png) / [overlay](assets/planet6897_20261103/pr_8505/pr8505-claim-p006-child_product_safe-native-overlay.png) | 미측정 · 산출 중 / 산출 중 |
+| `child_product_safety_rule.hwp` 6쪽 · 셀 단위 나눔 저장 재시작 | 99.86% · [review](assets/planet6897_20261103/pr_8505/pr8505-claim-p006-child_product_safe-native-review.png) / [overlay](assets/planet6897_20261103/pr_8505/pr8505-claim-p006-child_product_safe-native-overlay.png) | 99.82% · [review](assets/planet6897_20261103/pr_8505/pr8505-claim-p006-child_product_safe-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8505/pr8505-claim-p006-child_product_safe-wasm-overlay.png) |
 
 ## 남은 검증
 

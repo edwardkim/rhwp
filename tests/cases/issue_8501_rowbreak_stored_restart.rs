@@ -1,4 +1,18 @@
-//! [#8501] 관계형 회귀 — 셀 단위로 나누는 표의 쪽 끝 행은, 셀 저장 줄이 새 원점(vpos 0)에서
+//! 관계형·고정형(쪽수·내용 소속 또는 원본 속성 계약): PR #8505의 정식 회귀.
+//! 주석 갱신: 2026-11-04T13:59:19+09:00; 직전 파일 변경: 2026-11-03T19:42:35+09:00 (`624aeaed3d211188ba6d8894632f952ee16bb281`).
+//! 현재 통합 측정 근거 시작
+//! 측정일 2026-11-04, 제품 코드 `dc87f4fa2e`(리베이스 전 통합 후보).
+//! 96 DPI, Native Skia/fresh WASM Canvas, `visual_sweep.py --silhouette-only`의
+//! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣).
+//! 입력 `samples/issue8501/child_product_safety_rule.hwp`; 독립 Print `pdf/issue8501_child_product_safety_rule-2020.pdf`.
+//! 전체 19쪽, 전쪽 최저 Native 99.78% / fresh WASM 99.80%.
+//! 주장 6쪽 raw: Native 99.86% / fresh WASM 99.82%.
+//! 원본·TSV·대응 쪽 review/overlay: `mydocs/pr/pr_8505_review.md`.
+//! 전쪽 통과와 실제 절대 px 좌표 고정은 다른 조건이다. 본문 assertion의 원본 단위·상대 관계를 구분한다.
+//! 현재 통합 측정 근거 끝
+//!
+//! 아래는 선행 작성자의 구현 설명과 당시 관측 기록이며 현재 측정은 위를 따른다.
+//!
 //! 다시 시작하는 자리(한/글이 그 행을 나눈 기록)에서 나눈다. 셀 내용이 남은 예산에 겨우
 //! 들어간다는 이유로 행 전체를 앞 쪽에 두지 않는다.
 //!

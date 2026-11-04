@@ -1,4 +1,24 @@
-//! [#8381] PDF 편집 우선 가져오기가 원본 PDF 줄 위치와 한/글 재조판을 함께 맞춘다.
+//! 관계형: PR #8408의 정식 회귀.
+//! 주석 갱신: 2026-11-04T13:59:19+09:00; 직전 파일 변경: 2026-11-03T19:35:10+09:00 (`6da5cebfb8b407a2a63b15f82518140850815614`).
+//! 현재 통합 측정 근거 시작
+//! 측정일 2026-11-04, 제품 코드 `dc87f4fa2e`(리베이스 전 통합 후보).
+//! 96 DPI, Native Skia/fresh WASM Canvas, `visual_sweep.py --silhouette-only`의
+//! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣).
+//! 입력 `mydocs/pr/assets/issue_8381/integration_20261103/editable-2010.hwpx`; 독립 Print `samples/21_언어_기출_편집가능본-2010.pdf`.
+//! 전체 16쪽, 전쪽 최저 Native 97.80% / fresh WASM 98.08%.
+//! 주장 14쪽 raw: Native 98.93% / fresh WASM 98.91%.
+//! 입력 `mydocs/pr/assets/issue_8381/integration_20261103/editable-2020.hwpx`; 독립 Print `samples/21_언어_기출_편집가능본-2020.pdf`.
+//! 전체 15쪽, 전쪽 최저 Native 99.19% / fresh WASM 99.18%.
+//! 입력 `mydocs/pr/assets/issue_8381/integration_20261103/editable-plain.hwpx`; 독립 Print `samples/21_언어_기출_편집가능본.pdf`.
+//! 전체 15쪽, 전쪽 최저 Native 98.42% / fresh WASM 96.14%.
+//! 주장 5쪽 raw: Native 99.86% / fresh WASM 99.56%.
+//! 주장 13쪽 raw: Native 99.73% / fresh WASM 96.14%.
+//! 원본·TSV·대응 쪽 review/overlay: `mydocs/pr/pr_8408_review.md`.
+//! 전쪽 통과와 실제 절대 px 좌표 고정은 다른 조건이다. 본문 assertion의 원본 단위·상대 관계를 구분한다.
+//! 현재 통합 측정 근거 끝
+//!
+//! 아래는 선행 작성자의 구현 설명과 당시 관측 기록이며 현재 측정은 위를 따른다.
+//!
 //!
 //! 공백만 있는 한 줄 문단은 잉크가 없어 그 글자 상자가 점유한 내용이 아니다. 무표기본 지문
 //! 상자 맨 위의 « » 줄(글자 11.04pt)은 다음 본문 줄까지 띠가 짧은데, 수정 전에는 글자 높이

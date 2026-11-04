@@ -1,4 +1,20 @@
-//! 관계형·고정형(쪽수): 세로 오프셋으로 본문 아래끝보다 아래에 놓인 문단 기준 자리차지 개체는 흐름을 밀지 않는다.
+//! 관계형·고정형(쪽수·내용 소속 또는 원본 속성 계약): PR #8465의 정식 회귀.
+//! 주석 갱신: 2026-11-04T13:59:19+09:00; 직전 파일 변경: 2026-11-03T19:38:07+09:00 (`557f691d86d993e5beb081e28ed00b421f7e5dd0`).
+//! 현재 통합 측정 근거 시작
+//! 측정일 2026-11-04, 제품 코드 `dc87f4fa2e`(리베이스 전 통합 후보).
+//! 96 DPI, Native Skia/fresh WASM Canvas, `visual_sweep.py --silhouette-only`의
+//! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣).
+//! 입력 `samples/issue8462/156552561-offpage-textbox.hwpx`; 독립 Print `pdf/issue8462/156552561-offpage-textbox-2022.pdf`.
+//! 전체 3쪽, 전쪽 최저 Native 97.99% / fresh WASM 99.29%.
+//! 입력 `samples/issue8462/156633674-offpage-logo.hwpx`; 독립 Print `pdf/issue8462/156633674-offpage-logo-2022.pdf`.
+//! 전체 1쪽, 전쪽 최저 Native 100.00% / fresh WASM 100.00%.
+//! 주장 1쪽 raw: Native 100.00% / fresh WASM 100.00%.
+//! 원본·TSV·대응 쪽 review/overlay: `mydocs/pr/pr_8465_review.md`.
+//! 전쪽 통과와 실제 절대 px 좌표 고정은 다른 조건이다. 본문 assertion의 원본 단위·상대 관계를 구분한다.
+//! 현재 통합 측정 근거 끝
+//!
+//! 아래는 선행 작성자의 구현 설명과 당시 관측 기록이며 현재 측정은 위를 따른다.
+//!
 //! 주석 갱신: 2026-11-02T13:53:29+09:00 (새 파일).
 //! 2026-11-02 측정 raw(96dpi, PDFium, 색상 경계 보정 전 2px 실루엣, `visual_sweep.py --silhouette-only`),
 //! 기준은 각 원본의 독립 한컴 2022 12.0.0.4547 Print(pdf/issue8462/*-2022.pdf):

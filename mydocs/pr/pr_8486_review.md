@@ -48,6 +48,8 @@ typeset/state/notes.rs의 각주 조각 요구 높이·예약과 paragraph의 �
 
 P4G 실문서 각주 쪽과 line_reserve의 A30·A40·A46 경계를 비교한다. 참조 줄의 이월, 여러 각주, 구분선·여백 및 뒤 본문의 누락·중복을 함께 보호한다.
 
+관련 정식 회귀 파일: [issue_8468_footnote_line_reserve.rs](../../tests/cases/issue_8468_footnote_line_reserve.rs)
+
 ## 검증 입력 커밋 확인
 
 이번 통합의 [입력·PDF SHA-256 대조표](assets/planet6897_20261103/input-integrity.tsv)에 있는

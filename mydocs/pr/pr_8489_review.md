@@ -48,6 +48,8 @@ typeset의 단 시작 TAC 표 원점과 layout의 표·뒤 문단 배치가 같�
 
 S1·S2·S3의 위 간격 순서와 S4 표 위끝의 관계를 확인한다. 입법예고문 5·13쪽을 별도 실물 대조로 연결하며 선행 세로쓰기 표 PR의 결과도 함께 유지한다.
 
+관련 정식 회귀 파일: [issue_8474_column_top_tac_spacing.rs](../../tests/cases/issue_8474_column_top_tac_spacing.rs)
+
 ## 검증 입력 커밋 확인
 
 이번 통합의 [입력·PDF SHA-256 대조표](assets/planet6897_20261103/input-integrity.tsv)에 있는

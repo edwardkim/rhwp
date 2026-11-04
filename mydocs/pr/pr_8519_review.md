@@ -28,7 +28,7 @@
 
 | 입력 · 독립 Print PDF | Native 전쪽 TSV · 최저 raw | fresh WASM 전쪽 TSV · 최저 raw |
 | --- | --- | --- |
-| [table_host_top.hwp](../../samples/issue8518/table_host_top.hwp) · [issue8518_table_host_top-2020.pdf](../../pdf/issue8518_table_host_top-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8519/pr8519-table_host_top-2c1f0934-native.tsv) · 100.0% (2쪽) | 산출 중 · 미측정 (?쪽) |
+| [table_host_top.hwp](../../samples/issue8518/table_host_top.hwp) · [issue8518_table_host_top-2020.pdf](../../pdf/issue8518_table_host_top-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8519/pr8519-table_host_top-2c1f0934-native.tsv) · 100.0% (2쪽) | [TSV](assets/planet6897_20261103/pr_8519/pr8519-table_host_top-2c1f0934-wasm.tsv) · 100.0% (2쪽) |
 
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
@@ -57,7 +57,7 @@ table_host_top의 2쪽 표와 AFTER 문단, 1쪽에 표 조각이 없는 관계�
 
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
-| `table_host_top.hwp` 2쪽 · 빈 표 host 쪽 경계 | 100.00% · [review](assets/planet6897_20261103/pr_8519/pr8519-claim-p002-table_host_top-native-review.png) / [overlay](assets/planet6897_20261103/pr_8519/pr8519-claim-p002-table_host_top-native-overlay.png) | 미측정 · 산출 중 / 산출 중 |
+| `table_host_top.hwp` 2쪽 · 빈 표 host 쪽 경계 | 100.00% · [review](assets/planet6897_20261103/pr_8519/pr8519-claim-p002-table_host_top-native-review.png) / [overlay](assets/planet6897_20261103/pr_8519/pr8519-claim-p002-table_host_top-native-overlay.png) | 100.00% · [review](assets/planet6897_20261103/pr_8519/pr8519-claim-p002-table_host_top-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8519/pr8519-claim-p002-table_host_top-wasm-overlay.png) |
 
 ## 남은 검증
 

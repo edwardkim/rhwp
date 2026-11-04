@@ -48,6 +48,8 @@ typeset의 하단 틀 높이 생산과 예약·남은 본문 예산·실제 표 
 
 서로 다른 band_host_spacing 변형과 뒤 본문을 같은 Print 쪽에 연결한다. 선행 TAC 표·누름틀 줄 구성 PR의 정상 경계도 함께 유지한다.
 
+관련 정식 회귀 파일: [issue_8525_page_bottom_band_host_spacing.rs](../../tests/cases/issue_8525_page_bottom_band_host_spacing.rs)
+
 ## 검증 입력 커밋 확인
 
 이번 통합의 [입력·PDF SHA-256 대조표](assets/planet6897_20261103/input-integrity.tsv)에 있는
@@ -59,7 +61,7 @@ typeset의 하단 틀 높이 생산과 예약·남은 본문 예산·실제 표 
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
 | `band_host_spacing_23.hwpx` 1쪽 · 쪽 아래 고정 틀 띠 높이 | 100.00% · [review](assets/planet6897_20261103/pr_8531/pr8531-claim-p001-band_host_spacing_-c20c16-native-review.png) / [overlay](assets/planet6897_20261103/pr_8531/pr8531-claim-p001-band_host_spacing_-c20c16-native-overlay.png) | 100.00% · [review](assets/planet6897_20261103/pr_8531/pr8531-claim-p001-band_host_spacing_-c20c16-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8531/pr8531-claim-p001-band_host_spacing_-c20c16-wasm-overlay.png) |
-| `band_host_spacing_24.hwpx` 1쪽 · 다른 쪽 아래 고정 틀 띠 높이 | 100.00% · [review](assets/planet6897_20261103/pr_8531/pr8531-claim-p001-band_host_spacing_-ce6196-native-review.png) / [overlay](assets/planet6897_20261103/pr_8531/pr8531-claim-p001-band_host_spacing_-ce6196-native-overlay.png) | 100.00% · 산출 중 / 산출 중 |
+| `band_host_spacing_24.hwpx` 1쪽 · 다른 쪽 아래 고정 틀 띠 높이 | 100.00% · [review](assets/planet6897_20261103/pr_8531/pr8531-claim-p001-band_host_spacing_-ce6196-native-review.png) / [overlay](assets/planet6897_20261103/pr_8531/pr8531-claim-p001-band_host_spacing_-ce6196-native-overlay.png) | 100.00% · [review](assets/planet6897_20261103/pr_8531/pr8531-claim-p001-band_host_spacing_-ce6196-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8531/pr8531-claim-p001-band_host_spacing_-ce6196-wasm-overlay.png) |
 
 ## 남은 검증
 

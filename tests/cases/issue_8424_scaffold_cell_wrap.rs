@@ -1,4 +1,21 @@
-//! 관계형·고정형 (관계: 셀 글자 보존·셀 포함·행 높이 대소 / 고정: 독립 한컴 PDF 전체 쪽수).
+//! 관계형·고정형(쪽수·내용 소속 또는 원본 속성 계약): PR #8429의 정식 회귀.
+//! 주석 갱신: 2026-11-04T13:59:19+09:00; 직전 파일 변경: 2026-11-03T19:36:33+09:00 (`756ca7812f269c0c383622eb0d688d98910da8b7`).
+//! 현재 통합 측정 근거 시작
+//! 측정일 2026-11-04, 제품 코드 `dc87f4fa2e`(리베이스 전 통합 후보).
+//! 96 DPI, Native Skia/fresh WASM Canvas, `visual_sweep.py --silhouette-only`의
+//! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣).
+//! 입력 `mydocs/pr/assets/issue_8424/inputs/after/business_plan.hwpx`; 독립 Print `pdf/issue-8424/business_plan-2024.pdf`.
+//! 전체 3쪽, 전쪽 최저 Native 99.47% / fresh WASM 99.51%.
+//! 주장 2쪽 raw: Native 100.00% / fresh WASM 100.00%.
+//! 입력 `mydocs/pr/assets/issue_8424/inputs/after/cellwrap.hwpx`; 독립 Print `pdf/issue-8424/cellwrap-2024.pdf`.
+//! 전체 1쪽, 전쪽 최저 Native 100.00% / fresh WASM 100.00%.
+//! 주장 1쪽 raw: Native 100.00% / fresh WASM 100.00%.
+//! 원본·TSV·대응 쪽 review/overlay: `mydocs/pr/pr_8429_review.md`.
+//! 전쪽 통과와 실제 절대 px 좌표 고정은 다른 조건이다. 본문 assertion의 원본 단위·상대 관계를 구분한다.
+//! 현재 통합 측정 근거 끝
+//!
+//! 아래는 선행 작성자의 구현 설명과 당시 관측 기록이며 현재 측정은 위를 따른다.
+//!
 //! 주석 갱신: 2026-11-01T15:47:00+09:00 (새 파일).
 //! 2026-11-01 측정 raw(`visual_sweep.py --silhouette-only`, 96dpi, pdftoppm, `--compat 2024`):
 //! cellwrap 1쪽 Native 99.99% / fresh WASM 100.00% (전1쪽, 한컴 1쪽);

@@ -29,7 +29,7 @@
 | 입력 · 독립 Print PDF | Native 전쪽 TSV · 최저 raw | fresh WASM 전쪽 TSV · 최저 raw |
 | --- | --- | --- |
 | [156602236-press-logo.hwpx](../../samples/issue8491/156602236-press-logo.hwpx) · [156602236-press-logo-2022.pdf](../../pdf/issue8491/156602236-press-logo-2022.pdf) | [TSV](assets/planet6897_20261103/pr_8498/pr8498-156602236-press-logo-c6da8735-native.tsv) · 99.41% (3쪽) | [TSV](assets/planet6897_20261103/pr_8498/pr8498-156602236-press-logo-c6da8735-wasm.tsv) · 99.48% (3쪽) |
-| [156736331-press-logo.hwpx](../../samples/issue8491/156736331-press-logo.hwpx) · [156736331-press-logo-2022.pdf](../../pdf/issue8491/156736331-press-logo-2022.pdf) | [TSV](assets/planet6897_20261103/pr_8498/pr8498-156736331-press-logo-31768298-native.tsv) · 92.45% (5쪽) | 산출 중 · 미측정 (?쪽) |
+| [156736331-press-logo.hwpx](../../samples/issue8491/156736331-press-logo.hwpx) · [156736331-press-logo-2022.pdf](../../pdf/issue8491/156736331-press-logo-2022.pdf) | [TSV](assets/planet6897_20261103/pr_8498/pr8498-156736331-press-logo-31768298-native.tsv) · 92.45% (5쪽) | [TSV](assets/planet6897_20261103/pr_8498/pr8498-156736331-press-logo-31768298-wasm.tsv) · 93.05% (5쪽) |
 
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
@@ -58,9 +58,9 @@ typeset/controls/shape_flow.rs의 글줄·개체 점유 판정과 실제 개체 
 
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
-| `156602236-press-logo.hwpx` 1쪽 · 보도자료 로고 흐름 | 99.94% · [review](assets/planet6897_20261103/pr_8498/pr8498-claim-p001-156602236-press-lo-native-review.png) / [overlay](assets/planet6897_20261103/pr_8498/pr8498-claim-p001-156602236-press-lo-native-overlay.png) | 99.94% · 산출 중 / 산출 중 |
-| `156736331-press-logo.hwpx` 2쪽 · 보도자료 두 번째 로고 | 99.95% · [review](assets/planet6897_20261103/pr_8498/pr8498-claim-p002-156736331-press-lo-native-review.png) / [overlay](assets/planet6897_20261103/pr_8498/pr8498-claim-p002-156736331-press-lo-native-overlay.png) | 미측정 · 산출 중 / 산출 중 |
-| `156736331-press-logo.hwpx` 5쪽 · 보도자료 문서의 전쪽 최저 페이지 | 92.45% · [review](assets/planet6897_20261103/pr_8498/pr8498-claim-p005-156736331-press-lo-native-review.png) / [overlay](assets/planet6897_20261103/pr_8498/pr8498-claim-p005-156736331-press-lo-native-overlay.png) | 미측정 · 산출 중 / 산출 중 |
+| `156602236-press-logo.hwpx` 1쪽 · 보도자료 로고 흐름 | 99.94% · [review](assets/planet6897_20261103/pr_8498/pr8498-claim-p001-156602236-press-lo-native-review.png) / [overlay](assets/planet6897_20261103/pr_8498/pr8498-claim-p001-156602236-press-lo-native-overlay.png) | 99.94% · [review](assets/planet6897_20261103/pr_8498/pr8498-claim-p001-156602236-press-lo-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8498/pr8498-claim-p001-156602236-press-lo-wasm-overlay.png) |
+| `156736331-press-logo.hwpx` 2쪽 · 보도자료 두 번째 로고 | 99.95% · [review](assets/planet6897_20261103/pr_8498/pr8498-claim-p002-156736331-press-lo-native-review.png) / [overlay](assets/planet6897_20261103/pr_8498/pr8498-claim-p002-156736331-press-lo-native-overlay.png) | 99.99% · [review](assets/planet6897_20261103/pr_8498/pr8498-claim-p002-156736331-press-lo-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8498/pr8498-claim-p002-156736331-press-lo-wasm-overlay.png) |
+| `156736331-press-logo.hwpx` 5쪽 · 보도자료 문서의 전쪽 최저 페이지 | 92.45% · [review](assets/planet6897_20261103/pr_8498/pr8498-claim-p005-156736331-press-lo-native-review.png) / [overlay](assets/planet6897_20261103/pr_8498/pr8498-claim-p005-156736331-press-lo-native-overlay.png) | 93.05% · [review](assets/planet6897_20261103/pr_8498/pr8498-claim-p005-156736331-press-lo-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8498/pr8498-claim-p005-156736331-press-lo-wasm-overlay.png) |
 
 ## 남은 검증
 

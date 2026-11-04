@@ -28,7 +28,7 @@
 
 | 입력 · 독립 Print PDF | Native 전쪽 TSV · 최저 raw | fresh WASM 전쪽 TSV · 최저 raw |
 | --- | --- | --- |
-| [36316493-approval-body.hwpx](../../samples/issue8502/36316493-approval-body.hwpx) · [36316493-approval-body-2022.pdf](../../pdf/issue8502/36316493-approval-body-2022.pdf) | [TSV](assets/planet6897_20261103/pr_8508/pr8508-36316493-approval-body-554d73ae-native.tsv) · 99.87% (5쪽) | 산출 중 · 미측정 (?쪽) |
+| [36316493-approval-body.hwpx](../../samples/issue8502/36316493-approval-body.hwpx) · [36316493-approval-body-2022.pdf](../../pdf/issue8502/36316493-approval-body-2022.pdf) | [TSV](assets/planet6897_20261103/pr_8508/pr8508-36316493-approval-body-554d73ae-native.tsv) · 99.87% (5쪽) | [TSV](assets/planet6897_20261103/pr_8508/pr8508-36316493-approval-body-554d73ae-wasm.tsv) · 99.72% (5쪽) |
 
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
@@ -57,7 +57,7 @@ HWPX 결재문서의 표 뒤 간격과 정상 후행 줄 대조군을 확인한�
 
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
-| `36316493-approval-body.hwpx` 3쪽 · TAC 후행 간격 | 99.90% · [review](assets/planet6897_20261103/pr_8508/pr8508-claim-p003-36316493-approval--native-review.png) / [overlay](assets/planet6897_20261103/pr_8508/pr8508-claim-p003-36316493-approval--native-overlay.png) | 미측정 · 산출 중 / 산출 중 |
+| `36316493-approval-body.hwpx` 3쪽 · TAC 후행 간격 | 99.90% · [review](assets/planet6897_20261103/pr_8508/pr8508-claim-p003-36316493-approval--native-review.png) / [overlay](assets/planet6897_20261103/pr_8508/pr8508-claim-p003-36316493-approval--native-overlay.png) | 99.95% · [review](assets/planet6897_20261103/pr_8508/pr8508-claim-p003-36316493-approval--wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8508/pr8508-claim-p003-36316493-approval--wasm-overlay.png) |
 
 ## 남은 검증
 

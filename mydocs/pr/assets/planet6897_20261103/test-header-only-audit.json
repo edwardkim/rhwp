@@ -1,0 +1,166 @@
+{
+  "previous_commit": "e3986247e90a4f097b064e0938eee4e55264475c",
+  "count": 40,
+  "files": [
+    {
+      "file": "tests/cases/issue_8153_all_pages.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8153_kopub_circled_symbol.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8381_pdf_editable_blank_row.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8418_tac_table_line_trailing_spacing.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8419_batang_one_dot_leader_supplier.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8423_30396_recommendation_layout.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8424_scaffold_cell_wrap.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8425_default_outline_head_distance.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8432_declared_zero_textbox_list.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8435_pushed_anchor_line_float.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8439_props_json_whitespace.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8440_edit_keeps_table_host_gap.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8441_tac_shape_line_page_fit.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8446_reset_line_float_spill.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8458_text_line_tac_picture.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8462_offpage_float_pushdown.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8464_rowbreak_content_fit.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8467_approval_footer_anchor_line.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8468_footnote_line_reserve.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8470_vertical_cell_table_no_split.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8471_pushed_none_table_page_break.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8472_cell_picture_anchor.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8474_column_top_tac_spacing.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8478_span_closing_row_page_bottom.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8479_stored_ladder_missing_content.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8491_below_lines_float.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8493_table_tail_rewind.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8501_rowbreak_stored_restart.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8502_stored_tac_paragraph_spacing.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8503_nearfit_shrink_column_start.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8507_tac_declared_above_rows.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8510_whitespace_decoration_host.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8511_stored_frame_restart.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8518_table_host_near_top_reset.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8520_scaffold_table_restrict_in_page.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8525_page_bottom_band_host_spacing.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8529_rowbreak_exact_fit.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8532_rowspan_hard_break.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/issue_8543_leading_tac_shape_line.rs",
+      "non_doc_content_identical": true
+    },
+    {
+      "file": "tests/cases/scaffold_outline_numbering.rs",
+      "non_doc_content_identical": true
+    }
+  ]
+}

@@ -1,4 +1,20 @@
-//! 관계형·고정형: 기호 슬롯이 바탕(Batang)인 `․`(U+2024)는 Haansoft Batang 의 0.174em 전진을 쓴다(쪽수·출현 수는 고정).
+//! 관계형·고정형(쪽수·내용 소속 또는 원본 속성 계약): PR #8428의 정식 회귀.
+//! 주석 갱신: 2026-11-04T13:59:19+09:00; 직전 파일 변경: 2026-11-03T19:36:31+09:00 (`41eb40eb5a5b9082b5ab80a05e89404d3f5eb5ba`).
+//! 현재 통합 측정 근거 시작
+//! 측정일 2026-11-04, 제품 코드 `dc87f4fa2e`(리베이스 전 통합 후보).
+//! 96 DPI, Native Skia/fresh WASM Canvas, `visual_sweep.py --silhouette-only`의
+//! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣).
+//! 입력 `samples/issue2004_cell_image_stack.hwp`; 독립 Print `pdf/issue2004_cell_image_stack-hwp-2020.pdf`.
+//! 전체 8쪽, 전쪽 최저 Native 99.95% / fresh WASM 99.95%.
+//! 주장 1쪽 raw: Native 100.00% / fresh WASM 100.00%.
+//! 입력 `samples/issue2004_cell_image_stack.hwpx`; 독립 Print `pdf/issue2004_cell_image_stack-hwpx-2020.pdf`.
+//! 전체 8쪽, 전쪽 최저 Native 99.95% / fresh WASM 99.95%.
+//! 원본·TSV·대응 쪽 review/overlay: `mydocs/pr/pr_8428_review.md`.
+//! 전쪽 통과와 실제 절대 px 좌표 고정은 다른 조건이다. 본문 assertion의 원본 단위·상대 관계를 구분한다.
+//! 현재 통합 측정 근거 끝
+//!
+//! 아래는 선행 작성자의 구현 설명과 당시 관측 기록이며 현재 측정은 위를 따른다.
+//!
 //! 주석 갱신: 2026-11-01T14:52:05+09:00 (새 파일).
 //! 2026-11-01 측정 raw(96dpi, PDFium, 색상 경계 보정 전 2px 실루엣, `visual_sweep.py --silhouette-only`):
 //! samples/issue2004_cell_image_stack.hwp(pdf/issue2004_cell_image_stack-hwp-2020.pdf, 8쪽)

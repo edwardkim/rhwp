@@ -28,7 +28,7 @@
 
 | 입력 · 독립 Print PDF | Native 전쪽 TSV · 최저 raw | fresh WASM 전쪽 TSV · 최저 raw |
 | --- | --- | --- |
-| [156500952-k-startup-league.hwpx](../../samples/issue8510/156500952-k-startup-league.hwpx) · [156500952-k-startup-league-2022.pdf](../../pdf/issue8510/156500952-k-startup-league-2022.pdf) | [TSV](assets/planet6897_20261103/pr_8512/pr8512-156500952-k-startup-league-4c965793-native.tsv) · 99.26% (5쪽) | 산출 중 · 미측정 (?쪽) |
+| [156500952-k-startup-league.hwpx](../../samples/issue8510/156500952-k-startup-league.hwpx) · [156500952-k-startup-league-2022.pdf](../../pdf/issue8510/156500952-k-startup-league-2022.pdf) | [TSV](assets/planet6897_20261103/pr_8512/pr8512-156500952-k-startup-league-4c965793-native.tsv) · 99.26% (5쪽) | [TSV](assets/planet6897_20261103/pr_8512/pr8512-156500952-k-startup-league-4c965793-wasm.tsv) · 99.88% (5쪽) |
 
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
@@ -57,7 +57,7 @@ typeset의 문단 가시 글자 판정과 줄 점유 판정을 분리하고, 표
 
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
-| `156500952-k-startup-league.hwpx` 4쪽 · 공백 데코레이션 표 host | 99.89% · [review](assets/planet6897_20261103/pr_8512/pr8512-claim-p004-156500952-k-startu-native-review.png) / [overlay](assets/planet6897_20261103/pr_8512/pr8512-claim-p004-156500952-k-startu-native-overlay.png) | 미측정 · 산출 중 / 산출 중 |
+| `156500952-k-startup-league.hwpx` 4쪽 · 공백 데코레이션 표 host | 99.89% · [review](assets/planet6897_20261103/pr_8512/pr8512-claim-p004-156500952-k-startu-native-review.png) / [overlay](assets/planet6897_20261103/pr_8512/pr8512-claim-p004-156500952-k-startu-native-overlay.png) | 99.99% · [review](assets/planet6897_20261103/pr_8512/pr8512-claim-p004-156500952-k-startu-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8512/pr8512-claim-p004-156500952-k-startu-wasm-overlay.png) |
 
 ## 남은 검증
 

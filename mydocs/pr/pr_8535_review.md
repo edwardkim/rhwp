@@ -45,6 +45,8 @@ src/scaffold의 표 공통 속성이 HWPX 직렬화·재개방·페이지 배치
 
 각주를 포함한 scaffold 표 입력에서 저장 속성·재개방과 실제 한 쪽 출력을 확인한다. 일반 scaffold 표의 기존 배치와 내용 보존을 대조한다.
 
+관련 정식 회귀 파일: [issue_8520_scaffold_table_restrict_in_page.rs](../../tests/cases/issue_8520_scaffold_table_restrict_in_page.rs)
+
 ## 검증 입력 커밋 확인
 
 이번 통합의 [입력·PDF SHA-256 대조표](assets/planet6897_20261103/input-integrity.tsv)에 있는

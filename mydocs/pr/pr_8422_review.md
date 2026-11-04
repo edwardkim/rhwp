@@ -60,7 +60,7 @@ src/renderer/typeset.rs의 표 줄 전진과 src/renderer/layout.rs의 저장 �
 | --- | --- | --- |
 | `30026-safety-reform-toc.hwp` 3쪽 · TAC 표 줄간격 | 99.80% · [review](assets/planet6897_20261103/pr_8422/pr8422-claim-p003-30026-safety-refor-native-review.png) / [overlay](assets/planet6897_20261103/pr_8422/pr8422-claim-p003-30026-safety-refor-native-overlay.png) | 99.83% · [review](assets/planet6897_20261103/pr_8422/pr8422-claim-p003-30026-safety-refor-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8422/pr8422-claim-p003-30026-safety-refor-wasm-overlay.png) |
 | `30026-safety-reform-toc.hwp` 28쪽 · 안전개혁 목차의 전쪽 최저 페이지 | 97.52% · [review](assets/planet6897_20261103/pr_8422/pr8422-claim-p028-30026-safety-refor-native-review.png) / [overlay](assets/planet6897_20261103/pr_8422/pr8422-claim-p028-30026-safety-refor-native-overlay.png) | 97.52% · [review](assets/planet6897_20261103/pr_8422/pr8422-claim-p028-30026-safety-refor-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8422/pr8422-claim-p028-30026-safety-refor-wasm-overlay.png) |
-| `156487948-marine-pollution-law.hwp` 1쪽 · 해양오염방지법 표 간격 | 98.89% · [review](assets/planet6897_20261103/pr_8422/pr8422-marine-claim-p001-native-review.png) / [overlay](assets/planet6897_20261103/pr_8422/pr8422-marine-claim-p001-native-overlay.png) | 98.89% · 산출 중 / 산출 중 |
+| `156487948-marine-pollution-law.hwp` 1쪽 · 해양오염방지법 표 간격 | 98.89% · [review](assets/planet6897_20261103/pr_8422/pr8422-marine-claim-p001-native-review.png) / [overlay](assets/planet6897_20261103/pr_8422/pr8422-marine-claim-p001-native-overlay.png) | 98.89% · [review](assets/planet6897_20261103/pr_8422/pr8422-marine-claim-p001-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8422/pr8422-marine-claim-p001-wasm-overlay.png) |
 
 ## 남은 검증
 

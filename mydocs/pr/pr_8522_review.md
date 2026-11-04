@@ -54,6 +54,8 @@ composer의 공통 줄 구성 결과에서 개체 순서·행 높이·가용 너
 
 field_fit·field_over·rowbreak·인접 표 변형에서 줄 수용·이월과 뒤 내용 순서를 확인한다. 들어가는 경우와 넘는 경우를 같은 원본 단위로 구분한다.
 
+관련 정식 회귀 파일: [issue_8507_tac_declared_above_rows.rs](../../tests/cases/issue_8507_tac_declared_above_rows.rs)
+
 ## 검증 입력 커밋 확인
 
 이번 통합의 [입력·PDF SHA-256 대조표](assets/planet6897_20261103/input-integrity.tsv)에 있는

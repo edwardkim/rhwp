@@ -28,8 +28,8 @@
 
 | 입력 · 독립 Print PDF | Native 전쪽 TSV · 최저 raw | fresh WASM 전쪽 TSV · 최저 raw |
 | --- | --- | --- |
-| [1190000-200700045-nearfit-table-indent.hwp](../../samples/issue8503/1190000-200700045-nearfit-table-indent.hwp) · [1190000-200700045-nearfit-table-indent-2022.pdf](../../pdf/issue8503/1190000-200700045-nearfit-table-indent-2022.pdf) | [TSV](assets/planet6897_20261103/pr_8509/pr8509-1190000-200700045-nearfit-table-ind-ab008ceb-native.tsv) · 98.8% (1쪽) | 산출 중 · 미측정 (?쪽) |
-| [1490000-201000053-nearfit-table-indent.hwp](../../samples/issue8503/1490000-201000053-nearfit-table-indent.hwp) · [1490000-201000053-nearfit-table-indent-2022.pdf](../../pdf/issue8503/1490000-201000053-nearfit-table-indent-2022.pdf) | [TSV](assets/planet6897_20261103/pr_8509/pr8509-1490000-201000053-nearfit-table-ind-b003bbbc-native.tsv) · 100.0% (1쪽) | 산출 중 · 미측정 (?쪽) |
+| [1190000-200700045-nearfit-table-indent.hwp](../../samples/issue8503/1190000-200700045-nearfit-table-indent.hwp) · [1190000-200700045-nearfit-table-indent-2022.pdf](../../pdf/issue8503/1190000-200700045-nearfit-table-indent-2022.pdf) | [TSV](assets/planet6897_20261103/pr_8509/pr8509-1190000-200700045-nearfit-table-ind-ab008ceb-native.tsv) · 98.8% (1쪽) | [TSV](assets/planet6897_20261103/pr_8509/pr8509-1190000-200700045-nearfit-table-ind-ab008ceb-wasm.tsv) · 98.84% (1쪽) |
+| [1490000-201000053-nearfit-table-indent.hwp](../../samples/issue8503/1490000-201000053-nearfit-table-indent.hwp) · [1490000-201000053-nearfit-table-indent-2022.pdf](../../pdf/issue8503/1490000-201000053-nearfit-table-indent-2022.pdf) | [TSV](assets/planet6897_20261103/pr_8509/pr8509-1490000-201000053-nearfit-table-ind-b003bbbc-native.tsv) · 100.0% (1쪽) | [TSV](assets/planet6897_20261103/pr_8509/pr8509-1490000-201000053-nearfit-table-ind-b003bbbc-wasm.tsv) · 100.0% (1쪽) |
 
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
@@ -58,7 +58,7 @@ TAC 표의 근사 축소 여부는 첫 칸의 실제 저장 줄 오른끝을 근
 
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
-| `1190000-200700045-nearfit-table-indent.hwp` 1쪽 · 표 열 축소 판정 | 98.80% · [review](assets/planet6897_20261103/pr_8509/pr8509-claim-p001-1190000-200700045--native-review.png) / [overlay](assets/planet6897_20261103/pr_8509/pr8509-claim-p001-1190000-200700045--native-overlay.png) | 미측정 · 산출 중 / 산출 중 |
+| `1190000-200700045-nearfit-table-indent.hwp` 1쪽 · 표 열 축소 판정 | 98.80% · [review](assets/planet6897_20261103/pr_8509/pr8509-claim-p001-1190000-200700045--native-review.png) / [overlay](assets/planet6897_20261103/pr_8509/pr8509-claim-p001-1190000-200700045--native-overlay.png) | 98.84% · [review](assets/planet6897_20261103/pr_8509/pr8509-claim-p001-1190000-200700045--wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8509/pr8509-claim-p001-1190000-200700045--wasm-overlay.png) |
 
 ## 남은 검증
 

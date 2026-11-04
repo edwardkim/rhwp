@@ -1,4 +1,24 @@
-//! 관계형 (번호 끝↔본문 시작 거리와 글자 크기의 비, 같은 칸의 넘친 줄↔첫 줄 본문 시작·글자 보존, 비개요 번호 문단 불변).
+//! 관계형: PR #8433의 정식 회귀.
+//! 주석 갱신: 2026-11-04T13:59:19+09:00; 직전 파일 변경: 2026-11-03T19:36:40+09:00 (`17ebdb66b4c72bab53699ec40c6d0c9b111c8e26`).
+//! 현재 통합 측정 근거 시작
+//! 측정일 2026-11-04, 제품 코드 `dc87f4fa2e`(리베이스 전 통합 후보).
+//! 96 DPI, Native Skia/fresh WASM Canvas, `visual_sweep.py --silhouette-only`의
+//! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣).
+//! 입력 `mydocs/pr/assets/issue_8425/probe/levels.hwpx`; 독립 Print `pdf/issue-8425/levels-2024.pdf`.
+//! 전체 1쪽, 전쪽 최저 Native 91.97% / fresh WASM 92.21%.
+//! 주장 1쪽 raw: Native 91.97% / fresh WASM 92.21%.
+//! 입력 `mydocs/pr/assets/issue_8425/probe/levels.hwpx`; 독립 Print `pdf/issue-8425/levels-2020.pdf`.
+//! 전체 1쪽, 전쪽 최저 Native 91.85% / fresh WASM 92.03%.
+//! 주장 1쪽 raw: Native 91.85% / fresh WASM 92.03%.
+//! 입력 `samples/task3307/issue3307_outline_number.hwpx`; 독립 Print `pdf/task3307/issue3307_outline_number-2020.pdf`.
+//! 전체 9쪽, 전쪽 최저 Native 99.99% / fresh WASM 99.94%.
+//! 주장 7쪽 raw: Native 100.00% / fresh WASM 99.99%.
+//! 원본·TSV·대응 쪽 review/overlay: `mydocs/pr/pr_8433_review.md`.
+//! 전쪽 통과와 실제 절대 px 좌표 고정은 다른 조건이다. 본문 assertion의 원본 단위·상대 관계를 구분한다.
+//! 현재 통합 측정 근거 끝
+//!
+//! 아래는 선행 작성자의 구현 설명과 당시 관측 기록이며 현재 측정은 위를 따른다.
+//!
 //! 주석 갱신: 2026-11-01T19:05:00+09:00 (새 파일).
 //! 2026-11-01 측정 raw(`visual_sweep.py --silhouette-only`, 96dpi, pdftoppm, `--compat 2022`),
 //! `samples/task3307/issue3307_outline_number.hwpx` ↔ `pdf/task3307/issue3307_outline_number-2020.pdf`:

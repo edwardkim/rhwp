@@ -1,4 +1,22 @@
-//! 관계형·고정형(쪽수): TAC 표 문단 뒤 줄의 TAC 개체를 줄 높이만으로 쪽 끝에 수용하고, 그 줄의 그림은 저장 줄 원점에 둔다.
+//! 관계형·고정형(쪽수·내용 소속 또는 원본 속성 계약): PR #8444의 정식 회귀.
+//! 주석 갱신: 2026-11-04T13:59:19+09:00; 직전 파일 변경: 2026-11-03T19:36:50+09:00 (`8eaf7e441a922c4efaccfabcc3f62e4a02af0b24`).
+//! 현재 통합 측정 근거 시작
+//! 측정일 2026-11-04, 제품 코드 `dc87f4fa2e`(리베이스 전 통합 후보).
+//! 96 DPI, Native Skia/fresh WASM Canvas, `visual_sweep.py --silhouette-only`의
+//! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣).
+//! 입력 `samples/issue8441/156578788-tac-logo-line.hwp`; 독립 Print `pdf/issue8441/156578788-tac-logo-line-2022.pdf`.
+//! 전체 2쪽, 전쪽 최저 Native 99.61% / fresh WASM 99.56%.
+//! 주장 1쪽 raw: Native 99.88% / fresh WASM 99.95%.
+//! 입력 `samples/issue8441/156669499-tac-logo-line.hwpx`; 독립 Print `pdf/issue8441/156669499-tac-logo-line-2022.pdf`.
+//! 전체 1쪽, 전쪽 최저 Native 99.98% / fresh WASM 99.98%.
+//! 입력 `samples/issue8441/156715172-tac-table-picture.hwpx`; 독립 Print `pdf/issue8441/156715172-tac-table-picture-2022.pdf`.
+//! 전체 4쪽, 전쪽 최저 Native 99.09% / fresh WASM 99.10%.
+//! 원본·TSV·대응 쪽 review/overlay: `mydocs/pr/pr_8444_review.md`.
+//! 전쪽 통과와 실제 절대 px 좌표 고정은 다른 조건이다. 본문 assertion의 원본 단위·상대 관계를 구분한다.
+//! 현재 통합 측정 근거 끝
+//!
+//! 아래는 선행 작성자의 구현 설명과 당시 관측 기록이며 현재 측정은 위를 따른다.
+//!
 //! 주석 갱신: 2026-11-02T09:11:47+09:00 (새 파일).
 //! 2026-11-02 측정 raw(96dpi, PDFium, 색상 경계 보정 전 2px 실루엣, `visual_sweep.py --silhouette-only`),
 //! 기준은 각 원본의 독립 한컴 2022 12.0.0.4547 Print(pdf/issue8441/*-2022.pdf):

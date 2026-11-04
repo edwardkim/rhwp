@@ -1,4 +1,19 @@
-//! [#8529] 관계형 회귀 — HWPX 저장본의 셀 단위 나눔(RowBreak) 표에서 쪽 끝 행의 컷이 저장 첫
+//! 관계형·고정형(쪽수·내용 소속 또는 원본 속성 계약): PR #8530의 정식 회귀.
+//! 주석 갱신: 2026-11-04T13:59:19+09:00; 직전 파일 변경: 2026-11-03T19:43:25+09:00 (`b17a3becdd76270c215aba63121c8985d6363c53`).
+//! 현재 통합 측정 근거 시작
+//! 측정일 2026-11-04, 제품 코드 `dc87f4fa2e`(리베이스 전 통합 후보).
+//! 96 DPI, Native Skia/fresh WASM Canvas, `visual_sweep.py --silhouette-only`의
+//! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣).
+//! 입력 `samples/issue8529/rowbreak_exact_fit.hwpx`; 독립 Print `pdf/issue8529_rowbreak_exact_fit-2020.pdf`.
+//! 전체 3쪽, 전쪽 최저 Native 90.68% / fresh WASM 90.59%.
+//! 주장 1쪽 raw: Native 90.68% / fresh WASM 90.59%.
+//! 주장 2쪽 raw: Native 100.00% / fresh WASM 100.00%.
+//! 원본·TSV·대응 쪽 review/overlay: `mydocs/pr/pr_8530_review.md`.
+//! 전쪽 통과와 실제 절대 px 좌표 고정은 다른 조건이다. 본문 assertion의 원본 단위·상대 관계를 구분한다.
+//! 현재 통합 측정 근거 끝
+//!
+//! 아래는 선행 작성자의 구현 설명과 당시 관측 기록이며 현재 측정은 위를 따른다.
+//!
 //! 조각 높이를 **정확히** 채우면 그 컷을 받는다. 같은 컷을 고른 비교 규칙(HU→px 반올림 잡음은
 //! 정확히 맞음)과 다르게 쪽 면적 초과 검사가 부동소수 잡음으로 거부해 한 줄을 넘기지 않는다.
 //!

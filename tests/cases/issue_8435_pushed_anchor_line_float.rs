@@ -1,4 +1,24 @@
-//! 관계형·고정형(쪽수): TAC 표 다음 줄에 앵커돼 그 줄을 밀어낸 자리차지 로고 개체를 표 아래 같은 쪽에 둔다.
+//! 관계형·고정형(쪽수·내용 소속 또는 원본 속성 계약): PR #8437의 정식 회귀.
+//! 주석 갱신: 2026-11-04T13:59:19+09:00; 직전 파일 변경: 2026-11-03T19:36:44+09:00 (`66151761f274f52fd9dfbea0e5c75509c68e3539`).
+//! 현재 통합 측정 근거 시작
+//! 측정일 2026-11-04, 제품 코드 `dc87f4fa2e`(리베이스 전 통합 후보).
+//! 96 DPI, Native Skia/fresh WASM Canvas, `visual_sweep.py --silhouette-only`의
+//! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣).
+//! 입력 `samples/issue8435/156618114-logo-textbox-offset.hwpx`; 독립 Print `pdf/issue8435/156618114-logo-textbox-offset-2022.pdf`.
+//! 전체 2쪽, 전쪽 최저 Native 99.14% / fresh WASM 99.10%.
+//! 주장 2쪽 raw: Native 99.95% / fresh WASM 99.95%.
+//! 입력 `samples/issue8435/156638890-logo-textbox.hwpx`; 독립 Print `pdf/issue8435/156638890-logo-textbox-2022.pdf`.
+//! 전체 3쪽, 전쪽 최저 Native 99.95% / fresh WASM 99.95%.
+//! 주장 3쪽 raw: Native 99.95% / fresh WASM 99.95%.
+//! 입력 `samples/issue8435/156770078-logo-table.hwpx`; 독립 Print `pdf/issue8435/156770078-logo-table-2022.pdf`.
+//! 전체 3쪽, 전쪽 최저 Native 99.93% / fresh WASM 99.96%.
+//! 주장 3쪽 raw: Native 99.98% / fresh WASM 99.98%.
+//! 원본·TSV·대응 쪽 review/overlay: `mydocs/pr/pr_8437_review.md`.
+//! 전쪽 통과와 실제 절대 px 좌표 고정은 다른 조건이다. 본문 assertion의 원본 단위·상대 관계를 구분한다.
+//! 현재 통합 측정 근거 끝
+//!
+//! 아래는 선행 작성자의 구현 설명과 당시 관측 기록이며 현재 측정은 위를 따른다.
+//!
 //! 주석 갱신: 2026-11-01T23:18:07+09:00 (새 파일).
 //! 2026-11-01 측정 raw(96dpi, PDFium, 색상 경계 보정 전 2px 실루엣, `visual_sweep.py --silhouette-only`),
 //! 기준은 각 원본의 독립 한컴 2022 12.0.0.4547 Print(pdf/issue8435/*-2022.pdf):

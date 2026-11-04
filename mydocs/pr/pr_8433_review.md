@@ -30,7 +30,7 @@
 | --- | --- | --- |
 | [levels.hwpx](assets/issue_8425/probe/levels.hwpx) · [levels-2024.pdf](../../pdf/issue-8425/levels-2024.pdf) | [TSV](assets/planet6897_20261103/pr_8433/pr8433-levels-d014d88d-native.tsv) · 91.97% (1쪽) | [TSV](assets/planet6897_20261103/pr_8433/pr8433-levels-d014d88d-wasm.tsv) · 92.21% (1쪽) |
 | [levels.hwpx](assets/issue_8425/probe/levels.hwpx) · [levels-2020.pdf](../../pdf/issue-8425/levels-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8433/pr8433-levels-493f24c1-native.tsv) · 91.85% (1쪽) | [TSV](assets/planet6897_20261103/pr_8433/pr8433-levels-493f24c1-wasm.tsv) · 92.03% (1쪽) |
-| [issue3307_outline_number.hwpx](../../samples/task3307/issue3307_outline_number.hwpx) · [issue3307_outline_number-2020.pdf](../../pdf/task3307/issue3307_outline_number-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8433/pr8433-issue3307_outline_number-8704d61b-native.tsv) · 99.99% (9쪽) | 산출 중 · 미측정 (?쪽) |
+| [issue3307_outline_number.hwpx](../../samples/task3307/issue3307_outline_number.hwpx) · [issue3307_outline_number-2020.pdf](../../pdf/task3307/issue3307_outline_number-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8433/pr8433-issue3307_outline_number-8704d61b-native.tsv) · 99.99% (9쪽) | [TSV](assets/planet6897_20261103/pr_8433/pr8433-issue3307_outline_number-8704d61b-fresh-wasm.tsv) · 99.94% (9쪽) |
 
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
@@ -60,8 +60,8 @@ levels probe와 issue3307 원본의 대응 줄에서 번호·본문의 상대 �
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
 | `levels.hwpx` 1쪽 · 기본 개요 머리 모양 | 91.97% · [review](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-07bae7-native-review.png) / [overlay](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-07bae7-native-overlay.png) | 92.21% · [review](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-07bae7-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-07bae7-wasm-overlay.png) |
-| `levels.hwpx` 1쪽 · 개요 머리 probe의 2020 Print 최저 페이지 | 91.97% · [review](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-d891f2-native-review.png) / [overlay](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-d891f2-native-overlay.png) | 92.21% · 산출 중 / 산출 중 |
-| `issue3307_outline_number.hwpx` 7쪽 · 개요 번호 본문 거리 | 100.00% · [review](assets/planet6897_20261103/pr_8433/pr8433-outline-claim-p007-wasm-native-review.png) / [overlay](assets/planet6897_20261103/pr_8433/pr8433-outline-claim-p007-wasm-native-overlay.png) | 미측정 · 산출 중 / 산출 중 |
+| `levels.hwpx` 1쪽 · 개요 머리 probe의 2020 Print 최저 페이지 | 91.97% · [review](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-d891f2-native-review.png) / [overlay](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-d891f2-native-overlay.png) | 92.21% · [review](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-d891f2-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-d891f2-wasm-overlay.png) |
+| `issue3307_outline_number.hwpx` 7쪽 · 개요 번호 본문 거리 | 100.00% · [review](assets/planet6897_20261103/pr_8433/pr8433-outline-claim-p007-wasm-native-review.png) / [overlay](assets/planet6897_20261103/pr_8433/pr8433-outline-claim-p007-wasm-native-overlay.png) | 99.99% · [review](assets/planet6897_20261103/pr_8433/pr8433-outline-claim-p007-wasm-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8433/pr8433-outline-claim-p007-wasm-wasm-overlay.png) |
 
 ## 남은 검증
 

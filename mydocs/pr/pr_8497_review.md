@@ -45,6 +45,8 @@ typeset의 행 요구 높이·허용 컷과 layout의 마지막 행·병합 칸 
 
 Q·R·S·U·V의 표 바닥 관계와 P의 정상 선언 높이를 비교한다. 3·9쪽 및 입법예고문 11쪽을 연결해 여러 병합 칸이 동시에 끝나는 경계를 확인한다.
 
+관련 정식 회귀 파일: [issue_8478_span_closing_row_page_bottom.rs](../../tests/cases/issue_8478_span_closing_row_page_bottom.rs)
+
 ## 검증 입력 커밋 확인
 
 이번 통합의 [입력·PDF SHA-256 대조표](assets/planet6897_20261103/input-integrity.tsv)에 있는

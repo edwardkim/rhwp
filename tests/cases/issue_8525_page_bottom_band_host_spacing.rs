@@ -1,4 +1,26 @@
-//! 관계형·고정형(쪽수): 쪽 아래 고정 틀의 띠(하단 배타 영역)는 그린 표 높이이고 host 문단 간격을 넣지 않는다.
+//! 관계형·고정형(쪽수·내용 소속 또는 원본 속성 계약): PR #8531의 정식 회귀.
+//! 주석 갱신: 2026-11-04T13:59:19+09:00; 직전 파일 변경: 2026-11-03T20:32:37+09:00 (`c2660b4cf79980b020e48a6f5c4f3707a480fcda`).
+//! 현재 통합 측정 근거 시작
+//! 측정일 2026-11-04, 제품 코드 `dc87f4fa2e`(리베이스 전 통합 후보).
+//! 96 DPI, Native Skia/fresh WASM Canvas, `visual_sweep.py --silhouette-only`의
+//! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣).
+//! 입력 `samples/issue8525/band_host_spacing_22.hwpx`; 독립 Print `pdf/issue8525/band_host_spacing_22-2020.pdf`.
+//! 전체 1쪽, 전쪽 최저 Native 100.00% / fresh WASM 100.00%.
+//! 입력 `samples/issue8525/band_host_spacing_23.hwpx`; 독립 Print `pdf/issue8525/band_host_spacing_23-2020.pdf`.
+//! 전체 1쪽, 전쪽 최저 Native 100.00% / fresh WASM 100.00%.
+//! 주장 1쪽 raw: Native 100.00% / fresh WASM 100.00%.
+//! 입력 `samples/issue8525/band_host_spacing_23.hwpx`; 독립 Print `pdf/issue8525/band_host_spacing_23-2024.pdf`.
+//! 전체 1쪽, 전쪽 최저 Native 100.00% / fresh WASM 100.00%.
+//! 주장 1쪽 raw: Native 100.00% / fresh WASM 100.00%.
+//! 입력 `samples/issue8525/band_host_spacing_24.hwpx`; 독립 Print `pdf/issue8525/band_host_spacing_24-2020.pdf`.
+//! 전체 2쪽, 전쪽 최저 Native 100.00% / fresh WASM 100.00%.
+//! 주장 1쪽 raw: Native 100.00% / fresh WASM 100.00%.
+//! 원본·TSV·대응 쪽 review/overlay: `mydocs/pr/pr_8531_review.md`.
+//! 전쪽 통과와 실제 절대 px 좌표 고정은 다른 조건이다. 본문 assertion의 원본 단위·상대 관계를 구분한다.
+//! 현재 통합 측정 근거 끝
+//!
+//! 아래는 선행 작성자의 구현 설명과 당시 관측 기록이며 현재 측정은 위를 따른다.
+//!
 //! 주석 갱신: 2026-11-03 18:30 KST (새 파일)
 //!
 //! 측정 근거(측정일 2026-11-03, `scripts/visual_sweep.py --silhouette-only --dpi 96`, 판정값

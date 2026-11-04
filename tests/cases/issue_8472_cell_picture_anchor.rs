@@ -1,4 +1,18 @@
-//! [#8472] 관계형 회귀 — 칸 안 자리차지(TopAndBottom, vert=문단) 그림.
+//! 관계형·고정형(쪽수·내용 소속 또는 원본 속성 계약): PR #8477의 정식 회귀.
+//! 주석 갱신: 2026-11-04T13:59:19+09:00; 직전 파일 변경: 2026-11-03T19:40:21+09:00 (`76ceb2574cb09aa510b04759a7fddc8a92f10298`).
+//! 현재 통합 측정 근거 시작
+//! 측정일 2026-11-04, 제품 코드 `dc87f4fa2e`(리베이스 전 통합 후보).
+//! 96 DPI, Native Skia/fresh WASM Canvas, `visual_sweep.py --silhouette-only`의
+//! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣).
+//! 입력 `samples/issue8472/cell_picture_row_split.hwp`; 독립 Print `pdf/issue8472_cell_picture_row_split-2020.pdf`.
+//! 전체 2쪽, 전쪽 최저 Native 90.29% / fresh WASM 90.64%.
+//! 주장 2쪽 raw: Native 100.00% / fresh WASM 100.00%.
+//! 원본·TSV·대응 쪽 review/overlay: `mydocs/pr/pr_8477_review.md`.
+//! 전쪽 통과와 실제 절대 px 좌표 고정은 다른 조건이다. 본문 assertion의 원본 단위·상대 관계를 구분한다.
+//! 현재 통합 측정 근거 끝
+//!
+//! 아래는 선행 작성자의 구현 설명과 당시 관측 기록이며 현재 측정은 위를 따른다.
+//!
 //!
 //! 1. 본문 직속 비-TAC 표의 칸 높이는 저장 사다리(다음 문단 vpos = 앵커 vpos + 그림 높이)를 따른다.
 //!    그림을 단 빈 문단의 줄 전진을 그림 위에 한 번 더 쌓지 않는다.
