@@ -226,3 +226,34 @@ Native CLI 산출물을 `rhwp-candidate-rebase-4b149b6cdf`로 고정해 후속 �
 SHA-256은 `71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f`다.
 
 전체 회귀·최종 전쪽 Native/fresh WASM 비교가 아직 남아 있으므로 PR 준비 완료로 판정하지 않는다.
+
+## 새 base의 전체 Rust 결과와 Native 전쪽 집계
+
+`895205d5a7`의 최소 글꼴 전체 nextest는 12,558건 중 12,557 PASS, 1 FAIL,
+45 skipped로 종료됐다. 종료 코드 100이며, 실패는 `issue_713_rowbreak_table_no_intra_row_split`
+한 건이다. 통과한 검사까지 실패로 집계하거나 전체 실행이 성공했다고 표시하지 않는다.
+실패 조건의 원 해결 이력·기본/Native 실행 구성·독립 Print·고정 base 전쪽을 대조한 결과는
+[별도 분석](task_m100_713_clip_contract_revalidation.md)에 있다. 부적절한 viewport 대용 지표와
+base에서 이미 미달인 원본은 [이슈 #8598](https://github.com/edwardkim/rhwp/issues/8598)로
+이관했다. 전체 모듈과 근거를 보존했으며 공유 HWP·PDF와 정상 계약 검사는 유지했다.
+
+이관 뒤 수집 목록은 2,045개에서 2,044개로 바뀌고, 차이는 `tests/issue_713.rs` 한 개다.
+통과한 나머지 검사의 본문과 제품 코드는 이 이관으로 바뀌지 않았다. 전체 12,557 PASS를
+재사용하고, 삭제만을 이유로 같은 전체 회귀를 반복하지 않는다. 검토 worktree에서 파생 suite를
+다시 준비하고 manifest 검사를 통과했다. `.rs.txt` 사본은 자동 수집 대상이 아니다.
+
+제품 코드 `4b149b6cdf`의 Native 80개 비교·406쪽을 완료했다. 전쪽 최저 raw는 91.85%이며
+90% 미만·누락·독립 Print와 쪽수 불일치·원본/PDF 해시 불일치는 각각 0건이다.
+PR #8408의 PDF 편집 저장본은 2010판 16쪽 최저 97.80%, 2020판 15쪽 최저 99.19%,
+무표기판 15쪽 최저 98.54%다. 전쪽 점수만으로 확대 판독이나 최종 승인을 대신하지 않는다.
+
+현재 `7bb9e66fd0`의 최적화 fresh WASM과 고정 base `7fdd5441ff`의 WASM을 공용
+`target/pr-review`·빌드 잡 8개로 순차 빌드한다. 새 base 기능 32개 입력과 기존
+PR #8389·#8397의 원 TSV에 대응하는 Native 비교도 실행한다. 최종 lint·Native Skia 3종과
+fresh WASM 전쪽·기능 확인은 아직 완료하지 않았으므로 개별 리뷰의 최종 판정을 올리지 않는다.
+PR 생성·push는 작업지시자 승인 대기다.
+
+원시 로그는 ignored output의 `logs/rebase-895205d5a7-full-nextest-minfont.log`,
+수집 차이는 `logs/issue8598-inventory-after.json`, Native 집계는
+`logs/rebase-4b149b6cdf-native-80-audit.json`이다. 장시간 작업은 소유 worker·실제 child PID와
+종료 코드를 별도 기록하며, 외부 셸 관측 종료를 빌드·비교의 실제 종료로 오인하지 않는다.
