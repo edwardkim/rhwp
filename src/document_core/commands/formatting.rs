@@ -2598,6 +2598,179 @@ impl DocumentCore {
         }
         Ok("{\"ok\":true,\"exists\":false}".to_string())
     }
+
+    /// 구역의 쪽 번호 매기기(`pgnp`)를 읽는다 (#7635).
+    ///
+    /// 한/글 쪽 번호 매기기 창처럼 구역 본문 문단의 마지막 쪽 번호 위치를 돌려준다.
+    /// 구역에 없으면 `exists:false`다. 앞 구역의 것을 잇는지는 부르는 쪽이 정한다.
+    pub fn get_page_number_position_native(
+        &self,
+        section_idx: usize,
+    ) -> Result<String, crate::error::HwpError> {
+        let section = self
+            .document
+            .sections
+            .get(section_idx)
+            .ok_or_else(|| crate::error::HwpError::RenderError("구역 범위 초과".to_string()))?;
+        Ok(match last_page_number_position(&section.paragraphs) {
+            Some(pnp) => format!(
+                "{{\"ok\":true,\"exists\":true,\"position\":{},\"format\":{},\"dash\":{}}}",
+                pnp.position,
+                pnp.format,
+                pnp.dash_char != '\0'
+            ),
+            None => "{\"ok\":true,\"exists\":false}".to_string(),
+        })
+    }
+
+    /// 구역의 쪽 번호 매기기(`pgnp`)를 정한다 (#7635).
+    ///
+    /// 한/글 12.30 쪽 > 쪽 번호 매기기처럼 캐럿과 상관없이 구역 본문 문단의 쪽 번호 위치를
+    /// 모두 지우고, 구역 첫 문단의 구역·단 정의 바로 뒤에 하나를 넣는다. 위치 0(쪽 번호 없음)도
+    /// 컨트롤로 남겨 앞 구역의 쪽 번호를 잇지 않게 한다. 창에 없는 사용자 기호와 앞·뒤 장식
+    /// 문자는 지운 위치의 값을 잇는다. 줄표는 `-`(HWPX `sideChar`)다.
+    pub fn set_page_number_position_native(
+        &mut self,
+        section_idx: usize,
+        position: u8,
+        format: u8,
+        dash: bool,
+    ) -> Result<String, crate::error::HwpError> {
+        use crate::document_core::inline_control::{active_shape, insert_slot, remove_slot, Slot};
+        use crate::error::HwpError;
+        use crate::model::control::{Control, PageNumberPos};
+        use crate::model::paragraph::CharShapeRef;
+        use crate::serializer::body_text::control_stream_slots;
+
+        if position > 10 {
+            return Err(HwpError::RenderError(
+                "쪽 번호 위치는 0~10이어야 합니다".to_string(),
+            ));
+        }
+        if format > 16 {
+            return Err(HwpError::RenderError(
+                "번호 모양은 0~16이어야 합니다".to_string(),
+            ));
+        }
+        let paragraphs = &self
+            .document
+            .sections
+            .get(section_idx)
+            .ok_or_else(|| HwpError::RenderError("구역 범위 초과".to_string()))?
+            .paragraphs;
+        if paragraphs.is_empty() {
+            return Err(HwpError::RenderError("구역에 문단이 없습니다".to_string()));
+        }
+        let kept = last_page_number_position(paragraphs).cloned();
+        let pnp = PageNumberPos {
+            format,
+            position,
+            dash_char: if dash { '-' } else { '\0' },
+            ..kept.unwrap_or_default()
+        };
+
+        // 지울 자리와 넣을 자리를 복제본에서 먼저 확인한다. 실패하면 문서는 그대로다.
+        let is_pnp = |control: &Control| matches!(control, Control::PageNumberPos(_));
+        let mut removed = Vec::new();
+        for (pi, para) in paragraphs.iter().enumerate() {
+            if !para.controls.iter().any(is_pnp) {
+                continue;
+            }
+            let mut copy = para.clone();
+            while let Some(ci) = copy.controls.iter().rposition(is_pnp) {
+                remove_slot(&mut copy, ci)?;
+                removed.push((pi, ci));
+            }
+        }
+        let mut first = paragraphs[0].clone();
+        for &(_, ci) in removed.iter().filter(|(pi, _)| *pi == 0) {
+            remove_slot(&mut first, ci)?;
+        }
+        let leading = first
+            .controls
+            .iter()
+            .take_while(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)))
+            .count();
+        let raw = match leading {
+            0 => 0,
+            n => control_stream_slots(&first)[n - 1]
+                .map(|(raw, _)| raw + 8)
+                .ok_or_else(|| HwpError::RenderError("구역 정의 슬롯이 없습니다".to_string()))?,
+        };
+        let slot = |para: &crate::model::paragraph::Paragraph| Slot {
+            control: Control::PageNumberPos(pnp.clone()),
+            data: None,
+            shapes: vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: active_shape(para, raw),
+            }],
+            tags: vec![],
+        };
+        let checked = slot(&first);
+        insert_slot(&mut first, raw, leading, checked)?;
+
+        // 복제본과 같은 차례로 살아 있는 문단을 고쳐 표 Box 식별자와 조판 캐시를 지킨다.
+        let section = &mut self.document.sections[section_idx];
+        section.raw_stream = None;
+        for &(pi, ci) in &removed {
+            remove_slot(&mut section.paragraphs[pi], ci).expect("복제본에서 확인한 슬롯");
+        }
+        let first = &mut section.paragraphs[0];
+        let inserted = slot(first);
+        insert_slot(first, raw, leading, inserted).expect("복제본에서 확인한 자리");
+        for &(pi, ci) in &removed {
+            Self::remap_active_field_root_control(
+                &mut self.active_field,
+                section_idx,
+                pi,
+                |index| match index.cmp(&ci) {
+                    std::cmp::Ordering::Less => Some(index),
+                    std::cmp::Ordering::Equal => None,
+                    std::cmp::Ordering::Greater => Some(index - 1),
+                },
+            );
+        }
+        self.shift_active_field_for_control_insert(section_idx, 0, leading);
+        let mut changed: Vec<usize> = removed.iter().map(|(pi, _)| *pi).collect();
+        changed.push(0);
+        changed.sort_unstable();
+        changed.dedup();
+        for pi in changed {
+            self.reflow_paragraph(section_idx, pi);
+        }
+        self.recompose_section(section_idx);
+        // 뒤 구역은 이 구역의 쪽 번호 위치를 잇거나, 이 구역 첫 문단의 머리말·꼬리말을
+        // 컨트롤 차례로 가리킨다. 옮긴 컨트롤 때문에 차례가 바뀌므로 함께 다시 짠다.
+        for next in section_idx + 1..self.document.sections.len() {
+            self.mark_section_dirty(next);
+        }
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+        // 셀·캡션 캐럿처럼 컨트롤 차례로 가리키는 주소를 부르는 쪽이 옮길 수 있게 바꾼 차례를 돌려준다.
+        let removed_json: Vec<String> = removed
+            .iter()
+            .map(|(pi, ci)| format!("[{pi},{ci}]"))
+            .collect();
+        Ok(format!(
+            "{{\"ok\":true,\"controlIdx\":{leading},\"removed\":[{}]}}",
+            removed_json.join(",")
+        ))
+    }
+}
+
+/// 구역 본문 문단의 마지막 쪽 번호 위치. 조판이 구역 선언으로 쓰는 것과 같은 차례다.
+fn last_page_number_position(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+) -> Option<&crate::model::control::PageNumberPos> {
+    paragraphs.iter().rev().find_map(|para| {
+        para.controls
+            .iter()
+            .rev()
+            .find_map(|control| match control {
+                crate::model::control::Control::PageNumberPos(pnp) => Some(pnp),
+                _ => None,
+            })
+    })
 }
 
 #[cfg(test)]
