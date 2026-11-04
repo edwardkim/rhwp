@@ -5506,11 +5506,39 @@ impl LayoutEngine {
             footer_area.y + footer_area.height / 2.0
         };
         // 글상자 상단과 기준선을 혼용하지 않고 아래끝에서 기준선 여유를 뺀다.
-        // 독립 한컴 Print의 HFT Type3 글상자는 em=1000, yMin=-200이다.
-        // TTF의 기존 기준선 여유를 HFT에도 쓰면 자동 번호가 약 0.133em 위에 놓인다.
-        // 미수록 TTF는 기존 여유를 유지한다. SFNT 하강 메트릭이 있는 경우
-        // 측정 원본의 값을 쓰며 출력용 대체 face의 메트릭으로 바꾸지 않는다.
-        let descent = if source_hft {
+        band_bottom - Self::page_number_descent(style, source_hft, source_descent_em)
+    }
+
+    /// 위쪽 자동 쪽번호의 최종 글자 기준선이다. 꼬리말 쪽의 거울이다.
+    /// 한컴 Print는 글자 칸(1em)의 위끝을 머리말 밴드의 위끝(위쪽 여백 선)에 두고,
+    /// 머리말 밴드가 없으면 위쪽 여백의 중앙에 둔다. 위쪽 10mm·머리말 30mm는 36.12pt,
+    /// 위쪽 20mm·머리말 15mm는 64.44pt, 위쪽 25mm·머리말 0mm는 43.20pt(10pt 함초롬바탕)다.
+    fn header_page_number_y(
+        header_area: &LayoutRect,
+        style: &TextStyle,
+        source_hft: bool,
+        source_descent_em: Option<f64>,
+    ) -> f64 {
+        let band_top = if header_area.height > 1e-6 {
+            header_area.y
+        } else {
+            header_area.y / 2.0
+        };
+        band_top + style.font_size - Self::page_number_descent(style, source_hft, source_descent_em)
+    }
+
+    /// 자동 쪽번호 글자 칸의 기준선 아래 여유.
+    /// 독립 한컴 Print의 HFT Type3 글상자는 em=1000, yMin=-200이다.
+    /// TTF의 기존 기준선 여유를 HFT에도 쓰면 자동 번호가 약 0.133em 위에 놓인다.
+    /// 미수록 TTF는 기존 여유를 유지한다. SFNT 하강 메트릭이 있는 경우
+    /// 측정 원본의 값을 쓰며 출력용 대체 face의 메트릭으로 바꾸지 않는다.
+    fn page_number_descent(
+        style: &TextStyle,
+        source_hft: bool,
+        source_descent_em: Option<f64>,
+    ) -> f64 {
+        let font_size = style.font_size;
+        if source_hft {
             font_size * 0.2
         } else {
             let face = super::style_resolver::primary_font_name(
@@ -5522,8 +5550,7 @@ impl LayoutEngine {
             let descent_em = source_descent_em
                 .or_else(|| font_metrics_data::win_descent_em(face, style.bold, style.italic));
             font_size * descent_em.unwrap_or(1.0 / 3.0)
-        };
-        band_bottom - descent
+        }
     }
 
     fn page_number_baseline_y(
@@ -6440,8 +6467,7 @@ impl LayoutEngine {
                 _ => target_area.x + (target_area.width - text_width) / 2.0,
             };
 
-            // 자동 꼬리말 쪽번호는 아래쪽 여백 선을 기준으로 배치한다.
-            // 머리말 위치의 기존 실제 글자 배치는 이번 보정 범위 밖이다.
+            // 자동 쪽번호는 아래쪽 여백 선·위쪽 여백 선을 기준으로 배치한다.
             let border_drawn = !page_content
                 .page_hide
                 .as_ref()
@@ -6457,7 +6483,12 @@ impl LayoutEngine {
                     source_descent_em,
                 )
             } else {
-                target_area.y + target_area.height / 2.0 + font_size / 3.0
+                Self::header_page_number_y(
+                    target_area,
+                    &page_num_style,
+                    styles.page_number_font_is_hft,
+                    source_descent_em,
+                )
             };
             // 본문 기준 테두리 경로도 공통 쪽번호 기준선을 사용한다.
             // 종이 기준 테두리·감추기 여부로 별도의 글자 원점을 만들지 않는다.
@@ -6474,9 +6505,9 @@ impl LayoutEngine {
             } else {
                 footer_center
             };
-            // 꼬리말의 줄과 글자 상자는 같은 최종 기준선을 공유한다.
+            // 줄과 글자 상자는 같은 최종 기준선을 공유한다.
             // 글꼴 이름이나 각주 유무에 따른 임시 이동은 적용하지 않는다.
-            let run_y = if is_footer { y - font_size } else { y };
+            let run_y = y - font_size;
 
             let line_id = tree.next_id();
             let mut line_node = RenderNode::new(
