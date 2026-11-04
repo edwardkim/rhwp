@@ -116,17 +116,14 @@ function selectOleObjectFromHit(this: any, oleHit: any): void {
  * 연결선은 표 셀·글상자 위에 그려질 수 있다. 본문 hit-test를 먼저 처리하면 그
  * 컨테이너가 선택을 소비하므로, 선 자체의 적중을 먼저 객체 선택으로 확정한다.
  */
-function selectLineObjectFromHit(this: any, lineHit: any, type: 'line' | 'group' = 'line', extend = false): void {
-  if (extend && this.cursor.isInPictureObjectSelection()) {
-    this.cursor.togglePictureObjectSelection({ ...lineHit, type });
-  } else {
-    this.cursor.clearSelection();
-    this.exitPictureObjectSelectionIfNeeded();
-    this.cursor.enterPictureObjectSelectionDirect(
+function selectLineObjectFromHit(this: any, lineHit: any): void {
+  this.cursor.clearSelection();
+  this.exitPictureObjectSelectionIfNeeded();
+  this.cursor.enterPictureObjectSelectionDirect(
     lineHit.sec,
     lineHit.ppi,
     lineHit.ci,
-    type,
+    'line',
     lineHit.cellIdx,
     lineHit.cellParaIdx,
     lineHit.headerFooter,
@@ -135,8 +132,7 @@ function selectLineObjectFromHit(this: any, lineHit: any, type: 'line' | 'group'
     lineHit.noteRef,
     lineHit.missing,
     lineHit.pageIndex,
-    );
-  }
+  );
   this.active = true;
   this.caret.hide();
   this.selectionRenderer.clear();
@@ -1037,13 +1033,6 @@ export function onClick(this: any, e: MouseEvent): void {
   }
   if (earlyObjectHit?.type === 'line') {
     selectLineObjectFromHit.call(this, earlyObjectHit);
-    return;
-  }
-  // 묶음 자식의 도형·글자는 외곽 Group의 컨트롤 번호를 공유한다. 이를
-  // 일반 글상자의 셀 0 주소로 보내면 존재하지 않는 문단에 편집 커서가 생긴다.
-  // 자식 텍스트 hit보다 실제 묶음 개체의 선택을 먼저 확정한다.
-  if (earlyObjectHit?.type === 'group') {
-    selectLineObjectFromHit.call(this, earlyObjectHit, 'group', e.shiftKey);
     return;
   }
 
