@@ -142,3 +142,64 @@ fn cell_insert_requires_a_cell_path() {
         before
     );
 }
+
+/// 쪽마다 본문 표 칸에 그려진 글자열을 모은다.
+fn page_texts(doc: &rhwp::wasm_api::HwpDocument) -> Vec<Vec<String>> {
+    fn walk(node: &serde_json::Value, out: &mut Vec<String>) {
+        if node["type"] == "TextRun" {
+            if let Some(text) = node["text"].as_str().filter(|t| !t.trim().is_empty()) {
+                out.push(text.trim().to_string());
+            }
+        }
+        for child in node["children"].as_array().into_iter().flatten() {
+            walk(child, out);
+        }
+    }
+    (0..doc.page_count())
+        .map(|page| {
+            let tree: serde_json::Value =
+                serde_json::from_str(&doc.get_page_render_tree(page).unwrap()).unwrap();
+            let mut out = Vec::new();
+            walk(&tree, &mut out);
+            out
+        })
+        .collect()
+}
+
+#[test]
+fn cell_picture_beside_host_text_grows_the_row_once_for_pagination() {
+    // 1쪽 3행(「3. 보건소간 업무조정…」) 내용 칸에 글 옆 그림(9.9mm)을 넣는다.
+    // 한글 2022(맥 12.30) 인쇄: 행이 그림 높이만큼 한 번 커지고 1쪽은 「33.」 행까지, 2쪽은 「34.」부터,
+    // 전체 5쪽. 그림을 호스트 줄 아래에 쌓아 세면 1쪽이 「32.」에서 끝난다.
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/21868765_별표2_보건소_분장사무.hwp");
+    let mut core = DocumentCore::from_bytes(&std::fs::read(&path).unwrap()).expect("표본");
+    core.insert_picture_in_cell_native(
+        0,
+        4,
+        0,
+        &[(0, 11, 0)],
+        &PNG,
+        2800,
+        2800,
+        1,
+        1,
+        "png",
+        "그림",
+        Some(22000),
+        Some(0),
+    )
+    .expect("칸 그림");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&core.export_hwp_native().unwrap())
+        .expect("저장본");
+    let pages = page_texts(&doc);
+    assert_eq!(pages.len(), 5, "한컴 인쇄와 같은 5쪽");
+    let page_of = |label: &str| {
+        pages
+            .iter()
+            .position(|texts| texts.iter().any(|t| t == label))
+            .unwrap_or_else(|| panic!("{label} 행이 어느 쪽에도 없다"))
+    };
+    assert_eq!(page_of("33."), 0, "「33.」 행은 1쪽");
+    assert_eq!(page_of("34."), 1, "「34.」 행은 2쪽");
+}

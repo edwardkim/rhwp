@@ -16301,7 +16301,10 @@ impl LayoutEngine {
             let para_non_inline_extra_h = if p.text.trim().is_empty() && line_count > 0 {
                 (para_non_inline_h - overlapping_host_height).max(0.0)
             } else {
-                para_non_inline_h
+                // Square·Tight·Through 개체는 호스트 줄 옆에 놓여 같은 세로 띠를 쓴다.
+                // 표 높이 측정(calc_cell_wrap_objects_bottom_height)처럼 줄과 개체 중
+                // 큰 쪽만 점유하고, 줄 아래로 띠를 차지하는 TopAndBottom만 더한다.
+                para_top_and_bottom_h + (para_other_non_inline_h - overlapping_host_height).max(0.0)
             };
             let para_top_and_bottom_flow_unit =
                 para_has_top_and_bottom_non_inline_control && !para_has_visible_text;
