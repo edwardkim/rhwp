@@ -14,14 +14,15 @@ const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const require = createRequire(join(root, 'rhwp-studio/package.json'));
 
 // 관계형: 기본 TTF가 공급하지 못한 글자만 검증된 다음 프로그램의 윤곽을 쓴다.
-// 주석 갱신: 2026-11-04 15:56 KST. 좌표 핀이 아닌 합성 공급자·프로필 계약이다.
+// 주석 갱신: 2026-11-04 16:26 KST. 좌표 핀이 아닌 합성 공급자·프로필 계약이다.
 test('Print TTF 대체 글리프는 원 프로그램의 기하를 쓰고 Screen과 원 face는 보존한다', async t => {
   const pkg = resolve(process.env.RHWP_SWEEP_TEST_WASM_PKG || join(root, 'pkg'));
   const files = new Map([
     ['/rhwp.js', ['application/javascript', readFileSync(join(pkg, 'rhwp.js'))]],
     ['/rhwp_bg.wasm', ['application/wasm', readFileSync(join(pkg, 'rhwp_bg.wasm'))]],
     ['/primary.ttf', ['application/octet-stream', readFileSync(join(root, 'tests/fixtures/fonts/RHWPEquationLatinOnly.ttf'))]],
-    ['/fallback.ttf', ['application/octet-stream', readFileSync(join(root, 'tests/fixtures/fonts/RHWPHostFixture-Regular.ttf'))]],
+    // 기존 소유 fixture의 '가' 윤곽에 U+0628 cmap만 추가한 문맥 판정용 합성 face다.
+    ['/fallback.ttf', ['application/octet-stream', readFileSync(join(root, 'tests/fixtures/issue8533/RHWPPrintFallbackContext.ttf'))]],
   ]);
   const server = createSweepServer(files, new Map());
   await new Promise((accept, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', accept); });
@@ -48,7 +49,7 @@ test('Print TTF 대체 글리프는 원 프로그램의 기하를 쓰고 Screen�
       ${languages.map(lang => `<FONTFACE Count="1" Lang="${lang}"><FONT Id="0" Name="RHWP Print Primary,RHWP Print Fallback" Type="ttf"/></FONTFACE>`).join('')}
       </FACENAMELIST><CHARSHAPELIST Count="1"><CHARSHAPE Id="0" Height="2400"/>
       </CHARSHAPELIST></MAPPINGTABLE></HEAD><BODY><SECTION Id="0"><P ParaShape="0">
-      <TEXT CharShape="0"><CHAR>H가</CHAR></TEXT></P></SECTION></BODY></HWPML>`);
+      <TEXT CharShape="0"><CHAR>H가ب</CHAR></TEXT></P></SECTION></BODY></HWPML>`);
     const doc = new wasm.HwpDocument(source);
     try {
       doc.setHangul2024Compat(true);
@@ -60,21 +61,28 @@ test('Print TTF 대체 글리프는 원 프로그램의 기하를 쓰고 Screen�
       const rows = [];
       for (const supplied of [false, true]) {
         if (supplied) for (const {family, bytes} of programs) doc.registerTextFontGlyphCoverage(family, bytes, 0);
-        for (const profile of ['screen', 'print']) {
+        for (const [profile, compat] of [['screen', true], ['print', true], ['print', false], ['high-quality', true]]) {
+          doc.setHangul2024Compat(compat);
           calls.length = 0; paths.length = 0;
           doc.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', profile);
-          rows.push({supplied, profile, calls: [...calls], paths: paths.length, tree: doc.getPageRenderTree(0)});
+          rows.push({supplied, profile, compat, calls: [...calls], paths: paths.length, tree: doc.getPageRenderTree(0)});
         }
       }
       return rows;
     } finally { doc.free(); }
   });
-  const printed = rows.find(row => row.supplied && row.profile === 'print');
+  const printed = rows.find(row => row.supplied && row.profile === 'print' && row.compat);
   assert.ok(printed.calls.includes('H'), '원 face가 공급한 글자는 원 painter에 남는다');
   assert.ok(!printed.calls.includes('가'), '검증된 대체 TTF의 윤곽을 기하적으로 재생한다');
+  assert.ok(printed.calls.includes('ب'), '단독 글자여도 문맥 shaping이 필요한 문자는 원 painter에 남긴다');
+  const trees = new Map();
+  for (const row of rows) {
+    const tree = trees.get(row.compat) ?? row.tree;
+    trees.set(row.compat, tree);
+    assert.equal(row.tree, tree, '공급과 출력 프로필이 조판·소속을 바꾸지 않는다');
+  }
   for (const row of rows.filter(row => row !== printed)) {
     assert.ok(row.calls.includes('가'), 'Screen 또는 미공급 프로그램에는 기존 painter를 쓴다');
-    assert.equal(row.tree, printed.tree, '공급과 출력 프로필이 조판·소속을 바꾸지 않는다');
   }
   assert.ok(printed.paths > rows[0].paths, '대체 글리프의 실제 path 재생이 있어야 한다');
 });
