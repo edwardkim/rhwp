@@ -73,3 +73,33 @@ fn hwp_two_digit_pua_shapes_draw_the_number() {
     );
     assert!(text.matches("12").count() >= 4, "{text}");
 }
+
+fn overlap_widths(node: &rhwp::renderer::render_tree::RenderNode, out: &mut Vec<(f64, f64)>) {
+    if let rhwp::renderer::render_tree::RenderNodeType::TextRun(run) = &node.node_type {
+        if run.char_overlap.is_some() && run.para_index == Some(0) {
+            out.push((node.bbox.width, run.style.font_size));
+        }
+    }
+    for child in &node.children {
+        overlap_widths(child, out);
+    }
+}
+
+/// 한컴 Print는 14모양 모두 전각 한 칸(10pt 9.66pt)에 그린다. PUA 원 숫자를 표시 글자로
+/// 다시 재 1.5칸이 되거나, 펼친 글자끼리 겹치기가 반각 숫자 폭이 되면 뒤 글자가 밀린다.
+#[test]
+fn every_shape_takes_one_full_width_cell() {
+    for ext in ["hwp", "hwpx"] {
+        let core = open(ext);
+        let tree = core.build_page_render_tree(0).unwrap();
+        let mut widths = Vec::new();
+        overlap_widths(&tree.root, &mut widths);
+        assert_eq!(widths.len(), 14, "{ext}");
+        for (width, size) in widths {
+            assert!(
+                (width - size).abs() < 1.0,
+                "{ext}: 폭 {width} / 글자 크기 {size}"
+            );
+        }
+    }
+}

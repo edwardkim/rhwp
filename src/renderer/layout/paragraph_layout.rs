@@ -9250,6 +9250,10 @@ impl LayoutEngine {
             });
             let (full_width, layout_positions) = if let Some(shaping_width) = shaping_width {
                 (shaping_width, None)
+            } else if run.char_overlap.is_some() {
+                // 겹침·덧말은 논리 한 칸의 전진(테두리·기준 글자·본말 폭)을 그대로 쓴다.
+                // PUA 숫자의 표시 글자(①…)를 글자마다 다시 재면 한 칸이 1.5칸이 된다.
+                (full_width, None)
             } else {
                 emitted_run_layout_positions(
                     kerning_layout_session,
