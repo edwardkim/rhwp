@@ -1,0 +1,13 @@
+// strip_ls <in.hwp> <section> <para> <out.hwp>: 지정 문단의 저장 줄(PARA_LINE_SEG)만 제거한다.
+fn main() {
+    let a: Vec<String> = std::env::args().collect();
+    let bytes = std::fs::read(&a[1]).unwrap();
+    let sec: usize = a[2].parse().unwrap();
+    let pi: usize = a[3].parse().unwrap();
+    let mut doc = rhwp::parser::parse_document(&bytes).unwrap();
+    let p = &mut doc.sections[sec].paragraphs[pi];
+    println!("text={:?} segs={} controls={}", p.text, p.line_segs.len(), p.controls.len());
+    p.line_segs.clear();
+    let out = rhwp::serializer::serialize_document(&doc).unwrap();
+    std::fs::write(&a[4], out).unwrap();
+}
