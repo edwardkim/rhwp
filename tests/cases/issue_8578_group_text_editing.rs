@@ -1,5 +1,5 @@
 //! 관계형: 묶음 글상자와 본문의 클릭 주소가 실제 원문 소유자를 가리키는지 검사한다.
-//! 주석 갱신: 2026-11-05T00:00:00+09:00.
+//! 주석 갱신: 2026-11-05T01:24:05+09:00.
 //! 입력: 행정업무운영 편람 HWPX. 시각 픽셀 위치를 고정하지 않고 최종 트리의 글자 위치로 클릭한다.
 //! Native/fresh WASM 시각 일치율은 이 주소 계약의 판정에 사용하지 않는다.
 
@@ -64,6 +64,79 @@ fn empty_group_owner_has_a_body_caret_on_its_own_page() {
         assert!(rect["height"].as_f64().unwrap() > 0.0);
         assert!(rect["y"].as_f64().unwrap() >= 0.0);
     }
+}
+
+#[test]
+fn header_group_does_not_publish_a_body_caret_address() {
+    use rhwp::model::{control::Control, shape::ShapeObject};
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.create_header_footer_native(0, true, 0).unwrap();
+    for x in [0, 5000] {
+        core.create_shape_control_native(
+            0,
+            0,
+            0,
+            4000,
+            2000,
+            x,
+            0,
+            false,
+            "InFrontOfText",
+            "rectangle",
+            false,
+            false,
+            &[],
+        )
+        .unwrap();
+    }
+    let targets = core.document().sections[0].paragraphs[0]
+        .controls
+        .iter()
+        .enumerate()
+        .filter_map(|(i, c)| matches!(c, Control::Shape(_)).then_some((0, i)))
+        .collect::<Vec<_>>();
+    core.group_shapes_native(0, &targets).unwrap();
+    let mut model = core.document().clone();
+    let body = &mut model.sections[0].paragraphs[0];
+    let index = body.controls.iter().position(|c|
+        matches!(c, Control::Shape(shape) if matches!(shape.as_ref(), ShapeObject::Group(_)))).unwrap();
+    let group = body.controls.remove(index);
+    let header = body
+        .controls
+        .iter_mut()
+        .find_map(|c| match c {
+            Control::Header(header) => Some(header),
+            _ => None,
+        })
+        .unwrap();
+    header.paragraphs[0].controls.push(group);
+    let bytes = rhwp::serializer::hwpx::serialize_hwpx(&model).unwrap();
+    let core = DocumentCore::from_bytes(&bytes).unwrap();
+    let tree = core.build_page_render_tree(0).unwrap();
+    fn inspect(node: &RenderNode, in_header: bool, groups: &mut usize) {
+        let in_header = in_header || matches!(node.node_type, RenderNodeType::Header);
+        if in_header {
+            if matches!(node.node_type, RenderNodeType::Group(_)) {
+                *groups += 1;
+            }
+            if let RenderNodeType::TextRun(run) = &node.node_type {
+                assert!(
+                    !(run.section_index == Some(0)
+                        && run.para_index == Some(0)
+                        && run.cell_context.is_none()
+                        && run.char_start.is_some()),
+                    "머리말의 묶음을 본문 문단 0의 편집 주소로 노출하면 안 된다"
+                );
+            }
+        }
+        for child in &node.children {
+            inspect(child, in_header, groups);
+        }
+    }
+    let mut groups = 0;
+    inspect(&tree.root, false, &mut groups);
+    assert!(groups > 0, "실제 머리말 묶음을 대조한다");
 }
 
 #[test]

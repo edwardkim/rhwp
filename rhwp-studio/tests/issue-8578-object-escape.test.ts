@@ -1,5 +1,5 @@
 // 관계형: 개체 Esc는 소유 문단으로 돌아가며 삭제·붙여넣기 착지는 바꾸지 않는다.
-// 주석 갱신: 2026-11-05T00:35:00+09:00. 시각 픽셀 위치를 고정하지 않는 편집 주소 계약이다.
+// 주석 갱신: 2026-11-05T01:24:05+09:00. 시각 픽셀 위치를 고정하지 않는 편집 주소 계약이다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';

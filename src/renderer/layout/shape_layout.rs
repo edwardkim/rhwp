@@ -1215,6 +1215,8 @@ impl LayoutEngine {
         if matches!(shape, ShapeObject::Group(_))
             && !common.treat_as_char
             && para.text.trim().is_empty()
+            // 머리말·꼬리말·각주의 전용 편집 주소를 본문 주소로 만들지 않는다.
+            && matches!(parent.node_type, RenderNodeType::Column(_) | RenderNodeType::Body { .. })
         {
             fn has_body_caret(node: &RenderNode, section: usize, para: usize) -> bool {
                 matches!(&node.node_type, RenderNodeType::TextRun(run)
