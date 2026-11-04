@@ -79,3 +79,7 @@ Native CI의 `cli_exit_codes_native::png_json_metadata_and_render_preserve_featu
 223 → 5e의 제품 diff는 paragraph_layout.rs의 진단 출력과 로그 전용 순수 계산 제거다. 실제 text_y/y/line_height·원점·높이·줄 소유·분할·본문 점유·cell overflow 집계·paint·저장 계산은 같다. blank_spacer_line과 equation_only_endnote_tail_line은 후속 내용 점유에도 쓰이므로 유지했다. 제거한 미주 log tolerance getter는 layout.rs:4454의 세 Cell.get 비교와 순수 허용치 조건뿐이며 상태를 바꾸지 않는다. raw fallback은 원래 y_clamped=y를 그대로 소비한다.
 
 따라서 [Native/fresh WASM 32개 입력·72쪽, 실제 14개 역할·175쪽과 필수 Native 편람 383쪽](rebase-validation.md)의 renderer producer·SHA·TSV·직접 판독을 그대로 연결한다. 이 보정에서 새 픽셀을 측정했다고 바꾸어 적지 않는다. 새 레이아웃·baseline·px assertion을 추가하지 않았다. 실제 source와 계산 경로를 대조한 로그 보안 후속 보정으로 한정한다.
+
+## 새 head의 독립 CodeQL 결과
+
+ad423 head의 [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/41811036496)과 GHAS check가 성공했다. Rust 분석 `2093550961`은 126개 결과이며 이전 129개에서 세 개가 감소했다. PR merge-ref open alert는 15→12개이고 새 ID는 없다. #493·#494·#496의 해당 ref instance는 fixed다. 실제 tested merge는 `1dfe95166431dac7fd944934024341fc2cad3e3f`다. 새 세 sink의 runtime before-FAIL과 혼동하지 않는다.

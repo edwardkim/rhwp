@@ -12,3 +12,9 @@
 - merged wasm32 lib `cargo check --locked`: exit 0, 75.45초.
 
 이것은 현재 base와의 정책·컴파일 호환성과 양쪽 변경의 보존 확인이다. 이 임시 tree의 새 전체 회귀나 새 Visual Sweep으로 과장하지 않는다. 본 작업 head에서 완료한 전체 회귀·정확한 Native CI 22개 목록·전쪽 시각 검증의 producer는 그대로 기록한다. 새 제출 head의 실제 GitHub Full CI·CodeQL과 최종 current-base merge gate를 모두 확인한 뒤 병합한다. source/test/workflow 변경은 추가하지 않았다.
+
+## 마지막 merge gate의 추가 base 전진
+
+최종 조회 때 #8289가 별도 검토로 병합돼 base가 `140cb02b7fd6184e58209b29383ddaed18e49457`로 전진했다. 수식 symbols·tokenizer와 긴 식별자 회귀 세 파일은 이번 통합의 제품 diff와 겹치지 않는다. 새 병합 tree `7c1dcfa7b38e6c9f7dae2a87c25bfc49b7f791eb`의 해당 세 Git blob은 base와 같고 충돌이 없다. 실제 임시 병합 tree에서 기존 tokenizer 37개와 새 긴 식별자 회귀, suite·unit 정책 검사를 완료했다. 이 검증은 제출 head를 바꾼 전체 CI 재실행이 아니며, CI가 실제 분석한 앞선 merge ref와 구분한다. #8203과 #8289는 이번 선정 10건 밖의 독립 검토·병합이다. 이후 #8588·#8591로 base가 `782ab3e2d06380d7d36660f07d76ef4c8c7c0c0a`로 전진했다. 제품 source는 그대로이며 19개 새 경로는 merge tree `895f5f5dfec80896d10fee1d39e4651a4d8a4ea4`에서 base blob과 같고, 겹친 운영 계약 검사 한 파일은 60분 예산과 새 API 게시 계약을 함께 보존해 해당 Python·Node 검사를 실행했다.
+
+최종 운영 호환 검사는 Python 41건(archive 18·post-merge 4·편람 도구 19), Node 64건으로 모두 통과했다. 수식 경계 37+1건과 별개이며 새 전체 회귀·시각 재실행으로 세지 않는다.
