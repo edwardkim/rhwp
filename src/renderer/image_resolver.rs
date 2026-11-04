@@ -320,7 +320,7 @@ fn make_room_for_decode(bytes: &[u8]) {
 #[cfg(any(target_arch = "wasm32", test))]
 fn fits_beside(held: &image::RgbaImage, bytes: &[u8]) -> bool {
     canvaskit_encoded_image_header(bytes).is_some_and(|header| {
-        u64::from(header.width) * u64::from(header.height) * 4 * 4 <= held.as_raw().len() as u64
+        u128::from(header.width) * u128::from(header.height) * 16 <= held.as_raw().len() as u128
     })
 }
 
@@ -1761,6 +1761,27 @@ mod tests {
             assert!(grayscale_jpeg_bytes_to_png_bytes(&dropped).is_none());
             assert_eq!(take_decoded(&wide), None);
             assert_eq!(take_decoded(&dropped), None, "큰 그림의 디코드가 버렸다");
+        });
+
+        // 헤더만 있는 거대 PNG도 다음 decode 전에 자리를 낸다. 2^31 × 2^31의
+        // RGBA 예산은 u64 곱셈으로 wrap할 수 있으므로 큰 값이 작은 그림으로 보이면 안 된다.
+        let huge_source = photo(92);
+        let mut huge_header = vec![0; 33];
+        huge_header[..8].copy_from_slice(b"\x89PNG\r\n\x1a\n");
+        huge_header[8..12].copy_from_slice(&13u32.to_be_bytes());
+        huge_header[12..16].copy_from_slice(b"IHDR");
+        huge_header[16..20].copy_from_slice(&(1u32 << 31).to_be_bytes());
+        huge_header[20..24].copy_from_slice(&(1u32 << 31).to_be_bytes());
+        huge_header[24] = 8;
+        huge_header[25] = 6;
+        with_decoded_handoff(|| {
+            assert!(grayscale_jpeg_bytes_to_png_bytes(&huge_source).is_none());
+            assert_eq!(take_decoded(&huge_header), None);
+            assert_eq!(
+                take_decoded(&huge_source),
+                None,
+                "거대 헤더 전에 보관 픽셀을 버린다"
+            );
         });
     }
 
