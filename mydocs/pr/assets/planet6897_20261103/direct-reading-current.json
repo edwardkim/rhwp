@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-11-04T19:19:19.952739+00:00",
+  "recorded_at": "2026-11-04T19:44:59.369375+00:00",
   "records": [
     {
       "pr": 8422,
@@ -826,9 +826,201 @@
       },
       "observation": "4쪽 첫 조각의 위생·사역 행부터 의료기술·환경·항공·정비까지 내용 순서와 셀 소속·표 외곽을 확인했다. 앞 쪽 말미에서 보존한 위생 내용이 이어지며 글줄·행의 누락·겹침은 보이지 않는다.",
       "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8429,
+      "input": "mydocs/pr/assets/issue_8424/inputs/after/business_plan.hwpx",
+      "pdf": "pdf/issue-8424/business_plan-2024.pdf",
+      "page": 2,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:41:06.968018+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8429/pr8429-claim-p002-business_plan-native-review.png",
+          "sha256": "0c7748b5b6903e6d2cff42364f5fc1f9e3a388ffae4a482d79860afae09861b7",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8429-claim-p002-business_plan/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8429/pr8429-claim-p002-business_plan-native-overlay.png",
+          "sha256": "84f58c33b5ca3bf2daba512211a4ac79dcf414cfc940e39263a38c4797b99011",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8429-claim-p002-business_plan/overlay/overlay_002.png"
+        }
+      },
+      "observation": "추진 체계 및 일정의 6단계 표를 앞뒤 본문과 함께 대조했다. 각 단계의 주요 내용은 셀 폭에서 세 줄로 감기며 마지막 결과 보고서 행과 뒤 기대 효과 제목이 겹치지 않는다. 표의 행 경계·본문 줄바꿈과 끝 내용이 Print와 대응하고 글자 가장자리의 raster 차이는 남는다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8431,
+      "input": "samples/issue8423/30396-childcare-leave-recommendation.hwp",
+      "pdf": "pdf/issue8423/30396-childcare-leave-recommendation-2022.pdf",
+      "page": 9,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:41:06.968018+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8431/pr8431-claim-p009-30396-childcare-le-native-review.png",
+          "sha256": "700123985aa1358ab68bcd2ea4bd9df19a3aea586133e83420fdf5eecd59d228",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8431-claim-p009-30396-childcare-le/review/review_009.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8431/pr8431-claim-p009-30396-childcare-le-native-overlay.png",
+          "sha256": "54c7c91e189e7716ad80fa064c8e642ce3ccea977238c80362ff50a743585bf0",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8431-claim-p009-30396-childcare-le/overlay/overlay_009.png"
+        }
+      },
+      "observation": "실태 및 문제점 제목부터 육아휴직 규정, 두 항목의 사례 상자, 하단 기관별 표까지 순서·포함을 대조했다. 굵은 본문과 일반 본문, 사례 상자의 두 항목 및 50/94/47/17/80/94/50 수치가 대응한다. 가시 누락·상자와 뒤 본문의 겹침은 없고 획·테두리의 미세 raster 차이를 점수와 구분한다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8429,
+      "input": "mydocs/pr/assets/issue_8424/inputs/after/business_plan.hwpx",
+      "pdf": "pdf/issue-8424/business_plan-2024.pdf",
+      "page": 2,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:41:06.968018+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8429/pr8429-claim-p002-business_plan-wasm-review.png",
+          "sha256": "ae4edeb4db805e10e53d83cf9b871b407f9c5fc7a50e10655e91d92008927d0f",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8429-claim-p002-business_plan/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8429/pr8429-claim-p002-business_plan-wasm-overlay.png",
+          "sha256": "7f1e613888cf12a83003dc7c5270bcea3cf30e89932e86ba29bdd7f2955a28d7",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8429-claim-p002-business_plan/overlay/overlay_002.png"
+        }
+      },
+      "observation": "추진 체계 및 일정의 6단계 표를 앞뒤 본문과 함께 대조했다. 각 단계의 주요 내용은 셀 폭에서 세 줄로 감기며 마지막 결과 보고서 행과 뒤 기대 효과 제목이 겹치지 않는다. 표의 행 경계·본문 줄바꿈과 끝 내용이 Print와 대응하고 글자 가장자리의 raster 차이는 남는다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8431,
+      "input": "samples/issue8423/30396-childcare-leave-recommendation.hwp",
+      "pdf": "pdf/issue8423/30396-childcare-leave-recommendation-2022.pdf",
+      "page": 9,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:41:06.968018+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8431/pr8431-claim-p009-30396-childcare-le-wasm-review.png",
+          "sha256": "bd60a2b60a4fd71e909dfa37591de13703c61fb9e161216b26eff7051edb6b24",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8431-claim-p009-30396-childcare-le/review/review_009.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8431/pr8431-claim-p009-30396-childcare-le-wasm-overlay.png",
+          "sha256": "07567f6fd1cc9bfd1de577458e00117367db555a8b7daafde5c3a86c8d926d15",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8431-claim-p009-30396-childcare-le/overlay/overlay_009.png"
+        }
+      },
+      "observation": "실태 및 문제점 제목부터 육아휴직 규정, 두 항목의 사례 상자, 하단 기관별 표까지 순서·포함을 대조했다. 굵은 본문과 일반 본문, 사례 상자의 두 항목 및 50/94/47/17/80/94/50 수치가 대응한다. 가시 누락·상자와 뒤 본문의 겹침은 없고 획·테두리의 미세 raster 차이를 점수와 구분한다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8433,
+      "input": "mydocs/pr/assets/issue_8425/probe/levels.hwpx",
+      "pdf": "pdf/issue-8425/levels-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:44:59.369375+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-d891f2-native-review.png",
+          "sha256": "34285833ad9d75a8b560eaf1ca85d48308b67590872e5ea019d3fd0ec6c76095",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8433-claim-p001-levels-d891f2/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-d891f2-native-overlay.png",
+          "sha256": "4a40e1256b1192db3af0f6419abfc6405a5d56f41d7f1a714a6bcee84ff1cbb9",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8433-claim-p001-levels-d891f2/overlay/overlay_001.png"
+        }
+      },
+      "observation": "2020 Print와 개요 1~7수준 및 두 줄짜리 2/2.1 항목을 대조했다. 번호·본문의 내용 순서와 뒤 줄의 내어쓰기는 있으나, 제목 글자 시작점과 굵기에 가시 차이가 남는다. 90% 통과만으로 해당 차이를 정상이나 해결 완료로 판정하지 않으며 원 PR·저장 번호 정의와 대조가 필요하다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8437,
+      "input": "samples/issue8435/156618114-logo-textbox-offset.hwpx",
+      "pdf": "pdf/issue8435/156618114-logo-textbox-offset-2022.pdf",
+      "page": 2,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:44:59.369375+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8437/pr8437-claim-p002-156618114-logo-tex-native-review.png",
+          "sha256": "10cab050ee6cee45ad620c739ef809303390bee0690b5d5a67e1e96f8e451d51",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8437-claim-p002-156618114-logo-tex/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8437/pr8437-claim-p002-156618114-logo-tex-native-overlay.png",
+          "sha256": "5629b56378daf6753aba6e550c97224f623b887548bce9415ae8df2f1db0213e",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8437-claim-p002-156618114-logo-tex/overlay/overlay_002.png"
+        }
+      },
+      "observation": "담당 부서 두 줄 표와 그 아래 세 로고를 대조했다. 표의 좌우 및 행 경계와 세 로고의 순서·본문과의 분리가 Print에 대응한다. 정책브리핑·OPEN 로고의 획 가장자리 raster 차이는 남고 개체 이동·누락으로 판정할 차이는 보이지 않는다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8433,
+      "input": "mydocs/pr/assets/issue_8425/probe/levels.hwpx",
+      "pdf": "pdf/issue-8425/levels-2020.pdf",
+      "page": 1,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:44:59.369375+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-d891f2-wasm-review.png",
+          "sha256": "3cba157291b933656b85899156dddf191ea1c7daf93e130b010a1ed36e2aaafa",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8433-claim-p001-levels-d891f2/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-d891f2-wasm-overlay.png",
+          "sha256": "e4b7688b39b29381e89d22e176b93aa8c702ef2cfd8baea1885bc9fcf833bf48",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8433-claim-p001-levels-d891f2/overlay/overlay_001.png"
+        }
+      },
+      "observation": "2020 Print와 개요 1~7수준 및 두 줄짜리 2/2.1 항목을 대조했다. 번호·본문의 내용 순서와 뒤 줄의 내어쓰기는 있으나, 제목 글자 시작점과 굵기에 가시 차이가 남는다. 90% 통과만으로 해당 차이를 정상이나 해결 완료로 판정하지 않으며 원 PR·저장 번호 정의와 대조가 필요하다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8437,
+      "input": "samples/issue8435/156618114-logo-textbox-offset.hwpx",
+      "pdf": "pdf/issue8435/156618114-logo-textbox-offset-2022.pdf",
+      "page": 2,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:44:59.369375+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8437/pr8437-claim-p002-156618114-logo-tex-wasm-review.png",
+          "sha256": "25e771595208d51cde457973d07d5346d7e8ef5b7b539f76acee47e4a9b3e746",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8437-claim-p002-156618114-logo-tex/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8437/pr8437-claim-p002-156618114-logo-tex-wasm-overlay.png",
+          "sha256": "f21fb4047163d47e6b7ec29a39a882a8d709d72689eb8d9685add40346e26136",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8437-claim-p002-156618114-logo-tex/overlay/overlay_002.png"
+        }
+      },
+      "observation": "담당 부서 두 줄 표와 그 아래 세 로고를 대조했다. 표의 좌우 및 행 경계와 세 로고의 순서·본문과의 분리가 Print에 대응한다. 정책브리핑·OPEN 로고의 획 가장자리 raster 차이는 남고 개체 이동·누락으로 판정할 차이는 보이지 않는다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
     }
   ],
-  "record_count": 36,
+  "record_count": 44,
   "final_approval": false,
   "note": "직접 본 PNG의 해시와 관측만 기록한다. 기록되지 않은 쪽이나 최종 공통 검증의 완료를 주장하지 않는다."
 }

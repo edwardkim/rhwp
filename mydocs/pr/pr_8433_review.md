@@ -66,8 +66,23 @@ levels probe와 issue3307 원본의 대응 줄에서 번호·본문의 상대 �
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
 | `levels.hwpx` 1쪽 · 기본 개요 머리 모양 | 91.97% · [review](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-07bae7-native-review.png) / [overlay](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-07bae7-native-overlay.png) | 92.21% · [review](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-07bae7-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-07bae7-wasm-overlay.png) |
-| `levels.hwpx` 1쪽 · 개요 머리 probe의 2020 Print 최저 페이지 | 91.97% · [review](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-d891f2-native-review.png) / [overlay](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-d891f2-native-overlay.png) | 92.21% · [review](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-d891f2-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-d891f2-wasm-overlay.png) |
+| `levels.hwpx` 1쪽 · 개요 머리 probe의 2020 Print 최저 페이지 | 91.85% · [review](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-d891f2-native-review.png) / [overlay](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-d891f2-native-overlay.png) | 92.03% · [review](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-d891f2-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8433/pr8433-claim-p001-levels-d891f2-wasm-overlay.png) |
 | `issue3307_outline_number.hwpx` 7쪽 · 개요 번호 본문 거리 | 100.00% · [review](assets/planet6897_20261103/pr_8433/pr8433-outline-claim-p007-native-review.png) / [overlay](assets/planet6897_20261103/pr_8433/pr8433-outline-claim-p007-native-overlay.png) | 99.99% · [review](assets/planet6897_20261103/pr_8433/pr8433-outline-claim-p007-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8433/pr8433-outline-claim-p007-wasm-overlay.png) |
+
+## 직접 판독에서 남은 확인
+
+2026-11-05 KST에 2020 Print 탐침의 1쪽 Native/fresh WASM review와 별도 overlay를
+직접 대조했습니다. 수준 1~7의 번호·본문 및 넘친 줄은 보존되지만, 제목 글자 시작점과
+굵기에 가시 차이가 남습니다. 90% 통과만으로 해당 차이를 정상으로 판정하지 않습니다.
+원 PR 본문과 원본 HWPX의 글자 속성·PDF의 실제 글꼴 및 번호 폭을 대조하고 있습니다.
+[직접 판독 기록](assets/planet6897_20261103/direct-reading-current.json)에 해당 파일의 해시를
+연결했습니다. 원 PR이 주로 검증한 `issue3307_outline_number.hwpx` 7쪽의 개선과 탐침의
+남은 차이를 구분하며, 이 확인을 마치기 전에는 최종 수용으로 바꾸지 않습니다.
+
+기존 증적 표의 2020 Print 탐침 행은 같은 HWPX의 2024 PDF 점수를 잘못 가져왔습니다.
+이미지와 TSV는 올바른 2020 자료였으며, 이미지의 입력·PDF 해시 기록으로 점수 연결을
+수정했습니다. [전체 주장 행 대조](assets/planet6897_20261103/claim-table-score-audit.json)는
+96개 행을 확인하고 실제 수치 정정 1개 행을 기록합니다. PDF나 엔진 출력을 재생성하지 않았습니다.
 
 ## 통합 최종 검증 조건
 
