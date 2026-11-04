@@ -1,11 +1,51 @@
 # planet6897 원 PR 39건 통합 검토 증거
 
-현재는 로컬 검증 단계다. 각 원 PR의 `mydocs/pr/pr_N_review.md`에 실제 입력·독립 Print
-PDF·대응 쪽·전쪽 TSV·review/overlay를 연결하며, 최종 판정은 전체 검증 뒤 갱신한다.
-검토 대상은 PR #8408부터 #8547까지 접수한 39건으로 고정했다. 검증 중 새로 열린
-PR #8550·#8552·#8553은 다음 접수 대상이다.
+PR 생성 전 승인 대기까지 준비하는 로컬 작업이다. 검토 범위는 접수한 원 PR 39개로 고정했으며,
+새 PR을 추가로 체리픽하지 않는다. 원 PR별 입력·주장 쪽·원 head와 메인터너 보정을 분리해 기록한다.
+원격 PR 생성·push·review·comment·close는 수행하지 않았다.
 
-## 코드와 실행 파일
+## 현재 검증 출처와 상태 — 2026-11-05
+
+| 구분 | 실제 source·범위·상태 |
+| --- | --- |
+| 최신 검증 기준 | `upstream/devel` `22947f6a90c998e95fa51238d5b907a0ebd37162` |
+| 최신 필수 검증 제품 | `a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973` |
+| 전쪽 시각 측정 producer·당시 base | `4b149b6cdfc514b9858ed644be2cf8120c731cd4` / `7fdd5441ff1e77c083818e920a48089f294de35e` |
+| 전쪽 fresh WASM 실제 build head | `7bb9e66fd006109ca9f7ee4c4d3f752c82e60fae` — 위 제품과 runtime source 동일성 확인 |
+| 최신 기본 전체 Rust 회귀 | 12,561/12,561 PASS, 45 skipped, exit 0 |
+| 최신 Native Skia | unfiltered library 4,040 PASS·12 ignored, CI integration 모듈 21개 모두 exit 0 |
+| 최신 Rust 기타 게이트 | fmt·suite/tier·workspace all-target Clippy·WASM Clippy·workspace build·doc test 모두 exit 0 |
+| 전쪽 Native | 80입력·406쪽, 최저 91.85%, 90% 미만·누락·쪽수·입력/PDF 해시 불일치 0건 |
+| 전쪽 WASM | 중단 입력 36개 복구 완료. 80입력·406쪽, 최저 raw 92.03052%, 90% 미만·누락·쪽수·입력/제품 해시 오류 0건 |
+| PR #8389·#8397 보존 범위 | Native/fresh WASM 각각 17문서·1,770쪽, 원 TSV 2,153행 표시값 하락 0행 |
+| 최신 제품 후속 검사 | fresh 최적화 WASM·실제 브라우저/API와 리베이스 영향 경계 실행 중 |
+| 개별 리뷰 | 39개 작성, 37개 수용 가능 기록·2개 공통 검증 대기. 최신 head의 최종 승인 확정 0개 |
+
+[전쪽 Native/fresh WASM 산출물 감사](whole-page-capture-summary.json),
+[Rust 33개 실제 성공 게이트](rust-validation-a7e5ce7112.json)와
+[원 PR 39개 head 재확인](source-head-recheck-20261105.tsv)을 연결한다. 모두 Open·non-Draft이고
+리뷰어 요청이 유지되며 원 head 변경은 없다. 현재 devel은 PR metadata의 `base.sha`가 아닌
+실제 `git/ref/heads/devel`을 따로 조회해 확인했다.
+
+충돌 없는 리베이스 뒤 전체 비교를 반복하지 않는 작업지시자의 범위를 따른다. 재사용한 전쪽
+TSV·PNG는 원래의 producer·base·package 해시를 유지한다. 최신 source에서 재출력한 증거처럼
+표시하지 않는다. 새 base의 기능은 영향 대상과 정상 대조군을 최신 제품과 새 기준 제품으로
+실제 실행해 확인하며, 기존 보정 대상 PR #8498의 영향 5쪽은 리베이스 전 후보와 대조한다.
+최신 후보 집중 범위는 3문서·7쪽이고 새 base 자체 대조는 그중 2문서·2쪽이다.
+
+Native 대표 증적의 중복 제외 93개 입력·쪽 조합은 실제 원본·PDF·backend·source PNG 해시와
+대응함을 확인했다. 파일 대응 감사와 직접 판독·최종 승인 판정은 구분한다. WASM의 같은
+대표 증적 연결과 같은 환경 base 대조는 진행 중이다.
+
+설치 글꼴이 없는 환경의 회귀와 전체 시스템 글꼴을 공급한 독립 Print 시각 측정은 별도 계약이다.
+원본·독립 PDF·실제 글꼴 공급/대체·DPI·프로필·조판 세대와 Native/fresh WASM 해시는 최종
+출처 기록에서 구분한다. 폰트 파일을 추가하거나 재배포하지 않는다.
+
+아래는 이전 source의 검사와 판단 이력이다. 최신 source의 통과 결과나 현재 남은 작업과 혼동하지 않는다.
+
+## 이전 source의 실행·보정 이력
+
+### 코드와 실행 파일
 
 - 기준 devel: `7d06d5c706f1d89f1662e739abf2b1b25d2a98e4`.
 - 제품 코드: `dc87f4fa2e`. 이후 `fd97ae040f`는 두 호환 모드 회귀와 문서·증적 보강이며
@@ -18,7 +58,7 @@ PR #8550·#8552·#8553은 다음 접수 대상이다.
   `219cdf77a61e995569350fc81c8258f104bd177301a80bfe3a59670ff3804a06`.
   `rhwp-studio/public/rhwp.js`와 같은 바이트다.
 
-## 현재 검증 상태
+### 현재 검증 상태
 
 2026-11-04, 96 DPI, 색상 경계 보정 전 2px 내용 실루엣을 사용한다.
 직접 대응시킨 78개 입력/PDF 쌍의 Native 404쪽은 모두 90% 이상이다.
@@ -44,14 +84,14 @@ Native/fresh WASM 시각 비교에는 설치된 시스템 글꼴 전체를 공�
 글꼴을 숨기고 저장소의 허용된 기본 글꼴 5개만 노출한 환경에서 별도로 실행한다.
 글꼴 프로그램은 이 증적에 포함하지 않는다.
 
-## 기존 해결 범위 보존
+### 기존 해결 범위 보존
 
 [PR #8389·#8397 전쪽 비교](pr8389_8397/README.md)는 기존 TSV의 모든 기준 행을
 대조한다. Native는 원 PR 기준 2,153행 모두 유지·개선했다. 직전 통합 기록 일부의 수치가
 동일 코드 재측정과 다른 사실은 PNG SHA 대조와 함께 해당 기록에 명시했다.
 현재 devel과의 Native/fresh WASM 대조 및 최종 Rust·lint 검증은 완료 후 연결한다.
 
-## 최종 회귀와 base 대조 진행 기록
+### 최종 회귀와 base 대조 진행 기록
 
 최소 글꼴 환경의 전체 Rust 검사는 `fd97ae040f`에서 12,498개를 실행해 12,497개 통과,
 1개 실패, 45개 건너뛰기로 끝났다. 실패한 `body_overflow_baseline` partition 14는 새 실물
@@ -73,7 +113,7 @@ Native/fresh WASM 시각 비교에는 설치된 시스템 글꼴 전체를 공�
 후보에서 복원된 경우다. 이 행에 가상의 0% 기준값을 넣지 않고 실제 base 상태를 기록했다.
 fresh WASM의 같은 대조와 Native Skia·lint는 아직 완료 전이다.
 
-## 실제 가져오기·편집 경로
+### 실제 가져오기·편집 경로
 
 [WASM 실제 API 대조](wasm-producer-parity.md)는 최적화한 fresh package에서 PDF
 가져오기 3종과 EMC 문서의 실제 글자 삭제·HWPX 저장을 실행한 결과다. 네 산출물이

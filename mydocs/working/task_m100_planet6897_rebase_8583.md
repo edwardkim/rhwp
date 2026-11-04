@@ -461,3 +461,29 @@ PR metadata의 `base.sha`는 PR별 과거 값일 수 있으므로 현재 devel r
 과거 전체 측정을 최신 source의 새 실행으로 잘못 기록할 수 없게 실제 전쪽 producer/base와
 최신 필수 검증 source/base를 별도 필드로 다룬다. 리베이스 재사용 조건과 최신 집중 보존 검증이
 완료되지 않으면 최종 완료 문구를 생성하지 않는다. 이 도구는 ignored output 안의 검토 보조 도구다.
+
+
+## 중단된 WASM 전쪽 복구 완료와 증적 대응 감사 — 2026-11-05
+
+고정 제품 `4b149b6cdf`·WASM package `7bb9e66fd0`의 중단 입력 36개가 모두 종료했다.
+복구 worker의 실제 exit 0 뒤 별도 감사도 exit 0이다. 전 80입력·406쪽의 WASM 최저 raw는
+92.03052%이며, 90% 미만·누락·쪽수·입력/PDF·제품 해시 오류는 0건이다. Native 같은
+80입력·406쪽도 완료 manifest와 전쪽 원문을 다시 감사해 오류 0건을 확인했다.
+이는 새 렌더 실행이 아니라 이미 고정한 산출물의 감사다. 정확한 producer·base·package와
+최저값은 `mydocs/pr/assets/planet6897_20261103/whole-page-capture-summary.json`에 보존한다.
+
+대표 쪽 선택 100행 중 같은 입력·쪽 중복을 제외하면 93조합이다. Native 93조합 모두
+실제 입력·독립 PDF·쪽·backend·source PNG SHA와 review/overlay 연결을 확인했다.
+파일 대응 감사와 직접 판독은 별도다. 이번 점검에서 직접 읽은 여섯 review/overlay 쌍은
+읽은 실제 PNG 해시와 남은 차이까지 ignored 판독 원장에 기록했고 전체 승인으로 확대하지 않는다.
+한 개요 증적의 공용 key에 들어 있던 `-wasm`은 backend 중립 이름으로 정리했다. 같은
+Native 입력·쪽으로 패널만 재구성했으며 renderer를 다시 실행하지 않았다.
+WASM 대표 패널과 동일한 파일 대응 감사도 기존 완료 PNG를 사용해 후속 실행 중이다.
+
+최신 source `a7e5ce7112`의 Native Skia 제품 빌드·고정은 exit 0이고 SHA-256은
+`69113f81385355d22811a526ba8dd3e15c90bdffb58f858eddc59be4aef6c62b`다.
+최적화 fresh WASM은 컴파일 중이며 이 빌드의 실제 브라우저/API 결과를 과거 package 결과로
+대체하지 않는다. 새 base와 후보의 직접 대조는 상속한 PR #8585 및 정상 #8122의 2문서·2쪽이다.
+후보의 전체 집중 범위 3문서·7쪽 중 나머지 PR #8498의 5쪽은 같은 입력의 리베이스 전 후보와
+대조한다. 이 구분은 원래 작업 개선 유지와 새 base 기능 보존을 각각 입증하기 위한 것이다.
+같은 환경의 WASM base 전쪽 대조와 최종 개별 리뷰·주석 갱신·PR 본문 준비는 아직 남아 있다.
