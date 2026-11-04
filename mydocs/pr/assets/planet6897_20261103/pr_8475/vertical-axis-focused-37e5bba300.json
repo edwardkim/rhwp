@@ -1,0 +1,57 @@
+{
+  "recorded_at": "2026-11-04T23:40:05.320887+00:00",
+  "before_source": "c732203d4bd8fb7ae6ef158f1bacd210bd8509d9",
+  "corrected_source": "37e5bba3007614d9304c3dbf863503a8c7340405",
+  "shared_detection_function_sha256": "36ac322371a4920c60688e8a6a8e9d1d6384a772c6205200924c8b26bc76236c",
+  "detection_assertion_unchanged": true,
+  "before": {
+    "passed": 0,
+    "failed": 2,
+    "exit": 101,
+    "log": "output/pr-review/planet6897-20261103/logs/vertical-axis-before-v2-focused-before.log",
+    "log_sha256": "c12c00f12411abe656762c59aa954a9dfff84e7245ee8b5017fd8bfcd7b119d7"
+  },
+  "after": {
+    "passed": 7,
+    "failed": 0,
+    "groups": [
+      {
+        "path": "output/pr-review/planet6897-20261103/logs/vertical-axis-fix-v5-focused-issue_8470_vertical_cell_content_axis.log",
+        "sha256": "ac2f781736938380633c26ccade7edc31228e12d05b460e34e418836fd422663",
+        "passed": 2,
+        "failed": 0
+      },
+      {
+        "path": "output/pr-review/planet6897-20261103/logs/vertical-axis-fix-v5-focused-issue_8470_vertical_cell_table_no_split.log",
+        "sha256": "61a7728d4ad9332313cde139c309d39be570b6ddb7fe2ca864cd37b48dafae5a",
+        "passed": 4,
+        "failed": 0
+      },
+      {
+        "path": "output/pr-review/planet6897-20261103/logs/vertical-axis-fix-v5-focused-issue_6029_vertical_cell_line_budget.log",
+        "sha256": "d4df6487c7dc9e75970aca703be2137714b855da1c0c87e51eb5ea995d2e8f97",
+        "passed": 1,
+        "failed": 0
+      }
+    ],
+    "font_environment": "격리된 공개 글꼴 5개, 설치 OTF 의존 없음",
+    "cargo_jobs": 8,
+    "target_dir": "/home/tsjang/rhwp/target/pr-review",
+    "profile": "release-test",
+    "features": [
+      "native-skia"
+    ],
+    "nonstandard_rustc_cfg": false
+  },
+  "corrected_source_files": {
+    "src/document_core/commands/document.rs": "8ad96f48f0b7c3050914cc608789e881d85e75ad5a387fac77bbaa7d23f9c7c6",
+    "src/document_core/commands/document/cell_line_frame.rs": "c0212f6926272569c756b33a60b674ac809bdbccf4c0a009e7e944d4da4dbde8",
+    "src/renderer/composer.rs": "45850e66f64edcfe354736e0fc9f85e22a776543854168e8d2269a8287f8101b",
+    "src/renderer/composer/vertical_cell_lines.rs": "54e4390b715a3d496e631509a9607cc7ead61fc07ff09021baf2e998c3f4c37a",
+    "src/renderer/layout/table_cell_content.rs": "88b09b382a690b76dde140456859197e0b707352f607c1935b4481b999998595",
+    "tests/cases/issue_8470_vertical_cell_content_axis.rs": "61514b0e147a2cdb3c8cd951128c66895131ca64f39432ec625eb0ee508f0d05"
+  },
+  "excluded_earlier_runs": "llms 누락·안쪽 workspace 설정 오류와 이전 공유 lib 캐시를 사용한 v3/v4 실행은 수정 전후 판정에서 제외",
+  "pending": "최종 Native/fresh WASM Print 전쪽·확대 판독·필수 전체 검증",
+  "final_approval": false
+}

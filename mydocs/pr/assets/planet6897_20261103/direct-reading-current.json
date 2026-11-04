@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-11-04T23:09:54.389163+00:00",
+  "recorded_at": "2026-11-04T23:56:29.022054+00:00",
   "records": [
     {
       "pr": 8422,
@@ -3106,9 +3106,422 @@
       },
       "observation": "최저 쪽의 붙임1 보리·밀 사진 두 장과 각 캡션이 순서대로 같은 쪽에 남는다. 사진·캡션 표 경계가 PDF보다 약간 위에 있고 글꼴 굵기 차이도 남아 완전 일치라고 하지 않는다. 이 쪽은 떠나는 쪽 로고 보존의 직접 주장 쪽과 구분한 정상 대조 페이지다.",
       "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8486,
+      "input": "samples/issue8468/156454114-p4g-opening-remarks.hwp",
+      "pdf": "pdf/issue8468/156454114-p4g-opening-remarks-2022.pdf",
+      "page": 3,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T23:18:38.948061+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8486/pr8486-claim-p003-156454114-p4g-open-native-review.png",
+          "sha256": "e35195aeb116ec17a46ea3ebfdb811378baeb872b84a038dea07e7e272f47485",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p003-156454114-p4g-open/review/review_003.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8486/pr8486-claim-p003-156454114-p4g-open-native-overlay.png",
+          "sha256": "408d4da3877aed9b67ef8a4857f16d4d34db756b9ffda94b33e6193b09bce6c2",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p003-156454114-p4g-open/overlay/overlay_003.png"
+        }
+      },
+      "observation": "P4G 영문 연설문 3쪽의 Why Green Finance 제목, 본문 다섯 묶음과 각주 1)의 소속·순서·하단 간격을 대조했다. carbon neutrality·ESG performance 등의 굵은 구간과 뒤 일반 글자가 같은 줄을 유지하고, 각주가 다음 쪽으로 밀리거나 본문과 겹치지 않는다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8486,
+      "input": "samples/issue8468/156454114-p4g-opening-remarks.hwp",
+      "pdf": "pdf/issue8468/156454114-p4g-opening-remarks-2022.pdf",
+      "page": 3,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T23:18:38.948061+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8486/pr8486-claim-p003-156454114-p4g-open-wasm-review.png",
+          "sha256": "3cb82a0015400b9a048289bad37e735e17e07e0a3f607ff1afdac80709245977",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8486-claim-p003-156454114-p4g-open/review/review_003.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8486/pr8486-claim-p003-156454114-p4g-open-wasm-overlay.png",
+          "sha256": "fb4cebe5c00fa364852583a690403f86f4204ae8d052c9ed95ffea509b99c096",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8486-claim-p003-156454114-p4g-open/overlay/overlay_003.png"
+        }
+      },
+      "observation": "P4G 영문 연설문 3쪽의 Why Green Finance 제목, 본문 다섯 묶음과 각주 1)의 소속·순서·하단 간격을 대조했다. carbon neutrality·ESG performance 등의 굵은 구간과 뒤 일반 글자가 같은 줄을 유지하고, 각주가 다음 쪽으로 밀리거나 본문과 겹치지 않는다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8486,
+      "input": "samples/issue8468/156454114-p4g-opening-remarks.hwp",
+      "pdf": "pdf/issue8468/156454114-p4g-opening-remarks-2022.pdf",
+      "page": 4,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T23:18:38.948061+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8486/pr8486-claim-p004-156454114-p4g-open-native-review.png",
+          "sha256": "8b332ea16a8dccc46c03d82cfd7936985c9af4325ca8b96da3f540bc52806bb7",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p004-156454114-p4g-open/review/review_004.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8486/pr8486-claim-p004-156454114-p4g-open-native-overlay.png",
+          "sha256": "f954315f6d4becdebc85e1b3758ef0caef6d7ac92174e09ba595085ddba9d4d4",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p004-156454114-p4g-open/overlay/overlay_004.png"
+        }
+      },
+      "observation": "영문 연설문 4쪽에서 Progress of Green Finance 제목부터 NGFS·TCFD 마지막 문단까지 순서와 줄바꿈이 유지된다. 본문 위첨자 2)·3)와 하단 각주 두 개가 대응하고 본문 끝·각주 사이의 빈 공간도 보존된다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8486,
+      "input": "samples/issue8468/156454114-p4g-opening-remarks.hwp",
+      "pdf": "pdf/issue8468/156454114-p4g-opening-remarks-2022.pdf",
+      "page": 4,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T23:18:38.948061+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8486/pr8486-claim-p004-156454114-p4g-open-wasm-review.png",
+          "sha256": "05915929a0385143f0c0befd4d1e5bbc317eea6674133c27b3ed1d45e40c3bd8",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8486-claim-p004-156454114-p4g-open/review/review_004.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8486/pr8486-claim-p004-156454114-p4g-open-wasm-overlay.png",
+          "sha256": "8efd5e9a8d76481adb0ef3503da45270faf2c5406c2ed8fc6ceb34c7e0e44f40",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8486-claim-p004-156454114-p4g-open/overlay/overlay_004.png"
+        }
+      },
+      "observation": "영문 연설문 4쪽에서 Progress of Green Finance 제목부터 NGFS·TCFD 마지막 문단까지 순서와 줄바꿈이 유지된다. 본문 위첨자 2)·3)와 하단 각주 두 개가 대응하고 본문 끝·각주 사이의 빈 공간도 보존된다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8469,
+      "input": "samples/issue8464/rowbreak_content_fit_f1200_h2660_d16.hwpx",
+      "pdf": "pdf/issue8464_rowbreak_content_fit_f1200_h2660_d16-2020.pdf",
+      "page": 2,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T23:21:18.212938+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-ecf823-native-review.png",
+          "sha256": "d99bf3df9642bb75d9317ead65f5a5fca9d6c3a961eb44529bccb97000be58f4",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-ecf823/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-ecf823-native-overlay.png",
+          "sha256": "13d86395562fb3f02577f822bcf175e592d6e1526af8019d90ec5515fa39c770",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-ecf823/overlay/overlay_002.png"
+        }
+      },
+      "observation": "내용 맞춤 높이 대조 입력의 이어받기 2쪽에서 라벨 25~50와 대응 R행 내용이 순서대로 모두 보인다. 첫 행은 쪽 위쪽에 붙고 마지막 행의 하단 괘선까지 닫히며, 이 쪽 안에서 해당 범위의 행 누락·중복은 보이지 않으며, 전쪽 경계 보존 판정은 앞·뒤 쪽의 독립 증거와 함께 수행한다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8469,
+      "input": "samples/issue8464/rowbreak_content_fit_h2505.hwpx",
+      "pdf": "pdf/issue8464_rowbreak_content_fit_h2505-2020.pdf",
+      "page": 2,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T23:21:18.212938+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-6aec82-native-review.png",
+          "sha256": "558bec8b5c9a748c770de558b5195a058111b3a493abd6274a24e83375b939ac",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-6aec82/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-6aec82-native-overlay.png",
+          "sha256": "d18416aadd57ee65c42164034a76f35b168d8ddfd404adc1eb663cd4b869301a",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-6aec82/overlay/overlay_002.png"
+        }
+      },
+      "observation": "내용 맞춤 높이 대조 입력의 이어받기 2쪽에서 라벨 27~54와 대응 R행 내용이 순서대로 모두 보인다. 첫 행은 쪽 위쪽에 붙고 마지막 행의 하단 괘선까지 닫히며, 이 쪽 안에서 해당 범위의 행 누락·중복은 보이지 않으며, 전쪽 경계 보존 판정은 앞·뒤 쪽의 독립 증거와 함께 수행한다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8469,
+      "input": "samples/issue8464/rowbreak_content_fit_h2570.hwpx",
+      "pdf": "pdf/issue8464_rowbreak_content_fit_h2570-2020.pdf",
+      "page": 2,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T23:21:18.212938+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-c7fec0-native-review.png",
+          "sha256": "bf9cd986b6e0f59eabcd1db4cf2314aefadbd71a0c24aaad22f3fa0b0dc4fda7",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-c7fec0/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-c7fec0-native-overlay.png",
+          "sha256": "dd962d540dc031cef56441a1c42c751153d2aae5c7284dad80070d51544addee",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-c7fec0/overlay/overlay_002.png"
+        }
+      },
+      "observation": "내용 맞춤 높이 대조 입력의 이어받기 2쪽에서 라벨 27~53와 대응 R행 내용이 순서대로 모두 보인다. 첫 행은 쪽 위쪽에 붙고 마지막 행의 하단 괘선까지 닫히며, 이 쪽 안에서 해당 범위의 행 누락·중복은 보이지 않으며, 전쪽 경계 보존 판정은 앞·뒤 쪽의 독립 증거와 함께 수행한다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8469,
+      "input": "samples/issue8464/rowbreak_content_fit_f1200_h2660_d16.hwpx",
+      "pdf": "pdf/issue8464_rowbreak_content_fit_f1200_h2660_d16-2020.pdf",
+      "page": 2,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T23:30:47.285182+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-ecf823-wasm-review.png",
+          "sha256": "53b9537b32aeeadbc63f35d7c25581fff6259f7e2d83931f72f24b50f44c0791",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8469-claim-p002-rowbreak_content_f-ecf823/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-ecf823-wasm-overlay.png",
+          "sha256": "883cb1642a83558d8b25b3c9378749dc652429a847699cbfd863f411a47087ce",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8469-claim-p002-rowbreak_content_f-ecf823/overlay/overlay_002.png"
+        }
+      },
+      "observation": "내용 맞춤 높이 대조 입력의 이어받기 2쪽에서 라벨 25~50와 대응 R행 내용이 순서대로 모두 보인다. 첫 행은 쪽 위쪽에 붙고 마지막 행의 하단 괘선까지 닫힌다. 이 쪽 안에서 해당 범위의 행 누락·중복은 보이지 않으며, 전쪽 경계 보존 판정은 앞·뒤 쪽의 독립 증거와 함께 수행한다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8469,
+      "input": "samples/issue8464/rowbreak_content_fit_h2505.hwpx",
+      "pdf": "pdf/issue8464_rowbreak_content_fit_h2505-2020.pdf",
+      "page": 2,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T23:30:47.285182+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-6aec82-wasm-review.png",
+          "sha256": "7501a28fe8d00f4fc954f127cb45abaa2def91f23bd6472146c854af1ade98cf",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8469-claim-p002-rowbreak_content_f-6aec82/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-6aec82-wasm-overlay.png",
+          "sha256": "7de60ec9bd008a8e11c9754f600b6779b4d3beb4172e93387d85d0a5026c7f38",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8469-claim-p002-rowbreak_content_f-6aec82/overlay/overlay_002.png"
+        }
+      },
+      "observation": "내용 맞춤 높이 대조 입력의 이어받기 2쪽에서 라벨 27~54와 대응 R행 내용이 순서대로 모두 보인다. 첫 행은 쪽 위쪽에 붙고 마지막 행의 하단 괘선까지 닫힌다. 이 쪽 안에서 해당 범위의 행 누락·중복은 보이지 않으며, 전쪽 경계 보존 판정은 앞·뒤 쪽의 독립 증거와 함께 수행한다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8469,
+      "input": "samples/issue8464/rowbreak_content_fit_h2570.hwpx",
+      "pdf": "pdf/issue8464_rowbreak_content_fit_h2570-2020.pdf",
+      "page": 2,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T23:30:47.285182+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-c7fec0-wasm-review.png",
+          "sha256": "d3a50647e1f01544beea9232ff755af0e6ddcd8805b542d702d1ee22d8f903b3",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8469-claim-p002-rowbreak_content_f-c7fec0/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-c7fec0-wasm-overlay.png",
+          "sha256": "3cf3e438051089dc87675e867cc794d96115ee8984516297c15cfa6314e57874",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8469-claim-p002-rowbreak_content_f-c7fec0/overlay/overlay_002.png"
+        }
+      },
+      "observation": "내용 맞춤 높이 대조 입력의 이어받기 2쪽에서 라벨 27~53와 대응 R행 내용이 순서대로 모두 보인다. 첫 행은 쪽 위쪽에 붙고 마지막 행의 하단 괘선까지 닫힌다. 이 쪽 안에서 해당 범위의 행 누락·중복은 보이지 않으며, 전쪽 경계 보존 판정은 앞·뒤 쪽의 독립 증거와 함께 수행한다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8473,
+      "input": "samples/issue8467/36412338-approval-footer-split.hwpx",
+      "pdf": "pdf/issue8467/36412338-approval-footer-split-2022.pdf",
+      "page": 2,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T23:32:30.499298+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8473/pr8473-claim-p002-36412338-approval--native-review.png",
+          "sha256": "138d0974d640eb00932a8d105e3dcebd2951fceaad07cf3c1f04f0a297934ab1",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8473-claim-p002-36412338-approval-/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8473/pr8473-claim-p002-36412338-approval--native-overlay.png",
+          "sha256": "2f2850e7b2fc5cfb66cdb9f9e0a303599e4b2752df1015808372b1fbb0078b15",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8473-claim-p002-36412338-approval-/overlay/overlay_002.png"
+        }
+      },
+      "observation": "재난관리과장 발신 문서의 2쪽에서 수신자→회색 결재 구분선→담당자·결재 일자→시행·주소·전화 행이 같은 하단 영역에 순서대로 남는다. 회색 선과 뒤 연락처가 잘리거나 서로 겹치지 않는다. 담당자 이름의 굵기 표현에는 PDF와 차이가 남아 글자모양 완전 일치로 표현하지 않는다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8473,
+      "input": "samples/issue8467/36412338-approval-footer-split.hwpx",
+      "pdf": "pdf/issue8467/36412338-approval-footer-split-2022.pdf",
+      "page": 2,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T23:32:30.499298+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8473/pr8473-claim-p002-36412338-approval--wasm-review.png",
+          "sha256": "a602090d7e022dbd228b811c8dd81fb42aa0f0fc4960d326f318c821c3af8aff",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8473-claim-p002-36412338-approval-/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8473/pr8473-claim-p002-36412338-approval--wasm-overlay.png",
+          "sha256": "e26f5bc1b642fca433d8362fcbde616206b0044728aad65c54d9be0d7e8a6f1d",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8473-claim-p002-36412338-approval-/overlay/overlay_002.png"
+        }
+      },
+      "observation": "재난관리과장 발신 문서의 2쪽에서 수신자→회색 결재 구분선→담당자·결재 일자→시행·주소·전화 행이 같은 하단 영역에 순서대로 남는다. 회색 선과 뒤 연락처가 잘리거나 서로 겹치지 않는다. 담당자 이름의 굵기 표현에는 PDF와 차이가 남아 글자모양 완전 일치로 표현하지 않는다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8475,
+      "input": "samples/issue8470/vertical_fit.hwpx",
+      "pdf": "pdf/issue8470/vertical_fit-2020.pdf",
+      "page": 5,
+      "backend": "native",
+      "measurement_code_label": "vertical-axis-37e5bba300",
+      "producer_commit": "37e5bba3007614d9304c3dbf863503a8c7340405",
+      "observed_at_utc": "2026-11-04T23:56:29.022054+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-00-p005-review.png",
+          "sha256": "313bce8b7cfac3902e2e350f140c74a9a85f6d6fe0fc703cedb2423c5f87fa76",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/native/vertical-axis-0/review/review_005.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-00-p005-overlay.png",
+          "sha256": "195113092cbe2d63d6676a21c6120563c91a0cc4fadfb17d1de1cc67f8807721",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/native/vertical-axis-0/overlay/overlay_005.png"
+        }
+      },
+      "observation": "V6 표의 행 1–30과 닫힌 외곽을 확인했다. 병합 칸의 임용전경력 다섯 글자가 한 세로줄로 모두 셀 내부에 보이며, 수정 전 잘리던 력이 복원되었다. 인접 행 내용과 겹치거나 쪽을 넘어 분리되지 않는다.",
+      "status": "Native 주장 쪽 판독 완료; fresh WASM 및 최종 공통 검증 대기"
+    },
+    {
+      "pr": 8475,
+      "input": "samples/issue8470/vertical_oversize.hwpx",
+      "pdf": "pdf/issue8470/vertical_oversize-2020.pdf",
+      "page": 5,
+      "backend": "native",
+      "measurement_code_label": "vertical-axis-37e5bba300",
+      "producer_commit": "37e5bba3007614d9304c3dbf863503a8c7340405",
+      "observed_at_utc": "2026-11-04T23:56:29.022054+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-01-p005-review.png",
+          "sha256": "e0af6b312afc54db4a21d13022013db8197b77c8e252575aea8166680b57c2a5",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/native/vertical-axis-1/review/review_005.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-01-p005-overlay.png",
+          "sha256": "1373c5ed75b0108825e9c47f92edae3373b19510044a1c28a4d276fc6f3dca87",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/native/vertical-axis-1/overlay/overlay_005.png"
+        }
+      },
+      "observation": "V3 표의 행 1–36과 마지막 외곽을 확인했다. 하단의 세 행 병합 칸에 임용전경력 다섯 글자가 한 세로줄로 남고 인접 내용의 순서와 끝 행을 보존한다. 수정 전 셀 밖으로 나가던 마지막 글자가 보인다.",
+      "status": "Native 주장 쪽 판독 완료; fresh WASM 및 최종 공통 검증 대기"
+    },
+    {
+      "pr": 8475,
+      "input": "samples/issue8470/42565_입법예고문.hwp",
+      "pdf": "pdf/issue8470/42565_입법예고문-2020.pdf",
+      "page": 10,
+      "backend": "native",
+      "measurement_code_label": "vertical-axis-37e5bba300",
+      "producer_commit": "37e5bba3007614d9304c3dbf863503a8c7340405",
+      "observed_at_utc": "2026-11-04T23:56:29.022054+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-02-p010-review.png",
+          "sha256": "9da68fd9f07c6f24400c0accf1205b3aa9af013c02227d08ceae9bcb9b928b96",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/native/vertical-axis-2/review/review_010.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-02-p010-overlay.png",
+          "sha256": "ba6ff0d4c88b119c6a6fa84fce5ee5c2b54a3538a3c8ff385ff0e6b6b3d95a2d",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/native/vertical-axis-2/overlay/overlay_010.png"
+        }
+      },
+      "observation": "원본 입법예고문의 사진·인적 사항·병역·가족·임용전 경력 표가 같은 쪽에 남는다. 유효한 저장 줄을 가진 가족관계 및 파란 임용전경력의 글자 사이 간격은 독립 Print와 차이가 남는다. 이 쪽은 이전 c183 출력과 PNG 바이트가 동일하며, 저장 줄이 없는 두 축약 입력의 누락 보정 완료를 이 기존 표현 차이의 해결로 확대하지 않는다.",
+      "status": "Native 주장 쪽 판독 완료; fresh WASM 및 최종 공통 검증 대기"
+    },
+    {
+      "pr": 8475,
+      "input": "samples/issue8470/42565_입법예고문.hwp",
+      "pdf": "pdf/issue8470/42565_입법예고문-2020.pdf",
+      "page": 11,
+      "backend": "native",
+      "measurement_code_label": "vertical-axis-37e5bba300",
+      "producer_commit": "37e5bba3007614d9304c3dbf863503a8c7340405",
+      "observed_at_utc": "2026-11-04T23:56:29.022054+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-02-p011-review.png",
+          "sha256": "dcc80686a9f7a6134ddfc10672ebbf7ca2f71f63e3100aecd96d448f37f377ca",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/native/vertical-axis-2/review/review_011.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-02-p011-overlay.png",
+          "sha256": "9d96c1031962a622432e32346aedac04412f370f47be6124bcf0c9c1e84a67d1",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/native/vertical-axis-2/overlay/overlay_011.png"
+        }
+      },
+      "observation": "임용·시험·교육 훈련·외국어·징계 표의 병합 칸과 마지막 행 및 닫는 선을 확인했다. 표 밖으로 빠진 글자·중복 행·종료 후 잘림을 관찰하지 않았다. 이전 c183 출력과 PNG 바이트가 동일하다.",
+      "status": "Native 주장 쪽 판독 완료; fresh WASM 및 최종 공통 검증 대기"
+    },
+    {
+      "pr": 8475,
+      "input": "samples/issue6029/3200477_icao_procedure.hwpx",
+      "pdf": "pdf/issue6029-3200477_icao_procedure-2024.pdf",
+      "page": 1,
+      "backend": "native",
+      "measurement_code_label": "vertical-axis-37e5bba300",
+      "producer_commit": "37e5bba3007614d9304c3dbf863503a8c7340405",
+      "observed_at_utc": "2026-11-04T23:56:29.022054+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-05-p001-review.png",
+          "sha256": "9ea24b6042c33e08fe71cbf3c360c15eff25329a9120bad3b9b1dc1239e6fe55",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/native/vertical-axis-5/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-05-p001-overlay.png",
+          "sha256": "a5a52f125956e2a8972b73d08bd3c570539d33c9ac40d96bc56f2cfc39c92a0d",
+          "capture_path": "output/pr-review/planet6897-20261103/vertical-axis-review/native/vertical-axis-5/overlay/overlay_001.png"
+        }
+      },
+      "observation": "정상 저장 세로줄 대조군이다. 담당·세부 업무·기한의 상자와 세로 제목의 소속을 보존한다. 독립 Print에는 있는 상자 사이 연결 화살표가 RHWP에는 없고 제목 굵기·세로 글자 간격도 일부 다르다. 이전 c183 PNG와 바이트가 동일해 이번 합성 줄 보정으로 새로 생긴 차이로 분류하지 않으며, 원본 전체의 완전 일치를 주장하지 않는다.",
+      "status": "Native 주장 쪽 판독 완료; fresh WASM 및 최종 공통 검증 대기"
     }
   ],
-  "record_count": 132,
+  "record_count": 149,
   "final_approval": false,
   "note": "직접 본 PNG의 해시와 관측만 기록한다. 기록되지 않은 쪽이나 최종 공통 검증의 완료를 주장하지 않는다."
 }

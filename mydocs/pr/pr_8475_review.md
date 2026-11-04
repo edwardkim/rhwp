@@ -9,10 +9,43 @@
 Native/fresh WASM 양쪽에서 확인했으며 98%대 점수만으로 면제하지 않습니다.
 [소유권·합성 줄 경로 분석](../working/task_m100_8470_vertical_synthetic_frame.md)에 따라
 이 주장 칸의 글자 보존까지 보정·재검증한 뒤 최종 판정을 갱신합니다.
+
+별도 보정 소스 `37e5bba300`에서 [같은 관계 검사의 수정 전후 실행](assets/planet6897_20261103/pr_8475/vertical-axis-focused-37e5bba300.json)을 확인했습니다.
+검출 assertion을 바꾸지 않고 수정 전 2 FAIL에서 수정 후 2 PASS로 바뀌었으며,
+기존 표 나눔 4개와 저장 세로줄 정상 대조 1개도 최소 글꼴 환경에서 통과했습니다.
+이 소스는 별도 검증 worktree에 있으며 아직 통합 브랜치의 제품 코드에 적용하지 않았습니다.
+Native/fresh WASM 전쪽·확대 판독과 최종 공통 검증 전까지 보류를 유지합니다.
+
 메인터너가 통합 후보의 실제 전쪽 증적과 회귀 근거를 보강했습니다. 원 PR에 대응하는 입력·쪽과 반례는 아래에 기록했습니다.
 원 head와 리베이스·메인터너 보정을 적용한 통합 후보를 구분합니다. 실제 적용 커밋은 아래 표에 기록했습니다.
 완료된 검증과 남은 공통 검증을 아래에서 구분합니다. 최종 수용 판정과 PR 생성은 아직 대기입니다.
 아래 값은 명시한 코드 SHA의 실측 결과이며 원 PR의 승인이나 닫기를 뜻하지 않습니다.
+
+## 세로쓰기 글자 보존 보정의 현재 증거
+
+보정 소스 `37e5bba3007614d9304c3dbf863503a8c7340405`의 Native 제품을 별도로
+빌드해 실제 컴파일 의존성에 새 공통 helper가 포함됐음을 확인했습니다.
+[제품·명령·SHA](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/product.json),
+[전쪽 raw·직전 후보 대조](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/audit.json),
+[직접 판독과 PNG 해시](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/direct-reading.json)를 보존했습니다.
+
+| 입력 | 보정 후 Native 전쪽 TSV · 최저 raw | 직접 확인한 주장 쪽 |
+| --- | --- | --- |
+| `vertical_fit.hwpx` · 5쪽 | [TSV](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-00-silhouette.tsv) · 100.00% | 5쪽 [review](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-00-p005-review.png) / [overlay](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-00-p005-overlay.png) |
+| `vertical_oversize.hwpx` · 5쪽 | [TSV](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-01-silhouette.tsv) · 100.00% | 5쪽 [review](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-01-p005-review.png) / [overlay](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-01-p005-overlay.png) |
+| `42565_입법예고문.hwp` · 16쪽 | [TSV](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-02-silhouette.tsv) · 94.92448% | 10쪽 [review](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-02-p010-review.png) / [overlay](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-02-p010-overlay.png), 11쪽 [review](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-02-p011-review.png) / [overlay](assets/planet6897_20261103/pr_8475/vertical-axis-37e5bba300/native/case-02-p011-overlay.png) |
+
+두 축약 입력의 5쪽에서 `임용전경력` 다섯 글자가 한 세로줄의 셀 안에 표시되며, 마지막
+글자의 소실이 복원됐습니다. 앞뒤 행·표 끝·쪽 소속을 함께 확인했습니다. 정상 대조군을
+포함한 6입력·29쪽 중 27쪽은 이전 `c183a1ac61` 출력과 PNG 바이트가 동일하고,
+두 문제 쪽만 개선됐습니다. 원본의 유효한 저장 세로줄은 유지합니다.
+
+실물 10쪽의 기존 저장 세로줄 글자 간격과 정상 대조군의 연결 화살표 등에는 이전부터
+Print와 차이가 남습니다. 해당 페이지 PNG가 직전 후보와 동일함을 대조했으며, 이번
+합성 줄의 누락 보정을 원본 전체의 완전 일치로 확대하지 않습니다.
+
+fresh WASM의 같은 보정 소스 측정, 확대 판독, 필수 전체 Rust 묶음과 통합 브랜치 적용은
+아직 완료 전입니다. 아래 이전 producer의 TSV·PNG는 보정 전 증거로 유지합니다.
 
 ## 접수 정보
 
@@ -34,7 +67,7 @@ Native/fresh WASM 양쪽에서 확인했으며 98%대 점수만으로 면제하�
 원 PR의 변경 주장은 **fix(table): 세로쓰기 칸이 있는 표를 쪽 경계에서 나누지 않는다 (#8470)**입니다. 해당 주장에 연결된 입력과 쪽을 아래에 분리해 적었습니다.
 적층 PR에 중복 포함된 선행 커밋과 이 PR의 실제 신규 커밋은 최종 통합 기록에서 구분합니다.
 
-## 검증 입력과 전쪽 결과
+## 보정 전 검증 입력과 전쪽 결과
 
 | 입력 · 독립 Print PDF | Native 전쪽 TSV · 최저 raw | fresh WASM 전쪽 TSV · 최저 raw |
 | --- | --- | --- |
@@ -67,7 +100,7 @@ model/table.rs의 Table::layout_page_break가 측정·typeset·layout 공통 소
 148개 파일은 증적 고정 커밋 `fd97ae040f`의 파일 내용과 일치합니다.
 위 개별 입력은 저장소의 동일 파일을 재사용합니다.
 
-## 원 PR 주장 쪽의 시각 증적
+## 보정 전 원 PR 주장 쪽의 시각 증적
 
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |

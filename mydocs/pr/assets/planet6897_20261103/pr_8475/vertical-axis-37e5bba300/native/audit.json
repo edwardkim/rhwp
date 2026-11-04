@@ -1,0 +1,181 @@
+{
+  "recorded_at": "2026-11-04T23:49:13.792162+00:00",
+  "source_commit": "37e5bba3007614d9304c3dbf863503a8c7340405",
+  "backend": "native",
+  "cases": 6,
+  "pages": 29,
+  "records": [
+    {
+      "input": "samples/issue8470/vertical_fit.hwpx",
+      "pdf": "pdf/issue8470/vertical_fit-2020.pdf",
+      "pages": 5,
+      "minimum_raw": "100.0",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/visual/vertical-axis-37e5bba300/native/pr8475-vertical_fit-8a319181/silhouette.tsv",
+      "tsv_sha256": "651306476c87a371f9fe4a04366e2fc908ec9241fb4ab9918c6652f0cee0ac50",
+      "manifest_sha256": "d7f34e66908a719e548d2aa2de6a286df73f58d1f1a6a167cfb547377a60bd19",
+      "previous_candidate_comparison": {
+        "baseline": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/native/pr8475-vertical_fit-8a319181/silhouette.tsv",
+        "deltas_pp": {
+          "1": "0.0",
+          "2": "0.0",
+          "3": "0.0",
+          "4": "0.0",
+          "5": "1.24878"
+        },
+        "drop_over_0_1_pp": [],
+        "png_byte_identical_pages": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "png_changed_pages": [
+          5
+        ]
+      }
+    },
+    {
+      "input": "samples/issue8470/vertical_oversize.hwpx",
+      "pdf": "pdf/issue8470/vertical_oversize-2020.pdf",
+      "pages": 5,
+      "minimum_raw": "100.0",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/visual/vertical-axis-37e5bba300/native/pr8475-vertical_oversize-30055ea5/silhouette.tsv",
+      "tsv_sha256": "651306476c87a371f9fe4a04366e2fc908ec9241fb4ab9918c6652f0cee0ac50",
+      "manifest_sha256": "d72a30cbd36ae742df7582ced18612249e89699ebab80ad0577422628da985c9",
+      "previous_candidate_comparison": {
+        "baseline": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/native/pr8475-vertical_oversize-30055ea5/silhouette.tsv",
+        "deltas_pp": {
+          "1": "0.0",
+          "2": "0.0",
+          "3": "0.0",
+          "4": "0.0",
+          "5": "1.06012"
+        },
+        "drop_over_0_1_pp": [],
+        "png_byte_identical_pages": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "png_changed_pages": [
+          5
+        ]
+      }
+    },
+    {
+      "input": "samples/issue8470/42565_입법예고문.hwp",
+      "pdf": "pdf/issue8470/42565_입법예고문-2020.pdf",
+      "pages": 16,
+      "minimum_raw": "94.92448",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/visual/vertical-axis-37e5bba300/native/pr8475-42565_입법예고문-2279178b/silhouette.tsv",
+      "tsv_sha256": "3689ab0eee2f589e0b6ed10196c06ca94874832660eb5212a6ce97928e0f3877",
+      "manifest_sha256": "e8a55d7052ec5e56b0fc003a3e62cbcd4dd3c3d749ab6e5adec965af4955d764",
+      "previous_candidate_comparison": {
+        "baseline": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/native/pr8475-42565_입법예고문-2279178b/silhouette.tsv",
+        "deltas_pp": {
+          "1": "0.00000",
+          "2": "0.00000",
+          "3": "0.00000",
+          "4": "0.00000",
+          "5": "0.00000",
+          "6": "0.0",
+          "7": "0.0",
+          "8": "0.0",
+          "9": "0.00000",
+          "10": "0.00000",
+          "11": "0.0",
+          "12": "0.00000",
+          "13": "0.00000",
+          "14": "0.0",
+          "15": "0.00000",
+          "16": "0.0"
+        },
+        "drop_over_0_1_pp": [],
+        "png_byte_identical_pages": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "png_changed_pages": []
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/scaffold_outline_numbering/scaffold_outline_a.hwpx",
+      "pdf": "pdf/issue8540/scaffold_outline_a-2024.pdf",
+      "pages": 1,
+      "minimum_raw": "100.0",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/visual/vertical-axis-37e5bba300/native/pr8540-scaffold_outline_a-649191af/silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "manifest_sha256": "ae52d45c69a98c32d50f0bba58a924b40b41abfb65802d4a57a9e6f215dca929",
+      "previous_candidate_comparison": {
+        "baseline": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/native/pr8540-scaffold_outline_a-649191af/silhouette.tsv",
+        "deltas_pp": {
+          "1": "0.0"
+        },
+        "drop_over_0_1_pp": [],
+        "png_byte_identical_pages": [
+          1
+        ],
+        "png_changed_pages": []
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/scaffold_outline_numbering/scaffold_outline_b.hwpx",
+      "pdf": "pdf/issue8540/scaffold_outline_b-2024.pdf",
+      "pages": 1,
+      "minimum_raw": "100.0",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/visual/vertical-axis-37e5bba300/native/pr8540-scaffold_outline_b-82b08f33/silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "manifest_sha256": "7cba9a27e7a521b22a20ff7c5ea9ae19e8ac400033c25f429ea9deef9b5c1d2f",
+      "previous_candidate_comparison": {
+        "baseline": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/native/pr8540-scaffold_outline_b-82b08f33/silhouette.tsv",
+        "deltas_pp": {
+          "1": "0.0"
+        },
+        "drop_over_0_1_pp": [],
+        "png_byte_identical_pages": [
+          1
+        ],
+        "png_changed_pages": []
+      }
+    },
+    {
+      "input": "samples/issue6029/3200477_icao_procedure.hwpx",
+      "pdf": "pdf/issue6029-3200477_icao_procedure-2024.pdf",
+      "pages": 1,
+      "minimum_raw": "97.97401",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/visual/vertical-axis-37e5bba300/native/pr8475-3200477_icao_procedure-bc001901/silhouette.tsv",
+      "tsv_sha256": "dde5557e5b8340bd72abbe92af4dfb472b2ebf9c6faad60077d3499ef7c4f30f",
+      "manifest_sha256": "b5978f9887a87fc0feaf3b5f89bcd1aa435c915a1f40eab498e99f8c17aba277",
+      "previous_candidate_comparison": {
+        "baseline": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/native/pr8475-3200477_icao_procedure-bc001901/silhouette.tsv",
+        "deltas_pp": {
+          "1": "0.00000"
+        },
+        "drop_over_0_1_pp": [],
+        "png_byte_identical_pages": [
+          1
+        ],
+        "png_changed_pages": []
+      }
+    }
+  ],
+  "errors": [],
+  "previous_candidate_comparison_pending": [],
+  "scope": "전쪽 측정·제품·입력 동일성 감사. 최신 devel 대조·확대 판독·회귀 최종 판정은 별도다.",
+  "final_approval": false
+}

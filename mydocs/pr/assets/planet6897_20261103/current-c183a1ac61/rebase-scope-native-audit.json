@@ -1,0 +1,154 @@
+{
+  "recorded_at": "2026-11-04T23:39:32.271676+00:00",
+  "candidate_source": "c183a1ac61c2aa4188989fd93032cae68d3538c1",
+  "new_base_source": "22947f6a90c998e95fa51238d5b907a0ebd37162",
+  "candidate_only": false,
+  "cases": 3,
+  "candidate_pages": 7,
+  "errors": [],
+  "records": [
+    {
+      "pr": 8498,
+      "input": "samples/issue8491/156736331-press-logo.hwpx",
+      "pdf": "pdf/issue8491/156736331-press-logo-2022.pdf",
+      "backend": "native",
+      "reference_label": "4b149b6cdf",
+      "reference": {
+        "tsv": "mydocs/pr/assets/planet6897_20261103/current-c183a1ac61/rebase-scope-native/reference/pr8498-156736331-press-logo-31768298.tsv",
+        "sha256": "b3429a180e7c3f89c84c11652723c5d97cdc0e17f599952768b16f1cbe6689f6",
+        "pages": 5,
+        "minimum_raw": "92.45232",
+        "producer_native_sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f",
+        "producer_wasm_files": null,
+        "capture_context": "895205d5a7c9a545997e4d4248dcceac6c9314f9",
+        "capture_tsv": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/native/pr8498-156736331-press-logo-31768298/silhouette.tsv"
+      },
+      "candidate": {
+        "tsv": "mydocs/pr/assets/planet6897_20261103/current-c183a1ac61/rebase-scope-native/candidate/pr8498-156736331-press-logo-31768298.tsv",
+        "sha256": "b3429a180e7c3f89c84c11652723c5d97cdc0e17f599952768b16f1cbe6689f6",
+        "pages": 5,
+        "minimum_raw": "92.45232",
+        "producer_native_sha256": "cbb91433ec4e5b968ea7820dae1af09aa712991ae5b3027c68590fee5f2138d9",
+        "producer_wasm_files": null,
+        "capture_context": "c183a1ac61c2aa4188989fd93032cae68d3538c1",
+        "capture_tsv": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/native/pr8498-156736331-press-logo-31768298/silhouette.tsv"
+      },
+      "pages": [
+        {
+          "page": 1,
+          "before_raw": "99.68048",
+          "after_raw": "99.68048",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 2,
+          "before_raw": "99.94894",
+          "after_raw": "99.94894",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 3,
+          "before_raw": "99.97134",
+          "after_raw": "99.97134",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 4,
+          "before_raw": "99.92386",
+          "after_raw": "99.92386",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 5,
+          "before_raw": "92.45232",
+          "after_raw": "92.45232",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        }
+      ],
+      "input_sha256": "b95e0a460042895aeebc60779479f0bb439bc51d5e7643fcb224cfb3595bce93",
+      "pdf_sha256": "099c4d8c1bd51f409494eb811bb6e99093e95e198e7ffbc638afe345363c5dec"
+    },
+    {
+      "pr": 8585,
+      "input": "samples/issue7524/textbox_tac_picture_rows.hwp",
+      "pdf": "pdf/issue7524/textbox_tac_picture_rows-webhwp-print.pdf",
+      "backend": "native",
+      "reference_label": "base-22947f6a90",
+      "reference": {
+        "tsv": "mydocs/pr/assets/planet6897_20261103/current-c183a1ac61/rebase-scope-native/reference/pr8585-textbox_tac_picture_rows-1d8665a4.tsv",
+        "sha256": "719dd9ffd0e95fd0a77dbc2adca026e24a3239c8cffa7f53429ae04bd32db3e9",
+        "pages": 1,
+        "minimum_raw": "99.95891",
+        "producer_native_sha256": "305075056df1e0a9af4d93335192e532172fb6fc6e877063721cbbe52f5a95a6",
+        "producer_wasm_files": null,
+        "capture_context": "dc583bb2e1b06c2af24542829a308f69a9bf298d",
+        "capture_tsv": "output/pr-review/planet6897-20261103/visual/base-22947f6a90/native/pr8585-textbox_tac_picture_rows-1d8665a4/silhouette.tsv"
+      },
+      "candidate": {
+        "tsv": "mydocs/pr/assets/planet6897_20261103/current-c183a1ac61/rebase-scope-native/candidate/pr8585-textbox_tac_picture_rows-1d8665a4.tsv",
+        "sha256": "719dd9ffd0e95fd0a77dbc2adca026e24a3239c8cffa7f53429ae04bd32db3e9",
+        "pages": 1,
+        "minimum_raw": "99.95891",
+        "producer_native_sha256": "cbb91433ec4e5b968ea7820dae1af09aa712991ae5b3027c68590fee5f2138d9",
+        "producer_wasm_files": null,
+        "capture_context": "b29debe5471fe534627799df9de5cee863348a1b",
+        "capture_tsv": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/native/pr8585-textbox_tac_picture_rows-1d8665a4/silhouette.tsv"
+      },
+      "pages": [
+        {
+          "page": 1,
+          "before_raw": "99.95891",
+          "after_raw": "99.95891",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        }
+      ],
+      "input_sha256": "ffc0a66e92b10ec2ea10167bca2a2721c68a4207aed4acf5b381ab5e7ca18d36",
+      "pdf_sha256": "212f1c608c99a1a427aa5302046d8479afb0a16fecc19c2fcf62afb7212653a5"
+    },
+    {
+      "pr": 8122,
+      "input": "samples/issue8122/textbox_valign_no_lineseg.hwp",
+      "pdf": "pdf/issue8122/textbox_valign_no_lineseg-webhwp-print.pdf",
+      "backend": "native",
+      "reference_label": "base-22947f6a90",
+      "reference": {
+        "tsv": "mydocs/pr/assets/planet6897_20261103/current-c183a1ac61/rebase-scope-native/reference/pr8122-textbox_valign_no_lineseg-db64ab49.tsv",
+        "sha256": "cfe7021be1dc2ffa3663d8afc9177038746d4e687e61ba9ff5160aae5dd540e8",
+        "pages": 1,
+        "minimum_raw": "99.9275",
+        "producer_native_sha256": "305075056df1e0a9af4d93335192e532172fb6fc6e877063721cbbe52f5a95a6",
+        "producer_wasm_files": null,
+        "capture_context": "dc583bb2e1b06c2af24542829a308f69a9bf298d",
+        "capture_tsv": "output/pr-review/planet6897-20261103/visual/base-22947f6a90/native/pr8122-textbox_valign_no_lineseg-db64ab49/silhouette.tsv"
+      },
+      "candidate": {
+        "tsv": "mydocs/pr/assets/planet6897_20261103/current-c183a1ac61/rebase-scope-native/candidate/pr8122-textbox_valign_no_lineseg-db64ab49.tsv",
+        "sha256": "cfe7021be1dc2ffa3663d8afc9177038746d4e687e61ba9ff5160aae5dd540e8",
+        "pages": 1,
+        "minimum_raw": "99.9275",
+        "producer_native_sha256": "cbb91433ec4e5b968ea7820dae1af09aa712991ae5b3027c68590fee5f2138d9",
+        "producer_wasm_files": null,
+        "capture_context": "b29debe5471fe534627799df9de5cee863348a1b",
+        "capture_tsv": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/native/pr8122-textbox_valign_no_lineseg-db64ab49/silhouette.tsv"
+      },
+      "pages": [
+        {
+          "page": 1,
+          "before_raw": "99.9275",
+          "after_raw": "99.9275",
+          "delta_pp": "0.0000",
+          "verdict": "pass"
+        }
+      ],
+      "input_sha256": "de374075cfc2c1ef945d3795bba194b90dc42d759caf8b478c603d4777cfb8ff",
+      "pdf_sha256": "0cfca5740c6fc9aaadf9db814e6e0503850d1f56013eb4bdda895bbc80dd0023"
+    }
+  ],
+  "note": "Inherited features: compare actual new-base and candidate products on 8585 and normal 8122 control. Existing PR8498: compare pre-rebase candidate with post-rebase candidate. These scoped checks do not relabel reused whole-corpus captures as current-source renders. Candidate-only mode leaves inherited new-base comparisons pending."
+}
