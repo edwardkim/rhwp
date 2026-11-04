@@ -4,6 +4,9 @@ use super::control::{Control, FieldType, CTRL_CHAR_CODE_UNITS};
 use serde::{Deserialize, Serialize};
 
 mod control_source;
+mod marker_head;
+
+pub use marker_head::MarkerHead;
 
 /// 편집 입력의 줄바꿈을 LF로 통일한다. CR은 HWP5에서 문단 종료 코드다.
 pub fn normalize_text_newlines(text: &str) -> std::borrow::Cow<'_, str> {
@@ -214,23 +217,6 @@ pub enum NumberingMarker {
     /// 그려질 번호 문자열과 그 수준의 문단 머리 속성.
     Text(String, MarkerHead),
 }
-
-/// 목록 마커(글머리표·번호)의 문단 머리 속성 — HWP5 표 41·44 의 속성·너비 보정·본문과의 거리.
-///
-/// 줄 나눔과 배치가 마커가 차지하는 영역을 같은 값으로 정하도록 번호 문자열과 함께 둔다.
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
-pub struct MarkerHead {
-    /// 속성: bit0-1 정렬(0 왼쪽 · 1 가운데 · 2 오른쪽), bit2 인스턴스 폭,
-    /// bit3 자동 내어쓰기, bit4 본문과의 거리 단위(0 글자 크기 비율 · 1 HWPUNIT).
-    pub attr: u32,
-    /// 너비 보정값 (HWPUNIT)
-    pub width_adjust: i16,
-    /// 본문과의 거리 (bit4 에 따라 % 또는 HWPUNIT)
-    pub text_distance: i16,
-    /// 마커 글자 모양 (`u32::MAX` 는 참조 없음 — 문단 첫 글자 모양을 따른다)
-    pub char_shape_id: u32,
-}
-crate::storage::clone_copy!(MarkerHead);
 
 /// 줄 구성에서 선택한 공백 측정 규칙. 저장 형식의 bit나 글꼴 대체 규칙이 아니다.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
