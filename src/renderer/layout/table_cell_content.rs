@@ -122,20 +122,15 @@ impl LayoutEngine {
             .iter()
             .map(|para| {
                 if !para.text.is_empty() {
-                    let mut fresh =
-                        crate::renderer::composer::compose_paragraph_in_context(para, styles);
-                    crate::renderer::composer::recompose_cell_lines_in_frame(
-                        &mut fresh,
+                    // 가로 축에서 합성한 줄은 원본 저장 줄이 아니다. 최종 칸 높이를
+                    // 소유한 공통 구성 경로가 다시 나누고 일반/부분 표가 함께 소비한다.
+                    Some(crate::renderer::composer::compose_vertical_cell_lines(
                         para,
-                        crate::renderer::composer::ParagraphBox::content_width_px(
-                            inner_area.height,
-                            self.dpi,
-                        ),
                         styles,
+                        inner_area.height,
                         self.dpi,
                         self.profile.get().stored_geometry_policy(),
-                    );
-                    Some(fresh)
+                    ))
                 } else {
                     None
                 }
