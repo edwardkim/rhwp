@@ -5792,7 +5792,8 @@ def dedupe_target_keys(targets: list[Target]) -> list[Target]:
 
 
 def required_handbook_gate(root: Path, out_root: Path, rhwp_bin: str, workers: int,
-                           font_paths: list[Path]) -> dict[str, object]:
+                           font_paths: list[Path],
+                           font_environment: Path | None = None) -> dict[str, object]:
     """요청 시 편람을 별도로 Native 전쪽 출력해 #8389와 비교한다."""
     try:
         from scripts import visual_sweep_handbook as handbook
@@ -5808,6 +5809,8 @@ def required_handbook_gate(root: Path, out_root: Path, rhwp_bin: str, workers: i
     try:
         ensure_tools("native-skia")
         ensure_default_rhwp_binary_is_current(root, rhwp_bin)
+        if font_environment is not None:
+            font_environment = resolve_input_path(root, font_environment)
         fonts = list(font_paths or default_sweep_font_paths())
         webfonts = handbook.supply_webfonts(
             root, root / "output/pr-review/handbook-8153-webfont-cache", font_paths=fonts)
@@ -5817,7 +5820,7 @@ def required_handbook_gate(root: Path, out_root: Path, rhwp_bin: str, workers: i
             Target("required-handbook-8153-native", handbook.DOC, handbook.PDF),
             out_root, rhwp_bin, 96, DEFAULT_PIXEL_DIFF_THRESHOLD, None,
             resume=False, svg_rasterizer="webfont", wasm_pkg=None,
-            font_environment=None, observed_font_receipt=None, embed_fonts=None,
+            font_environment=font_environment, observed_font_receipt=None, embed_fonts=None,
             font_paths=fonts, font_mismatch_evidence=None, excluded_regions=None,
             exclusion_evidence=None, linked_images=[], compat="2024",
             page_workers=workers, rasterizer="png",
@@ -5847,8 +5850,10 @@ def required_handbook_gate(root: Path, out_root: Path, rhwp_bin: str, workers: i
 
 
 def enforce_required_handbook(root: Path, out_root: Path, rhwp_bin: str, workers: int,
-                              font_paths: list[Path]) -> None:
-    result = required_handbook_gate(root, out_root, rhwp_bin, workers, font_paths)
+                              font_paths: list[Path],
+                              font_environment: Path | None = None) -> None:
+    result = required_handbook_gate(root, out_root, rhwp_bin, workers, font_paths,
+                                   font_environment=font_environment)
     if result["status"] != "passed":
         raise SystemExit("PR 검토 보류: 필수 편람 Native 전쪽 검사에서 하락 또는 검증 실패")
 
@@ -5991,12 +5996,14 @@ def main() -> None:
             raise SystemExit("실루엣 보조값 90% 미만: TSV를 확인하고 직접 검토하세요.")
         if args.handbook_gate:
             enforce_required_handbook(Path.cwd(), Path(args.out), args.rhwp_bin,
-                                      args.page_workers, args.font_path)
+                                      args.page_workers, args.font_path,
+                                      font_environment=args.font_environment)
         return
 
     if args.handbook_gate and not (args.target or args.hwp or args.pdf or args.file_target):
         enforce_required_handbook(Path.cwd(), Path(args.out), args.rhwp_bin,
-                                  args.page_workers, args.font_path)
+                                  args.page_workers, args.font_path,
+                                  font_environment=args.font_environment)
         return
 
     custom_targets = custom_targets_from_args(args)
@@ -6101,7 +6108,8 @@ def main() -> None:
             "작성자 branch에서 PDF/overlay 원인을 수정하고 Native/fresh WASM TSV·review PNG를 재산출하세요: " + "; ".join(re_review_targets)
         )
     if args.handbook_gate:
-        enforce_required_handbook(root, out_root, args.rhwp_bin, args.page_workers, args.font_path)
+        enforce_required_handbook(root, out_root, args.rhwp_bin, args.page_workers, args.font_path,
+                                  font_environment=args.font_environment)
 
 
 if __name__ == "__main__":

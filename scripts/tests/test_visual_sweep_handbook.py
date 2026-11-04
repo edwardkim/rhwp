@@ -191,6 +191,30 @@ class HandbookGateTests(unittest.TestCase):
             SWEEP.main()
             enforce.assert_called_once()
 
+    def test_handbook_only_cli_preserves_requested_font_environment(self):
+        environment = ROOT / 'mydocs/pr/assets/planet6897_integration_final/pr8389_8397/handbook-font-environment.json'
+        with tempfile.TemporaryDirectory() as temp, \
+                patch.object(sys, 'argv', ['visual_sweep.py', '--handbook-gate', '--out', temp,
+                                         '--font-environment', str(environment)]), \
+                patch.object(SWEEP, 'enforce_required_handbook') as enforce:
+            SWEEP.main()
+            self.assertEqual(enforce.call_args.kwargs.get('font_environment'), environment)
+
+    def test_required_render_uses_requested_font_environment_with_all_pages(self):
+        from scripts import visual_sweep_resume
+        environment = ROOT / 'mydocs/pr/assets/planet6897_integration_final/pr8389_8397/handbook-font-environment.json'
+        with tempfile.TemporaryDirectory() as temp, \
+                patch.object(SWEEP, 'ensure_tools'), \
+                patch.object(SWEEP, 'ensure_default_rhwp_binary_is_current'), \
+                patch.object(handbook, 'supply_webfonts', return_value=[]), \
+                patch.object(visual_sweep_resume, 'render_silhouette_resumable',
+                             return_value=self.manifest) as render:
+            result = SWEEP.required_handbook_gate(ROOT, Path(temp), 'rhwp', 1, [],
+                                                 font_environment=environment)
+            self.assertEqual(render.call_args.kwargs['font_environment'], environment)
+            self.assertIsNone(render.call_args.args[7])
+            self.assertEqual(result['status'], 'passed')
+
     def test_required_render_is_native_all_pages_and_records_failed_gate(self):
         from scripts import visual_sweep_resume
         self.manifest['metrics'][0][handbook.METRIC] = '99.00'
