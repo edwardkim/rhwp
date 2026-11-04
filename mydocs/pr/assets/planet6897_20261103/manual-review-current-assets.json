@@ -1,0 +1,227 @@
+{
+  "recorded_at": "2026-11-04T19:10:48.403069+00:00",
+  "producer": "4b149b6cdfc514b9858ed644be2cf8120c731cd4",
+  "records": [
+    {
+      "source": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/native/pr8477-cell_picture_row_split-f5c3c377/silhouette.tsv",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-cell_picture_row_split-f5c3c377-native.tsv",
+      "sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/wasm/pr8477-cell_picture_row_split-f5c3c377/silhouette.tsv",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-cell_picture_row_split-f5c3c377-wasm.tsv",
+      "sha256": "2d96a69585f096e23614ca2a655493c63d9587b4bc0daa604409a6609f8ddfa7"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8477-claim-p002-cell_picture_row_s/review/review_002.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-claim-p002-cell_picture_row_s-p002-native-review.png",
+      "sha256": "cd6f4001c01e705399184d8b6b9df0cd0c036811f6720b7e87c8f6dacc6ce21b"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8477-claim-p002-cell_picture_row_s/overlay/overlay_002.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-claim-p002-cell_picture_row_s-p002-native-overlay.png",
+      "sha256": "bee4bf612d86b7c57fc3804f88b0ddad7b5f2bd0827b3d5babaf282948d900fc"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8477-claim-p002-cell_picture_row_s/review/review_002.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-claim-p002-cell_picture_row_s-p002-wasm-review.png",
+      "sha256": "06491f7e2b9ceff3c1a9265550a5fd857b5b10e139dfeab68499ae6354a6e84c"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8477-claim-p002-cell_picture_row_s/overlay/overlay_002.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-claim-p002-cell_picture_row_s-p002-wasm-overlay.png",
+      "sha256": "2239d8dcb26e07beafe8f2bc616ba4a8059a1a00a5c87b20f80928b90261c846"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8477-claim-p001-cell_picture_row_s/review/review_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-claim-p001-cell_picture_row_s-p001-native-review.png",
+      "sha256": "08196020919039dab25bbec024aa6c84d9b4b6f44c465670961ad4b8d5464fe5"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8477-claim-p001-cell_picture_row_s/overlay/overlay_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-claim-p001-cell_picture_row_s-p001-native-overlay.png",
+      "sha256": "610a5673742a1ef7677bf871864aa46883a255c98fd466a29a180a45a687bcc5"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8477-claim-p001-cell_picture_row_s/review/review_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-claim-p001-cell_picture_row_s-p001-wasm-review.png",
+      "sha256": "52e7328c7b96605572894a0195c39427de39ee18b8da1f40fe41651fab8c2abb"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8477-claim-p001-cell_picture_row_s/overlay/overlay_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-claim-p001-cell_picture_row_s-p001-wasm-overlay.png",
+      "sha256": "0576a9ea2949249781863055e8a8c8e1502a2806e76bb5aa0f7a28973e319535"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/native/pr8540-scaffold_outline_a-649191af/silhouette.tsv",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_a-649191af-native.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/wasm/pr8540-scaffold_outline_a-649191af/silhouette.tsv",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_a-649191af-wasm.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/native/pr8540-scaffold_outline_b-82b08f33/silhouette.tsv",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_b-82b08f33-native.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/wasm/pr8540-scaffold_outline_b-82b08f33/silhouette.tsv",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_b-82b08f33-wasm.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8540-scaffold_outline_a-649191af/review/review_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_a-649191af-p001-native-review.png",
+      "sha256": "3197cd7bf025997a0c6eedea271c207c2aa3a225fa519936927b092fd9e5a770"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8540-scaffold_outline_a-649191af/overlay/overlay_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_a-649191af-p001-native-overlay.png",
+      "sha256": "dada8fad95f65be9bccbc664e93f17ebf224a76d4555b1a667a1b0645a2f43e6"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8540-scaffold_outline_a-649191af/review/review_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_a-649191af-p001-wasm-review.png",
+      "sha256": "90b415bf1466b63e12fed7abe8aedc33e7887bb8f3989e3d453092006d94117f"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8540-scaffold_outline_a-649191af/overlay/overlay_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_a-649191af-p001-wasm-overlay.png",
+      "sha256": "22496dd35b5841063c55a2b97ee8621f222e183c86c6257d4c3fd99fd7b625d8"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8540-scaffold_outline_b-82b08f33/review/review_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_b-82b08f33-p001-native-review.png",
+      "sha256": "21a4d7603800ac73fd1c27dc23a4767f26ae49d2028906dbf50955a503844baa"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8540-scaffold_outline_b-82b08f33/overlay/overlay_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_b-82b08f33-p001-native-overlay.png",
+      "sha256": "6334e0a427a89dc96df827ac5d3b9076a16183013d93c638e4c9183c6b7ec807"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8540-scaffold_outline_b-82b08f33/review/review_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_b-82b08f33-p001-wasm-review.png",
+      "sha256": "3f18da7976c79d847a79e7bd35665a4b14ca718c8165421d4045db2674945ea8"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8540-scaffold_outline_b-82b08f33/overlay/overlay_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8540/current-4b149b6cdf/pr8540-scaffold_outline_b-82b08f33-p001-wasm-overlay.png",
+      "sha256": "0650cf3a008c18556364accadc6a4ad61a4d36341c2359309f5ec8dec3048d10"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/native/pr8546-leading_shape_line-2020-ae054dc3/silhouette.tsv",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading_shape_line-2020-ae054dc3-native.tsv",
+      "sha256": "ff877c3a2c4710cfc11c0e41c235ac106e7a6d0e96c18190b69b61e1c281b805"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/wasm/pr8546-leading_shape_line-2020-ae054dc3/silhouette.tsv",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading_shape_line-2020-ae054dc3-wasm.tsv",
+      "sha256": "98ac171e6ea325d2315a1814ce3210a7e4f84863f6e8e1bd12009e9c281dd3ce"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/native/pr8546-leading_shape_line-2020-e4eb27fc/silhouette.tsv",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading_shape_line-2020-e4eb27fc-native.tsv",
+      "sha256": "5d53ff053f5043d773a5fc336f277209843823edc54ff30c38e06a736c0edb7a"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/wasm/pr8546-leading_shape_line-2020-e4eb27fc/silhouette.tsv",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading_shape_line-2020-e4eb27fc-wasm.tsv",
+      "sha256": "69df14500146a7517d54f5c5396d149b2c6fa7845ebeb479ae160f1f74b36153"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8546-leading-shape-claim-p002/review/review_002.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-claim-p002-p002-native-review.png",
+      "sha256": "ae20b803717a3605d57d6d839d268b90ab74157850e1c2500b9c8312260bf441"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8546-leading-shape-claim-p002/overlay/overlay_002.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-claim-p002-p002-native-overlay.png",
+      "sha256": "7c968ee2e7fd76d910e0eb3b8202d0b04a53d9706fcabbcc3a17b4e11a24e4eb"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8546-leading-shape-claim-p002/review/review_002.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-claim-p002-p002-wasm-review.png",
+      "sha256": "75e8144a2290e95f040b9f5f35a4687ddc559026cbb96438c01eea71bd794725"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8546-leading-shape-claim-p002/overlay/overlay_002.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-claim-p002-p002-wasm-overlay.png",
+      "sha256": "5756ecd9788744724680352edaabf7aeebd0a67a1875d391be092514869f0e3f"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8546-leading-shape-2024-p002/review/review_002.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-2024-p002-p002-native-review.png",
+      "sha256": "2badfe893362ff57b1d3ea34cba3ca6afac360d87b4871cc30d94632d8566d88"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8546-leading-shape-2024-p002/overlay/overlay_002.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-2024-p002-p002-native-overlay.png",
+      "sha256": "34ca2c581019c687e09b6dd181f1d4b49c493f8a8f4567b0b8b635eaad7004a4"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8546-leading-shape-2024-p002/review/review_002.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-2024-p002-p002-wasm-review.png",
+      "sha256": "dc1572ef88dabadab2fec33dfb392d518330b14a0eadf96817963143b3261f09"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8546-leading-shape-2024-p002/overlay/overlay_002.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-2024-p002-p002-wasm-overlay.png",
+      "sha256": "a3db5261c0ce8b7b9032203c40f00fcc4fa96b8b7b70e3261e48cb44cdf5d221"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/native/pr8547-gangseo_exempt_certificates-e5b4dd3b/silhouette.tsv",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo_exempt_certificates-e5b4dd3b-native.tsv",
+      "sha256": "fa670a9e0ea3f4db3da6c3b9c2bfe9868eb1cc8968bfd6ededbb997681c9633a"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/wasm/pr8547-gangseo_exempt_certificates-e5b4dd3b/silhouette.tsv",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo_exempt_certificates-e5b4dd3b-wasm.tsv",
+      "sha256": "6c96c3203a3a0bf054a44ad4b502d8e62ceaea137fa04adf9b6b24e9b1a558b1"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8547-gangseo-p003/review/review_003.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p003-p003-native-review.png",
+      "sha256": "8c478b62c6e5f29c3e500df78ed1288b9e2aa851f75700e7c3eb0d52060ba744"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8547-gangseo-p003/overlay/overlay_003.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p003-p003-native-overlay.png",
+      "sha256": "78afeed241e8d4a628ccc86ecae5a86a88a12e4d57479f869e54de5bde1f9b5d"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8547-gangseo-p003/review/review_003.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p003-p003-wasm-review.png",
+      "sha256": "70730d1a60a3359b3e6147cfbdec0feb5d9e0c7c7ced13e13d127c211c077de0"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8547-gangseo-p003/overlay/overlay_003.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p003-p003-wasm-overlay.png",
+      "sha256": "2d4463d6c419b49211dd3c20c6aac579ec9aec0edfd88615253a7b752905f089"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8547-gangseo-p004/review/review_004.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p004-p004-native-review.png",
+      "sha256": "f9c0754d512716a235da5737b18a08b3481dfd8298cc43ca20638ea8c3511cb1"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8547-gangseo-p004/overlay/overlay_004.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p004-p004-native-overlay.png",
+      "sha256": "7f3dc8737ecf721592656e787c39d319a689854c3ded91acc6fe2960e9e45a00"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8547-gangseo-p004/review/review_004.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p004-p004-wasm-review.png",
+      "sha256": "8cb416ac8e74661bc0f441059eb47b4a56adc17d6fe77927f6198dcc171f61e9"
+    },
+    {
+      "source": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8547-gangseo-p004/overlay/overlay_004.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p004-p004-wasm-overlay.png",
+      "sha256": "c9c7d2e22e3094c3aed669b9c25c7f3052933f3795d9b73725bc31ef7e9abb9c"
+    }
+  ],
+  "final_approval": false
+}

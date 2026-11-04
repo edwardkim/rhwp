@@ -3,10 +3,50 @@
 ## 최종 판정
 
 **메인터너 보정 후 수용 가능**
-2020 경로의 93.14%는 유지됐습니다. 완료 판정은 남은 검증을 마친 뒤 갱신합니다.
 
-메인터너 보정 근거: 공통 앵커 회수 조건 보정 `ad0d4b1277` 및 두 호환 모드 회귀 `fd97ae040f`를 통합 후보에서 확인했습니다.
-새 devel `1924d371d6` 반영 뒤 기능 보존과 최종 공통 검증을 완료합니다. PR 생성은 작업지시자 승인 대기입니다.
+완료한 실측과 남은 통합 공통 검증을 구분합니다. 원 PR의 직접 승인·닫기와 통합 PR 생성은 수행하지 않았습니다.
+최종 수용은 WASM의 당시 base 대비 전쪽 대조와 전체 증적 감사를 완료한 뒤 판정합니다. PR 생성은 작업지시자 승인 대기입니다.
+
+## 현재 검토 코드와 증거 출처
+
+| 항목 | 값 |
+| --- | --- |
+| 원 PR | [PR #8546](https://github.com/edwardkim/rhwp/pull/8546) |
+| 원 head | `c08cb8030eff594f6f987832cc35d2bb8ae68943` |
+| 현재 통합 적용 커밋 | `870c928960508b7b332da695a9e9c3e37edade98` |
+| 최신 검증 제품 / 새 base | `a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973` / `22947f6a90c998e95fa51238d5b907a0ebd37162` |
+| 전쪽 Native 측정 producer / 당시 base | `4b149b6cdfc514b9858ed644be2cf8120c731cd4` / `7fdd5441ff1e77c083818e920a48089f294de35e` |
+| fresh WASM 실제 빌드 | `7bb9e66fd006109ca9f7ee4c4d3f752c82e60fae` (위 제품 코드와 동등한 구현) |
+| reviewer | `jangster77` 요청; 2026-11-04T17:44:08.556Z 고정한 원 head·Open·non-Draft 확인 |
+
+기존 전쪽 TSV/PNG는 실제 측정 producer의 결과로 재사용합니다. 최신 소스의 재출력으로 표시하지 않습니다.
+최신 제품의 최소 글꼴 전체 Rust 12,561개 통과·Native Skia·Rust lint 및 fresh WASM 실제 실행과
+새 base 기능 보존 집중 대조 14쪽을 완료했습니다. [제품 검증](assets/planet6897_20261103/latest-product-validation-a7e5ce7112.json)과
+[최신 리베이스 대조](assets/planet6897_20261103/rebase_scope_22947f6a90/base-comparison.json)를 연결합니다.
+
+## 현재 전쪽 Native/fresh WASM 증적
+
+| 원본 · 독립 Print | Native TSV · 전쪽 최저 | fresh WASM TSV · 전쪽 최저 |
+| --- | --- | --- |
+| [leading_shape_line-2020.hwp](../../samples/issue8543/leading_shape_line-2020.hwp) · [leading_shape_line-2020.pdf](../../pdf/issue8543/leading_shape_line-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading_shape_line-2020-ae054dc3-native.tsv) · 93.14000% (2쪽) | [TSV](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading_shape_line-2020-ae054dc3-wasm.tsv) · 92.99000% (2쪽) |
+| [leading_shape_line-2020.hwp](../../samples/issue8543/leading_shape_line-2020.hwp) · [leading_shape_line-2024.pdf](../../pdf/issue8543/leading_shape_line-2024.pdf) | [TSV](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading_shape_line-2020-e4eb27fc-native.tsv) · 93.44000% (2쪽) | [TSV](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading_shape_line-2020-e4eb27fc-wasm.tsv) · 93.09000% (2쪽) |
+
+96 DPI, 색상 경계 보정 전 2px 내용 실루엣입니다. 입력·Print PDF는 기존 동일 파일을 재사용하고 전체 쪽수와 누락을 확인했습니다.
+
+| 주장 쪽·범위 | Native review / overlay | fresh WASM review / overlay |
+| --- | --- | --- |
+| leading_shape_line-2020.hwp 2쪽 · 맨 앞 TAC 도형 줄 뒤 표 A·B 순서와 간격 | [review](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-claim-p002-p002-native-review.png) / [overlay](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-claim-p002-p002-native-overlay.png) | [review](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-claim-p002-p002-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-claim-p002-p002-wasm-overlay.png) |
+| leading_shape_line-2020.hwp 2쪽 · 2024 Print의 TAC 도형 줄 뒤 표 A·B 순서와 간격 | [review](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-2024-p002-p002-native-review.png) / [overlay](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-2024-p002-p002-native-overlay.png) | [review](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-2024-p002-p002-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8546/current-4b149b6cdf/pr8546-leading-shape-2024-p002-p002-wasm-overlay.png) |
+
+## 남은 통합 검증과 원격 조건
+
+동일 환경의 당시 base 대비 WASM 80개 입력·406쪽 0.1%p 하락 게이트와 주장별 증적 최종 감사가 남았습니다.
+[완료·대기 검증 기록](assets/planet6897_20261103/review-preparation-a7e5ce7112.json)을 따릅니다.
+
+아래 선행 분석은 당시 코드·증적의 기록입니다. 당시 남은 검증 문장은 현재 상태가 아니며 위 현재 기록과 구분합니다.
+
+<details>
+<summary>선행 구현 분석·독립 근거·당시 실행 기록</summary>
 
 ## 접수 정보
 
@@ -81,3 +121,5 @@
 
 두 호환 모드를 검사하도록 보완한 관계형 표 순서 회귀, 최소 글꼴 전체 Rust와
 기준 devel 대비 페이지별 raw 대조를 완료한 뒤 최종 판정을 갱신합니다.
+
+</details>

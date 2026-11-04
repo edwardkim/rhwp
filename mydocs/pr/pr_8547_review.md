@@ -3,10 +3,49 @@
 ## 최종 판정
 
 **메인터너 보정 후 수용 가능**
-원 PR의 검증 결과와 통합 브랜치의 최종 검증 결과를 구분합니다.
 
-메인터너가 6쪽 원본의 독립 Print 증적과 전쪽 Native/fresh WASM 측정, `65d345f8fd`의 회귀 근거를 보강했습니다.
-새 devel `1924d371d6` 반영 뒤 기능 보존과 최종 공통 검증을 완료합니다. PR 생성은 작업지시자 승인 대기입니다.
+완료한 실측과 남은 통합 공통 검증을 구분합니다. 원 PR의 직접 승인·닫기와 통합 PR 생성은 수행하지 않았습니다.
+최종 수용은 WASM의 당시 base 대비 전쪽 대조와 전체 증적 감사를 완료한 뒤 판정합니다. PR 생성은 작업지시자 승인 대기입니다.
+
+## 현재 검토 코드와 증거 출처
+
+| 항목 | 값 |
+| --- | --- |
+| 원 PR | [PR #8547](https://github.com/edwardkim/rhwp/pull/8547) |
+| 원 head | `802078a02454a66ef3dc917d6ba2c6461709dcd5` |
+| 현재 통합 적용 커밋 | `a6f332bf20a5baaaae5e2b430bd7a5414f7ddafb, 029ca31d2e6279b872deb93292b2f5f3759ab3fd` |
+| 최신 검증 제품 / 새 base | `a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973` / `22947f6a90c998e95fa51238d5b907a0ebd37162` |
+| 전쪽 Native 측정 producer / 당시 base | `4b149b6cdfc514b9858ed644be2cf8120c731cd4` / `7fdd5441ff1e77c083818e920a48089f294de35e` |
+| fresh WASM 실제 빌드 | `7bb9e66fd006109ca9f7ee4c4d3f752c82e60fae` (위 제품 코드와 동등한 구현) |
+| reviewer | `jangster77` 요청; 2026-11-04T17:44:08.556Z 고정한 원 head·Open·non-Draft 확인 |
+
+기존 전쪽 TSV/PNG는 실제 측정 producer의 결과로 재사용합니다. 최신 소스의 재출력으로 표시하지 않습니다.
+최신 제품의 최소 글꼴 전체 Rust 12,561개 통과·Native Skia·Rust lint 및 fresh WASM 실제 실행과
+새 base 기능 보존 집중 대조 14쪽을 완료했습니다. [제품 검증](assets/planet6897_20261103/latest-product-validation-a7e5ce7112.json)과
+[최신 리베이스 대조](assets/planet6897_20261103/rebase_scope_22947f6a90/base-comparison.json)를 연결합니다.
+
+## 현재 전쪽 Native/fresh WASM 증적
+
+| 원본 · 독립 Print | Native TSV · 전쪽 최저 | fresh WASM TSV · 전쪽 최저 |
+| --- | --- | --- |
+| [gangseo_exempt_certificates.hwp](../../samples/issue8532/gangseo_exempt_certificates.hwp) · [issue8532_gangseo_exempt_certificates-2020.pdf](../../pdf/issue8532_gangseo_exempt_certificates-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo_exempt_certificates-e5b4dd3b-native.tsv) · 97.95000% (6쪽) | [TSV](assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo_exempt_certificates-e5b4dd3b-wasm.tsv) · 97.98000% (6쪽) |
+
+96 DPI, 색상 경계 보정 전 2px 내용 실루엣입니다. 입력·Print PDF는 기존 동일 파일을 재사용하고 전체 쪽수와 누락을 확인했습니다.
+
+| 주장 쪽·범위 | Native review / overlay | fresh WASM review / overlay |
+| --- | --- | --- |
+| gangseo_exempt_certificates.hwp 3쪽 · 위생 걸침 묶음의 앞 조각과 저장 쪽 경계 | [review](assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p003-p003-native-review.png) / [overlay](assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p003-p003-native-overlay.png) | [review](assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p003-p003-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p003-p003-wasm-overlay.png) |
+| gangseo_exempt_certificates.hwp 4쪽 · 위생 걸침 묶음 이어받기와 뒤 행 | [review](assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p004-p004-native-review.png) / [overlay](assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p004-p004-native-overlay.png) | [review](assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p004-p004-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8547/current-4b149b6cdf/pr8547-gangseo-p004-p004-wasm-overlay.png) |
+
+## 남은 통합 검증과 원격 조건
+
+동일 환경의 당시 base 대비 WASM 80개 입력·406쪽 0.1%p 하락 게이트와 주장별 증적 최종 감사가 남았습니다.
+[완료·대기 검증 기록](assets/planet6897_20261103/review-preparation-a7e5ce7112.json)을 따릅니다.
+
+아래 선행 분석은 당시 코드·증적의 기록입니다. 당시 남은 검증 문장은 현재 상태가 아니며 위 현재 기록과 구분합니다.
+
+<details>
+<summary>선행 구현 분석·독립 근거·당시 실행 기록</summary>
 
 ## 접수 및 적용
 
@@ -72,3 +111,5 @@ raw 값은 1~6쪽 순서로 99.85%, 99.99%, **97.95%**, 100.00%, 100.00%, 100.00
 - 기준 devel과 같은 입력·Print·글꼴 조건에서 페이지별 하락을 대조하고,
   다른 문서에 대한 #8547의 영향도 분리해 판정합니다.
 - 통합 PR이 병합되면 실제 merge SHA와 검증한 증거를 원 PR에 연결하고 후속 처리합니다.
+
+</details>

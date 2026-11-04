@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-11-04T19:01:08.592877+00:00",
+  "recorded_at": "2026-11-04T19:09:23.334880+00:00",
   "status": "preparation; final common validation pending",
   "product_sha": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
   "base_sha": "22947f6a90c998e95fa51238d5b907a0ebd37162",
@@ -953,13 +953,12 @@
     "new_product_sha": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
     "new_base_sha": "22947f6a90c998e95fa51238d5b907a0ebd37162",
     "conflicts": 0,
-    "scoped_preservation_status": "pending",
+    "scoped_preservation_status": "passed",
     "user_instruction": "충돌 없는 리베이스는 전체 비교 검사를 다시 수행하지 않고 영향 경로를 검증한다.",
-    "evidence_path": "mydocs/pr/assets/planet6897_20261103/rebase_scope_22947f6a90/"
+    "evidence_path": "mydocs/pr/assets/planet6897_20261103/rebase_scope_22947f6a90/base-comparison.json"
   },
   "pending": [
     "동일 환경에서 당시 base 대비 WASM 80개 입력·406쪽의 0.1%p 하락 게이트 완료",
-    "새 base 22947f6a90의 실제 WASM 제품과 후보의 기능·시각 집중 대조 완료",
     "주장 쪽 직접 판독·회귀 주석·수동 작성 리뷰와 PR 본문 최종 감사"
   ],
   "final_approval": false

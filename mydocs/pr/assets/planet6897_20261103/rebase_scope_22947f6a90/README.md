@@ -16,7 +16,11 @@ PR #8498 원본의 Native/fresh WASM 각각 전5쪽은 같은 입력의 리베�
 [실제 PNG 비교](previous-candidate-pixel-comparison.json)도 10/10쪽 RGB가 동일하다.
 [변경 전 Native](before/native/pr8498-silhouette.tsv) · [변경 전 WASM](before/wasm/pr8498-silhouette.tsv)를 함께 보존한다.
 PR #8585는 새 base에서 상속한 기능이며 새 체리픽 접수 대상이 아니다. #8122는 저장 줄 없는 글상자의 정상 대조군이다.
-새 base 자체를 빌드한 동일 입력 대조는 진행 중이므로 이 후보 측정만으로 base 보존 완료·최종 승인을 판정하지 않는다.
+새 base 자체의 실제 Native/fresh WASM 제품을 빌드하고 같은 입력·PDF·글꼴 조건에서 후보와 대조했다.
+[실행 기록](base-product-execution.json)과 [실제 대조](base-comparison.json)의 총 14쪽은 정밀 raw가 모두 같다.
+새 base 두 입력의 원본 TSV도 [8585 Native](pr8585-base-native.tsv) · [8585 WASM](pr8585-base-wasm.tsv),
+[8122 Native](pr8122-base-native.tsv) · [8122 WASM](pr8122-base-wasm.tsv)로 보존한다.
+이 집중 범위의 기능 보존은 충족했고, 통합의 당시 base 대비 전쪽 WASM 대조와 최종 승인 판단은 별도로 남아 있다.
 
 ## 직접 판독한 상속 기능 — 같은 입력 1쪽
 

@@ -1,0 +1,193 @@
+{
+  "worker_pid": 1290319,
+  "events": [
+    {
+      "name": "latest-native-root-clippy",
+      "command": [
+        "bash",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/run_minfont_review.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/review-rebase-20261104",
+      "started": "2026-11-04T18:21:03.541016+00:00",
+      "status": "complete",
+      "git_head": "a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973",
+      "child_pid": 1290321,
+      "exit": 0,
+      "ended": "2026-11-04T18:24:23.585542+00:00"
+    },
+    {
+      "name": "native-build",
+      "command": [
+        "bash",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/run_minfont_review.sh",
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/review-base-22947f6a90",
+      "started": "2026-11-04T18:24:23.586917+00:00",
+      "status": "complete",
+      "git_head": "22947f6a90c998e95fa51238d5b907a0ebd37162",
+      "child_pid": 1292147,
+      "exit": 0,
+      "ended": "2026-11-04T18:35:37.904480+00:00"
+    },
+    {
+      "name": "native-pin",
+      "command": [
+        "python3",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/pin_22947f6a90_native.py"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/review-base-22947f6a90",
+      "started": "2026-11-04T18:35:38.155872+00:00",
+      "status": "complete",
+      "git_head": "22947f6a90c998e95fa51238d5b907a0ebd37162",
+      "child_pid": 1297517,
+      "exit": 0,
+      "ended": "2026-11-04T18:35:38.821563+00:00"
+    },
+    {
+      "name": "number-contract",
+      "command": [
+        "bash",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/run_minfont_review.sh",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "split_before_auto_number_placeholder",
+        "--",
+        "--test-threads",
+        "12"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/review-base-22947f6a90",
+      "started": "2026-11-04T18:35:38.849669+00:00",
+      "status": "complete",
+      "git_head": "22947f6a90c998e95fa51238d5b907a0ebd37162",
+      "child_pid": 1297520,
+      "exit": 0,
+      "ended": "2026-11-04T18:46:13.235816+00:00"
+    },
+    {
+      "name": "wasm-build",
+      "command": [
+        "sh",
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/review-base-22947f6a90",
+      "started": "2026-11-04T18:46:13.313582+00:00",
+      "status": "complete",
+      "git_head": "22947f6a90c998e95fa51238d5b907a0ebd37162",
+      "child_pid": 1300925,
+      "exit": 0,
+      "ended": "2026-11-04T19:06:11.532130+00:00",
+      "artifacts": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "631ff5e49ef0e6af1a2e95fe65202767de61b6e9213c124871687da4910ef2d9"
+      }
+    },
+    {
+      "name": "public-api",
+      "command": [
+        "node",
+        "--test",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rebase-22947f6a90-public-api.test.mjs"
+      ],
+      "cwd": "/home/tsjang/rhwp",
+      "started": "2026-11-04T19:06:12.097256+00:00",
+      "status": "complete",
+      "git_head": "dc583bb2e1b06c2af24542829a308f69a9bf298d",
+      "child_pid": 1307216,
+      "exit": 0,
+      "ended": "2026-11-04T19:06:13.439101+00:00"
+    },
+    {
+      "name": "focused-visual-native",
+      "command": [
+        "python3",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/run_visual_pairs.py",
+        "native",
+        "--pairs",
+        "rebase-22947f6a90-inherited-pairs.tsv",
+        "--code-label",
+        "base-22947f6a90",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-base-rebase-22947f6a90",
+        "--page-workers",
+        "1"
+      ],
+      "cwd": "/home/tsjang/rhwp",
+      "started": "2026-11-04T19:06:13.449696+00:00",
+      "status": "complete",
+      "git_head": "dc583bb2e1b06c2af24542829a308f69a9bf298d",
+      "child_pid": 1307230,
+      "exit": 0,
+      "ended": "2026-11-04T19:06:13.572352+00:00"
+    },
+    {
+      "name": "focused-visual-wasm",
+      "command": [
+        "python3",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/run_visual_pairs.py",
+        "wasm",
+        "--pairs",
+        "rebase-22947f6a90-inherited-pairs.tsv",
+        "--code-label",
+        "base-22947f6a90",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-base-rebase-22947f6a90",
+        "--page-workers",
+        "1",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/producer-packages/base-22947f6a90"
+      ],
+      "cwd": "/home/tsjang/rhwp",
+      "started": "2026-11-04T19:06:13.592913+00:00",
+      "status": "complete",
+      "git_head": "dc583bb2e1b06c2af24542829a308f69a9bf298d",
+      "child_pid": 1307232,
+      "exit": 0,
+      "ended": "2026-11-04T19:08:01.967567+00:00"
+    },
+    {
+      "name": "focused-visual-audit",
+      "command": [
+        "python3",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/audit_latest_rebase_scope.py"
+      ],
+      "cwd": "/home/tsjang/rhwp",
+      "started": "2026-11-04T19:08:01.987856+00:00",
+      "status": "complete",
+      "git_head": "d5f1feb9132a0a3cc57378eb9924da53ea6c5a50",
+      "child_pid": 1308513,
+      "exit": 0,
+      "ended": "2026-11-04T19:08:03.580053+00:00"
+    }
+  ]
+}

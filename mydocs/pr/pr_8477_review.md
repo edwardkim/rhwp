@@ -4,7 +4,48 @@
 
 **메인터너 보정 후 수용 가능**
 
-원 PR의 그림·앵커 소유 보정을 유지하고, 첫 분할 프레임과 각 그림 셀의 가운데 정렬 소비를 메인터너가 보정했습니다. 아래 두 쪽의 Native/fresh WASM 출력과 직접 판독을 완료했습니다. 통합 전체 회귀·lint·새 base 보존 검증은 진행 중이므로 통합 PR 준비 완료나 원 PR 직접 병합을 선언하지 않습니다. PR 생성은 작업지시자 승인 대기입니다.
+완료한 실측과 남은 통합 공통 검증을 구분합니다. 원 PR의 직접 승인·닫기와 통합 PR 생성은 수행하지 않았습니다.
+최종 수용은 WASM의 당시 base 대비 전쪽 대조와 전체 증적 감사를 완료한 뒤 판정합니다. PR 생성은 작업지시자 승인 대기입니다.
+
+## 현재 검토 코드와 증거 출처
+
+| 항목 | 값 |
+| --- | --- |
+| 원 PR | [PR #8477](https://github.com/edwardkim/rhwp/pull/8477) |
+| 원 head | `d53da96d75daf912d3e53d9137eadc7770732bbf` |
+| 현재 통합 적용 커밋 | `fac662108756c0a55672d37fb804be5f1fe10e09, 2e92a6056dcfe42e4c7ea3b2a4292126d2ff4568, 17ad0fae7b1ce572a56cc97ff39440735f738711, f0008cd6198cfc976cc4f9fbeacf4d6fd054d912` |
+| 최신 검증 제품 / 새 base | `a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973` / `22947f6a90c998e95fa51238d5b907a0ebd37162` |
+| 전쪽 Native 측정 producer / 당시 base | `4b149b6cdfc514b9858ed644be2cf8120c731cd4` / `7fdd5441ff1e77c083818e920a48089f294de35e` |
+| fresh WASM 실제 빌드 | `7bb9e66fd006109ca9f7ee4c4d3f752c82e60fae` (위 제품 코드와 동등한 구현) |
+| reviewer | `jangster77` 요청; 2026-11-04T17:44:08.556Z 고정한 원 head·Open·non-Draft 확인 |
+
+기존 전쪽 TSV/PNG는 실제 측정 producer의 결과로 재사용합니다. 최신 소스의 재출력으로 표시하지 않습니다.
+최신 제품의 최소 글꼴 전체 Rust 12,561개 통과·Native Skia·Rust lint 및 fresh WASM 실제 실행과
+새 base 기능 보존 집중 대조 14쪽을 완료했습니다. [제품 검증](assets/planet6897_20261103/latest-product-validation-a7e5ce7112.json)과
+[최신 리베이스 대조](assets/planet6897_20261103/rebase_scope_22947f6a90/base-comparison.json)를 연결합니다.
+
+## 현재 전쪽 Native/fresh WASM 증적
+
+| 원본 · 독립 Print | Native TSV · 전쪽 최저 | fresh WASM TSV · 전쪽 최저 |
+| --- | --- | --- |
+| [cell_picture_row_split.hwp](../../samples/issue8472/cell_picture_row_split.hwp) · [issue8472_cell_picture_row_split-2020.pdf](../../pdf/issue8472_cell_picture_row_split-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-cell_picture_row_split-f5c3c377-native.tsv) · 100.00000% (2쪽) | [TSV](assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-cell_picture_row_split-f5c3c377-wasm.tsv) · 99.99000% (2쪽) |
+
+96 DPI, 색상 경계 보정 전 2px 내용 실루엣입니다. 입력·Print PDF는 기존 동일 파일을 재사용하고 전체 쪽수와 누락을 확인했습니다.
+
+| 주장 쪽·범위 | Native review / overlay | fresh WASM review / overlay |
+| --- | --- | --- |
+| cell_picture_row_split.hwp 2쪽 · 그림 칸 앵커 | [review](assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-claim-p002-cell_picture_row_s-p002-native-review.png) / [overlay](assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-claim-p002-cell_picture_row_s-p002-native-overlay.png) | [review](assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-claim-p002-cell_picture_row_s-p002-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-claim-p002-cell_picture_row_s-p002-wasm-overlay.png) |
+| cell_picture_row_split.hwp 1쪽 · 앞 차트 표 높이와 1쪽 끝 라벨 조각 | [review](assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-claim-p001-cell_picture_row_s-p001-native-review.png) / [overlay](assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-claim-p001-cell_picture_row_s-p001-native-overlay.png) | [review](assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-claim-p001-cell_picture_row_s-p001-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8477/current-4b149b6cdf/pr8477-claim-p001-cell_picture_row_s-p001-wasm-overlay.png) |
+
+## 남은 통합 검증과 원격 조건
+
+동일 환경의 당시 base 대비 WASM 80개 입력·406쪽 0.1%p 하락 게이트와 주장별 증적 최종 감사가 남았습니다.
+[완료·대기 검증 기록](assets/planet6897_20261103/review-preparation-a7e5ce7112.json)을 따릅니다.
+
+아래 선행 분석은 당시 코드·증적의 기록입니다. 당시 남은 검증 문장은 현재 상태가 아니며 위 현재 기록과 구분합니다.
+
+<details>
+<summary>선행 구현 분석·독립 근거·당시 실행 기록</summary>
 
 ## 접수·검토 코드
 
@@ -94,3 +135,5 @@ PDF 래스터는 pypdfium2 5.13.0 / PDFium 153.0.7999.0의 `pdfium_smooth_rgb_ex
 | [pr8477-claim-p002-cell_picture_row_s-native-review.png](assets/planet6897_20261103/pr_8477/pr8477-claim-p002-cell_picture_row_s-native-review.png) | 135971 | `e965a30515fd3847da56a1e5f72c062b69b967b70ae1420971b2b2846076a587` |
 | [pr8477-claim-p002-cell_picture_row_s-wasm-overlay.png](assets/planet6897_20261103/pr_8477/pr8477-claim-p002-cell_picture_row_s-wasm-overlay.png) | 66397 | `de9012e9f89100d7212888398345a70a24dbd508a0bae8fda16403d3e6073fca` |
 | [pr8477-claim-p002-cell_picture_row_s-wasm-review.png](assets/planet6897_20261103/pr_8477/pr8477-claim-p002-cell_picture_row_s-wasm-review.png) | 135800 | `e360e513114134fdeeec585b8e4926b227924eb5413a78a92eb6565f11cebd97` |
+
+</details>
