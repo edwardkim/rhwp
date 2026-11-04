@@ -42,3 +42,23 @@ Native와 같은 공간 점검을 추가한다. 여유 공간 30GB 미만에서�
 [옵션 2](../manual/pr_review/post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)를 적용한다.
 원 PR의 새 code head 전체 CI·실제 검토·병합을 먼저 완료하고, 검토 기록·오늘할일·확정 merge SHA는
 최신 devel의 별도 기록 PR로 반영한다. 원 PR에 문서-only trailing commit을 추가하지 않는다.
+
+## 같은 공간 결함의 Render Diff 보정
+
+프런트엔드 보정 head `4644b8c2055d37bb82963384cfe8d64c92fbf0a8`의
+[전체 CI](https://github.com/edwardkim/rhwp/actions/runs/41759448335), CodeQL·Adapter·Proptest가
+모두 성공했다. 프런트엔드에서는 실제 여유 공간 약 5GB를 22GB로 늘린 뒤 fresh WASM과
+Studio 2,717 PASS·2 skip, E2E·package·글꼴 자산 검사를 완료했다.
+
+그러나 같은 head의 [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/41759448403/job/126343556269)는
+최적화 WASM 빌드 후 Native CLI의 `target/debug/deps/librhwp.rlib`를 만들다가
+2026-11-04 11:39:32 KST에 `No space left on device`로 실패했다. 시각 비교가 실패한 것이 아니라
+그 전 보고서용 CLI 빌드가 완료되지 않은 결과이며 Render Diff 통과로 표시하지 않는다.
+
+Render Diff의 checkout 뒤에도 같은 30GB 조건·미사용 Android/.NET 두 경로 정리를 추가한다.
+WASM 최적화·Native 빌드·시각 비교·CanvasKit readiness의 명령, 이미지·글꼴·문턱·timeout·권한은
+변경하지 않는다. 원 PR은 새 head에서 전체 CI를 다시 확인하고 옵션 2 후속 기록 경로를 유지한다.
+
+Render Diff 보정 뒤 두 workflow의 `actionlint`는 진단 없이 통과했고, 관련 기존 Python 계약은
+83 PASS(14.155초)였다. 두 job의 실제 shell 공간 분기 실행은 각각 4건, 합계 8건을 확인했다.
+제품·검사·입력·시각 증적의 추가 변경 없이 새 CI head로 제출한다.
