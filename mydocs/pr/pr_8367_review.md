@@ -22,4 +22,17 @@
 
 최종 runtime `2f44d7d0ab`에서 전체 12,499개·Native 공식 3종 4,064개·집중 21개·Studio 2,720개를 통과했다. Rust lint 묶음·TypeScript·production build·문서 예제·suite/unit 정책도 통과했다. [전체 검증 요약](assets/semanticist21-20261105/final-validation-summary.json), [최종 PNG와 해시](assets/semanticist21-20261105/representative-final-pngs.json), [원 기여 보존](assets/semanticist21-20261105/contribution-ancestry.json).
 
-원격 push·새 통합 PR·merge·후속 댓글은 현재 아직 실행하지 않았다. 승인 뒤 해당 제출 head의 CI와 최신 base의 충돌 여부를 다시 확인한다.
+원격 push·Open 통합 PR·해당 head CI·self-review·merge·후속 댓글·정리를 작업지시자가 승인했다. 실제 실행과 성공을 확인한 뒤 원격 결과를 기록한다.
+
+## Merge 후 contributor PR comment 계획
+
+머리말·꼬리말의 1·2와 본문 3·4 번호의 연속·소속을 확인했다. 기존 글머리표 차이는 그대로 남는다.
+
+실제 통합 PR·merge SHA·최신 head CI URL을 확정한 뒤 아래 원 PR별 증적과 함께 한국어 존댓말로 감사 댓글을 게시한다. 그림은 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/`에 아래 경로를 붙인다. merge SHA의 HTTP Content-Type과 SHA-256을 검증하고 게시 후 API 본문과 GitHub 화면 표시를 확인한다.
+
+| 입력·쪽 | 경로 | raw 실루엣(2px) | pixel match | 내용 픽셀 보조값 | review / overlay |
+| --- | --- | --- | --- | --- | --- |
+| `header_footer_numbering` 1쪽 | native | 94.91525% | 99.41065% | 28.17113% | [review](assets/semanticist21-20261105/comment-evidence/pr8367-header_footer_numbering/native/review/review_001.png) / [overlay](assets/semanticist21-20261105/comment-evidence/pr8367-header_footer_numbering/native/overlay/overlay_001.png) |
+| `header_footer_numbering` 1쪽 | wasm | 94.80661% | 99.55858% | 46.20746% | [review](assets/semanticist21-20261105/comment-evidence/pr8367-header_footer_numbering/wasm/review/review_001.png) / [overlay](assets/semanticist21-20261105/comment-evidence/pr8367-header_footer_numbering/wasm/overlay/overlay_001.png) |
+
+자동 geometry 후보 추출은 수행하지 않았으므로 후보 수를 0으로 쓰지 않는다. TSV-only 전쪽 raw 측정과 직접 판독을 구분한다. 해당 기능 검증 문서의 Native/fresh WASM 전쪽 raw 90% 미만은 0쪽이다. 내용 픽셀 보조값은 사람의 판정 정확도가 아니며 승인 gate를 대신하지 않는다. [Visual Sweep 댓글 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment)과 [전쪽 TSV manifest](assets/semanticist21-20261105/visual-manifest.json)를 연결한다.

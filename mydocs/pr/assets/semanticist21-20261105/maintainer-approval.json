@@ -1,0 +1,47 @@
+{
+  "recorded_at": "2026-11-05T07:18:11+09:00",
+  "approved_candidate": "da5e6ff665623344cedce7d043a771e8b0500fc5",
+  "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "user_responses": [
+    {
+      "question_id": "call_0328277e486a43d5b54250d51f847310",
+      "answer": "기존 차이 한정 예외·성능 2건 포함 (권장)"
+    },
+    {
+      "question_id": "call_510940fb0b7a418faa9f8c1cea5ee497",
+      "answer": "기존 차이 예외·10건 원격 처리 승인 (권장)"
+    }
+  ],
+  "fidelity_exception": {
+    "prs": [
+      8331,
+      8332
+    ],
+    "documents": [
+      "jpeg-sandbox",
+      "equation-flow"
+    ],
+    "pages_per_backend": 39,
+    "base_candidate_png_pairs": 78,
+    "all_byte_identical": true,
+    "scope": "Only pre-existing independent-Print differences with unchanged base/candidate output. Raw measurements remain unchanged.",
+    "does_not_allow": [
+      "new regressions",
+      "missing or duplicated content",
+      "page count mismatch",
+      "test failures",
+      "new low-fidelity golden or renderer fixtures"
+    ]
+  },
+  "remote_scope": [
+    "record decision",
+    "push integration branch",
+    "Open devel integration PR",
+    "exact-head CI and self-review",
+    "merge commit after success",
+    "original ten PR completion and thank-you comments",
+    "review records and devel sync",
+    "dedicated branch/worktree/output/debug cleanup"
+  ],
+  "workflow_cancel_rerun_or_settings_change_authorized": false
+}

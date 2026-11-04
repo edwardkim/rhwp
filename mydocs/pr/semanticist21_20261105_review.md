@@ -2,7 +2,7 @@
 
 ## 현재 판정과 기준
 
-**로컬 보정과 필수 검증 완료. 기능 PR 8건은 메인터너 보정 후 수용 가능, 성능 PR 2건은 기존 조판 차이의 수용 예외 결정 대기다.** [선정·수행 계획](semanticist21_20261105_review_plan.md)의 대상 10건을 유지한다. 최초 선정 뒤 reviewer `edwardkim`을 지정했으므로 현재 reviewer 필터로 다음 10건을 다시 고르지 않는다.
+**로컬 보정과 필수 검증 완료. 10건 모두 메인터너 보정 후 수용 가능하며, 성능 PR 2건의 기존 조판 차이는 작업지시자가 한정 예외를 승인했다.** [선정·수행 계획](semanticist21_20261105_review_plan.md)의 대상 10건을 유지한다. 최초 선정 뒤 reviewer `edwardkim`을 지정했으므로 현재 reviewer 필터로 다음 10건을 다시 고르지 않는다.
 
 - 비교 base: `22947f6a90c998e95fa51238d5b907a0ebd37162`.
 - 마지막 확인한 원격 devel: `e96b500e3ea259c821f05440f0388355916a9e9b`. 이후 추가된 파일은 이전 PR 검토 기록 3개뿐이며 제품 코드·테스트·설정의 변경은 없다. 현재 후보와의 merge-tree도 충돌 없이 성공했다. [차이 근거](assets/semanticist21-20261105/latest-base-refresh.json).
@@ -35,7 +35,7 @@
 
 #8331의 JPEG 픽셀 인계는 실제 최적화 WASM에서 첫 그리기 중앙값 1772.8 → 1118.6ms(-36.9%)와 linear memory 감소를 관측했다. 메인터너는 거대 이미지 헤더의 예산 곱셈 overflow를 보정했으며 실제 production 함수 음성 대조는 수정 전 FAIL / 수정 후 PASS다. #8332의 핵심 캐시는 #8348에서 이미 구현돼 중복 캐시를 제거하고 tokenizer 개선과 편집 계약 검사를 보존했다. 옛 base의 15초 → 2.7초를 현재 개선량으로 인용하지 않는다.
 
-두 성능 문서 39쪽은 최초 비교에서 base/후보의 Native/fresh WASM PNG가 모두 같았지만 독립 Print 대비 기존 조판 미달이 남았다. reference PDF의 누락 글꼴을 보완한 비교에서도 미달을 확인해 최종 Native/fresh WASM 전쪽 재측정도 완료했다. **기존 미달 범위의 수용 예외 질문은 아직 답변 대기이며 적용하지 않았다.** 평균이나 다른 문서 점수로 미달을 상쇄하지 않는다. [실측과 결정 범위](assets/semanticist21-20261105/performance-control-review.md).
+두 성능 문서 39쪽은 최초 비교에서 base/후보의 Native/fresh WASM PNG가 모두 같았지만 독립 Print 대비 기존 조판 미달이 남았다. reference PDF의 누락 글꼴을 보완한 비교에서도 미달을 확인해 최종 Native/fresh WASM 전쪽 재측정도 완료했다. **작업지시자가 기존 미달 중 base/후보 출력이 같은 범위에 한정해 수용 예외를 승인했다.** 평균이나 다른 문서 점수로 미달을 상쇄하지 않는다. [실측과 결정 범위](assets/semanticist21-20261105/performance-control-review.md).
 
 ## 완료된 공통 검증
 
@@ -51,7 +51,7 @@
 
 원 PR 4건의 실패는 실제 log·annotation을 확인한 checkout/compile 시간 초과였다. assertion·컴파일 오류를 발견하지 않았다. 최신 base의 Lint 45분·builder 60분 정책과 메인터너 새 후보 검증으로 처리하며 기여자 코드 재작업 댓글을 택하지 않았다. 기존 run의 취소·재실행이나 CI 명령·예산 변경은 수행하지 않았고, 미실행 원 검사를 성공으로 기록하지 않는다.
 
-로컬 필수 gate는 모두 완료했다. 두 성능 문서의 판정이 확정되면 승인 내용을 기록하고 exact 제출 SHA·본문·원 PR별 후속 처리안을 확정해 원격 단계로 진행한다. **원격 push·Open PR·merge는 이번 batch에서 아직 승인받거나 실행하지 않았다.**
+로컬 필수 gate는 모두 완료했다. 예외와 원격 범위를 승인받았으므로 exact 제출 SHA·본문·원 PR별 후속 처리안을 확정해 원격 단계로 진행한다. GitHub CI·merge의 실제 완료는 별도로 확인한다.
 
 ## 로컬 self-review 결과와 남은 결정
 
@@ -61,4 +61,8 @@
 4. 원 CI 실패 4건은 source 오류나 assertion 실패가 아닌 checkout/build 시간 초과로 판단했다. 현재 정책과 새 후보 검증으로 처리하며 재작업 댓글을 선택하지 않았다. [실제 job·annotation](assets/semanticist21-20261105/original-ci-failures.json).
 5. 성능 문서의 기존 미달은 예외 결정 전까지 수용에 적용하지 않는다. #8368의 다른 테두리 유형 차이 등 개별 기록에 명시한 기존 범위는 이 작업의 해결 성과나 자동 issue 종료 대상으로 삼지 않는다.
 
-[95개 최종 대표 PNG 목록](assets/semanticist21-20261105/representative-final-pngs.json), [전쪽 TSV](assets/semanticist21-20261105/visual-manifest.json), [원격 처리 제안](assets/semanticist21-20261105/remote-action-plan.md). 검토는 아직 종료되지 않았다. 두 성능 PR의 정책 결정과 승인된 원격 단계가 남아 있어 현재 후보 branch/worktree를 유지한다. merge·close 등 검토 종료 시 canonical 절차에 따라 output 전체와 검토 debug를 정리한다.
+[95개 최종 대표 PNG 목록](assets/semanticist21-20261105/representative-final-pngs.json), [전쪽 TSV](assets/semanticist21-20261105/visual-manifest.json), [원격 처리 제안](assets/semanticist21-20261105/remote-action-plan.md). 검토는 아직 종료되지 않았다. 승인된 원격 실행 단계가 남아 있어 현재 후보 branch/worktree를 유지한다. merge·close 등 검토 종료 시 canonical 절차에 따라 output 전체와 검토 debug를 정리한다.
+
+## 원격 처리 승인
+
+2026-11-05 작업지시자가 #8331·#8332의 변경 전부터 있던 동일 출력 차이에 한정한 수용 예외와 10건의 통합 push·Open PR·해당 head CI·self-review·merge·원 PR 완료/감사 댓글·동기화·정리를 승인했다. 새 회귀·검사 실패·쪽수 차이·누락·90% 미만의 새 렌더링 회귀 추가는 예외 대상이 아니다. [원문 답변과 한정 범위](assets/semanticist21-20261105/maintainer-approval.json). 원격 실행 결과와 CI는 실제 완료 후 별도로 기록한다.

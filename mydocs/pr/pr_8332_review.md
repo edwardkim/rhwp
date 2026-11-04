@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — 기존 성능 문서의 조판 차이 처리 결정 대기.** 코드 보정·성능/출력 보존 검증·전체 로컬 gate는 완료했다. 아래 두 성능 문서의 기존 미달 범위에 대한 수용 예외는 아직 승인되지 않았다. [정확한 기존 차이·최종 실측](assets/semanticist21-20261105/performance-control-review.md).
+**메인터너 보정 후 수용 가능.** 기존 성능 문서의 동일 출력 차이에 한정한 예외를 작업지시자가 승인했다. 수치·미달 페이지는 그대로 기록하며 [정확한 범위](assets/semanticist21-20261105/maintainer-approval.json)를 벗어나 적용하지 않는다.
 
 ## 접수와 범위
 
@@ -26,4 +26,17 @@
 
 최종 runtime `2f44d7d0ab`에서 전체 12,499개·Native 공식 3종 4,064개·집중 21개·Studio 2,720개를 통과했다. Rust lint 묶음·TypeScript·production build·문서 예제·suite/unit 정책도 통과했다. [전체 검증 요약](assets/semanticist21-20261105/final-validation-summary.json), [최종 PNG와 해시](assets/semanticist21-20261105/representative-final-pngs.json), [원 기여 보존](assets/semanticist21-20261105/contribution-ancestry.json).
 
-원격 push·새 통합 PR·merge·후속 댓글은 현재 아직 실행하지 않았다. 승인 뒤 해당 제출 head의 CI와 최신 base의 충돌 여부를 다시 확인한다.
+원격 push·Open 통합 PR·해당 head CI·self-review·merge·후속 댓글·정리를 작업지시자가 승인했다. 실제 실행과 성공을 확인한 뒤 원격 결과를 기록한다.
+
+## Merge 후 contributor PR comment 계획
+
+22쪽 전체 base/후보 출력이 같다. 19쪽의 수식·본문 시작과 두 단 흐름 차이는 기존 현상이며 이번 성능 수정의 해결 성과로 주장하지 않는다. 기존 공통 수식 캐시를 보존했다.
+
+실제 통합 PR·merge SHA·최신 head CI URL을 확정한 뒤 아래 원 PR별 증적과 함께 한국어 존댓말로 감사 댓글을 게시한다. 그림은 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/`에 아래 경로를 붙인다. merge SHA의 HTTP Content-Type과 SHA-256을 검증하고 게시 후 API 본문과 GitHub 화면 표시를 확인한다.
+
+| 입력·쪽 | 경로 | raw 실루엣(2px) | pixel match | 내용 픽셀 보조값 | review / overlay |
+| --- | --- | --- | --- | --- | --- |
+| `equation-flow` 19쪽 | native | 42.22444% | 88.70259% | 14.77119% | [review](assets/semanticist21-20261105/comment-evidence/pr8332-equation-flow/native/review/review_019.png) / [overlay](assets/semanticist21-20261105/comment-evidence/pr8332-equation-flow/native/overlay/overlay_019.png) |
+| `equation-flow` 19쪽 | wasm | 42.20281% | 88.63446% | 13.63772% | [review](assets/semanticist21-20261105/comment-evidence/pr8332-equation-flow/wasm/review/review_019.png) / [overlay](assets/semanticist21-20261105/comment-evidence/pr8332-equation-flow/wasm/overlay/overlay_019.png) |
+
+자동 geometry 후보 추출은 수행하지 않았으므로 후보 수를 0으로 쓰지 않는다. TSV-only 전쪽 raw 측정과 직접 판독을 구분한다. 이 문서의 raw 90% 미만 쪽과 승인된 기존 차이 예외를 댓글에도 명시한다. 내용 픽셀 보조값은 사람의 판정 정확도가 아니며 승인 gate를 대신하지 않는다. [Visual Sweep 댓글 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment)과 [전쪽 TSV manifest](assets/semanticist21-20261105/visual-manifest.json)를 연결한다.

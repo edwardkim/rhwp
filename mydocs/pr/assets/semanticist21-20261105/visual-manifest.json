@@ -1456,5 +1456,7 @@
   "final_handbook_gate": "mydocs/pr/assets/semanticist21-20261105/handbook-final-gate.json",
   "preliminary_runtime_source": "5c540c6c3eb197dc31dce30f576bcd342fbdd58a",
   "note": "All per-document runs reference final raw TSV bytes. Preliminary 10-font performance measurements are preserved separately. Full gate/API/PNG hashes and roundtrip runs are in the linked final result manifests. No existing-difference exception has been applied.",
-  "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2"
+  "runtime_source": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "maintainer_approval": "maintainer-approval.json",
+  "performance_exception": "2026-11-05 작업지시자가 #8331·#8332의 변경 전부터 있던 동일 출력 차이에 한정한 수용 예외와 10건의 통합 push·Open PR·해당 head CI·self-review·merge·원 PR 완료/감사 댓글·동기화·정리를 승인했다. 새 회귀·검사 실패·쪽수 차이·누락·90% 미만의 새 렌더링 회귀 추가는 예외 대상이 아니다."
 }

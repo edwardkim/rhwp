@@ -37,7 +37,7 @@
     "pages_per_backend": 39,
     "base_candidate_png_pairs": 78,
     "all_byte_identical": true,
-    "fidelity_exception": "pending not applied"
+    "fidelity_exception": "2026-11-05 작업지시자가 #8331·#8332의 변경 전부터 있던 동일 출력 차이에 한정한 수용 예외와 10건의 통합 push·Open PR·해당 head CI·self-review·merge·원 PR 완료/감사 댓글·동기화·정리를 승인했다. 새 회귀·검사 실패·쪽수 차이·누락·90% 미만의 새 렌더링 회귀 추가는 예외 대상이 아니다."
   },
   "security_cli": {
     "documents": 31,
@@ -74,7 +74,7 @@
       "0"
     ]
   ],
-  "remote_operations": "Initial authorized reviewer assignments completed; no code push/new PR/comments/merge in the proposed remote phase.",
+  "remote_operations": "Approved; preparing submission. Exact remote state is recorded separately after execution.",
   "all_required_local_gates": "passed",
   "final_metadata_checks": "final-metadata-check-runs.json"
 }
