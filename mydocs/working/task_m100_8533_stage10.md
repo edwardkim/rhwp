@@ -20,7 +20,9 @@ Mac에서 `--handbook-gate`만 지정한 실제 실행은 7.263초 뒤 공급 �
 import/class 이름 오류는 결함 검출 근거에서 제외하고, 수정한 실제 assertion 실패 로그를
 `option-readable-font-before-valid.log`에 보존했다.
 
-새 옵션 단독 전383쪽 실행은 `option-only-native-v2.log`에 기록한다. 공개 경로를 외부에서
-주입하지 않고 `--handbook-gate`가 자동 공급·Native 출력·쪽별 하한 판정을 끝내야 완료다.
+새 옵션 단독 전383쪽 실행은 `option-only-native-v2.log`에 기록했다. 공개 경로를 외부에서
+주입하지 않고 `--handbook-gate`가 자동 공급·Native 출력·쪽별 하한 판정을 완료했다.
+exit 0, 207.3초, 최저 raw 99.96465%·130쪽, #8389 하락 0쪽이다. 앞선 명시 공급 실행과
+383쪽의 실제 raw PNG SHA-256이 전부 같다. 전체 Visual Sweep Python도 245 PASS다.
 이 보정은 Python 공급 도구에 한정되어 Rust 제품 바이너리와 WASM 바이트를 바꾸지 않는다.
 이미 완료한 전체 nextest 12,537 PASS/0 FAIL/45 skip 및 Rust 필수 게이트를 중복 실행하지 않는다.
