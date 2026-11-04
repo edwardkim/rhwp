@@ -2276,9 +2276,19 @@ impl TypesetEngine {
             }) {
                 0.0
             } else {
+                // 형제 표는 세로 오프셋 순서로 놓이므로 컨트롤 순서가 뒤인 형제가 먼저
+                // 이 쪽에 놓였을 수 있다. 이 쪽에 이미 놓인 형제의 문단 원점을 공유한다.
                 st.paragraph_float_placements
                     .iter()
-                    .filter(|((owner, control), _)| *owner == para_idx && *control < ctrl_idx)
+                    .filter(|((owner, control), _)| {
+                        *owner == para_idx
+                            && *control != ctrl_idx
+                            && st.current_items.iter().any(|item| {
+                                matches!(item, PageItem::Table { para_index, control_index }
+                                    | PageItem::PartialTable { para_index, control_index, .. }
+                                    if *para_index == para_idx && control_index == control)
+                            })
+                    })
                     .min_by_key(|((_, control), _)| *control)
                     .map_or(st.current_height, |(_, placement)| placement.anchor_y)
             };
