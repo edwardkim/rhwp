@@ -33,6 +33,10 @@
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
 
+## 조판 원칙 준수 검토
+
+적용 대상입니다. 원본 저장값·독립 Print를 근거로 공통 규칙, 측정과 실제 배치의 소비 지점, 내용 소속·순서 및 적용되지 않는 반례를 아래에서 대조합니다.
+
 ## 구현 주장과 검증 증거의 대조
 
 칸 안 문단 기준 자리차지 그림은 앵커 줄 높이를 위에 한 번 더 쌓지 않고, 행 분할 때 그 그림과 소유 앵커 줄을 같은 조각으로 넘긴다.
@@ -53,7 +57,7 @@
 
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
-| `cell_picture_row_split.hwp` 2쪽 · 그림 칸 앵커 | 100.00% · [review](assets/planet6897_20261103/pr_8477/pr8477-claim-p002-cell_picture_row_s-native-review.png) / [overlay](assets/planet6897_20261103/pr_8477/pr8477-claim-p002-cell_picture_row_s-native-overlay.png) | 100.00% · 산출 중 / 산출 중 |
+| `cell_picture_row_split.hwp` 2쪽 · 그림 칸 앵커 | 100.00% · [review](assets/planet6897_20261103/pr_8477/pr8477-claim-p002-cell_picture_row_s-native-review.png) / [overlay](assets/planet6897_20261103/pr_8477/pr8477-claim-p002-cell_picture_row_s-native-overlay.png) | 100.00% · [review](assets/planet6897_20261103/pr_8477/pr8477-claim-p002-cell_picture_row_s-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8477/pr8477-claim-p002-cell_picture_row_s-wasm-overlay.png) |
 
 ## 남은 검증
 

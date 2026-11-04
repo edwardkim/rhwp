@@ -35,6 +35,10 @@
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
 
+## 조판 원칙 준수 검토
+
+적용 대상입니다. 원본 저장값·독립 Print를 근거로 공통 규칙, 측정과 실제 배치의 소비 지점, 내용 소속·순서 및 적용되지 않는 반례를 아래에서 대조합니다.
+
 ## 구현 주장과 검증 증거의 대조
 
 세로쓰기 칸을 가진 표는 저장 page_break 값을 보존하면서 조판에서는 나누지 않는 표로 취급한다.
@@ -55,8 +59,8 @@ model/table.rs의 Table::layout_page_break가 측정·typeset·layout 공통 소
 
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
-| `vertical_fit.hwpx` 5쪽 · 세로쓰기 표 경계 | 98.75% · [review](assets/planet6897_20261103/pr_8475/pr8475-claim-p005-vertical_fit-native-review.png) / [overlay](assets/planet6897_20261103/pr_8475/pr8475-claim-p005-vertical_fit-native-overlay.png) | 98.72% · 산출 중 / 산출 중 |
-| `vertical_oversize.hwpx` 5쪽 · 세로쓰기 넘침 경계 | 98.94% · [review](assets/planet6897_20261103/pr_8475/pr8475-claim-p005-vertical_oversize-native-review.png) / [overlay](assets/planet6897_20261103/pr_8475/pr8475-claim-p005-vertical_oversize-native-overlay.png) | 98.92% · 산출 중 / 산출 중 |
+| `vertical_fit.hwpx` 5쪽 · 세로쓰기 표 경계 | 98.75% · [review](assets/planet6897_20261103/pr_8475/pr8475-claim-p005-vertical_fit-native-review.png) / [overlay](assets/planet6897_20261103/pr_8475/pr8475-claim-p005-vertical_fit-native-overlay.png) | 98.72% · [review](assets/planet6897_20261103/pr_8475/pr8475-claim-p005-vertical_fit-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8475/pr8475-claim-p005-vertical_fit-wasm-overlay.png) |
+| `vertical_oversize.hwpx` 5쪽 · 세로쓰기 넘침 경계 | 98.94% · [review](assets/planet6897_20261103/pr_8475/pr8475-claim-p005-vertical_oversize-native-review.png) / [overlay](assets/planet6897_20261103/pr_8475/pr8475-claim-p005-vertical_oversize-native-overlay.png) | 98.92% · [review](assets/planet6897_20261103/pr_8475/pr8475-claim-p005-vertical_oversize-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8475/pr8475-claim-p005-vertical_oversize-wasm-overlay.png) |
 | `42565_입법예고문.hwp` 5쪽 · 구역 첫쪽 표 위 간격 | 99.27% · [review](assets/planet6897_20261103/pr_8475/pr8475-8489-8497-public-claims-p005-native-review.png) / [overlay](assets/planet6897_20261103/pr_8475/pr8475-8489-8497-public-claims-p005-native-overlay.png) | 99.24% · 산출 중 / 산출 중 |
 | `42565_입법예고문.hwp` 10쪽 · 세로쓰기 표 한쪽 수용 | 99.26% · [review](assets/planet6897_20261103/pr_8475/pr8475-8489-8497-public-claims-p010-native-review.png) / [overlay](assets/planet6897_20261103/pr_8475/pr8475-8489-8497-public-claims-p010-native-overlay.png) | 99.25% · [review](assets/planet6897_20261103/pr_8475/pr8475-8489-8497-public-claims-p010-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8475/pr8475-8489-8497-public-claims-p010-wasm-overlay.png) |
 | `42565_입법예고문.hwp` 11쪽 · 병합 칸 끝 행 | 100.00% · [review](assets/planet6897_20261103/pr_8475/pr8475-8489-8497-public-claims-p011-native-review.png) / [overlay](assets/planet6897_20261103/pr_8475/pr8475-8489-8497-public-claims-p011-native-overlay.png) | 100.00% · 산출 중 / 산출 중 |

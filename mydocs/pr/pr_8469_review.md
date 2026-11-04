@@ -37,6 +37,10 @@
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
 
+## 조판 원칙 준수 검토
+
+적용 대상입니다. 원본 저장값·독립 Print를 근거로 공통 규칙, 측정과 실제 배치의 소비 지점, 내용 소속·순서 및 적용되지 않는 반례를 아래에서 대조합니다.
+
 ## 구현 주장과 검증 증거의 대조
 
 셀 단위 나눔의 쪽 끝 행은 선언 높이와 별개로 실제 글줄·칸 안 여백이 남은 예산에 들어가는지 판단한다.
@@ -57,7 +61,7 @@ h2505·h2570·h3180 및 글자 크기가 다른 d14·d16에서 수용·이월 �
 
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
-| `rowbreak_content_fit_h3180.hwpx` 2쪽 · 셀 단위 나눔 경계 | 100.00% · [review](assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-native-review.png) / [overlay](assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-native-overlay.png) | 100.00% · 산출 중 / 산출 중 |
+| `rowbreak_content_fit_h3180.hwpx` 2쪽 · 셀 단위 나눔 경계 | 100.00% · [review](assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-native-review.png) / [overlay](assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-native-overlay.png) | 100.00% · [review](assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-wasm-overlay.png) |
 
 ## 남은 검증
 

@@ -28,13 +28,17 @@
 
 | 입력 · 독립 Print PDF | Native 전쪽 TSV · 최저 raw | fresh WASM 전쪽 TSV · 최저 raw |
 | --- | --- | --- |
-| [section_top_spacing-2020.hwp](../../samples/issue8474/section_top_spacing-2020.hwp) · [section_top_spacing-2020.pdf](../../pdf/issue8474/section_top_spacing-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8489/pr8489-section_top_spacing-2020-d729264d-native.tsv) · 100.0% (8쪽) | 산출 중 · 미측정 (?쪽) |
-| [section_top_spacing.hwpx](../../samples/issue8474/section_top_spacing.hwpx) · [section_top_spacing-2020.pdf](../../pdf/issue8474/section_top_spacing-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8489/pr8489-section_top_spacing-d729264d-native.tsv) · 100.0% (8쪽) | 산출 중 · 미측정 (?쪽) |
-| [top_tac_cases-2020.hwp](../../samples/issue8474/top_tac_cases-2020.hwp) · [top_tac_cases-2020.pdf](../../pdf/issue8474/top_tac_cases-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8489/pr8489-top_tac_cases-2020-065f35f3-native.tsv) · 100.0% (4쪽) | 산출 중 · 미측정 (?쪽) |
-| [top_tac_cases.hwpx](../../samples/issue8474/top_tac_cases.hwpx) · [top_tac_cases-2020.pdf](../../pdf/issue8474/top_tac_cases-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8489/pr8489-top_tac_cases-065f35f3-native.tsv) · 100.0% (4쪽) | 산출 중 · 미측정 (?쪽) |
+| [section_top_spacing-2020.hwp](../../samples/issue8474/section_top_spacing-2020.hwp) · [section_top_spacing-2020.pdf](../../pdf/issue8474/section_top_spacing-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8489/pr8489-section_top_spacing-2020-d729264d-native.tsv) · 100.0% (8쪽) | [TSV](assets/planet6897_20261103/pr_8489/pr8489-section_top_spacing-2020-d729264d-wasm.tsv) · 100.0% (8쪽) |
+| [section_top_spacing.hwpx](../../samples/issue8474/section_top_spacing.hwpx) · [section_top_spacing-2020.pdf](../../pdf/issue8474/section_top_spacing-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8489/pr8489-section_top_spacing-d729264d-native.tsv) · 100.0% (8쪽) | [TSV](assets/planet6897_20261103/pr_8489/pr8489-section_top_spacing-d729264d-wasm.tsv) · 100.0% (8쪽) |
+| [top_tac_cases-2020.hwp](../../samples/issue8474/top_tac_cases-2020.hwp) · [top_tac_cases-2020.pdf](../../pdf/issue8474/top_tac_cases-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8489/pr8489-top_tac_cases-2020-065f35f3-native.tsv) · 100.0% (4쪽) | [TSV](assets/planet6897_20261103/pr_8489/pr8489-top_tac_cases-2020-065f35f3-wasm.tsv) · 100.0% (4쪽) |
+| [top_tac_cases.hwpx](../../samples/issue8474/top_tac_cases.hwpx) · [top_tac_cases-2020.pdf](../../pdf/issue8474/top_tac_cases-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8489/pr8489-top_tac_cases-065f35f3-native.tsv) · 100.0% (4쪽) | [TSV](assets/planet6897_20261103/pr_8489/pr8489-top_tac_cases-065f35f3-wasm.tsv) · 100.0% (4쪽) |
 
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
+
+## 조판 원칙 준수 검토
+
+적용 대상입니다. 원본 저장값·독립 Print를 근거로 공통 규칙, 측정과 실제 배치의 소비 지점, 내용 소속·순서 및 적용되지 않는 반례를 아래에서 대조합니다.
 
 ## 구현 주장과 검증 증거의 대조
 
@@ -54,8 +58,8 @@ S1·S2·S3의 위 간격 순서와 S4 표 위끝의 관계를 확인한다. 입�
 
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
-| `section_top_spacing-2020.hwp` 8쪽 · 쪽 상단 TAC 표 | 100.00% · [review](assets/planet6897_20261103/pr_8489/pr8489-claim-p008-section_top_spacin-native-review.png) / [overlay](assets/planet6897_20261103/pr_8489/pr8489-claim-p008-section_top_spacin-native-overlay.png) | 미측정 · 산출 중 / 산출 중 |
-| `top_tac_cases-2020.hwp` 3쪽 · 쪽 상단 TAC 표의 다른 입력 | 100.00% · [review](assets/planet6897_20261103/pr_8489/pr8489-claim-p003-top_tac_cases-2020-native-review.png) / [overlay](assets/planet6897_20261103/pr_8489/pr8489-claim-p003-top_tac_cases-2020-native-overlay.png) | 미측정 · 산출 중 / 산출 중 |
+| `section_top_spacing-2020.hwp` 8쪽 · 쪽 상단 TAC 표 | 100.00% · [review](assets/planet6897_20261103/pr_8489/pr8489-claim-p008-section_top_spacin-native-review.png) / [overlay](assets/planet6897_20261103/pr_8489/pr8489-claim-p008-section_top_spacin-native-overlay.png) | 100.00% · [review](assets/planet6897_20261103/pr_8489/pr8489-claim-p008-section_top_spacin-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8489/pr8489-claim-p008-section_top_spacin-wasm-overlay.png) |
+| `top_tac_cases-2020.hwp` 3쪽 · 쪽 상단 TAC 표의 다른 입력 | 100.00% · [review](assets/planet6897_20261103/pr_8489/pr8489-claim-p003-top_tac_cases-2020-native-review.png) / [overlay](assets/planet6897_20261103/pr_8489/pr8489-claim-p003-top_tac_cases-2020-native-overlay.png) | 100.00% · [review](assets/planet6897_20261103/pr_8489/pr8489-claim-p003-top_tac_cases-2020-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8489/pr8489-claim-p003-top_tac_cases-2020-wasm-overlay.png) |
 
 ## 남은 검증
 

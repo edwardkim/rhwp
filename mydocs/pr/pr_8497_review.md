@@ -28,10 +28,14 @@
 
 | 입력 · 독립 Print PDF | Native 전쪽 TSV · 최저 raw | fresh WASM 전쪽 TSV · 최저 raw |
 | --- | --- | --- |
-| [span_page_bottom-2020.hwp](../../samples/issue8478/span_page_bottom-2020.hwp) · [span_page_bottom-2020.pdf](../../pdf/issue8478/span_page_bottom-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8497/pr8497-span_page_bottom-2020-43ded21b-native.tsv) · 99.77% (12쪽) | 산출 중 · 미측정 (?쪽) |
+| [span_page_bottom-2020.hwp](../../samples/issue8478/span_page_bottom-2020.hwp) · [span_page_bottom-2020.pdf](../../pdf/issue8478/span_page_bottom-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8497/pr8497-span_page_bottom-2020-43ded21b-native.tsv) · 99.77% (12쪽) | [TSV](assets/planet6897_20261103/pr_8497/pr8497-span_page_bottom-2020-43ded21b-wasm.tsv) · 100.0% (12쪽) |
 
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
+
+## 조판 원칙 준수 검토
+
+적용 대상입니다. 원본 저장값·독립 Print를 근거로 공통 규칙, 측정과 실제 배치의 소비 지점, 내용 소속·순서 및 적용되지 않는 반례를 아래에서 대조합니다.
 
 ## 구현 주장과 검증 증거의 대조
 
@@ -51,8 +55,8 @@ Q·R·S·U·V의 표 바닥 관계와 P의 정상 선언 높이를 비교한다.
 
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
-| `span_page_bottom-2020.hwp` 3쪽 · 병합 칸 끝 행 | 100.00% · [review](assets/planet6897_20261103/pr_8497/pr8497-claim-p003-span_page_bottom-2-native-review.png) / [overlay](assets/planet6897_20261103/pr_8497/pr8497-claim-p003-span_page_bottom-2-native-overlay.png) | 미측정 · 산출 중 / 산출 중 |
-| `span_page_bottom-2020.hwp` 9쪽 · 병합 칸 끝 행의 후속 페이지 | 100.00% · [review](assets/planet6897_20261103/pr_8497/pr8497-claim-p009-span_page_bottom-2-native-review.png) / [overlay](assets/planet6897_20261103/pr_8497/pr8497-claim-p009-span_page_bottom-2-native-overlay.png) | 미측정 · 산출 중 / 산출 중 |
+| `span_page_bottom-2020.hwp` 3쪽 · 병합 칸 끝 행 | 100.00% · [review](assets/planet6897_20261103/pr_8497/pr8497-claim-p003-span_page_bottom-2-native-review.png) / [overlay](assets/planet6897_20261103/pr_8497/pr8497-claim-p003-span_page_bottom-2-native-overlay.png) | 100.00% · [review](assets/planet6897_20261103/pr_8497/pr8497-claim-p003-span_page_bottom-2-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8497/pr8497-claim-p003-span_page_bottom-2-wasm-overlay.png) |
+| `span_page_bottom-2020.hwp` 9쪽 · 병합 칸 끝 행의 후속 페이지 | 100.00% · [review](assets/planet6897_20261103/pr_8497/pr8497-claim-p009-span_page_bottom-2-native-review.png) / [overlay](assets/planet6897_20261103/pr_8497/pr8497-claim-p009-span_page_bottom-2-native-overlay.png) | 100.00% · [review](assets/planet6897_20261103/pr_8497/pr8497-claim-p009-span_page_bottom-2-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8497/pr8497-claim-p009-span_page_bottom-2-wasm-overlay.png) |
 
 ## 남은 검증
 

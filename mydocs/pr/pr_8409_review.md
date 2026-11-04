@@ -29,10 +29,14 @@
 | 입력 · 독립 Print PDF | Native 전쪽 TSV · 최저 raw | fresh WASM 전쪽 TSV · 최저 raw |
 | --- | --- | --- |
 | [2025 행정업무운영 편람(최종).hwp](<../../samples/2025 행정업무운영 편람(최종).hwp>) · [2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf](<../../pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf>) | [TSV](assets/planet6897_20261103/pr_8409/historical-handbook-hwp-native.tsv) · 99.96% (383쪽) | [TSV](assets/planet6897_20261103/pr_8409/historical-handbook-hwp-wasm.tsv) · 99.96% (383쪽) |
-| [2025 행정업무운영 편람(최종).hwpx](<../../samples/2025 행정업무운영 편람(최종).hwpx>) · [2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf](<../../pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf>) | [TSV](assets/planet6897_20261103/pr_8409/historical-handbook-hwpx-native.tsv) · 99.96% (383쪽) | 산출 중 · 미측정 (?쪽) |
+| [2025 행정업무운영 편람(최종).hwpx](<../../samples/2025 행정업무운영 편람(최종).hwpx>) · [2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf](<../../pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf>) | [TSV](assets/planet6897_20261103/pr_8409/historical-handbook-hwpx-native.tsv) · 99.96% (383쪽) | [TSV](assets/planet6897_20261103/pr_8409/historical-handbook-hwpx-wasm.tsv) · 99.96% (383쪽) |
 
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
+
+## 조판 원칙 준수 검토
+
+조판 구현 변경은 비해당입니다. 기준점 식별 회귀만 바꾸며 제품 renderer는 변경하지 않습니다.
 
 ## 구현 주장과 검증 증거의 대조
 
@@ -47,7 +51,7 @@ tests/cases/issue_8153_all_pages.rs의 text_anchor_runs가 같은 기준선·수
 ## 검증 입력 커밋 확인
 
 두 편람 원본과 독립 Print PDF는 기존 저장소·로컬 기준 자료를 재사용합니다.
-파일별 SHA·대용량 PDF의 보관 조건은 전쪽 대조의 입력 명세에 함께 기록합니다.
+파일별 SHA·대용량 PDF의 보관 조건은 [전쪽 대조 입력 명세](assets/planet6897_20261103/pr8389_8397/inputs.tsv)에 기록했습니다.
 
 ## 원 PR 주장 쪽의 시각 증적
 

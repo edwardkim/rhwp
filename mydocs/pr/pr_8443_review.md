@@ -33,6 +33,10 @@
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
 
+## 조판 원칙 준수 검토
+
+적용 대상입니다. 원본 저장값·독립 Print를 근거로 공통 규칙, 측정과 실제 배치의 소비 지점, 내용 소속·순서 및 적용되지 않는 반례를 아래에서 대조합니다.
+
 ## 구현 주장과 검증 증거의 대조
 
 편집 뒤 원본 문단의 문단 기준 자리차지 개체가 점유한 높이를 저장 vpos 재계산에서도 보존한다.
@@ -42,6 +46,18 @@ composer/line_breaking.rs의 재조판·구역 vpos 재계산에서 편집한 �
 EMC 실제 편집 결과의 7쪽을 독립 Print와 비교한다. 문단 기준 자리차지 개체를 소유하지 않는 일반 문단까지 점유 보존을 적용하지 않는 대조군을 유지한다. fresh WASM의 deleteText(0,114,0,1)→exportHwpx 결과도 Native 실제 편집 산출물과 바이트 단위로 일치했다. [WASM 실제 API 산출물 대조](assets/planet6897_20261103/wasm-producer-parity.json)를 연결한다.
 
 관련 정식 회귀 파일: [issue_8440_edit_keeps_table_host_gap.rs](../../tests/cases/issue_8440_edit_keeps_table_host_gap.rs)
+
+## 변경 전의 실제 가져오기·편집 결과
+
+[동일 원본의 base/candidate API 산출물 대조](assets/planet6897_20261103/native-producer-before-after.json)와
+[실제 WASM API와 Native 산출물 일치](assets/planet6897_20261103/wasm-producer-parity.json)를 함께 확인했습니다.
+
+같은 EMC 원본에서 글자를 삭제하고 저장한 base 산출물의 주장 쪽(7쪽)은 60.61%였습니다.
+현재 Native/WASM의 실제 편집 산출물과 독립 Print를 대조합니다. 아래 TSV는 변경 전 7쪽만 포함합니다.
+
+[변경 전 편집 HWPX](assets/planet6897_20261103/before-producer/pr8443-emc-edit-base.hwpx) · [변경 전 선택 쪽 TSV](assets/planet6897_20261103/before-producer/pr8443-emc-edit-base-selected-native.tsv)
+
+[review](assets/planet6897_20261103/before-producer/pr8443-emc-edit-base-p007-review.png) / [overlay](assets/planet6897_20261103/before-producer/pr8443-emc-edit-base-p007-overlay.png)
 
 ## 검증 입력 커밋 확인
 

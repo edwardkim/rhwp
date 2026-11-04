@@ -34,6 +34,10 @@
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
 
+## 조판 원칙 준수 검토
+
+적용 대상입니다. 원본 저장값·독립 Print를 근거로 공통 규칙, 측정과 실제 배치의 소비 지점, 내용 소속·순서 및 적용되지 않는 반례를 아래에서 대조합니다.
+
 ## 구현 주장과 검증 증거의 대조
 
 기호 슬롯 바탕의 U+2024가 실제 face에 없으면 확인된 공급 face Haansoft Batang의 글리프 전진을 사용한다. 문서 이름으로 공급 글꼴을 선택하지 않는다.
@@ -54,7 +58,7 @@ src/renderer/font_metrics_technical_symbols.rs의 글리프 존재 정보와 fon
 
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
-| `issue2004_cell_image_stack.hwp` 1쪽 · Batang 기호 폭 | 100.00% · [review](assets/planet6897_20261103/pr_8428/pr8428-claim-p001-issue2004_cell_ima-native-review.png) / [overlay](assets/planet6897_20261103/pr_8428/pr8428-claim-p001-issue2004_cell_ima-native-overlay.png) | 100.00% · 산출 중 / 산출 중 |
+| `issue2004_cell_image_stack.hwp` 1쪽 · Batang 기호 폭 | 100.00% · [review](assets/planet6897_20261103/pr_8428/pr8428-claim-p001-issue2004_cell_ima-native-review.png) / [overlay](assets/planet6897_20261103/pr_8428/pr8428-claim-p001-issue2004_cell_ima-native-overlay.png) | 100.00% · [review](assets/planet6897_20261103/pr_8428/pr8428-claim-p001-issue2004_cell_ima-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8428/pr8428-claim-p001-issue2004_cell_ima-wasm-overlay.png) |
 
 ## 남은 검증
 

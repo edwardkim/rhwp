@@ -28,10 +28,14 @@
 
 | 입력 · 독립 Print PDF | Native 전쪽 TSV · 최저 raw | fresh WASM 전쪽 TSV · 최저 raw |
 | --- | --- | --- |
-| [table_tail.hwp](../../samples/issue8493/table_tail.hwp) · [issue8493_table_tail-2020.pdf](../../pdf/issue8493_table_tail-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8496/pr8496-table_tail-a10cf8fe-native.tsv) · 100.0% (3쪽) | 산출 중 · 미측정 (?쪽) |
+| [table_tail.hwp](../../samples/issue8493/table_tail.hwp) · [issue8493_table_tail-2020.pdf](../../pdf/issue8493_table_tail-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8496/pr8496-table_tail-a10cf8fe-native.tsv) · 100.0% (3쪽) | [TSV](assets/planet6897_20261103/pr_8496/pr8496-table_tail-a10cf8fe-wasm.tsv) · 100.0% (3쪽) |
 
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
+
+## 조판 원칙 준수 검토
+
+적용 대상입니다. 원본 저장값·독립 Print를 근거로 공통 규칙, 측정과 실제 배치의 소비 지점, 내용 소속·순서 및 적용되지 않는 반례를 아래에서 대조합니다.
 
 ## 구현 주장과 검증 증거의 대조
 
@@ -53,7 +57,7 @@ ROW31과 뒤 문단의 같은 쪽 소속, END의 다음 쪽 소속과 전체 내
 
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
-| `table_tail.hwp` 2쪽 · 표 꼬리 되감김 | 100.00% · [review](assets/planet6897_20261103/pr_8496/pr8496-claim-p002-table_tail-native-review.png) / [overlay](assets/planet6897_20261103/pr_8496/pr8496-claim-p002-table_tail-native-overlay.png) | 미측정 · 산출 중 / 산출 중 |
+| `table_tail.hwp` 2쪽 · 표 꼬리 되감김 | 100.00% · [review](assets/planet6897_20261103/pr_8496/pr8496-claim-p002-table_tail-native-review.png) / [overlay](assets/planet6897_20261103/pr_8496/pr8496-claim-p002-table_tail-native-overlay.png) | 100.00% · [review](assets/planet6897_20261103/pr_8496/pr8496-claim-p002-table_tail-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8496/pr8496-claim-p002-table_tail-wasm-overlay.png) |
 
 ## 남은 검증
 

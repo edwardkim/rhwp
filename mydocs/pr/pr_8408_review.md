@@ -35,6 +35,10 @@
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
 
+## 조판 원칙 준수 검토
+
+적용 대상입니다. 원본 저장값·독립 Print를 근거로 공통 규칙, 측정과 실제 배치의 소비 지점, 내용 소속·순서 및 적용되지 않는 반례를 아래에서 대조합니다.
+
 ## 구현 주장과 검증 증거의 대조
 
 공백만 있는 한 줄 문단은 다음 관측 PDF 줄까지의 띠를 점유한다. 보이는 잉크가 있는 줄의 상자까지 줄이는 규칙으로 확대하지 않는다.
@@ -44,6 +48,20 @@ src/parser/pdf/editable.rs의 reflow에서 관측 줄 사이의 간격을 저장
 무표기본 5·13쪽의 제목→본문 간격은 PDF bbox의 2424·2364HU라는 독립 근거를 쓴다. 2010판 14쪽의 위 첨자와 기존 행·paint 순서 검사도 함께 보호한다. fresh WASM의 `HwpDocument.importPdf(bytes, {layout: "editable"}) → exportHwpx()` 실제 실행 결과 3종이 Native importer 산출물과 바이트 단위로 일치했다. [WASM 실제 API 산출물 대조](assets/planet6897_20261103/wasm-producer-parity.json)를 연결한다.
 
 관련 정식 회귀 파일: [issue_8355_pdf_editable_fixed_trailing.rs](../../tests/cases/issue_8355_pdf_editable_fixed_trailing.rs) · [issue_8362_pdf_editable_hancom_rows.rs](../../tests/cases/issue_8362_pdf_editable_hancom_rows.rs) · [issue_8362_pdf_editable_paint_order.rs](../../tests/cases/issue_8362_pdf_editable_paint_order.rs) · [issue_8381_pdf_editable_blank_row.rs](../../tests/cases/issue_8381_pdf_editable_blank_row.rs)
+
+## 변경 전의 실제 가져오기·편집 결과
+
+[동일 원본의 base/candidate API 산출물 대조](assets/planet6897_20261103/native-producer-before-after.json)와
+[실제 WASM API와 Native 산출물 일치](assets/planet6897_20261103/wasm-producer-parity.json)를 함께 확인했습니다.
+
+2010·2020판은 base/candidate importer 결과가 바이트 단위로 같은 정상 대조군입니다.
+무표기본은 같은 원본 PDF를 base importer로 가져온 HWPX의 5쪽 75.59%·13쪽 72.85%에서
+현재 importer의 실제 산출물로 개선됐습니다. 아래 TSV는 변경 전의 주장 쪽 두 쪽만 포함합니다.
+
+[변경 전 HWPX](assets/planet6897_20261103/before-producer/editable-plain-base.hwpx) · [변경 전 선택 쪽 TSV](assets/planet6897_20261103/before-producer/editable-plain-base-selected-native.tsv)
+
+5쪽: [review](assets/planet6897_20261103/before-producer/editable-plain-base-p005-review.png) / [overlay](assets/planet6897_20261103/before-producer/editable-plain-base-p005-overlay.png)
+13쪽: [review](assets/planet6897_20261103/before-producer/editable-plain-base-p013-review.png) / [overlay](assets/planet6897_20261103/before-producer/editable-plain-base-p013-overlay.png)
 
 ## 검증 입력 커밋 확인
 

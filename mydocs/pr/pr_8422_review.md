@@ -29,10 +29,14 @@
 | 입력 · 독립 Print PDF | Native 전쪽 TSV · 최저 raw | fresh WASM 전쪽 TSV · 최저 raw |
 | --- | --- | --- |
 | [30026-safety-reform-toc.hwp](../../samples/issue8418/30026-safety-reform-toc.hwp) · [30026-safety-reform-toc-2022.pdf](../../pdf/issue8418/30026-safety-reform-toc-2022.pdf) | [TSV](assets/planet6897_20261103/pr_8422/pr8422-30026-safety-reform-toc-522e94f1-native.tsv) · 97.52% (37쪽) | [TSV](assets/planet6897_20261103/pr_8422/pr8422-30026-safety-reform-toc-522e94f1-wasm.tsv) · 97.52% (37쪽) |
-| [156487948-marine-pollution-law.hwp](../../samples/issue6737/156487948-marine-pollution-law.hwp) · [issue6737-156487948-2020.pdf](../../pdf/issue6737-156487948-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8422/pr8422-156487948-marine-pollution-law-bdf4bdba-native.tsv) · 98.89% (2쪽) | 산출 중 · 미측정 (?쪽) |
+| [156487948-marine-pollution-law.hwp](../../samples/issue6737/156487948-marine-pollution-law.hwp) · [issue6737-156487948-2020.pdf](../../pdf/issue6737-156487948-2020.pdf) | [TSV](assets/planet6897_20261103/pr_8422/pr8422-156487948-marine-pollution-law-bdf4bdba-native.tsv) · 98.89% (2쪽) | [TSV](assets/planet6897_20261103/pr_8422/pr8422-156487948-marine-pollution-law-bdf4bdba-wasm.tsv) · 98.89% (2쪽) |
 
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
+
+## 조판 원칙 준수 검토
+
+적용 대상입니다. 원본 저장값·독립 Print를 근거로 공통 규칙, 측정과 실제 배치의 소비 지점, 내용 소속·순서 및 적용되지 않는 반례를 아래에서 대조합니다.
 
 ## 구현 주장과 검증 증거의 대조
 
@@ -56,7 +60,7 @@ src/renderer/typeset.rs의 표 줄 전진과 src/renderer/layout.rs의 저장 �
 | --- | --- | --- |
 | `30026-safety-reform-toc.hwp` 3쪽 · TAC 표 줄간격 | 99.80% · [review](assets/planet6897_20261103/pr_8422/pr8422-claim-p003-30026-safety-refor-native-review.png) / [overlay](assets/planet6897_20261103/pr_8422/pr8422-claim-p003-30026-safety-refor-native-overlay.png) | 99.83% · [review](assets/planet6897_20261103/pr_8422/pr8422-claim-p003-30026-safety-refor-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8422/pr8422-claim-p003-30026-safety-refor-wasm-overlay.png) |
 | `30026-safety-reform-toc.hwp` 28쪽 · 안전개혁 목차의 전쪽 최저 페이지 | 97.52% · [review](assets/planet6897_20261103/pr_8422/pr8422-claim-p028-30026-safety-refor-native-review.png) / [overlay](assets/planet6897_20261103/pr_8422/pr8422-claim-p028-30026-safety-refor-native-overlay.png) | 97.52% · [review](assets/planet6897_20261103/pr_8422/pr8422-claim-p028-30026-safety-refor-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8422/pr8422-claim-p028-30026-safety-refor-wasm-overlay.png) |
-| `156487948-marine-pollution-law.hwp` 1쪽 · 해양오염방지법 표 간격 | 98.89% · [review](assets/planet6897_20261103/pr_8422/pr8422-marine-claim-p001-native-review.png) / [overlay](assets/planet6897_20261103/pr_8422/pr8422-marine-claim-p001-native-overlay.png) | 미측정 · 산출 중 / 산출 중 |
+| `156487948-marine-pollution-law.hwp` 1쪽 · 해양오염방지법 표 간격 | 98.89% · [review](assets/planet6897_20261103/pr_8422/pr8422-marine-claim-p001-native-review.png) / [overlay](assets/planet6897_20261103/pr_8422/pr8422-marine-claim-p001-native-overlay.png) | 98.89% · 산출 중 / 산출 중 |
 
 ## 남은 검증
 

@@ -33,6 +33,10 @@
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
 원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
 
+## 조판 원칙 준수 검토
+
+적용 대상입니다. 원본 저장값·독립 Print를 근거로 공통 규칙, 측정과 실제 배치의 소비 지점, 내용 소속·순서 및 적용되지 않는 반례를 아래에서 대조합니다.
+
 ## 구현 주장과 검증 증거의 대조
 
 나누지 않는 표가 다음 쪽으로 이동한 뒤의 명시적 쪽 나누기는 그 표가 실제로 놓인 쪽의 다음 쪽에서 시작한다.
@@ -53,7 +57,7 @@ typeset의 표 배치 완료 상태와 후속 문단의 쪽 전환이 같은 현
 
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
-| `pushed_none.hwpx` 3쪽 · 나누지 않는 표 뒤 쪽 나누기 | 99.97% · [review](assets/planet6897_20261103/pr_8476/pr8476-claim-p003-pushed_none-native-review.png) / [overlay](assets/planet6897_20261103/pr_8476/pr8476-claim-p003-pushed_none-native-overlay.png) | 100.00% · 산출 중 / 산출 중 |
+| `pushed_none.hwpx` 3쪽 · 나누지 않는 표 뒤 쪽 나누기 | 99.97% · [review](assets/planet6897_20261103/pr_8476/pr8476-claim-p003-pushed_none-native-review.png) / [overlay](assets/planet6897_20261103/pr_8476/pr8476-claim-p003-pushed_none-native-overlay.png) | 100.00% · [review](assets/planet6897_20261103/pr_8476/pr8476-claim-p003-pushed_none-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8476/pr8476-claim-p003-pushed_none-wasm-overlay.png) |
 
 ## 남은 검증
 
