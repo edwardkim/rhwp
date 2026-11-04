@@ -1,0 +1,16 @@
+{
+  "recorded_at": "2026-11-04T20:12:25.355463+00:00",
+  "backend": "wasm",
+  "base": "7fdd5441ff1e77c083818e920a48089f294de35e",
+  "candidate_product": "4b149b6cdfc514b9858ed644be2cf8120c731cd4",
+  "pages": 406,
+  "counts": {
+    "통과": 396,
+    "base 파싱 거부 → 후보 전쪽 출력": 6,
+    "base 누락 쪽 복원": 4
+  },
+  "allowed_drop_pp": "0.1",
+  "comparison_sha256": "014338a255162bb5ef4d08c06df7819bd5eca610f8e3f61d359c4106b1570cc0",
+  "errors": [],
+  "note": "Original base parse rejection and page restoration remain explicit; neither is a numerical pass. This comparison uses pinned pre-22947f6a90 products; latest scoped rebase checks are separate."
+}

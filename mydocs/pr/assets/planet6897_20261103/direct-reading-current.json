@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-11-04T19:44:59.369375+00:00",
+  "recorded_at": "2026-11-04T20:32:50.794138+00:00",
   "records": [
     {
       "pr": 8422,
@@ -1018,9 +1018,245 @@
       },
       "observation": "담당 부서 두 줄 표와 그 아래 세 로고를 대조했다. 표의 좌우 및 행 경계와 세 로고의 순서·본문과의 분리가 Print에 대응한다. 정책브리핑·OPEN 로고의 획 가장자리 raster 차이는 남고 개체 이동·누락으로 판정할 차이는 보이지 않는다.",
       "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8469,
+      "input": "samples/issue8464/rowbreak_content_fit_f1200_h2660_d14.hwpx",
+      "pdf": "pdf/issue8464_rowbreak_content_fit_f1200_h2660_d14-2020.pdf",
+      "page": 2,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T20:05:18.027992+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-907744-native-review.png",
+          "sha256": "14e44cb8a75fb6b7b70c146c096bb86c1c7fcc25af639acbcaef5e7949022c4f",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-907744/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-907744-native-overlay.png",
+          "sha256": "6ff00923bd0f59379ab7ad05f680402678b994ca691512bba1d7fabdb503d264",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-907744/overlay/overlay_002.png"
+        }
+      },
+      "observation": "d14 탐침 2쪽의 라벨 26~51과 대응 내용 R26~R51을 Print와 대조했다. 두 열의 셀 경계·내용 순서와 마지막 51행이 보존되며 보이는 누락·중복·겹침은 없다. 일부 획·가로선의 미세 raster 차이와 소속 검증을 구분한다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8473,
+      "input": "samples/issue8467/36416725-approval-footer-split.hwpx",
+      "pdf": "pdf/issue8467/36416725-approval-footer-split-2022.pdf",
+      "page": 1,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T20:05:18.027992+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8473/pr8473-claim-p001-36416725-approval--native-review.png",
+          "sha256": "3ae26e3616e2a26722f62ae845b4ac9a2918a4e89f30dabd841c3b194a11d6bc",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8473-claim-p001-36416725-approval-/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8473/pr8473-claim-p001-36416725-approval--native-overlay.png",
+          "sha256": "091f8ada60307327256e0e9cb5220cf1c5c8882c7d8df9204ec69fa002f0df44",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8473-claim-p001-36416725-approval-/overlay/overlay_001.png"
+        }
+      },
+      "observation": "중부소방서 제목·수신·구매 본문과 붙임 두 항목이 1쪽에 유지된다. 같은 문서 2쪽과 함께 확인했으며 1쪽 본문 끝에 결재·시행 꼬리가 중복되어 보이지 않는다. 본문의 줄바꿈·내용 순서가 Print에 대응한다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8473,
+      "input": "samples/issue8467/36416725-approval-footer-split.hwpx",
+      "pdf": "pdf/issue8467/36416725-approval-footer-split-2022.pdf",
+      "page": 2,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T20:05:18.027992+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8473/pr8473-claim-p002-36416725-approval--native-review.png",
+          "sha256": "c946296fbf1dc1d203e39360e1168b7c25c612a0b235d1dc1eee8a201873f446",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8473-claim-p002-36416725-approval-/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8473/pr8473-claim-p002-36416725-approval--native-overlay.png",
+          "sha256": "c2a5a4081d7bcd5fbc9bff85248003455db70db8d588a5085259d753d68d12b9",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8473-claim-p002-36416725-approval-/overlay/overlay_002.png"
+        }
+      },
+      "observation": "1쪽과 짝으로 대조했다. 결재선·전결 날짜·협조자·시행·주소·전화의 꼬리가 Print와 같이 2쪽 하단에 있고 앞쪽 구매 본문이 다시 표시되지 않는다. 큰 위쪽 빈 공간도 독립 Print와 대응하며 획·회색 띠 경계의 미세 raster 차이는 남는다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8469,
+      "input": "samples/issue8464/rowbreak_content_fit_f1200_h2660_d14.hwpx",
+      "pdf": "pdf/issue8464_rowbreak_content_fit_f1200_h2660_d14-2020.pdf",
+      "page": 2,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T20:05:18.027992+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-907744-wasm-review.png",
+          "sha256": "9856551d88e63b1e19af67a96df4c7027613a64073676c14148e22aed2920e06",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8469-claim-p002-rowbreak_content_f-907744/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8469/pr8469-claim-p002-rowbreak_content_f-907744-wasm-overlay.png",
+          "sha256": "8d1fe6301eab1a8946e9f00c98f28fbd9951fe7a6946296f5ebf18d2ff51a380",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8469-claim-p002-rowbreak_content_f-907744/overlay/overlay_002.png"
+        }
+      },
+      "observation": "d14 탐침 2쪽의 라벨 26~51과 대응 내용 R26~R51을 Print와 대조했다. 두 열의 셀 경계·내용 순서와 마지막 51행이 보존되며 보이는 누락·중복·겹침은 없다. 일부 획·가로선의 미세 raster 차이와 소속 검증을 구분한다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8473,
+      "input": "samples/issue8467/36416725-approval-footer-split.hwpx",
+      "pdf": "pdf/issue8467/36416725-approval-footer-split-2022.pdf",
+      "page": 1,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T20:05:18.027992+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8473/pr8473-claim-p001-36416725-approval--wasm-review.png",
+          "sha256": "ac039300dd5035d9d8e82966cbc49c84c209861f120b154dd748d155c6d3b9ca",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8473-claim-p001-36416725-approval-/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8473/pr8473-claim-p001-36416725-approval--wasm-overlay.png",
+          "sha256": "6f21662147fac633c38ca3be2d3d132f1b848f7929688e0af1177ed453639b3b",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8473-claim-p001-36416725-approval-/overlay/overlay_001.png"
+        }
+      },
+      "observation": "중부소방서 제목·수신·구매 본문과 붙임 두 항목이 1쪽에 유지된다. 같은 문서 2쪽과 함께 확인했으며 1쪽 본문 끝에 결재·시행 꼬리가 중복되어 보이지 않는다. 본문의 줄바꿈·내용 순서가 Print에 대응한다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8473,
+      "input": "samples/issue8467/36416725-approval-footer-split.hwpx",
+      "pdf": "pdf/issue8467/36416725-approval-footer-split-2022.pdf",
+      "page": 2,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T20:05:18.027992+00:00",
+      "method": "실제 review와 별도 overlay의 직접 판독",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8473/pr8473-claim-p002-36416725-approval--wasm-review.png",
+          "sha256": "063dbd5b3d8a068a414e601740faafefb994974b5e82d8140e34013b5c5c4e38",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8473-claim-p002-36416725-approval-/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8473/pr8473-claim-p002-36416725-approval--wasm-overlay.png",
+          "sha256": "8cfe9926eb7c062afc88205f9614e098bb6d0ebea11dfe79b66858040bb6a591",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8473-claim-p002-36416725-approval-/overlay/overlay_002.png"
+        }
+      },
+      "observation": "1쪽과 짝으로 대조했다. 결재선·전결 날짜·협조자·시행·주소·전화의 꼬리가 Print와 같이 2쪽 하단에 있고 앞쪽 구매 본문이 다시 표시되지 않는다. 큰 위쪽 빈 공간도 독립 Print와 대응하며 획·회색 띠 경계의 미세 raster 차이는 남는다.",
+      "status": "직접 판독 기록; 최종 공통 검증과 판정 대기"
+    },
+    {
+      "pr": 8547,
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "page": 3,
+      "backend": "native",
+      "measurement_code_label": "e61ed1ca73",
+      "observed_at_utc": "2026-11-04T20:10:38.101490+00:00",
+      "method": "새 Native 전체 페이지 review와 별도 overlay 직접 판독; 같은 입력의 독립 Print 및 3·4쪽 경계를 함께 대조",
+      "observation": "앞 후보에서 짧았던 마지막 위생 행의 아래 외곽이 독립 Print와 대응한다. 위생사 앞 조각은 3쪽에 유지되며 식품위생 행·보건방역 행과 겹치지 않는다. 4쪽과 함께 영양사 이어받기를 확인했고 획 가장자리 차이와 내용·외곽 소유를 구분했다.",
+      "status": "Native 직접 판독 완료; fresh WASM·정상 대조군·필수 회귀 및 최종 판정 대기",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/native-p003-review.png",
+          "capture_path": "output/pr-review/planet6897-20261103/8532-closing-frame-v3-visual/native/pr8547-closing-frame-v3/review/review_003.png",
+          "sha256": "0763054b45f694c9a47ddaacf4903e4eae4be53adcd82a9055ab656166cd4ae6"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/native-p003-overlay.png",
+          "capture_path": "output/pr-review/planet6897-20261103/8532-closing-frame-v3-visual/native/pr8547-closing-frame-v3/overlay/overlay_003.png",
+          "sha256": "c2470d4cb238c98e3689b9369871172d25084d168223c0fecf699143759ec699"
+        }
+      }
+    },
+    {
+      "pr": 8547,
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "page": 4,
+      "backend": "native",
+      "measurement_code_label": "e61ed1ca73",
+      "observed_at_utc": "2026-11-04T20:10:38.101490+00:00",
+      "method": "새 Native 전체 페이지 review와 별도 overlay 직접 판독; 같은 입력의 독립 Print 및 3·4쪽 경계를 함께 대조",
+      "observation": "3쪽과 짝으로 첫 영양사 줄과 다음 사역·의료기술·의무·환경·항공 행을 대조했다. 앞 조각을 늘려도 4쪽의 내용·행 순서와 표 외곽이 유지되며 보이는 누락·중복은 없다. 아래 걸침 칸의 열린 경계도 Print에 대응한다.",
+      "status": "Native 직접 판독 완료; fresh WASM·정상 대조군·필수 회귀 및 최종 판정 대기",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/native-p004-review.png",
+          "capture_path": "output/pr-review/planet6897-20261103/8532-closing-frame-v3-visual/native/pr8547-closing-frame-v3/review/review_004.png",
+          "sha256": "e7d93141410ac8171c490112bb1146f60bb42c0610916db17b9b5590e1e5f472"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/native-p004-overlay.png",
+          "capture_path": "output/pr-review/planet6897-20261103/8532-closing-frame-v3-visual/native/pr8547-closing-frame-v3/overlay/overlay_004.png",
+          "sha256": "39d80530b3ad0dee07253be201eb3331433e3272abfb62e70a11af56c2e4a98e"
+        }
+      }
+    },
+    {
+      "pr": 8547,
+      "page": 3,
+      "backend": "wasm",
+      "measurement_code_label": "e61ed1ca7329d3dacffc9c7fc76e602f30f43f66",
+      "observed_at_utc": "2026-11-04T20:32:50.794138+00:00",
+      "method": "Direct inspection of the actual full-page review and standalone overlay as a pair; no automatic score-only approval",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/wasm-p003-review.png",
+          "sha256": "8b1235611da5d81deebe2b8e0ab9fc47e9195981869916b7b1d2383cac0e345e",
+          "capture_path": "output/pr-review/planet6897-20261103/8532-closing-frame-v3-visual/wasm/pr8547-closing-frame-v3/review/review_003.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/wasm-p003-overlay.png",
+          "sha256": "854244ad204b457dc030e041b350d5b70eeaf3355d4cbf2032a200cbc3d89baf",
+          "capture_path": "output/pr-review/planet6897-20261103/8532-closing-frame-v3-visual/wasm/pr8547-closing-frame-v3/overlay/overlay_003.png"
+        }
+      },
+      "observation": "위생 앞 조각의 아래 외곽이 독립 Print와 대응한다. 위생사만 앞 조각에 남고 영양사는 다음 쪽으로 이어지며 다른 행의 내용·선·순서도 보존된다.",
+      "status": "read; regression and final common approval are pending"
+    },
+    {
+      "pr": 8547,
+      "page": 4,
+      "backend": "wasm",
+      "measurement_code_label": "e61ed1ca7329d3dacffc9c7fc76e602f30f43f66",
+      "observed_at_utc": "2026-11-04T20:32:50.794138+00:00",
+      "method": "Direct inspection of the actual full-page review and standalone overlay as a pair; no automatic score-only approval",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/wasm-p004-review.png",
+          "sha256": "e987d2efea57a772cf7727e0ea56681cb76fdd44d1090b0e0c628f653f063d40",
+          "capture_path": "output/pr-review/planet6897-20261103/8532-closing-frame-v3-visual/wasm/pr8547-closing-frame-v3/review/review_004.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8547/closing-frame-e61ed1ca73/wasm-p004-overlay.png",
+          "sha256": "31bd22b725a26c3d20c103f141bf398384997f180e99ad5059968a18e42e58d7",
+          "capture_path": "output/pr-review/planet6897-20261103/8532-closing-frame-v3-visual/wasm/pr8547-closing-frame-v3/overlay/overlay_004.png"
+        }
+      },
+      "observation": "영양사 이어받기와 의료기술·의무·약무 이후 행의 순서가 보존된다. 마지막 rowspan의 열린 왼쪽 외곽과 다른 셀의 하단도 Print와 대응한다.",
+      "status": "read; regression and final common approval are pending"
     }
   ],
-  "record_count": 44,
+  "record_count": 52,
   "final_approval": false,
   "note": "직접 본 PNG의 해시와 관측만 기록한다. 기록되지 않은 쪽이나 최종 공통 검증의 완료를 주장하지 않는다."
 }

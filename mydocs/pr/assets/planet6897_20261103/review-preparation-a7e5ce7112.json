@@ -958,11 +958,11 @@
     "evidence_path": "mydocs/pr/assets/planet6897_20261103/rebase_scope_22947f6a90/base-comparison.json"
   },
   "pending": [
-    "동일 환경에서 당시 base 대비 WASM 80개 입력·406쪽의 0.1%p 하락 게이트 완료",
     "주장 쪽 직접 판독·회귀 주석·수동 작성 리뷰와 PR 본문 최종 감사",
     "PR #8547 3쪽 마지막 행 아래 외곽 높이 차이의 원본 저장값·원 해결 PR·물리 프레임 대조",
     "PR #8547 공통 물리 프레임 보정 후보의 실제 Native/fresh WASM·필수 회귀 재검증",
     "PR #8433 기본 개요 탐침의 제목 시작점·굵기 차이 원인 대조"
   ],
-  "final_approval": false
+  "final_approval": false,
+  "completed_capture_base_comparison": "mydocs/pr/assets/planet6897_20261103/base-comparison-capture-4b149b6cdf.json"
 }

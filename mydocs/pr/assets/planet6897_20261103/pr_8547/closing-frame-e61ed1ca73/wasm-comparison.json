@@ -1,0 +1,46 @@
+{
+  "recorded_at": "2026-11-04T20:26:02.868629+00:00",
+  "backend": "wasm",
+  "status": "Native/fresh WASM 해당 경로의 전쪽 수치 대조 완료; 직접 판독·회귀·통합 최종 검증 대기",
+  "rows": [
+    {
+      "page": 1,
+      "before": 99.87,
+      "after": 99.87,
+      "delta": 0.0
+    },
+    {
+      "page": 2,
+      "before": 99.99,
+      "after": 99.99,
+      "delta": 0.0
+    },
+    {
+      "page": 3,
+      "before": 97.98,
+      "after": 100.0,
+      "delta": 2.019999999999996
+    },
+    {
+      "page": 4,
+      "before": 100.0,
+      "after": 100.0,
+      "delta": 0.0
+    },
+    {
+      "page": 5,
+      "before": 100.0,
+      "after": 100.0,
+      "delta": 0.0
+    },
+    {
+      "page": 6,
+      "before": 100.0,
+      "after": 100.0,
+      "delta": 0.0
+    }
+  ],
+  "errors": [],
+  "candidate_tsv": "output/pr-review/planet6897-20261103/8532-closing-frame-v3-visual/wasm/pr8547-closing-frame-v3/silhouette.tsv",
+  "baseline_tsv": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/wasm/pr8547-gangseo_exempt_certificates-e5b4dd3b/silhouette.tsv"
+}
