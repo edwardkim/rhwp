@@ -75,8 +75,38 @@ fn png_json_metadata_and_render_preserve_feature_and_provenance_contracts() {
         }
         let result = assert_code(&args, 0);
         let envelope: serde_json::Value = serde_json::from_slice(&result.stdout).unwrap();
-        assert_eq!(envelope["untrustedContent"], false);
-        assert_eq!(envelope["untrustedFields"], serde_json::json!([]));
+        // #3787의 실제 값 표지 계약: #8565가 추가한 글꼴 보고에는 문서의
+        // 글꼴명·대체 이름도 실린다. 엔진 집계만인 이전 빈 목록으로 고정하지 않는다.
+        // MAP 구현을 재인용하지 않고 이 CLI의 공개된 네 보고 필드를 검증한다.
+        let document_font_fields = [
+            "nativeFontSupply",
+            "fontEnvironment",
+            "observedFontFallbacks",
+            "declaredFontEnvironment",
+        ];
+        let expected_fields: Vec<_> = document_font_fields
+            .into_iter()
+            .filter(|field| {
+                envelope.get(*field).is_some_and(|value| match value {
+                    serde_json::Value::Null => false,
+                    serde_json::Value::Object(value) => !value.is_empty(),
+                    serde_json::Value::Array(value) => !value.is_empty(),
+                    _ => panic!("글꼴 보고는 객체나 배열이어야 함: {field}"),
+                })
+            })
+            .collect();
+        assert!(!expected_fields.is_empty(), "문서 글꼴 보고가 있어야 함");
+        assert_eq!(envelope["untrustedContent"], true);
+        let fields = envelope["untrustedFields"].as_array().unwrap();
+        let actual: std::collections::BTreeSet<_> =
+            fields.iter().map(|field| field.as_str().unwrap()).collect();
+        assert_eq!(actual.len(), fields.len(), "출처 경로가 중복되면 안 됨");
+        assert_eq!(
+            actual,
+            expected_fields
+                .into_iter()
+                .collect::<std::collections::BTreeSet<_>>()
+        );
         assert_eq!(envelope["schemaVersion"], "1.0");
         assert_eq!(envelope["backend"], "native-skia");
         assert!(envelope["pageCount"].as_u64().unwrap() > 0);

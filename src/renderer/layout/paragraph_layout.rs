@@ -3666,52 +3666,6 @@ impl LayoutEngine {
             None
         };
 
-        // [Task #517 Stage 1] RHWP_LAYOUT_DEBUG 진단 로깅
-        if layout_debug_enabled() {
-            eprintln!(
-                "LAYOUT_INLINE_TABLE_PARA: pi={} sec={} col_x={:.1} col_w={:.1} y_start={:.1} y={:.1} sb={:.1} sa={:.1} ml={:.1} mr={:.1} align={:?} ls_count={} tables={}",
-                para_index,
-                section_index,
-                col_area.x,
-                col_area.width,
-                y_start,
-                y,
-                spacing_before,
-                spacing_after,
-                margin_left,
-                margin_right,
-                alignment,
-                para.line_segs.len(),
-                inline_tables.len(),
-            );
-            for (li, seg) in para.line_segs.iter().enumerate() {
-                eprintln!(
-                    "  LAYOUT_LS[{}]: vpos={} lh={} ls={} bl={} text_start={} sw={}",
-                    li,
-                    seg.vertical_pos,
-                    seg.line_height,
-                    seg.line_spacing,
-                    seg.baseline_distance,
-                    seg.text_start,
-                    seg.segment_width,
-                );
-            }
-            for (ti, (ci, tbl)) in inline_tables.iter().enumerate() {
-                eprintln!(
-                    "  LAYOUT_INLINE_TBL[{}]: ctrl_idx={} rows={} cols={} w={} h={} vert={:?} horz={:?} wrap={:?}",
-                    ti,
-                    ci,
-                    tbl.row_count,
-                    tbl.col_count,
-                    tbl.common.width,
-                    tbl.common.height,
-                    tbl.common.vert_align,
-                    tbl.common.horz_align,
-                    tbl.common.text_wrap,
-                );
-            }
-        }
-
         // 3. char_offsets 갭 분석으로 텍스트 세그먼트 분할
         // 확장 컨트롤은 8 UTF-16 코드 유닛을 차지
         let text_chars: Vec<char> = para.text.chars().collect();
@@ -6954,7 +6908,6 @@ impl LayoutEngine {
             // 클램프 없이 원래 y 에 그리면 piling 자체가 발생하지 않는다. 콘텐츠 손실
             // (stop drawing) 도 발생하지 않으며, drift 의 본질적 해결은 Stage 5 에서.
             let col_bottom = col_area.y + col_area.height;
-            let line_visual_bottom = text_y + line_height;
             let is_body_flow_col_area = self.is_body_flow_col_area(col_area);
             let is_endnote_virtual_para = self.is_endnote_paragraph(para_index);
             // 마지막 run 끝에 실제 방출되는 TAC도 이 줄의 점유다. 정렬 폭과
@@ -6975,33 +6928,10 @@ impl LayoutEngine {
                     runs_all_whitespace,
                     &line_tac_offsets_for_width,
                 );
-            let tolerated_endnote_bottom_bleed = self.is_tolerated_current_endnote_bottom_bleed(
-                is_body_flow_col_area && cell_ctx.is_none() && is_endnote_virtual_para,
-                line_visual_bottom,
-                col_bottom,
-                equation_only_endnote_tail_line,
-            );
-            if is_body_flow_col_area
-                && cell_ctx.is_none()
-                && line_visual_bottom > col_bottom + 0.5
-                && !blank_spacer_line
-                && !tolerated_endnote_bottom_bleed
-            {
-                eprintln!(
-                    "LAYOUT_OVERFLOW_DRAW: section={} pi={} line={} y={:.1} col_bottom={:.1} overflow={:.1}px",
-                    section_index,
-                    para_index,
-                    line_idx,
-                    line_visual_bottom,
-                    col_bottom,
-                    line_visual_bottom - col_bottom,
-                );
-            }
             // [#3637] 셀 안 줄이 **쪽 본문 하단**을 넘는 경우.
             //
-            // 위 진단은 `is_body_flow_col_area && cell_ctx.is_none()` 이라 본문 흐름만
-            // 본다. 셀은 `col_area` 가 셀 사각형이라 그 조건이 언제나 거짓이고, 그래서
-            // 셀 안에서 쪽 밖으로 나간 글자는 **한 줄도 보고되지 않았다**.
+            // 기존 본문 전용 진단과 달리 셀의 실제 쪽 하단 초과를 집계한다.
+            // 셀은 `col_area`가 셀 사각형이므로 본문 흐름 여부로 판정하지 않는다.
             //
             // 실측: 쪽 밖 글자가 있는 문서 91건 중 8건이 이 침묵 구간이었다
             // (총 2,910자, 최대 471.8px 초과). 텍스트 추출에는 남아 있어 텍스트 diff 로도
@@ -11732,17 +11662,7 @@ impl LayoutEngine {
                 line_height * 0.8, // fallback: 줄 높이 기반 최소 어센트
             );
 
-            // Task #332 Stage 4b: clamp 제거, overflow 그대로 그림 (piling 차단)
-            let col_bottom = col_area.y + col_area.height;
-            if self.is_body_flow_col_area(col_area) && y + line_height > col_bottom + 0.5 {
-                eprintln!(
-                    "LAYOUT_OVERFLOW_DRAW: line={} y={:.1} col_bottom={:.1} overflow={:.1}px (fast path)",
-                    line_idx,
-                    y + line_height,
-                    col_bottom,
-                    y + line_height - col_bottom,
-                );
-            }
+            // 원래 y를 유지해 overflow 줄을 겹쳐 쌓지 않는다.
             let y_clamped = y;
             let line_id = tree.next_id();
             let mut line_node = RenderNode::new(

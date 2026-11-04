@@ -77,6 +77,7 @@ fn protected_document_layout_diagnostics_do_not_write_coordinates_to_stderr() {
         .env("RHWP_DIAG_SNAPALL", "1")
         .env("RHWP_DIAG_TAC", "1")
         .env("RHWP_DEBUG_PARA_TAC", "1")
+        .env("RHWP_LAYOUT_DEBUG", "1")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -93,7 +94,15 @@ fn protected_document_layout_diagnostics_do_not_write_coordinates_to_stderr() {
         .expect("finish protected document export");
     assert!(output.status.success(), "protected SVG export failed");
     let stderr = String::from_utf8_lossy(&output.stderr);
-    for marker in ["DIAG_SNAPALL", "DIAG_SNAP ", "TAC_LINE "] {
+    for marker in [
+        "DIAG_SNAPALL",
+        "DIAG_SNAP ",
+        "TAC_LINE ",
+        "LAYOUT_INLINE_TABLE_PARA:",
+        "LAYOUT_LS[",
+        "LAYOUT_INLINE_TBL[",
+        "LAYOUT_OVERFLOW_DRAW:",
+    ] {
         assert!(
             !stderr.contains(marker),
             "protected layout diagnostic channel: {marker}"
