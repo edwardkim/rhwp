@@ -1209,6 +1209,38 @@ impl LayoutEngine {
             );
         }
 
+        // 묶음 자식의 글줄은 셀 주소를 소유하며 바깥의 빈 본문 문단을 대신하지 않는다.
+        // 조판이 생략한 host 줄의 캐럿은 확정된 본문 흐름 원점에 남긴다. 개체 bbox나 자식
+        // 글상자 좌표로 추측하지 않고 기존 숨은 문단 표시기를 재사용하며 전진·인쇄는 바꾸지 않는다.
+        if matches!(shape, ShapeObject::Group(_))
+            && !common.treat_as_char
+            && para.text.trim().is_empty()
+        {
+            fn has_body_caret(node: &RenderNode, section: usize, para: usize) -> bool {
+                matches!(&node.node_type, RenderNodeType::TextRun(run)
+                    if run.section_index == Some(section) && run.para_index == Some(para)
+                    && run.cell_context.is_none() && run.char_start.is_some())
+                    || node
+                        .children
+                        .iter()
+                        .any(|child| has_body_caret(child, section, para))
+            }
+            if !has_body_caret(parent, section_index, para_index) {
+                let composed = compose_paragraph(para);
+                self.layout_hidden_paragraph_marker(
+                    tree,
+                    parent,
+                    para,
+                    &composed,
+                    styles,
+                    col_area,
+                    para_y,
+                    section_index,
+                    para_index,
+                );
+            }
+        }
+
         // 캡션 렌더링
         if let Some(caption) = caption {
             use crate::model::shape::CaptionVertAlign;

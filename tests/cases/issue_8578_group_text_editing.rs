@@ -52,6 +52,21 @@ fn contents_body_is_not_intercepted_by_group_decoration() {
 }
 
 #[test]
+fn empty_group_owner_has_a_body_caret_on_its_own_page() {
+    let core = load();
+    for (paragraph, page) in [(4, 2), (6, 3)] {
+        let rect: Value =
+            serde_json::from_str(&core.get_cursor_rect_native(0, paragraph, 0).unwrap()).unwrap();
+        assert_eq!(
+            rect["pageIndex"], page,
+            "Esc 복귀 주소의 캐럿이 원래 쪽에 남는다"
+        );
+        assert!(rect["height"].as_f64().unwrap() > 0.0);
+        assert!(rect["y"].as_f64().unwrap() >= 0.0);
+    }
+}
+
+#[test]
 fn distinct_group_textboxes_resolve_to_their_actual_text() {
     let core = load();
     let title = hit(&core, 2, "행정업무운영 편람");
