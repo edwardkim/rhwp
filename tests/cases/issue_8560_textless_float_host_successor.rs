@@ -1,6 +1,10 @@
 //! 검사 유형: 관계형·고정형.
 //! 주석 갱신: 2026-11-04T06:30:00+09:00 (새 파일, 직전 파일 커밋 없음).
-//! MEASURE_PLACEHOLDER
+//! 2026-11-04 측정 raw(`silhouette_raw_match_percent`, 96dpi, visual_sweep --silhouette-only, compat 2022,
+//! base 7d06d5c706 + 이 수정, Native skia / fresh WASM 07:30+09:00):
+//! - 21138757 안건표지 별지(HWP, 한컴 1쪽 = rhwp 1쪽): Native 93.75%, fresh WASM 93.40%;
+//!   전1쪽 최저 Native 93.75% / WASM 93.40%.
+//! - 수정 전(base 7d06d5c706) 1쪽 Native 49.72% / WASM 49.90%.
 //!
 //! 근거: mydocs/pr/assets/issue_8560/{head,base}/{native,wasm}/i470_silhouette.tsv.
 //!
