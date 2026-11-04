@@ -1,0 +1,12 @@
+{
+  "before": "ab1015668ec888bfbb96ec4679f7c648d0ab576d",
+  "after": "d75809517f9185277248dd6be995e89792563222",
+  "file": "src/renderer/height_measurer.rs",
+  "only_three_opt_in_diagnostic_blocks_removed": true,
+  "exact_source_reconstruction_equal": true,
+  "normalized_sha256": "a75a1f061b455294df09015796128c3073dbc8b964027d9d1e4ef5d6ec3b6e53",
+  "non_diagnostic_statements_unchanged": true,
+  "normal_environment_has_neither_RHWP_DIAG_ROWH_nor_RHWP_DIAG_ROWH_LINES": true,
+  "visual_evidence_producer": "2f44d7d0ab19c743089ae309a8ca64eee57efae2",
+  "fresh_visual_measurement_claimed": false
+}

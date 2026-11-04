@@ -8,7 +8,7 @@
 - 마지막 확인한 원격 devel: `e96b500e3ea259c821f05440f0388355916a9e9b`. 이후 추가된 파일은 이전 PR 검토 기록 3개뿐이며 제품 코드·테스트·설정의 변경은 없다. 현재 후보와의 merge-tree도 충돌 없이 성공했다. [차이 근거](assets/semanticist21-20261105/latest-base-refresh.json).
 - 로컬 branch: `review/integration-20261105-semanticist21-batch`.
 - 작업공간: `/home/edward/mygithub/rhwp-worktrees/review-integration-20261105-semanticist21`.
-- 최종 runtime: `2f44d7d0ab19c743089ae309a8ca64eee57efae2`. 원 기여 10개 head를 merge ancestry로 보존한다. 기본 작업공간의 배포용 pkg는 덮어쓰지 않았다.
+- 시각 검증 producer: `2f44d7d0ab19c743089ae309a8ca64eee57efae2`. 원 기여 10개 head를 merge ancestry로 보존한다. 기본 작업공간의 배포용 pkg는 덮어쓰지 않았다.
 
 ## 기능 PR 8건의 최종 Native/fresh WASM
 
@@ -70,3 +70,5 @@
 ## 제출 후 보안 진단 보정
 
 [통합 PR #8609](https://github.com/edwardkim/rhwp/pull/8609)의 첫 head Actions 검사들은 성공했지만 별도 GHAS CodeQL에서 기존 조판 진단 sink 두 개가 High로 판정됐다. 앞선 #8548의 정책을 따라 진단 채널만 제거하고 실제 암호 fixture의 stderr 계약을 보강한다. 계산·렌더 출력의 검증 증거는 같은 producer로 구분해 재사용한다. [정확한 flow·수정 전 실제 실패·검증 범위](assets/semanticist21-20261105/ci-security-followup.md). 새 head의 필수 로컬 검사·독립 CodeQL 성공 전에는 merge를 보류한다.
+
+보안 후속 source `d75809517f`에서 전체 12,499개, Native CI 22개 명령 192개와 별도 Native 라이브러리 4040개가 통과했다. 실제 암호 Native CLI의 해당 진단 출력은 0회이며 SVG 24쪽 전부가 기존 producer와 같다. [보안 보정 후 실제 검증](assets/semanticist21-20261105/security-local-validation.json). 제품·검사 보정은 준비됐으며 새 원격 head의 독립 CodeQL과 필수 CI는 아직 확인 전이다.

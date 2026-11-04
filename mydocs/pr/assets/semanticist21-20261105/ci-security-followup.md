@@ -30,3 +30,15 @@
 이번 제품 diff는 opt-in 진단 출력 블록과 그 안에서만 수행하던 진단 재구성 제거다. 해당 환경변수가 없는 일반 경로의 계산·상태 갱신·최종 출력은 같다. 8건의 기능 문서 Native/fresh WASM 75쪽씩, 성능 문서 39쪽씩과 편람 383쪽의 실제 producer SHA·전쪽 TSV·직접 판독을 그대로 연결한다. 새 raster를 측정했다고 기록하지 않는다. 실제 암호 fixture의 SVG 보존은 별도의 출력 채널 계약이며 독립 Print 피델리티 주장으로 쓰지 않는다.
 
 새 source의 로컬 검증과 독립 CodeQL 결과를 확인하기 전에는 이 보정을 완료로 판정하지 않는다. 나머지 기존 open 10건을 이 PR에서 모두 해결했다고 주장하지 않는다.
+
+## 수정 후 실제 Native 계약
+
+새 Native CLI의 SHA-256은 `0601fadafa75922fe57470ed31fdceb06f26bea10f4fb5d4a04c9383938b4f67`이다. 같은 최소 글꼴·실제 암호 HWPX·stdin 인증·진단 환경변수로 실행했을 때 DIAG_TRUST·DIAG_ROWH·DIAG_ROWH_PARA·DIAG_ROWH_LINE·DIAG_SPANH는 모두 0회다. 보정 전 DIAG_TRUST 24회·DIAG_ROWH 24회에서 실제 로그 부재 계약이 FAIL→PASS로 바뀌었고, 생성 SVG 24쪽 전부의 SHA-256은 이전 Native producer와 같다. [실측](security-rowh-after.json), [진단 블록 외 코드의 정확한 동일성](security-source-equivalence.json). 이 SVG 동일성을 독립 Print 피델리티로 보고하지 않는다.
+
+보정 source `d75809517f9185277248dd6be995e89792563222`의 전체 최소 글꼴 회귀는 12,499 PASS / 45 기존 skip(703.112초)다. 보강한 실제 암호 fixture의 stderr 계약도 이 전체 실행에서 PASS했다. 나머지 Native·문서 예제 gate와 새 head의 독립 CodeQL은 실제 완료 후 기록한다.
+
+## 보정 source의 최종 로컬 결과
+
+최소 글꼴 환경에서 fmt·workspace all-target Clippy·WASM32 Clippy·workspace build·manifest/unit 정책·전체 회귀가 통과했다. 전체 nextest는 12,499 PASS / 45 기존 skip이며, Native CI의 실제 22개 명령은 192 PASS, 별도의 Native 전체 라이브러리는 4040 PASS / 12 ignored다. 문서 예제 8 PASS / 3 ignored도 확인했다. 중복되는 library 필터와 전체 library 수량을 합산하지 않는다. [명령·종료·로그 해시](security-local-gate-runs.json), [집계](security-local-validation.json).
+
+[첫 제출의 실제 Actions·GHAS 결과](initial-github-ci.json)와 이번 로컬 보정 결과를 분리했다. 새 제출 head의 독립 CodeQL·필수 CI 성공을 확인한 뒤에만 self-review·merge를 완료한다.
