@@ -539,6 +539,7 @@ pub(crate) fn remove_slot(para: &mut Paragraph, ci: usize) -> Result<(Slot, u32)
         .checked_sub(8)
         .ok_or_else(|| invalid("문단 슬롯 수가 잘못되었습니다"))?;
     para.invalidate_layout_inputs();
+    para.forget_para_text_if_emptied();
     Ok((slot, raw))
 }
 

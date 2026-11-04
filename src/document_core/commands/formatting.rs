@@ -2601,6 +2601,7 @@ impl DocumentCore {
                 if idx < para.ctrl_data_records.len() {
                     para.ctrl_data_records.remove(idx);
                 }
+                para.forget_para_text_if_emptied();
             }
         } else {
             let ph = PageHide {

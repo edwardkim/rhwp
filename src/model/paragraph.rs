@@ -979,6 +979,30 @@ impl Paragraph {
         self.layout_field_values.clear();
     }
 
+    /// PARA_TEXT 로 실을 내용이 있는가 — 글자, 컨트롤, 제목 차례 표시, 짝 fieldBegin 을 아는
+    /// 다단락 필드의 고아 끝 마커(#4398). 저장기가 PARA_TEXT 를 쓰는 조건과 같다.
+    pub(crate) fn has_para_text_content(&self) -> bool {
+        !self.text.is_empty()
+            || !self.controls.is_empty()
+            || !self.title_marks.is_empty()
+            || self
+                .orphan_field_ends
+                .iter()
+                .any(|end| end.begin_ctrl_id != 0)
+    }
+
+    /// 편집이 내용을 모두 걷어낸 문단은 원본의 빈 PARA_TEXT 표지를 버린다.
+    ///
+    /// `has_para_text` 는 끝 표시만 든 원본 PARA_TEXT 를 다시 쓰게 하는 표지다. 개체나 글을
+    /// 지워 빈 문단이 됐는데 표지가 남으면 저장기가 char_count 1 문단에 PARA_TEXT `0d 00` 을
+    /// 쓰고, 한/글 12.30 은 그 HWP 를 "파일이 손상되었습니다"로 거절한다. 한/글이 쓰는 빈
+    /// 문단에는 PARA_TEXT 가 없고, 저장본을 다시 열어도 이 표지는 꺼진다.
+    pub(crate) fn forget_para_text_if_emptied(&mut self) {
+        if !self.has_para_text_content() {
+            self.has_para_text = false;
+        }
+    }
+
     #[inline]
     pub fn stored_text_partition_is_dirty(&self) -> bool {
         self.stored_text_partition_dirty
@@ -1349,6 +1373,7 @@ impl Paragraph {
         self.char_count = self.char_count.saturating_sub(CTRL_CHAR_CODE_UNITS);
         self.control_mask =
             Self::compute_control_mask_for(&self.text, &self.controls, &self.field_ranges);
+        self.forget_para_text_if_emptied();
         removed
     }
 
@@ -1916,6 +1941,7 @@ impl Paragraph {
 
         // 6. char_count 갱신
         self.char_count -= utf16_delta;
+        self.forget_para_text_if_emptied();
 
         actual_count
     }

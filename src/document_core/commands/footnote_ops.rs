@@ -193,6 +193,7 @@ impl DocumentCore {
             {
                 para.control_mask &= !(1u32 << 0x0011);
             }
+            para.forget_para_text_if_emptied();
 
             Self::reflow_paragraph_line_segs_after_control_delete(para, &self.styles, self.dpi);
             section.raw_stream = None;

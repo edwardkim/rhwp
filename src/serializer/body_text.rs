@@ -435,11 +435,7 @@ fn try_serialize_paragraph_with_msb<S: crate::storage::Storage>(
     // char_count 를 주장하는 자기모순 레코드가 되거나(종전), #4677 가드로
     // char_count=1 로 무너져 FIELD_END 슬롯이 영구 소실된다. `serialize_para_text`
     // 는 begin_ctrl_id 를 아는 마커만 방출하므로 판정도 같은 조건을 쓴다.
-    let has_emittable_orphan_end = para.orphan_field_ends.iter().any(|o| o.begin_ctrl_id != 0);
-    let has_content = !para.text.is_empty()
-        || !para.controls.is_empty()
-        || !para.title_marks.is_empty()
-        || has_emittable_orphan_end;
+    let has_content = para.has_para_text_content();
     // An explicit empty PARA_TEXT (just its terminator) is different from
     // an absent record. Preserve that source distinction on rebuild.
     let (text_data, residue_shifts): (Option<Vec<u8>>, Vec<GuideResidueShift>) =

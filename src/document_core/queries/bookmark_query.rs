@@ -189,6 +189,7 @@ impl DocumentCore {
                 range.control_idx -= 1;
             }
         }
+        paragraph.forget_para_text_if_emptied();
         if let Some(active) = self.active_field.as_mut() {
             if active.section_idx == sec
                 && active.para_idx == para

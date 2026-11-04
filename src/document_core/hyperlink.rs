@@ -422,6 +422,7 @@ impl DocumentCore {
                 range.control_idx -= 1;
             }
         }
+        candidate.forget_para_text_if_emptied();
         for (start, end, mods) in formats {
             let ids = self
                 .document
