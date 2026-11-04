@@ -68,6 +68,29 @@ impl TypesetEngine {
         let stored_complete_extent = self
             .stored_partial_fragment_complete_extent(input, budget, &scan)
             .or_else(|| self.stored_body_closing_fragment_extent(st, input, budget, &scan));
+        let trace_frame = |stage: &str, end: usize, height: f64, last: Option<f64>| {
+            if std::env::var_os("RHWP_DIAG_SCAN").is_some() {
+                let prefix_end = end.saturating_sub(1);
+                eprintln!(
+                    "DIAG_SCAN FRAGMENT_FRAME stage={} pi={} rows={}..{} continuation={} height={:.6} last={:?} cut_prefix={:.6} measured_prefix={:.6}",
+                    stage,
+                    para_idx,
+                    cursor_row,
+                    end,
+                    is_continuation,
+                    height,
+                    last,
+                    cut_row_h.iter().take(prefix_end).sum::<f64>(),
+                    mt.row_heights.iter().take(prefix_end).sum::<f64>(),
+                );
+            }
+        };
+        trace_frame(
+            "scan",
+            scan.end_row,
+            scan.consumed,
+            scan.end_row_height_override,
+        );
         let nested_opening_extent = (!is_continuation
             && cursor_row == 0
             && start_cut.is_empty()
@@ -244,6 +267,12 @@ impl TypesetEngine {
                 partial_height += height - current_content;
             }
         }
+        trace_frame(
+            "stored-row",
+            end_row,
+            partial_height,
+            end_row_height_override,
+        );
         // 원본 셀의 저장 쪽 0에서 재개하는 새 단은 실제 좌표축을 가진다.
         // 후속 TAC가 이 증거를 잃고 누적 좌표를 임의의 0 기준으로 읽지 않게 한다.
         let resumed_stored_page_frame = is_continuation
@@ -794,6 +823,12 @@ impl TypesetEngine {
         }
         // 종료 상자의 마지막 유닛 뒤 빈 공간은 누적 상자와 잔여의 합이 cellSz를 닫고
         // 다음 원본 줄이 전체 바깥 상자를 닫을 때만 수용한다. 같은 계획이 후속 간격을 소유한다.
+        trace_frame(
+            "opening-frame",
+            end_row,
+            partial_height,
+            end_row_height_override,
+        );
         if single_cell_fragment_shape
             && two_frame_successor_origin.is_some()
             && is_continuation
@@ -1677,6 +1712,12 @@ impl TypesetEngine {
         }
 
         let accepted_straddle_cells = if !start_cut_is_block && split_block_start.is_none() {
+            trace_frame(
+                "physical-band",
+                end_row,
+                partial_height,
+                end_row_height_override,
+            );
             layout_engine.accepted_straddle_fragment_units(
                 row_geometry_table,
                 &mt.row_heights,
