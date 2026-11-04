@@ -1,0 +1,8 @@
+{
+  "primary_product_sha": "40778b67d6f69ccd3ee86cde84818dc2deea2cff",
+  "build_source_manifest": "logs/owned-frame-build-source-files.sha256",
+  "rust_files": 1727,
+  "different_files": [],
+  "native_binary_sha256": "6d556ea3b231bd1976303978848045d05141b4d3d4404c689764ea72fcc69b7d",
+  "base_sha": "1924d371d6757392d063b8dc2e9bbe9a298be817"
+}

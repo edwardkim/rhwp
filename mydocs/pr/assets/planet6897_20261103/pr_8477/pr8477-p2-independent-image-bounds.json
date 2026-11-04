@@ -1,0 +1,37 @@
+{
+  "source": "samples/issue8472/cell_picture_row_split.hwp",
+  "pdf": "pdf/issue8472_cell_picture_row_split-2020.pdf",
+  "pdf_sha256": "34da9c3790e26a66f61b6f2fbadd438c8a97fea266536e91a6a46742be070848",
+  "page": 2,
+  "dpi": 96,
+  "coordinate_system": "CSS px; PDF points * 96/72",
+  "independent_pdf_image_bbox_xyxy": [
+    [
+      84.11466471354167,
+      91.58003743489583,
+      387.7919921875,
+      245.970703125
+    ],
+    [
+      401.5439860026042,
+      90.46134440104167,
+      705.2213541666666,
+      247.40934244791666
+    ]
+  ],
+  "minimum_font_image_bbox_xywh": [
+    {
+      "x": 84.3,
+      "y": 91.7,
+      "w": 303.9,
+      "h": 154.6
+    },
+    {
+      "x": 401.8,
+      "y": 90.4,
+      "w": 303.9,
+      "h": 157.1
+    }
+  ],
+  "minimal_font_log": "logs/pr8477-p2-minfont-render-tree.log"
+}
