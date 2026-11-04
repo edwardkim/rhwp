@@ -75,3 +75,40 @@
 이 커밋은 구현과 분석 단계다. 신규 관계 검사 함수의 정식 반영은 같은 코드의 Native/fresh WASM
 전쪽 측정과 직접 판독을 마친 뒤 증적·회귀 첫머리와 함께 진행한다. 해당 검사 코드는 로컬
 집중 실행에 사용했으며 이 단계에서 전체 검증·PR 준비 완료를 선언하지 않는다.
+
+## 이어받기 정렬의 앵커 줄 중복 계상
+
+2쪽은 2px raw가 100%여도 왼쪽 그림 위변에 약 1px 차이가 남았다. 독립 PDF의 좌·우 그림
+위변 차이는 −1.11874px이고, 원본 그림 높이 차이에 따른 가운데 정렬 관계는 −1.27333px다.
+기존 출력은 두 그림의 위변을 같게 그렸다. 수용 유닛은 그림 높이 안에 빈 앵커 줄을 이미
+포함하지만, paint의 줄 범위 합산은 그 빈 줄을 다시 더해 정렬 여유를 없앴다.
+
+같은 회귀 원본과 저장 높이 관계의 새 검사
+`continuation_pictures_center_their_owned_content_without_readding_anchor_lines`를 수정 전
+`9c5720da81`과 같은 제품 소스의 캐시된 Native rlib에 연결했다. 라이브러리를 재빌드하지 않고
+새 검사 코드만 `target/pr-review/release-test`에 링크한 선행 진단이다. 최소 글꼴 환경 실행은
+실제 상대차 0 / 원본 상대차 −1.27333으로 FAIL했다. 이 진단은 정식 nextest 실행을 대체하지
+않으며, 로그는 `pr8477-suffix-before-minfont.log`와 `pr8477-suffix-before-library.sha256`에 있다.
+
+이월된 마지막 빈 그림 앵커 문단 전체를 소유한 저장 컷만 인증한다. 기존 그림 프레임 생산자로
+원본·소유 control을 확인하고 `CellCutFrame::content_height`의 같은 컷 내용 높이를 paint의
+전체 내용 및 가운데 정렬에 공유한다. 기존 저장 그림 frame과 재조판·중첩·저장 리셋 계약을
+덮어쓰지 않는다. 이 보정의 정식 최소 글꼴 집중 회귀와 Native/fresh WASM은 진행 중이다.
+
+첫 보정 뒤 집중 실행은 40건 중 39건 통과·새 이어받기 검사 1건 실패였다.
+`top_and_bottom_flow`는 앵커 글줄에도 붙고 `non_inline_control_range`는 실제 그림 띠만
+소유한다. 글줄의 `None`으로 인증을 조기 종료하던 새 helper를 보정해, 실제 control 소유
+범위를 가진 원자 유닛만 원본 그림 프레임과 대조한다. 기대값과 허용 오차는 바꾸지 않았다.
+수정 후 정식 재실행 로그는 `pr8477-suffix-owner-focused-minfont.log`다.
+
+소유 유닛 판정 보정 후 최소 글꼴 정식 nextest 집중 검사는 **40건 전부 통과**했다.
+`pr8477-suffix-owner-focused-minfont.log`의 최종 summary는 40 passed, 1,460 skipped이며,
+skipped는 선택하지 않은 다른 suite 검사다. 같은 소스의 일반 CLI를 해당 integration과 같은
+의존성 그래프로 빌드해 17.71초에 완료했다. 명령은 `cargo build --locked --profile release-test
+--features native-skia --bin rhwp --test regression_suite_018 --target-dir target/pr-review`다.
+
+실제 Native Skia 96 DPI 전쪽 재측정은 **100.00 / 100.00%**다.
+`output/pr-review/planet6897-20261103/pr8477-owned-frame-native/pr8477-owned-frame/silhouette.tsv`에
+원본 값을 보존했다. 실행 파일 SHA-256은
+`6d556ea3b231bd1976303978848045d05141b4d3d4404c689764ea72fcc69b7d`다.
+동일 코드의 fresh WASM과 대규모 보존 검증은 아직 완료 전이며 제출 완료로 판정하지 않는다.

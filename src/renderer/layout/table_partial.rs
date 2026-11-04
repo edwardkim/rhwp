@@ -1938,6 +1938,15 @@ impl LayoutEngine {
             let reflow_content_height = cut_units.and_then(|(start, end)| {
                 self.reflow_partial_cell_content_height(cell, table, start, end, styles)
             });
+            let atomic_suffix_content_height = complete_suffix_frame
+                .then(|| {
+                    cut_units.and_then(|(start, end)| {
+                        self.stored_atomic_picture_suffix_content_height(
+                            cell, table, styles, start, end,
+                        )
+                    })
+                })
+                .flatten();
             if reflow_content_height.is_some() {
                 if let RenderNodeType::TableCell(meta) = &mut cell_node.node_type {
                     // 자식의 가시 폭은 부모의 물리 괘선 폭을 늘리지 않는다.
@@ -2044,6 +2053,8 @@ impl LayoutEngine {
                 0.0
             } else if let Some(frame) = &stored_picture_cut_frame {
                 frame.content_height
+            } else if let Some(height) = atomic_suffix_content_height {
+                height
             } else if let Some(ref ranges) = line_ranges {
                 let mut total = 0.0;
                 for (pi, ((comp, para), &(start, end))) in composed_store
@@ -2336,6 +2347,8 @@ impl LayoutEngine {
                 height
             } else if let Some(frame) = &stored_picture_cut_frame {
                 frame.content_height
+            } else if let Some(height) = atomic_suffix_content_height {
+                height
             } else if let Some(frame) = mixed_opening_frame {
                 // 예약한 상자와 같은 source host/child의 닫힌 점유 끝을 정렬한다.
                 frame.content_height
@@ -2504,6 +2517,7 @@ impl LayoutEngine {
                     ("mixed_declared", mixed_opening_frame.is_some()),
                     ("declared_opening", declared_opening_frame_owns_alignment),
                     ("atomic_opening", atomic_opening_frame_owns_alignment),
+                    ("atomic_suffix", atomic_suffix_content_height.is_some()),
                     ("frame", frame_owns_alignment),
                     ("ordinary", ordinary_source_frame_owns_alignment),
                     ("opening", align_saved_opening_frame),
