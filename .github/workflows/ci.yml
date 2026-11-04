@@ -1436,6 +1436,32 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # WASM 링크 전에 archive/Native와 같은 공간 기준으로 미사용 도구만 정리한다.
+      - name: Free disk space (remove unused pre-installed toolchains)
+        run: |
+          set -euo pipefail
+          echo 'Disk space before cleanup:'
+          df -h /
+          df -B1 --output=source,size,used,avail,pcent,target /
+          available_gb=$(df -BG --output=avail / | tail -1 | tr -dc '0-9')
+          if (( available_gb < 30 )); then
+            echo "Low disk space: ${available_gb}GB available; inspecting and removing unused toolchains."
+            for path in /usr/local/lib/android /usr/share/dotnet; do
+              if [[ -e "${path}" ]]; then
+                sudo du -sh "${path}"
+              else
+                echo "${path}: absent"
+              fi
+            done
+            sudo rm -rf /usr/local/lib/android /usr/share/dotnet
+          else
+            echo "Skip cleanup: ${available_gb}GB available"
+          fi
+
+          echo 'Disk space after cleanup:'
+          df -h /
+          df -B1 --output=source,size,used,avail,pcent,target /
+
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
         with:
