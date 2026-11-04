@@ -59,3 +59,10 @@ Native/fresh WASM 측정이 같은 확인된 글꼴 메트릭을 소비하는지
 | `HCRDotum` | `1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898` |
 | `HCRDotum-Bold` | `5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51` |
 | `Haansoft-Dotum` | `2989f37963a66f865ff9875bb5da668593dd297da03a0d6a727d8da3c093eb8b` |
+
+## 첫 Native 집중 검증
+
+제품 `874fac36f2`에서 같은 원본 PDF를 실제 importer로 재생성한 뒤 Native로
+1·5·13쪽을 측정했다. 세 쪽 모두 98% 이상이며 최저는 98.54%다. PDF는 그대로
+사용했고 일반 시스템 글꼴을 제공했다. 전15쪽과 fresh WASM은 아직 이 결과로
+대신하지 않는다. 수정 전 같은 세 쪽은 88.18671%·89.01597%·89.05578%였다.
