@@ -1,3 +1,7 @@
+# 제출 당시 PR 본문 이력
+
+이 문서는 코드 PR 제출 시의 본문이다. 확정된 CI·self-review·merge와 후속 순서는 [최종 원격 기록](remote-completion.md)을 확인한다.
+
 현재 devel `96827b3accd98ad0b80f76260b42fba24eded504`와의 충돌 없는 merge-tree에서 최신 정책·workspace all-target·WASM 컴파일 호환성도 확인했습니다. source branch는 유지했고 [base 변경과 보존 근거](base-advance-compatibility.md)를 기록했습니다.
 
 최신 보정 code `5e374d01f641745d20bc9424ce233021a327ed16`에서 CodeQL이 지적한 문서 좌표 진단을 제거하고 Native CLI의 PNG 출처 계약을 수정했습니다. stock **12,475 PASS / 45 skip**, 실제 Native CI의 **22개 명령·192 PASS**, 별도 Native lib 전체 **4,040 PASS / 12 ignored**, Native 출처 **11 PASS**를 확인했습니다. 기존의 잘못된 false 고정을 실제 글꼴 보고 표지로 바꾸었고, 종료 코드·feature·schema·출력 파일 검사는 유지했습니다. 보안 query·분류·workflow는 바꾸지 않았습니다. [실제 실패와 최종 보정 검증](ci-head223-followup.md)에 근거와 한계를 기록했습니다.

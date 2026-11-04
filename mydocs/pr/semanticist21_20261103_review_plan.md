@@ -9,11 +9,9 @@ last_verified: 2026-11-03
 
 ## 현재 단계
 
-10건의 메인터너 보정·필수 로컬 검증을 한 단위로 완료했다. 모든 원 head를 보존한 누적 후보를
-검증했으며 열 건 모두 **메인터너 보정 후 수용 가능**이다. 원격 원 head의 이전 CI와 보정된 후보의
-실제 검증을 구분한다. [최종 명세](assets/semanticist21-20261103/validation.md),
-[원 PR별 기록과 원격 처리안](assets/semanticist21-20261103/remote-action-plan.md)을 확인한다.
-push·공개 댓글·Open PR·merge는 아직 수행하지 않았고 별도 승인이 필요하다.
+선정한 열 건을 메인터너 보정 후 [통합 PR #8548](https://github.com/edwardkim/rhwp/pull/8548)로 수용했다. 제출 head `ad4232749d450c109c33b5b0ffc570aee652b66c`의 필수 GitHub CI·CodeQL·Render Diff·Adapter·Proptest와 최종 정책 검사, [self-review](https://github.com/edwardkim/rhwp/pull/8548#pullrequestreview-5767237915)를 완료하고 merge commit `28b58695cb01a20e980459e77a35f964817c7459`를 확인했다. 원 기여 head와 commit은 통합 조상으로 보존했다.
+
+[최종 운영 기록](assets/semanticist21-20261103/remote-completion.md)과 [최신 로컬 검증](assets/semanticist21-20261103/rebase-validation.md)에 실제 source·producer·전쪽 근거를 구분한다. CI 실행 정의 변경이 있으므로 코드 PR 뒤 별도 기록 PR에서 개별 검토 10개의 archive 이동과 오늘할일을 반영한다. 해당 기록 PR 뒤 devel 동기화·연결 이슈·원 PR별 감사 댓글·정리를 수행한다. 아래 최초 선정·충돌표는 접수 당시의 이력이며 현재 미진행 상태가 아니다.
 
 ## 대상과 기준
 
