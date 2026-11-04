@@ -2,8 +2,7 @@
 
 use super::super::helpers::{
     clipboard_color_to_css, clipboard_escape_html, detect_clipboard_image_mime,
-    get_textbox_from_shape, logical_paragraph_length, logical_to_text_offset,
-    utf16_pos_to_char_idx,
+    logical_paragraph_length, logical_to_text_offset, utf16_pos_to_char_idx,
 };
 use crate::document_core::{ClipboardData, DocumentCore};
 use crate::error::HwpError;
@@ -1123,7 +1122,7 @@ impl DocumentCore {
                         .paragraphs
                 }
                 Control::Shape(s) => {
-                    &mut super::super::helpers::get_textbox_from_shape_mut(s)
+                    &mut super::super::helpers::get_textbox_at_mut(s, cell_idx)
                         .ok_or_else(|| HwpError::RenderError("글상자 없음".to_string()))?
                         .paragraphs
                 }

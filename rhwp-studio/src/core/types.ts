@@ -169,9 +169,10 @@ export interface SectionDef {
   hideEmptyLine: boolean;
 }
 
-/** 중첩 표 경로 엔트리 (1레벨 = 단일 표, 2레벨 이상 = 중첩 표) */
+/** 표·글상자 편집 경로 엔트리. 각 레벨은 실제 문단을 소유한 컨테이너 하나를 나타낸다. */
 export interface CellPathEntry {
   controlIndex: number;
+  /** 표의 셀 번호. 독립 글상자는 0, 묶음은 원본 자식 순서의 깊이 우선 글상자 번호. */
   cellIndex: number;
   cellParaIndex: number;
 }

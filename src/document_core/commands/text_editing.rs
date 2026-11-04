@@ -2830,18 +2830,13 @@ impl DocumentCore {
                 Ok(&mut cell.paragraphs[cell_para_idx])
             }
             Control::Shape(shape) => {
-                if cell_idx != 0 {
-                    return Err(HwpError::RenderError(format!(
-                        "글상자 셀 인덱스는 0이어야 합니다 (요청: {})",
-                        cell_idx
-                    )));
-                }
-                let tb =
-                    super::super::helpers::get_textbox_from_shape_mut(shape).ok_or_else(|| {
+                let tb = super::super::helpers::get_textbox_at_mut(shape, cell_idx).ok_or_else(
+                    || {
                         HwpError::RenderError(
                             "지정된 Shape 컨트롤에 텍스트 박스가 없습니다".to_string(),
                         )
-                    })?;
+                    },
+                )?;
                 if cell_para_idx >= tb.paragraphs.len() {
                     return Err(HwpError::RenderError(format!(
                         "글상자 문단 인덱스 {} 범위 초과 (총 {}개)",
@@ -3214,7 +3209,7 @@ impl DocumentCore {
                 }
             }
             Some(Control::Shape(shape)) => {
-                if let Some(tb) = super::super::helpers::get_textbox_from_shape_mut(shape) {
+                if let Some(tb) = super::super::helpers::get_textbox_at_mut(shape, cell_idx) {
                     if let Some(cell_para) = tb.paragraphs.get_mut(cell_para_idx) {
                         reflow_line_segs(cell_para, paragraph_box.clone(), &styles, self.dpi);
                     }
@@ -3263,7 +3258,8 @@ impl DocumentCore {
                 &mut cell.paragraphs
             }
             Control::Shape(shape) => {
-                let Some(textbox) = super::super::helpers::get_textbox_from_shape_mut(shape) else {
+                let Some(textbox) = super::super::helpers::get_textbox_at_mut(shape, cell_idx)
+                else {
                     return;
                 };
                 &mut textbox.paragraphs
@@ -3423,9 +3419,18 @@ impl DocumentCore {
                 }
             }
             Control::Shape(shape) => {
-                let tb = super::super::helpers::get_textbox_from_shape(shape)?;
-                let common = shape.common();
-                Some((common.width as i32, tb.margin_left, tb.margin_right))
+                let tb = super::super::helpers::get_textbox_at(shape, cell_idx)?;
+                let owner = shape.textbox_shape_at(cell_idx)?;
+                // 묶음 자식은 독립 개체 common.sz가 없으며 orgSz와 합성 변환이 물리 프레임을 정한다.
+                // layout_group_child와 같은 원본 폭을 쓰고, 바깥 Group의 폭으로 재래핑하지 않는다.
+                let width = if matches!(shape.as_ref(), crate::model::shape::ShapeObject::Group(_))
+                {
+                    let attr = owner.shape_attr();
+                    (attr.original_width as f64 * attr.render_sx.abs()) as i32
+                } else {
+                    owner.common().width as i32
+                };
+                Some((width, tb.margin_left, tb.margin_right))
             }
             Control::Picture(pic) => Some((pic.common.width as i32, 0, 0)),
             _ => None,
@@ -3454,7 +3459,7 @@ impl DocumentCore {
             }
             para = match control {
                 Control::Table(t) => t.cells.get(cell_idx)?.paragraphs.get(cell_para_idx)?,
-                Control::Shape(s) => super::super::helpers::get_textbox_from_shape(s)?
+                Control::Shape(s) => super::super::helpers::get_textbox_at(s, cell_idx)?
                     .paragraphs
                     .get(cell_para_idx)?,
                 Control::Picture(p) => p.caption.as_ref()?.paragraphs.get(cell_para_idx)?,
@@ -4022,12 +4027,9 @@ impl DocumentCore {
                 }
                 table.cells.get(cell_idx)?.paragraphs.get(cell_para_idx)
             }
-            Control::Shape(shape) => {
-                if cell_idx != 0 {
-                    return None;
-                }
-                get_textbox_from_shape(shape)?.paragraphs.get(cell_para_idx)
-            }
+            Control::Shape(shape) => super::super::helpers::get_textbox_at(shape, cell_idx)?
+                .paragraphs
+                .get(cell_para_idx),
             Control::Picture(pic) => pic.caption.as_ref()?.paragraphs.get(cell_para_idx),
             _ => None,
         }
@@ -5060,7 +5062,7 @@ impl DocumentCore {
                 }
             }
             Some(Control::Shape(shape)) => {
-                if let Some(tb) = super::super::helpers::get_textbox_from_shape_mut(shape) {
+                if let Some(tb) = super::super::helpers::get_textbox_at_mut(shape, cell_idx) {
                     tb.paragraphs.insert(new_cell_para_idx, new_para);
                 }
             }
@@ -5191,7 +5193,7 @@ impl DocumentCore {
                 }
             }
             Some(Control::Shape(shape)) => {
-                if let Some(tb) = super::super::helpers::get_textbox_from_shape_mut(shape) {
+                if let Some(tb) = super::super::helpers::get_textbox_at_mut(shape, cell_idx) {
                     let removed = tb.paragraphs.remove(cell_para_idx);
                     removed_meta = removed.capture_meta();
                     merge_point = tb.paragraphs[prev_idx].merge_from(&removed);
@@ -5754,7 +5756,7 @@ impl DocumentCore {
                 Ok(cell.paragraphs.len())
             }
             Some(Control::Shape(shape)) => {
-                let text_box = get_textbox_from_shape(shape)
+                let text_box = super::super::helpers::get_textbox_at(shape, cell_idx)
                     .ok_or_else(|| HwpError::RenderError("도형에 글상자가 없습니다".to_string()))?;
                 Ok(text_box.paragraphs.len())
             }
@@ -6201,13 +6203,7 @@ impl DocumentCore {
                     &mut cell.paragraphs
                 }
                 Some(Control::Shape(shape)) => {
-                    if cell_idx != 0 {
-                        return Err(HwpError::RenderError(format!(
-                            "경로[{}]: 글상자의 cell_index는 0이어야 합니다 ({})",
-                            i, cell_idx
-                        )));
-                    }
-                    let text_box = super::super::helpers::get_textbox_from_shape_mut(shape)
+                    let text_box = super::super::helpers::get_textbox_at_mut(shape, cell_idx)
                         .ok_or_else(|| {
                             HwpError::RenderError(format!(
                                 "경로[{}]: controls[{}]가 텍스트 글상자가 아닙니다",

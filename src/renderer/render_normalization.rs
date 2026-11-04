@@ -32,6 +32,7 @@ pub enum RenderPathEntry {
     },
     ShapeTextBox {
         control_index: usize,
+        textbox_index: usize,
         paragraph_index: usize,
     },
     PictureCaption {
