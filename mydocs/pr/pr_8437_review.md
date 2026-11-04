@@ -2,7 +2,10 @@
 
 ## 최종 판정
 
-**머지 보류 — 통합 최종 head의 Native/fresh WASM 전쪽 측정과 기준 devel 대비 대조, 전체 로컬 검증이 진행 중입니다.**
+**메인터너 보정 후 수용 가능**
+메인터너가 통합 후보의 실제 전쪽 증적과 회귀 근거를 보강했습니다. 원 PR에 대응하는 입력·쪽과 반례는 아래에 기록했습니다.
+증적·회귀 첫머리 보강 커밋은 `e3986247e9`·`65d345f8fd`입니다. 원 head와 보정된 통합 후보를 구분합니다.
+새 devel `1924d371d6` 반영 뒤 기능 보존과 최종 공통 검증을 마치면 통합 PR을 준비합니다. PR 생성은 작업지시자 승인 대기입니다.
 아래 값은 명시한 코드 SHA의 실측 결과이며 원 PR의 승인이나 닫기를 뜻하지 않습니다.
 
 ## 접수 정보
@@ -63,9 +66,11 @@ layout.rs의 tac_sibling_float_anchor_offset_px와 typeset의 TableHostShapeFlow
 | `156638890-logo-textbox.hwpx` 3쪽 · TAC 로고 원점 | 99.95% · [review](assets/planet6897_20261103/pr_8437/pr8437-claim-p003-156638890-logo-tex-native-review.png) / [overlay](assets/planet6897_20261103/pr_8437/pr8437-claim-p003-156638890-logo-tex-native-overlay.png) | 99.95% · [review](assets/planet6897_20261103/pr_8437/pr8437-claim-p003-156638890-logo-tex-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8437/pr8437-claim-p003-156638890-logo-tex-wasm-overlay.png) |
 | `156770078-logo-table.hwpx` 3쪽 · 두 번째 TAC 로고 사례 | 99.98% · [review](assets/planet6897_20261103/pr_8437/pr8437-claim-p003-156770078-logo-tab-native-review.png) / [overlay](assets/planet6897_20261103/pr_8437/pr8437-claim-p003-156770078-logo-tab-native-overlay.png) | 99.98% · [review](assets/planet6897_20261103/pr_8437/pr8437-claim-p003-156770078-logo-tab-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8437/pr8437-claim-p003-156770078-logo-tab-wasm-overlay.png) |
 
-## 남은 검증
+## 통합 최종 검증 조건
 
-- 현재 통합 최종 head의 집중·전체 Rust 회귀, lint와 fresh WASM을 완료하고 로그를 연결합니다.
+- 리베이스 전 제품 `dc87f4fa2e`의 해당 전쪽 Native/fresh WASM 측정은 완료했습니다. 전체 Rust 12,498개 중 1건 기준 누락은 `70a9d870ee`에서 독립 Print로 보정한 뒤 통과했습니다.
+- `65d345f8fd`의 40개 회귀 첫머리 보강은 주석 외 내용이 동일합니다. 새 devel의 제품 변경과 구분해 검증합니다.
+- 새 devel의 Native 글꼴·측정 경로와 이번 통합을 함께 반영한 최종 head에서 필수 회귀·lint·출력 보존을 확인합니다.
 - 고정 `upstream/devel`과 같은 입력·Print·글꼴 조건에서 전쪽 raw 하락을 비교합니다.
 - 위 주장 쪽 review와 overlay를 독립 Print와 확대 대조해 내용·순서·격자·간격을 직접 판독합니다.
 - 누락 증적이나 90% 미만 쪽이 있으면 보정 후 다시 측정합니다.
