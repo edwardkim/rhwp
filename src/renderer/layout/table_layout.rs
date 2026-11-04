@@ -5206,7 +5206,9 @@ impl LayoutEngine {
             false,
         );
         self.declared_trust_allowed.set(true);
-        self.remember_stored_frame_rows(table, &out);
+        // 재귀 측정은 자체 paint 높이를 반환하되, 스캔이 명시적으로 게시한
+        // 앞 행의 물리 원점까지 다른 계획으로 덮어쓰지 않는다.
+        self.seed_stored_frame_rows(table, &out);
         out
     }
 

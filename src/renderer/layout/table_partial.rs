@@ -1300,8 +1300,10 @@ impl LayoutEngine {
                         row_span: cell.row_span,
                         border_fill_id: cell.border_fill_id,
                         text_direction: cell.text_direction,
-                        clip: is_in_split_row || is_rowbreak_straddle || height_override_clip,
-                        // [#5862] 이 경로의 clip 셀은 전부 쪽 컷이 만든 조각이다.
+                        // 온전한 행도 일반 표와 같은 셀 소유 경계로 그린다.
+                        // 쪽 조각 여부는 아래 별도 필드가 소유한다. 저장 줄이
+                        // 인증한 중첩 표 노출은 공통 clip 확장 경로가 처리한다.
+                        clip: true,
                         closed_reflow_frame: false,
                         page_fragment: is_in_split_row
                             || is_rowbreak_straddle
