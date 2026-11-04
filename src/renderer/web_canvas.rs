@@ -106,7 +106,7 @@ fn expand_pua_old_hangul_canvas(text: &str) -> String {
 
 use super::composer::{
     char_overlap_display_text, char_overlap_size_ratio, decode_pua_overlap_number,
-    expand_pua_render_text_in_style, CharOverlapInfo,
+    expand_pua_render_text_in_style, pua_overlap_number_border, CharOverlapInfo,
 };
 #[cfg(target_arch = "wasm32")]
 use super::layout::split_into_clusters;
@@ -3890,9 +3890,13 @@ impl WebCanvasRenderer {
 
         // PUA 다자리 숫자 디코딩 시도
         if let Some(number_str) = decode_pua_overlap_number(&chars) {
+            let mut overlap = overlap.clone();
+            if overlap.border_type == 0 {
+                overlap.border_type = pua_overlap_number_border(&chars);
+            }
             self.draw_char_overlap_combined(
                 style,
-                overlap,
+                &overlap,
                 &number_str,
                 bbox_x,
                 bbox_y,

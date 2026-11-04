@@ -469,6 +469,12 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
         isolated_jamo_font: None,
         page_number_char_style_id,
         page_number_font_is_hft,
+        style_char_shapes: storage.try_collect(
+            doc_info
+                .styles
+                .iter()
+                .map(|style| Ok(u32::from(style.char_shape_id))),
+        )?,
         char_styles,
         para_styles,
         border_styles,

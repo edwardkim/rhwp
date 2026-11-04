@@ -3665,9 +3665,12 @@ where
         _ => "TOP",
     };
     let align = match r.align {
-        1 => "RIGHT",
-        2 => "CENTER",
-        _ => "LEFT",
+        1 => "LEFT",
+        2 => "RIGHT",
+        3 => "CENTER",
+        4 => "DISTRIBUTE",
+        5 => "DISTRIBUTE_SPACE",
+        _ => "JUSTIFY",
     };
     xml_value(
         storage,
@@ -3842,6 +3845,13 @@ where
         4 => "SHAPE_REVERSAL_RECTANGLE",
         5 => "SHAPE_TRIANGLE",
         6 => "SHAPE_REVERSAL_TIRANGLE",
+        7 => "SHAPE_LIGHT",
+        8 => "SHAPE_RHOMBUS",
+        9 => "SHAPE_REVERSAL_RHOMBUS",
+        10 => "SHAPE_ROUNDED_RECTANGLE",
+        11 => "SHAPE_EMPTY_CIRCULATE_TRIANGLE",
+        12 => "SHAPE_THIN_CIRCULATE_TRIANGLE",
+        13 => "SHAPE_THICK_CIRCULATE_TRIANGLE",
         _ => "CHAR",
     };
     let compose_type = if co.expansion == 1 {
@@ -3850,9 +3860,11 @@ where
         "SPREAD"
     };
     // [#5140] 겹침 글자도 사용자 정의 기호일 수 있다. 속성이라 위치 축과 무관하므로
-    // 본문과 같은 표를 그대로 적용한다.
+    // 본문과 같은 표를 그대로 적용한다. HWP 원문 배열의 표지와 PUA 숫자는 한컴
+    // HWPX처럼 친 글로 돌린다.
+    let plain = crate::renderer::composer::char_overlap_plain_text(co);
     let text = storage
-        .chars(co.chars.iter().map(|&c| hancom_symbol_for_hwpx(c)))
+        .chars(plain.chars().map(hancom_symbol_for_hwpx))
         .map_err(xml_error)?;
     let mut out = xml_value(
         storage,

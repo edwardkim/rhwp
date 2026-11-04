@@ -1381,7 +1381,7 @@ pub(super) fn compose_horizontal_shaping_handoff(
     }
 
     let text_chars = para.text.chars().collect::<Vec<_>>();
-    let inline_controls = flow_inline_controls(para);
+    let inline_controls = flow_inline_controls(para, styles);
     let projection = prepare_paragraph_projection(
         para,
         &text_chars,
@@ -3438,7 +3438,7 @@ fn flow_inline_controls_with_tac_tables_with_storage<S: crate::storage::Storage>
 ) -> Result<Vec<FlowInlineControl>, S::Error> {
     Ok({
         let text_len = para.text.chars().count();
-        let mut controls = flow_inline_controls_with_storage(para, storage)?;
+        let mut controls = flow_inline_controls_with_storage(para, styles, storage)?;
         for ((control, char_position), utf16_position) in para
             .controls
             .iter()
@@ -4471,7 +4471,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
         // [#7160] 저장 줄이 없는 TAC 표 host 는 표 폭까지 줄 경계 판정에 넣는다.
         flow_inline_controls_with_tac_tables_with_storage(para, styles, dpi, storage)?
     } else {
-        flow_inline_controls_with_storage(para, storage)?
+        flow_inline_controls_with_storage(para, styles, storage)?
     };
     if purpose == FramePurpose::PictureAnchor {
         let prefix = crate::renderer::layout::leading_endnote_prefix_geometry(para, styles, 0);
@@ -6021,7 +6021,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
     }
 
     let text_len = text_chars.len();
-    let inline_controls = flow_inline_controls_with_storage(para, storage)?;
+    let inline_controls = flow_inline_controls_with_storage(para, styles, storage)?;
 
     // 문단 스타일에서 들여쓰기 및 줄 나눔 설정 조회 (들여쓰기는 목록 마커를 얹은 값)
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
@@ -6326,6 +6326,15 @@ fn try_reflow_line_segs_impl<S: Storage>(
             if inline_owns_row_height {
                 if let Some(baseline) = control.baseline_distance_hwp {
                     text_seg.baseline_distance = baseline;
+                }
+                // 프레임 채움과 같이 줄 간격에 참여하는 개체(덧말 등)는 그 높이로 간격을 잰다.
+                if let Some(height) = control.spacing_height_hwp {
+                    text_seg.line_spacing = compute_line_spacing_hwp(
+                        ls_type,
+                        ls_value,
+                        text_seg.line_height.max(height),
+                        dpi,
+                    );
                 }
             }
         }

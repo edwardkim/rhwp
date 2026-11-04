@@ -3,6 +3,18 @@
 /// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. 병합 `devel` 기준 46건(2026-08-30 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     (
+        "commands/compose_controls.rs",
+        "insert_ruby_native",
+        Exempt::DelegatesTo("insert_compose_control"),
+        "입력을 덧말로 만든 뒤 넣기 공통 함수에 위임한다. 공통 함수가 구역의 raw_stream을 비운다.",
+    ),
+    (
+        "commands/compose_controls.rs",
+        "insert_char_overlap_native",
+        Exempt::DelegatesTo("insert_compose_control"),
+        "입력을 글자 겹침으로 만든 뒤 넣기 공통 함수에 위임한다. 공통 함수가 구역의 raw_stream을 비운다.",
+    ),
+    (
         "host_font_environment.rs",
         "prepare_declared_font_fallbacks_with",
         Exempt::SessionState,

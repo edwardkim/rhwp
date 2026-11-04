@@ -6678,6 +6678,14 @@ fn parse_compose(
                     "SHAPE_REVERSAL_RECTANGLE" => 4,
                     "SHAPE_TRIANGLE" => 5,
                     "SHAPE_REVERSAL_TIRANGLE" => 6,
+                    // 한컴 12.30이 저장하는 나머지 일곱 모양. 모르는 이름은 글자끼리 겹치기다.
+                    "SHAPE_LIGHT" => 7,
+                    "SHAPE_RHOMBUS" => 8,
+                    "SHAPE_REVERSAL_RHOMBUS" => 9,
+                    "SHAPE_ROUNDED_RECTANGLE" => 10,
+                    "SHAPE_EMPTY_CIRCULATE_TRIANGLE" => 11,
+                    "SHAPE_THIN_CIRCULATE_TRIANGLE" => 12,
+                    "SHAPE_THICK_CIRCULATE_TRIANGLE" => 13,
                     _ => 0,
                 };
             }
@@ -6784,10 +6792,13 @@ fn parse_dutmal(
                 };
             }
             b"align" => {
+                // HWP `tdut`과 같은 문단 정렬 번호로 읽어 두 형식 사이에서 값이 바뀌지 않게 한다.
                 ruby.align = match attr_str(&attr).as_str() {
-                    "LEFT" => 0,
-                    "RIGHT" => 1,
-                    "CENTER" => 2,
+                    "LEFT" => 1,
+                    "RIGHT" => 2,
+                    "CENTER" => 3,
+                    "DISTRIBUTE" => 4,
+                    "DISTRIBUTE_SPACE" => 5,
                     _ => 0,
                 };
             }

@@ -9841,6 +9841,82 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 덧말 넣기. `char_offset`은 원문 축 글자 자리다.
+    /// `json`: `{"mainText","rubyText","below":bool,"styleId":number|null}`.
+    #[wasm_bindgen(js_name = insertRuby)]
+    pub fn insert_ruby(
+        &mut self,
+        sec: u32,
+        para: u32,
+        char_offset: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        self.core
+            .insert_ruby_native(sec as usize, para as usize, char_offset as usize, json)
+            .map_err(|e| e.into())
+    }
+
+    /// 글자 겹치기 넣기. `char_offset`은 원문 축 글자 자리다.
+    /// `json`: `{"text","shape":0~13,"innerSize":-8~2,"overlap":bool}`.
+    #[wasm_bindgen(js_name = insertCharOverlap)]
+    pub fn insert_char_overlap(
+        &mut self,
+        sec: u32,
+        para: u32,
+        char_offset: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        self.core
+            .insert_char_overlap_native(sec as usize, para as usize, char_offset as usize, json)
+            .map_err(|e| e.into())
+    }
+
+    /// 덧말·글자 겹침 하나의 값(겹칠 글자는 친 글 그대로).
+    #[wasm_bindgen(js_name = getComposeControl)]
+    pub fn get_compose_control(
+        &self,
+        sec: u32,
+        para: u32,
+        ctrl_idx: u32,
+    ) -> Result<String, JsValue> {
+        self.core
+            .get_compose_control_native(sec as usize, para as usize, ctrl_idx as usize)
+            .map_err(|e| e.into())
+    }
+
+    /// 덧말·글자 겹침 하나를 고친다. 입력은 넣을 때와 같다.
+    #[wasm_bindgen(js_name = setComposeControl)]
+    pub fn set_compose_control(
+        &mut self,
+        sec: u32,
+        para: u32,
+        ctrl_idx: u32,
+        json: &str,
+    ) -> Result<String, JsValue> {
+        self.core
+            .set_compose_control_native(sec as usize, para as usize, ctrl_idx as usize, json)
+            .map_err(|e| e.into())
+    }
+
+    /// 덧말·글자 겹침 하나를 지운다. `keep_main_text`면 덧말만 지우고 본말을 글로 남긴다.
+    #[wasm_bindgen(js_name = deleteComposeControl)]
+    pub fn delete_compose_control(
+        &mut self,
+        sec: u32,
+        para: u32,
+        ctrl_idx: u32,
+        keep_main_text: bool,
+    ) -> Result<String, JsValue> {
+        self.core
+            .delete_compose_control_native(
+                sec as usize,
+                para as usize,
+                ctrl_idx as usize,
+                keep_main_text,
+            )
+            .map_err(|e| e.into())
+    }
+
     /// 책갈피 추가
     #[wasm_bindgen(js_name = addBookmark)]
     pub fn add_bookmark(

@@ -88,8 +88,8 @@ fn whitelist() -> HashMap<&'static str, Vec<&'static str>> {
     m.insert("gutterType", vec!["LEFT_ONLY", "LEFT_RIGHT", "TOP_BOTTOM"]);
     // 캡션 side (#1387)
     m.insert("side", vec!["LEFT", "RIGHT", "TOP", "BOTTOM"]);
-    // circleType: SHAPE_REVERSAL_TIRANGLE 은 한컴 owpml 오타 철자 추정 — 파서·
-    // serializer 동일 철자라 roundtrip 정합. owpml 권위 자료 미접근으로 현행 유지.
+    // circleType: SHAPE_REVERSAL_TIRANGLE 은 한컴 owpml 철자 그대로다. 한컴 12.30 저장본의
+    // 14개 모양 이름과 같다.
     m.insert(
         "circleType",
         vec![
@@ -100,6 +100,13 @@ fn whitelist() -> HashMap<&'static str, Vec<&'static str>> {
             "SHAPE_REVERSAL_RECTANGLE",
             "SHAPE_TRIANGLE",
             "SHAPE_REVERSAL_TIRANGLE",
+            "SHAPE_LIGHT",
+            "SHAPE_RHOMBUS",
+            "SHAPE_REVERSAL_RHOMBUS",
+            "SHAPE_ROUNDED_RECTANGLE",
+            "SHAPE_EMPTY_CIRCULATE_TRIANGLE",
+            "SHAPE_THIN_CIRCULATE_TRIANGLE",
+            "SHAPE_THICK_CIRCULATE_TRIANGLE",
         ],
     );
     m.insert("composeType", vec!["OVERLAP", "SPREAD"]);
