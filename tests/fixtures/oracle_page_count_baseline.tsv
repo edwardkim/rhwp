@@ -549,3 +549,5 @@ tests/fixtures/issue1470_authored_caption_numbering/tables-caption-left.hwpx	1	1
 tests/fixtures/issue1470_authored_caption_numbering/tables-caption-left.hwp	1	1
 samples/issue4599/1790387_policy_progress.hwpx	64	64
 samples/issue8141/1342000_math_textbook_field_review.hwp	49	49
+# PR #8585: 동일 공개 입력의 독립 WebHWP Print PDF 전 1쪽(pdf/issue7524/).
+samples/issue7524/textbox_tac_picture_rows.hwp	1	1

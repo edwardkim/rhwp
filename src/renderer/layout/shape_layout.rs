@@ -18,7 +18,9 @@ use super::super::pagination::PageItem;
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{hwpunit_to_px, px_to_hwpunit, PathCommand, ShapeStyle, TextStyle};
-use super::paragraph_layout::trailing_space_width_after_last_inline_object;
+use super::paragraph_layout::{
+    center_alignment_excludes_trailing_space, trailing_space_width_after_last_inline_object,
+};
 use super::text_measurement::{
     estimate_text_width, is_cjk_char, is_vertical_rotate_char, resolved_to_text_style,
     vertical_substitute_char,
@@ -4085,7 +4087,34 @@ impl LayoutEngine {
                             estimate_text_width(&run.text, &ts)
                         })
                         .sum();
-                    let total = w + text_w;
+                    // 본문과 같은 소유 줄·말미 공백 계약을 쓴다. 마지막 개체 앞의
+                    // 공백은 개체 사이 내용이므로 가운데·오른쪽 정렬 폭에 남긴다.
+                    let last_inline_object_pos = ctrl_line
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, owner)| **owner == Some(li))
+                        .filter_map(|(ci, _)| control_text_positions.get(ci).copied())
+                        .max();
+                    let center_excludes_trailing_ws = center_alignment_excludes_trailing_space(
+                        para_alignment,
+                        line,
+                        last_inline_object_pos,
+                        li + 1 == comp.lines.len(),
+                        !crate::renderer::para_has_no_stored_line_segs(para),
+                    );
+                    let trailing_ws_width =
+                        if para_alignment == Alignment::Right || center_excludes_trailing_ws {
+                            trailing_space_width_after_last_inline_object(
+                                line,
+                                last_inline_object_pos,
+                                styles,
+                                center_excludes_trailing_ws,
+                                estimate_text_width,
+                            )
+                        } else {
+                            0.0
+                        };
+                    let total = w + text_w - trailing_ws_width;
                     start_x.push(match para_alignment {
                         Alignment::Center | Alignment::Distribute => {
                             inner_area.x + (inner_area.width - total).max(0.0) / 2.0

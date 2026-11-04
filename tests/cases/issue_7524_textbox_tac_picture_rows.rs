@@ -1,3 +1,10 @@
+//! 관계형·고정형 회귀: 사진의 포함·열 정렬 관계와 독립 Print의 2열·3줄 개수.
+//! 주석 갱신: 2026-11-04T21:32:48+09:00; 직전 파일 커밋: 2026-11-04T17:50:30+09:00 (c312ea2c87cddbb8608f649a0d742eac1ab6107c).
+//! 2026-11-04 원 head 7e7a86fef9 측정: Visual Sweep raw, 96dpi, PDFium, 색상 경계 보정 전 2px 내용 실루엣.
+//! textbox_tac_picture_rows.hwp 전 1쪽(1쪽): Native 96.84744% / fresh optimized WASM 96.85057%; 각 전쪽 최저 동일.
+//! 정식 근거: mydocs/pr/assets/pr8585/head-native.tsv, head-wasm.tsv와 대응 provenance·PNG; 독립 PDF는 pdf/issue7524/.
+//! 원 head의 마지막 사진 줄 정렬은 아직 다르며, 해당 관계 검사는 원 head FAIL을 확인한다. 보정 후 실측은 검토 기록에 연결한다.
+//!
 //! [#7524] 저장 줄이 없는 글상자 문단에서 여러 글자처럼 취급 그림이 한 줄로 늘어서 상자 밖으로
 //! 나가던 결함의 회귀 가드.
 //!
@@ -117,10 +124,35 @@ fn photos_wrap_into_rows_without_overlap() {
     let mut tops: Vec<i64> = photos.iter().map(|p| p.y.round() as i64).collect();
     tops.sort_unstable();
     tops.dedup();
-    assert!(
-        tops.len() >= 2,
-        "사진 6장이 여러 줄로 나뉘어야 한다(상자 폭에 들어가는 만큼씩). 줄 상단 {tops:?}"
+    assert_eq!(
+        tops.len(),
+        3,
+        "독립 Print의 사진 6장은 2열·3줄이다: {tops:?}"
     );
+    let mut columns: Option<Vec<f64>> = None;
+    for top in tops {
+        let mut xs: Vec<f64> = photos
+            .iter()
+            .filter(|photo| photo.y.round() as i64 == top)
+            .map(|photo| photo.x)
+            .collect();
+        xs.sort_by(f64::total_cmp);
+        assert_eq!(
+            xs.len(),
+            2,
+            "각 사진 줄은 같은 두 열을 소유해야 한다: {xs:?}"
+        );
+        if let Some(expected) = &columns {
+            for (actual, previous) in xs.iter().zip(expected) {
+                assert!(
+                    (actual - previous).abs() <= 0.5,
+                    "말미 공백은 사진 열의 정렬 원점을 바꾸지 않는다: {expected:?} / {xs:?}"
+                );
+            }
+        } else {
+            columns = Some(xs);
+        }
+    }
     for (i, a) in photos.iter().enumerate() {
         for b in &photos[i + 1..] {
             assert!(!a.overlaps(b), "사진끼리 겹친다: {a:?} / {b:?}");
