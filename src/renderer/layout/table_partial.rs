@@ -2863,8 +2863,16 @@ impl LayoutEngine {
                 // 판정이 아니라 control-only 문단의 합성 결과다. normal-table path와
                 // 같이 control을 배치해야 한다. cut fragment에서는 단위 소유권을
                 // 유지해 다음 쪽 표를 앞쪽에 중복 방출하지 않는다.
+                // 글자처럼 취급 도형(직선 화살표 등)만 든 문단도 같다. 저장 줄이
+                // 없으면 줄 수 0 으로 건너뛰어 도형 노드가 아예 생기지 않았다 —
+                // 일반 표 경로는 같은 문단을 제 줄에 그린다.
+                let has_unstored_tac_shape_ctrl = para.line_segs.is_empty()
+                    && para.controls.iter().any(|c| match c {
+                        Control::Shape(shape) => shape.common().treat_as_char,
+                        _ => false,
+                    });
                 let uncut_control_only_nested_table = cut_units.is_none()
-                    && (has_table_ctrl || has_picture_ctrl)
+                    && (has_table_ctrl || has_picture_ctrl || has_unstored_tac_shape_ctrl)
                     && para
                         .text
                         .chars()
@@ -3798,6 +3806,28 @@ impl LayoutEngine {
                                         // 그림을 줄 높이만큼 끌어내렸다 — 한/글 2024 PDF
                                         // 36308670 2쪽 빈 문단 1100HU=14.67px.
                                         top
+                                    } else if start_line == 0
+                                        && end_line == 0
+                                        && uncut_control_only_nested_table
+                                        && para.line_segs.is_empty()
+                                        && matches!(
+                                            pic.common.vert_rel_to,
+                                            crate::model::shape::VertRelTo::Para
+                                        )
+                                        && !cell.paragraphs[cp_idx + 1..].iter().any(|next| {
+                                            next.text.chars().any(|ch| !ch.is_whitespace())
+                                        })
+                                    {
+                                        // 저장 줄 없는 개체 전용 문단은 줄 수가 0 이라 첫 줄
+                                        // 상단이 기록되지 않는다. 구성 뒤 `para_y` 는 빈 문단
+                                        // 줄 하나를 지난 자리라, 문단 위를 원점으로 쓴다.
+                                        //
+                                        // 같은 칸에서 뒤에 글 문단이 오면 그 글은 한/글에서
+                                        // 그림 아래로 밀리지만, 이 경로는 저장 줄 사다리가
+                                        // 없는 뒤 문단을 그림 아래로 밀지 못한다. 그림만
+                                        // 문단 위로 올리면 뒤 글을 덮으므로 그 경우는 종전
+                                        // 원점을 둔다.
+                                        para_y_before_compose
                                     } else {
                                         para_y
                                     };
