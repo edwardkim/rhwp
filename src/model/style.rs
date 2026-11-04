@@ -492,7 +492,7 @@ pub struct Bullet {
     pub char_shape_id: u32,
     /// 글머리표 문자 (●, ■, ▶ 등)
     pub bullet_char: char,
-    /// 이미지 글머리표 여부 (0=문자, ID=이미지)
+    /// HWP의 그림 사용 여부 또는 HWPX의 정규화한 그림 ID. 실제 참조는 `image_reference()`로 읽는다.
     pub image_bullet: i32,
     /// HWPX에서 그림 사용을 표시했지만 실제 그림 참조가 없는 원본 속성이다.
     #[serde(skip_serializing)]
