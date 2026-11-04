@@ -12,7 +12,7 @@ PostScript 전용 글꼴 목록 보정으로, patch-id `a43892f42ca2005c9ef2cef3
 같다. 구현·검사·분석 문서 3개도 devel과 바이트가 같아 로컬 중복 커밋을 제외했다.
 
 `a4fb27f651`(리베이스 전 `8912bfab73`)은 **편람 검사에 명시한 글꼴 환경 전달**이라는
-다른 변경이다. 현재 devel은 그 함수에 `font_environment=None`을 전달하고 선택 인자도
+다른 변경이다. 당시 devel `96827b3acc`는 그 함수에 `font_environment=None`을 전달하고 선택 인자도
 없으므로, 커밋 이력뿐 아니라 실제 코드 대조로 미포함을 확인했다. 사용자가 제시한 조건인
 ‘같은 내용이 devel에 있으면 제외’에 따라 이 변경은 유지했다. 두 변경을 같은 것으로 취급하지 않는다.
 
@@ -90,3 +90,30 @@ PDF 무표기판 1·5·13쪽은 전부 98% 이상이나 전쪽·fresh WASM의 �
 
 원시 결과는 ignored output의 `logs/rebase-96827-feature-preservation-prepared-minfont.log`,
 `logs/rebase-96827-studio-typecheck.log`, `logs/rebase-2071603998-native-probes.log`에 있다.
+
+## 후속 devel 반영과 편람 변경 중복 제거
+
+2026-11-04, 사용자가 제시한 `4c892a9886c12e8d946a38c936d27f9595dd66ea`를
+새 devel `782ab3e2d06380d7d36660f07d76ef4c8c7c0c0a`와 대조했다.
+PR #8588의 통합 커밋 `056652594ba2cd1a515c9a5def1f80c8e1275064`에 편람 글꼴 환경
+전달 변경이 포함됐다. 원 커밋과 로컬 `a4fb27f651e17dc1b238b93005086fc165fe9e1b`의
+stable patch-id는 `380f38b255baf135c8313d57174500142c3df831`로 같고,
+구현·검사·분석 문서 3개도 새 devel과 바이트가 같다.
+
+따라서 `a4fb27f651`만 제외하고 새 devel 위로 리베이스했다.
+리베이스 직전 head는 `c6701105b4c58fc7841f2f643324a115f418e237`,
+직후 head는 `0891a492f44b5f28a0a3bffb574385bd034cd034`다.
+`range-diff`에서 이전 128개 중 해당 중복 1개만 빠지고 나머지 127개 패치는 모두 같다.
+새 base의 조상 관계, 작업 트리의 변경 없음, 해당 3개 파일의 devel 일치도 확인했다.
+기능을 되돌린 것이 아니라 devel의 동일 구현을 사용하도록 중복 이력을 제거한 것이다.
+
+첫 리베이스는 일시적인 index lock으로 멈췄고, Git 프로세스 종료와 lock 부재를 확인한 뒤
+`rebase --continue`로 완료했다. 소스 충돌은 없었다. 중단 로그와 완료 로그를 구분하며,
+대조 결과는 ignored output의 `logs/rebase-782ab3e2d0-range-diff.log`와
+`logs/rebase-782ab3e2d0-result.json`에 있다. 이전 제품의 렌더링 결과를 새 head의
+재출력 결과로 바꾸어 기록하지 않는다. 최종 제품의 필수 검증은 계속 진행한다.
+
+편람 gate의 도구 계약 검사는 새 head에서 19건 통과했다(exit 0).
+첫 실행은 테스트 모듈을 직접 지정해 같은 디렉터리의 보조 모듈을 찾지 못했으며,
+정식 discovery 방식으로 다시 실행해 확인했다. 로그는
+`logs/rebase-782ab3e2d0-handbook-tests-discovery.log`다.
