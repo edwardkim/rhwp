@@ -1,0 +1,54 @@
+[
+  {
+    "key": "jpeg-sandbox",
+    "base": {
+      "pages": 17,
+      "min": 75.47,
+      "below90": [
+        "7",
+        "15"
+      ]
+    },
+    "candidate": {
+      "pages": 17,
+      "min": 75.47,
+      "below90": [
+        "7",
+        "15"
+      ]
+    },
+    "byte_identical_pages": 17
+  },
+  {
+    "key": "equation-flow",
+    "base": {
+      "pages": 22,
+      "min": 42.22,
+      "below90": [
+        "8",
+        "11",
+        "12",
+        "13",
+        "18",
+        "19",
+        "20",
+        "21"
+      ]
+    },
+    "candidate": {
+      "pages": 22,
+      "min": 42.22,
+      "below90": [
+        "8",
+        "11",
+        "12",
+        "13",
+        "18",
+        "19",
+        "20",
+        "21"
+      ]
+    },
+    "byte_identical_pages": 22
+  }
+]

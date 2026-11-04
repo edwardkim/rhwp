@@ -1,3 +1,10 @@
+//! 검사 유형: 관계형·고정형(원문 번호·소속·독립 PDF 쪽수).
+//! 주석 갱신: 2026-11-05T02:21:40+09:00; Git 직전 파일 변경: 97bda8eed86510450b20b8271da8a50cbd881d67 2026-10-29T16:01:12+09:00.
+//! 선행 측정 source: 5c540c6c3e. 96 DPI·Print·PDFium exact physical DPI v2·2px raw 실루엣.
+//! 측정 실행 UTC: Native 2026-11-04T16:52:42.253740+00:00 ~ 2026-11-04T16:52:46.329925+00:00; WASM 2026-11-04T17:02:43.135763+00:00 ~ 2026-11-04T17:02:51.551305+00:00.
+//! header_footer_numbering: 전1쪽 Native 최저 94.92% / fresh WASM 최저 94.81%; 누락 없음.
+//! 증거: mydocs/pr/assets/semanticist21-20261105/validation/candidate/{native,wasm}/header_footer_numbering.tsv.
+//!
 //! 머리말 문단의 번호·개요 머리를 그리고, 본문과 한 계수기로 센다.
 //!
 //! 시험 문서는 한 쪽이다. 머리말에 번호·글머리표·개요 문단이 있고 본문에도 같은 세 문단이

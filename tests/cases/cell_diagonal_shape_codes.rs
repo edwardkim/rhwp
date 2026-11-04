@@ -1,3 +1,10 @@
+//! 검사 유형: 관계형(대각선의 셀 꼭짓점 소속·방향·개수).
+//! 주석 갱신: 2026-11-05T02:21:40+09:00; Git 직전 파일 변경: 816685b57201bc7f36160831bf4bd440ea5f8d57 2026-10-29T14:37:28+09:00.
+//! 선행 측정 source: 5c540c6c3e. 96 DPI·Print·PDFium exact physical DPI v2·2px raw 실루엣.
+//! 측정 실행 UTC: Native 2026-11-04T16:52:34.124752+00:00 ~ 2026-11-04T16:52:38.108932+00:00; WASM 2026-11-04T17:02:25.996224+00:00 ~ 2026-11-04T17:02:34.539992+00:00.
+//! cell_diagonal_shapes: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! 증거: mydocs/pr/assets/semanticist21-20261105/validation/candidate/{native,wasm}/cell_diagonal_shapes.tsv.
+//!
 //! 관계형: 칸 대각선 모양 코드마다 그리는 대각선 수와 방향, 꼭짓점을 검사한다.
 //! 2026-10-29 측정 raw(96dpi, pdfium, 2px 실루엣): 1쪽 Native 99.99% / fresh WASM 100.00%,
 //! 전1쪽 최저 99.99% / 100.00%. 같은 조건의 devel `f291d772a`은 97.59% / 97.59%.

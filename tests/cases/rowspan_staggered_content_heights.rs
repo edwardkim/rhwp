@@ -1,3 +1,11 @@
+//! 검사 유형: 관계형·고정형(독립 PDF 쪽수); 절대 페이지 좌표 핀 없음.
+//! 주석 갱신: 2026-11-05T02:21:40+09:00; Git 직전 파일 변경: 19aed211d178996cf83aae89388ed91d6ec93bcf 2026-10-29T01:16:35+09:00.
+//! 선행 측정 source: 5c540c6c3e. 96 DPI·Print·PDFium exact physical DPI v2·2px raw 실루엣.
+//! 측정 실행 UTC: Native 2026-11-04T16:51:22.176956+00:00 ~ 2026-11-04T16:52:21.959195+00:00; WASM 2026-11-04T17:01:38.785488+00:00 ~ 2026-11-04T17:02:01.289862+00:00.
+//! rowspan_staggered_heights: 전7쪽 Native 최저 99.32% / fresh WASM 최저 99.98%; 누락 없음.
+//! 증거: mydocs/pr/assets/semanticist21-20261105/validation/candidate/{native,wasm}/rowspan_staggered_heights.tsv.
+//! 대상 2쪽 N/W 99.50/99.99%, 이어받는 3쪽 99.99/100.00%; 같은 영역의 독립 PDF를 직접 판독했다.
+//!
 //! 엇갈린 병합 칸들의 행 높이를 칸 내용으로 푼다.
 //!
 //! 한컴 한글 12.30(Mac)에서 표 일부 블록에 "셀 높이를 같게"를 적용해 저장한 문서다.
@@ -103,4 +111,80 @@ fn staggered_span_cells_keep_their_own_heights() {
         right_bottom - top,
         14.0 * right
     );
+}
+
+fn outer_table(node: &RenderNode, paragraph: usize) -> Option<&RenderNode> {
+    if matches!(&node.node_type, RenderNodeType::Table(table)
+        if table.para_index == Some(paragraph) && table.cell_context.is_none())
+    {
+        return Some(node);
+    }
+    node.children
+        .iter()
+        .find_map(|child| outer_table(child, paragraph))
+}
+
+fn paragraph_lines<'a>(node: &'a RenderNode, paragraph: usize, out: &mut Vec<&'a RenderNode>) {
+    if matches!(&node.node_type, RenderNodeType::TextLine(line)
+        if line.para_index == Some(paragraph))
+    {
+        out.push(node);
+        return;
+    }
+    for child in &node.children {
+        paragraph_lines(child, paragraph, out);
+    }
+}
+
+#[test]
+fn staggered_table_preserves_following_content_and_paragraph_continuation() {
+    let bytes = std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE)).unwrap();
+    let core = DocumentCore::from_bytes(&bytes).unwrap();
+    assert_eq!(core.page_count(), 7, "독립 한컴 Print의 전체 쪽수");
+    let second = core.build_page_render_tree(1).unwrap();
+    let third = core.build_page_render_tree(2).unwrap();
+    let target = outer_table(&second.root, TABLE_PARA).expect("엇갈린 병합 표");
+    let following = outer_table(&second.root, 27).expect("분배 비율 안내 표");
+    let mut body = Vec::new();
+    paragraph_lines(&second.root, 28, &mut body);
+    let first_body = body.first().expect("후속 이용허락 본문");
+    assert!(target.bbox.y + target.bbox.height <= following.bbox.y);
+    assert!(following.bbox.y + following.bbox.height <= first_body.bbox.y);
+
+    let mut cells = Vec::new();
+    table_cells(&second.root, &mut cells);
+    for cell in cells {
+        assert!(cell.bbox.y >= target.bbox.y - 1e-6);
+        assert!(cell.bbox.y + cell.bbox.height <= target.bbox.y + target.bbox.height + 1e-6);
+    }
+    let mut before = Vec::new();
+    let mut after = Vec::new();
+    paragraph_lines(&second.root, 29, &mut before);
+    paragraph_lines(&third.root, 29, &mut after);
+    assert!(
+        !before.is_empty() && !after.is_empty(),
+        "본문 29는 두 쪽에 이어진다"
+    );
+    let normalize = |value: &str| -> String {
+        value
+            .chars()
+            .filter(|c| !c.is_whitespace() && !c.is_control() && *c != '\u{fffc}')
+            .collect()
+    };
+    let mut actual = String::new();
+    for line in before.iter().chain(&after) {
+        for child in &line.children {
+            if let RenderNodeType::TextRun(run) = &child.node_type {
+                actual.push_str(run.display_or_text());
+            }
+        }
+    }
+    assert_eq!(
+        normalize(&actual),
+        normalize(&core.document().sections[0].paragraphs[29].text),
+        "분할 본문의 순서·내용을 누락이나 중복 없이 보존한다"
+    );
+    let mut next = Vec::new();
+    paragraph_lines(&third.root, 30, &mut next);
+    assert!(after.last().unwrap().bbox.y < next.first().expect("후속 ④ 문단").bbox.y);
 }

@@ -1,3 +1,10 @@
+//! 검사 유형: 관계형·고정형(독립 PDF 쪽수·쪽번호); 절대 페이지 좌표 핀 없음.
+//! 주석 갱신: 2026-11-05T02:21:40+09:00; Git 직전 파일 변경: 9a709cdcd31300731cefbdbec4a978557f871183 2026-10-29T11:39:46+09:00.
+//! 선행 측정 source: 5c540c6c3e. 96 DPI·Print·PDFium exact physical DPI v2·2px raw 실루엣.
+//! 측정 실행 UTC: Native 2026-11-04T16:52:21.959709+00:00 ~ 2026-11-04T16:52:30.180317+00:00; WASM 2026-11-04T17:02:01.290222+00:00 ~ 2026-11-04T17:02:17.994605+00:00.
+//! section_start_page_number: 전4쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! 증거: mydocs/pr/assets/semanticist21-20261105/validation/candidate/{native,wasm}/section_start_page_number.tsv.
+//!
 //! 구역 정의의 시작 쪽 번호로 쪽 번호를 매긴다.
 //!
 //! 시험 문서는 한 구역 네 쪽이고, 구역 정의의 시작 쪽 번호가 10(`page_num` 10,

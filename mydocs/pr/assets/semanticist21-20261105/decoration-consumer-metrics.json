@@ -1,0 +1,17 @@
+[
+  {
+    "backend": "canvaskit",
+    "scope": "red top and blue bottom decoration ink only; actual consumer raster",
+    "raw_match": 99.83003
+  },
+  {
+    "backend": "native",
+    "scope": "red top and blue bottom decoration ink only; actual consumer raster",
+    "raw_match": 99.83003
+  },
+  {
+    "backend": "wasm-canvas2d",
+    "scope": "red top and blue bottom decoration ink only; actual consumer raster",
+    "raw_match": 99.83003
+  }
+]

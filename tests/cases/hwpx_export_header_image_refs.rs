@@ -1,3 +1,13 @@
+//! 검사 유형: 관계형(저장 전후 그림 참조·바이트 동일성).
+//! 주석 갱신: 2026-11-05T02:21:40+09:00; Git 직전 파일 변경: 9e31490ff41661d75bd5384785b69240c575ed75 2026-11-05T00:36:17+09:00.
+//! 선행 측정 source: 5c540c6c3e. 96 DPI·Print·PDFium exact physical DPI v2·2px raw 실루엣.
+//! 측정 실행 UTC: Native 2026-11-04T16:54:06.029676+00:00 ~ 2026-11-04T16:55:38.528244+00:00; WASM 2026-11-04T17:05:58.462881+00:00 ~ 2026-11-04T17:06:28.378039+00:00.
+//! header-image-refs: 전17쪽 Native 최저 99.62% / fresh WASM 최저 99.62%; 누락 없음.
+//! 증거: mydocs/pr/assets/semanticist21-20261105/validation/candidate/{native,wasm}/header-image-refs.tsv.
+//! image-bullet-newyear: 전3쪽 Native 최저 98.43% / fresh WASM 최저 98.43%; 누락 없음.
+//! 증거: mydocs/pr/assets/semanticist21-20261105/validation/candidate/{native,wasm}/image-bullet-newyear.tsv.
+//! 저장 재열기 전17쪽 N/W 최저 99.62/99.62%, NewYear 3쪽 98.43/98.43%; hwpspec은 비조판 바이트 참조 대조군이다.
+//!
 //! HWP를 HWPX로 내보내고 다시 읽어도 header.xml의 그림 참조가 같은 그림을 가리키는지 잠근다.
 //!
 //! 쪽·칸 배경의 그림 채우기와 그림 글머리표는 header.xml에서 `binaryItemIDRef`로 그림을 가리킨다.

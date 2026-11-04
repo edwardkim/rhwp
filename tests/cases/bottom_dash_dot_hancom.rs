@@ -1,5 +1,13 @@
+//! 검사 유형: 관계형·고정형(독립 Print 선분 길이·두께와 run 위상); 절대 페이지 좌표 핀 없음.
+//! 주석 갱신: 2026-11-05T02:21:40+09:00; Git 직전 파일 변경: ffc0550e8b9c6db8627f9a82cc7f0f3ff39a5415 2026-10-29T04:38:38+09:00.
+//! 선행 측정 source: 5c540c6c3e. 96 DPI·Print·PDFium exact physical DPI v2·2px raw 실루엣.
+//! 측정 실행 UTC: Native 2026-11-04T16:53:38.784740+00:00 ~ 2026-11-04T16:53:42.624197+00:00; WASM 2026-11-04T17:04:57.630804+00:00 ~ 2026-11-04T17:05:06.194009+00:00.
+//! decoration-top-probe-shape-3: 전1쪽 Native 최저 100.00% / fresh WASM 최저 100.00%; 누락 없음.
+//! 증거: mydocs/pr/assets/semanticist21-20261105/validation/candidate/{native,wasm}/decoration-top-probe-shape-3.tsv.
+//! 20개 꾸밈 대조군도 전1쪽씩 양쪽 90% 이상. CanvasKit은 실제 SkSurface의 꾸밈 소비 경로를 별도로 검사했다.
+//!
 //! 한컴 2024 Print의 9~48pt 아래 일점쇄선과 원본 글자 모양 구간의 위상을 보존한다.
-//! 같은 HWP의 Native·fresh WASM·CanvasKit 전쪽이 시각 검증을 통과한 뒤 추가했다.
+//! 같은 HWP의 Native·fresh WASM 전쪽과 CanvasKit의 실제 꾸밈 소비 경로를 대조한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::{paint::RenderProfile, DocumentCore};

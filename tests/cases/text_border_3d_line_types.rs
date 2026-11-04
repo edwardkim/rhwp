@@ -1,3 +1,10 @@
+//! 검사 유형: 관계형(글줄·문단 테두리의 유무와 정상 실선 보존).
+//! 주석 갱신: 2026-11-05T02:21:40+09:00; Git 직전 파일 변경: 5993e4d32e08cce8785e79364dd6ac66eab80dfb 2026-10-29T08:11:00+09:00.
+//! 선행 측정 source: 5c540c6c3e. 96 DPI·Print·PDFium exact physical DPI v2·2px raw 실루엣.
+//! 측정 실행 UTC: Native 2026-11-04T16:52:38.109597+00:00 ~ 2026-11-04T16:52:42.252230+00:00; WASM 2026-11-04T17:02:34.540392+00:00 ~ 2026-11-04T17:02:43.135372+00:00.
+//! border_line_types: 전1쪽 Native 최저 95.61% / fresh WASM 최저 96.79%; 누락 없음.
+//! 증거: mydocs/pr/assets/semanticist21-20261105/validation/candidate/{native,wasm}/border_line_types.tsv.
+//!
 //! 입체선(14~17)으로 지정한 글자·문단 테두리는 긋지 않는다.
 //!
 //! rhwp로 만든 시험 문서를 한컴 한글 12.30(Mac)에서 인쇄한 PDF
