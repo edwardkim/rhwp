@@ -330,3 +330,17 @@ base 누락 쪽 복원 4쪽이다. 미측정·후보 90% 미만·0.1%p 초과 �
 `b90db36de7`의 fmt·root Clippy·WASM 대상 Clippy는 모두 exit 0이다. workspace와
 Native Skia 검증 및 별도 제품 고정은 계속 진행한다. 제품 동등성을 확인하기 전까지는
 기존 12,557건 PASS 재사용의 최종 증명을 완료한 것으로 표시하지 않는다.
+
+
+### workspace 전체 target의 문서 lint 수정
+
+root·WASM Clippy와 workspace build는 exit 0으로 종료됐다. `--workspace --all-targets`
+Clippy는 `issue_8543_leading_tac_shape_line.rs`의 문서 목록 뒤 빈 문단 누락에 따른
+`doc_lazy_continuation` 7건으로 exit 101이었다. 한 곳에 빈 모듈 문서 주석을 넣어 목록과
+뒤 설명을 나눴으며, 검사 본문이 변경 전과 바이트 동일함을 확인했다. 기대값·허용치·제품 코드는
+변경하지 않는다. 전체 target lint는 보정 뒤 재실행한다.
+
+원격 `upstream/devel`에 `22947f6a90`이 확인됐다. PR #8285의 이동한 번호 자리표 code-unit과
+PR #8585/통합 PR #8601의 글상자 TAC 그림별 소유 줄·말미 공백 정렬이 추가됐다.
+기존 측정은 고정 제품의 과거 실행으로 보존하고, 새 base로 리베이스한 뒤 실제 소비 경로의
+적용·비적용과 기존 39 PR의 개선 유지 여부를 대조한다. 본인 열린 PR은 0건이다.
