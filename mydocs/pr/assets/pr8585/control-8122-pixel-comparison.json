@@ -1,0 +1,10 @@
+[
+  {
+    "backend": "native",
+    "same_pixels": true
+  },
+  {
+    "backend": "wasm",
+    "same_pixels": true
+  }
+]
