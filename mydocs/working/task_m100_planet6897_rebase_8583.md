@@ -257,3 +257,36 @@ PR 생성·push는 작업지시자 승인 대기다.
 수집 차이는 `logs/issue8598-inventory-after.json`, Native 집계는
 `logs/rebase-4b149b6cdf-native-80-audit.json`이다. 장시간 작업은 소유 worker·실제 child PID와
 종료 코드를 별도 기록하며, 외부 셸 관측 종료를 빌드·비교의 실제 종료로 오인하지 않는다.
+
+## 최적화 WASM·기존 TSV 보존과 최종 lint 보정
+
+후보 `7bb9e66fd0`의 최적화 WASM은 exit 0으로 완료했다. 고정 package·루트 pkg·Studio
+public의 JS/WASM 해시가 같다. WASM SHA-256은
+`0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1`이다.
+실제 브라우저의 271개 assertion·Worker 17개·12쪽 렌더/저장과 실패 복구를 통과했다.
+실제 PDF 가져오기 3종과 PR #8443 편집의 저장본도 제출 HWPX와 각각 바이트가 같다.
+
+Native의 PR #8389·#8397 보존 검증은 17개 입력·고유 1,770쪽을 완료했다. 두 PR의
+기준 TSV 2,153행을 대조해 원 PR 표시값 하락 0행이다. 과거 통합 기록과 환경이 다른
+5행은 직전 제품을 같은 환경에서 다시 측정한 값도 충족했으며 그 구분을 결과 TSV에 유지한다.
+필수 편람 HWPX Native 383쪽 gate도 passed, 기준 대비 하락 0쪽이다. 전쪽 최저 raw는
+130쪽 99.96463%다. 같은 글꼴·입력·PDF·제품의 383쪽 결과를 기존 보존 목록에도 연결해
+중복 렌더링하지 않았다. 이 결과만으로 아직 실행 중인 전체 fresh WASM 목록을 대신하지 않는다.
+
+영월의 새 회귀는 검증 head `e8b36a41aa`에서 최소 글꼴 5개만 노출하고 1/1 PASS,
+exit 0으로 완료했다. 기존 전체 검사 12,557 PASS의 본문은 그대로이며 이 새 검사를
+이전 실행에 포함했던 것으로 집계하지 않는다. fmt·manifest·unit-tier도 각각 exit 0이다.
+
+root Clippy는 `declared_first_frame.rs:182`의 `question_mark` 한 건으로 exit 101이었다.
+`stored_row_atomic_picture_alignment`의 그림 띠 검색은 `Option<usize>`를 반환한다.
+기존 `let Some(band) ... else { return None; }`를 같은 `position(...) ?`로 정리한다.
+검색 조건·반환 인덱스·None일 때 일반 배치로 돌아가는 계약·계산값·컷·원점은 바꾸지 않는다.
+원 보정 `d3b3f3d30d7`과 해당 함수의 실제 호출 경로·정렬 범위를 확인했다.
+그림 행·정확한 컷·첫 프레임의 기존 집중 검사와 lint를 다시 실행하고, 새 빌드의 제품과
+기존 고정 산출물의 동일성을 확인한 뒤 증적 재사용 범위를 확정한다. 아직 lint 통과나
+새 제품의 시각 결과를 선언하지 않는다.
+
+원시 근거는 ignored output의 `logs/rebase-4b149b6cdf-historical-native-audit.json`,
+`historical-native-display-comparison-4b149b6cdf.tsv`, `handbook-gate-4b149b6cdf/`,
+`logs/rebase-e8b36a41aa-new-source-supplier-minfont.log`,
+`logs/rebase-7bb9e66fd0-remaining-rust-native-clippy.log`에 있다.

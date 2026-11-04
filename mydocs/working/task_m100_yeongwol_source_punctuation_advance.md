@@ -81,8 +81,11 @@ package는 208HU `metricGlyphFallback`을 반환했다. 원본은 바꾸지 않�
 뒤 본문이 점유 끝에서 이어지는 관계를 함께 검사한다. 절대 px 위치를 고정하지 않고
 private/OTF 설치에 의존하지 않는다. 기존 기호 검사는 별개의 원본을 보호하므로 유지한다.
 
-전쪽 시각 측정과 공개 API의 수정 전/후 관측은 완료했다. 새 Rust 회귀의 최소 글꼴 실제
-실행은 공유 target의 base WASM 빌드가 끝난 뒤 집중 검사로 수행한다. 아직 Rust 실행의
-PASS를 선언하지 않으며, 검사 하나 추가를 이유로 앞서 통과한 전체 회귀를 반복하지 않는다.
+전쪽 시각 측정과 공개 API의 수정 전/후 관측을 완료했다. base WASM 빌드 종료 뒤
+검증 head `e8b36a41aa`의 새 Rust 회귀를 최소 글꼴 5개 환경에서 실행해 1/1 PASS,
+exit 0을 확인했다. 공용 `target/pr-review`·빌드 잡 8개를 사용했고 전체를 다시 실행하지 않았다.
+같은 계약의 공개 API 검사는 보정 전 exit 1 / 보정 후 exit 0이다. 이를 Rust의 보정 전
+실행으로 표시하지 않는다. 새 Rust 로그는
+`logs/rebase-e8b36a41aa-new-source-supplier-minfont.log`다.
 원시 API 관측은 ignored output의 `logs/yeongwol-supplier-before-after-probe.json`,
 `logs/yeongwol-supplier-current-7bb9-api.json`이다.

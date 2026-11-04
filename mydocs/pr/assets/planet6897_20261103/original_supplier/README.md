@@ -44,5 +44,7 @@ HBATANG.TTF의 독립 hmtx 178/1024em와 원본 글자 크기를 사용한다. �
 결함 검출 반례로 쓰지 않는다. 표시용 Noto 치환에서 보정 전 실제 WASM API는 1200HU
 `heuristicFullwidth`, 보정 후 실제 fresh WASM API는 208HU `metricGlyphFallback`다.
 
-새 Rust 검사의 최소 글꼴 실행은 아직 대기 중이다. 공개 API의 수정 전/후 관측을 Rust 검사의
-실제 FAIL/PASS 실행으로 표시하지 않는다. [공통 보정 분석](../../../../working/task_m100_yeongwol_source_punctuation_advance.md)에 실행 결과를 연결한다.
+검증 head `e8b36a41aa`에서 새 Rust 회귀를 저장소 허용 글꼴 5개만 노출한 최소 환경으로
+실행해 1/1 PASS, exit 0을 확인했다. 컴파일은 공용 `target/pr-review`·빌드 잡 8개다.
+공개 API의 보정 전 FAIL / 보정 후 PASS와 Rust의 보정 후 PASS를 구분한다. Rust의 보정 전
+실행으로 바꿔 쓰지 않는다. [공통 보정 분석](../../../../working/task_m100_yeongwol_source_punctuation_advance.md)에 실행 결과를 연결한다.

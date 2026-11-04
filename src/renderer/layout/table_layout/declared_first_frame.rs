@@ -179,11 +179,11 @@ impl LayoutEngine {
                     .take_while(|unit| unit.para_idx == next.para_idx)
                     .count();
             let owner_units = &units[end..owner_end];
-            let Some(band) = owner_units.iter().position(|unit| {
+            // 그림 띠를 소유하지 않는 유닛은 이 정렬 계약의 대상이 아니다.
+            // 미발견은 호출자의 일반 배치로 돌려보내는 기존 None 반환을 유지한다.
+            let band = owner_units.iter().position(|unit| {
                 unit.top_and_bottom_flow && unit.non_inline_control_range.is_some()
-            }) else {
-                return None;
-            };
+            })?;
             if band == 0
                 || !owner_units[..band].iter().all(|unit| {
                     !unit.reflowed_line_slot
