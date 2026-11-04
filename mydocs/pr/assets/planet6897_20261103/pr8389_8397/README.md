@@ -9,11 +9,14 @@ Native는 2026-11-04~05 실행에서 제품 코드 `4b149b6cdf`·고정 base
 문서별 전쪽 TSV는 [native](native/)에, 실제 입력·PDF·제품·TSV 해시는
 [Native 출처 명세](native-provenance.json)에 보존했다. `issue7905` 6쪽도 모두 98% 이상이다.
 
-fresh WASM의 [기존 대조](wasm-display-comparison.tsv)와 [문서별 TSV](wasm/)는
-리베이스 전 제품 코드 `dc87f4fa2e`의 실측이다. 당시 원 PR TSV 대비 하락·누락은 0이었으나,
-현재 `7bb9e66fd0` 최적화 제품의 재측정은 진행 중이므로 두 실행을 혼용하지 않는다.
-또한 `b90db36de7`의 lint 문법 수정 뒤 제품 동등성은 별도 확인 중이다.
-위 Native 값을 해당 최종 head에서 새로 렌더링한 값으로 표시하지 않는다.
+fresh WASM도 `7bb9e66fd0` 최적화 제품(실제 제품 코드 `4b149b6cdf`와 동일)의
+17문서·1,770쪽 재측정을 마쳤다. [원 PR 기준 2,153행 대조](wasm-display-comparison.tsv)는
+전 행 통과·하락 0행·누락 0쪽이다. [문서별 TSV](wasm/)와
+[WASM 출처 명세](wasm-provenance.json)에 실제 입력·PDF·package 해시를 보존했다.
+
+위 값은 고정 base `7fdd5441ff` 당시 제품의 실제 캡처다. 최신 base `22947f6a90` 반영 뒤에는
+추가된 번호 자리표·글상자 다중 그림 배치와 실제 영향 경로를 집중 검증한다.
+이미 완료한 위 전쪽 측정을 새 head에서 다시 출력한 값으로 표시하지 않는다.
 `sample10`에는 원 검증과 같은 외부 참조 그림 `oracle.gif`·`rdb02.gif`·`s1.jpg`를 공급했다.
 [입력·PDF SHA와 Git 포함 명세](inputs.tsv)에 실측 파일과 저장소 파일의 일치를 기록했다.
 

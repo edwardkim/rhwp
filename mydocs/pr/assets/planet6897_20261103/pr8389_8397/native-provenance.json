@@ -6,7 +6,7 @@
   "unique_pages": 1770,
   "reference_rows": 2153,
   "original_display_drops": 0,
-  "note": "Captured with the pinned pre-lint product; this does not claim a new render of b90db36de7. Final product equivalence is pending.",
+  "note": "Actual pinned pre-22947f6a90 captures. Not a new all-page rendering of the latest rebase. New base consumers are validated separately.",
   "captures": [
     {
       "document": "issue7905",
