@@ -63,20 +63,6 @@ pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
             style.font_families_source_ttf.fill(false);
         }
     }
-    // 기본 탭 간격은 구역 정의 값이다. 저장값은 탭 위치처럼 HWPUNIT 의 2배다(HWPX `tabStop`
-    // 8000 = `tabStopVal` 4000 = 한/글 40pt). 0(구역 정의 없이 만든 문서)이면 4000HU 를 둔다.
-    // 해소 스타일이 문서 하나에 한 벌이라 첫 구역 값을 모든 구역에 쓴다.
-    if let Some(spacing) = document
-        .sections
-        .first()
-        .and_then(|section| i32::try_from(section.section_def.default_tab_spacing).ok())
-        .filter(|&spacing| spacing > 0)
-    {
-        let width = hwpunit_to_px(spacing, dpi) / 2.0;
-        for style in &mut styles.para_styles {
-            style.default_tab_width = width;
-        }
-    }
     if missing_fonts::missing_char_table(document) {
         styles.page_number_char_style_id = Some(0);
         styles.page_number_font_is_hft = false;
@@ -474,6 +460,10 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
                     Ok(shape)
                 }))?
                 .into()
+        },
+        section_tab_width_bits: {
+            storage.bytes(2 * std::mem::size_of::<usize>() + std::mem::size_of::<u64>())?;
+            Default::default()
         },
         resolved_dpi: Some(dpi),
         isolated_jamo_font: None,
@@ -1697,7 +1687,7 @@ fn try_resolve_single_para_style<A: storage::Storage>(
     };
 
     // 기본 탭 간격: 한/글 기본값 40pt(4000 HWPUNIT). 문서의 구역 정의 값은
-    // `resolve_styles_for_document` 가 덮어쓴다.
+    // 구역 composition·측정·배치의 section_tab_scope가 함께 소비한다.
     let default_tab_width = hwpunit_to_px(4000, dpi);
 
     // 커스텀 탭 정지 해소: TabDef.tabs[] → px 변환

@@ -275,10 +275,17 @@ crate::storage::clone_fields!(ComposedParagraph, {lines, para_style_id, inline_c
 /// clear the session cache instead of reaching into the source model.
 #[derive(Default)]
 pub(crate) struct SingleLineOverflowCache {
+    section_tab_key: std::cell::Cell<u64>,
     entries: std::cell::RefCell<std::collections::HashMap<(usize, u32), bool>>,
 }
 
 impl SingleLineOverflowCache {
+    fn use_section_tab_key(&self, key: u64) {
+        if self.section_tab_key.replace(key) != key {
+            self.clear();
+        }
+    }
+
     #[inline]
     fn get(&self, para: &Paragraph, width_key: u32) -> Option<bool> {
         self.entries

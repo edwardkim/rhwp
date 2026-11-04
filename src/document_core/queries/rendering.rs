@@ -4675,6 +4675,12 @@ impl DocumentCore {
     /// 단일 문단만 재조판한다.
     pub(crate) fn recompose_paragraph(&mut self, section_idx: usize, para_idx: usize) {
         self.invalidate_page_tree_cache();
+        let _tabs = self.styles.section_tab_scope(
+            self.document.sections[section_idx]
+                .section_def
+                .default_tab_spacing,
+            self.dpi,
+        );
         let para = &self.document.sections[section_idx].paragraphs[para_idx];
         self.composed[section_idx][para_idx] =
             compose_paragraph_with_horizontal_shaping(para, &self.styles);
@@ -4685,6 +4691,12 @@ impl DocumentCore {
     /// composed 벡터에 새 문단 항목을 삽입한다 (문단 분할/붙여넣기 후).
     pub(crate) fn insert_composed_paragraph(&mut self, section_idx: usize, para_idx: usize) {
         self.invalidate_page_tree_cache();
+        let _tabs = self.styles.section_tab_scope(
+            self.document.sections[section_idx]
+                .section_def
+                .default_tab_spacing,
+            self.dpi,
+        );
         let para = &self.document.sections[section_idx].paragraphs[para_idx];
         let composed = compose_paragraph_with_horizontal_shaping(para, &self.styles);
         self.composed[section_idx].insert(para_idx, composed);
@@ -5535,6 +5547,9 @@ impl DocumentCore {
         let mut issue2424_typeset_elapsed = std::time::Duration::ZERO;
         let mut issue2424_postprocess_elapsed = std::time::Duration::ZERO;
         for (idx, section) in self.document.sections.iter().enumerate() {
+            let _tabs = self
+                .styles
+                .section_tab_scope(section.section_def.default_tab_spacing, self.dpi);
             if !self.dirty_sections[idx] {
                 // dirty가 아닌 구역에서도 carry를 업데이트
                 if let Some(pages) = self.pagination.get(idx) {
@@ -8339,6 +8354,15 @@ impl DocumentCore {
         // (이전 구역 + 현재 구역의 이전 페이지 모두 포함하여 구역 간 번호 연속 지원)
         self.layout_engine.reset_numbering_state();
         let sec_idx = page_content.section_index;
+        let _tabs = self.styles.section_tab_scope(
+            self.document
+                .sections
+                .get(sec_idx)
+                .map_or(0, |section| section.section_def.default_tab_spacing),
+            self.dpi,
+        );
+        self.layout_engine
+            .set_section_tab_key(self.styles.section_tab_key());
         self.layout_engine.set_section_column_spacing_hu(
             self.document
                 .sections

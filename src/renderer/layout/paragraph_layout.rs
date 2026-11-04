@@ -5710,7 +5710,8 @@ impl LayoutEngine {
         let spacing_after = para_style.map(|s| s.spacing_after).unwrap_or(0.0);
         // [Task #874 Case 3] `<...>` 단독 paragraph 의 paragraph-level extra spacing 제거.
         // typeset.rs::format_paragraph 측 동일 제거 — solo_zone_pad (zone 전환 패딩) 만 유지.
-        let tab_width = para_style.map(|s| s.default_tab_width).unwrap_or(0.0);
+        let tab_width =
+            styles.default_tab_width(para_style.map(|s| s.default_tab_width).unwrap_or(0.0));
         let tab_stops = para_style.map(|s| s.tab_stops.clone()).unwrap_or_default();
         let auto_tab_right = para_style.map(|s| s.auto_tab_right).unwrap_or(false);
 

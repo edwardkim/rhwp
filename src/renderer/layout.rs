@@ -3703,6 +3703,7 @@ pub struct LayoutEngine {
     /// cell width. This lives for the layout session and is cleared at the same
     /// source/style invalidation boundary as the other pointer-keyed caches.
     single_line_overflow_cache: super::composer::SingleLineOverflowCache,
+    section_tab_key: std::cell::Cell<u64>,
     /// Issue #2214 test-only: cache miss가 실제 table-wide scan으로 이어진 횟수.
     #[cfg(test)]
     table_nested_text_flag_scan_count: std::cell::Cell<usize>,
@@ -3877,6 +3878,7 @@ impl LayoutEngine {
             table_row_index_cache: Default::default(),
             cursor_probe_block_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
             single_line_overflow_cache: Default::default(),
+            section_tab_key: Default::default(),
             #[cfg(test)]
             table_nested_text_flag_scan_count: std::cell::Cell::new(0),
         }
@@ -4148,6 +4150,12 @@ impl LayoutEngine {
         overlay: std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,
     ) {
         *self.render_normalization.borrow_mut() = overlay;
+    }
+
+    pub(crate) fn set_section_tab_key(&self, key: u64) {
+        if self.section_tab_key.replace(key) != key {
+            self.clear_layout_caches();
+        }
     }
 
     pub(crate) fn set_section_column_spacing_hu(&self, spacing: i32) {
@@ -17246,7 +17254,8 @@ impl LayoutEngine {
             None => return x_base,
         };
         let para_style = styles.para_styles.get(comp.para_style_id as usize);
-        let tab_width = para_style.map(|s| s.default_tab_width).unwrap_or(48.0);
+        let tab_width =
+            styles.default_tab_width(para_style.map(|s| s.default_tab_width).unwrap_or(48.0));
         let tab_stops = para_style.map(|s| s.tab_stops.clone()).unwrap_or_default();
         let auto_tab_right = para_style.map(|s| s.auto_tab_right).unwrap_or(false);
         let available_width = col_area.width - margin_left;
