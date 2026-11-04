@@ -1152,7 +1152,7 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
   if (this.cursor.isInPictureObjectSelection()) {
     if (e.key === 'Escape') {
       e.preventDefault();
-      this.cursor.moveOutOfSelectedPicture();
+      this.cursor.returnToSelectedObjectOwner();
       this.pictureObjectRenderer?.clear();
       this.eventBus.emit('picture-object-selection-changed', false);
       this.updateCaret();
