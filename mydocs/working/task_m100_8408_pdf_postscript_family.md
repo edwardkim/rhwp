@@ -89,3 +89,16 @@ fresh WASM·최종 통합 제품 검증과 개별 리뷰 전체 갱신은 아직
 이는 새 family 보정이 실제 WASM API에서도 같은 저장본을 만드는 증거다.
 같은 저장본의 전쪽 fresh WASM 렌더링·독립 PDF 확대 판독은 아직 별도로 완료해야 한다.
 원시 결과는 ignored `logs/rebase-782ab3e2d0-wasm-producer-parity.log`에 있다.
+
+## 새 저장본의 fresh WASM 전쪽과 직접 판독
+
+같은 최적화 제품 `dd0ac546e3`으로 세 판본의 전46쪽을 측정했다. 2010판 16쪽 최저
+98.08%, 2020판 15쪽 99.18%, 무표기판 15쪽 98.44%로, 90% 미만·누락이 없다.
+각 독립 PDF와 전체 쪽수도 같다. 실제 원 주장인 무표기판 5·13쪽의 review·overlay를
+현재 PNG에서 생성해 직접 대조했다. raw는 각각 99.68359%·99.69047%다.
+
+공백 줄 뒤 본문과 문항·보기의 위치, 줄바꿈·상자 경계·내용 보존을 확인했다.
+13쪽 쪽번호 외형의 기존 한계는 Native 보고서와 동일하게 남기며 본문 배치와 구분한다.
+전쪽 TSV·같은 쪽의 대표 PNG와 제품 해시는
+`mydocs/pr/assets/issue_8381/integration_20261103/native-postscript-family.md`에 보완했다.
+새 base Native 제품의 재확인과 최종 공통 검증은 아직 진행 중이다.

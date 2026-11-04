@@ -2,10 +2,12 @@
 
 ## 최종 판정
 
-**머지 보류 — 새 저장본의 fresh WASM·최종 통합 검증 대기**
+**머지 보류 — 새 base Native 재확인·최종 통합 검증 대기**
 
 새 devel `96827b3acc`의 글꼴 공급 경로와 대조해 PDF family 보정을 추가했습니다.
 Native 전46쪽은 모두 90% 이상이며 [현재 저장본·TSV·대응 쪽 PNG](assets/issue_8381/integration_20261103/native-postscript-family.md)에 기록했습니다.
+새 제품 `dd0ac546e3`의 fresh WASM 전46쪽은 2010판 최저 98.08%, 2020판 99.18%,
+무표기판 98.44%로 모두 90% 이상입니다. 새 base Native 재확인과 최종 공통 검증을 계속합니다.
 현재 `editable-plain.hwpx`는 새 실제 API 저장본입니다. 아래의 이전 제품 수치와 WASM 증적은
 이전 저장본의 이력이며 새 저장본의 검증 완료로 사용하지 않습니다. 최종 검증 뒤 표를 갱신합니다.
 
