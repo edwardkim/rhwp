@@ -1,0 +1,1157 @@
+{
+  "recorded_at": "2026-11-04T18:44:06.548736+00:00",
+  "base": "7fdd5441ff1e77c083818e920a48089f294de35e",
+  "candidate": "4b149b6cdfc514b9858ed644be2cf8120c731cd4",
+  "cases": 32,
+  "pages": 72,
+  "raw_exact_pages": 72,
+  "raw_drop_over_0_1pp": 0,
+  "unavailable_pages": 0,
+  "records": [
+    {
+      "key": "header-hwp",
+      "input": "tests/fixtures/header_overflow/header-overflow.hwp",
+      "input_sha256": "7ed7d9fcf74012e0e7c5dbfdb5943d54920202e577ce2f39b49da03f3a1c8546",
+      "pdf": "pdf/semanticist21-20261103/header-overflow-hwp-2020.pdf",
+      "pdf_sha256": "268d216690d600b894ca5567b5a52884a50c62b8d77941144b6b39c54e65eeac",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "header-hwpx",
+      "input": "tests/fixtures/header_overflow/header-overflow.hwpx",
+      "input_sha256": "d8338073c5b23bfbf13d08e0b54a1498863dcf304e301c1cf4f8de7b2ba3d0ec",
+      "pdf": "pdf/semanticist21-20261103/header-overflow-hwpx-2020.pdf",
+      "pdf_sha256": "b6a36f203e98deb64259aab3d6e47bcae3b060cef6a5b7b6d5cc5f4d70507881",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "rotated-hwp",
+      "input": "tests/fixtures/hancom_rotated/rotated.hwp",
+      "input_sha256": "06968097d9f9e2b0e9d4159dd838e04591be204794b82d695a0ee1fe6e9ec2a3",
+      "pdf": "pdf/semanticist21-20261103/rotated-hwp-2024.pdf",
+      "pdf_sha256": "fbf047088a28068433a10c94de73677955c97a370d153a38c88388fd60627870",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "rotated-hwpx",
+      "input": "tests/fixtures/hancom_rotated/rotated.hwpx",
+      "input_sha256": "7e9762de41fa0ec1c38304e42fb31144e741b7b44d0bd2dc9dda40360e09df7b",
+      "pdf": "pdf/semanticist21-20261103/rotated-hwpx-2024.pdf",
+      "pdf_sha256": "d1d0fe97f6c2de683964b250dd172f935d54d99e064a2cf0e4d39d2dd4854730",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "grow-before",
+      "input": "tests/fixtures/hancom_table_grow/grow3-before.hwpx",
+      "input_sha256": "fd15d23befba672bfe13261aa5151c973d19e2ee504931a4a0fa4f3aabf823f5",
+      "pdf": "pdf/semanticist21-20261103/grow3-before-2024.pdf",
+      "pdf_sha256": "3235cb802488f800d6eb1861c3f6f485396530da7a96312f8e0fa12c9ba9a21d",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "grow-after",
+      "input": "tests/fixtures/hancom_table_grow/grow3-after.hwpx",
+      "input_sha256": "48611171d47efd415d88f932e76b3687c9b9b9e45271fea32c6e54100fff28b7",
+      "pdf": "pdf/semanticist21-20261103/grow3-after-2024.pdf",
+      "pdf_sha256": "ab7c44e9c045929bf6a40e5b90799b6f62a6b1afe209b80eba4c24e92693a4c1",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "nested-wide",
+      "input": "tests/fixtures/nested_wide_clip/nested-wide-hancom.hwpx",
+      "input_sha256": "566ca9c8fb99d916eb4190eb2c2b07c67c3fcde374bbca5f329a38cdf789ad04",
+      "pdf": "pdf/semanticist21-20261103/nested-wide-hancom-2024.pdf",
+      "pdf_sha256": "c4340435649f52b262fc0c27a1cb069015d9471ceac4948987c5c93f276a38fe",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "polygon-90",
+      "input": "tests/fixtures/semanticist21-20261103/polygon-90.hwpx",
+      "input_sha256": "fa78819178e579a453f9c02978926a1a5eb22625db9288d117c9386d5de38929",
+      "pdf": "pdf/semanticist21-20261103/polygon-90-2024.pdf",
+      "pdf_sha256": "c445320fbc67c2c64ee8c5ec6fe12624ec6446f3bdc802d97a0122425fa518e6",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "polygon-270",
+      "input": "tests/fixtures/semanticist21-20261103/polygon-270.hwpx",
+      "input_sha256": "07a367f2a2c5b00cc1945dd7355c701ad9a093a39ddd151e1d87340bebc9dde5",
+      "pdf": "pdf/semanticist21-20261103/polygon-270-2024.pdf",
+      "pdf_sha256": "f0b14bbfe7d21e8239919d95137fc8fd1469491fdc3d0731361550bfb3e51b7b",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "polygon-hflip",
+      "input": "tests/fixtures/semanticist21-20261103/polygon-hflip.hwpx",
+      "input_sha256": "501b1dc56f960d5a825728f3fc420fa72c371415f25ca96bace8cd7c67cb0764",
+      "pdf": "pdf/semanticist21-20261103/polygon-hflip-2024.pdf",
+      "pdf_sha256": "a37ebc3afa7a82e8e7d7d4b32863034603bf7e0ff7a3945b47b8986e19410c09",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "polygon-vflip",
+      "input": "tests/fixtures/semanticist21-20261103/polygon-vflip.hwpx",
+      "input_sha256": "4b41f0564711624a9e569cfb1ca124a89377888f8cd368dfdfa1db8bbeefeb2f",
+      "pdf": "pdf/semanticist21-20261103/polygon-vflip-2024.pdf",
+      "pdf_sha256": "15fabad3cc9e1540619c67529c81612d13373887265ad5d5241f0a87acd4cc42",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "polygon-resize",
+      "input": "tests/fixtures/semanticist21-20261103/polygon-resize.hwpx",
+      "input_sha256": "8b0387e44139652a27b968368241d7e43de266c6f63b3282deaf577fdaa40437",
+      "pdf": "pdf/semanticist21-20261103/polygon-resize-2024.pdf",
+      "pdf_sha256": "0f8cb78999f07a12028d16198cbdab4cd56626f837c3d7edfe073c59341d476f",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "spacing",
+      "input": "tests/fixtures/semanticist21-20261103/spacing.hwpx",
+      "input_sha256": "2720e9840e51f031b3dfec482f75a1f88c018276069e0d08882d1e672ac7f66a",
+      "pdf": "pdf/semanticist21-20261103/spacing-2024.pdf",
+      "pdf_sha256": "d7b369561bf52af231479c863f22f8b7e11e2f78b1e801f22b609226a1ff38d3",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "grow-nested",
+      "input": "tests/fixtures/semanticist21-20261103/grow-nested.hwpx",
+      "input_sha256": "eaa6a17f56f80b2869fdcbab993220dd198b7511576a340004a7c46e0f35522b",
+      "pdf": "pdf/semanticist21-20261103/grow-nested-2024.pdf",
+      "pdf_sha256": "c161d5ad2ddd895ef5278b0728be0d526585344b944ce6e3a20af0e5c5c23c17",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "grow-nested-unchanged",
+      "input": "tests/fixtures/semanticist21-20261103/grow-nested-unchanged.hwpx",
+      "input_sha256": "1a27ebb0a45da16558b37494507edfbbbb8ba8e62ad265fc3fb294355030c28f",
+      "pdf": "pdf/semanticist21-20261103/grow-nested-unchanged-2024.pdf",
+      "pdf_sha256": "9c00f9756639df2b036b68d744543fc658f6ec71b163790e942828cf7fd08107",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "spacing-before",
+      "input": "tests/fixtures/semanticist21-20261103/spacing-before.hwpx",
+      "input_sha256": "edbf65bdf2a50caa53f9ad285f6433b70f927a5ecf9142a240d269a26ad776b4",
+      "pdf": "pdf/semanticist21-20261103/spacing-before-2024.pdf",
+      "pdf_sha256": "58cfbda279c98c1a9552ca8f615f95139458391dc2831f2c025367d67b5da547",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "forms-before",
+      "input": "tests/fixtures/semanticist21-20261103/forms-before.hwpx",
+      "input_sha256": "0453f21c1af1d3ecee0520044917f56d126ac8372150b8bd8e6e7c353bd71415",
+      "pdf": "pdf/semanticist21-20261103/forms-before-2024.pdf",
+      "pdf_sha256": "6e7e615fed514ebc1f25dc9d01a8d267a6406a0b59f9d4c7f3c976d6e83baed9",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "forms-edited",
+      "input": "tests/fixtures/semanticist21-20261103/forms-edited.hwpx",
+      "input_sha256": "5c3a81a073df5693837b62ef41f3848879c7e57a72394333f6cc7fc7543fc711",
+      "pdf": "pdf/semanticist21-20261103/forms-edited-2024.pdf",
+      "pdf_sha256": "2058313bf01af3adbb3f81b775b71e7b2872d899f8275199b92421814e788833",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "no-lineseg-empty",
+      "input": "tests/fixtures/semanticist21-20261103/no-lineseg-empty.hwpx",
+      "input_sha256": "79df85cd755245717c3fec799a66a33e1fd8459a3fece2f63fe5e6377cb27ade",
+      "pdf": "pdf/semanticist21-20261103/no-lineseg-empty-2024.pdf",
+      "pdf_sha256": "cb2b889088f15edbced018c53a3948aa01a9f40ece75336be4f55f3567035aca",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "no-lineseg-text",
+      "input": "tests/fixtures/semanticist21-20261103/no-lineseg-text.hwpx",
+      "input_sha256": "63b9997bd8d35eeabe599ed21f17608ee061f80312fb6a2d12562d8587c169fa",
+      "pdf": "pdf/semanticist21-20261103/no-lineseg-text-2024.pdf",
+      "pdf_sha256": "f0d497d7d146743f074c372686dc8953e6fcf8a7cd8a89c9b2b69491f629f0ab",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "spacing-after",
+      "input": "tests/fixtures/semanticist21-20261103/spacing-after.hwpx",
+      "input_sha256": "ba8b3204b123a1fe8fbd87f3916a4698a4c046a7a55575d29cbeeb3103b5ea1f",
+      "pdf": "pdf/semanticist21-20261103/spacing-after-2024.pdf",
+      "pdf_sha256": "b45e56ab7a4049f426ee916f763228b85e9a85ba3ab706ba8e33f20a8b8a5ec3",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "no-lineseg-wrap",
+      "input": "tests/fixtures/semanticist21-20261103/no-lineseg-wrap.hwpx",
+      "input_sha256": "e17ce3b14c21242843db591bd6d728a4869e4480186ce8642b77aea52314ce32",
+      "pdf": "pdf/semanticist21-20261103/no-lineseg-wrap-2024.pdf",
+      "pdf_sha256": "54916301ba810ae25bb51d5141235269ce98f77bf5e6d8bac696aaebad1b5fb6",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "96.55502",
+          "current_raw": "96.55502",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "form",
+      "input": "samples/form-01.hwp",
+      "input_sha256": "75b6b8bb9121c6aeebf567aaa158ac7ec95caae597fd8a5ec7d4c84a25b927ac",
+      "pdf": "samples/hwpx/form-01-2024.pdf",
+      "pdf_sha256": "d1117657d92c789295d73af1bebd11b241eb352254b328d95c07f0efb87b18ee",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "99.58079",
+          "current_raw": "99.58079",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "form-original-hwpx",
+      "input": "samples/hwpx/form-01.hwpx",
+      "input_sha256": "3bbd207b88fe61e802706de3ccf98abdb8b450493164eec657c9ee88a5aba87e",
+      "pdf": "samples/hwpx/form-01-2024.pdf",
+      "pdf_sha256": "d1117657d92c789295d73af1bebd11b241eb352254b328d95c07f0efb87b18ee",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "99.58079",
+          "current_raw": "99.58079",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "form-slot-hwp",
+      "input": "tests/fixtures/pr8093_form_caret/form-slot.hwp",
+      "input_sha256": "1c7e40474066cfc7c4892ab8d3b2e6ae7dde7055335ae2330c772e1cdc159b6c",
+      "pdf": "pdf/pr8093_review/form-slot-hwp-2020.pdf",
+      "pdf_sha256": "fd36f88c6e8766ee36bf6dbfd36dea9defe33e6efa11aea18c0c53caa3f87817",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "form-slot-hwpx",
+      "input": "tests/fixtures/pr8093_form_caret/form-slot.hwpx",
+      "input_sha256": "4c9a67733132501dc47b303285dc4051ecbd9cb1223f964f77927e266900666d",
+      "pdf": "pdf/pr8093_review/form-slot-hwpx-2020.pdf",
+      "pdf_sha256": "d99caafedcd41355ebfaeee1fdf746bdb6da62fb096cd1bd03f270a1c10179e9",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "split-row",
+      "input": "samples/rowbreak-problem-pages.hwpx",
+      "input_sha256": "4ccc321e7eb146f28b768654502a128ba1ae408238fd1ed37d51e963732eb5b0",
+      "pdf": "pdf/rowbreak-problem-pages-hwpx-2020.pdf",
+      "pdf_sha256": "e3dc7bb21707f92e42e83808023bf155f62475fc4eb0e0498709d03986c5afe5",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "99.79106",
+          "current_raw": "99.79106",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 2,
+          "prior_raw": "99.5522",
+          "current_raw": "99.5522",
+          "delta_pp": "0.0000",
+          "verdict": "pass"
+        },
+        {
+          "page": 3,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        },
+        {
+          "page": 4,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        },
+        {
+          "page": 5,
+          "prior_raw": "93.05884",
+          "current_raw": "93.05884",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 6,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        },
+        {
+          "page": 7,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        },
+        {
+          "page": 8,
+          "prior_raw": "98.51484",
+          "current_raw": "98.51484",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 9,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        },
+        {
+          "page": 10,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        },
+        {
+          "page": 11,
+          "prior_raw": "95.84372",
+          "current_raw": "95.84372",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 12,
+          "prior_raw": "98.03543",
+          "current_raw": "98.03543",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 13,
+          "prior_raw": "98.81002",
+          "current_raw": "98.81002",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 14,
+          "prior_raw": "99.9994",
+          "current_raw": "99.9994",
+          "delta_pp": "0.0000",
+          "verdict": "pass"
+        },
+        {
+          "page": 15,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        },
+        {
+          "page": 16,
+          "prior_raw": "98.46737",
+          "current_raw": "98.46737",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 17,
+          "prior_raw": "99.04551",
+          "current_raw": "99.04551",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 18,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "notice-reopened",
+      "input": "mydocs/pr/assets/semanticist21-20261103/saved/notice-edited.hwpx",
+      "input_sha256": "567ec4aabba351a3936285479ff31d5e8d11570a033e770e1662347f7b7ce3c0",
+      "pdf": "mydocs/pr/assets/table-insertion-flow/notice-hancom-print.pdf",
+      "pdf_sha256": "de1e7469a33a1e3b6eb9f0829fffc52715a80e2351a3d4caaf6195b7ddfd26f2",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "96.66229",
+          "current_raw": "96.66229",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 2,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        },
+        {
+          "page": 3,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        },
+        {
+          "page": 4,
+          "prior_raw": "99.46849",
+          "current_raw": "99.46849",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 5,
+          "prior_raw": "99.94879",
+          "current_raw": "99.94879",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 6,
+          "prior_raw": "99.96806",
+          "current_raw": "99.96806",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 7,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        },
+        {
+          "page": 8,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        },
+        {
+          "page": 9,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        },
+        {
+          "page": 10,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        },
+        {
+          "page": 11,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        },
+        {
+          "page": 12,
+          "prior_raw": "97.79212",
+          "current_raw": "97.79212",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 13,
+          "prior_raw": "99.98339",
+          "current_raw": "99.98339",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 14,
+          "prior_raw": "99.98406",
+          "current_raw": "99.98406",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 15,
+          "prior_raw": "99.97776",
+          "current_raw": "99.97776",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 16,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        },
+        {
+          "page": 17,
+          "prior_raw": "99.98979",
+          "current_raw": "99.98979",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 18,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        },
+        {
+          "page": 19,
+          "prior_raw": "99.98983",
+          "current_raw": "99.98983",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 20,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        },
+        {
+          "page": 21,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        },
+        {
+          "page": 22,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        },
+        {
+          "page": 23,
+          "prior_raw": "99.96774",
+          "current_raw": "99.96774",
+          "delta_pp": "0.00000",
+          "verdict": "pass"
+        },
+        {
+          "page": 24,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "ownership-fresh-reference",
+      "input": "mydocs/pr/assets/table-insertion-flow/ownership/fresh-reference.hwpx",
+      "input_sha256": "c99160b2d024dedc467268ffc45f21a0dee5f0f377173d6ef2771bc7caf7b043",
+      "pdf": "mydocs/pr/assets/table-insertion-flow/ownership/fresh-reference-hancom-print.pdf",
+      "pdf_sha256": "5325efb934e2b2e4a121e7060a12e7abe03284db033dbe6a0f544cbffd0ead48",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "ownership-loaded-before",
+      "input": "mydocs/pr/assets/table-insertion-flow/ownership/loaded-before.hwpx",
+      "input_sha256": "ca03160be4ec78a600b29e53a8790a0c40337774233a534a2ddc23adc0d71939",
+      "pdf": "mydocs/pr/assets/table-insertion-flow/ownership/loaded-before-hancom-print.pdf",
+      "pdf_sha256": "1041e76f06fae6dcc0890ed08cc1d14f02933a3d8f51bf5b9e3612c8e70afa57",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "ownership-empty-host-after",
+      "input": "mydocs/pr/assets/table-insertion-flow/ownership/empty-host-after.hwpx",
+      "input_sha256": "f451e9919ed3f5f077b0434918762449092cfdecfab217fdbdb21c269fef18e6",
+      "pdf": "mydocs/pr/assets/table-insertion-flow/ownership/empty-host-after-hancom-print.pdf",
+      "pdf_sha256": "eb2007bba04fcce0f90f27015bfd0739616881c20ee03ab71b640369d1aea452",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    },
+    {
+      "key": "ownership-after-table-after",
+      "input": "mydocs/pr/assets/table-insertion-flow/ownership/after-table-after.hwpx",
+      "input_sha256": "236c0e7c375d793bf5ab6c94377ee038fb3a21a941515d7b49ad298e3f265c35",
+      "pdf": "mydocs/pr/assets/table-insertion-flow/ownership/after-table-after-hancom-print.pdf",
+      "pdf_sha256": "9ccd60e8eb3d447ff64891b2ac46ae0bf84f1e1de55d3e219c8a81725515f728",
+      "pages": [
+        {
+          "page": 1,
+          "prior_raw": "100.0",
+          "current_raw": "100.0",
+          "delta_pp": "0.0",
+          "verdict": "pass"
+        }
+      ],
+      "font_supply_sha256": "9c09dda107466c76c0fbd6e0351f458a9e96ef4c4610f984a8af180dcb7ed2ff",
+      "font_program_entries": 2070,
+      "same_font_order_and_programs": true,
+      "base_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "3e977f196bc6c7b5f5877221918a584ce959bd69c23594c603c411250a6ca32f"
+      },
+      "candidate_package": {
+        "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+        "rhwp_bg.wasm": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    }
+  ],
+  "note": "Existing completed captures compared without renderer rerun. Same input/PDF/program order/font programs/profiles/exporter and exact pinned packages verified. Published earlier TSV is retained as an earlier-reference comparison, not substituted for actual same-environment base evidence."
+}

@@ -37,7 +37,9 @@ TSV·PNG는 원래의 producer·base·package 해시를 유지한다. 최신 sou
 [리베이스 영향 경계의 실제 전쪽 TSV·대표 PNG](rebase_scope_22947f6a90/README.md)를 별도로 보존한다.
 
 Native/fresh WASM 대표 증적의 중복 제외 93개 입력·쪽 조합은 실제 원본·PDF·backend·source PNG 해시와
-대응함을 확인했다. 파일 대응 감사와 직접 판독·최종 승인 판정은 구분한다. 같은 환경 base 대조는 진행 중이다.
+대응함을 확인했다. 파일 대응 감사와 직접 판독·최종 승인 판정은 구분한다. [상속 기능 WASM 32입력·72쪽 대조](inherited-8548-wasm-preservation.json)는 같은 원본·PDF·글꼴
+프로그램·공급 순서와 출력 조건에서 정밀 raw가 72쪽 모두 같다. 주 검증 대상 80입력의
+WASM base 대조는 진행 중이다.
 
 설치 글꼴이 없는 환경의 회귀와 전체 시스템 글꼴을 공급한 독립 Print 시각 측정은 별도 계약이다.
 원본·독립 PDF·실제 글꼴 공급/대체·DPI·프로필·조판 세대와 Native/fresh WASM 해시는 최종

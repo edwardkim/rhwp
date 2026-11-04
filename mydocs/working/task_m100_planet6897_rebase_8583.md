@@ -521,3 +521,24 @@ WASM 대표 증적도 중복 제외 93개 입력·쪽의 파일 대응 감사에
 최신 제품 검사와 같은 환경의 원 devel·후보 대조는 구분한다. 새 기준 `22947f6a90`의 실제
 제품 빌드와 PR #8585·#8122의 대조, 기존 base의 WASM 80입력 대조·최종 개별 리뷰와
 회귀 주석 갱신·PR 템플릿 완성은 남아 있다. 이 항목을 기존 후보 점수로 대신하지 않는다.
+
+
+## 상속 기능 WASM 32입력의 같은 환경 대조 완료 — 2026-11-05
+
+기존 dispatcher가 로드한 인수는 과거 게시 TSV를 reference로 삼아 `split-row` 세 쪽과
+`notice-reopened` 한 쪽을 0.1%p 초과 하락으로 표시하고 exit 1로 끝났다. 그 비교 원문은
+ignored 실패 기록으로 보존했다. 게시 당시 글꼴 기록은 `/home/edward/mygithub/ttfs` 및
+rowbreak의 명시 HMKMM.TTF 공급이며 현재의 전체 시스템 프로그램 공급과 구분한다.
+이를 현재 고정 base 대비 제품 회귀라고 단정하거나 기존 원 TSV가 통과했다고 바꾸지 않는다.
+
+완료한 base `7fdd5441ff`와 후보 `4b149b6cdf`의 실제 캡처를 reference로 다시 집계했다.
+renderer를 다시 실행하지 않았다. 32입력·72쪽의 같은 환경 비교는 실제 exit 0이며
+정밀 raw는 72쪽 모두 동일하다. 원본·PDF SHA, 전체 쪽수, 인쇄 profile·조판 세대·PDF 래스터,
+PNG exporter, 글꼴 프로그램과 공급 순서, 고정한 Native/WASM product를 각각 감사했다.
+글꼴 공급 metadata는 두 실행에서 2,070개 항목과 순서가 동일하며 실행별 fingerprint를 보존한다.
+0.1%p 초과 하락·측정 누락은 0건이다. 원 공개 TSV와 다른 환경의 raw 값을 수치 통과로
+바꾸는 대신 현재 base의 실제 출력을 근거로 삼았다.
+
+정식 기록은 `mydocs/pr/assets/planet6897_20261103/inherited-8548-wasm-preservation.json`이다.
+이는 새 base의 #8548 기능 보존 대조이며 새로 접수하거나 체리픽한 PR은 아니다.
+새 기준 `22947f6a90`의 실제 제품/2문서 대조와 주 검증 대상 80입력 WASM base 비교는 별도다.
