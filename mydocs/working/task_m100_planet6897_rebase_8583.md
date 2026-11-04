@@ -309,3 +309,24 @@ compact render-tree 동일성은 직렬화하지 않는 clip·page_fragment까�
 남은 workspace·WASM lint·Native Skia 검증을 공용 target에서 순차 실행한다.
 새 제품의 해시와 실제 영향 경로를 확인하기 전에는 위 이전 제품의 캡처를 최종 head의 새 실측으로
 표시하지 않는다. fresh WASM 전체 비교·최종 개별 리뷰 갱신과 PR 생성은 아직 완료가 아니다.
+
+
+### Native base 80건 최종 대조와 경계 직접 판독
+
+base 80건 출력이 끝난 뒤 기존 PNG가 남아 있는 쪽수 불일치 문서는 같은 실루엣 함수로
+공통 쪽을 비교했다. 원래의 base/PDF 쪽수 차이는 manifest에 유지했으며 정상 쪽수로 바꾸지 않았다.
+후보 406쪽의 최종 분류는 수치 대조 통과 396쪽, base 파싱 거부 뒤 후보 출력 6쪽,
+base 누락 쪽 복원 4쪽이다. 미측정·후보 90% 미만·0.1%p 초과 하락은 각각 0쪽이다.
+10쪽의 복원 사례를 base와의 수치 일치로 집계하지 않는다. 정식 TSV와 제품 해시는
+`mydocs/pr/assets/planet6897_20261103/base-native-{comparison.tsv,provenance.json}`에 고정했다.
+
+새 base `split-row`의 RGB 차이 7쪽(3·4·5·7·8·11·15쪽)은 기존 캡처로 review·overlay를
+합성해 후보와 독립 PDF를 직접 판독했다. 5쪽은 base의 review·overlay도 함께 대조했다.
+표의 행·열과 이어받기 내용은 유지되며, 5쪽 후속 본문의 높이와 11쪽 일부 글자 간격의 PDF 차이는
+그대로 보인다. 이를 전 영역이 독립 PDF와 완전히 같다고 표현하지 않는다. 후보/base raw는
+같고 실제 RGB 변화도 기록된 경계의 명암 차이이며, compact tree의 일치를 미직렬화 플래그의
+동일성으로 확대하지 않는다. 판독 이미지는 ignored output의 `newbase-split-boundary-panels/`다.
+
+`b90db36de7`의 fmt·root Clippy·WASM 대상 Clippy는 모두 exit 0이다. workspace와
+Native Skia 검증 및 별도 제품 고정은 계속 진행한다. 제품 동등성을 확인하기 전까지는
+기존 12,557건 PASS 재사용의 최종 증명을 완료한 것으로 표시하지 않는다.
