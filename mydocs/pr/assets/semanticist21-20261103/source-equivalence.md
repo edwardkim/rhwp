@@ -20,3 +20,7 @@
 | `tests/cases/hancom_table_grow_saves_table_height.rs` | `7da3481bd9a833a65249b1fa94c71fab4bce1bbd7b97d4fc3cb1ac24861dbb72` | `530adb3cbdb580893e2f276a591634e4783f36e01e4d5ba0376444105423d7dc` | `684f9becc046af488b44aad0db6c31766f93a04f1fc3cd03b2816e282ddba667` |
 | `tests/cases/composer_without_stored_lines.rs` | `85c850f3baac513a43dc7f228af5be60e0c7c16f3a7b3a35721d9711a7935e2d` | `9f3fd4b9f2574b0a696b3ee4f45e53ea4bd6f3767c845268bdabe0495380996a` | `6b85e64bb35096d1cc688d67fae15ebe477f271bf7f9f40063adea66f0e52556` |
 | `tests/cases/paragraph_spacing_moves_stored_lines.rs` | `d662348714a686edc067ffbb6ad2881316e4cc3ec26cc79ea1fa888fcd720a9f` | `a5aa2586d5c988a312a8b763739d9fdddc657732a6d64dc33b26e990faf8ea00` | `9ee2b8378febbf5088ff71594513cb53bff5eeeee21a1e7af44f7bf7b3b2f188` |
+
+## CI 시간 예산 보정의 제품 source 보존
+
+`542474f36c` 이후의 [CI 시간 예산 보정](ci-budget-adjustment.md)은 workflow 한도·그 계약 검사·문서만 변경한다. 제품 `src/`, 루트 `tests/`, Cargo manifest/lock과 배포 package는 그대로다. H4의 실제 검증과 새 workflow head의 GitHub 검증을 구분한다.

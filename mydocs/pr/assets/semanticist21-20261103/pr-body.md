@@ -1,5 +1,7 @@
 표 삽입 뒤 본문 흐름, 양식의 논리 편집과 줄 소유, 개체 변환·문단 간격·저장 metadata의 경계 오류를 메인터너 보정으로 해결합니다. semanticist21의 원 PR 10개 head와 기여 commit을 누적 merge history에 보존합니다.
 
+대형 저장소의 checkout을 포함한 전체 CI 시간이 기존 20·30분 상한에 걸리는 문제도 보정합니다. Lint·Proptest는 45분, Frontend package·release-test archive builder는 60분으로 조정하며, 검사 범위와 판정 기준을 유지합니다. [실측과 운영 계약 검증](ci-budget-adjustment.md)에 근거를 기록했습니다.
+
 | 원 PR | 최종 동작 |
 | --- | --- |
 | #8211 | 표 삽입·본문 흐름 |

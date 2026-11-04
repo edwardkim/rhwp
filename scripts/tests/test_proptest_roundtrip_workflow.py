@@ -80,7 +80,7 @@ class ProptestRoundtripWorkflowTests(unittest.TestCase):
         self.assertNotIn("fuzz run", self.wf)
         self.assertNotIn("max_total_time", self.wf)
         self.assertNotIn("nightly", self.wf)
-        self.assertIn("timeout-minutes: 20", self.wf)
+        self.assertIn("timeout-minutes: 45", self.wf)
 
     def test_uses_debug_cargo_test_not_release_archive(self) -> None:
         self.assertIn("run-prop-roundtrip.mjs --cargo-test", self.wf)
