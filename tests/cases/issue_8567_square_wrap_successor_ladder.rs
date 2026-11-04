@@ -1,6 +1,10 @@
 //! 검사 유형: 관계형·고정형.
-//! 주석 갱신: 2026-11-04T11:45:00+09:00 (새 파일, 직전 파일 커밋 없음).
-//! MEASURE_PLACEHOLDER
+//! 주석 갱신: 2026-11-04T14:40:00+09:00 (새 파일, 직전 파일 커밋 없음).
+//! 2026-11-04 측정 raw(`silhouette_raw_match_percent`, 96dpi, visual_sweep --silhouette-only, compat 2022,
+//! base 1924d371d6 + 이 수정, Native skia / fresh WASM 14:30+09:00):
+//! - 20572683 부산 조례안 재의요구안 별지(HWP, 한컴 1쪽 = rhwp 1쪽): Native 99.99%, fresh WASM 99.29%;
+//!   전1쪽 최저 Native 99.99% / WASM 99.29%.
+//! - 수정 전(base 1924d371d6) 1쪽 Native 54.06% / WASM 54.54%.
 //!
 //! 근거: mydocs/pr/assets/issue_8567/{head,base}/{native,wasm}/i447_silhouette.tsv.
 //!
