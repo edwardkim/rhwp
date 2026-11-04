@@ -30,9 +30,10 @@
 
 - 1쪽 「2.」 줄 위끝: base 315.3 px → head 332.6 px(한컴 Print ≈ 332.4 px). 쪽수는 한컴과 같다.
 - rebase 전(base 7d06d5c706) head Native 1쪽은 99.51% 였다. rebase 후 95.98% 로 내려간 차이는 이 수정과 무관한
-  stream/devel #8565(Native 웹폰트 자동 공급) 이후 Native 가 「Native 글꼴 공급 한도 초과」로 한자 슬롯(한양신명조)
-  fallback 을 잃어 「李乙女」·「金丙女」 한자가 그려지지 않는 차이다. base 1924d371d6 에서도 같은 한자가 빠지며
-  (`RHWP_FONT_PATH` 유무와 무관), 줄·표 괘선 위치는 rebase 전 head 와 같다. fresh WASM 은 99.44% 그대로다.
+  stream/devel #8565(Native 웹폰트 자동 공급) 이후 한양신명조 슬롯이 한글 전용 subset 웹폰트(NotoSansKR-Regular,
+  CJK 통합 한자 0자)에 매핑되고 글리프 대체(`glyphFallbacks`)가 비어 「李乙女」·「金丙女」 한자가 대체 없이
+  그려지지 않는 차이다(#8590). base 1924d371d6 에서도 같은 한자가 빠지며(`RHWP_FONT_PATH` 유무와 무관),
+  줄·표 괘선 위치는 rebase 전 head 와 같다. fresh WASM 은 99.44% 그대로다.
 
 ## 파일
 

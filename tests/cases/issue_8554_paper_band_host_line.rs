@@ -1,10 +1,11 @@
 //! 검사 유형: 관계형·고정형.
-//! 주석 갱신: 2026-11-04T16:50:00+09:00 (새 파일, 직전 파일 커밋 없음).
+//! 주석 갱신: 2026-11-04T19:41:21+09:00 (새 파일, 직전 파일 커밋 없음).
 //! 2026-11-04 측정 raw(`silhouette_raw_match_percent`, 96dpi, visual_sweep --silhouette-only, compat 2022,
 //! base 1924d371d6 + 이 수정, Native skia / fresh WASM 16:40+09:00):
 //! - 2913671 별지 1(HWP, 한컴 2쪽 = rhwp 2쪽): Native 95.98/100.00%, fresh WASM 99.44/100.00%;
 //!   전2쪽 최저 Native 95.98%(1쪽) / WASM 99.44%(1쪽).
-//!   Native 1쪽 잔여는 base 에도 있는 한자 글꼴 공급 한도 차이(rebase 전 base 7d06d5c706 에서는 99.51%).
+//!   Native 1쪽 잔여는 base 에도 있는 #8565 한글 subset 웹폰트의 한자 누락(#8590; rebase 전 base
+//!   7d06d5c706 에서는 99.51%).
 //! - 수정 전(base 1924d371d6) 1쪽 Native 47.45% / WASM 47.26%(2쪽은 같은 값).
 //!
 //! 근거: mydocs/pr/assets/issue_8554/{head,base}/{native,wasm}/i39_silhouette.tsv.
