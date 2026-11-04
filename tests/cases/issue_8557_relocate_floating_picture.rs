@@ -1,10 +1,16 @@
-//! 관계형 — 띄운 그림을 다른 문단·칸 문단으로 옮겨 붙이면 소속과 오프셋이 바뀌고 저장 후에도 남는다 (#8557).
-//! 주석 갱신: 2026-11-04T11:45:00+09:00 (새 파일, 칸 기준 검사 추가)
-//! 시각 측정은 해당 없음: 합성 문서에서 그림 컨트롤의 소속·개수·오프셋과 그림 데이터 보존만 검사한다.
+//! 관계형·고정형 — 띄운 그림을 다른 문단·칸 문단으로 옮겨 붙이면 소속과 오프셋이 바뀌고 저장 후에도 남으며,
+//! 다른 쪽 칸으로 옮긴 그림은 그 칸 안에 그려진다 (#8557). 고정형은 독립 한컴 인쇄의 전체 쪽수(4)뿐이다.
+//! 주석 갱신: 2026-11-05T07:30:00+09:00 (새 파일, 다른 쪽 칸으로 옮긴 그림의 쪽·칸 소속 검사 추가)
+//! 앞 세 검사는 합성 문서의 소속·개수·오프셋과 그림 데이터 보존만 본다(시각 측정 해당 없음).
+//! 쪽·칸 소속 검사: 2026-11-05 측정, `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`
+//! raw 실루엣(2px 이웃), 입력 `samples/issue8557/21868765_relocated_picture.hwp`(같은 편집, 192px 그림),
+//! 기준 `pdf/issue8557/21868765_relocated_picture-hwp-mac-12.30.pdf`(한글 2022 맥 12.30.0 인쇄, 4쪽).
+//! Native 98.57·99.69·98.83·99.40, fresh WASM 98.57·99.69·98.83·98.87 (각 4쪽, 최저 98.57·98.57).
+//! 증거: `mydocs/pr/assets/issue_8557_relocate_dragged_picture/`.
 //! 기대값 근거: 한컴은 개체를 다른 쪽으로 끌어 놓으면 앵커(조판 부호)를 놓은 자리의 문단으로 옮긴다.
 //! 옮기는 동안 그림은 하나뿐이어야 하고(복제·소실 없음), 그림 데이터(BinData)는 그대로 쓰인다.
 //! 칸 문단으로 옮긴 그림은 한컴 칸 그림 저장 형태(세로 문단·가로 단 기준, 본문 영역 제한)를 따른다.
-//! 한글 2022(맥 12.31)에서 종이 기준·제한 없음 그대로 칸에 옮긴 그림을 인쇄하면 칸이 아니라 1쪽 맨 위에 그려졌다.
+//! 한글 2022(맥 12.30)에서 종이 기준·제한 없음 그대로 칸에 옮긴 그림을 인쇄하면 칸이 아니라 1쪽 맨 위에 그려졌다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -256,5 +262,101 @@ fn moving_a_picture_out_of_its_paragraph_renumbers_the_destination_table_path() 
             .collect::<Vec<_>>(),
         vec![(true, 300, 400)],
         "그림은 칸 문단 안에 하나"
+    );
+}
+
+/// 쪽마다 그림 노드의 (bbox, 그림을 품은 칸의 bbox, 그 칸의 글).
+fn page_images(doc: &rhwp::wasm_api::HwpDocument) -> Vec<Vec<([f64; 4], [f64; 4], String)>> {
+    fn bbox(node: &serde_json::Value) -> [f64; 4] {
+        let b = &node["bbox"];
+        let v = |k: &str| b[k].as_f64().unwrap();
+        [v("x"), v("y"), v("x") + v("w"), v("y") + v("h")]
+    }
+    fn texts(node: &serde_json::Value, out: &mut String) {
+        if node["type"] == "TextRun" {
+            out.push_str(node["text"].as_str().unwrap_or_default());
+        }
+        for child in node["children"].as_array().into_iter().flatten() {
+            texts(child, out);
+        }
+    }
+    fn walk<'a>(
+        node: &'a serde_json::Value,
+        cell: Option<&'a serde_json::Value>,
+        out: &mut Vec<([f64; 4], [f64; 4], String)>,
+    ) {
+        let cell = if node["type"] == "Cell" {
+            Some(node)
+        } else {
+            cell
+        };
+        if node["type"] == "Image" {
+            let cell = cell.expect("그림이 칸 밖에 그려졌다");
+            let mut text = String::new();
+            texts(cell, &mut text);
+            out.push((bbox(node), bbox(cell), text));
+        }
+        for child in node["children"].as_array().into_iter().flatten() {
+            walk(child, cell, out);
+        }
+    }
+    (0..doc.page_count())
+        .map(|page| {
+            let tree: serde_json::Value =
+                serde_json::from_str(&doc.get_page_render_tree(page).unwrap()).unwrap();
+            let mut out = Vec::new();
+            walk(&tree, None, &mut out);
+            out
+        })
+        .collect()
+}
+
+#[test]
+fn picture_moved_to_a_later_page_cell_is_drawn_inside_that_cell() {
+    // 1쪽 제목 문단에 띄운 그림을 3쪽 표 80행 내용 칸(「9. 통합건강증진사업에 관한 업무」)으로 옮긴다.
+    // 한글 2022(맥 12.31) 인쇄: 전체 4쪽, 그림은 3쪽 그 칸 안에 한 번만 그려진다.
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/21868765_별표2_보건소_분장사무.hwp");
+    let mut core = DocumentCore::from_bytes(&std::fs::read(&path).unwrap()).expect("표본");
+    core.insert_picture_native(
+        0,
+        2,
+        0,
+        &[],
+        &PNG,
+        2800,
+        2800,
+        1,
+        1,
+        "png",
+        "그림",
+        Some(30000),
+        Some(0),
+    )
+    .expect("본문 그림");
+    let pic = control_index(&core, 2, |c| matches!(c, Control::Picture(_)));
+    core.relocate_floating_picture_native(0, 2, &[], pic, 0, 4, 0, &[(0, 242, 0)], 22000, 0)
+        .expect("3쪽 칸으로 옮기기");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&core.export_hwp_native().unwrap())
+        .expect("저장본");
+    let pages = page_images(&doc);
+    assert_eq!(pages.len(), 4, "한컴 인쇄와 같은 4쪽");
+    let drawn: Vec<usize> = pages
+        .iter()
+        .enumerate()
+        .flat_map(|(page, images)| std::iter::repeat_n(page, images.len()))
+        .collect();
+    assert_eq!(drawn, vec![2], "그림은 3쪽에 한 번만");
+    let (image, cell, text) = &pages[2][0];
+    assert!(
+        text.contains("통합건강증진사업에"),
+        "그림을 품은 칸은 옮겨 놓은 9번 행 칸: {text}"
+    );
+    assert!(
+        image[0] >= cell[0] - 0.5
+            && image[1] >= cell[1] - 0.5
+            && image[2] <= cell[2] + 0.5
+            && image[3] <= cell[3] + 0.5,
+        "그림 {image:?} 이 칸 {cell:?} 안에 있다"
     );
 }
