@@ -33,3 +33,28 @@ PR #8389·#8397의 Native 기준 2,153행을 새 base 통합 제품 `40778b67d6`
 수정 후 기존 동일 환경에서 Native/fresh WASM과 독립 Print를 다시 비교하고,
 두 원 PR의 전체 기준 표시값 무하락 및 관련 원본·정상 대조군을 확인한다.
 아직 수정 후 통과를 선언하지 않으며 회귀 기대값이나 판정 기준은 수정하지 않았다.
+
+## 원본 전진과 실제 paint의 별도 대조
+
+제품 `2071603998`에서 자동 공급 환경의 1쪽은 99.97%로 회복했지만 3쪽은 99.92%였다.
+3쪽의 text run 456개 기하는 이전 제품과 모두 같다. 저장 원점·폭을 다시 바꾸지 않고
+실제 Native observer로 표시 프로그램을 대조했다.
+
+명시적 자동 공급 환경이 없던 Native 선택은 전4쪽에서 `바탕 → Haansoft Batang`,
+`새굴림 → Malgun Gothic`이다. 새 자동 환경은 원본 face가 없다는 이유로 Noto ExtraLight를
+공급해 그리기 프로그램을 바꾼다. 작업지시자가 앞서 승인한 기존 대체 설정 재사용 범위에서
+이 관측한 두 선택을 명시한다. 시스템 글꼴 전체는 그대로 제공하며 프로그램을 배포하지 않는다.
+최종 재현 입력은 `mydocs/pr/assets/planet6897_20261103/yeongwol-font-environment.json`이다.
+이는 측정 로그·중간 보고서가 아니라 Native/fresh WASM에 동일하게 전달할 글꼴 환경 입력이다.
+
+같은 원본·독립 PDF·제품의 Native 전4쪽은 99.98% / 99.99% / 99.97% / 100.00%다.
+PR #8389·#8397의 원 기준 99.60% / 99.99% / 99.97% / 100.00%를 모두 충족한다.
+원 기준 TSV의 값이나 허용치는 바꾸지 않았다. 2쪽의 원 기준은 99.99%이며, 다른 환경에서
+관측했던 100%와 원 PR의 판정값을 혼동하지 않는다. fresh WASM과 전체 문서 목록의 최종
+재검증은 아직 이 집중 결과로 대신하지 않는다.
+
+실제 observer 결과·명령·전쪽 TSV는 ignored output의
+`logs/yeongwol-p3-without-auto-environment-font-trace.json`,
+`logs/yeongwol-p3-current-auto-environment-font-trace.json`,
+`logs/rebase-2071603998-yeongwol-prior-native-programs-initial.log`,
+`rebase-2071603998-font-environment-check/yeongwol-prior-native-programs/silhouette.tsv`에 있다.
