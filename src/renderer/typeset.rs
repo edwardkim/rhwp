@@ -6260,9 +6260,9 @@ impl TypesetEngine {
                 .filter(|placement| {
                     placement.advance_end == Some(occupied_end)
                         || (placement.stored_horizontal_pen.is_some()
-                            && placement.advance_end.is_some_and(|end| {
-                                (end - occupied_end).abs() <= self.dpi / 7200.0
-                            }))
+                            && placement
+                                .advance_end
+                                .is_some_and(|end| (end - occupied_end).abs() <= self.dpi / 7200.0))
                 })
             {
                 placement.advance_end = Some(st.current_height);

@@ -160,3 +160,44 @@ wasm-pack 0.15.1, wasm-bindgen 0.2.127, wasm-opt version 130을 사용했다.
 
 Native 제품은 같은 코드에서 최소 글꼴 5개만 노출해 별도로 빌드한다. 위 결과만으로
 최종 전체 Rust·Skia·lint·전쪽 시각 보존 검증이나 39개 리뷰의 최종 완료를 선언하지 않는다.
+
+## PR #8548·#8592 반영 리베이스
+
+2026-11-04, 작업지시자가 devel 확인과 리베이스 우선 진행을 요청했다.
+fetch 결과 devel이 `782ab3e2d06380d7d36660f07d76ef4c8c7c0c0a`에서
+`7fdd5441ff1e77c083818e920a48089f294de35e`로 변경됐다. 새 base는 semanticist21
+10건 통합의 조판·선택·저장·보안 보정과 후속 기록을 포함한다. 외부 PR 39건의
+검토 범위에 새 PR을 추가로 체리픽한 것은 아니다.
+
+직전 head `9383c4240d0603e52ac0b03fbb064b7730ec43ba`를 새 base 위로 리베이스했다.
+직후 head는 `1fbe9e58ded48fa9f50dc96172106dff6e7bf96e`다. 기존 133개 커밋은
+모두 유지됐고, `range-diff`의 129개는 같은 패치다. 차이 4개는 아래 충돌 보정 3개와
+같은 함수의 문맥이 바뀐 후속 커밋 `570a5bd0cf`다. 후자는 diff 문맥만 달라졌다.
+
+- `typeset.rs`: 새 base의 저장 tail 소유·정확한 끝 일치와 PR #8422의 저장 pen 소유
+  1HU 환산 오차 비교를 함께 유지했다. 새 base의 뒤 저장 프레임 발행도 보존했다.
+- `composer/line_breaking.rs`: 새 base의 `skipped_unlined`와 PR #8443의 `in_start_run`을
+  각각 유지했다. 줄 없는 문단 처리와 편집 뒤 자리차지 개체의 점유 보존을 함께 적용한다.
+- `rhwp-contracts/provenance.rs`: 새 base `63532b1ee5`의 컨테이너 단위 출처 선언이
+  기존 보정의 경로를 이미 포함했다. `nativeFontSupply`·`fontEnvironment`와 PNG의
+  관측·선언 환경 표지를 정본으로 유지하고 중복 상수를 추가하지 않았다. 해당 파일은
+  새 base와 바이트가 같다. 기존 보정의 분석 문서와 반례 검사는 유지했다.
+
+충돌 해소는 구현 보존의 실제 검증을 대신하지 않는다. 관련 기존 회귀와 새 base에서
+들어온 기능, 원본·독립 Print의 출력을 새 head에서 검증해야 한다. GitHub 운영 지침의
+checkout 포함 CI 예산 조정도 확인했으며 로컬 전체 회귀 명령은 그대로 유지한다.
+
+이전 제품 `dd0ac546e3`으로 실행하던 소유 프로세스 24개만 SIGTERM으로 종료했다.
+강제 종료는 없고 산출물은 삭제하지 않았다. 완료한 Native 3개 입력·34쪽,
+WASM 12개 입력·124쪽, historical WASM 6개 입력·146쪽과 미완료 checkpoint를
+이전 제품의 근거로 구분했다. 편람 383쪽 gate는 미완료이며 새 head 통과로 쓰지 않는다.
+전체 Rust `2a4062d57a` 실행은 이 요청 전에 종료 코드 143으로 중단됐고, 테스트 summary와
+잔여 Cargo/Rust 프로세스가 없어 통과·전체 실행 완료로 기록하지 않았다.
+
+원시 대조·충돌 해소·이전 실행 종료 기록은 ignored output의
+`logs/rebase-7fdd5441ff-range-diff.log`, `logs/rebase-7fdd5441ff-resolutions.jsonl`,
+`logs/rebase-7fdd5441ff-owned-validation-stop.json`, `logs/rebase-7fdd5441ff-result.json`에 있다.
+
+충돌 해소 구문의 포맷 차이 한 곳을 수정한 뒤 `cargo fmt --all -- --check`와
+`git diff --check`를 통과했다. 포맷 재검사 로그는
+`logs/rebase-7fdd5441ff-fmt-corrected.log`이며 exit 0이다.
