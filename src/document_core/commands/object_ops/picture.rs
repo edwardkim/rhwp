@@ -1629,8 +1629,15 @@ impl DocumentCore {
                 //   bits 15-17=width_criterion(4=Absolute),
                 //   bits 18-20=height_criterion(2=Absolute),
                 //   bits 21-23=text_wrap(0=Square)
-                let common_attr: u32 =
-                    (2 << 3) | (horz_rel_bits << 8) | (4 << 15) | (2 << 18) | (1 << 26);
+                // 표 셀 문단 안 그림은 한컴처럼 본문 영역 제한(bit 13)을 켠다. 꺼 두면 한컴은
+                // 셀이 아니라 표를 둔 바깥 문단 기준으로 위치를 잡아 셀 밖(표 머리)에 그린다.
+                let in_table_cell = !cell_path_is_textbox;
+                let common_attr: u32 = (2 << 3)
+                    | (horz_rel_bits << 8)
+                    | ((in_table_cell as u32) << 13)
+                    | (4 << 15)
+                    | (2 << 18)
+                    | (1 << 26);
                 let common = CommonObjAttr {
                     ctrl_id: 0x67736F20,
                     attr: common_attr,
@@ -1639,6 +1646,7 @@ impl DocumentCore {
                     vert_rel_to: VertRelTo::Para,
                     horz_rel_to,
                     text_wrap: crate::model::shape::TextWrap::Square,
+                    flow_with_text: in_table_cell,
                     horizontal_offset: if cell_path_is_textbox {
                         offset_x_hu.max(0)
                     } else {

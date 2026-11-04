@@ -1,8 +1,10 @@
 //! 관계형 — `insert_picture_in_cell_native` 는 그림을 표 문단의 형제가 아니라 칸 문단 안에 넣는다 (#8556).
-//! 주석 갱신: 2026-11-04T03:20:00+09:00 (새 파일)
+//! 주석 갱신: 2026-11-04T11:40:00+09:00 (새 파일, 본문 영역 제한 검사 추가)
 //! 시각 측정은 해당 없음: 합성 문서에서 그림의 소속(칸 문단)과 위치 기준·오프셋 보존만 검사한다.
 //! 기대값 근거: 한컴에서 칸 안 커서로 서명 그림을 넣고 저장한 문서의 구조 — 그림이 칸 문단의 컨트롤이고
-//! 글자처럼 취급 아님, 세로 기준 문단(Para), 가로 기준 단(Column)이다. 저장 후 다시 열어도 같아야
+//! 글자처럼 취급 아님, 세로 기준 문단(Para), 가로 기준 단(Column), 본문 영역 제한(attr bit 13) 켬이다.
+//! 한글 2022(맥 12.31)에서 bit 13 을 끈 칸 그림을 인쇄하면 칸이 아니라 표 머리(바깥 문단 기준)에 그려졌다.
+//! 저장 후 다시 열어도 같아야
 //! 행 높이 변화·표 이동·쪽 나눔에서 그림이 칸과 함께 움직인다. 기존 `insertPicture` 의 칸 분기(#1151,
 //! 표 문단 형제·종이 기준)는 바꾸지 않는다.
 
@@ -22,8 +24,9 @@ const PNG: [u8; 65] = [
     0x82,
 ];
 
-/// 칸 문단 안 그림의 (가로 기준, 세로 기준, 가로·세로 오프셋, 글자처럼 취급) — 표 문단 형제 그림이 있으면 실패.
-fn cell_picture(doc: &Document, label: &str) -> (HorzRelTo, VertRelTo, i32, i32, bool) {
+/// 칸 문단 안 그림의 (가로 기준, 세로 기준, 가로·세로 오프셋, 글자처럼 취급, 본문 영역 제한)
+/// — 표 문단 형제 그림이 있으면 실패.
+fn cell_picture(doc: &Document, label: &str) -> (HorzRelTo, VertRelTo, i32, i32, bool, bool) {
     // 저장본은 구역 정의 등이 앞에 붙어 컨트롤 번호가 달라질 수 있어 소속으로 찾는다.
     let parent = doc.sections[0]
         .paragraphs
@@ -63,6 +66,7 @@ fn cell_picture(doc: &Document, label: &str) -> (HorzRelTo, VertRelTo, i32, i32,
         common.horizontal_offset as i32,
         common.vertical_offset as i32,
         common.treat_as_char,
+        common.flow_with_text,
     )
 }
 
@@ -101,7 +105,7 @@ fn cell_anchored_picture_lives_in_the_cell_paragraph_and_survives_save() {
     )
     .expect("칸 안 그림 넣기");
 
-    let expected = (HorzRelTo::Column, VertRelTo::Para, 1200, -500, false);
+    let expected = (HorzRelTo::Column, VertRelTo::Para, 1200, -500, false, true);
     assert_eq!(cell_picture(core.document(), "넣은 직후"), expected);
     let reopened =
         DocumentCore::from_bytes(&core.export_hwp_native().expect("저장")).expect("다시 열기");
