@@ -30,6 +30,33 @@ Native·fresh WASM을 96 DPI·같은 원본·같은 독립 Print PDF로 전 6쪽
 새 보정의 필수 회귀·정상 대조군 검증은 남아 있습니다. 아래 보정 전 제품의 전체 검증
 통과를 새 보정의 통과로 표시하지 않으며, 이를 완료한 뒤 최종 판정을 갱신합니다.
 
+## 번호 예약 보정을 포함한 최신 제품의 재확인
+
+제품 `c183a1ac61c2aa4188989fd93032cae68d3538c1`에서도 같은 원본과 독립 Print를
+전 6쪽 대조했습니다. [Native TSV](assets/planet6897_20261103/pr_8547/closing-frame-c183a1ac61/native.tsv)는
+최저 99.85%, [fresh WASM TSV](assets/planet6897_20261103/pr_8547/closing-frame-c183a1ac61/wasm.tsv)는
+최저 99.87%이며 3·4쪽은 양쪽 모두 100.00%입니다. 6쪽 쪽수도 일치합니다.
+
+| 쪽 | Native review / overlay | fresh WASM review / overlay |
+| --- | --- | --- |
+| 3 · 위생 앞 조각의 아래 외곽 | [review](assets/planet6897_20261103/pr_8547/closing-frame-c183a1ac61/native-p003-review.png) / [overlay](assets/planet6897_20261103/pr_8547/closing-frame-c183a1ac61/native-p003-overlay.png) | [review](assets/planet6897_20261103/pr_8547/closing-frame-c183a1ac61/wasm-p003-review.png) / [overlay](assets/planet6897_20261103/pr_8547/closing-frame-c183a1ac61/wasm-p003-overlay.png) |
+| 4 · 영양사 이어받기와 뒤 행 | [review](assets/planet6897_20261103/pr_8547/closing-frame-c183a1ac61/native-p004-review.png) / [overlay](assets/planet6897_20261103/pr_8547/closing-frame-c183a1ac61/native-p004-overlay.png) | [review](assets/planet6897_20261103/pr_8547/closing-frame-c183a1ac61/wasm-p004-review.png) / [overlay](assets/planet6897_20261103/pr_8547/closing-frame-c183a1ac61/wasm-p004-overlay.png) |
+
+양쪽 두 쪽을 직접 읽어 위생사·영양사의 쪽 소유와 표 하단·후속 행을 확인했습니다.
+[실제 제품과 증적 해시](assets/planet6897_20261103/pr_8547/closing-frame-c183a1ac61/provenance.json)를
+연결했습니다. 원본의 호스트 위치·개체 오프셋·선언 높이와 마지막 셀 종료의 관계를
+검사하는 `stored_restart_block_owns_source_host_frame_bottom`을 추가했습니다. 글꼴 설치나
+절대 px에 의존하지 않으며 기존 6쪽 내용·소속 검사도 유지합니다. 새 검사의 최소 글꼴
+실행은 통과했으며 통합 필수 검증을 진행 중입니다.
+
+## 새 보정의 최소 글꼴 집중 회귀
+
+원본·독립 Print의 양쪽 전쪽 측정 뒤 실제 최소 글꼴 환경에서 정식 검사를 실행했습니다.
+기본 개요 4개와 저장 줄 재시작 표 2개, 총 6개가 통과했습니다.
+[실행 명령·종료 코드·검사 파일 해시](assets/planet6897_20261103/marker-slot-focused-regression-c183a1ac61.json)를
+연결합니다. 원본 장평을 누락한 첫 검사 실패와 수정 근거도 같은 기록에 구분했습니다.
+전체 Rust·공통 영향 범위의 최종 검증은 아직 진행 중이며 집중 검사 통과로 대신하지 않습니다.
+
 ## 보정 전 검토 코드와 증거 출처
 
 | 항목 | 값 |

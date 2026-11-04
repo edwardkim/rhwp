@@ -1,20 +1,19 @@
-//! 관계형: PR #8433의 정식 회귀.
-//! 주석 갱신: 2026-11-05T04:02:25+09:00; 직전 파일 변경: 2026-11-03T19:36:40+09:00 (`17ebdb66b4c72bab53699ec40c6d0c9b111c8e26`).
+//! 관계형·고정형(독립 쪽수): PR #8433의 기본 개요 예약 영역 회귀.
+//! 주석 갱신: 2026-11-05T06:29:07+09:00; 직전 파일 변경: 2026-11-05T04:07:14+09:00 (`d5f1feb9132a0a3cc57378eb9924da53ea6c5a50`).
 //! 현재 통합 측정 근거 시작
-//! 측정일 2026-11-04, 제품 코드 `4b149b6cdfc514b9858ed644be2cf8120c731cd4` · `4b149b6cdf`.
-//! 실제 전쪽 측정 producer를 기록한다. 이후 충돌 없는 리베이스의 집중 검증은 개별 리뷰에서 구분한다.
+//! 측정일 2026-11-05 KST, 제품 코드 `c183a1ac61c2aa4188989fd93032cae68d3538c1`.
+//! 같은 원본·기존 독립 Print를 실제 새 Native/fresh WASM 제품으로 다시 측정했다.
 //! 96 DPI, Native Skia/fresh WASM Canvas, `visual_sweep.py --silhouette-only`의
 //! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣).
 //! 입력 `mydocs/pr/assets/issue_8425/probe/levels.hwpx`; 독립 Print `pdf/issue-8425/levels-2024.pdf`.
-//! 전체 1쪽, 전쪽 최저 Native 91.97% / fresh WASM 92.21%.
-//! 주장 1쪽 raw: Native 91.97% / fresh WASM 92.21%.
+//! 전체 1쪽, 전쪽 최저와 검사 1쪽 Native·fresh WASM 각각 100.00%.
 //! 입력 `mydocs/pr/assets/issue_8425/probe/levels.hwpx`; 독립 Print `pdf/issue-8425/levels-2020.pdf`.
-//! 전체 1쪽, 전쪽 최저 Native 91.85% / fresh WASM 92.03%.
-//! 주장 1쪽 raw: Native 91.85% / fresh WASM 92.03%.
+//! 전체 1쪽, 전쪽 최저와 검사 1쪽 Native·fresh WASM 각각 100.00%.
 //! 입력 `samples/task3307/issue3307_outline_number.hwpx`; 독립 Print `pdf/task3307/issue3307_outline_number-2020.pdf`.
 //! 전체 9쪽, 전쪽 최저 Native 99.99% / fresh WASM 99.94%.
 //! 주장 7쪽 raw: Native 100.00% / fresh WASM 99.99%.
 //! 원본·TSV·대응 쪽 review/overlay: `mydocs/pr/pr_8433_review.md`.
+//! 실제 새 TSV·직접 판독: `mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/`.
 //! 전쪽 통과와 실제 절대 px 좌표 고정은 다른 조건이다. 본문 assertion의 원본 단위·상대 관계를 구분한다.
 //! 현재 통합 측정 근거 끝
 //!
@@ -40,11 +39,11 @@
 //! ## 기대값의 출처 — 수정과 독립적인 근거
 //!
 //! - `pdf/task3307/issue3307_outline_number-2020.pdf`(한컴 2020 Print) 7쪽: "1." 은 x=117.54px,
-//!   "인적사항" 은 137.53px 에서 시작하고(10pt 셀 글자 크기의 50% 거리), "4. 감경 대상 공적 유무 및"
+//!   "인적사항" 은 137.53px 에서 시작하고(10pt 셀의 참조 형식 1em + 거리 50%), "4. 감경 대상 공적 유무 및"
 //!   의 둘째·셋째 줄은 첫 줄 본문과 같은 137.53px 에서 이어진다. 개요가 아닌 리터럴
 //!   "5. 혐의자의" 는 번호와 본문 사이에 거리를 두지 않는다.
-//! - 같은 규칙을 한컴 2020(11.0.0.9136)·2024(13.0.0.3901) Print 로 수준 1~7 개요 탐침에서 확인했다:
-//!   전 수준 `번호 시작 + 번호 글자 폭 + 글자 크기 50%`, 넘친 줄은 본문 시작에서 이어짐.
+//! - 2026-11-05 정정: 두 독립 Print의 수준별 제목은 실제 글리프 폭이 아니라 `^N` 참조
+//!   형식의 수준당 1em과 거리 50%를 예약한다. 아래 검사도 이 독립 관계를 사용한다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -68,7 +67,11 @@ fn page_runs() -> Vec<Run> {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(FIXTURE);
     let core =
         DocumentCore::from_bytes(&std::fs::read(path).expect("3307 픽스처")).expect("문서 로드");
-    let tree = core.build_page_render_tree(PAGE).expect("render tree");
+    runs_in_page(&core, PAGE)
+}
+
+fn runs_in_page(core: &DocumentCore, page: u32) -> Vec<Run> {
+    let tree = core.build_page_render_tree(page).expect("render tree");
     fn walk(node: &RenderNode, cell: Option<(u16, u16)>, out: &mut Vec<Run>) {
         let cell = match &node.node_type {
             RenderNodeType::TableCell(c) => Some((c.row, c.col)),
@@ -109,20 +112,57 @@ fn text_after<'a>(runs: &'a [Run], number: &Run) -> &'a Run {
         .unwrap_or_else(|| panic!("{:?} 뒤 본문 런이 없다", number.text))
 }
 
-/// 개요 번호와 본문 사이 거리는 번호 글자 크기의 50% 다.
+/// 참조 형식 1em에는 원본 장평 97%를 적용하고 본문 거리 50%는 별도로 둔다.
 #[test]
-fn default_outline_number_keeps_half_em_from_text() {
-    let runs = page_runs();
+fn default_outline_number_reserves_one_em_form_and_half_em_distance() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(FIXTURE);
+    let core =
+        DocumentCore::from_bytes(&std::fs::read(path).expect("3307 원본")).expect("문서 로드");
+    // 원본 HWPX header.xml의 charPr 25·34는 모두 장평 97%다.
+    // 독립 Print의 번호와 제목 원점은 이 참조 폭과 50% 본문 거리로 대응한다.
+    let shapes = &core.document().doc_info.char_shapes;
+    assert_eq!(
+        shapes[25].ratios[0], 97,
+        "인적사항·비위 유형·징계부가금의 원본 장평"
+    );
+    assert_eq!(shapes[34].ratios[0], 97, "감경 대상의 원본 장평");
+    let expected_em = f64::from(shapes[25].ratios[0]) / 100.0 + 0.5;
+    let runs = runs_in_page(&core, PAGE);
     for number in ["1.", "2.", "3.", "4."] {
         let num = find(&runs, number);
         let body = text_after(&runs, num);
-        let gap = body.bbox.x - (num.bbox.x + num.bbox.width);
-        let expected = num.font_size * 0.5;
+        let offset_em = (body.bbox.x - num.bbox.x) / num.font_size;
         assert!(
-            (gap - expected).abs() <= 1.0,
-            "{number} {:?}: 번호 뒤 거리 {gap:.2}px 가 글자 크기 {:.2}px 의 50%({expected:.2}px)여야 한다",
-            body.text,
-            num.font_size
+            (offset_em - expected_em).abs() <= 0.001,
+            "{number} {:?}: 실제 글리프 폭과 무관하게 참조 형식 1em × 원본 장평 + 거리 0.5em이어야 한다: {offset_em}em != {expected_em}em",
+            body.text
+        );
+    }
+}
+
+/// 제목 1~7의 본문은 참조 수준 경로의 예약 칸 뒤에서 시작한다.
+#[test]
+fn builtin_outline_levels_reserve_reference_form_instead_of_glyph_width() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("mydocs/pr/assets/issue_8425/probe/levels.hwpx");
+    let core = DocumentCore::from_bytes(&std::fs::read(path).expect("한컴 탐침 원본"))
+        .expect("기본 개요 탐침");
+    assert_eq!(core.page_count(), 1, "두 독립 Print의 전체 쪽수");
+    let runs = runs_in_page(&core, 0);
+    for level in 1..=7 {
+        let marker_text = "1.".repeat(level);
+        let marker = find(&runs, &marker_text);
+        let body = text_after(&runs, marker);
+        assert!(
+            body.text.trim_start().starts_with("수준"),
+            "run 분할과 무관하게 탐침의 실제 제목 시작이어야 한다: {:?}",
+            body.text
+        );
+        let expected = level as f64 + 0.5;
+        let actual = (body.bbox.x - marker.bbox.x) / marker.font_size;
+        assert!(
+            (actual - expected).abs() <= 0.001,
+            "수준{level}: 실제 글리프가 아니라 한 자리 참조 형식과 50% 거리를 예약: {actual}em != {expected}em"
         );
     }
 }

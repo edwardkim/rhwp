@@ -1,0 +1,53 @@
+{
+  "recorded_at": "2026-11-04T20:52:36.618972+00:00",
+  "code_commit": "c183a1ac61c2aa4188989fd93032cae68d3538c1",
+  "files": [
+    {
+      "capture": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/native/pr8433-levels-d014d88d/silhouette.tsv",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/levels-2024-native.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "capture": "output/pr-review/planet6897-20261103/marker-slot-panels/native/pr8433-levels-d014d88d/review/review_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/levels-2024-native-review.png",
+      "sha256": "399cb8916bf001d0a5a36130cfa5c8be8ec752fa294858bf18d378691c1ac9ce"
+    },
+    {
+      "capture": "output/pr-review/planet6897-20261103/marker-slot-panels/native/pr8433-levels-d014d88d/overlay/overlay_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/levels-2024-native-overlay.png",
+      "sha256": "1af1e65040f2b45d9a4da5cace33118d2382bb9285fb3c65830f0aed8a2ca931"
+    },
+    {
+      "capture": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/native/pr8433-levels-493f24c1/silhouette.tsv",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/levels-2020-native.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "capture": "output/pr-review/planet6897-20261103/marker-slot-panels/native/pr8433-levels-493f24c1/review/review_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/levels-2020-native-review.png",
+      "sha256": "e40f5ba4199bf9d0d723b871b89a65f5411d3046c96cd35dc3ab98691e8db95c"
+    },
+    {
+      "capture": "output/pr-review/planet6897-20261103/marker-slot-panels/native/pr8433-levels-493f24c1/overlay/overlay_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/levels-2020-native-overlay.png",
+      "sha256": "050676d993e894fd2a0dc65ee1ca54f8055309ade2dfabd7f69b5c7b5bcb2c86"
+    },
+    {
+      "capture": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/native/pr8433-issue3307_outline_number-8704d61b/silhouette.tsv",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/issue3307-p007-native.tsv",
+      "sha256": "2e90560f2542d5150f6311d7a634c5a11e4901453b4730124a5957fd1d726c84"
+    },
+    {
+      "capture": "output/pr-review/planet6897-20261103/marker-slot-panels/native/pr8433-issue3307_outline_number-8704d61b/review/review_007.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/issue3307-p007-native-review.png",
+      "sha256": "9fa7252d1c03e50c734435f0676b4e40eff16344c12ad278ebd7240dc278b07a"
+    },
+    {
+      "capture": "output/pr-review/planet6897-20261103/marker-slot-panels/native/pr8433-issue3307_outline_number-8704d61b/overlay/overlay_007.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/issue3307-p007-native-overlay.png",
+      "sha256": "57124f5051682bae564bab82cb072153a10d4c87dc30168a921ae2c5c5edd6c8"
+    }
+  ],
+  "final_approval": false,
+  "wasm_status": "optimized build and selected 13 inputs / 73 pages complete; full integration validation pending"
+}

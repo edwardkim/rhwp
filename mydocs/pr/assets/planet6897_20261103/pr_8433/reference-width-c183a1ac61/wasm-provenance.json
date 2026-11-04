@@ -1,0 +1,57 @@
+{
+  "recorded_at": "2026-11-04T21:09:19.052792+00:00",
+  "code_commit": "c183a1ac61c2aa4188989fd93032cae68d3538c1",
+  "package_files": {
+    "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+    "rhwp_bg.wasm": "f79bffaabc76cd4917791dc3dbececa2560cba8001fcb17578ba03076a5ce77e"
+  },
+  "build_exit": 0,
+  "files": [
+    {
+      "capture": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8433-levels-d014d88d/silhouette.tsv",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/levels-2024-wasm.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "capture": "output/pr-review/planet6897-20261103/marker-slot-panels/wasm/pr8433-levels-d014d88d/review/review_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/levels-2024-wasm-review.png",
+      "sha256": "6f60353c1d5f757529618ae1cd78207b045c042e5a939a1edc9fec950f8abf90"
+    },
+    {
+      "capture": "output/pr-review/planet6897-20261103/marker-slot-panels/wasm/pr8433-levels-d014d88d/overlay/overlay_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/levels-2024-wasm-overlay.png",
+      "sha256": "78d816ad3ce8a9d5c00f1b2739c1df847f1907e9c95840c78595e6494bffc777"
+    },
+    {
+      "capture": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8433-levels-493f24c1/silhouette.tsv",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/levels-2020-wasm.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "capture": "output/pr-review/planet6897-20261103/marker-slot-panels/wasm/pr8433-levels-493f24c1/review/review_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/levels-2020-wasm-review.png",
+      "sha256": "4809e59124083378179f5c02983c742a850b02c80ef03d3253c21f41b1c6ca50"
+    },
+    {
+      "capture": "output/pr-review/planet6897-20261103/marker-slot-panels/wasm/pr8433-levels-493f24c1/overlay/overlay_001.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/levels-2020-wasm-overlay.png",
+      "sha256": "392d75ab0320cf08464bcda9710bfc3b67b90d728b85024a1e9142b61b0b3aaa"
+    },
+    {
+      "capture": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8433-issue3307_outline_number-8704d61b/silhouette.tsv",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/issue3307-p007-wasm.tsv",
+      "sha256": "70cc9459d29c3dc4f5a4f33d1d19d0efb7fa6b2e47bb39230779c46f68041010"
+    },
+    {
+      "capture": "output/pr-review/planet6897-20261103/marker-slot-panels/wasm/pr8433-issue3307_outline_number-8704d61b/review/review_007.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/issue3307-p007-wasm-review.png",
+      "sha256": "39a01b3434d0f9a0cbe5a5930449daa4a6f99bbaab8d4f24599387d62dfca8ec"
+    },
+    {
+      "capture": "output/pr-review/planet6897-20261103/marker-slot-panels/wasm/pr8433-issue3307_outline_number-8704d61b/overlay/overlay_007.png",
+      "asset": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/issue3307-p007-wasm-overlay.png",
+      "sha256": "7046764fda4b1c2f6903862dc355975c160dd6c45aa2206e73bc82d194395adc"
+    }
+  ],
+  "final_approval": false
+}

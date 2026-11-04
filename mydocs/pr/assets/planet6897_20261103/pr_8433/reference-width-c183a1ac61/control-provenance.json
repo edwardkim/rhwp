@@ -1,0 +1,51 @@
+{
+  "recorded_at": "2026-11-04T21:25:20.576121+00:00",
+  "code_commit": "c183a1ac61c2aa4188989fd93032cae68d3538c1",
+  "note": "실제로 쓰이는 BULLET 4쪽과 NUMBER 2쪽을 구분하며 전쪽 Native/fresh WASM을 대조했습니다.",
+  "records": [
+    {
+      "backend": "native",
+      "input": "samples/issue7418/list_marker_head_synthetic.hwpx",
+      "pdf": "pdf/issue7418/list_marker_head_synthetic-2024.pdf",
+      "pages": 4,
+      "minimum": 100.0,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/bullet-control-native.tsv",
+      "sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+      "source_manifest": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/native/pr7418-list_marker_head_synthetic-6d7eee30/silhouette_manifest.json",
+      "source_manifest_sha256": "3fa7d5eddc5c377fe8f2d86eb39b6ba527f0e35ae912013a72d523e844ea6a5e"
+    },
+    {
+      "backend": "native",
+      "input": "samples/issue7418/condense_numbered_synthetic.hwpx",
+      "pdf": "pdf/issue7418/condense_numbered_synthetic-2024.pdf",
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/declared-number-control-native.tsv",
+      "sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "source_manifest": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/native/pr7418-condense_numbered_synthetic-91d6be85/silhouette_manifest.json",
+      "source_manifest_sha256": "0721ceb11dc3655524d25e53f7e5d029a04c89f15fe9f73baaf273f231f77b51"
+    },
+    {
+      "backend": "wasm",
+      "input": "samples/issue7418/list_marker_head_synthetic.hwpx",
+      "pdf": "pdf/issue7418/list_marker_head_synthetic-2024.pdf",
+      "pages": 4,
+      "minimum": 100.0,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/bullet-control-wasm.tsv",
+      "sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+      "source_manifest": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr7418-list_marker_head_synthetic-6d7eee30/silhouette_manifest.json",
+      "source_manifest_sha256": "9d185f8f80ae587b890552153349b292d4e68943b9a7f90a1ee155162a0c94e9"
+    },
+    {
+      "backend": "wasm",
+      "input": "samples/issue7418/condense_numbered_synthetic.hwpx",
+      "pdf": "pdf/issue7418/condense_numbered_synthetic-2024.pdf",
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "mydocs/pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/declared-number-control-wasm.tsv",
+      "sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "source_manifest": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr7418-condense_numbered_synthetic-91d6be85/silhouette_manifest.json",
+      "source_manifest_sha256": "9d4c0e5a4b6621ef014f3ab6f60335b66970f585e82ed5bfa42aaec091bfddba"
+    }
+  ]
+}

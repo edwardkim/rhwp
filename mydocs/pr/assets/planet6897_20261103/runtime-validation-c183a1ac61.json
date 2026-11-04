@@ -1,0 +1,83 @@
+{
+  "recorded_at": "2026-11-04T21:39:34.305154+00:00",
+  "code_commit": "c183a1ac61c2aa4188989fd93032cae68d3538c1",
+  "package": {
+    "rhwp.js": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393",
+    "rhwp_bg.wasm": "f79bffaabc76cd4917791dc3dbececa2560cba8001fcb17578ba03076a5ce77e"
+  },
+  "checks": [
+    {
+      "name": "public-api",
+      "command": [
+        "node",
+        "--test",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rebase-22947f6a90-public-api.test.mjs"
+      ],
+      "started": "2026-11-04T21:30:04.312825+00:00",
+      "ended": "2026-11-04T21:30:06.310607+00:00",
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-20261103/logs/marker-slot-public-api.log",
+      "log_sha256": "25adae3a078806f25a330f79cf2df9adb0075c5b65346e4eae16f72770f356d3"
+    },
+    {
+      "name": "browser-runtime",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/pdf-import-wasm.test.mjs"
+      ],
+      "started": "2026-11-04T21:30:06.311340+00:00",
+      "ended": "2026-11-04T21:30:33.621608+00:00",
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-20261103/logs/marker-slot-browser-runtime.log",
+      "log_sha256": "1cf2c4e8f6f87f76e035d602a6712a4f7f0ab5ba3dd0706d7773df5954180635"
+    },
+    {
+      "name": "producer-parity",
+      "command": [
+        "node",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/check-wasm-producer-parity.mjs"
+      ],
+      "started": "2026-11-04T21:30:33.622652+00:00",
+      "ended": "2026-11-04T21:30:51.010116+00:00",
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-20261103/logs/marker-slot-producer-parity.log",
+      "log_sha256": "e802e869f3a79908f4325538132d9110d7b2cea11ca759bea7c83ce6f2e30519"
+    },
+    {
+      "name": "wasm-newbase3",
+      "command": [
+        "/home/tsjang/rhwp/venv/bin/python",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/run_visual_pairs.py",
+        "wasm",
+        "--pairs",
+        "rebase-22947f6a90-focused-pairs.tsv",
+        "--code-label",
+        "marker-slot-c183a1ac61",
+        "--rhwp-bin",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/rhwp-marker-slot-c183a1ac61",
+        "--wasm-pkg",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/producer-packages/marker-slot-c183a1ac61",
+        "--page-workers",
+        "1"
+      ],
+      "started": "2026-11-04T21:30:51.010832+00:00",
+      "ended": "2026-11-04T21:36:40.195222+00:00",
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-20261103/logs/marker-slot-wasm-newbase3.log",
+      "log_sha256": "bd6ea29bff6c9916465bbe3bc58a25ce14eeccc7a1dea899f135315c57ba8f9c"
+    }
+  ],
+  "browser": {
+    "assertions": 271,
+    "actual_workers": 17,
+    "normal_workers": 11,
+    "memory_failure_controls": 3,
+    "engine_trap_controls": 3,
+    "rendered_saved_pages": 12
+  },
+  "public_api_tests": 2,
+  "export_comparison": "최신 WASM의 PDF 편집 가능 가져오기 3건과 실제 편집 1건을 기존 Native 생성 입력 바이트와 대조했습니다.",
+  "native_producer_note": "기존 Native 생성 입력과의 바이트 비교이며 이번에 Native PDF 가져오기를 새로 실행했다는 주장은 아닙니다.",
+  "full_validation_complete": false
+}

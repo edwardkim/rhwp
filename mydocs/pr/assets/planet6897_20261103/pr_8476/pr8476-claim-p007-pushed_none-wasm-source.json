@@ -1,0 +1,32 @@
+{
+  "input": "samples/issue8471/pushed_none.hwpx",
+  "input_sha256": "738f5a5548a3466ebee66670842a3d8e07fe575bdb66f083aceeed2cf2bd9c91",
+  "pdf": "pdf/issue8471/pushed_none-2020.pdf",
+  "pdf_sha256": "46b98fdaf93ac03ca78534deec390965101467a95e25c2f6f73b4bbb9000df07",
+  "page": 7,
+  "claim": "이월된 N3 표 뒤 N4 본문의 명시적 쪽 나누기",
+  "backend": "wasm",
+  "measurement_code_label": "4b149b6cdf",
+  "source_rhwp_png": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/wasm/pr8476-pushed_none-e585fbfc/rhwp_png/rhwp_007.png",
+  "source_rhwp_png_sha256": "403ff6dfe718591fe37fbdaaec13abd89d688f737771839db14fdd55cb8256e9",
+  "source_pdf_png": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/wasm/pr8476-pushed_none-e585fbfc/pdf_png/pdf-007.png",
+  "source_pdf_png_sha256": "b220793aeacd2cbf34f91221102f51689c3fbb9f125d03914c2d92dbfc86559e",
+  "native_product_sha256": "71a6e065770d741971ad618e614a2d0bc1759cf2eefd4ce9b72ad395032f8d8f",
+  "wasm_product": {
+    "files": [
+      {
+        "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/producer-packages/rebase-7bb9e66fd0/rhwp.js",
+        "sha256": "bb9be9d806756697eddee5d185e80e9256bd0d97947d78a94777222100f12393"
+      },
+      {
+        "path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/producer-packages/rebase-7bb9e66fd0/rhwp_bg.wasm",
+        "sha256": "0fcc2a5d219ade9de64ce9657de95ce8769ce21d3bed4062835dc15e205ae3e1"
+      }
+    ],
+    "exporter_sha256": "2d4cc3fbbdf4b4f528aa683649434221a783300e821fe68aaa2ae1e1b63220ee",
+    "font_registration_sha256": "5259038f8caad1f1c1a0dd9c2106589350a7d41ef8c5916c0108a1675951f9fe",
+    "comparison_profile": "print",
+    "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+    "render_tree": "WASM getPageRenderTree"
+  }
+}

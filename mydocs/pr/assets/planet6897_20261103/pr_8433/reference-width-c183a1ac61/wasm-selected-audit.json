@@ -1,0 +1,756 @@
+{
+  "recorded_at": "2026-11-04T21:23:19.682978+00:00",
+  "code_commit": "c183a1ac61c2aa4188989fd93032cae68d3538c1",
+  "backend": "wasm",
+  "cases": 13,
+  "pages": 73,
+  "minimum": 96.1185,
+  "strict_display_drops": 0,
+  "compared_pages": 73,
+  "errors": [],
+  "records": [
+    {
+      "input": "mydocs/pr/assets/issue_8425/probe/levels.hwpx",
+      "pdf": "pdf/issue-8425/levels-2024.pdf",
+      "pr": "8433",
+      "pages": 1,
+      "minimum": 100.0,
+      "manifest": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8433-levels-d014d88d/silhouette_manifest.json",
+      "manifest_sha256": "57699bb0713f95141ed4f2be1213c176f72e28db85667101a3f61f7fd653f326",
+      "tsv": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8433-levels-d014d88d/silhouette.tsv",
+      "before_manifest": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/wasm/pr8433-levels-d014d88d/silhouette_manifest.json",
+      "producer": "cbb91433ec4e5b968ea7820dae1af09aa712991ae5b3027c68590fee5f2138d9"
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8425/probe/levels.hwpx",
+      "pdf": "pdf/issue-8425/levels-2020.pdf",
+      "pr": "8433",
+      "pages": 1,
+      "minimum": 100.0,
+      "manifest": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8433-levels-493f24c1/silhouette_manifest.json",
+      "manifest_sha256": "70c3b0c9d01d769117eb4836398d5920c7da8101fdd9cff3677dffc7e928abd4",
+      "tsv": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8433-levels-493f24c1/silhouette.tsv",
+      "before_manifest": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/wasm/pr8433-levels-493f24c1/silhouette_manifest.json",
+      "producer": "cbb91433ec4e5b968ea7820dae1af09aa712991ae5b3027c68590fee5f2138d9"
+    },
+    {
+      "input": "samples/task3307/issue3307_outline_number.hwpx",
+      "pdf": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "pr": "8433",
+      "pages": 9,
+      "minimum": 99.93728,
+      "manifest": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8433-issue3307_outline_number-8704d61b/silhouette_manifest.json",
+      "manifest_sha256": "1f969dc11c00892a06ec776f1e1c11df8823737b1adf0e9e0ccc73df7d6ae1c6",
+      "tsv": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8433-issue3307_outline_number-8704d61b/silhouette.tsv",
+      "before_manifest": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/wasm/pr8433-issue3307_outline_number-8704d61b/silhouette_manifest.json",
+      "producer": "cbb91433ec4e5b968ea7820dae1af09aa712991ae5b3027c68590fee5f2138d9"
+    },
+    {
+      "input": "samples/issue7418/list_marker_head_synthetic.hwpx",
+      "pdf": "pdf/issue7418/list_marker_head_synthetic-2024.pdf",
+      "pr": "7418",
+      "pages": 4,
+      "minimum": 100.0,
+      "manifest": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr7418-list_marker_head_synthetic-6d7eee30/silhouette_manifest.json",
+      "manifest_sha256": "9d185f8f80ae587b890552153349b292d4e68943b9a7f90a1ee155162a0c94e9",
+      "tsv": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr7418-list_marker_head_synthetic-6d7eee30/silhouette.tsv",
+      "before_manifest": "output/pr-review/planet6897-20261103/marker-slot-control-e61/wasm/marker-explicit-control/silhouette_manifest.json",
+      "producer": "cbb91433ec4e5b968ea7820dae1af09aa712991ae5b3027c68590fee5f2138d9"
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8424/inputs/after/business_plan.hwpx",
+      "pdf": "pdf/issue-8424/business_plan-2024.pdf",
+      "pr": "8429",
+      "pages": 3,
+      "minimum": 100.0,
+      "manifest": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8429-business_plan-b47c75a0/silhouette_manifest.json",
+      "manifest_sha256": "2cd32066a617f68a7ad04a73edef037f83843faf34e09d2508796d2f2d61e893",
+      "tsv": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8429-business_plan-b47c75a0/silhouette.tsv",
+      "before_manifest": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/wasm/pr8429-business_plan-b47c75a0/silhouette_manifest.json",
+      "producer": "cbb91433ec4e5b968ea7820dae1af09aa712991ae5b3027c68590fee5f2138d9"
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8424/inputs/after/cellwrap.hwpx",
+      "pdf": "pdf/issue-8424/cellwrap-2024.pdf",
+      "pr": "8429",
+      "pages": 1,
+      "minimum": 100.0,
+      "manifest": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8429-cellwrap-4f4c9ba7/silhouette_manifest.json",
+      "manifest_sha256": "a73e5fe28f072321a434478a4b781a0b53111f3985ed4d409e82f5b765531180",
+      "tsv": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8429-cellwrap-4f4c9ba7/silhouette.tsv",
+      "before_manifest": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/wasm/pr8429-cellwrap-4f4c9ba7/silhouette_manifest.json",
+      "producer": "cbb91433ec4e5b968ea7820dae1af09aa712991ae5b3027c68590fee5f2138d9"
+    },
+    {
+      "input": "samples/issue8520/scaffold_table_footnote.hwpx",
+      "pdf": "pdf/issue8520/scaffold_table_footnote-2024.pdf",
+      "pr": "8535",
+      "pages": 2,
+      "minimum": 99.14798,
+      "manifest": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8535-scaffold_table_footnote-a5d8c38e/silhouette_manifest.json",
+      "manifest_sha256": "763e02d5841a2e42e50e7d9f52deb118fb7b439f3a7becb7f10856dd1094a46b",
+      "tsv": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8535-scaffold_table_footnote-a5d8c38e/silhouette.tsv",
+      "before_manifest": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/wasm/pr8535-scaffold_table_footnote-a5d8c38e/silhouette_manifest.json",
+      "producer": "cbb91433ec4e5b968ea7820dae1af09aa712991ae5b3027c68590fee5f2138d9"
+    },
+    {
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "pr": "8547",
+      "pages": 6,
+      "minimum": 99.87175,
+      "manifest": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8547-gangseo_exempt_certificates-e5b4dd3b/silhouette_manifest.json",
+      "manifest_sha256": "a9fe109af39a0025c938d83839920c501b9107a11759eee2c4526982b8ef7b88",
+      "tsv": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8547-gangseo_exempt_certificates-e5b4dd3b/silhouette.tsv",
+      "before_manifest": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/wasm/pr8547-gangseo_exempt_certificates-e5b4dd3b/silhouette_manifest.json",
+      "producer": "cbb91433ec4e5b968ea7820dae1af09aa712991ae5b3027c68590fee5f2138d9"
+    },
+    {
+      "input": "mydocs/pr/assets/scaffold_outline_numbering/scaffold_outline_a.hwpx",
+      "pdf": "pdf/issue8540/scaffold_outline_a-2024.pdf",
+      "pr": "8540",
+      "pages": 1,
+      "minimum": 100.0,
+      "manifest": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8540-scaffold_outline_a-649191af/silhouette_manifest.json",
+      "manifest_sha256": "1c751d6beba0928731a413a84ed90973f821c407d994bfc0bb8ada4fedae3526",
+      "tsv": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8540-scaffold_outline_a-649191af/silhouette.tsv",
+      "before_manifest": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/wasm/pr8540-scaffold_outline_a-649191af/silhouette_manifest.json",
+      "producer": "cbb91433ec4e5b968ea7820dae1af09aa712991ae5b3027c68590fee5f2138d9"
+    },
+    {
+      "input": "mydocs/pr/assets/scaffold_outline_numbering/scaffold_outline_b.hwpx",
+      "pdf": "pdf/issue8540/scaffold_outline_b-2024.pdf",
+      "pr": "8540",
+      "pages": 1,
+      "minimum": 100.0,
+      "manifest": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8540-scaffold_outline_b-82b08f33/silhouette_manifest.json",
+      "manifest_sha256": "05cb9c6d92d3ca6df68e88637c0db6c270a2fd8b0a2753e1eed685cef6c3cf09",
+      "tsv": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr8540-scaffold_outline_b-82b08f33/silhouette.tsv",
+      "before_manifest": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/wasm/pr8540-scaffold_outline_b-82b08f33/silhouette_manifest.json",
+      "producer": "cbb91433ec4e5b968ea7820dae1af09aa712991ae5b3027c68590fee5f2138d9"
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "pr": "1753",
+      "pages": 21,
+      "minimum": 96.1185,
+      "manifest": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr1753-deferred_takeplace_fill_ahead-02fed5f6-hwp-ac7274ea/silhouette_manifest.json",
+      "manifest_sha256": "89d7c12900e1dba8ab890efe35fc8a48090d4b89332bea398ae1b41a7fe6cc4c",
+      "tsv": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr1753-deferred_takeplace_fill_ahead-02fed5f6-hwp-ac7274ea/silhouette.tsv",
+      "before_manifest": "output/pr-review/planet6897-20261103/visual/marker-normal-before-4b149b6cdf/wasm/pr1753-deferred_takeplace_fill_ahead-02fed5f6-hwp-ac7274ea/silhouette_manifest.json",
+      "producer": "cbb91433ec4e5b968ea7820dae1af09aa712991ae5b3027c68590fee5f2138d9"
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "pr": "1753",
+      "pages": 21,
+      "minimum": 96.1185,
+      "manifest": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr1753-deferred_takeplace_fill_ahead-02fed5f6-hwpx-62f0a11e/silhouette_manifest.json",
+      "manifest_sha256": "ee74165b10dd41f5eb17b31aa9c6b601d2aa0bff7d922adbd7e2a14045e87a6a",
+      "tsv": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr1753-deferred_takeplace_fill_ahead-02fed5f6-hwpx-62f0a11e/silhouette.tsv",
+      "before_manifest": "output/pr-review/planet6897-20261103/visual/marker-normal-before-4b149b6cdf/wasm/pr1753-deferred_takeplace_fill_ahead-02fed5f6-hwpx-62f0a11e/silhouette_manifest.json",
+      "producer": "cbb91433ec4e5b968ea7820dae1af09aa712991ae5b3027c68590fee5f2138d9"
+    },
+    {
+      "input": "samples/issue7418/condense_numbered_synthetic.hwpx",
+      "pdf": "pdf/issue7418/condense_numbered_synthetic-2024.pdf",
+      "pr": "7418",
+      "pages": 2,
+      "minimum": 100.0,
+      "manifest": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr7418-condense_numbered_synthetic-91d6be85/silhouette_manifest.json",
+      "manifest_sha256": "9d4c0e5a4b6621ef014f3ab6f60335b66970f585e82ed5bfa42aaec091bfddba",
+      "tsv": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/wasm/pr7418-condense_numbered_synthetic-91d6be85/silhouette.tsv",
+      "before_manifest": "output/pr-review/planet6897-20261103/visual/marker-normal-before-4b149b6cdf/wasm/pr7418-condense_numbered_synthetic-91d6be85/silhouette_manifest.json",
+      "producer": "cbb91433ec4e5b968ea7820dae1af09aa712991ae5b3027c68590fee5f2138d9"
+    }
+  ],
+  "comparison": [
+    {
+      "input": "mydocs/pr/assets/issue_8425/probe/levels.hwpx",
+      "pdf": "pdf/issue-8425/levels-2024.pdf",
+      "page": 1,
+      "before": 92.20589,
+      "after": 100.0,
+      "delta_pp": 7.794110000000003
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8425/probe/levels.hwpx",
+      "pdf": "pdf/issue-8425/levels-2020.pdf",
+      "page": 1,
+      "before": 92.03052,
+      "after": 100.0,
+      "delta_pp": 7.969480000000004
+    },
+    {
+      "input": "samples/task3307/issue3307_outline_number.hwpx",
+      "pdf": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "page": 1,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task3307/issue3307_outline_number.hwpx",
+      "pdf": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "page": 2,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task3307/issue3307_outline_number.hwpx",
+      "pdf": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "page": 3,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task3307/issue3307_outline_number.hwpx",
+      "pdf": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "page": 4,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task3307/issue3307_outline_number.hwpx",
+      "pdf": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "page": 5,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task3307/issue3307_outline_number.hwpx",
+      "pdf": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "page": 6,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task3307/issue3307_outline_number.hwpx",
+      "pdf": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "page": 7,
+      "before": 99.99297,
+      "after": 99.99297,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task3307/issue3307_outline_number.hwpx",
+      "pdf": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "page": 8,
+      "before": 99.93728,
+      "after": 99.93728,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task3307/issue3307_outline_number.hwpx",
+      "pdf": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "page": 9,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/issue7418/list_marker_head_synthetic.hwpx",
+      "pdf": "pdf/issue7418/list_marker_head_synthetic-2024.pdf",
+      "page": 1,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/issue7418/list_marker_head_synthetic.hwpx",
+      "pdf": "pdf/issue7418/list_marker_head_synthetic-2024.pdf",
+      "page": 2,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/issue7418/list_marker_head_synthetic.hwpx",
+      "pdf": "pdf/issue7418/list_marker_head_synthetic-2024.pdf",
+      "page": 3,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/issue7418/list_marker_head_synthetic.hwpx",
+      "pdf": "pdf/issue7418/list_marker_head_synthetic-2024.pdf",
+      "page": 4,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8424/inputs/after/business_plan.hwpx",
+      "pdf": "pdf/issue-8424/business_plan-2024.pdf",
+      "page": 1,
+      "before": 99.51073,
+      "after": 100.0,
+      "delta_pp": 0.48927000000000476
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8424/inputs/after/business_plan.hwpx",
+      "pdf": "pdf/issue-8424/business_plan-2024.pdf",
+      "page": 2,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8424/inputs/after/business_plan.hwpx",
+      "pdf": "pdf/issue-8424/business_plan-2024.pdf",
+      "page": 3,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8424/inputs/after/cellwrap.hwpx",
+      "pdf": "pdf/issue-8424/cellwrap-2024.pdf",
+      "page": 1,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/issue8520/scaffold_table_footnote.hwpx",
+      "pdf": "pdf/issue8520/scaffold_table_footnote-2024.pdf",
+      "page": 1,
+      "before": 99.14965,
+      "after": 99.14798,
+      "delta_pp": -0.0016699999999900683
+    },
+    {
+      "input": "samples/issue8520/scaffold_table_footnote.hwpx",
+      "pdf": "pdf/issue8520/scaffold_table_footnote-2024.pdf",
+      "page": 2,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "page": 1,
+      "before": 99.87175,
+      "after": 99.87175,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "page": 2,
+      "before": 99.99111,
+      "after": 99.99111,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "page": 3,
+      "before": 97.97836,
+      "after": 100.0,
+      "delta_pp": 2.021640000000005
+    },
+    {
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "page": 4,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "page": 5,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "page": 6,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "mydocs/pr/assets/scaffold_outline_numbering/scaffold_outline_a.hwpx",
+      "pdf": "pdf/issue8540/scaffold_outline_a-2024.pdf",
+      "page": 1,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "mydocs/pr/assets/scaffold_outline_numbering/scaffold_outline_b.hwpx",
+      "pdf": "pdf/issue8540/scaffold_outline_b-2024.pdf",
+      "page": 1,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 1,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 2,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 3,
+      "before": 99.99282,
+      "after": 99.99282,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 4,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 5,
+      "before": 96.1185,
+      "after": 96.1185,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 6,
+      "before": 99.96403,
+      "after": 99.96403,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 7,
+      "before": 98.46144,
+      "after": 98.46144,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 8,
+      "before": 97.9025,
+      "after": 97.9025,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 9,
+      "before": 99.87971,
+      "after": 99.87971,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 10,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 11,
+      "before": 99.98128,
+      "after": 99.98128,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 12,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 13,
+      "before": 99.96665,
+      "after": 99.96665,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 14,
+      "before": 99.98809,
+      "after": 99.98809,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 15,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 16,
+      "before": 99.99429,
+      "after": 99.99429,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 17,
+      "before": 99.99388,
+      "after": 99.99388,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 18,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 19,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 20,
+      "before": 99.99535,
+      "after": 99.99535,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwp",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 21,
+      "before": 99.99803,
+      "after": 99.99803,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 1,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 2,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 3,
+      "before": 99.99564,
+      "after": 99.99564,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 4,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 5,
+      "before": 96.1185,
+      "after": 96.1185,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 6,
+      "before": 99.96403,
+      "after": 99.96403,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 7,
+      "before": 98.46144,
+      "after": 98.46144,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 8,
+      "before": 97.9025,
+      "after": 97.9025,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 9,
+      "before": 99.87971,
+      "after": 99.87971,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 10,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 11,
+      "before": 99.98128,
+      "after": 99.98128,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 12,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 13,
+      "before": 99.96665,
+      "after": 99.96665,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 14,
+      "before": 99.98809,
+      "after": 99.98809,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 15,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 16,
+      "before": 99.99429,
+      "after": 99.99429,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 17,
+      "before": 99.99388,
+      "after": 99.99388,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 18,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 19,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 20,
+      "before": 99.99412,
+      "after": 99.99412,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/task1753/deferred_takeplace_fill_ahead.hwpx",
+      "pdf": "samples/task1753/deferred_takeplace_fill_ahead-2024.pdf",
+      "page": 21,
+      "before": 99.998,
+      "after": 99.998,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/issue7418/condense_numbered_synthetic.hwpx",
+      "pdf": "pdf/issue7418/condense_numbered_synthetic-2024.pdf",
+      "page": 1,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    },
+    {
+      "input": "samples/issue7418/condense_numbered_synthetic.hwpx",
+      "pdf": "pdf/issue7418/condense_numbered_synthetic-2024.pdf",
+      "page": 2,
+      "before": 100.0,
+      "after": 100.0,
+      "delta_pp": 0.0
+    }
+  ],
+  "final_approval": false
+}

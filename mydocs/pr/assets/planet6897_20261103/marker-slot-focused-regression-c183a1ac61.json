@@ -1,0 +1,71 @@
+{
+  "recorded_at": "2026-11-04T21:33:22.242556+00:00",
+  "code_commit": "c183a1ac61c2aa4188989fd93032cae68d3538c1",
+  "font_environment": "run_minfont_review.sh: private/system fonts hidden, repository public fonts explicitly visible",
+  "focused_passed": 6,
+  "tests": [
+    {
+      "path": "tests/cases/issue_8425_default_outline_head_distance.rs",
+      "sha256": "c8789204ff66ebfd2bde6736ef364137835171bd9fe50821d35f8dc366e87811"
+    },
+    {
+      "path": "tests/cases/issue_8532_rowspan_hard_break.rs",
+      "sha256": "938b172b4590a4e0be6d1bbe5fc854991ec9efc3d266cc771ff488a112946f26"
+    }
+  ],
+  "events": [
+    {
+      "name": "focused-issue_8425_default_outline_head_distance",
+      "command": [
+        "bash",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/run_minfont_review.sh",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8425_default_outline_head_distance",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "12"
+      ],
+      "cwd": "/home/tsjang/rhwp",
+      "started": "2026-11-04T21:30:13.743988+00:00",
+      "ended": "2026-11-04T21:30:37.754035+00:00",
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-20261103/logs/marker-slot-rust-v2-focused-issue_8425_default_outline_head_distance.log",
+      "log_sha256": "44d7e4374d059cf88dcff29336d7ff83588b7f0e07fb30ce15b8485738861bf7"
+    },
+    {
+      "name": "focused-issue_8532_rowspan_hard_break",
+      "command": [
+        "bash",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-20261103/run_minfont_review.sh",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8532_rowspan_hard_break",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "12"
+      ],
+      "cwd": "/home/tsjang/rhwp",
+      "started": "2026-11-04T21:30:37.754766+00:00",
+      "ended": "2026-11-04T21:30:58.640199+00:00",
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-20261103/logs/marker-slot-rust-v2-focused-issue_8532_rowspan_hard_break.log",
+      "log_sha256": "19334d8664cfd18d06ec69499b6df4418a7f6fc71266f9fa38a28d2621e32ee0"
+    }
+  ],
+  "first_attempt": {
+    "result": "3 passed / 1 failed in marker module; source 97% width omitted by the newly authored expectation",
+    "log": "output/pr-review/planet6897-20261103/logs/marker-slot-rust-focused-issue_8425_default_outline_head_distance.log",
+    "corrected": "assert original charPr25/34 width 97%; reserve source reference em * 97% plus independent 50% body distance; tolerance unchanged"
+  },
+  "full_regression_status": "running; not yet complete",
+  "final_approval": false
+}

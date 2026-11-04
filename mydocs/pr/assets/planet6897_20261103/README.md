@@ -4,21 +4,44 @@ PR 생성 전 승인 대기까지 준비하는 로컬 작업이다. 검토 범�
 새 PR을 추가로 체리픽하지 않는다. 원 PR별 입력·주장 쪽·원 head와 메인터너 보정을 분리해 기록한다.
 원격 PR 생성·push·review·comment·close는 수행하지 않았다.
 
-## 현재 검증 출처와 상태 — 2026-11-05
+## 추가 보정의 실제 완료 범위 — 2026-11-05
+
+제품 코드 `c183a1ac61c2aa4188989fd93032cae68d3538c1`에서 기본 개요 예약 폭과 저장 줄
+재시작 표의 하단 보정을 검증하고 있습니다. 같은 원본·기존 독립 Print의 13개 조합·73쪽은
+Native/fresh WASM 모두 완료했고 최저 95.98%·96.12%, 이전 표시값 하락은 양쪽 0쪽입니다.
+[번호 전쪽 증거](pr_8433/reference-width-c183a1ac61/native-selected-audit.json),
+[같은 fresh WASM 증거](pr_8433/reference-width-c183a1ac61/wasm-selected-audit.json),
+[표 하단과 이어받기 증거](pr_8547/closing-frame-c183a1ac61/provenance.json)를 구분합니다.
+
+[최소 글꼴 집중 회귀 6개](marker-slot-focused-regression-c183a1ac61.json)와
+[실제 최적화 WASM의 공개 API·브라우저 검사](runtime-validation-c183a1ac61.json)는 통과했습니다.
+최신 Native의 [80개 입력·406쪽 전쪽 감사와 TSV 원본](current-c183a1ac61/native-audit.json)은
+완료했습니다. 최저 raw는 92.45232%이며 90% 미만·누락·쪽수·입력/PDF 해시 오류는 0건입니다.
+전체 Rust·fresh WASM 80개 입력의 전쪽 비교·보호 PR의 전쪽 무하락 대조는 최신 제품에서 진행 중입니다.
+아래 직전 완료 결과를 새 보정 제품의 전체 통과로 표시하지 않습니다. PR 생성·원격 작업은
+수행하지 않았으며 최종 준비 후 작업지시자 승인을 기다립니다.
+
+직접 판독 원장은 현재 122건입니다. 실제로 연 review·별도 overlay만 기록하며, 한 PR의
+전체 검증 완료 건수와 혼동하지 않습니다. 기존 producer `4b149b6cdf`의 PNG 재사용은
+최신 제품의 재출력과 구분합니다. PR #8475의 세로쓰기 병합 칸에서 마지막 글자가 보이지 않는
+차이와 PR #8512의 상자 선 표현, PR #8535의 각주 번호 위치 차이를 확인해 기록했습니다.
+이 기록을 완전 일치나 최종 승인으로 승격하지 않습니다.
+
+## 추가 보정 전의 완료된 공통 검증 — a7e5ce7112
 
 | 구분 | 실제 source·범위·상태 |
 | --- | --- |
 | 최신 검증 기준 | `upstream/devel` `22947f6a90c998e95fa51238d5b907a0ebd37162` |
-| 최신 필수 검증 제품 | `a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973` |
+| 보정 전 필수 검증 제품 | `a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973` |
 | 전쪽 시각 측정 producer·당시 base | `4b149b6cdfc514b9858ed644be2cf8120c731cd4` / `7fdd5441ff1e77c083818e920a48089f294de35e` |
 | 전쪽 fresh WASM 실제 build head | `7bb9e66fd006109ca9f7ee4c4d3f752c82e60fae` — 위 제품과 runtime source 동일성 확인 |
-| 최신 기본 전체 Rust 회귀 | 12,561/12,561 PASS, 45 skipped, exit 0 |
-| 최신 Native Skia | unfiltered library 4,040 PASS·12 ignored, CI integration 모듈 21개 모두 exit 0 |
-| 최신 Rust 기타 게이트 | fmt·suite/tier·workspace all-target Clippy·WASM Clippy·workspace build·doc test 모두 exit 0 |
+| 보정 전 기본 전체 Rust 회귀 | 12,561/12,561 PASS, 45 skipped, exit 0 |
+| 보정 전 Native Skia | unfiltered library 4,040 PASS·12 ignored, CI integration 모듈 21개 모두 exit 0 |
+| 보정 전 Rust 기타 게이트 | fmt·suite/tier·workspace all-target Clippy·WASM Clippy·workspace build·doc test 모두 exit 0 |
 | 전쪽 Native | 80입력·406쪽, 최저 91.85%, 90% 미만·누락·쪽수·입력/PDF 해시 불일치 0건 |
 | 전쪽 WASM | 중단 입력 36개 복구 완료. 80입력·406쪽, 최저 raw 92.03052%, 90% 미만·누락·쪽수·입력/제품 해시 오류 0건 |
 | PR #8389·#8397 보존 범위 | Native/fresh WASM 각각 17문서·1,770쪽, 원 TSV 2,153행 표시값 하락 0행 |
-| 최신 제품 후속 검사 | 최적화 WASM·실제 브라우저/API 통과. 새 base/후보와 리베이스 전 후보의 영향 3입력·7쪽씩, 총 14쪽 raw 동일. 당시 base의 전쪽 WASM 대조는 진행 중 |
+| 보정 전 제품 후속 검사 | 최적화 WASM·실제 브라우저/API 통과. 새 base/후보와 리베이스 전 후보의 영향 3입력·7쪽씩, 총 14쪽 raw 동일. 당시 base의 전쪽 WASM 대조는 진행 중 |
 | 개별 리뷰 | 39개 모두 현재 증적·최신 검증/대기 상태 갱신. 조건부 수용 기록이며 최종 승인 확정 0개 |
 
 [전쪽 Native/fresh WASM 산출물 감사](whole-page-capture-summary.json),

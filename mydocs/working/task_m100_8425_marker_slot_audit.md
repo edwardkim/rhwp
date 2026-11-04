@@ -64,6 +64,64 @@ bit 3만 켜며 bit 2는 꺼져 있다. 그런데 `list_marker_geometry_for`는 
 
 정상 대조군은 기존 `samples/issue7418/list_marker_head_synthetic.hwpx`와 한컴 2024
 Print다. 수정 전 제품 `e61ed1ca73`에서 Native·fresh WASM 전 4쪽이 모두 100.00%다.
-명시적 번호 정의의 실제 너비 비트·정렬·상대 크기·너비 보정과 글머리표가 섞인 입력으로,
+43개 문단은 실제로 BULLET만 사용한다. 번호 정의가 들어 있다는 사실만으로 실제
+NUMBER 경로의 실행 증거로 삼지 않는다. 실제 너비 비트·정렬·상대 크기·너비 보정이
+있는 글머리표 입력으로,
 새 기본 개요 보정 때문에 다른 계약이 바뀌지 않는지 확인한다. 최종 후보의 실제 측정과
 최소 글꼴 회귀는 아직 실행하지 않았으며 결과를 얻은 뒤 추가 기록한다.
+
+
+명시적 번호 대조는 별도 기존 `samples/issue7418/condense_numbered_synthetic.hwpx`와
+`pdf/issue7418/condense_numbered_synthetic-2024.pdf`(2쪽)를 추가했다. 실제 4개 문단이
+NUMBER를 사용하고 `useInstWidth=1`인 정의를 참조한다. 입력 XML의 사용 관계를 확인한
+뒤 보정 전·후 Native/fresh WASM을 각각 실행 중이다. 새 PR이나 새 fixture를 접수한 것이
+아니며, 기존 대조군의 실제 실행 범위를 바로잡았다.
+
+
+## 새 회귀의 독립 기대값과 기존 검사 정정
+
+13개 입력·Print 조합의 Native 73쪽은 최저 95.97856%이며 이전 표시값 하락이 0쪽이다.
+수준 1~7 탐침은 두 Print 기준 Native/fresh WASM 모두 100.00%이고, 원 실물 9쪽은
+최저 Native 99.99%·WASM 99.94%, 7쪽은 100.00%·99.99%를 유지했다. 이 세 영역의
+양쪽 review·overlay를 직접 판독하고 [정식 증거](../pr/pr_8433_review.md)에 연결했다.
+실제 NUMBER 대조군도 원본 XML의 사용 관계를 확인했고 보정 전·후 양쪽 2쪽 모두
+100.00%다. 글머리표 대조군은 별도 43개 BULLET 문단으로 한정해 기록한다.
+
+기존 `default_outline_number_keeps_half_em_from_text`는 실제 글리프 bbox 뒤를
+거리의 기준으로 삼았다. 한 자리 실제 글리프 폭이 1em인 글꼴에서는 원래도 통과할 수
+있어 이번 결함의 검출 증거로 삼지 않는다. 이를
+`default_outline_number_reserves_one_em_form_and_half_em_distance`로 고쳐 원본의
+1em 참조 형식과 50% 거리의 관계를 검사한다. 새
+`builtin_outline_levels_reserve_reference_form_instead_of_glyph_width`는 같은 탐침의
+일곱 수준을 검사하며 글꼴 폭이나 run 분할을 고정하지 않는다. 기존 내어쓰기와 리터럴
+번호 반례는 유지한다. 새 함수를 포함한 최소 글꼴 집중 6건은 아래 재실행 기록에서 통과했고,
+전체 회귀는 별도로 진행 중이다.
+
+[같은 관계의 수정 전·후 진단](../pr/assets/planet6897_20261103/pr_8433/reference-width-c183a1ac61/number-slot-before-after.json)은
+기존 실제 Native 출력에서 일곱 수준 모두 실패하고 보정 출력에서는 모두 통과했다.
+이는 실제 출력 트리의 관계 진단이며 이전 버전에서 새 Rust 함수를 실행했다고 주장하지
+않는다. 기대값은 보정 출력이 아니라 원본 글자 크기와 두 독립 Print의 형식 예약에서 정했다.
+
+## 2026-11-05 최소 글꼴 회귀의 원본 장평 확인
+
+첫 실행에서 탐침 수준 1~7과 기존 두 내용 관계 검사는 통과했고, 실물 7쪽의 새 거리 검사만
+실패했습니다. 원본을 다시 읽은 결과 `charPr 25·34`의 장평은 모두 97%였습니다. 제가 작성한
+첫 기대식 `1em + 0.5em`은 이 저장값을 누락했습니다. 실제 엔진 관측 1.47em은
+`참조 1em × 0.97 + 본문 거리 0.5em`과 일치합니다. 원본 저장 장평을 확인하는 assertion과
+이를 반영한 상대 관계로 검사를 바로잡았습니다. 허용 오차를 늘리거나 엔진을 변경하지 않았습니다.
+
+실패 로그는 `output/pr-review/planet6897-20261103/logs/marker-slot-rust-focused-issue_8425_default_outline_head_distance.log`,
+재실행은 같은 위치의 `marker-slot-rust-v2-*`에 별도로 기록합니다. 원래 실패 스냅샷을
+`marker-slot-rust-initial-failed-source-snapshot.json`으로 보존했고, 시각 검사의 제품 소스와
+Rust 검사 v2 소스 스냅샷을 분리했습니다. 제품·입력 바이트는 변하지 않아 진행 중인 시각 검사는 유지합니다.
+
+재실행에서 기본 개요 4개와 표 원본 프레임 관계 2개가 모두 통과했습니다. 명령·종료 시각·파일 해시는
+[집중 회귀 기록](../pr/assets/planet6897_20261103/marker-slot-focused-regression-c183a1ac61.json)에 보존했습니다.
+전체 필수 검증은 별도로 진행 중입니다.
+
+## 2026-11-05 최신 Native 전쪽 완료
+
+제품 `c183a1ac61`의 Native 80개 입력·406쪽을 완료했습니다. 최저 raw 92.45232%,
+90% 미만·누락·독립 PDF와 쪽수 불일치·입력/PDF 해시 오류는 모두 0건입니다.
+[전쪽 감사와 실제 TSV 원본](../pr/assets/planet6897_20261103/current-c183a1ac61/native-audit.json)을
+보존했습니다. fresh WASM 전쪽·보호 PR 무하락·전체 Rust 검증의 완료와는 구분합니다.

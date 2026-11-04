@@ -1,0 +1,125 @@
+{
+  "recorded_at": "2026-11-04T21:12:03.271801+00:00",
+  "input": "mydocs/pr/assets/issue_8425/probe/levels.hwpx",
+  "input_sha256": "d2aea77ecfd8786e8855f1cb9754f958206456a01b41a01b362c1f0e454d4c56",
+  "independent_pdf_measurement": "mydocs/pr/assets/planet6897_20261103/pr_8433/marker-slot-diagnostic.json",
+  "facts": [
+    {
+      "label": "before",
+      "tree": "output/pr-review/planet6897-20261103/visual/4b149b6cdf/native/pr8433-levels-493f24c1/render_tree/render_tree_001.json",
+      "tree_sha256": "a5e5b349e5dc40cab00d45df0a903dfe9acc514f461629b8d0dee9e9e13170a4",
+      "passed": 0,
+      "failed": 7,
+      "records": [
+        {
+          "level": 1,
+          "source_font_size_csspx": 16.0,
+          "expected_offset_em": 1.5,
+          "actual_offset_em": 1.3687500000000004,
+          "pass_with_cli_roundoff": false
+        },
+        {
+          "level": 2,
+          "source_font_size_csspx": 16.0,
+          "expected_offset_em": 2.5,
+          "actual_offset_em": 2.237499999999999,
+          "pass_with_cli_roundoff": false
+        },
+        {
+          "level": 3,
+          "source_font_size_csspx": 16.0,
+          "expected_offset_em": 3.5,
+          "actual_offset_em": 3.1062499999999993,
+          "pass_with_cli_roundoff": false
+        },
+        {
+          "level": 4,
+          "source_font_size_csspx": 16.0,
+          "expected_offset_em": 4.5,
+          "actual_offset_em": 3.9812499999999993,
+          "pass_with_cli_roundoff": false
+        },
+        {
+          "level": 5,
+          "source_font_size_csspx": 16.0,
+          "expected_offset_em": 5.5,
+          "actual_offset_em": 4.85,
+          "pass_with_cli_roundoff": false
+        },
+        {
+          "level": 6,
+          "source_font_size_csspx": 16.0,
+          "expected_offset_em": 6.5,
+          "actual_offset_em": 5.71875,
+          "pass_with_cli_roundoff": false
+        },
+        {
+          "level": 7,
+          "source_font_size_csspx": 16.0,
+          "expected_offset_em": 7.5,
+          "actual_offset_em": 6.5875,
+          "pass_with_cli_roundoff": false
+        }
+      ]
+    },
+    {
+      "label": "after",
+      "tree": "output/pr-review/planet6897-20261103/visual/marker-slot-c183a1ac61/native/pr8433-levels-493f24c1/render_tree/render_tree_001.json",
+      "tree_sha256": "f026a43390718c31f5a39cc56b412d497ebf7d62e66dcd08be9e641083ab312d",
+      "passed": 7,
+      "failed": 0,
+      "records": [
+        {
+          "level": 1,
+          "source_font_size_csspx": 16.0,
+          "expected_offset_em": 1.5,
+          "actual_offset_em": 1.5,
+          "pass_with_cli_roundoff": true
+        },
+        {
+          "level": 2,
+          "source_font_size_csspx": 16.0,
+          "expected_offset_em": 2.5,
+          "actual_offset_em": 2.5,
+          "pass_with_cli_roundoff": true
+        },
+        {
+          "level": 3,
+          "source_font_size_csspx": 16.0,
+          "expected_offset_em": 3.5,
+          "actual_offset_em": 3.5,
+          "pass_with_cli_roundoff": true
+        },
+        {
+          "level": 4,
+          "source_font_size_csspx": 16.0,
+          "expected_offset_em": 4.5,
+          "actual_offset_em": 4.5,
+          "pass_with_cli_roundoff": true
+        },
+        {
+          "level": 5,
+          "source_font_size_csspx": 16.0,
+          "expected_offset_em": 5.5,
+          "actual_offset_em": 5.5,
+          "pass_with_cli_roundoff": true
+        },
+        {
+          "level": 6,
+          "source_font_size_csspx": 16.0,
+          "expected_offset_em": 6.5,
+          "actual_offset_em": 6.5,
+          "pass_with_cli_roundoff": true
+        },
+        {
+          "level": 7,
+          "source_font_size_csspx": 16.0,
+          "expected_offset_em": 7.5,
+          "actual_offset_em": 7.5,
+          "pass_with_cli_roundoff": true
+        }
+      ]
+    }
+  ],
+  "status": "같은 참조 형식 관계가 기존 실제 출력에서 7개 실패, 보정 출력에서 7개 통과한 JSON 진단; 이전 Rust 함수 실행을 뜻하지 않음"
+}

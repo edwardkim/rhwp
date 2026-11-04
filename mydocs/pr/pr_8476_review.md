@@ -64,7 +64,14 @@ typeset의 표 배치 완료 상태와 후속 문단의 쪽 전환이 같은 현
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
 | `pushed_none.hwpx` 3쪽 · 나누지 않는 표 뒤 쪽 나누기 | 99.97% · [review](assets/planet6897_20261103/pr_8476/pr8476-claim-p003-pushed_none-native-review.png) / [overlay](assets/planet6897_20261103/pr_8476/pr8476-claim-p003-pushed_none-native-overlay.png) | 100.00% · [review](assets/planet6897_20261103/pr_8476/pr8476-claim-p003-pushed_none-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8476/pr8476-claim-p003-pushed_none-wasm-overlay.png) |
-| `pushed_none.hwpx` 2쪽 · 이월된 N1 표 뒤 쪽 나누기의 실제 기준 쪽 | 100.00% · [review](assets/planet6897_20261103/pr_8476/pr8476-claim-p002-pushed_none-native-review.png) / [overlay](assets/planet6897_20261103/pr_8476/pr8476-claim-p002-pushed_none-native-overlay.png) | 100.00% · [review](assets/planet6897_20261103/pr_8476/pr8476-claim-p002-pushed_none-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8476/pr8476-claim-p002-pushed_none-wasm-overlay.png) |
+| `pushed_none.hwpx` 2쪽 · 표 앵커 뒤 N1 끝 문단이 남는 앞 쪽 | 100.00% · [review](assets/planet6897_20261103/pr_8476/pr8476-claim-p002-pushed_none-native-review.png) / [overlay](assets/planet6897_20261103/pr_8476/pr8476-claim-p002-pushed_none-native-overlay.png) | 100.00% · [review](assets/planet6897_20261103/pr_8476/pr8476-claim-p002-pushed_none-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8476/pr8476-claim-p002-pushed_none-wasm-overlay.png) |
+
+| `pushed_none.hwpx` 7쪽 · 이월된 N3 표 30행의 단독 쪽 소유 | 100.00% · [review](assets/planet6897_20261103/pr_8476/pr8476-claim-p007-pushed_none-native-review.png) / [overlay](assets/planet6897_20261103/pr_8476/pr8476-claim-p007-pushed_none-native-overlay.png) | 100.00% · [review](assets/planet6897_20261103/pr_8476/pr8476-claim-p007-pushed_none-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8476/pr8476-claim-p007-pushed_none-wasm-overlay.png) |
+| `pushed_none.hwpx` 8쪽 · N3 표 다음 쪽의 N4 머리·채움 1~3 | 100.00% · [review](assets/planet6897_20261103/pr_8476/pr8476-claim-p008-pushed_none-native-review.png) / [overlay](assets/planet6897_20261103/pr_8476/pr8476-claim-p008-pushed_none-native-overlay.png) | 100.00% · [review](assets/planet6897_20261103/pr_8476/pr8476-claim-p008-pushed_none-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8476/pr8476-claim-p008-pushed_none-wasm-overlay.png) |
+
+2·3쪽과 7·8쪽의 Native, 7·8쪽의 fresh WASM review와 overlay를 직접 읽었습니다.
+7쪽 N3 표 뒤 명시적 쪽 나누기가 8쪽 N4로 이어지는 쪽 소유를 확인했습니다.
+이 이미지는 기존 `4b149b6cdf` 전쪽 PNG를 재사용해 구성했으며 새 제품의 재출력이 아닙니다.
 
 ## 통합 최종 검증 조건
 
@@ -86,4 +93,4 @@ typeset의 표 배치 완료 상태와 후속 문단의 쪽 전환이 같은 현
 통합 PR 생성·병합과 원 PR 댓글·닫기는 아직 수행하지 않았습니다.
 실제 병합 뒤 원 PR의 주장 문서·페이지에 대응하는 증거와 merge SHA를 연결합니다.
 
-<!-- planet6897-20261103-generated-review -->
+<!-- 수동 보정 기록을 포함하므로 일괄 생성으로 덮어쓰지 않는다. -->
