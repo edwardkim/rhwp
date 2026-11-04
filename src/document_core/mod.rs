@@ -20,6 +20,7 @@ mod font_environment;
 mod host_font_environment;
 mod loaded_frame_restore;
 mod table_reflow_owners;
+mod tac_host_rows;
 pub use canvas_metric_requests::{CanvasMetricBatch, CanvasMetricReply, CanvasMetricRequest};
 pub use host_font_environment::{
     DeclaredFontFallbackRequest, ObservedFontFallback, ObservedFontSource,
