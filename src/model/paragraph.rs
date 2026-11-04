@@ -188,6 +188,10 @@ pub struct Paragraph {
     /// splitting starts a continuation, and width reflow discards the old frames.
     #[serde(skip_serializing)]
     pub cell_vpos_reset: Option<bool>,
+    /// 글자처럼 취급 표의 높이 변화로 편집이 옮긴 저장 줄 흐름. 저장할 때 이 문단이 새 쪽
+    /// 맨 앞이면 저장 사본에만 쪽 원점 vpos를 적는다. 직렬화하지 않는다.
+    #[serde(skip_serializing)]
+    pub stored_flow_shifted: bool,
     /// [#7436] 번호·개요 문단의 번호 문자열(본문과의 거리 공백 포함).
     ///
     /// 번호는 문서 순서의 계수기에서 정해지는데, 줄 나눔은 문단 하나만 보고 줄을 채운다.
@@ -2323,6 +2327,8 @@ impl Paragraph {
             source_line_seg_vertical_pos: None,
             // 새 줄은 본문 축을 이어 붙인 저장 줄이 아니다.
             layout_rebased_body_axis: false,
+            // 갈라진 문단은 앞 문단의 새 저장 줄에 이어 계산된다.
+            stored_flow_shifted: false,
             // 새로 계산된 줄은 `char_offsets` 와 같은 HWP5 축에서 나오므로 보정이 없다 (#5961).
             hwpx_axis_shift: 0,
             range_tags: new_range_tags,

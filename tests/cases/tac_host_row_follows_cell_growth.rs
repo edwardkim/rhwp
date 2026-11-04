@@ -1,11 +1,16 @@
 //! 관계형: 칸 글이 늘어난 글자처럼 취급 표는 제자리에서 아래로 자라고, 뒤 표는 그만큼 내려가며, 저장·다시 열기 뒤에도 같다.
-//! 주석 갱신: 2026-11-04 12:20 KST(+09:00).
+//! 주석 갱신: 2026-11-04 16:10 KST(+09:00).
 //! 측정: 2026-11-04 한/글 12.30(Mac)에서 `samples/footnote-01.hwp` 제목 표 둘째 문단 앞에 "표안한글"을 넣었다.
 //! 한/글은 제목 표 윗변을 그대로 두고 표를 한 줄만큼 아래로 키웠으며, 제목 표와 다음 개요 표 사이 빈 자리도
 //! 그대로 두었다(같은 편집을 한 rhwp 저장본을 한/글로 열어도 같다). 한/글이 저장한 파일은 표 sz 6942→8362,
 //! 표 줄(둘째 줄) lh·th 7508→8928, 첫 줄 lh 7508→8928(th 1600 유지), 뒤 문단 vpos 14028→15448이었다.
 //! 수정 전 rhwp는 편집 직후 제목 표를 첫 줄 자리(2560HU 위)로 올리고 개요 표를 그대로 두었으며, 저장본을
-//! 다시 열면 개요 표가 58.7px 올라와 제목 표와 겹쳤다. 쪽·픽셀 좌표는 고정하지 않는다.
+//! 다시 열면 개요 표가 58.7px 올라와 제목 표와 겹쳤다.
+//! 쪽 나눔: 원본은 한/글에서 6쪽이고 1쪽이 "- 3D 프린터로…" 문단(문단 10)과 각주 둘로 끝난다. 편집 뒤에는
+//! 그 문단이 각주 위에 들어가지 않아 한/글이 2쪽 맨 위로 넘기고 7쪽이 된다(rhwp 저장본을 한/글로 열어도
+//! "3/7쪽"으로 같다). 한/글 저장본은 그 문단 첫 줄 vpos를 300(문단 위 간격)으로 적는다. 수정 전 rhwp는 편집
+//! 화면이 7쪽인데 저장본을 다시 열면 6쪽이었다(옮긴 vpos가 앞 쪽에 이어 있어 저장 사다리를 따르는 조판이
+//! 그 문단을 1쪽에 남겼다). 쪽·픽셀 좌표는 고정하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -170,4 +175,114 @@ fn saved_host_row_holds_the_table_it_draws() {
     );
     // 표 줄 끝에서 뒤 문단까지의 저장 간격도 그대로다.
     assert_eq!(next_gap(&saved), gap, "표 줄 끝과 뒤 문단 사이");
+}
+
+/// 쪽마다 그 쪽에서 시작하거나 이어지는 본문 문단 번호.
+fn page_paragraphs(doc: &DocumentCore) -> Vec<Vec<usize>> {
+    let pages = doc.dump_page_items_json(None);
+    pages
+        .as_array()
+        .expect("쪽 목록")
+        .iter()
+        .map(|page| {
+            let mut paras: Vec<usize> = page["columns"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .flat_map(|column| column["items"].as_array().into_iter().flatten())
+                .filter_map(|item| item["paraIndex"].as_u64())
+                .map(|index| index as usize)
+                .collect();
+            paras.dedup();
+            paras
+        })
+        .collect()
+}
+
+fn page_of(pages: &[Vec<usize>], para: usize) -> usize {
+    pages
+        .iter()
+        .position(|paras| paras.contains(&para))
+        .unwrap_or_else(|| panic!("문단 {para}이 어느 쪽에도 없다: {pages:?}"))
+}
+
+/// 편집이 옮긴 흐름은 첫 명시적 쪽 나눔 앞까지다.
+fn first_page_break(doc: &DocumentCore) -> usize {
+    doc.document().sections[0]
+        .paragraphs
+        .iter()
+        .position(|para| para.column_type == rhwp::model::paragraph::ColumnBreakType::Page)
+        .expect("명시적 쪽 나눔")
+}
+
+fn assert_same_pages(actual: &DocumentCore, expected: &[Vec<usize>], limit: usize, what: &str) {
+    let pages = page_paragraphs(actual);
+    assert_eq!(pages.len(), expected.len(), "{what} 쪽 수: {pages:?}");
+    for para in 0..limit {
+        assert_eq!(
+            page_of(&pages, para),
+            page_of(expected, para),
+            "{what} 문단 {para}의 쪽"
+        );
+    }
+}
+
+#[test]
+fn page_that_takes_the_pushed_paragraph_survives_save() {
+    let mut doc = open(&std::fs::read(SAMPLE).expect("견본"));
+    let original = page_paragraphs(&doc);
+    let limit = first_page_break(&doc);
+    let last = limit - 1;
+    assert_eq!(
+        page_of(&original, last),
+        page_of(&original, last - 1),
+        "견본에서는 문단 {last}이 앞 문단과 같은 쪽에 있다"
+    );
+
+    let control = title_control(&doc);
+    doc.insert_text_in_cell_native(0, 0, control, 0, 1, 0, TYPED)
+        .expect("제목 표 칸에 입력");
+    let typed = page_paragraphs(&doc);
+    // 한/글처럼 마지막 문단이 각주 위에 들어가지 않아 다음 쪽 맨 위로 간다.
+    assert_eq!(
+        page_of(&typed, last),
+        page_of(&typed, last - 1) + 1,
+        "편집 뒤 문단 {last}은 다음 쪽으로: {typed:?}"
+    );
+    assert_eq!(typed.len(), original.len() + 1, "편집 뒤 쪽 수: {typed:?}");
+
+    // 저장본은 그 쪽 시작을 저장 줄에 담아 다시 열어도 같은 쪽에 둔다.
+    let hwp = open(&doc.export_hwp_native().expect("HWP 저장"));
+    assert_same_pages(&hwp, &typed, limit, "HWP 다시 열기");
+    let hwpx = open(&doc.export_hwpx_native().expect("HWPX 저장"));
+    assert_same_pages(&hwpx, &typed, limit, "HWPX 다시 열기");
+    let paragraphs = &hwp.document().sections[0].paragraphs;
+    let previous_end = paragraphs[last - 1]
+        .line_segs
+        .last()
+        .map(|row| row.vertical_pos + row.line_height + row.line_spacing)
+        .expect("앞 문단 줄");
+    assert!(
+        paragraphs[last].line_segs[0].vertical_pos < previous_end,
+        "저장본의 문단 {last} 첫 줄은 새 쪽 원점에서 다시 시작한다"
+    );
+
+    // 편집 중 저장 줄은 앞 쪽에 이어 둔다. 쪽 원점은 저장본에만 적는다.
+    let live = &doc.document().sections[0].paragraphs;
+    assert!(
+        live[last].line_segs[0].vertical_pos
+            >= live[last - 1]
+                .line_segs
+                .last()
+                .map(|row| row.vertical_pos + row.line_height + row.line_spacing)
+                .expect("앞 문단 줄"),
+        "편집 중 문단 {last} 저장 줄은 앞 문단에 이어 있다"
+    );
+
+    // 글을 지우면 그 문단이 앞 쪽으로 돌아오고 저장해도 같다.
+    doc.delete_text_in_cell_native(0, 0, control, 0, 1, 0, TYPED.chars().count())
+        .expect("넣은 글 지우기");
+    assert_same_pages(&doc, &original, limit, "지운 뒤");
+    let restored = open(&doc.export_hwp_native().expect("지운 뒤 저장"));
+    assert_same_pages(&restored, &original, limit, "지운 뒤 다시 열기");
 }
