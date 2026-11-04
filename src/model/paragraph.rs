@@ -2240,21 +2240,6 @@ impl Paragraph {
         self.field_ranges = kept_field_ranges;
 
         // 5-2. controls 분할 (`moves`)
-        // 번호 자리표 공백은 그 자체로 번호의 8유닛을 담는다. 그 자리에서 나눈 번호는
-        // 새 문단 앞 갭을 따로 차지하지 않는다.
-        let placeholder_end = new_char_offsets.get(1).copied().unwrap_or_else(|| {
-            self.char_count
-                .saturating_sub(1)
-                .saturating_sub(utf16_split)
-        });
-        let number_placeholder_at_split = text_chars.get(split_pos) == Some(&' ')
-            && new_char_offsets.first() == Some(&0)
-            && placeholder_end >= CTRL_CHAR_CODE_UNITS;
-        let number_controls: Vec<bool> = self
-            .controls
-            .iter()
-            .map(|ctrl| matches!(ctrl, Control::AutoNumber(_) | Control::NewNumber(_)))
-            .collect();
         let old_controls = std::mem::take(&mut self.controls);
         let old_ctrl_data = std::mem::take(&mut self.ctrl_data_records);
         let mut kept_controls = Vec::with_capacity(old_controls.len());
@@ -2290,8 +2275,25 @@ impl Paragraph {
                 text_positions.get(ci) == Some(&split_pos)
                     && !matches!(new_controls[new_ci], Control::AutoNumber(_))
             })
-            .filter(|&(&ci, _)| !(number_placeholder_at_split && number_controls[ci]))
             .count();
+
+        // 번호 자리표 공백은 번호의 8유닛에 포함된다. 나눈 자리에서 새 문단으로
+        // 옮긴 자리표만 따로 세지 않는다. 앞 갭 보존과 controls 이동 규칙은 그대로 둔다.
+        let placeholder_end = new_char_offsets.get(1).copied().unwrap_or_else(|| {
+            self.char_count
+                .saturating_sub(1)
+                .saturating_sub(utf16_split)
+        });
+        let moved_number_placeholder = text_chars.get(split_pos) == Some(&' ')
+            && new_char_offsets.first() == Some(&0)
+            && placeholder_end >= CTRL_CHAR_CODE_UNITS
+            && moved_control_idx_map.iter().any(|(&ci, &new_ci)| {
+                text_positions.get(ci) == Some(&split_pos)
+                    && matches!(
+                        new_controls[new_ci],
+                        Control::AutoNumber(_) | Control::NewNumber(_)
+                    )
+            });
 
         // 6. char_count 갱신
         //    양쪽 문단에 남은 controls와 누름틀 끝 표지는 각각 8 code unit을 차지하므로 반영 필요
@@ -2299,11 +2301,6 @@ impl Paragraph {
         let new_text_code_units: u32 = new_text.chars().map(Self::char_stream_len).sum();
         let ctrl_code_units: u32 = (self.controls.len() + self.field_ranges.len()) as u32 * 8;
         self.char_count = kept_text_code_units + ctrl_code_units + 1; // +1 for paragraph end marker
-                                                                      // 번호의 8유닛은 자리표 공백이 이미 담으므로 그 공백을 따로 세지 않는다.
-        let moved_number_placeholder = number_placeholder_at_split
-            && moved_control_idx_map
-                .keys()
-                .any(|&ci| number_controls[ci] && text_positions.get(ci) == Some(&split_pos));
         let new_char_count =
             new_text_code_units + (new_controls.len() + new_field_ranges.len()) as u32 * 8 + 1
                 - u32::from(moved_number_placeholder);
