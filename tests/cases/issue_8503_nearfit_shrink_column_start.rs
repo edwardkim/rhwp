@@ -1,7 +1,8 @@
 //! 관계형: PR #8509의 정식 회귀.
-//! 주석 갱신: 2026-11-04T13:59:19+09:00; 직전 파일 변경: 2026-11-03T19:42:47+09:00 (`6b6572416a8b5d022ea9e027b9c23b14e6afcd98`).
+//! 주석 갱신: 2026-11-05T04:02:25+09:00; 직전 파일 변경: 2026-11-03T19:42:47+09:00 (`6b6572416a8b5d022ea9e027b9c23b14e6afcd98`).
 //! 현재 통합 측정 근거 시작
-//! 측정일 2026-11-04, 제품 코드 `dc87f4fa2e`(리베이스 전 통합 후보).
+//! 측정일 2026-11-04, 제품 코드 `4b149b6cdfc514b9858ed644be2cf8120c731cd4` · `4b149b6cdf`.
+//! 실제 전쪽 측정 producer를 기록한다. 이후 충돌 없는 리베이스의 집중 검증은 개별 리뷰에서 구분한다.
 //! 96 DPI, Native Skia/fresh WASM Canvas, `visual_sweep.py --silhouette-only`의
 //! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣).
 //! 입력 `samples/issue8503/1190000-200700045-nearfit-table-indent.hwp`; 독립 Print `pdf/issue8503/1190000-200700045-nearfit-table-indent-2022.pdf`.
@@ -9,6 +10,7 @@
 //! 주장 1쪽 raw: Native 98.80% / fresh WASM 98.84%.
 //! 입력 `samples/issue8503/1490000-201000053-nearfit-table-indent.hwp`; 독립 Print `pdf/issue8503/1490000-201000053-nearfit-table-indent-2022.pdf`.
 //! 전체 1쪽, 전쪽 최저 Native 100.00% / fresh WASM 100.00%.
+//! 주장 1쪽 raw: Native 100.00% / fresh WASM 100.00%.
 //! 원본·TSV·대응 쪽 review/overlay: `mydocs/pr/pr_8509_review.md`.
 //! 전쪽 통과와 실제 절대 px 좌표 고정은 다른 조건이다. 본문 assertion의 원본 단위·상대 관계를 구분한다.
 //! 현재 통합 측정 근거 끝

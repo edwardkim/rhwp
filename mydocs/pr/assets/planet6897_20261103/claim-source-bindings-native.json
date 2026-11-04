@@ -1,0 +1,1965 @@
+{
+  "recorded_at": "2026-11-04T19:02:47.485156+00:00",
+  "backend": "native",
+  "selection_rows": 100,
+  "unique_input_pages": 93,
+  "verified_claim_pairs": 93,
+  "direct_reading_this_checkpoint": 15,
+  "errors": [],
+  "records": [
+    {
+      "pr": 8422,
+      "input": "samples/issue8418/30026-safety-reform-toc.hwp",
+      "pdf": "pdf/issue8418/30026-safety-reform-toc-2022.pdf",
+      "page": 3,
+      "backend": "native",
+      "claim": "TAC 표 줄간격",
+      "claim_key": "pr8422-claim-p003-30026-safety-refor",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8422-claim-p003-30026-safety-refor/claim-source-003.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8422-claim-p003-30026-safety-refor/review/review_003.png",
+          "sha256": "5fb18c2bc3e1099aa276a8d8e68e050684ace49b1a99681fd0ab00cbec819ee8"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8422-claim-p003-30026-safety-refor/overlay/overlay_003.png",
+          "sha256": "5c9bc3d9ce9de026bea8aa898bbff4292b761878bcf81da15eb97484bf2144c0"
+        }
+      },
+      "direct_reading_this_checkpoint": true
+    },
+    {
+      "pr": 8428,
+      "input": "samples/issue2004_cell_image_stack.hwp",
+      "pdf": "pdf/issue2004_cell_image_stack-hwp-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "Batang 기호 폭",
+      "claim_key": "pr8428-claim-p001-issue2004_cell_ima-896918",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8428-claim-p001-issue2004_cell_ima-896918/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8428-claim-p001-issue2004_cell_ima-896918/review/review_001.png",
+          "sha256": "a1821aa9c54baa30c665504b7539d10c44ddad7241b4b39a149c2125082b42db"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8428-claim-p001-issue2004_cell_ima-896918/overlay/overlay_001.png",
+          "sha256": "4300217a7579c8a0f4cc9f4dca33a9c5945377c7ad61567382d4b34b7d3163b7"
+        }
+      },
+      "direct_reading_this_checkpoint": true
+    },
+    {
+      "pr": 8429,
+      "input": "mydocs/pr/assets/issue_8424/inputs/after/cellwrap.hwpx",
+      "pdf": "pdf/issue-8424/cellwrap-2024.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "긴 셀 문단 저장 줄",
+      "claim_key": "pr8429-claim-p001-cellwrap",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8429-claim-p001-cellwrap/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8429-claim-p001-cellwrap/review/review_001.png",
+          "sha256": "3abc7f0e2d624b710ade32e938f5cf54de157ffeb79565008dc2a52888022eb8"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8429-claim-p001-cellwrap/overlay/overlay_001.png",
+          "sha256": "41d716795b6279bf39f8aa9ec714984e2799cd4cf5791358e143b53902551689"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8431,
+      "input": "samples/issue8423/30396-childcare-leave-recommendation.hwp",
+      "pdf": "pdf/issue8423/30396-childcare-leave-recommendation-2022.pdf",
+      "page": 9,
+      "backend": "native",
+      "claim": "30396 표 host 원점",
+      "claim_key": "pr8431-claim-p009-30396-childcare-le",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8431-claim-p009-30396-childcare-le/claim-source-009.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8431-claim-p009-30396-childcare-le/review/review_009.png",
+          "sha256": "700123985aa1358ab68bcd2ea4bd9df19a3aea586133e83420fdf5eecd59d228"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8431-claim-p009-30396-childcare-le/overlay/overlay_009.png",
+          "sha256": "54c7c91e189e7716ad80fa064c8e642ce3ccea977238c80362ff50a743585bf0"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8433,
+      "input": "mydocs/pr/assets/issue_8425/probe/levels.hwpx",
+      "pdf": "pdf/issue-8425/levels-2024.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "기본 개요 머리 모양",
+      "claim_key": "pr8433-claim-p001-levels-07bae7",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8433-claim-p001-levels-07bae7/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8433-claim-p001-levels-07bae7/review/review_001.png",
+          "sha256": "7e6ff2256d3f50e0e39fe3060d42e805006907cd1bf82573dca3e31b9bb86134"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8433-claim-p001-levels-07bae7/overlay/overlay_001.png",
+          "sha256": "d4b6912595393d9b3046267d1433d34a1da589373dfe6d6a8f464ea73b470b8e"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8434,
+      "input": "samples/issue8432/156761223-declared-zero-textbox.hwp",
+      "pdf": "pdf/issue8432/156761223-declared-zero-textbox-2022.pdf",
+      "page": 3,
+      "backend": "native",
+      "claim": "선언 0 글상자",
+      "claim_key": "pr8434-claim-p003-156761223-declared",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8434-claim-p003-156761223-declared/claim-source-003.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8434-claim-p003-156761223-declared/review/review_003.png",
+          "sha256": "817766afa591722ce22363d7f2e977f6bd22229fec65c7c6e8e5f53e4c3d9800"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8434-claim-p003-156761223-declared/overlay/overlay_003.png",
+          "sha256": "2d395bb39611247c18b2de6218639f3b331fb3732783a08a4b39b925c438fa2a"
+        }
+      },
+      "direct_reading_this_checkpoint": true
+    },
+    {
+      "pr": 8437,
+      "input": "samples/issue8435/156638890-logo-textbox.hwpx",
+      "pdf": "pdf/issue8435/156638890-logo-textbox-2022.pdf",
+      "page": 3,
+      "backend": "native",
+      "claim": "TAC 로고 원점",
+      "claim_key": "pr8437-claim-p003-156638890-logo-tex",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8437-claim-p003-156638890-logo-tex/claim-source-003.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8437-claim-p003-156638890-logo-tex/review/review_003.png",
+          "sha256": "c9f115fca62a7a3a4e7995431766b62e834eb83feaa97a4a9aedaf97ed24b0bb"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8437-claim-p003-156638890-logo-tex/overlay/overlay_003.png",
+          "sha256": "e5d67d4ee3359c3667f12ce302bf909bac7eb03d4df9aa3e6424ed35a9febfe4"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8444,
+      "input": "samples/issue8441/156578788-tac-logo-line.hwp",
+      "pdf": "pdf/issue8441/156578788-tac-logo-line-2022.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "TAC 그림 줄 높이",
+      "claim_key": "pr8444-claim-p001-156578788-tac-logo",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8444-claim-p001-156578788-tac-logo/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8444-claim-p001-156578788-tac-logo/review/review_001.png",
+          "sha256": "5c45576a7589ccbb9bb4b88ae2ce83202096e9986ab926e93b77cf6a92aaefa8"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8444-claim-p001-156578788-tac-logo/overlay/overlay_001.png",
+          "sha256": "9211a517a3c86ce3678e581565938c2a8c3b9bf49356bcf7592903dece104523"
+        }
+      },
+      "direct_reading_this_checkpoint": true
+    },
+    {
+      "pr": 8448,
+      "input": "samples/issue8446/156569782-reset-line-logo-empty.hwp",
+      "pdf": "pdf/issue8446/156569782-reset-line-logo-empty-2022.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "저장 리셋 로고",
+      "claim_key": "pr8448-claim-p001-156569782-reset-li",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8448-claim-p001-156569782-reset-li/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8448-claim-p001-156569782-reset-li/review/review_001.png",
+          "sha256": "e834bbb08e67071c683abcf21b13d54973e228d1069a4fa20ec5d512770bf073"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8448-claim-p001-156569782-reset-li/overlay/overlay_001.png",
+          "sha256": "74f4fe2e9c540c376fabb39a1505088be92e8aec94ce0cedfdee79a15de547f0"
+        }
+      },
+      "direct_reading_this_checkpoint": true
+    },
+    {
+      "pr": 8461,
+      "input": "samples/issue8458/156759019-text-line-tac-logo.hwp",
+      "pdf": "pdf/issue8458/156759019-text-line-tac-logo-2022.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "텍스트 줄 TAC 로고",
+      "claim_key": "pr8461-claim-p002-156759019-text-lin",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8461-claim-p002-156759019-text-lin/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8461-claim-p002-156759019-text-lin/review/review_002.png",
+          "sha256": "c821454c5694ff4460eb5185e786aa8c0dae52ca3051d13098755360fe4600c3"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8461-claim-p002-156759019-text-lin/overlay/overlay_002.png",
+          "sha256": "cb42f093efea2d1e2cff9aab7101610ab14162b8f5ad6fed7f51417c4a4d178a"
+        }
+      },
+      "direct_reading_this_checkpoint": true
+    },
+    {
+      "pr": 8465,
+      "input": "samples/issue8462/156633674-offpage-logo.hwpx",
+      "pdf": "pdf/issue8462/156633674-offpage-logo-2022.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "용지 밖 오프셋",
+      "claim_key": "pr8465-claim-p001-156633674-offpage-",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8465-claim-p001-156633674-offpage-/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8465-claim-p001-156633674-offpage-/review/review_001.png",
+          "sha256": "0c4c517377299509a64a4ff672633a88d9c57648068bfbc85885f67410f0d8dc"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8465-claim-p001-156633674-offpage-/overlay/overlay_001.png",
+          "sha256": "9e3d2981fdeba6b23c4c4c15ce4523539c5794ff2d2126dfe9b304412fe6ec14"
+        }
+      },
+      "direct_reading_this_checkpoint": true
+    },
+    {
+      "pr": 8469,
+      "input": "samples/issue8464/rowbreak_content_fit_h3180.hwpx",
+      "pdf": "pdf/issue8464_rowbreak_content_fit_h3180-2020.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "셀 단위 나눔 경계",
+      "claim_key": "pr8469-claim-p002-rowbreak_content_f-68595c",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-68595c/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-68595c/review/review_002.png",
+          "sha256": "09a949b1298f94276a8968a24d21ab6b6e879b7cbf8257ed0059da91a2b9bf4f"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-68595c/overlay/overlay_002.png",
+          "sha256": "9ea50cbcec377e9bda7835d7fb9743aba35413167e50f4b61aaa448170f754df"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8473,
+      "input": "samples/issue8467/36416725-approval-footer-split.hwpx",
+      "pdf": "pdf/issue8467/36416725-approval-footer-split-2022.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "결재란 이월 뒤에도 본문 표는 1쪽에 보존",
+      "claim_key": "pr8473-claim-p001-36416725-approval-",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8473-claim-p001-36416725-approval-/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8473-claim-p001-36416725-approval-/review/review_001.png",
+          "sha256": "3ae26e3616e2a26722f62ae845b4ac9a2918a4e89f30dabd841c3b194a11d6bc"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8473-claim-p001-36416725-approval-/overlay/overlay_001.png",
+          "sha256": "091f8ada60307327256e0e9cb5220cf1c5c8882c7d8df9204ec69fa002f0df44"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8475,
+      "input": "samples/issue8470/vertical_fit.hwpx",
+      "pdf": "pdf/issue8470/vertical_fit-2020.pdf",
+      "page": 5,
+      "backend": "native",
+      "claim": "세로쓰기 표 경계",
+      "claim_key": "pr8475-claim-p005-vertical_fit",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8475-claim-p005-vertical_fit/claim-source-005.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8475-claim-p005-vertical_fit/review/review_005.png",
+          "sha256": "ccb7191f93137e09413475bccab8ac175fa72acd1f30a7b437e66218867d21cc"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8475-claim-p005-vertical_fit/overlay/overlay_005.png",
+          "sha256": "3d440c26c59ccf4e687ed2918cba850a7fe6c52e53b3d3884ee3beaa7b0cbfc9"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8476,
+      "input": "samples/issue8471/pushed_none.hwpx",
+      "pdf": "pdf/issue8471/pushed_none-2020.pdf",
+      "page": 3,
+      "backend": "native",
+      "claim": "나누지 않는 표 뒤 쪽 나누기",
+      "claim_key": "pr8476-claim-p003-pushed_none",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8476-claim-p003-pushed_none/claim-source-003.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8476-claim-p003-pushed_none/review/review_003.png",
+          "sha256": "7b6745b6de2d06b4ce7025063783b10fb1412efee74115e84fe6d75db6c46682"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8476-claim-p003-pushed_none/overlay/overlay_003.png",
+          "sha256": "12266d7e88983be513d5aa3dd58e606fe4caacaf87b6f8a33141f5e47a1925c1"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8477,
+      "input": "samples/issue8472/cell_picture_row_split.hwp",
+      "pdf": "pdf/issue8472_cell_picture_row_split-2020.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "그림 칸 앵커",
+      "claim_key": "pr8477-claim-p002-cell_picture_row_s",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8477-claim-p002-cell_picture_row_s/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8477-claim-p002-cell_picture_row_s/review/review_002.png",
+          "sha256": "cd6f4001c01e705399184d8b6b9df0cd0c036811f6720b7e87c8f6dacc6ce21b"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8477-claim-p002-cell_picture_row_s/overlay/overlay_002.png",
+          "sha256": "bee4bf612d86b7c57fc3804f88b0ddad7b5f2bd0827b3d5babaf282948d900fc"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8486,
+      "input": "samples/issue8468/line_reserve_F20_L30_A30_R12.hwp",
+      "pdf": "pdf/issue8468/line_reserve_F20_L30_A30_R12-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "각주 참조 줄 예약",
+      "claim_key": "pr8486-claim-p001-line_reserve_F20_L-b4eba3",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p001-line_reserve_F20_L-b4eba3/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p001-line_reserve_F20_L-b4eba3/review/review_001.png",
+          "sha256": "215e63bb7ee5b8750aa27ab1d39d8ed2fa1107d0684d148c01428d3281ed91b4"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p001-line_reserve_F20_L-b4eba3/overlay/overlay_001.png",
+          "sha256": "c0794410de777f134f7c56aca2b93c8eda02fce177755075b98c3cdaa2e13c18"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8487,
+      "input": "samples/issue8479/missing_lines.hwpx",
+      "pdf": "pdf/issue8479_missing_lines-2020.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "저장 vpos 리셋",
+      "claim_key": "pr8487-claim-p002-missing_lines",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8487-claim-p002-missing_lines/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8487-claim-p002-missing_lines/review/review_002.png",
+          "sha256": "38ae0233a8d7e3aeac4080066c1dfb34a98eb5ebde2b4e7c7f3f0c305881407f"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8487-claim-p002-missing_lines/overlay/overlay_002.png",
+          "sha256": "d3ae254dce4200d3c2ef01197e9f6f334bbcb2d0c1b65b695f087187d51688c2"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8489,
+      "input": "samples/issue8474/section_top_spacing-2020.hwp",
+      "pdf": "pdf/issue8474/section_top_spacing-2020.pdf",
+      "page": 8,
+      "backend": "native",
+      "claim": "쪽 상단 TAC 표",
+      "claim_key": "pr8489-claim-p008-section_top_spacin-99bd9a",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8489-claim-p008-section_top_spacin-99bd9a/claim-source-008.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8489-claim-p008-section_top_spacin-99bd9a/review/review_008.png",
+          "sha256": "a23322633691abba9c53fc555942e14ad093c80a8bbc899d451f3de162170357"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8489-claim-p008-section_top_spacin-99bd9a/overlay/overlay_008.png",
+          "sha256": "4fae722acd1e3d74e594909211a568b0a8ec033f90c24a752e2dac52394040ea"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8496,
+      "input": "samples/issue8493/table_tail.hwp",
+      "pdf": "pdf/issue8493_table_tail-2020.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "표 꼬리 되감김",
+      "claim_key": "pr8496-claim-p002-table_tail",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8496-claim-p002-table_tail/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8496-claim-p002-table_tail/review/review_002.png",
+          "sha256": "6edd30e99466703035aaebd91276476789a8e4ab872bb352659937c01a103280"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8496-claim-p002-table_tail/overlay/overlay_002.png",
+          "sha256": "466b2f3a70344f854cfdf106c24655e020dd8e1c56b229c040ecb0934ce1e501"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8497,
+      "input": "samples/issue8478/span_page_bottom-2020.hwp",
+      "pdf": "pdf/issue8478/span_page_bottom-2020.pdf",
+      "page": 3,
+      "backend": "native",
+      "claim": "병합 칸 끝 행",
+      "claim_key": "pr8497-claim-p003-span_page_bottom-2",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8497-claim-p003-span_page_bottom-2/claim-source-003.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8497-claim-p003-span_page_bottom-2/review/review_003.png",
+          "sha256": "4e7779fb35136b0e7cf7f3f0d6cb344e352d95ad9610982718fe7f3dbfeb0e9b"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8497-claim-p003-span_page_bottom-2/overlay/overlay_003.png",
+          "sha256": "59de1a292461d0f9189e5ac82f928de2ce207a07ae178beaa8fbeb9fbf8e3b30"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8498,
+      "input": "samples/issue8491/156602236-press-logo.hwpx",
+      "pdf": "pdf/issue8491/156602236-press-logo-2022.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "보도자료 로고 흐름",
+      "claim_key": "pr8498-claim-p001-156602236-press-lo",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8498-claim-p001-156602236-press-lo/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8498-claim-p001-156602236-press-lo/review/review_001.png",
+          "sha256": "38a2c089e35bfc5e75a6943e200f282e70237bb101898500c00e2e019a7fac7e"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8498-claim-p001-156602236-press-lo/overlay/overlay_001.png",
+          "sha256": "bb675a8ee6dcdbfa499183e4a7aee85f2f41a05b0319299d7a584a25d4a010e8"
+        }
+      },
+      "direct_reading_this_checkpoint": true
+    },
+    {
+      "pr": 8505,
+      "input": "samples/issue8501/child_product_safety_rule.hwp",
+      "pdf": "pdf/issue8501_child_product_safety_rule-2020.pdf",
+      "page": 6,
+      "backend": "native",
+      "claim": "셀 단위 나눔 저장 재시작",
+      "claim_key": "pr8505-claim-p006-child_product_safe",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8505-claim-p006-child_product_safe/claim-source-006.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8505-claim-p006-child_product_safe/review/review_006.png",
+          "sha256": "9b893d18310c8ff2162e3eae396711fe830e693f7bed0b29f71ae154571524fe"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8505-claim-p006-child_product_safe/overlay/overlay_006.png",
+          "sha256": "51a48ebba93a20a64f682fc0ac41af684457b84c4c5e2229ad2386df4c9b0bb0"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8508,
+      "input": "samples/issue8502/36316493-approval-body.hwpx",
+      "pdf": "pdf/issue8502/36316493-approval-body-2022.pdf",
+      "page": 3,
+      "backend": "native",
+      "claim": "TAC 후행 간격",
+      "claim_key": "pr8508-claim-p003-36316493-approval-",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8508-claim-p003-36316493-approval-/claim-source-003.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8508-claim-p003-36316493-approval-/review/review_003.png",
+          "sha256": "883a4c57b6ee40c1ed0dbae06adc57a63d8fb0c6b5b31bea613a6b01308efff9"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8508-claim-p003-36316493-approval-/overlay/overlay_003.png",
+          "sha256": "356b75e8a48dfe35a8f474abf52ac1c13505f8784c7e7495365dc90b291a41ea"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8509,
+      "input": "samples/issue8503/1190000-200700045-nearfit-table-indent.hwp",
+      "pdf": "pdf/issue8503/1190000-200700045-nearfit-table-indent-2022.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "표 열 축소 판정",
+      "claim_key": "pr8509-claim-p001-1190000-200700045-",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8509-claim-p001-1190000-200700045-/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8509-claim-p001-1190000-200700045-/review/review_001.png",
+          "sha256": "f103eea8b1eaf4e5ada550a490cf60029fa780c4fba1d6c87be1c43f9d88c42a"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8509-claim-p001-1190000-200700045-/overlay/overlay_001.png",
+          "sha256": "f67d9ec7346739bf33a8cd9cfb583f0255298d9714e2cd080706e081e2c7dc52"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8512,
+      "input": "samples/issue8510/156500952-k-startup-league.hwpx",
+      "pdf": "pdf/issue8510/156500952-k-startup-league-2022.pdf",
+      "page": 4,
+      "backend": "native",
+      "claim": "공백 데코레이션 표 host",
+      "claim_key": "pr8512-claim-p004-156500952-k-startu",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8512-claim-p004-156500952-k-startu/claim-source-004.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8512-claim-p004-156500952-k-startu/review/review_004.png",
+          "sha256": "a0c284e082c6a0957d141589f0fb4ba518b5eeccbb855366a4c37974dc0ab241"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8512-claim-p004-156500952-k-startu/overlay/overlay_004.png",
+          "sha256": "809f93e8b7efe8f299356ca282810766c6d643483e9e535d62d17b7f57ab7e14"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8514,
+      "input": "samples/issue8511/wanju_goods_forms.hwp",
+      "pdf": "pdf/issue8511_wanju_goods_forms-2020.pdf",
+      "page": 6,
+      "backend": "native",
+      "claim": "새 저장 프레임 경계",
+      "claim_key": "pr8514-claim-p006-wanju_goods_forms",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8514-claim-p006-wanju_goods_forms/claim-source-006.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8514-claim-p006-wanju_goods_forms/review/review_006.png",
+          "sha256": "83ba33cddb1e86ba8a14886026c403716d0fe5aa4cdb1d72af1ddbe46b7300e6"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8514-claim-p006-wanju_goods_forms/overlay/overlay_006.png",
+          "sha256": "51064c7830fc05cf4837b301ef808287e03be87981c39c26a2ab2b1a1da91449"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8519,
+      "input": "samples/issue8518/table_host_top.hwp",
+      "pdf": "pdf/issue8518_table_host_top-2020.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "빈 표 host 쪽 경계",
+      "claim_key": "pr8519-claim-p002-table_host_top",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8519-claim-p002-table_host_top/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8519-claim-p002-table_host_top/review/review_002.png",
+          "sha256": "ac05201af3b7dc8dc8701958ec77a52e3bc8759127cc0ae304f1851948b4c5e4"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8519-claim-p002-table_host_top/overlay/overlay_002.png",
+          "sha256": "b840681cacb3d45d4889829df865209de61745aae4e6952b4cb2c7e4461259f2"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8522,
+      "input": "samples/issue8507/field_over19.hwpx",
+      "pdf": "pdf/issue8507/field_over19-2024.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "누름틀 뒤 표 넘침",
+      "claim_key": "pr8522-claim-p001-field_over19-88499a",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_over19-88499a/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_over19-88499a/review/review_001.png",
+          "sha256": "87e04e0cd86b0f803412c2c6accd684ee40b67db07e64316543e9909673ea53b"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_over19-88499a/overlay/overlay_001.png",
+          "sha256": "ef1072504051df5281dcd132106d7b8b25c85d42ac4d45ac3613e1e1a3d5d5a3"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8530,
+      "input": "samples/issue8529/rowbreak_exact_fit.hwpx",
+      "pdf": "pdf/issue8529_rowbreak_exact_fit-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "행 끝 정확한 컷",
+      "claim_key": "pr8530-claim-p001-rowbreak_exact_fit",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8530-claim-p001-rowbreak_exact_fit/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8530-claim-p001-rowbreak_exact_fit/review/review_001.png",
+          "sha256": "537b5f0eb96c8401dc2d24b0387f9064ed32371a7814a2689c9e72e8e36a2dd7"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8530-claim-p001-rowbreak_exact_fit/overlay/overlay_001.png",
+          "sha256": "becd9a73772d86059b35c9a03104974946f5a153973ce03ac878821e178f0a8a"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8531,
+      "input": "samples/issue8525/band_host_spacing_23.hwpx",
+      "pdf": "pdf/issue8525/band_host_spacing_23-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "쪽 아래 고정 틀 띠 높이",
+      "claim_key": "pr8531-claim-p001-band_host_spacing_-c20c16",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8531-claim-p001-band_host_spacing_-c20c16/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8531-claim-p001-band_host_spacing_-c20c16/review/review_001.png",
+          "sha256": "4c6472d16af9aaef2d4b04197d058cd0d9032c7130ea31ee85be17416394ced4"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8531-claim-p001-band_host_spacing_-c20c16/overlay/overlay_001.png",
+          "sha256": "c68f1791af92f2a1ebf51ee0372d3ab5378a6dff6c44a1cbba824d7c4d3911af"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8535,
+      "input": "samples/issue8520/scaffold_table_footnote.hwpx",
+      "pdf": "pdf/issue8520/scaffold_table_footnote-2024.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "scaffold 표 범위",
+      "claim_key": "pr8535-claim-p001-scaffold_table_foo",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8535-claim-p001-scaffold_table_foo/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8535-claim-p001-scaffold_table_foo/review/review_001.png",
+          "sha256": "de0cbdeb3bd4a27a176781c7f497db27653d4da076f342425497a7a1f00cd76d"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8535-claim-p001-scaffold_table_foo/overlay/overlay_001.png",
+          "sha256": "6a49be772010998bb337701661abbe3ae2f9fd5f9b28449053ad0a334d97deec"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8429,
+      "input": "mydocs/pr/assets/issue_8424/inputs/after/business_plan.hwpx",
+      "pdf": "pdf/issue-8424/business_plan-2024.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "긴 셀 문단의 추가 주장 페이지",
+      "claim_key": "pr8429-claim-p002-business_plan",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8429-claim-p002-business_plan/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8429-claim-p002-business_plan/review/review_002.png",
+          "sha256": "0c7748b5b6903e6d2cff42364f5fc1f9e3a388ffae4a482d79860afae09861b7"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8429-claim-p002-business_plan/overlay/overlay_002.png",
+          "sha256": "84f58c33b5ca3bf2daba512211a4ac79dcf414cfc940e39263a38c4797b99011"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8434,
+      "input": "samples/issue8432/156690773-declared-zero-textbox.hwp",
+      "pdf": "pdf/issue8432/156690773-declared-zero-textbox-2022.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "다른 선언 0 글상자",
+      "claim_key": "pr8434-claim-p002-156690773-declared",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8434-claim-p002-156690773-declared/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8434-claim-p002-156690773-declared/review/review_002.png",
+          "sha256": "64ee9bec55e094614880e83d28b76af808c9634a17d72fe525416899f7e9a12f"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8434-claim-p002-156690773-declared/overlay/overlay_002.png",
+          "sha256": "2fc478260f7fa34afdac4c270e7be2bd484aab27198532237e453890cb6bcd11"
+        }
+      },
+      "direct_reading_this_checkpoint": true
+    },
+    {
+      "pr": 8437,
+      "input": "samples/issue8435/156770078-logo-table.hwpx",
+      "pdf": "pdf/issue8435/156770078-logo-table-2022.pdf",
+      "page": 3,
+      "backend": "native",
+      "claim": "두 번째 TAC 로고 사례",
+      "claim_key": "pr8437-claim-p003-156770078-logo-tab",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8437-claim-p003-156770078-logo-tab/claim-source-003.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8437-claim-p003-156770078-logo-tab/review/review_003.png",
+          "sha256": "8afbd66d860ae9a7682d79a4b6257225c341ad3b47d4447a9de0bdc52bf121e7"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8437-claim-p003-156770078-logo-tab/overlay/overlay_003.png",
+          "sha256": "b705afc8a4091aa6a1df826876331ca4a1d59fa36173074a603de79271af1828"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8437,
+      "input": "samples/issue8435/156618114-logo-textbox-offset.hwpx",
+      "pdf": "pdf/issue8435/156618114-logo-textbox-offset-2022.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "세 번째 TAC 로고 사례",
+      "claim_key": "pr8437-claim-p002-156618114-logo-tex",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8437-claim-p002-156618114-logo-tex/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8437-claim-p002-156618114-logo-tex/review/review_002.png",
+          "sha256": "10cab050ee6cee45ad620c739ef809303390bee0690b5d5a67e1e96f8e451d51"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8437-claim-p002-156618114-logo-tex/overlay/overlay_002.png",
+          "sha256": "5629b56378daf6753aba6e550c97224f623b887548bce9415ae8df2f1db0213e"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8475,
+      "input": "samples/issue8470/vertical_oversize.hwpx",
+      "pdf": "pdf/issue8470/vertical_oversize-2020.pdf",
+      "page": 5,
+      "backend": "native",
+      "claim": "세로쓰기 넘침 경계",
+      "claim_key": "pr8475-claim-p005-vertical_oversize",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8475-claim-p005-vertical_oversize/claim-source-005.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8475-claim-p005-vertical_oversize/review/review_005.png",
+          "sha256": "3a1e271e9c0d8844105709c8e967072157e802044b209cf780be03be6c6bb7ab"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8475-claim-p005-vertical_oversize/overlay/overlay_005.png",
+          "sha256": "bb6b510488f19676aea5bd9687a4f15c3345942b9679e04ee1b729d3dae74f57"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8486,
+      "input": "samples/issue8468/156454114-p4g-opening-remarks.hwp",
+      "pdf": "pdf/issue8468/156454114-p4g-opening-remarks-2022.pdf",
+      "page": 5,
+      "backend": "native",
+      "claim": "각주 실문서 대조",
+      "claim_key": "pr8486-claim-p005-156454114-p4g-open",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p005-156454114-p4g-open/claim-source-005.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p005-156454114-p4g-open/review/review_005.png",
+          "sha256": "4b59ffa33acb71ec5551d9c3de71a742d9be2284a172d04779a85a9948fdc56c"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p005-156454114-p4g-open/overlay/overlay_005.png",
+          "sha256": "5c14073343cc7cd4f55f0d343911edd7c45cede699d3e8796d9ce7e93116e8ae"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8489,
+      "input": "samples/issue8474/top_tac_cases-2020.hwp",
+      "pdf": "pdf/issue8474/top_tac_cases-2020.pdf",
+      "page": 3,
+      "backend": "native",
+      "claim": "쪽 상단 TAC 표의 다른 입력",
+      "claim_key": "pr8489-claim-p003-top_tac_cases-2020",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8489-claim-p003-top_tac_cases-2020/claim-source-003.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8489-claim-p003-top_tac_cases-2020/review/review_003.png",
+          "sha256": "dab23ca0a29a2d2c5e428fccd52affa4cda0bb3747cce880a61539b09043d3a5"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8489-claim-p003-top_tac_cases-2020/overlay/overlay_003.png",
+          "sha256": "7f7ca5393804fd64dd17ca418839c74370fdd0c300da033c271c422a9a897174"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8497,
+      "input": "samples/issue8478/span_page_bottom-2020.hwp",
+      "pdf": "pdf/issue8478/span_page_bottom-2020.pdf",
+      "page": 9,
+      "backend": "native",
+      "claim": "병합 칸 끝 행의 후속 페이지",
+      "claim_key": "pr8497-claim-p009-span_page_bottom-2",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8497-claim-p009-span_page_bottom-2/claim-source-009.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8497-claim-p009-span_page_bottom-2/review/review_009.png",
+          "sha256": "11846dc9857f56932d1d367b3ec017123d2e3797a0a34d9f7c001b8362c8bc02"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8497-claim-p009-span_page_bottom-2/overlay/overlay_009.png",
+          "sha256": "18b274f4541d7202c3e862fc5ccb12e1bd2dc21814e3fc9c1a6ab08689445784"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8498,
+      "input": "samples/issue8491/156736331-press-logo.hwpx",
+      "pdf": "pdf/issue8491/156736331-press-logo-2022.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "보도자료 두 번째 로고",
+      "claim_key": "pr8498-claim-p002-156736331-press-lo",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8498-claim-p002-156736331-press-lo/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8498-claim-p002-156736331-press-lo/review/review_002.png",
+          "sha256": "79a178a52be824b87b04123953db09ab8e8ffe0ef353f72fb62325fe070058da"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8498-claim-p002-156736331-press-lo/overlay/overlay_002.png",
+          "sha256": "fa6c097cabecc0009898a4e8c545ca14c9b1218813ee575826c4034e7870193a"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8531,
+      "input": "samples/issue8525/band_host_spacing_24.hwpx",
+      "pdf": "pdf/issue8525/band_host_spacing_24-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "다른 쪽 아래 고정 틀 띠 높이",
+      "claim_key": "pr8531-claim-p001-band_host_spacing_-ce6196",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8531-claim-p001-band_host_spacing_-ce6196/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8531-claim-p001-band_host_spacing_-ce6196/review/review_001.png",
+          "sha256": "78b07a8215c102ac93b379e06084ab7b4b5c56acdeeaf8d5f10040388e0bf561"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8531-claim-p001-band_host_spacing_-ce6196/overlay/overlay_001.png",
+          "sha256": "4ca761765acf9051b779906858067d5f6d2db3a7f9521b0f6529771661431520"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8530,
+      "input": "samples/issue8529/rowbreak_exact_fit.hwpx",
+      "pdf": "pdf/issue8529_rowbreak_exact_fit-2020.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "정확히 채운 행의 다음 쪽 시작",
+      "claim_key": "pr8530-claim-p002-rowbreak_exact_fit",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8530-claim-p002-rowbreak_exact_fit/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8530-claim-p002-rowbreak_exact_fit/review/review_002.png",
+          "sha256": "85a596a79f5bafb36c96a01c204c6ee648e688c6a34de876920ae5c6cca30589"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8530-claim-p002-rowbreak_exact_fit/overlay/overlay_002.png",
+          "sha256": "60fb4d981281701826c7178b3ff082d76b77655685502f99630ca8d0ef950b0b"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8498,
+      "input": "samples/issue8491/156736331-press-logo.hwpx",
+      "pdf": "pdf/issue8491/156736331-press-logo-2022.pdf",
+      "page": 5,
+      "backend": "native",
+      "claim": "보도자료 문서의 전쪽 최저 페이지",
+      "claim_key": "pr8498-claim-p005-156736331-press-lo",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8498-claim-p005-156736331-press-lo/claim-source-005.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8498-claim-p005-156736331-press-lo/review/review_005.png",
+          "sha256": "70dc63b2a2469f9a419e4296f94643b37a94bddd4c9b9e4dec794fbf418553bc"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8498-claim-p005-156736331-press-lo/overlay/overlay_005.png",
+          "sha256": "f3e4d6acab8f5c0ee4ec12df51062aa676f3f10e78a73f03e9e78db2d8da86cf"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8461,
+      "input": "samples/issue8458/156759019-text-line-tac-logo.hwp",
+      "pdf": "pdf/issue8458/156759019-text-line-tac-logo-2022.pdf",
+      "page": 12,
+      "backend": "native",
+      "claim": "로고 문서의 전쪽 최저 페이지",
+      "claim_key": "pr8461-claim-p012-156759019-text-lin",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8461-claim-p012-156759019-text-lin/claim-source-012.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8461-claim-p012-156759019-text-lin/review/review_012.png",
+          "sha256": "a2e7bf734bdabd9cd2adf610753e1040bd47de6c01aa213b4d71f97c33a0aa76"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8461-claim-p012-156759019-text-lin/overlay/overlay_012.png",
+          "sha256": "9a3ec2e5df7472ed35827a894e78736bfdefee4f19bebb1191dd1b4200167e03"
+        }
+      },
+      "direct_reading_this_checkpoint": true
+    },
+    {
+      "pr": 8422,
+      "input": "samples/issue8418/30026-safety-reform-toc.hwp",
+      "pdf": "pdf/issue8418/30026-safety-reform-toc-2022.pdf",
+      "page": 28,
+      "backend": "native",
+      "claim": "안전개혁 목차의 전쪽 최저 페이지",
+      "claim_key": "pr8422-claim-p028-30026-safety-refor",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8422-claim-p028-30026-safety-refor/claim-source-028.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8422-claim-p028-30026-safety-refor/review/review_028.png",
+          "sha256": "fa6bd37e16dbb37167fadf446e73e0470c9326941bd98417256a67df389d7f70"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8422-claim-p028-30026-safety-refor/overlay/overlay_028.png",
+          "sha256": "a7145fc7d989831bda7920dc688e5227bd1fd56c0adfcac953d73266b9cf2df8"
+        }
+      },
+      "direct_reading_this_checkpoint": true
+    },
+    {
+      "pr": 8448,
+      "input": "samples/issue8446/156667426-reset-line-logo.hwp",
+      "pdf": "pdf/issue8446/156667426-reset-line-logo-2022.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "리셋 로고 문서의 전쪽 최저 페이지",
+      "claim_key": "pr8448-claim-p002-156667426-reset-li",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8448-claim-p002-156667426-reset-li/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8448-claim-p002-156667426-reset-li/review/review_002.png",
+          "sha256": "7eebb91246ee9b646a72005463cf7b7a619ee2074bc24a783e2429e180c7bcfe"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8448-claim-p002-156667426-reset-li/overlay/overlay_002.png",
+          "sha256": "63eec8e5e45f460e71252f23fb7467ee4a5eebed1ab828d27c92facff501ff69"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8433,
+      "input": "mydocs/pr/assets/issue_8425/probe/levels.hwpx",
+      "pdf": "pdf/issue-8425/levels-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "개요 머리 probe의 2020 Print 최저 페이지",
+      "claim_key": "pr8433-claim-p001-levels-d891f2",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8433-claim-p001-levels-d891f2/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8433-claim-p001-levels-d891f2/review/review_001.png",
+          "sha256": "34285833ad9d75a8b560eaf1ca85d48308b67590872e5ea019d3fd0ec6c76095"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8433-claim-p001-levels-d891f2/overlay/overlay_001.png",
+          "sha256": "4a40e1256b1192db3af0f6419abfc6405a5d56f41d7f1a714a6bcee84ff1cbb9"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8546,
+      "input": "samples/issue8543/leading_shape_line-2020.hwp",
+      "pdf": "pdf/issue8543/leading_shape_line-2020.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "맨 앞 TAC 도형 줄 뒤 표 A·B 순서와 간격",
+      "claim_key": "pr8546-leading-shape-claim-p002",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8546-leading-shape-claim-p002/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8546-leading-shape-claim-p002/review/review_002.png",
+          "sha256": "ae20b803717a3605d57d6d839d268b90ab74157850e1c2500b9c8312260bf441"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8546-leading-shape-claim-p002/overlay/overlay_002.png",
+          "sha256": "7c968ee2e7fd76d910e0eb3b8202d0b04a53d9706fcabbcc3a17b4e11a24e4eb"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8422,
+      "input": "samples/issue6737/156487948-marine-pollution-law.hwp",
+      "pdf": "pdf/issue6737-156487948-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "해양오염방지법 표 간격",
+      "claim_key": "pr8422-marine-claim-p001",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8422-marine-claim-p001/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8422-marine-claim-p001/review/review_001.png",
+          "sha256": "67a95b7aaa9e4a9a63136e92142a4552b42bc2efa907ccea7a3b6962d77fbd37"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8422-marine-claim-p001/overlay/overlay_001.png",
+          "sha256": "6264cec85f4d1394f9707962f3d4145c199fe71b3e5d31f31f36d73307a325ff"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8433,
+      "input": "samples/task3307/issue3307_outline_number.hwpx",
+      "pdf": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "page": 7,
+      "backend": "native",
+      "claim": "개요 번호 본문 거리",
+      "claim_key": "pr8433-outline-claim-p007",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8433-outline-claim-p007/claim-source-007.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8433-outline-claim-p007/review/review_007.png",
+          "sha256": "2721fd020ed96f1c80edd4dcbca74f7e74797be7f1f45ab8795e6357c75215ea"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8433-outline-claim-p007/overlay/overlay_007.png",
+          "sha256": "69aaee42429b0591ac6bb23e37b478f91145ce632b6c3f241ca53dae85e6dbf6"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8475,
+      "input": "samples/issue8470/42565_입법예고문.hwp",
+      "pdf": "pdf/issue8470/42565_입법예고문-2020.pdf",
+      "page": 5,
+      "backend": "native",
+      "claim": "구역 첫쪽 표 위 간격",
+      "claim_key": "pr8475-8489-8497-public-claims",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8475-8489-8497-public-claims/claim-source-005.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8475-8489-8497-public-claims/review/review_005.png",
+          "sha256": "17b2e0383c16be77e84c610ac147de1ff201c853e9353679193e3b4a3751b679"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8475-8489-8497-public-claims/overlay/overlay_005.png",
+          "sha256": "cf80d9603db35897895000e7dd2f85e91f16e7ba3c821d363bbf2dda05ea2a29"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8475,
+      "input": "samples/issue8470/42565_입법예고문.hwp",
+      "pdf": "pdf/issue8470/42565_입법예고문-2020.pdf",
+      "page": 10,
+      "backend": "native",
+      "claim": "세로쓰기 표 한쪽 수용",
+      "claim_key": "pr8475-8489-8497-public-claims",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8475-8489-8497-public-claims/claim-source-010.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8475-8489-8497-public-claims/review/review_010.png",
+          "sha256": "efca6bf806211fa7065113335f996c529f2c80d9ff847e92457228e4ba3fcb87"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8475-8489-8497-public-claims/overlay/overlay_010.png",
+          "sha256": "04506c97328e2cdb99ade1a50a7ba55f02fcd176985651e645637662329c7837"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8475,
+      "input": "samples/issue8470/42565_입법예고문.hwp",
+      "pdf": "pdf/issue8470/42565_입법예고문-2020.pdf",
+      "page": 11,
+      "backend": "native",
+      "claim": "병합 칸 끝 행",
+      "claim_key": "pr8475-8489-8497-public-claims",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8475-8489-8497-public-claims/claim-source-011.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8475-8489-8497-public-claims/review/review_011.png",
+          "sha256": "c5fd7764d77e9d67eeda495c3ca75cf495ed6364911e4dda9288f27efb44b426"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8475-8489-8497-public-claims/overlay/overlay_011.png",
+          "sha256": "3593fe87f1dd58d07184f1f7eb6f0e53460038c0bc71d07a7b925bdadcc96d97"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8475,
+      "input": "samples/issue8470/42565_입법예고문.hwp",
+      "pdf": "pdf/issue8470/42565_입법예고문-2020.pdf",
+      "page": 13,
+      "backend": "native",
+      "claim": "구역 첫쪽 표 위 간격",
+      "claim_key": "pr8475-8489-8497-public-claims",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8475-8489-8497-public-claims/claim-source-013.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8475-8489-8497-public-claims/review/review_013.png",
+          "sha256": "5c7bbf1c524301a716534e1f6025999ad4665ef6ccc3b5466fde56f7df7a2b3e"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8475-8489-8497-public-claims/overlay/overlay_013.png",
+          "sha256": "5e34d6a8eb4c288b16cb945fa17175cbf0b7fb38fe9c25c06275de78337088c8"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8444,
+      "input": "samples/issue8441/156669499-tac-logo-line.hwpx",
+      "pdf": "pdf/issue8441/156669499-tac-logo-line-2022.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "둘째 로고 입력의 쪽 끝 수용과 표 아래 배치",
+      "claim_key": "pr8444-claim-p001-156669499-tac-logo",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8444-claim-p001-156669499-tac-logo/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8444-claim-p001-156669499-tac-logo/review/review_001.png",
+          "sha256": "8d67df9f46fefccab6eaa64c2514c4ff7aff6585b4590c41d191212d6d231f9e"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8444-claim-p001-156669499-tac-logo/overlay/overlay_001.png",
+          "sha256": "c1445fa708d0e607478943c305289f984a95dfa52e229110bf31e9f8254c7828"
+        }
+      },
+      "direct_reading_this_checkpoint": true
+    },
+    {
+      "pr": 8444,
+      "input": "samples/issue8441/156715172-tac-table-picture.hwpx",
+      "pdf": "pdf/issue8441/156715172-tac-table-picture-2022.pdf",
+      "page": 4,
+      "backend": "native",
+      "claim": "TAC 표 뒤 포스터의 저장 줄 원점과 내어쓰기",
+      "claim_key": "pr8444-claim-p004-156715172-tac-tabl",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8444-claim-p004-156715172-tac-tabl/claim-source-004.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8444-claim-p004-156715172-tac-tabl/review/review_004.png",
+          "sha256": "c8a1e7dac2a6b8fa0e59429601ae609211f7961417e84463abbf4f26d97c8e6f"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8444-claim-p004-156715172-tac-tabl/overlay/overlay_004.png",
+          "sha256": "0a547ecbe7633647ac84f00076ec56ebd28f84814043ddbeae11a00fa2d093ef"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8465,
+      "input": "samples/issue8462/156552561-offpage-textbox.hwpx",
+      "pdf": "pdf/issue8462/156552561-offpage-textbox-2022.pdf",
+      "page": 3,
+      "backend": "native",
+      "claim": "용지 밖 글상자가 본문 표를 추가 쪽으로 밀지 않음",
+      "claim_key": "pr8465-claim-p003-156552561-offpage-",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8465-claim-p003-156552561-offpage-/claim-source-003.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8465-claim-p003-156552561-offpage-/review/review_003.png",
+          "sha256": "8f0f27132c0b4aeb01e78a473adf0cc928a565967d42f40e4ab9ced9a9970a35"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8465-claim-p003-156552561-offpage-/overlay/overlay_003.png",
+          "sha256": "1dfef51ebdd7291806c0fe86a04582bb8d1e2f7b68a91467a93cb4bf1fbb7fa5"
+        }
+      },
+      "direct_reading_this_checkpoint": true
+    },
+    {
+      "pr": 8469,
+      "input": "samples/issue8464/rowbreak_content_fit_f1200_h2660_d14.hwpx",
+      "pdf": "pdf/issue8464_rowbreak_content_fit_f1200_h2660_d14-2020.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "d14 행 분할 조각의 소속과 내용 순서",
+      "claim_key": "pr8469-claim-p002-rowbreak_content_f-907744",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-907744/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-907744/review/review_002.png",
+          "sha256": "14e44cb8a75fb6b7b70c146c096bb86c1c7fcc25af639acbcaef5e7949022c4f"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-907744/overlay/overlay_002.png",
+          "sha256": "6ff00923bd0f59379ab7ad05f680402678b994ca691512bba1d7fabdb503d264"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8469,
+      "input": "samples/issue8464/rowbreak_content_fit_f1200_h2660_d16.hwpx",
+      "pdf": "pdf/issue8464_rowbreak_content_fit_f1200_h2660_d16-2020.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "d16 행 분할 조각의 소속과 내용 순서",
+      "claim_key": "pr8469-claim-p002-rowbreak_content_f-ecf823",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-ecf823/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-ecf823/review/review_002.png",
+          "sha256": "d99bf3df9642bb75d9317ead65f5a5fca9d6c3a961eb44529bccb97000be58f4"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-ecf823/overlay/overlay_002.png",
+          "sha256": "13d86395562fb3f02577f822bcf175e592d6e1526af8019d90ec5515fa39c770"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8469,
+      "input": "samples/issue8464/rowbreak_content_fit_h2505.hwpx",
+      "pdf": "pdf/issue8464_rowbreak_content_fit_h2505-2020.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "h2505 행의 내용 수용과 이어받기",
+      "claim_key": "pr8469-claim-p002-rowbreak_content_f-6aec82",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-6aec82/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-6aec82/review/review_002.png",
+          "sha256": "558bec8b5c9a748c770de558b5195a058111b3a493abd6274a24e83375b939ac"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-6aec82/overlay/overlay_002.png",
+          "sha256": "d18416aadd57ee65c42164034a76f35b168d8ddfd404adc1eb663cd4b869301a"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8469,
+      "input": "samples/issue8464/rowbreak_content_fit_h2570.hwpx",
+      "pdf": "pdf/issue8464_rowbreak_content_fit_h2570-2020.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "h2570 행의 내용 수용과 이어받기",
+      "claim_key": "pr8469-claim-p002-rowbreak_content_f-c7fec0",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-c7fec0/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-c7fec0/review/review_002.png",
+          "sha256": "bf9cd986b6e0f59eabcd1db4cf2314aefadbd71a0c24aaad22f3fa0b0dc4fda7"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8469-claim-p002-rowbreak_content_f-c7fec0/overlay/overlay_002.png",
+          "sha256": "dd962d540dc031cef56441a1c42c751153d2aae5c7284dad80070d51544addee"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8473,
+      "input": "samples/issue8467/36412338-approval-footer-split.hwpx",
+      "pdf": "pdf/issue8467/36412338-approval-footer-split-2022.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "다른 결재 서식의 결재란이 2쪽에만 놓임",
+      "claim_key": "pr8473-claim-p002-36412338-approval-",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8473-claim-p002-36412338-approval-/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8473-claim-p002-36412338-approval-/review/review_002.png",
+          "sha256": "138d0974d640eb00932a8d105e3dcebd2951fceaad07cf3c1f04f0a297934ab1"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8473-claim-p002-36412338-approval-/overlay/overlay_002.png",
+          "sha256": "2f2850e7b2fc5cfb66cdb9f9e0a303599e4b2752df1015808372b1fbb0078b15"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8486,
+      "input": "samples/issue8468/line_reserve_F20_L30_A40_R12.hwp",
+      "pdf": "pdf/issue8468/line_reserve_F20_L30_A40_R12-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "각주 A40의 참조 줄 예약과 뒤 본문 수용",
+      "claim_key": "pr8486-claim-p001-line_reserve_F20_L-86974c",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p001-line_reserve_F20_L-86974c/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p001-line_reserve_F20_L-86974c/review/review_001.png",
+          "sha256": "205d040d169ea3b99ec6274ca2fabc8e4949fb0e91e2294260ed134639109c7a"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p001-line_reserve_F20_L-86974c/overlay/overlay_001.png",
+          "sha256": "7cb1b5209f1761acfd15bfb0ce9668e3fb4cd826afff64321a4f8cac3874e5fb"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8489,
+      "input": "samples/issue8474/section_top_spacing.hwpx",
+      "pdf": "pdf/issue8474/section_top_spacing-2020.pdf",
+      "page": 8,
+      "backend": "native",
+      "claim": "HWPX 단 시작 TAC 표의 문단 위 간격",
+      "claim_key": "pr8489-claim-p008-section_top_spacin-f1a70d",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8489-claim-p008-section_top_spacin-f1a70d/claim-source-008.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8489-claim-p008-section_top_spacin-f1a70d/review/review_008.png",
+          "sha256": "150140d1485c3c1a816906dd5595950aa47cfbdaa41aeb957242a632e72485f0"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8489-claim-p008-section_top_spacin-f1a70d/overlay/overlay_008.png",
+          "sha256": "7ab941b8b90d81637b5ff8019492fe81ef2713435376ffcb821e97d255d7b413"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8489,
+      "input": "samples/issue8474/top_tac_cases.hwpx",
+      "pdf": "pdf/issue8474/top_tac_cases-2020.pdf",
+      "page": 3,
+      "backend": "native",
+      "claim": "HWPX S1~S4 표 시작 간격 관계",
+      "claim_key": "pr8489-claim-p003-top_tac_cases",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8489-claim-p003-top_tac_cases/claim-source-003.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8489-claim-p003-top_tac_cases/review/review_003.png",
+          "sha256": "4563b2bb2165f8a83cfab6b8f6e7168772dc768146b6478bccfe9336296edb1c"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8489-claim-p003-top_tac_cases/overlay/overlay_003.png",
+          "sha256": "513abe67f0880220e11a5fc1060ed076d95d20e5bed2bc887e2a552a7b5d18f1"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8509,
+      "input": "samples/issue8503/1490000-201000053-nearfit-table-indent.hwp",
+      "pdf": "pdf/issue8503/1490000-201000053-nearfit-table-indent-2022.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "두 번째 실물 표의 선언 폭과 오른쪽 괘선",
+      "claim_key": "pr8509-claim-p001-1490000-201000053-",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8509-claim-p001-1490000-201000053-/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8509-claim-p001-1490000-201000053-/review/review_001.png",
+          "sha256": "8f4b06fc006906723c54c8ff96bb9d534ac809aa9bf5f4f9fff3d252906f6b07"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8509-claim-p001-1490000-201000053-/overlay/overlay_001.png",
+          "sha256": "bc902408938dcf4c975ec64f1e143426edc3f90d2205d63304542bcefcdd4fe9"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8486,
+      "input": "samples/issue8468/line_reserve_F20_L30_A46_R12.hwp",
+      "pdf": "pdf/issue8468/line_reserve_F20_L30_A46_R12-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "각주 A46 정상 대조군의 참조 줄과 본문",
+      "claim_key": "pr8486-claim-p001-line_reserve_F20_L-fe82a3",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p001-line_reserve_F20_L-fe82a3/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p001-line_reserve_F20_L-fe82a3/review/review_001.png",
+          "sha256": "b7288253d9098e3d55bcb2ec9973c2feec848a9b47d854d8c20e83c75f91f7fc"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p001-line_reserve_F20_L-fe82a3/overlay/overlay_001.png",
+          "sha256": "80dc6ff1c24b26905f410033c5dd827625bb57474627ec166238b03313a9cba5"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8522,
+      "input": "samples/issue8507/field_fit.hwpx",
+      "pdf": "pdf/issue8507/field_fit-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "필드 뒤 표 폭이 맞는 정상 대조군",
+      "claim_key": "pr8522-claim-p001-field_fit",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_fit/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_fit/review/review_001.png",
+          "sha256": "05773a382bbd1897fce78c7f839dc7acc348f68d1d63d08e171cabc58af7cd3c"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_fit/overlay/overlay_001.png",
+          "sha256": "ae6905120d5625ecec0a43a6f81970d64ae45a390b91dce6c8f204821459018c"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8522,
+      "input": "samples/issue8507/field_fit_rb.hwpx",
+      "pdf": "pdf/issue8507/field_fit_rb-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "RowBreak 필드 뒤 표 폭이 맞는 대조군",
+      "claim_key": "pr8522-claim-p001-field_fit_rb",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_fit_rb/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_fit_rb/review/review_001.png",
+          "sha256": "5a792e1917af501edab8da6256e9a5c57e8399ee769e5a5d243c3fd9db2bf4cb"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_fit_rb/overlay/overlay_001.png",
+          "sha256": "ab075892a4df9035c5e4cde710439b2682c4e55884dab7c6dd3152288d5349d3"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8522,
+      "input": "samples/issue8507/field_over1414.hwpx",
+      "pdf": "pdf/issue8507/field_over1414-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "1414HU 폭 초과 표의 필드 뒤 줄바꿈",
+      "claim_key": "pr8522-claim-p001-field_over1414-0914b4",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_over1414-0914b4/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_over1414-0914b4/review/review_001.png",
+          "sha256": "dd98db3873fc852f1d9fdc905135b95e4863599b6f2bbb59e543b86f209b2071"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_over1414-0914b4/overlay/overlay_001.png",
+          "sha256": "5ababa9919669756843563bf2be97a20abd0b731c653f4dd28e36ea6710c8d05"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8522,
+      "input": "samples/issue8507/field_over1414.hwpx",
+      "pdf": "pdf/issue8507/field_over1414-2024.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "2024 Print의 폭 초과 표 줄바꿈",
+      "claim_key": "pr8522-claim-p001-field_over1414-321313",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_over1414-321313/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_over1414-321313/review/review_001.png",
+          "sha256": "a2291be6f27c12efeb6dd5a0abd118a8b5ae44c70769d16223862f5c89603343"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_over1414-321313/overlay/overlay_001.png",
+          "sha256": "516d619f17eda60d7764c499ac5aa138a7e6db33d113d05efe11445f81962999"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8522,
+      "input": "samples/issue8507/field_over19.hwpx",
+      "pdf": "pdf/issue8507/field_over19-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "19HU 폭 초과 표의 필드 줄 점유",
+      "claim_key": "pr8522-claim-p001-field_over19-033784",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_over19-033784/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_over19-033784/review/review_001.png",
+          "sha256": "f0caf3368e99910d0aed4bc23ae56784bdca5d82473b7f81e3b77b23e61c9aef"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_over19-033784/overlay/overlay_001.png",
+          "sha256": "fc8fc1e75dd5772d3a41c87f890fc24bdcbe445bc1316a773b1ac39bbf4c9371"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8522,
+      "input": "samples/issue8507/field_over19_rb.hwpx",
+      "pdf": "pdf/issue8507/field_over19_rb-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "RowBreak 폭 초과 표의 자기 줄 소속",
+      "claim_key": "pr8522-claim-p001-field_over19_rb",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_over19_rb/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_over19_rb/review/review_001.png",
+          "sha256": "6681b6ba8649e5c439e06d27398f20eb1d5569481b27e6249793b671d6564efd"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_over19_rb/overlay/overlay_001.png",
+          "sha256": "4fa07c465b9d84bffee3e49143cce8772d5d6668dfd2abe2f1b7fb095d1a84ab"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8522,
+      "input": "samples/issue8507/field_over19-saved-2020.hwp",
+      "pdf": "pdf/issue8507/field_over19-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "한컴 저장본의 빈 필드 줄과 표 줄 보존",
+      "claim_key": "pr8522-claim-p001-field_over19-saved",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_over19-saved/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_over19-saved/review/review_001.png",
+          "sha256": "6a68d100e721e1bad19b3bf633dc2283f85846e2379c4ad13235a478180744a0"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-field_over19-saved/overlay/overlay_001.png",
+          "sha256": "b86654ac4ce21b908b355031f9c01bf345d6ceb535b5c232e0f92bee243a25de"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8522,
+      "input": "samples/issue8507/tac_adjacent-saved.hwpx",
+      "pdf": "pdf/issue8507/tac_adjacent-saved-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "저장 줄이 있는 TAC 표의 행 높이 대조군",
+      "claim_key": "pr8522-claim-p001-tac_adjacent-saved",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-tac_adjacent-saved/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-tac_adjacent-saved/review/review_001.png",
+          "sha256": "663bdf1ef35a15e751a58af382f0860c121421d2ca1b21c17d5e3b2eb473a80b"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-tac_adjacent-saved/overlay/overlay_001.png",
+          "sha256": "8ddc62057ff69c795e372403e214fb1a2f63073fa50028fe608bd19fa9dcee4c"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8522,
+      "input": "samples/issue8507/tac_adjacent_generator.hwpx",
+      "pdf": "pdf/issue8507/tac_adjacent_generator-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "생성 TAC 표의 선언 높이와 실제 행 점유",
+      "claim_key": "pr8522-claim-p001-tac_adjacent_gener",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-tac_adjacent_gener/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-tac_adjacent_gener/review/review_001.png",
+          "sha256": "fb51f742292d86668071550edcca31ce82f212a1a3fe1517496bd7810014681f"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8522-claim-p001-tac_adjacent_gener/overlay/overlay_001.png",
+          "sha256": "b9b61461e973c7181089c04a9a27bba7332bd7b3d4e9e66d2ca687a45b2cf58d"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8531,
+      "input": "samples/issue8525/band_host_spacing_22.hwpx",
+      "pdf": "pdf/issue8525/band_host_spacing_22-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "N22 쪽 아래 띠의 정상 대조군",
+      "claim_key": "pr8531-claim-p001-band_host_spacing_-a033ed",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8531-claim-p001-band_host_spacing_-a033ed/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8531-claim-p001-band_host_spacing_-a033ed/review/review_001.png",
+          "sha256": "b69c35f593d4f258bd1708a2b894a89414e4cada54f490a87c5df1a8553ebc7a"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8531-claim-p001-band_host_spacing_-a033ed/overlay/overlay_001.png",
+          "sha256": "be9210ddae8e4aa68e796594eb872eb6b869ec20f9648c7642c42e92714c9207"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8531,
+      "input": "samples/issue8525/band_host_spacing_23.hwpx",
+      "pdf": "pdf/issue8525/band_host_spacing_23-2024.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "2024 Print의 N23 마지막 글줄과 틀 띠",
+      "claim_key": "pr8531-claim-p001-band_host_spacing_-2018b7",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8531-claim-p001-band_host_spacing_-2018b7/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8531-claim-p001-band_host_spacing_-2018b7/review/review_001.png",
+          "sha256": "9b0c6570215a0ff74170330e6f30a6bad66c55ca5dfa1d8a419241ed44fcb115"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8531-claim-p001-band_host_spacing_-2018b7/overlay/overlay_001.png",
+          "sha256": "9406b4f4f287987efb2933f0dfe5b51a2f7f0aee229f04604e58efb79509ce41"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8428,
+      "input": "samples/issue2004_cell_image_stack.hwpx",
+      "pdf": "pdf/issue2004_cell_image_stack-hwpx-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "HWPX 바탕 점의 공급 글리프와 앞뒤 간격",
+      "claim_key": "pr8428-claim-p001-issue2004_cell_ima-f72e21",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8428-claim-p001-issue2004_cell_ima-f72e21/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8428-claim-p001-issue2004_cell_ima-f72e21/review/review_001.png",
+          "sha256": "2859befd05cdcd22409a5b5ec930d83f1b8f1df486604195664e98e06ebea21d"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8428-claim-p001-issue2004_cell_ima-f72e21/overlay/overlay_001.png",
+          "sha256": "3e328dc88289aa5ab9c71c7764c45939dce3d60b97cdee6a457f0ed8cd54399e"
+        }
+      },
+      "direct_reading_this_checkpoint": true
+    },
+    {
+      "pr": 8477,
+      "input": "samples/issue8472/cell_picture_row_split.hwp",
+      "pdf": "pdf/issue8472_cell_picture_row_split-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "앞 차트 표 높이와 1쪽 끝 라벨 조각",
+      "claim_key": "pr8477-claim-p001-cell_picture_row_s",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8477-claim-p001-cell_picture_row_s/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8477-claim-p001-cell_picture_row_s/review/review_001.png",
+          "sha256": "08196020919039dab25bbec024aa6c84d9b4b6f44c465670961ad4b8d5464fe5"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8477-claim-p001-cell_picture_row_s/overlay/overlay_001.png",
+          "sha256": "610a5673742a1ef7677bf871864aa46883a255c98fd466a29a180a45a687bcc5"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8486,
+      "input": "samples/issue8468/156454114-p4g-opening-remarks.hwp",
+      "pdf": "pdf/issue8468/156454114-p4g-opening-remarks-2022.pdf",
+      "page": 3,
+      "backend": "native",
+      "claim": "첫 참조 줄이 소유한 각주 1 예약",
+      "claim_key": "pr8486-claim-p003-156454114-p4g-open",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p003-156454114-p4g-open/claim-source-003.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p003-156454114-p4g-open/review/review_003.png",
+          "sha256": "e35195aeb116ec17a46ea3ebfdb811378baeb872b84a038dea07e7e272f47485"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p003-156454114-p4g-open/overlay/overlay_003.png",
+          "sha256": "408d4da3877aed9b67ef8a4857f16d4d34db756b9ffda94b33e6193b09bce6c2"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8486,
+      "input": "samples/issue8468/156454114-p4g-opening-remarks.hwp",
+      "pdf": "pdf/issue8468/156454114-p4g-opening-remarks-2022.pdf",
+      "page": 4,
+      "backend": "native",
+      "claim": "같은 쪽의 각주 2·3 예약과 뒤 본문",
+      "claim_key": "pr8486-claim-p004-156454114-p4g-open",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p004-156454114-p4g-open/claim-source-004.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p004-156454114-p4g-open/review/review_004.png",
+          "sha256": "8b332ea16a8dccc46c03d82cfd7936985c9af4325ca8b96da3f540bc52806bb7"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8486-claim-p004-156454114-p4g-open/overlay/overlay_004.png",
+          "sha256": "f954315f6d4becdebc85e1b3758ef0caef6d7ac92174e09ba595085ddba9d4d4"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8476,
+      "input": "samples/issue8471/pushed_none.hwpx",
+      "pdf": "pdf/issue8471/pushed_none-2020.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "이월된 N1 표 뒤 쪽 나누기의 실제 기준 쪽",
+      "claim_key": "pr8476-claim-p002-pushed_none",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8476-claim-p002-pushed_none/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8476-claim-p002-pushed_none/review/review_002.png",
+          "sha256": "766727de0d1791b4ec14df896ee7a66542161616c8ebbba45c222f82cf35bd1e"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8476-claim-p002-pushed_none/overlay/overlay_002.png",
+          "sha256": "9b6a8a50ea274809369c965d0b18ae6f01306bca693a1286ad42f49e34f2df82"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8473,
+      "input": "samples/issue8467/36416725-approval-footer-split.hwpx",
+      "pdf": "pdf/issue8467/36416725-approval-footer-split-2022.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "결재란은 2쪽에만 놓이고 본문은 앞쪽에 보존",
+      "claim_key": "pr8473-claim-p002-36416725-approval-",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8473-claim-p002-36416725-approval-/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8473-claim-p002-36416725-approval-/review/review_002.png",
+          "sha256": "c946296fbf1dc1d203e39360e1168b7c25c612a0b235d1dc1eee8a201873f446"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8473-claim-p002-36416725-approval-/overlay/overlay_002.png",
+          "sha256": "c2a5a4081d7bcd5fbc9bff85248003455db70db8d588a5085259d753d68d12b9"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8546,
+      "input": "samples/issue8543/leading_shape_line-2020.hwp",
+      "pdf": "pdf/issue8543/leading_shape_line-2024.pdf",
+      "page": 2,
+      "backend": "native",
+      "claim": "2024 Print의 TAC 도형 줄 뒤 표 A·B 순서와 간격",
+      "claim_key": "pr8546-leading-shape-2024-p002",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8546-leading-shape-2024-p002/claim-source-002.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8546-leading-shape-2024-p002/review/review_002.png",
+          "sha256": "2badfe893362ff57b1d3ea34cba3ca6afac360d87b4871cc30d94632d8566d88"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8546-leading-shape-2024-p002/overlay/overlay_002.png",
+          "sha256": "34ca2c581019c687e09b6dd181f1d4b49c493f8a8f4567b0b8b635eaad7004a4"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8547,
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "page": 3,
+      "backend": "native",
+      "claim": "위생 걸침 묶음의 앞 조각과 저장 쪽 경계",
+      "claim_key": "pr8547-gangseo-p003",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8547-gangseo-p003/claim-source-003.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8547-gangseo-p003/review/review_003.png",
+          "sha256": "8c478b62c6e5f29c3e500df78ed1288b9e2aa851f75700e7c3eb0d52060ba744"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8547-gangseo-p003/overlay/overlay_003.png",
+          "sha256": "78afeed241e8d4a628ccc86ecae5a86a88a12e4d57479f869e54de5bde1f9b5d"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8547,
+      "input": "samples/issue8532/gangseo_exempt_certificates.hwp",
+      "pdf": "pdf/issue8532_gangseo_exempt_certificates-2020.pdf",
+      "page": 4,
+      "backend": "native",
+      "claim": "위생 걸침 묶음 이어받기와 뒤 행",
+      "claim_key": "pr8547-gangseo-p004",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8547-gangseo-p004/claim-source-004.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8547-gangseo-p004/review/review_004.png",
+          "sha256": "f9c0754d512716a235da5737b18a08b3481dfd8298cc43ca20638ea8c3511cb1"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8547-gangseo-p004/overlay/overlay_004.png",
+          "sha256": "7f3dc8737ecf721592656e787c39d319a689854c3ded91acc6fe2960e9e45a00"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8408,
+      "input": "mydocs/pr/assets/issue_8381/integration_20261103/editable-2010.hwpx",
+      "pdf": "samples/21_언어_기출_편집가능본-2010.pdf",
+      "page": 14,
+      "backend": "native",
+      "claim": "2010판 PDF 편집본의 위 첨자와 다음 본문 줄",
+      "claim_key": "pr8408-editable-2010-p014",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8408-editable-2010-p014/claim-source-014.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8408-editable-2010-p014/review/review_014.png",
+          "sha256": "de2a0750f26e197c865c36c69126c3a5bc08d001fabf67b0e4d034ad2b4f2c22"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8408-editable-2010-p014/overlay/overlay_014.png",
+          "sha256": "74b6a79165fdea414bb23063aedfc0d73dbbd9be28eb212d1750b0c8167369b6"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8408,
+      "input": "mydocs/pr/assets/issue_8381/integration_20261103/editable-plain.hwpx",
+      "pdf": "samples/21_언어_기출_편집가능본.pdf",
+      "page": 5,
+      "backend": "native",
+      "claim": "무표기 PDF 편집본의 공백 줄 뒤 본문",
+      "claim_key": "pr8408-editable-plain-p005",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8408-editable-plain-p005/claim-source-005.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8408-editable-plain-p005/review/review_005.png",
+          "sha256": "4c2de419f310c500023a3438d3ec313d2f8657a5ce81fb578cd999c0026da843"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8408-editable-plain-p005/overlay/overlay_005.png",
+          "sha256": "48557a943e7a7db8656274086bb13534d6f53a1278a87df5ab3aabb8a35487ac"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8408,
+      "input": "mydocs/pr/assets/issue_8381/integration_20261103/editable-plain.hwpx",
+      "pdf": "samples/21_언어_기출_편집가능본.pdf",
+      "page": 13,
+      "backend": "native",
+      "claim": "무표기 PDF 편집본의 공백 줄 뒤 본문",
+      "claim_key": "pr8408-editable-plain-p013",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8408-editable-plain-p013/claim-source-013.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8408-editable-plain-p013/review/review_013.png",
+          "sha256": "a5bfc28b1b03a78d71e584670311498f73b31472f54fb1b7f658dc274a4f82f6"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8408-editable-plain-p013/overlay/overlay_013.png",
+          "sha256": "89481910022612d6cdcdb9decb8f73059d9dd09d890afa5e6ac4ce8e4a4205c0"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    },
+    {
+      "pr": 8443,
+      "input": "mydocs/pr/assets/issue_8440/integration_20261103/pr8443-emc-edit.hwpx",
+      "pdf": "pdf/issue-8440/emc_edit-2024.pdf",
+      "page": 7,
+      "backend": "native",
+      "claim": "앞 문단 글자 편집 뒤 표 점유와 뒤 제목 원점",
+      "claim_key": "pr8443-emc-edit-p007",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8443-emc-edit-p007/claim-source-007.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8443-emc-edit-p007/review/review_007.png",
+          "sha256": "fd4263b57f5809d1313eaf80805d2d7b0804290a8548f41580308b574317da9a"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8443-emc-edit-p007/overlay/overlay_007.png",
+          "sha256": "d7b5948277dca86c011babaf53799facc83f8dc2611730b115bf921161e8757f"
+        }
+      },
+      "direct_reading_this_checkpoint": true
+    },
+    {
+      "pr": 8408,
+      "input": "mydocs/pr/assets/issue_8381/integration_20261103/editable-2020.hwpx",
+      "pdf": "samples/21_언어_기출_편집가능본-2020.pdf",
+      "page": 1,
+      "backend": "native",
+      "claim": "2020판 PDF 편집 가져오기의 정상 대조군",
+      "claim_key": "pr8408-editable-2020-p001",
+      "source_receipt": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8408-editable-2020-p001/claim-source-001.json",
+      "output_files": {
+        "review": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8408-editable-2020-p001/review/review_001.png",
+          "sha256": "e1e2ee1ad9c35793608bc42e0160dec790ece9b6b8eb515d17500ad1b73edce8"
+        },
+        "overlay": {
+          "path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8408-editable-2020-p001/overlay/overlay_001.png",
+          "sha256": "ed587cf922a6388d3e2e90720329e3151effa39e50cb5bf67b0e7fda0281bb20"
+        }
+      },
+      "direct_reading_this_checkpoint": false
+    }
+  ],
+  "note": "File/source binding audit is separate from direct visual reading and final approval. No renderer rerun."
+}

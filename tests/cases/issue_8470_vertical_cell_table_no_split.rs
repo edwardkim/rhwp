@@ -1,7 +1,8 @@
-//! 관계형·고정형(쪽수·내용 소속 또는 원본 속성 계약): PR #8475의 정식 회귀.
-//! 주석 갱신: 2026-11-04T13:59:19+09:00; 직전 파일 변경: 2026-11-03T19:38:52+09:00 (`5d7e42138e721f03abf79a3ab6ddc796525fb2e8`).
+//! 관계형·고정형(쪽수·독립 내용 및 계약 기대값): PR #8475의 정식 회귀.
+//! 주석 갱신: 2026-11-05T04:02:25+09:00; 직전 파일 변경: 2026-11-03T19:38:52+09:00 (`5d7e42138e721f03abf79a3ab6ddc796525fb2e8`).
 //! 현재 통합 측정 근거 시작
-//! 측정일 2026-11-04, 제품 코드 `dc87f4fa2e`(리베이스 전 통합 후보).
+//! 측정일 2026-11-04, 제품 코드 `4b149b6cdfc514b9858ed644be2cf8120c731cd4` · `4b149b6cdf`.
+//! 실제 전쪽 측정 producer를 기록한다. 이후 충돌 없는 리베이스의 집중 검증은 개별 리뷰에서 구분한다.
 //! 96 DPI, Native Skia/fresh WASM Canvas, `visual_sweep.py --silhouette-only`의
 //! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣).
 //! 입력 `samples/issue8470/vertical_fit.hwpx`; 독립 Print `pdf/issue8470/vertical_fit-2020.pdf`.
@@ -11,7 +12,7 @@
 //! 전체 5쪽, 전쪽 최저 Native 98.94% / fresh WASM 98.92%.
 //! 주장 5쪽 raw: Native 98.94% / fresh WASM 98.92%.
 //! 입력 `samples/issue8470/42565_입법예고문.hwp`; 독립 Print `pdf/issue8470/42565_입법예고문-2020.pdf`.
-//! 전체 16쪽, 전쪽 최저 Native 96.17% / fresh WASM 96.96%.
+//! 전체 16쪽, 전쪽 최저 Native 94.92% / fresh WASM 96.96%.
 //! 주장 5쪽 raw: Native 99.27% / fresh WASM 99.24%.
 //! 주장 10쪽 raw: Native 99.26% / fresh WASM 99.25%.
 //! 주장 11쪽 raw: Native 100.00% / fresh WASM 100.00%.

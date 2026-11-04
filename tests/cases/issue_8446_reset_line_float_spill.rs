@@ -1,12 +1,13 @@
-//! 관계형·고정형(쪽수·내용 소속 또는 원본 속성 계약): PR #8448의 정식 회귀.
-//! 주석 갱신: 2026-11-04T13:59:19+09:00; 직전 파일 변경: 2026-11-03T19:36:52+09:00 (`1e4e320bd84a05de20ee434a49500a9c59548d47`).
+//! 관계형·고정형(쪽수·독립 내용 및 계약 기대값): PR #8448의 정식 회귀.
+//! 주석 갱신: 2026-11-05T04:02:25+09:00; 직전 파일 변경: 2026-11-03T19:36:52+09:00 (`1e4e320bd84a05de20ee434a49500a9c59548d47`).
 //! 현재 통합 측정 근거 시작
-//! 측정일 2026-11-04, 제품 코드 `dc87f4fa2e`(리베이스 전 통합 후보).
+//! 측정일 2026-11-04, 제품 코드 `4b149b6cdfc514b9858ed644be2cf8120c731cd4` · `4b149b6cdf`.
+//! 실제 전쪽 측정 producer를 기록한다. 이후 충돌 없는 리베이스의 집중 검증은 개별 리뷰에서 구분한다.
 //! 96 DPI, Native Skia/fresh WASM Canvas, `visual_sweep.py --silhouette-only`의
 //! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣).
 //! 입력 `samples/issue8446/156569782-reset-line-logo-empty.hwp`; 독립 Print `pdf/issue8446/156569782-reset-line-logo-empty-2022.pdf`.
-//! 전체 2쪽, 전쪽 최저 Native 99.86% / fresh WASM 99.91%.
-//! 주장 1쪽 raw: Native 99.86% / fresh WASM 99.91%.
+//! 전체 2쪽, 전쪽 최저 Native 99.87% / fresh WASM 99.91%.
+//! 주장 1쪽 raw: Native 99.87% / fresh WASM 99.91%.
 //! 입력 `samples/issue8446/156667426-reset-line-logo.hwp`; 독립 Print `pdf/issue8446/156667426-reset-line-logo-2022.pdf`.
 //! 전체 3쪽, 전쪽 최저 Native 96.75% / fresh WASM 96.77%.
 //! 주장 2쪽 raw: Native 96.75% / fresh WASM 96.77%.

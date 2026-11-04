@@ -2,20 +2,11 @@
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능 — 최종 공통 검증 대기**
-
-PDF PostScript 이름의 family 보정과 새 실제 API 저장본을 같은 독립 PDF로 재검증했습니다.
-새 base `7fdd5441ff` 반영 뒤 Native 전46쪽과 최적화 fresh WASM 전46쪽 모두 90% 이상이며,
-누락·쪽수 불일치가 없습니다. Native 최저는 2010판 97.80%, 2020판 99.19%, 무표기판 98.54%,
-fresh WASM은 각각 98.08%, 99.18%, 98.44%입니다.
-
-실제 WASM `importPdf → exportHwpx` 산출물 세 개도 현재 제출 HWPX와 각각 바이트가 같습니다.
-무표기판 현재 SHA `5a13ddd9…`와 이전 `7a54ea97…` 저장본을 구분하고 아래 표·PNG를 현재 파일로
-갱신했습니다. [입력·전쪽 TSV·같은 쪽 증적](assets/issue_8381/integration_20261103/native-postscript-family.md)에 근거를 연결합니다.
-
-원 head와 메인터너 보정을 적용한 통합 후보를 구분합니다. 남은 최종 Rust·lint·새 base 대비
-전쪽 하락 대조와 PR #8389·#8397 보존 검증은 완료 후 확정합니다. PR 생성·push는 작업지시자
-승인 대기이며 원 PR의 원격 승인·닫기를 실행하지 않았습니다.
+**메인터너 보정 후 수용 가능**
+메인터너가 통합 후보의 실제 전쪽 증적과 회귀 근거를 보강했습니다. 원 PR에 대응하는 입력·쪽과 반례는 아래에 기록했습니다.
+원 head와 리베이스·메인터너 보정을 적용한 통합 후보를 구분합니다. 실제 적용 커밋은 아래 표에 기록했습니다.
+완료된 검증과 남은 공통 검증을 아래에서 구분합니다. 최종 수용 판정과 PR 생성은 아직 대기입니다.
+아래 값은 명시한 코드 SHA의 실측 결과이며 원 PR의 승인이나 닫기를 뜻하지 않습니다.
 
 ## 접수 정보
 
@@ -23,10 +14,11 @@ fresh WASM은 각각 98.08%, 99.18%, 98.44%입니다.
 | --- | --- |
 | 원 PR | [#8408](https://github.com/edwardkim/rhwp/pull/8408) · `planet6897` → `devel` |
 | 원 head | `b10341be243cf605f7d05ef81d29e0f065999329` |
-| 통합 적용 커밋 | `070120f551`, `e172dbe0d5`, `e8978a71c3` |
-| 검토 기준 devel | `7fdd5441ff1e77c083818e920a48089f294de35e` |
-| 실측 제품 코드 | `4b149b6cdf` / 최적화 WASM 실제 빌드 `7bb9e66fd0`(같은 runtime source) |
-| reviewer | `jangster77` 요청. 2026-11-04 원 head 불변·Open·non-Draft·요청 상태 재확인 |
+| 통합 적용 커밋 | `60ef42d03155c7b5f7a1eb7947012e996d849098, 046e200c42b6c873298112e869859ba2182f0f22, a84f1c4808656cbf57f80e18f69f98a176eaa953` |
+| 최종 검토 기준 devel | `22947f6a90c998e95fa51238d5b907a0ebd37162` |
+| 최종 필수 검증 제품 코드 | `a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973` |
+| 전쪽 시각 측정 producer / 당시 base | `4b149b6cdfc514b9858ed644be2cf8120c731cd4` / `7fdd5441ff1e77c083818e920a48089f294de35e` |
+| reviewer | `jangster77` 요청. 2026-11-04T17:44:08.556Z 원 head 불변·Open·non-Draft·요청 상태 재확인 |
 | 기본 경로 | `maintainer_general` |
 | 보조 경로 | `intake_and_review`, `local_validation`, `visual_fixture_evidence`, `multi_pr_update_branch`, `post_merge` |
 | 관련 이슈 | [#8381](https://github.com/edwardkim/rhwp/issues/8381) |
@@ -45,7 +37,9 @@ fresh WASM은 각각 98.08%, 99.18%, 98.44%입니다.
 | [editable-plain.hwpx](assets/issue_8381/integration_20261103/editable-plain.hwpx) · [21_언어_기출_편집가능본.pdf](../../samples/21_언어_기출_편집가능본.pdf) | [TSV](assets/planet6897_20261103/pr_8408/pr8408-editable-plain-0a7d5835-native.tsv) · 98.54% (15쪽) | [TSV](assets/planet6897_20261103/pr_8408/pr8408-editable-plain-0a7d5835-wasm.tsv) · 98.44% (15쪽) |
 
 96 DPI, 색상 경계 보정 전 2px 실루엣입니다. 검증 입력과 Print PDF는 같은 행에서 대응합니다.
-원본·PDF SHA와 기존 독립 Print의 출처는 위 전쪽 측정 기록에 있습니다. 현재 Git의 파일 바이트와 실행 입력이 같음을 확인했습니다.
+전쪽 TSV·PNG는 위 실제 producer에서 산출한 증거입니다. 최신 head의 재출력으로 표시하지 않습니다.
+충돌 없는 리베이스 뒤 영향 소비 경로를 새 제품으로 집중 검증 중이며, 완료한 실행과 남은 대조를 구분합니다.
+원본·PDF SHA와 Print 절차, 모든 쪽의 누락·쪽수 대조는 통합 증거 목록에서 확정합니다.
 
 ## 조판 원칙 준수 검토
 
@@ -86,20 +80,28 @@ src/parser/pdf/editable.rs의 reflow에서 관측 줄 사이의 간격을 저장
 | 입력 · 쪽 · 검토 대상 | Native raw · review / overlay | fresh WASM raw · review / overlay |
 | --- | --- | --- |
 | `editable-2010.hwpx` 14쪽 · 2010판 PDF 편집본의 위 첨자와 다음 본문 줄 | 98.93% · [review](assets/planet6897_20261103/pr_8408/pr8408-editable-2010-p014-native-review.png) / [overlay](assets/planet6897_20261103/pr_8408/pr8408-editable-2010-p014-native-overlay.png) | 98.91% · [review](assets/planet6897_20261103/pr_8408/pr8408-editable-2010-p014-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8408/pr8408-editable-2010-p014-wasm-overlay.png) |
+| `editable-2020.hwpx` 1쪽 · 2020판 PDF 편집 가져오기의 정상 대조군 | 99.76% · [review](assets/planet6897_20261103/pr_8408/pr8408-editable-2020-p001-native-review.png) / [overlay](assets/planet6897_20261103/pr_8408/pr8408-editable-2020-p001-native-overlay.png) | 99.73% · [review](assets/planet6897_20261103/pr_8408/pr8408-editable-2020-p001-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8408/pr8408-editable-2020-p001-wasm-overlay.png) |
 | `editable-plain.hwpx` 5쪽 · 무표기 PDF 편집본의 공백 줄 뒤 본문 | 99.67% · [review](assets/planet6897_20261103/pr_8408/pr8408-editable-plain-p005-native-review.png) / [overlay](assets/planet6897_20261103/pr_8408/pr8408-editable-plain-p005-native-overlay.png) | 99.68% · [review](assets/planet6897_20261103/pr_8408/pr8408-editable-plain-p005-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8408/pr8408-editable-plain-p005-wasm-overlay.png) |
 | `editable-plain.hwpx` 13쪽 · 무표기 PDF 편집본의 공백 줄 뒤 본문 | 99.68% · [review](assets/planet6897_20261103/pr_8408/pr8408-editable-plain-p013-native-review.png) / [overlay](assets/planet6897_20261103/pr_8408/pr8408-editable-plain-p013-native-overlay.png) | 99.69% · [review](assets/planet6897_20261103/pr_8408/pr8408-editable-plain-p013-wasm-review.png) / [overlay](assets/planet6897_20261103/pr_8408/pr8408-editable-plain-p013-wasm-overlay.png) |
 
 ## 통합 최종 검증 조건
 
-- 기본 최소 글꼴 전체 실행은 `895205d5a7`에서 12,557 PASS·1 FAIL·45 skipped입니다. 이 PR의 관련 검사들은 통과했습니다. 별도 부적합 검사 #713의 이관과 현재 신규 회귀를 다른 검사의 통과로 덮어 쓰지 않습니다.
-- 새 최적화 WASM의 브라우저 계약 271개 assertion과 실제 PDF 가져오기·저장 3종은 통과했습니다.
-- 현재 제품의 같은 입력·쪽 review/overlay와 전쪽 TSV를 사용합니다. 이전 저장본의 96.14%를 현재 결과로 재사용하지 않습니다.
-- 새 base 대비 페이지별 raw 0.1%p 초과 하락과 PR #8389·#8397 원 TSV 표시값 하락이 없음을 최종 목록 전체에서 확인합니다.
-- 필수 lint·Native Skia 3종·나머지 통합 입력의 fresh WASM과 최종 개별 리뷰를 마친 뒤 통합 후보 판정을 확정합니다.
+- 제품 `a7e5ce7112ea8b227c317a9cbfb9d6fed0b00973`의 전체 Rust 12,561개 통과와 Native Skia·CI 통합 모듈 21개·Rust lint를 확인했습니다.
+- 최적화 fresh WASM의 실제 브라우저 실행과 공개 API 검사를 완료했습니다.
+- 전쪽 측정 producer에서 Native/fresh WASM 각 80개 입력·406쪽은 모두 90% 이상입니다.
+- Native의 당시 base 대비 406쪽 대조와 PR #8389·#8397의 원 TSV 표시값 무하락 대조는 완료했습니다.
+- WASM의 당시 base 대비 전쪽 대조와 최신 base 기능 보존의 남은 실행은 아래와 같습니다.
+
+- 대기: 동일 환경에서 당시 base 대비 WASM 80개 입력·406쪽의 0.1%p 하락 게이트 완료
+- 대기: 새 base 22947f6a90의 실제 WASM 제품과 후보의 기능·시각 집중 대조 완료
+- 대기: 주장 쪽 직접 판독·회귀 주석·수동 작성 리뷰와 PR 본문 최종 감사
+
+이 대기 항목을 완료하지 않은 상태에서는 최종 검증 완료·승인으로 판정하지 않습니다.
+[완료·대기 검증 원본 기록](assets/planet6897_20261103/review-preparation-a7e5ce7112.json)
 
 ## Merge 후 원 PR 후속 처리
 
-통합 PR의 merge SHA와 검증한 동일 입력·쪽의 TSV 및 review/overlay를 원 PR에 연결합니다.
-댓글 게시와 원 PR 닫기는 최종 통합 검증 및 merge 후에 판정합니다.
+통합 PR 생성·병합과 원 PR 댓글·닫기는 아직 수행하지 않았습니다.
+실제 병합 뒤 원 PR의 주장 문서·페이지에 대응하는 증거와 merge SHA를 연결합니다.
 
 <!-- planet6897-20261103-generated-review -->

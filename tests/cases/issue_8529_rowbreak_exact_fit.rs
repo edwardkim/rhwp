@@ -1,7 +1,8 @@
-//! 관계형·고정형(쪽수·내용 소속 또는 원본 속성 계약): PR #8530의 정식 회귀.
-//! 주석 갱신: 2026-11-04T21:01:52+09:00; 직전 파일 변경: 2026-11-04T20:02:06+09:00 (`13ca465dfcfd5e42d1520fe801cd33c5b9a2b820`).
+//! 관계형·고정형(쪽수·독립 내용 및 계약 기대값): PR #8530의 정식 회귀.
+//! 주석 갱신: 2026-11-05T04:02:25+09:00; 직전 파일 변경: 2026-11-04T20:02:06+09:00 (`13ca465dfcfd5e42d1520fe801cd33c5b9a2b820`).
 //! 현재 통합 측정 근거 시작
-//! 측정일 2026-11-04, 제품 코드 `dd0ac546e3389f1703e67cb86f1c5bdf615ff0c9`.
+//! 측정일 2026-11-04, 제품 코드 `4b149b6cdfc514b9858ed644be2cf8120c731cd4` · `4b149b6cdf`.
+//! 실제 전쪽 측정 producer를 기록한다. 이후 충돌 없는 리베이스의 집중 검증은 개별 리뷰에서 구분한다.
 //! 96 DPI, Native Skia/fresh WASM Canvas, `visual_sweep.py --silhouette-only`의
 //! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣).
 //! 입력 `samples/issue8529/rowbreak_exact_fit.hwpx`; 독립 Print `pdf/issue8529_rowbreak_exact_fit-2020.pdf`.

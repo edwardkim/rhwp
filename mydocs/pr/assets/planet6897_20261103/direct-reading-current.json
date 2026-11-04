@@ -1,0 +1,598 @@
+{
+  "recorded_at": "2026-11-04T19:01:59.031515+00:00",
+  "records": [
+    {
+      "pr": 8422,
+      "page": 3,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T17:58:25.840600+00:00",
+      "method": "Direct inspection of the actual full-page review and standalone overlay as a pair; no automatic score-only approval",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8422/pr8422-claim-p003-30026-safety-refor-native-review.png",
+          "sha256": "5fb18c2bc3e1099aa276a8d8e68e050684ace49b1a99681fd0ab00cbec819ee8",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8422-claim-p003-30026-safety-refor/review/review_003.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8422/pr8422-claim-p003-30026-safety-refor-native-overlay.png",
+          "sha256": "5c9bc3d9ce9de026bea8aa898bbff4292b761878bcf81da15eb97484bf2144c0",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8422-claim-p003-30026-safety-refor/overlay/overlay_003.png"
+        }
+      },
+      "observation": "목차 제목 표 뒤 본문과 후행 줄간격·줄바꿈을 대조했다. 원 PR이 밝힌 휴먼둥근헤드라인 제목 획 모양 차이는 남으며 배치 개선과 구분한다.",
+      "status": "read; final common approval is pending"
+    },
+    {
+      "pr": 8434,
+      "page": 2,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T17:58:25.865784+00:00",
+      "method": "Direct inspection of the actual full-page review and standalone overlay as a pair; no automatic score-only approval",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8434/pr8434-claim-p002-156690773-declared-native-review.png",
+          "sha256": "64ee9bec55e094614880e83d28b76af808c9634a17d72fe525416899f7e9a12f",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8434-claim-p002-156690773-declared/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8434/pr8434-claim-p002-156690773-declared-native-overlay.png",
+          "sha256": "2fc478260f7fa34afdac4c270e7be2bd484aab27198532237e453890cb6bcd11",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8434-claim-p002-156690773-declared/overlay/overlay_002.png"
+        }
+      },
+      "observation": "선언 0 글상자 입력이 정상 해석돼 본문·담당 부서 표·배너와 정책브리핑 로고를 보존한다. 독립 PDF와 표 원점·뒤 로고의 비겹침·내용 순서를 확인했다.",
+      "status": "read; final common approval is pending"
+    },
+    {
+      "pr": 8461,
+      "page": 2,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T17:58:25.912948+00:00",
+      "method": "Direct inspection of the actual full-page review and standalone overlay as a pair; no automatic score-only approval",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8461/pr8461-claim-p002-156759019-text-lin-native-review.png",
+          "sha256": "c821454c5694ff4460eb5185e786aa8c0dae52ca3051d13098755360fe4600c3",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8461-claim-p002-156759019-text-lin/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8461/pr8461-claim-p002-156759019-text-lin-native-overlay.png",
+          "sha256": "cb42f093efea2d1e2cff9aab7101610ab14162b8f5ad6fed7f51417c4a4d178a",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8461-claim-p002-156759019-text-lin/overlay/overlay_002.png"
+        }
+      },
+      "observation": "본문 여러 줄 뒤 TAC 로고가 담당 부서 표 아래에 보존된다. 표·글줄·로고 겹침이나 누락은 보이지 않으며 본문의 줄바꿈·목록·쪽번호도 대응한다.",
+      "status": "read; final common approval is pending"
+    },
+    {
+      "pr": 8444,
+      "page": 1,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T17:58:25.936112+00:00",
+      "method": "Direct inspection of the actual full-page review and standalone overlay as a pair; no automatic score-only approval",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8444/pr8444-claim-p001-156578788-tac-logo-native-review.png",
+          "sha256": "5c45576a7589ccbb9bb4b88ae2ce83202096e9986ab926e93b77cf6a92aaefa8",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8444-claim-p001-156578788-tac-logo/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8444/pr8444-claim-p001-156578788-tac-logo-native-overlay.png",
+          "sha256": "9211a517a3c86ce3678e581565938c2a8c3b9bf49356bcf7592903dece104523",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8444-claim-p001-156578788-tac-logo/overlay/overlay_001.png"
+        }
+      },
+      "observation": "첫 쪽 제목·본문 뒤 담당 부서 표와 로고가 같은 쪽에서 차례로 보존된다. 표 아래 로고와 쪽번호가 독립 Print와 대응하며 본문/그림을 아래 쪽으로 밀거나 누락하지 않는다.",
+      "status": "read; final common approval is pending"
+    },
+    {
+      "pr": 8498,
+      "page": 1,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T17:58:25.969266+00:00",
+      "method": "Direct inspection of the actual full-page review and standalone overlay as a pair; no automatic score-only approval",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8498/pr8498-claim-p001-156602236-press-lo-native-review.png",
+          "sha256": "38a2c089e35bfc5e75a6943e200f282e70237bb101898500c00e2e019a7fac7e",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8498-claim-p001-156602236-press-lo/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8498/pr8498-claim-p001-156602236-press-lo-native-overlay.png",
+          "sha256": "bb675a8ee6dcdbfa499183e4a7aee85f2f41a05b0319299d7a584a25d4a010e8",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8498-claim-p001-156602236-press-lo/overlay/overlay_001.png"
+        }
+      },
+      "observation": "보도자료 본문·제목·하단 담당 부서 표 및 두 로고를 대조했다. 표와 로고를 같은 쪽에 보존하고 로고는 표 아래에 있으며, 제목/본문의 줄바꿈과 후속 내용이 대응한다.",
+      "status": "read; final common approval is pending"
+    },
+    {
+      "pr": 8443,
+      "page": 7,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T17:58:25.974621+00:00",
+      "method": "Direct inspection of the actual full-page review and standalone overlay as a pair; no automatic score-only approval",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8443/pr8443-emc-edit-p007-native-review.png",
+          "sha256": "fd4263b57f5809d1313eaf80805d2d7b0804290a8548f41580308b574317da9a",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8443-emc-edit-p007/review/review_007.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8443/pr8443-emc-edit-p007-native-overlay.png",
+          "sha256": "d7b5948277dca86c011babaf53799facc83f8dc2611730b115bf921161e8757f",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8443-emc-edit-p007/overlay/overlay_007.png"
+        }
+      },
+      "observation": "실제 EMC 편집 저장본의 전도성 RF·통신 포트·함체 포트 세 표와 사이 본문을 대조했다. 표 프레임·행 순서·표 뒤 간격을 보존하고 누락/겹침은 보이지 않는다. 작은 글자의 획·래스터 경계 차이는 별도로 남는다.",
+      "status": "read; final common approval is pending"
+    },
+    {
+      "pr": 8422,
+      "page": 3,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T18:15:55.980401+00:00",
+      "method": "Direct actual review and standalone overlay inspection, same input/page as Native and independent Print",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8422/pr8422-claim-p003-30026-safety-refor-wasm-review.png",
+          "sha256": "6380626b80c4e1b43234c764912ffe2e62658d7f2cdad543aa3c3f631ffddd58",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8422-claim-p003-30026-safety-refor/review/review_003.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8422/pr8422-claim-p003-30026-safety-refor-wasm-overlay.png",
+          "sha256": "9825673a6f0228532e5c197c10a35e2a43c1b8d2dcb07a42edc9e46f31ab84fd",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8422-claim-p003-30026-safety-refor/overlay/overlay_003.png"
+        }
+      },
+      "observation": "fresh WASM의 목차 제목 표 뒤 본문과 후행 줄간격·목차 항목의 줄바꿈을 Native/독립 PDF와 대조했다. 원 PR의 제목 글꼴 획 차이는 남으며 줄간격 개선과 구분한다.",
+      "status": "read; final common approval is pending"
+    },
+    {
+      "pr": 8434,
+      "page": 2,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T18:15:55.983798+00:00",
+      "method": "Direct actual review and standalone overlay inspection, same input/page as Native and independent Print",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8434/pr8434-claim-p002-156690773-declared-wasm-review.png",
+          "sha256": "1828ee421ae06bacb80b477bd138e5bbc84b98fb3e3ca1df9ce310b45fe7d79b",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8434-claim-p002-156690773-declared/review/review_002.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8434/pr8434-claim-p002-156690773-declared-wasm-overlay.png",
+          "sha256": "cc8fe77ec96b8dba1b156822484850e759f353aa5a78d798117e795a84a6e898",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8434-claim-p002-156690773-declared/overlay/overlay_002.png"
+        }
+      },
+      "observation": "fresh WASM에서도 선언 0 글상자 문서의 본문·담당 부서 표·하단 배너 및 로고가 독립 PDF와 같은 순서·위치로 보존된다. 누락/겹침은 보이지 않는다.",
+      "status": "read; final common approval is pending"
+    },
+    {
+      "pr": 8422,
+      "input": "samples/issue8418/30026-safety-reform-toc.hwp",
+      "page": 28,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:01:59.031515+00:00",
+      "method": "실제 전쪽 review와 별도 overlay를 함께 직접 판독; 점수와 관측을 구분",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8422/pr8422-claim-p028-30026-safety-refor-native-review.png",
+          "sha256": "fa6bd37e16dbb37167fadf446e73e0470c9326941bd98417256a67df389d7f70",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8422-claim-p028-30026-safety-refor/review/review_028.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8422/pr8422-claim-p028-30026-safety-refor-native-overlay.png",
+          "sha256": "a7145fc7d989831bda7920dc688e5227bd1fd56c0adfcac953d73266b9cf2df8",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8422-claim-p028-30026-safety-refor/overlay/overlay_028.png"
+        }
+      },
+      "observation": "TAC 표 뒤 본문의 줄 순서·줄바꿈·줄간격을 대조했다. 목록 첫 줄의 들여쓰기와 일부 글꼴 획 차이는 남으며 전체 픽셀 일치로 판정하지 않는다.",
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+    },
+    {
+      "pr": 8434,
+      "input": "samples/issue8432/156761223-declared-zero-textbox.hwp",
+      "page": 3,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:01:59.031515+00:00",
+      "method": "실제 전쪽 review와 별도 overlay를 함께 직접 판독; 점수와 관측을 구분",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8434/pr8434-claim-p003-156761223-declared-native-review.png",
+          "sha256": "817766afa591722ce22363d7f2e977f6bd22229fec65c7c6e8e5f53e4c3d9800",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8434-claim-p003-156761223-declared/review/review_003.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8434/pr8434-claim-p003-156761223-declared-native-overlay.png",
+          "sha256": "2d395bb39611247c18b2de6218639f3b331fb3732783a08a4b39b925c438fa2a",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8434-claim-p003-156761223-declared/overlay/overlay_003.png"
+        }
+      },
+      "observation": "선언 0 글상자 입력의 마지막 본문, 담당 부서 표, 정책브리핑·OPEN 로고가 같은 쪽에 차례로 보존된다. 표 외곽과 두 행, 표 아래 로고의 간격·비겹침을 대조했다.",
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+    },
+    {
+      "pr": 8444,
+      "input": "samples/issue8441/156669499-tac-logo-line.hwpx",
+      "page": 1,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:01:59.031515+00:00",
+      "method": "실제 전쪽 review와 별도 overlay를 함께 직접 판독; 점수와 관측을 구분",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8444/pr8444-claim-p001-156669499-tac-logo-native-review.png",
+          "sha256": "8d67df9f46fefccab6eaa64c2514c4ff7aff6585b4590c41d191212d6d231f9e",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8444-claim-p001-156669499-tac-logo/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8444/pr8444-claim-p001-156669499-tac-logo-native-overlay.png",
+          "sha256": "c1445fa708d0e607478943c305289f984a95dfa52e229110bf31e9f8254c7828",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8444-claim-p001-156669499-tac-logo/overlay/overlay_001.png"
+        }
+      },
+      "observation": "보도정정자료 제목 상자·본문 뒤 담당 부서 표와 두 로고가 같은 쪽에 보존된다. TAC 로고를 다음 쪽으로 밀거나 본문과 겹치는 현상은 보이지 않는다.",
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+    },
+    {
+      "pr": 8448,
+      "input": "samples/issue8446/156569782-reset-line-logo-empty.hwp",
+      "page": 1,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:01:59.031515+00:00",
+      "method": "실제 전쪽 review와 별도 overlay를 함께 직접 판독; 점수와 관측을 구분",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8448/pr8448-claim-p001-156569782-reset-li-native-review.png",
+          "sha256": "e834bbb08e67071c683abcf21b13d54973e228d1069a4fa20ec5d512770bf073",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8448-claim-p001-156569782-reset-li/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8448/pr8448-claim-p001-156569782-reset-li-native-overlay.png",
+          "sha256": "74f4fe2e9c540c376fabb39a1505088be92e8aec94ce0cedfdee79a15de547f0",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8448-claim-p001-156569782-reset-li/overlay/overlay_001.png"
+        }
+      },
+      "observation": "리셋된 빈 줄을 포함한 보도자료에서 제목·본문·각주 뒤 담당 부서 표와 로고가 같은 쪽에 순서대로 남는다. 첫 줄·빈 줄이 뒤 로고 원점을 이중 전진시키지 않는지 대조했다.",
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+    },
+    {
+      "pr": 8461,
+      "input": "samples/issue8458/156759019-text-line-tac-logo.hwp",
+      "page": 12,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:01:59.031515+00:00",
+      "method": "실제 전쪽 review와 별도 overlay를 함께 직접 판독; 점수와 관측을 구분",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8461/pr8461-claim-p012-156759019-text-lin-native-review.png",
+          "sha256": "a2e7bf734bdabd9cd2adf610753e1040bd47de6c01aa213b4d71f97c33a0aa76",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8461-claim-p012-156759019-text-lin/review/review_012.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8461/pr8461-claim-p012-156759019-text-lin-native-overlay.png",
+          "sha256": "9a3ec2e5df7472ed35827a894e78736bfdefee4f19bebb1191dd1b4200167e03",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8461-claim-p012-156759019-text-lin/overlay/overlay_012.png"
+        }
+      },
+      "observation": "12쪽 용어 표의 각 행과 내용 순서·표 끝·각주·쪽번호를 대조했다. 본문의 글꼴 폭과 획 차이는 남지만 표 행 경계·각주 소속은 대응한다. 이 쪽을 98% 이상 좌표 고정 근거로 사용하지 않는다.",
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+    },
+    {
+      "pr": 8465,
+      "input": "samples/issue8462/156552561-offpage-textbox.hwpx",
+      "page": 3,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:01:59.031515+00:00",
+      "method": "실제 전쪽 review와 별도 overlay를 함께 직접 판독; 점수와 관측을 구분",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8465/pr8465-claim-p003-156552561-offpage--native-review.png",
+          "sha256": "8f0f27132c0b4aeb01e78a473adf0cc928a565967d42f40e4ab9ced9a9970a35",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8465-claim-p003-156552561-offpage-/review/review_003.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8465/pr8465-claim-p003-156552561-offpage--native-overlay.png",
+          "sha256": "1dfef51ebdd7291806c0fe86a04582bb8d1e2f7b68a91467a93cb4bf1fbb7fa5",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8465-claim-p003-156552561-offpage-/overlay/overlay_003.png"
+        }
+      },
+      "observation": "개인정보보호법 상자와 본문 뒤 정책브리핑·OPEN 로고가 같은 쪽에서 보존된다. 붙임 제목·후속 표와 로고가 겹치지 않으며 표의 행 순서와 내용은 대응한다. 일부 글꼴 획 차이는 남는다.",
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+    },
+    {
+      "pr": 8465,
+      "input": "samples/issue8462/156633674-offpage-logo.hwpx",
+      "page": 1,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:01:59.031515+00:00",
+      "method": "실제 전쪽 review와 별도 overlay를 함께 직접 판독; 점수와 관측을 구분",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8465/pr8465-claim-p001-156633674-offpage--native-review.png",
+          "sha256": "0c4c517377299509a64a4ff672633a88d9c57648068bfbc85885f67410f0d8dc",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8465-claim-p001-156633674-offpage-/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8465/pr8465-claim-p001-156633674-offpage--native-overlay.png",
+          "sha256": "9e3d2981fdeba6b23c4c4c15ce4523539c5794ff2d2126dfe9b304412fe6ec14",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8465-claim-p001-156633674-offpage-/overlay/overlay_001.png"
+        }
+      },
+      "observation": "보도자료 제목·본문·담당 부서 표 뒤 정책브리핑·광고 배너·OPEN 로고를 대조했다. 페이지 밖 앵커 때문에 사라지던 하단 그림의 보존과 내용 순서·비겹침을 확인했다.",
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+    },
+    {
+      "pr": 8428,
+      "input": "samples/issue2004_cell_image_stack.hwp",
+      "page": 1,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:01:59.031515+00:00",
+      "method": "실제 전쪽 review와 별도 overlay를 함께 직접 판독; 점수와 관측을 구분",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8428/pr8428-claim-p001-issue2004_cell_ima-896918-native-review.png",
+          "sha256": "a1821aa9c54baa30c665504b7539d10c44ddad7241b4b39a149c2125082b42db",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8428-claim-p001-issue2004_cell_ima-896918/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8428/pr8428-claim-p001-issue2004_cell_ima-896918-native-overlay.png",
+          "sha256": "4300217a7579c8a0f4cc9f4dca33a9c5945377c7ad61567382d4b34b7d3163b7",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8428-claim-p001-issue2004_cell_ima-896918/overlay/overlay_001.png"
+        }
+      },
+      "observation": "HWP 입력의 표 안 농촌진흥청 로고와 광복80 그림을 대조했다. 두 그림이 머리 표에 포함되고 제목 표·세 부제·후속 본문이 순서대로 보존된다.",
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+    },
+    {
+      "pr": 8428,
+      "input": "samples/issue2004_cell_image_stack.hwpx",
+      "page": 1,
+      "backend": "native",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:01:59.031515+00:00",
+      "method": "실제 전쪽 review와 별도 overlay를 함께 직접 판독; 점수와 관측을 구분",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8428/pr8428-claim-p001-issue2004_cell_ima-f72e21-native-review.png",
+          "sha256": "2859befd05cdcd22409a5b5ec930d83f1b8f1df486604195664e98e06ebea21d",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8428-claim-p001-issue2004_cell_ima-f72e21/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8428/pr8428-claim-p001-issue2004_cell_ima-f72e21-native-overlay.png",
+          "sha256": "3e328dc88289aa5ab9c71c7764c45939dce3d60b97cdee6a457f0ed8cd54399e",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/native/pr8428-claim-p001-issue2004_cell_ima-f72e21/overlay/overlay_001.png"
+        }
+      },
+      "observation": "HWPX 입력의 같은 표 안 로고 두 개를 별도로 대조했다. 그림 포함·제목과 세 부제·후속 본문의 줄바꿈과 비겹침이 독립 Print와 대응한다.",
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+    },
+    {
+      "pr": 8422,
+      "input": "samples/issue8418/30026-safety-reform-toc.hwp",
+      "page": 28,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:01:59.031515+00:00",
+      "method": "실제 전쪽 review와 별도 overlay를 함께 직접 판독; 점수와 관측을 구분",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8422/pr8422-claim-p028-30026-safety-refor-wasm-review.png",
+          "sha256": "2499e7bd97f4ad9afd5528c09ef9cddd0e8a1ec74d1689b543910efdfad3c973",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8422-claim-p028-30026-safety-refor/review/review_028.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8422/pr8422-claim-p028-30026-safety-refor-wasm-overlay.png",
+          "sha256": "48569f51976cd9462e805edd84060edeb36626db2a8b706faeb378cca5de770d",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8422-claim-p028-30026-safety-refor/overlay/overlay_028.png"
+        }
+      },
+      "observation": "TAC 표 뒤 본문의 줄 순서·줄바꿈·줄간격을 대조했다. 목록 첫 줄의 들여쓰기와 일부 글꼴 획 차이는 남으며 전체 픽셀 일치로 판정하지 않는다. WASM에서는 일부 굵은 글자의 획 표현도 PDF와 다르며 배치 주장과 구분한다.",
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+    },
+    {
+      "pr": 8434,
+      "input": "samples/issue8432/156761223-declared-zero-textbox.hwp",
+      "page": 3,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:01:59.031515+00:00",
+      "method": "실제 전쪽 review와 별도 overlay를 함께 직접 판독; 점수와 관측을 구분",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8434/pr8434-claim-p003-156761223-declared-wasm-review.png",
+          "sha256": "a4b9b919029e035573eb300700cd0b41f11eb8327e3bd9f1c415d00b5d2c3d36",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8434-claim-p003-156761223-declared/review/review_003.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8434/pr8434-claim-p003-156761223-declared-wasm-overlay.png",
+          "sha256": "e1c9fa8f652e6925605c728d268e179bc228d8783863d0be5df0a3fe7de96d4c",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8434-claim-p003-156761223-declared/overlay/overlay_003.png"
+        }
+      },
+      "observation": "선언 0 글상자 입력의 마지막 본문, 담당 부서 표, 정책브리핑·OPEN 로고가 같은 쪽에 차례로 보존된다. 표 외곽과 두 행, 표 아래 로고의 간격·비겹침을 대조했다.",
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+    },
+    {
+      "pr": 8444,
+      "input": "samples/issue8441/156669499-tac-logo-line.hwpx",
+      "page": 1,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:01:59.031515+00:00",
+      "method": "실제 전쪽 review와 별도 overlay를 함께 직접 판독; 점수와 관측을 구분",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8444/pr8444-claim-p001-156669499-tac-logo-wasm-review.png",
+          "sha256": "2b4218af0c3bc81129a2b0f72ce499b776aa049253d927783059c48a5976d5a1",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8444-claim-p001-156669499-tac-logo/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8444/pr8444-claim-p001-156669499-tac-logo-wasm-overlay.png",
+          "sha256": "a23c625f2e9d8d42aa9055cbb2ce8932bca99caba7a3c23951571b57c1a6fcdf",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8444-claim-p001-156669499-tac-logo/overlay/overlay_001.png"
+        }
+      },
+      "observation": "보도정정자료 제목 상자·본문 뒤 담당 부서 표와 두 로고가 같은 쪽에 보존된다. TAC 로고를 다음 쪽으로 밀거나 본문과 겹치는 현상은 보이지 않는다.",
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+    },
+    {
+      "pr": 8448,
+      "input": "samples/issue8446/156569782-reset-line-logo-empty.hwp",
+      "page": 1,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:01:59.031515+00:00",
+      "method": "실제 전쪽 review와 별도 overlay를 함께 직접 판독; 점수와 관측을 구분",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8448/pr8448-claim-p001-156569782-reset-li-wasm-review.png",
+          "sha256": "d5345a99979b6d29f327dffc769c55146beb96399350133cb85378dea41596fd",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8448-claim-p001-156569782-reset-li/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8448/pr8448-claim-p001-156569782-reset-li-wasm-overlay.png",
+          "sha256": "ae5e8461a48c28009635f16d357ec20debad54785e5140d87213e9dba168cba6",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8448-claim-p001-156569782-reset-li/overlay/overlay_001.png"
+        }
+      },
+      "observation": "리셋된 빈 줄을 포함한 보도자료에서 제목·본문·각주 뒤 담당 부서 표와 로고가 같은 쪽에 순서대로 남는다. 첫 줄·빈 줄이 뒤 로고 원점을 이중 전진시키지 않는지 대조했다.",
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+    },
+    {
+      "pr": 8461,
+      "input": "samples/issue8458/156759019-text-line-tac-logo.hwp",
+      "page": 12,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:01:59.031515+00:00",
+      "method": "실제 전쪽 review와 별도 overlay를 함께 직접 판독; 점수와 관측을 구분",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8461/pr8461-claim-p012-156759019-text-lin-wasm-review.png",
+          "sha256": "51ff8fe8ff5eb4717b545c197f04251336cd16eae5216b6f788f932fe3ad54b9",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8461-claim-p012-156759019-text-lin/review/review_012.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8461/pr8461-claim-p012-156759019-text-lin-wasm-overlay.png",
+          "sha256": "596a708be88850c326ae7d91abd2d38a9b885642f95f0ae3cc02106079e5f268",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8461-claim-p012-156759019-text-lin/overlay/overlay_012.png"
+        }
+      },
+      "observation": "12쪽 용어 표의 각 행과 내용 순서·표 끝·각주·쪽번호를 대조했다. 본문의 글꼴 폭과 획 차이는 남지만 표 행 경계·각주 소속은 대응한다. 이 쪽을 98% 이상 좌표 고정 근거로 사용하지 않는다.",
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+    },
+    {
+      "pr": 8465,
+      "input": "samples/issue8462/156552561-offpage-textbox.hwpx",
+      "page": 3,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:01:59.031515+00:00",
+      "method": "실제 전쪽 review와 별도 overlay를 함께 직접 판독; 점수와 관측을 구분",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8465/pr8465-claim-p003-156552561-offpage--wasm-review.png",
+          "sha256": "0bc26da0e41f17ff1a86da594cb3916a9a8fcaa18c4f041c30c55b61b91ca1ca",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8465-claim-p003-156552561-offpage-/review/review_003.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8465/pr8465-claim-p003-156552561-offpage--wasm-overlay.png",
+          "sha256": "979e784d84f51dcc3de34c76446c2eacc21a847eb009833c53f47e611d947e48",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8465-claim-p003-156552561-offpage-/overlay/overlay_003.png"
+        }
+      },
+      "observation": "개인정보보호법 상자와 본문 뒤 정책브리핑·OPEN 로고가 같은 쪽에서 보존된다. 붙임 제목·후속 표와 로고가 겹치지 않으며 표의 행 순서와 내용은 대응한다. 일부 글꼴 획 차이는 남는다. WASM에서는 일부 굵은 글자의 획 표현도 PDF와 다르며 배치 주장과 구분한다.",
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+    },
+    {
+      "pr": 8465,
+      "input": "samples/issue8462/156633674-offpage-logo.hwpx",
+      "page": 1,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:01:59.031515+00:00",
+      "method": "실제 전쪽 review와 별도 overlay를 함께 직접 판독; 점수와 관측을 구분",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8465/pr8465-claim-p001-156633674-offpage--wasm-review.png",
+          "sha256": "54db2cc864222ec85b949ba357d51d53fc03b7f6aa983b93b9aba997e5908e14",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8465-claim-p001-156633674-offpage-/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8465/pr8465-claim-p001-156633674-offpage--wasm-overlay.png",
+          "sha256": "0f84ed1f396828cbb9a2ec0d60a25bfce525c2ee324035f1721736224dd9aaf0",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8465-claim-p001-156633674-offpage-/overlay/overlay_001.png"
+        }
+      },
+      "observation": "보도자료 제목·본문·담당 부서 표 뒤 정책브리핑·광고 배너·OPEN 로고를 대조했다. 페이지 밖 앵커 때문에 사라지던 하단 그림의 보존과 내용 순서·비겹침을 확인했다. WASM에서는 일부 굵은 글자의 획 표현도 PDF와 다르며 배치 주장과 구분한다.",
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+    },
+    {
+      "pr": 8428,
+      "input": "samples/issue2004_cell_image_stack.hwp",
+      "page": 1,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:01:59.031515+00:00",
+      "method": "실제 전쪽 review와 별도 overlay를 함께 직접 판독; 점수와 관측을 구분",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8428/pr8428-claim-p001-issue2004_cell_ima-896918-wasm-review.png",
+          "sha256": "91cd20f92b0b1ee758af9143d93207e9cf7bc92ee7556bceb4729add661a5002",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8428-claim-p001-issue2004_cell_ima-896918/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8428/pr8428-claim-p001-issue2004_cell_ima-896918-wasm-overlay.png",
+          "sha256": "1f444521e58be94aa579d761f5133c651f3938c0d0198f017e632e8812778b05",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8428-claim-p001-issue2004_cell_ima-896918/overlay/overlay_001.png"
+        }
+      },
+      "observation": "HWP 입력의 표 안 농촌진흥청 로고와 광복80 그림을 대조했다. 두 그림이 머리 표에 포함되고 제목 표·세 부제·후속 본문이 순서대로 보존된다.",
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+    },
+    {
+      "pr": 8428,
+      "input": "samples/issue2004_cell_image_stack.hwpx",
+      "page": 1,
+      "backend": "wasm",
+      "measurement_code_label": "4b149b6cdf",
+      "observed_at_utc": "2026-11-04T19:01:59.031515+00:00",
+      "method": "실제 전쪽 review와 별도 overlay를 함께 직접 판독; 점수와 관측을 구분",
+      "files": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8428/pr8428-claim-p001-issue2004_cell_ima-f72e21-wasm-review.png",
+          "sha256": "90a5f16bdec46f46ccacc4e8395c155b291fceaefc8c560fd94c99e414d9e94d",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8428-claim-p001-issue2004_cell_ima-f72e21/review/review_001.png"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261103/pr_8428/pr8428-claim-p001-issue2004_cell_ima-f72e21-wasm-overlay.png",
+          "sha256": "1f19f14e3df57a92db83840fb8f9367cf719580290d5632e00f2febe8fad2a42",
+          "capture_path": "output/pr-review/planet6897-20261103/claim-pages/4b149b6cdf/wasm/pr8428-claim-p001-issue2004_cell_ima-f72e21/overlay/overlay_001.png"
+        }
+      },
+      "observation": "HWPX 입력의 같은 표 안 로고 두 개를 별도로 대조했다. 그림 포함·제목과 세 부제·후속 본문의 줄바꿈과 비겹침이 독립 Print와 대응한다.",
+      "status": "직접 판독 기록; 공통 검증과 최종 판정은 대기"
+    }
+  ],
+  "record_count": 26,
+  "final_approval": false,
+  "note": "직접 본 PNG의 해시와 관측만 기록한다. 기록되지 않은 쪽이나 최종 공통 검증의 완료를 주장하지 않는다."
+}
