@@ -117,3 +117,20 @@ stable patch-id는 `380f38b255baf135c8313d57174500142c3df831`로 같고,
 첫 실행은 테스트 모듈을 직접 지정해 같은 디렉터리의 보조 모듈을 찾지 못했으며,
 정식 discovery 방식으로 다시 실행해 확인했다. 로그는
 `logs/rebase-782ab3e2d0-handbook-tests-discovery.log`다.
+
+새 base PR #8588의 duration 게시 기능은 Node 계약 64건과 workflow 계약 4건이
+통과했다. Visual Sweep Python 검사도 전체 247건 통과했다. 각각 exit 0이며,
+원시 로그는 `logs/rebase-782ab3e2d0-duration-node.log`,
+`logs/rebase-782ab3e2d0-duration-workflow.log`,
+`logs/rebase-782ab3e2d0-visual-sweep-python.log`다.
+
+개별 리뷰에 기재할 적용 SHA도 두 번의 `range-diff`를 연결해 갱신했다.
+최초 대조표 107개 항목 모두 현재 head의 조상임을 확인했고,
+ignored `rebase-current-sha-map.json`을 최종 리뷰 갱신의 입력으로 지정했다.
+이는 커밋의 적용 이력 대조이며 최종 제품의 기능·시각 검증 수로 계산하지 않는다.
+
+검증용 후보 worktree는 코드 `dd0ac546e3389f1703e67cb86f1c5bdf615ff0c9`로,
+base worktree는 `782ab3e2d06380d7d36660f07d76ef4c8c7c0c0a`로 맞췄다.
+기존 package가 남아 있는 사실은 최신 빌드 완료로 취급하지 않는다.
+후보 fresh WASM은 공용 `target/pr-review`·빌드 잡 8개로 최적화를 포함해 실행하며,
+다른 Cargo 명령은 해당 빌드가 종료된 뒤 순차 실행한다.
