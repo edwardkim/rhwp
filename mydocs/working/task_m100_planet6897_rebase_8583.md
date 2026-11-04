@@ -432,3 +432,32 @@ Native 최저 94.96164%, WASM 표시 최저 94.65%다. 정식 TSV와 실제 sour
 `target/pr-review/debug/incremental`만 정리했다. compiled dependency cache와 현재
 `release-test`·WASM 산출물은 보존했다. 가용 공간은 3,902,468,096→19,521,028,096바이트로
 회복됐고, 뒤이어 Native 검증을 재개했다. 기록은 `logs/debug-incremental-cleanup-boundary.json`이다.
+
+
+## 최신 제품 Rust 게이트 완료와 source 재확인 — 2026-11-05
+
+`a7e5ce7112`의 Native Skia unfiltered library와 실제 CI의 integration 모듈 21개가
+모두 exit 0으로 종료됐다. 앞선 기본 전체 12,561 PASS를 포함한 순차 Rust 게이트는
+33/33 완료다. 공용 target·jobs 8·실제 최소 글꼴 5개 환경을 유지했다. 실제 명령·시각·
+source와 종료 코드는 `mydocs/pr/assets/planet6897_20261103/rust-validation-a7e5ce7112.json`에
+기록한다. 이 파일은 Rust 실행의 완료 근거이며 전체 PR 준비 완료 판정은 아니다.
+추가로 새 base의 영향 경계와 기존 8472·8529·6699·8122 Native 집중 검사도 통과했다.
+
+원 PR 39개를 GitHub의 읽기 전용 API로 일괄 재확인했다. 모두 Open·non-Draft이며
+`jangster77` reviewer 요청이 유지된다. 고정 head 39개는 현재 관측 head와 모두 같다.
+`source-head-recheck-20261105.tsv`에 원 PR 링크·각 head·확인 시각을 보존한다.
+PR metadata의 `base.sha`는 PR별 과거 값일 수 있으므로 현재 devel ref로 해석하지 않았다.
+별도 `git/ref/heads/devel` 조회의 실제 값은 `22947f6a90`이며 현재 기준과 같다.
+원격 PR 생성·push·review·comment·close는 수행하지 않았다.
+
+최신 Native/fresh 최적화 WASM 제품 고정과 실제 브라우저·API 검증은 후속 순차 실행 중이다.
+새 기준 자체의 같은 입력 출력을 비교할 수 있도록 `22947f6a90` 전용 작업공간을 준비하고,
+후보 제품 작업이 종료한 다음 같은 target에서 기준 제품을 빌드하도록 계획한다.
+새 base의 집중 범위는 기존에 정한 3문서·7쪽이며 전체 기존 문서 재측정으로 확대하지 않는다.
+번호 공개 API의 저장 정상화가 원 결함을 검출하지 못하는 한계는 유지하고, 실제 내부 문자 수
+계약 및 글상자 사진의 적용·비적용 경계와 구분한다.
+
+최종 리뷰 생성기는 완료 manifest와 전쪽 TSV가 일치하는 자료만 수집하게 했다. 부분 TSV나
+과거 전체 측정을 최신 source의 새 실행으로 잘못 기록할 수 없게 실제 전쪽 producer/base와
+최신 필수 검증 source/base를 별도 필드로 다룬다. 리베이스 재사용 조건과 최신 집중 보존 검증이
+완료되지 않으면 최종 완료 문구를 생성하지 않는다. 이 도구는 ignored output 안의 검토 보조 도구다.
