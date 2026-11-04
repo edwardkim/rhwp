@@ -1,4 +1,5 @@
 //! 관계형·고정형: 원본 글꼴 프로그램과 기호의 소유 계약.
+//! 이번 보정: 2026-11-04T16:04:21+09:00; Screen과 portable Print에서 기존 원점·소속 검사를 모두 유지한다.
 //! 주석 갱신: 2026-10-30T12:45:07+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (55d447871d).
 //! 2026-10-24 측정 raw(96dpi, PDFium, 2px): Native / fresh WASM(no-opt).
 //! 일·생활균형 HWPX 4쪽 99.69% / 99.69%, 5쪽 99.98% / 99.98%; 전 6쪽 최저 98.95% / 98.94%.
@@ -584,6 +585,33 @@ fn worklife_declared_hft_quote_keeps_the_following_year_in_canvas_print() {
     core.register_canvas_metric_replies(context, batch.revision, replies)
         .unwrap();
     core.select_canvas_metrics(true).unwrap();
+    // Screen에서 준비한 HFT 원점은 보존한다. Print에는 휴대 메트릭을 명시적으로 선택한다.
+    let screen: Value = serde_json::from_str(
+        &core
+            .get_canvas_page_layer_tree_with_options_native(
+                3,
+                rhwp::paint::RenderProfile::Screen,
+                rhwp::paint::LayerJsonOptions {
+                    omit_image_bytes: true,
+                    omit_font_bytes: true,
+                },
+            )
+            .unwrap(),
+    )
+    .unwrap();
+    assert!(core
+        .get_canvas_page_layer_tree_with_options_native(
+            3,
+            rhwp::paint::RenderProfile::Print,
+            rhwp::paint::LayerJsonOptions {
+                omit_image_bytes: true,
+                omit_font_bytes: true,
+            },
+        )
+        .unwrap_err()
+        .to_string()
+        .contains("select portable metrics before exporting"));
+    core.select_canvas_metrics(false).unwrap();
     let layer: Value = serde_json::from_str(
         &core
             .get_canvas_page_layer_tree_with_options_native(
@@ -619,29 +647,34 @@ fn worklife_declared_hft_quote_keeps_the_following_year_in_canvas_print() {
             _ => {}
         }
     }
-    let mut ops = vec![];
-    collect(&layer, &format!("section:0/para:{pi}/char:"), &mut ops);
-    assert_eq!(
-        ops.iter()
-            .map(|r| r["text"].as_str().unwrap())
-            .collect::<String>(),
-        text,
-        "The heading keeps every source character exactly once and in order"
-    );
-    let owners: Vec<_> = ops
-        .iter()
-        .filter(|r| r["source"]["stableSourceKey"] == format!("section:0/para:{pi}/char:{year}"))
-        .collect();
-    assert_eq!(owners.len(), 1);
-    assert!(owners[0]["text"].as_str().unwrap().starts_with("22"));
-    let x = owners[0]["placement"]["runToPage"]["e"].as_f64().unwrap();
-    // C80: Native/fresh WASM 전 6쪽이 90% 이상이며 4쪽은 99.04483/99.03763%다.
-    // 독립 2020 Print 4쪽 H2hdrM 연도 원점은 82.3953476pt이며 96 CSS px로 환산한다.
-    // T16 따옴표는 ToUnicode 2019, Widths 225, FontMatrix .001이며 hmtx를 추정하지 않는다.
-    assert!(
-        (x - 109.86046346028646).abs() <= 2.0,
-        "year after HFT quote: {x}"
-    );
+    for layer in [&screen, &layer] {
+        let mut ops = vec![];
+        collect(layer, &format!("section:0/para:{pi}/char:"), &mut ops);
+        assert_eq!(
+            ops.iter()
+                .map(|r| r["text"].as_str().unwrap())
+                .collect::<String>(),
+            text,
+            "The heading keeps every source character exactly once and in order"
+        );
+        let owners: Vec<_> = ops
+            .iter()
+            .filter(|r| {
+                r["source"]["stableSourceKey"] == format!("section:0/para:{pi}/char:{year}")
+            })
+            .collect();
+        assert_eq!(owners.len(), 1);
+        assert!(owners[0]["text"].as_str().unwrap().starts_with("22"));
+        let x = owners[0]["placement"]["runToPage"]["e"].as_f64().unwrap();
+        // C80: Native/fresh WASM 전 6쪽이 90% 이상이며 4쪽은 99.04483/99.03763%다.
+        // 독립 2020 Print 4쪽 H2hdrM 연도 원점은 82.3953476pt이며 96 CSS px로 환산한다.
+        // T16 따옴표는 ToUnicode 2019, Widths 225, FontMatrix .001이며 hmtx를 추정하지 않는다.
+        assert!(
+            (x - 109.86046346028646).abs() <= 2.0,
+            "year after HFT quote: {x}"
+        );
+    }
+    core.select_canvas_metrics(true).unwrap();
     assert_eq!(core.document().sections[0].paragraphs[pi].text, text);
     assert_eq!(core.page_count(), 6);
 }

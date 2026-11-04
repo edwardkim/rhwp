@@ -268,8 +268,10 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
                         raise SystemExit(f'공급 글꼴의 유효한 family 이름이 없습니다: {source} face={index}: {error}') from error
                     identity, alias_errors = font_program_identity(font)
                     name_errors += alias_errors
-                    primary_family = identity['primaryFamily'] or names[0]
                     names = list(dict.fromkeys([*names, *identity['postScriptNames']]))
+                    if not names:
+                        raise SystemExit(f'공급 글꼴의 유효한 family·PostScript 이름이 없습니다: {source} face={index}')
+                    primary_family = identity['primaryFamily'] or names[0]
                     name_warnings = [{'nameID': item['nameID'],
                                       'platformID': item['platformID'],
                                       'platEncID': item['encodingID'],

@@ -2,6 +2,29 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {prepareNativePuaFonts, prepareHftOtfFonts} from '../visual-sweep-font-registration.mjs';
 
+// 관계형: 선언 체인의 실제 프로그램 공급과 TTF 원본·대체의 소유를 구분한다.
+// 주석 갱신: 2026-11-04 15:12 KST. 합성 공급자 바이트이며 실물 좌표 핀이 아니다.
+test('콤마 선언 체인에서도 원본 TTF와 HFT의 실제 프로그램을 준비한다', async () => {
+  const requests = [
+    {family: 'Original, Display', bold: false, italic: false, source_ttf: true},
+    {family: 'Missing, Display', bold: false, italic: false, source_ttf: true},
+    {family: 'Missing, Legacy', bold: false, italic: false},
+  ];
+  const fonts = [
+    {families: ['Original'], weight: 400, style: 'normal', sha256: 'original', signature: [0,1,0,0]},
+    {families: ['Display'], weight: 400, style: 'normal', sha256: 'display', signature: [0,1,0,0]},
+    {families: ['Legacy'], weight: 400, style: 'normal', sha256: 'legacy', openTypeCff: true, signature: [79,84,84,79]},
+  ];
+  const received = [];
+  const owner = {getNativeOtfFontRequests: () => JSON.stringify(requests),
+    prepareNativeOtfFonts(provider) {for (const request of requests) received.push(provider(JSON.stringify(request)));}};
+  const proofs = await prepareHftOtfFonts(owner, fonts, async font => Uint8Array.from(font.signature).buffer);
+  assert.ok(received[0] instanceof Uint8Array, '체인 전체를 단일 family 이름으로 조회하지 않는다');
+  assert.equal(received[1], null, '다른 표시 프로그램을 원본 TTF로 등록하지 않는다');
+  assert.deepEqual([...received[2]], [79,84,84,79]);
+  assert.deepEqual(proofs.map(p => p.sha256), ['original','legacy']);
+});
+
 test('같은 이름의 HFT와 원본 TrueType 요청은 프로그램을 섞지 않는다', async () => {
   const requests = [
     {family: 'Mixed', bold: false, italic: false},

@@ -269,8 +269,12 @@ async function main() {
           await metricSession.prepare(doc, {document: 1, fonts: 1}, 'canvas2d', () => true,
             () => document.fonts.ready, () => document.createElement('canvas').getContext('2d'));
           if (metricSession.lastError) throw Error(`Canvas 글꼴 폭 준비 실패: ${metricSession.lastError}`);
+          const screenCanvasMetricsActive = doc.canvasMetricsActive();
+          // 화면의 보충 폭은 유지하되 인쇄 쪽수·위치에는 Native/SVG와 같은
+          // portable 메트릭을 쓴다. 작업자 문서는 인쇄 전용이므로 복원할 화면이 없다.
+          doc.selectCanvasMetrics(false);
           const canvasMetricsActive = doc.canvasMetricsActive();
-          return {pageCount: doc.pageCount(), version: module.version(), nativePuaFonts, hftOtfFonts, observedFonts, fontEnvironment, canvasMetricsActive};
+          return {pageCount: doc.pageCount(), version: module.version(), nativePuaFonts, hftOtfFonts, observedFonts, fontEnvironment, screenCanvasMetricsActive, canvasMetricsActive};
         }, {compat: settings.compat, environmentJson, fonts, observedFontFallbacks, linkedImages, sourcePassword});
         const signature = JSON.stringify(info.fontEnvironment);
         if (environmentSignature !== undefined && environmentSignature !== signature) throw Error('WASM 작업자의 실제 글꼴 환경이 다릅니다.');
@@ -479,7 +483,8 @@ async function main() {
           console.log(`Canvas PNG p${suffix}: worker ${index + 1}`);
         }
         workers.push({index, pages, fonts: fontInfo, nativePuaFonts: info.nativePuaFonts, hftOtfFonts: info.hftOtfFonts,
-          observedFonts: info.observedFonts, fontEnvironment: info.fontEnvironment, canvasMetricsActive: info.canvasMetricsActive,
+          observedFonts: info.observedFonts, fontEnvironment: info.fontEnvironment,
+          screenCanvasMetricsActive: info.screenCanvasMetricsActive, canvasMetricsActive: info.canvasMetricsActive,
           canvasContext, browser: await browser.version()});
         await page.evaluate(() => { globalThis.sweepDocument.free(); delete globalThis.sweepDocument; });
       } finally {

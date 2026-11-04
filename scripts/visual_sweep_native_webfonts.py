@@ -68,10 +68,21 @@ def _installed_names(root, paths):
     """시스템 및 Native가 직접 읽는 명시 경로의 family/full/PostScript 이름."""
     names = set()
     try:
-        p = subprocess.run(['fc-list', '--format', '%{family}\n%{fullname}\n%{postscriptname}\n'],
+        p = subprocess.run(['fc-list', '--format', '%{file}\t%{family}\t%{fullname}\t%{postscriptname}\n'],
                            capture_output=True, text=True, check=True, timeout=30)
+        readable = {}
         for line in p.stdout.splitlines():
-            names.update(_normal(x) for x in line.split(',') if x.strip())
+            columns = line.split('\t', 3)
+            if len(columns) != 4:
+                continue
+            path, *identities = columns
+            # Fontconfig 캐시는 삭제되거나 접근이 차단된 파일도 반환할 수 있다.
+            # 같은 TTC의 여러 face는 파일의 읽기 가능 여부를 한 번만 확인한다.
+            if path not in readable:
+                readable[path] = handbook.readable_font_file(path)
+            if readable[path]:
+                for identity in identities:
+                    names.update(_normal(x) for x in identity.split(',') if x.strip())
     except (OSError, subprocess.SubprocessError):
         pass
     paths = [*paths, root / 'ttfs/opensource']

@@ -1,5 +1,5 @@
 """관계형: Native 글꼴 공급 우선순위와 실제 웹폰트 대체 계약을 검증한다."""
-# 주석 갱신: 2026-11-03 22:50:01 KST
+# 주석 갱신: 2026-11-04 17:13 KST
 # 합성 요청·응답을 사용하는 공급 경로 관계 검사이며 시각 일치율을 고정하지 않는다.
 import json
 import tempfile
@@ -11,6 +11,28 @@ from scripts import visual_sweep_native_webfonts as web
 
 
 class NativeWebfontTests(unittest.TestCase):
+    def test_fontconfig_names_require_readable_source_program(self):
+        from types import SimpleNamespace
+        with tempfile.TemporaryDirectory() as temp:
+            available, blocked = Path(temp) / 'available.ttf', Path(temp) / 'blocked.ttf'
+            available.write_bytes(b'font')
+            blocked.write_bytes(b'font')
+            output = (f'{available}\tAvailable\tAvailable Regular\tAvailablePS\n'
+                      f'{blocked}\tBlocked\tBlocked Regular\tBlockedPS\n')
+            original_open = Path.open
+
+            def readable(path, *args, **kwargs):
+                if path == blocked:
+                    raise PermissionError('검증 환경에서 읽을 수 없는 글꼴')
+                return original_open(path, *args, **kwargs)
+
+            with patch.object(web.subprocess, 'run', return_value=SimpleNamespace(stdout=output)), \
+                    patch.object(web.handbook, '_file_font_inventory', return_value=set()), \
+                    patch.object(Path, 'open', readable):
+                names = web._installed_names(Path(temp), [])
+            self.assertFalse(any('blocked' in name for name in names))
+            self.assertTrue({'available', 'availableregular', 'availableps'} <= names)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
