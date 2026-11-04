@@ -2650,6 +2650,7 @@ fn remove_field_in_para(para: &mut Paragraph, char_offset: usize) -> Result<usiz
             range.control_idx -= 1;
         }
     }
+    para.forget_para_text_if_emptied();
     Ok(control_idx)
 }
 

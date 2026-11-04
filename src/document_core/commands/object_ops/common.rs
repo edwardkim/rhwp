@@ -265,12 +265,17 @@ impl DocumentCore {
                 ls.baseline_distance = (max_remaining_ctrl_height * 850) / 1000;
             }
         } else if para.text.is_empty() {
-            // 텍스트도 컨트롤도 없음 → 기본 텍스트 높이로 리셋
-            if let Some(ls) = para.line_segs.first_mut() {
+            // 글도 높이를 차지하는 컨트롤도 없음 → 기본 텍스트 높이의 한 줄로 다시 둔다.
+            // 글 없는 문단의 줄 나눔은 0에서 시작하는 한 줄뿐이라 이 줄이 곧 새 줄 구성이다.
+            // 위 무효화 표지만 남기면 저장기가 이 문단을 줄 없이 써서, 한/글이 쓰는 빈 문단
+            // (PARA_TEXT 없이 줄 하나)과 달라진다.
+            if let Some(mut ls) = para.line_segs.first().cloned() {
+                ls.text_start = 0;
                 ls.line_height = 1000;
                 ls.text_height = 1000;
                 ls.baseline_distance = 850;
                 ls.line_spacing = 600;
+                para.replace_line_segs(vec![ls]);
             }
         } else {
             // 텍스트가 있으면 reflow_line_segs로 재계산.
