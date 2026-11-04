@@ -1425,11 +1425,26 @@ impl TypesetEngine {
             });
         }
 
+        // 같은 저장 컷으로 이미 첫 물리 프레임을 닫았으면 그 뒤의 본문 여유는
+        // 이 표 조각의 빈 띠가 아니다. 일반 쪽 하단 예산으로 다시 확장하면
+        // 스캔이 확정한 끝 행과 이어받기 원장에 그 여유가 중복 가산된다.
+        let accepted_opening_frame = saved_opening_frame.filter(|height| {
+            let roundoff = f64::EPSILON * (height.abs() + partial_height.abs()).max(1.0) * 8.0;
+            !is_continuation
+                && cursor_row == 0
+                && start_cut.is_empty()
+                && end_row_height_override.is_some()
+                && (partial_height - height).abs() <= roundoff
+                && (consumed + header_overhead - height).abs() <= roundoff
+        });
+        let blank_frame_for_rows = budget.reflow_blank_avail_for_rows.map(|frame| {
+            accepted_opening_frame.map_or(frame, |source_frame| frame.min(source_frame))
+        });
         // 쪽 끝 빈 띠는 실제 물리 경계와 수용한 조각 상자의 차이다.
         // 원본 프레임이 이미 예약한 띠는 그리기 높이에 다시 더하지 않는다.
         let ledger_page_end_band = if split_block_start.is_some() {
             0.0
-        } else if let Some(frame_rows) = budget.reflow_blank_avail_for_rows {
+        } else if let Some(frame_rows) = blank_frame_for_rows {
             // 물리 경계에는 아래 바깥여백과 실제 각주 공간이 이미 반영돼 있다.
             (frame_rows + header_overhead - partial_height).max(0.0)
         } else {
