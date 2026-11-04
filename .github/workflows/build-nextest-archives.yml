@@ -29,7 +29,7 @@ jobs:
   build:
     name: Build test archive (${{ inputs.archive_label }})
     runs-on: ubuntu-latest
-    # [#4029] 빠른 release-test는 30분, cold release-grade는 60분을 caller가 전달한다.
+    # [#4029 / #8548] checkout·setup을 포함해 두 profile 모두 60분을 caller가 전달한다.
     # 정상 소요시간 목표가 아니라 hang을 실패로 드러내는 상한이다.
     timeout-minutes: ${{ inputs.timeout_minutes }}
     permissions:
@@ -44,7 +44,7 @@ jobs:
           TARGET_GROUP: ${{ inputs.target_group }}
         run: |
           case "${CARGO_PROFILE}:${TIMEOUT_MINUTES}" in
-            release-test:30|release:60)
+            release-test:60|release:60)
               ;;
             *)
               echo "::error::invalid test archive policy: profile=${CARGO_PROFILE} timeout=${TIMEOUT_MINUTES}"

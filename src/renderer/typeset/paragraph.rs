@@ -12,6 +12,7 @@
 pub(super) mod boundary;
 mod columns;
 mod content;
+pub(super) use content::initialize_first_paragraph_origin;
 pub(super) mod context;
 pub(super) mod empty;
 mod entry;
@@ -371,6 +372,9 @@ pub(super) fn place_split_paragraph_with_storage<S: crate::storage::Storage>(
             on_entry_page = false;
             continue;
         };
+        if matches!(&fragment.item, PageItem::FullParagraph { .. }) {
+            let _ = initialize_first_paragraph_origin(st, para_idx, paragraphs, styles, dpi);
+        }
         if cursor_line == 0 {
             record_stored_column_top_spacing_with_storage(
                 st, paragraphs, para_idx, fmt, styles, dpi, storage,

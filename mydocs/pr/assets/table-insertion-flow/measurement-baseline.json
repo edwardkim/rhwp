@@ -1,0 +1,112 @@
+{
+  "source": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "wasmSha256": "95c1ea2dc80a4f3d0f4db28a7994b8ed180ba4dc2cfbdca91be02e6bf20676c7",
+  "jsSha256": "f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9",
+  "before": [
+    133.3,
+    240
+  ],
+  "afterEmpty": [
+    240,
+    240
+  ],
+  "beforeSecond": [
+    133.3,
+    240
+  ],
+  "afterTable": [
+    133.3,
+    240
+  ],
+  "expected": 34.2,
+  "newHeight": 240,
+  "checks": {
+    "emptyHostPreservesExisting": false,
+    "afterTablePreservesExisting": true,
+    "newTableOwnHeight": false
+  },
+  "states": [
+    {
+      "case": "fresh-reference",
+      "addresses": [
+        [
+          0,
+          2
+        ]
+      ],
+      "heights": [
+        34.2
+      ],
+      "pageCount": 1,
+      "savedSha256": "c99160b2d024dedc467268ffc45f21a0dee5f0f377173d6ef2771bc7caf7b043"
+    },
+    {
+      "case": "loaded-before",
+      "addresses": [
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "heights": [
+        133.3,
+        240
+      ],
+      "pageCount": 1,
+      "savedSha256": "ca03160be4ec78a600b29e53a8790a0c40337774233a534a2ddc23adc0d71939"
+    },
+    {
+      "case": "empty-host-after",
+      "addresses": [
+        [
+          1,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "heights": [
+        34.2,
+        240,
+        240
+      ],
+      "pageCount": 1,
+      "savedSha256": "f451e9919ed3f5f077b0434918762449092cfdecfab217fdbdb21c269fef18e6"
+    },
+    {
+      "case": "after-table-after",
+      "addresses": [
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          5,
+          0
+        ]
+      ],
+      "heights": [
+        133.3,
+        240,
+        240
+      ],
+      "pageCount": 1,
+      "savedSha256": "236c0e7c375d793bf5ab6c94377ee038fb3a21a941515d7b49ad298e3f265c35"
+    }
+  ],
+  "scope": "Existing two regression scenarios through official baseline WASM core APIs. No Canvas or visual-pass claim."
+}

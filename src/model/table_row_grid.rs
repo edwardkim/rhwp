@@ -176,7 +176,18 @@ impl Writer {
     where
         S::Error: std::fmt::Display,
     {
-        let result = self.project_with_storage(t, storage);
+        self.table_with_reserved_ids_and_storage(t, &std::collections::HashSet::new(), storage)
+    }
+    pub(crate) fn table_with_reserved_ids_and_storage<'a, S: crate::storage::Storage>(
+        &mut self,
+        t: &'a Table,
+        original_ids: &std::collections::HashSet<u32>,
+        storage: &S,
+    ) -> Result<Cow<'a, Table>, String>
+    where
+        S::Error: std::fmt::Display,
+    {
+        let result = self.project_with_storage(t, original_ids, storage);
         if let Err(error) = &result {
             if self.failure.is_none() {
                 self.failure = Some(storage.string(error).map_err(budget_error)?);
@@ -186,22 +197,52 @@ impl Writer {
     }
 
     fn project<'a>(&mut self, t: &'a Table) -> Result<Cow<'a, Table>, String> {
-        self.project_with_storage(t, &crate::storage::Unbounded)
+        self.project_with_storage(
+            t,
+            &std::collections::HashSet::new(),
+            &crate::storage::Unbounded,
+        )
     }
     fn project_with_storage<'a, S: crate::storage::Storage>(
         &mut self,
         t: &'a Table,
+        original_ids: &std::collections::HashSet<u32>,
         storage: &S,
     ) -> Result<Cow<'a, Table>, String>
     where
         S::Error: std::fmt::Display,
     {
-        if !self.ids.contains_key(&t.common.instance_id) {
+        let boundaries = projection_with_storage(t, storage)?;
+        let old_id = t.common.instance_id;
+        let clashes = if boundaries.is_some() {
+            self.ids.contains_key(&old_id)
+        } else {
+            self.records.iter().any(|record| record.id == old_id)
+        };
+        let id = if clashes {
+            let mut fresh = u32::MAX;
+            while self.ids.contains_key(&fresh) || original_ids.contains(&fresh) {
+                storage.bytes(0).map_err(budget_error)?;
+                fresh = fresh
+                    .checked_sub(1)
+                    .ok_or("HWPX 표 개체 ID를 발급할 수 없습니다")?;
+            }
+            fresh
+        } else {
+            old_id
+        };
+        if !self.ids.contains_key(&id) {
             storage.tree_entry::<u32, usize>().map_err(budget_error)?;
         }
-        *self.ids.entry(t.common.instance_id).or_default() += 1;
-        let Some(boundaries) = projection_with_storage(t, storage)? else {
-            return Ok(Cow::Borrowed(t));
+        *self.ids.entry(id).or_default() += 1;
+        let Some(boundaries) = boundaries else {
+            return if id == old_id {
+                Ok(Cow::Borrowed(t))
+            } else {
+                let mut renamed = storage.clone_table(t).map_err(budget_error)?;
+                renamed.common.instance_id = id;
+                Ok(Cow::Owned(renamed))
+            };
         };
         // Bound the record allocation before serializing JSON (each u16 takes
         // at most six bytes including its separator; the fixed record fits 512).
@@ -212,6 +253,7 @@ impl Writer {
             .ok_or("HWPX 표 격자 보존 정보가 크기 한도를 넘습니다")?;
         let index = |row| boundaries.binary_search(&row).expect("proven row boundary") as u16;
         let mut projected = storage.clone_table(t).map_err(budget_error)?;
+        projected.common.instance_id = id;
         projected.row_count = (boundaries.len() - 1) as u16;
         for c in &mut projected.cells {
             let end = index(c.row + c.row_span);
@@ -232,7 +274,7 @@ impl Writer {
             .push(
                 &mut self.records,
                 Record {
-                    id: t.common.instance_id,
+                    id,
                     fingerprint: fingerprint_with_storage(&projected, storage)?,
                     boundaries,
                 },

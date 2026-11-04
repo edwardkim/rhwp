@@ -678,7 +678,7 @@ class CiImpactWorkflowTests(unittest.TestCase):
         package = self._job("frontend-package-gates")
         install = self._step("Install frontend package dependencies", package)
 
-        self.assertIn("timeout-minutes: 30", package)
+        self.assertIn("timeout-minutes: 60", package)
         expected_commands = [
             f"npm --prefix {package_path} ci --no-audit --prefer-offline"
             for package_path in (

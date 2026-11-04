@@ -1,0 +1,308 @@
+{
+  "source": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "nativeBinarySha256": "205ae9bbc76edfc25bbd41de44a88fb888772ad986ba4994ecde9328e9fa17dc",
+  "exampleSha256": "4b6a04d9c785f79da7c1b83a88ed84caf1d005d124eb15dd4c21ad6a30a272d0",
+  "inputSha256": "c73145d60f3f0b041bc8fee64b65e6d419a1fc78aa62a90fa150b36f35278f4a",
+  "traceSha256": "35c4bf31b2b002b2c0b2e44f068eaf3a466ccae7721de8d956e454b262024113",
+  "fontManifestSha256": "aaa582301285f80f10ecce99a0926147cb50bb331d271be1a1754d928b8d9ebd",
+  "environmentSha256": "42872318d5c8ede3a2a92578be89be06e88918a5df7a6385a0e85406c1ce468e",
+  "savedModelSha256": "91695094d661d217d436ea0c16d01501ba603f5ada22dae6d7b3746cc5555730",
+  "state": {
+    "afterCapturePages": 27,
+    "backend": "native-skia",
+    "calls": 53,
+    "dpi": 96,
+    "editedPages": 27,
+    "originalPages": 22,
+    "pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27
+    ],
+    "profile": "print",
+    "reopenedAfterCapturePages": 24,
+    "reopenedPages": 24,
+    "scope": "Official9418 before-change full-page Native53call replay and separate saved reopen; renderer source unchanged"
+  },
+  "scope": "Official9418 Native before-change diagnosis on Linux x86_64: all27 live and24 reopened pages rendered, paired1..24 raw scores compared against frozen Hancom PNGs. Excess live pages25..27 have no oracle and remain explicitly unpaired; page-count/geometry failure retained.",
+  "referencePdfSha256": "de1e7469a33a1e3b6eb9f0829fffc52715a80e2351a3d4caaf6195b7ddfd26f2",
+  "counts": {
+    "live": 27,
+    "reopened": 24
+  },
+  "extraRenderedPagesWithoutReference": {
+    "live": [
+      25,
+      26,
+      27
+    ],
+    "reopened": []
+  },
+  "rows": [
+    {
+      "arm": "live",
+      "page": 1,
+      "raw": 89.66831
+    },
+    {
+      "arm": "live",
+      "page": 2,
+      "raw": 12.18535
+    },
+    {
+      "arm": "live",
+      "page": 3,
+      "raw": 93.04149
+    },
+    {
+      "arm": "live",
+      "page": 4,
+      "raw": 96.9137
+    },
+    {
+      "arm": "live",
+      "page": 5,
+      "raw": 40.67839
+    },
+    {
+      "arm": "live",
+      "page": 6,
+      "raw": 73.9658
+    },
+    {
+      "arm": "live",
+      "page": 7,
+      "raw": 100.0
+    },
+    {
+      "arm": "live",
+      "page": 8,
+      "raw": 5.78379
+    },
+    {
+      "arm": "live",
+      "page": 9,
+      "raw": 63.43697
+    },
+    {
+      "arm": "live",
+      "page": 10,
+      "raw": 32.70748
+    },
+    {
+      "arm": "live",
+      "page": 11,
+      "raw": 46.88938
+    },
+    {
+      "arm": "live",
+      "page": 12,
+      "raw": 12.26679
+    },
+    {
+      "arm": "live",
+      "page": 13,
+      "raw": 49.03776
+    },
+    {
+      "arm": "live",
+      "page": 14,
+      "raw": 53.52145
+    },
+    {
+      "arm": "live",
+      "page": 15,
+      "raw": 44.80673
+    },
+    {
+      "arm": "live",
+      "page": 16,
+      "raw": 45.33661
+    },
+    {
+      "arm": "live",
+      "page": 17,
+      "raw": 36.09693
+    },
+    {
+      "arm": "live",
+      "page": 18,
+      "raw": 29.18364
+    },
+    {
+      "arm": "live",
+      "page": 19,
+      "raw": 48.30842
+    },
+    {
+      "arm": "live",
+      "page": 20,
+      "raw": 25.21316
+    },
+    {
+      "arm": "live",
+      "page": 21,
+      "raw": 34.65395
+    },
+    {
+      "arm": "live",
+      "page": 22,
+      "raw": 39.22936
+    },
+    {
+      "arm": "live",
+      "page": 23,
+      "raw": 40.68071
+    },
+    {
+      "arm": "live",
+      "page": 24,
+      "raw": 31.93662
+    },
+    {
+      "arm": "reopened",
+      "page": 1,
+      "raw": 89.66831
+    },
+    {
+      "arm": "reopened",
+      "page": 2,
+      "raw": 12.34535
+    },
+    {
+      "arm": "reopened",
+      "page": 3,
+      "raw": 86.23539
+    },
+    {
+      "arm": "reopened",
+      "page": 4,
+      "raw": 99.53538
+    },
+    {
+      "arm": "reopened",
+      "page": 5,
+      "raw": 98.6627
+    },
+    {
+      "arm": "reopened",
+      "page": 6,
+      "raw": 99.98461
+    },
+    {
+      "arm": "reopened",
+      "page": 7,
+      "raw": 100.0
+    },
+    {
+      "arm": "reopened",
+      "page": 8,
+      "raw": 100.0
+    },
+    {
+      "arm": "reopened",
+      "page": 9,
+      "raw": 100.0
+    },
+    {
+      "arm": "reopened",
+      "page": 10,
+      "raw": 99.94752
+    },
+    {
+      "arm": "reopened",
+      "page": 11,
+      "raw": 99.95346
+    },
+    {
+      "arm": "reopened",
+      "page": 12,
+      "raw": 56.59933
+    },
+    {
+      "arm": "reopened",
+      "page": 13,
+      "raw": 54.63446
+    },
+    {
+      "arm": "reopened",
+      "page": 14,
+      "raw": 99.98094
+    },
+    {
+      "arm": "reopened",
+      "page": 15,
+      "raw": 99.98278
+    },
+    {
+      "arm": "reopened",
+      "page": 16,
+      "raw": 99.99018
+    },
+    {
+      "arm": "reopened",
+      "page": 17,
+      "raw": 99.9838
+    },
+    {
+      "arm": "reopened",
+      "page": 18,
+      "raw": 99.9755
+    },
+    {
+      "arm": "reopened",
+      "page": 19,
+      "raw": 99.94049
+    },
+    {
+      "arm": "reopened",
+      "page": 20,
+      "raw": 99.94693
+    },
+    {
+      "arm": "reopened",
+      "page": 21,
+      "raw": 99.92109
+    },
+    {
+      "arm": "reopened",
+      "page": 22,
+      "raw": 99.9553
+    },
+    {
+      "arm": "reopened",
+      "page": 23,
+      "raw": 99.95252
+    },
+    {
+      "arm": "reopened",
+      "page": 24,
+      "raw": 99.98212
+    }
+  ],
+  "raw90GatePass": false
+}
