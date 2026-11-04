@@ -17,16 +17,18 @@
 
 현행 논리 편집 API·Storage 예산·schema 35·#8517 및 선행 해결 PR의 동작을 유지했습니다. 원격 원 head를 그대로 승인한 결과와 보정된 통합 후보의 검증을 구분합니다. #8281의 기존 두 경계, #8290 뒤 간격, #8308의 기존 가시 배치처럼 이미 해결된 부분은 별도로 기록했습니다.
 
-로컬 검증: stock release-test nextest 12,466 PASS/45 skip, 관련 19모듈 78 PASS, Native Skia 필수 3종·root/WASM/workspace Clippy·workspace build·release build/lib·최적화 WASM·Studio 2,716 PASS를 확인했습니다. 31개 입력·71쪽의 Native/fresh WASM 전쪽 raw 최저는 각각 92.88%이며 쪽수 일치와 확대 판독을 완료했습니다. 실제 53호출·양식/개체/간격/clip API와 Native/WASM 저장본 교차 재열기도 검증했습니다.
+최신 제출 후보의 로컬 검증: stock release-test nextest **12,475 PASS / 45 skip**, Native Skia 필수 3종·기본/Native 실제 출처 계약·root/WASM/workspace Clippy·workspace build·release build/lib·doc test·최적화 WASM·Studio **2,717 PASS**, 관련 Python·Node 계약 **275 PASS**를 확인했습니다. **32개 입력·72쪽**의 Native/fresh WASM 전쪽 raw 최저는 각각 **92.89641% / 92.88059%**이며 쪽수 일치·확대 판독을 완료했습니다. Native 6개/WASM 7개 실제 API와 14개 저장 교차 재열기/실시간 역할 175쪽도 검증했습니다.
 
-기준 devel은 `7d06d5c706f1d89f1662e739abf2b1b25d2a98e4`, 검증 구현 head는 `c6ad3eea59d1b7701efdc4fb582e2d9a44b4f775`입니다. 최초 제출 `e68f0e1236`까지는 증적·문서와 테스트 근거 주석만 정리했고 실행문 동일성을 확인했습니다. 이후 CodeQL에서 확인한 암호 문서의 좌표·줄 메트릭 진단 로그 세 곳은 기존 보안 보정 정책에 따라 제거했습니다. 이 추가 변경의 Rust lint·workspace build·전체 12,466건과 새 실제 CLI 회귀는 `3af2224e4e`에서 별도로 통과했으며, 조판 계산이 같은 위 시각 증거를 새 security head의 재측정으로 표시하지 않습니다.
+기준 devel은 `1924d371d6757392d063b8dc2e9bbe9a298be817`, 검증 후보는 `696240b004707a6686864f94130befe3dd7f213e`입니다. Native의 동일 렌더링 source 재사용 producer `ef6d302937`와 이번 후보의 새 최적화 WASM·실제 API 실행을 구분했습니다. 새 base의 Native 웹폰트 공급은 필수 편람 **383쪽 / 최저 99.96465% / 기준 대비 하락 0쪽**과 관련 계약으로 보존을 확인했습니다. 이전 c6ad/H4의 증적은 이력으로 보존합니다.
 
-[최종 검증](validation.md) · [원 PR별 검토](../../semanticist21_20261103_review_plan.md) · [원본/독립 Print 출처](../../../../pdf/semanticist21-20261103/print-provenance.md)
+새 글꼴 보고의 출처 선언 누락과 오프라인 소비 fixture 불일치는 기존 guard를 유지한 채 공통 지도·소비 문서에서 보정했습니다. [원 계약·기존 PR 추적·실패와 재검증](ci-provenance-followup.md)을 기록했습니다. 폰트 선택·조판·paint 규칙은 해당 보정에서 바뀌지 않았습니다.
+
+[최신 검증·전쪽 TSV·대표 review/overlay](rebase-validation.md) · [최종 검증](validation.md) · [원 PR별 검토](../../semanticist21_20261103_review_plan.md) · [원본/독립 Print 출처](../../../../pdf/semanticist21-20261103/print-provenance.md)
 
 merge commit으로 통합해 원 기여 history를 보존합니다.
 
 [CodeQL 후속 보정과 CLI 음성·양성 대조](ci-security-followup.md)를 기록했습니다. 보안 경고 분류·query·workflow는 변경하지 않았습니다.
 
-![표 삽입 뒤 본문 흐름: 독립 Print·Native·WASM](zoom/notice-p12.png)
+![실제 표 삽입 53호출 뒤 21쪽 — fresh WASM review](rebase/png/notice-live-p21-wasm-review.png)
 
-![본문·셀 양식 편집: 독립 Print·Native·WASM](zoom/forms-edited.png)
+![Form01 HWPX — fresh WASM review](rebase/png/form-original-hwpx-wasm-review.png)

@@ -10,7 +10,7 @@
 
 공통 출처 지도에 SVG·PDF의 nativeFontSupply/fontEnvironment, PNG의 같은 필드와 observedFontFallbacks/declaredFontEnvironment를 선언한다. 객체 키에도 문서 글꼴명이 실리므로 해당 보고·환경 객체 전체를 문서 파생 데이터로 취급한다. 기존 marked의 실제 필드 존재 확인은 유지한다. 존재하지 않거나 null/빈 값인 필드는 표지에 추가하지 않는다. 검사·허용치·schemaVersion·출력 내용·폰트 선택·레이아웃·paint·저장 알고리즘은 바꾸지 않는다.
 
-기존 출처 계약 11건의 기본/Native 실행, Rust lint·workspace·stock 전체 회귀를 새 코드에서 확인하며 아직 보정 후 완료 판정은 하지 않았다. Native 32입력/편람383 출력의 producer는 ef6이며 이 메타데이터 선언 보정의 재실행 결과로 바꾸어 적지 않는다. 실제 렌더링 source 동일성을 확인해 재사용 범위를 명시한다. 최적화 fresh WASM과 실제 API·저장 검증은 새 보정 head에서 이어 실행한다.
+기존 출처 계약 11건의 기본/Native 실행, Rust lint·workspace·stock 전체 회귀를 새 코드에서 확인하며 아직 보정 후 완료 판정은 하지 않았다. Native 32개 입력/편람383 출력의 producer는 ef6이며 이 메타데이터 선언 보정의 재실행 결과로 바꾸어 적지 않는다. 실제 렌더링 source 동일성을 확인해 재사용 범위를 명시한다. 최적화 fresh WASM과 실제 API·저장 검증은 새 보정 head에서 이어 실행한다.
 
 공통 contracts 라이브러리 기존 단위 검사 15건과 fmt check는 보정 후 통과했다. 전체 명령 봉투의 실제 출처 계약과 Native PNG 경로는 새 code head에서 이어 검증한다.
 
@@ -19,3 +19,7 @@
 #5295의 원 구현 `ee5bb1c0af74b0ec6314d276910793d44e50e87f`은 오프라인 소비 fixture와 실제 출처 지도가 같은 경로를 선언하는지 검사한다. `63532b1ee5`에서 실제 JSON 계약 11건과 Rust lint·workspace build는 통과했지만, stock 전체 회귀는 12,475건 중 12,473 PASS / 2 FAIL / 45 skip였다. 두 실패는 소비용 fixture의 이전 빈 선언과 새 지도 사이의 불일치다.
 
 `.claude/skills/rhwp-provenance/fixtures/command-untrusted-fields.json`의 SVG·PDF 2경로/PNG 4경로와 해당 소비 문서·공통 기술 문서를 실제 지도에 동기화한다. 원 검사 assertion은 유지한다. 제품 Rust 코드는 `63532b1ee5`와 같고, 소비 fixture와 문서만 바뀐다. 집중 소비 계약과 stock 전체 회귀를 다시 실행하고, Native·최적화 WASM의 남은 필수 검증을 이어 진행한다.
+
+## 최종 보정 후 결과
+
+후보 `696240b004707a6686864f94130befe3dd7f213e`에서 stock 전체 12,475 PASS / 45 skip / 0 FAIL, 기본 출처 계약 11건과 Native 출처 계약 11건, Native 필수 4,064건·doc test 8건을 통과했다. 실제 MAP과 소비 fixture의 일치 검사 2건을 포함해 기존 guard를 그대로 통과했다. Rust lint·workspace 검증은 제품 Rust source가 같은 `63532b1ee5`의 완료 결과를 재사용하며, 소비 fixture/문서만 바뀐 것을 Git으로 확인했다. 최적화 fresh WASM, 실제 Native/WASM API와 저장 후 교차 재열기까지 완료했다. 자세한 producer·전쪽 TSV·판독은 [최신 검증](rebase-validation.md)을 따른다.

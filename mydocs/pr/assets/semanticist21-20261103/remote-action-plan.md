@@ -8,7 +8,7 @@
 2. `review/integration-20261103-semanticist21`을 메인터너 repository에 push하고 devel 대상 Open 통합 PR을 생성한다. 보정 없는 원격 원 head에 approve를 게시하지 않는다.
 3. 제출 head의 required CI와 aggregate·mergeable을 확인하고 self-review를 기록한다. 로컬에서 검증한 head와 GitHub head를 구분한다.
 4. 최신 base의 merge-tree와 exact-head CI를 재확인한 뒤 merge commit으로 통합한다. 원 열 head의 조상 관계와 기여자 commit을 보존하며 squash하지 않는다.
-5. 통합 merge SHA·devel 포함·원 PR 10건의 API 상태를 재조회하고 검증한 기여별 감사 댓글을 게시한다. 자동으로 MERGED가 반영되지 않은 원 PR은 base에 원 head와 보정이 포함된 것을 증명해 통합 수용 완료로 정리하는 범위를 승인 요청한다.
+5. 통합 merge SHA·devel 포함·원 PR 10건의 API 상태를 재조회하고 검증한 기여별 감사 댓글을 게시한다. 자동으로 MERGED가 반영되지 않은 원 PR은 base에 원 head와 보정이 포함된 것을 증명해 이미 승인된 통합 수용 완료 범위로 정리한다.
 6. 검토 기록·연결 이슈 상태를 대조하고 devel 동기화·검토 branch/산출물 정리를 수행한다. 다른 작업의 WIP는 보존한다.
 
 ## 승인 근거
@@ -32,3 +32,7 @@ AGENTS.md의 “GitHub comment, remote push, PR 생성은 사용자 승인을 �
 - [#8298 댓글](comments/pr-8298.md) · [개별 검토](../../pr_8298_review.md)
 - [#8299 댓글](comments/pr-8299.md) · [개별 검토](../../pr_8299_review.md)
 - [#8308 댓글](comments/pr-8308.md) · [개별 검토](../../pr_8308_review.md)
+
+## 이번 제출과 후속 기록
+
+시간 예산 보정·commit·push와 새 head 필수 CI 진행도 승인됐다. 최신 base 통합 후의 출처 보정·소비 fixture 동기화와 실제 재검증은 [최신 결과](rebase-validation.md)에 연결한다. 본 PR은 CI 실행 정의를 바꾸므로 전체 exact-head CI·self-review·merge 뒤 옵션 2의 별도 records-only PR에서 10개 개별 review archive와 오늘할일·merge 사실을 기록한다. 이미 녹색인 code PR에 기록만 trailing push하지 않는다. 중앙 `semanticist21_20261103_review_plan.md` 경로는 검사·원본 증거의 참조를 보존한다. 원 PR별 댓글은 해당 원 PR의 주장 입력/쪽에 대응하는 review/overlay를 immutable merge SHA로 확인한 후 게시한다.

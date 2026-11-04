@@ -1,5 +1,7 @@
 # 누적 검토의 최종 로컬 검증
 
+최신 devel 통합 뒤의 현재 검증은 [새 base 검증 현황](rebase-validation.md)에서 확인한다. 아래 본문은 각 검증 당시 head의 이력이다.
+
 GitHub 제출 뒤 추가한 [진단 출력 보안 보정](ci-security-followup.md)은 아래 조판 측정과 구분한다. 아래 결과는 측정·검증 당시 head의 기록이며, 후속 보정 검증은 별도 절에 기록한다.
 
 검증 head는 `c6ad3eea59d1b7701efdc4fb582e2d9a44b4f775`이며 제품 source는 `39b4f81f6aab4cc08c6145ed6911db2a8fe5125e`다. 기준 devel은 `7d06d5c706f1d89f1662e739abf2b1b25d2a98e4`다. 최초 제출 `e68f0e1236`까지의 문서·증적 정리는 제품 구현과 테스트 실행문을 바꾸지 않았다. 이후 보안 보정은 별도 절에서 구분한다.
@@ -117,3 +119,7 @@ notice의 53개 API 호출과 Native/WASM이 실제 저장한 파일을 양쪽 b
 보정 head `3af2224e4ef0db65e5e75ed7040ca1c06f6b2045`에서 stock 전체 nextest **12,466 PASS / 45 skip / 0 FAIL**과 새 암호 문서 CLI 회귀를 완료했다. fmt·manifest prepare/check·unit tiers·root/WASM/workspace Clippy·workspace build도 모두 exit 0이다. 전체 nextest의 컴파일+실행 시간은 1342.40초다.
 
 [세 로그의 실제 flow·기존 #8517 해결 이력·보정 전 FAIL과 보정 후 PASS](ci-security-followup.md)를 따른다. 위 Native/fresh WASM 71쪽은 조판 계산을 바꾸기 전의 실제 측정이며, 이번 로그 제거 head에서 다시 측정한 결과로 바꾸지 않는다.
+
+## 최신 devel 통합 후 검증
+
+이 문서의 c6ad/e68/H4 수치는 이전 기준의 이력이다. 최종 제출 후보와 최신 devel의 Rust·Native·fresh WASM·실제 API·편람·전쪽 TSV 및 판독 결과는 [최신 재검증](rebase-validation.md)을 따른다.

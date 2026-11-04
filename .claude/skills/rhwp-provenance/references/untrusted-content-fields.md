@@ -3,7 +3,7 @@
 이 장은 모든 `--json` 봉투에 실리는 두 키를 에이전트가 **어떻게 읽는지**만 적는다.
 키를 새로 만들지 않고, 문서 문자열을 바꾸지 않는다. 권위는
 `crates/rhwp-contracts/src/provenance.rs` 의 `marked()` 와
-[`mydocs/tech/envelope_provenance.md`](../../../mydocs/tech/envelope_provenance.md).
+[`mydocs/tech/envelope_provenance.md`](../../../../mydocs/tech/envelope_provenance.md).
 
 관련: [export-provenance-map.md](export-provenance-map.md),
 [command-field-catalog.md](command-field-catalog.md),

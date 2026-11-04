@@ -10,7 +10,7 @@ last_verified: 2026-11-04
 ## 최종 판정
 
 **메인터너 보정 후 수용 가능 — 검증한 누적 후보에 한정.**
-검증 head `c6ad3eea59d1b7701efdc4fb582e2d9a44b4f775`, 제품 source `39b4f81f6a`, 원 기여 적용 merge `02b7ad04bc`다. 원격 원 head의 충돌이나 이전 API를 그대로 승인한 것이 아니다. 10건의 로컬 보정·필수 검증 승인은 완료했고 push·공개 댓글·새 PR·merge는 별도 승인 범위다.
+검증 head `c6ad3eea59d1b7701efdc4fb582e2d9a44b4f775`, 제품 source `39b4f81f6a`, 원 기여 적용 merge `02b7ad04bc`다. 원격 원 head의 충돌이나 이전 API를 그대로 승인한 것이 아니다. 작업지시자가 통합 PR의 새 head CI·self-review·merge commit·원 PR별 후속 처리까지 승인했다. 초기 source 검증과 아래 최신 devel 재검증을 구분한다.
 
 ## 원본과 적용
 
@@ -75,8 +75,11 @@ composer_without_stored_lines의 공통 줄 메트릭 → section vpos 누적 �
 
 ## Merge 후 contributor PR comment 계획
 
-원 기여의 저장 줄 없는 문단의 공간·위치 델타를 수용한 사실과 위 보정 이유를 존댓말로 안내한다. 실제 통합 PR·merge SHA·새 head CI URL과 [Visual Sweep 정본](../manual/verification/visual_sweep_guide.md#github-merge-comment)을 연결한다. 원 PR별 원 head의 포함과 API 상태를 재확인한다.
+승인된 통합 PR [#8548](https://github.com/edwardkim/rhwp/pull/8548)의 exact-head CI·self-review·merge와 옵션 2 기록 PR 뒤 원 기여의 수용·감사·필요한 보정 이유를 한국어 존댓말로 게시한다. 실제 merge SHA·새 head CI·devel 포함을 확인하며 [댓글 초안](assets/semanticist21-20261103/comments/pr-8299.md)의 수치·문서/쪽 대응과 같은 증거를 사용한다.
 
-직접 표시할 최종 패널은 [대표 비교](assets/semanticist21-20261103/zoom/spacing.png)다. asset이 실제 devel에 포함된 것을 확인한 뒤 raw URL로 표시한다.
+이 기여는 원 PR이 제시한 합성 직렬화 또는 순수 composer 계약으로 검증한다. 실물 문서·해당 쪽의 시각 주장이 없으므로 관련 없는 다른 원본의 이미지를 독립 증거로 제시하지 않는다. 통합 전체의 시각 검증은 개별 계약과 구분해 연결한다.
 
-[원격 처리안과 댓글 초안](assets/semanticist21-20261103/remote-action-plan.md) · [누적 검토 계획](semanticist21_20261103_review_plan.md).
+## 최신 devel 통합 후 제출 기준
+현재 후보 `696240b004707a6686864f94130befe3dd7f213e`, 통합 base `1924d371d6757392d063b8dc2e9bbe9a298be817`다. [최신 전쪽·실제 API·저장·필수 편람 결과](assets/semanticist21-20261103/rebase-validation.md)와 [직접 판독](assets/semanticist21-20261103/direct-review.md)의 최신 devel 절이 아래 제출 기준이다. 과거 c6ad/e68/H4의 결과를 이 후보의 새 실행으로 표시하지 않는다. 제품 렌더링 source가 같은 Native producer와 새 fresh WASM 실행을 명시적으로 구분한다.
+
+stock nextest 12,475 PASS / 45 skip, Native 필수 3종·출처 계약·Rust lint·workspace·doc test·최적화 WASM·Studio 2,717건·운영 계약 275건을 통과했다. Native/WASM 각각 32개 입력·72쪽의 전쪽 raw 90% 미만과 누락·쪽수 불일치는 없다. 최신 base의 Native 편람 383쪽 gate도 최저 99.96465%·기준 대비 하락 0쪽으로 통과했다.
