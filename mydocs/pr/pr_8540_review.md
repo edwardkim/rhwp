@@ -62,7 +62,7 @@ A/B를 같은 Print PDF·96 DPI에서 다시 출력했습니다. 두 문서 모�
 
 개요 번호·본문 순서와 누락을 확대 대조했습니다. 새로운 절대 px 핀은 추가하지 않았습니다.
 `tests/cases/scaffold_outline_numbering.rs`는 구조·문자열 계약을 확인합니다.
-최종 head에서 focused/전체 Rust, lint, Native/fresh WASM, devel 대비 2%p 대조가 남았습니다.
+최종 head에서 focused/전체 Rust, lint, Native/fresh WASM, devel 대비 0.1%p 대조가 남았습니다.
 
 ## Merge 후 contributor PR comment 계획
 
