@@ -95,3 +95,24 @@ Native 집중 실행의 동일 실행 파일을 추가 컴파일 없이 진단 �
 원시 재현 로그는 `logs/current-895205d5a7-issue713-stock-graph.log`, Native 진단은
 `logs/current-895205d5a7-issue713-native-stdout.log`다. 문서의 base 미달과 부적절한 검사 조건은
 별도로 기록하며 기존 검사·기대값은 이 검증 단계에서 수정하지 않았다.
+
+## 정본 절차에 따른 이관과 보존
+
+검증 뒤 같은 원본·미해결 범위의 열린 이슈를 다시 검색해 0건임을 확인하고
+[이슈 #8598](https://github.com/edwardkim/rhwp/issues/8598)을 등록했다. 담당자는
+`jangster77`이며, source·원본·PDF 해시·base/head 전쪽 Native TSV 원문과 복원 조건을
+본문에 기록했다. 원래 이슈 #713을 재발로 다시 열거나 #7445에 자동 편입하지 않았다.
+
+정본은 Native만으로 base 미달이 확인된 경우도 이관을 허용한다. fresh WASM까지 측정한 것으로
+표시하지 않았다. 원래 2022 PDF도 별도로 확인했으며 31·32·33쪽의 픽셀이 이번 기준 PDF와 같다.
+새 Print를 만들거나 유리한 기준으로 바꾸지 않았다.
+
+[보존 자산](../pr/assets/issue_8598/README.md)에 모듈 전체 `.rs.txt`, 복원 원장,
+전쪽 base/후보 Native TSV와 31·32·33쪽 review/overlay를 보존했다. 검사 source blob과
+사본의 바이트·SHA-256 일치를 확인했다. 사본 추가만으로 자동 수집 목록이 바뀌지 않았고,
+활성 제거 후 모듈 집합의 차이는 `tests/issue_713.rs` 한 개뿐이다. 검사 함수 감소도 1개다.
+
+공유 원본 HWP·두 PDF는 정상 메타데이터·추출·보안·parser/serializer·편집 계약에서 사용하므로
+기존 경로·바이트를 유지한다. 그 계약들과 다른 문서의 검사를 함께 제거하지 않는다.
+이관된 출력 결함은 이 통합 PR의 해결·Closes 범위에 포함하지 않는다. 올바른 전쪽 출력과 확대
+판독을 완료한 뒤 새 이름의 관계형 회귀로 복원한다. 파생 suite는 검토 worktree에서 재생성한다.
