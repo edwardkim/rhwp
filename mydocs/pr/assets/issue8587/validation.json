@@ -1,0 +1,267 @@
+{
+  "issue": 8587,
+  "base": "96827b3accd98ad0b80f76260b42fba24eded504",
+  "implementation": "325fdcf1362bb39362224a849887cc80b53059db",
+  "imported_commit": "a4fb27f651e17dc1b238b93005086fc165fe9e1b",
+  "imported_local_commit": "4c892a9886",
+  "final_tail_actual_api": {
+    "ready": true,
+    "reason": "successful-pr-worker-measurements",
+    "pullNumber": 8583,
+    "finalHeadRunId": 41808163341,
+    "finalHeadRunAttempt": 1,
+    "finalHeadSha": "0ebb66d4e571807accdb241005b025088ce0e376",
+    "reviewOnlyTail": true,
+    "sourceRunId": 41802090733,
+    "latestRunAttempt": 2,
+    "measurementAttempts": {
+      "b": 1,
+      "c": 1,
+      "d": 1,
+      "e": 1
+    },
+    "testedMergeSha": "aef6a24973e4b119775df2ff59f6f672adc82253",
+    "sourceHeadSha": "4446720c7227b292ba76a607af22696679cb9560",
+    "artifactIds": [
+      13308404758,
+      13308863874,
+      13308604145,
+      13308329201
+    ]
+  },
+  "publication_integrity": {
+    "remoteMutation": false,
+    "parent": "34cd7ca05391b929f9df695bea7a959e3b713be4",
+    "commit": "5c1a3488c913971c76a214a5490e1dccbfdef1b8",
+    "tree": "6de676ccc3bc6b4b06fdd931ea2090cb09a7d685",
+    "blob": "80d09b5b96049e5b94029524c1cbdde5956067c6",
+    "bytes": 1096050,
+    "sha256": "6876637c755f623bd1561487e220bacdd299bf2a67b30c959fdcbaeb1f4fa9b7",
+    "targets": 46,
+    "measurement_sources": {
+      "b": {
+        "run_id": "41802090733",
+        "ref": "refs/pull/8583/merge",
+        "sha": "aef6a24973e4b119775df2ff59f6f672adc82253",
+        "run_attempt": "1",
+        "repository": "edwardkim/rhwp",
+        "repository_id": "1193345564",
+        "pull_number": "8583",
+        "head_repository_id": "1193345564",
+        "head_sha": "4446720c7227b292ba76a607af22696679cb9560",
+        "head_ref": "task/8533-wasm-source-advance"
+      },
+      "c": {
+        "run_id": "41802090733",
+        "ref": "refs/pull/8583/merge",
+        "sha": "aef6a24973e4b119775df2ff59f6f672adc82253",
+        "run_attempt": "1",
+        "repository": "edwardkim/rhwp",
+        "repository_id": "1193345564",
+        "pull_number": "8583",
+        "head_repository_id": "1193345564",
+        "head_sha": "4446720c7227b292ba76a607af22696679cb9560",
+        "head_ref": "task/8533-wasm-source-advance"
+      },
+      "d": {
+        "run_id": "41802090733",
+        "ref": "refs/pull/8583/merge",
+        "sha": "aef6a24973e4b119775df2ff59f6f672adc82253",
+        "run_attempt": "1",
+        "repository": "edwardkim/rhwp",
+        "repository_id": "1193345564",
+        "pull_number": "8583",
+        "head_repository_id": "1193345564",
+        "head_sha": "4446720c7227b292ba76a607af22696679cb9560",
+        "head_ref": "task/8533-wasm-source-advance"
+      },
+      "e": {
+        "run_id": "41802090733",
+        "ref": "refs/pull/8583/merge",
+        "sha": "aef6a24973e4b119775df2ff59f6f672adc82253",
+        "run_attempt": "1",
+        "repository": "edwardkim/rhwp",
+        "repository_id": "1193345564",
+        "pull_number": "8583",
+        "head_repository_id": "1193345564",
+        "head_sha": "4446720c7227b292ba76a607af22696679cb9560",
+        "head_ref": "task/8533-wasm-source-advance"
+      }
+    },
+    "changedFiles": "10369\t10369\tnextest-target-duration-policy.json",
+    "localBarePush": "PASS",
+    "mergeTree": "ac02bb51bfd48cda72a6a7e1f3a00240e450fa26",
+    "prepushMergeTree": "ac02bb51bfd48cda72a6a7e1f3a00240e450fa26"
+  },
+  "publication_api_commit": "a52efebae445294701637b0ce4892e416b878454",
+  "actual_publisher_readback": {
+    "published": false,
+    "reason": "unchanged",
+    "commitSha": "a52efebae445294701637b0ce4892e416b878454",
+    "sourceMergeSha": "96827b3accd98ad0b80f76260b42fba24eded504"
+  },
+  "tests": {
+    "node": {
+      "passed": 157,
+      "failed": 0
+    },
+    "workflow_contract": {
+      "passed": 45,
+      "failed": 0
+    },
+    "visual_sweep_python": {
+      "passed": 247,
+      "failed": 0
+    },
+    "actionlint": "PASS",
+    "workflow_prepare_actual_shell": "PASS"
+  },
+  "source_hashes": {
+    ".github/workflows/refresh-nextest-duration.yml": "bbb697de43350adbf0dbd70aefa87139921d10d3f9a68e591ee8d3ed70cba5ae",
+    "scripts/collect-postmerge-duration-data.mjs": "ae129317c4cd01cc7b2c7c2340a27128a9877e104816d575b7f4b56446fe21a6",
+    "scripts/publish-nextest-duration-data.mjs": "f87934237f7f7736f70bf2b72065a19ff0b335dab60fc5d4ca748b1721055def",
+    "scripts/visual_sweep.py": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+  },
+  "limitations": [
+    "Git push와 API 대조는 인증 주체·시각도 달라 GitHub 내부 원인을 특정하지 못했다.",
+    "devel/metrics 확인은 두 ref를 묶은 원자적 갱신이 아니다.",
+    "새 workflow의 GITHUB_TOKEN 실제 게시 검증은 새 PR의 CI·병합 후 별도로 확인한다."
+  ],
+  "native_handbook": {
+    "gate": {
+      "status": "passed",
+      "baseline": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/handbook-hwpx-native.tsv",
+      "baseline_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "metric": "silhouette_raw_match_percent",
+      "backend": "native-skia",
+      "precision": "0.01 percentage points",
+      "pages": 383,
+      "regressions": [],
+      "webfont_fallback": [],
+      "manifest": "output/pr-review/issue8587-duration-publish-20261104/handbook-font-environment/required-handbook-8153-native/silhouette_manifest.json",
+      "elapsed_seconds": 201.964
+    },
+    "minimum": {
+      "page": 130,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.96463,
+      "silhouette_raw_unmatched_pixels": 23,
+      "silhouette_boundary_reconciled_pixels": 5,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 65022,
+      "tolerant_content_match_percent": 99.97232
+    },
+    "provenance": {
+      "hwp": {
+        "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+        "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6"
+      },
+      "pdf": {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+        "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e"
+      },
+      "git_head": "4c892a9886c12e8d946a38c936d27f9595dd66ea",
+      "sweep_script": {
+        "path": "scripts/visual_sweep.py",
+        "sha256": "b4b4fc3ac591e11f976f299f081d3d9b9a6e86db175f102a95526bf3215b55fa"
+      },
+      "image_decoding": {
+        "alpha_background": "#ffffff",
+        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+      },
+      "svg_rasterizer": null,
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+        "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+        "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+        "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+        "version": "152.0.7947.0",
+        "wrapper_version": "5.12.1",
+        "version_exit_code": 0
+      },
+      "comparison_profile": "print",
+      "rhwp_binary": {
+        "configured": "output/pr-review/issue8533-wasm-advance-20261104/rhwp-final-native",
+        "path": "output/pr-review/issue8533-wasm-advance-20261104/rhwp-final-native",
+        "sha256": "8ae681680593809015ebb5c0a19ddaa5269ba11aa56d467882d6be81ab3d8728"
+      },
+      "native_webfont_fallback": {
+        "registry_sha256": "8a011c128e405dca6aea2c1329d4c28c9f5ef2bd48197b2010db4ea7464f69e5",
+        "mappings": {},
+        "document_glyph_fallbacks": [],
+        "unmapped_sources": [],
+        "local_document_substitutes": [],
+        "resources": [],
+        "module_sha256": "dc205694deaa48f23d5a1206ddaff5b985af6ad7845d3cd496a8322272b4da80"
+      },
+      "raster_backend": "native-skia",
+      "png_exporter_sha256": "65faf9a0f63db1c749eca577ec09caaeef6f99c118064c7d2fbb0aeb72a3a2ab",
+      "layout_generation": "2024",
+      "font_environment": {
+        "path": "/Users/tsjang/rhwp/mydocs/pr/assets/planet6897_integration_final/pr8389_8397/handbook-font-environment.json",
+        "sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25"
+      },
+      "font_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "file_count": 1206,
+        "full_inventory_sha256": "ead88154741d893795cbe389aefb5918bf4d7b4c432d909ec9d94f703d0971a4",
+        "inventory_scope": "전체 설치 목록은 중간 manifest에만 보존한다. 아래에는 요청된 KoPub 6종과 명시 대체 HBATANG 프로그램의 공급 출처를 기록하며 실제 선택 face 전체 목록이라고 주장하지 않는다.",
+        "requested_program_files": [
+          {
+            "path": "/Users/tsjang/Library/Fonts/HBATANG.TTF",
+            "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068"
+          },
+          {
+            "path": "/Users/tsjang/Library/Fonts/KoPub Batang Bold.ttf",
+            "sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b"
+          },
+          {
+            "path": "/Users/tsjang/Library/Fonts/KoPub Batang Light.ttf",
+            "sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f"
+          },
+          {
+            "path": "/Users/tsjang/Library/Fonts/KoPub Batang Medium.ttf",
+            "sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4"
+          },
+          {
+            "path": "/Users/tsjang/Library/Fonts/KoPub Dotum Bold.ttf",
+            "sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275"
+          },
+          {
+            "path": "/Users/tsjang/Library/Fonts/KoPub Dotum Light.ttf",
+            "sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+          },
+          {
+            "path": "/Users/tsjang/Library/Fonts/KoPub Dotum Medium.ttf",
+            "sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7"
+          },
+          {
+            "path": "/Users/tsjang/Library/Fonts/issue8160/system-fonts/hancom-office-2020/All/HBATANG.TTF",
+            "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+          }
+        ]
+      }
+    },
+    "all_pages": 383,
+    "missing": 0,
+    "p145_raw": 100.0,
+    "reused_native_binary": true,
+    "wasm": "이번 인자 전달 경로는 Native 전용이다. WASM renderer·일반 대상의 font_environment 전달 경로를 바꾸지 않았다."
+  }
+}
