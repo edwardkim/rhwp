@@ -1156,66 +1156,28 @@ fn assign_master_pages_for_section(
         };
         page.active_master_page = selected;
 
-        // 임의 쪽과 마지막 쪽은 별도 범위다. 표시 쪽 번호의 재시작과 구분하여
-        // 구역 안 물리 위치로 지정 대상을 고르고 같은 대체/겹침 계약을 소비한다.
-        let applicable_ext_mp_indices: Vec<usize> = ext_mp_indices
-            .iter()
-            .copied()
-            .filter(|&index| {
-                mps[index].optional_page_number.map_or(is_last, |number| {
-                    usize::from(number) == page_idx_in_section + 1
-                })
-            })
-            .collect();
-        if !applicable_ext_mp_indices.is_empty() {
-            let replace_exts: Vec<usize> = applicable_ext_mp_indices
-                .iter()
-                .filter(|&&i| !mps[i].overlap || mps[i].replace_base)
-                .copied()
-                .collect();
-            let overlap_exts: Vec<usize> = applicable_ext_mp_indices
-                .iter()
-                .filter(|&&i| mps[i].overlap && !mps[i].replace_base)
-                .copied()
-                .collect();
-
-            if let Some(&replace_idx) = replace_exts.last() {
-                page.active_master_page = Some(MasterPageRef {
-                    section_index,
-                    master_page_index: replace_idx,
-                });
-            }
-
-            let active_apply = page
-                .active_master_page
-                .as_ref()
-                .and_then(|mp_ref| {
-                    if mp_ref.section_index == section_index {
-                        mps.get(mp_ref.master_page_index)
-                    } else {
-                        None
-                    }
-                })
-                .map(|m| m.apply_to);
-            let mut remaining_overlap_exts: Vec<usize> = Vec::new();
-            for &i in &overlap_exts {
-                if Some(mps[i].apply_to) == active_apply {
-                    page.active_master_page = Some(MasterPageRef {
-                        section_index,
-                        master_page_index: i,
-                    });
-                } else {
-                    remaining_overlap_exts.push(i);
+        // 임의 쪽과 마지막 쪽은 별도 범위다. 표시 쪽 번호의 재시작과 구분하여 구역 안 물리 위치로
+        // 지정 대상을 고른다. 한컴 12.30은 구역 마지막 쪽 바탕쪽이 있으면 그 쪽에 그것만 쓰고 같은 쪽을
+        // 지정한 임의 쪽 바탕쪽은 그리지 않는다. 겹치게 하기면 기본 바탕쪽 위에 더 그리고, 아니면
+        // 기본 바탕쪽 대신 그린다(한컴 12.30 인쇄로 확인).
+        let extension = |last: bool| {
+            ext_mp_indices.iter().rev().copied().find(|&index| {
+                match mps[index].optional_page_number {
+                    None => last,
+                    Some(number) => !last && usize::from(number) == page_idx_in_section + 1,
                 }
-            }
-            if !remaining_overlap_exts.is_empty() {
-                page.extra_master_pages = remaining_overlap_exts
-                    .iter()
-                    .map(|&mi| MasterPageRef {
-                        section_index,
-                        master_page_index: mi,
-                    })
-                    .collect();
+            })
+        };
+        let chosen = if is_last { extension(true) } else { None }.or_else(|| extension(false));
+        if let Some(index) = chosen {
+            let master_ref = MasterPageRef {
+                section_index,
+                master_page_index: index,
+            };
+            if !mps[index].overlap || mps[index].replace_base {
+                page.active_master_page = Some(master_ref);
+            } else {
+                page.extra_master_pages = vec![master_ref];
             }
         }
     }
@@ -8379,14 +8341,17 @@ impl DocumentCore {
     /// 실제 page tree cache와 섞지 않고 마지막 편집 target 한 건만 재사용한다. 선택
     /// 드래그는 hit-test와 selection geometry를 프레임마다 연속 조회하므로, 캐시가
     /// 없으면 같은 대표 페이지를 매번 full build하게 된다 (#6452).
-    pub(crate) fn build_header_footer_edit_preview_tree(
+    pub fn build_header_footer_edit_preview_tree(
         &self,
         page_num: u32,
         section_idx: usize,
         is_header: bool,
         apply_to: u8,
     ) -> Result<PageRenderTree, HwpError> {
-        if self.header_footer_preview_page_for_section(section_idx)? != page_num {
+        // 바탕쪽은 그 바탕쪽을 고치는 쪽 어디에서나 그 쪽 용지로 그린다.
+        if crate::document_core::master_page_slot(apply_to).is_none()
+            && self.header_footer_preview_page_for_section(section_idx)? != page_num
+        {
             return Err(HwpError::RenderError(format!(
                 "쪽 {}은 구역 {}의 대표 HF 편집 페이지가 아닙니다",
                 page_num, section_idx
@@ -8456,20 +8421,35 @@ impl DocumentCore {
                 )
             }));
         let (base_page_content, paragraphs, composed) = self.find_page(page_num)?;
-        let overridden_page_content =
-            if let Some((section_idx, is_header, apply_to)) = header_footer_override {
-                let mut page_content = base_page_content.clone();
-                let target =
-                    self.header_footer_ref_for_edit_target(section_idx, is_header, apply_to)?;
-                if is_header {
-                    page_content.active_header = Some(target);
-                } else {
-                    page_content.active_footer = Some(target);
-                }
-                Some(page_content)
+        let master_override = header_footer_override.and_then(|(section_idx, _, apply_to)| {
+            crate::document_core::master_page_slot(apply_to).map(|slot| (section_idx, slot))
+        });
+        let overridden_page_content = if let Some((section_idx, slot)) = master_override {
+            // 바탕쪽 편집 화면: 그 쪽 용지에 고칠 바탕쪽 하나만 그린다(아래에서 본문·머리말 등을 뺀다).
+            self.master_page_ref(section_idx, slot)?;
+            let mut page_content = base_page_content.clone();
+            page_content.active_master_page = Some(MasterPageRef {
+                section_index: section_idx,
+                master_page_index: slot,
+            });
+            page_content.extra_master_pages.clear();
+            if let Some(hide) = page_content.page_hide.as_mut() {
+                hide.hide_master_page = false;
+            }
+            Some(page_content)
+        } else if let Some((section_idx, is_header, apply_to)) = header_footer_override {
+            let mut page_content = base_page_content.clone();
+            let target =
+                self.header_footer_ref_for_edit_target(section_idx, is_header, apply_to)?;
+            if is_header {
+                page_content.active_header = Some(target);
             } else {
-                None
-            };
+                page_content.active_footer = Some(target);
+            }
+            Some(page_content)
+        } else {
+            None
+        };
         let page_content = overridden_page_content
             .as_ref()
             .unwrap_or(base_page_content);
@@ -8713,6 +8693,15 @@ impl DocumentCore {
                 page_content.section_index,
                 page_content.page_number,
             );
+        }
+        if master_override.is_some() {
+            use crate::renderer::render_tree::RenderNodeType;
+            tree.root.children.retain(|node| {
+                matches!(
+                    node.node_type,
+                    RenderNodeType::PageBackground(_) | RenderNodeType::MasterPage
+                )
+            });
         }
         // Task #1154: 동일 bin_data_id Pic 컨트롤이 수직으로 인접 겹쳐 그려질 때
         // 두 그림의 미세한 세로 스케일 차이로 인한 잔상(이중 라인) 제거.

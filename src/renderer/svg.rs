@@ -705,7 +705,12 @@ impl SvgRenderer {
             return 0;
         }
         if matches!(&node.node_type, RenderNodeType::MasterPage) {
-            return 1;
+            // 맨 위로 보내기 바탕쪽은 본문과 글 앞 개체 위에 그린다.
+            return if node.layer.is_some_and(|layer| layer.master_front) {
+                5
+            } else {
+                1
+            };
         }
         if let Some(layer) = node.layer {
             if let Some(text_wrap) = layer.text_wrap {

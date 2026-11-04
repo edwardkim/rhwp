@@ -217,6 +217,11 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
                 )?;
             }
         }
+        // 원본 끝 목록이 바탕쪽 목록을 갖지 않으면(메모 목록만 남았거나 바탕쪽 편집이 원본 바탕쪽
+        // 목록을 버렸으면) 확장 바탕쪽은 모델이 저장한다.
+        if !crate::model::section_tail::holds_master_lists(tail) {
+            try_serialize_master_page_tail(section, &mut records, storage)?;
+        }
     } else {
         try_serialize_master_page_tail(section, &mut records, storage)?;
     }
@@ -228,6 +233,7 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
     if has_memo_tail && !memo_raw_matches {
         try_serialize_memo_tail(memo_lists, &mut records, storage)?;
     }
+    set_tail_master_count(&mut records, raw_start, storage)?;
     // 변경추적 병합 문단 여부(UINT16)는 5.0.3.2부터 존재한다. 재귀로 생성한
     // 머리말·꼬리말·셀 문단도 같은 출력 버전을 따른다. 보존된 24바이트 이상의
     // 헤더는 건드리지 않으며, 원본 스트림 재사용은 위에서 이미 반환했다.
@@ -242,6 +248,44 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
         }
     }
     super::record_writer::try_write_records(&records, storage)
+}
+
+/// 구역 정의(secd)의 대표Language 다음 UINT16에 구역 끝에 실제로 쓴 바탕쪽 목록 수를 적는다.
+/// 한컴 12.30은 이 수만큼만 구역 끝 바탕쪽 목록(마지막 쪽·임의 쪽)을 읽고, 0이면 무시한다.
+/// 원본 끝 목록을 그대로 썼든 모델에서 새로 썼든 쓴 레코드에서 센다(메모 목록은 빼고).
+fn set_tail_master_count<S: crate::storage::Storage>(
+    records: &mut [Record],
+    tail_start: usize,
+    storage: &S,
+) -> Result<(), S::Error> {
+    // CTRL_HEADER 자료에서 ctrl id(4)와 구역 정의 고정부(24), 대표Language(2) 다음 자리.
+    const COUNT_AT: usize = 30;
+    let mut previous = None;
+    let mut count: u16 = 0;
+    for record in records[tail_start..].iter().filter(|r| r.level == 1) {
+        if record.tag_id == tags::HWPTAG_LIST_HEADER && previous != Some(tags::HWPTAG_MEMO_LIST) {
+            count += 1;
+        }
+        previous = Some(record.tag_id);
+    }
+    let secd = tags::CTRL_SECTION_DEF.to_le_bytes();
+    let Some(record) = records[..tail_start]
+        .iter_mut()
+        .find(|r| r.tag_id == tags::HWPTAG_CTRL_HEADER && r.data.starts_with(&secd))
+    else {
+        return Ok(());
+    };
+    if record.data.len() < COUNT_AT + 2 {
+        if count == 0 {
+            return Ok(());
+        }
+        let missing = COUNT_AT + 2 - record.data.len();
+        storage.reserve(&mut record.data, missing)?;
+        record.data.resize(COUNT_AT + 2, 0);
+        record.size = record.data.len() as u32;
+    }
+    record.data[COUNT_AT..COUNT_AT + 2].copy_from_slice(&count.to_le_bytes());
+    Ok(())
 }
 
 fn try_serialize_master_page_tail<S: crate::storage::Storage>(

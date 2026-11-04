@@ -362,8 +362,8 @@ fn parse_master_page_start(e: &quick_xml::events::BytesStart, master_page: &mut 
                 master_page.overlap = duplicate;
             }
             b"pageNumber" => master_page.hwpx_page_number = Some(parse_u16(&attr)),
-            // 표지(첫 쪽) 전용 바탕쪽. serializer 는 방출하나 종전엔 미독 →
-            // pageFront="1" 바탕쪽이 왕복 시 "0" 으로 적용 범위가 바뀌었다.
+            // 인쇄할 때 바탕쪽 맨 위로 보내기(한컴 12.30 저장본). serializer 는 방출하나 종전엔 미독 →
+            // pageFront="1" 바탕쪽이 왕복 시 "0" 으로 바뀌었다.
             b"pageFront" => master_page.page_front = attr_str(&attr) != "0",
             _ => {}
         }
@@ -417,12 +417,12 @@ fn build_hwpx_master_page_list_header(master_page: &MasterPage) -> Vec<u8> {
     bytes.extend_from_slice(&master_page.text_height.to_le_bytes());
     bytes.push(master_page.text_ref);
     bytes.push(master_page.num_ref);
-    let kind = master_page
-        .optional_page_number
-        .and_then(|number| number.checked_add(3))
-        .unwrap_or(master_page.ext_flags);
+    // 한컴 12.30 HWP 저장본과 같은 종류 값과 속성(겹치게 하기·맨 위로 보내기)을 둔다.
+    let (kind, attr) = crate::serializer::control::master_page_list_kind(master_page);
     bytes.extend_from_slice(&kind.to_le_bytes());
-    bytes.extend_from_slice(&[0u8; 14]);
+    bytes.extend_from_slice(&[0u8; 2]);
+    bytes.extend_from_slice(&attr.to_le_bytes());
+    bytes.extend_from_slice(&[0u8; 8]);
     bytes
 }
 

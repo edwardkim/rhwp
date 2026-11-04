@@ -322,6 +322,8 @@ struct ListHeaderFields {
     text_ref: u8,
     num_ref: u8,
     ext_flags: u16,
+    /// 바탕쪽 속성(byte 22-25): bit 0 겹치게 하기, bit 1 인쇄할 때 맨 위로 보내기.
+    master_attr: u32,
 }
 enum ControlPayload<'a> {
     Section(&'a SectionDef),
@@ -566,12 +568,29 @@ fn try_serialize_section_def<S: crate::storage::Storage>(
         .iter()
         .any(|raw| raw.tag_id == tags::HWPTAG_LIST_HEADER && raw.level == level + 1);
     if !has_raw_master_page_records {
-        for master_page in sd.master_pages.iter().filter(|mp| !mp.is_extension) {
+        // 한컴은 기본 바탕쪽 목록을 양 쪽·짝수 쪽·홀수 쪽 차례로 저장한다(구역 정의 bit 29·30·31 차례).
+        let mut base: Vec<_> = sd
+            .master_pages
+            .iter()
+            .filter(|mp| !mp.is_extension)
+            .collect();
+        base.sort_by_key(|mp| master_page_kind_flag(mp.apply_to));
+        for master_page in base {
             try_serialize_master_page(master_page, level + 1, records, storage)?;
         }
     }
     Ok(())
 }
+/// 구역 정의 속성의 바탕쪽 종류 비트(bit 29 양 쪽, 30 짝수 쪽, 31 홀수 쪽). 한컴 12.30 저장본에서 확인했다.
+const MASTER_PAGE_KIND_FLAGS: u32 = 0xe000_0000;
+fn master_page_kind_flag(apply_to: HeaderFooterApply) -> u32 {
+    match apply_to {
+        HeaderFooterApply::Both => 0x2000_0000,
+        HeaderFooterApply::Even => 0x4000_0000,
+        HeaderFooterApply::Odd => 0x8000_0000,
+    }
+}
+
 fn write_section_def<W: std::io::Write>(
     sd: &SectionDef,
     w: &mut ByteWriter<W>,
@@ -580,7 +599,23 @@ fn write_section_def<W: std::io::Write>(
     // flags bit 20-21은 동기화하지 않는다. HWP5는 page_num_type을 별도 필드로
     // 갖지 않고 flags bit 20-21로만 표현하므로, 여기서 반영하지 않으면 HWPX
     // 출처 문서를 HWP5로 저장할 때 홀/짝 쪽번호 시작 설정이 유실된다.
-    let flags = (sd.flags & !0x0030_0000) | (((sd.page_num_type as u32) & 0x03) << 20);
+    let mut flags = (sd.flags & !0x0030_0000) | (((sd.page_num_type as u32) & 0x03) << 20);
+    // 모델이 저장하는 기본 바탕쪽은 한컴처럼 bit 29·30·31에 양 쪽·짝수 쪽·홀수 쪽이 있는지 적는다.
+    // 한컴 12.30은 이 비트가 목록과 맞지 않는 HWP를 손상된 파일로 거절한다. 원본 레코드를 다시 쓰는
+    // 바탕쪽은 원본의 비트를 그대로 둔다.
+    if !sd
+        .extra_child_records
+        .iter()
+        .any(|raw| raw.tag_id == tags::HWPTAG_LIST_HEADER)
+    {
+        flags = (flags & !MASTER_PAGE_KIND_FLAGS)
+            | sd.master_pages
+                .iter()
+                .filter(|master| !master.is_extension)
+                .fold(0, |bits, master| {
+                    bits | master_page_kind_flag(master.apply_to)
+                });
+    }
     w.write_u32(flags)?;
     w.write_i16(sd.column_spacing)?;
     w.write_i16(sd.line_grid)?;
@@ -602,6 +637,8 @@ fn write_section_def<W: std::io::Write>(
         w.write_u16(0)?; // 대표Language = 0 (Application 지정)
         w.write_bytes(&[0u8; 8])?; // 추가 zero padding (관찰된 한컴 정답지 패턴)
     }
+    // 대표Language 다음 UINT16(구역 끝 바탕쪽 목록 수)은 구역을 다 쓴 뒤 실제로 쓴 목록 수로 채운다
+    // (serializer::body_text::set_tail_master_count).
 
     Ok(())
 }
@@ -635,12 +672,7 @@ pub(crate) fn try_serialize_master_page<S: crate::storage::Storage>(
         }
         data
     } else {
-        let ext_flags = master_page
-            .optional_page_number
-            .and_then(|number| number.checked_add(3))
-            .unwrap_or_else(|| {
-                u16::from(master_page.overlap) | if master_page.is_extension { 0x02 } else { 0 }
-            });
+        let (ext_flags, master_attr) = master_page_list_kind(master_page);
         storage.binary(&ControlPayload::HeaderFooterList(ListHeaderFields {
             para_count: master_page.paragraphs.len() as u16,
             list_attr: 0,
@@ -649,6 +681,7 @@ pub(crate) fn try_serialize_master_page<S: crate::storage::Storage>(
             text_ref: master_page.text_ref,
             num_ref: master_page.num_ref,
             ext_flags,
+            master_attr,
         }))?
     };
 
@@ -662,6 +695,24 @@ pub(crate) fn try_serialize_master_page<S: crate::storage::Storage>(
         },
     )?;
     super::body_text::try_serialize_paragraph_list(&master_page.paragraphs, level, records, storage)
+}
+
+/// 바탕쪽 LIST_HEADER의 종류 값(byte 18-19)과 속성(byte 22-25). 한컴 12.30 저장본처럼 종류는 기본
+/// 바탕쪽 0, 구역 마지막 쪽 3, 구역 안 n째 쪽 n + 3이고, 속성은 bit 0 겹치게 하기·bit 1 맨 위로 보내기다.
+pub(crate) fn master_page_list_kind(master_page: &MasterPage) -> (u16, u32) {
+    let kind = if master_page.is_extension {
+        master_page
+            .optional_page_number
+            .and_then(|number| number.checked_add(3))
+            .unwrap_or(3)
+    } else {
+        0
+    };
+    let overlap = master_page.is_extension && !master_page.replace_base;
+    (
+        kind,
+        u32::from(overlap) | (u32::from(master_page.page_front) << 1),
+    )
 }
 
 fn serialize_page_def(pd: &PageDef) -> Vec<u8> {
@@ -3219,6 +3270,7 @@ fn build_header_footer_list_header(
         text_ref,
         num_ref,
         ext_flags,
+        master_attr: 0,
     }))
 }
 
@@ -3234,7 +3286,9 @@ fn write_header_footer_list_header<W: std::io::Write>(
     w.write_u8(input.text_ref)?;
     w.write_u8(input.num_ref)?;
     w.write_u16(input.ext_flags)?;
-    w.write_bytes(&[0u8; 14])?;
+    w.write_u16(0)?;
+    w.write_u32(input.master_attr)?;
+    w.write_bytes(&[0u8; 8])?;
     Ok(())
 }
 

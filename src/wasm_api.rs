@@ -2339,6 +2339,45 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 바탕쪽(양 쪽·짝수 쪽·홀수 쪽) 생성 — 빈 문단 1개 포함.
+    ///
+    /// options: `{"applyTo":0|1|2}`. 반환: `{"ok":true,"applyTo":16+n}`.
+    /// 바탕쪽 문단은 머리말·꼬리말 편집 API에 그 `applyTo`(16 + 바탕쪽 번호)를 주어 편집한다.
+    #[wasm_bindgen(js_name = createMasterPage)]
+    pub fn create_master_page(
+        &mut self,
+        section_idx: u32,
+        options_json: &str,
+    ) -> Result<String, JsValue> {
+        self.create_master_page_native(section_idx as usize, options_json)
+            .map_err(|e| e.into())
+    }
+
+    /// 바탕쪽 삭제. `apply_to`는 16 + 바탕쪽 번호.
+    #[wasm_bindgen(js_name = deleteMasterPage)]
+    pub fn delete_master_page(
+        &mut self,
+        section_idx: u32,
+        apply_to: u8,
+    ) -> Result<String, JsValue> {
+        self.delete_master_page_native(section_idx as usize, apply_to)
+            .map_err(|e| e.into())
+    }
+
+    /// 구역의 바탕쪽 목록. 반환: `{"ok":true,"masterPages":[{index,applyTo,isExtension,overlap,replaceBase,pageNumber,paraCount}]}`
+    #[wasm_bindgen(js_name = getMasterPages)]
+    pub fn get_master_pages(&self, section_idx: u32) -> Result<String, JsValue> {
+        self.get_master_pages_native(section_idx as usize)
+            .map_err(|e| e.into())
+    }
+
+    /// 쪽에서 고칠 바탕쪽. 반환: `{"ok":true,"found":true,"sectionIndex":N,"applyTo":16+n}` 또는 `{"ok":true,"found":false}`
+    #[wasm_bindgen(js_name = getMasterPageEditTarget)]
+    pub fn get_master_page_edit_target(&self, page_num: u32) -> Result<String, JsValue> {
+        self.get_master_page_edit_target_native(page_num)
+            .map_err(|e| e.into())
+    }
+
     /// 머리말/꼬리말 내 텍스트 삽입
     ///
     /// 반환: JSON `{"ok":true,"charOffset":<new_offset>}`
