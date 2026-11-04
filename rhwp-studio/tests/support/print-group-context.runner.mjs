@@ -40,14 +40,21 @@ if (mode === 'print') {
   fail = true;
   assert.throws(() => bridge.renderPageToCanvasFiltered(0, {}, 1, 'all', 'print'), /paint 실패/);
   assert.equal(active, true, '인쇄 실패 뒤에도 화면 상태를 복원한다');
-} else if (mode === 'group') {
+} else if (mode === 'group' || mode === 'textbox') {
   const {onClick} = await import(pathToFileURL(join(src, 'engine/input-handler-mouse.ts')));
   const {CursorState} = await import(pathToFileURL(join(src, 'engine/cursor.ts')));
   const events = [], addressReads = [];
   const wasm = {
     pageCount: 383,
     getCursorRect: () => ({pageIndex: 2, x: 350, y: 550, height: 12}),
-    hitTest() { addressReads.push('가짜 셀 조회'); throw Error('묶음의 자식은 외곽 묶음의 셀 0이 아니다'); },
+    hitTest() {
+      addressReads.push('텍스트 hit');
+      if (mode === 'group') throw Error('묶음의 자식은 외곽 묶음의 셀 0이 아니다');
+      return {sectionIndex: 0, paragraphIndex: 0, charOffset: 1, parentParaIndex: 4,
+        controlIndex: 0, cellIndex: 0, cellParaIndex: 0, isTextBox: true,
+        cellPath: [{controlIndex: 0, cellIndex: 0, cellParaIndex: 0}],
+        cursorRect: {pageIndex: 2, x: 350, y: 550, height: 12}};
+    },
   };
   const cursor = new CursorState(wasm);
   const rect = {left: 0, top: 0};
@@ -56,18 +63,28 @@ if (mode === 'print') {
     wasm, cursor, container: {clientWidth: 1000, clientHeight: 1100, getBoundingClientRect: () => rect, querySelector: () => content},
     viewportManager: {getZoom: () => 1},
     virtualScroll: {getPageAtPoint: () => 2, getPageOffset: () => 0, getPageWidth: () => 740, getPageLeftResolved: () => 0},
-    findPictureAtClick: () => ({type: 'group', sec: 0, ppi: 4, ci: 0, pageIndex: 2}),
+    findPictureAtClick: () => ({type: mode === 'group' ? 'group' : 'shape', sec: 0, ppi: 4, ci: 0, pageIndex: 2}),
+    isShapeBorderClickByRef: () => false,
     exitPictureObjectSelectionIfNeeded() {}, caret: {hide() {}}, fieldMarker: {hide() {}},
     selectionRenderer: {clear() {}}, cellSelectionRenderer: {clear() {}},
     renderPictureObjectSelection() { events.push('그룹 선택 표시'); },
     eventBus: {emit: (...args) => events.push(args)}, textarea: {focus() {}},
+    updateCaret() { events.push('텍스트 캐럿 표시'); }, startTextSelectionDrag() {},
   };
+  globalThis.document = {addEventListener() {}};
   onClick.call(handler, {clientX: 350, clientY: 550, button: 0, shiftKey: false, preventDefault() {}, target: {closest: () => null}});
+  if (mode === 'textbox') {
+    assert.equal(cursor.isInPictureObjectSelection(), false, '일반 글상자는 개체로 가로채지 않는다');
+    assert.equal(cursor.isInTextBox(), true, '일반 글상자 텍스트 편집은 유지한다');
+    assert.equal(cursor.getPosition().charOffset, 1);
+    assert.ok(events.includes('텍스트 캐럿 표시'));
+  } else {
   assert.equal(cursor.isInPictureObjectSelection(), true, '묶음 내부 클릭은 실제 외곽 묶음을 선택한다');
   assert.equal(cursor.getSelectedPictureRef().type, 'group');
   assert.equal(cursor.getSelectedPictureRef().ppi, 4);
   assert.equal(cursor.getSelectedPictureRef().pageIndex, 2);
   assert.deepEqual(addressReads, [], '잘못된 셀 주소로 텍스트 편집에 진입하지 않는다');
   assert.ok(events.includes('그룹 선택 표시'));
+  }
 } else throw Error('알 수 없는 검사 모드');
 console.log(`${mode}: PASS`);

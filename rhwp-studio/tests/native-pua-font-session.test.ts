@@ -1,4 +1,5 @@
-// 글꼴 공급의 비동기 소유 계약 검사다. mock bytes를 실제 cmap/시각 증거로 쓰지 않는다.
+// 관계형: 글꼴 공급의 비동기 소유·원본 TTF/대체 체인 분리를 검사한다.
+// 주석 갱신: 2026-11-04 15:18 KST. mock bytes를 실제 cmap/시각 증거로 쓰지 않는다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -23,8 +24,8 @@ test('같은 family의 HFT와 TrueType 폭 프로그램을 출처별로 준비�
     subscribe() { return () => {}; },
   });
   const requests = [
-    { family: 'MixedWidth', bold: false, italic: false },
-    { family: 'MixedWidth', bold: false, italic: false, source_ttf: true },
+    { family: 'MixedWidth, DisplayOnly', bold: false, italic: false },
+    { family: 'MixedWidth, DisplayOnly', bold: false, italic: false, source_ttf: true },
   ];
   const signatures: number[] = [];
   const owner = {

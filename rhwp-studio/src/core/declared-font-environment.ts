@@ -3,6 +3,7 @@ import { FONT_RULE_WEBFONT_ENTRIES } from './font-rule-runtime.ts';
 import { loadPreferredLocalFontBytes, resolveLocalFontProgramCandidates } from './local-fonts.ts';
 import { normalizeFontFaceData } from './sfnt-face.ts';
 import { fontSymbolDescriptors, type FontSymbolInspector } from './font-symbol-coverage.ts';
+import { sourceProgramFamilies } from './canvas-intrinsic-font.mjs';
 
 export interface DocumentFontSelectionPlan {
   environmentId: string | null;
@@ -25,10 +26,13 @@ const suppliedAliases = new Map<string, string>();
 
 /** 이미 승인·적재한 같은 family의 실제 프로그램만 조판에 공급한다. */
 export function declaredOpenTypeProgram(family: string, sourceTtf = false): Uint8Array | null {
-  const normalized = family.trim().toLocaleLowerCase();
-  const match = [...loadedPrograms.values()].find(program => (sourceTtf ? program.trueType : program.openTypeCff)
-    && (program.family.toLocaleLowerCase() === normalized || program.query.toLocaleLowerCase() === normalized));
-  return match ? new Uint8Array(match.bytes) : null;
+  for (const name of sourceProgramFamilies(family, sourceTtf)) {
+    const normalized = name.toLocaleLowerCase();
+    const match = [...loadedPrograms.values()].find(program => (sourceTtf ? program.trueType : program.openTypeCff)
+      && (program.family.toLocaleLowerCase() === normalized || program.query.toLocaleLowerCase() === normalized));
+    if (match) return new Uint8Array(match.bytes);
+  }
+  return null;
 }
 
 /** 로컬 감지 초기화 시 바이트·별칭·CSS face를 함께 해제한다. */

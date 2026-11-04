@@ -1,4 +1,5 @@
-// 합성 API 계약: 실제 WASM의 glyph paint와 Screen/Print 전환을 관측한다.
+// 관계형: 실제 WASM의 glyph paint와 Screen/Print 메트릭 전환을 관측한다.
+// 주석 갱신: 2026-11-04 15:18 KST. 합성 공급자·프로필 계약이다.
 // 실물 한컴 원본의 Visual Sweep을 대신하지 않는다.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -76,11 +77,40 @@ test('실제 Canvas Print 글리프는 기하 모드를 소비하고 Screen으�
           layer: JSON.parse(doc.getPageLayerTreeWithProfile(0, profile, true, true)),
           tree: doc.getPageRenderTree(0)});
       }
-      return rows;
+      // 실제 WASM 경계에서도 화면 폭이 인쇄에 유출되면 거부해야 한다.
+      // 공급자 폭은 합성 입력값이며 실물 문서의 좌표 정답이 아니다.
+      const measured = new wasm.HwpDocument(new TextEncoder().encode(
+        new TextDecoder().decode(bytes).replace('<CHAR>H</CHAR>', '<CHAR>😀A</CHAR>')));
+      let metricProbe;
+      try {
+        const batch = JSON.parse(measured.collectCanvasMetricRequests(1, 1));
+        if (!batch.requests.length) throw Error('보충 측정 반례가 수집되지 않았습니다.');
+        const measureContext = document.createElement('canvas').getContext('2d');
+        measured.registerCanvasMetricReplies(1, 1, batch.revision, JSON.stringify(batch.requests.map(r => {
+          measureContext.font = r.font;
+          return {...r, resolvedFont: measureContext.font, measuredAdvancePx: 31.25};
+        })));
+        measured.selectCanvasMetrics(true);
+        const canvas = document.createElement('canvas');
+        measured.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', 'screen');
+        let printError = null;
+        try { measured.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', 'print'); }
+        catch (error) { printError = String(error); }
+        measured.selectCanvasMetrics(false);
+        measured.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', 'print');
+        const portablePageCount = measured.pageCount();
+        measured.selectCanvasMetrics(true);
+        measured.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', 'screen');
+        metricProbe = {printError, portablePageCount, restored: measured.canvasMetricsActive()};
+      } finally { measured.free(); }
+      return {rows, metricProbe};
     } finally { doc.free(); }
   });
   const firstByCompat = new Map();
-  for (const row of result) {
+  assert.match(result.metricProbe.printError ?? '', /select portable metrics before exporting/);
+  assert.equal(result.metricProbe.portablePageCount, 1);
+  assert.equal(result.metricProbe.restored, true);
+  for (const row of result.rows) {
     const first = firstByCompat.get(row.compat) || row;
     firstByCompat.set(row.compat, first);
     assert.ok(row.ink > 0 && row.calls.some(call => call.text === 'H'), JSON.stringify(row));

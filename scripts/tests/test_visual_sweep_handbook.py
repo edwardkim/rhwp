@@ -1,4 +1,7 @@
-"""편람 전쪽 품질 하한과 웹폰트 부재 처리를 검증한다."""
+"""관계형: 편람 기준 TSV 하한·backend 신원과 웹폰트 공급 계약을 검사한다.
+
+주석 갱신: 2026-11-04 15:18 KST. 실물 절대 px 좌표를 고정하는 검사가 아니다.
+"""
 import copy
 import csv
 import hashlib
@@ -35,6 +38,16 @@ class HandbookGateTests(unittest.TestCase):
         self.assertEqual(result['status'], 'passed')
         self.assertEqual(result['pages'], 383)
         self.assertEqual(result['regressions'], [])
+
+    def test_explicit_wasm_comparison_keeps_the_same_floor_and_backend_identity(self):
+        self.manifest['provenance']['raster_backend'] = 'wasm-canvas2d'
+        self.assertEqual(handbook.compare(ROOT, self.manifest)['status'], 're_review_required')
+        result = handbook.compare(ROOT, self.manifest, backend='wasm-canvas2d')
+        self.assertEqual(result['status'], 'passed')
+        self.assertEqual(result['backend'], 'wasm-canvas2d')
+        self.manifest['metrics'][197][handbook.METRIC] = '99.84'
+        self.assertEqual(handbook.compare(ROOT, self.manifest, backend='wasm-canvas2d')['regressions'][0]['page'], 198)
+        self.assertEqual(handbook.compare(ROOT, self.manifest, backend='svg')['status'], 're_review_required')
 
     def test_any_displayed_decrease_fails_without_offset_by_other_page(self):
         self.manifest['metrics'][129][handbook.METRIC] = '99.95'

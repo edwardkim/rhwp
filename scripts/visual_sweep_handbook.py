@@ -169,7 +169,7 @@ def supply_webfonts(root, cache, has_face=None, *, font_paths=()):
     return records
 
 
-def compare(root, manifest, *, dpi=96):
+def compare(root, manifest, *, dpi=96, backend='native-skia'):
     """383쪽 raw 표시값이 #8389의 2자리 기준보다 내려가면 보류한다."""
     root = Path(root)
     try:
@@ -177,9 +177,10 @@ def compare(root, manifest, *, dpi=96):
             if sha(root / path) != expected:
                 raise ValueError(f'기준 파일 해시가 다릅니다: {path}')
         p = manifest['provenance']
-        if (dpi != 96 or manifest['run_state'] != 'complete'
+        if (backend not in {'native-skia', 'wasm-canvas2d'}
+                or dpi != 96 or manifest['run_state'] != 'complete'
                 or p['hwp']['sha256'] != DOC_SHA or p['pdf']['sha256'] != PDF_SHA
-                or p['raster_backend'] != 'native-skia' or p['layout_generation'] != '2024'
+                or p['raster_backend'] != backend or p['layout_generation'] != '2024'
                 or p['comparison_profile'] != 'print' or p['pdf_rasterizer']['policy'] != POLICY
                 or manifest['radius_px'] != 2 or manifest['silhouette_method'] != METHOD
                 or manifest['pr_review_gate']['document_page_counts'] != {'rhwp': PAGES, 'pdf': PAGES}
@@ -203,7 +204,7 @@ def compare(root, manifest, *, dpi=96):
                   for p in baseline if candidate[p] < baseline[p]]
         return {'status': 're_review_required' if losses else 'passed',
                 'baseline': str(BASELINE), 'baseline_sha256': BASELINE_SHA,
-                'metric': METRIC, 'precision': '0.01 percentage points', 'pages': PAGES,
+                'metric': METRIC, 'backend': backend, 'precision': '0.01 percentage points', 'pages': PAGES,
                 'regressions': losses}
     except (OSError, KeyError, TypeError, ValueError, OverflowError, InvalidOperation) as error:
         return {'status': 're_review_required', 'reason': 'invalid_handbook_evidence', 'error': str(error)}

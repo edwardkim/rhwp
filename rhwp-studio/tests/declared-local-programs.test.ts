@@ -1,7 +1,9 @@
+// 관계형: 승인한 프로그램 바이트·원본 TTF 소유·표시 별칭의 관계를 검사한다.
+// 주석 갱신: 2026-11-04 15:18 KST. 합성 공급자 계약이며 실물 px 핀이 아니다.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { prepareDeclaredLocalPrograms } from '../src/core/declared-font-environment.ts';
+import { prepareDeclaredLocalPrograms, declaredOpenTypeProgram } from '../src/core/declared-font-environment.ts';
 import { getDetectedOSFonts } from '../src/core/font-loader.ts';
 import { fontFamilyCandidatesForDisplay } from '../src/core/font-substitution.ts';
 import { detectLocalFonts, resetLocalFontsForTests } from '../src/core/local-fonts.ts';
@@ -124,6 +126,13 @@ test('승인된 SFNT의 같은 glyph 프로그램을 정규화한 뒤 선언 환
     assert.equal(programs[0].trueType, true, '실제 로드한 SFNT 형식을 공통 선택에 전달한다');
     const provider = supplied.find(face => face.family === 'RHWPBitmapSvgGlyphSmoke-Regular');
     assert.ok(provider);
+    assert.deepEqual(
+      declaredOpenTypeProgram('RHWPBitmapSvgGlyphSmoke-Regular, DisplayOnly', true),
+      new Uint8Array(provider.source),
+      '선택한 원본의 cmap도 전체 선언 체인이 아닌 주 family로 공급한다',
+    );
+    assert.equal(declaredOpenTypeProgram('Missing Original, RHWPBitmapSvgGlyphSmoke-Regular', true), null,
+      '뒤의 표시 프로그램을 원본 TrueType으로 승격하지 않는다');
     assert.ok(supplied.every(face => face.source === provider.source), '선택과 표시 별칭은 같은 바이트를 소비한다');
     const normalized = new DataView(provider.source);
     for (const tag of [0x676c7966, 0x686d7478]) { // glyf, hmtx
